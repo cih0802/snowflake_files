@@ -22,9 +22,11 @@
     '{{ invocation_id }}'                    AS DW_BATCH_ID
 {%- endmacro %}
 
--- DATE_SK: YYYYMMDD NUMBER(8,0) (DIM_DATE 조인키). NULL 안전.
+-- DATE_SK: YYYYMMDD NUMBER(8,0) (DIM_DATE 조인키). NULL 안전 + 캘린더 범위(cal_start~cal_end) 클램프.
+--   범위 밖·NULL 은 NULL 반환 → fact 에서 COALESCE(date_sk(...),0) 로 DIM_DATE Unknown 멤버(0) 라우팅.
 {% macro date_sk(date_col) -%}
-    TRY_TO_NUMBER(TO_CHAR({{ date_col }}, 'YYYYMMDD'))
+    CASE WHEN {{ date_col }} BETWEEN '{{ var("cal_start") }}' AND '{{ var("cal_end") }}'
+         THEN TRY_TO_NUMBER(TO_CHAR({{ date_col }}, 'YYYYMMDD')) END
 {%- endmacro %}
 
 -- MONTH_KEY: YYYYMM NUMBER(6,0) (월팩트 conform). NULL 안전.

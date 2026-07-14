@@ -3,10 +3,8 @@
 -- grain: DATE_SK×IDENTITY_SK×GA_EVENT_SK×GA_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH
 -- ⚠️ IDENTITY_SK=NULL(GA4_IDENTITY 비활성), CAMPAIGN_SK=NULL(DIM_CAMPAIGN 미적재·GA UTM↔CRM 캠페인 cross-source)
 -- ⚠️ 비/준가산 지표(AVG_SESSION_DURATION·BOUNCE_RATE)는 grain 값 — 상위 재합산 금지(06_DDL §6)
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'+merge(unique_key에 활성 IDENTITY/CAMPAIGN_SK 추가) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 {{ config(
-    materialized='table',
-    unique_key=['DATE_SK','GA_EVENT_SK','GA_SOURCE_SK','DEVICE_SK','PAGE_PATH'],
     tags=['gold_ready']
 ) }}
 
@@ -16,7 +14,7 @@ with e as (
 
 joined as (
     select
-        {{ date_sk('e.EVENT_DT') }}                                          as DATE_SK,
+        COALESCE({{ date_sk('e.EVENT_DT') }}, 0)                            as DATE_SK,        -- 범위밖/NULL → 0 (순서9)
         0                                                                   as IDENTITY_SK,   -- 센티넬(미매핑) — GA4_IDENTITY 활성 후 해소
         COALESCE(gev.GA_EVENT_SK, 0)                                        as GA_EVENT_SK,
         COALESCE(gs.GA_SOURCE_SK, 0)                                        as GA_SOURCE_SK,

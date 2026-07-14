@@ -1,10 +1,8 @@
 -- FACT_TARGET_DEV: 회원개발 목표 팩트 (CRM_DEV_TARGET, 월×조직×개발구분)
 -- Co-authored with CoCo
 -- ORG_SK 는 DIM_ORG.ORG_DK(=ABS(HASH(DEPT_ID)))로 해소. Bronze 입고 후 실행.
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 {{ config(
-    materialized='table',
-    unique_key=['MONTH_KEY','ORG_SK','DEV_TYPE'],
     tags=['gold_pending']
 ) }}
 

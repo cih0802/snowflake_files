@@ -18,3 +18,6 @@ select
     EVENT_ACTION                    as EVENT_ACTION,
     {{ gold_meta('GA4') }}
 from src
+union all
+-- 순서9 Unknown 멤버(GA_EVENT_SK=0): fact 의 미매핑 GA_EVENT_SK 센티넬 라우팅 대상.
+select 0, '(unknown)', '(unknown)', '(unknown)', {{ gold_meta('GA4') }}

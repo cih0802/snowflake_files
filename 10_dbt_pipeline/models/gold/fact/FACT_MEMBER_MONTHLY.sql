@@ -2,10 +2,8 @@
 -- Co-authored with CoCo
 -- ⚠️ 스캐폴드: 월×회원 grain 에 납입/청구액만 집계. 활동/증감/누적/밴드/플래그 등 대다수 지표는
 --    회원상태·개발·증감 통합 로직 필요 → 입고 후 확장. 차원 SK(CAMPAIGN/SPONSORSHIP/PAYMENT/REASON)=0 센티넬.
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(다치 FK 실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 {{ config(
-    materialized='table',
-    unique_key=['MONTH_KEY','MEMBER_DK'],
     tags=['gold_pending']
 ) }}
 
@@ -14,7 +12,7 @@ with b as (
 )
 
 select
-    {{ month_key('PAY_DE::DATE') }}               as MONTH_KEY,
+    COALESCE(TRY_TO_NUMBER(MBRFEE_MT), TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM')), 0) as MONTH_KEY,  -- 회비월 우선, MBRFEE_MT NULL(1.13M)은 납입월 폴백, 둘 다 없으면 0 (순서9)
     MBER_NO                                       as MEMBER_DK,
     0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as PAYMENT_SK, 0 as REASON_SK,
     0 as DEV_CNT, 0 as DEV_MEMBERS, 0 as STOP_CNT, 0 as UNPAID_CNT,
@@ -37,4 +35,5 @@ select
     CAST(NULL AS BOOLEAN) as UNPAID_FLAG_BOM, CAST(NULL AS BOOLEAN) as UNPAID_FLAG_EOM,
     {{ gold_meta('CRM') }}
 from b
-group by {{ month_key('PAY_DE::DATE') }}, MBER_NO
+where MBER_NO is not null                         -- 순수 불량 5행 제외(NOT NULL MEMBER_DK)
+group by COALESCE(TRY_TO_NUMBER(MBRFEE_MT), TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM')), 0), MBER_NO

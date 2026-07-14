@@ -2,7 +2,7 @@
 -- Co-authored with CoCo
 -- ⚠️ 스캐폴드: 행당 SEND_MEMBERS=1. 성과지표(OPEN/성공/실패)·D5는 입고 후. SERVICE_SK/CAMPAIGN_SK=0 센티넬.
 -- ❌ APP_PUSH_SEND_CNT/SUCCESS_CNT: 어드민 원천 ❌제외 확정(2026-07-09) → 컬럼 삭제. 내년 어드민 구현 시 컬럼 재추가(ADD COLUMN).
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(SERVICE_SK 등 실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 
 
 with s as (
@@ -29,5 +29,6 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '24b70347-040a-40c6-b075-ccde404e290d'                    AS DW_BATCH_ID
+    '939bb5db-645a-41c5-a55e-0e6a4feb44c8'                    AS DW_BATCH_ID
 from s
+where s.MBER_NO is not null                       -- 순수 불량 745행 제외(NOT NULL MEMBER_DK)

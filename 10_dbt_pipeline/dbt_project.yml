@@ -19,6 +19,10 @@ clean-targets:
 vars:
   ga4_start: '20000101'
   ga4_end:   '99991231'
+  # 순서9: GOLD 날짜차원(DIM_DATE) 고정 연속범위. date_sk 매크로가 이 범위 밖/NULL 을 NULL 로 클램프
+  #   → fact 에서 COALESCE(date_sk(...),0) 로 Unknown 멤버(DATE_SK=0) 라우팅. 범위 변경 시 DIM_DATE 도 자동 반영.
+  cal_start: '1991-01-01'
+  cal_end:   '2035-12-31'
 
 # ---------------------------------------------------------------------------
 # materialization 방침
@@ -44,12 +48,19 @@ models:
       +incremental_strategy: append
       +full_refresh: false
       +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
-    # GOLD: 순서 8 활성화. 구조는 03_top-down_gold/06_DDL.sql 소유(24테이블 선생성).
-    #   - dim = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
-    #   - fact = table(모델별 config) → 스캐폴드 grain 비유일로 인한 행소실 방지(D1 정본).
-    #   - full_refresh:false 는 incremental(dim)에만 효력; table(fact)은 매 run 재생성(멱등).
+    # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(24테이블 선생성).
+    #   - dim  = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
+    #   - fact = incremental + append + pre-hook TRUNCATE + full_refresh:false (SILVER 동일 패턴)
+    #            → DDL 구조·타입·주석·FK 보존하며 데이터만 전체 갱신(멱등 Δ0). table(CTAS) 폐기.
+    #            (table 이 매 run DDL 을 덮어써 타입 소실·fact FK 23개 드롭하던 문제 = 순서9 G-1/G-2 해소.)
+    #   - fact grain 비유일(스캐폴드 SK=0)이라 merge 대신 append(unique_key 불요·행소실 없음).
+    #   ⚠️ 전제: 06_DDL 선행 실행(테이블 미존재 시 incremental 첫 run 이 CTAS 로 구조 없이 생성됨).
     gold:
       +database: GN_DW
       +schema: GOLD
       +enabled: true
       +full_refresh: false
+      fact:
+        +materialized: incremental
+        +incremental_strategy: append
+        +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"

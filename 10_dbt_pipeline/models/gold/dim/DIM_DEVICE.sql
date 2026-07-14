@@ -17,3 +17,6 @@ select
     DEVICE_TYPE                     as DEVICE_TYPE,
     {{ gold_meta('GA4') }}
 from src
+union all
+-- 순서9 Unknown 멤버(DEVICE_SK=0): fact 의 미매핑 DEVICE_SK 센티넬 라우팅 대상.
+select 0, '(unknown)', {{ gold_meta('GA4') }}

@@ -1,7 +1,7 @@
 -- FACT_MEMBER_EVENT: 회원 사건 팩트 스캐폴드 (개발 ∪ 후원중단, Bronze 입고 후 실행)
 -- Co-authored with CoCo
 -- ⚠️ 스캐폴드: 행당 카운트 1 부여(회원 dedup·차원 SK 해소는 입고 후). CAMPAIGN/SPONSORSHIP/ORG/REASON_SK=0 센티넬.
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(차원 SK 실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 
 
 with dev as (
@@ -49,5 +49,5 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '24b70347-040a-40c6-b075-ccde404e290d'                    AS DW_BATCH_ID
+    'd4528355-3625-41c3-b3d2-8c3c022ddc03'                    AS DW_BATCH_ID
 from unioned

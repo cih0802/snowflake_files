@@ -1,10 +1,8 @@
 -- FACT_EVENT_PARTICIPATION: 행사 참여 팩트 스캐폴드 (CRM_EVENT_PARTICIPATION, Bronze 입고 후 실행)
 -- Co-authored with CoCo
 -- ⚠️ 스캐폴드: 행당 PARTICIPANT_CNT=1. 모집/대기/취소 등 상태별 집계는 입고 후. CAMPAIGN/SPONSORSHIP_SK=0 센티넬.
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(차원 SK 실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 {{ config(
-    materialized='table',
-    unique_key=['DATE_SK','MEMBER_DK','EVENT_SK'],
     tags=['gold_pending']
 ) }}
 
@@ -13,7 +11,7 @@ with p as (
 )
 
 select
-    {{ date_sk('p.PARTCPT_DT::DATE') }}           as DATE_SK,
+    COALESCE({{ date_sk('p.PARTCPT_DT::DATE') }}, {{ date_sk('e.EVENT_START_DATE') }}, 0) as DATE_SK,  -- 참여일 없으면 행사시작일, 둘 다 없으면 센티넬0 (순서9)
     p.MBER_NO                                     as MEMBER_DK,
     COALESCE(e.EVENT_SK, 0)                        as EVENT_SK,
     0                                             as CAMPAIGN_SK,

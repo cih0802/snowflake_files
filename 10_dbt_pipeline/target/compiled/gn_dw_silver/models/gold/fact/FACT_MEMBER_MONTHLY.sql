@@ -2,7 +2,7 @@
 -- Co-authored with CoCo
 -- ⚠️ 스캐폴드: 월×회원 grain 에 납입/청구액만 집계. 활동/증감/누적/밴드/플래그 등 대다수 지표는
 --    회원상태·개발·증감 통합 로직 필요 → 입고 후 확장. 차원 SK(CAMPAIGN/SPONSORSHIP/PAYMENT/REASON)=0 센티넬.
--- 🔴 D1 임시조치[삭제금지]: materialized=table 로 스캐폴드 행소실 방지. 프로젝트 마감 전 'incremental'(다치 FK 실적재 시) 재전환 검토 필수. 이력/코드 정리 시에도 이 주석 보존.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 
 
 with b as (
@@ -10,7 +10,7 @@ with b as (
 )
 
 select
-    TRY_TO_NUMBER(TO_CHAR(PAY_DE::DATE, 'YYYYMM'))               as MONTH_KEY,
+    TRY_TO_NUMBER(MBRFEE_MT)                      as MONTH_KEY,     -- 회비월(YYYYMM) grain: 납입일(PAY_DE) 대신 → 미납행 보존·NULL 0 (순서9)
     MBER_NO                                       as MEMBER_DK,
     0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as PAYMENT_SK, 0 as REASON_SK,
     0 as DEV_CNT, 0 as DEV_MEMBERS, 0 as STOP_CNT, 0 as UNPAID_CNT,
@@ -34,6 +34,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '24b70347-040a-40c6-b075-ccde404e290d'                    AS DW_BATCH_ID
+    'bf4f6e0e-6b73-44dc-89b0-0e6188875612'                    AS DW_BATCH_ID
 from b
-group by TRY_TO_NUMBER(TO_CHAR(PAY_DE::DATE, 'YYYYMM')), MBER_NO
+where MBER_NO is not null                         -- 순수 불량 5행 제외(NOT NULL MEMBER_DK)
+group by TRY_TO_NUMBER(MBRFEE_MT), MBER_NO
