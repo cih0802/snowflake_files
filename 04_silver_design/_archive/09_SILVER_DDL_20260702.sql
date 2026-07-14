@@ -2,6 +2,14 @@
 -- Co-authored with CoCo
 /*
 ================================================================================
+  ⛔ ARCHIVED / SUPERSEDED (2026-07-14)
+  ─────────────────────────────────────────────────────────────────────────────
+  이 파일의 역할(SILVER 테이블 DDL 정본)은 `silver_stepbystep_ddl.sql`(CRM 21테이블
+  DDL + BRONZE→SILVER 정제 INSERT 통합 실행 정본)이 대체함. 신규 작업은 그 파일 사용.
+  본 파일은 참조용으로만 보존:
+    - GA4 SILVER 5테이블 DDL(GA4_TRAFFIC_SOURCE·GA4_EVENT_DIM·GA4_DEVICE·GA4_EVENT·
+      GA4_IDENTITY)은 아직 stepbystep에 미이관 → 트랙 B(S-6) 착수 시 이 초안 참조.
+================================================================================
   GN_DW.SILVER — 전체 테이블 DDL (26개: CRM 21 + GA4 5)
   작성일   : 2026-07-02
   근거 문서 : SILVER 스키마 컬럼 인벤토리_20260630.csv (CRM 21 + GA4 5)

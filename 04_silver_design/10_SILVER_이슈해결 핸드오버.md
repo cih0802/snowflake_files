@@ -4,7 +4,8 @@ doc_role: 이슈·해결 핸드오버 노트 (CRM SILVER 설계 선결 Q)
 project: GN_DW (굿네이버스)
 created: 2026-06-29
 purpose: 인수인계자가 유사 이슈 발생 시 읽고 대응. Q번호는 master_plan §5와 동일.
-refs: 02_SILVER_작업계획_BRONZE-GOLD연결 20260630.md(master §5 Q표) · 03_SILVER_작업계획_CRM전용 20260630.md(§4) · 09_bronze_crm_ddl.sql · BRONZE_CRM 테이블 정보.MD · 06_지표용어사전 20260624.md
+status: Q4·Q7·Q13·Q14·Q15 ✅ / Q5·Q6 ✅해소·적재완료(2026-07-14) / Q2·Q3 ◐(현업 라벨 대기). CRM 21/21 SILVER 적재 완료.
+refs: 02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md(master 매핑 인덱스) · 03_SILVER_작업계획_CRM전용 20260714.md · 09_bronze_crm_ddl.sql · BRONZE_CRM 테이블 정보.MD · 06_지표용어사전 20260624.md
 END-METADATA -->
 
 # SILVER 설계 이슈·해결 핸드오버 노트 (CRM)
@@ -64,19 +65,47 @@ END-METADATA -->
 
 ---
 
-## 3. 미해결 — 인수인계 대응 가이드
+## 3. Q5·Q6 — 해소 완료 (2026-07-14 적재)
 
-### Q5 ⚠️ 발송키 이원화 (패턴 P5)
+> 최초 미해결(P5 미검증·설계결정) → **정의서 업데이트 + 실측 프로파일링으로 해소, CRM_SEND_*·CRM_MEMBER 적재 완료.**
+> 적재 SQL 정본 = `09_SILVER_적재쿼리_20260714.sql` STEP 3 배치 4 (구조 DDL은 `08_SILVER_테이블DDL_20260714.sql`).
+
+### Q5 ✅ 발송키 이원화 (패턴 P5) — 해소
 - **이슈**: `SND_*.SEQ_NO` vs `TM_MS_*/TD_MS_*.SNDNG_KEY` 관계 불명(병렬/구신/마이그레이션?).
-- **막힌 이유**: `SND_*` 컬럼 설명이 **"(LLM생성)" 미검증** → 키 단정 불가.
-- **대응**: ① `SND_*` 원본 정의서 확보(필수) ② 확보 전 임시 진단 = 두 키 값집합 overlap·날짜/회원 기준 행 매칭률 프로파일링(P3 응용) → 미러/병렬 추정. 결론 전까지 `CRM_SEND_*` 키 설계 잠정.
-- **[실측 2026-06-30]**: `SND_REQ_MST.SEQ_NO` 1,566 전건 유일·`TM_MS_EMAIL_SNDNG.SNDNG_KEY` 483,629 전건 유일 → **각 마스터에서 PK 유효**. 두 키 grain 상이(요청 1,566 vs 이메일발송 483,629)로 **별개 계열 확정**(별칭 아님). 단 SND_* 컬럼은 여전히 미검증 → 최종 PK는 정의서 확인 후.
+- **막혔던 이유**: `SND_*` 컬럼 설명이 "(LLM생성)" 미검증 → 키 단정 불가.
+- **[실측 2026-06-30]**: `SND_REQ_MST.SEQ_NO`·`TM_MS_EMAIL_SNDNG.SNDNG_KEY` 각 전건 유일 → 별개 계열 추정(별칭 아님). SND_* 컬럼 미검증으로 최종 PK 보류.
+- **[해소 2026-07-14]** — `BRONZE_CRM 테이블 정보.MD` 정의서 업데이트로 SND_* 컬럼 확정 + 실측:
+  - `SND_REQ_MST` 1,707행 = 1,707 distinct SEQ_NO → **SEQ_NO = PK**(요청 마스터).
+  - `SND_MEMBER_LIST` 8.3M행, REQ_SEQ_NO 1,646종, **orphan 0** → REQ_SEQ_NO → SEQ_NO **유효 FK**.
+  - **키 도메인 완전 분리**: `SEQ_NO ∩ EMAIL.SNDNG_KEY = 0`, `EMAIL ∩ MSG_AT SNDNG_KEY = 0`(레거시 3채널도 서로 분리).
+  - **결론**: 두 개의 독립 발송 시스템 —
+    · **SND_\*** (비즈뿌리오): `SND_REQ_MST`(요청) → `SND_MEMBER_LIST`(수신자)
+    · **TM_MS_\*/TD_MS_\*** (레거시 CRM): EMAIL·MSG_AT·PSTMTR 각 SNDNG_KEY
+    → `CRM_SEND_*`는 **4채널(EMAIL/MSG_AT/PSTMTR/SND) 구조적 UNION**, **`SEND_CHANNEL`을 PK에 포함**(채널·시스템 충돌 방지; REQUEST/MEMBER PK 보정, RESULT는 기존부터 포함).
+  - **적재 완료**: `CRM_SEND_REQUEST` 1,614,397 · `CRM_SEND_RESULT` 1,611,758(채널×SNDNG_KEY 집계) · `CRM_SEND_MEMBER` 38,471,525(EMAIL 7.81M+MSG_AT 20.56M+PSTMTR 1.80M+SND 8.30M).
+  - **실측 타입 주의**: `TM_MS_PSTMTR_SNDNG.SNDNG_STDR_DE`·`SND_REQ_MST.SEND_DATE`는 문서상 TEXT였으나 **실측 DATE형** → `::TIMESTAMP_NTZ` 캐스팅(TRY_TO_TIMESTAMP는 DATE 입력 거부).
 
-### Q6 ⚠️ 정기/일시 회원 UNION 정렬
-- **이슈**: `TM_MM_FDRM_MBER_INFO`(정기)·`TM_MM_ONCE_MBER_INFO`(일시) 컬럼셋·동일의미 표현 상이(수신동의: 정기 코드 vs 일시 Y/N).
-- **성격**: 데이터 이슈보다 **설계 결정**. 실측으로 "해결"되지 않음.
-- **대응**: S-1 `CRM_MEMBER` 설계 시 — 공통 교집합 + NULL 패딩 + `MEMBER_TYPE` 구분 + 수신동의 등 표준화 매핑 정의. 값 분포는 distinct 프로파일링으로 보조.
-- **[실측 2026-06-30]**: 정기 1,575,046(전건 숫자·38% leading-zero·len≤7)·일시 175,061(**전건 비숫자**·len≤9)·**번호 충돌 0**. ⇒ `MEMBER_DK`=**VARCHAR(10)** 확정(일시 비숫자·정기 0시작으로 NUMBER 불가), 충돌0이라 **접두 불요**. **GOLD `MEMBER_DK` NUMBER(38,0)→VARCHAR(10) ✅ 반영 완료(AC-1, GOLD CSV·05_필드인벤토리)**(TYPE-MDK). 수신값: 정기 `EMAIL_RECPTN_CD`가 **콤마 멀티값**(`'2,5,6'`·`'2, 3, 4, 5'`·순서/공백 제각각·`'Y'`·공백 혼재)·일시 Y/N → 단일코드 아님, **집합 정규화 규칙 필요**. SEX도 1·2 외 3·4·5·6·7·8·공백 존재 → 보정 매핑 보강.
+### Q6 ✅ 정기/일시 회원 UNION 정렬 — 해소
+- **이슈**: `TM_MM_FDRM_MBER_INFO`(정기)·`TM_MM_ONCE_MBER_INFO`(일시) 컬럼셋·동일의미 표현 상이(수신동의: 정기 코드 vs 일시 Y/N). 성격 = **설계 결정**.
+- **[실측 2026-06-30]**: 정기 1,575,046(숫자·38% leading-zero)·일시 175,061(비숫자)·**번호 충돌 0** → `MEMBER_DK`=**VARCHAR(10)** 확정(접두 불요). GOLD `MEMBER_DK` NUMBER→VARCHAR(10) 반영(AC-1).
+- **[해소 2026-07-14]** — 값 분포 프로파일링으로 표준화 규칙 확정 + `CRM_MEMBER` 적재:
+  - **SEX**: 코드그룹 **CM013 확정**(1=국내남·2=국내여·3=외국인남·4=외국인여·5=외국인기타·6=단체·7=기업·8=기타 — 순수 성별 아님). 규칙 = `'1','3'→'M'` · `'2','4'→'F'` · `'5'~'8'→'U'` · 공백/NULL→NULL. (상세 아래 "코드그룹 라벨" 참조)
+  - **수신동의(EMAIL_RECPTN/PSTMTR_RECPTN)**: 정기=콤마 멀티값(`'2,5,6'` 304k·`'2,5'` 181k·`'2, 3, 4, 5'`·`'2,6,5'` 등 **순서/공백 제각각**), 일시=Y/N. 규칙 = **정규화**(공백제거→분리→DISTINCT→오름차순→재결합; `ARRAY_SORT/DISTINCT/REMOVE`) → `'2,6,5'`·`'2, 3, 4, 5'`가 `'2,5,6'`·`'2,3,4,5'`로 통일. 일시 Y/N은 통과. (코드셋 정보 보존; BOOLEAN 축약은 GOLD/SV에서.)
+  - **UNION**: 정기(FDRM)∪일시(ONCE), MEMBER_TYPE 구분, MBER_NO 기준 dedup(QUALIFY). MBER_STAT_NM는 MM010 라벨 조인.
+  - **적재 완료**: `CRM_MEMBER` 1,763,065(정기 1,587,343 + 일시 175,722, 충돌·손실 0).
+
+### Q16 ✅ 캠페인↔마케팅캠페인 조인키 (패턴 P2) — 해소(무효화)
+- **이슈**: `TM_CM_CMPGN_MNG.MKTG_CMPGN_NM`(NUMBER) vs `TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD`(VARCHAR) 타입 상이.
+- **[해소 2026-07-14]**: 적재 후 실측 — `CRM_CAMPAIGN.MKTG_CMPGN_NM` **36,143행 전건 NULL**(원천 미채움). ⇒ **데이터상 연결 자체가 없음**(타입 불일치는 무의미). `MK_CMPGN_NM`=NULL 유지. 마케팅캠페인 마스터(287행)는 존재하나 캠페인이 이를 참조하지 않음. → 연결 필요 시 **현업에 조인키/매핑 요청** 필요.
+
+### 코드그룹 라벨 ✅ 확정·채움 (2026-07-14, 정의서 `코드그룹` 열 + CRM_CODE 조인)
+- **SEX = CM013**(혼합 필드): 1=국내남·2=국내여·3=외국인남·4=외국인여·5=외국인기타·6=단체·7=기업·8=기타. → 정의서 주석대로 **순수 성별 아님**. 표준화 `1,3→M · 2,4→F · 5~8→U`(비개인·외국기타; 개인/기업/단체 구분은 `MBER_DIV_CD`가 담당). 실측 채움: F 947,500·M 699,786·U 115,358·NULL 421.
+- **MBER_DIV_CD = MM018**: 1=개인·2=기업·3=단체 → `CRM_MEMBER.MBER_DIV_NM` **100% 채움**(당초 미상 해소).
+- **SETLE_CD = PM040**: 1=자동이체·2=신용카드·3=신용카드즉시·4=회비통장·5=휴대폰·…·12=네이버페이·13=가상계좌즉시 → `CRM_PAYMENT_METHOD.SETLE_NM` **100% 채움**.
+
+### Q12 ◐ 컬럼정의서 CSV ↔ DDL 컬럼집합 — CRM 적재 범위 내 해소
+- **[해소 2026-07-14]**: SILVER CRM 21테이블 정제 적재가 **매핑 컬럼 전부 성공**(결번·미존재 소스컬럼 0) → 적재에 필요한 컬럼집합은 검증됨. 실측 BRONZE_CRM=43테이블/927컬럼(원천정의 41/876 + 템플릿 2테이블 `TD_MS_AT_TMPLAT_BTN_LIST`·`TM_MS_EMAIL_TMPLAT_MNG`). **잔여**: 정제 미사용 컬럼의 전수 CSV↔DDL 대조는 입고팀 확인(저영향).
+- **실측 타입 교훈**: `SNDNG_STDR_DE`·`SEND_DATE`가 문서 TEXT였으나 실측 DATE → UNION 전 타입 확인 필수(§4).
 
 ---
 
@@ -86,3 +115,5 @@ END-METADATA -->
 - PK 있어도 **measure는 실물 중복 별도 확인**.
 - 실데이터 타 어카운트 → **쿼리팩+회수 템플릿**으로 분리 실행(P6).
 - 미수령/미검증 원천 의존 항목은 **잠정 처리 후 입고/정의서 시 확정**.
+- **정의서 타입 ≠ 실측 타입**: UNION/캐스팅 전 `INFORMATION_SCHEMA.COLUMNS`로 실제 타입 확인(예 `SNDNG_STDR_DE`·`SEND_DATE`가 문서 TEXT였으나 실측 DATE → `TRY_TO_TIMESTAMP` 거부, `::TIMESTAMP_NTZ` 사용).
+- **다계열 UNION 키는 판별자를 PK에 포함**: 키 도메인이 오늘 분리(overlap 0)여도 미래 충돌 방지 위해 `SEND_CHANNEL` 등 discriminator를 논리 PK에 포함.

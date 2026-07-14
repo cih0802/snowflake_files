@@ -1,0 +1,412 @@
+-- GN_DW SILVER CRM 테이블 정의 DDL (STEP 1 스키마 + STEP 2 CRM 21테이블 CREATE TABLE). 적재/ALTER 쿼리는 09_SILVER_적재쿼리_20260714.sql 참조.
+-- Co-authored with CoCo
+/*
+================================================================================
+  GN_DW.SILVER — CRM 21테이블 정의 DDL (테이블 구조 정본)
+  ★ 구 silver_stepbystep_ddl.sql 을 08(구조 DDL) + 09(적재 쿼리)로 분할 — 2026-07-14.
+      - 08 (이 파일): STEP 1 스키마 생성 + STEP 2 CREATE OR REPLACE TABLE x21 (멱등).
+      - 09          : STEP 3 BRONZE→SILVER 정제 INSERT OVERWRITE + 발송키 PK ALTER.
+  실행 순서 : 08 먼저(테이블 생성) → 09(적재). 08 은 CREATE OR REPLACE 로 안전 재실행.
+  근거      : 03_SILVER_작업계획_CRM전용 · 02_SILVER_작업계획_BRONZE-GOLD연결 · 03_top-down_gold/08_silver의존.md
+  S-5 반영  : [G1] CRM_MEMBER_DEV·CRM_MEMBER_AMT_CHANGE = AREA_CD·AREA_NM(CM018)·AGE
+              [G2] CRM_SEND_REQUEST = SEND_GBN_TOP/MID/BOT(+_NM) 3계층 (SND 채널 한정)
+  주의      : 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은
+              09 상단 ALTER 로 수행(멱등 로드 흐름 유지) — 본 파일 CREATE 는 단일 PK.
+================================================================================
+*/
+-- ============================================================================
+-- STEP 1 — 스키마 생성
+-- ============================================================================
+CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER
+  COMMENT = 'Silver 레이어 — Bronze(CRM·GA4) 정제 객체 (GOLD 입력용)';
+
+USE SCHEMA GN_DW.SILVER;
+
+-- ============================================================================
+-- STEP 2 — CRM 21테이블 DDL (빈 테이블 생성, 정제 INSERT 는 STEP 3)
+-- ============================================================================
+
+-- CRM 1: CRM_MEMBER (회원 통합 — 정기 ∪ 일시)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
+    MEMBER_DK           VARCHAR(10)     NOT NULL,
+    MEMBER_TYPE         VARCHAR(10),
+    MBER_DIV_CD         VARCHAR(3),
+    MBER_DIV_NM         VARCHAR,
+    CPR_DIV_CD          VARCHAR(3),
+    SEX                 VARCHAR(2),
+    MBER_STAT_CD        VARCHAR(3),
+    MBER_STAT_NM        VARCHAR,
+    CMPGN_CD            VARCHAR(20),
+    ACT_DEPT_CD         VARCHAR(10),
+    REGIST_DEPT_CD      VARCHAR(10),
+    JOIN_PATH_CD        VARCHAR(3),
+    HMPG_ID             VARCHAR(30),
+    ENTRPS_NM           VARCHAR(200),
+    EMAIL_RECPTN        VARCHAR,
+    PSTMTR_RECPTN       VARCHAR,
+    JOIN_DT             TIMESTAMP_NTZ,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (MEMBER_DK)
+) COMMENT = '회원 통합(정기∪일시). Q6 UNION 스키마 정렬 잠정';
+
+-- CRM 2: CRM_MEMBER_STATUS_HIST (회원 상태전이 · SCD2)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_STATUS_HIST (
+    MBER_NO             VARCHAR(10)     NOT NULL,
+    SER_NO              NUMBER(10,0)    NOT NULL,
+    BF_STAT_CD          VARCHAR(3),
+    BF_STAT_NM          VARCHAR,
+    CHN_STAT_CD         VARCHAR(3),
+    CHN_STAT_NM         VARCHAR,
+    EFFECTIVE_FROM      TIMESTAMP_NTZ,
+    EFFECTIVE_TO        TIMESTAMP_NTZ,
+    IS_CURRENT          BOOLEAN,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (MBER_NO, SER_NO)
+) COMMENT = '회원 상태전이 이력 (SCD2 range)';
+
+-- CRM 3: CRM_MEMBER_DEV (개발약정)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DEV (
+    SPNSR_NO            VARCHAR(9)      NOT NULL,
+    SPNSR_BSNS_NO       NUMBER(19,0)    NOT NULL,
+    OCCRRNC_DE          VARCHAR(8)      NOT NULL,
+    SER_NO              NUMBER(10,0)    NOT NULL,
+    MBER_NO             VARCHAR(10),
+    SPNSR_BSNS_ID       VARCHAR(20),
+    SPNSR_AMT           NUMBER(19,0),
+    DVLP_DIV_CD         VARCHAR(3),
+    ACT_DEPT_CD         VARCHAR(10),
+    ACMSLT_DEPT_CD      VARCHAR(10),
+    CMPGN_CD            VARCHAR(20),
+    SETLE_CD            VARCHAR(3),
+    AREA_CD             VARCHAR(3),
+    AREA_NM             VARCHAR,
+    AGE                 NUMBER(10,0),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO)
+) COMMENT = '개발약정 (Q13 스파인 — N:1 LEFT JOIN 안전). [S-5 G1] AREA_CD(CM018)·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스';
+
+-- CRM 4: CRM_MEMBER_AMT_CHANGE (증감)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_AMT_CHANGE (
+    OCCRRNC_DE          VARCHAR(8)      NOT NULL,
+    SER_NO              NUMBER(10,0)    NOT NULL,
+    MBER_NO             VARCHAR(10),
+    SPNSR_AMT           NUMBER(19,0),
+    RDCAMT_YN           VARCHAR(1),
+    ACMSLT_DEPT_CD      VARCHAR(10),
+    CMPGN_CD            VARCHAR(20),
+    AREA_CD             VARCHAR(3),
+    AREA_NM             VARCHAR,
+    AGE                 NUMBER(10,0),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (OCCRRNC_DE, SER_NO)
+) COMMENT = '약정 증감(증액/감액). [S-5 G1] AREA_CD(CM018)·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스';
+
+-- CRM 5: CRM_MEMBER_DISCONTINUE (중단)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DISCONTINUE (
+    MBER_NO             VARCHAR(10)     NOT NULL,
+    SPNSR_DSCNTC_DE     VARCHAR(8)      NOT NULL,
+    SER_NO              NUMBER(10,0)    NOT NULL,
+    DSCNTC_RSN_CD       VARCHAR(3),
+    DSCNTC_RSN_NM       VARCHAR,
+    DSCNTC_PATH         VARCHAR(1),
+    REGIST_DEPT_CD      VARCHAR(10),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (MBER_NO, SPNSR_DSCNTC_DE, SER_NO)
+) COMMENT = '후원중단';
+
+-- CRM 6: CRM_MEMBER_RESPONSOR (재후원)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_RESPONSOR (
+    MBER_NO             VARCHAR(10)     NOT NULL,
+    SER_NO              NUMBER(10,0)    NOT NULL,
+    RE_SPNSR_DE         VARCHAR(8)      NOT NULL,
+    REGIST_DEPT_CD      VARCHAR(10),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (MBER_NO, SER_NO, RE_SPNSR_DE)
+) COMMENT = '재후원';
+
+-- CRM 7: CRM_MEMBER_SPONSOR_BIZ (회원×후원사업)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_BIZ (
+    SPNSR_NO            VARCHAR(9)      NOT NULL,
+    SPNSR_BSNS_NO       NUMBER(19,0)    NOT NULL,
+    SPNSR_BSNS_ID       VARCHAR(20),
+    SPNSR_AMT           NUMBER(19,0),
+    SPNSR_DSCNTC_YN     VARCHAR(1),
+    SPNSR_DSCNTC_DE     VARCHAR(8),
+    SPNSR_DSCNTC_RSN_CD VARCHAR(3),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
+) COMMENT = '회원×후원사업 약정';
+
+-- CRM 8: CRM_SPONSOR_RELATION (결연)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SPONSOR_RELATION (
+    RELATNSP_KEY        NUMBER(10,0)    NOT NULL,
+    SPNSR_NO            VARCHAR(9),
+    SPNSR_BSNS_NO       NUMBER(19,0),
+    SPNSR_BSNS_ID       VARCHAR(20),
+    CHILD_CD            NUMBER(10,0),
+    MBER_NO             VARCHAR(10),
+    RELATNSP_STRT_DE    DATE,
+    RELATNSP_DSCNTC_DE  DATE,
+    RELATNSP_DSCNTC_YN  VARCHAR(1),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (RELATNSP_KEY)
+) COMMENT = '결연(아동). Q15 SPNSR_BSNS_ID 크로스워크 파생';
+
+-- CRM 9: CRM_PAYMENT_BILLING (납입·청구 — 회비 ∪ 기부금)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_BILLING (
+    PAY_KEY             VARCHAR         NOT NULL,
+    PAYMENT_TYPE        VARCHAR,
+    MBER_NO             VARCHAR(10),
+    SPNSR_BSNS_ID       VARCHAR(20),
+    RELATNSP_KEY        NUMBER(10,0),
+    MBRFEE_MT           VARCHAR(6),
+    MBRFEE_SQNC         NUMBER(3,0),
+    RQEST_AMT           NUMBER(19,0),
+    RQEST_DE            DATE,
+    PAY_AMT             NUMBER(10,0),
+    PAY_DE              DATE,
+    PAY_STAT_CD         VARCHAR(3),
+    SETLE_CD            VARCHAR(3),
+    GFT_DIV_CD          VARCHAR(3),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (PAY_KEY)
+) COMMENT = '납입/청구(회비∪기부금). Q14 납입 dedup·청구 행기준';
+
+-- CRM 10: CRM_PAYMENT_METHOD (결제수단)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_METHOD (
+    SETLE_KEY           NUMBER(10,0)    NOT NULL,
+    MBER_NO             VARCHAR(10),
+    SETLE_CD            VARCHAR(3),
+    SETLE_NM            VARCHAR,
+    CARD_DIV_CD         VARCHAR(3),
+    FNLT_CD             VARCHAR(10),
+    WTDRW_STRT_DE       DATE,
+    SETLE_STAT_CD       VARCHAR(3),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SETLE_KEY)
+) COMMENT = '결제수단 (현재상태)';
+
+-- CRM 11: CRM_CAMPAIGN (캠페인 마스터)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
+    CMPGN_CD            VARCHAR(20)     NOT NULL,
+    CMPGN_NM            VARCHAR(200),
+    UPPER_CMPGN_CD      VARCHAR(20),
+    UPPER_CMPGN_YN      VARCHAR(1),
+    BRND_ID             VARCHAR(30),
+    BRND_NM             VARCHAR(200),
+    PR_MTH_CD           VARCHAR(3),
+    SPNSR_BSNS_ID       VARCHAR(100),
+    CMPGN_CTGR_CD       NUMBER(10,0),
+    CMPGN_TYPE1_BSN     NUMBER(10,0),
+    CMPGN_TYPE2_BSN     NUMBER(10,0),
+    MKTG_CMPGN_NM       NUMBER(10,0),
+    MK_CMPGN_NM         VARCHAR(200),
+    CMPGN_STRT_DE       VARCHAR(8),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (CMPGN_CD)
+) COMMENT = '캠페인 마스터. Q2/Q3 코드 라벨·Q16 조인키';
+
+-- CRM 12: CRM_SPONSORSHIP (후원사업 마스터)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SPONSORSHIP (
+    SPNSR_BSNS_ID       VARCHAR(20)     NOT NULL,
+    SPNSR_BSNS_NM       VARCHAR(50),
+    SPNSR_BSNS_ABRV_CD  VARCHAR(3),
+    SPNSR_DIV_CD        VARCHAR(3),
+    DNTN_TY_CD          VARCHAR(3),
+    CPR_DIV_CD          VARCHAR(3),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SPNSR_BSNS_ID)
+) COMMENT = '후원사업 마스터 (실측 50개)';
+
+-- CRM 13: CRM_ORG (조직 마스터)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_ORG (
+    DEPT_ID                 VARCHAR(20)     NOT NULL,
+    DEPT_NM                 VARCHAR(50),
+    UPPER_DEPT_ID           VARCHAR(20),
+    ACMSLT_UPPER_DEPT_ID    VARCHAR(20),
+    ACMSLT_DEPT_YN          VARCHAR(1),
+    STATS_DEPT_LVL          NUMBER(3,0),
+    USE_YN                  VARCHAR(1),
+    SORT_ORDR               NUMBER(10,0),
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL,
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (DEPT_ID)
+) COMMENT = '조직 마스터. 실적팀=ACMSLT_UPPER_DEPT_ID 재귀 LVL5. USE_YN·SORT_ORDR 원천 확인';
+
+-- CRM 14: CRM_DEV_TARGET (개발목표)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_DEV_TARGET (
+    STDYY               VARCHAR(4)      NOT NULL,
+    STDR_MT             VARCHAR(6)      NOT NULL,
+    MBER_DVLP_DIV_CD    VARCHAR(1)      NOT NULL,
+    DEPT_ID             VARCHAR(20)     NOT NULL,
+    GOAL_CNT            NUMBER(10,0),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (STDYY, STDR_MT, MBER_DVLP_DIV_CD, DEPT_ID)
+) COMMENT = '회원개발 목표 (월×조직×개발구분)';
+
+-- CRM 15: CRM_SEND_REQUEST (발송요청)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
+    SNDNG_KEY           NUMBER(10,0)    NOT NULL,
+    SEND_CHANNEL        VARCHAR,
+    SNDNG_TY_CD         VARCHAR(3),
+    SEND_GBN_TOP        VARCHAR(255),
+    SEND_GBN_TOP_NM     VARCHAR(255),
+    SEND_GBN_MID        VARCHAR(255),
+    SEND_GBN_MID_NM     VARCHAR(255),
+    SEND_GBN_BOT        VARCHAR(255),
+    SEND_GBN_BOT_NM     VARCHAR(255),
+    TIT                 VARCHAR(100),
+    SNDNG_STDR_DE       TIMESTAMP_NTZ,
+    REQ_SEQ_NO          NUMBER(19,0),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SNDNG_KEY)
+) COMMENT = '발송요청 마스터. Q5 발송키 이원화. [S-5 G2] SEND_GBN_TOP/MID/BOT(+_NM)=DIM_SERVICE 대/중/소(SND 채널만, 타 채널 NULL)';
+
+-- CRM 16: CRM_SEND_MEMBER (발송×회원)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
+    SNDNG_KEY           NUMBER(10,0)    NOT NULL,
+    SNDNG_DTL_KEY       NUMBER(10,0)    NOT NULL,
+    MBER_NO             VARCHAR(10),
+    SNDNG_DE            TIMESTAMP_NTZ,
+    SNDNG_RST_CD        VARCHAR(3),
+    SEND_CHANNEL        VARCHAR,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
+) COMMENT = '발송×회원 상세';
+
+-- CRM 17: CRM_SEND_RESULT (발송×채널 집계)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_RESULT (
+    SNDNG_KEY           NUMBER(10,0)    NOT NULL,
+    SEND_CHANNEL        VARCHAR         NOT NULL,
+    SNDNG_CNT           NUMBER(10,0),
+    SUCCES_CNT          NUMBER(10,0),
+    FAILR_CNT           NUMBER(10,0),
+    TOT_CLICK_CNT       NUMBER,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (SNDNG_KEY, SEND_CHANNEL)
+) COMMENT = '발송×채널 집계';
+
+-- CRM 18: CRM_EVENT (행사 마스터)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
+    EVENT_KEY           VARCHAR         NOT NULL,
+    EVENT_SOURCE        VARCHAR,
+    EVENT_DIV_CD        VARCHAR(3),
+    EVENT_NM            VARCHAR(200),
+    STRT_DE             VARCHAR(8),
+    END_DE              VARCHAR(8),
+    RCRIT_PSNNL_CO      NUMBER(10,0),
+    BRNCH_DEPT_ID       VARCHAR(20),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (EVENT_KEY)
+) COMMENT = '행사 마스터(이벤트∪캠페인행사)';
+
+-- CRM 19: CRM_EVENT_PARTICIPATION (행사×참여자)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT_PARTICIPATION (
+    EVENT_KEY           VARCHAR         NOT NULL,
+    MBER_NO             VARCHAR(10)     NOT NULL,
+    PARTCPT_SEQ         NUMBER(10,0)    NOT NULL,
+    PARTCPT_STAT_CD     VARCHAR(3),
+    PARTCPT_CHNNL_CD    VARCHAR(3),
+    PARTCPT_PATH_CD     VARCHAR(3),
+    PRZWIN_CD           NUMBER(10,0),
+    RCPMNY_AMT          NUMBER(19,0),
+    PARTCPT_DT          TIMESTAMP_NTZ,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (EVENT_KEY, MBER_NO, PARTCPT_SEQ)
+) COMMENT = '행사×참여자';
+
+-- CRM 20: CRM_RELATION_ACTIVITY (결연활동 · EHGT 제외)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_RELATION_ACTIVITY (
+    ACTIVITY_KEY        VARCHAR         NOT NULL,
+    ACTIVITY_TYPE       VARCHAR,
+    RELATNSP_KEY        NUMBER(10,0),
+    MNG_NO              VARCHAR(7),
+    GFTMNEY             NUMBER(10,0),
+    LETTER_DIV_CD       NUMBER(10,0),
+    RCEPT_DE            DATE,
+    SNDNG_DE            DATE,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (ACTIVITY_KEY)
+) COMMENT = '결연활동(서신∪선물금). EHGT 제외';
+
+-- CRM 21: CRM_CODE (코드 사전)
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
+    CD_ID               VARCHAR(20)     NOT NULL,
+    DTL_CD_ID           VARCHAR(50)     NOT NULL,
+    DTL_CD_NM           VARCHAR(100),
+    UPPER_CD_ID         VARCHAR(20),
+    SORT_ORDR           NUMBER(10,0),
+    USE_YN              VARCHAR(1),
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (CD_ID, DTL_CD_ID)
+) COMMENT = '코드→라벨 사전. (CD_ID,DTL_CD_ID) 복합키';
