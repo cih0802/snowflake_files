@@ -1,0 +1,37 @@
+version: 2
+
+# SILVER Bridge / Agency / ERP 모델 — relationships (DBTERD ERD 생성용)
+models:
+  - name: IDENTITY_MEMBER_XREF
+    columns:
+      - name: USER_PSEUDO_ID
+        tests: [not_null]
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: AGENCY_AD_CREATIVE
+    columns:
+      - name: CREATIVE_KEY
+        tests: [not_null]
+
+  - name: AGENCY_AD_PERFORMANCE
+    columns:
+      - name: PERF_DATE
+        tests: [not_null]
+
+  - name: ERP_BUDGET
+    columns:
+      - name: BUDGET_KEY
+        tests: [not_null]
+
+  - name: ERP_BUDGET_ITEM
+    columns:
+      - name: BUDGET_ITEM_KEY
+        tests: [not_null]
+
+  - name: ERP_BIZ_TARGET
+    columns:
+      - name: STDR_MT
+        tests: [not_null]

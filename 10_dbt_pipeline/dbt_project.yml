@@ -21,18 +21,35 @@ vars:
   ga4_end:   '99991231'
 
 # ---------------------------------------------------------------------------
-# materialization 방침 (순서 7 확정, 정본 7-E) : INSERT OVERWRITE = full_refresh 동치
-#   - 모든 SILVER 모델 = materialized='table' → 매 run 전체 재생성(멱등).
-#   - 09_SILVER_적재쿼리_20260714.sql STEP 3~7 의 INSERT OVERWRITE 를 1:1 변환.
+# materialization 방침
+#   - SILVER (순서 8-B 개정): 구조 소유주 = 08_SILVER_테이블DDL. dbt = incremental +
+#     pre-hook TRUNCATE + append + full_refresh:false → DDL 구조 보존하며 데이터만 전체 갱신(멱등).
+#     (순서 7 의 materialized='table'/INSERT OVERWRITE 를 구조보존형으로 대체.)
 #   - DW_LOAD_TS = CURRENT_TIMESTAMP() (재실행 시 갱신) — 프로젝트 관례, 변경 금지(7-E).
-#   - GOLD 는 순서 8 대상 → 본 파이프라인에서 비활성(enabled:false, 파일은 보존).
+#   - GOLD (순서 8): dim=incremental(merge, DDL 보존) / fact=table. 상세는 아래 gold 블록 주석.
 # ---------------------------------------------------------------------------
 models:
   gn_dw_silver:
     silver:
       +database: GN_DW
       +schema: SILVER
-      +materialized: table
-    # GOLD: 순서 8(별도 세션)에서 활성화. 순서 7 가드레일 #3 — GOLD 생성 금지.
+      # 순서 8-B: 구조 소유주 = 04_silver_design/08_SILVER_테이블DDL_20260714.sql (33테이블 선생성).
+      #   dbt 는 구조를 덮지 않고 데이터만 갱신 → INSERT OVERWRITE 동치를 구조보존형으로 구현.
+      #   전략: incremental + pre-hook TRUNCATE + append + full_refresh:false.
+      #     · 매 run: 기존 DDL 테이블 TRUNCATE(제약·주석·구조 보존) 후 전체 SELECT 재적재(append).
+      #     · unique_key 불필요 → grain 비유일 모델 행소실 없음. 멱등(재실행 Δ0).
+      #     · full_refresh:false → --full-refresh 시에도 CTAS 재생성 차단(DDL 구조 보호).
+      #   ⚠️ 전제: 08 DDL 선행 실행(테이블 미존재 시 incremental 첫 run 이 CTAS 로 구조 없이 생성됨).
+      +materialized: incremental
+      +incremental_strategy: append
+      +full_refresh: false
+      +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
+    # GOLD: 순서 8 활성화. 구조는 03_top-down_gold/06_DDL.sql 소유(24테이블 선생성).
+    #   - dim = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
+    #   - fact = table(모델별 config) → 스캐폴드 grain 비유일로 인한 행소실 방지(D1 정본).
+    #   - full_refresh:false 는 incremental(dim)에만 효력; table(fact)은 매 run 재생성(멱등).
     gold:
-      +enabled: false
+      +database: GN_DW
+      +schema: GOLD
+      +enabled: true
+      +full_refresh: false

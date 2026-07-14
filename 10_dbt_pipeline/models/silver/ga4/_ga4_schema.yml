@@ -1,6 +1,7 @@
 version: 2
 
-# SILVER GA4 실적재 4개 테스트 (GA4_IDENTITY 는 enabled=false 제외)
+# SILVER GA4 모델 — PK 정의 + inter-model relationships (DBTERD ERD 생성용 포함)
+# GA4_IDENTITY 는 enabled=false (비활성) — relationships만 정의하여 ERD 표시.
 # 실행: dbt test --select silver.ga4
 models:
   - name: GA4_EVENT
@@ -10,10 +11,34 @@ models:
       - name: EVENT_TIMESTAMP
         tests: [not_null]
       - name: EVENT_NAME
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: { to: ref('GA4_EVENT_DIM'), field: EVENT_NAME }
       - name: BATCH_ORDERING_ID
         tests: [not_null]
+
   - name: GA4_EVENT_DIM
     columns:
       - name: EVENT_NAME
+        tests: [not_null, unique]
+
+  - name: GA4_DEVICE
+    columns:
+      - name: USER_PSEUDO_ID
         tests: [not_null]
+
+  - name: GA4_TRAFFIC_SOURCE
+    columns:
+      - name: USER_PSEUDO_ID
+        tests: [not_null]
+
+  - name: GA4_IDENTITY
+    columns:
+      - name: USER_PSEUDO_ID
+        tests: [not_null]
+      - name: MBER_NO
+        tests:
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { where: "MBER_NO IS NOT NULL" }

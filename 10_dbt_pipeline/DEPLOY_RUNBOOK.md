@@ -1,7 +1,7 @@
 ---
 project_id: GN_DW
 doc_type: dbt_deploy_runbook
-pipeline: gn_dw_silver (BRONZE→SILVER 32객체)
+pipeline: gn_dw_silver (BRONZE→SILVER 32객체 + SILVER→GOLD 18객체)
 target_object: GN_DW.SILVER.GN_DW_SILVER_PIPELINE
 workspace_stage: "snow://workspace/USER$.PUBLIC.\"snowflake_files\"/versions/live/10_dbt_pipeline"
 last_updated: 2026-07-14
@@ -55,16 +55,17 @@ EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='compile';
 
 ---
 
-### Step 3. run 실행 (SILVER 32테이블 재생성)
+### Step 3. build 실행 (SILVER 32테이블 데이터 갱신, DDL 구조 보존)
 
-> ⚠️ INSERT OVERWRITE 멱등이나 전체 테이블 재작성. 업무 시간 외 실행 권장.
+> [순서 8-B] SILVER 구조 소유주 = `04_silver_design/08_SILVER_테이블DDL_20260714.sql`(33→**32테이블** 선생성). dbt 는 `incremental + pre-hook TRUNCATE + append + full_refresh:false` 로 **구조·제약·주석 보존하며 데이터만 전체 재적재**(멱등 Δ0). 전제: 08 DDL 선행 실행(미존재 시 첫 run 이 CTAS 로 구조 없이 생성).
+> ⚠️ 매 run 전체 TRUNCATE 후 재적재. 업무 시간 외 실행 권장. `run` 아닌 `build`(test 게이트) 사용.
 
 ```sql
--- 전체 실행
-EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run';
+-- 전체 실행 (build = run + test 게이트)
+EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build';
 
 -- 선택 실행 (GA4 전용 + 하류 XREF)
-EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run --select silver.ga4+';
+EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build --select silver.ga4+';
 ```
 
 **확인:**
@@ -182,3 +183,90 @@ CRM / ERP / AGENCY / GA4 도메인 간 = 상호 독립 (병렬 실행, threads=4
 **운영 방침 결정:** BRONZE 원천이 "정기 갱신·주기 불규칙" → 고정 CRON 안티패턴. 현행 = 온디맨드 `build`, 최종형 = 트리거 기반 TASK(적재 메커니즘 확정 후).
 
 **현재 상태:** SILVER 32객체 배포·검증 완료(VERSION$2). GOLD(순서 8)는 `enabled: false` 로 미착수.
+
+---
+
+### 2026-07-14 — GOLD dbt 파이프라인 활성화·구현·검증 (순서 8 완료)
+
+| 순번 | 작업 | 명령/대상 | 결과 |
+|---|---|---|---|
+| 1 | GOLD 스키마 생성 | `CREATE SCHEMA GN_DW.GOLD WITH MANAGED ACCESS` | 생성(ACCOUNTADMIN 소유) |
+| 2 | GOLD 구조 DDL | `03_top-down_gold/06_DDL.sql` (사용자 실행) | 24테이블(DIM15+FACT9)·제약·주석 생성 |
+| 3 | 컬럼 정합 검증 | dim 모델 산출 ↔ DDL 컬럼 대조 | gold_ready 5개 완전 일치 |
+| 4 | `dbt_project.yml` gold 활성화 | `+enabled:true`, `+database/schema`, `+full_refresh:false` | dim=incremental(DDL 보존)/fact=table |
+| 5 | compile | ARGS='compile' | OK (50 models, 29 tests, 40 sources) |
+| 6 | build gold.dim | ARGS='build --select gold.dim' | PASS=27, ERROR=0 (12 incr + 15 test) |
+| 7 | build gold.fact | ARGS='build --select gold.fact' | PASS=15, ERROR=0 (6 table + 9 test) |
+| 8 | 멱등 재실행 | ARGS='build --select gold' | PASS=38, ERROR=0, **18테이블 Δ0** |
+
+**설계 결정 (보수적·downstream 오류 방지):**
+- **구조 소유주 = 06_DDL.sql**. dbt는 구조를 덮지 않고 적재만 → `full_refresh:false`.
+- **dim = incremental(merge)**: DDL 테이블 구조·제약·주석 보존, unique_key=_SK. 재실행 시 전체 소스 재처리·merge → 멱등.
+- **fact = table**: 스캐폴드 grain이 선언 unique_key와 실제 비유일(예: FACT_EVENT_PARTICIPATION 동일 회원·행사·일자 다중참여) → incremental+merge 시 **행소실**. 정보성 FK·주석(NOT ENFORCED, FACT PK/UNIQUE는 DDL에서 보류) 손실보다 데이터 정확성 우선 → table 유지(D1 정본).
+
+**적재 행수 (2회 실행 동일, Δ0):**
+
+| 테이블 | 행수 | 테이블 | 행수 |
+|---|--:|---|--:|
+| DIM_MEMBER | 1,763,065 | FACT_SERVICE_EVENT | 38,471,525 |
+| DIM_CAMPAIGN | 36,144 | FACT_MEMBER_MONTHLY | 36,577,960 |
+| DIM_REASON | 5,835 | FACT_MEMBER_EVENT | 4,633,105 |
+| DIM_EVENT | 3,787 | FACT_EVENT_PARTICIPATION | 1,134,126 |
+| DIM_GA_EVENT | 2,841 | FACT_GA_BEHAVIOR | 19,555 |
+| DIM_ORG | 1,315 | FACT_TARGET_DEV | 7,272 |
+| DIM_GA_SOURCE | 110 | DIM_SPONSORSHIP | 51 |
+| DIM_SERVICE | 11 | DIM_PAYMENT | 7 |
+| DIM_DEVICE | 2 | **DIM_DATE** | **1** |
+
+**주의·관찰:**
+- `DIM_DATE=1행`: GA4_EVENT.EVENT_DT 전량 **2026-05-01 단일 일자**(265,312행, distinct=1) → 데이터 기반 정상값. GA4 샤드 추가 입고 시 자동 확장(materialized 재생성).
+- `DIM_MEMBER_IDENTITY`: 자체 `enabled=false` 유지(GA4_IDENTITY·XREF 대기). GOLD 24테이블 중 dbt 적재 18개, 미적재 6개(AD_CREATIVE/BUDGET_ITEM/TARGET_BIZ/AD_PERFORMANCE/BUDGET + IDENTITY) = 원천 부재/대기.
+- 워크스페이스 직접실행(`execute dbt project from workspace ... project_root='/10_dbt_pipeline'`)으로 검증. 배포객체(VERSION$2) 반영은 별도 `ALTER ... ADD VERSION` 필요.
+
+**현재 상태:** SILVER 32객체 + GOLD 18객체(dim12+fact6) 적재·검증 완료. 멱등 확인. 배포객체 GOLD 반영(ADD VERSION)은 승인 대기.
+
+---
+
+### 2026-07-14 — SILVER "DDL 소유 + dbt 데이터만 갱신" 전환 (순서 8-B 완료)
+
+| 순번 | 작업 | 명령/대상 | 결과 |
+|---|---|---|---|
+| 1 | SILVER materialization 전환 | `dbt_project.yml` silver 블록 + GA4/bridge 6모델 인라인 | table/INSERT OVERWRITE → **incremental + pre-hook TRUNCATE + append + full_refresh:false** |
+| 2 | 구조 소유주 DDL 실행 | `04_silver_design/08_SILVER_테이블DDL_20260714.sql` (사용자) | SCHEMA + **32테이블** CREATE OR REPLACE (제약·주석) |
+| 3 | compile | ARGS='compile' | OK (50 models, 29 tests, 40 sources, 482 macros) |
+| 4 | 파일럿 build | ARGS='build --select CRM_CODE' | PASS=1, ERROR=0 (truncate+append·컬럼정합 검증) |
+| 5 | 전체 SILVER build | ARGS='build --select silver' | PASS=41 (32 incr + 9 test), ERROR=0 |
+| 6 | 멱등 재실행 | ARGS='build --select silver' 2회차 | PASS=41, **32테이블 Δ0** |
+| 7 | GOLD 회귀 재빌드 | ARGS='build --select gold' | PASS=38, ERROR=0, **dim 12 + fact 6 전부 baseline Δ0** (fact COUNT 확인 완료) |
+| 8 | 배포객체 반영 | `ALTER DBT PROJECT ... ADD VERSION` | 신규 버전 = default (GOLD활성화 + SILVER DDL소유전환) |
+
+**전략 요약 (옵션 A = TRUNCATE+append):**
+- **구조 소유주 = 08_SILVER_테이블DDL_20260714.sql** (CRM21·ERP3·AGENCY2·GA4 5·bridge1 = 32). dbt 는 구조를 덮지 않고 데이터만 갱신.
+- 매 run: 기존 DDL 테이블 `TRUNCATE`(제약·주석·구조 보존) 후 전체 SELECT `append` 재적재. `unique_key` 불필요 → grain 비유일 모델 행소실 없음, 멱등(Δ0).
+- `full_refresh:false` → `--full-refresh` 시에도 CTAS 재생성 차단(DDL 구조 보호).
+- ⚠️ 리스크(해소): append 는 대상 DDL 모든 컬럼이 모델 산출 컬럼에 존재해야 함 → 32모델 전량 build PASS 로 컬럼 정합 확인.
+
+**SILVER 적재 행수 (2회 실행 동일, Δ0 = GOLD baseline 소스와 일치):**
+
+| 테이블 | 행수 | 테이블 | 행수 |
+|---|--:|---|--:|
+| CRM_MEMBER | 1,763,065 | CRM_SEND_MEMBER | 38,471,525 |
+| CRM_MEMBER_DEV | 3,594,843 | CRM_PAYMENT_BILLING | 47,521,872 |
+| CRM_MEMBER_STATUS_HIST | 7,501,761 | CRM_PAYMENT_METHOD | 2,545,696 |
+| CRM_MEMBER_DISCONTINUE | 1,038,262 | CRM_SEND_REQUEST | 1,614,397 |
+| CRM_MEMBER_AMT_CHANGE | 324,947 | CRM_SEND_RESULT | 1,611,758 |
+| CRM_MEMBER_SPONSOR_BIZ | 2,170,572 | CRM_RELATION_ACTIVITY | 388,153 |
+| CRM_SPONSOR_RELATION | 862,610 | CRM_EVENT_PARTICIPATION | 1,134,126 |
+| CRM_CAMPAIGN | 36,144 | AGENCY_AD_PERFORMANCE | 235,572 |
+| GA4_EVENT | 265,312 | CRM_MEMBER_RESPONSOR | 115,254 |
+| ERP_BUDGET | 24,480 | CRM_DEV_TARGET | 25,344 |
+| AGENCY_AD_CREATIVE | 8,473 | CRM_CODE | 5,834 |
+| GA4_EVENT_DIM | 3,633 | CRM_EVENT | 3,787 |
+| ERP_BUDGET_ITEM | 2,040 | GA4_TRAFFIC_SOURCE | 1,175 |
+| GA4_IDENTITY | 1,348 | IDENTITY_MEMBER_XREF | 1,348 |
+| CRM_ORG | 1,315 | GA4_DEVICE | 76 |
+| CRM_SPONSORSHIP | 50 | ERP_BIZ_TARGET | 0 |
+
+**주의:** `ERP_BIZ_TARGET=0행` = 원천 부재(정상). GA4_IDENTITY·IDENTITY_MEMBER_XREF 이제 적재됨(각 1,348) → GOLD `DIM_MEMBER_IDENTITY` 활성화 재검토 가능(선택 후속).
+
+**현재 상태:** SILVER = DDL소유+데이터갱신 전환·검증 완료(멱등 Δ0). GOLD 재빌드로 dim 12 + fact 6 전부 baseline Δ0 확정. 배포객체(GOLD·SILVER 개정) ADD VERSION 반영 완료(신규 버전 default).

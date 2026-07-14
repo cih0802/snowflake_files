@@ -1,9 +1,11 @@
 version: 2
 
-# SILVER CRM 실적재 모델 테스트 (현재 CRM_MEMBER 만 실적재)
-# 나머지 20개는 Bronze 입고 후 테스트 추가 예정.
-# 실행: dbt test --select CRM_MEMBER
+# SILVER CRM 모델 — PK 정의 + inter-model relationships (DBTERD ERD 생성용 포함)
+# 실행: dbt test --select tag:silver_crm
+# MBER_NO 기반 FK는 CRM_MEMBER.MEMBER_DK 와 relationships 정의.
+# NULL 허용 FK는 where 필터로 테스트 실패 방지.
 models:
+  # ─── PK 모델 (relationship 대상) ───
   - name: CRM_MEMBER
     columns:
       - name: MEMBER_DK
@@ -12,3 +14,185 @@ models:
         tests:
           - not_null
           - accepted_values: { values: ['FDRM', 'ONCE'] }
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL" }
+      - name: ACT_DEPT_CD
+        tests:
+          - relationships:
+              to: ref('CRM_ORG')
+              field: DEPT_ID
+              config: { where: "ACT_DEPT_CD IS NOT NULL" }
+
+  - name: CRM_EVENT
+    columns:
+      - name: EVENT_KEY
+        tests: [not_null, unique]
+
+  - name: CRM_CAMPAIGN
+    columns:
+      - name: CMPGN_CD
+        tests: [not_null, unique]
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+
+  - name: CRM_SPONSORSHIP
+    columns:
+      - name: SPNSR_BSNS_ID
+        tests: [not_null, unique]
+
+  - name: CRM_ORG
+    columns:
+      - name: DEPT_ID
+        tests: [not_null, unique]
+
+  - name: CRM_CODE
+    columns:
+      - name: CD_ID
+        tests: [not_null]
+      - name: DTL_CD_ID
+        tests: [not_null]
+
+  - name: CRM_SEND_REQUEST
+    columns:
+      - name: SNDNG_KEY
+        tests: [not_null, unique]
+
+  # ─── FK 모델 (relationships 정의) ───
+  - name: CRM_EVENT_PARTICIPATION
+    columns:
+      - name: EVENT_KEY
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_EVENT'), field: EVENT_KEY }
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_MEMBER_DEV
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL" }
+
+  - name: CRM_MEMBER_DISCONTINUE
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_MEMBER_AMT_CHANGE
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL" }
+
+  - name: CRM_MEMBER_RESPONSOR
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_MEMBER_SPONSOR_BIZ
+    columns:
+      - name: SPNSR_BSNS_ID
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_SPONSORSHIP'), field: SPNSR_BSNS_ID }
+
+  - name: CRM_MEMBER_STATUS_HIST
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_PAYMENT_BILLING
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+
+  - name: CRM_PAYMENT_METHOD
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_SEND_MEMBER
+    columns:
+      - name: SNDNG_KEY
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_SEND_REQUEST'), field: SNDNG_KEY }
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+
+  - name: CRM_SEND_RESULT
+    columns:
+      - name: SNDNG_KEY
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_SEND_REQUEST'), field: SNDNG_KEY }
+
+  - name: CRM_SPONSOR_RELATION
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+
+  - name: CRM_DEV_TARGET
+    columns:
+      - name: DEPT_ID
+        tests:
+          - relationships:
+              to: ref('CRM_ORG')
+              field: DEPT_ID
+              config: { where: "DEPT_ID IS NOT NULL" }

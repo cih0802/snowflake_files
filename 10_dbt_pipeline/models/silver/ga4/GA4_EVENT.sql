@@ -1,7 +1,7 @@
 -- GA4_EVENT: 이벤트 팩트 소스 (FLATTEN + param 승격 + 07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
 -- Co-authored with CoCo
 -- 단방향: BRONZE_GA4(매크로)만 참조. n_id>=2=CONFLICT(미채움). PK GROUP BY dedup.
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 WITH ev AS (
     SELECT
         e.user_pseudo_id                                                     AS user_pseudo_id,

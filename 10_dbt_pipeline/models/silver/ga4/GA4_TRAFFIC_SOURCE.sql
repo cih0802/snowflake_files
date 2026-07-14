@@ -1,7 +1,7 @@
 -- GA4_TRAFFIC_SOURCE: 세션 last-click 트래픽소스 DISTINCT (first-touch/collected 제외 = grain 팽창 방지), 정본 09 STEP6.
 -- Co-authored with CoCo
 -- FROM 절 = ga4_union_shards 매크로(전기간 샤드 UNION, 명시 30컬럼). PoC 1일→전기간 멱등 전환.
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 SELECT DISTINCT
   NULLIF(NULLIF(s:manual_campaign:source::STRING,'(not set)'),'(direct)')                       AS UTM_SOURCE,
   NULLIF(NULLIF(NULLIF(s:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')       AS UTM_MEDIUM,

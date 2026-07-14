@@ -1,6 +1,6 @@
 -- GA4_IDENTITY: 신원 1행/pseudo (Q1 S접두 분기 + 세션 채움, 단방향=GA4_EVENT 미참조), 정본 09 STEP6.
 -- Co-authored with CoCo
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 WITH ev AS (
     SELECT
         e.user_pseudo_id AS user_pseudo_id,

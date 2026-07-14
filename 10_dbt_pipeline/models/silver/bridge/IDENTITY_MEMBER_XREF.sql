@@ -1,7 +1,7 @@
 -- IDENTITY_MEMBER_XREF: GA 신원↔CRM 회원 브리지 (교차소스 유일 예외), 정본 09 STEP7.
 -- Co-authored with CoCo
 -- 의존성(7-C): ref 로 GA4_IDENTITY·CRM_MEMBER 후행 강제. LEFT JOIN(UNMATCHED 보존, C1). CHILD_CODE 제외.
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 SELECT
     g.USER_PSEUDO_ID    AS USER_PSEUDO_ID,
     g.GA_MEMBER_ID      AS GA_MEMBER_ID,

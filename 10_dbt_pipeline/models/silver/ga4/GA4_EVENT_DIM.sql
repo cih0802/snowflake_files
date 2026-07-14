@@ -1,6 +1,6 @@
 -- GA4_EVENT_DIM: 이벤트 정의 DISTINCT (event_params 승격: category/label/action), 정본 09 STEP6.
 -- Co-authored with CoCo
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 SELECT DISTINCT
   EVENT_NAME          AS EVENT_NAME,
   EVENT_CATEGORY      AS EVENT_CATEGORY,

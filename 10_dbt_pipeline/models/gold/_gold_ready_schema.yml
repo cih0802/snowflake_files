@@ -1,13 +1,17 @@
 version: 2
 
-# GOLD gold_ready 모델 테스트 (실적재 6개 대상)
-# 실행: dbt test --select tag:gold_ready
-# ⚠️ IDENTITY_SK·CAMPAIGN_SK 는 DIM 미적재(비활성/스캐폴드)라 relationships 테스트 제외.
+# GOLD 스키마 테스트 — relationships 정의(DBTERD ERD 생성용 포함)
+# 실행: dbt test --select tag:gold_ready   (gold_ready 태그 모델만)
+#       dbt test --select tag:gold_pending  (스캐폴드 모델)
+# 센티넬 FK(=0)는 where 필터로 테스트 실패 방지, DBTERD는 관계 인식.
 models:
+  # ─── DIM tables (PK 정의) ───
   - name: DIM_DATE
     columns:
       - name: DATE_SK
         tests: [not_null, unique]
+      - name: MONTH_KEY
+        tests: [not_null]
   - name: DIM_DEVICE
     columns:
       - name: DEVICE_SK
@@ -25,24 +29,213 @@ models:
       - name: MEMBER_SK
         tests: [not_null, unique]
       - name: MEMBER_DK
-        tests: [not_null]
+        tests: [not_null, unique]
+  - name: DIM_MEMBER_IDENTITY
+    columns:
+      - name: IDENTITY_SK
+        tests: [not_null, unique]
+  - name: DIM_EVENT
+    columns:
+      - name: EVENT_SK
+        tests: [not_null, unique]
+  - name: DIM_ORG
+    columns:
+      - name: ORG_SK
+        tests: [not_null, unique]
+  - name: DIM_CAMPAIGN
+    columns:
+      - name: CAMPAIGN_SK
+        tests: [not_null, unique]
+  - name: DIM_SPONSORSHIP
+    columns:
+      - name: SPONSORSHIP_SK
+        tests: [not_null, unique]
+  - name: DIM_PAYMENT
+    columns:
+      - name: PAYMENT_SK
+        tests: [not_null, unique]
+  - name: DIM_REASON
+    columns:
+      - name: REASON_SK
+        tests: [not_null, unique]
+  - name: DIM_SERVICE
+    columns:
+      - name: SERVICE_SK
+        tests: [not_null, unique]
+
+  # ─── FACT tables (FK relationships) ───
   - name: FACT_GA_BEHAVIOR
     columns:
       - name: DATE_SK
         tests:
           - not_null
           - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
-      - name: GA_SOURCE_SK
+      - name: IDENTITY_SK
         tests:
           - not_null
-          - relationships: { to: ref('DIM_GA_SOURCE'), field: GA_SOURCE_SK }
+          - relationships:
+              to: ref('DIM_MEMBER_IDENTITY')
+              field: IDENTITY_SK
+              config: { where: "IDENTITY_SK != 0" }
       - name: GA_EVENT_SK
         tests:
           - not_null
           - relationships: { to: ref('DIM_GA_EVENT'), field: GA_EVENT_SK }
+      - name: GA_SOURCE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_GA_SOURCE'), field: GA_SOURCE_SK }
       - name: DEVICE_SK
         tests:
           - not_null
           - relationships: { to: ref('DIM_DEVICE'), field: DEVICE_SK }
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "CAMPAIGN_SK != 0" }
       - name: PAGE_PATH
         tests: [not_null]
+
+  - name: FACT_EVENT_PARTICIPATION
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_MEMBER'), field: MEMBER_DK }
+      - name: EVENT_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_EVENT')
+              field: EVENT_SK
+              config: { where: "EVENT_SK != 0" }
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "CAMPAIGN_SK != 0" }
+      - name: SPONSORSHIP_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SPONSORSHIP')
+              field: SPONSORSHIP_SK
+              config: { where: "SPONSORSHIP_SK != 0" }
+
+  - name: FACT_MEMBER_EVENT
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_MEMBER'), field: MEMBER_DK }
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "CAMPAIGN_SK != 0" }
+      - name: SPONSORSHIP_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SPONSORSHIP')
+              field: SPONSORSHIP_SK
+              config: { where: "SPONSORSHIP_SK != 0" }
+      - name: ORG_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_ORG')
+              field: ORG_SK
+              config: { where: "ORG_SK != 0" }
+      - name: REASON_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_REASON')
+              field: REASON_SK
+              config: { where: "REASON_SK != 0" }
+
+  - name: FACT_MEMBER_MONTHLY
+    columns:
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_MEMBER'), field: MEMBER_DK }
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "CAMPAIGN_SK != 0" }
+      - name: SPONSORSHIP_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SPONSORSHIP')
+              field: SPONSORSHIP_SK
+              config: { where: "SPONSORSHIP_SK != 0" }
+      - name: PAYMENT_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_PAYMENT')
+              field: PAYMENT_SK
+              config: { where: "PAYMENT_SK != 0" }
+      - name: REASON_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_REASON')
+              field: REASON_SK
+              config: { where: "REASON_SK != 0" }
+
+  - name: FACT_SERVICE_EVENT
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_MEMBER'), field: MEMBER_DK }
+      - name: SERVICE_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SERVICE')
+              field: SERVICE_SK
+              config: { where: "SERVICE_SK != 0" }
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "CAMPAIGN_SK != 0" }
+
+  - name: FACT_TARGET_DEV
+    columns:
+      - name: ORG_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_ORG')
+              field: ORG_SK
+              config: { where: "ORG_SK != 0" }

@@ -4,7 +4,9 @@
 -- 배포·검증 이력 (2026-07-14, 본 세션 실측):
 --   · CREATE DBT PROJECT → SHOW → compile → run(32객체) → GA4 매크로 회귀수정 → test PASS=9 → ADD VERSION(VERSION$2 default).
 --   · 32객체 멱등검증 완료(BEFORE=AFTER, Δ0). 상세: 04_silver_design/10_SILVER_RUN_이력_비교_20260714.md.
---   · materialized='table'(INSERT OVERWRITE 멱등 = full_refresh 동치, 정본 7-E). GOLD 는 순서 8(enabled:false).
+--   · [순서 8-B 개정] SILVER = DDL 소유(04_silver_design/08_SILVER_테이블DDL) + dbt 는 데이터만 갱신:
+--     incremental + pre-hook TRUNCATE + append + full_refresh:false (구조·제약·주석 보존, 멱등 Δ0).
+--     (구 materialized='table'/INSERT OVERWRITE 를 구조보존형으로 대체.) GOLD 는 순서 8 활성화(enabled:true).
 -- ★ 운영 방침 결정(2026-07-14): BRONZE 원천이 "정기 갱신·주기 불규칙" → 고정 CRON TASK 안티패턴.
 --   → 현행 = 온디맨드 build 계약(§C). CRON TASK 는 보류(§D, 참고용). 최종형은 트리거 기반(§E).
 -- 워크스페이스 스테이지: snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline

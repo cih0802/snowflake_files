@@ -1,30 +1,9 @@
+begin;
+    insert into GN_DW.SILVER.CRM_EVENT ("EVENT_KEY", "EVENT_SOURCE", "EVENT_DIV_CD", "EVENT_NM", "STRT_DE", "END_DE", "RCRIT_PSNNL_CO", "BRNCH_DEPT_ID", "DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "EVENT_KEY", "EVENT_SOURCE", "EVENT_DIV_CD", "EVENT_NM", "STRT_DE", "END_DE", "RCRIT_PSNNL_CO", "BRNCH_DEPT_ID", "DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.SILVER.CRM_EVENT__dbt_tmp
+    )
 
-  
-    
-
-        create or replace transient table GN_DW.SILVER.CRM_EVENT
-         as
-        (-- CRM_EVENT: 행사 마스터 = 일반행사(EVENT) ∪ 캠페인행사(CRMN), 정본 09 STEP3.
--- Co-authored with CoCo
-SELECT 'EVENT_'||EVENT_CD          AS EVENT_KEY,
-  'EVENT'                          AS EVENT_SOURCE,
-  NULLIF(TRIM(EVENT_DIV_CD),'')    AS EVENT_DIV_CD,
-  NULLIF(TRIM(EVENT_NM),'')        AS EVENT_NM,
-  NULLIF(TRIM(STRT_DATE),'')       AS STRT_DE,
-  NULLIF(TRIM(END_DATE),'')        AS END_DE,
-  NULL                             AS RCRIT_PSNNL_CO,
-  NULL                             AS BRNCH_DEPT_ID,
-  'CRM'                            AS DW_SOURCE_SYSTEM,
-  'BRONZE_CRM.TM_MS_EVENT'         AS DW_SOURCE_TABLE,
-  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
-  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
-  NULL                             AS DW_BATCH_ID
-FROM GN_DW.BRONZE_CRM.TM_MS_EVENT WHERE EVENT_CD IS NOT NULL
-UNION ALL
-SELECT 'CRMN_'||CRMN_CD, 'CRMN', NULLIF(TRIM(CRMN_DIV_CD),''), NULLIF(TRIM(CRMN_TIT),''),
-  NULLIF(TRIM(CRMN_STRT_DE),''), NULLIF(TRIM(CRMN_END_DE),''), RCRIT_PSNNL_CO, NULLIF(TRIM(BRNCH_DEPT_ID),''),
-  'CRM','BRONZE_CRM.TM_MS_CRMN', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
-FROM GN_DW.BRONZE_CRM.TM_MS_CRMN WHERE CRMN_CD IS NOT NULL
-        );
-      
-  
+;
+    commit;

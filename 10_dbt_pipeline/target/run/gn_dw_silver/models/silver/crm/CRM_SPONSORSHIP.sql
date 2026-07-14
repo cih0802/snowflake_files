@@ -1,24 +1,9 @@
+begin;
+    insert into GN_DW.SILVER.CRM_SPONSORSHIP ("SPNSR_BSNS_ID", "SPNSR_BSNS_NM", "SPNSR_BSNS_ABRV_CD", "SPNSR_DIV_CD", "DNTN_TY_CD", "CPR_DIV_CD", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "SPNSR_BSNS_ID", "SPNSR_BSNS_NM", "SPNSR_BSNS_ABRV_CD", "SPNSR_DIV_CD", "DNTN_TY_CD", "CPR_DIV_CD", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.SILVER.CRM_SPONSORSHIP__dbt_tmp
+    )
 
-  
-    
-
-        create or replace transient table GN_DW.SILVER.CRM_SPONSORSHIP
-         as
-        (-- CRM_SPONSORSHIP: 후원사업 마스터 정제 (BRONZE TM_CM_SPNSR_BSNS_INFO → SILVER), 정본 09 STEP3.
--- Co-authored with CoCo
-SELECT
-  NULLIF(TRIM(SPNSR_BSNS_ID),'')      AS SPNSR_BSNS_ID,
-  NULLIF(TRIM(SPNSR_BSNS_NM),'')      AS SPNSR_BSNS_NM,
-  NULLIF(TRIM(SPNSR_BSNS_ABRV_CD),'') AS SPNSR_BSNS_ABRV_CD,
-  NULLIF(TRIM(SPNSR_DIV_CD),'')       AS SPNSR_DIV_CD,
-  NULLIF(TRIM(DNTN_TY_CD),'')         AS DNTN_TY_CD,
-  NULLIF(TRIM(CPR_DIV_CD),'')         AS CPR_DIV_CD,
-  'CRM'                               AS DW_SOURCE_SYSTEM,
-  CURRENT_TIMESTAMP()                 AS DW_LOAD_TS,
-  CURRENT_TIMESTAMP()                 AS DW_UPDATE_TS,
-  NULL                                AS DW_BATCH_ID
-FROM GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO
-WHERE SPNSR_BSNS_ID IS NOT NULL
-        );
-      
-  
+;
+    commit;

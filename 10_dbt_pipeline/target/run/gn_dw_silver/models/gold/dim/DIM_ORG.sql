@@ -1,0 +1,30 @@
+-- back compat for old kwarg name
+  
+  begin;
+    
+        
+            
+	    
+	    
+            
+        
+    
+
+    
+
+    merge into GN_DW.GOLD.DIM_ORG as DBT_INTERNAL_DEST
+        using GN_DW.GOLD.DIM_ORG__dbt_tmp as DBT_INTERNAL_SOURCE
+        on ((DBT_INTERNAL_SOURCE.ORG_SK = DBT_INTERNAL_DEST.ORG_SK))
+
+    
+    when matched then update set
+        "ORG_SK" = DBT_INTERNAL_SOURCE."ORG_SK","ORG_DK" = DBT_INTERNAL_SOURCE."ORG_DK","CORP" = DBT_INTERNAL_SOURCE."CORP","DIVISION" = DBT_INTERNAL_SOURCE."DIVISION","DEPARTMENT" = DBT_INTERNAL_SOURCE."DEPARTMENT","TEAM" = DBT_INTERNAL_SOURCE."TEAM","DW_SOURCE_SYSTEM" = DBT_INTERNAL_SOURCE."DW_SOURCE_SYSTEM","DW_LOAD_TS" = DBT_INTERNAL_SOURCE."DW_LOAD_TS","DW_UPDATE_TS" = DBT_INTERNAL_SOURCE."DW_UPDATE_TS","DW_BATCH_ID" = DBT_INTERNAL_SOURCE."DW_BATCH_ID"
+    
+
+    when not matched then insert
+        ("ORG_SK", "ORG_DK", "CORP", "DIVISION", "DEPARTMENT", "TEAM", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    values
+        ("ORG_SK", "ORG_DK", "CORP", "DIVISION", "DEPARTMENT", "TEAM", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+
+;
+    commit;

@@ -1,6 +1,6 @@
 -- GA4_DEVICE: 기기 차원 DISTINCT (platform/device 파생: APP/M/PC), 정본 09 STEP6.
 -- Co-authored with CoCo
-{{ config(materialized='table') }}
+{{ config(materialized='incremental') }}
 SELECT DISTINCT
   CASE WHEN platform IN ('ANDROID','IOS') THEN 'APP'
        WHEN device:category::STRING IN ('mobile','tablet') THEN 'M'
