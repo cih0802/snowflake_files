@@ -1,41 +1,24 @@
--- CRM_EVENT_PARTICIPATION: 행사×참여자 통합 (TD_MS_EVENT_PRTCPNT_DTL∪TD_MS_CRMN_PRTCPNT)
+-- CRM_EVENT_PARTICIPATION: 행사 참여 = EVENT ∪ CRMN 참여자 (PK dedup), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key=['EVENT_KEY', 'MBER_NO', 'PARTCPT_SEQ'],
-    incremental_strategy='merge'
-) }}
-
-with event_part as (
-    select
-        'EV-' || EVENT_CD::VARCHAR                               as EVENT_KEY,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))          as MBER_NO,
-        PARTCPT_SEQ::NUMBER(10,0)                                as PARTCPT_SEQ,
-        CAST({{ clean_str('PARTCPT_STAT_CD') }} AS VARCHAR(3))   as PARTCPT_STAT_CD,
-        CAST({{ clean_str('PARTCPT_CHNNL_CD') }} AS VARCHAR(3))  as PARTCPT_CHNNL_CD,
-        CAST({{ clean_str('PARTCPT_PATH_CD') }} AS VARCHAR(3))   as PARTCPT_PATH_CD,
-        PRZWIN_CD::NUMBER(10,0)                                  as PRZWIN_CD,
-        CAST(NULL AS NUMBER(19,0))                               as RCPMNY_AMT,
-        PARTCPT_DT                                               as PARTCPT_DT,
-        {{ dw_meta('TD_MS_EVENT_PRTCPNT_DTL') }}
-    from {{ source('bronze_crm', 'TD_MS_EVENT_PRTCPNT_DTL') }}
-),
-
-crmn_part as (
-    select
-        'CR-' || CRMN_CD::VARCHAR                                as EVENT_KEY,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))          as MBER_NO,
-        PRTCPNT_KEY::NUMBER(10,0)                                as PARTCPT_SEQ,
-        CAST({{ clean_str('PARTCPT_STAT_CD') }} AS VARCHAR(3))   as PARTCPT_STAT_CD,
-        CAST({{ clean_str('RQST_PATH_CD') }} AS VARCHAR(3))      as PARTCPT_CHNNL_CD,
-        CAST(NULL AS VARCHAR(3))                                 as PARTCPT_PATH_CD,
-        CAST(NULL AS NUMBER(10,0))                               as PRZWIN_CD,
-        RCPMNY_AMT::NUMBER(19,0)                                 as RCPMNY_AMT,
-        FRST_REGIST_DT                                           as PARTCPT_DT,
-        {{ dw_meta('TD_MS_CRMN_PRTCPNT') }}
-    from {{ source('bronze_crm', 'TD_MS_CRMN_PRTCPNT') }}
-)
-
-select * from event_part
-union all
-select * from crmn_part
+SELECT 'EVENT_'||EVENT_CD          AS EVENT_KEY,
+  NULLIF(TRIM(MBER_NO),'')         AS MBER_NO,
+  PARTCPT_SEQ                      AS PARTCPT_SEQ,
+  NULLIF(TRIM(PARTCPT_STAT_CD),'') AS PARTCPT_STAT_CD,
+  NULLIF(TRIM(PARTCPT_CHNNL_CD),'')AS PARTCPT_CHNNL_CD,
+  NULLIF(TRIM(PARTCPT_PATH_CD),'') AS PARTCPT_PATH_CD,
+  PRZWIN_CD                        AS PRZWIN_CD,
+  NULL                             AS RCPMNY_AMT,
+  PARTCPT_DT                       AS PARTCPT_DT,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TD_MS_EVENT_PRTCPNT_DTL') }} WHERE MBER_NO IS NOT NULL AND PARTCPT_SEQ IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY EVENT_CD, MBER_NO, PARTCPT_SEQ ORDER BY PARTCPT_DT DESC NULLS LAST)=1
+UNION ALL
+SELECT 'CRMN_'||CRMN_CD, NULLIF(TRIM(MBER_NO),''), PRTCPNT_KEY, NULLIF(TRIM(PARTCPT_STAT_CD),''),
+  NULL, NULLIF(TRIM(RQST_PATH_CD),''), NULL, RCPMNY_AMT, TRY_TO_TIMESTAMP(PARTCPT_DATE),
+  'CRM','BRONZE_CRM.TD_MS_CRMN_PRTCPNT', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM {{ source('bronze_crm','TD_MS_CRMN_PRTCPNT') }} WHERE MBER_NO IS NOT NULL AND PRTCPNT_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY CRMN_CD, MBER_NO, PRTCPNT_KEY ORDER BY TRY_TO_TIMESTAMP(PARTCPT_DATE) DESC NULLS LAST)=1

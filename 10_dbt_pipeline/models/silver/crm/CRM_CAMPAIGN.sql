@@ -1,31 +1,26 @@
--- CRM_CAMPAIGN: 캠페인 마스터 정제 (TM_CM_CMPGN_MNG + BRND_NM LEFT JOIN, Q2/Q3/Q16 미해소)
+-- CRM_CAMPAIGN: 캠페인 + 브랜드/마케팅캠페인 LEFT JOIN 정제 (BRONZE → SILVER), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key='CMPGN_CD',
-    incremental_strategy='merge'
-) }}
-
-select
-    CAST({{ clean_str('c.CMPGN_CD') }} AS VARCHAR(20))      as CMPGN_CD,
-    CAST({{ clean_str('c.CMPGN_NM') }} AS VARCHAR(200))     as CMPGN_NM,
-    CAST({{ clean_str('c.UPPER_CMPGN_CD') }} AS VARCHAR(20)) as UPPER_CMPGN_CD,
-    CAST({{ clean_str('c.UPPER_CMPGN_YN') }} AS VARCHAR(1)) as UPPER_CMPGN_YN,
-    CAST({{ clean_str('c.BRND_ID') }} AS VARCHAR(30))        as BRND_ID,
-    CAST({{ clean_str('b.BRND_NM') }} AS VARCHAR(200))       as BRND_NM,
-    CAST({{ clean_str('c.PR_MTH_CD') }} AS VARCHAR(3))       as PR_MTH_CD,
-    CAST({{ clean_str('c.SPNSR_BSNS_ID') }} AS VARCHAR(100)) as SPNSR_BSNS_ID,
-    c.CMPGN_CTGR_CD::NUMBER(10,0)                            as CMPGN_CTGR_CD,
-    c.CMPGN_TYPE1_BSN::NUMBER(10,0)                          as CMPGN_TYPE1_BSN,
-    c.CMPGN_TYPE2_BSN::NUMBER(10,0)                          as CMPGN_TYPE2_BSN,
-    c.MKTG_CMPGN_NM::NUMBER(10,0)                            as MKTG_CMPGN_NM,
-    -- ⚠️Q16: TM_CM_MKTNG_CMPGN_MNG 조인키 미확정 → NULL 보존
-    CAST(NULL AS VARCHAR(200))                               as MK_CMPGN_NM,
-    CAST({{ clean_str('c.CMPGN_STRT_DE') }} AS VARCHAR(8))  as CMPGN_STRT_DE,
-    'CRM'                                                    as DW_SOURCE_SYSTEM,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ                      as DW_LOAD_TS,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ                  as DW_UPDATE_TS,
-    '{{ invocation_id }}'                                as DW_BATCH_ID
-from {{ source('bronze_crm', 'TM_CM_CMPGN_MNG') }} c
-left join {{ source('bronze_crm', 'TM_CM_BRND_MNG') }} b
-    on {{ clean_str('c.BRND_ID') }} = {{ clean_str('b.BRND_ID') }}
+-- Q16: MKTG_CMPGN_NM(NUMBER) ↔ MK_CMPGN_CD(TEXT) 조인키 불일치 → TO_VARCHAR 캐스팅 조인.
+SELECT
+  NULLIF(TRIM(c.CMPGN_CD),'')       AS CMPGN_CD,
+  NULLIF(TRIM(c.CMPGN_NM),'')       AS CMPGN_NM,
+  NULLIF(TRIM(c.UPPER_CMPGN_CD),'') AS UPPER_CMPGN_CD,
+  NULLIF(TRIM(c.UPPER_CMPGN_YN),'') AS UPPER_CMPGN_YN,
+  NULLIF(TRIM(c.BRND_ID),'')        AS BRND_ID,
+  NULLIF(TRIM(b.BRND_NM),'')        AS BRND_NM,
+  NULLIF(TRIM(c.PR_MTH_CD),'')      AS PR_MTH_CD,
+  NULLIF(TRIM(c.SPNSR_BSNS_ID),'')  AS SPNSR_BSNS_ID,
+  c.CMPGN_CTGR_CD                   AS CMPGN_CTGR_CD,
+  c.CMPGN_TYPE1_BSN                 AS CMPGN_TYPE1_BSN,
+  c.CMPGN_TYPE2_BSN                 AS CMPGN_TYPE2_BSN,
+  c.MKTG_CMPGN_NM                   AS MKTG_CMPGN_NM,
+  NULLIF(TRIM(m.MK_CMPGN_NM),'')    AS MK_CMPGN_NM,
+  NULLIF(TRIM(c.CMPGN_STRT_DE),'')  AS CMPGN_STRT_DE,
+  'CRM'                             AS DW_SOURCE_SYSTEM,
+  CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
+  NULL                              AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_CM_CMPGN_MNG') }} c
+LEFT JOIN {{ source('bronze_crm','TM_CM_BRND_MNG') }} b ON c.BRND_ID = b.BRND_ID
+LEFT JOIN {{ source('bronze_crm','TM_CM_MKTNG_CMPGN_MNG') }} m ON TO_VARCHAR(c.MKTG_CMPGN_NM) = m.MK_CMPGN_CD
+WHERE c.CMPGN_CD IS NOT NULL

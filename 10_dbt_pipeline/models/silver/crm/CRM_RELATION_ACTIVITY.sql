@@ -1,39 +1,23 @@
--- CRM_RELATION_ACTIVITY: 결연활동 통합 (서신∪선물금, EHGT 제외, ACTIVITY_KEY=파생 접두 키)
+-- CRM_RELATION_ACTIVITY: 결연활동 = 서신 ∪ 선물금 (EHGT 제외, PK dedup), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key='ACTIVITY_KEY',
-    incremental_strategy='merge'
-) }}
-
-with letter as (
-    select
-        'LT-' || RELATNSP_KEY::VARCHAR || '-' || MNG_NO          as ACTIVITY_KEY,
-        'LETTER'                                                  as ACTIVITY_TYPE,
-        RELATNSP_KEY::NUMBER(10,0)                               as RELATNSP_KEY,
-        CAST({{ clean_str('MNG_NO') }} AS VARCHAR(7))            as MNG_NO,
-        CAST(NULL AS NUMBER(10,0))                               as GFTMNEY,
-        LETTER_DIV_CD::NUMBER(10,0)                              as LETTER_DIV_CD,
-        RCEPT_DE                                                 as RCEPT_DE,
-        SNDNG_DE                                                 as SNDNG_DE,
-        {{ dw_meta('TM_RM_RELATNSP_LETTER_INFO') }}
-    from {{ source('bronze_crm', 'TM_RM_RELATNSP_LETTER_INFO') }}
-),
-
-gftmney as (
-    select
-        'GF-' || RELATNSP_KEY::VARCHAR || '-' || MNG_NO          as ACTIVITY_KEY,
-        'GIFTMONEY'                                              as ACTIVITY_TYPE,
-        RELATNSP_KEY::NUMBER(10,0)                               as RELATNSP_KEY,
-        CAST({{ clean_str('MNG_NO') }} AS VARCHAR(7))            as MNG_NO,
-        GFTMNEY::NUMBER(10,0)                                    as GFTMNEY,
-        CAST(NULL AS NUMBER(10,0))                               as LETTER_DIV_CD,
-        SETLE_DE                                                 as RCEPT_DE,
-        SNDNG_DE                                                 as SNDNG_DE,
-        {{ dw_meta('TM_RM_RELATNSP_GFTMNEY_INFO') }}
-    from {{ source('bronze_crm', 'TM_RM_RELATNSP_GFTMNEY_INFO') }}
-)
-
-select * from letter
-union all
-select * from gftmney
+SELECT 'LETTER_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),'') AS ACTIVITY_KEY,
+  '서신'                           AS ACTIVITY_TYPE,
+  RELATNSP_KEY                     AS RELATNSP_KEY,
+  NULLIF(TRIM(MNG_NO),'')          AS MNG_NO,
+  NULL                             AS GFTMNEY,
+  LETTER_DIV_CD                    AS LETTER_DIV_CD,
+  RCEPT_DE                         AS RCEPT_DE,
+  SNDNG_DE                         AS SNDNG_DE,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  'BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_RM_RELATNSP_LETTER_INFO') }} WHERE RELATNSP_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY RCEPT_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT 'GFT_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),''), '선물금', RELATNSP_KEY, NULLIF(TRIM(MNG_NO),''),
+  GFTMNEY, NULL, NULL, SNDNG_DE,
+  'CRM','BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM {{ source('bronze_crm','TM_RM_RELATNSP_GFTMNEY_INFO') }} WHERE RELATNSP_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY SNDNG_DE DESC NULLS LAST)=1

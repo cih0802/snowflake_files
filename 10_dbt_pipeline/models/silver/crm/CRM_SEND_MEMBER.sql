@@ -1,49 +1,23 @@
--- CRM_SEND_MEMBER: 발송×회원 상세 통합 (EMAIL∪MSG_AT∪PSTMTR 발송 상세)
+-- CRM_SEND_MEMBER: 발송×회원 상세 = 채널별 상세 ∪ SND 회원리스트 (채널별 dedup), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key=['SNDNG_KEY', 'SNDNG_DTL_KEY'],
-    incremental_strategy='merge'
-) }}
-
-with email as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        SNDNG_DTL_KEY::NUMBER(10,0)                              as SNDNG_DTL_KEY,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))          as MBER_NO,
-        SNDNG_DE                                                 as SNDNG_DE,
-        CAST({{ clean_str('SNDNG_RST_CD') }} AS VARCHAR(3))      as SNDNG_RST_CD,
-        'EMAIL'                                                  as SEND_CHANNEL,
-        {{ dw_meta('TD_MS_EMAIL_SNDNG_DTLS') }}
-    from {{ source('bronze_crm', 'TD_MS_EMAIL_SNDNG_DTLS') }}
-),
-
-msg_at as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        SNDNG_DTL_KEY::NUMBER(10,0)                              as SNDNG_DTL_KEY,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))          as MBER_NO,
-        SNDNG_DT                                                 as SNDNG_DE,
-        CAST({{ clean_str('TRNSMS_STAT_CD') }} AS VARCHAR(3))    as SNDNG_RST_CD,
-        'MSG_AT'                                                 as SEND_CHANNEL,
-        {{ dw_meta('TD_MS_MSG_AT_SNDNG_DTLS') }}
-    from {{ source('bronze_crm', 'TD_MS_MSG_AT_SNDNG_DTLS') }}
-),
-
-pstmtr as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        SNDNG_DTL_KEY::NUMBER(10,0)                              as SNDNG_DTL_KEY,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))          as MBER_NO,
-        SNDNG_DE                                                 as SNDNG_DE,
-        CAST(NULL AS VARCHAR(3))                                 as SNDNG_RST_CD,
-        'PSTMTR'                                                 as SEND_CHANNEL,
-        {{ dw_meta('TD_MS_PSTMTR_SNDNG_DTL') }}
-    from {{ source('bronze_crm', 'TD_MS_PSTMTR_SNDNG_DTL') }}
-)
-
-select * from email
-union all
-select * from msg_at
-union all
-select * from pstmtr
+SELECT SNDNG_KEY AS SNDNG_KEY, SNDNG_DTL_KEY AS SNDNG_DTL_KEY, NULLIF(TRIM(MBER_NO),'') AS MBER_NO,
+  SNDNG_DE AS SNDNG_DE, NULLIF(TRIM(SNDNG_RST_CD),'') AS SNDNG_RST_CD, 'EMAIL' AS SEND_CHANNEL,
+  'CRM' AS DW_SOURCE_SYSTEM, 'BRONZE_CRM.TD_MS_EMAIL_SNDNG_DTLS' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP() AS DW_LOAD_TS, CURRENT_TIMESTAMP() AS DW_UPDATE_TS, NULL AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TD_MS_EMAIL_SNDNG_DTLS') }} WHERE SNDNG_KEY IS NOT NULL AND SNDNG_DTL_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT SNDNG_KEY, SNDNG_DTL_KEY, NULLIF(TRIM(MBER_NO),''), SNDNG_DT, NULLIF(TRIM(TRNSMS_STAT_CD),''), 'MSG_AT',
+  'CRM','BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TD_MS_MSG_AT_SNDNG_DTLS') }} WHERE SNDNG_KEY IS NOT NULL AND SNDNG_DTL_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DT DESC NULLS LAST)=1
+UNION ALL
+SELECT SNDNG_KEY, SNDNG_DTL_KEY, NULLIF(TRIM(MBER_NO),''), SNDNG_DE, NULL, 'PSTMTR',
+  'CRM','BRONZE_CRM.TD_MS_PSTMTR_SNDNG_DTL',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TD_MS_PSTMTR_SNDNG_DTL') }} WHERE SNDNG_KEY IS NOT NULL AND SNDNG_DTL_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT REQ_SEQ_NO, R_NUM, NULLIF(TRIM(MBER_NO),''), SND_DT, NULLIF(TRIM(SND_YN),''), 'SND',
+  'CRM','BRONZE_CRM.SND_MEMBER_LIST',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','SND_MEMBER_LIST') }} WHERE REQ_SEQ_NO IS NOT NULL AND R_NUM IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY REQ_SEQ_NO, R_NUM ORDER BY SND_DT DESC NULLS LAST)=1

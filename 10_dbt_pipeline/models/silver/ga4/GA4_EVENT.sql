@@ -1,66 +1,99 @@
--- GA4_EVENT: 이벤트 팩트 소스 (전체 FLATTEN + param 승격, 72h 소급보정 merge)
+-- GA4_EVENT: 이벤트 팩트 소스 (FLATTEN + param 승격 + 07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
 -- Co-authored with CoCo
--- ⚠️ 증분: GA4는 D+3까지 소급수정 → is_incremental 시 D-3~D-1 재처리, merge로 기존 보정
--- ⚠️ 최초 전체적재: dbt run --select silver.ga4 --full-refresh (else 분기 = 전체 shard UNION)
-{{ config(
-    materialized='incremental',
-    unique_key=['USER_PSEUDO_ID','EVENT_TIMESTAMP','EVENT_NAME','BATCH_ORDERING_ID'],
-    incremental_strategy='merge'
-) }}
-
-with src as (
-    {% if is_incremental() %}
-        {{ ga4_union_shards(
-            (modules.datetime.date.today() - modules.datetime.timedelta(days=3)).strftime('%Y%m%d'),
-            (modules.datetime.date.today() - modules.datetime.timedelta(days=1)).strftime('%Y%m%d')
-        ) }}
-    {% else %}
-        {{ ga4_union_shards('20000101', '99991231') }}
-    {% endif %}
+-- 단방향: BRONZE_GA4(매크로)만 참조. n_id>=2=CONFLICT(미채움). PK GROUP BY dedup.
+{{ config(materialized='table') }}
+WITH ev AS (
+    SELECT
+        e.user_pseudo_id                                                     AS user_pseudo_id,
+        e.event_timestamp                                                    AS event_timestamp,
+        e.event_name                                                         AS event_name,
+        e.batch_ordering_id                                                  AS batch_ordering_id,
+        e.event_date                                                         AS event_date,
+        e.user_id                                                            AS user_id,
+        e.device                                                             AS device,
+        e.geo                                                                AS geo,
+        e.platform                                                           AS platform,
+        e.is_active_user                                                     AS is_active_user,
+        e.session_traffic_source_last_click                                  AS stlc,
+        MAX(IFF(p.value:key::STRING='ga_session_id',     p.value:value:int_value::NUMBER, NULL)) AS ga_session_id,
+        MAX(IFF(p.value:key::STRING='ga_session_number', p.value:value:int_value::NUMBER, NULL)) AS ga_session_number,
+        MAX(IFF(p.value:key::STRING='session_engaged',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS session_engaged,
+        MAX(IFF(p.value:key::STRING='engagement_time_msec', p.value:value:int_value::NUMBER, NULL)) AS engagement_time_msec,
+        MAX(IFF(p.value:key::STRING='page_location', p.value:value:string_value::STRING, NULL))     AS page_location,
+        MAX(IFF(p.value:key::STRING='page_title',    p.value:value:string_value::STRING, NULL))     AS page_title,
+        MAX(IFF(p.value:key::STRING='page_referrer', p.value:value:string_value::STRING, NULL))     AS page_referrer,
+        MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL))    AS event_category,
+        MAX(IFF(p.value:key::STRING='event_action',   p.value:value:string_value::STRING, NULL))    AS event_action,
+        MAX(IFF(p.value:key::STRING='event_label',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))   AS event_label,
+        MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))     AS percent_scrolled,
+        MAX(IFF(p.value:key::STRING='link_url',  p.value:value:string_value::STRING, NULL))         AS link_url,
+        MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))         AS link_text
+    FROM ( {{ ga4_union_shards(var('ga4_start'), var('ga4_end')) }} ) e, LATERAL FLATTEN(input => e.event_params) p
+    GROUP BY
+        e.user_pseudo_id, e.event_timestamp, e.event_name, e.batch_ordering_id, e.event_date,
+        e.user_id, e.device, e.geo, e.platform, e.is_active_user, e.session_traffic_source_last_click
+),
+sess AS (
+    SELECT
+        user_pseudo_id || '-' || ga_session_id AS ga_session_key,
+        COUNT(DISTINCT user_id)                 AS n_id,
+        MAX(user_id)                            AS sess_uid
+    FROM ev
+    WHERE ga_session_id IS NOT NULL
+    GROUP BY user_pseudo_id || '-' || ga_session_id
 )
-
-select
-    e.user_pseudo_id                                                                                     as USER_PSEUDO_ID,
-    e.event_timestamp                                                                                    as EVENT_TIMESTAMP,
-    e.event_name                                                                                         as EVENT_NAME,
-    e.batch_ordering_id                                                                                  as BATCH_ORDERING_ID,
-    e.event_date                                                                                         as EVENT_DATE,
-    TO_DATE(e.event_date,'YYYYMMDD')                                                                     as EVENT_DT,
-    TO_TIMESTAMP(e.event_timestamp/1000000)::TIMESTAMP_NTZ                                               as EVENT_TS,
-    e.user_id                                                                                            as USER_ID,   -- ⚠️VARCHAR 유지
-    MAX(IFF(p.value:key::STRING='ga_session_id', p.value:value:int_value::NUMBER, NULL))                 as GA_SESSION_ID,
-    MAX(IFF(p.value:key::STRING='ga_session_number', p.value:value:int_value::NUMBER, NULL))             as GA_SESSION_NUMBER,
-    MAX(IFF(p.value:key::STRING='session_engaged',
-        COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))            as SESSION_ENGAGED,
-    MAX(IFF(p.value:key::STRING='engagement_time_msec', p.value:value:int_value::NUMBER, NULL))          as ENGAGEMENT_TIME_MSEC,
-    MAX(IFF(p.value:key::STRING='page_location', p.value:value:string_value::STRING, NULL))              as PAGE_LOCATION,
-    MAX(IFF(p.value:key::STRING='page_title', p.value:value:string_value::STRING, NULL))                 as PAGE_TITLE,
-    MAX(IFF(p.value:key::STRING='page_referrer', p.value:value:string_value::STRING, NULL))              as PAGE_REFERRER,
-    MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL))             as EVENT_CATEGORY,
-    MAX(IFF(p.value:key::STRING='event_action', p.value:value:string_value::STRING, NULL))               as EVENT_ACTION,
-    MAX(IFF(p.value:key::STRING='event_label',
-        COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))            as EVENT_LABEL,
-    MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))              as PERCENT_SCROLLED,
-    MAX(IFF(p.value:key::STRING='link_url', p.value:value:string_value::STRING, NULL))                   as LINK_URL,
-    MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))                  as LINK_TEXT,
-    CASE WHEN e.platform IN ('ANDROID','IOS') THEN 'APP'
-         WHEN e.device:category::STRING IN ('mobile','tablet') THEN 'M' ELSE 'PC' END                    as DEVICE_TYPE,
-    e.device:category::STRING                                                                            as DEVICE_CATEGORY,
-    e.device:operating_system::STRING                                                                    as OS,
-    e.geo:country::STRING                                                                                as GEO_COUNTRY,
-    e.geo:city::STRING                                                                                   as GEO_CITY,
-    NULLIF(NULLIF(e.session_traffic_source_last_click:manual_campaign:source::STRING,'(not set)'),'(direct)')                    as UTM_SOURCE,
-    NULLIF(NULLIF(NULLIF(e.session_traffic_source_last_click:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')   as UTM_MEDIUM,
-    NULLIF(e.session_traffic_source_last_click:manual_campaign:campaign_name::STRING,'(not set)')                                as UTM_CAMPAIGN,
-    e.session_traffic_source_last_click:cross_channel_campaign:default_channel_group::STRING             as DEFAULT_CHANNEL_GROUP,
-    e.platform                                                                                           as PLATFORM,
-    e.is_active_user                                                                                     as IS_ACTIVE_USER,
-    'GA4'                              as DW_SOURCE_SYSTEM,
-    'BRONZE_GA4.EVENTS_*'              as DW_SOURCE_TABLE,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ as DW_LOAD_TS,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ                  as DW_UPDATE_TS,
-    '{{ invocation_id }}'                                as DW_BATCH_ID
-from src e, LATERAL FLATTEN(input => e.event_params) p
-group by
-    e.user_pseudo_id, e.event_timestamp, e.event_name, e.batch_ordering_id, e.event_date,
-    e.user_id, e.is_active_user, e.platform, e.device, e.geo, e.session_traffic_source_last_click
+SELECT
+    ev.user_pseudo_id                                            AS USER_PSEUDO_ID,
+    ev.event_timestamp                                           AS EVENT_TIMESTAMP,
+    ev.event_name                                                AS EVENT_NAME,
+    ev.batch_ordering_id                                         AS BATCH_ORDERING_ID,
+    ev.event_date                                                AS EVENT_DATE,
+    TO_DATE(ev.event_date,'YYYYMMDD')                            AS EVENT_DT,
+    TO_TIMESTAMP(ev.event_timestamp/1000000)                     AS EVENT_TS,
+    ev.user_id                                                   AS USER_ID,
+    ev.ga_session_id                                             AS GA_SESSION_ID,
+    ev.ga_session_number                                         AS GA_SESSION_NUMBER,
+    IFF(ev.ga_session_id IS NULL, NULL, ev.user_pseudo_id || '-' || ev.ga_session_id) AS GA_SESSION_KEY,
+    CASE WHEN ev.user_id IS NOT NULL   THEN ev.user_id
+         WHEN ev.ga_session_id IS NULL THEN NULL
+         WHEN s.n_id = 1               THEN s.sess_uid
+         ELSE NULL END                                           AS USER_ID_FILLED,
+    CASE WHEN ev.user_id IS NOT NULL   THEN 'DIRECT'
+         WHEN ev.ga_session_id IS NULL THEN 'UNRESOLVED'
+         WHEN s.n_id = 1               THEN 'SESSION_FILL'
+         WHEN s.n_id >= 2              THEN 'CONFLICT'
+         ELSE 'UNRESOLVED' END                                   AS ID_RESOLUTION,
+    ev.session_engaged                                           AS SESSION_ENGAGED,
+    ev.engagement_time_msec                                      AS ENGAGEMENT_TIME_MSEC,
+    ev.page_location                                             AS PAGE_LOCATION,
+    ev.page_title                                                AS PAGE_TITLE,
+    ev.page_referrer                                             AS PAGE_REFERRER,
+    ev.event_category                                            AS EVENT_CATEGORY,
+    ev.event_action                                              AS EVENT_ACTION,
+    ev.event_label                                               AS EVENT_LABEL,
+    ev.percent_scrolled                                          AS PERCENT_SCROLLED,
+    ev.link_url                                                  AS LINK_URL,
+    ev.link_text                                                 AS LINK_TEXT,
+    CASE WHEN ev.platform IN ('ANDROID','IOS') THEN 'APP'
+         WHEN ev.device:category::STRING IN ('mobile','tablet') THEN 'M' ELSE 'PC' END AS DEVICE_TYPE,
+    ev.device:category::STRING                                   AS DEVICE_CATEGORY,
+    ev.device:operating_system::STRING                           AS OS,
+    ev.geo:country::STRING                                       AS GEO_COUNTRY,
+    ev.geo:city::STRING                                          AS GEO_CITY,
+    NULLIF(NULLIF(ev.stlc:manual_campaign:source::STRING,'(not set)'),'(direct)')                 AS UTM_SOURCE,
+    NULLIF(NULLIF(NULLIF(ev.stlc:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)') AS UTM_MEDIUM,
+    NULLIF(ev.stlc:manual_campaign:campaign_name::STRING,'(not set)')                             AS UTM_CAMPAIGN,
+    ev.stlc:cross_channel_campaign:default_channel_group::STRING AS DEFAULT_CHANNEL_GROUP,
+    ev.platform                                                  AS PLATFORM,
+    ev.is_active_user                                            AS IS_ACTIVE_USER,
+    'GA4'               AS DW_SOURCE_SYSTEM,
+    'BRONZE_GA4.events' AS DW_SOURCE_TABLE,
+    CURRENT_TIMESTAMP() AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
+    NULL                AS DW_BATCH_ID
+FROM ev
+LEFT JOIN sess s
+    ON ev.ga_session_id IS NOT NULL
+   AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id

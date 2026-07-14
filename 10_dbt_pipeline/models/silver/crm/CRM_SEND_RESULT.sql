@@ -1,49 +1,20 @@
--- CRM_SEND_RESULT: 발송×채널 집계 통합 (EMAIL∪MSG_AT∪PSTMTR 집계, TOT_CLICK_CNT VARCHAR→NUMBER)
+-- CRM_SEND_RESULT: 발송결과 집계 = 채널별 LQY GROUP BY ∪ SND 요청집계 (채널 통합 예외, master §3), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key=['SNDNG_KEY', 'SEND_CHANNEL'],
-    incremental_strategy='merge'
-) }}
-
-with email as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'EMAIL'                                                  as SEND_CHANNEL,
-        SNDNG_CNT::NUMBER(10,0)                                  as SNDNG_CNT,
-        SUCCES_CNT::NUMBER(10,0)                                 as SUCCES_CNT,
-        FAILR_CNT::NUMBER(10,0)                                  as FAILR_CNT,
-        TRY_TO_NUMBER({{ clean_str('URL_OTHBC_CNT_CTNT') }})     as TOT_CLICK_CNT,
-        {{ dw_meta('TD_MS_EMAIL_LQY_SNDNG') }}
-    from {{ source('bronze_crm', 'TD_MS_EMAIL_LQY_SNDNG') }}
-),
-
-msg_at as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'MSG_AT'                                                 as SEND_CHANNEL,
-        SNDNG_CNT::NUMBER(10,0)                                  as SNDNG_CNT,
-        SUCCES_CNT::NUMBER(10,0)                                 as SUCCES_CNT,
-        AT_FAILR_CNT::NUMBER(10,0)                               as FAILR_CNT,
-        TRY_TO_NUMBER({{ clean_str('TOT_CLICK_CNT_CTNT') }})     as TOT_CLICK_CNT,
-        {{ dw_meta('TD_MS_MSG_AT_LQY_SNDNG') }}
-    from {{ source('bronze_crm', 'TD_MS_MSG_AT_LQY_SNDNG') }}
-),
-
-pstmtr as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'PSTMTR'                                                 as SEND_CHANNEL,
-        SNDNG_CNT::NUMBER(10,0)                                  as SNDNG_CNT,
-        CAST(NULL AS NUMBER(10,0))                               as SUCCES_CNT,
-        CAST(NULL AS NUMBER(10,0))                               as FAILR_CNT,
-        CAST(NULL AS NUMBER)                                     as TOT_CLICK_CNT,
-        {{ dw_meta('TD_MS_PSTMTR_LQY_SNDNG') }}
-    from {{ source('bronze_crm', 'TD_MS_PSTMTR_LQY_SNDNG') }}
-)
-
-select * from email
-union all
-select * from msg_at
-union all
-select * from pstmtr
+SELECT SNDNG_KEY AS SNDNG_KEY, 'EMAIL' AS SEND_CHANNEL,
+  SUM(SNDNG_CNT) AS SNDNG_CNT, SUM(SUCCES_CNT) AS SUCCES_CNT, SUM(FAILR_CNT)::NUMBER(10,0) AS FAILR_CNT,
+  NULL AS TOT_CLICK_CNT,
+  'CRM' AS DW_SOURCE_SYSTEM, 'BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP() AS DW_LOAD_TS, CURRENT_TIMESTAMP() AS DW_UPDATE_TS, NULL AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TD_MS_EMAIL_LQY_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL GROUP BY SNDNG_KEY
+UNION ALL
+SELECT SNDNG_KEY,'MSG_AT',SUM(SNDNG_CNT),SUM(SUCCES_CNT),SUM(AT_FAILR_CNT),SUM(TRY_TO_NUMBER(TOT_CLICK_CNT_CTNT)),
+  'CRM','BRONZE_CRM.TD_MS_MSG_AT_LQY_SNDNG',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TD_MS_MSG_AT_LQY_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL GROUP BY SNDNG_KEY
+UNION ALL
+SELECT SNDNG_KEY,'PSTMTR',SUM(SNDNG_CNT),NULL,NULL,NULL,
+  'CRM','BRONZE_CRM.TD_MS_PSTMTR_LQY_SNDNG',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TD_MS_PSTMTR_LQY_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL GROUP BY SNDNG_KEY
+UNION ALL
+SELECT SEQ_NO,'SND',SUM(TARGET_CNT),SUM(SEND_CNT),SUM(FAIL_CNT),NULL,
+  'CRM','BRONZE_CRM.SND_REQ_MST',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','SND_REQ_MST') }} WHERE SEQ_NO IS NOT NULL GROUP BY SEQ_NO

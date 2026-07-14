@@ -1,22 +1,19 @@
--- CRM_PAYMENT_METHOD: 결제수단 현재상태 정제 (SCD1, DW_UPDATE_TS=LAST_UPDT_DT)
+-- CRM_PAYMENT_METHOD: 결제수단(현재상태, SETLE_KEY dedup) + 수단명(PM040) 라벨, 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key='SETLE_KEY',
-    incremental_strategy='merge'
-) }}
-
-select
-    SETLE_KEY::NUMBER(10,0)                               as SETLE_KEY,
-    CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))       as MBER_NO,
-    CAST({{ clean_str('SETLE_CD') }} AS VARCHAR(3))       as SETLE_CD,
-    CAST(NULL AS VARCHAR)                                 as SETLE_NM,        -- CRM_CODE 적재 후 채움
-    CAST({{ clean_str('CARD_DIV_CD') }} AS VARCHAR(3))    as CARD_DIV_CD,
-    CAST({{ clean_str('FNLT_CD') }} AS VARCHAR(10))       as FNLT_CD,
-    WTDRW_STRT_DE                                         as WTDRW_STRT_DE,
-    CAST({{ clean_str('SETLE_STAT_CD') }} AS VARCHAR(3))  as SETLE_STAT_CD,
-    'CRM'                                                 as DW_SOURCE_SYSTEM,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ                   as DW_LOAD_TS,
-    LAST_UPDT_DT                                          as DW_UPDATE_TS,
-    '{{ invocation_id }}'                                as DW_BATCH_ID
-from {{ source('bronze_crm', 'TM_PM_SETLE_INFO') }}
+SELECT
+  s.SETLE_KEY                      AS SETLE_KEY,
+  NULLIF(TRIM(s.MBER_NO),'')       AS MBER_NO,
+  NULLIF(TRIM(s.SETLE_CD),'')      AS SETLE_CD,
+  pm.DTL_CD_NM                     AS SETLE_NM,
+  NULLIF(TRIM(s.CARD_DIV_CD),'')   AS CARD_DIV_CD,
+  NULLIF(TRIM(s.FNLT_CD),'')       AS FNLT_CD,
+  s.WTDRW_STRT_DE                  AS WTDRW_STRT_DE,
+  NULLIF(TRIM(s.SETLE_STAT_CD),'') AS SETLE_STAT_CD,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_PM_SETLE_INFO') }} s
+LEFT JOIN {{ ref('CRM_CODE') }} pm ON pm.CD_ID='PM040' AND pm.DTL_CD_ID = NULLIF(TRIM(s.SETLE_CD),'')
+WHERE s.SETLE_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY s.SETLE_KEY ORDER BY s.WTDRW_STRT_DE DESC NULLS LAST)=1

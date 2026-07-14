@@ -1,61 +1,46 @@
--- CRM_MEMBER: 정기(FDRM) ∪ 일시(ONCE) 회원 통합 정제 (grain=MEMBER_DK, PK=MEMBER_DK)
+-- CRM_MEMBER: 회원 마스터 = 정기(FDRM) ∪ 일시(ONCE), SEX/MBER_DIV_NM/상태 라벨·수신동의 정규화, 정본 09 STEP3 배치4.
 -- Co-authored with CoCo
--- 원천: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO
--- 정제: 타입 캐스팅 · NULL 표준화 · MEMBER_TYPE 파생 · 회원키 선행0/S접두 보존(VARCHAR)
--- ⚠️ Q6: 정기/일시 UNION 스키마 정렬(잠정). 코드→라벨(_NM)은 CRM_CODE 적재 후 채움(현재 NULL)
--- ⚠️ EMAIL/PSTMTR_RECPTN: 정기=코드(멀티값 '2,5,6'), 일시=Y/N — raw 보존(정규화는 후속)
-{{ config(
-    materialized='incremental',
-    unique_key='MEMBER_DK',
-    incremental_strategy='merge'
-) }}
-
-with regular as (
-    select
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))       as MEMBER_DK,
-        'FDRM'                                                 as MEMBER_TYPE,
-        CAST({{ clean_str('MBER_DIV_CD') }} AS VARCHAR(3))     as MBER_DIV_CD,
-        CAST(NULL AS VARCHAR)                                  as MBER_DIV_NM,
-        CAST({{ clean_str('CPR_DIV_CD') }} AS VARCHAR(3))      as CPR_DIV_CD,
-        CAST({{ clean_str('SEX') }} AS VARCHAR(2))             as SEX,
-        CAST({{ clean_str('MBER_STAT_CD') }} AS VARCHAR(3))    as MBER_STAT_CD,
-        CAST(NULL AS VARCHAR)                                  as MBER_STAT_NM,
-        CAST({{ clean_str('CMPGN_CD') }} AS VARCHAR(20))       as CMPGN_CD,
-        CAST({{ clean_str('ACT_DEPT_CD') }} AS VARCHAR(10))    as ACT_DEPT_CD,
-        CAST({{ clean_str('REGIST_DEPT_CD') }} AS VARCHAR(10)) as REGIST_DEPT_CD,
-        CAST({{ clean_str('JOIN_PATH_CD') }} AS VARCHAR(3))    as JOIN_PATH_CD,
-        CAST({{ clean_str('HMPG_ID') }} AS VARCHAR(30))        as HMPG_ID,
-        CAST(NULL AS VARCHAR(200))                             as ENTRPS_NM,
-        CAST({{ clean_str('EMAIL_RECPTN_CD') }} AS VARCHAR)    as EMAIL_RECPTN,
-        CAST({{ clean_str('PSTMTR_RECPTN_CD') }} AS VARCHAR)   as PSTMTR_RECPTN,
-        FRST_REGIST_DT                                          as JOIN_DT,
-        {{ dw_meta('TM_MM_FDRM_MBER_INFO') }}
-    from {{ source('bronze_crm', 'TM_MM_FDRM_MBER_INFO') }}
-),
-
-once as (
-    select
-        CAST({{ clean_str('ONCE_MBER_NO') }} AS VARCHAR(10))   as MEMBER_DK,
-        'ONCE'                                                 as MEMBER_TYPE,
-        CAST({{ clean_str('MBER_DIV_CD') }} AS VARCHAR(3))     as MBER_DIV_CD,
-        CAST(NULL AS VARCHAR)                                  as MBER_DIV_NM,
-        CAST({{ clean_str('CPR_DIV_CD') }} AS VARCHAR(3))      as CPR_DIV_CD,
-        CAST({{ clean_str('SEX') }} AS VARCHAR(2))             as SEX,
-        CAST(NULL AS VARCHAR(3))                               as MBER_STAT_CD,
-        CAST(NULL AS VARCHAR)                                  as MBER_STAT_NM,
-        CAST(NULL AS VARCHAR(20))                              as CMPGN_CD,
-        CAST(NULL AS VARCHAR(10))                              as ACT_DEPT_CD,
-        CAST({{ clean_str('REGIST_DEPT_CD') }} AS VARCHAR(10)) as REGIST_DEPT_CD,
-        CAST(NULL AS VARCHAR(3))                               as JOIN_PATH_CD,
-        CAST({{ clean_str('HMPG_ID') }} AS VARCHAR(30))        as HMPG_ID,
-        CAST({{ clean_str('ENTRPS_NM') }} AS VARCHAR(200))     as ENTRPS_NM,
-        CAST({{ clean_str('EMAIL_RECPTN_YN') }} AS VARCHAR)    as EMAIL_RECPTN,
-        CAST({{ clean_str('PSTMTR_RECPTN_YN') }} AS VARCHAR)   as PSTMTR_RECPTN,
-        FRST_REGIST_DT                                          as JOIN_DT,
-        {{ dw_meta('TM_MM_ONCE_MBER_INFO') }}
-    from {{ source('bronze_crm', 'TM_MM_ONCE_MBER_INFO') }}
-)
-
-select * from regular
-union all
-select * from once
+SELECT
+  NULLIF(TRIM(f.MBER_NO),'')       AS MEMBER_DK,
+  'FDRM'                           AS MEMBER_TYPE,
+  NULLIF(TRIM(f.MBER_DIV_CD),'')   AS MBER_DIV_CD,
+  md.DTL_CD_NM                     AS MBER_DIV_NM,
+  NULLIF(TRIM(f.CPR_DIV_CD),'')    AS CPR_DIV_CD,
+  CASE WHEN f.SEX IN ('1','3') THEN 'M' WHEN f.SEX IN ('2','4') THEN 'F' WHEN NULLIF(TRIM(f.SEX),'') IS NULL THEN NULL ELSE 'U' END AS SEX,
+  NULLIF(TRIM(f.MBER_STAT_CD),'')  AS MBER_STAT_CD,
+  st.DTL_CD_NM                     AS MBER_STAT_NM,
+  NULLIF(TRIM(f.CMPGN_CD),'')      AS CMPGN_CD,
+  NULLIF(TRIM(f.ACT_DEPT_CD),'')   AS ACT_DEPT_CD,
+  NULLIF(TRIM(f.REGIST_DEPT_CD),'')AS REGIST_DEPT_CD,
+  NULLIF(TRIM(f.JOIN_PATH_CD),'')  AS JOIN_PATH_CD,
+  NULLIF(TRIM(f.HMPG_ID),'')       AS HMPG_ID,
+  NULL                             AS ENTRPS_NM,
+  CASE WHEN NULLIF(TRIM(f.EMAIL_RECPTN_CD),'') IS NULL THEN NULL
+       ELSE ARRAY_TO_STRING(ARRAY_SORT(ARRAY_DISTINCT(ARRAY_REMOVE(SPLIT(REPLACE(TRIM(f.EMAIL_RECPTN_CD),' ',''),','),TO_VARIANT('')))),',') END AS EMAIL_RECPTN,
+  CASE WHEN NULLIF(TRIM(f.PSTMTR_RECPTN_CD),'') IS NULL THEN NULL
+       ELSE ARRAY_TO_STRING(ARRAY_SORT(ARRAY_DISTINCT(ARRAY_REMOVE(SPLIT(REPLACE(TRIM(f.PSTMTR_RECPTN_CD),' ',''),','),TO_VARIANT('')))),',') END AS PSTMTR_RECPTN,
+  f.FRST_REGIST_DT                 AS JOIN_DT,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  'BRONZE_CRM.TM_MM_FDRM_MBER_INFO' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_INFO') }} f
+LEFT JOIN {{ ref('CRM_CODE') }} st ON st.CD_ID='MM010' AND st.DTL_CD_ID = NULLIF(TRIM(f.MBER_STAT_CD),'')
+LEFT JOIN {{ ref('CRM_CODE') }} md ON md.CD_ID='MM018' AND md.DTL_CD_ID = NULLIF(TRIM(f.MBER_DIV_CD),'')
+WHERE f.MBER_NO IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(f.MBER_NO),'') ORDER BY f.FRST_REGIST_DT DESC NULLS LAST)=1
+UNION ALL
+SELECT
+  NULLIF(TRIM(o.ONCE_MBER_NO),''), 'ONCE', NULLIF(TRIM(o.MBER_DIV_CD),''), md.DTL_CD_NM, NULLIF(TRIM(o.CPR_DIV_CD),''),
+  CASE WHEN o.SEX IN ('1','3') THEN 'M' WHEN o.SEX IN ('2','4') THEN 'F' WHEN NULLIF(TRIM(o.SEX),'') IS NULL THEN NULL ELSE 'U' END,
+  NULL, NULL,
+  NULL, NULL, NULLIF(TRIM(o.REGIST_DEPT_CD),''),
+  NULL, NULLIF(TRIM(o.HMPG_ID),''), NULLIF(TRIM(o.ENTRPS_NM),''),
+  NULLIF(TRIM(o.EMAIL_RECPTN_YN),''), NULLIF(TRIM(o.PSTMTR_RECPTN_YN),''),
+  o.FRST_REGIST_DT,
+  'CRM','BRONZE_CRM.TM_MM_ONCE_MBER_INFO', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM {{ source('bronze_crm','TM_MM_ONCE_MBER_INFO') }} o
+LEFT JOIN {{ ref('CRM_CODE') }} md ON md.CD_ID='MM018' AND md.DTL_CD_ID = NULLIF(TRIM(o.MBER_DIV_CD),'')
+WHERE o.ONCE_MBER_NO IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(o.ONCE_MBER_NO),'') ORDER BY o.FRST_REGIST_DT DESC NULLS LAST)=1

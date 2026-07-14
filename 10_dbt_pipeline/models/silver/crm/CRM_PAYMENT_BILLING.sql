@@ -1,51 +1,30 @@
--- CRM_PAYMENT_BILLING: 납입/청구 통합 (회비 TM_PM_MBRFEE_ACMSLT ∪ 기부금 TM_PM_DNTN_DTLS)
+-- CRM_PAYMENT_BILLING: 결제(청구·납입) = 회비 ∪ 기부금 (PAY_KEY 접두 통합키), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key='PAY_KEY',
-    incremental_strategy='merge'
-) }}
-
-with mbrfee as (
-    select
-        'MF-' || MBRFEE_KEY::VARCHAR                      as PAY_KEY,
-        '회비'                                             as PAYMENT_TYPE,
-        CAST({{ clean_str('MBER_NO') }} AS VARCHAR(10))   as MBER_NO,
-        CAST({{ clean_str('SPNSR_BSNS_ID') }} AS VARCHAR(20)) as SPNSR_BSNS_ID,
-        RELATNSP_KEY::NUMBER(10,0)                        as RELATNSP_KEY,
-        CAST({{ clean_str('MBRFEE_MT') }} AS VARCHAR(6))  as MBRFEE_MT,
-        MBRFEE_SQNC::NUMBER(3,0)                          as MBRFEE_SQNC,
-        RQEST_AMT::NUMBER(19,0)                           as RQEST_AMT,
-        RQEST_DE                                          as RQEST_DE,
-        PAY_AMT::NUMBER(10,0)                             as PAY_AMT,
-        PAY_DE                                            as PAY_DE,
-        CAST({{ clean_str('PAY_STAT_CD') }} AS VARCHAR(3)) as PAY_STAT_CD,
-        CAST({{ clean_str('SETLE_CD') }} AS VARCHAR(3))   as SETLE_CD,
-        CAST({{ clean_str('GFT_DIV_CD') }} AS VARCHAR(3)) as GFT_DIV_CD,
-        {{ dw_meta('TM_PM_MBRFEE_ACMSLT') }}
-    from {{ source('bronze_crm', 'TM_PM_MBRFEE_ACMSLT') }}
-),
-
-dntn as (
-    select
-        'DN-' || DNTN_KEY::VARCHAR                        as PAY_KEY,
-        '기부금'                                           as PAYMENT_TYPE,
-        CAST({{ clean_str('ONCE_MBER_NO') }} AS VARCHAR(10)) as MBER_NO,
-        CAST({{ clean_str('SPNSR_BSNS_ID') }} AS VARCHAR(20)) as SPNSR_BSNS_ID,
-        CAST(NULL AS NUMBER(10,0))                        as RELATNSP_KEY,
-        CAST(NULL AS VARCHAR(6))                          as MBRFEE_MT,
-        CAST(NULL AS NUMBER(3,0))                         as MBRFEE_SQNC,
-        CAST(NULL AS NUMBER(19,0))                        as RQEST_AMT,
-        CAST(NULL AS DATE)                                as RQEST_DE,
-        PAY_AMT::NUMBER(10,0)                             as PAY_AMT,
-        PAY_DE                                            as PAY_DE,
-        CAST({{ clean_str('PAY_STAT_CD') }} AS VARCHAR(3)) as PAY_STAT_CD,
-        CAST({{ clean_str('SETLE_CD') }} AS VARCHAR(3))   as SETLE_CD,
-        CAST(NULL AS VARCHAR(3))                          as GFT_DIV_CD,
-        {{ dw_meta('TM_PM_DNTN_DTLS') }}
-    from {{ source('bronze_crm', 'TM_PM_DNTN_DTLS') }}
-)
-
-select * from mbrfee
-union all
-select * from dntn
+SELECT
+  'MBRFEE_'||MBRFEE_KEY            AS PAY_KEY,
+  '회비'                           AS PAYMENT_TYPE,
+  NULLIF(TRIM(MBER_NO),'')         AS MBER_NO,
+  NULLIF(TRIM(SPNSR_BSNS_ID),'')   AS SPNSR_BSNS_ID,
+  RELATNSP_KEY                     AS RELATNSP_KEY,
+  NULLIF(TRIM(MBRFEE_MT),'')       AS MBRFEE_MT,
+  MBRFEE_SQNC                      AS MBRFEE_SQNC,
+  RQEST_AMT                        AS RQEST_AMT,
+  RQEST_DE                         AS RQEST_DE,
+  PAY_AMT                          AS PAY_AMT,
+  PAY_DE                           AS PAY_DE,
+  NULLIF(TRIM(PAY_STAT_CD),'')     AS PAY_STAT_CD,
+  NULLIF(TRIM(SETLE_CD),'')        AS SETLE_CD,
+  NULLIF(TRIM(GFT_DIV_CD),'')      AS GFT_DIV_CD,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  'BRONZE_CRM.TM_PM_MBRFEE_ACMSLT' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_PM_MBRFEE_ACMSLT') }} WHERE MBRFEE_KEY IS NOT NULL
+UNION ALL
+SELECT
+  'DNTN_'||DNTN_KEY, '기부금', NULLIF(TRIM(ONCE_MBER_NO),''), NULLIF(TRIM(SPNSR_BSNS_ID),''), NULL,
+  NULL, NULL, NULL, NULL, PAY_AMT, PAY_DE,
+  NULLIF(TRIM(PAY_STAT_CD),''), NULLIF(TRIM(SETLE_CD),''), NULL,
+  'CRM','BRONZE_CRM.TM_PM_DNTN_DTLS', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM {{ source('bronze_crm','TM_PM_DNTN_DTLS') }} WHERE DNTN_KEY IS NOT NULL

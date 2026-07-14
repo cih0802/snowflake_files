@@ -1,32 +1,26 @@
--- GA4_TRAFFIC_SOURCE: 트래픽소스 차원 (session last-click DISTINCT, 센티넬 NULLIF)
+-- GA4_TRAFFIC_SOURCE: 세션 last-click 트래픽소스 DISTINCT (first-touch/collected 제외 = grain 팽창 방지), 정본 09 STEP6.
 -- Co-authored with CoCo
+-- FROM 절 = ga4_union_shards 매크로(전기간 샤드 UNION, 명시 30컬럼). PoC 1일→전기간 멱등 전환.
 {{ config(materialized='table') }}
-
-with src as (
-    {{ ga4_union_shards('20000101', '99991231') }}
+SELECT DISTINCT
+  NULLIF(NULLIF(s:manual_campaign:source::STRING,'(not set)'),'(direct)')                       AS UTM_SOURCE,
+  NULLIF(NULLIF(NULLIF(s:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')       AS UTM_MEDIUM,
+  NULLIF(s:manual_campaign:campaign_name::STRING,'(not set)')                                    AS UTM_CAMPAIGN,
+  NULLIF(s:manual_campaign:content::STRING,'(not set)')                                          AS UTM_CONTENT,
+  NULLIF(s:manual_campaign:term::STRING,'(not set)')                                             AS UTM_TERM,
+  CONCAT_WS(' / ',
+    NULLIF(NULLIF(s:manual_campaign:source::STRING,'(not set)'),'(direct)'),
+    NULLIF(NULLIF(NULLIF(s:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)'))    AS SOURCE_MEDIUM,
+  s:cross_channel_campaign:source::STRING                                                        AS XCHAN_SOURCE,
+  s:cross_channel_campaign:medium::STRING                                                        AS XCHAN_MEDIUM,
+  s:cross_channel_campaign:campaign_name::STRING                                                 AS XCHAN_CAMPAIGN,
+  s:cross_channel_campaign:default_channel_group::STRING                                         AS DEFAULT_CHANNEL_GROUP,
+  'GA4'               AS DW_SOURCE_SYSTEM,
+  'BRONZE_GA4.events' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP() AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
+  NULL                AS DW_BATCH_ID
+FROM (
+  SELECT session_traffic_source_last_click AS s
+  FROM ( {{ ga4_union_shards(var('ga4_start'), var('ga4_end')) }} )
 )
-
-select distinct
-    NULLIF(NULLIF(session_traffic_source_last_click:manual_campaign:source::STRING,'(not set)'),'(direct)')                       as UTM_SOURCE,
-    NULLIF(NULLIF(NULLIF(session_traffic_source_last_click:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')      as UTM_MEDIUM,
-    NULLIF(session_traffic_source_last_click:manual_campaign:campaign_name::STRING,'(not set)')                                   as UTM_CAMPAIGN,
-    NULLIF(session_traffic_source_last_click:manual_campaign:content::STRING,'(not set)')                                         as UTM_CONTENT,
-    NULLIF(session_traffic_source_last_click:manual_campaign:term::STRING,'(not set)')                                           as UTM_TERM,
-    CONCAT_WS(' / ',
-        NULLIF(NULLIF(session_traffic_source_last_click:manual_campaign:source::STRING,'(not set)'),'(direct)'),
-        NULLIF(NULLIF(NULLIF(session_traffic_source_last_click:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')) as SOURCE_MEDIUM,
-    session_traffic_source_last_click:cross_channel_campaign:source::STRING                                                       as XCHAN_SOURCE,
-    session_traffic_source_last_click:cross_channel_campaign:medium::STRING                                                       as XCHAN_MEDIUM,
-    session_traffic_source_last_click:cross_channel_campaign:campaign_name::STRING                                                as XCHAN_CAMPAIGN,
-    session_traffic_source_last_click:cross_channel_campaign:default_channel_group::STRING                                        as DEFAULT_CHANNEL_GROUP,
-    NULLIF(traffic_source:source::STRING,'(not set)')                                                                            as TS_SOURCE,
-    NULLIF(traffic_source:medium::STRING,'(not set)')                                                                            as TS_MEDIUM,
-    NULLIF(traffic_source:name::STRING,'(not set)')                                                                              as TS_CAMPAIGN,
-    collected_traffic_source:manual_source::STRING                                                                               as CTS_SOURCE,
-    collected_traffic_source:manual_medium::STRING                                                                              as CTS_MEDIUM,
-    'GA4'                              as DW_SOURCE_SYSTEM,
-    'BRONZE_GA4.EVENTS_*'              as DW_SOURCE_TABLE,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ as DW_LOAD_TS,
-    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ                  as DW_UPDATE_TS,
-    '{{ invocation_id }}'                                as DW_BATCH_ID
-from src

@@ -1,49 +1,31 @@
--- CRM_SEND_REQUEST: 발송요청 마스터 통합 (EMAIL∪MSG_AT∪PSTMTR, Q5 REQ_SEQ_NO 미해소)
+-- CRM_SEND_REQUEST: 발송요청 마스터 = EMAIL ∪ MSG_AT ∪ PSTMTR ∪ SND (채널별 dedup), 정본 09 STEP3.
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    unique_key='SNDNG_KEY',
-    incremental_strategy='merge'
-) }}
-
-with email as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'EMAIL'                                                  as SEND_CHANNEL,
-        CAST({{ clean_str('SNDNG_TY_CD') }} AS VARCHAR(3))       as SNDNG_TY_CD,
-        CAST({{ clean_str('TIT') }} AS VARCHAR(100))             as TIT,
-        SNDNG_STDR_DE                                            as SNDNG_STDR_DE,
-        CAST(NULL AS NUMBER(19,0))                               as REQ_SEQ_NO,   -- ⚠️Q5 미해소
-        {{ dw_meta('TM_MS_EMAIL_SNDNG') }}
-    from {{ source('bronze_crm', 'TM_MS_EMAIL_SNDNG') }}
-),
-
-msg_at as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'MSG_AT'                                                 as SEND_CHANNEL,
-        CAST({{ clean_str('SNDNG_TY_CD') }} AS VARCHAR(3))       as SNDNG_TY_CD,
-        CAST({{ clean_str('TIT') }} AS VARCHAR(100))             as TIT,
-        SNDNG_STDR_DE                                            as SNDNG_STDR_DE,
-        CAST(NULL AS NUMBER(19,0))                               as REQ_SEQ_NO,
-        {{ dw_meta('TM_MS_MSG_AT_SNDNG') }}
-    from {{ source('bronze_crm', 'TM_MS_MSG_AT_SNDNG') }}
-),
-
-pstmtr as (
-    select
-        SNDNG_KEY::NUMBER(10,0)                                  as SNDNG_KEY,
-        'PSTMTR'                                                 as SEND_CHANNEL,
-        CAST({{ clean_str('SNDNG_TY_CD') }} AS VARCHAR(3))       as SNDNG_TY_CD,
-        CAST(NULL AS VARCHAR(100))                               as TIT,
-        SNDNG_STDR_DE::TIMESTAMP_NTZ                             as SNDNG_STDR_DE,
-        CAST(NULL AS NUMBER(19,0))                               as REQ_SEQ_NO,
-        {{ dw_meta('TM_MS_PSTMTR_SNDNG') }}
-    from {{ source('bronze_crm', 'TM_MS_PSTMTR_SNDNG') }}
-)
-
-select * from email
-union all
-select * from msg_at
-union all
-select * from pstmtr
+SELECT SNDNG_KEY AS SNDNG_KEY, 'EMAIL' AS SEND_CHANNEL, NULLIF(TRIM(SNDNG_TY_CD),'') AS SNDNG_TY_CD,
+  NULL AS SEND_GBN_TOP, NULL AS SEND_GBN_TOP_NM, NULL AS SEND_GBN_MID, NULL AS SEND_GBN_MID_NM,
+  NULL AS SEND_GBN_BOT, NULL AS SEND_GBN_BOT_NM,
+  NULLIF(TRIM(TIT),'') AS TIT, SNDNG_STDR_DE::TIMESTAMP_NTZ AS SNDNG_STDR_DE, NULL AS REQ_SEQ_NO,
+  'CRM' AS DW_SOURCE_SYSTEM, 'BRONZE_CRM.TM_MS_EMAIL_SNDNG' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP() AS DW_LOAD_TS, CURRENT_TIMESTAMP() AS DW_UPDATE_TS, NULL AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TM_MS_EMAIL_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT SNDNG_KEY,'MSG_AT',NULLIF(TRIM(SNDNG_TY_CD),''), NULL,NULL,NULL,NULL,NULL,NULL,
+  NULLIF(TRIM(TIT),''),SNDNG_STDR_DE::TIMESTAMP_NTZ,NULL,
+  'CRM','BRONZE_CRM.TM_MS_MSG_AT_SNDNG',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TM_MS_MSG_AT_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT SNDNG_KEY,'PSTMTR',NULLIF(TRIM(SNDNG_TY_CD),''), NULL,NULL,NULL,NULL,NULL,NULL,
+  NULL,SNDNG_STDR_DE::TIMESTAMP_NTZ,NULL,
+  'CRM','BRONZE_CRM.TM_MS_PSTMTR_SNDNG',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','TM_MS_PSTMTR_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+UNION ALL
+SELECT SEQ_NO,'SND',NULL,
+  NULLIF(TRIM(SEND_GBN_TOP),''),NULLIF(TRIM(SEND_GBN_TOP_NM),''),
+  NULLIF(TRIM(SEND_GBN_MID),''),NULLIF(TRIM(SEND_GBN_MID_NM),''),
+  NULLIF(TRIM(SEND_GBN_BOT),''),NULLIF(TRIM(SEND_GBN_BOT_NM),''),
+  NULLIF(TRIM(SEND_TITLE),''),SEND_DATE::TIMESTAMP_NTZ,SEQ_NO,
+  'CRM','BRONZE_CRM.SND_REQ_MST',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM {{ source('bronze_crm','SND_REQ_MST') }} WHERE SEQ_NO IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY SEQ_NO ORDER BY SEND_DATE DESC NULLS LAST)=1
