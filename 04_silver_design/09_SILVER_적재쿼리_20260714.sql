@@ -405,3 +405,507 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY REQ_SEQ_NO, R_NUM ORDER BY SND_DT DESC N
 -- ============================================================================
 
 
+-- ============================================================================
+-- STEP 4 — ERP (트랙 C, 2차) 정제 적재 : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER
+--   근거 : 05_SILVER_작업계획_ERP전용 · 11_SILVER_블로커_triage · 08_SILVER_테이블DDL(STEP 4)
+--   공통 : TOTAL(사전집계 요약행) 제외 · 금액 원단위 보존 · 멱등 INSERT OVERWRITE.
+--   키   : BUDGET_ITEM_DK = MD5(연도|수입지출|예산단위|장|관|항|목|세목|세세목|재원) — ITEM/BUDGET 동일식.
+-- ============================================================================
+
+-- ERP 1 : ERP_BUDGET_ITEM (예산과목 마스터, 2,040행)
+INSERT OVERWRITE INTO GN_DW.SILVER.ERP_BUDGET_ITEM
+(BUDGET_ITEM_DK, BUDGET_YEAR, INCOME_EXPENSE_DIV, BUDGET_UNIT_NM,
+ JANG_NM, KWAN_NM, HANG_NM, MOK_NM, DTL_ITEM_NM, SUBDTL_ITEM_NM, FUND_SOURCE_NM,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT DISTINCT
+  MD5(COALESCE(TO_VARCHAR(YEAR),'')||'|'||COALESCE(INCOME_EXPS_DIV_NM,'')||'|'||COALESCE(BDGT_UNIT_NM,'')||'|'||
+      COALESCE(JANG_NM,'')||'|'||COALESCE(KWAN_NM,'')||'|'||COALESCE(HANG_NM,'')||'|'||
+      COALESCE(MOK_NM,'')||'|'||COALESCE(DTL_ITEM_NM,'')||'|'||COALESCE(SUBDTL_ITEM_NM,'')||'|'||COALESCE(FUND_SOURCE_NM,'')),
+  TRY_TO_NUMBER(YEAR), NULLIF(TRIM(INCOME_EXPS_DIV_NM),''), NULLIF(TRIM(BDGT_UNIT_NM),''),
+  NULLIF(TRIM(JANG_NM),''), NULLIF(TRIM(KWAN_NM),''), NULLIF(TRIM(HANG_NM),''),
+  NULLIF(TRIM(MOK_NM),''), NULLIF(TRIM(DTL_ITEM_NM),''), NULLIF(TRIM(SUBDTL_ITEM_NM),''), NULLIF(TRIM(FUND_SOURCE_NM),''),
+  'ERP','BRONZE_ERP.BDGT_ACMSLT_LEDGER',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
+WHERE INCOME_EXPS_DIV_NM <> 'TOTAL';
+
+-- ERP 2 : ERP_BUDGET (월별 wide→long 언피벗, 2,040 × 12 = 24,480행)
+INSERT OVERWRITE INTO GN_DW.SILVER.ERP_BUDGET
+(BUDGET_ITEM_DK, BUDGET_YEAR, MONTH_NO, MONTH_KEY,
+ YEAR_BUDGET_AMT, CHN_BUDGET_AMT, ADJ_BUDGET_AMT, EXEC_AMT,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+WITH B AS (
+  SELECT
+    MD5(COALESCE(TO_VARCHAR(YEAR),'')||'|'||COALESCE(INCOME_EXPS_DIV_NM,'')||'|'||COALESCE(BDGT_UNIT_NM,'')||'|'||
+        COALESCE(JANG_NM,'')||'|'||COALESCE(KWAN_NM,'')||'|'||COALESCE(HANG_NM,'')||'|'||
+        COALESCE(MOK_NM,'')||'|'||COALESCE(DTL_ITEM_NM,'')||'|'||COALESCE(SUBDTL_ITEM_NM,'')||'|'||COALESCE(FUND_SOURCE_NM,'')) AS BUDGET_ITEM_DK,
+    TRY_TO_NUMBER(YEAR) AS BUDGET_YEAR, TO_VARCHAR(YEAR) AS YEAR_TXT, *
+  FROM GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
+  WHERE INCOME_EXPS_DIV_NM <> 'TOTAL'
+),
+-- ⚠️ Snowflake 제약: LATERAL 안의 VALUES 절은 외부 컬럼 참조 불가(CORRELATION 오류) → CTE+UNION ALL 12개월로 언피벗.
+U AS (
+  SELECT BUDGET_ITEM_DK,BUDGET_YEAR,1 MONTH_NO,YEAR_BDGT_AMT_1 YB,CHN_BDGT_AMT_1 CB,ADJ_BDGT_AMT_1 AB,EXEC_AMT_1 EX,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,2,YEAR_BDGT_AMT_2,CHN_BDGT_AMT_2,ADJ_BDGT_AMT_2,EXEC_AMT_2,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,3,YEAR_BDGT_AMT_3,CHN_BDGT_AMT_3,ADJ_BDGT_AMT_3,EXEC_AMT_3,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,4,YEAR_BDGT_AMT_4,CHN_BDGT_AMT_4,ADJ_BDGT_AMT_4,EXEC_AMT_4,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,5,YEAR_BDGT_AMT_5,CHN_BDGT_AMT_5,ADJ_BDGT_AMT_5,EXEC_AMT_5,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,6,YEAR_BDGT_AMT_6,CHN_BDGT_AMT_6,ADJ_BDGT_AMT_6,EXEC_AMT_6,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,7,YEAR_BDGT_AMT_7,CHN_BDGT_AMT_7,ADJ_BDGT_AMT_7,EXEC_AMT_7,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,8,YEAR_BDGT_AMT_8,CHN_BDGT_AMT_8,ADJ_BDGT_AMT_8,EXEC_AMT_8,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,9,YEAR_BDGT_AMT_9,CHN_BDGT_AMT_9,ADJ_BDGT_AMT_9,EXEC_AMT_9,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,10,YEAR_BDGT_AMT_10,CHN_BDGT_AMT_10,ADJ_BDGT_AMT_10,EXEC_AMT_10,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,11,YEAR_BDGT_AMT_11,CHN_BDGT_AMT_11,ADJ_BDGT_AMT_11,EXEC_AMT_11,YEAR_TXT FROM B
+  UNION ALL SELECT BUDGET_ITEM_DK,BUDGET_YEAR,12,YEAR_BDGT_AMT_12,CHN_BDGT_AMT_12,ADJ_BDGT_AMT_12,EXEC_AMT_12,YEAR_TXT FROM B
+)
+SELECT BUDGET_ITEM_DK,BUDGET_YEAR,MONTH_NO,YEAR_TXT||LPAD(TO_VARCHAR(MONTH_NO),2,'0'),
+       YB,CB,AB,EX,'ERP','BRONZE_ERP.BDGT_ACMSLT_LEDGER',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM U;
+
+-- ERP 3 : ERP_BIZ_TARGET — ⛔ 원천 부재(E-6) : 적재 보류(스키마-only). 현업 사업계획 원천 확보 시 적재.
+
+-- ============================================================================
+-- STEP 4 완료 — ERP 2객체 적재(ERP_BUDGET_ITEM 2,040 · ERP_BUDGET 24,480), ERP_BIZ_TARGET 보류.
+--   TOTAL 요약행 제외 · 금액 원단위 · MD5 키 DIM/FACT 정합.
+--   잔여(외부) : FTG-B 사업목표 원천(E-6) · 모금성비용/광고비(E-1, AGENCY 보강) · Q10 캠페인 연결키(현업).
+-- ============================================================================
+
+
+-- ============================================================================
+-- STEP 5 — AGENCY (트랙 D, 3차) 정제 적재 : BRONZE_AGENCY 3테이블 → SILVER 3객체
+--   근거 : 06_SILVER_작업계획_AGENCY전용 · 08_SILVER_테이블DDL(STEP 5) · 설계결정 6종(실측 2026-07-14)
+--   방식 : 유형별 정제 → UNION ALL(원천 1행 grain, NULL 패딩) · _SOURCE_SYSTEM 테이블기반 · 인입콜 TRY_TO_NUMBER.
+-- ============================================================================
+
+-- AGENCY 2 : AGENCY_AD_PERFORMANCE (3소스 UNION, 총 235,572행)
+INSERT OVERWRITE INTO GN_DW.SILVER.AGENCY_AD_PERFORMANCE
+(SOURCE_SYSTEM, AD_DATE, AD_YEAR, AD_MONTH, CAMPAIGN_NM, UPPER_CAMPAIGN_NM, MEDIA_CHANNEL_NM, DEVICE_NM,
+ CREATIVE_NM, PROGRAM_NM, IMPRESSION_CNT, CLICK_CNT, CONV_MEMBER_CNT, CONV_UNIT_CNT, INBOUND_CALL_CNT,
+ CONV_CALL_CNT, AD_CNT, AD_COST, COST_TYPE, DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+-- DIGITAL (DGT) : 노출·클릭·GA전환 보유 (연·월은 DATE 파생 — 텍스트 YEAR/MONTH='2025년'/'03월' 파싱불가)
+SELECT 'DIGITAL', DATE, YEAR(DATE), MONTH(DATE),
+  NULLIF(TRIM(CMPGN_NM),''), NULLIF(TRIM(UPPER_CMPGN_NM),''), NULLIF(TRIM(MEDIA_NM),''), NULLIF(TRIM(DEVICE),''),
+  NULLIF(TRIM(MATR),''), NULL, EXPS_CNT, CLICK_CNT, GA_CONV_MBER_CNT, CONV_VU_CNT, NULL,
+  NULL, NULL, GA_AD_COST, 'GA', 'AGENCY','BRONZE_AGENCY.DGT_AD_CMPGN_DTLS',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS
+UNION ALL
+-- REBROADCAST (REBRDC) : 캠페인명 부재(방송명 대체), 인입콜 TEXT→TRY_TO_NUMBER, 편성비용 (연·월 DATE 파생)
+SELECT 'REBROADCAST', DATE, YEAR(DATE), MONTH(DATE),
+  NULL, NULL, NULLIF(TRIM(CHNNL_CMPNY),''), NULL,
+  NULLIF(TRIM(BRDC_NM),''), NULLIF(TRIM(BRDC_NM),''), NULL, NULL, DVLP_MBER_CNT, DVLP_CNT, TRY_TO_NUMBER(INBOUND_CALL_CNT),
+  NULL, AD_CNT, BRDC_SCHDL_COST, '편성', 'AGENCY','BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS
+UNION ALL
+-- VIDEO : 인입콜·전환콜·집행광고비 (연·월 BRDC_DATE 파생)
+SELECT 'VIDEO', BRDC_DATE, YEAR(BRDC_DATE), MONTH(BRDC_DATE),
+  NULLIF(TRIM(MKT_CMPGN_NM),''), NULLIF(TRIM(UPPER_CMPGN_NM),''), NULLIF(TRIM(CHNNL_NM),''), NULL,
+  NULLIF(TRIM(MATR_NM),''), NULLIF(TRIM(SCHDL_NM),''), NULL, NULL, NULL, NULL, INBOUND_CALL_CNT,
+  CONV_CALL_CNT, AD_CNT, ACTL_PUR_AD_COST_KRW, '집행', 'AGENCY','BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
+FROM GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS;
+
+-- AGENCY 1 : AGENCY_AD_CREATIVE (3소스 소재/매체 distinct)
+INSERT OVERWRITE INTO GN_DW.SILVER.AGENCY_AD_CREATIVE
+(CREATIVE_DK, SOURCE_SYSTEM, MEDIA_CHANNEL_NM, CREATIVE_NM, CREATIVE_TYPE_NM, CM_AREA_NM, AD_SEC_NM,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT DISTINCT
+  MD5(SOURCE_SYSTEM||'|'||COALESCE(MEDIA_CHANNEL_NM,'')||'|'||COALESCE(CREATIVE_NM,'')||'|'||
+      COALESCE(CREATIVE_TYPE_NM,'')||'|'||COALESCE(CM_AREA_NM,'')||'|'||COALESCE(AD_SEC_NM,'')),
+  SOURCE_SYSTEM, MEDIA_CHANNEL_NM, CREATIVE_NM, CREATIVE_TYPE_NM, CM_AREA_NM, AD_SEC_NM,
+  'AGENCY', DW_SOURCE_TABLE, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM (
+  SELECT 'DIGITAL' SOURCE_SYSTEM, NULLIF(TRIM(MEDIA_NM),'') MEDIA_CHANNEL_NM, NULLIF(TRIM(MATR),'') CREATIVE_NM,
+         NULLIF(TRIM(MATR_TY_NM),'') CREATIVE_TYPE_NM, CAST(NULL AS VARCHAR) CM_AREA_NM, CAST(NULL AS VARCHAR) AD_SEC_NM,
+         'BRONZE_AGENCY.DGT_AD_CMPGN_DTLS' DW_SOURCE_TABLE FROM GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS
+  UNION ALL
+  SELECT 'REBROADCAST', NULLIF(TRIM(CHNNL_CMPNY),''), NULLIF(TRIM(BRDC_NM),''), NULLIF(TRIM(RE_BRDC_TY_NM),''),
+         NULL, NULL, 'BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS' FROM GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS
+  UNION ALL
+  SELECT 'VIDEO', NULLIF(TRIM(CHNNL_NM),''), NULLIF(TRIM(MATR_NM),''), NULLIF(TRIM(CMPGN_TY_NM),''),
+         NULLIF(TRIM(CM_AREA),''), NULLIF(TRIM(AD_SEC),''), 'BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS' FROM GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS
+);
+
+-- AGENCY 3 : AGENCY_COST — ❌ 제거(2026-07-14 아키텍처 리뷰).
+--   사유 : ① master §3 위반(월 롤업은 SILVER 금지 → GOLD) ② SILVER(AGENCY_AD_PERFORMANCE) 파생 = 단방향(SILVER→BRONZE) 위반
+--          ③ AD_PERFORMANCE.AD_COST+COST_TYPE와 중복. → 비용은 성과팩트에 원천 grain 보존, 월 롤업·ERP 결합은 GOLD FBD.
+
+-- ============================================================================
+-- STEP 5 완료 — AGENCY 2객체 적재(AD_PERFORMANCE 235,572 · AD_CREATIVE distinct). AGENCY_COST는 GOLD로 이관(제거).
+--   정정 : 연·월 = DATE 파생(텍스트 YEAR/MONTH '2025년'/'03월' 파싱불가) · _SOURCE_SYSTEM 테이블기반 · 인입콜 TRY_TO_NUMBER · 파생 미적재.
+--   DQ : AD_PERFORMANCE 행수 = 3소스 합(235,572) · 연/월 NULL 0 · CREATIVE PK유일.
+--   잔여(외부) : 캠페인 이름매칭 크로스워크(현업) · FBD 비용 롤업·ERP 결합(GOLD) · GA4 전환 결합(GOLD).
+-- ============================================================================
+
+
+-- ============================================================================
+-- STEP 6 — GA4 (트랙 B, 1차) 정제 적재 : BRONZE_GA4.events_YYYYMMDD → SILVER 5객체
+--   근거 : 07_GA4_SILVER_샤드통합 설계결정.md · 14_GA4_작업지시 프롬프트_20260714.md · 08 STEP 6 DDL.
+--   원천 : 1일 샤드 GN_DW.BRONZE_GA4."events_20260501" (287,025행, 소문자·인용 식별자).
+--          ⚠️ 전기간 샤드 입고 시 FROM 절을 ga4_union_shards(명시 30컬럼 UNION)로 교체하면 동일 로직 멱등 재적재.
+--   규칙 : 명시컬럼(SELECT * 금지) · session_traffic_source_last_click(UI 일치) · float=double, 세션/카운트=int_value ·
+--          event_date→TO_DATE(TRY_TO_NUMBER 금지) · 비가산 raw · 멱등 INSERT OVERWRITE · 메타 4+1컬럼.
+--   ⚠️ 병렬 금지(credential cache 락) — 아래 6개 INSERT 는 순차 실행.
+--   ⚠️ 단방향 : 5개 모두 BRONZE_GA4 만 참조(GA4_IDENTITY 도 GA4_EVENT 참조 금지 → session-fill CTE 재계산).
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- GA4 B-1 : GA4_TRAFFIC_SOURCE  (session/last-click DISTINCT — last-click 한정 그레인)
+--   ⚠️ GA4-검토(2026-07-14): first-touch(traffic_source)·collected(collected_traffic_source)는
+--      어트리뷰션 grain 상이 → 제외(혼재 시 1,175→6,736 팽창·DIM_GA_SOURCE fan-out).
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.GA4_TRAFFIC_SOURCE
+(UTM_SOURCE, UTM_MEDIUM, UTM_CAMPAIGN, UTM_CONTENT, UTM_TERM, SOURCE_MEDIUM,
+ XCHAN_SOURCE, XCHAN_MEDIUM, XCHAN_CAMPAIGN, DEFAULT_CHANNEL_GROUP,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT DISTINCT
+    NULLIF(NULLIF(s:manual_campaign:source::STRING,'(not set)'),'(direct)'),
+    NULLIF(NULLIF(NULLIF(s:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)'),
+    NULLIF(s:manual_campaign:campaign_name::STRING,'(not set)'),
+    NULLIF(s:manual_campaign:content::STRING,'(not set)'),
+    NULLIF(s:manual_campaign:term::STRING,'(not set)'),
+    CONCAT_WS(' / ',
+        NULLIF(NULLIF(s:manual_campaign:source::STRING,'(not set)'),'(direct)'),
+        NULLIF(NULLIF(NULLIF(s:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)')),
+    s:cross_channel_campaign:source::STRING,
+    s:cross_channel_campaign:medium::STRING,
+    s:cross_channel_campaign:campaign_name::STRING,
+    s:cross_channel_campaign:default_channel_group::STRING,
+    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM (
+    SELECT "session_traffic_source_last_click" AS s
+    FROM GN_DW.BRONZE_GA4."events_20260501"
+);
+
+-- ----------------------------------------------------------------------------
+-- GA4 B-2 : GA4_EVENT_DIM  (이벤트 정의 DISTINCT — event_params 승격)
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.GA4_EVENT_DIM
+(EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT DISTINCT EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
+    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM (
+    SELECT e."event_name" AS EVENT_NAME,
+        MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL)) AS EVENT_CATEGORY,
+        MAX(IFF(p.value:key::STRING='event_label',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS EVENT_LABEL,
+        MAX(IFF(p.value:key::STRING='event_action', p.value:value:string_value::STRING, NULL)) AS EVENT_ACTION
+    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    GROUP BY e."event_name", e."event_timestamp", e."user_pseudo_id", e."batch_ordering_id"
+);
+
+-- ----------------------------------------------------------------------------
+-- GA4 B-3 : GA4_DEVICE  (기기 DISTINCT — platform/device 파생)
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.GA4_DEVICE
+(DEVICE_TYPE, PLATFORM, DEVICE_CATEGORY, OS, BROWSER, LANGUAGE,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT DISTINCT
+    CASE WHEN "platform" IN ('ANDROID','IOS') THEN 'APP'
+         WHEN "device":category::STRING IN ('mobile','tablet') THEN 'M'
+         ELSE 'PC' END,
+    "platform",
+    "device":category::STRING,
+    "device":operating_system::STRING,
+    "device":browser::STRING,
+    "device":language::STRING,
+    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM GN_DW.BRONZE_GA4."events_20260501";
+
+-- ----------------------------------------------------------------------------
+-- GA4 B-4 : GA4_EVENT  (팩트 소스 — FLATTEN + param 승격 + 07 §5-A 세션 채움)
+--   2단계 세션 채움(설계결정서 §5-A): ① ev(PK GROUP BY, ga_session_id 승격)
+--   → ② sess(GA_SESSION_KEY 별 COUNT(DISTINCT user_id)=n_id·MAX(user_id)=sess_uid) → LEFT JOIN.
+--   ⚠️ COUNT(DISTINCT) OVER 미지원 → 반드시 집계 CTE 방식. n_id>=2 = CONFLICT(미채움).
+--   ⚠️ 원천 복합PK 중복군(16,187) 은 ev 의 PK GROUP BY 로 dedup → GA4_EVENT PK 유일.
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.GA4_EVENT
+(USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, BATCH_ORDERING_ID, EVENT_DATE, EVENT_DT, EVENT_TS,
+ USER_ID, GA_SESSION_ID, GA_SESSION_NUMBER, GA_SESSION_KEY, USER_ID_FILLED, ID_RESOLUTION,
+ SESSION_ENGAGED, ENGAGEMENT_TIME_MSEC, PAGE_LOCATION, PAGE_TITLE, PAGE_REFERRER,
+ EVENT_CATEGORY, EVENT_ACTION, EVENT_LABEL, PERCENT_SCROLLED, LINK_URL, LINK_TEXT,
+ DEVICE_TYPE, DEVICE_CATEGORY, OS, GEO_COUNTRY, GEO_CITY,
+ UTM_SOURCE, UTM_MEDIUM, UTM_CAMPAIGN, DEFAULT_CHANNEL_GROUP, PLATFORM, IS_ACTIVE_USER,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+WITH ev AS (
+    SELECT
+        e."user_pseudo_id"                                                  AS user_pseudo_id,
+        e."event_timestamp"                                                 AS event_timestamp,
+        e."event_name"                                                      AS event_name,
+        e."batch_ordering_id"                                               AS batch_ordering_id,
+        e."event_date"                                                      AS event_date,
+        e."user_id"                                                         AS user_id,
+        e."device"                                                          AS device,
+        e."geo"                                                             AS geo,
+        e."platform"                                                        AS platform,
+        e."is_active_user"                                                  AS is_active_user,
+        e."session_traffic_source_last_click"                              AS stlc,
+        MAX(IFF(p.value:key::STRING='ga_session_id',     p.value:value:int_value::NUMBER, NULL)) AS ga_session_id,
+        MAX(IFF(p.value:key::STRING='ga_session_number', p.value:value:int_value::NUMBER, NULL)) AS ga_session_number,
+        MAX(IFF(p.value:key::STRING='session_engaged',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS session_engaged,
+        MAX(IFF(p.value:key::STRING='engagement_time_msec', p.value:value:int_value::NUMBER, NULL)) AS engagement_time_msec,
+        MAX(IFF(p.value:key::STRING='page_location', p.value:value:string_value::STRING, NULL))     AS page_location,
+        MAX(IFF(p.value:key::STRING='page_title',    p.value:value:string_value::STRING, NULL))     AS page_title,
+        MAX(IFF(p.value:key::STRING='page_referrer', p.value:value:string_value::STRING, NULL))     AS page_referrer,
+        MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL))    AS event_category,
+        MAX(IFF(p.value:key::STRING='event_action',   p.value:value:string_value::STRING, NULL))    AS event_action,
+        MAX(IFF(p.value:key::STRING='event_label',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))   AS event_label,
+        MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))     AS percent_scrolled,
+        MAX(IFF(p.value:key::STRING='link_url',  p.value:value:string_value::STRING, NULL))         AS link_url,
+        MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))         AS link_text
+    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    GROUP BY
+        e."user_pseudo_id", e."event_timestamp", e."event_name", e."batch_ordering_id", e."event_date",
+        e."user_id", e."device", e."geo", e."platform", e."is_active_user", e."session_traffic_source_last_click"
+),
+sess AS (   -- 07 §5-A 세션 집계: COUNT(DISTINCT) OVER 미지원 → GROUP BY 로 산출
+    SELECT
+        user_pseudo_id || '-' || ga_session_id AS ga_session_key,
+        COUNT(DISTINCT user_id)                 AS n_id,
+        MAX(user_id)                            AS sess_uid
+    FROM ev
+    WHERE ga_session_id IS NOT NULL
+    GROUP BY user_pseudo_id || '-' || ga_session_id
+)
+SELECT
+    ev.user_pseudo_id,
+    ev.event_timestamp,
+    ev.event_name,
+    ev.batch_ordering_id,
+    ev.event_date,
+    TO_DATE(ev.event_date,'YYYYMMDD'),
+    TO_TIMESTAMP(ev.event_timestamp/1000000),
+    ev.user_id,
+    ev.ga_session_id,
+    ev.ga_session_number,
+    IFF(ev.ga_session_id IS NULL, NULL, ev.user_pseudo_id || '-' || ev.ga_session_id),
+    CASE WHEN ev.user_id IS NOT NULL                     THEN ev.user_id       -- DIRECT: 원본 보존
+         WHEN ev.ga_session_id IS NULL                   THEN NULL             -- 세션불명 → 미채움
+         WHEN s.n_id = 1                                 THEN s.sess_uid       -- SESSION_FILL
+         ELSE NULL END,                                                        -- CONFLICT(n>=2)/UNRESOLVED
+    CASE WHEN ev.user_id IS NOT NULL                     THEN 'DIRECT'
+         WHEN ev.ga_session_id IS NULL                   THEN 'UNRESOLVED'
+         WHEN s.n_id = 1                                 THEN 'SESSION_FILL'
+         WHEN s.n_id >= 2                                THEN 'CONFLICT'
+         ELSE 'UNRESOLVED' END,
+    ev.session_engaged,
+    ev.engagement_time_msec,
+    ev.page_location,
+    ev.page_title,
+    ev.page_referrer,
+    ev.event_category,
+    ev.event_action,
+    ev.event_label,
+    ev.percent_scrolled,
+    ev.link_url,
+    ev.link_text,
+    CASE WHEN ev.platform IN ('ANDROID','IOS') THEN 'APP'
+         WHEN ev.device:category::STRING IN ('mobile','tablet') THEN 'M' ELSE 'PC' END,
+    ev.device:category::STRING,
+    ev.device:operating_system::STRING,
+    ev.geo:country::STRING,
+    ev.geo:city::STRING,
+    NULLIF(NULLIF(ev.stlc:manual_campaign:source::STRING,'(not set)'),'(direct)'),
+    NULLIF(NULLIF(NULLIF(ev.stlc:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)'),
+    NULLIF(ev.stlc:manual_campaign:campaign_name::STRING,'(not set)'),
+    ev.stlc:cross_channel_campaign:default_channel_group::STRING,
+    ev.platform,
+    ev.is_active_user,
+    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM ev
+LEFT JOIN sess s
+    ON ev.ga_session_id IS NOT NULL
+   AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id;
+
+-- ----------------------------------------------------------------------------
+-- GA4 B-5 : GA4_IDENTITY  (신원 1행/pseudo — Q1 접두사 분기 + 세션 채움)
+--   ⚠️ 단방향 유지 : GA4_EVENT 참조 금지 → BRONZE 에서 세션 채움 CTE 재계산.
+--   PK=USER_PSEUDO_ID → pseudo 당 1행. 채움 회원번호는 MAX 로 결정적 선택(다중 로그인 pseudo 방어).
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.GA4_IDENTITY
+(USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MBER_NO, ONCE_MBER_NO, ID_RESOLUTION,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+WITH ev AS (
+    SELECT
+        e."user_pseudo_id" AS user_pseudo_id,
+        e."user_id"        AS user_id,
+        MAX(IFF(p.value:key::STRING='ga_session_id', p.value:value:int_value::NUMBER, NULL)) AS ga_session_id
+    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    GROUP BY e."user_pseudo_id", e."event_timestamp", e."event_name", e."batch_ordering_id", e."user_id"
+),
+sess AS (
+    SELECT user_pseudo_id || '-' || ga_session_id AS ga_session_key,
+           COUNT(DISTINCT user_id) AS n_id, MAX(user_id) AS sess_uid
+    FROM ev WHERE ga_session_id IS NOT NULL
+    GROUP BY user_pseudo_id || '-' || ga_session_id
+),
+filled AS (
+    SELECT
+        ev.user_pseudo_id,
+        CASE WHEN ev.user_id IS NOT NULL              THEN ev.user_id
+             WHEN ev.ga_session_id IS NOT NULL AND s.n_id = 1 THEN s.sess_uid
+             ELSE NULL END AS member_id,
+        CASE WHEN ev.user_id IS NOT NULL              THEN 'DIRECT'
+             WHEN ev.ga_session_id IS NOT NULL AND s.n_id = 1 THEN 'SESSION_FILL'
+             ELSE NULL END AS id_resolution
+    FROM ev
+    LEFT JOIN sess s
+        ON ev.ga_session_id IS NOT NULL
+       AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id
+)
+SELECT
+    user_pseudo_id,
+    MAX(member_id)                                                                 AS ga_member_id,
+    CASE WHEN MAX(member_id) ILIKE 'S%' THEN 'ONCE' ELSE 'FDRM' END                 AS member_type,
+    IFF(MAX(member_id) ILIKE 'S%', NULL, MAX(member_id))                            AS mber_no,
+    IFF(MAX(member_id) ILIKE 'S%', MAX(member_id), NULL)                            AS once_mber_no,
+    IFF(MIN(IFF(id_resolution='DIRECT',0,1)) = 0, 'DIRECT', 'SESSION_FILL')         AS id_resolution,
+    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM filled
+WHERE member_id IS NOT NULL
+GROUP BY user_pseudo_id;
+
+-- ============================================================================
+-- STEP 6 완료 — GA4 5객체 적재(멱등 INSERT OVERWRITE). DQ 게이트 = STEP 6-DQ 참조.
+--   PoC(1일 샤드 events_20260501). 전기간 입고 후 FROM 절 ga4_union_shards 교체·재실행.
+--   세션 채움(07 §5-A): user_id 원본 채움률 4.22% → USER_ID_FILLED/GA4_IDENTITY 로 커버리지 개선(SESSION_FILL 은 추론값).
+-- ============================================================================
+
+
+-- ============================================================================
+-- STEP 7 : S-7 신원 브리지 IDENTITY_MEMBER_XREF (교차소스 유일 예외)
+-- ----------------------------------------------------------------------------
+--   목적 : GA 신원(GA4_IDENTITY) ↔ CRM 회원(CRM_MEMBER) 해소.
+--   조인 : GA_MEMBER_ID = MEMBER_DK 결정적 exact 매칭(실측 1,348/1,348=100%, fan-out 0, type불일치 0).
+--   grain: 1행/USER_PSEUDO_ID. 멱등 INSERT OVERWRITE.
+--   미매칭 보존(LEFT JOIN) → MATCH_METHOD='UNMATCHED'/CONFIDENCE='NONE'.
+--   CHILD_CODE 제외(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피 — 결연아동은 GOLD URL파싱/결연팩트에서).
+--   ⚠️ 단방향 : SILVER GA4_IDENTITY·CRM_MEMBER 만 참조.
+-- ----------------------------------------------------------------------------
+INSERT OVERWRITE INTO GN_DW.SILVER.IDENTITY_MEMBER_XREF
+(USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MEMBER_DK, HOMEPAGE_ID, ID_RESOLUTION,
+ MATCH_METHOD, MATCH_CONFIDENCE,
+ DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
+SELECT
+    g.USER_PSEUDO_ID,
+    g.GA_MEMBER_ID,
+    g.MEMBER_TYPE,
+    m.MEMBER_DK,
+    m.HMPG_ID                                                              AS homepage_id,
+    g.ID_RESOLUTION,
+    IFF(m.MEMBER_DK IS NOT NULL, 'MEMBER_ID_EXACT', 'UNMATCHED')           AS match_method,
+    CASE WHEN m.MEMBER_DK IS NULL          THEN 'NONE'
+         WHEN g.ID_RESOLUTION = 'DIRECT'   THEN 'HIGH'
+         ELSE 'MEDIUM' END                                                 AS match_confidence,
+    'GA4+CRM', 'SILVER.GA4_IDENTITY+CRM_MEMBER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM GN_DW.SILVER.GA4_IDENTITY g
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
+    ON g.GA_MEMBER_ID = m.MEMBER_DK;
+
+-- STEP 7 완료 — 신원 브리지 적재(멱등). DQ = 아래 STEP 7-DQ.
+-- ----------------------------------------------------------------------------
+-- ★ GOLD 소비 계약 (consumption contract) — 후속 오류방지 필수준수 (2026-07-14 실측근거)
+--   [C1] 익명 다수 : GA4_EVENT distinct pseudo 27,840 중 신원해소 1,348(4.84%). 95.16% 익명.
+--        → FACT_GA_BEHAVIOR 는 XREF 에 반드시 LEFT JOIN. INNER JOIN 금지(이벤트 95% silent 소실).
+--        미매칭/익명 pseudo → DIM_MEMBER_IDENTITY '-1 UNKNOWN' IDENTITY_SK 로 귀속.
+--   [C2] grain 구분 : XREF=pseudo grain(1,348행) ≠ DIM_MEMBER_IDENTITY=member grain(distinct MEMBER_DK 1,274).
+--        → DIM_MEMBER_IDENTITY 구축 시 MEMBER_DK 로 DISTINCT/GROUP BY 필수(안 하면 회원지표 중복계상).
+--   [C3] UNMATCHED 처리 : DIM_MEMBER_IDENTITY.MEMBER_DK 는 NOT NULL.
+--        → 회원차원 구축은 WHERE MATCH_METHOD='MEMBER_ID_EXACT' 로 UNMATCHED 제외(제약위반 방지).
+--        UNMATCHED pseudo 는 팩트 IDENTITY_SK 해소에서만 -1 로 흡수.
+--   [C4] 조인키 정합 : MEMBER_DK 최대길이 9(≤VARCHAR10) · 양측 공백 0 (PoC 실측). 전기간 재적재 시 재검증.
+-- ============================================================================
+
+
+-- ============================================================================
+-- STEP 7-DQ : 신원 브리지 검증 (2026-07-14 실행 통과 — 실측 쿼리 정본)
+-- ----------------------------------------------------------------------------
+-- (A) 사전 진단 — 적재 前 매칭률·fan-out·type정합 측정 (실측: 1,348/1,348=100%, fan-out 0, type불일치 0)
+WITH ga AS (
+  SELECT USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, ID_RESOLUTION
+  FROM GN_DW.SILVER.GA4_IDENTITY
+  WHERE GA_MEMBER_ID IS NOT NULL
+)
+SELECT
+  COUNT(*)                                                                 AS ga_ids_total,
+  COUNT(DISTINCT ga.GA_MEMBER_ID)                                          AS ga_distinct_member_ids,
+  SUM(IFF(m.MEMBER_DK IS NOT NULL,1,0))                                    AS matched_rows,
+  COUNT(DISTINCT IFF(m.MEMBER_DK IS NOT NULL, ga.GA_MEMBER_ID, NULL))      AS matched_distinct_ids,
+  SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.ID_RESOLUTION='DIRECT',1,0))      AS matched_direct,
+  SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.ID_RESOLUTION='SESSION_FILL',1,0)) AS matched_sessionfill,
+  SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.MEMBER_TYPE <> m.MEMBER_TYPE,1,0)) AS type_mismatch
+FROM ga
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
+  ON ga.GA_MEMBER_ID = m.MEMBER_DK;
+
+-- (B) 적재 후 DQ 게이트 — 행수대사·PK유일·fan-out·매칭/신뢰도 분포·로직 무결성
+--     실측 통과: xref_rows=ga4_identity_rows=1348 / distinct_pk=1348·pk_null=0
+--               / matched=1348·unmatched=0 / conf_high=1348·conf_medium=0
+--               / bad_matched_null_dk=0 / distinct_members=1274
+SELECT
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF)                                     AS xref_rows,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.GA4_IDENTITY)                                             AS ga4_identity_rows,
+  (SELECT COUNT(DISTINCT USER_PSEUDO_ID) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF)               AS distinct_pk,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE USER_PSEUDO_ID IS NULL)        AS pk_null,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE MATCH_METHOD='MEMBER_ID_EXACT') AS matched,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE MATCH_METHOD='UNMATCHED')       AS unmatched,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE MATCH_CONFIDENCE='HIGH')        AS conf_high,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE MATCH_CONFIDENCE='MEDIUM')      AS conf_medium,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF
+     WHERE MATCH_METHOD='MEMBER_ID_EXACT' AND MEMBER_DK IS NULL)                               AS bad_matched_null_dk,
+  (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF
+     WHERE MEMBER_DK IS NOT NULL)                                                              AS distinct_members;
+
+-- STEP 7-DQ 완료 — 전 항목 통과(2026-07-14). 전기간 GA4 샤드 입고 후 재적재 시 재실행.
+-- ============================================================================
+
+
+-- ============================================================================
+-- STEP 8 : 전체 SILVER 통합 검증 (cross-reference 정합 · 순서 6, §5 게이트 전수) — 2026-07-14 실행
+-- ----------------------------------------------------------------------------
+-- DQ-1 (PK/grain 유일성) : SILVER 30객체 전수 dup=0 통과. ERP_BIZ_TARGET=0행(스키마-only) 제외.
+--   · 신규(S-6/S-7) 9종 + CRM 21종 = 30. conform dim 3종(GA4_DEVICE·EVENT_DIM·TRAFFIC_SOURCE)은
+--     전체 속성조합 NULL-safe 키로 유일(NULL-concat 아티팩트 배제).
+-- DQ-3 (조인 fan-out) : DQ-1에서 부모키 전수 유일 입증 → 자식→부모 참조조인 fan-out 원천 불가(논리 충족).
+--   · S-7 브리지 실측 재확인 : GA4_IDENTITY 1,348 → XREF 1,348 (행 불변).
+-- ----------------------------------------------------------------------------
+-- DQ-2 (cross-reference orphan) : 자식 참조값 중 부모 부재 건수(0=정합).
+--   실측 결과(2026-07-14):
+--     XREF.MEMBER_DK→CRM_MEMBER ............... 0 / 1,348      ✅
+--     ERP_BUDGET.ITEM_DK→ERP_BUDGET_ITEM ...... 0 / 24,480     ✅
+--     SPONSOR_RELATION.MBER_NO→CRM_MEMBER ..... 0 / 862,610    ✅
+--     EVENT_PARTICIPATION.EVENT_KEY→CRM_EVENT . 263,611 / 1,134,126 (distinct 53키) ⚠️ ADMIN 온라인행사 미입고 범위갭(키형식 정상·NULL 0)
+--     EVENT_PARTICIPATION.MBER_NO→CRM_MEMBER .. 9,480 / 1,134,126 (distinct 7,713·0.8%) ⚠️ 탈퇴/비CRM 참가자 추정(NULL 0)
+--   ▸ 통합 앵커(S-7 identity·ERP·결연)는 전부 정합. ⚠️ 2건은 S-7 무관·기존 CRM 적재분·부모행 부재(키오류 아님).
+SELECT 'XREF.MEMBER_DK→CRM_MEMBER' AS link, COUNT(*) AS child_rows,
+       SUM(IFF(p.MEMBER_DK IS NULL,1,0)) AS orphans
+FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF c
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER p ON c.MEMBER_DK = p.MEMBER_DK
+WHERE c.MATCH_METHOD='MEMBER_ID_EXACT'
+UNION ALL
+SELECT 'ERP_BUDGET.ITEM_DK→ERP_BUDGET_ITEM', COUNT(*), SUM(IFF(p.BUDGET_ITEM_DK IS NULL,1,0))
+FROM GN_DW.SILVER.ERP_BUDGET c
+LEFT JOIN GN_DW.SILVER.ERP_BUDGET_ITEM p ON c.BUDGET_ITEM_DK = p.BUDGET_ITEM_DK
+UNION ALL
+SELECT 'SPONSOR_RELATION.MBER_NO→CRM_MEMBER', COUNT(*), SUM(IFF(p.MEMBER_DK IS NULL,1,0))
+FROM GN_DW.SILVER.CRM_SPONSOR_RELATION c
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER p ON c.MBER_NO = p.MEMBER_DK
+UNION ALL
+SELECT 'EVENT_PARTICIPATION.EVENT_KEY→CRM_EVENT', COUNT(*), SUM(IFF(p.EVENT_KEY IS NULL,1,0))
+FROM GN_DW.SILVER.CRM_EVENT_PARTICIPATION c
+LEFT JOIN GN_DW.SILVER.CRM_EVENT p ON c.EVENT_KEY = p.EVENT_KEY
+UNION ALL
+SELECT 'EVENT_PARTICIPATION.MBER_NO→CRM_MEMBER', COUNT(*), SUM(IFF(p.MEMBER_DK IS NULL,1,0))
+FROM GN_DW.SILVER.CRM_EVENT_PARTICIPATION c
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER p ON c.MBER_NO = p.MEMBER_DK
+ORDER BY orphans DESC, link;
+
+-- STEP 8 완료 — 통합검증. DQ-1/DQ-3 전수 통과 · DQ-2 앵커 정합.
+--   ⚠️ EVENT_PARTICIPATION orphan 2건 처리 결정(최소오류 방향, 2026-07-14):
+--     · GOLD 소비 시 INNER JOIN 금지(263,611행 silent 소실 위험). SILVER placeholder 날조 금지(오염).
+--     · 확정 = GOLD DIM_EVENT '-1 UNKNOWN' 멤버 + LEFT JOIN 으로 참여행 100% 보존→미상 귀속.
+--       ADMIN 온라인행사 입고 시 53개 EVENT_KEY 가 실제 이벤트로 자동 치환(소급 정정). SILVER 무변경.
+--     · MBER_NO orphan 9,480(탈퇴/비CRM)도 동일 패턴(-1 UNKNOWN 회원) 권장.
+-- ============================================================================
+
+

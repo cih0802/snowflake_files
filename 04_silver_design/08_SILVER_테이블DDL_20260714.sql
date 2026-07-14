@@ -410,3 +410,305 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
     DW_BATCH_ID         VARCHAR,
     PRIMARY KEY (CD_ID, DTL_CD_ID)
 ) COMMENT = '코드→라벨 사전. (CD_ID,DTL_CD_ID) 복합키';
+
+-- ============================================================================
+-- STEP 4 — ERP (트랙 C, 2차) : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER 3객체
+--   근거 : 05_SILVER_작업계획_ERP전용 · 11_SILVER_블로커_triage_Q1-Q16
+--   실측(2026-07-14) : 원장 2,041행 = 지출1,875 + 수입165 + TOTAL 1(사전집계 요약행 → 제외).
+--                      full-hierarchy DISTINCT = 행수 → 각 행이 유일 예산과목(세세목).
+--   원장 구조 : 차원 10 + 총액 4 + 월별 48(편성YEAR_BDGT/추경CHN/조정ADJ/집행EXEC × 12개월).
+--   설계 : ITEM(마스터) + BUDGET(월 long 언피벗) + BIZ_TARGET(원천부재 → 스키마-only).
+--   키 : BUDGET_ITEM_DK = MD5(연도|수입지출|예산단위|장|관|항|목|목세|세세목|재원) — DIM/FACT 동일식.
+-- ============================================================================
+
+-- ERP 1: ERP_BUDGET_ITEM (예산과목 마스터 → DIM_BUDGET_ITEM)
+CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
+    BUDGET_ITEM_DK      VARCHAR         NOT NULL,   -- MD5 해시 대체키
+    BUDGET_YEAR         NUMBER(4,0),
+    INCOME_EXPENSE_DIV  VARCHAR,                    -- 수입/지출
+    BUDGET_UNIT_NM      VARCHAR,                    -- 예산단위(=조직명, 코드 없음)
+    JANG_NM             VARCHAR,                    -- 예산과목 1단계 장
+    KWAN_NM             VARCHAR,                    -- 2단계 관
+    HANG_NM             VARCHAR,                    -- 3단계 항
+    MOK_NM              VARCHAR,                    -- 4단계 목
+    DTL_ITEM_NM         VARCHAR,                    -- 5단계 세목
+    SUBDTL_ITEM_NM      VARCHAR,                    -- 6단계 세세목
+    FUND_SOURCE_NM      VARCHAR,                    -- 재원
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (BUDGET_ITEM_DK)
+) COMMENT = '예산과목 마스터(예산단위×장/관/항/목/세목/세세목×재원). TOTAL 요약행 제외. → DIM_BUDGET_ITEM';
+
+-- ERP 2: ERP_BUDGET (월별 편성/추경/조정/집행 long → FBD)
+CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
+    BUDGET_ITEM_DK      VARCHAR         NOT NULL,   -- → ERP_BUDGET_ITEM FK
+    BUDGET_YEAR         NUMBER(4,0),
+    MONTH_NO            NUMBER(2,0)     NOT NULL,   -- 1~12
+    MONTH_KEY           VARCHAR(6),                 -- 'YYYYMM'
+    YEAR_BUDGET_AMT     NUMBER(38,0),               -- 편성(연예산) 원단위
+    CHN_BUDGET_AMT      NUMBER(38,0),               -- 추경 원단위
+    ADJ_BUDGET_AMT      NUMBER(38,0),               -- 조정 원단위
+    EXEC_AMT            NUMBER(38,0),               -- 집행 원단위
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (BUDGET_ITEM_DK, MONTH_NO)
+) COMMENT = '예산 편성/추경/조정/집행 월 grain(wide→long). 금액 원단위. → FBD(편성/집행). 모금성비용·광고비는 AGENCY 보강(E-1)';
+
+-- ERP 3: ERP_BIZ_TARGET (사업목표 → FTG-B) — ⛔ 원천 부재(E-6): 스키마-only, 적재 보류
+CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BIZ_TARGET (
+    BIZ_TARGET_DK       VARCHAR         NOT NULL,
+    TARGET_YEAR         NUMBER(4,0),
+    MONTH_NO            NUMBER(2,0),
+    MONTH_KEY           VARCHAR(6),
+    ORG_NM              VARCHAR,                    -- 조직(이름, 코드 없음)
+    SPONSOR_BIZ_NM      VARCHAR,                    -- 후원사업
+    CAMPAIGN_NM         VARCHAR,                    -- 캠페인(연결키 부재 Q10 — nullable)
+    TARGET_AMT          NUMBER(38,0),               -- 연/추경 (누계)목표
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (BIZ_TARGET_DK)
+) COMMENT = 'FTG-B 사업목표. ⛔원천부재(E-6): 원장≠사업목표 → 스키마-only, 적재 보류(현업 사업계획 원천 대기)';
+
+-- ============================================================================
+-- STEP 5 — AGENCY (트랙 D, 3차) : BRONZE_AGENCY 3테이블 → SILVER 2객체 (AGENCY_COST는 리뷰 후 제거→GOLD)
+--   근거 : 06_SILVER_작업계획_AGENCY전용 · 11_SILVER_블로커_triage
+--   실측(2026-07-14) 설계결정 6종 확정 :
+--     ① _SOURCE_SYSTEM = 테이블 기반(DIGITAL/REBROADCAST/VIDEO) — 행단위 출처 플래그 없음(A-2/Q9)
+--     ② 인입콜 : REBRDC.INBOUND_CALL_CNT=TEXT(비수치 2/2064) → TRY_TO_NUMBER · VIDEO=NUMBER
+--     ③ 전환 명/건 : DGT GA_CONV_MBER_CNT(명)/CONV_VU_CNT(VU) · REBRDC DVLP_MBER_CNT/DVLP_CNT · VIDEO CONV_CALL_CNT
+--     ④ measure 불균일 : 노출·클릭=DGT만 / 광고비=GA_AD_COST·BRDC_SCHDL_COST(편성)·ACTL_PUR_AD_COST_KRW(집행) → NULL 패딩
+--     ⑤ 캠페인명 : DGT.CMPGN_NM(100%) · VIDEO.MKT_CMPGN_NM(98.4%) · REBRDC=컬럼부재(방송명 BRDC_NM 대체)
+--     ⑥ 파생(CPA/CTR/CVR/CPC/CPM/VTR) : SILVER 미적재(원천 base만 보존) — 재계산은 GOLD/SV(P2)
+--   그레인 : AD_PERFORMANCE = 원천 1행(UNION, 총 235,572) · CREATIVE/COST = 파생 정제.
+-- ============================================================================
+
+-- AGENCY 1: AGENCY_AD_CREATIVE (매체·소재·CM위치·초수·유형 → DIM_AD_CREATIVE)
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
+    CREATIVE_DK         VARCHAR         NOT NULL,   -- MD5(소스+매체+소재+유형+CM위치+초수)
+    SOURCE_SYSTEM       VARCHAR         NOT NULL,   -- DIGITAL/REBROADCAST/VIDEO
+    MEDIA_CHANNEL_NM    VARCHAR,                    -- 매체/채널
+    CREATIVE_NM         VARCHAR,                    -- 소재(DGT.MATR/REBRDC.BRDC_NM/VIDEO.MATR_NM)
+    CREATIVE_TYPE_NM    VARCHAR,                    -- 소재유형/RT유형/캠페인유형
+    CM_AREA_NM          VARCHAR,                    -- CM위치(VIDEO)
+    AD_SEC_NM           VARCHAR,                    -- 초수(VIDEO)
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (CREATIVE_DK)
+) COMMENT = '광고 소재/매체 차원(3소스 UNION distinct). → DIM_AD_CREATIVE. 소스별 필드 산재→NULL 허용';
+
+-- AGENCY 2: AGENCY_AD_PERFORMANCE (3소스 정제→UNION 광고성과 → FAD)
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
+    SOURCE_SYSTEM       VARCHAR         NOT NULL,   -- DIGITAL/REBROADCAST/VIDEO(②⑤)
+    AD_DATE             DATE,
+    AD_YEAR             NUMBER(4,0),
+    AD_MONTH            NUMBER(2,0),
+    CAMPAIGN_NM         VARCHAR,                    -- DGT.CMPGN_NM/VIDEO.MKT_CMPGN_NM/REBRDC=NULL(⑤)
+    UPPER_CAMPAIGN_NM   VARCHAR,
+    MEDIA_CHANNEL_NM    VARCHAR,
+    DEVICE_NM           VARCHAR,                    -- DGT만
+    CREATIVE_NM         VARCHAR,
+    PROGRAM_NM          VARCHAR,                    -- REBRDC.BRDC_NM/VIDEO.SCHDL_NM
+    IMPRESSION_CNT      NUMBER(38,4),               -- 노출: DGT만(④)
+    CLICK_CNT           NUMBER(38,4),               -- 클릭: DGT만(④)
+    CONV_MEMBER_CNT     NUMBER(38,4),               -- 전환/개발 명(③)
+    CONV_UNIT_CNT       NUMBER(38,4),               -- 전환 VU/건(③, 비건수 주의)
+    INBOUND_CALL_CNT    NUMBER(38,4),               -- REBRDC(TRY_TO_NUMBER)+VIDEO(②)
+    CONV_CALL_CNT       NUMBER(38,4),               -- VIDEO 전환콜(별개 measure)
+    AD_CNT              NUMBER(38,4),               -- REBRDC/VIDEO 광고횟수
+    AD_COST             NUMBER(38,4),               -- 광고비(소스별 컬럼 상이)
+    COST_TYPE           VARCHAR,                    -- GA/편성(REBRDC)/집행(VIDEO)
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR
+) COMMENT = '광고성과 3소스 UNION(원천 1행 grain, 총 235,572). 파생 미적재(⑥). → FAD. GA4 전환 결합은 GOLD';
+
+-- AGENCY 3: AGENCY_COST — ❌ 제거(2026-07-14 아키텍처 리뷰): 월 롤업은 master §3상 GOLD 소관 ·
+--   AD_PERFORMANCE.AD_COST+COST_TYPE와 중복 · SILVER→SILVER 파생(단방향 위반). 비용은 성과팩트 원천 grain 보존, 롤업/ERP결합은 GOLD FBD.
+
+
+-- ============================================================================
+-- STEP 6 — GA4 (트랙 B, 1차) : BRONZE_GA4.events_YYYYMMDD 샤드 UNION → SILVER 5객체
+--   근거 : 07_GA4_SILVER_샤드통합 설계결정.md · 14_GA4_작업지시 프롬프트_20260714.md
+--   착수 게이트(§2) : 현재 1일 샤드 events_20260501(287,025행)만 입고 → PoC(DDL·FLATTEN 검증).
+--                     전기간 샤드 입고 후 동일 DDL·적재로 멱등 재적재.
+--   DDL 초안 이관원 : _archive/09_SILVER_DDL_20260702.sql (GA4 5테이블).
+--   규칙 : 명시 30컬럼(SELECT * 금지) · session_traffic_source_last_click(UI 일치) ·
+--          비가산 지표 raw 적재(율/평균은 GOLD) · 메타 4+1컬럼 · 멱등 INSERT OVERWRITE(09).
+--   ⚠️ all-NULL 잡컬럼(app_info·event_dimensions·publisher)은 NUMBER — 매핑 제외.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- GA4 1: GA4_TRAFFIC_SOURCE  (DISTINCT 그레인 — PK 없음)
+--   ⚠️ 그레인 = session_traffic_source_last_click 한정(last-click). first-touch(traffic_source)·
+--      collected(collected_traffic_source)는 어트리뷰션 모델·grain 상이 → 본 차원 제외(혼재 시
+--      그레인 팽창·DIM_GA_SOURCE fan-out). 필요 시 별도 유저/이벤트 grain 차원으로(GOLD). (GA4-검토 2026-07-14)
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_TRAFFIC_SOURCE (
+    UTM_SOURCE              VARCHAR,                 -- 센티넬 NULLIF((not set)/(direct))
+    UTM_MEDIUM              VARCHAR,                 -- 센티넬 NULLIF((not set)/(none)/(direct))
+    UTM_CAMPAIGN            VARCHAR,
+    UTM_CONTENT             VARCHAR,
+    UTM_TERM                VARCHAR,
+    SOURCE_MEDIUM           VARCHAR,                 -- 파생 source / medium
+    XCHAN_SOURCE            VARCHAR,                 -- cross_channel_campaign(동일 last-click variant)
+    XCHAN_MEDIUM            VARCHAR,
+    XCHAN_CAMPAIGN          VARCHAR,
+    DEFAULT_CHANNEL_GROUP   VARCHAR,                 -- ⚠️정규화 금지(정상 라벨)
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE         VARCHAR,
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS            TIMESTAMP_NTZ,
+    DW_BATCH_ID             VARCHAR
+) COMMENT = 'GA 트래픽소스(session/last-click 한정). 그레인=source/medium/campaign/content/term(+xchan/channel_group) DISTINCT → DIM_GA_SOURCE. first-touch·collected는 grain 상이로 제외(GA4-검토)';
+
+-- ----------------------------------------------------------------------------
+-- GA4 2: GA4_EVENT_DIM  (DISTINCT 그레인 — 키 NULL 가능 → PK 없음)
+--   ⚠️ GA-2(카디널리티 리스크): event_label 혼합타입(문자+숫자)이 고카디널리티면 전기간 확장 시
+--      본 차원이 사실상 팩트化(1일 실측 event_name 49개 대비 3,633행). GOLD DIM_GA_EVENT 는
+--      event_name(+안정 category/action) 키로 conform, 변동성 label 은 팩트측(GA4_EVENT.EVENT_LABEL) 유지 권고.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT_DIM (
+    EVENT_NAME          VARCHAR(200)    NOT NULL,
+    EVENT_CATEGORY      VARCHAR,
+    EVENT_LABEL         VARCHAR,                     -- ⚠️혼합타입 → COALESCE(string,int)
+    EVENT_ACTION        VARCHAR,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR
+) COMMENT = 'GA 이벤트분류. 그레인=event_name×category×label×action DISTINCT (PK 없음) → DIM_GA_EVENT';
+
+-- ----------------------------------------------------------------------------
+-- GA4 3: GA4_DEVICE  (DISTINCT 그레인 — 키 NULL 가능 → PK 없음)
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_DEVICE (
+    DEVICE_TYPE         VARCHAR(10)     NOT NULL,   -- PC/M/APP(파생) → DIM_DEVICE 핵심
+    PLATFORM            VARCHAR(50),                 -- WEB/ANDROID/IOS (O2 conform 대기)
+    DEVICE_CATEGORY     VARCHAR,
+    OS                  VARCHAR,
+    BROWSER             VARCHAR,
+    LANGUAGE            VARCHAR,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR
+) COMMENT = 'GA 디바이스. 그레인=device_type×platform×category DISTINCT (PK 없음) → DIM_DEVICE(GA분)';
+
+-- ----------------------------------------------------------------------------
+-- GA4 4: GA4_EVENT  (이벤트 팩트 소스 — 복합 PK)
+--   ⚠️ GA-1: 원천 샤드에 복합키 중복군 존재(1일 실측 16,187군) → 적재는 PK GROUP BY 로 dedup.
+--   ⚠️ 07 §5-A session-fill: 원본 USER_ID 불변 보존 + 파생 USER_ID_FILLED/ID_RESOLUTION 신설.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
+    USER_PSEUDO_ID          VARCHAR(200)    NOT NULL,   -- 세션 스파인
+    EVENT_TIMESTAMP         NUMBER          NOT NULL,   -- UTC microsec(원본, 불변)
+    EVENT_NAME              VARCHAR(200)    NOT NULL,
+    BATCH_ORDERING_ID       NUMBER          NOT NULL,
+    EVENT_DATE              VARCHAR(8),                  -- 원본 YYYYMMDD(date-shard)
+    EVENT_DT                DATE,                        -- 파생: TO_DATE(event_date,'YYYYMMDD')
+    EVENT_TS                TIMESTAMP_NTZ,               -- 파생: TO_TIMESTAMP(event_timestamp/1e6)
+    USER_ID                 VARCHAR(10),                 -- CRM 회원번호(Q1) ⚠️VARCHAR·원본 불변
+    GA_SESSION_ID           NUMBER,                      -- event_params 승격
+    GA_SESSION_NUMBER       NUMBER,
+    GA_SESSION_KEY          VARCHAR,                     -- 파생: user_pseudo_id∥'-'∥ga_session_id (세션 자연키)
+    USER_ID_FILLED          VARCHAR(10),                 -- 파생: 세션 전파 회원번호(07 §5-A) — 회원 귀속용
+    ID_RESOLUTION           VARCHAR(20),                 -- DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT
+    SESSION_ENGAGED         VARCHAR(5),                  -- ⚠️혼합타입 → COALESCE
+    ENGAGEMENT_TIME_MSEC    NUMBER,                      -- 비가산 raw(O1)
+    PAGE_LOCATION           VARCHAR,
+    PAGE_TITLE              VARCHAR,
+    PAGE_REFERRER           VARCHAR,
+    EVENT_CATEGORY          VARCHAR,
+    EVENT_ACTION            VARCHAR,
+    EVENT_LABEL             VARCHAR,                     -- ⚠️혼합타입 → COALESCE
+    PERCENT_SCROLLED        NUMBER,
+    LINK_URL                VARCHAR,
+    LINK_TEXT               VARCHAR,
+    DEVICE_TYPE             VARCHAR(10),                 -- 파생 PC/M/APP
+    DEVICE_CATEGORY         VARCHAR,
+    OS                      VARCHAR,
+    GEO_COUNTRY             VARCHAR,
+    GEO_CITY                VARCHAR,
+    UTM_SOURCE              VARCHAR,                     -- 센티넬 NULLIF
+    UTM_MEDIUM              VARCHAR,
+    UTM_CAMPAIGN            VARCHAR,
+    DEFAULT_CHANNEL_GROUP   VARCHAR,
+    PLATFORM                VARCHAR(50),
+    IS_ACTIVE_USER          BOOLEAN,
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE         VARCHAR,
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS            TIMESTAMP_NTZ,
+    DW_BATCH_ID             VARCHAR,
+    PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, BATCH_ORDERING_ID)
+) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 비가산(engagement_time_msec 등)=raw 적재(O1). 원천 PK 중복은 적재 GROUP BY dedup(GA-1)';
+
+-- ----------------------------------------------------------------------------
+-- GA4 5: GA4_IDENTITY  (신원 — Q1 접두사 분기, 세션 채움 반영)
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_IDENTITY (
+    USER_PSEUDO_ID      VARCHAR(200)    NOT NULL,   -- 세션 스파인
+    GA_MEMBER_ID        VARCHAR(10),                 -- = user_id_filled(세션 채움 후 회원번호) ⚠️VARCHAR
+    MEMBER_TYPE         VARCHAR(10),                 -- 파생: 'S%'→ONCE else FDRM
+    MBER_NO             VARCHAR(10),                 -- ※비강제 FK→TM_MM_FDRM_MBER_INFO.MBER_NO(파생)
+    ONCE_MBER_NO        VARCHAR(10),                 -- ※비강제 FK→TM_MM_ONCE_MBER_INFO.ONCE_MBER_NO(파생)
+    ID_RESOLUTION       VARCHAR(20),                 -- DIRECT/SESSION_FILL (신뢰도 노출)
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (USER_PSEUDO_ID)
+) COMMENT = 'GA 신원(Q1 구조확정) → S-7 IDENTITY_MEMBER_XREF. 접두사 분기: S%→ONCE_MBER_NO / else→MBER_NO. 세션 채움(07 §5-A) 반영';
+
+-- STEP 6 (DDL) 완료 — GA4 5객체. 적재는 09 STEP 6 참조.
+
+
+-- ============================================================================
+-- STEP 7 (DDL) — S-7 신원 브리지 (교차소스 유일 예외)
+-- ----------------------------------------------------------------------------
+--  IDENTITY_MEMBER_XREF : GA 신원(GA4_IDENTITY) ↔ CRM 회원(CRM_MEMBER) 해소 브리지.
+--  ▸ 배치 근거(보수적 아키텍처): master §3 "교차소스 conform→GOLD" 원칙의 유일 예외.
+--    확률적/추론 신원해소(GA측 ID_RESOLUTION=session-fill 추론값 + GA↔CRM MATCH_CONFIDENCE)를
+--    SILVER 경계에 격리하여 GOLD.DIM_MEMBER_IDENTITY 를 결정적 차원으로 유지.
+--  ▸ 서러게이트키(IDENTITY_SK) 없음 — SK 부여·conform 은 GOLD 소관. 여기는 자연키+매칭메타만.
+--  ▸ grain = 1행/USER_PSEUDO_ID(GA 스파인). CHILD_CODE 제외(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피).
+--  ▸ ★grain 주의 : pseudo grain(1,348) ≠ member grain(distinct MEMBER_DK 1,274). GOLD DIM_MEMBER_IDENTITY(회원차원)
+--    구축 시 MEMBER_DK DISTINCT 필수 · UNMATCHED 제외(MEMBER_DK NOT NULL). 커버리지 4.84%(익명 95%→LEFT JOIN). 09 STEP7 소비계약 참조.
+--  ▸ 미매칭 GA 신원도 보존(MATCH_METHOD='UNMATCHED') — 전기간 샤드 커버리지·DQ 추적용.
+--  ▸ 단방향 : SILVER(GA4_IDENTITY, CRM_MEMBER) 만 참조. BRONZE/GOLD 직참조 없음.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
+    USER_PSEUDO_ID      VARCHAR(200)    NOT NULL,   -- GA 세션 스파인 (PK)
+    GA_MEMBER_ID        VARCHAR(10),                 -- GA측 회원번호(=user_id_filled)
+    MEMBER_TYPE         VARCHAR(10),                 -- ONCE(S%)/FDRM
+    MEMBER_DK           VARCHAR(10),                 -- 매칭된 CRM 불변회원키(미매칭 NULL). ※비강제 FK→CRM_MEMBER.MEMBER_DK
+    HOMEPAGE_ID         VARCHAR,                     -- 매칭 CRM 회원의 HMPG_ID(미매칭 NULL)
+    ID_RESOLUTION       VARCHAR(20),                 -- GA측 신뢰도 passthrough: DIRECT/SESSION_FILL
+    MATCH_METHOD        VARCHAR(30),                 -- MEMBER_ID_EXACT / UNMATCHED
+    MATCH_CONFIDENCE    VARCHAR(10),                 -- HIGH(exact+DIRECT) / MEDIUM(exact+SESSION_FILL) / NONE(미매칭)
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
+    DW_SOURCE_TABLE     VARCHAR,
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,
+    DW_UPDATE_TS        TIMESTAMP_NTZ,
+    DW_BATCH_ID         VARCHAR,
+    PRIMARY KEY (USER_PSEUDO_ID)
+) COMMENT = 'S-7 신원 브리지(교차소스 유일예외). GA4_IDENTITY ↔ CRM_MEMBER 자연키 해소 + MATCH_METHOD/CONFIDENCE. SK없음(GOLD 소관). CHILD_CODE 제외(fan-out). 미매칭 보존';
+
+-- STEP 7 (DDL) 완료 — 신원 브리지 1객체. 적재는 09 STEP 7 참조.
