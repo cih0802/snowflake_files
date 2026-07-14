@@ -1,0 +1,1159 @@
+-- =============================================================================
+-- BRONZE_CRM 물리 DDL (정본 / source of truth for physical types)
+-- doc_id: BRONZE_CRM_DDL
+-- project: GN_DW (굿네이버스)
+-- source: SnowSQL v1.2.26 `create or replace` 출력 (2026-06-29 수령)
+-- scope: BRONZE_CRM 스키마 + 41 테이블 (CRM 원천 그대로 적재, managed access)
+-- note:
+--   - 컬럼 한글 설명·코드그룹은 `BRONZE_CRM 테이블 정보.MD`(데이터 딕셔너리) 참조.
+--   - 본 파일은 **물리 데이터타입의 정본**. 딕셔너리 MD는 3개 차단 테이블만 타입 인라인,
+--     나머지 38테이블 타입은 본 파일을 참조(백필 대신 참조 원칙).
+--   - 적재 메타 공통: _LOAD_DT TIMESTAMP_NTZ(9), _BATCH_ID VARCHAR(50).
+-- =============================================================================
+
+create or replace schema BRONZE_CRM with managed access
+  COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
+
+-- -----------------------------------------------------------------------------
+-- 1. SND_MEMBER_LIST  (발송 회원 리스트)
+-- -----------------------------------------------------------------------------
+create or replace TABLE SND_MEMBER_LIST (
+  REQ_SEQ_NO NUMBER(19,0),
+  R_NUM NUMBER(19,0),
+  MBER_NO VARCHAR(255),
+  SPNSR_CD VARCHAR(255),
+  SPNSR_NM VARCHAR(255),
+  CMPGN_CD VARCHAR(255),
+  CMPGN_NM VARCHAR(255),
+  GENDER VARCHAR(255),
+  AGE VARCHAR(255),
+  SETLE_CD VARCHAR(255),
+  SETLE_NM VARCHAR(255),
+  DSCNTC_PATH VARCHAR(255),
+  DSCNTC_RSN_CD VARCHAR(255),
+  DSCNTC_RSN_NM VARCHAR(255),
+  CHILD_NO VARCHAR(255),
+  LST_BRND_CD VARCHAR(255),
+  LST_BRND_NM VARCHAR(255),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  MNG_NO VARCHAR(255),
+  LETTER_DIV_CD VARCHAR(255),
+  CHILD_DTL_CD VARCHAR(255),
+  CHILD_DTL_NM VARCHAR(255),
+  RELATNSP_DSCNTC_YN VARCHAR(255),
+  FRST_SPNSR VARCHAR(255),
+  FRST_BRND_CD VARCHAR(255),
+  FRST_BRND_NM VARCHAR(255),
+  RELATNSP_KEY NUMBER(19,0),
+  LST_REGIST_DT TIMESTAMP_NTZ(9),
+  PRIV_SUSP_YN VARCHAR(255),
+  SND_YN VARCHAR(255),
+  SND_MSG VARCHAR(16777216),
+  REG_DATE TIMESTAMP_NTZ(9),
+  SND_DT TIMESTAMP_NTZ(9),
+  SND_HOUR VARCHAR(255),
+  SND_MIN VARCHAR(255),
+  EMAIL_RECPTN_CD VARCHAR(255),
+  EMAIL_RECPTN_NM VARCHAR(255),
+  NATION_CD VARCHAR(255),
+  NATION_NM VARCHAR(255),
+  BPLC_CD VARCHAR(255),
+  BPLC_KOR_NM VARCHAR(255),
+  DISCHARGE_REPORT_KOR VARCHAR(255),
+  PAST_NATION_NM VARCHAR(255),
+  PAST_BPLC_NM VARCHAR(255),
+  PAST_CHILD_NO VARCHAR(255),
+  FAMILY_DTL VARCHAR(255),
+  FINAL_CHILD_SPNSR_START_DT TIMESTAMP_NTZ(9),
+  NEW_CHILD_NO VARCHAR(255),
+  NEW_CHILD_PROJECT_COUNTRY VARCHAR(255),
+  NEW_CHILD_WORKPLACE_NM VARCHAR(255),
+  NEW_CHILD_PIC VARCHAR(255),
+  NEW_CHILD_GENDER VARCHAR(255),
+  SPNSR_AMOUNT NUMBER(10,2),
+  SPNSR_STRT_DT TIMESTAMP_NTZ(9),
+  SPNSR_DSCNTC_DT TIMESTAMP_NTZ(9),
+  RELATNSP_DT TIMESTAMP_NTZ(9),
+  SPNSR_TYPE VARCHAR(255),
+  CPR_DIV_CD VARCHAR(255),
+  DEPT_CD VARCHAR(255),
+  CURRENT_BRND VARCHAR(255),
+  CURRENT_UPPER_CMPGN VARCHAR(255),
+  CURRENT_CMPGN VARCHAR(255),
+  FIRST_UPPER_CMPGN VARCHAR(255),
+  FIRST_CMPGN VARCHAR(255),
+  LAST_TOP_CMPGN VARCHAR(255),
+  LAST_CMPGN VARCHAR(255),
+  MSG_KEY VARCHAR(255),
+  CINFO VARCHAR(255),
+  RESPONSED_YN VARCHAR(255),
+  RESPONSED_DT TIMESTAMP_NTZ(9),
+  SYNCED_AT TIMESTAMP_NTZ(9),
+  CALL_STATUS VARCHAR(30),
+  REAL_SEND_DT TIMESTAMP_NTZ(9),
+  LAST_UPPER_CMPGN VARCHAR(255),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 2. SND_REQ_MST  (발송 요청 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE SND_REQ_MST (
+  SEQ_NO NUMBER(19,0),
+  SEND_GBN_TOP VARCHAR(255),
+  SEND_GBN_MID VARCHAR(255),
+  SEND_GBN_BOT VARCHAR(255),
+  SEND_TITLE VARCHAR(255),
+  MSG_TYPE VARCHAR(255),
+  TMPL_CODE VARCHAR(255),
+  AUTHOR VARCHAR(255),
+  CREATE_DATE DATE,
+  CONDITION_TITLE VARCHAR(255),
+  CALL_NUMBER VARCHAR(255),
+  ALT_SMS_YN VARCHAR(255),
+  REGULARLY VARCHAR(255),
+  PERIODIC VARCHAR(255),
+  PERIODIC_WEEK VARCHAR(255),
+  PERIODIC_DAY NUMBER(10,0),
+  SEND_DATE DATE,
+  SEND_TIME TIME(9),
+  SEND_MIN VARCHAR(2),
+  SEND_SPLIT_TYPE VARCHAR(255),
+  DIVIDE NUMBER(10,0),
+  DIVIDE_UNIT NUMBER(10,0),
+  CORP_TYPE VARCHAR(255),
+  AUTO_TYPE VARCHAR(255),
+  USE_YN VARCHAR(255),
+  REG_ID VARCHAR(255),
+  MOD_DATE DATE,
+  INIT_REG_DATE DATE,
+  LAST_SEND_DATE DATE,
+  APPR_STATUS VARCHAR(255),
+  CREATE_DEPT VARCHAR(255),
+  SENDER_EMAIL VARCHAR(255),
+  RCPT_LIST VARCHAR(16777216),
+  SEND_STATUS VARCHAR(255),
+  SEND_CNT NUMBER(19,0),
+  FAIL_CNT NUMBER(19,0),
+  LAST_ERR VARCHAR(16777216),
+  END_DATE DATE,
+  PAPER_YEAR VARCHAR(255),
+  MENU_CODE VARCHAR(255),
+  SEND_GBN_TOP_NM VARCHAR(255),
+  SEND_GBN_MID_NM VARCHAR(255),
+  SEND_GBN_BOT_NM VARCHAR(255),
+  TARGET_CNT NUMBER(19,0),
+  SEND_ROUND NUMBER(10,0),
+  EXTRA VARCHAR(255),
+  ASSIGN_TARGET_CNT NUMBER(19,0),
+  FIRST_SEQ_NO NUMBER(19,0),
+  JOB_ID VARCHAR(255),
+  SYNCED_AT VARCHAR(255),
+  REG_NM VARCHAR(255),
+  SERVICE_MENU_CODE VARCHAR(100),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 3. TC_CMMN_CD  (공통코드 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TC_CMMN_CD (
+  CD_ID VARCHAR(20),
+  CD_NM VARCHAR(100),
+  CD_DC VARCHAR(500),
+  SORT_ORDR NUMBER(10,0),
+  RM VARCHAR(1000),
+  USE_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 4. TC_CMMN_DTL_CD  (공통 상세코드)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TC_CMMN_DTL_CD (
+  CD_ID VARCHAR(20),
+  DTL_CD_ID VARCHAR(50),
+  DTL_CD_NM VARCHAR(100),
+  DTL_CD_DC VARCHAR(500),
+  SORT_ORDR NUMBER(10,0),
+  RM VARCHAR(1000),
+  USE_YN VARCHAR(1),
+  CD_ATRB1 VARCHAR(100),
+  CD_ATRB2 VARCHAR(100),
+  CD_ATRB3 VARCHAR(100),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  UPPER_CD_ID VARCHAR(20),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 5. TD_MS_CRMN_PRTCPNT  (캠페인/행사 참여)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_CRMN_PRTCPNT (
+  CRMN_CD NUMBER(10,0),
+  PRTCPNT_KEY NUMBER(10,0),
+  MBER_NO VARCHAR(10),
+  RQST_PATH_CD VARCHAR(3),
+  PARTCPT_TIME_CO NUMBER(10,0),
+  PARTCPT_STAT_CD VARCHAR(3),
+  SELF_PARTCPT_CD VARCHAR(3),
+  RCPMNY_STAT_CD VARCHAR(3),
+  RCPMNY_DATE VARCHAR(8),
+  REFND_DATE VARCHAR(8),
+  RQST_DATE VARCHAR(8),
+  PARTCPT_DATE VARCHAR(8),
+  RCPMNY_AMT NUMBER(19,0),
+  ACMPNY_PARTCPT_CO NUMBER(10,0),
+  RM VARCHAR(1000),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 6. TD_MS_EMAIL_LQY_SNDNG  (이메일 대량발송 집계)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_EMAIL_LQY_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  MSG_ID VARCHAR(20),
+  MKT_TRGET_CTNT VARCHAR(300),
+  SNDNG_CNT NUMBER(10,0),
+  SUCCES_CNT NUMBER(10,0),
+  FAILR_CNT NUMBER(10,0),
+  RECPTN_CNT NUMBER(10,0),
+  SNDNG_STRT_DT TIMESTAMP_NTZ(9),
+  SNDNG_END_DT TIMESTAMP_NTZ(9),
+  INFLOW_PATH_CTNT VARCHAR(100),
+  SNDNG_YEAR_CTNT VARCHAR(100),
+  SNDNG_MT_CTNT VARCHAR(100),
+  SNDNG_TEAM_CTNT VARCHAR(100),
+  SUCCES_FAILR_CNT_CTNT VARCHAR(100),
+  URL_OTHBC_CNT_CTNT VARCHAR(100),
+  URL_OTHBC_RT_CTNT VARCHAR(100),
+  SESION_VU_CTNT VARCHAR(300),
+  SESION_PGE_CNT_CTNT VARCHAR(100),
+  DVLP_ACMSLT_CNT_CTNT VARCHAR(100),
+  CLOS_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 7. TD_MS_EMAIL_SNDNG_DTLS  (이메일 발송 상세 - 회원단위)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_EMAIL_SNDNG_DTLS (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_DTL_KEY NUMBER(10,0),
+  SNDNG_DE TIMESTAMP_NTZ(9),
+  MBER_NO VARCHAR(10),
+  SNDNG_RST_CD VARCHAR(3),
+  ATCHFL_ID VARCHAR(20),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 8. TD_MS_EVENT_PRTCPNT_DTL  (이벤트 참여 상세)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_EVENT_PRTCPNT_DTL (
+  EVENT_CD NUMBER(10,0),
+  MBER_NO VARCHAR(10),
+  PARTCPT_SEQ NUMBER(10,0),
+  EVENT_PARTCPT_DIV_CD VARCHAR(3),
+  PRZWIN_CD NUMBER(10,0),
+  PARTCPT_CHNNL_CD VARCHAR(3),
+  PARTCPT_PATH_CD VARCHAR(3),
+  PARTCPT_STAT_CD VARCHAR(3),
+  PARTCPT_DT TIMESTAMP_NTZ(9),
+  RM VARCHAR(1000),
+  RM2 VARCHAR(1000),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 9. TD_MS_MSG_AT_LQY_SNDNG  (알림톡/메시지 대량발송 집계 - 클릭수 보유)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_MSG_AT_LQY_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  DIVS_DTL_KEY NUMBER(10,0),
+  SNDNG_CNT NUMBER(10,0),
+  SUCCES_CNT NUMBER(10,0),
+  AT_ALTRTV_SNDNG_CNT NUMBER(10,0),
+  AT_FAILR_CNT NUMBER(10,0),
+  RESVE_SNDNG_DE DATE,
+  RESVE_HM VARCHAR(4),
+  TOT_CLICK_CNT_CTNT VARCHAR(100),
+  CLICK_CNT_CTNT1 VARCHAR(100),
+  CLICK_CNT_CTNT2 VARCHAR(100),
+  CLICK_CNT_CTNT3 VARCHAR(100),
+  CLICK_CNT_CTNT4 VARCHAR(100),
+  RM_VU_CTNT VARCHAR(100),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 10. TD_MS_MSG_AT_SNDNG_DTLS  (알림톡/메시지 발송 상세 - 회원단위)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_MSG_AT_SNDNG_DTLS (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_DTL_KEY NUMBER(10,0),
+  SNDNG_DT TIMESTAMP_NTZ(9),
+  MBER_NO VARCHAR(10),
+  SNDNG_NO NUMBER(10,0),
+  TRNSMS_STAT_CD VARCHAR(3),
+  TRNSMS_FAILR_CD_ID VARCHAR(20),
+  FRST_RGSTR_ID VARCHAR(30),
+  ALTRTV_MSG_SNDNG_YN VARCHAR(1),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  ATTACHED_FILE VARCHAR(100),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 11. TD_MS_PSTMTR_LQY_SNDNG  (우편물 대량발송 집계)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_PSTMTR_LQY_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_CNT NUMBER(10,0),
+  SNDNG_SQNC NUMBER(3,0),
+  SNDNG_TIT VARCHAR(255),
+  SNDNG_MEMO_CTNT VARCHAR(4000),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 12. TD_MS_PSTMTR_SNDNG_DTL  (우편물 발송 상세 - 회원단위)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TD_MS_PSTMTR_SNDNG_DTL (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_DTL_KEY NUMBER(10,0),
+  SNDNG_DE TIMESTAMP_NTZ(9),
+  MBER_NO VARCHAR(10),
+  RELATNSP_KEY NUMBER(10,0),
+  MNG_NO VARCHAR(7),
+  DTL_KEY NUMBER(10,0),
+  BIZN_REQUST_KEY NUMBER(10,0),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 13. TH_MM_FDRM_MBER_STNG_DTLS  (정기회원 상태변경 내역 / SCD2 소스)
+--     BF_STAT_CD/CHN_STAT_CD = 변경 전/후 회원상태코드. FMM 시점지표 #49·50·52·53.
+-- -----------------------------------------------------------------------------
+create or replace TABLE TH_MM_FDRM_MBER_STNG_DTLS (
+  MBER_NO VARCHAR(10),
+  SER_NO NUMBER(10,0),
+  BF_STAT_CD VARCHAR(3),
+  CHN_STAT_CD VARCHAR(3),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 14. TH_PM_SETLE_INFO_HIST  (결제정보 변경이력)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TH_PM_SETLE_INFO_HIST (
+  SETLE_KEY NUMBER(10,0),
+  UPDT_DT TIMESTAMP_NTZ(9),
+  UPDUSR_ID VARCHAR(30),
+  UPDUSR_NM VARCHAR(100),
+  MBER_NO VARCHAR(10),
+  CPR_DIV_CD VARCHAR(3),
+  SETLE_CD VARCHAR(3),
+  WTDRW_STRT_DE DATE,
+  WTDRW_ASMT_SQNC NUMBER(3,0),
+  FNLT_DIV_CD VARCHAR(3),
+  FNLT_CD VARCHAR(10),
+  SETLE_ENTRPS_CD VARCHAR(10),
+  CARD_TRMVT VARCHAR(6),
+  ACNUT_SER_NO NUMBER(10,0),
+  PAYER_NM VARCHAR(30),
+  CARD_DIV_CD VARCHAR(3),
+  ETC_CTTPC VARCHAR(14),
+  ETC_CTTPC_REL_CD VARCHAR(3),
+  PAYER_MBER_REL_CD VARCHAR(3),
+  CRTFC_MTH_CD VARCHAR(3),
+  CRTFC_FILE_NM VARCHAR(200),
+  CRTFC_DATA_CTNT VARCHAR(4000),
+  CRTFC_DE DATE,
+  FILE_SIZE NUMBER(10,0),
+  BILLKEY VARCHAR(50),
+  SETLE_STAT_CD VARCHAR(3),
+  BF_SETLE_STAT_CD VARCHAR(3),
+  RQST_DIV_CD VARCHAR(3),
+  RCEPT_DIV_CD VARCHAR(3),
+  APRV_YN VARCHAR(1),
+  APRV_REQUST_KEY NUMBER(19,0),
+  APRV_RST_KEY NUMBER(19,0),
+  FRST_BEGIN_DE DATE,
+  RQEST_EXCL_YN VARCHAR(1),
+  RQEST_EXCL_STRT_DE DATE,
+  RQEST_EXCL_END_DE DATE,
+  APPLCNT_NM VARCHAR(30),
+  APPLCNT_ETC_CTTPC VARCHAR(14),
+  APPLCNT_ETC_CTTPC_REL_CD VARCHAR(3),
+  APPLCNT_MBER_REL_CD VARCHAR(3),
+  BF_SETLE_KEY NUMBER(10,0),
+  OPERT_DIV_CD VARCHAR(3),
+  CRTFC_TY_CD VARCHAR(3),
+  USE_YN VARCHAR(1),
+  RGSTR_ID VARCHAR(30),
+  RGSTR_NM VARCHAR(30),
+  REGIST_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 15. TM_CM_BRND_MNG  (브랜드 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_BRND_MNG (
+  BRND_ID VARCHAR(30),
+  BRND_NM VARCHAR(200),
+  USE_DEPT_CD VARCHAR(10),
+  USE_YN VARCHAR(1),
+  PR_MTH_LIST VARCHAR(4000),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 16. TM_CM_CMPGN_MNG  (캠페인 마스터, 32 cols)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_CMPGN_MNG (
+  CMPGN_CD VARCHAR(20),
+  CMPGN_NM VARCHAR(200),
+  UPPER_CMPGN_CD VARCHAR(20),
+  UPPER_CMPGN_YN VARCHAR(1),
+  SPNSR_DIV_CD VARCHAR(3),
+  CPR_DIV_CD VARCHAR(3),
+  CMPGN_TRGET_CD VARCHAR(2),
+  USE_DEPT_CD VARCHAR(10),
+  USE_SCOPE VARCHAR(1),
+  SPNSR_ENTRPRS_ID VARCHAR(20),
+  BRND_ID VARCHAR(30),
+  PR_MTH_CD VARCHAR(3),
+  CMPGN_STRT_DE VARCHAR(8),
+  MBRFEE_BNKB_LIST VARCHAR(4000),
+  INICIS_ACNT_NO VARCHAR(50),
+  USE_YN VARCHAR(1),
+  REFER_URL VARCHAR(255),
+  SPNSR_BSNS_ID VARCHAR(100),
+  CMPGN_DC VARCHAR(500),
+  EMRGNCY_AID_BPLC_CD NUMBER(10,0),
+  CMPGN_PRPT_YN VARCHAR(1),
+  ATCHFL_ID VARCHAR(20),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  RM VARCHAR(50),
+  MBER_INFLOW_PATH_CD NUMBER(10,0),
+  CMPGN_CTGR_CD NUMBER(10,0),
+  CMPGN_TYPE1_BSN NUMBER(10,0),
+  CMPGN_TYPE2_BSN NUMBER(10,0),
+  MKTG_CMPGN_NM NUMBER(10,0),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 17. TM_CM_DEPT_INFO  (부서/조직 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_DEPT_INFO (
+  DEPT_ID VARCHAR(20),
+  DEPT_NM VARCHAR(50),
+  UPPER_DEPT_ID VARCHAR(20),
+  SORT_ORDR NUMBER(10,0),
+  USE_YN VARCHAR(1),
+  ACMSLT_DEPT_YN VARCHAR(1),
+  STATS_DEPT_LVL NUMBER(3,0),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  ACMSLT_UPPER_DEPT_ID VARCHAR(20),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 18. TM_CM_MBER_DVLP_GOAL  (회원개발 목표 / FTG_D 소스)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_MBER_DVLP_GOAL (
+  STDYY VARCHAR(4),
+  STDR_MT VARCHAR(6),
+  MBER_DVLP_DIV_CD VARCHAR(1),
+  DEPT_ID VARCHAR(20),
+  GOAL_CNT NUMBER(10,0),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 19. TM_CM_MKTNG_CMPGN_MNG  (마케팅캠페인명 마스터, 2026-06 신규)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_MKTNG_CMPGN_MNG (
+  MK_CMPGN_CD VARCHAR(50),
+  MK_CMPGN_NM VARCHAR(200),
+  USE_YN VARCHAR(1),
+  RM VARCHAR(500),
+  FRST_RGSTR_ID VARCHAR(50),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(50),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 20. TM_CM_SPNSR_BSNS_INFO  (후원사업 마스터 / DIM_SPONSORSHIP 소스)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_CM_SPNSR_BSNS_INFO (
+  SPNSR_BSNS_ID VARCHAR(20),
+  SPNSR_DIV_CD VARCHAR(3),
+  SPNSR_BSNS_NM VARCHAR(50),
+  SPNSR_BSNS_ABRV_CD VARCHAR(3),
+  DNTN_TY_CD VARCHAR(3),
+  SORT_ORDR NUMBER(10,0),
+  CPR_DIV_CD VARCHAR(3),
+  RM VARCHAR(1000),
+  USE_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 21. TM_MM_FDRM_MBER_DVLP_AMT  (정기회원 개발/약정 금액 / FMM·FME 소스)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_DVLP_AMT (
+  SPNSR_NO VARCHAR(9),
+  SPNSR_BSNS_NO NUMBER(19,0),
+  OCCRRNC_DE VARCHAR(8),
+  SER_NO NUMBER(10,0),
+  MBER_NO VARCHAR(10),
+  ACT_DEPT_CD VARCHAR(10),
+  ACMSLT_DEPT_CD VARCHAR(10),
+  CMPGN_CD VARCHAR(20),
+  SETLE_CD VARCHAR(3),
+  MBER_DIV_CD VARCHAR(3),
+  SEX VARCHAR(2),
+  AREA_CD VARCHAR(3),
+  AGE NUMBER(10,0),
+  SPNSR_TIME_CO NUMBER(10,0),
+  SPNSR_AMT_CD VARCHAR(3),
+  SPNSR_BSNS_ID VARCHAR(20),
+  CANCL_RDCAMT_RSN_CD VARCHAR(3),
+  SPNSR_AMT NUMBER(19,0),
+  DVLP_DIV_CD VARCHAR(3),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_RGSTR_NM VARCHAR(100),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 22. TM_MM_FDRM_MBER_INFO  (정기회원 마스터 / DIM_MEMBER 소스)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_INFO (
+  MBER_NO VARCHAR(10),
+  MBER_DIV_CD VARCHAR(3),
+  CPR_DIV_CD VARCHAR(3),
+  SLRCLD_LRR_CD VARCHAR(3),
+  MOBLPHON_STAT_CD VARCHAR(3),
+  TSTM_DIV_CD NUMBER(10,0),
+  ETC_TSTM_DIV_CD NUMBER(10,0),
+  ETC_CTTPC_REL_CD VARCHAR(3),
+  ETC_CTTPC_STAT_CD VARCHAR(3),
+  EMAIL_STAT_CD VARCHAR(3),
+  PSTMTR_RECPTN_CD VARCHAR(100),
+  EMAIL_RECPTN_CD VARCHAR(100),
+  CHRCTR_RECPTN_YN VARCHAR(1),
+  BL_ENTRPS_NO NUMBER(19,0),
+  SPECL_MNG_CD1 VARCHAR(3),
+  SPECL_MNG_CD2 VARCHAR(3),
+  TNI_CU_BL_NO NUMBER(19,0),
+  CMPGN_CD VARCHAR(20),
+  MBER_STAT_CD VARCHAR(3),
+  RELATNSP_DIV_CD VARCHAR(3),
+  ACT_DEPT_CD VARCHAR(10),
+  HMPG_ID VARCHAR(30),
+  JOIN_PATH_CD VARCHAR(3),
+  CTI_SYNCHRN_DIV_CD VARCHAR(3),
+  STDR_DE DATE,
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  REGIST_DEPT_CD VARCHAR(10),
+  FRST_RGSTR_ID VARCHAR(30),
+  SEX VARCHAR(2),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 23. TM_MM_FDRM_MBER_IRSD  (정기회원 증감/감액 내역 / RDCAMT_YN=감액여부)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_IRSD (
+  OCCRRNC_DE VARCHAR(8),
+  SER_NO NUMBER(10,0),
+  ACMSLT_DEPT_CD VARCHAR(10),
+  CMPGN_CD VARCHAR(20),
+  MBER_NO VARCHAR(10),
+  SPNSR_AMT NUMBER(19,0),
+  SETLE_CD VARCHAR(3),
+  MBER_DIV_CD VARCHAR(3),
+  SEX VARCHAR(2),
+  AREA_CD VARCHAR(3),
+  AGE NUMBER(10,0),
+  SPNSR_TIME_CO NUMBER(10,0),
+  SPNSR_AMT_CD VARCHAR(3),
+  RDCAMT_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 24. TM_MM_FDRM_MBER_RE_SPNSR  (재후원 내역, append-only)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_RE_SPNSR (
+  MBER_NO VARCHAR(10),
+  SER_NO NUMBER(10,0),
+  RE_SPNSR_DE VARCHAR(8),
+  REGIST_DEPT_CD VARCHAR(10),
+  FRST_RGSTR_ID VARCHAR(30),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 25. TM_MM_FDRM_MBER_SPNSR_BSNS  (회원 후원사업 약정/중단)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_SPNSR_BSNS (
+  SPNSR_NO VARCHAR(9),
+  SPNSR_BSNS_NO NUMBER(19,0),
+  SPNSR_BSNS_ID VARCHAR(20),
+  SPNSR_AMT NUMBER(19,0),
+  SPNSR_DSCNTC_DE VARCHAR(8),
+  SPNSR_DSCNTC_YN VARCHAR(1),
+  SPNSR_DSCNTC_RSN_CD VARCHAR(3),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 26. TM_MM_FDRM_MBER_SPNSR_DSCNTC  (정기회원 후원중단 내역)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_FDRM_MBER_SPNSR_DSCNTC (
+  MBER_NO VARCHAR(10),
+  SPNSR_DSCNTC_DE VARCHAR(8),
+  SER_NO NUMBER(10,0),
+  DSCNTC_RSN_CD VARCHAR(3),
+  DSCNTC_PATH VARCHAR(1),
+  REGIST_DEPT_CD VARCHAR(10),
+  FRST_RGSTR_ID VARCHAR(30),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 27. TM_MM_ONCE_MBER_INFO  (일시회원 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MM_ONCE_MBER_INFO (
+  ONCE_MBER_NO VARCHAR(10),
+  MBER_DIV_CD VARCHAR(3),
+  CPR_DIV_CD VARCHAR(3),
+  SEX VARCHAR(2),
+  TSTM_DIV_CD NUMBER(10,0),
+  ETC_TSTM_DIV_CD NUMBER(10,0),
+  REL_CD VARCHAR(3),
+  ENTRPS_NM VARCHAR(200),
+  HMPG_ID VARCHAR(30),
+  PSTMTR_RECPTN_YN VARCHAR(1),
+  EMAIL_RECPTN_YN VARCHAR(1),
+  CHRCTR_RECPTN_YN VARCHAR(1),
+  FDRM_MBER_TRNSFER_FG BOOLEAN,
+  SPECL_MNG_CD1 VARCHAR(100),
+  SPECL_MNG_CD2 VARCHAR(100),
+  TNI_CU_BL_NO NUMBER(19,0),
+  CTI_SYNCHRN_DIV_CD VARCHAR(3),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  REGIST_DEPT_CD VARCHAR(10),
+  FRST_RGSTR_ID VARCHAR(100),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 28. TM_MS_CRMN  (캠페인/행사 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MS_CRMN (
+  CRMN_CD NUMBER(10,0),
+  CRMN_DIV_CD VARCHAR(3),
+  CRMN_TIT VARCHAR(100),
+  CRMN_PLACE_NM VARCHAR(200),
+  BRNCH_DEPT_ID VARCHAR(20),
+  ATCHFL_ID VARCHAR(20),
+  SITE_URL VARCHAR(255),
+  CRMN_STRT_DE VARCHAR(8),
+  CRMN_END_DE VARCHAR(8),
+  CRMN_PART_STRT_DE VARCHAR(8),
+  CRMN_PART_END_DE VARCHAR(8),
+  TAT NUMBER(5,0),
+  RCRIT_PSNNL_CO NUMBER(10,0),
+  RESRCE_SRVC_FG BOOLEAN,
+  CPR_DIV_CD VARCHAR(3),
+  ENTRPS_CD NUMBER(10,0),
+  RM VARCHAR(1000),
+  CRMN_CTNT VARCHAR(4000),
+  USE_YN VARCHAR(1),
+  PART_USE_YN VARCHAR(1),
+  TMPLAT_ID VARCHAR(30),
+  TMPLAT_TIT VARCHAR(100),
+  TMPLAT_PART_ID VARCHAR(30),
+  TMPLAT_PART_TIT VARCHAR(100),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  SRVY VARCHAR(200),
+  RM2 VARCHAR(1000),
+  PROMO_CODE VARCHAR(255),
+  TMPLAT_WIN_ID VARCHAR(30),
+  TMPLAT_WIN_TIT VARCHAR(100),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 29. TM_MS_EMAIL_SNDNG  (이메일 발송 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MS_EMAIL_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_CD_ID VARCHAR(20),
+  SNDNG_DTL_CD_ID VARCHAR(20),
+  SNDNG_STDR_DE TIMESTAMP_NTZ(9),
+  SNDNG_TY_CD VARCHAR(3),
+  TIT VARCHAR(100),
+  EMAIL_RM VARCHAR(4000),
+  PRCS_DE TIMESTAMP_NTZ(9),
+  PCPSN_ID VARCHAR(30),
+  PRCS_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 30. TM_MS_EVENT  (이벤트 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MS_EVENT (
+  EVENT_CD NUMBER(10,0),
+  EVENT_DIV_CD VARCHAR(3),
+  EVENT_NM VARCHAR(200),
+  STRT_DATE VARCHAR(8),
+  END_DATE VARCHAR(8),
+  PRZWIN_PSNNL_CO NUMBER(10,0),
+  PRZWIN_GFT_SNDNG_DE VARCHAR(8),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 31. TM_MS_MSG_AT_SNDNG  (알림톡/메시지 발송 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MS_MSG_AT_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_CD_ID VARCHAR(20),
+  SNDNG_DTL_CD_ID VARCHAR(20),
+  SNDNG_STDR_DE TIMESTAMP_NTZ(9),
+  SNDNG_TY_CD VARCHAR(3),
+  SNDNG_TIME_DIV_CD VARCHAR(3),
+  MSG_DIV_CD VARCHAR(3),
+  TIT VARCHAR(100),
+  MSG_AT_RM VARCHAR(4000),
+  PRCS_DE TIMESTAMP_NTZ(9),
+  PCPSN_ID VARCHAR(20),
+  ATCHFL_ID VARCHAR(20),
+  TMPLAT_ID VARCHAR(30),
+  ALTRTV_MSG_SNDNG_YN VARCHAR(1),
+  ALTRTV_MSG_ATCHFL_ID VARCHAR(20),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 32. TM_MS_PSTMTR_SNDNG  (우편물 발송 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_MS_PSTMTR_SNDNG (
+  SNDNG_KEY NUMBER(10,0),
+  SNDNG_CD_ID VARCHAR(20),
+  SNDNG_DTL_CD_ID VARCHAR(20),
+  SNDNG_STDR_DE DATE,
+  SNDNG_TY_CD VARCHAR(3),
+  PRCS_DE DATE,
+  PCPSN_ID VARCHAR(20),
+  PRCS_STAT_CD VARCHAR(3),
+  LQY_YN VARCHAR(1),
+  RE_SNDNG_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 33. TM_PM_DNTN_DTLS  (일시후원금 납입 상세)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_PM_DNTN_DTLS (
+  DNTN_KEY NUMBER(19,0),
+  ONCE_MBER_NO VARCHAR(10),
+  CPR_DIV_CD VARCHAR(3),
+  SETLE_CD VARCHAR(3),
+  ONCE_CMPGN_CD VARCHAR(20),
+  ELCTR_SETLE_KEY NUMBER(19,0),
+  SETLE_ENTRPS_CD VARCHAR(10),
+  SETLE_CMPNY_ACNT_NO NUMBER(10,0),
+  MBRFEE_BNKB_KEY NUMBER(19,0),
+  ACNUT_SER_NO NUMBER(10,0),
+  FNLT_CD VARCHAR(10),
+  PAYER_NM VARCHAR(30),
+  PAY_AMT NUMBER(10,0),
+  PAY_DE DATE,
+  PAY_STAT_CD VARCHAR(3),
+  PRCS_STAT_CD VARCHAR(3),
+  USE_YN VARCHAR(1),
+  TRNSFER_MBRFEE_KEY NUMBER(10,0),
+  TRNSFER_RSN_CD VARCHAR(3),
+  RETUN_DNTN_KEY NUMBER(19,0),
+  RETUN_RSN_CD VARCHAR(3),
+  RETUN_KEY NUMBER(10,0),
+  RM VARCHAR(1000),
+  ACMSLT_DEPT_CD VARCHAR(10),
+  REGIST_DE DATE,
+  RGSTR_ID VARCHAR(50),
+  RGSTR_NM VARCHAR(30),
+  SPNSR_BSNS_ID VARCHAR(20),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 34. TM_PM_MBRFEE_ACMSLT  (회비 청구/납입 적상 / FMM 회비 소스)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_PM_MBRFEE_ACMSLT (
+  MBRFEE_KEY NUMBER(19,0),
+  MBER_DIV_CD VARCHAR(3),
+  MBER_NO VARCHAR(10),
+  CPR_DIV_CD VARCHAR(3),
+  SPNSR_NO VARCHAR(9),
+  SPNSR_BSNS_NO NUMBER(19,0),
+  SPNSR_BSNS_ID VARCHAR(20),
+  RELATNSP_KEY NUMBER(10,0),
+  OVSEA_AID_KEY NUMBER(10,0),
+  MBRFEE_MT VARCHAR(6),
+  MBRFEE_SQNC NUMBER(3,0),
+  RQEST_MT VARCHAR(6),
+  RQEST_SQNC NUMBER(3,0),
+  MBRFEE_DIV_CD VARCHAR(3),
+  GFT_DIV_CD VARCHAR(3),
+  GFTMNEY_CHILD_CD NUMBER(10,0),
+  ONCE_CMPGN_CD VARCHAR(20),
+  TOGETH_WTDRW_REQUST_KEY NUMBER(10,0),
+  TOGETH_WTDRW_YN VARCHAR(1),
+  SETLE_KEY NUMBER(10,0),
+  SETLE_CD VARCHAR(3),
+  SETLE_ENTRPS_CD VARCHAR(10),
+  PAYER_NM VARCHAR(30),
+  RQEST_DIV_CD VARCHAR(3),
+  RQEST_AMT NUMBER(19,0),
+  RQEST_DE DATE,
+  PAY_AMT NUMBER(10,0),
+  PAY_DE DATE,
+  PAY_STAT_CD VARCHAR(3),
+  PRCS_STAT_CD VARCHAR(3),
+  RQST_KEY NUMBER(19,0),
+  RST_KEY NUMBER(19,0),
+  ELCTR_SETLE_KEY NUMBER(19,0),
+  SETLE_CMPNY_ACNT_NO NUMBER(10,0),
+  MBRFEE_BNKB_KEY NUMBER(19,0),
+  ACNUT_SER_NO NUMBER(10,0),
+  FNLT_CD VARCHAR(10),
+  BILLKEY VARCHAR(50),
+  RQEST_RST_CD VARCHAR(50),
+  PRCS_RST_CD VARCHAR(10),
+  TRNSFER_REQUST_KEY NUMBER(10,0),
+  TRNSFER_MBRFEE_KEY NUMBER(10,0),
+  TRNSFER_DNTN_KEY NUMBER(10,0),
+  TRNSFER_RSN_CD VARCHAR(3),
+  RETUN_REQUST_KEY NUMBER(10,0),
+  RETUN_MBRFEE_KEY NUMBER(10,0),
+  RETUN_RSN_CD VARCHAR(3),
+  RM VARCHAR(1000),
+  USE_YN VARCHAR(1),
+  OPERTOR_ID VARCHAR(100),
+  OPERTOR_NM VARCHAR(100),
+  OPERT_DE DATE,
+  OPERT_DIV_CD VARCHAR(3),
+  OPER_KEY NUMBER(10,0),
+  OPER_RST_KEY NUMBER(10,0),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 35. TM_PM_SETLE_INFO  (결제정보 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_PM_SETLE_INFO (
+  SETLE_KEY NUMBER(10,0),
+  MBER_NO VARCHAR(10),
+  CPR_DIV_CD VARCHAR(3),
+  SETLE_CD VARCHAR(3),
+  WTDRW_STRT_DE DATE,
+  WTDRW_ASMT_SQNC NUMBER(3,0),
+  WTDRW_ASMT_SQNC_UPDT_DE DATE,
+  FNLT_DIV_CD VARCHAR(3),
+  FNLT_CD VARCHAR(10),
+  SETLE_ENTRPS_CD VARCHAR(10),
+  CARD_TRMVT VARCHAR(6),
+  ACNUT_SER_NO NUMBER(10,0),
+  PAYER_NM VARCHAR(30),
+  CARD_DIV_CD VARCHAR(3),
+  MBTLNUM VARCHAR(20),
+  ETC_CTTPC VARCHAR(14),
+  ETC_CTTPC_REL_CD VARCHAR(3),
+  PAYER_MBER_REL_CD VARCHAR(3),
+  CRTFC_MTH_CD VARCHAR(3),
+  CRTFC_FILE_NM VARCHAR(200),
+  CRTFC_DATA_CTNT VARCHAR(4000),
+  CRTFC_DE DATE,
+  FILE_SIZE NUMBER(10,0),
+  BILLKEY VARCHAR(50),
+  SETLE_STAT_CD VARCHAR(3),
+  RQST_DIV_CD VARCHAR(3),
+  RCEPT_DIV_CD VARCHAR(3),
+  APRV_YN VARCHAR(1),
+  APRV_REQUST_KEY NUMBER(19,0),
+  APRV_RST_KEY NUMBER(19,0),
+  FRST_BEGIN_DE DATE,
+  RQEST_EXCL_YN VARCHAR(1),
+  RQEST_EXCL_STRT_DE DATE,
+  RQEST_EXCL_END_DE DATE,
+  APPLCNT_NM VARCHAR(30),
+  APPLCNT_MBTLNUM VARCHAR(20),
+  APPLCNT_ETC_CTTPC VARCHAR(14),
+  APPLCNT_ETC_CTTPC_REL_CD VARCHAR(3),
+  APPLCNT_MBER_REL_CD VARCHAR(3),
+  BF_SETLE_KEY NUMBER(10,0),
+  OPERT_DIV_CD VARCHAR(3),
+  CRTFC_TY_CD VARCHAR(3),
+  USE_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_RGSTR_NM VARCHAR(100),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDUSR_NM VARCHAR(100),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 36. TM_RM_BPLC_MNG  (사업장 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_BPLC_MNG (
+  BPLC_CD VARCHAR(8),
+  NATION_CD VARCHAR(3),
+  BPLC_KORNM VARCHAR(200),
+  BPLC_ENGNM VARCHAR(200),
+  BSNS_STRT_DE DATE,
+  BSNS_END_DE DATE,
+  RELATNSP_BSNS_YN VARCHAR(1),
+  RELATNSP_BSNS_DSCNTC_DE DATE,
+  GFTMNEY_PSBL_YN VARCHAR(1),
+  LETTER_PSBL_YN VARCHAR(1),
+  BPLC_DC VARCHAR(4000),
+  WTWK_FROM_DSTNC NUMBER(10,0),
+  CNCSN_RSN VARCHAR(100),
+  BPLC_MTCHG_MNG_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_UPDUSR_ID VARCHAR(30),
+  LAST_UPDT_DT TIMESTAMP_NTZ(9),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 37. TM_RM_CHILD_MSTR_INFO  (결연아동 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_CHILD_MSTR_INFO (
+  CHILD_CD NUMBER(10,0),
+  CHILD_NO VARCHAR(30),
+  BPLC_CD VARCHAR(8),
+  SEX VARCHAR(2),
+  RELATNSP_STAT_CD VARCHAR(3),
+  CHILD_STAT_CD VARCHAR(3),
+  CHILD_DTL_STAT_CD VARCHAR(3),
+  REGIST_DIV_CD VARCHAR(3),
+  FRST_REGIST_DT TIMESTAMP_NTZ(9),
+  LAST_REGIST_DT TIMESTAMP_NTZ(9),
+  RE_UPDT_DT TIMESTAMP_NTZ(9),
+  MNYRS_NATION_CD VARCHAR(3),
+  CMS_CHILD_NO VARCHAR(30),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 38. TM_RM_RELATNSP_CHG_INFO  (결연 변경 내역)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_RELATNSP_CHG_INFO (
+  RELATNSP_KEY NUMBER(10,0),
+  CHG_YN VARCHAR(1),
+  CHG_RSN_CD NUMBER(10,0),
+  CHG_RST_CD NUMBER(10,0),
+  CHG_PERSON_ID VARCHAR(20),
+  CHG_DE DATE,
+  CHG_RELATNSP_KEY NUMBER(10,0),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 39. TM_RM_RELATNSP_GFTMNEY_INFO  (결연 선물금 내역, EHGT=미상 약어)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_RELATNSP_GFTMNEY_INFO (
+  RELATNSP_KEY NUMBER(10,0),
+  MNG_NO VARCHAR(7),
+  MBRFEE_KEY NUMBER(10,0),
+  SETLE_DE DATE,
+  SETLE_CD VARCHAR(3),
+  SETLE_BANK_CD VARCHAR(10),
+  GFTMNEY NUMBER(10,0),
+  GFT_DIV_CD VARCHAR(3),
+  KOREAN_RM_CTNT VARCHAR(1000),
+  ENGL_RM_CTNT VARCHAR(1000),
+  SNDNG_DE DATE,
+  EHGT VARCHAR(30),
+  GFTMNEY_DOLLAR_AMT VARCHAR(30),
+  APRV_DE DATE,
+  UNREPLY_RSN_CD NUMBER(10,0),
+  TRNSFER_KEY NUMBER(10,0),
+  TRNSFER_YN VARCHAR(1),
+  TRNSFER_AFTER_RELATNSP_KEY NUMBER(10,0),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 40. TM_RM_RELATNSP_LETTER_INFO  (결연 서신 내역)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_RELATNSP_LETTER_INFO (
+  RELATNSP_KEY NUMBER(10,0),
+  MNG_NO VARCHAR(7),
+  LETTER_DIV_CD NUMBER(10,0),
+  CTNT VARCHAR(4000),
+  RCEPT_DE DATE,
+  SNDNG_DE DATE,
+  ONLINE_POST_WRITNG_YN VARCHAR(1),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DE DATE,
+  EXCEL_SER_NO NUMBER(10,0),
+  UNREPLY_RSN_CD NUMBER(10,0),
+  LANG_CD VARCHAR(10),
+  ONLINE_INFLOW_CD NUMBER(10,0),
+  LETTER_STAT_CD NUMBER(3,0),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);
+
+-- -----------------------------------------------------------------------------
+-- 41. TM_RM_RELATNSP_MSTR_INFO  (결연 마스터)
+-- -----------------------------------------------------------------------------
+create or replace TABLE TM_RM_RELATNSP_MSTR_INFO (
+  RELATNSP_KEY NUMBER(10,0),
+  SPNSR_NO VARCHAR(9),
+  SPNSR_BSNS_NO NUMBER(19,0),
+  CHILD_CD NUMBER(10,0),
+  RELATNSP_STRT_DE DATE,
+  RELATNSP_DSCNTC_DE DATE,
+  RELATNSP_DSCNTC_YN VARCHAR(1),
+  RELATNSP_DSCNTC_RSN_CD NUMBER(10,0),
+  FRST_RGSTR_ID VARCHAR(30),
+  FRST_REGIST_DE DATE,
+  MBER_NO VARCHAR(10),
+  _LOAD_DT TIMESTAMP_NTZ(9),
+  _BATCH_ID VARCHAR(50)
+);

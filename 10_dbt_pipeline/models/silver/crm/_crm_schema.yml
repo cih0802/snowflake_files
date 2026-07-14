@@ -1,0 +1,14 @@
+version: 2
+
+# SILVER CRM 실적재 모델 테스트 (현재 CRM_MEMBER 만 실적재)
+# 나머지 20개는 Bronze 입고 후 테스트 추가 예정.
+# 실행: dbt test --select CRM_MEMBER
+models:
+  - name: CRM_MEMBER
+    columns:
+      - name: MEMBER_DK
+        tests: [not_null, unique]
+      - name: MEMBER_TYPE
+        tests:
+          - not_null
+          - accepted_values: { values: ['FDRM', 'ONCE'] }

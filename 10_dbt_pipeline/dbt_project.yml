@@ -1,0 +1,56 @@
+# GN_DW SILVER dbt 파이프라인 — BRONZE 정제 → SILVER 적재 (DDL 분리 + incremental)
+# Co-authored with CoCo
+name: 'gn_dw_silver'
+version: '1.0.0'
+config-version: 2
+
+profile: 'default'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# ---------------------------------------------------------------------------
+# materialization 방침: ③ DDL 분리 + dbt 파이프라인
+#   - 테이블 구조(타입·PK·길이)는 04_silver_design/SILVER_DDL_20260702.sql 이 소유
+#   - dbt 는 incremental(merge) 로 INSERT/UPSERT 만 수행, full_refresh 비활성으로
+#     DDL 이 만든 빈 테이블을 절대 CREATE OR REPLACE 로 덮어쓰지 않음
+# ---------------------------------------------------------------------------
+models:
+  gn_dw_silver:
+    silver:
+      +database: GN_DW
+      +schema: SILVER
+      +materialized: incremental
+      +incremental_strategy: merge
+      +full_refresh: false
+      +on_schema_change: append_new_columns
+      # 감사메타 세만틱(GOLD와 동일): DW_LOAD_TS(최초적재) 보존, UPDATE_TS·BATCH_ID(=invocation_id) run마다 갱신.
+      +merge_exclude_columns: ['DW_LOAD_TS']
+      # GA4: date-shard 통합. 초기 전체적재 위해 full_refresh 허용
+      #   - 차원(traffic_source/event_dim/device)=table, event=incremental(72h merge)
+      #   - 최초 적재: dbt run --select silver.ga4 --full-refresh
+      ga4:
+        +full_refresh: true
+    # ---------------------------------------------------------------------------
+    # GOLD: star schema (DIM 15 + FACT 9). 구조 소유=03_top-down_gold/06_DDL.sql
+    #   - CRM 원칙 동일: incremental(merge) + full_refresh:false 로 DDL 빈 테이블 보호
+    #   - 대리키(_SK)=해시(gold_sk 매크로), 감사메타=gold_meta
+    #   - tag:gold_ready  = 실데이터 적재 가능(GA4 4 + DIM_MEMBER + FACT_GA_BEHAVIOR)
+    #   - tag:gold_pending= Bronze 입고 후 실행(CRM 기반 DIM/FACT 스캐폴드)
+    # ---------------------------------------------------------------------------
+    gold:
+      +database: GN_DW
+      +schema: GOLD
+      +materialized: incremental
+      +incremental_strategy: merge
+      +full_refresh: false
+      +on_schema_change: append_new_columns
+      # 감사메타 세만틱: DW_LOAD_TS(최초적재)는 merge 갱신에서 제외해 보존.
+      #   DW_UPDATE_TS(최종적재)·DW_BATCH_ID(=invocation_id)는 매 run 갱신됨.
+      +merge_exclude_columns: ['DW_LOAD_TS']

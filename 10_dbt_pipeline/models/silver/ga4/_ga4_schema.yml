@@ -1,0 +1,19 @@
+version: 2
+
+# SILVER GA4 실적재 4개 테스트 (GA4_IDENTITY 는 enabled=false 제외)
+# 실행: dbt test --select silver.ga4
+models:
+  - name: GA4_EVENT
+    columns:
+      - name: USER_PSEUDO_ID
+        tests: [not_null]
+      - name: EVENT_TIMESTAMP
+        tests: [not_null]
+      - name: EVENT_NAME
+        tests: [not_null]
+      - name: BATCH_ORDERING_ID
+        tests: [not_null]
+  - name: GA4_EVENT_DIM
+    columns:
+      - name: EVENT_NAME
+        tests: [not_null]

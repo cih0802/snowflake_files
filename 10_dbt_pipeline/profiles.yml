@@ -1,0 +1,14 @@
+# Snowflake 세션 인증 사용 — password/authenticator/env_var 금지
+# 대상 스키마(GN_DW.SILVER)는 사전 존재해야 함(DDL 배포 완료)
+default:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: ""
+      user: ""
+      role: ACCOUNTADMIN
+      database: GN_DW
+      warehouse: COMPUTE_WH
+      schema: SILVER
+      threads: 4

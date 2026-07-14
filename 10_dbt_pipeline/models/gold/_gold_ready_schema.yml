@@ -1,0 +1,48 @@
+version: 2
+
+# GOLD gold_ready 모델 테스트 (실적재 6개 대상)
+# 실행: dbt test --select tag:gold_ready
+# ⚠️ IDENTITY_SK·CAMPAIGN_SK 는 DIM 미적재(비활성/스캐폴드)라 relationships 테스트 제외.
+models:
+  - name: DIM_DATE
+    columns:
+      - name: DATE_SK
+        tests: [not_null, unique]
+  - name: DIM_DEVICE
+    columns:
+      - name: DEVICE_SK
+        tests: [not_null, unique]
+  - name: DIM_GA_SOURCE
+    columns:
+      - name: GA_SOURCE_SK
+        tests: [not_null, unique]
+  - name: DIM_GA_EVENT
+    columns:
+      - name: GA_EVENT_SK
+        tests: [not_null, unique]
+  - name: DIM_MEMBER
+    columns:
+      - name: MEMBER_SK
+        tests: [not_null, unique]
+      - name: MEMBER_DK
+        tests: [not_null]
+  - name: FACT_GA_BEHAVIOR
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: GA_SOURCE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_GA_SOURCE'), field: GA_SOURCE_SK }
+      - name: GA_EVENT_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_GA_EVENT'), field: GA_EVENT_SK }
+      - name: DEVICE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DEVICE'), field: DEVICE_SK }
+      - name: PAGE_PATH
+        tests: [not_null]
