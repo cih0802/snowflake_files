@@ -1,59 +1,81 @@
--- GN_DW SILVER dbt 파이프라인 배포·오케스트레이션 DDL (순서 7-D). ⚠️ 저작 전용 — 본 세션 미실행.
+-- GN_DW SILVER dbt 파이프라인 배포·오케스트레이션 DDL — 현행 운영계약: 온디맨드 build (2026-07-14 갱신).
 -- Co-authored with CoCo
 -- ============================================================================
--- 순서 7 방침: dbt 모델(BRONZE→SILVER 32객체) 저작 + 배포/스케줄 DDL 저작까지.
---   · materialized='table' (INSERT OVERWRITE 멱등 = full_refresh 동치, 정본 7-E).
---   · GOLD 는 순서 8(별도 세션) — enabled:false 로 본 파이프라인에서 제외.
---   · SILVER 32객체는 이미 적재·검증 완료 → 아래 EXECUTE 는 재생성이므로 신중히 실행(멱등이나 데이터 재작성).
+-- 배포·검증 이력 (2026-07-14, 본 세션 실측):
+--   · CREATE DBT PROJECT → SHOW → compile → run(32객체) → GA4 매크로 회귀수정 → test PASS=9 → ADD VERSION(VERSION$2 default).
+--   · 32객체 멱등검증 완료(BEFORE=AFTER, Δ0). 상세: 04_silver_design/10_SILVER_RUN_이력_비교_20260714.md.
+--   · materialized='table'(INSERT OVERWRITE 멱등 = full_refresh 동치, 정본 7-E). GOLD 는 순서 8(enabled:false).
+-- ★ 운영 방침 결정(2026-07-14): BRONZE 원천이 "정기 갱신·주기 불규칙" → 고정 CRON TASK 안티패턴.
+--   → 현행 = 온디맨드 build 계약(§C). CRON TASK 는 보류(§D, 참고용). 최종형은 트리거 기반(§E).
 -- 워크스페이스 스테이지: snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────
--- (1) DBT PROJECT 객체 생성 — 워크스페이스 dbt 프로젝트를 Snowflake 네이티브 객체로 배포
+-- (A) DBT PROJECT 객체 — [배포 완료] VERSION$2 가 default. 재배포 불필요.
 -- ─────────────────────────────────────────────────────────────────────────
-CREATE DBT PROJECT IF NOT EXISTS GN_DW.SILVER.GN_DW_SILVER_PIPELINE
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
-  COMMENT = 'BRONZE→SILVER 정제 파이프라인(32객체). 정본 09_SILVER_적재쿼리_20260714. 순서 7.';
+-- CREATE DBT PROJECT IF NOT EXISTS GN_DW.SILVER.GN_DW_SILVER_PIPELINE
+--   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
+--   COMMENT = 'BRONZE→SILVER 정제 파이프라인(32객체). 정본 09_SILVER_적재쿼리_20260714. 순서 7.';
 
--- 배포 후 확인
+-- 워크스페이스 파일 수정 후 배포객체에 반영(신규 버전 = default):
+-- ALTER DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE
+--   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
+--   COMMENT = '<변경 요약>';
+
+-- 확인:
 -- SHOW DBT PROJECTS IN SCHEMA GN_DW.SILVER;
+-- SHOW VERSIONS IN DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE;
 
 -- ─────────────────────────────────────────────────────────────────────────
--- (2) 검증 — 실제 테이블 생성 없이 파싱/컴파일만 (안전, SILVER 데이터 불변)
+-- (B) 검증 — 테이블 불변(안전). SILVER 데이터 재작성 없음.
 -- ─────────────────────────────────────────────────────────────────────────
 -- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='parse';
 -- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='compile';
 
--- ─────────────────────────────────────────────────────────────────────────
--- (3) 전체 실행(재생성) — ⚠️ 검증완료 SILVER 32테이블을 CREATE OR REPLACE (멱등). 실행 판단 후 주석 해제.
---     dbt ref DAG 가 의존순서 자동 보장: CRM_CODE→CRM_*, CRM_MEMBER_SPONSOR_BIZ→CRM_SPONSOR_RELATION,
---     (GA4_IDENTITY + CRM_MEMBER)→IDENTITY_MEMBER_XREF. CRM/ERP/AGENCY/GA4 는 상호 독립(병렬 스케줄).
--- ─────────────────────────────────────────────────────────────────────────
--- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run';                      -- 전체
--- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run --select silver.ga4+'; -- GA4 샤드 입고 시(하류 XREF 포함)
--- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='test';                      -- not_null 등 스키마 테스트
+-- ═════════════════════════════════════════════════════════════════════════
+-- (C) ★현행 운영계약: 온디맨드 build (= run + test 통합) — [권장 실행경로]
+--     · build 는 모델 생성 직후 해당 모델의 test 를 함께 수행 → 조용한 회귀(GA4 0행 등)를
+--       test 실패로 즉시 게이트. (run 단독은 0행도 SUCCESS 로 통과하므로 위험.)
+--     · BRONZE 적재 주체(커넥터/배치)가 적재 완료 후 아래 한 줄을 호출하도록 배선하면 됨.
+--     · dbt ref DAG 가 의존순서 자동보장: CRM_CODE→CRM_*, MEMBER_SPONSOR_BIZ→SPONSOR_RELATION,
+--       (GA4_IDENTITY+CRM_MEMBER)→IDENTITY_MEMBER_XREF. 도메인(CRM/ERP/AGENCY/GA4) 상호 독립(threads=4 병렬).
+-- ═════════════════════════════════════════════════════════════════════════
+-- 전체 재정제(권장):
+EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build';
+
+-- 부분 재정제(원천 일부만 갱신 시):
+-- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build --select silver.ga4+';   -- GA4 샤드 입고 시(하류 XREF 포함)
+-- EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build --select silver.crm';     -- CRM 도메인만
 
 -- ─────────────────────────────────────────────────────────────────────────
--- (4) 스케줄 TASK (순서 7-D) — 일배치. ⚠️ CREATE 후 RESUME 해야 가동. 저작만: 실행/RESUME 보류.
---     · CRM/ERP/AGENCY/GA4 는 dbt DAG 내 독립 → 단일 EXECUTE 로 dbt 가 병렬 처리(threads=4).
---     · GA4 신규 샤드(events_YYYYMMDD) 입고 트리거는 별도 STREAM/외부 오케스트레이션 소관(커넥터).
+-- (D) [보류] 고정 CRON TASK — 주기 불규칙이라 현재 부적합. 정기·정시 확정 시에만 사용.
+--     ⚠️ run 이 아닌 build 로 게이트. 저작만: CREATE/RESUME 보류.
 -- ─────────────────────────────────────────────────────────────────────────
-CREATE TASK IF NOT EXISTS GN_DW.SILVER.TASK_SILVER_DAILY
-  WAREHOUSE = COMPUTE_WH
-  SCHEDULE  = 'USING CRON 0 5 * * * Asia/Seoul'   -- 매일 05:00 KST
-  COMMENT   = 'BRONZE→SILVER 32객체 일배치 재정제(dbt run). 순서 7-D.'
-AS
-  EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run';
-
--- (선택) GA4 전용 태스크 — 전기간 샤드 입고 파이프라인이 별도 스케줄일 때 분리 운영.
--- CREATE TASK IF NOT EXISTS GN_DW.SILVER.TASK_SILVER_GA4
+-- CREATE TASK IF NOT EXISTS GN_DW.SILVER.TASK_SILVER_DAILY
 --   WAREHOUSE = COMPUTE_WH
---   SCHEDULE  = 'USING CRON 0 6 * * * Asia/Seoul'
---   COMMENT   = 'GA4 5객체 + 하류 XREF 재정제(샤드 입고 후).'
+--   SCHEDULE  = 'USING CRON 0 5 * * * Asia/Seoul'   -- 매일 05:00 KST
+--   SUSPEND_TASK_AFTER_NUM_FAILURES = 1              -- 회귀 시 즉시 정지
+--   COMMENT   = 'BRONZE→SILVER 32객체 재정제(dbt build). 주기 확정 시에만 RESUME.'
 -- AS
---   EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='run --select silver.ga4+';
+--   EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build';
+-- ALTER TASK GN_DW.SILVER.TASK_SILVER_DAILY RESUME;   -- 가동(주기 확정 후)
 
--- 가동(저작 단계에서는 보류):
--- ALTER TASK GN_DW.SILVER.TASK_SILVER_DAILY RESUME;
--- 모니터링:
+-- ─────────────────────────────────────────────────────────────────────────
+-- (E) [최종 목표형] 트리거 기반 TASK — 불규칙 도착에 정합. BRONZE 적재 메커니즘 확정 후 구현.
+--     · BRONZE 핵심 테이블에 STREAM 생성 → WHEN 절로 신규 데이터 있을 때만 실행(빈 실행/낭비 제거).
+--     · 아래는 설계 스케치(테이블·스트림명은 실제 적재 대상으로 교체).
+-- ─────────────────────────────────────────────────────────────────────────
+-- CREATE STREAM IF NOT EXISTS GN_DW.SILVER.STRM_BRONZE_TRIGGER ON TABLE GN_DW.BRONZE_CRM.<핵심원천>;
+-- CREATE TASK IF NOT EXISTS GN_DW.SILVER.TASK_SILVER_TRIGGERED
+--   WAREHOUSE = COMPUTE_WH
+--   SCHEDULE  = '60 MINUTE'                                   -- 폴링 주기(또는 SCHEDULE 없이 상위 태스크 체인)
+--   SUSPEND_TASK_AFTER_NUM_FAILURES = 1
+--   WHEN SYSTEM$STREAM_HAS_DATA('GN_DW.SILVER.STRM_BRONZE_TRIGGER')
+-- AS
+--   EXECUTE DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE ARGS='build';
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- (F) 모니터링
+-- ─────────────────────────────────────────────────────────────────────────
 -- SELECT * FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(TASK_NAME=>'TASK_SILVER_DAILY')) ORDER BY SCHEDULED_TIME DESC;
+-- 행수 스냅샷 비교(04_silver_design/10_SILVER_RUN_이력_비교_20260714.md 의 비교쿼리 참조).

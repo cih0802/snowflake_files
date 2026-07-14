@@ -1,0 +1,28 @@
+
+  
+    
+
+        create or replace transient table GN_DW.SILVER.CRM_PAYMENT_METHOD
+         as
+        (-- CRM_PAYMENT_METHOD: 결제수단(현재상태, SETLE_KEY dedup) + 수단명(PM040) 라벨, 정본 09 STEP3.
+-- Co-authored with CoCo
+SELECT
+  s.SETLE_KEY                      AS SETLE_KEY,
+  NULLIF(TRIM(s.MBER_NO),'')       AS MBER_NO,
+  NULLIF(TRIM(s.SETLE_CD),'')      AS SETLE_CD,
+  pm.DTL_CD_NM                     AS SETLE_NM,
+  NULLIF(TRIM(s.CARD_DIV_CD),'')   AS CARD_DIV_CD,
+  NULLIF(TRIM(s.FNLT_CD),'')       AS FNLT_CD,
+  s.WTDRW_STRT_DE                  AS WTDRW_STRT_DE,
+  NULLIF(TRIM(s.SETLE_STAT_CD),'') AS SETLE_STAT_CD,
+  'CRM'                            AS DW_SOURCE_SYSTEM,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID
+FROM GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO s
+LEFT JOIN GN_DW.SILVER.CRM_CODE pm ON pm.CD_ID='PM040' AND pm.DTL_CD_ID = NULLIF(TRIM(s.SETLE_CD),'')
+WHERE s.SETLE_KEY IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY s.SETLE_KEY ORDER BY s.WTDRW_STRT_DE DESC NULLS LAST)=1
+        );
+      
+  

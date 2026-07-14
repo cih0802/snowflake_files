@@ -1,0 +1,35 @@
+
+  
+    
+
+        create or replace transient table GN_DW.SILVER.CRM_CAMPAIGN
+         as
+        (-- CRM_CAMPAIGN: 캠페인 + 브랜드/마케팅캠페인 LEFT JOIN 정제 (BRONZE → SILVER), 정본 09 STEP3.
+-- Co-authored with CoCo
+-- Q16: MKTG_CMPGN_NM(NUMBER) ↔ MK_CMPGN_CD(TEXT) 조인키 불일치 → TO_VARCHAR 캐스팅 조인.
+SELECT
+  NULLIF(TRIM(c.CMPGN_CD),'')       AS CMPGN_CD,
+  NULLIF(TRIM(c.CMPGN_NM),'')       AS CMPGN_NM,
+  NULLIF(TRIM(c.UPPER_CMPGN_CD),'') AS UPPER_CMPGN_CD,
+  NULLIF(TRIM(c.UPPER_CMPGN_YN),'') AS UPPER_CMPGN_YN,
+  NULLIF(TRIM(c.BRND_ID),'')        AS BRND_ID,
+  NULLIF(TRIM(b.BRND_NM),'')        AS BRND_NM,
+  NULLIF(TRIM(c.PR_MTH_CD),'')      AS PR_MTH_CD,
+  NULLIF(TRIM(c.SPNSR_BSNS_ID),'')  AS SPNSR_BSNS_ID,
+  c.CMPGN_CTGR_CD                   AS CMPGN_CTGR_CD,
+  c.CMPGN_TYPE1_BSN                 AS CMPGN_TYPE1_BSN,
+  c.CMPGN_TYPE2_BSN                 AS CMPGN_TYPE2_BSN,
+  c.MKTG_CMPGN_NM                   AS MKTG_CMPGN_NM,
+  NULLIF(TRIM(m.MK_CMPGN_NM),'')    AS MK_CMPGN_NM,
+  NULLIF(TRIM(c.CMPGN_STRT_DE),'')  AS CMPGN_STRT_DE,
+  'CRM'                             AS DW_SOURCE_SYSTEM,
+  CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
+  NULL                              AS DW_BATCH_ID
+FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG c
+LEFT JOIN GN_DW.BRONZE_CRM.TM_CM_BRND_MNG b ON c.BRND_ID = b.BRND_ID
+LEFT JOIN GN_DW.BRONZE_CRM.TM_CM_MKTNG_CMPGN_MNG m ON TO_VARCHAR(c.MKTG_CMPGN_NM) = m.MK_CMPGN_CD
+WHERE c.CMPGN_CD IS NOT NULL
+        );
+      
+  

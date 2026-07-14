@@ -1,0 +1,26 @@
+
+  
+    
+
+        create or replace transient table GN_DW.SILVER.CRM_MEMBER_DISCONTINUE
+         as
+        (-- CRM_MEMBER_DISCONTINUE: 후원중단 정제 + 사유(MM005) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
+-- Co-authored with CoCo
+SELECT
+  NULLIF(TRIM(s.MBER_NO),'')         AS MBER_NO,
+  NULLIF(TRIM(s.SPNSR_DSCNTC_DE),'') AS SPNSR_DSCNTC_DE,
+  s.SER_NO                           AS SER_NO,
+  NULLIF(TRIM(s.DSCNTC_RSN_CD),'')   AS DSCNTC_RSN_CD,
+  cd.DTL_CD_NM                       AS DSCNTC_RSN_NM,
+  NULLIF(TRIM(s.DSCNTC_PATH),'')     AS DSCNTC_PATH,
+  NULLIF(TRIM(s.REGIST_DEPT_CD),'')  AS REGIST_DEPT_CD,
+  'CRM'                              AS DW_SOURCE_SYSTEM,
+  CURRENT_TIMESTAMP()                AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()                AS DW_UPDATE_TS,
+  NULL                               AS DW_BATCH_ID
+FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC s
+LEFT JOIN GN_DW.SILVER.CRM_CODE cd ON cd.CD_ID='MM005' AND cd.DTL_CD_ID = NULLIF(TRIM(s.DSCNTC_RSN_CD),'')
+WHERE s.MBER_NO IS NOT NULL AND s.SPNSR_DSCNTC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
+        );
+      
+  

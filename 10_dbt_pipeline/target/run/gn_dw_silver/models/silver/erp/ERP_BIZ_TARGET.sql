@@ -1,0 +1,27 @@
+
+  
+    
+
+        create or replace transient table GN_DW.SILVER.ERP_BIZ_TARGET
+         as
+        (-- ERP_BIZ_TARGET: FTG-B 사업목표 — 원천부재(E-6) 스키마-only 빈 모델(WHERE 1=0), 정본 09 STEP4/08 DDL.
+-- Co-authored with CoCo
+-- 현업 사업계획 원천 확보 시 SELECT 교체. 08 DDL 컬럼/타입과 정합(빈 결과 유지).
+SELECT
+  CAST(NULL AS VARCHAR)        AS BIZ_TARGET_DK,
+  CAST(NULL AS NUMBER(4,0))    AS TARGET_YEAR,
+  CAST(NULL AS NUMBER(2,0))    AS MONTH_NO,
+  CAST(NULL AS VARCHAR(6))     AS MONTH_KEY,
+  CAST(NULL AS VARCHAR)        AS ORG_NM,
+  CAST(NULL AS VARCHAR)        AS SPONSOR_BIZ_NM,
+  CAST(NULL AS VARCHAR)        AS CAMPAIGN_NM,
+  CAST(NULL AS NUMBER(38,0))   AS TARGET_AMT,
+  CAST('ERP' AS VARCHAR)       AS DW_SOURCE_SYSTEM,
+  CAST(NULL AS VARCHAR)        AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()          AS DW_LOAD_TS,
+  CAST(NULL AS TIMESTAMP_NTZ)  AS DW_UPDATE_TS,
+  CAST(NULL AS VARCHAR)        AS DW_BATCH_ID
+WHERE 1=0
+        );
+      
+  
