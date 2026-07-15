@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GN_DW 파이프라인 전체 인벤토리 (112 객체 + 전체 DDL 메타)</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f8fafc, #0f172a);
+      --card-bg: light-dark(#ffffff, #1e293b);
+      --border: light-dark(#cbd5e1, #334155);
+      --text: light-dark(#0f172a, #f8fafc);
+      --text-sub: light-dark(#64748b, #94a3b8);
+      --chip-bg: light-dark(#f1f5f9, #0f172a);
+      --chip-border: light-dark(#cbd5e1, #475569);
+      --primary: #3b82f6;
+      --upstream: #10b981;
+      --downstream: #f59e0b;
+      --panel-bg: light-dark(#ffffff, #0b1120);
+      --table-th: light-dark(#f1f5f9, #1e293b);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      margin: 0; padding: 16px;
+      background-color: var(--bg); color: var(--text);
+      overflow-x: hidden;
+    }
+
+    header {
+      margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 2px solid var(--border); padding-bottom: 12px;
+    }
+    h1 { margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 800; }
+    .note { font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; }
+    .guide { font-size: 0.82rem; color: var(--text-sub); margin-top: 12px; font-weight: 600; }
+    .legend-box { text-align: right; display: flex; flex-direction: column; gap: 8px; font-size: 0.75rem; }
+
+    /* 화면 좌우를 꽉 채우는 4열 레이아웃 */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1.15fr 1.1fr 0.8fr;
+      gap: 12px;
+      position: relative;
+      width: 100%;
+    }
+
+    .layer-col {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .layer-title {
+      font-weight: 800; font-size: 0.95rem;
+      padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+      color: var(--text);
+      display: flex; justify-content: space-between;
+    }
+    .layer-title span { font-size: 0.78rem; font-weight: normal; color: var(--text-sub); }
+
+    .domain-group {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 8px;
+    }
+    .domain-title {
+      font-size: 0.73rem; font-weight: 700; color: var(--text-sub);
+      margin-bottom: 6px; letter-spacing: -0.3px;
+    }
+
+    /* 테이블 칩: 자동 줄바꿈으로 세로 극대 압축 */
+    .chip-container { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .chip {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 0.74rem; font-family: monospace;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      white-space: nowrap;
+      user-select: none;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .chip:hover { transform: translateY(-1px); border-color: var(--primary); }
+    
+    /* 특수 상태 스타일 (점선) */
+    .chip.unmapped { border: 1px dashed #c026d3; color: #c026d3; }
+    .chip.pending { border: 1px dashed var(--text-sub); color: var(--text-sub); opacity: 0.6; }
+
+    /* 리니지 하이라이트 효과 (font-weight: 700; 대신 text-shadow 사용) */
+	/* font-weight: 700; 삭제 */
+	.chip.is-selected { background: var(--primary); border-color: var(--primary); color: #fff; z-index: 3; }
+	.chip.is-upstream { background: var(--upstream); border-color: var(--upstream); color: #fff; z-index: 3; }
+	.chip.is-downstream { background: var(--downstream); border-color: var(--downstream); color: #fff; z-index: 3; }
+    .dimmed .chip:not(.is-selected):not(.is-upstream):not(.is-downstream) { opacity: 0.25; }
+
+    /* SVG 리니지 연결선 */
+    #lineage-svg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1;
+    }
+    path.lineage-line { fill: none; stroke-width: 2px; transition: stroke 0.3s ease; opacity: 0.8; }
+
+    /* 측면 슬라이드 패널 (전체 컬럼 표시) */
+    .side-panel {
+      position: fixed; top: 0; right: -550px; width: 530px; height: 100vh;
+      background: var(--panel-bg); border-left: 2px solid var(--border);
+      box-shadow: -4px 0 16px rgba(0,0,0,0.25);
+      z-index: 100; transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; flex-direction: column;
+    }
+    .side-panel.open { right: 0; }
+    .panel-header {
+      padding: 16px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--table-th);
+    }
+    .panel-header h2 { margin: 0; font-size: 1.05rem; font-family: monospace; word-break: break-all; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-sub); }
+    .panel-body { padding: 16px; overflow-y: auto; flex: 1; }
+    
+    table.ddl-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left; }
+    table.ddl-table th, table.ddl-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    table.ddl-table th { background: var(--table-th); position: sticky; top: 0; font-weight: 700; }
+    .key-badge {
+      display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; margin-right: 4px;
+    }
+    .badge-pk { background: #ef4444; color: white; }
+    .badge-fk { background: #3b82f6; color: white; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>GN_DW 파이프라인 전체 인벤토리 (112 객체 + 전체 DDL 메타)</h1>
+      <div class="note">
+        테이블명 + 키 컬럼만 표기한 백본. 상세 컬럼 생략.<br>
+        실측: <b>BRONZE 4스키마 → SILVER 32모델 → GOLD 15 DIM + 8 FACT (+WIDE 8)</b>.<br>
+        GN_DW 데이터베이스의 모든 테이블/뷰(INFORMATION_SCHEMA 실측). DIM_DATE는 ETL 생성(원천 무관).<br>
+        단방향 계약: SERVING → GOLD → SILVER → BRONZE.
+      </div>
+      <div class="guide">
+        [인터랙션] 테이블 클릭: <b>전체 컬럼 DDL 및 상·하위 리니지</b> 표시 | 마우스 오버: 리니지 미리보기 | 배경 클릭: 초기화
+      </div>
+    </div>
+    <div class="legend-box">
+      <div style="font-size: 0.85rem; font-weight: 600;">
+        <span style="color:var(--upstream)">■ 원천(Upstream)</span> | 
+        <span style="color:var(--primary)">■ 선택(Target)</span> | 
+        <span style="color:var(--downstream)">■ 소비(Downstream)</span>
+      </div>
+      <div>
+        <span style="color:#c026d3; border: 1px dashed #c026d3; padding: 2px 4px; border-radius: 3px;">보라색 점선</span> : 리니지 미매핑 BRONZE (SILVER 미소비)<br>
+        <span style="color:var(--text-sub); border: 1px dashed var(--text-sub); padding: 2px 4px; border-radius: 3px; opacity: 0.7; margin-top: 6px; display: inline-block;">회색 점선</span> : 원천 미입고 보류 (FACT_TARGET_BIZ 등 E-6 대기)
+      </div>
+    </div>
+  </header>
+
+  <div class="pipeline-grid" id="grid-root">
+    <svg id="lineage-svg"></svg>
+
+    <!-- 1. BRONZE LAYER (48) -->
+    <div class="layer-col">
+      <div class="layer-title">BRONZE <span>4 스키마 (48)</span></div>
+      
+      <div class="domain-group">
+        <div class="domain-title">BRONZE_CRM · 회원/거래/결제</div>
+        <div class="chip-container">
+          <div class="chip" id="TM_MM_FDRM_MBER_INFO">TM_MM_FDRM_MBER_INFO</div>
+          <div class="chip" id="TM_MM_ONCE_MBER_INFO">TM_MM_ONCE_MBER_INFO</div>
+          <div class="chip" id="TM_MM_FDRM_MBER_DVLP_AMT">TM_MM_FDRM_MBER_DVLP_AMT</div>
+          <div class="chip" id="TM_MM_FDRM_MBER_IRSD">TM_MM_FDRM_MBER_IRSD</div>
+          <div class="chip" id="TM_MM_FDRM_MBER_SPNSR_DSCNTC">TM_MM_FDRM_MBER_SPNSR_DSCNTC</div>
+          <div class="chip" id="TM_MM_FDRM_MBER_RE_SPNSR">TM_MM_FDRM_MBER_RE_SPNSR</div>
+          <div class="chip" id="TM_MM_FDRM_MBER_SPNSR_BSNS">TM_MM_FDRM_MBER_SPNSR_BSNS</div>
+          <div class="chip" id="TH_MM_FDRM_MBER_STNG_DTLS">TH_MM_FDRM_MBER_STNG_DTLS</div>
+          <div class="chip" id="TM_CM_MBER_DVLP_GOAL">TM_CM_MBER_DVLP_GOAL</div>
+          <div class="chip" id="TM_PM_SETLE_INFO">TM_PM_SETLE_INFO</div>
+          <div class="chip" id="TM_PM_MBRFEE_ACMSLT">TM_PM_MBRFEE_ACMSLT</div>
+          <div class="chip" id="TM_PM_DNTN_DTLS">TM_PM_DNTN_DTLS</div>
+          <div class="chip unmapped" id="TH_PM_SETLE_INFO_HIST">TH_PM_SETLE_INFO_HIST</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">BRONZE_CRM · 발송(MS)</div>
+        <div class="chip-container">
+          <div class="chip" id="TM_MS_EMAIL_SNDNG">TM_MS_EMAIL_SNDNG</div>
+          <div class="chip" id="TM_MS_MSG_AT_SNDNG">TM_MS_MSG_AT_SNDNG</div>
+          <div class="chip" id="TM_MS_PSTMTR_SNDNG">TM_MS_PSTMTR_SNDNG</div>
+          <div class="chip" id="SND_REQ_MST">SND_REQ_MST</div>
+          <div class="chip" id="TD_MS_EMAIL_LQY_SNDNG">TD_MS_EMAIL_LQY_SNDNG</div>
+          <div class="chip" id="TD_MS_MSG_AT_LQY_SNDNG">TD_MS_MSG_AT_LQY_SNDNG</div>
+          <div class="chip" id="TD_MS_PSTMTR_LQY_SNDNG">TD_MS_PSTMTR_LQY_SNDNG</div>
+          <div class="chip" id="TD_MS_EMAIL_SNDNG_DTLS">TD_MS_EMAIL_SNDNG_DTLS</div>
+          <div class="chip" id="TD_MS_MSG_AT_SNDNG_DTLS">TD_MS_MSG_AT_SNDNG_DTLS</div>
+          <div class="chip" id="TD_MS_PSTMTR_SNDNG_DTL">TD_MS_PSTMTR_SNDNG_DTL</div>
+          <div class="chip" id="SND_MEMBER_LIST">SND_MEMBER_LIST</div>
+          <div class="chip unmapped" id="TM_MS_EMAIL_TMPLAT_MNG">TM_MS_EMAIL_TMPLAT_MNG</div>
+          <div class="chip unmapped" id="TD_MS_AT_TMPLAT_BTN_LIST">TD_MS_AT_TMPLAT_BTN_LIST</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">BRONZE_CRM · 마스터/행사/코드</div>
+        <div class="chip-container">
+          <div class="chip" id="TM_CM_CMPGN_MNG">TM_CM_CMPGN_MNG</div>
+          <div class="chip" id="TM_CM_BRND_MNG">TM_CM_BRND_MNG</div>
+          <div class="chip" id="TM_CM_MKTNG_CMPGN_MNG">TM_CM_MKTNG_CMPGN_MNG</div>
+          <div class="chip" id="TM_CM_SPNSR_BSNS_INFO">TM_CM_SPNSR_BSNS_INFO</div>
+          <div class="chip" id="TM_CM_DEPT_INFO">TM_CM_DEPT_INFO</div>
+          <div class="chip" id="TM_MS_EVENT">TM_MS_EVENT</div>
+          <div class="chip" id="TM_MS_CRMN">TM_MS_CRMN</div>
+          <div class="chip" id="TD_MS_EVENT_PRTCPNT_DTL">TD_MS_EVENT_PRTCPNT_DTL</div>
+          <div class="chip" id="TD_MS_CRMN_PRTCPNT">TD_MS_CRMN_PRTCPNT</div>
+          <div class="chip" id="TM_RM_RELATNSP_MSTR_INFO">TM_RM_RELATNSP_MSTR_INFO</div>
+          <div class="chip" id="TM_RM_RELATNSP_LETTER_INFO">TM_RM_RELATNSP_LETTER_INFO</div>
+          <div class="chip" id="TM_RM_RELATNSP_GFTMNEY_INFO">TM_RM_RELATNSP_GFTMNEY_INFO</div>
+          <div class="chip" id="TC_CMMN_DTL_CD">TC_CMMN_DTL_CD</div>
+          <div class="chip unmapped" id="TC_CMMN_CD">TC_CMMN_CD</div>
+          <div class="chip unmapped" id="TM_RM_BPLC_MNG">TM_RM_BPLC_MNG</div>
+          <div class="chip unmapped" id="TM_RM_CHILD_MSTR_INFO">TM_RM_CHILD_MSTR_INFO</div>
+          <div class="chip unmapped" id="TM_RM_RELATNSP_CHG_INFO">TM_RM_RELATNSP_CHG_INFO</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">GA4 / ERP / AGENCY</div>
+        <div class="chip-container">
+          <div class="chip" id="events_20260501">events_20260501</div>
+          <div class="chip" id="BDGT_ACMSLT_LEDGER">BDGT_ACMSLT_LEDGER</div>
+          <div class="chip" id="DGT_AD_CMPGN_DTLS">DGT_AD_CMPGN_DTLS</div>
+          <div class="chip" id="REBRDC_AD_CMPGN_DTLS">REBRDC_AD_CMPGN_DTLS</div>
+          <div class="chip" id="VIDEO_AD_CMPGN_DTLS">VIDEO_AD_CMPGN_DTLS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SILVER LAYER (32) -->
+    <div class="layer-col">
+      <div class="layer-title">SILVER <span>표준화 키 (32)</span></div>
+      
+      <div class="domain-group">
+        <div class="domain-title">CRM · 회원/후원/캠페인</div>
+        <div class="chip-container">
+          <div class="chip" id="CRM_MEMBER">CRM_MEMBER</div>
+          <div class="chip" id="CRM_CAMPAIGN">CRM_CAMPAIGN</div>
+          <div class="chip" id="CRM_SPONSORSHIP">CRM_SPONSORSHIP</div>
+          <div class="chip" id="CRM_ORG">CRM_ORG</div>
+          <div class="chip" id="CRM_DEV_TARGET">CRM_DEV_TARGET</div>
+          <div class="chip" id="CRM_CODE">CRM_CODE</div>
+          <div class="chip" id="CRM_MEMBER_DEV">CRM_MEMBER_DEV</div>
+          <div class="chip" id="CRM_MEMBER_AMT_CHANGE">CRM_MEMBER_AMT_CHANGE</div>
+          <div class="chip" id="CRM_MEMBER_DISCONTINUE">CRM_MEMBER_DISCONTINUE</div>
+          <div class="chip" id="CRM_MEMBER_RESPONSOR">CRM_MEMBER_RESPONSOR</div>
+          <div class="chip" id="CRM_MEMBER_SPONSOR_BIZ">CRM_MEMBER_SPONSOR_BIZ</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">CRM · 이력/결제/행사/발송</div>
+        <div class="chip-container">
+          <div class="chip" id="CRM_MEMBER_STATUS_HIST">CRM_MEMBER_STATUS_HIST</div>
+          <div class="chip" id="CRM_SPONSOR_RELATION">CRM_SPONSOR_RELATION</div>
+          <div class="chip" id="CRM_PAYMENT_METHOD">CRM_PAYMENT_METHOD</div>
+          <div class="chip" id="CRM_PAYMENT_BILLING">CRM_PAYMENT_BILLING</div>
+          <div class="chip" id="CRM_EVENT">CRM_EVENT</div>
+          <div class="chip" id="CRM_EVENT_PARTICIPATION">CRM_EVENT_PARTICIPATION</div>
+          <div class="chip" id="CRM_RELATION_ACTIVITY">CRM_RELATION_ACTIVITY</div>
+          <div class="chip" id="CRM_SEND_REQUEST">CRM_SEND_REQUEST</div>
+          <div class="chip" id="CRM_SEND_RESULT">CRM_SEND_RESULT</div>
+          <div class="chip" id="CRM_SEND_MEMBER">CRM_SEND_MEMBER</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">GA4 / ERP / AGENCY</div>
+        <div class="chip-container">
+          <div class="chip" id="GA4_EVENT">GA4_EVENT</div>
+          <div class="chip" id="GA4_TRAFFIC_SOURCE">GA4_TRAFFIC_SOURCE</div>
+          <div class="chip" id="GA4_EVENT_DIM">GA4_EVENT_DIM</div>
+          <div class="chip" id="GA4_DEVICE">GA4_DEVICE</div>
+          <div class="chip" id="GA4_IDENTITY">GA4_IDENTITY</div>
+          <div class="chip" id="IDENTITY_MEMBER_XREF">IDENTITY_MEMBER_XREF</div>
+          <div class="chip" id="ERP_BUDGET_ITEM">ERP_BUDGET_ITEM</div>
+          <div class="chip" id="ERP_BUDGET">ERP_BUDGET</div>
+          <div class="chip" id="ERP_BIZ_TARGET">ERP_BIZ_TARGET</div>
+          <div class="chip" id="AGENCY_AD_CREATIVE">AGENCY_AD_CREATIVE</div>
+          <div class="chip" id="AGENCY_AD_PERFORMANCE">AGENCY_AD_PERFORMANCE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. GOLD LAYER (24) -->
+    <div class="layer-col">
+      <div class="layer-title">GOLD <span>DIM (15) + FACT (9)</span></div>
+      
+      <div class="domain-group">
+        <div class="domain-title">DIMENSION (15)</div>
+        <div class="chip-container">
+          <div class="chip" id="DIM_DATE">DIM_DATE</div>
+          <div class="chip" id="DIM_MEMBER">DIM_MEMBER</div>
+          <div class="chip" id="DIM_MEMBER_IDENTITY">DIM_MEMBER_IDENTITY</div>
+          <div class="chip" id="DIM_CAMPAIGN">DIM_CAMPAIGN</div>
+          <div class="chip" id="DIM_SPONSORSHIP">DIM_SPONSORSHIP</div>
+          <div class="chip" id="DIM_ORG">DIM_ORG</div>
+          <div class="chip" id="DIM_SERVICE">DIM_SERVICE</div>
+          <div class="chip" id="DIM_PAYMENT">DIM_PAYMENT</div>
+          <div class="chip" id="DIM_REASON">DIM_REASON</div>
+          <div class="chip" id="DIM_EVENT">DIM_EVENT</div>
+          <div class="chip" id="DIM_GA_SOURCE">DIM_GA_SOURCE</div>
+          <div class="chip" id="DIM_GA_EVENT">DIM_GA_EVENT</div>
+          <div class="chip" id="DIM_DEVICE">DIM_DEVICE</div>
+          <div class="chip" id="DIM_AD_CREATIVE">DIM_AD_CREATIVE</div>
+          <div class="chip" id="DIM_BUDGET_ITEM">DIM_BUDGET_ITEM</div>
+        </div>
+      </div>
+
+      <div class="domain-group">
+        <div class="domain-title">FACT (9)</div>
+        <div class="chip-container">
+          <div class="chip" id="FACT_MEMBER_MONTHLY">FACT_MEMBER_MONTHLY</div>
+          <div class="chip" id="FACT_MEMBER_EVENT">FACT_MEMBER_EVENT</div>
+          <div class="chip" id="FACT_TARGET_DEV">FACT_TARGET_DEV</div>
+          <div class="chip" id="FACT_SERVICE_EVENT">FACT_SERVICE_EVENT</div>
+          <div class="chip" id="FACT_EVENT_PARTICIPATION">FACT_EVENT_PARTICIPATION</div>
+          <div class="chip" id="FACT_GA_BEHAVIOR">FACT_GA_BEHAVIOR</div>
+          <div class="chip" id="FACT_AD_PERFORMANCE">FACT_AD_PERFORMANCE</div>
+          <div class="chip" id="FACT_BUDGET">FACT_BUDGET</div>
+          <div class="chip pending" id="FACT_TARGET_BIZ">FACT_TARGET_BIZ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. WIDE LAYER (8) -->
+    <div class="layer-col">
+      <div class="layer-title">WIDE VIEW <span>마트 (8)</span></div>
+      
+      <div class="domain-group">
+        <div class="domain-title">SERVING VIEWS</div>
+        <div class="chip-container" style="flex-direction: column;">
+          <div class="chip" id="WIDE_MEMBER_MONTHLY">WIDE_MEMBER_MONTHLY</div>
+          <div class="chip" id="WIDE_MEMBER_EVENT">WIDE_MEMBER_EVENT</div>
+          <div class="chip" id="WIDE_TARGET_DEV">WIDE_TARGET_DEV</div>
+          <div class="chip" id="WIDE_SERVICE_EVENT">WIDE_SERVICE_EVENT</div>
+          <div class="chip" id="WIDE_EVENT_PARTICIPATION">WIDE_EVENT_PARTICIPATION</div>
+          <div class="chip" id="WIDE_GA_BEHAVIOR">WIDE_GA_BEHAVIOR</div>
+          <div class="chip" id="WIDE_AD_PERFORMANCE">WIDE_AD_PERFORMANCE</div>
+          <div class="chip" id="WIDE_BUDGET">WIDE_BUDGET</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측 컬럼 DDL 슬라이드 패널 -->
+  <div class="side-panel" id="side-panel">
+    <div class="panel-header">
+      <h2 id="panel-title">TABLE_NAME</h2>
+      <button class="close-btn" id="close-panel">×</button>
+    </div>
+    <div class="panel-body">
+      <table class="ddl-table">
+        <thead>
+          <tr><th>컬럼명 / 키</th><th>데이터 타입</th><th>한글 설명 (Comment)</th></tr>
+        </thead>
+        <tbody id="panel-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // 1. DDL 전체 컬럼 인벤토리 (100% 완전 수록 - 잘림 없음)
+    const ddlMeta = {
+      // ==========================================================
+      // [GOLD DIMENSIONS (15개)]
+      // ==========================================================
+      "DIM_DATE": [
+        ["DATE_SK", "NUMBER(8,0)", "YYYYMMDD", "PK"], ["FULL_DATE", "DATE", "실제 일자", ""],
+        ["YEAR", "NUMBER(4,0)", "년", ""], ["MONTH", "NUMBER(2,0)", "월", ""],
+        ["MONTH_KEY", "NUMBER(6,0)", "YYYYMM (월팩트 conform)", ""], ["DAY", "NUMBER(2,0)", "일", ""],
+        ["DAY_OF_WEEK", "VARCHAR", "요일", ""], ["WEEK_OF_YEAR", "NUMBER(2,0)", "주차", ""],
+        ["QUARTER", "NUMBER(1,0)", "분기", ""], ["IS_HOLIDAY", "BOOLEAN", "휴일여부", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_ORG": [
+        ["ORG_SK", "NUMBER(38,0)", "조직 대리키 (=hash(DEPT_ID), PK)", "PK"], ["ORG_DK", "NUMBER(38,0)", "불변 조직키 (=hash(DEPT_ID); SCD1이라 ORG_SK와 1:1)", ""],
+        ["CORP", "VARCHAR", "법인(#114)", ""], ["DIVISION", "VARCHAR", "본부/지부(#115)", ""],
+        ["DEPARTMENT", "VARCHAR", "부서(#116)", ""], ["TEAM", "VARCHAR", "팀", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_MEMBER": [
+        ["MEMBER_SK", "NUMBER(38,0)", "버전 대리키", "PK"], ["MEMBER_DK", "VARCHAR(10)", "불변 회원키(조인용)", ""],
+        ["GENDER", "VARCHAR", "성별(#130)", ""], ["REGION", "VARCHAR", "지역(#131)", ""],
+        ["AGE_BAND", "VARCHAR", "연령대(overview). 원천: 개발/증감 테이블 AGE 스냅샷", ""], ["MEMBER_STATUS", "VARCHAR", "회원상태(#132)", ""],
+        ["MEMBER_TYPE", "VARCHAR", "회원구분(05 2-1). 원천: MBER_DIV_CD(MM018 개인/기업/단체)", ""], ["NEW_EXISTING_FLAG", "VARCHAR", "신규기존구분(#113)", ""],
+        ["FIRST_JOIN_DATE", "DATE", "최초가입일=회원번호 생성일(#28)", ""], ["FIRST_CAMPAIGN", "VARCHAR", "최초캠페인(#29)", ""],
+        ["ENROLL_PATH", "VARCHAR", "가입경로(overview 2-1). 원천: JOIN_PATH_CD(MM014)", ""], ["FIRST_SPONSORSHIP", "VARCHAR", "최초후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS", ""],
+        ["LAST_STOP_DATE", "DATE", "최종중단일(#30)", ""], ["LAST_CAMPAIGN", "VARCHAR", "최종캠페인(#31)", ""],
+        ["CURRENT_SPONSORSHIP", "VARCHAR", "현재후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS", ""], ["EFFECTIVE_FROM", "DATE", "SCD2 유효시작", ""],
+        ["EFFECTIVE_TO", "DATE", "SCD2 유효종료", ""], ["IS_CURRENT", "BOOLEAN", "현재행 여부", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_MEMBER_IDENTITY": [
+        ["IDENTITY_SK", "NUMBER(38,0)", "회원 식별 대리키 (ETL 일련번호, PK)", "PK"], ["MEMBER_DK", "VARCHAR(10)", "불변 회원키", "FK"],
+        ["MEMBER_NO", "VARCHAR", "회원번호(#110)", ""], ["MEMNUM", "VARCHAR", "memnum(#111)", ""],
+        ["GA_MEMBER_ID", "VARCHAR", "member id(#112)", ""], ["HOMEPAGE_ID", "VARCHAR", "홈페이지/앱 ID. 원천: TM_MM_FDRM_MBER_INFO.HMPG_ID", ""],
+        ["CHILD_CODE", "VARCHAR", "결연아동코드(#122, URL 파싱)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_CAMPAIGN": [
+        ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 대리키 (ETL 일련번호, PK)", "PK"], ["CAMPAIGN_BK", "VARCHAR", "캠페인 업무키(BK, 자연키)", ""],
+        ["BRAND", "VARCHAR", "공통브랜드(#117)", ""], ["PARENT_CAMPAIGN", "VARCHAR", "공통상위캠페인(#119)", ""],
+        ["CAMPAIGN_NAME", "VARCHAR", "캠페인명(#18·120·147)", ""], ["PROMO_METHOD", "VARCHAR", "홍보방법(#118)", ""],
+        ["CAMPAIGN_TYPE", "VARCHAR", "캠페인 유형(#17)", ""], ["DOMESTIC_OVERSEAS", "VARCHAR", "국내/해외(#15)", ""],
+        ["BIZ_CASE_TYPE", "VARCHAR", "사업/사례(#16)", ""], ["CAMPAIGN_OPEN_DATE", "DATE", "오픈일자(#19)", ""],
+        ["ORG_SK", "NUMBER(38,0)", "캠페인 귀속조직", "FK"], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_SPONSORSHIP": [
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 대리키 (ETL 일련번호, PK)", "PK"], ["SPONSORSHIP_BK", "VARCHAR", "후원사업 업무키(BK, 자연키)", ""],
+        ["SPONSORSHIP_NAME", "VARCHAR", "후원사업 전체(#123)", ""], ["SPONSORSHIP_ABBR", "VARCHAR", "약칭(#124)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_AD_CREATIVE": [
+        ["AD_CREATIVE_SK", "NUMBER(38,0)", "광고소재 대리키 (ETL 일련번호, PK)", "PK"], ["AD_CREATIVE_BK", "VARCHAR", "광고소재 업무키(BK, 자연키)", ""],
+        ["MEDIA_NAME", "VARCHAR", "매체명/공동브랜드(#11)", ""], ["PLATFORM", "VARCHAR", "플랫폼(#12)", ""],
+        ["PLATFORM_TYPE", "VARCHAR", "플랫폼/매체유형(#13)", ""], ["CREATIVE", "VARCHAR", "소재(#20)", ""],
+        ["CM_POSITION", "VARCHAR", "CM위치(#21)", ""], ["DURATION_SEC", "NUMBER(9,0)", "초수(#22)", ""],
+        ["RT_TYPE", "VARCHAR", "RT유형", ""], ["AD_TYPE", "VARCHAR", "광고유형", ""],
+        ["TARGET_GROUP", "VARCHAR", "타겟그룹", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_GA_SOURCE": [
+        ["GA_SOURCE_SK", "NUMBER(38,0)", "GA 트래픽소스 대리키 (ETL 일련번호, PK)", "PK"], ["UTM_SOURCE", "VARCHAR", "source", ""],
+        ["UTM_MEDIUM", "VARCHAR", "medium", ""], ["UTM_CONTENT", "VARCHAR", "세션 수동 광고 콘텐츠(#103)", ""],
+        ["UTM_TERM", "VARCHAR", "세션 수동 검색어(#104)", ""], ["SOURCE_MEDIUM", "VARCHAR", "세션 소스/매체(#109)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_GA_EVENT": [
+        ["GA_EVENT_SK", "NUMBER(38,0)", "GA 이벤트 대리키 (ETL 일련번호, PK)", "PK"], ["EVENT_CATEGORY", "VARCHAR", "이벤트 카테고리(#99)", ""],
+        ["EVENT_LABEL", "VARCHAR", "이벤트 라벨(#100)", ""], ["EVENT_ACTION", "VARCHAR", "이벤트 액션(#101)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_SERVICE": [
+        ["SERVICE_SK", "NUMBER(38,0)", "서비스 대리키 (ETL 일련번호, PK)", "PK"], ["SEND_TYPE_L", "VARCHAR", "발송구분 대(#133)", ""],
+        ["SEND_TYPE_M", "VARCHAR", "발송구분 중(#134)", ""], ["SEND_TYPE_S", "VARCHAR", "발송구분 소(#135)", ""],
+        ["SUBTYPE", "VARCHAR", "발송/참여 subtype", ""], ["CHANNEL", "VARCHAR", "CRM_UMS", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_PAYMENT": [
+        ["PAYMENT_SK", "NUMBER(38,0)", "납입/결제 대리키 (ETL 일련번호, PK)", "PK"], ["PAYMENT_METHOD", "VARCHAR", "납입방식(#125)", ""],
+        ["SETTLE_METHOD", "VARCHAR", "결제방식", ""], ["FEE_TYPE", "VARCHAR", "회비유형(정기/일시 — #66~68 분해)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_REASON": [
+        ["REASON_SK", "NUMBER(38,0)", "사유 대리키 (ETL 일련번호, PK)", "PK"], ["REASON_CODE", "VARCHAR", "사유코드(BK, 업무키)", ""],
+        ["REASON_NAME", "VARCHAR", "중단사유(#162)·미납사유(#82)", ""], ["REASON_TYPE", "VARCHAR", "중단 / 미납 구분", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_DEVICE": [
+        ["DEVICE_SK", "NUMBER(38,0)", "디바이스 대리키 (ETL 일련번호, PK)", "PK"], ["DEVICE_TYPE", "VARCHAR", "PC / M / APP", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_EVENT": [
+        ["EVENT_SK", "NUMBER(38,0)", "행사 대리키 (ETL 일련번호, PK)", "PK"], ["EVENT_BK", "VARCHAR", "행사 업무키(BK, 자연키)", ""],
+        ["EVENT_KIND", "VARCHAR", "온라인/오프라인", ""], ["EVENT_CATEGORY", "VARCHAR", "행사구분", ""],
+        ["EVENT_NAME", "VARCHAR", "행사명", ""], ["EVENT_START_DATE", "DATE", "행사기간 시작(05 3-6)", ""],
+        ["EVENT_END_DATE", "DATE", "행사기간 종료(05 3-6)", ""], ["APPLY_CHANNEL", "VARCHAR", "신청경로", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "DIM_BUDGET_ITEM": [
+        ["BUDGET_ITEM_SK", "NUMBER(38,0)", "예산 세세목 대리키 (ETL 일련번호, PK)", "PK"], ["BUDGET_ITEM_NAME", "VARCHAR", "세세목명", ""],
+        ["BUDGET_CATEGORY", "VARCHAR", "예산구분", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+
+      // ==========================================================
+      // [GOLD FACTS (9개)]
+      // ==========================================================
+      "FACT_MEMBER_MONTHLY": [
+        ["MONTH_KEY", "NUMBER(6,0)", "YYYYMM", "FK"], ["MEMBER_DK", "VARCHAR(10)", "월 스냅샷 대상 회원 (불변키)", "FK"],
+        ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"], ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"],
+        ["PAYMENT_SK", "NUMBER(38,0)", "납입/결제 유형 (FK→DIM_PAYMENT)", "FK"], ["REASON_SK", "NUMBER(38,0)", "중단/미납 사유 (FK→DIM_REASON)", "FK"],
+        ["DEV_CNT", "NUMBER(18,4)", "개발(건) SUM(금액)/10000 (#4·5·149)", ""], ["DEV_MEMBERS", "NUMBER(38,0)", "개발(명) COUNT (#148)", ""],
+        ["STOP_CNT", "NUMBER(18,4)", "중단(건) (#35, FME 롤업)", ""], ["UNPAID_CNT", "NUMBER(18,4)", "미납(건) (#36)", ""],
+        ["ACTIVE_CNT", "NUMBER(18,4)", "활동(건) (#37·157)", ""], ["ACTIVE_MEMBERS", "NUMBER(38,0)", "활동(명) (#156)", ""],
+        ["ACTIVE_CUM_CNT", "NUMBER(18,4)", "활동누계(건) (#159)", ""], ["ACTIVE_CUM_MEMBERS", "NUMBER(38,0)", "활동누계(명) (#158)", ""],
+        ["INCREASE_CNT", "NUMBER(18,4)", "증액(건) (#151)", ""], ["INCREASE_MEMBERS", "NUMBER(38,0)", "증액(명) (#150)", ""],
+        ["DECREASE_CNT", "NUMBER(18,4)", "감액(건) SUM(감액금액)/10000 (#38)", ""], ["CHURN_CNT", "NUMBER(18,4)", "이탈(건) SUM(취소+감액)/10000 (신규#20)", ""],
+        ["YEAR_START_ACTIVE_CNT", "NUMBER(18,4)", "연도초 활동회원(건) (#49)", ""], ["YEAR_END_ACTIVE_CNT", "NUMBER(18,4)", "연도말 활동회원(건) (#50)", ""],
+        ["MONTH_END_ACTIVE_CNT", "NUMBER(18,4)", "월말활동회원(건) (#52)", ""], ["PREV_MONTH_END_ACTIVE_CNT", "NUMBER(18,4)", "전월말 활동회원(건) (#53)", ""],
+        ["CAMPAIGN_UNPAID_CNT", "NUMBER(18,4)", "캠페인별 미납(건) (#83)", ""], ["STATUS_UNPAID_CNT", "NUMBER(18,4)", "회원상태별 미납(건) (#84)", ""],
+        ["REGULAR_FEE", "NUMBER(18,2)", "정기회비(원) (#66)", ""], ["REGULAR_ONETIME_FEE", "NUMBER(18,2)", "정기회원 일시회비(원) (#67)", ""],
+        ["ONETIME_ONETIME_FEE", "NUMBER(18,2)", "일시회원 일시회비(원) (#68)", ""], ["PAID_FEE", "NUMBER(18,2)", "납입회비(원) (#69·70 단일화)", ""],
+        ["BILLED_AMT", "NUMBER(18,2)", "청구(원) (#71)", ""], ["INBOUND_CALL_CNT", "NUMBER(38,0)", "인바운드콜수 (overview) — 비-CRM 별도 입력", ""],
+        ["TS_CALL_CNT", "NUMBER(38,0)", "TS콜수 (overview) — 비-CRM 별도 입력", ""], ["DEV_TYPE", "VARCHAR", "개발구분(#121)", ""],
+        ["NEW_FLAG", "BOOLEAN", "신규(#32)", ""], ["INCREASE_FLAG", "BOOLEAN", "증액(#33)", ""],
+        ["REDONATE_FLAG", "BOOLEAN", "재후원(#34)", ""], ["JOIN_DATE", "DATE", "캠페인 가입일(#27)", ""],
+        ["STOP_DATE", "DATE", "가입캠페인 중단일(#26)", ""], ["AMOUNT_BAND1", "VARCHAR", "후원금액대1 5만(#72)", ""],
+        ["AMOUNT_BAND2", "VARCHAR", "후원금액대2 1만(#73)", ""], ["PERIOD_BAND1", "VARCHAR", "후원기간대1 5년(#74)", ""],
+        ["PERIOD_BAND2", "VARCHAR", "후원기간대2 1년(#75)", ""], ["SPONSOR_MONTHS", "NUMBER(9,2)", "후원기간(개월) (#127)", ""],
+        ["SPONSOR_YEARS", "NUMBER(9,2)", "후원기간(년) (#128)", ""], ["PAID_MONTHS", "NUMBER(9,0)", "납입개월수 (#129)", ""],
+        ["NEW_EXISTING_FLAG", "VARCHAR", "신규/기존(시점귀속, #113) — 04§5 reconcile", ""], ["UNPAID_FLAG_BOM", "BOOLEAN", "월초 미납회원 여부(=전월말 상태)", ""],
+        ["UNPAID_FLAG_EOM", "BOOLEAN", "월말 미납회원 여부", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_MEMBER_EVENT": [
+        ["DATE_SK", "NUMBER(8,0)", "사건일", "FK"], ["MEMBER_DK", "VARCHAR(10)", "상태전이 대상 회원 (불변키)", "FK"],
+        ["EVENT_TYPE", "VARCHAR", "상태전이 유형(개발/중단/증액/미납중단)", ""], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["REASON_SK", "NUMBER(38,0)", "중단/미납 사유 (FK→DIM_REASON)", "FK"], ["DEV_CNT", "NUMBER(18,4)", "개발(건) (#149)", ""],
+        ["DEV_MEMBERS", "NUMBER(38,0)", "개발(명) (#148)", ""], ["STOP_CNT", "NUMBER(18,4)", "중단(건) (#35)", ""],
+        ["STOP_MEMBERS", "NUMBER(38,0)", "중단(명)", ""], ["UNPAID_STOP_CNT", "NUMBER(18,4)", "미납중단(건)", ""],
+        ["UNPAID_STOP_MEMBERS", "NUMBER(38,0)", "미납중단(명) — 05 2-2 원천 확인(정본 §3 건·명)", ""], ["JOIN_DATE", "DATE", "가입일", ""],
+        ["STOP_DATE", "DATE", "중단일", ""], ["STOP_REASON", "VARCHAR", "중단사유", ""],
+        ["STOP_CHANNEL", "VARCHAR", "중단채널", ""], ["NEW_EXISTING_FLAG", "VARCHAR", "신규기존", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_TARGET_DEV": [
+        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["DEV_TYPE", "VARCHAR", "개발구분(#121 conform)", ""], ["GOAL_CNT", "NUMBER(18,4)", "회원개발목표 (CRM TM_CM_MBER_DVLP_GOAL)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_TARGET_BIZ": [
+        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
+        ["ANNUAL_GOAL_CNT", "NUMBER(18,4)", "연사업목표(건) (#152)", ""], ["SUPP_GOAL_CNT", "NUMBER(18,4)", "추경목표(건) (#153)", ""],
+        ["ANNUAL_CUM_GOAL_CNT", "NUMBER(18,4)", "연사업누계목표(건) (#154)", ""], ["SUPP_CUM_GOAL_CNT", "NUMBER(18,4)", "추경누계목표(건) (#155)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_SERVICE_EVENT": [
+        ["DATE_SK", "NUMBER(8,0)", "발송일", "FK"], ["MEMBER_DK", "VARCHAR(10)", "발송 대상 회원 (불변키)", "FK"],
+        ["SERVICE_SK", "NUMBER(38,0)", "발송 서비스 유형 (FK→DIM_SERVICE)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
+        ["SEND_MEMBERS", "NUMBER(38,0)", "발송수(명) (#85)", ""], ["SUCCESS_MEMBERS", "NUMBER(38,0)", "성공수(명) (#86)", ""],
+        ["FAIL_MEMBERS", "NUMBER(38,0)", "실패수(명) (#87)", ""], ["OPEN_MEMBERS", "NUMBER(38,0)", "오픈(명) (overview)", ""],
+        ["LETTER_PART_MEMBERS", "NUMBER(38,0)", "서신참여(명) (#88)", ""], ["LETTER_PART_CNT", "NUMBER(18,4)", "서신참여(건) (#89)", ""],
+        ["GIFT_PART_MEMBERS", "NUMBER(38,0)", "선물금참여(명) (#90)", ""], ["GIFT_PART_AMT", "NUMBER(18,2)", "선물금참여(원) (#91)", ""],
+        ["D5_LETTER_PART_MEMBERS", "NUMBER(38,0)", "+5일차 서신참여(명) (#139)", ""], ["D5_LETTER_PART_CNT", "NUMBER(18,4)", "+5일차 서신참여(건) (#140)", ""],
+        ["D5_GIFT_PART_MEMBERS", "NUMBER(38,0)", "+5일차 선물금참여(명) (#141)", ""], ["D5_GIFT_PART_CNT", "NUMBER(18,4)", "+5일차 선물금참여(건) (#142)", ""],
+        ["D5_INCREASE_PART_MEMBERS", "NUMBER(38,0)", "+5일차 증액참여(명) (#143)", ""], ["D5_INCREASE_PART_CNT", "NUMBER(18,4)", "+5일차 증액참여(건) (#144)", ""],
+        ["D5_STOP_MEMBERS", "NUMBER(38,0)", "+5일차 중단(명) (#145)", ""], ["D5_STOP_CNT", "NUMBER(18,4)", "+5일차 중단(건) (#146)", ""],
+        ["SERVICE_MEMBERS", "NUMBER(38,0)", "서비스(명) (#160)", ""], ["SERVICE_CNT", "NUMBER(18,4)", "서비스(건) (#161)", ""],
+        ["SEND_TITLE", "VARCHAR", "제목(#136)", ""], ["SEND_STATUS", "VARCHAR", "발송상태(#138)", ""],
+        ["SEND_STATUS2", "VARCHAR", "발송상태2(05 3-1)", ""], ["SEND_TYPE", "VARCHAR", "발송유형", ""],
+        ["MAIL_RECEIVE_FLAG", "BOOLEAN", "메일수신여부", ""], ["MEMBER_STOP_FLAG", "BOOLEAN", "결연회원 중단여부", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_GA_BEHAVIOR": [
+        ["DATE_SK", "NUMBER(8,0)", "행동 발생일 YYYYMMDD (FK→DIM_DATE)", "FK"], ["IDENTITY_SK", "NUMBER(38,0)", "방문자 회원식별 (FK→DIM_MEMBER_IDENTITY)", "FK"],
+        ["GA_EVENT_SK", "NUMBER(38,0)", "GA 이벤트 분류 (FK→DIM_GA_EVENT)", "FK"], ["GA_SOURCE_SK", "NUMBER(38,0)", "유입 트래픽소스 (FK→DIM_GA_SOURCE)", "FK"],
+        ["DEVICE_SK", "NUMBER(38,0)", "접속 디바이스 (FK→DIM_DEVICE)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "세션캠페인(#102)", "FK"],
+        ["PAGE_PATH", "VARCHAR", "페이지경로+쿼리(#105)", ""], ["PAGE_LOCATION", "VARCHAR", "페이지위치(#106)", ""],
+        ["VISITS", "NUMBER(38,0)", "방문수(명) (#92)", ""], ["EVENT_CNT", "NUMBER(38,0)", "이벤트수(명) (#95)", ""],
+        ["VIEW_CNT", "NUMBER(38,0)", "조회수(명) (#96)", ""], ["SESSION_CNT", "NUMBER(38,0)", "세션수(명) (#97)", ""],
+        ["ENGAGED_SESSIONS", "NUMBER(38,0)", "참여세션수", ""], ["SCROLL_DEPTH", "NUMBER(9,4)", "스크롤깊이 AVG (#107) — 비가산", ""],
+        ["ACTIVE_USERS", "NUMBER(38,0)", "활성사용자수(명) (#93) — 비가산", ""], ["TOTAL_USERS", "NUMBER(38,0)", "총사용자(명) (#94) — 비가산", ""],
+        ["AVG_SESSION_DURATION", "NUMBER(9,4)", "평균세션시간 (#98) — 비가산", ""], ["BOUNCE_RATE", "NUMBER(9,4)", "이탈율 (#108) — 비가산", ""],
+        ["ENGAGEMENT_RATE", "NUMBER(9,4)", "참여율 — 비가산", ""], ["AVG_ENGAGEMENT_TIME_PER_SESSION", "NUMBER(9,4)", "세션당 평균참여시간 — 비가산", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_AD_PERFORMANCE": [
+        ["PERF_DATE_SK", "NUMBER(8,0)", "실적일", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
+        ["AD_CREATIVE_SK", "NUMBER(38,0)", "광고소재/매체 (FK→DIM_AD_CREATIVE)", "FK"], ["DEVICE_SK", "NUMBER(38,0)", "디바이스 (FK→DIM_DEVICE)", "FK"],
+        ["AD_COST", "NUMBER(18,2)", "광고비(원) (#6)", ""], ["IMPRESSIONS", "NUMBER(38,0)", "노출수 (#23)", ""],
+        ["CLICKS", "NUMBER(38,0)", "클릭수(행동 횟수, ≠회원명) (#24)", ""], ["INBOUND_CALL", "NUMBER(38,0)", "인입콜 (#25)", ""],
+        ["GA_CONV_MEMBERS", "NUMBER(38,0)", "GA전환수(명)", ""], ["GA_CONV_CNT", "NUMBER(18,4)", "GA전환수(건)", ""],
+        ["DAY_OF_WEEK", "VARCHAR", "요일", ""], ["WEEK_OF_YEAR", "NUMBER(2,0)", "주차", ""],
+        ["TIME_BAND", "VARCHAR", "시간대", ""], ["CM_POSITION", "VARCHAR", "CM위치", ""],
+        ["RT_TYPE", "VARCHAR", "RT유형", ""], ["AD_START_TIME", "VARCHAR", "광고시작시간", ""],
+        ["BROADCAST_DATE", "DATE", "송출일(≠실적일)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_EVENT_PARTICIPATION": [
+        ["DATE_SK", "NUMBER(8,0)", "참여일 YYYYMMDD (FK→DIM_DATE)", "FK"], ["MEMBER_DK", "VARCHAR(10)", "참여 회원 (불변키)", "FK"],
+        ["EVENT_SK", "NUMBER(38,0)", "행사 (FK→DIM_EVENT)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "분석축", "FK"],
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "분석축", "FK"], ["RECRUIT_CNT", "NUMBER(38,0)", "모집인원", ""],
+        ["TOTAL_CNT", "NUMBER(38,0)", "총인원", ""], ["WAIT_CNT", "NUMBER(38,0)", "대기인원", ""],
+        ["CANCEL_CNT", "NUMBER(38,0)", "취소인원", ""], ["CONFIRM_CNT", "NUMBER(38,0)", "신청확정인원", ""],
+        ["PARTICIPATE_CNT", "NUMBER(38,0)", "참여인원", ""], ["ABSENT_CNT", "NUMBER(38,0)", "불참인원", ""],
+        ["PARTICIPANT_CNT", "NUMBER(38,0)", "참여자수", ""], ["PARTICIPATION_TIMES", "NUMBER(38,0)", "참여횟수", ""],
+        ["WAIT_TIMES", "NUMBER(38,0)", "대기횟수", ""], ["ABSENT_TIMES", "NUMBER(38,0)", "불참횟수", ""],
+        ["CUM_APPLY_TIMES", "NUMBER(38,0)", "누적신청 횟수", ""], ["REGULAR_DONATION", "NUMBER(18,2)", "정기후원금(원)", ""],
+        ["WIN_FLAG", "BOOLEAN", "당첨여부", ""], ["SELF_PART_FLAG", "BOOLEAN", "본인참여", ""],
+        ["PART_STATUS", "VARCHAR", "참여상태", ""], ["PART_PATH", "VARCHAR", "참여경로(05 3-5)", ""],
+        ["PART_CHANNEL", "VARCHAR", "참여채널(05 3-5)", ""], ["INCREASE_FLAG", "BOOLEAN", "증액여부", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "FACT_BUDGET": [
+        ["MONTH_KEY", "NUMBER(6,0)", "예산월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["BUDGET_ITEM_SK", "NUMBER(38,0)", "예산 세세목 (FK→DIM_BUDGET_ITEM)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (선택 FK→DIM_SPONSORSHIP)", "FK"], ["PLAN_BUDGET_MONTH", "NUMBER(18,2)", "편성예산(월)", ""],
+        ["PLAN_BUDGET_YEAR", "NUMBER(18,2)", "편성예산(연)", ""], ["EXEC_BUDGET_ERP", "NUMBER(18,2)", "집행예산(ERP)", ""],
+        ["EXEC_BUDGET_EST", "NUMBER(18,2)", "집행예산(추정)", ""], ["FUNDRAISING_COST", "NUMBER(18,2)", "모금성비용", ""],
+        ["AD_COST", "NUMBER(18,2)", "광고비", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+
+      // ==========================================================
+      // [SILVER LAYERS (32개)]
+      // ==========================================================
+      "CRM_MEMBER": [
+        ["MEMBER_DK", "VARCHAR(10)", "불변 회원키 (PK, 조인용)", "PK"], ["MEMBER_TYPE", "VARCHAR(10)", "회원구분 파생 (정기=FDRM / 일시=ONCE)", ""],
+        ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드 (MM018: 개인/기업/단체)", ""], ["MBER_DIV_NM", "VARCHAR", "회원구분명 (코드 라벨)", ""],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SEX", "VARCHAR(2)", "성별", ""],
+        ["MBER_STAT_CD", "VARCHAR(3)", "회원상태코드", ""], ["MBER_STAT_NM", "VARCHAR", "회원상태명 (코드 라벨)", ""],
+        ["CMPGN_CD", "VARCHAR(20)", "가입 캠페인코드 (→CRM_CAMPAIGN)", "FK"], ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드 (→CRM_ORG)", "FK"],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", "FK"], ["JOIN_PATH_CD", "VARCHAR(3)", "가입경로코드 (MM014)", ""],
+        ["HMPG_ID", "VARCHAR(30)", "홈페이지/앱 ID", ""], ["ENTRPS_NM", "VARCHAR(200)", "기업/단체명 (법인회원)", ""],
+        ["EMAIL_RECPTN", "VARCHAR", "이메일 수신동의 여부", ""], ["PSTMTR_RECPTN", "VARCHAR", "우편물 수신동의 여부", ""],
+        ["JOIN_DT", "TIMESTAMP_NTZ", "가입일시", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_STATUS_HIST": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "상태전이 일련번호 (PK)", "PK"],
+        ["BF_STAT_CD", "VARCHAR(3)", "변경 전 상태코드", ""], ["BF_STAT_NM", "VARCHAR", "변경 전 상태명 (코드 라벨)", ""],
+        ["CHN_STAT_CD", "VARCHAR(3)", "변경 후 상태코드", ""], ["CHN_STAT_NM", "VARCHAR", "변경 후 상태명 (코드 라벨)", ""],
+        ["EFFECTIVE_FROM", "TIMESTAMP_NTZ", "SCD2 유효시작 시각", ""], ["EFFECTIVE_TO", "TIMESTAMP_NTZ", "SCD2 유효종료 시각", ""],
+        ["IS_CURRENT", "BOOLEAN", "현재행 여부", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_DEV": [
+        ["SPNSR_NO", "VARCHAR(9)", "후원번호 (PK)", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호 (PK)", "PK"],
+        ["OCCRRNC_DE", "VARCHAR(8)", "발생일자 YYYYMMDD (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"],
+        ["SPNSR_AMT", "NUMBER(19,0)", "약정 후원금액 (원단위)", ""], ["DVLP_DIV_CD", "VARCHAR(3)", "개발구분코드", ""],
+        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드 (→CRM_ORG)", "FK"], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", "FK"],
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", "FK"], ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""],
+        ["AREA_CD", "VARCHAR(3)", "지역코드 (CM018) — DIM_MEMBER REGION 스냅샷 소스", ""], ["AREA_NM", "VARCHAR", "지역명 (코드 라벨)", ""],
+        ["AGE", "NUMBER(10,0)", "연령 — DIM_MEMBER AGE_BAND 스냅샷 소스", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_AMT_CHANGE": [
+        ["OCCRRNC_DE", "VARCHAR(8)", "발생일자 YYYYMMDD (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "변경 후 약정금액 (원단위)", ""],
+        ["RDCAMT_YN", "VARCHAR(1)", "감액여부 (Y=감액/N=증액)", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", "FK"],
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", "FK"], ["AREA_CD", "VARCHAR(3)", "지역코드 (CM018) — DIM_MEMBER REGION 스냅샷 소스", ""],
+        ["AREA_NM", "VARCHAR", "지역명 (코드 라벨)", ""], ["AGE", "NUMBER(10,0)", "연령 — DIM_MEMBER AGE_BAND 스냅샷 소스", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_DISCONTINUE": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일자 YYYYMMDD (PK)", "PK"],
+        ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"], ["DSCNTC_RSN_CD", "VARCHAR(3)", "중단사유코드", ""],
+        ["DSCNTC_RSN_NM", "VARCHAR", "중단사유명 (코드 라벨)", ""], ["DSCNTC_PATH", "VARCHAR(1)", "중단경로", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", "FK"], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_RESPONSOR": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
+        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일자 YYYYMMDD (PK)", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", "FK"],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_MEMBER_SPONSOR_BIZ": [
+        ["SPNSR_NO", "VARCHAR(9)", "후원번호 (PK)", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호 (PK)", "PK"],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "약정금액 (원단위)", ""],
+        ["SPNSR_DSCNTC_YN", "VARCHAR(1)", "후원중단여부 (Y/N)", ""], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일자 YYYYMMDD", ""],
+        ["SPNSR_DSCNTC_RSN_CD", "VARCHAR(3)", "후원중단사유코드", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_SPONSOR_RELATION": [
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (PK)", "PK"], ["SPNSR_NO", "VARCHAR(9)", "후원번호", ""],
+        ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (Q15 크로스워크 파생)", "FK"],
+        ["CHILD_CD", "NUMBER(10,0)", "결연아동코드", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["RELATNSP_STRT_DE", "DATE", "결연 시작일", ""], ["RELATNSP_DSCNTC_DE", "DATE", "결연 중단일", ""],
+        ["RELATNSP_DSCNTC_YN", "VARCHAR(1)", "결연 중단여부 (Y/N)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_PAYMENT_BILLING": [
+        ["PAY_KEY", "VARCHAR", "납입/청구 대체키 (PK)", "PK"], ["PAYMENT_TYPE", "VARCHAR", "납입유형 파생 (회비/기부금)", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", "FK"], ["MBRFEE_MT", "VARCHAR(6)", "회비 대상월 YYYYMM", ""],
+        ["MBRFEE_SQNC", "NUMBER(3,0)", "회비 회차", ""], ["RQEST_AMT", "NUMBER(19,0)", "청구금액 (원단위)", ""],
+        ["RQEST_DE", "DATE", "청구일자", ""], ["PAY_AMT", "NUMBER(10,0)", "납입금액 (원단위)", ""],
+        ["PAY_DE", "DATE", "납입일자", ""], ["PAY_STAT_CD", "VARCHAR(3)", "납입상태코드", ""],
+        ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""], ["GFT_DIV_CD", "VARCHAR(3)", "기부구분코드", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_PAYMENT_METHOD": [
+        ["SETLE_KEY", "NUMBER(10,0)", "결제수단키 (PK)", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""], ["SETLE_NM", "VARCHAR", "결제수단명 (코드 라벨)", ""],
+        ["CARD_DIV_CD", "VARCHAR(3)", "카드구분코드", ""], ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""],
+        ["WTDRW_STRT_DE", "DATE", "출금 시작일", ""], ["SETLE_STAT_CD", "VARCHAR(3)", "결제상태코드", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_CAMPAIGN": [
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (PK)", "PK"], ["CMPGN_NM", "VARCHAR(200)", "캠페인명", ""],
+        ["UPPER_CMPGN_CD", "VARCHAR(20)", "상위캠페인코드 (자기참조)", ""], ["UPPER_CMPGN_YN", "VARCHAR(1)", "상위캠페인 여부 (Y/N)", ""],
+        ["BRND_ID", "VARCHAR(30)", "브랜드ID", ""], ["BRND_NM", "VARCHAR(200)", "브랜드명", ""],
+        ["PR_MTH_CD", "VARCHAR(3)", "홍보방법코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID (Q16 조인키)", "FK"],
+        ["CMPGN_CTGR_CD", "NUMBER(10,0)", "캠페인 카테고리코드", ""], ["CMPGN_TYPE1_BSN", "NUMBER(10,0)", "캠페인 유형1 (사업)", ""],
+        ["CMPGN_TYPE2_BSN", "NUMBER(10,0)", "캠페인 유형2 (사업)", ""], ["MKTG_CMPGN_NM", "NUMBER(10,0)", "마케팅 캠페인명 코드", ""],
+        ["MK_CMPGN_NM", "VARCHAR(200)", "마케팅 캠페인명 (라벨)", ""], ["CMPGN_STRT_DE", "VARCHAR(8)", "캠페인 시작일 YYYYMMDD", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_SPONSORSHIP": [
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (PK)", "PK"], ["SPNSR_BSNS_NM", "VARCHAR(50)", "후원사업명", ""],
+        ["SPNSR_BSNS_ABRV_CD", "VARCHAR(3)", "후원사업 약칭코드", ""], ["SPNSR_DIV_CD", "VARCHAR(3)", "후원구분코드", ""],
+        ["DNTN_TY_CD", "VARCHAR(3)", "기부유형코드", ""], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_ORG": [
+        ["DEPT_ID", "VARCHAR(20)", "부서ID (PK)", "PK"], ["DEPT_NM", "VARCHAR(50)", "부서명", ""],
+        ["UPPER_DEPT_ID", "VARCHAR(20)", "상위부서ID (조직 계층)", ""], ["ACMSLT_UPPER_DEPT_ID", "VARCHAR(20)", "실적상위부서ID (실적팀 재귀 LVL5)", ""],
+        ["ACMSLT_DEPT_YN", "VARCHAR(1)", "실적부서 여부 (Y/N)", ""], ["STATS_DEPT_LVL", "NUMBER(3,0)", "통계부서 레벨", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부 (Y/N, 원천 확인)", ""], ["SORT_ORDR", "NUMBER(10,0)", "정렬순서 (원천 확인)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_DEV_TARGET": [
+        ["STDYY", "VARCHAR(4)", "기준연도 YYYY (PK)", "PK"], ["STDR_MT", "VARCHAR(6)", "기준월 YYYYMM (PK)", "PK"],
+        ["MBER_DVLP_DIV_CD", "VARCHAR(1)", "회원개발 구분코드 (PK)", "PK"], ["DEPT_ID", "VARCHAR(20)", "부서ID (PK, →CRM_ORG)", "PK"],
+        ["GOAL_CNT", "NUMBER(10,0)", "목표 건수", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_SEND_REQUEST": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발송키 (PK)", "PK"], ["SEND_CHANNEL", "VARCHAR", "발송채널 (SND/SMS/EMAIL 등)", ""],
+        ["SNDNG_TY_CD", "VARCHAR(3)", "발송유형코드", ""], ["SEND_GBN_TOP", "VARCHAR(255)", "발송구분 대분류코드 DIM_SERVICE 대", ""],
+        ["SEND_GBN_TOP_NM", "VARCHAR(255)", "발송구분 대분류명", ""], ["SEND_GBN_MID", "VARCHAR(255)", "발송구분 중분류코드 DIM_SERVICE 중", ""],
+        ["SEND_GBN_MID_NM", "VARCHAR(255)", "발송구분 중분류명", ""], ["SEND_GBN_BOT", "VARCHAR(255)", "발송구분 소분류코드 DIM_SERVICE 소", ""],
+        ["SEND_GBN_BOT_NM", "VARCHAR(255)", "발송구분 소분류명", ""], ["TIT", "VARCHAR(100)", "발송 제목", ""],
+        ["SNDNG_STDR_DE", "TIMESTAMP_NTZ", "발송 기준일시", ""], ["REQ_SEQ_NO", "NUMBER(19,0)", "요청 일련번호", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_SEND_MEMBER": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발송키 (PK, →CRM_SEND_REQUEST)", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발송상세키 (PK)", "PK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SNDNG_DE", "TIMESTAMP_NTZ", "발송일시", ""],
+        ["SNDNG_RST_CD", "VARCHAR(3)", "발송결과코드", ""], ["SEND_CHANNEL", "VARCHAR", "발송채널", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_SEND_RESULT": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발송키 (PK, →CRM_SEND_REQUEST)", "PK"], ["SEND_CHANNEL", "VARCHAR", "발송채널 (PK)", "PK"],
+        ["SNDNG_CNT", "NUMBER(10,0)", "발송 건수", ""], ["SUCCES_CNT", "NUMBER(10,0)", "성공 건수", ""],
+        ["FAILR_CNT", "NUMBER(10,0)", "실패 건수", ""], ["TOT_CLICK_CNT", "NUMBER", "총 클릭수", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_EVENT": [
+        ["EVENT_KEY", "VARCHAR", "행사키 (PK)", "PK"], ["EVENT_SOURCE", "VARCHAR", "행사출처 (이벤트/캠페인행사)", ""],
+        ["EVENT_DIV_CD", "VARCHAR(3)", "행사구분코드", ""], ["EVENT_NM", "VARCHAR(200)", "행사명", ""],
+        ["STRT_DE", "VARCHAR(8)", "시작일자 YYYYMMDD", ""], ["END_DE", "VARCHAR(8)", "종료일자 YYYYMMDD", ""],
+        ["RCRIT_PSNNL_CO", "NUMBER(10,0)", "모집인원 수", ""], ["BRNCH_DEPT_ID", "VARCHAR(20)", "주관부서ID (→CRM_ORG)", "FK"],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_EVENT_PARTICIPATION": [
+        ["EVENT_KEY", "VARCHAR", "행사키 (PK, →CRM_EVENT)", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"],
+        ["PARTCPT_SEQ", "NUMBER(10,0)", "참여 일련번호 (PK)", "PK"], ["PARTCPT_STAT_CD", "VARCHAR(3)", "참여상태코드", ""],
+        ["PARTCPT_CHNNL_CD", "VARCHAR(3)", "참여채널코드", ""], ["PARTCPT_PATH_CD", "VARCHAR(3)", "참여경로코드", ""],
+        ["PRZWIN_CD", "NUMBER(10,0)", "당첨코드", ""], ["RCPMNY_AMT", "NUMBER(19,0)", "입금금액 (원단위)", ""],
+        ["PARTCPT_DT", "TIMESTAMP_NTZ", "참여일시", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_RELATION_ACTIVITY": [
+        ["ACTIVITY_KEY", "VARCHAR", "결연활동 대체키 (PK)", "PK"], ["ACTIVITY_TYPE", "VARCHAR", "활동유형 파생 (서신/선물금)", ""],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", "FK"], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
+        ["GFTMNEY", "NUMBER(10,0)", "선물금 (원단위)", ""], ["LETTER_DIV_CD", "NUMBER(10,0)", "서신구분코드", ""],
+        ["RCEPT_DE", "DATE", "접수일자", ""], ["SNDNG_DE", "DATE", "발송일자", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "CRM_CODE": [
+        ["CD_ID", "VARCHAR(20)", "코드그룹 ID (PK)", "PK"], ["DTL_CD_ID", "VARCHAR(50)", "상세코드 ID (PK)", "PK"],
+        ["DTL_CD_NM", "VARCHAR(100)", "상세코드명 (라벨)", ""], ["UPPER_CD_ID", "VARCHAR(20)", "상위코드 ID (코드 계층)", ""],
+        ["SORT_ORDR", "NUMBER(10,0)", "정렬순서", ""], ["USE_YN", "VARCHAR(1)", "사용여부 (Y/N)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "ERP_BUDGET_ITEM": [
+        ["BUDGET_ITEM_DK", "VARCHAR", "MD5 해시 대체키 (PK) = MD5(연도|수입지출|...|재원)", "PK"], ["BUDGET_YEAR", "NUMBER(4,0)", "예산연도 YYYY", ""],
+        ["INCOME_EXPENSE_DIV", "VARCHAR", "수입/지출 구분", ""], ["BUDGET_UNIT_NM", "VARCHAR", "예산단위 (=조직명, 코드 없음)", ""],
+        ["JANG_NM", "VARCHAR", "예산과목 1단계 장", ""], ["KWAN_NM", "VARCHAR", "예산과목 2단계 관", ""],
+        ["HANG_NM", "VARCHAR", "예산과목 3단계 항", ""], ["MOK_NM", "VARCHAR", "예산과목 4단계 목", ""],
+        ["DTL_ITEM_NM", "VARCHAR", "예산과목 5단계 세목", ""], ["SUBDTL_ITEM_NM", "VARCHAR", "예산과목 6단계 세세목", ""],
+        ["FUND_SOURCE_NM", "VARCHAR", "재원", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "ERP_BUDGET": [
+        ["BUDGET_ITEM_DK", "VARCHAR", "예산과목 대체키 (PK, →ERP_BUDGET_ITEM)", "PK"], ["BUDGET_YEAR", "NUMBER(4,0)", "예산연도 YYYY", ""],
+        ["MONTH_NO", "NUMBER(2,0)", "월 1~12 (PK)", "PK"], ["MONTH_KEY", "VARCHAR(6)", "월키 YYYYMM", ""],
+        ["YEAR_BUDGET_AMT", "NUMBER(38,0)", "편성(연예산) 금액 원단위", ""], ["CHN_BUDGET_AMT", "NUMBER(38,0)", "추경 금액 원단위", ""],
+        ["ADJ_BUDGET_AMT", "NUMBER(38,0)", "조정 금액 원단위", ""], ["EXEC_AMT", "NUMBER(38,0)", "집행 금액 원단위", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "ERP_BIZ_TARGET": [
+        ["BIZ_TARGET_DK", "VARCHAR", "사업목표 대체키 (PK)", "PK"], ["TARGET_YEAR", "NUMBER(4,0)", "목표연도 YYYY", ""],
+        ["MONTH_NO", "NUMBER(2,0)", "월 1~12", ""], ["MONTH_KEY", "VARCHAR(6)", "월키 YYYYMM", ""],
+        ["ORG_NM", "VARCHAR", "조직 (이름, 코드 없음)", ""], ["SPONSOR_BIZ_NM", "VARCHAR", "후원사업", ""],
+        ["CAMPAIGN_NM", "VARCHAR", "캠페인 (연결키 부재 Q10 — nullable)", ""], ["TARGET_AMT", "NUMBER(38,0)", "연/추경 (누계)목표 금액 원단위", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "AGENCY_AD_CREATIVE": [
+        ["CREATIVE_DK", "VARCHAR", "MD5(소스+매체+소재+유형+CM위치+초수) 대체키 (PK)", "PK"], ["SOURCE_SYSTEM", "VARCHAR", "소스 시스템 (DIGITAL/REBROADCAST/VIDEO)", ""],
+        ["MEDIA_CHANNEL_NM", "VARCHAR", "매체/채널명", ""], ["CREATIVE_NM", "VARCHAR", "소재명 (DGT.MATR/REBRDC.BRDC_NM/VIDEO.MATR_NM)", ""],
+        ["CREATIVE_TYPE_NM", "VARCHAR", "소재유형/RT유형/캠페인유형", ""], ["CM_AREA_NM", "VARCHAR", "CM위치 (VIDEO)", ""],
+        ["AD_SEC_NM", "VARCHAR", "초수 (VIDEO)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "AGENCY_AD_PERFORMANCE": [
+        ["SOURCE_SYSTEM", "VARCHAR", "소스 시스템 (DIGITAL/REBROADCAST/VIDEO)", ""], ["AD_DATE", "DATE", "광고 집행일자", ""],
+        ["AD_YEAR", "NUMBER(4,0)", "광고 집행연도 YYYY", ""], ["AD_MONTH", "NUMBER(2,0)", "광고 집행월 1~12", ""],
+        ["CAMPAIGN_NM", "VARCHAR", "캠페인명 (DGT.CMPGN_NM/VIDEO.MKT_CMPGN_NM/REBRDC=NULL)", ""], ["UPPER_CAMPAIGN_NM", "VARCHAR", "상위 캠페인명", ""],
+        ["MEDIA_CHANNEL_NM", "VARCHAR", "매체/채널명", ""], ["DEVICE_NM", "VARCHAR", "디바이스 (DGT만)", ""],
+        ["CREATIVE_NM", "VARCHAR", "소재명", ""], ["PROGRAM_NM", "VARCHAR", "프로그램명 (REBRDC.BRDC_NM/VIDEO.SCHDL_NM)", ""],
+        ["IMPRESSION_CNT", "NUMBER(38,4)", "노출수 (DGT만)", ""], ["CLICK_CNT", "NUMBER(38,4)", "클릭수 (DGT만)", ""],
+        ["CONV_MEMBER_CNT", "NUMBER(38,4)", "전환/개발 명수", ""], ["CONV_UNIT_CNT", "NUMBER(38,4)", "전환 VU/건수", ""],
+        ["INBOUND_CALL_CNT", "NUMBER(38,4)", "인입콜 수 (REBRDC=TRY_TO_NUMBER + VIDEO)", ""], ["CONV_CALL_CNT", "NUMBER(38,4)", "VIDEO 전환콜 (별개 measure)", ""],
+        ["AD_CNT", "NUMBER(38,4)", "광고횟수 (REBRDC/VIDEO)", ""], ["AD_COST", "NUMBER(38,4)", "광고비 (소스별 컬럼 상이)", ""],
+        ["COST_TYPE", "VARCHAR", "비용유형 (GA/편성(REBRDC)/집행(VIDEO))", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "GA4_TRAFFIC_SOURCE": [
+        ["UTM_SOURCE", "VARCHAR", "UTM source (센티넬 NULLIF (not set)/(direct))", ""], ["UTM_MEDIUM", "VARCHAR", "UTM medium (센티넬 NULLIF (not set)/(none)/(direct))", ""],
+        ["UTM_CAMPAIGN", "VARCHAR", "UTM campaign", ""], ["UTM_CONTENT", "VARCHAR", "UTM content", ""],
+        ["UTM_TERM", "VARCHAR", "UTM term", ""], ["SOURCE_MEDIUM", "VARCHAR", "파생 source / medium", ""],
+        ["XCHAN_SOURCE", "VARCHAR", "cross_channel_campaign source (동일 last-click variant)", ""], ["XCHAN_MEDIUM", "VARCHAR", "cross_channel_campaign medium", ""],
+        ["XCHAN_CAMPAIGN", "VARCHAR", "cross_channel_campaign campaign", ""], ["DEFAULT_CHANNEL_GROUP", "VARCHAR", "기본 채널그룹 (정규화 금지 — 정상 라벨)", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "GA4_EVENT_DIM": [
+        ["EVENT_NAME", "VARCHAR(200)", "이벤트명 (그레인 핵심키)", "PK"], ["EVENT_CATEGORY", "VARCHAR", "이벤트 카테고리", ""],
+        ["EVENT_LABEL", "VARCHAR", "이벤트 라벨 (혼합타입 → COALESCE(string,int))", ""], ["EVENT_ACTION", "VARCHAR", "이벤트 액션", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "GA4_DEVICE": [
+        ["DEVICE_TYPE", "VARCHAR(10)", "디바이스 유형 PC/M/APP(파생) → DIM_DEVICE 핵심", "PK"], ["PLATFORM", "VARCHAR(50)", "플랫폼 WEB/ANDROID/IOS (O2 conform 대기)", ""],
+        ["DEVICE_CATEGORY", "VARCHAR", "디바이스 카테고리 (원본)", ""], ["OS", "VARCHAR", "운영체제", ""],
+        ["BROWSER", "VARCHAR", "브라우저", ""], ["LANGUAGE", "VARCHAR", "언어", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "GA4_EVENT": [
+        ["USER_PSEUDO_ID", "VARCHAR(200)", "세션 스파인 (PK)", "PK"], ["EVENT_TIMESTAMP", "NUMBER", "UTC microsec (원본, 불변) (PK)", "PK"],
+        ["EVENT_NAME", "VARCHAR(200)", "이벤트명 (PK)", "PK"], ["BATCH_ORDERING_ID", "NUMBER", "배치 내 정렬 ID (PK, dedup 보조)", "PK"],
+        ["EVENT_DATE", "VARCHAR(8)", "원본 YYYYMMDD (date-shard)", ""], ["EVENT_DT", "DATE", "파생: TO_DATE(event_date,'YYYYMMDD')", ""],
+        ["EVENT_TS", "TIMESTAMP_NTZ", "파생: TO_TIMESTAMP(event_timestamp/1e6)", ""], ["USER_ID", "VARCHAR(10)", "CRM 회원번호(Q1) VARCHAR·원본 불변", "FK"],
+        ["GA_SESSION_ID", "NUMBER", "GA 세션ID (event_params 승격)", ""], ["GA_SESSION_NUMBER", "NUMBER", "GA 세션 번호", ""],
+        ["GA_SESSION_KEY", "VARCHAR", "파생: user_pseudo_id∥'-'∥ga_session_id (세션 자연키)", ""], ["USER_ID_FILLED", "VARCHAR(10)", "파생: 세션 전파 회원번호(07 §5-A) — 회원 귀속용", ""],
+        ["ID_RESOLUTION", "VARCHAR(20)", "신원해소 신뢰도 DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT", ""], ["SESSION_ENGAGED", "VARCHAR(5)", "세션 engaged 여부 (혼합타입 → COALESCE)", ""],
+        ["ENGAGEMENT_TIME_MSEC", "NUMBER", "참여시간 msec (비가산 raw, O1)", ""], ["PAGE_LOCATION", "VARCHAR", "페이지 URL", ""],
+        ["PAGE_TITLE", "VARCHAR", "페이지 제목", ""], ["PAGE_REFERRER", "VARCHAR", "리퍼러 URL", ""],
+        ["EVENT_CATEGORY", "VARCHAR", "이벤트 카테고리", ""], ["EVENT_ACTION", "VARCHAR", "이벤트 액션", ""],
+        ["EVENT_LABEL", "VARCHAR", "이벤트 라벨 (혼합타입 → COALESCE)", ""], ["PERCENT_SCROLLED", "NUMBER", "스크롤 비율", ""],
+        ["LINK_URL", "VARCHAR", "클릭 링크 URL", ""], ["LINK_TEXT", "VARCHAR", "클릭 링크 텍스트", ""],
+        ["DEVICE_TYPE", "VARCHAR(10)", "디바이스 유형 파생 PC/M/APP", ""], ["DEVICE_CATEGORY", "VARCHAR", "디바이스 카테고리 (원본)", ""],
+        ["OS", "VARCHAR", "운영체제", ""], ["GEO_COUNTRY", "VARCHAR", "국가", ""],
+        ["GEO_CITY", "VARCHAR", "도시", ""], ["UTM_SOURCE", "VARCHAR", "UTM source (센티넬 NULLIF)", ""],
+        ["UTM_MEDIUM", "VARCHAR", "UTM medium", ""], ["UTM_CAMPAIGN", "VARCHAR", "UTM campaign", ""],
+        ["DEFAULT_CHANNEL_GROUP", "VARCHAR", "기본 채널그룹", ""], ["PLATFORM", "VARCHAR(50)", "플랫폼 WEB/ANDROID/IOS", ""],
+        ["IS_ACTIVE_USER", "BOOLEAN", "활성 사용자 여부", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "GA4_IDENTITY": [
+        ["USER_PSEUDO_ID", "VARCHAR(200)", "세션 스파인 (PK)", "PK"], ["GA_MEMBER_ID", "VARCHAR(10)", "= user_id_filled(세션 채움 후 회원번호) VARCHAR", ""],
+        ["MEMBER_TYPE", "VARCHAR(10)", "파생: 'S%'→ONCE else FDRM", ""], ["MBER_NO", "VARCHAR(10)", "정기 회원번호 FK→TM_MM_FDRM_MBER_INFO.MBER_NO(파생)", "FK"],
+        ["ONCE_MBER_NO", "VARCHAR(10)", "일시 회원번호 FK→TM_MM_ONCE_MBER_INFO.ONCE_MBER_NO(파생)", "FK"], ["ID_RESOLUTION", "VARCHAR(20)", "신원해소 신뢰도 DIRECT/SESSION_FILL", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+      "IDENTITY_MEMBER_XREF": [
+        ["USER_PSEUDO_ID", "VARCHAR(200)", "GA 세션 스파인 (PK)", "PK"], ["GA_MEMBER_ID", "VARCHAR(10)", "GA측 회원번호(=user_id_filled)", ""],
+        ["MEMBER_TYPE", "VARCHAR(10)", "회원구분 ONCE(S%)/FDRM", ""], ["MEMBER_DK", "VARCHAR(10)", "매칭된 CRM 불변회원키(미매칭 NULL). FK→CRM_MEMBER.MEMBER_DK", "FK"],
+        ["HOMEPAGE_ID", "VARCHAR", "매칭 CRM 회원의 HMPG_ID(미매칭 NULL)", ""], ["ID_RESOLUTION", "VARCHAR(20)", "GA측 신뢰도 passthrough: DIRECT/SESSION_FILL", ""],
+        ["MATCH_METHOD", "VARCHAR(30)", "매칭방법 MEMBER_ID_EXACT / UNMATCHED", ""], ["MATCH_CONFIDENCE", "VARCHAR(10)", "매칭신뢰도 HIGH(exact+DIRECT) / MEDIUM / NONE", ""],
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ],
+
+      // ==========================================================
+      // [BRONZE SOURCES (48개)]
+      // ==========================================================
+      "SND_MEMBER_LIST": [
+        ["REQ_SEQ_NO", "NUMBER(19,0)", "REQ_SEQ_NO", "PK"], ["R_NUM", "NUMBER(19,0)", "순번", ""],
+        ["MBER_NO", "VARCHAR(255)", "회원번호", "FK"], ["SPNSR_CD", "VARCHAR(255)", "후원사업(코드)", ""],
+        ["SPNSR_NM", "VARCHAR(255)", "후원사업(이름)", ""], ["CMPGN_CD", "VARCHAR(255)", "캠페인(코드)", ""],
+        ["CMPGN_NM", "VARCHAR(255)", "캠페인(이름)", ""], ["GENDER", "VARCHAR(255)", "성별(회원)", ""],
+        ["AGE", "VARCHAR(255)", "연령대", ""], ["SETLE_CD", "VARCHAR(255)", "납입방식(코드)", ""],
+        ["SETLE_NM", "VARCHAR(255)", "납입방식(이름)", ""], ["DSCNTC_PATH", "VARCHAR(255)", "중단채널", ""],
+        ["DSCNTC_RSN_CD", "VARCHAR(255)", "중단사유(코드)", ""], ["DSCNTC_RSN_NM", "VARCHAR(255)", "중단사유(이름)", ""],
+        ["CHILD_NO", "VARCHAR(255)", "아동번호", ""], ["LST_BRND_CD", "VARCHAR(255)", "최종브랜드(코드)", ""],
+        ["LST_BRND_NM", "VARCHAR(255)", "최종브랜드(이름)", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "가입일", ""],
+        ["MNG_NO", "VARCHAR(255)", "관리번호", ""], ["LETTER_DIV_CD", "VARCHAR(255)", "서비스구분", ""],
+        ["CHILD_DTL_CD", "VARCHAR(255)", "아동세부상태(코드)", ""], ["CHILD_DTL_NM", "VARCHAR(255)", "아동세부상태(이름)", ""],
+        ["RELATNSP_DSCNTC_YN", "VARCHAR(255)", "결연중단유무", ""], ["FRST_SPNSR", "VARCHAR(255)", "최초후원사업(회원)", ""],
+        ["FRST_BRND_CD", "VARCHAR(255)", "최초 브랜드(코드)", ""], ["FRST_BRND_NM", "VARCHAR(255)", "최초 브랜드(이름)", ""],
+        ["RELATNSP_KEY", "NUMBER(19,0)", "결연번호", ""], ["LST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최종가입일", ""],
+        ["PRIV_SUSP_YN", "VARCHAR(255)", "개인 정보 이용 중단", ""], ["SND_YN", "VARCHAR(255)", "발송 성공 여부", ""],
+        ["SND_MSG", "VARCHAR(16777216)", "발송 메시지", ""], ["REG_DATE", "TIMESTAMP_NTZ(9)", "등록일시", ""],
+        ["SND_DT", "TIMESTAMP_NTZ(9)", "발송일", ""], ["SND_HOUR", "VARCHAR(255)", "발송시", ""],
+        ["SND_MIN", "VARCHAR(255)", "발송분", ""], ["EMAIL_RECPTN_CD", "VARCHAR(255)", "이메일 수신 상태(코드)", ""],
+        ["EMAIL_RECPTN_NM", "VARCHAR(255)", "이메일 수신 상태(이름)", ""], ["NATION_CD", "VARCHAR(255)", "국가코드", ""],
+        ["NATION_NM", "VARCHAR(255)", "국가명", ""], ["BPLC_CD", "VARCHAR(255)", "사업장코드", ""],
+        ["BPLC_KOR_NM", "VARCHAR(255)", "사업장명", ""], ["DISCHARGE_REPORT_KOR", "VARCHAR(255)", "퇴소보고서(한글)", ""],
+        ["PAST_NATION_NM", "VARCHAR(255)", "과거국가명", ""], ["PAST_BPLC_NM", "VARCHAR(255)", "과거사업장명", ""],
+        ["PAST_CHILD_NO", "VARCHAR(255)", "과거아동번호", ""], ["FAMILY_DTL", "VARCHAR(255)", "가족사항", ""],
+        ["FINAL_CHILD_SPNSR_START_DT", "TIMESTAMP_NTZ(9)", "종결아동결연시작일", ""], ["NEW_CHILD_NO", "VARCHAR(255)", "신규아동번호", ""],
+        ["NEW_CHILD_PROJECT_COUNTRY", "VARCHAR(255)", "신규아동사업국", ""], ["NEW_CHILD_WORKPLACE_NM", "VARCHAR(255)", "신규아동사업장명", ""],
+        ["NEW_CHILD_PIC", "VARCHAR(255)", "신규아동사진", ""], ["NEW_CHILD_GENDER", "VARCHAR(255)", "신규아동성별", ""],
+        ["SPNSR_AMOUNT", "NUMBER(10,2)", "후원금액(월납부액)", ""], ["SPNSR_STRT_DT", "TIMESTAMP_NTZ(9)", "후원시작일(최초가입일)", ""],
+        ["SPNSR_DSCNTC_DT", "TIMESTAMP_NTZ(9)", "후원중단일(가장최근중단일)", ""], ["RELATNSP_DT", "TIMESTAMP_NTZ(9)", "결연매칭일(결연일)", ""],
+        ["SPNSR_TYPE", "VARCHAR(255)", "후원구분", ""], ["CPR_DIV_CD", "VARCHAR(255)", "법인구분", ""],
+        ["DEPT_CD", "VARCHAR(255)", "사용부서", ""], ["CURRENT_BRND", "VARCHAR(255)", "최종브랜드(현재)", ""],
+        ["CURRENT_UPPER_CMPGN", "VARCHAR(255)", "최종상위캠페인(현재)", ""], ["CURRENT_CMPGN", "VARCHAR(255)", "최종캠페인(현재)", ""],
+        ["FIRST_UPPER_CMPGN", "VARCHAR(255)", "최초상위캠페인", ""], ["FIRST_CMPGN", "VARCHAR(255)", "최초캠페인", ""],
+        ["LAST_TOP_CMPGN", "VARCHAR(255)", "최종상위캠페인", ""], ["LAST_CMPGN", "VARCHAR(255)", "최종캠페인", ""],
+        ["MSG_KEY", "VARCHAR(255)", "메세지키", ""], ["CINFO", "VARCHAR(255)", "알림톡구분", ""],
+        ["RESPONSED_YN", "VARCHAR(255)", "발송확인여부", ""], ["RESPONSED_DT", "TIMESTAMP_NTZ(9)", "확인일시", ""],
+        ["SYNCED_AT", "TIMESTAMP_NTZ(9)", "동기화 타임스탬프", ""], ["CALL_STATUS", "VARCHAR(30)", "수신 결과 상태 (비즈뿌리오)", ""],
+        ["REAL_SEND_DT", "TIMESTAMP_NTZ(9)", "실제발신일시", ""], ["LAST_UPPER_CMPGN", "VARCHAR(255)", "최종상위캠페인", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "SND_REQ_MST": [
+        ["SEQ_NO", "NUMBER(19,0)", "순번", "PK"], ["SEND_GBN_TOP", "VARCHAR(255)", "발송 카테고리 (대)", ""],
+        ["SEND_GBN_MID", "VARCHAR(255)", "발송 카테고리 (중)", ""], ["SEND_GBN_BOT", "VARCHAR(255)", "발송 카테고리 (소)", ""],
+        ["SEND_TITLE", "VARCHAR(255)", "발송 제목", ""], ["MSG_TYPE", "VARCHAR(255)", "메시지 유형", ""],
+        ["TMPL_CODE", "VARCHAR(255)", "템플릿 코드", ""], ["AUTHOR", "VARCHAR(255)", "작성자", ""],
+        ["CREATE_DATE", "DATE", "작성일", ""], ["CONDITION_TITLE", "VARCHAR(255)", "발송 조건 제목", ""],
+        ["CALL_NUMBER", "VARCHAR(255)", "발신 번호", ""], ["ALT_SMS_YN", "VARCHAR(255)", "대체 문자 발송 여부", ""],
+        ["REGULARLY", "VARCHAR(255)", "발송 유형 (정기/비정기)", ""], ["PERIODIC", "VARCHAR(255)", "발송 주기", ""],
+        ["PERIODIC_WEEK", "VARCHAR(255)", "요일별 발송 요일", ""], ["PERIODIC_DAY", "NUMBER(10,0)", "매월 발송 일자", ""],
+        ["SEND_DATE", "DATE", "발송 시작 날짜", ""], ["SEND_TIME", "TIME(9)", "발송 시작 시간", ""],
+        ["SEND_MIN", "VARCHAR(2)", "발신분", ""], ["SEND_SPLIT_TYPE", "VARCHAR(255)", "발송 분할 방식", ""],
+        ["DIVIDE", "NUMBER(10,0)", "분할 건수", ""], ["DIVIDE_UNIT", "NUMBER(10,0)", "분할 단위 (분)", ""],
+        ["CORP_TYPE", "VARCHAR(255)", "법인 구분", ""], ["AUTO_TYPE", "VARCHAR(255)", "자동/수동 구분", ""],
+        ["USE_YN", "VARCHAR(255)", "사용 여부", ""], ["REG_ID", "VARCHAR(255)", "등록자", ""],
+        ["MOD_DATE", "DATE", "수정일", ""], ["INIT_REG_DATE", "DATE", "최초 등록일", ""],
+        ["LAST_SEND_DATE", "DATE", "최근 발송일", ""], ["APPR_STATUS", "VARCHAR(255)", "승인 상태", ""],
+        ["CREATE_DEPT", "VARCHAR(255)", "작성 부서", ""], ["SENDER_EMAIL", "VARCHAR(255)", "발신 메일주소", ""],
+        ["RCPT_LIST", "VARCHAR(16777216)", "수신자 목록", ""], ["SEND_STATUS", "VARCHAR(255)", "발송 상태", ""],
+        ["SEND_CNT", "NUMBER(19,0)", "발송 건수", ""], ["FAIL_CNT", "NUMBER(19,0)", "실패 건수", ""],
+        ["LAST_ERR", "VARCHAR(16777216)", "최근 오류", ""], ["END_DATE", "DATE", "발송종료일", ""],
+        ["PAPER_YEAR", "VARCHAR(255)", "ACPI 년도", ""], ["MENU_CODE", "VARCHAR(255)", "메뉴코드", ""],
+        ["SEND_GBN_TOP_NM", "VARCHAR(255)", "발송 카테고리 (대)", ""], ["SEND_GBN_MID_NM", "VARCHAR(255)", "발송 카테고리 (중)", ""],
+        ["SEND_GBN_BOT_NM", "VARCHAR(255)", "발송 카테고리 (소)", ""], ["TARGET_CNT", "NUMBER(19,0)", "발송대상카운트", ""],
+        ["SEND_ROUND", "NUMBER(10,0)", "발송차수", ""], ["EXTRA", "VARCHAR(255)", "EXTRA", ""],
+        ["ASSIGN_TARGET_CNT", "NUMBER(19,0)", "배정대상카운트", ""], ["FIRST_SEQ_NO", "NUMBER(19,0)", "첫번째SEQ_NO", ""],
+        ["JOB_ID", "VARCHAR(255)", "배치잡ID", ""], ["SYNCED_AT", "VARCHAR(255)", "동기화 타임스탬프", ""],
+        ["REG_NM", "VARCHAR(255)", "등록자명", ""], ["SERVICE_MENU_CODE", "VARCHAR(100)", "서비스메뉴코드", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TC_CMMN_CD": [
+        ["CD_ID", "VARCHAR(20)", "코드ID", "PK"], ["CD_NM", "VARCHAR(100)", "코드명", ""],
+        ["CD_DC", "VARCHAR(500)", "코드설명", ""], ["SORT_ORDR", "NUMBER(10,0)", "정렬순서", ""],
+        ["RM", "VARCHAR(1000)", "비고", ""], ["USE_YN", "VARCHAR(1)", "사용여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TC_CMMN_DTL_CD": [
+        ["CD_ID", "VARCHAR(20)", "코드ID", "PK"], ["DTL_CD_ID", "VARCHAR(50)", "상세코드ID", "PK"],
+        ["DTL_CD_NM", "VARCHAR(100)", "상세코드명", ""], ["DTL_CD_DC", "VARCHAR(500)", "상세코드설명", ""],
+        ["SORT_ORDR", "NUMBER(10,0)", "정렬순서", ""], ["RM", "VARCHAR(1000)", "비고", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["CD_ATRB1", "VARCHAR(100)", "코드속성1", ""],
+        ["CD_ATRB2", "VARCHAR(100)", "코드속성2", ""], ["CD_ATRB3", "VARCHAR(100)", "코드속성3", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["UPPER_CD_ID", "VARCHAR(20)", "상위코드ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_AT_TMPLAT_BTN_LIST": [
+        ["TMPLAT_ID", "VARCHAR(30)", "템플릿ID", "PK"], ["BTN_SEQ", "NUMBER(10,0)", "버튼순번", "PK"],
+        ["BTN_TY_CD", "VARCHAR(3)", "버튼유형코드", ""], ["BTN_NM", "VARCHAR(16777216)", "버튼명", ""],
+        ["ANDROID_URL", "VARCHAR(255)", "안드로이드URL", ""], ["IOS_URL", "VARCHAR(255)", "IOSURL", ""],
+        ["MOBILE_URL", "VARCHAR(255)", "모바일URL", ""], ["PC_URL", "VARCHAR(255)", "PCURL", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_CRMN_PRTCPNT": [
+        ["CRMN_CD", "NUMBER(10,0)", "행사코드", "PK"], ["PRTCPNT_KEY", "NUMBER(10,0)", "참여자KEY", "PK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["RQST_PATH_CD", "VARCHAR(3)", "신청경로코드", ""],
+        ["PARTCPT_TIME_CO", "NUMBER(10,0)", "참여시간수", ""], ["PARTCPT_STAT_CD", "VARCHAR(3)", "참여상태코드", ""],
+        ["SELF_PARTCPT_CD", "VARCHAR(3)", "자기참여코드", ""], ["RCPMNY_STAT_CD", "VARCHAR(3)", "입금상태코드", ""],
+        ["RCPMNY_DATE", "VARCHAR(8)", "입금일자", ""], ["REFND_DATE", "VARCHAR(8)", "환불일자", ""],
+        ["RQST_DATE", "VARCHAR(8)", "신청일자", ""], ["PARTCPT_DATE", "VARCHAR(8)", "참여일자", ""],
+        ["RCPMNY_AMT", "NUMBER(19,0)", "입금금액", ""], ["ACMPNY_PARTCPT_CO", "NUMBER(10,0)", "동반참여수", ""],
+        ["RM", "VARCHAR(1000)", "비고", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_EMAIL_LQY_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["MSG_ID", "VARCHAR(20)", "메시지ID", ""],
+        ["MKT_TRGET_CTNT", "VARCHAR(300)", "마케팅대상내용", ""], ["SNDNG_CNT", "NUMBER(10,0)", "발신건수", ""],
+        ["SUCCES_CNT", "NUMBER(10,0)", "성공건수", ""], ["FAILR_CNT", "NUMBER(10,0)", "실패건수", ""],
+        ["RECPTN_CNT", "NUMBER(10,0)", "수신건수", ""], ["SNDNG_STRT_DT", "TIMESTAMP_NTZ(9)", "발신시작일시", ""],
+        ["SNDNG_END_DT", "TIMESTAMP_NTZ(9)", "발신종료일시", ""], ["INFLOW_PATH_CTNT", "VARCHAR(100)", "유입경로내용", ""],
+        ["SNDNG_YEAR_CTNT", "VARCHAR(100)", "발신년도내용", ""], ["SNDNG_MT_CTNT", "VARCHAR(100)", "발신월내용", ""],
+        ["SNDNG_TEAM_CTNT", "VARCHAR(100)", "발신팀내용", ""], ["SUCCES_FAILR_CNT_CTNT", "VARCHAR(100)", "성공실패건수내용", ""],
+        ["URL_OTHBC_CNT_CTNT", "VARCHAR(100)", "URL공개건수내용", ""], ["URL_OTHBC_RT_CTNT", "VARCHAR(100)", "URL공개율내용", ""],
+        ["SESION_VU_CTNT", "VARCHAR(300)", "세션값내용", ""], ["SESION_PGE_CNT_CTNT", "VARCHAR(100)", "세션페이지건수내용", ""],
+        ["DVLP_ACMSLT_CNT_CTNT", "VARCHAR(100)", "개발실적건수내용", ""], ["CLOS_YN", "VARCHAR(1)", "마감여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_EMAIL_SNDNG_DTLS": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
+        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SNDNG_RST_CD", "VARCHAR(3)", "발신결과코드", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_EVENT_PRTCPNT_DTL": [
+        ["EVENT_CD", "NUMBER(10,0)", "이벤트코드", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["PARTCPT_SEQ", "NUMBER(10,0)", "참여순번", "PK"], ["EVENT_PARTCPT_DIV_CD", "VARCHAR(3)", "이벤트참여구분코드", ""],
+        ["PRZWIN_CD", "NUMBER(10,0)", "당첨코드", ""], ["PARTCPT_CHNNL_CD", "VARCHAR(3)", "참여채널코드", ""],
+        ["PARTCPT_PATH_CD", "VARCHAR(3)", "참여경로코드", ""], ["PARTCPT_STAT_CD", "VARCHAR(3)", "참여상태코드", ""],
+        ["PARTCPT_DT", "TIMESTAMP_NTZ(9)", "참여일시", ""], ["RM", "VARCHAR(1000)", "비고", ""],
+        ["RM2", "VARCHAR(1000)", "비고2", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_MSG_AT_LQY_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["DIVS_DTL_KEY", "NUMBER(10,0)", "분할상세KEY", "PK"],
+        ["SNDNG_CNT", "NUMBER(10,0)", "발신건수", ""], ["SUCCES_CNT", "NUMBER(10,0)", "성공건수", ""],
+        ["AT_ALTRTV_SNDNG_CNT", "NUMBER(10,0)", "알림톡대체발송건수", ""], ["AT_FAILR_CNT", "NUMBER(10,0)", "알림톡실패건수", ""],
+        ["RESVE_SNDNG_DE", "DATE", "예약발신일", ""], ["RESVE_HM", "VARCHAR(4)", "예약시분", ""],
+        ["TOT_CLICK_CNT_CTNT", "VARCHAR(100)", "총클릭건수내용", ""], ["CLICK_CNT_CTNT1", "VARCHAR(100)", "클릭건수내용1", ""],
+        ["CLICK_CNT_CTNT2", "VARCHAR(100)", "클릭건수내용2", ""], ["CLICK_CNT_CTNT3", "VARCHAR(100)", "클릭건수내용3", ""],
+        ["CLICK_CNT_CTNT4", "VARCHAR(100)", "클릭건수내용4", ""], ["RM_VU_CTNT", "VARCHAR(100)", "비고값내용", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_MSG_AT_SNDNG_DTLS": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
+        ["SNDNG_DT", "TIMESTAMP_NTZ(9)", "발신일시", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SNDNG_NO", "NUMBER(10,0)", "발신번호", ""], ["TRNSMS_STAT_CD", "VARCHAR(3)", "전송상태코드", ""],
+        ["TRNSMS_FAILR_CD_ID", "VARCHAR(20)", "전송실패코드ID", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "대체메시지발신여부", ""],
+        ["ALTRTV_MSG_SNDNG_YN", "VARCHAR(1)", "대체문자 발송 여부", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록자ID", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최초등록일시", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정자ID", ""],
+        ["ATTACHED_FILE", "VARCHAR(100)", "첨부파일", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_PSTMTR_LQY_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_CNT", "NUMBER(10,0)", "발신건수", ""],
+        ["SNDNG_SQNC", "NUMBER(3,0)", "발신차수", ""], ["SNDNG_TIT", "VARCHAR(255)", "발신제목", ""],
+        ["SNDNG_MEMO_CTNT", "VARCHAR(4000)", "발신메모내용", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TD_MS_PSTMTR_SNDNG_DTL": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
+        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "FK"], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
+        ["DTL_KEY", "NUMBER(10,0)", "상세KEY", ""], ["BIZN_REQUST_KEY", "NUMBER(10,0)", "업무요청KEY", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TH_MM_FDRM_MBER_STNG_DTLS": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
+        ["BF_STAT_CD", "VARCHAR(3)", "이전상태코드", ""], ["CHN_STAT_CD", "VARCHAR(3)", "변경상태코드", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TH_PM_SETLE_INFO_HIST": [
+        ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "PK"], ["UPDT_DT", "TIMESTAMP_NTZ(9)", "수정일시", ""],
+        ["UPDUSR_ID", "VARCHAR(30)", "수정자ID", ""], ["UPDUSR_NM", "VARCHAR(100)", "수정자명", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["WTDRW_STRT_DE", "DATE", "출금시작일", ""],
+        ["WTDRW_ASMT_SQNC", "NUMBER(3,0)", "출금지정차수", ""], ["FNLT_DIV_CD", "VARCHAR(3)", "금융기관구분코드", ""],
+        ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""],
+        ["CARD_TRMVT", "VARCHAR(6)", "결제번호암호화", ""], ["ACNUT_SER_NO", "NUMBER(10,0)", "카드유효기간", ""],
+        ["PAYER_NM", "VARCHAR(30)", "결제자명", ""], ["CARD_DIV_CD", "VARCHAR(3)", "카드구분코드", ""],
+        ["ETC_CTTPC", "VARCHAR(14)", "기타연락처", ""], ["ETC_CTTPC_REL_CD", "VARCHAR(3)", "기타연락처관계코드", ""],
+        ["PAYER_MBER_REL_CD", "VARCHAR(3)", "결제자회원관계코드", ""], ["CRTFC_MTH_CD", "VARCHAR(3)", "인증방법코드", ""],
+        ["CRTFC_FILE_NM", "VARCHAR(200)", "인증파일명", ""], ["CRTFC_DATA_CTNT", "VARCHAR(4000)", "인증데이터내용", ""],
+        ["CRTFC_DE", "DATE", "인증일", ""], ["FILE_SIZE", "NUMBER(10,0)", "파일크기", ""],
+        ["BILLKEY", "VARCHAR(50)", "빌키", ""], ["SETLE_STAT_CD", "VARCHAR(3)", "결제상태코드", ""],
+        ["BF_SETLE_STAT_CD", "VARCHAR(3)", "이전결제상태코드", ""], ["RQST_DIV_CD", "VARCHAR(3)", "신청구분코드", ""],
+        ["RCEPT_DIV_CD", "VARCHAR(3)", "접수구분코드", ""], ["APRV_YN", "VARCHAR(1)", "승인여부", ""],
+        ["APRV_REQUST_KEY", "NUMBER(19,0)", "승인요청KEY", ""], ["APRV_RST_KEY", "NUMBER(19,0)", "승인결과KEY", ""],
+        ["FRST_BEGIN_DE", "DATE", "최초개시일", ""], ["RQEST_EXCL_YN", "VARCHAR(1)", "청구제외여부", ""],
+        ["RQEST_EXCL_STRT_DE", "DATE", "청구제외시작일", ""], ["RQEST_EXCL_END_DE", "DATE", "청구제외종료일", ""],
+        ["APPLCNT_NM", "VARCHAR(30)", "신청자명", ""], ["APPLCNT_ETC_CTTPC", "VARCHAR(14)", "신청자기타연락처", ""],
+        ["APPLCNT_ETC_CTTPC_REL_CD", "VARCHAR(3)", "신청자기타연락처관계코드", ""], ["APPLCNT_MBER_REL_CD", "VARCHAR(3)", "신청자회원관계코드", ""],
+        ["BF_SETLE_KEY", "NUMBER(10,0)", "이전결제KEY", ""], ["OPERT_DIV_CD", "VARCHAR(3)", "작업구분코드", ""],
+        ["CRTFC_TY_CD", "VARCHAR(3)", "인증유형코드", ""], ["USE_YN", "VARCHAR(1)", "사용여부", ""],
+        ["RGSTR_ID", "VARCHAR(30)", "등록자ID", ""], ["RGSTR_NM", "VARCHAR(30)", "등록자명", ""],
+        ["REGIST_DT", "TIMESTAMP_NTZ(9)", "등록일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_BRND_MNG": [
+        ["BRND_ID", "VARCHAR(30)", "브랜드ID", "PK"], ["BRND_NM", "VARCHAR(200)", "브랜드명", ""],
+        ["USE_DEPT_CD", "VARCHAR(10)", "사용부서코드", ""], ["USE_YN", "VARCHAR(1)", "사용여부", ""],
+        ["PR_MTH_LIST", "VARCHAR(4000)", "홍보방법리스트", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_CMPGN_MNG": [
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "PK"], ["CMPGN_NM", "VARCHAR(200)", "캠페인명", ""],
+        ["UPPER_CMPGN_CD", "VARCHAR(20)", "상위캠페인코드", ""], ["UPPER_CMPGN_YN", "VARCHAR(1)", "상위캠페인여부", ""],
+        ["SPNSR_DIV_CD", "VARCHAR(3)", "후원구분코드", ""], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["CMPGN_TRGET_CD", "VARCHAR(2)", "캠페인대상코드", ""], ["USE_DEPT_CD", "VARCHAR(10)", "사용부서코드", ""],
+        ["USE_SCOPE", "VARCHAR(1)", "사용범위", ""], ["SPNSR_ENTRPRS_ID", "VARCHAR(20)", "후원기업ID", ""],
+        ["BRND_ID", "VARCHAR(30)", "브랜드ID", ""], ["PR_MTH_CD", "VARCHAR(3)", "홍보방법코드", ""],
+        ["CMPGN_STRT_DE", "VARCHAR(8)", "캠페인시작일", ""], ["MBRFEE_BNKB_LIST", "VARCHAR(4000)", "회비통장리스트", ""],
+        ["INICIS_ACNT_NO", "VARCHAR(50)", "이니시스계정번호", ""], ["USE_YN", "VARCHAR(1)", "사용여부", ""],
+        ["REFER_URL", "VARCHAR(255)", "참고URL", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID", "FK"],
+        ["CMPGN_DC", "VARCHAR(500)", "캠페인설명", ""], ["EMRGNCY_AID_BPLC_CD", "NUMBER(10,0)", "긴급구호사업장코드", ""],
+        ["CMPGN_PRPT_YN", "VARCHAR(1)", "캠페인특성여부", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["RM", "VARCHAR(50)", "비고", ""], ["MBER_INFLOW_PATH_CD", "NUMBER(10,0)", "개발인입경로", ""],
+        ["CMPGN_CTGR_CD", "NUMBER(10,0)", "캠페인 카테고리", ""], ["CMPGN_TYPE1_BSN", "NUMBER(10,0)", "캠페인유형(국내/해외)", ""],
+        ["CMPGN_TYPE2_BSN", "NUMBER(10,0)", "캠페인유형(사업/사례)", ""], ["MKTG_CMPGN_NM", "NUMBER(10,0)", "마케팅갬페인명", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_DEPT_INFO": [
+        ["DEPT_ID", "VARCHAR(20)", "부서ID", "PK"], ["DEPT_NM", "VARCHAR(50)", "부서명", ""],
+        ["UPPER_DEPT_ID", "VARCHAR(20)", "상위부서ID", ""], ["SORT_ORDR", "NUMBER(10,0)", "정렬순서", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["ACMSLT_DEPT_YN", "VARCHAR(1)", "실적부서여부", ""],
+        ["STATS_DEPT_LVL", "NUMBER(3,0)", "통계부서레벨", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["ACMSLT_UPPER_DEPT_ID", "VARCHAR(20)", "실적상위부서ID", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_MBER_DVLP_GOAL": [
+        ["STDYY", "VARCHAR(4)", "기준연", "PK"], ["STDR_MT", "VARCHAR(6)", "기준월", "PK"],
+        ["MBER_DVLP_DIV_CD", "VARCHAR(1)", "개발구분", "PK"], ["DEPT_ID", "VARCHAR(20)", "부서", "PK"],
+        ["GOAL_CNT", "NUMBER(10,0)", "개발목표수", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종등록자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종등록일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_MKTNG_CMPGN_MNG": [
+        ["MK_CMPGN_CD", "VARCHAR(50)", "마케팅캠페인코드", "PK"], ["MK_CMPGN_NM", "VARCHAR(200)", "마케팅캠페인명", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["RM", "VARCHAR(500)", "비고", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(50)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(50)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_CM_SPNSR_BSNS_INFO": [
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "PK"], ["SPNSR_DIV_CD", "VARCHAR(3)", "후원구분코드", ""],
+        ["SPNSR_BSNS_NM", "VARCHAR(50)", "후원사업명", ""], ["SPNSR_BSNS_ABRV_CD", "VARCHAR(3)", "후원사업약칭코드", ""],
+        ["DNTN_TY_CD", "VARCHAR(3)", "기부금유형코드", ""], ["SORT_ORDR", "NUMBER(10,0)", "정렬순서", ""],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["RM", "VARCHAR(1000)", "비고", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_DVLP_AMT": [
+        ["SPNSR_NO", "VARCHAR(9)", "후원번호", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", "PK"],
+        ["OCCRRNC_DE", "VARCHAR(8)", "발생일", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", "FK"],
+        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
+        ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
+        ["SEX", "VARCHAR(2)", "성별", ""], ["AREA_CD", "VARCHAR(3)", "지역코드", ""],
+        ["AGE", "NUMBER(10,0)", "연령", ""], ["SPNSR_TIME_CO", "NUMBER(10,0)", "후원시간수", ""],
+        ["SPNSR_AMT_CD", "VARCHAR(3)", "후원금액코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"],
+        ["CANCL_RDCAMT_RSN_CD", "VARCHAR(3)", "취소감액사유코드", ""], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
+        ["DVLP_DIV_CD", "VARCHAR(3)", "개발구분코드", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_RGSTR_NM", "VARCHAR(100)", "최초등록자명", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_INFO": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SLRCLD_LRR_CD", "VARCHAR(3)", "양력음력코드", ""],
+        ["MOBLPHON_STAT_CD", "VARCHAR(3)", "휴대폰상태코드", ""], ["TSTM_DIV_CD", "NUMBER(10,0)", "TSTM구분코드", ""],
+        ["ETC_TSTM_DIV_CD", "NUMBER(10,0)", "기타TSTM구분코드", ""], ["ETC_CTTPC_REL_CD", "VARCHAR(3)", "기타연락처관계코드", ""],
+        ["ETC_CTTPC_STAT_CD", "VARCHAR(3)", "기타연락처상태코드", ""], ["EMAIL_STAT_CD", "VARCHAR(3)", "이메일상태코드", ""],
+        ["PSTMTR_RECPTN_CD", "VARCHAR(100)", "우편물수신코드", ""], ["EMAIL_RECPTN_CD", "VARCHAR(100)", "이메일수신코드", ""],
+        ["CHRCTR_RECPTN_YN", "VARCHAR(1)", "문자수신여부", ""], ["BL_ENTRPS_NO", "NUMBER(19,0)", "소속업체번호", ""],
+        ["SPECL_MNG_CD1", "VARCHAR(3)", "특별관리코드1", ""], ["SPECL_MNG_CD2", "VARCHAR(3)", "특별관리코드2", ""],
+        ["TNI_CU_BL_NO", "NUMBER(19,0)", "더네이버스클럽소속번호", ""], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
+        ["MBER_STAT_CD", "VARCHAR(3)", "회원상태코드", ""], ["RELATNSP_DIV_CD", "VARCHAR(3)", "결연구분코드", ""],
+        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", "FK"], ["HMPG_ID", "VARCHAR(30)", "홈페이지ID", ""],
+        ["JOIN_PATH_CD", "VARCHAR(3)", "가입경로코드", ""], ["CTI_SYNCHRN_DIV_CD", "VARCHAR(3)", "CTI동기화구분코드", ""],
+        ["STDR_DE", "DATE", "기준일", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["SEX", "VARCHAR(2)", "성별", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_IRSD": [
+        ["OCCRRNC_DE", "VARCHAR(8)", "발생일", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
+        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
+        ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
+        ["SEX", "VARCHAR(2)", "성별", ""], ["AREA_CD", "VARCHAR(3)", "지역코드", ""],
+        ["AGE", "NUMBER(10,0)", "연령", ""], ["SPNSR_TIME_CO", "NUMBER(10,0)", "후원시간수", ""],
+        ["SPNSR_AMT_CD", "VARCHAR(3)", "후원금액코드", ""], ["RDCAMT_YN", "VARCHAR(1)", "감액여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_RE_SPNSR": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
+        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_SPNSR_BSNS": [
+        ["SPNSR_NO", "VARCHAR(9)", "후원번호", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", "PK"],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
+        ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일", ""], ["SPNSR_DSCNTC_YN", "VARCHAR(1)", "후원중단여부", ""],
+        ["SPNSR_DSCNTC_RSN_CD", "VARCHAR(3)", "후원중단사유코드", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_FDRM_MBER_SPNSR_DSCNTC": [
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일", "PK"],
+        ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"], ["DSCNTC_RSN_CD", "VARCHAR(3)", "중단사유코드", ""],
+        ["DSCNTC_PATH", "VARCHAR(1)", "중단경로", ""], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MM_ONCE_MBER_INFO": [
+        ["ONCE_MBER_NO", "VARCHAR(10)", "일시후원회원번호", "PK"], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SEX", "VARCHAR(2)", "성별", ""],
+        ["TSTM_DIV_CD", "NUMBER(10,0)", "TSTM구분코드", ""], ["ETC_TSTM_DIV_CD", "NUMBER(10,0)", "기타TSTM구분코드", ""],
+        ["REL_CD", "VARCHAR(3)", "관계코드", ""], ["ENTRPS_NM", "VARCHAR(200)", "업체명", ""],
+        ["HMPG_ID", "VARCHAR(30)", "홈페이지ID", ""], ["PSTMTR_RECPTN_YN", "VARCHAR(1)", "우편물수신여부", ""],
+        ["EMAIL_RECPTN_YN", "VARCHAR(1)", "이메일수신여부", ""], ["CHRCTR_RECPTN_YN", "VARCHAR(1)", "문자수신여부", ""],
+        ["FDRM_MBER_TRNSFER_FG", "BOOLEAN", "정기회원이관유무", ""], ["SPECL_MNG_CD1", "VARCHAR(100)", "특별관리코드1", ""],
+        ["SPECL_MNG_CD2", "VARCHAR(100)", "특별관리코드2", ""], ["TNI_CU_BL_NO", "NUMBER(19,0)", "더네이버스클럽소속번호", ""],
+        ["CTI_SYNCHRN_DIV_CD", "VARCHAR(3)", "CTI동기화구분코드", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"], ["FRST_RGSTR_ID", "VARCHAR(100)", "최초등록자ID", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_CRMN": [
+        ["CRMN_CD", "NUMBER(10,0)", "행사코드", "PK"], ["CRMN_DIV_CD", "VARCHAR(3)", "행사구분코드", ""],
+        ["CRMN_TIT", "VARCHAR(100)", "행사제목", ""], ["CRMN_PLACE_NM", "VARCHAR(200)", "행사장소명", ""],
+        ["BRNCH_DEPT_ID", "VARCHAR(20)", "지부부서ID", "FK"], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
+        ["SITE_URL", "VARCHAR(255)", "사이트URL", ""], ["CRMN_STRT_DE", "VARCHAR(8)", "행사시작일", ""],
+        ["CRMN_END_DE", "VARCHAR(8)", "행사종료일", ""], ["CRMN_PART_STRT_DE", "VARCHAR(8)", "캠페인참여시작일자", ""],
+        ["CRMN_PART_END_DE", "VARCHAR(8)", "캠페인참여종료일자", ""], ["TAT", "NUMBER(5,0)", "소요시간", ""],
+        ["RCRIT_PSNNL_CO", "NUMBER(10,0)", "모집인원수", ""], ["RESRCE_SRVC_FG", "BOOLEAN", "자원봉사유무", ""],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["ENTRPS_CD", "NUMBER(10,0)", "업체코드", ""],
+        ["RM", "VARCHAR(1000)", "비고", ""], ["CRMN_CTNT", "VARCHAR(4000)", "행사내용", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["PART_USE_YN", "VARCHAR(1)", "참여사용여부", ""],
+        ["TMPLAT_ID", "VARCHAR(30)", "템플릿ID", ""], ["TMPLAT_TIT", "VARCHAR(100)", "템플릿제목", ""],
+        ["TMPLAT_PART_ID", "VARCHAR(30)", "템플릿파트ID", ""], ["TMPLAT_PART_TIT", "VARCHAR(100)", "템플릿파트제목", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["SRVY", "VARCHAR(200)", "설문조사 링크", ""], ["RM2", "VARCHAR(1000)", "비고2", ""],
+        ["PROMO_CODE", "VARCHAR(255)", "프로모션코드", ""], ["TMPLAT_WIN_ID", "VARCHAR(30)", "템플릿윈도우ID", ""],
+        ["TMPLAT_WIN_TIT", "VARCHAR(100)", "템플릿윈도우제목", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_EMAIL_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_CD_ID", "VARCHAR(20)", "발신코드ID", ""],
+        ["SNDNG_DTL_CD_ID", "VARCHAR(20)", "발신상세코드ID", ""], ["SNDNG_STDR_DE", "TIMESTAMP_NTZ(9)", "발신기준일", ""],
+        ["SNDNG_TY_CD", "VARCHAR(3)", "발신유형코드", ""], ["TIT", "VARCHAR(100)", "제목", ""],
+        ["EMAIL_RM", "VARCHAR(4000)", "이메일비고", ""], ["PRCS_DE", "TIMESTAMP_NTZ(9)", "처리일", ""],
+        ["PCPSN_ID", "VARCHAR(30)", "처리자ID", ""], ["PRCS_YN", "VARCHAR(1)", "처리여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_EMAIL_TMPLAT_MNG": [
+        ["TMPLAT_KEY", "NUMBER(10,0)", "템플릿KEY", "PK"], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["SNDNG_CD_ID", "VARCHAR(20)", "발신코드ID", ""], ["SNDNG_DTL_CD_ID", "VARCHAR(20)", "발신상세코드ID", ""],
+        ["ATMC_YN", "VARCHAR(1)", "자동여부", ""], ["TIT", "VARCHAR(100)", "제목", ""],
+        ["EMAIL_CTNT", "VARCHAR(16777216)", "이메일내용", ""], ["WRITNG_DEPT_ID", "VARCHAR(20)", "작성부서ID", ""],
+        ["WRITNG_DEPT_NM", "VARCHAR(30)", "작성부서명", ""], ["CHRG_DEPT_ID", "VARCHAR(20)", "담당부서ID", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_EVENT": [
+        ["EVENT_CD", "NUMBER(10,0)", "이벤트코드", "PK"], ["EVENT_DIV_CD", "VARCHAR(3)", "이벤트구분코드", ""],
+        ["EVENT_NM", "VARCHAR(200)", "이벤트명", ""], ["STRT_DATE", "VARCHAR(8)", "시작일자", ""],
+        ["END_DATE", "VARCHAR(8)", "종료일자", ""], ["PRZWIN_PSNNL_CO", "NUMBER(10,0)", "당첨인원수", ""],
+        ["PRZWIN_GFT_SNDNG_DE", "VARCHAR(8)", "당첨선물발송일", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_MSG_AT_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_CD_ID", "VARCHAR(20)", "발신코드ID", ""],
+        ["SNDNG_DTL_CD_ID", "VARCHAR(20)", "발신상세코드ID", ""], ["SNDNG_STDR_DE", "TIMESTAMP_NTZ(9)", "발신기준일", ""],
+        ["SNDNG_TY_CD", "VARCHAR(3)", "발신유형코드", ""], ["SNDNG_TIME_DIV_CD", "VARCHAR(3)", "발신시간구분코드", ""],
+        ["MSG_DIV_CD", "VARCHAR(3)", "메시지구분코드", ""], ["TIT", "VARCHAR(100)", "제목", ""],
+        ["MSG_AT_RM", "VARCHAR(4000)", "메시지알림톡비고", ""], ["PRCS_DE", "TIMESTAMP_NTZ(9)", "처리일", ""],
+        ["PCPSN_ID", "VARCHAR(20)", "처리자ID", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
+        ["TMPLAT_ID", "VARCHAR(30)", "템플릿ID", ""], ["ALTRTV_MSG_SNDNG_YN", "VARCHAR(1)", "대체메시지발신여부", ""],
+        ["ALTRTV_MSG_ATCHFL_ID", "VARCHAR(20)", "대체메시지첨부파일ID", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_MS_PSTMTR_SNDNG": [
+        ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_CD_ID", "VARCHAR(20)", "발신코드ID", ""],
+        ["SNDNG_DTL_CD_ID", "VARCHAR(20)", "발신상세코드ID", ""], ["SNDNG_STDR_DE", "DATE", "발신기준일", ""],
+        ["SNDNG_TY_CD", "VARCHAR(3)", "발신유형코드", ""], ["PRCS_DE", "DATE", "처리일", ""],
+        ["PCPSN_ID", "VARCHAR(20)", "처리자ID", ""], ["PRCS_STAT_CD", "VARCHAR(3)", "처리상태코드", ""],
+        ["LQY_YN", "VARCHAR(1)", "대량여부", ""], ["RE_SNDNG_YN", "VARCHAR(1)", "재발신여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_PM_DNTN_DTLS": [
+        ["DNTN_KEY", "NUMBER(19,0)", "기부금KEY", "PK"], ["ONCE_MBER_NO", "VARCHAR(10)", "일시후원회원번호", "FK"],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SETLE_CD", "VARCHAR(3)", "결제코드", ""],
+        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", "FK"], ["ELCTR_SETLE_KEY", "NUMBER(19,0)", "전자결제KEY", ""],
+        ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""], ["SETLE_CMPNY_ACNT_NO", "NUMBER(10,0)", "결제사계좌번호", ""],
+        ["MBRFEE_BNKB_KEY", "NUMBER(19,0)", "회비통장KEY", ""], ["ACNUT_SER_NO", "NUMBER(10,0)", "계좌일련번호", ""],
+        ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["PAYER_NM", "VARCHAR(30)", "결제자명", ""],
+        ["PAY_AMT", "NUMBER(10,0)", "납입금액", ""], ["PAY_DE", "DATE", "납입일", ""],
+        ["PAY_STAT_CD", "VARCHAR(3)", "납입상태코드", ""], ["PRCS_STAT_CD", "VARCHAR(3)", "처리상태코드", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["TRNSFER_MBRFEE_KEY", "NUMBER(10,0)", "이관회비KEY", ""],
+        ["TRNSFER_RSN_CD", "VARCHAR(3)", "이관사유코드", ""], ["RETUN_DNTN_KEY", "NUMBER(19,0)", "환급기부금KEY", ""],
+        ["RETUN_RSN_CD", "VARCHAR(3)", "환급사유코드", ""], ["RETUN_KEY", "NUMBER(10,0)", "환급KEY", ""],
+        ["RM", "VARCHAR(1000)", "비고", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"],
+        ["REGIST_DE", "DATE", "등록일", ""], ["RGSTR_ID", "VARCHAR(50)", "등록자ID", ""],
+        ["RGSTR_NM", "VARCHAR(30)", "등록자명", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_PM_MBRFEE_ACMSLT": [
+        ["MBRFEE_KEY", "NUMBER(19,0)", "회비KEY", "PK"], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["SPNSR_NO", "VARCHAR(9)", "후원번호", ""], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"], ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "FK"],
+        ["OVSEA_AID_KEY", "NUMBER(10,0)", "해외구호KEY", ""], ["MBRFEE_MT", "VARCHAR(6)", "회비월", ""],
+        ["MBRFEE_SQNC", "NUMBER(3,0)", "회비차수", ""], ["RQEST_MT", "VARCHAR(6)", "청구월", ""],
+        ["RQEST_SQNC", "NUMBER(3,0)", "청구차수", ""], ["MBRFEE_DIV_CD", "VARCHAR(3)", "회비구분코드", ""],
+        ["GFT_DIV_CD", "VARCHAR(3)", "선물구분코드", ""], ["GFTMNEY_CHILD_CD", "NUMBER(10,0)", "선물금아동코드", ""],
+        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", "FK"], ["TOGETH_WTDRW_REQUST_KEY", "NUMBER(10,0)", "함께출금요청KEY", ""],
+        ["TOGETH_WTDRW_YN", "VARCHAR(1)", "함께출금여부", ""], ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "FK"],
+        ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""],
+        ["PAYER_NM", "VARCHAR(30)", "결제자명", ""], ["RQEST_DIV_CD", "VARCHAR(3)", "청구구분코드", ""],
+        ["RQEST_AMT", "NUMBER(19,0)", "청구금액", ""], ["RQEST_DE", "DATE", "청구일", ""],
+        ["PAY_AMT", "NUMBER(10,0)", "납입금액", ""], ["PAY_DE", "DATE", "납입일", ""],
+        ["PAY_STAT_CD", "VARCHAR(3)", "납입상태코드", ""], ["PRCS_STAT_CD", "VARCHAR(3)", "처리상태코드", ""],
+        ["RQST_KEY", "NUMBER(19,0)", "신청KEY", ""], ["RST_KEY", "NUMBER(19,0)", "결과KEY", ""],
+        ["ELCTR_SETLE_KEY", "NUMBER(19,0)", "전자결제KEY", ""], ["SETLE_CMPNY_ACNT_NO", "NUMBER(10,0)", "결제사계좌번호", ""],
+        ["MBRFEE_BNKB_KEY", "NUMBER(19,0)", "회비통장KEY", ""], ["ACNUT_SER_NO", "NUMBER(10,0)", "계좌일련번호", ""],
+        ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["BILLKEY", "VARCHAR(50)", "빌키", ""],
+        ["RQEST_RST_CD", "VARCHAR(50)", "청구결과코드", ""], ["PRCS_RST_CD", "VARCHAR(10)", "처리결과코드", ""],
+        ["TRNSFER_REQUST_KEY", "NUMBER(10,0)", "이관요청KEY", ""], ["TRNSFER_MBRFEE_KEY", "NUMBER(10,0)", "이관회비KEY", ""],
+        ["TRNSFER_DNTN_KEY", "NUMBER(10,0)", "이관기부금KEY", ""], ["TRNSFER_RSN_CD", "VARCHAR(3)", "이관사유코드", ""],
+        ["RETUN_REQUST_KEY", "NUMBER(10,0)", "환급요청KEY", ""], ["RETUN_MBRFEE_KEY", "NUMBER(10,0)", "환급회비KEY", ""],
+        ["RETUN_RSN_CD", "VARCHAR(3)", "환급사유코드", ""], ["RM", "VARCHAR(1000)", "비고", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["OPERTOR_ID", "VARCHAR(100)", "작업자ID", ""],
+        ["OPERTOR_NM", "VARCHAR(100)", "작업자명", ""], ["OPERT_DE", "DATE", "작업일", ""],
+        ["OPERT_DIV_CD", "VARCHAR(3)", "작업구분코드", ""], ["OPER_KEY", "NUMBER(10,0)", "운영KEY", ""],
+        ["OPER_RST_KEY", "NUMBER(10,0)", "운영결과KEY", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_PM_SETLE_INFO": [
+        ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SETLE_CD", "VARCHAR(3)", "결제코드", ""],
+        ["WTDRW_STRT_DE", "DATE", "출금시작일", ""], ["WTDRW_ASMT_SQNC", "NUMBER(3,0)", "출금지정차수", ""],
+        ["WTDRW_ASMT_SQNC_UPDT_DE", "DATE", "출금지정차수수정일", ""], ["FNLT_DIV_CD", "VARCHAR(3)", "금융기관구분코드", ""],
+        ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""],
+        ["CARD_TRMVT", "VARCHAR(6)", "카드유효기간", ""], ["ACNUT_SER_NO", "NUMBER(10,0)", "계좌일련번호", ""],
+        ["PAYER_NM", "VARCHAR(30)", "결제자명", ""], ["CARD_DIV_CD", "VARCHAR(3)", "카드구분코드", ""],
+        ["MBTLNUM", "VARCHAR(20)", "휴대폰번호", ""], ["ETC_CTTPC", "VARCHAR(14)", "기타연락처", ""],
+        ["ETC_CTTPC_REL_CD", "VARCHAR(3)", "기타연락처관계코드", ""], ["PAYER_MBER_REL_CD", "VARCHAR(3)", "결제자회원관계코드", ""],
+        ["CRTFC_MTH_CD", "VARCHAR(3)", "인증방법코드", ""], ["CRTFC_FILE_NM", "VARCHAR(200)", "인증파일명", ""],
+        ["CRTFC_DATA_CTNT", "VARCHAR(4000)", "인증데이터내용", ""], ["CRTFC_DE", "DATE", "인증일", ""],
+        ["FILE_SIZE", "NUMBER(10,0)", "파일크기", ""], ["BILLKEY", "VARCHAR(50)", "빌키", ""],
+        ["SETLE_STAT_CD", "VARCHAR(3)", "결제상태코드", ""], ["RQST_DIV_CD", "VARCHAR(3)", "신청구분코드", ""],
+        ["RCEPT_DIV_CD", "VARCHAR(3)", "접수구분코드", ""], ["APRV_YN", "VARCHAR(1)", "승인여부", ""],
+        ["APRV_REQUST_KEY", "NUMBER(19,0)", "승인요청KEY", ""], ["APRV_RST_KEY", "NUMBER(19,0)", "승인결과KEY", ""],
+        ["FRST_BEGIN_DE", "DATE", "최초개시일", ""], ["RQEST_EXCL_YN", "VARCHAR(1)", "청구제외여부", ""],
+        ["RQEST_EXCL_STRT_DE", "DATE", "청구제외시작일", ""], ["RQEST_EXCL_END_DE", "DATE", "청구제외종료일", ""],
+        ["APPLCNT_NM", "VARCHAR(30)", "신청자명", ""], ["APPLCNT_MBTLNUM", "VARCHAR(20)", "신청자휴대폰번호", ""],
+        ["APPLCNT_ETC_CTTPC", "VARCHAR(14)", "신청자기타연락처", ""], ["APPLCNT_ETC_CTTPC_REL_CD", "VARCHAR(3)", "신청자기타연락처관계코드", ""],
+        ["APPLCNT_MBER_REL_CD", "VARCHAR(3)", "신청자회원관계코드", ""], ["BF_SETLE_KEY", "NUMBER(10,0)", "이전결제KEY", ""],
+        ["OPERT_DIV_CD", "VARCHAR(3)", "작업구분코드", ""], ["CRTFC_TY_CD", "VARCHAR(3)", "인증유형코드", ""],
+        ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_RGSTR_NM", "VARCHAR(100)", "최초등록자명", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDUSR_NM", "VARCHAR(100)", "최종수정자명", ""],
+        ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_BPLC_MNG": [
+        ["BPLC_CD", "VARCHAR(8)", "사업장코드", "PK"], ["NATION_CD", "VARCHAR(3)", "국가코드", ""],
+        ["BPLC_KORNM", "VARCHAR(200)", "사업장한글명", ""], ["BPLC_ENGNM", "VARCHAR(200)", "사업장영문명", ""],
+        ["BSNS_STRT_DE", "DATE", "사업시작일", ""], ["BSNS_END_DE", "DATE", "사업종료일", ""],
+        ["RELATNSP_BSNS_YN", "VARCHAR(1)", "결연사업여부", ""], ["RELATNSP_BSNS_DSCNTC_DE", "DATE", "결연사업중단일", ""],
+        ["GFTMNEY_PSBL_YN", "VARCHAR(1)", "선물금가능여부", ""], ["LETTER_PSBL_YN", "VARCHAR(1)", "서신가능여부", ""],
+        ["BPLC_DC", "VARCHAR(4000)", "사업장설명", ""], ["WTWK_FROM_DSTNC", "NUMBER(10,0)", "수도부터거리", ""],
+        ["CNCSN_RSN", "VARCHAR(100)", "종결사유", ""], ["BPLC_MTCHG_MNG_YN", "VARCHAR(1)", "사업장매칭관리여부", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
+        ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_CHILD_MSTR_INFO": [
+        ["CHILD_CD", "NUMBER(10,0)", "아동코드", "PK"], ["CHILD_NO", "VARCHAR(30)", "아동번호", ""],
+        ["BPLC_CD", "VARCHAR(8)", "사업장코드", ""], ["SEX", "VARCHAR(2)", "성별", ""],
+        ["RELATNSP_STAT_CD", "VARCHAR(3)", "결연상태코드", ""], ["CHILD_STAT_CD", "VARCHAR(3)", "아동상태코드", ""],
+        ["CHILD_DTL_STAT_CD", "VARCHAR(3)", "아동상세상태코드", ""], ["REGIST_DIV_CD", "VARCHAR(3)", "등록구분코드", ""],
+        ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""], ["LAST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최종등록일시", ""],
+        ["RE_UPDT_DT", "TIMESTAMP_NTZ(9)", "재수정일시", ""], ["MNYRS_NATION_CD", "VARCHAR(3)", "모금국가코드", ""],
+        ["CMS_CHILD_NO", "VARCHAR(30)", "CMS아동번호", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_RELATNSP_CHG_INFO": [
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "PK"], ["CHG_YN", "VARCHAR(1)", "교체여부", ""],
+        ["CHG_RSN_CD", "NUMBER(10,0)", "교체사유코드", ""], ["CHG_RST_CD", "NUMBER(10,0)", "교체결과코드", ""],
+        ["CHG_PERSON_ID", "VARCHAR(20)", "교체자ID", ""], ["CHG_DE", "DATE", "교체일", ""],
+        ["CHG_RELATNSP_KEY", "NUMBER(10,0)", "교체결연KEY", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_RELATNSP_GFTMNEY_INFO": [
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "PK"], ["MNG_NO", "VARCHAR(7)", "관리번호", "PK"],
+        ["MBRFEE_KEY", "NUMBER(10,0)", "회비KEY", ""], ["SETLE_DE", "DATE", "결제일", ""],
+        ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["SETLE_BANK_CD", "VARCHAR(10)", "결제은행코드", ""],
+        ["GFTMNEY", "NUMBER(10,0)", "선물금", ""], ["GFT_DIV_CD", "VARCHAR(3)", "선물구분코드", ""],
+        ["KOREAN_RM_CTNT", "VARCHAR(1000)", "한글비고내용", ""], ["ENGL_RM_CTNT", "VARCHAR(1000)", "영어비고내용", ""],
+        ["SNDNG_DE", "DATE", "발신일", ""], ["EHGT", "VARCHAR(30)", "환율", ""],
+        ["GFTMNEY_DOLLAR_AMT", "VARCHAR(30)", "선물금미화금액", ""], ["APRV_DE", "DATE", "승인일", ""],
+        ["UNREPLY_RSN_CD", "NUMBER(10,0)", "미답신사유코드", ""], ["TRNSFER_KEY", "NUMBER(10,0)", "이관KEY", ""],
+        ["TRNSFER_YN", "VARCHAR(1)", "이관여부", ""], ["TRNSFER_AFTER_RELATNSP_KEY", "NUMBER(10,0)", "이관후결연KEY", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_RELATNSP_LETTER_INFO": [
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "PK"], ["MNG_NO", "VARCHAR(7)", "관리번호", "PK"],
+        ["LETTER_DIV_CD", "NUMBER(10,0)", "서신구분코드", ""], ["CTNT", "VARCHAR(4000)", "내용", ""],
+        ["RCEPT_DE", "DATE", "접수일", ""], ["SNDNG_DE", "DATE", "발신일", ""],
+        ["ONLINE_POST_WRITNG_YN", "VARCHAR(1)", "온라인우편작성여부", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["FRST_REGIST_DE", "DATE", "최초등록일", ""], ["EXCEL_SER_NO", "NUMBER(10,0)", "엑셀일련번호", ""],
+        ["UNREPLY_RSN_CD", "NUMBER(10,0)", "미답신사유코드", ""], ["LANG_CD", "VARCHAR(10)", "언어코드", ""],
+        ["ONLINE_INFLOW_CD", "NUMBER(10,0)", "온라인유입코드", ""], ["LETTER_STAT_CD", "NUMBER(3,0)", "편지상태코드", ""],
+        ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "TM_RM_RELATNSP_MSTR_INFO": [
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "PK"], ["SPNSR_NO", "VARCHAR(9)", "후원번호", ""],
+        ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""], ["CHILD_CD", "NUMBER(10,0)", "아동코드", ""],
+        ["RELATNSP_STRT_DE", "DATE", "결연시작일", ""], ["RELATNSP_DSCNTC_DE", "DATE", "결연중단일", ""],
+        ["RELATNSP_DSCNTC_YN", "VARCHAR(1)", "결연중단여부", ""], ["RELATNSP_DSCNTC_RSN_CD", "NUMBER(10,0)", "결연중단사유코드", ""],
+        ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DE", "DATE", "최초등록일", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
+      ],
+      "DGT_AD_CMPGN_DTLS": [
+        ["TIME", "VARCHAR(16777216)", "시간", ""], ["YEAR", "VARCHAR(16777216)", "연도", ""],
+        ["CPR_NM", "VARCHAR(16777216)", "법인", ""], ["DMST_OVSEA_DIV_NM", "VARCHAR(16777216)", "국내해외구분", ""],
+        ["BSNS_CASE_DIV_NM", "VARCHAR(16777216)", "사업사례구분", ""], ["CMPGN_TY_NM", "VARCHAR(16777216)", "캠페인유형", ""],
+        ["AD_TY_NM", "VARCHAR(16777216)", "광고유형", ""], ["MONTH", "VARCHAR(16777216)", "월", ""],
+        ["DEVICE", "VARCHAR(16777216)", "기기", ""], ["MEDIA_NM", "VARCHAR(16777216)", "매체", ""],
+        ["WEEK", "VARCHAR(16777216)", "주차", ""], ["DAY", "VARCHAR(16777216)", "일자", ""],
+        ["DOW", "VARCHAR(16777216)", "요일", ""], ["CMPGN_NM", "VARCHAR(16777216)", "캠페인명", ""],
+        ["MATR", "VARCHAR(16777216)", "소재", ""], ["MATR_TY_NM", "VARCHAR(16777216)", "소재유형", ""],
+        ["EXPS_CNT", "FLOAT", "노출수", ""], ["CLICK_CNT", "FLOAT", "클릭수", ""],
+        ["GA_AD_COST", "FLOAT", "광고비", ""], ["GA_CONV_MBER_CNT", "FLOAT", "후원자수(명)", ""],
+        ["CONV_VU_CNT", "FLOAT", "전환가치(건)", ""], ["CPA", "FLOAT", "CPA", ""],
+        ["DEV_UNIT_PRICE", "FLOAT", "개발단가", ""], ["CTR", "FLOAT", "CTR", ""],
+        ["CVR", "FLOAT", "CVR", ""], ["CPC", "FLOAT", "CPC", ""],
+        ["CPM", "FLOAT", "CPM", ""], ["UPPER_CMPGN_NM", "VARCHAR(16777216)", "상위캠페인", ""],
+        ["READ_CNT", "FLOAT", "조회수", ""], ["MEDIA_PTNT_CUST_CNT", "FLOAT", "잠재고객수(매체)", ""],
+        ["DATE", "DATE", "날짜", ""], ["VTR", "FLOAT", "VTR", ""],
+        ["PAGE_TYPE_NM", "VARCHAR(16777216)", "지면구분", ""], ["CRM_DVLP_CNT", "FLOAT", "CRM개발건수", ""],
+        ["AD_GRP_NM", "VARCHAR(16777216)", "광고그룹", ""], ["GRP_DIV_NM", "VARCHAR(16777216)", "그룹구분", ""]
+      ],
+      "REBRDC_AD_CMPGN_DTLS": [
+        ["RE_BRDC_TY_NM", "VARCHAR(16777216)", "재송출유형", ""], ["DIV_NM", "VARCHAR(16777216)", "구분", ""],
+        ["YEAR", "VARCHAR(16777216)", "년도", ""], ["BRDC_MT", "VARCHAR(16777216)", "방송월", ""],
+        ["CHNNL_CMPNY", "VARCHAR(16777216)", "채널사", ""], ["BRDC_NM", "VARCHAR(16777216)", "방송명", ""],
+        ["BRDC_DIV_NM", "VARCHAR(16777216)", "본방송구분", ""], ["DATE", "DATE", "날짜", ""],
+        ["DOW", "VARCHAR(16777216)", "요일", ""], ["BRDC_TIME", "VARCHAR(16777216)", "방송시간", ""],
+        ["INBOUND_CALL_CNT", "VARCHAR(16777216)", "인입콜", ""], ["DVLP_MBER_CNT", "FLOAT", "회원개발(명)", ""],
+        ["DVLP_CNT", "FLOAT", "회원개발(건)", ""], ["BRDC_SCHDL_COST", "FLOAT", "방송편성비", ""],
+        ["WEEK", "VARCHAR(16777216)", "주차", ""], ["AD_CNT", "FLOAT", "횟수", ""],
+        ["TIME_RNG_DIV_NM", "VARCHAR(16777216)", "시간대구분", ""], ["CELEB_NM", "VARCHAR(16777216)", "셀럽", ""],
+        ["DMST_OVSEA_DIV_NM", "VARCHAR(16777216)", "국내/해외구분", ""], ["CASE1_BSNS_DIV_NM", "VARCHAR(16777216)", "사업구분1", ""],
+        ["CASE1_FAM_TY_NM", "VARCHAR(16777216)", "가정유형1", ""], ["CASE1_APPEAL_POINT_NM", "VARCHAR(16777216)", "소구포인트1", ""],
+        ["CASE1_CHILD_NM", "VARCHAR(16777216)", "아동명1", ""], ["CASE1_CASE_DIV_NM", "VARCHAR(16777216)", "사례구분1", ""],
+        ["CASE2_BSNS_DIV_NM", "VARCHAR(16777216)", "사업구분2", ""], ["CASE2_FAM_TY_NM", "VARCHAR(16777216)", "가정유형2", ""],
+        ["CASE2_APPEAL_POINT_NM", "VARCHAR(16777216)", "소구포인트2", ""], ["CASE2_CHILD_NM", "VARCHAR(16777216)", "아동명2", ""],
+        ["CASE2_CASE_DIV_NM", "VARCHAR(16777216)", "사례구분2", ""], ["CASE3_BSNS_DIV_NM", "VARCHAR(16777216)", "사업구분3", ""],
+        ["CASE3_FAM_TY_NM", "VARCHAR(16777216)", "가정유형3", ""], ["CASE3_APPEAL_POINT_NM", "VARCHAR(16777216)", "소구포인트3", ""],
+        ["CASE3_CHILD_NM", "VARCHAR(16777216)", "아동명3", ""], ["CASE3_CASE_DIV_NM", "VARCHAR(16777216)", "사례구분3", ""]
+      ],
+      "VIDEO_AD_CMPGN_DTLS": [
+        ["CHNNL_NM", "VARCHAR(16777216)", "채널", ""], ["DOW", "VARCHAR(16777216)", "요일", ""],
+        ["BRDC_DATE", "DATE", "방송일자", ""], ["TIME_RNG", "VARCHAR(16777216)", "시간대", ""],
+        ["DAY_DIV_NM", "VARCHAR(16777216)", "주중/토/일", ""], ["PRG_STRT_TIME", "VARCHAR(16777216)", "프로그램시작시간", ""],
+        ["SCHDL_NM", "VARCHAR(16777216)", "편성명", ""], ["CM", "VARCHAR(16777216)", "CM", ""],
+        ["CM_AREA", "VARCHAR(16777216)", "CM위치", ""], ["AD_STRT_TIME", "VARCHAR(16777216)", "광고시작시간", ""],
+        ["AD_END_TIME", "VARCHAR(16777216)", "광고종료시간", ""], ["SPOT_TY", "VARCHAR(16777216)", "SpotType", ""],
+        ["AD_VIEW_RT", "FLOAT", "광고시청률", ""], ["AD_CNT", "NUMBER(38,0)", "횟수", ""],
+        ["AD_SEC", "VARCHAR(16777216)", "초수", ""], ["ACTL_PUR_AD_COST_KRW", "NUMBER(38,0)", "실구매광고비(원)", ""],
+        ["INBOUND_CALL_CNT", "NUMBER(38,0)", "인입콜", ""], ["CPC", "VARCHAR(16777216)", "CPC", ""],
+        ["UPPER_CMPGN_NM", "VARCHAR(16777216)", "상위캠페인", ""], ["MATR_NM", "VARCHAR(16777216)", "소재명", ""],
+        ["CMPGN_TY_NM", "VARCHAR(16777216)", "캠페인유형", ""], ["DUR_PD_MATR_CHN", "VARCHAR(16777216)", "중도소재변경", ""],
+        ["CHNNL_CMPNY_TY_NM", "VARCHAR(16777216)", "채널사유형", ""], ["WEEK", "VARCHAR(16777216)", "주차", ""],
+        ["CONV_CALL_CNT", "FLOAT", "전환콜", ""], ["BRDC_MT", "VARCHAR(16777216)", "방송월", ""],
+        ["YEAR", "VARCHAR(16777216)", "해당연도", ""], ["CTV_DIV_NM", "VARCHAR(16777216)", "CTV 구분", ""],
+        ["MKT_CMPGN_NM", "VARCHAR(16777216)", "마케팅 캠페인명", ""], ["SPNSR_BSNS_NM", "VARCHAR(16777216)", "후원사업구분", ""],
+        ["DMST_OVSEA_DIV_NM", "VARCHAR(16777216)", "캠페인유형(국내/해외)", ""], ["BSNS_CASE_DIV_NM", "VARCHAR(16777216)", "캠페인유형(사업/사례)", ""]
+      ],
+      "BDGT_ACMSLT_LEDGER": [
+        ["YEAR", "VARCHAR(16777216)", "연도", ""], ["INCOME_EXPS_DIV_NM", "VARCHAR(16777216)", "수지구분", ""],
+        ["BDGT_UNIT_NM", "VARCHAR(16777216)", "예산단위", ""], ["JANG_NM", "VARCHAR(16777216)", "장", ""],
+        ["KWAN_NM", "VARCHAR(16777216)", "관", ""], ["HANG_NM", "VARCHAR(16777216)", "항", ""],
+        ["MOK_NM", "VARCHAR(16777216)", "목", ""], ["DTL_ITEM_NM", "VARCHAR(16777216)", "세목", ""],
+        ["SUBDTL_ITEM_NM", "VARCHAR(16777216)", "세세목", ""], ["FUND_SOURCE_NM", "VARCHAR(16777216)", "재원", ""],
+        ["YEAR_BDGT_TOT_AMT", "NUMBER(38,0)", "연예산_합계", ""], ["CHN_BDGT_TOT_AMT", "NUMBER(38,0)", "변경예산_합계", ""],
+        ["ADJ_BDGT_TOT_AMT", "NUMBER(38,0)", "조정예산_합계", ""], ["EXEC_TOT_AMT", "NUMBER(38,0)", "집행금액_합계", ""],
+        ["YEAR_BDGT_AMT_1~12", "NUMBER(38,0)", "1월~12월 연예산 금액 (월별 컬럼 12개)", ""],
+        ["CHN_BDGT_AMT_1~12", "NUMBER(38,0)", "1월~12월 변경예산 금액 (월별 컬럼 12개)", ""],
+        ["ADJ_BDGT_AMT_1~12", "NUMBER(38,0)", "1월~12월 조정예산 금액 (월별 컬럼 12개)", ""],
+        ["EXEC_AMT_1~12", "NUMBER(38,0)", "1월~12월 집행금액 (월별 컬럼 12개)", ""]
+      ],
+      "events_20260501": [
+        ["event_date", "VARCHAR(16777216)", "이벤트 기록 날짜(YYYYMMDD)", ""], ["event_timestamp", "NUMBER(38,0)", "GA4 서버 수신 시각(UTC 마이크로초)", "PK"],
+        ["event_name", "VARCHAR(16777216)", "이벤트 이름", "PK"], ["event_params", "VARIANT", "이벤트 파라미터 배열(REPEATED RECORD)", ""],
+        ["event_previous_timestamp", "NUMBER(38,0)", "동일 기기 직전 이벤트 수신 시각", ""], ["event_value_in_usd", "FLOAT", "USD 환산 value", ""],
+        ["event_bundle_sequence_id", "NUMBER(38,0)", "전송 배치 요청 순번 ID", ""], ["event_server_timestamp_offset", "NUMBER(38,0)", "수집/서버업로드 시각 차이", ""],
+        ["user_id", "VARCHAR(16777216)", "개발자 설정 사용자 고유 ID (CRM 연계)", "FK"], ["user_pseudo_id", "VARCHAR(16777216)", "GA4 자동 생성 익명 사용자 식별자", "PK"],
+        ["privacy_info", "VARIANT", "동의모드 정보", ""], ["user_properties", "VARIANT", "사용자 속성 배열", ""],
+        ["user_first_touch_timestamp", "NUMBER(38,0)", "사용자 최초 앱실행/웹방문 시각", ""], ["user_ltv", "VARIANT", "사용자 생애가치(LTV) 정보", ""],
+        ["device", "VARIANT", "기기 정보", ""], ["geo", "VARIANT", "지리 정보(IP 기반)", ""],
+        ["app_info", "NUMBER(38,0)", "앱 정보", ""], ["traffic_source", "VARIANT", "최초 유입 트래픽 소스(First-touch)", ""],
+        ["stream_id", "VARCHAR(16777216)", "GA4 데이터 스트림 고유 ID", ""], ["platform", "VARCHAR(16777216)", "이벤트 발생 플랫폼(WEB/ANDROID/IOS)", ""],
+        ["event_dimensions", "NUMBER(38,0)", "이벤트 차원 정보", ""], ["ecommerce", "VARIANT", "전자상거래 정보", ""],
+        ["items", "VARIANT", "상품 배열(REPEATED RECORD)", ""], ["collected_traffic_source", "VARIANT", "이벤트 시점 원시 UTM 소스(Event-scoped)", ""],
+        ["is_active_user", "BOOLEAN", "해당 날짜 사용자 활성 여부", ""], ["batch_event_index", "NUMBER(38,0)", "동일 배치 내 이벤트 발생 순번", ""],
+        ["batch_page_id", "NUMBER(38,0)", "세션 내 페이지뷰 순번", ""], ["batch_ordering_id", "NUMBER(38,0)", "페이지 내 네트워크 요청 단조 증가 순번", ""],
+        ["session_traffic_source_last_click", "VARIANT", "세션 마지막 클릭 트래픽 소스(GA4 UI 일치)", ""], ["publisher", "NUMBER(38,0)", "퍼블리셔 광고 수익 정보", ""]
+      ]
+    };
+
+    // 2. 리니지 관계 매핑 ([From, To])
+    const lineagePairs = [
+      ["TM_MM_FDRM_MBER_INFO", "CRM_MEMBER"], ["TM_MM_ONCE_MBER_INFO", "CRM_MEMBER"],
+      ["TM_CM_CMPGN_MNG", "CRM_CAMPAIGN"], ["TM_CM_BRND_MNG", "CRM_CAMPAIGN"], ["TM_CM_MKTNG_CMPGN_MNG", "CRM_CAMPAIGN"],
+      ["TM_CM_SPNSR_BSNS_INFO", "CRM_SPONSORSHIP"], ["TM_CM_DEPT_INFO", "CRM_ORG"],
+      ["TM_CM_MBER_DVLP_GOAL", "CRM_DEV_TARGET"], ["TC_CMMN_DTL_CD", "CRM_CODE"],
+      ["TM_MM_FDRM_MBER_DVLP_AMT", "CRM_MEMBER_DEV"], ["TM_MM_FDRM_MBER_IRSD", "CRM_MEMBER_AMT_CHANGE"],
+      ["TM_MM_FDRM_MBER_SPNSR_DSCNTC", "CRM_MEMBER_DISCONTINUE"], ["TM_MM_FDRM_MBER_RE_SPNSR", "CRM_MEMBER_RESPONSOR"],
+      ["TM_MM_FDRM_MBER_SPNSR_BSNS", "CRM_MEMBER_SPONSOR_BIZ"], ["TH_MM_FDRM_MBER_STNG_DTLS", "CRM_MEMBER_STATUS_HIST"],
+      ["TM_RM_RELATNSP_MSTR_INFO", "CRM_SPONSOR_RELATION"], ["TM_PM_SETLE_INFO", "CRM_PAYMENT_METHOD"],
+      ["TM_MS_EVENT", "CRM_EVENT"], ["TM_MS_CRMN", "CRM_EVENT"],
+      ["TD_MS_EVENT_PRTCPNT_DTL", "CRM_EVENT_PARTICIPATION"], ["TD_MS_CRMN_PRTCPNT", "CRM_EVENT_PARTICIPATION"],
+      ["TM_RM_RELATNSP_LETTER_INFO", "CRM_RELATION_ACTIVITY"], ["TM_RM_RELATNSP_GFTMNEY_INFO", "CRM_RELATION_ACTIVITY"],
+      ["TM_PM_MBRFEE_ACMSLT", "CRM_PAYMENT_BILLING"], ["TM_PM_DNTN_DTLS", "CRM_PAYMENT_BILLING"],
+      ["TM_MS_EMAIL_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_MSG_AT_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_PSTMTR_SNDNG", "CRM_SEND_REQUEST"],
+      ["SND_REQ_MST", "CRM_SEND_REQUEST"], ["SND_REQ_MST", "CRM_SEND_RESULT"],
+      ["TD_MS_EMAIL_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_MSG_AT_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_PSTMTR_LQY_SNDNG", "CRM_SEND_RESULT"],
+      ["TD_MS_EMAIL_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_MSG_AT_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_PSTMTR_SNDNG_DTL", "CRM_SEND_MEMBER"],
+      ["SND_MEMBER_LIST", "CRM_SEND_MEMBER"],
+      ["events_20260501", "GA4_EVENT"], ["events_20260501", "GA4_TRAFFIC_SOURCE"], ["events_20260501", "GA4_EVENT_DIM"],
+      ["events_20260501", "GA4_DEVICE"], ["events_20260501", "GA4_IDENTITY"],
+      ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET_ITEM"], ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET"],
+      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"],
+      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"],
+      ["CRM_MEMBER", "DIM_MEMBER"], ["CRM_MEMBER", "DIM_MEMBER_IDENTITY"], ["CRM_CAMPAIGN", "DIM_CAMPAIGN"],
+      ["CRM_SPONSORSHIP", "DIM_SPONSORSHIP"], ["CRM_ORG", "DIM_ORG"], ["CRM_PAYMENT_METHOD", "DIM_PAYMENT"],
+      ["CRM_MEMBER_DISCONTINUE", "DIM_REASON"], ["CRM_EVENT", "DIM_EVENT"], ["CRM_SEND_REQUEST", "DIM_SERVICE"],
+      ["GA4_TRAFFIC_SOURCE", "DIM_GA_SOURCE"], ["GA4_EVENT_DIM", "DIM_GA_EVENT"], ["GA4_DEVICE", "DIM_DEVICE"],
+      ["GA4_IDENTITY", "IDENTITY_MEMBER_XREF"], ["IDENTITY_MEMBER_XREF", "DIM_MEMBER_IDENTITY"],
+      ["AGENCY_AD_CREATIVE", "DIM_AD_CREATIVE"], ["ERP_BUDGET_ITEM", "DIM_BUDGET_ITEM"],
+      ["CRM_MEMBER_DEV", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_AMT_CHANGE", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_STATUS_HIST", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_RESPONSOR", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_SPONSOR_BIZ", "FACT_MEMBER_MONTHLY"], ["CRM_PAYMENT_BILLING", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_DEV", "FACT_MEMBER_EVENT"], ["CRM_MEMBER_DISCONTINUE", "FACT_MEMBER_EVENT"],
+      ["CRM_DEV_TARGET", "FACT_TARGET_DEV"], ["CRM_SEND_REQUEST", "FACT_SERVICE_EVENT"],
+      ["CRM_SEND_MEMBER", "FACT_SERVICE_EVENT"], ["CRM_SEND_RESULT", "FACT_SERVICE_EVENT"],
+      ["CRM_RELATION_ACTIVITY", "FACT_SERVICE_EVENT"], ["CRM_EVENT_PARTICIPATION", "FACT_EVENT_PARTICIPATION"],
+      ["GA4_EVENT", "FACT_GA_BEHAVIOR"], ["GA4_EVENT", "FACT_AD_PERFORMANCE"],
+      ["AGENCY_AD_PERFORMANCE", "FACT_AD_PERFORMANCE"], ["ERP_BUDGET", "FACT_BUDGET"],
+      ["ERP_BIZ_TARGET", "FACT_TARGET_BIZ"],
+      ["FACT_MEMBER_MONTHLY", "WIDE_MEMBER_MONTHLY"], ["FACT_MEMBER_EVENT", "WIDE_MEMBER_EVENT"],
+      ["FACT_TARGET_DEV", "WIDE_TARGET_DEV"], ["FACT_SERVICE_EVENT", "WIDE_SERVICE_EVENT"],
+      ["FACT_EVENT_PARTICIPATION", "WIDE_EVENT_PARTICIPATION"], ["FACT_GA_BEHAVIOR", "WIDE_GA_BEHAVIOR"],
+      ["FACT_AD_PERFORMANCE", "WIDE_AD_PERFORMANCE"], ["FACT_BUDGET", "WIDE_BUDGET"]
+    ];
+
+    const upstreamMap = {}, downstreamMap = {};
+    lineagePairs.forEach(([from, to]) => {
+      if (!downstreamMap[from]) downstreamMap[from] = [];
+      if (!upstreamMap[to]) upstreamMap[to] = [];
+      downstreamMap[from].push(to);
+      upstreamMap[to].push(from);
+    });
+
+    const chips = document.querySelectorAll('.chip');
+    const svg = document.getElementById('lineage-svg');
+    const root = document.getElementById('grid-root');
+    const sidePanel = document.getElementById('side-panel');
+    const panelTitle = document.getElementById('panel-title');
+    const panelBody = document.getElementById('panel-table-body');
+    let activeChipId = null;
+
+    function getRelatedNodes(startId, map) {
+      const visited = new Set();
+      const stack = [startId];
+      while (stack.length > 0) {
+        const current = stack.pop();
+        if (map[current]) {
+          map[current].forEach(next => {
+            if (!visited.has(next)) { visited.add(next); stack.push(next); }
+          });
+        }
+      }
+      return visited;
+    }
+
+    function drawLines(fromId, toId, color) {
+      const el1 = document.getElementById(fromId);
+      const el2 = document.getElementById(toId);
+      if (!el1 || !el2) return;
+
+      const rect1 = el1.getBoundingClientRect();
+      const rect2 = el2.getBoundingClientRect();
+      const rootRect = root.getBoundingClientRect();
+
+      const x1 = rect1.right - rootRect.left;
+      const y1 = rect1.top + rect1.height / 2 - rootRect.top;
+      const x2 = rect2.left - rootRect.left;
+      const y2 = rect2.top + rect2.height / 2 - rootRect.top;
+
+      const dx = (x2 - x1) * 0.5;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`);
+      path.setAttribute("class", "lineage-line");
+      path.setAttribute("stroke", color);
+      svg.appendChild(path);
+    }
+
+    function renderLineage(targetId) {
+      svg.innerHTML = '';
+      chips.forEach(c => c.classList.remove('is-selected', 'is-upstream', 'is-downstream'));
+      
+      if (!targetId) { root.classList.remove('dimmed'); return; }
+
+      root.classList.add('dimmed');
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) targetEl.classList.add('is-selected');
+
+      const upstreams = getRelatedNodes(targetId, upstreamMap);
+      const downstreams = getRelatedNodes(targetId, downstreamMap);
+
+      upstreams.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('is-upstream'); });
+      downstreams.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('is-downstream'); });
+
+      lineagePairs.forEach(([from, to]) => {
+        if ((upstreams.has(from) || from === targetId) && (upstreams.has(to) || to === targetId)) {
+          drawLines(from, to, "var(--upstream)");
+        }
+        if ((downstreams.has(from) || from === targetId) && (downstreams.has(to) || to === targetId)) {
+          drawLines(from, to, "var(--downstream)");
+        }
+      });
+    }
+
+    function openPanel(tableId) {
+      panelTitle.textContent = tableId;
+      panelBody.innerHTML = '';
+      
+      // WIDE 마트 뷰는 대대응 FACT 팩트 테이블을 미러링
+      let targetKey = tableId;
+      if (tableId.startsWith('WIDE_')) {
+        targetKey = tableId.replace('WIDE_', 'FACT_');
+      }
+
+      const columns = ddlMeta[targetKey] || [
+        ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
+        ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
+      ];
+
+      columns.forEach(([name, type, comment, key]) => {
+        let badge = '';
+        if (key === 'PK') badge = `<span class="key-badge badge-pk">PK</span>`;
+        else if (key === 'FK') badge = `<span class="key-badge badge-fk">FK</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${badge}<b>${name}</b></td>
+          <td style="color:var(--text-sub)">${type}</td>
+          <td>${comment}</td>
+        `;
+        panelBody.appendChild(tr);
+      });
+
+      sidePanel.classList.add('open');
+    }
+
+    function closePanel() {
+      sidePanel.classList.remove('open');
+      activeChipId = null;
+      renderLineage(null);
+    }
+
+    chips.forEach(chip => {
+      chip.addEventListener('mouseenter', () => { if (!activeChipId) renderLineage(chip.id); });
+      chip.addEventListener('mouseleave', () => { if (!activeChipId) renderLineage(null); });
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        activeChipId = chip.id;
+        renderLineage(activeChipId);
+        openPanel(chip.id);
+      });
+    });
+
+    document.getElementById('close-panel').addEventListener('click', closePanel);
+    document.body.addEventListener('click', (e) => {
+      if (!sidePanel.contains(e.target)) closePanel();
+    });
+
+    window.addEventListener('resize', () => { if (activeChipId) renderLineage(activeChipId); });
+  </script>
+</body>
+</html>

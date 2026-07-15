@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>GN_DW 파이프라인 백본 ERD</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-07-15",
+    "intent": "GN_DW BRONZE->SILVER->GOLD 파이프라인 백본 ERD (테이블명+키컬럼만, 3 레이아웃)",
+    "dataSources": [
+      { "type": "file", "path": "10_dbt_pipeline/models/**", "producerNotes": "dbt 모델 32 SILVER + 15 DIM + 8 FACT 실측" },
+      { "type": "file", "path": "03_top-down_gold/08_silver의존.md", "producerNotes": "GOLD<-SILVER lineage 정본" },
+      { "type": "file", "path": "10_dbt_pipeline/models/gold/_gold_ready_schema.yml", "producerNotes": "DIM PK / FACT FK 키 정의" }
+    ],
+    "sections": [
+      { "id": "by-bronze", "title": "브론즈별 소스 도메인 레인", "producerNotes": "CRM/GA4/ERP/AGENCY 4레인, mermaid subgraph." },
+      { "id": "by-gold", "title": "gold별 스타 스키마 백본", "producerNotes": "FACT<->공유 DIM 키 매핑." },
+      { "id": "unified", "title": "단일 통합 3열", "producerNotes": "스키마 단위 백본." }
+    ]
+  }
+  </script>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, system-ui, "Apple SD Gothic Neo", sans-serif;
+      max-width: 1180px; margin: 0 auto; padding: 24px;
+      color: light-dark(#1f2937, #e5e7eb);
+      background: light-dark(#ffffff, #0f172a);
+    }
+    h1 { color: light-dark(#0f172a, #f1f5f9); border-bottom: 2px solid light-dark(#2563eb, #60a5fa); padding-bottom: 8px; }
+    h2 { color: light-dark(#0f172a, #f1f5f9); margin-top: 36px; }
+    p.note { color: light-dark(#475569, #94a3b8); font-size: 14px; }
+    .legend { font-size: 13px; color: light-dark(#475569, #94a3b8); margin: 4px 0 16px; }
+    .diagram {
+      border: 1px solid light-dark(#d1d5db, #374151);
+      border-radius: 8px; padding: 12px; margin: 12px 0 8px;
+      background: light-dark(#f8fafc, #111827);
+      overflow-x: auto;
+    }
+    code { background: light-dark(#f3f4f6, #1f2937); padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <h1>GN_DW 파이프라인 백본 ERD</h1>
+  <p class="note">
+    테이블명 + 키 컬럼만 표기한 백본. 상세 컬럼 생략.
+    실측: <b>BRONZE 4스키마 → SILVER 32모델 → GOLD 15 DIM + 8 FACT (+WIDE 8)</b>.
+    점선/회색 = 원천 미입고 보류(<code>FACT_TARGET_BIZ</code>, E-6 대기).
+    단방향 계약: SERVING → GOLD → SILVER → BRONZE.
+  </p>
+
+  <h2 id="by-bronze">1. 브론즈별 (소스 도메인 레인 · 좌 Bronze → 중 Silver → 우 Gold)</h2>
+  <p class="legend">CRM / GA4 / ERP / AGENCY 4개 도메인 레인. 각 레인이 Bronze→Silver→Gold로 흐름.</p>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  subgraph BRONZE["BRONZE (원천 1:1)"]
+    direction TB
+    bc_m["CRM 회원마스터<br/>MEMBER_DK"]
+    bc_cmp["CRM 캠페인/브랜드<br/>CMPGN_CD"]
+    bc_spn["CRM 후원사업<br/>SPNSR_BSNS_ID"]
+    bc_org["CRM 부서<br/>DEPT_ID"]
+    bc_evt["CRM 행사<br/>EVENT_KEY"]
+    bc_snd["CRM 발송<br/>SND_REQ_MST"]
+    bc_pay["CRM 회비/기부/결제"]
+    bg["GA4 events_YYYYMMDD 샤드<br/>event / user_pseudo_id"]
+    be["ERP BDGT_ACMSLT_LEDGER<br/>예산과목×월"]
+    ba["AGENCY DGT/REBRDC/VIDEO<br/>_AD_CMPGN_DTLS"]
+  end
+  subgraph SILVER["SILVER (GN_DW.SILVER · 32)"]
+    direction TB
+    sc_m["CRM_MEMBER<br/>MEMBER_DK"]
+    sc_cmp["CRM_CAMPAIGN<br/>CMPGN_CD"]
+    sc_spn["CRM_SPONSORSHIP<br/>SPNSR_BSNS_ID"]
+    sc_org["CRM_ORG<br/>DEPT_ID"]
+    sc_evt["CRM_EVENT<br/>EVENT_KEY"]
+    sc_ep["CRM_EVENT_PARTICIPATION"]
+    sc_sreq["CRM_SEND_REQUEST"]
+    sc_paym["CRM_PAYMENT_METHOD"]
+    sc_disc["CRM_MEMBER_DISCONTINUE"]
+    sc_tgt["CRM_DEV_TARGET"]
+    sc_txn["CRM_MEMBER_DEV/AMT/HIST/<br/>RESPONSOR/SPONSOR_BIZ/BILLING"]
+    sg_evt["GA4_EVENT<br/>GA_SESSION_ID"]
+    sg_src["GA4_TRAFFIC_SOURCE"]
+    sg_dim["GA4_EVENT_DIM"]
+    sg_dev["GA4_DEVICE"]
+    sg_id["GA4_IDENTITY<br/>GA_MEMBER_ID"]
+    sg_xref["IDENTITY_MEMBER_XREF<br/>PSEUDO↔MEMBER_DK"]
+    se_item["ERP_BUDGET_ITEM"]
+    se_bd["ERP_BUDGET"]
+    sa_cr["AGENCY_AD_CREATIVE"]
+    sa_perf["AGENCY_AD_PERFORMANCE<br/>AD_DATE"]
+  end
+  subgraph GOLD["GOLD (15 DIM + 8 FACT)"]
+    direction TB
+    d_mem["DIM_MEMBER<br/>MEMBER_SK/DK"]
+    d_id["DIM_MEMBER_IDENTITY<br/>IDENTITY_SK"]
+    d_cmp["DIM_CAMPAIGN<br/>CAMPAIGN_SK"]
+    d_spn["DIM_SPONSORSHIP<br/>SPONSORSHIP_SK"]
+    d_org["DIM_ORG<br/>ORG_SK"]
+    d_svc["DIM_SERVICE<br/>SERVICE_SK"]
+    d_pay["DIM_PAYMENT<br/>PAYMENT_SK"]
+    d_rsn["DIM_REASON<br/>REASON_SK"]
+    d_evt["DIM_EVENT<br/>EVENT_SK"]
+    d_gsrc["DIM_GA_SOURCE<br/>GA_SOURCE_SK"]
+    d_gevt["DIM_GA_EVENT<br/>GA_EVENT_SK"]
+    d_dev["DIM_DEVICE<br/>DEVICE_SK"]
+    d_ad["DIM_AD_CREATIVE<br/>AD_CREATIVE_SK"]
+    d_bi["DIM_BUDGET_ITEM<br/>BUDGET_ITEM_SK"]
+    f_fmm["FACT_MEMBER_MONTHLY"]
+    f_fme["FACT_MEMBER_EVENT"]
+    f_ftd["FACT_TARGET_DEV"]
+    f_fse["FACT_SERVICE_EVENT"]
+    f_fga["FACT_GA_BEHAVIOR"]
+    f_fad["FACT_AD_PERFORMANCE"]
+    f_fep["FACT_EVENT_PARTICIPATION"]
+    f_fbd["FACT_BUDGET"]
+    f_ftb["FACT_TARGET_BIZ (보류)"]:::pending
+  end
+  bc_m --> sc_m
+  bc_cmp --> sc_cmp
+  bc_spn --> sc_spn
+  bc_org --> sc_org
+  bc_evt --> sc_evt
+  bc_evt --> sc_ep
+  bc_snd --> sc_sreq
+  bc_pay --> sc_paym
+  bc_pay --> sc_txn
+  bg --> sg_evt
+  bg --> sg_src
+  bg --> sg_dim
+  bg --> sg_dev
+  bg --> sg_id
+  be --> se_item
+  be --> se_bd
+  ba --> sa_cr
+  ba --> sa_perf
+  sc_m --> d_mem
+  sc_m --> d_id
+  sc_cmp --> d_cmp
+  sc_spn --> d_spn
+  sc_org --> d_org
+  sc_paym --> d_pay
+  sc_disc --> d_rsn
+  sc_evt --> d_evt
+  sc_sreq --> d_svc
+  sg_src --> d_gsrc
+  sg_dim --> d_gevt
+  sg_dev --> d_dev
+  sg_id --> sg_xref
+  sg_xref --> d_id
+  sa_cr --> d_ad
+  se_item --> d_bi
+  sc_txn --> f_fmm
+  sc_disc --> f_fme
+  sc_tgt --> f_ftd
+  sc_sreq --> f_fse
+  sc_ep --> f_fep
+  sg_evt --> f_fga
+  sg_evt --> f_fad
+  sa_perf --> f_fad
+  se_bd --> f_fbd
+  se_bd -.-> f_ftb
+  classDef pending stroke-dasharray:4 3,stroke:#999,color:#999;
+    </pre>
+  </div>
+
+  <h2 id="by-gold">2. gold별 (스타 스키마 백본 · FACT ↔ 공유 DIM)</h2>
+  <p class="legend">각 FACT가 참조하는 차원 키(SK/DK)만 연결. 공유 차원(DATE·MEMBER·CAMPAIGN 등)이 허브.</p>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  d_date["DIM_DATE<br/>DATE_SK/MONTH_KEY"]
+  d_mem["DIM_MEMBER<br/>MEMBER_DK"]
+  d_cmp["DIM_CAMPAIGN<br/>CAMPAIGN_SK"]
+  d_spn["DIM_SPONSORSHIP<br/>SPONSORSHIP_SK"]
+  d_org["DIM_ORG<br/>ORG_SK"]
+  d_rsn["DIM_REASON<br/>REASON_SK"]
+  d_pay["DIM_PAYMENT<br/>PAYMENT_SK"]
+  d_svc["DIM_SERVICE<br/>SERVICE_SK"]
+  d_evt["DIM_EVENT<br/>EVENT_SK"]
+  d_id["DIM_MEMBER_IDENTITY<br/>IDENTITY_SK"]
+  d_gsrc["DIM_GA_SOURCE<br/>GA_SOURCE_SK"]
+  d_gevt["DIM_GA_EVENT<br/>GA_EVENT_SK"]
+  d_dev["DIM_DEVICE<br/>DEVICE_SK"]
+  d_ad["DIM_AD_CREATIVE<br/>AD_CREATIVE_SK"]
+  d_bi["DIM_BUDGET_ITEM<br/>BUDGET_ITEM_SK"]
+  f_fmm(["FACT_MEMBER_MONTHLY"])
+  f_fme(["FACT_MEMBER_EVENT"])
+  f_ftd(["FACT_TARGET_DEV"])
+  f_fse(["FACT_SERVICE_EVENT"])
+  f_fep(["FACT_EVENT_PARTICIPATION"])
+  f_fga(["FACT_GA_BEHAVIOR"])
+  f_fad(["FACT_AD_PERFORMANCE"])
+  f_fbd(["FACT_BUDGET"])
+  f_fmm --- d_mem
+  f_fmm --- d_cmp
+  f_fmm --- d_spn
+  f_fmm --- d_pay
+  f_fmm --- d_rsn
+  f_fme --- d_date
+  f_fme --- d_mem
+  f_fme --- d_cmp
+  f_fme --- d_spn
+  f_fme --- d_org
+  f_fme --- d_rsn
+  f_ftd --- d_org
+  f_ftd --- d_date
+  f_fse --- d_date
+  f_fse --- d_mem
+  f_fse --- d_svc
+  f_fse --- d_cmp
+  f_fep --- d_date
+  f_fep --- d_mem
+  f_fep --- d_evt
+  f_fep --- d_cmp
+  f_fep --- d_spn
+  f_fga --- d_date
+  f_fga --- d_id
+  f_fga --- d_gevt
+  f_fga --- d_gsrc
+  f_fga --- d_dev
+  f_fga --- d_cmp
+  f_fad --- d_date
+  f_fad --- d_ad
+  f_fad --- d_cmp
+  f_fad --- d_dev
+  f_fbd --- d_date
+  f_fbd --- d_bi
+  f_fbd --- d_org
+    </pre>
+  </div>
+
+  <h2 id="unified">3. 단일 통합 (스키마 3열)</h2>
+  <p class="legend">스키마 단위 백본. Bronze 4 → Silver 32(그룹) → Gold DIM/FACT/WIDE.</p>
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  subgraph BRONZE["BRONZE (4 스키마)"]
+    direction TB
+    b1["BRONZE_CRM (43)"]
+    b2["BRONZE_GA4 (샤드)"]
+    b3["BRONZE_ERP"]
+    b4["BRONZE_AGENCY (3)"]
+  end
+  subgraph SILVER["SILVER (32)"]
+    direction TB
+    s1["CRM_* (21)<br/>MEMBER_DK·CMPGN_CD·SPNSR_BSNS_ID<br/>·DEPT_ID·EVENT_KEY"]
+    s2["GA4_* (5)<br/>GA_SESSION_ID·GA_MEMBER_ID"]
+    s3["IDENTITY_MEMBER_XREF<br/>PSEUDO↔MEMBER_DK"]
+    s4["ERP_* (3)<br/>예산과목·MONTH"]
+    s5["AGENCY_* (2)<br/>AD_DATE·소재"]
+  end
+  subgraph GOLD["GOLD (15 DIM + 8 FACT + 8 WIDE)"]
+    direction TB
+    g1["DIM ×15<br/>*_SK (+MEMBER_DK, MONTH_KEY)"]
+    g2["FACT ×8<br/>MEMBER_DK·*_SK·DATE_SK·MONTH_KEY"]
+    g3["WIDE view ×8"]
+  end
+  b1 --> s1
+  b2 --> s2
+  b3 --> s4
+  b4 --> s5
+  s2 --> s3
+  s1 --> g1
+  s2 --> g1
+  s3 --> g1
+  s4 --> g1
+  s5 --> g1
+  s1 --> g2
+  s2 --> g2
+  s4 --> g2
+  s5 --> g2
+  g1 --> g3
+  g2 --> g3
+    </pre>
+  </div>
+
+  <script src="/libs/mermaid@10.9.6/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict', flowchart: { htmlLabels: true } });
+  </script>
+
+</body>
+</html>
