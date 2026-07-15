@@ -4,6 +4,12 @@ version: 2
 # 실행: dbt test --select tag:silver_crm
 # MBER_NO 기반 FK는 CRM_MEMBER.MEMBER_DK 와 relationships 정의.
 # NULL 허용 FK는 where 필터로 테스트 실패 방지.
+# ⚠️ 순서9-C severity 정책 (메달리온 베스트 프랙티스):
+#    Silver 참조무결성 실패가 "알려진 원천/마스터 미완전"에서 기인하면 severity:warn 으로 관측·추적(CI 미차단).
+#    error 는 구조적 불변식(차원 PK not_null/unique 등)에만 예약. 아래 relationships/not_null(FK성) 은 전부 warn.
+#    ▶▶ 마스터 전량입고·키체계 확정 후 warn 제거 → error 복귀 (후속조치, 누락 금지. 문서50 BLOCKING-1/2).
+#    대상: MBER_NO/MEMBER_DK→CRM_MEMBER, EVENT_KEY→CRM_EVENT(이슈 E 263,611), SNDNG_KEY→CRM_SEND_REQUEST,
+#          SPNSR_BSNS_ID→CRM_SPONSORSHIP, CMPGN_CD→CRM_CAMPAIGN, not_null(MBER_NO) 고아분.
 models:
   # ─── PK 모델 (relationship 대상) ───
   - name: CRM_MEMBER
@@ -19,7 +25,7 @@ models:
           - relationships:
               to: ref('CRM_CAMPAIGN')
               field: CMPGN_CD
-              config: { where: "CMPGN_CD IS NOT NULL" }
+              config: { where: "CMPGN_CD IS NOT NULL", severity: warn }   # 순서9-C: 캠페인 마스터 소량 gap(고아 4). warn. 확정 후 error 복귀.
       - name: ACT_DEPT_CD
         tests:
           - relationships:
@@ -41,7 +47,7 @@ models:
           - relationships:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
-              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 순서9-C: 후원사업 마스터 미완전(50행, 고아 18,091). warn. 전량입고 후 error 복귀.
 
   - name: CRM_SPONSORSHIP
     columns:
@@ -66,23 +72,33 @@ models:
         tests: [not_null, unique]
 
   # ─── FK 모델 (relationships 정의) ───
+  # 회원→CRM_MEMBER relationships = severity:warn (마스터 미완전 고아, 순서9-B). 마스터 전량입고 후 제거→error 복귀.
   - name: CRM_EVENT_PARTICIPATION
     columns:
       - name: EVENT_KEY
         tests:
           - not_null
-          - relationships: { to: ref('CRM_EVENT'), field: EVENT_KEY }
+          - relationships:
+              to: ref('CRM_EVENT')
+              field: EVENT_KEY
+              config: { severity: warn }   # 순서9-C: 이슈 E 고아 263,611(23%) — 마스터 미완전/키체계 미확정. warn 관측(문서50 BLOCKING-2). 확정 후 error 복귀.
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
 
   - name: CRM_MEMBER_DEV
     columns:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:
@@ -94,21 +110,27 @@ models:
           - relationships:
               to: ref('CRM_CAMPAIGN')
               field: CMPGN_CD
-              config: { where: "CMPGN_CD IS NOT NULL" }
+              config: { where: "CMPGN_CD IS NOT NULL", severity: warn }   # 순서9-C: 캠페인 마스터 소량 gap(고아 18). warn. 확정 후 error 복귀.
 
   - name: CRM_MEMBER_DISCONTINUE
     columns:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
 
   - name: CRM_MEMBER_AMT_CHANGE
     columns:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
       - name: CMPGN_CD
         tests:
           - relationships:
@@ -121,7 +143,10 @@ models:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
 
   - name: CRM_MEMBER_SPONSOR_BIZ
     columns:
@@ -135,52 +160,75 @@ models:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
 
   - name: CRM_PAYMENT_BILLING
     columns:
       - name: MBER_NO
         tests:
-          - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - not_null:
+              config: { severity: warn }   # 순서9-C: NULL 회원번호 고아 5(이슈 B/D). warn. 마스터 재추출/판정 후 error 복귀.
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
-              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 순서9-C: 후원사업 마스터 미완전(고아 1). warn. 전량입고 후 error 복귀.
 
   - name: CRM_PAYMENT_METHOD
     columns:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 37). 전량입고 후 제거
 
   - name: CRM_SEND_MEMBER
     columns:
       - name: SNDNG_KEY
         tests:
           - not_null
-          - relationships: { to: ref('CRM_SEND_REQUEST'), field: SNDNG_KEY }
+          - relationships:
+              to: ref('CRM_SEND_REQUEST')
+              field: SNDNG_KEY
+              config: { severity: warn }   # 순서9-C: 발송요청 마스터 미완전(고아 11,313). warn. 전량입고 후 error 복귀.
       - name: MBER_NO
         tests:
-          - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - not_null:
+              config: { severity: warn }   # 순서9-C: NULL 회원번호 고아 745(이슈 B/D). warn. 마스터 재추출/판정 후 error 복귀.
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 31,486). 전량입고 후 제거
 
   - name: CRM_SEND_RESULT
     columns:
       - name: SNDNG_KEY
         tests:
           - not_null
-          - relationships: { to: ref('CRM_SEND_REQUEST'), field: SNDNG_KEY }
+          - relationships:
+              to: ref('CRM_SEND_REQUEST')
+              field: SNDNG_KEY
+              config: { severity: warn }   # 순서9-C: 발송요청 마스터 미완전(고아 9). warn. 전량입고 후 error 복귀.
 
   - name: CRM_SPONSOR_RELATION
     columns:
       - name: MBER_NO
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:

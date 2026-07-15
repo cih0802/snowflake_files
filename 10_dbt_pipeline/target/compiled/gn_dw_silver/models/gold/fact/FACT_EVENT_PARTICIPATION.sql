@@ -9,7 +9,9 @@ with p as (
 )
 
 select
-    COALESCE(TRY_TO_NUMBER(TO_CHAR(p.PARTCPT_DT::DATE, 'YYYYMMDD')), TRY_TO_NUMBER(TO_CHAR(e.EVENT_START_DATE, 'YYYYMMDD')), 0) as DATE_SK,  -- 참여일 없으면 행사시작일, 둘 다 없으면 센티넬0 (순서9)
+    COALESCE(CASE WHEN p.PARTCPT_DT::DATE BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(p.PARTCPT_DT::DATE, 'YYYYMMDD')) END, CASE WHEN e.EVENT_START_DATE BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(e.EVENT_START_DATE, 'YYYYMMDD')) END, 0) as DATE_SK,  -- 참여일 없으면 행사시작일, 둘 다 없으면 센티넬0 (순서9)
     p.MBER_NO                                     as MEMBER_DK,
     COALESCE(e.EVENT_SK, 0)                        as EVENT_SK,
     0                                             as CAMPAIGN_SK,
@@ -27,7 +29,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '939bb5db-645a-41c5-a55e-0e6a4feb44c8'                    AS DW_BATCH_ID
+    'ecb2a2a1-80f3-4f9b-b682-52f3bd552714'                    AS DW_BATCH_ID
 from p
 left join GN_DW.GOLD.DIM_EVENT e
     on e.EVENT_BK = p.EVENT_KEY

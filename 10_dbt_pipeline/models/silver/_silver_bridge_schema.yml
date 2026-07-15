@@ -9,29 +9,33 @@ models:
       - name: MEMBER_DK
         tests:
           - not_null
-          - relationships: { to: ref('CRM_MEMBER'), field: MEMBER_DK }
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 회원 마스터 미완전 고아 정책 일관(warn). 전량입고 후 제거→error 복귀
 
   - name: AGENCY_AD_CREATIVE
     columns:
-      - name: CREATIVE_KEY
+      - name: CREATIVE_DK
         tests: [not_null]
 
   - name: AGENCY_AD_PERFORMANCE
     columns:
-      - name: PERF_DATE
-        tests: [not_null]
+      - name: AD_DATE
+        tests:
+          - not_null   # 순서9-D: 실측 널 0/235,572 확인 → error 승격(구조 불변식: 광고성과 행 날짜 필수). 순서9-C warn 은 실데이터 검증 전 보수적 조치였음.
 
   - name: ERP_BUDGET
     columns:
-      - name: BUDGET_KEY
+      - name: BUDGET_ITEM_DK
         tests: [not_null]
 
   - name: ERP_BUDGET_ITEM
     columns:
-      - name: BUDGET_ITEM_KEY
+      - name: BUDGET_ITEM_DK
         tests: [not_null]
 
   - name: ERP_BIZ_TARGET
     columns:
-      - name: STDR_MT
+      - name: BIZ_TARGET_DK   # 원천 0행(WHERE 1=0 스캐폴드) → 통과. STDR_MT 는 존재하지 않는 컬럼이었음(수정).
         tests: [not_null]

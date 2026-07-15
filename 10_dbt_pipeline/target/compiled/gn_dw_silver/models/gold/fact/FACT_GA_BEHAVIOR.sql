@@ -12,7 +12,8 @@ with e as (
 
 joined as (
     select
-        TRY_TO_NUMBER(TO_CHAR(e.EVENT_DT, 'YYYYMMDD'))                                          as DATE_SK,
+        COALESCE(CASE WHEN e.EVENT_DT BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(e.EVENT_DT, 'YYYYMMDD')) END, 0)                            as DATE_SK,        -- 범위밖/NULL → 0 (순서9)
         0                                                                   as IDENTITY_SK,   -- 센티넬(미매핑) — GA4_IDENTITY 활성 후 해소
         COALESCE(gev.GA_EVENT_SK, 0)                                        as GA_EVENT_SK,
         COALESCE(gs.GA_SOURCE_SK, 0)                                        as GA_SOURCE_SK,
@@ -68,6 +69,6 @@ select
     'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '1adbefd8-de39-4a3d-a1ec-455b854ad516'                    AS DW_BATCH_ID
+    'ecb2a2a1-80f3-4f9b-b682-52f3bd552714'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, GA_EVENT_SK, GA_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH

@@ -10,7 +10,8 @@ with s as (
 )
 
 select
-    TRY_TO_NUMBER(TO_CHAR(s.SNDNG_DE::DATE, 'YYYYMMDD'))             as DATE_SK,
+    COALESCE(CASE WHEN s.SNDNG_DE::DATE BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(s.SNDNG_DE::DATE, 'YYYYMMDD')) END, 0)  as DATE_SK,   -- 범위밖/NULL → 0 (순서9)
     s.MBER_NO                                     as MEMBER_DK,
     0                                             as SERVICE_SK,
     0                                             as CAMPAIGN_SK,
@@ -29,6 +30,6 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '939bb5db-645a-41c5-a55e-0e6a4feb44c8'                    AS DW_BATCH_ID
+    'ecb2a2a1-80f3-4f9b-b682-52f3bd552714'                    AS DW_BATCH_ID
 from s
 where s.MBER_NO is not null                       -- 순수 불량 745행 제외(NOT NULL MEMBER_DK)

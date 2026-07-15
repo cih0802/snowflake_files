@@ -32,6 +32,8 @@
 */
 
 USE DATABASE GN_DW;
+CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD 
+  COMMENT = 'Gold 레이어 — 킴볼 스타스키마(DIM 15 + FACT 9) 분석 소비 계층. 지표 215개 귀속, WIDE VIEW 9개 제공';
 USE SCHEMA GOLD;
 
 -- ============================================================================

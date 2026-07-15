@@ -7,9 +7,10 @@
 ) }}
 
 with spine as (
-    -- 고정 연속 캘린더. GENERATOR rowcount 는 상수 필수(범위 여유분 생성 후 cal_end 로 필터).
+    -- 고정 연속 캘린더. rowcount 는 cal_start~cal_end 의 실제 일수를 jinja 로 산출(매직상수 제거).
+    --   순서9-B: 기존 하드코딩 16500 은 cal_end 확장 시 캘린더가 조용히 잘리는 잠복 결함 → 범위에서 자동 계산으로 대체.
     select DATEADD(day, SEQ4(), DATE '{{ var("cal_start") }}') as FULL_DATE
-    from TABLE(GENERATOR(rowcount => 16500))
+    from TABLE(GENERATOR(rowcount => {{ (modules.datetime.datetime.strptime(var("cal_end"), "%Y-%m-%d") - modules.datetime.datetime.strptime(var("cal_start"), "%Y-%m-%d")).days + 1 }}))
 ),
 
 calendar as (

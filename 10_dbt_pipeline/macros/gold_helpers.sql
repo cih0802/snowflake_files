@@ -33,3 +33,15 @@
 {% macro month_key(date_col) -%}
     TRY_TO_NUMBER(TO_CHAR({{ date_col }}, 'YYYYMM'))
 {%- endmacro %}
+
+-- MONTH_KEY 검증 클램프: YYYYMM 후보(숫자)가 캘린더 범위(cal_start~cal_end 월)·월(01~12) 모두 유효할 때만 반환, 아니면 NULL.
+--   → fact 에서 COALESCE(month_key_clamp(...), month_key_clamp(폴백), 0) 로 무효 월키를 Unknown(0) 라우팅.
+--   순서9-B: MBRFEE_MT 등 소스 원값이 YYYYMM 아닌 쓰레기 숫자(실측 20251·210103 등 ~2,043행)를 TRY_TO_NUMBER 가 통과시켜
+--            유령 월키 생성 + 정상 폴백 단락하던 문제 차단. date_sk 의 범위 클램프와 동일 철학(무효→0).
+{% macro month_key_clamp(mk_num) -%}
+    {%- set lo = var("cal_start")[:7] | replace("-", "") -%}
+    {%- set hi = var("cal_end")[:7] | replace("-", "") -%}
+    CASE WHEN {{ mk_num }} BETWEEN {{ lo }} AND {{ hi }}
+          AND MOD({{ mk_num }}, 100) BETWEEN 1 AND 12
+         THEN {{ mk_num }} END
+{%- endmacro %}

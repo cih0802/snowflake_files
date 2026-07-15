@@ -64,3 +64,9 @@ models:
         +materialized: incremental
         +incremental_strategy: append
         +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
+      # WIDE 소비뷰(순서9-D): 팩트×차원 LEFT JOIN 평탄화. 물리저장 0(view).
+      #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보(BLOCKING-4 해소, 미거버넌스 객체 재발방지).
+      #   컬럼/뷰 COMMENT 는 각 모델 post_hook 의 ALTER VIEW/COMMENT ON VIEW 로 적용(정본 03_top-down_gold/10_WIDE VIEW 코멘트.sql verbatim).
+      wide:
+        +materialized: view
+        +tags: ['gold_wide']

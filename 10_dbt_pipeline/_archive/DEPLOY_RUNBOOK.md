@@ -270,3 +270,66 @@ CRM / ERP / AGENCY / GA4 도메인 간 = 상호 독립 (병렬 실행, threads=4
 **주의:** `ERP_BIZ_TARGET=0행` = 원천 부재(정상). GA4_IDENTITY·IDENTITY_MEMBER_XREF 이제 적재됨(각 1,348) → GOLD `DIM_MEMBER_IDENTITY` 활성화 재검토 가능(선택 후속).
 
 **현재 상태:** SILVER = DDL소유+데이터갱신 전환·검증 완료(멱등 Δ0). GOLD 재빌드로 dim 12 + fact 6 전부 baseline Δ0 확정. 배포객체(GOLD·SILVER 개정) ADD VERSION 반영 완료(신규 버전 default).
+
+---
+
+### 2026-07-15 — GOLD fact "table→incremental append" 전환 + DIM_DATE 재설계 + MEMBER_DK 판정 (순서 9 완료)
+
+**배경 gap 판정 (설계적합성 검토 항목1·7):**
+- **G-1(타입 소실)·G-2(FK 드롭)**: GOLD fact 6개가 `materialized='table'` → 매 run `CREATE OR REPLACE TABLE AS SELECT` 로 06_DDL 구조를 덮어써 컬럼 타입 소실 + fact FK 드롭(실측 GOLD FK 35→12). dim(merge)은 DDL 보존이라 정상.
+- **결정**: fact `table` 전면 폐기 → SILVER 동일 **incremental + append + pre-hook TRUNCATE + full_refresh:false** (DDL=구조·타입·FK 소유, dbt=데이터만 갱신). TRUNCATE 는 구조 보존. 순서8의 "fact=table(D1)" 판정을 순서9에서 개정.
+
+| 순번 | 작업 | 명령/대상 | 결과 |
+|---|---|---|---|
+| 1 | fact materialization 전환 | `dbt_project.yml` gold.fact 블록 + fact 6개 config 정리 | table → incremental+append+pre-hook TRUNCATE |
+| 2 | DIM_DATE 재설계 | `models/gold/dim/DIM_DATE.sql` + `cal_start/cal_end` var | GA4 의존 제거 → 고정 캘린더 1991~2035 + DATE_SK=0 Unknown |
+| 3 | date_sk 매크로 | `macros/gold_helpers.sql` | 캘린더 범위 클램프(범위밖/NULL→NULL, fact 에서 COALESCE(...,0)) |
+| 4 | fact 날짜 라우팅·불량행 제외 | FMM/FEP/FSE/FME/FGA | DATE_SK COALESCE(...,0), FMM MONTH_KEY 3단 폴백+MBER_NO 필터(5행), FSE MBER_NO 필터(745행) |
+| 5 | conformed dim Unknown 멤버 | DIM_DATE/DEVICE/GA_EVENT/GA_SOURCE | SK=0 'Unknown' 행 추가(센티넬 라우팅 대상) |
+| 6 | 전체 build (검증) | ARGS='build' | ERROR=26 — SILVER relationship 실패가 하류 GOLD fact SKIP(=0행) 유발 |
+| 7 | GOLD 한정 build | ARGS='build --select path:models/gold' | SILVER 테스트 게이트 우회 → fact 6개 정상 적재 |
+| 8 | MEMBER_DK 판정 (Phase 2) | `_gold_ready_schema.yml` 4곳 | MEMBER_DK→DIM_MEMBER relationships **severity: warn** 강등 |
+| 9 | 최종 build | ARGS='build --select path:models/gold' | **PASS=95 WARN=4 ERROR=0 SKIP=0** |
+
+**검증 SELECT 결과 (G-1/G-2/DATE 해소 확인):**
+- GOLD fact FK 개수 = **35** (G-2 해소, FK 생존).
+- FMM 타입 복원: MONTH_KEY `NUMBER(6,0)`, PAID_FEE/BILLED_AMT `NUMBER(18,2)` (G-1 해소).
+- DIM_DATE = **16,437행**(고정캘린더 + Unknown 1행, MIN(DATE_SK)=0).
+
+**⚠️ 운영 교훈 — 전체 build 시 GOLD fact SKIP:**
+- `build`(무선택)는 SILVER 테스트를 GOLD와 인터리브 → SILVER relationship 실패(예 CRM_PAYMENT_METH)가 하류 GOLD fact 를 **SKIP**(=이전 0행 유지). fact 모델 에러 아님.
+- GOLD만 검증·적재하려면 반드시 `--select path:models/gold` (SILVER 테스트 게이트 우회, SILVER 테이블은 이미 존재해 ref 해결).
+
+**Phase 2 — MEMBER_DK 고아 판정 (선택지 c 채택):**
+- MEMBER_DK→DIM_MEMBER relationships 4건 실패: **통합 distinct 9,248명**(FSE 31,486행/FEP 9,480/FME 271/FMM 181).
+- 성격: **8,803명(95%)이 정상 7자리 FDRM 활동회원**(거래 여러 fact 등장)인데 마스터(CRM_MEMBER)에 부재 + ONCE(S) 206 + 불량ID ~239(예 `1`). → fact 버그 아닌 **회원 마스터 스냅샷 미완전**(부분적재).
+- 결정: **(c) severity: warn** — (a 라우팅=실ID 추적성 상실 / b DIM 보강=속성NULL 셸 오염) 대비 비파괴·가역. build 통과. **마스터 전량입고 후 severity 제거(error 복귀)** 조건 명시(주석 기재).
+
+**GOLD 적재 행수 (순서9, 6 fact 전량):**
+
+| 테이블 | 행수 | 비고 |
+|---|--:|---|
+| FACT_MEMBER_MONTHLY | 37,792,342 | MONTH_KEY 회비월 grain+폴백(순서8 36.58M 대비 증가) |
+| FACT_SERVICE_EVENT | 38,470,780 | MBER_NO NULL 745행 제외(순서8 38.47M) |
+| FACT_MEMBER_EVENT | 4,633,105 | Δ0 |
+| FACT_EVENT_PARTICIPATION | 1,134,126 | Δ0 |
+| FACT_GA_BEHAVIOR | 19,555 | Δ0 |
+| FACT_TARGET_DEV | 7,272 | Δ0 |
+
+**현재 상태:** GOLD fact 6개 = incremental+append 전환·검증 완료(G-1/G-2 해소, FK 35 생존). DIM_DATE 고정캘린더 재설계 완료. GOLD 테스트 PASS=95/WARN=4(MEMBER_DK 소스 gap)/ERROR=0. **워크스페이스 직접실행 검증만 완료 — 배포객체 ADD VERSION 미반영(승인 대기).** 설계적합성 검토 항목1(GOLD fact+dim) 완료, **잔여: 항목1 SILVER 32모델 컬럼정합 + 항목2~6.**
+
+**순서9-B 하드닝 (데이터 아키텍처 비판적 재검토 후 보수적 수정 — build 재검증 완료):**
+- **FMM MONTH_KEY 무결성**: `COALESCE(TRY_TO_NUMBER(MBRFEE_MT), ...)` 이 YYYYMM 검증 없이 소스 쓰레기 숫자를 통과(실측 무효 ~2,043행: MIN 20251·MAX 210103, 범위밖·월>12) + 정상 PAY_DE 폴백 단락. → `month_key_clamp` 매크로 신설(범위 199101~203512·월 01~12 검증, 무효→NULL) 후 `COALESCE(clamp(MBRFEE_MT), clamp(PAY_DE월), 0)`. 재검증: **무효 월키 0건**(below/above/bad_month 전부 0), MK=0 은 53행(양쪽 무효), 순행수 −6. GROUP BY 는 출력 별칭(`MONTH_KEY, MEMBER_DK`)으로 단순화(검증식 중복 제거).
+- **DIM_DATE rowcount 매직상수 제거**: `GENERATOR(rowcount => 16500)`(cal_end 확장 시 조용한 캘린더 잘림 잠복결함) → jinja `modules.datetime` 로 cal_start~cal_end 실제 일수 자동 산출. 재검증 16,437행 유지.
+- **DATE_SK 라우팅 건강 확인**(수정 불필요): DATE_SK=0 비율 FEP 50·FME 90·FGA 0·FSE 0 = 극소.
+- 영향 파일: `macros/gold_helpers.sql`(month_key_clamp 추가), `models/gold/fact/FACT_MEMBER_MONTHLY.sql`, `models/gold/dim/DIM_DATE.sql`.
+
+**순서9-B 설계적합성 검토 항목 2~6 (완료 — 상세·미결은 `_OPEN_ITEMS_후속조치.md`):**
+- **항목2(grain·키)**: 통과. FEP/FSE/FME 행수=소스(fan-out 없음), FGA 조인 base=joined=265,312 실측, 조인 자연키 NULL-safe 중복 0. 노트: 월 팩트(FMM/ERP_BUDGET) MONTH_KEY grain ↔ DIM_MONTH 부재.
+- **항목3(ref 방향)**: 통과. 전 SILVER 모델 intra-SILVER ref(코드 라벨 등), 교차소스는 `IDENTITY_MEMBER_XREF` 단일 예외(문서화됨). 역참조·BRONZE 직참조 없음.
+- **항목5(누락/과잉)**: GOLD DDL 24개 중 미적재 6개 식별(AGENCY 2·ERP 3·DIM_MEMBER_IDENTITY). 소스 준비된 4개는 모델 미작성. DIM_MEMBER_IDENTITY enabled=false 유지 권고. → 결정 대기.
+- **항목6(test 커버리지)**: full build ERROR=26 원인 3종 계량 — ① 회원 마스터 미완전 고아(SILVER MBER_NO→CRM_MEMBER 8+2테이블, GOLD와 동일원인) ② `EVENT_KEY→CRM_EVENT` 고아 263,611(참여 23%!) ③ `SNDNG_KEY→CRM_SEND_REQUEST` 11,313+9·not_null MBER_NO NULL 745+5.
+  - **조치(선택적)**: ① 회원→CRM_MEMBER relationships 12건 `severity: warn` 강등(GOLD 일관, 마스터 전량입고 후 error 복귀 — `_OPEN_ITEMS` BLOCKING-1). ②③ 은 별개 근본원인이라 **error 유지**(현업 §E 판정 대기). ②(EVENT_KEY) 로 인해 full build 는 여전히 실패, GOLD-only build 만 green.
+- **항목4(정제규칙 이행 vs 09_적재쿼리)**: **미착수** (`_OPEN_ITEMS` 참조).
+- 신규 산출물: `_현업검토요청_의심데이터_20260715.md`(A~E 현업 판정 요청), `_OPEN_ITEMS_후속조치.md`(미결 추적).
+- ⚠️ 검증 필요: SILVER 테스트 severity 변경 반영은 `dbt build --select path:models/silver path:models/gold` (또는 `dbt test`)로 사용자 확인 예정.

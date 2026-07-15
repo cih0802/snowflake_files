@@ -10,7 +10,11 @@ with b as (
 )
 
 select
-    TRY_TO_NUMBER(MBRFEE_MT)                      as MONTH_KEY,     -- 회비월(YYYYMM) grain: 납입일(PAY_DE) 대신 → 미납행 보존·NULL 0 (순서9)
+    COALESCE(CASE WHEN TRY_TO_NUMBER(MBRFEE_MT) BETWEEN 199101 AND 203512
+          AND MOD(TRY_TO_NUMBER(MBRFEE_MT), 100) BETWEEN 1 AND 12
+         THEN TRY_TO_NUMBER(MBRFEE_MT) END, CASE WHEN TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM')) BETWEEN 199101 AND 203512
+          AND MOD(TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM')), 100) BETWEEN 1 AND 12
+         THEN TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM')) END, 0) as MONTH_KEY,  -- 회비월(YYYYMM 검증) 우선, 무효/NULL 이면 납입월(검증) 폴백, 둘 다 무효면 0=Unknown월 (순서9-B: 쓰레기 월키 차단)
     MBER_NO                                       as MEMBER_DK,
     0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as PAYMENT_SK, 0 as REASON_SK,
     0 as DEV_CNT, 0 as DEV_MEMBERS, 0 as STOP_CNT, 0 as UNPAID_CNT,
@@ -34,7 +38,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'bf4f6e0e-6b73-44dc-89b0-0e6188875612'                    AS DW_BATCH_ID
+    'ecb2a2a1-80f3-4f9b-b682-52f3bd552714'                    AS DW_BATCH_ID
 from b
 where MBER_NO is not null                         -- 순수 불량 5행 제외(NOT NULL MEMBER_DK)
-group by TRY_TO_NUMBER(MBRFEE_MT), MBER_NO
+group by MONTH_KEY, MEMBER_DK                      -- 순서9-B: 출력 별칭으로 group by(MONTH_KEY 검증식 중복 제거·정합 보장)

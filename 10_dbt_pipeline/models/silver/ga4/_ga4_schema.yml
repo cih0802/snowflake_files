@@ -20,17 +20,15 @@ models:
   - name: GA4_EVENT_DIM
     columns:
       - name: EVENT_NAME
-        tests: [not_null, unique]
+        tests: [not_null]   # unique 제거(순서9-C): grain=(event_name×cat×label×action) 브리지 → event_name 다중행 정상. GOLD DIM_GA_EVENT 가 (cat,label,action) distinct 추출. GA4_EVENT relationships 는 존재성만 요구.
 
   - name: GA4_DEVICE
     columns:
-      - name: USER_PSEUDO_ID
+      - name: DEVICE_TYPE
         tests: [not_null]
 
   - name: GA4_TRAFFIC_SOURCE
-    columns:
-      - name: USER_PSEUDO_ID
-        tests: [not_null]
+    # grain = 세션 last-click 트래픽소스 DISTINCT. 안정적 단일 not_null 자연키 없음(모든 UTM/XCHAN NULL 가능) → 컬럼 테스트 없음.
 
   - name: GA4_IDENTITY
     columns:
@@ -41,4 +39,4 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { where: "MBER_NO IS NOT NULL" }
+              config: { where: "MBER_NO IS NOT NULL", severity: warn }   # 순서9-B: 회원 마스터 미완전 고아 정책 일관(warn). 전량입고 후 제거

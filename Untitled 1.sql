@@ -24,3 +24,27 @@ ORDER BY 1;
 ALTER DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE
   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
   COMMENT = '순서8 GOLD활성화 + 순서8-B SILVER DDL소유전환';
+
+
+--SILVER 스키마의 테이블 중 컬럼 전체가 null인 것을 추출하는 쿼리
+EXECUTE IMMEDIATE $$
+DECLARE
+  stmt STRING;
+  rs RESULTSET;
+BEGIN
+  SELECT LISTAGG(s, ' UNION ALL ') WITHIN GROUP (ORDER BY table_name)
+    INTO :stmt
+  FROM (
+    SELECT table_name,
+      'SELECT ''' || table_name || ''' tbl, COUNT(*) n, ARRAY_COMPACT(ARRAY_CONSTRUCT(' ||
+      LISTAGG('IFF(COUNT("' || column_name || '")=0,''' || column_name || ''',NULL)', ',')
+        WITHIN GROUP (ORDER BY ordinal_position) ||
+      ')) fully_null_cols FROM GN_DW.SILVER."' || table_name || '"' AS s
+    FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+    WHERE table_schema='SILVER'
+    GROUP BY table_name
+  );
+  rs := (EXECUTE IMMEDIATE :stmt);
+  RETURN TABLE(rs);
+END;
+$$

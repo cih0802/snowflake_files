@@ -6,7 +6,8 @@
 
 with dev as (
     select
-        TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD'), 'YYYYMMDD'))  as DATE_SK,
+        COALESCE(CASE WHEN TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD'), 'YYYYMMDD')) END, 0)  as DATE_SK,   -- 범위밖/NULL → 0 (순서9)
         MBER_NO                                             as MEMBER_DK,
         'DEV'                                               as EVENT_TYPE,
         0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as ORG_SK, 0 as REASON_SK,
@@ -22,7 +23,8 @@ with dev as (
 
 stop as (
     select
-        TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD'), 'YYYYMMDD')) as DATE_SK,
+        COALESCE(CASE WHEN TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD') BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD'), 'YYYYMMDD')) END, 0) as DATE_SK,   -- 범위밖/NULL → 0 (순서9)
         MBER_NO                                             as MEMBER_DK,
         'STOP'                                              as EVENT_TYPE,
         0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as ORG_SK, 0 as REASON_SK,
@@ -49,5 +51,5 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'd4528355-3625-41c3-b3d2-8c3c022ddc03'                    AS DW_BATCH_ID
+    '79c7f449-64e1-46aa-9c0c-b206859bd7a3'                    AS DW_BATCH_ID
 from unioned
