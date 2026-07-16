@@ -63,7 +63,11 @@ for ln in lines:
                 missing.append(key)
     out.append(ln)
 
+GEN = "scripts/add_gold_comments.py"
+_prov = f"-- 컬럼 COMMENT 주입기(생성기): {GEN} — 재실행 시 이 스크립트로 갱신"
+if not any(_prov in l for l in out[:6]):
+    out.insert(0, _prov)
 open(DDL, "w", encoding="utf-8").write("\n".join(out))
-print(f"injected COMMENT on {injected} columns")
+print(f"[{GEN}] injected COMMENT on {injected} columns → {DDL}")
 if missing:
     print(f"no-desc columns ({len(missing)}):", missing[:20])

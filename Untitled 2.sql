@@ -119,3 +119,50 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select tag:gold_wide';
 
 -- 3) 전체 회귀 green 재확인
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+
+
+
+
+-- ================================== 20260716
+-- 1) 현행 버전 목록·날짜 확인 (VERSION$5가 오늘 변경 이전인지 확인)
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+
+-- 2) 오늘(2026-07-15) identity 배선 포함 live 워크스페이스를 새 버전으로 추가 → VERSION$6
+ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
+  ADD VERSION identity_wired_20260715
+  FROM 'snow://workspace/user$.public."snowflake_files"/versions/live/10_dbt_pipeline';
+
+-- 3) 검증: VERSION$6(alias identity_wired_20260715)가 생기고 LAST가 이를 가리키는지
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+
+
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --target dev --select FACT_GA_BEHAVIOR WIDE_GA_BEHAVIOR'
+
+;;
+
+
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
+    MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',
+    MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키(조인용)',
+    GENDER              VARCHAR         COMMENT '성별(#130)',
+    REGION              VARCHAR         COMMENT '지역(#131)',
+    AGE_BAND            VARCHAR         COMMENT '연령대(overview). 원천: 개발/증감 테이블 AGE 스냅샷',
+    MEMBER_STATUS       VARCHAR         COMMENT '회원상태(#132)',
+    MEMBER_TYPE         VARCHAR         COMMENT '회원구분(05 2-1). 원천: MBER_DIV_CD(MM018 개인/기업/단체)',
+    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존구분(#113)',
+    FIRST_JOIN_DATE     DATE            COMMENT '최초가입일=회원번호 생성일(#28)',
+    FIRST_CAMPAIGN      VARCHAR         COMMENT '최초캠페인(#29)',
+    ENROLL_PATH         VARCHAR         COMMENT '가입경로(overview 2-1). 원천: JOIN_PATH_CD(MM014)',
+    FIRST_SPONSORSHIP   VARCHAR         COMMENT '최초후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS',
+    LAST_STOP_DATE      DATE            COMMENT '최종중단일(#30)',
+    LAST_CAMPAIGN       VARCHAR         COMMENT '최종캠페인(#31)',
+    CURRENT_SPONSORSHIP VARCHAR         COMMENT '현재후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS',
+    EFFECTIVE_FROM      DATE            COMMENT 'SCD2 유효시작',
+    EFFECTIVE_TO        DATE            COMMENT 'SCD2 유효종료',
+    IS_CURRENT          BOOLEAN         COMMENT '현재행 여부',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '회원 차원 (SCD2 · 회원 상태버전)';
+

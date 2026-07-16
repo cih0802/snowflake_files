@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GN_DW 파이프라인 전체 인벤토리 (112 객체 + 전체 DDL 메타)</title>
+  <title>GN_DW 파이프라인 전체 인벤토리 (112 객체 + dbt 정본 메타 v3)</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -19,6 +19,7 @@
       --downstream: #f59e0b;
       --panel-bg: light-dark(#ffffff, #0b1120);
       --table-th: light-dark(#f1f5f9, #1e293b);
+      --warn: #d97706;
     }
 
     body {
@@ -36,7 +37,7 @@
     h1 { margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 800; }
     .note { font-size: 0.85rem; color: var(--text-sub); line-height: 1.5; }
     .guide { font-size: 0.82rem; color: var(--text-sub); margin-top: 12px; font-weight: 600; }
-    .legend-box { text-align: right; display: flex; flex-direction: column; gap: 8px; font-size: 0.75rem; }
+    .legend-box { text-align: right; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; }
 
     /* 화면 좌우를 꽉 채우는 4열 레이아웃 */
     .pipeline-grid {
@@ -73,7 +74,6 @@
       margin-bottom: 6px; letter-spacing: -0.3px;
     }
 
-    /* 테이블 칩: 자동 줄바꿈으로 세로 극대 압축 */
     .chip-container { display: flex; flex-wrap: wrap; gap: 5px; }
 
     .chip {
@@ -92,15 +92,15 @@
     
     .chip:hover { transform: translateY(-1px); border-color: var(--primary); }
     
-    /* 특수 상태 스타일 (점선) */
+    /* 특수 상태 스타일 */
     .chip.unmapped { border: 1px dashed #c026d3; color: #c026d3; }
     .chip.pending { border: 1px dashed var(--text-sub); color: var(--text-sub); opacity: 0.6; }
+    .chip.scd2 { border-color: #06b6d4; background: light-dark(#ecfeff, #083344); }
 
-    /* 리니지 하이라이트 효과 (font-weight: 700; 대신 text-shadow 사용) */
-	/* font-weight: 700; 삭제 */
-	.chip.is-selected { background: var(--primary); border-color: var(--primary); color: #fff; z-index: 3; }
-	.chip.is-upstream { background: var(--upstream); border-color: var(--upstream); color: #fff; z-index: 3; }
-	.chip.is-downstream { background: var(--downstream); border-color: var(--downstream); color: #fff; z-index: 3; }
+    /* 리니지 하이라이트 효과 */
+    .chip.is-selected { background: var(--primary); border-color: var(--primary); color: #fff; z-index: 3; }
+    .chip.is-upstream { background: var(--upstream); border-color: var(--upstream); color: #fff; z-index: 3; }
+    .chip.is-downstream { background: var(--downstream); border-color: var(--downstream); color: #fff; z-index: 3; }
     .dimmed .chip:not(.is-selected):not(.is-upstream):not(.is-downstream) { opacity: 0.25; }
 
     /* SVG 리니지 연결선 */
@@ -112,7 +112,7 @@
 
     /* 측면 슬라이드 패널 (전체 컬럼 표시) */
     .side-panel {
-      position: fixed; top: 0; right: -550px; width: 530px; height: 100vh;
+      position: fixed; top: 0; right: -580px; width: 560px; height: 100vh;
       background: var(--panel-bg); border-left: 2px solid var(--border);
       box-shadow: -4px 0 16px rgba(0,0,0,0.25);
       z-index: 100; transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -128,29 +128,50 @@
     .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-sub); }
     .panel-body { padding: 16px; overflow-y: auto; flex: 1; }
     
+    /* WIDE 및 조인 관계 요약 박스 */
+    .summary-box {
+      background: light-dark(#eff6ff, #1e3a8a);
+      border: 1px solid light-dark(#bfdbfe, #3b82f6);
+      border-radius: 6px; padding: 10px; margin-bottom: 14px;
+      font-size: 0.78rem; line-height: 1.5;
+    }
+    .summary-box b { color: light-dark(#1d4ed8, #93c5fd); }
+    
+    /* 링크 미니 태그 */
+    .link-tag {
+      display: inline-block; background: light-dark(#e2e8f0, #334155);
+      border-radius: 3px; padding: 1px 5px; font-size: 0.7rem; font-family: monospace;
+      margin: 2px; cursor: pointer; color: var(--text); text-decoration: underline;
+    }
+    .link-tag:hover { background: var(--primary); color: #fff; }
+
     table.ddl-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left; }
     table.ddl-table th, table.ddl-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
     table.ddl-table th { background: var(--table-th); position: sticky; top: 0; font-weight: 700; }
+    
+    /* 키 및 속성 배지 스타일 */
     .key-badge {
       display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 0.65rem; font-weight: bold; margin-right: 4px;
     }
     .badge-pk { background: #ef4444; color: white; }
     .badge-fk { background: #3b82f6; color: white; }
+    .badge-warn { background: var(--warn); color: white; border: 1px dashed #fff; }
+    .badge-deg { background: #64748b; color: white; }
+    .badge-scd2 { background: #06b6d4; color: white; }
   </style>
 </head>
 <body>
 
   <header>
     <div>
-      <h1>GN_DW 파이프라인 전체 인벤토리 (112 객체 + 전체 DDL 메타)</h1>
+      <h1>GN_DW 파이프라인 전체 인벤토리 (112 객체 + dbt 정본 메타 v3)</h1>
       <div class="note">
-        테이블명 + 키 컬럼만 표기한 백본. 상세 컬럼 생략.<br>
-        실측: <b>BRONZE 4스키마 → SILVER 32모델 → GOLD 15 DIM + 8 FACT (+WIDE 8)</b>.<br>
-        GN_DW 데이터베이스의 모든 테이블/뷰(INFORMATION_SCHEMA 실측). DIM_DATE는 ETL 생성(원천 무관).<br>
-        단방향 계약: SERVING → GOLD → SILVER → BRONZE.
+        <b>정본 소스:</b> PK/FK/조인은 dbt <code>schema.yml</code> (relationships/unique 테스트) 파싱 결과.<br>
+        <b>센티넬 규칙:</b> 미매칭/범위밖 SK는 <b>Unknown 멤버(SK=0)</b>로 라우팅 (시드 0번행 보유).<br>
+        <b>SCD2 처리:</b> DIM_MEMBER는 회원상태 이력 기반 다중버전. WIDE 소비 뷰는 <code>IS_CURRENT=TRUE</code>로 1행 단일화하여 fan-out 방지.
       </div>
       <div class="guide">
-        [인터랙션] 테이블 클릭: <b>전체 컬럼 DDL 및 상·하위 리니지</b> 표시 | 마우스 오버: 리니지 미리보기 | 배경 클릭: 초기화
+        [인터랙션] 테이블 클릭: <b>dbt 조인 계약(PK/FK) 및 컬럼 DDL</b> 표시 | 우측 미니 태그 클릭: 조인 타겟 이동 | 배경 클릭: 초기화
       </div>
     </div>
     <div class="legend-box">
@@ -160,8 +181,8 @@
         <span style="color:var(--downstream)">■ 소비(Downstream)</span>
       </div>
       <div>
-        <span style="color:#c026d3; border: 1px dashed #c026d3; padding: 2px 4px; border-radius: 3px;">보라색 점선</span> : 리니지 미매핑 BRONZE (SILVER 미소비)<br>
-        <span style="color:var(--text-sub); border: 1px dashed var(--text-sub); padding: 2px 4px; border-radius: 3px; opacity: 0.7; margin-top: 6px; display: inline-block;">회색 점선</span> : 원천 미입고 보류 (FACT_TARGET_BIZ 등 E-6 대기)
+        <span class="key-badge badge-pk">PK</span> Unique 테스트 | <span class="key-badge badge-fk">FK</span> 실선 조인 | <span class="key-badge badge-warn">FK(warn)</span> 마스터 고아 허용 (점선)<br>
+        <span class="key-badge badge-deg">DEG</span> 파생 월키(DIM 조인 없음) | <span style="color:#06b6d4; font-weight:bold;">[SCD2]</span> 이력 다중버전 차원
       </div>
     </div>
   </header>
@@ -172,7 +193,6 @@
     <!-- 1. BRONZE LAYER (48) -->
     <div class="layer-col">
       <div class="layer-title">BRONZE <span>4 스키마 (48)</span></div>
-      
       <div class="domain-group">
         <div class="domain-title">BRONZE_CRM · 회원/거래/결제</div>
         <div class="chip-container">
@@ -191,7 +211,6 @@
           <div class="chip unmapped" id="TH_PM_SETLE_INFO_HIST">TH_PM_SETLE_INFO_HIST</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">BRONZE_CRM · 발송(MS)</div>
         <div class="chip-container">
@@ -210,7 +229,6 @@
           <div class="chip unmapped" id="TD_MS_AT_TMPLAT_BTN_LIST">TD_MS_AT_TMPLAT_BTN_LIST</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">BRONZE_CRM · 마스터/행사/코드</div>
         <div class="chip-container">
@@ -233,7 +251,6 @@
           <div class="chip unmapped" id="TM_RM_RELATNSP_CHG_INFO">TM_RM_RELATNSP_CHG_INFO</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">GA4 / ERP / AGENCY</div>
         <div class="chip-container">
@@ -249,7 +266,6 @@
     <!-- 2. SILVER LAYER (32) -->
     <div class="layer-col">
       <div class="layer-title">SILVER <span>표준화 키 (32)</span></div>
-      
       <div class="domain-group">
         <div class="domain-title">CRM · 회원/후원/캠페인</div>
         <div class="chip-container">
@@ -266,7 +282,6 @@
           <div class="chip" id="CRM_MEMBER_SPONSOR_BIZ">CRM_MEMBER_SPONSOR_BIZ</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">CRM · 이력/결제/행사/발송</div>
         <div class="chip-container">
@@ -282,7 +297,6 @@
           <div class="chip" id="CRM_SEND_MEMBER">CRM_SEND_MEMBER</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">GA4 / ERP / AGENCY</div>
         <div class="chip-container">
@@ -304,12 +318,11 @@
     <!-- 3. GOLD LAYER (24) -->
     <div class="layer-col">
       <div class="layer-title">GOLD <span>DIM (15) + FACT (9)</span></div>
-      
       <div class="domain-group">
         <div class="domain-title">DIMENSION (15)</div>
         <div class="chip-container">
           <div class="chip" id="DIM_DATE">DIM_DATE</div>
-          <div class="chip" id="DIM_MEMBER">DIM_MEMBER</div>
+          <div class="chip scd2" id="DIM_MEMBER">DIM_MEMBER</div>
           <div class="chip" id="DIM_MEMBER_IDENTITY">DIM_MEMBER_IDENTITY</div>
           <div class="chip" id="DIM_CAMPAIGN">DIM_CAMPAIGN</div>
           <div class="chip" id="DIM_SPONSORSHIP">DIM_SPONSORSHIP</div>
@@ -325,7 +338,6 @@
           <div class="chip" id="DIM_BUDGET_ITEM">DIM_BUDGET_ITEM</div>
         </div>
       </div>
-
       <div class="domain-group">
         <div class="domain-title">FACT (9)</div>
         <div class="chip-container">
@@ -342,10 +354,9 @@
       </div>
     </div>
 
-    <!-- 4. WIDE LAYER (8) -->
+    <!-- 4. WIDE LAYER (9) -->
     <div class="layer-col">
-      <div class="layer-title">WIDE VIEW <span>마트 (8)</span></div>
-      
+      <div class="layer-title">WIDE VIEW <span>마트 (9)</span></div>
       <div class="domain-group">
         <div class="domain-title">SERVING VIEWS</div>
         <div class="chip-container" style="flex-direction: column;">
@@ -357,33 +368,260 @@
           <div class="chip" id="WIDE_GA_BEHAVIOR">WIDE_GA_BEHAVIOR</div>
           <div class="chip" id="WIDE_AD_PERFORMANCE">WIDE_AD_PERFORMANCE</div>
           <div class="chip" id="WIDE_BUDGET">WIDE_BUDGET</div>
+          <div class="chip pending" id="WIDE_TARGET_BIZ">WIDE_TARGET_BIZ</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 우측 컬럼 DDL 슬라이드 패널 -->
+  <!-- 우측 컬럼 DDL 및 조인 계약 슬라이드 패널 -->
   <div class="side-panel" id="side-panel">
     <div class="panel-header">
       <h2 id="panel-title">TABLE_NAME</h2>
       <button class="close-btn" id="close-panel">×</button>
     </div>
     <div class="panel-body">
+      <div id="panel-summary"></div>
       <table class="ddl-table">
         <thead>
-          <tr><th>컬럼명 / 키</th><th>데이터 타입</th><th>한글 설명 (Comment)</th></tr>
+          <tr><th>컬럼명 / 키 조인 계약</th><th>데이터 타입</th><th>한글 설명 (Comment)</th></tr>
         </thead>
         <tbody id="panel-table-body"></tbody>
       </table>
     </div>
   </div>
 
-  <script>
-    // 1. DDL 전체 컬럼 인벤토리 (100% 완전 수록 - 잘림 없음)
+  <!-- [파트 2 JS 엔진 영역] -->
+<script>
+    // ==========================================================
+    // 0. 테이블명 한글 설명 매핑 사전 (추가된 영역)
+    // ==========================================================
+    const tableNameMap = {
+      // --- WIDE VIEW (9) ---
+      "WIDE_MEMBER_MONTHLY": "월별 회원 활동/후원 통합 마트",
+      "WIDE_MEMBER_EVENT": "회원 상태전이(가입/중단/증액) 통합 마트",
+      "WIDE_TARGET_DEV": "조직별 회원개발 목표 대비 실적 마트",
+      "WIDE_SERVICE_EVENT": "회원 발송 및 서비스 참여 실적 마트",
+      "WIDE_EVENT_PARTICIPATION": "행사 참여 및 결과 통합 마트",
+      "WIDE_GA_BEHAVIOR": "GA4 웹/앱 행동 및 트래픽 유입 마트",
+      "WIDE_AD_PERFORMANCE": "광고 매체별 전환 및 집행 실적 마트",
+      "WIDE_BUDGET": "ERP 예산 편성 및 집행 현황 마트",
+      "WIDE_TARGET_BIZ": "조직/사업별 사업목표 마트 (구조준비·원천대기 0행)",
+
+      // --- GOLD FACT (9) ---
+      "FACT_MEMBER_MONTHLY": "월별 회원 활동/후원/미납 팩트",
+      "FACT_MEMBER_EVENT": "회원 상태전이(개발/중단/증액) 팩트",
+      "FACT_TARGET_DEV": "조직별 회원개발 목표 팩트",
+      "FACT_TARGET_BIZ": "조직/사업별 사업목표 팩트",
+      "FACT_SERVICE_EVENT": "발송(TMS/이메일) 및 서비스 팩트",
+      "FACT_GA_BEHAVIOR": "GA4 방문자 행동 및 트래픽 팩트",
+      "FACT_AD_PERFORMANCE": "디지털/방송 광고 집행 및 전환 팩트",
+      "FACT_EVENT_PARTICIPATION": "온/오프라인 행사 참여 실적 팩트",
+      "FACT_BUDGET": "ERP 예산 편성/집행 팩트",
+
+      // --- GOLD DIMENSION (15) ---
+      "DIM_DATE": "통합 날짜 달력 차원",
+      "DIM_ORG": "조직 및 부서 계층 차원",
+      "DIM_MEMBER": "회원 마스터 차원 (SCD2 상태이력)",
+      "DIM_MEMBER_IDENTITY": "회원 통합 식별 차원 (GA-CRM 연계)",
+      "DIM_CAMPAIGN": "캠페인 및 브랜드 마스터 차원",
+      "DIM_SPONSORSHIP": "후원사업 및 기부유형 차원",
+      "DIM_AD_CREATIVE": "광고 소재 및 매체 채널 차원",
+      "DIM_GA_SOURCE": "GA4 유입 소스/매체 차원",
+      "DIM_GA_EVENT": "GA4 이벤트 분류 차원",
+      "DIM_SERVICE": "발송 및 참여 서비스 분류 차원",
+      "DIM_PAYMENT": "납입방식 및 결제수단 차원",
+      "DIM_REASON": "후원중단 및 미납 사유 차원",
+      "DIM_DEVICE": "접속 디바이스 및 플랫폼 차원",
+      "DIM_EVENT": "행사 및 이벤트 마스터 차원",
+      "DIM_BUDGET_ITEM": "ERP 예산 과목/세목 차원",
+
+      // --- SILVER LAYER 주요 테이블 ---
+      "CRM_MEMBER": "CRM 표준 정기/일시 회원 통합 테이블",
+      "CRM_MEMBER_STATUS_HIST": "CRM 회원 상태변경 이력 표준 테이블",
+      "CRM_MEMBER_DEV": "회원 개발(신규약정) 실적 표준 테이블",
+      "CRM_MEMBER_AMT_CHANGE": "회원 약정금액 증감 이력 표준 테이블",
+      "CRM_MEMBER_DISCONTINUE": "회원 후원 중단 내역 표준 테이블",
+      "CRM_MEMBER_RESPONSOR": "회원 재후원 약정 실적 표준 테이블",
+      "CRM_MEMBER_SPONSOR_BIZ": "회원별 후원사업 약정 내역 표준 테이블",
+      "CRM_SPONSOR_RELATION": "결연후원 매칭 및 상태 표준 테이블",
+      "CRM_PAYMENT_BILLING": "월별 회비 청구 및 납입 결과 표준 테이블",
+      "CRM_PAYMENT_METHOD": "회원 결제수단 및 계좌 정보 표준 테이블",
+      "CRM_CAMPAIGN": "CRM 캠페인 마스터 표준 테이블",
+      "CRM_SPONSORSHIP": "CRM 후원사업 마스터 표준 테이블",
+      "CRM_ORG": "CRM 부서/조직 마스터 표준 테이블",
+      "CRM_DEV_TARGET": "CRM 연도별/부서별 개발목표 표준 테이블",
+      "CRM_SEND_REQUEST": "메시지/이메일 발송 요청 마스터 표준 테이블",
+      "CRM_SEND_MEMBER": "발송 대상 회원 상세 내역 표준 테이블",
+      "CRM_SEND_RESULT": "채널별 발송 성공/실패 집계 표준 테이블",
+      "CRM_EVENT": "행사/이벤트 마스터 표준 테이블",
+      "CRM_EVENT_PARTICIPATION": "행사 참여 신청 및 입금 표준 테이블",
+      "CRM_RELATION_ACTIVITY": "결연 아동 서신 및 선물금 내역 표준 테이블",
+      "CRM_CODE": "CRM 공통 코드 및 상세 코드 표준 테이블",
+      "GA4_EVENT": "GA4 표준 정제 이벤트 테이블",
+      "GA4_TRAFFIC_SOURCE": "GA4 표준 UTM 트래픽 소스 테이블",
+      "GA4_EVENT_DIM": "GA4 표준 이벤트 메타 테이블",
+      "GA4_DEVICE": "GA4 접속 디바이스/OS 표준 테이블",
+      "GA4_IDENTITY": "GA4 방문자-CRM 회원 번호 매칭 표준 테이블",
+      "IDENTITY_MEMBER_XREF": "GA4 ↔ CRM 회원 통합 크로스워크 테이블",
+      "ERP_BUDGET_ITEM": "ERP 예산 과목 계층 표준 테이블",
+      "ERP_BUDGET": "ERP 월별 예산 편성/집행 표준 테이블",
+      "ERP_BIZ_TARGET": "ERP 부서별 사업목표 표준 테이블",
+      "AGENCY_AD_CREATIVE": "대행사 매체/광고소재 통합 표준 테이블",
+      "AGENCY_AD_PERFORMANCE": "대행사 매체별 광고 집행실적 표준 테이블"
+    };
+    // ==========================================================
+    // 1. dbt schema.yml 정본 기반 조인 계약 (PK/FK/DEG)
+    // ==========================================================
+    // [팩트/실버 FK 매핑] 컬럼명: { target: "타겟테이블", key: "타겟PK", type: "FK"|"WARN"|"DEG" }
+    const fkContractMap = {
+      // GOLD FACT (relationships 정본)
+      "FACT_GA_BEHAVIOR": {
+        "DATE_SK": { target: "DIM_DATE", key: "DATE_SK", type: "FK" },
+        "IDENTITY_SK": { target: "DIM_MEMBER_IDENTITY", key: "IDENTITY_SK", type: "FK" },
+        "GA_EVENT_SK": { target: "DIM_GA_EVENT", key: "GA_EVENT_SK", type: "FK" },
+        "GA_SOURCE_SK": { target: "DIM_GA_SOURCE", key: "GA_SOURCE_SK", type: "FK" },
+        "DEVICE_SK": { target: "DIM_DEVICE", key: "DEVICE_SK", type: "FK" },
+        "CAMPAIGN_SK": { target: "DIM_CAMPAIGN", key: "CAMPAIGN_SK", type: "FK" }
+      },
+      "FACT_EVENT_PARTICIPATION": {
+        "DATE_SK": { target: "DIM_DATE", key: "DATE_SK", type: "FK" },
+        "MEMBER_DK": { target: "DIM_MEMBER", key: "MEMBER_DK", type: "WARN" }, // 마스터 고아 허용 (warn)
+        "EVENT_SK": { target: "DIM_EVENT", key: "EVENT_SK", type: "FK" },
+        "CAMPAIGN_SK": { target: "DIM_CAMPAIGN", key: "CAMPAIGN_SK", type: "FK" },
+        "SPONSORSHIP_SK": { target: "DIM_SPONSORSHIP", key: "SPONSORSHIP_SK", type: "FK" }
+      },
+      "FACT_MEMBER_EVENT": {
+        "DATE_SK": { target: "DIM_DATE", key: "DATE_SK", type: "FK" },
+        "MEMBER_DK": { target: "DIM_MEMBER", key: "MEMBER_DK", type: "WARN" },
+        "CAMPAIGN_SK": { target: "DIM_CAMPAIGN", key: "CAMPAIGN_SK", type: "FK" },
+        "SPONSORSHIP_SK": { target: "DIM_SPONSORSHIP", key: "SPONSORSHIP_SK", type: "FK" },
+        "ORG_SK": { target: "DIM_ORG", key: "ORG_SK", type: "FK" },
+        "REASON_SK": { target: "DIM_REASON", key: "REASON_SK", type: "FK" }
+      },
+      "FACT_MEMBER_MONTHLY": {
+        "MEMBER_DK": { target: "DIM_MEMBER", key: "MEMBER_DK", type: "WARN" },
+        "MONTH_KEY": { target: "", key: "", type: "DEG" }, // Degenerate (DIM_DATE 조인 없음)
+        "CAMPAIGN_SK": { target: "DIM_CAMPAIGN", key: "CAMPAIGN_SK", type: "FK" },
+        "SPONSORSHIP_SK": { target: "DIM_SPONSORSHIP", key: "SPONSORSHIP_SK", type: "FK" },
+        "PAYMENT_SK": { target: "DIM_PAYMENT", key: "PAYMENT_SK", type: "FK" },
+        "REASON_SK": { target: "DIM_REASON", key: "REASON_SK", type: "FK" }
+      },
+      "FACT_SERVICE_EVENT": {
+        "DATE_SK": { target: "DIM_DATE", key: "DATE_SK", type: "FK" },
+        "MEMBER_DK": { target: "DIM_MEMBER", key: "MEMBER_DK", type: "WARN" },
+        "SERVICE_SK": { target: "DIM_SERVICE", key: "SERVICE_SK", type: "FK" },
+        "CAMPAIGN_SK": { target: "DIM_CAMPAIGN", key: "CAMPAIGN_SK", type: "FK" }
+      },
+      "FACT_TARGET_DEV": {
+        "ORG_SK": { target: "DIM_ORG", key: "ORG_SK", type: "FK" },
+        "MONTH_KEY": { target: "", key: "", type: "DEG" }
+      },
+      "FACT_BUDGET": {
+        "BUDGET_ITEM_SK": { target: "DIM_BUDGET_ITEM", key: "BUDGET_ITEM_SK", type: "FK" },
+        "MONTH_KEY": { target: "", key: "", type: "DEG" }
+      },
+      // SILVER LAYER (대표적 FK)
+      "CRM_MEMBER": {
+        "CMPGN_CD": { target: "CRM_CAMPAIGN", key: "CMPGN_CD", type: "WARN" },
+        "ACT_DEPT_CD": { target: "CRM_ORG", key: "DEPT_ID", type: "WARN" },
+        "REGIST_DEPT_CD": { target: "CRM_ORG", key: "DEPT_ID", type: "WARN" }
+      },
+      "GA4_EVENT": {
+        "EVENT_NAME": { target: "GA4_EVENT_DIM", key: "EVENT_NAME", type: "FK" },
+        "USER_ID": { target: "CRM_MEMBER", key: "MEMBER_DK", type: "WARN" }
+      },
+      "IDENTITY_MEMBER_XREF": {
+        "MEMBER_DK": { target: "CRM_MEMBER", key: "MEMBER_DK", type: "WARN" }
+      }
+    };
+
+    // [GOLD DIM PK 매핑] 차원별 Unique 키
+    const pkContractMap = {
+      "DIM_DATE": ["DATE_SK"], "DIM_ORG": ["ORG_SK"], "DIM_MEMBER": ["MEMBER_SK"],
+      "DIM_MEMBER_IDENTITY": ["IDENTITY_SK"], "DIM_CAMPAIGN": ["CAMPAIGN_SK"],
+      "DIM_SPONSORSHIP": ["SPONSORSHIP_SK"], "DIM_AD_CREATIVE": ["AD_CREATIVE_SK"],
+      "DIM_GA_SOURCE": ["GA_SOURCE_SK"], "DIM_GA_EVENT": ["GA_EVENT_SK"],
+      "DIM_SERVICE": ["SERVICE_SK"], "DIM_PAYMENT": ["PAYMENT_SK"],
+      "DIM_REASON": ["REASON_SK"], "DIM_DEVICE": ["DEVICE_SK"],
+      "DIM_EVENT": ["EVENT_SK"], "DIM_BUDGET_ITEM": ["BUDGET_ITEM_SK"]
+    };
+
+    // [WIDE 마트 조인 차원 정본] (_wide_schema.yml 기반)
+    const wideJoinMeta = {
+      "WIDE_MEMBER_MONTHLY": { fact: "FACT_MEMBER_MONTHLY", dims: ["DIM_MEMBER", "DIM_CAMPAIGN", "DIM_SPONSORSHIP", "DIM_PAYMENT", "DIM_REASON"], note: "회원 SCD2는 IS_CURRENT=TRUE 1행 단일화. MONTH_KEY 파생 (DIM_DATE 미조인)" },
+      "WIDE_MEMBER_EVENT": { fact: "FACT_MEMBER_EVENT", dims: ["DIM_DATE", "DIM_MEMBER", "DIM_CAMPAIGN", "DIM_SPONSORSHIP", "DIM_ORG", "DIM_REASON"], note: "회원 SCD2 현재버전 1행 조인" },
+      "WIDE_TARGET_DEV": { fact: "FACT_TARGET_DEV", dims: ["DIM_ORG"], note: "월 grain 목표 마트" },
+      "WIDE_SERVICE_EVENT": { fact: "FACT_SERVICE_EVENT", dims: ["DIM_DATE", "DIM_MEMBER", "DIM_SERVICE", "DIM_CAMPAIGN"], note: "발송 및 참여 서비스 통합 뷰" },
+      "WIDE_EVENT_PARTICIPATION": { fact: "FACT_EVENT_PARTICIPATION", dims: ["DIM_DATE", "DIM_MEMBER", "DIM_EVENT", "DIM_CAMPAIGN", "DIM_SPONSORSHIP"], note: "행사 참여 실적 통합 뷰" },
+      "WIDE_GA_BEHAVIOR": { fact: "FACT_GA_BEHAVIOR", dims: ["DIM_DATE", "DIM_GA_EVENT", "DIM_GA_SOURCE", "DIM_DEVICE", "DIM_CAMPAIGN", "DIM_MEMBER_IDENTITY"], note: "GA4 행동 및 트래픽 소스 평탄화" },
+      "WIDE_AD_PERFORMANCE": { fact: "FACT_AD_PERFORMANCE", dims: ["DIM_CAMPAIGN", "DIM_AD_CREATIVE", "DIM_DEVICE"], note: "광고 매체사 및 GA 전환 실적" },
+      "WIDE_BUDGET": { fact: "FACT_BUDGET", dims: ["DIM_ORG", "DIM_BUDGET_ITEM", "DIM_CAMPAIGN", "DIM_SPONSORSHIP"], note: "ERP 예산 및 집행 평탄화" },
+      "WIDE_TARGET_BIZ": { fact: "FACT_TARGET_BIZ", dims: ["DIM_ORG", "DIM_SPONSORSHIP", "DIM_CAMPAIGN"], note: "사업목표 평탄화. 차원=이름기반 크로스워크 조인. ⚠️원천대기(E-6) 0행·측정치 단위충돌(금액vs건) NULL" }
+    };
+
+    // ==========================================================
+    // 2. 리니지 관계 매핑 ([From, To])
+    // ==========================================================
+    const lineagePairs = [
+      ["TM_MM_FDRM_MBER_INFO", "CRM_MEMBER"], ["TM_MM_ONCE_MBER_INFO", "CRM_MEMBER"],
+      ["TM_CM_CMPGN_MNG", "CRM_CAMPAIGN"], ["TM_CM_BRND_MNG", "CRM_CAMPAIGN"], ["TM_CM_MKTNG_CMPGN_MNG", "CRM_CAMPAIGN"],
+      ["TM_CM_SPNSR_BSNS_INFO", "CRM_SPONSORSHIP"], ["TM_CM_DEPT_INFO", "CRM_ORG"],
+      ["TM_CM_MBER_DVLP_GOAL", "CRM_DEV_TARGET"], ["TC_CMMN_DTL_CD", "CRM_CODE"],
+      ["TM_MM_FDRM_MBER_DVLP_AMT", "CRM_MEMBER_DEV"], ["TM_MM_FDRM_MBER_IRSD", "CRM_MEMBER_AMT_CHANGE"],
+      ["TM_MM_FDRM_MBER_SPNSR_DSCNTC", "CRM_MEMBER_DISCONTINUE"], ["TM_MM_FDRM_MBER_RE_SPNSR", "CRM_MEMBER_RESPONSOR"],
+      ["TM_MM_FDRM_MBER_SPNSR_BSNS", "CRM_MEMBER_SPONSOR_BIZ"], ["TH_MM_FDRM_MBER_STNG_DTLS", "CRM_MEMBER_STATUS_HIST"],
+      ["TM_RM_RELATNSP_MSTR_INFO", "CRM_SPONSOR_RELATION"], ["TM_PM_SETLE_INFO", "CRM_PAYMENT_METHOD"],
+      ["TM_MS_EVENT", "CRM_EVENT"], ["TM_MS_CRMN", "CRM_EVENT"],
+      ["TD_MS_EVENT_PRTCPNT_DTL", "CRM_EVENT_PARTICIPATION"], ["TD_MS_CRMN_PRTCPNT", "CRM_EVENT_PARTICIPATION"],
+      ["TM_RM_RELATNSP_LETTER_INFO", "CRM_RELATION_ACTIVITY"], ["TM_RM_RELATNSP_GFTMNEY_INFO", "CRM_RELATION_ACTIVITY"],
+      ["TM_PM_MBRFEE_ACMSLT", "CRM_PAYMENT_BILLING"], ["TM_PM_DNTN_DTLS", "CRM_PAYMENT_BILLING"],
+      ["TM_MS_EMAIL_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_MSG_AT_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_PSTMTR_SNDNG", "CRM_SEND_REQUEST"],
+      ["SND_REQ_MST", "CRM_SEND_REQUEST"], ["SND_REQ_MST", "CRM_SEND_RESULT"],
+      ["TD_MS_EMAIL_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_MSG_AT_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_PSTMTR_LQY_SNDNG", "CRM_SEND_RESULT"],
+      ["TD_MS_EMAIL_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_MSG_AT_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_PSTMTR_SNDNG_DTL", "CRM_SEND_MEMBER"],
+      ["SND_MEMBER_LIST", "CRM_SEND_MEMBER"],
+      ["events_20260501", "GA4_EVENT"], ["events_20260501", "GA4_TRAFFIC_SOURCE"], ["events_20260501", "GA4_EVENT_DIM"],
+      ["events_20260501", "GA4_DEVICE"], ["events_20260501", "GA4_IDENTITY"],
+      ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET_ITEM"], ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET"],
+      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"],
+      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"],
+      ["CRM_MEMBER", "DIM_MEMBER"], ["CRM_MEMBER", "DIM_MEMBER_IDENTITY"], ["CRM_CAMPAIGN", "DIM_CAMPAIGN"],
+      ["CRM_SPONSORSHIP", "DIM_SPONSORSHIP"], ["CRM_ORG", "DIM_ORG"], ["CRM_PAYMENT_METHOD", "DIM_PAYMENT"],
+      ["CRM_MEMBER_DISCONTINUE", "DIM_REASON"], ["CRM_EVENT", "DIM_EVENT"], ["CRM_SEND_REQUEST", "DIM_SERVICE"],
+      ["GA4_TRAFFIC_SOURCE", "DIM_GA_SOURCE"], ["GA4_EVENT_DIM", "DIM_GA_EVENT"], ["GA4_DEVICE", "DIM_DEVICE"],
+      ["GA4_IDENTITY", "IDENTITY_MEMBER_XREF"], ["IDENTITY_MEMBER_XREF", "DIM_MEMBER_IDENTITY"],
+      ["AGENCY_AD_CREATIVE", "DIM_AD_CREATIVE"], ["ERP_BUDGET_ITEM", "DIM_BUDGET_ITEM"],
+      ["CRM_MEMBER_DEV", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_AMT_CHANGE", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_STATUS_HIST", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_RESPONSOR", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_SPONSOR_BIZ", "FACT_MEMBER_MONTHLY"], ["CRM_PAYMENT_BILLING", "FACT_MEMBER_MONTHLY"],
+      ["CRM_MEMBER_DEV", "FACT_MEMBER_EVENT"], ["CRM_MEMBER_DISCONTINUE", "FACT_MEMBER_EVENT"],
+      ["CRM_DEV_TARGET", "FACT_TARGET_DEV"], ["CRM_SEND_REQUEST", "FACT_SERVICE_EVENT"],
+      ["CRM_SEND_MEMBER", "FACT_SERVICE_EVENT"], ["CRM_SEND_RESULT", "FACT_SERVICE_EVENT"],
+      ["CRM_RELATION_ACTIVITY", "FACT_SERVICE_EVENT"], ["CRM_EVENT_PARTICIPATION", "FACT_EVENT_PARTICIPATION"],
+      ["GA4_EVENT", "FACT_GA_BEHAVIOR"], ["GA4_EVENT", "FACT_AD_PERFORMANCE"],
+      ["AGENCY_AD_PERFORMANCE", "FACT_AD_PERFORMANCE"], ["ERP_BUDGET", "FACT_BUDGET"],
+      ["ERP_BIZ_TARGET", "FACT_TARGET_BIZ"],
+      ["FACT_MEMBER_MONTHLY", "WIDE_MEMBER_MONTHLY"], ["FACT_MEMBER_EVENT", "WIDE_MEMBER_EVENT"],
+      ["FACT_TARGET_DEV", "WIDE_TARGET_DEV"], ["FACT_SERVICE_EVENT", "WIDE_SERVICE_EVENT"],
+      ["FACT_EVENT_PARTICIPATION", "WIDE_EVENT_PARTICIPATION"], ["FACT_GA_BEHAVIOR", "WIDE_GA_BEHAVIOR"],
+      ["FACT_AD_PERFORMANCE", "WIDE_AD_PERFORMANCE"], ["FACT_BUDGET", "WIDE_BUDGET"],
+      ["FACT_TARGET_BIZ", "WIDE_TARGET_BIZ"]
+    ];
+
+    const upstreamMap = {}, downstreamMap = {};
+    lineagePairs.forEach(([from, to]) => {
+      if (!downstreamMap[from]) downstreamMap[from] = [];
+      if (!upstreamMap[to]) upstreamMap[to] = [];
+      downstreamMap[from].push(to);
+      upstreamMap[to].push(from);
+    });
+
+// ==========================================================
+    // 3. DDL 전체 컬럼 인벤토리 (GOLD / SILVER)
+    // ==========================================================
     const ddlMeta = {
-      // ==========================================================
-      // [GOLD DIMENSIONS (15개)]
-      // ==========================================================
+      // --- GOLD DIMENSIONS (15개) ---
       "DIM_DATE": [
         ["DATE_SK", "NUMBER(8,0)", "YYYYMMDD", "PK"], ["FULL_DATE", "DATE", "실제 일자", ""],
         ["YEAR", "NUMBER(4,0)", "년", ""], ["MONTH", "NUMBER(2,0)", "월", ""],
@@ -401,7 +639,7 @@
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "DIM_MEMBER": [
-        ["MEMBER_SK", "NUMBER(38,0)", "버전 대리키", "PK"], ["MEMBER_DK", "VARCHAR(10)", "불변 회원키(조인용)", ""],
+        ["MEMBER_SK", "NUMBER(38,0)", "버전 대리키 (SCD2 해시)", "PK"], ["MEMBER_DK", "VARCHAR(10)", "불변 회원키(조인용, 비-unique)", ""],
         ["GENDER", "VARCHAR", "성별(#130)", ""], ["REGION", "VARCHAR", "지역(#131)", ""],
         ["AGE_BAND", "VARCHAR", "연령대(overview). 원천: 개발/증감 테이블 AGE 스냅샷", ""], ["MEMBER_STATUS", "VARCHAR", "회원상태(#132)", ""],
         ["MEMBER_TYPE", "VARCHAR", "회원구분(05 2-1). 원천: MBER_DIV_CD(MM018 개인/기업/단체)", ""], ["NEW_EXISTING_FLAG", "VARCHAR", "신규기존구분(#113)", ""],
@@ -409,7 +647,7 @@
         ["ENROLL_PATH", "VARCHAR", "가입경로(overview 2-1). 원천: JOIN_PATH_CD(MM014)", ""], ["FIRST_SPONSORSHIP", "VARCHAR", "최초후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS", ""],
         ["LAST_STOP_DATE", "DATE", "최종중단일(#30)", ""], ["LAST_CAMPAIGN", "VARCHAR", "최종캠페인(#31)", ""],
         ["CURRENT_SPONSORSHIP", "VARCHAR", "현재후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS", ""], ["EFFECTIVE_FROM", "DATE", "SCD2 유효시작", ""],
-        ["EFFECTIVE_TO", "DATE", "SCD2 유효종료", ""], ["IS_CURRENT", "BOOLEAN", "현재행 여부", ""],
+        ["EFFECTIVE_TO", "DATE", "SCD2 유효종료", ""], ["IS_CURRENT", "BOOLEAN", "현재행 여부 (WIDE 조인시 TRUE 필터 필수)", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
@@ -499,11 +737,9 @@
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
 
-      // ==========================================================
-      // [GOLD FACTS (9개)]
-      // ==========================================================
+      // --- GOLD FACTS (9개) ---
       "FACT_MEMBER_MONTHLY": [
-        ["MONTH_KEY", "NUMBER(6,0)", "YYYYMM", "FK"], ["MEMBER_DK", "VARCHAR(10)", "월 스냅샷 대상 회원 (불변키)", "FK"],
+        ["MONTH_KEY", "NUMBER(6,0)", "YYYYMM (월 conform, DIM_DATE 미조인 Degenerate)", "FK"], ["MEMBER_DK", "VARCHAR(10)", "월 스냅샷 대상 회원 (불변키)", "FK"],
         ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"], ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"],
         ["PAYMENT_SK", "NUMBER(38,0)", "납입/결제 유형 (FK→DIM_PAYMENT)", "FK"], ["REASON_SK", "NUMBER(38,0)", "중단/미납 사유 (FK→DIM_REASON)", "FK"],
         ["DEV_CNT", "NUMBER(18,4)", "개발(건) SUM(금액)/10000 (#4·5·149)", ""], ["DEV_MEMBERS", "NUMBER(38,0)", "개발(명) COUNT (#148)", ""],
@@ -531,7 +767,7 @@
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_MEMBER_EVENT": [
-        ["DATE_SK", "NUMBER(8,0)", "사건일", "FK"], ["MEMBER_DK", "VARCHAR(10)", "상태전이 대상 회원 (불변키)", "FK"],
+        ["DATE_SK", "NUMBER(8,0)", "사건일 (FK→DIM_DATE)", "FK"], ["MEMBER_DK", "VARCHAR(10)", "상태전이 대상 회원 (불변키)", "FK"],
         ["EVENT_TYPE", "VARCHAR", "상태전이 유형(개발/중단/증액/미납중단)", ""], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
         ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
         ["REASON_SK", "NUMBER(38,0)", "중단/미납 사유 (FK→DIM_REASON)", "FK"], ["DEV_CNT", "NUMBER(18,4)", "개발(건) (#149)", ""],
@@ -544,13 +780,13 @@
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_TARGET_DEV": [
-        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (Degenerate 월키)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
         ["DEV_TYPE", "VARCHAR", "개발구분(#121 conform)", ""], ["GOAL_CNT", "NUMBER(18,4)", "회원개발목표 (CRM TM_CM_MBER_DVLP_GOAL)", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_TARGET_BIZ": [
-        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
+        ["MONTH_KEY", "NUMBER(6,0)", "목표월 YYYYMM (Degenerate 월키)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
         ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (FK→DIM_SPONSORSHIP)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
         ["ANNUAL_GOAL_CNT", "NUMBER(18,4)", "연사업목표(건) (#152)", ""], ["SUPP_GOAL_CNT", "NUMBER(18,4)", "추경목표(건) (#153)", ""],
         ["ANNUAL_CUM_GOAL_CNT", "NUMBER(18,4)", "연사업누계목표(건) (#154)", ""], ["SUPP_CUM_GOAL_CNT", "NUMBER(18,4)", "추경누계목표(건) (#155)", ""],
@@ -558,7 +794,7 @@
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_SERVICE_EVENT": [
-        ["DATE_SK", "NUMBER(8,0)", "발송일", "FK"], ["MEMBER_DK", "VARCHAR(10)", "발송 대상 회원 (불변키)", "FK"],
+        ["DATE_SK", "NUMBER(8,0)", "발송일 (FK→DIM_DATE)", "FK"], ["MEMBER_DK", "VARCHAR(10)", "발송 대상 회원 (불변키)", "FK"],
         ["SERVICE_SK", "NUMBER(38,0)", "발송 서비스 유형 (FK→DIM_SERVICE)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
         ["SEND_MEMBERS", "NUMBER(38,0)", "발송수(명) (#85)", ""], ["SUCCESS_MEMBERS", "NUMBER(38,0)", "성공수(명) (#86)", ""],
         ["FAIL_MEMBERS", "NUMBER(38,0)", "실패수(명) (#87)", ""], ["OPEN_MEMBERS", "NUMBER(38,0)", "오픈(명) (overview)", ""],
@@ -590,8 +826,8 @@
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_AD_PERFORMANCE": [
-        ["PERF_DATE_SK", "NUMBER(8,0)", "실적일", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
-        ["AD_CREATIVE_SK", "NUMBER(38,0)", "광고소재/매체 (FK→DIM_AD_CREATIVE)", "FK"], ["DEVICE_SK", "NUMBER(38,0)", "디바이스 (FK→DIM_DEVICE)", "FK"],
+        ["PERF_DATE_SK", "NUMBER(8,0)", "실적일", ""], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", ""],
+        ["AD_CREATIVE_SK", "NUMBER(38,0)", "광고소재/매체 (FK→DIM_AD_CREATIVE)", "FK"], ["DEVICE_SK", "NUMBER(38,0)", "디바이스 (FK→DIM_DEVICE)", ""],
         ["AD_COST", "NUMBER(18,2)", "광고비(원) (#6)", ""], ["IMPRESSIONS", "NUMBER(38,0)", "노출수 (#23)", ""],
         ["CLICKS", "NUMBER(38,0)", "클릭수(행동 횟수, ≠회원명) (#24)", ""], ["INBOUND_CALL", "NUMBER(38,0)", "인입콜 (#25)", ""],
         ["GA_CONV_MEMBERS", "NUMBER(38,0)", "GA전환수(명)", ""], ["GA_CONV_CNT", "NUMBER(18,4)", "GA전환수(건)", ""],
@@ -619,9 +855,9 @@
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "FACT_BUDGET": [
-        ["MONTH_KEY", "NUMBER(6,0)", "예산월 YYYYMM (FK→DIM_DATE, 월 conform)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", "FK"],
-        ["BUDGET_ITEM_SK", "NUMBER(38,0)", "예산 세세목 (FK→DIM_BUDGET_ITEM)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", "FK"],
-        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (선택 FK→DIM_SPONSORSHIP)", "FK"], ["PLAN_BUDGET_MONTH", "NUMBER(18,2)", "편성예산(월)", ""],
+        ["MONTH_KEY", "NUMBER(6,0)", "예산월 YYYYMM (Degenerate 월키)", "FK"], ["ORG_SK", "NUMBER(38,0)", "조직 (FK→DIM_ORG)", ""],
+        ["BUDGET_ITEM_SK", "NUMBER(38,0)", "예산 세세목 (FK→DIM_BUDGET_ITEM)", "FK"], ["CAMPAIGN_SK", "NUMBER(38,0)", "캠페인 (FK→DIM_CAMPAIGN)", ""],
+        ["SPONSORSHIP_SK", "NUMBER(38,0)", "후원사업 (선택 FK→DIM_SPONSORSHIP)", ""], ["PLAN_BUDGET_MONTH", "NUMBER(18,2)", "편성예산(월)", ""],
         ["PLAN_BUDGET_YEAR", "NUMBER(18,2)", "편성예산(연)", ""], ["EXEC_BUDGET_ERP", "NUMBER(18,2)", "집행예산(ERP)", ""],
         ["EXEC_BUDGET_EST", "NUMBER(18,2)", "집행예산(추정)", ""], ["FUNDRAISING_COST", "NUMBER(18,2)", "모금성비용", ""],
         ["AD_COST", "NUMBER(18,2)", "광고비", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
@@ -629,9 +865,7 @@
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
 
-      // ==========================================================
-      // [SILVER LAYERS (32개)]
-      // ==========================================================
+      // --- SILVER LAYER (32개) ---
       "CRM_MEMBER": [
         ["MEMBER_DK", "VARCHAR(10)", "불변 회원키 (PK, 조인용)", "PK"], ["MEMBER_TYPE", "VARCHAR(10)", "회원구분 파생 (정기=FDRM / 일시=ONCE)", ""],
         ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드 (MM018: 개인/기업/단체)", ""], ["MBER_DIV_NM", "VARCHAR", "회원구분명 (코드 라벨)", ""],
@@ -657,10 +891,10 @@
       "CRM_MEMBER_DEV": [
         ["SPNSR_NO", "VARCHAR(9)", "후원번호 (PK)", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호 (PK)", "PK"],
         ["OCCRRNC_DE", "VARCHAR(8)", "발생일자 YYYYMMDD (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", ""],
         ["SPNSR_AMT", "NUMBER(19,0)", "약정 후원금액 (원단위)", ""], ["DVLP_DIV_CD", "VARCHAR(3)", "개발구분코드", ""],
-        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드 (→CRM_ORG)", "FK"], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", "FK"],
-        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", "FK"], ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""],
+        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드 (→CRM_ORG)", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", ""],
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", ""], ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""],
         ["AREA_CD", "VARCHAR(3)", "지역코드 (CM018) — DIM_MEMBER REGION 스냅샷 소스", ""], ["AREA_NM", "VARCHAR", "지역명 (코드 라벨)", ""],
         ["AGE", "NUMBER(10,0)", "연령 — DIM_MEMBER AGE_BAND 스냅샷 소스", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
@@ -668,9 +902,9 @@
       ],
       "CRM_MEMBER_AMT_CHANGE": [
         ["OCCRRNC_DE", "VARCHAR(8)", "발생일자 YYYYMMDD (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "변경 후 약정금액 (원단위)", ""],
-        ["RDCAMT_YN", "VARCHAR(1)", "감액여부 (Y=감액/N=증액)", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", "FK"],
-        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", "FK"], ["AREA_CD", "VARCHAR(3)", "지역코드 (CM018) — DIM_MEMBER REGION 스냅샷 소스", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["SPNSR_AMT", "NUMBER(19,0)", "변경 후 약정금액 (원단위)", ""],
+        ["RDCAMT_YN", "VARCHAR(1)", "감액여부 (Y=감액/N=증액)", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드 (→CRM_ORG)", ""],
+        ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (→CRM_CAMPAIGN)", ""], ["AREA_CD", "VARCHAR(3)", "지역코드 (CM018) — DIM_MEMBER REGION 스냅샷 소스", ""],
         ["AREA_NM", "VARCHAR", "지역명 (코드 라벨)", ""], ["AGE", "NUMBER(10,0)", "연령 — DIM_MEMBER AGE_BAND 스냅샷 소스", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
@@ -679,19 +913,19 @@
         ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일자 YYYYMMDD (PK)", "PK"],
         ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"], ["DSCNTC_RSN_CD", "VARCHAR(3)", "중단사유코드", ""],
         ["DSCNTC_RSN_NM", "VARCHAR", "중단사유명 (코드 라벨)", ""], ["DSCNTC_PATH", "VARCHAR(1)", "중단경로", ""],
-        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", "FK"], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "CRM_MEMBER_RESPONSOR": [
         ["MBER_NO", "VARCHAR(10)", "회원번호 (PK)", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호 (PK)", "PK"],
-        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일자 YYYYMMDD (PK)", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", "FK"],
+        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일자 YYYYMMDD (PK)", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드 (→CRM_ORG)", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
         ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""], ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "CRM_MEMBER_SPONSOR_BIZ": [
         ["SPNSR_NO", "VARCHAR(9)", "후원번호 (PK)", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호 (PK)", "PK"],
-        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "약정금액 (원단위)", ""],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", ""], ["SPNSR_AMT", "NUMBER(19,0)", "약정금액 (원단위)", ""],
         ["SPNSR_DSCNTC_YN", "VARCHAR(1)", "후원중단여부 (Y/N)", ""], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일자 YYYYMMDD", ""],
         ["SPNSR_DSCNTC_RSN_CD", "VARCHAR(3)", "후원중단사유코드", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
@@ -699,8 +933,8 @@
       ],
       "CRM_SPONSOR_RELATION": [
         ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (PK)", "PK"], ["SPNSR_NO", "VARCHAR(9)", "후원번호", ""],
-        ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (Q15 크로스워크 파생)", "FK"],
-        ["CHILD_CD", "NUMBER(10,0)", "결연아동코드", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (Q15 크로스워크 파생)", ""],
+        ["CHILD_CD", "NUMBER(10,0)", "결연아동코드", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["RELATNSP_STRT_DE", "DATE", "결연 시작일", ""], ["RELATNSP_DSCNTC_DE", "DATE", "결연 중단일", ""],
         ["RELATNSP_DSCNTC_YN", "VARCHAR(1)", "결연 중단여부 (Y/N)", ""], ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
@@ -708,8 +942,8 @@
       ],
       "CRM_PAYMENT_BILLING": [
         ["PAY_KEY", "VARCHAR", "납입/청구 대체키 (PK)", "PK"], ["PAYMENT_TYPE", "VARCHAR", "납입유형 파생 (회비/기부금)", ""],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", "FK"],
-        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", "FK"], ["MBRFEE_MT", "VARCHAR(6)", "회비 대상월 YYYYMM", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID (→CRM_SPONSORSHIP)", ""],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", ""], ["MBRFEE_MT", "VARCHAR(6)", "회비 대상월 YYYYMM", ""],
         ["MBRFEE_SQNC", "NUMBER(3,0)", "회비 회차", ""], ["RQEST_AMT", "NUMBER(19,0)", "청구금액 (원단위)", ""],
         ["RQEST_DE", "DATE", "청구일자", ""], ["PAY_AMT", "NUMBER(10,0)", "납입금액 (원단위)", ""],
         ["PAY_DE", "DATE", "납입일자", ""], ["PAY_STAT_CD", "VARCHAR(3)", "납입상태코드", ""],
@@ -719,7 +953,7 @@
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "CRM_PAYMENT_METHOD": [
-        ["SETLE_KEY", "NUMBER(10,0)", "결제수단키 (PK)", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SETLE_KEY", "NUMBER(10,0)", "결제수단키 (PK)", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["SETLE_CD", "VARCHAR(3)", "결제수단코드", ""], ["SETLE_NM", "VARCHAR", "결제수단명 (코드 라벨)", ""],
         ["CARD_DIV_CD", "VARCHAR(3)", "카드구분코드", ""], ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""],
         ["WTDRW_STRT_DE", "DATE", "출금 시작일", ""], ["SETLE_STAT_CD", "VARCHAR(3)", "결제상태코드", ""],
@@ -730,7 +964,7 @@
         ["CMPGN_CD", "VARCHAR(20)", "캠페인코드 (PK)", "PK"], ["CMPGN_NM", "VARCHAR(200)", "캠페인명", ""],
         ["UPPER_CMPGN_CD", "VARCHAR(20)", "상위캠페인코드 (자기참조)", ""], ["UPPER_CMPGN_YN", "VARCHAR(1)", "상위캠페인 여부 (Y/N)", ""],
         ["BRND_ID", "VARCHAR(30)", "브랜드ID", ""], ["BRND_NM", "VARCHAR(200)", "브랜드명", ""],
-        ["PR_MTH_CD", "VARCHAR(3)", "홍보방법코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID (Q16 조인키)", "FK"],
+        ["PR_MTH_CD", "VARCHAR(3)", "홍보방법코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID (Q16 조인키)", ""],
         ["CMPGN_CTGR_CD", "NUMBER(10,0)", "캠페인 카테고리코드", ""], ["CMPGN_TYPE1_BSN", "NUMBER(10,0)", "캠페인 유형1 (사업)", ""],
         ["CMPGN_TYPE2_BSN", "NUMBER(10,0)", "캠페인 유형2 (사업)", ""], ["MKTG_CMPGN_NM", "NUMBER(10,0)", "마케팅 캠페인명 코드", ""],
         ["MK_CMPGN_NM", "VARCHAR(200)", "마케팅 캠페인명 (라벨)", ""], ["CMPGN_STRT_DE", "VARCHAR(8)", "캠페인 시작일 YYYYMMDD", ""],
@@ -772,7 +1006,7 @@
       ],
       "CRM_SEND_MEMBER": [
         ["SNDNG_KEY", "NUMBER(10,0)", "발송키 (PK, →CRM_SEND_REQUEST)", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발송상세키 (PK)", "PK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SNDNG_DE", "TIMESTAMP_NTZ", "발송일시", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["SNDNG_DE", "TIMESTAMP_NTZ", "발송일시", ""],
         ["SNDNG_RST_CD", "VARCHAR(3)", "발송결과코드", ""], ["SEND_CHANNEL", "VARCHAR", "발송채널", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
@@ -790,7 +1024,7 @@
         ["EVENT_KEY", "VARCHAR", "행사키 (PK)", "PK"], ["EVENT_SOURCE", "VARCHAR", "행사출처 (이벤트/캠페인행사)", ""],
         ["EVENT_DIV_CD", "VARCHAR(3)", "행사구분코드", ""], ["EVENT_NM", "VARCHAR(200)", "행사명", ""],
         ["STRT_DE", "VARCHAR(8)", "시작일자 YYYYMMDD", ""], ["END_DE", "VARCHAR(8)", "종료일자 YYYYMMDD", ""],
-        ["RCRIT_PSNNL_CO", "NUMBER(10,0)", "모집인원 수", ""], ["BRNCH_DEPT_ID", "VARCHAR(20)", "주관부서ID (→CRM_ORG)", "FK"],
+        ["RCRIT_PSNNL_CO", "NUMBER(10,0)", "모집인원 수", ""], ["BRNCH_DEPT_ID", "VARCHAR(20)", "주관부서ID (→CRM_ORG)", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
@@ -806,7 +1040,7 @@
       ],
       "CRM_RELATION_ACTIVITY": [
         ["ACTIVITY_KEY", "VARCHAR", "결연활동 대체키 (PK)", "PK"], ["ACTIVITY_TYPE", "VARCHAR", "활동유형 파생 (서신/선물금)", ""],
-        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", "FK"], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연키 (→CRM_SPONSOR_RELATION)", ""], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
         ["GFTMNEY", "NUMBER(10,0)", "선물금 (원단위)", ""], ["LETTER_DIV_CD", "NUMBER(10,0)", "서신구분코드", ""],
         ["RCEPT_DE", "DATE", "접수일자", ""], ["SNDNG_DE", "DATE", "발송일자", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
@@ -899,7 +1133,7 @@
         ["USER_PSEUDO_ID", "VARCHAR(200)", "세션 스파인 (PK)", "PK"], ["EVENT_TIMESTAMP", "NUMBER", "UTC microsec (원본, 불변) (PK)", "PK"],
         ["EVENT_NAME", "VARCHAR(200)", "이벤트명 (PK)", "PK"], ["BATCH_ORDERING_ID", "NUMBER", "배치 내 정렬 ID (PK, dedup 보조)", "PK"],
         ["EVENT_DATE", "VARCHAR(8)", "원본 YYYYMMDD (date-shard)", ""], ["EVENT_DT", "DATE", "파생: TO_DATE(event_date,'YYYYMMDD')", ""],
-        ["EVENT_TS", "TIMESTAMP_NTZ", "파생: TO_TIMESTAMP(event_timestamp/1e6)", ""], ["USER_ID", "VARCHAR(10)", "CRM 회원번호(Q1) VARCHAR·원본 불변", "FK"],
+        ["EVENT_TS", "TIMESTAMP_NTZ", "파생: TO_TIMESTAMP(event_timestamp/1e6)", ""], ["USER_ID", "VARCHAR(10)", "CRM 회원번호(Q1) VARCHAR·원본 불변", ""],
         ["GA_SESSION_ID", "NUMBER", "GA 세션ID (event_params 승격)", ""], ["GA_SESSION_NUMBER", "NUMBER", "GA 세션 번호", ""],
         ["GA_SESSION_KEY", "VARCHAR", "파생: user_pseudo_id∥'-'∥ga_session_id (세션 자연키)", ""], ["USER_ID_FILLED", "VARCHAR(10)", "파생: 세션 전파 회원번호(07 §5-A) — 회원 귀속용", ""],
         ["ID_RESOLUTION", "VARCHAR(20)", "신원해소 신뢰도 DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT", ""], ["SESSION_ENGAGED", "VARCHAR(5)", "세션 engaged 여부 (혼합타입 → COALESCE)", ""],
@@ -919,28 +1153,25 @@
       ],
       "GA4_IDENTITY": [
         ["USER_PSEUDO_ID", "VARCHAR(200)", "세션 스파인 (PK)", "PK"], ["GA_MEMBER_ID", "VARCHAR(10)", "= user_id_filled(세션 채움 후 회원번호) VARCHAR", ""],
-        ["MEMBER_TYPE", "VARCHAR(10)", "파생: 'S%'→ONCE else FDRM", ""], ["MBER_NO", "VARCHAR(10)", "정기 회원번호 FK→TM_MM_FDRM_MBER_INFO.MBER_NO(파생)", "FK"],
-        ["ONCE_MBER_NO", "VARCHAR(10)", "일시 회원번호 FK→TM_MM_ONCE_MBER_INFO.ONCE_MBER_NO(파생)", "FK"], ["ID_RESOLUTION", "VARCHAR(20)", "신원해소 신뢰도 DIRECT/SESSION_FILL", ""],
+        ["MEMBER_TYPE", "VARCHAR(10)", "파생: 'S%'→ONCE else FDRM", ""], ["MBER_NO", "VARCHAR(10)", "정기 회원번호 FK→TM_MM_FDRM_MBER_INFO.MBER_NO(파생)", ""],
+        ["ONCE_MBER_NO", "VARCHAR(10)", "일시 회원번호 FK→TM_MM_ONCE_MBER_INFO.ONCE_MBER_NO(파생)", ""], ["ID_RESOLUTION", "VARCHAR(20)", "신원해소 신뢰도 DIRECT/SESSION_FILL", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
       "IDENTITY_MEMBER_XREF": [
         ["USER_PSEUDO_ID", "VARCHAR(200)", "GA 세션 스파인 (PK)", "PK"], ["GA_MEMBER_ID", "VARCHAR(10)", "GA측 회원번호(=user_id_filled)", ""],
-        ["MEMBER_TYPE", "VARCHAR(10)", "회원구분 ONCE(S%)/FDRM", ""], ["MEMBER_DK", "VARCHAR(10)", "매칭된 CRM 불변회원키(미매칭 NULL). FK→CRM_MEMBER.MEMBER_DK", "FK"],
+        ["MEMBER_TYPE", "VARCHAR(10)", "회원구분 ONCE(S%)/FDRM", ""], ["MEMBER_DK", "VARCHAR(10)", "매칭된 CRM 불변회원키(미매칭 NULL). FK→CRM_MEMBER.MEMBER_DK", ""],
         ["HOMEPAGE_ID", "VARCHAR", "매칭 CRM 회원의 HMPG_ID(미매칭 NULL)", ""], ["ID_RESOLUTION", "VARCHAR(20)", "GA측 신뢰도 passthrough: DIRECT/SESSION_FILL", ""],
         ["MATCH_METHOD", "VARCHAR(30)", "매칭방법 MEMBER_ID_EXACT / UNMATCHED", ""], ["MATCH_CONFIDENCE", "VARCHAR(10)", "매칭신뢰도 HIGH(exact+DIRECT) / MEDIUM / NONE", ""],
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""], ["DW_SOURCE_TABLE", "VARCHAR", "원천 테이블 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""], ["DW_UPDATE_TS", "TIMESTAMP_NTZ", "최종 갱신 시각 (공통감사)", ""],
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ],
-
-      // ==========================================================
-      // [BRONZE SOURCES (48개)]
-      // ==========================================================
+	  // --- BRONZE SOURCES (48개 - FK 배지 생성 금지) ---
       "SND_MEMBER_LIST": [
         ["REQ_SEQ_NO", "NUMBER(19,0)", "REQ_SEQ_NO", "PK"], ["R_NUM", "NUMBER(19,0)", "순번", ""],
-        ["MBER_NO", "VARCHAR(255)", "회원번호", "FK"], ["SPNSR_CD", "VARCHAR(255)", "후원사업(코드)", ""],
+        ["MBER_NO", "VARCHAR(255)", "회원번호", ""], ["SPNSR_CD", "VARCHAR(255)", "후원사업(코드)", ""],
         ["SPNSR_NM", "VARCHAR(255)", "후원사업(이름)", ""], ["CMPGN_CD", "VARCHAR(255)", "캠페인(코드)", ""],
         ["CMPGN_NM", "VARCHAR(255)", "캠페인(이름)", ""], ["GENDER", "VARCHAR(255)", "성별(회원)", ""],
         ["AGE", "VARCHAR(255)", "연령대", ""], ["SETLE_CD", "VARCHAR(255)", "납입방식(코드)", ""],
@@ -1037,7 +1268,7 @@
       ],
       "TD_MS_CRMN_PRTCPNT": [
         ["CRMN_CD", "NUMBER(10,0)", "행사코드", "PK"], ["PRTCPNT_KEY", "NUMBER(10,0)", "참여자KEY", "PK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["RQST_PATH_CD", "VARCHAR(3)", "신청경로코드", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["RQST_PATH_CD", "VARCHAR(3)", "신청경로코드", ""],
         ["PARTCPT_TIME_CO", "NUMBER(10,0)", "참여시간수", ""], ["PARTCPT_STAT_CD", "VARCHAR(3)", "참여상태코드", ""],
         ["SELF_PARTCPT_CD", "VARCHAR(3)", "자기참여코드", ""], ["RCPMNY_STAT_CD", "VARCHAR(3)", "입금상태코드", ""],
         ["RCPMNY_DATE", "VARCHAR(8)", "입금일자", ""], ["REFND_DATE", "VARCHAR(8)", "환불일자", ""],
@@ -1065,14 +1296,14 @@
       ],
       "TD_MS_EMAIL_SNDNG_DTLS": [
         ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
-        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["SNDNG_RST_CD", "VARCHAR(3)", "발신결과코드", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
         ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
         ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TD_MS_EVENT_PRTCPNT_DTL": [
-        ["EVENT_CD", "NUMBER(10,0)", "이벤트코드", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["EVENT_CD", "NUMBER(10,0)", "이벤트코드", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["PARTCPT_SEQ", "NUMBER(10,0)", "참여순번", "PK"], ["EVENT_PARTCPT_DIV_CD", "VARCHAR(3)", "이벤트참여구분코드", ""],
         ["PRZWIN_CD", "NUMBER(10,0)", "당첨코드", ""], ["PARTCPT_CHNNL_CD", "VARCHAR(3)", "참여채널코드", ""],
         ["PARTCPT_PATH_CD", "VARCHAR(3)", "참여경로코드", ""], ["PARTCPT_STAT_CD", "VARCHAR(3)", "참여상태코드", ""],
@@ -1096,7 +1327,7 @@
       ],
       "TD_MS_MSG_AT_SNDNG_DTLS": [
         ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
-        ["SNDNG_DT", "TIMESTAMP_NTZ(9)", "발신일시", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SNDNG_DT", "TIMESTAMP_NTZ(9)", "발신일시", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["SNDNG_NO", "NUMBER(10,0)", "발신번호", ""], ["TRNSMS_STAT_CD", "VARCHAR(3)", "전송상태코드", ""],
         ["TRNSMS_FAILR_CD_ID", "VARCHAR(20)", "전송실패코드ID", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "대체메시지발신여부", ""],
         ["ALTRTV_MSG_SNDNG_YN", "VARCHAR(1)", "대체문자 발송 여부", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록자ID", ""],
@@ -1114,8 +1345,8 @@
       ],
       "TD_MS_PSTMTR_SNDNG_DTL": [
         ["SNDNG_KEY", "NUMBER(10,0)", "발신KEY", "PK"], ["SNDNG_DTL_KEY", "NUMBER(10,0)", "발신상세KEY", "PK"],
-        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
-        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "FK"], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
+        ["SNDNG_DE", "TIMESTAMP_NTZ(9)", "발신일", ""], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
+        ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", ""], ["MNG_NO", "VARCHAR(7)", "관리번호", ""],
         ["DTL_KEY", "NUMBER(10,0)", "상세KEY", ""], ["BIZN_REQUST_KEY", "NUMBER(10,0)", "업무요청KEY", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
         ["LAST_UPDUSR_ID", "VARCHAR(30)", "최종수정자ID", ""], ["LAST_UPDT_DT", "TIMESTAMP_NTZ(9)", "최종수정일시", ""],
@@ -1130,7 +1361,7 @@
       "TH_PM_SETLE_INFO_HIST": [
         ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "PK"], ["UPDT_DT", "TIMESTAMP_NTZ(9)", "수정일시", ""],
         ["UPDUSR_ID", "VARCHAR(30)", "수정자ID", ""], ["UPDUSR_NM", "VARCHAR(100)", "수정자명", ""],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
         ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["WTDRW_STRT_DE", "DATE", "출금시작일", ""],
         ["WTDRW_ASMT_SQNC", "NUMBER(3,0)", "출금지정차수", ""], ["FNLT_DIV_CD", "VARCHAR(3)", "금융기관구분코드", ""],
         ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""],
@@ -1171,7 +1402,7 @@
         ["BRND_ID", "VARCHAR(30)", "브랜드ID", ""], ["PR_MTH_CD", "VARCHAR(3)", "홍보방법코드", ""],
         ["CMPGN_STRT_DE", "VARCHAR(8)", "캠페인시작일", ""], ["MBRFEE_BNKB_LIST", "VARCHAR(4000)", "회비통장리스트", ""],
         ["INICIS_ACNT_NO", "VARCHAR(50)", "이니시스계정번호", ""], ["USE_YN", "VARCHAR(1)", "사용여부", ""],
-        ["REFER_URL", "VARCHAR(255)", "참고URL", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID", "FK"],
+        ["REFER_URL", "VARCHAR(255)", "참고URL", ""], ["SPNSR_BSNS_ID", "VARCHAR(100)", "후원사업ID", ""],
         ["CMPGN_DC", "VARCHAR(500)", "캠페인설명", ""], ["EMRGNCY_AID_BPLC_CD", "NUMBER(10,0)", "긴급구호사업장코드", ""],
         ["CMPGN_PRPT_YN", "VARCHAR(1)", "캠페인특성여부", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
@@ -1218,12 +1449,12 @@
       "TM_MM_FDRM_MBER_DVLP_AMT": [
         ["SPNSR_NO", "VARCHAR(9)", "후원번호", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", "PK"],
         ["OCCRRNC_DE", "VARCHAR(8)", "발생일", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", "FK"],
-        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", ""],
+        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", ""], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", ""],
         ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
         ["SEX", "VARCHAR(2)", "성별", ""], ["AREA_CD", "VARCHAR(3)", "지역코드", ""],
         ["AGE", "NUMBER(10,0)", "연령", ""], ["SPNSR_TIME_CO", "NUMBER(10,0)", "후원시간수", ""],
-        ["SPNSR_AMT_CD", "VARCHAR(3)", "후원금액코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"],
+        ["SPNSR_AMT_CD", "VARCHAR(3)", "후원금액코드", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", ""],
         ["CANCL_RDCAMT_RSN_CD", "VARCHAR(3)", "취소감액사유코드", ""], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
         ["DVLP_DIV_CD", "VARCHAR(3)", "개발구분코드", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
         ["FRST_RGSTR_NM", "VARCHAR(100)", "최초등록자명", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
@@ -1238,19 +1469,19 @@
         ["PSTMTR_RECPTN_CD", "VARCHAR(100)", "우편물수신코드", ""], ["EMAIL_RECPTN_CD", "VARCHAR(100)", "이메일수신코드", ""],
         ["CHRCTR_RECPTN_YN", "VARCHAR(1)", "문자수신여부", ""], ["BL_ENTRPS_NO", "NUMBER(19,0)", "소속업체번호", ""],
         ["SPECL_MNG_CD1", "VARCHAR(3)", "특별관리코드1", ""], ["SPECL_MNG_CD2", "VARCHAR(3)", "특별관리코드2", ""],
-        ["TNI_CU_BL_NO", "NUMBER(19,0)", "더네이버스클럽소속번호", ""], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
+        ["TNI_CU_BL_NO", "NUMBER(19,0)", "더네이버스클럽소속번호", ""], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", ""],
         ["MBER_STAT_CD", "VARCHAR(3)", "회원상태코드", ""], ["RELATNSP_DIV_CD", "VARCHAR(3)", "결연구분코드", ""],
-        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", "FK"], ["HMPG_ID", "VARCHAR(30)", "홈페이지ID", ""],
+        ["ACT_DEPT_CD", "VARCHAR(10)", "활동부서코드", ""], ["HMPG_ID", "VARCHAR(30)", "홈페이지ID", ""],
         ["JOIN_PATH_CD", "VARCHAR(3)", "가입경로코드", ""], ["CTI_SYNCHRN_DIV_CD", "VARCHAR(3)", "CTI동기화구분코드", ""],
         ["STDR_DE", "DATE", "기준일", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
-        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", ""], ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""],
         ["SEX", "VARCHAR(2)", "성별", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_MM_FDRM_MBER_IRSD": [
         ["OCCRRNC_DE", "VARCHAR(8)", "발생일", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
-        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", "FK"],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
+        ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", ""], ["CMPGN_CD", "VARCHAR(20)", "캠페인코드", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
         ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
         ["SEX", "VARCHAR(2)", "성별", ""], ["AREA_CD", "VARCHAR(3)", "지역코드", ""],
         ["AGE", "NUMBER(10,0)", "연령", ""], ["SPNSR_TIME_CO", "NUMBER(10,0)", "후원시간수", ""],
@@ -1260,13 +1491,13 @@
       ],
       "TM_MM_FDRM_MBER_RE_SPNSR": [
         ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"],
-        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"],
+        ["RE_SPNSR_DE", "VARCHAR(8)", "재후원일", "PK"], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_MM_FDRM_MBER_SPNSR_BSNS": [
         ["SPNSR_NO", "VARCHAR(9)", "후원번호", "PK"], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", "PK"],
-        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", ""], ["SPNSR_AMT", "NUMBER(19,0)", "후원금액", ""],
         ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일", ""], ["SPNSR_DSCNTC_YN", "VARCHAR(1)", "후원중단여부", ""],
         ["SPNSR_DSCNTC_RSN_CD", "VARCHAR(3)", "후원중단사유코드", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
@@ -1274,7 +1505,7 @@
       "TM_MM_FDRM_MBER_SPNSR_DSCNTC": [
         ["MBER_NO", "VARCHAR(10)", "회원번호", "PK"], ["SPNSR_DSCNTC_DE", "VARCHAR(8)", "후원중단일", "PK"],
         ["SER_NO", "NUMBER(10,0)", "일련번호", "PK"], ["DSCNTC_RSN_CD", "VARCHAR(3)", "중단사유코드", ""],
-        ["DSCNTC_PATH", "VARCHAR(1)", "중단경로", ""], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"],
+        ["DSCNTC_PATH", "VARCHAR(1)", "중단경로", ""], ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
@@ -1288,13 +1519,13 @@
         ["FDRM_MBER_TRNSFER_FG", "BOOLEAN", "정기회원이관유무", ""], ["SPECL_MNG_CD1", "VARCHAR(100)", "특별관리코드1", ""],
         ["SPECL_MNG_CD2", "VARCHAR(100)", "특별관리코드2", ""], ["TNI_CU_BL_NO", "NUMBER(19,0)", "더네이버스클럽소속번호", ""],
         ["CTI_SYNCHRN_DIV_CD", "VARCHAR(3)", "CTI동기화구분코드", ""], ["FRST_REGIST_DT", "TIMESTAMP_NTZ(9)", "최초등록일시", ""],
-        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", "FK"], ["FRST_RGSTR_ID", "VARCHAR(100)", "최초등록자ID", ""],
+        ["REGIST_DEPT_CD", "VARCHAR(10)", "등록부서코드", ""], ["FRST_RGSTR_ID", "VARCHAR(100)", "최초등록자ID", ""],
         ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_MS_CRMN": [
         ["CRMN_CD", "NUMBER(10,0)", "행사코드", "PK"], ["CRMN_DIV_CD", "VARCHAR(3)", "행사구분코드", ""],
         ["CRMN_TIT", "VARCHAR(100)", "행사제목", ""], ["CRMN_PLACE_NM", "VARCHAR(200)", "행사장소명", ""],
-        ["BRNCH_DEPT_ID", "VARCHAR(20)", "지부부서ID", "FK"], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
+        ["BRNCH_DEPT_ID", "VARCHAR(20)", "지부부서ID", ""], ["ATCHFL_ID", "VARCHAR(20)", "첨부파일ID", ""],
         ["SITE_URL", "VARCHAR(255)", "사이트URL", ""], ["CRMN_STRT_DE", "VARCHAR(8)", "행사시작일", ""],
         ["CRMN_END_DE", "VARCHAR(8)", "행사종료일", ""], ["CRMN_PART_STRT_DE", "VARCHAR(8)", "캠페인참여시작일자", ""],
         ["CRMN_PART_END_DE", "VARCHAR(8)", "캠페인참여종료일자", ""], ["TAT", "NUMBER(5,0)", "소요시간", ""],
@@ -1364,9 +1595,9 @@
         ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_PM_DNTN_DTLS": [
-        ["DNTN_KEY", "NUMBER(19,0)", "기부금KEY", "PK"], ["ONCE_MBER_NO", "VARCHAR(10)", "일시후원회원번호", "FK"],
+        ["DNTN_KEY", "NUMBER(19,0)", "기부금KEY", "PK"], ["ONCE_MBER_NO", "VARCHAR(10)", "일시후원회원번호", ""],
         ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SETLE_CD", "VARCHAR(3)", "결제코드", ""],
-        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", "FK"], ["ELCTR_SETLE_KEY", "NUMBER(19,0)", "전자결제KEY", ""],
+        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", ""], ["ELCTR_SETLE_KEY", "NUMBER(19,0)", "전자결제KEY", ""],
         ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""], ["SETLE_CMPNY_ACNT_NO", "NUMBER(10,0)", "결제사계좌번호", ""],
         ["MBRFEE_BNKB_KEY", "NUMBER(19,0)", "회비통장KEY", ""], ["ACNUT_SER_NO", "NUMBER(10,0)", "계좌일련번호", ""],
         ["FNLT_CD", "VARCHAR(10)", "금융기관코드", ""], ["PAYER_NM", "VARCHAR(30)", "결제자명", ""],
@@ -1375,22 +1606,22 @@
         ["USE_YN", "VARCHAR(1)", "사용여부", ""], ["TRNSFER_MBRFEE_KEY", "NUMBER(10,0)", "이관회비KEY", ""],
         ["TRNSFER_RSN_CD", "VARCHAR(3)", "이관사유코드", ""], ["RETUN_DNTN_KEY", "NUMBER(19,0)", "환급기부금KEY", ""],
         ["RETUN_RSN_CD", "VARCHAR(3)", "환급사유코드", ""], ["RETUN_KEY", "NUMBER(10,0)", "환급KEY", ""],
-        ["RM", "VARCHAR(1000)", "비고", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", "FK"],
+        ["RM", "VARCHAR(1000)", "비고", ""], ["ACMSLT_DEPT_CD", "VARCHAR(10)", "실적부서코드", ""],
         ["REGIST_DE", "DATE", "등록일", ""], ["RGSTR_ID", "VARCHAR(50)", "등록자ID", ""],
-        ["RGSTR_NM", "VARCHAR(30)", "등록자명", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"],
+        ["RGSTR_NM", "VARCHAR(30)", "등록자명", ""], ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", ""],
         ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""], ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_PM_MBRFEE_ACMSLT": [
         ["MBRFEE_KEY", "NUMBER(19,0)", "회비KEY", "PK"], ["MBER_DIV_CD", "VARCHAR(3)", "회원구분코드", ""],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""],
         ["SPNSR_NO", "VARCHAR(9)", "후원번호", ""], ["SPNSR_BSNS_NO", "NUMBER(19,0)", "후원사업번호", ""],
-        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", "FK"], ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", "FK"],
+        ["SPNSR_BSNS_ID", "VARCHAR(20)", "후원사업ID", ""], ["RELATNSP_KEY", "NUMBER(10,0)", "결연KEY", ""],
         ["OVSEA_AID_KEY", "NUMBER(10,0)", "해외구호KEY", ""], ["MBRFEE_MT", "VARCHAR(6)", "회비월", ""],
         ["MBRFEE_SQNC", "NUMBER(3,0)", "회비차수", ""], ["RQEST_MT", "VARCHAR(6)", "청구월", ""],
         ["RQEST_SQNC", "NUMBER(3,0)", "청구차수", ""], ["MBRFEE_DIV_CD", "VARCHAR(3)", "회비구분코드", ""],
         ["GFT_DIV_CD", "VARCHAR(3)", "선물구분코드", ""], ["GFTMNEY_CHILD_CD", "NUMBER(10,0)", "선물금아동코드", ""],
-        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", "FK"], ["TOGETH_WTDRW_REQUST_KEY", "NUMBER(10,0)", "함께출금요청KEY", ""],
-        ["TOGETH_WTDRW_YN", "VARCHAR(1)", "함께출금여부", ""], ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "FK"],
+        ["ONCE_CMPGN_CD", "VARCHAR(20)", "일시후원캠페인코드", ""], ["TOGETH_WTDRW_REQUST_KEY", "NUMBER(10,0)", "함께출금요청KEY", ""],
+        ["TOGETH_WTDRW_YN", "VARCHAR(1)", "함께출금여부", ""], ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", ""],
         ["SETLE_CD", "VARCHAR(3)", "결제코드", ""], ["SETLE_ENTRPS_CD", "VARCHAR(10)", "결제업체코드", ""],
         ["PAYER_NM", "VARCHAR(30)", "결제자명", ""], ["RQEST_DIV_CD", "VARCHAR(3)", "청구구분코드", ""],
         ["RQEST_AMT", "NUMBER(19,0)", "청구금액", ""], ["RQEST_DE", "DATE", "청구일", ""],
@@ -1412,7 +1643,7 @@
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "TM_PM_SETLE_INFO": [
-        ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"],
+        ["SETLE_KEY", "NUMBER(10,0)", "결제KEY", "PK"], ["MBER_NO", "VARCHAR(10)", "회원번호", ""],
         ["CPR_DIV_CD", "VARCHAR(3)", "법인구분코드", ""], ["SETLE_CD", "VARCHAR(3)", "결제코드", ""],
         ["WTDRW_STRT_DE", "DATE", "출금시작일", ""], ["WTDRW_ASMT_SQNC", "NUMBER(3,0)", "출금지정차수", ""],
         ["WTDRW_ASMT_SQNC_UPDT_DE", "DATE", "출금지정차수수정일", ""], ["FNLT_DIV_CD", "VARCHAR(3)", "금융기관구분코드", ""],
@@ -1496,7 +1727,7 @@
         ["RELATNSP_STRT_DE", "DATE", "결연시작일", ""], ["RELATNSP_DSCNTC_DE", "DATE", "결연중단일", ""],
         ["RELATNSP_DSCNTC_YN", "VARCHAR(1)", "결연중단여부", ""], ["RELATNSP_DSCNTC_RSN_CD", "NUMBER(10,0)", "결연중단사유코드", ""],
         ["FRST_RGSTR_ID", "VARCHAR(30)", "최초등록자ID", ""], ["FRST_REGIST_DE", "DATE", "최초등록일", ""],
-        ["MBER_NO", "VARCHAR(10)", "회원번호", "FK"], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
+        ["MBER_NO", "VARCHAR(10)", "회원번호", ""], ["_LOAD_DT", "TIMESTAMP_NTZ(9)", "적재일시 (ETL 적재 시각)", ""],
         ["_BATCH_ID", "VARCHAR(50)", "배치ID (적재 배치 식별자)", ""]
       ],
       "DGT_AD_CMPGN_DTLS": [
@@ -1574,7 +1805,7 @@
         ["event_name", "VARCHAR(16777216)", "이벤트 이름", "PK"], ["event_params", "VARIANT", "이벤트 파라미터 배열(REPEATED RECORD)", ""],
         ["event_previous_timestamp", "NUMBER(38,0)", "동일 기기 직전 이벤트 수신 시각", ""], ["event_value_in_usd", "FLOAT", "USD 환산 value", ""],
         ["event_bundle_sequence_id", "NUMBER(38,0)", "전송 배치 요청 순번 ID", ""], ["event_server_timestamp_offset", "NUMBER(38,0)", "수집/서버업로드 시각 차이", ""],
-        ["user_id", "VARCHAR(16777216)", "개발자 설정 사용자 고유 ID (CRM 연계)", "FK"], ["user_pseudo_id", "VARCHAR(16777216)", "GA4 자동 생성 익명 사용자 식별자", "PK"],
+        ["user_id", "VARCHAR(16777216)", "개발자 설정 사용자 고유 ID (CRM 연계)", ""], ["user_pseudo_id", "VARCHAR(16777216)", "GA4 자동 생성 익명 사용자 식별자", "PK"],
         ["privacy_info", "VARIANT", "동의모드 정보", ""], ["user_properties", "VARIANT", "사용자 속성 배열", ""],
         ["user_first_touch_timestamp", "NUMBER(38,0)", "사용자 최초 앱실행/웹방문 시각", ""], ["user_ltv", "VARIANT", "사용자 생애가치(LTV) 정보", ""],
         ["device", "VARIANT", "기기 정보", ""], ["geo", "VARIANT", "지리 정보(IP 기반)", ""],
@@ -1588,65 +1819,15 @@
       ]
     };
 
-    // 2. 리니지 관계 매핑 ([From, To])
-    const lineagePairs = [
-      ["TM_MM_FDRM_MBER_INFO", "CRM_MEMBER"], ["TM_MM_ONCE_MBER_INFO", "CRM_MEMBER"],
-      ["TM_CM_CMPGN_MNG", "CRM_CAMPAIGN"], ["TM_CM_BRND_MNG", "CRM_CAMPAIGN"], ["TM_CM_MKTNG_CMPGN_MNG", "CRM_CAMPAIGN"],
-      ["TM_CM_SPNSR_BSNS_INFO", "CRM_SPONSORSHIP"], ["TM_CM_DEPT_INFO", "CRM_ORG"],
-      ["TM_CM_MBER_DVLP_GOAL", "CRM_DEV_TARGET"], ["TC_CMMN_DTL_CD", "CRM_CODE"],
-      ["TM_MM_FDRM_MBER_DVLP_AMT", "CRM_MEMBER_DEV"], ["TM_MM_FDRM_MBER_IRSD", "CRM_MEMBER_AMT_CHANGE"],
-      ["TM_MM_FDRM_MBER_SPNSR_DSCNTC", "CRM_MEMBER_DISCONTINUE"], ["TM_MM_FDRM_MBER_RE_SPNSR", "CRM_MEMBER_RESPONSOR"],
-      ["TM_MM_FDRM_MBER_SPNSR_BSNS", "CRM_MEMBER_SPONSOR_BIZ"], ["TH_MM_FDRM_MBER_STNG_DTLS", "CRM_MEMBER_STATUS_HIST"],
-      ["TM_RM_RELATNSP_MSTR_INFO", "CRM_SPONSOR_RELATION"], ["TM_PM_SETLE_INFO", "CRM_PAYMENT_METHOD"],
-      ["TM_MS_EVENT", "CRM_EVENT"], ["TM_MS_CRMN", "CRM_EVENT"],
-      ["TD_MS_EVENT_PRTCPNT_DTL", "CRM_EVENT_PARTICIPATION"], ["TD_MS_CRMN_PRTCPNT", "CRM_EVENT_PARTICIPATION"],
-      ["TM_RM_RELATNSP_LETTER_INFO", "CRM_RELATION_ACTIVITY"], ["TM_RM_RELATNSP_GFTMNEY_INFO", "CRM_RELATION_ACTIVITY"],
-      ["TM_PM_MBRFEE_ACMSLT", "CRM_PAYMENT_BILLING"], ["TM_PM_DNTN_DTLS", "CRM_PAYMENT_BILLING"],
-      ["TM_MS_EMAIL_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_MSG_AT_SNDNG", "CRM_SEND_REQUEST"], ["TM_MS_PSTMTR_SNDNG", "CRM_SEND_REQUEST"],
-      ["SND_REQ_MST", "CRM_SEND_REQUEST"], ["SND_REQ_MST", "CRM_SEND_RESULT"],
-      ["TD_MS_EMAIL_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_MSG_AT_LQY_SNDNG", "CRM_SEND_RESULT"], ["TD_MS_PSTMTR_LQY_SNDNG", "CRM_SEND_RESULT"],
-      ["TD_MS_EMAIL_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_MSG_AT_SNDNG_DTLS", "CRM_SEND_MEMBER"], ["TD_MS_PSTMTR_SNDNG_DTL", "CRM_SEND_MEMBER"],
-      ["SND_MEMBER_LIST", "CRM_SEND_MEMBER"],
-      ["events_20260501", "GA4_EVENT"], ["events_20260501", "GA4_TRAFFIC_SOURCE"], ["events_20260501", "GA4_EVENT_DIM"],
-      ["events_20260501", "GA4_DEVICE"], ["events_20260501", "GA4_IDENTITY"],
-      ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET_ITEM"], ["BDGT_ACMSLT_LEDGER", "ERP_BUDGET"],
-      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_PERFORMANCE"],
-      ["DGT_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["REBRDC_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"], ["VIDEO_AD_CMPGN_DTLS", "AGENCY_AD_CREATIVE"],
-      ["CRM_MEMBER", "DIM_MEMBER"], ["CRM_MEMBER", "DIM_MEMBER_IDENTITY"], ["CRM_CAMPAIGN", "DIM_CAMPAIGN"],
-      ["CRM_SPONSORSHIP", "DIM_SPONSORSHIP"], ["CRM_ORG", "DIM_ORG"], ["CRM_PAYMENT_METHOD", "DIM_PAYMENT"],
-      ["CRM_MEMBER_DISCONTINUE", "DIM_REASON"], ["CRM_EVENT", "DIM_EVENT"], ["CRM_SEND_REQUEST", "DIM_SERVICE"],
-      ["GA4_TRAFFIC_SOURCE", "DIM_GA_SOURCE"], ["GA4_EVENT_DIM", "DIM_GA_EVENT"], ["GA4_DEVICE", "DIM_DEVICE"],
-      ["GA4_IDENTITY", "IDENTITY_MEMBER_XREF"], ["IDENTITY_MEMBER_XREF", "DIM_MEMBER_IDENTITY"],
-      ["AGENCY_AD_CREATIVE", "DIM_AD_CREATIVE"], ["ERP_BUDGET_ITEM", "DIM_BUDGET_ITEM"],
-      ["CRM_MEMBER_DEV", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_AMT_CHANGE", "FACT_MEMBER_MONTHLY"],
-      ["CRM_MEMBER_STATUS_HIST", "FACT_MEMBER_MONTHLY"], ["CRM_MEMBER_RESPONSOR", "FACT_MEMBER_MONTHLY"],
-      ["CRM_MEMBER_SPONSOR_BIZ", "FACT_MEMBER_MONTHLY"], ["CRM_PAYMENT_BILLING", "FACT_MEMBER_MONTHLY"],
-      ["CRM_MEMBER_DEV", "FACT_MEMBER_EVENT"], ["CRM_MEMBER_DISCONTINUE", "FACT_MEMBER_EVENT"],
-      ["CRM_DEV_TARGET", "FACT_TARGET_DEV"], ["CRM_SEND_REQUEST", "FACT_SERVICE_EVENT"],
-      ["CRM_SEND_MEMBER", "FACT_SERVICE_EVENT"], ["CRM_SEND_RESULT", "FACT_SERVICE_EVENT"],
-      ["CRM_RELATION_ACTIVITY", "FACT_SERVICE_EVENT"], ["CRM_EVENT_PARTICIPATION", "FACT_EVENT_PARTICIPATION"],
-      ["GA4_EVENT", "FACT_GA_BEHAVIOR"], ["GA4_EVENT", "FACT_AD_PERFORMANCE"],
-      ["AGENCY_AD_PERFORMANCE", "FACT_AD_PERFORMANCE"], ["ERP_BUDGET", "FACT_BUDGET"],
-      ["ERP_BIZ_TARGET", "FACT_TARGET_BIZ"],
-      ["FACT_MEMBER_MONTHLY", "WIDE_MEMBER_MONTHLY"], ["FACT_MEMBER_EVENT", "WIDE_MEMBER_EVENT"],
-      ["FACT_TARGET_DEV", "WIDE_TARGET_DEV"], ["FACT_SERVICE_EVENT", "WIDE_SERVICE_EVENT"],
-      ["FACT_EVENT_PARTICIPATION", "WIDE_EVENT_PARTICIPATION"], ["FACT_GA_BEHAVIOR", "WIDE_GA_BEHAVIOR"],
-      ["FACT_AD_PERFORMANCE", "WIDE_AD_PERFORMANCE"], ["FACT_BUDGET", "WIDE_BUDGET"]
-    ];
-
-    const upstreamMap = {}, downstreamMap = {};
-    lineagePairs.forEach(([from, to]) => {
-      if (!downstreamMap[from]) downstreamMap[from] = [];
-      if (!upstreamMap[to]) upstreamMap[to] = [];
-      downstreamMap[from].push(to);
-      upstreamMap[to].push(from);
-    });
-
+    // ==========================================================
+    // 4. 인터랙션 및 렌더링 엔진 (SCD2, WARN, DEG 반영)
+    // ==========================================================
     const chips = document.querySelectorAll('.chip');
     const svg = document.getElementById('lineage-svg');
     const root = document.getElementById('grid-root');
     const sidePanel = document.getElementById('side-panel');
     const panelTitle = document.getElementById('panel-title');
+    const panelSummary = document.getElementById('panel-summary');
     const panelBody = document.getElementById('panel-table-body');
     let activeChipId = null;
 
@@ -1689,7 +1870,6 @@
     function renderLineage(targetId) {
       svg.innerHTML = '';
       chips.forEach(c => c.classList.remove('is-selected', 'is-upstream', 'is-downstream'));
-      
       if (!targetId) { root.classList.remove('dimmed'); return; }
 
       root.classList.add('dimmed');
@@ -1713,25 +1893,115 @@
     }
 
     function openPanel(tableId) {
-      panelTitle.textContent = tableId;
+      // -------------------------------------------------------------
+      // [기존 코드] panelTitle.textContent = tableId;
+      // [변경 코드] 아래 2줄로 교체하시면 한글명이 부제목으로 붙습니다.
+      const koDesc = tableNameMap[tableId] ? ` <span style="font-size:0.85rem; color:var(--text-sub); font-weight:normal;">— ${tableNameMap[tableId]}</span>` : '';
+      panelTitle.innerHTML = `${tableId}${koDesc}`;
+      // -------------------------------------------------------------
+      
+      panelSummary.innerHTML = '';
       panelBody.innerHTML = '';
       
-      // WIDE 마트 뷰는 대대응 FACT 팩트 테이블을 미러링
       let targetKey = tableId;
-      if (tableId.startsWith('WIDE_')) {
-        targetKey = tableId.replace('WIDE_', 'FACT_');
+      const isWide = tableId.startsWith('WIDE_');
+      const isFact = tableId.startsWith('FACT_');
+
+      // 1. WIDE 마트 요약 박스 생성 (_wide_schema.yml 기반 실제 조인 차원 표시)
+      if (isWide && wideJoinMeta[tableId]) {
+        const meta = wideJoinMeta[tableId];
+        targetKey = meta.fact; // WIDE 뷰 컬럼 목록은 팩트를 미러링
+        
+        const dimTags = meta.dims.map(d => `<span class="link-tag" onclick="openPanel('${d}')">🔗 ${d}</span>`).join(' ');
+        panelSummary.innerHTML = `
+          <div class="summary-box">
+            <b>💡 통합 서빙 마트 (Wide View)</b><br>
+            • 중심 팩트: <span class="link-tag" onclick="openPanel('${meta.fact}')">🔗 ${meta.fact}</span><br>
+            • 조인 차원: ${dimTags}<br>
+            • 계약 안내: ${meta.note}
+          </div>
+        `;
+      } 
+      // 2. FACT 테이블 요약 박스 생성 (relationships 정본 기반)
+      else if (isFact && fkContractMap[tableId]) {
+        const fkRules = fkContractMap[tableId];
+        let fkTags = '';
+        Object.entries(fkRules).forEach(([col, rule]) => {
+          if (rule.type === 'DEG') {
+            fkTags += `<span style="display:inline-block; margin:2px 4px; font-size:0.75rem;">• <b>${col}</b>: [DEG] 파생 월키 (DIM 조인 없음)</span><br>`;
+          } else {
+            const badgeType = rule.type === 'WARN' ? 'badge-warn' : 'badge-fk';
+            const label = rule.type === 'WARN' ? 'FK(warn)' : 'FK';
+            fkTags += `<span style="display:inline-block; margin:2px 0; font-size:0.75rem;">• <b>${col}</b> <span class="key-badge ${badgeType}">${label}</span> ──> <span class="link-tag" onclick="openPanel('${rule.target}')">🔗 ${rule.target}.${rule.key}</span></span><br>`;
+          }
+        });
+        panelSummary.innerHTML = `
+          <div class="summary-box">
+            <b>💡 dbt 조인 계약 (relationships 정본)</b><br>
+            ${fkTags}
+            <span style="font-size:0.7rem; color:var(--text-sub);">※ 미매칭/범위밖/NULL SK는 Unknown 멤버(SK=0)로 라우팅 (0번행 시드 보유)</span>
+          </div>
+        `;
+      }
+      // 3. DIM_DATE 특수 역방향 안내
+      else if (tableId === 'DIM_DATE') {
+        panelSummary.innerHTML = `
+          <div class="summary-box">
+            <b>💡 일 grain 컨포먼드 차원 (Conformed Dimension)</b><br>
+            • 참조 팩트 (DATE_SK): <span class="link-tag" onclick="openPanel('FACT_MEMBER_EVENT')">🔗 FACT_MEMBER_EVENT</span> <span class="link-tag" onclick="openPanel('FACT_SERVICE_EVENT')">🔗 FACT_SERVICE_EVENT</span> <span class="link-tag" onclick="openPanel('FACT_GA_BEHAVIOR')">🔗 FACT_GA_BEHAVIOR</span> <span class="link-tag" onclick="openPanel('FACT_EVENT_PARTICIPATION')">🔗 FACT_EVENT_PARTICIPATION</span><br>
+            • 주의: 월 팩트(FACT_MEMBER_MONTHLY 등)는 DIM_DATE를 조인하지 않고 MONTH_KEY를 파생 속성으로 사용합니다.
+          </div>
+        `;
+      }
+      // 4. DIM_MEMBER SCD2 안내
+      else if (tableId === 'DIM_MEMBER') {
+        panelSummary.innerHTML = `
+          <div class="summary-box" style="border-color:#06b6d4; background:light-dark(#ecfeff, #083344);">
+            <b><span style="color:#06b6d4;">[SCD2]</span> 이력 기반 다중버전 차원</b><br>
+            • MEMBER_SK: 버전 대리키 (PK, unique)<br>
+            • MEMBER_DK: 불변 회원번호 (조인용, 비-unique)<br>
+            • 소비 계약: WIDE 뷰 등에서 조인 시 반드시 <code>WHERE IS_CURRENT = TRUE</code> 조건을 부여하여 fan-out(데이터 뻥튀기)을 방지해야 합니다.
+          </div>
+        `;
       }
 
+      // 테이블 컬럼 렌더링
       const columns = ddlMeta[targetKey] || [
         ["DW_SOURCE_SYSTEM", "VARCHAR", "원천 시스템 식별 (공통감사)", ""],
         ["DW_LOAD_TS", "TIMESTAMP_NTZ", "최초 적재 시각 (공통감사)", ""],
         ["DW_BATCH_ID", "VARCHAR", "적재 배치 식별자 = dbt invocation_id (공통감사)", ""]
       ];
 
+      const currentFkMap = fkContractMap[targetKey] || {};
+      const currentPkList = pkContractMap[targetKey] || [];
+
       columns.forEach(([name, type, comment, key]) => {
         let badge = '';
-        if (key === 'PK') badge = `<span class="key-badge badge-pk">PK</span>`;
-        else if (key === 'FK') badge = `<span class="key-badge badge-fk">FK</span>`;
+        
+        // PK 배지 (schema.yml unique 테스트 기준)
+        if (key === 'PK' || currentPkList.includes(name)) {
+          badge = `<span class="key-badge badge-pk">PK</span>`;
+        }
+        
+        // FK 배지 (schema.yml relationships 정본 주입 - BRONZE 제외)
+        if (currentFkMap[name]) {
+          const rule = currentFkMap[name];
+          if (rule.type === 'DEG') {
+            badge += `<span class="key-badge badge-deg">DEG</span>`;
+          } else if (rule.type === 'WARN') {
+            badge += `<span class="key-badge badge-warn" title="마스터 고아 허용">FK(warn)</span>`;
+          } else {
+            badge += `<span class="key-badge badge-fk">FK</span>`;
+          }
+        } else if (key === 'FK' && !tableId.startsWith('BRONZE_') && !tableId.startsWith('TM_') && !tableId.startsWith('TD_')) {
+          // fallback
+          badge += `<span class="key-badge badge-fk">FK</span>`;
+        }
+
+        // SCD2 IS_CURRENT 특수 표시
+        if (tableId === 'DIM_MEMBER' && name === 'IS_CURRENT') {
+          badge += `<span class="key-badge badge-scd2">SCD2</span>`;
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `

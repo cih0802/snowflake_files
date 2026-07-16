@@ -4,8 +4,8 @@ version: 2
 #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트(BLOCKING-4 해소).
 #   컬럼/뷰 COMMENT 는 각 모델 post_hook(ALTER VIEW/COMMENT ON VIEW)로 적용 — 정본 03_top-down_gold/10_WIDE VIEW 코멘트.sql verbatim.
 #   실행: dbt build --select tag:gold_wide   (또는 path:models/gold/wide)
-# ⚠️ WIDE_TARGET_BIZ(9번째)는 FACT_TARGET_BIZ 모델 부재(E-6 외부원천 0행·작성보류)로 미작성.
-#    FACT_TARGET_BIZ 모델 저작 시 함께 추가(정본 09_빅테이블 VIEW.md §3.4).
+# WIDE_TARGET_BIZ(9번째) 추가완료 — FACT_TARGET_BIZ(스키마-only, E-6 원천부재 0행) 참조. 차원 조인은 이름 크로스워크.
+#   ⚠️ 건 measure(#152~155)는 SILVER=금액(TARGET_AMT) vs GOLD=건 단위충돌로 NULL. GOLD DDL 금액 measure 신설 후 배선.
 models:
   - name: WIDE_MEMBER_MONTHLY
     description: "회원 월 팩트(FMM) 평탄화 — MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY."
@@ -16,10 +16,12 @@ models:
   - name: WIDE_SERVICE_EVENT
     description: "서비스/발송 팩트(FSE) 평탄화 — DATE·MEMBER[현재버전]·SERVICE·CAMPAIGN."
   - name: WIDE_GA_BEHAVIOR
-    description: "GA 행동 팩트(FGA) 평탄화 — DATE·GA_EVENT·GA_SOURCE·DEVICE·CAMPAIGN. 비가산 지표 상위 재합산 금지. IDENTITY_* 는 DIM_MEMBER_IDENTITY 비활성(이슈 S)으로 NULL 플레이스홀더."
+    description: "GA 행동 팩트(FGA) 평탄화 — DATE·GA_EVENT·GA_SOURCE·DEVICE·CAMPAIGN·IDENTITY. 비가산 지표 상위 재합산 금지. IDENTITY_* 는 DIM_MEMBER_IDENTITY 활성(2026-07-15)으로 실조인(⚠️G-5 GA4 1일 기반·전기간 입고 시 재검증)."
   - name: WIDE_AD_PERFORMANCE
     description: "광고 성과 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. FACT_AD_PERFORMANCE 스캐폴드(차원FK 미해소, Q10/O5 대기) 반영."
   - name: WIDE_EVENT_PARTICIPATION
     description: "행사 참여 팩트(FEP) 평탄화 — DATE·MEMBER[현재버전]·EVENT·CAMPAIGN·SPONSORSHIP."
+  - name: WIDE_TARGET_BIZ
+    description: "사업목표 팩트(FTG_B) 평탄화 — ORG·SPONSORSHIP·CAMPAIGN. 월 grain=MONTH_KEY. E-6 원천부재 0행(입고 시 자동 채워짐)."
   - name: WIDE_BUDGET
     description: "예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. FUNDRAISING_COST(E-1)·AD_COST(E-4) 원천부재로 NULL."

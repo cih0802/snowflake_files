@@ -27,7 +27,7 @@ END-METADATA -->
 - dbt view 모델(`models/gold/wide/`, `materialized: view`, `ref()`) 8종 저작 → `ADD VERSION` → full `build` green(PASS=205 WARN=21 ERROR=0). COMMENT 는 **post-hook**(`ALTER VIEW ... ALTER COLUMN` + `COMMENT ON VIEW`, 정본 `10_WIDE VIEW 코멘트.sql` verbatim) → 뷰 8/8 + 컬럼 310/310 실측 확인.
 - 8종: WIDE_MEMBER_MONTHLY·WIDE_MEMBER_EVENT·WIDE_TARGET_DEV·WIDE_SERVICE_EVENT·WIDE_GA_BEHAVIOR·WIDE_AD_PERFORMANCE·WIDE_EVENT_PARTICIPATION·WIDE_BUDGET.
 - ⏳ **보류 1종 WIDE_TARGET_BIZ**: `FACT_TARGET_BIZ` 거버넌스 모델 부재(E-6 원천 0행). FACT_TARGET_BIZ 저작 시 동시 추가.
-- ⚠️ WIDE_GA_BEHAVIOR: `DIM_MEMBER_IDENTITY`(enabled=false) 미조인, IDENTITY_* 타입드 NULL 플레이스홀더.
+- ✅ WIDE_GA_BEHAVIOR: `DIM_MEMBER_IDENTITY` 활성(2026-07-15)·IDENTITY_* 4컬럼 실조인 복원(⚠️GA4 1일 기반·커버리지 4.22%·G-5 재검증).
 ### ✅ #3 AD_DATE not_null warn→error 승격 (실측 널 0/235,572)
 
 ### 🔜 다음 세션 최우선 (외부/결정 도착 시)

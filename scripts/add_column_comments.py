@@ -103,5 +103,9 @@ for ln in lines:
                 added += 1
     out.append(ln)
 
+GEN = "scripts/add_column_comments.py"
+_prov = f"-- 컬럼 COMMENT 주입기(생성기): {GEN} — 재실행 시 이 스크립트로 갱신"
+if not any(_prov in l for l in out[:6]):
+    out.insert(0, _prov)
 open(DDL, "w", encoding="utf-8").write("\n".join(out))
-print(f"added {added} column comments")
+print(f"[{GEN}] added {added} column comments → {DDL}")

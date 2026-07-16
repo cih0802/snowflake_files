@@ -29,7 +29,13 @@ models:
       - name: MEMBER_SK
         tests: [not_null, unique]
       - name: MEMBER_DK
-        tests: [not_null, unique]
+        tests:
+          - not_null
+          # SCD2: 전체는 버전 반복이라 unique 아님. 단 '현재버전'은 회원당 1행이어야 함
+          # → IS_CURRENT 한정 unique 가드레일(grain 변경 시 잔존행/중복 현재행 조기 탐지).
+          - unique:
+              config:
+                where: "IS_CURRENT = TRUE"
   - name: DIM_MEMBER_IDENTITY
     columns:
       - name: IDENTITY_SK

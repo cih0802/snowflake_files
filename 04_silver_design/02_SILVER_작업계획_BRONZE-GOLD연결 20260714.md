@@ -113,11 +113,11 @@ END-METADATA -->
 - **`IDENTITY_MEMBER_XREF` (신원 브리지, S-7)**: SILVER "동일소스 only" 원칙의 **유일한 교차소스 예외**. GA↔CRM 신원해소를 전용 브리지로 격리(`MATCH_METHOD`/`MATCH_CONFIDENCE`). 입력 = CRM 회원번호(=memnum=member id) + GA `user_id`. **✅ 2026-07-14 적재완료** — 위치=**SILVER 확정**(보수적 근거: 확률적 신원해소(session-fill 추론 + match confidence)를 SILVER에 격리→GOLD 결정적 차원 유지 / SK·conform은 GOLD 소관이므로 브리지엔 IDENTITY_SK 없음). grain=1행/`USER_PSEUDO_ID`. 실측 매칭 `GA_MEMBER_ID=MEMBER_DK` **exact 100%**(1,348행·fan-out 0·type불일치 0·CONFIDENCE 전량 HIGH). **CHILD_CODE 제외**(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피 — 결연아동은 GOLD URL파싱/결연팩트에서). **미매칭 GA 보존**(MATCH_METHOD='UNMATCHED', 전기간 샤드 커버리지 추적). → GOLD `DIM_MEMBER_IDENTITY`가 이 브리지를 소비하며 IDENTITY_SK 부여. (CRM측은 CRM 문서(03)에서 이미 충족.)
 - **`DIM_DATE` (생성 차원)**: 원천 없는 conform 차원 → SILVER 정제 대상 아님. GOLD(또는 util)에서 생성 → SILVER 객체 수 제외.
 - **★ S-7 브리지 GOLD 소비계약 (후속 오류방지 — 09 STEP 7 정본, 실측근거 2026-07-14)**:
-  - **C1 (익명 95%)**: GA4_EVENT distinct pseudo 27,840 중 신원해소 1,348(**4.84%**). `FACT_GA_BEHAVIOR`는 XREF에 **LEFT JOIN 필수**(INNER 금지=이벤트 95% silent 소실). 익명/미매칭 → `DIM_MEMBER_IDENTITY` **`-1 UNKNOWN`** 귀속.
+  - **C1 (익명 95%)**: GA4_EVENT distinct pseudo 27,840 중 신원해소 1,348(**4.84%**). `FACT_GA_BEHAVIOR`는 XREF에 **LEFT JOIN 필수**(INNER 금지=이벤트 95% silent 소실). 익명/미매칭 → `DIM_MEMBER_IDENTITY` **Unknown 멤버(`SK=0`)** 귀속. *(2026-07-16 정정: 구현 확정값 `0`, 초안 `-1` 폐기)*
   - **C2 (grain)**: XREF=pseudo grain(1,348) ≠ `DIM_MEMBER_IDENTITY`=member grain(distinct 1,274). 회원차원 구축 시 **MEMBER_DK DISTINCT 필수**(중복계상 방지).
-  - **C3 (UNMATCHED)**: `DIM_MEMBER_IDENTITY.MEMBER_DK`는 NOT NULL → 회원차원은 `MATCH_METHOD='MEMBER_ID_EXACT'` 필터로 UNMATCHED 제외. 팩트에서만 -1 흡수.
+  - **C3 (UNMATCHED)**: `DIM_MEMBER_IDENTITY.MEMBER_DK`는 NOT NULL → 회원차원은 `MATCH_METHOD='MEMBER_ID_EXACT'` 필터로 UNMATCHED 제외. 팩트에서만 Unknown(`SK=0`) 흡수.
   - **C4 (조인키)**: MEMBER_DK 최대길이 9(≤VARCHAR10)·공백 0(PoC). 전기간 재적재 시 재검증.
-  - **🔲 GOLD 오픈액션(순서 8)**: `DIM_MEMBER_IDENTITY`·`DIM_EVENT`에 `-1 UNKNOWN` 시드행 생성 + 모든 GA/이벤트 팩트 LEFT JOIN 적용. EVENT_PARTICIPATION orphan(53이벤트·7,713회원)도 동일 패턴으로 흡수.
+  - **✅ GOLD 실행결과(2026-07-16 갱신, 순서8 완료)**: `DIM_MEMBER_IDENTITY`·`DIM_EVENT` 등 **13개 DIM 전량 `SK=0` Unknown 시드행** 생성 완료(`union all select 0 '(미매핑)'`) + GA/이벤트 팩트 LEFT JOIN 적용. **초안의 `-1 UNKNOWN` 표기는 구현 단계에서 `SK=0`으로 통일·폐기.** ⚠️ 잔여: `DIM_MEMBER` 자체에는 아직 Unknown 시드행 없음(EVENT_PARTICIPATION MBER_NO 9,480 orphan 흡수 게이트).
 - **ADMIN 피드**(앱푸시→FSE, 행사 조회수→FEP): AGENCY로 흡수 또는 CRM 서비스에 합류 — 목적지 미정(AGENCY 문서 06 참조).
 
 ---
@@ -148,6 +148,6 @@ END-METADATA -->
 | 3 | ✅ **S-7 신원 브리지** (`IDENTITY_MEMBER_XREF`) — 08 DDL STEP 7 → 09 적재 STEP 7 → DQ 통과 | 브리지 1객체 1,348행 (§6) | GA4 입고 직후 착수·완료 |
 | 4 | ✅ **트랙 C(ERP) 2차** — 08 DDL → 09 적재 → DQ 검증 완료 | ERP_BUDGET_ITEM 2,040 · ERP_BUDGET 24,480 · BIZ_TARGET 스키마-only | GA4와 병렬 실행(외부 의존 0) |
 | 5 | ✅ **트랙 D(AGENCY) 3차** — 설계결정 6종 확정 → 08 DDL → 09 적재 → DQ 검증 완료 | AD_PERFORMANCE 235,572 · AD_CREATIVE 8,473 · COST 823 | 외부 의존 0(설계결정 내부 해소) |
-| 6 | ✅ **전체 SILVER 통합 검증** (2026-07-14 실행, 09 STEP 8) | DQ-1 PK 유일성 30객체 dup=0 ✅ · DQ-3 fan-out 논리충족 ✅ · DQ-2 통합앵커(identity·ERP·결연) orphan 0 ✅ / ⚠️ EVENT_PARTICIPATION 2건(EVENT_KEY 263,611=ADMIN행사 미입고 53건·MBER_NO 9,480=탈퇴/비CRM) → **결정: GOLD DIM_EVENT/DIM_MEMBER `-1 UNKNOWN` + LEFT JOIN 으로 행 100% 보존, ADMIN 입고 시 소급 치환. SILVER 무변경** | SILVER 정합 확정 ✅ |
+| 6 | ✅ **전체 SILVER 통합 검증** (2026-07-14 실행, 09 STEP 8) | DQ-1 PK 유일성 30객체 dup=0 ✅ · DQ-3 fan-out 논리충족 ✅ · DQ-2 통합앵커(identity·ERP·결연) orphan 0 ✅ / ⚠️ EVENT_PARTICIPATION 2건(EVENT_KEY 263,611=ADMIN행사 미입고 53건·MBER_NO 9,480=탈퇴/비CRM) → **결정: GOLD DIM Unknown 멤버(`SK=0`) + LEFT JOIN 으로 행 100% 보존, ADMIN 입고 시 소급 치환. SILVER 무변경** *(2026-07-16 정정: 구현 확정값 `0`, 초안 `-1` 폐기)* | SILVER 정합 확정 ✅ |
 | 7 | **파이프라인 일괄 구성** (Bronze→Silver 오케스트레이션·스케줄) | dbt job / Task | 원칙 C |
 | 8 | **GOLD 배포** — `GN_DW.GOLD` 생성 → SILVER→GOLD 적재 → WIDE VIEW·COMMENT → Semantic View | GOLD 24 + SV | `08_silver의존.md` lineage |

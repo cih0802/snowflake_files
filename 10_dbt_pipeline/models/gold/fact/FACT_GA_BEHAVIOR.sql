@@ -1,7 +1,8 @@
 -- FACT_GA_BEHAVIOR: GA 행동 팩트 (GA4_EVENT + GA DIM 조인, 일 grain)
 -- Co-authored with CoCo
 -- grain: DATE_SK×IDENTITY_SK×GA_EVENT_SK×GA_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH
--- ⚠️ IDENTITY_SK=NULL(GA4_IDENTITY 비활성), CAMPAIGN_SK=NULL(DIM_CAMPAIGN 미적재·GA UTM↔CRM 캠페인 cross-source)
+-- IDENTITY_SK = IDENTITY_MEMBER_XREF(pseudo→회원) → DIM_MEMBER_IDENTITY 매칭분, 미매칭=0(센티넬). CAMPAIGN_SK=NULL(DIM_CAMPAIGN GA UTM↔CRM cross-source).
+-- ⚠️ [G-5 재확인] IDENTITY 결선은 GA4 1일 샤드 기반(회원 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
 -- ⚠️ 비/준가산 지표(AVG_SESSION_DURATION·BOUNCE_RATE)는 grain 값 — 상위 재합산 금지(06_DDL §6)
 -- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 {{ config(
@@ -11,11 +12,18 @@
 with e as (
     select * from {{ ref('GA4_EVENT') }}
 ),
+-- pseudo→회원 매칭(1 pseudo 1행 = XREF grain). IDENTITY_SK 해소용, fan-out 없음.
+xref as (
+    select USER_PSEUDO_ID, MEMBER_DK
+    from {{ ref('IDENTITY_MEMBER_XREF') }}
+    where MEMBER_DK is not null
+    qualify row_number() over (partition by USER_PSEUDO_ID order by MEMBER_DK) = 1
+),
 
 joined as (
     select
         COALESCE({{ date_sk('e.EVENT_DT') }}, 0)                            as DATE_SK,        -- 범위밖/NULL → 0 (순서9)
-        0                                                                   as IDENTITY_SK,   -- 센티넬(미매핑) — GA4_IDENTITY 활성 후 해소
+        COALESCE(dmi.IDENTITY_SK, 0)                                        as IDENTITY_SK,   -- 매칭 회원 SK / 미매칭=0(센티넬)
         COALESCE(gev.GA_EVENT_SK, 0)                                        as GA_EVENT_SK,
         COALESCE(gs.GA_SOURCE_SK, 0)                                        as GA_SOURCE_SK,
         COALESCE(dv.DEVICE_SK, 0)                                           as DEVICE_SK,
@@ -39,6 +47,10 @@ joined as (
         and EQUAL_NULL(gs.UTM_MEDIUM, e.UTM_MEDIUM)
     left join {{ ref('DIM_DEVICE') }}    dv
         on  EQUAL_NULL(dv.DEVICE_TYPE, e.DEVICE_TYPE)
+    left join xref x
+        on  x.USER_PSEUDO_ID = e.USER_PSEUDO_ID
+    left join {{ ref('DIM_MEMBER_IDENTITY') }} dmi
+        on  dmi.MEMBER_DK = x.MEMBER_DK
 )
 
 select

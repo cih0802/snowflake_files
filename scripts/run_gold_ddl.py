@@ -31,6 +31,8 @@ for raw in ddl.split(";"):
         continue
     stmts.append(sql)
 
+GEN = "scripts/run_gold_ddl.py"
+print(f"[실행기(생성기): {GEN}] source DDL = /workspace/03_top-down_gold/06_DDL.sql")
 print(f"Executing {len(stmts)} statements...")
 errors = 0
 for i, stmt in enumerate(stmts, 1):

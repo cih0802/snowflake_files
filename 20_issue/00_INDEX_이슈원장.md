@@ -25,6 +25,7 @@ END-METADATA -->
 | 20 | `20_현업확인_요청.md` | 현업 확인 | GOLD 지표정의 잔여 + dbt 의심데이터 A~E 판정요청 |
 | 30 | `30_설계_의사결정.md` | 내부 의사결정 | D1~D3·#80·우리끼리 잠정확정·결정대기 GOLD 6 |
 | 40 | `40_입고대기_원천의존.md` | 입고 대기 | 외부원천 하드블로커·데이터 기간요건 |
+| 41 | `41_입고요청서_ERP_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | 입고 대기 | E-6 ERP 사업목표 정식 입고요청서·BRONZE DDL 제안 |
 | 50 | `50_dbt_파이프라인_미결조치.md` | 실행 | BLOCKING-1/2/3/4·순서9-C severity정책·DONE 로그 |
 | 90 | `90_해소완료_로그.md` | 완료 | 닫힌 항목·해소 Q이슈 |
 
@@ -45,9 +46,9 @@ END-METADATA -->
 | 🟢 해소완료 | 다수 | D1·D3·DEC-* · 지표정의 다수 · Q4~Q7·Q11~Q16 · 닫힌항목 7 | 90 |
 
 > **핵심**: 외부 의존 하드블로커는 **GA4 전기간 입고 · ERP FTG-B 원천 · ERP 모금성비용 원천 · (ERP/AGENCY) 연결키·이름 현업확인** 4건뿐. 그 외 잔여는 내부 설계·실행으로 해소 가능.
-> **dbt 배포 상태 [2026-07-15 실측]**: dbt project 를 `GN_DW.OPS.DW_PIPELINE`(운영 전용 스키마)로 배포. **순서9-D 기준 SILVER 32 + GOLD 22 + WIDE view 8 = 62 models, 164 tests. full `dbt build` green(PASS=205 WARN=21 ERROR=0)**. 순서9-C 코드버그 8 수정 + 참조무결성 9 `severity:warn` 강등(메달리온 BP). 상세 §50.
-> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 8/9 배포완료**(WIDE view 8종 dbt view·COMMENT 310/310, 9번째 WIDE_TARGET_BIZ 는 FACT_TARGET_BIZ 부재로 보류) · GOLD 미작성 = FACT_TARGET_BIZ(E-6)뿐.
-> **▶ 진행 현황 [순서9-D]**: WIDE VIEW 8종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, WIDE_TARGET_BIZ+FACT_TARGET_BIZ). **총괄표**: `10_dbt_pipeline/DBT_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/NEXT_SESSION_순서9-D_20260715.md`.
+> **dbt 배포 상태 [2026-07-15 실측]**: dbt project 를 `GN_DW.OPS.DW_PIPELINE`(운영 전용 스키마)로 배포. **순서9-D 기준 SILVER 32 + GOLD 22 + WIDE view 8 = 62 models, 164 tests. full `dbt build` green(PASS=205 WARN=21 ERROR=0)**. 순서9-C 코드버그 8 수정 + 참조무결성 9 `severity:warn` 강등(메달리온 BP). 상세 §50. **[2026-07-15] VERSION$6 `IDENTITY_WIRED_20260715` 추가 배포** — DIM_MEMBER_IDENTITY 활성·FACT/WIDE_GA_BEHAVIOR identity 배선(매칭 1,274명), 재빌드 PASS=15.
+> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 원천부재로 0행 스켈레톤).
+> **▶ 진행 현황 [순서9-D]**: WIDE VIEW 9종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **[2026-07-16] FACT_TARGET_BIZ+WIDE_TARGET_BIZ 스켈레톤 저작**(0행 통과) — 단, 비판적 검토서 **단위충돌(SILVER 금액 TARGET_AMT vs GOLD 건 #152~155)·조인키 교정(이름기반)** 발견·처리(측정치 NULL·이름조인). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, **FACT_TARGET_BIZ 금액 measure 신설 or 건 원천확보**). **총괄표**: `10_dbt_pipeline/DBT_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/NEXT_SESSION_순서9-D_20260715.md`.
 
 ---
 
@@ -64,18 +65,18 @@ END-METADATA -->
 | A-10 | — | CRM/어드민 | 행사기간·참여경로·채널 | ✅ CRM-backed·어드민분만 제외 | 90 |
 | E-1·E-4 | O3 | ERP | 캠페인/매체 연결키 | 🔴 부분·국내/해외 보류 | 40 |
 | E-5·A-9 | — | ERP/AGENCY/GA4 | 적재 시작시점/범위 | 🟡 실적재 후 확정 | 40 |
-| E-6 | — | ERP | 사업목표(FTG-B) 원천 | 🔴 원천 부재·descope | 40 |
+| E-6 | — | ERP | 사업목표(FTG-B) 원천 | 🔴 원천 부재·descope·**입고요청서(41) 발행·회신대기** · [2026-07-16] FACT/WIDE_TARGET_BIZ 스켈레톤 저작(0행)·단위충돌 미해소 | 40·41 |
 | C-8 | DEC-7 | 현업 | 인바운드콜·TS콜 수치 | ✅ 결정→입고(값 대기) | 40 |
 | G-5 | — | GA4 | GA4 전체기간 shards | 🔴 1일 샤드만 | 40 |
 
 ### 2-B. 의사결정 (설계/IT)
 | 대표 ID | 별칭 | 이슈 | 상태 | 문서 |
 |---|---|---|---|---|
-| D1 | — | 스캐폴드 팩트 `unique_key`<grain | ✅ 해결(table)·🔴 FROZEN 재평가 | 30·10 |
-| D2 | — | DIM_MEMBER SCD2 | ✅ 방향확정·잔여 코드라벨링 | 30 |
+| D1 | — | 스캐폴드 팩트 `unique_key`<grain | ✅ 해결(append+TRUNCATE)·🔴 FROZEN 대량시 merge 재평가 | 30·10 |
+| D2 | — | DIM_MEMBER SCD2 | ✅ 완료: append+TRUNCATE(구조복원 코멘트22/22·PK·현재행 회원당1·손실0·7.93M) | 30·90 |
 | D3 | — | DIM_ORG 가짜update | ✅ 해결(SCD1) | 90 |
 | #80 | DEC-4 | UNPAID_MEMBERS 신설 | 🔵 구현 대기 | 30 |
-| ID-활성 | — | GA4_IDENTITY 활성 | 🔵 조건후 | 30 |
+| ID-활성 | — | GA4_IDENTITY/DIM_MEMBER_IDENTITY 활성 | 🟢 활성·배선완료(2026-07-15)·⚠️G-5 재검증 | 30·50 |
 | SF | — | session-fill 채택 | ✅ 채택 | 90 |
 | O8 | — | FSE·FEP 캠페인·후원사업 귀속 | 🔄 잠정(직접FK) | 30 |
 | O10 | Q7 | 조직 역할 FMM·FME 반영 | 🔄 잠정(실적부서) | 30 |
@@ -129,6 +130,8 @@ END-METADATA -->
 | C | 캘린더 범위밖 날짜 | ~140행 | DATE_SK=0 | 20·50 |
 | D | 원천 값 전무 컬럼 | 5종 | NULL | 20·50 |
 | E | `EVENT_KEY→CRM_EVENT` 고아(참여 23%) | 263,611 | **warn 관측(순서9-C)**·GOLD SK=0 라우팅 | 20·50 |
+
+> **센티넬 규약(정본, 2026-07-16 확정)**: 미매칭·범위밖·NULL 차원키는 **Unknown 멤버 `SK=0`**으로 라우팅(13개 GOLD DIM 전량 `union all select 0 '(미매핑)'` 시드 + `gold_helpers` `COALESCE(...,0)`). ⚠️ SILVER 설계초안(02·15·00_README)의 `-1 UNKNOWN` 표기는 **구현 단계에서 `0`으로 통일·폐기**됨(해당 문서 2026-07-16 정정 반영). `-1`은 이 프로젝트 어디에도 없음.
 
 ### 2-F. 닫힌 항목 (재론 불요)
 | 대표 ID | 별칭 | 이슈 | 문서 |
