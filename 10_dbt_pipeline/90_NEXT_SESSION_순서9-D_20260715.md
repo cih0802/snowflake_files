@@ -10,28 +10,30 @@ END-METADATA -->
 > 이 파일을 다음 세션 시작 시 그대로 붙여넣거나 참조하세요. 순서9-C 종료 상태의 핸드오프입니다.
 
 ## 0. 먼저 읽을 문서 (순서대로)
-1. `20_issue/00_INDEX_이슈원장.md` — 이슈 원장 허브·상태 대시보드
-2. `10_dbt_pipeline/DBT_배포운영_통합_20260715.md` — **배포/운영 정본 + §7 진행요건 총괄표**
-3. `20_issue/50_dbt_파이프라인_미결조치.md` — BLOCKING·순서9-C DONE·warn복귀 추적표
+1. `10_dbt_pipeline/README.md` — 폴더·문서 역할과 읽는 순서 안내
+2. `20_issue/00_INDEX_이슈원장.md` — 이슈 원장 허브·상태 대시보드
+3. `10_dbt_pipeline/00_배포운영_통합_20260715.md` — **배포/운영 정본 + §7 진행요건 총괄표**
+4. `20_issue/50_dbt_파이프라인_미결조치.md` — BLOCKING·DONE·warn복귀 추적표
 
 ## 1. 현재 상태 (순서9-D 종료, 2026-07-15)
 - **배포 객체**: `GN_DW.OPS.DW_PIPELINE` (dbt project, 운영 전용 스키마). 최신 버전이 default.
 - **워크스페이스 스테이지**: `snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline`
-- **전체 파이프라인**: SILVER 32 + GOLD 22 + WIDE view 8 = 62 models, 164 tests. **full build green (PASS=205 WARN=21 ERROR=0)**.
+- **전체 파이프라인**: SILVER 32 + GOLD 33(dim 15 + fact 9 + WIDE view 9) = **65 models**. **[2026-07-16] WIDE 9/9 완결·full build green**.
 - **적재 검증됨**: DIM_BUDGET_ITEM(2,041)·DIM_AD_CREATIVE(8,474)·FACT_BUDGET(24,480)·FACT_AD_PERFORMANCE(235,572)·FMM(37.8M, UNPAID_EOM=true 3.3M).
 - **운영 계약**: 온디맨드 `EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';` (run 금지, build 사용).
 - **execute/dbt/DDL 은 사용자가 직접 실행** — 명령어만 제시할 것. 읽기전용 진단 SELECT 는 에이전트가 실행 가능.
 
 ## 2. 순서9-D 완료 작업 (내부 가능분 소진)
-### ✅ WIDE VIEW 8/9 생성·배포 (BLOCKING-4 해소)
-- dbt view 모델(`models/gold/wide/`, `materialized: view`, `ref()`) 8종 저작 → `ADD VERSION` → full `build` green(PASS=205 WARN=21 ERROR=0). COMMENT 는 **post-hook**(`ALTER VIEW ... ALTER COLUMN` + `COMMENT ON VIEW`, 정본 `10_WIDE VIEW 코멘트.sql` verbatim) → 뷰 8/8 + 컬럼 310/310 실측 확인.
-- 8종: WIDE_MEMBER_MONTHLY·WIDE_MEMBER_EVENT·WIDE_TARGET_DEV·WIDE_SERVICE_EVENT·WIDE_GA_BEHAVIOR·WIDE_AD_PERFORMANCE·WIDE_EVENT_PARTICIPATION·WIDE_BUDGET.
-- ⏳ **보류 1종 WIDE_TARGET_BIZ**: `FACT_TARGET_BIZ` 거버넌스 모델 부재(E-6 원천 0행). FACT_TARGET_BIZ 저작 시 동시 추가.
+### ✅ WIDE VIEW 9/9 생성·배포 (BLOCKING-4 완결)
+- dbt view 모델(`models/gold/wide/`, `materialized: view`, `ref()`) 8종 저작(순서9-D) → **[2026-07-16] WIDE_TARGET_BIZ 추가로 9/9** → full `build` green. COMMENT 는 **post-hook**(`ALTER VIEW ... ALTER COLUMN` + `COMMENT ON VIEW`, 정본 `10_WIDE VIEW 코멘트.sql` verbatim) → 뷰 8/8 + 컬럼 310/310 실측 확인.
+- 9종: WIDE_MEMBER_MONTHLY·WIDE_MEMBER_EVENT·WIDE_TARGET_DEV·WIDE_SERVICE_EVENT·WIDE_GA_BEHAVIOR·WIDE_AD_PERFORMANCE·WIDE_EVENT_PARTICIPATION·WIDE_BUDGET·**WIDE_TARGET_BIZ(2026-07-16, 0행)**.
+- ⚠️ **WIDE_TARGET_BIZ/FACT_TARGET_BIZ = 0행 스켈레톤**: 구조·리니지 완결, 측정치 미채움(E-6 입고 대기). 잠복결함 2건(단위충돌 금액vs건·조인키 타입) 사전 교정 — 문서50 §FACT_TARGET_BIZ.
 - ✅ WIDE_GA_BEHAVIOR: `DIM_MEMBER_IDENTITY` 활성(2026-07-15)·IDENTITY_* 4컬럼 실조인 복원(⚠️GA4 1일 기반·커버리지 4.22%·G-5 재검증).
 ### ✅ #3 AD_DATE not_null warn→error 승격 (실측 널 0/235,572)
 
 ### 🔜 다음 세션 최우선 (외부/결정 도착 시)
-- **설계결정**: FACT_BUDGET 추경/조정 예산 슬롯 신설 여부(문서30 §7) · WIDE_TARGET_BIZ+FACT_TARGET_BIZ(E-6 입고 시).
+- **설계결정**: ①FACT_BUDGET 추경/조정 예산 슬롯 신설 여부(문서30 §7) ②FACT_TARGET_BIZ 금액 measure 신설 or '건' 목표 원천 확보(단위충돌 해소).
+- **E-6 입고 시**: FACT_TARGET_BIZ/WIDE_TARGET_BIZ 측정치 실채움 + 이름 크로스워크(문서32) 조직 grain 정합 확인.
 - **정의 원천 재사용**: `03_top-down_gold/09_빅테이블 VIEW.md` §3.4(WIDE_TARGET_BIZ DDL) + `10_WIDE VIEW 코멘트.sql`.
 
 ## 3. 순서9-C 산출물 요약 (참고)
@@ -50,10 +52,11 @@ END-METADATA -->
 ## 5. 외부 입력 대기 (착수 불가 — §7 정본)
 - 원천 입고: FUNDRAISING_COST(E-1)·AD_COST(E-4)·FACT_TARGET_BIZ(E-6)·GA4 전기간(G-5)·회원 마스터 전량입고(BLOCKING-1→severity error 복귀).
 - 현업 회신: FACT_AD_PERFORMANCE CAMPAIGN_SK(Q10)·AD_CREATIVE_SK(소재 부분키 설계)·DEVICE_SK(매핑)·GA_CONV 정의(O5)·이슈 A/C/D.
-- 입고/회신 도착 시: `DBT_배포운영_통합_20260715.md` §7 표에서 해당 요건→산출물 찾아 착수.
+- 입고/회신 도착 시: `00_배포운영_통합_20260715.md` §7 표에서 해당 요건→산출물 찾아 착수.
 
 ## 6. 후속 개선 TODO (내부·저우선) — 순서9-D 처리결과
 - 🟠 **[설계결정 대기] `FACT_BUDGET.PLAN_BUDGET_YEAR`**: 추경(CHN)/조정(ADJ) 은 원천 실재하나 GOLD 슬롯 부재. `PLAN_BUDGET_YEAR` 임의 주입 = 재무 오귀속 → 전용 슬롯 신설 또는 소비정의 확정 필요(문서30 §7). 임의매핑 금지.
+- 🟠 **[설계결정 대기] `FACT_TARGET_BIZ` 단위충돌**: SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 현재 4개 건 measure 전부 NULL 처리(재무 오귀속 방지). 해소=①GOLD DDL 금액 measure 신설 or ②현업 '건' 목표 원천. (문서50 §FACT_TARGET_BIZ·문서30 §6)
 - ⏳ **[Q10 게이트] `FACT_AD_PERFORMANCE` 캠페인 이름매칭**(AGENCY.CAMPAIGN_NM ↔ CRM_CAMPAIGN.CMPGN_NM) — 실구현 Q10 회신 대기(진단 PoC만 가능).
 - ✅ **[DONE 순서9-D] `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격**(실측 널 0/235,572 확인).
 

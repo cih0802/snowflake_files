@@ -79,7 +79,7 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 - ⏳ **잔여 외부 원천 입고**: `FACT_BUDGET.FUNDRAISING_COST`(E-1)·`.AD_COST`(E-4) · `FACT_TARGET_BIZ`(E-6) · GA4 분석(G-5) · 회원 마스터 전량입고(BLOCKING-1).
 - ⏳ **잔여 현업 회신**: `FACT_AD_PERFORMANCE` CAMPAIGN_SK(Q10)·AD_CREATIVE_SK(소재 부분키)·DEVICE_SK(매핑)·GA_CONV(O5) · 이슈 A/C/D.
 - 🔜 **다음 세션(내부 가능)**: WIDE VIEW 9종 dbt view화 + COMMENT(`03_top-down_gold/10_...sql`) → BLOCKING-4 해소.
-- **요건 총괄표(정본)**: `10_dbt_pipeline/DBT_배포운영_통합_20260715.md` **§7**.
+- **요건 총괄표(정본)**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` **§7**.
 
 ## 🟢 배포 미반영 (하위: 위 BLOCKING-3 로 격상)
 순서 9·9-B 편집은 **워크스페이스 직접실행 검증만** 완료. ~~배포객체 `ALTER DBT PROJECT ... ADD VERSION` 미반영~~ → **실측 결과 객체 자체 부재로 BLOCKING-3 로 통합.** 최초 `CREATE` 후 이후 편집분은 `ADD VERSION` 으로 반영.
