@@ -29,7 +29,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ecb2a2a1-80f3-4f9b-b682-52f3bd552714'                    AS DW_BATCH_ID
+    '50eaa2d8-6f32-46e5-ad87-91e23c3b74a4'                    AS DW_BATCH_ID
 from p
 left join GN_DW.GOLD.DIM_EVENT e
     on e.EVENT_BK = p.EVENT_KEY

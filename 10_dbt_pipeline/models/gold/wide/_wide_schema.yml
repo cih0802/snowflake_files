@@ -4,8 +4,8 @@ version: 2
 #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트(BLOCKING-4 해소).
 #   컬럼/뷰 COMMENT 는 각 모델 post_hook(ALTER VIEW/COMMENT ON VIEW)로 적용 — 정본 03_top-down_gold/10_WIDE VIEW 코멘트.sql verbatim.
 #   실행: dbt build --select tag:gold_wide   (또는 path:models/gold/wide)
-# WIDE_TARGET_BIZ(9번째) 추가완료 — FACT_TARGET_BIZ(스키마-only, E-6 원천부재 0행) 참조. 차원 조인은 이름 크로스워크.
-#   ⚠️ 건 measure(#152~155)는 SILVER=금액(TARGET_AMT) vs GOLD=건 단위충돌로 NULL. GOLD DDL 금액 measure 신설 후 배선.
+# WIDE_TARGET_BIZ(9번째) 추가완료 — FACT_TARGET_BIZ(스키마-only, 원천=CRM 확정 CRM_BIZ_TARGET, E-6 입고 대기 0행) 참조. 차원 조인은 이름 크로스워크.
+#   단위=건 확정(2026-07-20, #152~155): SILVER TARGET_CNT(건) → FACT TARGET_TYPE 피벗(당초→ANNUAL·추경→SUPP). 누계는 SV(P7). E-6 입고 시 채움.
 models:
   - name: WIDE_MEMBER_MONTHLY
     description: "회원 월 팩트(FMM) 평탄화 — MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY."

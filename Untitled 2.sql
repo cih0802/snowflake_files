@@ -166,3 +166,5 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '회원 차원 (SCD2 · 회원 상태버전)';
 
+drop schema gn_dw.silver;
+drop schema gn_dw.gold;

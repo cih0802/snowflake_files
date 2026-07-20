@@ -11,6 +11,8 @@ END-METADATA -->
 > 파이프라인 오류·의심 원인 이슈를 **업무프로세스 단계별 문서**로 분할 관리합니다.
 > 본 문서는 **진입점**입니다: 모든 이슈 ID를 여기서 찾고, "현 단계" 열을 따라 상세 문서로 이동하세요.
 
+> 🔄 **[2026-07-20 최신 정정]** **E-6 / FTG-B(사업목표) 원천 = CRM 확정** (기존 "ERP" 표기 폐기). 근거: 정본 인벤토리(마케팅 §1 "CRM에 부서별 목표만 존재")·현업 확언. 단위 = **건(#152~155, 지표사전 기준)** 확정. 예산·집행(FBD)·모금성비용·연결키 관련 ERP 표기는 그대로 유효(사업목표만 CRM). ※파일명·SILVER 테이블 `ERP_BIZ_TARGET` 리네임은 dbt 영향 별건으로 보류.
+
 ## 이슈해결 업무프로세스 & 문서맵
 ```
 [접수·분류] → [진단] → ┬ [현업확인] ┐
@@ -25,7 +27,7 @@ END-METADATA -->
 | 20 | `20_현업확인_요청.md` | 현업 확인 | GOLD 지표정의 잔여 + dbt 의심데이터 A~E 판정요청 |
 | 30 | `30_설계_의사결정.md` | 내부 의사결정 | D1~D3·#80·우리끼리 잠정확정·결정대기 GOLD 6 |
 | 40 | `40_입고대기_원천의존.md` | 입고 대기 | 외부원천 하드블로커·데이터 기간요건 |
-| 41 | `41_입고요청서_ERP_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | 입고 대기 | E-6 ERP 사업목표 정식 입고요청서·BRONZE DDL 제안 |
+| 41 | `41_입고요청서_ERP_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | 입고 대기 | E-6 **CRM** 사업목표 정식 입고요청서·BRONZE DDL 제안 (원천 CRM 정정 2026-07-20; 파일명 리네임 별건) |
 | 50 | `50_dbt_파이프라인_미결조치.md` | 실행 | BLOCKING-1/2/3/4·순서9-C severity정책·DONE 로그 |
 | 90 | `90_해소완료_로그.md` | 완료 | 닫힌 항목·해소 Q이슈 |
 
@@ -37,7 +39,7 @@ END-METADATA -->
 ## 1. 상태 대시보드 (한눈에)
 | 현황 | 건수 | 대표 항목 | 관할 문서 |
 |---|---|---|---|
-| 🔴 하드블로커(외부) | 4 | **G-5** GA4 전기간 입고 · **E-6** FTG-B 원천 · **E-1** 모금성비용 원천 · **Q10** 캠페인 연결키 | 40 · 20 |
+| 🔴 하드블로커(외부) | 4 | **G-5** GA4 전기간 입고 · **E-6** FTG-B 원천(CRM) · **E-1** 모금성비용 원천 · **Q10** 캠페인 연결키 | 40 · 20 |
 | 🟠 설계결정 블로커 | ~~3+~~→ 감소 | ~~A-2/Q9~~ ✅해소(순9-C) · O2 APP분기 ✅데이터확정(PC/M·APP휴면) · AGENCY 6종 부분해소 | 30 |
 | 🔄 우리끼리 잠정(게이트 有) | 6 | A-7/O5 · A-8 · O6 · #81 · O8 · O10 | 20 · 30 |
 | 🔵 비블로커 | 6 | #80 · ID-활성 · Q1·Q2·Q3·Q8 | 30 · 20 |
@@ -45,10 +47,10 @@ END-METADATA -->
 | ❌ 제외 | 3 | A-5·A-6·A-10(어드민분) | 90 |
 | 🟢 해소완료 | 다수 | D1·D3·DEC-* · 지표정의 다수 · Q4~Q7·Q11~Q16 · 닫힌항목 7 | 90 |
 
-> **핵심**: 외부 의존 하드블로커는 **GA4 전기간 입고 · ERP FTG-B 원천 · ERP 모금성비용 원천 · (ERP/AGENCY) 연결키·이름 현업확인** 4건뿐. 그 외 잔여는 내부 설계·실행으로 해소 가능.
+> **핵심**: 외부 의존 하드블로커는 **GA4 전기간 입고 · CRM FTG-B 사업목표 원천 · ERP 모금성비용 원천 · (ERP/AGENCY) 연결키·이름 현업확인** 4건뿐. 그 외 잔여는 내부 설계·실행으로 해소 가능.
 > **dbt 배포 상태 [2026-07-15 배포 · 2026-07-16 갱신]**: dbt project 를 `GN_DW.OPS.DW_PIPELINE`(운영 전용 스키마)로 배포. **[2026-07-16 실측] SILVER 32 + GOLD 33(dim 15 + fact 9 + WIDE view 9) = 65 models. full `dbt build` green**. 순서9-C 코드버그 8 수정 + 참조무결성 9 `severity:warn` 강등(메달리온 BP). 상세 §50. **[2026-07-15] VERSION$6 `IDENTITY_WIRED_20260715` 추가 배포** — DIM_MEMBER_IDENTITY 활성·FACT/WIDE_GA_BEHAVIOR identity 배선(매칭 1,274명), 재빌드 PASS=15.
-> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 원천부재로 0행 스켈레톤).
-> **▶ 진행 현황 [순서9-D]**: WIDE VIEW 9종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **[2026-07-16] FACT_TARGET_BIZ+WIDE_TARGET_BIZ 스켈레톤 저작**(0행 통과) — 단, 비판적 검토서 **단위충돌(SILVER 금액 TARGET_AMT vs GOLD 건 #152~155)·조인키 교정(이름기반)** 발견·처리(측정치 NULL·이름조인). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, **FACT_TARGET_BIZ 금액 measure 신설 or 건 원천확보**). **총괄표**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/90_NEXT_SESSION_순서9-D_20260715.md`.
+> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 CRM 원천 미입고로 0행 스켈레톤).
+> **▶ 진행 현황 [순서9-D]**: WIDE VIEW 9종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **[2026-07-16] FACT_TARGET_BIZ+WIDE_TARGET_BIZ 스켈레톤 저작**(0행 통과) — 단, 비판적 검토서 **단위충돌(SILVER 금액 TARGET_AMT vs GOLD 건 #152~155)·조인키 교정(이름기반)** 발견·처리(측정치 NULL·이름조인). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, **FACT_TARGET_BIZ 단위=건 확정(2026-07-20 정정) → 현업이 건 목표 원천 제공 시 채움; Bronze DDL 단위 건 정합 필요**). **총괄표**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/90_NEXT_SESSION_순서9-D_20260715.md`.
 
 ---
 
@@ -65,7 +67,7 @@ END-METADATA -->
 | A-10 | — | CRM/어드민 | 행사기간·참여경로·채널 | ✅ CRM-backed·어드민분만 제외 | 90 |
 | E-1·E-4 | O3 | ERP | 캠페인/매체 연결키 | 🔴 부분·국내/해외 보류 | 40 |
 | E-5·A-9 | — | ERP/AGENCY/GA4 | 적재 시작시점/범위 | 🟡 실적재 후 확정 | 40 |
-| E-6 | — | ERP | 사업목표(FTG-B) 원천 | 🔴 원천 부재·descope·**입고요청서(41) 발행·회신대기** · [2026-07-16] FACT/WIDE_TARGET_BIZ 스켈레톤 저작(0행)·단위충돌 미해소 | 40·41 |
+| E-6 | — | **CRM** | 사업목표(FTG-B) 원천 | 🔴 **원천=CRM 확정(2026-07-20 정정)**·신규 목표 테이블 입고 대기·**입고요청서(41) 발행·회신대기** · 단위=건 확정(#152~155) · [2026-07-16] FACT/WIDE_TARGET_BIZ 스켈레톤 저작(0행) | 40·41 |
 | C-8 | DEC-7 | 현업 | 인바운드콜·TS콜 수치 | ✅ 결정→입고(값 대기) | 40 |
 | G-5 | — | GA4 | GA4 전체기간 shards | 🔴 1일 샤드만 | 40 |
 

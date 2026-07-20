@@ -33,7 +33,7 @@ BRONZE(원천 1:1) → **SILVER(정제·통합)** → GOLD(star schema). GOLD FA
 |---|---|---|
 | CRM (+UMS) | ✅ 구현 (`SILVER.CRM_*` 21개) | 회원·약정·납입·발송·행사·조직·코드 등 |
 | BigQuery(GA4) | ⏳ 설계 확정 (`SILVER.GA4_*` 5개) | BigQuery 적재 후 구성 (샤드 통합 → `04_silver_design/GA4_SILVER_샤드통합_설계결정.md`) |
-| ERP | ⏳ frame 완료 · SILVER 미생성 | 사업목표·편성/집행예산·모금성비용 |
+| ERP | ⏳ frame 완료 · SILVER 미생성 | 편성/집행예산·모금성비용 (※**사업목표는 ERP 아닌 CRM**으로 정정 2026-07-20 — 예산원장≠사업목표, CRM 신규 목표 테이블 입고 대기, 33 E-6) |
 | 대행사(Agency, GADS 포함) | ⏳ frame 완료 · SILVER 미생성 | 광고소재·광고비·노출/클릭/인입콜·편성비 |
 | 어드민(ADMIN) | ❌ 제외 확정(2026-07-09) | 앱푸시 발송/성공·이벤트 조회수·행사기간/참여경로/채널 → **원천 미채택**. 의존 GOLD 컬럼 미채움 고정 |
 
@@ -115,7 +115,7 @@ SILVER 테이블 26개 목록: CRM_MEMBER, CRM_MEMBER_STATUS_HIST, CRM_MEMBER_DE
 | **FACT_AD_PERFORMANCE** (FAD) | GA_CONV_* | `GA4_EVENT`(전환 이벤트) | ⚠️전환 정의(O5) |
 | FAD | AD_COST·IMPRESSIONS·CLICKS·INBOUND_CALL | 🟢 **AGENCY 3테이블 적재** — 유형별 정제→UNION(실측 검토 §4·02 §3). 노출·클릭=DGT만·인입콜 REBRDC TEXT/VIDEO NUMBER·`_SOURCE_SYSTEM` SILVER 부여 | §4 |
 | **FACT_EVENT_PARTICIPATION** (FEP) | 모집/참여/취소/당첨 등 | `CRM_EVENT` + `CRM_EVENT_PARTICIPATION`(PARTCPT_STAT_CD·PRZWIN_CD·RCPMNY_AMT) | |
-| **FACT_TARGET_BIZ** (FTG_B) | 사업목표(ANNUAL_*·SUPP_*) | ⛔ **원천 부재** — 적재된 ERP 예산원장은 사업목표 아님, 별도 입고(33 E-6) | §4 |
+| **FACT_TARGET_BIZ** (FTG_B) | 사업목표(ANNUAL_*·SUPP_*) | ⛔ **CRM 신규 목표 테이블 입고 대기** — 원천=CRM 확정(2026-07-20 정정); ERP 예산원장은 사업목표 아님, 별도 입고(33 E-6) | §4 |
 | **FACT_BUDGET** (FBD) | 편성/집행예산·모금성비용·광고비 | ◐ **ERP 원장 적재** — 편성/집행 O · 모금성비용 원천 부재 · 광고비 AGENCY 보강(§4·02 §3) | §4 |
 
 ---
@@ -142,7 +142,7 @@ SILVER 테이블 26개 목록: CRM_MEMBER, CRM_MEMBER_STATUS_HIST, CRM_MEMBER_DE
 |---|---|---|
 | `DIM_AD_CREATIVE` (전체) | 🟢 AGENCY 3테이블 적재(스키마 상이) | `SILVER.AGENCY_AD_CREATIVE`(가칭) — 매체·소재·CM위치·초수는 **원천별 산재/부분**(DGT `MEDIA_NM`·VIDEO `CM_AREA/AD_SEC` 등). 유형별 정제→UNION(02 §3 게이트) |
 | `DIM_BUDGET_ITEM` (전체) | 🟢 ERP 원장 적재 | `SILVER.ERP_BUDGET_ITEM` — 예산과목(장/관/항/목/세목/세세목) 매핑 가능 |
-| `FACT_TARGET_BIZ` (전체) | ⛔ **원천 부재** | 사업목표(조직×후원사업). **예산원장≠사업목표** → 별도 입고 필요(33 E-6) |
+| `FACT_TARGET_BIZ` (전체) | ⛔ **CRM 신규 목표 테이블 입고 대기** | 사업목표(조직×후원사업). 원천=**CRM** 확정(2026-07-20 정정)·예산원장≠사업목표 → 별도 입고 필요(33 E-6) |
 | `FACT_BUDGET` (전체) | ◐ ERP 원장 적재(편성/집행 O) | 편성/집행 O · **모금성비용 원천 부재** · 광고비는 AGENCY 보강 |
 | `FACT_AD_PERFORMANCE.AD_COST·IMPRESSIONS·CLICKS·INBOUND_CALL` | 🟢 AGENCY 적재(불균일) | measure 원천별 상이(노출·클릭=DGT만/인입콜=REBRDC TEXT·VIDEO NUMBER/광고비 컬럼 3종). `_SOURCE_SYSTEM` SILVER 부여·인입콜 `TRY_TO_NUMBER`(02 §3). `GA_CONV_*`=GA4 |
 | `FACT_SERVICE_EVENT.APP_PUSH_*` | ⛔ 어드민(ADMIN) ❌제외 확정 | 앱푸시 발송/성공 — 원천 미채택 → 미채움 고정 |
@@ -178,7 +178,7 @@ SILVER 테이블 26개 목록: CRM_MEMBER, CRM_MEMBER_STATUS_HIST, CRM_MEMBER_DE
 
 ### 5-C. 커버리지 요약
 - GOLD 24테이블 중 **SILVER(CRM·GA4)로 적재 가능**: DIM 13 + FACT 5(FMM·FME·FTG_D·FSE·FGA·FEP 중 CRM/GA4분) — 부분 갭은 5-A.
-- **적재됨·실측 검토 대기(적재 전 게이트)**: DIM 2(AD_CREATIVE·BUDGET_ITEM) + FACT(FBD 편성/집행·FAD 대부분) → §4·02 §3. **원천 부재(입고 대기)**: FTG_B 사업목표·FBD 모금성비용.
+- **적재됨·실측 검토 대기(적재 전 게이트)**: DIM 2(AD_CREATIVE·BUDGET_ITEM) + FACT(FBD 편성/집행·FAD 대부분) → §4·02 §3. **입고 대기**: FTG_B 사업목표(원천=CRM 확정)·FBD 모금성비용(ERP).
 
 ### 5-D. 레거시 문서 오염 점검 (2026-07-02)
 `99_next_prompt.md`는 구설계(12 DIM+6 FACT·40테이블) 기준 **세션 핸드오프(레거시)**, `10`·`12`·`13`은 파생 working 문서다. 본 lineage 결론이 이들에 오염됐는지 **정본 `BRONZE_CRM 테이블 정보.MD`(41테이블)로 전수 재확인**한 결과:

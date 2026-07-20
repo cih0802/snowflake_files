@@ -414,12 +414,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
 ) COMMENT = '코드→라벨 사전. (CD_ID,DTL_CD_ID) 복합키';
 
 -- ============================================================================
--- STEP 4 — ERP (트랙 C, 2차) : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER 3객체
+-- STEP 4 — ERP (트랙 C, 2차) : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER 2객체 (사업목표는 CRM 트랙으로 재분류 2026-07-20)
 --   근거 : 05_SILVER_작업계획_ERP전용 · 11_SILVER_블로커_triage_Q1-Q16
 --   실측(2026-07-14) : 원장 2,041행 = 지출1,875 + 수입165 + TOTAL 1(사전집계 요약행 → 제외).
 --                      full-hierarchy DISTINCT = 행수 → 각 행이 유일 예산과목(세세목).
 --   원장 구조 : 차원 10 + 총액 4 + 월별 48(편성YEAR_BDGT/추경CHN/조정ADJ/집행EXEC × 12개월).
---   설계 : ITEM(마스터) + BUDGET(월 long 언피벗) + BIZ_TARGET(원천부재 → 스키마-only).
+--   설계 : ITEM(마스터) + BUDGET(월 long 언피벗). ※BIZ_TARGET(사업목표)은 원천=CRM 확정 → CRM 트랙(STEP 3)으로 이동, SILVER.CRM_BIZ_TARGET.
 --   키 : BUDGET_ITEM_DK = MD5(연도|수입지출|예산단위|장|관|항|목|목세|세세목|재원) — DIM/FACT 동일식.
 -- ============================================================================
 
@@ -462,23 +462,26 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     PRIMARY KEY (BUDGET_ITEM_DK, MONTH_NO)
 ) COMMENT = '예산 편성/추경/조정/집행 월 grain(wide→long). 금액 원단위. → FBD(편성/집행). 모금성비용·광고비는 AGENCY 보강(E-1)';
 
--- ERP 3: ERP_BIZ_TARGET (사업목표 → FTG-B) — ⛔ 원천 부재(E-6): 스키마-only, 적재 보류
-CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BIZ_TARGET (
+-- CRM(신규) : CRM_BIZ_TARGET (사업목표 → FTG-B) — ⛔ CRM 신규 목표 테이블 입고 대기(E-6): 스키마-only, 적재 보류
+-- ※원천=CRM 확정(2026-07-20 정정, 트랙 ERP→CRM 재분류). BRONZE_CRM.CRM_BIZ_TARGET → SILVER.CRM_BIZ_TARGET → GOLD FACT_TARGET_BIZ.
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     BIZ_TARGET_DK       VARCHAR         NOT NULL COMMENT '사업목표 대체키 (PK)',
     TARGET_YEAR         NUMBER(4,0)     COMMENT '목표연도 YYYY',
     MONTH_NO            NUMBER(2,0)     COMMENT '월 1~12',
     MONTH_KEY           VARCHAR(6)      COMMENT '월키 YYYYMM',
-    ORG_NM              VARCHAR         COMMENT '조직 (이름, 코드 없음)',
+    ORG_CD              VARCHAR         COMMENT '조직코드 (FK→DIM_ORG; 이름조인 보완)',
+    ORG_NM              VARCHAR         COMMENT '조직 (이름 — 크로스워크 전 조인키)',
     SPONSOR_BIZ_NM      VARCHAR         COMMENT '후원사업',
     CAMPAIGN_NM         VARCHAR         COMMENT '캠페인 (연결키 부재 Q10 — nullable)',
-    TARGET_AMT          NUMBER(38,0)    COMMENT '연/추경 (누계)목표 금액 원단위',
+    TARGET_TYPE         VARCHAR         COMMENT '목표유형: 당초/추경1차/추경2차 → GOLD ANNUAL/SUPP 분기',
+    TARGET_CNT          NUMBER(18,4)    COMMENT '연/추경 (누계)목표 건수(건) — 지표사전 #152~155. ※금액(원) 입고 시 /10000 파생',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BIZ_TARGET_DK)
-) COMMENT = 'FTG-B 사업목표. ⛔원천부재(E-6): 원장≠사업목표 → 스키마-only, 적재 보류(현업 사업계획 원천 대기)';
+) COMMENT = 'FTG-B 사업목표. 원천=CRM 확정(2026-07-20). ⛔CRM 신규 목표 테이블 입고 대기(E-6) → 스키마-only, 적재 보류';
 
 -- ============================================================================
 -- STEP 5 — AGENCY (트랙 D, 3차) : BRONZE_AGENCY 3테이블 → SILVER 2객체 (AGENCY_COST는 리뷰 후 제거→GOLD)

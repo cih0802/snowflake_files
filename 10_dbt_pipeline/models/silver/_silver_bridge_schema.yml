@@ -35,7 +35,7 @@ models:
       - name: BUDGET_ITEM_DK
         tests: [not_null]
 
-  - name: ERP_BIZ_TARGET
+  - name: CRM_BIZ_TARGET
     columns:
-      - name: BIZ_TARGET_DK   # 원천 0행(WHERE 1=0 스캐폴드) → 통과. STDR_MT 는 존재하지 않는 컬럼이었음(수정).
+      - name: BIZ_TARGET_DK   # 원천 0행(WHERE 1=0 스캐폴드) → 통과. 원천=CRM 확정(구 ERP_BIZ_TARGET).
         tests: [not_null]

@@ -27,9 +27,9 @@ END-METADATA -->
 
 | 원천 | 실행문서 | SILVER 객체 | 트랙 | 상태 (2026-07-14) |
 |---|---|---|---|---|
-| **CRM** | `03_SILVER_작업계획_CRM전용 20260714.md` | 21 | A | ✅ 적재완료 + S-5 검증완료(G1·G2 해소) |
+| **CRM** | `03_SILVER_작업계획_CRM전용 20260714.md` | 21 (+1 신규) | A | ✅ 21 적재완료 + S-5 검증완료(G1·G2 해소). +신규 `CRM_BIZ_TARGET`(사업목표, 원천=CRM 확정 2026-07-20) 입고 대기(E-6·스키마-only) |
 | **GA4** | `04_SILVER_작업계획_GA4전용 20260714.md` | 5 | B **(착수 1차)** | ✅ 5객체 PoC 적재(1일샤드 271,544행·DQ 통과) — 전기간 입고 시 멱등 재적재 |
-| **ERP** | `05_SILVER_작업계획_ERP전용 20260714.md` | 3 | C **(착수 2차)** | ✅ 2객체 적재(BUDGET 24,480·BUDGET_ITEM 2,040) + ERP_BIZ_TARGET 스키마-only |
+| **ERP** | `05_SILVER_작업계획_ERP전용 20260714.md` | 2 | C **(착수 2차)** | ✅ 2객체 적재(BUDGET 24,480·BUDGET_ITEM 2,040). ※사업목표(구 ERP_BIZ_TARGET)는 CRM 트랙 재분류(2026-07-20) |
 | **AGENCY**(∪GADS∪ADMIN) | `06_SILVER_작업계획_AGENCY전용 20260714.md` | 2 | D **(착수 3차)** | ✅ 2객체 적재(AGENCY_COST는 리뷰 후 GOLD 이관) |
 | 교차소스 신원브리지 | 본 문서 **§6**(S-7) | 1 `IDENTITY_MEMBER_XREF` | — | ✅ 적재완료(1,348행·DQ 통과·PoC 샤드) |
 | **합계** | | **32** (+ `DIM_DATE` 생성) | | |
@@ -48,7 +48,7 @@ END-METADATA -->
 |---|---|---|---|
 | `BRONZE_CRM` | 43 | 112,512,161 | ✅ 21테이블 적재(110,731,312) |
 | `BRONZE_GA4` | 1 | 287,025 | ✅ 5객체 PoC 적재(GA4_EVENT 265,312·GA4_TRAFFIC_SOURCE 1,175·GA4_EVENT_DIM 3,633·GA4_IDENTITY 1,348·GA4_DEVICE 76) — 1일 샤드 `events_20260501`, 전기간 입고 후 멱등 재적재 |
-| `BRONZE_ERP` | 1 | 2,041 | ✅ 2테이블 적재(ERP_BUDGET_ITEM 2,040·ERP_BUDGET 24,480) · ERP_BIZ_TARGET 스키마-only |
+| `BRONZE_ERP` | 1 | 2,041 | ✅ 2테이블 적재(ERP_BUDGET_ITEM 2,040·ERP_BUDGET 24,480) · ※사업목표(CRM_BIZ_TARGET)는 BRONZE_CRM으로 재분류 |
 | `BRONZE_AGENCY` | 3 | 235,572 | ✅ 2테이블 적재(AD_PERFORMANCE 235,572·AD_CREATIVE 8,473) · AGENCY_COST 리뷰 후 제거→GOLD |
 
 > **S-5 GOLD 역산 검증(CRM)**: CRM 유래 GOLD 15테이블 **전건 적재 가능**. 갭 2건(G1 `DIM_MEMBER.REGION/AGE_BAND` · G2 `DIM_SERVICE.SEND_TYPE 대/중/소`) **2026-07-14 해소·실측 검증 완료** → 상세는 CRM 문서(03).
@@ -89,7 +89,8 @@ END-METADATA -->
 |---|---|---|---|
 | **CRM** | DIM_MEMBER · DIM_MEMBER_IDENTITY(CRM측) · DIM_CAMPAIGN · DIM_SPONSORSHIP · DIM_ORG · DIM_SERVICE · DIM_PAYMENT · DIM_REASON · DIM_EVENT | FMM · FME · FTG-D · FSE(CRM분) · FEP(CRM분) | ✅ 빌드·적재 가능 |
 | **GA4** | DIM_GA_SOURCE · DIM_GA_EVENT · DIM_DEVICE(GA분) · DIM_MEMBER_IDENTITY(GA측) | FGA · FAD(전환분) | 🟡 입고 후(트랙 B) |
-| **ERP** | DIM_BUDGET_ITEM | FTG-B · FBD(편성/집행) | ⛔/◐ 입고 후(트랙 C) |
+| **ERP** | DIM_BUDGET_ITEM | FBD(편성/집행) | ◐ 입고 후(트랙 C). ※FTG-B(사업목표)는 CRM 트랙 재분류 |
+| **CRM(신규)** | — | FTG-B(사업목표, `CRM_BIZ_TARGET`) | ⛔ CRM 신규 목표 테이블 입고 후(E-6·원천=CRM 확정 2026-07-20·단위 건) |
 | **AGENCY** | DIM_AD_CREATIVE | FAD · FBD(모금성비용/광고비) | 🟢 입고·검토 후(트랙 D) |
 | **생성/교차** | DIM_DATE(생성) | — | ✅ / S-7 |
 

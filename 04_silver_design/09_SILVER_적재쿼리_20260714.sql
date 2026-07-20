@@ -461,12 +461,12 @@ SELECT BUDGET_ITEM_DK,BUDGET_YEAR,MONTH_NO,YEAR_TXT||LPAD(TO_VARCHAR(MONTH_NO),2
        YB,CB,AB,EX,'ERP','BRONZE_ERP.BDGT_ACMSLT_LEDGER',CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),NULL
 FROM U;
 
--- ERP 3 : ERP_BIZ_TARGET — ⛔ 원천 부재(E-6) : 적재 보류(스키마-only). 현업 사업계획 원천 확보 시 적재.
+-- CRM(신규) : CRM_BIZ_TARGET — ⛔ CRM 신규 목표 테이블 입고 대기(E-6, 원천=CRM 확정 2026-07-20) : 적재 보류(스키마-only). 입고 시 적재.
 
 -- ============================================================================
--- STEP 4 완료 — ERP 2객체 적재(ERP_BUDGET_ITEM 2,040 · ERP_BUDGET 24,480), ERP_BIZ_TARGET 보류.
+-- STEP 4 완료 — ERP 2객체 적재(ERP_BUDGET_ITEM 2,040 · ERP_BUDGET 24,480). ※CRM_BIZ_TARGET는 CRM 트랙(STEP 3)으로 재분류·보류.
 --   TOTAL 요약행 제외 · 금액 원단위 · MD5 키 DIM/FACT 정합.
---   잔여(외부) : FTG-B 사업목표 원천(E-6) · 모금성비용/광고비(E-1, AGENCY 보강) · Q10 캠페인 연결키(현업).
+--   잔여(외부) : FTG-B 사업목표 원천(E-6, CRM 신규 목표 테이블) · 모금성비용/광고비(E-1, AGENCY 보강) · Q10 캠페인 연결키(현업).
 -- ============================================================================
 
 
@@ -863,7 +863,7 @@ SELECT
 -- ============================================================================
 -- STEP 8 : 전체 SILVER 통합 검증 (cross-reference 정합 · 순서 6, §5 게이트 전수) — 2026-07-14 실행
 -- ----------------------------------------------------------------------------
--- DQ-1 (PK/grain 유일성) : SILVER 30객체 전수 dup=0 통과. ERP_BIZ_TARGET=0행(스키마-only) 제외.
+-- DQ-1 (PK/grain 유일성) : SILVER 30객체 전수 dup=0 통과. CRM_BIZ_TARGET=0행(스키마-only) 제외.
 --   · 신규(S-6/S-7) 9종 + CRM 21종 = 30. conform dim 3종(GA4_DEVICE·EVENT_DIM·TRAFFIC_SOURCE)은
 --     전체 속성조합 NULL-safe 키로 유일(NULL-concat 아티팩트 배제).
 -- DQ-3 (조인 fan-out) : DQ-1에서 부모키 전수 유일 입증 → 자식→부모 참조조인 fan-out 원천 불가(논리 충족).

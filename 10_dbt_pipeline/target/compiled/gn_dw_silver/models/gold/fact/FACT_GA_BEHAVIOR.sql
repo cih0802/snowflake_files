@@ -81,6 +81,6 @@ select
     'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '3773c4ae-c708-46e0-9161-3164a75c5afe'                    AS DW_BATCH_ID
+    '50eaa2d8-6f32-46e5-ad87-91e23c3b74a4'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, GA_EVENT_SK, GA_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH

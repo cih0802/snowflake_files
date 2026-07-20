@@ -42,7 +42,7 @@ END-METADATA -->
 > ⚠️ **[순서9-C 개정]** 메달리온 베스트 프랙티스(Silver 참조무결성 = 알려진 원천 미완전이면 warn 관측, error 는 구조 불변식만)에 따라 **E 및 참조무결성 9건을 `severity:warn` 강등** → **full `dbt build` 는 이제 green**(ERROR=0). 마스터 전량입고·키체계 확정 시 `_crm_schema.yml`의 순서9-C warn 을 error 로 복귀. 대상 목록·복귀조건은 해당 yml 주석 참조.
 
 ## 🟡 결정 대기 — 누락/과잉 GOLD 6개
-모델 작성 여부 결정 필요. **상세는 문서30 §6.** 요약: 소스 준비 4개(즉시 가능)·소스 부재 1개(FACT_TARGET_BIZ)·`DIM_MEMBER_IDENTITY`는 **2026-07-15 활성화 완료**(enabled=true·XREF dedup 조인, 1,274명 매칭).
+모델 작성 여부 결정 필요. **상세는 문서30 §6.** 요약: 소스 준비 4개(즉시 가능)·소스 입고대기 1개(FACT_TARGET_BIZ, 원천=**CRM** 확정·신규 목표 테이블 대기)·`DIM_MEMBER_IDENTITY`는 **2026-07-15 활성화 완료**(enabled=true·XREF dedup 조인, 1,274명 매칭).
 
 ## 🟢 [정정 2026-07-15] BLOCKING-3 — dbt project 배포됨 (기존 "미배포" 오진 정정)
 **정정**: 앞선 "결과 공란"은 **조회 스키마 오류**(`SHOW DBT PROJECTS IN SCHEMA GN_DW.SILVER`)였음 — 프로젝트는 **`GN_DW.OPS`** 에 있음. `SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS` 실측 = **`DW_PIPELINE`** 존재(VERSION$1~$6). dbt 버전관리·`build` 게이트·리니지 정상 작동 중.
@@ -60,7 +60,7 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 
 ### ⚠️ [2026-07-16 비판적 검토] FACT_TARGET_BIZ 스켈레톤 — 잠복 결함 2건 처리
 0행 스켈레톤이라 build 는 통과하나, 데이터 입고 시 **조용히 오작동**할 구조 2건을 사전 발견·교정.
-- 🔴 **단위충돌(금액 vs 건)**: SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 최초안은 `TARGET_AMT→ANNUAL_GOAL_CNT` 매핑 = 금액을 건 슬롯에 강제투입(`FACT_BUDGET` "재무 오귀속 방지" 원칙 위배). → **4개 건 measure 전부 NULL(원천부재)** 처리. **해소조건**: ①GOLD DDL `FACT_TARGET_BIZ`에 `TARGET_AMT`(금액) measure 신설 후 1줄 배선, 또는 ②현업이 '건' 목표 원천 제공. (문서30 §6 설계결정 대상)
+- 🔴→✅방향확정 **단위충돌(금액 vs 건)**: SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 최초안은 `TARGET_AMT→ANNUAL_GOAL_CNT` 매핑 = 금액을 건 슬롯에 강제투입(`FACT_BUDGET` "재무 오귀속 방지" 원칙 위배). → **4개 건 measure 전부 NULL(원천부재)** 처리. **[2026-07-20 결정] GOLD 단위=건(지표사전 기준) 확정 → 해소경로 ②채택: 현업이 '건' 목표 원천 제공**(CRM 신규 목표 테이블). ①금액 measure 신설안 폐기. ⚠️Bronze DDL(`41_..._BRONZE_DDL.sql`)이 현재 `TARGET_AMT(원)`이라 **건 기준으로 정합 필요**. (원천=CRM 확정, 문서30 §6)
 - 🔴 **조인키 타입 불일치(이름 vs 코드)**: 최초안이 DIM 코드 BK(`ORG_DK`=hash(DEPT_ID)·`SPONSORSHIP_BK`=SPNSR_BSNS_ID·`CAMPAIGN_BK`=CMPGN_CD)에 SILVER **이름**(ORG_NM·SPONSOR_BIZ_NM·CAMPAIGN_NM)을 조인 → 입고 시 100% Unknown(0) 라우팅될 뻔. → **이름기반 조인으로 교정**(`o.DEPARTMENT`·`s.SPONSORSHIP_NAME`·`c.CAMPAIGN_NAME`). ⚠️잔여: ERP 조직명=본부/지부 grain vs `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → **조직 이름 크로스워크**(문서32) 확보 전까지 미매칭 시 Unknown(0).
 - **결론**: 구조·리니지·거버넌스는 완결(9/9). 측정치 실채움은 E-6 입고 + 위 2개 해소조건 충족 시.
 

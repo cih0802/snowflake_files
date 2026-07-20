@@ -43,16 +43,16 @@
 ---
 
 ## 설계 요약
-- **SILVER 설계 33객체 = CRM 21 + GA4 5 + ERP 3 + AGENCY 3 + 신원브리지 1**(+`DIM_DATE` 생성). **물리 실측(2026-07-14): 32객체 존재·적재** — CRM 21 + GA4 5(PoC 1일샤드) + ERP 2적재+`ERP_BIZ_TARGET` 스키마-only + AGENCY 2(`AGENCY_COST`는 GOLD 이관) + 신원브리지 1. 전기간 GA4 샤드 입고 시 멱등 재적재만 잔여.
+- **SILVER 설계 33객체 = CRM 21 + GA4 5 + ERP 3 + AGENCY 3 + 신원브리지 1**(+`DIM_DATE` 생성). **물리 실측(2026-07-14): 32객체 존재·적재** — CRM 21 + GA4 5(PoC 1일샤드) + ERP 2적재 + AGENCY 2(`AGENCY_COST`는 GOLD 이관) + 신원브리지 1. **[2026-07-20 정정] 사업목표는 원천=CRM 확정 → `CRM_BIZ_TARGET`(CRM 트랙, 신규 입고 대상·스키마-only)로 ERP→CRM 재분류**. 전기간 GA4 샤드 입고 시 멱등 재적재만 잔여.
 - **정제 범위**: 타입 캐스팅 · NULL/빈값 표준화 · 코드→라벨 병행보존 · 중복제거(PK) · **동일 소스 내 JOIN**까지. 집계(GROUP BY)·교차소스 conform 조인은 GOLD.
 - **계층 규칙(P2)**: `SERVING → GOLD → SILVER → BRONZE` 단방향. GOLD는 BRONZE 직접 참조 금지.
-- **GOLD 24(15 DIM + 9 FACT) 커버**: CRM 유래 15테이블 빌드·적재 가능(S-5 검증완료, G1·G2 해소). 잔여 9(FTG-B·FBD·FAD + DIM_AD_CREATIVE·DIM_BUDGET_ITEM·DIM_GA_*·DIM_DEVICE·FGA)는 GA4·ERP·AGENCY 입고 후(트랙 B/C/D).
+- **GOLD 24(15 DIM + 9 FACT) 커버**: CRM 유래 15테이블 빌드·적재 가능(S-5 검증완료, G1·G2 해소). 잔여 9(FTG-B·FBD·FAD + DIM_AD_CREATIVE·DIM_BUDGET_ITEM·DIM_GA_*·DIM_DEVICE·FGA)는 GA4·ERP·CRM(신규 목표)·AGENCY 입고 후. ※FTG-B는 원천=CRM 확정(`CRM_BIZ_TARGET`, E-6).
 
 ---
 
 ## 현재 상태 (2026-07-14 갱신)
 - **✅ CRM SILVER 트랙 A 완료** — `GN_DW.SILVER` 스키마 생성 + **CRM 21/21 테이블 정제 적재**(멱등 `INSERT OVERWRITE`, 각 행수 = BRONZE 일치). SQL 정본 = `08_SILVER_테이블DDL_20260714.sql` + `09_SILVER_적재쿼리_20260714.sql`. Q4·Q5·Q6·Q13·Q14·Q15·Q16 + 코드그룹(SEX/MBER_DIV/SETLE) 전건 해소 + **S-5 GOLD 역산 검증(G1·G2 해소)** 반영.
-- **✅ GA4/ERP/AGENCY SILVER 적재완료** — GA4 5객체 PoC(1일샤드 271,544행·DQ 통과) · ERP 2객체(BUDGET 24,480·BUDGET_ITEM 2,040)+`ERP_BIZ_TARGET` 스키마-only · AGENCY 2객체(AD_PERFORMANCE 235,572·AD_CREATIVE 8,473). 전기간 GA4 샤드 입고(커넥터 소관) 시 멱등 재적재만 잔여.
+- **✅ GA4/ERP/AGENCY SILVER 적재완료** — GA4 5객체 PoC(1일샤드 271,544행·DQ 통과) · ERP 2객체(BUDGET 24,480·BUDGET_ITEM 2,040) · AGENCY 2객체(AD_PERFORMANCE 235,572·AD_CREATIVE 8,473). ※사업목표 `CRM_BIZ_TARGET`(원천=CRM 확정 2026-07-20)는 CRM 트랙 스키마-only(E-6 입고 대기). 전기간 GA4 샤드 입고(커넥터 소관) 시 멱등 재적재만 잔여.
 - **✅ S-7 신원브리지 완료** — `IDENTITY_MEMBER_XREF` 1,348행(GA_MEMBER_ID=MEMBER_DK exact 100%·PK유일·CONFIDENCE HIGH). 09 STEP 7. **★GOLD 소비계약(C1~C4)**: FACT는 LEFT JOIN(익명 95%)·회원차원은 MEMBER_DK DISTINCT + UNMATCHED 제외 → master §6.
 - **✅ 전체 SILVER 통합검증 완료** — 09 STEP 8: DQ-1 PK유일성 30객체 dup=0 · DQ-3 fan-out 논리충족 · DQ-2 통합앵커(identity·ERP·결연) orphan 0. ⚠️ `CRM_EVENT_PARTICIPATION` orphan 2건(EVENT_KEY 263,611=ADMIN행사 미입고·MBER_NO 9,480=탈퇴/비CRM) → GOLD Unknown 멤버(**SK=0**)+LEFT JOIN 흡수. **[2026-07-16 정정] 실제 구현은 `SK=0` 센티넬 채택**(설계초안의 `-1` 표기는 폐기 — 13개 GOLD DIM 전량 `union all select 0 '(미매핑)'` 시드로 통일, `gold_helpers` `COALESCE(...,0)`). ✅ GOLD 스키마 배포 완료.
 - BRONZE 적재 실측: **CRM 43테이블·GA4 `events_20260501` 287,025행·AGENCY 3테이블·ERP `BDGT_ACMSLT_LEDGER` 2,041행 모두 적재됨**. 트랙 B/C/D 착수 가능.

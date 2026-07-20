@@ -1,4 +1,7 @@
--- GA4_EVENT_DIM: 이벤트 정의 DISTINCT (event_params 승격: category/label/action), 정본 09 STEP6.
+-- GA4_EVENT_DIM: 이벤트 정의 브리지 (event_params 승격: category/label/action), 정본 09 STEP6.
+-- ⚠️ grain = (EVENT_NAME × EVENT_CATEGORY × EVENT_LABEL × EVENT_ACTION). EVENT_NAME 은 다중행 정상(유일 아님).
+--    GOLD DIM_GA_EVENT 가 여기서 distinct (category,label,action) 를 추출해 분류차원 SK 생성 → 조합 커버리지 필수.
+--    ▶▶ unique(EVENT_NAME) 테스트 금지(순서9-C: 조합 grain 파괴 사고). GA4_EVENT relationships 는 존재성만 요구.
 -- Co-authored with CoCo
 
 SELECT DISTINCT

@@ -27,12 +27,12 @@ END-METADATA -->
 ### ✅ WIDE VIEW 9/9 생성·배포 (BLOCKING-4 완결)
 - dbt view 모델(`models/gold/wide/`, `materialized: view`, `ref()`) 8종 저작(순서9-D) → **[2026-07-16] WIDE_TARGET_BIZ 추가로 9/9** → full `build` green. COMMENT 는 **post-hook**(`ALTER VIEW ... ALTER COLUMN` + `COMMENT ON VIEW`, 정본 `10_WIDE VIEW 코멘트.sql` verbatim) → 뷰 8/8 + 컬럼 310/310 실측 확인.
 - 9종: WIDE_MEMBER_MONTHLY·WIDE_MEMBER_EVENT·WIDE_TARGET_DEV·WIDE_SERVICE_EVENT·WIDE_GA_BEHAVIOR·WIDE_AD_PERFORMANCE·WIDE_EVENT_PARTICIPATION·WIDE_BUDGET·**WIDE_TARGET_BIZ(2026-07-16, 0행)**.
-- ⚠️ **WIDE_TARGET_BIZ/FACT_TARGET_BIZ = 0행 스켈레톤**: 구조·리니지 완결, 측정치 미채움(E-6 입고 대기). 잠복결함 2건(단위충돌 금액vs건·조인키 타입) 사전 교정 — 문서50 §FACT_TARGET_BIZ.
+- ⚠️ **WIDE_TARGET_BIZ/FACT_TARGET_BIZ = 0행 스켈레톤**: 구조·리니지 완결, 측정치 미채움(E-6 입고 대기). 원천=CRM 확정(2026-07-20, 구 ERP_BIZ_TARGET→`CRM_BIZ_TARGET`)·단위 건 확정 → TARGET_TYPE 피벗 measure 배선 정정 완료. 조인키(이름) 잠복 이슈만 잔여 — 문서50.
 - ✅ WIDE_GA_BEHAVIOR: `DIM_MEMBER_IDENTITY` 활성(2026-07-15)·IDENTITY_* 4컬럼 실조인 복원(⚠️GA4 1일 기반·커버리지 4.22%·G-5 재검증).
 ### ✅ #3 AD_DATE not_null warn→error 승격 (실측 널 0/235,572)
 
 ### 🔜 다음 세션 최우선 (외부/결정 도착 시)
-- **설계결정**: ①FACT_BUDGET 추경/조정 예산 슬롯 신설 여부(문서30 §7) ②FACT_TARGET_BIZ 금액 measure 신설 or '건' 목표 원천 확보(단위충돌 해소).
+- **설계결정**: ①FACT_BUDGET 추경/조정 예산 슬롯 신설 여부(문서30 §7). ※②FACT_TARGET_BIZ 단위충돌은 **[2026-07-20] 건 확정으로 해소**(원천=CRM `CRM_BIZ_TARGET`·TARGET_TYPE 피벗 배선). E-6 입고만 대기.
 - **E-6 입고 시**: FACT_TARGET_BIZ/WIDE_TARGET_BIZ 측정치 실채움 + 이름 크로스워크(문서32) 조직 grain 정합 확인.
 - **정의 원천 재사용**: `03_top-down_gold/09_빅테이블 VIEW.md` §3.4(WIDE_TARGET_BIZ DDL) + `10_WIDE VIEW 코멘트.sql`.
 
@@ -56,7 +56,7 @@ END-METADATA -->
 
 ## 6. 후속 개선 TODO (내부·저우선) — 순서9-D 처리결과
 - 🟠 **[설계결정 대기] `FACT_BUDGET.PLAN_BUDGET_YEAR`**: 추경(CHN)/조정(ADJ) 은 원천 실재하나 GOLD 슬롯 부재. `PLAN_BUDGET_YEAR` 임의 주입 = 재무 오귀속 → 전용 슬롯 신설 또는 소비정의 확정 필요(문서30 §7). 임의매핑 금지.
-- 🟠 **[설계결정 대기] `FACT_TARGET_BIZ` 단위충돌**: SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 현재 4개 건 measure 전부 NULL 처리(재무 오귀속 방지). 해소=①GOLD DDL 금액 measure 신설 or ②현업 '건' 목표 원천. (문서50 §FACT_TARGET_BIZ·문서30 §6)
+- ✅ **[해소 2026-07-20] `FACT_TARGET_BIZ` 단위충돌**: 구 SILVER `ERP_BIZ_TARGET.TARGET_AMT`(금액) vs GOLD `ANNUAL/SUPP_GOAL_CNT`(건) 충돌 → **GOLD 단위=건 확정(지표사전 #152~155)**. 원천=CRM 재분류(`CRM_BIZ_TARGET`, `TARGET_CNT`+`TARGET_TYPE`), FACT는 TARGET_TYPE 피벗(당초→ANNUAL·추경→SUPP)으로 배선. 누계는 SV(P7). 잔여=E-6 입고·이름 크로스워크(문서32).
 - ⏳ **[Q10 게이트] `FACT_AD_PERFORMANCE` 캠페인 이름매칭**(AGENCY.CAMPAIGN_NM ↔ CRM_CAMPAIGN.CMPGN_NM) — 실구현 Q10 회신 대기(진단 PoC만 가능).
 - ✅ **[DONE 순서9-D] `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격**(실측 널 0/235,572 확인).
 
