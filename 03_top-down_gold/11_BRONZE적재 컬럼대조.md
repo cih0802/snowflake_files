@@ -8,6 +8,8 @@ END-METADATA -->
 
 # BRONZE(확정 DDL) ↔ GOLD 필요 데이터 충족 점검
 
+> ✅ **[2026-07-20 배포·적재로 확증]** GOLD 24테이블 + SILVER 32테이블 적재 완료로 본 점검 결론("BRONZE에 GOLD 필요 데이터 공백 없음")이 실측 확인됨. `FACT_TARGET_BIZ`만 0행(=`CRM_BIZ_TARGET` 데이터 입고 대기).
+
 **기준**: `09_bronze_crm_ddl.sql`(확정 BRONZE)이 GOLD 설계(215 지표 / 24테이블)가 필요로 하는 데이터를 **모두 담고 있는지**만 본다. 컬럼정의서 CSV는 작성중(WIP)이라 비교 기준으로 쓰지 않는다.
 
 ## 결론

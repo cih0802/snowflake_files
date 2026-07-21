@@ -1,6 +1,6 @@
 -- GN_DW.GOLD WIDE VIEW 9개의 뷰 컬럼 COMMENT를 ALTER VIEW로 일괄 적용하는 스크립트.
 -- Co-authored with CoCo
--- ⚠️ [2026-07-13 실측] GOLD 미배포(WIDE VIEW 미생성) → 본 스크립트는 뷰 배포 후 적용. compile 검증만 완료, 실적용·NULL 0 검증은 배포 후.
+-- ✅ [2026-07-20 적용 완료] GOLD 배포·적재 후 본 스크립트 실행 완료(9뷰 330컬럼 COMMENT 적용). idempotent — 재실행 안전.
 -- 🔷 [2026-07-07 정정] DIM_ORG = SCD1 (DEC-2): 조직 변경이력 소스·as-was 요구 없음 → EFFECTIVE_*/IS_CURRENT 컬럼 삭제.
 --    아래 ORG_CORP/DIVISION/DEPARTMENT/TEAM COMMENT의 "(as-was)" 표기는 SCD1 정정 이전 잔재이며, 실제 의미는 current-value(최신 조직명·계층)임.
 

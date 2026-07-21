@@ -3,7 +3,7 @@
 /*
 ================================================================================
   GN_DW.GOLD — 전체 테이블 DDL (24개: DIM 15 + FACT 9)
-  작성일   : 2026-07-02 (컬럼 COMMENT 추가: 2026-07-03, 출처: gold 스키마 컬럼 인벤토리_20260629.csv)
+  작성일   : 2026-07-02 (컬럼 COMMENT 추가: 2026-07-03; 배포·적재: 2026-07-20 GN_DW.GOLD 24테이블 생성·적재 완료)
   참고 문서 : gold 스키마 컬럼 인벤토리_20260629.csv
                GOLD_개발자 전달노트_20260629.md
                03_top-down_gold/03_테이블 설계.md
@@ -19,8 +19,8 @@
      DW_UPDATE_TS(최종적재) / DW_BATCH_ID(=dbt invocation_id) 감사 컬럼 포함.
   6. FACT_GA_BEHAVIOR 의 비가산 지표(BOUNCE_RATE·AVG_SESSION_DURATION 등)는
      그레인 기준 값 — 상위 레벨 재합산 금지(테이블 COMMENT 명시).
-  7. [2026-07-13 실측] ERP·AGENCY·GA4는 BRONZE 적재됨(실측 검토 게이트=04_silver_design/02 §3 후 적재).
-     단 사업목표(FTG_B, 원천=CRM 확정 2026-07-20·입고 대기)·모금성비용(FBD, ERP 원천 부재)은 미입고, ADMIN(앱푸시·조회수)은 제외 확정 → 해당 컬럼만 생성·미채움.
+  7. [2026-07-20 적재 완료] CRM·GA4·ERP·AGENCY SILVER→GOLD 적재 완료(24테이블 + WIDE VIEW 9개).
+     단 사업목표(FTG_B, 원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET·데이터 입고 대기)·모금성비용(FBD, ERP 원천 부재)은 미입고, ADMIN(앱푸시·조회수)은 제외 확정 → 해당 컬럼만 생성·미채움(FACT_TARGET_BIZ=0행).
   8. FK/PK 제약은 파일 하단 [관계 제약] 섹션에서 ALTER 로 일괄 선언.
      - 전부 NOT ENFORCED NORELY (정보성) — Snowflake 는 NOT NULL 외 강제 안 함.
        ERD·BI 관계 인식·문서화 용도이며, 데이터 미검증 단계이므로 RELY 는 보류.
@@ -408,7 +408,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_DEV (
 
 
 -- ============================================================================
--- FACT 4: FACT_TARGET_BIZ (FTG_B) — 사업 목표 팩트 (원천=CRM 확정 2026-07-20; 예산원장≠사업목표, CRM 신규 목표 테이블 입고 대기 33 E-6)
+-- FACT 4: FACT_TARGET_BIZ (FTG_B) — 사업 목표 팩트 (원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET; 예산원장≠사업목표, 데이터 입고 대기·현재 0행)
 -- ============================================================================
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_BIZ (
     MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '목표월 YYYYMM (FK→DIM_DATE, 월 conform)', -- GRAIN / ※비강제 FK→DIM_DATE
@@ -423,7 +423,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_BIZ (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '사업 목표 팩트 (MONTH_KEY × ORG × SPONSORSHIP · 원천=CRM 확정, CRM 신규 목표 테이블 입고 대기 — 스키마-only, 33 E-6)';
+) COMMENT = '사업 목표 팩트 (MONTH_KEY × ORG × SPONSORSHIP · 원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET — 데이터 입고 대기, 현재 0행)';
 
 
 -- ============================================================================

@@ -4,7 +4,7 @@ doc_role: consumption_wide_view (DDL)
 project: GN_DW (굿네이버스)
 derived_from: 06_DDL.sql + 03_테이블 설계.md §4 팩트×차원 참조
 structure: 9 WIDE VIEW (1 per FACT)
-status: 9개 뷰 DDL compile 검증 통과 · **GN_DW.GOLD 미배포**(2026-07-13 실측 — 뷰 미생성, 배포는 GOLD 테이블 CREATE 후)
+status: 9개 뷰 **배포·적재 완료**(2026-07-20 — `GN_DW.GOLD` WIDE VIEW 9개 생성, 컬럼 COMMENT 적용)
 END-METADATA -->
 
 # GOLD 빅테이블 VIEW (GN_DW.GOLD)

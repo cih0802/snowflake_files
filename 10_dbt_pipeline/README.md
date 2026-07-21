@@ -59,7 +59,7 @@ END-METADATA -->
 | `20_issue/20_현업확인_요청.md` | 현업 회신 대기 항목·의심데이터 A~E |
 | `20_issue/30_설계_의사결정.md` | D1~D3·결정대기 GOLD·설계 트리거 |
 | `20_issue/40_입고대기_원천의존.md` | 외부 원천 하드블로커(G-5·E-1·E-4·E-6 등) |
-| `20_issue/41_입고요청서_ERP_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | E-6 입고요청서·BRONZE DDL 제안 |
+| `20_issue/41_입고요청서_CRM_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | E-6 입고요청서·BRONZE DDL 제안 |
 | `20_issue/50_dbt_파이프라인_미결조치.md` | BLOCKING·DONE·warn→error 복귀 추적표 |
 | `20_issue/90_해소완료_로그.md` | 닫힌 항목 이력 |
 

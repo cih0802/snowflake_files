@@ -4,7 +4,7 @@
 -- 목적: 현업으로부터 사업목표 데이터 입고 시 BRONZE 적재 대상 테이블.
 -- 원천: CRM (현업 수동입력 — 매출 실적 확인 후 사후 조정 프로세스)
 -- 블로커: E-6 (40_입고대기_원천의존.md)
--- SILVER 후속: GN_DW.SILVER.ERP_BIZ_TARGET → GOLD FTG-B
+-- SILVER 후속: GN_DW.SILVER.CRM_BIZ_TARGET → GOLD FTG-B
 -- ============================================================================
 -- 업무 특성:
 --   - 목표는 ERP가 아닌 CRM에서 관리 (사후 조정 방식)
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS GN_DW.BRONZE_CRM.CRM_BIZ_TARGET (
     _LOADED_AT          TIMESTAMP_NTZ   DEFAULT CURRENT_TIMESTAMP() COMMENT '적재 시각',
     _BATCH_ID           VARCHAR         COMMENT '적재 배치 식별자'
 )
-COMMENT = 'BRONZE — CRM 사업목표 원천 (현업 CRM 입력). 버전누적(당초/추경 공존). → SILVER.ERP_BIZ_TARGET으로 정제.'
+COMMENT = 'BRONZE — CRM 사업목표 원천 (현업 CRM 입력). 버전누적(당초/추경 공존). → SILVER.CRM_BIZ_TARGET으로 정제.'
 ;
 
 -- ============================================================================

@@ -407,7 +407,7 @@ QUALIFY ROW_NUMBER() OVER (PARTITION BY REQ_SEQ_NO, R_NUM ORDER BY SND_DT DESC N
 
 -- ============================================================================
 -- STEP 4 — ERP (트랙 C, 2차) 정제 적재 : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER
---   근거 : 05_SILVER_작업계획_ERP전용 · 11_SILVER_블로커_triage · 08_SILVER_테이블DDL(STEP 4)
+--   근거 : 05_SILVER_작업계획_ERP전용 · 08_SILVER_테이블DDL(STEP 4)
 --   공통 : TOTAL(사전집계 요약행) 제외 · 금액 원단위 보존 · 멱등 INSERT OVERWRITE.
 --   키   : BUDGET_ITEM_DK = MD5(연도|수입지출|예산단위|장|관|항|목|세목|세세목|재원) — ITEM/BUDGET 동일식.
 -- ============================================================================

@@ -60,7 +60,7 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 
 ### ⚠️ [2026-07-16 비판적 검토] FACT_TARGET_BIZ 스켈레톤 — 잠복 결함 2건 처리
 0행 스켈레톤이라 build 는 통과하나, 데이터 입고 시 **조용히 오작동**할 구조 2건을 사전 발견·교정.
-- 🔴→✅방향확정 **단위충돌(금액 vs 건)**: SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 최초안은 `TARGET_AMT→ANNUAL_GOAL_CNT` 매핑 = 금액을 건 슬롯에 강제투입(`FACT_BUDGET` "재무 오귀속 방지" 원칙 위배). → **4개 건 measure 전부 NULL(원천부재)** 처리. **[2026-07-20 결정] GOLD 단위=건(지표사전 기준) 확정 → 해소경로 ②채택: 현업이 '건' 목표 원천 제공**(CRM 신규 목표 테이블). ①금액 measure 신설안 폐기. ⚠️Bronze DDL(`41_..._BRONZE_DDL.sql`)이 현재 `TARGET_AMT(원)`이라 **건 기준으로 정합 필요**. (원천=CRM 확정, 문서30 §6)
+- 🔴→✅**해소** **단위충돌(금액 vs 건)**: (구)SILVER `ERP_BIZ_TARGET.TARGET_AMT`=목표 **금액(원)** vs GOLD measure `ANNUAL/SUPP_GOAL_CNT`(#152~155)=목표 **건(件)**. 최초안은 `TARGET_AMT→ANNUAL_GOAL_CNT` 매핑 = 금액을 건 슬롯에 강제투입(`FACT_BUDGET` "재무 오귀속 방지" 원칙 위배). **[2026-07-20 해소] SILVER 테이블을 `CRM_BIZ_TARGET`(`TARGET_CNT` 건 + `TARGET_TYPE` 당초/추경)로 재구축 완료** → GOLD FACT는 TARGET_TYPE 피벗(당초→ANNUAL·추경→SUPP)으로 배선. ①금액 measure 신설안 폐기. 잔여 = 현업 데이터 입고(E-6). (원천=CRM 확정, 문서30 §6)
 - 🔴 **조인키 타입 불일치(이름 vs 코드)**: 최초안이 DIM 코드 BK(`ORG_DK`=hash(DEPT_ID)·`SPONSORSHIP_BK`=SPNSR_BSNS_ID·`CAMPAIGN_BK`=CMPGN_CD)에 SILVER **이름**(ORG_NM·SPONSOR_BIZ_NM·CAMPAIGN_NM)을 조인 → 입고 시 100% Unknown(0) 라우팅될 뻔. → **이름기반 조인으로 교정**(`o.DEPARTMENT`·`s.SPONSORSHIP_NAME`·`c.CAMPAIGN_NAME`). ⚠️잔여: ERP 조직명=본부/지부 grain vs `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → **조직 이름 크로스워크**(문서32) 확보 전까지 미매칭 시 Unknown(0).
 - **결론**: 구조·리니지·거버넌스는 완결(9/9). 측정치 실채움은 E-6 입고 + 위 2개 해소조건 충족 시.
 
@@ -72,7 +72,7 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 - **결론**: bronze 데이터·설계로직만으로 안전 진행 가능한 내부작업은 #3로 종료. #1(설계결정)·#2(Q10)는 외부/결정 의존.
 
 ## 🟡 [순서9-C] GOLD 완성 진행 요건 — 내부분 착수·검증 완료 / 잔여 외부의존
-파이프라인 골격(SILVER 32 + GOLD 19 + build green) 완성. **내부 가능분은 순서9-C에서 작성·build 검증 완료(PASS=27 WARN=1 ERROR=0)**:
+파이프라인 골격(SILVER 32 + GOLD 24 base + WIDE 9 + build green) 완성. **내부 가능분은 순서9-C에서 작성·build 검증 완료(PASS=27 WARN=1 ERROR=0)**:
 - ✅ **작성완료**: `DIM_BUDGET_ITEM`(2,041) · `DIM_AD_CREATIVE`(8,474) · `FACT_BUDGET`(24,480, 편성/집행만) · `FACT_AD_PERFORMANCE`(235,572, 스캐폴드: measure/날짜만·차원FK=0) · **#80 `FACT_MEMBER_MONTHLY.UNPAID_FLAG_EOM/BOM`**(미납 EOM=true 3,302,535).
 - ✅ **이슈 E 진단완료**: 고아 99.98% 참여상세·동일기간·동일형식 → **마스터 누락(외부)** 확정. 내부 수정 불가·warn 유지.
 - ✅ **데이터기반 설계결정**: A-2 `_SOURCE_SYSTEM='AGENCY'` 상수(매체구분은 속성) · DEVICE_TYPE PC/M(APP 휴면).
@@ -85,7 +85,7 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 순서 9·9-B 편집은 **워크스페이스 직접실행 검증만** 완료. ~~배포객체 `ALTER DBT PROJECT ... ADD VERSION` 미반영~~ → **실측 결과 객체 자체 부재로 BLOCKING-3 로 통합.** 최초 `CREATE` 후 이후 편집분은 `ADD VERSION` 으로 반영.
 
 ## ✅ [DONE 순서9-C 2026-07-15] dbt project 배포 + full build green 달성
-**배포**: `CREATE DBT PROJECT GN_DW.OPS.DW_PIPELINE` (운영 전용 스키마 — 데이터 레이어 SILVER/GOLD와 분리, 접두어 중복·스코프 오칭 제거). 50 models(SILVER 32+GOLD 18)·153 data tests.
+**배포**: `CREATE DBT PROJECT GN_DW.OPS.DW_PIPELINE` (운영 전용 스키마 — 데이터 레이어 SILVER/GOLD와 분리, 접두어 중복·스코프 오칭 제거). 50 models(SILVER 32+GOLD 18, 07-15 시점)·153 data tests. *(이후 GOLD 확장: dim15+fact9+WIDE9 → 전체 65 models, 2026-07-16)*
 
 **첫 build 에서 드러난 17 ERROR 처리** (153-test ERD suite가 배포 전 한 번도 실행 안 됨 → 잠재버그 일괄 표면화):
 | 분류 | 건수 | 조치 |

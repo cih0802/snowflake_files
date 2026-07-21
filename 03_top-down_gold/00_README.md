@@ -7,7 +7,7 @@ method: 01_작업 계획.md
 authoritative_source: ../99_provided_definition/   # 현업 제공 원본(정본). 편집 금지(read-only).
 structure: 15 DIM + 9 FACT + 9 WIDE VIEW
 naming: NN_이름 (작업/읽기 순서)
-status: CURRENT — Top-down 1~10단계 완료. 진행상태 정본=01_작업 계획.md
+status: CURRENT — Top-down 1~10단계 완료 + 배포·적재 완료(2026-07-20 GOLD 24T+9V·SILVER 32T). 진행상태 정본=01_작업 계획.md
 END-METADATA -->
 
 # GN_DW GOLD Top-down 설계 — 폴더 색인
@@ -38,15 +38,14 @@ END-METADATA -->
 | `03_테이블 설계.md` | ⭐ **설계 정본** — 15 DIM + 9 FACT, 팩트×차원 참조, open 항목 | 2~3단계 ✅ |
 | `04_SV파생 매핑.md` | derived 81 → 분자/분모 base + 소속 FACT (SV 입력) | 4단계 ✅ |
 | `05_필드 인벤토리.md` | 테이블·컬럼·타입(제안)·키 인벤토리 | 5단계 ✅ draft(타입 확정 전) |
-| `06_DDL.sql` | 15 DIM + 9 FACT DDL + 정보성 FK 35 | 6단계 ✅ (compile 검증 완료, **미배포** — 2026-07-13 실측 GN_DW.GOLD 스키마 미생성) |
+| `06_DDL.sql` | 15 DIM + 9 FACT DDL + 정보성 FK 35 | 6단계 ✅ (**배포·적재 완료** — 2026-07-20 `GN_DW.GOLD` 생성·적재) |
 | `07_메타.md` | 제약 정책·FK 결정·재실행 규칙·미해결 (사람 인수인계용) | 7단계 ✅ |
-| `08_silver의존.md` | GOLD 컬럼 → SILVER(26테이블) lineage + 미수령 원천 격리 | 8단계 ✅ |
-| `09_빅테이블 VIEW.md` | 소비용 WIDE VIEW 9개 DDL (팩트×참조DIM 평탄화) | 9단계 ✅ (DDL 작성·compile 검증, **미배포**) |
-| `10_WIDE VIEW 코멘트.sql` | WIDE VIEW 컬럼 COMMENT (ALTER VIEW, 뷰당 1문) | 10단계 ✅ (스크립트 작성 완료, **미적용** — 배포 후 실행) |
-| `30_BRONZE 컨트랙트.md` | 입고팀 전달: 데이터 존재 확인 / 차단 / 정의 질문 | 인계 |
-| `32_BRONZE적재 컬럼대조.md` | 확정 BRONZE ↔ GOLD 필요데이터 충족 점검 (누락 없음) | 점검 |
+| `08_silver의존.md` | GOLD 컬럼 → SILVER(32테이블) lineage + 원천 갭 이력 | 8단계 ✅ |
+| `09_빅테이블 VIEW.md` | 소비용 WIDE VIEW 9개 DDL (팩트×참조DIM 평탄화) | 9단계 ✅ (**배포 완료**) |
+| `10_WIDE VIEW 코멘트.sql` | WIDE VIEW 컬럼 COMMENT (ALTER VIEW, 뷰당 1문) | 10단계 ✅ (**적용 완료** — 2026-07-20) |
+| `11_BRONZE적재 컬럼대조.md` | 확정 BRONZE ↔ GOLD 필요데이터 충족 점검 (누락 없음) | 점검 |
 | `99_next_prompt.md` | 다음 세션 인계 | 인계 |
-| `_archive/` | 구 설계 산출물(12 DIM+6 FACT 기준) — 현 설계로 대체됨 | 보관 |
+| `_archive/` | 구 설계 산출물(12 DIM+6 FACT 기준)·구 working 문서(BRONZE 컨트랙트·오픈액션·컬럼매핑 등) — 현 설계로 대체됨. **참조하지 말 것** | 보관 |
 
 ## 핵심 수치
 - 지표 215 = 공통 162 + 신규 53 / measure 60 + dimension 74 + derived 81
@@ -58,7 +57,8 @@ END-METADATA -->
 `02 분류 → 03 설계 → 04 SV파생매핑 → 05 인벤토리 → 06 DDL(+FK) → 07 메타 → 08 SILVER lineage → 09 WIDE VIEW → 10 VIEW COMMENT`
 
 ## 상태
-- Top-down 설계 **1~10단계 완료**. 215 지표·overview 필드 전수 귀속(누락 0).
-- 물리 배포: ⛔ **미배포(2026-07-13 실측)** — `GN_DW`에 GOLD·SILVER 스키마가 없음(BRONZE_CRM/GA4/ERP/AGENCY·OPS·SECURITY만 존재). `06_DDL.sql`·WIDE VIEW DDL은 **작성 완료이나 실제 CREATE 미실행**. (구 "24테이블 + WIDE VIEW 9개 생성됨" 기술은 실측과 상충 → 정정.) WIDE VIEW 설계(SCD2 dedup·조직 조인·330컬럼 COMMENT)는 유효.
-- 잔여: 5·6단계 draft(타입 정밀화 — 정본 `06_지표용어사전` 확정 대기) / open 항목은 `03_테이블 설계.md §5`.
-- 다음 트랙: SILVER→GOLD 적재 → (적재 후) WIDE VIEW 검증쿼리 재확인 → Semantic View 매핑.
+- Top-down 설계 **1~10단계 완료** + **배포·적재 완료(2026-07-20)**. 215 지표·overview 필드 전수 귀속(누락 0).
+- 물리 배포: ✅ **완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개, `GN_DW.SILVER` 32테이블 적재. FACT 행수 예: FMM 37.79M·FSE 38.47M·FME 4.63M·FEP 1.13M. **`FACT_TARGET_BIZ`만 0행**(=`CRM_BIZ_TARGET` 데이터 입고 대기).
+- 잔여: 타입 정밀화(정본 `06_지표용어사전` 확정 대기) / 사업목표(`CRM_BIZ_TARGET`) 데이터 입고 / open 항목은 `03_테이블 설계.md §5`.
+- GA4: `events_20260501` 1일 샤드(추가 입고 예정 없음)를 **전체로 간주**하고 적재·검증 완료. 추후 추가 입고 시 GA4 SILVER/GOLD 재적재·재검증 재작업 예정.
+- 다음 트랙: Semantic View 매핑(derived 81 → metric).

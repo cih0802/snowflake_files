@@ -22,7 +22,7 @@ END-METADATA -->
 
 ## 1. 요청 배경
 
-GN_DW SILVER 레이어에 `ERP_BIZ_TARGET` 테이블을 설계하였으나,
+GN_DW SILVER 레이어에 `CRM_BIZ_TARGET` 테이블을 설계하였으나,
 현재 BRONZE에 대응하는 원천 데이터가 **존재하지 않습니다.**
 
 - 기존 ERP 예산원장(`BDGT_ACMSLT_LEDGER`)은 **편성/집행** 데이터이며, **사업목표(연사업·추경 누계목표)** 와는 별개입니다.
@@ -112,7 +112,7 @@ GN_DW SILVER 레이어에 `ERP_BIZ_TARGET` 테이블을 설계하였으나,
     ↓ 추출
 [BRONZE] GN_DW.BRONZE_CRM.CRM_BIZ_TARGET (신규)
     ↓ 정제
-[SILVER] GN_DW.SILVER.ERP_BIZ_TARGET (스키마 준비 완료)
+[SILVER] GN_DW.SILVER.CRM_BIZ_TARGET (스키마 준비 완료·0행)
     ↓ 변환
 [GOLD]   FTG-B (사업목표 달성률 = 실적/목표)
     ↓
@@ -131,19 +131,22 @@ GN_DW SILVER 레이어에 `ERP_BIZ_TARGET` 테이블을 설계하였으나,
 
 ---
 
-## 6. 참고 — 현재 SILVER DDL (스키마-only)
+## 6. 참고 — 현재 SILVER DDL (실배포·0행, 리네임 완료)
 
 ```sql
--- 04_silver_design/08_SILVER_테이블DDL_20260714.sql line 466
-CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BIZ_TARGET (
+-- 04_silver_design/08_SILVER_테이블DDL_20260714.sql (dbt 모델: models/silver/crm/CRM_BIZ_TARGET.sql)
+-- 실배포 구조(GN_DW.SILVER.CRM_BIZ_TARGET, 0행) — TARGET_CNT(건)·TARGET_TYPE 반영 완료
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     BIZ_TARGET_DK       VARCHAR         NOT NULL,  -- 사업목표 대체키 (PK)
-    TARGET_YEAR         NUMBER(4,0),               -- 목표연도 YYYY
-    MONTH_NO            NUMBER(2,0),               -- 월 1~12
-    MONTH_KEY           VARCHAR(6),                -- 월키 YYYYMM
+    TARGET_YEAR         NUMBER,                    -- 목표연도 YYYY
+    MONTH_NO            NUMBER,                    -- 월 1~12
+    MONTH_KEY           VARCHAR,                   -- 월키 YYYYMM
+    ORG_CD              VARCHAR,                   -- 조직코드
     ORG_NM              VARCHAR,                   -- 조직 (이름)
     SPONSOR_BIZ_NM      VARCHAR,                   -- 후원사업
     CAMPAIGN_NM         VARCHAR,                   -- 캠페인 (nullable)
-    TARGET_AMT          NUMBER(38,0),              -- 목표 금액 원단위
+    TARGET_TYPE         VARCHAR,                   -- 목표유형: 당초 / 추경1차 / 추경2차
+    TARGET_CNT          NUMBER,                    -- 목표 건수(건) — #152~155, GOLD ANNUAL/SUPP_GOAL_CNT와 정합
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL,
     DW_SOURCE_TABLE     VARCHAR,
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL,

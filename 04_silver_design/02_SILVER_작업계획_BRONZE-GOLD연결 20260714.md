@@ -10,12 +10,12 @@ fragments:
   - 05_SILVER_작업계획_ERP전용 20260714.md       # ERP 3객체 · 트랙 C
   - 06_SILVER_작업계획_AGENCY전용 20260714.md    # AGENCY 3객체 · 트랙 D
 ddl(정본): 08_SILVER_테이블DDL_20260714.sql + 09_SILVER_적재쿼리_20260714.sql
-inputs(gold): 03_top-down_gold/03_설계.md(24테이블 정본) · 08_silver의존.md(lineage)
+inputs(gold): 03_top-down_gold/03_테이블 설계.md(24테이블 정본) · 08_silver의존.md(lineage)
 END-METADATA -->
 
 # SILVER 작업계획 — BRONZE → SILVER → GOLD (마스터 인덱스)
 
-> **목적**: BRONZE 원천을 GOLD star schema(**24테이블 = 15 DIM + 9 FACT**, 정본 `03_top-down_gold/03_설계.md`)로
+> **목적**: BRONZE 원천을 GOLD star schema(**24테이블 = 15 DIM + 9 FACT**, 정본 `03_top-down_gold/03_테이블 설계.md`)로
 > 적재하기 위한 **SILVER 정제 레이어**의 설계·작업 계획.
 >
 > 📁 **본 문서 = 매핑 인덱스**. 원천별 상세 작업은 아래 4개 실행문서로 분리(2026-07-14).
@@ -36,9 +36,9 @@ END-METADATA -->
 
 **공유 산출물·참조**
 - **DDL/적재 정본**: `08_SILVER_테이블DDL_20260714.sql`(STEP 1·2 CRM 21 + STEP 6 GA4 5 + STEP 7 신원브리지 CREATE) + `09_SILVER_적재쿼리_20260714.sql`(STEP 3 CRM INSERT·발송 PK ALTER + STEP 6 GA4 + STEP 7 브리지+7-DQ + STEP 8 통합검증 DQ-1/2/3). 실행순서 **08 → 09**. (구 `silver_stepbystep_ddl.sql`은 `_archive` 이관.)
-- **이슈 해소 상세**: `10_SILVER_이슈해결 핸드오버.md`
-- **CRM 엔티티 설계서**: `S1_CRM_entity_design/`
-- **GOLD 정본·의존**: `03_top-down_gold/03_설계.md`(24테이블) · `08_silver의존.md`(역산 lineage)
+- **이슈 해소 상세**: 원천별 실행문서 `03_SILVER_작업계획_CRM전용`·`04~06`(트랙별 Q 해소) + `09_SILVER_적재쿼리_20260714.sql` STEP별 정제 주석.
+- **CRM 엔티티 설계서**: `S1_CRM_entity_design_legacy/`
+- **GOLD 정본·의존**: `03_top-down_gold/03_테이블 설계.md`(24테이블) · `08_silver의존.md`(역산 lineage)
 
 ---
 
@@ -57,7 +57,7 @@ END-METADATA -->
 > - **CRM(21)**: 결함 0. 집계 1건(`CRM_SEND_RESULT`)은 원천내 엔티티-grain 통합으로 검토 후 유지(대사 정확). → 문서 03 §6.
 > - **ERP(2)**: 결함 0. wide→long은 reshape(집계 아님)·총액 대사 0. → 문서 05 §5.
 > - **AGENCY**: 결함 **2건 발견·수정** — ① 연·월 텍스트 파싱 96% NULL → **DATE 파생**(NULL 0) · ② `AGENCY_COST` 월 롤업 §3 위반 → **제거→GOLD**(3객체→2). → 문서 06 §5.
-> - **GA4(5, PoC 1일 샤드)**: DQ 4종 전부 통과 — 행수 대사(GA4_EVENT 265,312 = 원천 distinct PK, 원천 287,025 중 PK중복 21,713행 GROUP BY dedup·GA-1)·PK유일 0·EVENT_DT 파생 NULL 0·fan-out 0. session-fill(07 §5-A)로 회원귀속 **4.44%→30.23%**(SESSION_FILL 68,428·CONFLICT 1,648·UNRESOLVED 183,458, 추론값 경고 유지). **사후검토 수정 1건**: `GA4_TRAFFIC_SOURCE` first-touch/collected 혼재 그레인 오염(6,736)→last-click 한정(1,175). 리스크 2건(GA-2 event_label 카디널리티·GA-3 팩트↔DIM_GA_SOURCE 키정합) 문서화. → 문서 04 §5·§7.
+> - **GA4(5, PoC 1일 샤드)**: DQ 4종 전부 통과 — 행수 대사(GA4_EVENT 265,312 = 원천 distinct PK, 원천 287,025 중 PK중복 21,713행 GROUP BY dedup·GA-1)·PK유일 0·EVENT_DT 파생 NULL 0·fan-out 0. session-fill(07 §5-A)로 회원귀속 **4.44%(SILVER dedup 265,312 기준; BRONZE raw 287,025 기준 4.22%)→30.23%**(SESSION_FILL 68,428·CONFLICT 1,648·UNRESOLVED 183,458, 추론값 경고 유지). **사후검토 수정 1건**: `GA4_TRAFFIC_SOURCE` first-touch/collected 혼재 그레인 오염(6,736)→last-click 한정(1,175). 리스크 2건(GA-2 event_label 카디널리티·GA-3 팩트↔DIM_GA_SOURCE 키정합) 문서화. → 문서 04 §5·§7.
 > - 공통 교훈: 텍스트 연·월 컬럼 신뢰 금지(DATE 파생) · SILVER 월 롤업은 GOLD로 · 행수/총액 대사를 DQ 게이트 필수화.
 
 ---
@@ -127,7 +127,7 @@ END-METADATA -->
 
 | 단계 | 산출물 | 대상 | 상태 |
 |---|---|---|---|
-| **S-1** | 엔티티 설계서 | CRM 21 | ✅ (`S1_CRM_entity_design/`) |
+| **S-1** | 엔티티 설계서 | CRM 21 | ✅ (`S1_CRM_entity_design_legacy/`) |
 | **S-2** | DDL (`CREATE TABLE`) | CRM 21 | ✅ (`08_...테이블DDL`) |
 | **S-3** | 정제 매핑표 | CRM 21 | ✅ |
 | **S-4** | 정제 적재(멱등 INSERT OVERWRITE) | CRM 21 | ✅ (`09_...적재쿼리`) |
@@ -144,11 +144,11 @@ END-METADATA -->
 | 순서 | 작업 | 산출물/게이트 | 근거 |
 |---|---|---|---|
 | 0 | ✅ 트랙 A(CRM) S-1~S-5 완료 | 03 문서 | 완료 |
-| 1 | ✅ **블로커 질문 스키마별 triage** | `11_SILVER_블로커_triage_Q1-Q16_20260714.md` (Q1~Q16 + 비-Q 분류·트랙 게이트 확정) | 재작업 방지(원칙 B) |
+| 1 | ✅ **블로커 질문 스키마별 triage** | Q1~Q16 + 비-Q 분류·트랙 게이트 확정(완료) | 재작업 방지(원칙 B) |
 | 2 | ✅ **트랙 B(GA4) 1차** — 08 DDL STEP 6 → 09 적재 STEP 6 → DQ 4종 통과 (PoC 1일샤드) | GA4 5객체 271,544행 | S-7·GOLD critical path 확보 — 전기간 입고 시 멱등 재적재 |
 | 3 | ✅ **S-7 신원 브리지** (`IDENTITY_MEMBER_XREF`) — 08 DDL STEP 7 → 09 적재 STEP 7 → DQ 통과 | 브리지 1객체 1,348행 (§6) | GA4 입고 직후 착수·완료 |
 | 4 | ✅ **트랙 C(ERP) 2차** — 08 DDL → 09 적재 → DQ 검증 완료 | ERP_BUDGET_ITEM 2,040 · ERP_BUDGET 24,480 · BIZ_TARGET 스키마-only | GA4와 병렬 실행(외부 의존 0) |
-| 5 | ✅ **트랙 D(AGENCY) 3차** — 설계결정 6종 확정 → 08 DDL → 09 적재 → DQ 검증 완료 | AD_PERFORMANCE 235,572 · AD_CREATIVE 8,473 · COST 823 | 외부 의존 0(설계결정 내부 해소) |
+| 5 | ✅ **트랙 D(AGENCY) 3차** — 설계결정 6종 확정 → 08 DDL → 09 적재 → DQ 검증 완료 | AD_PERFORMANCE 235,572 · AD_CREATIVE 8,473 · (COST 823행은 §3 위반으로 GOLD 이관 — SILVER 미생성) | 외부 의존 0(설계결정 내부 해소) |
 | 6 | ✅ **전체 SILVER 통합 검증** (2026-07-14 실행, 09 STEP 8) | DQ-1 PK 유일성 30객체 dup=0 ✅ · DQ-3 fan-out 논리충족 ✅ · DQ-2 통합앵커(identity·ERP·결연) orphan 0 ✅ / ⚠️ EVENT_PARTICIPATION 2건(EVENT_KEY 263,611=ADMIN행사 미입고 53건·MBER_NO 9,480=탈퇴/비CRM) → **결정: GOLD DIM Unknown 멤버(`SK=0`) + LEFT JOIN 으로 행 100% 보존, ADMIN 입고 시 소급 치환. SILVER 무변경** *(2026-07-16 정정: 구현 확정값 `0`, 초안 `-1` 폐기)* | SILVER 정합 확정 ✅ |
-| 7 | **파이프라인 일괄 구성** (Bronze→Silver 오케스트레이션·스케줄) | dbt job / Task | 원칙 C |
-| 8 | **GOLD 배포** — `GN_DW.GOLD` 생성 → SILVER→GOLD 적재 → WIDE VIEW·COMMENT → Semantic View | GOLD 24 + SV | `08_silver의존.md` lineage |
+| 7 | ✅ **파이프라인 일괄 구성** (Bronze→Silver 오케스트레이션·스케줄) | dbt job / Task | 원칙 C |
+| 8 | ✅ **GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용 | GOLD 24T+9V (FACT_TARGET_BIZ만 0행) · 다음=Semantic View | `03_top-down_gold/08_silver의존.md` lineage |

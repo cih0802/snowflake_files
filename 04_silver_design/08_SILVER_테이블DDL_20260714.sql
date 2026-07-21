@@ -415,7 +415,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
 
 -- ============================================================================
 -- STEP 4 — ERP (트랙 C, 2차) : BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER 2객체 (사업목표는 CRM 트랙으로 재분류 2026-07-20)
---   근거 : 05_SILVER_작업계획_ERP전용 · 11_SILVER_블로커_triage_Q1-Q16
+--   근거 : 05_SILVER_작업계획_ERP전용
 --   실측(2026-07-14) : 원장 2,041행 = 지출1,875 + 수입165 + TOTAL 1(사전집계 요약행 → 제외).
 --                      full-hierarchy DISTINCT = 행수 → 각 행이 유일 예산과목(세세목).
 --   원장 구조 : 차원 10 + 총액 4 + 월별 48(편성YEAR_BDGT/추경CHN/조정ADJ/집행EXEC × 12개월).
@@ -485,7 +485,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
 
 -- ============================================================================
 -- STEP 5 — AGENCY (트랙 D, 3차) : BRONZE_AGENCY 3테이블 → SILVER 2객체 (AGENCY_COST는 리뷰 후 제거→GOLD)
---   근거 : 06_SILVER_작업계획_AGENCY전용 · 11_SILVER_블로커_triage
+--   근거 : 06_SILVER_작업계획_AGENCY전용
 --   실측(2026-07-14) 설계결정 6종 확정 :
 --     ① _SOURCE_SYSTEM = 테이블 기반(DIGITAL/REBROADCAST/VIDEO) — 행단위 출처 플래그 없음(A-2/Q9)
 --     ② 인입콜 : REBRDC.INBOUND_CALL_CNT=TEXT(비수치 2/2064) → TRY_TO_NUMBER · VIDEO=NUMBER
