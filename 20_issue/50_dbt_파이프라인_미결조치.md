@@ -41,14 +41,45 @@ END-METADATA -->
 
 > ⚠️ **[순서9-C 개정]** 메달리온 베스트 프랙티스(Silver 참조무결성 = 알려진 원천 미완전이면 warn 관측, error 는 구조 불변식만)에 따라 **E 및 참조무결성 9건을 `severity:warn` 강등** → **full `dbt build` 는 이제 green**(ERROR=0). 마스터 전량입고·키체계 확정 시 `_crm_schema.yml`의 순서9-C warn 을 error 로 복귀. 대상 목록·복귀조건은 해당 yml 주석 참조.
 
+## 🔴→🟡 BLOCKING-5 — GOLD 팩트 measure·차원FK 대규모 미적재 (SV/Agent 착수 시 실측 발견 2026-07-21 · A1/A3 부분해소 진행중)
+> SV 설계(05_SV-Agent_ai 2단계) 중 **배포된 GOLD 실데이터**를 컬럼별 실측(`COUNT_IF`)한 결과, 행수는 있으나 **대부분의 카운트 measure·차원 FK가 전건 0/NULL**. 기존 Item D("원천 값 전무 5종")·D1(스캐폴드)·E(고아)의 범위를 **초과**하는 미적재. Cortex Analyst SV가 이 위에 서면 0/오답을 자신 있게 반환 → **배포 전 원인규명 필수**.
+> 🟡 **[2026-07-21 진행] A1·A3 착수** — 입고된 SILVER 데이터로 채울 수 있는 것부터 구현(아래 §BLOCKING-5 진행분).
+
+| FACT | ✅ 적재(활성 가능) | ❌ 전건 0/NULL (미적재) |
+|---|---|---|
+| FMM 37.8M→40.05M | PAID_FEE(36.09M)·BILLED_AMT·UNPAID_FLAG_BOM/EOM · ✅**DEV/STOP 건·명(A1: FME 롤업)** · ✅**HAS_BILLING(A1 출처플래그)** | UNPAID/ACTIVE/CUM/MONTH_END/YEAR_*·INCREASE 건·명·CAMPAIGN_UNPAID·STATUS_UNPAID·INBOUND/TS_CALL·REGULAR_FEE·SPONSOR/PAID_MONTHS·DEV_TYPE·밴드·JOIN_DATE·NEW_FLAG·NEW_EXISTING_FLAG·**CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK** |
+| FME 4.6M | DEV_CNT/MEMBERS·JOIN_DATE(3.59M)·STOP_CNT/MEMBERS/STOP_DATE(1.04M) | UNPAID_STOP·**ORG_SK·CAMPAIGN_SK·SPONSORSHIP_SK·REASON_SK·NEW_EXISTING_FLAG** |
+| FSE 38.5M | SEND_MEMBERS(전행)·SEND_STATUS(35.75M) · ✅**SERVICE_SK(A3: 요청마스터 조인, 99.97%)** · ✅**SEND_TITLE(A3)** | SUCCESS/FAIL/OPEN/LETTER/GIFT·**D5_\*(증액·서신·선물·중단)**·**CAMPAIGN_SK**(원천 캠페인 컬럼 부재) |
+| FEP 1.1M | MEMBER_DK·PARTICIPANT_CNT·EVENT_SK(76.8%) | TOTAL/RECRUIT_CNT·CAMPAIGN_SK·SPONSORSHIP_SK |
+| FBD 24.5K | BUDGET_ITEM_SK(전행)·PLAN_BUDGET_MONTH(7,290)·EXEC_BUDGET_ERP(3,244) | PLAN_BUDGET_YEAR·FUNDRAISING_COST·AD_COST·CAMPAIGN_SK·ORG_SK |
+
+- **영향**: 캠페인별/조직별/서비스구분별/납입방식별/신규기존별 지표, 활동·개발·중단 카운트 비율, 목표대비(공1~3), 서비스 수신/참여/증액/코호트(신31~53) = **전부 계산 불가**. Phase-1 실활성 = 납부율·미납회원감소·납입/청구/예산(세세목)·개발/중단 총건·유지기간·발송수·참여자수뿐.
+- **원인 후보(규명 필요)**: ① dbt gold.fact 모델이 해당 measure/FK 매핑 미구현(스캐폴드 컬럼 잔존) ② SILVER 원천 컬럼 공란(=Item D 확장) ③ FK 조인 미결선(전건 센티넬 0). → **GOLD/ETL 담당 확인**: 의도된 NULL인가 vs 적재 로직 누락인가.
+  - 🟡 **[2026-07-21 규명 결과]**: 원인은 대부분 **①(스캐폴드 컬럼 잔존, 로직 미구현)** — SILVER 원천은 입고돼 있음(FME dev/stop·CRM_SEND_REQUEST 등). 입고 대기(②/외부)는 소수(INBOUND/TS_CALL=C-8·FTG_BIZ=E-6·D5 코호트·FSE CAMPAIGN_SK[원천 캠페인 컬럼 부재]).
+- **조치**: (a) 좁은 Phase-1 SV는 실적재 컬럼만으로 배포(진행), (b) 본 항목 원인규명 후 measure/FK 적재 → SV metric 순차 활성(구조 DDL 불변). 
+- **검증 재현**: `SELECT COUNT_IF(<col><>0) FROM GN_DW.GOLD.<fact>` (상세 매트릭스 = `05_SV-Agent_ai/04_SV_설계.md §0.6`).
+
+### 🟡 [2026-07-21 진행분] BLOCKING-5 A-계열 착수 (입고 데이터로 구현 가능분)
+> "할 수 있는 것만" 원칙: 입고된 SILVER 데이터로 결정·외부의존 없이 채울 수 있는 항목을 우선 구현. build 는 사용자 실행.
+- ✅ **A3 — FSE SERVICE_SK·SEND_TITLE** (`models/gold/fact/FACT_SERVICE_EVENT.sql`): `CRM_SEND_MEMBER × CRM_SEND_REQUEST`(SNDNG_KEY, unique) 조인 → `SERVICE_SK = gold_sk([SEND_CHANNEL, SNDNG_TY_CD])`(DIM_SERVICE 동일 산식)·`SEND_TITLE=TIT`. **시뮬 검증: 커버 99.97%(38.46M/38.47M)·DIM_SERVICE 미매칭 SK=0건**. 미매칭 → SERVICE_SK=0(Unknown).
+- ✅ **A1 — FMM DEV/STOP 건·명 + HAS_BILLING** (`models/gold/fact/FACT_MEMBER_MONTHLY.sql` + `06_DDL.sql`): 스파인 = 회비(billing) ∪ 개발/중단(FME 월 롤업). `DEV_CNT/DEV_MEMBERS/STOP_CNT/STOP_MEMBERS` 실채움. **신규 컬럼 `HAS_BILLING BOOLEAN`**(출처 플래그)로 보수(billing-only)·정확(전체) 양립. **시뮬 검증: 40,054,883행=distinct grain(fan-out 0)·HAS_BILLING=TRUE 37,792,336(구 스파인과 정확 일치)·EVENT_ONLY 2,262,547·DEV 2.97M/STOP 0.97M 월×회원**.
+  - ⚠️ **DDL 변경**: FMM에 `HAS_BILLING` 1컬럼 추가(06_DDL.sql). fact는 append+pre-hook TRUNCATE라 **build 전 06_DDL 재실행(ALTER/재생성) 필요** — 미실행 시 신컬럼 부재로 append 실패.
+  - ⚠️ **DEV_CNT 의미**: FME 사건수(금액/10000 아님). 금액기반 "건"은 원천 금액컬럼+FME 변경 필요(별도트랙).
+- 🔜 **잔여(B계열) — ⏸️ Agent 오픈(SV 배포) 후 진행 결정**: SV/Agent를 먼저 열어 실사용 피드백을 받은 뒤 우선순위대로 착수. 데이터·조인은 준비됨, 각 게이트만 남음.
+  - **B1 FSE SUCCESS/FAIL_MEMBERS**: SNDNG_RST_CD 채워짐(2/1/Y/4/3/N/0) → **채널별 성공/실패 코드매핑 업무확정** 후 파생.
+  - **B2 FMM SPONSORSHIP_SK·PAYMENT_SK**: 원천 컬럼(SPNSR_BSNS_ID·PAYMENT_TYPE 등) 존재 → **O8 다중후원(회원 9.9%·최대13) grain 규칙**(대표후원/최빈) 확정 후.
+  - **B3 FMM/FSE CAMPAIGN_SK**: 발송/회비 원천에 캠페인 컬럼 부재 → **조인경로 확보 + O8 fan-out 검증**(§1-6 P3 패턴) 후.
+  - **근거**: A1/A3로 Phase-1 SV 실활성 스코프(발송수·서비스구분·개발/중단 총건 등)는 충분 확보 → Agent 먼저 열고, B는 실사용 요구에 따라 순차.
+
 ## 🟡 결정 대기 — 누락/과잉 GOLD 6개
 모델 작성 여부 결정 필요. **상세는 문서30 §6.** 요약: 소스 준비 4개(즉시 가능)·소스 입고대기 1개(FACT_TARGET_BIZ, 원천=**CRM** 확정·신규 목표 테이블 대기)·`DIM_MEMBER_IDENTITY`는 **2026-07-15 활성화 완료**(enabled=true·XREF dedup 조인, 1,274명 매칭).
 
-## 🟢 [정정 2026-07-15] BLOCKING-3 — dbt project 배포됨 (기존 "미배포" 오진 정정)
-**정정**: 앞선 "결과 공란"은 **조회 스키마 오류**(`SHOW DBT PROJECTS IN SCHEMA GN_DW.SILVER`)였음 — 프로젝트는 **`GN_DW.OPS`** 에 있음. `SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS` 실측 = **`DW_PIPELINE`** 존재(VERSION$1~$6). dbt 버전관리·`build` 게이트·리니지 정상 작동 중.
-- **현행 배포**: `GN_DW.OPS.DW_PIPELINE`, default=LAST → **VERSION$6 `IDENTITY_WIRED_20260715`**(2026-07-15 18:03, 오늘 identity 배선 포함). source=`snow://workspace/user$.public."snowflake_files"/versions/live/10_dbt_pipeline/`.
-- **검증(2026-07-15)**: VERSION$6 기준 `EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select FACT_GA_BEHAVIOR WIDE_GA_BEHAVIOR'` → PASS=15 WARN=0 ERROR=0.
-- **후속**: 이후 워크스페이스 편집분은 `ALTER DBT PROJECT ... ADD VERSION` 으로 반영.
+## 🟢 [정정 2026-07-15 · 재생성 2026-07-21] BLOCKING-3 — dbt project 배포됨
+**정정(2026-07-15)**: 앞선 "결과 공란"은 **조회 스키마 오류**(`SHOW DBT PROJECTS IN SCHEMA GN_DW.SILVER`)였음 — 프로젝트는 **`GN_DW.OPS`** 에 있음. dbt 버전관리·`build` 게이트·리니지 정상 작동.
+- **[2026-07-21 계정이전 재생성]** 신 계정(cs94293)에 `GN_DW.OPS.DW_PIPELINE` **최초 재생성 완료** — `VERSION$1`(default=LAST, A1/A3 반영분). `CREATE DBT PROJECT` 권한을 GN_DW_ADMIN에 선부여 후 생성(`10_dbt_pipeline/deploy_dbt_project.sql`). source=`snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline/`.
+- **[2026-07-21 build 검증]** `build --target dev` (전체 232 노드) → **PASS=211 WARN=21 ERROR=0**. FMM 40,054,883·FSE 38,470,780 재적재. WARN 21 = 기존 참조무결성 warn(순서9-C 강등분).
+- **후속**: 워크스페이스 편집분은 `ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE ADD VERSION` 으로 반영.
+- **참고(구 계정 이력)**: 구 계정 default=VERSION$6 `IDENTITY_WIRED_20260715` — 신 계정은 versions/live 최신 코드가 곧 VERSION$1 이라 드리프트 무관.
 
 ## 🟢 [순서9-D 2026-07-15 배포·검증완료 / 2026-07-16 9/9 완결] BLOCKING-4 — GOLD WIDE VIEW: 9/9 배포완료(dbt view)
 GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 뷰 0개였음. **순서9-D 에서 dbt view 모델(`models/gold/wide/`, `ref()`·`materialized:view`)로 8종 저작→`ADD VERSION`→full `build` 배포 완료** — 미거버넌스 객체(BLOCKING-3) 재발 방지.

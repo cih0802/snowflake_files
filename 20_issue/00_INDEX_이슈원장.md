@@ -40,6 +40,7 @@ END-METADATA -->
 | 현황 | 건수 | 대표 항목 | 관할 문서 |
 |---|---|---|---|
 | 🔴 하드블로커(외부) | 4 | **G-5** GA4 전기간 입고 · **E-6** FTG-B 원천(CRM) · **E-1** 모금성비용 원천 · **Q10** 캠페인 연결키 | 40 · 20 |
+| 🔴 적재 블로커(내부) | 1 | **BLOCKING-5** GOLD 팩트 measure·차원FK 대규모 미적재(2026-07-21 SV착수 실측) — 🟡 **A1(FMM DEV/STOP+HAS_BILLING)·A3(FSE SERVICE_SK) 부분해소 진행중** | 50 |
 | 🟠 설계결정 블로커 | ~~3+~~→ 감소 | ~~A-2/Q9~~ ✅해소(순9-C) · O2 APP분기 ✅데이터확정(PC/M·APP휴면) · AGENCY 6종 부분해소 | 30 |
 | 🔄 우리끼리 잠정(게이트 有) | 6 | A-7/O5 · A-8 · O6 · #81 · O8 · O10 | 20 · 30 |
 | 🔵 비블로커 | 6 | #80 · ID-활성 · Q1·Q2·Q3·Q8 | 30 · 20 |
@@ -48,9 +49,10 @@ END-METADATA -->
 | 🟢 해소완료 | 다수 | D1·D3·DEC-* · 지표정의 다수 · Q4~Q7·Q11~Q16 · 닫힌항목 7 | 90 |
 
 > **핵심**: 외부 의존 하드블로커는 **GA4 전기간 입고 · CRM FTG-B 사업목표 원천 · ERP 모금성비용 원천 · (ERP/AGENCY) 연결키·이름 현업확인** 4건뿐. 그 외 잔여는 내부 설계·실행으로 해소 가능.
-> **dbt 배포 상태 [2026-07-15 배포 · 2026-07-16 갱신 · 2026-07-20 실측]**: dbt project 를 `GN_DW.OPS.DW_PIPELINE`(운영 전용 스키마)로 배포. **[2026-07-16 실측] SILVER 32 + GOLD 33(dim 15 + fact 9 + WIDE view 9) = 65 models. full `dbt build` green**. 순서9-C 코드버그 8 수정 + 참조무결성 9 `severity:warn` 강등(메달리온 BP). 상세 §50. **[2026-07-15] VERSION$6 `IDENTITY_WIRED_20260715` 추가 배포** — DIM_MEMBER_IDENTITY 활성·FACT/WIDE_GA_BEHAVIOR identity 배선(매칭 1,274명·XREF 1,348행), 재빌드 PASS=15. **[2026-07-20 실측] `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개·`GN_DW.SILVER` 32테이블 배포·적재 완료**(FACT_TARGET_BIZ만 0행). ⚠️ **버전 동기화 필요**: `SHOW VERSIONS` default=VERSION$6(07-15)가 최신·VERSION$7+ 없음 → 07-16/07-20 워크스페이스 변경은 `ALTER DBT PROJECT … ADD VERSION`으로 재고정 권장.
-> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 CRM 원천 미입고로 0행 스켈레톤).
+> **dbt 배포 상태 [2026-07-15 배포 · 2026-07-16 갱신 · 2026-07-20 실측 · 2026-07-21 계정이전·A1/A3]**: ~~구 계정: `GN_DW.OPS.DW_PIPELINE`(VERSION$6 default)~~ → **신 계정(cs94293): `GN_DW.OPS.DW_PIPELINE`으로 최초 재생성 필요** (정본 위치=OPS 운영스키마, `10_dbt_pipeline/deploy_dbt_project.sql` 참조). 워크스페이스 dbt build는 정상 확인(SILVER 32 + GOLD 33 = 65 models green). **[2026-07-20 실측] `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개·`GN_DW.SILVER` 32테이블 배포·적재 완료**(FACT_TARGET_BIZ만 0행). 순서9-C 코드버그 8 수정 + 참조무결성 9 `severity:warn` 강등(메달리온 BP). ⚠️ **[2026-07-21 A1] FMM에 `HAS_BILLING` 컬럼 추가·행수 37.79M→40.05M** → build 전 `03_top-down_gold/06_DDL.sql` 재실행 필요. 상세 §50.
+> **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 CRM 원천 미입고로 0행 스켈레톤). · **🔴→🟡 BLOCKING-5 [2026-07-21 신규·부분해소중]** GOLD 팩트 measure·차원FK 대규모 미적재(FMM 카운트·FK 전건0·FSE SUCCESS/D5 전건0 등) — SV/Agent 착수 실측 발견. 🟡 **A1(FMM DEV/STOP+HAS_BILLING)·A3(FSE SERVICE_SK+SEND_TITLE) 구현·시뮬검증 완료**(build 대기), 잔여 B계열(코드매핑·O8 규칙)·외부입고 원인규명 필요(§50).
 > **▶ 진행 현황 [순서9-D]**: WIDE VIEW 9종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **[2026-07-16] FACT_TARGET_BIZ+WIDE_TARGET_BIZ 스켈레톤 저작**(0행 통과) — 단, 비판적 검토서 **단위충돌(SILVER 금액 TARGET_AMT vs GOLD 건 #152~155)·조인키 교정(이름기반)** 발견·처리(측정치 NULL·이름조인). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, **FACT_TARGET_BIZ 단위=건 확정(2026-07-20 정정) → 현업이 건 목표 원천 제공 시 채움; Bronze DDL 단위 건 정합 필요**). **총괄표**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/90_NEXT_SESSION_순서9-D_20260715.md`.
+> **▶ SERVING(SV/Agent) [순서9-E 2026-07-22]**: `GN_DW.SERVING`에 **Semantic View 5 배포·검증**(SV=FACT 일치·fan-out 0) + **Cortex Agent 2 배포·CoWork 연결**(AGENT_MEMBER·AGENT_OVERALL, owner=GN_DW_ADMIN, SI object ADD AGENT·소비 3역할 USAGE). 신규 진단·교훈 = **문서10 §6**: (6-A) FME/FSE/FEP grain 비유일→PK 미선언 · (6-B) 납부율 무필터 100.36% 왜곡→기간스코프 강제(신규 P10) · (6-C) 🔴 **트라이얼 DATA_AGENT_RUN 차단→NL 스모크 paid 게이트** · (6-D) cortex_agent_save 소유권 보정 · (6-E) BLOCKING-5 활성/비활성 경계 확정. 정본 = `05_SV-Agent_ai/`(00 README·08 spec·09 구현·10 검증·11 거버넌스).
 
 ---
 
@@ -61,7 +63,7 @@ END-METADATA -->
 ### 2-A. 입고 필요 (원천 데이터)
 | 대표 ID | 별칭 | 계층 | 이슈 | 상태 | 문서 |
 |---|---|---|---|---|---|
-| A-2 | Q9 | AGENCY | 광고 `_SOURCE_SYSTEM` 출처구분 | 🟠 테이블기반 부여 내부해소 | 30 |
+| A-2 | Q9 | AGENCY | 광고 `_SOURCE_SYSTEM` 출처구분 | ✅ 해소(순9-C 데이터확정: `DW_SOURCE_SYSTEM='AGENCY'` 상수·매체구분 속성) | 30 |
 | A-5 | — | AGENCY | 앱푸시 발송·성공(어드민) | ❌ 제외 | 90 |
 | A-6 | — | AGENCY | 이벤트 조회수(어드민) | ❌ 제외 | 90 |
 | A-10 | — | CRM/어드민 | 행사기간·참여경로·채널 | ✅ CRM-backed·어드민분만 제외 | 90 |
@@ -115,7 +117,7 @@ END-METADATA -->
 | Q6 | 정기/일시 UNION | 🟢 적재완료 | 90 |
 | Q7 | 조직 역할 3종(=O10) | 🟢 | 90 |
 | Q8 | EVENT_TYPE·활동전환(=O6) | 🔵 라벨 대기 | 20 |
-| Q9 | 노출·클릭 출처(=A-2) | 🟠 설계 | 30 |
+| Q9 | 노출·클릭 출처(=A-2) | ✅ 해소(순9-C, =A-2) | 30 |
 | Q10 | 세세목↔캠페인 | 🔴 부분·연결키 현업 | 40 |
 | Q11 | EHGT(=C-10) | 🟢 제외 | 90 |
 | Q12 | CSV↔DDL 대조 | 🟢 ◐잔여 입고팀 | 90 |

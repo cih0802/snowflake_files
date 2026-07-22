@@ -27,7 +27,7 @@
 | 2 | `02_GN_DW_building/` | **설계 정본(작업계획서)**. 운영 등급 이관 설계. `01` 대비 핵심 변경점 = **SERVING 계층 분리(4계층)**. | 설계 문서화 단계(라이브 전) |
 | 3 | `03_top-down_gold/` | **GOLD 정본**. 지표 215개(top) 기반 GOLD star schema(down) 설계 = **12 DIM + 6 FACT**. | Top-down 1~7단계 완료 |
 | 4 | `04_silver_design/` | **SILVER 설계**. GOLD 요구(역산) + BRONZE 적재현황 2축으로 SILVER 정제 레이어 설계. SILVER 24테이블. | 문서화 완료(CRM 14 즉시 가능) |
-| 5 | `05_SV-Agent_ai/` | **SERVING 의미계층**. GOLD 위 Semantic View 4 + Cortex Agent 3 설계. derived 81 metric 배속. | 0~1단계 완료, 2~7 대기 |
+| 5 | `05_SV-Agent_ai/` | **SERVING 의미계층**. GOLD 위 Semantic View 5 배포 + Cortex Agent 2 스펙(회원·overall). derived 81 metric 배속. 배포 산출물=루트 `cortex_project/`. | 0~5단계 완료(SV 배포·검증·평가셋·Agent 스펙), 6~8 대기 |
 
 > 폴더 위상 요약: `03`(GOLD)·`04`(SILVER)·`05`(SV/Agent)가 **현행 정본 트랙**. `02`는 상위 설계 정본이며 GOLD 상세는 `03`에 위임. `00`·`01`은 원천/레거시 참조용.
 
@@ -66,6 +66,7 @@ SERVING Semantic View 4 (MEMBER·SERVICE·AD·GA) + Cortex Agent 3
 | `GA 커넥터 테스트.md` / `sharepoint 데이터 테스트.sql` / `stagefile_download.md` | 원천 연동·적재 테스트 기록. |
 | `OPS.sql` / `TEARDOWN.sql` | 운영·정리 스크립트. |
 | `예산 안.md` | 프로젝트 예산 안. |
+| `cortex_project/` | **semantic_studio 툴 관리 배포 폴더(비번호·이동/개명 금지)**. Cortex Agent 스펙 YAML + `cortex-project.yaml`(artifact→Snowflake FQN 매니페스트). `05_SV-Agent_ai/08_AGENT_spec.md`가 사람용 설계 정본이고, 이 폴더는 그 **배포 산출물(IaC)**. 툴이 `cortex_project/` 또는 루트에서만 매니페스트를 탐색하므로 번호부여/이동 시 배포가 깨진다. |
 
 ---
 
@@ -74,5 +75,5 @@ SERVING Semantic View 4 (MEMBER·SERVICE·AD·GA) + Cortex Agent 3
    - 배경 이해가 필요하면 `00_PoC_bak/` → `01_project_sample/` 먼저 참조.
 
 ## 현재 상태 (요약)
-- 설계 트랙: GOLD ✅ / SILVER ✅(문서) / SV·Agent 🔵(1단계까지). 라이브 배포 전.
+- 설계 트랙: GOLD ✅ / SILVER ✅(문서) / SV·Agent 🔵(SV 5 배포·검증·평가셋 완료, Agent 2 스펙 완료·배포는 사용자, CoWork 연결 대기).
 - 데이터 트랙: BRONZE CRM 수령 완료, GA4·ERP·AGENCY 입고 대기 → 입고 시 SILVER/GOLD/SV 확장.

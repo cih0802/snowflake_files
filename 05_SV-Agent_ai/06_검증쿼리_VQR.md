@@ -1,0 +1,203 @@
+<!-- LLM-METADATA
+doc_id: SV_VQR_VERIFICATION
+doc_role: 4단계 — SV 검증쿼리(DoD 회귀) + Verified Query(VQR) 후보 + custom instruction 후보
+project: GN_DW (굿네이버스)
+created: 2026-07-22
+depends_on: 05_SV_DDL.sql (배포 완료 2026-07-22), 04_SV_설계.md(정정본), 03_SV_metric_배속.md(정정본)
+scope: Phase-1 배포 5 SV (SV_MEMBER_MONTHLY·SV_MEMBER_EVENT·SV_SERVICE·SV_EVENT_PARTICIPATION·SV_BUDGET)
+verify_env: GN_DW.SERVING (live), 2026-07-22 실측
+END-METADATA -->
+
+# 4단계 — 검증쿼리 & Verified Query (VQR)
+
+> 배포된 5 SV를 **실데이터로 검증**(SV 집계 = 단일 FACT 직접집계 일치)하고, Cortex Analyst 스티어링용 **VQR 후보**·**custom instruction 후보**를 확정한다. 모든 수치는 2026-07-22 라이브 실측.
+
+---
+
+## 0. 검증 요약
+
+- ✅ **fan-out/가산성 DoD 통과**: 5 SV 전부 SEMANTIC_VIEW 집계 = FACT 직접집계 **완전 일치**(아래 §1).
+- 🔧 **결함 1건 수정·재배포 완료**: `SV_MEMBER_EVENT.AVG_RETENTION_MONTHS`가 전건 **NULL** → 제거. FME는 개발행에 `JOIN_DATE`·중단행에 `STOP_DATE`가 서로 다른 행에 있어 행별 `DATEDIFF`가 NULL, `DIM_MEMBER_CURRENT.LAST_STOP_DATE`도 미적재(실측 0) → 유지기간 산출 불가. **2026-07-22 `CREATE OR REPLACE` 재배포·재검증 완료**(SV=FACT 일치). ⚠ 재배포로 삭제된 REFERENCES/SELECT grant도 재부여 완료(§5).
+- ⚠ **custom instruction 후보 3건**(§4): ① 납부율 기간 스코프(전기간 100.36% vs 연도별 ~94%) ② 미납회원 감소율 월 그룹 전제 ③ 행사·서비스 미매핑(Unknown) 고지.
+
+---
+
+## 1. 검증 결과 매트릭스 — SV 집계 = FACT 직접 (2026-07-22 live)
+
+| SV | metric | SV 값 | FACT 직접 | 판정 |
+|---|---|---:|---:|:--:|
+| SV_MEMBER_MONTHLY | TOTAL_PAID_FEE | 895,178,309,108 | 895,178,309,108 | ✅ |
+| SV_MEMBER_MONTHLY | TOTAL_BILLED_AMT | 891,959,790,888 | 891,959,790,888 | ✅ |
+| SV_MEMBER_MONTHLY | PAYMENT_RATE(공64) | 100.36% | 895,178,309,108÷891,959,790,888 | ✅(전기간·주의§4) |
+| SV_MEMBER_MONTHLY | TOTAL_DEV_CNT | 3,594,843 | 3,594,843 | ✅ |
+| SV_MEMBER_MONTHLY | TOTAL_STOP_CNT | 1,038,262 | 1,038,262 | ✅ |
+| SV_MEMBER_MONTHLY | UNPAID_MEMBERS_BOM | 526,654 | 526,654 | ✅ |
+| SV_MEMBER_MONTHLY | UNPAID_MEMBERS_EOM | 547,651 | 547,651 | ✅ |
+| SV_MEMBER_MONTHLY | UNPAID_REDUCTION_RATE(공80) | -3.99% | (526,654-547,651)÷526,654 | ✅(전기간·주의§4) |
+| SV_MEMBER_EVENT | TOTAL_DEV_CNT | 3,594,843 | 3,594,843 | ✅ |
+| SV_MEMBER_EVENT | TOTAL_STOP_CNT | 1,038,262 | 1,038,262 | ✅ |
+| SV_MEMBER_EVENT | DEV_MEMBER_COUNT | 1,585,949 | 1,585,949 | ✅ |
+| SV_MEMBER_EVENT | STOP_MEMBER_COUNT | 903,064 | 903,064 | ✅ |
+| SV_MEMBER_EVENT | ~~AVG_RETENTION_MONTHS~~ | NULL | 산출불가 | 🔧제거 |
+| SV_SERVICE | TOTAL_SEND_MEMBERS | 38,470,780 | 38,470,780 | ✅ |
+| SV_SERVICE | DISTINCT_SEND_MEMBERS | 1,031,971 | 1,031,971 | ✅ |
+| SV_EVENT_PARTICIPATION | TOTAL_PARTICIPANTS | 1,134,126 | 1,134,126 | ✅ |
+| SV_EVENT_PARTICIPATION | DISTINCT_PARTICIPANTS | 407,223 | 407,223 | ✅ |
+| SV_BUDGET | TOTAL_PLAN_BUDGET | 503,070,876,000 | 503,070,876,000 | ✅ |
+| SV_BUDGET | TOTAL_EXEC_BUDGET | 199,287,107,812 | 199,287,107,812 | ✅ |
+| SV_BUDGET | EXEC_RATE | 39.61% | 199,287,107,812÷503,070,876,000 | ✅ |
+
+> **차원조인 fan-out 무증폭 확인**: 회원 성별별 개발건 합(F 2,002,899 + M 1,362,101 + U 229,573 + 공백 270 = 3,594,843) = FME DEV 총계 → DIM_MEMBER_CURRENT 조인 증폭 0.
+
+---
+
+## 2. 검증쿼리 (DoD 회귀검증 — GOLD 재적재/SV 재배포 후 재실행)
+
+> R6(GOLD 변경 → SV stale) 방어. 각 쿼리는 **SV 집계 = FACT 직접**을 단언한다. 배포 후·재적재 후 재실행하여 일치 확인.
+
+```sql
+-- V1. SV_MEMBER_MONTHLY: 회비/개발/중단/미납 총량 = FMM 직접 (fan-out·가산성)
+SELECT sv.*, f.*
+FROM (SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY
+        METRICS TOTAL_PAID_FEE, TOTAL_BILLED_AMT, TOTAL_DEV_CNT, TOTAL_STOP_CNT,
+                UNPAID_MEMBERS_BOM, UNPAID_MEMBERS_EOM)) sv,
+     (SELECT SUM(PAID_FEE) f_paid, SUM(BILLED_AMT) f_billed, SUM(DEV_CNT) f_dev, SUM(STOP_CNT) f_stop,
+             COUNT(DISTINCT CASE WHEN UNPAID_FLAG_BOM THEN MEMBER_DK END) f_bom,
+             COUNT(DISTINCT CASE WHEN UNPAID_FLAG_EOM THEN MEMBER_DK END) f_eom
+      FROM GN_DW.GOLD.FACT_MEMBER_MONTHLY) f;
+-- 기대: TOTAL_PAID_FEE=f_paid ... UNPAID_MEMBERS_EOM=f_eom (전열 일치)
+
+-- V2. SV_MEMBER_EVENT: 개발/중단 건·고유회원수 = FME 직접
+SELECT 'SV' src, TOTAL_DEV_CNT, TOTAL_STOP_CNT, DEV_MEMBER_COUNT, STOP_MEMBER_COUNT
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_EVENT
+       METRICS TOTAL_DEV_CNT, TOTAL_STOP_CNT, DEV_MEMBER_COUNT, STOP_MEMBER_COUNT)
+UNION ALL
+SELECT 'FACT', SUM(DEV_CNT), SUM(STOP_CNT),
+       COUNT(DISTINCT CASE WHEN DEV_CNT>0 THEN MEMBER_DK END),
+       COUNT(DISTINCT CASE WHEN STOP_CNT>0 THEN MEMBER_DK END)
+FROM GN_DW.GOLD.FACT_MEMBER_EVENT;   -- 기대: 두 행 동일
+
+-- V3. SV_SERVICE: 발송수·고유회원수 = FSE 직접
+SELECT (SELECT TOTAL_SEND_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS TOTAL_SEND_MEMBERS)) sv_send,
+       (SELECT SUM(SEND_MEMBERS) FROM GN_DW.GOLD.FACT_SERVICE_EVENT) f_send,
+       (SELECT DISTINCT_SEND_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS DISTINCT_SEND_MEMBERS)) sv_dist,
+       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_SERVICE_EVENT) f_dist;
+
+-- V4. SV_EVENT_PARTICIPATION: 참여자수·고유회원수 = FEP 직접
+SELECT (SELECT TOTAL_PARTICIPANTS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_EVENT_PARTICIPATION METRICS TOTAL_PARTICIPANTS)) sv_part,
+       (SELECT SUM(PARTICIPANT_CNT) FROM GN_DW.GOLD.FACT_EVENT_PARTICIPATION) f_part,
+       (SELECT DISTINCT_PARTICIPANTS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_EVENT_PARTICIPATION METRICS DISTINCT_PARTICIPANTS)) sv_dist,
+       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_EVENT_PARTICIPATION) f_dist;
+
+-- V5. SV_BUDGET: 편성/집행 = FBD 직접
+SELECT (SELECT TOTAL_PLAN_BUDGET FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_BUDGET METRICS TOTAL_PLAN_BUDGET)) sv_plan,
+       (SELECT SUM(PLAN_BUDGET_MONTH) FROM GN_DW.GOLD.FACT_BUDGET) f_plan,
+       (SELECT TOTAL_EXEC_BUDGET FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_BUDGET METRICS TOTAL_EXEC_BUDGET)) sv_exec,
+       (SELECT SUM(EXEC_BUDGET_ERP) FROM GN_DW.GOLD.FACT_BUDGET) f_exec;
+
+-- V6. 시간 가산성(월 그룹 SUM = 전체): 다월 분해 후 재합이 총량과 일치 (fan-out·중복 없음)
+SELECT SUM(TOTAL_DEV_CNT) yr_sum
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS month.CAL_YEAR METRICS TOTAL_DEV_CNT);
+-- 기대: 3,594,843 (= 전체 TOTAL_DEV_CNT)
+```
+
+---
+
+## 3. Verified Query (VQR) 후보 — Cortex Analyst 스티어링
+
+> 각 항목: **NL 질문(한글)** → 검증된 `SEMANTIC_VIEW` SQL(2026-07-22 실행 성공). Phase-1 **활성 metric/dimension만** 사용. 5단계 Agent 구성 시 각 SV의 `AI_VERIFIED_QUERIES`(또는 SVA vqr_management)로 등록.
+
+### SV_MEMBER_MONTHLY
+```sql
+-- Q. "연도별 납부율 추이" (공64)  ※기간 스코프 필수(§4-1)
+SELECT CAL_YEAR, PAYMENT_RATE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS month.CAL_YEAR METRICS PAYMENT_RATE)
+ORDER BY CAL_YEAR;                       -- 예: 2023=93.66 · 2024=93.86 · 2025=93.98(%)
+
+-- Q. "회원구분별 납입회비 총액"
+SELECT MEMBER_TYPE, TOTAL_PAID_FEE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS member.MEMBER_TYPE METRICS TOTAL_PAID_FEE)
+ORDER BY TOTAL_PAID_FEE DESC;            -- 예: 1=756.6B · 2=132.1B · 3=6.4B
+
+-- Q. "2024년 월별 미납회원 감소율" (공80)  ※월 그룹 전제(§4-2)
+SELECT CAL_MONTH, UNPAID_REDUCTION_RATE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS month.CAL_YEAR, month.CAL_MONTH
+                   METRICS UNPAID_REDUCTION_RATE)
+WHERE CAL_YEAR = 2024 ORDER BY CAL_MONTH;
+
+-- Q. "성별 개발/중단 건수"
+SELECT GENDER, TOTAL_DEV_CNT, TOTAL_STOP_CNT
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS member.GENDER
+                   METRICS TOTAL_DEV_CNT, TOTAL_STOP_CNT);
+```
+
+### SV_MEMBER_EVENT
+```sql
+-- Q. "전이유형별 개발/중단 건수와 고유 회원수"
+SELECT EVENT_TYPE, TOTAL_DEV_CNT, TOTAL_STOP_CNT, DEV_MEMBER_COUNT, STOP_MEMBER_COUNT
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_EVENT DIMENSIONS fme.EVENT_TYPE
+                   METRICS TOTAL_DEV_CNT, TOTAL_STOP_CNT, DEV_MEMBER_COUNT, STOP_MEMBER_COUNT);
+
+-- Q. "연도·주차별 중단 건수 추이"
+SELECT CAL_YEAR, WEEK_OF_YEAR, TOTAL_STOP_CNT
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_EVENT DIMENSIONS date.CAL_YEAR, date.WEEK_OF_YEAR
+                   METRICS TOTAL_STOP_CNT)
+WHERE CAL_YEAR = 2025 ORDER BY WEEK_OF_YEAR;
+```
+
+### SV_SERVICE
+```sql
+-- Q. "채널별 발송수"
+SELECT CHANNEL, TOTAL_SEND_MEMBERS
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE DIMENSIONS service.CHANNEL METRICS TOTAL_SEND_MEMBERS)
+ORDER BY TOTAL_SEND_MEMBERS DESC;        -- 예: MSG_AT 20.6M · SND 8.3M · EMAIL 7.8M · PSTMTR 1.79M · (미매핑) 11K
+
+-- Q. "서비스유형별 발송 고유회원수"
+SELECT SUBTYPE, DISTINCT_SEND_MEMBERS
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE DIMENSIONS service.SUBTYPE METRICS DISTINCT_SEND_MEMBERS)
+ORDER BY DISTINCT_SEND_MEMBERS DESC;
+```
+
+### SV_EVENT_PARTICIPATION
+```sql
+-- Q. "행사종류별 참여자수·고유참여회원수"  ※미매핑(Unknown) 23% 고지(§4-3)
+SELECT EVENT_KIND, TOTAL_PARTICIPANTS, DISTINCT_PARTICIPANTS
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_EVENT_PARTICIPATION DIMENSIONS event.EVENT_KIND
+                   METRICS TOTAL_PARTICIPANTS, DISTINCT_PARTICIPANTS)
+ORDER BY TOTAL_PARTICIPANTS DESC;        -- 예: EVENT 718,438 · (Unknown) 263,611 · CRMN 152,077
+```
+
+### SV_BUDGET
+```sql
+-- Q. "예산구분별 편성·집행·집행율"
+SELECT BUDGET_CATEGORY, TOTAL_PLAN_BUDGET, TOTAL_EXEC_BUDGET, EXEC_RATE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_BUDGET DIMENSIONS item.BUDGET_CATEGORY
+                   METRICS TOTAL_PLAN_BUDGET, TOTAL_EXEC_BUDGET, EXEC_RATE)
+ORDER BY TOTAL_PLAN_BUDGET DESC;         -- 예: 지출 254.1B/31.7% · 수입 249.0B/47.7%
+
+-- Q. "월별 집행율 추이"
+SELECT MONTH_KEY, EXEC_RATE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_BUDGET DIMENSIONS month.MONTH_KEY METRICS EXEC_RATE)
+ORDER BY MONTH_KEY;
+```
+
+---
+
+## 4. custom instruction 후보 (Agent/SV 지침 — 5단계 반영)
+
+1. **납부율(공64)은 기간 스코프 필수.** 전기간 무필터 집계는 재청구·이월로 왜곡(실측: 전기간 100.36% vs 연도별 ~94%). 질문에 연/월 그룹 또는 필터가 없으면 최근 연·월 또는 명시 기간으로 한정하고, 무필터 총율은 참고치로만 제시.
+2. **미납회원 감소율(공80)·미납회원수는 월 그룹/필터 전제.** `COUNT(DISTINCT MEMBER_DK)` 기반이라 다월 무그룹 집계는 회원 중복 제거로 월별 합과 다름(전기간 단일값은 의미 약함). 반드시 `month` 차원과 함께 사용.
+3. **행사·서비스 미매핑(Unknown) 고지.** 행사 `EVENT_KIND`의 Unknown(EVENT_SK=0) = 참여 263,611(약 23%, 이슈 E), 서비스 채널 `(미매핑)` = 발송 11,313. 행사명/채널별 집계는 부분 커버 → 확정치로 단정 금지, 커버리지 안내.
+4. **회원 속성은 현재 스냅샷 기준**(성별·회원상태·회원구분). 과거월 조회 시에도 현재값. 지역·연령대·후원사업은 dim 공란으로 비활성.
+5. **회비 지표는 `HAS_BILLING=TRUE` 전제 권장**(청구 원천 존재 행).
+6. **비활성 지표 요청 시**: 캠페인/납입방식/조직/후원사업별 분해·성공/실패/오픈·D5 코호트·활동/누계 카운트·유지율/LTV·목표대비는 **데이터 적재 후(Phase-2)** 안내(추정 금지, R8).
+
+---
+
+## 5. 재배포 이력 & 다음 단계
+
+- ✅ **`SV_MEMBER_EVENT` 재배포 완료(2026-07-22)**: `05_SV_DDL.sql` 정정본(retention 제거)으로 `CREATE OR REPLACE` 실행 → §2 V2 재검증 통과(SV=FACT 일치, metric 4개, FME PK 없음 확인). **⚠ `CREATE OR REPLACE`가 grant를 삭제하므로 REFERENCES/SELECT(ANALYST·VIEWER·SERVICE) 재부여 완료**(SHOW GRANTS 7행 확인). → 단일 SV 재배포 시 grant 재실행 필수(05 §6 주석).
+- **다음**: `08_AGENT_spec.md` — 최종 3 Agent(회원·마케팅·overall) 중 **Phase-1 배포 2개**(회원·overall, 마케팅은 bronze 미완으로 Phase-2) 스펙(도구=SV·Cortex Search·orchestration 라우팅·custom instruction §4) → `10_SI연결_검증.md`(CoWork ADD AGENT).
+
+---
+_Co-authored with CoCo_

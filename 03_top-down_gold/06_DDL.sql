@@ -32,8 +32,10 @@
 */
 
 USE DATABASE GN_DW;
-CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD 
-  COMMENT = 'Gold 레이어 — 킴볼 스타스키마(DIM 15 + FACT 9) 분석 소비 계층. 지표 215개 귀속, WIDE VIEW 9개 제공';
+CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD
+    WITH MANAGED ACCESS
+    COMMENT = '분석 View + Semantic View + Agent + 예측 테이블 + Streamlit';
+    
 USE SCHEMA GOLD;
 
 -- ============================================================================
@@ -315,9 +317,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     SPONSORSHIP_SK              NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
     PAYMENT_SK                  NUMBER(38,0)    COMMENT '납입/결제 유형 (FK→DIM_PAYMENT)',
     REASON_SK                   NUMBER(38,0)    COMMENT '중단/미납 사유 (FK→DIM_REASON)',
-    DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) SUM(금액)/10000 (#4·5·149)',
-    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) COUNT (#148)',
-    STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) (#35, FME 롤업)',
+    DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) — A1: FME(CRM_MEMBER_DEV) 사건수 롤업. ⚠️금액/10000 의미는 원천 금액컬럼+FME 변경 필요(별도트랙, #4·5·149)',
+    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) — A1: 월×회원 개발발생=1 (#148)',
+    STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)',
     UNPAID_CNT                  NUMBER(18,4)    COMMENT '미납(건) (#36)',
     ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157)',
     ACTIVE_MEMBERS              NUMBER(38,0)    COMMENT '활동(명) (#156)',
@@ -356,6 +358,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     NEW_EXISTING_FLAG           VARCHAR         COMMENT '신규/기존(시점귀속, #113) — 04§5 reconcile',       -- snapshot
     UNPAID_FLAG_BOM             BOOLEAN         COMMENT '월초 미납회원 여부(=전월말 상태) — 04§5 reconcile (#80)', -- snapshot
     UNPAID_FLAG_EOM             BOOLEAN         COMMENT '월말 미납회원 여부 — 04§5 reconcile (#80)',         -- snapshot
+    HAS_BILLING                 BOOLEAN         NOT NULL COMMENT '납입/청구 행 존재 여부 — TRUE=회비 스파인(구 37.79M), FALSE=개발/중단 사건만(납입無 월). 보수적 소비=WHERE HAS_BILLING; 정확 소비=전체 (A1 2026-07-21)',  -- 출처 플래그
     DW_SOURCE_SYSTEM            VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                  TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',

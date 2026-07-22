@@ -1,8 +1,8 @@
 -- DIM_MEMBER_IDENTITY: 회원 신원 브리지 (CRM_MEMBER × GA4_IDENTITY 매칭, IDENTITY_MEMBER_XREF 경유)
 -- Co-authored with CoCo
--- ⚠️ 활성화(2026-07-15): SILVER GA4_IDENTITY 1,348행 적재 확인 → enabled 해제. GA_MEMBER_ID=exact member_id 매칭분만.
---    grain 보호: XREF는 user_pseudo_id 단위(1회원 최대 3 pseudo·67명) → MEMBER_DK로 집계 후 조인(IDENTITY_SK 유일성 보장).
---    데이터 범위: 현재 GA4 1일 샤드 기반(채움률 ~4.2%)·Q1 현업검증 대기. 전기간 입고 시 truncate+append로 자동 갱신.
+-- ⚠️ 활성화(2026-07-15): SILVER GA4_IDENTITY 적재 확인 → enabled 해제. GA_MEMBER_ID=exact member_id 매칭분만.
+--    grain 보호: XREF는 user_pseudo_id 단위(1회원 최대 3 pseudo) → MEMBER_DK로 집계 후 조인(IDENTITY_SK 유일성 보장).
+--    데이터 범위: 현재 GA4 1일 샤드 기반(채움률 ~4.2%)·Q1 현업검증 대기. 행수는 GA4 입고 범위에 비례(전기간 입고 시 truncate+append로 자동 갱신).
 
 
 with m as (
@@ -27,7 +27,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '50eaa2d8-6f32-46e5-ad87-91e23c3b74a4'                    AS DW_BATCH_ID
+    'b50d9005-0be3-463b-8b58-76f0c3a68e8a'                    AS DW_BATCH_ID
 from m
 left join xref x on x.X_MEMBER_DK = m.MEMBER_DK
 
@@ -37,4 +37,4 @@ select 0, '(미매핑)', '(미매핑)', NULL, NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '50eaa2d8-6f32-46e5-ad87-91e23c3b74a4'                    AS DW_BATCH_ID
+    'b50d9005-0be3-463b-8b58-76f0c3a68e8a'                    AS DW_BATCH_ID

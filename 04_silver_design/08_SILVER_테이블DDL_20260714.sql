@@ -20,7 +20,8 @@
 -- STEP 1 — 스키마 생성
 -- ============================================================================
 CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER
-  COMMENT = 'Silver 레이어 — Bronze(CRM·GA4·ERP·AGENCY) 정제 객체 (GOLD 입력용)';
+    WITH MANAGED ACCESS
+    COMMENT = 'Silver 레이어 — Bronze(CRM·GA4·ERP·AGENCY) 정제/변환 객체 (GOLD 입력용)';
 
 USE SCHEMA GN_DW.SILVER;
 

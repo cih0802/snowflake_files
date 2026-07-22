@@ -1,0 +1,12 @@
+version: 1
+artifacts:
+  - path: AGENT_MEMBER.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MEMBER
+  - path: AGENT_OVERALL.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_OVERALL

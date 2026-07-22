@@ -1,0 +1,165 @@
+------------------------------------------------------
+-- 8. 모니터링 세팅
+------------------------------------------------------
+USE ROLE ACCOUNTADMIN;
+
+------------------------------------------------------
+-- 8.1 Resource Monitor
+------------------------------------------------------
+
+-- ETL Warehouse 모니터 (월 200 크레딧)
+CREATE OR REPLACE RESOURCE MONITOR RM_ETL
+    WITH CREDIT_QUOTA = 200
+    FREQUENCY = MONTHLY
+    START_TIMESTAMP = IMMEDIATELY
+    NOTIFY_USERS = (TRIALADMIN)
+    TRIGGERS
+        ON 75 PERCENT DO NOTIFY
+        ON 90 PERCENT DO SUSPEND
+        ON 100 PERCENT DO SUSPEND_IMMEDIATE;
+
+ALTER WAREHOUSE GN_DW_ETL_WH SET RESOURCE_MONITOR = RM_ETL;
+
+-- Analytics Warehouse 모니터 (월 500 크레딧)
+CREATE OR REPLACE RESOURCE MONITOR RM_ANALYTICS
+    WITH CREDIT_QUOTA = 500
+    FREQUENCY = MONTHLY
+    START_TIMESTAMP = IMMEDIATELY
+    NOTIFY_USERS = (TRIALADMIN)
+    TRIGGERS
+        ON 75 PERCENT DO NOTIFY
+        ON 90 PERCENT DO NOTIFY
+        ON 100 PERCENT DO SUSPEND;
+
+ALTER WAREHOUSE GN_DW_ANALYTICS_WH SET RESOURCE_MONITOR = RM_ANALYTICS;
+
+-- Dev Warehouse 모니터 (월 100 크레딧)
+CREATE OR REPLACE RESOURCE MONITOR RM_DEV
+    WITH CREDIT_QUOTA = 100
+    FREQUENCY = MONTHLY
+    START_TIMESTAMP = IMMEDIATELY
+    NOTIFY_USERS = (TRIALADMIN)
+    TRIGGERS
+        ON 80 PERCENT DO NOTIFY
+        ON 100 PERCENT DO SUSPEND;
+
+ALTER WAREHOUSE GN_DW_DEV_WH SET RESOURCE_MONITOR = RM_DEV;
+
+-- Account 레벨 모니터 (월 1000 크레딧, 전체 안전망)
+CREATE OR REPLACE RESOURCE MONITOR RM_ACCOUNT
+    WITH CREDIT_QUOTA = 1000
+    FREQUENCY = MONTHLY
+    START_TIMESTAMP = IMMEDIATELY
+    NOTIFY_USERS = (TRIALADMIN)
+    TRIGGERS
+        ON 80 PERCENT DO NOTIFY
+        ON 95 PERCENT DO SUSPEND;
+
+ALTER ACCOUNT SET RESOURCE_MONITOR = RM_ACCOUNT;
+
+------------------------------------------------------
+-- 8.2 Alert 설정
+-- ※ Alert 활성화 전 Notification Integration을 먼저 생성해야 이메일 발송 가능
+------------------------------------------------------
+
+-- Alert은 Warehouse 지정 필수 (condition 평가 시 사용)
+
+-- ETL 실패 감지
+CREATE OR REPLACE ALERT GN_DW.SILVER.ALERT_ETL_FAILURE
+    WAREHOUSE = GN_DW_ETL_WH
+    SCHEDULE = 'USING CRON 0 * * * * Asia/Seoul'
+    IF (EXISTS (
+        SELECT 1
+        FROM GN_DW.SILVER.ETL_LOG
+        WHERE STATUS = 'ERROR'
+          AND STARTED_AT >= DATEADD('hour', -1, CURRENT_TIMESTAMP())
+    ))
+    THEN
+        CALL SYSTEM$SEND_EMAIL(
+            'GN_DW_ALERT',
+            'admin@example.com',
+            'ETL 실패 알림',
+            'GN_DW ETL 파이프라인에서 최근 1시간 내 에러가 발생했습니다. ETL_LOG를 확인하세요.'
+        );
+
+-- 장시간 쿼리 감지 (30분 이상)
+CREATE OR REPLACE ALERT GN_DW.SILVER.ALERT_LONG_QUERY
+    WAREHOUSE = GN_DW_ETL_WH
+    SCHEDULE = 'USING CRON */15 * * * * Asia/Seoul'
+    IF (EXISTS (
+        SELECT 1
+        FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(
+            DATEADD('minute', -15, CURRENT_TIMESTAMP()), CURRENT_TIMESTAMP()
+        ))
+        WHERE EXECUTION_STATUS = 'RUNNING'
+          AND DATEDIFF('minute', START_TIME, CURRENT_TIMESTAMP()) > 30
+    ))
+    THEN
+        CALL SYSTEM$SEND_EMAIL(
+            'GN_DW_ALERT',
+            'admin@example.com',
+            '장시간 쿼리 알림',
+            'GN_DW에서 30분 이상 실행 중인 쿼리가 있습니다.'
+        );
+
+-- BRONZE 데이터 미갱신 감지 (24시간 이상)
+CREATE OR REPLACE ALERT GN_DW.SILVER.ALERT_BRONZE_STALE
+    WAREHOUSE = GN_DW_ETL_WH
+    SCHEDULE = 'USING CRON 0 9 * * * Asia/Seoul'
+    IF (EXISTS (
+        SELECT 1
+        FROM SNOWFLAKE.ACCOUNT_USAGE.TABLE_STORAGE_METRICS
+        WHERE TABLE_CATALOG = 'GN_DW'
+          AND TABLE_SCHEMA = 'BRONZE'
+          AND TABLE_NAME = 'FACT_PAYMENT_HISTORY'
+          AND DATEDIFF('hour', LAST_ALTERED, CURRENT_TIMESTAMP()) > 24
+    ))
+    THEN
+        CALL SYSTEM$SEND_EMAIL(
+            'GN_DW_ALERT',
+            'admin@example.com',
+            'BRONZE 데이터 미갱신 알림',
+            'BRONZE.FACT_PAYMENT_HISTORY가 24시간 이상 갱신되지 않았습니다. 적재팀 확인 필요.'
+        );
+
+-- Alert 활성화 (운영 시작 시 주석 해제)
+-- ALTER ALERT GN_DW.SILVER.ALERT_ETL_FAILURE RESUME;
+-- ALTER ALERT GN_DW.SILVER.ALERT_LONG_QUERY RESUME;
+-- ALTER ALERT GN_DW.SILVER.ALERT_BRONZE_STALE RESUME;
+
+-- ※ Notification Integration 생성 (Alert 활성화 전 반드시 실행)
+-- CREATE OR REPLACE NOTIFICATION INTEGRATION GN_DW_ALERT
+--     TYPE = EMAIL
+--     ENABLED = TRUE
+--     ALLOWED_RECIPIENTS = ('admin@example.com');
+
+------------------------------------------------------
+-- 8.3 비용 추적 View
+------------------------------------------------------
+CREATE OR REPLACE VIEW GN_DW.GOLD.V_MONTHLY_COST_REPORT AS
+SELECT
+    DATE_TRUNC('month', START_TIME) AS MONTH,
+    WAREHOUSE_NAME,
+    ROUND(SUM(CREDITS_USED), 2) AS CREDITS_USED,
+    ROUND(SUM(CREDITS_USED_COMPUTE), 2) AS CREDITS_COMPUTE,
+    ROUND(SUM(CREDITS_USED_CLOUD_SERVICES), 2) AS CREDITS_CLOUD
+FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
+WHERE WAREHOUSE_NAME IN ('GN_DW_ETL_WH', 'GN_DW_ANALYTICS_WH', 'GN_DW_DEV_WH')
+  AND START_TIME >= DATEADD('month', -6, CURRENT_DATE())
+GROUP BY MONTH, WAREHOUSE_NAME
+ORDER BY MONTH DESC, CREDITS_USED DESC;
+
+-- Role별 쿼리 비용 (최근 30일)
+CREATE OR REPLACE VIEW GN_DW.GOLD.V_COST_BY_ROLE AS
+SELECT
+    DATE_TRUNC('day', START_TIME) AS QUERY_DATE,
+    ROLE_NAME,
+    WAREHOUSE_NAME,
+    COUNT(*) AS QUERY_COUNT,
+    ROUND(SUM(TOTAL_ELAPSED_TIME) / 1000 / 60, 1) AS TOTAL_MINUTES,
+    ROUND(AVG(TOTAL_ELAPSED_TIME) / 1000, 1) AS AVG_SECONDS
+FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+WHERE WAREHOUSE_NAME IN ('GN_DW_ETL_WH', 'GN_DW_ANALYTICS_WH', 'GN_DW_DEV_WH')
+  AND START_TIME >= DATEADD('day', -30, CURRENT_DATE())
+GROUP BY QUERY_DATE, ROLE_NAME, WAREHOUSE_NAME
+ORDER BY QUERY_DATE DESC, TOTAL_MINUTES DESC;
