@@ -4,13 +4,13 @@ doc_type: architecture_overview
 chapter: "05_ARCHITECTURE"
 index: "00_INDEX.md"
 language: ko (설명) / en (구조 키)
-canonical_basis: "03_top-down_gold (GOLD 정본) · 04_silver_design · 05_SV-Agent_ai"
-last_updated: "2026-06-24"
+canonical_basis: "03_top-down_gold (GOLD 정본) · 04_silver_design · 05_SV-Agent_ai · 10_dbt_pipeline"
+last_updated: "2026-07-22"
 ---
 
 # GN_DW 전체 아키텍처 (Architecture Overview)
 
-> 본 문서는 GN_DW 데이터 웨어하우스의 메달리온 아키텍처 전체 구성을 시각화한다. 상세 정의는 각 챕터(01~04) 및 `03_top-down_gold/` 참조.
+> 본 문서는 GN_DW 데이터 웨어하우스의 메달리온 아키텍처 전체 구성을 시각화한다(라이브 실측 2026-07-22). 상세 정의는 각 챕터(01~04) 및 정본 폴더 참조.
 
 ---
 
@@ -18,48 +18,53 @@ last_updated: "2026-06-24"
 
 ```mermaid
 flowchart LR
-  CRM["CRM (41개 테이블 / 876컬럼)<br/>수령 완료"]
-  PEND["GA4 / ERP / AGENCY<br/>입고 대기<br/>(GADS·ADMIN: AGENCY/CRM<br/>통합 예정·목적지 미정)"]
+  CRM["CRM (43테이블)<br/>✅ 전수 수령"]
+  PART["GA4 · ERP · AGENCY<br/>◐ 부분 입고<br/>(GADS·ADMIN: AGENCY/CRM<br/>통합 예정·미정)"]
   LOADER["LOADER<br/>(입고팀)"]
 
   subgraph GNDW["GN_DW (데이터베이스)"]
     direction LR
-    BRONZE["BRONZE<br/>원천 1:1 (6원천)"]
-    SILVER["SILVER<br/>정제·통합 (23)"]
-    GOLD["GOLD<br/>스타 스키마<br/>15 DIM + 9 FACT = 24"]
-    SERVING["SERVING<br/>SV 4 / Agent 3<br/>(Streamlit: 별도 트랙)"]
-    OPS["OPS<br/>비용 리포트 / 모니터링"]
+    subgraph BRZ["BRONZE (원천별 4스키마 · 48)"]
+      BCRM["BRONZE_CRM 43"]
+      BAGN["BRONZE_AGENCY 3"]
+      BERP["BRONZE_ERP 1"]
+      BGA4["BRONZE_GA4 1"]
+    end
+    SILVER["SILVER<br/>정제·통합 (32)"]
+    GOLD["GOLD<br/>스타 스키마 24<br/>(15 DIM + 9 FACT)<br/>+ WIDE VIEW 9"]
+    SERVING["SERVING<br/>SV 5 / Agent 2<br/>(+ 보조뷰 2)"]
+    OPS["OPS<br/>dbt DW_PIPELINE"]
     SECURITY["SECURITY<br/>마스킹 / 네트워크"]
   end
 
-  CRM --> BRONZE
-  PEND --> BRONZE
-  LOADER --> BRONZE
-  BRONZE --> SILVER --> GOLD --> SERVING
+  CRM --> BCRM
+  PART --> BAGN & BERP & BGA4
+  LOADER --> BRZ
+  BRZ -->|dbt| SILVER -->|dbt| GOLD --> SERVING
+  OPS -.dbt 실행.-> SILVER
 ```
 
-> 데이터 도메인: CRM(✅수령) · GA4 · ERP · AGENCY + GADS·ADMIN. GA4·ERP·AGENCY는 입고 대기, **GADS·ADMIN은 AGENCY 또는 CRM으로 통합 예정(목적지·접두사 미정)** → 물리 원천 4~6 가변.
-> CRM 접두사 구성(현재 41테이블 기준, 추후 확장 가능): SND_(2)·TC_(2)·TD_MS_(8)·TH_(2)·TM_CM_(6)·TM_MM_(7)·TM_MS_(5)·TM_PM_(3)·TM_RM_(6).
-> 계층 참조: **SERVING → GOLD → SILVER → BRONZE 단방향** (GOLD의 BRONZE 직접 참조 금지). OPS·SECURITY는 운영/거버넌스 보조 스키마.
-
+> 데이터 도메인: CRM(✅전수 43) · GA4·ERP·AGENCY(◐부분 입고) + GADS·ADMIN(AGENCY/CRM 통합 예정·미정) → 물리 원천 4~6 가변.
+> 계층 참조: **SERVING → GOLD → SILVER → BRONZE 단방향** (GOLD의 BRONZE 직접 참조 금지). OPS(dbt)·SECURITY는 운영/거버넌스 보조 스키마.
+> ETL 전 구간(BRONZE→SILVER→GOLD→WIDE)은 dbt 프로젝트 `GN_DW.OPS.DW_PIPELINE`(65 models)이 수행.
 
 ---
 <div style="page-break-before: always;"></div>
 
 ## 2. 계층별 역할 (Layer Responsibilities)
 
-| Layer | Schema | 객체 유형 | 핵심 원칙 |
+| Layer | Schema | 객체 (라이브) | 핵심 원칙 |
 |---|---|---|---|
-| 원천(도메인) | (외부) | CRM 41(확장가능) + GA4·ERP·AGENCY 대기 / GADS·ADMIN 통합예정 | 입고팀 정의서 기반, SoT |
-| 적재 | BRONZE | 물리 테이블 (원천 1:1) | 6원천 1:1 전량 적재, 멱등성(P6) |
-| 통합·정제 | SILVER | 물리 테이블 (23) | 타입/NULL/코드라벨/중복제거/동일소스 JOIN |
-| 분석 | GOLD | star schema 24 (15 DIM + 9 FACT, base measure 61) | SILVER만 참조(P2), 집계 granularity |
-| 소비/서비스 | SERVING | SV(4) + Agent(3) | GOLD cross-schema 참조(P7) |
-| 운영 | OPS | 비용 View, 메타 | 운영 가시성 |
+| 원천(도메인) | (외부) | CRM 43 ✅ + GA4·ERP·AGENCY 부분 / GADS·ADMIN 통합예정 | 입고팀 정의서 기반, SoT |
+| 적재 | BRONZE_CRM/AGENCY/ERP/GA4 | 물리 테이블 48 (원천 1:1) | 원천별 분리 적재, 멱등성(P6) |
+| 통합·정제 | SILVER | 물리 테이블 32 (dbt) | 타입/NULL/코드라벨/UNION·JOIN, 행 grain 유지 |
+| 분석 | GOLD | star 24 (15 DIM+9 FACT, base measure 61) + WIDE VIEW 9 | SILVER만 참조(P2), 집계 grain |
+| 소비/서비스 | SERVING | SV 5 + Agent 2 + 보조뷰 2 | GOLD cross-schema 참조(P7) |
+| 운영 | OPS | dbt PROJECT DW_PIPELINE | ETL 오케스트레이션 |
 | 거버넌스 | SECURITY | 정책 객체 | 보안 격리 |
 
-> 원천 현황: **CRM 41테이블/876컬럼 전수 수령(현재 기준·추후 확장 가능)**. GA4·ERP·AGENCY 미수령 → 입고 후 SILVER/GOLD 활성(S-6). GADS·ADMIN은 2026-06-24 정의서 추가 도메인이나 **AGENCY 또는 CRM으로 통합 예정(목적지·접두사 미정)** — GOLD 귀속(GADS→FAD / ADMIN→FSE)만 확정.
-> ⚠️ 실제 GN_DW DB 스키마는 **원천별 분리**(`BRONZE_CRM`·`BRONZE_GA4`·`BRONZE_ERP`·`BRONZE_AGENCY`)로 구현됨(단일 BRONZE 아님). [2026-07-13 실측] CRM 43테이블/927컬럼·GA4 `events_20260501` **287,025행(전체 1일 샤드)**·AGENCY 3테이블·ERP `BDGT_ACMSLT_LEDGER` 2,041행 적재됨. **GOLD·SILVER 스키마는 아직 미생성**(설계·DDL만 완료, CREATE 미실행).
+> 원천 현황: **CRM 43테이블 전수 수령**. GA4·ERP·AGENCY는 부분 입고(GA4 1일 샤드·ERP 예산원장·AGENCY 광고 스캐폴드) → 전기간/잔여 입고 후 SILVER/GOLD/SV 자동 확장(S-6). GADS·ADMIN은 AGENCY/CRM 통합 예정(목적지·접두사 미정) — GOLD 귀속(GADS→FAD / ADMIN→FSE)만 확정.
+> BRONZE는 **원천별 스키마 분리**(`BRONZE_CRM`·`BRONZE_AGENCY`·`BRONZE_ERP`·`BRONZE_GA4`)로 구현(단일 BRONZE 아님). [실측] CRM 43·GA4 `events_20260501` 287,025행·AGENCY 3(DGT 197,686/VIDEO 35,822/REBRDC 2,064)·ERP `BDGT_ACMSLT_LEDGER` 2,041행. **SILVER 32·GOLD 24+WIDE 9·SERVING SV5/Agent2 전량 배포 완료.**
 
 ---
 
@@ -83,27 +88,26 @@ ENGINEER   ANALYST     LOADER         SERVICE          (ADMIN)
     │         │                                      owns all
     │    GN_DW_VIEWER                                schemas
     │
-    └── ETL/프로시저/태스크 운영
+    └── ETL/dbt 파이프라인 운영
 ```
 
 ### 역할별 스키마 접근 매트릭스
 
 ```
-Role            │ BRONZE │ SILVER │ GOLD        │ SERVING        │ OPS    │ SECURITY
-────────────────┼────────┼────────┼─────────────┼────────────────┼────────┼─────────
-GN_DW_ADMIN     │ ALL    │ ALL    │ ALL         │ ALL            │ ALL    │ ALL
-GN_DW_ENGINEER  │ SELECT │ ALL    │ USAGE       │ USAGE          │ SELECT │ -
-                │        │        │ SELECT      │                │        │
-                │        │        │ CREATE      │                │        │
-                │        │        │  TABLE/VIEW │                │        │
-GN_DW_ANALYST   │ -      │ SELECT │ SELECT      │ SV/Agent       │ SELECT │ -
-GN_DW_VIEWER    │ -      │ -      │ SELECT      │ SV/Agent       │ -      │ -
-GN_DW_LOADER    │ INSERT │ -      │ -           │ -              │ -      │ -
-                │ UPDATE │        │             │                │        │
-GN_DW_SERVICE   │ -      │ -      │ SELECT      │ SV/Agent       │ -      │ -
+Role            │ BRONZE_* │ SILVER │ GOLD        │ SERVING        │ OPS    │ SECURITY
+────────────────┼──────────┼────────┼─────────────┼────────────────┼────────┼─────────
+GN_DW_ADMIN     │ ALL      │ ALL    │ ALL         │ ALL            │ ALL    │ ALL
+GN_DW_ENGINEER  │ SELECT   │ ALL    │ ALL         │ USAGE          │ USAGE  │ -
+                │          │        │ (dbt CREATE │                │ (dbt)  │
+                │          │        │  TABLE/VIEW)│                │        │
+GN_DW_ANALYST   │ -        │ SELECT │ SELECT      │ SV/Agent       │ -      │ -
+GN_DW_VIEWER    │ -        │ -      │ SELECT      │ SV/Agent       │ -      │ -
+GN_DW_LOADER    │ INSERT   │ -      │ -           │ -              │ -      │ -
+                │ UPDATE   │        │             │                │        │
+GN_DW_SERVICE   │ -        │ -      │ SELECT      │ SV/Agent       │ -      │ -
 ```
 
-> GOLD는 물리 테이블(DIM/FACT) 계층이므로 ENGINEER는 `CREATE TABLE`(star schema 적재)·`CREATE VIEW` 권한을 가진다. 소비 역할(ANALYST/VIEWER/SERVICE)은 GOLD SELECT + SERVING SV/Agent 접근.
+> GOLD는 물리 테이블(DIM/FACT)+WIDE VIEW 계층이므로 ENGINEER는 dbt 실행을 위한 `CREATE TABLE`·`CREATE VIEW` 권한을 가진다. 소비 역할(ANALYST/VIEWER/SERVICE)은 GOLD SELECT + SERVING SV/Agent 접근. Role 6종·WH 3종은 라이브 실측 확인.
 
 ---
 
@@ -115,7 +119,7 @@ GN_DW_SERVICE   │ -      │ -      │ SELECT      │ SV/Agent       │ -  
 flowchart LR
   subgraph ETL["GN_DW_ETL_WH / SMALL / 자동중단 60s"]
     direction TB
-    E1["프로시저 / 태스크(DAG)<br/>LOADER 적재 / GOLD 적재 SP"]
+    E1["dbt 파이프라인(DW_PIPELINE)<br/>LOADER 적재"]
     E2["역할: ENGINEER · LOADER"]
   end
   subgraph ANA["GN_DW_ANALYTICS_WH / MEDIUM / 자동중단 300s"]
@@ -134,25 +138,22 @@ flowchart LR
 
 <div style="page-break-before: always;"></div>
 
-## 5. ETL 파이프라인 DAG (Task Orchestration)
+## 5. ETL 파이프라인 (dbt Orchestration)
 
 ```mermaid
 flowchart LR
-  CRON(["⏱ 05:30 KST"])
-  T1["VALIDATE_BRONZE<br/>품질 게이트"]
-  T2["REFINEMENT_ROOT<br/>BRONZE→SILVER"]
-  T3["LOAD_GOLD<br/>SILVER→GOLD"]
-  T4["FINALIZER<br/>로그 · 알림"]
+  BRZ["BRONZE_<SOURCE><br/>원천 48"]
+  S["SILVER 32<br/>(dbt table)"]
+  G["GOLD star 24<br/>(dbt table)"]
+  W["WIDE VIEW 9<br/>(dbt view)"]
 
-  CRON --> T1
-  T1 -->|통과| T2
-  T2 --> T3
-  T3 --> T4
+  BRZ -->|dbt run| S -->|dbt run| G --> W
+  S -.dbt test.-> S
+  G -.dbt test.-> G
 ```
 
-> 실행 모드: Serverless (자동 스케일링, 3회 연속 실패 시 중단). `TASK_LOAD_GOLD` 적재 프로시저는 별도 트랙(04 범위 밖).
-
-> 현행 GOLD는 **물리 star schema 적재**(DIM/FACT MERGE)이며, 레거시의 GOLD 예측 View 갱신 단계(`TASK_REFRESH_FORECAST`)는 현행 24테이블에 예측 테이블이 없어 제외.
+> 실행: dbt 프로젝트 `GN_DW.OPS.DW_PIPELINE` (65 models = SILVER 32 + GOLD 24 + WIDE 9). 품질 게이트 = dbt schema tests(relationships=warn·핵심 PK=error). 정기 스케줄(cron Task 래핑)은 향후 도입.
+> 구설계의 Serverless Task DAG(`VALIDATE_BRONZE`→`REFINEMENT_ROOT`→`LOAD_GOLD`→`FINALIZER`)·정제 프로시저·`ETL_LOG`·예측(Forecast) 파이프라인은 **전량 폐기**(dbt 전환·forecast 제외 2026-07-10).
 
 ---
 
@@ -160,38 +161,42 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-  subgraph SV["Semantic View (4) — FACT grain 경계로 분리"]
-    SVM["SV_MEMBER → FACT_MEMBER_MONTHLY (FMM)"]
-    SVS["SV_SERVICE → FACT_SERVICE_EVENT (FSE)"]
-    SVA["SV_AD → FACT_AD_PERFORMANCE (FAD)"]
-    SVG["SV_GA → FACT_GA_BEHAVIOR (FGA)"]
+  subgraph SV["Semantic View (5 배포 · 최종 7) — FACT grain 경계로 분리"]
+    SVM["SV_MEMBER_MONTHLY → FMM"]
+    SVE["SV_MEMBER_EVENT → FME"]
+    SVS["SV_SERVICE → FSE"]
+    SVP["SV_EVENT_PARTICIPATION → FEP"]
+    SVB["SV_BUDGET → FBD"]
   end
-  subgraph AG["Cortex Agent (3)"]
-    A1["1. 회원실적 Agent<br/>(단일 SV)"]
-    A2["2. 서비스 Agent<br/>(단일 SV)"]
-    A3["3. 마케팅 Agent<br/>(다중 SV 라우팅)"]
+  subgraph AG["Cortex Agent (2 배포 · 최종 3)"]
+    A1["AGENT_MEMBER<br/>(회원 도메인: 월실적·상태전이·발송·행사 4 SV)"]
+    A2["AGENT_OVERALL<br/>(전사·재무: 예산 기본 + 회원월실적·발송 3 SV)"]
   end
   SVM --> A1
+  SVE --> A1
+  SVS --> A1
+  SVP --> A1
+  SVB --> A2
+  SVM --> A2
   SVS --> A2
-  SVA --> A3
-  SVG --> A3
 ```
 
-> SV별 도메인: MEMBER(회원 실적·목표대비·유지/중단) · SERVICE(발송·수신·참여·이벤트·앱푸시) · AD(광고 노출·클릭·전환·집행예산) · GA(세션·이탈율·스크롤).
-> 정확도 메커니즘: synonyms(한글) · VQR · custom instruction(시간가용성/NULL) · 평가셋.
-> derived 81 metric 전수 배속(MEMBER 48 · SERVICE 24 · AD 4 · GA 2 · 보류 3). 모든 참조: `GN_DW.GOLD.FACT_* / DIM_*` (cross-schema).
-> ※ Streamlit 앱은 현행 SV/Agent 설계(05) 범위 밖 — 별도 소비 트랙.
-> ※ 본 SV 4 / Agent 3은 **star schema 기반 목표 상태**이며 정본은 `05_SV-Agent_ai/`. `03_GOLD_SERVING.md`의 **레거시 SV 7 / Agent 1**은 PoC 이관 현재 상태로, 전환 로드맵의 시작점이다(수치 상충 아님).
+> 배포 SV 5(FMM·FME·FSE·FEP·FBD). 미배포 2(FGA·FAD/FTG 계열) = 최종 7 목표의 Phase-2 확장.
+> Agent 2(AGENT_MEMBER·AGENT_OVERALL), owner=GN_DW_ADMIN, Snowflake Intelligence(CoWork) 연결·소비 3역할 USAGE.
+> 정확도 메커니즘: synonyms(한글)·VQR·custom instruction(기간스코프 강제 P10)·평가셋. 모든 참조: `GN_DW.GOLD.FACT_*/DIM_*`(cross-schema) + SERVING 보조뷰(DIM_MEMBER_CURRENT·DIM_MONTH)로 fan-out 차단.
+> ⚠️ [6-C] 트라이얼 계정 DATA_AGENT_RUN 차단 → NL 스모크는 paid 이관 대기. Streamlit은 현재 미배포.
+> SV/Agent 정본 = `05_SV-Agent_ai/`.
 
-### GOLD star schema 24 (적재 정본 — `03_top-down_gold/06_DDL.sql`)
+### GOLD star schema 24 (적재 정본 — `03_top-down_gold/06_DDL.sql`, dbt 모델화)
 
 ```
 DIM (15)  DIM_DATE  DIM_MEMBER  DIM_MEMBER_IDENTITY  DIM_CAMPAIGN  DIM_SPONSORSHIP
           DIM_ORG  DIM_AD_CREATIVE  DIM_GA_SOURCE  DIM_GA_EVENT  DIM_SERVICE
           DIM_PAYMENT  DIM_REASON  DIM_DEVICE  DIM_EVENT  DIM_BUDGET_ITEM
 FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)    FACT_TARGET_DEV(FTG-D)
-          FACT_TARGET_BIZ(FTG-B)     FACT_SERVICE_EVENT(FSE)   FACT_GA_BEHAVIOR(FGA)
+          FACT_TARGET_BIZ(FTG-B·0행)  FACT_SERVICE_EVENT(FSE)   FACT_GA_BEHAVIOR(FGA)
           FACT_AD_PERFORMANCE(FAD)   FACT_EVENT_PARTICIPATION(FEP)   FACT_BUDGET(FBD)
+WIDE (9)  각 FACT 1:1 평탄화 VIEW (WIDE_MEMBER_MONTHLY … WIDE_TARGET_BIZ)
           → base measure 61  (지표 215 → measure 60 + dimension 74 + derived 81)
 ```
 
@@ -202,7 +207,7 @@ FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)    FACT_TARGET_DEV(F
 ## 7. 보안 & 거버넌스 (Security & Governance)
 
 ```
-┌─────────────────────── SECURITY 스키마 ───────────────────────────┐
+┌─────────────────────── SECURITY 스키마 (MANAGED ACCESS) ──────────┐
 │                                                                   │
 │  Network Rules          │  Network Policy       │  Masking Policy │
 │  ───────────────────    │  ──────────────────   │  ────────────── │
@@ -212,35 +217,33 @@ FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)    FACT_TARGET_DEV(F
 └───────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────── OPS 스키마 ────────────────────────────────┐
-│                                                                   │
-│  Resource Monitor (4)   │  Alert (3)            │  Cost Views (2) │
-│  ───────────────────    │  ──────────────────   │  ────────────── │
-│  계정/WH별 크레딧 상한  │  비용 급증 알림       │  비용 분석 집계  │
-│  임계 80%/95% SUSPEND   │  태스크 실패 알림     │                 │
+│  DBT PROJECT DW_PIPELINE (ETL 오케스트레이션)                     │
+│  ── 향후(설계안): Resource Monitor / Alert / Cost View ──         │
 └───────────────────────────────────────────────────────────────────┘
 ```
+
+> 보안 정책(네트워크/마스킹)·모니터링(RM/Alert/Cost)은 설계안이며 운영 승격 시 배포. 상세는 `04_운영 확인.md` 7~8장.
 
 ---
 
 ## 8. 구축 실행 흐름 (Execution Sequence)
 
 ```
-Step  1 ─── 환경(TZ, WH 3종)
-Step  2 ─── Role 6종 + 계층
-Step  3 ─── Database + Schema 6종
-Step  4 ─── BRONZE 테이블 (원천 1:1 — CRM 41 ✅[확장 가능] / GA4·ERP·AGENCY 입고 후 / GADS·ADMIN 통합 예정·미정)
-Step  5 ─── 정제 프로시저 → SILVER 23 산출 (소스별 정제·통합)
-Step  6 ─── GOLD star schema 24 적재 (15 DIM + 9 FACT, base measure 61)
-Step  7 ─── Semantic View 4 (SV_MEMBER/SERVICE/AD/GA)
-Step  8 ─── Cortex Agent 3 (회원실적/서비스/마케팅)
-Step  9 ─── Grants + Future Grants
-Step 10 ─── Task DAG 4종
-Step 11 ─── 테스트 (권한/E2E/정합성)
-Step 12 ─── 보안 (네트워크/마스킹/MFA)
-Step 13 ─── 모니터링 (Resource Monitor/Alert/Cost)
+Step  1 ─── 환경(TZ, WH 3종)                                    ✅ 라이브
+Step  2 ─── Role 6종 + 계층                                      ✅ 라이브
+Step  3 ─── Database + Schema (BRONZE 4 + SILVER/GOLD/SERVING/OPS/SECURITY) ✅
+Step  4 ─── BRONZE 적재 48 (CRM 43 ✅ / GA4·ERP·AGENCY 부분)     ◐ 부분
+Step  5 ─── dbt: SILVER 32 산출                                  ✅ 라이브
+Step  6 ─── dbt: GOLD star 24 + WIDE VIEW 9                       ✅ 라이브
+Step  7 ─── Semantic View 5 (최종 7)                             ✅ 배포
+Step  8 ─── Cortex Agent 2 (최종 3)                              ✅ 배포
+Step  9 ─── Grants + Future Grants                               ✅
+Step 10 ─── 테스트 (권한/E2E/정합성 · dbt test)                  ✅
+Step 11 ─── 보안 (네트워크/마스킹/MFA)                           ○ 설계안
+Step 12 ─── 모니터링 (Resource Monitor/Alert/Cost)               ○ 설계안
 ```
 
-> Streamlit 앱 구축은 현행 SV/Agent 정본(05) 범위 밖이므로 본 시퀀스에서 제외(필요 시 별도 트랙).
+> Streamlit 앱은 현재 미배포(향후 별도 트랙). ETL은 dbt 파이프라인으로 대체됨.
 
 ---
 
@@ -250,14 +253,14 @@ Step 13 ─── 모니터링 (Resource Monitor/Alert/Cost)
 
 | ID | 원칙 | 설명 |
 |---|---|---|
-| P1 | Layer Separation | BRONZE(원천 1:1 보존)→SILVER(정제·통합)→GOLD(분석 star schema), SERVING = 소비 |
-| P2 | No Bronze Direct Ref | `SERVING→GOLD→SILVER→BRONZE` 단방향. GOLD는 BRONZE 직접 참조 금지(외부 집계본도 SILVER 경유) |
-| P3 | GOLD Access Control | GOLD는 물리 star schema(DIM/FACT). 소비는 SERVING SV/Agent 경유, 직접 접근은 SELECT 한정 |
+| P1 | Layer Separation | BRONZE(원천 1:1 보존)→SILVER(정제·통합)→GOLD(분석 star schema+WIDE), SERVING = 소비 |
+| P2 | No Bronze Direct Ref | `SERVING→GOLD→SILVER→BRONZE` 단방향. GOLD는 BRONZE 직접 참조 금지 |
+| P3 | GOLD Access Control | GOLD는 물리 star schema+WIDE VIEW. 소비는 SERVING SV/Agent 경유, 직접 접근은 SELECT 한정 |
 | P4 | Role Hierarchy | 모든 Custom Role → SYSADMIN 귀속 |
 | P5 | Workload Isolation | 용도별 WH 분리 (ETL / 분석 / 개발) |
-| P6 | Idempotency | GOLD DDL `CREATE TABLE IF NOT EXISTS`(비파괴·재실행 안전) / 적재 MERGE 멱등성 |
+| P6 | Idempotency | dbt run 재실행 안전(table CREATE OR REPLACE / view 재생성) |
 | P7 | Serving Separation | SV/Agent는 GOLD가 아닌 SERVING 스키마 |
 
 ---
 
-> **관련 문서:** `01_환경_Role.md` · `02_DB_BRONZE_SILVER.md` · `03_GOLD_SERVING.md`(레거시 View 전략) · `04_운영.md` · **GOLD 정본** `03_top-down_gold/GOLD_ddl 초안.sql` · **SV/Agent 정본** `05_SV-Agent_ai/`
+> **관련 문서:** `01_환경_Role.md` · `02_DB_BRONZE_SILVER.md` · `03_GOLD_SERVING.md` · `04_운영 확인.md` · **GOLD 정본** `../03_top-down_gold/06_DDL.sql` · **SV/Agent 정본** `../05_SV-Agent_ai/` · **dbt** `../10_dbt_pipeline/`

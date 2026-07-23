@@ -5,14 +5,14 @@ chapter: "02_DB_BRONZE_SILVER"
 sections: [3.1, 3.2, 3.3, 3.4, 4]
 index: "00_INDEX.md"
 depends_on: ["01_환경_Role.md"]   # roles/warehouses 필요
-provides: [database, schemas, bronze_tables, silver_tables, procedures]
+provides: [database, schemas, bronze_tables, silver_tables, dbt_pipeline]
 language: ko (설명) / en (구조 키)
 ---
 
-# 02. DB / BRONZE / SILVER / 프로시저 (objects + procedures)
+# 02. DB / BRONZE / SILVER / dbt 파이프라인 (objects + pipeline)
 
 > 인덱스: `00_INDEX.md` · 핵심 원칙(P1~P7)은 인덱스 참조.
-> 본 챕터는 구축 step 3~5를 다룬다. **정제 프로시저(4장)가 SILVER를 산출하므로 GOLD View(03_GOLD_SERVING.md)보다 먼저 실행한다.**
+> 본 챕터는 구축 step 3~5를 다룬다. **BRONZE→SILVER→GOLD 적재는 dbt 파이프라인(`GN_DW.OPS.DW_PIPELINE`)이 담당한다(라이브 2026-07-22). 구설계의 정제 프로시저 18종은 dbt 모델로 전량 대체됨(폐기).**
 
 ---
 
@@ -29,50 +29,65 @@ database:
 
 ```yaml
 schemas:
-  - id: BRONZE
-    purpose: 원천 데이터 적재 (외부팀)
+  # ── BRONZE: 원천별 스키마로 물리 분리 (단일 BRONZE 아님) ──
+  - id: BRONZE_CRM
+    purpose: 원천 적재 — CRM (회원/납입/캠페인)
     owner: GN_DW_ADMIN
-    note: "LOADER role 쓰기 권한"
+    access: MANAGED ACCESS
+    note: "LOADER role 쓰기. 43테이블 실측"
+  - id: BRONZE_AGENCY
+    purpose: 원천 적재 — 대행사 (디지털/DRTV/재송출 광고)
+    owner: GN_DW_ADMIN
+    access: MANAGED ACCESS
+    note: "3테이블 실측"
+  - id: BRONZE_ERP
+    purpose: 원천 적재 — ERP (예산 실적 원장)
+    owner: GN_DW_ADMIN
+    access: MANAGED ACCESS
+    note: "1테이블 실측"
+  - id: BRONZE_GA4
+    purpose: 원천 적재 — GA4 (웹/앱 방문)
+    owner: GN_DW_ADMIN
+    access: MANAGED ACCESS
+    note: "1테이블(1일 샤드) 실측"
   - id: SILVER
-    purpose: 정제/변환 레이어
+    purpose: 정제/통합 레이어
     owner: GN_DW_ADMIN
-    note: "물리 테이블 (프로시저 갱신)"
+    note: "물리 테이블 32 (dbt 모델 갱신). 소스 접두 CRM_*/GA4_*/ERP_*/AGENCY_* + bridge"
   - id: GOLD
-    purpose: 분석 계층 — star schema 물리 테이블(15 DIM + 9 FACT) + 레거시 호환 View 35
+    purpose: 분석 계층 — star schema 물리 테이블(15 DIM + 9 FACT) + 평탄화 WIDE VIEW 9
     owner: GN_DW_ADMIN
-    note: "데이터 프로덕트 계층. Analyst/Viewer 읽기 전용(owner's rights)"
+    note: "데이터 프로덕트 계층. Analyst/Viewer 읽기 전용. 레거시 PoC View는 없음(WIDE 9로 대체)"
   - id: SERVING
-    purpose: Semantic View + Agent + Streamlit
+    purpose: Semantic View + Cortex Agent (+ 보조 뷰)
     owner: GN_DW_ADMIN
-    note: "소비/서비스 계층. GOLD View를 cross-schema 참조. Viewer 소비 지점 (P7)"
+    note: "소비/서비스 계층. GOLD를 cross-schema 참조. SV 5 + Agent 2 + 보조뷰 2 (P7). Streamlit 미배포"
   - id: OPS
-    purpose: 비용 리포트 View (+향후 모니터링 객체)
+    purpose: ETL 운영 인프라 — dbt 프로젝트 객체
     owner: GN_DW_ADMIN
-    note: "운영 메타데이터. ETL_LOG·Alert는 SILVER 유지, Resource Monitor는 계정 레벨"
+    note: "DBT PROJECT DW_PIPELINE 배치. (구설계의 ETL_LOG/Task/Alert는 dbt 전환으로 미사용)"
   - id: SECURITY
     purpose: 마스킹 정책 · 네트워크 룰/정책 객체
     owner: GN_DW_ADMIN
-    note: "거버넌스 정책 격리"
+    note: "거버넌스 정책 격리 (MANAGED ACCESS)"
 schema_contents:
-  BRONZE: { tables: 56, note: "CRM 41 + 외부 15, 원천 1:1. 물리 구현은 BRONZE_CRM/GA4/ERP/AGENCY 분리" }
-  SILVER: { tables: 23, procedures: 22, etl_log: 1, tasks: 4, alerts: 3, note: "통합·정제 + 운영 파이프라인 객체" }
-  GOLD: { star_schema: 24, legacy_views: 35, forecast_tables: 0, note: "star 24(15 DIM+9 FACT) + 레거시 View 35 병존. forecast 제외(2026-07-10)" }
-  SERVING: { semantic_views: 7, agents: 1, streamlit_apps: 6 }
-  OPS: { views: 2, note: "비용 리포트 View" }
+  BRONZE_CRM: { tables: 43, note: "CRM 원천 1:1 (원천정의 41 + 템플릿 2)" }
+  BRONZE_AGENCY: { tables: 3, note: "DGT/REBRDC/VIDEO 광고 성과 내역" }
+  BRONZE_ERP: { tables: 1, note: "BDGT_ACMSLT_LEDGER 예산 실적 원장" }
+  BRONZE_GA4: { tables: 1, note: "events_20260501 (1일 샤드, 소문자명)" }
+  SILVER: { tables: 32, pipeline: "dbt DW_PIPELINE", note: "CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1" }
+  GOLD: { star_schema: 24, wide_views: 9, forecast_tables: 0, note: "star 24(15 DIM+9 FACT) + WIDE VIEW 9. forecast 제외(2026-07-10)" }
+  SERVING: { semantic_views: 5, agents: 2, helper_views: 2, streamlit_apps: 0 }
+  OPS: { dbt_projects: 1, note: "DW_PIPELINE (BRONZE→SILVER 32 + SILVER→GOLD 24 + WIDE 9 = 65 models)" }
   SECURITY: { policies: "masking + network", note: "거버넌스 정책 격리" }
-naming_note: "PoC ANALYTICS 스키마(=현 GOLD View)와 혼동 방지 위해 소비 계층은 SERVING으로 명명"
-implementation_note: |
-  ⚠️ 실제 GN_DW DB는 BRONZE를 단일 스키마가 아닌 **원천별 스키마로 분리** 구현함:
-  BRONZE_CRM(관리형 액세스)·BRONZE_GA4·BRONZE_ERP·BRONZE_AGENCY (2026-07 실측).
-  본 문서의 단일 BRONZE 표기는 논리 계층 명칭이며, 물리 적재 스키마는 원천별 분리(BRONZE_<SOURCE>)를 따른다.
-  아래 bronze_crm_tables 41개는 BRONZE_CRM, bronze_external_tables는 GA4→BRONZE_GA4 / 광고·DRTV→BRONZE_AGENCY(또는 해당 원천)로 귀속.
-  SILVER/GOLD/SERVING/OPS/SECURITY 스키마 중 현재(2026-07) 생성된 것은 OPS·SECURITY뿐이며 SILVER 이후는 미생성(빌드 초기)."
-  actual_state_20260713: |
-    [실측 2026-07-13] 원천정의(41테이블/876컬럼)와 물리 적재가 다름:
-    - BRONZE_CRM = **43테이블 / 927컬럼** (원천 41 + 템플릿 2: TD_MS_AT_TMPLAT_BTN_LIST·TM_MS_EMAIL_TMPLAT_MNG). 전량 적재(수백만 행, 예 TM_PM_MBRFEE_ACMSLT 46.4M).
-    - BRONZE_GA4."events_20260501" = **287,025행**(전체 1일 샤드, 소문자명). user_id 4.22%.
-    - BRONZE_AGENCY 3테이블(DGT 197,686/REBRDC 2,064/VIDEO 35,822), BRONZE_ERP.BDGT_ACMSLT_LEDGER **2,041행 적재됨**(문서 "ERP 미수령"과 상충). [실측] ERP 컬럼=예산과목·예산단위명·재원+월별금액, **캠페인·매체 연결키 없음** → 결론7(캠페인 ROI 불가) 확정.
-    - **GOLD·SILVER 스키마 미생성**(DDL만 작성, CREATE 미실행)."
+naming_note: "PoC ANALYTICS 스키마(=현 GOLD)와 혼동 방지 위해 소비 계층은 SERVING으로 명명"
+bronze_total: 48   # CRM 43 + AGENCY 3 + ERP 1 + GA4 1
+live_state_20260722: |
+  [라이브 실측 2026-07-22] 전 계층 배포·적재 완료:
+  - BRONZE 4스키마 48테이블 적재(CRM 43 전량 수백만 행, AGENCY 3·ERP 1·GA4 1 부분 입고).
+  - SILVER 32테이블·GOLD 24테이블+WIDE 9뷰·SERVING SV5/Agent2 모두 생성됨(구설계 "GOLD·SILVER 미생성" 상충 → 정정).
+  - ETL = dbt `GN_DW.OPS.DW_PIPELINE` (65 models). 사용자 프로시저·Task·ETL_LOG 없음(SHOW PROCEDURES/TASKS 실측 0).
+  - FACT_TARGET_BIZ / SILVER.CRM_BIZ_TARGET = 0행(E-6 CRM 사업목표 입고 대기).
 ```
 
 ---
@@ -80,14 +95,14 @@ implementation_note: |
 ## 3.2.1 CRM 원천 테이블 인벤토리 (crm_source_inventory)
 
 > 입고팀 회신 CRM 원천 테이블/컬럼 정의서 기반. BRONZE 적재의 **source of truth**.
-> ★ **기준 = 현재 측정 데이터(실측 2026-07-13): `GN_DW.BRONZE_CRM` = 43테이블 / 927컬럼, 전량 적재.**
+> ★ **기준 = 현재 측정 데이터(실측): `GN_DW.BRONZE_CRM` = 43테이블 / 927컬럼, 전량 적재.**
 > 참고(원천정의서 `BRONZE_CRM 테이블 정보.MD` = 41테이블/876컬럼)는 초기 정의이며, 이후 템플릿 2테이블(`TD_MS_AT_TMPLAT_BTN_LIST`·`TM_MS_EMAIL_TMPLAT_MNG`) 추가 + per-table 컬럼수 실측 상이 → **아래 인벤토리·수치는 실측을 기준으로 읽을 것**.
-> **설계 원칙:** CRM 원천 테이블을 BRONZE에 1:1 전량 적재한다. 통합·정제(consolidation)는 SILVER 단계에서 수행.
+> **설계 원칙:** CRM 원천 테이블을 BRONZE_CRM에 1:1 전량 적재한다. 통합·정제(consolidation)는 SILVER 단계에서 수행.
 
 ```yaml
 crm_source_summary:
-  total_tables: 43        # ★실측 2026-07-13 (GN_DW.BRONZE_CRM). 원천정의서=41(참고)
-  total_columns: 927      # ★실측 2026-07-13. 원천정의서=876(참고, per-table 상이)
+  total_tables: 43        # ★실측 (GN_DW.BRONZE_CRM). 원천정의서=41(참고)
+  total_columns: 927      # ★실측. 원천정의서=876(참고, per-table 상이)
   added_beyond_def: [TD_MS_AT_TMPLAT_BTN_LIST, TM_MS_EMAIL_TMPLAT_MNG]  # 정의서에 없던 템플릿 2테이블
   common_code_master: { group: TC_CMMN_CD, detail: TC_CMMN_DTL_CD }
   code_lookup: "코드여부=Y인 컬럼은 TC_CMMN_DTL_CD.CD_ID에서 코드값 조회"
@@ -153,9 +168,9 @@ crm_source_tables:
   - { id: TM_RM_RELATNSP_MSTR_INFO, cols: 11, prefix: TM_RM_, desc: "결연 마스터 (후원번호↔아동코드 매핑, 결연시작/중단)" }
 
 crm_to_bronze_note: |
-  CRM 41개 원천 → GN_DW.BRONZE 41개 테이블로 1:1 전량 적재 (원천 구조 보존).
-  통합·정제(consolidation)는 SILVER 단계에서 수행한다 (3.4절 silver_consolidation_map 참조).
-  ※ 상세 컬럼 매핑은 BRONZE_CRM 테이블 정보.MD 참조
+  CRM 원천 → GN_DW.BRONZE_CRM 43개 테이블로 1:1 전량 적재 (원천 구조 보존).
+  통합·정제(consolidation)는 SILVER 단계에서 수행한다 (3.4절 silver 인벤토리 참조).
+  ※ 상세 컬럼 매핑은 99_provided_definition/BRONZE_CRM 테이블 정보.MD 참조
 
 crm_key_references:
   common_code: "TC_CMMN_CD(그룹) + TC_CMMN_DTL_CD(상세). 코드여부=Y 컬럼은 코드그룹ID로 조인"
@@ -172,244 +187,138 @@ crm_key_references:
 
 ## 3.3 BRONZE 테이블 (bronze_tables)
 
-> CRM 원천 41개 + 외부 소스(GA/광고/DRTV) = **총 56개** 테이블을 1:1 전량 적재.
-> **원칙:** BRONZE는 원천 구조를 그대로 보존한다. 통합·정제(consolidation)는 SILVER에서 수행.
+> BRONZE는 **원천별 스키마로 물리 분리**되어 있으며(단일 BRONZE 아님), 원천 구조를 그대로 1:1 보존한다.
+> **총 48테이블** = CRM 43 + AGENCY 3 + ERP 1 + GA4 1 (라이브 실측 2026-07-22).
+> CRM 43개 세부 목록·컬럼수는 3.2.1 인벤토리 참조. 통합·정제는 SILVER에서 dbt 모델로 수행.
 
 ```yaml
-bronze_crm_tables:   # CRM 원천 41개 (3.2.1 인벤토리와 1:1 대응)
-  # ── 발송(SND) 계열 ──
-  - { id: SND_MEMBER_LIST, desc: "발송 대상 회원 목록" }
-  - { id: SND_REQ_MST, desc: "발송 요청 마스터" }
-  # ── 공통코드(TC) 계열 ──
-  - { id: TC_CMMN_CD, desc: "공통코드 그룹 마스터" }
-  - { id: TC_CMMN_DTL_CD, desc: "공통코드 상세" }
-  # ── 마케팅 상세(TD_MS) 계열 ──
-  - { id: TD_MS_CRMN_PRTCPNT, desc: "행사 참여자 상세" }
-  - { id: TD_MS_EMAIL_LQY_SNDNG, desc: "이메일 대량 발송 집계" }
-  - { id: TD_MS_EMAIL_SNDNG_DTLS, desc: "이메일 발송 상세" }
-  - { id: TD_MS_EVENT_PRTCPNT_DTL, desc: "이벤트 참여 상세" }
-  - { id: TD_MS_MSG_AT_LQY_SNDNG, desc: "알림톡 대량 발송 집계" }
-  - { id: TD_MS_MSG_AT_SNDNG_DTLS, desc: "알림톡 발송 상세" }
-  - { id: TD_MS_PSTMTR_LQY_SNDNG, desc: "우편물 대량 발송 집계" }
-  - { id: TD_MS_PSTMTR_SNDNG_DTL, desc: "우편물 발송 상세" }
-  # ── 이력(TH) 계열 ──
-  - { id: TH_MM_FDRM_MBER_STNG_DTLS, desc: "정기회원 세팅 이력" }
-  - { id: TH_PM_SETLE_INFO_HIST, desc: "결제정보 변경 이력" }
-  # ── 공통 마스터(TM_CM) 계열 ──
-  - { id: TM_CM_BRND_MNG, desc: "브랜드 관리 마스터" }
-  - { id: TM_CM_CMPGN_MNG, desc: "캠페인 관리 마스터 (2026-06 +5: 국내해외/사업사례/카테고리/인입경로/마케팅캠페인)" }
-  - { id: TM_CM_MKTNG_CMPGN_MNG, desc: "마케팅캠페인명 마스터 (2026-06 신규)" }
-  - { id: TM_CM_DEPT_INFO, desc: "부서 정보" }
-  - { id: TM_CM_MBER_DVLP_GOAL, desc: "회원 개발 목표" }
-  - { id: TM_CM_SPNSR_BSNS_INFO, desc: "후원사업 정보" }
-  # ── 회원 관리(TM_MM) 계열 ──
-  - { id: TM_MM_FDRM_MBER_DVLP_AMT, desc: "정기회원 개발 실적" }
-  - { id: TM_MM_FDRM_MBER_INFO, desc: "정기회원 마스터" }
-  - { id: TM_MM_FDRM_MBER_IRSD, desc: "정기회원 증감액 이력" }
-  - { id: TM_MM_FDRM_MBER_RE_SPNSR, desc: "정기회원 재후원 이력" }
-  - { id: TM_MM_FDRM_MBER_SPNSR_BSNS, desc: "정기회원 후원사업 매핑" }
-  - { id: TM_MM_FDRM_MBER_SPNSR_DSCNTC, desc: "정기회원 후원중단 이력" }
-  - { id: TM_MM_ONCE_MBER_INFO, desc: "일시후원 회원 마스터" }
-  # ── 마케팅 마스터(TM_MS) 계열 ──
-  - { id: TM_MS_CRMN, desc: "세레모니 마스터" }
-  - { id: TM_MS_EMAIL_SNDNG, desc: "이메일 발송 마스터" }
-  - { id: TM_MS_EVENT, desc: "이벤트 마스터" }
-  - { id: TM_MS_MSG_AT_SNDNG, desc: "알림톡 발송 마스터" }
-  - { id: TM_MS_PSTMTR_SNDNG, desc: "우편물 발송 마스터" }
-  # ── 납입/결제(TM_PM) 계열 ──
-  - { id: TM_PM_DNTN_DTLS, desc: "일시후원 기부금 상세" }
-  - { id: TM_PM_MBRFEE_ACMSLT, desc: "회비 청구/납입 실적" }
-  - { id: TM_PM_SETLE_INFO, desc: "결제수단 정보" }
-  # ── 결연 관리(TM_RM) 계열 ──
-  - { id: TM_RM_BPLC_MNG, desc: "사업장 관리" }
-  - { id: TM_RM_CHILD_MSTR_INFO, desc: "아동 마스터" }
-  - { id: TM_RM_RELATNSP_CHG_INFO, desc: "결연 교체 정보" }
-  - { id: TM_RM_RELATNSP_GFTMNEY_INFO, desc: "결연 선물금 정보" }
-  - { id: TM_RM_RELATNSP_LETTER_INFO, desc: "결연 서신 정보" }
-  - { id: TM_RM_RELATNSP_MSTR_INFO, desc: "결연 마스터" }
+bronze_schemas:
+  BRONZE_CRM:   # 43테이블 (3.2.1 인벤토리 전량 = source of truth)
+    tables: 43
+    note: "회원/납입/캠페인/발송/결연 등 CRM 전 도메인. 수백만 행 전량 적재(예 TM_PM_MBRFEE_ACMSLT 46.4M · SND_MEMBER_LIST 8.3M)."
 
-bronze_external_tables:   # CRM 외부 소스 (GA/광고/DRTV) — 15개
-  - { id: FACT_AD_GA_AUDIENCE, desc: GA 잠재고객 세션 }
-  - { id: FACT_AD_GOOGLE_DEMANDGEN, desc: Google 디맨드젠 광고 }
-  - { id: FACT_AD_GOOGLE_PMAX, desc: Google P-MAX 광고 }
-  - { id: FACT_AD_META, desc: Meta 광고 성과 }
-  - { id: FACT_DIGITAL_AD_DETAIL, desc: 디지털 광고 상세 }
-  - { id: FACT_DIGITAL_MONTHLY_DEV, desc: 디지털 월별 개발 목표/실적 }
-  - { id: FACT_DRTV_BROADCAST_EFF, desc: DRTV 방송효과 }
-  - { id: FACT_DRTV_MONTHLY_DEV, desc: DRTV 월별 개발 목표/실적 }
-  - { id: FACT_GA_FEEDBACK_PAGE, desc: GA 피드백 페이지 }
-  - { id: FACT_GA_VISITS_APP, desc: "GA 방문(앱)" }
-  - { id: FACT_GA_VISITS_MOBILE, desc: "GA 방문(모바일)" }
-  - { id: FACT_GA_VISITS_PC, desc: "GA 방문(PC)" }
-  - { id: FACT_GA_VISITS_TOTAL, desc: "GA 방문(전체)" }
-  - { id: FACT_RETRANSMIT_BROADCAST_CONV, desc: 재송출 방송 전환 }
-  - { id: FACT_RETRANSMIT_MONTHLY_DEV, desc: 재송출 월별 개발 }
+  BRONZE_AGENCY:   # 3테이블 (대행사 광고 성과)
+    - { id: DGT_AD_CMPGN_DTLS, rows: 197686, desc: "디지털 광고 성과 내역" }
+    - { id: VIDEO_AD_CMPGN_DTLS, rows: 35822, desc: "영상(DRTV) 광고 성과 내역" }
+    - { id: REBRDC_AD_CMPGN_DTLS, rows: 2064, desc: "재송출 광고 성과 내역" }
 
-bronze_total: 56   # CRM 41 + 외부 15
+  BRONZE_ERP:   # 1테이블 (예산 원장)
+    - { id: BDGT_ACMSLT_LEDGER, rows: 2041, desc: "예산 실적 원장 (예산과목·예산단위·재원 + 월별금액). ⚠️[결론7] 캠페인·매체 연결키 없음" }
+
+  BRONZE_GA4:   # 1테이블 (1일 샤드)
+    - { id: events_20260501, rows: 287025, desc: "GA4 이벤트 (2026-05-01 전체 1일 샤드, 소문자 테이블명). user_id 채움 4.22%. ⚠️[G-5] 전기간 샤드 입고 대기" }
+
+bronze_total: 48   # CRM 43 + AGENCY 3 + ERP 1 + GA4 1
+
+ingest_status:
+  CRM: "✅ 전수 수령 (43테이블)"
+  AGENCY: "◐ 부분 (3테이블 스캐폴드)"
+  ERP: "◐ 부분 (예산원장 1 · 모금성비용 원천 부재 E-1)"
+  GA4: "◐ 부분 (1일 샤드만 · 전기간 대기 G-5)"
+  note: "잔여 입고분(GA4 전기간·ERP 모금성비용·CRM 사업목표 등)은 입고 후 SILVER/GOLD/SV로 자동 확장(의도된 대기)."
 ```
 
 ```yaml
 bronze_load_policy:
-  poc_flow: "Excel -> Stage -> pandas -> Snowpark DataFrame -> RAW 테이블"
-  comparison:
-    - { item: 적재주체, poc: "ACCOUNTADMIN, 노트북 수동", gn_dw: "GN_DW_LOADER(최소권한)" }
-    - { item: 적재방식, poc: "Snowpark create_dataframe 단건", gn_dw: "대용량은 Excel→Parquet→COPY INTO 권장" }
-    - { item: 멱등성, poc: "APPEND 반복 중복 위험", gn_dw: "MERGE 또는 DELETE+INSERT" }
-    - { item: 검증, poc: "row count만", gn_dw: "SP_VALIDATE_BRONZE_DATA(4.3)" }
-    - { item: 스케줄, poc: 수동, gn_dw: "태스크 05:30 VALIDATE_BRONZE 이전 적재 완료 가정" }
-  boundary: "BRONZE 적재 파이프라인 구현은 외부팀(LOADER) 담당으로 범위 밖. 본 문서 책임은 SILVER 정제부터. 적재 표준안=Excel_to_Table_개선.ipynb"
+  loader: "외부팀(GN_DW_LOADER) — BRONZE 적재는 본 문서 책임 범위 밖"
+  method: "원천 → BRONZE_<SOURCE> 1:1 적재 (원천 구조 보존)"
+  idempotency: "재적재 시 중복 방지(MERGE 또는 재생성). 감사컬럼 표준(_LOAD_DT 등)"
+  boundary: "본 문서 책임은 SILVER 정제(dbt)부터. BRONZE 신선도 점검은 06_RUNBOOK.md 참조"
 ```
 
 ---
 
 ## 3.4 SILVER 정제 레이어 (silver_tables)
 
-> SILVER는 BRONZE 56개 테이블을 **통합·정제(consolidation)**하여 GOLD가 소비할 **23개** 분석용 테이블로 축소한다.
-> 역할: (1) 타입 캐스팅·NULL 처리 (2) 여러 원천을 JOIN/UNION하여 분석 모델 구성 (3) GOLD View가 소비하지 않는 테이블 제외.
+> SILVER는 BRONZE 48테이블을 **정제·통합**하여 GOLD가 소비할 **32개** 테이블로 재구성한다(dbt 모델).
+> 역할: (1) 타입 캐스팅·NULL 처리·코드→라벨 (2) 정기∪일시 등 UNION/JOIN 통합 (3) 행 granularity 유지(집계는 GOLD).
+> 명명: 소스 접두 `CRM_*` / `GA4_*` / `ERP_*` / `AGENCY_*` + 교차소스 브리지 1(`IDENTITY_MEMBER_XREF`).
 
 ```yaml
+silver_total: 32   # CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1
+
 silver_tables:
-  dim: [DIM_CAMPAIGN_CODE, DIM_MEMBER_ATTRIBUTE, DIM_ORG_CODE, DIM_TEMP_TO_REGULAR_MATCH]
-  member_payment: [FACT_MEMBER_DEV_ALL, FACT_PAYMENT_HISTORY, FACT_DISCONTINUED_MEMBER]
-  media_ad: [FACT_DRTV_BROADCAST_EFF, FACT_DRTV_MONTHLY_DEV, FACT_DIGITAL_AD_DETAIL, FACT_DIGITAL_MONTHLY_DEV, FACT_RETRANSMIT_BROADCAST_CONV, FACT_RETRANSMIT_MONTHLY_DEV]
-  digital_ga: [FACT_AD_GA_AUDIENCE, FACT_AD_META, FACT_GA_VISITS_TOTAL, FACT_GA_VISITS_PC, FACT_GA_VISITS_MOBILE, FACT_GA_VISITS_APP]
-  messaging_etc: [FACT_SMS_ALIMTALK_SEND, FACT_MARKETING_SEND_NEW, FACT_GA_FEEDBACK_PAGE, FACT_TEMP_MEMBER_DONATION]
-silver_total: 23
+  crm:   # 22
+    - { id: CRM_CAMPAIGN, desc: "캠페인 마스터 (코드 라벨·조인키)" }
+    - { id: CRM_CODE, desc: "코드→라벨 사전 (CD_ID,DTL_CD_ID 복합키)" }
+    - { id: CRM_ORG, desc: "조직 마스터 (실적팀=재귀 LVL5)" }
+    - { id: CRM_SPONSORSHIP, desc: "후원사업 마스터 (실측 50)" }
+    - { id: CRM_MEMBER, desc: "회원 통합(정기∪일시). Q6 UNION" }
+    - { id: CRM_MEMBER_STATUS_HIST, desc: "회원 상태전이 이력 (SCD2 range)" }
+    - { id: CRM_MEMBER_DEV, desc: "개발약정 (Q13 스파인)" }
+    - { id: CRM_MEMBER_AMT_CHANGE, desc: "약정 증감(증액/감액)" }
+    - { id: CRM_MEMBER_DISCONTINUE, desc: "후원중단" }
+    - { id: CRM_MEMBER_RESPONSOR, desc: "재후원" }
+    - { id: CRM_MEMBER_SPONSOR_BIZ, desc: "회원×후원사업 약정" }
+    - { id: CRM_PAYMENT_BILLING, desc: "납입/청구(회비∪기부금). Q14 dedup" }
+    - { id: CRM_PAYMENT_METHOD, desc: "결제수단(현재상태)" }
+    - { id: CRM_DEV_TARGET, desc: "회원개발 목표 (월×조직×개발구분) → FTG-D" }
+    - { id: CRM_BIZ_TARGET, desc: "사업목표 → FTG-B. ⛔E-6 CRM 입고 대기, 0행 스켈레톤" }
+    - { id: CRM_EVENT, desc: "행사 마스터(이벤트∪캠페인행사)" }
+    - { id: CRM_EVENT_PARTICIPATION, desc: "행사×참여자" }
+    - { id: CRM_SEND_REQUEST, desc: "발송요청 마스터 (Q5 발송키 이원화)" }
+    - { id: CRM_SEND_MEMBER, desc: "발송×회원 상세" }
+    - { id: CRM_SEND_RESULT, desc: "발송×채널 집계" }
+    - { id: CRM_RELATION_ACTIVITY, desc: "결연활동(서신∪선물금)" }
+    - { id: CRM_SPONSOR_RELATION, desc: "결연(아동). Q15 크로스워크" }
+  ga4:   # 5
+    - { id: GA4_EVENT, desc: "GA 이벤트 팩트 소스 → FGA. 원천 PK 중복 dedup(GA-1)" }
+    - { id: GA4_EVENT_DIM, desc: "GA 이벤트분류 → DIM_GA_EVENT" }
+    - { id: GA4_TRAFFIC_SOURCE, desc: "GA 트래픽소스(session/last-click) → DIM_GA_SOURCE" }
+    - { id: GA4_DEVICE, desc: "GA 디바이스 → DIM_DEVICE(GA분)" }
+    - { id: GA4_IDENTITY, desc: "GA 신원(Q1) → 브리지 입력. 접두사 분기 S%→ONCE_MBER_NO" }
+  erp:   # 2
+    - { id: ERP_BUDGET, desc: "예산 편성/추경/조정/집행 월 grain(wide→long) → FBD" }
+    - { id: ERP_BUDGET_ITEM, desc: "예산과목 마스터(장/관/항/목/세목/세세목×재원) → DIM_BUDGET_ITEM" }
+  agency:   # 2
+    - { id: AGENCY_AD_CREATIVE, desc: "광고 소재/매체 차원(3소스 UNION distinct) → DIM_AD_CREATIVE" }
+    - { id: AGENCY_AD_PERFORMANCE, desc: "광고성과 3소스 UNION(원천 1행 grain) → FAD" }
+  bridge:   # 1 (교차소스 유일 예외)
+    - { id: IDENTITY_MEMBER_XREF, desc: "S-7 신원 브리지: GA4_IDENTITY ↔ CRM_MEMBER 자연키 해소 + MATCH_METHOD/CONFIDENCE. 미매칭 보존" }
 
-# BRONZE → SILVER 통합 매핑 (여러 원천 → 하나의 SILVER 테이블)
-# ⚠️ [결론4] 인입콜 타입 불일치: 재송출(RETRANSMIT).INBOUND_CALL_CNT=TEXT vs DRTV(영상).INBOUND_CALL_CNT=NUMBER.
-#   통합/집계 전 TRY_TO_NUMBER 캐스팅 필수. 영상 원천의 CONV_CALL_CNT(전환콜)는 인입콜과 별개 지표로 분리 유지.
-# ⚠️ [결론5] 대행사 3원천(DRTV/RETRANSMIT/DIGITAL)은 행 단위 출처 플래그(_SOURCE_SYSTEM)가 원천에 없음.
-#   GA_/CRM_ 접두는 귀속 시스템, 3테이블은 광고유형 구분 → GOLD FAD 통합 시 명시적 _SOURCE_SYSTEM 컬럼을 SILVER에서 부여할 것.
-silver_consolidation_map:
-  DIM_CAMPAIGN_CODE: { sources: [TM_CM_CMPGN_MNG, TM_CM_BRND_MNG, TM_CM_MKTNG_CMPGN_MNG], work: "캠페인+브랜드+마케팅캠페인명 코드 통합, 중복 제거, TRIM" }
-  DIM_MEMBER_ATTRIBUTE: { sources: [TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO], work: "정기+일시 회원 속성(성별/연령대/지역) 추출 통합" }
-  DIM_ORG_CODE: { sources: [TM_CM_DEPT_INFO], work: "부서코드 TRIM, 중복 제거" }
-  DIM_TEMP_TO_REGULAR_MATCH: { sources: [TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, TM_PM_DNTN_DTLS], work: "일시→정기 전환 매칭 생성" }
-  FACT_MEMBER_DEV_ALL: { sources: [TM_MM_FDRM_MBER_DVLP_AMT, TM_CM_MBER_DVLP_GOAL], work: "개발실적+목표 JOIN, 날짜 캐스팅" }
-  FACT_PAYMENT_HISTORY: { sources: [TM_PM_MBRFEE_ACMSLT, TM_PM_SETLE_INFO], work: "납입실적+결제수단 JOIN, 미납금액 계산" }
-  FACT_DISCONTINUED_MEMBER: { sources: [TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_FDRM_MBER_INFO], work: "중단이력+회원정보 JOIN, 유지일수 계산" }
-  FACT_SMS_ALIMTALK_SEND: { sources: [TD_MS_MSG_AT_LQY_SNDNG, TD_MS_MSG_AT_SNDNG_DTLS, TM_MS_MSG_AT_SNDNG], work: "알림톡 집계+상세+마스터 통합" }
-  FACT_MARKETING_SEND_NEW: { sources: [TD_MS_EMAIL_LQY_SNDNG, TD_MS_EMAIL_SNDNG_DTLS, TM_MS_EMAIL_SNDNG], work: "이메일 집계+상세+마스터 통합" }
-  FACT_TEMP_MEMBER_DONATION: { sources: [TM_PM_DNTN_DTLS, TM_MM_ONCE_MBER_INFO], work: "기부금상세+일시회원정보 JOIN" }
-  FACT_DRTV_BROADCAST_EFF: { sources: [FACT_DRTV_BROADCAST_EFF], work: "타입 정제(NUMBER/DATE 캐스팅). 인입콜=NUMBER, 전환콜(CONV_CALL_CNT) 별도 유지" }
-  FACT_DRTV_MONTHLY_DEV: { sources: [FACT_DRTV_MONTHLY_DEV], work: "타입 정제" }
-  FACT_DIGITAL_AD_DETAIL: { sources: [FACT_DIGITAL_AD_DETAIL], work: "FLOAT→NUMBER, NULL→0" }
-  FACT_DIGITAL_MONTHLY_DEV: { sources: [FACT_DIGITAL_MONTHLY_DEV], work: "타입 정제" }
-  FACT_RETRANSMIT_BROADCAST_CONV: { sources: [FACT_RETRANSMIT_BROADCAST_CONV], work: "타입 정제 — ⚠️ 인입콜(INBOUND_CALL_CNT)=TEXT 원천 → TRY_TO_NUMBER 캐스팅 필수(결론4)" }
-  FACT_RETRANSMIT_MONTHLY_DEV: { sources: [FACT_RETRANSMIT_MONTHLY_DEV], work: "타입 정제" }
-  FACT_AD_GA_AUDIENCE: { sources: [FACT_AD_GA_AUDIENCE], work: "세션수/활성사용자 NUMBER, 날짜 DATE" }
-  FACT_AD_META: { sources: [FACT_AD_META], work: "노출/클릭/지출 NUMBER, 보고기간 DATE" }
-  FACT_GA_VISITS_TOTAL: { sources: [FACT_GA_VISITS_TOTAL], work: "TEXT→NUMBER" }
-  FACT_GA_VISITS_PC: { sources: [FACT_GA_VISITS_PC], work: "TEXT→NUMBER" }
-  FACT_GA_VISITS_MOBILE: { sources: [FACT_GA_VISITS_MOBILE], work: "TEXT→NUMBER" }
-  FACT_GA_VISITS_APP: { sources: [FACT_GA_VISITS_APP], work: "TEXT→NUMBER" }
-  FACT_GA_FEEDBACK_PAGE: { sources: [FACT_GA_FEEDBACK_PAGE], work: "이탈률/참여율 NUMBER" }
-
-# BRONZE 중 SILVER에 포함되지 않는 테이블 (현재 GOLD View 미참조)
-bronze_not_in_silver:
-  - { id: SND_MEMBER_LIST, reason: "현재 GOLD View 미참조 (향후 발송 분석 확장 시 추가)" }
-  - { id: SND_REQ_MST, reason: "현재 GOLD View 미참조" }
-  - { id: TC_CMMN_CD, reason: "공통코드 — SILVER 통합 시 lookup으로만 사용" }
-  - { id: TC_CMMN_DTL_CD, reason: "공통코드 상세 — SILVER 통합 시 lookup으로만 사용" }
-  - { id: TD_MS_CRMN_PRTCPNT, reason: "세레모니 — 현재 분석 범위 밖" }
-  - { id: TD_MS_EVENT_PRTCPNT_DTL, reason: "이벤트 참여 — 현재 분석 범위 밖" }
-  - { id: TD_MS_PSTMTR_LQY_SNDNG, reason: "우편물 — 현재 분석 범위 밖" }
-  - { id: TD_MS_PSTMTR_SNDNG_DTL, reason: "우편물 — 현재 분석 범위 밖" }
-  - { id: TH_MM_FDRM_MBER_STNG_DTLS, reason: "세팅이력 — 현재 GOLD View 미참조" }
-  - { id: TH_PM_SETLE_INFO_HIST, reason: "결제변경이력 — FACT_PAYMENT_HISTORY에 현재값 반영" }
-  - { id: TM_CM_SPNSR_BSNS_INFO, reason: "후원사업정보 — DIM_CAMPAIGN_CODE에 통합" }
-  - { id: TM_MM_FDRM_MBER_IRSD, reason: "증감액이력 — 현재 GOLD View 미참조" }
-  - { id: TM_MM_FDRM_MBER_RE_SPNSR, reason: "재후원이력 — 현재 GOLD View 미참조" }
-  - { id: TM_MM_FDRM_MBER_SPNSR_BSNS, reason: "후원사업매핑 — 현재 GOLD View 미참조" }
-  - { id: TM_MS_CRMN, reason: "세레모니 마스터 — 현재 분석 범위 밖" }
-  - { id: TM_MS_EVENT, reason: "이벤트 마스터 — 현재 분석 범위 밖" }
-  - { id: TM_MS_PSTMTR_SNDNG, reason: "우편물 마스터 — 현재 분석 범위 밖" }
-  - { id: TM_RM_BPLC_MNG, reason: "사업장 — 현재 GOLD View 미참조" }
-  - { id: TM_RM_CHILD_MSTR_INFO, reason: "아동 — 현재 GOLD View 미참조" }
-  - { id: TM_RM_RELATNSP_CHG_INFO, reason: "결연교체 — 현재 GOLD View 미참조" }
-  - { id: TM_RM_RELATNSP_GFTMNEY_INFO, reason: "결연선물금 — 현재 GOLD View 미참조" }
-  - { id: TM_RM_RELATNSP_LETTER_INFO, reason: "결연서신 — 현재 GOLD View 미참조" }
-  - { id: TM_RM_RELATNSP_MSTR_INFO, reason: "결연마스터 — 현재 GOLD View 미참조" }
-  - { id: FACT_AD_GOOGLE_DEMANDGEN, reason: "현재 GOLD View 미참조" }
-  - { id: FACT_AD_GOOGLE_PMAX, reason: "현재 GOLD View 미참조" }
-  note: "향후 분석 요건 추가 시 SILVER 정제 프로시저를 확장하여 포함 가능"
+silver_notes:
+  - "[결론4] 인입콜 타입 불일치(재송출 TEXT vs 영상 NUMBER) → TRY_TO_NUMBER 캐스팅 후 AGENCY_AD_PERFORMANCE UNION."
+  - "[결론5/A-2] AGENCY 3소스 행 단위 출처 플래그 부재 → _SOURCE_SYSTEM='AGENCY' 상수 + 매체구분 속성 부여."
+  - "[S-5] CRM_MEMBER_DEV/AMT_CHANGE의 AREA_CD(CM018)·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스."
+  - "[S-7] IDENTITY_MEMBER_XREF만 교차소스 조인 허용(SK 없음, GOLD 소관). CHILD_CODE 제외(fan-out)."
+  - "센티넬: 미매칭·범위밖·NULL 차원키는 GOLD Unknown 멤버 SK=0으로 라우팅(구설계 -1 UNKNOWN 표기 폐기)."
 ```
 
 ---
 
-## 4. 프로시저 생성 (procedures)
+## 4. dbt 파이프라인 (dbt_pipeline)
 
-> **실행 위치:** GOLD View 생성 전(step 5). SILVER 산출을 담당.
-
-### 4.1 BRONZE → SILVER 통합·정제 프로시저 (refine_procedures)
-
-> 각 프로시저는 BRONZE의 원천 테이블을 참조하여 SILVER 분석 테이블을 산출한다.
-> 통합 대상(여러 BRONZE → 1 SILVER)은 프로시저 내에서 JOIN/UNION 수행.
+> **실행 주체:** dbt 프로젝트 `GN_DW.OPS.DW_PIPELINE` (라이브 배포). 구설계의 정제 프로시저(`SP_REFINE_*` 18)·오케스트레이션(`SP_RUN_ALL_REFINEMENT`)·`SP_LOAD_GOLD`·`ETL_LOG`·Task DAG는 **전량 폐기**되고 dbt 모델로 대체됨.
+> **정본 위치:** `10_dbt_pipeline/` (모델·schema.yml·배포 스크립트). 저작 정본 SQL = `04_silver_design/09_SILVER_적재쿼리_*` + `03_top-down_gold/06_DDL.sql`.
 
 ```yaml
-refine_procedures:
-  - { id: 1,  proc: SP_REFINE_DIM_CAMPAIGN, target: [DIM_CAMPAIGN_CODE], sources: [TM_CM_CMPGN_MNG, TM_CM_BRND_MNG, TM_CM_MKTNG_CMPGN_MNG, TC_CMMN_DTL_CD], work: "캠페인+브랜드+마케팅캠페인명 통합, 코드 TRIM, 사용여부 필터" }
-  - { id: 2,  proc: SP_REFINE_DIM_MEMBER, target: [DIM_MEMBER_ATTRIBUTE], sources: [TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO], work: "정기+일시 회원 속성 통합, NULL 처리, 연령대/지역 표준화" }
-  - { id: 3,  proc: SP_REFINE_FACT_PAYMENT, target: [FACT_PAYMENT_HISTORY], sources: [TM_PM_MBRFEE_ACMSLT, TM_PM_SETLE_INFO], work: "납입+결제수단 JOIN, DATE 캐스팅, 미납금액 계산" }
-  - { id: 4,  proc: SP_REFINE_FACT_MEMBER_DEV, target: [FACT_MEMBER_DEV_ALL], sources: [TM_MM_FDRM_MBER_DVLP_AMT, TM_CM_MBER_DVLP_GOAL], work: "개발실적+목표 JOIN, 날짜 캐스팅, 신청월 파생" }
-  - { id: 5,  proc: SP_REFINE_FACT_DISCONTINUED, target: [FACT_DISCONTINUED_MEMBER], sources: [TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_FDRM_MBER_INFO], work: "중단이력+회원정보 JOIN, 유지일수 계산" }
-  - { id: 6,  proc: SP_REFINE_FACT_DIGITAL_AD, target: [FACT_DIGITAL_AD_DETAIL], sources: [FACT_DIGITAL_AD_DETAIL], work: "FLOAT→NUMBER 캐스팅, NULL 0 대체" }
-  - { id: 7,  proc: SP_REFINE_FACT_SMS, target: [FACT_SMS_ALIMTALK_SEND], sources: [TD_MS_MSG_AT_LQY_SNDNG, TD_MS_MSG_AT_SNDNG_DTLS, TM_MS_MSG_AT_SNDNG], work: "알림톡 집계+상세+마스터 통합, TIMESTAMP/NUMBER 캐스팅" }
-  - { id: 8,  proc: SP_REFINE_FACT_AD_GA, target: [FACT_AD_GA_AUDIENCE], sources: [FACT_AD_GA_AUDIENCE], work: "세션수/활성사용자 NUMBER, 날짜 DATE" }
-  - { id: 9,  proc: SP_REFINE_FACT_AD_META, target: [FACT_AD_META], sources: [FACT_AD_META], work: "노출/클릭/지출 NUMBER, 보고기간 DATE" }
-  - { id: 10, proc: SP_REFINE_FACT_GA_VISITS, target: [FACT_GA_VISITS_TOTAL, FACT_GA_VISITS_PC, FACT_GA_VISITS_MOBILE, FACT_GA_VISITS_APP], sources: [FACT_GA_VISITS_TOTAL, FACT_GA_VISITS_PC, FACT_GA_VISITS_MOBILE, FACT_GA_VISITS_APP], work: "세션/페이지뷰/방문수 TEXT→NUMBER (4개 테이블)" }
-  - { id: 11, proc: SP_REFINE_FACT_GA_FEEDBACK, target: [FACT_GA_FEEDBACK_PAGE], sources: [FACT_GA_FEEDBACK_PAGE], work: "이탈률/참여율/평균세션시간 NUMBER" }
-  - { id: 12, proc: SP_REFINE_DIM_ORG, target: [DIM_ORG_CODE], sources: [TM_CM_DEPT_INFO], work: "부서코드 TRIM, 중복 제거" }
-  - { id: 13, proc: SP_REFINE_DIM_TEMP_MATCH, target: [DIM_TEMP_TO_REGULAR_MATCH], sources: [TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, TM_PM_DNTN_DTLS], work: "일시→정기 전환 매칭, 전환일 DATE" }
-  - { id: 14, proc: SP_REFINE_FACT_DRTV, target: [FACT_DRTV_BROADCAST_EFF, FACT_DRTV_MONTHLY_DEV], sources: [FACT_DRTV_BROADCAST_EFF, FACT_DRTV_MONTHLY_DEV], work: "횟수/광고비/인입콜/시청률 NUMBER, 방송일자 DATE (2개)" }
-  - { id: 15, proc: SP_REFINE_FACT_DIGITAL_DEV, target: [FACT_DIGITAL_MONTHLY_DEV], sources: [FACT_DIGITAL_MONTHLY_DEV], work: "예산/목표/실적 NUMBER, 날짜 DATE" }
-  - { id: 16, proc: SP_REFINE_FACT_RETRANSMIT, target: [FACT_RETRANSMIT_BROADCAST_CONV, FACT_RETRANSMIT_MONTHLY_DEV], sources: [FACT_RETRANSMIT_BROADCAST_CONV, FACT_RETRANSMIT_MONTHLY_DEV], work: "횟수/편성비/인입콜 NUMBER, 날짜 DATE (2개)" }
-  - { id: 17, proc: SP_REFINE_FACT_MARKETING_SEND, target: [FACT_MARKETING_SEND_NEW], sources: [TD_MS_EMAIL_LQY_SNDNG, TD_MS_EMAIL_SNDNG_DTLS, TM_MS_EMAIL_SNDNG], work: "이메일 집계+상세+마스터 통합, TIMESTAMP 캐스팅" }
-  - { id: 18, proc: SP_REFINE_FACT_TEMP_DONATION, target: [FACT_TEMP_MEMBER_DONATION], sources: [TM_PM_DNTN_DTLS, TM_MM_ONCE_MBER_INFO], work: "기부금+일시회원 JOIN, 후원일 DATE, 금액 NUMBER" }
-refine_principles:
-  - "CREATE OR REPLACE TABLE (전체 재생성, 멱등성)"
-  - "SILVER = BRONZE 원천 통합 + 파생 컬럼 + 올바른 타입 (구조가 달라질 수 있음)"
-  - "NULL key 레코드는 WHERE로 제외"
-  - "통합 대상 프로시저는 여러 BRONZE 테이블을 JOIN/UNION하여 단일 SILVER 테이블 산출"
-```
+dbt_project:
+  name: DW_PIPELINE
+  fqn: GN_DW.OPS.DW_PIPELINE
+  dbt_version: 1.9.4
+  source_location: "snow://workspace/USER$.PUBLIC.\"snowflake_files\"/versions/live/10_dbt_pipeline/"
+  models_total: 65   # SILVER 32 + GOLD 24(dim15+fact9) + WIDE 9
+  layers:
+    silver: { models: 32, materialization: table, source: "BRONZE_<SOURCE>", note: "CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1" }
+    gold_star: { models: 24, materialization: table, source: SILVER, note: "15 DIM + 9 FACT (센티넬 SK=0 시드 포함)" }
+    gold_wide: { models: 9, materialization: view, source: "GOLD FACT/DIM", note: "평탄화 WIDE VIEW (BLOCKING-4 해소)" }
 
-### 4.2 SILVER → GOLD 프로시저 (load_gold)
+pipeline_flow: "BRONZE_<SOURCE> → (dbt) SILVER 32 → (dbt) GOLD star 24 → (dbt) WIDE VIEW 9"
 
-> GOLD는 **star schema 물리 테이블 적재**(DIM/FACT MERGE)로 구성. `SP_LOAD_GOLD`가 SILVER를 GOLD 15 DIM + 9 FACT로 적재하며, `TASK_LOAD_GOLD`가 정제 완료 후 실행(04_운영.md 5장).
-> ⛔ **[forecast 제외 결정 2026-07-10]** GOLD 예측(Forecast) 파이프라인은 **비활성**한다. star schema 24에 예측 테이블이 없으며, 레거시 예측 자산(`FORECAST_*` 5종 테이블·`V_FORECAST_*`/`V_CAMPAIGN_*_FORECAST` 뷰·`SP_REFRESH_FORECAST_DATA`·`TASK_REFRESH_FORECAST`)은 전환 대상에서 제외한다. 아래 정의는 이력 참고용이며 운영 파이프라인에서 실행하지 않는다.
+quality_tests:
+  framework: "dbt schema tests (not_null/unique/relationships)"
+  policy: "참조무결성 relationships는 severity:warn(메달리온 BP) · 핵심 PK/not_null은 error"
+  note: "구설계 SP_VALIDATE_BRONZE_DATA·ETL_LOG는 dbt test·run 로그로 대체"
 
-```yaml
-load_gold:
-  proc: SP_LOAD_GOLD
-  method: "SILVER FACT/DIM → GOLD star schema MERGE (15 DIM + 9 FACT)"
-  location: GN_DW.GOLD
-  trigger: "TASK_LOAD_GOLD (정제 완료 후 실행, 04_운영.md 5장)"
+dbt_principles:
+  - "멱등성: dbt run이 CREATE OR REPLACE(table) / view 재생성 → 재실행 안전"
+  - "SILVER = BRONZE 정제·통합(행 grain 유지) / GOLD = 집계·star schema"
+  - "센티넬 규약: 13개 GOLD DIM 전량 SK=0 Unknown 시드 + gold_helpers COALESCE(...,0)"
+  - "스캐폴드 팩트(FACT_TARGET_BIZ)는 원천 미입고 시 0행 통과(스켈레톤)"
 
-# ⛔ 비활성 (forecast 제외 결정). 실행하지 않음 — 이력 참고용.
-forecast_pipeline_DEPRECATED:
-  proc: SP_REFRESH_FORECAST_DATA
-  engine: SNOWFLAKE.ML.FORECAST   # 브랜드별 월간 개발건수/평균납입액 예측
-  steps:
-    - "학습데이터 생성: SILVER(FACT_MEMBER_DEV_ALL, FACT_PAYMENT_HISTORY) -> FORECAST_TRAINING_DATA -> 브랜드·월 집계로 TRAIN_DEV_COUNT, TRAIN_AVG_PAYMENT"
-    - "모델 학습/예측: TRAIN_* 입력으로 ML.FORECAST 모델 생성 후 FORECAST() 호출"
-    - "결과 저장: FORECAST_DEV_COUNT_RESULT, FORECAST_AVG_PAYMENT_RESULT"
-    - "노출: V_FORECAST_DEV_COUNT, V_FORECAST_AVG_PAYMENT가 TRAIN_*(actual) + FORECAST_*_RESULT(forecast) UNION ALL"
-  location: GN_DW.GOLD
-  status: "DEPRECATED — forecast 제외 결정(2026-07-10)로 미운영"
-```
-
-### 4.3 유틸리티 프로시저 (utility_procedures)
-
-> 의존성 상 ETL_LOG 테이블과 SP_LOG_ETL_STATUS는 4.1보다 먼저 정의 (4.1이 내부 호출).
-
-```yaml
-utility_procedures:
-  - { id: 1, proc: SP_RUN_ALL_REFINEMENT, desc: "4.1 모든 정제 프로시저 순차 호출(오케스트레이션)" }
-  - { id: 2, proc: SP_LOG_ETL_STATUS, desc: "ETL 실행 로그 기록(시작/종료/에러/row count)" }
-  - { id: 3, proc: SP_VALIDATE_BRONZE_DATA, desc: "BRONZE 품질 체크(NULL 비율, row count 변동)" }
+deploy_ref: "배포·운영 총괄 = 10_dbt_pipeline/00_배포운영_통합_*.md · deploy_dbt_project.sql"
 ```
 
 ---
 
-> **이전 단계:** `01_환경_Role.md` · **다음 단계:** `03_GOLD_SERVING.md` (GOLD View → Semantic View → Agent → 권한 → Streamlit)
+> **이전 단계:** `01_환경_Role.md` · **다음 단계:** `03_GOLD_SERVING.md` (GOLD star schema → WIDE VIEW → Semantic View → Agent → 권한)

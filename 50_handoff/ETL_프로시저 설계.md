@@ -150,8 +150,8 @@ flowchart LR
   CRON(["⏱ 일 1회"])
   V["VALIDATE_BRONZE<br/>품질 게이트"]
   R["REFINEMENT_ROOT<br/>SP_RUN_ALL_REFINEMENT"]
-  D["LOAD_DIM_ROOT<br/>12 DIM"]
-  F["LOAD_FACT_ROOT<br/>6 FACT"]
+  D["LOAD_DIM_ROOT<br/>15 DIM"]
+  F["LOAD_FACT_ROOT<br/>9 FACT"]
   FIN["FINALIZER<br/>로그·알림"]
   CRON --> V -->|통과| R --> D --> F --> FIN
 ```

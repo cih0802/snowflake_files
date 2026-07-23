@@ -26,7 +26,7 @@ END-METADATA -->
 > **범위**: 설계 → 배포 → RBAC → CoWork 연결 → 거버넌스까지 완료. **미검증 = 에이전트 자연어 계층**(트라이얼 제약, §주의 5).
 
 ## 1. 폴더 위상
-- **입력(읽기전용)**: `03_top-down_gold/` (GOLD 정본 — DIM 12·FACT 6·derived 81 SSOT), `99_provided_definition/` (지표사전·용어).
+- **입력(읽기전용)**: `03_top-down_gold/` (GOLD 정본 — DIM 15·FACT 9·derived 81 SSOT), `99_provided_definition/` (지표사전·용어).
 - **근거**: `08_mornitoring/` (거버넌스 SQL 근거), `20_issue/` (BLOCKING-5 등 데이터 게이트).
 - **이 폴더 = SERVING(SV·Agent)**: GOLD 소비 계층. 배포 산출물(Agent YAML·매니페스트)은 워크스페이스 루트 `cortex_project/`.
 

@@ -1,5 +1,7 @@
 # Snowflake 세션 인증 사용 — password/authenticator/env_var 금지
 # 대상 스키마(GN_DW.SILVER)는 사전 존재해야 함(DDL 배포 완료)
+# 실행 role = GN_DW_ENGINEER (최소권한): dbt는 06/08 DDL 테이블에 적재만(dim merge / fact·silver append+TRUNCATE),
+#   WIDE view 생성. CREATE TABLE 불요·구조 OWNERSHIP은 GN_DW_ADMIN. 권한 근거: 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql D.5.
 default:
   target: dev
   outputs:
@@ -7,8 +9,8 @@ default:
       type: snowflake
       account: ""
       user: ""
-      role: ACCOUNTADMIN
+      role: GN_DW_ENGINEER
       database: GN_DW
-      warehouse: COMPUTE_WH
+      warehouse: GN_DW_ETL_WH
       schema: SILVER
       threads: 4

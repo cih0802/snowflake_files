@@ -13,6 +13,7 @@ language: ko (설명) / en (구조 키)
 
 > 인덱스: `00_INDEX.md` · 핵심 원칙(P1~P7)은 인덱스 참조.
 > 본 챕터는 구축 1~2단계(execution_order step 1~2)를 다룬다.
+> **실행 정본(멱등 SQL)**: `07_ENVIRONMENT_RBAC_setup.sql` — 본 챕터 §1.2(WH)·§2(역할·계층·권한) + `03_GOLD_SERVING.md §3.8`(스키마 grant)를 한 파일로 부트스트랩.
 
 ---
 
@@ -37,7 +38,7 @@ warehouses:
     size: SMALL
     auto_suspend_sec: 60
     auto_resume: true
-    note: "프로시저/태스크 전용"
+    note: "dbt 파이프라인(GN_DW.OPS.DW_PIPELINE) 실행 전용. 라이브(2026-07-22): 3종 WH 실측 확인(ETL Small·ANALYTICS Medium·DEV X-Small)"
   - id: GN_DW_ANALYTICS_WH
     purpose: 분석가 쿼리
     size: MEDIUM
@@ -66,10 +67,10 @@ design_notes:
 role_hierarchy:
   ACCOUNTADMIN:
     SYSADMIN:
-      GN_DW_ADMIN:        # DB/스키마 관리, DDL
-        - GN_DW_ENGINEER  # ETL 개발, 프로시저/태스크 운영
+      GN_DW_ADMIN:        # DB/스키마 관리, DDL, SV/Agent 소유
+        - GN_DW_ENGINEER  # ETL 개발, dbt 파이프라인 운영
         - GN_DW_ANALYST:  # 분석 쿼리 (SELECT only)
-            - GN_DW_VIEWER # 읽기 전용 (GOLD View 읽기 + SERVING 소비)
+            - GN_DW_VIEWER # 읽기 전용 (GOLD/WIDE 읽기 + SERVING 소비)
         - GN_DW_LOADER    # 외부팀 BRONZE 적재
         - GN_DW_SERVICE   # 서비스 계정 (API, Streamlit)
     SECURITYADMIN: {}     # Role 관리
@@ -85,7 +86,7 @@ roles:
     scope: 전체
     note: "ALL PRIVILEGES 보유로 모든 WH 사용 가능하나, 기본값은 DEV_WH. 운영 WH(ETL/ANALYTICS) 사용 시 명시적 USE WAREHOUSE 필요"
   - id: GN_DW_ENGINEER
-    purpose: ETL 개발, 프로시저
+    purpose: ETL 개발, dbt 파이프라인
     warehouse: [GN_DW_ETL_WH, GN_DW_DEV_WH]
     scope: "BRONZE, SILVER, GOLD, SERVING(USAGE)"
   - id: GN_DW_ANALYST
@@ -105,9 +106,12 @@ roles:
     warehouse: [GN_DW_ANALYTICS_WH]
     scope: "GOLD(읽기), SERVING(소비)"
 creation_rules:
-  - "6개 Role 생성 후 GRANT ROLE TO ROLE로 계층 구성"
+  - "6개 Role 생성 후 GRANT ROLE TO ROLE로 계층 구성 (라이브 실측: 6종 전량 생성 확인)"
   - "모든 Custom Role 최종 SYSADMIN 귀속 (P4)"
-  - "Serverless 태스크용 EXECUTE MANAGED TASK ON ACCOUNT를 GN_DW_ADMIN/ENGINEER에 부여 (04_운영.md 5장 연계)"
+  - "소유 모델: GN_DW DB·전 스키마·테이블/뷰·SV/Agent/DBT PROJECT = GN_DW_ADMIN 소유(07 §B.5로 ACCOUNTADMIN→ADMIN 이관). 커스텀 롤(ENGINEER/ANALYST/VIEWER/LOADER/SERVICE)은 적재·조회만(소유 없음)."
+  - "계정 레벨 객체는 ACCOUNTADMIN 유지(이관 대상 아님): 네트워크/인증 정책·Resource Monitor·CoWork object·SNOWFLAKE.CORTEX_* 부여."
+  - "MANAGED ACCESS 스키마 → 소유자 GN_DW_ADMIN이 모든 object grant 발급. dbt WIDE view는 생성 롤(ENGINEER) 소유(dbt 산출물)."
+  - "ETL은 dbt 파이프라인(GN_DW.OPS.DW_PIPELINE)으로 운영 — 별도 Serverless Task 없음(향후 dbt 스케줄 Task 래핑 시 EXECUTE MANAGED TASK ON ACCOUNT를 GN_DW_ADMIN/ENGINEER에 부여)"
 ```
 
 ### 2.3 유저 생성 (user_provisioning)
@@ -123,17 +127,18 @@ note: "실제 유저 정보(이름/이메일)는 조직 정책에 따라 기입.
 
 ---
 
-## 3. 향후 확장: dbt 전용 Role 분리 (방식 C)
+## 3. dbt 실행 권한 (GN_DW_ENGINEER — 전용 롤 불필요)
 
-> **현재 상태**: dbt는 `GN_DW_ENGINEER` Role을 그대로 사용.
-> Gold에 CREATE TABLE이 불필요하므로 별도 Role 없이 운영 가능.
+> **현재 상태(라이브 2026-07-22)**: dbt 파이프라인 `GN_DW.OPS.DW_PIPELINE`이 **배포·운영 중**이며, 실행 role은 **`GN_DW_ENGINEER`**(최소권한). 전용 `GN_DW_DBT` Role은 **불필요**(SHOW ROLES 실측 6종).
+> **정정(중요)**: dbt는 GOLD/SILVER에 테이블을 **생성하지 않고 적재만** 한다 — dim=incremental merge, fact·silver=append+pre-hook TRUNCATE, WIDE=view. 구조·컬럼 COMMENT·FK는 `06_DDL`/`08_DDL`(소유=GN_DW_ADMIN)이 보존한다. 따라서 dbt 롤에 **GOLD `CREATE TABLE`은 불요**이며, 필요한 것은 granular DML(INSERT/UPDATE/DELETE)·`TRUNCATE`·WIDE용 `CREATE VIEW`뿐이다.
+> 권한 사실: `TRUNCATE`는 개별 grant 가능한 TABLE 권한이고, `EXECUTE DBT PROJECT`는 `USAGE ON DBT PROJECT`로 충분 → **소유권 없이 실행 가능**. 구현 grant는 `07_ENVIRONMENT_RBAC_setup.sql` §D.5.
 
-### 3.1 분리 시점 (trigger)
+### 3.1 GN_DW_DBT 분리 시점 (trigger) — 현재 **미충족**
 
-아래 조건 중 하나라도 해당되면 `GN_DW_DBT` Role 분리를 검토:
-- dbt가 Gold 스키마에 테이블을 직접 생성해야 하는 경우
-- dbt 파이프라인과 수동 ETL(프로시저/태스크)의 권한을 격리해야 하는 경우
-- dbt 전용 서비스 계정을 CI/CD에서 사용하는 경우
+아래 조건 중 하나라도 해당될 때만 `GN_DW_DBT` Role 분리를 검토(현재 셋 다 해당 없음):
+- ~~dbt가 Gold 스키마에 테이블을 직접 생성해야 하는 경우~~ → **해당 없음**: dbt는 적재 전용(구조는 DDL 소유).
+- dbt 파이프라인과 수동 ETL의 권한을 물리적으로 격리해야 하는 경우(감사/규제 요구)
+- dbt 전용 서비스 계정을 CI/CD에서 별도 자격증명으로 운용하는 경우
 
 ### 3.2 목표 계층 구조
 

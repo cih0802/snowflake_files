@@ -19,6 +19,10 @@
 -- ============================================================================
 -- STEP 1 — 스키마 생성
 -- ============================================================================
+-- 실행 컨텍스트(role 설계 정합, 01_환경 Role.md §2.2): 스키마·테이블 DDL = GN_DW_ADMIN · 기본 WH = DEV_WH
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE DATABASE GN_DW;
 CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER
     WITH MANAGED ACCESS
     COMMENT = 'Silver 레이어 — Bronze(CRM·GA4·ERP·AGENCY) 정제/변환 객체 (GOLD 입력용)';

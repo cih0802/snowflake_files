@@ -2,7 +2,7 @@
 
 > **목적**: BRONZE·SILVER·GOLD **전 계층을 구축하시는 IT팀**께 전달하는 **설계 문서 묶음 안내**입니다.
 > **한 줄**: 분석 모델(GOLD)·정제(SILVER)·입고(BRONZE) 설계가 완료되었습니다. 아래 문서를 통해 **무엇을 적재·정제·생성**하고 **무엇을 회신**해야 하는지 확인하실 수 있습니다.
-> **기준 정본**: GOLD = 12 DIM + 6 FACT (`GOLD_ddl 초안.sql`). 데이터 도메인 = CRM·GA4·ERP·AGENCY + GADS·ADMIN (2026-06-24 정의서 반영, GADS·ADMIN은 통합 예정·미정).
+> **기준 정본**: GOLD = 15 DIM + 9 FACT (`GOLD_ddl 초안.sql`). 데이터 도메인 = CRM·GA4·ERP·AGENCY + GADS·ADMIN (2026-06-24 정의서 반영, GADS·ADMIN은 통합 예정·미정).
 > **역할**: IT팀이 **BRONZE·SILVER·GOLD 전 계층 구축 + 변환 프로시저 작성 + BRONZE 컨트랙트 회신**을 담당합니다. SERVING(SV/Agent)·OPS·SECURITY는 본 전달 범위 밖(별도 트랙)입니다.
 
 > **용어 안내** (처음 보시는 분께): **메달리온** = BRONZE(원본)→SILVER(정제)→GOLD(분석용)로 단계별 정제하는 적재 구조 · **DIM(차원)** = 분석 기준(회원·날짜·조직 등) · **FACT(팩트)** = 측정값(금액·건수 등) · **star schema** = FACT를 가운데 두고 DIM이 둘러싼 분석용 구조.
@@ -10,7 +10,7 @@
 > **✅ IT팀이 하실 일 (요약)**
 > 1. **BRONZE 적재** — 원천 데이터를 있는 그대로 적재 + `BRONZE_컨트랙트 요청서`(문서 #1) **3가지 회신**.
 > 2. **SILVER 정제** — 정제 규칙대로 테이블 생성 (문서 #3·#4).
-> 3. **GOLD 적재** — star schema 18개(12 DIM + 6 FACT) 구축 (문서 #5~#10; #5는 SILVER→GOLD 매핑).
+> 3. **GOLD 적재** — star schema 24개(15 DIM + 9 FACT) 구축 (문서 #5~#10; #5는 SILVER→GOLD 매핑).
 > 4. **변환 SP 작성** — BRONZE→SILVER, SILVER→GOLD 프로시저 (문서 #11 골격 기반).
 >
 > 착수 전 **§4 체크리스트**(전달 방식·증분 여부·GADS/ADMIN 처리 등)를 먼저 합의해 주시면 진행이 매끄럽습니다.
@@ -26,9 +26,9 @@
 | 3 | `04_silver_design/SILVER_설계_작업 계획.md` | **SILVER** | 정제 정본. 테이블 전수목록·통합트리·개념↔물리명·결정 D1~D11·리스크 R1~R8 |
 | 4 | `04_silver_design/S1_CRM_entity_design/` (01~15) | **SILVER** | **CRM 15개 엔티티 상세설계** — 테이블별 grain·PK·컬럼·정제규칙 (정제 SP의 직접 입력) |
 | 5 | `03_top-down_gold/GOLD_SILVER 의존.md` | **연결고리** | GOLD 컬럼 ← SILVER 소스 매핑. **SILVER→GOLD 적재 로직의 핵심 근거** |
-| 6 | `03_top-down_gold/GOLD_ddl 초안.sql` | **GOLD** | 18테이블 star schema DDL (12 DIM + 6 FACT). 재실행 안전(IF NOT EXISTS) |
-| 7 | `03_top-down_gold/GOLD_차원 설계.md` | GOLD | DIM 12개 grain·SK/BK·SCD·컬럼 (DDL 부속 ①) |
-| 8 | `03_top-down_gold/GOLD_팩트 설계.md` | GOLD | FACT 6개 grain·measure·가산성 (DDL 부속 ②) |
+| 6 | `03_top-down_gold/GOLD_ddl 초안.sql` | **GOLD** | 24테이블 star schema DDL (15 DIM + 9 FACT). 재실행 안전(IF NOT EXISTS) |
+| 7 | `03_top-down_gold/GOLD_차원 설계.md` | GOLD | DIM 15개 grain·SK/BK·SCD·컬럼 (DDL 부속 ①) |
+| 8 | `03_top-down_gold/GOLD_팩트 설계.md` | GOLD | FACT 9개 grain·measure·가산성 (DDL 부속 ②) |
 | 9 | `03_top-down_gold/GOLD_파생지표 매핑.md` | GOLD | derived 81 → 분자/분모 base measure 매핑 (DDL 부속 ③) |
 | 10 | `03_top-down_gold/GOLD_메타제약 확인.md` | GOLD | 시간가용성·우선순위·미해결/합의 항목 + META 테이블 제안 |
 | 11 | `ETL_프로시저_설계.md` | 프로시저 | BRONZE→SILVER 정제 SP·SILVER→GOLD 적재 SP·DAG 골격 (변환 로직 설계 정본) |
@@ -45,7 +45,7 @@
 |---|---|---|---|
 | BRONZE | 원천 1:1 적재 (가공 없음, 구조 보존) | 원천 6도메인 (CRM 40 ✅ + 5 입고 대기) | ✅ 구축 대상 |
 | SILVER | 정제·통합 (타입/NULL/코드라벨/중복제거/JOIN) | 28 (CRM 15 + 입고 후 13; GADS·ADMIN 3 잠정) | ✅ 구축 대상 |
-| GOLD | 분석 star schema (집계·통합) | 18 = 12 DIM + 6 FACT | ✅ 구축 대상 |
+| GOLD | 분석 star schema (집계·통합) | 24 = 15 DIM + 9 FACT | ✅ 구축 대상 |
 | SERVING | 의미계층 (Semantic View + Cortex Agent) | SV 4 + Agent 3 | 별도 트랙 |
 | OPS | 운영 메타 (비용 리포트·적재 로그) | View 2 + 로그 | 별도 트랙 |
 | SECURITY | 거버넌스 정책 (마스킹·네트워크 룰) | 정책 N | 별도 트랙 |
@@ -54,7 +54,7 @@
 flowchart LR
   B["BRONZE<br/>원천 1:1 (6도메인)"]
   S["SILVER<br/>정제·통합 (25+)"]
-  G["GOLD<br/>star schema (18 = 12+6)"]
+  G["GOLD<br/>star schema (24 = 15+9)"]
   V["SERVING<br/>SV 4 / Agent 3 (별도 트랙)"]
   B --> S --> G --> V
 ```
@@ -71,14 +71,15 @@ flowchart LR
 | Google Ads | `GADS` | 미정 | ⏳ 보류 | **AGENCY/CRM 통합 예정·목적지 미정** |
 | 어드민 | `ADMIN` | 미정 | ⏳ 보류 | 앱푸시·이벤트 / **AGENCY/CRM 통합 예정·미정** |
 
-### 2-2. GOLD 18테이블 (DDL 정본)
+### 2-2. GOLD 24테이블 (DDL 정본)
 
 ```
-DIM (12)  DIM_DATE  DIM_ORG  DIM_CAMPAIGN  DIM_MEMBER  DIM_MEMBER_IDENTITY
+DIM (15)  DIM_DATE  DIM_ORG  DIM_CAMPAIGN  DIM_MEMBER  DIM_MEMBER_IDENTITY
           DIM_SPONSORSHIP  DIM_AD_CREATIVE  DIM_GA_SOURCE  DIM_SERVICE
-          DIM_PAYMENT  DIM_GA_EVENT  DIM_REASON
-FACT (6)  FACT_MEMBER_MONTHLY(FMM)   FACT_TARGET_DEV(FTG-D)   FACT_TARGET_BIZ(FTG-B)
-          FACT_SERVICE_EVENT(FSE)    FACT_GA_BEHAVIOR(FGA)    FACT_AD_PERFORMANCE(FAD)
+          DIM_PAYMENT  DIM_GA_EVENT  DIM_REASON  DIM_BUDGET_ITEM  DIM_DEVICE  DIM_EVENT
+FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)      FACT_TARGET_DEV(FTG-D)
+          FACT_TARGET_BIZ(FTG-B)     FACT_SERVICE_EVENT(FSE)     FACT_EVENT_PARTICIPATION(FEP)
+          FACT_GA_BEHAVIOR(FGA)      FACT_AD_PERFORMANCE(FAD)    FACT_BUDGET(FBD)
           → base measure 61
 ```
 
@@ -143,4 +144,4 @@ SP_RUN_ALL_REFINEMENT       상위 호출 (원천별 SP 순차/병렬)
 - 데이터: **CRM만 전수 수령**. GA4·ERP·AGENCY 미수령, GADS·ADMIN 통합 미정 → 입고/결정 후 SILVER·GOLD 활성(S-6).
 - 변환 SP: **미작성**(IT팀 작성 대상). §4 설계 입력으로 도출.
 
-> 참고 수치 주의: 레거시 `02_GN_DW_building/02_DB_BRONZE_SILVER.md`의 BRONZE 54 / SILVER 23 / GOLD View 35는 **PoC 기반 구안**이며, 본 인덱스의 BRONZE(6도메인)·SILVER 28(CRM 15 + 입고 후 13, GADS·ADMIN 3 잠정)·GOLD 18(12 DIM+6 FACT)이 **현행 정본**입니다.
+> 참고 수치 주의: 레거시 `02_GN_DW_building/02_DB_BRONZE_SILVER.md`의 BRONZE 54 / SILVER 23 / GOLD View 35는 **PoC 기반 구안**이며, 본 인덱스의 BRONZE(6도메인)·SILVER 28(CRM 15 + 입고 후 13, GADS·ADMIN 3 잠정)·GOLD 24(15 DIM+9 FACT)이 **현행 정본**입니다.

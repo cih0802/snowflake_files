@@ -168,3 +168,16 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
 
 drop schema gn_dw.silver;
 drop schema gn_dw.gold;
+
+
+--======================================================
+--20260722
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE ADD VERSION
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+
+
+USE ROLE GN_DW_ENGINEER;
+USE WAREHOUSE GN_DW_ETL_WH;
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';

@@ -8,7 +8,7 @@
 --
 -- 연계 문서 / RELATED DOCUMENT
 --   데이터 마이그레이션 작업 문서:
---     snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/데이터마이그레이션 20260713.md
+--     snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/01_데이터마이그레이션 20260713.md
 --   참조 지점: 해당 문서 3.2(스키마 DDL 추출) / 5.1(DDL로 스키마·테이블 재생성) 단계에서 본 파일을 사용.
 --
 -- 메타데이터 / METADATA

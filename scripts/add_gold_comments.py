@@ -2,7 +2,7 @@
 # Co-authored with CoCo
 import csv, re, sys
 
-CSV = "/workspace/gold 스키마 컬럼 인벤토리_20260629.csv"
+CSV = "/workspace/_archive/gold 스키마 컬럼 인벤토리_20260629.csv"
 DDL = "/workspace/03_top-down_gold/06_DDL.sql"
 
 # (table, column) -> 설명

@@ -66,8 +66,8 @@ def load_old(path):
             key[(t, c)] = row["키"]; fk[(t, c)] = row["FK_타깃"]
     return grain, typ, key, fk
 
-OG_S, OT_S, OK_S, OFK_S = load_old("/workspace/SILVER 스키마 컬럼 인벤토리_20260630.csv")
-OG_G, OT_G, OK_G, OFK_G = load_old("/workspace/gold 스키마 컬럼 인벤토리_20260629.csv")
+OG_S, OT_S, OK_S, OFK_S = load_old("/workspace/_archive/SILVER 스키마 컬럼 인벤토리_20260630.csv")
+OG_G, OT_G, OK_G, OFK_G = load_old("/workspace/_archive/gold 스키마 컬럼 인벤토리_20260629.csv")
 
 # 신규 테이블 GRAIN/유형 정의
 NEW_SILVER = {
@@ -178,9 +178,9 @@ hdr = ["테이블명","GRAIN","테이블유형","컬럼명","타입","NULLABLE",
 sv = build(SILVER, "SILVER", OG_S, OT_S, OK_S, OFK_S)
 gd = build(GOLD, "GOLD", OG_G, OT_G, OK_G, OFK_G)
 
-with open("/workspace/SILVER 스키마 컬럼 인벤토리_20260716.csv", "w", newline="", encoding="utf-8") as f:
+with open("/workspace/06_reference/SILVER 스키마 컬럼 인벤토리_20260716.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f); w.writerow(hdr); w.writerows(sv)
-with open("/workspace/gold 스키마 컬럼 인벤토리_20260716.csv", "w", newline="", encoding="utf-8") as f:
+with open("/workspace/06_reference/gold 스키마 컬럼 인벤토리_20260716.csv", "w", newline="", encoding="utf-8") as f:
     w = csv.writer(f); w.writerow(hdr); w.writerows(gd)
 
 print(f"SILVER rows={len(sv)} tables={len(set(r[0] for r in sv))}")
