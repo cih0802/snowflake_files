@@ -1,4 +1,4 @@
--- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·SERVING 스키마·CoWork object·helper 뷰 생성
+-- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object·helper 뷰 생성
 -- Co-authored with CoCo
 --
 -- ★ 정본(canonical) 실행 스크립트 — 2026-07-22 05_SV-Agent_ai/02_SERVING_setup.sql 에서 이관.
@@ -10,9 +10,9 @@
 --   05_SV-Agent_ai/01_SV-Agent 작업계획.md §0단계 · §7 거버넌스
 --   Snowflake docs: Snowflake CoWork object (CREATE SNOWFLAKE INTELLIGENCE)
 --
--- 실행 순서(권장): A~C(WH·역할·WH grant) → BRONZE/SILVER/GOLD DDL → 05_SV_DDL.sql → 09_AGENT_spec_구현.sql
---                  → B.5(소유권 이관, 객체 존재 후 1회) → D~G(스키마 grant·SERVING·CoWork·helper 뷰)
---   ※ B.5/D 는 대상 스키마·객체가 존재해야 하므로 DDL·SV·Agent·DBT PROJECT 배포 후 실행.
+-- 실행 순서(권장): A~C(WH·역할·WH grant) → B.5(DB 생성 → 소유권 ADMIN 이관 → 9스키마 GN_DW_ADMIN 생성)
+--                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → 05_SV_DDL.sql → 09_AGENT_spec_구현.sql → D~G(스키마 grant·SERVING·CoWork·helper 뷰)
+--   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
 -- 소유 모델: GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위).
 --            커스텀 롤은 적재·조회만. 계정 레벨(네트워크/인증 정책·Resource Monitor·CoWork·CORTEX)은 ACCOUNTADMIN 유지.
 -- 멱등: 전 구간 IF NOT EXISTS / OR REPLACE / OWNERSHIP 재이관 안전. 반복 실행 가능.
@@ -78,48 +78,48 @@ GRANT USAGE ON WAREHOUSE GN_DW_ETL_WH       TO ROLE GN_DW_LOADER;
 GRANT USAGE ON WAREHOUSE GN_DW_ANALYTICS_WH TO ROLE GN_DW_SERVICE;
 
 /* =====================================================================
-   B.5 소유권 이관 — GN_DW DB 트리 전체를 GN_DW_ADMIN 소유로 (SoD 설계 핵심)
-      원칙: SYSADMIN ▸ GN_DW_ADMIN 이 DB·스키마·모든 객체(테이블/뷰/SV/Agent/DBT PROJECT)를 소유.
+   B.5 DATABASE 생성 + 소유권 이관 + 스키마 전체 생성 (SoD 설계 핵심)
+      원칙: 커스텀 롤엔 계정 레벨 CREATE DATABASE 가 없다 → DB 는 SYSADMIN 이 생성하고
+             DB 소유권만 GN_DW_ADMIN 에 이관한다. 이후 모든 스키마·테이블·뷰·SV·Agent·
+             DBT PROJECT 는 GN_DW_ADMIN 이 "처음부터 직접 생성" → 생성 시점부터 ADMIN 소유(개별 이관 불요).
+      효과: DB 트리 전체가 ADMIN 소유로 정합. MANAGED ACCESS 스키마의 grant 발급 주체 = 소유자 GN_DW_ADMIN.
              커스텀 롤(ENGINEER/ANALYST/VIEWER/LOADER/SERVICE)은 적재·조회만(소유 없음).
-      효과: MANAGED ACCESS 스키마의 grant 발급 주체 = 소유자 GN_DW_ADMIN → 이후 D~E·G 를 ADMIN 이 자체 수행.
       ⚠️ ACCOUNTADMIN 전용으로 남는 것(이관 대상 아님, 계정 레벨):
              네트워크/인증 정책(ALTER ACCOUNT SET ...), Resource Monitor, CoWork object(§F), SNOWFLAKE.CORTEX_* 부여.
-      전제: 스키마·객체가 존재해야 함(BRONZE/SILVER/GOLD DDL·SV·Agent·DBT PROJECT 배포 후 1회 실행).
-             INFORMATION_SCHEMA 는 시스템 소유 → 이관 불가·제외. SERVING 은 생성 시점부터 ADMIN 소유(제외).
-      멱등: 이미 ADMIN 소유면 no-op 유사. COPY CURRENT GRANTS 로 하위 grant 보존.
+      스키마 정본: 02_DB_BRONZE_SILVER.md §3.2 · 03_GOLD_SERVING.md §3.8.
+             BRONZE_*·SECURITY = MANAGED ACCESS. SILVER/GOLD/SERVING/OPS = 일반. PUBLIC 은 자동 존재.
+             INFORMATION_SCHEMA 는 시스템 소유 → 관리 대상 아님(무관).
+      멱등: CREATE ... IF NOT EXISTS · COPY CURRENT GRANTS 로 반복 실행 안전.
       비고: dbt(ENGINEER)가 만드는 WIDE view 는 생성 롤(ENGINEER) 소유 — dbt 산출물로 허용(구조 base table 은 ADMIN 소유 유지).
    ===================================================================== */
-USE ROLE ACCOUNTADMIN;
 
--- (1) 데이터베이스
+-- (1) DATABASE — SYSADMIN 이 생성 (커스텀 롤엔 CREATE DATABASE 권한 없음)
+USE ROLE SYSADMIN;
+CREATE DATABASE IF NOT EXISTS GN_DW
+  DATA_RETENTION_TIME_IN_DAYS = 1
+  COMMENT = '굿네이버스 데이터웨어하우스';
+
+-- (2) DB 소유권 → GN_DW_ADMIN. 이후 스키마/객체를 ADMIN 이 직접 CREATE → 생성 시점부터 ADMIN 소유
+USE ROLE ACCOUNTADMIN;
 GRANT OWNERSHIP ON DATABASE GN_DW TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 
--- (2) 스키마 (INFORMATION_SCHEMA 제외 · SERVING 은 이미 ADMIN 소유)
-GRANT OWNERSHIP ON SCHEMA GN_DW.PUBLIC        TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.BRONZE_CRM    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.BRONZE_AGENCY TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.BRONZE_ERP    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.BRONZE_GA4    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.SILVER        TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.GOLD          TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.OPS           TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON SCHEMA GN_DW.SECURITY      TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-
--- (3) 각 스키마의 모든 테이블/뷰 (반복 실행 안전)
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.BRONZE_CRM    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.BRONZE_AGENCY TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.BRONZE_ERP    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.BRONZE_GA4    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.SILVER        TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL TABLES IN SCHEMA GN_DW.GOLD          TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-GRANT OWNERSHIP ON ALL VIEWS  IN SCHEMA GN_DW.GOLD          TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
-
--- (4) DBT PROJECT (OPS) — 현재 소유 ACCOUNTADMIN → ADMIN 이관(재배포·ALTER 권한)
-GRANT OWNERSHIP ON DBT PROJECT GN_DW.OPS.DW_PIPELINE TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+-- (3) 스키마 9종 — GN_DW_ADMIN 이 처음부터 생성 (개별 OWNERSHIP 이관 불필요)
+USE ROLE GN_DW_ADMIN;
+-- BRONZE: 원천별 물리 분리 (MANAGED ACCESS — LOADER 쓰기)
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_CRM    WITH MANAGED ACCESS COMMENT = '원천 적재 — CRM(회원/납입/캠페인). 43테이블';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_AGENCY WITH MANAGED ACCESS COMMENT = '원천 적재 — 대행사 광고 성과. 3테이블';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_ERP    WITH MANAGED ACCESS COMMENT = '원천 적재 — ERP 예산 실적 원장. 1테이블';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_GA4    WITH MANAGED ACCESS COMMENT = '원천 적재 — GA4 웹/앱 방문. 1테이블(일 샤드)';
+-- 정제·분석·소비·운영·거버넌스
+CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 32테이블(CRM 22+GA4 5+ERP 2+AGENCY 2+bridge 1)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema 24(15 DIM+9 FACT) + 평탄화 WIDE VIEW 9';
+CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치(P7). GOLD DIM/FACT cross-schema 참조';
+CREATE SCHEMA IF NOT EXISTS GN_DW.OPS      COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.SECURITY WITH MANAGED ACCESS COMMENT = '거버넌스 정책 격리 — 마스킹/네트워크 정책';
 
 /* =====================================================================
    D. 스키마 권한 (03_GOLD_SERVING.md §3.8 schema_grants)
-      스키마 소유자 = GN_DW_ADMIN(B.5 이관 후) → ADMIN 이 발급.
+      스키마 소유자 = GN_DW_ADMIN(ADMIN 이 처음부터 생성) → ADMIN 이 발급.
    ===================================================================== */
 USE ROLE GN_DW_ADMIN;
 
@@ -225,7 +225,7 @@ GRANT INSERT, UPDATE ON FUTURE TABLES IN SCHEMA GN_DW.BRONZE_GA4 TO ROLE GN_DW_L
                  EXECUTE DBT PROJECT = USAGE ON DBT PROJECT(docs). → 소유권 없이 실행 가능.
       결정: 별도 GN_DW_DBT 롤 불필요(01_환경 Role.md §3 트리거 미충족). ADMIN 은 OWNERSHIP 만 유지.
    ===================================================================== */
-USE ROLE GN_DW_ADMIN;  -- B.5 이관 후 GOLD/SILVER/OPS 소유자 = GN_DW_ADMIN → ADMIN 이 발급
+USE ROLE GN_DW_ADMIN;  -- GOLD/SILVER/OPS 소유자 = GN_DW_ADMIN(처음부터 생성) → ADMIN 이 발급
 
 -- GOLD: dim merge(INSERT/UPDATE/DELETE) + fact pre-hook TRUNCATE. (USAGE·CREATE VIEW·SELECT 는 D.2 기보유)
 GRANT INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
@@ -235,24 +235,23 @@ GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO 
 GRANT INSERT, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 GRANT INSERT, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 
+
+-- DBT 생성 후 진행
+-- snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/10_dbt_pipeline/deploy_dbt_project.sql
 -- OPS 스키마 + DBT PROJECT 실행권(EXECUTE DBT PROJECT = USAGE ON DBT PROJECT) + run history 조회(MONITOR)
--- (DBT PROJECT 소유는 B.5 (4)에서 ADMIN 으로 이관 완료)
+-- (DBT PROJECT 소유 = GN_DW_ADMIN — Phase 4 에서 ADMIN 이 CREATE DBT PROJECT 로 직접 생성)
 GRANT USAGE   ON SCHEMA GN_DW.OPS                    TO ROLE GN_DW_ENGINEER;
 GRANT USAGE   ON DBT PROJECT GN_DW.OPS.DW_PIPELINE   TO ROLE GN_DW_ENGINEER;
 GRANT MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE   TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
-   E. SERVING 스키마 (P7 serving_separation) — SV·Agent 배치 계층
-      소유 = GN_DW_ADMIN. GOLD는 cross-schema 참조(SERVING→GOLD 단방향).
-      (B.5 로 DB 소유자 = ADMIN → ADMIN 이 스키마 생성 가능. 별도 CREATE SCHEMA 위임 불요.)
+   E. SERVING 스키마 소비 권한 (P7 serving_separation) — SV·Agent 배치 계층
+      SERVING 스키마 자체는 §B.5(3)에서 GN_DW_ADMIN 이 생성(소유=ADMIN).
+      GOLD는 cross-schema 참조(SERVING→GOLD 단방향).
    ===================================================================== */
 USE ROLE GN_DW_ADMIN;
-USE WAREHOUSE GN_DW_DEV_WH;
-CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING
-  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치(P7). GOLD DIM/FACT cross-schema 참조';
 
 -- E.1 SERVING 소비 권한: ENGINEER USAGE / 소비 3역할 USAGE
-USE ROLE GN_DW_ADMIN;
 GRANT USAGE ON SCHEMA GN_DW.SERVING TO ROLE GN_DW_ENGINEER;
 GRANT USAGE ON SCHEMA GN_DW.SERVING TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON SCHEMA GN_DW.SERVING TO ROLE GN_DW_VIEWER;
@@ -310,14 +309,19 @@ SELECT
     MEMBER_SK,
     MEMBER_DK,
     GENDER,
+    GENDER_NAME,
     REGION,
     AGE_BAND,
     MEMBER_STATUS,
     MEMBER_TYPE,
+    MEMBER_TYPE_NAME,
+    MEMBER_STATUS_NAME,
+    MEMBER_STATUS_GROUP,
     NEW_EXISTING_FLAG,
     FIRST_JOIN_DATE,
     FIRST_CAMPAIGN,
     ENROLL_PATH,
+    ENROLL_PATH_NAME,
     FIRST_SPONSORSHIP,
     LAST_STOP_DATE,
     LAST_CAMPAIGN,

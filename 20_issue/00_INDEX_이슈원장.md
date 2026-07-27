@@ -43,7 +43,7 @@ END-METADATA -->
 | 🔴 적재 블로커(내부) | 1 | **BLOCKING-5** GOLD 팩트 measure·차원FK 대규모 미적재(2026-07-21 SV착수 실측) — 🟡 **A1(FMM DEV/STOP+HAS_BILLING)·A3(FSE SERVICE_SK) 부분해소 진행중** | 50 |
 | 🟠 설계결정 블로커 | ~~3+~~→ 감소 | ~~A-2/Q9~~ ✅해소(순9-C) · O2 APP분기 ✅데이터확정(PC/M·APP휴면) · AGENCY 6종 부분해소 | 30 |
 | 🔄 우리끼리 잠정(게이트 有) | 6 | A-7/O5 · A-8 · O6 · #81 · O8 · O10 | 20 · 30 |
-| 🔵 비블로커 | 6 | #80 · ID-활성 · Q1·Q2·Q3·Q8 | 30 · 20 |
+| 🔵 비블로커 | 10 | #80 · ID-활성 · Q1·Q2·Q3·Q8 · **SVL-1~4**(SV 코드→라벨 매핑 확인) | 30 · 20 |
 | 🛠️ 설계흡수 | 1 | SF-biz(익명 미귀속) | 30 |
 | ❌ 제외 | 3 | A-5·A-6·A-10(어드민분) | 90 |
 | 🟢 해소완료 | 다수 | D1·D3·DEC-* · 지표정의 다수 · Q4~Q7·Q11~Q16 · 닫힌항목 7 | 90 |
@@ -53,6 +53,8 @@ END-METADATA -->
 > **잔여 배포 이슈**: BLOCKING-3(해소) · **BLOCKING-4 🟢 9/9 배포완료**(WIDE view 9종 dbt view·[2026-07-16] WIDE_TARGET_BIZ + FACT_TARGET_BIZ 스켈레톤 저작·build green PASS=2) · GOLD DDL 24 전량 dbt 모델화(FACT_TARGET_BIZ 는 E-6 CRM 원천 미입고로 0행 스켈레톤). · **🔴→🟡 BLOCKING-5 [2026-07-21 신규·부분해소중]** GOLD 팩트 measure·차원FK 대규모 미적재(FMM 카운트·FK 전건0·FSE SUCCESS/D5 전건0 등) — SV/Agent 착수 실측 발견. 🟡 **A1(FMM DEV/STOP+HAS_BILLING)·A3(FSE SERVICE_SK+SEND_TITLE) 구현·시뮬검증 완료**(build 대기), 잔여 B계열(코드매핑·O8 규칙)·외부입고 원인규명 필요(§50).
 > **▶ 진행 현황 [순서9-D]**: WIDE VIEW 9종 dbt view화·배포(BLOCKING-4 해소) + `AGENCY_AD_PERFORMANCE.AD_DATE` not_null warn→error 승격(실측 널 0). **[2026-07-16] FACT_TARGET_BIZ+WIDE_TARGET_BIZ 스켈레톤 저작**(0행 통과) — 단, 비판적 검토서 **단위충돌(SILVER 금액 TARGET_AMT vs GOLD 건 #152~155)·조인키 교정(이름기반)** 발견·처리(측정치 NULL·이름조인). **내부(bronze·설계로직) 가능작업 소진.** 잔여 = 외부의존(E-1/E-4/E-6/G-5/BLOCKING-1) · 현업(Q10/O5) · 설계결정(FACT_BUDGET 추경/조정 슬롯=문서30 §7, **FACT_TARGET_BIZ 단위=건 확정(2026-07-20 정정) → 현업이 건 목표 원천 제공 시 채움; Bronze DDL 단위 건 정합 필요**). **총괄표**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` §7 · 착수 프롬프트: `10_dbt_pipeline/90_NEXT_SESSION_순서9-D_20260715.md`.
 > **▶ SERVING(SV/Agent) [순서9-E 2026-07-22]**: `GN_DW.SERVING`에 **Semantic View 5 배포·검증**(SV=FACT 일치·fan-out 0) + **Cortex Agent 2 배포·CoWork 연결**(AGENT_MEMBER·AGENT_OVERALL, owner=GN_DW_ADMIN, SI object ADD AGENT·소비 3역할 USAGE). 신규 진단·교훈 = **문서10 §6**: (6-A) FME/FSE/FEP grain 비유일→PK 미선언 · (6-B) 납부율 무필터 100.36% 왜곡→기간스코프 강제(신규 P10) · (6-C) 🔴 **트라이얼 DATA_AGENT_RUN 차단→NL 스모크 paid 게이트** · (6-D) cortex_agent_save 소유권 보정 · (6-E) BLOCKING-5 활성/비활성 경계 확정. 정본 = `05_SV-Agent_ai/`(00 README·08 spec·09 구현·10 검증·11 거버넌스).
+> **▶ SV 코드→라벨화 [순서9-F 2026-07-23]**: 회원 SV 4종·행사 SV의 코드성 차원을 한글 라벨로 비정규화(GOLD `DIM_MEMBER`.MEMBER_TYPE_NAME/STATUS_NAME/STATUS_GROUP/GENDER_NAME/ENROLL_PATH_NAME · `DIM_EVENT`.EVENT_KIND_NAME → SERVING `DIM_MEMBER_CURRENT` → SV `*_NAME` 차원·Agent 2종 지침 VERSION$3). 원천=SILVER `CRM_CODE`(MM018/MM010/MM014) 빌드시점 조인·복제 없음. 코드그룹 불명확분 = **SVL-1~4**(문서20 §D) 현업 회신 대기.
+> **▶ SV/Agent 고도화 [순서9-G 2026-07-23]**: (1) 🟢 기본 기간스코프를 **SV `AI_SQL_GENERATION`**으로 이전 — Agent 프롬프트 규칙이 생성 SQL에 미반영되던 문제(기간 미지정 시 전기간 스캔) 해소. **AI/DB 전문가 검토 반영 최종안(VERSION$7)**: 기간·그룹 **모두** 없을 때만 발동 → **`GROUP BY ROLLUP((연,월))`로 총계+최근12개월 월별 동시 반환**(비율도 총계 정확), Agent는 총계요약→월별→되묻기, **"합계만" 요청 시 단일값**, 기준월은 **데이터 MAX(연월)**(CURRENT_DATE 아님 — FMM 2029·FBD 2026-12 미래데이터 누락 방지). `cortex analyst query` CLI로 생성SQL 검증. (2) PoC 지표 이식 **미납비중·총미납금액·평균납입회비**. (3) Agent 답변 **한글 명칭 표기**. (4) 재배포 ops: SV=`CREATE OR ALTER`(GRANT 보존)·Agent=`ADD LIVE VERSION FROM LAST`→MODIFY→COMMIT(**VERSION$7**). 신규 교훈 **P11(생성SQL 제어는 SV 계층)** = 문서10 §7(§7-F=Data Mart Phase-2 백로그·VQR 결정론 관찰, **§7-G=Agent instruction 55% 컴팩트·VERSION$8** — SQL메커니즘은 SV 소유라 Agent 프롬프트서 삭제, 라우팅·구성·가드레일만 잔류). 정본=`05_SV-Agent_ai/05_SV_DDL.sql·09_AGENT_spec_구현.sql`.
 
 ---
 
@@ -105,6 +107,10 @@ END-METADATA -->
 | O6 | Q8 | EVENT_TYPE 코드체계 | 🔄 잠정·게이트 라벨 | 20 |
 | SF-biz | — | 익명 미귀속 | 🛠️ 설계흡수 | 30 |
 | #81 | — | 미납클릭·납입전환 판정 | 🔄 잠정·게이트 identity | 20 |
+| SVL-1 | — | 발송소분류(`SNDNG_TY_CD`) 라벨 | 🔵 라벨 대기(SV_SERVICE) | 20 |
+| SVL-2 | — | 발송상태(`SNDNG_RST_CD`) 라벨 | 🔵 라벨 대기(SV_SERVICE) | 20 |
+| SVL-3 | — | 발송채널(`SEND_CHANNEL`) 라벨 | 🔵 라벨 대기(SV_SERVICE) | 20 |
+| SVL-4 | O6/Q8 | 행사구분(`EVENT_DIV_CD`/`CRMN_DIV_CD`) 라벨 | 🔵 라벨 대기(SV_EVENT_PARTICIPATION) | 20 |
 
 ### 2-D. SILVER Q-이슈 (Q1~Q16)
 | Q | 이슈 | 상태 | 문서 |

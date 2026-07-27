@@ -1,0 +1,204 @@
+name: SV_MEMBER_EVENT
+description: 'Phase-1 회원 상태전이 SV(base FME, 일 grain). 활성: 개발/중단 건·고유회원수. 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는
+  가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재
+  대기): 조직/캠페인/후원사업/사유별 분해(ORG_SK·FK=0), 신규기존 분해(NEF=0), 미납중단(UNPAID_STOP=0).'
+tables:
+  - name: DATE
+    synonyms:
+      - 날짜
+      - 일자
+      - 사건일
+    description: 일 차원.
+    base_table:
+      database: GN_DW
+      schema: GOLD
+      table: DIM_DATE
+    primary_key:
+      columns:
+        - DATE_SK
+    dimensions:
+      - name: CAL_MONTH
+        synonyms:
+          - 월
+        description: 월(1~12)
+        expr: date.MONTH
+        data_type: "NUMBER(2,0)"
+      - name: CAL_YEAR
+        synonyms:
+          - 연도
+          - 년
+        description: 연도
+        expr: date.YEAR
+        data_type: "NUMBER(4,0)"
+      - name: DAY_OF_WEEK
+        synonyms:
+          - 요일
+        description: 요일
+        expr: date.DAY_OF_WEEK
+        data_type: VARCHAR(16777216)
+      - name: EVENT_DATE
+        synonyms:
+          - 사건일
+          - 발생일
+          - 일자
+        description: 상태전이 발생일
+        expr: date.FULL_DATE
+        data_type: DATE
+      - name: WEEK_OF_YEAR
+        synonyms:
+          - 주차
+          - 주
+        description: 연중 주차
+        expr: date.WEEK_OF_YEAR
+        data_type: "NUMBER(2,0)"
+  - name: FME
+    synonyms:
+      - 회원 상태전이
+      - 개발중단 사건
+    description: "회원 상태전이 사건 팩트(4.63M). 1행=1개발/중단 사건. ⚠(DATE_SK,MEMBER_DK,EVENT_TYPE)\
+      \ 실측 비유일(distinct 4,052,797) → PK 미선언(기저 FACT·참조 안 됨·집계 무해, 2026-07-22)."
+    base_table:
+      database: GN_DW
+      schema: GOLD
+      table: FACT_MEMBER_EVENT
+    dimensions:
+      - name: EVENT_TYPE
+        synonyms:
+          - 전이유형코드
+        description: 상태전이 유형 원천 코드값(DEV/STOP). 표기·집계는 EVENT_TYPE_NAME(개발/중단) 사용 권장.
+        expr: fme.EVENT_TYPE
+        data_type: VARCHAR(16777216)
+      - name: JOIN_DATE
+        synonyms:
+          - 가입일
+        description: 회원 가입일(유지기간 산출 기준)
+        expr: fme.JOIN_DATE
+        data_type: DATE
+      - name: STOP_DATE
+        synonyms:
+          - 중단일
+          - 해지일
+        description: 회원 중단일
+        expr: fme.STOP_DATE
+        data_type: DATE
+      - name: EVENT_TYPE_NAME
+        synonyms:
+          - 전이유형
+          - 개발중단
+          - 사건유형
+        description: '전이유형명(한글): 개발/중단. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: CASE FME.EVENT_TYPE WHEN 'DEV' THEN '개발' WHEN 'STOP' THEN '중단' ELSE
+          '미상' END
+        data_type: VARCHAR(16777216)
+    metrics:
+      - name: DEV_MEMBER_COUNT
+        synonyms:
+          - 개발회원수
+          - 신규 회원수
+        description: 개발 고유 회원수. D(distinct). 다기간도 중복 없음.
+        expr: COUNT(DISTINCT CASE WHEN fme.DEV_CNT > 0 THEN fme.MEMBER_DK END)
+        access_modifier: public_access
+      - name: STOP_MEMBER_COUNT
+        synonyms:
+          - 중단회원수
+          - 해지 회원수
+        description: 중단 고유 회원수. D(distinct).
+        expr: COUNT(DISTINCT CASE WHEN fme.STOP_CNT > 0 THEN fme.MEMBER_DK END)
+        access_modifier: public_access
+      - name: TOTAL_DEV_CNT
+        synonyms:
+          - 개발건
+          - 개발 총건
+        description: 개발 건수 합계. F(가산).
+        expr: SUM(fme.DEV_CNT)
+        access_modifier: public_access
+      - name: TOTAL_STOP_CNT
+        synonyms:
+          - 중단건
+          - 중단 총건
+          - 해지건
+        description: 중단 건수 합계. F(가산).
+        expr: SUM(fme.STOP_CNT)
+        access_modifier: public_access
+  - name: MEMBER
+    synonyms:
+      - 회원
+      - 회원속성
+    description: 회원 현재 스냅샷. fan-out 차단용 helper 뷰.
+    base_table:
+      database: GN_DW
+      schema: SERVING
+      table: DIM_MEMBER_CURRENT
+    primary_key:
+      columns:
+        - MEMBER_DK
+    dimensions:
+      - name: GENDER
+        synonyms:
+          - 성별코드
+        description: 회원 성별
+        expr: member.GENDER
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS
+        synonyms:
+          - 회원상태코드
+          - 상태코드
+        description: 회원상태 원천 코드값(1~12). 표기·집계는 MEMBER_STATUS_NAME/MEMBER_STATUS_GROUP
+          사용 권장.
+        expr: member.MEMBER_STATUS
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_TYPE
+        synonyms:
+          - 회원구분코드
+          - 구분코드
+        description: 회원구분 원천 코드값(1/2/3). 표기·집계는 MEMBER_TYPE_NAME(개인/기업/단체) 사용 권장.
+        expr: member.MEMBER_TYPE
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_TYPE_NAME
+        synonyms:
+          - 회원구분
+          - 구분
+          - 회원유형
+          - 개인기업단체
+        description: '회원구분명(한글): 개인/기업/단체. 원천 코드 MM018. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.MEMBER_TYPE_NAME
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS_NAME
+        synonyms:
+          - 회원상태
+          - 상태
+          - 회원현황
+        description: '회원상태명(한글): 활동회원/신규미납1~5/장기미납1~5/후원중단. 현재 스냅샷 기준. 원천 코드 MM010.
+          코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.MEMBER_STATUS_NAME
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS_GROUP
+        synonyms:
+          - 회원상태분류
+          - 상태분류
+          - 상태대분류
+          - 정상미납중단
+        description: '회원상태 대분류: 정상(활동)/미납(신규·장기미납)/중단(후원중단)/미상. 요약 집계용.'
+        expr: member.MEMBER_STATUS_GROUP
+        data_type: VARCHAR(16777216)
+      - name: GENDER_NAME
+        synonyms:
+          - 성별
+          - 성
+          - 남녀
+        description: '성별명(한글): 여성/남성/미상. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.GENDER_NAME
+        data_type: VARCHAR(16777216)
+relationships:
+  - name: FME_TO_DATE
+    left_table: FME
+    right_table: DATE
+    relationship_columns:
+      - left_column: DATE_SK
+        right_column: DATE_SK
+  - name: FME_TO_MEMBER
+    left_table: FME
+    right_table: MEMBER
+    relationship_columns:
+      - left_column: MEMBER_DK
+        right_column: MEMBER_DK

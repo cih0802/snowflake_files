@@ -81,20 +81,42 @@ unioned as (
     select * from versioned
     union all
     select * from single
+),
+
+-- 코드→라벨 사전(빌드시점 lookup). SILVER.CRM_CODE 단일원천 — gold 복제 없이 차원에 비정규화.
+-- (CD_ID,DTL_CD_ID) 복합PK → 1:1, fan-out 없음.
+code_type as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM018'
+),
+code_status as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM010'
+),
+code_path as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM014'
 )
 
 select
     MEMBER_SK                                     as MEMBER_SK,
     MEMBER_DK                                     as MEMBER_DK,
-    SEX                                           as GENDER,       -- 코드 raw(라벨화는 CRM_CODE 조인 후)
+    SEX                                           as GENDER,       -- 코드 raw(F/M/U)
+    CASE UPPER(SEX) WHEN 'F' THEN '여성' WHEN 'M' THEN '남성' ELSE '미상' END as GENDER_NAME, -- 성별 라벨
     CAST(NULL AS VARCHAR)                          as REGION,       -- ⚠️ 개발·증감 AREA_CD 대기
     CAST(NULL AS VARCHAR)                          as AGE_BAND,     -- ⚠️ 개발·증감 AGE 대기
     MEMBER_STATUS                                 as MEMBER_STATUS, -- MM010 코드 raw(버전=CHN_STAT_CD, 무이력=MBER_STAT_CD)
     MBER_DIV_CD                                   as MEMBER_TYPE,   -- MM018 개인/기업/단체(코드 raw)
+    COALESCE(ct.DTL_CD_NM, '미상')                as MEMBER_TYPE_NAME,   -- MM018 라벨(1개인/2기업/3단체)
+    COALESCE(cs.DTL_CD_NM, '미상')                as MEMBER_STATUS_NAME, -- MM010 라벨(활동/신규미납/장기미납/후원중단)
+    CASE
+        WHEN MEMBER_STATUS = '1'                                            THEN '정상'
+        WHEN MEMBER_STATUS IN ('2','3','4','5','6','7','8','9','10','11')   THEN '미납'
+        WHEN MEMBER_STATUS = '12'                                          THEN '중단'
+        ELSE '미상'
+    END                                           as MEMBER_STATUS_GROUP, -- 대분류(파생)
     CAST(NULL AS VARCHAR)                          as NEW_EXISTING_FLAG,  -- ⚠️ 파생규칙 미정
     JOIN_DT::DATE                                 as FIRST_JOIN_DATE,
     CMPGN_CD                                      as FIRST_CAMPAIGN,
     JOIN_PATH_CD                                  as ENROLL_PATH,
+    COALESCE(cp.DTL_CD_NM, '미상')                as ENROLL_PATH_NAME, -- MM014 가입경로 라벨
     CAST(NULL AS VARCHAR)                          as FIRST_SPONSORSHIP,   -- ⚠️ SPONSOR_BIZ 대기
     CAST(NULL AS DATE)                             as LAST_STOP_DATE,      -- ⚠️ DISCONTINUE 대기
     CAST(NULL AS VARCHAR)                          as LAST_CAMPAIGN,       -- ⚠️ 이력 대기
@@ -103,4 +125,7 @@ select
     EFFECTIVE_TO                                  as EFFECTIVE_TO,
     IS_CURRENT                                    as IS_CURRENT,
     {{ gold_meta('CRM') }}
-from unioned
+from unioned u
+left join code_type   ct on u.MBER_DIV_CD   = ct.DTL_CD_ID
+left join code_status cs on u.MEMBER_STATUS = cs.DTL_CD_ID
+left join code_path   cp on u.JOIN_PATH_CD  = cp.DTL_CD_ID

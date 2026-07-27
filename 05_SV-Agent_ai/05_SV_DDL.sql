@@ -92,9 +92,16 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       (COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END)
        - COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END))
       / NULLIF(COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END), 0) * 100
-      WITH SYNONYMS ('미납회원 감소율') COMMENT = '공80 미납회원 감소율(%) = (월초미납−월말미납) ÷ 월초미납 ×100. 비율(N).'
+      WITH SYNONYMS ('미납회원 감소율') COMMENT = '공80 미납회원 감소율(%) = (월초미납−월말미납) ÷ 월초미납 ×100. 비율(N).',
+    fmm.TOTAL_UNPAID_AMT AS SUM(fmm.BILLED_AMT) - SUM(fmm.PAID_FEE)
+      WITH SYNONYMS ('총미납금액', '미납액 총액') COMMENT = '총미납금액(원) = 청구 − 납입. F(가산). 재청구 중복 포함 주의(PoC UNPAID_RATIO 로직 이식).',
+    fmm.UNPAID_RATIO AS (SUM(fmm.BILLED_AMT) - SUM(fmm.PAID_FEE)) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
+      WITH SYNONYMS ('미납비중', '미납율') COMMENT = '미납비중(%) = (청구−납입) ÷ 청구 ×100 (=100−납부율). 비율(N, 재집계 금지). 기간 스코프 전제 권장(무필터 시 재청구·이월 왜곡). PoC UNPAID_RATIO 로직 이식.',
+    fmm.AVG_PAID_FEE AS AVG(fmm.PAID_FEE)
+      WITH SYNONYMS ('평균납입회비', '평균회비') COMMENT = '행(월×회원)당 평균 납입회비(원). HAS_BILLING=TRUE 전제 권장. PoC AVG_PAID 로직 이식.'
   )
-  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건. 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분은 현재 스냅샷 기준(과거월도 현재값). 비활성(적재 대기): 캠페인/납입방식/후원사업/사유별 분해(FK=0), 활동/누계/미납 카운트 비율(ACTIVE_CNT=0), 신규기존 분해(NEF=0), 지역/연령대(dim 공란).';
+  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비(PoC 이식). 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분은 현재 스냅샷 기준(과거월도 현재값). 비활성(적재 대기): 캠페인/납입방식/후원사업/사유별 분해(FK=0), 활동/누계/미납 카운트 비율(ACTIVE_CNT=0), 신규기존 분해(NEF=0), 지역/연령대(dim 공란).'
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·성별·회원상태 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 납부율·미납비중 등 비율은 총계 행에서 SUM 기반으로 정확히 산출한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 -- 비활성(Phase-2/적재 후) — 구조 불변, 적재 완결 시 metric만 추가:
 --   공45~47 활동율·공54~57 중단율·공76~78 미납율(ACTIVE/MONTH_END/YEAR_START_ACTIVE_CNT = 전건 0)
@@ -150,7 +157,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     --   서로 다른 행에 있어 행별 DATEDIFF가 전건 NULL, DIM_MEMBER_CURRENT.LAST_STOP_DATE도 미적재 → 산출 불가.
     --   유지기간/유지율/LTV(신4·6~8)는 회원 가입↔중단 페어링(코호트) 필요 → Agent/Phase-2 확장.
   )
-  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). 활성: 개발/중단 건·고유회원수. 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재 대기): 조직/캠페인/후원사업/사유별 분해(ORG_SK·FK=0), 신규기존 분해(NEF=0), 미납중단(UNPAID_STOP=0).';
+  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). 활성: 개발/중단 건·고유회원수. 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재 대기): 조직/캠페인/후원사업/사유별 분해(ORG_SK·FK=0), 신규기존 분해(NEF=0), 미납중단(UNPAID_STOP=0).'
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·전이유형·성별 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
 /* =====================================================================================
@@ -197,7 +205,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.DISTINCT_SEND_MEMBERS AS COUNT(DISTINCT fse.MEMBER_DK)
       WITH SYNONYMS ('발송 고유회원수', '수신 대상 회원수') COMMENT = '발송 대상 고유 회원수. D(distinct). 다기간 중복 방지.'
   )
-  COMMENT = 'Phase-1 서비스 발송 SV(base FSE). 활성: 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별. 시간=전체가능. 비활성(적재 대기): 수신/성공/실패/오픈(SUCCESS/FAIL/OPEN=0), 서신/선물금/증액 참여·+5일 코호트(D5_*=0, 신31~53), 캠페인별(CAMPAIGN_SK=0).';
+  COMMENT = 'Phase-1 서비스 발송 SV(base FSE). 활성: 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별. 시간=전체가능. 비활성(적재 대기): 수신/성공/실패/오픈(SUCCESS/FAIL/OPEN=0), 서신/선물금/증액 참여·+5일 코호트(D5_*=0, 신31~53), 캠페인별(CAMPAIGN_SK=0).'
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(채널·서비스유형·회원구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
 /* =====================================================================================
@@ -246,7 +255,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep.DISTINCT_PARTICIPANTS AS COUNT(DISTINCT fep.MEMBER_DK)
       WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).'
   )
-  COMMENT = 'Phase-1 행사 참여 SV(base FEP). 활성: 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분·참여일별. 행사 미매칭 23%(EVENT_SK=0 Unknown 라우팅) → 행사명별 집계는 부분, 확정치로 단정 금지. 비활성(적재 대기): 모집/총원(TOTAL/RECRUIT_CNT=0), 캠페인/후원사업별(FK=0).';
+  COMMENT = 'Phase-1 행사 참여 SV(base FEP). 활성: 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분·참여일별. 행사 미매칭 23%(EVENT_SK=0 Unknown 라우팅) → 행사명별 집계는 부분, 확정치로 단정 금지. 비활성(적재 대기): 모집/총원(TOTAL/RECRUIT_CNT=0), 캠페인/후원사업별(FK=0).'
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(행사종류·행사명·회원구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
 /* =====================================================================================
@@ -287,7 +297,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd.EXEC_RATE AS SUM(fbd.EXEC_BUDGET_ERP) / NULLIF(SUM(fbd.PLAN_BUDGET_MONTH), 0) * 100
       WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N).'
   )
-  COMMENT = 'Phase-1 예산 SV(base FBD). 활성: 편성예산(월)·집행예산(ERP)·집행율, 세세목/예산구분/월별. 비활성(적재 대기): 연 편성예산(PLAN_BUDGET_YEAR=0), 집행추정/모금성비용/광고비(=0), 조직/캠페인별(ORG/CAMPAIGN_SK=0), 개발단가·ROI(신9~11, O3·E-6 대기).';
+  COMMENT = 'Phase-1 예산 SV(base FBD). 활성: 편성예산(월)·집행예산(ERP)·집행율, 세세목/예산구분/월별. 비활성(적재 대기): 연 편성예산(PLAN_BUDGET_YEAR=0), 집행추정/모금성비용/광고비(=0), 조직/캠페인별(ORG/CAMPAIGN_SK=0), 개발단가·ROI(신9~11, O3·E-6 대기).'
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(세세목·예산구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계(합계·집행율) 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 편성예산·집행예산·집행율을 월별로 보여준다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
 /* =====================================================================================

@@ -15,6 +15,19 @@
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- 참고 — Snowsight UI(Connect 메뉴) ↔ SQL 대응 (이 문서로 전부 대체 가능)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 워크스페이스 우측 상단 Connect 메뉴의 각 항목은 아래 SQL과 1:1 대응:
+--   · Deploy dbt project(신규)      = CREATE DBT PROJECT ... FROM '.../versions/live'   → Step 1
+--   · Existing dbt deployment(버전+) = ALTER DBT PROJECT ... ADD VERSION FROM '...'      → Step 3 하단
+--   · Redeploy dbt project           = ALTER DBT PROJECT ... ADD VERSION (버튼형)         → Step 3 하단
+--   · Create schedule                = CREATE TASK ... AS EXECUTE DBT PROJECT ...         → Step 4
+--   · View project / View schedules  = SHOW DBT PROJECTS / SHOW TASKS + 오브젝트 탐색기   → Step 1 SHOW문
+-- 차이(딱 하나): UI "Connect" 는 위 오브젝트 생성 외에 워크스페이스↔배포오브젝트 UI 연결(편의버튼)만
+--   추가로 만든다. 이는 Snowflake 오브젝트가 아니라 UI 편의기능 → SQL 배포 후 UI를 붙이고 싶으면
+--   Connect » Existing dbt deployment 에서 GN_DW.OPS.DW_PIPELINE 선택(중복 생성 아님).
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Step 1 — CREATE (최초 배포) : VERSION$1 자동 default
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
@@ -23,6 +36,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 -- CREATE DBT PROJECT 권한 (신 계정 실측: GN_DW_ADMIN 에 미부여 → ACCOUNTADMIN 이 선부여)
 GRANT CREATE DBT PROJECT ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ADMIN;
 
+-- 워크스페이스 경로 수정 필요함
 CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
   COMMENT = 'BRONZE→SILVER 32 + SILVER→GOLD 24(dim15+fact9)+WIDE 9. 정본 09_SILVER_적재쿼리_20260714.';
@@ -53,3 +67,30 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
 -- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
 --   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
 --   COMMENT = '<변경 요약>';
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Step 4 — 스케줄 자동화 (TASK) : 준비되면 주석 해제
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 주의:
+--   1. WAREHOUSE 필수 — serverless task 는 EXECUTE DBT PROJECT 미지원.
+--   2. TASK 는 dbt project 와 동일 스키마(GN_DW.OPS)에 생성.
+--   3. 생성 직후 SUSPENDED 상태 → RESUME 해야 스케줄 동작.
+--   4. R2 규칙 유지: run 금지·build 사용(run+test 게이트).
+--   5. CRON 타임존은 KST 기준(Asia/Seoul). UTC 필요 시 UTC 로 교체.
+
+-- (a) 전체 재정제 — 매일 오전 6시 KST:
+-- CREATE OR ALTER TASK GN_DW.OPS.RUN_DW_PIPELINE_DAILY
+--   WAREHOUSE = GN_DW_ETL_WH
+--   SCHEDULE = 'USING CRON 0 6 * * * Asia/Seoul'
+--   COMMENT = 'DW_PIPELINE 일일 build(run+test) 자동 실행'
+-- AS
+--   EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+
+-- (b) 활성화 (생성 후 SUSPENDED → RESUME):
+-- ALTER TASK IF EXISTS GN_DW.OPS.RUN_DW_PIPELINE_DAILY RESUME;
+
+-- (c) 상태 확인:
+-- SHOW TASKS LIKE 'RUN_DW_PIPELINE_DAILY' IN SCHEMA GN_DW.OPS;
+
+-- (d) 중지(일시 정지):
+-- ALTER TASK IF EXISTS GN_DW.OPS.RUN_DW_PIPELINE_DAILY SUSPEND;

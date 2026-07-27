@@ -38,7 +38,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'b50d9005-0be3-463b-8b58-76f0c3a68e8a'                    AS DW_BATCH_ID
+    'fb03029f-d498-4df4-bdf3-e26f63d41199'                    AS DW_BATCH_ID
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY      -- SNDNG_KEY unique → fan-out 없음
 where s.MBER_NO is not null                       -- 순수 불량 745행 제외(NOT NULL MEMBER_DK)

@@ -61,7 +61,15 @@
 -- #####################################################################
 -- # SCHEMA 1/4 : GN_DW.BRONZE_CRM  (CRM 원천 - 회원/납입/캠페인)
 -- #####################################################################
-create database if not exists GN_DW COMMENT='굿네이버스 데이터웨어하우스';
+USE ROLE SYSADMIN;
+CREATE DATABASE IF NOT EXISTS GN_DW
+  DATA_RETENTION_TIME_IN_DAYS = 1
+  COMMENT = '굿네이버스 데이터웨어하우스';
+
+-- (2) DB 소유권 → GN_DW_ADMIN. 이후 스키마/객체를 ADMIN 이 직접 CREATE → 생성 시점부터 ADMIN 소유
+USE ROLE ACCOUNTADMIN;
+GRANT OWNERSHIP ON DATABASE GN_DW TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+
 create or replace schema GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
 
 create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (

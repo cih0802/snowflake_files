@@ -11,6 +11,7 @@ select
     ABS(HASH(COALESCE(CAST(EVENT_KEY AS VARCHAR), '∅')))                  as EVENT_SK,
     EVENT_KEY                                     as EVENT_BK,
     EVENT_SOURCE                                  as EVENT_KIND,
+    CASE EVENT_SOURCE WHEN 'EVENT' THEN '일반행사' WHEN 'CRMN' THEN '캠페인행사' ELSE '미상' END as EVENT_KIND_NAME,
     EVENT_DIV_CD                                  as EVENT_CATEGORY,
     EVENT_NM                                      as EVENT_NAME,
     TRY_TO_DATE(STRT_DE, 'YYYYMMDD')              as EVENT_START_DATE,
@@ -19,13 +20,13 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'b50d9005-0be3-463b-8b58-76f0c3a68e8a'                    AS DW_BATCH_ID
+    'fb03029f-d498-4df4-bdf3-e26f63d41199'                    AS DW_BATCH_ID
 from e
 
 union all
 -- unknown 멤버(SK=0): 팩트 EVENT_SK=0(미매핑) 조인 유실 방지
-select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL,
+select 0, '(미매핑)', NULL, '미상', NULL, '(미매핑)', NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'b50d9005-0be3-463b-8b58-76f0c3a68e8a'                    AS DW_BATCH_ID
+    'fb03029f-d498-4df4-bdf3-e26f63d41199'                    AS DW_BATCH_ID

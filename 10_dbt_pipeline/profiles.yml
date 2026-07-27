@@ -14,3 +14,12 @@ default:
       warehouse: GN_DW_ETL_WH
       schema: SILVER
       threads: 4
+    prod:
+      type: snowflake
+      account: ""
+      user: ""
+      role: GN_DW_ENGINEER
+      database: GN_DW
+      warehouse: GN_DW_ETL_WH
+      schema: GOLD
+      threads: 4

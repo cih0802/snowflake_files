@@ -1,0 +1,197 @@
+name: SV_EVENT_PARTICIPATION
+description: 'Phase-1 행사 참여 SV(base FEP). 활성: 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분·참여일별.
+  행사 미매칭 23%(EVENT_SK=0 Unknown 라우팅) → 행사명별 집계는 부분, 확정치로 단정 금지. 비활성(적재 대기): 모집/총원(TOTAL/RECRUIT_CNT=0),
+  캠페인/후원사업별(FK=0).'
+tables:
+  - name: DATE
+    synonyms:
+      - 날짜
+      - 참여일
+    description: 일 차원.
+    base_table:
+      database: GN_DW
+      schema: GOLD
+      table: DIM_DATE
+    primary_key:
+      columns:
+        - DATE_SK
+    dimensions:
+      - name: CAL_MONTH
+        synonyms:
+          - 월
+        description: 월(1~12)
+        expr: date.MONTH
+        data_type: "NUMBER(2,0)"
+      - name: CAL_YEAR
+        synonyms:
+          - 연도
+          - 년
+        description: 연도
+        expr: date.YEAR
+        data_type: "NUMBER(4,0)"
+      - name: PART_DATE
+        synonyms:
+          - 참여일
+          - 행사일
+          - 일자
+        description: 참여일
+        expr: date.FULL_DATE
+        data_type: DATE
+  - name: EVENT
+    synonyms:
+      - 행사
+      - 이벤트
+    description: "행사 차원. EVENT_SK 고아 23%(이슈 E) → Unknown(SK=0) 라우팅, 행사명별 집계는 부분."
+    base_table:
+      database: GN_DW
+      schema: GOLD
+      table: DIM_EVENT
+    primary_key:
+      columns:
+        - EVENT_SK
+    dimensions:
+      - name: EVENT_CATEGORY
+        synonyms:
+          - 행사구분
+        description: 행사 구분
+        expr: event.EVENT_CATEGORY
+        data_type: VARCHAR(16777216)
+      - name: EVENT_KIND
+        synonyms:
+          - 행사종류코드
+        description: 행사종류 원천 코드값(EVENT/CRMN). 표기·집계는 EVENT_KIND_NAME(일반행사/캠페인행사) 사용
+          권장.
+        expr: event.EVENT_KIND
+        data_type: VARCHAR(16777216)
+      - name: EVENT_NAME
+        synonyms:
+          - 행사명
+          - 이벤트명
+        description: 행사명
+        expr: event.EVENT_NAME
+        data_type: VARCHAR(16777216)
+      - name: EVENT_KIND_NAME
+        synonyms:
+          - 행사종류
+          - 행사유형
+          - 행사구분대
+        description: '행사종류명(한글): 일반행사/캠페인행사. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: event.EVENT_KIND_NAME
+        data_type: VARCHAR(16777216)
+  - name: FEP
+    synonyms:
+      - 행사 참여
+      - 이벤트 참여
+    description: "행사 참여 팩트(1.13M). ⚠(DATE_SK,MEMBER_DK,EVENT_SK) 실측 비유일(distinct 843,414)\
+      \ → PK 미선언(기저 FACT·집계 무해, 2026-07-22)."
+    base_table:
+      database: GN_DW
+      schema: GOLD
+      table: FACT_EVENT_PARTICIPATION
+    metrics:
+      - name: DISTINCT_PARTICIPANTS
+        synonyms:
+          - 고유 참여회원수
+        description: 고유 참여 회원수. D(distinct).
+        expr: COUNT(DISTINCT fep.MEMBER_DK)
+        access_modifier: public_access
+      - name: TOTAL_PARTICIPANTS
+        synonyms:
+          - 참여자수
+          - 참가자수
+        description: 참여자수 합계. F(가산).
+        expr: SUM(fep.PARTICIPANT_CNT)
+        access_modifier: public_access
+      - name: TOTAL_PARTICIPATE_CNT
+        synonyms:
+          - 참여건수
+        description: 참여 건수 합계. F(가산).
+        expr: SUM(fep.PARTICIPATE_CNT)
+        access_modifier: public_access
+  - name: MEMBER
+    synonyms:
+      - 회원
+    description: 회원 현재 스냅샷. fan-out 차단용 helper 뷰.
+    base_table:
+      database: GN_DW
+      schema: SERVING
+      table: DIM_MEMBER_CURRENT
+    primary_key:
+      columns:
+        - MEMBER_DK
+    dimensions:
+      - name: GENDER
+        synonyms:
+          - 성별코드
+        description: 회원 성별
+        expr: member.GENDER
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS
+        synonyms:
+          - 회원상태코드
+          - 상태코드
+        description: 회원상태 원천 코드값(1~12). 표기·집계는 MEMBER_STATUS_NAME/MEMBER_STATUS_GROUP
+          사용 권장.
+        expr: member.MEMBER_STATUS
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_TYPE
+        synonyms:
+          - 회원구분코드
+          - 구분코드
+        description: 회원구분 원천 코드값(1/2/3). 표기·집계는 MEMBER_TYPE_NAME(개인/기업/단체) 사용 권장.
+        expr: member.MEMBER_TYPE
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_TYPE_NAME
+        synonyms:
+          - 회원구분
+          - 구분
+          - 회원유형
+          - 개인기업단체
+        description: '회원구분명(한글): 개인/기업/단체. 원천 코드 MM018. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.MEMBER_TYPE_NAME
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS_NAME
+        synonyms:
+          - 회원상태
+          - 상태
+          - 회원현황
+        description: '회원상태명(한글): 활동회원/신규미납1~5/장기미납1~5/후원중단. 현재 스냅샷 기준. 원천 코드 MM010.
+          코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.MEMBER_STATUS_NAME
+        data_type: VARCHAR(16777216)
+      - name: MEMBER_STATUS_GROUP
+        synonyms:
+          - 회원상태분류
+          - 상태분류
+          - 상태대분류
+          - 정상미납중단
+        description: '회원상태 대분류: 정상(활동)/미납(신규·장기미납)/중단(후원중단)/미상. 요약 집계용.'
+        expr: member.MEMBER_STATUS_GROUP
+        data_type: VARCHAR(16777216)
+      - name: GENDER_NAME
+        synonyms:
+          - 성별
+          - 성
+          - 남녀
+        description: '성별명(한글): 여성/남성/미상. 코드가 아닌 이 라벨로 집계·표기.'
+        expr: member.GENDER_NAME
+        data_type: VARCHAR(16777216)
+relationships:
+  - name: FEP_TO_DATE
+    left_table: FEP
+    right_table: DATE
+    relationship_columns:
+      - left_column: DATE_SK
+        right_column: DATE_SK
+  - name: FEP_TO_EVENT
+    left_table: FEP
+    right_table: EVENT
+    relationship_columns:
+      - left_column: EVENT_SK
+        right_column: EVENT_SK
+  - name: FEP_TO_MEMBER
+    left_table: FEP
+    right_table: MEMBER
+    relationship_columns:
+      - left_column: MEMBER_DK
+        right_column: MEMBER_DK
