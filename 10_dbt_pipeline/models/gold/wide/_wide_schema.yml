@@ -18,7 +18,13 @@ models:
   - name: WIDE_GA_BEHAVIOR
     description: "GA 행동 팩트(FGA) 평탄화 — DATE·GA_EVENT·GA_SOURCE·DEVICE·CAMPAIGN·IDENTITY. 비가산 지표 상위 재합산 금지. IDENTITY_* 는 DIM_MEMBER_IDENTITY 활성(2026-07-15)으로 실조인(⚠️G-5 GA4 1일 기반·전기간 입고 시 재검증)."
   - name: WIDE_AD_PERFORMANCE
-    description: "광고 성과 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. FACT_AD_PERFORMANCE 스캐폴드(차원FK 미해소, Q10/O5 대기) 반영."
+    description: "광고 성과 **코어** 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. grain=AD_PERF_DK(235,572행). [2026-07-28 DEC-8] 방송 degen 5종은 위성 뷰로 이관 — 본 뷰는 3원천 공통 컬럼만. **전 유형 집계는 본 뷰만 사용**(위성 뷰와 합산 시 이중계상). CAMPAIGN_SK·AD_CREATIVE_SK 는 0 스캐폴드(Q10/소재 부분키 대기)·DEVICE_SK 는 실배선 완료(DEC-10). ⚠️AD_SOURCE_TYPE(원천 출처축) ≠ AD_CREATIVE_TYPE(소재 광고유형)."
+  - name: WIDE_AD_BROADCAST
+    description: "방송광고 위성 팩트(FAD_B) 평탄화 — grain=AD_PERF_DK(37,886행, VIDEO 35,822+REBRDC 2,064). 코어와 1:1이라 코어 measure(AD_COST·INBOUND_CALL) 동반 노출 → 방송 분석을 단일 뷰로 완결. ⚠️코어 뷰와 함께 합산하면 이중계상. 컬럼 NULL 은 두 방송 원천 중 한쪽 전용 속성(결측 아님). DVLP_MEMBER_CNT·DVLP_CNT = 재방송 개발실적(O16 분리, GA 전환 아님). _SRC 는 비가산(N)."
+  - name: WIDE_AD_DIGITAL
+    description: "디지털광고 위성 팩트(FAD_D) 평탄화 — grain=AD_PERF_DK(197,686행). 코어와 1:1이라 코어 measure(AD_COST·IMPRESSIONS·CLICKS·GA_CONV_*) 동반 노출 → 비율 재계산 base 를 같은 뷰에서 확보. ⚠️코어 뷰와 함께 합산하면 이중계상. `_SRC` 7종은 대행사 산정 **비가산(N)** — 집계는 base 재계산(예: CTR=SUM(CLICKS)/SUM(IMPRESSIONS)), _SRC 는 대조용. DEVICE_TYPE 동반(디지털은 기기 실존)."
+  - name: WIDE_AD_BROADCAST_CASE
+    description: "재방송 사례 위성 팩트(FAD_BC) 평탄화 — grain=AD_PERF_DK×CASE_SEQ(5,327행). ⚠️코어에 **1:N** 이므로 코어 measure 를 의도적으로 미노출(fan-out 방지) — 사례 속성 분포·빈도 분석 전용. 방송 횟수는 COUNT(DISTINCT AD_PERF_DK)로 계수. 아동명 미노출(PII 판정 대기 O14)."
   - name: WIDE_EVENT_PARTICIPATION
     description: "행사 참여 팩트(FEP) 평탄화 — DATE·MEMBER[현재버전]·EVENT·CAMPAIGN·SPONSORSHIP."
   - name: WIDE_TARGET_BIZ

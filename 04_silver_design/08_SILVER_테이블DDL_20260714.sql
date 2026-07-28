@@ -519,7 +519,11 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
 ) COMMENT = '광고 소재/매체 차원(3소스 UNION distinct). → DIM_AD_CREATIVE. 소스별 필드 산재→NULL 허용';
 
 -- AGENCY 2: AGENCY_AD_PERFORMANCE (3소스 정제→UNION 광고성과 → FAD)
+-- ⚠️ [2026-07-28 순서9-I DEC-8·DEC-11] AD_PERF_DK(행 식별자)·AD_SOURCE_TYPE(출처 명시축) 2컬럼 신설.
+--    원천을 BRONZE 직접참조에서 staging 3종(AGENCY_AD_ROW_*) ref 로 변경했다.
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). 위성 3종 조인키. 발급지점=AGENCY_AD_ROW_* staging (DEC-11)',
+    AD_SOURCE_TYPE             VARCHAR         NOT NULL COMMENT '광고유형 DIGITAL/VIDEO/REBROADCAST — 원천 테이블 출처축(DEC-8). GOLD FAD degenerate 로 승격',
     SOURCE_SYSTEM       VARCHAR         NOT NULL COMMENT '소스 시스템 (DIGITAL/REBROADCAST/VIDEO) (②⑤)',
     AD_DATE             DATE            COMMENT '광고 집행일자',
     AD_YEAR             NUMBER(4,0)     COMMENT '광고 집행연도 YYYY',
@@ -532,8 +536,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     PROGRAM_NM          VARCHAR         COMMENT '프로그램명 (REBRDC.BRDC_NM/VIDEO.SCHDL_NM)',
     IMPRESSION_CNT      NUMBER(38,4)    COMMENT '노출수 (DGT만) (④)',
     CLICK_CNT           NUMBER(38,4)    COMMENT '클릭수 (DGT만) (④)',
-    CONV_MEMBER_CNT     NUMBER(38,4)    COMMENT '전환/개발 명수 (③)',
-    CONV_UNIT_CNT       NUMBER(38,4)    COMMENT '전환 VU/건수 (③, 비건수 주의)',
+    CONV_MEMBER_CNT     NUMBER(38,4)    COMMENT 'GA 전환 명수 (DIGITAL 전용). ⚠️O16 교정 2026-07-28: 종전 REBRDC.DVLP_MBER_CNT(개발회원수)를 이 자리에 위치매핑해 GOLD GA_CONV_MEMBERS 로 혼입시켰음 → 개발실적은 AGENCY_AD_BROADCAST.DVLP_MEMBER_CNT 로 이관, 여기는 NULL',
+    CONV_UNIT_CNT       NUMBER(38,4)    COMMENT 'GA 전환 VU/건수 (DIGITAL 전용, 비건수 주의). ⚠️O16 교정 2026-07-28: 종전 REBRDC.DVLP_CNT(개발건수) 혼입 → AGENCY_AD_BROADCAST.DVLP_CNT 로 이관, 여기는 NULL',
     INBOUND_CALL_CNT    NUMBER(38,4)    COMMENT '인입콜 수 (REBRDC=TRY_TO_NUMBER + VIDEO) (②)',
     CONV_CALL_CNT       NUMBER(38,4)    COMMENT 'VIDEO 전환콜 (별개 measure)',
     AD_CNT              NUMBER(38,4)    COMMENT '광고횟수 (REBRDC/VIDEO)',
@@ -545,6 +549,255 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '광고성과 3소스 UNION(원천 1행 grain, 총 235,572). 파생 미적재(⑥). → FAD. GA4 전환 결합은 GOLD';
+
+-- ============================================================================
+-- AGENCY 4~9 — 광고 팩트군 재설계 신설 6테이블 [2026-07-28 순서9-I · DEC-8~11]
+--   근거 : 03_top-down_gold/03_테이블 설계.md §3-A · 05_필드 인벤토리.md FAD/FAD_B/FAD_D/FAD_BC
+--          20_issue/30_설계_의사결정.md §1-A · 20_issue/10_진단_원인분석.md §8-I
+--   구성 : staging 3(무손실 전컬럼 + AD_PERF_DK 발급) → 파생 3(위성 팩트 원천)
+--   ⚠️ AD_PERF_DK 는 staging 3종이 **발급 단일지점**이다. 파생·GOLD 는 값을 승계만 하며
+--      절대 재계산하지 않는다(재계산 시 코어·위성 DK 불일치 → 위성 조인 붕괴).
+--   ⚠️ staging 은 BRONZE 컬럼명을 **그대로 보존**한다(개명·형변환 금지). 정제는 파생 계층 담당.
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 4: AGENCY_AD_ROW_DGT — BRONZE_AGENCY.DGT_AD_CMPGN_DTLS 전 36컬럼 무손실 staging
+--   실측 197,686행 / 전컬럼 중복 35그룹·최대 2중복 → DUP_SEQ 로 분리
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ) — 본 테이블이 발급 단일지점(DEC-11)',
+    AD_SOURCE_TYPE             VARCHAR         NOT NULL COMMENT '광고유형 상수 DIGITAL — 출처 명시축(DEC-8)',
+    ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시 MD5(TO_JSON(OBJECT_CONSTRUCT(*))). 컬럼 추가 시 값 변동(전컬럼 해시 정의상 의도)',
+    DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번. 그룹 내 행은 전컬럼 동일 → DK 집합은 재실행 멱등',
+    TIME                VARCHAR         COMMENT '[원천보존] 시각 텍스트',
+    YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트 (DW 는 DATE 파생 사용 — 텍스트 파싱 금지)',
+    CPR_NM              VARCHAR         COMMENT '[원천보존] 협력사명 (미노출·O15)',
+    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분 (미노출·O15)',
+    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 사업/사례 구분 (미노출·O15)',
+    CMPGN_TY_NM         VARCHAR         COMMENT '[원천보존] 캠페인유형명',
+    AD_TY_NM            VARCHAR         COMMENT '[원천보존] 광고유형명 → FAD_D.AD_TYPE_NM',
+    MONTH               VARCHAR         COMMENT '[원천보존] 월 텍스트 (DW 는 DATE 파생 사용)',
+    DEVICE              VARCHAR         COMMENT '[원천보존] 기기 M/PC → DIM_DEVICE 조인키(DEC-10 실배선)',
+    MEDIA_NM            VARCHAR         COMMENT '[원천보존] 매체명 → MEDIA_CHANNEL_NM',
+    WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트 (DW 는 DATE 파생 사용)',
+    DAY                 VARCHAR         COMMENT '[원천보존] 일 텍스트 (DW 는 DATE 파생 사용)',
+    DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트 (DW 는 DAYNAME 파생 사용)',
+    CMPGN_NM            VARCHAR         COMMENT '[원천보존] 캠페인명 → CAMPAIGN_NM',
+    MATR                VARCHAR         COMMENT '[원천보존] 소재명 → CREATIVE_NM',
+    MATR_TY_NM          VARCHAR         COMMENT '[원천보존] 소재유형명 → FAD_D.CREATIVE_TYPE',
+    EXPS_CNT            FLOAT           COMMENT '[원천보존] 노출수 → FAD.IMPRESSIONS',
+    CLICK_CNT           FLOAT           COMMENT '[원천보존] 클릭수 → FAD.CLICKS',
+    GA_AD_COST          FLOAT           COMMENT '[원천보존] GA 광고비 → FAD.AD_COST',
+    GA_CONV_MBER_CNT    FLOAT           COMMENT '[원천보존] GA 전환 회원수 → FAD.GA_CONV_MEMBERS (진짜 GA — O16 대조군)',
+    CONV_VU_CNT         FLOAT           COMMENT '[원천보존] GA 전환 VU수 → FAD.GA_CONV_CNT (진짜 GA — O16 대조군)',
+    CPA                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPA → FAD_D.CPA_SRC (비가산)',
+    DEV_UNIT_PRICE      FLOAT           COMMENT '[원천보존] 대행사 산정 개발단가 → FAD_D.DEV_UNIT_PRICE_SRC (비가산)',
+    CTR                 FLOAT           COMMENT '[원천보존] 대행사 산정 CTR → FAD_D.CTR_SRC (비가산)',
+    CVR                 FLOAT           COMMENT '[원천보존] 대행사 산정 CVR → FAD_D.CVR_SRC (비가산)',
+    CPC                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPC → FAD_D.CPC_SRC (비가산)',
+    CPM                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPM → FAD_D.CPM_SRC (비가산)',
+    UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명 → UPPER_CAMPAIGN_NM',
+    READ_CNT            FLOAT           COMMENT '[원천보존] 읽음수 → FAD_D.READ_CNT',
+    MEDIA_PTNT_CUST_CNT FLOAT           COMMENT '[원천보존] 매체 잠재고객수 → FAD_D.MEDIA_POTENTIAL_CUST_CNT',
+    DATE                DATE            COMMENT '[원천보존] 실적일 → FAD.PERF_DATE_SK',
+    VTR                 FLOAT           COMMENT '[원천보존] 대행사 산정 VTR → FAD_D.VTR_SRC (비가산·재계산 불가)',
+    PAGE_TYPE_NM        VARCHAR         COMMENT '[원천보존] 페이지유형 → FAD_D.PAGE_TYPE',
+    CRM_DVLP_CNT        FLOAT           COMMENT '[원천보존] CRM 개발건수 → FAD_D.CRM_DEV_CNT',
+    AD_GRP_NM           VARCHAR         COMMENT '[원천보존] 광고그룹명 → FAD_D.AD_GROUP_NM',
+    GRP_DIV_NM          VARCHAR         COMMENT '[원천보존] 그룹구분 → FAD_D.GROUP_DIV',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK)
+) COMMENT = 'DGT 디지털광고 원천 무손실 staging(36컬럼 전량 보존) + AD_PERF_DK 발급. 실측 197,686행. → AGENCY_AD_PERFORMANCE(공통) · AGENCY_AD_DIGITAL(고유)';
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 5: AGENCY_AD_ROW_VIDEO — BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS 전 32컬럼 무손실 staging
+--   실측 35,822행 / 전컬럼 중복 30그룹·최대 3중복 → DUP_SEQ 필수
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ) — 본 테이블이 발급 단일지점(DEC-11)',
+    AD_SOURCE_TYPE             VARCHAR         NOT NULL COMMENT '광고유형 상수 VIDEO — 출처 명시축(DEC-8)',
+    ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시',
+    DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번(최대 3중복 실측)',
+    CHNNL_NM            VARCHAR         COMMENT '[원천보존] 채널명 → MEDIA_CHANNEL_NM · FAD_B.CHANNEL_COMPANY',
+    DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트 (DW 는 DAYNAME 파생 사용)',
+    BRDC_DATE           DATE            COMMENT '[원천보존] 송출일 → FAD.PERF_DATE_SK · FAD_B.BROADCAST_DATE',
+    TIME_RNG            VARCHAR         COMMENT '[원천보존] 시간대 → FAD_B.TIME_BAND',
+    DAY_DIV_NM          VARCHAR         COMMENT '[원천보존] 요일구분(평일/주말) → FAD_B.DAY_DIV',
+    PRG_STRT_TIME       VARCHAR         COMMENT '[원천보존] 프로그램 시작시간 → FAD_B.PRG_START_TIME',
+    SCHDL_NM            VARCHAR         COMMENT '[원천보존] 편성명 → PROGRAM_NM · FAD_B.PROGRAM_NM',
+    CM                  VARCHAR         COMMENT '[원천보존] CM 구분 (미노출·O15 — 일반명 판정보류)',
+    CM_AREA             VARCHAR         COMMENT '[원천보존] CM위치 → FAD_B.CM_POSITION',
+    AD_STRT_TIME        VARCHAR         COMMENT '[원천보존] 광고시작시간 → FAD_B.AD_START_TIME',
+    AD_END_TIME         VARCHAR         COMMENT '[원천보존] 광고종료시간 → FAD_B.AD_END_TIME',
+    SPOT_TY             VARCHAR         COMMENT '[원천보존] SPOT유형 → FAD_B.SPOT_TYPE',
+    AD_VIEW_RT          FLOAT           COMMENT '[원천보존] 대행사 산정 광고시청률 → FAD_B.AD_VIEW_RT_SRC (비가산·재계산 불가)',
+    AD_CNT              NUMBER          COMMENT '[원천보존] 광고횟수 → FAD_B.AD_CNT',
+    AD_SEC              VARCHAR         COMMENT '[원천보존] 광고 초수(TEXT) → FAD_B.DURATION_SEC (TRY_TO_NUMBER)',
+    ACTL_PUR_AD_COST_KRW NUMBER         COMMENT '[원천보존] 실집행 광고비(원) → FAD.AD_COST',
+    INBOUND_CALL_CNT    NUMBER          COMMENT '[원천보존] 인입콜수 → FAD.INBOUND_CALL',
+    CPC                 VARCHAR         COMMENT '[원천보존] 대행사 산정 CPC(TEXT) → FAD_B.CPC_SRC (비가산)',
+    UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명 → UPPER_CAMPAIGN_NM',
+    MATR_NM             VARCHAR         COMMENT '[원천보존] 소재명 → CREATIVE_NM',
+    CMPGN_TY_NM         VARCHAR         COMMENT '[원천보존] 캠페인유형명',
+    DUR_PD_MATR_CHN     VARCHAR         COMMENT '[원천보존] 기간/소재 채널 (미노출·O15)',
+    CHNNL_CMPNY_TY_NM   VARCHAR         COMMENT '[원천보존] 채널사유형 → FAD_B.CHANNEL_COMPANY_TYPE',
+    WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트 (DW 는 DATE 파생 사용)',
+    CONV_CALL_CNT       FLOAT           COMMENT '[원천보존] 전환콜 → FAD_B.CONV_CALL_CNT (인입콜과 별개)',
+    BRDC_MT             VARCHAR         COMMENT '[원천보존] 방송월 텍스트 (DW 는 DATE 파생 사용)',
+    YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트 (DW 는 DATE 파생 사용)',
+    CTV_DIV_NM          VARCHAR         COMMENT '[원천보존] CTV구분 → FAD_B.CTV_DIV',
+    MKT_CMPGN_NM        VARCHAR         COMMENT '[원천보존] 마케팅 캠페인명 → CAMPAIGN_NM',
+    SPNSR_BSNS_NM       VARCHAR         COMMENT '[원천보존] 후원사업명 (미노출·O15 — 일반명 판정보류)',
+    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분 (미노출·O15)',
+    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 사업/사례 구분 (미노출·O15)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK)
+) COMMENT = 'VIDEO 방송광고 원천 무손실 staging(32컬럼 전량 보존) + AD_PERF_DK 발급. 실측 35,822행. → AGENCY_AD_PERFORMANCE(공통) · AGENCY_AD_BROADCAST(고유)';
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 6: AGENCY_AD_ROW_REBRDC — BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS 전 34컬럼 무손실 staging
+--   실측 2,064행 / 전컬럼 중복 0그룹(전건 DUP_SEQ=1) — 3종 로직 동일성 위해 DUP_SEQ 동일 부여
+--   ⚠️ CASE1_*~CASE3_* 반복군 15컬럼은 원형 보존. 언피벗은 AGENCY_AD_BROADCAST_CASE 담당.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ) — 본 테이블이 발급 단일지점(DEC-11)',
+    AD_SOURCE_TYPE             VARCHAR         NOT NULL COMMENT '광고유형 상수 REBROADCAST — 출처 명시축(DEC-8)',
+    ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시',
+    DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번(실측 중복 0 → 전건 1)',
+    RE_BRDC_TY_NM       VARCHAR         COMMENT '[원천보존] 재방송유형명 → FAD_B.RT_TYPE',
+    DIV_NM              VARCHAR         COMMENT '[원천보존] 구분명 (미노출·O15 — 일반명 판정보류)',
+    YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트 (DW 는 DATE 파생 사용)',
+    BRDC_MT             VARCHAR         COMMENT '[원천보존] 방송월 텍스트 (DW 는 DATE 파생 사용)',
+    CHNNL_CMPNY         VARCHAR         COMMENT '[원천보존] 채널사 → MEDIA_CHANNEL_NM · FAD_B.CHANNEL_COMPANY',
+    BRDC_NM             VARCHAR         COMMENT '[원천보존] 방송명 → CREATIVE_NM · PROGRAM_NM · FAD_B.PROGRAM_NM',
+    BRDC_DIV_NM         VARCHAR         COMMENT '[원천보존] 방송구분 → FAD_B.BRDC_DIV',
+    DATE                DATE            COMMENT '[원천보존] 실적일/송출일 → FAD.PERF_DATE_SK · FAD_B.BROADCAST_DATE',
+    DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트 (DW 는 DAYNAME 파생 사용)',
+    BRDC_TIME           VARCHAR         COMMENT '[원천보존] 방송시각 → FAD_B.TIME_BAND (TIME_RNG_DIV_NM 부재 시 대체)',
+    INBOUND_CALL_CNT    VARCHAR         COMMENT '[원천보존] 인입콜수(TEXT) → FAD.INBOUND_CALL (TRY_TO_NUMBER)',
+    DVLP_MBER_CNT       FLOAT           COMMENT '[원천보존] 개발회원수 → FAD_B.DVLP_MEMBER_CNT. ⚠️O16: 종전 FAD.GA_CONV_MEMBERS 로 혼입돼 있었음(GA 전환 아님)',
+    DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발건수 → FAD_B.DVLP_CNT. ⚠️O16: 종전 FAD.GA_CONV_CNT 로 혼입돼 있었음(GA 전환 아님)',
+    BRDC_SCHDL_COST     FLOAT           COMMENT '[원천보존] 편성비용 → FAD.AD_COST (COST_TYPE=편성)',
+    WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트 (DW 는 DATE 파생 사용)',
+    AD_CNT              FLOAT           COMMENT '[원천보존] 광고횟수 → FAD_B.AD_CNT',
+    TIME_RNG_DIV_NM     VARCHAR         COMMENT '[원천보존] 시간대구분명 → FAD_B.TIME_BAND (1순위)',
+    CELEB_NM            VARCHAR         COMMENT '[원천보존] 출연자명 (미노출 — PII 판정 대기 O14)',
+    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분 (미노출·O15)',
+    CASE1_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례1 사업구분 → FAD_BC(CASE_SEQ=1).BIZ_DIV',
+    CASE1_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례1 가족유형 → FAD_BC(CASE_SEQ=1).FAMILY_TYPE',
+    CASE1_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례1 어필포인트 → FAD_BC(CASE_SEQ=1).APPEAL_POINT',
+    CASE1_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례1 아동명 — ⚠️GOLD 미적재(PII 판정 대기 O14)',
+    CASE1_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례1 사례구분 → FAD_BC(CASE_SEQ=1).CASE_DIV',
+    CASE2_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례2 사업구분 → FAD_BC(CASE_SEQ=2).BIZ_DIV',
+    CASE2_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례2 가족유형 → FAD_BC(CASE_SEQ=2).FAMILY_TYPE',
+    CASE2_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례2 어필포인트 → FAD_BC(CASE_SEQ=2).APPEAL_POINT',
+    CASE2_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례2 아동명 — ⚠️GOLD 미적재(PII 판정 대기 O14)',
+    CASE2_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례2 사례구분 → FAD_BC(CASE_SEQ=2).CASE_DIV',
+    CASE3_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례3 사업구분 → FAD_BC(CASE_SEQ=3).BIZ_DIV',
+    CASE3_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례3 가족유형 → FAD_BC(CASE_SEQ=3).FAMILY_TYPE',
+    CASE3_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례3 어필포인트 → FAD_BC(CASE_SEQ=3).APPEAL_POINT',
+    CASE3_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례3 아동명 — ⚠️GOLD 미적재(PII 판정 대기 O14)',
+    CASE3_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례3 사례구분 → FAD_BC(CASE_SEQ=3).CASE_DIV',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK)
+) COMMENT = 'REBRDC 재방송광고 원천 무손실 staging(34컬럼 전량 보존, CASE 반복군 포함) + AD_PERF_DK 발급. 실측 2,064행. → AGENCY_AD_PERFORMANCE · AGENCY_AD_BROADCAST · AGENCY_AD_BROADCAST_CASE';
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 7: AGENCY_AD_DIGITAL — 디지털 고유속성 + 대행사 파생 _SRC 7종 → GOLD FACT_AD_DIGITAL
+--   ⚠️ _SRC 는 대행사 산정 원천값. DW 재계산 없이 보존하며 **전량 비가산(N)** — SUM 금지(DEC-9).
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '코어 1:1 조인키(staging 발급값 승계 — 재계산 금지)',
+    PAGE_TYPE           VARCHAR         COMMENT '페이지유형 ← DGT.PAGE_TYPE_NM',
+    AD_GROUP_NM         VARCHAR         COMMENT '광고그룹명 ← DGT.AD_GRP_NM',
+    GROUP_DIV           VARCHAR         COMMENT '그룹구분 ← DGT.GRP_DIV_NM',
+    CREATIVE_TYPE       VARCHAR         COMMENT '소재유형 ← DGT.MATR_TY_NM',
+    AD_TYPE_NM          VARCHAR         COMMENT '광고유형명(대행사 표기) ← DGT.AD_TY_NM. ⚠️코어 AD_SOURCE_TYPE(출처축)과 다른 개념',
+    READ_CNT            FLOAT           COMMENT '읽음수 ← DGT.READ_CNT (가산)',
+    MEDIA_POTENTIAL_CUST_CNT FLOAT      COMMENT '매체 잠재고객수 ← DGT.MEDIA_PTNT_CUST_CNT (가산)',
+    CRM_DEV_CNT         FLOAT           COMMENT 'CRM 개발건수 ← DGT.CRM_DVLP_CNT (가산)',
+    CTR_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CTR ← DGT.CTR. DW 재계산=CLICKS/IMPRESSIONS',
+    CVR_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=GA_CONV_MEMBERS/CLICKS (O5)',
+    CPC_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS',
+    CPM_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CPM ← DGT.CPM. DW 재계산=AD_COST/IMPRESSIONS×1000',
+    CPA_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/GA_CONV_CNT',
+    DEV_UNIT_PRICE_SRC  FLOAT           COMMENT '[비가산 N] 대행사 산정 개발단가 ← DGT.DEV_UNIT_PRICE. DW 재계산=AD_COST/개발건수',
+    VTR_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 VTR ← DGT.VTR. base 부재로 재계산 불가(대조 대상 아님)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK)
+) COMMENT = '디지털광고 고유속성 위성 원천(DGT 실측 197,686행, 코어와 1:1). → GOLD FACT_AD_DIGITAL. DEC-8·DEC-9';
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 8: AGENCY_AD_BROADCAST — 방송(VIDEO∪REBRDC) 고유속성 → GOLD FACT_AD_BROADCAST
+--   ⚠️ 컬럼 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'이며 결측이 아니다(각 컬럼 주석의 전용 표기 참조).
+--   ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 개발실적. 종전 코어 GA_CONV_* 로 혼입돼 있던 값.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '코어 1:1 조인키(staging 발급값 승계 — 재계산 금지)',
+    TIME_BAND           VARCHAR         COMMENT '시간대 ← VIDEO.TIME_RNG / REBRDC.TIME_RNG_DIV_NM(1순위)·BRDC_TIME(대체)',
+    CM_POSITION         VARCHAR         COMMENT 'CM위치 ← VIDEO.CM_AREA [VIDEO 전용]',
+    RT_TYPE             VARCHAR         COMMENT 'RT(재방송)유형 ← REBRDC.RE_BRDC_TY_NM [REBRDC 전용]',
+    AD_START_TIME       VARCHAR         COMMENT '광고시작시간 ← VIDEO.AD_STRT_TIME [VIDEO 전용]',
+    AD_END_TIME         VARCHAR         COMMENT '광고종료시간 ← VIDEO.AD_END_TIME [VIDEO 전용]',
+    BROADCAST_DATE      DATE            COMMENT '송출일 ← VIDEO.BRDC_DATE / REBRDC.DATE. ⚠️코어 PERF_DATE_SK(실적일)와 구분',
+    PROGRAM_NM          VARCHAR         COMMENT '프로그램/편성명 ← VIDEO.SCHDL_NM / REBRDC.BRDC_NM',
+    CHANNEL_COMPANY     VARCHAR         COMMENT '채널사 ← VIDEO.CHNNL_NM / REBRDC.CHNNL_CMPNY',
+    CHANNEL_COMPANY_TYPE VARCHAR        COMMENT '채널사유형 ← VIDEO.CHNNL_CMPNY_TY_NM [VIDEO 전용]',
+    SPOT_TYPE           VARCHAR         COMMENT 'SPOT유형 ← VIDEO.SPOT_TY [VIDEO 전용]',
+    DURATION_SEC        NUMBER(9,0)     COMMENT '광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용]',
+    DAY_DIV             VARCHAR         COMMENT '요일구분 평일/주말 ← VIDEO.DAY_DIV_NM [VIDEO 전용]',
+    PRG_START_TIME      VARCHAR         COMMENT '프로그램 시작시간 ← VIDEO.PRG_STRT_TIME [VIDEO 전용]',
+    CTV_DIV             VARCHAR         COMMENT 'CTV구분 ← VIDEO.CTV_DIV_NM [VIDEO 전용]',
+    BRDC_DIV            VARCHAR         COMMENT '방송구분 ← REBRDC.BRDC_DIV_NM [REBRDC 전용]',
+    AD_CNT              FLOAT           COMMENT '광고횟수 ← VIDEO·REBRDC.AD_CNT (가산)',
+    CONV_CALL_CNT       FLOAT           COMMENT '전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용] (인입콜과 별개 measure)',
+    DVLP_MEMBER_CNT     FLOAT           COMMENT '개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관 2026-07-28: 종전 코어 GA_CONV_MEMBERS 로 혼입(GA 전환 아님)',
+    DVLP_CNT            FLOAT           COMMENT '개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관 2026-07-28: 종전 코어 GA_CONV_CNT 로 혼입(GA 전환 아님)',
+    AD_VIEW_RT_SRC      FLOAT           COMMENT '[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. 재계산 불가',
+    CPC_SRC             FLOAT           COMMENT '[비가산 N] 대행사 산정 CPC ← VIDEO.CPC(TEXT) [VIDEO 전용]. DW 재계산=AD_COST/CLICKS',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK)
+) COMMENT = '방송광고 고유속성 위성 원천(VIDEO 35,822 + REBRDC 2,064 = 37,886행, 코어와 1:1). → GOLD FACT_AD_BROADCAST. DEC-8 · O16 해소';
+
+-- ----------------------------------------------------------------------------
+-- AGENCY 9: AGENCY_AD_BROADCAST_CASE — REBRDC 사례 반복군 언피벗 → GOLD FACT_AD_BROADCAST_CASE
+--   grain = AD_PERF_DK × CASE_SEQ (코어에 1:N). 실측 5,327행(전속성 NULL 사례 미적재).
+--   ⚠️ 코어 measure 와 동시 집계 시 사례 수만큼 중복 합산(fan-out) — 사례 분석 전용.
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT 'grain 1/2 · 코어 조인키(staging 발급값 승계 — 재계산 금지)',
+    CASE_SEQ            NUMBER(2,0)     NOT NULL COMMENT 'grain 2/2 · 사례 순번 1~3 (원천 CASE1_*~CASE3_* 언피벗축). 사례 4개 확장 시 DDL 무변경',
+    BIZ_DIV             VARCHAR         COMMENT '사업구분 ← REBRDC.CASEn_BSNS_DIV_NM',
+    FAMILY_TYPE         VARCHAR         COMMENT '가족유형 ← REBRDC.CASEn_FAM_TY_NM',
+    APPEAL_POINT        VARCHAR         COMMENT '어필포인트 ← REBRDC.CASEn_APPEAL_POINT_NM',
+    CASE_DIV            VARCHAR         COMMENT '사례구분 ← REBRDC.CASEn_CASE_DIV_NM',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK, CASE_SEQ)
+) COMMENT = '재방송 사례 정규화 위성 원천(5속성×3반복 15컬럼 → CASE_SEQ 언피벗, 실측 5,327행). → GOLD FACT_AD_BROADCAST_CASE. ⚠️CASEn_CHILD_NM 미적재(PII O14)';
 
 -- AGENCY 3: AGENCY_COST — ❌ 제거(2026-07-14 아키텍처 리뷰): 월 롤업은 master §3상 GOLD 소관 ·
 --   AD_PERFORMANCE.AD_COST+COST_TYPE와 중복 · SILVER→SILVER 파생(단방향 위반). 비용은 성과팩트 원천 grain 보존, 롤업/ERP결합은 GOLD FBD.

@@ -1,20 +1,23 @@
-# BRONZE 노출감사 호스트 실행 러너 — 캐시된 INFORMATION_SCHEMA CSV를 읽어 감사 산출물 생성
+# BRONZE 노출감사 호스트 실행 러너 — Snowflake 직접조회 또는 캐시 폴백으로 감사 산출물 생성
 # Co-authored with CoCo
 """
 gen_bronze_exposure_audit.py 의 판정 로직을 호스트 환경에서 실행하는 러너.
-커널(/tmp)에서 workspace로 파일 전송이 불가한 제약을 우회한다.
 
-입력: /output/cortex/cache/tool_outputs/<session>/snowflake_sql_execute_00{1,2}.txt
-      (001 = SILVER+GOLD 컬럼, 002 = BRONZE 컬럼 — snowflake_sql_execute 캐시)
-출력: 30_output_share/06_BRONZE노출감사.{md,csv}
+실행 모드:
+  인수 없이 → Snowflake 직접조회 (snowflake-connector-python + OAuth 토큰)
+  인수 있으면 → 기존 캐시 폴백 (호환용)
+
+출력: 30_output_share/06_BRONZE노출감사.{md,csv,xlsx}
 
 dbt 하드코딩 검출은 workspace 파일을 직접 스캔한다(호스트는 read 가능).
 """
 import csv, os, re, sys, glob
 from datetime import date
 
-WS = "/workspace"
-OUT_DIR = os.path.join(WS, "30_output_share")
+# 기본은 workspace FUSE 마운트. 마운트 장애 시 스테이지에서 내려받은 사본 경로를
+# GN_DW_WS 로 지정해 동일 로직을 그대로 재현한다(입력 경로만 다르고 판정은 불변).
+WS = os.environ.get("GN_DW_WS", "/workspace")
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
 BASENAME = "06_BRONZE노출감사"
 GEN_PATH = "scripts/gen_bronze_exposure_audit.py"
 RUNNER_PATH = "scripts/run_bronze_audit_host.py"
@@ -113,8 +116,18 @@ def scan_dbt_hardcoding():
         re.compile(r"\b0\s+as\s+(\w+_SK)\b", re.IGNORECASE),
         re.compile(r"CAST\s*\(\s*NULL\s+AS\s+\w+(?:\([^)]*\))?\s*\)\s+as\s+(\w+)", re.IGNORECASE),
     ]
-    # 실적재 projection 검출: `<expr> as COL` 중 0/CAST(NULL) 이 아닌 것
-    real_pat = re.compile(r"(\S[^,]*?)\s+as\s+([A-Z_][A-Z0-9_]*)\s*,?\s*(?:--.*)?$", re.IGNORECASE)
+    # 결함 2+3 교정: 행 내 모든 alias 를 수집한 뒤 SQL 타입 키워드를 제외한다.
+    #   · 결함2(미탐): 이전 정규식은 행말 앵커($)라 한 행에 alias 가 여럿이면 마지막만 검출.
+    #   · 결함3(오탐): 앵커를 풀어 모든 `as X` 를 잡으면 `CAST(NULL AS VARCHAR)` 의
+    #     타입 키워드를 alias 로 오인. → 타입 키워드 집합으로 걸러낸다.
+    alias_pat = re.compile(r"\bas\s+([A-Za-z_]\w*)", re.IGNORECASE)
+    SQL_TYPES = {
+        "VARCHAR", "CHAR", "CHARACTER", "STRING", "TEXT", "BINARY", "VARBINARY",
+        "NUMBER", "DECIMAL", "NUMERIC", "INT", "INTEGER", "BIGINT", "SMALLINT", "TINYINT",
+        "FLOAT", "FLOAT4", "FLOAT8", "DOUBLE", "REAL",
+        "BOOLEAN", "DATE", "DATETIME", "TIME", "TIMESTAMP", "TIMESTAMP_LTZ",
+        "TIMESTAMP_NTZ", "TIMESTAMP_TZ", "VARIANT", "OBJECT", "ARRAY",
+    }
 
     hardcoded = {}   # (model, col) -> info
     real = set()     # (model, col)
@@ -135,10 +148,10 @@ def scan_dbt_hardcoding():
                             hardcoded[(model, col)] = {
                                 "file": rel, "model": model,
                                 "pattern": " ".join(m.group(0).split()), "line": lineno}
-                # 같은 행에서 하드코딩으로 잡히지 않은 alias 는 실적재로 간주
-                for m in real_pat.finditer(line.split("--")[0]):
-                    col = m.group(2).upper()
-                    if col not in hit_cols:
+                # 결함 2+3 교정: 행 내 모든 alias 수집, SQL 타입 키워드 제외
+                for m in alias_pat.finditer(line.split("--")[0]):
+                    col = m.group(1).upper()
+                    if col not in SQL_TYPES and col not in hit_cols:
                         real.add((model, col))
     return hardcoded, real
 
@@ -186,6 +199,45 @@ def parse_cache(path):
                 continue
             rows.append((schema, table, col, dtype, pos))
     return rows
+
+
+def fetch_columns_snowflake():
+    """Snowflake INFORMATION_SCHEMA 직접조회 → (schema, table, col, dtype, pos) 리스트.
+
+    재현성 근거: 세션 캐시(snowflake_sql_execute 출력)는 휘발성이라 동일 결과를
+    재생산할 수 없다. 러너는 인수 없이 실행하면 항상 원본 카탈로그를 직접 읽는다.
+    """
+    import snowflake.connector
+    token_path = os.environ.get("SNOWFLAKE_TOKEN_FILE_PATH", "/snowflake/session/token")
+    with open(token_path) as f:
+        token = f.read().strip()
+    conn = snowflake.connector.connect(
+        account=os.environ.get("SNOWFLAKE_ACCOUNT", ""),
+        host=os.environ.get("SNOWFLAKE_HOST", ""),
+        user=os.environ.get("SNOWFLAKE_USERNAME", ""),
+        authenticator="oauth",
+        token=token,
+        role=os.environ.get("SNOWFLAKE_ROLE", "ACCOUNTADMIN"),
+        # INFORMATION_SCHEMA 조회는 실행 웨어하우스를 요구한다.
+        warehouse=os.environ.get("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH"),
+        database="GN_DW",
+        insecure_mode=True,  # 샌드박스가 OCSP 응답기를 차단
+    )
+    sql = """
+    SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE, ORDINAL_POSITION
+    FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA IN ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4',
+                           'SILVER','GOLD')
+    ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+    """
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+        rows = cur.fetchall()
+    finally:
+        cur.close()
+        conn.close()
+    return [(r[0], r[1], r[2], r[3], r[4]) for r in rows]
 
 
 def classify(table_name, col_upper, silver_cols, gold_cols, silver_refs, gold_refs, hardcoded, real):
@@ -238,8 +290,13 @@ def classify(table_name, col_upper, silver_cols, gold_cols, silver_refs, gold_re
                     "동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)")
         return "미노출(검토대상)", "낮음(일반명)", "일반명 — 개별 실측 필요"
 
+    # 결함4 교정(P15): 동명 GOLD 컬럼 존재만으로 '높음'을 주면
+    # "설계완료 ≠ 값존재"(P15)와 자기모순. projection 확인 여부로 신뢰도를 분리한다.
     if col_upper in gold_cols:
-        return "노출됨(GOLD)", "높음", "동명 GOLD 컬럼 존재"
+        if any(c == col_upper for (_m, c) in real):
+            return "노출됨(GOLD)", "높음", "동명 GOLD 컬럼 + 실적재 projection 확인"
+        return ("노출됨(GOLD)", "중간(스키마만)",
+                "GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)")
     if col_upper in silver_cols:
         return "SILVER까지만", "높음", "GOLD 미승격"
     if col_upper in silver_refs:
@@ -254,18 +311,21 @@ VERDICT_ORDER = ["노출됨(GOLD)", "대체노출(파생)", "⚠️설계O·값�
 
 
 def main():
-    if not CACHE_DIR:
-        print("usage: run_bronze_audit_host.py <cache_dir>", file=sys.stderr)
-        sys.exit(1)
-
     print(f"[{AUDIT_DATE}] BRONZE 노출감사 (호스트 실행)")
 
-    # 1) 캐시 CSV 로드
+    # 1) 컬럼 목록 로드 — 결함1 교정: 인수 없으면 Snowflake 직접조회(정본),
+    #    인수가 있으면 캐시 폴백(커넥터·토큰 없는 환경 전용).
     all_rows = []
-    for cf in sorted(glob.glob(os.path.join(CACHE_DIR, "snowflake_sql_execute_*.txt"))):
-        parsed = parse_cache(cf)
-        print(f"  {os.path.basename(cf)}: {len(parsed)}행")
-        all_rows.extend(parsed)
+    if not CACHE_DIR:
+        print("  모드: Snowflake 직접조회 (OAuth)")
+        all_rows = fetch_columns_snowflake()
+        print(f"  조회 완료: {len(all_rows)}행")
+    else:
+        print(f"  모드: 캐시 폴백 ({CACHE_DIR}) — 재현성 없음, 정상 경로 아님")
+        for cf in sorted(glob.glob(os.path.join(CACHE_DIR, "snowflake_sql_execute_*.txt"))):
+            parsed = parse_cache(cf)
+            print(f"  {os.path.basename(cf)}: {len(parsed)}행")
+            all_rows.extend(parsed)
 
     bronze_map, silver_cols, gold_cols = {}, set(), set()
     for schema, table, col, dtype, pos in all_rows:

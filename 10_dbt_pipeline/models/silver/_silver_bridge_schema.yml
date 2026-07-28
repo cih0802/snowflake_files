@@ -19,11 +19,68 @@ models:
       - name: CREATIVE_DK
         tests: [not_null]
 
+  # ─── AGENCY staging (DEC-11) — BRONZE 전컬럼 무손실 보존 + AD_PERF_DK 발급 단일지점 ───
+  # AD_PERF_DK 유일성은 위성 팩트 1:1 조인의 전제조건이므로 error 로 강제한다.
+  # 실측(2026-07-28): DGT 197,686 · VIDEO 35,822 · REBRDC 2,064 = 235,572 전건 유일(충돌 0).
+  - name: AGENCY_AD_ROW_DGT
+    columns:
+      - name: AD_PERF_DK
+        tests: [not_null, unique]
+  - name: AGENCY_AD_ROW_VIDEO
+    columns:
+      - name: AD_PERF_DK
+        tests: [not_null, unique]
+  - name: AGENCY_AD_ROW_REBRDC
+    columns:
+      - name: AD_PERF_DK
+        tests: [not_null, unique]
+
+  # ─── AGENCY 파생 (DEC-8 위성 원천) ───
+  - name: AGENCY_AD_DIGITAL
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique                       # 코어와 1:1 보장(실측 197,686행)
+          - relationships:
+              to: ref('AGENCY_AD_ROW_DGT')
+              field: AD_PERF_DK
+  - name: AGENCY_AD_BROADCAST
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique                       # 코어와 1:1 보장(VIDEO∪REBRDC 실측 37,886행)
+  - name: AGENCY_AD_BROADCAST_CASE
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('AGENCY_AD_ROW_REBRDC')
+              field: AD_PERF_DK
+      - name: CASE_SEQ
+        tests: [not_null]
+      # grain = AD_PERF_DK × CASE_SEQ (1:N — 사례 언피벗). 실측 5,327행(전NULL 사례 미적재).
+      # ⚠️ dbt_utils 미설치(trial EAI 불가 → 자작 매크로로 대체)이므로 조합키 유일성은
+      #    복합 표현식에 built-in unique 를 걸어 검사한다.
+      - name: "AD_PERF_DK || '|' || CASE_SEQ"
+        tests: [unique]
+
   - name: AGENCY_AD_PERFORMANCE
     columns:
       - name: AD_DATE
         tests:
           - not_null   # 순서9-D: 실측 널 0/235,572 확인 → error 승격(구조 불변식: 광고성과 행 날짜 필수). 순서9-C warn 은 실데이터 검증 전 보수적 조치였음.
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique     # 순서9-I DEC-11: 코어 grain. 위성 3종 1:1/1:N 조인의 전제.
+      - name: AD_SOURCE_TYPE
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DIGITAL', 'VIDEO', 'REBROADCAST']   # DEC-8 출처 명시축
 
   - name: ERP_BUDGET
     columns:

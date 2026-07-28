@@ -294,6 +294,10 @@ models:
 
   - name: FACT_AD_PERFORMANCE
     columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique          # 순서9-I DEC-11: 코어 grain(원천 1행=팩트 1행). 위성 조인의 전제.
       - name: PERF_DATE_SK
         tests: [not_null]
       - name: AD_CREATIVE_SK
@@ -306,4 +310,45 @@ models:
       - name: CAMPAIGN_SK
         tests: [not_null]
       - name: DEVICE_SK
-        tests: [not_null]
+        tests:
+          - not_null
+          # DEC-10 기기축 실배선 완료 → 센티넬 예외(!=0) 없이 전건 차원 참조가 성립해야 한다.
+          # 실측(2026-07-28): DIGITAL 197,686 실기기 · 방송 37,886 '(해당없음)' · unknown 0건.
+          - relationships: { to: ref('DIM_DEVICE'), field: DEVICE_SK }
+      - name: AD_SOURCE_TYPE
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DIGITAL', 'VIDEO', 'REBROADCAST']   # DEC-8 출처 명시축(§3-A-4)
+
+  # ─── AGENCY 위성 팩트 3종 (순서9-I DEC-8) ───
+  # 코어 FACT_AD_PERFORMANCE 와 AD_PERF_DK 로 조인. FAD_B·FAD_D 는 1:1, FAD_BC 는 1:N.
+  - name: FACT_AD_BROADCAST
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique          # 1:1 (VIDEO∪REBRDC 실측 37,886행)
+          - relationships: { to: ref('FACT_AD_PERFORMANCE'), field: AD_PERF_DK }
+
+  - name: FACT_AD_DIGITAL
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - unique          # 1:1 (DGT 실측 197,686행)
+          - relationships: { to: ref('FACT_AD_PERFORMANCE'), field: AD_PERF_DK }
+
+  - name: FACT_AD_BROADCAST_CASE
+    columns:
+      - name: AD_PERF_DK
+        tests:
+          - not_null
+          - relationships: { to: ref('FACT_AD_PERFORMANCE'), field: AD_PERF_DK }
+      - name: CASE_SEQ
+        tests:
+          - not_null
+          - accepted_values: { values: [1, 2, 3] }   # 사례 반복군 1~3 언피벗
+      # grain = AD_PERF_DK × CASE_SEQ. dbt_utils 미설치이므로 복합 표현식에 unique 를 건다.
+      - name: "AD_PERF_DK || '|' || CASE_SEQ"
+        tests: [unique]

@@ -88,6 +88,8 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 - ⏳ **보류 1종 WIDE_TARGET_BIZ**: ✅ **[해소 2026-07-16]** `FACT_TARGET_BIZ`(스켈레톤)+`WIDE_TARGET_BIZ` dbt 모델 저작 → `build --select FACT_TARGET_BIZ WIDE_TARGET_BIZ` green(PASS=2, 0행). BLOCKING-4 이제 **9/9**. 단, 아래 §단위충돌·조인키 결함 처리분 참조.
 - ✅ **WIDE_GA_BEHAVIOR IDENTITY 배선(2026-07-15 갱신)**: `DIM_MEMBER_IDENTITY` 활성화에 따라 IDENTITY_* 4컬럼 **NULL 플레이스홀더 → 실조인 복원**(`f.IDENTITY_SK = DIM_MEMBER_IDENTITY.IDENTITY_SK`). FACT_GA_BEHAVIOR.IDENTITY_SK 도 XREF(pseudo→회원)→DIM 매칭분으로 채움(미매칭=0 센티넬). ⚠️GA4 1일 기반·G-5 시 재검증(아래 §G-5 게이트).
 - 🔜 **후속(저우선)**: GOLD 스키마 설명 "9개"→실 배포 9종 일치 확인 완료.
+- ✅ **[순서9-I 2026-07-28] WIDE 9종 → 13종으로 확장**: AGENCY 광고 위성 팩트 분리(DEC-8)에 맞춰 `WIDE_AD_BROADCAST`·`WIDE_AD_DIGITAL`·`WIDE_AD_BROADCAST_CASE` **3종 신설** + `WIDE_AD_PERFORMANCE` 코어화 수정. `dbt build` green(**PASS=258 WARN=21 ERROR=0**, 12 view models OK). ⚠️**measure 노출 규칙(DEC-13)**: 1:1 위성(FAD_B·FAD_D)은 코어 measure 동반 노출(fan-out 없음), **1:N 위성(FAD_BC)은 미노출**(사례 수만큼 중복 합산). 상세 = 문서10 §8-I(11) · 문서30 §1-A DEC-13.
+- 🔜 **후속(저우선)**: GOLD 스키마 COMMENT 의 "WIDE VIEW 9개" 문구 → **13개**로 갱신 필요(미반영).
 
 ### ⚠️ [2026-07-16 비판적 검토] FACT_TARGET_BIZ 스켈레톤 — 잠복 결함 2건 처리
 0행 스켈레톤이라 build 는 통과하나, 데이터 입고 시 **조용히 오작동**할 구조 2건을 사전 발견·교정.
@@ -108,7 +110,9 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 - ✅ **이슈 E 진단완료**: 고아 99.98% 참여상세·동일기간·동일형식 → **마스터 누락(외부)** 확정. 내부 수정 불가·warn 유지.
 - ✅ **데이터기반 설계결정**: A-2 `_SOURCE_SYSTEM='AGENCY'` 상수(매체구분은 속성) · DEVICE_TYPE PC/M(APP 휴면).
 - ⏳ **잔여 외부 원천 입고**: `FACT_BUDGET.FUNDRAISING_COST`(E-1)·`.AD_COST`(E-4) · `FACT_TARGET_BIZ`(E-6) · GA4 분석(G-5) · 회원 마스터 전량입고(BLOCKING-1).
-- ⏳ **잔여 현업 회신**: `FACT_AD_PERFORMANCE` CAMPAIGN_SK(Q10)·AD_CREATIVE_SK(소재 부분키)·DEVICE_SK(매핑)·GA_CONV(O5) · 이슈 A/C/D.
+- ⏳ **잔여 현업 회신**: `FACT_AD_PERFORMANCE` CAMPAIGN_SK(Q10)·AD_CREATIVE_SK(소재 부분키) · 이슈 A/C/D.
+  - ✅ **[해소 순서9-I 2026-07-28] DEVICE_SK 매핑**: 현업 회신 불요 — 실측으로 AGENCY device 도메인이 `DIM_DEVICE` 와 **네이티브 동일**(M/PC) 확인, 방송 NULL 37,886은 기기 개념 부재로 `(해당없음)` 멤버 신설(DEC-10). 실배선 후 `DEVICE_SK=0` **0건** → 지표 공14 사용 가능.
+  - 🟡 **GA_CONV(O5) 부분해소**: `GA_CONV_MEMBERS`(명) 분자 확정분은 유지. 단 **O16 발견으로 재방송 개발실적 혼입을 분리**(코어=디지털 전용) → 합계가 GA_CONV_MEMBERS 171,645→122,551 · GA_CONV_CNT 159,693.9→63,372.9 로 **감소**. `GA_CONV_CNT` 어의(건/VU) 현업 확인은 **여전히 잔여**.
 - 🔜 **다음 세션(내부 가능)**: WIDE VIEW 9종 dbt view화 + COMMENT(`03_top-down_gold/10_...sql`) → BLOCKING-4 해소.
 - **요건 총괄표(정본)**: `10_dbt_pipeline/00_배포운영_통합_20260715.md` **§7**.
 

@@ -27,7 +27,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'fb03029f-d498-4df4-bdf3-e26f63d41199'                    AS DW_BATCH_ID
+    'dc4646cc-51ff-4f7e-bfc7-e9f018c89a5e'                    AS DW_BATCH_ID
 from m
 left join xref x on x.X_MEMBER_DK = m.MEMBER_DK
 
@@ -37,4 +37,4 @@ select 0, '(미매핑)', '(미매핑)', NULL, NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'fb03029f-d498-4df4-bdf3-e26f63d41199'                    AS DW_BATCH_ID
+    'dc4646cc-51ff-4f7e-bfc7-e9f018c89a5e'                    AS DW_BATCH_ID

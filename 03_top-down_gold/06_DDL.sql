@@ -181,7 +181,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_AD_CREATIVE (
     CM_POSITION         VARCHAR         COMMENT 'CM위치(#21)',
     DURATION_SEC        NUMBER(9,0)     COMMENT '초수(#22)',
     RT_TYPE             VARCHAR         COMMENT 'RT유형',
-    AD_TYPE             VARCHAR         COMMENT '광고유형',
+    AD_TYPE             VARCHAR         COMMENT '소재 광고유형. ⚠️코어 FACT_AD_PERFORMANCE.AD_SOURCE_TYPE(원천 출처축 DIGITAL/VIDEO/REBROADCAST)과 다른 개념 — WIDE 에서는 AD_CREATIVE_TYPE 으로 노출',
     TARGET_GROUP        VARCHAR         COMMENT '타겟그룹',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
@@ -271,15 +271,19 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_REASON (
 
 -- ============================================================================
 -- DIM 13: DIM_DEVICE — 디바이스 차원
+--   ⚠️ [2026-07-28 순서9-I DEC-10] 멤버 `(해당없음)` 신설 + DEVICE_SCOPE_DESC 컬럼 신설.
+--      방송광고(VIDEO·REBRDC)는 기기 개념이 없다(실측 37,886행 전량 NULL) → `(unknown)`(진짜 미상)과
+--      의미를 분리한다. `(해당없음)`은 값이 확정된 정상 멤버이므로 **해시 SK**, `0`=Unknown 정본 유지.
 -- ============================================================================
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DEVICE (
-    DEVICE_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '디바이스 대리키 (ETL 일련번호, PK)',
-    DEVICE_TYPE         VARCHAR         COMMENT 'PC / M / APP',
+    DEVICE_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '디바이스 대리키 (해시 SK, PK). 단 (unknown)=0 센티넬 · -1 미사용',
+    DEVICE_TYPE         VARCHAR         COMMENT 'PC / M / APP / (해당없음) / (unknown). (해당없음)=방송광고(기기개념 부재, DEC-10) · APP=GA4 platform=WEB 단일로 현 데이터 미생성(G-5)',
+    DEVICE_SCOPE_DESC   VARCHAR         COMMENT '멤버 의미 자기설명(DEC-10). 팩트 조인·문서 참조 없이 차원만 조회해도 (해당없음)의 뜻을 알 수 있게 하는 장치',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '디바이스 차원 (1디바이스)';
+) COMMENT = '디바이스 차원 (1디바이스). 멤버 = PC·M·(APP 미생성)·(해당없음)방송·(unknown)센티넬0';
 
 
 -- ============================================================================
@@ -510,31 +514,128 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR (
 
 
 -- ============================================================================
--- FACT 7: FACT_AD_PERFORMANCE (FAD) — 광고 성과 팩트 (AGENCY 3테이블 적재·measure 불균일)
+-- FACT 7: FACT_AD_PERFORMANCE (FAD) — 광고 성과 **코어** 팩트 (3원천 공통속성)
+--   ⚠️ [2026-07-28 순서9-I DEC-8·DEC-11] 구조 변경 3건:
+--     1) AD_PERF_DK(PK·grain) 신설 — 원천에 PK 가 없어(전컬럼 중복 131행 실측) 위성 1:1 조인이
+--        불가했다. staging 3종이 발급하는 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ)를 승계한다.
+--     2) AD_SOURCE_TYPE(degen) 신설 — DW_SOURCE_SYSTEM='AGENCY' 로 평탄화돼 소실된 원천 테이블 출처를 복원.
+--     3) 방송 전용 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE) **제거** →
+--        위성 FACT_AD_BROADCAST 로 이관. 종전에는 코어에 자리만 있고 SQL 이 CAST(NULL) 하드코딩이라
+--        전건 NULL 이었고(값미주입 결함군), 디지털 197,686행에서는 애초에 항상 NULL 인 희소 컬럼이었다.
+--   ⚠️ DEVICE_SK 는 DEC-10 으로 **실배선**됐다(종전 0 하드코딩 → 235,572행 전건 unknown).
+--      실측 라우팅: DIGITAL 197,686 실기기 해시SK · 방송 37,886 '(해당없음)' · unknown 0건.
 -- ============================================================================
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
-    PERF_DATE_SK        NUMBER(8,0)     NOT NULL COMMENT '실적일',
-    CAMPAIGN_SK         NUMBER(38,0)    NOT NULL COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
-    AD_CREATIVE_SK      NUMBER(38,0)    NOT NULL COMMENT '광고소재/매체 (FK→DIM_AD_CREATIVE)',
-    DEVICE_SK           NUMBER(38,0)    NOT NULL COMMENT '디바이스 (FK→DIM_DEVICE)',
-    AD_COST             NUMBER(18,2)    COMMENT '광고비(원) (#6)',
-    IMPRESSIONS         NUMBER(38,0)    COMMENT '노출수 (#23)',
-    CLICKS              NUMBER(38,0)    COMMENT '클릭수(행동 횟수, ≠회원명) (#24)',
-    INBOUND_CALL        NUMBER(38,0)    COMMENT '인입콜 (#25)',
-    GA_CONV_MEMBERS     NUMBER(38,0)    COMMENT 'GA전환수(명)',
-    GA_CONV_CNT         NUMBER(18,4)    COMMENT 'GA전환수(건)',
-    DAY_OF_WEEK         VARCHAR         COMMENT '요일',             -- degen
-    WEEK_OF_YEAR        NUMBER(2,0)     COMMENT '주차',             -- degen
-    TIME_BAND           VARCHAR         COMMENT '시간대',            -- degen
-    CM_POSITION         VARCHAR         COMMENT 'CM위치',           -- degen
-    RT_TYPE             VARCHAR         COMMENT 'RT유형',            -- degen
-    AD_START_TIME       VARCHAR         COMMENT '광고시작시간',       -- degen
-    BROADCAST_DATE      DATE            COMMENT '송출일(≠실적일)',    -- degen
+    AD_PERF_DK          VARCHAR(32)     NOT NULL PRIMARY KEY COMMENT '행 식별자(GRAIN·PK) MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). 위성 3종 조인키. 발급지점=SILVER.AGENCY_AD_ROW_* (DEC-11)',
+    PERF_DATE_SK        NUMBER(8,0)     NOT NULL COMMENT '실적일 (분석축, FK→DIM_DATE)',
+    CAMPAIGN_SK         NUMBER(38,0)    NOT NULL COMMENT '캠페인 (분석축, FK→DIM_CAMPAIGN). ⚠️현재 0 스캐폴드 — Q10 이름매칭 대기',
+    AD_CREATIVE_SK      NUMBER(38,0)    NOT NULL COMMENT '광고소재/매체 (분석축, FK→DIM_AD_CREATIVE). ⚠️현재 0 스캐폴드 — 부분키 매칭 설계 대기',
+    DEVICE_SK           NUMBER(38,0)    NOT NULL COMMENT '디바이스 (분석축, FK→DIM_DEVICE). DEC-10 실배선: 실기기 해시SK / 방송=(해당없음) / 미매핑=0',
+    AD_COST             NUMBER(18,2)    COMMENT '광고비(원) (#6). 원천별 컬럼 상이 — COST_TYPE 은 SILVER 보유',
+    IMPRESSIONS         NUMBER(38,0)    COMMENT '노출수 (#23). DIGITAL 전용(방송 원천 부재)',
+    CLICKS              NUMBER(38,0)    COMMENT '클릭수(행동 횟수, ≠회원명) (#24). DIGITAL 전용. CTR 분자 공#9',
+    INBOUND_CALL        NUMBER(38,0)    COMMENT '인입콜 (#25). REBRDC(TEXT→TRY_TO_NUMBER)·VIDEO 보유, DGT 부재',
+    GA_CONV_MEMBERS     NUMBER(38,0)    COMMENT 'GA전환수(명) — **DIGITAL 전용**. ⚠️O16 교정 2026-07-28: 종전 REBRDC 개발회원수가 혼입돼 합계의 28.60%를 차지했음(재방송 개발실적은 FACT_AD_BROADCAST.DVLP_MEMBER_CNT 로 이관)',
+    GA_CONV_CNT         NUMBER(18,4)    COMMENT 'GA전환수(건/VU) — **DIGITAL 전용**. ⚠️O16 교정 2026-07-28: 종전 REBRDC 개발건수가 혼입돼 합계의 60.32%(과반)를 차지했음 → FACT_AD_BROADCAST.DVLP_CNT 로 이관. 합계 소수=비건수, 어의 현업확인 잔여(O5)',
+    DAY_OF_WEEK         VARCHAR         COMMENT '요일 (degen, AD_DATE 파생)',
+    WEEK_OF_YEAR        NUMBER(2,0)     COMMENT '주차 (degen, AD_DATE 파생)',
+    AD_SOURCE_TYPE             VARCHAR         COMMENT '광고유형 DIGITAL/VIDEO/REBROADCAST (degen). 출처 명시축(DEC-8·§3-A-4) — DW_SOURCE_SYSTEM(시스템 출처)과 2단 추적. DEVICE_TYPE=(해당없음) 행의 방송 여부 판별 수단',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고 성과 팩트 (PERF_DATE × CAMPAIGN × AD_CREATIVE × DEVICE · AGENCY 3테이블 적재: 인입콜 TEXT/NUMBER 캐스팅·_SOURCE_SYSTEM SILVER 부여·캠페인 이름매칭)';
+) COMMENT = '광고 성과 코어 팩트 (grain=AD_PERF_DK, 실측 235,572행 · 분석축 PERF_DATE × CAMPAIGN × AD_CREATIVE × DEVICE). 3원천 공통속성만 보유 — 유형 고유속성은 위성 FACT_AD_BROADCAST/DIGITAL/BROADCAST_CASE';
+
+
+-- ============================================================================
+-- FACT 7-B: FACT_AD_BROADCAST (FAD_B) — 광고성과 위성: 방송(VIDEO∪REBRDC) 고유속성
+--   [2026-07-28 순서9-I 신설 · DEC-8]  grain = AD_PERF_DK (코어와 1:1, 실측 37,886행)
+--   ⚠️ 조인: FACT_AD_PERFORMANCE f JOIN FACT_AD_BROADCAST b USING (AD_PERF_DK) — 1:1이라 fan-out 없음
+--   ⚠️ 컬럼 NULL 은 '두 방송 원천 중 한쪽 전용 속성'이며 결측이 아니다(주석의 [VIDEO/REBRDC 전용] 표기 참조)
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL PRIMARY KEY COMMENT '코어 1:1 조인키(GRAIN·PK, FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
+    TIME_BAND           VARCHAR         COMMENT '시간대 ← VIDEO.TIME_RNG / REBRDC.TIME_RNG_DIV_NM(1순위)·BRDC_TIME(대체). 코어에서 이관(종전 CAST(NULL) 하드코딩)',
+    CM_POSITION         VARCHAR         COMMENT 'CM위치 ← VIDEO.CM_AREA [VIDEO 전용]. 코어에서 이관',
+    RT_TYPE             VARCHAR         COMMENT 'RT(재방송)유형 ← REBRDC.RE_BRDC_TY_NM [REBRDC 전용]. 코어에서 이관',
+    AD_START_TIME       VARCHAR         COMMENT '광고시작시간 ← VIDEO.AD_STRT_TIME [VIDEO 전용]. 코어에서 이관',
+    AD_END_TIME         VARCHAR         COMMENT '광고종료시간 ← VIDEO.AD_END_TIME [VIDEO 전용]. 신규 노출',
+    BROADCAST_DATE      DATE            COMMENT '송출일 ← VIDEO.BRDC_DATE / REBRDC.DATE. ⚠️코어 PERF_DATE_SK(실적일)와 구분. 코어에서 이관',
+    PROGRAM_NM          VARCHAR         COMMENT '프로그램/편성명 ← VIDEO.SCHDL_NM / REBRDC.BRDC_NM',
+    CHANNEL_COMPANY     VARCHAR         COMMENT '채널사 ← VIDEO.CHNNL_NM / REBRDC.CHNNL_CMPNY',
+    CHANNEL_COMPANY_TYPE VARCHAR        COMMENT '채널사유형 ← VIDEO.CHNNL_CMPNY_TY_NM [VIDEO 전용]',
+    SPOT_TYPE           VARCHAR         COMMENT 'SPOT유형 ← VIDEO.SPOT_TY [VIDEO 전용]',
+    DURATION_SEC        NUMBER(9,0)     COMMENT '광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용]. 종전 DIM_AD_CREATIVE 에서 CAST(NULL) 하드코딩이던 값',
+    DAY_DIV             VARCHAR         COMMENT '요일구분 평일/주말 ← VIDEO.DAY_DIV_NM [VIDEO 전용]',
+    PRG_START_TIME      VARCHAR         COMMENT '프로그램 시작시간 ← VIDEO.PRG_STRT_TIME [VIDEO 전용]',
+    CTV_DIV             VARCHAR         COMMENT 'CTV구분 ← VIDEO.CTV_DIV_NM [VIDEO 전용]',
+    BRDC_DIV            VARCHAR         COMMENT '방송구분 ← REBRDC.BRDC_DIV_NM [REBRDC 전용]',
+    AD_CNT              NUMBER(38,0)    COMMENT '광고횟수 ← VIDEO·REBRDC.AD_CNT (가산)',
+    CONV_CALL_CNT       NUMBER(18,4)    COMMENT '전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용]. 코어 INBOUND_CALL(인입콜)과 별개 measure',
+    DVLP_MEMBER_CNT     NUMBER(18,4)    COMMENT '개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 GA_CONV_MEMBERS 로 혼입(GA 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값 실존(2행: 12.5·18.5) → NUMBER(38,0) 은 반올림으로 총합을 +1 왜곡(49,093→49,094). 원천값 보존 우선',
+    DVLP_CNT            NUMBER(18,4)    COMMENT '개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 GA_CONV_CNT 로 혼입(GA 전환 아님)',
+    AD_VIEW_RT_SRC      NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가',
+    CPC_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CPC ← VIDEO.CPC(TEXT) [VIDEO 전용]. DW 재계산=AD_COST/CLICKS (DEC-9 대조용)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '광고성과 위성 — 방송(VIDEO 35,822 + REBRDC 2,064 = 37,886행) 고유속성. 코어와 AD_PERF_DK 1:1. DEC-8 이관 + O16 해소(개발실적 분리)';
+
+
+-- ============================================================================
+-- FACT 7-D: FACT_AD_DIGITAL (FAD_D) — 광고성과 위성: 디지털(DGT) 고유속성
+--   [2026-07-28 순서9-I 신설 · DEC-8]  grain = AD_PERF_DK (코어와 1:1, 실측 197,686행)
+--   ⚠️ _SRC 7종 = 대행사가 계산해 넘긴 파생값(DEC-9). DW 는 재계산하지 않고 원천값을 보존하며,
+--      SV 가 base measure 로 별도 재계산한다. 목적은 **대조**(대행사 산식 vs DW 산식 차이 확인).
+--      전량 **비가산(N)** — 비율·단가이므로 SUM/AVG 재합산 금지.
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_DIGITAL (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL PRIMARY KEY COMMENT '코어 1:1 조인키(GRAIN·PK, FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
+    PAGE_TYPE           VARCHAR         COMMENT '페이지유형 ← DGT.PAGE_TYPE_NM',
+    AD_GROUP_NM         VARCHAR         COMMENT '광고그룹명 ← DGT.AD_GRP_NM',
+    GROUP_DIV           VARCHAR         COMMENT '그룹구분 ← DGT.GRP_DIV_NM',
+    CREATIVE_TYPE       VARCHAR         COMMENT '소재유형 ← DGT.MATR_TY_NM',
+    AD_TYPE_NM          VARCHAR         COMMENT '광고유형명(대행사 표기) ← DGT.AD_TY_NM. ⚠️코어 AD_SOURCE_TYPE(원천 출처축 DIGITAL/VIDEO/REBROADCAST)과 다른 개념',
+    READ_CNT            NUMBER(38,0)    COMMENT '읽음수 ← DGT.READ_CNT (가산)',
+    MEDIA_POTENTIAL_CUST_CNT NUMBER(38,0) COMMENT '매체 잠재고객수 ← DGT.MEDIA_PTNT_CUST_CNT (가산)',
+    CRM_DEV_CNT         NUMBER(18,4)    COMMENT 'CRM 개발건수 ← DGT.CRM_DVLP_CNT (가산)',
+    CTR_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CTR ← DGT.CTR. DW 재계산=CLICKS/IMPRESSIONS',
+    CVR_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=GA_CONV_MEMBERS/CLICKS (O5 확정)',
+    CPC_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS',
+    CPM_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CPM ← DGT.CPM. DW 재계산=AD_COST/IMPRESSIONS×1000',
+    CPA_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/GA_CONV_CNT',
+    DEV_UNIT_PRICE_SRC  NUMBER(18,2)    COMMENT '[비가산 N] 대행사 산정 개발단가 ← DGT.DEV_UNIT_PRICE. DW 재계산=AD_COST/개발건수',
+    VTR_SRC             NUMBER(18,6)    COMMENT '[비가산 N] 대행사 산정 VTR ← DGT.VTR. base 부재로 재계산 불가(대조 대상 아닌 유일값)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '광고성과 위성 — 디지털(DGT 197,686행) 고유속성 + 대행사 산정 _SRC 7종(비가산). 코어와 AD_PERF_DK 1:1. DEC-8·DEC-9';
+
+
+-- ============================================================================
+-- FACT 7-BC: FACT_AD_BROADCAST_CASE (FAD_BC) — 광고성과 위성: 재방송 사례(정규화)
+--   [2026-07-28 순서9-I 신설 · DEC-8]  grain = AD_PERF_DK × CASE_SEQ (코어에 **1:N**, 실측 5,327행)
+--   ⚠️ fan-out 주의: 코어 measure(광고비·노출 등)와 함께 집계하면 사례 수만큼 중복 합산된다.
+--      사례 속성 분석 전용으로 사용하고, 코어 measure 집계는 코어 단독으로 수행할 것.
+--   ⚠️ 원천 CASE1_*~CASE3_* = 5속성 × 3반복 = 15컬럼 반복군을 CASE_SEQ 축으로 언피벗했다.
+--      사례가 4개로 늘어도 DDL 변경 불필요(행으로 흡수). 전속성 NULL 사례는 미적재(희소행 방지).
+--   ⚠️ CASEn_CHILD_NM(아동명) 미적재 — PII 판정 대기(O14). SILVER staging 에 원형 보존.
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE (
+    AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT 'GRAIN 1/2 · 코어 조인키(FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
+    CASE_SEQ            NUMBER(2,0)     NOT NULL COMMENT 'GRAIN 2/2 · 사례 순번 1~3 (원천 CASE1_*~CASE3_* 언피벗축)',
+    BIZ_DIV             VARCHAR         COMMENT '사업구분 ← REBRDC.CASEn_BSNS_DIV_NM',
+    FAMILY_TYPE         VARCHAR         COMMENT '가족유형 ← REBRDC.CASEn_FAM_TY_NM',
+    APPEAL_POINT        VARCHAR         COMMENT '어필포인트 ← REBRDC.CASEn_APPEAL_POINT_NM',
+    CASE_DIV            VARCHAR         COMMENT '사례구분 ← REBRDC.CASEn_CASE_DIV_NM',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AD_PERF_DK, CASE_SEQ)
+) COMMENT = '광고성과 위성 — 재방송 사례 정규화(15컬럼 반복군 → CASE_SEQ 언피벗, 실측 5,327행). 코어에 1:N(fan-out 주의). ⚠️아동명 미적재(PII O14)';
 
 
 -- ============================================================================
@@ -646,6 +747,10 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE DROP CONSTRAINT FK_FAD_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE DROP CONSTRAINT FK_FAD_DIM_AD_CREATIVE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE DROP CONSTRAINT FK_FAD_DIM_DEVICE; EXCEPTION WHEN OTHER THEN NULL; END;
+  -- [2026-07-28 순서9-I] AGENCY 위성 3종 → 코어 FK
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_BROADCAST DROP CONSTRAINT FK_FAD_B_FAD; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_DIGITAL DROP CONSTRAINT FK_FAD_D_FAD; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE DROP CONSTRAINT FK_FAD_BC_FAD; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION DROP CONSTRAINT FK_FEP_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION DROP CONSTRAINT FK_FEP_DIM_EVENT; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION DROP CONSTRAINT FK_FEP_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
@@ -727,6 +832,17 @@ ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE ADD CONSTRAINT FK_FAD_DIM_AD_CREATIVE
     FOREIGN KEY (AD_CREATIVE_SK) REFERENCES GN_DW.GOLD.DIM_AD_CREATIVE (AD_CREATIVE_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE ADD CONSTRAINT FK_FAD_DIM_DEVICE
     FOREIGN KEY (DEVICE_SK) REFERENCES GN_DW.GOLD.DIM_DEVICE (DEVICE_SK) NOT ENFORCED NORELY;
+
+-- AGENCY 위성 팩트 3종 → 코어 FACT_AD_PERFORMANCE (AD_PERF_DK)  [2026-07-28 순서9-I DEC-8]
+--   ⚠️ 팩트→팩트 FK 는 통상 지양하나, 위성 패턴은 코어 grain 을 공유하는 **수직 분할**이므로
+--      코어가 사실상 부모 차원 역할을 한다. ERD 가독성·BI 자동 조인 인식을 위해 선언한다(NOT ENFORCED).
+--   ⚠️ FAD_B·FAD_D 는 1:1(위성 PK=코어 PK) · FAD_BC 는 1:N(위성 PK=코어 PK + CASE_SEQ).
+ALTER TABLE GN_DW.GOLD.FACT_AD_BROADCAST ADD CONSTRAINT FK_FAD_B_FAD
+    FOREIGN KEY (AD_PERF_DK) REFERENCES GN_DW.GOLD.FACT_AD_PERFORMANCE (AD_PERF_DK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_AD_DIGITAL ADD CONSTRAINT FK_FAD_D_FAD
+    FOREIGN KEY (AD_PERF_DK) REFERENCES GN_DW.GOLD.FACT_AD_PERFORMANCE (AD_PERF_DK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE ADD CONSTRAINT FK_FAD_BC_FAD
+    FOREIGN KEY (AD_PERF_DK) REFERENCES GN_DW.GOLD.FACT_AD_PERFORMANCE (AD_PERF_DK) NOT ENFORCED NORELY;
 
 -- FACT_EVENT_PARTICIPATION
 ALTER TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION ADD CONSTRAINT FK_FEP_DIM_DATE
