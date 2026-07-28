@@ -1,0 +1,1125 @@
+﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-07-28
+# 자동 생성물 — 생성기 scripts/gen_bronze_exposure_audit.py(+러너 scripts/run_bronze_audit_host.py) 재실행으로 갱신. 직접 편집 금지.
+
+원천시스템,BRONZE_테이블,BRONZE_컬럼,데이터타입,판정,신뢰도,비고
+AGENCY,DGT_AD_CMPGN_DTLS,TIME,TEXT,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,DGT_AD_CMPGN_DTLS,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
+AGENCY,DGT_AD_CMPGN_DTLS,CPR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,DMST_OVSEA_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,BSNS_CASE_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CMPGN_TY_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,DGT_AD_CMPGN_DTLS,AD_TY_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,MONTH,TEXT,대체노출(파생),높음,DATE 파생(MONTH(AD_DATE)) 로 대체
+AGENCY,DGT_AD_CMPGN_DTLS,DEVICE,TEXT,⚠️설계O·값미주입,높음,GOLD `DEVICE_SK`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:20 `0 as DEVICE_SK`
+AGENCY,DGT_AD_CMPGN_DTLS,MEDIA_NM,TEXT,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,DGT_AD_CMPGN_DTLS,WEEK,TEXT,대체노출(파생),높음,DATE 파생(WEEKOFYEAR) 로 대체
+AGENCY,DGT_AD_CMPGN_DTLS,DAY,TEXT,대체노출(파생),높음,DATE 파생(DAY) 로 대체
+AGENCY,DGT_AD_CMPGN_DTLS,DOW,TEXT,대체노출(파생),높음,DATE 파생(DAYNAME) 로 대체
+AGENCY,DGT_AD_CMPGN_DTLS,CMPGN_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+AGENCY,DGT_AD_CMPGN_DTLS,MATR,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,DGT_AD_CMPGN_DTLS,MATR_TY_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,DGT_AD_CMPGN_DTLS,EXPS_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `IMPRESSIONS` (FACT_AD_PERFORMANCE.sql)
+AGENCY,DGT_AD_CMPGN_DTLS,CLICK_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `CLICKS` (FACT_AD_PERFORMANCE.sql)
+AGENCY,DGT_AD_CMPGN_DTLS,GA_AD_COST,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql)
+AGENCY,DGT_AD_CMPGN_DTLS,GA_CONV_MBER_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_CONV_MEMBERS` (FACT_AD_PERFORMANCE.sql)
+AGENCY,DGT_AD_CMPGN_DTLS,CONV_VU_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_CONV_CNT` (FACT_AD_PERFORMANCE.sql)
+AGENCY,DGT_AD_CMPGN_DTLS,CPA,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,DEV_UNIT_PRICE,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CTR,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CVR,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CPC,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CPM,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,UPPER_CMPGN_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,DGT_AD_CMPGN_DTLS,READ_CNT,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,MEDIA_PTNT_CUST_CNT,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,DATE,DATE,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,DGT_AD_CMPGN_DTLS,VTR,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,PAGE_TYPE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,CRM_DVLP_CNT,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,AD_GRP_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,DGT_AD_CMPGN_DTLS,GRP_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,RE_BRDC_TY_NM,TEXT,⚠️설계O·값미주입,높음,GOLD `RT_TYPE`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:31 `CAST(NULL AS VARCHAR) as RT_TYPE`
+AGENCY,REBRDC_AD_CMPGN_DTLS,DIV_NM,TEXT,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,REBRDC_AD_CMPGN_DTLS,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
+AGENCY,REBRDC_AD_CMPGN_DTLS,BRDC_MT,TEXT,대체노출(파생),높음,DATE 파생(MONTH) 로 대체
+AGENCY,REBRDC_AD_CMPGN_DTLS,CHNNL_CMPNY,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,REBRDC_AD_CMPGN_DTLS,BRDC_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,REBRDC_AD_CMPGN_DTLS,BRDC_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,DATE,DATE,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,REBRDC_AD_CMPGN_DTLS,DOW,TEXT,대체노출(파생),높음,DATE 파생(DAYNAME) 로 대체
+AGENCY,REBRDC_AD_CMPGN_DTLS,BRDC_TIME,TEXT,⚠️설계O·값미주입,높음,GOLD `TIME_BAND`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:29 `CAST(NULL AS VARCHAR) as TIME_BAND`
+AGENCY,REBRDC_AD_CMPGN_DTLS,INBOUND_CALL_CNT,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 존재
+AGENCY,REBRDC_AD_CMPGN_DTLS,DVLP_MBER_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_CONV_MEMBERS` (FACT_AD_PERFORMANCE.sql)
+AGENCY,REBRDC_AD_CMPGN_DTLS,DVLP_CNT,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_CONV_CNT` (FACT_AD_PERFORMANCE.sql)
+AGENCY,REBRDC_AD_CMPGN_DTLS,BRDC_SCHDL_COST,FLOAT,노출됨(GOLD),높음,개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql)
+AGENCY,REBRDC_AD_CMPGN_DTLS,WEEK,TEXT,대체노출(파생),높음,DATE 파생(WEEKOFYEAR) 로 대체
+AGENCY,REBRDC_AD_CMPGN_DTLS,AD_CNT,FLOAT,SILVER까지만,높음,GOLD 미승격
+AGENCY,REBRDC_AD_CMPGN_DTLS,TIME_RNG_DIV_NM,TEXT,⚠️설계O·값미주입,높음,GOLD `TIME_BAND`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:29 `CAST(NULL AS VARCHAR) as TIME_BAND`
+AGENCY,REBRDC_AD_CMPGN_DTLS,CELEB_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,DMST_OVSEA_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE1_BSNS_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE1_FAM_TY_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE1_APPEAL_POINT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE1_CHILD_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE1_CASE_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE2_BSNS_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE2_FAM_TY_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE2_APPEAL_POINT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE2_CHILD_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE2_CASE_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE3_BSNS_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE3_FAM_TY_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE3_APPEAL_POINT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE3_CHILD_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,REBRDC_AD_CMPGN_DTLS,CASE3_CASE_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,CHNNL_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,DOW,TEXT,대체노출(파생),높음,DATE 파생(DAYNAME) 로 대체
+AGENCY,VIDEO_AD_CMPGN_DTLS,BRDC_DATE,DATE,⚠️설계O·값미주입,높음,GOLD `BROADCAST_DATE`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:33 `CAST(NULL AS DATE) as BROADCAST_DATE`
+AGENCY,VIDEO_AD_CMPGN_DTLS,TIME_RNG,TEXT,⚠️설계O·값미주입,높음,GOLD `TIME_BAND`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:29 `CAST(NULL AS VARCHAR) as TIME_BAND`
+AGENCY,VIDEO_AD_CMPGN_DTLS,DAY_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,PRG_STRT_TIME,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,SCHDL_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,CM,TEXT,미노출(검토대상),낮음(일반명),일반명 — 개별 실측 필요
+AGENCY,VIDEO_AD_CMPGN_DTLS,CM_AREA,TEXT,⚠️설계O·값미주입,높음,GOLD `CM_POSITION`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:30 `CAST(NULL AS VARCHAR) as CM_POSITION`
+AGENCY,VIDEO_AD_CMPGN_DTLS,AD_STRT_TIME,TEXT,⚠️설계O·값미주입,높음,GOLD `AD_START_TIME`(FACT_AD_PERFORMANCE.sql) 자리 존재하나 하드코딩 — FACT_AD_PERFORMANCE.sql:32 `CAST(NULL AS VARCHAR) as AD_START_TIME`
+AGENCY,VIDEO_AD_CMPGN_DTLS,AD_END_TIME,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,SPOT_TY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,AD_VIEW_RT,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,AD_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+AGENCY,VIDEO_AD_CMPGN_DTLS,AD_SEC,TEXT,⚠️설계O·값미주입,높음,"GOLD `DURATION_SEC`(DIM_AD_CREATIVE.sql) 자리 존재하나 하드코딩 — DIM_AD_CREATIVE.sql:25 `CAST(NULL AS NUMBER(9,0)) as DURATION_SEC`"
+AGENCY,VIDEO_AD_CMPGN_DTLS,ACTL_PUR_AD_COST_KRW,NUMBER,노출됨(GOLD),높음,개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql)
+AGENCY,VIDEO_AD_CMPGN_DTLS,INBOUND_CALL_CNT,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 존재
+AGENCY,VIDEO_AD_CMPGN_DTLS,CPC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,UPPER_CMPGN_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,MATR_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,CMPGN_TY_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,DUR_PD_MATR_CHN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,CHNNL_CMPNY_TY_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,WEEK,TEXT,대체노출(파생),높음,DATE 파생(WEEKOFYEAR) 로 대체
+AGENCY,VIDEO_AD_CMPGN_DTLS,CONV_CALL_CNT,FLOAT,SILVER까지만,높음,GOLD 미승격
+AGENCY,VIDEO_AD_CMPGN_DTLS,BRDC_MT,TEXT,대체노출(파생),높음,DATE 파생(MONTH) 로 대체
+AGENCY,VIDEO_AD_CMPGN_DTLS,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
+AGENCY,VIDEO_AD_CMPGN_DTLS,CTV_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,MKT_CMPGN_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+AGENCY,VIDEO_AD_CMPGN_DTLS,SPNSR_BSNS_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+AGENCY,VIDEO_AD_CMPGN_DTLS,DMST_OVSEA_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+AGENCY,VIDEO_AD_CMPGN_DTLS,BSNS_CASE_DIV_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,REQ_SEQ_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,R_NUM,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_MEMBER_LIST,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,SPNSR_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SPNSR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,CMPGN_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,SND_MEMBER_LIST,GENDER,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,SND_MEMBER_LIST,AGE,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,SND_MEMBER_LIST,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,SETLE_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,DSCNTC_PATH,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,DSCNTC_RSN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,DSCNTC_RSN_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,CHILD_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,LST_BRND_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,LST_BRND_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,SND_MEMBER_LIST,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,LETTER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,CHILD_DTL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CHILD_DTL_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,RELATNSP_DSCNTC_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,FRST_SPNSR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FRST_BRND_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FRST_BRND_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,LST_REGIST_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,PRIV_SUSP_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SND_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_MEMBER_LIST,SND_MSG,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,SND_MEMBER_LIST,REG_DATE,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,SND_MEMBER_LIST,SND_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_MEMBER_LIST,SND_HOUR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SND_MIN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,EMAIL_RECPTN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_MEMBER_LIST,EMAIL_RECPTN_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NATION_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NATION_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,BPLC_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,BPLC_KOR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,DISCHARGE_REPORT_KOR,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,SND_MEMBER_LIST,PAST_NATION_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,PAST_BPLC_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,PAST_CHILD_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FAMILY_DTL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FINAL_CHILD_SPNSR_START_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NEW_CHILD_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NEW_CHILD_PROJECT_COUNTRY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NEW_CHILD_WORKPLACE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NEW_CHILD_PIC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,NEW_CHILD_GENDER,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SPNSR_AMOUNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SPNSR_STRT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SPNSR_DSCNTC_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,RELATNSP_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SPNSR_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,DEPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CURRENT_BRND,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CURRENT_UPPER_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CURRENT_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FIRST_UPPER_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,FIRST_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,LAST_TOP_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,LAST_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,MSG_KEY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CINFO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,RESPONSED_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,RESPONSED_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,SYNCED_AT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,CALL_STATUS,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,REAL_SEND_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,LAST_UPPER_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEQ_NO,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,SEND_GBN_TOP,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_GBN_MID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_GBN_BOT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_TITLE,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 존재
+CRM,SND_REQ_MST,MSG_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,TMPL_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,AUTHOR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CREATE_DATE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CONDITION_TITLE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CALL_NUMBER,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,ALT_SMS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,REGULARLY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,PERIODIC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,PERIODIC_WEEK,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,PERIODIC_DAY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_DATE,DATE,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,SEND_TIME,TIME,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_MIN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_SPLIT_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,DIVIDE,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,DIVIDE_UNIT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CORP_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,AUTO_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,SND_REQ_MST,REG_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,MOD_DATE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,INIT_REG_DATE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,LAST_SEND_DATE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,APPR_STATUS,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CREATE_DEPT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SENDER_EMAIL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,RCPT_LIST,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_STATUS,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 존재
+CRM,SND_REQ_MST,SEND_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,FAIL_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,LAST_ERR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,END_DATE,DATE,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,PAPER_YEAR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,MENU_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_GBN_TOP_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_GBN_MID_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_GBN_BOT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,TARGET_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,SEND_ROUND,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,EXTRA,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,ASSIGN_TARGET_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,FIRST_SEQ_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,JOB_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SYNCED_AT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,REG_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SERVICE_MENU_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_CD,CD_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,CD_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,SORT_ORDR,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_CD,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TC_CMMN_CD,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TC_CMMN_CD,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_CD,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,DTL_CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,DTL_CD_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,DTL_CD_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,SORT_ORDR,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TC_CMMN_DTL_CD,CD_ATRB1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,CD_ATRB2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,CD_ATRB3,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TC_CMMN_DTL_CD,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,UPPER_CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TC_CMMN_DTL_CD,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,TMPLAT_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,BTN_SEQ,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,BTN_TY_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,BTN_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,ANDROID_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,IOS_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,MOBILE_URL,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,PC_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_AT_TMPLAT_BTN_LIST,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,CRMN_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_CRMN_PRTCPNT,PRTCPNT_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_CRMN_PRTCPNT,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_CRMN_PRTCPNT,RQST_PATH_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_CRMN_PRTCPNT,SELF_PARTCPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,REFND_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,RQST_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_CRMN_PRTCPNT,ACMPNY_PARTCPT_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_CRMN_PRTCPNT,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,MSG_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,MKT_TRGET_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,SUCCES_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,FAILR_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,RECPTN_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_STRT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_END_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,INFLOW_PATH_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_YEAR_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_MT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_TEAM_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SUCCES_FAILR_CNT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,URL_OTHBC_CNT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,URL_OTHBC_RT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SESION_VU_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,SESION_PGE_CNT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,DVLP_ACMSLT_CNT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,CLOS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_EMAIL_LQY_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_SNDNG_DTLS,SNDNG_DTL_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_SNDNG_DTLS,SNDNG_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_SNDNG_DTLS,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_SNDNG_DTLS,SNDNG_RST_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_SNDNG_DTLS,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_EMAIL_SNDNG_DTLS,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_SNDNG_DTLS,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,EVENT_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_EVENT_PRTCPNT_DTL,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_SEQ,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,EVENT_PARTCPT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PRZWIN_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_CHNNL_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_PATH_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_DT,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EVENT_PRTCPNT_DTL,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,RM2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_EVENT_PRTCPNT_DTL,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_LQY_SNDNG,DIVS_DTL_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_LQY_SNDNG,SUCCES_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_LQY_SNDNG,AT_ALTRTV_SNDNG_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,AT_FAILR_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_MSG_AT_LQY_SNDNG,RESVE_SNDNG_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,RESVE_HM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,TOT_CLICK_CNT_CTNT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_MSG_AT_LQY_SNDNG,CLICK_CNT_CTNT1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,CLICK_CNT_CTNT2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,CLICK_CNT_CTNT3,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,CLICK_CNT_CTNT4,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,RM_VU_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_MSG_AT_LQY_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,SNDNG_DTL_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,SNDNG_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,SNDNG_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,TRNSMS_STAT_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,TRNSMS_FAILR_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,ALTRTV_MSG_SNDNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,ATTACHED_FILE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_SNDNG_DTLS,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_TIT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_MEMO_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_PSTMTR_LQY_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,SNDNG_DTL_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,SNDNG_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,DTL_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,BIZN_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TD_MS_PSTMTR_SNDNG_DTL,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_SNDNG_DTL,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,SER_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,BF_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,CHN_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_MM_FDRM_MBER_STNG_DTLS,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,SETLE_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,UPDUSR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,WTDRW_STRT_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,WTDRW_ASMT_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,FNLT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,FNLT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,SETLE_ENTRPS_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CARD_TRMVT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,ACNUT_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,PAYER_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CARD_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,ETC_CTTPC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,ETC_CTTPC_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,PAYER_MBER_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CRTFC_MTH_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CRTFC_FILE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CRTFC_DATA_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CRTFC_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,FILE_SIZE,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,BILLKEY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,SETLE_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TH_PM_SETLE_INFO_HIST,BF_SETLE_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,RQST_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,RCEPT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APRV_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APRV_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APRV_RST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,FRST_BEGIN_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,RQEST_EXCL_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,RQEST_EXCL_STRT_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,RQEST_EXCL_END_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_ETC_CTTPC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_ETC_CTTPC_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_MBER_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,BF_SETLE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,OPERT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,CRTFC_TY_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TH_PM_SETLE_INFO_HIST,RGSTR_ID,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TH_PM_SETLE_INFO_HIST,RGSTR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,REGIST_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TH_PM_SETLE_INFO_HIST,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,BRND_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_BRND_MNG,BRND_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_BRND_MNG,USE_DEPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_BRND_MNG,PR_MTH_LIST,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_BRND_MNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,TM_CM_CMPGN_MNG,UPPER_CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,UPPER_CMPGN_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,SPNSR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_TRGET_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,USE_DEPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,USE_SCOPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,SPNSR_ENTRPRS_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,BRND_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,PR_MTH_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_STRT_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,MBRFEE_BNKB_LIST,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,INICIS_ACNT_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_CMPGN_MNG,REFER_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,EMRGNCY_AID_BPLC_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,CMPGN_PRPT_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_CMPGN_MNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,MBER_INFLOW_PATH_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,CMPGN_CTGR_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_TYPE1_BSN,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,CMPGN_TYPE2_BSN,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,MKTG_CMPGN_NM,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_CMPGN_MNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_DEPT_INFO,DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,DEPT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,UPPER_DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,SORT_ORDR,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_DEPT_INFO,ACMSLT_DEPT_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,STATS_DEPT_LVL,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_DEPT_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_DEPT_INFO,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_DEPT_INFO,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_DEPT_INFO,ACMSLT_UPPER_DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_DEPT_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_DEPT_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MBER_DVLP_GOAL,STDYY,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_MBER_DVLP_GOAL,STDR_MT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_MBER_DVLP_GOAL,MBER_DVLP_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_MBER_DVLP_GOAL,DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_MBER_DVLP_GOAL,GOAL_CNT,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 존재
+CRM,TM_CM_MBER_DVLP_GOAL,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MBER_DVLP_GOAL,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_MBER_DVLP_GOAL,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MBER_DVLP_GOAL,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MBER_DVLP_GOAL,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MBER_DVLP_GOAL,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,MK_CMPGN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_CM_MKTNG_CMPGN_MNG,MK_CMPGN_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_MKTNG_CMPGN_MNG,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_MKTNG_CMPGN_MNG,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_MKTNG_CMPGN_MNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_MKTNG_CMPGN_MNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_BSNS_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_BSNS_ABRV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,DNTN_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,SORT_ORDR,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_CM_SPNSR_BSNS_INFO,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_SPNSR_BSNS_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_CM_SPNSR_BSNS_INFO,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_SPNSR_BSNS_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_BSNS_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,OCCRRNC_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SER_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,ACT_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,ACMSLT_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,MBER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SEX,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,AREA_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,AGE,NUMBER,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_AMT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,CANCL_RDCAMT_RSN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,DVLP_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,FRST_RGSTR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,MBER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,SLRCLD_LRR_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,MOBLPHON_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,TSTM_DIV_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,ETC_TSTM_DIV_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,ETC_CTTPC_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,ETC_CTTPC_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,EMAIL_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,PSTMTR_RECPTN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MM_FDRM_MBER_INFO,EMAIL_RECPTN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MM_FDRM_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,BL_ENTRPS_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,SPECL_MNG_CD1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,SPECL_MNG_CD2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,TNI_CU_BL_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,MBER_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,RELATNSP_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,ACT_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,HMPG_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,JOIN_PATH_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,CTI_SYNCHRN_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,STDR_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MM_FDRM_MBER_INFO,REGIST_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,SEX,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,OCCRRNC_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,SER_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,ACMSLT_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,MBER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,SEX,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,AREA_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,AGE,NUMBER,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
+CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_AMT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,RDCAMT_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_IRSD,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,SER_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,RE_SPNSR_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,REGIST_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_RE_SPNSR,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_BSNS_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_DSCNTC_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_DSCNTC_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,SPNSR_DSCNTC_RSN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_SPNSR_BSNS,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,SPNSR_DSCNTC_DE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,SER_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,DSCNTC_RSN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,DSCNTC_PATH,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,REGIST_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_SPNSR_DSCNTC,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,ONCE_MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,MBER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,SEX,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,TSTM_DIV_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,ETC_TSTM_DIV_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,ENTRPS_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,HMPG_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,PSTMTR_RECPTN_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MM_ONCE_MBER_INFO,EMAIL_RECPTN_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MM_ONCE_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,FDRM_MBER_TRNSFER_FG,BOOLEAN,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,SPECL_MNG_CD1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,SPECL_MNG_CD2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,TNI_CU_BL_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,CTI_SYNCHRN_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MM_ONCE_MBER_INFO,REGIST_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MM_ONCE_MBER_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_CRMN,CRMN_DIV_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_CRMN,CRMN_TIT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_CRMN,CRMN_PLACE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,BRNCH_DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_CRMN,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,SITE_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_STRT_DE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_CRMN,CRMN_END_DE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_CRMN,CRMN_PART_STRT_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_PART_END_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TAT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,RCRIT_PSNNL_CO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_CRMN,RESRCE_SRVC_FG,BOOLEAN,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_CRMN,ENTRPS_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_CRMN,PART_USE_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_TIT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_PART_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_PART_TIT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_CRMN,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,SRVY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,RM2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,PROMO_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_WIN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,TMPLAT_WIN_TIT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_SNDNG,SNDNG_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,SNDNG_DTL_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,SNDNG_STDR_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_SNDNG,SNDNG_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_SNDNG,TIT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_SNDNG,EMAIL_RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,PRCS_DE,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,PRCS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_EMAIL_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,TMPLAT_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_TMPLAT_MNG,SNDNG_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,SNDNG_DTL_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,ATMC_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,TIT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EMAIL_TMPLAT_MNG,EMAIL_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,WRITNG_DEPT_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,WRITNG_DEPT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,CHRG_DEPT_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_EMAIL_TMPLAT_MNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_TMPLAT_MNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,EVENT_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_EVENT,EVENT_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EVENT,EVENT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_EVENT,STRT_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_EVENT,END_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_MS_EVENT,PRZWIN_PSNNL_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,PRZWIN_GFT_SNDNG_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_EVENT,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_DTL_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_STDR_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_MSG_AT_SNDNG,SNDNG_TIME_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,MSG_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,TIT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_MSG_AT_SNDNG,MSG_AT_RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,PRCS_DE,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,TMPLAT_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,ALTRTV_MSG_SNDNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,ALTRTV_MSG_ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_MSG_AT_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_PSTMTR_SNDNG,SNDNG_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,SNDNG_DTL_CD_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,SNDNG_STDR_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_PSTMTR_SNDNG,SNDNG_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_PSTMTR_SNDNG,PRCS_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,PRCS_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,LQY_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,RE_SNDNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_MS_PSTMTR_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,DNTN_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_PM_DNTN_DTLS,ONCE_MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,ONCE_CMPGN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,ELCTR_SETLE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,SETLE_ENTRPS_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,SETLE_CMPNY_ACNT_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,MBRFEE_BNKB_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,ACNUT_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,FNLT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,PAYER_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,PAY_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,PAY_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,PAY_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,PRCS_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_PM_DNTN_DTLS,TRNSFER_MBRFEE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,TRNSFER_RSN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,RETUN_DNTN_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,RETUN_RSN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,RETUN_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,ACMSLT_DEPT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,REGIST_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,RGSTR_ID,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_PM_DNTN_DTLS,RGSTR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_DNTN_DTLS,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_PM_MBRFEE_ACMSLT,MBER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,SPNSR_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,SPNSR_BSNS_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,OVSEA_AID_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_MT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_SQNC,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_MT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,GFT_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,GFTMNEY_CHILD_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,ONCE_CMPGN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TOGETH_WTDRW_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TOGETH_WTDRW_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,SETLE_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,SETLE_ENTRPS_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,PAYER_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,PAY_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,PAY_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,PAY_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,PRCS_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,ELCTR_SETLE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,SETLE_CMPNY_ACNT_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_BNKB_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,ACNUT_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,FNLT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,BILLKEY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_RST_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,PRCS_RST_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TRNSFER_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TRNSFER_MBRFEE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TRNSFER_DNTN_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TRNSFER_RSN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RETUN_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RETUN_MBRFEE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RETUN_RSN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_PM_MBRFEE_ACMSLT,OPERTOR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,OPERTOR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,OPERT_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,OPERT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,OPER_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,OPER_RST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,SETLE_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,CPR_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,WTDRW_STRT_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,WTDRW_ASMT_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,WTDRW_ASMT_SQNC_UPDT_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FNLT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FNLT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,SETLE_ENTRPS_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CARD_TRMVT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,ACNUT_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,PAYER_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CARD_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,MBTLNUM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,ETC_CTTPC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,ETC_CTTPC_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,PAYER_MBER_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CRTFC_MTH_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CRTFC_FILE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CRTFC_DATA_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CRTFC_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FILE_SIZE,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,BILLKEY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,SETLE_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_SETLE_INFO,RQST_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,RCEPT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APRV_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APRV_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APRV_RST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FRST_BEGIN_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,RQEST_EXCL_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,RQEST_EXCL_STRT_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,RQEST_EXCL_END_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APPLCNT_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APPLCNT_MBTLNUM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APPLCNT_ETC_CTTPC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APPLCNT_ETC_CTTPC_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,APPLCNT_MBER_REL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,BF_SETLE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,OPERT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,CRTFC_TY_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_PM_SETLE_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FRST_RGSTR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_PM_SETLE_INFO,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,LAST_UPDUSR_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_SETLE_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BPLC_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,NATION_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BPLC_KORNM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BPLC_ENGNM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BSNS_STRT_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BSNS_END_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,RELATNSP_BSNS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,RELATNSP_BSNS_DSCNTC_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,GFTMNEY_PSBL_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,LETTER_PSBL_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BPLC_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,WTWK_FROM_DSTNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,CNCSN_RSN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,BPLC_MTCHG_MNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_RM_BPLC_MNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,LAST_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_BPLC_MNG,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,CHILD_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_CHILD_MSTR_INFO,CHILD_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,BPLC_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,SEX,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_CHILD_MSTR_INFO,RELATNSP_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,CHILD_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,CHILD_DTL_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,REGIST_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_RM_CHILD_MSTR_INFO,LAST_REGIST_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,RE_UPDT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,MNYRS_NATION_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,CMS_CHILD_NO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_CHILD_MSTR_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_RST_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_PERSON_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,CHG_RELATNSP_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_CHG_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MBRFEE_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_BANK_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFTMNEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFT_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,KOREAN_RM_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,ENGL_RM_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SNDNG_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,EHGT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFTMNEY_DOLLAR_AMT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,APRV_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,UNREPLY_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_AFTER_RELATNSP_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,LETTER_DIV_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,RCEPT_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,SNDNG_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_POST_WRITNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,FRST_REGIST_DE,DATE,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_RM_RELATNSP_LETTER_INFO,EXCEL_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,UNREPLY_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,LANG_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_INFLOW_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,LETTER_STAT_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_MSTR_INFO,RELATNSP_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,SPNSR_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,SPNSR_BSNS_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,CHILD_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,RELATNSP_STRT_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,RELATNSP_DSCNTC_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,RELATNSP_DSCNTC_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,RELATNSP_DSCNTC_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_MSTR_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_MSTR_INFO,FRST_REGIST_DE,DATE,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
+CRM,TM_RM_RELATNSP_MSTR_INFO,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_MSTR_INFO,_LOAD_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_MSTR_INFO,_BATCH_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
+ERP,BDGT_ACMSLT_LEDGER,INCOME_EXPS_DIV_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,BDGT_UNIT_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,JANG_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,KWAN_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,HANG_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,MOK_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,DTL_ITEM_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,SUBDTL_ITEM_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,FUND_SOURCE_NM,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_TOT_AMT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_TOT_AMT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_TOT_AMT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,EXEC_TOT_AMT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_1,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_1,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_1,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_1,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_2,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_2,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_2,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_2,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_3,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_3,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_3,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_3,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_4,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_4,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_4,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_4,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_5,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_5,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_5,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_5,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_6,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_6,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_6,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_6,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_7,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_7,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_7,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_7,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_8,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_8,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_8,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_8,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_9,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_9,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_9,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_9,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_10,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_10,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_10,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_10,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_11,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_11,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_11,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_11,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_AMT_12,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_AMT_12,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_AMT_12,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,EXEC_AMT_12,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+GA4,events_20260501,event_date,TEXT,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,event_timestamp,NUMBER,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,event_name,TEXT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_EVENT_SK` (FACT_GA_BEHAVIOR.sql)
+GA4,events_20260501,event_params,VARIANT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+GA4,events_20260501,event_previous_timestamp,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,event_value_in_usd,FLOAT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,event_bundle_sequence_id,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,event_server_timestamp_offset,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,user_id,TEXT,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,user_pseudo_id,TEXT,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,privacy_info,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,user_properties,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,user_first_touch_timestamp,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,user_ltv,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,device,VARIANT,노출됨(GOLD),높음,개명 적재 → GOLD `DEVICE_SK` (FACT_GA_BEHAVIOR.sql)
+GA4,events_20260501,geo,VARIANT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+GA4,events_20260501,app_info,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,traffic_source,VARIANT,노출됨(GOLD),높음,개명 적재 → GOLD `GA_SOURCE_SK` (FACT_GA_BEHAVIOR.sql)
+GA4,events_20260501,stream_id,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,platform,TEXT,노출됨(GOLD),높음,개명 적재 → GOLD `DEVICE_SK` (FACT_GA_BEHAVIOR.sql)
+GA4,events_20260501,event_dimensions,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,ecommerce,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,items,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,collected_traffic_source,VARIANT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,is_active_user,BOOLEAN,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,batch_event_index,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,batch_page_id,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+GA4,events_20260501,batch_ordering_id,NUMBER,SILVER까지만,높음,GOLD 미승격
+GA4,events_20260501,session_traffic_source_last_click,VARIANT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+GA4,events_20260501,publisher,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님

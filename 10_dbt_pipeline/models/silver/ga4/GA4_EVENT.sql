@@ -76,8 +76,11 @@ SELECT
     ev.percent_scrolled                                          AS PERCENT_SCROLLED,
     ev.link_url                                                  AS LINK_URL,
     ev.link_text                                                 AS LINK_TEXT,
+    -- GA4 공식 기준: platform × device.category 조합(platform 단독 불가). 미분류는 '(unknown)' 격리(2026-07-27 교정).
     CASE WHEN ev.platform IN ('ANDROID','IOS') THEN 'APP'
-         WHEN ev.device:category::STRING IN ('mobile','tablet') THEN 'M' ELSE 'PC' END AS DEVICE_TYPE,
+         WHEN ev.platform = 'WEB' AND ev.device:category::STRING IN ('mobile','tablet') THEN 'M'
+         WHEN ev.platform = 'WEB' AND ev.device:category::STRING = 'desktop' THEN 'PC'
+         ELSE '(unknown)' END AS DEVICE_TYPE,
     ev.device:category::STRING                                   AS DEVICE_CATEGORY,
     ev.device:operating_system::STRING                           AS OS,
     ev.geo:country::STRING                                       AS GEO_COUNTRY,

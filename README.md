@@ -66,7 +66,7 @@ SERVING Semantic View 5 배포(회원월·회원이벤트·서비스·행사참�
 | `06_reference/` | 스크립트 생성 스키마 컬럼 인벤토리(SILVER·GOLD, 20260716) |
 | `50_handoff/` | 인계·크로스커팅 산출물: `IT팀_전달 인덱스.md`·`ETL_프로시저 설계.md`·`GOLD_개발자 전달노트`·`문서검토_체크리스트`·`예산 안.md`·데이터마이그레이션 3종(md+DDL+setup) |
 | `99_provided_definition/` | 현업 제공 정의: 지표사전·용어·`컬럼정의서`·`테이블정의`·`GA4스키마`·`BRONZE_CRM 테이블 정보.MD` |
-| `08_mornitoring/`·`10_dbt_pipeline/`·`20_issue/`·`30_output_share/` | 거버넌스 근거·dbt 파이프라인·이슈 원장·현업 공유 산출물 |
+| `08_mornitoring/`·`10_dbt_pipeline/`·`20_issue/`·`30_output_share/` | 거버넌스 근거·dbt 파이프라인·이슈 원장·현업 공유 산출물. `30_`: `01_DW_현업활용가이드`·`03_GN_DW_개념도.html`·**`04_컬럼계보매핑`**(BRONZE→SILVER→GOLD 컬럼 계보+지표#)·**`05_지표GOLD매핑`**(215지표·04·05 보고서필드→GOLD 추적 장표, 생성기 `scripts/gen_metric_gold_mapping.py`) |
 | `scripts/` | 인벤토리 재생성·코멘트 주입 등 파이썬/SQL 도구 |
 | `_archive/` | 구설계·레거시 스냅샷(구 인벤토리 CSV·연동 테스트 기록 등). **참조 정본 아님** |
 

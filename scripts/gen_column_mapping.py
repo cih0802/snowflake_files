@@ -8,7 +8,7 @@ GN_DW 데이터 계보(lineage) 매핑 산출물 생성기.
   - silver/gold dbt 모델 SELECT 식 (컬럼 변환 규칙)
 출력: MD(가독) · CSV(가공) · XLSX(현업 공유, WIDE 시트 분할)
 """
-import csv, os
+import csv, os, re
 
 OUT_DIR = os.path.realpath("/workspace/30_output_share")
 BASENAME = "04_컬럼계보매핑"
@@ -18,8 +18,87 @@ PROV = f"본 파일은 자동 생성물입니다. 직접 수정 금지 — 생�
 
 # ── 컬럼: 마트, GOLD컬럼, 업무의미, SILVER(테이블.컬럼), BRONZE(테이블.컬럼), 변환규칙, 상태
 # 상태: OK=적재완료 · PARTIAL=일부대기 · WAIT=원천대기
-HEADER = ["WIDE_마트", "GOLD_컬럼", "업무_의미", "SILVER_원천(테이블.컬럼)",
+HEADER = ["WIDE_마트", "GOLD_컬럼", "지표#", "업무_의미", "SILVER_원천(테이블.컬럼)",
           "BRONZE_원천(테이블.컬럼)", "변환_규칙", "상태"]
+
+# GOLD/WIDE 컬럼 → 지표번호(공N=공통 지표사전 / 신N=신규 지표사전) 매핑.
+# 근거: 02_지표 분류.md(배속) + 04_SV파생 매핑.md §1 base 카탈로그 + 05_필드 인벤토리.md.
+# 지표번호 없는 컬럼(overview base·키·감사·수기·전환수 등)은 공란.
+# 정본 추적 장표: 30_output_share/05_지표GOLD매핑.md (생성기 scripts/gen_metric_gold_mapping.py).
+METRIC_NO = {
+    # ── measure (물리 base)
+    "DEV_CNT": "공4·5·149", "DEV_MEMBERS": "공148", "DEV_CNT/STOP_CNT": "공149·35",
+    "STOP_CNT": "공35", "UNPAID_CNT": "공36", "ACTIVE_MEMBERS": "공156",
+    "DECREASE_CNT": "공38", "CHURN_CNT": "신20", "INCREASE_MEMBERS": "공150",
+    "REGULAR_FEE": "공66", "PAID_FEE": "공69·70", "BILLED_AMT": "공71",
+    "SEND_MEMBERS": "공85", "SUCCESS_MEMBERS": "공86", "FAIL_MEMBERS": "공87",
+    "LETTER_PART_MEMBERS": "공88", "GIFT_PART_AMT": "공91",
+    "D5_LETTER_PART_MEMBERS": "공139", "D5_INCREASE_PART_MEMBERS": "공143",
+    "AD_COST": "공6", "IMPRESSIONS": "공23", "CLICKS": "공24", "INBOUND_CALL": "공25",
+    "SESSION_CNT": "공97", "SCROLL_DEPTH": "공107",
+    "ANNUAL_GOAL_CNT": "공152", "SUPP_GOAL_CNT": "공153",
+    "ANNUAL_CUM_GOAL_CNT": "공154", "SUPP_CUM_GOAL_CNT": "공155",
+    # ── dimension (차원 속성)
+    "CAMPAIGN_BRAND": "공117", "CAMPAIGN_NAME": "공18·120", "DEV_TYPE": "공121",
+    "DEVICE_TYPE": "공14", "MEMBER_GENDER": "공130", "MEMBER_REGION": "공131",
+    "MEMBER_STATUS": "공132", "PAYMENT_METHOD": "공125", "REDONATE_FLAG": "공34",
+    "SEND_TITLE": "공136", "SEND_STATUS": "공138", "SPONSORSHIP_NAME": "공123·124",
+    "STOP_REASON": "공162", "ORG_NM": "공114·115·116", "ORG_NM(계층)": "공114·115·116",
+    "PAGE_PATH": "공105·106", "UTM_SOURCE/MEDIUM": "공109", "MEMBER_DK": "공110",
+    "IDENTITY(회원귀속)": "공112",
+}
+
+
+def mno(col):
+    return METRIC_NO.get(col, "")
+
+
+def validate_metric_no():
+    """[정합성 검증 · 저비용] 하드코딩 METRIC_NO ↔ 정본(05_필드 인벤토리.md) 파싱값 대조.
+    같은 사실이 두 곳(이 dict / 정본 문서)에 존재해 drift 위험이 있으므로 재실행마다 경고를 남긴다.
+    산출물 내용은 바꾸지 않는다(경고 전용) — 결합 위험 없이 어긋남만 조기 탐지.
+    정본 파서 부재/실패 시 조용히 skip."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "gmg", os.path.join(os.path.dirname(os.path.realpath(__file__)), "gen_metric_gold_mapping.py"))
+        gmg = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gmg)
+        _, entries = gmg.load_gold_inventory()
+    except Exception as e:                                  # noqa: BLE001
+        print(f"  [정합성검증] skip — 정본 파서 로드 실패: {e}")
+        return
+    canon = {}                       # GOLD 컬럼 → 정본 지표#
+    for e in entries:
+        if e["col"] and e["mno"]:
+            canon.setdefault(e["col"], e["mno"].replace(" ", "·"))
+    mismatch, superset, only_hard, ok = [], [], [], 0
+    for col, hard in METRIC_NO.items():
+        c = canon.get(col)
+        if c is None:
+            only_hard.append(col)
+            continue
+        h_set = set(re.findall(r"[공신]\d+", hard))
+        c_set = set(re.findall(r"[공신]\d+", c))
+        if h_set == c_set:
+            ok += 1
+        elif h_set and h_set < c_set:
+            # 정본 설명에 이 컬럼을 '소비하는' 파생지표 참조가 함께 적힌 경우
+            # (예: CLICKS '클릭수(#24). CTR 분자 공#9' → #9는 CLICKS 자체의 번호가 아님)
+            superset.append((col, hard, c))
+        else:
+            mismatch.append((col, hard, c))
+    print(f"  [정합성검증] METRIC_NO {len(METRIC_NO)}건: 정본일치 {ok} · 불일치 {len(mismatch)}"
+          f" · 정본초과(파생참조 추정) {len(superset)} · 정본미존재 {len(only_hard)}")
+    for col, hard, c in mismatch:
+        print(f"    ⚠️ 불일치 {col}: 하드코딩='{hard}' vs 정본='{c}' → 정본 확인 후 수정")
+    for col, hard, c in superset:
+        print(f"    ℹ️ 정본초과 {col}: '{c}' ⊃ '{hard}' — 파생지표 참조 포함 추정(정상). 실제 상충 시 수동 확인")
+    if only_hard:
+        print(f"    ℹ️ 정본에 지표# 없음: {', '.join(sorted(only_hard))}")
+        print(f"       (대부분 WIDE 뷰 개명 컬럼 — 예: ORG_NM←CORP/DIVISION/DEPARTMENT, MEMBER_GENDER←GENDER. 수기 유지 필요)")
+
+
 
 ROWS = [
     # ─────────────────────────── WIDE_MEMBER_MONTHLY ───────────────────────────
@@ -252,7 +331,8 @@ def write_csv():
         w.writerow([f"# {PROV}"])
         w.writerow([])
         w.writerow(HEADER)
-        w.writerows(ROWS)
+        for r in ROWS:
+            w.writerow([r[0], r[1], mno(r[1]), r[2], r[3], r[4], r[5], r[6]])
         w.writerow([])
         w.writerow(["# 부록: DIM/FACT 계층 매핑 (파워유저용)"])
         w.writerow(["계층", "GOLD_객체", "업무_의미", "SILVER_원천", "BRONZE_원천", "변환_규칙", "상태"])
@@ -281,6 +361,7 @@ def write_md():
     lines.append(f"> ⚙️ **생성기**: `{GEN_PATH}` — {PROV}")
     lines.append("> **읽는 법**: 현업이 조회하는 **최종 결과(GOLD/WIDE 마트)** 컬럼을 기준으로,")
     lines.append("> 그 값이 어떤 **SILVER(정제)** → **BRONZE(원천)** 컬럼에서 왔는지 역방향으로 추적합니다.")
+    lines.append("> **지표#** = 해당 컬럼에 대응하는 지표사전 번호(공N=공통·신N=신규). 지표 기준 전체 추적은 `05_지표GOLD매핑.md` 참조.")
     lines.append("> 상태: **OK** 사용가능 · **PARTIAL** 일부 대기 · **WAIT** 원천 입고 대기")
     lines.append("")
     lines.append("## 0. 업무 질문 → 어느 마트를 볼까?")
@@ -293,11 +374,11 @@ def write_md():
     for i, mart in enumerate(marts, 1):
         lines.append(f"## {i}. `{mart}`")
         lines.append("")
-        lines.append("| GOLD 컬럼 | 업무 의미 | SILVER 원천 | BRONZE 원천 | 변환 규칙 | 상태 |")
-        lines.append("|---|---|---|---|---|---|")
+        lines.append("| GOLD 컬럼 | 지표# | 업무 의미 | SILVER 원천 | BRONZE 원천 | 변환 규칙 | 상태 |")
+        lines.append("|---|---|---|---|---|---|---|")
         for r in ROWS:
             if r[0] == mart:
-                lines.append(f"| `{r[1]}` | {r[2]} | `{r[3]}` | `{r[4]}` | {r[5]} | {r[6]} |")
+                lines.append(f"| `{r[1]}` | {mno(r[1])} | {r[2]} | `{r[3]}` | `{r[4]}` | {r[5]} | {r[6]} |")
         lines.append("")
     lines.append("---")
     lines.append("")
@@ -363,13 +444,13 @@ def write_xlsx():
         ws["A1"] = title; ws["A1"].font = title_font
         head = (["계층", "GOLD 객체", "업무 의미", "SILVER 원천", "BRONZE 원천", "변환 규칙", "상태"]
                 if is_dimfact else
-                ["GOLD 컬럼", "업무 의미", "SILVER 원천(테이블.컬럼)", "BRONZE 원천(테이블.컬럼)", "변환 규칙", "상태"])
+                ["GOLD 컬럼", "지표#", "업무 의미", "SILVER 원천(테이블.컬럼)", "BRONZE 원천(테이블.컬럼)", "변환 규칙", "상태"])
         ws.append([]); ws.append(head)
         style_header(ws, 3, len(head))
         for r in rows:
-            ws.append(r if is_dimfact else r[1:])
+            ws.append(r if is_dimfact else [r[1], mno(r[1]), r[2], r[3], r[4], r[5], r[6]])
         widths = ([10, 22, 22, 30, 40, 30, 12] if is_dimfact
-                  else [26, 22, 34, 44, 34, 12])
+                  else [26, 12, 22, 34, 44, 34, 12])
         for i, wdt in enumerate(widths, 1):
             ws.column_dimensions[get_column_letter(i)].width = wdt
         st_col = len(head)
@@ -404,3 +485,4 @@ if __name__ == "__main__":
         print("XLSX:", write_xlsx())
     except ImportError:
         print("XLSX: openpyxl 미설치 — pip install 후 재실행 필요")
+    validate_metric_no()

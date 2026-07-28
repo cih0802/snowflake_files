@@ -150,7 +150,7 @@ END-METADATA -->
 | SV | FACT 행수 | Phase | 근거·게이트 |
 |---|---:|---|---|
 | SV_MEMBER_MONTHLY | 40,054,883 | **1 (즉시)** | 실적재(2026-07-22 정정: 구 37,792,336은 HAS_BILLING 부분집합). 목표대비(공1~3)의 FTG_D=7,272 ✅ / FTG_B(사업목표대비)는 **0행 → Phase 2**(문서40 E-6) |
-| SV_MEMBER_EVENT | 4,633,105 | **1 (즉시)** | 실적재. 유지율/LTV cohort는 FME 기반 산출가능(신8 LTV는 24년~ 부분) |
+| SV_MEMBER_EVENT | 4,633,105 | **1 (즉시)** | 실적재. 유지율/LTV cohort는 FME 기반 산출가능(신8 LTV는 22년~ 부분, 회비데이터 binding) |
 | SV_SERVICE | 38,470,780 | **1 (즉시)** | 실적재. 단 신32/33 GA 클릭명은 FGA 의존 → 해당 metric만 Phase 2 |
 | SV_EVENT_PARTICIPATION | 1,134,126 | **1 (즉시)** | 실적재. ⚠️ EVENT_KEY→DIM_EVENT 고아 23%(이슈 E, Unknown(0) 라우팅) → instruction에 커버리지 고지 |
 | SV_BUDGET | 24,480 | **1 (부분)** | FBD 편성/집행 ✅ / 모금성비용·광고비(E-1·E-4)·FTG_B(E-6)·캠페인 ROI(O3) = **Phase 2** |
