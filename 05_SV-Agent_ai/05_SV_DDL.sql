@@ -302,7 +302,171 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
 
 
 /* =====================================================================================
-   6. GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
+   6. SV_AD (overall Agent) — base FACT_AD_COMBINED(helper, FAP+FAD+FAB 1:1 pre-join) + DIM_DEVICE + DIM_DATE
+      선행: SERVING.FACT_AD_COMBINED helper 뷰 생성 필요 (아래 CREATE VIEW 포함)
+      활성: 광고비·노출·클릭·CTR(디지털)·CVR(디지털)·CRM개발건·개발단가(디지털)
+            인바운드콜·방송횟수·전환콜(방송) · 기기·출처유형·매체사·시간대·프로그램 차원
+      ⚠ CAMPAIGN_SK·AD_CREATIVE_SK 전건 0 → 캠페인/소재별 분해 불가(Phase-2)
+      ⚠ 디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 없이 혼합집계 시 왜곡 주의
+   ===================================================================================== */
+
+-- 6-0. helper 뷰: FAP+FAD+FAB 1:1 pre-join (세 팩트가 AD_PERF_DK로 완전분할, fan-out 0)
+--   근거: Snowflake semantic view metric은 단일 테이블 컬럼만 참조 가능 → 개발단가(AD_COST÷CRM_DEV_CNT)
+--   등 cross-satellite 비율 metric 산출을 위해 사전 조인. DIM_MEMBER_CURRENT helper 패턴 동일.
+CREATE OR REPLACE VIEW GN_DW.SERVING.FACT_AD_COMBINED AS
+SELECT
+  -- FAP core
+  fap.AD_PERF_DK,
+  fap.PERF_DATE_SK,
+  fap.CAMPAIGN_SK,
+  fap.AD_CREATIVE_SK,
+  fap.DEVICE_SK,
+  fap.AD_COST,
+  fap.IMPRESSIONS,
+  fap.CLICKS,
+  fap.INBOUND_CALL,
+  fap.GA_CONV_MEMBERS,
+  fap.GA_CONV_CNT,
+  fap.DAY_OF_WEEK,
+  fap.WEEK_OF_YEAR,
+  fap.AD_SOURCE_TYPE,
+  -- FAD (digital satellite) — NULL for broadcast rows
+  dig.PAGE_TYPE,
+  dig.AD_GROUP_NM,
+  dig.GROUP_DIV,
+  dig.CREATIVE_TYPE,
+  dig.AD_TYPE_NM,
+  dig.READ_CNT,
+  dig.MEDIA_POTENTIAL_CUST_CNT,
+  dig.CRM_DEV_CNT,
+  dig.CTR_SRC,
+  dig.CVR_SRC,
+  dig.CPC_SRC,
+  dig.CPM_SRC,
+  dig.CPA_SRC,
+  dig.DEV_UNIT_PRICE_SRC,
+  dig.VTR_SRC,
+  -- FAB (broadcast satellite) — NULL for digital rows
+  brc.TIME_BAND,
+  brc.CM_POSITION,
+  brc.RT_TYPE,
+  brc.PROGRAM_NM,
+  brc.CHANNEL_COMPANY,
+  brc.CHANNEL_COMPANY_TYPE,
+  brc.SPOT_TYPE,
+  brc.DURATION_SEC,
+  brc.DAY_DIV,
+  brc.BRDC_DIV,
+  brc.CTV_DIV,
+  brc.AD_CNT,
+  brc.CONV_CALL_CNT,
+  brc.DVLP_MEMBER_CNT,
+  brc.DVLP_CNT,
+  brc.AD_VIEW_RT_SRC  AS BRDC_AD_VIEW_RT_SRC,
+  brc.CPC_SRC         AS BRDC_CPC_SRC
+FROM GN_DW.GOLD.FACT_AD_PERFORMANCE fap
+LEFT JOIN GN_DW.GOLD.FACT_AD_DIGITAL dig ON fap.AD_PERF_DK = dig.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.FACT_AD_BROADCAST brc ON fap.AD_PERF_DK = brc.AD_PERF_DK;
+
+-- helper 뷰 GRANT (소비 역할이 SV를 통해 간접 접근)
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_SERVICE;
+
+-- 6-1. SV_AD 본체
+CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
+  TABLES (
+    ad AS GN_DW.SERVING.FACT_AD_COMBINED
+      PRIMARY KEY (AD_PERF_DK)
+      WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
+      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join, 235,572행 유일). AD_SOURCE_TYPE으로 디지털/방송 구분.',
+    device AS GN_DW.GOLD.DIM_DEVICE
+      PRIMARY KEY (DEVICE_SK)
+      WITH SYNONYMS ('기기', '디바이스', '매체기기')
+      COMMENT = '기기(디바이스) 차원.',
+    date AS GN_DW.GOLD.DIM_DATE
+      PRIMARY KEY (DATE_SK)
+      WITH SYNONYMS ('날짜', '실적일')
+      COMMENT = '일 차원.'
+  )
+  RELATIONSHIPS (
+    ad_to_date   AS ad (PERF_DATE_SK) REFERENCES date (DATE_SK),
+    ad_to_device AS ad (DEVICE_SK)    REFERENCES device
+  )
+  DIMENSIONS (
+    -- 시간
+    date.PERF_DATE    AS date.FULL_DATE  WITH SYNONYMS ('실적일', '광고일', '일자') COMMENT = '광고 실적 발생일',
+    date.CAL_YEAR     AS date.YEAR       WITH SYNONYMS ('연도', '년')   COMMENT = '연도',
+    date.CAL_MONTH    AS date.MONTH      WITH SYNONYMS ('월')          COMMENT = '월(1~12)',
+    date.CAL_QUARTER  AS date.QUARTER    WITH SYNONYMS ('분기')        COMMENT = '분기(1~4)',
+    -- 코어 차원
+    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형(DIGITAL/VIDEO/REBROADCAST). 디지털/방송 measure 필터 필수.',
+    ad.DAY_OF_WEEK    AS ad.DAY_OF_WEEK    WITH SYNONYMS ('요일')   COMMENT = '요일',
+    ad.WEEK_OF_YEAR   AS ad.WEEK_OF_YEAR   WITH SYNONYMS ('주차')   COMMENT = '연중 주차',
+    -- 기기
+    device.DEVICE_TYPE       AS device.DEVICE_TYPE       WITH SYNONYMS ('기기유형', '디바이스유형', '모바일', 'PC') COMMENT = '기기 유형. 실제 코드값 4종: ''M''=모바일(GA4 mobile/tablet 통합) · ''PC''=데스크톱 · ''(해당없음)''=방송광고(기기 개념 없음) · ''(unknown)''=매핑 실패 센티넬. ⚠필터 시 ''MOBILE''/''TABLET'' 아님 — 모바일은 ''M''.',
+    device.DEVICE_SCOPE_DESC AS device.DEVICE_SCOPE_DESC WITH SYNONYMS ('기기범위') COMMENT = '기기 범위 설명(예: 모바일(GA4 device.category=mobile/tablet)).',
+    -- 디지털 전용 차원
+    ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용.',
+    ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용(39% 채움).',
+    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용.',
+    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용.',
+    -- 방송 전용 차원
+    ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사') COMMENT = '방송 채널사(61종). VIDEO/REBROADCAST 전용.',
+    ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대(24종). 방송 전용.',
+    ad.PROGRAM_NM      AS ad.PROGRAM_NM      WITH SYNONYMS ('프로그램', '프로그램명', '방송프로그램') COMMENT = '방송 프로그램명(1,837종, 94% 채움). 방송 전용.',
+    ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용.',
+    ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서') COMMENT = 'CM 내 위치(16종). 방송 전용.',
+    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. 방송 전용.'
+  )
+  METRICS (
+    -- 공통 measure
+    ad.TOTAL_AD_COST   AS SUM(ad.AD_COST)
+      WITH SYNONYMS ('광고비', '광고비 총액', '매체비') COMMENT = '광고비 합계(원). F(가산). 디지털+방송 합산 가능. 총 514.4억원.',
+    ad.TOTAL_IMPRESSIONS AS SUM(ad.IMPRESSIONS)
+      WITH SYNONYMS ('노출수', '노출', '임프레션') COMMENT = '노출수 합계. F(가산). 디지털 전용(방송은 NULL).',
+    ad.TOTAL_CLICKS AS SUM(ad.CLICKS)
+      WITH SYNONYMS ('클릭수', '클릭') COMMENT = '클릭수 합계. F(가산). 디지털 전용(방송은 NULL).',
+    ad.TOTAL_INBOUND_CALL AS SUM(ad.INBOUND_CALL)
+      WITH SYNONYMS ('인바운드콜', '전화문의', '콜수') COMMENT = '인바운드 전화 건수 합계. F(가산). 방송 전용(디지털은 NULL).',
+    ad.TOTAL_GA_CONV_MEMBERS AS SUM(ad.GA_CONV_MEMBERS)
+      WITH SYNONYMS ('GA전환회원', '전환회원수') COMMENT = 'GA 전환 회원수 합계. F(가산). 디지털 전용.',
+    ad.CTR AS SUM(ad.CLICKS) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100
+      WITH SYNONYMS ('클릭률', 'CTR') COMMENT = '공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용. 실측 2024 0.199% / 2025 0.286% / 2026 0.345%.',
+    ad.CVR AS SUM(ad.GA_CONV_MEMBERS) / NULLIF(SUM(ad.CLICKS), 0) * 100
+      WITH SYNONYMS ('전환율', 'CVR') COMMENT = '공10 CVR(%) = GA전환회원 ÷ 클릭수 ×100. 비율(N). 디지털 전용.',
+    -- 디지털 전용 measure
+    ad.TOTAL_CRM_DEV_CNT AS SUM(ad.CRM_DEV_CNT)
+      WITH SYNONYMS ('CRM개발건', 'CRM 개발건수', '디지털개발건') COMMENT = 'CRM 개발건수 합계(디지털). F(가산). 총 249,390. 소수값 포함(189,252행 중 24,614행 비정수 — 기여도 배분 추정) → 정수 단정 금지. 적재범위 2024-01~2026-05(2026-06부터 원천이 개발건수 대신 단가를 제공 → 미적재).',
+    -- ⚠ 분자를 분모 적재행으로 정합(CASE WHEN) — 미적재행 광고비를 분자에 넣으면 단가가 과대계상된다.
+    --   미정합 시 2026 단가 125,482원(오) vs 정합 103,066원(정) — 2026-06 광고비가 분모 없이 분자에만 들어간 탓.
+    ad.DEV_UNIT_PRICE AS SUM(CASE WHEN ad.CRM_DEV_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.CRM_DEV_CNT), 0)
+      WITH SYNONYMS ('개발단가', 'CPA', '건당 광고비') COMMENT = '공7 디지털 개발단가(원) = 광고비 ÷ CRM개발건. 비율(N). DIGITAL 전용. 분자를 개발건수 적재행으로 정합(미적재행 광고비 제외) → 2026-06 이후는 산출 불가(NULL). 실측 2024 131,367원 / 2025 110,335원 / 2026(1~5월) 103,066원.',
+    ad.TOTAL_READ_CNT AS SUM(ad.READ_CNT)
+      WITH SYNONYMS ('조회수', '열람수', '읽기수') COMMENT = '콘텐츠 조회수 합계(디지털). F(가산). 총 8.17M.',
+    ad.TOTAL_MEDIA_POTENTIAL AS SUM(ad.MEDIA_POTENTIAL_CUST_CNT)
+      WITH SYNONYMS ('매체잠재고객수', '잠재고객') COMMENT = '매체 잠재고객수 합계(디지털). F(가산).',
+    -- 방송 전용 measure
+    ad.TOTAL_AD_CNT AS SUM(ad.AD_CNT)
+      WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). 총 36,712. VIDEO/REBROADCAST 전용.',
+    ad.TOTAL_CONV_CALL_CNT AS SUM(ad.CONV_CALL_CNT)
+      WITH SYNONYMS ('전환콜', '전환전화건') COMMENT = '방송 전환 전화 건수 합계. F(가산). 총 49,093. 방송 전용.',
+    ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
+      WITH SYNONYMS ('방송개발건', '방송 개발회원건수') COMMENT = '방송 개발건수 합계. F(가산). 총 96,321. 방송 전용. ⚠커버리지 5.2%(37,886행 중 1,982행만 적재) → 방송 전체 개발 규모로 해석 금지, 적재된 편성분 부분합.',
+    ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
+      WITH SYNONYMS ('방송개발회원', '방송 개발회원수') COMMENT = '방송 개발회원수 합계. F(가산). 방송 전용. ⚠커버리지 5.2% — 부분합.'
+    -- ❌ BRDC_DEV_UNIT_PRICE(방송 개발단가, 공8) 미노출 — 2026-07-28 실측 후 제거 결정.
+    --    분모 DVLP_CNT 커버리지 5.2%인데 분자 AD_COST는 100% → 정합 전 223,466원 vs 정합 후 157,969원
+    --    = **41% 과대계상**. 분자를 CASE로 정합해도 방송 광고비의 29%만 반영되어 "방송 개발단가"라는
+    --    이름이 실제 커버리지를 오인시킨다 → Phase-2(DVLP_CNT 적재 확대 후) 재검토.
+    --    선례: SV_MEMBER_EVENT.AVG_RETENTION_MONTHS 도 동일 사유로 제거 후 재배포(01 진행상태표 #3).
+  )
+  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper, 235,572행). 활성: 광고비(514.4억)·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수·전환콜·방송개발건 [방송]. 기간: 디지털 2024-01 - 2026-06, 방송 2023-01 - 2026-07. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(FK=0, Phase-2). ⚠개발단가는 2026-06 이후 산출 불가(원천이 개발건수 대신 단가 제공). ⚠방송개발건 커버리지 5.2%(부분합). 방송 개발단가는 분모 커버리지 부족(5.2%)으로 41% 왜곡되어 미노출(Phase-2).'
+  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수·전환콜·방송개발건은 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가는 2026-06 이후 원천 미적재로 NULL이다. 개발단가를 최신월 기준으로 묻는 질문에는 산출 가능한 최신월(2026-05)까지로 기간을 한정하고, 2026-06 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 방송 개발건수는 커버리지 5.2%의 부분합이므로 방송 전체 개발 규모로 단정하지 말고 부분 집계임을 명시한다.';
+
+
+/* =====================================================================================
+   7. GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST가 VIEWER를 상속(계층)하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
       ⚠ CREATE OR REPLACE는 기존 GRANT를 전부 삭제(OWNERSHIP만 잔존)한다 → **단일 SV 재배포 시 해당 SV의
         GRANT 3줄을 반드시 재실행**. (2026-07-22 SV_MEMBER_EVENT 재배포 시 grant 소실 실측·재부여 확인.)
@@ -322,6 +486,9 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION T
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET              TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET              TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET              TO ROLE GN_DW_SERVICE;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD                  TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD                  TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD                  TO ROLE GN_DW_SERVICE;
 
 /*
 =====================================================================================
@@ -343,7 +510,19 @@ SELECT * FROM SEMANTIC_VIEW(
   METRICS TOTAL_DEV_CNT
 ) ORDER BY 1;
 
--- (7-4) 확인: SHOW SEMANTIC VIEWS
+-- (7-4) SV_AD 광고비 총액 == FAP 직접 SUM (위성 조인 fan-out 0)
+SELECT (SELECT TOTAL_AD_COST FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS TOTAL_AD_COST)) AS sv_val,
+       (SELECT SUM(AD_COST) FROM GN_DW.GOLD.FACT_AD_PERFORMANCE)                            AS fact_val;
+
+-- (7-5) SV_AD 디지털 CTR 스모크
+SELECT * FROM SEMANTIC_VIEW(
+  GN_DW.SERVING.SV_AD
+  DIMENSIONS date.CAL_YEAR
+  METRICS TOTAL_AD_COST, CTR
+  FILTER fap.AD_SOURCE_TYPE = 'DIGITAL'
+) ORDER BY 1;
+
+-- (7-6) 확인: SHOW SEMANTIC VIEWS
 SHOW SEMANTIC VIEWS IN SCHEMA GN_DW.SERVING;
 =====================================================================================
 */

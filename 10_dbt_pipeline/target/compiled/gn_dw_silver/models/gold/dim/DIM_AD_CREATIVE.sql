@@ -25,7 +25,7 @@ select
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'dc4646cc-51ff-4f7e-bfc7-e9f018c89a5e'                    AS DW_BATCH_ID
+    '8892b58a-55ca-4860-92ec-fb71fa7ce65a'                    AS DW_BATCH_ID
 from s
 
 union all
@@ -34,4 +34,4 @@ select 0, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'dc4646cc-51ff-4f7e-bfc7-e9f018c89a5e'                    AS DW_BATCH_ID
+    '8892b58a-55ca-4860-92ec-fb71fa7ce65a'                    AS DW_BATCH_ID

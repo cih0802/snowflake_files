@@ -103,7 +103,7 @@ END-METADATA -->
 
 ---
 
-## 1. SV 구조 (best practice — 최종 7 SV / 3 Agent · **Phase-1 배포 = 5 SV / 2 Agent**)
+## 1. SV 구조 (best practice — 최종 7 SV / 3 Agent · **Phase-1 배포 = 6 SV / 2 Agent**)
 
 > 원칙 3: **SV = FACT grain + conformed DIM(3~6 테이블)**. 목표 FACT(FTG_D·FTG_B)는 독립 SV가 아니라 소비 SV에 conformed 폴딩. 각 SV의 metric 전수 배속은 **1단계 산출물**(`03_SV_metric_배속.md` 재작성)에서 잠근다 — 아래 표의 metric 수는 잠정.
 
@@ -115,7 +115,7 @@ END-METADATA -->
 | `SV_MEMBER_EVENT` | **FME** 일×회원×상태전이 | — | 회원 | ✅ 4.6M | §3-1 유지기간·LTV(신2~8)·주간/일 중단(공58)·cohort base |
 | `SV_SERVICE` | **FSE** 일×회원×서비스×캠페인 | +FMM(코호트 조인)·+FGA(신32 cross 조건부) | 회원 | ✅ 38.5M | §7 서비스효과(신30~53) |
 | `SV_EVENT_PARTICIPATION` | **FEP** 일×회원×행사 | — | 회원 | ✅ 1.1M | 행사 참여(O11 총참여수 등 base 집계) |
-| `SV_AD` | **FAD** 일×캠페인×소재 | +FMM(개발단가 연계) | 마케팅 | ⚠️ 235K **스캐폴드**(measure/날짜만·차원FK=0) | §3 광고 CTR/개발단가(공7~10) |
+| `SV_AD` | **FAD** 일×캠페인×소재 | +FMM(개발단가 연계) | 마케팅 | ✅ **235K Phase-1 배포**(2026-07-28) — measure/축 실적재, 캠페인·소재 FK만 0 | §3 광고 CTR/개발단가(공7~10) |
 | `SV_GA` | **FGA** 일×identity×이벤트×소스 | +DIM_MEMBER_IDENTITY | 마케팅 | ⚠️ 44.9K **GA4 1일 샤드만** | §4 GA행동(공98·108) |
 | `SV_BUDGET` | **FBD** 월×ORG×세세목 | +FTG_B(사업목표)·+FMM(ROI 연계) | overall | ✅ 24.5K(편성/집행) · FTG_B **0행** | 예산/집행/개발단가·ROI(신9~11 보류) |
 
@@ -154,11 +154,11 @@ END-METADATA -->
 | SV_SERVICE | 38,470,780 | **1 (즉시)** | 실적재. 단 신32/33 GA 클릭명은 FGA 의존 → 해당 metric만 Phase 2 |
 | SV_EVENT_PARTICIPATION | 1,134,126 | **1 (즉시)** | 실적재. ⚠️ EVENT_KEY→DIM_EVENT 고아 23%(이슈 E, Unknown(0) 라우팅) → instruction에 커버리지 고지 |
 | SV_BUDGET | 24,480 | **1 (부분)** | FBD 편성/집행 ✅ / 모금성비용·광고비(E-1·E-4)·FTG_B(E-6)·캠페인 ROI(O3) = **Phase 2** |
-| SV_AD | 235,572 | **2 (보류)** | FAD **스캐폴드**(measure/날짜만·CAMPAIGN/CREATIVE/DEVICE FK=0). CTR(공9)은 부분 가능하나 개발단가(공7·8)는 conform 조인 불가 → 차원FK 보강(Q10 캠페인 연결키) 후 |
+| SV_AD | 235,572 | **1 (부분)** ✅ | **2026-07-28 승격 배포**. BRONZE→GOLD 확장으로 measure·degen축 실적재 → 광고비·CTR(공9)·CVR(공10)·개발단가(공7·8) 활성. base=`SERVING.FACT_AD_COMBINED`(FAP+FAD+FAB 1:1 pre-join). 잔여 Phase-2: **캠페인/소재별 분해만**(CAMPAIGN/CREATIVE_SK=0, Q10) |
 | SV_GA | 44,905 | **2 (보류)** | FGA **GA4 1일 샤드만**(G-5 전기간 입고 대기). #98·108 placeholder. identity 4.22% → 커버리지 확정치 오인 금지 |
 
-**Phase 1 (즉시 배포 가능)**: 회원 Agent(4 SV) + overall Agent(SV_BUDGET 부분) → 현업 회원/서비스/예산 질의 대부분 커버.
-**Phase 2 (데이터 입고 후)**: 마케팅 Agent(SV_AD·SV_GA), 목표대비 사업(FTG_B), 개발단가·ROI(신9~11), GA cross metric(공81 분모·신32·33). 트리거: G-5(GA4 전기간)·E-6(CRM 사업목표)·E-1/E-4(ERP/AGENCY 비용)·Q10(캠페인 연결키).
+**Phase 1 (즉시 배포 가능)**: 회원 Agent(4 SV) + overall Agent(SV_BUDGET 부분 + **SV_AD**) → 현업 회원/서비스/예산/광고 질의 대부분 커버.
+**Phase 2 (데이터 입고 후)**: SV_GA(+마케팅 Agent), 목표대비 사업(FTG_B), 예산기반 ROI(신9~11), GA cross metric(공81 분모·신32·33), 광고 캠페인/소재별 분해. 트리거: G-5(GA4 전기간)·E-6(CRM 사업목표)·E-1/E-4(ERP/AGENCY 비용)·Q10(캠페인 연결키).
 
 ---
 
@@ -247,6 +247,7 @@ END-METADATA -->
 | 6 | `10_SI연결_검증.md` | ✅ 배포·연결 완료 / 🔄 스모크 대기 (2026-07-22) — CoCo 대행배포: 2 Agent `cortex_agent_save`(GN_DW.SERVING) → **소유권 GN_DW_ADMIN 이전**(생성 시 ACCOUNTADMIN → GRANT OWNERSHIP COPY CURRENT GRANTS) → USAGE grant(ANALYST/VIEWER/SERVICE) → **CoWork SI object `ADD AGENT`**(2행 등록 확인). 실행로그=`09_AGENT_spec_구현.sql`. **스모크**: `cortex_agent_query`(DATA_AGENT_RUN API)가 **트라이얼 계정 차단** → CoWork UI(ai.snowflake.com)에서 10 §3 문항 수동 검증 필요 |
 | 7 | `11_거버넌스_운영.md` | ✅ 완료 (2026-07-22) — 08_mornitoring 근거로 GN_DW 맞춤 거버넌스: 과금 매핑(CORTEX_AGENTS·AI_SERVICES·SNOWFLAKE_INTELLIGENCE·WH), 사용량 정본뷰(중복합산 금지), Budget(소프트)·Per-user quota/RBAC(하드)·Alert(2h), **품질 폐루프**(오답→instruction/VQR 재배포), 거버넌스 체크리스트, 트라이얼 제약·paid 이관표 |
 | 8 | `00_README.md` 갱신·인계 | ⬜ 대기 |
+| **9** | **SV_AD 확장 (파이프라인 확장 반영)** | 🔄 **문서완료·배포 부분** (2026-07-28) — BRONZE→GOLD AGENCY 광고 확장 검토 후 **SV_AD 신설**. ① `SERVING.FACT_AD_COMBINED` helper 뷰(FAP+FAD+FAB 1:1 pre-join) + `SV_AD`(dim 20·metric 16) **CREATE 완료**, fan-out 스모크 **PASS**(광고비 51,439,193,917.80 SV=FACT 일치), CTR/개발단가 산출 확인. ② 문서 정합: `05`(§6 DDL)·`09`(analyst_ad)·`04`(§6 전면 재작성)·`03`(§5 P2→P1·§8.3/8.4 집계·§6-G/H/I)·`08`(§0/§1/§3.2)·`01`(본표). ③ **잔여 사용자 실행**: `13_SV_AD_배포_추가작업.sql` (소유권 이전 2건 + AGENT_OVERALL 재배포 + USAGE 재부여 + SI 재확인) |
 
 > 상태: ⬜ 대기 / 🔄 진행 / ✅ 완료 / ⛔ 보류(사유). Phase 2 항목은 데이터 입고 트리거 충족 시 착수.
 > **파일 넘버링 규칙**: 폴더 내 2자리 순차 접두사(`00_README`·`01_작업계획`·`02_`=step0 ··· `10_`=step7). 단계번호≠파일번호(파일=00부터 문서순). 레거시는 `_archive/`.

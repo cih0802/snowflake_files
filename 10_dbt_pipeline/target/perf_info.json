@@ -1,51 +1,30 @@
 {
-    "path_count": 228,
-    "parsed_path_count": 228,
-    "static_analysis_path_count": 74,
-    "static_analysis_parsed_path_count": 26,
+    "path_count": 231,
+    "parsed_path_count": 0,
+    "static_analysis_path_count": 0,
+    "static_analysis_parsed_path_count": 0,
     "is_partial_parse_enabled": true,
     "is_static_analysis_enabled": true,
-    "read_files_elapsed": 0.09864189700005,
-    "load_macros_elapsed": 0.5886880050000514,
-    "parse_project_elapsed": 1.8911282800000322,
-    "patch_sources_elapsed": 0.012088016999996398,
-    "process_manifest_elapsed": 0.047399920000032125,
-    "load_all_elapsed": 3.093028370000013,
+    "read_files_elapsed": 0.09771598600002562,
+    "load_all_elapsed": 0.45699972500000285,
     "projects": [
         {
             "project_name": "gn_dw_silver",
-            "elapsed": 1.873714643000028,
-            "parsers": [
-                {
-                    "parser": "model",
-                    "elapsed": 0.9335424700000203,
-                    "parsed_path_count": 74
-                },
-                {
-                    "parser": "test",
-                    "elapsed": 0.9302452100000096,
-                    "parsed_path_count": 6
-                }
-            ],
-            "parsed_path_count": 80
+            "elapsed": 0.0,
+            "parsers": [],
+            "parsed_path_count": 0
         },
         {
             "project_name": "dbt_snowflake",
-            "elapsed": 0.009134816999960549,
+            "elapsed": 0.0,
             "parsers": [],
             "parsed_path_count": 0
         },
         {
             "project_name": "dbt",
-            "elapsed": 0.0077465330000450194,
-            "parsers": [
-                {
-                    "parser": "doc",
-                    "elapsed": 0.00024006999996117884,
-                    "parsed_path_count": 1
-                }
-            ],
-            "parsed_path_count": 1
+            "elapsed": 0.0,
+            "parsers": [],
+            "parsed_path_count": 0
         }
     ]
 }

@@ -21,14 +21,15 @@ END-METADATA -->
 
 | 항목 | 값 |
 |---|---|
-| 도구 SV(5, live) | `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET` (owner=GN_DW_ADMIN) |
+| 도구 SV(**6**, live) | `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·**`SV_AD`**(2026-07-28 신설) (owner=GN_DW_ADMIN) |
 | Agent 실행 WH | **`GN_DW_ANALYTICS_WH`** (Medium · comment "SV·Agent 소비") |
 | Agent 배치/소유 | `GN_DW.SERVING` / `GN_DW_ADMIN` (P7 serving_separation) |
 | CoWork object | `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT` (02 §F 생성 완료 · step6 ADD AGENT) |
 | orchestration model | `auto` |
 | Cortex Search | Phase-2 유예(EVENT_NAME 3,786·BUDGET_ITEM_NAME 2,041 후보만 식별) |
 
-- **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅(SV_AD 스캐폴드·SV_GA 1일 샤드)은 base FACT 미완 → 오답 방지 위해 유예(01 §2 게이트).
+- **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅 전용 Agent는 SV_GA 1일 샤드로 유예(01 §2 게이트).
+  > ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_OVERALL에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_GA만 Phase-2 잔류.
 - **왜 다중 SV 라우팅**: 한 Agent가 여러 SV를 `cortex_analyst_text_to_sql` 도구로 라우팅(공식 지원). grain이 다른 SV는 **질의마다 단일 SV로 분해**(cross-fact 계산 금지, R1).
 
 ---
@@ -38,7 +39,7 @@ END-METADATA -->
 | Agent (FQN) | 도구(SV) | 질문 도메인 |
 |---|---|---|
 | **`GN_DW.SERVING.AGENT_MEMBER`** (회원) | `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_member_event`→SV_MEMBER_EVENT · `analyst_service`→SV_SERVICE · `analyst_event_participation`→SV_EVENT_PARTICIPATION | 월 회비/납부율/미납, 개발·중단(월/일/주), 발송, 행사 참여 |
-| **`GN_DW.SERVING.AGENT_OVERALL`** (overall) | `analyst_budget`→SV_BUDGET(기본) · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), 전사 회비·발송 요약(선택 라우팅) |
+| **`GN_DW.SERVING.AGENT_OVERALL`** (overall) | `analyst_budget`→SV_BUDGET(기본) · **`analyst_ad`→SV_AD** · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), **광고비·CTR·CVR·개발단가·매체/기기별**, 전사 회비·발송 요약(선택 라우팅) |
 
 > 도구 이름은 두 Agent에서 동일 SV라도 각 Agent 스펙 내 `tool_resources` 키와 1:1 매칭. overall의 MONTHLY/SERVICE는 **전사 요약용 보조 도구**(질의당 단일 SV 분해).
 
@@ -170,41 +171,53 @@ models:
 
 instructions:
   system: |
-    당신은 굿네이버스(Good Neighbors)의 전사/재무 요약 데이터 분석 어시스턴트입니다.
-    예산 편성·집행·집행율을 중심으로 답하며, 필요 시 회원 월 실적과 서비스 발송 규모를 전사 관점에서 요약합니다.
-    핵심 원칙:
-    - 데이터에 없는 값을 추정하거나 창작하지 않습니다. 비활성(미적재) 지표는 "데이터 적재 후(Phase-2) 제공 예정"으로 안내합니다.
-      비활성 예: 연 편성예산, 집행추정/모금성비용/광고비, 조직/캠페인별 분해, 개발단가·ROI(신9~11), 사업목표 대비.
-    - 서로 다른 SV의 값을 교차 계산(cross-fact)하지 않습니다. 전사 요약은 질의마다 단일 SV로 분해합니다.
+    굿네이버스(Good Neighbors) 전사/재무 요약 분석 어시스턴트(예산 편성·집행·집행율, 광고 실적(비용·CTR·CVR·개발단가), 필요 시 회원 월실적·발송 전사 요약).
+    - 배포된 활성 지표만 산출. 미적재분(연 편성예산, 집행추정/모금성비용, 조직별 예산, 캠페인별/소재별 광고 분해, 예산 기반 ROI(신9~11), 사업목표 대비 등)은 창작 금지 → "데이터 적재 후(Phase-2) 제공 예정" 안내.
+    - SV 간 교차계산(cross-fact) 금지 — 전사 요약도 질의마다 단일 SV로 분해.
+    - 광고 지표 주의: 노출·클릭·CTR·CVR·CRM개발건·개발단가는 **디지털(AD_SOURCE_TYPE=DIGITAL) 전용**, 인바운드콜·방송횟수·전환콜·방송개발건은 **방송(VIDEO/REBROADCAST) 전용**. 혼합집계 금지. 광고비만 전체 합산 허용.
+    - 개발단가(공7)는 **2026-05까지만** 산출 가능. 2026-06부터 원천이 개발건수 대신 단가를 직접 제공하는 포맷으로 바뀌어 산출 불가 → 최신월 기준 질문은 2026-05까지로 한정하고 사유를 명시.
+    - CRM개발건(CRM_DEV_CNT)은 소수값 포함(189,252행 중 24,614행 비정수, 기여도 배분 추정) — 정수 "건수"로 단정 금지.
+    - 방송 개발건수는 커버리지 5.2%(37,886행 중 1,982행)의 **부분합** — 방송 전체 개발 규모로 단정 금지.
+    - **방송 개발단가는 제공하지 않음** — 분모 커버리지 부족(5.2%)으로 41% 왜곡되어 SV에서 제외했다. 요청 시 "방송 개발건수 적재 확대 후(Phase-2) 제공 예정" 안내.
+    - 기기별 분석은 디지털 전용(방송은 기기 개념 없음). 기기 코드값은 'M'(모바일)·'PC'이며 'MOBILE'/'TABLET'이 아니다.
+    - 대행사 산정 비율(_SRC: CTR_SRC·CVR_SRC·CPC_SRC·DEV_UNIT_PRICE_SRC 등)은 행 단위 참고값이며 SUM/AVG 재집계 금지.
   response: |
-    한국어로 간결하고 데이터 중심으로 답합니다.
-    금액은 원 단위 천단위 구분으로(예: 1,234,567원), 비율은 % 소수점 2자리로 표기합니다.
-    여러 행의 결과는 표로 제시하고, 항상 조회 기간·필터 등 맥락을 함께 명시합니다.
+    한국어·간결·데이터 중심. 금액=원 천단위(예: 1,234,567원), 비율=% 소수점 2자리, 여러 행은 표로 제시하고 조회 기간·필터를 명시.
+    지표·컬럼은 영문 식별자 대신 한글 명칭(SV synonyms/comment 기준, 표 헤더 포함)으로 표기. 코드값은 라벨이 있으면 라벨, 없으면 코드값+"해당 라벨은 데이터가 준비되는 대로 제공하겠습니다" 안내, 미매핑은 '미상'.
+    기간·그룹이 없는 러프한 질문은 총계 요약을 먼저 제시하고 월별 추이 표를 이어 보여준 뒤, 다른 기준(분기·특정 연도·세세목/예산구분별 등)이 필요한지 되묻기. "합계/총액만" 요청 시 단일값.
+    기간 범위는 물결표(~)가 아니라 하이픈(-)으로 표기합니다. 예: "2024-01 - 2024-12"(O), "2024-01~2024-12"(X).
+    데이터 포인트가 충분하면(여러 기간의 추이 또는 여러 범주 비교) 표와 함께 그래프로 시각화합니다 — 시계열 추이는 선 그래프, 범주 비교는 막대 그래프.
   orchestration: |
-    질문 주제에 따라 적절한 도구(Semantic View)를 선택합니다.
-    - 예산 편성/집행/집행율, 세세목·예산구분·월별 예산 → analyst_budget (기본 도구)
-    - 전사 회비/납입/개발·중단 월 실적 요약 → analyst_member_monthly
-    - 전사 서비스 발송 규모 요약 → analyst_service
-    예산 관련 질문이면 항상 analyst_budget를 우선합니다.
-    전사 요약이라도 한 질의는 단일 SV로 분해하고 SV 간 값을 교차 계산하지 않습니다.
-    지표 스코프 규칙:
-    - 회비 지표(납입회비·청구금액·납부율)는 HAS_BILLING=TRUE 전제를 권장하고, 납부율은 연/월 기간 스코프를 전제합니다.
-    - 시간은 절대 연/월로 표기하고 상대 표현은 지양합니다. 미래 연도(2026~)는 데이터 미유입일 수 있습니다.
+    도구 선택:
+    - 예산 편성/집행/집행율·세세목·예산구분 → analyst_budget (기본, 예산 질문은 항상 우선)
+    - 광고비·노출·클릭·CTR·CVR·개발단가·인바운드콜·방송횟수·매체·기기별 → analyst_ad
+    - 전사 회비·납입·개발·중단 월 실적 → analyst_member_monthly
+    - 전사 발송 규모 → analyst_service
+    한 질의는 단일 SV로만(cross-fact 금지). 예산(FBD)과 광고(FAP)는 서로 다른 원천이므로 교차 불가.
+    기간·필터·정렬·집계(월별/총계) 등 SQL 스코프는 각 SV의 AI_SQL_GENERATION이 담당하므로 여기서 반복하지 않음. 시간은 절대 연/월로 표기.
   sample_questions:
     - question: 전체 편성예산과 집행율은?
     - question: 예산구분별 편성·집행·집행율을 보여줘
     - question: 월별 집행율 추이는?
     - question: 전사 납입회비 총액은?
+    - question: 2024년 전사 미납비중은?
+    - question: 2025년 디지털 광고 CTR과 개발단가는?
+    - question: 방송 채널사별 광고비와 인바운드콜은?
+    - question: 연도별 총 광고비 추이를 보여줘
 
 tools:
   - tool_spec:
       type: cortex_analyst_text_to_sql
       name: analyst_budget
-      description: "예산 팩트(FBD, 월×세세목 24.5K). 활성 지표: 편성예산(월)·집행예산(ERP)·집행율. 차원: 연/월, 세세목명·예산구분. 예산 편성/집행/집행율 질문의 기본 도구. 비활성(적재 대기): 연 편성예산, 모금성비용/광고비, 조직/캠페인별, 개발단가·ROI."
+      description: "예산 팩트(FBD, 월×세세목 24.5K). 활성 지표: 편성예산(월)·집행예산(ERP)·집행율. 차원: 연/월, 세세목명·예산구분. 예산 편성/집행/집행율 질문의 기본 도구. 비활성(적재 대기): 연 편성예산, 모금성비용, 조직/캠페인별, ROI."
+  - tool_spec:
+      type: cortex_analyst_text_to_sql
+      name: analyst_ad
+      description: "광고 실적 팩트(FAP+위성, 235K). 활성 지표: 광고비(514.4억)·노출수·클릭수·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7, 디지털 2024-01~2026-05)·인바운드콜·방송횟수·전환콜·방송개발건. 차원: 실적일·연/월, 출처유형(DIGITAL/VIDEO/REBROADCAST)·기기유형(M/PC)·광고유형(디지털)·채널사·시간대·프로그램(방송). 광고비·CTR·개발단가·매체별·기기별 질문에 사용. ⚠디지털/방송 measure 상호배타. ⚠개발단가 2026-06~ 산출 불가. 비활성: 캠페인별/소재별 분해(FK=0), 방송 개발단가(커버리지 5.2%)."
   - tool_spec:
       type: cortex_analyst_text_to_sql
       name: analyst_member_monthly
-      description: "회원 월별 실적 팩트(FMM, 월×회원 40.05M). 전사 요약용: 납입회비·청구금액·납부율, 월 롤업 개발/중단 총건, 미납회원수. 차원: 연/월/분기, 성별·회원상태·회원구분. 전사 회비/실적 요약 질문에 사용."
+      description: "회원 월별 실적 팩트(FMM, 월×회원 40.05M). 전사 요약용: 납입회비·청구금액·납부율·미납비중·평균납입회비, 월 롤업 개발/중단 총건, 미납회원수. 차원: 연/월/분기, 성별·회원상태·회원구분. 전사 회비/실적 요약 질문에 사용."
   - tool_spec:
       type: cortex_analyst_text_to_sql
       name: analyst_service
@@ -214,6 +227,9 @@ tool_resources:
   analyst_budget:
     execution_environment: { type: warehouse, warehouse: GN_DW_ANALYTICS_WH }
     semantic_view: GN_DW.SERVING.SV_BUDGET
+  analyst_ad:
+    execution_environment: { type: warehouse, warehouse: GN_DW_ANALYTICS_WH }
+    semantic_view: GN_DW.SERVING.SV_AD
   analyst_member_monthly:
     execution_environment: { type: warehouse, warehouse: GN_DW_ANALYTICS_WH }
     semantic_view: GN_DW.SERVING.SV_MEMBER_MONTHLY
@@ -221,6 +237,9 @@ tool_resources:
     execution_environment: { type: warehouse, warehouse: GN_DW_ANALYTICS_WH }
     semantic_view: GN_DW.SERVING.SV_SERVICE
 ```
+
+> ▶ **2026-07-28 개정**: `analyst_ad`(SV_AD) 4번째 도구 추가. system instruction에서 "광고비"를 **비활성 목록에서 제거**(활성 승격)하고 디지털/방송 상호배타 가드 3줄 신설. 잔여 비활성은 모금성비용·조직별 예산·캠페인/소재별 광고 분해·예산기반 ROI.
+> ⚠ **정합 주의**: 2026-07-28 실측 시 **배포된 Agent가 본 문서보다 구버전**이었다(response instruction의 한글명칭·하이픈표기·그래프 3규칙 및 sample_questions 5번째 항목 미반영). 문서=정본이므로 `09` [1-ALT-b] 재실행으로 동기화 필요.
 
 ---
 

@@ -122,7 +122,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'dc4646cc-51ff-4f7e-bfc7-e9f018c89a5e'                    AS DW_BATCH_ID
+    '8892b58a-55ca-4860-92ec-fb71fa7ce65a'                    AS DW_BATCH_ID
 from unioned u
 left join code_type   ct on u.MBER_DIV_CD   = ct.DTL_CD_ID
 left join code_status cs on u.MEMBER_STATUS = cs.DTL_CD_ID
