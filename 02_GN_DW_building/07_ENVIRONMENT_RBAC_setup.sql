@@ -111,11 +111,15 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_AGENCY WITH MANAGED ACCESS COMMENT = '�
 CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_ERP    WITH MANAGED ACCESS COMMENT = '원천 적재 — ERP 예산 실적 원장. 1테이블';
 CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_GA4    WITH MANAGED ACCESS COMMENT = '원천 적재 — GA4 웹/앱 방문. 1테이블(일 샤드)';
 -- 정제·분석·소비·운영·거버넌스
-CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 32테이블(CRM 22+GA4 5+ERP 2+AGENCY 2+bridge 1)';
-CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema 24(15 DIM+9 FACT) + 평탄화 WIDE VIEW 9';
+-- [2026-07-28 순서9-I] AGENCY 광고 팩트군 재설계(DEC-8) 반영: SILVER 32→38 · GOLD star 24→27 · WIDE 9→12
+CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 38테이블(CRM 22+GA4 5+ERP 2+AGENCY 8+bridge 1)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema 27(15 DIM+12 FACT) + 평탄화 WIDE VIEW 12. 지표 215개 귀속';
 CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치(P7). GOLD DIM/FACT cross-schema 참조';
 CREATE SCHEMA IF NOT EXISTS GN_DW.OPS      COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE)';
 CREATE SCHEMA IF NOT EXISTS GN_DW.SECURITY WITH MANAGED ACCESS COMMENT = '거버넌스 정책 격리 — 마스킹/네트워크 정책';
+-- 기존 배포본 재실행 시 COMMENT 갱신 (IF NOT EXISTS 는 기존 스키마의 COMMENT 를 덮지 않음)
+ALTER SCHEMA GN_DW.SILVER SET COMMENT = '정제/통합 레이어 — dbt 38테이블(CRM 22+GA4 5+ERP 2+AGENCY 8+bridge 1)';
+ALTER SCHEMA GN_DW.GOLD   SET COMMENT = '분석 계층 — star schema 27(15 DIM+12 FACT) + 평탄화 WIDE VIEW 12. 지표 215개 귀속';
 
 /* =====================================================================
    D. 스키마 권한 (03_GOLD_SERVING.md §3.8 schema_grants)

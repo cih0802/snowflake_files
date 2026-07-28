@@ -1,6 +1,12 @@
--- GN_DW.GOLD WIDE VIEW 9개의 뷰 컬럼 COMMENT를 ALTER VIEW로 일괄 적용하는 스크립트.
+-- GN_DW.GOLD WIDE VIEW 12개의 뷰 컬럼 COMMENT를 ALTER VIEW로 일괄 적용하는 스크립트.
 -- Co-authored with CoCo
 -- ✅ [2026-07-20 적용 완료] GOLD 배포·적재 후 본 스크립트 실행 완료(9뷰 330컬럼 COMMENT 적용). idempotent — 재실행 안전.
+-- ✅ [2026-07-28 순서9-I 확장·적용 완료] AGENCY 광고 위성 팩트 3종(DEC-8)에 맞춰 **9뷰 → 12뷰**로 확장.
+--    실행 검증: ALTER VIEW 12/12 성공(컬럼명 오류 0) · 실측 **12뷰 411컬럼 전량 COMMENT 적용(누락 0)**.
+--    · 7   WIDE_AD_PERFORMANCE  = 코어화(방송 degen 5종 제거 · AD_PERF_DK·AD_SOURCE_TYPE·DEVICE_SCOPE_DESC 추가)
+--    · 7-A WIDE_AD_BROADCAST      (신설, 1:1)  · 7-B WIDE_AD_DIGITAL (신설, 1:1)
+--    · 7-C WIDE_AD_BROADCAST_CASE (신설, 1:N — 코어 measure 미노출)
+--    ⚠️ dbt 모델 `models/gold/wide/*.sql` 의 post_hook 과 **내용 동일(verbatim 대응)**. 한쪽만 고치면 drift.
 -- 🔷 [2026-07-07 정정] DIM_ORG = SCD1 (DEC-2): 조직 변경이력 소스·as-was 요구 없음 → EFFECTIVE_*/IS_CURRENT 컬럼 삭제.
 --    아래 ORG_CORP/DIVISION/DEPARTMENT/TEAM COMMENT의 "(as-was)" 표기는 SCD1 정정 이전 잔재이며, 실제 의미는 current-value(최신 조직명·계층)임.
 
@@ -9,11 +15,12 @@
   GN_DW.GOLD — WIDE VIEW 컬럼 COMMENT
   적용 대상  : WIDE_MEMBER_MONTHLY / WIDE_MEMBER_EVENT / WIDE_TARGET_DEV /
                WIDE_TARGET_BIZ / WIDE_SERVICE_EVENT / WIDE_GA_BEHAVIOR /
-               WIDE_AD_PERFORMANCE / WIDE_EVENT_PARTICIPATION / WIDE_BUDGET
+               WIDE_AD_PERFORMANCE / WIDE_AD_BROADCAST / WIDE_AD_DIGITAL /
+               WIDE_AD_BROADCAST_CASE / WIDE_EVENT_PARTICIPATION / WIDE_BUDGET
 --------------------------------------------------------------------------------
   실행 전제 / 정책
   ─────────────────────────────────────────────────────────────────────────────
-  1. 09_빅테이블 VIEW.md DDL로 9개 VIEW가 먼저 생성돼 있어야 함.
+  1. 09_빅테이블 VIEW.md DDL로 12개 VIEW가 먼저 생성돼 있어야 함.
   2. 뷰 컬럼 COMMENT는 반드시 ALTER VIEW ... ALTER COLUMN ... COMMENT 사용.
      ※ COMMENT ON COLUMN 은 TABLE 전용 — 뷰에 쓰면
        "Object found is of type 'VIEW', not specified type 'TABLE'" 오류.
@@ -21,7 +28,8 @@
      한 컬럼명이라도 틀리면 그 뷰 전체가 실패 → 컬럼명은 실제 뷰 기준(검증 완료).
   4. alias DIM 컬럼은 "원본DIM.컬럼 — 설명 (#지표번호)" 로 출처 명시.
   5. 파생 컬럼(CAL_YEAR·CAL_MONTH)은 계산식 포함. 비가산 지표는 "[비가산]" 접두.
-  6. 전 9개 뷰 실객체 대상 실행 검증 완료(오류 0).
+     대행사 산정 파생(`_SRC`, DEC-9)은 "비가산 N" + DW 재계산식을 함께 기재.
+  6. 전 12개 뷰 실객체 대상 실행 검증 완료(오류 0 · 2026-07-28 재검증).
 ================================================================================
 */
 
@@ -286,23 +294,23 @@ ALTER VIEW GN_DW.GOLD.WIDE_GA_BEHAVIOR
           COLUMN CAMPAIGN_NAME                  COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120)';
 
 -- ============================================================================
--- 7. WIDE_AD_PERFORMANCE
+-- 7. WIDE_AD_PERFORMANCE (코어)
+--    ⚠️ [2026-07-28 순서9-I DEC-8] 방송 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·
+--       AD_START_TIME·BROADCAST_DATE)은 위성 WIDE_AD_BROADCAST 로 이관 → 본 뷰에서 제거.
+--    ⚠️ DEC-12 명명 분리: AD_SOURCE_TYPE(원천 출처축) ≠ AD_CREATIVE_TYPE(소재 광고유형).
 -- ============================================================================
 ALTER VIEW GN_DW.GOLD.WIDE_AD_PERFORMANCE
-    ALTER COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
+    ALTER COLUMN AD_PERF_DK          COMMENT '광고성과 행 식별자(grain) — 위성 뷰 조인키',
+          COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
           COLUMN AD_COST             COMMENT '광고비(원)',
-          COLUMN IMPRESSIONS         COMMENT '노출수',
-          COLUMN CLICKS              COMMENT '클릭수',
+          COLUMN IMPRESSIONS         COMMENT '노출수(디지털 전용)',
+          COLUMN CLICKS              COMMENT '클릭수(디지털 전용)',
           COLUMN INBOUND_CALL        COMMENT '인입콜수',
-          COLUMN GA_CONV_MEMBERS     COMMENT 'GA전환수(명)',
-          COLUMN GA_CONV_CNT         COMMENT 'GA전환수(건)',
+          COLUMN GA_CONV_MEMBERS     COMMENT 'GA전환수(명) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
+          COLUMN GA_CONV_CNT         COMMENT 'GA전환수(건/VU) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
           COLUMN DAY_OF_WEEK         COMMENT '요일(팩트 degen)',
           COLUMN WEEK_OF_YEAR        COMMENT '주차(팩트 degen)',
-          COLUMN TIME_BAND           COMMENT '시간대(팩트 degen)',
-          COLUMN CM_POSITION         COMMENT 'CM위치(팩트 degen, #21)',
-          COLUMN RT_TYPE             COMMENT 'RT유형(팩트 degen)',
-          COLUMN AD_START_TIME       COMMENT '광고시작시간(팩트 degen)',
-          COLUMN BROADCAST_DATE      COMMENT '송출일(팩트 degen, 실적일과 다를 수 있음)',
+          COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 DIGITAL/VIDEO/REBROADCAST — 출처 명시축(팩트 degen, DEC-8)',
           COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별 (GA4/AGENCY/GADS)',
           COLUMN PERF_FULL_DATE      COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자',
           COLUMN PERF_YEAR           COMMENT 'DIM_DATE.YEAR — 실적일 년',
@@ -320,9 +328,114 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_PERFORMANCE
           COLUMN AD_PLATFORM         COMMENT 'DIM_AD_CREATIVE.PLATFORM — 플랫폼 (#12)',
           COLUMN AD_PLATFORM_TYPE    COMMENT 'DIM_AD_CREATIVE.PLATFORM_TYPE — 플랫폼/매체유형 (#13)',
           COLUMN AD_CREATIVE         COMMENT 'DIM_AD_CREATIVE.CREATIVE — 소재 (#20)',
-          COLUMN AD_TYPE             COMMENT 'DIM_AD_CREATIVE.AD_TYPE — 광고유형',
+          COLUMN AD_CREATIVE_TYPE    COMMENT 'DIM_AD_CREATIVE.AD_TYPE — 소재 광고유형 (⚠️AD_SOURCE_TYPE 과 다른 개념)',
           COLUMN AD_TARGET_GROUP     COMMENT 'DIM_AD_CREATIVE.TARGET_GROUP — 타겟그룹',
-          COLUMN DEVICE_TYPE         COMMENT 'DIM_DEVICE.DEVICE_TYPE — PC / M / APP';
+          COLUMN DEVICE_TYPE         COMMENT 'DIM_DEVICE.DEVICE_TYPE — PC / M / (해당없음)방송 / (unknown)',
+          COLUMN DEVICE_SCOPE_DESC   COMMENT 'DIM_DEVICE.DEVICE_SCOPE_DESC — 기기축 적용범위 자기설명(DEC-10)';
+
+-- ============================================================================
+-- 7-A. WIDE_AD_BROADCAST  [순서9-I 신설] 방송광고 위성(1:1)
+--      코어 measure 동반 노출(DEC-13) — ⚠️코어 뷰와 합산 시 이중계상.
+-- ============================================================================
+ALTER VIEW GN_DW.GOLD.WIDE_AD_BROADCAST
+    ALTER COLUMN AD_PERF_DK          COMMENT '광고성과 행 식별자(grain) — 코어 WIDE_AD_PERFORMANCE 조인키',
+          COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 VIDEO/REBROADCAST (본 뷰는 방송 2종만)',
+          COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
+          COLUMN AD_COST             COMMENT '[코어] 광고비(원) — VIDEO=실집행·REBRDC=편성비용',
+          COLUMN INBOUND_CALL        COMMENT '[코어] 인입콜수',
+          COLUMN TIME_BAND           COMMENT '시간대',
+          COLUMN CM_POSITION         COMMENT 'CM위치 (VIDEO 전용)',
+          COLUMN RT_TYPE             COMMENT 'RT(재방송)유형 (REBRDC 전용)',
+          COLUMN AD_START_TIME       COMMENT '광고시작시간 (VIDEO 전용)',
+          COLUMN AD_END_TIME         COMMENT '광고종료시간 (VIDEO 전용)',
+          COLUMN BROADCAST_DATE      COMMENT '송출일 — 실적일(PERF_DATE_SK)과 다를 수 있음',
+          COLUMN PROGRAM_NM          COMMENT '프로그램/편성명',
+          COLUMN CHANNEL_COMPANY     COMMENT '채널사',
+          COLUMN CHANNEL_COMPANY_TYPE COMMENT '채널사유형 (VIDEO 전용)',
+          COLUMN SPOT_TYPE           COMMENT 'SPOT유형 (VIDEO 전용)',
+          COLUMN DURATION_SEC        COMMENT '광고 초수 (VIDEO 전용)',
+          COLUMN DAY_DIV             COMMENT '요일구분 평일/주말 (VIDEO 전용)',
+          COLUMN PRG_START_TIME      COMMENT '프로그램 시작시간 (VIDEO 전용)',
+          COLUMN CTV_DIV             COMMENT 'CTV구분 (VIDEO 전용)',
+          COLUMN BRDC_DIV            COMMENT '방송구분 (REBRDC 전용)',
+          COLUMN AD_CNT              COMMENT '광고횟수',
+          COLUMN CONV_CALL_CNT       COMMENT '전환콜 (VIDEO 전용) — 인입콜과 별개',
+          COLUMN DVLP_MEMBER_CNT     COMMENT '개발회원수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)',
+          COLUMN DVLP_CNT            COMMENT '개발건수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)',
+          COLUMN AD_VIEW_RT_SRC      COMMENT '광고시청률(대행사 산정) — 비가산 N, 재합산 금지',
+          COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N, 재합산 금지',
+          COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',
+          COLUMN PERF_FULL_DATE      COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자',
+          COLUMN PERF_YEAR           COMMENT 'DIM_DATE.YEAR — 실적일 년',
+          COLUMN PERF_MONTH          COMMENT 'DIM_DATE.MONTH — 실적일 월',
+          COLUMN PERF_QUARTER        COMMENT 'DIM_DATE.QUARTER — 실적일 분기',
+          COLUMN PERF_IS_HOLIDAY     COMMENT 'DIM_DATE.IS_HOLIDAY — 실적일 휴일여부',
+          COLUMN CAMPAIGN_NAME       COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명',
+          COLUMN AD_MEDIA_NAME       COMMENT 'DIM_AD_CREATIVE.MEDIA_NAME — 매체명',
+          COLUMN AD_CREATIVE         COMMENT 'DIM_AD_CREATIVE.CREATIVE — 소재';
+
+-- ============================================================================
+-- 7-B. WIDE_AD_DIGITAL  [순서9-I 신설] 디지털광고 위성(1:1)
+--      코어 measure 동반 노출(DEC-13) · _SRC 전량 비가산 N(DEC-9).
+-- ============================================================================
+ALTER VIEW GN_DW.GOLD.WIDE_AD_DIGITAL
+    ALTER COLUMN AD_PERF_DK          COMMENT '광고성과 행 식별자(grain) — 코어 WIDE_AD_PERFORMANCE 조인키',
+          COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 — 본 뷰는 DIGITAL 만',
+          COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
+          COLUMN AD_COST             COMMENT '[코어] GA 광고비(원)',
+          COLUMN IMPRESSIONS         COMMENT '[코어] 노출수 — CTR 분모',
+          COLUMN CLICKS              COMMENT '[코어] 클릭수 — CTR 분자',
+          COLUMN GA_CONV_MEMBERS     COMMENT '[코어] GA전환수(명) — CVR 분자(O16 교정 후 디지털 전용)',
+          COLUMN GA_CONV_CNT         COMMENT '[코어] GA전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용)',
+          COLUMN PAGE_TYPE           COMMENT '페이지유형',
+          COLUMN AD_GROUP_NM         COMMENT '광고그룹명',
+          COLUMN GROUP_DIV           COMMENT '그룹구분',
+          COLUMN CREATIVE_TYPE       COMMENT '소재유형(원천 표기)',
+          COLUMN AD_TYPE_NM          COMMENT '광고유형명(대행사 표기) — ⚠️AD_SOURCE_TYPE 과 다른 개념',
+          COLUMN READ_CNT           COMMENT '읽음수',
+          COLUMN MEDIA_POTENTIAL_CUST_CNT COMMENT '매체 잠재고객수',
+          COLUMN CRM_DEV_CNT         COMMENT 'CRM 개발건수',
+          COLUMN CTR_SRC             COMMENT 'CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS)',
+          COLUMN CVR_SRC             COMMENT 'CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(GA_CONV_MEMBERS)/SUM(CLICKS)',
+          COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS)',
+          COLUMN CPM_SRC             COMMENT 'CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000',
+          COLUMN CPA_SRC             COMMENT 'CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(GA_CONV_CNT)',
+          COLUMN DEV_UNIT_PRICE_SRC  COMMENT '개발단가(대행사 산정) — 비가산 N',
+          COLUMN VTR_SRC             COMMENT 'VTR(대행사 산정) — 비가산 N, base 부재로 재계산 불가',
+          COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',
+          COLUMN PERF_FULL_DATE      COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자',
+          COLUMN PERF_YEAR           COMMENT 'DIM_DATE.YEAR — 실적일 년',
+          COLUMN PERF_MONTH          COMMENT 'DIM_DATE.MONTH — 실적일 월',
+          COLUMN PERF_QUARTER        COMMENT 'DIM_DATE.QUARTER — 실적일 분기',
+          COLUMN PERF_IS_HOLIDAY     COMMENT 'DIM_DATE.IS_HOLIDAY — 실적일 휴일여부',
+          COLUMN CAMPAIGN_NAME       COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명',
+          COLUMN AD_MEDIA_NAME       COMMENT 'DIM_AD_CREATIVE.MEDIA_NAME — 매체명',
+          COLUMN AD_CREATIVE         COMMENT 'DIM_AD_CREATIVE.CREATIVE — 소재',
+          COLUMN DEVICE_TYPE         COMMENT 'DIM_DEVICE.DEVICE_TYPE — M / PC (디지털은 기기 실존)';
+
+-- ============================================================================
+-- 7-C. WIDE_AD_BROADCAST_CASE  [순서9-I 신설] 재방송 사례 위성(코어에 1:N)
+--      ⚠️ 코어 measure 미노출(DEC-13 1:N 규칙 — fan-out 방지). 분포 분석 전용.
+-- ============================================================================
+ALTER VIEW GN_DW.GOLD.WIDE_AD_BROADCAST_CASE
+    ALTER COLUMN AD_PERF_DK          COMMENT 'grain 1/2 · 광고성과 행 식별자 — 코어 WIDE_AD_PERFORMANCE 조인키(1:N)',
+          COLUMN CASE_SEQ            COMMENT 'grain 2/2 · 사례 순번 1~3 (원천 CASE1~CASE3 언피벗축)',
+          COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 — 본 뷰는 REBROADCAST 만',
+          COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
+          COLUMN BIZ_DIV             COMMENT '사례 사업구분',
+          COLUMN FAMILY_TYPE         COMMENT '사례 가족유형',
+          COLUMN APPEAL_POINT        COMMENT '사례 어필포인트',
+          COLUMN CASE_DIV            COMMENT '사례구분',
+          COLUMN RT_TYPE             COMMENT 'RT(재방송)유형 — 위성 FAD_B 에서 동반',
+          COLUMN PROGRAM_NM          COMMENT '프로그램/편성명 — 위성 FAD_B 에서 동반',
+          COLUMN CHANNEL_COMPANY     COMMENT '채널사 — 위성 FAD_B 에서 동반',
+          COLUMN BROADCAST_DATE      COMMENT '송출일 — 위성 FAD_B 에서 동반',
+          COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',
+          COLUMN PERF_FULL_DATE      COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자',
+          COLUMN PERF_YEAR           COMMENT 'DIM_DATE.YEAR — 실적일 년',
+          COLUMN PERF_MONTH          COMMENT 'DIM_DATE.MONTH — 실적일 월',
+          COLUMN PERF_QUARTER        COMMENT 'DIM_DATE.QUARTER — 실적일 분기',
+          COLUMN CAMPAIGN_NAME       COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명';
 
 -- ============================================================================
 -- 8. WIDE_EVENT_PARTICIPATION

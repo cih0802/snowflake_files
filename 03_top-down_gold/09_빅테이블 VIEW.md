@@ -3,13 +3,17 @@ doc_id: GOLD_WIDE_VIEWS
 doc_role: consumption_wide_view (DDL)
 project: GN_DW (굿네이버스)
 derived_from: 06_DDL.sql + 03_테이블 설계.md §4 팩트×차원 참조
-structure: 9 WIDE VIEW (1 per FACT)
-status: 9개 뷰 **배포·적재 완료**(2026-07-20 — `GN_DW.GOLD` WIDE VIEW 9개 생성, 컬럼 COMMENT 적용)
+structure: 12 WIDE VIEW (팩트 12개 = 1 per FACT)
+status: 12개 뷰 **배포·적재 완료**(2026-07-28 순서9-I — `GN_DW.GOLD` WIDE VIEW 12개 실측, 컬럼 COMMENT 적용)
 END-METADATA -->
 
 # GOLD 빅테이블 VIEW (GN_DW.GOLD)
 
-팩트 9개를 각각 참조 DIM과 LEFT JOIN하여 평탄화한 소비용 VIEW. 스타스키마 정합성은 원본 테이블이 유지하고, VIEW는 현업 셀프서비스용(물리 저장 0).
+팩트 12개를 각각 참조 DIM과 LEFT JOIN하여 평탄화한 소비용 VIEW. 스타스키마 정합성은 원본 테이블이 유지하고, VIEW는 현업 셀프서비스용(물리 저장 0).
+
+> ⚠️ **[2026-07-28 순서9-I] 개수 정정** — AGENCY 광고 위성 팩트 3종 신설(DEC-8)로 WIDE 는 **9 → 12개**다.
+> 문서50·문서00 의 "13종" 표기는 `models/gold/wide/` 파일 수(`.sql` 12 + `_wide_schema.yml` 1)를
+> 모델 수로 오산한 값이었다(실측: GOLD VIEW 12 · dbt view 모델 12). **정본 = 12.**
 
 ---
 
@@ -25,6 +29,8 @@ END-METADATA -->
 | 조인 방향 | 전부 LEFT JOIN(팩트 행 보존) |
 | 컬럼 | SK 제외, BK/명칭 포함. DIM 속성은 `DIM약칭_` 접두로 출력명 유일성 확보 |
 | 비가산 measure | 컬럼 유지 + 뷰 COMMENT에 재합산 금지 명시(FGA) |
+| **위성 팩트 measure 노출 (DEC-13)** | **1:1 위성**(FAD_B·FAD_D)은 코어 measure **동반 노출**(fan-out 없음 → 단일 뷰 완결). **1:N 위성**(FAD_BC)은 코어 measure **미노출**(사례 수만큼 중복 합산). ⚠️ 위성 뷰와 코어 뷰를 **함께 합산하면 이중계상** — 전 유형 집계는 코어 뷰만 사용 |
+| **대행사 파생 `_SRC` (DEC-9)** | 비가산(N) — 행 단위 참조·대조 전용. 집계는 base 재계산(예: `SUM(CLICKS)/SUM(IMPRESSIONS)`) |
 | 감사컬럼 | 팩트 `DW_SOURCE_SYSTEM`만 유지 |
 
 **조인 시맨틱**: 회원=현재버전 속성(팩트에 SK 부재로 as-was 불가), 조직=**SCD1 current-value**. 팩트의 `ORG_SK`는 사건 시점 부서 *식별*은 주지만 부서명·계층 속성은 최신값(SCD1)이다. 조직 재편 이전 편제로의 as-was 조회는 미지원(요구 없음·조직 이력소스 없음).
@@ -49,7 +55,7 @@ LEFT JOIN (
 
 ---
 
-## 3. VIEW DDL (9개)
+## 3. VIEW DDL (12개)
 
 ### 1. WIDE_MEMBER_MONTHLY (FMM)
 
@@ -298,18 +304,27 @@ LEFT JOIN GN_DW.GOLD.DIM_DEVICE          dv ON f.DEVICE_SK    = dv.DEVICE_SK
 LEFT JOIN GN_DW.GOLD.DIM_CAMPAIGN        c  ON f.CAMPAIGN_SK  = c.CAMPAIGN_SK;
 ```
 
-### 7. WIDE_AD_PERFORMANCE (FAD)
+### 7. WIDE_AD_PERFORMANCE (FAD) — 코어
+
+> ⚠️ **[2026-07-28 순서9-I DEC-8]** 코어에서 위성으로 **이관된 방송 degen 5종**
+> (`TIME_BAND`·`CM_POSITION`·`RT_TYPE`·`AD_START_TIME`·`BROADCAST_DATE`)은 본 뷰에서 **제거**됐다 → `WIDE_AD_BROADCAST`.
+> ⚠️ **`AD_SOURCE_TYPE`(코어 degen = 원천 출처축)** 과 **`AD_CREATIVE_TYPE`(`DIM_AD_CREATIVE.AD_TYPE` = 소재 광고유형)** 은
+> **다른 개념**이다(DEC-12 분리 명명). 종전 둘 다 `AD_TYPE` 이라 WIDE 평탄화에서 충돌했다.
+> ⚠️ `AD_PERF_DK`(DEC-11) = grain 겸 **위성 뷰 조인키**. `DEVICE_SK` 는 DEC-10 으로 실배선(방송행 = `(해당없음)`).
+> ⚠️ `CAMPAIGN_SK`·`AD_CREATIVE_SK` 는 여전히 0 스캐폴드(Q10·소재 부분키 대기) → 관련 컬럼 NULL.
+> 구현 = `10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql`
 
 ```sql
 CREATE OR REPLACE VIEW GN_DW.GOLD.WIDE_AD_PERFORMANCE
-  COMMENT = '광고 성과 팩트 평탄화 (FAD × DATE·CAMPAIGN·AD_CREATIVE·DEVICE). DIM_DATE 파생은 PERF_ 접두.'
+  COMMENT = '광고 성과 코어 팩트 평탄화 (FAD × DATE·CAMPAIGN·AD_CREATIVE·DEVICE, grain=AD_PERF_DK). DIM_DATE 파생은 PERF_ 접두. 유형 고유속성은 WIDE_AD_BROADCAST/DIGITAL/BROADCAST_CASE 참조.'
 AS
 SELECT
+    f.AD_PERF_DK,
     f.PERF_DATE_SK,
     f.AD_COST, f.IMPRESSIONS, f.CLICKS, f.INBOUND_CALL,
-    f.GA_CONV_MEMBERS, f.GA_CONV_CNT,
-    f.DAY_OF_WEEK, f.WEEK_OF_YEAR, f.TIME_BAND,
-    f.CM_POSITION, f.RT_TYPE, f.AD_START_TIME, f.BROADCAST_DATE,
+    f.GA_CONV_MEMBERS, f.GA_CONV_CNT,          -- O16 교정 후 디지털 전용
+    f.DAY_OF_WEEK, f.WEEK_OF_YEAR,
+    f.AD_SOURCE_TYPE,                          -- DIGITAL/VIDEO/REBROADCAST (출처 명시축)
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE           AS PERF_FULL_DATE,
     d.YEAR                AS PERF_YEAR,
@@ -324,17 +339,132 @@ SELECT
     c.CAMPAIGN_TYPE       AS CAMPAIGN_TYPE,
     ac.AD_CREATIVE_BK     AS AD_CREATIVE_BK,
     ac.MEDIA_NAME         AS AD_MEDIA_NAME,
-    ac.PLATFORM          AS AD_PLATFORM,
+    ac.PLATFORM           AS AD_PLATFORM,
     ac.PLATFORM_TYPE      AS AD_PLATFORM_TYPE,
     ac.CREATIVE           AS AD_CREATIVE,
-    ac.AD_TYPE            AS AD_TYPE,
+    ac.AD_TYPE            AS AD_CREATIVE_TYPE,  -- 소재 광고유형 (≠ AD_SOURCE_TYPE)
     ac.TARGET_GROUP       AS AD_TARGET_GROUP,
-    dv.DEVICE_TYPE        AS DEVICE_TYPE
+    dv.DEVICE_TYPE        AS DEVICE_TYPE,
+    dv.DEVICE_SCOPE_DESC  AS DEVICE_SCOPE_DESC  -- DEC-10 자기설명
 FROM GN_DW.GOLD.FACT_AD_PERFORMANCE f
 LEFT JOIN GN_DW.GOLD.DIM_DATE        d  ON f.PERF_DATE_SK  = d.DATE_SK
 LEFT JOIN GN_DW.GOLD.DIM_CAMPAIGN    c  ON f.CAMPAIGN_SK   = c.CAMPAIGN_SK
 LEFT JOIN GN_DW.GOLD.DIM_AD_CREATIVE ac ON f.AD_CREATIVE_SK = ac.AD_CREATIVE_SK
 LEFT JOIN GN_DW.GOLD.DIM_DEVICE      dv ON f.DEVICE_SK     = dv.DEVICE_SK;
+```
+
+### 7-A. WIDE_AD_BROADCAST (FAD_B) — 위성 1:1 · 신설 2026-07-28
+
+> grain = `AD_PERF_DK` (FAD_B 와 1:1, 코어와도 1:1). 실측 **37,886행**(VIDEO 35,822 + REBRDC 2,064).
+> **코어 measure 동반 노출**(DEC-13 1:1 규칙) → "채널사별 방송 광고비"·"시간대별 인입콜"을 조인 없이 답한다.
+> ⚠️ **이중계상 금지**: `AD_COST`·`INBOUND_CALL` 은 코어 뷰에도 있다. 두 뷰를 함께 합산하면 방송 행이 2번 센다.
+> ⚠️ 컬럼 NULL 은 **두 방송 원천 중 한쪽 전용 속성**이며 결측이 아니다.
+> · VIDEO 전용: `CM_POSITION`·`AD_START_TIME`·`AD_END_TIME`·`CHANNEL_COMPANY_TYPE`·`SPOT_TYPE`·`DURATION_SEC`·`DAY_DIV`·`PRG_START_TIME`·`CTV_DIV`·`CONV_CALL_CNT`·`AD_VIEW_RT_SRC`·`CPC_SRC`
+> · REBRDC 전용: `RT_TYPE`·`BRDC_DIV`·`DVLP_MEMBER_CNT`·`DVLP_CNT`
+> ⚠️ **`DVLP_*` = 재방송 개발실적** — 종전 코어 `GA_CONV_*` 에 혼입돼 있던 값(O16). **GA 전환과 다른 개념.**
+> 구현 = `models/gold/wide/WIDE_AD_BROADCAST.sql`
+
+```sql
+CREATE OR REPLACE VIEW GN_DW.GOLD.WIDE_AD_BROADCAST
+  COMMENT = '방송광고 위성 팩트 평탄화 (FAD_B × DATE·CAMPAIGN·AD_CREATIVE, grain=AD_PERF_DK, 37,886행). 코어 measure 동반 노출(1:1이라 fan-out 없음) — 단 WIDE_AD_PERFORMANCE 와 합산 시 이중계상 주의. 방송 전용(디지털 제외).'
+AS
+SELECT
+    b.AD_PERF_DK,
+    f.AD_SOURCE_TYPE,                          -- VIDEO / REBROADCAST
+    f.PERF_DATE_SK,
+    f.AD_COST, f.INBOUND_CALL,                 -- [코어 measure] 1:1 이므로 동반 안전
+    b.TIME_BAND, b.CM_POSITION, b.RT_TYPE,
+    b.AD_START_TIME, b.AD_END_TIME, b.BROADCAST_DATE,
+    b.PROGRAM_NM, b.CHANNEL_COMPANY, b.CHANNEL_COMPANY_TYPE,
+    b.SPOT_TYPE, b.DURATION_SEC, b.DAY_DIV, b.PRG_START_TIME,
+    b.CTV_DIV, b.BRDC_DIV,
+    b.AD_CNT, b.CONV_CALL_CNT,
+    b.DVLP_MEMBER_CNT, b.DVLP_CNT,             -- 재방송 개발실적 (≠ GA 전환)
+    b.AD_VIEW_RT_SRC, b.CPC_SRC,               -- 대행사 산정 · 비가산 N
+    b.DW_SOURCE_SYSTEM,
+    d.FULL_DATE  AS PERF_FULL_DATE,  d.YEAR    AS PERF_YEAR,
+    d.MONTH      AS PERF_MONTH,      d.QUARTER AS PERF_QUARTER,
+    d.IS_HOLIDAY AS PERF_IS_HOLIDAY,
+    c.CAMPAIGN_NAME  AS CAMPAIGN_NAME,
+    ac.MEDIA_NAME    AS AD_MEDIA_NAME,
+    ac.CREATIVE      AS AD_CREATIVE
+FROM GN_DW.GOLD.FACT_AD_BROADCAST b
+JOIN      GN_DW.GOLD.FACT_AD_PERFORMANCE f  ON b.AD_PERF_DK    = f.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.DIM_DATE            d  ON f.PERF_DATE_SK  = d.DATE_SK
+LEFT JOIN GN_DW.GOLD.DIM_CAMPAIGN        c  ON f.CAMPAIGN_SK   = c.CAMPAIGN_SK
+LEFT JOIN GN_DW.GOLD.DIM_AD_CREATIVE     ac ON f.AD_CREATIVE_SK = ac.AD_CREATIVE_SK;
+```
+
+### 7-B. WIDE_AD_DIGITAL (FAD_D) — 위성 1:1 · 신설 2026-07-28
+
+> grain = `AD_PERF_DK` (FAD_D 와 1:1). 실측 **197,686행**(DGT).
+> **코어 measure 동반 노출**(DEC-13) → "페이지유형별 CTR"·"광고그룹별 전환수"를 조인 없이 답한다.
+> ⚠️ **이중계상 금지** — 전 유형 집계는 코어 뷰만.
+> ⚠️ **기기축 동반**: 디지털은 기기(M/PC)가 실존하므로 `DEVICE_TYPE` 노출(DEC-10 실배선).
+> ⚠️ **`_SRC` 비가산(DEC-9)** — 집계는 반드시 base 재계산. `VTR_SRC` 는 base 부재로 재계산 불가(대조 대상 아님).
+> 구현 = `models/gold/wide/WIDE_AD_DIGITAL.sql`
+
+```sql
+CREATE OR REPLACE VIEW GN_DW.GOLD.WIDE_AD_DIGITAL
+  COMMENT = '디지털광고 위성 팩트 평탄화 (FAD_D × DATE·CAMPAIGN·AD_CREATIVE·DEVICE, grain=AD_PERF_DK, 197,686행). 코어 measure 동반 노출(1:1이라 fan-out 없음) — 단 WIDE_AD_PERFORMANCE 와 합산 시 이중계상 주의. _SRC 는 비가산(N), 집계는 base 재계산.'
+AS
+SELECT
+    g.AD_PERF_DK,
+    f.AD_SOURCE_TYPE,                          -- DIGITAL 만
+    f.PERF_DATE_SK,
+    f.AD_COST, f.IMPRESSIONS, f.CLICKS,        -- [코어 measure] = 비율 재계산 base
+    f.GA_CONV_MEMBERS, f.GA_CONV_CNT,
+    g.PAGE_TYPE, g.AD_GROUP_NM, g.GROUP_DIV, g.CREATIVE_TYPE, g.AD_TYPE_NM,
+    g.READ_CNT, g.MEDIA_POTENTIAL_CUST_CNT, g.CRM_DEV_CNT,
+    g.CTR_SRC, g.CVR_SRC, g.CPC_SRC, g.CPM_SRC, g.CPA_SRC,   -- 비가산 N
+    g.DEV_UNIT_PRICE_SRC, g.VTR_SRC,
+    g.DW_SOURCE_SYSTEM,
+    d.FULL_DATE  AS PERF_FULL_DATE,  d.YEAR    AS PERF_YEAR,
+    d.MONTH      AS PERF_MONTH,      d.QUARTER AS PERF_QUARTER,
+    d.IS_HOLIDAY AS PERF_IS_HOLIDAY,
+    c.CAMPAIGN_NAME  AS CAMPAIGN_NAME,
+    ac.MEDIA_NAME    AS AD_MEDIA_NAME,
+    ac.CREATIVE      AS AD_CREATIVE,
+    dv.DEVICE_TYPE   AS DEVICE_TYPE
+FROM GN_DW.GOLD.FACT_AD_DIGITAL g
+JOIN      GN_DW.GOLD.FACT_AD_PERFORMANCE f  ON g.AD_PERF_DK    = f.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.DIM_DATE            d  ON f.PERF_DATE_SK  = d.DATE_SK
+LEFT JOIN GN_DW.GOLD.DIM_CAMPAIGN        c  ON f.CAMPAIGN_SK   = c.CAMPAIGN_SK
+LEFT JOIN GN_DW.GOLD.DIM_AD_CREATIVE     ac ON f.AD_CREATIVE_SK = ac.AD_CREATIVE_SK
+LEFT JOIN GN_DW.GOLD.DIM_DEVICE          dv ON f.DEVICE_SK     = dv.DEVICE_SK;
+```
+
+### 7-C. WIDE_AD_BROADCAST_CASE (FAD_BC) — 위성 1:N · 신설 2026-07-28
+
+> grain = `AD_PERF_DK × CASE_SEQ` (FAD_BC 와 1:1, **코어에는 1:N**). 실측 **5,327행**.
+> ⚠️ **코어 measure 를 의도적으로 미노출**(DEC-13 1:N 규칙). 광고비·인입콜을 함께 두면 사례 수만큼 fan-out 된다.
+> 형제 뷰가 코어 measure 를 노출하는 것은 그쪽이 1:1 이기 때문이며, **본 뷰는 카디널리티가 달라 규칙이 반대다.**
+> → **사례 속성 분포·빈도 분석 전용.** 금액·건수 집계는 `WIDE_AD_BROADCAST` 사용.
+> ⚠️ `COUNT(*)` = **사례 수**(방송 횟수 아님). 방송 횟수는 `COUNT(DISTINCT AD_PERF_DK)`.
+> ⚠️ 전 속성 NULL 사례는 미적재(희소행 방지) → 방송 1건당 사례 수는 **0~3 가변**.
+> ⚠️ 아동명(`CASEn_CHILD_NM`) **미노출** — PII 판정 대기(O14). SILVER staging 에 원형 보존.
+> 구현 = `models/gold/wide/WIDE_AD_BROADCAST_CASE.sql`
+
+```sql
+CREATE OR REPLACE VIEW GN_DW.GOLD.WIDE_AD_BROADCAST_CASE
+  COMMENT = '재방송 사례 위성 팩트 평탄화 (FAD_BC × DATE·CAMPAIGN, grain=AD_PERF_DK×CASE_SEQ, 5,327행). ⚠️코어에 1:N — 코어 measure 미노출(fan-out 방지). 사례 속성 분포 분석 전용. 방송 횟수는 COUNT(DISTINCT AD_PERF_DK). 아동명 미노출(PII O14).'
+AS
+SELECT
+    bc.AD_PERF_DK,
+    bc.CASE_SEQ,                               -- 1~3 (원천 CASE1~CASE3 언피벗축)
+    f.AD_SOURCE_TYPE,                          -- REBROADCAST 만
+    f.PERF_DATE_SK,
+    bc.BIZ_DIV, bc.FAMILY_TYPE, bc.APPEAL_POINT, bc.CASE_DIV,
+    b.RT_TYPE, b.PROGRAM_NM, b.CHANNEL_COMPANY, b.BROADCAST_DATE,  -- 방송 맥락(measure 제외)
+    bc.DW_SOURCE_SYSTEM,
+    d.FULL_DATE AS PERF_FULL_DATE, d.YEAR    AS PERF_YEAR,
+    d.MONTH     AS PERF_MONTH,     d.QUARTER AS PERF_QUARTER,
+    c.CAMPAIGN_NAME AS CAMPAIGN_NAME
+FROM GN_DW.GOLD.FACT_AD_BROADCAST_CASE bc
+JOIN      GN_DW.GOLD.FACT_AD_PERFORMANCE f ON bc.AD_PERF_DK   = f.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.FACT_AD_BROADCAST   b ON bc.AD_PERF_DK   = b.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.DIM_DATE            d ON f.PERF_DATE_SK  = d.DATE_SK
+LEFT JOIN GN_DW.GOLD.DIM_CAMPAIGN        c ON f.CAMPAIGN_SK   = c.CAMPAIGN_SK;
 ```
 
 ### 8. WIDE_EVENT_PARTICIPATION (FEP)
@@ -430,14 +560,29 @@ SELECT CAMPAIGN_SK, COUNT(*) c FROM GN_DW.GOLD.DIM_CAMPAIGN GROUP BY CAMPAIGN_SK
 SELECT
   (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_MEMBER_MONTHLY) AS fact_rows,
   (SELECT COUNT(*) FROM GN_DW.GOLD.WIDE_MEMBER_MONTHLY) AS view_rows;
+
+-- V4. [순서9-I] 위성 WIDE fan-out 감지 — 위성 뷰 행수 = 위성 팩트 행수 (기대: 각 쌍 일치)
+SELECT 'FAD_B'  AS pair, (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_BROADCAST)      AS fact_rows,
+                          (SELECT COUNT(*) FROM GN_DW.GOLD.WIDE_AD_BROADCAST)      AS view_rows
+UNION ALL SELECT 'FAD_D',  (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_DIGITAL),
+                          (SELECT COUNT(*) FROM GN_DW.GOLD.WIDE_AD_DIGITAL)
+UNION ALL SELECT 'FAD_BC', (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_BROADCAST_CASE),
+                          (SELECT COUNT(*) FROM GN_DW.GOLD.WIDE_AD_BROADCAST_CASE);
+
+-- V5. [순서9-I] 위성 1:1 전제 검증 — AD_PERF_DK 중복 (기대: 각 0행)
+SELECT AD_PERF_DK, COUNT(*) c FROM GN_DW.GOLD.FACT_AD_BROADCAST GROUP BY 1 HAVING COUNT(*) > 1;
+SELECT AD_PERF_DK, COUNT(*) c FROM GN_DW.GOLD.FACT_AD_DIGITAL   GROUP BY 1 HAVING COUNT(*) > 1;
+-- FAD_BC 는 1:N 이 정상 → grain 은 (AD_PERF_DK, CASE_SEQ) 조합으로 검증
+SELECT AD_PERF_DK, CASE_SEQ, COUNT(*) c FROM GN_DW.GOLD.FACT_AD_BROADCAST_CASE GROUP BY 1,2 HAVING COUNT(*) > 1;
 ```
 
 ---
 
 ## 5. 배포 · 모니터링
 
-- FACT/DIM 24개 생성 후 실행. 9개 VIEW는 상호 의존 없어 순서 무관 일괄 실행.
-- 배포 직후 §4 V1·V3로 fan-out 없음 확인.
+- FACT/DIM **27개** 생성 후 실행. **12개 VIEW**는 상호 의존 없어 순서 무관 일괄 실행.
+  ⚠️ 단 위성 WIDE 3종은 코어 팩트(`FACT_AD_PERFORMANCE`)를 조인하므로 **팩트 적재 후**여야 행이 나온다.
+- 배포 직후 §4 V1·V3로 fan-out 없음 확인. **위성은 V4·V5 추가 확인**(DEC-13 카디널리티 전제).
 
 | 조회 성능 | 액션 |
 |------|------|
