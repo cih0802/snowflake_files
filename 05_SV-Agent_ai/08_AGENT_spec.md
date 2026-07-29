@@ -86,6 +86,11 @@ END-METADATA -->
 
 ### 3.1 AGENT_MEMBER
 
+> 🔴 **[2026-07-29 발견] 본 절 YAML 사본은 구버전이다 — 정본 대조 필수.**
+> 아래 사본은 **순서9-F/9-G 개정 이전** 판본이다(장문 서술형 `response`·`orchestration`, `analyst_*` 4종 라우팅 문장형). 실제 정본 `cortex_project/AGENT_MEMBER.agent.yaml` 및 배포본(VERSION$2)은 **컴팩트 판본 + `*_NAME` 라벨 차원 + 원천(provenance) 규칙 + 기본 창 규칙**을 포함한다.
+> 즉 §3.2(AGENT_OVERALL)는 동기화 상태이나 **§3.1만 뒤처져 있다**. 이는 이번 세션 변경분이 아니라 **누적 부채**이며, 전면 재작성은 범위가 커 별도 작업으로 분리했다(리스크: 사본을 근거로 재배포하면 라벨화·원천 규칙이 **소실**된다).
+> **당분간 AGENT_MEMBER 스펙의 근거는 반드시 `cortex_project/AGENT_MEMBER.agent.yaml` 을 직접 읽을 것.** 후속 착수 시 `semantic_studio cortex_agent_read`(source=workspace) 결과로 본 절을 통째로 교체한다.
+
 ```yaml
 models:
   orchestration: auto
@@ -184,7 +189,7 @@ instructions:
   response: |
     한국어·간결·데이터 중심. 금액=원 천단위(예: 1,234,567원), 비율=% 소수점 2자리, 여러 행은 표로 제시하고 조회 기간·필터를 명시.
     지표·컬럼은 영문 식별자 대신 한글 명칭(SV synonyms/comment 기준, 표 헤더 포함)으로 표기. 코드값은 라벨이 있으면 라벨, 없으면 코드값+"해당 라벨은 데이터가 준비되는 대로 제공하겠습니다" 안내, 미매핑은 '미상'.
-    기간·그룹이 없는 러프한 질문은 총계 요약을 먼저 제시하고 월별 추이 표를 이어 보여준 뒤, 다른 기준(분기·특정 연도·세세목/예산구분별 등)이 필요한지 되묻기. "합계/총액만" 요청 시 단일값.
+    기간·그룹이 없는 러프한 질문은 기본 창 총계를 먼저, 이어 기간별 추이 표를 제시한 뒤, 다른 기준(분기·특정 연도·세세목/예산구분별)이나 전체 기간이 필요한지 되묻기. "합계/총액만" 요청 시 단일값.
     기간 범위는 물결표(~)가 아니라 하이픈(-)으로 표기합니다. 예: "2024-01 - 2024-12"(O), "2024-01~2024-12"(X).
     데이터 포인트가 충분하면(여러 기간의 추이 또는 여러 범주 비교) 표와 함께 그래프로 시각화합니다 — 시계열 추이는 선 그래프, 범주 비교는 막대 그래프.
   orchestration: |
@@ -194,7 +199,7 @@ instructions:
     - 전사 회비·납입·개발·중단 월 실적 → analyst_member_monthly
     - 전사 발송 규모 → analyst_service
     한 질의는 단일 SV로만(cross-fact 금지). 예산(FBD)과 광고(FAP)는 서로 다른 원천이므로 교차 불가.
-    기간·필터·정렬·집계(월별/총계) 등 SQL 스코프는 각 SV의 AI_SQL_GENERATION이 담당하므로 여기서 반복하지 않음. 시간은 절대 연/월로 표기.
+    기간·필터·정렬·집계 등 SQL 스코프는 각 SV의 AI_SQL_GENERATION이 담당하므로 여기서 반복하지 않되, 사용자가 기간을 안 밝히면 SV 그레인에 맞는 기본 창을 질의에 명시해 전달한다(월 그레인=최근 12개월 월별, 일 그레인=최근 7일 일별). "전체·전기간" 명시 시 미적용. 시간은 절대 연/월로 표기.
   sample_questions:
     - question: 전체 편성예산과 집행율은?
     - question: 예산구분별 편성·집행·집행율을 보여줘
@@ -239,7 +244,20 @@ tool_resources:
 ```
 
 > ▶ **2026-07-28 개정**: `analyst_ad`(SV_AD) 4번째 도구 추가. system instruction에서 "광고비"를 **비활성 목록에서 제거**(활성 승격)하고 디지털/방송 상호배타 가드 3줄 신설. 잔여 비활성은 모금성비용·조직별 예산·캠페인/소재별 광고 분해·예산기반 ROI.
-> ⚠ **정합 주의**: 2026-07-28 실측 시 **배포된 Agent가 본 문서보다 구버전**이었다(response instruction의 한글명칭·하이픈표기·그래프 3규칙 및 sample_questions 5번째 항목 미반영). 문서=정본이므로 `09` [1-ALT-b] 재실행으로 동기화 필요.
+> ⚠ ~~**정합 주의**: 2026-07-28 실측 시 배포된 Agent가 본 문서보다 구버전~~ → 🟢 **해소(2026-07-29, 순서9-L)**: 두 Agent 모두 정본 yaml → `cortex_agent_deploy` 로 재배포·발행 완료(**VERSION$2 = default**).
+>
+> ▶ **2026-07-29 개정(순서9-L) — 기간 미지정 시 "기본 창(default window)" 규칙**
+> **트리거**: CoWork에서 "예산구분별 편성·집행·집행율을 보여줘"(기간 미지정) → Agent가 **전체 기간 집계**로 응답. 사용자 기대는 "최근 1년 월별".
+> **원인**: 순서9-G에서 기간 스코프를 SV `AI_SQL_GENERATION`으로 이전할 때 발동 조건을 **"기간·그룹이 모두 없을 때"** 로 좁혔다. 이번 질문은 **그룹(예산구분)이 지정**되어 조건에서 벗어나 ROLLUP이 발동하지 않았고, 기간 기본값을 줄 규칙이 어디에도 없었다.
+> **변경(두 Agent 공통, instruction 2줄 *제자리 교체*)**
+> - `orchestration`: "…SQL 스코프는 SV의 AI_SQL_GENERATION 담당이므로 여기서 반복하지 않**음**" → "…반복하지 않**되, 기간 미지정 시 기본 창을 질의에 명시해 전달**한다". `"전체·전기간"` 명시 시 미적용.
+>   - **AGENT_OVERALL**: SV 그레인 기준(월=최근 12개월 월별, 일=최근 7일 일별)
+>   - **AGENT_MEMBER**: **도구명 직접 명시**(`analyst_member_monthly`=최근 12개월 월별, 그 외 3종=최근 7일 일별) — MEMBER는 월 그레인 1종+일 그레인 3종이 섞여 그레인 추론 오류 위험이 커 결정론적으로 고정
+> - `response`: "총계 요약 먼저 + **월별** 추이" → "**기본 창** 총계 먼저 + **기간별** 추이", 되묻기 선택지에 **'전체 기간'** 추가(암묵적 필터링 혼란 방지)
+>
+> ⚠ **설계 판단 — 신규 블록을 추가하지 않은 이유**: orchestration에 이미 "기간 스코프는 SV 담당, 여기서 반복하지 않음"이 있어 **별도 기간 규칙 블록을 덧붙이면 자기모순**이 되고 LLM이 둘 중 하나를 무작위로 무시한다. 또 "적용 기간을 응답에 명시"는 `response` 1행 "조회 기간·필터를 명시"와 **완전 중복**이라 넣지 않았다(토큰 순증 ≈ 0). → 신규 교훈 **P24**.
+> ⚠ **폐기한 초안**: "결과 행 수 7~12개가 되도록" — 예산구분(2)×12개월=**24행**이므로 행 수 기준은 LLM이 기간을 임의 절단하게 만든다. 기준은 **시간 버킷 수**여야 한다. "연도별 최근 3개년"도 근거 없이 만든 값이라 폐기.
+> ⚠ **기본 창의 트레이드오프**(수용한 리스크): 암묵적 필터링이므로 "왜 2022년이 없지?"라는 혼란이 가능하다 → ① 적용 기간을 응답에 항상 명시(기존 규칙 재사용) ② 되묻기에 '전체 기간' 선택지 노출 ③ `"전체"` 키워드로 규칙 무시 — 3중으로 완화.
 
 ---
 
@@ -252,6 +270,44 @@ tool_resources:
 ### 4.1 (권장) semantic_studio로 save → publish
 1. `cortex_agent_save` — `file_path=cortex_project/AGENT_MEMBER.agent.yaml`, `fqn=GN_DW.SERVING.AGENT_MEMBER` (OVERALL 동일).
 2. `SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;` 로 미게시 버전 확인 후 `cortex_agent_publish` (필요 시).
+
+> ⚠⚠ **배포 3경로의 버전 의미 차이 — 실측 검증 완료(2026-07-29, 순서9-L)**
+> `SHOW VERSIONS` 의 `is_default=true` 행이 **실사용자에게 서비스되는 버전**이다. `live` 는 편집 중 버전이며 default가 아니다.
+>
+> | 경로 | 결과 | 버전 이력 | 판정 |
+> |---|---|---|---|
+> | ① `CREATE OR REPLACE AGENT` (`09` [1-ALT]) | VERSION$1(신 spec)+live 생성, `is_default=true` → **즉시 발행**, COMMIT 불요 | 🔴 **VERSION$1 하나로 초기화 → 기존 전 버전 소멸(롤백 불가)**. 추가로 USAGE grant 3건·CoWork SI 등록도 파괴(순서9-J §2) | 최초 생성 전용 |
+> | ② `cortex_agent_save` **단독** | live만 갱신, default는 **기존 VERSION$N 유지** | 보존 | 🔴 **함정** — 저장 성공 메시지가 나오지만 **미발행**. 사용자는 계속 구 spec을 받는다 |
+> | ③ `cortex_agent_deploy` (=save+publish) | **VERSION$N+1 신규 생성 + default 승격** | 🟢 보존(직전 버전 롤백 가능) | ★**권장** |
+> | ③′ **순수 SQL** (`09` [4-B]) | ③과 **동일** | 🟢 보존 | ★**CoCo 없이 SQL만으로 가능** |
+>
+> **③′ 순수 SQL 등가 경로** — semantic_studio 없이 SQL만으로 ③과 같은 결과를 낸다(실측 검증 2026-07-29, 임시 agent `ZZ_TMP_SQLPUB`·`ZZ_TMP_GAP`). **구버전 agent가 있는 계정의 표준 경로**이며 **0·4단계를 빠뜨리면 실패한다**:
+> ```sql
+> -- 0) ★ live 선복구 — 없으면 1)이 "Live version is not found." 로 실패
+> ALTER AGENT <fqn> ADD LIVE VERSION FROM LAST;    -- 이미 있으면 에러 → 09 [4-B-0] 멱등 블록 사용
+> -- 1) spec 전체 교체 (⚠ SPECIFICATION 뒤 = 필수)
+> ALTER AGENT <fqn> MODIFY LIVE VERSION SET SPECIFICATION = $$ <YAML 전문> $$;
+> -- 2) 발행 (VERSION$N+1 생성 + default 승격)
+> ALTER AGENT <fqn> COMMIT COMMENT = '...';
+> -- 3) 개발 재개용 live 재생성 (⚠ 생략 시 다음 편집 불가)
+> ALTER AGENT <fqn> ADD LIVE VERSION FROM LAST;
+> -- 4) ★ COMMENT·PROFILE 은 spec 이 아니라 DDL 속성 → 1~3 으로 안 바뀜 (⚠ 콤마 구분 필수)
+> ALTER AGENT <fqn> SET COMMENT = '...', PROFILE = '{"display_name":"...","color":"#..."}';
+> ```
+>
+> | 단계 | 놓치면 생기는 일 | 실측 증거 |
+> |---|---|---|
+> | **0** | 🔴 1)이 즉시 실패 — `COMMIT`·CoWork UI 발행이 live 를 소진하므로 **구버전 계정은 live 가 없을 수 있다** | `ZZ_TMP_GAP`: COMMIT 후 `SHOW VERSIONS` 에 live 행 소멸 → `MODIFY LIVE VERSION` → `Live version is not found.` → `ADD LIVE VERSION FROM LAST` 후 3행 복구 |
+> | **1** | `=` 누락 시 `syntax error … unexpected '$$…'` / YAML 미포함 필드는 **삭제**(전체 교체) | 실측 |
+> | **2** | 미실행 시 live 만 바뀌고 사용자는 구 버전 수신(P25). ⚠ **spec 무변경이어도 새 버전 생성 → 멱등 아님** | `ZZ_TMP_GAP`: 무변경 COMMIT → `VERSION$2` 생성 |
+> | **3** | 다음 편집 불가. 성공 메시지의 `null` 은 alias 미지정이며 정상 | `Live version nullsuccessfully created` |
+> | **4** | 🔴 CoWork **표시명·색상·설명이 구버전으로 남는다** | `ZZ_TMP_GAP`: spec v3 커밋 후에도 `old-comment`·`구버전표시명` 유지. `SET COMMENT='…' PROFILE='…'`(콤마 없음) → `unexpected 'PROFILE'`, 콤마 추가 후 성공 |
+>
+> ↔ **①과의 결정적 차이**: ①(`CREATE OR REPLACE`)은 COMMENT·PROFILE 을 매번 재지정해야 하고 누락 시 소실되지만, ③′은 건드리지 않아 **기존 표시설정·grant·SI 등록이 모두 보존**된다. 대신 표시설정을 *바꾸려면* 4단계를 명시해야 한다.
+> 구현체 = `09` **[4-B]**(`[4-B-0]` 멱등 live 복구 · `[4-B-a]`/`[4-B-b]` 양 Agent YAML 전문 · `[4-B-c]` COMMENT·PROFILE). **운영 계정 업데이트의 기본 경로.**
+>
+> **실측 근거**: ① 임시 agent `ZZ_TMP_VERTEST` 로 v1 생성→v2 REPLACE 시 VERSION$2가 생기지 않고 VERSION$1 내용만 교체됨. ③ 두 Agent 배포 후 VERSION$2 `is_default=true`(신 규칙 포함)·VERSION$1 `is_default=false` 보존 확인.
+> **운영 원칙**: 최초 생성만 ①, **이후 모든 변경은 ③ 또는 ③′**. ②로 끝내지 말 것. → 신규 교훈 **P25**.
 
 ### 4.2 (참고) SQL — save 대체 시
 ```sql
@@ -279,6 +335,16 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_DW.SERVING.AGENT_OVERALL;
 -- object USAGE는 02 §F에서 소비 3역할에 이미 부여. CoWork URL: https://ai.snowflake.com
 ```
+
+> ⚠ **재실행 안전성(멱등) — 실측 정리(2026-07-29, 순서9-L)**
+> 위 `ADD AGENT` 는 **이미 등록된 agent에 재실행하면 에러**다. 재실행 가능한 배포 스크립트로 만들려면:
+> - `ADD AGENT IF NOT EXISTS` → **syntax error**(미지원). 실측 확인.
+> - 제거 구문은 `REMOVE AGENT` 가 **아니라 `DROP AGENT`** 다 — `ALTER SNOWFLAKE INTELLIGENCE <si> DROP AGENT <fqn>` (정본: docs *Configure the visibility of agents in Snowflake CoWork*).
+> - → **해법**: `SHOW AGENTS IN SNOWFLAKE INTELLIGENCE <si>` 로 사전 확인 후 조건 분기. 구현체 = `09` [4] `EXECUTE IMMEDIATE` 블록(실행 검증: 기등록 상태 재실행 → `AGENT_MEMBER=skipped AGENT_OVERALL=skipped`).
+>
+> ⚠ **가드의 전제를 반드시 실측할 것**: `SHOW AGENTS IN SNOWFLAKE INTELLIGENCE` 결과가 `SHOW AGENTS IN ACCOUNT` 와 **우연히 동일**할 수 있다(본 계정은 2건이 정확히 일치했다). 그 경우 "계정 전체 목록"인지 "SI 멤버십"인지 구분되지 않아 **가드가 항상 skip 하는 무력 상태**일 수 있다. → `DROP AGENT` 직후 행이 사라지고(0) 재-`ADD` 시 복귀(1)함을 확인해 **멤버십 반영임을 검증 완료**. 유사 가드를 만들 때 동일 검증을 거칠 것. → 신규 교훈 **P26**.
+>
+> ⚠ Snowflake Scripting 제약: `FOR rec IN (…) DO` 의 커서 변수(`rec.col`)는 **스크립팅 표현식에서 참조 불가**(`invalid identifier 'REC.AGENT_NAME'`). agent 목록 루프를 만들지 말고 **명시 분기**로 작성한다.
 
 ---
 
