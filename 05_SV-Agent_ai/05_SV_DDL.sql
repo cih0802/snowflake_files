@@ -34,6 +34,23 @@
 --
 -- ▶ 배포: 본 파일은 DDL 정본(에이전트 작성). CREATE/GRANT 실행은 사용자가 GN_DW_ADMIN 역할로 수행.
 --     소유=GN_DW_ADMIN · 위치=GN_DW.SERVING(P7 serving_separation) · base=GN_DW.GOLD cross-schema 참조.
+--
+-- ▶ [원천] 절 규약 (2026-07-29 신설 · BRONZE lineage 노출):
+--     모든 SV의 **테이블 COMMENT**와 **SV 최상위 COMMENT**에 `[원천]`/`[원천 요약]` 절을 기입한다.
+--     목적: Agent(Cortex Analyst)가 SV 메타데이터를 context로 읽으므로, "이 수치 어디서 온 거야?"
+--           류의 데이터 출처(provenance) 질문에 **창작 없이** 답할 수 있게 한다.
+--     형식: `[원천] 시스템=<원천시스템> · BRONZE=<DB.스키마.테이블(핵심컬럼)> · SILVER=<정제테이블>`
+--     BRONZE 스키마 4종(02_DB_BRONZE_SILVER.md §원천 목록):
+--       GN_DW.BRONZE_CRM    — CRM(eCRM·UMS) 직적재 (43테이블/927컬럼 실측)
+--       GN_DW.BRONZE_ERP    — ERP 예산·실적 원장 (파일 업로드 → 테이블화)
+--       GN_DW.BRONZE_AGENCY — 대행사 일별 리포트 (Google Sheet·Drive Excel·SharePoint Excel, 3테이블)
+--       GN_DW.BRONZE_GA4    — BigQuery GA4 events 일별 샤드
+--     정본 계보: 30_output_share/04_컬럼계보매핑.md (GOLD컬럼→SILVER→BRONZE 1:1 · 자동생성)
+--               30_output_share/05_지표GOLD매핑.md (지표#→GOLD배속→SILVER→BRONZE, 215지표)
+--               03_top-down_gold/08_silver의존.md  (SILVER→BRONZE lineage 확정)
+--     ⚠ 컬럼 단위 완전 매핑은 SV COMMENT에 넣지 않는다(토큰 낭비·유지보수 이중화). SV에는 **테이블 수준**만
+--       기입하고, 세부는 위 정본 문서로 안내하도록 Agent instructions에 규칙을 둔다(09_AGENT_spec_구현.sql).
+--     ⚠ 원천이 바뀌면 04_컬럼계보매핑.md 재생성(scripts/gen_column_mapping.py) 후 본 파일의 [원천] 절도 동기화.
 
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -49,15 +66,15 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm AS GN_DW.GOLD.FACT_MEMBER_MONTHLY
       PRIMARY KEY (MONTH_KEY, MEMBER_DK)
       WITH SYNONYMS ('회원 월별 실적', '월간 회원 팩트')
-      COMMENT = '회원 월별 스냅샷 팩트(grain=월×회원, 40.05M · 실측 유일 → PK). 회비/개발/중단 월 롤업.',
+      COMMENT = '회원 월별 스냅샷 팩트(grain=월×회원, 40.05M · 실측 유일 → PK). 회비/개발/중단 월 롤업. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: 회비/청구 TM_PM_MBRFEE_ACMSLT(PAY_AMT·RQEST_AMT·PAY_STAT_CD)+TM_PM_DNTN_DTLS(PAY_AMT) · 개발 TM_MM_FDRM_MBER_DVLP_AMT(OCCRRNC_DE·SPNSR_AMT) · 중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC · 증감 TM_MM_FDRM_MBER_IRSD(SPNSR_AMT·RDCAMT_YN) · SILVER=CRM_PAYMENT_BILLING·CRM_MEMBER_DEV·CRM_MEMBER_DISCONTINUE·CRM_MEMBER_AMT_CHANGE.',
     month AS GN_DW.SERVING.DIM_MONTH
       PRIMARY KEY (MONTH_KEY)
       WITH SYNONYMS ('월', '조회월', '기간')
-      COMMENT = '월 차원(DIM_DATE 월 grain DISTINCT). fan-out 차단용 helper 뷰.',
+      COMMENT = '월 차원(DIM_DATE 월 grain DISTINCT). fan-out 차단용 helper 뷰. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원', '회원속성')
-      COMMENT = '회원 현재 스냅샷(SCD2 IS_CURRENT). 불변/현재 속성 전용. fan-out 차단용 helper 뷰.'
+      COMMENT = '회원 현재 스냅샷(SCD2 IS_CURRENT). 불변/현재 속성 전용. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO(SEX·MBER_STAT_CD·RELATNSP_DIV_CD) ∪ TM_MM_ONCE_MBER_INFO(일시회원) + TH_MM_FDRM_MBER_STNG_DTLS(상태이력 SCD2) · SILVER=CRM_MEMBER.'
   )
   RELATIONSHIPS (
     fmm_to_month  AS fmm (MONTH_KEY) REFERENCES month,
@@ -100,7 +117,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.AVG_PAID_FEE AS AVG(fmm.PAID_FEE)
       WITH SYNONYMS ('평균납입회비', '평균회비') COMMENT = '행(월×회원)당 평균 납입회비(원). HAS_BILLING=TRUE 전제 권장. PoC AVG_PAID 로직 이식.'
   )
-  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비(PoC 이식). 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분은 현재 스냅샷 기준(과거월도 현재값). 비활성(적재 대기): 캠페인/납입방식/후원사업/사유별 분해(FK=0), 활동/누계/미납 카운트 비율(ACTIVE_CNT=0), 신규기존 분해(NEF=0), 지역/연령대(dim 공란).'
+  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(회비 TM_PM_MBRFEE_ACMSLT·기부 TM_PM_DNTN_DTLS·개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC·증감 TM_MM_FDRM_MBER_IRSD·회원 TM_MM_FDRM_MBER_INFO) → SILVER(CRM_*) → GOLD(FMM). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비(PoC 이식). 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분은 현재 스냅샷 기준(과거월도 현재값). 비활성(적재 대기): 캠페인/납입방식/후원사업/사유별 분해(FK=0), 활동/누계/미납 카운트 비율(ACTIVE_CNT=0), 신규기존 분해(NEF=0), 지역/연령대(dim 공란).'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·성별·회원상태 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 납부율·미납비중 등 비율은 총계 행에서 SUM 기반으로 정확히 산출한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 -- 비활성(Phase-2/적재 후) — 구조 불변, 적재 완결 시 metric만 추가:
@@ -117,15 +134,15 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
   TABLES (
     fme AS GN_DW.GOLD.FACT_MEMBER_EVENT
       WITH SYNONYMS ('회원 상태전이', '개발중단 사건')
-      COMMENT = '회원 상태전이 사건 팩트(4.63M). 1행=1개발/중단 사건. ⚠(DATE_SK,MEMBER_DK,EVENT_TYPE) 실측 비유일(distinct 4,052,797) → PK 미선언(기저 FACT·참조 안 됨·집계 무해, 2026-07-22).',
+      COMMENT = '회원 상태전이 사건 팩트(4.63M). 1행=1개발/중단 사건. ⚠(DATE_SK,MEMBER_DK,EVENT_TYPE) 실측 비유일(distinct 4,052,797) → PK 미선언(기저 FACT·참조 안 됨·집계 무해, 2026-07-22). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: 개발 TM_MM_FDRM_MBER_DVLP_AMT(OCCRRNC_DE·SPNSR_AMT·MBER_NO) · 중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC(SPNSR_DSCNTC_DE·DSCNTC_RSN_CD·DSCNTC_PATH) · SILVER=CRM_MEMBER_DEV+CRM_MEMBER_DISCONTINUE.',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '일자', '사건일')
-      COMMENT = '일 차원.',
+      COMMENT = '일 차원. [원천] ETL 생성(달력, 팩트 일자범위 기반) — 업무 원천 시스템 없음.',
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원', '회원속성')
-      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰.'
+      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.'
   )
   RELATIONSHIPS (
     fme_to_date   AS fme (DATE_SK)   REFERENCES date,
@@ -157,7 +174,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     --   서로 다른 행에 있어 행별 DATEDIFF가 전건 NULL, DIM_MEMBER_CURRENT.LAST_STOP_DATE도 미적재 → 산출 불가.
     --   유지기간/유지율/LTV(신4·6~8)는 회원 가입↔중단 페어링(코호트) 필요 → Agent/Phase-2 확장.
   )
-  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). 활성: 개발/중단 건·고유회원수. 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재 대기): 조직/캠페인/후원사업/사유별 분해(ORG_SK·FK=0), 신규기존 분해(NEF=0), 미납중단(UNPAID_STOP=0).'
+  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC) → SILVER(CRM_MEMBER_DEV+CRM_MEMBER_DISCONTINUE) → GOLD(FME). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 개발/중단 건·고유회원수. 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재 대기): 조직/캠페인/후원사업/사유별 분해(ORG_SK·FK=0), 신규기존 분해(NEF=0), 미납중단(UNPAID_STOP=0).'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·전이유형·성별 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
@@ -169,19 +186,19 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
   TABLES (
     fse AS GN_DW.GOLD.FACT_SERVICE_EVENT
       WITH SYNONYMS ('발송', '서비스 발송', '문자메일 발송')
-      COMMENT = '서비스 발송 팩트(38.47M). ⚠(DATE_SK,MEMBER_DK,SERVICE_SK) 실측 비유일(distinct 36,651,766) → PK 미선언(기저 FACT·집계 무해, 2026-07-22).',
+      COMMENT = '서비스 발송 팩트(38.47M). ⚠(DATE_SK,MEMBER_DK,SERVICE_SK) 실측 비유일(distinct 36,651,766) → PK 미선언(기저 FACT·집계 무해, 2026-07-22). [원천] 시스템=CRM(UMS 발송) · BRONZE=GN_DW.BRONZE_CRM: 발송마스터 TM_MS_EMAIL_SNDNG·TM_MS_MSG_AT_SNDNG·TM_MS_PSTMTR_SNDNG · 발송상세 TD_MS_EMAIL_SNDNG_DTLS·TD_MS_MSG_AT_SNDNG_DTLS·TD_MS_PSTMTR_SNDNG_DTL(MBER_NO·SNDNG_RST_CD) · 성과 TD_MS_*_LQY_SNDNG(성공/실패, 현재 미적재) · SILVER=CRM_SEND_REQUEST·CRM_SEND_MEMBER·CRM_SEND_RESULT.',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '발송일')
-      COMMENT = '일 차원.',
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
     service AS GN_DW.GOLD.DIM_SERVICE
       PRIMARY KEY (SERVICE_SK)
       WITH SYNONYMS ('서비스', '서비스구분', '발송채널')
-      COMMENT = '서비스 차원(A3 SERVICE_SK 99.97% 커버). 미매칭=Unknown(SK=0).',
+      COMMENT = '서비스 차원(A3 SERVICE_SK 99.97% 커버). 미매칭=Unknown(SK=0). [원천] 시스템=CRM(UMS) · BRONZE=GN_DW.BRONZE_CRM.SND_REQ_MST(SEND_GBN_TOP/MID/BOT 대·중·소분류 코드) · SILVER=CRM_SEND_REQUEST.',
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
-      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰.'
+      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.'
   )
   RELATIONSHIPS (
     fse_to_date    AS fse (DATE_SK)    REFERENCES date,
@@ -205,7 +222,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.DISTINCT_SEND_MEMBERS AS COUNT(DISTINCT fse.MEMBER_DK)
       WITH SYNONYMS ('발송 고유회원수', '수신 대상 회원수') COMMENT = '발송 대상 고유 회원수. D(distinct). 다기간 중복 방지.'
   )
-  COMMENT = 'Phase-1 서비스 발송 SV(base FSE). 활성: 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별. 시간=전체가능. 비활성(적재 대기): 수신/성공/실패/오픈(SUCCESS/FAIL/OPEN=0), 서신/선물금/증액 참여·+5일 코호트(D5_*=0, 신31~53), 캠페인별(CAMPAIGN_SK=0).'
+  COMMENT = 'Phase-1 서비스 발송 SV(base FSE). [원천 요약] 원천시스템=CRM(UMS 발송) · BRONZE=GN_DW.BRONZE_CRM(TM_MS_EMAIL/MSG_AT/PSTMTR_SNDNG + TD_MS_*_SNDNG_DTLS + SND_REQ_MST) → SILVER(CRM_SEND_*) → GOLD(FSE). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별. 시간=전체가능. 비활성(적재 대기): 수신/성공/실패/오픈(SUCCESS/FAIL/OPEN=0), 서신/선물금/증액 참여·+5일 코호트(D5_*=0, 신31~53), 캠페인별(CAMPAIGN_SK=0).'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(채널·서비스유형·회원구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
@@ -217,19 +234,19 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
   TABLES (
     fep AS GN_DW.GOLD.FACT_EVENT_PARTICIPATION
       WITH SYNONYMS ('행사 참여', '이벤트 참여')
-      COMMENT = '행사 참여 팩트(1.13M). ⚠(DATE_SK,MEMBER_DK,EVENT_SK) 실측 비유일(distinct 843,414) → PK 미선언(기저 FACT·집계 무해, 2026-07-22).',
+      COMMENT = '행사 참여 팩트(1.13M). ⚠(DATE_SK,MEMBER_DK,EVENT_SK) 실측 비유일(distinct 843,414) → PK 미선언(기저 FACT·집계 무해, 2026-07-22). [원천] 시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM: 참여상세 TD_MS_EVENT_PRTCPNT_DTL(MBER_NO·PARTCPT_STAT_CD·RCPMNY_AMT) ∪ TD_MS_CRMN_PRTCPNT(캠페인행사) · SILVER=CRM_EVENT_PARTICIPATION.',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '참여일')
-      COMMENT = '일 차원.',
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
     event AS GN_DW.GOLD.DIM_EVENT
       PRIMARY KEY (EVENT_SK)
       WITH SYNONYMS ('행사', '이벤트')
-      COMMENT = '행사 차원. EVENT_SK 고아 23%(이슈 E) → Unknown(SK=0) 라우팅, 행사명별 집계는 부분.',
+      COMMENT = '행사 차원. EVENT_SK 고아 23%(이슈 E) → Unknown(SK=0) 라우팅, 행사명별 집계는 부분. [원천] 시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM: TM_MS_EVENT(EVENT_NM·STRT_DE) ∪ TM_MS_CRMN(캠페인행사) · SILVER=CRM_EVENT.',
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
-      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰.'
+      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.'
   )
   RELATIONSHIPS (
     fep_to_date   AS fep (DATE_SK)   REFERENCES date,
@@ -255,7 +272,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep.DISTINCT_PARTICIPANTS AS COUNT(DISTINCT fep.MEMBER_DK)
       WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).'
   )
-  COMMENT = 'Phase-1 행사 참여 SV(base FEP). 활성: 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분·참여일별. 행사 미매칭 23%(EVENT_SK=0 Unknown 라우팅) → 행사명별 집계는 부분, 확정치로 단정 금지. 비활성(적재 대기): 모집/총원(TOTAL/RECRUIT_CNT=0), 캠페인/후원사업별(FK=0).'
+  COMMENT = 'Phase-1 행사 참여 SV(base FEP). [원천 요약] 원천시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM(행사 TM_MS_EVENT∪TM_MS_CRMN · 참여 TD_MS_EVENT_PRTCPNT_DTL∪TD_MS_CRMN_PRTCPNT) → SILVER(CRM_EVENT+CRM_EVENT_PARTICIPATION) → GOLD(FEP). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분·참여일별. 행사 미매칭 23%(EVENT_SK=0 Unknown 라우팅) → 행사명별 집계는 부분, 확정치로 단정 금지. 비활성(적재 대기): 모집/총원(TOTAL/RECRUIT_CNT=0), 캠페인/후원사업별(FK=0).'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(행사종류·행사명·회원구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
@@ -268,15 +285,15 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd AS GN_DW.GOLD.FACT_BUDGET
       PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
       WITH SYNONYMS ('예산', '예산 집행')
-      COMMENT = '예산 팩트(grain=월×세세목, 24.5K · 실측 유일 → PK). 편성/집행.',
+      COMMENT = '예산 팩트(grain=월×세세목, 24.5K · 실측 유일 → PK). 편성/집행. [원천] 시스템=ERP(예산관리, Snowflake 파일 업로드 적재) · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(예산·실적 원장): 편성 YEAR_BDGT_AMT_n · 집행 EXEC_AMT_n — 12개월 wide 컬럼을 월 long으로 언피벗 · SILVER=ERP_BUDGET.',
     month AS GN_DW.SERVING.DIM_MONTH
       PRIMARY KEY (MONTH_KEY)
       WITH SYNONYMS ('월', '예산월')
-      COMMENT = '월 차원. fan-out 차단용 helper 뷰.',
+      COMMENT = '월 차원. fan-out 차단용 helper 뷰. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
     item AS GN_DW.GOLD.DIM_BUDGET_ITEM
       PRIMARY KEY (BUDGET_ITEM_SK)
       WITH SYNONYMS ('세세목', '예산항목')
-      COMMENT = '예산 세세목 차원.'
+      COMMENT = '예산 세세목 차원. [원천] 시스템=ERP · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(JANG_NM~SUBDTL_ITEM_NM 장·관·항·목·세목·세세목 6단계 계층 + BDGT_UNIT_NM 예산단위) — DISTINCT 마스터화·MD5 대리키 · SILVER=ERP_BUDGET_ITEM.'
   )
   RELATIONSHIPS (
     fbd_to_month AS fbd (MONTH_KEY)      REFERENCES month,
@@ -297,7 +314,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd.EXEC_RATE AS SUM(fbd.EXEC_BUDGET_ERP) / NULLIF(SUM(fbd.PLAN_BUDGET_MONTH), 0) * 100
       WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N).'
   )
-  COMMENT = 'Phase-1 예산 SV(base FBD). 활성: 편성예산(월)·집행예산(ERP)·집행율, 세세목/예산구분/월별. 비활성(적재 대기): 연 편성예산(PLAN_BUDGET_YEAR=0), 집행추정/모금성비용/광고비(=0), 조직/캠페인별(ORG/CAMPAIGN_SK=0), 개발단가·ROI(신9~11, O3·E-6 대기).'
+  COMMENT = 'Phase-1 예산 SV(base FBD). [원천 요약] 원천시스템=ERP(예산관리 · Snowflake 파일 업로드로 bronze 적재) · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(편성 YEAR_BDGT_AMT_n·집행 EXEC_AMT_n 월 언피벗, 세세목 JANG_NM~SUBDTL_ITEM_NM) → SILVER(ERP_BUDGET+ERP_BUDGET_ITEM) → GOLD(FBD). ⚠광고비는 이 SV의 원천(ERP)에 없다 — 광고비는 AGENCY 원천의 SV_AD 소관(예산 원장에 광고비 컬럼 부재, E-4). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 편성예산(월)·집행예산(ERP)·집행율, 세세목/예산구분/월별. 비활성(적재 대기): 연 편성예산(PLAN_BUDGET_YEAR=0), 집행추정/모금성비용/광고비(=0), 조직/캠페인별(ORG/CAMPAIGN_SK=0), 개발단가·ROI(신9~11, O3·E-6 대기).'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(세세목·예산구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계(합계·집행율) 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 편성예산·집행예산·집행율을 월별로 보여준다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 
@@ -379,15 +396,15 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad AS GN_DW.SERVING.FACT_AD_COMBINED
       PRIMARY KEY (AD_PERF_DK)
       WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
-      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join, 235,572행 유일). AD_SOURCE_TYPE으로 디지털/방송 구분.',
+      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join, 235,572행 유일). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·전환콜) / GN_DW.BRONZE_GA4.events_YYYYMMDD(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
     device AS GN_DW.GOLD.DIM_DEVICE
       PRIMARY KEY (DEVICE_SK)
       WITH SYNONYMS ('기기', '디바이스', '매체기기')
-      COMMENT = '기기(디바이스) 차원.',
+      COMMENT = '기기(디바이스) 차원. [원천] 시스템=GA4(BigQuery→Snowflake) · BRONZE=GN_DW.BRONZE_GA4.events_YYYYMMDD(device.category) · SILVER=GA4_DEVICE. 방송 행은 기기 개념이 없어 (해당없음).',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '실적일')
-      COMMENT = '일 차원.'
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.'
   )
   RELATIONSHIPS (
     ad_to_date   AS ad (PERF_DATE_SK) REFERENCES date (DATE_SK),
@@ -452,17 +469,25 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.TOTAL_CONV_CALL_CNT AS SUM(ad.CONV_CALL_CNT)
       WITH SYNONYMS ('전환콜', '전환전화건') COMMENT = '방송 전환 전화 건수 합계. F(가산). 총 49,093. 방송 전용.',
     ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
-      WITH SYNONYMS ('방송개발건', '방송 개발회원건수') COMMENT = '방송 개발건수 합계. F(가산). 총 96,321. 방송 전용. ⚠커버리지 5.2%(37,886행 중 1,982행만 적재) → 방송 전체 개발 규모로 해석 금지, 적재된 편성분 부분합.',
+      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '재방송 개발건수 합계. F(가산). 총 96,321. **REBROADCAST 전용** — VIDEO는 원천(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 **구조적으로 부재**(대행사 비디오 리포트는 개발 대신 전환콜 보고)하므로 결손이 아니다. REBROADCAST 내 커버리지 **96.03%**(2,064행 중 1,982행). ⚠VIDEO를 포함한 "방송 전체" 개발 규모로 확대 해석 금지.',
     ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
-      WITH SYNONYMS ('방송개발회원', '방송 개발회원수') COMMENT = '방송 개발회원수 합계. F(가산). 방송 전용. ⚠커버리지 5.2% — 부분합.'
-    -- ❌ BRDC_DEV_UNIT_PRICE(방송 개발단가, 공8) 미노출 — 2026-07-28 실측 후 제거 결정.
-    --    분모 DVLP_CNT 커버리지 5.2%인데 분자 AD_COST는 100% → 정합 전 223,466원 vs 정합 후 157,969원
-    --    = **41% 과대계상**. 분자를 CASE로 정합해도 방송 광고비의 29%만 반영되어 "방송 개발단가"라는
-    --    이름이 실제 커버리지를 오인시킨다 → Phase-2(DVLP_CNT 적재 확대 후) 재검토.
-    --    선례: SV_MEMBER_EVENT.AVG_RETENTION_MONTHS 도 동일 사유로 제거 후 재배포(01 진행상태표 #3).
+      WITH SYNONYMS ('재방송개발회원', '방송개발회원', '방송 개발회원수') COMMENT = '재방송 개발회원수 합계. F(가산). **REBROADCAST 전용**(VIDEO 원천에 컬럼 부재). REBROADCAST 내 커버리지 96.03%.',
+    -- ✅ 공8 재방송 개발단가 — 2026-07-29 실측 재검증 후 **복원**(종전 제거 결정은 오진).
+    --    [오진 경위] 종전(2026-07-28) 근거 "커버리지 5.2% · 41% 과대계상"은 REBROADCAST의 개발건수를
+    --      VIDEO까지 합친 분모(37,886행)로 나눈 값이다. VIDEO는 원천에 개발 컬럼이 **없어**(구조적 부재)
+    --      결손으로 셀 대상이 아니다 → 범주 오류.
+    --    [실측 2026-07-29] REBROADCAST 단독: 커버리지 1,982/2,064 = **96.03%**,
+    --      미정합 158,933.27원 vs 정합 157,969.27원 = **왜곡 0.61%** (방송합계 기준이던 41.5%가 아님).
+    --      또한 종전 주석의 "방송 광고비의 29%만 반영"은 수치가 뒤집힌 오기 —
+    --      정합 분자 ₩15,215,758,016 / 방송합계 ₩21,524,449,226 = **70.7% 포함**(29%는 제외되는 VIDEO 몫).
+    --    [명명] `BRDC_`(방송)가 아니라 `REBRDC_`(재방송)로 둔다. VIDEO(방송 광고비의 29%)에 개발 개념이
+    --      없으므로 "방송 개발단가"는 여전히 스코프를 오인시킨다 — 종전 주석의 문제의식은 타당했고,
+    --      해법이 "제거"가 아니라 "정확한 스코프 명명"이었다.
+    ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)
+      WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(VIDEO 원천에 개발 컬럼 부재 → 방송 전체 단가가 아님). 분자를 개발건수 적재행으로 정합(미적재 82행 광고비 제외). 실측 157,969원(커버리지 96.03% · 정합 왜곡 0.61%). ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 41.5% 과대계상.'
   )
-  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper, 235,572행). 활성: 광고비(514.4억)·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수·전환콜·방송개발건 [방송]. 기간: 디지털 2024-01 - 2026-06, 방송 2023-01 - 2026-07. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(FK=0, Phase-2). ⚠개발단가는 2026-06 이후 산출 불가(원천이 개발건수 대신 단가 제공). ⚠방송개발건 커버리지 5.2%(부분합). 방송 개발단가는 분모 커버리지 부족(5.2%)으로 41% 왜곡되어 미노출(Phase-2).'
-  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수·전환콜·방송개발건은 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가는 2026-06 이후 원천 미적재로 NULL이다. 개발단가를 최신월 기준으로 묻는 질문에는 산출 가능한 최신월(2026-05)까지로 기간을 한정하고, 2026-06 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 방송 개발건수는 커버리지 5.2%의 부분합이므로 방송 전체 개발 규모로 단정하지 말고 부분 집계임을 명시한다.';
+  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper, 235,572행). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비(514.4억)·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수·전환콜 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. 기간: 디지털 2024-01 - 2026-06, 방송 2023-01 - 2026-07. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(FK=0, Phase-2). ⚠개발단가(공7)는 2026-06 이후 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다(REBROADCAST 내 커버리지 96.03%). VIDEO 혼합 집계 시 41.5% 과대계상.'
+  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수·전환콜은 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. **개발건수(재방송개발건·재방송개발회원)와 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 필터를 자동 추가한다** — VIDEO 원천에 개발 컬럼이 없어 혼합 시 41.5% 과대계상된다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가(공7, 디지털)는 2026-06 이후 원천 미적재로 NULL이다. 최신월 기준 질문에는 산출 가능한 최신월(2026-05)까지로 기간을 한정하고, 2026-06 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 개발건수·개발단가를 "방송"으로 묻더라도 **재방송(REBROADCAST) 전용 지표**임을 답변에 명시한다 — VIDEO는 대행사 원천에 개발 컬럼이 없어 집계 대상이 아니며(결손이 아니라 구조적 부재), 따라서 방송 전체 개발 규모로 단정하면 안 된다. 재방송 내 커버리지는 96.03%다.';
 
 
 /* =====================================================================================

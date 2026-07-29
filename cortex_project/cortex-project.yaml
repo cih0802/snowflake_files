@@ -10,23 +10,3 @@ artifacts:
     targets:
       default:
         object: GN_DW.SERVING.AGENT_OVERALL
-  - path: SV_MEMBER_EVENT.sv.yaml
-    type: semantic_view
-    targets:
-      default:
-        object: GN_DW.SERVING.SV_MEMBER_EVENT
-  - path: SV_SERVICE.sv.yaml
-    type: semantic_view
-    targets:
-      default:
-        object: GN_DW.SERVING.SV_SERVICE
-  - path: SV_EVENT_PARTICIPATION.sv.yaml
-    type: semantic_view
-    targets:
-      default:
-        object: GN_DW.SERVING.SV_EVENT_PARTICIPATION
-  - path: SV_MEMBER_MONTHLY.sv.yaml
-    type: semantic_view
-    targets:
-      default:
-        object: GN_DW.SERVING.SV_MEMBER_MONTHLY

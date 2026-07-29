@@ -1,6 +1,6 @@
 <!-- LLM-METADATA
 doc_id: SV_AGENT_WORKPLAN
-doc_role: Semantic View + Cortex Agent 설계·배포 작업계획 (정본, v4.2)
+doc_role: Semantic View + Cortex Agent 설계·배포 작업계획 (정본, v4.3)
 project: GN_DW (굿네이버스)
 created: 2026-07-21
 supersedes: _archive/00_SV-Agent 작업계획_legacy.md (v3.1 — 설계문서 only)
@@ -8,7 +8,7 @@ scope: SV/Agent 실배포 + Snowflake Intelligence(CoWork) 연결 + 평가·거�
 inputs: 03_top-down_gold/ (GOLD 실물 star schema) + 20_issue/ (데이터 게이트·미결)
 END-METADATA -->
 
-# Semantic View · Agent 작업계획 (GN_DW · v4.2)
+# Semantic View · Agent 작업계획 (GN_DW · v4.3)
 
 > 굿네이버스 GN_DW **Semantic View(SV) + Cortex Agent 설계·배포·운영 작업계획서**.
 > **레거시(`_archive/00_SV-Agent 작업계획_legacy.md`, v3.1)와의 결정적 차이**: 레거시는 *"설계 문서 산출까지, `CREATE` 금지"* 였다. **본 v4는 GOLD 스타스키마 실물이 완성(2026-07-20)된 것을 전제로, 실제 `CREATE SEMANTIC VIEW`/`CREATE AGENT` 배포 → Snowflake Intelligence(CoWork) 연결 → 평가·거버넌스까지의 end-to-end 계획이다.**
@@ -70,6 +70,28 @@ END-METADATA -->
 
 12. **SV·Agent는 형상관리·재현 배포(IaC).** 모든 `CREATE SEMANTIC VIEW`/`CREATE AGENT` DDL을 소스관리(가능하면 dbt `semantic_view` materialization 또는 DCM)로 버전관리하고, **GOLD DDL 변경 시 SV 회귀검증(스모크 + eval 재실행) 후 재배포**한다. 손수 실행분도 `05_SV_DDL.sql`·`08_AGENT_spec.md`에 정본으로 보존.
 
+13. **BRONZE 원천(provenance)을 SV 메타데이터에 노출한다.** *(2026-07-29 신설)* 모든 SV의 **테이블 COMMENT**와 **SV 최상위 COMMENT**에 `[원천]`/`[원천 요약]` 절을 기입한다 — 형식 `[원천] 시스템=<원천시스템> · BRONZE=<DB.스키마.테이블(핵심컬럼)> · SILVER=<정제테이블>`.
+    - **왜**: Agent(Cortex Analyst)는 SV 메타데이터를 context로 읽는다. 원천을 SV에 적어두면 "이 수치 어디서 온 거야?"·"믿을 수 있어?" 류의 **provenance 질문에 Agent가 창작 없이** 답한다. 현업 신뢰(trust) 확보가 소비 계층의 마지막 관문이고, 출처를 못 대는 숫자는 채택되지 않는다.
+    - **부수 효과(중요)**: 원천이 다른 SV를 한 답변에 함께 낼 때 Agent가 **왜 표를 분리하는지** 근거를 갖게 된다(예: 예산=ERP / 광고비=AGENCY → 교차 집계 금지). 종전에는 "tool 결과가 따로라서" 분리했을 뿐 사용자에게 이유를 설명하지 못했다.
+    - **입도 규칙**: SV에는 **테이블 수준**만 적는다. 컬럼 단위 완전 매핑은 넣지 않는다 — 토큰 낭비 + 정본 이중화(drift) 위험. 컬럼 단위 요청은 정본 문서로 안내하도록 Agent instructions에 규칙을 둔다.
+    - **BRONZE 스키마 4종** (정본 `02_GN_DW_building/02_DB_BRONZE_SILVER.md`):
+
+    | BRONZE 스키마 | 원천 시스템 | 적재 방식 | 이 원천을 쓰는 SV |
+    |---|---|---|---|
+    | `GN_DW.BRONZE_CRM` | CRM (eCRM · UMS) | 직적재 (43테이블/927컬럼 실측) | SV_MEMBER_MONTHLY · SV_MEMBER_EVENT · SV_SERVICE · SV_EVENT_PARTICIPATION |
+    | `GN_DW.BRONZE_ERP` | ERP 예산·실적 원장 | 파일 업로드 → 테이블화 | SV_BUDGET |
+    | `GN_DW.BRONZE_AGENCY` | 대행사 일별 리포트 | Google Sheet · Drive Excel · SharePoint Excel (3테이블) | SV_AD |
+    | `GN_DW.BRONZE_GA4` | GA4 (BigQuery 경유) | events 일별 샤드 | SV_AD (전환·기기) · *(Phase-2 SV_GA)* |
+
+    - **정본 계보 문서** (SV COMMENT는 요약, 상세는 여기):
+      - `30_output_share/04_컬럼계보매핑.md` — GOLD 컬럼 → SILVER → BRONZE **1:1 컬럼 매핑** + 변환 규칙 (자동생성: `scripts/gen_column_mapping.py`)
+      - `30_output_share/05_지표GOLD매핑.md` — 지표# → GOLD 배속 → SILVER → BRONZE (215지표, 자동생성)
+      - `03_top-down_gold/08_silver의존.md` — SILVER→BRONZE lineage 확정
+      - `30_output_share/06_BRONZE노출감사.md` — 순방향 감사(BRONZE 1,121컬럼 중 미노출 664)
+    - **동기화 의무**: 원천이 바뀌면 ① `gen_column_mapping.py` 재실행 → ② `05_SV_DDL.sql`의 `[원천]` 절 수정 → ③ SV 재배포(+GRANT 재실행) → ④ **`cortex_project/*.agent.yaml`(정본) 원천 지도 갱신** → ⑤ Agent 재배포 → ⑥ `08_AGENT_spec.md` §3 사본 동기화. 자동 전파 없음.
+    - **입도 결정의 설계 정본 = `04_SV_설계.md` §0.7** (선택지 A/B/C 비교·기입 금지 목록·에스컬레이션 트리거). 원칙 13은 "무엇을" 정하고, §0.7이 "어느 입도로·왜"를 정한다.
+    - ⚠ **정본 위상 주의(drift 재발 방지)**: Agent 스펙의 정본은 **`cortex_project/*.agent.yaml`**(08 §3 규정)이며 `09_AGENT_spec_구현.sql`은 **실행 로그**다. 09만 고치면 정본이 뒤처진다 — 08 §3에 이미 동일 사고(2026-07-28 배포본이 문서보다 구버전) 기록이 있다.
+
 ---
 
 ## 0.1 핵심 의사결정 기록 (왜 이렇게)
@@ -77,6 +99,7 @@ END-METADATA -->
 | 결정 | 왜 |
 |---|---|
 | **레거시 4-SV → v4 7-SV** | 레거시는 metric 많은 4 FACT(FMM·FSE·FAD·FGA)만 SV화했으나, GOLD 9 FACT 실물이 완성됨 → 모든 grain을 covered. grain당 1 SV가 best practice(focused scope) |
+| **BRONZE 원천을 SV COMMENT에 기입 (2026-07-29)** | Agent가 SV 메타데이터를 context로 읽으므로, 원천을 SV에 적으면 provenance 질문("이 숫자 어디서 왔어?")에 창작 없이 답한다. 별도 tool·Cortex Search 불요. **테이블 수준만** 기입 — 컬럼 단위는 `04_컬럼계보매핑.md` 정본으로 안내(토큰·drift 회피). 부수 효과로 원천이 다른 SV의 표 분리 근거를 Agent가 갖는다(예산 ERP ↔ 광고 AGENCY 교차 금지) |
 | **SV base = GOLD base 테이블(WIDE 뷰 아님)** | 사용자 확정. relationship을 SV가 governed 관리 → 조인 정확도↑. WIDE 뷰는 조인 pre-bake돼 편하나 relationship 표현력·필터축 제어를 잃음. GOLD 뷰 SELECT 권한만 있으면 base 조인 가능 |
 | **Agent 3개(회원/마케팅/overall)** | 사용자 확정. 현업 질문 도메인 경계와 일치. 레거시도 Agent는 3개였음(회원/서비스/마케팅) → 서비스를 회원 도메인에 흡수, 예산·전사를 overall로 신설 |
 | **SV는 grain당 분리(개수 비고정)** | 정확도 레버. 한 SV에 grain 섞으면 text-to-SQL 혼동. 7개는 focused SV들의 결과지 목표가 아님 |
@@ -237,7 +260,7 @@ END-METADATA -->
 
 | 단계 | 산출물 | 상태 |
 |---|---|---|
-| — | 작업계획(본 문서 v4.2) `01_SV-Agent 작업계획.md` | ✅ 완료 |
+| — | 작업계획(본 문서 v4.3) `01_SV-Agent 작업계획.md` | ✅ 완료 |
 | 0 | `02_SERVING_setup.sql` (SERVING 스키마·권한·CoWork object) | ✅ 완료 (2026-07-21) — RBAC 전체 선행 구축(WH 3·역할 6·계층·GOLD/SILVER/BRONZE grant) + SERVING(owner GN_DW_ADMIN) + CoWork object. DoD 검증: ANALYST GOLD SELECT ✅·VIEWER SERVING USAGE ✅ |
 | 1 | `03_SV_metric_배속.md` (7 SV 재배속) | ✅ 완료 (2026-07-21) — derived 81 전수 재배속(MONTHLY 40·EVENT 8·SERVICE 24·PARTICIPATION 0·AD 4·GA 2·BUDGET 3=81, 중복0·누락0). Phase: P1 69·P2 12. 레거시 SV_MEMBER 48→grain분리(FME 8 이관) |
 | 2 | `04_SV_설계.md` (+브리지·Cortex Search 식별) | ✅ 설계완료 / ⛔ **데이터 게이트 발견** (2026-07-21) — 7 SV 구조·비판검토·fan-out helper 검증 완료. **단 실측 결과 GOLD 차원 FK(CAMPAIGN/SERVICE/PAYMENT/ORG_SK)·FMM 카운트 measure·NEW_EXISTING_FLAG 전건 미적재** → 실활성 지표 극소수(§0.6). 3단계 스코프 결정 필요 |
@@ -248,6 +271,9 @@ END-METADATA -->
 | 7 | `11_거버넌스_운영.md` | ✅ 완료 (2026-07-22) — 08_mornitoring 근거로 GN_DW 맞춤 거버넌스: 과금 매핑(CORTEX_AGENTS·AI_SERVICES·SNOWFLAKE_INTELLIGENCE·WH), 사용량 정본뷰(중복합산 금지), Budget(소프트)·Per-user quota/RBAC(하드)·Alert(2h), **품질 폐루프**(오답→instruction/VQR 재배포), 거버넌스 체크리스트, 트라이얼 제약·paid 이관표 |
 | 8 | `00_README.md` 갱신·인계 | ⬜ 대기 |
 | **9** | **SV_AD 확장 (파이프라인 확장 반영)** | 🔄 **문서완료·배포 부분** (2026-07-28) — BRONZE→GOLD AGENCY 광고 확장 검토 후 **SV_AD 신설**. ① `SERVING.FACT_AD_COMBINED` helper 뷰(FAP+FAD+FAB 1:1 pre-join) + `SV_AD`(dim 20·metric 16) **CREATE 완료**, fan-out 스모크 **PASS**(광고비 51,439,193,917.80 SV=FACT 일치), CTR/개발단가 산출 확인. ② 문서 정합: `05`(§6 DDL)·`09`(analyst_ad)·`04`(§6 전면 재작성)·`03`(§5 P2→P1·§8.3/8.4 집계·§6-G/H/I)·`08`(§0/§1/§3.2)·`01`(본표). ③ **잔여 사용자 실행**: `13_SV_AD_배포_추가작업.sql` (소유권 이전 2건 + AGENT_OVERALL 재배포 + USAGE 재부여 + SI 재확인) |
+| **10** | **BRONZE 원천(provenance) 노출** | 🔄 **문서완료·배포 대기** (2026-07-29) — 원칙 13 신설. ① `05_SV_DDL.sql`: SV 6종의 **테이블 COMMENT + SV 최상위 COMMENT**에 `[원천]`/`[원천 요약]` 절 기입(시스템·BRONZE DB.스키마.테이블(핵심컬럼)·SILVER) + 헤더에 규약 블록. ② `09_AGENT_spec_구현.sql`: 2 Agent instructions 보강 — system(원천 응답 규칙·Agent별 원천 지도·컬럼단위는 정본 안내)·response(원천 다르면 표 분리+각주)·orchestration(출처만 묻는 질문은 도구 미호출)·tool description(analyst_budget=ERP·analyst_ad=AGENCY+GA4)·sample_question 각 1건. ③ **잔여 사용자 실행**: `05_SV_DDL.sql` SV 6종 재배포(`CREATE OR REPLACE` → **GRANT 재실행 필수**) → `09` [1-ALT] Agent 2종 재배포 → `cortex_project/*.agent.yaml` 동기화. ④ 검증: `DESCRIBE SEMANTIC VIEW`로 COMMENT 반영 확인 + CoWork에서 "이 데이터 원천은?" 질의 |
+| **10-a** | **원천노출 사후 검토에서 나온 미결(2026-07-29)** | ⬜ **대기** — 원천 작업 자체와 별개로 검토 중 드러난 정합 부채. ① **`cortex_project/` 정본 부채**: `AGENT_OVERALL.agent.yaml`이 **SV_AD(analyst_ad) 미반영 구버전**(단계9 산출물 미전파) + `AGENT_MEMBER`도 원천 규칙 미반영 → 08 §3이 yaml을 정본으로 규정하므로 **yaml 갱신 없이는 재배포마다 회귀**. ② **`cortex-project.yaml` SV 등록 불완전**: SV yaml 4종만 등록(`SV_BUDGET`·`SV_AD` 누락)이고 등록된 4종에는 `[원천]` 절이 없다 → 누군가 `semantic_view_deploy`를 그 yaml로 실행하면 **COMMENT 작업이 소실**된다. **SV 정본은 `05_SV_DDL.sql`(원칙12)** 임을 `cortex-project.yaml` 주변에 명시하거나, yaml을 재다운로드해 정합화할 것. ③ **평가셋 공백**: 원천 질문은 SQL을 만들지 않아 `07_평가셋_eval.md`의 gold-SQL 대조로 채점 불가 → **가드레일(ⓖ) 신규 클래스**("텍스트 답변·도구 미호출 기대")로 등록 필요. ④ `06_검증쿼리_VQR.md`에 원천 관련 VQR은 **부적합**(VQR=SQL 정본) → 등록하지 않는 것이 맞음을 명시 |
+| **10-b** | **공8 재방송 개발단가 복원 (오진 교정)** | 🔄 **문서완료·배포 대기** (2026-07-29) — 사용자가 `13_SV_AD_배포_추가작업.sql` §진단쿼리를 실행해 **2026-07-28 배포취소 결정이 오진**임이 드러났다. **[원인]** `DVLP_CNT`는 `BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS` 전용이고 `VIDEO_AD_CMPGN_DTLS`에는 개발 컬럼이 **아예 없다**(비디오 리포트=전환콜 보고) → VIDEO의 공백은 **미적재 결손이 아니라 구조적 부재**인데 이를 분모 모집단(37,886행)에 포함시켜 "커버리지 5.2%·41.5% 왜곡"이 산출됐다. **[실측]** REBROADCAST 단독 커버리지 **96.03%**(1,982/2,064) · 정합 왜곡 **0.61%**(158,933→**157,969원**). 종전 주석의 "정합해도 방송 광고비 29%만 반영"도 뒤집힌 오기(실제 **70.7% 포함**, 29%는 제외되는 VIDEO 몫). **[조치]** ① `05_SV_DDL.sql`: `REBRDC_DEV_UNIT_PRICE` metric 신설(`BRDC_`→`REBRDC_` 명명 — VIDEO에 개발 개념 부재하므로 "방송"은 여전히 오인 유발) + TOTAL_DVLP_CNT/MEMBER_CNT COMMENT·최상위 COMMENT·AI_SQL_GENERATION(1)(6) 교정. ② `09`+`cortex_project/AGENT_OVERALL.agent.yaml`: 스코프 3분류(디지털/방송/재방송)·"미제공" 문구 삭제·tool description·sample_question. ③ `04_SV_설계.md` §6.4/6.5/6.7 + `03_SV_metric_배속.md` 공8 P2→**P1**(P1 72→73·P2 9→8·보류 4→3). **[교훈]** "결함 metric 미노출" 원칙은 유지하되 **결함 판정 자체를 먼저 검증**한다 — 커버리지 분모에 해당 개념이 없는 세그먼트를 넣으면 정상 지표가 결함으로 오판된다(04 §6.4.1). ④ 잔여: **VIDEO 개발단가**는 대행사 리포트에 항목 신설 요청 필요(별건) |
 
 > 상태: ⬜ 대기 / 🔄 진행 / ✅ 완료 / ⛔ 보류(사유). Phase 2 항목은 데이터 입고 트리거 충족 시 착수.
 > **파일 넘버링 규칙**: 폴더 내 2자리 순차 접두사(`00_README`·`01_작업계획`·`02_`=step0 ··· `10_`=step7). 단계번호≠파일번호(파일=00부터 문서순). 레거시는 `_archive/`.
@@ -264,6 +290,11 @@ END-METADATA -->
 | 메타·미해결 | `03_top-down_gold/07_메타.md` | 시간가용성 enum·중복정의 충돌 |
 | 1단계(레거시) | `05_SV-Agent_ai/_archive/1_SV_metric 배속.md` | 4-SV 배속(metric↔FACT 매핑 재사용) |
 | 데이터 게이트 | `20_issue/00_INDEX_이슈원장.md` 외 | Phase 2 트리거(G-5·E-6·E-1/4·Q10·A~G) |
+| **BRONZE 계보(원칙 13)** | `30_output_share/04_컬럼계보매핑.md` | **GOLD 컬럼 → SILVER → BRONZE 1:1 매핑 + 변환규칙** — SV `[원천]` 절의 근거. 컬럼 단위 상세는 여기만 인용 |
+| **지표별 계보** | `30_output_share/05_지표GOLD매핑.md` | 지표#(215) → GOLD 배속 → SILVER → BRONZE 추적 |
+| SILVER 의존 | `03_top-down_gold/08_silver의존.md` | SILVER→BRONZE lineage 확정(원천 테이블·컬럼) |
+| BRONZE 노출감사 | `30_output_share/06_BRONZE노출감사.md` | 순방향(BRONZE 1,121컬럼 중 미노출 664) — 원천에 있으나 SV에 없는 것 확인용 |
+| BRONZE 원천 목록 | `02_GN_DW_building/02_DB_BRONZE_SILVER.md` | BRONZE 스키마 4종(CRM·GA4·ERP·AGENCY) 정의·적재 방식 |
 
 ## 부록 B. Best practice 출처 (Snowflake 공식)
 - Semantic views overview / getting started(star schema 권장): `/user-guide/views-semantic/overview`
@@ -276,6 +307,7 @@ END-METADATA -->
 - YAML spec(synonyms·description·sample_values·relationships): `/user-guide/views-semantic/semantic-view-yaml-spec`
 
 ## 부록 C. 변경 이력
+- **v4.3** (2026-07-29): **BRONZE 원천(provenance) 노출** — 원칙 13 신설. SV 6종의 테이블·최상위 COMMENT에 `[원천]`/`[원천 요약]` 절 기입(`05_SV_DDL.sql`), Agent 2종 instructions에 원천 질문 응답 규칙 추가(`09_AGENT_spec_구현.sql` — system 규칙·원천 시스템 지도·표 분리 각주·출처만 묻는 질문은 도구 미호출·tool description 원천 명기·sample_question 각 1건). BRONZE 스키마 4종(CRM/ERP/AGENCY/GA4)↔SV 매핑표 및 정본 계보 문서(`04_컬럼계보매핑.md`·`05_지표GOLD매핑.md`·`08_silver의존.md`·`06_BRONZE노출감사.md`) 명시. 입도=테이블 수준(컬럼 단위는 정본 안내). 동기화 의무 5단계 절차 명문화. **미배포 — 반영에는 SV 재배포(+GRANT 재실행) → Agent 재배포 필요.**
 - **v4.2** (2026-07-21): **비판적 검토·가드레일 강화(후속 오류 방지)**. 원칙 10~12 신설(1 SV=1 FACT fan-out 방지·고카디널리티 차원 Cortex Search 백킹·SV/Agent IaC 형상관리+회귀). §0.2 리스크·가드레일 체크리스트(R1~R8) 신설. **0단계(SERVING 스키마·권한·CoWork object 생성) 전제 추가**(SERVING 미생성 상태 명시). cross-fact/목표대비는 conformed 브리지 뷰로만 구현(raw 다중 FACT 조인 금지) 명문화. overall Agent 스코프 명확화(예산+선택적 다중 SV, 질의당 단일 SV 분해). 2·3·7단계 DoD에 브리지/Search/fan-out/회귀 반영.
 - **v4.1** (2026-07-21): **객체 배치 정합화** — 정본 `02_GN_DW_building`(P7 serving_separation) 확인 후, SV·Agent 배치를 `GN_DW.GOLD`→**`GN_DW.SERVING`**으로 복원. Agent는 SERVING 배치 + **CoWork object로 가시성 큐레이션**(구 `SNOWFLAKE_INTELLIGENCE.AGENTS`는 deprecated). 데이터 격리는 스키마가 아니라 owner's rights(P3)+role scope+`SECURITY` row access policy로 명문화. (`01_project_sample`은 GOLD 통합 레거시로 확인 → `01_project_sample_legacy/`로 참고용 보존)
 - **v4** (2026-07-21): 레거시 v3.1 대체. **범위 = 설계→실배포+SI/CoWork+평가·거버넌스**로 확장(GOLD 실물 완성 전제). SV base = GOLD base DIM/FACT. **구조 4 SV → 7 SV**(grain당 1개, 9 FACT covered), **Agent 3개(회원/마케팅/overall)**. 데이터 현황 게이트로 Phase 1/2 분리. 단계 3·5·6에 실제 CREATE·SI 연결 추가.

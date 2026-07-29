@@ -1,3 +1,5 @@
+안되잖아!!!
+
 -- GN_DW.GOLD 스키마 전체 DDL(24개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
 -- Co-authored with CoCo
 /*
