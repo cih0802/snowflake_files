@@ -15,6 +15,9 @@ END-METADATA -->
 > ⚠️ 본 문서는 **마스터 인덱스(`02_...20260714.md`)의 AGENCY 분리 실행본**이다.
 > 공통 원칙·GOLD 커버리지 요약은 master 참조. 객체 명칭·정제 규칙 불일치 시 master 우선.
 > **GADS·ADMIN은 AGENCY로 흡수**(별도 prefix 미생성).
+>
+> 🔄 **[2026-07-28 재설계]** §0~§5 는 초기 **3객체** 설계 기준 기술이다. 현행은 **8객체**(staging 3 + 코어 2 + 위성 3) — **§6-B 참조**.
+> 🔄 **[2026-07-29]** `08_SILVER_테이블DDL_20260714.sql` 의 설계근거·실측이력 주석을 **§6 으로 이관**했다(08 = 구조 계약만).
 
 ---
 
@@ -87,3 +90,63 @@ END-METADATA -->
   - **🔎 아키텍처 리뷰 이력(2026-07-14)**: 비판적 점검에서 **결함 2건 발견·수정** — ① 연·월 텍스트 파싱 96% NULL → DATE 파생 재적재(NULL 0) · ② `AGENCY_COST` 월 롤업(§3 위반·중복·SILVER파생) → **제거→GOLD 이관**. 잔여 관찰: `AGENCY_AD_PERFORMANCE`는 이벤트 grain 팩트로 자연 PK 없음(무결성 게이트=소스 행수 대사 235,572) · `AD_COST`는 GA/편성/집행 혼재이므로 `COST_TYPE` 분리 집계 필수(단순 SUM 금지).
 - **완료 조건**: 정규화 전략·이름매칭·파생처리 확정 → AGENCY SILVER 신설(S-6) → `DIM_AD_CREATIVE`·`FAD` 빌드 + `FBD` 비용 보강(ERP 결합, GOLD).
 - **다음(LLM)**: (a) 3테이블 컬럼 프로파일·공통/전용 measure 매핑 → (b) `_SOURCE_SYSTEM`·인입콜 캐스팅·이름매칭 규칙 확정 → (c) SILVER 신설·UNION 적재 → (d) `08_silver의존.md` AGENCY lineage로 `FAD`/`FBD` 적재. GA4 전환(FAD)은 GA4 문서(04), 비용(FBD)은 ERP 문서(05)와 연동.
+
+---
+
+## 6. DDL 설계근거 (08 DDL 에서 이관 · 2026-07-29)
+
+> `08_SILVER_테이블DDL_20260714.sql` 은 구조 계약(타입·PK·COMMENT)만 담도록 정리했다.
+> AGENCY 관련 설계근거·실측수치·리뷰이력은 아래로 이관했다. **08 은 본 절을 참조한다.**
+
+### 6-A. 설계결정 6종 (실측 2026-07-14 · 종전 08 STEP 5 헤더 ①~⑥)
+
+| # | 결정 | 근거 |
+|---|---|---|
+| ① | `SOURCE_SYSTEM` = **테이블 기반** 부여(DIGITAL/REBROADCAST/VIDEO) | 3테이블에 행단위 출처 플래그 없음(A-2/Q9) |
+| ② | 인입콜 `TRY_TO_NUMBER` 캐스팅 | REBRDC `INBOUND_CALL_CNT`=TEXT(비수치 2/2,064) vs VIDEO=NUMBER |
+| ③ | 전환 명/건 컬럼 분리 | DGT `GA_CONV_MBER_CNT`(명)/`CONV_VU_CNT`(VU) · REBRDC `DVLP_MBER_CNT`/`DVLP_CNT` · VIDEO `CONV_CALL_CNT` |
+| ④ | measure 불균일 → **NULL 패딩** | 노출·클릭=DGT만 / 광고비=`GA_AD_COST`·`BRDC_SCHDL_COST`(편성)·`ACTL_PUR_AD_COST_KRW`(집행) |
+| ⑤ | 캠페인명 소스별 상이 | DGT `CMPGN_NM`(100%) · VIDEO `MKT_CMPGN_NM`(98.4%) · REBRDC 컬럼부재(방송명 `BRDC_NM` 대체) |
+| ⑥ | 파생(CPA/CTR/CVR/CPC/CPM/VTR) **SILVER 미계산** | 원천 base 만 보존, 재계산은 GOLD/SV(P2) |
+
+- 그레인: `AGENCY_AD_PERFORMANCE` = 원천 1행(3소스 UNION 235,572) · `AGENCY_AD_CREATIVE`/위성 = 파생 정제.
+- **`AGENCY_COST` 제거(2026-07-14 아키텍처 리뷰)**: 월 롤업은 master §3상 GOLD 소관 · `AD_PERFORMANCE.AD_COST`+`COST_TYPE` 와 중복 · SILVER→SILVER 파생(단방향 위반). 비용은 성과팩트에서 원천 grain 보존, 롤업·ERP 결합은 GOLD `FACT_BUDGET`.
+
+### 6-B. 광고 팩트군 재설계 — 8객체 (2026-07-28 순서9-I · DEC-8~11)
+
+> 근거: `03_top-down_gold/03_테이블 설계.md §3-A` · `20_issue/10_진단_원인분석.md §8-I` · `20_issue/30_설계_의사결정.md §1-A`
+> ⚠️ §0~§5 의 "AGENCY 3객체" 기술은 이 재설계 **이전** 상태다. 현행 = **8객체**.
+
+구성: **staging 3**(무손실 전컬럼 보존 + `AD_PERF_DK` 발급) → **코어 2** → **위성 3**
+
+| SILVER 객체 | 역할 | 실측 행수 | GOLD |
+|---|---|---:|---|
+| `AGENCY_AD_ROW_DGT` | DGT 36컬럼 무손실 staging | 197,686 | — |
+| `AGENCY_AD_ROW_VIDEO` | VIDEO 32컬럼 무손실 staging | 35,822 | — |
+| `AGENCY_AD_ROW_REBRDC` | REBRDC 34컬럼 무손실 staging(CASE 반복군 포함) | 2,064 | — |
+| `AGENCY_AD_PERFORMANCE` | 코어 — 3소스 공통 measure UNION | 235,572 | `FACT_AD_PERFORMANCE` |
+| `AGENCY_AD_CREATIVE` | 코어 — 소재/매체 차원 | 8,473 | `DIM_AD_CREATIVE` |
+| `AGENCY_AD_DIGITAL` | 위성 — 디지털 고유속성 + `_SRC` 7종 | 197,686 | `FACT_AD_DIGITAL` |
+| `AGENCY_AD_BROADCAST` | 위성 — 방송(VIDEO∪REBRDC) 고유속성 | 37,886 | `FACT_AD_BROADCAST` |
+| `AGENCY_AD_BROADCAST_CASE` | 위성 — REBRDC 사례 5속성×3반복 언피벗 | 5,327 | `FACT_AD_BROADCAST_CASE` |
+
+- **DEC-11 `AD_PERF_DK` = `MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ)`** — 발급 단일지점은 staging 3종. 코어·위성·GOLD 는 승계만(재계산 금지). `ROW_HASH`=`MD5(TO_JSON(OBJECT_CONSTRUCT(*)))`, `DUP_SEQ`=전컬럼 중복 그룹 내 순번(DGT 35그룹·최대2 / VIDEO 30그룹·최대3 / REBRDC 0그룹).
+- **DEC-8 `AD_SOURCE_TYPE`** 출처 명시축 신설 → GOLD FAD degenerate 승격. 종전 `AD_TYPE` 은 `DIM_AD_CREATIVE.AD_TYPE` 과 충돌해 개명.
+- **DEC-9 `_SRC` 8종 전량 보존 · 전량 비가산(N)** — 대행사 산정값이므로 SUM 금지.
+- **DEC-10 `DIM_DEVICE` 실배선** — DGT `DEVICE`(실측 `PC`/`M`) 조인, `(해당없음)` 멤버 추가.
+- **O16 의미혼입 해소**: 종전 SILVER UNION 이 REBRDC `DVLP_MBER_CNT`·`DVLP_CNT`(재방송 개발실적)를 DIGITAL 의 GA 전환 자리에 **위치매핑**해 GOLD `GA_CONV_MEMBERS`(오염 28.60%)·`GA_CONV_CNT`(60.32%)로 노출했다. → 개발실적을 `AGENCY_AD_BROADCAST.DVLP_MEMBER_CNT`/`DVLP_CNT` 로 이관, 코어 `CONV_MEMBER_CNT`/`CONV_UNIT_CNT` 는 **DIGITAL 전용**으로 확정.
+- **staging 규약**: BRONZE 컬럼명·타입 그대로 보존(개명·형변환 금지). `YEAR`·`MONTH`·`WEEK`·`DOW`·`BRDC_MT` 는 `'2025년'`·`'03월'` 형태 텍스트 — 숫자 파싱 시 96% NULL(2026-07-14 실측 결함), 시간축은 `DATE` 컬럼에서 파생.
+- **미노출 컬럼**: `CASEn_CHILD_NM`·`CELEB_NM` = PII 판정 대기(**O14**, 현 설계 미적재) · 기타 52컬럼 = 지표 수요 미확인(**O15**, staging 에 무손실 보존).
+- **dbt build 결과(2026-07-28)**: `PASS=258 WARN=21 ERROR=0`(WARN 21 전부 기존 CRM 고아관계, 신설분 0). `AD_PERF_DK` 235,572건 전건 유일 · `DEVICE_SK` unknown 0건.
+
+### 6-C. 컬럼 어의 미결·주의 (08 컬럼 COMMENT 에 요약 반영)
+
+| 컬럼 | 실측 | 상태 |
+|---|---|---|
+| `AGENCY_AD_DIGITAL.CRM_DEV_CNT` | 값 있는 189,252행 중 **24,614행(13.0%) 비정수**(min 0.0·max 322.0·합 249,390.45) | **AD-2** 기여도 배분값 여부 현업 확인 대기 — "건수" 단정 금지 |
+| `CRM_DEV_CNT` ↔ `DEV_UNIT_PRICE_SRC` | 2026-01~05 = 건수 전건 / **2026-06 = 단가 8,401행 전건**. 동일 행 공존 **0건** | **AD-3** 원천 포맷 변경. 검증관계 아닌 **기간보완** 관계 → 개발단가는 2026-05까지만 산출 |
+| `AGENCY_AD_BROADCAST.DVLP_CNT`·`DVLP_MEMBER_CNT` | REBRDC 전용. VIDEO 원천에 개발 항목이 **구조적으로 부재**(전환콜로 대체 보고) | **AD-5** 비율 분모는 REBRDC 2,064행 단독으로 한정(96.03%). 방송 전체 37,886행을 분모로 잡으면 +41% 과대계상(순서9-J 오진 → 9-K 철회, **P21**) |
+| `AGENCY_AD_PERFORMANCE.SOURCE_SYSTEM` | `AD_SOURCE_TYPE` 와 **전건 동일값**(불일치 0건, 2026-07-29 실측) | 중복 컬럼. 신규 소비는 `AD_SOURCE_TYPE` 사용 |
+| `AGENCY_AD_PERFORMANCE.AD_COST` | `COST_TYPE` 실측값 = `GA`/`편성`/`집행` 혼재 | **단순 SUM 금지** — `COST_TYPE` 분리 집계 |
+| `AGENCY_AD_PERFORMANCE` | 이벤트 grain 팩트로 자연 PK 없음 | 무결성 게이트 = 소스 행수 대사(235,572) |
+

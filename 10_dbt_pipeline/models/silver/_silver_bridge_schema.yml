@@ -6,9 +6,21 @@ models:
     columns:
       - name: USER_PSEUDO_ID
         tests: [not_null]
-      - name: MEMBER_DK
+      - name: MATCH_METHOD
         tests:
           - not_null
+          - accepted_values: { values: ['MEMBER_ID_EXACT', 'UNMATCHED'] }
+      - name: MEMBER_DK
+        tests:
+          # ⚠️ [2026-07-29 교정] 종전 무조건 `not_null`(error) 은 **설계와 모순**이었다.
+          #   본 브리지는 미매칭 GA 신원을 MATCH_METHOD='UNMATCHED' + MEMBER_DK=NULL 로 **의도적으로 보존**한다
+          #   (08_SILVER_테이블DDL: "매칭된 CRM 불변회원키(미매칭 NULL)" · "미매칭 보존" / 02 master §6).
+          #   PoC 데이터가 우연히 100% 매칭(1,348행)이라 통과하던 잠재결함 →
+          #   GA4 신규 샤드(events_20260719) 입고로 UNMATCHED 186행 발생하자 ERROR 로 표면화,
+          #   하류 18노드가 SKIP 되어 FACT_GA_BEHAVIOR·DIM_MEMBER_IDENTITY 가 스테일로 남았다.
+          #   → 진짜 불변식은 "**매칭된 행**은 MEMBER_DK 를 가진다" 이므로 where 로 스코프를 좁힌다(error 유지).
+          - not_null:
+              config: { where: "MATCH_METHOD = 'MEMBER_ID_EXACT'" }
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK

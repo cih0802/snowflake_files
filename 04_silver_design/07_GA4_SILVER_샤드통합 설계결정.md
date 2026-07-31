@@ -173,6 +173,33 @@ BRONZE_GA4.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
 | `GA4_파이프라인_dbt로 작업전_주의사항.md` | dbt 구현 가이드 (매크로 코드, 증분 전략, ERD, trial 제약) |
 | **본 문서** | 설계 결정 근거 + GOLD 의존성 영향 검증 |
 | `03_top-down_gold/08_silver의존.md` | GOLD 컬럼 → SILVER 전체 lineage 정본 |
-| `SILVER_DDL_20260702.sql` | SILVER 물리 스키마 (GA4 5 + CRM 21) |
+| `08_SILVER_테이블DDL_20260714.sql` | SILVER 물리 스키마 정본(38테이블 · GA4 5는 STEP 5) |
+
+---
+
+## 7. DDL 설계근거 (08 DDL 에서 이관 · 2026-07-29)
+
+> `08_SILVER_테이블DDL_20260714.sql` 은 구조 계약(타입·PK·COMMENT)만 담도록 정리했다.
+> GA4 관련 설계근거·실측수치는 아래로 이관했다. **08 STEP 5 는 본 절을 참조한다.**
+
+### 7-A. 착수 게이트 · 적재 규칙 (종전 08 STEP 6 헤더)
+
+- **게이트**: 현재 BRONZE 는 1일 샤드 `events_20260501`(**287,025행**)만 입고된 PoC 상태다(**G-5** 하드블로커). 전기간 샤드 입고 후 동일 DDL·적재로 **멱등 재적재**만 하면 되며 구조 변경은 불요.
+- **규칙**: 명시 30컬럼 선택(`SELECT *` 금지) · `session_traffic_source_last_click` 사용(GA4 UI 일치) · 비가산 지표는 raw 적재(율·평균은 GOLD/SV) · 공통감사 메타 5컬럼 · 멱등 `INSERT OVERWRITE`(09).
+- ⚠️ all-NULL 잡컬럼(`app_info`·`event_dimensions`·`publisher`)은 원천 타입이 NUMBER — **매핑 제외**.
+- DDL 초안 이관원 = `_archive/09_SILVER_DDL_20260702.sql`.
+
+### 7-B. 테이블별 grain·리스크 (종전 08 GA4 1~5 블록 주석)
+
+| 테이블 | grain | 근거·리스크 |
+|---|---|---|
+| `GA4_TRAFFIC_SOURCE` | `session_traffic_source_last_click` **한정** DISTINCT (PK 없음) | first-touch(`traffic_source`)·collected(`collected_traffic_source`)는 어트리뷰션 모델·grain 이 달라 **본 차원에서 제외**. 혼재 시 그레인 팽창 + `DIM_GA_SOURCE` fan-out. 필요 시 별도 유저/이벤트 grain 차원으로 GOLD 에서 신설.(GA4-검토 2026-07-14) |
+| `GA4_EVENT_DIM` | `event_name × category × label × action` DISTINCT (키 NULL 가능 → PK 없음) | **GA-2 카디널리티 리스크**: `event_label` 이 혼합타입(문자+숫자) 고카디널리티라 전기간 확장 시 차원이 사실상 팩트화된다(1일 실측 `event_name` 49개 대비 **3,633행**). → GOLD `DIM_GA_EVENT` 는 `event_name`(+안정 category/action)으로 conform 하고, 변동성 높은 `label` 은 팩트측(`GA4_EVENT.EVENT_LABEL`)에 유지 권고. |
+| `GA4_DEVICE` | `device_type × platform × category` DISTINCT (PK 없음) | 실측 76행. **코드값 실측 = `DEVICE_TYPE` PC/M 2종 · `PLATFORM` WEB 단일** — APP/ANDROID/IOS 는 미입고(O2 APP 휴면). 08 COMMENT 에 실측값으로 명시(**P19**). |
+| `GA4_EVENT` | 복합 PK(`USER_PSEUDO_ID`,`EVENT_TIMESTAMP`,`EVENT_NAME`,`BATCH_ORDERING_ID`) | **GA-1**: 원천 샤드에 복합키 중복군 존재(1일 실측 16,187군) → 적재에서 PK `GROUP BY` dedup. 287,025행 → SILVER **265,312행**. 비가산(`ENGAGEMENT_TIME_MSEC` 등)은 raw 보존(**O1**). |
+| `GA4_IDENTITY` | 1행/`USER_PSEUDO_ID` | **Q1** 접두사 분기 `S%`→`ONCE_MBER_NO` / else→`MBER_NO`. §5-A session-fill 반영(원본 `USER_ID` 불변 보존 + 파생 `USER_ID_FILLED`/`ID_RESOLUTION` 신설). 실측 1,348행. |
+
+- 센티넬: `UTM_SOURCE`/`UTM_MEDIUM` 은 `(not set)`/`(none)`/`(direct)` 를 `NULLIF` 처리. 단 `DEFAULT_CHANNEL_GROUP` 은 **정규화 금지**(정상 라벨).
+- 혼합타입 컬럼(`SESSION_ENGAGED`·`EVENT_LABEL`)은 적재 시 `COALESCE(string_value, int_value)`.
 
 *Co-authored with CoCo*

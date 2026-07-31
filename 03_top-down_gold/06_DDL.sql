@@ -1,33 +1,39 @@
--- GN_DW.GOLD 스키마 전체 DDL(24개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
+-- GN_DW.GOLD 스키마 전체 DDL(27개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
 -- Co-authored with CoCo
 /*
 ================================================================================
-  GN_DW.GOLD — 전체 테이블 DDL (24개: DIM 15 + FACT 9)
-  작성일   : 2026-07-02 (컬럼 COMMENT 추가: 2026-07-03; 배포·적재: 2026-07-20 GN_DW.GOLD 24테이블 생성·적재 완료)
-  참고 문서 : gold 스키마 컬럼 인벤토리_20260629.csv
-               GOLD_개발자 전달노트_20260629.md
-               03_top-down_gold/03_테이블 설계.md
+  GN_DW.GOLD — 전체 테이블 DDL (27개: DIM 15 + FACT 12)
+  작성일   : 2026-07-02 (컬럼 COMMENT: 2026-07-03 / 배포·적재: 2026-07-20 / 광고 위성 3종 증설: 2026-07-28 순서9-I)
+  실측대조 : 2026-07-29 — INFORMATION_SCHEMA GOLD = BASE TABLE 27 + VIEW 12, FK 38 · 본 파일과 전 컬럼 일치.
+  참고 문서 : 03_top-down_gold/03_테이블 설계.md(DEC-8~13) · 09_빅테이블 VIEW.md(WIDE VIEW 12)
+               05_필드 인벤토리.md · 08_silver의존.md
 --------------------------------------------------------------------------------
   실행 규칙
   ─────────────────────────────────────────────────────────────────────────────
-  1. DIM 15개를 모두 생성한 뒤 FACT 9개를 생성한다.
+  1. DIM 15개를 모두 생성한 뒤 FACT 12개를 생성한다.
   2. DIM_DATE → DIM_ORG → DIM_MEMBER → 나머지 DIM → FACT 순서 준수.
+     FACT 내부는 코어 FACT_AD_PERFORMANCE 를 위성 3종(FAD_B·FAD_D·FAD_BC)보다 먼저 생성.
   3. FK_타깃에 '※비강제' 표기된 컬럼은 FOREIGN KEY 제약 없이 일반 컬럼으로 생성.
-  4. 타입 길이(VARCHAR 자릿수)는 PENDING — 현재 미정. 운영 후 ALTER 예정.
-     단, MEMBER_DK 는 [실측06-30] VARCHAR(10) 확정.
+  4. 타입 길이(VARCHAR 자릿수)는 대부분 PENDING — 실측 376컬럼이 기본길이, 명시 19컬럼.
+     운영 후 ALTER 예정. 단, MEMBER_DK 는 [실측06-30] VARCHAR(10) 확정.
   5. 모든 테이블 공통: DW_SOURCE_SYSTEM / DW_LOAD_TS(최초적재, NOT NULL) /
      DW_UPDATE_TS(최종적재) / DW_BATCH_ID(=dbt invocation_id) 감사 컬럼 포함.
   6. FACT_GA_BEHAVIOR 의 비가산 지표(BOUNCE_RATE·AVG_SESSION_DURATION 등)는
      그레인 기준 값 — 상위 레벨 재합산 금지(테이블 COMMENT 명시).
-  7. [2026-07-20 적재 완료] CRM·GA4·ERP·AGENCY SILVER→GOLD 적재 완료(24테이블 + WIDE VIEW 9개).
-     단 사업목표(FTG_B, 원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET·데이터 입고 대기)·모금성비용(FBD, ERP 원천 부재)은 미입고, ADMIN(앱푸시·조회수)은 제외 확정 → 해당 컬럼만 생성·미채움(FACT_TARGET_BIZ=0행).
-  8. FK/PK 제약은 파일 하단 [관계 제약] 섹션에서 ALTER 로 일괄 선언.
+  7. [적재 상태] CRM·GA4·ERP·AGENCY SILVER→GOLD 적재 완료(27테이블 + WIDE VIEW 12개).
+     단 사업목표(FTG_B, 원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET·데이터 입고 대기 E-6)·
+     모금성비용(FBD, ERP 원천 부재 E-1)은 미입고, ADMIN(앱푸시·조회수)은 제외 확정
+     → 해당 컬럼만 생성·미채움(FACT_TARGET_BIZ=0행).
+  8. FK/PK 제약은 파일 하단 [관계 제약] 섹션에서 ALTER 로 일괄 선언(현행 38개).
      - 전부 NOT ENFORCED NORELY (정보성) — Snowflake 는 NOT NULL 외 강제 안 함.
        ERD·BI 관계 인식·문서화 용도이며, 데이터 미검증 단계이므로 RELY 는 보류.
      - 참조 대상이 비유일(SCD2 MEMBER_DK / 월conform MONTH_KEY)인 FK 는
        Snowflake 규칙상 선언 불가 → 동일 섹션에 [보류] 사유·조인경로 명문화.
-     - FACT PK/UNIQUE 는 grain 미확정으로 보류(설계 문서 준수).
+     - FACT PK/UNIQUE 는 grain 미확정으로 보류. 단 광고 팩트군은 AD_PERF_DK 를
+       PK 로 선언(코어·1:1 위성) / FAD_BC 는 (AD_PERF_DK, CASE_SEQ) 복합 PK.
   9. 각 컬럼의 COMMENT 는 gold 스키마 컬럼 인벤토리_20260629.csv 설명 컬럼 기준.
+ 10. ⚠️ 센티넬 규약 = **SK=0 '(미매핑)'**. 13개 DIM 에 Unknown 시드행을 두고 팩트는
+     LEFT JOIN + COALESCE(...,0). 설계 초안의 `-1 UNKNOWN` 표기는 폐기됨(2026-07-16).
 ================================================================================
 */
 
@@ -38,7 +44,8 @@ USE DATABASE GN_DW;
 CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD
     WITH MANAGED ACCESS
     COMMENT = '분석 View + Semantic View + Agent + 예측 테이블 + Streamlit';
-    
+GRANT CREATE VIEW ON SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
+
 USE SCHEMA GOLD;
 
 -- ============================================================================
@@ -68,10 +75,15 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DATE (
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
     ORG_SK              NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '조직 대리키 (=hash(DEPT_ID), PK)',
     ORG_DK              NUMBER(38,0)    NOT NULL COMMENT '불변 조직키 (=hash(DEPT_ID); SCD1이라 ORG_SK와 1:1)',
-    CORP                VARCHAR         COMMENT '법인(#114)',
-    DIVISION            VARCHAR         COMMENT '본부/지부(#115)',
-    DEPARTMENT          VARCHAR         COMMENT '부서(#116)',
-    TEAM                VARCHAR         COMMENT '팀',
+    -- CONF-4(2026-07-31 정본대조): D6 4단 중 CORP·TEAM은 부서 차원에서 산출 불가/보류. DIVISION은 "실적지부"로 재정의.
+    CORP                VARCHAR         COMMENT '법인(#114) — 🔴 부서 차원에서 산출 불가(CONF-4). 부서→법인 1:1 아님: 200부서에 복수법인 혼재(2종 69부서/23,130명 · 3종 131부서/1,544,005명=98.6%). 부서트리 LVL1도 부적합(ZA 구조노드 587부서가 법인 루트 미연결 + 직위 B000007 + 회원0 재단법인 2개 혼재). 법인 축의 정본 원천 = 회원 속성 CPR_DIV_CD(CM019: I=사단/S=사복/A=통합) → DIM_MEMBER 또는 팩트 degen 배속 판단 필요. 값 NULL 유지',
+    DIVISION            VARCHAR         COMMENT '실적지부 — 정본 용어사전 430(실적 지부 명)·431(실적지부(본부/지부) 구분). 🔴 재정의(CONF-4): 정본 보고서는 "본부/지부" 단독 사용 0건이고 "실적지부(본부/지부)"(05:275)·"실적지부"(05:311) 형태로만 쓴다 → 조직트리(UPPER_DEPT_ID)가 아니라 실적트리(ACMSLT_UPPER_DEPT_ID) 기반. ⚠️ 산출 규칙 미확정 — 실적부서 455개 중 명칭기반 최근접 본부/지부 도달 418개(91.9%)·미도달 37개이고 명칭 판정은 범주오류 위험 → 규칙 확정까지 값 NULL 유지',
+    DEPARTMENT          VARCHAR         COMMENT '부서(#116) — ✅ 정본 정합(용어사전 121·390·391 · 회원보고서 4개 · 마케팅보고서 2개). DEPT_NM 직접 대입(695종)',
+    TEAM                VARCHAR         COMMENT '팀 — 🔴 보류(CONF-4). 정본 근거 = 지표 #152~155(연사업/추경 목표) "각 팀별" 뿐이고 용어사전·회원보고서·마케팅보고서 실질 0건(검출된 3건은 전부 "원천팀/원본팀" 편집주석). 그 원천 CRM_BIZ_TARGET은 미입고(E-6) → 소비처 부재. E-6 입고 시 재개. 값 NULL 유지',
+    -- 원천 계통 컬럼 노출(추론 0) — O16/CONF-4 후속 규칙 확정 시 즉시 활용. SILVER CRM_ORG 에 이미 전파돼 있음.
+    ACMSLT_UPPER_DEPT_ID VARCHAR        COMMENT '실적상위부서ID (원천 그대로) — 실적트리 부모. 조직트리 UPPER_DEPT_ID 와 441건 상이·573건 동일·NULL 300. 실적부서 455개 중 446개(98.0%)가 이 트리 LVL5 → DEC-5 "5th=실적부서" 근거',
+    ACMSLT_DEPT_YN      VARCHAR         COMMENT '실적부서 여부 Y/N (원천 그대로) — Y 455개',
+    USE_YN              VARCHAR         COMMENT '사용여부 Y/N (원천 그대로) — 🔴 N이 764개(58.1%)지만 제외 금지(O16): 팩트가 대량 참조(CRM_MEMBER.ACT_DEPT_CD 미사용 156부서에 410,506명 · AMT_CHANGE 미사용 189부서에 100,931건) + 필터 시 트리 파편화(LVL1 9→42). 소비 측 필터용으로만 사용',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -141,16 +153,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_CAMPAIGN (
     PARENT_CAMPAIGN     VARCHAR         COMMENT '공통상위캠페인(#119)',
     CAMPAIGN_NAME       VARCHAR         COMMENT '캠페인명(#18·120·147)',
     PROMO_METHOD        VARCHAR         COMMENT '홍보방법(#118)',
-    CAMPAIGN_TYPE       VARCHAR         COMMENT '캠페인 유형(#17)',
-    DOMESTIC_OVERSEAS   VARCHAR         COMMENT '국내/해외(#15)',
-    BIZ_CASE_TYPE       VARCHAR         COMMENT '사업/사례(#16)',
+    CAMPAIGN_TYPE       VARCHAR         COMMENT '캠페인 유형(#17) = 캠페인 카테고리 라벨(SILVER MM294, 56종). 예: 국내사례캠페인·굿즈캠페인·해외캠페인. ⚠️숫자코드 아님(2026-07-16 라벨화)',
+    DOMESTIC_OVERSEAS   VARCHAR         COMMENT '국내/해외(#15) = SILVER CMPGN_TYPE1_NM(MM295): 국내 / 통합 / 해외. (종전 전건 NULL — 2026-07-16 BRONZE 재입고로 채움)',
+    BIZ_CASE_TYPE       VARCHAR         COMMENT '사업/사례(#16) = SILVER CMPGN_TYPE2_NM(MM296): 굿즈 / 기타 / 사례 / 사업. ⚠️종전 모델이 유형1(국내/해외)을 여기 매핑한 의미혼입을 2026-07-16 교정',
+    INFLOW_PATH         VARCHAR         COMMENT '개발인입경로 라벨(SILVER MM293, 16종). 예: 디지털·방송·영상광고·지역개발·마케팅콜개발·직원개발. 현업 "주요캠페인" 분류축(2026-07-16 신설)',
+    MARKETING_CAMPAIGN  VARCHAR         COMMENT '마케팅캠페인명(SILVER MK_CMPGN_NM, 323종·고아 0). Q16 해소(2026-07-16 신설)',
     CAMPAIGN_OPEN_DATE  DATE            COMMENT '오픈일자(#19)',
     ORG_SK              NUMBER(38,0)    COMMENT '캠페인 귀속조직',  -- FK→DIM_ORG
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '캠페인 차원 (1캠페인)';
+) COMMENT = '캠페인 차원 (1캠페인). 분류 4축 = CAMPAIGN_TYPE(카테고리)·INFLOW_PATH(인입경로)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례) + MARKETING_CAMPAIGN. 전부 라벨(코드 아님)';
 
 
 -- ============================================================================
@@ -261,7 +275,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_REASON (
     REASON_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '사유 대리키 (ETL 일련번호, PK)',
     REASON_CODE         VARCHAR         NOT NULL COMMENT '사유코드(BK, 업무키)',
     REASON_NAME         VARCHAR         COMMENT '중단사유(#162)·미납사유(#82)',
-    REASON_TYPE         VARCHAR         COMMENT '중단 / 미납 구분',
+    REASON_TYPE         VARCHAR         COMMENT '사유 코드그룹 ID. ⚠️주석상 "중단/미납 구분"이었으나 실제값은 CRM 코드그룹 ID 336종(PM019·MS049·PM018·PM002·PM032·PM033 등) — ''중단''/''미납'' 리터럴 0건(전체 5,839행). 중단/미납 구분 필터가 필요하면 별도 분류 컬럼 신설 필요(O21, 2026-07-31 실측 교정)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -329,7 +343,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     CAMPAIGN_SK                 NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK              NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
     PAYMENT_SK                  NUMBER(38,0)    COMMENT '납입/결제 유형 (FK→DIM_PAYMENT)',
-    REASON_SK                   NUMBER(38,0)    COMMENT '중단/미납 사유 (FK→DIM_REASON)',
+    REASON_SK                   NUMBER(38,0)    COMMENT '미납 대표사유 (FK→DIM_REASON) — ✅ W3(DEC-24, 2026-07-31) 배선 완료. 🔴 미납(PAY_STAT_CD=''F'') 행 한정 — 최종차수(MBRFEE_SQNC 최대)의 RQEST_RST_CD를 (코드그룹, 코드) 복합키로 DIM_REASON 조인. 코드그룹 = SETLE_CD 1&2자리→PM002 / 1&4자리→PM032 / 2→PM018 / 12→PM033 / 5→PM019. 실측 미납 월×회원 3,302,535 중 3,164,724(95.83%) 매핑 · 0=비미납 또는 구조적 사유부재 137,811(수기처리 127,155 + F코드부재 10,623 + DIM미존재 33). ⚠️ 대표 1개로 축약 — 복수사유 분포는 SILVER 직접 조회. ⚠️ 중단사유는 별도 트랙(FME)',
     DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) — A1: FME(CRM_MEMBER_DEV) 사건수 롤업. ⚠️금액/10000 의미는 원천 금액컬럼+FME 변경 필요(별도트랙, #4·5·149)',
     DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) — A1: 월×회원 개발발생=1 (#148)',
     STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)',
@@ -371,6 +385,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     NEW_EXISTING_FLAG           VARCHAR         COMMENT '신규/기존(시점귀속, #113) — 04§5 reconcile',       -- snapshot
     UNPAID_FLAG_BOM             BOOLEAN         COMMENT '월초 미납회원 여부(=전월말 상태) — 04§5 reconcile (#80)', -- snapshot
     UNPAID_FLAG_EOM             BOOLEAN         COMMENT '월말 미납회원 여부 — 04§5 reconcile (#80)',         -- snapshot
+    -- W4(DEC-22, 2026-07-31): ML 전용 파생. 🔴 정본 215지표에 없는 신규 — 정본 (건)과 혼동 금지.
+    --   CONF-2 주의: 정본 `(건)`은 약정금액÷10,000이나 아래 4종은 실제 개수·횟수다.
+    AMT_INCREASE_CUM_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 해당 월말까지 누적 증액 이력 횟수 (CRM_MEMBER_AMT_CHANGE RDCAMT_YN=N 건수). 🔴 정본 증액(건)#151(=전월대비 활동건 증가분)과 다름 — 혼용 금지',  -- snapshot
+    AMT_DECREASE_CUM_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 해당 월말까지 누적 감액 이력 횟수 (RDCAMT_YN=Y 건수). 🔴 정본 감액(건)#38(=감액금액/10,000)과 다름 — 혼용 금지',  -- snapshot
+    PAID_SPONSOR_BIZ_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 그 달 실제 납입(PAY_AMT>0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL',
+    IS_MULTI_PAID_BIZ           BOOLEAN         COMMENT 'W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT>1). HAS_BILLING=FALSE면 NULL',
     HAS_BILLING                 BOOLEAN         NOT NULL COMMENT '납입/청구 행 존재 여부 — TRUE=회비 스파인(구 37.79M), FALSE=개발/중단 사건만(납입無 월). 보수적 소비=WHERE HAS_BILLING; 정확 소비=전체 (A1 2026-07-21)',  -- 출처 플래그
     DW_SOURCE_SYSTEM            VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                  TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
@@ -704,7 +724,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
 --           정보성이며 NORELY(옵티마이저가 무결성 가정 안 함) — GOLD 데이터
 --           검증 완료 후 RELY 승격 검토(그 전까지 조인제거 오답 위험 차단).
 --  전제   : 참조 대상이 실제 PK 인 컬럼만 선언(Snowflake FK 대상 = PK/UNIQUE).
---           본 ALTER 는 24개 테이블 생성 이후 실행.
+--           본 ALTER 는 27개 테이블 생성 이후 실행.
 --  명명   : FK_<자식테이블>_<부모차원>[_<역할>]
 --  타입정합: 자식 FK 컬럼 ↔ 부모 PK 타입 일치 검증 완료
 --           (DATE_SK=NUMBER(8,0), 그 외 SK=NUMBER(38,0)).
@@ -712,7 +732,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
 --           · CREATE OR REPLACE 가 테이블을 재생성하며 기존 FK 를 모두 제거 →
 --             이어지는 ALTER 가 FK 를 다시 부여(전체 실행은 항상 안전·멱등).
 --           · [멱등화 2026-07-20] FK 섹션만 부분 재실행해도 안전하도록, 아래 ADD 전에
---             EXECUTE IMMEDIATE 스크립팅 블록으로 35개 제약을 선(先) DROP(미존재 시 EXCEPTION 무시).
+--             EXECUTE IMMEDIATE 스크립팅 블록으로 38개 제약을 선(先) DROP(미존재 시 EXCEPTION 무시).
 --             Snowflake 는 DROP CONSTRAINT IF EXISTS 미지원 → BEGIN...EXCEPTION WHEN OTHER THEN NULL 패턴 사용.
 --             (특정 DIM 만 CREATE OR REPLACE 시 자식 FK 소실은 여전 → 그 경우 전체 실행 권장.)
 -- ============================================================================
@@ -882,15 +902,16 @@ ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_SPONSORSHIP
 --       대상 DIM_DATE.MONTH_KEY 는 월당 ~30행으로 비유일(PK=DATE_SK).
 --       → 조인 경로: DIM_DATE 월초행 필터(예: DAY=1) 또는 월 conform 뷰 경유.
 --       → 월 grain conformed 차원(DIM_MONTH) 신설 시 FK 승격 가능하나,
---         테이블 수 24개 고정 원칙에 따라 현 단계 보류(설계 open O 참조).
+--         현 단계 보류(설계 open O 참조).
 --
---  [FACT PK/UNIQUE 보류] grain 미확정·ETL 멱등성 의존(설계문서)으로 미설정.
---       논리 grain 은 각 테이블 COMMENT 에 명시. 확정 후 UNIQUE(NORELY) 검토.
+--  [FACT PK/UNIQUE] 광고 팩트군은 선언됨 — FAD·FAD_B·FAD_D = PK(AD_PERF_DK),
+--       FAD_BC = PK(AD_PERF_DK, CASE_SEQ). 그 외 FACT 는 grain 미확정·ETL 멱등성
+--       의존으로 미설정(논리 grain 은 각 테이블 COMMENT 에 명시). 확정 후 UNIQUE(NORELY) 검토.
 -- ============================================================================
 
 
 -- ============================================================================
--- [검증 쿼리] DDL 실행 후 24개 테이블 생성 확인
+-- [검증 쿼리] DDL 실행 후 27개 테이블 생성 확인
 -- ============================================================================
 SELECT
     CASE WHEN table_name LIKE 'DIM_%' THEN 'DIM' ELSE 'FACT' END AS category,
@@ -898,31 +919,35 @@ SELECT
     comment
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_schema = 'GOLD'
+  AND table_type = 'BASE TABLE'
 ORDER BY category DESC, table_name;
--- 기대값: DIM 15행 + FACT 9행 = 24행
+-- 기대값: DIM 15행 + FACT 12행 = 27행 (※ WIDE VIEW 12개는 09 문서 소관 — 여기서 제외)
 
 -- ----------------------------------------------------------------------------
--- [검증 쿼리] 정보성 FK 35개 선언 확인
+-- [검증 쿼리] 정보성 FK 38개 선언 확인
 -- ----------------------------------------------------------------------------
 SHOW IMPORTED KEYS IN SCHEMA GN_DW.GOLD;
--- 기대값: 35행 (DIM_CAMPAIGN 1 + FMM 4 + FME 5 + FTG_D 1 + FTG_B 3
---          + FSE 3 + FGA 6 + FAD 4 + FEP 4 + FBD 4). 보류 FK(MEMBER_DK·MONTH_KEY) 제외.
+-- 기대값: 38행 (DIM_CAMPAIGN 1 + FMM 4 + FME 5 + FTG_D 1 + FTG_B 3
+--          + FSE 3 + FGA 6 + FAD 4 + FEP 4 + FBD 4
+--          + 광고 위성→코어 3: FAD_B·FAD_D·FAD_BC). 보류 FK(MEMBER_DK·MONTH_KEY) 제외.
 
 -- 자동화용(스크립트 카운트): FOREIGN KEY 제약 수 집계
 SELECT COUNT(*) AS fk_count
 FROM GN_DW.INFORMATION_SCHEMA.TABLE_CONSTRAINTS
 WHERE constraint_schema = 'GOLD'
   AND constraint_type = 'FOREIGN KEY';
--- 기대값: 35
+-- 기대값: 38   (2026-07-29 실측 일치)
 
 -- ============================================================================
 -- [구현 완료 주석]
 -- ----------------------------------------------------------------------------
---  · 6단계(DDL 초안): CREATE TABLE 24개(DIM 15 + FACT 9) — compile 기준 완료.
---  · 7단계(메타/제약) 선반영: 위 [관계 제약] 섹션에 정보성 FK 35개 ALTER 구현 +
+--  · 6단계(DDL): CREATE TABLE 27개(DIM 15 + FACT 12) — 배포·적재 완료.
+--    광고 팩트군 = 코어 FAD 1 + 위성 3(FAD_B·FAD_D·FAD_BC), 2026-07-28 순서9-I 증설.
+--  · 7단계(메타/제약): 위 [관계 제약] 섹션에 정보성 FK 38개 ALTER 구현 +
 --    보류 FK(MEMBER_DK·MONTH_KEY)·FACT PK 사유 명문화.
 --    → 6/7단계 경계는 각 섹션 헤더 주석으로 구분. 배포 편의를 위해 단일 파일 유지.
 --  · 컬럼 COMMENT: gold 스키마 컬럼 인벤토리_20260629.csv 설명 컬럼 기준 (2026-07-03 추가).
 --  · 사람 인수인계용 설명 문서: 07_메타.md 참조(제약 정책·미해결 항목 서술형).
+--  · 소비 계층(WIDE VIEW 12개)은 본 파일 범위 외 — 09_빅테이블 VIEW.md · 10_WIDE VIEW 코멘트.sql.
 --  · PENDING: VARCHAR 길이 등 타입 정밀화(정본 06_지표용어사전)는 미반영 — 운영 후 ALTER.
 -- ============================================================================

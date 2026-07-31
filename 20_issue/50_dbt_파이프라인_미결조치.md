@@ -48,7 +48,7 @@ END-METADATA -->
 | FACT | ✅ 적재(활성 가능) | ❌ 전건 0/NULL (미적재) |
 |---|---|---|
 | FMM 37.8M→40.05M | PAID_FEE(36.09M)·BILLED_AMT·UNPAID_FLAG_BOM/EOM · ✅**DEV/STOP 건·명(A1: FME 롤업)** · ✅**HAS_BILLING(A1 출처플래그)** | UNPAID/ACTIVE/CUM/MONTH_END/YEAR_*·INCREASE 건·명·CAMPAIGN_UNPAID·STATUS_UNPAID·INBOUND/TS_CALL·REGULAR_FEE·SPONSOR/PAID_MONTHS·DEV_TYPE·밴드·JOIN_DATE·NEW_FLAG·NEW_EXISTING_FLAG·**CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK** |
-| FME 4.6M | DEV_CNT/MEMBERS·JOIN_DATE(3.59M)·STOP_CNT/MEMBERS/STOP_DATE(1.04M) | UNPAID_STOP·**ORG_SK·CAMPAIGN_SK·SPONSORSHIP_SK·REASON_SK·NEW_EXISTING_FLAG** |
+| FME 4.6M | DEV_CNT/MEMBERS·JOIN_DATE(3.59M)·STOP_CNT/MEMBERS/STOP_DATE(1.04M) · ✅**CAMPAIGN_SK(DEV 한정, 2026-07-30 실측: DEV 3,594,825/3,594,843 · 16,318종)** | UNPAID_STOP·**ORG_SK**·**CAMPAIGN_SK(STOP 한정 — 원천 `CRM_MEMBER_DISCONTINUE`에 캠페인 컬럼 부재)**·**SPONSORSHIP_SK·REASON_SK·NEW_EXISTING_FLAG** |
 | FSE 38.5M | SEND_MEMBERS(전행)·SEND_STATUS(35.75M) · ✅**SERVICE_SK(A3: 요청마스터 조인, 99.97%)** · ✅**SEND_TITLE(A3)** | SUCCESS/FAIL/OPEN/LETTER/GIFT·**D5_\*(증액·서신·선물·중단)**·**CAMPAIGN_SK**(원천 캠페인 컬럼 부재) |
 | FEP 1.1M | MEMBER_DK·PARTICIPANT_CNT·EVENT_SK(76.8%) | TOTAL/RECRUIT_CNT·CAMPAIGN_SK·SPONSORSHIP_SK |
 | FBD 24.5K | BUDGET_ITEM_SK(전행)·PLAN_BUDGET_MONTH(7,290)·EXEC_BUDGET_ERP(3,244) | PLAN_BUDGET_YEAR·FUNDRAISING_COST·AD_COST·CAMPAIGN_SK·ORG_SK |
@@ -70,6 +70,92 @@ END-METADATA -->
   - **B2 FMM SPONSORSHIP_SK·PAYMENT_SK**: 원천 컬럼(SPNSR_BSNS_ID·PAYMENT_TYPE 등) 존재 → **O8 다중후원(회원 9.9%·최대13) grain 규칙**(대표후원/최빈) 확정 후.
   - **B3 FMM/FSE CAMPAIGN_SK**: 발송/회비 원천에 캠페인 컬럼 부재 → **조인경로 확보 + O8 fan-out 검증**(§1-6 P3 패턴) 후.
   - **근거**: A1/A3로 Phase-1 SV 실활성 스코프(발송수·서비스구분·개발/중단 총건 등)는 충분 확보 → Agent 먼저 열고, B는 실사용 요구에 따라 순차.
+
+### 🔴 [신규 2026-07-30] BLOCKING-5 범위 확장 — **DIM 계열 미적재 (기존 진단에서 누락)**
+
+> **왜 지금 나왔나**: 위 BLOCKING-5 표는 FMM·FME·FSE·FEP·FBD **5개 FACT만** 진단했다. DIM 계열은 그 표의 대상이 아니었다. ML 요건 정본(`99_provided_definition/데이터플랫폼 ML 예측관련_취합_20260730.xlsx`) 대조 중 발견.
+> ⚠️ **[정정 2026-07-30] "어느 문서에도 등록되지 않았다"는 최초 기술은 과장이었다.** 3건 모두 **설계 문서·모델 주석에는 기재돼 있었다** — `DIM_ORG` 계층전개는 **DEC-5(§6-1)** 에 반영 위치까지 명시 + `DIM_ORG.sql` 주석 / `IS_HOLIDAY`는 **D1 설계 컬럼** + `DIM_DATE.sql` 주석 / `SPONSORSHIP_ABBR`은 **D5 설계 컬럼**. 정확한 문제는 **"설계에는 있으나 (a) 값 미주입 상태가 dbt 미결조치 추적표에 올라오지 않았고 (b) 설계 문서에 구현현황이 역기록되지 않았다"** 는 것이다. 설계 소관 항목은 `03_테이블 설계.md` §5 **O16~O19** 로 정본화했고, 본 표는 미적재 추적만 담당한다.
+
+| DIM | 컬럼 | 실측 (2026-07-30) | 원천 | 성격 |
+|---|---|---|---|---|
+| `DIM_ORG` (1,315행) | `CORP`·`DIVISION`·`TEAM` | **전건 NULL** (`DEPARTMENT`만 1,315/695종 채움) | 🟢 `SILVER.CRM_ORG.UPPER_DEPT_ID` **1,314행/321종 확보** · `ACMSLT_UPPER_DEPT_ID` 1,014행 | **내부 구현 가능** (재귀 CTE) |
+| `DIM_DATE` (16,437행) | `IS_HOLIDAY` | **TRUE 0 / FALSE 16,437 / NULL 0** = 하드코딩 `FALSE` | 🔴 **전 스키마 전무** (`%HOLIDAY%`·`%HDAY%`·`%RESTDE%`·`%WORKDAY%` 검색 결과 GOLD 자기참조뿐) | **외부 입고 필요** → 문서40 |
+| `DIM_SPONSORSHIP` (51행) | `SPONSORSHIP_ABBR` | 값은 채움(`1`~`6`, 6종) 그러나 **라벨 없음 · 컬럼명이 의미 은폐** | 🟢 `CRM_SPONSORSHIP.SPNSR_BSNS_ABRV_CD` | **라벨 컬럼 신설 + 현업 매핑** |
+
+**(1) `DIM_ORG` 계층 미전개** — `DIM_ORG.sql` 주석에 자기문서화됨:
+> *"⚠️ 계층전개(CORP/DIVISION/DEPARTMENT/TEAM)=`UPPER_DEPT_ID` 재귀 필요 → 입고 후 확장. 현재 DEPARTMENT=DEPT_NM만."*
+
+- ⚠️ **설계 소관**: 계층 전개 방식·미결 3건은 **`03_top-down_gold/03_테이블 설계.md` §5 O16**(정본)에 기록. 본 문서는 "미적재 상태" 추적만 담당한다.
+- **DEC-5(현업 C-7)가 이미 정한 것**: 트리 = **`UPPER_DEPT_ID`**(확정) · `STATS_DEPT_LVL` **미사용**(확정) · `TEAM` = **5th 레벨**.
+  → 종전 본 세션에서 "어느 트리 기준인지 확정 불가"·"`STATS_DEPT_LVL`이 폐기인지 현업 확인 필요"로 올린 것은 **DEC-5를 읽지 않은 상태의 추론이었다 → 철회.**
+- 재귀 실측(2026-07-30): `UPPER_DEPT_ID` 트리 **6단**, LVL별 9/38/351/672/238/6 = **1,314 = 원천 행수 정확 일치**(고아·순환 0).
+- 🔴 잔여 미결(설계 O16): ① 6레벨 → 4컬럼 매핑(DEC-5는 `TEAM`=5th만 확정) ② 본부/지부가 D6에서 **동일 레벨(`DIVISION`)** 로 묶여 ML 요건 "신규본부/신규지부" 3분류 산출 불가 ③ DEC-5 부기 "5th=실적부서" 표현 확인(실측: `ACMSLT_DEPT_YN='Y'` = LVL1 1/LVL2 0/LVL3 219/LVL4 115/LVL5 118/LVL6 2 → LVL5의 49.6%만 실적부서·실적부서 455개 중 LVL5는 26%)
+- ⚠️ **본 세션 자체 오판 기록**: `DEPT_NM LIKE '%본부%'` 명칭 패턴으로 "깊이 기반 매핑 성립 불가"라 판정했으나 설계·DEC-5는 **레벨 기반**이므로 **검증 기준을 잘못 잡은 범주 오류**(AD-1 오진과 동일 유형) → 판정 철회.
+- **요건 영향**: 기획실 "**부서별** 개발예측"은 `DEPARTMENT`(695종)로 산출 가능 ✅ / 회비예측 "신규**본부**/신규**지부**/기존"은 `DIVISION` 부재로 불가 🔴
+
+**(2) `DIM_DATE.IS_HOLIDAY`** — `DIM_DATE.sql`: `FALSE as IS_HOLIDAY,   -- ⚠️ 휴일 원천 없음(추후 보정)`
+- 기획실 개발예측 **A안 3종 전부**가 *"연도말까지 **주말(휴일)** 제외한 나머지 개발가능일수 반영"* 을 요구.
+- 주말은 `DAY_OF_WEEK`(Sat/Sun 정상 채움)로 산출 가능. **공휴일은 불가** → 문서40 신규 등록.
+- ⚠️ WIDE 6종(`WIDE_MEMBER_EVENT`·`WIDE_SERVICE_EVENT`·`WIDE_GA_BEHAVIOR`·`WIDE_EVENT_PARTICIPATION`·`WIDE_AD_*`)이 이 컬럼을 **그대로 상속**한다 → 현재 전부 FALSE. 소비 측이 "휴일 아님"으로 오독할 위험.
+
+**(3) `DIM_SPONSORSHIP.SPONSORSHIP_ABBR` 의미 은폐** — DDL·D5 주석은 `'약칭(#124)'`이나 실제 값은 `1`~`6` **6종 코드**다:
+
+| `ABBR` | 사업수 | 소속 사업 (원문) | 🟡 그룹 의미 **(추정)** |
+|---|---:|---|---|
+| `1` | 17 | 국내아동후원·아동복지시설지원·아동학대예방·결식아동지원·장애시설지원·복지관후원·저소득가정지원·저금통·정회원·국내사례·국내사업후원·국내아동권리보호사업 등 | 국내 계열 |
+| `2` | 1 | 해외아동결연 | 결연 |
+| `3` | 6 | 해외지역개발사업·희망학교지원사업·식수위생지원사업·해외교육지원사업·보건의료지원사업·재난구호지원사업 | 해외 프로젝트 계열 |
+| `4` | 3 | 대북지원사업·북한사업후원·북한아동후원 | 대북/북한 계열 |
+| `5` | 21 | 일시후원·선물금회원·선물캠페인·긴급구호(법정/지정)·가족개별후원·재가복지개별후원·좋은이웃·혼합회원·특별후원회원·정기일시 등 | 기타 계열 |
+| `6` | 2 | 해외사례·해외사업후원 | (귀속 불명) |
+| NULL | 1 | (미매핑) | 센티넬 |
+
+- 🔴 **위 "그룹 의미" 열은 사업명에서 읽어낸 추정이며 코드사전 근거가 아니다.** `SILVER.CRM_CODE`에서 해당 코드그룹(`CD_ID`)을 특정하지 못했다 → **라벨 확정 전 단정 금지.** (SVL-1~4와 동일 성격의 라벨 대기 항목)
+- ML 정본은 *"후원사업(국내/결연/해외프로젝트/기타)별"* **4그룹**과 월 회비예측 *"후원사업 총 **11개**"* 를 요구. **6종↔4그룹↔11개 대응은 전부 미확정** → 현업 매핑표 필요(문서20 §F-2).
+- ⚠️ 카디널리티 50↔29 불일치는 **신규가 아니다** — 기존 **O13**(설계 §5)로 이미 등록된 미확정 항목. 이번에 배포본 51행(=마스터 50 + unknown 1)·실사용 29종을 추가 실측했을 뿐 원인은 여전히 미확정.
+- ⚠️ 2026-07-16 캠페인 유형1/유형2 의미혼입 교정과 **동일 패턴**(컬럼명·주석이 실제 의미를 가림).
+- 설계 소관 정본 = `03_테이블 설계.md` §5 **O19**.
+
+### 🔴 [신규 2026-07-30] `UNPAID_FLAG_BOM` LAG 전월 근사 — DEC-4가 "완료"로만 기록한 잠복 결함
+
+`FACT_MEMBER_MONTHLY.sql:91`:
+```sql
+LAG(j.UNPAID_FLAG_EOM) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY) as UNPAID_FLAG_BOM
+-- 모델 주석: "회원별 월순 LAG(union 스파인 전체 월 기준; 결측월은 직전 존재월 근사)"
+```
+스파인 = 회비 ∪ 개발/중단이 **있는 월만** 존재 → 회원의 월이 연속이 아니다. `LAG`는 "전월"이 아니라 **"직전 존재월"** 을 가져온다.
+
+**규모 실측 (2026-07-30, `MONTH_KEY` 199101~203512)**:
+```
+직전행이 있는 행                38,294,238
+  gap = 1개월  (정확)           36,785,612   96.06%
+  gap > 1개월  (근사=부정확)      1,508,626    3.94%   ← BOM 이 실제 전월 상태가 아님
+  gap > 12개월                     980,037           ← "전월"이 1년 이상 전
+최대 gap                              370개월  (30.8년)
+```
+최악 사례: 1991년 행이 2022년 행의 "전월"로 사용된다.
+
+- 모델 주석에는 자기문서화돼 있으나 **문서30 DEC-4는 "`UNPAID_FLAG_BOM`(LAG) ✅완료"로만 기록**하고 근사 사실·규모를 남기지 않았다.
+- 🔴 **§5 직접 영향**: `PREV_MONTH_END_ACTIVE_CNT`(#53)를 같은 `LAG` 패턴으로 구현하면 **동일 결함을 상속**한다. 이 컬럼은 `04_SV파생 매핑.md`상 중단율·활동율 계산의 **분모 입력**이다.
+- **올바른 처리 후보**: ① 스파인을 `DIM_DATE` 월 축으로 **dense화**(회원×존재구간 전월 생성) 후 `LAG` ② `MONTH_KEY` 산술로 **명시적 전월 조인**(`ADD_MONTHS` 기준 self-join, 없으면 NULL) — ②가 dense화 비용 없이 정확하다.
+- **결정 필요** → 문서30 신규 DEC. §5 착수의 선결조건(`YEAR_START` 적재규약과 동급).
+
+### 🟡 [신규 2026-07-30] FMM 52컬럼 전수 census — 미적재를 3분류로 확정
+
+BLOCKING-5 표는 "전건 0/NULL"을 한 칸에 묶었으나, **0 상수 주입과 전건 NULL은 조치 방식이 다르다.** 2026-07-29 재적재본 실측 결과:
+
+| 분류 | 수 | 컬럼 |
+|---|---:|---|
+| **실적재** | 8 | `PAID_FEE`(36.09M nz) · `BILLED_AMT`(37.15M nz) · `HAS_BILLING`(TRUE 37,792,336) · `UNPAID_FLAG_EOM`(TRUE 3,302,535) · `UNPAID_FLAG_BOM`(TRUE 3,194,999) · `DEV_CNT`(2.97M nz) · `DEV_MEMBERS` · `STOP_CNT`(0.97M nz) |
+| **0 상수 주입** | 27 | `ACTIVE*` 4종 · `MONTH_END`/`YEAR_START`/`YEAR_END`/`PREV_MONTH_END_ACTIVE_CNT` · `UNPAID_CNT`·`CAMPAIGN_UNPAID_CNT`·`STATUS_UNPAID_CNT` · `CHURN_CNT` · `INCREASE_CNT`·`INCREASE_MEMBERS`·`DECREASE_CNT` · `CAMPAIGN_SK`·`SPONSORSHIP_SK`·`PAYMENT_SK`·`REASON_SK` · `REGULAR_FEE`·`REGULAR_ONETIME_FEE`·`ONETIME_ONETIME_FEE` · `SPONSOR_MONTHS`·`SPONSOR_YEARS`·`PAID_MONTHS` · `INBOUND_CALL_CNT`·`TS_CALL_CNT` |
+| **전건 NULL** | 11 | `DEV_TYPE`·`NEW_FLAG`·`INCREASE_FLAG`·`REDONATE_FLAG`·`AMOUNT_BAND1/2`·`PERIOD_BAND1/2`·`NEW_EXISTING_FLAG`·`JOIN_DATE`·`STOP_DATE` |
+| grain·감사 | 6 | `MONTH_KEY`·`MEMBER_DK`·`DW_*` 4종 |
+
+- 합계 52 = `06_DDL.sql` FMM 컬럼수 **1:1 일치** (DDL↔배포본 동기 확인).
+- ⚠️ **측정 방법 주의**: `COUNT(col)`은 non-null만 세므로 0 상수 주입군을 "적재됨"으로 오판한다. **`COUNT_IF(col<>0)` 또는 `GROUP BY` 값 분포로 판정할 것.** (2026-07-30 이 오판 실제 발생 — `FSE.OPEN_MEMBERS`를 `COUNT()`로 "38,470,780행 전건 적재"로 오판, 실제는 전건 0)
+- ✅ **부수 소득**: `UNPAID_FLAG_EOM`(TRUE 3,302,535)은 이미 실적재 → §5 `UNPAID_CNT` 배선 시 **독립 cross-check 기준**으로 사용 가능(P21). 또 ML 요건 "연속미납횟수"를 이 flag의 월 run-length로 산출 가능(단 위 LAG 결함 영향).
+- ✅ `REGULAR_FEE`가 0인데 `PAID_FEE`는 실적재 → **회비 분해(정기/일시)가 미수행 상태**임이 확정.
+
 
 ## 🟡 결정 대기 — 누락/과잉 GOLD 6개
 모델 작성 여부 결정 필요. **상세는 문서30 §6.** 요약: 소스 준비 4개(즉시 가능)·소스 입고대기 1개(FACT_TARGET_BIZ, 원천=**CRM** 확정·신규 목표 테이블 대기)·`DIM_MEMBER_IDENTITY`는 **2026-07-15 활성화 완료**(enabled=true·XREF dedup 조인, 1,274명 매칭).

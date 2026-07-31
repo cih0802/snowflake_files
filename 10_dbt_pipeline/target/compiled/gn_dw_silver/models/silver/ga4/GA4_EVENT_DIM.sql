@@ -43,6 +43,25 @@ FROM (
           "is_active_user"                    AS is_active_user,
           "batch_ordering_id"                 AS batch_ordering_id
         FROM GN_DW.BRONZE_GA4."events_20260501"
+        UNION ALL
+      
+        -- ⚠️ BRONZE_GA4 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        SELECT
+          "event_date"                        AS event_date,
+          "event_timestamp"                   AS event_timestamp,
+          "event_name"                        AS event_name,
+          "event_params"                      AS event_params,       -- VARIANT: LATERAL FLATTEN은 모델에서
+          "user_id"                           AS user_id,            -- ⚠️VARCHAR 필수(선행0·S접두 보존)
+          "user_pseudo_id"                    AS user_pseudo_id,
+          "device"                            AS device,
+          "geo"                               AS geo,
+          "traffic_source"                    AS traffic_source,
+          "collected_traffic_source"          AS collected_traffic_source,
+          "session_traffic_source_last_click" AS session_traffic_source_last_click,
+          "platform"                          AS platform,
+          "is_active_user"                    AS is_active_user,
+          "batch_ordering_id"                 AS batch_ordering_id
+        FROM GN_DW.BRONZE_GA4."events_20260719"
         
       
     

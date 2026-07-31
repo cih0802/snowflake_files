@@ -59,7 +59,7 @@ ORDER BY 1, 2;
 SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;   -- 기대: 0행(미존재) → Step 1 진행
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 1 — CREATE (최초 배포) : VERSION$1 자동 default
+-- Step 1-1 — CREATE (최초 배포) : VERSION$1 자동 default
 -- ─────────────────────────────────────────────────────────────────────────────
 -- OPS 스키마는 이미 존재(2026-07-28 생성) → 아래는 멱등 no-op.
 --   ※ IF NOT EXISTS 이므로 기존 COMMENT('ETL 운영 인프라 — dbt 프로젝트…')는 덮이지 않음.
@@ -82,6 +82,68 @@ SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- Step 1-2 — 재배포 (버전이 남도록) : ALTER … ADD VERSION → VERSION$N+1
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 언제: 워크스페이스의 models/·macros/·dbt_project.yml 을 수정한 뒤.
+--   Snowsight UI 의 `Connect » Redeploy dbt project`(= Existing dbt deployment)와 동일 동작.
+--
+-- ⚠️ 왜 CREATE 를 다시 쓰지 않는가:
+--   · `CREATE DBT PROJECT IF NOT EXISTS`(Step 1-1) → 이미 있으면 **아무 일도 안 함**(구버전 그대로 실행됨).
+--   · `CREATE OR REPLACE DBT PROJECT`             → 버전 식별자가 1로 **리셋**되고 **기존 버전·alias·run history 전량 소실**.
+--     (snow CLI 의 `snow dbt deploy --force` 도 내부적으로 이것 → docs 경고: 사용 금지)
+--   → 재배포는 반드시 **ALTER … ADD VERSION**. 이력이 남아 감사·롤백이 가능하다.
+--
+-- ⚠️ 배포 객체 ≠ 워크스페이스: DBT PROJECT 는 워크스페이스의 **스냅샷**이다.
+--    워크스페이스에서 dbt build 를 돌려도(= `EXECUTE DBT PROJECT FROM WORKSPACE` / Workspaces UI)
+--    배포 객체는 바뀌지 않는다 → ADD VERSION 을 빼먹으면 배포본이 조용히 뒤처진다.
+--    [실측 2026-07-29] `SHOW VERSIONS` 결과 **VERSION$1(2026-07-28) 뿐** — 그 사이 워크스페이스 변경분
+--    (07-29 SV/Agent, 07-16 캠페인 4축 등)이 배포 객체에 **미반영** 상태였다. 00_배포운영_통합 §0 경고와 동일 사고.
+
+-- (1) 현재 배포본 확인 — 최신 VERSION$N·is_default 를 먼저 본다.
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;   -- default_version / default_version_name 확인
+
+-- (2) 새 버전 추가 = 재배포. VERSION$N+1 로 자동 증가하며 default 로 승격된다.
+--     ⚠️ `ADD VERSION` 에는 COMMENT 절이 **없다**(문법: ADD VERSION [<version_name_alias>] FROM '<uri>').
+--        변경 요약은 ① 선택적 **alias**(식별자 규칙: 공백·특수문자 불가) ② 프로젝트 COMMENT(아래 3)
+--        ③ 본 문서/`00_배포운영_통합 §0` 이력에 남긴다.
+ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
+  ADD VERSION CAMPAIGN_4AXIS_20260730
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+
+-- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
+ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
+  COMMENT = 'BRONZE→SILVER 38 + SILVER→GOLD 27(dim 15 + fact 12) + WIDE VIEW 12 = 77 models. [v2 20260730] 캠페인 분류 4축 라벨화(DEC-17)·DIM_CAMPAIGN 의미혼입 교정(DEC-17-A)·XREF MEMBER_DK not_null 스코프 교정. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+
+-- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+
+-- (5) 문법 검증(테이블 불변, 안전) → 통과 후 Step 3 의 build 실행.
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+
+-- ── 롤백 (직전 버전으로 되돌리기) ─────────────────────────────────────────────
+-- ⚠️ `EXECUTE DBT PROJECT` 에는 VERSION 절이 **없다** — 실행은 항상 default 버전을 쓴다.
+--    따라서 롤백 = default 버전을 되돌리는 것.
+-- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET DEFAULT_VERSION = 'VERSION$1';   -- 또는 alias
+-- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE UNSET DEFAULT_VERSION;               -- LAST(최신)로 복귀
+--   ※ 현 계정 실측 default_version = 'LAST' (DESCRIBE 확인) → 새 버전 추가 시 자동으로 최신을 따라간다.
+--
+-- ── ⚠️ BCR-2362 (2026_06 bundle, Pending) — 이 절차의 유효기간 ────────────────
+--   번들이 계정에 활성화되면 DBT PROJECT 가 **단일 mutable `live` 버전**으로 전환되고
+--   `ADD VERSION`·`SHOW VERSIONS`·`SET DEFAULT_VERSION`·버전 경로(`versions/VERSION$N/`)가 **제거**된다
+--   (기존 버전도 접근 불가). 경로는 `versions/live/` 로 통일되고 파일은 PUT/GET/COPY FILES 로 직접 수정된다.
+--   대신 partial parsing·`dbt retry`·`--select state:modified`(Slim CI)·`source freshness` 가 열린다.
+--   [실측 2026-07-29] 본 계정은 **아직 미적용**(`SHOW VERSIONS` → VERSION$1, is_live=false) → 위 절차 유효.
+--   ▶▶ 번들 활성 후에는 Step 1-2 를 "workspace → live 동기화"로 재작성해야 한다(버전 이력 전략 폐기).
+--
+-- ── (참고) DDL 선행이 필요한 변경인지 확인 — R4: 구조 소유주는 dbt 가 아니다 ──
+--   모델에 **신규 컬럼**을 추가했다면 ADD VERSION 전에 DDL 을 먼저 적용해야 한다
+--   (미적용 시 SILVER/fact 는 append 실패, GOLD dim 은 merge 에서 신컬럼이 조용히 누락).
+--     SILVER → 04_silver_design/08_SILVER_테이블DDL_20260714.sql
+--     GOLD   → 03_top-down_gold/06_DDL.sql
+--   ⚠️ 자식 FK 가 있는 GOLD DIM 에 컬럼만 추가할 때는 `CREATE OR REPLACE` 금지(FK 드롭) → `ALTER ADD COLUMN`.
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- Step 2 — 검증 (테이블 불변, 안전 — 데이터 변경 없음)
 -- ─────────────────────────────────────────────────────────────────────────────
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
@@ -96,7 +158,7 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
 --    따라서 `--full-refresh` 플래그는 **사용 금지**(무시되지만 혼동 유발).
 
 -- 전체 재정제:
--- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 
 -- 부분: GA4 샤드 입고 시(하류 XREF 포함) / CRM 도메인만:
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select silver.ga4+';

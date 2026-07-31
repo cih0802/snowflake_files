@@ -9,25 +9,45 @@
 --   03_top-down_gold/04_SV파생 매핑.md       derived 81→분자/분모 base 매핑(stale; 공64·공80·유지기간 공식 정합 확인 참고)
 --   Snowflake docs: /user-guide/views-semantic/sql (CREATE SEMANTIC VIEW DDL 구문 · COMMENT = 필수 · GRANT REFERENCES,SELECT)
 --
--- ▶ 실측 활성 매트릭스 (COUNT_IF, 2026-07-22 · A1/A3 적재 반영):
---   ⚠ 아래 수치는 모두 **COUNT_IF = 값이 채워진(>0) 행 수**이다. SV에 노출되는 metric은 **SUM 집계**이므로 값이 다르다.
+-- ▶ 실측 활성 매트릭스 (2026-07-29 재검증 · SV 6종 = SV_MEMBER_MONTHLY·SV_MEMBER_EVENT·SV_SERVICE·SV_EVENT_PARTICIPATION·SV_BUDGET·SV_AD):
+--   ⚠ 아래 수치는 모두 **COUNT_IF = 값이 채워진 행 수**이다. SV에 노출되는 metric은 **SUM 집계**이므로 값이 다르다.
 --     예) FMM DEV_CNT: COUNT_IF(행수)=2,970,417 이나 TOTAL_DEV_CNT=SUM(DEV_CNT)=3,594,843.
 --         FMM STOP_CNT: COUNT_IF(행수)=972,376 이나 TOTAL_STOP_CNT=SUM(STOP_CNT)=1,038,262.
 --     → 06/07 검증·평가셋의 metric 값(SUM 기준)과 대조할 때 이 구분에 유의(모순 아님).
---     FMM 40.05M : PAID_FEE 36.1M · BILLED_AMT 37.1M · DEV_CNT 2.97M · STOP_CNT 0.97M · UNPAID_FLAG_BOM 3.19M/EOM 3.30M · HAS_BILLING 37.79M ✅
+--     FMM 40.05M : PAID_FEE 36.09M · BILLED_AMT 37.15M · DEV_CNT 2.97M · STOP_CNT 0.97M · UNPAID_FLAG_BOM 3.19M/EOM 3.30M · HAS_BILLING 37.79M ✅
 --                  ACTIVE/CUM/MONTH_END/INCREASE 건·명 · CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK · NEW_EXISTING_FLAG = 전건 0 ❌
 --     FME 4.63M  : DEV_CNT/DEV_MEMBERS 3.59M · STOP_CNT/STOP_MEMBERS 1.04M · JOIN/STOP_DATE ✅ / ORG_SK·FK·NEF = 0 ❌
 --     FSE 38.47M : SEND_MEMBERS(전행) · SEND_STATUS 35.75M · SERVICE_SK 99.97% · SEND_TITLE ✅ / SUCCESS/FAIL/OPEN/D5/LETTER/GIFT·CAMPAIGN_SK = 0 ❌
 --     FEP 1.13M  : PARTICIPANT_CNT/PARTICIPATE_CNT(전행) · EVENT_SK 76.8%(고아 23%) ✅ / TOTAL/RECRUIT_CNT·CAMPAIGN/SPONSORSHIP_SK = 0 ❌
---     FBD 24.5K  : PLAN_BUDGET_MONTH 7,290 · EXEC_BUDGET_ERP 3,244 · BUDGET_ITEM_SK(전행) ✅ / 연예산·집행추정·모금성/광고비·ORG/CAMPAIGN_SK = 0 ❌
+--     FBD 24,480 : PLAN_BUDGET_MONTH 7,290 · EXEC_BUDGET_ERP 3,244 · BUDGET_ITEM_SK(전행) ✅ / 연예산·집행추정·모금성/광고비·ORG/CAMPAIGN_SK = 0 ❌
+--                  ⚠ FBD 두 금액은 **≠0 기준** 카운트다(음수 존재 — PLAN 1행·EXEC 24행 조정/환입).
+--                    >0 기준으로는 각각 7,289 · 3,220. 집행율 분모·분자 스코프 정의 시 이 차이에 유의.
+--     AD  235,572: [2026-07-28 순서9-I 신설 · base=SERVING.FACT_AD_COMBINED helper]
+--                  AD_COST 224,399행(총 514.4억) · DEVICE_SK 전행(unknown 0) ✅
+--                  [디지털 전용] IMPRESSIONS 190,440 · CLICKS · GA_CONV_MEMBERS · READ_CNT · MEDIA_POTENTIAL ·
+--                    CRM_DEV_CNT 189,252(2024-01~2026-05만 — 2026-06부터 원천이 단가로 대체, AD-3)
+--                  [방송 전용] INBOUND_CALL 165,462(REBRDC 113,241 + VIDEO 52,221) · AD_CNT 36,712(REBRDC 2,059 + VIDEO 34,653)
+--                  🔴 CONV_CALL_CNT = **전건 NULL**(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS 원천부터 35,822행 전량 NULL).
+--                     배포된 metric TOTAL_CONV_CALL_CNT 의 "총 49,093" 은 현 데이터에 근거가 없다
+--                     → metric 제거(SV_AD METRICS 절 상단 근거 주석). ⚠재배포 필요.
+--                  [재방송 전용] DVLP_CNT 1,982/2,064(96.03%) · DVLP_MEMBER_CNT — VIDEO 원천에 개발 컬럼 구조적 부재(AD-5)
+--                  ❌ CAMPAIGN_SK · AD_CREATIVE_SK = 전건 0 → 캠페인/소재별 분해 불가(Phase-2)
 --     활성 dim속성: 회원 GENDER 1.76M·MEMBER_STATUS 1.59M·MEMBER_TYPE 1.76M ✅ / REGION·AGE_BAND·FIRST_SPONSORSHIP = 0 ❌
 --                   서비스 SUBTYPE·CHANNEL ✅ / SEND_TYPE_L/M/S = 0 ❌ · 행사 EVENT_NAME/KIND/CATEGORY ✅ / APPLY_CHANNEL = 0 ❌ · 세세목 NAME/CATEGORY ✅
 --
+-- ▶ 배포 실측 대조 (2026-07-29): SHOW SEMANTIC VIEWS/METRICS/DIMENSIONS IN SCHEMA GN_DW.SERVING
+--     = SV 6종 · metric 39개 · dimension 61개 — 구조는 일치했으나 SV_AD 의 TOTAL_CONV_CALL_CNT 가
+--       **빈 metric(원천 전건 NULL)** 으로 확인돼 본 파일에서 제거했다 → 재배포 후 metric 38개(SV_AD 15).
+--       metric  : SV_AD 15(배포본 16) · SV_MEMBER_MONTHLY 11 · SV_MEMBER_EVENT 4 · SV_BUDGET 3 · SV_EVENT_PARTICIPATION 3 · SV_SERVICE 2
+--       dimension: SV_AD 19 · SV_MEMBER_EVENT 11 · SV_SERVICE 9 · SV_EVENT_PARTICIPATION 9 · SV_MEMBER_MONTHLY 8 · SV_BUDGET 5
+--
 -- ▶ 가드레일 준수:
 --     R1 fan-out : 월팩트→SERVING.DIM_MONTH(월 grain) · 회원속성→SERVING.DIM_MEMBER_CURRENT(현재행) — raw DIM_DATE/DIM_MEMBER 직접조인 금지.
+--                  광고팩트→SERVING.FACT_AD_COMBINED(AD_PERF_DK 1:1 pre-join) — 위성 3종 직접 다중조인 금지.
 --     R5 가산성  : F(flow)=SUM metric / D(distinct 회원)=COUNT(DISTINCT MEMBER_DK) metric(다월 중복 방지) / 비율=분자·분모 각각 집계 후 division.
---     조인키 타입: MEMBER_DK=VARCHAR(캐스팅 금지) · MONTH_KEY/DATE_SK/*_SK=NUMBER.
---     PRIMARY KEY(2026-07-22 정정): 실측 유일한 FMM(MONTH_KEY,MEMBER_DK)·FBD(MONTH_KEY,BUDGET_ITEM_SK)만 선언.
+--     조인키 타입: MEMBER_DK=VARCHAR(캐스팅 금지) · MONTH_KEY/DATE_SK/*_SK=NUMBER · AD_PERF_DK=VARCHAR(32).
+--     PRIMARY KEY: 실측 유일한 것만 선언 — FMM(MONTH_KEY,MEMBER_DK) · FBD(MONTH_KEY,BUDGET_ITEM_SK) ·
+--                 ad(AD_PERF_DK, 235,572행 전건 유일 · 2026-07-28 추가).
 --                 FME/FSE/FEP는 선언 grain이 실측 비유일(FME 4.63M→4.05M·FSE 38.47M→36.65M·FEP 1.13M→0.84M) → PK 미선언.
 --                 기저 FACT는 다른 테이블에서 참조되지 않아(관계의 다측) PK 불요 · fan-out/집계 무해(compile 확인).
 --     비활성    : 실측 0/NULL(FK·SUCCESS·D5·연예산 등)은 SV에서 제외(하단 비활성 주석) — 적재 완결 시 metric만 추가(구조 불변).
@@ -315,14 +335,15 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
       WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N).'
   )
   COMMENT = 'Phase-1 예산 SV(base FBD). [원천 요약] 원천시스템=ERP(예산관리 · Snowflake 파일 업로드로 bronze 적재) · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(편성 YEAR_BDGT_AMT_n·집행 EXEC_AMT_n 월 언피벗, 세세목 JANG_NM~SUBDTL_ITEM_NM) → SILVER(ERP_BUDGET+ERP_BUDGET_ITEM) → GOLD(FBD). ⚠광고비는 이 SV의 원천(ERP)에 없다 — 광고비는 AGENCY 원천의 SV_AD 소관(예산 원장에 광고비 컬럼 부재, E-4). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 편성예산(월)·집행예산(ERP)·집행율, 세세목/예산구분/월별. 비활성(적재 대기): 연 편성예산(PLAN_BUDGET_YEAR=0), 집행추정/모금성비용/광고비(=0), 조직/캠페인별(ORG/CAMPAIGN_SK=0), 개발단가·ROI(신9~11, O3·E-6 대기).'
-  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(세세목·예산구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계(합계·집행율) 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 편성예산·집행예산·집행율을 월별로 보여준다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(세세목·예산구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 12개 월별 행 + 전체 총계(합계·집행율) 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 편성예산·집행예산·집행율을 월별로 보여준다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다. ⚠집행율 산정 주의: 현재 집행예산(EXEC_BUDGET_ERP)은 특정 월까지만 적재돼 있고 나머지 월은 0이다(2026-07-29 실측: 202601~202605만 실질 집행 존재). 편성은 12개월 전량이므로, 집행율을 연 합계(전체 편성 ÷ 일부 집행)로 내면 분모가 과대해 집행율이 구조적으로 낮게 나온다. 이를 방지하기 위해 — (A) 집행율을 구할 때는 집행 데이터가 있는 월(EXEC_BUDGET_ERP<>0)만 편성 분모에 포함한다: SUM(CASE WHEN EXEC_BUDGET_ERP<>0 THEN PLAN_BUDGET_MONTH END)을 분모로, SUM(CASE WHEN EXEC_BUDGET_ERP<>0 THEN EXEC_BUDGET_ERP END)을 분자로 쓴다. (B) 집행 미적재 월은 "집행 미반영"으로 표기하며 편성만 보여준다. (C) 답변에 "집행 적재 기간 = 202601~202605, 이후 미반영"임을 반드시 명시한다. (D) 월별 ROLLUP 총계도 (A) 스코프로 산정한다.';
 
 
 /* =====================================================================================
    6. SV_AD (overall Agent) — base FACT_AD_COMBINED(helper, FAP+FAD+FAB 1:1 pre-join) + DIM_DEVICE + DIM_DATE
       선행: SERVING.FACT_AD_COMBINED helper 뷰 생성 필요 (아래 CREATE VIEW 포함)
       활성: 광고비·노출·클릭·CTR(디지털)·CVR(디지털)·CRM개발건·개발단가(디지털)
-            인바운드콜·방송횟수·전환콜(방송) · 기기·출처유형·매체사·시간대·프로그램 차원
+             인바운드콜·방송횟수(방송) · 재방송개발건·재방송 개발단가(재방송) · 기기·출처유형·매체사·시간대·프로그램 차원
+       🔴 전환콜(CONV_CALL_CNT)은 원천 전건 NULL → metric 미노출(2026-07-29 제거 · METRICS 절 상단 근거 주석)
       ⚠ CAMPAIGN_SK·AD_CREATIVE_SK 전건 0 → 캠페인/소재별 분해 불가(Phase-2)
       ⚠ 디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 없이 혼합집계 시 왜곡 주의
    ===================================================================================== */
@@ -385,6 +406,11 @@ FROM GN_DW.GOLD.FACT_AD_PERFORMANCE fap
 LEFT JOIN GN_DW.GOLD.FACT_AD_DIGITAL dig ON fap.AD_PERF_DK = dig.AD_PERF_DK
 LEFT JOIN GN_DW.GOLD.FACT_AD_BROADCAST brc ON fap.AD_PERF_DK = brc.AD_PERF_DK;
 
+-- helper 뷰 COMMENT (2026-07-29 추가 — DIM_MONTH·DIM_MEMBER_CURRENT 와 동일 규약. ⚠재배포 필요: 현 DB의 본 뷰 COMMENT는 NULL)
+--   ※ 뷰 COMMENT는 ALTER VIEW ... SET COMMENT 사용(COMMENT ON VIEW 는 미지원 — 10_WIDE VIEW 코멘트.sql §2 동일 규약).
+ALTER VIEW GN_DW.SERVING.FACT_AD_COMBINED SET COMMENT =
+  'GOLD 광고 팩트 3종(FAP 코어 + FAD_D·FAD_B 위성)을 AD_PERF_DK 로 1:1 pre-join — SV_AD 의 단일 base. PK=AD_PERF_DK(235,572행 전건 유일, fan-out 0). 위성은 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(디지털행=방송컬럼 NULL, 방송행=디지털컬럼 NULL — 결측이 아니라 원천 부재). 존재 이유: Snowflake semantic view metric 식은 자기 logical table 컬럼만 참조 가능해 개발단가(AD_COST÷CRM_DEV_CNT) 등 cross-satellite 비율을 SV 에서 직접 계산할 수 없다.';
+
 -- helper 뷰 GRANT (소비 역할이 SV를 통해 간접 접근)
 GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_VIEWER;
@@ -396,7 +422,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad AS GN_DW.SERVING.FACT_AD_COMBINED
       PRIMARY KEY (AD_PERF_DK)
       WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
-      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join, 235,572행 유일). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·전환콜) / GN_DW.BRONZE_GA4.events_YYYYMMDD(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
+      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join, 235,572행 유일). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·개발건수) / GN_DW.BRONZE_GA4.events_YYYYMMDD(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
     device AS GN_DW.GOLD.DIM_DEVICE
       PRIMARY KEY (DEVICE_SK)
       WITH SYNONYMS ('기기', '디바이스', '매체기기')
@@ -445,7 +471,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.TOTAL_CLICKS AS SUM(ad.CLICKS)
       WITH SYNONYMS ('클릭수', '클릭') COMMENT = '클릭수 합계. F(가산). 디지털 전용(방송은 NULL).',
     ad.TOTAL_INBOUND_CALL AS SUM(ad.INBOUND_CALL)
-      WITH SYNONYMS ('인바운드콜', '전화문의', '콜수') COMMENT = '인바운드 전화 건수 합계. F(가산). 방송 전용(디지털은 NULL).',
+      WITH SYNONYMS ('인바운드콜', '전화문의', '콜수') COMMENT = '인바운드 전화 건수 합계. F(가산). 방송 전용(디지털은 NULL). 총 165,462(REBROADCAST 113,241 + VIDEO 52,221).',
     ad.TOTAL_GA_CONV_MEMBERS AS SUM(ad.GA_CONV_MEMBERS)
       WITH SYNONYMS ('GA전환회원', '전환회원수') COMMENT = 'GA 전환 회원수 합계. F(가산). 디지털 전용.',
     ad.CTR AS SUM(ad.CLICKS) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100
@@ -464,10 +490,18 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.TOTAL_MEDIA_POTENTIAL AS SUM(ad.MEDIA_POTENTIAL_CUST_CNT)
       WITH SYNONYMS ('매체잠재고객수', '잠재고객') COMMENT = '매체 잠재고객수 합계(디지털). F(가산).',
     -- 방송 전용 measure
+    --   🔴 [2026-07-29 제거] ad.TOTAL_CONV_CALL_CNT (전환콜) — 원천 전건 NULL 이므로 **미노출**.
+    --      실측: BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT 35,822행 전량 NULL
+    --            → SILVER.AGENCY_AD_BROADCAST → GOLD.FACT_AD_BROADCAST → helper 전 계층 SUM=NULL.
+    --      종전 배포 COMMENT의 "총 49,093" 은 현 데이터에 근거가 없다(실측 대조 실패).
+    --      제거 근거: 20_issue/30_설계_의사결정.md — "빈 metric 은 0/NULL 을 사실처럼 반환" 🔴 금지.
+    --                 선례 AVG_RETENTION_MONTHS(순9-E, 전건 NULL → 제거)와 동일 처리.
+    --      ⚠ 순9-K(REBRDC_DEV_UNIT_PRICE 오진 제거)와는 다른 사안이다 — 그쪽은 값이 있는데 분모 모집단을
+    --        잘못 잡은 경우였고, 이쪽은 값 자체가 원천에 없다.
+    --      helper 뷰의 brc.CONV_CALL_CNT 컬럼은 무손실 원칙상 유지(SV 노출만 차단).
+    --      → 대행사가 전환콜을 실제 제공하기 시작하면 이 metric 만 되살린다(구조 불변). 현업확인 AD-6.
     ad.TOTAL_AD_CNT AS SUM(ad.AD_CNT)
-      WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). 총 36,712. VIDEO/REBROADCAST 전용.',
-    ad.TOTAL_CONV_CALL_CNT AS SUM(ad.CONV_CALL_CNT)
-      WITH SYNONYMS ('전환콜', '전환전화건') COMMENT = '방송 전환 전화 건수 합계. F(가산). 총 49,093. 방송 전용.',
+      WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). 총 36,712(REBROADCAST 2,059 + VIDEO 34,653). VIDEO/REBROADCAST 전용.',
     ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
       WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '재방송 개발건수 합계. F(가산). 총 96,321. **REBROADCAST 전용** — VIDEO는 원천(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 **구조적으로 부재**(대행사 비디오 리포트는 개발 대신 전환콜 보고)하므로 결손이 아니다. REBROADCAST 내 커버리지 **96.03%**(2,064행 중 1,982행). ⚠VIDEO를 포함한 "방송 전체" 개발 규모로 확대 해석 금지.',
     ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
@@ -486,8 +520,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)
       WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(VIDEO 원천에 개발 컬럼 부재 → 방송 전체 단가가 아님). 분자를 개발건수 적재행으로 정합(미적재 82행 광고비 제외). 실측 157,969원(커버리지 96.03% · 정합 왜곡 0.61%). ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 41.5% 과대계상.'
   )
-  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper, 235,572행). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비(514.4억)·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수·전환콜 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. 기간: 디지털 2024-01 - 2026-06, 방송 2023-01 - 2026-07. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(FK=0, Phase-2). ⚠개발단가(공7)는 2026-06 이후 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다(REBROADCAST 내 커버리지 96.03%). VIDEO 혼합 집계 시 41.5% 과대계상.'
-  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수·전환콜은 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. **개발건수(재방송개발건·재방송개발회원)와 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 필터를 자동 추가한다** — VIDEO 원천에 개발 컬럼이 없어 혼합 시 41.5% 과대계상된다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가(공7, 디지털)는 2026-06 이후 원천 미적재로 NULL이다. 최신월 기준 질문에는 산출 가능한 최신월(2026-05)까지로 기간을 한정하고, 2026-06 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 개발건수·개발단가를 "방송"으로 묻더라도 **재방송(REBROADCAST) 전용 지표**임을 답변에 명시한다 — VIDEO는 대행사 원천에 개발 컬럼이 없어 집계 대상이 아니며(결손이 아니라 구조적 부재), 따라서 방송 전체 개발 규모로 단정하면 안 된다. 재방송 내 커버리지는 96.03%다.';
+  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper, 235,572행). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비(514.4억)·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. 기간: 디지털 2024-01 - 2026-06, 방송 2023-01 - 2026-07. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(FK=0, Phase-2). ⚠개발단가(공7)는 2026-06 이후 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다(REBROADCAST 내 커버리지 96.03%). VIDEO 혼합 집계 시 41.5% 과대계상. ⚠전환콜(CONV_CALL_CNT)은 대행사 원천이 전건 비어 있어 이 SV에 measure가 없다 — 질문받으면 미제공으로 안내(추정치 생성 금지).'
+  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. **개발건수(재방송개발건·재방송개발회원)와 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 필터를 자동 추가한다** — VIDEO 원천에 개발 컬럼이 없어 혼합 시 41.5% 과대계상된다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가(공7, 디지털)는 2026-06 이후 원천 미적재로 NULL이다. 최신월 기준 질문에는 산출 가능한 최신월(2026-05)까지로 기간을 한정하고, 2026-06 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 개발건수·개발단가를 "방송"으로 묻더라도 **재방송(REBROADCAST) 전용 지표**임을 답변에 명시한다 — VIDEO는 대행사 원천에 개발 컬럼이 없어 집계 대상이 아니며(결손이 아니라 구조적 부재), 따라서 방송 전체 개발 규모로 단정하면 안 된다. 재방송 내 커버리지는 96.03%다. (7) **전환콜**은 이 SV에 measure가 없다 — 대행사 원천(VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT)이 전건 비어 있기 때문이다. 질문받으면 SQL을 생성하지 말고 미제공 사유를 답하고, 인바운드콜(INBOUND_CALL)로 대체 가능한지 되묻는다. 전환콜 수치를 추정·창작하지 않는다.';
 
 
 /* =====================================================================================

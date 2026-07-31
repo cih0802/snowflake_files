@@ -27,10 +27,10 @@
 | `02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md` | ★ **정본 = 매핑 인덱스** — 원천→실행문서 매핑·공통원칙·GOLD24 커버리지·교차소스(신원브리지 S-7)·작업단계 |
 | `03_SILVER_작업계획_CRM전용 20260714.md` | **CRM 21객체 실행본**(트랙 A · S-1~S-5 완료) |
 | `04_SILVER_작업계획_GA4전용 20260714.md` | **GA4 5객체 실행본**(트랙 B) |
-| `05_SILVER_작업계획_ERP전용 20260714.md` | **ERP 3객체 실행본**(트랙 C) |
-| `06_SILVER_작업계획_AGENCY전용 20260714.md` | **AGENCY 3객체 실행본**(트랙 D · GADS·ADMIN 흡수) |
-| `07_GA4_SILVER_샤드통합 설계결정.md` | GA4 date-shard 통합 설계 결정 |
-| `08_SILVER_테이블DDL_20260714.sql` | **테이블 정의 정본** — STEP 1~2 CRM 21 + STEP 6 GA4 5 + STEP 7 신원브리지(ERP·AGENCY 포함) CREATE(타입·PK). 실행 1순위 |
+| `05_SILVER_작업계획_ERP전용 20260714.md` | **ERP 2객체 실행본**(트랙 C) + §6 DDL 설계근거(원장 구조 실측) |
+| `06_SILVER_작업계획_AGENCY전용 20260714.md` | **AGENCY 8객체 실행본**(트랙 D · GADS·ADMIN 흡수) + §6 DDL 설계근거(설계결정 6종·재설계 DEC-8~11·컬럼 어의) |
+| `07_GA4_SILVER_샤드통합 설계결정.md` | GA4 date-shard 통합 설계 결정 + §7 DDL 설계근거(착수 게이트·테이블별 grain/리스크) |
+| `08_SILVER_테이블DDL_20260714.sql` | **테이블 정의 정본** — 스키마 + 38테이블 CREATE(타입·PK·COMMENT). 실행 1순위. ⚠️ 구조 계약만 기술하며 설계근거·실측이력은 `05 §6`(ERP)·`06 §6`(AGENCY)·`07 §7`(GA4)·`02 §6`(브리지)로 이관됨 |
 | `09_SILVER_적재쿼리_20260714.sql` | **정제 적재 정본** — STEP 3 CRM INSERT + STEP 6 GA4 + STEP 7 브리지(+7-DQ) + **STEP 8 전체 통합검증(DQ-1/2/3)**. 실행 2순위(08 다음) |
 | `10_SILVER_RUN_이력_비교_20260714.md` | SILVER 적재 RUN 이력·행수 비교 |
 | `14_GA4_작업지시 프롬프트_20260714.md` | GA4 트랙 B 작업지시 프롬프트 |
@@ -43,7 +43,10 @@
 ---
 
 ## 설계 요약
-- **SILVER 설계 33객체 = CRM 21 + GA4 5 + ERP 3 + AGENCY 3 + 신원브리지 1**(+`DIM_DATE` 생성). **물리 실측: 32객체 존재·적재** — CRM 22(21 적재 + `CRM_BIZ_TARGET` 1 스키마-only·0행) + GA4 5(PoC 1일샤드) + ERP 2 + AGENCY 2(`AGENCY_COST`는 GOLD 이관) + 신원브리지 1 = **32**. **[2026-07-20 정정] 사업목표는 원천=CRM 확정 → `CRM_BIZ_TARGET`(CRM 트랙, 신규 입고 대상·스키마-only)로 ERP→CRM 재분류**. 전기간 GA4 샤드 입고 시 멱등 재적재만 잔여.
+- **SILVER 물리 실측(2026-07-29) = 38객체** — CRM 22(21 적재 + `CRM_BIZ_TARGET` 스키마-only·0행) + ERP 2 + **AGENCY 8**(코어 2 + staging 3 + 위성 3) + GA4 5(PoC 1일샤드) + 신원브리지 1 = **38**. dbt SILVER 모델 38개와 1:1.
+  - **[2026-07-28 순서9-I]** 광고 팩트군 재설계로 AGENCY 2 → **8객체**(`AGENCY_AD_ROW_{DGT,VIDEO,REBRDC}`·`AGENCY_AD_DIGITAL`·`AGENCY_AD_BROADCAST`·`AGENCY_AD_BROADCAST_CASE` 신설). 상세 = `06_..._AGENCY전용 §6-B`.
+  - **[2026-07-20 정정]** 사업목표는 원천=CRM 확정 → `CRM_BIZ_TARGET`(CRM 트랙, E-6 입고 대기)로 ERP→CRM 재분류. `AGENCY_COST` 는 GOLD 이관(SILVER 미생성).
+  - 전기간 GA4 샤드 입고(G-5) 시 멱등 재적재만 잔여.
 - **정제 범위**: 타입 캐스팅 · NULL/빈값 표준화 · 코드→라벨 병행보존 · 중복제거(PK) · **동일 소스 내 JOIN**까지. 집계(GROUP BY)·교차소스 conform 조인은 GOLD.
 - **계층 규칙(P2)**: `SERVING → GOLD → SILVER → BRONZE` 단방향. GOLD는 BRONZE 직접 참조 금지.
 - **GOLD 24(15 DIM + 9 FACT) 커버**: CRM 유래 15테이블 빌드·적재 가능(S-5 검증완료, G1·G2 해소). 잔여 9(FTG-B·FBD·FAD + DIM_AD_CREATIVE·DIM_BUDGET_ITEM·DIM_GA_*·DIM_DEVICE·FGA)는 GA4·ERP·CRM(신규 목표)·AGENCY 입고 후. ※FTG-B는 원천=CRM 확정(`CRM_BIZ_TARGET`, E-6).

@@ -111,6 +111,8 @@ END-METADATA -->
 
 ## 6. 교차소스 객체
 
+> 🔄 **[2026-07-29]** `08_SILVER_테이블DDL_20260714.sql` STEP 6 의 브리지 배치근거·grain 주의 주석을 축약하고 **본 절을 정본으로 참조**하도록 정리했다. 08 에는 GOLD 소비계약 요약 3줄(pseudo grain ≠ 회원 grain · `MEMBER_DK` DISTINCT + UNMATCHED 제외 · FACT 는 LEFT JOIN)만 남겼다. 전문은 아래 C1~C4.
+
 - **`IDENTITY_MEMBER_XREF` (신원 브리지, S-7)**: SILVER "동일소스 only" 원칙의 **유일한 교차소스 예외**. GA↔CRM 신원해소를 전용 브리지로 격리(`MATCH_METHOD`/`MATCH_CONFIDENCE`). 입력 = CRM 회원번호(=memnum=member id) + GA `user_id`. **✅ 2026-07-14 적재완료** — 위치=**SILVER 확정**(보수적 근거: 확률적 신원해소(session-fill 추론 + match confidence)를 SILVER에 격리→GOLD 결정적 차원 유지 / SK·conform은 GOLD 소관이므로 브리지엔 IDENTITY_SK 없음). grain=1행/`USER_PSEUDO_ID`. 실측 매칭 `GA_MEMBER_ID=MEMBER_DK` **exact 100%**(1,348행·fan-out 0·type불일치 0·CONFIDENCE 전량 HIGH). **CHILD_CODE 제외**(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피 — 결연아동은 GOLD URL파싱/결연팩트에서). **미매칭 GA 보존**(MATCH_METHOD='UNMATCHED', 전기간 샤드 커버리지 추적). → GOLD `DIM_MEMBER_IDENTITY`가 이 브리지를 소비하며 IDENTITY_SK 부여. (CRM측은 CRM 문서(03)에서 이미 충족.)
 - **`DIM_DATE` (생성 차원)**: 원천 없는 conform 차원 → SILVER 정제 대상 아님. GOLD(또는 util)에서 생성 → SILVER 객체 수 제외.
 - **★ S-7 브리지 GOLD 소비계약 (후속 오류방지 — 09 STEP 7 정본, 실측근거 2026-07-14)**:
@@ -152,3 +154,71 @@ END-METADATA -->
 | 6 | ✅ **전체 SILVER 통합 검증** (2026-07-14 실행, 09 STEP 8) | DQ-1 PK 유일성 30객체 dup=0 ✅ · DQ-3 fan-out 논리충족 ✅ · DQ-2 통합앵커(identity·ERP·결연) orphan 0 ✅ / ⚠️ EVENT_PARTICIPATION 2건(EVENT_KEY 263,611=ADMIN행사 미입고 53건·MBER_NO 9,480=탈퇴/비CRM) → **결정: GOLD DIM Unknown 멤버(`SK=0`) + LEFT JOIN 으로 행 100% 보존, ADMIN 입고 시 소급 치환. SILVER 무변경** *(2026-07-16 정정: 구현 확정값 `0`, 초안 `-1` 폐기)* | SILVER 정합 확정 ✅ |
 | 7 | ✅ **파이프라인 일괄 구성** (Bronze→Silver 오케스트레이션·스케줄) | dbt job / Task | 원칙 C |
 | 8 | ✅ **GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용 | GOLD 24T+9V (FACT_TARGET_BIZ만 0행) · 다음=Semantic View | `03_top-down_gold/08_silver의존.md` lineage |
+
+---
+
+## 8. DDL 설계 근거 (08_SILVER_테이블DDL에서 이관, 2026-07-29)
+
+> 아래는 DDL 정본(`08_SILVER_테이블DDL_20260714.sql`)에서 분리한 **설계 근거·이슈 참조·의사결정 이력**.
+> DDL 에는 필수 주석(구조 식별·COMMENT 절)만 잔존. 설계 배경이 궁금할 때 본 절 참조.
+
+### 8-A. 파일 구조 규약
+- 구 `silver_stepbystep_ddl.sql` 을 **08(구조 DDL) + 09(적재 쿼리)**로 분할 (2026-07-14).
+- 08: STEP 1 스키마 생성 + CREATE OR REPLACE TABLE ×38 (멱등).
+- 09: BRONZE→SILVER 정제 INSERT OVERWRITE + 발송키 PK ALTER.
+- 실행 순서: 08 먼저(테이블 생성) → 09(적재).
+- 실행 컨텍스트: `GN_DW_ADMIN` · `GN_DW_DEV_WH` (`01_환경 Role.md §2.2` 정합).
+
+### 8-B. CRM 22테이블 설계 근거
+- S-5 반영: [G1] CRM_MEMBER_DEV·CRM_MEMBER_AMT_CHANGE = AREA_CD·AREA_NM(CM018)·AGE — DIM_MEMBER REGION/AGE_BAND 스냅샷 소스.
+- S-5 반영: [G2] CRM_SEND_REQUEST = SEND_GBN_TOP/MID/BOT(+_NM) 3계층 (SND 채널 한정, 타 채널 NULL) — DIM_SERVICE 대/중/소 소스.
+- 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행(멱등 로드 흐름 유지).
+- Q5: 발송키 이원화 — SND와 SMS/EMAIL 별도 키체계.
+- Q6: 정기∪일시 UNION 스키마 정렬 잠정.
+- Q13: 개발약정 3중 grain — 스파인 + N:1 LEFT JOIN 안전 확인.
+- Q14: 납입 dedup · 청구 행기준 분리.
+- Q15: SPNSR_BSNS_ID 크로스워크 파생 (후원번호 NO vs ID).
+- Q16: 캠페인↔마케팅캠페인 조인키(무효화됐으나 컬럼 유지).
+
+### 8-C. ERP 설계 근거
+- 원장 실측(2026-07-14): 2,041행 = 지출1,875 + 수입165 + TOTAL 1(사전집계 요약행 → 제외).
+- 원장 구조: 차원 10 + 총액 4 + 월별 48(편성YEAR_BDGT/추경CHN/조정ADJ/집행EXEC × 12개월).
+- 설계: ITEM(마스터) + BUDGET(월 long 언피벗).
+- 키: BUDGET_ITEM_DK = MD5(연도|수입지출|예산단위|장|관|항|목|세목|세세목|재원).
+- CRM_BIZ_TARGET: 원천=CRM 확정(2026-07-20 정정, 트랙 ERP→CRM 재분류). 단위=건 확정(#152~155).
+
+### 8-D. AGENCY 설계 근거
+- 설계결정 6종 확정(2026-07-14):
+  1. `_SOURCE_SYSTEM` = 테이블 기반(DIGITAL/REBROADCAST/VIDEO) — 행단위 출처 플래그 없음(A-2/Q9 해소).
+  2. 인입콜: REBRDC=TEXT(비수치 2/2064) → TRY_TO_NUMBER · VIDEO=NUMBER.
+  3. 전환 명/건: DGT GA_CONV_MBER_CNT(명)/CONV_VU_CNT(VU) · REBRDC DVLP_MBER_CNT/DVLP_CNT · VIDEO CONV_CALL_CNT.
+  4. measure 불균일: 노출·클릭=DGT만 / 광고비=소스별 상이 → NULL 패딩.
+  5. 캠페인명: DGT.CMPGN_NM(100%) · VIDEO.MKT_CMPGN_NM(98.4%) · REBRDC=컬럼부재.
+  6. 파생(CPA/CTR/CVR/CPC/CPM/VTR): SILVER 미적재(원천 base만 보존) — 재계산은 GOLD/SV.
+- [2026-07-28 순서9-I] 광고 팩트군 재설계(DEC-8~DEC-11):
+  - DEC-8: 유형별 위성 팩트 분리 — 코어 + DIGITAL 위성 + BROADCAST 위성 + BROADCAST_CASE.
+  - DEC-9: 대행사 파생값 `_SRC` 전량 보존(비가산 N, SUM 금지).
+  - DEC-10: `DIM_DEVICE` `(해당없음)` 멤버 신설 — 방송광고 기기NULL 의미분리.
+  - DEC-11: `AD_PERF_DK` 행 식별자 — MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). staging 이 발급 단일지점.
+  - DEC-12: `AD_TYPE` → `AD_SOURCE_TYPE` 명명충돌 분리.
+- staging 3종(AGENCY_AD_ROW_*) 규칙:
+  - BRONZE 컬럼명 **그대로 보존**(개명·형변환 금지). 정제는 파생 계층 담당.
+  - AD_PERF_DK 는 staging 이 발급 단일지점. 파생·GOLD 는 승계만(재계산 시 위성 조인 붕괴).
+- O16(의미혼입 해소 2026-07-28): REBRDC 개발실적(DVLP_MBER_CNT·DVLP_CNT)이 코어 GA_CONV_* 로 혼입됐던 것을 위성 AGENCY_AD_BROADCAST 로 이관.
+- AGENCY_COST 제거(2026-07-14): 월 롤업은 GOLD 소관 · AD_PERFORMANCE.AD_COST와 중복 · SILVER→SILVER 파생(단방향 위반).
+
+### 8-E. GA4 설계 근거
+- 근거: `07_GA4_SILVER_샤드통합 설계결정.md` · `14_GA4_작업지시 프롬프트_20260714.md`.
+- 현재 1일 샤드 events_20260501(287,025행)만 입고 → PoC. 전기간 샤드 입고 후 동일 DDL로 멱등 재적재.
+- 규칙: 명시 30컬럼(SELECT * 금지) · session_traffic_source_last_click(UI 일치) · 비가산 지표 raw 적재.
+- GA4_TRAFFIC_SOURCE: session/last-click 한정. first-touch·collected 는 grain 상이로 제외.
+- GA4_EVENT_DIM: event_label 혼합타입(고카디널리티) → GOLD 에서 event_name 키로 conform, label 은 팩트측 유지 권고.
+- GA4_EVENT: 원천 샤드에 복합키 중복군(1일 16,187군) → 적재 PK GROUP BY dedup. session-fill(07 §5-A) 반영.
+
+### 8-F. 신원 브리지(IDENTITY_MEMBER_XREF) 설계 근거
+- 배치 근거: master §3 "교차소스 conform→GOLD" 원칙의 유일 예외. 확률적 신원해소를 SILVER 경계에 격리.
+- 서러게이트키(IDENTITY_SK) 없음 — SK 부여·conform 은 GOLD 소관.
+- grain = 1행/USER_PSEUDO_ID(GA 스파인). CHILD_CODE 제외(fan-out 회피).
+- ★grain 주의: pseudo grain(1,348) ≠ member grain(distinct MEMBER_DK 1,274). GOLD 구축 시 MEMBER_DK DISTINCT 필수 + UNMATCHED 제외.
+- 미매칭 GA 신원도 보존(MATCH_METHOD='UNMATCHED') — DQ 추적용.
+- 단방향: SILVER(GA4_IDENTITY, CRM_MEMBER)만 참조. BRONZE/GOLD 직참조 없음.

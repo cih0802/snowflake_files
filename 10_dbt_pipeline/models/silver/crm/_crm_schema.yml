@@ -48,6 +48,38 @@ models:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
               config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 순서9-C: 후원사업 마스터 미완전(50행, 고아 18,091). warn. 전량입고 후 error 복귀.
+      # ─── 캠페인 분류 4축 라벨 (2026-07-16 BRONZE 재입고, Q2·Q3 해소) ───
+      #   코드가 있으면 라벨도 있어야 한다(코드사전 MM293~MM296 조인). 라벨 NULL = 코드사전 미등재 = 고아.
+      #   ⚠️ severity 정책(위 §헤더) 준수: 라벨은 코드사전 조인 산물(FK성)이므로 **전부 warn**.
+      #      error 는 구조적 불변식(PK not_null/unique)에만 예약 — 원천 코드사전 보강은 우리 통제 밖이다.
+      #      accepted_values 도 warn: 현업이 원천 라벨 문구를 바꾸면 값이 변하는 것이 정상이며, CI 차단 사유가 아니다.
+      #      ▶▶ 기지 고아(카테고리 23행·유형1 740행) 해소 + 라벨 문구 확정 후 error 승격 검토.
+      - name: CMPGN_CTGR_NM        # MM294 캠페인 카테고리(56)
+        tests:
+          - not_null:
+              config: { where: "CMPGN_CTGR_CD IS NOT NULL", severity: warn }   # 기지 고아: CMPGN_CTGR_CD=58, 23행
+      - name: CMPGN_TYPE1_NM       # MM295 국내/통합/해외 (⚠️사업/사례 아님)
+        tests:
+          - not_null:
+              config: { where: "CMPGN_TYPE1_BSN IS NOT NULL", severity: warn } # 기지 고아: CMPGN_TYPE1_BSN=4, 740행
+          - accepted_values:
+              values: ['국내', '통합', '해외']
+              config: { where: "CMPGN_TYPE1_NM IS NOT NULL", severity: warn }
+      - name: CMPGN_TYPE2_NM       # MM296 굿즈/기타/사례/사업
+        tests:
+          - not_null:
+              config: { where: "CMPGN_TYPE2_BSN IS NOT NULL", severity: warn }  # 실측 고아 0 — 회귀 감지용
+          - accepted_values:
+              values: ['굿즈', '기타', '사례', '사업']
+              config: { where: "CMPGN_TYPE2_NM IS NOT NULL", severity: warn }
+      - name: MBER_INFLOW_PATH_NM  # MM293 개발인입경로(16)
+        tests:
+          - not_null:
+              config: { where: "MBER_INFLOW_PATH_CD IS NOT NULL", severity: warn } # 실측 고아 0 — 회귀 감지용
+      - name: MK_CMPGN_NM          # Q16 마케팅캠페인 라벨(323종, 고아 0)
+        tests:
+          - not_null:
+              config: { where: "MKTG_CMPGN_NM IS NOT NULL", severity: warn }       # 실측 고아 0 — 회귀 감지용
 
   - name: CRM_SPONSORSHIP
     columns:
@@ -181,6 +213,15 @@ models:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
               config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 순서9-C: 후원사업 마스터 미완전(고아 1). warn. 전량입고 후 error 복귀.
+      # W1(DEC-17, 2026-07-31): 결제결과코드 = 사유축 전용. 판정축은 PAY_STAT_CD(DEC-3) 불변.
+      - name: RQEST_RST_CD
+        tests:
+          # 사유 커버리지 회귀 감지: 미납(F) 행에 사유코드가 있어야 함. 실측 부재 1,096/6,262,245(0.018%) → warn.
+          # ⚠️조인은 (코드그룹, 코드) 복합키 — 코드그룹 = SETLE_CD+자릿수. 코드 단독 relationships 테스트 금지('01'이 41개 코드그룹에 존재).
+          - not_null:
+              config: { where: "PAY_STAT_CD = 'F'", severity: warn }
+      - name: PRCS_RST_CD
+        # ⚠️PAY_STAT_CD 거울 컬럼(불일치 0.386%·7종). 판정·사유 분해에 사용 금지 → 테스트 미부여(원천 보존 목적).
 
   - name: CRM_PAYMENT_METHOD
     columns:

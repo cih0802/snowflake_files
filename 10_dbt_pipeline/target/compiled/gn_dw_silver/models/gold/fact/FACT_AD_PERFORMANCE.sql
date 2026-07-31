@@ -46,7 +46,7 @@ select
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '669c7dcc-1689-4020-9ee5-1be787ae11b1'                    AS DW_BATCH_ID
+    '51e80c75-d0d7-4b40-9c62-82658d1247eb'                    AS DW_BATCH_ID
 from p
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real
