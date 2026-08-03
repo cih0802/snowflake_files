@@ -138,13 +138,21 @@ END-METADATA -->
 - **fan-out/가산성**: SV가 helper 뷰로 차단. 다월 distinct는 `COUNT(DISTINCT)` metric. grain 상이 SV 병합 금지.
 - **DO NOT**: 지표·수식·조인키 추정 금지. `03_top-down_gold/` 입력문서 수정 금지. 문서 충돌 시 최신 정정·실측 우선.
 - **판정·구문을 단정하기 전 실측**: 순서9-L 에서 미검증 단정 5건이 자기검토로 뒤집혔다(미발행을 "배포 완료"로 오인 · `REMOVE AGENT` 미지원으로 오기록(정답 `DROP AGENT`) · 무력할 수 있던 멱등 가드 · live 선복구 누락 · COMMENT/PROFILE 미갱신). **문서 근거를 확인하고, 가드는 상태를 변화시켜 검증**한다(P25·P26).
-- **정본↔사본 동기화**: Agent spec 정본 = `cortex_project/*.agent.yaml`. 변경 시 ① 05 재배포(+GRANT) → ② 정본 yaml → ③ `09` [4-B]/deploy → ④ `08 §3` 사본. **동일 drift 4회 재발**(P23) → 착수·종료 시 정본과 사본을 대조할 것.
+- **정본↔사본 동기화**: Agent spec 정본 = `cortex_project/agents/<AGENT>/agent_spec.yaml`. 변경 시 ① 05 재배포(+GRANT) → ② 정본 yaml → ③ `09_2` 실행 → ④ `08 §3` 서술 동기화. **동일 drift 4회 재발**(P23) → 2026-07-31 구조 변경으로 **SQL 사본을 없앴다**(09_2 가 stage 정본을 직접 읽는다). `08 §3` 서술만 사본으로 남아 있으니 착수·종료 시 정본과 대조할 것.
 
 ---
 
 ## 5. 산출물 위치·명명 (2자리 순차)
 
-`00_README.md`(색인) · `01_작업계획` · `02_SERVING_setup.sql` · `03_SV_metric_배속.md` · `04_SV_설계.md` · `05_SV_DDL.sql` · `06_검증쿼리_VQR.md` · `07_평가셋_eval.md` · `08_AGENT_spec.md` · `09_AGENT_spec_구현.sql` · `10_SI연결_검증.md` · `11_거버넌스_운영.md` · `12_paid_테스트_실행가이드.md` · **`13_SV_AD_배포_추가작업.sql`**. 레거시 = `_archive/`.
+`00_README.md`(색인) · `01_작업계획` · `02_SERVING_setup.sql` · `03_SV_metric_배속.md` · `04_SV_설계.md` · `05_SV_DDL.sql` · `06_검증쿼리_VQR.md` · `07_평가셋_eval.md` · `08_AGENT_spec.md` · **`09_1_AGENT_생성.sql`**(껍데기) · **`09_2_AGENT_버전업.sql`**(yaml 기반 스펙 발행) · `10_SI연결_검증.md` · `11_거버넌스_운영.md` · `12_paid_테스트_실행가이드.md` · ~~`09_AGENT_spec_구현.sql`~~·~~`13_SV_AD_배포_추가작업.sql`~~(**DEPRECATED 2026-07-31**, 포인터 스텁만 잔존). 레거시 = `_archive/`.
+
+> **실행 순서 (2026-07-31 확정, mq60369 재현 실증)**: `02_SERVING_setup` → dbt(BRONZE→GOLD) → `05_SV_DDL`(§7 GRANT·§8 검증 포함) → `09_1_AGENT_생성`(껍데기+grant+SI) → `09_2_AGENT_버전업`(정본 yaml 발행 ★도구가 붙는 단계). 4번만 하면 tool 이 없어 데이터 질문에 답하지 못한다 — 5번까지가 1세트다. **05는 최초·재배포 공용 단일 파일이며 별도 update 스크립트가 없다.**
+
+> **변경 시 — "무엇을 바꾸는가"로 갈린다**: SV/데이터만 변경 → `05` 통째 재실행 → `05 §8` 스모크 / Agent 스펙 변경 → `cortex_project/agents/<AGENT>/agent_spec.yaml` 갱신 → **`09_2`** / COMMENT·PROFILE 변경 → **`09_1 [5]`**(spec 이 아닌 DDL 속성). 🔴 운영 중 Agent 에 `09_1 [1]` `CREATE OR REPLACE` 재실행 금지 — 버전 이력 초기화 + USAGE grant·CoWork SI 파괴.
+
+> **Agent 스펙은 SQL 에 사본을 두지 않는다 (2026-07-31 구조 변경)**: 구 09 는 YAML 전문을 네 블록에 사본으로 갖고 "정본 변경 시 함께 갱신" 규약에 의존했고, 그 규약이 지켜지지 않아 **동일 유형 drift 가 4회 재발**(P23)했다. `09_2` 는 `ALTER AGENT … ADD VERSION FROM <stage>` 로 워크스페이스 정본 파일을 직접 읽으므로 사본이 0개 = drift 구조적 불가. **실측 규약**: 스펙 파일명은 **`agent_spec.yaml`**(공식 문서의 `agent.yaml` 예시는 부정확 — 틀리면 `No spec file present for the agent`) · 인자는 **디렉터리** · **live 가 있으면 거부**되므로 COMMIT 선행 · 발행된 버전은 **자동 is_default=true**, 이전 버전 보존.
+
+> **SV COMMENT 규약 (2026-07-31 신설, 05 헤더 정본)**: COMMENT에 **수치를 넣지 않는다**(행수·합계·커버리지%·건수·금액·적재기간). Agent가 COMMENT를 원천 답변 근거로 인용하므로 박아둔 수치는 적재량이 바뀌는 순간 Agent가 거짓을 말하게 된다. `[원천]` 절은 `시스템=… · BRONZE=DB.스키마.테이블(핵심컬럼) · SILVER=…` 형식으로 **이름만** 적고, 컬럼 단위 완전 매핑은 `30_output_share/04_컬럼계보매핑.md`로 안내한다. 저카디널리티 코드 차원은 **실제 코드값을 열거**한다(틀리면 Analyst가 0행을 반환하는 무증상 오답).
 
 > Phase-2 신규 산출물은 다음 순번(14~)으로 부여하거나 기존 문서에 in-place 추가. `cortex_project/*.agent.yaml`은 이동·개명 금지.
 

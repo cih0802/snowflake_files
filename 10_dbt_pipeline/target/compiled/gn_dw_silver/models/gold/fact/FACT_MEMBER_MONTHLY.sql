@@ -196,7 +196,7 @@ joined as (
         'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '6eabfb84-2ade-4be9-80e4-631bbe56f45f'                    AS DW_BATCH_ID
+    'caf0ed7e-1e99-4c1d-b479-e0fc6272f462'                    AS DW_BATCH_ID
     from spine sp
     left join billing    bl on sp.MONTH_KEY = bl.MONTH_KEY and sp.MEMBER_DK = bl.MEMBER_DK
     left join fme_rollup fr on sp.MONTH_KEY = fr.MONTH_KEY and sp.MEMBER_DK = fr.MEMBER_DK

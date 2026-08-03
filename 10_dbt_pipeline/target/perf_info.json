@@ -1,38 +1,33 @@
 {
     "path_count": 233,
-    "parsed_path_count": 5,
-    "static_analysis_path_count": 2,
+    "parsed_path_count": 4,
+    "static_analysis_path_count": 3,
     "static_analysis_parsed_path_count": 0,
     "is_partial_parse_enabled": true,
     "is_static_analysis_enabled": true,
-    "read_files_elapsed": 0.09872498499998983,
-    "load_macros_elapsed": 0.0006867050000209929,
-    "parse_project_elapsed": 0.7004472940000142,
-    "patch_sources_elapsed": 6.93219999448047e-05,
-    "process_manifest_elapsed": 0.0020690650000005917,
-    "load_all_elapsed": 1.3494515719999072,
+    "read_files_elapsed": 0.09405446199997414,
+    "load_macros_elapsed": 0.000615653000011207,
+    "parse_project_elapsed": 0.3689335139999912,
+    "patch_sources_elapsed": 6.518200001437435e-05,
+    "process_manifest_elapsed": 0.001091842999983328,
+    "load_all_elapsed": 1.0151578510000263,
     "projects": [
         {
             "project_name": "gn_dw_silver",
-            "elapsed": 0.6999477359998991,
+            "elapsed": 0.3684380949999877,
             "parsers": [
                 {
                     "parser": "model",
-                    "elapsed": 0.3052789869999515,
-                    "parsed_path_count": 2
+                    "elapsed": 0.2855507670000179,
+                    "parsed_path_count": 3
                 },
                 {
                     "parser": "test",
-                    "elapsed": 0.14579573800006074,
-                    "parsed_path_count": 2
-                },
-                {
-                    "parser": "test",
-                    "elapsed": 0.24884943600000042,
+                    "elapsed": 0.08287143699999433,
                     "parsed_path_count": 1
                 }
             ],
-            "parsed_path_count": 5
+            "parsed_path_count": 4
         },
         {
             "project_name": "dbt_snowflake",

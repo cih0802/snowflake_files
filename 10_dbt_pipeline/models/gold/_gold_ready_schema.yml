@@ -36,6 +36,54 @@ models:
           - unique:
               config:
                 where: "IS_CURRENT = TRUE"
+      # ─── [2026-08-03 O27/DEC-28] 신규·채움 컬럼 도메인 가드 ───
+      # 규약(DEC-26 §16-C ③): 실측 distinct 전량 열거(폐지코드 포함) · 코드=error · 라벨=warn
+      # ⚠️ USE_YN='Y' 필터 금지 — 폐지코드가 실적재에 남아 있어 라벨이 조용히 사라진다.
+      # 🔴 NULL 은 accepted_values 대상이 아니다(dbt 는 NULL 행을 통과시킨다) → 결손은 별도 관측.
+      - name: AREA_CD
+        description: "지역 코드 raw. CM018 18종 + sentinel '0'(라벨 없음). 시점귀속 as-of"
+        tests:
+          - accepted_values:
+              # CM018 18종 × 실적재 18종 = 18/18 일치(2026-08-03 실측) + sentinel '0'
+              values: ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+              quote: true
+      - name: REGION
+        description: "지역 (#131) CM018 약칭 라벨. 코드=AREA_CD"
+        tests:
+          - accepted_values:
+              values: ['서울','경기','인천','강원','대전','충남','충북','광주','전북','전남','대구','경북','경남','울산','부산','제주','기타','세종']
+              quote: true
+              config:
+                severity: warn   # 라벨은 사전 변경에 따라 늘 수 있다 → 관측만
+      - name: AGE
+        description: "연령대 코드 raw CM014(1~12). 🔴연속형 나이 아님"
+        tests:
+          - accepted_values:
+              # CM014 12종 × 실적재 12종 = 12/12 일치 · 교차검증 AGE=10↔SEX=6·11↔SEX=7 각 100%
+              values: [1,2,3,4,5,6,7,8,9,10,11,12]
+              quote: false
+      - name: AGE_BAND
+        description: "연령대 CM014 라벨. 코드=AGE. 원천이 이미 구간화(창작 아님)"
+        tests:
+          - accepted_values:
+              values: ['10대 미만','10대','20대','30대','40대','50대','60대','70대','70대 이상','단체','기업','기타']
+              quote: true
+              config:
+                severity: warn
+      - name: PREV_MBER_STAT_CD
+        description: "상태전이 이전상태 코드 MM010. 원천 BF_STAT_CD 12/12 일치"
+        tests:
+          - accepted_values:
+              values: ['1','2','3','4','5','6','7','8','9','10','11','12']
+              quote: true
+      - name: PREV_MEMBER_STATUS_NAME
+        description: "이전상태 라벨 MM010. 코드=PREV_MBER_STAT_CD"
+        tests:
+          - accepted_values:
+              values: ['활동회원','신규미납1','신규미납2','신규미납3','신규미납4','신규미납5','장기미납1','장기미납2','장기미납3','장기미납4','장기미납5','후원중단']
+              quote: true
+              config:
+                severity: warn
   - name: DIM_MEMBER_IDENTITY
     columns:
       - name: IDENTITY_SK
@@ -195,6 +243,49 @@ models:
               to: ref('DIM_REASON')
               field: REASON_SK
               config: { where: "REASON_SK != 0" }
+      # [2026-08-03 O24] 개발구분 도메인 가드. 종전 결함은 "EVENT_TYPE 이 DEV/STOP 2종만이어도
+      #   행수·fan-out·참조무결성 검증을 전부 통과"해 어떤 자동검증에도 걸리지 않았다(교훈 P27).
+      #   원천 코드가 조용히 늘어나면 이 테스트가 잡는다. 중단원천 행은 NULL 이라 where 로 제외.
+      - name: DVLP_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1','2','3','4','5']
+              quote: true
+              config: { where: "DVLP_DIV_CD is not null" }
+      - name: DVLP_DIV_NM
+        tests:
+          - accepted_values:
+              values: ['신규','증액','감액','재후원','후원중단']
+              quote: true
+              config: { where: "DVLP_DIV_NM is not null" }
+      # -- [2026-08-03 O25] 중단사유·중단경로 도메인 가드 --
+      #   STOP_REASON(MM005) 실측 20종 = 활성 14 + 폐지 6. 폐지코드도 도메인에 포함한다
+      #   (USE_YN='Y' 로 좁히면 366행 라벨이 조용히 사라진다 — G2 실측 확인).
+      #   라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn, 코드는 error.
+      - name: STOP_REASON
+        tests:
+          - accepted_values:
+              values: ['1', '8', '9', '11', '13', '14', '15', '16', '17', '20', '21', '22', '23', '25', '26', '27', '28', '29', '30', '31']
+              quote: true
+              config: { where: "STOP_REASON is not null" }
+      - name: STOP_REASON_NM
+        tests:
+          - accepted_values:
+              values: ['기타', '명의변경', '반송미납', '신규미납', '아동퇴소', '약정후원', '이중가입', '장기미납', '회원항의', '다른곳지원', '사업장종결', '지라니기타', '지라니부재', '지라니이관', '기업후원종료', '일시후원이었음', '만18세아동퇴소', '은행자동납부해지', '개인(경제적)사유', '지라니TS후원중단']
+              quote: true
+              config: { where: "STOP_REASON_NM is not null", severity: warn }
+      - name: STOP_CHANNEL
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "STOP_CHANNEL is not null" }
+      - name: STOP_CHANNEL_NM
+        tests:
+          - accepted_values:
+              values: ['CRM', '홈페이지', 'SYSTEM']
+              quote: true
+              config: { where: "STOP_CHANNEL_NM is not null", severity: warn }
 
   - name: FACT_MEMBER_MONTHLY
     columns:

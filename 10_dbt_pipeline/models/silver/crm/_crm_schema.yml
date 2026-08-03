@@ -32,6 +32,70 @@ models:
               to: ref('CRM_ORG')
               field: DEPT_ID
               config: { where: "ACT_DEPT_CD IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }   # [O26] CM013 raw. 종전 M/F/U 축약 폐기
+      - name: EMAIL_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "EMAIL_STAT_CD is not null" }
+      - name: ETC_CTTPC_REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+              quote: true
+              config: { where: "ETC_CTTPC_REL_CD is not null" }
+      - name: ETC_CTTPC_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "ETC_CTTPC_STAT_CD is not null" }
+      - name: ETC_TSTM_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "ETC_TSTM_DIV_CD is not null" }
+      - name: MOBLPHON_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MOBLPHON_STAT_CD is not null" }
+      - name: REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '7', '8', '9', '11', '12', '13']
+              quote: true
+              config: { where: "REL_CD is not null" }
+      - name: RELATNSP_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['2', '3', '4', '5']
+              quote: true
+              config: { where: "RELATNSP_DIV_CD is not null" }
+      - name: SLRCLD_LRR_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "SLRCLD_LRR_CD is not null" }
+      - name: TSTM_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "TSTM_DIV_CD is not null" }
 
   - name: CRM_EVENT
     columns:
@@ -80,6 +144,28 @@ models:
         tests:
           - not_null:
               config: { where: "MKTG_CMPGN_NM IS NOT NULL", severity: warn }       # 실측 고아 0 — 회귀 감지용
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CMPGN_TRGET_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '9', '10', '11', '13']
+              quote: true
+              config: { where: "CMPGN_TRGET_CD is not null" }
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['A', 'I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: SPNSR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2']
+              quote: true
+              config: { where: "SPNSR_DIV_CD is not null" }
 
   - name: CRM_SPONSORSHIP
     columns:
@@ -105,6 +191,28 @@ models:
 
   # ─── FK 모델 (relationships 정의) ───
   # 회원→CRM_MEMBER relationships = severity:warn (마스터 미완전 고아, 순서9-B). 마스터 전량입고 후 제거→error 복귀.
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: MSG_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4']
+              quote: true
+              config: { where: "MSG_DIV_CD is not null" }
+      - name: PSTMTR_PRCS_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1']
+              quote: true
+              config: { where: "PSTMTR_PRCS_STAT_CD is not null" }
+      - name: SNDNG_TIME_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "SNDNG_TIME_DIV_CD is not null" }
   - name: CRM_EVENT_PARTICIPATION
     columns:
       - name: EVENT_KEY
@@ -143,6 +251,34 @@ models:
               to: ref('CRM_CAMPAIGN')
               field: CMPGN_CD
               config: { where: "CMPGN_CD IS NOT NULL", severity: warn }   # 순서9-C: 캠페인 마스터 소량 gap(고아 18). warn. 확정 후 error 복귀.
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CANCL_RDCAMT_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33']
+              quote: true
+              config: { where: "CANCL_RDCAMT_RSN_CD is not null" }
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }
+      - name: SPNSR_AMT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5']
+              quote: true
+              config: { where: "SPNSR_AMT_CD is not null" }
 
   - name: CRM_MEMBER_DISCONTINUE
     columns:
@@ -153,6 +289,16 @@ models:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
               config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: DSCNTC_PATH_NM
+        tests:
+          - accepted_values:
+              values: ['CRM', '홈페이지', 'SYSTEM']
+              quote: true
+              config: { where: "DSCNTC_PATH_NM is not null", severity: warn }
 
   - name: CRM_MEMBER_AMT_CHANGE
     columns:
@@ -169,6 +315,34 @@ models:
               to: ref('CRM_CAMPAIGN')
               field: CMPGN_CD
               config: { where: "CMPGN_CD IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: SETLE_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '4', '5', '8', '11', '12']
+              quote: true
+              config: { where: "SETLE_CD is not null" }
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }
+      - name: SPNSR_AMT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5']
+              quote: true
+              config: { where: "SPNSR_AMT_CD is not null" }
 
   - name: CRM_MEMBER_RESPONSOR
     columns:
@@ -222,6 +396,52 @@ models:
               config: { where: "PAY_STAT_CD = 'F'", severity: warn }
       - name: PRCS_RST_CD
         # ⚠️PAY_STAT_CD 거울 컬럼(불일치 0.386%·7종). 판정·사유 분해에 사용 금지 → 테스트 미부여(원천 보존 목적).
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['A', 'I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: MBRFEE_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['E', 'G', 'I', 'U']
+              quote: true
+              config: { where: "MBRFEE_DIV_CD is not null" }
+      - name: OPERT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '5', '6', '7']
+              quote: true
+              config: { where: "OPERT_DIV_CD is not null" }
+      - name: MBRFEE_PRCS_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['F', 'R', 'S']
+              quote: true
+              config: { where: "MBRFEE_PRCS_STAT_CD is not null" }
+      - name: RETUN_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+              quote: true
+              config: { where: "RETUN_RSN_CD is not null" }
+      - name: RQEST_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '9', 'Y']
+              quote: true
+              config: { where: "RQEST_DIV_CD is not null" }
 
   - name: CRM_PAYMENT_METHOD
     columns:
@@ -232,6 +452,46 @@ models:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
               config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 37). 전량입고 후 제거
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: APPLCNT_MBER_REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+              quote: true
+              config: { where: "APPLCNT_MBER_REL_CD is not null" }
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: CRTFC_MTH_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '4', '5', '7']
+              quote: true
+              config: { where: "CRTFC_MTH_CD is not null" }
+      - name: FNLT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "FNLT_DIV_CD is not null" }
+      - name: RCEPT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '2', '4', '5', '6', '7']
+              quote: true
+              config: { where: "RCEPT_DIV_CD is not null" }
+      - name: RQST_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['01', '02', '03', '04', '08', '11']
+              quote: true
+              config: { where: "RQST_DIV_CD is not null" }
 
   - name: CRM_SEND_MEMBER
     columns:
@@ -276,6 +536,16 @@ models:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
               config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: RELATNSP_DSCNTC_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '16', '17', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33']
+              quote: true
+              config: { where: "RELATNSP_DSCNTC_RSN_CD is not null" }
 
   - name: CRM_DEV_TARGET
     columns:

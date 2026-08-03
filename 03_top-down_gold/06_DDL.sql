@@ -97,19 +97,23 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키(조인용)',  -- SCD2 DK; [실측06-30]VARCHAR(10)
-    GENDER              VARCHAR         COMMENT '성별 코드 raw(F/M/U). 라벨=GENDER_NAME',
-    GENDER_NAME         VARCHAR         COMMENT '성별명(라벨). F→여성·M→남성·그외→미상',
-    REGION              VARCHAR         COMMENT '지역(#131)',
-    AGE_BAND            VARCHAR         COMMENT '연령대(overview). 원천: 개발/증감 테이블 AGE 스냅샷',
-    MEMBER_STATUS       VARCHAR         COMMENT '회원상태 코드 raw(#132, MM010). 라벨=MEMBER_STATUS_NAME',
-    MEMBER_TYPE         VARCHAR         COMMENT '회원구분 코드 raw(05 2-1). 원천: MBER_DIV_CD(MM018). 라벨=MEMBER_TYPE_NAME',
+    -- [2026-08-03 O26] 코드 컬럼 = BRONZE 원천명 / 라벨 컬럼 = 분석 용어.
+    --   개명: GENDER→SEX · MEMBER_STATUS→MBER_STAT_CD · MEMBER_TYPE→MBER_DIV_CD · ENROLL_PATH→JOIN_PATH_CD
+    --   (ALTER TABLE RENAME COLUMN 으로 물리 반영. CREATE OR REPLACE 금지 — FK·GRANT 파괴)
+    SEX                 VARCHAR         COMMENT '성별 원천코드 raw — BRONZE TM_MM_FDRM_MBER_INFO.SEX(정본 코드그룹 CM013). 1국내남·2국내여·3외국남·4외국여·5외국기타·6단체·7기업·8기타(+0 사전부재). 🔴 정본 비고가 ''성별만으로는 사용하지는 않음''을 명시 — 성별 단일축은 GENDER_NAME 을 쓴다. 라벨=SEX_NM(원천)·GENDER_NAME(분석)',
+    SEX_NM              VARCHAR         COMMENT 'CM013 원천 라벨 그대로(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 국내·외국인 축 보존용 — 이 축은 CM013 만 보유한다',
+    GENDER_NAME         VARCHAR         COMMENT '성별(#130) 분석 라벨 — 코드사전 CM017 라벨 그대로: 남자/여자/기타/단체/기업. 정본 공#130 값 정의 ''남/여/기업/단체/기타'' 와 일치. ⚠️CM017 은 정본 컬럼정의서가 어떤 컬럼에도 지정하지 않은 그룹(현업 확인 대상). ⚠️종전 하드코딩 ''여성/남성/미상''은 정본 5종을 3종으로 축약하고 법인·단체를 ''미상''으로 오라벨했다(O26 교정)',
+    REGION              VARCHAR         COMMENT '지역(#131) 분석 라벨 — CM018 라벨(서울/경기/인천 … 약칭, 정본 공#131 과 일치). ⚠️미주입: 개발·증감 AREA_CD 대기. 채울 때 코드컬럼 `AREA_CD`(CM018)를 병설한다',
+    AGE_BAND            VARCHAR         COMMENT '연령대 분석 라벨 — CM014 라벨(10대 미만/10대/…/70대 이상/단체/기업/기타). ⚠️미주입: 개발·증감 AGE 대기. 채울 때 코드컬럼 `AGE`(CM014)를 병설한다',
+    MBER_STAT_CD        VARCHAR         COMMENT '회원상태 원천코드 raw(#132, MM010) — 정본 명칭 ''회원상태코드''. SCD2 버전행은 TH_MM_FDRM_MBER_STNG_DTLS.CHN_STAT_CD(변경상태코드), 무이력행은 TM_MM_FDRM_MBER_INFO.MBER_STAT_CD 에서 온다(둘 다 MM010). 라벨=MEMBER_STATUS_NAME',
+    MBER_DIV_CD         VARCHAR         COMMENT '회원구분 원천코드 raw — BRONZE MBER_DIV_CD(MM018 1개인·2기업·3단체). 라벨=MEMBER_TYPE_NAME',
     MEMBER_TYPE_NAME    VARCHAR         COMMENT '회원구분명(라벨). 원천 CRM_CODE MM018: 1개인·2기업·3단체. 미매핑→미상',
     MEMBER_STATUS_NAME  VARCHAR         COMMENT '회원상태명(라벨). 원천 CRM_CODE MM010: 1활동회원·2~6신규미납1~5·7~11장기미납1~5·12후원중단. 미매핑→미상',
     MEMBER_STATUS_GROUP VARCHAR         COMMENT '회원상태 대분류(파생). 1→정상·2~11→미납·12→중단·NULL→미상',
-    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존구분(#113)',
+    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존구분(#113) 분석 라벨. ⚠️미주입: 파생규칙 미정. 채울 때 코드컬럼 `RELATNSP_DIV_CD`(MM019)를 병설한다',
     FIRST_JOIN_DATE     DATE            COMMENT '최초가입일=회원번호 생성일(#28)',
     FIRST_CAMPAIGN      VARCHAR         COMMENT '최초캠페인(#29)',
-    ENROLL_PATH         VARCHAR         COMMENT '가입경로 코드 raw. 원천: JOIN_PATH_CD(MM014). 라벨=ENROLL_PATH_NAME',
+    JOIN_PATH_CD        VARCHAR         COMMENT '가입경로 원천코드 raw — BRONZE JOIN_PATH_CD(MM014). 라벨=ENROLL_PATH_NAME',
     ENROLL_PATH_NAME    VARCHAR         COMMENT '가입경로명(라벨). 원천 CRM_CODE MM014: 홈페이지/CRM/모바일웹/희망TV/외주콜센터/모바일앱/REG/EDU. 미매핑→미상',
     FIRST_SPONSORSHIP   VARCHAR         COMMENT '최초후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS',
     LAST_STOP_DATE      DATE            COMMENT '최종중단일(#30)',
@@ -121,8 +125,30 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-03 DEC-27] SILVER CRM_MEMBER.MEMBER_TYPE 이 존재했는데 GOLD 모델 CTE 컬럼열거에서
+    --   탈락해 있던 것을 복원(G3 결손 유형 — "모델O·SELECT 탈락"). ALTER TABLE ADD COLUMN 으로 물리 반영.
+    MEMBER_TYPE         VARCHAR         COMMENT '회원 등록계통 구분 — SILVER CRM_MEMBER.MEMBER_TYPE 전파: FDRM=정기회원(TM_MM_FDRM_MBER_INFO 1,587,343명) / ONCE=일시회원(TM_MM_ONCE_MBER_INFO 175,722명). 🔴 일시회원은 회원상태(MM010)·가입경로(MM014) 개념이 원천에 없다 — 상태 기반 분포·이탈률·예측 모집단은 FDRM 으로 한정할 것. ⚠️ MEMBER_TYPE_NAME(개인/기업/단체, MM018)은 이 컬럼의 라벨이 아니다 — 완전히 다른 축이며 코드는 MBER_DIV_CD 다'
 ) COMMENT = '회원 차원 (SCD2 · 회원 상태버전)';
+
+
+-- ============================================================================
+-- DIM 3-V: DIM_MEMBER_CURRENT — 분석가 기본 진입점 (현재행 뷰) [2026-08-03 신설 · DEC-27 §17-A]
+-- ============================================================================
+-- 🔴 본 파일은 **테이블 구조 소유주**이며 뷰는 소유하지 않는다.
+--    `DIM_MEMBER_CURRENT` 정본 = dbt 모델 `10_dbt_pipeline/models/gold/dim/DIM_MEMBER_CURRENT.sql`
+--    (materialized='view' · `ref('DIM_MEMBER')` · COMMENT 는 post_hook).
+--
+-- ▶ 왜 dbt 가 소유하는가 (`dbt_project.yml` §67~72 확립 원칙)
+--    "ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보
+--     (BLOCKING-4 해소, **미거버넌스 객체 재발방지**)" — WIDE 소비뷰와 동일 근거다.
+--    ⚠️ 2026-08-03 초판이 이 뷰를 본 파일에 CREATE VIEW + GRANT 로 넣었다가 위 원칙 위반으로 철회했다.
+--       GRANT 도 불요다 — GOLD 스키마에 VIEW future grant(SELECT → ANALYST/VIEWER/SERVICE)가
+--       이미 있어 매 build 시 자동 부여된다(실측 확인).
+--
+-- ▶ 존재 이유(요약): 회원 FACT 4개가 전부 MEMBER_DK 로 조인하는데 DIM_MEMBER 는 SCD2(평균 4.50버전)라
+--    순진한 조인이 조용히 팬아웃한다 — 실측 202606 단월 3.60배 · 납입회비 171.3억→507.5억(2.96배 과대).
+--    상세·전건 NULL 7컬럼 미노출 판정 = 문서30 DEC-27 §17-A·§17-C.
 
 
 -- ============================================================================
@@ -405,13 +431,16 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     DATE_SK             NUMBER(8,0)     NOT NULL COMMENT '사건일',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '상태전이 대상 회원 (불변키)',     -- ※비강제 FK→DIM_MEMBER
-    EVENT_TYPE          VARCHAR         NOT NULL COMMENT '상태전이 유형(개발/중단/증액/미납중단)',
+    EVENT_TYPE          VARCHAR         NOT NULL COMMENT '원천 계통 구분: DEV=개발원천(TM_MM_FDRM_MBER_DVLP_AMT) / STOP=중단원천(TM_MM_FDRM_MBER_SPNSR_DSCNTC). ⚠️ 상태(신규·증액·감액·재후원·후원중단)는 DVLP_DIV_CD/DVLP_DIV_NM 참조 — O24',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
     ORG_SK              NUMBER(38,0)    COMMENT '조직 (FK→DIM_ORG)',
     REASON_SK           NUMBER(38,0)    COMMENT '중단/미납 사유 (FK→DIM_REASON)',
-    DEV_CNT             NUMBER(18,4)    COMMENT '개발(건) (#149)',
-    DEV_MEMBERS         NUMBER(38,0)    COMMENT '개발(명) (#148)',
+    DVLP_DIV_CD         VARCHAR         COMMENT '개발구분코드 — BRONZE TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD raw(정본 MM015). 1=신규 2=증액 3=감액 4=재후원 5=후원중단. 중단원천 행은 NULL(원천에 컬럼 부재). 🔴 MM015(개발구분)는 MM010(회원상태)이 아니다 — 두 그룹 모두 ''후원중단''을 포함해 혼동되기 쉽다. 회원상태는 DIM_MEMBER.MBER_STAT_CD(MM010 1활동회원·2~11미납·12후원중단)',
+    DVLP_DIV_NM         VARCHAR         COMMENT '개발구분명 — MM015 라벨(신규/증액/감액/재후원/후원중단). ⚠️ 값 ''후원중단''(1,010,680건)은 EVENT_TYPE=''STOP''(1,038,262건)과 동일 사건이 중복 존재(동일 회원·일자 99.99%) → 두 축 합산 금지, O24 현업확인 대기',
+    SPNSR_AMT           NUMBER(18,0)    COMMENT '후원금액(원) — 원천 raw. 감액·후원중단은 음수. 정본 공#38 감액(건)·#151 증액(건) = 금액÷10,000 이므로 원금액 보존(설계 §1·CONF-2). 중단원천 행은 NULL',
+    DEV_CNT             NUMBER(18,4)    COMMENT '개발(건) (#149) — 정본 공#121 개발구분 = 신규(1)·증액(2)·재후원(4) 한정. ⚠️ 2026-08-03 O24 교정: 종전은 감액·후원중단까지 포함해 56.86% 과대계상(3,594,843 → 2,291,878)',
+    DEV_MEMBERS         NUMBER(38,0)    COMMENT '개발(명) (#148) — DEV_CNT 와 동일 범위(코드 1·2·4)',
     STOP_CNT            NUMBER(18,4)    COMMENT '중단(건) (#35)',
     STOP_MEMBERS        NUMBER(38,0)    COMMENT '중단(명)',
     UNPAID_STOP_CNT     NUMBER(18,4)    COMMENT '미납중단(건)',
@@ -420,6 +449,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     STOP_DATE           DATE            COMMENT '중단일',             -- degen
     STOP_REASON         VARCHAR         COMMENT '중단사유',            -- degen
     STOP_CHANNEL        VARCHAR         COMMENT '중단채널',            -- degen
+    -- [2026-08-03 O25] 중단사유·중단경로 라벨쌍 신설(ALTER TABLE ADD COLUMN 으로 물리 반영, 위치=맨 끝).
+    --   계보 계약(30_output_share/04_컬럼계보매핑 §4)이 STOP_REASON 을 "사유코드→라벨"로 명시했는데
+    --   실적재는 raw 코드여서 현업이 WIDE 에서 숫자만 보던 상태였다. SILVER 라벨(채움률 100%)을 전파해 해소.
+    STOP_REASON_NM      VARCHAR         COMMENT '중단사유명 — 정본 공#162. MM005 라벨(SILVER CRM_MEMBER_DISCONTINUE.DSCNTC_RSN_NM 전파). 코드는 STOP_REASON. ⚠️USE_YN 무필터 조인 — 실측 20종 중 6종(366행)이 폐지코드이며 필터를 걸면 라벨이 사라진다. 개발원천 행은 개념 부재로 NULL (O25)',  -- degen
+    STOP_CHANNEL_NM     VARCHAR         COMMENT '중단경로명 — MM287 라벨(SYSTEM/CRM/홈페이지). 코드는 STOP_CHANNEL(1/2/3). 개발원천 행은 개념 부재로 NULL. 215지표 밖 — 현업 수요 확인 대상 (O25)',  -- degen
     NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존',            -- degen
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',

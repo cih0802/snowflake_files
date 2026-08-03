@@ -6,6 +6,18 @@
 --   GA4 user_id는 이 둘을 단일 필드로 통합 표현 → 'S' 접두 유무로 FDRM/ONCE 판별.
 --   MEMBER_DK=VARCHAR(10) 필수·NUMBER 캐스팅 절대 금지.
 -- ⚠️ REGION/AGE_BAND=NULL(개발·증감 AREA_CD/AGE 대기), NEW_EXISTING/SPONSORSHIP/STOP 파생 대기.
+--
+-- ============================================================================
+-- [2026-08-03 O26] 명명 규칙 전환 — 코드 컬럼 = BRONZE 원천명 / 라벨 컬럼 = 분석 용어
+--   근거: 현업이 아직 BRONZE 를 직접 조회한다(O24 확립). 원천이 이미 수식어 접두 관례를 쓴다
+--         (`ACT_/ACMSLT_/REGIST_DEPT_CD` · `EMAIL_/MOBLPHON_/ETC_CTTPC_STAT_CD`) → 신개념 도입 아님.
+--   개명: GENDER→SEX · MEMBER_STATUS→MBER_STAT_CD · MEMBER_TYPE→MBER_DIV_CD · ENROLL_PATH→JOIN_PATH_CD
+--   유지: 라벨은 분석 용어 그대로 — GENDER_NAME · MEMBER_STATUS_NAME · MEMBER_TYPE_NAME · ENROLL_PATH_NAME
+--         REGION · AGE_BAND 도 라벨명이라 유지(미주입 상태. 채울 때 코드컬럼 AREA_CD/AGE 를 병설한다)
+--   신설: SEX_NM(CM013 원천 라벨) — 국내/외국인 축 복구
+--   🔴 하드코딩 라벨 폐기: 종전 `CASE ... '여성'/'남성'/'미상'` → CRM_CODE CM017 조인으로 대체.
+--      라벨은 코드사전이 정본이며 사전이 바뀌면 자동 반영된다.
+-- ============================================================================
 -- 🔷 D2 SCD2 활성화(2026-07-16): 전용 소스 CRM_MEMBER_STATUS_HIST(7.5M행) 입고완료 → 시점조인 재배선.
 --    • 회원상태(MEMBER_STATUS)만 SCD2. 성별·가입일·구분 등 마스터 속성은 SCD1(버전 간 동일값 반복).
 --    • grain=회원상태 버전. MEMBER_SK=해시(MEMBER_DK, EFFECTIVE_FROM). 동일 시점(일자) 다중변경(3,151건)은
@@ -50,8 +62,8 @@ hist_scd2 as (
 versioned as (
     select
         ABS(HASH(COALESCE(CAST(m.MEMBER_DK AS VARCHAR), '∅') || '‖' || COALESCE(CAST(h.EFF_FROM AS VARCHAR), '∅')))  as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.MBER_DIV_CD, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
-        h.STATUS_CD                                   as MEMBER_STATUS,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        h.STATUS_CD                                   as MBER_STAT_CD,
         h.EFF_FROM                                    as EFFECTIVE_FROM,
         h.EFF_TO                                      as EFFECTIVE_TO,
         h.IS_CUR                                      as IS_CURRENT
@@ -63,8 +75,8 @@ versioned as (
 single as (
     select
         ABS(HASH(COALESCE(CAST(m.MEMBER_DK AS VARCHAR), '∅') || '‖' || COALESCE(CAST(m.JOIN_DT AS VARCHAR), '∅')))   as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.MBER_DIV_CD, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
-        m.MBER_STAT_CD                                as MEMBER_STATUS,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        m.MBER_STAT_CD                                as MBER_STAT_CD,
         m.JOIN_DT::DATE                               as EFFECTIVE_FROM,
         CAST(NULL AS DATE)                            as EFFECTIVE_TO,
         TRUE                                          as IS_CURRENT
@@ -88,30 +100,53 @@ code_status as (
 ),
 code_path as (
     select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'MM014'
+),
+-- [2026-08-03 O26] 성별 단일축 = CM017. CM013(원천 지정)과 **같은 코드값의 다른 라벨체계**다.
+--   CM017: 1,3→남자 · 2,4→여자 · 5,8→기타 · 6→단체 · 7→기업 (5종)
+--   ⇒ 정본 지표 공#130 성별 정의 "남 / 여 / 기업 / 단체 / 기타" 와 정확히 일치한다.
+--   종전 하드코딩 `CASE UPPER(SEX) WHEN 'F' THEN '여성' WHEN 'M' THEN '남성' ELSE '미상' END` 는
+--   ① 정본 5종을 3종으로 축약 ② 정본에 없는 '미상'을 창작 ③ 법인·단체(성별 개념 부재)를 '미상'으로 오라벨
+--   했다(실측: SEX='U' 115,358명 중 기업 40,003 + 단체 14,989 = 54,992명 = 47.7%).
+--   ⚠️ CM017 은 정본 컬럼정의서가 **어떤 컬럼에도 지정하지 않은** 코드그룹이다(0건). 사용 근거는
+--      "정본 지정"이 아니라 "정본 공#130 값 정의와 라벨 일치" — 현업 확인 대상.
+--   ⚠️ (CD_ID,DTL_CD_ID) PK 라 fan-out 없음(실측 8행=8 distinct).
+code_gender as (
+    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM017'
 )
 
 select
     MEMBER_SK                                     as MEMBER_SK,
     MEMBER_DK                                     as MEMBER_DK,
-    SEX                                           as GENDER,       -- 코드 raw(F/M/U)
-    CASE UPPER(SEX) WHEN 'F' THEN '여성' WHEN 'M' THEN '남성' ELSE '미상' END as GENDER_NAME, -- 성별 라벨
-    CAST(NULL AS VARCHAR)                          as REGION,       -- ⚠️ 개발·증감 AREA_CD 대기
-    CAST(NULL AS VARCHAR)                          as AGE_BAND,     -- ⚠️ 개발·증감 AGE 대기
-    MEMBER_STATUS                                 as MEMBER_STATUS, -- MM010 코드 raw(버전=CHN_STAT_CD, 무이력=MBER_STAT_CD)
-    MBER_DIV_CD                                   as MEMBER_TYPE,   -- MM018 개인/기업/단체(코드 raw)
-    COALESCE(ct.DTL_CD_NM, '미상')                as MEMBER_TYPE_NAME,   -- MM018 라벨(1개인/2기업/3단체)
-    COALESCE(cs.DTL_CD_NM, '미상')                as MEMBER_STATUS_NAME, -- MM010 라벨(활동/신규미납/장기미납/후원중단)
+    SEX                                           as SEX,           -- [O26] CM013 코드 raw(0~8) — BRONZE 원천명·원천값
+    SEX_NM                                        as SEX_NM,        -- [O26] CM013 원천 라벨(국내(남자)/외국인(여자)/단체/기업 …) — 국내·외국인 축 보존
+    cg.DTL_CD_NM                                  as GENDER_NAME,   -- [O26] CM017 분석 라벨(남자/여자/기타/단체/기업) = 정본 공#130. [2026-08-03] COALESCE('미상') 폐기 → 미매칭은 NULL(DEC-17-B 창작금지)
+    CAST(NULL AS VARCHAR)                          as REGION,       -- ⚠️ 개발·증감 AREA_CD 대기. 채울 때 코드컬럼 `AREA_CD`(CM018) 병설
+    CAST(NULL AS VARCHAR)                          as AGE_BAND,     -- ⚠️ 개발·증감 AGE 대기. 채울 때 코드컬럼 `AGE`(CM014) 병설
+    MBER_STAT_CD                                  as MBER_STAT_CD,  -- MM010 코드 raw. 버전행=CHN_STAT_CD(변경상태코드)·무이력행=MBER_STAT_CD(회원상태코드). 정본 명칭은 후자
+    MBER_DIV_CD                                   as MBER_DIV_CD,   -- MM018 개인/기업/단체(코드 raw)
+    ct.DTL_CD_NM                                  as MEMBER_TYPE_NAME,   -- MM018 라벨(1개인/2기업/3단체) ⚠️MEMBER_TYPE 의 라벨이 아니다(다른 축)
+    -- [2026-08-03] '미상' 폐기 — 개념 부재와 결측을 분리한다(P21).
+    --   일시회원(MEMBER_TYPE='ONCE')은 원천에 회원상태가 아예 없다 → '(해당없음)'
+    --   정기회원('FDRM')인데 상태가 없으면 진짜 결측 → NULL (라벨 창작 금지, DEC-17-B)
+    --   실측 2026-08-03: ONCE 175,722 전건 상태 NULL · FDRM 1,587,343 중 NULL 1명
+    --   표기 선례: DIM_DEVICE.sql 5~6행 — '(해당없음)'=확정된 정상 멤버 / 0·(unknown)=진짜 미상
+    case when u.MBER_STAT_CD is not null then cs.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as MEMBER_STATUS_NAME, -- MM010 라벨(활동/신규미납/장기미납/후원중단)
     CASE
-        WHEN MEMBER_STATUS = '1'                                            THEN '정상'
-        WHEN MEMBER_STATUS IN ('2','3','4','5','6','7','8','9','10','11')   THEN '미납'
-        WHEN MEMBER_STATUS = '12'                                          THEN '중단'
-        ELSE '미상'
+        WHEN MBER_STAT_CD = '1'                                            THEN '정상'
+        WHEN MBER_STAT_CD IN ('2','3','4','5','6','7','8','9','10','11')   THEN '미납'
+        WHEN MBER_STAT_CD = '12'                                          THEN '중단'
+        WHEN u.MEMBER_TYPE = 'ONCE'                                       THEN '(해당없음)'
+        ELSE NULL
     END                                           as MEMBER_STATUS_GROUP, -- 대분류(파생)
-    CAST(NULL AS VARCHAR)                          as NEW_EXISTING_FLAG,  -- ⚠️ 파생규칙 미정
+    CAST(NULL AS VARCHAR)                          as NEW_EXISTING_FLAG,  -- ⚠️ 파생규칙 미정. 채울 때 코드컬럼 `RELATNSP_DIV_CD`(MM019) 병설
     JOIN_DT::DATE                                 as FIRST_JOIN_DATE,
     CMPGN_CD                                      as FIRST_CAMPAIGN,
-    JOIN_PATH_CD                                  as ENROLL_PATH,
-    COALESCE(cp.DTL_CD_NM, '미상')                as ENROLL_PATH_NAME, -- MM014 가입경로 라벨
+    JOIN_PATH_CD                                  as JOIN_PATH_CD,
+    case when u.JOIN_PATH_CD is not null then cp.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as ENROLL_PATH_NAME, -- MM014 가입경로 라벨. ONCE 는 가입경로 개념 부재
     CAST(NULL AS VARCHAR)                          as FIRST_SPONSORSHIP,   -- ⚠️ SPONSOR_BIZ 대기
     CAST(NULL AS DATE)                             as LAST_STOP_DATE,      -- ⚠️ DISCONTINUE 대기
     CAST(NULL AS VARCHAR)                          as LAST_CAMPAIGN,       -- ⚠️ 이력 대기
@@ -122,8 +157,13 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '6eabfb84-2ade-4be9-80e4-631bbe56f45f'                    AS DW_BATCH_ID
+    'caf0ed7e-1e99-4c1d-b479-e0fc6272f462'                    AS DW_BATCH_ID,
+    -- [2026-08-03] SILVER 에 존재했으나 CTE 컬럼열거에서 탈락해 있던 컬럼 복원(G3 결손 유형).
+    --   FDRM=정기(1,587,343) / ONCE=일시(175,722). ONCE 는 회원상태·가입경로 개념이 원천에 없다.
+    --   ⚠️ MEMBER_TYPE_NAME(MM018 개인/기업/단체)은 이 컬럼의 라벨이 아니다 — 다른 축(코드=MBER_DIV_CD).
+    MEMBER_TYPE                                   as MEMBER_TYPE
 from unioned u
 left join code_type   ct on u.MBER_DIV_CD   = ct.DTL_CD_ID
-left join code_status cs on u.MEMBER_STATUS = cs.DTL_CD_ID
+left join code_status cs on u.MBER_STAT_CD  = cs.DTL_CD_ID
 left join code_path   cp on u.JOIN_PATH_CD  = cp.DTL_CD_ID
+left join code_gender cg on u.SEX           = cg.DTL_CD_ID

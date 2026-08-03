@@ -9,6 +9,13 @@ SELECT
   NULLIF(TRIM(s.FNLT_CD),'')       AS FNLT_CD,
   s.WTDRW_STRT_DE                  AS WTDRW_STRT_DE,
   NULLIF(TRIM(s.SETLE_STAT_CD),'') AS SETLE_STAT_CD,
+  -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. 라벨은 수요 확인 후 별도 배선(스캐폴드 금지).
+  NULLIF(TRIM(s.APPLCNT_MBER_REL_CD),'') AS APPLCNT_MBER_REL_CD,  -- CM009
+  NULLIF(TRIM(s.CPR_DIV_CD),'')    AS CPR_DIV_CD,     -- CM019
+  NULLIF(TRIM(s.CRTFC_MTH_CD),'')  AS CRTFC_MTH_CD,   -- MM014
+  NULLIF(TRIM(s.FNLT_DIV_CD),'')   AS FNLT_DIV_CD,    -- PM050 (기관코드 원값은 FNLT_CD)
+  NULLIF(TRIM(s.RCEPT_DIV_CD),'')  AS RCEPT_DIV_CD,   -- PM003
+  NULLIF(TRIM(s.RQST_DIV_CD),'')   AS RQST_DIV_CD,    -- PM004
   'CRM'                            AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,

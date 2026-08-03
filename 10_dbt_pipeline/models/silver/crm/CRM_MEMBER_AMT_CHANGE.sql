@@ -11,6 +11,11 @@ SELECT
   NULLIF(TRIM(s.AREA_CD),'')        AS AREA_CD,
   a.DTL_CD_NM                       AS AREA_NM,
   s.AGE                             AS AGE,
+  -- [2026-08-03 G3] 정본 코드컬럼 raw 전파(라벨 미배선 — 수요 확인 후 별도).
+  NULLIF(TRIM(s.MBER_DIV_CD),'')    AS MBER_DIV_CD,   -- MM018
+  NULLIF(TRIM(s.SETLE_CD),'')       AS SETLE_CD,      -- PM040
+  NULLIF(TRIM(s.SEX),'')            AS SEX,           -- CM013 raw. ⚠️CRM_MEMBER.SEX 는 M/F/U 정규화값 — 동명이의
+  NULLIF(TRIM(s.SPNSR_AMT_CD),'')   AS SPNSR_AMT_CD,  -- CM012
   'CRM'                             AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,

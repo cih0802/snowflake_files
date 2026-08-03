@@ -285,6 +285,64 @@ END-METADATA -->
 - **§6-I** *(신규 2026-07-28 · 2026-07-29 교정)* 공8 "GA 개발단가"가 실제로는 **재방송(REBROADCAST) `DVLP_CNT`** 기반으로 실현됨 — 원 정의의 "SRC=GA4"와 불일치. ~~분모 커버리지 5.2%로 41% 왜곡되어 미노출~~ → **오진 철회**: `DVLP_CNT`는 `REBRDC_AD_CMPGN_DTLS` 전용이고 VIDEO 원천에는 개발 컬럼이 없다(구조적 부재). 재방송 단독 커버리지 96.03%·왜곡 0.61% → `REBRDC_DEV_UNIT_PRICE`로 **노출**. **잔여 확인사항은 지표명·정의(SRC=GA4 표기)** 2건이며 적재범위는 해소. *(부분 잔여)*
 - **§6-J** *(신규 2026-07-28)* **2026-06 원천 포맷 변경** — 디지털 광고 원천이 개발건수(`CRM_DEV_CNT`) 제공을 중단하고 단가(`DEV_UNIT_PRICE_SRC`)를 직접 제공. 개발단가(공7)는 **2026-05까지만 산출 가능**. 이후 기간 추적 방식(원천에 건수 재요청 vs 대행사 단가 채택 — 정의가 다름) 결정 필요. *(잔여, 파이프라인·현업 공동 확인)*
 
+#### 8.5.1 §6-H·§6-I·§6-J 근거 쿼리 (구 13_SV_AD_배포_추가작업.sql §6 이관, 2026-07-31)
+
+현업 합의를 받으러 갈 때 그대로 실행해 근거로 제시할 쿼리다. 실측값은 2026-07-28 cs94293 기준이며, 계정·적재시점이 다르면 절대값은 달라진다(판정 논리는 동일).
+
+**(1) §6-H — `CRM_DEV_CNT` 소수값 실태**: "개발건수"인데 소수인 이유 확인용.
+```sql
+SELECT COUNT(*)                                    AS rows_with_val,
+       COUNT_IF(CRM_DEV_CNT != FLOOR(CRM_DEV_CNT)) AS non_integer_rows,
+       MIN(CRM_DEV_CNT) AS min_val, MAX(CRM_DEV_CNT) AS max_val, SUM(CRM_DEV_CNT) AS total_val
+FROM GN_DW.GOLD.FACT_AD_DIGITAL
+WHERE CRM_DEV_CNT IS NOT NULL;
+```
+실측: `rows_with_val=189,252` · **`non_integer_rows=24,614`(13.0%)** · min 0.0 · max 322.0 · total 249,390.45 → **소수값 실재 확정**. 기여도 배분(fractional attribution) 가능성 → 현업 확인 전 "건수" 단정 금지.
+
+**(2) §6-G/§6-J — 자체계산 개발단가 vs 대행사 산정값**
+```sql
+SELECT d.YEAR,
+       SUM(CASE WHEN c.CRM_DEV_CNT IS NOT NULL THEN c.AD_COST END)
+         / NULLIF(SUM(c.CRM_DEV_CNT), 0) AS dev_unit_price_calc,
+       AVG(c.DEV_UNIT_PRICE_SRC)         AS dev_unit_price_src_avg,
+       COUNT(c.CRM_DEV_CNT)              AS rows_crm_dev,
+       COUNT(c.DEV_UNIT_PRICE_SRC)       AS rows_src
+FROM GN_DW.SERVING.FACT_AD_COMBINED c
+JOIN GN_DW.GOLD.DIM_DATE d ON c.PERF_DATE_SK = d.DATE_SK
+WHERE c.AD_SOURCE_TYPE = 'DIGITAL'
+GROUP BY 1 ORDER BY 1;
+```
+실측: 2024·2025 = calc만 존재(src 0행) / 2026 = calc 103,066원 + src_avg 29,018원(8,401행) → **교차검증 불가**. 두 컬럼은 완전 상호배타로 같은 행에 공존하지 않으므로 "자체값 vs 대행사값 검증"이 아니라 **기간 보완 관계**다(04 §6.4.2 · §6-G 정정 반영).
+⚠ `DEV_UNIT_PRICE_SRC`는 행 단위 비율(N, 비가산) — AVG는 분포 확인용 참고일 뿐 정본 지표로 쓰지 말 것(SV metric 미노출 · Agent instruction으로 재집계 차단됨).
+
+**(3) §6-J 근거 — 2026-06 은 적재 지연이 아니라 포맷 변경**
+```sql
+SELECT d.YEAR, d.MONTH, COUNT(*) AS rows_total,
+       COUNT(c.CRM_DEV_CNT) AS rows_crm_dev, COUNT(c.DEV_UNIT_PRICE_SRC) AS rows_src
+FROM GN_DW.SERVING.FACT_AD_COMBINED c
+JOIN GN_DW.GOLD.DIM_DATE d ON c.PERF_DATE_SK = d.DATE_SK
+WHERE c.AD_SOURCE_TYPE = 'DIGITAL' AND d.YEAR = 2026
+GROUP BY 1, 2 ORDER BY 1, 2;
+```
+실측: 2026-01~05 = crm_dev 전건 / src 0 ‖ 2026-06 = crm_dev **0** / src **8,401 전건** → 원천이 개발건수 제공을 중단하고 단가를 직접 제공하는 포맷으로 변경됨.
+▶▶ **현업·파이프라인 결정 필요**: 2026-06 이후 개발단가를 계속 추적하려면 (a) 원천에 개발건수 재요청, 또는 (b) `DEV_UNIT_PRICE_SRC` 채택(정의가 다름 — 대행사 기준).
+
+**(4) §6-I / 비율 metric 분자·분모 커버리지 정합 점검** — 신규 비율 metric 추가 시 필수 체크(04 §6.4.1)
+```sql
+SELECT AD_SOURCE_TYPE, COUNT(*) AS rows_total,
+       COUNT(CRM_DEV_CNT) AS rows_denom_dig, COUNT(DVLP_CNT) AS rows_denom_brc,
+       SUM(AD_COST)/NULLIF(SUM(CRM_DEV_CNT),0) AS dig_unaligned,
+       SUM(CASE WHEN CRM_DEV_CNT IS NOT NULL THEN AD_COST END)
+         /NULLIF(SUM(CRM_DEV_CNT),0)           AS dig_aligned,
+       SUM(AD_COST)/NULLIF(SUM(DVLP_CNT),0)    AS brc_unaligned,
+       SUM(CASE WHEN DVLP_CNT IS NOT NULL THEN AD_COST END)
+         /NULLIF(SUM(DVLP_CNT),0)              AS brc_aligned
+FROM GN_DW.SERVING.FACT_AD_COMBINED
+GROUP BY 1 ORDER BY 1;
+```
+실측 판정: 디지털 개발단가 = 분모 커버리지 95.7% · 미정합 119,951 vs 정합 114,870 = +4.4% → **분자 정합 후 노출** ✅ / 방송 개발단가 = AD_SOURCE_TYPE 전체를 분모로 본 커버리지 5.2% · +41% → 당초 미노출 결정. ⚠ 단 이 5.2%는 **VIDEO를 분모 모집단에 넣은 범주 오류**였고(§6-I 오진 철회), REBROADCAST 단독으로는 96.03%다.
+▶ **규칙**: 신규 SUM/SUM 비율 metric 은 (1) 분모 커버리지가 90% 미만이면 정합해도 노출 재검토, (2) 분자는 항상 `CASE WHEN <분모> IS NOT NULL THEN <분자> END` 로 제한한다. (3) 분모 모집단을 **컬럼이 구조적으로 존재하는 세그먼트로 한정**한 뒤 커버리지를 재다.
+
 ---
 
 ## 9. 다음 단계(2단계) 입력

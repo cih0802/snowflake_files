@@ -47,7 +47,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Step 0 — 사전조건 재확인 (읽기 전용, 안전)
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT CURRENT_ACCOUNT() AS ACCOUNT, CURRENT_ROLE() AS ROLE;   -- 기대: KD03246
+SELECT CURRENT_ACCOUNT() AS ACCOUNT, CURRENT_ROLE() AS ROLE;   -- 기대: <ACCOUNT>
 
 -- 레이어별 객체 수 (기대: SILVER 38 BASE / GOLD 27 BASE + 12 VIEW / SERVING 0 ← helper뷰 미배포)
 SELECT TABLE_SCHEMA, TABLE_TYPE, COUNT(*) AS CNT

@@ -17,6 +17,10 @@ SELECT
   NULLIF(TRIM(b.BRND_NM),'')        AS BRND_NM,
   NULLIF(TRIM(c.PR_MTH_CD),'')      AS PR_MTH_CD,
   NULLIF(TRIM(c.SPNSR_BSNS_ID),'')  AS SPNSR_BSNS_ID,
+  -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. 라벨은 수요 확인 후 별도 배선(스캐폴드 금지).
+  NULLIF(TRIM(c.CMPGN_TRGET_CD),'') AS CMPGN_TRGET_CD,   -- CM002
+  NULLIF(TRIM(c.CPR_DIV_CD),'')     AS CPR_DIV_CD,       -- CM019
+  NULLIF(TRIM(c.SPNSR_DIV_CD),'')   AS SPNSR_DIV_CD,     -- CM035
   c.CMPGN_CTGR_CD                   AS CMPGN_CTGR_CD,
   NULLIF(TRIM(ctgr.DTL_CD_NM),'')   AS CMPGN_CTGR_NM,
   c.MBER_INFLOW_PATH_CD             AS MBER_INFLOW_PATH_CD,

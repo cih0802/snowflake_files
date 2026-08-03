@@ -25,15 +25,22 @@ select
     f.SPONSOR_MONTHS, f.SPONSOR_YEARS, f.PAID_MONTHS,
     f.NEW_EXISTING_FLAG, f.UNPAID_FLAG_BOM, f.UNPAID_FLAG_EOM,
     f.DW_SOURCE_SYSTEM,
-    m.GENDER              as MEMBER_GENDER,
+    -- [2026-08-03 O26] 회원 속성 노출 재구성 — 코드=BRONZE 원천명 · 라벨=분석 용어.
+    --   종전은 코드만(`MEMBER_GENDER`=M/F/U 등) 노출해 현업이 WIDE 에서 코드만 보던 상태였다.
+    m.SEX                 as SEX,                     -- CM013 코드 raw
+    m.SEX_NM              as SEX_NM,                  -- CM013 원천 라벨(국내/외국인 축)
+    m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
     m.REGION              as MEMBER_REGION,
     m.AGE_BAND            as MEMBER_AGE_BAND,
-    m.MEMBER_STATUS       as MEMBER_STATUS,
-    m.MEMBER_TYPE         as MEMBER_TYPE,
+    m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
+    m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
+    m.MBER_DIV_CD         as MBER_DIV_CD,             -- MM018 코드 raw
+    m.MEMBER_TYPE_NAME    as MEMBER_TYPE_NAME,        -- MM018 분석 라벨
     m.NEW_EXISTING_FLAG   as MEMBER_NEW_EXISTING,
     m.FIRST_JOIN_DATE     as MEMBER_FIRST_JOIN_DATE,
     m.FIRST_CAMPAIGN      as MEMBER_FIRST_CAMPAIGN,
-    m.ENROLL_PATH         as MEMBER_ENROLL_PATH,
+    m.JOIN_PATH_CD        as JOIN_PATH_CD,            -- MM014 코드 raw
+    m.ENROLL_PATH_NAME    as MEMBER_ENROLL_PATH_NAME, -- MM014 분석 라벨
     m.FIRST_SPONSORSHIP   as MEMBER_FIRST_SPONSORSHIP,
     m.CURRENT_SPONSORSHIP as MEMBER_CURRENT_SPONSORSHIP,
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
@@ -53,8 +60,8 @@ select
     r.REASON_TYPE         as REASON_TYPE
 from GN_DW.GOLD.FACT_MEMBER_MONTHLY f
 left join (
-    select MEMBER_DK, GENDER, REGION, AGE_BAND, MEMBER_STATUS, MEMBER_TYPE,
-           NEW_EXISTING_FLAG, FIRST_JOIN_DATE, FIRST_CAMPAIGN, ENROLL_PATH,
+    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, REGION, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME, JOIN_PATH_CD, ENROLL_PATH_NAME,
+           NEW_EXISTING_FLAG, FIRST_JOIN_DATE, FIRST_CAMPAIGN,
            FIRST_SPONSORSHIP, CURRENT_SPONSORSHIP
     from GN_DW.GOLD.DIM_MEMBER
     where IS_CURRENT = TRUE

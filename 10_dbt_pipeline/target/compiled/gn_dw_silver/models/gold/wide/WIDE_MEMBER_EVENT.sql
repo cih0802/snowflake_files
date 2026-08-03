@@ -4,18 +4,33 @@
 
 select
     f.DATE_SK, f.MEMBER_DK, f.EVENT_TYPE,
+    -- [2026-08-03 O24] 개발구분 축 노출. 컬럼명은 BRONZE 원천명 그대로(현업 혼동 방지).
+    --   ⚠️ DVLP_DIV_NM='후원중단' 과 EVENT_TYPE='STOP' 은 동일 사건 중복 → 합산 금지.
+    f.DVLP_DIV_CD, f.DVLP_DIV_NM, f.SPNSR_AMT,
     f.DEV_CNT, f.DEV_MEMBERS,
     f.STOP_CNT, f.STOP_MEMBERS,
     f.UNPAID_STOP_CNT, f.UNPAID_STOP_MEMBERS,
-    f.JOIN_DATE, f.STOP_DATE, f.STOP_REASON, f.STOP_CHANNEL, f.NEW_EXISTING_FLAG,
+    f.JOIN_DATE, f.STOP_DATE, f.STOP_REASON, f.STOP_CHANNEL,
+    -- [2026-08-03 O25] 중단사유·중단경로 라벨 노출. 종전엔 raw 코드(1/14/16 · 1/2/3)만 있어
+    --   현업이 WIDE 를 조회하면 숫자만 보였다. 계보 계약(04_컬럼계보매핑 §4)이 STOP_REASON 을
+    --   "사유코드→라벨"로 명시한 것과 실적재가 어긋난 상태를 해소한다(정본 공#162).
+    f.STOP_REASON_NM, f.STOP_CHANNEL_NM,
+    f.NEW_EXISTING_FLAG,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.QUARTER, d.IS_HOLIDAY,
-    m.GENDER              as MEMBER_GENDER,
+    -- [2026-08-03 O26] 회원 속성 노출 재구성 — 코드=BRONZE 원천명 · 라벨=분석 용어.
+    --   종전은 코드만(`MEMBER_GENDER`=M/F/U 등) 노출해 현업이 WIDE 에서 코드만 보던 상태였다.
+    m.SEX                 as SEX,                     -- CM013 코드 raw
+    m.SEX_NM              as SEX_NM,                  -- CM013 원천 라벨(국내/외국인 축)
+    m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
     m.REGION              as MEMBER_REGION,
     m.AGE_BAND            as MEMBER_AGE_BAND,
-    m.MEMBER_STATUS       as MEMBER_STATUS,
-    m.MEMBER_TYPE         as MEMBER_TYPE,
-    m.ENROLL_PATH         as MEMBER_ENROLL_PATH,
+    m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
+    m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
+    m.MBER_DIV_CD         as MBER_DIV_CD,             -- MM018 코드 raw
+    m.MEMBER_TYPE_NAME    as MEMBER_TYPE_NAME,        -- MM018 분석 라벨
+    m.JOIN_PATH_CD        as JOIN_PATH_CD,            -- MM014 코드 raw
+    m.ENROLL_PATH_NAME    as MEMBER_ENROLL_PATH_NAME, -- MM014 분석 라벨
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
     c.BRAND               as CAMPAIGN_BRAND,
     c.PARENT_CAMPAIGN     as CAMPAIGN_PARENT,
@@ -38,7 +53,7 @@ select
 from GN_DW.GOLD.FACT_MEMBER_EVENT f
 left join GN_DW.GOLD.DIM_DATE d on f.DATE_SK = d.DATE_SK
 left join (
-    select MEMBER_DK, GENDER, REGION, AGE_BAND, MEMBER_STATUS, MEMBER_TYPE, ENROLL_PATH
+    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, REGION, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME, JOIN_PATH_CD, ENROLL_PATH_NAME
     from GN_DW.GOLD.DIM_MEMBER
     where IS_CURRENT = TRUE
     qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK

@@ -1,12 +1,21 @@
 -- CRM_MEMBER: 회원 마스터 = 정기(FDRM) ∪ 일시(ONCE), SEX/MBER_DIV_NM/상태 라벨·수신동의 정규화, 정본 09 STEP3 배치4.
 -- Co-authored with CoCo
+-- [2026-08-03 O26] SEX 원천 보존 교정 — 종전은 `SEX IN ('1','3')→'M' / ('2','4')→'F' / else 'U'` 로 축약해
+--   원천 CM013 도메인 8종을 3종으로 파괴했다(값 충실도 검사 24건 중 유일한 불일치: SILVER만 3종·BRONZE만 8종).
+--   🔴 정본 컬럼정의서 비고가 이미 경고했다: "특이사항, 6=단체, 7=기업, 8=기타 값을 보면.
+--      컬럼설명은 성별이나 **성별만으로는 사용하지는 않음**" — 종전 구현이 정확히 그 금지된 사용법이었다.
+--   CM013 = 국내/외국인 × 성별 + 법인유형 복합축(1국내남·2국내여·3외국남·4외국여·5외국기타·6단체·7기업·8기타).
+--   조치: `SEX` = 원천 raw 무변환 · `SEX_NM` = CM013 라벨 그대로 신설(국내/외국인 축 복구).
+--   성별 단일축(정본 공#130 "남/여/기업/단체/기타")은 동일 코드의 다른 라벨체계 CM017 이며 GOLD 에서 조인한다.
+--   ⚠️ CM013 은 (CD_ID,DTL_CD_ID) PK 라 fan-out 없음(실측 8행=8 distinct).
 SELECT
   NULLIF(TRIM(f.MBER_NO),'')       AS MEMBER_DK,
   'FDRM'                           AS MEMBER_TYPE,
   NULLIF(TRIM(f.MBER_DIV_CD),'')   AS MBER_DIV_CD,
   md.DTL_CD_NM                     AS MBER_DIV_NM,
   NULLIF(TRIM(f.CPR_DIV_CD),'')    AS CPR_DIV_CD,
-  CASE WHEN f.SEX IN ('1','3') THEN 'M' WHEN f.SEX IN ('2','4') THEN 'F' WHEN NULLIF(TRIM(f.SEX),'') IS NULL THEN NULL ELSE 'U' END AS SEX,
+  NULLIF(TRIM(f.SEX),'')           AS SEX,
+  sx.DTL_CD_NM                     AS SEX_NM,
   NULLIF(TRIM(f.MBER_STAT_CD),'')  AS MBER_STAT_CD,
   st.DTL_CD_NM                     AS MBER_STAT_NM,
   NULLIF(TRIM(f.CMPGN_CD),'')      AS CMPGN_CD,
@@ -20,6 +29,18 @@ SELECT
   CASE WHEN NULLIF(TRIM(f.PSTMTR_RECPTN_CD),'') IS NULL THEN NULL
        ELSE ARRAY_TO_STRING(ARRAY_SORT(ARRAY_DISTINCT(ARRAY_REMOVE(SPLIT(REPLACE(TRIM(f.PSTMTR_RECPTN_CD),' ',''),','),TO_VARIANT('')))),',') END AS PSTMTR_RECPTN,
   f.FRST_REGIST_DT                 AS JOIN_DT,
+  -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. 라벨은 수요 확인 후 별도 배선(스캐폴드 금지).
+  --   ⚠️ TSTM_DIV_CD·ETC_TSTM_DIV_CD 는 BRONZE 타입이 NUMBER → CRM_CODE.DTL_CD_ID(VARCHAR)와 조인 가능하도록 TO_VARCHAR 정규화.
+  --   ⚠️ EMAIL_RECPTN_CD·PSTMTR_RECPTN_CD 는 이미 EMAIL_RECPTN·PSTMTR_RECPTN 으로 정규화 노출됨 → raw 중복 추가하지 않음.
+  NULLIF(TRIM(f.EMAIL_STAT_CD),'')     AS EMAIL_STAT_CD,      -- MM009
+  NULLIF(TRIM(f.ETC_CTTPC_REL_CD),'')  AS ETC_CTTPC_REL_CD,   -- MM008 (사전 심각 불완전 → 라벨 불가)
+  NULLIF(TRIM(f.ETC_CTTPC_STAT_CD),'') AS ETC_CTTPC_STAT_CD,  -- MM008
+  NULLIF(TRIM(TO_VARCHAR(f.ETC_TSTM_DIV_CD)),'') AS ETC_TSTM_DIV_CD,  -- MS026
+  NULLIF(TRIM(f.MOBLPHON_STAT_CD),'')  AS MOBLPHON_STAT_CD,   -- MM008
+  CAST(NULL AS VARCHAR)                AS REL_CD,             -- CM009 (ONCE 전용 — FDRM 원천 부재)
+  NULLIF(TRIM(f.RELATNSP_DIV_CD),'')   AS RELATNSP_DIV_CD,    -- MM019
+  NULLIF(TRIM(f.SLRCLD_LRR_CD),'')     AS SLRCLD_LRR_CD,      -- CM029 (폐지코드 사용중)
+  NULLIF(TRIM(TO_VARCHAR(f.TSTM_DIV_CD)),'')     AS TSTM_DIV_CD,      -- MS026
   'CRM'                            AS DW_SOURCE_SYSTEM,
   'BRONZE_CRM.TM_MM_FDRM_MBER_INFO' AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
@@ -28,19 +49,29 @@ SELECT
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_INFO') }} f
 LEFT JOIN {{ ref('CRM_CODE') }} st ON st.CD_ID='MM010' AND st.DTL_CD_ID = NULLIF(TRIM(f.MBER_STAT_CD),'')
 LEFT JOIN {{ ref('CRM_CODE') }} md ON md.CD_ID='MM018' AND md.DTL_CD_ID = NULLIF(TRIM(f.MBER_DIV_CD),'')
+-- O26: CM013 = 정본이 SEX 에 지정한 코드그룹. USE_YN 무필터(라벨 소실 방지).
+LEFT JOIN {{ ref('CRM_CODE') }} sx ON sx.CD_ID='CM013' AND sx.DTL_CD_ID = NULLIF(TRIM(f.SEX),'')
 WHERE f.MBER_NO IS NOT NULL
 QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(f.MBER_NO),'') ORDER BY f.FRST_REGIST_DT DESC NULLS LAST)=1
 UNION ALL
 SELECT
   NULLIF(TRIM(o.ONCE_MBER_NO),''), 'ONCE', NULLIF(TRIM(o.MBER_DIV_CD),''), md.DTL_CD_NM, NULLIF(TRIM(o.CPR_DIV_CD),''),
-  CASE WHEN o.SEX IN ('1','3') THEN 'M' WHEN o.SEX IN ('2','4') THEN 'F' WHEN NULLIF(TRIM(o.SEX),'') IS NULL THEN NULL ELSE 'U' END,
+  NULLIF(TRIM(o.SEX),''), sx.DTL_CD_NM,
   NULL, NULL,
   NULL, NULL, NULLIF(TRIM(o.REGIST_DEPT_CD),''),
   NULL, NULLIF(TRIM(o.HMPG_ID),''), NULLIF(TRIM(o.ENTRPS_NM),''),
   NULLIF(TRIM(o.EMAIL_RECPTN_YN),''), NULLIF(TRIM(o.PSTMTR_RECPTN_YN),''),
   o.FRST_REGIST_DT,
+  -- [2026-08-03 G3] 위 FDRM 브랜치와 동일 순서. ONCE 원천에 없는 컬럼은 NULL(개념 부재 — 0/'' 로 채우지 않는다).
+  NULL, NULL, NULL,
+  NULLIF(TRIM(TO_VARCHAR(o.ETC_TSTM_DIV_CD)),''),          -- ETC_TSTM_DIV_CD (MS026)
+  NULL,
+  NULLIF(TRIM(o.REL_CD),''),                               -- REL_CD (CM009)
+  NULL, NULL,
+  NULLIF(TRIM(TO_VARCHAR(o.TSTM_DIV_CD)),''),              -- TSTM_DIV_CD (MS026)
   'CRM','BRONZE_CRM.TM_MM_ONCE_MBER_INFO', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM {{ source('bronze_crm','TM_MM_ONCE_MBER_INFO') }} o
 LEFT JOIN {{ ref('CRM_CODE') }} md ON md.CD_ID='MM018' AND md.DTL_CD_ID = NULLIF(TRIM(o.MBER_DIV_CD),'')
+LEFT JOIN {{ ref('CRM_CODE') }} sx ON sx.CD_ID='CM013' AND sx.DTL_CD_ID = NULLIF(TRIM(o.SEX),'')
 WHERE o.ONCE_MBER_NO IS NOT NULL
 QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(o.ONCE_MBER_NO),'') ORDER BY o.FRST_REGIST_DT DESC NULLS LAST)=1
