@@ -97,28 +97,33 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키(조인용)',  -- SCD2 DK; [실측06-30]VARCHAR(10)
+    -- 🔴 [O27 2026-08-04 정본 동기화] 본 블록 = O27_DIM_MEMBER_ALTER.sql §2·§3·§4 와 일치.
+    --   ADD 4(AREA_CD·AGE·PREV_MBER_STAT_CD·PREV_MEMBER_STATUS_NAME) · DROP 3(NEW_EXISTING_FLAG·
+    --   LAST_CAMPAIGN·CURRENT_SPONSORSHIP) · COMMENT 8컬럼. 🔴 종전에는 물리 ALTER 만 하고 이 파일을
+    --   갱신하지 않아 2026-08-03 전체 재구축(TEARDOWN+setup)에서 O27 이 통째로 소실됐다(O30/P57).
     -- [2026-08-03 O26] 코드 컬럼 = BRONZE 원천명 / 라벨 컬럼 = 분석 용어.
     --   개명: GENDER→SEX · MEMBER_STATUS→MBER_STAT_CD · MEMBER_TYPE→MBER_DIV_CD · ENROLL_PATH→JOIN_PATH_CD
     --   (ALTER TABLE RENAME COLUMN 으로 물리 반영. CREATE OR REPLACE 금지 — FK·GRANT 파괴)
     SEX                 VARCHAR         COMMENT '성별 원천코드 raw — BRONZE TM_MM_FDRM_MBER_INFO.SEX(정본 코드그룹 CM013). 1국내남·2국내여·3외국남·4외국여·5외국기타·6단체·7기업·8기타(+0 사전부재). 🔴 정본 비고가 ''성별만으로는 사용하지는 않음''을 명시 — 성별 단일축은 GENDER_NAME 을 쓴다. 라벨=SEX_NM(원천)·GENDER_NAME(분석)',
     SEX_NM              VARCHAR         COMMENT 'CM013 원천 라벨 그대로(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 국내·외국인 축 보존용 — 이 축은 CM013 만 보유한다',
     GENDER_NAME         VARCHAR         COMMENT '성별(#130) 분석 라벨 — 코드사전 CM017 라벨 그대로: 남자/여자/기타/단체/기업. 정본 공#130 값 정의 ''남/여/기업/단체/기타'' 와 일치. ⚠️CM017 은 정본 컬럼정의서가 어떤 컬럼에도 지정하지 않은 그룹(현업 확인 대상). ⚠️종전 하드코딩 ''여성/남성/미상''은 정본 5종을 3종으로 축약하고 법인·단체를 ''미상''으로 오라벨했다(O26 교정)',
-    REGION              VARCHAR         COMMENT '지역(#131) 분석 라벨 — CM018 라벨(서울/경기/인천 … 약칭, 정본 공#131 과 일치). ⚠️미주입: 개발·증감 AREA_CD 대기. 채울 때 코드컬럼 `AREA_CD`(CM018)를 병설한다',
-    AGE_BAND            VARCHAR         COMMENT '연령대 분석 라벨 — CM014 라벨(10대 미만/10대/…/70대 이상/단체/기업/기타). ⚠️미주입: 개발·증감 AGE 대기. 채울 때 코드컬럼 `AGE`(CM014)를 병설한다',
+    AREA_CD                 VARCHAR(10)     COMMENT '지역 코드 raw — CM018(18종) + sentinel ''0''(라벨 없음). 라벨=REGION. [O27] 개발약정(CRM_MEMBER_DEV) **시점 스냅샷**이며 SCD2 버전별로 다를 수 있다. 판정근거: CM018 사전 18종 × 실적재 distinct 18종 = 18/18 일치 · 정본 공#131 지역정의가 약칭이라 CM011(정식명) 아님',
+    REGION                  VARCHAR         COMMENT '지역 (#131) — CM018 약칭 라벨(서울/경기/인천/강원…). 코드=AREA_CD. [O27] 시점귀속(as-of): 그 버전 EFFECTIVE_FROM 이하 최근 개발약정의 값. 적중 96.91%(7,681,020/7,925,716). ⚠️ONCE(일시회원) 175,722행은 개발약정에 행이 없어 NULL — ''(해당없음)''이 아니다(개념은 있고 원천이 없다). sentinel AREA_CD=''0'' 도 라벨 NULL',
+    AGE                     NUMBER(2,0)     COMMENT '연령대 코드 raw — CM014(1~12). 🔴**연속형 나이가 아니다**: 1=10대미만·2=10대·3=20대·4=30대·5=40대·6=50대·7=60대·8=70대·9=70대이상·10=단체·11=기업·12=기타. 라벨=AGE_BAND. 판정근거: CM014 12종 × 실적재 12종 = 12/12 일치 · 독립 교차검증 AGE=''10''(단체) 21,920행 전건 SEX=''6''(단체) · AGE=''11''(기업) 64,581행 전건 SEX=''7''(기업). ⚠️BRONZE TM_MM_FDRM_MBER_DVLP_AMT.AGE COMMENT ''연령''(NUMBER)은 오류다',
+    AGE_BAND                VARCHAR         COMMENT '연령대 — CM014 라벨. 코드=AGE. [O27] 시점귀속(as-of) · 적중 97.63%. 🔴구간을 우리가 만든 것이 아니라 **원천이 이미 구간화**해 제공한다(DEC-28 §18-B 로 DEC-27 §17-C ''구간 정의 없음→보류'' 판정을 정정). ⚠️생년월일(MBER_BIRTHDAY) 입고는 이 컬럼의 선행조건이 아니다 — 시점정확 연령에만 필요. ⚠️ONCE 는 NULL',
     MBER_STAT_CD        VARCHAR         COMMENT '회원상태 원천코드 raw(#132, MM010) — 정본 명칭 ''회원상태코드''. SCD2 버전행은 TH_MM_FDRM_MBER_STNG_DTLS.CHN_STAT_CD(변경상태코드), 무이력행은 TM_MM_FDRM_MBER_INFO.MBER_STAT_CD 에서 온다(둘 다 MM010). 라벨=MEMBER_STATUS_NAME',
     MBER_DIV_CD         VARCHAR         COMMENT '회원구분 원천코드 raw — BRONZE MBER_DIV_CD(MM018 1개인·2기업·3단체). 라벨=MEMBER_TYPE_NAME',
     MEMBER_TYPE_NAME    VARCHAR         COMMENT '회원구분명(라벨). 원천 CRM_CODE MM018: 1개인·2기업·3단체. 미매핑→미상',
     MEMBER_STATUS_NAME  VARCHAR         COMMENT '회원상태명(라벨). 원천 CRM_CODE MM010: 1활동회원·2~6신규미납1~5·7~11장기미납1~5·12후원중단. 미매핑→미상',
     MEMBER_STATUS_GROUP VARCHAR         COMMENT '회원상태 대분류(파생). 1→정상·2~11→미납·12→중단·NULL→미상',
-    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존구분(#113) 분석 라벨. ⚠️미주입: 파생규칙 미정. 채울 때 코드컬럼 `RELATNSP_DIV_CD`(MM019)를 병설한다',
+    PREV_MBER_STAT_CD       VARCHAR(10)     COMMENT '상태전이 **이전상태** 코드 raw — MM010. 현재상태=MBER_STAT_CD 와 짝지어 전이를 표현한다(이 SCD2 버전행이 곧 전이 사건이므로 fan-out 0). 원천=CRM_MEMBER_STATUS_HIST.BF_STAT_CD(채움 100%·7,501,761·12종 = MM010 12/12 일치). ⚠️이력 미보유행(FDRM 무이력·ONCE 전체)은 NULL — ''이전상태가 없다''가 아니라 ''이력이 없다''. ⚠️동일자 다중전이는 최종 전이로 축약된다(중간 단계 소실)',
+    PREV_MEMBER_STATUS_NAME VARCHAR(100)    COMMENT '이전상태 라벨 — MM010. 코드=PREV_MBER_STAT_CD. 하드코딩 아니라 CRM_CODE 조인(P31). 원천 라벨 BF_STAT_NM 도 MM010 과 100% 일치하나 사전 조인을 정본으로 쓴다. ⚠️개발구분(MM015)은 다른 축 — FACT_MEMBER_EVENT.DVLP_DIV_NM',
     FIRST_JOIN_DATE     DATE            COMMENT '최초가입일=회원번호 생성일(#28)',
     FIRST_CAMPAIGN      VARCHAR         COMMENT '최초캠페인(#29)',
     JOIN_PATH_CD        VARCHAR         COMMENT '가입경로 원천코드 raw — BRONZE JOIN_PATH_CD(MM014). 라벨=ENROLL_PATH_NAME',
     ENROLL_PATH_NAME    VARCHAR         COMMENT '가입경로명(라벨). 원천 CRM_CODE MM014: 홈페이지/CRM/모바일웹/희망TV/외주콜센터/모바일앱/REG/EDU. 미매핑→미상',
-    FIRST_SPONSORSHIP   VARCHAR         COMMENT '최초후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS',
-    LAST_STOP_DATE      DATE            COMMENT '최종중단일(#30)',
-    LAST_CAMPAIGN       VARCHAR         COMMENT '최종캠페인(#31)',
-    CURRENT_SPONSORSHIP VARCHAR         COMMENT '현재후원사업(회원 스냅샷). 원천: TM_MM_FDRM_MBER_SPNSR_BSNS',
+    FIRST_SPONSORSHIP       VARCHAR         COMMENT '최초 후원사업 — CRM_MEMBER_DEV 최소 발생일(OCCRRNC_DE)의 SPNSR_BSNS_ID. ''최초''는 시점 불변이라 as-of 불요(SCD1). 적중 97.76%. ⚠️ONCE 는 개발약정 부재로 NULL. ⚠️**현재 후원사업**은 제공하지 않는다 — 동시 다중후원이 정상(14.2%·최대 14)이라 단일값이 성립하지 않아 CURRENT_SPONSORSHIP 을 DROP 했다(O13 계열)',
+    LAST_STOP_DATE          DATE            COMMENT '최종 중단일 — 원천 CRM_MEMBER_DISCONTINUE.SPNSR_DSCNTC_DE. 🔴**그 버전 시점까지의 as-of max** 다(단순 max 아님). 단순 max 는 미래 정보를 과거 버전에 누설해 예측 피처(LTV·유지기간 신4·6~8)를 오염시킨다. 적중 19.73%(1,563,872/7,925,716) — 중단 이력이 없는 회원·중단 이전 버전은 NULL',
     EFFECTIVE_FROM      DATE            COMMENT 'SCD2 유효시작',
     EFFECTIVE_TO        DATE            COMMENT 'SCD2 유효종료',
     IS_CURRENT          BOOLEAN         COMMENT '현재행 여부',
@@ -486,6 +491,17 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     STOP_REASON_NM      VARCHAR         COMMENT '중단사유명 — 정본 공#162. MM005 라벨(SILVER CRM_MEMBER_DISCONTINUE.DSCNTC_RSN_NM 전파). 코드는 STOP_REASON. ⚠️USE_YN 무필터 조인 — 실측 20종 중 6종(366행)이 폐지코드이며 필터를 걸면 라벨이 사라진다. 개발원천 행은 개념 부재로 NULL (O25)',  -- degen
     STOP_CHANNEL_NM     VARCHAR         COMMENT '중단경로명 — MM287 라벨(SYSTEM/CRM/홈페이지). 코드는 STOP_CHANNEL(1/2/3). 개발원천 행은 개념 부재로 NULL. 215지표 밖 — 현업 수요 확인 대상 (O25)',  -- degen
     NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존',            -- degen
+    -- [2026-08-04 O35] 사건시점 연령대·지역 전파(ALTER TABLE ADD COLUMN 으로 물리 반영, 물리 위치=맨 끝).
+    --   왜 팩트에 두는가: 이 두 속성은 **개발약정 이벤트에서 관측된 값**이라 측정된 grain 이 사건이다
+    --   (Kimball 의 트랜잭션 시점 속성). DIM_MEMBER 경유 스냅샷은 「최근 약정」 값이어서 과거 사건에
+    --   붙이면 시점이 왜곡된다(P60). 원천 SILVER CRM_MEMBER_DEV 가 사건행별 값을 100% 보유한다.
+    --   부수 효과: 같은 팩트 안에 캠페인 축이 이미 있으므로 **연령대 × 캠페인 교차**가 성립한다.
+    --   🔴 DIM_MEMBER 의 AGE/AREA_CD 축(SV 차원명 _AT_PLEDGE)은 제거하지 않는다 — 성격이 다르므로
+    --      이름으로 구분해 공존시킨다(_AT_EVENT=사건시점·정확 / _AT_PLEDGE=최근 약정 스냅샷).
+    AGE_AT_EVENT        NUMBER(2,0)     COMMENT '연령대 코드 raw — **사건(개발약정) 시점 값**. 원천 BRONZE TM_MM_FDRM_MBER_DVLP_AMT.AGE(정본 CM014) 사건행별 값을 SILVER CRM_MEMBER_DEV 경유로 무변환 전파. 1=10대 미만 2=10대 3=20대 4=30대 5=40대 6=50대 7=60대 8=70대 9=70대 이상 10=단체 11=기업 12=기타. 🔴 연속형 나이가 아니다 — 평균·구간 재계산 금지. 라벨=AGE_BAND_AT_EVENT. 🔴 DIM_MEMBER.AGE(=최근 약정 스냅샷, SV 차원명 _AT_PLEDGE)와 **다른 축이다** — 같은 회원이라도 사건마다 값이 다를 수 있고 이 컬럼이 그 사건 당시의 정확한 값이다. 중단원천 행은 원천에 컬럼이 부재하여 NULL(0 아님, P21)',
+    AGE_BAND_AT_EVENT   VARCHAR         COMMENT '연령대명 — **사건(개발약정) 시점** 연령대 라벨. CM014 사전 조인(하드코딩 아님, P31). 코드는 AGE_AT_EVENT. 원천이 이미 구간화한 값이며 우리가 구간을 창작하지 않는다. ✅ ''10대 미만''이 상위인 것은 **오류가 아니다** — 편지쓰기대회 계열 캠페인(희망편지·가족그림편지·세계시민교육편지)이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B). 🔴 DIM_MEMBER.AGE_BAND(최근 약정 스냅샷·SV _AT_PLEDGE)와 값이 다를 수 있다 — 이 컬럼이 사건 시점 정확값이다. 중단원천 행은 NULL',
+    AREA_CD_AT_EVENT    VARCHAR(10)     COMMENT '지역 코드 raw — **사건(개발약정) 시점 값**. 원천 BRONZE TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD(정본 CM018 약칭축, 지표 공#131) 사건행별 값 무변환 전파. 실제값 = CM018 코드 + 라벨 없는 센티넬 ''0''. 라벨=REGION_AT_EVENT. 🔴 DIM_MEMBER.AREA_CD(=최근 약정 스냅샷, SV 차원명 _AT_PLEDGE)와 **다른 축이다** — 이사 등으로 사건마다 값이 다를 수 있다. ⚠️ **현재 거주지가 아니다** — BRONZE 전체에 현주소 축이 없어 현재 지역은 산출 불가(O34). 중단원천 행은 원천에 컬럼이 부재하여 NULL',
+    REGION_AT_EVENT     VARCHAR         COMMENT '지역명 — **사건(개발약정) 시점** 지역 라벨(CM018 약칭, 지표 공#131). 코드는 AREA_CD_AT_EVENT. 원천 SILVER CRM_MEMBER_DEV.AREA_NM(CM018 사전 조인) 전파. ⚠️ 센티넬 코드 ''0'' 은 사전에 라벨이 없어 NULL 이다 — ''미상''으로 창작하지 않는다. ⚠️ **현재 거주지가 아니다**(O34). 🔴 DIM_MEMBER.REGION(최근 약정 스냅샷·SV _AT_PLEDGE)과 값이 다를 수 있다. 중단원천 행은 NULL',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',

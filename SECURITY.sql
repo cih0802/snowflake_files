@@ -42,3 +42,10 @@ CREATE OR REPLACE SECRET ADMIN_DB.PUBLIC.git_sec
 -- ============================================================
 -- 워크스페이스 상단 Git 메뉴 → Settings → Credentials에서
 -- 새 토큰으로 업데이트
+
+
+
+CREATE OR REPLACE SECRET SANDBOX.TOOLS.git_sec
+    TYPE = PASSWORD
+    USERNAME = 'cih0802'
+    PASSWORD = '';  -- 여기에 새 PAT 입력

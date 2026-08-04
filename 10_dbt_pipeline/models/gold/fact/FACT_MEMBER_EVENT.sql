@@ -36,6 +36,33 @@
 --   → 코드5 행은 DEV_CNT=0·STOP_CNT=0 으로 두어 measure 중복계상은 없으나,
 --     `DVLP_DIV_NM='후원중단'` 을 행수로 세면 STOP 과 이중계상된다. 합산 금지.
 -- ============================================================================
+--
+-- ============================================================================
+-- [2026-08-04 O35] 사건시점 연령대·지역 전파 (`_AT_EVENT` 4컬럼)
+-- ----------------------------------------------------------------------------
+-- 문제: "왜 10대 미만이 이렇게 많나?" 의 답(= 편지쓰기대회 계열 아동 모집 캠페인)을 Agent 가
+--   스스로 계산해 보일 수 없었다. 연령대는 `SV_MEMBER_MONTHLY`(FMM × DIM_MEMBER_CURRENT)에,
+--   캠페인은 `SV_MEMBER_EVENT`(FME)에 갈라져 있고 `SEMANTIC_VIEW()` 는 단일 뷰 대상이라
+--   Agent 가 SV 끼리 행 단위 조인을 못 한다. FMM 의 CAMPAIGN_SK 는 센티넬 단일값이라 조인해도 무의미.
+--
+-- 채택안 = **사건시점 속성 전파**(대안 B multi-fact SV · C Agent 조인은 기각, 근거 = 이슈원장 O35):
+--   · 속성이 **측정된 grain 에 놓인다** — 개발약정 이벤트에서 관측된 값이므로 사건 팩트의 속성이 맞다
+--     (Kimball 트랜잭션 시점 속성). `DIM_MEMBER_CURRENT` 경유 스냅샷의 시점 왜곡이 원천 소멸한다(P60).
+--   · 같은 SV 안에서 **연령대 × 캠페인 교차**가 성립한다.
+--
+-- 원천 실측(2026-08-04 BRONZE·SILVER 직접 스캔):
+--   · `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 채움 100% · distinct 12 = CM014 12/12 일치
+--   · `.AREA_CD` = CM018 코드 + 라벨 없는 센티넬 `'0'` + 소수 NULL
+--   · SILVER `CRM_MEMBER_DEV` 는 BRONZE 를 1:1 승계하며 `AREA_NM`(CM018 라벨)까지 이미 보유
+--     → 지역 라벨은 추가 조인 불요, 연령대 라벨만 `CRM_CODE` CM014 조인
+--   · 🔴 **스냅샷으로는 재현 불가**: 복수 개발사건 회원 중 AGE 가 변하는 회원·AREA_CD 가 변하는 회원이
+--     실재한다(둘 다 측정 확인) → 사건행별 값과 최근 약정 스냅샷은 실제로 다르다
+--   · 중단원천(`TM_MM_FDRM_MBER_SPNSR_DSCNTC`)은 컬럼 자체가 부재(전 9컬럼 확인) → NULL.
+--     0 으로 채우지 않는다(P21 — 개념 부재를 결측/0 으로 오판 금지, DVLP_DIV_CD 와 동일 처리)
+--
+-- 🔴 `DIM_MEMBER` 의 `AGE`/`AREA_CD` 축(SV 차원명 `_AT_PLEDGE`)은 **제거하지 않는다**.
+--    성격이 다르다(월 팩트 × 현재행 스냅샷 vs 사건 팩트 × 사건시점) → 이름으로 구분해 공존시킨다.
+-- ============================================================================
 {{ config(
     tags=['gold_pending']
 ) }}
@@ -45,6 +72,12 @@
 -- 이므로 이 조인은 fan-out 을 만들지 않는다(행수 불변 검증 대상).
 with campaign_valid as (
     select CMPGN_CD from {{ ref('CRM_CAMPAIGN') }}
+),
+
+-- [2026-08-04 O35] 연령대 라벨 = CM014. 하드코딩 CASE 금지(P31 — 사전과 조용히 갈라진다).
+--   `DTL_CD_ID` 유일이라 fan-out 없음. USE_YN 무필터(폐지코드가 실적재에 남아 필터 시 라벨 소실).
+code_ageband as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM014'
 ),
 
 dev as (
@@ -75,9 +108,15 @@ dev as (
         -- O25: 개발 사건에는 중단사유·중단경로 개념이 부재 → NULL (0/'' 로 채우지 않는다, P21)
         CAST(NULL AS VARCHAR)                               as STOP_REASON_NM,
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG
+        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        -- [2026-08-04 O35] 사건시점 연령대·지역. 사건행 자신의 값이므로 as-of 계산이 불요하다.
+        d.AGE                                               as AGE_AT_EVENT,
+        cab.DTL_CD_NM                                       as AGE_BAND_AT_EVENT,
+        d.AREA_CD                                           as AREA_CD_AT_EVENT,
+        d.AREA_NM                                           as REGION_AT_EVENT
     from {{ ref('CRM_MEMBER_DEV') }} d
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
+    left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
 ),
 
 stop as (
@@ -111,7 +150,13 @@ stop as (
         --   "사유코드→라벨"로 명시했는데 실적재가 raw 코드여서 현업이 숫자만 보던 상태를 해소한다.
         DSCNTC_RSN_NM                                       as STOP_REASON_NM,
         DSCNTC_PATH_NM                                      as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG
+        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        -- [2026-08-04 O35] 중단원천에는 연령·지역 컬럼이 **구조적으로 부재**(전 9컬럼 실측 확인) → NULL.
+        --   ⚠️ 0 이나 '미상' 으로 채우지 않는다 — 개념 부재를 결측으로 오판하는 P21 유형을 되풀이한다.
+        CAST(NULL AS NUMBER(2,0))                           as AGE_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as AGE_BAND_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as AREA_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as REGION_AT_EVENT
     from {{ ref('CRM_MEMBER_DISCONTINUE') }}
 ),
 
@@ -126,5 +171,7 @@ select
     DVLP_DIV_CD, DVLP_DIV_NM, SPNSR_AMT,
     DEV_CNT, DEV_MEMBERS, STOP_CNT, STOP_MEMBERS, UNPAID_STOP_CNT, UNPAID_STOP_MEMBERS,
     JOIN_DATE, STOP_DATE, STOP_REASON, STOP_CHANNEL, STOP_REASON_NM, STOP_CHANNEL_NM, NEW_EXISTING_FLAG,
+    -- [2026-08-04 O35] 사건시점 축. `_AT_PLEDGE`(DIM_MEMBER 스냅샷)와 이름으로 구분해 공존한다.
+    AGE_AT_EVENT, AGE_BAND_AT_EVENT, AREA_CD_AT_EVENT, REGION_AT_EVENT,
     {{ gold_meta('CRM') }}
 from unioned

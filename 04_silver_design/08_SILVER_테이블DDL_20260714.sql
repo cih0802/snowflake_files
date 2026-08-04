@@ -237,7 +237,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_BILLING (
     MBER_DIV_CD             VARCHAR         COMMENT '회원구분 코드 raw (정본 MM018). 회비 전용 — 기부금 부재 → NULL',
     MBRFEE_DIV_CD           VARCHAR         COMMENT '회비구분 코드 raw (정본 PM010). 회비 전용 → 기부금 NULL',
     OPERT_DIV_CD            VARCHAR         COMMENT '작업구분 코드 raw (정본 MM014). 회비 전용 → 기부금 NULL',
-    PRCS_STAT_CD            VARCHAR         COMMENT '처리상태 코드 raw (정본 PM013). 🔴회비 전용 — 기부금 원천에도 동명 컬럼이 있으나 정본이 코드그룹 미지정이라 O16형 의미혼입 방지를 위해 NULL 유지. 미납 판정은 PAY_STAT_CD(DEC-3) 불변',
+    MBRFEE_PRCS_STAT_CD     VARCHAR         COMMENT '처리상태 코드 raw (정본 PM013). 🔴회비 전용 — 기부금 원천에도 동명 컬럼이 있으나 정본이 코드그룹 미지정이라 O16형 의미혼입 방지를 위해 NULL 유지. 미납 판정은 PAY_STAT_CD(DEC-3) 불변. [O26] MBRFEE_ 접두 = 원천 테이블 TM_PM_MBRFEE_ACMSLT 변별토큰 — CRM_SEND_REQUEST.PSTMTR_PRCS_STAT_CD(MS061)와 동명이의였다. BRONZE 실측 도메인 완전 분리: 여기 R 144,028·S 46,247,143·F 449 vs PSTMTR 0/1 (2026-08-04 재확인)',
     RETUN_RSN_CD            VARCHAR         COMMENT '반환사유 코드 raw (정본 PM042). 회비∪기부금 양쪽 존재',
     RQEST_DIV_CD            VARCHAR         COMMENT '청구구분 코드 raw (정본 PM024). 회비 전용 → 기부금 NULL',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
@@ -371,7 +371,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
     REQ_SEQ_NO          NUMBER(19,0)    COMMENT '요청 일련번호',
     -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
     MSG_DIV_CD              VARCHAR         COMMENT '메시지구분 코드 raw (정본 MS010). MSG_AT 채널 전용 — 그 외 채널은 개념 부재로 NULL',
-    PRCS_STAT_CD            VARCHAR         COMMENT '처리상태 코드 raw (정본 MS061). PSTMTR 채널 전용 — 그 외 NULL',
+    PSTMTR_PRCS_STAT_CD     VARCHAR         COMMENT '처리상태 코드 raw (정본 MS061). PSTMTR 채널 전용 — 그 외 NULL. [O26] PSTMTR_ 접두 = 원천 테이블 TM_MS_PSTMTR_SNDNG 변별토큰 — CRM_PAYMENT_BILLING.MBRFEE_PRCS_STAT_CD(PM013)와 동명이의였다. BRONZE 실측 도메인 완전 분리: 여기 0=170·1=3,631 vs MBRFEE R/S/F (2026-08-04 재확인)',
     SNDNG_TIME_DIV_CD       VARCHAR         COMMENT '발송시간구분 코드 raw (정본 MS267). MSG_AT 채널 전용 — 그 외 NULL',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',

@@ -138,11 +138,6 @@ COMMENT ON COLUMN GN_DW.GOLD.FACT_EVENT_PARTICIPATION.PART_STATUS IS
 [금지] 두 체계를 합산·GROUP BY 하지 말 것. 리포트는 행사종류별로 **항상 분리**한다.
 [한글 라벨 없음] 값은 원천 코드 그대로이므로 `=''참여''` 같은 한글 비교는 **0행**을 반환한다(에러 없음).';
 
--- 1-B. 상태별 카운트 — 전건 0 이 "0명"이 아니라 "미배선"임을 명시
---      현 COMMENT('대기인원' 등)는 값이 실재하는 것처럼 읽혀 그대로 소비되면 "전부 0명"이라는
---      오답이 된다. 원인은 컬럼 탈락이 아니라 **O28 코드체계 미확정**이다(문서10 §14-H).
-COMMENT ON COLUMN GN_DW.GOLD.FACT_EVENT_PARTICIPATION.RECRUIT_CNT IS
-'모집인원 — 🔴 **전건 0 (미배선)**. 실측 2026-08-04: 비영 0 / 1,134,126행. 원천은 실재한다(SILVER `CRM_EVENT.RCRIT_PSNNL_CO` 채움 3,361/3,786=88.8%) → 행사차원 배속 판정 후 배선 대상. **0 을 "모집인원 0명"으로 읽지 말 것**.';
 
 COMMENT ON COLUMN GN_DW.GOLD.FACT_EVENT_PARTICIPATION.TOTAL_CNT IS
 '총인원 — 🔴 **전건 0 (미배선)**. 실측 2026-08-04: 비영 0 / 1,134,126행. 원인 = O28 참여상태 코드체계 미확정(문서20 §I 회신 대기). **0 을 실제 0명으로 읽지 말 것**. 참여 행수는 `PARTICIPANT_CNT` 를 쓴다.';
@@ -215,14 +210,6 @@ COMMENT ON COLUMN GN_DW.GOLD.FACT_AD_BROADCAST.DURATION_SEC IS
 ⚠️ [VIDEO 전용] REBRDC 원천에는 초수 컬럼이 **구조적으로 없다** → REBRDC 행의 NULL 은 결손이 아니다(AD-1 유형 오판 주의).
 → 조치 순서 = 본 경고 → SILVER HH:MM:SS 파싱(무추론·즉시 가능) → 숫자 3종 현업 확인 후 변환(확인 전 NULL 유지가 현 상태보다 안전) → `DIM_AD_CREATIVE.DURATION_SEC` 중복축 정리.';
 
--- 부수: 같은 축이 소재차원에도 (전건 NULL 로) 존재한다 — 중복축이다
---   ⚠️ 물리 COMMENT 는 `'초수(#22)'` 이고 *"원천 부재"* 는 **모델 파일 주석**(DIM_AD_CREATIVE.sql:5·25)에
---      있다. 즉 물리 COMMENT 자체가 거짓을 말한 것은 아니나, 지표번호만 있어 **전건 NULL 임을
---      알 수 없다** → 소비자는 조회 가능한 축으로 오인한다.
-COMMENT ON COLUMN GN_DW.GOLD.DIM_AD_CREATIVE.DURATION_SEC IS
-'초수(#22) — 🔴 **전건 NULL · 중복축 (O29)**. 모델이 `CAST(NULL AS NUMBER(9,0))` 하드코딩이다. 조회·조인하지 말 것.
-🔴 모델 주석의 *"원천 부재(초수)"* 는 **거짓**이다 — 원천은 실재한다(SILVER `AGENCY_AD_CREATIVE.AD_SEC_NM` VIDEO 1,217/1,279=95.2% · BRONZE `VIDEO_AD_CMPGN_DTLS.AD_SEC` 33,890/36,416=93.1%). P14 위반 사례.
-🔴 그러나 **채움이 정답이 아니다** — 같은 축이 `FACT_AD_BROADCAST.DURATION_SEC` 에 이미 배선돼 있다(§18-D ① 같은 역할 컬럼 우선). 판정은 **중복축 DROP 또는 소재차원 정본 통합**이며 결정 대기다.';
 
 
 -- ============================================================================
@@ -238,7 +225,6 @@ COMMENT ON COLUMN GN_DW.GOLD.DIM_AD_CREATIVE.DURATION_SEC IS
 ALTER VIEW GN_DW.GOLD.WIDE_EVENT_PARTICIPATION ALTER
   COLUMN PART_STATUS COMMENT '🔴 참여상태 — **코드체계 2개 혼입**(O28). 일반행사=MS304(110=Success·120=Fail·130~220=N_step_right/fail) 707,476행 / 캠페인행사=소정수 1~6 152,046행(의미 미확정·문서20 §I). 판별자=`EVENT_KIND`(단 고아 23.2% 는 `(미매핑)`). **두 체계 합산·GROUP BY 금지** · 한글 비교(=''참여'')는 0행 반환',
   COLUMN EVENT_KIND COMMENT 'DIM_EVENT.EVENT_KIND — 🔴 행사종류 코드 raw(`EVENT`=일반행사 / `CRMN`=캠페인행사). ⚠️종전 COMMENT *"온라인/오프라인"* 은 **거짓**이었다(실측 도메인 EVENT 376·CRMN 3,410·NULL 1) → `=''온라인''` 은 0행 반환. 라벨=`EVENT_KIND_NAME`. 🔷 이 컬럼이 `PART_STATUS` 코드체계 판별자다',
-  COLUMN RECRUIT_CNT COMMENT '모집인원 — 🔴 전건 0(미배선). 원천 실재(`CRM_EVENT.RCRIT_PSNNL_CO` 88.8%). 0 을 실측값으로 읽지 말 것',
   COLUMN TOTAL_CNT COMMENT '총인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정. 0 을 실측값으로 읽지 말 것',
   COLUMN WAIT_CNT COMMENT '대기인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정. 0 을 실측값으로 읽지 말 것',
   COLUMN CANCEL_CNT COMMENT '취소인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정. 0 을 실측값으로 읽지 말 것',

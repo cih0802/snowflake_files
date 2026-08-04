@@ -10,8 +10,14 @@
 --   ※ (대안) `CREATE OR ALTER SEMANTIC VIEW`는 GRANT·materialization을 보존한다. 다만 tag 변경은
 --     미지원이고 생략한 속성은 unset되므로, 전체 재배포에는 현행 `CREATE OR REPLACE` + GRANT 재실행을 유지한다.
 --
--- ▶ 실행 순서 (신규 계정 재현)
---   02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql → dbt(BRONZE→GOLD) → **본 파일** → 09_AGENT_spec_구현.sql
+-- ▶ 실행 순서 (신규 계정 재현) — 🔴 정본 = `02_GN_DW_building/06_RUNBOOK.md` §11.2-C
+--   07_ENVIRONMENT_RBAC_setup.sql → GOLD/SILVER DDL → dbt build
+--   → **08_After_Deploy_DBT.sql §G**(helper 뷰 2종 — 본 파일이 논리테이블로 참조하므로 필수 선행)
+--   → **본 파일** → 09_1_AGENT_생성.sql(껍데기) → 09_2_AGENT_버전업.sql(스펙 본문)
+--   🔴 [2026-08-04 O36 교정] 종전 이 줄은 *"… → 본 파일 → 09_AGENT_spec_구현.sql"* 이었다.
+--      `09_AGENT_spec_구현.sql` 은 [DEPRECATED 2026-07-31] 포인터 스텁이고, **09_1·09_2 두 단계**다.
+--      특히 `09_2` 를 빼면 Agent 스펙이 `{"models":{"orchestration":"auto"}}` 로 남아 도구가 0개다.
+--      또 helper 뷰 선행 단계가 빠져 있었다(본 파일은 SERVING.DIM_MEMBER_CURRENT·DIM_MONTH 를 참조한다).
 --   ⚠ 본 파일을 반드시 `GN_DW_ADMIN` 역할로 실행한다(75행). ACCOUNTADMIN으로 만들면 소유권이 어긋나
 --     이후 재배포가 권한 오류로 막힌다(복구 SQL은 §8-11 주석).
 --
@@ -19,7 +25,9 @@
 --   04_SV_설계.md            §0.1 helper뷰 · §0.3 가산성 · §1~6 SV구조 · **§6.9 구조적 제약 8건**
 --   03_SV_metric_배속.md     지표별 분자/분모 직역 · **§8.5 미해결 플래그 + §8.5.1 근거 쿼리**
 --   01_SV-Agent 작업계획.md  §3 3단계 · 원칙10(fan-out) · R1·R5 가산성 · 원칙6 한글 synonyms
---   02_SERVING_setup.sql     SERVING 스키마 · helper뷰(DIM_MONTH·DIM_MEMBER_CURRENT) · RBAC
+--   02_GN_DW_building/08_After_Deploy_DBT.sql **§G**   helper뷰(DIM_MONTH·DIM_MEMBER_CURRENT) 실행 정본
+--     ⚠ 종전 이 줄은 `02_SERVING_setup.sql` 을 지목했으나 그 파일은 포인터 스텁이고,
+--       `07_ENVIRONMENT_RBAC_setup.sql` 에도 두 뷰가 없다(O36 실측). 런북 §11.3-B 참조.
 --   30_output_share/04_컬럼계보매핑.md · 05_지표GOLD매핑.md   GOLD컬럼→SILVER→BRONZE 1:1 계보
 --   Snowflake docs: /user-guide/views-semantic/sql
 --
@@ -71,11 +79,18 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원', '회원속성')
-      COMMENT = '회원 현재 스냅샷(SCD2 IS_CURRENT). 불변/현재 속성 전용. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO(SEX·MBER_STAT_CD·RELATNSP_DIV_CD) ∪ TM_MM_ONCE_MBER_INFO(일시회원) + TH_MM_FDRM_MBER_STNG_DTLS(상태이력 SCD2) · SILVER=CRM_MEMBER.'
+      COMMENT = '회원 현재 스냅샷(SCD2 IS_CURRENT). 불변/현재 속성 전용. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO(SEX·MBER_STAT_CD·RELATNSP_DIV_CD) ∪ TM_MM_ONCE_MBER_INFO(일시회원) + TH_MM_FDRM_MBER_STNG_DTLS(상태이력 SCD2) · SILVER=CRM_MEMBER.',
+    -- [2026-08-04 O33] 미납사유 축. FMM.REASON_SK 는 배선돼 있었고 "적재 대기" 표기가 거짓이었다.
+    --   🔴 단 이 SK 는 코드그룹 5종(PM002·PM018·PM032·PM033·PM019)에 걸쳐 있다 → REASON_TYPE 동반 노출 필수.
+    reason AS GN_DW.GOLD.DIM_REASON
+      PRIMARY KEY (REASON_SK)
+      WITH SYNONYMS ('사유', '미납사유', '결제사유')
+      COMMENT = '사유 차원. PK 유일(fan-out 0). 🔴코드그룹이 섞여 있다 — REASON_TYPE 으로 먼저 분리하지 않으면 서로 다른 코드체계를 한 축으로 합산하게 된다(O28 유형). [원천] 시스템=CRM · SILVER=CRM_CODE 파생.'
   )
   RELATIONSHIPS (
     fmm_to_month  AS fmm (MONTH_KEY) REFERENCES month,
-    fmm_to_member AS fmm (MEMBER_DK) REFERENCES member
+    fmm_to_member AS fmm (MEMBER_DK) REFERENCES member,
+    fmm_to_reason AS fmm (REASON_SK) REFERENCES reason
   )
   DIMENSIONS (
     month.MONTH_KEY   AS month.MONTH_KEY WITH SYNONYMS ('연월', '조회연월') COMMENT = 'YYYYMM 정수',
@@ -89,7 +104,13 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드')     COMMENT = '회원상태 원천코드(MM010 1~12). 라벨은 MEMBER_STATUS_NAME',
     member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분', '구분') COMMENT = '회원구분 라벨(MM018). 실제값 3종: ''개인''·''기업''·''단체''',
     member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드')     COMMENT = '회원구분 원천코드(MM018 1개인·2기업·3단체). 라벨은 MEMBER_TYPE_NAME',
-    fmm.HAS_BILLING      AS fmm.HAS_BILLING      WITH SYNONYMS ('회비출처여부', '청구대상') COMMENT = 'TRUE=회비(billing) 원천 존재 행. 회비 지표는 TRUE 전제 권장.'
+    fmm.HAS_BILLING      AS fmm.HAS_BILLING      WITH SYNONYMS ('회비출처여부', '청구대상') COMMENT = 'TRUE=회비(billing) 원천 존재 행. 회비 지표는 TRUE 전제 권장.',
+    reason.UNPAID_REASON_TYPE AS reason.REASON_TYPE WITH SYNONYMS ('사유 코드체계', '사유그룹') COMMENT = '🔴사유 코드그룹(PM002·PM018·PM032·PM033·PM019). **사유별 분해 시 이 축을 먼저 걸거나 함께 GROUP BY 할 것** — 그룹이 다르면 같은 이름도 다른 의미다. 그룹 미분리 합산은 조용히 틀린다(O28 유형)',
+    reason.UNPAID_REASON      AS reason.REASON_NAME WITH SYNONYMS ('미납사유', '사유', '결제실패사유') COMMENT = '사유 라벨. 🔴**미납/결제실패 행에만 배선**된다 — 정상 납입 행은 전건 ''(미매핑)''이므로 대부분이 (미매핑) 한 덩어리로 나온다. 따라서 미납 관련 지표(총미납금액·미납비중·미납회원수)와 함께 쓸 때만 의미가 있다. ⚠️반드시 UNPAID_REASON_TYPE 과 함께 볼 것',
+    -- [2026-08-04 O33] 지역·연령대 노출. O27 이 DIM_MEMBER 에 as-of 배선을 완료했고 helper 뷰가 이미 보유한다
+    --   → 배선 추가 없이 선언만으로 활성화. 종전 SV COMMENT 의 "비활성(적재 대기): 지역/연령대" 는 거짓이 됐다.
+    member.MEMBER_REGION_AT_PLEDGE AS member.REGION WITH SYNONYMS ('지역', '약정시점 지역', '가입시점 지역', '시도') COMMENT = '🔴**약정(개발) 시점의** 회원 지역 라벨 — **현재 거주지가 아니다**(O34 확정). 정본 공#131 · 코드사전 CM018 약칭. 실제값: ''서울''·''경기''·''인천''·''강원''·''대전''·''대구''·''부산''·''광주''·''울산''·''세종''·''충남''·''충북''·''전남''·''전북''·''경남''·''경북''·''제주''·''기타''. 원천 = 개발약정 테이블의 지역코드이며 약정 당시 값이 그대로 굳는다 — 이후 이사해도 갱신되지 않는다. 코드는 DIM_MEMBER.AREA_CD. ⚠️''현재 거주지역별'' 질문에는 답할 수 없다 — 원천에 현재 주소 축이 없다. ⚠️개발약정이 없는 회원(주로 일시회원)은 NULL 이며 ''미상''이 아니라 원천 부재다',
+    member.MEMBER_AGE_BAND_AT_PLEDGE AS member.AGE_BAND WITH SYNONYMS ('연령대', '약정시점 연령대', '가입시점 연령대') COMMENT = '🔴**약정(개발) 시점의** 회원 연령대 라벨 — **현재 나이가 아니다**(O34 확정). 코드사전 CM014. 실제값: ''10대 미만''·''10대''·''20대''·''30대''·''40대''·''50대''·''60대''·''70대''·''70대 이상''·''단체''·''기업''·''기타''. ✅라벨 매핑은 CM014 사전과 일치 검증됨(우리 쪽 결함 아님). ✅''10대 미만''이 최다인 것도 **실제이며 데이터 오류가 아니다** — 원인은 **편지쓰기대회 계열 캠페인**(희망편지쓰기대회·가족그림편지쓰기대회·세계시민교육편지)이다. 이 계열은 학교·부모 DB 를 통해 **아동 본인 명의로 후원 약정을 맺는 모집 이벤트**여서 20세 미만 비중이 그 외 캠페인보다 압도적으로 높다(개발사건 단위 실측·문서10 §19 참조). 따라서 *''왜 10대 미만이 많은가''* 라는 질문에는 **''특정 아동 모집 캠페인(편지쓰기대회 계열) 때문이며 약정 당시 연령 기준이다''** 라고 답하면 된다 — 결측·오류로 설명하지 말 것. 🔴그러나 이 값은 **약정 당시에 굳은 스냅샷**이라 오래된 회원일수록 실제 나이와 벌어진다 — 독립 원천(SND_MEMBER_LIST 연령대 라벨)과 회원 단위 대조 시 불일치가 **전부 노화 방향**이었고, 약정연도가 오래될수록 격차가 단조 증가했다. ⚠️**현재 연령대는 산출 불가**다 — BRONZE 전체에 생년월일 컬럼이 없다. 따라서 ''현재 연령별'' 질문에 이 축으로 답하지 말 것. ⚠️''단체''·''기업''은 나이가 아니라 법인 구분이므로 연령 추이에서 제외할 것 · 원천 부재 시 NULL'
   )
   METRICS (
     fmm.TOTAL_PAID_FEE   AS SUM(fmm.PAID_FEE)
@@ -118,7 +139,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.AVG_PAID_FEE AS AVG(fmm.PAID_FEE)
       WITH SYNONYMS ('평균납입회비', '평균회비') COMMENT = '행(월×회원)당 평균 납입회비(원). HAS_BILLING=TRUE 전제 권장. PoC AVG_PAID 로직 이식.'
   )
-  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(회비 TM_PM_MBRFEE_ACMSLT·기부 TM_PM_DNTN_DTLS·개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC·증감 TM_MM_FDRM_MBER_IRSD·회원 TM_MM_FDRM_MBER_INFO) → SILVER(CRM_*) → GOLD(FMM). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비. 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분은 현재 스냅샷 기준(과거월도 현재값). 비활성(적재 대기): 캠페인/납입방식/후원사업/사유별 분해, 활동/누계/미납 카운트 비율, 신규기존 분해, 지역/연령대.'
+  COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(회비 TM_PM_MBRFEE_ACMSLT·기부 TM_PM_DNTN_DTLS·개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC·증감 TM_MM_FDRM_MBER_IRSD·회원 TM_MM_FDRM_MBER_INFO) → SILVER(CRM_*) → GOLD(FMM). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비. 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분/지역/연령대는 현재 스냅샷 기준(과거월도 현재값). [2026-08-04 O33] 지역·연령대 활성화(O27 as-of 배선 완료 — 종전 "적재 대기" 표기는 거짓이었다). 🔴[O34 확정] 지역·연령대는 **약정(개발) 시점 스냅샷**이며 **현재 값이 아니다** — 차원명에 _AT_PLEDGE 를 붙였다. 현재 연령·현재 거주지는 **산출 불가**(BRONZE 에 생년월일·현주소 축이 없다). ''10대 미만'' 최다는 실제이며 **편지쓰기대회 계열 아동 모집 캠페인** 때문이다(오류가 아니다) — 질문받으면 그 이벤트 성격으로 설명할 것. 🔴단 이 SV 에는 캠페인 축이 없어 **교차 확인은 SV_MEMBER_EVENT 에서** 해야 한다. [O33] 미납사유 활성화 — 단 코드그룹 5종이 섞여 있어 UNPAID_REASON_TYPE 동반 필수이고 미납 지표와 함께 쓸 때만 의미가 있다. 비활성(적재 대기): 캠페인/납입방식/후원사업별 분해, 활동/누계/미납 카운트 비율, 신규기존 분해. '
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·성별·회원상태 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 납부율·미납비중 등 비율은 총계 행에서 SUM 기반으로 정확히 산출한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
 
 -- 비활성(Phase-2/적재 후) — 구조 불변, 적재 완결 시 metric만 추가:
@@ -144,11 +165,18 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원', '회원속성')
-      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.'
+      COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.',
+    -- [2026-08-04 O33] 캠페인 축 활성화. FME.CAMPAIGN_SK 는 이미 배선돼 있었고 종전 SV COMMENT 의
+    --   "비활성(적재 대기): 캠페인별 분해" 가 거짓이었다. PK 유일(fan-out 0)·고아 0% 확인 후 노출.
+    campaign AS GN_DW.GOLD.DIM_CAMPAIGN
+      PRIMARY KEY (CAMPAIGN_SK)
+      WITH SYNONYMS ('캠페인', '모금 캠페인')
+      COMMENT = '캠페인 차원. PK 유일이라 조인이 행수를 늘리지 않는다. 🔴개발(DEV)행에만 배선된다 — 중단(STOP)행은 전건 ''(미매핑)''(SK=0)이다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_CMPGN · SILVER=CRM_CAMPAIGN.'
   )
   RELATIONSHIPS (
-    fme_to_date   AS fme (DATE_SK)   REFERENCES date,
-    fme_to_member AS fme (MEMBER_DK) REFERENCES member
+    fme_to_date     AS fme (DATE_SK)     REFERENCES date,
+    fme_to_member   AS fme (MEMBER_DK)   REFERENCES member,
+    fme_to_campaign AS fme (CAMPAIGN_SK) REFERENCES campaign
   )
   DIMENSIONS (
     date.EVENT_DATE   AS date.FULL_DATE     WITH SYNONYMS ('사건일', '발생일', '일자') COMMENT = '상태전이 발생일',
@@ -161,13 +189,30 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.DVLP_DIV_CD   AS fme.DVLP_DIV_CD    WITH SYNONYMS ('개발구분코드') COMMENT = '개발구분 원천코드(1=신규 2=증액 3=감액 4=재후원 5=후원중단). 라벨은 DVLP_DIV_NM',
     fme.JOIN_DATE     AS fme.JOIN_DATE      WITH SYNONYMS ('가입일')      COMMENT = '회원 가입일(유지기간 산출 기준)',
     fme.STOP_DATE     AS fme.STOP_DATE      WITH SYNONYMS ('중단일', '해지일') COMMENT = '회원 중단일',
+    -- [2026-08-04 O33] 중단사유·중단경로 축. FME 는 라벨 컬럼을 직접 보유하고 단일 코드그룹(MM005)이라
+    --   DIM_REASON 조인 없이 안전하다(FMM 쪽 사유와 달리 코드체계 혼입 없음).
+    fme.STOP_REASON_NAME  AS fme.STOP_REASON_NM  WITH SYNONYMS ('중단사유', '해지사유', '중단이유') COMMENT = '중단사유 라벨(정본 MM005 단일 코드체계 — 혼입 없음). 실제값 예: ''개인(경제적)사유''·''장기미납''·''신규미납''·''다른곳지원''·''명의변경''·''아동퇴소''·''회원항의''·''기타''. 🔴**중단(STOP) 사건 전용 축**이다 — 개발(DEV) 행은 원천에 사유가 없어 NULL 이다. 따라서 중단 지표(중단건·중단회원수)와 함께 쓸 것이며, 개발 지표와 교차하면 전건 NULL 로 뭉개진다',
+    fme.STOP_CHANNEL_NAME AS fme.STOP_CHANNEL_NM WITH SYNONYMS ('중단경로', '해지경로', '중단채널') COMMENT = '중단 접수경로 라벨. 🔴중단(STOP) 사건 전용 — 개발 행은 NULL. 중단사유와 같은 원천 행에서 온다',
+    -- [2026-08-04 O35] 사건시점 연령대·지역 축. 🔴 아래 4개 차원 모두 **개발(DEV) 사건 전용**이다
+    --   (중단 원천에는 연령·지역 컬럼이 구조적으로 없어 NULL). 이 SV 에는 캠페인 축이 함께 있으므로
+    --   **연령대 × 캠페인 교차**가 여기서 성립한다 — SV_MEMBER_MONTHLY 로는 불가하다.
+    fme.AGE_BAND_AT_EVENT AS fme.AGE_BAND_AT_EVENT WITH SYNONYMS ('연령대', '나이대', '사건시점 연령대', '약정시점 연령대', '개발시점 연령대') COMMENT = '🔴**개발약정(사건) 당시의** 회원 연령대 — **현재 나이가 아니다**. 코드사전 CM014. 실제값: ''10대 미만''·''10대''·''20대''·''30대''·''40대''·''50대''·''60대''·''70대''·''70대 이상''·''단체''·''기업''·''기타''. ✅라벨 매핑은 CM014 사전과 일치 검증됨. ✅''10대 미만''이 최다인 것도 **실제이며 데이터 오류가 아니다** — 원인은 **편지쓰기대회 계열 캠페인**(희망편지쓰기대회·가족그림편지쓰기대회·세계시민교육편지)이며 학교·부모 DB 를 통해 **아동 본인 명의로 후원 약정을 맺는 모집 이벤트**다. 🟢 **이 SV 에서 직접 확인할 수 있다** — 이 차원을 CAMPAIGN_NAME 과 교차하면 해당 계열의 ''10대 미만'' 비중이 그 외 캠페인보다 압도적으로 높은 것이 재현된다. 결측·기본값 오염으로 설명하지 말 것. ⚠️SV_MEMBER_MONTHLY 의 MEMBER_AGE_BAND_AT_PLEDGE 와 **다른 축**이다 — 그쪽은 회원 현재행이 담은 *최근* 약정 스냅샷이고 이 차원은 *그 사건* 당시 값이라 값이 다를 수 있다(사건시점이 정확하다). 🔴개발(DEV) 사건 전용 — 중단(STOP) 행은 원천에 컬럼이 없어 NULL 이며 ''미상''이 아니다',
+    fme.AGE_CD_AT_EVENT   AS fme.AGE_AT_EVENT      WITH SYNONYMS ('연령대코드') COMMENT = '사건시점 연령대 원천코드(CM014 1=10대 미만 2=10대 3=20대 4=30대 5=40대 6=50대 7=60대 8=70대 9=70대 이상 10=단체 11=기업 12=기타). 🔴연속형 나이가 아니므로 평균·구간 재계산 금지. 라벨은 AGE_BAND_AT_EVENT. 개발(DEV) 사건 전용',
+    fme.REGION_AT_EVENT   AS fme.REGION_AT_EVENT   WITH SYNONYMS ('지역', '시도', '사건시점 지역', '약정시점 지역') COMMENT = '🔴**개발약정(사건) 당시의** 회원 지역 라벨 — **현재 거주지가 아니다**. 정본 공#131 · 코드사전 CM018 약칭. 실제값: ''서울''·''경기''·''인천''·''강원''·''대전''·''대구''·''부산''·''광주''·''울산''·''세종''·''충남''·''충북''·''전남''·''전북''·''경남''·''경북''·''제주''·''기타''. ⚠️''현재 거주지역별'' 질문에는 답할 수 없다 — BRONZE 에 현주소 축이 없다(O34). ⚠️센티넬 코드 ''0''은 사전에 라벨이 없어 NULL 이다 — ''미상''으로 창작하지 말 것. ⚠️SV_MEMBER_MONTHLY 의 MEMBER_REGION_AT_PLEDGE(최근 약정 스냅샷)와 **다른 축**이며 이사 등으로 값이 다를 수 있다. 🔴개발(DEV) 사건 전용 — 중단 행은 NULL',
+    fme.AREA_CD_AT_EVENT  AS fme.AREA_CD_AT_EVENT  WITH SYNONYMS ('지역코드') COMMENT = '사건시점 지역 원천코드(CM018 + 라벨 없는 센티넬 ''0''). 라벨은 REGION_AT_EVENT. 개발(DEV) 사건 전용',
     member.GENDER_NAME   AS member.GENDER_NAME   WITH SYNONYMS ('성별')     COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨). ⚠ 종전 코드값(''M''/''F''/''U'') 노출 → O26 교정',
     member.SEX           AS member.SEX           WITH SYNONYMS ('성별코드') COMMENT = '성별 원천코드(CM013). 이 차원의 실제값 8종 1~8 (+미기재 NULL). ⚠회원 마스터에 ''0''은 없다 — sentinel ''0''은 개발·증감 원천에만 존재하므로 ''0'' 조건은 0행. 라벨은 GENDER_NAME(분석)·SEX_NM(원천)',
     member.SEX_NM        AS member.SEX_NM        WITH SYNONYMS ('성별상세', '국내외국인') COMMENT = 'CM013 원천 라벨 8종(국내(남자)·외국인(여자)·단체·기업 등). 국내/외국인 구분용',
     member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(공#132, MM010)',
     member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드') COMMENT = '회원상태 원천코드(MM010 1~12)',
     member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018): 개인·기업·단체',
-    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018)'
+    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018)',
+    -- [2026-08-04 O33] 캠페인 축. 🔴 아래 5개 차원 모두 **개발(DEV) 사건 전용**이다.
+    campaign.CAMPAIGN_NAME      AS campaign.CAMPAIGN_NAME      WITH SYNONYMS ('캠페인', '캠페인명', '모금캠페인') COMMENT = '캠페인명. 🔴**개발(DEV) 사건 전용 축**이다 — 중단(STOP) 사건은 원천에 캠페인이 없어 전건 ''(미매핑)''으로 뭉개진다. 따라서 ''캠페인별 중단건''은 답이 나오지 않는다(''(미매핑)'' 한 덩어리). 캠페인별 분해는 개발 지표(개발건·개발회원수·증액/감액)에만 쓸 것',
+    campaign.CAMPAIGN_BRAND     AS campaign.BRAND              WITH SYNONYMS ('브랜드', '캠페인 브랜드') COMMENT = '캠페인 브랜드. 개발(DEV) 사건 전용(위 CAMPAIGN_NAME 주의사항 동일)',
+    campaign.CAMPAIGN_TYPE      AS campaign.CAMPAIGN_TYPE      WITH SYNONYMS ('캠페인유형', '캠페인 종류') COMMENT = '캠페인 유형. 개발(DEV) 사건 전용',
+    campaign.CAMPAIGN_INFLOW_PATH AS campaign.INFLOW_PATH      WITH SYNONYMS ('유입경로', '캠페인 유입경로') COMMENT = '캠페인 유입경로. 개발(DEV) 사건 전용. ⚠️회원 가입경로(DIM_MEMBER.JOIN_PATH_CD/ENROLL_PATH_NAME)와 다른 축이다 — 이쪽은 캠페인 속성이고 그쪽은 회원 속성이다',
+    campaign.DOMESTIC_OVERSEAS  AS campaign.DOMESTIC_OVERSEAS  WITH SYNONYMS ('국내해외', '국내외') COMMENT = '캠페인 국내/해외 구분. 개발(DEV) 사건 전용'
   )
   METRICS (
     fme.TOTAL_DEV_CNT     AS SUM(fme.DEV_CNT)
@@ -194,8 +239,8 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     -- ⚠ AVG_RETENTION_MONTHS(신4 유지기간) 미노출: 개발행에 JOIN_DATE·중단행에 STOP_DATE가 서로 다른 행에
     --   있어 행별 DATEDIFF가 전건 NULL이고 LAST_STOP_DATE도 미적재 → 산출 불가. 근거·경위 = 04 §6.9-(2) 계열.
   )
-  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC) → SILVER(CRM_MEMBER_DEV+CRM_MEMBER_DISCONTINUE) → GOLD(FME). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 개발/중단 건·고유회원수 · **개발구분 5종(신규·증액·감액·재후원·후원중단, 정본 MM015) · 증액/감액 금액·회원수**(2026-08-03 O24 신설). 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)으로 Phase-1 산출 불가 → Agent/Phase-2 확장. 비활성(적재 대기): 조직/캠페인/후원사업/사유별 분해, 신규기존 분해, 미납중단.'
-  AI_SQL_GENERATION '핵심 규칙: (1) **상태(증액·감액·신규·재후원·후원중단)를 묻는 질문은 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터한다** — EVENT_TYPE 은 실제값이 ''DEV''/''STOP'' 2종뿐인 원천 계통축이라 ''증액'' 등으로 필터하면 0행이 된다(O24). (2) **중단 이중계상 금지**: 중단 규모는 TOTAL_STOP_CNT(중단원천) 하나만 쓴다. DVLP_DIV_NM=''후원중단'' 행수를 여기에 더하면 동일 사건이 두 번 세어진다(동일 회원·일자 99.99% 중복, O24 현업확인 대기). 사용자가 "전체 중단"을 물으면 TOTAL_STOP_CNT 로 답하고 개발원천 측 중단 기록이 별도로 존재함을 각주로 밝힌다. (3) **개발 규모는 TOTAL_DEV_CNT 를 쓴다** — 정본 공#121 개발구분 = 신규·증액·재후원 한정이며 감액·후원중단은 제외된다. DVLP_DIV_NM 전체 행수를 개발실적으로 세지 않는다. (4) 증액·감액 금액은 원금액이다. 정본 `(건)` 지표는 금액÷10,000 이므로 "증액(건)"을 물으면 금액÷10,000 로 산출하고 단위를 명시한다. 감액 금액은 **음수**로 저장돼 있으니 규모를 말할 때 절대값 여부를 밝힌다. (5) 증액·감액 metric 은 **사건 발생일 기준**이며 정본 공#150·#151·#38(월 마감 시 전월 대비 활동 증감 = 월말 스냅샷)과 **정의가 다르다** — 정본 수치와 대조하는 질문에는 이 차이를 반드시 명시한다. (6) 적용 조건(기간·그룹 모두 미지정 시): 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
+  COMMENT = 'Phase-1 회원 상태전이 SV(base FME, 일 grain). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC) → SILVER(CRM_MEMBER_DEV+CRM_MEMBER_DISCONTINUE) → GOLD(FME). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 개발/중단 건·고유회원수 · **개발구분 5종(신규·증액·감액·재후원·후원중단, 정본 MM015) · 증액/감액 금액·회원수**(2026-08-03 O24 신설). 시간=전체가능. 유지기간/유지율/LTV(신4·6~8)는 가입↔중단 페어링(LAST_STOP_DATE 미적재·FME 행별 단일일자)으로 Phase-1 산출 불가 → Agent/Phase-2 확장. [2026-08-04 O33] **캠페인 축 활성화** — 단 개발(DEV) 사건 전용이다(중단 사건은 원천에 캠페인 부재로 전건 (미매핑)). 종전 "적재 대기" 표기는 거짓이었다. 비활성(적재 대기): 조직/후원사업별 분해, 신규기존 분해, 미납중단. [O33] **중단사유·중단경로 활성화** — 단일 코드체계(MM005)로 혼입 없음. 🔴중단(STOP) 사건 전용이다(개발 행은 원천에 사유 부재로 NULL). [2026-08-04 O35] **사건시점 연령대·지역 활성화** — GOLD FME 에 개발약정 사건행별 값을 전파해(AGE_BAND_AT_EVENT·REGION_AT_EVENT + 코드쌍) 이 SV 안에서 **연령대 × 캠페인 교차**가 성립한다. 🔴이 축은 **사건 당시** 값이며 SV_MEMBER_MONTHLY 의 _AT_PLEDGE(최근 약정 스냅샷)와 다른 축이다 — 사건시점이 정확하다. 🔴개발(DEV) 사건 전용(중단 원천에 연령·지역 컬럼이 구조적으로 부재).'
+  AI_SQL_GENERATION '핵심 규칙: (1) **상태(증액·감액·신규·재후원·후원중단)를 묻는 질문은 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터한다** — EVENT_TYPE 은 실제값이 ''DEV''/''STOP'' 2종뿐인 원천 계통축이라 ''증액'' 등으로 필터하면 0행이 된다(O24). (2) **중단 이중계상 금지**: 중단 규모는 TOTAL_STOP_CNT(중단원천) 하나만 쓴다. DVLP_DIV_NM=''후원중단'' 행수를 여기에 더하면 동일 사건이 두 번 세어진다(동일 회원·일자 99.99% 중복, O24 현업확인 대기). 사용자가 "전체 중단"을 물으면 TOTAL_STOP_CNT 로 답하고 개발원천 측 중단 기록이 별도로 존재함을 각주로 밝힌다. (3) **개발 규모는 TOTAL_DEV_CNT 를 쓴다** — 정본 공#121 개발구분 = 신규·증액·재후원 한정이며 감액·후원중단은 제외된다. DVLP_DIV_NM 전체 행수를 개발실적으로 세지 않는다. (4) 증액·감액 금액은 원금액이다. 정본 `(건)` 지표는 금액÷10,000 이므로 "증액(건)"을 물으면 금액÷10,000 로 산출하고 단위를 명시한다. 감액 금액은 **음수**로 저장돼 있으니 규모를 말할 때 절대값 여부를 밝힌다. (5) 증액·감액 metric 은 **사건 발생일 기준**이며 정본 공#150·#151·#38(월 마감 시 전월 대비 활동 증감 = 월말 스냅샷)과 **정의가 다르다** — 정본 수치와 대조하는 질문에는 이 차이를 반드시 명시한다. (6) 적용 조건(기간·그룹 모두 미지정 시): 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다. (7) **연령대·지역은 사건시점 축이다**(O35): AGE_BAND_AT_EVENT·REGION_AT_EVENT 는 개발약정 당시 값이며 **현재 나이·현재 거주지가 아니다** — "현재 연령대별/거주지역별" 질문에는 산출 불가를 밝히고(BRONZE 에 생년월일·현주소 축 없음) 약정 시점 기준으로 답하되 그 전제를 명시한다. 개발(DEV) 사건 전용이므로 **중단 지표와 교차하면 전건 NULL** 이다 — 개발 지표(TOTAL_DEV_CNT·DEV_MEMBER_COUNT)와 함께 쓴다. **"10대 미만이 왜 많은가"류 질문에는 추측하지 말고 AGE_BAND_AT_EVENT × CAMPAIGN_NAME 을 실제로 교차 집계해 편지쓰기대회 계열 캠페인의 편중을 수치로 보여준 뒤 설명한다** — 데이터 오류·결측으로 설명하지 않는다. SV_MEMBER_MONTHLY 의 _AT_PLEDGE 축 값과 다를 수 있고 이 SV 쪽이 사건시점 정확값이다.';
 
 
 /* =====================================================================================
@@ -659,4 +704,5 @@ SHOW GRANTS ON VIEW GN_DW.SERVING.FACT_AD_COMBINED;
 --   판정: OWNERSHIP(GN_DW_ADMIN) + SELECT × ANALYST·VIEWER·SERVICE
 
 --   ▶ Agent(AGENT_MEMBER·AGENT_OVERALL) 의 grant·CoWork SI 검증은 이 파일 소관이 아니다
---     → 09_AGENT_spec_구현.sql [5] 참조.
+--     → **09_1_AGENT_생성.sql [6] 검증절** 참조(구 `09_AGENT_spec_구현.sql [5]` — 그 파일은
+--       [DEPRECATED 2026-07-31] 포인터 스텁이다. O36 교정).

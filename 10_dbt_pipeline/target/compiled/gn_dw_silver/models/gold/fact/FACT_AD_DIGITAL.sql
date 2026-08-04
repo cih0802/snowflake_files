@@ -30,5 +30,5 @@ select
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '5ef82815-e89f-4a45-805d-207f49bbc068'                    AS DW_BATCH_ID
+    '843ce7ab-b507-4121-a0e3-e64a56430f9c'                    AS DW_BATCH_ID
 from GN_DW.SILVER.AGENCY_AD_DIGITAL

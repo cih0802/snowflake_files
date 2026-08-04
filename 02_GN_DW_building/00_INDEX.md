@@ -170,4 +170,4 @@ principles:
 | `04_운영.md` | 5~8 | dbt 파이프라인, 테스트, 보안(네트워크/마스킹/MFA), 모니터링 |
 | `05_ARCHITECTURE.md` | overview | 전체 아키텍처 다이어그램, 데이터 흐름, RBAC, WH, DAG, SERVING 조감도 |
 | `06_RUNBOOK.md` | operations | 운영 매뉴얼 — 일상점검, 장애대응, 수동실행, 보안사고 대응 |
-| `07_ENVIRONMENT_RBAC_setup.sql` | setup(실행) | 0단계 부트스트랩 SQL — WH 3·역할 6+계층·WH/스키마 grant·SERVING 스키마·CoWork object·helper 뷰 2. 01·03 §3.8 설계의 **실행 정본**(05_SV-Agent_ai/02_SERVING_setup.sql에서 이관) |
+| `07_ENVIRONMENT_RBAC_setup.sql` | setup(실행) | 0단계 부트스트랩 SQL — WH 3·역할 6+계층·WH/스키마 grant·SERVING **스키마**·CoWork object. 01·03 §3.8 설계의 **실행 정본**(05_SV-Agent_ai/02_SERVING_setup.sql에서 이관). 🔴 [2026-08-04 O36] 종전 '**helper 뷰 2**' 표기는 **거짓**이었다 — `DIM_MONTH`·`DIM_MEMBER_CURRENT` 는 이 파일에 없고 **`08_After_Deploy_DBT.sql` §G** 가 정본이다 |

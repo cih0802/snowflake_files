@@ -76,7 +76,7 @@ USE WAREHOUSE GN_DW_DEV_WH;
 
 CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
-  COMMENT = 'BRONZE→SILVER 38 + SILVER→GOLD 27(dim 15 + fact 12) + WIDE VIEW 12 = 77 models. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. 정본 09_SILVER_적재쿼리_20260714, 03_top-down_gold/06_DDL.';
 
 SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
@@ -108,12 +108,12 @@ DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;   -- default_version / default_versi
 --        변경 요약은 ① 선택적 **alias**(식별자 규칙: 공백·특수문자 불가) ② 프로젝트 COMMENT(아래 3)
 --        ③ 본 문서/`00_배포운영_통합 §0` 이력에 남긴다.
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION CAMPAIGN_4AXIS_20260730
+  ADD VERSION SV_MEM_EVENT_AGE_20260804
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER 38 + SILVER→GOLD 27(dim 15 + fact 12) + WIDE VIEW 12 = 77 models. [v2 20260730] 캠페인 분류 4축 라벨화(DEC-17)·DIM_CAMPAIGN 의미혼입 교정(DEC-17-A)·XREF MEMBER_DK not_null 스코프 교정. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260804] sv_mem_event 연령대 채움. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
 
 -- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
@@ -207,10 +207,29 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Step 5 — SERVING 계층 (본 파일 범위 밖, 순서 참고용)
 -- ─────────────────────────────────────────────────────────────────────────────
+-- 🔴 [2026-08-04 전면 교정] 종전 이 절은 **세 곳이 틀렸다**. 실측으로 확인해 바로잡았다.
+--    ① helper 뷰 정본을 `02_SERVING_setup.sql` / `07 §E+§G` 로 지목했는데 둘 다 아니다 —
+--       `02_SERVING_setup.sql` 은 포인터 스텁이고, `07_ENVIRONMENT_RBAC_setup.sql` 에는
+--       `DIM_MONTH`·`DIM_MEMBER_CURRENT` 가 **한 줄도 없다**(grep 확인).
+--       실제 정본은 **`02_GN_DW_building/08_After_Deploy_DBT.sql` §G** 다(런북 §11.3-B 가 이미
+--       같은 오류를 자기교정했는데 이 파일에 반영되지 않아 「닫힌 링크」로 남아 있었다).
+--    ② `13_SV_AD_배포_추가작업.sql` 은 `[DEPRECATED 2026-07-31]` 이며 **실행 가능한 라인이 0개**다.
+--       `FACT_AD_COMBINED` 는 **`05_SV_DDL.sql` 이 만든다**(398행).
+--    ③ Agent 단계가 아예 빠져 있었다 — 특히 `09_2` 누락은 Agent 를 껍데기로 남긴다.
+--
 -- dbt 는 SILVER/GOLD 까지만 소유. SV/Agent 를 쓰려면 아래를 **이 순서대로** 별도 실행:
---   1. 05_SV-Agent_ai/02_SERVING_setup.sql
---        또는 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql §E(grant) + §G(helper 뷰)
---        → DIM_MONTH · DIM_MEMBER_CURRENT 생성  ★ SV DDL 보다 반드시 먼저
---   2. 05_SV-Agent_ai/13_SV_AD_배포_추가작업.sql  → FACT_AD_COMBINED pre-join 뷰
---   3. 05_SV-Agent_ai/05_SV_DDL.sql               → CREATE SEMANTIC VIEW
--- 미실행 시 증상: "Table 'GN_DW.SERVING.DIM_MONTH' does not exist or not authorized"
+--   1. 02_GN_DW_building/08_After_Deploy_DBT.sql   → DBT PROJECT GRANT + SERVING GRANT + CoWork
+--        §G.1 SERVING.DIM_MONTH · §G.2 SERVING.DIM_MEMBER_CURRENT
+--        ★ SV DDL 보다 반드시 먼저 (SV 가 논리테이블로 참조한다)
+--   2. 05_SV-Agent_ai/05_SV_DDL.sql                → SERVING.FACT_AD_COMBINED + SEMANTIC VIEW 6종
+--        🔴 반드시 `USE ROLE GN_DW_ADMIN` (ACCOUNTADMIN 으로 만들면 이후 재배포가 막힌다)
+--   3. 05_SV-Agent_ai/09_1_AGENT_생성.sql          → Agent **껍데기** + USAGE grant + CoWork SI
+--   4. 05_SV-Agent_ai/09_2_AGENT_버전업.sql        → 🔴 **Agent 스펙 본문(도구·instruction)**
+--
+-- 미실행 시 증상:
+--   1 누락 → "Table 'GN_DW.SERVING.DIM_MONTH' does not exist or not authorized"
+--   4 누락 → Agent 객체는 생기고 UI 에도 보이는데 스펙이 `{"models":{"orchestration":"auto"}}` —
+--            **도구 0개·instruction 0개**로 질의에 전혀 답하지 못한다(2026-08-04 실측된 실제 상태).
+--
+-- 전체 재구축·신규 계정 순서 정본 = `02_GN_DW_building/06_RUNBOOK.md` §11.2-B(기존 계정 최소경로)
+--                                  · **§11.2-C(신규 계정 · BRONZE 만 있는 계정)**

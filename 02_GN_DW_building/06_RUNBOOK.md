@@ -28,6 +28,7 @@ last_updated: 2026-07-22
 8. [보안 사고 대응](#8-보안-사고-대응)
 9. [긴급 연락망 / 에스컬레이션](#9-긴급-연락망--에스컬레이션)
 10. [Phase-1 검증 로그 (2026-07-22)](#10-phase-1-검증-로그-2026-07-22)
+11. [🔴 전체 재구축 순서 (TEARDOWN → 재생성)](#11--전체-재구축-순서-teardown--재생성)
 
 ---
 
@@ -150,9 +151,40 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='run --select FACT_MEMBER_MONTHLY
 
 ### 3.3 GOLD DDL 변경 반영
 
+> 🔴 **[2026-08-04 O30 교정] 종전 이 절은 *"06_DDL.sql 재실행 후 dbt build"* 라고만 적혀 있었다.**
+> `06_DDL.sql` 은 전부 `CREATE OR REPLACE TABLE` 이다 — **재실행하면 데이터·FK·GRANT 가 전부 파괴**되고,
+> 정본 DDL 에 접히지 않은 물리 `ALTER` 변경도 함께 소실된다. 실제로 2026-08-03 이 경로로
+> **`dbt build` ERROR 3 · SKIP 68 · GOLD 뷰 5종 소실 · SERVING 전멸** 사고가 났다(문서10 §19 · P57).
+> **평상시 컬럼 변경에 `06_DDL.sql` 을 재실행하지 말 것.** 재실행은 §11 전체 재구축 때만이다.
+
+**평상시 컬럼 추가·변경 절차 (데이터 보존)**
+
 ```sql
--- star schema 컬럼 변경 시: 03_top-down_gold/06_DDL.sql 재실행 후 dbt build
--- (예: FMM HAS_BILLING 추가처럼 스키마 변경이 선행되는 경우)
+-- ① 물리에 ALTER 로 반영 (CREATE OR REPLACE 금지 — FK·GRANT 보존)
+USE ROLE GN_DW_ADMIN;
+ALTER TABLE GN_DW.GOLD.<T> ADD COLUMN IF NOT EXISTS <C> <TYPE>;
+ALTER TABLE GN_DW.GOLD.<T> ALTER COLUMN <C> COMMENT '<...>';   -- RENAME 은 구 COMMENT 를 승계한다(P33)
+
+-- ② 🔴 같은 세션에 정본 DDL 도 고친다 = 03_top-down_gold/06_DDL.sql
+--    (SILVER 는 04_silver_design/08_SILVER_테이블DDL_20260714.sql)
+--    이 단계를 빠뜨리면 다음 재구축이 ①을 조용히 되돌린다 — O30 의 직접 원인이다.
+
+-- ③ 모델 산출 컬럼도 맞춘다 (10_dbt_pipeline/models/…)
+--    ⚠️ dbt incremental 은 '대상 테이블에 없는 산출 컬럼'을 에러 없이 버린다.
+--       모델에만 있는 컬럼은 무증상으로 폐기되므로 테스트로 잡히지 않는다.
+
+-- ④ dbt build
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+```
+
+**완료 판정 (문서 아님 — 실측)**
+
+```sql
+-- 정본 DDL ↔ 물리 컬럼 집합이 양방향으로 일치하는지 확인한다.
+--   06_DDL.sql 의 해당 CREATE 문을 임시 이름으로 실행해 컬럼을 비교하고 DROP 한다.
+--   (본 방식으로 2026-08-04 DIM_MEMBER 30컬럼 == 물리 30컬럼 확인)
+SELECT COLUMN_NAME FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='GOLD' AND TABLE_NAME='<T>' ORDER BY ORDINAL_POSITION;
 ```
 
 > ⛔ 예측(Forecast) 파이프라인은 제외 결정(2026-07-10)으로 미운영.
@@ -457,6 +489,218 @@ SHOW GRANTS TO ROLE GN_DW_VIEWER;
 SHOW GRANTS ON SCHEMA GN_DW.SERVING;
 SHOW GRANTS ON DATABASE GN_DW;
 ```
+
+---
+
+## 11. 🔴 전체 재구축 순서 (TEARDOWN → 재생성)
+
+> **작성 2026-08-04 (O30 사고 후속) · 정본 진단 = `20_issue/10_진단_원인분석.md` §19**
+>
+> 🔴 **이 절은 "데이터를 버리고 처음부터 만든다"는 결정이 이미 내려진 경우에만 쓴다.**
+> 평상시 컬럼 변경은 **§3.3** 이다. 이 절의 ①②는 `CREATE OR REPLACE TABLE` 이라
+> **데이터·FK·GRANT 를 전부 파괴**한다.
+
+### 11.0 사고 이력 — 왜 이 절이 생겼는가
+
+2026-08-03 20:55~21:38 전체 재구축이 실행됐고, **정본 DDL 에 접히지 않은 물리 `ALTER` 변경만
+되돌아가** `dbt build` 가 깨졌다.
+
+| 결과 | 실측 |
+|---|---|
+| dbt build | ERROR 3 · SKIP 68 (모델 9 + 테스트 59) |
+| 소실된 변경집합 | O26 SILVER 개명 2컬럼 · O27 `DIM_MEMBER` 4추가/3삭제 — **둘 다 정본 DDL 미동기화** |
+| 무사한 변경집합 | DEC-30 구조변경 · O25 SILVER 38컬럼 · O28/O29 COMMENT 가드 — **정본 DDL 에 접혀 있었다** |
+| 부수 피해 | GOLD 뷰 5종 미생성 · SERVING 객체 0건 · 빈 테이블 9종 |
+
+**교훈 P57**: 재구축은 **정본 DDL 파일을 실행**한다. 정본에 접히지 않은 `ALTER` 는
+「다음 재구축까지만 유효한 임시 패치」다.
+
+### 11.1 사전 점검 (재구축 전에 반드시)
+
+```sql
+-- ① 정본 DDL ↔ 현재 물리 구조가 어긋난 곳이 없는지 먼저 확인한다.
+--    어긋난 채로 재구축하면 그 차이가 '조용히' 사라진다.
+--    → 모델 산출 컬럼 vs 물리 컬럼 양방향 대조 (§3.3 완료 판정과 동일 방법)
+
+-- ② 물리에만 있는 ALTER 변경이 남아 있으면 지금 정본 DDL 에 접는다.
+--    미접힘 이력: O26(→08_SILVER_테이블DDL) · O27(→06_DDL.sql) — 2026-08-04 접기 완료
+
+-- ③ BRONZE 재적재 가능 여부 확인 (원천 파일·스테이지 존재)
+SELECT TABLE_SCHEMA, COUNT(*) TBLS, SUM(ROW_COUNT) ROWS
+FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
+```
+
+### 11.2 현재 상태 (2026-08-04 실측) — 어디까지 되어 있는가
+
+| 단계 | 상태 | 근거 |
+|---|---|---|
+| 0 환경·RBAC (`07_ENVIRONMENT_RBAC_setup.sql`) | ✅ 완료 | 역할 6종 생성 2026-08-03 20:55 · 스키마 11종(OPS·SERVING 포함) 존재 |
+| 0b BRONZE | ✅ 완료 | 51테이블 · 112,512,201행 |
+| ① `06_DDL.sql` (GOLD 28) | ✅ 완료 | — |
+| ② `08_SILVER_테이블DDL` (SILVER 38) | ✅ 완료 | — |
+| **정본 DDL ↔ 물리 정합** | ✅ **불일치 0** | **66테이블 전수 대조**(정본 선언 컬럼 vs `INFORMATION_SCHEMA`) |
+| DBT PROJECT `GN_DW.OPS.DW_PIPELINE` | 🔴 **미존재** | `SHOW DBT PROJECTS IN DATABASE GN_DW` = 0행 (재구축이 삭제) |
+| ③ dbt build | 🔴 미완 | 빈 테이블 9종 · GOLD 뷰 5종 미생성 |
+| ④ SERVING | 🔴 미완 | SERVING 객체 0건 |
+
+> 🔴 **①②를 다시 실행할 필요가 없다.** 2026-08-04 복구로 물리 구조가 정본 DDL 과 **완전히 일치**한다
+> (66테이블 양방향 차집합 0). 재실행하면 **SILVER·GOLD 데이터가 전량 삭제**되고 ③을 다시 돌려야 한다.
+> ①②는 **DB 를 처음부터 만들 때만** 쓴다.
+
+### 11.2-B 실행 순서 (지금 시점 · 최소 경로)
+
+```
+1) deploy_dbt_project.sql          ← 🔴 DBT PROJECT 가 없다. 3)의 GRANT 전제조건
+     10_dbt_pipeline/deploy_dbt_project.sql
+     · CREATE SCHEMA GN_DW.OPS (멱등) + GRANT CREATE DBT PROJECT
+     · CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE FROM '…/versions/live'
+     ⚠️ 이미 있으면 IF NOT EXISTS 가 '아무 일도 안 함' → 구버전이 그대로 실행된다.
+        모델을 고친 뒤라면 ALTER DBT PROJECT … ADD VERSION 으로 새 버전을 올려야 한다.
+        (2026-08-04 DIM_AD_CREATIVE 모델 수정분이 여기에 해당)
+
+2) dbt build                        ← SILVER·GOLD 적재 + GOLD 뷰 13종 생성
+     EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --target dev';
+     또는 워크스페이스 직접 실행(project_root='/10_dbt_pipeline')
+     ⚠️ 워크스페이스 직접 실행은 live 파일을 읽으므로 1) 없이도 되지만,
+        그 경우 3)의 DBT PROJECT GRANT 3줄은 여전히 실패한다.
+
+3) 08_After_Deploy_DBT.sql          ← DBT PROJECT GRANT + SERVING GRANT + CoWork + helper 뷰 2
+     02_GN_DW_building/08_After_Deploy_DBT.sql
+     · §G.1 SERVING.DIM_MONTH          ← GOLD.DIM_DATE
+     · §G.2 SERVING.DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER  (2026-08-04 O27 반영)
+     ⚠️ 역할이 ACCOUNTADMIN ↔ GN_DW_ADMIN 으로 바뀐다. 스크립트의 USE ROLE 을 지킬 것.
+
+4) 05_SV_DDL.sql                    ← SERVING.FACT_AD_COMBINED + SV 6종
+     05_SV-Agent_ai/05_SV_DDL.sql
+     · 3)의 helper 뷰 2종을 논리테이블로 참조한다(DIM_MEMBER_CURRENT 4곳 · DIM_MONTH 2곳)
+     · 🔴 반드시 `USE ROLE GN_DW_ADMIN` 으로 실행(ACCOUNTADMIN 으로 만들면 소유권이 어긋나
+       이후 재배포가 권한 오류로 막힌다 — 05 파일 15~16행)
+
+5) 09_1_AGENT_생성.sql              ← Agent **껍데기**만 (최소 스펙·소유권·USAGE grant·CoWork SI)
+     05_SV-Agent_ai/09_1_AGENT_생성.sql
+
+6) 09_2_AGENT_버전업.sql            ← 🔴 **스펙 본문 적용. 이 단계를 빼면 Agent 가 아무것도 못 한다**
+     05_SV-Agent_ai/09_2_AGENT_버전업.sql
+     · 정본 = cortex_project/agents/<AGENT>/agent_spec.yaml (stage 에서 직접 읽는다)
+     · `ALTER AGENT … ADD VERSION FROM <stage dir>` → 새 버전 자동 is_default · 이전 버전 보존
+     · GRANT·CoWork SI 를 파괴하지 않는다(2026-08-04 실측: USAGE 3종 잔존)
+     ⚠️ 성공 메시지가 `Version nullsuccessfully created` 로 보이는 것은 표시 버그다
+     🔴 **미실행 시 증상**: Agent 객체는 생기고 UI 에도 보이지만 스펙이
+        `{"models":{"orchestration":"auto"}}` — **도구 0개·instruction 0개**로 질의에 답하지 못한다.
+        2026-08-04 재구축 후 실제로 이 상태였다(§19-I 최소경로가 이 단계를 누락하고 있었다).
+
+※ O28_O29_COMMENT_GUARD.sql          ← 선택(상세화). 11.3 참조
+```
+
+> 🔴 **[2026-08-04 교정] 종전 이 목록의 5단계 `13_SV_AD_배포_추가작업.sql` 은 삭제됐다.**
+> 그 파일은 `[DEPRECATED 2026-07-31]` 이며 **실행 가능한 라인이 0개**다(전량 주석 · 내용은 05·09 로
+> 이관 완료). 실행해도 아무 일이 없으므로 파괴적이지는 않지만 **「했다」는 착각을 만든다.**
+> 같은 이유로 `09_AGENT_spec_구현.sql`(구 09)·`02_SERVING_setup.sql` 도 실행 대상이 아니다.
+> 그리고 종전 목록은 **`09_2` 를 아예 담고 있지 않았다** — 그래서 Agent 가 껍데기로 남았다.
+
+### 11.2-C 🆕 신규 계정 재현 순서 (BRONZE 만 있는 계정 · 2026-08-04 신설)
+
+> §11.2-B 는 *"이미 만들어진 계정에서 dbt 이후가 날아간 경우"* 의 최소 경로다.
+> **DB 를 처음부터 만드는 경우는 아래 순서**이며, ①② 를 반드시 포함한다.
+
+| # | 파일 | 실행 역할 | 산출물 |
+|---|---|---|---|
+| **0** | `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` | 파일이 SYSADMIN→SECURITYADMIN→ACCOUNTADMIN→GN_DW_ADMIN 으로 전환 | WH 3 · 역할 6 · DATABASE · 스키마 11 · GRANT(FUTURE 포함) · CoWork SI object |
+| ① | `03_top-down_gold/06_DDL.sql` | GN_DW_ADMIN | GOLD 28테이블 |
+| ② | `04_silver_design/08_SILVER_테이블DDL_20260714.sql` | GN_DW_ADMIN | SILVER 38테이블 |
+| ③ | `10_dbt_pipeline/deploy_dbt_project.sql` | ACCOUNTADMIN→GN_DW_ADMIN | `GN_DW.OPS.DW_PIPELINE` |
+| ④ | **dbt build** | GN_DW_ADMIN(또는 ENGINEER) | SILVER·GOLD 적재 + GOLD 뷰 13종 |
+| ⑤ | `02_GN_DW_building/08_After_Deploy_DBT.sql` | GN_DW_ADMIN↔ACCOUNTADMIN 전환 | DBT PROJECT GRANT · **§G SERVING helper 뷰 2종** · SERVING GRANT · CoWork |
+| ⑥ | `05_SV-Agent_ai/05_SV_DDL.sql` | 🔴 GN_DW_ADMIN | `FACT_AD_COMBINED` + SV 6종 + §7 GRANT + §8 스모크 |
+| ⑦ | `05_SV-Agent_ai/09_1_AGENT_생성.sql` | GN_DW_ADMIN | Agent 껍데기 2종 |
+| ⑧ | `05_SV-Agent_ai/09_2_AGENT_버전업.sql` | GN_DW_ADMIN | 🔴 Agent 스펙 본문 |
+
+🔴 **0 을 건너뛰면 ① 이 첫 줄에서 죽는다** — `06_DDL.sql` 41~42행이 `USE ROLE GN_DW_ADMIN` ·
+`USE WAREHOUSE GN_DW_DEV_WH` 이고 둘 다 `07` 이 만든다. `SILVER`·`GOLD`·`SERVING`·`OPS` 스키마도 없다.
+**BRONZE 가 이미 있는 계정이어도 0 은 실행한다** — `07` 의 BRONZE 관련 구문은 전부 `IF NOT EXISTS`
+(스키마 생성·GRANT)이며 **BRONZE 테이블·데이터는 건드리지 않는다.**
+
+⚠️ ③ 의 `deploy_dbt_project.sql` 은 현재 Step 1-2(`ALTER … ADD VERSION <별칭>`)와 Step 3(build)이
+주석 해제 상태다. 신규 계정에서 통째로 실행하면 `CREATE`(VERSION$1) 직후 **동일 내용의 VERSION$2** 가
+생긴다(무해하나 불필요). 신규 계정에서는 **Step 1-1 → Step 2 → Step 3** 만 실행한다.
+반대로 ④ 는 그 Step 3 에 포함돼 있으므로 별도 실행이 불요할 수 있다 — 파일 상태를 보고 판단한다.
+
+**①② 를 다시 실행하지 말아야 하는 경우** = §11.2 참조(기존 계정). 두 파일은 전부
+`CREATE OR REPLACE TABLE` 이라 **데이터·FK·GRANT 를 파괴**한다.
+
+
+**의존 관계 요약** (§11.2-B·§11.2-C 공통)
+
+| 산출물 | 선행 필요 | 이유 |
+|---|---|---|
+| `06_DDL.sql`·`08_SILVER_테이블DDL` | **`07` 역할·WH·스키마** | 첫 줄이 `USE ROLE GN_DW_ADMIN`·`USE WAREHOUSE GN_DW_DEV_WH` |
+| `08` 5~7행 GRANT | **DBT PROJECT 객체** | `GRANT USAGE ON DBT PROJECT …` |
+| `08` §G 뷰 2종 | GOLD 테이블 **구조**만 | 데이터 불요 → dbt build 전후 무관 |
+| `05_SV_DDL.sql` | `08` §G 뷰 2종 | SV 논리테이블로 참조 |
+| 의미있는 SV 결과 | dbt build | 데이터가 있어야 질의가 답을 낸다 |
+| **Agent 가 실제로 답하는 것** | **`09_1` → `09_2` 둘 다** | `09_1` 은 껍데기만 만든다. 스펙(도구·instruction)은 `09_2` 가 넣는다 |
+| `09_2` | `05_SV_DDL.sql` | 스펙 `tool_resources` 가 SV 를 참조한다(SV 부재 시 도구가 깨진다) |
+
+---
+
+### 11.3-B ✅ [해소] SERVING helper 뷰 — 정본은 `08_After_Deploy_DBT.sql` §G 였다
+
+> 🔴 **2026-08-04 최초 판정 정정.** 나는 이 항목을 *"실행 정본 유실(BLOCKER)"* 로 등재했으나 **틀렸다.**
+> `02_SERVING_setup.sql` 스텁이 *"07_ENVIRONMENT_RBAC_setup.sql 로 이관"* 이라고 적어서 07 과
+> `_archive` 만 확인하고 단정했다. 실제 정본은 **`08_After_Deploy_DBT.sql` §G** 다.
+> **스텁의 이관 안내가 틀린 파일을 가리키고 있었고, 나는 그것을 검증 없이 따라갔다.**
+
+**실제로 존재하는 결함은 다른 것이었다** — `08` §G.2 가 O27 을 반영하지 않았다.
+
+| 항목 | 내용 |
+|---|---|
+| 증상 | `SERVING.DIM_MEMBER_CURRENT` 생성문이 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP` 을 SELECT — O27 이 `GOLD.DIM_MEMBER` 에서 DROP 한 컬럼 |
+| 확인 | 동일 SELECT 를 컴파일 → `invalid identifier 'NEW_EXISTING_FLAG'` (실측) |
+| 영향 | 위 순서 3) 이 **실패**하고, 그 결과 4) `05_SV_DDL.sql` 도 helper 뷰 부재로 실패 |
+| 조치 | ✅ 3컬럼 제거(2026-08-04). SV 는 이 3컬럼을 참조하지 않는다(`05_SV_DDL.sql` 실측 0건) → 소비 영향 0. 수정 후 컴파일 검증 통과 |
+
+📌 **O27 이 번진 산출물은 4개였다**: `06_DDL.sql`(정본) · `GOLD.DIM_MEMBER`(물리) ·
+`10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql`(모델) · **`08_After_Deploy_DBT.sql`(SERVING 뷰)**.
+구조 변경 시 **소비 뷰까지 역방향으로 추적**해야 한다 — 모델·DDL 만 보면 4번째를 놓친다.
+
+**남은 항목(BLOCKER 아님) — `DIM_MEMBER_CURRENT` 2판 공존**
+
+| 객체 | 소유 | 용도 | 컬럼 |
+|---|---|---|---|
+| `SERVING.DIM_MEMBER_CURRENT` | `08` §G.2 | **SV 전용** fan-out 차단 | 19 (REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 포함) |
+| `GOLD.DIM_MEMBER_CURRENT` | dbt 모델 (DEC-27 §17-A) | **분석가 진입점** | 20 (위 4컬럼 미노출 · `MEMBER_TYPE`·감사컬럼 포함) |
+
+소비자가 달라 **의도적 분리로 설명 가능**하나 문서에 명시돼 있지 않았다 → 양쪽 COMMENT·헤더에
+역할 분리를 명기했다(2026-08-04). ⬜ 잔여: `DIM_MEMBER_CURRENT.sql` 헤더가 *"전건 NULL 7컬럼 미노출"*
+로 **이제 존재하지 않는 3컬럼을 열거**한다 — 거짓 주석 회수 대상(P33 ③). build 실패 요인은 아니다.
+
+### 11.4 재구축 후 검증
+
+```sql
+-- ① 계층별 객체·행수
+SELECT TABLE_SCHEMA, TABLE_TYPE, COUNT(*) OBJS, SUM(ROW_COUNT) ROWS
+FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA IN ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4','SILVER','GOLD','SERVING')
+GROUP BY 1,2 ORDER BY 1,2;
+--   기대: GOLD 테이블 28 · GOLD 뷰 13 · SILVER 테이블 38 · SERVING 객체 > 0
+
+-- ② 빈 테이블 (원래 0행인 FACT_TARGET_BIZ·CRM_BIZ_TARGET 외에 있으면 적재 실패)
+SELECT TABLE_SCHEMA, TABLE_NAME FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA IN ('SILVER','GOLD') AND ROW_COUNT=0
+ORDER BY 1,2;
+
+-- ③ COMMENT 커버리지 (SV description 으로 소비되므로 결손은 무증상 오답이 된다)
+SELECT TABLE_SCHEMA, COUNT(*) COLS, COUNT_IF(COMMENT IS NULL OR COMMENT='') NO_CMT
+FROM GN_DW.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA IN ('SILVER','GOLD') GROUP BY 1;
+--   기대: NO_CMT = 0
+
+-- ④ dbt 결과: ERROR 0 · SKIP 0 이어야 한다.
+--   🔴 SKIP 은 무해하지 않다 — 상류 1건 실패가 모델 9 + 테스트 59 를 건너뛰게 만든 이력이 있다.
+```
+
+> 🔴 **재구축 후 기대값 인용 주의**: 각 스크립트에 적힌 행수·적중률은 **재구축 이전 측정치**다.
+> BRONZE 를 재적재하면 값이 달라질 수 있다 — 어긋나면 원인 규명 전 **어느 쪽도 인용하지 말 것**(PROC-3 c).
 
 ---
 

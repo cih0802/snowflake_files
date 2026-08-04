@@ -38,14 +38,16 @@ END-METADATA -->
 |------|------|------|
 | `00_README.md` (본 문서) | — | 폴더 색인·상태·주의사항 |
 | `01_SV-Agent 작업계획.md` | 정본 | 설계원칙·의사결정·구조·작업단계 1~8·**진행상태표**·changelog(v4.2) |
-| `02_SERVING_setup.sql` | 0 | SERVING 스키마·WH 3·역할 6·계층 grant·CoWork object 생성 (RBAC 선행) |
+| `02_SERVING_setup.sql` | ⛔ | **[DEPRECATED] 포인터 스텁 — 실행 대상 아님.** RBAC·스키마 정본 = `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` · **helper 뷰(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) 정본 = `08_After_Deploy_DBT.sql` §G**(O36 실측: 07 에는 없다) |
 | `03_SV_metric_배속.md` | 1 | derived 81 metric을 SV에 전수 배속(P1 69·P2 12) |
 | `04_SV_설계.md` | 2 | 7 SV 구조·relationship·fan-out helper·아키텍처 비판검토·**데이터 게이트 발견** |
-| `05_SV_DDL.sql` | 3 | Phase-1 SV 5개 `CREATE SEMANTIC VIEW` + GRANT (배포 정본) |
+| `05_SV_DDL.sql` | 3 | Phase-1 SV **6종** `CREATE SEMANTIC VIEW` + `SERVING.FACT_AD_COMBINED` + GRANT (배포 정본). 🔴 `GN_DW_ADMIN` 으로 실행 |
 | `06_검증쿼리_VQR.md` | 4 | SV 라이브 검증(SV=FACT)·회귀쿼리·VQR 후보·custom instruction 6 |
 | `07_평가셋_eval.md` | 4 | NL↔gold SQL↔ground truth 평가셋(2026-07-22)·가드레일 ⓖ |
 | `08_AGENT_spec.md` | 5 | **Agent 2 스펙 정본**(도구·orchestration·instruction·배포절차·평가매핑) |
-| `09_AGENT_spec_구현.sql` | 6 | Agent **배포 실행 로그**(소유권 이전·USAGE·ADD AGENT) + 트라이얼/paid 이관 체크리스트 |
+| `09_AGENT_spec_구현.sql` | ⛔ | **[DEPRECATED 2026-07-31] 포인터 스텁 — 실행 대상 아님.** 아래 두 파일로 분해됐다 |
+| `09_1_AGENT_생성.sql` | 6 | Agent **껍데기** 생성(최소 스펙) + 소유권 + USAGE grant 6 + CoWork SI 등록 + COMMENT/PROFILE 정본 |
+| `09_2_AGENT_버전업.sql` | 6 | 🔴 **Agent 스펙 본문 적용** — `cortex_project/agents/<AGENT>/agent_spec.yaml` 정본을 stage 에서 직접 읽어 새 버전 발행. **이 파일을 빼면 Agent 는 도구 0개·instruction 0개인 껍데기로 남는다**(O36) |
 | `10_SI연결_검증.md` | 6 | CoWork 연결 절차 + 스모크·회귀 검증표(정확도 14·가드레일 8) |
 | `11_거버넌스_운영.md` | 7 | 사용량 모니터링·비용쿼터·알림·**품질 폐루프** |
 | `12_paid_테스트_실행가이드.md` | 6(보강) | **paid 이관 후 Agent NL 스모크 단독 실행 가이드**(22문항·트라이얼 차단분) |
@@ -74,8 +76,10 @@ END-METADATA -->
 4. **PK 미선언 FACT**: FME/FSE/FEP는 예상 grain 키가 실측 비유일 → SV에서 PK 미선언(기저 FACT·집계 무해). 유일 FMM·FBD만 PK 선언(05·20_issue 10 §6).
 5. **트라이얼 제약**: `SNOWFLAKE.CORTEX.DATA_AGENT_RUN`/`cortex_agent_query`가 트라이얼 차단('Access denied for trial accounts') → **에이전트 NL 실행·스모크 불가**. paid 이관 후 10 §3 필수 실행(08-1 [6]).
 6. **납부율 기간 스코프**: 전기간 무필터 납부율 = 100.36%(재청구·이월 왜곡). 반드시 연/월 스코프로 답. Agent instruction에 반영됨.
-7. **비활성 지표 = Phase-2 안내**: 캠페인/조직/후원사업/납입방식별·성공률·D5·유지율/LTV·목표대비·개발단가/ROI는 미적재 → 임의 산출 금지, "데이터 적재 후 제공" 안내(R8).
-8. **회원 속성은 현재 스냅샷**: 성별·회원상태·회원구분은 과거월 조회에도 현재값. 지역·연령대는 미적재.
+7. **비활성 지표 = Phase-2 안내**: 조직/후원사업/납입방식별·성공률·D5·유지율/LTV·목표대비·예산기반 ROI는 미적재 → 임의 산출 금지, "데이터 적재 후 제공" 안내(R8).
+   🔴 [2026-08-04 O33·O35 갱신] **캠페인별 분해는 활성화됐다**(`SV_MEMBER_EVENT` — 단 개발(DEV) 사건 전용). 중단사유·중단경로도 활성. 종전 목록에 남아 있던 '캠페인'은 회수한다(P61: 부정형 서술은 활성화할 때마다 함께 지워야 한다). 광고 쪽 캠페인/소재별 분해는 여전히 미적재(연결키 부재)다.
+8. **회원 속성은 현재 스냅샷**: 성별·회원상태·회원구분은 과거월 조회에도 현재값.
+   🔴 [2026-08-04 O34·O35 갱신] **지역·연령대는 미적재가 아니다 — 활성이다.** 다만 **현재 값이 아니라 약정(개발) 시점 값**이다: `SV_MEMBER_MONTHLY` 는 `_AT_PLEDGE`(회원 현재행이 담은 최근 약정 스냅샷) · `SV_MEMBER_EVENT` 는 `_AT_EVENT`(그 사건 당시·정확). 두 축은 값이 다를 수 있고(실측 연령대 7.95%·지역 3.99% 불일치) **사건 단위 질문은 후자**를 쓴다. **현재 나이·현재 거주지는 산출 불가**(BRONZE 에 생년월일·현주소 축이 없다).
 9. **행사/서비스 Unknown**: 행사 미매칭 ~23%(EVENT_SK=0). 행사명별 집계는 부분 커버 → 커버리지 고지.
 10. **ground truth 재생성**: GOLD 재적재 시 07 평가셋 기대값 재실행·갱신 후 회귀.
 
@@ -87,7 +91,9 @@ END-METADATA -->
 |---|---|
 | 마케팅 Agent(SV_AD·SV_GA) | FAD 차원FK 보강(Q10)·FGA 전기간(G-5) |
 | Cortex Search 백킹(EVENT_NAME·BUDGET_ITEM_NAME) | 리터럴 오매칭 관측 시 |
-| 캠페인/조직/후원사업/납입방식별 분해 | CAMPAIGN/ORG/SPONSORSHIP/PAYMENT_SK 적재 |
+| 조직/후원사업/납입방식별 분해 | ORG/SPONSORSHIP/PAYMENT_SK 적재 |
+| ~~캠페인별 분해~~ → **활성**(O33) | `SV_MEMBER_EVENT` 에서 가능(개발 DEV 사건 전용) |
+| ~~지역·연령대별 분해~~ → **활성**(O33·O35) | `_AT_PLEDGE`(월 SV) · `_AT_EVENT`(사건 SV). 단 **현재값은 산출 불가** |
 | 성공/실패/오픈·D5 코호트 | 코드매핑·D5 적재(신31~53) |
 | 유지율/LTV/유지기간 | LAST_STOP_DATE·가입↔중단 브리지 |
 | 목표대비·개발단가/ROI | FTG_D/FTG_B·비용 적재·conform 브리지(E-6·신9~11) |

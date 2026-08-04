@@ -10,7 +10,8 @@ END-METADATA -->
 # 12. Paid 계정 테스트 실행 가이드
 
 > **목적**: 트라이얼에서 차단된 `DATA_AGENT_RUN`을 paid 계정에서 실행하여 Agent 2개의 **NL→SQL 정확도·가드레일**을 검증한다.
-> **선행**: `02_SERVING_setup.sql` → `05_SV_DDL.sql` → `09_AGENT_spec_구현.sql` 순차 실행 완료(Agent 2 + CoWork 연결 상태).
+> **선행**: `02_GN_DW_building/08_After_Deploy_DBT.sql`(§G helper 뷰) → `05_SV_DDL.sql` → `09_1_AGENT_생성.sql` → **`09_2_AGENT_버전업.sql`** 순차 실행 완료(Agent 2 + 스펙 반영 + CoWork 연결 상태).
+> 🔴 [2026-08-04 O36 교정] 종전 표기(`02_SERVING_setup.sql` → … → `09_AGENT_spec_구현.sql`)는 두 파일이 모두 DEPRECATED 스텁이라 실행 불가였다. 순서 정본 = `06_RUNBOOK.md` §11.2-C.
 > **소요**: ~30분(22문항 수동 질의·판정).
 
 ---

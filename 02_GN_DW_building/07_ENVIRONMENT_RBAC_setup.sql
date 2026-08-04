@@ -11,7 +11,12 @@
 --   Snowflake docs: Snowflake CoWork object (CREATE SNOWFLAKE INTELLIGENCE)
 --
 -- 실행 순서(권장): A~C(WH·역할·WH grant) → B.5(DB 생성 → 소유권 ADMIN 이관 → 9스키마 GN_DW_ADMIN 생성)
---                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → 05_SV_DDL.sql → 09_AGENT_spec_구현.sql → D~G(스키마 grant·SERVING·CoWork·helper 뷰)
+--                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → D~F(스키마 grant·SERVING·CoWork)
+--                  → dbt build → 08_After_Deploy_DBT.sql §G(helper 뷰 2종) → 05_SV_DDL.sql
+--                  → 09_1_AGENT_생성.sql → 09_2_AGENT_버전업.sql
+--   🔴 [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
+--      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·DIM_MEMBER_CURRENT 가 없다.**
+--      실행 정본은 `08_After_Deploy_DBT.sql` §G 다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
 --   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
 -- 소유 모델: GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위).
 --            커스텀 롤은 적재·조회만. 계정 레벨(네트워크/인증 정책·Resource Monitor·CoWork·CORTEX)은 ACCOUNTADMIN 유지.
