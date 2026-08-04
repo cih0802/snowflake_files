@@ -123226,3 +123226,109 @@ ALTER VIEW GN_DW.GOLD.WIDE_MEMBER_MONTHLY ALTER COLUMN CAL_YEAR COMMENT 'FLOOR(M
 [0m19:24:12.885299 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 168.1139, "process_in_blocks": "0", "process_kernel_time": 2.78, "process_mem_max_rss": "531852", "process_out_blocks": "0", "process_user_time": 29.51}
 [0m19:24:12.885873 [debug] [Dummy-1   ]: Command `cli build` succeeded at 19:24:12.885640 after 168.11 seconds
 [0m19:24:12.886362 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 19:58:16.083985 | 2fcda748-114a-4a78-bda0-dfe74b4d289a ==============================
+[0m19:58:16.083985 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m19:58:16.084840 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'profiles_dir': '/tmp/dbt/', 'log_path': '/tmp/dbt/logs', 'fail_fast': 'False', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'invocation_command': 'dbt ', 'introspect': 'True', 'static_parser': 'True', 'target_path': '/tmp/dbt/target/', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'False'}
+[0m19:58:16.358714 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m19:58:16.888098 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m19:58:17.294964 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 2 files changed.
+[0m19:58:17.296792 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/dim/DIM_SEND_TYPE.sql
+[0m19:58:17.297423 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/wide/WIDE_GA_BEHAVIOR.sql
+[0m19:58:18.202964 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:58:18.205803 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:58:18.274645 [info ] [Dummy-1   ]: Found 79 models, 276 data tests, 40 sources, 483 macros
+[0m19:58:18.280585 [info ] [Dummy-1   ]: 
+[0m19:58:18.281171 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m19:58:18.281622 [info ] [Dummy-1   ]: 
+[0m19:58:18.282452 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m19:58:18.293904 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m19:58:18.295937 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m19:58:18.403806 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:58:18.404519 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:58:18.405067 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:58:18.405607 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:58:18.406098 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:58:18.406505 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:58:19.158258 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.752 seconds
+[0m19:58:19.162809 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:58:19.163314 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m19:58:19.177764 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.771 seconds
+[0m19:58:19.179707 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:58:19.180204 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m19:58:19.354432 [debug] [ThreadPool]: SQL status: SUCCESS 41 in 0.191 seconds
+[0m19:58:19.357544 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:58:19.358046 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:58:19.460879 [debug] [ThreadPool]: SQL status: SUCCESS 38 in 0.280 seconds
+[0m19:58:19.463812 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:58:19.464305 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:58:19.473118 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.115 seconds
+[0m19:58:19.539005 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.074 seconds
+[0m19:58:19.562243 [debug] [Thread-2 (]: Began running node model.gn_dw_silver.WIDE_GA_BEHAVIOR
+[0m19:58:19.563010 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now model.gn_dw_silver.WIDE_GA_BEHAVIOR)
+[0m19:58:19.563554 [debug] [Thread-2 (]: Began compiling node model.gn_dw_silver.WIDE_GA_BEHAVIOR
+[0m19:58:19.574055 [debug] [Thread-2 (]: Writing injected SQL for node "model.gn_dw_silver.WIDE_GA_BEHAVIOR"
+[0m19:58:19.574850 [debug] [Thread-2 (]: Began executing node model.gn_dw_silver.WIDE_GA_BEHAVIOR
+[0m19:58:19.575621 [debug] [Thread-2 (]: Finished running node model.gn_dw_silver.WIDE_GA_BEHAVIOR
+[0m19:58:19.577777 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m19:58:19.578285 [debug] [Dummy-1   ]: Connection 'model.gn_dw_silver.WIDE_GA_BEHAVIOR' was properly closed.
+[0m19:58:19.578794 [debug] [Dummy-1   ]: Connection 'list_GN_DW_SILVER' was properly closed.
+[0m19:58:19.579537 [debug] [Dummy-1   ]: Command end result
+[0m19:58:19.739451 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:58:19.741986 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:58:19.748472 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m19:58:19.749110 [info ] [Dummy-1   ]: Compiled node 'WIDE_GA_BEHAVIOR' is:
+-- WIDE_GA_BEHAVIOR: GA 행동 팩트(FGA) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.6)
+-- Co-authored with CoCo
+-- 2026-07-15: DIM_MEMBER_IDENTITY 활성화 → IDENTITY_* 4컬럼 실조인 복원(f.IDENTITY_SK = DIM_MEMBER_IDENTITY.IDENTITY_SK).
+--    ⚠️[G-5 재확인] 현재 GA4 1일 샤드 기반(회원 매칭 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
+
+
+select
+    f.DATE_SK, f.PAGE_PATH, f.PAGE_LOCATION,
+    f.VISITS, f.EVENT_CNT, f.VIEW_CNT, f.SESSION_CNT, f.ENGAGED_SESSIONS,
+    f.SCROLL_DEPTH, f.ACTIVE_USERS, f.TOTAL_USERS,
+    f.AVG_SESSION_DURATION, f.BOUNCE_RATE, f.ENGAGEMENT_RATE,
+    f.AVG_ENGAGEMENT_TIME_PER_SESSION,
+    f.DW_SOURCE_SYSTEM,
+    d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.IS_HOLIDAY,
+    -- DIM_MEMBER_IDENTITY 활성(2026-07-15) → 실제 조인. ⚠️[G-5] GA4 1일 기반·커버리지 ~4.2%, 전기간 입고 시 재검증(문서50)
+    mi.MEMBER_DK          as IDENTITY_MEMBER_DK,
+    mi.MEMBER_NO          as IDENTITY_MEMBER_NO,
+    mi.MEMNUM             as IDENTITY_MEMNUM,
+    mi.GA_MEMBER_ID       as IDENTITY_GA_MEMBER_ID,
+    ge.EVENT_CATEGORY     as GA_EVENT_CATEGORY,
+    ge.EVENT_LABEL        as GA_EVENT_LABEL,
+    ge.EVENT_ACTION       as GA_EVENT_ACTION,
+    gs.UTM_SOURCE         as GA_UTM_SOURCE,
+    gs.UTM_MEDIUM         as GA_UTM_MEDIUM,
+    gs.UTM_CONTENT        as GA_UTM_CONTENT,
+    gs.UTM_TERM           as GA_UTM_TERM,
+    gs.SOURCE_MEDIUM      as GA_SOURCE_MEDIUM,
+    dv.DEVICE_TYPE        as DEVICE_TYPE,
+    c.CAMPAIGN_BK         as CAMPAIGN_BK,
+    c.BRAND               as CAMPAIGN_BRAND,
+    c.CAMPAIGN_NAME       as CAMPAIGN_NAME
+from GN_DW.GOLD.FACT_GA_BEHAVIOR f
+left join GN_DW.GOLD.DIM_DATE      d  on f.DATE_SK      = d.DATE_SK
+left join GN_DW.GOLD.DIM_GA_EVENT  ge on f.GA_EVENT_SK  = ge.GA_EVENT_SK
+left join GN_DW.GOLD.DIM_GA_SOURCE gs on f.GA_SOURCE_SK = gs.GA_SOURCE_SK
+left join GN_DW.GOLD.DIM_DEVICE    dv on f.DEVICE_SK    = dv.DEVICE_SK
+left join GN_DW.GOLD.DIM_CAMPAIGN  c  on f.CAMPAIGN_SK  = c.CAMPAIGN_SK
+left join GN_DW.GOLD.DIM_MEMBER_IDENTITY mi on f.IDENTITY_SK = mi.IDENTITY_SK
+[0m19:58:19.750916 [debug] [Dummy-1   ]: Resource report: {"command_name": "compile", "command_success": true, "command_wall_clock_time": 3.7394454, "process_in_blocks": "0", "process_kernel_time": 0.95, "process_mem_max_rss": "519588", "process_out_blocks": "0", "process_user_time": 5.37}
+[0m19:58:19.751563 [debug] [Dummy-1   ]: Command `cli compile` succeeded at 19:58:19.751285 after 3.74 seconds
+[0m19:58:19.752072 [debug] [Dummy-1   ]: Flushing usage events

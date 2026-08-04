@@ -158,10 +158,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_IDENTITY (
     IDENTITY_SK         NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '회원 식별 대리키 (ETL 일련번호, PK)',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키',  -- ※비강제 FK→DIM_MEMBER(SCD2/비유일)
     MEMBER_NO           VARCHAR         NOT NULL COMMENT '회원번호(#110)',
-    MEMNUM              VARCHAR         COMMENT 'memnum(#111)',
+    MEMNUM              VARCHAR         COMMENT 'memnum(#111) — 🔴 전건 NULL(미배선). 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 memnum= (17,795행·1,589종). 조회 시 항상 0행',
     GA_MEMBER_ID        VARCHAR         COMMENT 'member id(#112)',
     HOMEPAGE_ID         VARCHAR         COMMENT '홈페이지/앱 ID. 원천: TM_MM_FDRM_MBER_INFO.HMPG_ID',
-    CHILD_CODE          VARCHAR         COMMENT '결연아동코드(#122, URL 파싱)',
+    CHILD_CODE          VARCHAR         COMMENT '결연아동코드(#122, URL 파싱) — 🔴 전건 NULL(미배선). 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 childnum= (6,827행·594종). 조회 시 항상 0행',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -577,12 +577,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR (
     GA_EVENT_SK                     NUMBER(38,0)    NOT NULL COMMENT 'GA 이벤트 분류 (FK→DIM_GA_EVENT)',
     GA_SOURCE_SK                    NUMBER(38,0)    NOT NULL COMMENT '유입 트래픽소스 (FK→DIM_GA_SOURCE)',
     DEVICE_SK                       NUMBER(38,0)    NOT NULL COMMENT '접속 디바이스 (FK→DIM_DEVICE)',
-    CAMPAIGN_SK                     NUMBER(38,0)    NOT NULL COMMENT '세션캠페인(#102)',
-    PAGE_PATH                       VARCHAR         NOT NULL COMMENT '페이지경로+쿼리(#105)',  -- degen(grain)
-    PAGE_LOCATION                   VARCHAR         COMMENT '페이지위치(#106)',                -- degen
-    VISITS                          NUMBER(38,0)    COMMENT '방문수(명) (#92)',
-    EVENT_CNT                       NUMBER(38,0)    COMMENT '이벤트수(명) (#95)',
-    VIEW_CNT                        NUMBER(38,0)    COMMENT '조회수(명) (#96)',
+    CAMPAIGN_SK                     NUMBER(38,0)    NOT NULL COMMENT '세션캠페인(#102) — 🔴 상수 0 하드코딩(센티넬). GA UTM 캠페인 244종이 하나로 뭉개져 있다(P51 위반). SILVER.GA4_EVENT.UTM_CAMPAIGN(채움 88.0%) 미배선 → 캠페인축 분석 불가. WIDE 의 CAMPAIGN_BK/NAME/BRAND 도 전건 (미매핑)',
+    PAGE_PATH                       VARCHAR         NOT NULL COMMENT '페이지경로 — 🔴 쿼리문자열 제외됨(산식 = SPLIT_PART(PAGE_LOCATION,''?'',1) · 실측 ''?'' 포함 0행). 정본 #105「페이지경로+쿼리문자열」 미충족이며 정본 #122 결연아동코드(childnum=) 파생 불가',  -- degen(grain)
+    PAGE_LOCATION                   VARCHAR         COMMENT '페이지위치(#106) — 🔴 grain 내 MAX() 대표값(URL 전체 아님). 원천 distinct 75,474종 → GOLD 8,408종만 생존(67,066종·88.9% 소실). childnum 594→352종 · memnum 1,589→680종. 특정 URL 유무 판정 금지',                -- degen
+    VISITS                          NUMBER(38,0)    COMMENT '방문수(명) (#92) — 가산(실측 배수 1.0000). SESSION_CNT 의 가산 대체축',
+    EVENT_CNT                       NUMBER(38,0)    COMMENT '이벤트수(명) (#95) — 가산(실측 배수 1.0000)',
+    VIEW_CNT                        NUMBER(38,0)    COMMENT '조회수(명) (#96) — 가산(실측 배수 1.0000)',
     SESSION_CNT                     NUMBER(38,0)    COMMENT '세션수(명) (#97) — 🔴**비가산**. COUNT(DISTINCT user||session) 인데 집계 grain 이라 같은 세션이 여러 행에 반복된다. 실측 SUM=243,156 vs 실제 distinct 77,172 = **3.15배 과대계상** → SUM 금지. 가산 대체 = VISITS',
     ENGAGED_SESSIONS                NUMBER(38,0)    COMMENT '참여세션수 — 🔴**비가산**. COUNT(DISTINCT) + 집계 grain. 실측 SUM=161,117 vs 실제 37,505 = **4.30배 과대계상** → SUM 금지',
     SCROLL_DEPTH                    NUMBER(9,4)     COMMENT '스크롤깊이 AVG (#107) — 비가산',

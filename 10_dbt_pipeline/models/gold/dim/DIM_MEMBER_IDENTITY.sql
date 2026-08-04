@@ -24,10 +24,10 @@ select
     {{ gold_sk(['MEMBER_DK']) }}                  as IDENTITY_SK,
     MEMBER_DK                                     as MEMBER_DK,
     MEMBER_DK                                     as MEMBER_NO,
-    CAST(NULL AS VARCHAR)                          as MEMNUM,
+    CAST(NULL AS VARCHAR)                          as MEMNUM,         -- 🔴 전건 NULL. 정본 #111. 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 memnum= (17,795행·1,589종) — 미배선(phase-2). ⚠️ 단 GOLD.FACT_GA_BEHAVIOR.PAGE_LOCATION 은 MAX() 대표값이라 680종만 남으므로 배선 원천은 SILVER 여야 한다
     x.GA_MEMBER_ID                                as GA_MEMBER_ID,   -- exact member_id 매칭분(미매칭=NULL)
     HMPG_ID                                       as HOMEPAGE_ID,
-    CAST(NULL AS VARCHAR)                          as CHILD_CODE,     -- ⚠️ 결연(SPONSOR_RELATION) 대기
+    CAST(NULL AS VARCHAR)                          as CHILD_CODE,     -- 🔴 전건 NULL. 종전 주석 '결연(SPONSOR_RELATION) 대기' 는 회수한다 — 정본 #122 는 결연아동코드를 "페이지 경로+쿼리 문자열에서 childnum= 뒤 13자리" 로 규정하며 정본 DDL(06_DDL.sql:164)도 'URL 파싱' 이라 적었다. 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 childnum= (6,827행·594종) — 미배선(phase-2)
     {{ gold_meta('CRM') }}
 from m
 left join xref x on x.X_MEMBER_DK = m.MEMBER_DK
