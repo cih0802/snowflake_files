@@ -22,7 +22,25 @@ SELECT
     {{ clean_str('CHNNL_NM') }}                 AS CHANNEL_COMPANY,         -- 채널사
     {{ clean_str('CHNNL_CMPNY_TY_NM') }}        AS CHANNEL_COMPANY_TYPE,    -- 채널사유형
     {{ clean_str('SPOT_TY') }}                  AS SPOT_TYPE,               -- SPOT유형
-    TRY_TO_NUMBER({{ clean_str('AD_SEC') }})    AS DURATION_SEC,            -- 광고 초수 ← VIDEO.AD_SEC(TEXT)
+    -- 🟢 [O29 2026-08-04 배선] 광고 초수 — HH:MM:SS 파싱으로 96.6% 무성 소실 복구
+    --   BRONZE `AD_SEC`(TEXT) 는 두 표기가 혼재한다(2026-08-04 실측, 채움 33,890/36,416):
+    --     · HH:MM:SS  32,739행(96.6%) — 00:01:00·0:01:30·00:01:30·00:02:00·0:00:30 → {60,90,90,120,30}초
+    --     · 숫자      1,151행(3.4%)   — 60000000·90000000·30000000
+    --   종전 `TRY_TO_NUMBER` 단독은 HH:MM:SS 를 **에러 없이 NULL** 로 만들어 32,739행을 잃었다(P27).
+    -- 🔴 숫자 3종은 의도적으로 NULL 이다 — 단위 미확정(µs 해석이 유력하나 **추론**, 문서20 §J 회신 대기).
+    --   30,000,000 을 "초"로 두면 3천만초(≈347일)로 읽히므로 **NULL 이 더 안전하다**(DEC-29 §19-A #7).
+    --   회신 후 `/10^6` 변환을 이 CASE 에 ELSE 분기로 추가하면 100% 가 된다. 원본은 BRONZE 에 보존됨.
+    -- ⚠️ **`TRY_TO_TIME` 을 쓰지 말 것** — 2026-08-04 실측: `TRY_TO_TIME('30000000')` 이 실패하지 않고
+    --   **`05:20:00`(19,200초)** 을 반환한다. 즉 단위 미확정 숫자를 그럴듯한 초수로 조용히 바꿔
+    --   O29 와 **동일한 무성 오답을 재도입**한다. 반드시 `LIKE '%:%'` 로 표기를 먼저 가른다.
+    CASE WHEN {{ clean_str('AD_SEC') }} LIKE '%:%'
+              AND TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',1)) IS NOT NULL
+              AND TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',2)) IS NOT NULL
+              AND TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',3)) IS NOT NULL
+         THEN TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',1)) * 3600
+            + TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',2)) * 60
+            + TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',3))
+    END                                         AS DURATION_SEC,
     {{ clean_str('DAY_DIV_NM') }}               AS DAY_DIV,                 -- 요일구분(평일/주말)
     {{ clean_str('PRG_STRT_TIME') }}            AS PRG_START_TIME,          -- 프로그램 시작시간
     {{ clean_str('CTV_DIV_NM') }}               AS CTV_DIV,                 -- CTV구분

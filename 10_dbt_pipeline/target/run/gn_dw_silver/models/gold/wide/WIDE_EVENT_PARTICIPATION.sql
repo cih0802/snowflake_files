@@ -8,13 +8,18 @@
 
 select
     f.DATE_SK, f.MEMBER_DK,
-    f.RECRUIT_CNT, f.TOTAL_CNT, f.WAIT_CNT, f.CANCEL_CNT,
+    -- [DEC-30] f.RECRUIT_CNT 제거 → e.RECRUIT_HEADCOUNT(행사 차원)으로 대체
+    f.TOTAL_CNT, f.WAIT_CNT, f.CANCEL_CNT,
     f.CONFIRM_CNT, f.PARTICIPATE_CNT, f.ABSENT_CNT,
     f.PARTICIPANT_CNT, f.PARTICIPATION_TIMES,
     f.WAIT_TIMES, f.ABSENT_TIMES, f.CUM_APPLY_TIMES,
     f.REGULAR_DONATION,
     f.WIN_FLAG, f.SELF_PART_FLAG, f.PART_STATUS,
     f.PART_PATH, f.PART_CHANNEL, f.INCREASE_FLAG,
+    -- [DEC-30] degen key 2종. 🔷유일 식별 = (PART_EVENT_BK, MEMBER_DK, PARTCPT_SEQ).
+    --   ⚠️PART_EVENT_BK(팩트·고아 포함 전건) 와 EVENT_BK(차원 매칭·고아는 '(미매핑)') 는 다르다.
+    f.EVENT_BK            as PART_EVENT_BK,
+    f.PARTCPT_SEQ         as PARTCPT_SEQ,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.IS_HOLIDAY,
     -- [2026-08-03 O26] 회원 속성 노출 재구성 — 코드=BRONZE 원천명 · 라벨=분석 용어.
@@ -22,7 +27,9 @@ select
     m.SEX                 as SEX,                     -- CM013 코드 raw
     m.SEX_NM              as SEX_NM,                  -- CM013 원천 라벨(국내/외국인 축)
     m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
+    m.AREA_CD             as MEMBER_AREA_CD,          -- [O27] CM018 코드 raw (라벨=MEMBER_REGION)
     m.REGION              as MEMBER_REGION,
+    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. ⚠️연속형 나이 아님
     m.AGE_BAND            as MEMBER_AGE_BAND,
     m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
     m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
@@ -35,6 +42,7 @@ select
     e.EVENT_START_DATE    as EVENT_START_DATE,
     e.EVENT_END_DATE      as EVENT_END_DATE,
     e.APPLY_CHANNEL       as EVENT_APPLY_CHANNEL,
+    e.RECRUIT_HEADCOUNT   as EVENT_RECRUIT_HEADCOUNT,  -- [DEC-30] 행사 정원(행사 grain) — 참여행 반복 합산 금지
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
     c.BRAND               as CAMPAIGN_BRAND,
     c.CAMPAIGN_NAME       as CAMPAIGN_NAME,
@@ -43,7 +51,7 @@ select
 from GN_DW.GOLD.FACT_EVENT_PARTICIPATION f
 left join GN_DW.GOLD.DIM_DATE d on f.DATE_SK = d.DATE_SK
 left join (
-    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, REGION, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME
+    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, AREA_CD, REGION, AGE, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME
     from GN_DW.GOLD.DIM_MEMBER
     where IS_CURRENT = TRUE
     qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK

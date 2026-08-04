@@ -219,7 +219,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_AD_CREATIVE (
     PLATFORM_TYPE       VARCHAR         COMMENT '플랫폼/매체유형(#13)',
     CREATIVE            VARCHAR         COMMENT '소재(#20)',
     CM_POSITION         VARCHAR         COMMENT 'CM위치(#21)',
-    DURATION_SEC        NUMBER(9,0)     COMMENT '초수(#22)',
+    -- 🔴 [DEC-30 2026-08-04] DURATION_SEC 제거 — 초수는 **소재 속성이 아니다**(실측: 소재 41종 중
+    --   19종이 복수 초수를 가져 함수종속 53.7% 뿐 · 같은 소재가 30/60/90초 편집본으로 송출).
+    --   정본 소재지 = FACT_AD_BROADCAST.DURATION_SEC(방송 grain). 본 컬럼은 오배치 중복축이었다.
     RT_TYPE             VARCHAR         COMMENT 'RT유형',
     AD_TYPE             VARCHAR         COMMENT '소재 광고유형. ⚠️코어 FACT_AD_PERFORMANCE.AD_SOURCE_TYPE(원천 출처축 DIGITAL/VIDEO/REBROADCAST)과 다른 개념 — WIDE 에서는 AD_CREATIVE_TYPE 으로 노출',
     TARGET_GROUP        VARCHAR         COMMENT '타겟그룹',
@@ -240,6 +242,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_SOURCE (
     UTM_CONTENT         VARCHAR         COMMENT '세션 수동 광고 콘텐츠(#103)',
     UTM_TERM            VARCHAR         COMMENT '세션 수동 검색어(#104)',
     SOURCE_MEDIUM       VARCHAR         COMMENT '세션 소스/매체(#109)',
+    DEFAULT_CHANNEL_GROUP VARCHAR       COMMENT '[DEC-30] GA4 표준 채널그룹 ← GA4_TRAFFIC_SOURCE.DEFAULT_CHANNEL_GROUP. 채움 100%(2,167)·14종 · grain 에 93.8% 함수종속(다중 9/146·최대 4)이라 MAX() 대표값. ⚠️SOURCE_MEDIUM(파생 문자열)과 다른 개념 — GA4 가 산정한 표준 분류다',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -267,9 +270,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_EVENT (
 -- ============================================================================
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SERVICE (
     SERVICE_SK          NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '서비스 대리키 (ETL 일련번호, PK)',
-    SEND_TYPE_L         VARCHAR         COMMENT '발송구분 대(#133)',
-    SEND_TYPE_M         VARCHAR         COMMENT '발송구분 중(#134)',
-    SEND_TYPE_S         VARCHAR         COMMENT '발송구분 소(#135)',
+    -- 🔴 [DEC-30 2026-08-04] SEND_TYPE_L/M/S 3컬럼 제거 → **DIM_SEND_TYPE 으로 이관**했다.
+    --   본 차원 grain 은 (CHANNEL,SUBTYPE) 10행인데 대/중/소를 넣으면 74행이 되어 함수종속이 깨지고
+    --   SERVICE_SK 산식이 바뀌어 이미 99.97% 적재된 FSE.SERVICE_SK 를 파괴한다.
+    --   정본 지표 #133·#134·#135 는 소멸하지 않는다 — 소재지만 DIM_SEND_TYPE 으로 옮겼다.
     SUBTYPE             VARCHAR         COMMENT '발송/참여 subtype',
     CHANNEL             VARCHAR         COMMENT 'CRM_UMS (ADMIN enum은 어드민 제외로 미사용 2026-07-09)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
@@ -277,6 +281,32 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SERVICE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '서비스 차원 (1서비스 · 발송/참여 유형)';
+
+
+-- ============================================================================
+-- DIM 10-B: DIM_SEND_TYPE — 발송구분 차원 (대/중/소 3단 계층) [DEC-30 2026-08-04 신설]
+-- ============================================================================
+-- 🟢 신설 근거 = DEC-28 §18-C 의 "②차원 분리" 안 실행. DIM_SERVICE grain 확장(①안)은
+--    SERVICE_SK 산식을 바꿔 이미 99.97% 적재된 FSE.SERVICE_SK 를 파괴하므로 기각됐다.
+-- 🟢 커버리지 재측정 = 소비 grain(FSE)에서 21.58%(8,300,272/38,470,780).
+--    DEC-28 이 인용한 0.106%(1,707/1,614,397)는 **요청 grain 분모**로 가치를 200배 과소평가했다(P39)
+--    — send-type 이 붙은 요청은 평균 4,862.5명 발송 vs 없는 요청 18.7명(260배 차).
+-- 🔴 자연키 = (대,중,소) 전체 경로. 중분류 코드 단독은 모호하다(코드 16종 vs 라벨 26종).
+--    실측 (TOP,MID,BOT) 65조합 = 라벨 결합 65 · 계층 NULL 0 → 라벨이 경로에 100% 함수종속.
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_TYPE (
+    SEND_TYPE_SK        NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '발송구분 대리키 (ETL 해시, PK)',
+    SEND_TYPE_BK        VARCHAR         NOT NULL COMMENT '발송구분 업무키 = 대>중>소 코드 경로(자연키). ⚠️중분류 코드는 단독으로 모호하다(코드 16종 vs 라벨 26종) → 반드시 전체 경로로 식별한다',
+    SEND_GBN_TOP        VARCHAR         COMMENT '발송구분 대 코드 raw ← CRM_SEND_REQUEST.SEND_GBN_TOP. ⚠️이 값은 코드가 아니라 CRM_CODE.CD_ID(코드그룹 ID) 자체다 — MS046 결연·MS047 회원·MS048 회비·MS049 서비스·MS050 사업보고 등 12종. 라벨=SEND_TYPE_L',
+    SEND_TYPE_L         VARCHAR         COMMENT '발송구분(대) (#133) 분석 라벨 ← SEND_GBN_TOP_NM. 🔴정본 #133 과 불일치(2026-08-04 실측): #133 은 6종(결연/회비/서비스/사업보고/참여/기타)인데 실측 라벨 **9종** — 추가 3종 = 회원만족(MS052)·회원서비스(MS054)·회원(MS047+MS053). #133 은 생략기호가 없어 완전열거로 읽힌다 → 불일치 실재. 문서20 §L 현업 확인 · 데이터 우선 보존(DEC-26). ⚠️대분류는 코드그룹과 1:1 이 아니다 — 결연=MS046+MS051 · 기타=MS0505+MS055 · 회원=MS047+MS053 (코드그룹 12종 → 라벨 9종). 🟢SEND_GBN_TOP 12종 전부 CRM_CODE.CD_ID 실재 확인',
+    SEND_GBN_MID        VARCHAR         COMMENT '발송구분 중 코드 raw ← SEND_GBN_MID. 🔴 코드 단독 사용 금지 — 실측 코드 16종에 라벨 26종이 대응한다(부모 그룹에 따라 의미가 달라짐). 반드시 (대,중) 쌍으로 해석',
+    SEND_TYPE_M         VARCHAR         COMMENT '발송구분(중) (#134) 분석 라벨 ← SEND_GBN_MID_NM. 정본 값정의: 선물금/신규결연회원발송/회원서신/만18세아동종결/일반퇴소 등',
+    SEND_GBN_BOT        VARCHAR         COMMENT '발송구분 소 코드 raw ← SEND_GBN_BOT (CRM_CODE.UPPER_CD_ID 계층 하위). 🔴 코드 단독 모호(코드 42종 vs 라벨 56종) → (대,중,소) 경로로 해석',
+    SEND_TYPE_S         VARCHAR         COMMENT '발송구분(소) (#135) 분석 라벨 ← SEND_GBN_BOT_NM. 정본 값정의: 선물금접수확인/신규결연우편물(PF)/결연100일/서신접수확인/첫출금안내(사단) 등',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '발송구분 차원 — 대/중/소 3단 계층 평탄화 (정본 지표 #133·#134·#135). grain=(대,중,소) 코드 경로 65조합 + 센티넬. 🟢FACT_SERVICE_EVENT 소비 커버리지 실측 21.58%(8,300,272/38,470,780) — 요청 grain 0.106% 는 잘못된 분모다(P39). ⚠️DEC-28 §18-C 가 DIM_SERVICE grain 확장 대신 차원 분리를 택한 이유 = SERVICE_SK(FSE 99.97% 적재) 보존.';
 
 
 -- ============================================================================
@@ -339,6 +369,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_EVENT (
     EVENT_START_DATE    DATE            COMMENT '행사기간 시작(05 3-6)',
     EVENT_END_DATE      DATE            COMMENT '행사기간 종료(05 3-6)',
     APPLY_CHANNEL       VARCHAR         COMMENT '신청경로',
+    RECRUIT_HEADCOUNT   NUMBER(38,0)    COMMENT '[DEC-30] 모집인원 ← CRM_EVENT.RCRIT_PSNNL_CO. 채움 3,361/3,786=88.8%·74종. 🔴행사 속성이므로 참여 팩트가 아니라 행사 차원이 정본 — 참여행 반복 시 SUM 이 101.0배 과대계상(행사 참값 4,513,184 vs 456,007,553). 행사 단위로만 합산',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -529,6 +560,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
     SEND_TYPE                   VARCHAR         COMMENT '발송유형',                 -- degen
     MAIL_RECEIVE_FLAG           BOOLEAN         COMMENT '메일수신여부',             -- degen
     MEMBER_STOP_FLAG            BOOLEAN         COMMENT '결연회원 중단여부',         -- degen
+    SEND_TYPE_SK                NUMBER(38,0)    COMMENT '[DEC-30] 발송구분 (FK→DIM_SEND_TYPE). 🟢커버리지 실측 21.58%(8,300,272/38,470,780) — 미매칭은 센티넬 0. ⚠️DEC-28 이 인용한 0.106% 는 요청 grain 분모였다(P39)',
     DW_SOURCE_SYSTEM            VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                  TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -551,8 +583,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR (
     VISITS                          NUMBER(38,0)    COMMENT '방문수(명) (#92)',
     EVENT_CNT                       NUMBER(38,0)    COMMENT '이벤트수(명) (#95)',
     VIEW_CNT                        NUMBER(38,0)    COMMENT '조회수(명) (#96)',
-    SESSION_CNT                     NUMBER(38,0)    COMMENT '세션수(명) (#97)',
-    ENGAGED_SESSIONS                NUMBER(38,0)    COMMENT '참여세션수',
+    SESSION_CNT                     NUMBER(38,0)    COMMENT '세션수(명) (#97) — 🔴**비가산**. COUNT(DISTINCT user||session) 인데 집계 grain 이라 같은 세션이 여러 행에 반복된다. 실측 SUM=243,156 vs 실제 distinct 77,172 = **3.15배 과대계상** → SUM 금지. 가산 대체 = VISITS',
+    ENGAGED_SESSIONS                NUMBER(38,0)    COMMENT '참여세션수 — 🔴**비가산**. COUNT(DISTINCT) + 집계 grain. 실측 SUM=161,117 vs 실제 37,505 = **4.30배 과대계상** → SUM 금지',
     SCROLL_DEPTH                    NUMBER(9,4)     COMMENT '스크롤깊이 AVG (#107) — 비가산',
     ACTIVE_USERS                    NUMBER(38,0)    COMMENT '활성사용자수(명) (#93) — 비가산',
     TOTAL_USERS                     NUMBER(38,0)    COMMENT '총사용자(명) (#94) — 비가산',
@@ -619,7 +651,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST (
     CHANNEL_COMPANY     VARCHAR         COMMENT '채널사 ← VIDEO.CHNNL_NM / REBRDC.CHNNL_CMPNY',
     CHANNEL_COMPANY_TYPE VARCHAR        COMMENT '채널사유형 ← VIDEO.CHNNL_CMPNY_TY_NM [VIDEO 전용]',
     SPOT_TYPE           VARCHAR         COMMENT 'SPOT유형 ← VIDEO.SPOT_TY [VIDEO 전용]',
-    DURATION_SEC        NUMBER(9,0)     COMMENT '광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용]. 종전 DIM_AD_CREATIVE 에서 CAST(NULL) 하드코딩이던 값',
+    DURATION_SEC        NUMBER(9,0)     COMMENT '🔴 광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용] — **현재 값 신뢰 금지(O29)**. 적재값 30,000,000/60,000,000/90,000,000 이라 "초"로 읽으면 오답(µs 해석 유력하나 미확정·현업 확인 대기). 원천 HH:MM:SS 32,739행(96.6%)이 캐스팅에서 무성 소실 → 유효 커버리지 1,151/36,416=3.2%(파싱 시 93.1% 회복). REBRDC NULL 은 결손 아니라 원천 부재',
     DAY_DIV             VARCHAR         COMMENT '요일구분 평일/주말 ← VIDEO.DAY_DIV_NM [VIDEO 전용]',
     PRG_START_TIME      VARCHAR         COMMENT '프로그램 시작시간 ← VIDEO.PRG_STRT_TIME [VIDEO 전용]',
     CTV_DIV             VARCHAR         COMMENT 'CTV구분 ← VIDEO.CTV_DIV_NM [VIDEO 전용]',
@@ -699,33 +731,36 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
     DATE_SK             NUMBER(8,0)     NOT NULL COMMENT '참여일 YYYYMMDD (FK→DIM_DATE)',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '참여 회원 (불변키)',              -- ※비강제 FK→DIM_MEMBER
     EVENT_SK            NUMBER(38,0)    NOT NULL COMMENT '행사 (FK→DIM_EVENT)',
-    CAMPAIGN_SK         NUMBER(38,0)    COMMENT '분석축',
-    SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '분석축',
-    RECRUIT_CNT         NUMBER(38,0)    COMMENT '모집인원',
-    TOTAL_CNT           NUMBER(38,0)    COMMENT '총인원',
-    WAIT_CNT            NUMBER(38,0)    COMMENT '대기인원',
-    CANCEL_CNT          NUMBER(38,0)    COMMENT '취소인원',
-    CONFIRM_CNT         NUMBER(38,0)    COMMENT '신청확정인원',
-    PARTICIPATE_CNT     NUMBER(38,0)    COMMENT '참여인원',
-    ABSENT_CNT          NUMBER(38,0)    COMMENT '불참인원',
-    PARTICIPANT_CNT     NUMBER(38,0)    COMMENT '참여자수',
-    PARTICIPATION_TIMES NUMBER(38,0)    COMMENT '참여횟수',
-    WAIT_TIMES          NUMBER(38,0)    COMMENT '대기횟수',
-    ABSENT_TIMES        NUMBER(38,0)    COMMENT '불참횟수',
-    CUM_APPLY_TIMES     NUMBER(38,0)    COMMENT '누적신청 횟수',
+    CAMPAIGN_SK         NUMBER(38,0)    COMMENT '분석축(캠페인) — 🔴 전건 0 하드코딩(미배선). 차단=O8 다중캠페인 귀속규칙 현업 미회신. 0 은 (미매핑) 센티넬이며 "캠페인 없음" 아님',
+    SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '분석축(후원사업) — 🔴 전건 0 하드코딩(미배선). 차단=O8 동일 게이트. 0 은 (미매핑) 센티넬',
+    -- 🔴 [DEC-30 2026-08-04] RECRUIT_CNT 제거 → DIM_EVENT.RECRUIT_HEADCOUNT 로 이관(§18-D ② grain 실패).
+    TOTAL_CNT           NUMBER(38,0)    COMMENT '총인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정. 0 을 실측값으로 읽지 말 것',
+    WAIT_CNT            NUMBER(38,0)    COMMENT '대기인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
+    CANCEL_CNT          NUMBER(38,0)    COMMENT '취소인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
+    CONFIRM_CNT         NUMBER(38,0)    COMMENT '신청확정인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
+    PARTICIPATE_CNT     NUMBER(38,0)    COMMENT '참여인원 — ⚠️행당 상수 1 하드코딩(집계 아님). 취소·불참 행도 1',
+    ABSENT_CNT          NUMBER(38,0)    COMMENT '불참인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
+    PARTICIPANT_CNT     NUMBER(38,0)    COMMENT '참여자수 — ⚠️행당 상수 1(=행수). 회원 중복 미제거 → 명수는 COUNT(DISTINCT MEMBER_DK)',
+    PARTICIPATION_TIMES NUMBER(38,0)    COMMENT '참여횟수 — 🔴 전건 0(미배선). 🟢 PARTCPT_SEQ 로 O28 무관하게 산출 가능',
+    WAIT_TIMES          NUMBER(38,0)    COMMENT '대기횟수 — 🔴 전건 0(미배선). O28 확정 후 산출',
+    ABSENT_TIMES        NUMBER(38,0)    COMMENT '불참횟수 — 🔴 전건 0(미배선). O28 확정 후 산출',
+    CUM_APPLY_TIMES     NUMBER(38,0)    COMMENT '누적신청 횟수 — 🔴 전건 0(미배선). PARTCPT_SEQ 기반 산출 가능(O28 무관)',
     REGULAR_DONATION    NUMBER(18,2)    COMMENT '정기후원금(원)',
     -- ❌ VIEW_CNT(조회수) 삭제(2026-07-09): 어드민 원천 제외 확정. 내년 어드민 구현 시 ADD COLUMN 재추가.
     WIN_FLAG            BOOLEAN         COMMENT '당첨여부',           -- degen
-    SELF_PART_FLAG      BOOLEAN         COMMENT '본인참여',           -- degen
-    PART_STATUS         VARCHAR         COMMENT '참여상태',           -- degen
+    SELF_PART_FLAG      BOOLEAN         COMMENT '본인참여 — 🔴 전건 NULL(미배선). 원천 대응 미확정',   -- degen
+    -- 🔴 [O28 2026-08-04] 한 컬럼에 코드체계 2개 혼입. 상세 = 03_top-down_gold/O28_O29_COMMENT_GUARD.sql §1-A
+    PART_STATUS         VARCHAR         COMMENT '🔴 참여상태 — 코드체계 2개 혼입(O28). 일반행사=MS304(110 Success·120 Fail·130~220 N_step_right/fail) 707,476행 / 캠페인행사=소정수 1~6 152,046행(의미 미확정·문서20 §I). 판별자=EVENT_KEY 접두(고아 23.2% 안전). 두 체계 합산·GROUP BY 금지 · 한글 비교는 0행',   -- degen
     PART_PATH           VARCHAR         COMMENT '참여경로(05 3-5)',   -- degen
     PART_CHANNEL        VARCHAR         COMMENT '참여채널(05 3-5)',   -- degen
-    INCREASE_FLAG       BOOLEAN         COMMENT '증액여부',           -- degen
+    INCREASE_FLAG       BOOLEAN         COMMENT '증액여부 — 🔴 전건 NULL(미배선). 정소재지는 FACT_MEMBER_EVENT.DVLP_DIV_CD(MM015 코드2)',   -- degen
+    EVENT_BK            VARCHAR         COMMENT '[DEC-30] degenerate key — 원천 행사키 ← CRM_EVENT_PARTICIPATION.EVENT_KEY(채움 100%). 🔴고아 행사 식별자 보존용: 마스터 부재 53개 행사·263,611행(23.2%)이 EVENT_SK=0 으로 뭉개져 서로 구별되지 않았다(SILVER distinct 3,715 vs GOLD EVENT_SK 3,663). 🔷(EVENT_BK,MEMBER_DK,PARTCPT_SEQ) 가 행 유일 식별 — EVENT_SK 로는 31,831키·63,783행 충돌. ⚠️접두(EVENT_/CRMN_)가 O28 코드체계 판별자',   -- degen
+    PARTCPT_SEQ         NUMBER(38,0)    COMMENT '[DEC-30] degenerate key — 참여 일련번호 ← CRM_EVENT_PARTICIPATION.PARTCPT_SEQ(채움 100%). 🔷(EVENT_SK,MEMBER_DK,PARTCPT_SEQ) 가 행을 유일 식별 — (행사,회원)만으로는 802,298 ≠ 1,134,126 중복. ⚠️전역 순번 아님((행사,SEQ) 201,817) · 음수 20,844행·INT_MIN 1행 → 식별자 전용, 정렬·범위조건 금지',   -- degen
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '행사 참여 팩트 (DATE_SK × MEMBER_DK × EVENT_SK)';
+) COMMENT = '행사 참여 팩트 (DATE_SK × MEMBER_DK × EVENT_SK) · 1,134,126행(2026-08-04 실측). 🔴O28: PART_STATUS 에 코드체계 2개 혼입 — 행사종류 미분리 집계는 조용히 틀린다. 🔴미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2) 전건 0/NULL — 0 을 실측값으로 읽지 말 것. 🟡행 식별자 부재(유일조합=EVENT_KEY,MEMBER_DK,PARTCPT_SEQ). ⚠️고아 EVENT_SK=0 263,611행(23.2%)';
 
 
 -- ============================================================================
@@ -790,6 +825,7 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_TARGET_BIZ DROP CONSTRAINT FK_FTG_B_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT DROP CONSTRAINT FK_FSE_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT DROP CONSTRAINT FK_FSE_DIM_SERVICE; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT DROP CONSTRAINT FK_FSE_DIM_SEND_TYPE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT DROP CONSTRAINT FK_FSE_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR DROP CONSTRAINT FK_FGA_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR DROP CONSTRAINT FK_FGA_DIM_MEMBER_IDENTITY; EXCEPTION WHEN OTHER THEN NULL; END;
@@ -860,6 +896,9 @@ ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT ADD CONSTRAINT FK_FSE_DIM_DATE
     FOREIGN KEY (DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT ADD CONSTRAINT FK_FSE_DIM_SERVICE
     FOREIGN KEY (SERVICE_SK) REFERENCES GN_DW.GOLD.DIM_SERVICE (SERVICE_SK) NOT ENFORCED NORELY;
+-- [DEC-30 2026-08-04] 발송구분 차원 FK 신설
+ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT ADD CONSTRAINT FK_FSE_DIM_SEND_TYPE
+    FOREIGN KEY (SEND_TYPE_SK) REFERENCES GN_DW.GOLD.DIM_SEND_TYPE (SEND_TYPE_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_SERVICE_EVENT ADD CONSTRAINT FK_FSE_DIM_CAMPAIGN
     FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
 

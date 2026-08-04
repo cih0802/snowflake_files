@@ -1,33 +1,18 @@
 {
-    "path_count": 233,
-    "parsed_path_count": 4,
-    "static_analysis_path_count": 3,
+    "path_count": 235,
+    "parsed_path_count": 0,
+    "static_analysis_path_count": 0,
     "static_analysis_parsed_path_count": 0,
     "is_partial_parse_enabled": true,
     "is_static_analysis_enabled": true,
-    "read_files_elapsed": 0.09405446199997414,
-    "load_macros_elapsed": 0.000615653000011207,
-    "parse_project_elapsed": 0.3689335139999912,
-    "patch_sources_elapsed": 6.518200001437435e-05,
-    "process_manifest_elapsed": 0.001091842999983328,
-    "load_all_elapsed": 1.0151578510000263,
+    "read_files_elapsed": 0.09669148900002256,
+    "load_all_elapsed": 0.5143131109999786,
     "projects": [
         {
             "project_name": "gn_dw_silver",
-            "elapsed": 0.3684380949999877,
-            "parsers": [
-                {
-                    "parser": "model",
-                    "elapsed": 0.2855507670000179,
-                    "parsed_path_count": 3
-                },
-                {
-                    "parser": "test",
-                    "elapsed": 0.08287143699999433,
-                    "parsed_path_count": 1
-                }
-            ],
-            "parsed_path_count": 4
+            "elapsed": 0.0,
+            "parsers": [],
+            "parsed_path_count": 0
         },
         {
             "project_name": "dbt_snowflake",

@@ -787,7 +787,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST (
     CHANNEL_COMPANY     VARCHAR         COMMENT '채널사',
     CHANNEL_COMPANY_TYPE VARCHAR        COMMENT '채널사유형 [VIDEO 전용]',
     SPOT_TYPE           VARCHAR         COMMENT 'SPOT유형 [VIDEO 전용]',
-    DURATION_SEC        NUMBER(9,0)     COMMENT '광고 초수 [VIDEO 전용]',
+    -- 🟢 [DEC-30 2026-08-04] HH:MM:SS 파싱 배선 — 96.6% 무성 소실 복구(3.2%→93.1%).
+    --   ⚠️ 숫자 3종(30/60/90 ×10^6)은 단위 미확정이라 의도적 NULL(문서20 §J 회신 대기).
+    --   ⚠️ TRY_TO_TIME 금지 — '30000000' 을 05:20:00(19,200초)로 조용히 바꾼다(P48).
+    DURATION_SEC        NUMBER(9,0)     COMMENT '광고 초수 [VIDEO 전용] — HH:MM:SS 파싱값(초). 값 집합 {30,60,90,120}. 숫자표기 1,151행은 단위 미확정으로 NULL 유지. REBRDC 는 원천 부재',
     DAY_DIV             VARCHAR         COMMENT '요일구분 평일/주말 [VIDEO 전용]',
     PRG_START_TIME      VARCHAR         COMMENT '프로그램 시작시간 [VIDEO 전용]',
     CTV_DIV             VARCHAR         COMMENT 'CTV구분 [VIDEO 전용]',

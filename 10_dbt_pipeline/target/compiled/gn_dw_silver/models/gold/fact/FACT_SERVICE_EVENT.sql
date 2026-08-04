@@ -11,7 +11,9 @@ with s as (
 ),
 req as (
     -- 발송요청 마스터: SNDNG_KEY unique(1,614,397). SERVICE_SK 산식 컬럼(SEND_CHANNEL·SNDNG_TY_CD) + 제목(TIT).
-    select SNDNG_KEY, SEND_CHANNEL, SNDNG_TY_CD, TIT
+    -- [DEC-30 2026-08-04] 발송구분 계층 3컬럼 추가 — DIM_SEND_TYPE 조인키 산식용.
+    select SNDNG_KEY, SEND_CHANNEL, SNDNG_TY_CD, TIT,
+           SEND_GBN_TOP, SEND_GBN_MID, SEND_GBN_BOT
     from GN_DW.SILVER.CRM_SEND_REQUEST
 )
 
@@ -35,10 +37,16 @@ select
     s.SEND_CHANNEL                                as SEND_TYPE,
     CAST(NULL AS BOOLEAN)                          as MAIL_RECEIVE_FLAG,
     CAST(NULL AS BOOLEAN)                          as MEMBER_STOP_FLAG,
+    -- 🟢 [DEC-30 2026-08-04] 발송구분 차원 배선 — DIM_SEND_TYPE 과 **동일 산식**(경로 3컬럼 해시).
+    --   커버리지 실측 8,300,272/38,470,780 = **21.58%**. 나머지는 발송요청에 구분값이 없어 센티넬 0.
+    --   ⚠️ DEC-28 §18-C 가 인용한 0.106% 는 **요청 grain 분모**였다 — send-type 이 붙은 요청은
+    --      평균 4,862.5명 발송(없는 요청 18.7명)이라 소비 grain 에서는 200배 차이가 난다(P39).
+    CASE WHEN r.SEND_GBN_TOP IS NULL THEN 0
+         ELSE ABS(HASH(COALESCE(CAST(r.SEND_GBN_TOP AS VARCHAR), '∅') || '‖' || COALESCE(CAST(r.SEND_GBN_MID AS VARCHAR), '∅') || '‖' || COALESCE(CAST(r.SEND_GBN_BOT AS VARCHAR), '∅'))) END as SEND_TYPE_SK,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'caf0ed7e-1e99-4c1d-b479-e0fc6272f462'                    AS DW_BATCH_ID
+    '5ef82815-e89f-4a45-805d-207f49bbc068'                    AS DW_BATCH_ID
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY      -- SNDNG_KEY unique → fan-out 없음
 where s.MBER_NO is not null                       -- 순수 불량 745행 제외(NOT NULL MEMBER_DK)

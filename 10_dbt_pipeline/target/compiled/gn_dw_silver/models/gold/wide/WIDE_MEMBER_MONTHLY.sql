@@ -30,19 +30,22 @@ select
     m.SEX                 as SEX,                     -- CM013 코드 raw
     m.SEX_NM              as SEX_NM,                  -- CM013 원천 라벨(국내/외국인 축)
     m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
+    m.AREA_CD             as MEMBER_AREA_CD,          -- [O27] CM018 코드 raw (라벨=MEMBER_REGION)
     m.REGION              as MEMBER_REGION,
+    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. ⚠️연속형 나이 아님
     m.AGE_BAND            as MEMBER_AGE_BAND,
     m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
     m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
+    m.PREV_MBER_STAT_CD   as PREV_MBER_STAT_CD,       -- [O27] 상태전이 이전상태 코드(MM010)
+    m.PREV_MEMBER_STATUS_NAME as PREV_MEMBER_STATUS_NAME,  -- [O27] 이전상태 라벨(MM010)
     m.MBER_DIV_CD         as MBER_DIV_CD,             -- MM018 코드 raw
     m.MEMBER_TYPE_NAME    as MEMBER_TYPE_NAME,        -- MM018 분석 라벨
-    m.NEW_EXISTING_FLAG   as MEMBER_NEW_EXISTING,
     m.FIRST_JOIN_DATE     as MEMBER_FIRST_JOIN_DATE,
     m.FIRST_CAMPAIGN      as MEMBER_FIRST_CAMPAIGN,
     m.JOIN_PATH_CD        as JOIN_PATH_CD,            -- MM014 코드 raw
     m.ENROLL_PATH_NAME    as MEMBER_ENROLL_PATH_NAME, -- MM014 분석 라벨
     m.FIRST_SPONSORSHIP   as MEMBER_FIRST_SPONSORSHIP,
-    m.CURRENT_SPONSORSHIP as MEMBER_CURRENT_SPONSORSHIP,
+    m.LAST_STOP_DATE      as MEMBER_LAST_STOP_DATE,   -- [O27] as-of 최종중단일(그 시점까지)
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
     c.BRAND               as CAMPAIGN_BRAND,
     c.PARENT_CAMPAIGN     as CAMPAIGN_PARENT,
@@ -60,9 +63,8 @@ select
     r.REASON_TYPE         as REASON_TYPE
 from GN_DW.GOLD.FACT_MEMBER_MONTHLY f
 left join (
-    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, REGION, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME, JOIN_PATH_CD, ENROLL_PATH_NAME,
-           NEW_EXISTING_FLAG, FIRST_JOIN_DATE, FIRST_CAMPAIGN,
-           FIRST_SPONSORSHIP, CURRENT_SPONSORSHIP
+    select MEMBER_DK, SEX, SEX_NM, GENDER_NAME, AREA_CD, REGION, AGE, AGE_BAND, MBER_STAT_CD, MEMBER_STATUS_NAME, PREV_MBER_STAT_CD, PREV_MEMBER_STATUS_NAME, MBER_DIV_CD, MEMBER_TYPE_NAME, JOIN_PATH_CD, ENROLL_PATH_NAME,
+           FIRST_JOIN_DATE, FIRST_CAMPAIGN, FIRST_SPONSORSHIP, LAST_STOP_DATE
     from GN_DW.GOLD.DIM_MEMBER
     where IS_CURRENT = TRUE
     qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK
