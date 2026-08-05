@@ -65,3 +65,37 @@ END-METADATA -->
 
 ---
 _Co-authored with CoCo_
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+
+### 🔴 `gold.fact` 에 `on_schema_change: fail` 적용 (O40-B · P82)
+
+**왜**: 기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러도 워닝도 없이 버린다.**
+이번에 실제로 겪었다 — O40 에서 컬럼 2종을 추가하고 build 가 `PASS=370 WARN=27 ERROR=0 SKIP=0` 으로
+끝났는데 `INSERT` 가 대상 테이블의 **56컬럼만** 써서 신규 컬럼이 생기지 않았다.
+🔴 **"ERROR=0" 은 성공 신호가 아니었다.**
+
+**왜 `append_new_columns` 가 아닌가**: GOLD DDL 정본은 `03_top-down_gold/06_DDL.sql` 이고 dbt 는
+파이프라인만 실행한다. 자동 ALTER 는 정본과 조용히 어긋나므로, **수동 DDL 거버넌스를 유지하면서
+불일치만 큰 소리로 드러내는** `fail` 을 택했다.
+
+**적용 전 안전 검증(2026-08-05)**: `dbt compile` 후 13개 팩트의 컴파일 SQL 을 `SELECT * FROM (...) LIMIT 0`
+으로 실행해 **모델 산출 컬럼 vs 테이블 컬럼 전량 대조** → 드리프트 **0건** 확인 후 적용.
+`dbt list --output json` 으로 유효 config `"on_schema_change": "fail"` 반영 확인.
+
+### ⚠️ 팩트에 컬럼을 추가하는 표준 절차 (이 순서를 지킬 것)
+1. `03_top-down_gold/06_DDL.sql` 수정(정본)
+2. `ALTER TABLE ... ADD COLUMN` 실행
+3. `INFORMATION_SCHEMA.COLUMNS` 로 **컬럼 존재 확인** ← 건너뛰면 4~5가 무증상 실패한다
+4. dbt 모델 수정
+5. `dbt build --select <FACT>`
+6. 🔴 **`COUNT(<신규컬럼>)` 비NULL 건수 검증** — 행수·기존 값 불변만 보면 통과해 버린다
+
+> 🔴 교훈: **실행 순서를 문서에 적는 것과 선행 단계를 실제로 완료해 두는 것은 다르다.** 넘길 때는
+> 「무엇을 먼저 해야 하는지」가 아니라 **「지금 무엇만 하면 되는지」** 상태로 만들어 넘긴다.
+
+_Co-authored with CoCo_

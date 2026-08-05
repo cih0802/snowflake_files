@@ -12,7 +12,9 @@ models:
   - name: WIDE_MEMBER_EVENT
     description: "회원 이벤트 팩트(FME) 평탄화 — DATE·MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·ORG·REASON."
   - name: WIDE_TARGET_DEV
-    description: "회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY."
+    description: "회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY. [2026-08-05 O38] MONTH_KEY 연도 복원으로 CAL_YEAR 가 유효해졌다(종전 1~12 라 FLOOR(MONTH_KEY/100)=0 전건). 목표 대비 실적은 WIDE_DEV_ACHIEVEMENT 소관."
+  - name: WIDE_DEV_ACHIEVEMENT
+    description: "[2026-08-05 O38 신설] 회원개발 **목표 대비 실적** 월 conform 뷰 — FTG_D(목표) × FME(실적) FULL OUTER. grain=MONTH_KEY×ORG_SK×DEV_TYPE. 마케팅 장표 「1. 개발현황(목표,실적)」의 정본이며 정본 지표 공#1(월 목표 달성율)·#2(누계)·#3(연)의 산출 base 다. 🔴달성율 컬럼은 두지 않는다 — SUM(실적)/SUM(목표) 로 재계산할 것(행 단위 비율의 평균은 항상 틀린다). 🔴달성율 분모·분자는 **HAS_POSITIVE_GOAL=TRUE**(=GOAL_CNT>0) 로 스코프해야 한다 — 목표 미편성분의 실적이 분자에 섞이면 조용히 과대해진다(P18·P63). ⚠️**HAS_GOAL_ROW(목표 행 존재)로 스코프하면 안 된다**: 원천이 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채워 목표 행의 과반이 0 이므로, 그 행들의 실적이 분모 없이 분자에 들어가 비율이 폭증한다(실측 확인 후 교정). ⚠️_YTD·_YEAR 컬럼은 월에 대해 비가산 — 월을 가로질러 합산 금지. ⚠️일별 실적은 WIDE_MEMBER_EVENT(일 grain) 소관 — 월 목표를 일자에 반복하면 이중계상된다. ⚠️매체(브랜드2)별 목표는 원천에 없다(정본 마케팅 인벤토리 §1 「부서별 목표만 존재·매체별 목표 확인 불가」)."
   - name: WIDE_SERVICE_EVENT
     description: "서비스/발송 팩트(FSE) 평탄화 — DATE·MEMBER[현재버전]·SERVICE·CAMPAIGN."
   - name: WIDE_GA_BEHAVIOR

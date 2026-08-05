@@ -5,7 +5,7 @@ project: GN_DW (굿네이버스)
 created: 2026-07-22
 depends_on: 05_1~05_7_SV_DDL_*.sql(5 SV 배포), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
 scope: Phase-1 배포 2 Agent (AGENT_MEMBER·AGENT_OVERALL) / 마케팅 Agent = Phase-2
-workspace_specs: cortex_project/AGENT_MEMBER.agent.yaml · cortex_project/AGENT_OVERALL.agent.yaml
+workspace_specs: cortex_project/agents/AGENT_MEMBER/agent_spec.yaml · cortex_project/agents/AGENT_OVERALL/agent_spec.yaml   # 2026-08-05 O38 경로 정정
 deploy_by: 사용자(GN_DW_ADMIN) — 에이전트는 스펙 작성·읽기전용 테스트만
 END-METADATA -->
 
@@ -76,7 +76,9 @@ END-METADATA -->
 
 ## 3. Agent 스펙 (정본 — workspace YAML)
 
-> 정본 파일: `cortex_project/AGENT_MEMBER.agent.yaml` · `cortex_project/AGENT_OVERALL.agent.yaml` (semantic_studio `cortex_agent_write`로 작성). 아래는 동기화된 사본.
+> 🔴 **정본 파일(2026-08-05 O38 정정)**: `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` · `cortex_project/agents/AGENT_OVERALL/agent_spec.yaml`.
+> 종전 이 자리에 적혀 있던 `cortex_project/AGENT_*.agent.yaml`(루트)은 **정본이 아니며 `_archive/` 로 이관됐다** — MEMBER 쪽은 도구 4개·샘플 8개의 **O33 이전 판본**이었다(정본은 도구 6개·샘플 19개).
+> 정본이 두 경로로 선언돼 서로 모순이던 상태였고, 실제 배포가 `09_2` 의 `ADD VERSION FROM <디렉터리>` 로 `agents/<AGENT>/agent_spec.yaml` 을 읽으므로 **그쪽이 정본**이다. 아래는 동기화된 사본.
 
 > ⚠️ **`cortex_project/` 폴더 = semantic_studio 툴이 관리하는 배포 매니페스트 폴더 — 이동·개명 금지.**
 > - **성격**: 사람용 설계문서(본 `08_AGENT_spec.md`)와 별개인 **기계 관리 배포 IaC**(dbt project·Terraform state에 해당). `cortex-project.yaml`(매니페스트)이 `path(상대) → Snowflake FQN` 매핑을 보관하고, `cortex_agent_save`/`publish`/`deploy`가 이를 읽어 배포 대상을 해석한다.
@@ -87,9 +89,9 @@ END-METADATA -->
 ### 3.1 AGENT_MEMBER
 
 > 🔴 **[2026-07-29 발견] 본 절 YAML 사본은 구버전이다 — 정본 대조 필수.**
-> 아래 사본은 **순서9-F/9-G 개정 이전** 판본이다(장문 서술형 `response`·`orchestration`, `analyst_*` 4종 라우팅 문장형). 실제 정본 `cortex_project/AGENT_MEMBER.agent.yaml` 및 배포본(VERSION$2)은 **컴팩트 판본 + `*_NAME` 라벨 차원 + 원천(provenance) 규칙 + 기본 창 규칙**을 포함한다.
+> 아래 사본은 **순서9-F/9-G 개정 이전** 판본이다(장문 서술형 `response`·`orchestration`, `analyst_*` 4종 라우팅 문장형). 실제 정본 `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` 및 배포본(**VERSION$5**, 2026-08-05 O38)은 **컴팩트 판본 + `*_NAME` 라벨 차원 + 원천(provenance) 규칙 + 기본 창 규칙 + 도구 6개**(`analyst_member_cohort`·`analyst_dev_achievement` 포함)를 포함한다.
 > 즉 §3.2(AGENT_OVERALL)는 동기화 상태이나 **§3.1만 뒤처져 있다**. 이는 이번 세션 변경분이 아니라 **누적 부채**이며, 전면 재작성은 범위가 커 별도 작업으로 분리했다(리스크: 사본을 근거로 재배포하면 라벨화·원천 규칙이 **소실**된다).
-> **당분간 AGENT_MEMBER 스펙의 근거는 반드시 `cortex_project/AGENT_MEMBER.agent.yaml` 을 직접 읽을 것.** 후속 착수 시 `semantic_studio cortex_agent_read`(source=workspace) 결과로 본 절을 통째로 교체한다.
+> **당분간 AGENT_MEMBER 스펙의 근거는 반드시 `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` 을 직접 읽을 것.** 후속 착수 시 `semantic_studio cortex_agent_read`(source=workspace) 결과로 본 절을 통째로 교체한다.
 
 ```yaml
 models:
@@ -178,6 +180,9 @@ instructions:
   system: |
     굿네이버스(Good Neighbors) 전사/재무 요약 분석 어시스턴트(예산 편성·집행·집행율, 광고 실적(비용·CTR·CVR·개발단가), 필요 시 회원 월실적·발송 전사 요약).
     - 배포된 활성 지표만 산출. 미적재분(연 편성예산, 집행추정/모금성비용, 조직별 예산, 캠페인별/소재별 광고 분해, 예산 기반 ROI(신9~11), 사업목표 대비 등)은 창작 금지 → "데이터 적재 후(Phase-2) 제공 예정" 안내.
+  <!-- 🔴 [2026-08-05 O38] 이 사본은 구버전이다. 배포본(VERSION$4)에는 **"목표는 두 가지"** 절이 추가돼
+       사업목표(FTG_B 미입고 → 산출 불가)와 **회원개발 목표(산출 가능 · AGENT_MEMBER 소관)** 를 분리한다.
+       이 사본만 보고 "목표는 전부 미적재"로 읽지 말 것 — 정본은 cortex_project/agents/AGENT_OVERALL/agent_spec.yaml -->
     - SV 간 교차계산(cross-fact) 금지 — 전사 요약도 질의마다 단일 SV로 분해.
     - 광고 지표 주의: 노출·클릭·CTR·CVR·CRM개발건·개발단가는 **디지털(AD_SOURCE_TYPE=DIGITAL) 전용**, 인바운드콜·방송횟수·전환콜·방송개발건은 **방송(VIDEO/REBROADCAST) 전용**. 혼합집계 금지. 광고비만 전체 합산 허용.
     - 개발단가(공7)는 **2026-05까지만** 산출 가능. 2026-06부터 원천이 개발건수 대신 단가를 직접 제공하는 포맷으로 바뀌어 산출 불가 → 최신월 기준 질문은 2026-05까지로 한정하고 사유를 명시.
@@ -268,7 +273,7 @@ tool_resources:
 > 스펙은 workspace에 작성됨(save 안 됨). 아래를 사용자가 순서대로 실행. **권장: semantic_studio save/publish**, DDL은 참고.
 
 ### 4.1 (권장) semantic_studio로 save → publish
-1. `cortex_agent_save` — `file_path=cortex_project/AGENT_MEMBER.agent.yaml`, `fqn=GN_DW.SERVING.AGENT_MEMBER` (OVERALL 동일).
+1. 🔴 **`cortex_agent_save`/`cortex_agent_deploy` 를 쓰지 않는다**(2026-08-05 O38 정정). 이 도구는 **live 버전**을 만드는데 이 프로젝트는 **명명 버전 방식**(VERSION$n)이고 `ADD VERSION FROM` 은 live 가 있으면 **거부**된다. 정본 경로 = `agents/<AGENT>/agent_spec.yaml` 갱신 → `ALTER WORKSPACE … COMMIT` → **`09_2_AGENT_버전업.sql`** → `SET DEFAULT_VERSION`(P66: 발행만으로 default 가 되지 않는다).
 2. `SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;` 로 미게시 버전 확인 후 `cortex_agent_publish` (필요 시).
 
 > ⚠⚠ **배포 3경로의 버전 의미 차이 — 실측 검증 완료(2026-07-29, 순서9-L)**

@@ -416,7 +416,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     PAYMENT_SK                  NUMBER(38,0)    COMMENT '납입/결제 유형 (FK→DIM_PAYMENT)',
     REASON_SK                   NUMBER(38,0)    COMMENT '미납 대표사유 (FK→DIM_REASON) — ✅ W3(DEC-24, 2026-07-31) 배선 완료. 🔴 미납(PAY_STAT_CD=''F'') 행 한정 — 최종차수(MBRFEE_SQNC 최대)의 RQEST_RST_CD를 (코드그룹, 코드) 복합키로 DIM_REASON 조인. 코드그룹 = SETLE_CD 1&2자리→PM002 / 1&4자리→PM032 / 2→PM018 / 12→PM033 / 5→PM019. 실측 미납 월×회원 3,302,535 중 3,164,724(95.83%) 매핑 · 0=비미납 또는 구조적 사유부재 137,811(수기처리 127,155 + F코드부재 10,623 + DIM미존재 33). ⚠️ 대표 1개로 축약 — 복수사유 분포는 SILVER 직접 조회. ⚠️ 중단사유는 별도 트랙(FME)',
     DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) — A1: FME(CRM_MEMBER_DEV) 사건수 롤업. ⚠️금액/10000 의미는 원천 금액컬럼+FME 변경 필요(별도트랙, #4·5·149)',
-    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) — A1: 월×회원 개발발생=1 (#148)',
+    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명)(#148) — A1: 월×회원 개발발생=1. 🟢이 컬럼은 **옳다**: grain 이 월×회원이라 SUM 이 곧 개발(명)이며 466개월 전부 COUNT(DISTINCT MEMBER_DK) 와 일치 실측(O39). ⚠️동명의 FACT_MEMBER_EVENT.DEV_MEMBERS 는 사건 플래그로 SUM 이 건수다 — 혼용 금지.',
     STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)',
     UNPAID_CNT                  NUMBER(18,4)    COMMENT '미납(건) (#36)',
     ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157)',
@@ -436,8 +436,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     REGULAR_FEE                 NUMBER(18,2)    COMMENT '정기회비(원) (#66)',
     REGULAR_ONETIME_FEE         NUMBER(18,2)    COMMENT '정기회원 일시회비(원) (#67)',
     ONETIME_ONETIME_FEE         NUMBER(18,2)    COMMENT '일시회원 일시회비(원) (#68)',
-    PAID_FEE                    NUMBER(18,2)    COMMENT '납입회비(원) (#69·70 단일화)',
-    BILLED_AMT                  NUMBER(18,2)    COMMENT '청구(원) (#71)',
+    PAID_FEE                    NUMBER(18,2)    COMMENT '납입 **총액**(원) = 회비+기부금 (#69·70 단일화). 🔴「납입회비」가 아니다(O40) — 회비만은 PAID_FEE_BILLABLE. 납부율 분자로 쓰지 말 것(분모 BILLED_AMT 는 회비 청구만이라 모집단 불일치).',
+    BILLED_AMT                  NUMBER(18,2)    COMMENT '회비 청구액(원) (#71). 기부금은 원천에 청구 컬럼이 없어 포함되지 않는다(O40).',
+    -- [2026-08-05 O40] 납부율·미납금액 모집단 일치 컬럼 2종
+    PAID_FEE_BILLABLE           NUMBER(18,2)    COMMENT '회비만 납입액(원) — 납부율 분자 **정본**(O40). `PAYMENT_TYPE=''회비''` 행의 PAY_AMT 합. 🔴`PAID_FEE` 와 다르다: 그쪽은 회비+기부금 총수납액이고 기부금은 원천에 청구 컬럼이 없어 분모에 못 들어간다. 납부율 = PAID_FEE_BILLABLE / BILLED_AMT 로 계산할 것.',
+    UNPAID_BILLED_AMT           NUMBER(18,2)    COMMENT '미납 청구액(원) — 정본 **DEC-3** 정의(O40): `PAY_STAT_CD IN (''F'', NULL)` 인 행의 **RQEST_AMT** 합. 🔴차감식(BILLED−PAID)을 쓰지 말 것 — 기부금이 미납을 상쇄해 2.37배 과소해진다(2025 실측 123억 vs 정본 293억).',
     INBOUND_CALL_CNT            NUMBER(38,0)    COMMENT '인바운드콜수 (overview) — 비-CRM 별도 입력',
     TS_CALL_CNT                 NUMBER(38,0)    COMMENT 'TS콜수 (overview) — 비-CRM 별도 입력',
     DEV_TYPE                    VARCHAR         COMMENT '개발구분(#121)',                                  -- degen
@@ -462,7 +465,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     AMT_DECREASE_CUM_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 해당 월말까지 누적 감액 이력 횟수 (RDCAMT_YN=Y 건수). 🔴 정본 감액(건)#38(=감액금액/10,000)과 다름 — 혼용 금지',  -- snapshot
     PAID_SPONSOR_BIZ_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 그 달 실제 납입(PAY_AMT>0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL',
     IS_MULTI_PAID_BIZ           BOOLEAN         COMMENT 'W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT>1). HAS_BILLING=FALSE면 NULL',
-    HAS_BILLING                 BOOLEAN         NOT NULL COMMENT '납입/청구 행 존재 여부 — TRUE=회비 스파인(구 37.79M), FALSE=개발/중단 사건만(납입無 월). 보수적 소비=WHERE HAS_BILLING; 정확 소비=전체 (A1 2026-07-21)',  -- 출처 플래그
+    HAS_BILLING                 BOOLEAN         NOT NULL COMMENT '결제(billing) 행 존재 여부 — TRUE=결제 스파인(구 37.79M), FALSE=개발/중단 전용 월(회비 measure NULL). 🔴**「회비만」 스코프가 아니다**(O40): 기저 CTE 가 회비와 **기부금을 함께** 담으므로 TRUE 행에도 기부금이 섞이고 청구 없는 기부금 전용 월도 TRUE 다. 이 필터를 걸어도 납부율 분자는 정화되지 않는다 — 회비 기준이 필요하면 PAID_FEE_BILLABLE 을 쓴다.',  -- 출처 플래그
     DW_SOURCE_SYSTEM            VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                  TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -479,15 +482,15 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     EVENT_TYPE          VARCHAR         NOT NULL COMMENT '원천 계통 구분: DEV=개발원천(TM_MM_FDRM_MBER_DVLP_AMT) / STOP=중단원천(TM_MM_FDRM_MBER_SPNSR_DSCNTC). ⚠️ 상태(신규·증액·감액·재후원·후원중단)는 DVLP_DIV_CD/DVLP_DIV_NM 참조 — O24',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
-    ORG_SK              NUMBER(38,0)    COMMENT '조직 (FK→DIM_ORG)',
+    ORG_SK              NUMBER(38,0)    COMMENT '조직 (FK→DIM_ORG) — **실적부서**(원천 ACMSLT_DEPT_CD) 기준. O10/Q7 확정축. 🔴 개발(DEV) 사건 전용이다(2026-08-05 O38 배선, 미매칭 8행은 0 라우팅). 중단(STOP) 행은 전건 0 — 축이 없어서가 아니라 중단원천이 REGIST_DEPT_CD(**등록부서**)만 보유해 역할이 다르기 때문이다. 한 컬럼에 섞으면 부서별 집계가 조용히 틀린다(O24·O28 의미혼입 유형) → 등록부서 축 배속은 O38-B 결정 대기. ⚠️ ''부서별 중단건''을 이 컬럼으로 내지 말 것',
     REASON_SK           NUMBER(38,0)    COMMENT '중단/미납 사유 (FK→DIM_REASON)',
     DVLP_DIV_CD         VARCHAR         COMMENT '개발구분코드 — BRONZE TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD raw(정본 MM015). 1=신규 2=증액 3=감액 4=재후원 5=후원중단. 중단원천 행은 NULL(원천에 컬럼 부재). 🔴 MM015(개발구분)는 MM010(회원상태)이 아니다 — 두 그룹 모두 ''후원중단''을 포함해 혼동되기 쉽다. 회원상태는 DIM_MEMBER.MBER_STAT_CD(MM010 1활동회원·2~11미납·12후원중단)',
     DVLP_DIV_NM         VARCHAR         COMMENT '개발구분명 — MM015 라벨(신규/증액/감액/재후원/후원중단). ⚠️ 값 ''후원중단''(1,010,680건)은 EVENT_TYPE=''STOP''(1,038,262건)과 동일 사건이 중복 존재(동일 회원·일자 99.99%) → 두 축 합산 금지, O24 현업확인 대기',
     SPNSR_AMT           NUMBER(18,0)    COMMENT '후원금액(원) — 원천 raw. 감액·후원중단은 음수. 정본 공#38 감액(건)·#151 증액(건) = 금액÷10,000 이므로 원금액 보존(설계 §1·CONF-2). 중단원천 행은 NULL',
     DEV_CNT             NUMBER(18,4)    COMMENT '개발(건) (#149) — 정본 공#121 개발구분 = 신규(1)·증액(2)·재후원(4) 한정. ⚠️ 2026-08-03 O24 교정: 종전은 감액·후원중단까지 포함해 56.86% 과대계상(3,594,843 → 2,291,878)',
-    DEV_MEMBERS         NUMBER(38,0)    COMMENT '개발(명) (#148) — DEV_CNT 와 동일 범위(코드 1·2·4)',
+    DEV_MEMBERS         NUMBER(38,0)    COMMENT '🔴「명」이 아니다 — 개발 사건 플래그(0/1). SUM 은 개발(건)이며 실측 2,291,878 로 실제 고유회원 1,585,923 대비 44.5% 과대다(O39). 개발(명)(#148)은 COUNT(DISTINCT MEMBER_DK). 월 단위는 FACT_MEMBER_MONTHLY.DEV_MEMBERS 사용.',
     STOP_CNT            NUMBER(18,4)    COMMENT '중단(건) (#35)',
-    STOP_MEMBERS        NUMBER(38,0)    COMMENT '중단(명)',
+    STOP_MEMBERS        NUMBER(38,0)    COMMENT '🔴「명」이 아니다 — 중단 사건 플래그(0/1). SUM 은 중단(건)이며 실측 1,038,262 로 실제 고유회원 903,064 대비 15.0% 과대다(O39). 중단(명)은 COUNT(DISTINCT MEMBER_DK).',
     UNPAID_STOP_CNT     NUMBER(18,4)    COMMENT '미납중단(건)',
     UNPAID_STOP_MEMBERS NUMBER(38,0)    COMMENT '미납중단(명) — 05 2-2 원천 확인(정본 §3 건·명)',
     JOIN_DATE           DATE            COMMENT '가입일',             -- degen
@@ -534,10 +537,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
 -- FACT 3: FACT_TARGET_DEV (FTG_D) — 회원개발 목표 팩트
 -- ============================================================================
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_DEV (
-    MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '목표월 YYYYMM (FK→DIM_DATE, 월 conform)', -- GRAIN / ※비강제 FK→DIM_DATE
-    ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG)',
-    DEV_TYPE            VARCHAR         NOT NULL COMMENT '개발구분(#121 conform)',
-    GOAL_CNT            NUMBER(18,4)    COMMENT '회원개발목표 (CRM TM_CM_MBER_DVLP_GOAL)',
+    MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '목표월 YYYYMM (FK→DIM_DATE, 월 conform). 🔴 2026-08-05 O38 교정: 종전 모델이 STDYY(기준연)를 버리고 STDR_MT 만 적재해 실적재가 **1~12 월 번호**였다 — 연도별 목표가 전부 합산돼 특정 연월 목표가 조용히 부풀었다(행수·SUM·참조무결성을 모두 통과하는 무증상 결함). 원천 = STDYY || LPAD(STDR_MT,2,''0'')', -- GRAIN / ※비강제 FK→DIM_DATE
+    ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG) — 부서 단위. ⚠️ 목표는 부서까지만 존재한다(정본 마케팅 인벤토리 §1: ''현재 CRM상에 부서별 목표만 존재하며 매체별 목표는 확인 불가'')',
+    DEV_TYPE            VARCHAR         NOT NULL COMMENT '개발구분(#121 conform) — 실측 도메인 {1 신규, 2 증액, 4 재후원}. 정본 공#121 개발 정의와 정확히 일치하므로 FACT_MEMBER_EVENT.DEV_CNT 와 모집단이 같다(달성율 분모·분자 정합)',
+    GOAL_CNT            NUMBER(18,4)    COMMENT '회원개발목표 (CRM TM_CM_MBER_DVLP_GOAL). 월 목표(건). 연 목표는 별도 저장 지표가 아니라 이 값의 연 합계다(정본 공#3)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -572,7 +575,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
     MEMBER_DK                   VARCHAR(10)     NOT NULL COMMENT '발송 대상 회원 (불변키)',        -- ※비강제 FK→DIM_MEMBER
     SERVICE_SK                  NUMBER(38,0)    NOT NULL COMMENT '발송 서비스 유형 (FK→DIM_SERVICE)',
     CAMPAIGN_SK                 NUMBER(38,0)    NOT NULL COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
-    SEND_MEMBERS                NUMBER(38,0)    COMMENT '발송수(명) (#85)',
+    SEND_MEMBERS                NUMBER(38,0)    COMMENT '🔴「명」이 아니다 — 발송 플래그(전 행 1). SUM 은 행수=발송 건수이며 실측 38,470,780 로 실제 고유회원 1,031,971 대비 37.3배 과대다(O39). 발송(명)(#85)은 COUNT(DISTINCT MEMBER_DK).',
     SUCCESS_MEMBERS             NUMBER(38,0)    COMMENT '성공수(명) (#86)',
     FAIL_MEMBERS                NUMBER(38,0)    COMMENT '실패수(명) (#87)',
     OPEN_MEMBERS                NUMBER(38,0)    COMMENT '오픈(명) (overview)',

@@ -74,6 +74,25 @@ billing as (
                  THEN b.PAY_AMT END)                   as REGULAR_ONETIME_FEE,
         SUM(CASE WHEN m.MT_MEMBER_TYPE = 'ONCE'
                  THEN b.PAY_AMT END)                   as ONETIME_ONETIME_FEE,
+        -- ── [2026-08-05 O40] 납부율·미납금액 모집단 일치 컬럼 2종 신설 ──────────────
+        -- 🔴 결함: `PAID_FEE`(=SUM(PAY_AMT))는 **회비 ∪ 기부금** 이고 `BILLED_AMT`(=SUM(RQEST_AMT))는
+        --    **회비뿐**이다. 기부금 원천 `TM_PM_DNTN_DTLS` 에는 청구 컬럼이 아예 없다
+        --    (SILVER 실측: PAYMENT_TYPE='기부금' 1,130,252행 전건 `RQEST_AMT` NULL · `MBRFEE_MT` 도 NULL).
+        --    → 두 값을 나누면 분자에만 기부금이 더해져 납부율이 구조적으로 과대해진다(P63 모집단 불일치).
+        --    무증상이 아니라 **이미 사고가 났다**: 전 기간 `PAYMENT_RATE` **100.36%** · `TOTAL_UNPAID_AMT`
+        --    **−3,218,518,220(음수)** 이 실측된다. 2025 는 93.98%(실제 85.65%)로 그럴싸해 더 위험했다.
+        -- 🟢 판별자는 `PAYMENT_TYPE` 이다 — 실측으로 정확하다:
+        --    PAYMENT_TYPE='회비' 46,391,620행 = `MBRFEE_DIV_CD` 비NULL 46,391,620행 (**정확 일치**)
+        --    PAYMENT_TYPE='기부금' 1,130,252행 = `MBRFEE_DIV_CD` 비NULL 0행
+        --    ⚠️ `ONETIME_ONETIME_FEE`(회원유형 ONCE 기준)로 빼는 방식은 **쓰지 않는다** — 축이 다르고
+        --       마스터부재 314행이 어느 쪽에도 안 들어가 정의가 새어 나간다(근사 40,000원 어긋남 실측).
+        SUM(CASE WHEN b.PAYMENT_TYPE = '회비' THEN b.PAY_AMT END)  as PAID_FEE_BILLABLE,
+        -- 정본 DEC-3 미납 정의 = `PAY_STAT_CD IN ('F', NULL)` 인 **청구액**. 차감식(청구−납입)을 폐기한다.
+        --   ⚠️ 분자는 `RQEST_AMT`(청구액)다 — 미납은 "청구했으나 안 들어온 금액"이므로 PAY_AMT 가 아니다.
+        --   시뮬레이션(2026-08-05 · 본 모델 MONTH_KEY 로직 재현): 2025 = **29,251,314,636** 으로
+        --   BRONZE 직접 집계값과 **정확히 일치**(차감식은 12,335,580,090 = 2.37배 과소였다).
+        SUM(CASE WHEN b.PAY_STAT_CD = 'F' OR b.PAY_STAT_CD IS NULL
+                 THEN b.RQEST_AMT END)                            as UNPAID_BILLED_AMT,
         -- #80(DEC-4): 월×회원에 미납 청구행(PAY_STAT_CD='F' OR NULL)이 하나라도 있으면 월말 미납.
         BOOLOR_AGG(PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL)  as UNPAID_FLAG_EOM
     from b
@@ -206,6 +225,8 @@ joined as (
         bl.ONETIME_ONETIME_FEE        as ONETIME_ONETIME_FEE,   -- #68 일시회원 전체
         bl.PAID_FEE,
         bl.BILLED_AMT,
+        bl.PAID_FEE_BILLABLE          as PAID_FEE_BILLABLE,   -- [O40] 회비만 납입액(납부율 분자 정본)
+        bl.UNPAID_BILLED_AMT          as UNPAID_BILLED_AMT,   -- [O40] DEC-3 정본 미납 청구액
         0 as INBOUND_CALL_CNT, 0 as TS_CALL_CNT,       -- ⚠️ 비-CRM 수기 미수령(C-8)
         CAST(NULL AS VARCHAR)  as DEV_TYPE,
         CAST(NULL AS BOOLEAN)  as NEW_FLAG, CAST(NULL AS BOOLEAN) as INCREASE_FLAG, CAST(NULL AS BOOLEAN) as REDONATE_FLAG,

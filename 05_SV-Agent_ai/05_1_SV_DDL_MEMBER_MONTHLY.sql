@@ -84,7 +84,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드')     COMMENT = '회원상태 원천코드(MM010 1~12). 라벨은 MEMBER_STATUS_NAME',
     member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분', '구분') COMMENT = '회원구분 라벨(MM018). 실제값 3종: ''개인''·''기업''·''단체''',
     member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드')     COMMENT = '회원구분 원천코드(MM018 1개인·2기업·3단체). 라벨은 MEMBER_TYPE_NAME',
-    fmm.HAS_BILLING      AS fmm.HAS_BILLING      WITH SYNONYMS ('회비출처여부', '청구대상') COMMENT = 'TRUE=회비(billing) 원천 존재 행. 회비 지표는 TRUE 전제 권장.',
+    fmm.HAS_BILLING      AS fmm.HAS_BILLING      WITH SYNONYMS ('결제출처여부', '결제원천 존재') COMMENT = 'TRUE=결제(billing) 원천 행이 존재하는 월×회원. 🔴**「회비만」 스코프가 아니다**(O40) — 기저 CTE 가 회비(TM_PM_MBRFEE_ACMSLT)와 **기부금(TM_PM_DNTN_DTLS)을 함께** 담으므로 TRUE 인 행에도 기부금이 섞여 있고, 청구가 없는 기부금 전용 월도 TRUE 다. 따라서 이 필터를 걸어도 **회비 납부율의 분자는 정화되지 않는다.** 회비 지표를 볼 때 행 범위를 좁히는 용도로만 쓰고, 「회비 기준」이라고 서술하지 말 것.',
     reason.UNPAID_REASON_TYPE AS reason.REASON_TYPE WITH SYNONYMS ('사유 코드체계', '사유그룹') COMMENT = '🔴사유 코드그룹(PM002·PM018·PM032·PM033·PM019). **사유별 분해 시 이 축을 먼저 걸거나 함께 GROUP BY 할 것** — 그룹이 다르면 같은 이름도 다른 의미다. 그룹 미분리 합산은 조용히 틀린다(O28 유형)',
     reason.UNPAID_REASON      AS reason.REASON_NAME WITH SYNONYMS ('미납사유', '사유', '결제실패사유') COMMENT = '사유 라벨. 🔴**미납/결제실패 행에만 배선**된다 — 정상 납입 행은 전건 ''(미매핑)''이므로 대부분이 (미매핑) 한 덩어리로 나온다. 따라서 미납 관련 지표(총미납금액·미납비중·미납회원수)와 함께 쓸 때만 의미가 있다. ⚠️반드시 UNPAID_REASON_TYPE 과 함께 볼 것',
     -- [2026-08-04 O33] 지역·연령대 노출. O27 이 DIM_MEMBER 에 as-of 배선을 완료했고 helper 뷰가 이미 보유한다
@@ -94,11 +94,11 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
   )
   METRICS (
     fmm.TOTAL_PAID_FEE   AS SUM(fmm.PAID_FEE)
-      WITH SYNONYMS ('납입회비', '납입회비 총액', '수납액') COMMENT = '납입회비 합계(원). F(가산).',
+      WITH SYNONYMS ('총수납액', '수납액', '납입총액') COMMENT = '납입 **총액**(원) = 회비 + 기부금. F(가산). 🔴**「납입회비」가 아니다**(O40) — 기저 `PAID_FEE` 는 회비(TM_PM_MBRFEE_ACMSLT)와 기부금(TM_PM_DNTN_DTLS)의 `PAY_AMT` 를 **모두** 합한 값이다. 🔴**납부율의 분자로 쓰지 말 것** — 기부금은 원천에 청구(`RQEST_AMT`) 컬럼이 아예 없어(전건 NULL) 분모 `TOTAL_BILLED_AMT` 에 구조적으로 들어갈 수 없다. 분자에만 더해지면 납부율이 과대해진다(2025 실측 8.32%p 과대). 회비만의 납입액은 **`TOTAL_PAID_FEE_BILLABLE`** 이다.',
     fmm.TOTAL_BILLED_AMT AS SUM(fmm.BILLED_AMT)
       WITH SYNONYMS ('청구금액', '청구액 총액') COMMENT = '청구금액 합계(원, 재청구 중복 포함). F(가산).',
     fmm.PAYMENT_RATE     AS SUM(fmm.PAID_FEE) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
-      WITH SYNONYMS ('납부율', '수납율') COMMENT = '공64 납부율(%) = 납입회비 ÷ 청구금액 ×100. 비율(N, 재집계 금지).',
+      WITH SYNONYMS ('수납율(총액기준)') COMMENT = '🔴**과대 지표 — 단독 인용 금지**(O40 · 2026-08-05 실측). 공64 납부율을 의도했으나 분자(`PAID_FEE`=회비+기부금)와 분모(`BILLED_AMT`=회비 청구만)의 **모집단이 일치하지 않는다.** 기부금은 원천에 청구 컬럼이 없어 분모에 들어갈 수 없으므로 값이 구조적으로 부풀려진다 — 2025 실측 **93.98%** 였으나 회비 기준 실제값은 **85.65%**(8.32%p 과대). 🔴사용자가 「납부율」을 물으면 이 metric 을 쓰지 말고 **`PAYMENT_RATE_FEE`(정본)** 를 쓸 것. 비율(N, 재집계 금지).',
     fmm.TOTAL_DEV_CNT    AS SUM(fmm.DEV_CNT)
       WITH SYNONYMS ('개발건', '개발 총건', '신규개발수') COMMENT = '개발(신규 후원) 건수 합계. F(가산). FME 월 롤업(A1).',
     fmm.TOTAL_STOP_CNT   AS SUM(fmm.STOP_CNT)
@@ -113,14 +113,29 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       / NULLIF(COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END), 0) * 100
       WITH SYNONYMS ('미납회원 감소율') COMMENT = '공80 미납회원 감소율(%) = (월초미납−월말미납) ÷ 월초미납 ×100. 비율(N).',
     fmm.TOTAL_UNPAID_AMT AS SUM(fmm.BILLED_AMT) - SUM(fmm.PAID_FEE)
-      WITH SYNONYMS ('총미납금액', '미납액 총액') COMMENT = '총미납금액(원) = 청구 − 납입. F(가산). 재청구 중복 포함 주의(PoC UNPAID_RATIO 로직 이식).',
+      WITH SYNONYMS ('미납액(차감식)') COMMENT = '🔴**과소 지표 — 단독 인용 금지**(O40 · 2026-08-05 실측). 「청구 − 납입」 차감식이라 분자에 섞인 **기부금이 미납을 상쇄**한다. 2025 실측 **12,335,580,090** 이었으나 정본 DEC-3 정의(`PAY_STAT_CD IN (''F'', NULL)` 인 청구액)로는 **29,251,314,636** — **2.37배 과소**이며 16.9억 원대가 아니라 **169억 원**이 누락된다. 🔴미납금액 질문에는 이 metric 을 쓰지 말고 **`TOTAL_UNPAID_AMT_DEC3`(정본)** 를 쓸 것. 미납 **회원수**는 `UNPAID_MEMBERS_BOM/EOM` 이 정상이다.',
     fmm.UNPAID_RATIO AS (SUM(fmm.BILLED_AMT) - SUM(fmm.PAID_FEE)) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
-      WITH SYNONYMS ('미납비중', '미납율') COMMENT = '미납비중(%) = (청구−납입) ÷ 청구 ×100 (=100−납부율). 비율(N, 재집계 금지). 기간 스코프 전제 권장(무필터 시 재청구·이월 왜곡). PoC UNPAID_RATIO 로직 이식.',
+      WITH SYNONYMS ('미납비중(차감식)') COMMENT = '🔴**과소 지표 — 단독 인용 금지**(O40). `TOTAL_UNPAID_AMT` 와 같은 차감식이라 기부금이 미납을 상쇄한다. 2025 실측 6.02% 였으나 정본 DEC-3 기준은 **14.29%** 다. 미납 비중 질문에는 **`UNPAID_RATIO_DEC3`(정본)** 를 쓸 것. 비율(N, 재집계 금지).',
+    -- ── [2026-08-05 O40 §4] 정본 지표 — 분자·분모 모집단 일치 ────────────────────
+    --   위 4종(TOTAL_PAID_FEE·PAYMENT_RATE·TOTAL_UNPAID_AMT·UNPAID_RATIO)은 결함 지표로 남겨두고
+    --   (저장쿼리·문서 참조 보호) 자연어 표현은 아래 정본으로 라우팅한다(P79).
+    fmm.TOTAL_PAID_FEE_BILLABLE AS SUM(fmm.PAID_FEE_BILLABLE)
+      WITH SYNONYMS ('납입회비', '납입회비 총액', '회비 납입액', '수납회비', '회비 수납액')
+      COMMENT = '납입회비(원) — **회비만**. F(가산). 정본 #69·70. 기부금은 제외된다(기부금은 원천에 청구 컬럼이 없어 납부율 분모에 들어갈 수 없다). 회비+기부금 총수납액은 TOTAL_PAID_FEE 다.',
+    fmm.PAYMENT_RATE_FEE AS SUM(fmm.PAID_FEE_BILLABLE) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
+      WITH SYNONYMS ('납부율', '수납율', '회비 납부율', '납입률', '납부율(%)')
+      COMMENT = '**공64 납부율(%) 정본** = 회비 납입액 ÷ 회비 청구액 ×100. 분자·분모가 모두 회비라 모집단이 일치한다. 비율(N, 재집계 금지). 🟢납부율을 묻는 질문에는 이 metric 을 쓴다(PAYMENT_RATE 는 기부금이 섞여 과대).',
+    fmm.TOTAL_UNPAID_AMT_DEC3 AS SUM(fmm.UNPAID_BILLED_AMT)
+      WITH SYNONYMS ('총미납금액', '미납금액', '미납액', '미납액 총액', '못 걷은 금액')
+      COMMENT = '**총미납금액(원) 정본** — DEC-3 정의: 결제상태가 실패(F) 또는 NULL 인 청구액 합. F(가산). 🟢미납금액 질문에는 이 metric 을 쓴다(TOTAL_UNPAID_AMT 는 차감식이라 기부금이 미납을 상쇄해 과소). ⚠️미납은 회수될 수 있으므로 조회 시점 스냅샷이다.',
+    fmm.UNPAID_RATIO_DEC3 AS SUM(fmm.UNPAID_BILLED_AMT) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
+      WITH SYNONYMS ('미납비중', '미납율', '미납률', '미납 비율')
+      COMMENT = '**미납비중(%) 정본** = 미납 청구액 ÷ 회비 청구액 ×100. 비율(N, 재집계 금지). ⚠️`100 − 납부율` 과 정확히 같지 않다 — 부분납입 행이 있어 두 값은 서로 보완적이다(2025 실측 납부율 85.65% · 미납비중 14.29%).',
     fmm.AVG_PAID_FEE AS AVG(fmm.PAID_FEE)
       WITH SYNONYMS ('평균납입회비', '평균회비') COMMENT = '행(월×회원)당 평균 납입회비(원). HAS_BILLING=TRUE 전제 권장. PoC AVG_PAID 로직 이식.'
   )
   COMMENT = 'Phase-1 회원 월별 실적 SV(base FMM). [원천 요약] 원천시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM(회비 TM_PM_MBRFEE_ACMSLT·기부 TM_PM_DNTN_DTLS·개발 TM_MM_FDRM_MBER_DVLP_AMT·중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC·증감 TM_MM_FDRM_MBER_IRSD·회원 TM_MM_FDRM_MBER_INFO) → SILVER(CRM_*) → GOLD(FMM). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 납입/청구 총액·납부율(공64)·미납회원 감소율(공80)·개발/중단 총건·총미납금액·미납비중·평균납입회비. 시간=전체가능. 회비 지표는 HAS_BILLING=TRUE 전제 권장. 회원상태/성별/구분/지역/연령대는 현재 스냅샷 기준(과거월도 현재값). [2026-08-04 O33] 지역·연령대 활성화(O27 as-of 배선 완료 — 종전 "적재 대기" 표기는 거짓이었다). 🔴[O34 확정] 지역·연령대는 **약정(개발) 시점 스냅샷**이며 **현재 값이 아니다** — 차원명에 _AT_PLEDGE 를 붙였다. 현재 연령·현재 거주지는 **산출 불가**(BRONZE 에 생년월일·현주소 축이 없다). ''10대 미만'' 최다는 실제이며 **편지쓰기대회 계열 아동 모집 캠페인** 때문이다(오류가 아니다) — 질문받으면 그 이벤트 성격으로 설명할 것. 🔴단 이 SV 에는 캠페인 축이 없다 — **연령대 × 캠페인 교차는 SV_MEMBER_EVENT**(사건시점 축), **캠페인별 중단률·획득시점 회원특성은 SV_MEMBER_COHORT**(회원 grain)에서 한다. [2026-08-05 O37] 🔴 종전 이 자리의 「교차 확인 불가」 계열 표현은 회수됐다 — 두 SV 에 축이 실재하므로 "불가"로 답하지 말고 해당 SV 로 라우팅한다(P61). [O33] 미납사유 활성화 — 단 코드그룹 5종이 섞여 있어 UNPAID_REASON_TYPE 동반 필수이고 미납 지표와 함께 쓸 때만 의미가 있다. 비활성(적재 대기): 납입방식/후원사업별 분해, 활동/누계/미납 카운트 비율, 신규기존 분해. 🔴 **캠페인은 이 목록에서 제외**한다(2026-08-05 O37) — 이 SV 의 `FMM.CAMPAIGN_SK` 가 센티넬 단일값이라 여기서는 분해되지 않지만, **캠페인 분해 자체가 불가한 것은 아니다**: 개발/중단 건수는 `SV_MEMBER_EVENT`, 캠페인별 중단률·획득 코호트는 `SV_MEMBER_COHORT` 로 답한다. 🔴 이 목록은 축을 활성화할 때마다 회수 대상이다(P61 — 부정형 서술이 남으면 Agent 가 "불가"로 답한다). '
-  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·성별·회원상태 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 납부율·미납비중 등 비율은 총계 행에서 SUM 기반으로 정확히 산출한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';
+  AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(회원구분·성별·회원상태 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 납부율·미납비중 등 비율은 총계 행에서 SUM 기반으로 정확히 산출한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다. ⚠**[O40 · 2026-08-05 해소] 납부율·미납금액은 정본 metric 을 쓴다.** 「납부율」=**`PAYMENT_RATE_FEE`** · 「납입회비」=**`TOTAL_PAID_FEE_BILLABLE`** · 「미납금액」=**`TOTAL_UNPAID_AMT_DEC3`** · 「미납비중」=**`UNPAID_RATIO_DEC3`**. 🔴구지표 `PAYMENT_RATE`(분자에 기부금 혼입 → 과대) · `TOTAL_UNPAID_AMT`/`UNPAID_RATIO`(차감식 → 과소) · `TOTAL_PAID_FEE`(회비+기부금 총수납액)는 **납부율·미납금액 답변에 쓰지 않는다.** `TOTAL_PAID_FEE` 는 「총수납액(회비+기부금)」을 명시적으로 물을 때만 쓰고 그때도 기부금 포함임을 밝힌다. (2) `HAS_BILLING=TRUE` 는 「회비만」 스코프가 **아니다** — 이 필터를 걸었다는 이유로 「회비 기준」이라고 서술하지 않는다. 회비 기준은 metric 선택으로 결정된다. ⚠**「마감·확정」이라고 단정하지 않는다.** 이 팩트는 적재 시점 **스냅샷**이다 — 지난 연도의 미납 청구가 이후에 납입되면 값이 바뀐다(2025년분 회비가 2026-07-01 까지 계속 납입된 것이 실측으로 확인됐다). 또 회비월 데이터는 **미래월까지 존재**한다. 따라서 특정 연도 실적을 답할 때 「이미 마감된 실측치」,「확정치」 같은 표현을 쓰지 말고 **「조회 시점 적재 기준」임을 명시**한다.';
 
 -- 비활성(Phase-2/적재 후) — 구조 불변, 적재 완결 시 metric만 추가:
 --   공45~47 활동율·공54~57 중단율·공76~78 미납율(ACTIVE/MONTH_END/YEAR_START_ACTIVE_CNT 미적재)

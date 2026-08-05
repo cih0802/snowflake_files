@@ -95,14 +95,54 @@
 --   `DIM_MEMBER_CURRENT` 현재 스냅샷만 쓸 수 있었다(P60 계열 잠복). 코드체계가 서로 다르다 —
 --   개발원천은 CM013(국내/외국인 구분 포함), 회원 마스터 라벨은 CM017 계열이다. 합산 금지.
 -- ============================================================================
+--
+-- ============================================================================
+-- [2026-08-05 O38 / O10 해소] ORG_SK 배선 — 부서별 실적이 산출 불가였다
+-- ----------------------------------------------------------------------------
+-- 결함: `ORG_SK` 가 **전건 센티넬 0**(4,633,105/4,633,105 실측)이었다. 컬럼·FK·DIM_ORG 는
+--   모두 존재하는데 값만 없는 P15 유형("설계 완료 ≠ 값 존재")이다.
+--   `FACT_MEMBER_MONTHLY` 에는 `ORG_SK` 컬럼 자체가 없으므로 **GOLD 전체에 부서별 회원실적 축이
+--   없었다** — measure(DEV_CNT·STOP_CNT)만 보면 "있다"로 오판하기 쉬운 형태다.
+--
+-- 소비측 요건: 마케팅 장표 「개발현황(목표,실적)」의 **첫 축이 부서명**이고
+--   `20_현업확인_요청.md` 가 기획실 요건을 *"부서별 × 일자별 개발 건"* 으로 기재하고 있다.
+--   즉 이 미배선 하나가 목표 대비 실적 장표 전체를 막고 있었다.
+--
+-- 채택 = **실적부서(`ACMSLT_DEPT_CD`)**. 근거 = O10/Q7 기확정(문서30 §4) — 재론 불요.
+--   실측(2026-08-05, SILVER `CRM_MEMBER_DEV` 3,594,843행):
+--     · `ACMSLT_DEPT_CD` 채움 3,594,835 · distinct 349 · DIM_ORG 매칭 **3,594,835(99.9998%)**
+--     · 미매칭은 **8행**뿐 → 0(Unknown 멤버) 라우팅
+--     · `ACT_DEPT_CD`(활동부서)도 366종 실재하나 O10 이 기본을 실적부서로 확정했으므로 쓰지 않는다
+--   목표 팩트와의 conform 확인: `FACT_TARGET_DEV` 목표 조직 **234종 ⊆ 실적 349종**,
+--     목표에만 있는 조직 **0** → 달성율 계산에서 분모 누락이 생기지 않는다.
+--
+-- 산식은 `FACT_TARGET_DEV` 와 동일하게 `DIM_ORG.ORG_DK = ABS(HASH(DEPT_ID))` 조인으로 맞춘다
+--   (양 팩트가 같은 경로로 SK 를 얻어야 목표↔실적 조인이 성립한다).
+--   ⚠️ `gold_sk(['ACMSLT_DEPT_CD'])` 로 직접 해시하면 안 된다 — `gold_sk` 는 `COALESCE+CAST` 를
+--      감싸므로 `ORG_DK`(순수 `ABS(HASH())`)와 값이 다르고, 미매칭 부서가 고아 FK 로 새어나간다.
+--   DIM_ORG 는 `ORG_DK` 유일(1,315/1,315 실측)이라 이 조인은 **fan-out 0** 이다.
+--
+-- 🔴 중단(STOP) 브랜치는 0 센티넬을 유지한다 — 축이 없어서가 아니라 **역할이 다르기 때문**이다.
+--   중단원천 `CRM_MEMBER_DISCONTINUE` 는 `REGIST_DEPT_CD`(**등록부서**)를 보유한다
+--   (채움 925,948/1,038,262 = 89.2% · distinct 54 · DIM_ORG 매칭 100%).
+--   그러나 개발측은 **실적부서**(349종)이고 중단측은 **등록부서**(54종)로 카디널리티가 6배 다르다.
+--   한 컬럼에 섞으면 O24(개발구분 뭉갬)·O28(한 컬럼 두 코드체계)와 **동일한 의미혼입**이 되고,
+--   "부서별 중단건"이 조용히 틀린 집계를 낸다. → 등록부서 축의 배속은 별도 결정 사안으로 남긴다
+--   (이슈 O38-B). 추론으로 채우지 않는다(P21).
+-- ============================================================================
 {{ config(
     tags=['gold_pending']
 ) }}
 
+-- [2026-08-05 O38] 실적부서 → ORG_SK. DIM_ORG.ORG_DK 유일이라 fan-out 0(행수 불변 검증 대상).
+--   `FACT_TARGET_DEV` 와 동일 경로로 SK 를 얻어 목표↔실적 월×조직 conform 을 성립시킨다.
+with org_lookup as (
+    select ORG_DK, ORG_SK from {{ ref('DIM_ORG') }}
+),
 -- [2026-07-30 B3 개발측 해소] 유효 캠페인키 집합. 고아 CMPGN_CD(실측 18행)를 SK=0(unknown 멤버 R5)로
 -- 흡수해 FK 고아를 만들지 않는다. CRM_CAMPAIGN 은 CMPGN_CD 유일(실측 36,143행=36,143 distinct·중복 0)
--- 이므로 이 조인은 fan-out 을 만들지 않는다(행수 불변 검증 대상).
-with campaign_valid as (
+-- 이 므로 이 조인은 fan-out 을 만들지 않는다(행수 불변 검증 대상).
+campaign_valid as (
     select CMPGN_CD from {{ ref('CRM_CAMPAIGN') }}
 ),
 
@@ -131,7 +171,11 @@ dev as (
              then {{ gold_sk(['d.CMPGN_CD']) }}
              else 0
         end                                                 as CAMPAIGN_SK,
-        0 as SPONSORSHIP_SK, 0 as ORG_SK, 0 as REASON_SK,
+        0 as SPONSORSHIP_SK,
+        -- [2026-08-05 O38] 실적부서(ACMSLT_DEPT_CD) → ORG_SK. O10/Q7 확정축.
+        --   미매칭 8행(실측)은 COALESCE 로 0(Unknown 멤버) 라우팅 — 고아 FK 를 만들지 않는다.
+        COALESCE(og.ORG_SK, 0)                              as ORG_SK,
+        0 as REASON_SK,
         -- O24: BRONZE 원천 코드·라벨 무변환 노출
         d.DVLP_DIV_CD                                       as DVLP_DIV_CD,
         d.DVLP_DIV_NM                                       as DVLP_DIV_NM,
@@ -163,6 +207,8 @@ dev as (
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
     left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
     left join code_sex       csx on d.SEX = csx.DTL_CD_ID
+    -- [2026-08-05 O38] ORG_DK 유일(1,315/1,315)이라 fan-out 0.
+    left join org_lookup     og on og.ORG_DK = ABS(HASH(d.ACMSLT_DEPT_CD))
 ),
 
 stop as (
@@ -170,7 +216,12 @@ stop as (
         COALESCE({{ date_sk("TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD')") }}, 0) as DATE_SK,   -- 범위밖/NULL → 0 (순서9)
         MBER_NO                                             as MEMBER_DK,
         'STOP'                                              as EVENT_TYPE,
-        0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as ORG_SK,
+        0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK,
+        -- [2026-08-05 O38] 🔴 중단측 0 센티넬 유지는 **축 부재가 아니라 역할 불일치** 때문이다.
+        --   이 원천은 `REGIST_DEPT_CD`(등록부서, 채움 89.2%·54종·DIM_ORG 매칭 100%)를 보유하지만
+        --   개발측 축은 **실적부서**(349종)다. 한 컬럼에 섞으면 "부서별 중단건"이 조용히 틀린다
+        --   (O24·O28 의미혼입 유형). 등록부서 축 배속은 별도 결정(O38-B) — 추론으로 채우지 않는다.
+        0 as ORG_SK,
         -- [2026-08-03 O25] REASON_SK 배선. 종전 전건 0(하드코딩) → DIM_REASON 실조인.
         --   DIM_REASON.REASON_SK = gold_sk(['CD_ID','DTL_CD_ID']) 이므로 (코드그룹, 코드) 복합키로 동일 산식을 재현한다.
         --   코드그룹은 MM005(중단사유) 고정 — FMM 처럼 SETLE_CD 자릿수 분기가 필요한 구조가 아니다.

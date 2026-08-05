@@ -63,7 +63,7 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 |---|---|---|---|
 | FMM `FACT_MEMBER_MONTHLY` | 조회년월(MONTH_KEY)×회원(MEMBER_DK) | 납입회비·개발/중단/미납·증감액 등 28 (HAS_BILLING 필터) | 40,054,883 |
 | FME `FACT_MEMBER_EVENT` | 사건일(DATE_SK)×회원×상태전이(EVENT_TYPE) | 개발·중단·증액·미납중단(건·명) | 4,633,105 |
-| FTG-D `FACT_TARGET_DEV` | 조회년월×조직(ORG)×개발구분 | GOAL_CNT 회원개발목표수 ✅CRM 확정 | 7,272 |
+| FTG-D `FACT_TARGET_DEV` | 조회년월(YYYYMM)×조직(ORG)×개발구분 | GOAL_CNT 회원개발목표수 ✅CRM 확정 | 25,344 (⚠️2026-08-05 O38 연도 복원 후 · 종전 7,272 는 연도 소실로 3.49배 병합된 값) |
 | FTG-B `FACT_TARGET_BIZ` | 조회년월×조직×후원사업[×캠페인] | 연사업/추경목표(건) #152~155 | 0 (⛔E-6 CRM 입고 대기) |
 | FSE `FACT_SERVICE_EVENT` | 발송일×회원×서비스×캠페인 | 발송/성공/실패·서신/선물금 참여 등 17 | 38,470,780 |
 | FGA `FACT_GA_BEHAVIOR` | 일×IDENTITY×이벤트×세션소스×페이지 | 방문·활성/총사용자·세션·이벤트 등 7 | 44,905 |
@@ -84,7 +84,7 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 > ⚠️ 구설계의 "레거시 PoC View 35개(A/B/C 계열)"는 **존재하지 않음**. 아래 WIDE 9가 GOLD의 유일한 뷰 계층이다.
 
 ```yaml
-gold_wide_views:   # 9 (FACT 1:1)
+gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
   - { id: WIDE_MEMBER_MONTHLY, base: FMM, note: "×MEMBER[현재]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY" }
   - { id: WIDE_MEMBER_EVENT, base: FME, note: "×DATE·MEMBER[현재]·CAMPAIGN·SPONSORSHIP·ORG[as-was]·REASON" }
   - { id: WIDE_SERVICE_EVENT, base: FSE, note: "×DATE·MEMBER[현재]·SERVICE·CAMPAIGN" }
@@ -93,6 +93,7 @@ gold_wide_views:   # 9 (FACT 1:1)
   - { id: WIDE_EVENT_PARTICIPATION, base: FEP, note: "×DATE·MEMBER[현재]·EVENT·CAMPAIGN·SPONSORSHIP" }
   - { id: WIDE_BUDGET, base: FBD, note: "×ORG[as-was]·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain" }
   - { id: WIDE_TARGET_DEV, base: FTG-D, note: "×ORG[as-was]. 월 grain" }
+  - { id: WIDE_DEV_ACHIEVEMENT, base: "FTG-D × FME", note: "목표 대비 실적 월 conform(FULL OUTER). 마케팅 장표 「개발현황(목표,실적)」 정본 · 공#1~3 산출 base. 달성율은 SUM/SUM 재계산 + **HAS_POSITIVE_GOAL**(=GOAL_CNT>0) 스코프 필수 — 목표 행의 과반이 0 이라 HAS_GOAL_ROW(행 존재)로 스코프하면 비율이 폭증한다. 신설 2026-08-05 O38" }
   - { id: WIDE_TARGET_BIZ, base: FTG-B, note: "×ORG·SPONSORSHIP·CAMPAIGN. 월 grain. E-6 입고 대기·0행" }
 ```
 
@@ -132,10 +133,10 @@ serving_helper_views:   # SERVING 내 보조 VIEW 2 (SV fan-out 차단용)
 ```yaml
 agents:   # 2 배포
   - id: GN_DW.SERVING.AGENT_MEMBER
-    spec: cortex_project/AGENT_MEMBER.agent.yaml
+    spec: cortex_project/agents/AGENT_MEMBER/agent_spec.yaml   # 정본(2026-08-05 O38 경로 정정 · 구 루트 yaml 은 _archive/ 이관)
     domain: "회원 도메인 (4 SV): 월실적 SV_MEMBER_MONTHLY · 상태전이 SV_MEMBER_EVENT · 서비스발송 SV_SERVICE · 행사참여 SV_EVENT_PARTICIPATION"
   - id: GN_DW.SERVING.AGENT_OVERALL
-    spec: cortex_project/AGENT_OVERALL.agent.yaml
+    spec: cortex_project/agents/AGENT_OVERALL/agent_spec.yaml  # 정본(2026-08-05 O38 경로 정정 · 구 루트 yaml 은 _archive/ 이관)
     domain: "전사·재무 요약 (3 SV): 예산 SV_BUDGET(기본 도구) · 회원월실적 SV_MEMBER_MONTHLY · 발송 SV_SERVICE. ※행사 SV는 미포함"
 access_roles: [GN_DW_ANALYST, GN_DW_VIEWER, GN_DW_SERVICE]
 deployment_notes:
@@ -187,3 +188,26 @@ future_plan:
 
 > **이전 단계:** `02_DB_BRONZE_SILVER.md` · **다음 단계:** `04_운영 확인.md` (운영·테스트·보안·모니터링)
 > **GOLD 정본:** `../03_top-down_gold/` · **SV/Agent 정본:** `../05_SV-Agent_ai/`
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+
+### `FACT_MEMBER_MONTHLY` 컬럼 58종으로 확장 (O40)
+
+`PAID_FEE_BILLABLE`(회비만 납입액) · `UNPAID_BILLED_AMT`(DEC-3 미납 청구액) 2종 추가 → **56 → 58**.
+2025 실측 175,381,890,496 / 29,251,314,636 · 교정 납부율 **85.65%** · 미납비중 **14.29%**.
+기존 measure·행수(40,054,883) 불변.
+
+🔴 **회비 지표 소비 규약**: 납부율 분자는 `PAID_FEE_BILLABLE` 이다. `PAID_FEE` 는 **회비+기부금 총수납액**
+이므로 분모(`BILLED_AMT`=회비 청구만)와 모집단이 맞지 않는다. `HAS_BILLING=TRUE` 는 **회비 스코프가 아니다.**
+
+### GOLD FACT 컬럼 COMMENT 는 dbt 소관이 아니다 (구성관리 공백)
+정본은 `03_top-down_gold/06_DDL.sql` 이고 FACT 모델에는 COMMENT `post_hook` 이 없다.
+→ ① COMMENT 교정은 **build 불요**(`COMMENT ON COLUMN` 이 영구) ② 단 **full-refresh 로 테이블이
+재생성되면 `06_DDL.sql` 을 다시 돌려야** 복원된다. 반면 **WIDE 는 뷰이고 post_hook 이 COMMENT 소유주**라
+모델 파일을 함께 고쳐야 다음 build 가 되돌리지 않는다(**P33**).
+
+_Co-authored with CoCo_

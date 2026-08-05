@@ -85,10 +85,16 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018)'
   )
   METRICS (
+    -- [2026-08-05 O39] 🔴 synonym '발송 회원수' 를 이 metric 에서 **제거**하고 아래 DISTINCT 로 옮겼다.
+    --   기저 컬럼 `FSE.SEND_MEMBERS` 는 이름에 MEMBERS 가 붙었지만 실측 **전 행이 1 인 발송 플래그**이고
+    --   SUM 은 행수(=발송 건수)와 같다. 실측: SUM=38,470,780 vs 고유회원 1,031,971 = **37.3배**.
+    --   종전엔 「발송 회원수」 질문이 이 metric 으로 라우팅돼 37배 과대값을 답할 수 있었다(무증상 오답).
     fse.TOTAL_SEND_MEMBERS AS SUM(fse.SEND_MEMBERS)
-      WITH SYNONYMS ('발송수', '발송 건수', '발송 회원수') COMMENT = '발송수 합계. F(가산).',
+      WITH SYNONYMS ('발송수', '발송 건수', '발송건', '발송 횟수')
+      COMMENT = '발송 **건수** 합계. F(가산). 🔴**회원수가 아니다** — 같은 회원에게 여러 번 발송되면 그만큼 중복 계수된다. 회원 「명」 수를 묻는 질문(발송 회원수·수신 대상 몇 명)에는 이 metric 을 쓰지 말고 DISTINCT_SEND_MEMBERS 를 쓴다. ⚠️metric 명에 MEMBERS 가 들어간 것은 기저 컬럼명(SEND_MEMBERS) 을 따른 역사적 잔재이며 의미는 건수다.',
     fse.DISTINCT_SEND_MEMBERS AS COUNT(DISTINCT fse.MEMBER_DK)
-      WITH SYNONYMS ('발송 고유회원수', '수신 대상 회원수') COMMENT = '발송 대상 고유 회원수. D(distinct). 다기간 중복 방지.'
+      WITH SYNONYMS ('발송 회원수', '발송 고유회원수', '발송(명)', '발송명', '수신 대상 회원수', '수신자수', '몇 명에게 발송')
+      COMMENT = '발송 대상 **고유 회원수(명)**. D(distinct) — 🔴가산 금지: 월별로 뽑아 합산하면 여러 달 수신한 회원이 중복된다. 기간을 바꾸면 반드시 재집계할 것. 정본 「발송(명)」이 이 metric 이다(발송 건수는 TOTAL_SEND_MEMBERS).'
   )
   COMMENT = 'Phase-1 서비스 발송 SV(base FSE). [원천 요약] 원천시스템=CRM(UMS 발송) · BRONZE=GN_DW.BRONZE_CRM(TM_MS_EMAIL/MSG_AT/PSTMTR_SNDNG + TD_MS_*_SNDNG_DTLS + SND_REQ_MST) → SILVER(CRM_SEND_*) → GOLD(FSE). 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별. 시간=전체가능. 비활성(적재 대기): 수신/성공/실패/오픈, 서신/선물금/증액 참여·+5일 코호트(신31~53), 캠페인별.'
   AI_SQL_GENERATION '적용 조건: 질문에 기간(연/월)과 그룹(채널·서비스유형·회원구분 등)이 모두 없을 때만. 이 경우 전체 기간 풀스캔을 피해 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고(기준월은 CURRENT_DATE가 아니라 데이터 최신월 — 미래연월 데이터도 최신월로 인정), GROUP BY ROLLUP((연,월))로 월별 행 + 전체 총계 행을 함께 반환해 월별 추이와 총계를 동시에 제공한다. 사용자가 기간/그룹을 지정하거나 합계·총액만 원하면 그 요청을 우선한다.';

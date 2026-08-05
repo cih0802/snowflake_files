@@ -249,6 +249,9 @@ models:
               field: SPONSORSHIP_SK
               config: { where: "SPONSORSHIP_SK != 0" }
       - name: ORG_SK
+        # [2026-08-05 O38] 이 가드는 종전에도 있었으나 ORG_SK 가 전건 0 이라 where 절이
+        #   전건을 걸러 **항상 0행을 검사**하는 무력 상태였다(P26 유형 — 가드가 정상처럼 보였다).
+        #   실적부서 배선 후 비로소 실제 참조무결성을 검사한다(미매칭 8행은 0 라우팅되어 제외).
         tests:
           - not_null
           - relationships:
@@ -566,6 +569,20 @@ models:
 
   - name: FACT_TARGET_DEV
     columns:
+      # [2026-08-05 O38] 종전 MONTH_KEY 에 테스트가 한 건도 없어 「연도 소실 → 1~12 적재」가
+      #   행수·SUM·참조무결성을 모두 통과하며 무증상으로 유지됐다. 규약 가드를 신설한다.
+      #   ⚠️ dbt_utils 미설치(trial EAI 불가) → YYYYMM 6자리 규약은 singular test
+      #      `tests/assert_ftg_dev_month_key_yyyymm.sql` 이 담당한다.
+      - name: MONTH_KEY
+        tests: [not_null]
+      - name: DEV_TYPE
+        tests:
+          # 정본 공#121 개발구분 = 신규(1)·증액(2)·재후원(4). 목표 원천 실측 도메인과 일치.
+          #   FACT_MEMBER_EVENT.DEV_CNT 와 conform 되는 축이므로 도메인이 벌어지면 달성율이 조용히 틀린다.
+          - accepted_values:
+              values: ['1', '2', '4']
+              quote: true
+              config: { severity: error }
       - name: ORG_SK
         tests:
           - not_null

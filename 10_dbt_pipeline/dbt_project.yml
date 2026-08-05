@@ -64,6 +64,18 @@ models:
         +materialized: incremental
         +incremental_strategy: append
         +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
+        # [2026-08-05 O40-B] 🔴 신규 컬럼 무증상 폐기 차단 (P82)
+        #   기본값 'ignore' 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러·워닝 없이 버린다.**
+        #   실제로 겪었다: O40 에서 컬럼 2종을 추가하고 build 가 ERROR=0 으로 끝났는데
+        #   INSERT 가 대상 테이블의 56컬럼만 써서 신규 컬럼이 생기지 않았다(문서10 §24-H).
+        #   'fail' = 모델↔테이블 스키마가 어긋나면 **큰 소리로 실패**한다.
+        #   'append_new_columns'(자동 반영)를 쓰지 않는 이유: GOLD DDL 정본은
+        #   03_top-down_gold/06_DDL.sql 이고 dbt 는 파이프라인만 실행한다 — 자동 ALTER 는
+        #   정본과 조용히 어긋나므로 **수동 DDL 거버넌스를 유지**하고 불일치만 드러낸다.
+        #   ⚠️컬럼 추가 절차: ① 06_DDL.sql 수정 ② ALTER TABLE 실행 ③ INFORMATION_SCHEMA 로
+        #   컬럼 존재 확인 ④ 모델 수정 ⑤ build ⑥ **신규 컬럼 비NULL 건수 검증**.
+        #   적용 전 13개 팩트 전량 컴파일 대조로 드리프트 0 확인(2026-08-05).
+        +on_schema_change: fail
       # WIDE 소비뷰(순서9-D): 팩트×차원 LEFT JOIN 평탄화. 물리저장 0(view).
       #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보(BLOCKING-4 해소, 미거버넌스 객체 재발방지).
       #   컬럼/뷰 COMMENT 는 각 모델 post_hook 의 ALTER VIEW/COMMENT ON VIEW 로 적용(정본 03_top-down_gold/10_WIDE VIEW 코멘트.sql verbatim).

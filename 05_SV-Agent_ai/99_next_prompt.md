@@ -30,7 +30,8 @@ END-METADATA -->
 > - **P26** 멱등 가드는 관측 대상이 실제 상태를 반영하는지 **변화를 일으켜** 검증. 두 관측이 우연히 같으면 무력한 가드가 정상처럼 보인다.
 >
 > ⚠ **Agent spec 변경 시 경로**: 기존 계정은 **`09` [4-B]**(이력·grant·SI 보존) 또는 `cortex_agent_deploy`. **`09` [1-ALT](CREATE OR REPLACE)는 신규 계정 전용** — 버전 이력을 초기화하고 grant·SI 등록을 파괴한다.
-> ⚠ **`08 §3.1`(AGENT_MEMBER YAML 사본)은 구버전 부채** — 근거는 `cortex_project/AGENT_MEMBER.agent.yaml` 을 직독할 것.
+> ⚠ **`08 §3.1`(AGENT_MEMBER YAML 사본)은 구버전 부채** — 근거는 `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml`(정본)을 직독할 것.
+> 🔴 2026-08-05 O38: 종전 이 자리가 지목했던 루트 `cortex_project/AGENT_MEMBER.agent.yaml` 은 **O33 이전 판본이었고 `_archive/` 로 이관**됐다 — 그 파일을 근거로 삼으면 도구 2개(코호트·달성율)와 O33~O38 규칙이 통째로 누락된다.
 
 
 ---
