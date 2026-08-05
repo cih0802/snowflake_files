@@ -571,8 +571,10 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
      · §G.2 SERVING.DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER  (2026-08-04 O27 반영)
      ⚠️ 역할이 ACCOUNTADMIN ↔ GN_DW_ADMIN 으로 바뀐다. 스크립트의 USE ROLE 을 지킬 것.
 
-4) 05_SV_DDL.sql                    ← SERVING.FACT_AD_COMBINED + SV 6종
-     05_SV-Agent_ai/05_SV_DDL.sql
+4) 05_1 ~ 05_7_SV_DDL_*.sql         ← SV 6종(+05_7 에 SERVING.FACT_AD_COMBINED 동봉)
+        🔴 [2026-08-05 O37 분할] 각 파일이 GRANT·스모크까지 포함해 **독립 실행**된다(순서 무관).
+           `05_0_SV_DDL.sql` 은 인덱스·공통규약·전체검증 전용 — 실행해도 SV 가 배포되지 않는다.
+     05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql ... 05_7_SV_DDL_AD.sql
      · 3)의 helper 뷰 2종을 논리테이블로 참조한다(DIM_MEMBER_CURRENT 4곳 · DIM_MONTH 2곳)
      · 🔴 반드시 `USE ROLE GN_DW_ADMIN` 으로 실행(ACCOUNTADMIN 으로 만들면 소유권이 어긋나
        이후 재배포가 권한 오류로 막힌다 — 05 파일 15~16행)
@@ -612,7 +614,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 | ③ | `10_dbt_pipeline/deploy_dbt_project.sql` | ACCOUNTADMIN→GN_DW_ADMIN | `GN_DW.OPS.DW_PIPELINE` |
 | ④ | **dbt build** | GN_DW_ADMIN(또는 ENGINEER) | SILVER·GOLD 적재 + GOLD 뷰 13종 |
 | ⑤ | `02_GN_DW_building/08_After_Deploy_DBT.sql` | GN_DW_ADMIN↔ACCOUNTADMIN 전환 | DBT PROJECT GRANT · **§G SERVING helper 뷰 2종** · SERVING GRANT · CoWork |
-| ⑥ | `05_SV-Agent_ai/05_SV_DDL.sql` | 🔴 GN_DW_ADMIN | `FACT_AD_COMBINED` + SV 6종 + §7 GRANT + §8 스모크 |
+| ⑥ | `05_SV-Agent_ai/05_1`~`05_7_SV_DDL_*.sql` | 🔴 GN_DW_ADMIN | SV 6종 + 각 파일 GRANT·스모크 (+`05_7` 에 `FACT_AD_COMBINED`). **파일 간 순서 무관·독립 실행**(2026-08-05 O37 분할). ⚠️ `05_SV_DDL.sql` 은 인덱스·전체검증 전용이라 실행해도 SV 가 만들어지지 않는다 |
 | ⑦ | `05_SV-Agent_ai/09_1_AGENT_생성.sql` | GN_DW_ADMIN | Agent 껍데기 2종 |
 | ⑧ | `05_SV-Agent_ai/09_2_AGENT_버전업.sql` | GN_DW_ADMIN | 🔴 Agent 스펙 본문 |
 
@@ -637,10 +639,10 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 | `06_DDL.sql`·`08_SILVER_테이블DDL` | **`07` 역할·WH·스키마** | 첫 줄이 `USE ROLE GN_DW_ADMIN`·`USE WAREHOUSE GN_DW_DEV_WH` |
 | `08` 5~7행 GRANT | **DBT PROJECT 객체** | `GRANT USAGE ON DBT PROJECT …` |
 | `08` §G 뷰 2종 | GOLD 테이블 **구조**만 | 데이터 불요 → dbt build 전후 무관 |
-| `05_SV_DDL.sql` | `08` §G 뷰 2종 | SV 논리테이블로 참조 |
+| `05_1`~`05_7_SV_DDL_*.sql` | `08` §G 뷰 2종 | SV 논리테이블로 참조 |
 | 의미있는 SV 결과 | dbt build | 데이터가 있어야 질의가 답을 낸다 |
 | **Agent 가 실제로 답하는 것** | **`09_1` → `09_2` 둘 다** | `09_1` 은 껍데기만 만든다. 스펙(도구·instruction)은 `09_2` 가 넣는다 |
-| `09_2` | `05_SV_DDL.sql` | 스펙 `tool_resources` 가 SV 를 참조한다(SV 부재 시 도구가 깨진다) |
+| `09_2` | `05_1`~`05_7_SV_DDL_*.sql` | 스펙 `tool_resources` 가 SV 를 참조한다(SV 부재 시 도구가 깨진다) |
 
 ---
 
@@ -657,8 +659,8 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 |---|---|
 | 증상 | `SERVING.DIM_MEMBER_CURRENT` 생성문이 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP` 을 SELECT — O27 이 `GOLD.DIM_MEMBER` 에서 DROP 한 컬럼 |
 | 확인 | 동일 SELECT 를 컴파일 → `invalid identifier 'NEW_EXISTING_FLAG'` (실측) |
-| 영향 | 위 순서 3) 이 **실패**하고, 그 결과 4) `05_SV_DDL.sql` 도 helper 뷰 부재로 실패 |
-| 조치 | ✅ 3컬럼 제거(2026-08-04). SV 는 이 3컬럼을 참조하지 않는다(`05_SV_DDL.sql` 실측 0건) → 소비 영향 0. 수정 후 컴파일 검증 통과 |
+| 영향 | 위 순서 3) 이 **실패**하고, 그 결과 4) `05_*_SV_DDL_*.sql` 도 helper 뷰 부재로 실패 |
+| 조치 | ✅ 3컬럼 제거(2026-08-04). SV 는 이 3컬럼을 참조하지 않는다(`05_1~05_7_SV_DDL_*.sql` 실측 0건) → 소비 영향 0. 수정 후 컴파일 검증 통과 |
 
 📌 **O27 이 번진 산출물은 4개였다**: `06_DDL.sql`(정본) · `GOLD.DIM_MEMBER`(물리) ·
 `10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql`(모델) · **`08_After_Deploy_DBT.sql`(SERVING 뷰)**.

@@ -67,12 +67,12 @@ WHERE MONTH_KEY IS NOT NULL;
 --   🔴 [2026-08-04 O27 반영] 종전 이 뷰는 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP`
 --      3컬럼을 SELECT 했으나, O27 이 `GOLD.DIM_MEMBER` 에서 **DROP** 한 컬럼이라
 --      **이 문장이 `invalid identifier` 로 실패**했다(2026-08-04 실측 확인).
---      → 3컬럼 제거. SV 는 이 3컬럼을 참조하지 않으므로(05_SV_DDL.sql 실측 0건) 소비 영향 없다.
+--      → 3컬럼 제거. SV 는 이 3컬럼을 참조하지 않으므로(05_1~05_7_SV_DDL_*.sql 실측 0건) 소비 영향 없다.
 --      DROP 사유: 시점귀속(#113)→정소재지 FMM · 대표규칙 O8 미결 · 동시 다중후원 정상.
 --   ⚠️ O27 신규 4컬럼(AREA_CD·AGE·PREV_MBER_STAT_CD·PREV_MEMBER_STATUS_NAME)은 **의도적으로 미노출**이다
---      — SV 가 사용하지 않는다. 필요해지면 여기와 05_SV_DDL.sql 을 함께 고친다.
+--      — SV 가 사용하지 않는다. 필요해지면 여기와 05_1~05_7_SV_DDL_*.sql 을 함께 고친다.
 --   ⚠️ `GOLD.DIM_MEMBER_CURRENT`(dbt 모델 소유, DEC-27 §17-A)와 **다른 객체**다. 역할 분리:
---        · 본 뷰(SERVING) = **SV 전용** fan-out 차단 논리테이블(05_SV_DDL.sql 4곳 참조)
+--        · 본 뷰(SERVING) = **SV 전용** fan-out 차단 논리테이블(05_1~05_7_SV_DDL_*.sql 4곳 참조)
 --        · GOLD 판          = **분석가 기본 진입점**(전건 NULL 컬럼 미노출 · 감사컬럼 포함)
 --      두 판의 컬럼 구성은 의도적으로 다르다 — 한쪽만 고치지 말 것.
 CREATE OR REPLACE VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT
@@ -113,7 +113,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT TO ROLE GN_DW_SERVICE;
 
 -- =====================================================================
 -- 0단계 완료 — WH 3 · 역할 6+계층 · WH/스키마 grant · SERVING 스키마 · CoWork object · helper 뷰 2.
--- 다음: 05_SV_DDL.sql(SV **6종** + FACT_AD_COMBINED)
+-- 다음: 05_1~05_7_SV_DDL_*.sql(SV **6종** · `05_7` 에 FACT_AD_COMBINED 동봉 · 각 파일 독립 실행)
 --       → 09_1_AGENT_생성.sql(Agent 껍데기 2) → 09_2_AGENT_버전업.sql(스펙 본문) ★필수
 -- 🔴 [2026-08-04 O36 교정] 종전 'SV 5'는 SV_AD 신설 이전 수치이고, `09_AGENT_spec_구현.sql` 은
 --    [DEPRECATED 2026-07-31] 스텁이다. `09_2` 를 빼면 Agent 가 도구 0개로 남는다.

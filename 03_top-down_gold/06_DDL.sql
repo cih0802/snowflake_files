@@ -24,7 +24,7 @@
      단 사업목표(FTG_B, 원천=CRM 신규 목표 테이블 CRM_BIZ_TARGET·데이터 입고 대기 E-6)·
      모금성비용(FBD, ERP 원천 부재 E-1)은 미입고, ADMIN(앱푸시·조회수)은 제외 확정
      → 해당 컬럼만 생성·미채움(FACT_TARGET_BIZ=0행).
-  8. FK/PK 제약은 파일 하단 [관계 제약] 섹션에서 ALTER 로 일괄 선언(현행 38개).
+  8. FK/PK 제약은 파일 하단 [관계 제약] 섹션에서 ALTER 로 일괄 선언(현행 42개).
      - 전부 NOT ENFORCED NORELY (정보성) — Snowflake 는 NOT NULL 외 강제 안 함.
        ERD·BI 관계 인식·문서화 용도이며, 데이터 미검증 단계이므로 RELY 는 보류.
      - 참조 대상이 비유일(SCD2 MEMBER_DK / 월conform MONTH_KEY)인 FK 는
@@ -181,21 +181,30 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_CAMPAIGN (
     CAMPAIGN_SK         NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '캠페인 대리키 (ETL 일련번호, PK)',
     CAMPAIGN_BK         VARCHAR         NOT NULL COMMENT '캠페인 업무키(BK, 자연키)',
     BRAND               VARCHAR         COMMENT '공통브랜드(#117)',
-    PARENT_CAMPAIGN     VARCHAR         COMMENT '공통상위캠페인(#119)',
+    PARENT_CAMPAIGN     VARCHAR         COMMENT '상위캠페인 코드(#119) — 자기참조 키(값 도메인 = CAMPAIGN_BK). 🔴 라벨이 아니다. 사람이 읽는 이름은 PARENT_CAMPAIGN_NAME 을 쓴다(O37 신설)',
     CAMPAIGN_NAME       VARCHAR         COMMENT '캠페인명(#18·120·147)',
-    PROMO_METHOD        VARCHAR         COMMENT '홍보방법(#118)',
+    PROMO_METHOD        VARCHAR         COMMENT '홍보방법 원천코드(#118, 원천 PR_MTH_CD · 코드사전 CM008). 🔴 라벨이 아니라 숫자 코드다 — 사람·Agent 가 읽는 이름은 PROMO_METHOD_NAME 을 쓴다(O37 신설)',
     CAMPAIGN_TYPE       VARCHAR         COMMENT '캠페인 유형(#17) = 캠페인 카테고리 라벨(SILVER MM294, 56종). 예: 국내사례캠페인·굿즈캠페인·해외캠페인. ⚠️숫자코드 아님(2026-07-16 라벨화)',
     DOMESTIC_OVERSEAS   VARCHAR         COMMENT '국내/해외(#15) = SILVER CMPGN_TYPE1_NM(MM295): 국내 / 통합 / 해외. (종전 전건 NULL — 2026-07-16 BRONZE 재입고로 채움)',
     BIZ_CASE_TYPE       VARCHAR         COMMENT '사업/사례(#16) = SILVER CMPGN_TYPE2_NM(MM296): 굿즈 / 기타 / 사례 / 사업. ⚠️종전 모델이 유형1(국내/해외)을 여기 매핑한 의미혼입을 2026-07-16 교정',
-    INFLOW_PATH         VARCHAR         COMMENT '개발인입경로 라벨(SILVER MM293, 16종). 예: 디지털·방송·영상광고·지역개발·마케팅콜개발·직원개발. 현업 "주요캠페인" 분류축(2026-07-16 신설)',
-    MARKETING_CAMPAIGN  VARCHAR         COMMENT '마케팅캠페인명(SILVER MK_CMPGN_NM, 323종·고아 0). Q16 해소(2026-07-16 신설)',
+    INFLOW_PATH         VARCHAR         COMMENT '개발인입경로 라벨(SILVER MM293). 예: 디지털·방송·영상광고·지역개발·마케팅콜개발·대면모금·직원개발. 🔴 이 축은 **모집 채널**이다 — 2026-07-16 신설 시 「현업 주요캠페인 분류축」이라 적었던 표기는 거짓이므로 회수한다(O37). 캠페인 카테고리 = CAMPAIGN_TYPE(MM294) · 상위캠페인 = PARENT_CAMPAIGN_NAME',
+    MARKETING_CAMPAIGN  VARCHAR         COMMENT '마케팅캠페인명(SILVER MK_CMPGN_NM). Q16 해소(2026-07-16 신설)',
     CAMPAIGN_OPEN_DATE  DATE            COMMENT '오픈일자(#19)',
     ORG_SK              NUMBER(38,0)    COMMENT '캠페인 귀속조직',  -- FK→DIM_ORG
+    -- [2026-08-05 O37] 상위캠페인 라벨 신설(ALTER TABLE ADD COLUMN 으로 물리 반영, 위치=맨 끝).
+    --   PARENT_CAMPAIGN 이 자기참조 **코드**여서 현업이 말하는 "주요캠페인"을 코드로만 보고 있었다.
+    --   DIM_CAMPAIGN 자기조인(PARENT_CAMPAIGN = CAMPAIGN_BK)으로 전건 해소된다(O25/G3 동일 패턴).
+    PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '상위캠페인명 — 코드 PARENT_CAMPAIGN(자기참조 CAMPAIGN_BK)을 DIM_CAMPAIGN 자기조인으로 해소한 라벨. 현업 "주요캠페인" 계열 축. ⚠️ 상위가 없는 캠페인은 NULL 이며 ''(미매핑)''으로 창작하지 않는다(P21). ⚠️ 캠페인 카테고리 축과 다르다 — 카테고리는 CAMPAIGN_TYPE(MM294)이다',
+    -- [2026-08-05 O37] 홍보방법 라벨 신설. PROMO_METHOD(원천 PR_MTH_CD)는 **숫자 코드**이고
+    --   SILVER CRM_CAMPAIGN 에 `PR_MTH_NM` 이 없었다(카테고리·유입경로는 코드/라벨 쌍이 있는데 홍보방법만
+    --   코드뿐이었다). 코드사전 탐색으로 **CM008 이 도메인을 전량 덮는 것**을 확인해 배선했다.
+    --   🔴 라벨 없이 이 축을 SV 에 노출하면 Analyst 가 코드를 추측해 0행 무증상 오답을 낸다(§6.9-(5)·AD-4 유형).
+    PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명 — 코드 PROMO_METHOD(원천 PR_MTH_CD)를 코드사전 CM008 로 해소한 라벨. 실제값 계열: PC배너광고(DA)·M배너광고(DA)·PC검색광고(SA)·M검색광고(SA)·TM·TS·PC캠페인-홈페이지·M캠페인-홈페이지·온라인·오프라인·APP캠페인·기존회원메일·기타 등. ⚠️ 원천 PR_MTH_CD 가 없는 캠페인은 NULL 이며 ''(미매핑)''으로 창작하지 않는다(P21). ⚠️ USE_YN 무필터 조인',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '캠페인 차원 (1캠페인). 분류 4축 = CAMPAIGN_TYPE(카테고리)·INFLOW_PATH(인입경로)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례) + MARKETING_CAMPAIGN. 전부 라벨(코드 아님)';
+) COMMENT = '캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN. PARENT_CAMPAIGN·PROMO_METHOD 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)';
 
 
 -- ============================================================================
@@ -502,6 +511,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     AGE_BAND_AT_EVENT   VARCHAR         COMMENT '연령대명 — **사건(개발약정) 시점** 연령대 라벨. CM014 사전 조인(하드코딩 아님, P31). 코드는 AGE_AT_EVENT. 원천이 이미 구간화한 값이며 우리가 구간을 창작하지 않는다. ✅ ''10대 미만''이 상위인 것은 **오류가 아니다** — 편지쓰기대회 계열 캠페인(희망편지·가족그림편지·세계시민교육편지)이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B). 🔴 DIM_MEMBER.AGE_BAND(최근 약정 스냅샷·SV _AT_PLEDGE)와 값이 다를 수 있다 — 이 컬럼이 사건 시점 정확값이다. 중단원천 행은 NULL',
     AREA_CD_AT_EVENT    VARCHAR(10)     COMMENT '지역 코드 raw — **사건(개발약정) 시점 값**. 원천 BRONZE TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD(정본 CM018 약칭축, 지표 공#131) 사건행별 값 무변환 전파. 실제값 = CM018 코드 + 라벨 없는 센티넬 ''0''. 라벨=REGION_AT_EVENT. 🔴 DIM_MEMBER.AREA_CD(=최근 약정 스냅샷, SV 차원명 _AT_PLEDGE)와 **다른 축이다** — 이사 등으로 사건마다 값이 다를 수 있다. ⚠️ **현재 거주지가 아니다** — BRONZE 전체에 현주소 축이 없어 현재 지역은 산출 불가(O34). 중단원천 행은 원천에 컬럼이 부재하여 NULL',
     REGION_AT_EVENT     VARCHAR         COMMENT '지역명 — **사건(개발약정) 시점** 지역 라벨(CM018 약칭, 지표 공#131). 코드는 AREA_CD_AT_EVENT. 원천 SILVER CRM_MEMBER_DEV.AREA_NM(CM018 사전 조인) 전파. ⚠️ 센티넬 코드 ''0'' 은 사전에 라벨이 없어 NULL 이다 — ''미상''으로 창작하지 않는다. ⚠️ **현재 거주지가 아니다**(O34). 🔴 DIM_MEMBER.REGION(최근 약정 스냅샷·SV _AT_PLEDGE)과 값이 다를 수 있다. 중단원천 행은 NULL',
+    -- [2026-08-05 O37] 사건시점 성별 전파 + 캠페인 귀속 중단건(ALTER TABLE ADD COLUMN, 물리 위치=맨 끝).
+    --   · 성별: `_AT_EVENT` 계열 확장. 개발원천이 사건행별 성별을 보유하는데 전파되지 않아
+    --     성별은 DIM_MEMBER_CURRENT 현재 스냅샷만 쓸 수 있었다(P60 계열 잠복).
+    --   · CAMPAIGN_STOP_CNT: Agent 가 "캠페인별 중단률은 원천에 캠페인이 없어 산출 불가"라고
+    --     답한 것을 해소한다. 중단원천에는 실제로 캠페인이 없으나 **개발원천 코드5(후원중단) 행이
+    --     CMPGN_CD 를 보유**하며 그 축은 이미 CAMPAIGN_SK 로 배선돼 있었다 — measure 만 없었다.
+    --   🔴 그러나 이 measure 로 「중단률」을 만들면 안 된다. 코드5 의 캠페인은 **중단 시점** 캠페인이라
+    --     신규 건수와 모집단이 달라 비율이 100% 를 넘는다(실측 확인). 캠페인별 중단률의 정본은
+    --     FACT_MEMBER_COHORT 의 12개월 고정 이탈률이다.
+    SEX_AT_EVENT        VARCHAR         COMMENT '성별 코드 raw — **사건(개발약정) 시점 값**. 원천 BRONZE TM_MM_FDRM_MBER_DVLP_AMT.SEX(정본 CM013) 무변환 전파. 라벨=GENDER_AT_EVENT. ⚠️ CM013 에 없는 센티넬 ''0'' 이 소수 존재하며 라벨은 NULL 이다 — ''미상''으로 창작하지 않는다(P21). 🔴 DIM_MEMBER.SEX(회원 마스터 현재 스냅샷)와 **다른 축**이다 — 마스터에는 ''0'' 이 없다. 중단원천 행은 원천에 컬럼이 부재하여 NULL',
+    GENDER_AT_EVENT     VARCHAR         COMMENT '성별명 — **사건(개발약정) 시점** 성별 라벨. CM013 사전 조인(하드코딩 아님, P31). 코드는 SEX_AT_EVENT. 실제값 계열: 국내(남자)·국내(여자)·외국인(남자)·외국인(여자)·외국인(기타)·단체·기업·기타. 🔴 DIM_MEMBER_CURRENT.GENDER_NAME(CM017 라벨·현재 스냅샷)과 **코드체계가 다르다** — 두 축을 같은 성별로 합산하지 말 것. 중단원천 행은 NULL',
+    CAMPAIGN_STOP_CNT   NUMBER(18,4)    COMMENT '캠페인 귀속 중단(건) — 개발원천 DVLP_DIV_CD=''5''(MM015 후원중단) 행에만 1, 그 외 0. 이 행은 CAMPAIGN_SK 를 보유하므로 **캠페인별 중단 사건 분해**가 성립한다(O37). 🔴 STOP_CNT 와 **절대 합산 금지** — 같은 중단 사건이 개발원천·중단원천에 중복 존재한다(O24). 🔴 이 measure 를 개발건으로 나눠 「중단률」로 쓰지 말 것 — 코드5 의 캠페인은 **중단 시점** 캠페인이라 모집단이 달라 비율이 100%를 넘는다. 캠페인별 중단률은 FACT_MEMBER_COHORT 를 쓴다',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -802,6 +823,57 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
 
 
 -- ============================================================================
+-- FACT 10: FACT_MEMBER_COHORT (FMC) — 회원 획득 코호트 팩트 (회원 grain)  [2026-08-05 O37 신설]
+-- ----------------------------------------------------------------------------
+-- 왜 신설했나: Agent 가 *"캠페인별 중단률은 중단 원천에 캠페인이 없어 구조적으로 산출 불가"*
+--   라고 답했다. 원천 재스캔 결과 그 판정은 틀렸다 —
+--   중단원천(TM_MM_FDRM_MBER_SPNSR_DSCNTC)에는 확실히 캠페인 컬럼이 없으나,
+--   개발원천(TM_MM_FDRM_MBER_DVLP_AMT)의 DVLP_DIV_CD='5'(MM015 후원중단) 행이 CMPGN_CD 를
+--   전건 보유하고 그 축은 이미 FME.CAMPAIGN_SK 로 배선까지 끝나 있었다.
+--
+-- 🔴 그런데 그것만으로는 중단률이 되지 않는다. 두 의미 결함을 구조로 막는다:
+--   ① 코드5 의 캠페인은 **중단 시점** 캠페인이라 신규 건수로 나누면 모집단이 달라
+--      비율이 100% 를 넘는다(기존회원 대상 캠페인에서 실증). → 분모를 **획득 코호트**로 잡는다.
+--   ② 누적 이탈률은 **관측 기간**에 지배된다(획득이 이를수록 이탈률이 높은 단조 관계 실측).
+--      캠페인은 실행 연도가 다르므로 누적률로 비교하면 오래된 캠페인이 자동으로
+--      「중단률 높음」이 된다 — 값은 정상인데 답이 틀리는 P60 유형이다.
+--      → **12개월 고정 이탈률**을 정본으로 삼고, 분자를 관측 가능 코호트로 제한해
+--        Agent 가 분모를 잘못 고를 경로 자체를 없앤다.
+--
+-- 왜 별도 팩트인가: 중단률의 분모는 **회원 수**다. 사건 팩트(FME)에서 회원 수를 distinct 로
+--   세게 하면 소비 끝단이 분모를 틀리기 쉽다. 회원 grain 으로 미리 확정하면 SUM/SUM 이 된다.
+-- 🔴 FACT 중 유일하게 grain 이 실제로 유일하므로 PK 를 선언한다(다른 FACT 의 PK 미선언 사유 =
+--   grain 비유일, 본 표는 해당 없음 — 하단 [관계 제약 — 보류] 절의 예외다).
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
+    MEMBER_DK               VARCHAR(10)     NOT NULL PRIMARY KEY COMMENT '회원 불변키 (grain·PK). ※비강제 FK→DIM_MEMBER',
+    ACQ_CAMPAIGN_SK         NUMBER(38,0)    COMMENT '획득 캠페인 (FK→DIM_CAMPAIGN). 회원을 처음 데려온 캠페인이다. 미매칭·부재는 0(Unknown 멤버)',
+    ACQ_DATE_SK             NUMBER(8,0)     COMMENT '획득일 (FK→DIM_DATE). 획득 사건의 발생일. 캘린더 범위밖·무효는 0',
+    ACQ_BASIS               VARCHAR         COMMENT '획득 판정 근거. ''NEW''=개발구분 신규(MM015 코드1) 사건으로 판정 / ''FALLBACK''=신규 사건이 없어 최초 개발 사건으로 대체 판정. 🔴 FALLBACK 은 획득캠페인 신뢰도가 낮다 — 캠페인 비교 시 ''NEW'' 로 한정할 것을 권한다. ⚠️ 개발 이력이 아예 없는 중단회원은 획득 캠페인을 알 수 없어 이 팩트에 **존재하지 않는다**(중단 총계는 FACT_MEMBER_EVENT 를 쓴다)',
+    ACQ_DVLP_DIV_CD         VARCHAR         COMMENT '획득 사건의 개발구분 코드(MM015). ACQ_BASIS=''NEW'' 이면 ''1''',
+    ACQ_AGE_CD              NUMBER(2,0)     COMMENT '획득 시점 연령대 코드(CM014). 🔴 연속형 나이가 아니다 — 평균·구간 재계산 금지. 라벨=ACQ_AGE_BAND',
+    ACQ_AGE_BAND            VARCHAR         COMMENT '획득 시점 연령대명(CM014 라벨). 🔴 **현재 나이가 아니다** — 현재 연령은 BRONZE 에 생년월일이 없어 산출 불가(O34). 이 축의 ''10대 미만'' 상위는 오류가 아니며 편지쓰기대회 계열 아동 모집 캠페인 때문이다(O34-B) — 결측·기본값 오염으로 설명하지 말 것',
+    ACQ_AREA_CD             VARCHAR(10)     COMMENT '획득 시점 지역 코드(CM018 + 라벨 없는 센티넬 ''0''). 라벨=ACQ_REGION',
+    ACQ_REGION              VARCHAR         COMMENT '획득 시점 지역명(CM018 약칭). 🔴 **현재 거주지가 아니다** — BRONZE 에 현주소 축이 없다(O34). 센티넬 ''0''은 사전 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다',
+    ACQ_SEX_CD              VARCHAR         COMMENT '획득 시점 성별 코드(CM013). 라벨=ACQ_GENDER. ⚠️ DIM_MEMBER 의 성별(CM017 계열·현재 스냅샷)과 코드체계가 다르다',
+    ACQ_GENDER              VARCHAR         COMMENT '획득 시점 성별명(CM013 라벨). 계열: 국내(남자)·국내(여자)·외국인(남자)·외국인(여자)·외국인(기타)·단체·기업·기타',
+    ACQ_SPNSR_AMT           NUMBER(18,0)    COMMENT '획득 사건의 후원금액(원, raw). 🔴 건수로 환산하지 말 것 — 정본 공#38·#151 이 금액÷10,000 규약이라 혼용하면 정의가 깨진다(CONF-2)',
+    FIRST_STOP_DATE_SK      NUMBER(8,0)     COMMENT '최초 중단일 (FK→DIM_DATE). 중단원천(EVENT_TYPE=''STOP'') 기준 최초 사건. 🔴 **미중단 회원은 NULL** 이며 0 이 아니다 — 0 은 「날짜 미상」이라는 다른 뜻이다(P21). 중단했으나 일자가 캘린더 범위밖이면 0',
+    FIRST_STOP_REASON_NM    VARCHAR         COMMENT '최초 중단의 사유명(MM005 라벨). 미중단 회원은 NULL. ⚠️ USE_YN 무필터 — 폐지코드도 실적재에 남아 있어 필터하면 라벨이 사라진다',
+    TENURE_DAYS             NUMBER(9,0)     COMMENT '유지기간(일) = 최초 중단일 − 획득일. 🔴 미중단 회원은 NULL(아직 종료되지 않은 관측이다 — 0 이나 현재까지 경과일로 채우면 평균 유지기간이 조용히 틀린다). 획득일·중단일 중 하나가 무효면 NULL',
+    IS_12M_OBSERVABLE       BOOLEAN         COMMENT '12개월 관측 가능 여부 = 획득일 + 12개월 ≤ 데이터 최종 사건일. 🔴 12개월 이탈률의 **분모 자격**이다. 최근 획득 회원은 아직 12개월이 지나지 않아 FALSE 이며, 포함시키면 최근 캠페인이 실제보다 이탈률이 낮게 보인다',
+    ACQ_MEMBERS             NUMBER(38,0)    COMMENT '획득 회원수 — 항상 1(회원 grain). 캠페인별 획득 규모의 분모',
+    STOPPED_MEMBERS         NUMBER(38,0)    COMMENT '누적 이탈 회원수 — 중단 이력이 있으면 1. 🔴 이 값을 ACQ_MEMBERS 로 나눈 **누적 이탈률은 캠페인 비교에 쓰면 안 된다** — 획득 시점이 이를수록 관측 기간이 길어 이탈률이 구조적으로 높게 나온다. 캠페인 비교에는 STOPPED_12M_MEMBERS / OBSERVABLE_12M_MEMBERS 를 쓴다',
+    STOPPED_12M_MEMBERS     NUMBER(38,0)    COMMENT '12개월 내 이탈 회원수 — **IS_12M_OBSERVABLE=TRUE 이고** 최초 중단이 획득 후 12개월 내인 경우 1. 관측 불가 회원은 이탈했어도 0 이다(분자·분모를 구조적으로 일치시켜 잘못된 분모 사용을 차단한다). 분모는 반드시 OBSERVABLE_12M_MEMBERS',
+    OBSERVABLE_12M_MEMBERS  NUMBER(38,0)    COMMENT '12개월 이탈률의 분모 회원수 — IS_12M_OBSERVABLE=TRUE 이면 1. 🔴 12개월 이탈률 = SUM(STOPPED_12M_MEMBERS)/SUM(OBSERVABLE_12M_MEMBERS). ACQ_MEMBERS 를 분모로 쓰지 말 것',
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '회원 획득 코호트 팩트 (1행=1회원 · grain 유일이라 PK 선언). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 🔴 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다. 개발 이력이 없는 중단회원은 획득 캠페인이 없어 미포함(중단 총계는 FACT_MEMBER_EVENT).';
+
+
+-- ============================================================================
 -- [관계 제약] 정보성 FK 선언 (NOT ENFORCED NORELY)
 -- ----------------------------------------------------------------------------
 --  목적   : ERD 자동생성 · BI 관계 인식 · 인수인계 문서화.
@@ -865,6 +937,9 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_BUDGET DROP CONSTRAINT FK_FBD_DIM_BUDGET_ITEM; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_BUDGET DROP CONSTRAINT FK_FBD_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_BUDGET DROP CONSTRAINT FK_FBD_DIM_SPONSORSHIP; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_DATE_ACQ; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_DATE_STOP; EXCEPTION WHEN OTHER THEN NULL; END;
   RETURN 'FK drop (idempotent) done';
 END;
 $$;
@@ -973,6 +1048,16 @@ ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_CAMPAIGN
 ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_SPONSORSHIP
     FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
 
+-- FACT_MEMBER_COHORT  [2026-08-05 O37]
+--   FIRST_STOP_DATE_SK 는 미중단 회원에서 NULL 이다(0 아님 — 0 은 「날짜 미상」이라는 다른 뜻).
+--   FK 는 NULL 을 위반으로 보지 않으므로 선언에 문제가 없다.
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_DIM_CAMPAIGN
+    FOREIGN KEY (ACQ_CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_DIM_DATE_ACQ
+    FOREIGN KEY (ACQ_DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_DIM_DATE_STOP
+    FOREIGN KEY (FIRST_STOP_DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
+
 -- ============================================================================
 -- [관계 제약 — 보류(FK 미선언)] 인수인계 필독
 -- ----------------------------------------------------------------------------
@@ -994,13 +1079,14 @@ ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_SPONSORSHIP
 --         현 단계 보류(설계 open O 참조).
 --
 --  [FACT PK/UNIQUE] 광고 팩트군은 선언됨 — FAD·FAD_B·FAD_D = PK(AD_PERF_DK),
---       FAD_BC = PK(AD_PERF_DK, CASE_SEQ). 그 외 FACT 는 grain 미확정·ETL 멱등성
+--       FAD_BC = PK(AD_PERF_DK, CASE_SEQ). **FMC = PK(MEMBER_DK)** — 회원 grain 이라
+--       실제로 유일하다(2026-08-05 O37). 그 외 FACT 는 grain 미확정·ETL 멱등성
 --       의존으로 미설정(논리 grain 은 각 테이블 COMMENT 에 명시). 확정 후 UNIQUE(NORELY) 검토.
 -- ============================================================================
 
 
 -- ============================================================================
--- [검증 쿼리] DDL 실행 후 27개 테이블 생성 확인
+-- [검증 쿼리] DDL 실행 후 28개 테이블 생성 확인
 -- ============================================================================
 SELECT
     CASE WHEN table_name LIKE 'DIM_%' THEN 'DIM' ELSE 'FACT' END AS category,
@@ -1010,29 +1096,34 @@ FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_schema = 'GOLD'
   AND table_type = 'BASE TABLE'
 ORDER BY category DESC, table_name;
--- 기대값: DIM 15행 + FACT 12행 = 27행 (※ WIDE VIEW 12개는 09 문서 소관 — 여기서 제외)
+-- 기대값: DIM 15행 + FACT 13행 = 28행 (FACT 13 = 종전 12 + FACT_MEMBER_COHORT, 2026-08-05 O37)
+--         (※ WIDE VIEW 는 09 문서 소관 — 여기서 제외)
 
 -- ----------------------------------------------------------------------------
--- [검증 쿼리] 정보성 FK 38개 선언 확인
+-- [검증 쿼리] 정보성 FK 42개 선언 확인
 -- ----------------------------------------------------------------------------
 SHOW IMPORTED KEYS IN SCHEMA GN_DW.GOLD;
--- 기대값: 38행 (DIM_CAMPAIGN 1 + FMM 4 + FME 5 + FTG_D 1 + FTG_B 3
---          + FSE 3 + FGA 6 + FAD 4 + FEP 4 + FBD 4
---          + 광고 위성→코어 3: FAD_B·FAD_D·FAD_BC). 보류 FK(MEMBER_DK·MONTH_KEY) 제외.
+-- 기대값: 42행 (DIM_CAMPAIGN 1 + FMM 4 + FME 5 + FTG_D 1 + FTG_B 3
+--          + FSE 4 + FGA 6 + FAD 4 + FEP 4 + FBD 4
+--          + 광고 위성→코어 3: FAD_B·FAD_D·FAD_BC
+--          + FMC 3: ACQ_CAMPAIGN·ACQ_DATE·FIRST_STOP_DATE). 보류 FK(MEMBER_DK·MONTH_KEY) 제외.
+-- ⚠️ 2026-08-05 O37 교정: 종전 기대값 「38」은 stale 이었다 — FSE 를 3 으로 셌으나 실제 4
+--    (DATE·SERVICE·SEND_TYPE·CAMPAIGN)이다. O37 착수 시점 실측 baseline = 39, 신설 3 → 42.
 
 -- 자동화용(스크립트 카운트): FOREIGN KEY 제약 수 집계
 SELECT COUNT(*) AS fk_count
 FROM GN_DW.INFORMATION_SCHEMA.TABLE_CONSTRAINTS
 WHERE constraint_schema = 'GOLD'
   AND constraint_type = 'FOREIGN KEY';
--- 기대값: 38   (2026-07-29 실측 일치)
+-- 기대값: 42   (2026-08-05 O37 실측 일치. 종전 기술 38 은 FSE 오계수 — 위 절 참조)
 
 -- ============================================================================
 -- [구현 완료 주석]
 -- ----------------------------------------------------------------------------
---  · 6단계(DDL): CREATE TABLE 27개(DIM 15 + FACT 12) — 배포·적재 완료.
+--  · 6단계(DDL): CREATE TABLE 28개(DIM 15 + FACT 13) — 배포·적재 완료.
+--    FACT 13 = 종전 12 + FACT_MEMBER_COHORT(회원 획득 코호트, 2026-08-05 O37).
 --    광고 팩트군 = 코어 FAD 1 + 위성 3(FAD_B·FAD_D·FAD_BC), 2026-07-28 순서9-I 증설.
---  · 7단계(메타/제약): 위 [관계 제약] 섹션에 정보성 FK 38개 ALTER 구현 +
+--  · 7단계(메타/제약): 위 [관계 제약] 섹션에 정보성 FK 42개 ALTER 구현 +
 --    보류 FK(MEMBER_DK·MONTH_KEY)·FACT PK 사유 명문화.
 --    → 6/7단계 경계는 각 섹션 헤더 주석으로 구분. 배포 편의를 위해 단일 파일 유지.
 --  · 컬럼 COMMENT: gold 스키마 컬럼 인벤토리_20260629.csv 설명 컬럼 기준 (2026-07-03 추가).

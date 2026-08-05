@@ -14,7 +14,7 @@
 --
 -- ▶ 실행 순서
 --   02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql → dbt(BRONZE→GOLD)
---   → 05_SV_DDL.sql(SV 6종 + §7 GRANT + §8 검증) → **본 파일** → 09_2_AGENT_버전업.sql
+--   → 05_1~05_7_SV_DDL_*.sql(SV 6종 + 각 파일 GRANT·스모크) → **본 파일** → 09_2_AGENT_버전업.sql
 --   ⚠ SV 가 없으면 Agent 는 만들어지지만 질의 시 도구가 깨진다(tool_resources 가 SV 를 참조).
 --
 -- ▶ 언제 이 파일을 다시 실행하는가

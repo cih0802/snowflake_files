@@ -23,6 +23,13 @@
 --    실측: TOP = MS046 결연·MS047 회원·MS048 회비·MS049 서비스·MS050 사업보고 … 12종.
 --    지표사전 #134 값 열거가 MS046 라벨과 일치해 교차확인됨(DEC-28 §18-C).
 -- 🔴 DEC-25 준수: 코드(원천명 `SEND_GBN_*`)와 라벨(분석용어 `SEND_TYPE_L/M/S`)을 **병기**한다.
+-- 🔴 [2026-08-04 자기검토] **정본 #133 과 라벨이 불일치한다** — #133 은 6종(결연/회비/서비스/사업보고/
+--    참여/기타)인데 실측 `SEND_TYPE_L` 은 **9종**이다(추가: 회원만족 MS052 · 회원서비스 MS054 · 회원 MS047+MS053).
+--    #133 은 생략기호가 없어 완전열거로 읽히므로 불일치가 실재한다 → 문서20 §L 현업 확인.
+--    데이터를 임의 통합·삭제하지 않는다(DEC-26 참고본 강등 · 원천 우선).
+-- ⚠️ **대분류는 코드그룹과 1:1 이 아니다**: 라벨 하나가 복수 코드그룹에서 온다
+--    (결연=MS046+MS051 경로21 · 기타=MS0505+MS055 경로4 · 회원=MS047+MS053 경로2) → 코드그룹 12종 → 라벨 9종.
+-- 🟢 `SEND_GBN_TOP` 12종 전부 `CRM_CODE.CD_ID` 로 실재 확인(MS0501·MS0505 포함 — 오염값 아님).
 
 
 with src as (
@@ -49,7 +56,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '5ef82815-e89f-4a45-805d-207f49bbc068'                    AS DW_BATCH_ID
+    '8162e9f4-6643-49ba-b6e8-240f496af9fe'                    AS DW_BATCH_ID
 from src
 
 union all
@@ -59,4 +66,4 @@ select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, '(미�
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '5ef82815-e89f-4a45-805d-207f49bbc068'                    AS DW_BATCH_ID
+    '8162e9f4-6643-49ba-b6e8-240f496af9fe'                    AS DW_BATCH_ID

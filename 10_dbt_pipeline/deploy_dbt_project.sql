@@ -21,7 +21,7 @@
 --   6. ❌ **SERVING helper 뷰 미생성 (객체 0개)** — DIM_MONTH·DIM_MEMBER_CURRENT·FACT_AD_COMBINED
 --         → dbt 배포와 **무관**(dbt 는 SILVER/GOLD 만 소유). 단 SV/Agent 는 이 뷰 없이는 실패.
 --         해소: 05_SV-Agent_ai/02_SERVING_setup.sql  또는
---               02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql §E+§G  → 그 다음 05_SV_DDL.sql
+--               02_GN_DW_building/08_After_Deploy_DBT.sql §G  → 그 다음 05_1~05_7_SV_DDL_*.sql
 --   7. ✅ SILVER 38 / GOLD 27테이블+WIDE 12뷰 **이미 배포·적재 완료**
 --         (FACT_MEMBER_MONTHLY 40,054,883 · FACT_SERVICE_EVENT 38,470,780 · FACT_TARGET_BIZ 0행=입고대기)
 --         → 즉 워크스페이스 dbt build 는 이미 성공. 본 파일은 **거버넌스 오브젝트 등록**이 목적.
@@ -214,14 +214,15 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 --       실제 정본은 **`02_GN_DW_building/08_After_Deploy_DBT.sql` §G** 다(런북 §11.3-B 가 이미
 --       같은 오류를 자기교정했는데 이 파일에 반영되지 않아 「닫힌 링크」로 남아 있었다).
 --    ② `13_SV_AD_배포_추가작업.sql` 은 `[DEPRECATED 2026-07-31]` 이며 **실행 가능한 라인이 0개**다.
---       `FACT_AD_COMBINED` 는 **`05_SV_DDL.sql` 이 만든다**(398행).
+--       `FACT_AD_COMBINED` 는 **`05_7_SV_DDL_AD.sql` 이 만든다**(2026-08-05 O37 분할 · 종전 `05_SV_DDL.sql` 398행).
 --    ③ Agent 단계가 아예 빠져 있었다 — 특히 `09_2` 누락은 Agent 를 껍데기로 남긴다.
 --
 -- dbt 는 SILVER/GOLD 까지만 소유. SV/Agent 를 쓰려면 아래를 **이 순서대로** 별도 실행:
 --   1. 02_GN_DW_building/08_After_Deploy_DBT.sql   → DBT PROJECT GRANT + SERVING GRANT + CoWork
 --        §G.1 SERVING.DIM_MONTH · §G.2 SERVING.DIM_MEMBER_CURRENT
 --        ★ SV DDL 보다 반드시 먼저 (SV 가 논리테이블로 참조한다)
---   2. 05_SV-Agent_ai/05_SV_DDL.sql                → SERVING.FACT_AD_COMBINED + SEMANTIC VIEW 6종
+--   2. 05_SV-Agent_ai/05_1~05_7_SV_DDL_*.sql       → SEMANTIC VIEW 6종 (+05_7 에 SERVING.FACT_AD_COMBINED)
+--      🔴 각 파일 독립 실행(순서 무관). `05_0_SV_DDL.sql` 은 인덱스·전체검증 전용(SV 정의 없음).
 --        🔴 반드시 `USE ROLE GN_DW_ADMIN` (ACCOUNTADMIN 으로 만들면 이후 재배포가 막힌다)
 --   3. 05_SV-Agent_ai/09_1_AGENT_생성.sql          → Agent **껍데기** + USAGE grant + CoWork SI
 --   4. 05_SV-Agent_ai/09_2_AGENT_버전업.sql        → 🔴 **Agent 스펙 본문(도구·instruction)**

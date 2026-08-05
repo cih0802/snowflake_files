@@ -16,6 +16,10 @@ select
     --   "사유코드→라벨"로 명시한 것과 실적재가 어긋난 상태를 해소한다(정본 공#162).
     f.STOP_REASON_NM, f.STOP_CHANNEL_NM,
     f.NEW_EXISTING_FLAG,
+    -- [2026-08-04 O35] 사건시점 연령대·지역. 아래 MEMBER_AGE_* / MEMBER_REGION(=DIM_MEMBER 현재버전
+    --   경유 '최근 약정' 스냅샷)과 **다른 축**이며 값이 다를 수 있다. 이 축이 사건 당시 정확값이다.
+    --   같은 뷰 안에 캠페인 축이 있어 연령대 × 캠페인 교차가 성립한다. 중단(STOP)행은 원천 부재로 NULL.
+    f.AGE_AT_EVENT, f.AGE_BAND_AT_EVENT, f.AREA_CD_AT_EVENT, f.REGION_AT_EVENT,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.QUARTER, d.IS_HOLIDAY,
     -- [2026-08-03 O26] 회원 속성 노출 재구성 — 코드=BRONZE 원천명 · 라벨=분석 용어.

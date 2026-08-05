@@ -1,0 +1,293 @@
+-- GN_DW 3단계: Semantic View DDL 정본 — SV_AD (광고 실적) + helper 뷰 FACT_AD_COMBINED
+-- Co-authored with CoCo
+-- ============================================================================
+-- ▶ 이 파일의 위상  [2026-08-05 O37 분할]
+--   대상 SV = **SV_AD (+ helper 뷰 `FACT_AD_COMBINED` 동봉 — 이 SV 의 단일 base 이므로 독립 실행을 위해 같은 파일에 둔다)**. 이 파일 하나로 **독립 실행**된다
+--   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
+--   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
+--   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
+--   `CREATE OR REPLACE` 가 GRANT 를 파괴하지만 GRANT 절이 같은 파일에 있어 자기완결적이다.
+--
+--   ⚠️ 종전에는 SV 6종이 단일 파일 `05_SV_DDL.sql(현 `_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql`)`(708행)에 있었다. SV 하나를 고칠 때마다
+--      파일 전체를 재작성해야 해서 **손대지 않은 SV 의 COMMENT 를 훼손할 경로**였고
+--      (O27→O30 · P58 과 같은 유형), 신규 SV 추가도 기존 파일 편집을 강제했다. → SV 단위로 분할.
+--      `05_0_SV_DDL.sql` 은 **인덱스 + 전체 배포 검증**으로 전환됐다(SV 정의는 더 이상 없다).
+--
+-- ▶ 선행 조건 (이것만 만족하면 언제든 실행 가능)
+--   ① GOLD 적재 완료(`dbt build`) — 이 SV 의 논리테이블 원천
+--   ② **`02_GN_DW_building/08_After_Deploy_DBT.sql` §G** — SERVING helper 뷰
+--      (`DIM_MONTH`·`DIM_MEMBER_CURRENT`). 이 파일이 논리테이블로 참조하므로 필수 선행.
+--      ⚠ `02_SERVING_setup.sql`·`07_ENVIRONMENT_RBAC_setup.sql` 이 아니다(O36 실측 교정).
+--   ⚠ 반드시 `GN_DW_ADMIN` 역할로 실행한다. ACCOUNTADMIN 으로 만들면 소유권이 어긋나 이후
+--     재배포가 권한 오류로 막힌다(복구 SQL = `05_0_SV_DDL.sql` 전체검증 §8-11 주석).
+--
+-- ▶ 정본 근거 (수치·이력·판정 경위는 이 파일에 두지 않는다)
+--   `04_SV_설계.md` §0.1 helper뷰 · §0.3 가산성 · §1~6 SV구조 · **§6.9 구조적 제약**
+--   `03_SV_metric_배속.md` 지표별 분자/분모 직역 · **§8.5 미해결 + §8.5.1 근거 쿼리**
+--   `01_SV-Agent 작업계획.md` §3 3단계 · 원칙10(fan-out) · R1·R5 가산성 · 원칙6 한글 synonyms
+--   `05_0_SV_DDL.sql` 분할 인덱스 · 전체 배포 검증 · 공통 규약 전문
+--
+-- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
+--   R1 fan-out : 월팩트→`SERVING.DIM_MONTH` · 회원속성→`SERVING.DIM_MEMBER_CURRENT` ·
+--                광고팩트→`SERVING.FACT_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
+--   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
+--   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.
+--   비활성 지표: 원천 미적재분은 SV 에서 아예 제외한다(빈 metric 이 0/NULL 을 사실처럼 반환).
+--   COMMENT 규약: 🔴 **수치를 넣지 않는다**(Agent 가 COMMENT 를 근거로 인용 → 적재량 변하면 거짓이 된다) ·
+--                `[원천]` 절은 테이블·컬럼 이름만 · 저카디널리티 코드 차원은 **실제 코드값을 열거**.
+-- ============================================================================
+
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+/* =====================================================================================
+   6. SV_AD (overall Agent) — base FACT_AD_COMBINED(helper, FAP+FAD+FAB 1:1 pre-join)
+      활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털]
+            인바운드콜·방송횟수 [방송] · 재방송개발건·재방송 개발단가(공8) [재방송 전용]
+      ⚠ 디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 없이 혼합집계 시 왜곡
+      ⚠ 캠페인/소재 연결키 미적재 → 캠페인·소재별 분해 불가(Phase-2)
+      ⚠ 전환콜(CONV_CALL_CNT)·방송 전체 개발단가는 의도적 미노출 — 근거 = 04 §6.9
+   ===================================================================================== */
+
+-- 6-0. helper 뷰: FAP+FAD+FAB 1:1 pre-join (세 팩트가 AD_PERF_DK로 완전분할, fan-out 0)
+--   존재 이유: semantic view metric 식은 자기 logical table 컬럼만 참조 가능 → 개발단가(AD_COST÷CRM_DEV_CNT)
+--   등 cross-satellite 비율 metric을 SV에서 직접 계산할 수 없다(04 §6.9-(1)). DIM_MEMBER_CURRENT 패턴과 동일.
+CREATE OR REPLACE VIEW GN_DW.SERVING.FACT_AD_COMBINED AS
+SELECT
+  -- FAP core
+  fap.AD_PERF_DK,
+  fap.PERF_DATE_SK,
+  fap.CAMPAIGN_SK,
+  fap.AD_CREATIVE_SK,
+  fap.DEVICE_SK,
+  fap.AD_COST,
+  fap.IMPRESSIONS,
+  fap.CLICKS,
+  fap.INBOUND_CALL,
+  fap.GA_CONV_MEMBERS,
+  fap.GA_CONV_CNT,
+  fap.DAY_OF_WEEK,
+  fap.WEEK_OF_YEAR,
+  fap.AD_SOURCE_TYPE,
+  -- FAD (digital satellite) — NULL for broadcast rows
+  dig.PAGE_TYPE,
+  dig.AD_GROUP_NM,
+  dig.GROUP_DIV,
+  dig.CREATIVE_TYPE,
+  dig.AD_TYPE_NM,
+  dig.READ_CNT,
+  dig.MEDIA_POTENTIAL_CUST_CNT,
+  dig.CRM_DEV_CNT,
+  dig.CTR_SRC,
+  dig.CVR_SRC,
+  dig.CPC_SRC,
+  dig.CPM_SRC,
+  dig.CPA_SRC,
+  dig.DEV_UNIT_PRICE_SRC,
+  dig.VTR_SRC,
+  -- FAB (broadcast satellite) — NULL for digital rows
+  brc.TIME_BAND,
+  brc.CM_POSITION,
+  brc.RT_TYPE,
+  brc.PROGRAM_NM,
+  brc.CHANNEL_COMPANY,
+  brc.CHANNEL_COMPANY_TYPE,
+  brc.SPOT_TYPE,
+  brc.DURATION_SEC,
+  brc.DAY_DIV,
+  brc.BRDC_DIV,
+  brc.CTV_DIV,
+  brc.AD_CNT,
+  brc.CONV_CALL_CNT,
+  brc.DVLP_MEMBER_CNT,
+  brc.DVLP_CNT,
+  brc.AD_VIEW_RT_SRC  AS BRDC_AD_VIEW_RT_SRC,
+  brc.CPC_SRC         AS BRDC_CPC_SRC
+FROM GN_DW.GOLD.FACT_AD_PERFORMANCE fap
+LEFT JOIN GN_DW.GOLD.FACT_AD_DIGITAL dig ON fap.AD_PERF_DK = dig.AD_PERF_DK
+LEFT JOIN GN_DW.GOLD.FACT_AD_BROADCAST brc ON fap.AD_PERF_DK = brc.AD_PERF_DK;
+
+-- helper 뷰 COMMENT — 뷰는 `ALTER VIEW ... SET COMMENT` 사용(`COMMENT ON VIEW` 미지원).
+ALTER VIEW GN_DW.SERVING.FACT_AD_COMBINED SET COMMENT =
+  'GOLD 광고 팩트 3종(FAP 코어 + FAD 디지털·FAB 방송 위성)을 AD_PERF_DK 로 1:1 pre-join — SV_AD 의 단일 base. PK=AD_PERF_DK(전건 유일, fan-out 0). 위성은 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(디지털행=방송컬럼 NULL, 방송행=디지털컬럼 NULL — 결측이 아니라 원천 부재). 존재 이유: semantic view metric 식은 자기 logical table 컬럼만 참조 가능해 개발단가(AD_COST÷CRM_DEV_CNT) 등 cross-satellite 비율을 SV 에서 직접 계산할 수 없다.';
+
+-- helper 뷰 GRANT (SERVING 에는 FUTURE grant 가 없어 명시 부여 필요 — 04 §6.9-(3))
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_SERVICE;
+
+-- 6-1. SV_AD 본체
+CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
+  TABLES (
+    ad AS GN_DW.SERVING.FACT_AD_COMBINED
+      PRIMARY KEY (AD_PERF_DK)
+      WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
+      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·개발건수) / GN_DW.BRONZE_GA4.events_YYYYMMDD(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
+    device AS GN_DW.GOLD.DIM_DEVICE
+      PRIMARY KEY (DEVICE_SK)
+      WITH SYNONYMS ('기기', '디바이스', '매체기기')
+      COMMENT = '기기(디바이스) 차원. [원천] 시스템=GA4(BigQuery→Snowflake) · BRONZE=GN_DW.BRONZE_GA4.events_YYYYMMDD(device.category) · SILVER=GA4_DEVICE. 방송 행은 기기 개념이 없어 (해당없음).',
+    date AS GN_DW.GOLD.DIM_DATE
+      PRIMARY KEY (DATE_SK)
+      WITH SYNONYMS ('날짜', '실적일')
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.'
+  )
+  RELATIONSHIPS (
+    ad_to_date   AS ad (PERF_DATE_SK) REFERENCES date (DATE_SK),
+    ad_to_device AS ad (DEVICE_SK)    REFERENCES device
+  )
+  DIMENSIONS (
+    -- 시간
+    date.PERF_DATE    AS date.FULL_DATE  WITH SYNONYMS ('실적일', '광고일', '일자') COMMENT = '광고 실적 발생일',
+    date.CAL_YEAR     AS date.YEAR       WITH SYNONYMS ('연도', '년')   COMMENT = '연도',
+    date.CAL_MONTH    AS date.MONTH      WITH SYNONYMS ('월')          COMMENT = '월(1~12)',
+    date.CAL_QUARTER  AS date.QUARTER    WITH SYNONYMS ('분기')        COMMENT = '분기(1~4)',
+    -- 코어 차원
+    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형. 코드값: ''DIGITAL'' · ''VIDEO''(방송 본방) · ''REBROADCAST''(재방송). 디지털/방송 measure 필터 필수.',
+    ad.DAY_OF_WEEK    AS ad.DAY_OF_WEEK    WITH SYNONYMS ('요일')   COMMENT = '요일',
+    ad.WEEK_OF_YEAR   AS ad.WEEK_OF_YEAR   WITH SYNONYMS ('주차')   COMMENT = '연중 주차',
+    -- 기기
+    device.DEVICE_TYPE       AS device.DEVICE_TYPE       WITH SYNONYMS ('기기유형', '디바이스유형', '모바일', 'PC') COMMENT = '기기 유형. 실제 코드값: ''M''=모바일(GA4 mobile/tablet 통합) · ''PC''=데스크톱 · ''(해당없음)''=방송광고(기기 개념 없음) · ''(unknown)''=매핑 실패 센티넬. ⚠필터 시 ''MOBILE''/''TABLET'' 아님 — 모바일은 ''M''.',
+    device.DEVICE_SCOPE_DESC AS device.DEVICE_SCOPE_DESC WITH SYNONYMS ('기기범위') COMMENT = '기기 범위 설명(예: 모바일(GA4 device.category=mobile/tablet)).',
+    -- 디지털 전용 차원
+    ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용.',
+    ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용. 원천에 일부 행만 채워져 있어 부분집합이다.',
+    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용.',
+    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용.',
+    -- 방송 전용 차원
+    ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사') COMMENT = '방송 채널사. VIDEO/REBROADCAST 전용. ⚠광고비 기준 정렬 시 광고비가 없는 채널사가 섞이므로 NULLS LAST 를 명시할 것.',
+    ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용.',
+    ad.PROGRAM_NM      AS ad.PROGRAM_NM      WITH SYNONYMS ('프로그램', '프로그램명', '방송프로그램') COMMENT = '방송 프로그램명(고카디널리티 — Cortex Search 백킹 후보). 방송 전용.',
+    ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용.',
+    ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서') COMMENT = 'CM 내 위치. 방송 전용.',
+    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. 방송 전용.'
+  )
+  METRICS (
+    -- 공통 measure
+    ad.TOTAL_AD_COST   AS SUM(ad.AD_COST)
+      WITH SYNONYMS ('광고비', '광고비 총액', '매체비') COMMENT = '광고비 합계(원). F(가산). 디지털+방송 합산 가능.',
+    ad.TOTAL_IMPRESSIONS AS SUM(ad.IMPRESSIONS)
+      WITH SYNONYMS ('노출수', '노출', '임프레션') COMMENT = '노출수 합계. F(가산). 디지털 전용(방송은 NULL).',
+    ad.TOTAL_CLICKS AS SUM(ad.CLICKS)
+      WITH SYNONYMS ('클릭수', '클릭') COMMENT = '클릭수 합계. F(가산). 디지털 전용(방송은 NULL).',
+    ad.TOTAL_INBOUND_CALL AS SUM(ad.INBOUND_CALL)
+      WITH SYNONYMS ('인바운드콜', '전화문의', '콜수') COMMENT = '인바운드 전화 건수 합계. F(가산). 방송 전용(디지털은 NULL) — VIDEO·REBROADCAST 모두 존재.',
+    ad.TOTAL_GA_CONV_MEMBERS AS SUM(ad.GA_CONV_MEMBERS)
+      WITH SYNONYMS ('GA전환회원', '전환회원수') COMMENT = 'GA 전환 회원수 합계. F(가산). 디지털 전용.',
+    ad.CTR AS SUM(ad.CLICKS) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100
+      WITH SYNONYMS ('클릭률', 'CTR') COMMENT = '공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용.',
+    ad.CVR AS SUM(ad.GA_CONV_MEMBERS) / NULLIF(SUM(ad.CLICKS), 0) * 100
+      WITH SYNONYMS ('전환율', 'CVR') COMMENT = '공10 CVR(%) = GA전환회원 ÷ 클릭수 ×100. 비율(N). 디지털 전용.',
+    -- 디지털 전용 measure
+    ad.TOTAL_CRM_DEV_CNT AS SUM(ad.CRM_DEV_CNT)
+      WITH SYNONYMS ('CRM개발건', 'CRM 개발건수', '디지털개발건') COMMENT = 'CRM 개발건수 합계(디지털). F(가산). ⚠원천에 비정수(소수) 값이 섞여 있어 기여도 배분값일 가능성이 있다 → "건수"로 정수 단정 금지(어의 미확정, 03 §8.5 §6-H). ⚠원천이 개발건수 제공을 중단하고 단가를 직접 제공하는 포맷으로 바뀐 시점 이후는 미적재다 — 적재 구간은 데이터에서 확인할 것(03 §8.5.1).',
+    -- 분자를 분모 적재행으로 정합(CASE WHEN): 미적재행 광고비를 분자에 넣으면 단가가 과대계상된다(04 §6.9 · 03 §8.5.1-(4)).
+    ad.DEV_UNIT_PRICE AS SUM(CASE WHEN ad.CRM_DEV_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.CRM_DEV_CNT), 0)
+      WITH SYNONYMS ('개발단가', 'CPA', '건당 광고비') COMMENT = '공7 디지털 개발단가(원) = 광고비 ÷ CRM개발건. 비율(N). DIGITAL 전용. 분자를 개발건수 적재행으로 정합(미적재행 광고비 제외). ⚠원천 포맷 변경 이후 구간은 개발건수가 없어 산출 불가(NULL) — 산출 가능한 최신 구간은 데이터에서 확인할 것.',
+    ad.TOTAL_READ_CNT AS SUM(ad.READ_CNT)
+      WITH SYNONYMS ('조회수', '열람수', '읽기수') COMMENT = '콘텐츠 조회수 합계(디지털). F(가산).',
+    ad.TOTAL_MEDIA_POTENTIAL AS SUM(ad.MEDIA_POTENTIAL_CUST_CNT)
+      WITH SYNONYMS ('매체잠재고객수', '잠재고객') COMMENT = '매체 잠재고객수 합계(디지털). F(가산).',
+    -- 방송 전용 measure
+    --   ⚠ 전환콜(CONV_CALL_CNT)은 의도적 미노출 — 대행사 원천(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS)이
+    --     전건 비어 있어 빈 metric이 된다. helper 뷰 컬럼은 무손실 원칙상 유지하고 SV 노출만 차단한다.
+    --     원천이 실제 제공을 시작하면 이 metric만 되살린다(구조 불변). 근거·선례 = 04 §6.9 · 현업확인 AD-6.
+    ad.TOTAL_AD_CNT AS SUM(ad.AD_CNT)
+      WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). VIDEO/REBROADCAST 전용.',
+    ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
+      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '재방송 개발건수 합계. F(가산). **REBROADCAST 전용** — VIDEO는 원천(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 **구조적으로 부재**하므로(대행사 비디오 리포트는 개발 대신 전환콜 보고) 결손이 아니다. ⚠VIDEO를 포함한 "방송 전체" 개발 규모로 확대 해석 금지.',
+    ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
+      WITH SYNONYMS ('재방송개발회원', '방송개발회원', '방송 개발회원수') COMMENT = '재방송 개발회원수 합계. F(가산). **REBROADCAST 전용**(VIDEO 원천에 컬럼 부재).',
+    -- 공8 재방송 개발단가 — 명명이 `BRDC_`(방송)가 아니라 `REBRDC_`(재방송)인 이유: VIDEO 원천에 개발 개념이
+    --   없어 "방송 개발단가"라는 이름이 스코프를 오인시킨다. 판정 경위 = 03 §8.5 §6-I · 04 §6.4.1.
+    ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)
+      WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(VIDEO 원천에 개발 컬럼 부재 → 방송 전체 단가가 아님). 분자를 개발건수 적재행으로 정합. ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 과대계상된다.'
+  )
+  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. ⚠디지털/방송 measure 상호배타. ⚠캠페인/소재별 분해 불가(연결키 미적재, Phase-2). ⚠개발단가(공7)는 원천 포맷 변경 이후 구간 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다. ⚠전환콜(CONV_CALL_CNT)은 대행사 원천이 전건 비어 있어 이 SV에 measure가 없다 — 질문받으면 미제공으로 안내(추정치 생성 금지). ⚠수치·기간은 이 COMMENT에 두지 않는다 — 반드시 SV를 조회해 답할 것.'
+  AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. **개발건수(재방송개발건·재방송개발회원)와 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 필터를 자동 추가한다** — VIDEO 원천에 개발 컬럼이 없어 혼합 시 과대계상된다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) 캠페인별·소재별 분해 요청은 캠페인/소재 연결키 미적재(Phase-2)로 안내하고 SQL 생성하지 않는다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가(공7, 디지털)는 원천이 개발건수 제공을 중단한 시점 이후 NULL이다. 기간을 하드코딩하지 말고 CRM_DEV_CNT 가 존재하는 최신 연월을 데이터에서 조회해 그 시점까지로 한정하고, 그 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 개발건수·개발단가를 "방송"으로 묻더라도 **재방송(REBROADCAST) 전용 지표**임을 답변에 명시한다 — VIDEO는 대행사 원천에 개발 컬럼이 없어 집계 대상이 아니며(결손이 아니라 구조적 부재), 방송 전체 개발 규모로 단정하면 안 된다. (7) **전환콜**은 이 SV에 measure가 없다 — 대행사 원천(VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT)이 전건 비어 있기 때문이다. 질문받으면 SQL을 생성하지 말고 미제공 사유를 답하고, 인바운드콜(INBOUND_CALL)로 대체 가능한지 되묻는다. 전환콜 수치를 추정·창작하지 않는다. (8) 채널사·프로그램 등 방송 차원을 광고비 기준으로 정렬할 때는 ORDER BY ... DESC NULLS LAST 를 쓴다 — 기본값 NULLS FIRST 면 광고비 없는 항목이 상위를 점유한다.';
+
+
+/* =====================================================================================
+   GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
+      ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
+      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
+         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+         분할의 이점: GRANT 가 대상 SV 와 같은 파일에 있어 빠뜨릴 수 없다.
+   ===================================================================================== */
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD TO ROLE GN_DW_SERVICE;
+
+
+/* =====================================================================================
+   스모크 검증 (배포 직후 실행) — 04 §0.1 DoD
+      원리: `SEMANTIC_VIEW(...)` 집계 == 단일 FACT 직접 SUM 일치 → 조인 fan-out 0 검증.
+      🔴 판정은 **절대값이 아니라 불변식**으로 한다. 적재량은 계정·시점마다 다르므로
+         "sv_val == fact_val" 같은 관계식이 참인지만 본다. 기대 절대값을 문서에 박으면
+         재현 시 전항 오탐이 된다(04 §6.9-(8)).
+      ▶ SV 6종 전체를 아우르는 배포 검증(소유권·GRANT·구조 대조) = `05_0_SV_DDL.sql`
+   ===================================================================================== */
+USE WAREHOUSE GN_DW_ANALYTICS_WH;
+
+-- ─── 8-B. SV_AD 스모크 ─────────────────────────────────────────────────────────────
+-- (8-4) fan-out 0: SV 집계 == 코어 FACT 직접 SUM (위성 2개 1:1 조인 검증)
+SELECT (SELECT TOTAL_AD_COST FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS TOTAL_AD_COST)) AS sv_val,
+       (SELECT SUM(AD_COST)  FROM GN_DW.GOLD.FACT_AD_PERFORMANCE)                           AS fact_val;
+--   판정: sv_val == fact_val
+
+-- (8-5) 수직분할 완결성: 디지털 + 방송 == 코어 전건 (helper 뷰 LEFT JOIN 안전성 근거)
+SELECT (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_PERFORMANCE) AS fap,
+       (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_DIGITAL)     AS dig,
+       (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_BROADCAST)   AS brc,
+       (SELECT COUNT(*) FROM GN_DW.SERVING.FACT_AD_COMBINED) AS combined;
+--   판정: dig + brc == fap  AND  combined == fap  (→ 중복 팽창 없음)
+
+-- (8-6) 디지털 지표 산출 (CTR·CVR·개발단가)
+--   🔴 SEMANTIC_VIEW(...) 내부에 FILTER 절로 `ad.컬럼` 을 쓰면 **문법 오류**다
+--      ("syntax error ... unexpected 'ad'"). 차원을 DIMENSIONS 에 넣고 **바깥 WHERE 에서
+--      별칭 없는 컬럼명**으로 걸러야 한다(04 §6.9-(6)).
+SELECT CAL_YEAR, AD_SOURCE_TYPE, TOTAL_AD_COST, CTR, CVR, DEV_UNIT_PRICE
+FROM SEMANTIC_VIEW(
+  GN_DW.SERVING.SV_AD
+  DIMENSIONS date.CAL_YEAR, ad.AD_SOURCE_TYPE
+  METRICS TOTAL_AD_COST, CTR, CVR, DEV_UNIT_PRICE
+)
+WHERE AD_SOURCE_TYPE = 'DIGITAL'
+ORDER BY 1;
+--   판정: 연도별 행이 나오고 CTR/CVR 이 NULL 아님. 개발단가는 최신 구간에서 NULL 일 수 있다(원천 포맷 변경).
+
+-- (8-7) 상호배타 확인 + 기기 차원 조인
+SELECT AD_SOURCE_TYPE, DEVICE_TYPE, TOTAL_AD_COST, TOTAL_CLICKS, TOTAL_INBOUND_CALL, TOTAL_AD_CNT
+FROM SEMANTIC_VIEW(
+  GN_DW.SERVING.SV_AD
+  DIMENSIONS ad.AD_SOURCE_TYPE, device.DEVICE_TYPE
+  METRICS TOTAL_AD_COST, TOTAL_CLICKS, TOTAL_INBOUND_CALL, TOTAL_AD_CNT
+)
+ORDER BY 1, 2;
+--   판정(구조 불변식):
+--     DIGITAL     · M / PC       : 클릭 있음 · 인바운드콜·방송횟수 **NULL**
+--     REBROADCAST · (해당없음)   : 인바운드콜·방송횟수 있음 · 클릭 **NULL**
+--     VIDEO       · (해당없음)   : 인바운드콜·방송횟수 있음 · 클릭 **NULL**
+--   → 기기 코드가 'M'/'PC'/'(해당없음)' 임을 확인(=SV comment 와 일치). 'MOBILE' 아님.
+
+-- (8-8) 방송 전용 축 조인 (채널사)
+--   🔴 `ORDER BY <metric> DESC` 는 Snowflake 기본이 **NULLS FIRST** → 광고비 NULL 채널사가
+--      상위를 차지해 "top N" 이 오염된다 → `NULLS LAST` 필수(04 §6.9-(7)).
+SELECT CHANNEL_COMPANY, TOTAL_AD_COST, TOTAL_INBOUND_CALL, TOTAL_AD_CNT, TOTAL_DVLP_CNT
+FROM SEMANTIC_VIEW(
+  GN_DW.SERVING.SV_AD
+  DIMENSIONS ad.CHANNEL_COMPANY
+  METRICS TOTAL_AD_COST, TOTAL_INBOUND_CALL, TOTAL_AD_CNT, TOTAL_DVLP_CNT
+)
+WHERE CHANNEL_COMPANY IS NOT NULL
+ORDER BY TOTAL_AD_COST DESC NULLS LAST
+LIMIT 10;
+--   ⚠ TOTAL_DVLP_CNT 는 REBROADCAST 전용 부분합 — 채널사별 개발 규모 비교에 쓰지 말 것.
+
+-- (8-9) 미노출 metric 확인 — 아래는 **에러가 나야 정상**
+--   SELECT BRDC_DEV_UNIT_PRICE FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS BRDC_DEV_UNIT_PRICE);
+--   SELECT TOTAL_CONV_CALL_CNT FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS TOTAL_CONV_CALL_CNT);
+--   판정: 둘 다 `invalid identifier` — 방송 전체 개발단가와 전환콜은 의도적 미노출이다(04 §6.9).
+--     재방송 한정 단가는 `REBRDC_DEV_UNIT_PRICE`(AD_SOURCE_TYPE='REBROADCAST' 필터 전제)로 노출된다.

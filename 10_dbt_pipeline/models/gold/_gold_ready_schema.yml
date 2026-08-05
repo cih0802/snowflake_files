@@ -337,6 +337,155 @@ models:
               values: ['서울','경기','인천','강원','대전','충남','충북','광주','전북','전남','대구','경북','경남','울산','부산','제주','기타','세종']
               quote: true
               config: { where: "REGION_AT_EVENT is not null", severity: warn }
+      # -- [2026-08-05 O37] 사건시점 성별 도메인 가드 + 캠페인 귀속 중단건 --
+      #   동일 규약(코드=error · 라벨=warn · USE_YN 필터 금지 · 중단원천 행은 NULL 이라 where 제외).
+      #   🔴 원천에 CM013 사전 미등재 센티넬 '0' 이 소수 있다 — 도메인에 포함하되 라벨은 NULL 이다
+      #      ('미상' 으로 창작하지 않는다, P21). ⚠️ DIM_MEMBER 쪽 성별 가드와 코드체계가 다르다.
+      - name: SEX_AT_EVENT
+        description: "사건시점 성별 코드 raw CM013 + 라벨 없는 센티넬 '0'. DIM_MEMBER.SEX(현재 스냅샷)와 다른 축"
+        tests:
+          - accepted_values:
+              values: ['0','1','2','3','4','5','6','7','8']
+              quote: true
+              config: { where: "SEX_AT_EVENT is not null" }
+      - name: GENDER_AT_EVENT
+        description: "사건시점 성별 CM013 라벨. 코드=SEX_AT_EVENT. 🔴DIM_MEMBER_CURRENT.GENDER_NAME(CM017)과 다른 코드체계 — 합산 금지"
+        tests:
+          - accepted_values:
+              values: ['국내(남자)','국내(여자)','외국인(남자)','외국인(여자)','외국인(기타)','단체','기업','기타']
+              quote: true
+              config: { where: "GENDER_AT_EVENT is not null", severity: warn }
+      # 🔴 캠페인 귀속 중단건은 개발원천 코드5 행에만 1 이다. 이 불변식이 깨지면 STOP_CNT 와
+      #   이중계상되므로 error 로 잡는다(O24 중복 원천 문제의 재발 방지).
+      - name: CAMPAIGN_STOP_CNT
+        description: "캠페인 귀속 중단(건). DVLP_DIV_CD='5' 행에만 1. 🔴STOP_CNT 와 합산 금지 · 개발건으로 나눠 중단률로 쓰지 말 것(FACT_MEMBER_COHORT 사용)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0,1]
+              quote: false
+
+  # ==========================================================================
+  # [2026-08-05 O37] FACT_MEMBER_COHORT — 회원 획득 코호트 (캠페인별 중단률 정본)
+  # --------------------------------------------------------------------------
+  # 이 팩트는 grain 이 실제로 유일한 유일한 FACT 다 → unique 를 error 로 강제한다.
+  # 🔴 가장 중요한 테스트는 아래 singular test 2건이다(tests/ 디렉터리):
+  #    ① STOPPED_12M_MEMBERS <= OBSERVABLE_12M_MEMBERS (분자⊆분모 불변식)
+  #    ② 12개월 이탈률이 100% 를 넘지 않는다
+  #    이 두 불변식이 O37 의 설계 목적 자체다 — 깨지면 캠페인 비교가 조용히 틀린다.
+  # ==========================================================================
+  - name: FACT_MEMBER_COHORT
+    description: >
+      회원 획득 코호트 팩트(1행=1회원). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본.
+      중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 —
+      누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다(P63).
+    columns:
+      - name: MEMBER_DK
+        description: "회원 불변키(grain·PK)"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('DIM_MEMBER')
+              field: MEMBER_DK
+              # FME·FMM 과 동일 사유(BLOCKING-1 회원 마스터 미완전) → warn 유지.
+              config:
+                severity: warn
+      - name: ACQ_CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { where: "ACQ_CAMPAIGN_SK != 0" }
+      - name: ACQ_DATE_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_DATE')
+              field: DATE_SK
+              config: { where: "ACQ_DATE_SK != 0" }
+      - name: FIRST_STOP_DATE_SK
+        description: "최초 중단일. 🔴미중단은 NULL(0 아님 — 0 은 날짜 미상)"
+        tests:
+          - relationships:
+              to: ref('DIM_DATE')
+              field: DATE_SK
+              config: { where: "FIRST_STOP_DATE_SK is not null and FIRST_STOP_DATE_SK != 0" }
+      - name: ACQ_BASIS
+        description: "획득 판정 근거. NEW=신규(MM015 코드1) / FALLBACK=신규 부재로 최초 개발사건 대체"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['NEW','FALLBACK']
+              quote: true
+      - name: ACQ_DVLP_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1','2','3','4','5']
+              quote: true
+              config: { where: "ACQ_DVLP_DIV_CD is not null" }
+      # 획득시점 회원특성 — FME 의 _AT_EVENT 가드와 동일 도메인(같은 원천 컬럼을 승계).
+      - name: ACQ_AGE_CD
+        tests:
+          - accepted_values:
+              values: [1,2,3,4,5,6,7,8,9,10,11,12]
+              quote: false
+              config: { where: "ACQ_AGE_CD is not null" }
+      - name: ACQ_AGE_BAND
+        tests:
+          - accepted_values:
+              values: ['10대 미만','10대','20대','30대','40대','50대','60대','70대','70대 이상','단체','기업','기타']
+              quote: true
+              config: { where: "ACQ_AGE_BAND is not null", severity: warn }
+      - name: ACQ_AREA_CD
+        tests:
+          - accepted_values:
+              values: ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18']
+              quote: true
+              config: { where: "ACQ_AREA_CD is not null" }
+      - name: ACQ_REGION
+        tests:
+          - accepted_values:
+              values: ['서울','경기','인천','강원','대전','충남','충북','광주','전북','전남','대구','경북','경남','울산','부산','제주','기타','세종']
+              quote: true
+              config: { where: "ACQ_REGION is not null", severity: warn }
+      - name: ACQ_SEX_CD
+        tests:
+          - accepted_values:
+              values: ['0','1','2','3','4','5','6','7','8']
+              quote: true
+              config: { where: "ACQ_SEX_CD is not null" }
+      - name: ACQ_GENDER
+        tests:
+          - accepted_values:
+              values: ['국내(남자)','국내(여자)','외국인(남자)','외국인(여자)','외국인(기타)','단체','기업','기타']
+              quote: true
+              config: { where: "ACQ_GENDER is not null", severity: warn }
+      # measure 불변식 — 0/1 플래그 팩트다. 값이 벗어나면 SUM 기반 비율이 즉시 틀린다.
+      - name: ACQ_MEMBERS
+        tests:
+          - not_null
+          - accepted_values: { values: [1], quote: false }
+      - name: STOPPED_MEMBERS
+        tests:
+          - not_null
+          - accepted_values: { values: [0,1], quote: false }
+      - name: STOPPED_12M_MEMBERS
+        description: "12개월 내 이탈. 🔴IS_12M_OBSERVABLE 인 회원만 1 — 분모는 반드시 OBSERVABLE_12M_MEMBERS"
+        tests:
+          - not_null
+          - accepted_values: { values: [0,1], quote: false }
+      - name: OBSERVABLE_12M_MEMBERS
+        description: "12개월 이탈률의 분모 자격"
+        tests:
+          - not_null
+          - accepted_values: { values: [0,1], quote: false }
+      - name: IS_12M_OBSERVABLE
+        tests:
+          - not_null
+      - name: TENURE_DAYS
+        description: "유지기간(일). 🔴미중단은 NULL(우절단 관측)"
 
   - name: FACT_MEMBER_MONTHLY
     columns:

@@ -3,7 +3,7 @@ doc_id: SV_VQR_VERIFICATION
 doc_role: 4단계 — SV 검증쿼리(DoD 회귀) + Verified Query(VQR) 후보 + custom instruction 후보
 project: GN_DW (굿네이버스)
 created: 2026-07-22
-depends_on: 05_SV_DDL.sql (배포 완료 2026-07-22), 04_SV_설계.md(정정본), 03_SV_metric_배속.md(정정본)
+depends_on: 05_1~05_7_SV_DDL_*.sql (배포 완료 2026-07-22), 04_SV_설계.md(정정본), 03_SV_metric_배속.md(정정본)
 scope: Phase-1 배포 5 SV (SV_MEMBER_MONTHLY·SV_MEMBER_EVENT·SV_SERVICE·SV_EVENT_PARTICIPATION·SV_BUDGET)
 verify_env: GN_DW.SERVING (live), 2026-07-22 실측
 END-METADATA -->
@@ -196,7 +196,7 @@ ORDER BY MONTH_KEY;
 
 ## 5. 재배포 이력 & 다음 단계
 
-- ✅ **`SV_MEMBER_EVENT` 재배포 완료(2026-07-22)**: `05_SV_DDL.sql` 정정본(retention 제거)으로 `CREATE OR REPLACE` 실행 → §2 V2 재검증 통과(SV=FACT 일치, metric 4개, FME PK 없음 확인). **⚠ `CREATE OR REPLACE`가 grant를 삭제하므로 REFERENCES/SELECT(ANALYST·VIEWER·SERVICE) 재부여 완료**(SHOW GRANTS 7행 확인). → 단일 SV 재배포 시 grant 재실행 필수(05 §6 주석).
+- ✅ **`SV_MEMBER_EVENT` 재배포 완료(2026-07-22)**: `05_1~05_7_SV_DDL_*.sql` 정정본(retention 제거)으로 `CREATE OR REPLACE` 실행 → §2 V2 재검증 통과(SV=FACT 일치, metric 4개, FME PK 없음 확인). **⚠ `CREATE OR REPLACE`가 grant를 삭제하므로 REFERENCES/SELECT(ANALYST·VIEWER·SERVICE) 재부여 완료**(SHOW GRANTS 7행 확인). → 단일 SV 재배포 시 grant 재실행 필수(05 §6 주석).
 - **다음**: `08_AGENT_spec.md` — 최종 3 Agent(회원·마케팅·overall) 중 **Phase-1 배포 2개**(회원·overall, 마케팅은 bronze 미완으로 Phase-2) 스펙(도구=SV·Cortex Search·orchestration 라우팅·custom instruction §4) → `10_SI연결_검증.md`(CoWork ADD AGENT).
 
 ---

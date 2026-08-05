@@ -36,6 +36,65 @@
 --   → 코드5 행은 DEV_CNT=0·STOP_CNT=0 으로 두어 measure 중복계상은 없으나,
 --     `DVLP_DIV_NM='후원중단'` 을 행수로 세면 STOP 과 이중계상된다. 합산 금지.
 -- ============================================================================
+--
+-- ============================================================================
+-- [2026-08-04 O35] 사건시점 연령대·지역 전파 (`_AT_EVENT` 4컬럼)
+-- ----------------------------------------------------------------------------
+-- 문제: "왜 10대 미만이 이렇게 많나?" 의 답(= 편지쓰기대회 계열 아동 모집 캠페인)을 Agent 가
+--   스스로 계산해 보일 수 없었다. 연령대는 `SV_MEMBER_MONTHLY`(FMM × DIM_MEMBER_CURRENT)에,
+--   캠페인은 `SV_MEMBER_EVENT`(FME)에 갈라져 있고 `SEMANTIC_VIEW()` 는 단일 뷰 대상이라
+--   Agent 가 SV 끼리 행 단위 조인을 못 한다. FMM 의 CAMPAIGN_SK 는 센티넬 단일값이라 조인해도 무의미.
+--
+-- 채택안 = **사건시점 속성 전파**(대안 B multi-fact SV · C Agent 조인은 기각, 근거 = 이슈원장 O35):
+--   · 속성이 **측정된 grain 에 놓인다** — 개발약정 이벤트에서 관측된 값이므로 사건 팩트의 속성이 맞다
+--     (Kimball 트랜잭션 시점 속성). `DIM_MEMBER_CURRENT` 경유 스냅샷의 시점 왜곡이 원천 소멸한다(P60).
+--   · 같은 SV 안에서 **연령대 × 캠페인 교차**가 성립한다.
+--
+-- 원천 실측(2026-08-04 BRONZE·SILVER 직접 스캔):
+--   · `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 채움 100% · distinct 12 = CM014 12/12 일치
+--   · `.AREA_CD` = CM018 코드 + 라벨 없는 센티넬 `'0'` + 소수 NULL
+--   · SILVER `CRM_MEMBER_DEV` 는 BRONZE 를 1:1 승계하며 `AREA_NM`(CM018 라벨)까지 이미 보유
+--     → 지역 라벨은 추가 조인 불요, 연령대 라벨만 `CRM_CODE` CM014 조인
+--   · 🔴 **스냅샷으로는 재현 불가**: 복수 개발사건 회원 중 AGE 가 변하는 회원·AREA_CD 가 변하는 회원이
+--     실재한다(둘 다 측정 확인) → 사건행별 값과 최근 약정 스냅샷은 실제로 다르다
+--   · 중단원천(`TM_MM_FDRM_MBER_SPNSR_DSCNTC`)은 컬럼 자체가 부재(전 9컬럼 확인) → NULL.
+--     0 으로 채우지 않는다(P21 — 개념 부재를 결측/0 으로 오판 금지, DVLP_DIV_CD 와 동일 처리)
+--
+-- 🔴 `DIM_MEMBER` 의 `AGE`/`AREA_CD` 축(SV 차원명 `_AT_PLEDGE`)은 **제거하지 않는다**.
+--    성격이 다르다(월 팩트 × 현재행 스냅샷 vs 사건 팩트 × 사건시점) → 이름으로 구분해 공존시킨다.
+-- ============================================================================
+--
+-- ============================================================================
+-- [2026-08-05 O37] 사건시점 성별 전파 + 캠페인 귀속 중단건
+-- ----------------------------------------------------------------------------
+-- 트리거: Agent 가 *"캠페인 축은 개발 사건에만 배선돼 있고 중단 사건에는 캠페인 정보가
+--   원천에 없다 — 따라서 캠페인별 중단률은 구조적으로 산출 불가"* 라고 답했다.
+--
+-- 🔴 그 판정은 **틀렸다**. BRONZE 재스캔 결과:
+--   · 중단원천 `TM_MM_FDRM_MBER_SPNSR_DSCNTC` 에는 확실히 캠페인 컬럼이 없다(전 9컬럼 확인).
+--   · 그러나 개발원천 `TM_MM_FDRM_MBER_DVLP_AMT` 의 `DVLP_DIV_CD='5'`(MM015 후원중단) 행이
+--     `CMPGN_CD` 를 **전건 보유**하며, 이 팩트에 이미 `CAMPAIGN_SK` 로 배선까지 끝나 있었다.
+--     즉 축은 물리적으로 존재했고 **측정값(measure)만 없었다**.
+--   · Agent 가 그렇게 답한 직접 원인은 SV COMMENT 의 *"캠페인별 중단건은 답이 나오지 않는다"* 다
+--     → P61 재발(축이 활성인데 부정형 서술이 회수되지 않았다).
+--
+-- 조치: `CAMPAIGN_STOP_CNT` 신설 — 코드5 행에만 1. 이 행은 캠페인·연령대·지역·성별을 전부
+--   보유하므로 **캠페인별 중단 사건 분해와 이탈자 특성 분석**이 이 팩트 안에서 성립한다.
+--
+-- 🔴 그러나 이 measure 로 「중단률」을 만들면 안 된다(설계 함정 2건):
+--   ① 코드5 의 캠페인은 **중단 시점** 캠페인이다. 신규 건수로 나누면 분자·분모 모집단이
+--      달라 비율이 100% 를 넘는다(기존회원 대상 캠페인에서 실증). 비율이 아니다.
+--   ② 누적 이탈률은 **관측 기간**에 지배된다 — 획득이 이를수록 이탈률이 높은 단조 관계가
+--      실측됐다. 캠페인은 실행 연도가 다르므로 누적률로 비교하면 오래된 캠페인이 자동으로
+--      「중단률 높음」이 된다(P60 유형: 값은 정상인데 답이 틀린다).
+--   → 캠페인별 중단률의 정본은 `FACT_MEMBER_COHORT` 의 **12개월 고정 이탈률**이다.
+--
+-- 🔴 `STOP_CNT` 와 `CAMPAIGN_STOP_CNT` 는 **합산 금지** — 같은 중단 사건이 두 원천에 있다(O24).
+--
+-- 성별: `_AT_EVENT` 계열 확장. 원천이 사건행별 성별을 보유하는데 전파되지 않아 성별은
+--   `DIM_MEMBER_CURRENT` 현재 스냅샷만 쓸 수 있었다(P60 계열 잠복). 코드체계가 서로 다르다 —
+--   개발원천은 CM013(국내/외국인 구분 포함), 회원 마스터 라벨은 CM017 계열이다. 합산 금지.
+-- ============================================================================
 
 
 -- [2026-07-30 B3 개발측 해소] 유효 캠페인키 집합. 고아 CMPGN_CD(실측 18행)를 SK=0(unknown 멤버 R5)로
@@ -43,6 +102,19 @@
 -- 이므로 이 조인은 fan-out 을 만들지 않는다(행수 불변 검증 대상).
 with campaign_valid as (
     select CMPGN_CD from GN_DW.SILVER.CRM_CAMPAIGN
+),
+
+-- [2026-08-04 O35] 연령대 라벨 = CM014. 하드코딩 CASE 금지(P31 — 사전과 조용히 갈라진다).
+--   `DTL_CD_ID` 유일이라 fan-out 없음. USE_YN 무필터(폐지코드가 실적재에 남아 필터 시 라벨 소실).
+code_ageband as (
+    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM014'
+),
+
+-- [2026-08-05 O37] 성별 라벨 = CM013. 하드코딩 CASE 금지(P31). `DTL_CD_ID` 유일이라 fan-out 없음.
+--   USE_YN 무필터(동일 사유). ⚠️ 원천에 사전 미등재 센티넬 `'0'` 이 소수 있어 라벨은 NULL 이 된다 —
+--   '미상'으로 창작하지 않는다(P21).
+code_sex as (
+    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM013'
 ),
 
 dev as (
@@ -74,9 +146,22 @@ dev as (
         -- O25: 개발 사건에는 중단사유·중단경로 개념이 부재 → NULL (0/'' 로 채우지 않는다, P21)
         CAST(NULL AS VARCHAR)                               as STOP_REASON_NM,
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG
+        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        -- [2026-08-04 O35] 사건시점 연령대·지역. 사건행 자신의 값이므로 as-of 계산이 불요하다.
+        d.AGE                                               as AGE_AT_EVENT,
+        cab.DTL_CD_NM                                       as AGE_BAND_AT_EVENT,
+        d.AREA_CD                                           as AREA_CD_AT_EVENT,
+        d.AREA_NM                                           as REGION_AT_EVENT,
+        -- [2026-08-05 O37] 사건시점 성별 + 캠페인 귀속 중단건.
+        d.SEX                                               as SEX_AT_EVENT,
+        csx.DTL_CD_NM                                       as GENDER_AT_EVENT,
+        -- 코드5(후원중단) 행만 1. 이 행은 CAMPAIGN_SK 를 보유하므로 캠페인별 중단 분해가 성립한다.
+        -- 🔴 STOP_CNT 와 합산 금지(동일 사건 이중계상, O24) · 개발건으로 나눠 중단률로 쓰지 말 것.
+        case when d.DVLP_DIV_CD = '5' then 1 else 0 end      as CAMPAIGN_STOP_CNT
     from GN_DW.SILVER.CRM_MEMBER_DEV d
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
+    left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
+    left join code_sex       csx on d.SEX = csx.DTL_CD_ID
 ),
 
 stop as (
@@ -111,7 +196,18 @@ stop as (
         --   "사유코드→라벨"로 명시했는데 실적재가 raw 코드여서 현업이 숫자만 보던 상태를 해소한다.
         DSCNTC_RSN_NM                                       as STOP_REASON_NM,
         DSCNTC_PATH_NM                                      as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG
+        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        -- [2026-08-04 O35] 중단원천에는 연령·지역 컬럼이 **구조적으로 부재**(전 9컬럼 실측 확인) → NULL.
+        --   ⚠️ 0 이나 '미상' 으로 채우지 않는다 — 개념 부재를 결측으로 오판하는 P21 유형을 되풀이한다.
+        CAST(NULL AS NUMBER(2,0))                           as AGE_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as AGE_BAND_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as AREA_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as REGION_AT_EVENT,
+        -- [2026-08-05 O37] 성별도 중단원천에 컬럼이 부재하여 NULL(동일 사유). 캠페인 귀속 중단건은
+        --   개발원천 코드5 행이 담당하므로 이 브랜치는 0 이다 — 두 축을 합산하면 이중계상된다(O24).
+        CAST(NULL AS VARCHAR)                               as SEX_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as GENDER_AT_EVENT,
+        0                                                   as CAMPAIGN_STOP_CNT
     from GN_DW.SILVER.CRM_MEMBER_DISCONTINUE
 ),
 
@@ -126,8 +222,12 @@ select
     DVLP_DIV_CD, DVLP_DIV_NM, SPNSR_AMT,
     DEV_CNT, DEV_MEMBERS, STOP_CNT, STOP_MEMBERS, UNPAID_STOP_CNT, UNPAID_STOP_MEMBERS,
     JOIN_DATE, STOP_DATE, STOP_REASON, STOP_CHANNEL, STOP_REASON_NM, STOP_CHANNEL_NM, NEW_EXISTING_FLAG,
+    -- [2026-08-04 O35] 사건시점 축. `_AT_PLEDGE`(DIM_MEMBER 스냅샷)와 이름으로 구분해 공존한다.
+    AGE_AT_EVENT, AGE_BAND_AT_EVENT, AREA_CD_AT_EVENT, REGION_AT_EVENT,
+    -- [2026-08-05 O37] 사건시점 성별 + 캠페인 귀속 중단건.
+    SEX_AT_EVENT, GENDER_AT_EVENT, CAMPAIGN_STOP_CNT,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '843ce7ab-b507-4121-a0e3-e64a56430f9c'                    AS DW_BATCH_ID
+    '8162e9f4-6643-49ba-b6e8-240f496af9fe'                    AS DW_BATCH_ID
 from unioned

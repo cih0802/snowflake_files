@@ -3,7 +3,7 @@ doc_id: SV_AGENT_SPEC
 doc_role: 5단계 — Cortex Agent 스펙(회원·overall) 정본 + 배포/CoWork/평가 가이드
 project: GN_DW (굿네이버스)
 created: 2026-07-22
-depends_on: 05_SV_DDL.sql(5 SV 배포), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
+depends_on: 05_1~05_7_SV_DDL_*.sql(5 SV 배포), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
 scope: Phase-1 배포 2 Agent (AGENT_MEMBER·AGENT_OVERALL) / 마케팅 Agent = Phase-2
 workspace_specs: cortex_project/AGENT_MEMBER.agent.yaml · cortex_project/AGENT_OVERALL.agent.yaml
 deploy_by: 사용자(GN_DW_ADMIN) — 에이전트는 스펙 작성·읽기전용 테스트만

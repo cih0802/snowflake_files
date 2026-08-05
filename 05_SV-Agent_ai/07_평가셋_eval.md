@@ -3,7 +3,7 @@ doc_id: SV_EVAL_SET
 doc_role: 4단계 — Cortex Analyst 평가셋(ground-truth Q&A) · SV 정확도 회귀 기준 (Agent eval 입력)
 project: GN_DW (굿네이버스)
 created: 2026-07-22
-depends_on: 05_SV_DDL.sql(배포), 06_검증쿼리_VQR.md(VQR·custom instruction 후보)
+depends_on: 05_1~05_7_SV_DDL_*.sql(배포), 06_검증쿼리_VQR.md(VQR·custom instruction 후보)
 scope: Phase-1 배포 5 SV
 ground_truth_asof: 2026-07-22 (GOLD 재적재 시 기대값 재생성 필요 — §4)
 END-METADATA -->

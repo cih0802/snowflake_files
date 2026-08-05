@@ -12,7 +12,7 @@
 --
 -- 실행 순서(권장): A~C(WH·역할·WH grant) → B.5(DB 생성 → 소유권 ADMIN 이관 → 9스키마 GN_DW_ADMIN 생성)
 --                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → D~F(스키마 grant·SERVING·CoWork)
---                  → dbt build → 08_After_Deploy_DBT.sql §G(helper 뷰 2종) → 05_SV_DDL.sql
+--                  → dbt build → 08_After_Deploy_DBT.sql §G(helper 뷰 2종) → 05_1~05_7_SV_DDL_*.sql
 --                  → 09_1_AGENT_생성.sql → 09_2_AGENT_버전업.sql
 --   🔴 [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
 --      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·DIM_MEMBER_CURRENT 가 없다.**
