@@ -7,7 +7,7 @@
 --
 --   ① FACT_EVENT_PARTICIPATION.RECRUIT_CNT
 --        DEC-30 판정 = 모집인원은 **행사 속성**이므로 팩트에서 DROP,
---        정소재지 = DIM_EVENT.RECRUIT_HEADCOUNT (DEC30_STRUCTURE_ALTER.sql)
+--        정소재지 = DIM_EVENT.RECRUIT_HEADCOUNT (_archive/DEC30_STRUCTURE_ALTER.sql · 정본 06_DDL.sql:386)
 --   ② DIM_AD_CREATIVE.DURATION_SEC
 --        DEC-30 판정 = 초수는 **소재 속성이 아니다**(오배치 중복축) → DROP,
 --        정소재지 = FACT_AD_BROADCAST.DURATION_SEC (방송 grain)

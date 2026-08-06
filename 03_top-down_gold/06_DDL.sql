@@ -97,7 +97,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키(조인용)',  -- SCD2 DK; [실측06-30]VARCHAR(10)
-    -- 🔴 [O27 2026-08-04 정본 동기화] 본 블록 = O27_DIM_MEMBER_ALTER.sql §2·§3·§4 와 일치.
+    -- 🔴 [O27 2026-08-04 정본 동기화] 본 블록 = _archive/O27_DIM_MEMBER_ALTER.sql §2·§3·§4 와 일치.
     --   ADD 4(AREA_CD·AGE·PREV_MBER_STAT_CD·PREV_MEMBER_STATUS_NAME) · DROP 3(NEW_EXISTING_FLAG·
     --   LAST_CAMPAIGN·CURRENT_SPONSORSHIP) · COMMENT 8컬럼. 🔴 종전에는 물리 ALTER 만 하고 이 파일을
     --   갱신하지 않아 2026-08-03 전체 재구축(TEARDOWN+setup)에서 O27 이 통째로 소실됐다(O30/P57).
@@ -789,7 +789,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
     -- ❌ VIEW_CNT(조회수) 삭제(2026-07-09): 어드민 원천 제외 확정. 내년 어드민 구현 시 ADD COLUMN 재추가.
     WIN_FLAG            BOOLEAN         COMMENT '당첨여부',           -- degen
     SELF_PART_FLAG      BOOLEAN         COMMENT '본인참여 — 🔴 전건 NULL(미배선). 원천 대응 미확정',   -- degen
-    -- 🔴 [O28 2026-08-04] 한 컬럼에 코드체계 2개 혼입. 상세 = 03_top-down_gold/O28_O29_COMMENT_GUARD.sql §1-A
+    -- 🔴 [O28 2026-08-04] 한 컬럼에 코드체계 2개 혼입. 상세 = 03_top-down_gold/_archive/O28_O29_COMMENT_GUARD.sql §1-A (APPLIED·참조 전용)
     PART_STATUS         VARCHAR         COMMENT '🔴 참여상태 — 코드체계 2개 혼입(O28). 일반행사=MS304(110 Success·120 Fail·130~220 N_step_right/fail) 707,476행 / 캠페인행사=소정수 1~6 152,046행(의미 미확정·문서20 §I). 판별자=EVENT_KEY 접두(고아 23.2% 안전). 두 체계 합산·GROUP BY 금지 · 한글 비교는 0행',   -- degen
     PART_PATH           VARCHAR         COMMENT '참여경로(05 3-5)',   -- degen
     PART_CHANNEL        VARCHAR         COMMENT '참여채널(05 3-5)',   -- degen

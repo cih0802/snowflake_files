@@ -29,7 +29,7 @@ select
     'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID
 from src
 union all
 -- DEC-10 `(해당없음)` 멤버: 방송광고 전용. 해시 SK(정상 멤버) — FAD.AD_TYPE IN ('VIDEO','REBROADCAST') 과 동반.
@@ -37,10 +37,10 @@ select ABS(HASH(COALESCE(CAST('(해당없음)' AS VARCHAR), '∅'))), '(해당�
        '방송광고(TV·재방송) — 기기 개념 없음', 'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID
 union all
 -- 순서9 Unknown 멤버(DEVICE_SK=0): fact 의 미매핑 DEVICE_SK 센티넬 라우팅 대상.
 select 0, '(unknown)', '기기 정보 미상 또는 매핑 실패(센티넬)', 'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID

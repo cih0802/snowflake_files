@@ -57,7 +57,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID
 from c
 left join parent p      on p.PARENT_CD  = c.UPPER_CMPGN_CD
 left join code_promo cp on cp.DTL_CD_ID = c.PR_MTH_CD
@@ -68,4 +68,4 @@ select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID

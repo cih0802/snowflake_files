@@ -47,6 +47,8 @@ END-METADATA -->
 | 🔄 우리끼리 잠정(게이트 有) | 6 | A-7/O5 · A-8 · O6 · #81 · O8 · O10 | 20 · 30 |
 | 🔵 비블로커 | 10 → **12** | #80 · ID-활성 · Q1·Q2·Q3·Q8 · **SVL-1~4**(SV 코드→라벨 매핑 확인) · **AD-2**(CRM_DEV_CNT 소수값 어의) · **AD-4 잔여**(타 SV 코드차원 comment 전수점검) | 30 · 20 · 10 §9 |
 | 🔴 **재구축 드리프트(내부)** | **1** | **[신규 2026-08-04] O30** 전체 환경 재구축이 정본 DDL 미동기화 구조 변경(O26 2컬럼·O27 7컬럼)을 되돌려 `dbt build` ERROR 3·SKIP 68. ✅ 구조 복구·정본 동기화 완료 / ⬜ 잔여 = `dbt build`·SERVING 복구(SV 6종 전멸) | 10 §19 |
+| 🟢 **재구축 미완(내부)** | **1 → 해소 진행** | **[2026-08-05 O41]** 2차 전체 재구축. ✅ BRONZE 재적재 완료(CRM 43/112,512,201행 · AGENCY 4 · ERP 1 · GA4 3) · SILVER 38 적재 · **`dbt build` 완주 `PASS=370 WARN=27 ERROR=0 SKIP=0`**(O42 해소 후) · GOLD 팩트 12/13 적재(`FACT_TARGET_BIZ` 0 = E-6 정상) · WIDE 13 + `DIM_MEMBER_CURRENT` 생성 / ⬜ 잔여 = 런북 §11.2-C **⑤~⑧**(helper 뷰 → SV 6종 → Agent `09_1`→`09_2`). **SERVING 객체 0** | 00 §O41·§O42 |
+| 🟢 **가드 역효과(내부)** | **1 해소** | **[2026-08-05 O42]** O40-B 가 넣은 `on_schema_change: fail` 이 타입 오탐으로 팩트 10종 ERROR·145 SKIP 유발(컬럼 불일치는 0건). ✅ `append_new_columns` 로 해소 — 타입 변경 미처리 + `source_columns` 반환으로 O40 차단 유지. ⚠️ 내부 매크로 오버라이드는 서버측 런타임에서 발화하지 않아 폐기(P84). 🟠 잔여 = **O42-B**(조용한 반올림 20컬럼 스케일 검토) · **O42-C**(자동 ALTER 드리프트 감시) | 00 §O42 |
 | 🔴 워크스페이스 운영 | **1** | **[신규 2026-07-29]** **OPS-1** 루트 `SECURITY.sql` 에 GitHub PAT 평문 기록됨(현재 플레이스홀더 교체·버전이력 잔존 가능) → **토큰 revoke + 재발급 필요**. 부수 **OPS-2**(`USER$<user>` DB SECRET 은 역할로 ALTER 불가 → UI 또는 일반 DB SECRET 사용) | 00 §순서9-L 부수 |
 | 🟠 소비계층 미결(내부) | **3** | **[신규 2026-07-29]** ① **PRV-1** provenance 평가 공백 — 원천 질문은 SQL 미생성이라 gold-SQL 채점 불가 → `07` 가드레일 ⓖ 신규 클래스 필요 · ② **PRV-2** 컬럼단위 출처 요청 대응 — `04_컬럼계보매핑.md` Cortex Search 색인 → Agent tool(현업 반복질문 시 착수, 🔜 트리거 대기) · ③ **PRV-3 [순서9-L]** 기간 기본창 규칙이 실제 생성 SQL에 반영되는지 **NL 스모크 미검증**(트라이얼 `DATA_AGENT_RUN` 차단 → paid 게이트) | 10 §10-B·§10-E·§11-H |
 | 🛠️ 설계흡수 | 1 | SF-biz(익명 미귀속) | 30 |
@@ -138,6 +140,375 @@ END-METADATA -->
 > 🟢 **신규 교훈 P62·P62-B**(문서10 §20-G): 순서 문서는 **파일이 실행 가능한지까지** 검증해야 정본이다
 >   (`grep -vc "^--\|^$"` 로 실행 라인 수를 센다) · **자기교정은 전파되지 않는다**(인용처를 `grep` 으로 찾아 함께 고친다).
 >
+> **▶ 🔴 최신 상태 [2026-08-05 O41 — D/O 스크립트 stale 판정 + 2차 재구축 미완 실측]**
+> 트리거: 사용자 질의 *"`03_top-down_gold/` 의 `D`·`O` 접두 문서 6종이 이미 적용돼 stale 한가?"*
+> **답 = 6종 전부 구조·COMMENT 기준 stale 이다.** 근거는 문서가 아니라 **물리 실측**이다(P33).
+>
+> 🟢 **판정 (2026-08-05 `INFORMATION_SCHEMA` 전수 대조)** — 6종의 산출물이 전부 정본에 접혀 있고,
+>   금일 재구축이 **정본 DDL 만 실행한 상태에서 물리에 그대로 재현**됐다 = 스크립트 없이도 복원된다.
+>   · `DEC30_STRUCTURE_ALTER.sql` → `06_DDL.sql` 236·259·287·301~323·386·603·776·797·798·993~995 접힘.
+>     물리 확인: `DIM_SEND_TYPE` 12컬럼 · `FSE.SEND_TYPE_SK` · `DIM_EVENT.RECRUIT_HEADCOUNT` ·
+>     `FEP.PARTCPT_SEQ` · `DIM_GA_SOURCE.DEFAULT_CHANNEL_GROUP` 존재 / DROP 5컬럼 전건 소멸
+>   · `O27_DIM_MEMBER_ALTER.sql` → `06_DDL.sql` 100~120 접힘. 물리 `DIM_MEMBER` **30컬럼**(ADD 4·DROP 3 반영)
+>   · `O28_O29_COMMENT_GUARD.sql` → FACT·테이블 COMMENT 는 `06_DDL.sql` 777~803·694 접힘 ·
+>     WIDE 분은 모델 `post_hook` 이 소유(`WIDE_EVENT_PARTICIPATION.sql`·`WIDE_AD_BROADCAST.sql` 실측 확인)
+>   · `O30_REBUILD_DRIFT_REPAIR.sql` → 고치려던 드리프트가 소멸. SILVER 개명 2건이
+>     `08_SILVER_테이블DDL_20260714.sql` 240·374 에 접혀 물리에 재현됨(`MBRFEE_`·`PSTMTR_` 확인)
+>   · `O39_COMMENT_GUARD.sql` → `06_DDL.sql` 491·493·578 접힘 · WIDE 2뷰는 모델 `post_hook` 보유
+>   · `O40_PAYMENT_SCOPE_FIX.sql` §1 → `06_DDL.sql` 442·443·468 접힘(`PAID_FEE_BILLABLE`·`UNPAID_BILLED_AMT`)
+>
+> 🔴 **그러나 「stale = 무해」가 아니다 — 재실행이 정본을 되돌리는 것 2건**
+>   ① `DEC30 §1` 의 `SEND_TYPE_L` COMMENT 는 **정본보다 구버전**이다. 정본(`06_DDL.sql:314`)은
+>      *"🔴정본 #133 과 불일치 — #133 6종 vs 실측 9종"* 경고를 담았는데 스크립트는 종전
+>      *"정본 값정의: 결연/회비/…"* 뿐이다 → 재실행하면 **경고가 지워진다**(P33 역방향).
+>   ② `O40 §1-B` 의 「**적재 대기**」 문구는 build 완료로 사문화됐고 정본에서 제거됐다 →
+>      재실행하면 정상 지표에 "대기 중" 이 되살아난다(O28·O29 에서 겪은 사문화 주석 유형).
+>   ③ `O30 §1` 의 `RENAME COLUMN` 은 **멱등이 아니다**(헤더는 멱등이라 적었다 — 구 이름이 없어 ERROR).
+>   ⇒ 조치 후보 = 6종 `_archive/` 이관 또는 헤더에 `[APPLIED · 재실행 금지]` 명시.
+>      **검증쿼리 절(§3~§6)은 살아 있는 자산**이므로 통째 폐기하지 말 것.
+>
+>   ⇒ ✅ **조치 완료(2026-08-05, 사용자 결정) — 6종 `03_top-down_gold/_archive/` 이관**.
+>      각 파일 선두에 `[APPLIED 2026-08-05 · 재실행 금지]` 배너 + **정본 위치·물리 실측 근거·
+>      살아 있는 자산(검증쿼리 절)·재실행 시 부작용**을 명시했다. 검증쿼리는 폐기하지 않았다.
+>      🟢 **P62-B 인용처 회수 6곳**(실행 지시·경로 지목만 교정 · 이력 기록은 보존):
+>      `30_설계_의사결정.md:925`(DEC-30 실행 순서 지시 → 취소선+APPLIED) ·
+>      `02_GN_DW_building/06_RUNBOOK.md:595`(재현 순서 목록의 「선택」 → 「실행 대상 아님」) ·
+>      `06_DDL.sql:100·792` · `03_테이블 설계.md:459·503` ·
+>      `10_dbt_pipeline/models/gold/fact/FACT_EVENT_PARTICIPATION.sql:11` ·
+>      `_archive/O28_O29_사문화_COMMENT_2건_20260804.sql:10·18`.
+>      ⚠️ `10_dbt_pipeline/logs/`·`target/` 의 인용은 build 산출물이라 교정 대상이 아니다.
+>
+> 🔴 **부수 발견 — 정본 문서 1건이 아직 거짓을 말한다**: `10_WIDE VIEW 코멘트.sql:507`
+>   `EVENT_KIND COMMENT 'DIM_EVENT.EVENT_KIND — 온라인/오프라인'`. 이 문구는 O28 이 실측으로
+>   **거짓 판정**(실제 도메인 `EVENT`/`CRMN`)해 회수한 것이고 dbt 모델은 회수본을 갖고 있으나,
+>   **WIDE COMMENT 정본 파일만 미반영**이다 → 이 파일로 재생성하면 `=''온라인''` 0행 오답이 부활한다.
+>   `O28_O29_COMMENT_GUARD.sql §3-3`(기대 0행) 이 잡도록 설계된 바로 그 경로다.
+>
+> 🔴 **더 큰 발견 — 환경이 지금 「2차 재구축 미완」 상태다(O30 재발 유형이나 원인은 다르다)**
+>   실측 2026-08-05: 전 스키마 **01:43 재생성** · GOLD 29테이블 01:45 · BRONZE_CRM 01:48~49 ·
+>   `DIM_MEMBER_CURRENT` 뷰만 02:08(`GN_DW_ENGINEER`=dbt) 생성.
+>   · **데이터 0** — BRONZE_CRM `TM_MM_FDRM_MBER_INFO`·`TM_MM_FDRM_MBER_DVLP_AMT`·`TC_CMMN_DTL_CD`
+>     직접 `COUNT(*)` **전부 0** · SILVER 38테이블 0행 · GOLD 29테이블 0행
+>   · **BRONZE 미완** — `BRONZE_CRM` **24테이블뿐**이고 `BRONZE_ERP`·`BRONZE_AGENCY`·`BRONZE_GA4` 는
+>     스키마만 있고 **테이블 0개**
+>   · **GOLD 뷰 전멸** — WIDE 10종·`DIM_MEMBER_CURRENT` 중 뷰는 **1개뿐**(build 가 조기 실패한 형태)
+>   · **SERVING 객체 0** — SV 7종·Agent 2종 부재(O30 때와 동일)
+>   ⚠️ **작업조건 #3 를 이번엔 만족시킬 수 없었다** — BRONZE 가 비어 있어 스크립트에 적힌 실측치
+>     (`2,291,878`·`38,470,780`·`21.58%` 등)를 **재검증할 수단이 없다**. 따라서 위 판정은
+>     **구조·COMMENT 계층에 한정**이며 값 계층은 미검증이다. 재적재 후 재측정 필요(PROC-3 (c)).
+>   ⏸ **정지 지점**: 재적재·`dbt build` 는 **작업조건 #5** 에 따라 사용자 입력 대기.
+>
+> 🟢 **O41 재적재 가능성 실측 — 원천은 살아 있다(2026-08-05)**
+>   계정 자체가 **신규 트라이얼 `kd96599`**(SNOWFLAKE DB 01:37 프로비저닝 = 이전 `kd03246` 아님)이고
+>   `SHOW SHARES` 에 GN_DW 관련 inbound 0 · `SHOW STAGES IN DATABASE GN_DW` **0건** 이라
+>   한때 "재적재 원천 없음"으로 보였다. 🔴 **그 판단은 틀렸다** — 스테이지는 `GN_DW` 가 아니라
+>   **`SANDBOX.TOOLS.MIG_LOAD_STAGE`**(마이그레이션 정본 경로)에 있다:
+>   · `LIST` 실측 **300파일 · 3.14GB** = BRONZE_CRM **43테이블 277파일 2.97GB** ·
+>     AGENCY 4/6 · ERP 1/1 · GA4 2/16(0.17GB). 업로드 08:42~08:56 UTC(=01:42~01:56 -0700)
+>   · 기대 51 중 **`BRONZE_GA4.SYNC_ERR_INFO` 만 파일 없음** — 원본이 빈 테이블이라 언로드 산출물이
+>     없는 것이며 결손이 아니다(문서 §6.1 이 이 2개를 예외로 명시)
+>   ⇒ **A→B→로컬 재수행 불요.** `05_데이터마이그 C_CONSUMER.sql` 부터 재개 가능하다.
+>
+> 🔴 **재구축이 어디서 멈췄는지 특정** — `50_handoff/04_..BRONZE_DDL_20260730.sql` 이 **24번째에서 중단**됐다.
+>   생성된 24개가 파일 내 `create or replace TABLE` 순서의 **정확한 프리픽스**(끝 = `TM_MM_FDRM_MBER_IRSD`
+>   = 파일 679행 · 다음은 698행 `TM_MM_FDRM_MBER_RE_SPNSR`)다. AGENCY·ERP·GA4 는 스키마만 존재.
+>   ⚠️ 업로드(01:56 종료)와 DDL(01:48~49)이 **겹쳐 실행**됐다 — 인과는 미규명.
+>
+> 🔴 **여기에 무증상 함정이 있다(신규)**: `05` §A.3 프로시저 `LOAD_BRONZE_SCHEMA` 는
+>   `INFORMATION_SCHEMA.TABLES` 를 **순회**해 `COPY INTO` 한다 → **테이블이 없으면 그 테이블을 조용히
+>   건너뛴다.** 지금 상태에서 §A.4 를 그대로 실행하면 CRM 24개만 적재되고
+>   `'schema BRONZE_CRM loaded tables: 24'` 를 **성공처럼 반환**하며, ERP·AGENCY 는 `loaded tables: 0`
+>   이 되는데 **ERROR 가 아니다.** ⇒ **DDL 51 완성이 COPY 의 선행 조건**이며, 완료 판정은
+>   반환 메시지가 아니라 `43/4/1/3` 테이블 수 대조로 해야 한다.
+>
+> 🟢 **확인된 재개 순서**(정본 = `50_handoff/01_데이터마이그레이션 20260730.md §10` · 런북 §11.2-C)
+>   ① `50_handoff/04_..BRONZE_DDL_20260730.sql` **전체 재실행** — 전 구문이 `create or replace TABLE`
+>      이고 현재 데이터가 0행이라 재실행이 안전하다(기대: CRM 43·AGENCY 4·ERP 1·GA4 3 = **51**)
+>   ② `05_데이터마이그 C_CONSUMER.sql` §A.1 스테이지 검증(**기대 0행** — 헤더 혼재·중복 파일) →
+>      §A.2 `FF_CSV_LOAD` → §A.4 `ERP→AGENCY→CRM` → §A.5 **GA4 는 프로시저 금지·개별 COPY**
+>      (VARIANT 11컬럼 `TRY_PARSE_JSON`. 프로시저로 넣으면 JSON 이 문자열이 되어 `col:key` 탐색 불가)
+>   ③ §A.6 검증 = 스키마별 행수 · 빈 테이블 0 · GA4 `event_params` `TYPEOF`=ARRAY
+>      ⚠️ **B 계정이 없으므로 §6.1 의 「B↔C 대조」는 불가**하다 → 기준은 §6.2 이력
+>      (CRM 112,512,161 · GA4 287,025 · AGENCY 235,572 · ERP 2,041)이며 이는 **48테이블 시점**
+>      측정치다. 어긋나면 원인 규명 전 인용 금지(PROC-3 c)
+>   ④ 런북 §11.2-C **①② 는 이미 완료**(GOLD 29·SILVER 38 생성 + O27/DEC-30/O39/O40 구조 반영 확인) →
+>      ③ `10_dbt_pipeline/deploy_dbt_project.sql`(신규 계정은 Step 1-1→2→3) → ⏸ **④ `dbt build`
+>      = 작업조건 #5 정지선** → ⑤ `08_After_Deploy_DBT.sql`(§G helper 뷰) → ⑥ `05_1`~`05_7` SV →
+>   ⑦ `09_1` → ⑧ `09_2`(🔴 이 단계 누락이 O35 「Agent 껍데기」의 직접 원인)
+>
+> 🟢 **O41 재적재 실행됨 — BRONZE·SILVER 정상 · GOLD 는 DIM 만 (실측 2026-08-05 17:50)**
+>   · **BRONZE 전량 적재** — CRM 43테이블 **112,512,201행** · AGENCY 4/243,550 · ERP 1/6,336 ·
+>     GA4 3/576,441. 빈 테이블 = `BRONZE_GA4.SYNC_ERR_INFO` **1건뿐**(원본 빈 테이블 = 기대된 예외)
+>     ⚠️ 문서 §6.2 이력(CRM 112,512,161)과 **+40행** 차 · ERP 2,041→6,336 · AGENCY 235,572→243,550.
+>        이력은 **48테이블 시점**이고 ERP 는 컬럼 62→64 변경본이라 단순 비교 대상이 아니다 → 미대조 잔여
+>   · **SILVER 38테이블 112,108,325행** · 빈 테이블 = `CRM_BIZ_TARGET` **1건뿐** = **E-6 하드블로커**
+>     0행 스켈레톤이라 정상 상태다
+>   · 🟢 **BRONZE→SILVER 손실 0 검증(개발 체인 표본)** — `TM_MM_FDRM_MBER_DVLP_AMT` ↔ `CRM_MEMBER_DEV`:
+>     행수 **3,594,843 = 3,594,843** · 고유회원 **1,585,949 = 1,585,949** ·
+>     `SUM(SPNSR_AMT)` **15,712,188,652 = 15,712,188,652** · `DVLP_DIV_CD` 5종 = 5종 · 전 항목 동일
+>   · 🟢 **SILVER→GOLD DIM 검증(`DIM_MEMBER`)** — 정본 기대값과 전항 일치:
+>     SCD2 버전 **7,925,716** · 회원 **1,763,065**(= SILVER `CRM_MEMBER` 1,763,065 · 손실 0) ·
+>     **현재행 1,763,065 = 고유회원 1,763,065**(D2 가드레일 통과·중복 현재행 0) ·
+>     `SEX` **8종**(O26 CM013 복구) · `GENDER_NAME` **5종**(공#130) ·
+>     `AREA_CD` **19종**(CM018 18 + 센티넬 0 = O27 판정과 일치) ·
+>     `REGION` 채움 **96.91%** · `AGE_BAND` **97.63%** — **O27 기록치와 소수점까지 동일**
+>     ⚠️ `PREV_MBER_STAT_CD` 93.71% 는 정본에 대응 기대값이 없어(O27 기록은 원천 측 100%/7,501,761) 미대조
+>
+> 🔴 **그러나 GOLD FACT 12개 전건 0행** — DIM 17개는 전부 채워졌는데 FACT 는 하나도 없다
+>   (`FACT_MEMBER_MONTHLY`·`FACT_MEMBER_EVENT`·`FSE`·`FEP`·`FGA`·`FAD_*`·`FACT_BUDGET`·
+>   `FACT_TARGET_*`·`FACT_MEMBER_COHORT` 직접 `COUNT(*)` = 0). WIDE 뷰도 여전히 **0개**
+>   (GOLD 뷰 = `DIM_MEMBER_CURRENT` 1개뿐).
+>   ⚠️ **DIM/FACT 경계에서 정확히 갈린 형태**이므로 원인은 셋 중 하나다 — ① build 선택자가 DIM 만 포함
+>   ② 첫 FACT 에서 ERROR 후 나머지 SKIP ③ FACT 단계 미실행. **원인 미규명 상태로 진행 금지**
+>   (FACT 는 `incremental+append+pre-hook TRUNCATE` 라 부분 적재가 조용히 남을 수 있다).
+>   ⚠️ `INFORMATION_SCHEMA.TABLES.LAST_ALTERED`·`ROW_COUNT` 가 **신뢰 불가**였다 — DIM 이 채워졌는데도
+>   `LAST_ALTERED` 는 적재 이전 시각(02:08)을 가리켰다. 판정은 직접 `COUNT(*)` 로만 할 것(신규 P79 후보).
+>   ⏸ `dbt build` 재실행은 **작업조건 #5** 정지선 — 사용자 입력 대기.
+
+>
+> **▶ 🔴 최신 상태 [2026-08-05 O42 — `on_schema_change: fail` 가드가 팩트 13종 중 10종을 죽였다]**
+> 🔴 **트리거**: 사용자 질의 *"build 하다가 에러가 났는데 이게 뭐때문인지 모르겠다"* → GOLD FACT 전건 0행의 원인.
+> 🟢 **로그 확보 경로(신규 지식 P80)**: 워크스페이스 `10_dbt_pipeline/logs/dbt.log` 는 **01:11~01:16 것뿐**이라
+>   쓸 수 없었다. 실행은 배포 객체 `GN_DW.OPS.DW_PIPELINE` 의 `EXECUTE DBT PROJECT` 였고 로그는
+>   **Snowflake 안**에 있다 → `SNOWFLAKE.INFORMATION_SCHEMA.DBT_PROJECT_EXECUTION_HISTORY()` +
+>   **`SYSTEM$GET_DBT_LOG(query_id, 1000000)`**. 파일 로그만 보고 "로그가 없다"고 판단하면 안 된다.
+>
+> 🔴 **실행 이력 3건 전수**(2026-08-05, 이 프로젝트의 **유일한** 실행들):
+>   `parse` 02:05:48 SUCCESS · `compile` 02:06:06 SUCCESS · **`build` 02:06:28~02:08:50 `HANDLED_ERROR`**
+>   에러코드 210012 · 결과 **`PASS=221 WARN=21 ERROR=10 SKIP=145 TOTAL=397`**
+>
+> 🔴 **단일 원인 — 10건 전부 동일 에러**: `Compilation Error … The source and target schemas on this
+>   incremental model are out of sync!` (macro `process_schema_changes`)
+>   실패 10 = `FACT_BUDGET`·`FACT_SERVICE_EVENT`·`FACT_AD_BROADCAST`·`FACT_EVENT_PARTICIPATION`·
+>   `FACT_AD_DIGITAL`·`FACT_MEMBER_EVENT`·`FACT_TARGET_DEV`·`FACT_AD_PERFORMANCE`·`FACT_TARGET_BIZ`·
+>   `FACT_GA_BEHAVIOR`. 🟢 통과 = `FACT_AD_BROADCAST_CASE`(5,340행).
+>   `FACT_MEMBER_MONTHLY`·`FACT_MEMBER_COHORT` 는 ERROR 가 아니라 **SKIP**(상류 FME 실패의 하류)
+>   → **10 ERROR + 2 SKIP = 빈 팩트 12개**로 실측과 정확히 일치. DIM 17종은 `gold.fact` 설정 밖이라
+>   `on_schema_change` 기본값 `ignore` 로 정상 적재됐다 — **DIM/FACT 경계에서 갈린 이유가 이것**이다.
+>
+> 🔴 **결정적 사실 — 막으려던 결함은 하나도 없었다**: 10개 모델 전부
+>   `Source columns not in target: []` · `Target columns not in source: []` = **컬럼 집합 완전 일치**.
+>   발화 원인은 **`New column types` 뿐**이고 총 **101컬럼**이며 전부 정상 표현식 타입이다:
+>   · 센티넬 리터럴 `0`/`1` → `NUMBER(1,0)` (DDL `NUMBER(38,0)`) — FSE 22·FEP 16 의 대부분
+>   · `HASH()` → `NUMBER(19,0)` · `TRY_TO_NUMBER()` → `NUMBER(38,0)`(DDL `MONTH_KEY NUMBER(6,0)`)
+>   · 비율·나눗셈 → `FLOAT`·`NUMBER(24,6)`·`NUMBER(38,12)` · `SUM(NUMBER(18,2))` → `NUMBER(38,4)`
+>   ⇒ **정본 DDL 이 넓은 타입을 선언하고 모델은 센티넬·해시·나눗셈을 낸다** = 이 파이프라인의 **정상 상태**다.
+>   `append` 는 삽입 시 캐스팅하므로 실제 무해했고, 종전 build 들이 통과해 온 이유도 이것이다.
+>
+> 🔴 **자기결함 — 가드 도입 검증이 반쪽이었다**: `dbt_project.yml:78` `+on_schema_change: fail` 은
+>   **2026-08-05 O40-B 에서 처음 도입**됐고(P82 · O40 신규 컬럼 무증상 폐기 차단 목적) **도입 후 첫 build 가
+>   바로 이 build 다** — 회귀가 아니라 **신규 도입 결함**이다.
+>   같은 줄 주석은 *"적용 전 13개 팩트 전량 컴파일 대조로 드리프트 0 확인(2026-08-05)"* 이라고 적었는데
+>   그 대조는 **컬럼만** 봤다. dbt 의 `fail` 은 **컬럼 + 타입**을 함께 diff 하고 하나라도 있으면 던진다.
+>   → 주석이 **거짓 안전 신호**를 준 사례. 교정 대상(P33 ③).
+>   🟢 **신규 교훈 P83 후보**: 가드를 도입할 때는 *가드가 무엇을 diff 하는지*를 구현 수준에서 확인하고
+>   **일부러 발화시켜 실효성을 확인**해야 한다(P26 의 역방향 — 통과도 실증해야 한다).
+>
+> 🔴 **비판적 재검토(사용자 지시) — 내 종전 진술 1건이 과했다**
+>   종전에 *"타입 차이는 무해하다"* 고 단정했으나 **101컬럼 전수 대조(로그 추론타입 ↔ `INFORMATION_SCHEMA`
+>   선언타입)** 결과 그렇지 않았다:
+>   · **안전 58**(DDL 이 같거나 더 넓음 — 센티넬 `NUMBER(1,0)`→`NUMBER(38,0)` 등)
+>   · **정수부 축소 24**(초과 시 **INSERT 실패** = 큰 소리. `DATE_SK 38,0→8,0`·`MONTH_KEY 38,0→6,0`·
+>     `AGE_AT_EVENT 10,0→2,0` 등. YYYYMMDD·YYYYMM·나이는 실제로는 자릿수에 들어가고,
+>     벗어나면 실패하는 편이 **바람직한 가드**다)
+>   · 🔴 **조용한 반올림 20** = FLOAT→정수 3(`AD_CNT`·`READ_CNT`·`MEDIA_POTENTIAL_CUST_CNT`) ·
+>     FLOAT→스케일 13(`CTR_SRC`·`CPC_SRC` 등 비율류) · 소수부 축소 4(`IMPRESSIONS`·`CLICKS`·
+>     `INBOUND_CALL`·`GA_CONV_MEMBERS` `38,4→38,0`)
+>   ⇒ **"무해"는 틀렸다.** 정확한 진술은 *"`on_schema_change` 값과 무관하게 동일하게 발생한다"* 다 —
+>   INSERT 는 어차피 대상 컬럼 타입으로 캐스팅하므로 `fail` 을 켜 둔다고 반올림이 막히지 않았다
+>   (오히려 build 가 죽어 데이터가 0행이었을 뿐이다). 스케일 적정성은 **타입 가드 사안이 아니라
+>   DDL 설계 검토 사안** → 🟠 **O42-B 로 분리 등재**(조용한 반올림 20컬럼 스케일 적정성 검토).
+>
+> 🟢 **그럼에도 B안이 성립한다 — 근거는 어댑터 원본 확인(추론 아님)**
+>   `dbt-snowflake 1.9.2` 의 `snowflake__diff_column_data_types` 는
+>   `sc.data_type != tc.data_type and not sc.can_expand_to(other_column=tc)` 로 판정하고
+>   `can_expand_to` 는 **문자열 전용**이다 → **숫자 컬럼의 어떤 폭 차이도 예외 없이 플래그**된다.
+>   그리고 `fail` 이 제시하는 해법 3개가 이 프로젝트에서 전부 금지다:
+>   ① 자동 ALTER(정본 거버넌스 위반·기존 기각) ② `full_refresh`(CTAS 가 DDL·제약·주석·FK 파괴 →
+>   `+full_refresh: false` 가 걸린 이유) ③ 수동 스키마 변경(정본 DDL 을 표현식 추론 타입에 맞춰
+>   넓히라는 뜻 = 거꾸로). ⇒ **해소 경로 없는 영구 교착**이므로 좁히는 것이 옳다.
+>
+> 🔴 **다만 B안 원안(singular test)은 구현 불가였다 — 설계 수정**
+>   singular test 는 모델이 **build 된 뒤** 실행되고, `ignore` 로 되돌리면 버려진 컬럼이 **흔적을
+>   남기지 않는다**(테이블 = 모델 산출물 그 자체). 즉 test 로는 O40 실패양상(모델에만 있는 컬럼)을
+>   **원리적으로 탐지할 수 없다.**
+>   🟢 결정적 발견: `default__process_schema_changes` 는 non-ignore 일 때 **`source_columns`(모델 컬럼)**
+>   를 반환하고 materialization 이 그것을 `dest_columns` 로 쓴다. `ignore` 면 `{}` 를 반환해
+>   **대상 테이블 컬럼으로 fallback** — 이 fallback 이 O40 무증상 폐기의 실체다.
+>   ⇒ **`ignore` 복귀 자체가 O40 을 재도입한다.** 원안을 그대로 실행했다면 결함을 되살렸을 것이다.
+>
+> ✅ **조치 완료 — `fail` 유지 + 전역 매크로 프로젝트 오버라이드로 「컬럼 집합 전용 가드」로 축소**
+>   · 신설 `10_dbt_pipeline/macros/gn_on_schema_change.sql` = `snowflake__process_schema_changes`
+>     오버라이드. 컬럼 추가·삭제 → **즉시 실패**(조치 절차를 에러 메시지에 명시) /
+>     타입 차이 → **로그만 남기고 통과** / 반환 계약 `source_columns` **보존**(O40 차단 유지) /
+>     `append_new_columns`·`sync_all_columns` 는 dbt 기본 동작에 위임.
+>     🔴 `default__` 는 정의하지 않았다 — 정의하면 위임 호출이 무한 재귀한다.
+>   · `dbt_project.yml:67~92` 교정 — 종전 *"13개 팩트 전량 컴파일 대조로 드리프트 0 확인"* 은
+>     **거짓 안전 신호**였음을 명기(그 대조는 컬럼만 봤다). 값은 `fail` 유지.
+>   · 🟢 검증: `dbt parse --project-dir /10_dbt_pipeline` **통과**(dbt=1.9.4 · snowflake=1.9.2 =
+>     배포 객체와 동일 버전) · 매크로명 충돌 없음 · Jinja 오류 없음.
+>   · ⚠️ 유지보수 부채 등재: dbt 내부 매크로 오버라이드다 → dbt-core/dbt-snowflake 업그레이드 시
+>     `default__process_schema_changes` 원본과 **반환값 계약(source_columns)** 대조 필수.
+>   ⏸ **잔여 = 배포 + build**: 워크스페이스 파일 변경은 `ALTER DBT PROJECT … ADD VERSION` 으로
+>     새 버전을 올려야 `EXECUTE DBT PROJECT` 에 반영된다(현재 `VERSION$1`). 그 다음 `build`.
+>     **작업조건 #5 정지선 — 사용자 입력 대기.**
+>     build 후 검증 3관문: ① ERROR=0 · SKIP 대폭 감소 ② 팩트 13종 전부 비0행(직접 `COUNT(*)`)
+>     ③ WIDE 뷰 10종 생성 확인.
+>
+> 🔴 **[2026-08-05 18:14 재시도 실패 — 오버라이드가 발화하지 않았다]**
+>   사용자가 `EXECUTE DBT PROJECT FROM WORKSPACE … project_root='/10_dbt_pipeline' args='build --target dev'`
+>   실행 → **동일 결과**(10 실패 · 91.99s). 🔴 에러 문구가 **dbt 원본 영문 그대로**이고 스택도
+>   `macros/materializations/models/incremental/on_schema_change.sql` 이다 → 내 매크로가 아니라
+>   `default__process_schema_changes` 가 실행됐다.
+>
+>   🟢 **배제된 원인 2개(실측)**
+>   · 파일 미배포 아님 — `LIST 'snow://workspace/…/versions/live/10_dbt_pipeline/macros/'` 에
+>     `gn_on_schema_change.sql` **8,080바이트 · 06 Aug 01:08:09 GMT** 존재. build 는 01:14:55 GMT 로 **이후**다
+>     (`head` 도 동일 내용 — 개인 워크스페이스라 commit 이슈 아님)
+>   · 등록 누락 아님 — build 가 갱신한 `target/manifest.json` 에
+>     **`macro.gn_dw_silver.snowflake__process_schema_changes` 존재**
+>
+>   🟢 **dispatch 탐색 순서는 오히려 우리 편이었다(프로브 실측)** — 임시 매크로로
+>     `adapter.dispatch('…','dbt')` 를 호출해 실패 메시지에서 탐색 순서를 그대로 받아냈다:
+>     `'gn_dw_silver.snowflake__…', 'gn_dw_silver.default__…', 'dbt.snowflake__…', 'dbt.default__…'`
+>     → **루트 프로젝트 + 어댑터 접두가 최우선**이다. 즉 오버라이드 기법 자체는 옳다.
+>
+>   🔴 **진짜 용의자 = 서버측 프로젝트 스냅샷/파스 캐시 stale**
+>     프로브 매크로를 **내용만 바꿔 덮어쓰자** 직전 실행에서 정상 호출됐던 같은 이름을
+>     *"could not find a macro with the name … in any package"* 로 반환했다.
+>     워크스페이스 `target/partial_parse.msgpack` 삭제 후에도 동일 → 캐시는 워크스페이스가 아니라
+>     **서버측 실행 샌드박스(`/tmp/dbt`)** 에 있다고 보는 것이 정합적이다.
+>     ⇒ `EXECUTE … FROM WORKSPACE` 는 **파일 갱신 반영 시점이 불확정**이다. 18:14 build 가
+>     내 매크로 없는 스냅샷을 실행했다는 설명과 일치한다.
+>   ⚠️ 부수 확인: **로컬 샌드박스 dbt 런타임 ≠ 서버측 런타임**. 로컬에는 `snowflake__diff_column_data_types`
+>     가 있으나 서버측에는 **없다**(프로브 탐색 실패로 확인) → §O42 의 "어댑터 원본" 인용은
+>     **로컬 기준**이었다. 결론(숫자 타입 차이는 전부 플래그)은 `default__diff_column_data_types` 에서도
+>     동일하나, **런타임 대조 없이 로컬 소스를 정본처럼 인용한 것은 절차 결함**이다(P33 계열).
+>
+> 🔴 **[2026-08-05 18:37 (가)안도 실패 — 오버라이드 기법 자체를 폐기]**
+>   배포 경로를 갖췄다: `ALTER DBT PROJECT` → **`VERSION$2`**(alias `PIPE_TEST_RULE_20260806`, 18:33:26) ·
+>   `parse` 18:33:41 SUCCESS · `compile` 18:33:59 SUCCESS. 🟢 배포 스냅샷에 매크로 실재 확인 —
+>   `LIST 'snow://dbt/GN_DW.OPS.DW_PIPELINE/versions/version$2/macros/'` → `gn_on_schema_change.sql` 8,080B.
+>   🔴 그런데 build(85.88s)가 **또 dbt 원본 영문 문구**로 실패했다(10 실패 · 동일 타입 목록).
+>   ⇒ 워크스페이스 실행·배포객체 **양쪽 모두** 오버라이드가 발화하지 않는다.
+>   ⚠️ **스냅샷 캐시 가설도 기각**: 직후 `dbt parse` 가 *"Unable to do partial parsing because a project
+>      config has changed"* 를 냈다 = 워크스페이스 파일 변경은 **서버측에 정상 도달**한다.
+>      즉 원인은 배포·캐시가 아니라 **Snowflake 서버측 dbt 런타임의 dispatch 가 루트 프로젝트의
+>      `snowflake__process_schema_changes` 를 채택하지 않는다**는 것이다(로컬 소스 기준 탐색 순서와
+>      불일치 — 런타임 구현 차이. 원인 미규명·재현 가능).
+>   ✅ **발화하지 않는 가드는 거짓 안전 신호**이므로 `macros/gn_on_schema_change.sql` **삭제**했다.
+>      (판정·근거는 본 절에 보존 — 파일만 제거)
+>   🟢 **신규 교훈 P84 후보**: 관리형 런타임(Snowflake dbt)에서 **내부 매크로 오버라이드에 의존하지 말 것.**
+>      로컬 dbt 소스로 검증한 dispatch 동작이 서버측에서 재현되지 않는다. 문서화된 **config 값**으로
+>      해결 가능한 길이 있으면 그것을 택한다.
+>
+> ✅ **[2026-08-05 18:41 최종 조치 — `+on_schema_change: append_new_columns`]**
+>   dbt 원본 동작으로 필요 요건이 전부 충족된다(내부 매크로 의존 0):
+>   · `sync_column_schemas('append_new_columns', …)` 는 **타입 변경을 처리하지 않고**
+>     `source_not_in_target` 만 ALTER → 현재 그 집합이 **공집합**이므로 **완전 no-op** = 타입 오탐 소멸
+>   · `'ignore'` 가 아니므로 `process_schema_changes` 반환이 **`source_columns`(모델 컬럼)** 이고
+>     그것이 INSERT 의 `dest_columns` 가 된다 → **O40 무증상 폐기 차단 유지**
+>     (⇒ 애초에 `ignore` 복귀는 답이 아니었다는 §O42 판단은 유효)
+>   · `dbt parse --project-dir /10_dbt_pipeline --target dev` **통과**
+>   🟠 **O42-C 신규 등재(감시)**: 훗날 모델에만 있는 신규 컬럼이 생기면 dbt 가 **자동 ALTER** 하므로
+>     물리가 `06_DDL.sql` 보다 앞서 나갈 수 있다(O30 유형 드리프트). 컬럼 추가 절차 ①~⑥ 준수 필수 ·
+>     정기적으로 물리 컬럼 ↔ `06_DDL.sql` 대조.
+>   ⏸ **build 는 작업조건 #5 정지선** — 재배포(`ADD VERSION`) 또는 워크스페이스 실행 후
+>     검증 3관문: ① ERROR=0 ② 팩트 13종 전부 비0행(직접 `COUNT(*)`) ③ WIDE 뷰 10종 생성.
+>
+> 🟢🟢 **[2026-08-05 18:51 해소 확인 — O42 종결 · O41 파이프라인 완주]**
+>   사용자 build 결과 **`Done. PASS=370 WARN=27 ERROR=0 SKIP=0 TOTAL=397`**
+>   (`Found 81 models, 316 data tests, 40 sources, 483 macros` · full parse). 종전 `ERROR=10 SKIP=145` 소멸.
+>   ⇒ **`append_new_columns` 조치가 실효**했음을 *변화로* 확인했다(P26).
+>
+>   ✅ **관문 ① ERROR=0 · SKIP=0** — 통과
+>   ✅ **관문 ② 팩트 13종 직접 `COUNT(*)`** — 12종 적재 · 1종만 0행이고 그것은 **기대된 0**이다
+>     `FMM` **40,054,883** · `FSE` **38,470,780** · `FME` **4,633,105** · `FMC` **1,585,949** ·
+>     `FEP` **1,134,126** · `FAD_PERF` 243,545 · `FAD_DIGITAL` 205,059 · `FACT_BUDGET` 75,996 ·
+>     `FGA` 68,836 · `FAB` 38,486 · `FTG_DEV` **25,344** · `FAB_CASE` 5,340 ·
+>     🟡 `FACT_TARGET_BIZ` **0 = E-6 하드블로커**(CRM 사업목표 원천 미입고 · `SILVER.CRM_BIZ_TARGET` 도 0행)
+>     → 결함이 아니라 스켈레톤 정상 상태
+>   ✅ **관문 ③ GOLD 뷰 14종** — `DIM_MEMBER_CURRENT` + **WIDE 13종**
+>     (`WIDE_MEMBER_MONTHLY`·`_MEMBER_EVENT`·`_SERVICE_EVENT`·`_EVENT_PARTICIPATION`·`_GA_BEHAVIOR`·
+>      `_BUDGET`·`_TARGET_DEV`·`_TARGET_BIZ`·`_DEV_ACHIEVEMENT`·`_AD_PERFORMANCE`·`_AD_BROADCAST`·
+>      `_AD_BROADCAST_CASE`·`_AD_DIGITAL`)
+>
+>   🟢 **O42-C(자동 ALTER 드리프트) 첫 점검 — 깨끗하다**: GOLD **기본 테이블 컬럼 502개**로
+>     build 전과 **동일**(종전 측정 522 는 `DIM_MEMBER_CURRENT` 뷰 20컬럼 포함값) →
+>     `append_new_columns` 가 **아무것도 ALTER 하지 않았다** = 예측대로 완전 no-op.
+>     이 점검(물리 컬럼수 ↔ `06_DDL.sql`)을 build 마다 반복하는 것이 O42-C 방어선이다.
+>
+>   🟢 **부수 확인 — O38 교정이 실제로 살아났다**: `FACT_TARGET_DEV` **25,344행**
+>     (종전 7,272 = 3.49배 병합 결함) · `MONTH_KEY` **201201~202612** · YYYYMMM 규약 위반 **0건** ·
+>     `SUM(GOAL_CNT)` **4,622,103** = 원천과 정확히 일치. O38 W1(`STDYY||LPAD`)과 singular test 가 동작한다.
+>
+>   ⬜ **잔여**: ① **WARN 27건** 내역 미확인(종전 21 → 27 로 증가 · 기존 고아키 계열로 추정되나 **미검증**)
+>
+> 🟢🟢🟢 **[2026-08-05 19:02 O41 종결 — 런북 §11.2-C ⑤~⑧ 완료(사용자 실행)·전 계층 실측 검증]**
+>   · ⑤ **SERVING helper 뷰 2종** `DIM_MONTH`(18:59:39) · `DIM_MEMBER_CURRENT`(18:59:40) ✅
+>   · ⑥ **Semantic View 8종** 18:59:56~19:01:54 ✅ + `SERVING.FACT_AD_COMBINED`(19:01:26) =
+>     `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_MEMBER_COHORT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·
+>     `SV_BUDGET`·`SV_AD`·**`SV_DEV_ACHIEVEMENT`**(O38 신설)
+>   · ⑦⑧ **Agent 2종** `AGENT_MEMBER`·`AGENT_OVERALL`(19:02:26·19:02:29) ✅
+>     🟢 **O35 「껍데기 Agent」 재발 없음 — `DESCRIBE AGENT` 로 스펙 본문 실측 확인**:
+>     `AGENT_MEMBER` = tools **6종**(analyst_member_monthly·_member_event·_service·_member_cohort·
+>     _event_participation·**_dev_achievement**) + instructions(system/orchestration/response) +
+>     `tool_resources` 6종 SV 매핑 + `sample_questions` 19문 · default **VERSION$3** ·
+>     `AGENT_OVERALL` = tools **4종**(analyst_budget·_ad·_member_monthly·_service) · default **VERSION$3**.
+>     ⇒ `{"models":{"orchestration":"auto"}}` 만 있는 껍데기 상태가 **아니다** = `09_2` 정상 적용.
+>   🟢 **O38 배선이 소비계층까지 관통했다**: `SV_DEV_ACHIEVEMENT` 실재 + `AGENT_MEMBER` 에
+>     `analyst_dev_achievement` 도구로 등재 + orchestration 에 *"목표·달성율 질문은 반드시
+>     analyst_dev_achievement"* 라우팅 명문화. 마케팅 장표 「1. 개발현황(목표,실적)」 경로 완성.
+>   🔴 **문서 stale 1건 교정**: 런북 §11.2-B 4) · §11.2-C ⑥ 이 *"SV 6종"* 이라고 적고 있었다 —
+>     실측 **8종**(O37 분할 이후 `SV_MEMBER_COHORT`·`SV_DEV_ACHIEVEMENT` 추가분 미반영).
+>     양쪽 다 8종으로 교정하고 목록을 명기했다(P33 ③).
+>
+>   ⬜ **최종 잔여 2건**
+>     ① **WARN 27건 내역 미확인**(종전 21 → 27) — 기존 고아키 계열 추정이나 **미검증**. 확인 필요.
+>     ② **paid 게이트** — Agent NL 스모크(`DATA_AGENT_RUN`)는 트라이얼에서 차단(문서40 §paid 게이트).
+>        SV 데이터층 ground-truth 검증은 트라이얼에서도 가능하므로 정확성은 확인할 수 있다.
+>
+> ✅ **[2026-08-05 19:2x O41 잔여 2건 종결 — WARN 전수 분류 + SV ground-truth]**
+>
+> 🟢 **잔여① WARN 27건 전수 분류 — 회귀가 아니다(증가분의 정체 규명)**
+>   🔴 **"21 → 27 로 6건 늘었다"는 비교 자체가 성립하지 않았다.** 실패 build(01c62ee2) 로그를 다시
+>   훑으니 그 21건은 **전부 SILVER** 였다(GOLD yml 출처 0건). GOLD 팩트 테스트는 모델이 ERROR/SKIP 이라
+>   **실행조차 못 했다**. 성공 build = SILVER 21 + **GOLD 6** = 27. ⇒ 27 이 **첫 완전 측정치**다.
+>   추가된 GOLD 6 = `FACT_SERVICE_EVENT`·`FEP`·`FME`·`FMM`·`FMC` 의 `MEMBER_DK`→`DIM_MEMBER`
+>   relationships 5건 + `FEP.PART_STATUS` accepted_values 1건.
+>   🟢 **SILVER 21건은 yml 주석의 기지값과 건수까지 일치**(회귀 0) — `CRM_SEND_MEMBER.SNDNG_KEY` 11,313 ·
+>   `MBER_NO` NULL 745 · `CRM_PAYMENT_BILLING.RQEST_RST_CD` 1,096 · `CMPGN_TYPE1_NM` 740 ·
+>   `CMPGN_CTGR_NM` 23 · `SPNSR_BSNS_ID` 1 등 전부 기록치와 동일.
+>   ⚠️ **내가 중간에 한 번 틀렸다**: `CMPGN_TYPE1_NM` 740건을 *"코드는 있는데 라벨이 없다 = 코드사전
+>   매핑 실패 = 신규 결함"* 으로 판정했는데, yml 이 `where: CMPGN_TYPE1_BSN IS NOT NULL` 로 **바로 그
+>   경우만 세도록 설계**돼 있고 주석에 *"기지 고아: CMPGN_TYPE1_BSN=4, 740행"* 으로 이미 적혀 있었다.
+>   테스트 정의를 먼저 읽지 않고 값만 보고 판정한 절차 결함이다(신규 **P85** 후보: 테스트 WARN 을
+>   해석하려면 그 테스트의 `where` 필터를 먼저 읽어야 한다 — 분모를 모르면 값의 의미를 모른다. P21 계열).
+>   🟢 **고아 회원키 = 단일 원인·외부 의존 확정(실측)**: 4개 SILVER 테이블의 고아를 합집합하면
+>   **고유 회원 9,247명**(문서50 BLOCKING-1 기록 9,248 과 사실상 동일). 이들을 BRONZE 회원 마스터
+>   (`TM_MM_FDRM_MBER_INFO` ∪ `TM_MM_ONCE_MBER_INFO`)와 대조 → **존재 0명 · 부재 9,247명**.
+>   동시에 BRONZE 마스터 키 **1,763,065 = SILVER `CRM_MEMBER` 1,763,065** 로 완전 일치.
+>   ⇒ SILVER 로직 결함이 **아니라** 원천 입고 누락이다. **BLOCKING-1(회원 마스터 전량입고) 대기**이며
+>   전량 입고 시 warn→error 복귀 대상. GOLD 5건은 이 9,247명의 하류 전파일 뿐이다.
+>   🟡 **잔존 실결함 1건**: `FEP.PART_STATUS` 오염값 **`)` 2행**(테스트는 distinct 값 1로 보고).
+>   O28 이 기록한 *"오염값 `)` 2행"* 과 동일 — 재구축 후에도 그대로 남았다. O28 잔여로 유지.
+>
+> 🟢 **잔여② SV ground-truth 검증 — 통과(paid 불요 구간)**
+>   `SV_DEV_ACHIEVEMENT` × 직접 SQL 대조(2022~2026 연도별): `TOTAL_GOAL_CNT`·
+>   `TOTAL_ACTUAL_CNT_ON_GOAL`·`ACHIEVEMENT_RATE` **5개 연도 전부 MATCH**(소수 6자리까지).
+>   🟢 **4계층 무손실 실증**: `SUM(GOAL_CNT)` = BRONZE **4,622,103** = SILVER = GOLD = WIDE = **SV** 동일.
+>   🟢 **정본 스코프 재현**: 미스코프 **49.59%** · 정본 `GOAL_CNT>0` **34.60%** ·
+>   실적 총계 **2,291,878** · `WIDE_DEV_ACHIEVEMENT` **37,522행** — P63 기록치와 전부 일치.
+>   ⇒ SV metric 식에 `GOAL_CNT>0` 을 못박은 조치가 **배포 후에도 유효**함을 확인.
+>   🟢 **O40 납부율도 3수치 완전 일치**(2025): `PAID_FEE_BILLABLE` **175,381,890,496** ·
+>   `UNPAID_BILLED_AMT` **29,251,314,636** · 납부율 **85.65%** = O40 기대값과 동일.
+>   ⚠️ `ORG_DEPARTMENT='(미매핑)'` 3행·실적 6건(무시 가능 규모) — O38 기록 "미매칭 8행"과 동계열.
+>   ⏸ **여기서 멈추는 구간**: Agent 자연어 응답 품질·응답시간·비용은 `DATA_AGENT_RUN` 차단으로
+>     **paid 계정 이관 후 측정**(문서40 §paid 게이트 · 절차 = `05_SV-Agent_ai/12_paid_테스트_실행가이드.md`).
+
+
+>
+
 > **▶ 🟡 최신 상태 [2026-08-05 O38 — 개발목표 연도 소실 교정 · 부서별 실적 배선 · 목표 대비 실적 소비뷰]** — 정본 = 문서10 **§22**
 > 🔴 **트리거**: 사용자 질의 *"마케팅 장표 「1. 개발현황(목표,실적)」 13항목이 지금 GOLD 에 있는가?"* →
 >   답은 **온전히 답하는 것 1개(예산구분)뿐**이었고, 확인 과정에서 **미등록 결함 2건**이 드러났다.
@@ -181,7 +552,12 @@ END-METADATA -->
 > 🟢 **build 전 검증 전항 통과(실측 시뮬레이션)**
 >   · W1: grain **25,344 유일** · `SUM(GOAL_CNT)` **4,622,103 불변** · 201201~202612 · 센티넬 0 · 변환실패 0
 >   · W2: **fan-out 0**(3,594,843 불변) · `DEV_CNT` **2,291,878 불변** · 센티넬 8
->   · W3: 연도별 grain 유일 · 완결연도 달성율 **2022 58.3% · 2023 59.3% · 2024 53.8% · 2025 54.4%**
+>   · W3: 연도별 grain 유일 · ~~완결연도 달성율 **2022 58.3% · 2023 59.3% · 2024 53.8% · 2025 54.4%**~~
+>     🔴 **[2026-08-05 19:2x 정정 — 이 수치는 미스코프 값이었다]** 같은 절이 P18·P63 으로 *"미스코프
+>     (전체 실적÷전체 목표)는 틀린 값"* 이라고 선언했는데, 정작 이 W3 수치가 **그 미스코프로 산출**됐다.
+>     build 후 실측 재현 = 미스코프 **2022 58.8 · 2023 59.4 · 2024 54.0 · 2025 54.5**(기록치와 동일 계열)
+>     vs **정본 스코프(`GOAL_CNT>0`) 2022 52.5% · 2023 44.3% · 2024 40.0% · 2025 39.8%**.
+>     ⇒ 2023 은 **15.1%p** 차이다. 인용 시 반드시 정본 스코프 값을 쓸 것.
 >   · **신규 가드 실효성 실증(P26)**: singular test 를 현 데이터에 돌려 **위반 12키·7,272행 검출** 확인.
 >     build 후 0 이 되어야 한다 — 가드가 실제 상태를 반영함을 *변화로* 확인했다
 >

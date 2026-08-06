@@ -8,7 +8,7 @@
 --    소정수 1~6 은 대조로 확정 불가(코드사전 336그룹 중 1~6 포함 118그룹) → **현업 회신 필수**(문서20 §I).
 --    그 확정 전에는 상태별 카운트 5종을 배선하면 **결손 창작**이다(P38) → 의도적 0 유지.
 -- ⚠️ 미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2)의 사유는 컬럼 COMMENT 에 개별 명시했다
---    (정본 = `03_top-down_gold/06_DDL.sql` FEP 블록 · 가드 스크립트 = `O28_O29_COMMENT_GUARD.sql`).
+--    (정본 = `03_top-down_gold/06_DDL.sql` FEP 블록 · 가드 스크립트 = `_archive/O28_O29_COMMENT_GUARD.sql`).
 -- 🟢 단 `PARTICIPATION_TIMES`·`CUM_APPLY_TIMES` 는 `PARTCPT_SEQ`(채움 100%) 기반이라 O28 과 무관하게
 --    산출 가능하다 — 회신 대기 대상이 아니다(별건 배선 후보).
 -- ⚠️ CAMPAIGN/SPONSORSHIP_SK=0 센티넬은 O8(다중 캠페인 귀속규칙) 현업 미회신 차단분이다.
@@ -53,7 +53,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '70585b41-f46e-46ce-b6ba-556600f2d3c3'                    AS DW_BATCH_ID
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID
 from p
 left join GN_DW.GOLD.DIM_EVENT e
     on e.EVENT_BK = p.EVENT_KEY

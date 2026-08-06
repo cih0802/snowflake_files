@@ -592,7 +592,9 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
         `{"models":{"orchestration":"auto"}}` — **도구 0개·instruction 0개**로 질의에 답하지 못한다.
         2026-08-04 재구축 후 실제로 이 상태였다(§19-I 최소경로가 이 단계를 누락하고 있었다).
 
-※ O28_O29_COMMENT_GUARD.sql          ← 선택(상세화). 11.3 참조
+※ O28_O29_COMMENT_GUARD.sql          ← 🔴 실행 대상 아님(2026-08-05 O41). 정본 06_DDL.sql +
+                                       WIDE 모델 post_hook 에 접혀 재구축+build 로 복원된다.
+                                       파일은 _archive/ 로 이관됨(참조 전용). 11.3 참조
 ```
 
 > 🔴 **[2026-08-04 교정] 종전 이 목록의 5단계 `13_SV_AD_배포_추가작업.sql` 은 삭제됐다.**
@@ -614,7 +616,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 | ③ | `10_dbt_pipeline/deploy_dbt_project.sql` | ACCOUNTADMIN→GN_DW_ADMIN | `GN_DW.OPS.DW_PIPELINE` |
 | ④ | **dbt build** | GN_DW_ADMIN(또는 ENGINEER) | SILVER·GOLD 적재 + GOLD 뷰 13종 |
 | ⑤ | `02_GN_DW_building/08_After_Deploy_DBT.sql` | GN_DW_ADMIN↔ACCOUNTADMIN 전환 | DBT PROJECT GRANT · **§G SERVING helper 뷰 2종** · SERVING GRANT · CoWork |
-| ⑥ | `05_SV-Agent_ai/05_1`~`05_7_SV_DDL_*.sql` | 🔴 GN_DW_ADMIN | SV 6종 + 각 파일 GRANT·스모크 (+`05_7` 에 `FACT_AD_COMBINED`). **파일 간 순서 무관·독립 실행**(2026-08-05 O37 분할). ⚠️ `05_SV_DDL.sql` 은 인덱스·전체검증 전용이라 실행해도 SV 가 만들어지지 않는다 |
+| ⑥ | `05_SV-Agent_ai/05_1`~`05_7_SV_DDL_*.sql` | 🔴 GN_DW_ADMIN | SV **8종** + 각 파일 GRANT·스모크 (+`05_7` 에 `FACT_AD_COMBINED`). **파일 간 순서 무관·독립 실행**(2026-08-05 O37 분할). 🔴 **[2026-08-05 교정] 종전 "6종" 은 stale** — 실측 배포 8종 = `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_MEMBER_COHORT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·`SV_AD`·`SV_DEV_ACHIEVEMENT`(O38 신설). ⚠️ `05_SV_DDL.sql` 은 인덱스·전체검증 전용이라 실행해도 SV 가 만들어지지 않는다 |
 | ⑦ | `05_SV-Agent_ai/09_1_AGENT_생성.sql` | GN_DW_ADMIN | Agent 껍데기 2종 |
 | ⑧ | `05_SV-Agent_ai/09_2_AGENT_버전업.sql` | GN_DW_ADMIN | 🔴 Agent 스펙 본문 |
 

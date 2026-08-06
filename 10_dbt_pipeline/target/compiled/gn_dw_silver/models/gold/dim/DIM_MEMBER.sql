@@ -278,7 +278,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'a6126032-316a-4fe6-99c3-1ba2cbc3b7bf'                    AS DW_BATCH_ID,
+    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID,
     -- [2026-08-03] SILVER 에 존재했으나 CTE 컬럼열거에서 탈락해 있던 컬럼 복원(G3 결손 유형).
     --   FDRM=정기(1,587,343) / ONCE=일시(175,722). ONCE 는 회원상태·가입경로 개념이 원천에 없다.
     --   ⚠️ MEMBER_TYPE_NAME(MM018 개인/기업/단체)은 이 컬럼의 라벨이 아니다 — 다른 축(코드=MBER_DIV_CD).
