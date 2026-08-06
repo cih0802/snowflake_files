@@ -14,10 +14,13 @@ GN_DW '지표 → GOLD' 추적(traceability) 장표 생성기.
 
 출력(30_output_share): MD(가독) · CSV(가공) · XLSX(현업 공유, 시트 분할)
 """
-import csv, os, re, sys, importlib.util
+import csv, os, re, sys, json, importlib.util
 
 WS = os.path.realpath("/workspace")
-OUT_DIR = os.path.join(WS, "30_output_share")
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+LINEAGE_CSV = os.environ.get("GN_DW_LINEAGE", os.path.join(OUT_DIR, "04_컬럼계보매핑.csv"))
+CENSUS = os.environ.get("GN_DW_CENSUS", "/tmp/census.json")
+MEASURED = os.environ.get("GN_DW_MEASURED", "")
 BASENAME = "05_지표GOLD매핑"
 GEN_PATH = "scripts/gen_metric_gold_mapping.py"
 PROV = f"본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 {GEN_PATH} 수정 후 재실행하세요."
@@ -100,15 +103,67 @@ def base_token(v):
 
 # ─────────────────────────────── 1) gen_column_mapping ROWS 재사용 ───────────────────────────────
 def load_gcm():
-    spec = importlib.util.spec_from_file_location("gcm", os.path.join(WS, "scripts", "gen_column_mapping.py"))
-    gcm = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(gcm)
+    """계보는 04_컬럼계보매핑.csv(실측 파생물)에서 읽는다.
+
+    ⚠️ 구 판본은 `gen_column_mapping.py` 의 하드코딩 리스트를 import 했다. 그 리스트가 stale 해지면
+    이 문서도 함께 stale 해졌다(O24·O26·O34·O38·O39 미반영). 이제는 **측정 산출물을 입력으로 받는다**.
+    """
     col2src, obj2src = {}, {}
-    for r in gcm.ROWS:                       # [마트,GOLD컬럼,의미,SILVER,BRONZE,규칙,상태]
-        col2src.setdefault(r[1], (r[3], r[4], r[6], r[0]))
-    for r in gcm.DIM_FACT_ROWS:              # [계층,GOLD객체,의미,SILVER,BRONZE,규칙,상태]
-        obj2src.setdefault(r[1], (r[3], r[4], r[6], r[0]))
+    if not os.path.exists(LINEAGE_CSV):
+        raise SystemExit(f"계보 입력이 없습니다: {LINEAGE_CSV} — 먼저 gen_column_mapping.py 를 실행하세요.")
+    with open(LINEAGE_CSV, encoding="utf-8-sig") as f:
+        for r in csv.DictReader(f):
+            col = r["WIDE_컬럼"]
+            gold = r["GOLD_원천(테이블.컬럼)"]
+            silver = r["SILVER_원천(테이블.컬럼)"]
+            bronze = r["BRONZE_원천(테이블)"]
+            conf = r["계보_확정도"]
+            col2src.setdefault(col, (silver, bronze, conf, r["WIDE_마트"]))
+            gt = gold.split(".")[0] if "." in gold else ""
+            if gt:
+                obj2src.setdefault(gt, (silver, bronze, conf, r["WIDE_마트"]))
     return col2src, obj2src
+
+
+def load_census():
+    """GOLD 물리 컬럼 실측 census — 상태 판정을 추측이 아니라 측정으로 한다."""
+    if not os.path.exists(CENSUS):
+        return {}
+    raw = json.load(open(CENSUS, encoding="utf-8"))
+    out = {}
+    for k, v in raw.items():
+        if not k.startswith("GOLD."):
+            continue
+        t = k.split(".", 1)[1]
+        for c, i in v["cols"].items():
+            out.setdefault(c, []).append((t, v["rows"], int(i["nonnull"] or 0), int(i["nonzero"] or 0)))
+    return out
+
+
+CENSUS_IDX = {}
+
+
+def measured_status(physical):
+    """물리컬럼명으로 census 를 조회해 상태를 판정. 못 찾으면 (None, 근거없음)."""
+    tok = base_token(physical or "")
+    if not tok or tok not in CENSUS_IDX:
+        return None, ""
+    best = None
+    for t, rows, nn, nz in CENSUS_IDX[tok]:
+        if rows == 0:
+            cand = ("WAIT", f"`{t}` 0행")
+        elif nn == 0:
+            cand = ("WAIT", f"`{t}.{tok}` 전건 NULL")
+        elif nz == 0:
+            cand = ("WAIT", f"`{t}.{tok}` 전건 0 — 설계O·값 미주입")
+        elif nz < rows:
+            cand = ("PARTIAL", f"`{t}.{tok}` 비영 {nz:,}/{rows:,} ({nz/rows*100:.1f}%)")
+        else:
+            cand = ("OK", f"`{t}.{tok}` 비영 {nz:,}/{rows:,} (100%)")
+        rank = {"OK": 0, "PARTIAL": 1, "WAIT": 2}
+        if best is None or rank[cand[0]] < rank[best[0]]:
+            best = cand
+    return best
 
 
 # ─────────────────────────────── 2) 지표 분류 (215 배속) ───────────────────────────────
@@ -289,21 +344,31 @@ IDENTITY_SET = {"공81", "공122", "신32", "신33"}
 WAIT_SET = {"공152", "공153", "공154", "공155"}
 
 
-def derive_status(key, cls, place):
+def derive_status(key, cls, place, physical=""):
+    """상태 판정 — **실측 우선**.
+
+    ① 물리 컬럼을 특정할 수 있으면 census(`COUNT`/`COUNT_IF(<>0)`)로 판정한다.
+    ② 특정 불가(파생 metric·차원 배속 등)일 때만 배속·원천 계통 추정으로 내려간다.
+       이때 근거 열에 「추정」임을 명시한다 — 실측과 추정을 섞어 보여주지 않는다.
+    """
+    ms = measured_status(physical) if physical else None
+    if ms and ms[0]:
+        return ms[0], "실측: " + ms[1]
+
     raw = (cls.get("place_raw", "") + " " + cls.get("basis", ""))
     if key in WAIT_SET or "FTG-B" in place or "FTG_B" in place or "원천 부재" in raw or "입고 대기" in raw or "대기" in raw:
-        return "WAIT"
+        return "WAIT", "추정: 원천 미입고 계통(E-6 등)"
     if key in IDENTITY_SET or "identity" in raw:
-        return "PARTIAL"
+        return "PARTIAL", "추정: identity 브리지 의존"
     src = cls.get("src", "")
     p = place.upper()
     if src in ("GA4", "GA") or p.startswith("FGA") or "GA_" in p:
-        return "PARTIAL"
+        return "PARTIAL", "추정: GA4 계통(G-5 샤드 부분입고)"
     if src == "AGENCY" or p.startswith("FAD") or "AD_CREATIVE" in p:
-        return "PARTIAL"
+        return "PARTIAL", "추정: AGENCY 계통(연결키 Q10 대기)"
     if p.startswith("FBD") or (src == "ERP"):
-        return "PARTIAL"
-    return "OK"
+        return "PARTIAL", "추정: ERP 예산 계통(E-1/E-4 대기)"
+    return "OK", "추정: 배속·원천 계통에 알려진 제약 없음"
 
 
 # ─────────────────────────────── 6) 지표 → GOLD 행 조립 ───────────────────────────────
@@ -319,7 +384,7 @@ MEASURE_OVERRIDE = {
 
 HEADER = ["지표#", "구분", "지표명", "유형", "소스", "단위",
           "GOLD_배속", "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천",
-          "정본_계산식", "상태"]
+          "정본_계산식", "상태", "상태_근거"]
 
 
 def build_metric_rows():
@@ -381,9 +446,16 @@ def build_metric_rows():
         else:  # dimension
             gold = f"{place}"
             silver, bronze = src_for_obj(place)
+        phys = ""
+        if typ == "measure":
+            phys = num2base.get(key, "") or MEASURE_OVERRIDE.get(key, "")
+        elif typ == "derived":
+            dv2 = derived.get(key)
+            phys = (dv2 or {}).get("num", "") or ""
+        st, st_why = derive_status(key, c, place, phys)
         rows.append([
             key, d.get("cat", c.get("", "")) or _cat_guess(place, typ), c["name"], typ, c["src"], c["unit"],
-            place, gold, silver, bronze, d.get("formula", ""), derive_status(key, c, place),
+            place, gold, silver, bronze, d.get("formula", ""), st, st_why,
         ])
     return rows, num2base, derived, num2metricnum
 
@@ -696,14 +768,37 @@ def write_md(rows, mkt, mem):
     L.append("> **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에")
     L.append("> 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이")
     L.append("> 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.")
-    L.append("> 상태: **OK** 사용가능 · **PARTIAL** 일부 대기(GA/AGENCY/ERP·identity) · **WAIT** 원천 입고 대기(FTG-B 사업목표 등)")
+    L.append("> 상태: **OK** 사용가능 · **PARTIAL** 일부 대기 · **WAIT** 값 부재(전건 0/NULL 또는 원천 미입고)")
+    L.append("")
+    L.append("> 🔴 **상태는 가능한 한 실측입니다** — 지표에 대응하는 GOLD 물리 컬럼을 특정할 수 있으면")
+    L.append("> `COUNT`/`COUNT_IF(<>0)` 로 직접 측정해 판정하고, 근거를 `상태_근거` 열에 `실측:` 으로 적습니다.")
+    L.append("> 물리 컬럼을 특정할 수 없는 경우(파생 metric·차원 배속)에만 배속·원천 계통으로 **추정**하고 `추정:` 으로 표시합니다.")
+    L.append("> **`추정:` 행을 사용 가능 근거로 단독 인용하지 마세요.**")
     L.append("")
     L.append("## 0. 요약")
     L.append("")
     L.append(f"- 총 **{len(rows)}개** 지표 (공통 162 + 신규 53).")
+    n_meas = sum(1 for r in rows if str(r[12]).startswith("실측"))
     L.append(f"- 상태: ✅ OK **{n_ok}** · ◐ PARTIAL **{n_par}** · ⛔ WAIT **{n_wait}**")
+    L.append(f"- 판정 근거: **실측 {n_meas}** / 추정 {len(rows)-n_meas} (실측 = GOLD 물리 컬럼 census 직접 조회)")
+    L.append("")
+    L.append("> 🔴 **종전 판본은 이 표를 `OK 168 · PARTIAL 43 · WAIT 4` 로 적었습니다. 그것은 과대 진술이었습니다** —")
+    L.append("> 상태를 원천 계통으로만 추정해서, `FACT_MEMBER_MONTHLY` 의 활동·미납·증액 카운트나")
+    L.append("> `FACT_SERVICE_EVENT` 의 성공·실패·참여 카운트처럼 **컬럼이 전건 `0` 인 지표를 `OK` 로 분류**했습니다.")
+    L.append("> 이번 판본은 실측으로 판정하므로 그 지표들이 `WAIT` 로 드러납니다(§0-2).")
     L.append("- **유형별 GOLD 매핑 규칙**: `measure`→FACT 물리컬럼 · `dimension`→DIM(또는 FMM degen/스냅샷) · `derived`→**SV metric**(분자/분모 base로 계산, 물리컬럼 아님. 단 GA4 비가산 #98·108은 FGA 물리적재).")
     L.append("- **약어**: FMM=FACT_MEMBER_MONTHLY · FME=FACT_MEMBER_EVENT · FSE=FACT_SERVICE_EVENT · FAD=FACT_AD_PERFORMANCE · FGA=FACT_GA_BEHAVIOR · FBD=FACT_BUDGET · FEP=FACT_EVENT_PARTICIPATION · FTG-D=FACT_TARGET_DEV · FTG-B=FACT_TARGET_BIZ · SV=Semantic View metric.")
+    L.append("")
+    waits = [r for r in rows if r[11] == "WAIT" and str(r[12]).startswith("실측")]
+    L.append("### 0-2. 🔴 실측 `WAIT` — 「설계는 됐으나 값이 없는」 지표")
+    L.append("")
+    L.append(f"아래 **{len(waits)}개** 지표는 배속·계보가 모두 확정돼 있으나 대응 GOLD 물리 컬럼이 **전건 0 또는 NULL** 이다.")
+    L.append("조회하면 에러 없이 `0` 이 반환되므로 **그 `0` 을 실적으로 읽으면 조용히 틀린다**(P15).")
+    L.append("")
+    L.append("| 지표# | 지표명 | GOLD 매핑 | 실측 근거 |")
+    L.append("|---|---|---|---|")
+    for r in waits:
+        L.append(f"| `{r[0]}` | {r[2]} | `{r[7]}` | {str(r[12]).replace('실측: ','')} |")
     L.append("")
     L.append("### 0-1. 보고서필드 매핑 신뢰도 (⚠ 커버리지 ≠ 정확도)")
     L.append("")
@@ -727,11 +822,11 @@ def write_md(rows, mkt, mem):
     def emit_table(title, subset):
         L.append(f"### {title} ({len(subset)})")
         L.append("")
-        L.append("| 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 |")
-        L.append("|---|---|---|---|---|---|---|---|---|---|---|")
+        L.append("| 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 |")
+        L.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
         for r in subset:
             fx = (r[10] or "").replace("|", "\\|")
-            L.append(f"| `{r[0]}` | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | `{r[7]}` | `{r[8]}` | `{r[9]}` | {fx} | {r[11]} |")
+            L.append(f"| `{r[0]}` | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | `{r[7]}` | `{r[8]}` | `{r[9]}` | {fx} | {r[11]} | {r[12]} |")
         L.append("")
 
     L.append("## 1. 지표 → GOLD 전체 매핑")
@@ -845,6 +940,8 @@ def write_xlsx(rows, mkt, mem):
 
 # ─────────────────────────────── main ───────────────────────────────
 def main():
+    global CENSUS_IDX
+    CENSUS_IDX = load_census()
     rows, num2base, derived, num2metricnum = build_metric_rows()
     indices = build_field_index(rows)
     mkt = map_report_fields(DOC_MKT, indices, "mkt")
