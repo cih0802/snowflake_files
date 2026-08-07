@@ -225,10 +225,36 @@ VERDICT_PREF = ["조립가능", "집계필요", "판정불가(SV파생)",
                 "배분규칙필요", "형제팩트중복", "도달불가", "grain부정합",
                 "값없음", "타원천", "원천부재", "판정불가"]
 
+# 🔴 [2026-08-07 O48] **생성기 간 출력 문자열 계약**(O46 §3-① · P92).
+#   `05` 생성기(`gen_metric_gold_mapping.py`)는 SV 파생 지표의 GOLD 매핑을 이 접두로 시작하는
+#   문자열로 쓰고, 이 검사기는 그 접두로 「물리 컬럼이 아님」을 판정한다.
+#   접두가 한쪽에서만 바뀌면 **에러 없이 분류만 무너진다**(실측: SV파생 67→10 · 판정불가 9→103).
+#   ⇒ 상수로 고정하고 `scripts/test_generators.py::T3` 가 양쪽 생성기·산출물에서 계약을 검사한다.
+SV_METRIC_PREFIX = "SV metric"
+
 
 
 def cs_of(gold, t):
     return set(gold.get(t, []))
+
+
+# 🔴 [2026-08-07 O48] 앵커 선정을 **모듈 함수로 분리**했다 — 회귀 테스트 대상이기 때문이다.
+#   O47-B 사고(동점을 삽입 순서로 깨서 34행이 요동)는 오류를 내지 않는 **조용한 실패**였고
+#   재빌드로 우연히 발견됐다. main() 안의 인라인 3줄은 테스트할 수 없다 →
+#   `scripts/test_generators.py::T1` 이 이 함수에 **삽입 순서를 섞은 동일 집계**를 넣어
+#   결과 동일함을 검사한다. 함수 시그니처·반환형이 곧 계약이다.
+def pick_anchor(hit):
+    """Counter/dict {fact: hit} → (anchor, tie_label).
+
+    정렬 = (hit 내림차순, 팩트명 오름차순) → **삽입 순서와 무관하게 결정적**.
+    동점이 둘 이상이면 tie_label 에 `A / B` 로 노출한다(경합 사실 자체가 판정이다).
+    """
+    ranked = sorted(dict(hit).items(), key=lambda kv: (-kv[1], kv[0]))
+    if not ranked:
+        return None, ""
+    top = ranked[0][1]
+    tie = [f for f, n in ranked if n == top]
+    return ranked[0][0], (" / ".join(tie) if len(tie) > 1 else "")
 
 
 def main():
@@ -336,10 +362,8 @@ def main():
             #   → ① 정렬을 **(hit 내림차순, 팩트명 오름차순)** 으로 고정해 재현 가능하게 한다.
             #     ② 동점이면 **그 사실 자체를 판정으로 노출**한다 — 「혼합섹션」이며 한 표로 만들 수
             #        없다는 것이 정답이다(앵커를 하나 골라 나머지를 「도달불가」로 적으면 거짓이 된다).
-            ranked = sorted(hit.items(), key=lambda kv: (-kv[1], kv[0]))
-            anchor = ranked[0][0] if ranked else None
-            tie = [f for f, n in ranked if ranked and n == ranked[0][1]]
-            anchor_tie = " / ".join(tie) if len(tie) > 1 else ""
+            #   🔴 [2026-08-07 O48] 로직은 `pick_anchor()` 로 분리했다 — 회귀 테스트 대상이다.
+            anchor, anchor_tie = pick_anchor(hit)
             for r in frs:
                 # 🔴 앵커 산정과 필드 판정 **양쪽 모두** 교정 매핑을 써야 한다.
                 #   한쪽만 쓰면 앵커는 옛 팩트인데 필드는 새 팩트를 가리켜 전부 grain부정합이 된다.
@@ -637,7 +661,7 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
         return "원천부재", gmap.lstrip("⛔ ").strip()
     if not obj:
         return "판정불가", "GOLD 매핑이 물리 컬럼 형태가 아니다(미정·비고 등)"
-    if gmap.startswith("SV metric") or obj == "SV":
+    if gmap.startswith(SV_METRIC_PREFIX) or obj == "SV":
         return "판정불가(SV파생)", "SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다"
     if not anchor:
         return "판정불가", "이 섹션에 앵커 팩트가 없다(전부 차원·SV)"
