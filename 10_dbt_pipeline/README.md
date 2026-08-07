@@ -75,6 +75,9 @@ _Co-authored with CoCo_
 ### 🔴 `gold.fact` 에 `on_schema_change: fail` 적용 (O40-B · P82)
 
 **왜**: 기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러도 워닝도 없이 버린다.**
+🟢 **WARN 내역 정본** = `20_issue/50_dbt_파이프라인_미결조치.md` §WARN 27건 전량 목록 ·
+근본원인 = `20_issue/00_INDEX_이슈원장.md` O41 §잔여① (고아 회원 9,247명 단일 원인 · 실결함은 `PART_STATUS` 1건뿐).
+
 이번에 실제로 겪었다 — O40 에서 컬럼 2종을 추가하고 build 가 `PASS=370 WARN=27 ERROR=0 SKIP=0` 으로
 끝났는데 `INSERT` 가 대상 테이블의 **56컬럼만** 써서 신규 컬럼이 생기지 않았다.
 🔴 **"ERROR=0" 은 성공 신호가 아니었다.**

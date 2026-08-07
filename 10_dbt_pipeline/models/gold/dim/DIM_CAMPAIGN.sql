@@ -58,12 +58,20 @@ select
     p.PARENT_NM                                   as PARENT_CAMPAIGN_NAME,
     -- [2026-08-05 O37] 홍보방법 라벨. 원천 코드가 없으면 NULL — '(미매핑)'으로 창작하지 않는다(P21).
     cp.DTL_CD_NM                                  as PROMO_METHOD_NAME,
+    -- [2026-08-06 O45] 🔴 마케팅캠페인 **conformed FK**(물리 위치 = 맨 끝, ALTER ADD COLUMN 규약).
+    --   `MARKETING_CAMPAIGN` 은 라벨이라 광고 팩트가 참조할 수 없었다 → 광고↔CRM 결합 불가(O44).
+    --   실측: 브리지 조인 `MK_CMPGN_CD = MKTG_CMPGN_NM::varchar` **33,915/33,915 = 100% 해소** ·
+    --   개발실적 커버리지 **2,278,685/2,291,878 = 99.42%**.
+    COALESCE(mk.MKTG_CAMPAIGN_SK, 0)              as MKTG_CAMPAIGN_SK,
     {{ gold_meta('CRM') }}
 from c
 left join parent p      on p.PARENT_CD  = c.UPPER_CMPGN_CD
 left join code_promo cp on cp.DTL_CD_ID = c.PR_MTH_CD
+-- [2026-08-06 O45] MKTG_CAMPAIGN_BK 는 차원에서 유일이라 fan-out 0.
+left join {{ ref('DIM_MARKETING_CAMPAIGN') }} mk
+       on mk.MKTG_CAMPAIGN_BK = TO_VARCHAR(c.MKTG_CMPGN_NM)
 
 union all
 -- unknown 멤버(SK=0): 팩트 CAMPAIGN_SK=0(미매핑) 조인 유실 방지
-select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL,
+select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0,
     {{ gold_meta('CRM') }}

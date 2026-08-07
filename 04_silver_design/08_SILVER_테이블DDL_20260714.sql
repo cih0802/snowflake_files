@@ -963,3 +963,23 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
 ) COMMENT = 'S-7 신원 브리지(교차소스 유일예외). GA4_IDENTITY ↔ CRM_MEMBER 자연키 해소. SK없음(GOLD 소관). 미매칭 보존';
+
+
+-- ############################################################################
+-- [2026-08-06 O45] 신규 SILVER 테이블 1종 — 마케팅캠페인 마스터
+-- ----------------------------------------------------------------------------
+-- Q16 「MKTG_CMPGN_NM 전건 NULL」 오진 철회의 산물. 실측: 브리지 조인 100% 해소 ·
+-- AGENCY 광고 캠페인명과 이름 일치 76/105(72.4%) → 광고행 89.7% 도달.
+-- 실행 스크립트 정본 = 03_top-down_gold/O45_ASSEMBLY_AXES.sql §1
+-- ############################################################################
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
+    MK_CMPGN_CD        VARCHAR       COMMENT 'PK. 마케팅캠페인 코드. TM_CM_CMPGN_MNG.MKTG_CMPGN_NM(NUMBER)의 문자 표현과 조인된다',
+    MK_CMPGN_NM        VARCHAR       COMMENT '마케팅캠페인명. AGENCY 광고 CAMPAIGN_NM 과 이름 매칭되는 축',
+    USE_YN             VARCHAR       COMMENT '사용여부(원천 그대로 — 폐지분도 과거 실적에 붙으므로 제외하지 않는다)',
+    RM                 VARCHAR       COMMENT '비고',
+    DW_SOURCE_SYSTEM   VARCHAR       COMMENT '원천 시스템',
+    DW_LOAD_TS         TIMESTAMP_NTZ COMMENT '적재 시각',
+    DW_UPDATE_TS       TIMESTAMP_NTZ COMMENT '갱신 시각',
+    DW_BATCH_ID        VARCHAR       COMMENT '배치 식별'
+)
+COMMENT = '[O45] 마케팅캠페인 마스터(323행). AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천.';

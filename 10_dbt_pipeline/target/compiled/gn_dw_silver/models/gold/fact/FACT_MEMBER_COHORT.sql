@@ -28,6 +28,11 @@
 --   인 회원에 대해서만 1 이 된다. 소비 끝단이 분모를 `ACQ_MEMBERS` 로 잘못 골라도 분자가
 --   이미 관측 가능 집합으로 제한돼 있어 과소추정 방향으로만 틀린다(과대추정 불가).
 --
+-- [2026-08-06 O45] 확장: `ACQ_ORG_SK`·`ACQ_SPONSORSHIP_SK` 2축 추가 → 이 팩트가 뷰
+--   `DIM_MEMBER_ACQUISITION` 을 통해 **회원 귀속 차원**으로 소비된다. `FMM`·`FSE`·`FEP` 가
+--   `MEMBER_DK` 1:1 조인으로 캠페인·부서·후원사업을 분해할 수 있다(O44 차단 41필드·11섹션 해소).
+--   🔴 O8(다중귀속) 을 임의로 푼 것이 아니다 — **「획득 시점」이라는 명시 규칙**을 쓴 것이다.
+--
 -- 상류 = `FACT_MEMBER_EVENT`(GOLD). SILVER 를 다시 읽지 않는다 — FME 가 이미 개발∪중단을
 --   union 하고 conformed SK·사건시점 속성·중단사유 라벨을 확정했으므로 재구현은 드리프트를 만든다.
 --
@@ -56,6 +61,10 @@ dev as (
 acq_ranked as (
     select
         MEMBER_DK, CAMPAIGN_SK, DATE_SK, DVLP_DIV_CD,
+        -- [2026-08-06 O45] 획득 부서·획득 후원사업. FME 가 conformed SK 로 확정한 축을 승계한다
+        --   (SILVER 재조회 금지 — 재구현은 드리프트를 만든다). `SPONSORSHIP_SK` 는 O45 에서
+        --   FME 에 실배선됐다(종전 전건 0 은 O8 문제가 아니라 **배선 누락**이었다).
+        ORG_SK, SPONSORSHIP_SK,
         AGE_AT_EVENT, AGE_BAND_AT_EVENT, AREA_CD_AT_EVENT, REGION_AT_EVENT,
         SEX_AT_EVENT, GENDER_AT_EVENT, SPNSR_AMT,
         case when DVLP_DIV_CD = '1' then 'NEW' else 'FALLBACK' end as ACQ_BASIS,
@@ -115,6 +124,8 @@ joined as (
         a.SEX_AT_EVENT                                              as ACQ_SEX_CD,
         a.GENDER_AT_EVENT                                           as ACQ_GENDER,
         a.SPNSR_AMT                                                 as ACQ_SPNSR_AMT,
+        coalesce(a.ORG_SK, 0)                                       as ACQ_ORG_SK,
+        coalesce(a.SPONSORSHIP_SK, 0)                               as ACQ_SPONSORSHIP_SK,
         -- 유효 중단일이 없고 무효 일자 중단행만 있으면 0(날짜 미상)으로 라우팅. 중단 이력이
         -- 전혀 없거나 획득 전 중단만 있으면 NULL(미중단) — 0 과 NULL 은 다른 뜻이다(P21).
         coalesce(sf.FIRST_STOP_VALID,
@@ -138,7 +149,8 @@ final as (
     select
         MEMBER_DK, ACQ_CAMPAIGN_SK, ACQ_DATE_SK, ACQ_BASIS, ACQ_DVLP_DIV_CD,
         ACQ_AGE_CD, ACQ_AGE_BAND, ACQ_AREA_CD, ACQ_REGION, ACQ_SEX_CD, ACQ_GENDER,
-        ACQ_SPNSR_AMT, FIRST_STOP_DATE_SK, FIRST_STOP_REASON_NM,
+        ACQ_SPNSR_AMT, ACQ_ORG_SK, ACQ_SPONSORSHIP_SK,
+        FIRST_STOP_DATE_SK, FIRST_STOP_REASON_NM,
         -- 유지기간 = 중단일 − 획득일. 🔴 미중단은 NULL(우절단 관측이다 — 0 이나 현재까지
         --   경과일로 채우면 평균 유지기간이 조용히 틀린다).
         case when ACQ_DATE is not null and FIRST_STOP_DATE is not null
@@ -170,8 +182,10 @@ select
     ACQ_SPNSR_AMT, FIRST_STOP_DATE_SK, FIRST_STOP_REASON_NM, TENURE_DAYS,
     IS_12M_OBSERVABLE, ACQ_MEMBERS, STOPPED_MEMBERS, STOPPED_12M_MEMBERS,
     OBSERVABLE_12M_MEMBERS,
+    -- [2026-08-06 O45] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
+    ACQ_ORG_SK, ACQ_SPONSORSHIP_SK,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '70585b41-f46e-46ce-b6ba-556600f2d3c3'                    AS DW_BATCH_ID
+    'b21b7934-7c9a-4bb8-bfb2-a3d18e0205f5'                    AS DW_BATCH_ID
 from final

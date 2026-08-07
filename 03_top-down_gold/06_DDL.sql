@@ -1,16 +1,24 @@
--- GN_DW.GOLD 스키마 전체 DDL(27개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
+-- GN_DW.GOLD 스키마 전체 DDL(31개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
 -- Co-authored with CoCo
 /*
 ================================================================================
-  GN_DW.GOLD — 전체 테이블 DDL (27개: DIM 15 + FACT 12)
-  작성일   : 2026-07-02 (컬럼 COMMENT: 2026-07-03 / 배포·적재: 2026-07-20 / 광고 위성 3종 증설: 2026-07-28 순서9-I)
+  GN_DW.GOLD — 전체 테이블 DDL (31개: DIM 17 + FACT 14)
+  작성일   : 2026-07-02 (컬럼 COMMENT: 2026-07-03 / 배포·적재: 2026-07-20 / 광고 위성 3종 증설: 2026-07-28 순서9-I
+             / **O45 조립축 증설: 2026-08-06** — DIM_MARKETING_CAMPAIGN·FACT_MEMBER_FEE 신설 + 신규 컬럼 3 + FK 8)
   실측대조 : 2026-07-29 — INFORMATION_SCHEMA GOLD = BASE TABLE 27 + VIEW 12, FK 38 · 본 파일과 전 컬럼 일치.
+             **2026-08-06 재대조 — BASE TABLE 31 + VIEW 16, FK 50 · 본 파일과 전 컬럼·순서 일치(기계 대조).**
+             (대조 방법: 06_DDL 파싱 결과 31테이블 vs INFORMATION_SCHEMA 31테이블 · 컬럼명·순서 불일치 0 ·
+              선언 FOREIGN KEY 50 = 라이브 50. ⚠️ 초안에 「FK 53」이라 적었던 것은 미측정 오기였다 → 교정.)
+  🔴 재현성 : 이 파일 + `04_silver_design/08_SILVER_테이블DDL_20260714.sql` + `dbt build` 만으로
+             신규 환경이 현재 구조와 동일하게 재현된다. O45 임시 스크립트(`O45_ASSEMBLY_AXES.sql`)는
+             본 파일에 **전량 이관 완료**되어 `_archive/` 로 이관했다(2026-08-06).
   참고 문서 : 03_top-down_gold/03_테이블 설계.md(DEC-8~13) · 09_빅테이블 VIEW.md(WIDE VIEW 12)
                05_필드 인벤토리.md · 08_silver의존.md
 --------------------------------------------------------------------------------
   실행 규칙
   ─────────────────────────────────────────────────────────────────────────────
-  1. DIM 15개를 모두 생성한 뒤 FACT 12개를 생성한다.
+  1. DIM 17개를 모두 생성한 뒤 FACT 14개를 생성한다. [2026-08-06 O45 로 15/12 → 17/14]
+     신규 DIM = DIM_MARKETING_CAMPAIGN · 신규 FACT = FACT_MEMBER_FEE.
   2. DIM_DATE → DIM_ORG → DIM_MEMBER → 나머지 DIM → FACT 순서 준수.
      FACT 내부는 코어 FACT_AD_PERFORMANCE 를 위성 3종(FAD_B·FAD_D·FAD_BC)보다 먼저 생성.
   3. FK_타깃에 '※비강제' 표기된 컬럼은 FOREIGN KEY 제약 없이 일반 컬럼으로 생성.
@@ -203,8 +211,38 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_CAMPAIGN (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-06 O45] 마케팅캠페인 conformed FK.
+    --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다** — 라이브 환경에서는 `ALTER TABLE ADD COLUMN`
+    --      으로 추가되어 물리 ordinal 이 **맨 끝(20)** 이 되었다(실측). 이 파일에서 감사컬럼 앞에
+    --      적으면 신규 환경 재구축 시 컬럼 순서가 라이브와 달라져 dbt 모델 SELECT 순서와 어긋난다.
+    --      ⚠️ 2026-08-06 최초 작성 시 감사컬럼 **앞**에 적어 두었던 것을 실측(ordinal 20) 후 교정했다.
+    --   🔴 MARKETING_CAMPAIGN 은 **라벨**이라 광고 팩트가 참조할 수 없었다 → 광고↔CRM 결합 전면 불가(O44).
+    --   실측: 브리지 조인 `MK_CMPGN_CD = MKTG_CMPGN_NM::varchar` 33,915/33,915 = **100% 해소** ·
+    --         개발실적 커버리지 2,278,685/2,291,878 = **99.42%**.
+    MKTG_CAMPAIGN_SK    NUMBER(38,0)    COMMENT '[O45] 마케팅캠페인 대리키 (FK→DIM_MARKETING_CAMPAIGN). 광고(AGENCY)와 개발실적(CRM)을 잇는 conformed 축. 0=미매핑. 🔴개발캠페인 grain 으로 광고비를 내리면 181.6배 팬아웃(218,402행 → 39,669,103행 · 마케팅캠페인당 개발캠페인 평균 120.4·최대 901, 광고 도달 81개 한정) — 결합은 마케팅캠페인 grain 에서만 할 것'
 ) COMMENT = '캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN. PARENT_CAMPAIGN·PROMO_METHOD 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)';
+
+
+-- ============================================================================
+-- DIM 17: DIM_MARKETING_CAMPAIGN — 마케팅캠페인 conformed 차원 [2026-08-06 O45 신설]
+-- ----------------------------------------------------------------------------
+-- 🔴 AGENCY(광고) ↔ CRM(개발실적) 결합이 성립하는 **유일한 grain**. `DIM_CAMPAIGN.MARKETING_CAMPAIGN`
+--    은 라벨이라 광고 팩트가 참조할 수 없었다 → 독립 차원으로 승격해 양측이 같은 SK 를 쓰게 한다.
+-- ⚠️ 생성 순서: `DIM_CAMPAIGN`·`FACT_AD_PERFORMANCE` 가 이 차원을 FK 참조하지만 FK 는 하단
+--    [관계 제약] 에서 ALTER 로 선언하므로 생성 순서 제약은 없다. 다만 논리상 DIM 구간에 둔다.
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (
+    MKTG_CAMPAIGN_SK    NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '대리키 = gold_sk(MK_CMPGN_CD). 0 = (미매핑) Unknown 멤버',
+    MKTG_CAMPAIGN_BK    VARCHAR         COMMENT '업무키 = 원천 MK_CMPGN_CD (SILVER.CRM_MARKETING_CAMPAIGN)',
+    MKTG_CAMPAIGN_NAME  VARCHAR         COMMENT '마케팅캠페인명. 🔴광고측(AGENCY CAMPAIGN_NM)과의 **조인 키**다 — 이름매칭이 유일 경로다(AGENCY 원천 3종에 캠페인 코드 컬럼 0개). 실측 광고 도달 218,402/243,545 = 89.7% · 미도달 10.3% 는 SK=0 으로 간다',
+    USE_YN              VARCHAR         COMMENT '사용여부(원천 그대로 — 폐지분도 과거 실적에 붙으므로 제외하지 않는다)',
+    DEV_CAMPAIGN_CNT    NUMBER(38,0)    COMMENT '🔴**팬아웃 경고축**: 이 마케팅캠페인에 매달린 개발캠페인 수. 1 보다 크면 개발캠페인 단위로 광고비를 내릴 때 그 배수만큼 복제된다. 실측 2026-08-06 — 이 컬럼의 모집단 = 마스터 전체 323개: 평균 105.0 · 최대 13,176 · 합 33,915 / 광고 도달분 81개 한정: 평균 120.4 · 최대 901 · 합 9,750 / naive 조인 218,402행 → 39,669,103행 = **181.6배**. 결합은 마케팅캠페인 grain 에서만 할 것',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '[O45] 마케팅캠페인 conformed 차원 (323행+Unknown). 광고 ↔ CRM 후원 결합이 성립하는 **유일한 grain**. 실측 2026-08-06: 광고 도달 89.7%(218,402/243,545) · 개발실적 도달 99.42% · 마케팅캠페인 grain 개발단가 73,842원. 🔴개발캠페인 grain 으로 내리면 181.6배 팬아웃(218,402행 → 39,669,103행) — 현업 광고비 배분 규칙 필요(Q10 재정의).';
 
 
 -- ============================================================================
@@ -669,8 +707,13 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고 성과 코어 팩트 (grain=AD_PERF_DK, 실측 235,572행 · 분석축 PERF_DATE × CAMPAIGN × AD_CREATIVE × DEVICE). 3원천 공통속성만 보유 — 유형 고유속성은 위성 FACT_AD_BROADCAST/DIGITAL/BROADCAST_CASE';
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-06 O45] 마케팅캠페인 축. **선언 위치 = 감사컬럼 뒤**(라이브 물리 ordinal 19 실측).
+    --   🟢 원천은 살아 있었다: `SILVER.AGENCY_AD_PERFORMANCE.CAMPAIGN_NM` 채움 240,291/243,545(98.7%)·110종.
+    --      GOLD 로 전파되지 않은 **배선 누락**이었다(원천 부재가 아니다 — Q10 과 별개다).
+    --   ⚠️ `CAMPAIGN_SK`(개발캠페인)는 여전히 전건 센티넬이다. 이 컬럼이 그 대체가 아니라 **다른 grain** 이다.
+    MKTG_CAMPAIGN_SK    NUMBER(38,0)    COMMENT '[O45] 마케팅캠페인 대리키 (FK→DIM_MARKETING_CAMPAIGN). 광고↔CRM 결합축. 도달 89.7%(218,402/243,545) · 미도달 10.3%는 0(미매핑) — 이 버킷을 「미집행」으로 읽지 말 것. 🔴개발캠페인(CAMPAIGN_SK) grain 결합 금지 — 181.6배 팬아웃(218,402행 → 39,669,103행, 실측 2026-08-06)'
+) COMMENT = '광고 성과 코어 팩트 (grain=AD_PERF_DK, 실측 243,545행 · 분석축 PERF_DATE × MKTG_CAMPAIGN × AD_CREATIVE × DEVICE). 3원천 공통속성만 보유 — 유형 고유속성은 위성 FACT_AD_BROADCAST/DIGITAL/BROADCAST_CASE';
 
 
 -- ============================================================================
@@ -872,8 +915,60 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-06 O45] 획득 귀속축 2종. **선언 위치 = 감사컬럼 뒤**(라이브 물리 ordinal 25·26 실측).
+    --   🔴 이 팩트가 뷰 `GOLD.DIM_MEMBER_ACQUISITION` 을 통해 **회원 귀속 차원**으로 소비된다 —
+    --      FMM·FSE·FEP·FME 가 `MEMBER_DK` 1:1 조인으로 캠페인·부서·후원사업을 분해한다.
+    --      팬아웃 0 실측(FMM 40,054,883 · FSE 38,470,780 · FEP 1,134,126 · FME 4,633,105 전부 불변).
+    --   🔴 O8(다중귀속 규칙 미확정)을 임의로 푼 것이 아니라 **「획득 시점」 명시 규칙**을 쓴 것이다.
+    ACQ_ORG_SK              NUMBER(38,0)    COMMENT '[O45] 획득 시점 담당조직 대리키 (FK→DIM_ORG). 0=미매핑. ⚠️ 「현재 소속」이 아니라 **획득 시점** 값이다',
+    ACQ_SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '[O45] 획득 시점 후원사업 대리키 (FK→DIM_SPONSORSHIP). 0=미매핑. ⚠️ 회비 납입 대상 후원사업(`FACT_MEMBER_FEE.SPONSORSHIP_SK`)과 **의미가 다르다** — 같은 라벨이 두 축이다'
 ) COMMENT = '회원 획득 코호트 팩트 (1행=1회원 · grain 유일이라 PK 선언). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 🔴 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다. 개발 이력이 없는 중단회원은 획득 캠페인이 없어 미포함(중단 총계는 FACT_MEMBER_EVENT).';
+
+
+-- ============================================================================
+-- FACT 14: FACT_MEMBER_FEE — 회비 분해 팩트 [2026-08-06 O45 신설]
+-- ----------------------------------------------------------------------------
+-- grain = MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK × FEE_DIV_CD × PAYMENT_TYPE × SETLE_CD
+--         (실측 40,262,076행 · 중복 그룹 0 = GATE-D2 · 2026-08-07 O45-C 재빌드 후)
+-- 🔴 왜 FMM 에 컬럼 추가가 아닌가: FMM grain = 회원×월 정확히 1행(40,054,883 = distinct member-month).
+--    후원사업을 붙이면 회원-월-후원사업 39,563,730 vs 회원-월 37,148,615 = 6.5% 증가로 **grain 이 깨진다.**
+--    **grain 이 다르면 팩트를 나눈다.**
+-- 🔴 **FMM 과 같은 표에서 합산 금지 — 동일 원천(SILVER.CRM_PAYMENT_BILLING) 이중계상이다.**
+--    실측 증거: `FMM ⋈ FMF (MEMBER_DK, MONTH_KEY)` → 행 40,054,883 → 40,262,076 이고
+--    `SUM(FMM.BILLED_AMT)` 891,959,790,888 → **1,056,821,121,099 (+18.5% 과대계상)**.
+--    ⇒ 회원-월 요약이면 FMM, 회비 분해(납입방식·회비구분·납입일)면 FMF **중 하나만** 앵커로 쓴다.
+-- 🔴 PK 미선언이 의도다: grain 7종 중 `FEE_DIV_CD` 가 기부금 행에서 원천 NULL 이라 PK(=NOT NULL 의미)
+--    선언은 사실과 어긋난다. 유일성은 dbt GROUP BY + O45_VERIFY GATE-D2 로 보증한다.
+-- ✅ O45-C 해소(2026-08-06 · 사용자 결정 = FMF 에 필터 적용): 모델에 `where MBER_NO is not null` 을
+--    적용해 **FMM 규약과 일치**시켰다. 제외 대상 = 회원 미귀속 불량 5행(`SUM(PAY_AMT)` 34,672,700 ·
+--    2011-03/04 납입 · `RQEST_AMT` NULL). 회원 grain 팩트에서 `MEMBER_DK` NULL 행은 `DIM_MEMBER` 로
+--    조인되지 않아 어차피 소비 불가이며, 총계만 SILVER 원표와 맞아 보이게 만든다.
+--    ✅ [2026-08-07 재빌드 완료 · 기대값 전부 재현] 행 40,262,078 → **40,262,076** · `PAID_FEE` 895,212,981,808 →
+--    **895,178,309,108** (= FMM 과 동일) · `BILLED_AMT`·`PAID_FEE_BILLABLE`·`UNPAID_BILLED_AMT` 불변.
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
+    MONTH_KEY           NUMBER(6,0)     COMMENT '회비월 YYYYMM (FK→DIM_DATE.MONTH_KEY 개념축). 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 — FMM 과 동일 규칙',
+    MEMBER_DK           VARCHAR(10)     COMMENT '회원 자연키 (FK→DIM_MEMBER.MEMBER_DK). 🔴VARCHAR(10) 규약(O12/AC-1) — 원천 MBER_NO 최대길이 9 실측',
+    SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '🔴**납입 대상** 후원사업 대리키 (FK→DIM_SPONSORSHIP). 원천 채움 99.83%. 획득 후원사업(FMC.ACQ_SPONSORSHIP_SK)과 **의미가 다르다**',
+    PAYMENT_SK          NUMBER(38,0)    COMMENT '결제수단 대리키 (FK→DIM_PAYMENT). ⚠️라벨 커버리지 99.3% — 원천 11종 중 5종은 코드그룹 미특정으로 0(미매핑). 원본은 SETLE_CD 참조(O45-B)',
+    FEE_DIV_CD          VARCHAR         COMMENT '회비구분 코드(PM010). 🔴기부금 행은 원천이 NULL — **결측이 아니라 해당없음**',
+    FEE_DIV_NAME        VARCHAR         COMMENT '회비구분명: 정기·선물금·일시·긴급구호 (PM010 라벨)',
+    PAYMENT_TYPE        VARCHAR         COMMENT '납입유형 = 회비/기부금. 🔴납부율·미납 분석은 회비만으로 스코프 — 기부금은 청구(RQEST_AMT)가 전건 NULL 이라 분모에 못 들어간다(O40)',
+    SETLE_CD            VARCHAR         COMMENT 'degen: 결제수단 원본 코드. 라벨 없는 5종(3·10·6·13·7 · 225,855행)을 잃지 않기 위해 보존 — 현업 코드그룹 확인 대상(O45-B)',
+    LAST_PAY_DATE_SK    NUMBER(8,0)     COMMENT '해당 조합의 **최종 납입일** (FK→DIM_DATE). 🔴시점 축이며 합계가 아니다. FMM 은 월 팩트라 「기준일(납입일)」은 이 팩트에서만 답한다',
+    LAST_BILL_DATE_SK   NUMBER(8,0)     COMMENT '해당 조합의 최종 청구일 (FK→DIM_DATE)',
+    BILLED_AMT          NUMBER(38,2)    COMMENT '청구액(원) = SUM(RQEST_AMT). FMM·SILVER 와 총계 일치 실측 = 891,959,790,888 (GATE-D)',
+    PAID_FEE            NUMBER(38,2)    COMMENT '납입 총액(원) = 회비 + 기부금. 🔴납부율 분자로 쓰지 말 것(O40). ⚠️O45-C: FMM 대비 +34,672,700(불량 5행 포함 차이)',
+    PAID_FEE_BILLABLE   NUMBER(38,2)    COMMENT '회비 납입액(원) — 납부율 분자 **정본**(O40). FMM 과 완전일치 실측 = 768,800,286,349',
+    UNPAID_BILLED_AMT   NUMBER(38,2)    COMMENT '미납 청구액(원) — DEC-3 정본 = PAY_STAT_CD IN (F, NULL) 인 청구액. 🔴차감식 아님. ⚠️조회 시점 스냅샷. FMM 과 완전일치 = 122,621,758,323',
+    BILLING_ROWS        NUMBER(38,0)    COMMENT '집계된 원천 회비행 수. 🔴금액도 「건수」도 아니다(정본 (건) 정의는 CONF-2 미결)',
+    UNPAID_FLAG         BOOLEAN         COMMENT '해당 조합에 미납 청구행이 하나라도 있는가(BOOLOR_AGG)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '[O45] 회비 분해 팩트. grain = 회원 × 회비월 × 후원사업 × 납입방식 × 회비구분 × 납입유형 × 결제수단(실측 40,262,076행 · 2026-08-07 확정). 🔴FACT_MEMBER_MONTHLY 와 **동일 원천**(SILVER.CRM_PAYMENT_BILLING)이므로 두 팩트를 같은 표에서 SUM 하면 이중계상이다 — 실측 조인 시 청구액이 891,959,790,888 → 1,056,821,121,099(+18.5%)로 부푼다. 납입방식·회비구분·납입일 축이 필요할 때만 이 팩트를 앵커로 쓰고, 그 외에는 FACT_MEMBER_MONTHLY 를 정본으로 쓸 것. measure 식은 FMM 과 동일(O40 정본).';
 
 
 -- ============================================================================
@@ -1061,6 +1156,36 @@ ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_DIM_DATE_ACQ
 ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_DIM_DATE_STOP
     FOREIGN KEY (FIRST_STOP_DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
 
+-- ----------------------------------------------------------------------------
+-- [2026-08-06 O45] 조립 축 신설분 FK 8종
+--   🔴 타입 정합 필수(P88): 참조 PK 와 **정확히 같은 타입**이어야 한다. 폭이 넓어도 실패한다.
+--      DIM_DATE.DATE_SK = NUMBER(8,0) · 그 외 대리키 = NUMBER(38,0).
+--      실제 실패 사례: `LAST_PAY_DATE_SK` 를 맨 NUMBER(=38,0)로 두어
+--      "Primary key and foreign key data type does not match" 발생.
+--   ⚠️ 라이브 환경 적용 시에는 `ADD CONSTRAINT` 만 실행한다(테이블 재생성 금지).
+-- ----------------------------------------------------------------------------
+-- FACT_MEMBER_FEE → 차원 4종
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_FEE ADD CONSTRAINT FK_FMF_SPONSORSHIP
+    FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_FEE ADD CONSTRAINT FK_FMF_PAYMENT
+    FOREIGN KEY (PAYMENT_SK) REFERENCES GN_DW.GOLD.DIM_PAYMENT (PAYMENT_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_FEE ADD CONSTRAINT FK_FMF_PAY_DATE
+    FOREIGN KEY (LAST_PAY_DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_FEE ADD CONSTRAINT FK_FMF_BILL_DATE
+    FOREIGN KEY (LAST_BILL_DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
+
+-- FACT_MEMBER_COHORT 획득 귀속축 2종
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_ACQ_ORG
+    FOREIGN KEY (ACQ_ORG_SK) REFERENCES GN_DW.GOLD.DIM_ORG (ORG_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT ADD CONSTRAINT FK_FMC_ACQ_SPONSORSHIP
+    FOREIGN KEY (ACQ_SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
+
+-- 마케팅캠페인 conformed 축 2종 (광고 ↔ CRM 결합의 유일 경로)
+ALTER TABLE GN_DW.GOLD.DIM_CAMPAIGN ADD CONSTRAINT FK_DIM_CAMPAIGN_MKTG
+    FOREIGN KEY (MKTG_CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (MKTG_CAMPAIGN_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE ADD CONSTRAINT FK_FAP_MKTG_CAMPAIGN
+    FOREIGN KEY (MKTG_CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (MKTG_CAMPAIGN_SK) NOT ENFORCED NORELY;
+
 -- ============================================================================
 -- [관계 제약 — 보류(FK 미선언)] 인수인계 필독
 -- ----------------------------------------------------------------------------
@@ -1134,3 +1259,69 @@ WHERE constraint_schema = 'GOLD'
 --  · 소비 계층(WIDE VIEW 12개)은 본 파일 범위 외 — 09_빅테이블 VIEW.md · 10_WIDE VIEW 코멘트.sql.
 --  · PENDING: VARCHAR 길이 등 타입 정밀화(정본 06_지표용어사전)는 미반영 — 운영 후 ALTER.
 -- ============================================================================
+
+
+-- ############################################################################
+-- [2026-08-06 O45] 보고서 섹션 조립 가능화 — 축 3종 + 팩트 1종
+-- ----------------------------------------------------------------------------
+-- 정본 이슈 = 20_issue/00_INDEX_이슈원장.md §O45 · 실행 스크립트 = 03_top-down_gold/O45_ASSEMBLY_AXES.sql
+-- 사후 검증 = 03_top-down_gold/O45_VERIFY.sql (build 후 필수)
+--
+-- 🔴 아래 4개는 `CREATE OR REPLACE` 로 만들지 않는다 — FK·GRANT·COMMENT 소실(순서9 G-1/G-2).
+--    신규 = CREATE TABLE IF NOT EXISTS · 기존 = ALTER TABLE ADD COLUMN(물리 위치 = 맨 끝).
+--    ⚠️ [2026-08-06 갱신] 종전 이 줄은 *"실제 DDL 본문은 O45_ASSEMBLY_AXES.sql 이 정본"* 이라고
+--    적혀 있었다 — 그 상태로 O45 스크립트를 아카이브하면 신규 테이블 2종·신규 컬럼 3종·FK 8종의
+--    DDL 이 **정본에서 사라진다**(실측: 이 파일에 CREATE 문 0건이었다). 따라서 **전량 이 파일로
+--    이관 완료**했고 이제 이 파일이 유일한 정본이다. 아래는 이관 내역 요약이다.
+--
+--  신규 GOLD.DIM_MARKETING_CAMPAIGN  (차원 17번째)
+--      MKTG_CAMPAIGN_SK(PK) · MKTG_CAMPAIGN_BK · MKTG_CAMPAIGN_NAME · USE_YN
+--      · DEV_CAMPAIGN_CNT(팬아웃 경고축) · 감사 4종
+--      → AGENCY(광고) ↔ CRM(개발실적) 결합이 성립하는 유일한 grain. 실측 광고 도달 89.7%.
+--
+--  신규 GOLD.FACT_MEMBER_FEE  (팩트 14번째)
+--      grain = MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × FEE_DIV_CD × PAYMENT_TYPE × PAYMENT_SK
+--      measure = BILLED_AMT · PAID_FEE · PAID_FEE_BILLABLE · UNPAID_BILLED_AMT · BILLING_ROWS
+--      🔴 FMM 에 컬럼을 붙이지 않은 이유: FMM grain = 회원×월 정확히 1행(40,054,883 = distinct
+--         member-month)이고 후원사업을 붙이면 회원-월-후원사업 39,563,730 vs 회원-월 37,148,615
+--         = 6.5% 증가로 grain 이 깨진다. **grain 이 다르면 팩트를 나눈다.**
+--      🔴 measure 식은 FMM 과 동일하다(O40 정본) → 총계 일치가 검증 관문이다(GATE-D).
+--         ⚠️ **이 서술은 2026-08-06 O45-C 해소로 비로소 참이 됐다** — 그전에는 불량 5행 취급이 갈려
+--            `PAID_FEE` 만 어긋났는데도 「완전 동일」이라 단정하고 있었다. 단정하는 서술은 검증과 함께 쓴다.
+--
+--  변경 GOLD.FACT_MEMBER_COHORT  +2 컬럼
+--      ACQ_ORG_SK · ACQ_SPONSORSHIP_SK  (물리 위치 = 맨 끝)
+--      → 이 팩트가 뷰 GOLD.DIM_MEMBER_ACQUISITION 을 통해 **회원 귀속 차원**으로 소비된다.
+--        FMM·FSE·FEP 가 MEMBER_DK 1:1 조인으로 캠페인·부서·후원사업을 분해한다(팬아웃 0 실측).
+--      🔴 O8(다중귀속 규칙 미확정)을 임의로 푼 것이 아니라 **「획득 시점」 명시 규칙**을 쓴 것이다.
+--
+--  변경 GOLD.DIM_CAMPAIGN  +1 컬럼 = MKTG_CAMPAIGN_SK
+--  변경 GOLD.FACT_AD_PERFORMANCE +1 컬럼 = MKTG_CAMPAIGN_SK
+--
+--  🔴 배선 교정(컬럼 추가 아님): GOLD.FACT_MEMBER_EVENT.SPONSORSHIP_SK
+--      종전 `0 as SPONSORSHIP_SK` 하드코딩 → 실배선. **O8 문제가 아니라 배선 누락**이었다:
+--      사건 grain 에서는 후원사업이 하나로 확정되므로 귀속 규칙이 필요 없고,
+--      원천 SILVER.CRM_MEMBER_DEV.SPNSR_BSNS_ID 는 채움 100% · DIM_SPONSORSHIP 고아 0 이다.
+--
+--  신규 뷰(구조 소유주 = dbt 모델. 이 파일에서 만들지 않는다)
+--      GOLD.DIM_MEMBER_ACQUISITION  — FACT_MEMBER_COHORT 위의 회원 귀속 차원 뷰
+--      GOLD.WIDE_MEMBER_FEE         — 회비 분해 소비뷰
+--
+--  🔴 타입 규약(2026-08-06 실행 중 발견 → 교정, P88)
+--      Snowflake FK 는 참조 PK 와 **타입이 정확히 일치**해야 한다. 폭이 넓기만 해도 실패한다:
+--        ALTER TABLE GOLD.FACT_MEMBER_FEE ADD CONSTRAINT FK_FMF_PAY_DATE ...
+--          → "SQL compilation error: Primary key and foreign key data type does not match"
+--        원인 = FMF.LAST_PAY_DATE_SK 를 맨 NUMBER(=NUMBER(38,0))로 선언했는데
+--               DIM_DATE.DATE_SK 는 NUMBER(8,0) 이다.
+--      따라서 신규 팩트/차원 작성 시 다음 4개는 **반드시 명시 폭**으로 쓴다:
+--        *_DATE_SK   NUMBER(8,0)    (= DIM_DATE.DATE_SK)
+--        MONTH_KEY   NUMBER(6,0)    (= DIM_DATE.MONTH_KEY · FMM·FBD·FTG-D/B 전부 동일)
+--        *_SK        NUMBER(38,0)   (= 전 차원 대리키)
+--        MEMBER_DK   VARCHAR(10)    (= DIM_MEMBER.MEMBER_DK · 전 팩트 동일)
+--      🔴 맨 `NUMBER`·맨 `VARCHAR` 는 각각 NUMBER(38,0)·VARCHAR(16777216) 으로 굳는다.
+--         컬럼 COMMENT 에 "VARCHAR(10) 규약"이라 써 두고 정작 선언은 맨 VARCHAR 였던 사례가
+--         이번에 실제로 발생했다 — **주석이 아니라 선언이 물리 타입을 만든다.**
+--
+--  🔴 FMF 는 PK 를 선언하지 않는다: grain 7종 중 FEE_DIV_CD 가 기부금 행에서 원천 NULL 이므로
+--      PK(=NOT NULL 의미) 선언은 사실과 어긋난다. 유일성은 dbt GROUP BY + GATE-D2 로 보증한다.
+-- ############################################################################

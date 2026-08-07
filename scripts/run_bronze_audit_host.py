@@ -112,6 +112,24 @@ LINEAGE_MAP = {
     ("events_", "platform"):  ("DEVICE_SK",    "FACT_GA_BEHAVIOR.sql"),
     ("events_", "traffic_source"): ("GA_SOURCE_SK", "FACT_GA_BEHAVIOR.sql"),
     ("events_", "event_name"):     ("GA_EVENT_SK",  "FACT_GA_BEHAVIOR.sql"),
+    # ── CRM 개명 계보 (2026-08-06 등재 · O38·O45 배선분) ──
+    # 🔴 P90 ②: 신규 객체를 만들면 이 등록부가 그 사실을 모른다. 아래 8건은 등재 전까지
+    #    전부 「SILVER까지만 · GOLD 미승격」으로 오판됐다(2026-08-06 실행에서 실측 확인).
+    #    근거는 dbt 모델 본문 대조이며 각 행에 GOLD 컬럼·모델을 명시한다.
+    # O45 마케팅캠페인 conformed 축 — 광고(AGENCY) ↔ 개발실적(CRM) 결합축
+    ("TM_CM_MKTNG_CMPGN_MNG", "MK_CMPGN_CD"): ("MKTG_CAMPAIGN_BK",   "DIM_MARKETING_CAMPAIGN.sql"),
+    ("TM_CM_MKTNG_CMPGN_MNG", "MK_CMPGN_NM"): ("MKTG_CAMPAIGN_NAME", "DIM_MARKETING_CAMPAIGN.sql"),
+    # 캠페인 마스터측 조인키(NUMBER) → 브리지 조인으로 SK 승격 (DIM_CAMPAIGN.sql:65)
+    ("TM_CM_CMPGN_MNG", "MKTG_CMPGN_NM"):     ("MKTG_CAMPAIGN_SK",   "DIM_CAMPAIGN.sql"),
+    # O38 실적부서 · O45 후원사업 배선 (개발/중단 사건 팩트)
+    ("TM_MM_FDRM_MBER_DVLP_AMT", "ACMSLT_DEPT_CD"): ("ORG_SK",          "FACT_MEMBER_EVENT.sql"),
+    ("TM_MM_FDRM_MBER_DVLP_AMT", "SPNSR_BSNS_ID"):  ("SPONSORSHIP_SK",  "FACT_MEMBER_EVENT.sql"),
+    # O45 회비 팩트 — 회비·기부금 UNION 양쪽에서 후원사업축이 올라온다(CRM_PAYMENT_BILLING)
+    ("TM_PM_MBRFEE_ACMSLT", "SPNSR_BSNS_ID"): ("SPONSORSHIP_SK", "FACT_MEMBER_FEE.sql"),
+    ("TM_PM_MBRFEE_ACMSLT", "MBRFEE_DIV_CD"): ("FEE_DIV_CD",     "FACT_MEMBER_FEE.sql"),
+    ("TM_PM_DNTN_DTLS",     "SPNSR_BSNS_ID"): ("SPONSORSHIP_SK", "FACT_MEMBER_FEE.sql"),
+    # 후원사업 마스터 → 차원 자연키
+    ("TM_CM_SPNSR_BSNS_INFO", "SPNSR_BSNS_ID"): ("SPONSORSHIP_BK", "DIM_SPONSORSHIP.sql"),
 }
 
 
@@ -299,6 +317,15 @@ def classify(table_name, col_upper, silver_cols, gold_cols, silver_refs, gold_re
         gcol, gmodel = lin
         hc = hardcoded.get((gmodel, gcol))
         if hc:
+            # 🔴 [2026-08-06] 브랜치별 상이를 「값미주입」으로 뭉개면 안 된다.
+            #   같은 모델이 UNION 브랜치별로 실조인과 센티넬을 함께 갖는 경우가 있다
+            #   (예: FACT_MEMBER_EVENT — DEV 브랜치는 ORG_SK·SPONSORSHIP_SK 실조인,
+            #    STOP 브랜치는 역할 불일치로 0 유지 = O38-B 결정 대기).
+            #   이때 「값미주입」이라 답하면 이미 산출 가능한 축을 불가로 안내한다(P61·P76).
+            if (gmodel, gcol) in real:
+                return ("노출됨(GOLD)", "중간(브랜치별 상이)",
+                        f"개명 적재 → GOLD `{gcol}` ({gmodel}) · "
+                        f"⚠️ 일부 브랜치는 센티넬 — {gmodel}:{hc['line']} `{hc['pattern']}`")
             return ("⚠️설계O·값미주입", "높음",
                     f"GOLD `{gcol}`({gmodel}) 자리 존재하나 하드코딩 — "
                     f"{gmodel}:{hc['line']} `{hc['pattern']}`")

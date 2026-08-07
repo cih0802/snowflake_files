@@ -55,7 +55,7 @@ LEFT JOIN (
 
 ---
 
-## 3. VIEW DDL (12개)
+## 3. VIEW DDL (14개)
 
 ### 1. WIDE_MEMBER_MONTHLY (FMM)
 
@@ -586,6 +586,37 @@ LEFT JOIN GN_DW.GOLD.DIM_SPONSORSHIP s  ON f.SPONSORSHIP_SK = s.SPONSORSHIP_SK;
 ```
 
 ---
+
+### 10. WIDE_MEMBER_FEE (FMF) — 회비 분해 소비뷰 [신설 2026-08-06 O45]
+
+> **왜 신설했는가**: `WIDE_MEMBER_MONTHLY` 는 회원×월 grain 이라 **후원사업·납입방식별 회비 분해가 불가**했다.
+> 후원사업을 붙이면 회원-월 37,148,615 → 회원-월-후원사업 39,563,730 (**+6.5%**) 로 grain 이 깨진다.
+> ⇒ grain 이 다르면 팩트를 나눈다. `FACT_MEMBER_FEE` 를 신설하고 이 뷰가 라벨을 비정규화한다.
+>
+> 🔴 **`WIDE_MEMBER_MONTHLY` 와 한 표에서 조인 금지** — 두 뷰는 같은 원천(`SILVER.CRM_PAYMENT_BILLING`)의
+> **형제 팩트**다. 실측: 조인 시 청구액 891,959,790,888 → **1,056,821,121,099 (+18.5%)**.
+>
+> - base: `FACT_MEMBER_FEE` (**40,262,076행** · 2026-08-07 O45-C 재빌드 확정)
+> - 조인: `DIM_SPONSORSHIP`(납입 대상 후원사업) · `DIM_PAYMENT`(결제수단) · `DIM_MEMBER_CURRENT`(회원 속성 스냅샷)
+>   · **`DIM_MEMBER_ACQUISITION`**(획득 귀속축 — `ACQ_*`)
+> - fan-out 검증: 뷰 행수 == FMF 행수 (GATE-C)
+> - 🔴 축 이름에 시점을 박았다: `SPONSORSHIP_NAME`(납입 대상) vs `ACQ_SPONSORSHIP_NAME`(획득) ·
+>   `ACQ_DEPARTMENT`(획득 부서) vs `WIDE_MEMBER_EVENT.ORG_DEPARTMENT`(사건 부서). **같은 라벨, 다른 축**이다.
+> - 상세 컬럼 = `05_필드 인벤토리.md` **FMF-W**
+
+### 11. DIM_MEMBER_ACQUISITION — 획득 귀속축 뷰 [신설 2026-08-06 O45]
+
+> WIDE 계열은 아니지만 **소비 계층 뷰**라 여기 등재한다(정본 컬럼 목록 = `05_필드 인벤토리.md` **D17**).
+>
+> - base: `FACT_MEMBER_COHORT` (1,585,949행 = 1행/회원)
+> - 🔴 **왜 테이블이 아니라 뷰인가**: 같은 사실을 두 곳에 저장하면 반드시 어긋난다(O43 P85).
+>   `FACT_MEMBER_COHORT` 가 **단일 정의 지점**이다.
+> - 🔴 **O8(다중귀속)을 임의로 푼 것이 아니다** — **「획득 시점」이라는 명시 규칙**을 쓴 것이다.
+>   회원-월 grain 의 다중 후원사업 귀속 문제는 여전히 미결이다(P87: 이슈는 grain 별로 쪼개서 판정한다).
+> - 팬아웃 실측(등록 전 측정 · 네 앵커 모두 조인 후 행수 불변):
+>   `FMM` 40,054,883 · `FSE` 38,470,780 · `FEP` 1,134,126 · `FME` 4,633,105
+> - 미매칭 645,136 = **1.61%**
+
 
 ## 4. 검증 쿼리
 

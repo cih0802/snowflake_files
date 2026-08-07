@@ -159,6 +159,11 @@ code_sex as (
     select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM013'
 ),
 
+-- [2026-08-06 O45] 후원사업 차원 조회. `SPONSORSHIP_BK`(=원천 SPNSR_BSNS_ID) 는 차원에서 유일하다.
+spb_lookup as (
+    select SPONSORSHIP_BK, SPONSORSHIP_SK from {{ ref('DIM_SPONSORSHIP') }}
+),
+
 dev as (
     select
         COALESCE({{ date_sk("TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')") }}, 0)  as DATE_SK,   -- 범위밖/NULL → 0 (순서9)
@@ -171,7 +176,13 @@ dev as (
              then {{ gold_sk(['d.CMPGN_CD']) }}
              else 0
         end                                                 as CAMPAIGN_SK,
-        0 as SPONSORSHIP_SK,
+        -- [2026-08-06 O45] 🔴 **후원사업 축 실배선** — 종전 `0` 하드코딩은 **배선 누락**이었다.
+        --   O8(다중귀속 규칙 미확정)과 무관하다: 사건 grain 에서는 그 사건의 후원사업이 하나로
+        --   확정되므로 귀속 규칙이 필요 없다. 실측(SILVER `CRM_MEMBER_DEV` 3,594,843행):
+        --     · `SPNSR_BSNS_ID` 채움 **100%** · distinct 29
+        --     · `DIM_SPONSORSHIP`(50종) 대조 **고아 코드 0 · 고아 행 0** → 완전 정합
+        --   산식은 DIM_SPONSORSHIP.SPONSORSHIP_SK 와 동일(`gold_sk(['SPNSR_BSNS_ID'])`).
+        COALESCE(sp.SPONSORSHIP_SK, 0)                       as SPONSORSHIP_SK,
         -- [2026-08-05 O38] 실적부서(ACMSLT_DEPT_CD) → ORG_SK. O10/Q7 확정축.
         --   미매칭 8행(실측)은 COALESCE 로 0(Unknown 멤버) 라우팅 — 고아 FK 를 만들지 않는다.
         COALESCE(og.ORG_SK, 0)                              as ORG_SK,
@@ -209,6 +220,8 @@ dev as (
     left join code_sex       csx on d.SEX = csx.DTL_CD_ID
     -- [2026-08-05 O38] ORG_DK 유일(1,315/1,315)이라 fan-out 0.
     left join org_lookup     og on og.ORG_DK = ABS(HASH(d.ACMSLT_DEPT_CD))
+    -- [2026-08-06 O45] 후원사업 축. SPONSORSHIP_BK 유일(51/51)이라 fan-out 0.
+    left join spb_lookup     sp on sp.SPONSORSHIP_BK = d.SPNSR_BSNS_ID
 ),
 
 stop as (

@@ -272,6 +272,37 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 | MBER_NO/MEMBER_DK→CRM_MEMBER 다수 (BLOCKING-1) | `_crm_schema.yml`·`_gold_ready_schema.yml`·bridge·ga4 | warn | 회원 마스터 전량입고 |
 | ~~AGENCY_AD_PERFORMANCE.AD_DATE not_null~~ | `_silver_bridge_schema.yml` | ✅ **error (순서9-D 승격완료)** | ~~널 여부 실데이터 검증~~ 완료(0/235,572) |
 
+### 🟢 WARN 27건 전량 목록 (2026-08-07 실측 · `PASS=375 WARN=27 ERROR=0 SKIP=0 TOTAL=402`)
+
+> 🔴 **이 표가 없어서 같은 질문이 두 번 나왔다.** 위 추적표는 **그룹 단위**(「다수」·「×2」)라
+> 「WARN 이 27인데 그 27이 무엇인가」에 답하지 못했다. 전량 목록을 정본으로 고정한다.
+> 분류 근거·근본원인은 `00_INDEX_이슈원장.md` **O41 §잔여①**(SILVER 21 + GOLD 6 = 27 · 고아 회원 **9,247명** 단일 원인).
+> ⚠️ **WARN 값을 해석하기 전에 그 테스트의 `where` 필터를 먼저 읽을 것** — 분모를 모르면 값의 의미를 모른다(P85 계열).
+
+| # | 테스트 | WARN | 계열 | 복귀 트리거 |
+|---:|---|---:|---|---|
+| 1 | `relationships CRM_EVENT_PARTICIPATION.EVENT_KEY → CRM_EVENT` | 263,611 | 이슈 E | 이벤트 마스터/키체계 확정 |
+| 2 | `relationships CRM_SEND_MEMBER.SNDNG_KEY → CRM_SEND_REQUEST` | 11,313 | 발송요청 | 발송요청 마스터 전량입고 |
+| 3 | `relationships CRM_SEND_RESULT.SNDNG_KEY → CRM_SEND_REQUEST` | 9 | 발송요청 | 〃 |
+| 4 | `relationships CRM_CAMPAIGN.SPNSR_BSNS_ID → CRM_SPONSORSHIP` | 18,091 | 후원사업 | 후원사업 마스터 전량입고 |
+| 5 | `relationships CRM_PAYMENT_BILLING.SPNSR_BSNS_ID → CRM_SPONSORSHIP` | 1 | 후원사업 | 〃 |
+| 6 | `relationships CRM_MEMBER.CMPGN_CD → CRM_CAMPAIGN` | 4 | 캠페인 | 캠페인 마스터 확정 |
+| 7 | `relationships CRM_MEMBER_DEV.CMPGN_CD → CRM_CAMPAIGN` | 18 | 캠페인 | 〃 |
+| 8 | `not_null CRM_SEND_MEMBER.MBER_NO` | 745 | 이슈 B/D | 마스터 재추출·불량ID 판정 |
+| 9 | `not_null CRM_PAYMENT_BILLING.MBER_NO` | 5 | 이슈 B/D | 〃 |
+| 10 | `not_null CRM_PAYMENT_BILLING.RQEST_RST_CD` ⚠️`where PAY_STAT_CD='F'` | 1,096 | O17 W1 사유 커버리지 | 사유 커버리지 회귀 감지용(0.018%) |
+| 11 | `not_null CRM_CAMPAIGN.CMPGN_TYPE1_NM` ⚠️`where CMPGN_TYPE1_BSN IS NOT NULL` | 740 | 순서9-C 캠페인축 | 기지 고아(코드 4종) |
+| 12 | `not_null CRM_CAMPAIGN.CMPGN_CTGR_NM` | 23 | 순서9-C 캠페인축 | 기지 고아 |
+| 13 | `accepted_values FACT_EVENT_PARTICIPATION.PART_STATUS` | 1 | 🟡 **실결함 — 2026-08-07 행 특정 완료** | 오염값 **`)` 2행**(distinct 1로 보고). ✅ **BRONZE 원본까지 4행 전량 식별**: `TD_MS_EVENT_PRTCPNT_DTL` — 회원 `0526424`×행사 `118`(SEQ 1087 NULL·1138 `)`) · 회원 `1377663`×행사 `153`(SEQ 3787 NULL·3839 `)`). **4행 전부 2024-02-14 · `FRST_RGSTR_ID='HomePage'` · `DIV/CHNL/PATH` = 100/100/200 동일** → 단일 입력 사고. 🟢 **정정값 후보 = `110`** — 두 행사의 정상값이 `110` **단일**(118: 2,598행 · 153: 5,174행 = **7,772/7,772 = 100%**). 🔴 인접 컬럼 전건 정상이라 **필드 밀림 아님**(O28 재분류 재확인). ⇒ **원천 정정 요청**(우리가 원천을 못 고친다) vs 센티넬 라우팅 결정 · 상세 = 00 §O28 |
+| 14~22 | `relationships *.MBER_NO → CRM_MEMBER` **SILVER 9건** — `CRM_SEND_MEMBER` 31,486 · `CRM_EVENT_PARTICIPATION` 9,480 · `CRM_PAYMENT_BILLING` 309 · `CRM_MEMBER_DEV` 270 · `GA4_IDENTITY` 172 · `CRM_MEMBER_STATUS_HIST` 85 · `CRM_PAYMENT_METHOD` 37 · `CRM_MEMBER_DISCONTINUE` 1 · `CRM_MEMBER_RESPONSOR` 1 | 41,841 | **BLOCKING-1** | 회원 마스터 전량입고 |
+| 23~27 | `relationships *.MEMBER_DK → DIM_MEMBER` **GOLD 5건** — `FACT_SERVICE_EVENT` 31,486 · `FACT_EVENT_PARTICIPATION` 9,480 · `FACT_MEMBER_EVENT` 271 · `FACT_MEMBER_MONTHLY` 199 · `FACT_MEMBER_COHORT` 16 | 41,452 | **BLOCKING-1 하류 전파** | 〃 |
+
+**해석**
+- 🟢 **27건 중 26건이 「알려진 외부 원천 미완전」**이고, 그중 **14건(SILVER 9 + GOLD 5)이 단일 원인** — 고아 회원 **9,247명**이 BRONZE 회원 마스터에 부재(O41 실측: 존재 0명·부재 9,247명, BRONZE 키 1,763,065 = SILVER `CRM_MEMBER` 1,763,065 완전 일치 → SILVER 로직 결함 아님).
+- 🟡 **실결함은 1건뿐** = #13 `PART_STATUS` 오염값 `)` 2행(O28 잔여).
+- 🟢 **2026-08-07 재확인 — 회귀 0**: 오늘 build 의 WARN 27 을 로그에서 전량 추출해 O41 기재 기지값과 대조, **항목·건수 전량 일치**. ⚠️ 구 실행분 로그는 `dbt.log.1` 로 로테이션돼 로그 대 로그 대조는 불가 — 문서 기재값 대조로 검증했다.
+- 🔴 **추적표 미등재였던 것 4건**(#10·#11·#12·#13) 과 **누락 1건**(#27 `FACT_MEMBER_COHORT` — O37 신설 팩트라 추적표가 「FMM·FEP·FME·FSE 4건」으로 굳어 있었다) 을 이 표로 흡수했다.
+
 ## ✅ [DONE 2026-07-15] 검토 항목 4 — 정제규칙 drift 없음
 SILVER 32모델 ↔ `04_silver_design/09_SILVER_적재쿼리_20260714.sql`(912줄) 정밀 대조 완료. **drift 0건 → 수정 없음.**
 - CRM 21/21·ERP 3/3·AGENCY 2/2·GA4 5/5·bridge 1/1 일치.

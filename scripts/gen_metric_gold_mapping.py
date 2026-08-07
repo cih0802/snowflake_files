@@ -1,962 +1,957 @@
-# 지표(지표번호) → GOLD 매핑 장표 생성기 (현업용, 215 지표 + 보고서필드 인벤토리 매핑)
+# gen_metric_gold_mapping.py — 지표 → GOLD 추적 장표 생성기
 # Co-authored with CoCo
 """
 GN_DW '지표 → GOLD' 추적(traceability) 장표 생성기.
 "원하는 지표가 GOLD 어디에(FACT/DIM/SV·물리컬럼·SV base) 어떻게 매핑됐는지" 한 눈에 본다.
 
-정본(근거) — 모두 파싱해 지표번호로 조인:
-  - 03_top-down_gold/02_지표 분류.md        (215 지표: 유형·소스·단위·배속 FACT/DIM/SV)
-  - 99_provided_definition/02_지표사전 공통.md (공통 162: 정의·정본 계산식)
-  - 99_provided_definition/03_지표사전 신규.md (신규 53: 정의·정본 계산식)
-  - 03_top-down_gold/04_SV파생 매핑.md       (derived 81 → 분자/분모 base + FACT, base 물리컬럼 카탈로그)
-  - scripts/gen_column_mapping.py            (GOLD 컬럼 → SILVER → BRONZE 계보 재사용)
-  - 99_provided_definition/04·05 보고서필드 인벤토리.md (보고서×필드 → 지표번호/GOLD 매핑)
+정본(근거) — 전부 파싱해 지표번호로 조인한다. **사실을 리터럴로 보관하지 않는다**(P85-①):
+  · 03_top-down_gold/02_지표 분류.md            (215 지표: 유형·소스·단위·배속)
+  · 99_provided_definition/02_지표사전 공통.md    (공통 162: 구분·정의·정본 계산식)
+  · 99_provided_definition/03_지표사전 신규.md    (신규 53: 〃)
+  · 03_top-down_gold/04_SV파생 매핑.md          (derived → 분자/분모 base + FACT · base 카탈로그)
+  · 03_top-down_gold/05_필드 인벤토리.md         (보고서필드 라벨 → GOLD 물리컬럼 정본)
+  · 99_provided_definition/04·05_보고서필드 인벤토리.md (보고서 × 필드)
+  · 30_output_share/04_컬럼계보매핑.csv          (GOLD → SILVER → BRONZE 계보. 🔴 **산출물 파일**로 받는다)
+  · /tmp/census.json                            (GOLD 전 컬럼 COUNT / COUNT_IF(<>0) 실측)
+  · scripts/field_mapping_override.py           (보고서필드 매핑 교정 등록부 — 큐레이션 분리)
 
-출력(30_output_share): MD(가독) · CSV(가공) · XLSX(현업 공유, 시트 분할)
+출력: 30_output_share/05_지표GOLD매핑.{md,csv,xlsx}
+
+────────────────────────────────────────────────────────────────────────────
+[2026-08-06 재작성] 소스 유실 복구 — 종전 판본에서 바꾼 것
+  🔴 ① **상태를 원천 계통으로 추정하지 않는다.** 지표에 대응하는 GOLD 물리 컬럼을 특정할 수 있으면
+       census 로 직접 측정해 판정하고 근거를 `상태_근거` 에 `실측:` 으로 적는다. 특정 불가할 때만
+       `추정:` 을 쓴다. 종전 판본이 `OK 168` 로 적었던 것은 과대 진술이었고, 전건 `0` 컬럼을
+       `OK` 로 분류해 **현업이 빈 결과를 답으로 믿게** 만들었다(O43 · P76 · P85-③).
+  🔴 ② **계보를 모듈 import 로 가져오지 않는다.** 종전 `load_gcm()` 은 `gen_column_mapping.py` 를
+       동적 import 해 `gcm.ROWS`(파이썬 리터럴 계보표)를 읽었다. 그 리터럴이 stale 의 배포원이었고
+       (O43), 계보가 실측 파생으로 재작성되자 `ROWS` 가 사라져 **이 생성기가 실행 불가**가 됐다.
+       ⇒ 이제 `04_컬럼계보매핑.csv`(산출물)를 입력으로 받는다 → 신선함이 전파된다(P85-④).
+  🔴 ③ **교정 등록부를 실제로 배선한다.** `field_mapping_override.py` 는 작성만 되고 어떤 생성기에도
+       import 되지 않아 O45 의 효과가 산출물에 0건 반영됐다(O45-D · P90-①).
+       `try/except import` 를 쓰지 않는다 — 조용한 실패가 가장 위험하다(P90-③).
+  🔴 ④ **COMMENT/문서에 수치를 복제하지 않는다.** 이 파일의 모든 수치는 실행 시점에 측정된다.
+────────────────────────────────────────────────────────────────────────────
 """
-import csv, os, re, sys, json, importlib.util
+import csv
+import json
+import os
+import re
+import sys
+from datetime import date
 
-WS = os.path.realpath("/workspace")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # 🔴 샌드박스 sys.path[0] 고정 회피(P90-③)
+
+import field_mapping_override as FMO   # noqa: E402  — 필수 의존. 실패 시 즉시 중단시킨다.
+
+WS = os.environ.get("GN_DW_WS", "/workspace")
 OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
-LINEAGE_CSV = os.environ.get("GN_DW_LINEAGE", os.path.join(OUT_DIR, "04_컬럼계보매핑.csv"))
 CENSUS = os.environ.get("GN_DW_CENSUS", "/tmp/census.json")
-MEASURED = os.environ.get("GN_DW_MEASURED", "")
+LINEAGE_CSV = os.environ.get("GN_DW_LINEAGE", os.path.join(OUT_DIR, "04_컬럼계보매핑.csv"))
 BASENAME = "05_지표GOLD매핑"
 GEN_PATH = "scripts/gen_metric_gold_mapping.py"
+MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
 PROV = f"본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 {GEN_PATH} 수정 후 재실행하세요."
 
-DOC_CLS   = os.path.join(WS, "03_top-down_gold", "02_지표 분류.md")
-DOC_COMM  = os.path.join(WS, "99_provided_definition", "02_지표사전 공통.md")
-DOC_NEW   = os.path.join(WS, "99_provided_definition", "03_지표사전 신규.md")
-DOC_SV    = os.path.join(WS, "03_top-down_gold", "04_SV파생 매핑.md")
-DOC_INV   = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
-DOC_MKT   = os.path.join(WS, "99_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
-DOC_MEM   = os.path.join(WS, "99_provided_definition", "05_회원_보고서필드 인벤토리.md")
+DOC_CLS = os.path.join(WS, "03_top-down_gold", "02_지표 분류.md")
+DOC_COMM = os.path.join(WS, "99_provided_definition", "02_지표사전 공통.md")
+DOC_NEW = os.path.join(WS, "99_provided_definition", "03_지표사전 신규.md")
+DOC_SV = os.path.join(WS, "03_top-down_gold", "04_SV파생 매핑.md")
+DOC_INV = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
+DOC_MKT = os.path.join(WS, "99_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
+DOC_MEM = os.path.join(WS, "99_provided_definition", "05_회원_보고서필드 인벤토리.md")
+
+HEADER = ("지표#", "구분", "지표명", "유형", "소스", "단위", "GOLD_배속",
+          "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천", "정본_계산식",
+          "상태", "상태_근거")
+FIELD_HEADER = ("영역", "섹션", "필드값", "데이터원천", "데이터TYPE",
+                "대응_지표#", "GOLD_매핑", "분해축", "매핑근거")
+
+# 지표번호 → 배속 약어 확장
+ABBR = {
+    "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_SERVICE_EVENT",
+    "FEP": "FACT_EVENT_PARTICIPATION", "FMC": "FACT_MEMBER_COHORT", "FMF": "FACT_MEMBER_FEE",
+    "FAD": "FACT_AD_PERFORMANCE", "FAD_B": "FACT_AD_BROADCAST", "FAD_D": "FACT_AD_DIGITAL",
+    "FAD_BC": "FACT_AD_BROADCAST_CASE", "FGA": "FACT_GA_BEHAVIOR", "FBD": "FACT_BUDGET",
+    "FTG_D": "FACT_TARGET_DEV", "FTG-D": "FACT_TARGET_DEV",
+    "FTG_B": "FACT_TARGET_BIZ", "FTG-B": "FACT_TARGET_BIZ",
+}
+
+# 원천 입고 대기(외부 하드블로커)로 물리 측정이 성립하지 않는 지표 — WAIT 고정
+WAIT_SET = frozenset({"공152", "공153", "공154", "공155"})   # 사업목표 FTG-B (E-6)
+# GA↔CRM identity 커버리지 종속 — 측정값이 있어도 PARTIAL 로 강등
+IDENTITY_SET = frozenset({"공81", "공122", "신32", "신33"})
+# 🔴 **컬럼 채움률이 100% 여도** PARTIAL 을 유지하는 소스 = GA4.
+#   이유가 중요하다 — GA4 는 **적재된 샤드 안에서는 채움 100%** 지만 전기간이 입고되지 않았다(G-5).
+#   즉 결손이 「컬럼 NULL」이 아니라 **「시간 커버리지」** 에 있어 census 로는 드러나지 않는다.
+#   AGENCY·ERP 는 결손이 특정 축(소재 Q10 · 모금성비용 E-1)에 국한되므로 여기 넣지 않고
+#   ① 채움률 임계 ② 추정 분기의 계통 표기로 처리한다 — 뭉개면 사유를 잘못 말하게 된다.
+SRC_TIME_GAP = frozenset({"GA4", "GA"})
+# 채움률 임계 — 이 미만이면 PARTIAL. 컬럼 자체는 살아 있으나 일부 구간·분기만 채워진 상태다.
+OK_FILL_MIN = 0.95
+
+# base 물리명을 지표번호로 역인덱스할 수 없는 경우의 명시 배속(측정 대상 컬럼 지정)
+MEASURE_OVERRIDE = {
+    "공25": "INBOUND_CALL", "공66": "REGULAR_FEE", "공87": "FAIL_MEMBERS",
+    "공91": "GIFT_PART_AMT", "공97": "SESSION_CNT", "공107": "SCROLL_DEPTH",
+}
+
+INV_DELIMS = re.compile(r"\s(?:SUM|COUNT|AVG|COALESCE|비가산|conform|롤업|GA4)|—|"
+                        r"\((?:overview|05|04|신규|신#|SCD|정본|원천|=|선택|MM|SND|TM_|TH_|TD_|CRM|MBER|행동|건/)|/\s?10000")
+INV_NO_SUBSTR = frozenset({
+    "PLAN_BUDGET_YEAR", "PLAN_BUDGET_MONTH", "EXEC_BUDGET_ERP", "EXEC_BUDGET_EST",
+    "AMOUNT_BAND1", "AMOUNT_BAND2", "PERIOD_BAND1", "PERIOD_BAND2",
+    "UTM_TERM", "UTM_CONTENT",
+})
 
 
-# ─────────────────────────────── 마크다운 테이블 파서 ───────────────────────────────
+# ───────────────────────────── 마크다운 표 파서 ─────────────────────────────
 def parse_md(path):
-    """마크다운 파일을 훑어 표 블록을 반환. 각 표: dict(h1,h2,h3,label,header[],rows[[]]).
-    label = 표 직전의 **굵은글씨** 라벨(예: 'CRM 필드')."""
-    h1 = h2 = h3 = label = ""
-    tables, block = [], []
-    with open(path, encoding="utf-8") as f:
-        lines = f.readlines()
+    """표 블록 목록을 반환. 각 표 = dict(h1,h2,h3,label,header[],rows[[]])."""
+    out, block, ctx = [], [], {"h1": "", "h2": "", "h3": "", "label": ""}
 
     def is_sep(cells):
-        return cells and all(re.fullmatch(r":?-{2,}:?", c.strip() or "-") for c in cells if c.strip() != "") \
-            and all(set(c.strip()) <= set("-: ") for c in cells)
+        return all(re.fullmatch(r":?-{2,}:?", c.strip()) or set(c.strip()) <= set("-: ")
+                   for c in cells) and any("-" in c for c in cells)
 
-    def flush(block, ctx):
-        rows = []
-        for ln in block:
-            cells = [c.strip() for c in ln.strip().strip("|").split("|")]
-            rows.append(cells)
-        # 분리행 제거
-        rows = [r for r in rows if not is_sep(r)]
-        if len(rows) >= 2:
-            tables.append({**ctx, "header": rows[0], "rows": rows[1:]})
+    def flush():
+        if len(block) < 2:
+            block.clear()
+            return
+        rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in block]
+        header = rows[0]
+        body = [r for r in rows[1:] if not is_sep(r)]
+        out.append(dict(ctx, header=header, rows=body))
+        block.clear()
 
-    for raw in lines:
+    for raw in open(path, encoding="utf-8").readlines():
         ln = raw.rstrip("\n")
         s = ln.strip()
         if s.startswith("|"):
-            block.append(ln)
+            block.append(s)
             continue
-        if block:
-            flush(block, {"h1": h1, "h2": h2, "h3": h3, "label": label})
-            block = []
+        flush()
         if s.startswith("# "):
-            h1, h2, h3 = s[2:].strip(), "", ""
+            ctx = {"h1": s[2:].strip(), "h2": "", "h3": "", "label": ""}
         elif s.startswith("## "):
-            h2, h3 = s[3:].strip(), ""
+            ctx = dict(ctx, h2=s[3:].strip(), h3="", label="")
         elif s.startswith("### "):
-            h3 = s[4:].strip()
-        m = re.fullmatch(r"\*\*(.+?)\*\*", s)
-        if m:
-            label = m.group(1).strip()
-    if block:
-        flush(block, {"h1": h1, "h2": h2, "h3": h3, "label": label})
-    return tables
+            ctx = dict(ctx, h3=s[4:].strip(), label="")
+        else:
+            m = re.fullmatch(r"\*\*(.+?)\*\*", s)
+            if m:
+                ctx = dict(ctx, label=m.group(1).strip())
+    flush()
+    return out
 
 
-def col_idx(header, *needles):
+def col_idx(header, *names):
     for i, h in enumerate(header):
-        for nd in needles:
-            if nd in h:
+        for n in names:
+            if h.strip() == n:
                 return i
     return None
 
 
 def clean_placement(v):
-    """배속 셀에서 대표 토큰만: 'SV ✅…'→'SV', 'FAD ✅실측…'→'FAD', 'FMM ⚠️…'→'FMM'."""
-    v = v.strip()
-    v = re.split(r"[ \u2705\u26a0\ufe0f]", v, 1)[0]
-    return v.strip()
+    """배속 셀에서 대표 토큰만: 'SV ✅…'→'SV', 'FMM ⚠️…'→'FMM'."""
+    return re.split(r"[ \u2705\u26a0\ufe0f]", v.strip(), 1)[0].strip()
 
 
 def base_token(v):
-    """base 표현에서 선두 UPPER_SNAKE 식별자 추출: 'CAMPAIGN_UNPAID_CNT ×10000'→'CAMPAIGN_UNPAID_CNT'."""
+    """base 표현에서 선두 UPPER_SNAKE 식별자: 'DEV_CNT(YTD)'→'DEV_CNT'."""
     m = re.search(r"[A-Z][A-Z0-9_]+", v or "")
     return m.group(0) if m else ""
 
 
-# ─────────────────────────────── 1) gen_column_mapping ROWS 재사용 ───────────────────────────────
-def load_gcm():
-    """계보는 04_컬럼계보매핑.csv(실측 파생물)에서 읽는다.
-
-    ⚠️ 구 판본은 `gen_column_mapping.py` 의 하드코딩 리스트를 import 했다. 그 리스트가 stale 해지면
-    이 문서도 함께 stale 해졌다(O24·O26·O34·O38·O39 미반영). 이제는 **측정 산출물을 입력으로 받는다**.
-    """
-    col2src, obj2src = {}, {}
-    if not os.path.exists(LINEAGE_CSV):
-        raise SystemExit(f"계보 입력이 없습니다: {LINEAGE_CSV} — 먼저 gen_column_mapping.py 를 실행하세요.")
-    with open(LINEAGE_CSV, encoding="utf-8-sig") as f:
-        for r in csv.DictReader(f):
-            col = r["WIDE_컬럼"]
-            gold = r["GOLD_원천(테이블.컬럼)"]
-            silver = r["SILVER_원천(테이블.컬럼)"]
-            bronze = r["BRONZE_원천(테이블)"]
-            conf = r["계보_확정도"]
-            col2src.setdefault(col, (silver, bronze, conf, r["WIDE_마트"]))
-            gt = gold.split(".")[0] if "." in gold else ""
-            if gt:
-                obj2src.setdefault(gt, (silver, bronze, conf, r["WIDE_마트"]))
-    return col2src, obj2src
-
-
-def load_census():
-    """GOLD 물리 컬럼 실측 census — 상태 판정을 추측이 아니라 측정으로 한다."""
-    if not os.path.exists(CENSUS):
-        return {}
-    raw = json.load(open(CENSUS, encoding="utf-8"))
-    out = {}
-    for k, v in raw.items():
-        if not k.startswith("GOLD."):
-            continue
-        t = k.split(".", 1)[1]
-        for c, i in v["cols"].items():
-            out.setdefault(c, []).append((t, v["rows"], int(i["nonnull"] or 0), int(i["nonzero"] or 0)))
-    return out
-
-
-CENSUS_IDX = {}
-
-
-def measured_status(physical):
-    """물리컬럼명으로 census 를 조회해 상태를 판정. 못 찾으면 (None, 근거없음)."""
-    tok = base_token(physical or "")
-    if not tok or tok not in CENSUS_IDX:
-        return None, ""
-    best = None
-    for t, rows, nn, nz in CENSUS_IDX[tok]:
-        if rows == 0:
-            cand = ("WAIT", f"`{t}` 0행")
-        elif nn == 0:
-            cand = ("WAIT", f"`{t}.{tok}` 전건 NULL")
-        elif nz == 0:
-            cand = ("WAIT", f"`{t}.{tok}` 전건 0 — 설계O·값 미주입")
-        elif nz < rows:
-            cand = ("PARTIAL", f"`{t}.{tok}` 비영 {nz:,}/{rows:,} ({nz/rows*100:.1f}%)")
-        else:
-            cand = ("OK", f"`{t}.{tok}` 비영 {nz:,}/{rows:,} (100%)")
-        rank = {"OK": 0, "PARTIAL": 1, "WAIT": 2}
-        if best is None or rank[cand[0]] < rank[best[0]]:
-            best = cand
-    return best
-
-
-# ─────────────────────────────── 2) 지표 분류 (215 배속) ───────────────────────────────
+# ───────────────────────────── 정본 로더 ─────────────────────────────
 def load_classification():
-    """{'공4': {...}, '신20': {...}} — name/유형/소스/단위/basis/배속/배속원문."""
+    """{'공4': {name,type,src,unit,basis,place,place_raw}, '신20': {...}}"""
     out = {}
     for t in parse_md(DOC_CLS):
-        if col_idx(t["header"], "지표명") is None or col_idx(t["header"], "배속") is None:
+        h = t["header"]
+        if col_idx(h, "지표명") is None or col_idx(h, "배속") is None:
             continue
         pref = "공" if "공통" in t["h2"] else ("신" if "신규" in t["h2"] else None)
         if not pref:
             continue
+        i_no, i_nm = 0, col_idx(h, "지표명")
+        i_ty, i_sr = col_idx(h, "유형"), col_idx(h, "소스")
+        i_un, i_ba = col_idx(h, "단위"), col_idx(h, "집계/basis")
+        i_pl = col_idx(h, "배속")
         for r in t["rows"]:
-            if not r or not r[0].isdigit():
+            if len(r) <= i_pl or not r[i_no].strip().isdigit():
                 continue
-            key = f"{pref}{int(r[0])}"
+            key = f"{pref}{int(r[i_no])}"
             out[key] = {
-                "name": r[1], "type": r[2], "src": r[3], "unit": r[4],
-                "basis": r[5] if len(r) > 5 else "",
-                "place_raw": r[7] if len(r) > 7 else "",
-                "place": clean_placement(r[7] if len(r) > 7 else ""),
+                "name": r[i_nm], "type": r[i_ty], "src": r[i_sr], "unit": r[i_un],
+                "basis": r[i_ba] if i_ba is not None and len(r) > i_ba else "",
+                "place_raw": r[i_pl], "place": clean_placement(r[i_pl]),
             }
     return out
 
 
-# ─────────────────────────────── 3) 지표사전 (정의·계산식) ───────────────────────────────
 def load_dictionary(path, pref):
+    """{'공4': {cat, def, formula}}"""
     out = {}
     for t in parse_md(path):
-        ci_no = col_idx(t["header"], "순서")
-        ci_nm = col_idx(t["header"], "지표명")
-        ci_def = col_idx(t["header"], "정의")
-        ci_fx = col_idx(t["header"], "계산식")
-        if None in (ci_no, ci_nm, ci_fx):
+        h = t["header"]
+        i_no = col_idx(h, "순서")
+        i_nm = col_idx(h, "지표명")
+        if i_no is None or i_nm is None:
             continue
+        i_ct, i_df, i_fm = col_idx(h, "구분"), col_idx(h, "정의"), col_idx(h, "계산식")
         for r in t["rows"]:
-            if ci_no >= len(r) or not r[ci_no].isdigit():
+            if len(r) <= i_nm or not r[i_no].strip().isdigit():
                 continue
-            key = f"{pref}{int(r[ci_no])}"
-            out[key] = {
-                "cat": r[1] if len(r) > 1 else "",
-                "def": r[ci_def] if ci_def is not None and ci_def < len(r) else "",
-                "formula": r[ci_fx] if ci_fx < len(r) else "",
+            out[f"{pref}{int(r[i_no])}"] = {
+                "cat": r[i_ct] if i_ct is not None and len(r) > i_ct else "",
+                "def": r[i_df] if i_df is not None and len(r) > i_df else "",
+                "formula": r[i_fm] if i_fm is not None and len(r) > i_fm else "",
             }
     return out
 
 
-# ─────────────────────────────── 4) SV파생 (derived base + base 카탈로그) ───────────────────────────────
+def _parse_srcnums(cell):
+    """'공4·5·149' → [('공',[4,5,149])] · '공139~142' → [('공',[139..142])]."""
+    out = []
+    for pref, body in re.findall(r"(공|신)\s*([\d·~,\s]+)", cell or ""):
+        nums = []
+        for tok in re.split(r"[·,\s]+", body):
+            tok = tok.strip()
+            if not tok:
+                continue
+            if "~" in tok:
+                a, b = tok.split("~")[:2]
+                if a.strip().isdigit() and b.strip().isdigit():
+                    nums.extend(range(int(a), int(b) + 1))
+            elif tok.isdigit():
+                nums.append(int(tok))
+        if nums:
+            out.append((pref, nums))
+    return out
+
+
 def load_sv():
-    """returns (num2base_measure, derived_map)
-       num2base_measure: {'공4':'DEV_CNT', ...}  (§1 base 카탈로그 역인덱스)
-       derived_map: {'공45':{'num':'MONTH_END_ACTIVE_CNT','den':'...','fact':'FMM','note':''}, ...}"""
+    """(num2base, derived_map)
+       num2base   : 지표# → base 물리명 (§1 base 카탈로그의 '원천 지표#' 역인덱스)
+       derived_map: 지표# → {num, den, fact}
+    """
     num2base, derived = {}, {}
     for t in parse_md(DOC_SV):
-        h2 = t["h2"]
-        hdr = t["header"]
-        # §1 base 카탈로그
-        if col_idx(hdr, "base 물리명") is not None and col_idx(hdr, "원천 지표#") is not None:
-            ci_b = col_idx(hdr, "base 물리명")
-            ci_s = col_idx(hdr, "원천 지표#")
+        h = t["header"]
+        i_base, i_src = col_idx(h, "base 물리명"), col_idx(h, "원천 지표#")
+        if i_base is not None and i_src is not None:
             for r in t["rows"]:
-                if ci_s >= len(r):
+                if len(r) <= max(i_base, i_src):
                     continue
-                # 'A / B / C' 다중 base → 지표번호와 위치(순서)로 페어링
-                base_list = [base_token(x) for x in re.split(r"\s*/\s*", r[ci_b]) if base_token(x)]
-                nums_seq = [f"{pref}{n}" for pref, nums in _parse_srcnums(r[ci_s]) for n in nums]
-                if base_list and len(base_list) == len(nums_seq):
-                    for k, b in zip(nums_seq, base_list):
-                        num2base.setdefault(k, b)
-                else:
-                    b0 = base_list[0] if base_list else base_token(r[ci_b])
-                    for k in nums_seq:
-                        num2base.setdefault(k, b0)
+                bases = [b.strip() for b in re.split(r"\s*/\s*", r[i_base]) if b.strip()]
+                for pref, nums in _parse_srcnums(r[i_src]):
+                    for k, n in enumerate(nums):
+                        key = f"{pref}{n}"
+                        num2base.setdefault(key, bases[k] if k < len(bases) else bases[0])
             continue
-        # §2(공통 derived) / §3(신규 derived)
-        pref = "공" if h2.strip().startswith("2.") else ("신" if h2.strip().startswith("3.") else None)
-        ci_num = col_idx(hdr, "분자")
-        ci_den = col_idx(hdr, "분모")
-        ci_fact = col_idx(hdr, "FACT")
-        if pref and ci_num is not None and col_idx(hdr, "#") == 0:
-            for r in t["rows"]:
-                if not r or not r[0].isdigit():
-                    continue
-                key = f"{pref}{int(r[0])}"
-                derived[key] = {
-                    "num": r[ci_num] if ci_num < len(r) else "",
-                    "den": r[ci_den] if ci_den is not None and ci_den < len(r) else "",
-                    "fact": r[ci_fact] if ci_fact is not None and ci_fact < len(r) else "",
-                }
+        i_num, i_den = col_idx(h, "분자 base"), col_idx(h, "분모 base")
+        if i_num is None or i_den is None:
+            continue
+        i_no = 0
+        i_fact = col_idx(h, "FACT(분자·분모)", "FACT")
+        pref = "공" if t["h2"].startswith("2.") else ("신" if t["h2"].startswith("3.") else None)
+        if not pref:
+            continue
+        for r in t["rows"]:
+            no = r[i_no].strip().lstrip("#").strip()
+            if not no.isdigit():
+                continue
+            derived[f"{pref}{int(no)}"] = {
+                "num": r[i_num] if len(r) > i_num else "",
+                "den": r[i_den] if len(r) > i_den else "",
+                "fact": r[i_fact] if i_fact is not None and len(r) > i_fact else "",
+            }
     return num2base, derived
 
 
-# ─────────────────────────────── 4b) GOLD 물리 필드 인벤토리 (보고서필드 → GOLD 컬럼 정본) ───────────────────────────────
-INV_DELIMS = re.compile(r"\s(?:SUM|COUNT|AVG|COALESCE|비가산|conform|롤업|GA4)|—|\((?:overview|05|04|신규|신#|SCD|정본|원천|=|선택|MM|SND|TM_|TH_|TD_|CRM|MBER|행동|건/)|/\s?10000")
+def load_lineage():
+    """04_컬럼계보매핑.csv → (col2src, obj2src)
+       col2src: GOLD 컬럼명            → (SILVER 원천, BRONZE 원천)
+       obj2src: GOLD 테이블(또는 마트)  → (SILVER 원천, BRONZE 원천)
+       🔴 모듈 import 가 아니라 **산출물 CSV** 를 읽는다(P85-④).
+    """
+    col2src, obj2src = {}, {}
+    if not os.path.exists(LINEAGE_CSV):
+        raise SystemExit(f"계보 입력이 없다: {LINEAGE_CSV} — gen_column_mapping.py 를 먼저 실행할 것")
+    agg = {}
+    with open(LINEAGE_CSV, encoding="utf-8-sig") as f:
+        for row in csv.reader(f):
+            if not row or row[0].startswith("#") or row[0].startswith("##"):
+                continue
+            if row[0].strip() in ("WIDE_마트", "계층"):
+                hdr = row
+                i_g = col_idx(hdr, "GOLD_원천(테이블.컬럼)")
+                i_s = col_idx(hdr, "SILVER_원천(테이블.컬럼)")
+                i_b = col_idx(hdr, "BRONZE_원천(테이블)")
+                agg["idx"] = (i_g, i_s, i_b)
+                continue
+            i_g, i_s, i_b = agg.get("idx", (2, 3, 4))
+            if i_g is None or len(row) <= max(filter(None, [i_g, i_s, i_b])):
+                continue
+            gold, silver, bronze = row[i_g].strip(), row[i_s].strip(), row[i_b].strip()
+            if not gold or "." not in gold:
+                continue
+            tbl, _, col = gold.partition(".")
+            if col:
+                col2src.setdefault(col, (silver, bronze))
+            if tbl:
+                obj2src.setdefault(tbl, (silver, bronze))
+    return col2src, obj2src
+
+
+def load_census():
+    if not os.path.exists(CENSUS):
+        raise SystemExit(f"census 가 없다: {CENSUS} — scripts/census_columns.py 를 먼저 실행할 것")
+    return json.load(open(CENSUS, encoding="utf-8"))
 
 
 def _inv_label(desc):
-    """설명에서 보고서필드 한글 라벨만 추출: '개발(건) SUM(금액)/10000 (#4·5·149)' → '개발(건)'."""
-    d = re.sub(r"\(?(?:신규|신)?#\s*[\d·~]+\)?", "", desc)   # #지표번호 제거
-    d = INV_DELIMS.split(d)[0]
-    return d.strip(" .·")
+    """설명에서 보고서필드 한글 라벨만: '개발(건) SUM(금액)/10000 (#4·5)' → '개발(건)'."""
+    # 🔴 지표번호 괄호는 **괄호 전체**를 지운다 — 종전 판본은 여는 괄호만 지워
+    #    '납입회비(원) (#69·70 단일화)' 가 '납입회비(원)  단일화)' 로 남아 라벨 매칭이 실패했다.
+    s = re.sub(r"\([^()]*#[^()]*\)", "", desc or "")
+    s = re.sub(r"\(?(?:신규|신)?#\s*[\d·~]+\)?", "", s)
+    lab = re.split(INV_DELIMS, s)[0].strip(" .·")
+    # 🔴 [2026-08-07 O47-B] **주석은 라벨이 아니다.** 인벤토리 설명 칸에는 라벨 대신 상태 주석만
+    #   적힌 셀이 있다(예: FME 의 `CAMPAIGN_SK` = "🔴 **DEV 브랜치 전용**(실측 …) · **STOP 전건 0**").
+    #   종전 파서는 이것을 라벨로 색인했고, `idx.setdefault` 가 **문서 순서 first-wins** 라서
+    #   쓰레기 라벨이 실제 라벨의 자리를 선점할 수 있었다(실측: 이번 세션의 인벤토리 주석 추가로
+    #   FME 3컬럼이 쓰레기 라벨로 색인됨). 상태 마커로 시작하면 라벨이 아니라고 판정한다.
+    if lab[:1] in ("🔴", "🟠", "🟡", "🟢", "🔵", "⚠", "✅", "⛔", "◐", "❔", "🆕", "🔷", "▸"):
+        return ""
+    return lab
 
 
 def _inv_metricno(desc):
-    """설명의 (#..) → '공4·5·149' / '신20' 형태."""
-    outs = []
-    for pre, body in re.findall(r"(신규|신|공)?\s*#\s*([\d·~]+)", desc):
-        p = "신" if pre in ("신규", "신") else "공"
+    """설명의 (#..) → '공4·5·149' / '신20'."""
+    out = []
+    for pref, body in re.findall(r"(신규|신|공)?\s*#\s*([\d·~]+)", desc or ""):
+        p = "신" if pref in ("신규", "신") else "공"
         nums = []
-        for part in re.split(r"·", body):
-            if "~" in part:
-                a, b = part.split("~")
+        for tok in body.split("·"):
+            if "~" in tok:
+                a, b = tok.split("~")[:2]
                 if a.isdigit() and b.isdigit():
-                    nums += [str(x) for x in range(int(a), int(b) + 1)]
-            elif part.isdigit():
-                nums.append(part)
+                    nums.extend(str(x) for x in range(int(a), int(b) + 1))
+            elif tok.isdigit():
+                nums.append(tok)
         if nums:
-            outs.append(p + "·".join(nums))
-    return " ".join(outs)
+            out.append(p + "·".join(nums))
+    return " ".join(out)
+
+
+def _norm(s):
+    s = (s or "").lower().replace("중복", "").replace("（", "(").replace("）", ")")
+    s = s.replace("률", "율")          # 표기 변형 통일(이탈률 ↔ 이탈율) — 의미 동일
+    return re.sub(r"[\s()\[\]/·,%*=＝~:\-—–÷]", "", s)
 
 
 def load_gold_inventory():
-    """05_필드 인벤토리.md 파싱 → 보고서필드(설명) → GOLD 물리컬럼 정본 인덱스.
-    returns (idx: label_norm→entry, entries: [entry]).  entry={col,table,desc,label_norm,mno}."""
-    entries = []
+    """05_필드 인벤토리.md → (idx: label_norm→entry, entries).
+       entry = {col, table, desc, label_norm, mno}"""
+    idx, entries = {}, []
     for t in parse_md(DOC_INV):
-        # 표 소속 GOLD 객체: 헤딩 'D2. DIM_MEMBER ...' / 'FMM. FACT_MEMBER_MONTHLY ...'
         head = t["h3"] or t["h2"]
-        m = re.match(r"[A-Z0-9_]+\.\s*([A-Z_]+)", head)
-        if not m or col_idx(t["header"], "컬럼명") is None:
+        # 🔴 제목 형식이 두 가지다: 'FTG_D. FACT_TARGET_DEV — …' 와 'WIDE_DEV_ACHIEVEMENT — …'
+        #   후자를 못 잡으면 테이블명이 비어 매핑이 `.COLUMN` 이 되고 소비 생성기가 판정불가로 흘린다(실측).
+        m = re.match(r"[A-Z0-9_]+\.\s*([A-Z_][A-Z0-9_]+)", head)
+        if not m:
+            m = re.match(r"((?:FACT|DIM|WIDE|SV)_[A-Z0-9_]+)", head)
+        table = m.group(1) if m else ""
+        h = t["header"]
+        i_col, i_desc = col_idx(h, "컬럼명"), col_idx(h, "설명", "설명/basis", "설명/근거")
+        if i_col is None or i_desc is None:
             continue
-        table = m.group(1)
-        ci_c = col_idx(t["header"], "컬럼명")
-        ci_d = col_idx(t["header"], "설명")   # '설명' 또는 '설명/basis'
         for r in t["rows"]:
-            if ci_c >= len(r):
+            if len(r) <= max(i_col, i_desc):
                 continue
-            col = r[ci_c].strip()
-            if not col or col.startswith("~~") or "❌" in " ".join(r):   # 삭제 컬럼 제외
+            col = r[i_col].strip().strip("`")
+            desc = r[i_desc].strip()
+            if not col or col.startswith("~~") or "❌" in col or " " in col:
                 continue
-            if col.endswith("_SK") or col in ("MEMBER_DK", "ORG_DK", "CAMPAIGN_BK", "SPONSORSHIP_BK",
-                                              "REASON_CODE", "AD_CREATIVE_BK", "EVENT_BK"):
-                pass  # 키도 매핑 대상(회원번호 등)이라 유지
-            desc = r[ci_d] if ci_d is not None and ci_d < len(r) else ""
             label = _inv_label(desc)
-            entries.append({
-                "col": col, "table": table, "desc": desc,
-                "label_norm": _norm(label), "mno": _inv_metricno(desc),
-            })
-    idx = {}
-    for e in entries:
-        if e["label_norm"]:
+            if not label:
+                continue
+            e = {"col": col, "table": table, "desc": desc, "label": label,
+                 "label_norm": _norm(label), "mno": _inv_metricno(desc)}
+            entries.append(e)
             idx.setdefault(e["label_norm"], e)
     return idx, entries
 
 
-def _parse_srcnums(cell):
-    """'공4·5·149' → [('공',[4,5,149])]; '공139~142' → [('공',[139..142])]; '신20' → [('신',[20])]."""
-    res = []
-    for pref, body in re.findall(r"(공|신)\s*([\d·~,\s]+)", cell):
-        nums = []
-        for part in re.split(r"[·,\s]+", body.strip()):
-            if not part:
-                continue
-            if "~" in part:
-                a, b = part.split("~")
-                if a.isdigit() and b.isdigit():
-                    nums.extend(range(int(a), int(b) + 1))
-            elif part.isdigit():
-                nums.append(int(part))
-        if nums:
-            res.append((pref, nums))
-    return res
+# ───────────────────────────── 상태 판정 (실측 우선) ─────────────────────────────
+def measure(census, table, col):
+    """(rows, nonnull, nonzero) — 없으면 None."""
+    ent = census.get(f"GOLD.{table}") or census.get(f"SERVING.{table}")
+    if not ent:
+        return None
+    c = ent["cols"].get(col)
+    if not c:
+        return None
+    return ent["rows"], c["nonnull"], c["nonzero"]
 
 
-# ─────────────────────────────── 5) 상태 판정 ───────────────────────────────
-IDENTITY_SET = {"공81", "공122", "신32", "신33"}
-WAIT_SET = {"공152", "공153", "공154", "공155"}
+def find_column(census, col, prefer=None):
+    """census 전역에서 컬럼을 보유한 GOLD 테이블을 찾는다. prefer 우선."""
+    hits = [t.split(".", 1)[1] for t, e in census.items()
+            if t.startswith("GOLD.") and col in e["cols"]]
+    if not hits:
+        return None
+    if prefer:
+        for p in ([prefer] if isinstance(prefer, str) else prefer):
+            if p in hits:
+                return p
+    return sorted(hits)[0]
 
 
-def derive_status(key, cls, place, physical=""):
-    """상태 판정 — **실측 우선**.
+def derive_status(key, cls, num2base, derived, census):
+    """(상태, 근거). 🔴 물리 컬럼을 특정할 수 있으면 census 로 **측정**한다."""
+    if key in WAIT_SET:
+        return "WAIT", "추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_BIZ` 0행"
 
-    ① 물리 컬럼을 특정할 수 있으면 census(`COUNT`/`COUNT_IF(<>0)`)로 판정한다.
-    ② 특정 불가(파생 metric·차원 배속 등)일 때만 배속·원천 계통 추정으로 내려간다.
-       이때 근거 열에 「추정」임을 명시한다 — 실측과 추정을 섞어 보여주지 않는다.
-    """
-    ms = measured_status(physical) if physical else None
-    if ms and ms[0]:
-        return ms[0], "실측: " + ms[1]
+    # 측정 대상 컬럼 결정: MEASURE_OVERRIDE → base 카탈로그 → derived 분자 base
+    col = MEASURE_OVERRIDE.get(key) or num2base.get(key)
+    if not col and key in derived:
+        col = base_token(derived[key]["num"])
+    prefer = []
+    place = cls.get("place", "")
+    if place in ABBR:
+        prefer.append(ABBR[place])
+    if key in derived:
+        for tok in re.split(r"[·,/ ]+", derived[key]["fact"] or ""):
+            tok = tok.strip()
+            if tok in ABBR:
+                prefer.append(ABBR[tok])
 
-    raw = (cls.get("place_raw", "") + " " + cls.get("basis", ""))
-    if key in WAIT_SET or "FTG-B" in place or "FTG_B" in place or "원천 부재" in raw or "입고 대기" in raw or "대기" in raw:
-        return "WAIT", "추정: 원천 미입고 계통(E-6 등)"
-    if key in IDENTITY_SET or "identity" in raw:
-        return "PARTIAL", "추정: identity 브리지 의존"
-    src = cls.get("src", "")
-    p = place.upper()
-    if src in ("GA4", "GA") or p.startswith("FGA") or "GA_" in p:
-        return "PARTIAL", "추정: GA4 계통(G-5 샤드 부분입고)"
-    if src == "AGENCY" or p.startswith("FAD") or "AD_CREATIVE" in p:
-        return "PARTIAL", "추정: AGENCY 계통(연결키 Q10 대기)"
-    if p.startswith("FBD") or (src == "ERP"):
-        return "PARTIAL", "추정: ERP 예산 계통(E-1/E-4 대기)"
-    return "OK", "추정: 배속·원천 계통에 알려진 제약 없음"
+    if col:
+        tbl = find_column(census, col, prefer)
+        if tbl:
+            m = measure(census, tbl, col)
+            if m:
+                rows, nn, nz = m
+                if rows == 0:
+                    return "WAIT", f"실측: `{tbl}` **0행** — 테이블 미적재"
+                if not nz:
+                    return "WAIT", f"실측: `{tbl}.{col}` 전건 0 — 설계O·값 미주입"
+                pct = f"{nz / rows * 100:.1f}%" if rows else "—"
+                base = f"실측: `{tbl}.{col}` 비영 {nz:,}/{rows:,} ({pct})"
+                if key in IDENTITY_SET:
+                    return "PARTIAL", base + " · GA↔CRM identity 커버리지 종속"
+                # 🔴 실측이 원천 계통 제약을 지우지 않는다 — 값이 있어도 GA4(1일 샤드)·
+                #   AGENCY(소재 연결키 Q10)·ERP(모금성비용 E-1) 는 커버리지가 열려 있다.
+                #   이 강등을 빼면 「사용가능」이 거짓이 되는 방향으로만 틀린다(P76).
+                if cls.get("src") in SRC_TIME_GAP:
+                    return "PARTIAL", base + " · ⚠️ 채움률은 **적재된 샤드 내부** 기준이다 — GA4 전기간 미입고(G-5)"
+                if nz < rows * OK_FILL_MIN:
+                    return "PARTIAL", base + f" · 채움률 {OK_FILL_MIN:.0%} 미만"
+                return "OK", base
+
+    # 물리 컬럼 특정 불가 → 배속·원천 계통 추정 (🔴 단독 인용 금지 표기)
+    if key in IDENTITY_SET:
+        return "PARTIAL", "추정: GA↔CRM identity 브리지 의존 — 물리 컬럼 미특정"
+    if cls.get("type") == "dimension":
+        tbl = ABBR.get(place, place)
+        ent = census.get(f"GOLD.{tbl}")
+        if ent and ent["rows"]:
+            return ("PARTIAL" if cls.get("src") in ("GA4", "GA", "AGENCY", "ERP") else "OK",
+                    f"추정: 배속 차원 `{tbl}` {ent['rows']:,}행 실재 — 대응 물리 컬럼 미특정")
+    if cls.get("src") in ("GA4", "GA"):
+        return "PARTIAL", "추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정"
+    if cls.get("src") == "AGENCY":
+        return "PARTIAL", "추정: AGENCY 원천 계통(소재 연결키 Q10) — 물리 컬럼 미특정"
+    if cls.get("src") == "ERP":
+        return "PARTIAL", "추정: ERP 원천 계통(모금성비용 E-1) — 물리 컬럼 미특정"
+    # 🔴 CRM·복합 계통은 알려진 계통 제약이 없다 → OK 로 두되 **추정임을 명시**한다.
+    #   여기서 PARTIAL 로 강등하면 범례(「PARTIAL = GA/AGENCY/ERP·identity 일부 대기」)와 어긋나
+    #   사유를 잘못 말하게 된다. 대신 `추정:` 표기 + 헤더의 「단독 인용 금지」로 방어한다.
+    return "OK", "추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정"
 
 
-# ─────────────────────────────── 6) 지표 → GOLD 행 조립 ───────────────────────────────
-# SV파생 §1 base 카탈로그에 없는 measure → 실제 WIDE 물리컬럼(gen_column_mapping.py ROWS 존재값)으로 보강
-MEASURE_OVERRIDE = {
-    "공25": "INBOUND_CALL",      # 인입콜 (WIDE_AD_PERFORMANCE)
-    "공66": "REGULAR_FEE",       # 정기회비 (WIDE_MEMBER_MONTHLY)
-    "공87": "FAIL_MEMBERS",      # 실패수(명) (WIDE_SERVICE_EVENT)
-    "공91": "GIFT_PART_AMT",     # 선물금참여(원) (WIDE_SERVICE_EVENT)
-    "공97": "SESSION_CNT",       # 세션수(명) (WIDE_GA_BEHAVIOR)
-    "공107": "SCROLL_DEPTH",     # 스크롤깊이 (WIDE_GA_BEHAVIOR)
-}
-
-HEADER = ["지표#", "구분", "지표명", "유형", "소스", "단위",
-          "GOLD_배속", "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천",
-          "정본_계산식", "상태", "상태_근거"]
-
-
+# ───────────────────────────── 지표 행 ─────────────────────────────
 def build_metric_rows():
     cls = load_classification()
-    comm = load_dictionary(DOC_COMM, "공")
-    new = load_dictionary(DOC_NEW, "신")
-    dic = {**comm, **new}
+    dic = {}
+    dic.update(load_dictionary(DOC_COMM, "공"))
+    dic.update(load_dictionary(DOC_NEW, "신"))
     num2base, derived = load_sv()
-    col2src, obj2src = load_gcm()
+    col2src, obj2src = load_lineage()
+    census = load_census()
 
     def src_for_col(col):
-        col = base_token(col) or col
-        if col in col2src:
-            s = col2src[col]
-            return s[0], s[1]
-        return "", ""
+        return col2src.get(col, ("", ""))
 
     def src_for_obj(obj):
-        obj = obj.split("(")[0].split(" ")[0].strip()
-        if obj in obj2src:
-            s = obj2src[obj]
-            return s[0], s[1]
-        return "", ""
+        return obj2src.get(obj, ("", ""))
 
-    rows, num2metricnum = [], {}      # num2metricnum: GOLD컬럼 → 지표# (04 계보 보강용)
-    order = [f"공{i}" for i in range(1, 163)] + [f"신{i}" for i in range(1, 54)]
-    for key in order:
+    rows, num2map = [], {}
+    keys = [f"공{i}" for i in range(1, 163)] + [f"신{i}" for i in range(1, 54)]
+    for key in keys:
         c = cls.get(key)
         if not c:
             continue
         d = dic.get(key, {})
         place = c["place"]
         typ = c["type"]
-        silver = bronze = ""
-        if typ == "derived":
+        mapping, silver, bronze = "", "", ""
+
+        if typ == "derived" or place == "SV":
             dv = derived.get(key)
-            if dv:
-                num_b, den_b = dv["num"], dv["den"]
-                fact = dv["fact"] or place
-                gold = f"SV metric — 분자: {num_b or '—'} / 분모: {den_b or '—'}"
-                silver, bronze = src_for_col(num_b)
-                place_disp = f"SV ({fact})" if fact and fact != "SV" else "SV"
-            else:
-                gold = "SV metric (파생 — base는 04_SV파생 매핑.md 참조)"
-                place_disp = place
-            # #98·108 GA4 비가산은 물리 적재
             if key in ("공98", "공108"):
-                gold = "FGA 물리적재(비가산) — " + gold
-                silver, bronze = src_for_obj("FACT_GA_BEHAVIOR")
-        elif typ == "measure":
-            base = num2base.get(key, "") or MEASURE_OVERRIDE.get(key, "")
-            if base:
-                gold = f"{place}.{base}" if place and not place.endswith(")") else f"{place} · {base}"
-                silver, bronze = src_for_col(base)
-                num2metricnum.setdefault(base, []).append(key)
+                mapping = f"FGA 물리적재(비가산) — {num2base.get(key, '')}"
+                silver, bronze = src_for_col(num2base.get(key, ""))
+            elif dv:
+                num, den = dv["num"] or "—", dv["den"] or "—"
+                mapping = f"SV metric — 분자: {num}" + (f" / 분모: {den}" if den != "—" else "")
+                silver, bronze = src_for_col(base_token(num))
             else:
-                gold = f"{place} (measure — 컬럼 06_DDL.sql 확인)"
-                silver, bronze = src_for_obj(place)
+                mapping = "SV metric (파생 — base는 04_SV파생 매핑.md 참조)"
+        elif typ == "measure":
+            col = MEASURE_OVERRIDE.get(key) or num2base.get(key, "")
+            if col:
+                mapping = f"{place}.{col}"
+                silver, bronze = src_for_col(col)
+            else:
+                mapping = f"{place} (measure — 컬럼 06_DDL.sql 확인)"
+                silver, bronze = src_for_obj(ABBR.get(place, place))
         else:  # dimension
-            gold = f"{place}"
-            silver, bronze = src_for_obj(place)
-        phys = ""
-        if typ == "measure":
-            phys = num2base.get(key, "") or MEASURE_OVERRIDE.get(key, "")
-        elif typ == "derived":
-            dv2 = derived.get(key)
-            phys = (dv2 or {}).get("num", "") or ""
-        st, st_why = derive_status(key, c, place, phys)
-        rows.append([
-            key, d.get("cat", c.get("", "")) or _cat_guess(place, typ), c["name"], typ, c["src"], c["unit"],
-            place, gold, silver, bronze, d.get("formula", ""), st, st_why,
-        ])
-    return rows, num2base, derived, num2metricnum
+            mapping = place
+            silver, bronze = src_for_obj(ABBR.get(place, place))
+
+        status, why = derive_status(key, c, num2base, derived, census)
+        rows.append([key, d.get("cat", ""), c["name"], typ, c["src"], c["unit"],
+                     place, mapping, silver, bronze, d.get("formula", ""), status, why])
+        num2map[key] = (mapping, typ, place, status)
+    return rows, num2map
 
 
-def _cat_guess(place, typ):
-    return ""
+# ───────────────────────────── 보고서필드 매핑 ─────────────────────────────
+RATE_RE = re.compile(r"율|률|구성비|증감|대비|비중|달성|1인당|1명당|%")
+UNIT_SUFFIX = re.compile(r"(명|건|원|개월|년|횟수|수|%)$")
 
 
-# ─────────────────────────────── 7) 보고서필드 인벤토리 매핑 ───────────────────────────────
-def _norm(s):
-    s = s.lower()
-    s = s.replace("중복", "")
-    s = re.sub(r"[\s()（）\[\]/·,%*=＝~:\-—–÷]", "", s)
-    s = s.replace("（", "").replace("）", "")
-    return s
-
-
-# ③ 부분일치에서 제외할 GOLD 컬럼(동명이의·코호트한정·구간(band)·예산 세분 — 반드시 명시적 별칭으로만 매핑)
-# 근거: 표본검증 2026-07-27에서 substring 오매핑 유발 확인
-#   UTM_CONTENT('세션 수동 광고 콘텐츠')←'세션수' · D5_*(+5일차 코호트)←'선물금 참여(건)'
-#   *_BAND(구간)←'후원금액' · *_BUDGET_*(월/연/ERP/추정 구분)←'연 편성예산'
-INV_NO_SUBSTR = {"UTM_CONTENT", "UTM_TERM",
-                 "AMOUNT_BAND1", "AMOUNT_BAND2", "PERIOD_BAND1", "PERIOD_BAND2",
-                 "PLAN_BUDGET_MONTH", "PLAN_BUDGET_YEAR", "EXEC_BUDGET_ERP", "EXEC_BUDGET_EST"}
-
-
-def build_field_index(metric_rows):
-    """보고서필드 매칭용 인덱스 구성.
-    - metric_idx: 정규화 지표명 → (지표#, 유형, GOLD매핑, 배속)  [율/파생=SV 매핑 확보]
-    - inv_idx/inv_entries: GOLD 물리 필드 인벤토리(05_필드 인벤토리.md) → 물리 컬럼 정본
-    - alias: 보고서 표기 변형 → 표준 라벨"""
-    metric_idx = {}
-    for r in metric_rows:
-        metric_idx.setdefault(_norm(r[2]), (r[0], r[3], r[7], r[6]))
-    inv_idx, inv_entries = load_gold_inventory()
-    alias = {
-        # 목표달성율(개발) — SV 파생(공1~3)
-        "월목표달성율": "월 목표대비 개발(%)", "월목표대비개발건": "월 목표대비 개발(%)", "월목표대비개발": "월 목표대비 개발(%)",
-        "누계월목표달성율": "누계 목표대비 개발(%)", "누계목표대비개발건": "누계 목표대비 개발(%)",
-        "연목표달성율": "연 목표대비 개발(%)", "연목표대비개발건": "연 목표대비 개발(%)",
-        # 개발/활동/중단/미납/감액 — 물리 컬럼(인벤토리)
-        "개발건": "개발(건)", "개발명": "개발(명)", "누계개발건": "개발(건)", "누계개발명": "개발(명)",
-        "전년동월개발명": "개발(명)", "전년누계개발명": "개발(명)", "전년대비증감개발명": "개발(명)",
-        "활동명": "활동(명)", "활동건": "활동(건)", "활동누계명": "활동누계(명)", "활동누계건": "활동누계(건)",
-        "중단건": "중단(건)", "중단명": "중단(명)", "미납건": "미납(건)", "감액건": "감액(건)", "이탈건": "이탈(건)",
-        "증액명": "증액(명)", "증액건": "증액(건)", "미납중단명": "미납중단(명)", "미납중단건": "미납중단(건)",
-        "월말활동회원건": "월말활동회원(건)", "연도초활동회원건": "연도초 활동회원(건)", "연도말활동회원건": "연도말 활동회원(건)",
-        # 회비/금액
-        "정기회비": "정기회비(원)", "납입회비": "납입회비(원)", "청구": "청구(원)", "청구회비": "청구(원)",
-        "후원기간개월": "후원기간(개월)", "후원기간년": "후원기간(년)", "납입개월수": "납입개월수",
-        # 서비스 발송·참여 — 물리 컬럼
-        "발송수": "발송수(명)", "발송명": "발송수(명)", "성공수": "성공수(명)", "발송성공수": "성공수(명)", "오픈": "오픈(명)", "오픈수": "오픈(명)",
-        "실패수": "실패수(명)", "서신참여명": "서신참여(명)", "서신참여건": "서신참여(건)",
-        "선물금참여명": "선물금참여(명)", "선물금참여원": "선물금참여(원)", "서비스명": "서비스(명)", "서비스건": "서비스(건)",
-        # GA 행동 — 물리 컬럼(device 분해는 동일 컬럼)
-        "방문수": "방문수", "방문수합계": "방문수", "pc방문수": "방문수", "m방문수": "방문수", "app방문수": "방문수",
-        "활성사용자": "활성사용자수", "활성사용자합계": "활성사용자수",
-        "pc활성사용자": "활성사용자수", "m활성사용자": "활성사용자수", "app활성사용자": "활성사용자수",
-        "총사용자": "총사용자", "이벤트수": "이벤트수", "조회수": "조회수",
-        "세션수": "세션수", "세션": "세션수", "평균세션시간": "평균세션시간", "스크롤깊이": "스크롤깊이", "이탈율": "이탈율", "참여율": "참여율",
-        "eventcategory": "event_category", "eventaction": "event_action", "eventlabel": "event_label",
-        # 차원(공통) — 물리 컬럼
-        "부서명": "부서", "부서": "부서", "법인명": "법인", "법인": "법인", "본부지부": "본부/지부",
-        "브랜드": "공통브랜드", "상위캠페인": "공통상위캠페인", "홍보방법": "홍보방법",
-        "매체명브랜드2": "매체명/공동브랜드", "매체명": "매체명/공동브랜드",
-        "캠페인": "캠페인명", "캠페인명": "캠페인명", "후원사업": "후원사업 전체", "후원사업2명": "후원사업 전체", "후원사업명": "후원사업 전체",
-        "개발구분": "개발구분", "성별": "성별", "성별회원": "성별", "지역": "지역", "회원상태": "회원상태", "회원구분": "회원구분",
-        "연령대": "연령대", "가입경로": "가입경로", "신규기존": "신규기존구분", "신규기존구분": "신규기존구분",
-        "납입방식": "납입방식", "발송구분": "발송구분 대", "발송구분대": "발송구분 대", "미납사유": "미납사유", "중단사유": "중단사유",
-        "제목": "제목", "발송상태": "발송상태", "회원번호": "회원번호",
-        "노출수횟수": "노출수", "노출수": "노출수", "클릭수": "클릭수", "인입콜": "인입콜",
-        "ga전환수명": "GA전환수", "ga전환수건": "GA전환수", "전환수": "GA전환수",
-        # 목표(회원개발목표=FTG_D.GOAL_CNT, 물리) / 목표달성율(=SV 공1~3)
-        "월목표": "회원개발목표", "연목표": "회원개발목표", "누계월목표": "회원개발목표", "누계목표": "회원개발목표", "월목표누계": "회원개발목표",
-        "월목표대비달성율": "월 목표대비 개발(%)", "누계목표대비달성율": "누계 목표대비 개발(%)", "연목표대비달성율": "연 목표대비 개발(%)",
-        # 발송 성공/실패(명)·납입(원) 축약형
-        "성공명": "성공수", "실패명": "실패수", "발송성공명": "성공수", "발송실패명": "실패수",
-        "납입원": "납입회비", "납입": "납입회비", "누계중단명": "중단(명)", "누계개발명2": "개발(명)",
-        # 예산(FBD 물리) — 누계·집행율(%)은 SV라 물리 없음(미매칭 정상)
-        "월편성예산": "편성예산", "연편성예산": "편성예산", "편성예산": "편성예산",
-        "월집행예산erp마감값": "집행예산", "월집행예산추정치": "집행예산", "집행예산": "집행예산",
-        # 광고 차원 축약
-        "매체유형명": "매체유형", "잠재고객이름타겟그룹": "타겟그룹", "송출플랫폼": "플랫폼",
-        # 표기 변형(률/율)
-        "이탈률": "이탈율", "기준일자": "실제 일자", "기준일시": "실제 일자",
-        # 이벤트/행사(FEP·DIM_EVENT 물리)
-        "이벤트명": "행사명", "이벤트구분": "행사구분", "이벤트관리": "행사명", "총참여수": "참여자수",
-        "이벤트참여횟수전체": "참여횟수", "정기후원금": "정기후원금", "참여일": "참여경로",
-        # 기타 물리 차원
-        "실적지부": "본부/지부", "아동번호": "결연아동코드", "최초브랜드": "최초캠페인",
-        "세션수동콘텐츠": "세션 수동 광고 콘텐츠", "세션콘텐츠": "세션 수동 광고 콘텐츠",
-        # 날짜 grain(→DIM_DATE) · 실적(→개발 measure) · 후원금액대
-        "기준년월": "실제 일자", "기준년도": "실제 일자", "신청일자": "실제 일자",
-        "최근참여일": "실제 일자", "참여일자": "실제 일자",
-        "월실적": "개발(건)", "일별실적": "개발(건)",
-        "후원금액대약정금액기준10000원": "후원금액대1 5만",
-        "후원기간대납입기준": "후원기간대1 5년",
-        # ── 표본검증(2026-07-27) 확정 별칭: substring 오매핑 교정분 ──
-        "세션수": "세션수(명)", "세션": "세션수(명)",                    # ←UTM_CONTENT 오매핑 교정
-        "월편성예산": "편성예산(월)", "연편성예산": "편성예산(연)",         # ←월/연 구분
-        "월집행예산erp마감값": "집행예산(ERP, 월)", "월집행예산추정치": "집행예산(추정)",
-        "연도초활동건": "연도초 활동회원(건)", "전월말활동건": "전월말 활동회원(건)",  # ←공49·53 전용컬럼
-        "가입캠페인": "캠페인명", "최근캠페인": "최종캠페인",
-        "최초상위캠페인": "공통상위캠페인", "상위캠페인10개": "공통상위캠페인",
-        "기준일납입일": "실제 일자", "가입부서": "부서", "실적지부본부지부": "본부/지부",
-        "연령": "연령대",
-    }
-    return metric_idx, inv_idx, inv_entries, alias
-
-
-def slice_axis(field, gold):
-    """보고서필드가 GOLD 컬럼의 어떤 '분해 축(슬라이스)'인지 판정.
-    같은 컬럼으로 수렴하는 필드(PC/M/APP 방문수, 전년/주간 개발건)가 실제로는
-    필터·윈도우를 걸어야 나오는 값임을 명시 — 현업 오해 방지(§8-E #1-2).
-    이미 컬럼명이 시점/윈도우를 내포하면(YEAR_START·PREV_MONTH·MONTH_END·CUM) 중복표기하지 않는다.
-    ⚠️ 축값 적재 실측(2026-07-27): `DIM_DEVICE`=PC·M·(unknown) 3건뿐 → **APP 축값 미적재**.
-       `FACT_GA_BEHAVIOR`.DEVICE_SK는 전건 적재(널/0 없음), 실분포 M 36,035행·PC 8,870행."""
-    if not gold or gold.startswith("("):
-        return ""
-    ax = []
-    # 디바이스 축 (DIM_DEVICE.DEVICE_TYPE = PC/M/APP · FGA/FAD의 DEVICE_SK 조인)
-    if re.match(r"^PC", field):
-        ax.append("DIM_DEVICE.DEVICE_TYPE='PC'")
-    elif re.match(r"^APP", field):
-        ax.append("DIM_DEVICE.DEVICE_TYPE='APP' ⚠️축값 미적재(2026-07-27 실측: PC·M만)")
-    elif re.match(r"^M[가-힣]", field):
-        ax.append("DIM_DEVICE.DEVICE_TYPE='M'")
-    # 기간 윈도우 축 (컬럼이 이미 시점을 내포하면 생략)
-    encoded = any(t in gold for t in ("YEAR_START", "PREV_MONTH", "MONTH_END", "_CUM", "CUM_"))
-    if not encoded:
-        tw = []
-        if "전전년" in field:
-            tw.append("전전년 동기")
-        elif "전년" in field:
-            tw.append("전년 동기")
-        elif "전월" in field:
-            tw.append("전월")
-        elif "전주" in field:
-            tw.append("전주")
-        if "누계" in field:
-            tw.append("YTD 누계")
-        if "주간" in field or "주차" in field:
-            tw.append("주")
-        elif "당월" in field or "당해년도" in field:
-            tw.append("당기")
-        if tw:
-            ax.append("기간윈도우: " + "+".join(tw))
-    # 신규/기존 귀속 축
-    if "신규" in field and "기존" not in field:
-        ax.append("FMM.NEW_EXISTING_FLAG='신규'")
-    elif "기존" in field and "신규" not in field:
-        ax.append("FMM.NEW_EXISTING_FLAG='기존'")
-    # 전체 합계(축 없음) 명시
-    if not ax and ("합계" in field or "전체" in field):
-        return "(전체 합계 · 축 없음)"
-    return " · ".join(ax)
-
-
-def map_report_fields(doc, indices, kind):
-    """보고서필드 표 → [영역, 섹션, 필드값, 원천, TYPE, 대응 지표#, GOLD 매핑, 매핑근거].
-    매핑 우선순위: ① GOLD 물리 필드 인벤토리(물리 컬럼) → ② 지표사전(율·파생=SV) → ③ 부분일치.
-    지표번호가 없어도 물리 컬럼이 있으면 매핑된다(예: 연령대→DIM_MEMBER.AGE_BAND, 오픈(명)→FSE.OPEN_MEMBERS)."""
-    metric_idx, inv_idx, inv_entries, alias = indices
-    # 파생 의미 표지: 이 표지를 가진 보고서필드는 물리 컬럼이 아니라 SV 계산항목이다.
-    # ③④(부분일치)가 base measure 이름을 substring으로 낚아채 '물리컬럼'으로 오확정하는 것을 차단(정밀도 우선).
-    DERIVED_MARK = re.compile(r"율|률|구성비|증감|대비|비중|달성|1인당|1명당|%")
-
-    def resolve(field):
-        n = _norm(field)
-        cands = [n]
-        if n in alias:
-            cands.append(_norm(alias[n]))
-        # ① 인벤토리 정확일치 → 물리 GOLD 컬럼
-        for c in cands:
-            if c in inv_idx:
-                e = inv_idx[c]
-                return (e["mno"] or "(215밖)", f'{e["table"]}.{e["col"]}', "필드인벤토리")
-        # ② 지표사전 정확일치 → 율·파생(SV)·측정
-        for c in cands:
-            if c in metric_idx:
-                h = metric_idx[c]
-                return (h[0], h[2], "지표사전")
-        # 파생 표지가 있으면 부분일치(③④)를 건너뛰고 ⑤ SV 패턴으로 직행
-        if not DERIVED_MARK.search(field):
-            # ③ 인벤토리 부분일치 (라벨↔필드 포함관계) — 위험 컬럼(blocklist)·+5일차 코호트는 제외
-            for c in cands:
-                if len(c) >= 2:
-                    for e in inv_entries:
-                        if e["col"] in INV_NO_SUBSTR or e["col"].startswith("D5_"):
-                            continue
-                        ln = e["label_norm"]
-                        if ln and len(ln) >= 2 and (ln == c or ln.startswith(c) or c.startswith(ln) or c in ln):
-                            return (e["mno"] or "(215밖)", f'{e["table"]}.{e["col"]}', "필드인벤토리~")
-            # ④ 지표사전 부분일치
-            for c in cands:
-                if len(c) >= 4:
-                    for k, h in metric_idx.items():
-                        if k and k in c:
-                            return (h[0], h[2], "지표사전~")
-        # ⑤ SV 파생 패턴(율·증감·구성비·집행율·1인당·누계) — 물리 컬럼 없이 SV metric으로 계산(P7 등)
-        base = ""
-        blen = 0
-        for e in inv_entries:
-            ln = e["label_norm"]
-            if ln and len(ln) >= 2 and ln in n and len(ln) > blen:
-                base, blen = f'{e["table"]}.{e["col"]}', len(ln)
-
-        def sv(no, desc):
-            g = f"SV metric — {desc}" + (f" · base: {base}" if base else "")
-            return (no, g, "SV파생")
-
-        pct = bool(re.search(r"%|율|률", field))
-        if "증감" in field and (pct or "p" in field.lower().split("증감")[-1]):
-            return sv("공60", "증감율(%) = (당기−전기)/전기×100 (P7 시계열)")
-        if "증감" in field:
-            return sv("공59", "증감 = 당기−전기 (P7 시계열)")
-        if "구성비" in field or "비중" in field:
-            return sv("(ratio-of-total)", "구성비/비중(%) = 부분/전체×100 (예: 공26·29·신41 패턴)")
-        if "달성" in field:
-            return sv("공1·2·3", "목표달성율(%) = 개발(건)/회원개발목표 (FTG_D 분모)")
-        if "대비" in field:
-            return sv("(SV ratio)", "대비(%) = 분자/분모 ×100 — 보고서 정의상 두 base 비율(분모는 보고서 문맥 확인)")
-        if "집행율" in field or "집행률" in field:
-            return sv("(overview)", "집행율(%) = 집행예산/편성예산 (FBD, P7)")
-        if "1인당" in field or "1명당" in field:
-            return sv("공61", "1명당 건수 = 활동회원(건)/활동회원(명)")
-        if "성공율" in field:
-            return sv("(FSE 파생)", "성공율(%) = SUCCESS_MEMBERS/SEND_MEMBERS")
-        if "납입" in field and "명" in field:
-            return ("(FMM 파생)", "SV metric — 납입회원수(명) = COUNT(DISTINCT MBER_NO WHERE PAY_STAT_CD='S') · 원천 BRONZE_CRM.TM_PM_MBRFEE_ACMSLT(46.4M·적재완료)", "SV파생")
-        if "누계" in field:
-            return sv("(YTD)", "누계 = base의 YTD running sum (P7·물리 미저장)")
-        if pct:
-            return sv("(SV ratio)", "비율(%) — SV time-intelligence/ratio")
-        if "평균" in field:
-            return sv("(SV avg)", "평균 — SV 집계(base AVG)")
-        return ("—", "(미매칭 — GOLD 물리·SV 대응 미확인)", "")
-
-    out = []
-    for t in parse_md(doc):
-        hdr = t["header"]
-        ci_f = col_idx(hdr, "필드값")
-        ci_s = col_idx(hdr, "데이터 원천", "원천")
-        ci_t = col_idx(hdr, "데이터 TYPE", "TYPE")
-        if ci_f is None:
-            continue
-        area = t["h1"] or ""
-        section = t["h2"] or ""
-        label = t["label"] or ""
-        if kind == "mkt":
-            area = "마케팅 보고서"
-            sec = section
-        else:
-            sec = (section + (f" · {label}" if label and "필드" in label else "")).strip(" ·")
-        for r in t["rows"]:
-            if ci_f >= len(r) or not r[ci_f] or r[ci_f] in ("필드값",):
-                continue
-            field = r[ci_f]
-            srcv = r[ci_s] if ci_s is not None and ci_s < len(r) else ""
-            typev = r[ci_t] if ci_t is not None and ci_t < len(r) else ""
-            mno, gold, basis = resolve(field)
-            out.append([area, sec, field, srcv, typev, mno, gold, slice_axis(field, gold), basis])
+def _keys(s):
+    """라벨 1개에서 매칭 후보 키를 단계적으로 만든다.
+    🔴 별칭 표(수십~수백 항목)를 하드코딩하지 않는다 — 그 표는 stale 의 배포원이고(P85),
+       유실 시 추측으로 복원할 수도 없다. 대신 **정규화 규칙**으로 만든다.
+       ① 정규화 원형  ② 단위 접미 제거형  ③ 문자 정렬형(어순 차이 흡수: '월 편성예산' ↔ '편성예산(월)')
+    """
+    n = _norm(s)
+    out = [("정확", n)]
+    n2 = UNIT_SUFFIX.sub("", n)
+    if n2 and n2 != n:
+        out.append(("단위", n2))
+    if len(n) >= 4:
+        out.append(("어순", "".join(sorted(n))))
     return out
 
 
-# ─────────────────────────────── 8) 출력: CSV ───────────────────────────────
+def build_field_index(metric_rows):
+    metric_idx, metric_unit, metric_sort = {}, {}, {}
+    for r in metric_rows:
+        for kind, k in _keys(r[2]):
+            tgt = {"정확": metric_idx, "단위": metric_unit, "어순": metric_sort}[kind]
+            tgt.setdefault(k, (r[0], r[3], r[7], r[6]))
+    inv_idx, inv_entries = load_gold_inventory()
+    inv_unit, inv_sort = {}, {}
+    for e in inv_entries:
+        for kind, k in _keys(e["label"]):
+            if kind == "단위":
+                inv_unit.setdefault(k, e)
+            elif kind == "어순":
+                inv_sort.setdefault(k, e)
+    return {"metric": metric_idx, "metric_unit": metric_unit, "metric_sort": metric_sort,
+            "inv": inv_idx, "inv_unit": inv_unit, "inv_sort": inv_sort,
+            "inv_entries": inv_entries}
+
+
+def slice_axis(field, gold):
+    """보고서필드가 GOLD 컬럼의 어떤 분해 축인지 — 같은 컬럼으로 수렴하는 필드 구분."""
+    parts = []
+    if re.match(r"^PC", field):
+        parts.append("DIM_DEVICE.DEVICE_TYPE='PC'")
+    elif re.match(r"^APP", field):
+        parts.append("DIM_DEVICE.DEVICE_TYPE='APP' ⚠️축값 미적재")
+    elif re.match(r"^M[가-힣]", field):
+        parts.append("DIM_DEVICE.DEVICE_TYPE='M'")
+    if not any(t in gold for t in ("YEAR_START", "PREV_MONTH", "MONTH_END", "_CUM", "CUM_")):
+        for tok, lab in (("전전년", "전전년 동기"), ("전년", "전년 동기"), ("전월", "전월"),
+                         ("전주", "전주"), ("누계", "YTD 누계"), ("주간", "주차"),
+                         ("당월", "당월"), ("당해년도", "당기")):
+            if tok in field:
+                parts.append("기간윈도우: " + lab)
+                break
+    if "신규" in field:
+        parts.append("FMM.NEW_EXISTING_FLAG='신규'")
+    elif "기존" in field:
+        parts.append("FMM.NEW_EXISTING_FLAG='기존'")
+    return " · ".join(parts)
+
+
+def map_report_fields(doc, indices, kind):
+    out, seen_fields = [], []
+
+    def lookup(field):
+        """인벤토리 → 지표사전 순으로 3단 사다리(정확 → 단위접미 → 어순)를 적용한다."""
+        keys = dict(_keys(field))
+        # ① GOLD 물리 필드 인벤토리
+        for kd, store, tag in (("정확", "inv", "필드인벤토리"),
+                               ("단위", "inv_unit", "필드인벤토리(단위)"),
+                               ("어순", "inv_sort", "필드인벤토리(어순)")):
+            k = keys.get(kd)
+            if k and k in indices[store]:
+                e = indices[store][k]
+                return e["mno"] or "(215밖)", f"{e['table']}.{e['col']}", tag
+        # ② 지표사전
+        for kd, store, tag in (("정확", "metric", "지표사전"),
+                               ("단위", "metric_unit", "지표사전(단위)"),
+                               ("어순", "metric_sort", "지표사전(어순)")):
+            k = keys.get(kd)
+            if k and k in indices[store]:
+                m = indices[store][k]
+                return m[0], m[2], tag
+        return None
+
+    def resolve(field):
+        # ⓪ 교정 등록부 — 정본 인벤토리의 정확일치가 **틀렸음을 실측으로 확인**한 항목이 최우선
+        ov = FMO.apply(field)
+        if ov:
+            gold, kind_, _why = ov
+            return "", gold, f"교정등록부({kind_})"
+        # ①② 인벤토리·지표사전 사다리 (원표기 → 등록 별칭)
+        hit = lookup(field)
+        if hit:
+            return hit
+        clean = re.sub(r"\*+\s*\(?중복\)?\s*\*+", "", field).strip()
+        if clean != field:
+            hit = lookup(clean)
+            if hit:
+                return hit
+        alias = FMO.label_alias(field) or FMO.label_alias(clean)
+        if alias:
+            hit = lookup(alias)
+            if hit:
+                return hit[0], hit[1], hit[2] + "·별칭등록부"
+        # ③ 규칙 판정 (율·증감·구성비 등 = SV 파생)
+        #   🔴 출력 형식 계약: GOLD 매핑 문자열은 반드시 `SV metric — ` 로 시작한다.
+        #      `09_보고서필드_조립가능성` 생성기가 이 접두로 「물리 컬럼이 아니다」를 판정한다
+        #      (형식을 바꾸면 조립가능성 판정이 조용히 「판정불가」로 무너진다 — 실측 재발함).
+        #      분류 표시는 **지표# 열**에 둔다.
+        if "납입" in field and "명" in field:
+            return ("(FMM 파생)",
+                    "SV metric — 납입회원수(명) = COUNT(DISTINCT MEMBER_DK WHERE 납입성공)", "SV파생")
+        if RATE_RE.search(field):
+            if "달성" in field:
+                return "공1·2·3", "SV metric — 목표달성율(%) = 개발(건)/회원개발목표 (FTG_D 분모)", "SV파생"
+            if "구성비" in field or "비중" in field:
+                return "(ratio-of-total)", "SV metric — 구성비/비중(%) = 부분/전체×100", "SV파생"
+            if "증감" in field:
+                if "율" in field or "%" in field:
+                    return "공60", "SV metric — 증감율(%) = (당기−전기)/전기×100 (P7 시계열)", "SV파생"
+                return "공59", "SV metric — 증감 = 당기−전기 (P7 시계열)", "SV파생"
+            if "집행율" in field:
+                return "(overview)", "SV metric — 집행율(%) = 집행예산/편성예산 (FBD, P7)", "SV파생"
+            if "1인당" in field or "1명당" in field:
+                return "공61", "SV metric — 1명당 건수 = 활동회원(건)/활동회원(명)", "SV파생"
+            if "성공율" in field:
+                return "(FSE 파생)", "SV metric — 성공율(%) = SUCCESS_MEMBERS/SEND_MEMBERS", "SV파생"
+            return "(SV ratio)", "SV metric — 비율(%) — SV time-intelligence/ratio", "SV파생"
+        if "누계" in field:
+            # 🔴 누계는 **물리 미저장**이다 — base 컬럼을 그대로 가리키면 단월값을 누계로 읽는다.
+            #   그래도 base 를 같이 실어야 추적이 끊기지 않는다.
+            b = lookup(field.replace("누계", "").strip()) or lookup(field.replace("(누계)", "").strip())
+            tail = f" · base: {b[1]}" if b else ""
+            return "(YTD)", f"SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장){tail}", "SV파생"
+        # ④ 열리지 않는 것은 「불가」로 명시 — 미매칭과 섞으면 사유가 사라진다
+        br = FMO.blocked_reason(field)
+        if br:
+            return "", f"⛔ 불가 — {br}", "⛔불가(등록부)"
+        # ⑤ 부분일치 (⚠ 검증필요)
+        n = _norm(field)
+        if len(n) >= 3:
+            for e2 in indices["inv_entries"]:
+                ln = e2["label_norm"]
+                if len(ln) >= 3 and e2["col"] not in INV_NO_SUBSTR and (n in ln or ln in n):
+                    return e2["mno"] or "(215밖)", f"{e2['table']}.{e2['col']}", "필드인벤토리~"
+            for k, m2 in indices["metric"].items():
+                if len(k) >= 3 and (n in k or k in n):
+                    return m2[0], m2[2], "지표사전~"
+        # ⑥ 평균 — 물리 `AVG_*` 컬럼을 먼저 찾은 뒤에도 못 찾으면 SV 집계로 본다
+        if "평균" in field:
+            return "(SV avg)", "SV metric — 평균 = base AVG (SV 집계)", "SV파생"
+        return "", "(미매칭 — GOLD 물리·SV 대응 미확인)", "(미매칭)"
+
+    for t in parse_md(doc):
+        h = t["header"]
+        i_f = col_idx(h, "필드값")
+        if i_f is None:
+            continue
+        i_src = col_idx(h, "데이터 원천", "원천")
+        i_ty = col_idx(h, "데이터 TYPE", "TYPE")
+        area = "마케팅 보고서" if kind == "mkt" else (t["h1"] or "")
+        section = t["h2"] or t["h3"] or ""
+        if t["label"]:
+            section = (section + " · " + t["label"]).strip(" ·")
+        for r in t["rows"]:
+            if len(r) <= i_f:
+                continue
+            field = r[i_f].strip()
+            if not field or field.startswith("---"):
+                continue
+            seen_fields.append(field)
+            src = r[i_src].strip() if i_src is not None and len(r) > i_src else ""
+            ty = r[i_ty].strip() if i_ty is not None and len(r) > i_ty else ""
+            mno, gold, basis = resolve(field)
+            out.append([area, section, field, src, ty, mno, gold, slice_axis(field, gold), basis])
+    return out, seen_fields
+
+
+# ───────────────────────────── 출력 ─────────────────────────────
 def write_csv(rows, mkt, mem):
-    path = os.path.join(OUT_DIR, BASENAME + ".csv")
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
+    p = os.path.join(OUT_DIR, BASENAME + ".csv")
+    with open(p, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow([f"# 생성기: {GEN_PATH}"])
+        w.writerow([f"# 생성기: {GEN_PATH} | 측정일: {MEASURED}"])
         w.writerow([f"# {PROV}"])
         w.writerow([])
-        w.writerow(["## 지표 → GOLD 매핑 (215)"])
+        w.writerow([f"## 지표 → GOLD 매핑 ({len(rows)})"])
         w.writerow(HEADER)
         w.writerows(rows)
         w.writerow([])
         w.writerow(["## 마케팅 보고서필드 → 지표#/GOLD"])
-        w.writerow(["영역", "섹션", "필드값", "데이터원천", "데이터TYPE", "대응_지표#", "GOLD_매핑", "분해축", "매핑근거"])
+        w.writerow(FIELD_HEADER)
         w.writerows(mkt)
         w.writerow([])
         w.writerow(["## 회원 보고서필드 → 지표#/GOLD"])
-        w.writerow(["영역", "섹션", "필드값", "데이터원천", "데이터TYPE", "대응_지표#", "GOLD_매핑", "분해축", "매핑근거"])
+        w.writerow(FIELD_HEADER)
         w.writerows(mem)
-    return path
+    return p
 
 
-# ─────────────────────────────── 9) 출력: MD ───────────────────────────────
 def write_md(rows, mkt, mem):
-    path = os.path.join(OUT_DIR, BASENAME + ".md")
-    n_ok = sum(1 for r in rows if r[11] == "OK")
-    n_par = sum(1 for r in rows if r[11] == "PARTIAL")
-    n_wait = sum(1 for r in rows if r[11] == "WAIT")
-    # 매핑근거별 정밀도 집계(보고서필드) — 커버리지≠정확도임을 명시하기 위함
-    from collections import Counter
-    basis = Counter((r[8] or "(미매칭)") for r in (mkt + mem))
+    import collections
+    p = os.path.join(OUT_DIR, BASENAME + ".md")
+    ok = sum(1 for r in rows if r[11] == "OK")
+    pa = sum(1 for r in rows if r[11] == "PARTIAL")
+    wa = sum(1 for r in rows if r[11] == "WAIT")
+    meas = sum(1 for r in rows if r[12].startswith("실측:"))
+    basis_cnt = collections.Counter(r[8] for r in mkt + mem)
     L = []
-    L.append("<!-- LLM-METADATA")
-    L.append("doc_id: METRIC_TO_GOLD_MAPPING")
-    L.append("doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장표 (현업용)")
-    L.append("project: GN_DW (굿네이버스)")
-    L.append("grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md(보고서필드→GOLD 물리컬럼 정본) · gen_column_mapping.py · 04·05 보고서필드 인벤토리")
-    L.append(f"generator: {GEN_PATH}")
-    L.append("generated: auto (do-not-edit)")
-    L.append("END-METADATA -->")
-    L.append("")
-    L.append("# 지표 → GOLD 매핑 장표 (현업용)")
-    L.append("")
-    L.append(f"> ⚙️ **생성기**: `{GEN_PATH}` — {PROV}")
-    L.append("> **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에")
-    L.append("> 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이")
-    L.append("> 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.")
-    L.append("> 상태: **OK** 사용가능 · **PARTIAL** 일부 대기 · **WAIT** 값 부재(전건 0/NULL 또는 원천 미입고)")
-    L.append("")
-    L.append("> 🔴 **상태는 가능한 한 실측입니다** — 지표에 대응하는 GOLD 물리 컬럼을 특정할 수 있으면")
-    L.append("> `COUNT`/`COUNT_IF(<>0)` 로 직접 측정해 판정하고, 근거를 `상태_근거` 열에 `실측:` 으로 적습니다.")
-    L.append("> 물리 컬럼을 특정할 수 없는 경우(파생 metric·차원 배속)에만 배속·원천 계통으로 **추정**하고 `추정:` 으로 표시합니다.")
-    L.append("> **`추정:` 행을 사용 가능 근거로 단독 인용하지 마세요.**")
-    L.append("")
-    L.append("## 0. 요약")
-    L.append("")
-    L.append(f"- 총 **{len(rows)}개** 지표 (공통 162 + 신규 53).")
-    n_meas = sum(1 for r in rows if str(r[12]).startswith("실측"))
-    L.append(f"- 상태: ✅ OK **{n_ok}** · ◐ PARTIAL **{n_par}** · ⛔ WAIT **{n_wait}**")
-    L.append(f"- 판정 근거: **실측 {n_meas}** / 추정 {len(rows)-n_meas} (실측 = GOLD 물리 컬럼 census 직접 조회)")
-    L.append("")
-    L.append("> 🔴 **종전 판본은 이 표를 `OK 168 · PARTIAL 43 · WAIT 4` 로 적었습니다. 그것은 과대 진술이었습니다** —")
-    L.append("> 상태를 원천 계통으로만 추정해서, `FACT_MEMBER_MONTHLY` 의 활동·미납·증액 카운트나")
-    L.append("> `FACT_SERVICE_EVENT` 의 성공·실패·참여 카운트처럼 **컬럼이 전건 `0` 인 지표를 `OK` 로 분류**했습니다.")
-    L.append("> 이번 판본은 실측으로 판정하므로 그 지표들이 `WAIT` 로 드러납니다(§0-2).")
-    L.append("- **유형별 GOLD 매핑 규칙**: `measure`→FACT 물리컬럼 · `dimension`→DIM(또는 FMM degen/스냅샷) · `derived`→**SV metric**(분자/분모 base로 계산, 물리컬럼 아님. 단 GA4 비가산 #98·108은 FGA 물리적재).")
-    L.append("- **약어**: FMM=FACT_MEMBER_MONTHLY · FME=FACT_MEMBER_EVENT · FSE=FACT_SERVICE_EVENT · FAD=FACT_AD_PERFORMANCE · FGA=FACT_GA_BEHAVIOR · FBD=FACT_BUDGET · FEP=FACT_EVENT_PARTICIPATION · FTG-D=FACT_TARGET_DEV · FTG-B=FACT_TARGET_BIZ · SV=Semantic View metric.")
-    L.append("")
-    waits = [r for r in rows if r[11] == "WAIT" and str(r[12]).startswith("실측")]
-    L.append("### 0-2. 🔴 실측 `WAIT` — 「설계는 됐으나 값이 없는」 지표")
-    L.append("")
-    L.append(f"아래 **{len(waits)}개** 지표는 배속·계보가 모두 확정돼 있으나 대응 GOLD 물리 컬럼이 **전건 0 또는 NULL** 이다.")
-    L.append("조회하면 에러 없이 `0` 이 반환되므로 **그 `0` 을 실적으로 읽으면 조용히 틀린다**(P15).")
-    L.append("")
-    L.append("| 지표# | 지표명 | GOLD 매핑 | 실측 근거 |")
-    L.append("|---|---|---|---|")
-    for r in waits:
-        L.append(f"| `{r[0]}` | {r[2]} | `{r[7]}` | {str(r[12]).replace('실측: ','')} |")
-    L.append("")
-    L.append("### 0-1. 보고서필드 매핑 신뢰도 (⚠ 커버리지 ≠ 정확도)")
-    L.append("")
-    L.append("| 매핑근거 | 건수 | 신뢰도 | 해석 |")
-    L.append("|---|---:|---|---|")
-    for k, lvl, desc in [
+    A = L.append
+    A("<!-- LLM-METADATA")
+    A("doc_id: METRIC_TO_GOLD_MAPPING")
+    A("doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장표 (현업용)")
+    A("project: GN_DW (굿네이버스)")
+    A("grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md · "
+      "30_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · "
+      "field_mapping_override.py(교정 등록부) · 04·05 보고서필드 인벤토리")
+    A(f"generator: {GEN_PATH}")
+    A(f"measured: {MEASURED}")
+    A("generated: auto (do-not-edit)")
+    A("END-METADATA -->")
+    A("")
+    A("# 지표 → GOLD 매핑 장표 (현업용)")
+    A("")
+    A(f"> ⚙️ **생성기**: `{GEN_PATH}` · 측정일 **{MEASURED}** — {PROV}")
+    A("> **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에")
+    A("> 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이")
+    A("> 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.")
+    A("> 상태: **OK** 사용가능 · **PARTIAL** 일부 대기 · **WAIT** 값 없음/원천 입고 대기")
+    A("")
+    A("> 🔴 **상태는 가능한 한 실측입니다** — 지표에 대응하는 GOLD 물리 컬럼을 특정할 수 있으면")
+    A("> `COUNT`/`COUNT_IF(<>0)` 로 직접 측정해 판정하고, 근거를 `상태_근거` 열에 `실측:` 으로 적습니다.")
+    A("> 물리 컬럼을 특정할 수 없는 경우(파생 metric·차원 배속)에만 배속·원천 계통으로 **추정**하고 `추정:` 으로 표시합니다.")
+    A("> **`추정:` 행을 사용 가능 근거로 단독 인용하지 마세요.**")
+    A("")
+    A("## 0. 요약")
+    A("")
+    A(f"- 총 **{len(rows)}개** 지표 (공통 162 + 신규 53).")
+    A(f"- 상태: ✅ OK **{ok}** · ◐ PARTIAL **{pa}** · ⛔ WAIT **{wa}**")
+    A(f"- 판정 근거: **실측 {meas}** / 추정 {len(rows) - meas} (실측 = GOLD 물리 컬럼 census 직접 조회)")
+    A("")
+    A("> 🔴 **원천 계통 추정으로 상태를 매기면 「사용가능」이 거짓이 되는 방향으로만 틀립니다** — 컬럼이 전건 `0` 인")
+    A("> 지표를 `OK` 로 분류하면 현업이 조회해서 받은 `0` 을 실적으로 믿습니다(에러도 경고도 없습니다).")
+    A("> 그래서 이 장표는 물리 컬럼을 특정할 수 있는 지표를 전부 측정해서 판정합니다(§0-2).")
+    A("- **유형별 GOLD 매핑 규칙**: `measure`→FACT 물리컬럼 · `dimension`→DIM(또는 FMM degen/스냅샷) · "
+      "`derived`→**SV metric**(분자/분모 base로 계산, 물리컬럼 아님. 단 GA4 비가산 #98·108은 FGA 물리적재).")
+    A("- **약어**: " + " · ".join(f"{k}={v}" for k, v in sorted(ABBR.items()) if "-" not in k) + " · SV=Semantic View metric.")
+    A("")
+    A("### 0-2. 🔴 실측 `WAIT` — 「설계는 됐으나 값이 없는」 지표")
+    A("")
+    wait_measured = [r for r in rows if r[11] == "WAIT" and r[12].startswith("실측:")]
+    A(f"아래 **{len(wait_measured)}개** 지표는 배속·계보가 모두 확정돼 있으나 대응 GOLD 물리 컬럼이 **전건 0 또는 NULL** 이다.")
+    A("조회하면 에러 없이 `0` 이 반환되므로 **그 `0` 을 실적으로 읽으면 조용히 틀린다**(P15).")
+    A("")
+    A("| 지표# | 지표명 | GOLD 매핑 | 실측 근거 |")
+    A("|---|---|---|---|")
+    for r in wait_measured:
+        A(f"| `{r[0]}` | {r[2]} | `{r[7]}` | {r[12][4:].strip()} |")
+    A("")
+    A("### 0-1. 보고서필드 매핑 신뢰도 (⚠ 커버리지 ≠ 정확도)")
+    A("")
+    A("| 매핑근거 | 건수 | 신뢰도 | 해석 |")
+    A("|---|---:|---|---|")
+    guide = [
+        ("교정등록부", "높음(실측 교정)", "정본 인벤토리의 정확일치가 **틀렸음을 물리 실측으로 확인**해 바로잡은 항목 — "
+                                  "`field_mapping_override.py` 에 사유·근거 기재"),
         ("필드인벤토리", "높음(정확일치)", "05_필드 인벤토리.md 라벨과 정확히 일치 — 물리 GOLD 컬럼 확정"),
         ("지표사전", "높음(정확일치)", "지표사전 지표명과 정확히 일치"),
         ("SV파생", "중(규칙기반)", "율·증감·구성비·대비 등 규칙 판정 — **분자/분모 확정은 04_SV파생 매핑.md·현업 확인 필요**"),
         ("필드인벤토리~", "**검증필요**(부분일치)", "라벨 부분일치 — 동명이의 가능. 표본검증 권장"),
         ("지표사전~", "**검증필요**(부분일치)", "지표명 부분일치 — 동명이의 가능. 표본검증 권장"),
-        ("(미매칭)", "—", "GOLD 물리·SV 어느 쪽도 대응 없음(어드민 제외분 등)"),
-    ]:
-        L.append(f"| `{k}` | {basis.get(k, 0)} | {lvl} | {desc} |")
-    L.append("")
-    L.append("> **후속 작업 주의**: 위 표의 `~`(부분일치)·`SV파생` 행은 **문자열/규칙 기반 추정**이다. 현업 확정 전")
-    L.append("> 계약·개발 산출물의 근거로 단독 인용하지 말고, `필드인벤토리`/`지표사전`(정확일치) 또는 정본 문서로 재확인할 것.")
-    L.append("> 생성 시점 원천 문서가 바뀌면 이 장표는 **자동 갱신되지 않는다** → 생성기 재실행 필요.")
-    L.append("")
+        ("(미매칭)", "—", "GOLD 물리·SV 어느 쪽도 대응 없음(어드민 제외분·원천 부재)"),
+    ]
+    for name, conf, desc in guide:
+        A(f"| `{name}` | {basis_cnt.get(name, 0)} | {conf} | {desc} |")
+    A("")
+    A("> **후속 작업 주의**: 위 표의 `~`(부분일치)·`SV파생` 행은 **문자열/규칙 기반 추정**이다. 현업 확정 전")
+    A("> 계약·개발 산출물의 근거로 단독 인용하지 말고, `교정등록부`/`필드인벤토리`/`지표사전`(정확일치)으로 재확인할 것.")
+    A("> 생성 시점 원천 문서가 바뀌면 이 장표는 **자동 갱신되지 않는다** → 생성기 재실행 필요.")
+    A("")
+    A("## 1. 지표 → GOLD 전체 매핑")
+    A("")
 
-    def emit_table(title, subset):
-        L.append(f"### {title} ({len(subset)})")
-        L.append("")
-        L.append("| 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 |")
-        L.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+    def emit(title, subset):
+        A(f"### {title} ({len(subset)})")
+        A("")
+        A("| 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | "
+          "SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 |")
+        A("|---|---|---|---|---|---|---|---|---|---|---|---|")
         for r in subset:
-            fx = (r[10] or "").replace("|", "\\|")
-            L.append(f"| `{r[0]}` | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | `{r[7]}` | `{r[8]}` | `{r[9]}` | {fx} | {r[11]} | {r[12]} |")
-        L.append("")
+            f10 = (r[10] or "").replace("|", "\\|")
+            A(f"| `{r[0]}` | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | `{r[7]}` | "
+              f"`{r[8]}` | `{r[9]}` | {f10} | {r[11]} | {r[12]} |")
+        A("")
 
-    L.append("## 1. 지표 → GOLD 전체 매핑")
-    L.append("")
-    emit_table("1-A. 공통 지표", [r for r in rows if r[0].startswith("공")])
-    emit_table("1-B. 신규 지표", [r for r in rows if r[0].startswith("신")])
+    emit("1-A. 공통 지표", [r for r in rows if r[0].startswith("공")])
+    emit("1-B. 신규 지표", [r for r in rows if r[0].startswith("신")])
+    A("---")
+    A("")
 
-    L.append("---")
-    L.append("")
-    L.append("## 2. 마케팅 보고서필드 → 지표#/GOLD 매핑")
-    L.append("")
-    L.append("> `99_provided_definition/04_마케팅_보고서필드 인벤토리.md`(디지털/영상/재송출 효율분석 + 전환회원특성 + 캠페인별 LTV)의 필드를 지표번호·GOLD로 매핑.")
-    L.append("> **매핑근거**: `필드인벤토리`=05_필드 인벤토리.md의 GOLD 물리 컬럼과 직접 대응(지표번호 없어도 매핑됨. 예: 연령대→`DIM_MEMBER.AGE_BAND`) · `지표사전`=지표명 일치 · `SV파생`=율/증감/구성비/집행율/1인당/납입(명)/누계 등 **물리 컬럼 없이 SV metric으로 계산**(base·원천 병기) · `~`=부분일치. 미매칭 2건은 어드민 푸시(발송·성공건수, ❌삭제 확정)뿐.")
-    L.append("")
-    L.append("| 영역 | 섹션 | 필드값 | 데이터 원천 | TYPE | 대응 지표# | GOLD 매핑 | 분해축 | 매핑근거 |")
-    L.append("|---|---|---|---|---|---|---|---|---|")
-    for r in mkt:
-        L.append(f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | `{r[5]}` | `{r[6]}` | {r[7]} | {r[8]} |")
-    L.append("")
-    L.append("---")
-    L.append("")
-    L.append("## 3. 회원 보고서필드 → 지표#/GOLD 매핑")
-    L.append("")
-    L.append("> `99_provided_definition/05_회원_보고서필드 인벤토리.md`(개발현황·회원특성·서비스 보고서의 CRM/GA 필드)를 지표번호·GOLD로 매핑.")
-    L.append("")
-    L.append("| 영역 | 섹션 | 필드값 | 데이터 원천 | TYPE | 대응 지표# | GOLD 매핑 | 분해축 | 매핑근거 |")
-    L.append("|---|---|---|---|---|---|---|---|---|")
-    for r in mem:
-        L.append(f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | `{r[5]}` | `{r[6]}` | {r[7]} | {r[8]} |")
-    L.append("")
-    L.append("---")
-    L.append("_Co-authored with CoCo_")
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("\n".join(L))
-    return path
+    def emit_fields(title, note, data):
+        A(title)
+        A("")
+        A(note)
+        A("")
+        A("| 영역 | 섹션 | 필드값 | 데이터 원천 | TYPE | 대응 지표# | GOLD 매핑 | 분해축 | 매핑근거 |")
+        A("|---|---|---|---|---|---|---|---|---|")
+        for r in data:
+            A(f"| {r[0]} | {r[1]} | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | {r[7]} | {r[8]} |")
+        A("")
+
+    emit_fields("## 2. 마케팅 보고서필드 → 지표#/GOLD 매핑",
+                "> `99_provided_definition/04_마케팅_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
+                "> ⚠️ 이 표는 **라벨→컬럼 매핑**이며 **섹션 단위 조립 가능성이 아니다**(P86). "
+                "섹션을 한 표로 조립할 수 있는지는 `09_보고서필드_조립가능성.md` 를 본다.", mkt)
+    emit_fields("## 3. 회원 보고서필드 → 지표#/GOLD 매핑",
+                "> `99_provided_definition/05_회원_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
+                "> ⚠️ 조립 가능성은 `09_보고서필드_조립가능성.md` 소관이다(P86).", mem)
+    A("_Co-authored with CoCo_")
+    open(p, "w", encoding="utf-8").write("\n".join(L) + "\n")
+    return p
 
 
-# ─────────────────────────────── 10) 출력: XLSX ───────────────────────────────
 def write_xlsx(rows, mkt, mem):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.utils import get_column_letter
-    wb = Workbook()
     hdr_fill = PatternFill("solid", fgColor="1F4E78")
     hdr_font = Font(color="FFFFFF", bold=True, size=10)
-    title_font = Font(bold=True, size=13, color="1F4E78")
     wrap = Alignment(wrap_text=True, vertical="top")
     thin = Side(style="thin", color="D0D0D0")
-    border = Border(left=thin, right=thin, top=thin, bottom=thin)
-    status_fill = {"OK": PatternFill("solid", fgColor="E2EFDA"),
-                   "PARTIAL": PatternFill("solid", fgColor="FFF2CC"),
-                   "WAIT": PatternFill("solid", fgColor="FCE4D6")}
-
-    def style_header(ws, row_idx, ncol):
-        for c in range(1, ncol + 1):
-            cell = ws.cell(row=row_idx, column=c)
-            cell.fill = hdr_fill; cell.font = hdr_font
-            cell.alignment = wrap; cell.border = border
+    bd = Border(left=thin, right=thin, top=thin, bottom=thin)
+    stat_fill = {"OK": PatternFill("solid", fgColor="E2EFDA"),
+                 "PARTIAL": PatternFill("solid", fgColor="FFF2CC"),
+                 "WAIT": PatternFill("solid", fgColor="FCE4D6")}
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "00_INDEX"
+    ws["A1"] = "GN_DW 지표 → GOLD 매핑 장표"
+    ws["A1"].font = Font(bold=True, size=13, color="1F4E78")
+    ws["A2"] = f"⚙️ 생성기: {GEN_PATH} · 측정일 {MEASURED} — {PROV}"
+    ws.append([])
+    ws.append(["시트", "내용"])
+    for t, d in (("01_지표GOLD매핑", "215 지표 → 배속·물리컬럼/SV base·SILVER/BRONZE·계산식·상태(실측)"),
+                 ("02_마케팅보고서필드", "04 마케팅 보고서필드 → 지표#/GOLD"),
+                 ("03_회원보고서필드", "05 회원 보고서필드 → 지표#/GOLD")):
+        ws.append([t, d])
+    ws.column_dimensions["A"].width = 26
+    ws.column_dimensions["B"].width = 88
 
     def sheet(title, header, data, widths, status_col=None):
-        ws = wb.create_sheet(title[:31])
-        ws["A1"] = title; ws["A1"].font = title_font
-        ws["A2"] = f"⚙️ 생성기: {GEN_PATH}"
-        ws.append([]); ws.append(header)
-        style_header(ws, 4, len(header))
+        s = wb.create_sheet(title[:31])
+        s["A1"] = f"⚙️ 생성기: {GEN_PATH} · 측정일 {MEASURED}"
+        s["A1"].font = Font(size=9)
+        s.append([])
+        s.append([])
+        s.append(list(header))
+        for i, w in enumerate(widths, 1):
+            from openpyxl.utils import get_column_letter
+            s.column_dimensions[get_column_letter(i)].width = w
+        for j in range(1, len(header) + 1):
+            c = s.cell(row=4, column=j)
+            c.fill, c.font, c.alignment, c.border = hdr_fill, hdr_font, wrap, bd
         for r in data:
-            ws.append(r)
-        for i, wd in enumerate(widths, 1):
-            ws.column_dimensions[get_column_letter(i)].width = wd
-        for rr in range(5, ws.max_row + 1):
-            for cc in range(1, len(header) + 1):
-                cell = ws.cell(row=rr, column=cc)
-                cell.alignment = wrap; cell.border = border
+            s.append(list(r))
+        for i in range(5, s.max_row + 1):
+            for j in range(1, len(header) + 1):
+                c = s.cell(row=i, column=j)
+                c.alignment, c.border = wrap, bd
             if status_col:
-                sv = ws.cell(row=rr, column=status_col).value
-                if sv in status_fill:
-                    ws.cell(row=rr, column=status_col).fill = status_fill[sv]
-        ws.freeze_panes = "A5"
-        return ws
+                v = s.cell(row=i, column=status_col).value
+                if v in stat_fill:
+                    s.cell(row=i, column=status_col).fill = stat_fill[v]
+        s.freeze_panes = "A5"
 
-    # INDEX
-    ws = wb.active; ws.title = "00_INDEX"
-    ws["A1"] = "GN_DW 지표 → GOLD 매핑 장표"; ws["A1"].font = title_font
-    ws["A2"] = f"⚙️ 생성기: {GEN_PATH} — {PROV}"
-    ws.append([]); ws.append(["시트", "내용"]); style_header(ws, 4, 2)
-    for nm, desc in [
-        ("01_지표GOLD매핑", "215 지표(공통162+신규53) → 배속·물리컬럼/SV base·SILVER/BRONZE·계산식·상태"),
-        ("02_마케팅보고서필드", "04 마케팅 보고서필드 → 지표#/GOLD"),
-        ("03_회원보고서필드", "05 회원 보고서필드 → 지표#/GOLD"),
-    ]:
-        ws.append([nm, desc])
-    ws.column_dimensions["A"].width = 26; ws.column_dimensions["B"].width = 88
-    for rr in range(5, ws.max_row + 1):
-        for cc in (1, 2):
-            ws.cell(row=rr, column=cc).alignment = wrap; ws.cell(row=rr, column=cc).border = border
-    ws.append([]); ws.append(["범례", "OK=사용가능 · PARTIAL=일부대기(GA/AGENCY/ERP·identity) · WAIT=원천 입고 대기"])
-
-    sheet("01_지표GOLD매핑", HEADER, rows,
-          [8, 8, 30, 10, 8, 8, 16, 40, 34, 40, 46, 9], status_col=12)
-    fhdr = ["영역", "섹션", "필드값", "데이터 원천", "TYPE", "대응 지표#", "GOLD 매핑", "분해축", "매핑근거"]
-    sheet("02_마케팅보고서필드", fhdr, mkt, [18, 26, 26, 22, 12, 12, 34, 30, 16])
-    sheet("03_회원보고서필드", fhdr, mem, [16, 30, 26, 20, 12, 12, 34, 30, 16])
-
-    import shutil
+    sheet("01_지표GOLD매핑", HEADER, rows, (8, 8, 30, 10, 8, 8, 16, 40, 34, 40, 46, 9, 48), 12)
+    sheet("02_마케팅보고서필드", FIELD_HEADER, mkt, (18, 26, 26, 22, 12, 12, 40, 30, 18))
+    sheet("03_회원보고서필드", FIELD_HEADER, mem, (16, 30, 26, 20, 12, 12, 40, 30, 18))
     tmp = os.path.join("/tmp", BASENAME + ".xlsx")
     wb.save(tmp)
-    path = os.path.join(OUT_DIR, BASENAME + ".xlsx")
-    shutil.copyfile(tmp, path)
-    return path
+    import shutil
+    p = os.path.join(OUT_DIR, BASENAME + ".xlsx")
+    shutil.copyfile(tmp, p)
+    return p
 
 
-# ─────────────────────────────── main ───────────────────────────────
 def main():
-    global CENSUS_IDX
-    CENSUS_IDX = load_census()
-    rows, num2base, derived, num2metricnum = build_metric_rows()
+    rows, _ = build_metric_rows()
     indices = build_field_index(rows)
-    mkt = map_report_fields(DOC_MKT, indices, "mkt")
-    mem = map_report_fields(DOC_MEM, indices, "mem")
-    def _rate(x):
-        tot = len(x); m = sum(1 for r in x if r[5] != "—"); return f"{m}/{tot} ({100*m//max(tot,1)}%)"
-    print("지표 행:", len(rows), "| 마케팅 필드:", _rate(mkt), "| 회원 필드:", _rate(mem))
+    mkt, seen1 = map_report_fields(DOC_MKT, indices, "mkt")
+    mem, seen2 = map_report_fields(DOC_MEM, indices, "mem")
+
+    # 🔴 등록부 유효성 검증(P85-②) — 인벤토리에서 사라진 항목은 죽은 교정이다
+    dead = FMO.validate(seen1 + seen2)
+    applied = sum(1 for r in mkt + mem if r[8].startswith("교정등록부"))
+    if dead:
+        print("⚠️ 교정 등록부에 인벤토리 부재 항목:", ", ".join(dead))
+    if applied == 0:
+        print("🔴 교정 등록부 적용 0건 — 배선이 끊겼을 수 있다(O45-D 재발 신호)")
+    print(f"교정 적용 {applied}행")
+    # 🔴 별칭 등록부의 **우변**이 정본에 실재하는지 확인한다 — 없으면 그 별칭은 무력하다
+    known = set(indices["inv"]) | set(indices["metric"])
+    bad_alias = sorted(k for k, v in FMO.LABEL_ALIAS.items() if _norm(v) not in known)
+    if bad_alias:
+        print("⚠️ 별칭 우변이 정본에 없음(무력 별칭):", ", ".join(bad_alias))
+    unmatched = sorted({r[2] for r in mkt + mem if r[8] == "(미매칭)"})
+    print(f"미매칭 고유 {len(unmatched)}: " + ", ".join(unmatched[:40]))
+
+    def rate(x):
+        n = sum(1 for r in x if r[5] or r[8] != "(미매칭)")
+        return f"{n}/{len(x)} ({n / max(len(x), 1) * 100:.1f}%)"
+
+    print("지표 행:", len(rows), "| 마케팅 필드:", rate(mkt), "| 회원 필드:", rate(mem))
     print("CSV :", write_csv(rows, mkt, mem))
     print("MD  :", write_md(rows, mkt, mem))
     try:
         print("XLSX:", write_xlsx(rows, mkt, mem))
     except ImportError:
         print("XLSX: openpyxl 미설치")
-    # 04 계보 보강용 역인덱스 저장(참고 출력)
-    return num2metricnum
 
 
 if __name__ == "__main__":

@@ -13,7 +13,9 @@
 --    라우팅: 실기기 → 해시 SK / 방송(AD_SOURCE_TYPE 방송 2종) → `(해당없음)` 멤버 / 그 외 미매핑 → 0(unknown).
 --
 -- ⚠️ 잔여 스캐폴드 (게이트 미해소 — 해소 시 본 주석과 함께 정정할 것):
---   · CAMPAIGN_SK=0: 캠페인 이름매칭(Q10 연결키·DIM_CAMPAIGN 키 확정) 대기. 이름컬럼 존재 → 후속 매칭 가능.
+--   · CAMPAIGN_SK=0: **개발캠페인** 직접 매칭은 여전히 대기(Q10). 🟢 단 [2026-08-06 O45] 부터
+--     **마케팅캠페인 축(`MKTG_CAMPAIGN_SK`)이 89.7% 로 살아 있다** → 광고↔개발 결합은 그 grain 에서
+--     성립한다. 「광고와 CRM 은 연결할 수 없다」는 서술은 회수됐다(P61).
 --   · AD_CREATIVE_SK=0: DIM_AD_CREATIVE 키(MD5[SOURCE|MEDIA|CREATIVE|TYPE|CM_AREA|AD_SEC])가
 --     성과테이블에 미보유(TYPE/CM_AREA/AD_SEC 부재) → 정합 조인 불가. 부분키 매칭 설계 대기.
 
@@ -43,10 +45,27 @@ select
     DAYNAME(p.AD_DATE)           as DAY_OF_WEEK,      -- degen(AD_DATE 파생)
     WEEKOFYEAR(p.AD_DATE)        as WEEK_OF_YEAR,     -- degen(AD_DATE 파생)
     p.AD_SOURCE_TYPE                    as AD_SOURCE_TYPE,          -- degen 출처 명시축(DEC-8·§3-A-4): DIGITAL/VIDEO/REBROADCAST
+    -- ── [2026-08-06 O45] 🔴 마케팅캠페인 축 신설(물리 위치 = 맨 끝, ALTER ADD COLUMN 규약) ──
+    --   종전 `CAMPAIGN_SK=0` 만 있어 **광고 ↔ CRM 후원 결합이 전면 불가**했다(O44 차단 4필드 + ROAS).
+    --   🟢 원천은 살아 있었다: `SILVER.AGENCY_AD_PERFORMANCE.CAMPAIGN_NM` 채움 240,291/243,545(98.7%)·110종.
+    --      GOLD 로 전파되지 않은 **배선 누락**이었다(원천 부재가 아니다).
+    --   실측 도달률: `DIM_MARKETING_CAMPAIGN`(323행) 이름매칭 **218,402/243,545 = 89.7%**
+    --   실측 결합 결과(마케팅캠페인 grain): 79 캠페인 · 광고행 216,481(폭발 0) ·
+    --      광고비 34,209,625,719원 · 개발 463,279건 → **개발단가 73,842원**
+    --   🔴 **개발캠페인(`CAMPAIGN_SK`) grain 으로 내리지 말 것** — 팬아웃 실측(2026-08-06 재측정):
+    --      광고캠페인명 110종 중 마스터와 일치 **81종** → 개발캠페인 **9,750종**(평균 120.4 · 최대 901)
+    --      → naive 조인 시 **218,402행 → 39,669,103행 = 181.6배 폭발**하고 광고비가 그만큼 복제된다.
+    --      ⚠️ 종전 기술 「76종 · 9,037종 · 평균 118.9 · 183,170→36,629,512 = 200배」는 **재현 불가**
+    --         하여 위 실측값으로 교체했다(P89). 같은 문단의 89.7%·98.7% 는 재현된다.
+    --      개발캠페인 단위 ROI 는 현업의
+    --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
+    --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
+    --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
+    COALESCE(mk.MKTG_CAMPAIGN_SK, 0)    as MKTG_CAMPAIGN_SK,
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '884f2b90-c97e-401d-bdb2-d8d7cb6f0017'                    AS DW_BATCH_ID
+    'b21b7934-7c9a-4bb8-bfb2-a3d18e0205f5'                    AS DW_BATCH_ID
 from p
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real
@@ -55,3 +74,6 @@ left join dev d_real
 left join dev d_na
        on d_na.DEVICE_TYPE = '(해당없음)'
       and p.AD_SOURCE_TYPE in ('VIDEO','REBROADCAST')
+-- [2026-08-06 O45] 마케팅캠페인 이름매칭. `MKTG_CAMPAIGN_NAME` 은 차원에서 유일하므로 fan-out 0.
+left join GN_DW.GOLD.DIM_MARKETING_CAMPAIGN mk
+       on mk.MKTG_CAMPAIGN_NAME = p.CAMPAIGN_NM
