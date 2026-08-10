@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+워크스페이스 스테이지 반영 대조 — **패딩 허용** (P102 실행 + P133 교정).
+Co-authored with CoCo
+
+🔴 왜 전용 스크립트인가
+   `/workspace` 마운트의 `ls` 성공은 스테이지 반영을 뜻하지 않는다(OPS-3 · P99 — 실측으로 산출물 3종 유실).
+   그래서 `cortex ws ls` 로 대조해야 하는데, **그 size 는 원본 바이트가 아니라 16바이트 블록 패딩값**이다(P133).
+   로컬 `getsize` 와 등호 비교하면 **정상 파일도 전건 「불일치」**로 나온다 — 실제로 O53 에서 32/32 오판했다.
+   ⇒ 판정식 = `stage == ceil(local/16)*16` 또는 `ceil((local+1)/16)*16`.
+   ⚠️ 이 검사는 「반영됐는가」만 본다. 내용 동일성까지 보려면 다운로드 후 해시 대조가 필요하다.
+
+사용법
+   python3 scripts/ws_stage_verify.py <파일목록.txt>
+   python3 scripts/ws_stage_verify.py --o53          # O53 세션 수정분 프리셋
+"""
+import math
+import os
+import re
+import subprocess
+import sys
+
+WS = 'USER$.PUBLIC."snowflake_files"'
+
+O53_FILES = [
+    '99_NEXT_SESSION.md',
+    '20_issue/00_INDEX_이슈원장.md', '20_issue/40_입고대기_원천의존.md',
+    '03_top-down_gold/06_DDL.sql', '03_top-down_gold/00_README.md',
+    '03_top-down_gold/09_빅테이블 VIEW.md', '03_top-down_gold/05_필드 인벤토리.md',
+    '03_top-down_gold/10_WIDE VIEW 코멘트.sql',
+    '02_GN_DW_building/03_GOLD_SERVING.md',
+    '05_SV-Agent_ai/04_SV_설계.md', '05_SV-Agent_ai/05_8_SV_DDL_DEV_ACHIEVEMENT.sql',
+    '05_SV-Agent_ai/05_0_SV_DDL.sql',
+    '10_dbt_pipeline/dbt_project.yml',
+    '10_dbt_pipeline/models/gold/_gold_ready_schema.yml',
+    '10_dbt_pipeline/models/gold/wide/_wide_schema.yml',
+    '10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql',
+    '10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql',
+    '10_dbt_pipeline/models/gold/dim/DIM_MEMBER_CURRENT.sql',
+    '10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql',
+    '10_dbt_pipeline/models/gold/fact/FACT_DEV_ACHIEVEMENT.sql',
+    '10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql',
+    '10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql',
+    'scripts/gen_o53_gold_ddl.py', 'scripts/gen_o53_ad_combined.py',
+    'scripts/run_o53_new_tables.py', 'scripts/table_ddl_column_gate.py',
+    'scripts/audit_ddl_rule7.py', 'scripts/ws_stage_verify.py',
+    'scripts/o51d_view_comments/gate.py',
+    'scripts/field_mapping_override.py', 'scripts/gen_section_assembly.py',
+    'scripts/gen_column_mapping.py', 'scripts/gen_concept_diagram.py',
+]
+# 삭제되었어야 하는 파일 — 스테이지에 남아 있으면 실패
+O53_DELETED = [
+    '10_dbt_pipeline/models/gold/wide/WIDE_DEV_ACHIEVEMENT.sql',
+    '10_dbt_pipeline/tests/assert_wide_dev_achv_goal_rows_preserved.sql',
+]
+
+
+def stage_index(dirs):
+    idx = {}
+    for d in sorted(dirs):
+        pref = f'/{d}/' if d else '/'
+        out = subprocess.run(['cortex', 'ws', 'ls', f'{WS}:{pref}'],
+                             capture_output=True, text=True).stdout
+        for line in out.split('\n'):
+            m = re.match(r'(/versions/\w+/\S.*?)\s+(\d+)\s+([0-9a-f]{32})\s', line)
+            if m:
+                idx[m.group(1).split('/versions/live/', 1)[-1]] = int(m.group(2))
+    return idx
+
+
+def main():
+    if '--o53' in sys.argv:
+        files, deleted = O53_FILES, O53_DELETED
+    elif len(sys.argv) > 1:
+        files = [l.strip() for l in open(sys.argv[1], encoding='utf-8') if l.strip()]
+        deleted = []
+    else:
+        sys.exit(__doc__)
+
+    idx = stage_index({os.path.dirname(f) for f in files} | {os.path.dirname(f) for f in deleted})
+    ok = bad = miss = 0
+    for f in files:
+        if not os.path.exists(f):
+            print(f'  ⚪ 로컬 부재      {f}')
+            continue
+        loc = os.path.getsize(f)
+        st = idx.get(f)
+        allowed = {math.ceil(loc / 16) * 16, math.ceil((loc + 1) / 16) * 16}
+        if st is None:
+            miss += 1
+            print(f'  🔴 스테이지 부재  {f}')
+        elif st in allowed:
+            ok += 1
+        else:
+            bad += 1
+            print(f'  🔴 반영 불일치    {f}  로컬 {loc}B → 스테이지 {st}B (기대 {sorted(allowed)})')
+    print(f'\n반영 확인 {ok} · 불일치 {bad} · 부재 {miss} / 대상 {len(files)}')
+    for g in deleted:
+        print(('  🔴 삭제 미반영  ' if g in idx else '  ✅ 삭제 반영    ') + g)
+    if bad or miss:
+        sys.exit('🔴 스테이지 반영 실패 — 파일 단위 재복사 후 재검사할 것(P99)')
+    print('✅ 전건 반영')
+
+
+if __name__ == '__main__':
+    main()

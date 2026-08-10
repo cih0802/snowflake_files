@@ -12,7 +12,8 @@
 --   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
 --   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
 --   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
---   `CREATE OR REPLACE` 가 GRANT 를 파괴하지만 GRANT 절이 같은 파일에 있어 자기완결적이다.
+--   🔴 [2026-08-10 O54] 본문 DDL 은 **`CREATE OR ALTER SEMANTIC VIEW`** 다 — GRANT 를 보존하므로
+--      재실행 시 아래 GRANT 절은 멱등 재확인 용도다(파괴 후 복구가 아니다 · P125).
 --
 -- ▶ 무엇을 답하는 SV 인가
 --   마케팅 장표 **「1. 개발현황(목표, 실적)」** 의 정본이고, 정본 지표
@@ -93,7 +94,7 @@ USE SCHEMA GN_DW.SERVING;
       활성: 월 목표·월 실적·달성율(공#1) · 누계/연은 동일 metric + 기간 필터(공#2·#3)
             차원 = 연/월/연월 · 부서명 · 개발구분(코드·라벨) · 목표편성여부(GOAL_CNT>0) · 실적발생여부
    ===================================================================================== */
-CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
   TABLES (
     achv AS GN_DW.GOLD.FACT_DEV_ACHIEVEMENT
       PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
@@ -147,8 +148,9 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
 /* =====================================================================================
    GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
-      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
-         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+      🟢 [2026-08-10 O54] 본문이 `CREATE OR ALTER` 이므로 **기존 GRANT 는 보존**된다(§129 실측) →
+         아래 GRANT 는 멱등 재확인이다. ⛔ `CREATE OR REPLACE` 로 되돌리면 GRANT 가 파괴된다(P125).
+      🔴 판정은 소유자 세션이 아니라 **소비 역할 세션**으로 한다(P126) — `scripts/sv_unit_gate.py`.
    ===================================================================================== */
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT TO ROLE GN_DW_VIEWER;

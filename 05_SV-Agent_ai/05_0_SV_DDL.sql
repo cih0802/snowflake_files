@@ -66,8 +66,9 @@
    ===================================================================================== */
 --
 -- ▶ 가드레일 (위반 시 fan-out·가산성 오류)
---   R1 fan-out : 월팩트→SERVING.DIM_MONTH · 회원속성→SERVING.DIM_MEMBER_CURRENT ·
---                광고팩트→SERVING.FACT_AD_COMBINED(AD_PERF_DK 1:1 pre-join).
+--   R1 fan-out : 월팩트→GOLD.DIM_MONTH · 회원속성→GOLD.DIM_MEMBER_CURRENT ·
+--                광고팩트→GOLD.WIDE_AD_COMBINED(AD_PERF_DK 1:1 pre-join).
+--                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).
 --                raw DIM_DATE/DIM_MEMBER 직접조인, 위성 3종 다중조인 금지.
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK)(다월 중복 방지) / 비율=분자·분모 각각 집계 후 division.
 --   조인키 타입: MEMBER_DK=VARCHAR(캐스팅 금지) · MONTH_KEY/DATE_SK/*_SK=NUMBER · AD_PERF_DK=VARCHAR(32).
@@ -119,15 +120,18 @@ SHOW SEMANTIC VIEWS IN SCHEMA GN_DW.SERVING;
 --   ⚠ owner 가 ACCOUNTADMIN 이면 이 파일을 GN_DW_ADMIN 이 아닌 역할로 실행한 것이다. 복구:
 --     USE ROLE ACCOUNTADMIN;
 --     GRANT OWNERSHIP ON SEMANTIC VIEW GN_DW.SERVING.SV_AD TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
---     GRANT OWNERSHIP ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+--     (helper 뷰 소유권 복구는 불요 — O54 로 SV_AD base 가 GOLD.WIDE_AD_COMBINED 로 옮겨졌다)
 
 -- (8-12) SV_AD grant 3역할
 SHOW GRANTS ON SEMANTIC VIEW GN_DW.SERVING.SV_AD;
 --   판정: OWNERSHIP(GN_DW_ADMIN) + REFERENCES/SELECT × ANALYST·VIEWER·SERVICE
 
--- (8-13) helper 뷰 grant
-SHOW GRANTS ON VIEW GN_DW.SERVING.FACT_AD_COMBINED;
---   판정: OWNERSHIP(GN_DW_ADMIN) + SELECT × ANALYST·VIEWER·SERVICE
+-- (8-13) ⛔ [2026-08-10 O54] **폐지** — SV_AD 의 base 가 `SERVING.FACT_AD_COMBINED`(helper) 에서
+--   **`GOLD.WIDE_AD_COMBINED`**(dbt 소유 뷰)로 재배선됐다. helper 는 어떤 SV 도 참조하지 않는다.
+--   ⬜ 물리 객체는 잔존 → 의존 참조 0 확인 후 로드맵 **7단계**에서 `SERVING` helper 3종과 함께 DROP.
+--   GOLD 뷰의 소비 권한은 dbt FUTURE GRANT 소관이며 아래로 확인한다.
+SHOW GRANTS ON VIEW GN_DW.GOLD.WIDE_AD_COMBINED;
+--   판정: SELECT × ANALYST·VIEWER·SERVICE (소유자는 dbt 실행 역할)
 
 --   ▶ Agent(AGENT_MEMBER·AGENT_OVERALL) 의 grant·CoWork SI 검증은 이 파일 소관이 아니다
 --     → **09_1_AGENT_생성.sql [6] 검증절** 참조(구 `09_AGENT_spec_구현.sql [5]` — 그 파일은

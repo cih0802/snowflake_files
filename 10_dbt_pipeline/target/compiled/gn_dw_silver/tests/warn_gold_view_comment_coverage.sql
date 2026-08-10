@@ -25,24 +25,39 @@
 -- 판정: 0행이면 PASS.
 --
 -- 🟠 severity=warn 으로 시작한다(의도된 잠정) — 근거:
---   ① 본 게이트는 **실행 검증 전**이다(작성 시점에 `dbt build` 미실행 · 계정/순서 제약).
+--   ① 본 게이트는 **실행 검증 전**이었다(작성 시점에 `dbt build` 미실행 · 계정/순서 제약).
 --   ② O42 의 교훈: 해소 경로를 확인하지 않은 하드 게이트는 파이프라인을 세운다.
 --      `on_schema_change: fail` 이 타입 오탐으로 팩트 10종 ERROR·145 SKIP 을 냈고 교착이 됐다.
 --   ③ 프로젝트 선례(순서9-C): 「알려진 미완전은 warn 관측 → 실측 후 error 승격」.
---   ⛔ **승격 트리거**: 첫 clean `dbt build` 에서 본 테스트 WARN=0 이 확인되면 즉시
---      `severity='error'` 로 올리고 파일명을 `assert_` 접두로 바꿀 것. WARN>0 이면 누락 컬럼을
---      해당 모델 post_hook 의 `ALTER VIEW ... ALTER COLUMN` 에 추가한 뒤 승격한다.
---      ⚠️ warn 으로 방치하면 이 파일 자체가 거짓 안전 신호가 된다(P16 — 미탐보다 오탐이 위험).
-
+--
+-- 🔴🔴 [2026-08-10 O53] **자동 승격 지시를 철회한다 — warn 을 유지한다(사용자 결정).**
+--   종전 이 자리에는 *"첫 clean build 에서 WARN=0 이면 즉시 `severity='error'` 로 올리고
+--   파일명을 `assert_` 접두로 바꿀 것"* 이라고 적혀 있었다. 그 트리거는 **이미 충족됐다** —
+--   O51-F 완료 시점 실측 GOLD 뷰 컬럼 COMMENT 커버리지 = **전건 보유(위반 0)**.
+--   그런데 사용자 결정(2026-08-10 · O51-F)은 **warn 유지**다. 근거:
+--     · BRONZE 원천이 증량될 예정이고(문서40 CMP-1 캠페인 상위코드·공통코드 신설 예고),
+--       새 뷰·새 컬럼이 들어오는 순간 error 게이트는 **파이프라인 전체를 세운다**.
+--     · 문안 누락은 소비 품질 문제이지 구조 불변식 위반이 아니다 — error 는 구조 불변식만(순서9-C 방침).
+--   ⇒ 🔴 **헤더의 지시와 사용자 결정이 어긋난 상태로 두지 않는다**(🆕 P130): 방치하면 다음 세션이
+--      헤더를 따라 승격시키고, 원천 증량 첫날 build 가 선다. 승격은 **사용자가 명시적으로 지시할 때만** 한다.
+--   ⚠️ 대신 warn 이 거짓 안전 신호가 되지 않도록(P16) **분모를 매 세션 실측**할 것 —
+--      「위반 0」이 공집합 통과가 아님을 확인하는 유일한 방법이다(P106).
 
 -- 의존성 고정: INFORMATION_SCHEMA 를 직접 읽으므로 ref() 가 없으면 dbt 가 순서를 모른다.
---   뷰 생성·post_hook 이후에 실행되도록 GOLD view 모델 16종 전량을 depends_on 으로 묶는다.
+--   뷰 생성 이후에 실행되도록 GOLD view 모델 **14종 전량**을 depends_on 으로 묶는다.
 --   ⚠️ 새 GOLD 뷰 모델을 추가하면 아래 목록에도 넣을 것(누락 시 그 뷰가 만들어지기 전에 검사할 수 있다).
+--   🔴 [2026-08-10 O53] 3건 제거 + 1건 추가 = 16 → 14.
+--      · 제거: `WIDE_DEV_ACHIEVEMENT`(→ FACT_DEV_ACHIEVEMENT 테이블 개명) ·
+--              `DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION`(뷰→테이블 전환)
+--        ⇒ 세 객체는 이제 **테이블**이라 본 게이트의 대상(INFORMATION_SCHEMA.VIEWS)에서 빠진다.
+--          그 COMMENT 는 `06_DDL.sql` 이 소유하며 커버리지는 O53 2단계 스캔으로 판정했다.
+--      · 추가: `WIDE_AD_COMBINED`(신설 · SV_AD 새 base)
+--      ⚠️ 이 목록을 안 고치면 `dbt parse` 가 「존재하지 않는 노드」 **경고만** 내고 통과한다 —
+--         경고는 게이트가 아니다(P105). O53 에서 실제로 이 경고로 잡았다.
 -- depends_on: GN_DW.GOLD.WIDE_MEMBER_MONTHLY
 -- depends_on: GN_DW.GOLD.WIDE_MEMBER_EVENT
 -- depends_on: GN_DW.GOLD.WIDE_MEMBER_FEE
 -- depends_on: GN_DW.GOLD.WIDE_TARGET_DEV
--- depends_on: GN_DW.GOLD.WIDE_DEV_ACHIEVEMENT
 -- depends_on: GN_DW.GOLD.WIDE_TARGET_BIZ
 -- depends_on: GN_DW.GOLD.WIDE_SERVICE_EVENT
 -- depends_on: GN_DW.GOLD.WIDE_GA_BEHAVIOR
@@ -50,10 +65,11 @@
 -- depends_on: GN_DW.GOLD.WIDE_AD_BROADCAST
 -- depends_on: GN_DW.GOLD.WIDE_AD_DIGITAL
 -- depends_on: GN_DW.GOLD.WIDE_AD_BROADCAST_CASE
+-- depends_on: GN_DW.GOLD.WIDE_AD_COMBINED
 -- depends_on: GN_DW.GOLD.WIDE_EVENT_PARTICIPATION
 -- depends_on: GN_DW.GOLD.WIDE_BUDGET
--- depends_on: GN_DW.GOLD.DIM_MEMBER_CURRENT
--- depends_on: GN_DW.GOLD.DIM_MEMBER_ACQUISITION
+
+
 
 with gold_views as (
     select TABLE_SCHEMA, TABLE_NAME, COMMENT as VIEW_COMMENT

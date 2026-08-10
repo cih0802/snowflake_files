@@ -41,7 +41,7 @@ END-METADATA -->
 | `02_SERVING_setup.sql` | ⛔ | **[DEPRECATED] 포인터 스텁 — 실행 대상 아님.** RBAC·스키마 정본 = `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` · **helper 뷰(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) 정본 = `08_After_Deploy_DBT.sql` §G**(O36 실측: 07 에는 없다) |
 | `03_SV_metric_배속.md` | 1 | derived 81 metric을 SV에 전수 배속(P1 69·P2 12) |
 | `04_SV_설계.md` | 2 | 7 SV 구조·relationship·fan-out helper·아키텍처 비판검토·**데이터 게이트 발견** |
-| `05_1`~`05_7_SV_DDL_*.sql` | 3 | Phase-1 SV **6종** `CREATE SEMANTIC VIEW` + GRANT + 스모크 (배포 정본, SV 단위 분할 2026-08-05 O37). `05_7` 에 `SERVING.FACT_AD_COMBINED` 동봉. 🔴 `GN_DW_ADMIN` 으로 실행 · 파일 간 순서 무관 |
+| `05_1`~`05_7_SV_DDL_*.sql` | 3 | Phase-1 SV **6종** `CREATE SEMANTIC VIEW` + GRANT + 스모크 (배포 정본, SV 단위 분할 2026-08-05 O37). 🔴 [2026-08-10 O54] `05_7` 의 `SERVING.FACT_AD_COMBINED` 동봉은 **폐지** — SV_AD base = `GOLD.WIDE_AD_COMBINED`(dbt 소유) ⇒ `05_7`·`05_8`·`05_9` 는 `dbt build` 이후에만 배포된다. 🔴 `GN_DW_ADMIN` 으로 실행 · 파일 간 순서 무관 |
 | `05_0_SV_DDL.sql` | 3 | **분할 인덱스 + 공통규약 정본 + 전체 배포 검증**. ⚠️ SV 정의가 없다 — 실행해도 SV 가 배포되지 않는다 |
 | `06_검증쿼리_VQR.md` | 4 | SV 라이브 검증(SV=FACT)·회귀쿼리·VQR 후보·custom instruction 6 |
 | `07_평가셋_eval.md` | 4 | NL↔gold SQL↔ground truth 평가셋(2026-07-22)·가드레일 ⓖ |

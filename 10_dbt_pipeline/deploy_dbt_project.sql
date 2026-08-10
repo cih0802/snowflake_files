@@ -220,15 +220,17 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- dbt 는 SILVER/GOLD 까지만 소유. SV/Agent 를 쓰려면 아래를 **이 순서대로** 별도 실행:
 --   1. 02_GN_DW_building/08_After_Deploy_DBT.sql   → DBT PROJECT GRANT + SERVING GRANT + CoWork
 --        §G.1 SERVING.DIM_MONTH · §G.2 SERVING.DIM_MEMBER_CURRENT
+--        ⛔ [2026-08-10 O54] 이 단계는 **실행 불요** — SV 9종 base 가 전부 GOLD 로 재배선됐다(08 §G 배너 참조).
 --        ★ SV DDL 보다 반드시 먼저 (SV 가 논리테이블로 참조한다)
---   2. 05_SV-Agent_ai/05_1~05_7_SV_DDL_*.sql       → SEMANTIC VIEW 6종 (+05_7 에 SERVING.FACT_AD_COMBINED)
+--   2. 05_SV-Agent_ai/05_1~05_9_SV_DDL_*.sql       → SEMANTIC VIEW 9종 (helper 동봉 폐지 · O54)
 --      🔴 각 파일 독립 실행(순서 무관). `05_0_SV_DDL.sql` 은 인덱스·전체검증 전용(SV 정의 없음).
 --        🔴 반드시 `USE ROLE GN_DW_ADMIN` (ACCOUNTADMIN 으로 만들면 이후 재배포가 막힌다)
 --   3. 05_SV-Agent_ai/09_1_AGENT_생성.sql          → Agent **껍데기** + USAGE grant + CoWork SI
 --   4. 05_SV-Agent_ai/09_2_AGENT_버전업.sql        → 🔴 **Agent 스펙 본문(도구·instruction)**
 --
 -- 미실행 시 증상:
---   1 누락 → "Table 'GN_DW.SERVING.DIM_MONTH' does not exist or not authorized"
+--   1 누락 → (O54 이후 해당 증상 소멸 — base 가 GOLD 다. 대신 `dbt build` 누락 시
+--             "Table 'GN_DW.GOLD.DIM_MEMBER_CURRENT' does not exist" 가 난다)
 --   4 누락 → Agent 객체는 생기고 UI 에도 보이는데 스펙이 `{"models":{"orchestration":"auto"}}` —
 --            **도구 0개·instruction 0개**로 질의에 전혀 답하지 못한다(2026-08-04 실측된 실제 상태).
 --

@@ -6,7 +6,9 @@
 --   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
 --   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
 --   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
---   `CREATE OR REPLACE` 가 GRANT 를 파괴하지만 GRANT 절이 같은 파일에 있어 자기완결적이다.
+--   🔴 [2026-08-10 O54] 본문 DDL 은 **`CREATE OR ALTER SEMANTIC VIEW`** 다 — GRANT 가 보존된다
+--      (§129 실측 · created_on 불변). 아래 GRANT 절은 멱등 재확인용이며 ⛔ `CREATE OR REPLACE`
+--      로 되돌리면 GRANT 가 파괴된다(P125 실사고).
 --
 --   ⚠️ 종전에는 SV 6종이 단일 파일 `05_SV_DDL.sql(현 `_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql`)`(708행)에 있었다. SV 하나를 고칠 때마다
 --      파일 전체를 재작성해야 해서 **손대지 않은 SV 의 COMMENT 를 훼손할 경로**였고
@@ -28,8 +30,9 @@
 --   `05_0_SV_DDL.sql` 분할 인덱스 · 전체 배포 검증 · 공통 규약 전문
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`SERVING.DIM_MONTH` · 회원속성→`SERVING.DIM_MEMBER_CURRENT` ·
---                광고팩트→`SERVING.FACT_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
 --   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
 --   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.
@@ -46,13 +49,13 @@ USE SCHEMA GN_DW.SERVING;
    5. SV_BUDGET (overall Agent) — base FBD(월×조직×세세목)
       활성: 편성예산(월)·집행예산(ERP)·집행율 · 세세목명/예산구분
    ===================================================================================== */
-CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
   TABLES (
     fbd AS GN_DW.GOLD.FACT_BUDGET
       PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
       WITH SYNONYMS ('예산', '예산 집행')
       COMMENT = '예산 팩트(grain=월×세세목, 실측 유일 → PK). 편성/집행. ⚠편성·집행 금액에 음수(조정/환입)가 존재한다. [원천] 시스템=ERP(예산관리, Snowflake 파일 업로드 적재) · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(예산·실적 원장): 편성 YEAR_BDGT_AMT_n · 집행 EXEC_AMT_n — 12개월 wide 컬럼을 월 long으로 언피벗 · SILVER=ERP_BUDGET.',
-    month AS GN_DW.SERVING.DIM_MONTH
+    month AS GN_DW.GOLD.DIM_MONTH
       PRIMARY KEY (MONTH_KEY)
       WITH SYNONYMS ('월', '예산월')
       COMMENT = '월 차원. fan-out 차단용 helper 뷰. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
@@ -87,8 +90,9 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
 /* =====================================================================================
    GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
-      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
-         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+      🟢 [2026-08-10 O54] 본문이 `CREATE OR ALTER` 이므로 **기존 GRANT 는 보존**된다 →
+         아래 GRANT 는 멱등 재확인이다. 🔴 판정은 소유자 세션이 아니라 **소비 역할 세션**으로
+         한다(P126) — 검사기 = `scripts/sv_unit_gate.py`.
          분할의 이점: GRANT 가 대상 SV 와 같은 파일에 있어 빠뜨릴 수 없다.
    ===================================================================================== */
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET TO ROLE GN_DW_ANALYST;

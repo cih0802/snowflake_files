@@ -6,12 +6,15 @@
    또 문장 앞에 `--`·`/* */` 주석 블록이 붙어 있어 선두 키워드 매칭 전에 주석을 벗겨야 한다
    (실측: 이 처리를 빼면 CREATE 가 건너뛰어지고 GRANT 만 실행돼 "does not exist" 로 실패했다).
 
-사용: python3 /tmp/deploy_sv.py <파일...>
+사용: python3 /workspace/scripts/deploy_sv.py <파일...>
+
+🔴 [2026-08-10 O54] `sys.path` 를 `/tmp/ws/scripts` → `/workspace/scripts` 로 교정.
+   `/tmp` 는 세션 중에도 초기화되므로 종전 경로는 재실행 시 `ModuleNotFoundError` 였다.
 """
 import re
 import sys
 
-sys.path.insert(0, '/tmp/ws/scripts')
+sys.path.insert(0, '/workspace/scripts')
 from sfconn import conn
 
 

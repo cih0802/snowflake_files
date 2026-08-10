@@ -6,7 +6,9 @@
 --   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
 --   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
 --   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
---   `CREATE OR REPLACE` 가 GRANT 를 파괴하지만 GRANT 절이 같은 파일에 있어 자기완결적이다.
+--   🔴 [2026-08-10 O54] 본문 DDL 은 **`CREATE OR ALTER SEMANTIC VIEW`** 다 — GRANT 가 보존된다
+--      (§129 실측 · created_on 불변). 아래 GRANT 절은 멱등 재확인용이며 ⛔ `CREATE OR REPLACE`
+--      로 되돌리면 GRANT 가 파괴된다(P125 실사고).
 --
 --   ⚠️ 종전에는 SV 6종이 단일 파일 `05_SV_DDL.sql(현 `_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql`)`(708행)에 있었다. SV 하나를 고칠 때마다
 --      파일 전체를 재작성해야 해서 **손대지 않은 SV 의 COMMENT 를 훼손할 경로**였고
@@ -28,8 +30,9 @@
 --   `05_0_SV_DDL.sql` 분할 인덱스 · 전체 배포 검증 · 공통 규약 전문
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`SERVING.DIM_MONTH` · 회원속성→`SERVING.DIM_MEMBER_CURRENT` ·
---                광고팩트→`SERVING.FACT_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
 --   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
 --   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.
@@ -46,7 +49,7 @@ USE SCHEMA GN_DW.SERVING;
    4. SV_EVENT_PARTICIPATION (회원 Agent) — base FEP(일×회원×행사)
       활성: 참여자수·참여건수·고유 참여회원수 · 행사명/종류/구분
    ===================================================================================== */
-CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
   TABLES (
     fep AS GN_DW.GOLD.FACT_EVENT_PARTICIPATION
       WITH SYNONYMS ('행사 참여', '이벤트 참여')
@@ -59,7 +62,7 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
       PRIMARY KEY (EVENT_SK)
       WITH SYNONYMS ('행사', '이벤트')
       COMMENT = '행사 차원. EVENT_SK 고아분은 Unknown(SK=0)으로 라우팅되므로 행사명별 집계는 부분집합이다(이슈 E). [원천] 시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM: TM_MS_EVENT(EVENT_NM·STRT_DE) ∪ TM_MS_CRMN(캠페인행사) · SILVER=CRM_EVENT.',
-    member AS GN_DW.SERVING.DIM_MEMBER_CURRENT
+    member AS GN_DW.GOLD.DIM_MEMBER_CURRENT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
       COMMENT = '회원 현재 스냅샷. fan-out 차단용 helper 뷰. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_INFO ∪ TM_MM_ONCE_MBER_INFO + TH_MM_FDRM_MBER_STNG_DTLS · SILVER=CRM_MEMBER.'
@@ -99,8 +102,9 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
 /* =====================================================================================
    GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
-      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
-         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+      🟢 [2026-08-10 O54] 본문이 `CREATE OR ALTER` 이므로 **기존 GRANT 는 보존**된다 →
+         아래 GRANT 는 멱등 재확인이다. 🔴 판정은 소유자 세션이 아니라 **소비 역할 세션**으로
+         한다(P126) — 검사기 = `scripts/sv_unit_gate.py`.
          분할의 이점: GRANT 가 대상 SV 와 같은 파일에 있어 빠뜨릴 수 없다.
    ===================================================================================== */
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION TO ROLE GN_DW_ANALYST;

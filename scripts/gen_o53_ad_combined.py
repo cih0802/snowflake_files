@@ -44,7 +44,13 @@ BRC = ['TIME_BAND', 'CM_POSITION', 'RT_TYPE', 'AD_START_TIME', 'AD_END_TIME', 'B
        'PROGRAM_NM', 'CHANNEL_COMPANY', 'CHANNEL_COMPANY_TYPE', 'SPOT_TYPE', 'DURATION_SEC',
        'DAY_DIV', 'PRG_START_TIME', 'CTV_DIV', 'BRDC_DIV', 'AD_CNT', 'CONV_CALL_CNT',
        'DVLP_MEMBER_CNT', 'DVLP_CNT', 'AD_VIEW_RT_SRC', 'CPC_SRC']
+# helper 뷰에 없던 O53 신규 노출 4컬럼. 🔴 그중 **VIDEO 전용은 3종뿐**이다 —
+#   `BROADCAST_DATE` 는 재방송에도 원천이 있다(BRONZE `REBRDC_AD_CMPGN_DTLS.DATE`).
+#   [O53 자기정정] 최초 판이 4종 전부를 「VIDEO 전용」으로 적었는데 build 후 실측이 반박했다:
+#   재방송 행의 BROADCAST_DATE 는 **전건 채움**이었다. 문안이 틀리면 Analyst 가 재방송을
+#   시간축 분석에서 통째로 제외한다(무증상 오답) ⇒ 컬럼별로 분리해 기술한다.
 NEW_TIME = ['AD_START_TIME', 'AD_END_TIME', 'BROADCAST_DATE', 'PRG_START_TIME']
+VIDEO_ONLY_TIME = ['AD_START_TIME', 'AD_END_TIME', 'PRG_START_TIME']
 RENAME = {'AD_VIEW_RT_SRC': 'BRDC_AD_VIEW_RT_SRC', 'CPC_SRC': 'BRDC_CPC_SRC'}
 
 WARN_DIG = (" ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 "
@@ -58,6 +64,11 @@ WARN_TIME = (" 🔴🔴[WIDE_AD_COMBINED] **VIDEO(본방송) 전용이다** — 
              "전용축 판정 근거 = 이슈원장 §429.")
 WARN_RENAME = (" ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — "
                "이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것.")
+WARN_BRDC_DATE = (" 🔴[WIDE_AD_COMBINED] **송출일이며 코어의 실적일(PERF_DATE_SK)과 다른 축**이다 — 둘을 같은 "
+                  "시간축으로 섞지 말 것. 🟢본방송(VIDEO)·재방송(REBRDC) **양 원천 모두에 있다**"
+                  "(BRONZE `VIDEO_AD_CMPGN_DTLS.BRDC_DATE` · `REBRDC_AD_CMPGN_DTLS.DATE`) — 같은 방송 위성의 "
+                  "시각 3컬럼(AD_START_TIME·AD_END_TIME·PRG_START_TIME)이 VIDEO 전용인 것과 **다르다**. "
+                  "⇒ 재방송을 포함한 **일자 단위** 방송 분석은 이 컬럼으로 가능하다. 디지털행은 원천 부재로 NULL.")
 
 # ── 규칙7 치환 (이관 전용) ────────────────────────────────────────────────────
 # 🔴 [O53 적발] 기존 `06_DDL.sql` 팩트 COMMENT 에는 실측 수치가 박혀 있다 — 규칙7 위반이다.
@@ -119,7 +130,13 @@ def main():
         assert c in brc, f'🔴 FAB 문안 결손: {c}'
         out = RENAME.get(c, c)
         expr = f'brc.{c}' + (f'{"":<1}as {out}' if c in RENAME else '')
-        d = RULE7_OVERRIDE.get(c, brc[c]) + (WARN_TIME if c in NEW_TIME else WARN_BRC)
+        base = RULE7_OVERRIDE.get(c, brc[c])
+        if c in VIDEO_ONLY_TIME:
+            d = base + WARN_TIME
+        elif c == 'BROADCAST_DATE':
+            d = base + WARN_BRDC_DATE
+        else:
+            d = base + WARN_BRC
         if c in RENAME:
             d += WARN_RENAME
         cols.append((out, expr, d))

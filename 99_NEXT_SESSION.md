@@ -2,7 +2,7 @@
 doc_id: NEXT_SESSION_PROMPT
 doc_role: 다음 세션 착수 프롬프트 — 이 파일만 읽고 바로 시작할 수 있게 구성
 project: GN_DW (굿네이버스 데이터웨어하우스)
-updated: 2026-08-07 (**O51-D — GOLD 뷰 컬럼 COMMENT 문안 355컬럼 완성 · 8모델 gn_view_commented 전환 · 빈 축 경고 43 · O45-B 해소 · ⛔dbt build 대기**. 착수는 §0-A 부터. 선행 O50/O51-C = 메커니즘 규명 + 6뷰 136컬럼 적용 + DEC-34 · 신규 P105~P113)
+updated: 2026-08-10 (**O54 — 로드맵 6단계 前半 완료: SV base 재배선 7종·SV 9종 전건 base=GOLD·값 불변 52 metric·GRANT 보존 실측(CREATE OR ALTER)·helper 등급 물리 소멸·신규 P135~P136·신규 OWN-1. 착수는 §0-A = 로드맵 4단계**. 이전: O53 — 로드맵 2단계 GOLD 최종형 완료: 테이블 31→35·619/619 COMMENT · 뷰 16→14 · DIM_MONTH·FACT_DEV_ACHIEVEMENT 신설 · DMC/DMA 뷰→테이블 · WIDE_AD_COMBINED 신설 · dbt build ERROR 0 · DEC-8 유지·DEC-34 개정 · 신규 P127~P134. 착수는 §0-A**. 이전: O51-D — GOLD 뷰 컬럼 COMMENT 문안 355컬럼 완성 · 8모델 gn_view_commented 전환 · 빈 축 경고 43 · O45-B 해소 · ⛔dbt build 대기**. 착수는 §0-A 부터. 선행 O50/O51-C = 메커니즘 규명 + 6뷰 136컬럼 적용 + DEC-34 · 신규 P105~P113)
 정본: 이슈=20_issue/00_INDEX_이슈원장.md · 진단·교훈=20_issue/10_진단_원인분석.md · 운영=02_GN_DW_building/06_RUNBOOK.md
 편집 규칙: 이 문서는 **포인터 + 미결 항목 + 착수 프롬프트**만 담는다. 완료 작업의 경위는 정본에 두고 복사하지 않는다.
 END-METADATA -->
@@ -28,86 +28,88 @@ END-METADATA -->
    ⑤ 발견한 것을 `20_issue/` 에 등재했나
    ⛔ ①~⑤ 를 통과하지 못하면 **다음 단계로 넘어가지 않는다.**
 10. 🆕 **완료 판정은 문서가 아니라 스캔이다**(P33). DDL 문장을 실행했다는 사실은 성공의 근거가 아니다.
+11. 🆕🔴 **채움률·비율은 모집단을 먼저 확정하고 낸다**(P128). 구조적 부재 집단(예: 일시회원 ONCE)을
+    분모에 넣으면 값이 과소로 나와 결손을 오진한다. 분모를 함께 적지 않은 비율은 근거가 아니다.
+12. 🆕🔴 **「없다」고 선언하기 전에 기능 기준으로 전수 검색한다**(P132). 「그 경로에 파일이 없다」와
+    「그 기능이 없다」는 다른 주장이다 — 후자를 잘못 말하면 이미 있는 게이트를 중복 신설하고
+    **기존 게이트는 갱신되지 않은 채 방치**된다.
+13. 🆕🔴 **`cortex ws ls` 의 size 는 원본 바이트가 아니다**(16B 패딩 · P133). 로컬 크기와 등호 비교하면
+    정상 파일도 전건 「불일치」로 나온다 — 패딩 허용 비교나 내용 해시로 대조할 것.
 
 ---
 
-## 0-A. 🔴 이번 세션(O51-D) 상태 — **`dbt build` 대기**. 여기서 시작한다
+## 0-A. 🔴 착수점 — **로드맵 4단계**. 여기서 시작한다
 
-> ⛔ **첫 행동 = `dbt build`**(로컬 dbt). 그 다음 검증까지가 한 묶음이다.
-> 사전검증은 전부 끝나 있다: `dbt parse` 통과 · 게이트 8/8 · 스테이지 전수 70/70 · 규칙 7 위반 0.
+> **직전 세션(2026-08-10 O54) = 로드맵 6단계 前半 완료.** SV base 재배선 **7종**을 1회 편집·1회 배포로 끝냈고
+> 물리 실측으로 판정했다(원장 §O54). ⛔ **O53 §0-A ①②③ 는 전부 끝났다 — 다시 하지 말 것.**
+>
+> | O54 에서 끝난 것 | 실측 근거 |
+> |---|---|
+> | ① `WIDE_AD_COMBINED` 재빌드 | **이미 반영돼 있었다**(사용자 build) — `BROADCAST_DATE` COMMENT 교정본 물리 존재 · GOLD 테이블 35/619 · 뷰 14/546 |
+> | ② `SV_DEV_ACHIEVEMENT` 재배포 | `CREATE OR ALTER` 로 복구 — D-1 SV=base(4,622,103 / 2,291,878) · D-3b 100% 초과 **0행** |
+> | ③ SV base 재배선 **7종** | `DESC SEMANTIC VIEW` 전수 — SV **9종 전건** base 스키마 = **GOLD** · `SERVING` 참조 **0** |
+> | 값 불변 | metric **52개 전건 동일**(전/후 스냅샷) · GATE-D 891,959,790,888 일치 |
+> | GRANT | `CREATE OR ALTER` 가 **보존**(created_on 불변 실측) · 게이트 누락 0 · **소비 3역할 세션 7/7 성공**(P126) |
+>
+> 🟢 **§3 「6단계를 쪼개지 말 것」은 무효화됐다** — 그 근거가 「`CREATE OR REPLACE` 의 GRANT 파괴」였고
+> `CREATE OR ALTER` 로 보존됨을 실측했다. 남은 6단계 後半(판정 4종·경합·DEC-31 반영)은 **4단계 뒤**에 한다.
 
-| 끝난 것 | 상태 |
+### ⛔ 첫 행동 = **4단계**(`09` 재생성 + 판정 오류 17건 교정)
+2·3단계(GOLD 최종형)가 끝나 `09` 판정의 입력(`/tmp/census.json`·`/tmp/schema.json`)이 바뀌었다.
+`gen_section_assembly.py:58-59` 가 그 두 파일을 읽으므로 **재덤프가 선행**이다.
+1. `python3 scripts/dump_schema.py` → `python3 scripts/census_columns.py`(수 분 · 백그라운드)
+2. `gen_column_mapping.py`(04) → `gen_metric_gold_mapping.py`(05) → `gen_section_assembly.py`(09)
+3. **O49 판정 오류 17건 교정** — 근거는 원장 §O49 에 실측값으로 남아 있다(계정 정지 이전 확보분 · 유효).
+4. 「집계필요」 6건·「앵커_경합」 34행 **처방 쿼리를 실제 실행**해 근거 첨부 · 2-G 라벨 의심 2건 판정
+5. 완료 게이트 = **`09` md 에 SQL 블록 > 0**(현재 실측 0) · 그 다음 5단계 골든 갱신 → `test_generators.py` 17/17
+
+### ⬜ 4단계 착수 전 알아둘 것
+- 🔴 **`06_DDL` 테이블 COMMENT 규칙7 위반 37건 · 14테이블** — `python3 scripts/audit_ddl_rule7.py --detail`.
+  **재구축 전에** 처리할 것(`06_DDL` 이 replay 스크립트다).
+- 🟠 **OWN-1**(신규 · 원장 §O54) SV 2종 소유자가 `ACCOUNTADMIN`(`SV_MEMBER_COHORT`·`SV_MEMBER_FEE`) →
+  `05_0` (8-11) 판정 위반. 두 파일은 아직 `CREATE OR REPLACE` 이므로 **소유권 교정 + `CREATE OR ALTER` 전환을 같은 편집에서**.
+- ⬜ **7단계**: `SERVING` helper 3종 물리 DROP + `08_After_Deploy_DBT §G` 절 삭제(⛔개별 승인 · 의존 참조 0 확인 후).
+  🟢 `§G` 에는 이미 **「실행 불요」 배너**가 붙어 신규 계정 재현에서 건너뛴다.
+
+---
+
+### ✅ O53 에서 끝난 것 — **다시 하지 말 것**
+| 항목 | 실측 결과 |
 |---|---|
-| O51-D 문안 **355컬럼**(8객체) | ✅ yml 등재 완료 — `10_` 이관 206 · 기존 보존 17 · 신규 132 |
-| 8모델 `materialized='gn_view_commented'` | ✅ 전환 + `post_hook` 전량 제거 |
-| `DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION` | ✅ `_gold_ready_schema.yml` 신규 등재(O50 잔여 해소) |
-| **O45-B** 결제수단 코드그룹 | 🟢 **해소** — PM040 확정. 처방은 `20_issue/50_…md` §O51-D-P1 |
-| 빈 축 경고 43컬럼 | ✅ 부착 — 전건 NULL/전건 센티넬을 문안이 침묵하던 문제 |
-| `(as-was)` 16건 | ✅ 교정 — DIM_ORG 는 SCD1(DEC-2)이라 거짓이었다 |
+| GOLD 테이블 | **35**(DIM 20 + FACT 15) · 컬럼 COMMENT **619/619** |
+| GOLD 뷰 | **14** · 컬럼 COMMENT **546/546** |
+| 신설/전환 | `DIM_MONTH` 541 · `DIM_MEMBER_CURRENT` 1,763,065 · `DIM_MEMBER_ACQUISITION` 1,585,949 · `FACT_DEV_ACHIEVEMENT` 37,522 · `WIDE_AD_COMBINED` 243,545 — **전건 PK 유일 · 기대치 정확 일치** |
+| dbt build | **ERROR 0 · FAIL 0** (success 88 · pass 290 · warn 27 = 전부 기지 SILVER 계열) |
+| 결정 | **DEC-8 유지**(광고 병합 철회) · **DEC-34 개정**(§0.8-D — 「전량 테이블화」 철회 · ② SERVING helper 등급 폐지) |
+| COMMENT 정본 이동 | 신규 4테이블은 **`06_DDL.sql` 인라인**이 정본(dbt yml `columns[]` 아님) — 재구축 replay 대비 |
 
-### ⛔ build 직후 반드시 할 검증 (이 순서로)
+### 🔴 O53 에서 내가 저지른 것 (같은 실수 반복 금지)
+1. **선택지 바꿔치기** — 사용자가 고른 안이 아닌 제3안을 계획서에 넣었다(P127)
+2. **채움률 범주 오류** — ONCE(구조적 부재 집단)를 분모에 넣어 과소 보고(P128 · AD-1 오진과 동일 유형)
+3. **BRONZE 미스캔** — 「원본 실측」을 요구받고 GOLD 계층만 쟀다(뒤늦게 교정)
+4. **없는 파일에 작업 배정** → 실은 **기능이 이미 있었다**(`scripts/o51d_view_comments/gate.py`) — P129→**P132**
+5. **마커만 남김** — 게이트 대상에서 3종을 제외하고 대체 게이트를 만들지 않았다 → 즉시 신설(`table_ddl_column_gate.py`)
+6. **문안 일괄 부착** — 방송 4컬럼에 「VIDEO 전용」을 묶어 붙여 1건이 거짓이 됐다(P134)
+7. **문서 전체 독해 위반** — `20_issue/50_dbt_파이프라인_미결조치.md`(priority HIGH)를 안 읽고 "완독"이라 보고.
+   🔴 그 미독 문서가 실제로 설계를 바꿨다(§300 R1 → merge 금지 · P131)
 
-**0) build** — 파이프·리다이렉트 금지(클라이언트 파서가 거부한다). `--project-dir` 는 **워크스페이스 루트 기준 상대경로**다.
-```
-dbt build --project-dir /10_dbt_pipeline --select WIDE_MEMBER_MONTHLY WIDE_MEMBER_EVENT WIDE_SERVICE_EVENT WIDE_EVENT_PARTICIPATION WIDE_MEMBER_FEE WIDE_DEV_ACHIEVEMENT DIM_MEMBER_CURRENT DIM_MEMBER_ACQUISITION
-```
-⚠️ 8모델만 선택 실행이다. 전체 build 는 그 다음에 판단한다(WARN 추적표 §2 참조).
-
-**1) 물리 COMMENT 355/355 확인** — 🔴 **완료 판정은 이것뿐이다**(P33). 분모를 함께 출력해 vacuous pass 를 배제한다(P106).
-```sql
-select table_name, count(*) cols, count(comment) commented, count(*) - count(comment) missing
-from GN_DW.INFORMATION_SCHEMA.COLUMNS
-where table_schema='GOLD' and table_name in
- ('WIDE_MEMBER_MONTHLY','WIDE_MEMBER_EVENT','WIDE_SERVICE_EVENT','WIDE_EVENT_PARTICIPATION',
-  'WIDE_MEMBER_FEE','WIDE_DEV_ACHIEVEMENT','DIM_MEMBER_CURRENT','DIM_MEMBER_ACQUISITION')
-group by 1 order by 1;
--- 기대: 80·62·57·53·39·19·20·25 = 355, missing 전부 0
-```
-
-**2) 빈 축이 다시 침묵하지 않는지**
-```
-python3 scripts/o51d_view_comments/nullscan.py
-```
-기대 = 전건 NULL 후보 전부 `✅문안 언급`.
-
-**3) `(as-was)` 3뷰의 물리 COMMENT 가 교정됐는지** — O51-C 가 거짓을 물리에 배포했던 곳이다.
-```sql
-select table_name, column_name, comment
-from GN_DW.INFORMATION_SCHEMA.COLUMNS
-where table_schema='GOLD' and column_name in ('ORG_CORP','ORG_DIVISION','ORG_TEAM','ORG_DEPARTMENT')
-  and comment ilike '%as-was%' and comment not ilike '%as-was 가 아니다%';
--- 기대: 0행 (3뷰가 이번 build 로 재생성되므로)
-```
-
-**4) 뷰 전체 커버리지** — 기대 **491/559**(제외 2뷰 68컬럼은 7단계 DROP 예정).
-
-**5) 게이트 WARN 변화** — `warn_gold_view_comment_coverage` 가 통과로 바뀌는지. 8단계 error 승격의 선행조건이다.
-
-### 🔴 build 실패 시
-
-컬럼목록 불일치가 유일한 실패 모드다. `python3 scripts/o51d_view_comments/gate.py` 로 어느 모델인지 특정한 뒤
-**yml 을 손으로 고치지 말고** `build_yml.py` → `reapply_cols.py` 로 재생성한다(순서 정본 = `ORDINAL_POSITION`).
-
-### 생성기 (정본 — 손 편집 금지)
-
-`scripts/o51d_view_comments/` : `desc_member`·`desc_own`·`desc_fee`·`desc_dim`·`desc_emptyaxis`(문안) ·
-`build_yml`(생성) · `reapply_cols`(재반영) · `fix_as_was`·`switch_mat`(교정) · `gate`·`nullscan`(게이트) ·
-`O51D_BRONZE_codescan.txt`(BRONZE 스캔 원자료).
-⚠️ `desc_empty.py` 라는 이름은 **쓰지 말 것** — 그 경로가 스테이지에서 ENOENT 로 고착됐다(P99).
-
-### 🔴 이번 세션에서 내가 저지른 것 (반복 금지)
-
-| # | 무엇 | 교훈 |
+### 게이트 (정본 — 손 편집 금지 · 실행만)
+| 스크립트 | 무엇을 검사 | 최근 결과 |
 |---|---|---|
-| 1 | 규칙 7(COMMENT 에 수치 금지)을 **어긴 뒤, 재검토에서 "그 규칙은 없다"고 철회**했다. 대화의 6개 항목만 보고 이 문서의 10개를 확인하지 않았다 | **P111** 규칙의 정본은 문서다 |
-| 2 | 경고 문안의 비율을 **행 가중**으로 적어 손실을 6배 축소해 보이게 했다(사라지는 것은 회원인데) | **P108** 경고의 비율은 보호 대상과 같은 분모로 |
-| 3 | 멱등 가드가 **주석 문구에 오탐**해 8모델 전환을 조용히 스킵했다 | 가드는 대상 구조를 봐야 한다 |
-| 4 | 스테이지 검증을 **손으로 고른 목록**으로 해서 파일 1개를 빠뜨렸고, 그 사이 stale 산출물이 반영됐다 | **P113** 디렉터리 전수 스캔으로 |
-| 5 | 산문에 정규식 일괄 치환을 시도해 문장을 훼손했다 | **P112** 치환 결과를 읽어라 |
+| `scripts/table_ddl_column_gate.py` | `06_DDL` 선언 ↔ 모델 **출력 컬럼·순서**(build 전 판정) | **4/4** · 자기검사 4/4 |
+| `scripts/o51d_view_comments/gate.py` | GOLD 뷰 8종 SELECT ↔ yml `columns[]` 순서 | **8/8** |
+| `scripts/gen_o53_gold_ddl.py` | 문안 결손·TODO·규칙7·중복·타입(생성 시 게이트) | 84컬럼 위반 0 · 자기검사 9/9 |
+| `scripts/audit_ddl_rule7.py` | `06_DDL` 테이블 COMMENT 의 실측 수치 혼입 | ⬜ **37건 잔존**(별건) |
+| `scripts/sv_unit_gate.py` | SV 비율 metric 단위 + **SV GRANT 6건/9종** | 위반 0(O52 시점) |
+| `scripts/o54_sv_value_gate.py` | 🆕 SV metric 총계 스냅샷 대조(base 교체 값 불변) | **52 metric 불변** |
+| `scripts/o54_sv_header_patch.py`·`o54_sv_note_patch.py` | 🆕 SV DDL 가드레일 헤더·GRANT 주석 정합(잔존 검사 내장) | 8/8 · 6/6 |
+| `scripts/ws_stage_verify.py` | 스테이지 반영 대조 — **패딩 허용**(`--o53` 프리셋) | 33/33 반영 · 삭제 2건 확인 |
 
-전량 경위·실측은 `20_issue/00_INDEX_이슈원장.md` §O51 → O51-D / O51-D-B / O51-D-C / O51-D-D.
-
----
+### ⬜ O53 이 남긴 미결 (별건)
+- **`06_DDL` 테이블 COMMENT 규칙7 위반 37건 · 14테이블** — `python3 scripts/audit_ddl_rule7.py --detail` 로 목록 재생성.
+  수치를 「규모는 이슈원장 §… 참조」로 치환한다(O51-D-B 선례). 🔴 **재구축 전에** 처리할 것 —
+  `06_DDL` 이 replay 스크립트이므로 지금 안 고치면 새 환경에 그대로 복제된다.
+- **SERVING helper 3종 DROP** = 로드맵 7단계(의존 참조 0 확인 후). ⚠️ `GOLD.FACT_AD_*` 2종 DROP 은 **무효**(병합 철회).
 
 ## 1. 직전 세션(O50/O51-C)에서 끝난 것 — 다시 하지 말 것
 
@@ -159,13 +161,13 @@ where table_schema='GOLD' and column_name in ('ORG_CORP','ORG_DIVISION','ORG_TEA
 | **3** | **Phase 3 검증 게이트** | B | `FACT_AD_PERFORMANCE`=**243,545 불변**(BRONZE replay 정합: DGT 205,059+REBRDC 2,070+VIDEO 36,416) · `DIM_MEMBER_CURRENT`=1,763,065 PK유일 · `DIM_MEMBER_ACQUISITION`=1,585,949 PK유일 · `DIM_MONTH`=541 · `FACT_DEV_ACHIEVEMENT` 목표행 보존 · **35테이블 COMMENT 100%** · 뷰 COMMENT **546** · DMC 4컬럼 채움 **FDRM 98.68/99.28/99.91/56.60% · ONCE 전건 0**(분모 확정 필수 · P128) |
 | **4** | census/schema 재덤프 → **`09` 재생성 + 판정 오류 17건 교정 + 「집계필요」·「앵커_경합」 처방 쿼리 실행검증** | **A#2** (O49 중단분) | `09` md 에 SQL 블록 >0 · 집계필요 6건·경합 34행 쿼리 **실행 근거** 첨부 · 2-G 라벨 의심 2건 판정 |
 | **5** | 골든 `scripts/golden/outputs.json` 갱신 | A#1 파생 | `test_generators.py` **17/17 PASS** |
-| **6** | 🔴 **SV 9종 + Agent — 1회 편집·1회 배포**. base 재배선 **7종**(실측: `DIM_MONTH` 2 · `DIM_MEMBER_CURRENT` 4 · `FACT_AD_COMBINED` 1 · `WIDE_DEV_ACHIEVEMENT` 1 · 중복 제외) **＋** 판정 4종·경합·DEC-31 동일값 **동시**. ⚠️ `SV_DEV_ACHIEVEMENT` 1종만 **2단계에서 선행**(개명으로 base 소멸) | **A#3 ⊕ Phase 4** | SV **9/9 배포** · GATE-D(청구액 891,959,790,888 일치) · **`CREATE OR ALTER` + GRANT 9종 전수 + 소비 역할 세션 판정**(P125·P126) |
+| **6** | 🟡 **前半 완료(O54) = base 재배선 7종**(SV 9종 전건 base=GOLD 실측 · 값 불변 52 metric · GRANT 보존). **後半 미착수** = 판정 4종·경합·DEC-31 반영(4단계 선행 필요). 종전 기재 → 🔴 **SV 9종 + Agent — 1회 편집·1회 배포**. base 재배선 **7종**(실측: `DIM_MONTH` 2 · `DIM_MEMBER_CURRENT` 4 · `FACT_AD_COMBINED` 1 · `WIDE_DEV_ACHIEVEMENT` 1 · 중복 제외) **＋** 판정 4종·경합·DEC-31 동일값 **동시**. ⚠️ `SV_DEV_ACHIEVEMENT` 1종만 **2단계에서 선행**(개명으로 base 소멸) | **A#3 ⊕ Phase 4** | SV **9/9 배포** · GATE-D(청구액 891,959,790,888 일치) · **`CREATE OR ALTER` + GRANT 9종 전수 + 소비 역할 세션 판정**(P125·P126) |
 | **7** | **Phase 5 — 파괴적 정리**(⛔개별 승인). `SERVING.FACT_AD_COMBINED`·`DIM_MONTH`·`DIM_MEMBER_CURRENT` DROP. 🔴 **`GOLD.FACT_AD_DIGITAL`·`FACT_AD_BROADCAST` DROP 은 무효**(O53: 광고 병합 철회·DEC-8 유지) | B | `ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 잔존 참조 **0** 확인 후 |
 | **8** | **관문 dbt 승격** — `test_generators.py` 17종. 🔴 `warn_gold_view_comment_coverage` 는 **warn 유지**(사용자 결정) — 파일 헤더의 자동 승격 지시가 이 결정과 충돌하므로 **헤더를 고칠 것**(P130) | **A#4 ⊕ O51** | 승격 후 build ERROR=0 |
 | **9** | **현업 질문서 마감** — §6 9건 + O51-D 미특정 코드그룹 합류 | A#5 | 회신 없이 진행 불가한 것 확정 |
 | **10** | 문서·이슈 정리 — DEC-35(3계층 기준)·**DEC-8 유지 확정 기록**(반전 철회)·**DEC-34 §0.8-C 개정**(전량 테이블화 → 성격 기반·팩트 재구성형은 dbt GOLD 뷰)·O50/O51 종결 | Phase 6 | |
 
-🔴 **6단계를 쪼개지 말 것** — `CREATE OR REPLACE SEMANTIC VIEW` 가 GRANT 를 파괴하므로 나누면 GRANT 재실행이 2배가 된다.
+~~🔴 **6단계를 쪼개지 말 것**~~ → 🟢 **[2026-08-10 O54 무효화]** 근거였던 「`CREATE OR REPLACE` 의 GRANT 파괴」가 `CREATE OR ALTER` 로 해소됨을 실측했다(created_on 6건 불변) ⇒ **분할 비용 0**. 실제로 前半(base 재배선)만 먼저 배포했다.
 🟢 **[2026-08-10 O52-B 보강]** 더 나은 경로가 이미 원장에 있다 — **정의만 바꿀 때는 `CREATE OR ALTER SEMANTIC VIEW`**
   를 쓰면 **GRANT 가 보존**된다(`20_issue/10_진단_원인분석.md` §129 실측). `CREATE OR REPLACE` 는 GRANT 를 파괴한다.
   ⚠️ 본 세션에서 이 처방을 놓쳐 SV 2종의 GRANT 를 실제로 파괴했다(즉시 복구 · 원장 §O52-B · **P125**).
@@ -173,22 +175,23 @@ where table_schema='GOLD' and column_name in ('ORG_CORP','ORG_DIVISION','ORG_TEA
 🔴 **2단계가 `09` 판정의 입력을 바꾼다** — `gen_section_assembly.py:58-59` 가 `/tmp/census.json`·`/tmp/schema.json`(GOLD 실 스키마)을 읽는다. 그래서 4·5 가 2·3 뒤에 온다.
 
 ### 🔴 로드맵 진행 현황 — 2026-08-10 실측 (사용자 질의 「전부 완료됐나」에 대한 답)
-**아니다. 10단계 중 완료 1 · 진행중 1(2단계) · 부분완료 2 · 미착수 6.** *(2026-08-10 O53 갱신)*
+**10단계 중 완료 2 · 부분완료 2 · 미착수 6.** *(2026-08-10 O53 · `dbt build` 완료 후 실측)*
+⛔ **현재 착수점은 §0-A 다** — 2·3단계와 6단계 前半(base 재배선)이 끝났고 **4단계**가 다음이다.
 
 | 순 | 작업 | 상태 | 실측 근거 |
 |---|---|---|---|
 | 1 | O51-D 문안 | 🟢 **완료** | + **O51-F** 로 확장 종결 — 뷰 COMMENT **559/559 (100%)** |
-| 2 | Phase 1~2 GOLD 최종형 | 🟢 **구조 완료 · ⛔ `dbt build` 대기 (2026-08-10 O53)** | 착수 시 실측: GOLD 테이블 **31**(DIM 17+FACT 14) · `06_DDL.sql` 내 GOLD `CREATE TABLE` **31** = 배포 실측과 완전 일치(**replay 전제 성립** · `dbt_project.yml:51` 「24테이블」은 stale) · `GOLD.DIM_MONTH` **없음** · `FACT_DEV_ACHIEVEMENT` **없음** · `DIM_MEMBER_CURRENT` **20컬럼 VIEW** · `DIM_MEMBER_ACQUISITION` **25컬럼 VIEW** · `WIDE_DEV_ACHIEVEMENT` **19컬럼 VIEW**(37,522행·`ORG_SK\|DEV_TYPE\|MONTH_KEY` 유일). 🔴 **광고 병합은 철회**(DEC-8 유지 · 사용자 결정 = BRONZE 증량 확장성) → 목표 **35테이블**. 계획 결함 7건·지침 위반 4건·문서 stale 6건을 **실행 전** 적발·교정(원장 §O53).<br>✅ **실행 결과(0~4단계)**: GOLD **테이블 35(619/619 COMMENT)** · **뷰 13**(build 후 `WIDE_AD_COMBINED` 생성 시 14) · 신규 84컬럼 · PK 4종 · 소비 4역할 SELECT 실측 · dbt 모델 5종(4종 append+TRUNCATE) · `dbt parse` 경고 0 · 컬럼순서 게이트 8/8 · 생성기 게이트 자기검사 9/9. ⛔ **5단계 = 사용자 `dbt build`** |
-| 3 | Phase 3 검증 게이트 | 🟠 **build 후 실행 대기** | 구조 게이트는 이미 통과(테이블 35·619/619·PK·권한). 남은 것은 **행수·유일성·채움률** 판정이며 `dbt build` 이후에만 가능하다 — 기대치는 로드맵 3단계 열 참조 |
+| 2 | Phase 1~2 GOLD 최종형 | 🟢 **완료 (2026-08-10 O53 · build 검증까지)** | 착수 시 실측: GOLD 테이블 **31**(DIM 17+FACT 14) · `06_DDL.sql` 내 GOLD `CREATE TABLE` **31** = 배포 실측과 완전 일치(**replay 전제 성립** · `dbt_project.yml:51` 「24테이블」은 stale) · `GOLD.DIM_MONTH` **없음** · `FACT_DEV_ACHIEVEMENT` **없음** · `DIM_MEMBER_CURRENT` **20컬럼 VIEW** · `DIM_MEMBER_ACQUISITION` **25컬럼 VIEW** · `WIDE_DEV_ACHIEVEMENT` **19컬럼 VIEW**(37,522행·`ORG_SK\|DEV_TYPE\|MONTH_KEY` 유일). 🔴 **광고 병합은 철회**(DEC-8 유지 · 사용자 결정 = BRONZE 증량 확장성) → 목표 **35테이블**. 계획 결함 7건·지침 위반 4건·문서 stale 6건을 **실행 전** 적발·교정(원장 §O53).<br>✅ **실행 결과(0~4단계)**: GOLD **테이블 35(619/619 COMMENT)** · **뷰 13**(build 후 `WIDE_AD_COMBINED` 생성 시 14) · 신규 84컬럼 · PK 4종 · 소비 4역할 SELECT 실측 · dbt 모델 5종(4종 append+TRUNCATE) · `dbt parse` 경고 0 · 컬럼순서 게이트 8/8 · 생성기 게이트 자기검사 9/9. ✅ **`dbt build` ERROR 0·FAIL 0**(success 88·pass 290·warn 27 = 전부 기지 SILVER 계열) · O53 노드 5모델 success + 테스트 2건 pass. ⬜ 잔여 = `WIDE_AD_COMBINED` 1모델 재빌드(`BROADCAST_DATE` 문안 교정 반영 · §0-A ①) |
+| 3 | Phase 3 검증 게이트 | 🟢 **완료 (2026-08-10 O53)** | **6/6 기대치 정확 일치 · PK 전건 유일** — `DIM_MONTH` 541 · `DIM_MEMBER_CURRENT` 1,763,065 · `DIM_MEMBER_ACQUISITION` 1,585,949 · `FACT_DEV_ACHIEVEMENT` 37,522 · `WIDE_AD_COMBINED` 243,545 · `FACT_AD_PERFORMANCE` 243,545(불변). 테이블 35/619 · 뷰 14/546 · DMC 4컬럼 채움 FDRM 기준 확인 · ONCE 175,722 전건 0(구조적 부재) · WARN 회귀 0 |
 | 4 | `09` 재생성 + 판정오류 17건 | 🔴 **미착수** | 완료 게이트 = 「`09` md 에 SQL 블록 >0」 → 실측 **0** · 파일 mtime 2026-08-07 |
 | 5 | 골든 `outputs.json` 갱신 | 🔴 **미착수** | mtime 2026-08-07(미갱신) |
-| 6 | SV 9종 + Agent | 🟡 **부분완료** | ✅ SV **9/9 배포** · 스모크 9/9 · GATE-D 일치 · Agent 2종 도구 **9/9 배선** · GRANT 9종 전수 정상(복구 후) / 🔴 **미완**: ① base 재배선(SERVING→GOLD·뷰→테이블)은 **2단계 선행 필요** — SV 가 여전히 `SERVING.DIM_MONTH`·`DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED` 를 참조 ② 판정 4종·경합·DEC-31 동일값 반영은 **4단계 선행 필요** |
+| 6 | SV 9종 + Agent | 🟡 **前半 완료(2026-08-10 O54) · 後半 미착수** | ✅ SV **9/9 배포** · 스모크 9/9 · GATE-D 일치 · Agent 2종 도구 **9/9 배선** · GRANT 9종 전수 정상(복구 후) / 🔴 **미완**: ① base 재배선(SERVING→GOLD·뷰→테이블)은 **2단계 선행 필요** — SV 가 여전히 `SERVING.DIM_MONTH`·`DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED` 를 참조 ② 판정 4종·경합·DEC-31 동일값 반영은 **4단계 선행 필요**.<br>🔴 **`SV_DEV_ACHIEVEMENT` 는 현재 깨져 있다** — base 뷰를 DROP·개명했으므로 `CREATE OR ALTER` 재배포가 즉시 필요하다(§0-A ②) |
 | 7 | Phase 5 파괴적 정리 | 🔴 **미착수** | SERVING helper 3종 잔존. ⚠️ 2뷰 DROP 은 **철회**(O51-F) · ⚠️ `GOLD.FACT_AD_*` 2종 DROP 도 **무효화**(O53 · 광고 병합 철회) |
 | 8 | 관문 dbt 승격 | 🔴 **미착수** | `warn_gold_view_comment_coverage` 는 **warn 유지**(사용자 결정 2026-08-10) — 🔴 실측 GOLD 뷰 **559/559 = WARN 0** 이라 파일 헤더의 자동 승격 트리거가 **이미 충족** 상태다. 헤더와 사용자 결정이 충돌하므로 **헤더 교정 필요**(P130) · `test_generators.py` 17종 미승격 |
 | 9 | 현업 질문서 마감 | 🔴 **미착수** | §6 9건 + O51-D 미특정 코드그룹 |
 | 10 | 문서·이슈 정리 | 🟡 **부분** | O51/O52/**O53** 원장 등재 완료 · `40_입고대기` **CMP-1**(캠페인 상위코드·공통코드 신설 예고) 등재 완료 / ⬜ DEC-35 · **DEC-8 유지 확정 기록** · **DEC-34 §0.8-C 개정** 미작성 |
 
-⛔ **현재 착수점 = 2단계**(Phase 1~2 GOLD 최종형 · **v5 확정**). 3·4·5·6잔여·7 이 전부 여기에 물려 있다.
+⛔ **현재 착수점 = 4단계**(`09` 재생성 · 2026-08-10 O54 이후). 2·3 완료 · 6단계 前半 완료 ⇒ 5·6後半·7 이 4단계에 물려 있다.
 🔴 2단계는 **O51-D/O51-F 와 충돌 지점 3개**가 있다 — 바로 아래 §「2단계 착수 시 반드시 볼 것」을 먼저 읽을 것.
 🟢 **[2026-08-10 O53] v5 실행 순서** — ⓿ 원장·문서 등재(완료) → ❶ 사전검증(문안 64 수집 + 신규 4 + `WIDE_AD_COMBINED` 51 이관 + `06_DDL` 4블록 기계 생성 + `scripts/table_ddl_column_gate.py` **신설** + 스테이지 전수 스캔) → ❷ `06_DDL` **전체 재실행 금지 · 신규 `CREATE TABLE` 4문장만** → ❸ dbt 5모델(전환·신설 4종은 **`append`+`pre-hook TRUNCATE`** · `WIDE_AD_COMBINED` 는 뷰) + yml 재배치 + `dbt parse` → ❹ 참조처(SV DDL `05_8` · dbt 테스트 **2건** · 커버리지 게이트 헤더 · GOLD 스키마 COMMENT **14** · 문서 12곳) → ❺ ⛔ **`dbt build` 정지선** → ❻ `SV_DEV_ACHIEVEMENT` **1종만** `CREATE OR ALTER` + GRANT 소비역할 판정.
   🔴 **merge 금지 근거**: `20_issue/50_…md` §300 R1 — `IS_CURRENT` 필터 차원에 merge 를 쓰면 구 현재행이 잔존해 **팬아웃 차단이 무너진다**(P131).

@@ -1,12 +1,15 @@
--- GN_DW 3단계: Semantic View DDL 정본 — SV_AD (광고 실적) + helper 뷰 FACT_AD_COMBINED
+-- GN_DW 3단계: Semantic View DDL 정본 — SV_AD (광고 실적) · base = GOLD.WIDE_AD_COMBINED(dbt 소유)
 -- Co-authored with CoCo
 -- ============================================================================
 -- ▶ 이 파일의 위상  [2026-08-05 O37 분할]
---   대상 SV = **SV_AD (+ helper 뷰 `FACT_AD_COMBINED` 동봉 — 이 SV 의 단일 base 이므로 독립 실행을 위해 같은 파일에 둔다)**. 이 파일 하나로 **독립 실행**된다
+--   대상 SV = **SV_AD**. base = `GOLD.WIDE_AD_COMBINED`(dbt 모델 소유) ⇒ 🔴 이 파일은 **`dbt build` 이후에만**
+--   배포 가능하다(DEC-34 §0.8-D ③ 계열 · O54 재배선). 종전 helper `SERVING.FACT_AD_COMBINED` 동봉은 폐지됐다. 이 파일 하나로 **독립 실행**된다
 --   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
 --   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
 --   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
---   `CREATE OR REPLACE` 가 GRANT 를 파괴하지만 GRANT 절이 같은 파일에 있어 자기완결적이다.
+--   🔴 [2026-08-10 O54] 본문 DDL 은 **`CREATE OR ALTER SEMANTIC VIEW`** 다 — GRANT 가 보존된다
+--      (§129 실측 · created_on 불변). 아래 GRANT 절은 멱등 재확인용이며 ⛔ `CREATE OR REPLACE`
+--      로 되돌리면 GRANT 가 파괴된다(P125 실사고).
 --
 --   ⚠️ 종전에는 SV 6종이 단일 파일 `05_SV_DDL.sql(현 `_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql`)`(708행)에 있었다. SV 하나를 고칠 때마다
 --      파일 전체를 재작성해야 해서 **손대지 않은 SV 의 COMMENT 를 훼손할 경로**였고
@@ -28,8 +31,9 @@
 --   `05_0_SV_DDL.sql` 분할 인덱스 · 전체 배포 검증 · 공통 규약 전문
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`SERVING.DIM_MONTH` · 회원속성→`SERVING.DIM_MEMBER_CURRENT` ·
---                광고팩트→`SERVING.FACT_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
 --   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
 --   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.
@@ -43,7 +47,7 @@ USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
 
 /* =====================================================================================
-   6. SV_AD (overall Agent) — base FACT_AD_COMBINED(helper, FAP+FAD+FAB 1:1 pre-join)
+   6. SV_AD (overall Agent) — base GOLD.WIDE_AD_COMBINED(dbt 뷰, FAP+FAD+FAB 1:1 pre-join)
       활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털]
             인바운드콜·방송횟수 [방송] · 재방송개발건·재방송 개발단가(공8) [재방송 전용]
       ⚠ 디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 없이 혼합집계 시 왜곡
@@ -51,80 +55,17 @@ USE SCHEMA GN_DW.SERVING;
       ⚠ 전환콜(CONV_CALL_CNT)·방송 전체 개발단가는 의도적 미노출 — 근거 = 04 §6.9
    ===================================================================================== */
 
--- 6-0. helper 뷰: FAP+FAD+FAB 1:1 pre-join (세 팩트가 AD_PERF_DK로 완전분할, fan-out 0)
---   존재 이유: semantic view metric 식은 자기 logical table 컬럼만 참조 가능 → 개발단가(AD_COST÷CRM_DEV_CNT)
---   등 cross-satellite 비율 metric을 SV에서 직접 계산할 수 없다(04 §6.9-(1)). DIM_MEMBER_CURRENT 패턴과 동일.
-CREATE OR REPLACE VIEW GN_DW.SERVING.FACT_AD_COMBINED AS
-SELECT
-  -- FAP core
-  fap.AD_PERF_DK,
-  fap.PERF_DATE_SK,
-  fap.CAMPAIGN_SK,
-  -- [2026-08-06 O45] 마케팅캠페인 conformed 축 — 광고↔개발실적을 잇는 유일한 키다.
-  --   🔴 `CAMPAIGN_SK`(개발캠페인)는 전건 센티넬이지만 이 축은 살아 있다(연결키 부재가 아니라 grain 문제였다).
-  fap.MKTG_CAMPAIGN_SK,
-  fap.AD_CREATIVE_SK,
-  fap.DEVICE_SK,
-  fap.AD_COST,
-  fap.IMPRESSIONS,
-  fap.CLICKS,
-  fap.INBOUND_CALL,
-  fap.GA_CONV_MEMBERS,
-  fap.GA_CONV_CNT,
-  fap.DAY_OF_WEEK,
-  fap.WEEK_OF_YEAR,
-  fap.AD_SOURCE_TYPE,
-  -- FAD (digital satellite) — NULL for broadcast rows
-  dig.PAGE_TYPE,
-  dig.AD_GROUP_NM,
-  dig.GROUP_DIV,
-  dig.CREATIVE_TYPE,
-  dig.AD_TYPE_NM,
-  dig.READ_CNT,
-  dig.MEDIA_POTENTIAL_CUST_CNT,
-  dig.CRM_DEV_CNT,
-  dig.CTR_SRC,
-  dig.CVR_SRC,
-  dig.CPC_SRC,
-  dig.CPM_SRC,
-  dig.CPA_SRC,
-  dig.DEV_UNIT_PRICE_SRC,
-  dig.VTR_SRC,
-  -- FAB (broadcast satellite) — NULL for digital rows
-  brc.TIME_BAND,
-  brc.CM_POSITION,
-  brc.RT_TYPE,
-  brc.PROGRAM_NM,
-  brc.CHANNEL_COMPANY,
-  brc.CHANNEL_COMPANY_TYPE,
-  brc.SPOT_TYPE,
-  brc.DURATION_SEC,
-  brc.DAY_DIV,
-  brc.BRDC_DIV,
-  brc.CTV_DIV,
-  brc.AD_CNT,
-  brc.CONV_CALL_CNT,
-  brc.DVLP_MEMBER_CNT,
-  brc.DVLP_CNT,
-  brc.AD_VIEW_RT_SRC  AS BRDC_AD_VIEW_RT_SRC,
-  brc.CPC_SRC         AS BRDC_CPC_SRC
-FROM GN_DW.GOLD.FACT_AD_PERFORMANCE fap
-LEFT JOIN GN_DW.GOLD.FACT_AD_DIGITAL dig ON fap.AD_PERF_DK = dig.AD_PERF_DK
-LEFT JOIN GN_DW.GOLD.FACT_AD_BROADCAST brc ON fap.AD_PERF_DK = brc.AD_PERF_DK;
-
--- helper 뷰 COMMENT — 뷰는 `ALTER VIEW ... SET COMMENT` 사용(`COMMENT ON VIEW` 미지원).
-ALTER VIEW GN_DW.SERVING.FACT_AD_COMBINED SET COMMENT =
-  'GOLD 광고 팩트 3종(FAP 코어 + FAD 디지털·FAB 방송 위성)을 AD_PERF_DK 로 1:1 pre-join — SV_AD 의 단일 base. PK=AD_PERF_DK(전건 유일, fan-out 0). 위성은 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(디지털행=방송컬럼 NULL, 방송행=디지털컬럼 NULL — 결측이 아니라 원천 부재). 존재 이유: semantic view metric 식은 자기 logical table 컬럼만 참조 가능해 개발단가(AD_COST÷CRM_DEV_CNT) 등 cross-satellite 비율을 SV 에서 직접 계산할 수 없다.';
-
--- helper 뷰 GRANT (SERVING 에는 FUTURE grant 가 없어 명시 부여 필요 — 04 §6.9-(3))
-GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_ANALYST;
-GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_VIEWER;
-GRANT SELECT ON VIEW GN_DW.SERVING.FACT_AD_COMBINED TO ROLE GN_DW_SERVICE;
+-- 6-0. ⛔ [2026-08-10 O54] **helper 뷰 생성 블록 제거** — 사용자 결정.
+--   base 가 `SERVING.FACT_AD_COMBINED`(SQL 스크립트 소유 47컬럼) → **`GOLD.WIDE_AD_COMBINED`**
+--   (dbt 소유 51컬럼 · 방송 시간축 4컬럼 포함)으로 재배선됐으므로 이 파일은 더 이상 소비뷰를 만들지 않는다.
+--   🔴 이 파일에서 `CREATE VIEW GN_DW.GOLD.WIDE_AD_COMBINED` 를 되살리지 말 것 — dbt 모델
+--      (`models/gold/wide/WIDE_AD_COMBINED.sql`)이 정본이며 스크립트가 덮으면 4컬럼이 소실된다.
+--   ⬜ 물리 `SERVING.FACT_AD_COMBINED` 는 잔존한다 → 의존 참조 0 확인 후 로드맵 **7단계**에서 DROP.
 
 -- 6-1. SV_AD 본체
-CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
   TABLES (
-    ad AS GN_DW.SERVING.FACT_AD_COMBINED
+    ad AS GN_DW.GOLD.WIDE_AD_COMBINED
       PRIMARY KEY (AD_PERF_DK)
       WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
       COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·개발건수) / GN_DW.BRONZE_GA4.events_YYYYMMDD(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
@@ -223,15 +164,16 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)
       WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(VIDEO 원천에 개발 컬럼 부재 → 방송 전체 단가가 아님). 분자를 개발건수 적재행으로 정합. ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 과대계상된다.'
   )
-  COMMENT = 'Phase-1 광고 실적 SV(base FACT_AD_COMBINED helper). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. ⚠디지털/방송 measure 상호배타. [2026-08-06 O45] 🔴 **마케팅캠페인별 분해가 활성화됐다 — 종전 "캠페인/소재별 분해 불가" 서술은 절반이 거짓이므로 쪼갰다**(P61). ✅ **마케팅캠페인**(MARKETING_CAMPAIGN) 축으로 광고비·노출·클릭·CTR·개발단가를 분해할 수 있다. ⛔ **소재별은 여전히 불가**(소재 연결키 부재 · Q10). ⛔ **개발캠페인(개별 캠페인명)별도 불가** — 연결키가 없어서가 아니라 한 마케팅캠페인에 개발캠페인이 다수 매달려 광고비 배분 규칙이 없기 때문이다(DEV_CAMPAIGN_CNT 축으로 그 배수를 확인할 수 있다). 해소 경로는 원천 입고가 아니라 **현업 배분 규칙 1건**이다. ⚠️ 마케팅캠페인 축으로 그루핑하면 미도달 광고행이 ''(미매핑)''으로 모이므로 캠페인별 합계 < 전체 합계다 — 총계는 축 없이 답한다. ⚠️ **광고비 ÷ CRM 개발실적(FACT_MEMBER_EVENT)** 형태의 개발단가는 이 SV 로 산출할 수 없다(cross-fact — metric 식은 자기 logical table 컬럼만 참조 가능). 이 SV 의 개발단가(공7)는 **대행사가 리포트한 디지털 개발건수** 기준이다. 두 정의를 섞지 말 것. ⚠개발단가(공7)는 원천 포맷 변경 이후 구간 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다. ⚠전환콜(CONV_CALL_CNT)은 대행사 원천이 전건 비어 있어 이 SV에 measure가 없다 — 질문받으면 미제공으로 안내(추정치 생성 금지). ⚠수치·기간은 이 COMMENT에 두지 않는다 — 반드시 SV를 조회해 답할 것.'
+  COMMENT = 'Phase-1 광고 실적 SV(base GOLD.WIDE_AD_COMBINED — dbt 소유 GOLD 뷰). [원천 요약] 원천시스템=대행사(Agency) 일별 리포트(Google Sheet·Drive Excel·SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY(디지털 DGT_AD_CMPGN_DTLS · 방송 VIDEO_AD_CMPGN_DTLS+REBRDC_AD_CMPGN_DTLS) + GN_DW.BRONZE_GA4.events_YYYYMMDD → SILVER(AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT) → GOLD(FAP+FAD+FAB). ⚠예산(SV_BUDGET)은 ERP 원천으로 서로 다른 시스템 — 교차 집계 불가. 테이블별 상세 원천은 각 테이블 COMMENT의 [원천] 절 참조. 활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털] / 인바운드콜·방송횟수 [방송] / 재방송개발건·재방송 개발단가(공8) [재방송 전용]. ⚠디지털/방송 measure 상호배타. [2026-08-06 O45] 🔴 **마케팅캠페인별 분해가 활성화됐다 — 종전 "캠페인/소재별 분해 불가" 서술은 절반이 거짓이므로 쪼갰다**(P61). ✅ **마케팅캠페인**(MARKETING_CAMPAIGN) 축으로 광고비·노출·클릭·CTR·개발단가를 분해할 수 있다. ⛔ **소재별은 여전히 불가**(소재 연결키 부재 · Q10). ⛔ **개발캠페인(개별 캠페인명)별도 불가** — 연결키가 없어서가 아니라 한 마케팅캠페인에 개발캠페인이 다수 매달려 광고비 배분 규칙이 없기 때문이다(DEV_CAMPAIGN_CNT 축으로 그 배수를 확인할 수 있다). 해소 경로는 원천 입고가 아니라 **현업 배분 규칙 1건**이다. ⚠️ 마케팅캠페인 축으로 그루핑하면 미도달 광고행이 ''(미매핑)''으로 모이므로 캠페인별 합계 < 전체 합계다 — 총계는 축 없이 답한다. ⚠️ **광고비 ÷ CRM 개발실적(FACT_MEMBER_EVENT)** 형태의 개발단가는 이 SV 로 산출할 수 없다(cross-fact — metric 식은 자기 logical table 컬럼만 참조 가능). 이 SV 의 개발단가(공7)는 **대행사가 리포트한 디지털 개발건수** 기준이다. 두 정의를 섞지 말 것. ⚠개발단가(공7)는 원천 포맷 변경 이후 구간 산출 불가(원천이 개발건수 대신 단가 제공). ⚠개발건수/개발단가는 **REBROADCAST 전용** — VIDEO 원천(VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 구조적으로 부재하므로 "방송 전체" 지표가 아니다. ⚠전환콜(CONV_CALL_CNT)은 대행사 원천이 전건 비어 있어 이 SV에 measure가 없다 — 질문받으면 미제공으로 안내(추정치 생성 금지). ⚠수치·기간은 이 COMMENT에 두지 않는다 — 반드시 SV를 조회해 답할 것.'
   AI_SQL_GENERATION '핵심 규칙: (1) AD_SOURCE_TYPE 필터가 없는 질문에서 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객은 반드시 AD_SOURCE_TYPE=''DIGITAL'' 필터를 자동 추가한다. 인바운드콜·방송횟수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 필터를 자동 추가한다. **개발건수(재방송개발건·재방송개발회원)와 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 필터를 자동 추가한다** — VIDEO 원천에 개발 컬럼이 없어 혼합 시 과대계상된다. 광고비만 전체 합산 허용. (2) 적용 조건(기간·그룹 미지정 시): 데이터에 실제 존재하는 최신 연월(MAX(연월)) 기준 직전 12개월로 한정하고, GROUP BY ROLLUP((연,월))로 월별 행 + 총계 행을 함께 반환한다. (3) **캠페인별 분해는 마케팅캠페인 축으로 답한다**(O45 · 종전의 「SQL 생성 거부」 규칙은 폐기됐다): MARKETING_CAMPAIGN 으로 그루핑하고, ''(미매핑)'' 버킷이 존재하므로 **캠페인별 합계가 전체 합계보다 작다는 점을 답변에 명시**한다. 🔴 **소재별 분해는 여전히 불가**하다(소재 연결키 부재) — SQL 을 생성하지 말고 사유를 답한다. 🔴 **개발캠페인(개별 캠페인명)별 ROI·개발단가도 생성하지 않는다** — 한 마케팅캠페인에 개발캠페인이 다수 매달려 광고비를 내리면 그 배수로 복제된다(DEV_CAMPAIGN_CNT 로 배수를 보여주며 설명한다). 필요한 것은 원천 입고가 아니라 현업의 광고비 배분 규칙이다. 🔴 **광고비 ÷ CRM 개발실적** 형태의 개발단가를 이 SV 에서 만들지 않는다 — 개발실적은 다른 팩트(FACT_MEMBER_EVENT)에 있어 cross-fact 이며 SV metric 식으로 표현할 수 없다. 이 SV 의 개발단가는 대행사 리포트 기준임을 밝힌다. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M''(''MOBILE''/''TABLET'' 아님), 데스크톱은 ''PC''. 방송은 ''(해당없음)''이므로 기기별 분석은 디지털에만 적용한다. (5) 개발단가(공7, 디지털)는 원천이 개발건수 제공을 중단한 시점 이후 NULL이다. 기간을 하드코딩하지 말고 CRM_DEV_CNT 가 존재하는 최신 연월을 데이터에서 조회해 그 시점까지로 한정하고, 그 이후는 원천 포맷 변경으로 산출 불가임을 답변에 명시한다. (6) 개발건수·개발단가를 "방송"으로 묻더라도 **재방송(REBROADCAST) 전용 지표**임을 답변에 명시한다 — VIDEO는 대행사 원천에 개발 컬럼이 없어 집계 대상이 아니며(결손이 아니라 구조적 부재), 방송 전체 개발 규모로 단정하면 안 된다. (7) **전환콜**은 이 SV에 measure가 없다 — 대행사 원천(VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT)이 전건 비어 있기 때문이다. 질문받으면 SQL을 생성하지 말고 미제공 사유를 답하고, 인바운드콜(INBOUND_CALL)로 대체 가능한지 되묻는다. 전환콜 수치를 추정·창작하지 않는다. (8) 채널사·프로그램 등 방송 차원을 광고비 기준으로 정렬할 때는 ORDER BY ... DESC NULLS LAST 를 쓴다 — 기본값 NULLS FIRST 면 광고비 없는 항목이 상위를 점유한다.';
 
 
 /* =====================================================================================
    GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
-      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
-         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+      🟢 [2026-08-10 O54] 본문이 `CREATE OR ALTER` 이므로 **기존 GRANT 는 보존**된다 →
+         아래 GRANT 는 멱등 재확인이다. 🔴 판정은 소유자 세션이 아니라 **소비 역할 세션**으로
+         한다(P126) — 검사기 = `scripts/sv_unit_gate.py`.
          분할의 이점: GRANT 가 대상 SV 와 같은 파일에 있어 빠뜨릴 수 없다.
    ===================================================================================== */
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD TO ROLE GN_DW_ANALYST;
@@ -259,7 +201,7 @@ SELECT (SELECT TOTAL_AD_COST FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS TOTA
 SELECT (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_PERFORMANCE) AS fap,
        (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_DIGITAL)     AS dig,
        (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_BROADCAST)   AS brc,
-       (SELECT COUNT(*) FROM GN_DW.SERVING.FACT_AD_COMBINED) AS combined;
+       (SELECT COUNT(*) FROM GN_DW.GOLD.WIDE_AD_COMBINED) AS combined;
 --   판정: dig + brc == fap  AND  combined == fap  (→ 중복 팽창 없음)
 
 -- (8-6) 디지털 지표 산출 (CTR·CVR·개발단가)

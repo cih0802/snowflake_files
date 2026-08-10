@@ -603,11 +603,11 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 
 3) 08_After_Deploy_DBT.sql          ← DBT PROJECT GRANT + SERVING GRANT + CoWork + helper 뷰 2
      02_GN_DW_building/08_After_Deploy_DBT.sql
-     · §G.1 SERVING.DIM_MONTH          ← GOLD.DIM_DATE
-     · §G.2 SERVING.DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER  (2026-08-04 O27 반영)
+     · §G.1 SERVING.DIM_MONTH          ← GOLD.DIM_DATE   ⛔ [2026-08-10 O54] 실행 불요(SV base = GOLD.DIM_MONTH)
+     · §G.2 SERVING.DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER  ⛔ [2026-08-10 O54] 실행 불요(SV base = GOLD.DIM_MEMBER_CURRENT)
      ⚠️ 역할이 ACCOUNTADMIN ↔ GN_DW_ADMIN 으로 바뀐다. 스크립트의 USE ROLE 을 지킬 것.
 
-4) 05_1 ~ 05_7_SV_DDL_*.sql         ← SV 6종(+05_7 에 SERVING.FACT_AD_COMBINED 동봉)
+4) 05_1 ~ 05_9_SV_DDL_*.sql         ← SV 9종 (helper 동봉 폐지 · [2026-08-10 O54] base 전건 GOLD)
         🔴 [2026-08-05 O37 분할] 각 파일이 GRANT·스모크까지 포함해 **독립 실행**된다(순서 무관).
            `05_0_SV_DDL.sql` 은 인덱스·공통규약·전체검증 전용 — 실행해도 SV 가 배포되지 않는다.
      05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql ... 05_7_SV_DDL_AD.sql
@@ -708,7 +708,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 
 | 객체 | 소유 | 용도 | 컬럼 |
 |---|---|---|---|
-| `SERVING.DIM_MEMBER_CURRENT` | `08` §G.2 | **SV 전용** fan-out 차단 | 19 (REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 포함) |
+| ~~`SERVING.DIM_MEMBER_CURRENT`~~ | `08` §G.2 | ⛔ **[2026-08-10 O54] SV 미참조** — base = `GOLD.DIM_MEMBER_CURRENT`(24컬럼 테이블). 7단계 DROP 대상 | 19 (구) |
 | `GOLD.DIM_MEMBER_CURRENT` | dbt 모델 (DEC-27 §17-A) | **분석가 진입점** | 20 (위 4컬럼 미노출 · `MEMBER_TYPE`·감사컬럼 포함) |
 
 소비자가 달라 **의도적 분리로 설명 가능**하나 문서에 명시돼 있지 않았다 → 양쪽 COMMENT·헤더에

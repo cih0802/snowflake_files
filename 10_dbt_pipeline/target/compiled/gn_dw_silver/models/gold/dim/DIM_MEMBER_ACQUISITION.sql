@@ -1,4 +1,4 @@
--- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 위의 뷰
+-- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
 -- Co-authored with CoCo
 --
 -- ============================================================================
@@ -37,6 +37,13 @@
 --     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
 --     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
 --     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+-- 🔴🔴 [2026-08-10 O53] **뷰 → 테이블 전환.**
+--   ① 컬럼 COMMENT 정본이 `03_top-down_gold/06_DDL.sql` 인라인 COMMENT 로 이동했다(사용자 결정).
+--      schema.yml `columns[]` 는 제거 — 같은 사실을 두 곳에 두면 갈라진다(P85).
+--   ② `incremental` + `append` + `pre_hook TRUNCATE` — merge 금지(완전 재산출 차원에서 grain 이동 시
+--      구 행 잔존 · 문서50 §300 R1 · P131). base 인 FACT_MEMBER_COHORT 가 회원 집합을 매 build 재산출한다.
+--   ③ 감사컬럼 4종을 신설했다(GOLD 35테이블 전수 관례 · 뷰 시절에는 없었다).
+--   🔴 SELECT 컬럼 변경 시 06_DDL 블록을 동시에 재생성할 것(`scripts/gen_o53_gold_ddl.py`).
 
 
 select
@@ -68,7 +75,12 @@ select
     c.FIRST_STOP_DATE_SK                            as FIRST_STOP_DATE_SK,
     c.FIRST_STOP_REASON_NM                          as FIRST_STOP_REASON_NM,
     c.TENURE_DAYS                                   as TENURE_DAYS,
-    c.IS_12M_OBSERVABLE                             as IS_12M_OBSERVABLE
+    c.IS_12M_OBSERVABLE                             as IS_12M_OBSERVABLE,
+    -- [O53] 감사컬럼 — GOLD 테이블 전수 관례. 원천계통은 base(FMC)와 동일한 CRM.
+    'CRM'                       AS DW_SOURCE_SYSTEM,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
+    '012f4b71-86cc-4e3b-babe-7e2ab06a3bf8'                    AS DW_BATCH_ID
 from GN_DW.GOLD.FACT_MEMBER_COHORT c
 left join GN_DW.GOLD.DIM_CAMPAIGN     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
 left join GN_DW.GOLD.DIM_ORG          org on org.ORG_SK          = c.ACQ_ORG_SK

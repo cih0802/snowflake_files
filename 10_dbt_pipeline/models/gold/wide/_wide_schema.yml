@@ -1201,7 +1201,7 @@ models:
       - name: AD_END_TIME
         description: "광고종료시간 ← VIDEO.AD_END_TIME [VIDEO 전용]. 신규 노출 🔴🔴[WIDE_AD_COMBINED] **VIDEO(본방송) 전용이다** — 재방송(REBRDC) 원천에는 이 컬럼이 **아예 없다**(BRONZE `REBRDC_AD_CMPGN_DTLS` 에 시각 컬럼 부재 · 보유 항목은 방송시간·방송월뿐). 따라서 재방송행의 NULL 은 적재 지연이 아니라 **해당 없음**이다(P20 3분류). 시각 기반 분석은 VIDEO 로 스코프하고, 재방송을 포함한 시간대 분석은 TIME_BAND 를 쓸 것. 전용축 판정 근거 = 이슈원장 §429."
       - name: BROADCAST_DATE
-        description: "송출일 ← VIDEO.BRDC_DATE / REBRDC.DATE. ⚠️코어 PERF_DATE_SK(실적일)와 구분. 코어에서 이관 🔴🔴[WIDE_AD_COMBINED] **VIDEO(본방송) 전용이다** — 재방송(REBRDC) 원천에는 이 컬럼이 **아예 없다**(BRONZE `REBRDC_AD_CMPGN_DTLS` 에 시각 컬럼 부재 · 보유 항목은 방송시간·방송월뿐). 따라서 재방송행의 NULL 은 적재 지연이 아니라 **해당 없음**이다(P20 3분류). 시각 기반 분석은 VIDEO 로 스코프하고, 재방송을 포함한 시간대 분석은 TIME_BAND 를 쓸 것. 전용축 판정 근거 = 이슈원장 §429."
+        description: "송출일 ← VIDEO.BRDC_DATE / REBRDC.DATE. ⚠️코어 PERF_DATE_SK(실적일)와 구분. 코어에서 이관 🔴[WIDE_AD_COMBINED] **송출일이며 코어의 실적일(PERF_DATE_SK)과 다른 축**이다 — 둘을 같은 시간축으로 섞지 말 것. 🟢본방송(VIDEO)·재방송(REBRDC) **양 원천 모두에 있다**(BRONZE `VIDEO_AD_CMPGN_DTLS.BRDC_DATE` · `REBRDC_AD_CMPGN_DTLS.DATE`) — 같은 방송 위성의 시각 3컬럼(AD_START_TIME·AD_END_TIME·PRG_START_TIME)이 VIDEO 전용인 것과 **다르다**. ⇒ 재방송을 포함한 **일자 단위** 방송 분석은 이 컬럼으로 가능하다. 디지털행은 원천 부재로 NULL."
       - name: PROGRAM_NM
         description: "프로그램/편성명 ← VIDEO.SCHDL_NM / REBRDC.BRDC_NM ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CHANNEL_COMPANY

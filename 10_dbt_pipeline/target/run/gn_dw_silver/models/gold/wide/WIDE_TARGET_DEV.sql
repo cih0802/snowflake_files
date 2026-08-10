@@ -11,7 +11,7 @@ create or replace view GN_DW.GOLD.WIDE_TARGET_DEV
       ORG_DEPARTMENT COMMENT $$DIM_ORG.DEPARTMENT — 부서 (#116). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴「부서」는 축이 둘이다 — 이 컬럼은 **사건 부서**이고 획득 부서는 DIM_MEMBER_ACQUISITION.ACQ_DEPARTMENT 다(O34).$$,
       ORG_TEAM COMMENT $$DIM_ORG.TEAM — 팀. 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-F 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.TEAM`. `DIM_ORG` 는 DEPARTMENT 만 채워져 있고 상위 계층 유도 규칙이 미확정이다(CONF-4). 실측 규모는 이슈원장 §O51-F.$$
     )
-    comment = $$회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY. [2026-08-05 O38] MONTH_KEY 연도 복원으로 CAL_YEAR 가 유효해졌다(종전 1~12 라 FLOOR(MONTH_KEY/100)=0 전건). 목표 대비 실적은 `WIDE_DEV_ACHIEVEMENT` 소관이다. 🔴[O51-F 실측] 조직 상위 계층(ORG_CORP·ORG_DIVISION·ORG_TEAM)은 차원 자체가 비어 있어 **부서 단위까지만 분해된다**(CONF-4).$$
+    comment = $$회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY. [2026-08-05 O38] MONTH_KEY 연도 복원으로 CAL_YEAR 가 유효해졌다(종전 1~12 라 FLOOR(MONTH_KEY/100)=0 전건). 목표 대비 실적은 `FACT_DEV_ACHIEVEMENT`(구 WIDE_DEV_ACHIEVEMENT · O53 개명) 소관이다. 🔴[O51-F 실측] 조직 상위 계층(ORG_CORP·ORG_DIVISION·ORG_TEAM)은 차원 자체가 비어 있어 **부서 단위까지만 분해된다**(CONF-4).$$
     as (
       -- WIDE_TARGET_DEV: 회원개발 목표 팩트(FTG_D) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.3)
 -- Co-authored with CoCo

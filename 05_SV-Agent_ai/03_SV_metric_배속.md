@@ -170,7 +170,7 @@ END-METADATA -->
 
 ---
 
-## 5. SV_AD (base = SERVING.FACT_AD_COMBINED, 일×광고실적) — 4 metric [**Phase 1** ✅ 2026-07-28 배포]
+## 5. SV_AD (base = **GOLD.WIDE_AD_COMBINED** [2026-08-10 O54] 재배선 · 종전 SERVING.FACT_AD_COMBINED, 일×광고실적) — 4 metric [**Phase 1** ✅ 2026-07-28 배포]
 
 > overall Agent(2026-07-28 배정 변경: 마케팅 Agent → **AGENT_OVERALL** analyst_ad). §3 광고 CTR·개발단가(공7~10).
 > **2026-07-28 정정**: FAD "스캐폴드" 전제 **부분 해제**. BRONZE→GOLD 확장으로 measure·degenerate 축 실적재 → **공7·9·10 P1 승격**.
@@ -307,7 +307,7 @@ SELECT d.YEAR,
        AVG(c.DEV_UNIT_PRICE_SRC)         AS dev_unit_price_src_avg,
        COUNT(c.CRM_DEV_CNT)              AS rows_crm_dev,
        COUNT(c.DEV_UNIT_PRICE_SRC)       AS rows_src
-FROM GN_DW.SERVING.FACT_AD_COMBINED c
+FROM GN_DW.GOLD.WIDE_AD_COMBINED c
 JOIN GN_DW.GOLD.DIM_DATE d ON c.PERF_DATE_SK = d.DATE_SK
 WHERE c.AD_SOURCE_TYPE = 'DIGITAL'
 GROUP BY 1 ORDER BY 1;
@@ -319,7 +319,7 @@ GROUP BY 1 ORDER BY 1;
 ```sql
 SELECT d.YEAR, d.MONTH, COUNT(*) AS rows_total,
        COUNT(c.CRM_DEV_CNT) AS rows_crm_dev, COUNT(c.DEV_UNIT_PRICE_SRC) AS rows_src
-FROM GN_DW.SERVING.FACT_AD_COMBINED c
+FROM GN_DW.GOLD.WIDE_AD_COMBINED c
 JOIN GN_DW.GOLD.DIM_DATE d ON c.PERF_DATE_SK = d.DATE_SK
 WHERE c.AD_SOURCE_TYPE = 'DIGITAL' AND d.YEAR = 2026
 GROUP BY 1, 2 ORDER BY 1, 2;
@@ -337,7 +337,7 @@ SELECT AD_SOURCE_TYPE, COUNT(*) AS rows_total,
        SUM(AD_COST)/NULLIF(SUM(DVLP_CNT),0)    AS brc_unaligned,
        SUM(CASE WHEN DVLP_CNT IS NOT NULL THEN AD_COST END)
          /NULLIF(SUM(DVLP_CNT),0)              AS brc_aligned
-FROM GN_DW.SERVING.FACT_AD_COMBINED
+FROM GN_DW.GOLD.WIDE_AD_COMBINED
 GROUP BY 1 ORDER BY 1;
 ```
 실측 판정: 디지털 개발단가 = 분모 커버리지 95.7% · 미정합 119,951 vs 정합 114,870 = +4.4% → **분자 정합 후 노출** ✅ / 방송 개발단가 = AD_SOURCE_TYPE 전체를 분모로 본 커버리지 5.2% · +41% → 당초 미노출 결정. ⚠ 단 이 5.2%는 **VIDEO를 분모 모집단에 넣은 범주 오류**였고(§6-I 오진 철회), REBROADCAST 단독으로는 96.03%다.

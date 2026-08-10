@@ -47,6 +47,16 @@ GRANT USAGE ON SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT TO R
 /* =====================================================================
    G. SERVING helper 뷰 — SV fan-out 차단용 (04_SV_설계.md §0.1)
       소유 = GN_DW_ADMIN. SV relationship에서 이 뷰를 logical table로 참조.
+
+   ⛔⛔ [2026-08-10 O54] **이 절은 이제 실행 불요다 — 신규 계정 재현에서 건너뛴다.**
+      SV 9종 전부 base 를 GOLD 정본으로 재배선했다(실측: BASE_TABLE_SCHEMA_NAME 전건 GOLD).
+        · `SERVING.DIM_MONTH`          → `GOLD.DIM_MONTH`(테이블 · 06_DDL 소유)
+        · `SERVING.DIM_MEMBER_CURRENT` → `GOLD.DIM_MEMBER_CURRENT`(테이블 · dbt 소유 24컬럼)
+        · `SERVING.FACT_AD_COMBINED`   → `GOLD.WIDE_AD_COMBINED`(dbt 뷰 51컬럼)
+      🔴 그러므로 재현 순서에서 이 절을 실행하지 않아도 `05_1`~`05_9` 가 배포된다.
+         단 `05_7`(SV_AD)·`05_8`·`05_9` 는 base 가 dbt 소유이므로 **`dbt build` 이후**여야 한다.
+      ⬜ 절 자체 삭제 + 물리 helper 3종 DROP = 로드맵 **7단계**(⛔개별 승인 · 의존 참조 0 확인 후).
+      ⚠️ 아래 정의는 7단계 승인 전 롤백 근거로 보존한다 — 되살릴 때 SV 를 함께 되돌릴 것.
    ===================================================================== */
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

@@ -739,7 +739,7 @@ END-METADATA -->
 > · **최종 형상** — 테이블 31→**35** · 뷰 16→**14** · 테이블 컬럼 COMMENT 535→**619(100%)** · SERVING helper 3종 **이번엔 불변**(6·7단계 이월).
 >   ⚠️ 계획 단계 예측은 607 이었다 — 감사컬럼 4×3종(신규 3테이블)을 빼고 셌기 때문이다. **실측 619**(84 신규). 예측치를 실측으로 교체한다.
 >
-> ##### 🆕 신규 교훈 P127~P132
+> ##### 🆕 신규 교훈 P127~P134
 > | ID | 교훈 |
 > |---|---|
 > | **P127** | **선택지를 제시해 답을 받았으면 그 답의 안으로 실행한다.** 계획서에 제시하지 않은 제3안을 끼워 넣으면 사용자는 자기가 고르지 않은 설계를 승인하게 된다. 범위를 바꿔야 한다면 **다시 물어야** 한다 |
@@ -747,6 +747,8 @@ END-METADATA -->
 > | **P129** | **작업을 배정하기 전에 대상 파일·객체의 실재를 확인한다.** 없는 파일에 배정된 작업은 실행 단계에서 조용히 누락된다(P33 의 계획 판본) |
 > | **P130** | **게이트 헤더의 자동 승격 지시는 사용자 결정과 충돌할 수 있다.** 결정이 바뀌면 헤더를 즉시 고친다 — 안 고치면 다음 세션이 헤더를 따라 승격시켜 파이프라인을 세운다 |
 > | **P131** | **차원의 머티리얼라이제이션은 「grain 이동 가능성」으로 고른다.** 현재행 필터·완전 재산출 차원에 merge 를 쓰면 구 행이 잔존한다 → `append` + `pre-hook TRUNCATE`(R1 계승) |
+> | **P133** | **`cortex ws ls` 의 size 는 원본 바이트가 아니다**(16B 블록 패딩). 로컬 크기와 등호 비교하면 **정상 파일도 전건 「불일치」**로 나온다 — 패딩 허용 비교나 내용 해시로 대조할 것(P102 의 실행 방법 구체화) |
+> | **P134** | **「전용축」은 컬럼을 묶어서 단정하지 않는다.** 같은 위성 안에서도 컬럼별로 원천 보유가 다르다(방송 위성: 시각 3컬럼은 VIDEO 전용이지만 송출일은 양 원천). 경고 문안을 일괄 부착하면 **정확한 컬럼에까지 거짓 제약**을 심고, 그 COMMENT 를 읽는 Analyst 가 데이터를 통째로 제외한다 |
 > | **P132** | **「없다」의 반경을 좁혀 말한다.** 「그 경로에 파일이 없다」와 「그 기능이 없다」는 다른 주장이다. 후자를 말하려면 **기능 기준 전수 검색**을 해야 한다 — 안 하면 이미 있는 게이트를 중복 신설하고 기존 게이트는 갱신되지 않은 채 방치된다(P117·P129 의 확장) |
 >
 > ⬜ **O53 잔여**: 1~5단계 실행(문안 수집·`06_DDL` 4블록·dbt 5모델·참조처 갱신) → ⛔ **`dbt build` 정지선(사용자 실행)** →
@@ -793,6 +795,139 @@ END-METADATA -->
 > 🔴 build 실패 시 1순위 원인 후보 = **DDL 선언 컬럼 ↔ 모델 SELECT 불일치**(append 단계에서 발화). 그때는
 > `scripts/gen_o53_gold_ddl.py` 의 `ORDER` 를 정본으로 삼아 모델 SELECT 를 맞춘다.
 > 🔴 build 직후 **`SV_DEV_ACHIEVEMENT` 는 깨진 상태**다(base 뷰가 사라졌다) — 6단계 재배포까지가 정상 경로다.
+>
+> ##### 🟢 O53 5단계 완료 — `dbt build` 결과 (2026-08-10 05:10 · 사용자 실행)
+> **ERROR 0 · FAIL 0** · 모델 success **88** · 테스트 pass **290** · warn **27**(전부 기지 SILVER 참조무결성·accepted_values 계열).
+> O53 노드 전건 통과: `DIM_MONTH`·`DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION`·`FACT_DEV_ACHIEVEMENT`·`WIDE_AD_COMBINED`
+> **5모델 success** · `assert_fact_dev_achv_goal_rows_preserved` **PASS** · `warn_gold_view_comment_coverage` **PASS(위반 0)**.
+>
+> **3단계 검증 게이트 — 6/6 기대치 정확 일치 · PK 전건 유일**
+> | 객체 | 실측 = 기대 | PK distinct |
+> |---|---:|---:|
+> | `DIM_MONTH` | **541** | 541 |
+> | `DIM_MEMBER_CURRENT` | **1,763,065** | 1,763,065 |
+> | `DIM_MEMBER_ACQUISITION` | **1,585,949** | 1,585,949 |
+> | `FACT_DEV_ACHIEVEMENT` | **37,522** | 37,522 |
+> | `WIDE_AD_COMBINED` | **243,545** | 243,545 |
+> | `FACT_AD_PERFORMANCE`(불변 확인) | **243,545** | 243,545 |
+>
+> DMC 4컬럼 채움 실측도 계획 기대치와 일치: FDRM 1,587,343 기준 `REGION` 1,566,416 · `AGE_BAND` 1,575,863 ·
+> `FIRST_SPONSORSHIP` 1,585,913 · `LAST_STOP_DATE` 898,425 / **ONCE 175,722 전건 0**(구조적 부재).
+>
+> ##### 🔴🔴 build 후 실측이 내가 방금 쓴 문안을 반박했다 — `BROADCAST_DATE` 자기정정
+> `WIDE_AD_COMBINED` 의 방송 시간축 4컬럼 문안에 *"VIDEO 전용 · 재방송 원천에는 컬럼이 아예 없다"* 를 **4종 모두**에 붙였는데,
+> build 후 실측에서 **재방송 2,070행의 `BROADCAST_DATE` 가 전건 채움**이었다. 배선 확인 결과:
+> · `AD_START_TIME`·`AD_END_TIME`·`PRG_START_TIME` = **VIDEO 전용**(맞다) — 모델 주석도 그렇게 적고 있었다
+> · `BROADCAST_DATE` = **양 원천**(`VIDEO_AD_CMPGN_DTLS.BRDC_DATE` ∪ `REBRDC_AD_CMPGN_DTLS.DATE`) — 06_DDL 원본 COMMENT 가
+>   이미 *"송출일 ← VIDEO.BRDC_DATE / REBRDC.DATE"* 로 정확히 적고 있었고 **내가 덧붙인 경고만 틀렸다**
+> 🔴 왜 위험한가: COMMENT 는 Cortex Analyst 의 프롬프트 context 다. 「VIDEO 전용」이라고 적어 두면 Analyst 가
+> **재방송을 일자 단위 방송 분석에서 통째로 제외**한다 — 에러 없이 답만 틀린다(P19 유형).
+> ✅ 조치: 생성기 `scripts/gen_o53_ad_combined.py` 에 `VIDEO_ONLY_TIME`(3종)과 `BROADCAST_DATE` 전용 문안을 분리하고
+> yml `columns[]` 51건을 재생성했다. 컬럼순서 게이트 8/8 재통과.
+> ⛔ **물리 반영은 아직이다** — 뷰 COMMENT 는 build 시 적용되므로 `dbt build --select WIDE_AD_COMBINED` **1회**가 필요하다.
+> ⇒ 🆕 **P134: 「전용축」은 컬럼을 묶어서 단정하지 않는다.** 같은 위성 안에서도 컬럼별로 원천 보유가 다르다.
+>   경고 문안을 **일괄 부착**하면 정확한 컬럼에까지 거짓 제약을 심는다 — 부착 대상은 컬럼 단위로 실측해 정한다.
+>
+> ##### 🔴 누락했던 게이트를 실제로 만들었다 (지침 ③ 위반 자기교정)
+> 4단계에서 `gate.py` 대상에서 테이블 3종을 제외하며 *"검사 축이 옮겨갔다"* 고 적었지만 **대체 게이트를 만들지 않았다** —
+> 제외만 하고 방치하면 그 3종은 **아무 게이트도 보지 않는 상태**가 된다(P16). 마커만 남긴 것이므로 즉시 이행했다.
+> ✅ 신설 **`scripts/table_ddl_column_gate.py`** — `06_DDL` 선언 ↔ 모델 **실제 출력 컬럼**(이름·순서)을 대조한다.
+>   · 판정 방식: 정규식 파싱을 쓰지 않는다. 모델의 `ref()`·`gold_meta()`·`config()`·프로젝트 매크로를 최소 렌더한 뒤
+>     **Snowflake 에 `LIMIT 0` 으로 물어** 커서 메타데이터에서 컬럼명·순서를 받는다(CTE·윈도우·주석에 강건).
+>   · 왜 순서까지 보나: fact/dim 이 `append` 라 **INSERT 가 컬럼 위치로 매칭**된다 — 이름 집합이 같고 순서만 달라도
+>     값이 다른 컬럼에 조용히 들어간다. `on_schema_change: append_new_columns` 는 순서를 전혀 보지 않는다(O42 실측).
+>   · 결과 **4/4 일치** · **자기검사 4/4**(정상 대조군 · DDL 에만 · 모델에만 · 순서만 어긋남).
+>   · ⚠️ 이 게이트는 `dbt build` **이전**에 판정 가능하다 — 물리가 아니라 모델 정의를 보기 때문이다(P120).
+>
+> ##### 🔧 규칙7 감사 정정 — 39건 → **37건**(오탐 2건 제거) · 감사기 상설화
+> 최초 스캔의 39건에 **규약 상수가 섞여 있었다**: 「공#38 감액(건) = 금액÷10,000」의 `10,000` 은 실측 수치가 아니라
+> **지표 정의**이고 원천이 늘어도 변하지 않는다(`FACT_MEMBER_EVENT.SPNSR_AMT`·`FACT_MEMBER_COHORT.ACQ_SPNSR_AMT`).
+> ⇒ 화이트리스트에 `÷상수` 를 추가해 **37건 · 14테이블**로 정정. 여전히 하한이다(파싱 579 < 물리 619).
+> ✅ **`scripts/audit_ddl_rule7.py` 신설** — 마커 대신 **재생성 가능한 목록**으로 고정했다(`--detail` 로 컬럼별 위반 스니펫).
+> 상위: `FACT_MEMBER_FEE` 7 · `FACT_MEMBER_EVENT` 5 · `FACT_GA_BEHAVIOR` 4 · `FACT_MEMBER_MONTHLY`·`FACT_AD_PERFORMANCE`·`FACT_EVENT_PARTICIPATION` 각 3.
+> ⬜ **잔여(별건)**: 37건 치환 — 재구축 replay 전에 처리할 것(지금 안 고치면 새 환경에 그대로 복제된다).
+>
+> ##### 🔧 스테이지 대조 방법 자체가 틀렸다 (방법론 교정)
+> 이번 세션 수정분 **32파일**을 로컬 크기 ↔ `cortex ws ls` 크기로 등호 비교했더니 **전건 「불일치」**로 나왔다.
+> 원인 = 스테이지가 **16바이트 블록 패딩값**을 보고한다(예: 39,015 → 39,024 · 432,375 → 432,384).
+> 패딩 공식(`ceil(size/16)*16`)으로 재판정 → **32/32 일치**, 삭제 대상 2파일도 스테이지에서 소멸 확인.
+> ⇒ 🆕 **P133: `cortex ws ls` 의 size 는 원본 바이트가 아니다.** 로컬과 등호 비교하면 전건 오판한다 —
+>   패딩 허용 비교를 하거나 내용 해시로 대조할 것. (P102 의 실행 방법을 이 사례로 구체화한다.)
+>
+> ##### ⛔ O53 다음 착수점 (6단계)
+> ① `dbt build --select WIDE_AD_COMBINED` 1회 — `BROADCAST_DATE` 문안 물리 반영(위 자기정정)
+> ② `SV_DEV_ACHIEVEMENT` **`CREATE OR ALTER SEMANTIC VIEW`** 재배포 — base 를 `GOLD.FACT_DEV_ACHIEVEMENT` 로
+>   (현재 **깨진 상태**다 · 구 base 뷰가 사라졌다). ⚠️ `CREATE OR REPLACE` 금지(GRANT 파괴 · P125).
+> ③ 재배포 후 **소비 역할 세션으로 GRANT 판정**(P126) — `scripts/sv_unit_gate.py`
+> ④ SV 6종 base 재배선(`DIM_MONTH`·`DIM_MEMBER_CURRENT`→GOLD · `SV_AD`→`WIDE_AD_COMBINED`) = 6단계 본체
+> 🟢 **①~④ 전량 완료 = 아래 §O54.**
+>
+> **▶ 🟢 완료 [2026-08-10 O54 — 로드맵 6단계 前半: SV base 재배선 7종 · SERVING helper 등급 물리 소멸]**
+>
+> **트리거** = `99_NEXT_SESSION.md` §0-A ①②③. 착수 점검에서 ①(`WIDE_AD_COMBINED` 재빌드)은 **이미 반영돼 있었다** —
+> 사용자 `dbt build` 로 처리됨(물리 실측: `BROADCAST_DATE` COMMENT 에 교정 문안 존재 · GOLD 테이블 **35/619** · 뷰 **14/546**).
+>
+> #### 🔴 착수 시 적발한 지시 충돌 1건 (사용자 판단 요청 → 승인)
+> `§0-A ③`(base 재배선 즉시)과 `§3`(**6단계를 쪼개지 말 것**)이 충돌했다. 쪼개지 말라는 **근거는
+> 「`CREATE OR REPLACE` 가 GRANT 를 파괴하므로 배포 2회 = GRANT 재실행 2배」**였는데, `SV_DEV_ACHIEVEMENT` 재배포에서
+> **`CREATE OR ALTER` 가 GRANT 를 보존함을 실측**했다(`created_on` timestamp **6건 전건 불변** · §129 처방의 물리 확증).
+> ⇒ **분할 비용이 소멸**했고 판정 4종·경합·DEC-31 은 4단계(09 재생성, 미착수) 선행이 필요하다 ⇒ 사용자 결정 = **base 재배선만 선행**.
+> 🟢 이것이 §3 의 「쪼개지 말 것」을 **무효화하는 근거**다 — 다음 세션은 6단계 後半(판정 반영)만 남는다.
+>
+> #### 실행·실측 결과
+> | 항목 | 결과 |
+> |---|---|
+> | base 재배선 | **7종** — `SV_MEMBER_MONTHLY`(월+회원 2건) · `SV_BUDGET`(월) · `SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`(회원) · `SV_AD`(광고) ＋ `SV_DEV_ACHIEVEMENT`(개명 base) |
+> | 물리 판정 | `DESC SEMANTIC VIEW` 전수 — SV **9종 전건** `BASE_TABLE_SCHEMA_NAME` = **`GOLD`** · `SERVING` 참조 **0** |
+> | 등가성 선검증 | 행수·PK유일 **전건 일치**: `DIM_MONTH` 541=541 · `DIM_MEMBER_CURRENT` 1,763,065=1,763,065 · `FACT_AD_COMBINED`↔`WIDE_AD_COMBINED` 243,545=243,545 · 컬럼은 GOLD 가 **상위집합**(19→24 · 47→51) |
+> | 값 불변 | metric 총계 **52개 전건 동일**(재배선 전/후 스냅샷 대조 · 신설 `scripts/o54_sv_value_gate.py`) · **GATE-D 891,959,790,888 일치** |
+> | GRANT | `CREATE OR ALTER` 로 보존 — 게이트 **9종 누락 0** · 🔴 **소비 3역할 세션에서 metric 쿼리 7/7 성공·값 동일**(P126 준수) |
+> | 스모크 | `SV_DEV_ACHIEVEMENT` D-1(SV=base 4,622,103 / 2,291,878) · **D-3b 100% 초과 0행** |
+>
+> #### 🔴 본 세션 자체 결함 3건 — 전부 **배포 전** 적발·교정
+> 1. 🔴🔴 **일괄 FQN 치환이 「참조」와 「정의」를 구분하지 못했다.** `SERVING.FACT_AD_COMBINED → GOLD.WIDE_AD_COMBINED`
+>    치환이 `05_7` 의 **helper 생성문**까지 바꿔 `CREATE OR REPLACE VIEW GN_DW.GOLD.WIDE_AD_COMBINED` 를 만들었다 —
+>    그대로 배포하면 **dbt 소유 51컬럼 뷰를 스크립트 판본 47컬럼으로 덮어** 방송 시간축 4컬럼이 소실됐다.
+>    배포 전 `CREATE|ALTER|GRANT|DROP` 문 **전수 그렙**으로 적발 → 사용자 결정에 따라 helper 블록 **제거**. 🆕 **P135**
+> 2. 🔴 **치환기가 조용히 0건을 반환했다.** 헤더 2줄 교정에서 유니코드 escape 를 잘못 써(`팩`=U+D329 를 U+D31D 로)
+>    **8파일 전건 미치환**인데 base 치환분 때문에 `EDIT` 로 표시됐다 → 물리 확인에서 적발. 🆕 **P136**
+> 3. 🔴 **잔존 검사기가 자기 산출물을 오탐**했다(P114 재발) — 새로 넣은 경고문에 `CREATE OR REPLACE` 가 들어 있어
+>    위반으로 잡혔다. ⇒ 판정을 **파괴 전제 문구**(`기존 GRANT 를 전부 삭제`·`GRANT 를 파괴하지만`)로 좁혔다.
+>
+> #### 🔴 문서 결함 1건 교정 (P62-B 재사례 · 물리만 고치고 설계문서는 방치돼 있었다)
+> `04_SV_설계.md` §0.8-D 4번이 *"방송 시간축 **4컬럼**은 VIDEO 전용이며 재방송에는 원천이 없다"* 로 남아 있었다.
+> **P134(O53 자기정정)가 물리 COMMENT 에만 반영되고 설계 정본에는 전파되지 않은 것이다.**
+> 🔴 BRONZE 직접 재실측: `REBRDC_AD_CMPGN_DTLS.DATE` **2,070/2,070** · `VIDEO_AD_CMPGN_DTLS.BRDC_DATE` **36,416/36,416**
+> ⇒ VIDEO 전용은 **시각 3컬럼**뿐이고 `BROADCAST_DATE` 는 **양 원천 모두에 있다**. 문안 교정 완료.
+>
+> #### 회수한 인용처 (helper 소멸 전파)
+> `05_0`(검증 8-11·8-13) · `05_1`~`05_7`(R1 가드레일 헤더 8파일 · GRANT 주석 6파일) · `05_7`(파일 위상·base 표기·SV COMMENT) ·
+> `00_README` · `03_SV_metric_배속`(§5 헤더 + 검증쿼리 3) · `04_SV_설계`(§0.8-C·§0.8-D·실측쿼리) ·
+> `06_RUNBOOK`(§G 실행 불요 2 · 재현 4) · `deploy_dbt_project.sql`(Step 5 · 증상 3) ·
+> `08_After_Deploy_DBT.sql` **§G 에 「실행 불요」 배너**(신규 계정 재현에서 건너뛴다 · 절 삭제는 7단계).
+> 🔴 **`scripts/deploy_sv.py` 실행 불가 상태였다** — `sys.path` 가 `/tmp/ws/scripts`(세션 중 초기화되는 경로)여서
+>    재실행 시 `ModuleNotFoundError` 였다 → `/workspace/scripts` 로 교정.
+>
+> #### ⬜ O54 가 남긴 미결 (전부 별건 · 마커 등재)
+> - 🟠 **OWN-1 [신규]** SV **2종 소유자가 `ACCOUNTADMIN`** — `SV_MEMBER_COHORT`·`SV_MEMBER_FEE`(실측 `SHOW SEMANTIC VIEWS`).
+>   `05_0` (8-11) 판정은 *"전부 owner = GN_DW_ADMIN"* 이므로 **판정 위반 2건**이다. 복구 SQL 은 `05_0` §8-11 주석에 있다
+>   (`GRANT OWNERSHIP … COPY CURRENT GRANTS`). ⚠️ 두 파일(`05_3`·`05_9`)은 **아직 `CREATE OR REPLACE`** 이므로
+>   소유권 교정과 `CREATE OR ALTER` 전환을 **같은 편집에서** 할 것(재배포 시 GRANT 파괴 회피).
+> - ⬜ **`05_0` (8-11)(8-12) 판정문이 「SV 6개」로 stale** — 실제 **9종**. 위 OWN-1 과 함께 교정.
+> - ⬜ **UNPAID_RATIO 부호 관찰**(재배선과 무관 · 선행 상태): `SV_MEMBER_MONTHLY.TOTAL_UNPAID_AMT` **−3,218,518,220** ·
+>   `UNPAID_RATIO` **−0.36%** 인데 `UNPAID_RATIO_DEC3` 는 **13.75%** 다. 두 정의가 공존하는 이유를 확인해야 한다
+>   (⚠️ 값은 O54 전후 **불변** — 내가 만든 것이 아니다).
+> - ⬜ **7단계**: `SERVING.DIM_MONTH`·`DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED` **물리 DROP** + `08 §G` 절 삭제
+>   (⛔개별 승인 · `ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 잔존 참조 0 확인 후).
+>
+> #### 🆕 신규 교훈
+> - **P135** 🔴 **FQN 일괄 치환은 「참조」와 「정의」를 구분하지 못한다.** 같은 문자열이 `FROM`(참조)과
+>   `CREATE VIEW`(정의)에 함께 있으면 치환은 **정의를 이주시켜 상위 계층 객체를 덮어쓴다.**
+>   → ① 치환 후 **`CREATE|ALTER|GRANT|DROP` 문을 전수 출력해 눈으로 확인**한다(배포기가 그 문장을 실행한다)
+>   ② 소유주가 다른 계층(dbt vs SQL 스크립트)으로 가는 치환은 **정의문 제외**를 명시한다.
+> - **P136** 🔴 **치환기는 「몇 건 바꿨나」를 출력하고 0 건이면 실패로 본다.** 이번엔 escape 오류로 8파일 전건
+>   미치환이었는데, 같은 파일의 **다른 치환이 성공**해 `EDIT` 로 표시돼 성공처럼 보였다.
+>   → 패턴별 히트 수를 따로 세고 **구 표기 잔존 검사**를 붙인다(P106 계열 = vacuous pass 방지).
 >
 > **▶ 🟠 진행중 [2026-08-07 O50 — SV base 객체 선택 규칙 부재(DEC-34) · 뷰 COMMENT 원인 오지목]**
 > 🟠 **O50-C**: SV 가 어느 계층을 base 로 잡아야 하는지 규칙이 없었다 → **DEC-34 신설**(`05_SV-Agent_ai/04_SV_설계.md` **§0.8**).
