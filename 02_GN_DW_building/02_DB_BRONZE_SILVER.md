@@ -77,7 +77,7 @@ schema_contents:
   BRONZE_GA4: { tables: 1, note: "events_20260501 (1일 샤드, 소문자명)" }
   SILVER: { tables: 32, pipeline: "dbt DW_PIPELINE", note: "CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1" }
   GOLD: { star_schema: 24, wide_views: 9, forecast_tables: 0, note: "star 24(15 DIM+9 FACT) + WIDE VIEW 9. forecast 제외(2026-07-10)" }
-  SERVING: { semantic_views: 5, agents: 2, helper_views: 2, streamlit_apps: 0 }
+  SERVING: { semantic_views: 9, agents: 2, helper_views: 0, streamlit_apps: 0, note: "[2026-08-10 O55] SV 9종(base 전건 GOLD) · helper 뷰 3종 물리 DROP 완료" }
   OPS: { dbt_projects: 1, note: "DW_PIPELINE (BRONZE→SILVER 32 + SILVER→GOLD 24 + WIDE 9 = 65 models)" }
   SECURITY: { policies: "masking + network", note: "거버넌스 정책 격리" }
 naming_note: "PoC ANALYTICS 스키마(=현 GOLD)와 혼동 방지 위해 소비 계층은 SERVING으로 명명"

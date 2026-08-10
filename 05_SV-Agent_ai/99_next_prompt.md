@@ -46,7 +46,7 @@ END-METADATA -->
 | `01_SV-Agent 작업계획.md` (v4.2) | **정본**. 원칙12·리스크 R1~R8·Agent↔SV 라우팅·결정 로그·진행표 | §1.1 매핑·**§1.2 Agent(최종3/Phase-1 배포2)**·§2 데이터 게이트·§1.1 하단 **결정 로그(2026-07-22)** |
 | `04_SV_설계.md` (정정본) | 7 SV 구조·relationship·가산성·**§0.4 시간/NULL instruction**·§0.6 적재 완결성 | 마케팅 SV(SV_AD·SV_GA) 설계·브리지 원칙(R1) |
 | `03_SV_metric_배속.md` (정정본) | derived 81→SV 배속·**활성/Phase 태깅** | 비활성 지표(캠페인·성공률·유지율·목표대비) → 승격 대상 |
-| `05_1~05_7_SV_DDL_*.sql` | 배포된 5 SV 정의(=Agent 도구). **⚠ 헤더의 COUNT_IF(행수) vs metric SUM 구분 주석** | 각 CREATE 블록·§6 GRANT(재배포 시 grant 재실행) |
+| `05_1~05_9_SV_DDL_*.sql` | 배포된 5 SV 정의(=Agent 도구). **⚠ 헤더의 COUNT_IF(행수) vs metric SUM 구분 주석** | 각 CREATE 블록·§6 GRANT(재배포 시 grant 재실행) |
 | `08_AGENT_spec.md` | **배포 2 Agent 스펙 정본** + 마케팅 Agent Phase-2 유예 근거 | §1 구성·§5 평가매핑 |
 
 ### P1 — Phase-2 트리거·데이터 상태 (승격 조건)
@@ -73,7 +73,7 @@ END-METADATA -->
 - ✅ **0단계** `02_SERVING_setup.sql` — WH 3·역할 6·계층 grant + `GN_DW.SERVING` + helper 뷰 + CoWork object.
 - ✅ **1단계** `03_SV_metric_배속.md` — derived 81 전수 배속(활성/Phase 태깅).
 - ✅ **2단계** `04_SV_설계.md` — 7 SV 구조 + fan-out helper + 정정 로그.
-- ✅ **3단계** `05_1~05_7_SV_DDL_*.sql` — **SV 6종 배포·검증**(fan-out/가산성 DoD PASS·PK 정정). SV_AD 는 순서9-J/K 추가.
+- ✅ **3단계** `05_1~05_9_SV_DDL_*.sql` — **SV 6종 배포·검증**(fan-out/가산성 DoD PASS·PK 정정). SV_AD 는 순서9-J/K 추가.
 - ✅ **4단계** `06_검증쿼리_VQR.md`·`07_평가셋_eval.md` — 라이브 검증(SV=FACT)·VQR 후보·평가셋.
 - ✅ **5단계** `08_AGENT_spec.md` — **Agent 2개 스펙**(회원 4 SV · overall 예산+광고+월실적/발송 4 SV). 마케팅 Agent = Phase-2 유예.
 - ✅ **6단계** `09_AGENT_spec_구현.sql`(배포 실행 로그·소유권·USAGE·ADD AGENT 멱등·[4-B] 갱신 경로) + `10_SI연결_검증.md`.

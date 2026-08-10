@@ -119,6 +119,28 @@ FIELD_MAPPING_OVERRIDE = {
         "SV metric — 납입회원수(명) = COUNT(DISTINCT MEMBER_DK WHERE 납입성공)", "WRONG_UNIT",
         "물리 컬럼이 없다(#80 미구현). 원천은 실재하므로 SV 에서 산출 가능하다 — "
         "`FACT_MEMBER_FEE`(회비 grain)에서 회원 distinct 로 센다. 🔴 `PAID_FEE` 를 「명」으로 쓰지 말 것."),
+
+    # ── [2026-08-10 O56] 2-1 주간 중단보고 — 주차 축을 가진 팩트로 이관 (O49 적발 6건) ──
+    # 🔴 종전 매핑은 `FACT_MEMBER_MONTHLY` 를 가리켰다. 그 팩트에는 `DATE_SK` 가 없어서
+    #   **주차로 쪼갤 수 없는데** 컬럼은 존재하므로 검사기가 「앵커 로컬 = 조립가능」으로 통과시켰다.
+    #   실측(O56): FME 월 롤업 = FMM **466개월 전건 일치**(불일치 0) ⇒ 이관 손실 0 이고
+    #   FME 로 주차 집계를 실행하면 **1,795주 · STOP 합계 1,038,262**(총계 보존)가 나온다.
+    "중단(건) *당월 주차": (
+        "FACT_MEMBER_EVENT.STOP_CNT", "WRONG_GRAIN",
+        "[O56] 주차 축은 `FME.DATE_SK` 에만 있다 — `FMM` 은 `MONTH_KEY` 뿐이라 주차 분해가 불가하다. "
+        "이관 손실 0(월 롤업 466개월 전건 일치)."),
+    "중단(건) *전년 동월 주차": (
+        "FACT_MEMBER_EVENT.STOP_CNT", "WRONG_GRAIN", "[O56] 위와 동일 — 주차 축은 `FME` 뿐이다."),
+    "중단(건) *전전년 동월 주차": (
+        "FACT_MEMBER_EVENT.STOP_CNT", "WRONG_GRAIN", "[O56] 위와 동일 — 주차 축은 `FME` 뿐이다."),
+    "당해년도 주간 개발건": (
+        "FACT_MEMBER_EVENT.DEV_CNT", "WRONG_GRAIN",
+        "[O56] 「주간」 개발건은 일 축이 필요하다 — `FME.DATE_SK`. 이관 손실 0(DEV 월 롤업 "
+        "2,291,878 전건 일치)."),
+    "전년도 주간 개발건": (
+        "FACT_MEMBER_EVENT.DEV_CNT", "WRONG_GRAIN", "[O56] 위와 동일."),
+    "전전년도 주간 개발건": (
+        "FACT_MEMBER_EVENT.DEV_CNT", "WRONG_GRAIN", "[O56] 위와 동일."),
 }
 
 # ── 라벨 별칭 등록부 (보고서 표기 → 정본 인벤토리/지표사전 라벨) ──

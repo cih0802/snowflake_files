@@ -366,11 +366,11 @@ _Co-authored with CoCo_
 |---|---|---|---|
 | 🟢 정본 | `TOTAL_PAID_FEE_BILLABLE` | `SUM(PAID_FEE_BILLABLE)` | 납입회비 |
 | 🟢 정본 | `PAYMENT_RATE_FEE` | 회비 납입 ÷ 회비 청구 ×100 | **납부율**·수납율 |
-| 🟢 정본 | `TOTAL_UNPAID_AMT_DEC3` | `SUM(UNPAID_BILLED_AMT)` (DEC-3) | **총미납금액**·미납액 |
-| 🟢 정본 | `UNPAID_RATIO_DEC3` | 미납청구 ÷ 회비청구 ×100 | **미납비중**·미납율 |
-| 🔴 결함(보존) | `TOTAL_PAID_FEE` | `SUM(PAID_FEE)` = 회비+기부금 | 총수납액(만) |
-| 🔴 결함(보존) | `PAYMENT_RATE` | 분자에 기부금 혼입 → **과대**(전 기간 100.36%) | 수납율(총액기준) |
-| 🔴 결함(보존) | `TOTAL_UNPAID_AMT`·`UNPAID_RATIO` | 차감식 → **과소**(전 기간 −32억) | (차감식) 표기 |
+| 🟢 정본 | `TOTAL_UNPAID_AMT` | `SUM(UNPAID_BILLED_AMT)` (DEC-3) | **총미납금액**·미납액 |
+| 🟢 정본 | `UNPAID_RATIO` | 미납청구 ÷ 회비청구 ×100 | **미납비중**·미납율 |
+| 🟢 **[2026-08-10 O56-C EXPO-2 개명]** | `TOTAL_PAID_FEE` → **`TOTAL_PAID_ALL`** | `SUM(PAID_FEE)` = 회비+기부금 | 총수납액. 🟢 **결함이 아니다** — 기부금은 BRONZE 에 실재하고(`TM_PM_DNTN_DTLS` 1,130,252행 · 126,412,695,459원 = 총수납의 14.12%) 「총수납액」 질문의 정답이다. 문제는 이름이었다(`_FEE` 인데 회비가 아니다) ⇒ 형제 SV `SV_MEMBER_FEE.TOTAL_PAID_ALL` 과 **이름 통일**(정의·값 불변). 🔴 납부율 분자로는 쓰지 않는다 |
+| 🟢 **[2026-08-10 O56-C EXPO-2 제거]** | ~~`PAYMENT_RATE`~~ | 분자에 기부금 혼입 → **과대**(전 기간 100.36%) | **SV 에서 제거**했다. BRONZE 실측 근거: 기부 원천 `TM_PM_DNTN_DTLS` 에 청구 컬럼(`RQEST_AMT`)이 **아예 없어** 분모에 들어갈 수 없다 ⇒ 비율이 구조적으로 100% 를 넘는다. **유효 용도가 문서 어디에도 없다.** 정본 = `PAYMENT_RATE_FEE`(공64) — 형제 SV 와 동명이고 지표번호에 묶여 있어 **승격하지 않았다**. 재발 방지 = `scripts/sv_unit_gate.py` `RETIRED_EXPR` |
+| ~~🔴 결함(보존)~~ → 🟢 **[2026-08-10 O56 EXPO-1 제거]** | ~~`TOTAL_UNPAID_AMT`·`UNPAID_RATIO`(차감식)~~ | 차감식 → **과소**(전 기간 −3,218,518,220 / −0.360837%) | **SV 에서 제거**했고 위 정본이 이 두 이름을 **승격**했다. 근거: 경고문은 게이트가 아니다(P105) · 짧은 이름이 폐기식이라 Agent 가 −0.36% 를 답할 경로였다 · 형제 SV `SV_MEMBER_FEE` 는 정본 식에 이미 짧은 이름을 써 **동명이의** 상태였다. 재발 방지 = `scripts/sv_unit_gate.py` 폐기식 노출 게이트 |
 
 결함 metric 은 저장쿼리·문서 참조 보호를 위해 **삭제하지 않고** 「단독 인용 금지」 경고와 함께 남겼다.
 **자연어 표현은 전부 정본으로 이전**했다(라이브 DDL 로 라우팅 확인). 2025 정본값 = 납부율 **85.65%** ·

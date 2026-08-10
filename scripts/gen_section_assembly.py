@@ -177,6 +177,12 @@ SRC_SYS = {
     # [2026-08-06 O45] 미등재 시 `SRC_SYS.get()` 이 "?" 를 돌려 **원천 상이 = 타원천**으로 오판한다
     #   (실측 10행 오판 발생). 원천은 SILVER.CRM_PAYMENT_BILLING = CRM 이다.
     "FACT_MEMBER_FEE": "CRM",
+    # 🔴 [2026-08-10 O56] **같은 함정이 재발했다.** O53 이 `WIDE_DEV_ACHIEVEMENT`(뷰) →
+    #   `FACT_DEV_ACHIEVEMENT`(테이블)로 개명·전환하면서 이 팩트가 **앵커 후보로 새로 진입**했는데
+    #   등록부에 넣지 않아 원천이 `?` 가 되어 **타원천 오판 3건**이 났다(1-1 「월목표」 · 1-2 「개발(건)」 ·
+    #   1-3 「월 목표」). 원천은 개발실적 `TM_MM_FDRM_MBER_DVLP_AMT` + 목표 `TM_CM_MBER_DVLP_GOAL` = **CRM** 이다.
+    #   ⇒ **GOLD 에 팩트가 추가되면 이 등록부를 함께 갱신한다**(O45 주석이 이미 경고하고 있었다 · P140 계열).
+    "FACT_DEV_ACHIEVEMENT": "CRM",
 }
 
 # [2026-08-06 O45] **동일 원천 형제 팩트** — 시간·엔티티축이 같아 보여도 함께 조립하면 이중계상.
@@ -209,6 +215,94 @@ ONE_TO_ONE_SATELLITE = {
         "완전 수직분할) → 코어와 같은 표에 둘 수 있다(DEC-13)",
 }
 
+# ── [2026-08-10 O56] 판정 교정 등록부 5종 (O49 적발 17건 + 신규 4건) ────────
+# 🔴 왜 등록부인가: 17건은 **처방이 틀린 것이 아니라 판정이 틀린 것**이었다. 검사기가 보지 않는
+#   세 가지가 원인이다 — ① 필드가 요구하는 시간 grain ② 브리지 차원 경유 ③ measure 의 가산성.
+#   실측 근거는 전부 2026-08-10 O56 재측정분이다(계정 정지 이전 O49 값을 현 스키마에서 재확인).
+
+# ① 섹션 앵커 강제 — 「최다 히트」가 섹션이 요구하는 grain 을 만족하지 못할 때
+SECTION_ANCHOR_OVERRIDE = {
+    "2-1. [회원] 주간 중단보고": (
+        "FACT_MEMBER_EVENT",
+        "섹션명이 **주간**이고 필드가 `*당월 주차` 를 명시하는데, 최다 히트 앵커 `FACT_MEMBER_MONTHLY` 는 "
+        "`MONTH_KEY` 만 갖고 `DATE_SK` 가 **없어 주차 축이 원천적으로 부재**하다. `FACT_MEMBER_EVENT` 로 "
+        "교체하면 **손실 0** 이다 — 실측(O56): FME 월 롤업 = FMM **466개월 전건 일치**"
+        "(STOP 불일치 0 · DEV 불일치 0 · STOP 1,038,262 · DEV 2,291,878). 센티넬 `FME.DATE_SK=0` 은 "
+        "90행(DEV 88 · STOP 0)뿐이고, 주차 집계를 실제로 실행하면 **1,795주 행**이 생성되며 "
+        "STOP 합계가 FME·FMM 과 **1,038,262 로 동일**하다."),
+}
+
+# ② 필드가 요구하는 시간 grain — 앵커가 그 축을 못 가지면 「조립가능」이 될 수 없다(P104)
+#    🔴 이것이 17건 중 6건의 원인이다: 앵커에 컬럼이 있으니 「앵커 로컬 = 조립가능」으로 통과했다.
+REQUIRED_TIME_GRAIN = [
+    (r"주차|주간|주별", "일",
+     "주차 수치는 **일 축**에서만 산출된다 — 주는 일의 파생이며 월의 하위가 아니다. "
+     "월 팩트에서 주차를 낼 수 있는 경로는 존재하지 않는다"),
+    (r"\*?일별|일일|일간", "일",
+     "일 단위 수치는 **일 축**이 필요하다 — 월 팩트에는 일자 분해 경로가 없다"),
+]
+
+# ③ 브리지 차원 경유 — 직접 FK 가 없어도 1:1 브리지가 있으면 도달한다
+#    🔴 이것이 17건 중 7건의 원인이다(3-7 좌측 성별·연령대·지역·후원사업·상위캠페인·가입캠페인·후원금액).
+IDENTITY_BRIDGE = {
+    "FACT_GA_BEHAVIOR": {
+        "bridge": "DIM_MEMBER_IDENTITY",
+        "key": "MEMBER_DK",
+        "reaches": ["DIM_MEMBER", "DIM_MEMBER_CURRENT", "DIM_MEMBER_ACQUISITION"],
+        "why": (
+            "`FGA` 에 `MEMBER_DK` 가 없다는 사실은 **회원 축 도달불가를 뜻하지 않는다** — "
+            "`DIM_MEMBER_IDENTITY` 가 **전건 1:1 브리지**다(실측 O56: 1,763,066행 · `IDENTITY_SK` 유일 "
+            "1,763,066 · `MEMBER_DK` 유일 1,763,066 · NULL 0). 2홉 조인 실측: base 68,836 → "
+            "**47,112**(= 68,836 − unknown 21,724 **정확히 일치** ⇒ 실회원 행 전건 매칭 · 팬아웃 0) · "
+            "3홉(+`DIM_MEMBER_ACQUISITION`) 45,792. "
+            "채움(분모 = 실회원 행 47,112 · P128): 성별 **47,112 = 100%** · 연령대·지역 **45,601 = 96.79%** · "
+            "획득축 **45,792 = 97.20%**. "
+            "🔴 단서 두 가지: ㉮ `IDENTITY_SK = 0`(unknown) **21,724행 = 31.6%** 이므로 **분모로 쓰면 과소**다 — "
+            "실회원 모집단을 명시할 것 ㉯ 🔴 **`DIM_MEMBER` 를 직접 조인하지 말 것** — SCD2 라서 "
+            "**7,925,716행**(회원 1,763,065)이고 필터 없이 조인하면 **161,729행 = 2.35배 팬아웃**한다. "
+            "`DIM_MEMBER_CURRENT` 또는 `IS_CURRENT = TRUE` 를 쓰면 47,112 로 정확하다"),
+    },
+}
+
+# ④ 비가산 measure — 값이 있고 도달도 되지만 **더하면 틀리는** 컬럼
+#    🔴 「조립가능」을 취소하지 않는다(제 grain 에서는 맞다). 기간·주차 합산 처방만 금지한다.
+NONADDITIVE_MEASURE = {
+    ("FACT_MEMBER_EVENT", "STOP_MEMBERS"): (
+        "`STOP_MEMBERS` 는 「명」이 아니라 **사건행당 1 인 플래그**다 — 실측(O56) "
+        "`SUM(STOP_MEMBERS) = SUM(STOP_CNT) = 중단행수` 가 전부 **1,038,262** 로 동일하다. "
+        "주차별로 집계해 더하면 **972,925** 인데 실제 distinct 회원은 **903,064** 라 **7.74% 과대**다"
+        "(같은 회원이 여러 주에 중단). 🟢 BRONZE 독립 확증: 원천 "
+        "`TM_MM_FDRM_MBER_SPNSR_DSCNTC` 행 **1,038,262** · distinct `MBER_NO` **903,064** — "
+        "GOLD 와 정확히 일치한다. ⇒ 처방은 「사전집계 후 SUM」이 아니라 "
+        "**`COUNT(DISTINCT MEMBER_DK)`(비가산)** 이며 **주차 합계를 월로 더하지 않는다**"),
+    ("FACT_MEMBER_MONTHLY", "DEV_MEMBERS"): (
+        "🔴 **[O56 신규 적발]** `DEV_MEMBERS` 도 비가산이다 — 실측 `SUM(DEV_MEMBERS)` **1,996,977** vs "
+        "실제 distinct 개발회원 **1,585,923** = **410,054 과대(25.9%)**. 회원-월 grain 이라 "
+        "**같은 회원이 여러 달에 개발**되면 중복 계상된다(`SUM(DEV_CNT)` = 2,291,878 은 건수라 정상). "
+        "⇒ 「개발(명)」을 여러 월에 걸쳐 물으면 **`COUNT(DISTINCT MEMBER_DK)`** 로 낸다. "
+        "O49 는 이 필드를 검사하지 않았다(P79/O39 와 같은 유형의 3건째 재발)"),
+}
+
+# ⑤ FK 는 있으나 **의미가 다른** 경로 — FK 존재를 의미 도달로 읽으면 오답이 된다
+#    🔴 O49 §6 의 F4 미검증 항목. (앵커, 차원, 필드값) 조합으로만 발동한다.
+SEMANTIC_FK_MISMATCH = {
+    ("FACT_MEMBER_FEE", "DIM_DATE", "기준일자"): (
+        "`FMF` 에서 `DIM_DATE` 로 가는 FK 는 **`LAST_PAY_DATE_SK`(최종납입일)·`LAST_BILL_DATE_SK`(최종청구일)** "
+        "둘뿐이고 **「기준일자」가 아니다** — 둘 다 사건 시점이며 보고 기준일이 아니다. "
+        "실측(O56): 40,262,076행 중 센티넬(0) `LAST_PAY_DATE_SK` **1,869,272(4.64%)** · "
+        "`LAST_BILL_DATE_SK` **646,712(1.61%)** · 시간축은 `MONTH_KEY` **252개월**뿐이다. "
+        "🔴 FK 가 있다는 사실을 **의미 도달로 읽은 오판**이다(P96 계열) — 기준일자는 일 축을 가진 "
+        "팩트(`FME.DATE_SK`)에서 얻는다"),
+}
+
+# SCD2 차원 — 조인 시 현재행 필터가 필수인 차원(팬아웃 방지 · P131 계열)
+SCD2_DIM = {
+    "DIM_MEMBER": (
+        "🔴 `DIM_MEMBER` 는 **SCD2** 다 — 실측(O56) **7,925,716행 / 회원 1,763,065**(현재행 1,763,065). "
+        "`IS_CURRENT = TRUE` 없이 조인하면 **4.49배 팬아웃**한다(FGA 실측 68,836 → 161,729 = 2.35배). "
+        "⇒ `DIM_MEMBER_CURRENT` 를 쓰거나 `IS_CURRENT = TRUE` 를 명시할 것"),
+}
+
 # ── [2026-08-07 O47] 시간축 조밀도 순위 ──────────────────────────────
 # 🔴 「축이 다르다」만으로 닫으면 **방향**이 사라진다. 방향에 따라 해소 주체가 완전히 다르다:
 #   · fine → coarse (대상이 앵커보다 잘다)  = **사전집계 후 조인**으로 해결. 테이블 신설 불요.
@@ -222,7 +316,7 @@ TIME_RANK = {"일": 0, "일(획득)": 0, "월": 1}
 #   🔴 「좋은 판정을 고른다」가 아니라 **「앵커에서 실제로 도달하는 축을 고른다」** 는 뜻이다 —
 #   각 후보를 실측 판정한 결과 중에서 고르므로 없는 경로를 만들어내지 않는다.
 VERDICT_PREF = ["조립가능", "집계필요", "판정불가(SV파생)",
-                "배분규칙필요", "형제팩트중복", "도달불가", "grain부정합",
+                "배분규칙필요", "형제팩트중복", "도달불가", "grain부정합", "요구grain부정합",
                 "값없음", "타원천", "원천부재", "판정불가"]
 
 # 🔴 [2026-08-07 O48] **생성기 간 출력 문자열 계약**(O46 §3-① · P92).
@@ -364,6 +458,14 @@ def main():
             #        없다는 것이 정답이다(앵커를 하나 골라 나머지를 「도달불가」로 적으면 거짓이 된다).
             #   🔴 [2026-08-07 O48] 로직은 `pick_anchor()` 로 분리했다 — 회귀 테스트 대상이다.
             anchor, anchor_tie = pick_anchor(hit)
+            # 🔴 [2026-08-10 O56] **섹션 앵커 강제** — 「최다 히트」는 섹션이 요구하는 grain 을 모른다.
+            #   2-1 은 섹션명이 「주간」이고 필드가 `*당월 주차` 를 명시하는데 앵커가 월 팩트(FMM)로
+            #   잡혀 **주차 measure 6건이 조립가능으로 오판**됐다(O49 적발). 교체 손실은 실측 0 이다.
+            anchor_forced = ""
+            _ov = SECTION_ANCHOR_OVERRIDE.get(sec)
+            if _ov and _ov[0] in grain and _ov[0] != anchor:
+                anchor_forced = f"{anchor or '—'} → {_ov[0]}"
+                anchor, anchor_tie = _ov[0], ""
             for r in frs:
                 # 🔴 앵커 산정과 필드 판정 **양쪽 모두** 교정 매핑을 써야 한다.
                 #   한쪽만 쓰면 앵커는 옛 팩트인데 필드는 새 팩트를 가리켜 전부 grain부정합이 된다.
@@ -383,7 +485,8 @@ def main():
                 if not cands:
                     _m = re.match(r"^([A-Z_\-]+)", g0)
                     cands = [(ABBREV.get(_m.group(1), _m.group(1)) if _m else "", "")]
-                judged = [(o_, c_) + judge(anchor, o_, c_, gmap, grain, fk_alive, census, gold, dims)
+                judged = [(o_, c_) + judge(anchor, o_, c_, gmap, grain, fk_alive, census, gold, dims,
+                                          field=r[2])
                           for o_, c_ in cands]
                 best = min(judged, key=lambda t: VERDICT_PREF.index(t[2])
                            if t[2] in VERDICT_PREF else len(VERDICT_PREF))
@@ -397,11 +500,14 @@ def main():
                     why = (f"⚠️ **앵커 경합** — 이 섹션은 `{anchor_tie}` 가 동수로 경합하는 **혼합 섹션**이라 "
                            f"앵커를 하나 고르는 것 자체가 임의적이다. 판정은 `{anchor}` 기준이며, "
                            f"**이 섹션은 한 표가 아니라 경합 팩트 수만큼의 쿼리로 나눠야 한다**(O47-B) ▸ " + why)
+                if anchor_forced:
+                    why = (f"🔁 **앵커 강제 교체**({anchor_forced}) — {_ov[1]} ▸ " + why)
                 rows_out.append({
                     "보고서": book, "영역": r[0], "섹션": r[1], "필드값": r[2],
                     "대응_지표#": r[5], "GOLD_매핑": gmap, "매핑근거": r[8],
                     "매핑교정": ov_kind, "종전_매핑": gmap_was,
                     "앵커_팩트": anchor or "—", "앵커_경합": anchor_tie,
+                    "앵커_강제": anchor_forced,
                     "조립가능도": verdict, "판정_근거(실측)": why,
                 })
 
@@ -431,16 +537,25 @@ def main():
 ICON = {"조립가능": "✅", "도달불가": "⛔", "grain부정합": "⛔", "타원천": "⛔",
         "값없음": "⛔", "판정불가": "❔", "판정불가(SV파생)": "◐", "원천부재": "⛔",
         # [2026-08-07 O47]
-        "집계필요": "◐", "배분규칙필요": "⛔", "형제팩트중복": "⛔"}
+        "집계필요": "◐", "배분규칙필요": "⛔", "형제팩트중복": "⛔",
+        # [2026-08-10 O56]
+        "요구grain부정합": "⛔"}
 
 # 🔴 [2026-08-07 O47] **「집계필요」는 불가 집계에 넣지 않는다.** 사전집계 후 조인하면 팬아웃이 0 이고
 #   테이블 신설도 업무 규칙도 필요하지 않다(실측 증명 = 코드 상단 TIME_RANK 주석).
 #   불가로 세면 조립가능률이 실제보다 낮게 나오고 현업에 「안 된다」고 잘못 안내한다(P95).
-BAD = ("도달불가", "grain부정합", "타원천", "값없음", "배분규칙필요", "형제팩트중복", "원천부재")
+BAD = ("도달불가", "grain부정합", "요구grain부정합", "타원천", "값없음",
+       "배분규칙필요", "형제팩트중복", "원천부재")
 
 
 def write_banner(rows):
-    """05 §2·§3 에 삽입할 섹션별 조립가능성 배너. 생성기가 이 파일을 읽어 끼워 넣는다."""
+    """05 §2·§3 에 삽입할 섹션별 조립가능성 배너 텍스트를 생성한다.
+
+    🔴 [2026-08-10 O56 자기검토] 종전 docstring 은 *"생성기가 이 파일을 읽어 끼워 넣는다"* 였는데
+    **거짓이다** — 전수 검색 결과 이 파일을 읽는 코드는 **0곳**이다(`gen_metric_gold_mapping.py` 포함).
+    즉 이것은 **수기 삽입용 참고 산출물**이며, 05 md 의 배너는 자동 주입되지 않는다.
+    ⇒ 사실대로 적는다(P132: 「없다」와 「못 찾았다」를 구분하고, 없는 소비자를 있다고 쓰지 않는다).
+    """
     out = {}
     bysec = collections.defaultdict(list)
     for r in rows:
@@ -492,8 +607,13 @@ def write_banner(rows):
                 why = r["판정_근거(실측)"].replace("|", "\\|")
                 A(f"> | **{r['필드값']}** | {ICON[r['조립가능도']]} {r['조립가능도']} | {why} |")
         out[f"{book}||{area}||{sec}"] = "\n".join(L)
-    json.dump(out, open("/tmp/section_banner.json", "w"), ensure_ascii=False, indent=1)
-    print("BANNER:", "/tmp/section_banner.json", len(out), "섹션")
+    # 🔴 [2026-08-10 O56 자기검토] 종전에는 이 파일을 **고정 경로 `/tmp/section_banner.json`** 에 썼다.
+    #   결함 2건이었다: ① `GN_DW_OUT` 을 무시하므로 **대조·기준선 실행이 정본 배너를 덮어쓴다**
+    #   (실제로 오염됐고, 그 파일을 읽고 「배너 17 vs CSV 23 불일치」라는 **가짜 결함**을 잡을 뻔했다)
+    #   ② `/tmp` 는 세션 중 초기화된다(P99). ⇒ 산출물 디렉터리로 옮긴다.
+    path = os.path.join(OUT_DIR, "09_섹션배너.json")
+    json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print("BANNER:", path, len(out), "섹션")
 
 
 def write_md(rows, grain, fk_alive):
@@ -528,6 +648,7 @@ def write_md(rows, grain, fk_alive):
         "형제팩트중복": "같은 원천의 다른 grain 팩트 — 조인이 아니라 **앵커를 바꿔서** 얻는다. 조인하면 이중계상",
         "도달불가": "그 차원으로 가는 앵커의 FK 가 **전건 센티넬**이거나 FK 자체가 없다 — 조인해도 `(미매핑)` 한 덩어리",
         "grain부정합": "엔티티축이 다르거나 시간축 조밀도 순위를 판정할 수 없다",
+        "요구grain부정합": "🆕 **필드가 요구하는 시간 grain 이 앵커에 없다**(예: 「주차」인데 앵커가 월 팩트). 앵커가 그 컬럼을 갖고 있어도 **축이 없으면 쪼갤 수 없다** — 해소 경로는 **앵커 교체**다(O56·P104)",
         "값없음": "컬럼은 있으나 **전건 0/NULL** (census 실측)",
         "타원천": "원천 시스템이 다르고 연결키가 없다",
         "판정불가(SV파생)": "SV metric — 물리 컬럼이 아니므로 **base 의 조립가능도를 따른다**",
@@ -618,6 +739,137 @@ def write_md(rows, grain, fk_alive):
             A(f"| {r['보고서']} | {r['섹션'][:28]} | {r['필드값']} | `{r['앵커_팩트']}` | "
               f"`{r['GOLD_매핑'][:44]}` | {r['판정_근거(실측)'].replace('|','\\|')} |")
         A("")
+    A("## 3-C. 🆕 검증된 처방 쿼리 (실행 근거 첨부 · 2026-08-10 O56)")
+    A("")
+    A("> 🔴 **여기 실린 쿼리는 전부 실제로 실행한 것이고, 표에 적힌 값이 그 실행 결과다.**")
+    A("> 종전 판본은 처방을 **산문으로만** 적었고 실행 근거가 없었다 — 그 결과 처방 4건이 틀린 채")
+    A("> 통과했다(O49 적발). 처방은 쿼리로 적고 값으로 증명한다(P139).")
+    A("")
+    A("### ㉮ 2-1 앵커 교체 — 월 팩트로는 주차를 낼 수 없다")
+    A("")
+    A("`FACT_MEMBER_MONTHLY` 에는 `DATE_SK` 가 없다. 앵커를 `FACT_MEMBER_EVENT` 로 바꿔도 **손실이 0** 인지 먼저 증명한다.")
+    A("")
+    A("```sql")
+    A("-- ① 앵커 교체 손실 검증: FME 월 롤업 = FMM (466개월 전건)")
+    A("with fme as (")
+    A("  select floor(DATE_SK/100) M, sum(STOP_CNT) S, sum(DEV_CNT) D")
+    A("  from GN_DW.GOLD.FACT_MEMBER_EVENT group by 1),")
+    A("fmm as (")
+    A("  select MONTH_KEY M, sum(STOP_CNT) S, sum(DEV_CNT) D")
+    A("  from GN_DW.GOLD.FACT_MEMBER_MONTHLY group by 1)")
+    A("select count(*) MONTHS_COMPARED,")
+    A("       count_if(coalesce(a.S,0) <> coalesce(b.S,0)) STOP_MISMATCH,")
+    A("       count_if(coalesce(a.D,0) <> coalesce(b.D,0)) DEV_MISMATCH")
+    A("from fme a full outer join fmm b on a.M = b.M;")
+    A("-- 실행 결과: MONTHS_COMPARED=466 · STOP_MISMATCH=0 · DEV_MISMATCH=0")
+    A("")
+    A("-- ② 교체 후 주차 축이 실제로 나오는지 + 총계 보존")
+    A("with wk as (")
+    A("  select date_trunc('week', to_date(to_varchar(DATE_SK),'YYYYMMDD')) WK,")
+    A("         sum(STOP_CNT) STOP_CNT")
+    A("  from GN_DW.GOLD.FACT_MEMBER_EVENT where DATE_SK > 0 group by 1)")
+    A("select count(*) WEEK_ROWS, sum(STOP_CNT) STOP_SUM from wk;")
+    A("-- 실행 결과: WEEK_ROWS=1,795 (1991-01-07 ~ 2026-07-06) · STOP_SUM=1,038,262 = FME·FMM 총계와 동일")
+    A("```")
+    A("")
+    A("### ㉯ 「중단(명)」·「개발(명)」은 비가산 — SUM 처방이 틀렸다")
+    A("")
+    A("```sql")
+    A("-- ① STOP_MEMBERS 는 「명」이 아니라 사건행당 1 인 플래그다")
+    A("select sum(STOP_MEMBERS) SUM_MEMBERS, sum(STOP_CNT) SUM_CNT, count_if(STOP_CNT > 0) ROWS_STOP")
+    A("from GN_DW.GOLD.FACT_MEMBER_EVENT;")
+    A("-- 실행 결과: 1,038,262 / 1,038,262 / 1,038,262  (셋이 동일 = 건수다)")
+    A("")
+    A("-- ② 주차로 쪼개 더하면 과대계상된다")
+    A("with w as (")
+    A("  select date_trunc('week', to_date(to_varchar(DATE_SK),'YYYYMMDD')) WK,")
+    A("         count(distinct case when STOP_CNT > 0 then MEMBER_DK end) D")
+    A("  from GN_DW.GOLD.FACT_MEMBER_EVENT where DATE_SK > 0 group by 1)")
+    A("select sum(D) WEEKLY_SUM_DISTINCT,")
+    A("       (select count(distinct case when STOP_CNT > 0 then MEMBER_DK end)")
+    A("          from GN_DW.GOLD.FACT_MEMBER_EVENT where DATE_SK > 0) TRUE_DISTINCT")
+    A("from w;")
+    A("-- 실행 결과: 972,925 vs 903,064 = 69,861 과대 (7.74%)")
+    A("")
+    A("-- ③ 🟢 BRONZE 원천 독립 대조 — 「명」의 정답은 원천 distinct 다")
+    A("select count(*) BRONZE_ROWS, count(distinct MBER_NO) U_MBER")
+    A("from GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC;")
+    A("-- 실행 결과: 1,038,262 / 903,064  → GOLD 와 정확히 일치(행수=건수 · distinct=명)")
+    A("")
+    A("-- ④ 🔴 [O56 신규] 개발(명)도 비가산이다 — O49 는 이 필드를 검사하지 않았다")
+    A("select sum(DEV_MEMBERS) FMM_SUM, sum(DEV_CNT) FMM_CNT,")
+    A("       (select count(distinct MEMBER_DK) from GN_DW.GOLD.FACT_MEMBER_EVENT")
+    A("          where EVENT_TYPE = 'DEV' and DEV_CNT > 0) TRUE_DISTINCT")
+    A("from GN_DW.GOLD.FACT_MEMBER_MONTHLY;")
+    A("-- 실행 결과: 1,996,977 / 2,291,878 / 1,585,923  → SUM(DEV_MEMBERS) 가 25.9% 과대")
+    A("```")
+    A("")
+    A("### ㉰ 3-7 좌측 「도달불가」 7건 — identity 브리지로 열린다")
+    A("")
+    A("```sql")
+    A("-- ① 브리지 유일성 (1:1 이어야 팬아웃이 0 이다)")
+    A("select count(*) ROWS_, count(distinct IDENTITY_SK) U_ISK, count(distinct MEMBER_DK) U_MDK,")
+    A("       count_if(IDENTITY_SK is null) NULL_ISK")
+    A("from GN_DW.GOLD.DIM_MEMBER_IDENTITY;")
+    A("-- 실행 결과: 1,763,066 / 1,763,066 / 1,763,066 / 0  = 전건 1:1")
+    A("")
+    A("-- ② 🔴 처방을 틀리게 쓰면 팬아웃한다 — DIM_MEMBER 는 SCD2 다")
+    A("select count(*) from GN_DW.GOLD.FACT_GA_BEHAVIOR f")
+    A("  join GN_DW.GOLD.DIM_MEMBER_IDENTITY i on f.IDENTITY_SK = i.IDENTITY_SK")
+    A("  join GN_DW.GOLD.DIM_MEMBER m on i.MEMBER_DK = m.MEMBER_DK;          -- ⛔ 161,729 (2.35배)")
+    A("select count(*) from GN_DW.GOLD.FACT_GA_BEHAVIOR f")
+    A("  join GN_DW.GOLD.DIM_MEMBER_IDENTITY i on f.IDENTITY_SK = i.IDENTITY_SK")
+    A("  join GN_DW.GOLD.DIM_MEMBER_CURRENT m on i.MEMBER_DK = m.MEMBER_DK;  -- ✅ 47,112")
+    A("-- base 68,836 − unknown(IDENTITY_SK=0) 21,724 = 47,112 → 실회원 행 전건 매칭 · 팬아웃 0")
+    A("-- DIM_MEMBER 실측: 7,925,716행 / 회원 1,763,065 → 필터 없이 조인하면 4.49배로 늘어난다")
+    A("")
+    A("-- ③ 채움률은 **분모를 실회원 행으로** 잡아야 한다(P128)")
+    A("-- 실행 결과(분모 47,112): 성별 47,112 = 100% · 연령대·지역 45,601 = 96.79% · 획득축 45,792 = 97.20%")
+    A("-- ⚠️ unknown 21,724 = 31.6% 를 분모에 넣으면 과소로 보인다")
+    A("```")
+    A("")
+    A("### ㉱ 「집계필요」 처방 — 사전집계 후 LEFT JOIN 은 팬아웃 0")
+    A("")
+    A("```sql")
+    A("with pre as (")
+    A("  select MEMBER_DK, floor(DATE_SK/100) MONTH_KEY,")
+    A("         count(distinct case when STOP_CNT > 0 then MEMBER_DK end) STOP_MEMBERS_D")
+    A("  from GN_DW.GOLD.FACT_MEMBER_EVENT where DATE_SK > 0 group by 1, 2)")
+    A("select count(*) JOINED_ROWS, sum(m.BILLED_AMT) BILLED_AFTER")
+    A("from GN_DW.GOLD.FACT_MEMBER_MONTHLY m")
+    A("left join pre p on m.MEMBER_DK = p.MEMBER_DK and m.MONTH_KEY = p.MONTH_KEY;")
+    A("-- 실행 결과: 40,054,883 (base 40,054,883 불변) · 891,959,790,888 (불변)")
+    A("```")
+    A("")
+    A("### ㉲ F4 「기준일자」 — FK 가 있지만 의미가 다르다")
+    A("")
+    A("```sql")
+    A("-- FMF 에서 DIM_DATE 로 가는 FK 는 최종납입일·최종청구일뿐이다(보고 기준일이 아니다)")
+    A("select count(*) ROWS_,")
+    A("       count_if(LAST_PAY_DATE_SK = 0) ZERO_PAY, count_if(LAST_BILL_DATE_SK = 0) ZERO_BILL,")
+    A("       count(distinct MONTH_KEY) MONTHS_")
+    A("from GN_DW.GOLD.FACT_MEMBER_FEE;")
+    A("-- 실행 결과: 40,262,076 · 1,869,272 (4.64%) · 646,712 (1.61%) · 252")
+    A("-- ⇒ 「기준일자」는 일 축을 가진 팩트(FME.DATE_SK)에서 얻는다. FK 존재를 의미 도달로 읽지 말 것")
+    A("```")
+    A("")
+    A("### ㉳ 「가입일」·「중단일」 계보 — 앵커 교체로 흡수된다")
+    A("")
+    A("```sql")
+    A("-- 중단일: DIM 과 팩트가 같은 원천이라 값이 완전히 같다")
+    A("with f as (select MEMBER_DK, max(STOP_DATE) MX from GN_DW.GOLD.FACT_MEMBER_EVENT")
+    A("           where STOP_DATE is not null group by 1),")
+    A("     d as (select MEMBER_DK, LAST_STOP_DATE from GN_DW.GOLD.DIM_MEMBER_CURRENT")
+    A("           where LAST_STOP_DATE is not null)")
+    A("select count(*) COMPARED, count_if(f.MX <> d.LAST_STOP_DATE) MISMATCH_")
+    A("from f join d on f.MEMBER_DK = d.MEMBER_DK;")
+    A("-- 실행 결과: 898,425 / 불일치 0  ⇒ 컬럼명만 다르다")
+    A("")
+    A("-- 가입일: 이름이 비슷한데 **원천이 다르다** — 같다고 단정하면 안 된다(P104)")
+    A("-- 실행 결과: 비교 1,585,933 · 일치 1,558,628 (98.28%) · 불일치 27,305 (1.72%)")
+    A("--            그중 FME 가 늦은 것 26,991 (98.85%) · 중앙값 차이 0일 ⇒ 처리 지연")
+    A("```")
+    A("")
     A("## 4. 🟢 새로 열린 경로 — 마케팅캠페인 grain ROAS")
     A("")
     A("> 이슈원장 Q16 은 *\"캠페인↔마케팅캠페인 조인키 무효화(`MKTG_CMPGN_NM` 전건 NULL)\"* 로 기록돼 있었다.")
@@ -655,7 +907,13 @@ def write_md(rows, grain, fk_alive):
     print("MD :", path)
 
 
-def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
+def _nonadditive_note(obj, col):
+    """비가산 measure 면 처방 문구를 돌려준다(판정은 바꾸지 않는다)."""
+    note = NONADDITIVE_MEASURE.get((obj, col))
+    return (" ▸ 🔴 **비가산 처방**: " + note) if note else ""
+
+
+def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims, field=""):
     if gmap.startswith("⛔"):
         # 05 의 등록부가 **불가 사유를 실측으로 명시**한 항목이다 — 「판정불가」로 뭉개면 사유가 사라진다.
         return "원천부재", gmap.lstrip("⛔ ").strip()
@@ -665,6 +923,22 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
         return "판정불가(SV파생)", "SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다"
     if not anchor:
         return "판정불가", "이 섹션에 앵커 팩트가 없다(전부 차원·SV)"
+
+    # ── [2026-08-10 O56] **필드가 요구하는 시간 grain 검사 — 다른 어떤 검사보다 먼저** ──
+    # 🔴 O49 적발 17건 중 6건의 원인이다. 앵커에 컬럼이 **있으니** 「앵커 로컬 = 조립가능」으로
+    #   통과했지만, 필드가 요구하는 것은 컬럼이 아니라 **주차 축**이었다(P104).
+    #   컬럼 보유는 축 보유가 아니다 — `FMM.STOP_CNT` 는 있어도 주차로 쪼갤 수 없다.
+    if field:
+        _ax = grain.get(anchor, {}).get("time") or []
+        for _pat, _need, _why in REQUIRED_TIME_GRAIN:
+            if re.search(_pat, field) and _need not in _ax:
+                return "요구grain부정합", (
+                    f"필드값 「{field}」 이 **{_need} 축**을 요구하는데 앵커 `{anchor}` 의 시간축은 "
+                    f"**{'/'.join(_ax) or '없음'}** 이다. {_why}. "
+                    f"🔴 앵커가 그 컬럼을 갖고 있다는 사실은 **축을 갖고 있다는 뜻이 아니다** — "
+                    f"종전 검사기는 컬럼 보유만 보고 `조립가능` 으로 통과시켰다(O49 적발 · P104). "
+                    f"해소 경로 = **일 축을 가진 팩트로 앵커를 교체**한다"
+                    + _nonadditive_note(obj, col))
 
     # ── [2026-08-07 O47] 앵커 로컬 degenerate 우선 검사 ──
     # 🔴 차원을 찾기 **전에** 앵커 팩트 자체의 컬럼을 본다.
@@ -694,12 +968,28 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
                     return "값없음", f"`{obj}.{col}` 전건 0 ({cen['rows']:,}행)"
 
     if obj == anchor:
-        return "조립가능", f"앵커 팩트 `{anchor}` 자체의 컬럼"
+        return "조립가능", (f"앵커 팩트 `{anchor}` 자체의 컬럼" + _nonadditive_note(obj, col))
 
     if obj.startswith("DIM_"):
+        # 🔴 [2026-08-10 O56] **FK 생존 검사보다 먼저 「의미」를 본다.** FK 가 있다는 사실은
+        #   그 FK 가 이 필드의 의미를 준다는 뜻이 아니다 — O49 §6 F4 가 이 오판이었다.
+        sem = SEMANTIC_FK_MISMATCH.get((anchor, obj, field))
+        if sem:
+            return "도달불가", sem
         alive = fk_alive.get(anchor, {}).get(obj)
         if alive is True:
-            return "조립가능", f"`{anchor}` → `{obj}` FK 생존(비영 존재)"
+            base = f"`{anchor}` → `{obj}` FK 생존(비영 존재)"
+            return "조립가능", base + (" ▸ " + SCD2_DIM[obj] if obj in SCD2_DIM else "")
+        # 🔴 [2026-08-10 O56] **브리지 차원 경유** — 직접 FK 부재가 도달불가를 뜻하지 않는다.
+        #   O49 적발 7건(3-7 좌측)의 원인. 브리지 유일성·팬아웃·채움을 실측한 뒤에만 연다(P94 아님).
+        br = IDENTITY_BRIDGE.get(anchor)
+        if br and obj in br["reaches"]:
+            bridge_alive = fk_alive.get(anchor, {}).get(br["bridge"])
+            if bridge_alive is True:
+                return "조립가능", (
+                    f"`{anchor}` → `{br['bridge']}` → `{obj}` **2홉 브리지 경유**"
+                    f"(브리지 FK 생존 · 조인키 `{br['key']}`) ▸ " + br["why"]
+                    + (" ▸ " + SCD2_DIM[obj] if obj in SCD2_DIM else ""))
         ev = BRONZE_EVIDENCE.get((anchor, obj), "")
         if obj == "DIM_MEMBER_IDENTITY" and not ev:
             ev = DIM_IDENTITY_NOTE
@@ -740,7 +1030,8 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
                     axis + ". 🟢 **불가가 아니다** — `" + obj + "` 를 앵커 grain 으로 **먼저 집계한 뒤** 조인하면 "
                     "팬아웃이 0 이다. 🔴 naive 조인(사전집계 없이)만 이중계상을 만든다. "
                     "실측 증명: `FMM ⋈ (FSE→회원·월 사전집계)` 행 40,054,883 **불변** · "
-                    "청구액 891,959,790,888 **불변**(2026-08-07 O47)." + suffix)
+                    "청구액 891,959,790,888 **불변**(2026-08-07 O47)." + suffix
+                    + _nonadditive_note(obj, col))
             if ra < rb:      # 대상이 앵커보다 **굵다** → coarse→fine = 배분규칙 필요
                 return "배분규칙필요", (
                     axis + ". 🔴 굵은 쪽을 잘게 내리려면 **배분(귀속) 규칙**이 필요하다 — 규칙 없이 조인하면 "
@@ -751,7 +1042,7 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims):
         if ga.get("entity") != gb.get("entity"):
             return "grain부정합", (f"엔티티축 상이 — `{anchor}`={','.join(ga.get('entity') or ['없음'])} vs "
                                 f"`{obj}`={','.join(gb.get('entity') or ['없음'])}" + suffix)
-        return "조립가능", f"`{obj}` 가 앵커와 시간·엔티티축 동일"
+        return "조립가능", (f"`{obj}` 가 앵커와 시간·엔티티축 동일" + _nonadditive_note(obj, col))
 
     return "판정불가", f"`{obj}` 는 GOLD 팩트·차원이 아니다"
 

@@ -88,7 +88,7 @@ END-METADATA -->
       - `30_output_share/05_지표GOLD매핑.md` — 지표# → GOLD 배속 → SILVER → BRONZE (215지표, 자동생성)
       - `03_top-down_gold/08_silver의존.md` — SILVER→BRONZE lineage 확정
       - `30_output_share/06_BRONZE노출감사.md` — 순방향 감사(BRONZE 1,121컬럼 중 미노출 664)
-    - **동기화 의무**: 원천이 바뀌면 ① `gen_column_mapping.py` 재실행 → ② 해당 `05_1`~`05_7_SV_DDL_*.sql` 의 `[원천]` 절 수정(2026-08-05 O37 분할 — SV 단위 파일) → ③ SV 재배포(+GRANT 재실행) → ④ **`cortex_project/*.agent.yaml`(정본) 원천 지도 갱신** → ⑤ Agent 재배포 → ⑥ `08_AGENT_spec.md` §3 사본 동기화. 자동 전파 없음.
+    - **동기화 의무**: 원천이 바뀌면 ① `gen_column_mapping.py` 재실행 → ② 해당 `05_1`~`05_9_SV_DDL_*.sql` 의 `[원천]` 절 수정(2026-08-05 O37 분할 — SV 단위 파일) → ③ SV 재배포(+GRANT 재실행) → ④ **`cortex_project/*.agent.yaml`(정본) 원천 지도 갱신** → ⑤ Agent 재배포 → ⑥ `08_AGENT_spec.md` §3 사본 동기화. 자동 전파 없음.
     - **입도 결정의 설계 정본 = `04_SV_설계.md` §0.7** (선택지 A/B/C 비교·기입 금지 목록·에스컬레이션 트리거). 원칙 13은 "무엇을" 정하고, §0.7이 "어느 입도로·왜"를 정한다.
     - ⚠ **정본 위상 주의(drift 재발 방지)**: Agent 스펙의 정본은 **`cortex_project/*.agent.yaml`**(08 §3 규정)이며 `09_AGENT_spec_구현.sql`은 **실행 로그**다. 09만 고치면 정본이 뒤처진다 — 08 §3에 이미 동일 사고(2026-07-28 배포본이 문서보다 구버전) 기록이 있다.
 
@@ -126,7 +126,11 @@ END-METADATA -->
 
 ---
 
-## 1. SV 구조 (best practice — 최종 7 SV / 3 Agent · **Phase-1 배포 = 6 SV / 2 Agent**)
+## 1. SV 구조 (best practice — 3 Agent · **배포 = SV 9종 / 2 Agent**)
+
+> 🔴 [2026-08-10 O55] 종전 제목의 「최종 7 SV · Phase-1 배포 = 6 SV」는 **stale 이었다** —
+> 실측 배포 **9종**이고 최종 목표치도 7 을 이미 넘었다. 아래 절의 「5 SV」·「6 SV」 서술은
+> **2026-07-22/07-29 시점 스냅샷**이므로 이력으로 읽을 것(현재 상태의 정본 = `05_0_SV_DDL.sql` §전체 배포 검증).
 
 > 원칙 3: **SV = FACT grain + conformed DIM(3~6 테이블)**. 목표 FACT(FTG_D·FTG_B)는 독립 SV가 아니라 소비 SV에 conformed 폴딩. 각 SV의 metric 전수 배속은 **1단계 산출물**(`03_SV_metric_배속.md` 재작성)에서 잠근다 — 아래 표의 metric 수는 잠정.
 
@@ -214,7 +218,7 @@ END-METADATA -->
 ### 3단계 — SV metric expression + `CREATE SEMANTIC VIEW` DDL
 - 분자/분모를 metric expression으로 직역(×100·conformed JOIN·필터축·시간/NULL instruction).
 - **Phase 1 SV 5개 실제 `CREATE SEMANTIC VIEW` 배포**(`GN_DW.SERVING`, GOLD FACT/DIM cross-schema 참조). placeholder metric은 정의만(비활성 주석). Phase 2 SV는 DDL 초안만.
-- **산출물**: `05_1~05_7_SV_DDL_*.sql`(CREATE 문) + 배포 검증(`SELECT FROM SEMANTIC_VIEW(...)` 스모크).
+- **산출물**: `05_1~05_9_SV_DDL_*.sql`(CREATE 문) + 배포 검증(`SELECT FROM SEMANTIC_VIEW(...)` 스모크).
 - **DoD**: Phase 1 SV 5개 `SHOW SEMANTIC VIEWS`에 존재, 대표 질의 semantic SQL 성공. **fan-out 스모크(R1)**: 브리지/조인 measure 합 = 단일 FACT 합 일치 확인. 가산성 N/S measure의 SUM 오집계 없음.
 
 ### 4단계 — Verified Queries + 평가셋
@@ -264,7 +268,7 @@ END-METADATA -->
 | 0 | `02_SERVING_setup.sql` (SERVING 스키마·권한·CoWork object) | ✅ 완료 (2026-07-21) — RBAC 전체 선행 구축(WH 3·역할 6·계층·GOLD/SILVER/BRONZE grant) + SERVING(owner GN_DW_ADMIN) + CoWork object. DoD 검증: ANALYST GOLD SELECT ✅·VIEWER SERVING USAGE ✅ |
 | 1 | `03_SV_metric_배속.md` (7 SV 재배속) | ✅ 완료 (2026-07-21) — derived 81 전수 재배속(MONTHLY 40·EVENT 8·SERVICE 24·PARTICIPATION 0·AD 4·GA 2·BUDGET 3=81, 중복0·누락0). Phase: P1 69·P2 12. 레거시 SV_MEMBER 48→grain분리(FME 8 이관) |
 | 2 | `04_SV_설계.md` (+브리지·Cortex Search 식별) | ✅ 설계완료 / ⛔ **데이터 게이트 발견** (2026-07-21) — 7 SV 구조·비판검토·fan-out helper 검증 완료. **단 실측 결과 GOLD 차원 FK(CAMPAIGN/SERVICE/PAYMENT/ORG_SK)·FMM 카운트 measure·NEW_EXISTING_FLAG 전건 미적재** → 실활성 지표 극소수(§0.6). 3단계 스코프 결정 필요 |
-| 3 | `05_1~05_7_SV_DDL_*.sql` (Phase 1 CREATE) | ✅ **배포·검증 완료** (2026-07-22) — SV 5개 `CREATE SEMANTIC VIEW` + GRANT REFERENCES,SELECT(ANALYST/VIEWER/SERVICE) 사용자(GN_DW_ADMIN) 실행 완료. **fan-out 스모크 PASS**: 납입회비 SV=FACT 895,178,309,108 일치·발송수 38,470,780 일치·성별×개발건 합 3,594,843=FME 총계(회원조인 fan-out 0). 실측 활성분만 노출(공64·공80·개발/중단·유지기간·발송·참여·예산). **PK 정정**: 유일 FMM·FBD만 선언, 비유일 FME/FSE/FEP 미선언. SHOW: 5개 SV owner=GN_DW_ADMIN 확인 |
+| 3 | `05_1~05_9_SV_DDL_*.sql` (Phase 1 CREATE) | ✅ **배포·검증 완료** (2026-07-22) — SV 5개 `CREATE SEMANTIC VIEW` + GRANT REFERENCES,SELECT(ANALYST/VIEWER/SERVICE) 사용자(GN_DW_ADMIN) 실행 완료. **fan-out 스모크 PASS**: 납입회비 SV=FACT 895,178,309,108 일치·발송수 38,470,780 일치·성별×개발건 합 3,594,843=FME 총계(회원조인 fan-out 0). 실측 활성분만 노출(공64·공80·개발/중단·유지기간·발송·참여·예산). **PK 정정**: 유일 FMM·FBD만 선언, 비유일 FME/FSE/FEP 미선언. SHOW: 5개 SV owner=GN_DW_ADMIN 확인 |
 | 4 | `06_검증쿼리_VQR.md`·`07_평가셋_eval.md` | ✅ 완료 (2026-07-22) — `06`: 5 SV 라이브 검증(SV=FACT 일치)·회귀쿼리 V1~V6·SV별 VQR 후보·custom instruction 후보 6. `SV_MEMBER_EVENT` retention 제거 재배포·재검증(+`CREATE OR REPLACE`로 삭제된 grant 재부여, SHOW GRANTS 7행 확인). `07`: 5 SV 평가셋(NL↔gold SQL↔ground truth, 2026-07-22)·가드레일(ⓖ) 케이스 포함. **배포본=파일 정합 확인**(DESCRIBE: FME/FSE PK 없음·retention 없음·grant 정상) |
 | 5 | `08_AGENT_spec.md` (CREATE AGENT) | ✅ 스펙완료 (2026-07-22) — 2 Agent(AGENT_MEMBER 4SV·AGENT_OVERALL 예산+MONTHLY/SERVICE) 스펙 작성. model=auto·WH=GN_DW_ANALYTICS_WH·orchestration 라우팅·custom instruction 6(06§4)·sample_questions·평가셋 매핑(07). workspace YAML=`cortex_project/agents/AGENT_MEMBER/agent_spec.yaml`·`agents/AGENT_OVERALL/agent_spec.yaml`(2026-08-05 O38 경로 정정 — 구 루트 yaml 은 `_archive/` 이관). Cortex Search=Phase-2 유예. **배포(save/publish)·CoWork ADD AGENT·USAGE grant는 사용자(GN_DW_ADMIN)** — §4 절차 |
 | 6 | `10_SI연결_검증.md` | ✅ 배포·연결 완료 / 🔄 스모크 대기 (2026-07-22) — CoCo 대행배포: 2 Agent `cortex_agent_save`(GN_DW.SERVING) → **소유권 GN_DW_ADMIN 이전**(생성 시 ACCOUNTADMIN → GRANT OWNERSHIP COPY CURRENT GRANTS) → USAGE grant(ANALYST/VIEWER/SERVICE) → **CoWork SI object `ADD AGENT`**(2행 등록 확인). 실행로그=`09_AGENT_spec_구현.sql`. **스모크**: `cortex_agent_query`(DATA_AGENT_RUN API)가 **트라이얼 계정 차단** → CoWork UI(ai.snowflake.com)에서 10 §3 문항 수동 검증 필요 |

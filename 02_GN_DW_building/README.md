@@ -23,7 +23,7 @@
 | `04_운영.md` | dbt 파이프라인, 테스트, 보안(네트워크/마스킹/MFA), 모니터링. |
 | `05_ARCHITECTURE.md` | 전체 아키텍처 다이어그램 + SERVING 조감도. |
 | `06_RUNBOOK.md` | 운영 매뉴얼 — 일상점검/장애대응/수동실행/보안사고. |
-| `07_ENVIRONMENT_RBAC_setup.sql` | **0단계 부트스트랩 실행 SQL** — WH 3·역할 6+계층·WH/스키마 grant·SERVING 스키마·CoWork object·helper 뷰 2. `01`·`03 §3.8` 설계의 실행 정본(멱등). |
+| `07_ENVIRONMENT_RBAC_setup.sql` | **0단계 부트스트랩 실행 SQL** — WH 3·역할 6+계층·WH/스키마 grant·SERVING 스키마·CoWork object. 🔴 [2026-08-10 O55] 종전 「helper 뷰 2」 표기는 제거 — helper 3종 물리 DROP 완료. `01`·`03 §3.8` 설계의 실행 정본(멱등). |
 
 ---
 

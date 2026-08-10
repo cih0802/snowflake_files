@@ -118,9 +118,14 @@ deployment_notes:
   - "최종 7 목표 대비 미배포 2 = GA(FGA)·광고(FAD)/목표(FTG) 계열 → Phase-2."
   - "synonyms(한글)·VQR·custom instruction(기간스코프 강제 P10)·평가셋으로 정확도 확보."
 
-serving_helper_views:   # SERVING 내 보조 VIEW 2 (SV fan-out 차단용)
-  - { id: DIM_MEMBER_CURRENT, base: "GOLD.DIM_MEMBER", desc: "SCD2 현재행(IS_CURRENT=TRUE)만 추출 — 1:1 회원조인. PK=MEMBER_DK" }
-  - { id: DIM_MONTH, base: "GOLD.DIM_DATE", desc: "월 grain DISTINCT 추출 — 월팩트 시간차원. PK=MONTH_KEY" }
+serving_helper_views: []  # ⛔ [2026-08-10 O55] 폐지 — 물리 DROP 완료. SERVING 에 helper VIEW 가 없다.
+  # 종전 2종(DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER · DIM_MONTH ← GOLD.DIM_DATE)과
+  # FACT_AD_COMBINED 는 SV fan-out 차단용이었으나, SV 9종 base 를 GOLD 정본으로 재배선한 뒤(O54)
+  # 의존 참조 0 을 3원 교차 검증하고 DROP 했다(O55). 대체 객체:
+  #   DIM_MEMBER_CURRENT → GOLD.DIM_MEMBER_CURRENT(BASE TABLE · dbt 소유)
+  #   DIM_MONTH          → GOLD.DIM_MONTH(BASE TABLE · 06_DDL 소유)
+  #   FACT_AD_COMBINED   → GOLD.WIDE_AD_COMBINED(VIEW · dbt 소유)
+  # 롤백 근거 DDL = _archive/O55_helper_rollback_20260810/
 ```
 
 ---

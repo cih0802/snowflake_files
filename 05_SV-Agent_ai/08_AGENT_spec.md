@@ -3,7 +3,7 @@ doc_id: SV_AGENT_SPEC
 doc_role: 5단계 — Cortex Agent 스펙(회원·overall) 정본 + 배포/CoWork/평가 가이드
 project: GN_DW (굿네이버스)
 created: 2026-07-22
-depends_on: 05_1~05_7_SV_DDL_*.sql(5 SV 배포), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
+depends_on: 05_1~05_9_SV_DDL_*.sql(SV 9종 배포 · [2026-08-10 O55] 종전 「5 SV」는 stale), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
 scope: Phase-1 배포 2 Agent (AGENT_MEMBER·AGENT_OVERALL) / 마케팅 Agent = Phase-2
 workspace_specs: cortex_project/agents/AGENT_MEMBER/agent_spec.yaml · cortex_project/agents/AGENT_OVERALL/agent_spec.yaml   # 2026-08-05 O38 경로 정정
 deploy_by: 사용자(GN_DW_ADMIN) — 에이전트는 스펙 작성·읽기전용 테스트만
@@ -360,9 +360,9 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 ### 5.1 AGENT_MEMBER (07 §1~4-SV)
 | # | 질문 | 기대 라우팅 | 기대값 |
 |---|---|---|---|
-| M3 | 2024년 납부율은? | member_monthly / PAYMENT_RATE·CAL_YEAR=2024 | 93.86% |
-| M4 | 연도별 납부율 추이(2023~2025) | member_monthly / PAYMENT_RATE·CAL_YEAR | 93.66·93.86·93.98% |
-| M5 | 회원구분별 납입회비 총액 | member_monthly / TOTAL_PAID_FEE·MEMBER_TYPE | 1=756.6B·2=132.1B·3=6.36B |
+| M3 | 2024년 납부율은? | member_monthly / **PAYMENT_RATE_FEE**·CAL_YEAR=2024 | **85.77%** | 🔴[O56-C EXPO-2] `PAYMENT_RATE` 제거 · 종전 기대값은 폐기식 값 |
+| M4 | 연도별 납부율 추이(2023~2025) | member_monthly / **PAYMENT_RATE_FEE**·CAL_YEAR | **86.05·85.77·85.65%** | 🔴[O56-C EXPO-2 재측정] |
+| M5 | 회원구분별 **총수납액** | member_monthly / **TOTAL_PAID_ALL**·MEMBER_TYPE_NAME | 개인=756.6B·기업=132.1B·단체=6.36B | 🔴[O56-C] 개명 · 값 불변 |
 | E4 | 전이유형별 개발/중단 건수·회원수 | member_event / EVENT_TYPE | 개발 3,594,843/회원 1,585,949 · 중단 1,038,262/903,064 |
 | S3 | 채널별 발송수 | service / TOTAL_SEND_MEMBERS·CHANNEL | MSG_AT 20.56M·SND 8.30M·EMAIL 7.81M·PSTMTR 1.79M·(미매핑)11,313 |
 | P3 | 행사종류별 참여자수 | event_participation / EVENT_KIND | EVENT 718,438·(Unknown)263,611·CRMN 152,077 |
@@ -376,7 +376,7 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 | B1 | 전체 편성예산 | budget / TOTAL_PLAN_BUDGET | 503,070,876,000 |
 | B3 | 전체 집행율 | budget / EXEC_RATE | 39.61% |
 | B4 | 예산구분별 편성·집행·집행율 | budget / BUDGET_CATEGORY | 지출 254.06B/80.49B/31.68% · 수입 249.01B/118.79B/47.71% |
-| — | 전사 납입회비 총액 | member_monthly / TOTAL_PAID_FEE | 895,178,309,108 |
+| — | 전사 **총수납액**(회비+기부금) | member_monthly / **TOTAL_PAID_ALL** | 895,178,309,108 | 🔴[O56-C] 회비만은 `TOTAL_PAID_FEE_BILLABLE` 768,800,286,349 |
 | **B5ⓖ** | 캠페인별 ROI(개발단가) | (비활성) | "CAMPAIGN_SK·비용·FMM 연계 미적재→Phase-2(신9~11)" 안내 |
 
 > **가드레일(ⓖ)**: 비활성 지표는 임의 산출 없이 Phase-2 안내(R8). 납부율 무필터는 기간 스코프로 재해석(전기간 100.36% 단정 금지). 행사/서비스 Unknown 커버리지 고지.

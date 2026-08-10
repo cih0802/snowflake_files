@@ -3,7 +3,7 @@ doc_id: SV_EVAL_SET
 doc_role: 4단계 — Cortex Analyst 평가셋(ground-truth Q&A) · SV 정확도 회귀 기준 (Agent eval 입력)
 project: GN_DW (굿네이버스)
 created: 2026-07-22
-depends_on: 05_1~05_7_SV_DDL_*.sql(배포), 06_검증쿼리_VQR.md(VQR·custom instruction 후보)
+depends_on: 05_1~05_9_SV_DDL_*.sql(배포), 06_검증쿼리_VQR.md(VQR·custom instruction 후보)
 scope: Phase-1 배포 5 SV
 ground_truth_asof: 2026-07-22 (GOLD 재적재 시 기대값 재생성 필요 — §4)
 END-METADATA -->
@@ -25,11 +25,11 @@ END-METADATA -->
 
 | # | NL 질문 | 기대 metric / dim | 기대값 (2026-07-22) |
 |---|---|---|---|
-| M1 | 전체 납입회비 총액은? | TOTAL_PAID_FEE | 895,178,309,108 |
+| M1 | 전체 **총수납액**(회비+기부금)은? | TOTAL_PAID_ALL | 895,178,309,108 |<br>🔴[2026-08-10 O56-C] metric 개명(`TOTAL_PAID_FEE`→`TOTAL_PAID_ALL`) · **질문 문구도 교정했다**: 이 값은 「납입회비」가 아니라 기부금 포함 총수납액이다(회비만은 `TOTAL_PAID_FEE_BILLABLE` **768,800,286,349**). ✅ **[O56-D] 재실행 검증 완료 — 895,178,309,108 · 회비만 768,800,286,349 둘 다 일치**
 | M2 | 전체 청구금액 총액은? | TOTAL_BILLED_AMT | 891,959,790,888 |
-| M3 | 2024년 납부율은? | PAYMENT_RATE / month.CAL_YEAR=2024 | 93.86% |
-| M4 | 연도별 납부율 추이(2023~2025) | PAYMENT_RATE / month.CAL_YEAR | 2023 93.66 · 2024 93.86 · 2025 93.98 (%) |
-| M5 | 회원구분별 납입회비 총액 | TOTAL_PAID_FEE / member.MEMBER_TYPE | 1=756,640,436,694 · 2=132,140,772,778 · 3=6,356,891,665 · (NULL)=40,207,971 |
+| M3 | 2024년 납부율은? | **PAYMENT_RATE_FEE** / month.CAL_YEAR=2024 | **85.77%** |<br>🔴[2026-08-10 O56-C EXPO-2] `PAYMENT_RATE` 제거로 metric·기대값 **동시 교체**. 종전 기대값 93.86% 는 **폐기식(모집단 불일치) 값**이었다 — 평가셋이 결함값을 정답으로 고정하고 있었다. ✅ **[O56-D] 재실행 검증 완료 — 실측 85.77% 일치**(문서 교체만으로 끝내지 않았다)
+| M4 | 연도별 납부율 추이(2023~2025) | **PAYMENT_RATE_FEE** / month.CAL_YEAR | **2023 86.05 · 2024 85.77 · 2025 85.65 (%)** |<br>🔴[2026-08-10 O56-C EXPO-2 재측정] 종전 93.66·93.86·93.98 은 폐기식 값이다. ✅ **[O56-D] 재실행 검증 완료 — 86.05·85.77·85.65 전건 일치**
+| M5 | 회원구분별 **총수납액** | TOTAL_PAID_ALL / member.MEMBER_TYPE_NAME | 개인=756,640,436,694 · 기업=132,140,772,778 · 단체=6,356,891,665 · (NULL)=40,207,971 |<br>🔴[2026-08-10 O56-C] metric 개명 · 차원명은 `MEMBER_TYPE_NAME`(라벨) · 값 불변 실측 확인. ✅ **[O56-D] 재실행 검증 완료 — 4구분 전건 일치**(개인 756,640,436,694 · 기업 132,140,772,778 · 단체 6,356,891,665 · (NULL) 40,207,971)
 | M6 | 성별 개발 건수 | TOTAL_DEV_CNT / member.GENDER | F=2,002,899 · M=1,362,101 · U=229,573 · (공백)=270 |
 | M7 | 회원상태별 개발 건수(상위) | TOTAL_DEV_CNT / member.MEMBER_STATUS | 12=2,317,052 · 1=1,194,376 · 7=29,794 |
 | M8 | 2024년 개발/중단 건수 | TOTAL_DEV_CNT·TOTAL_STOP_CNT / CAL_YEAR=2024 | 개발 319,881 · 중단 123,180 |
@@ -39,12 +39,12 @@ END-METADATA -->
 
 ```sql
 -- gold (M3/M4): 연도별 납부율
-SELECT CAL_YEAR, PAYMENT_RATE
-FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS month.CAL_YEAR METRICS PAYMENT_RATE)
+SELECT CAL_YEAR, PAYMENT_RATE_FEE
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS month.CAL_YEAR METRICS PAYMENT_RATE_FEE)
 WHERE CAL_YEAR BETWEEN 2023 AND 2025 ORDER BY CAL_YEAR;
 -- gold (M5): 회원구분별 납입회비
-SELECT MEMBER_TYPE, TOTAL_PAID_FEE
-FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS member.MEMBER_TYPE METRICS TOTAL_PAID_FEE);
+SELECT MEMBER_TYPE_NAME, TOTAL_PAID_ALL
+FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY DIMENSIONS member.MEMBER_TYPE_NAME METRICS TOTAL_PAID_ALL);
 ```
 
 > ⓖ 주의(06 §4-1): 납부율 무필터 전기간은 100.36%(재청구·이월 왜곡) → 기간(연/월) 스코프로 답해야 PASS.

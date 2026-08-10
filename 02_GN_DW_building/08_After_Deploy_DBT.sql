@@ -45,85 +45,26 @@ GRANT USAGE ON SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT TO R
 --       선택적 제한이 필요하면 7단계에서 CORTEX_USER 회수 후 CORTEX_AGENT_USER 명시 부여.
 
 /* =====================================================================
-   G. SERVING helper 뷰 — SV fan-out 차단용 (04_SV_설계.md §0.1)
-      소유 = GN_DW_ADMIN. SV relationship에서 이 뷰를 logical table로 참조.
-
-   ⛔⛔ [2026-08-10 O54] **이 절은 이제 실행 불요다 — 신규 계정 재현에서 건너뛴다.**
-      SV 9종 전부 base 를 GOLD 정본으로 재배선했다(실측: BASE_TABLE_SCHEMA_NAME 전건 GOLD).
-        · `SERVING.DIM_MONTH`          → `GOLD.DIM_MONTH`(테이블 · 06_DDL 소유)
-        · `SERVING.DIM_MEMBER_CURRENT` → `GOLD.DIM_MEMBER_CURRENT`(테이블 · dbt 소유 24컬럼)
-        · `SERVING.FACT_AD_COMBINED`   → `GOLD.WIDE_AD_COMBINED`(dbt 뷰 51컬럼)
-      🔴 그러므로 재현 순서에서 이 절을 실행하지 않아도 `05_1`~`05_9` 가 배포된다.
-         단 `05_7`(SV_AD)·`05_8`·`05_9` 는 base 가 dbt 소유이므로 **`dbt build` 이후**여야 한다.
-      ⬜ 절 자체 삭제 + 물리 helper 3종 DROP = 로드맵 **7단계**(⛔개별 승인 · 의존 참조 0 확인 후).
-      ⚠️ 아래 정의는 7단계 승인 전 롤백 근거로 보존한다 — 되살릴 때 SV 를 함께 되돌릴 것.
+   G. ⛔⛔ [2026-08-10 O55] **절 폐지 — 삭제 완료. 실행 라인 0.**
+      종전 내용 = SERVING helper 뷰 3종 생성(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) + 소비 3역할 SELECT GRANT.
+      O54 에서 SV 9종 base 를 GOLD 정본으로 재배선했고, O55 에서 **물리 객체를 DROP** 했다.
+        · `SERVING.DIM_MONTH`          → `GOLD.DIM_MONTH`(BASE TABLE · 06_DDL 소유)
+        · `SERVING.DIM_MEMBER_CURRENT` → `GOLD.DIM_MEMBER_CURRENT`(BASE TABLE · dbt 소유)
+        · `SERVING.FACT_AD_COMBINED`   → `GOLD.WIDE_AD_COMBINED`(VIEW · dbt 소유)
+      🔴 DROP 전 사전 검증(3원 교차): SV base 참조 0(`INFORMATION_SCHEMA.SEMANTIC_TABLES`
+         `BASE_TABLE_SCHEMA='SERVING'`) · 뷰 정의 참조 0(자기 제외) · `ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 0.
+      🔴 DROP 후 판정: SERVING 잔존 helper **0** · SV **9종·논리테이블 32건 전건 GOLD 유지**.
+      ⚠️ 롤백 근거 DDL 은 `_archive/O55_helper_rollback_20260810/`(166행)에 채취해 뒀다 —
+         되살릴 필요가 생기면 SV base 도 함께 되돌려야 한다(둘은 한 쌍이다).
+      ⚠️ 신규 계정 재현에서 이 절은 **없는 것이 정상**이다. 선행 조건은 `dbt build` 뿐이다.
    ===================================================================== */
-USE ROLE GN_DW_ADMIN;
-USE WAREHOUSE GN_DW_DEV_WH;
-
--- G.1 DIM_MONTH: 월팩트(FMM·FBD·FTG_D·FTG_B) 시간차원 — DIM_DATE 직접 조인 시 28~31× fan-out 방지
-CREATE OR REPLACE VIEW GN_DW.SERVING.DIM_MONTH
-  COMMENT = 'GOLD.DIM_DATE에서 월 grain DISTINCT 추출 — 월팩트 시간차원(fan-out 차단). PK=MONTH_KEY.'
-AS
-SELECT DISTINCT
-    MONTH_KEY,
-    YEAR,
-    MONTH,
-    QUARTER
-FROM GN_DW.GOLD.DIM_DATE
-WHERE MONTH_KEY IS NOT NULL;
-
--- G.2 DIM_MEMBER_CURRENT: SCD2 현재행만 — 회원당 다버전 fan-out 방지
---   🔴 [2026-08-04 O27 반영] 종전 이 뷰는 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP`
---      3컬럼을 SELECT 했으나, O27 이 `GOLD.DIM_MEMBER` 에서 **DROP** 한 컬럼이라
---      **이 문장이 `invalid identifier` 로 실패**했다(2026-08-04 실측 확인).
---      → 3컬럼 제거. SV 는 이 3컬럼을 참조하지 않으므로(05_1~05_7_SV_DDL_*.sql 실측 0건) 소비 영향 없다.
---      DROP 사유: 시점귀속(#113)→정소재지 FMM · 대표규칙 O8 미결 · 동시 다중후원 정상.
---   ⚠️ O27 신규 4컬럼(AREA_CD·AGE·PREV_MBER_STAT_CD·PREV_MEMBER_STATUS_NAME)은 **의도적으로 미노출**이다
---      — SV 가 사용하지 않는다. 필요해지면 여기와 05_1~05_7_SV_DDL_*.sql 을 함께 고친다.
---   ⚠️ `GOLD.DIM_MEMBER_CURRENT`(dbt 모델 소유, DEC-27 §17-A)와 **다른 객체**다. 역할 분리:
---        · 본 뷰(SERVING) = **SV 전용** fan-out 차단 논리테이블(05_1~05_7_SV_DDL_*.sql 4곳 참조)
---        · GOLD 판          = **분석가 기본 진입점**(전건 NULL 컬럼 미노출 · 감사컬럼 포함)
---      두 판의 컬럼 구성은 의도적으로 다르다 — 한쪽만 고치지 말 것.
-CREATE OR REPLACE VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT
-  COMMENT = 'GOLD.DIM_MEMBER SCD2 현재행(IS_CURRENT=TRUE)만 추출 — 1:1 회원조인(fan-out 차단). PK=MEMBER_DK. SV 전용 — 분석가용은 GOLD.DIM_MEMBER_CURRENT.'
-AS
-SELECT
-    MEMBER_SK,
-    MEMBER_DK,
-    -- [2026-08-03 O26] 코드=BRONZE 원천명 / 라벨=분석 용어. GENDER→SEX · MEMBER_STATUS→MBER_STAT_CD
-    --   · MEMBER_TYPE→MBER_DIV_CD · ENROLL_PATH→JOIN_PATH_CD. SEX_NM(CM013 원천 라벨) 신설.
-    SEX,
-    SEX_NM,
-    GENDER_NAME,
-    REGION,
-    AGE_BAND,
-    MBER_STAT_CD,
-    MBER_DIV_CD,
-    MEMBER_TYPE_NAME,
-    MEMBER_STATUS_NAME,
-    MEMBER_STATUS_GROUP,
-    FIRST_JOIN_DATE,
-    FIRST_CAMPAIGN,
-    JOIN_PATH_CD,
-    ENROLL_PATH_NAME,
-    FIRST_SPONSORSHIP,
-    LAST_STOP_DATE,
-    EFFECTIVE_FROM
-FROM GN_DW.GOLD.DIM_MEMBER
-WHERE IS_CURRENT = TRUE;
-
--- G.3 소비 권한: helper 뷰에 SELECT (SV caller가 접근)
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MONTH          TO ROLE GN_DW_ANALYST;
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MONTH          TO ROLE GN_DW_VIEWER;
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MONTH          TO ROLE GN_DW_SERVICE;
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT TO ROLE GN_DW_ANALYST;
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT TO ROLE GN_DW_VIEWER;
-GRANT SELECT ON VIEW GN_DW.SERVING.DIM_MEMBER_CURRENT TO ROLE GN_DW_SERVICE;
 
 -- =====================================================================
--- 0단계 완료 — WH 3 · 역할 6+계층 · WH/스키마 grant · SERVING 스키마 · CoWork object · helper 뷰 2.
--- 다음: 05_1~05_7_SV_DDL_*.sql(SV **6종** · `05_7` 에 FACT_AD_COMBINED 동봉 · 각 파일 독립 실행)
+-- 0단계 완료 — WH 3 · 역할 6+계층 · WH/스키마 grant · SERVING 스키마 · CoWork object.
+--   ⛔ [2026-08-10 O54·O55] 종전 이 줄 끝의 「helper 뷰 2」는 완료 요건에서 **빠졌다** — §G 절이 삭제됐다.
+-- 다음: 05_1~05_9_SV_DDL_*.sql(SV **9종** · 각 파일 독립 실행 · base 전건 GOLD)
+--   ⛔ [2026-08-10 O54] 종전 「05_1~05_7 · SV 6종 · `05_7` 에 FACT_AD_COMBINED 동봉」은 **거짓이 됐다**
+--      — SV 는 9종이고(`05_8` DEV_ACHIEVEMENT · `05_9` MEMBER_FEE 신설) `05_7` 의 helper 생성 블록은 제거됐다.
 --       → 09_1_AGENT_생성.sql(Agent 껍데기 2) → 09_2_AGENT_버전업.sql(스펙 본문) ★필수
 -- 🔴 [2026-08-04 O36 교정] 종전 'SV 5'는 SV_AD 신설 이전 수치이고, `09_AGENT_spec_구현.sql` 은
 --    [DEPRECATED 2026-07-31] 스텁이다. `09_2` 를 빼면 Agent 가 도구 0개로 남는다.

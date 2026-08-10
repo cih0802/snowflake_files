@@ -601,17 +601,18 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
      ⚠️ 워크스페이스 직접 실행은 live 파일을 읽으므로 1) 없이도 되지만,
         그 경우 3)의 DBT PROJECT GRANT 3줄은 여전히 실패한다.
 
-3) 08_After_Deploy_DBT.sql          ← DBT PROJECT GRANT + SERVING GRANT + CoWork + helper 뷰 2
+3) 08_After_Deploy_DBT.sql          ← DBT PROJECT GRANT + SERVING GRANT + CoWork  (helper 뷰 없음)
      02_GN_DW_building/08_After_Deploy_DBT.sql
-     · §G.1 SERVING.DIM_MONTH          ← GOLD.DIM_DATE   ⛔ [2026-08-10 O54] 실행 불요(SV base = GOLD.DIM_MONTH)
-     · §G.2 SERVING.DIM_MEMBER_CURRENT ← GOLD.DIM_MEMBER  ⛔ [2026-08-10 O54] 실행 불요(SV base = GOLD.DIM_MEMBER_CURRENT)
+     · ⛔ [2026-08-10 O55] **§G 절은 삭제됐다** — helper 뷰 3종을 물리 DROP 했고 절 78행을 제거했다.
+       SV base = GOLD.DIM_MONTH · GOLD.DIM_MEMBER_CURRENT · GOLD.WIDE_AD_COMBINED(전건 GOLD 실측).
      ⚠️ 역할이 ACCOUNTADMIN ↔ GN_DW_ADMIN 으로 바뀐다. 스크립트의 USE ROLE 을 지킬 것.
 
 4) 05_1 ~ 05_9_SV_DDL_*.sql         ← SV 9종 (helper 동봉 폐지 · [2026-08-10 O54] base 전건 GOLD)
         🔴 [2026-08-05 O37 분할] 각 파일이 GRANT·스모크까지 포함해 **독립 실행**된다(순서 무관).
            `05_0_SV_DDL.sql` 은 인덱스·공통규약·전체검증 전용 — 실행해도 SV 가 배포되지 않는다.
      05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql ... 05_7_SV_DDL_AD.sql
-     · 3)의 helper 뷰 2종을 논리테이블로 참조한다(DIM_MEMBER_CURRENT 4곳 · DIM_MONTH 2곳)
+     · ⛔ [2026-08-10 O55] 종전 「3)의 helper 뷰 2종을 논리테이블로 참조한다」는 **거짓이 됐다** —
+       9종·논리테이블 32건 전건이 `GOLD` 객체를 참조한다(`SEMANTIC_TABLES` 실측). 3)에 의존하지 않는다.
      · 🔴 반드시 `USE ROLE GN_DW_ADMIN` 으로 실행(ACCOUNTADMIN 으로 만들면 소유권이 어긋나
        이후 재배포가 권한 오류로 막힌다 — 05 파일 15~16행)
 
@@ -651,7 +652,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 | ② | `04_silver_design/08_SILVER_테이블DDL_20260714.sql` | GN_DW_ADMIN | SILVER 38테이블 |
 | ③ | `10_dbt_pipeline/deploy_dbt_project.sql` | ACCOUNTADMIN→GN_DW_ADMIN | `GN_DW.OPS.DW_PIPELINE` |
 | ④ | **dbt build** | GN_DW_ADMIN(또는 ENGINEER) | SILVER·GOLD 적재 + GOLD 뷰 13종 |
-| ⑤ | `02_GN_DW_building/08_After_Deploy_DBT.sql` | GN_DW_ADMIN↔ACCOUNTADMIN 전환 | DBT PROJECT GRANT · **§G SERVING helper 뷰 2종** · SERVING GRANT · CoWork |
+| ⑤ | `02_GN_DW_building/08_After_Deploy_DBT.sql` | GN_DW_ADMIN↔ACCOUNTADMIN 전환 | DBT PROJECT GRANT · SERVING GRANT · CoWork. 🔴 [2026-08-10 O55] **§G(helper 뷰) 절 삭제** — helper 3종 물리 DROP 완료 |
 | ⑥ | `05_SV-Agent_ai/05_1`~`05_7_SV_DDL_*.sql` | 🔴 GN_DW_ADMIN | SV **8종** + 각 파일 GRANT·스모크 (+`05_7` 에 `FACT_AD_COMBINED`). **파일 간 순서 무관·독립 실행**(2026-08-05 O37 분할). 🔴 **[2026-08-05 교정] 종전 "6종" 은 stale** — 실측 배포 8종 = `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_MEMBER_COHORT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·`SV_AD`·`SV_DEV_ACHIEVEMENT`(O38 신설). ⚠️ `05_SV_DDL.sql` 은 인덱스·전체검증 전용이라 실행해도 SV 가 만들어지지 않는다 |
 | ⑦ | `05_SV-Agent_ai/09_1_AGENT_생성.sql` | GN_DW_ADMIN | Agent 껍데기 2종 |
 | ⑧ | `05_SV-Agent_ai/09_2_AGENT_버전업.sql` | GN_DW_ADMIN | 🔴 Agent 스펙 본문 |
@@ -684,7 +685,11 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 
 ---
 
-### 11.3-B ✅ [해소] SERVING helper 뷰 — 정본은 `08_After_Deploy_DBT.sql` §G 였다
+### 11.3-B ✅ [해소 · 2026-08-10 O55 종결] SERVING helper 뷰 — 종전 정본은 `08_After_Deploy_DBT.sql` §G 였고, 지금은 **helper 자체가 없다**
+
+> 🟢 **[2026-08-10 O55]** 이 항목은 **역사 기록**이다. SV 9종 base 가 전건 `GOLD` 로 재배선된 뒤
+> helper 3종(`DIM_MONTH`·`DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED`)을 **물리 DROP** 하고 `§G` 절을 삭제했다.
+> ⇒ 아래 「정본이 §G 다」·「helper 뷰 부재 시 SV 실패」 서술은 **현재 상태가 아니다**(당시 판정으로만 읽을 것).
 
 > 🔴 **2026-08-04 최초 판정 정정.** 나는 이 항목을 *"실행 정본 유실(BLOCKER)"* 로 등재했으나 **틀렸다.**
 > `02_SERVING_setup.sql` 스텁이 *"07_ENVIRONMENT_RBAC_setup.sql 로 이관"* 이라고 적어서 07 과

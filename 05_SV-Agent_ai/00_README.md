@@ -16,7 +16,7 @@ END-METADATA -->
 
 | 트랙 | 상태 |
 |---|---|
-| SV 5개 배포·검증 | ✅ `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET` (fan-out 0·SV=FACT 일치) |
+| SV **9종** 배포·검증 | ✅ `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_MEMBER_COHORT`·`SV_MEMBER_FEE`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·`SV_AD`·`SV_DEV_ACHIEVEMENT` (fan-out 0·SV=FACT 일치). 🔴 [2026-08-10 O55] 종전 「SV 5개」는 2026-07-22 스냅샷이라 stale 이었다 — 실측 9종 · base 전건 GOLD · owner 전건 GN_DW_ADMIN |
 | Agent 2개 배포 | ✅ `AGENT_MEMBER`(4 SV)·`AGENT_OVERALL`(예산+월실적/발송) — owner=GN_DW_ADMIN |
 | CoWork 연결 | ✅ `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT`에 ADD AGENT(2) · 소비 3역할 USAGE |
 | 거버넌스 문서 | ✅ 사용량·비용쿼터·알림·품질 폐루프(11번) |
@@ -38,10 +38,10 @@ END-METADATA -->
 |------|------|------|
 | `00_README.md` (본 문서) | — | 폴더 색인·상태·주의사항 |
 | `01_SV-Agent 작업계획.md` | 정본 | 설계원칙·의사결정·구조·작업단계 1~8·**진행상태표**·changelog(v4.2) |
-| `02_SERVING_setup.sql` | ⛔ | **[DEPRECATED] 포인터 스텁 — 실행 대상 아님.** RBAC·스키마 정본 = `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` · **helper 뷰(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) 정본 = `08_After_Deploy_DBT.sql` §G**(O36 실측: 07 에는 없다) |
+| `02_SERVING_setup.sql` | ⛔ | **[DEPRECATED] 포인터 스텁 — 실행 대상 아님.** RBAC·스키마 정본 = `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql`. 🔴 [2026-08-10 O54] 종전 「helper 뷰(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) 정본 = `08_After_Deploy_DBT.sql` §G」는 **실효됐다** — SV 9종 base 가 전건 GOLD 로 재배선됐고 🟢 [2026-08-10 O55] **helper 3종 물리 DROP + §G 절 삭제 완료** — 어느 파일도 helper 를 만들지 않는다 |
 | `03_SV_metric_배속.md` | 1 | derived 81 metric을 SV에 전수 배속(P1 69·P2 12) |
-| `04_SV_설계.md` | 2 | 7 SV 구조·relationship·fan-out helper·아키텍처 비판검토·**데이터 게이트 발견** |
-| `05_1`~`05_7_SV_DDL_*.sql` | 3 | Phase-1 SV **6종** `CREATE SEMANTIC VIEW` + GRANT + 스모크 (배포 정본, SV 단위 분할 2026-08-05 O37). 🔴 [2026-08-10 O54] `05_7` 의 `SERVING.FACT_AD_COMBINED` 동봉은 **폐지** — SV_AD base = `GOLD.WIDE_AD_COMBINED`(dbt 소유) ⇒ `05_7`·`05_8`·`05_9` 는 `dbt build` 이후에만 배포된다. 🔴 `GN_DW_ADMIN` 으로 실행 · 파일 간 순서 무관 |
+| `04_SV_설계.md` | 2 | SV 구조·relationship·fan-out·아키텍처 비판검토·**데이터 게이트 발견**. 🔴 [2026-08-10 O54] 종전 「7 SV」·「fan-out helper」 표기는 stale — 현재 **9종**이고 helper 의존은 0 이다 |
+| `05_1`~`05_9_SV_DDL_*.sql` | 3 | Phase-1 SV **9종** `CREATE SEMANTIC VIEW` + GRANT + 스모크 (배포 정본, SV 단위 분할 2026-08-05 O37). 🔴 [2026-08-10 O54] 종전 「`05_1`~`05_9` · **6종**」 표기는 **거짓이 됐다** — `05_8`(DEV_ACHIEVEMENT)·`05_9`(MEMBER_FEE) 신설. `05_7` 의 `SERVING.FACT_AD_COMBINED` 동봉은 **폐지** — SV_AD base = `GOLD.WIDE_AD_COMBINED`(dbt 소유) ⇒ 9종 전건이 `dbt build` 이후에만 배포된다. 🔴 `GN_DW_ADMIN` 으로 실행 · 파일 간 순서 무관 · 🟠 `05_3`·`05_9` 만 아직 `CREATE OR REPLACE`(OWN-1) |
 | `05_0_SV_DDL.sql` | 3 | **분할 인덱스 + 공통규약 정본 + 전체 배포 검증**. ⚠️ SV 정의가 없다 — 실행해도 SV 가 배포되지 않는다 |
 | `06_검증쿼리_VQR.md` | 4 | SV 라이브 검증(SV=FACT)·회귀쿼리·VQR 후보·custom instruction 6 |
 | `07_평가셋_eval.md` | 4 | NL↔gold SQL↔ground truth 평가셋(2026-07-22)·가드레일 ⓖ |

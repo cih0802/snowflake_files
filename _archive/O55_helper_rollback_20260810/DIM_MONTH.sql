@@ -1,0 +1,14 @@
+create or replace view DIM_MONTH(
+	MONTH_KEY,
+	YEAR,
+	MONTH,
+	QUARTER
+) COMMENT='GOLD.DIM_DATE에서 월 grain DISTINCT 추출 — 월팩트 시간차원(fan-out 차단). PK=MONTH_KEY.'
+ as
+SELECT DISTINCT
+    MONTH_KEY,
+    YEAR,
+    MONTH,
+    QUARTER
+FROM GN_DW.GOLD.DIM_DATE
+WHERE MONTH_KEY IS NOT NULL;

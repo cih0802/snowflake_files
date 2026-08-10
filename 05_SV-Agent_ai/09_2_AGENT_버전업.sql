@@ -31,7 +31,7 @@
 --   ↔ COMMENT·PROFILE 은 spec 이 아닌 DDL 속성이라 **이 파일로는 안 바뀐다** → 09_1 [5] 사용.
 --
 -- ▶ 실행 순서 / 변경 반영 순서
---   05_1~05_7_SV_DDL_*.sql(SV 변경 시) → `cortex_project/agents/*/agent_spec.yaml` **정본 갱신**
+--   05_1~05_9_SV_DDL_*.sql(SV 변경 시) → `cortex_project/agents/*/agent_spec.yaml` **정본 갱신**
 --   → **본 파일** → (필요 시) 08_AGENT_spec.md 서술 동기화
 --   ⚠ SV 를 바꿨는데 스펙을 안 바꿨더라도, instruction 이 SV 규칙을 사실로 안내하므로
 --     SV 재배포 후에는 정본 yaml 의 서술이 여전히 맞는지 확인할 것.

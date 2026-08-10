@@ -1,4 +1,6 @@
--- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object·helper 뷰 생성
+-- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
+--   ⛔ [2026-08-10 O55] 종전 이 줄 끝의 「helper 뷰 생성」은 **삭제했다** — 이 파일에 helper 생성문이 없었고(O36),
+--      helper 자체가 물리 DROP 됐다(SV base 전건 GOLD).
 -- Co-authored with CoCo
 --
 -- ★ 정본(canonical) 실행 스크립트 — 2026-07-22 05_SV-Agent_ai/02_SERVING_setup.sql 에서 이관.
@@ -12,11 +14,12 @@
 --
 -- 실행 순서(권장): A~C(WH·역할·WH grant) → B.5(DB 생성 → 소유권 ADMIN 이관 → 9스키마 GN_DW_ADMIN 생성)
 --                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → D~F(스키마 grant·SERVING·CoWork)
---                  → dbt build → 08_After_Deploy_DBT.sql §G(helper 뷰 2종) → 05_1~05_7_SV_DDL_*.sql
+--                  → dbt build → 08_After_Deploy_DBT.sql(GRANT·CoWork) → 05_1~05_9_SV_DDL_*.sql (SV 9종)
 --                  → 09_1_AGENT_생성.sql → 09_2_AGENT_버전업.sql
 --   🔴 [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
 --      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·DIM_MEMBER_CURRENT 가 없다.**
---      실행 정본은 `08_After_Deploy_DBT.sql` §G 다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
+--      당시 실행 정본은 `08_After_Deploy_DBT.sql` §G 였다. 🟢 [2026-08-10 O55] **그 §G 절도 삭제됐다** —
+--      helper 3종 물리 DROP 완료 ⇒ 어느 파일도 helper 를 만들지 않는다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
 --   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
 -- 소유 모델: GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위).
 --            커스텀 롤은 적재·조회만. 계정 레벨(네트워크/인증 정책·Resource Monitor·CoWork·CORTEX)은 ACCOUNTADMIN 유지.

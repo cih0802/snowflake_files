@@ -2,37 +2,17 @@
 -- Co-authored with CoCo
 -- ============================================================================
 -- ▶ 이 파일의 위상  [2026-08-05 O37 분할]
---   대상 SV = **SV_EVENT_PARTICIPATION**. 이 파일 하나로 **독립 실행**된다
---   (역할·웨어하우스·스키마 설정 + SV 정의 + GRANT + 스모크가 모두 들어 있다).
---   🔴 다른 `05_*_SV_DDL_*.sql` 과 **실행 순서 의존이 없다** — 필요한 파일만 단독 실행한다.
---   최초 세팅과 변경 반영이 같은 파일이다(통째로 재실행 · 별도 update 스크립트 없음).
---   🔴 [2026-08-10 O54] 본문 DDL 은 **`CREATE OR ALTER SEMANTIC VIEW`** 다 — GRANT 가 보존된다
---      (§129 실측 · created_on 불변). 아래 GRANT 절은 멱등 재확인용이며 ⛔ `CREATE OR REPLACE`
---      로 되돌리면 GRANT 가 파괴된다(P125 실사고).
+--   대상 SV = **SV_EVENT_PARTICIPATION** — 이 파일 하나로 **독립 실행**된다(상세 = 아래 포인터).
 --
---   ⚠️ 종전에는 SV 6종이 단일 파일 `05_SV_DDL.sql(현 `_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql`)`(708행)에 있었다. SV 하나를 고칠 때마다
---      파일 전체를 재작성해야 해서 **손대지 않은 SV 의 COMMENT 를 훼손할 경로**였고
---      (O27→O30 · P58 과 같은 유형), 신규 SV 추가도 기존 파일 편집을 강제했다. → SV 단위로 분할.
---      `05_0_SV_DDL.sql` 은 **인덱스 + 전체 배포 검증**으로 전환됐다(SV 정의는 더 이상 없다).
---
--- ▶ 선행 조건 (이것만 만족하면 언제든 실행 가능)
---   ① GOLD 적재 완료(`dbt build`) — 이 SV 의 논리테이블 원천
---   ② **`02_GN_DW_building/08_After_Deploy_DBT.sql` §G** — SERVING helper 뷰
---      (`DIM_MONTH`·`DIM_MEMBER_CURRENT`). 이 파일이 논리테이블로 참조하므로 필수 선행.
---      ⚠ `02_SERVING_setup.sql`·`07_ENVIRONMENT_RBAC_setup.sql` 이 아니다(O36 실측 교정).
---   ⚠ 반드시 `GN_DW_ADMIN` 역할로 실행한다. ACCOUNTADMIN 으로 만들면 소유권이 어긋나 이후
---     재배포가 권한 오류로 막힌다(복구 SQL = `05_0_SV_DDL.sql` 전체검증 §8-11 주석).
---
--- ▶ 정본 근거 (수치·이력·판정 경위는 이 파일에 두지 않는다)
---   `04_SV_설계.md` §0.1 helper뷰 · §0.3 가산성 · §1~6 SV구조 · **§6.9 구조적 제약**
---   `03_SV_metric_배속.md` 지표별 분자/분모 직역 · **§8.5 미해결 + §8.5.1 근거 쿼리**
---   `01_SV-Agent 작업계획.md` §3 3단계 · 원칙10(fan-out) · R1·R5 가산성 · 원칙6 한글 synonyms
---   `05_0_SV_DDL.sql` 분할 인덱스 · 전체 배포 검증 · 공통 규약 전문
+--   🔴 **파일 규약·선행 조건·정본 근거의 정본 = `05_0_SV_DDL.sql` §공통 규약** (2026-08-10 O55 DUP-1).
+--      독립 실행 · 파일 간 순서 무관 · 재실행 반영 · `CREATE OR ALTER`(GRANT·소유권 보존) ·
+--      분할 이력(O37) · 선행 조건은 `dbt build` **하나** · 실행 역할 `GN_DW_ADMIN`.
+--      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
 --   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
 --                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
---                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).
+--                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
 --   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
 --   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.

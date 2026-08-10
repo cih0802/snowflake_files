@@ -60,9 +60,9 @@ deliverables:
   gold_star_schema: 24    # ★ 정본: 15 DIM + 9 FACT (03_top-down_gold/) — FACT: FMM·FME·FTG_D·FTG_B·FSE·FGA·FAD·FEP·FBD
   gold_wide_views: 9      # FACT 1:1 평탄화 VIEW (레거시 PoC View 없음)
   forecast_tables: 0      # ⛔ forecast 제외 결정(2026-07-10)
-  semantic_views: 5       # 배포(최종 목표 7). FMM·FME·FSE·FEP·FBD
+  semantic_views: 9       # [2026-08-10 O55 실측] SV_MEMBER_MONTHLY·MEMBER_EVENT·MEMBER_COHORT·MEMBER_FEE·SERVICE·EVENT_PARTICIPATION·BUDGET·AD·DEV_ACHIEVEMENT
   agents: 2               # AGENT_MEMBER·AGENT_OVERALL (최종 목표 3)
-  serving_helper_views: 2 # DIM_MEMBER_CURRENT·DIM_MONTH
+  serving_helper_views: 0 # [2026-08-10 O55] 물리 DROP 완료 — SV base 가 전건 GOLD 라 helper 가 불요해졌다
   streamlit_apps: 0       # 미배포
   dbt_projects: 1         # GN_DW.OPS.DW_PIPELINE (65 models)
   refine_procedures: 0    # 폐기(dbt 전환) — 구설계 SP_REFINE_* 18
