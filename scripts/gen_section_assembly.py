@@ -101,7 +101,7 @@ BRONZE_EVIDENCE = {
     ("FACT_MEMBER_MONTHLY", "DIM_ORG"):
         "`FACT_MEMBER_MONTHLY` 에 **`ORG_SK` 컬럼 자체가 없다**(물리 확인). 회원-월 grain 에 부서를 붙이려면 "
         "회원의 소속부서 개념이 필요한데 원천은 **사건(개발)에만 부서를 준다**. "
-        "→ 부서별 실적은 `FACT_MEMBER_EVENT.ORG_SK`(개발행 실키) 또는 `WIDE_DEV_ACHIEVEMENT` 에서 낸다.",
+        "→ 부서별 실적은 `FACT_MEMBER_EVENT.ORG_SK`(개발행 실키) 또는 `FACT_DEV_ACHIEVEMENT` 에서 낸다.",
     ("FACT_MEMBER_MONTHLY", "DIM_DATE"):
         "`FACT_MEMBER_MONTHLY` 는 **월 grain**(`MONTH_KEY`)이고 `DATE_SK` 가 없다. "
         "일자 분해는 `FACT_MEMBER_EVENT.DATE_SK`(사건 grain)에서만 가능하다.",
@@ -123,11 +123,11 @@ FACT_PAIR_EVIDENCE = {
         "목표는 **부서 grain**(원천 `TM_CM_MBER_DVLP_GOAL.DEPT_ID`)이고 `FACT_MEMBER_MONTHLY` 는 "
         "**회원-월 grain** 이며 **`ORG_SK` 컬럼이 아예 없다**(물리 확인). 원천이 부서를 주는 곳은 "
         "**개발 사건**(`TM_MM_FDRM_MBER_DVLP_AMT.ACMSLT_DEPT_CD`)뿐이다. "
-        "🟢 **올바른 대안 = `WIDE_DEV_ACHIEVEMENT`**(grain `MONTH_KEY × ORG_SK × DEV_TYPE` · "
+        "🟢 **올바른 대안 = `FACT_DEV_ACHIEVEMENT`**(grain `MONTH_KEY × ORG_SK × DEV_TYPE` · "
         "`GOAL_CNT`·`ACTUAL_CNT`·`*_YTD`·`*_YEAR` 완비) 또는 `FACT_MEMBER_EVENT.ORG_SK`. "
         "⚠️ 일자까지 필요하면 `FACT_MEMBER_EVENT.DATE_SK` 를 쓰되 **목표와는 대응시킬 수 없다**.",
     ("FACT_MEMBER_MONTHLY", "FACT_TARGET_DEV"):
-        "위 항목의 역방향 — 회원-월 팩트에 부서 목표를 붙일 수 없다. `WIDE_DEV_ACHIEVEMENT` 를 쓴다.",
+        "위 항목의 역방향 — 회원-월 팩트에 부서 목표를 붙일 수 없다. `FACT_DEV_ACHIEVEMENT` 를 쓴다.",
     ("FACT_MEMBER_MONTHLY", "FACT_MEMBER_EVENT"):
         "`FACT_MEMBER_EVENT` 는 **사건(일) grain**, `FACT_MEMBER_MONTHLY` 는 **월 grain** 이다. "
         "FMM 은 FME 의 월 롤업이므로(`SUM(DEV_CNT)` 양쪽 **2,291,878 동일**) 같은 표에서 더하면 **이중계상**이다. "

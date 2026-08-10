@@ -2,6 +2,10 @@
 -- Co-authored with CoCo
 -- 2026-07-15: DIM_MEMBER_IDENTITY 활성화 → IDENTITY_* 4컬럼 실조인 복원(f.IDENTITY_SK = DIM_MEMBER_IDENTITY.IDENTITY_SK).
 --    ⚠️[G-5 재확인] 현재 GA4 1일 샤드 기반(회원 매칭 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 
 
 select

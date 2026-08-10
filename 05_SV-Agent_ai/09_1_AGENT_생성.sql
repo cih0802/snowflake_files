@@ -41,7 +41,10 @@ USE WAREHOUSE GN_DW_ANALYTICS_WH;
 --     따라서 이 파일이 COMMENT·PROFILE 의 정본이다.
 -- ============================================================================
 CREATE OR REPLACE AGENT GN_DW.SERVING.AGENT_MEMBER
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent(Phase-1). SV 4종: 월실적·상태전이·서비스발송·행사참여.'
+  -- 🔴 [2026-08-10 O52] 종전 COMMENT 는 "SV 4종" 이었는데 `09_2` 가 도구를 **7종**으로 늘렸다.
+  --   즉 이 파일만 보면 도구 수를 오인한다 — `09_1` 은 껍데기이고 정본 도구 목록은 `09_2` 다.
+  --   ⇒ COMMENT 를 실제 7종으로 맞췄다(`SHOW AGENTS` 의 comment 로 노출되는 값이다).
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent(Phase-1). SV 7종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해.'
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}'
   FROM SPECIFICATION
   $$

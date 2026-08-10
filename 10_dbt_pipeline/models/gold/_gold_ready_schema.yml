@@ -680,3 +680,24 @@ models:
       # grain 가드: (대,중,소) 경로 유일. 실측 65조합 + 센티넬 = 66행.
       - name: "COALESCE(SEND_GBN_TOP,'~') || '|' || COALESCE(SEND_GBN_MID,'~') || '|' || COALESCE(SEND_GBN_BOT,'~')"
         tests: [unique]
+  # ── [2026-08-07 O51-D 신규 등재] materialized='view' 오버라이드로 dim/ 에 있는 GOLD 뷰 2종.
+  #   O50 이 「어느 schema.yml 에도 등재 없음 → dbt 문서·테스트 커버리지 0」으로 적발했던 잔여를 해소한다.
+  #   ⚠️ 두 모델은 `materialized='gn_view_commented'` 이므로 columns[] 는 **SELECT 전 컬럼·순서 일치**가 필수다.
+
+  # 🔴🔴 [2026-08-10 O53] 아래 4모델은 **테이블**이다(뷰 아님).
+  #   · DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION = 뷰 → 테이블 전환
+  #   · DIM_MONTH·FACT_DEV_ACHIEVEMENT           = 신설(FACT_DEV_ACHIEVEMENT 는 구 WIDE_DEV_ACHIEVEMENT 개명)
+  #   ⚠️ **컬럼 COMMENT 정본이 `03_top-down_gold/06_DDL.sql` 인라인 COMMENT 로 이동**했다(사용자 결정 2026-08-10).
+  #      그래서 여기에는 `columns[]` 를 두지 않는다 — 같은 사실을 두 곳에 두면 갈라진다(P85).
+  #      재구축 시 06_DDL 이 replay 스크립트이므로 그 파일이 COMMENT 의 유일 복원 경로다.
+  #      생성기 = `scripts/gen_o53_gold_ddl.py`(손 편집 금지 · 게이트 자기검사 9/9).
+  #   ⚠️ 머티리얼라이제이션 = incremental + append + pre_hook TRUNCATE. **merge 금지**
+  #      (완전 재산출 차원에서 grain 이동 시 구 행 잔존 · 문서50 §300 R1 · P131).
+  - name: DIM_MEMBER_CURRENT
+    description: "회원 현재행 차원(1행 = 1회원) — SCD2 DIM_MEMBER 의 IS_CURRENT 투영. 분석가 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  - name: DIM_MEMBER_ACQUISITION
+    description: "회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  - name: DIM_MONTH
+    description: "월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  - name: FACT_DEV_ACHIEVEMENT
+    description: "회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql."

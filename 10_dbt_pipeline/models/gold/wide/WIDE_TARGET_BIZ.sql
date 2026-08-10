@@ -1,11 +1,11 @@
 -- WIDE_TARGET_BIZ: 사업목표 팩트(FTG_B) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.4)
 -- Co-authored with CoCo
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
-    materialized='view',
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '사업목표 팩트 평탄화 (FTG_B × ORG × SPONSORSHIP × CAMPAIGN). 월 grain=MONTH_KEY. 원천=CRM(CRM_BIZ_TARGET) 입고 대기 E-6, 현재 0행.'",
-      "ALTER VIEW {{ this }} ALTER COLUMN MONTH_KEY COMMENT '목표월 YYYYMM', COLUMN CAL_YEAR COMMENT 'FLOOR(MONTH_KEY/100) — 연도', COLUMN CAL_MONTH COMMENT 'MOD(MONTH_KEY,100) — 월', COLUMN ANNUAL_GOAL_CNT COMMENT '연사업목표(건) (#152)', COLUMN SUPP_GOAL_CNT COMMENT '추경목표(건) (#153)', COLUMN ANNUAL_CUM_GOAL_CNT COMMENT '연사업누계목표(건) (#154)', COLUMN SUPP_CUM_GOAL_CNT COMMENT '추경누계목표(건) (#155)', COLUMN DW_SOURCE_SYSTEM COMMENT '원천 시스템 식별', COLUMN ORG_CORP COMMENT 'DIM_ORG.CORP — 법인 (#114)', COLUMN ORG_DIVISION COMMENT 'DIM_ORG.DIVISION — 본부/지부 (#115)', COLUMN ORG_DEPARTMENT COMMENT 'DIM_ORG.DEPARTMENT — 부서 (#116)', COLUMN ORG_TEAM COMMENT 'DIM_ORG.TEAM — 팀', COLUMN SPONSORSHIP_BK COMMENT 'DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키', COLUMN SPONSORSHIP_NAME COMMENT 'DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)', COLUMN CAMPAIGN_BK COMMENT 'DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키', COLUMN CAMPAIGN_BRAND COMMENT 'DIM_CAMPAIGN.BRAND — 공통브랜드 (#117)', COLUMN CAMPAIGN_NAME COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120)'"
-    ]
+    materialized='gn_view_commented'
 ) }}
 
 select

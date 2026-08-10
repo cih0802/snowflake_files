@@ -48,7 +48,7 @@ models:
       +incremental_strategy: append
       +full_refresh: false
       +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
-    # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(24테이블 선생성).
+    # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(**35테이블** 선생성 · 2026-08-10 O53. 종전 기재 「24」는 stale 이었다 — 실측 31 → O53 로 35).
     #   - dim  = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
     #   - fact = incremental + append + pre-hook TRUNCATE + full_refresh:false (SILVER 동일 패턴)
     #            → DDL 구조·타입·주석·FK 보존하며 데이터만 전체 갱신(멱등 Δ0). table(CTAS) 폐기.
@@ -98,7 +98,49 @@ models:
         +on_schema_change: append_new_columns
       # WIDE 소비뷰(순서9-D): 팩트×차원 LEFT JOIN 평탄화. 물리저장 0(view).
       #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보(BLOCKING-4 해소, 미거버넌스 객체 재발방지).
-      #   컬럼/뷰 COMMENT 는 각 모델 post_hook 의 ALTER VIEW/COMMENT ON VIEW 로 적용(정본 03_top-down_gold/10_WIDE VIEW 코멘트.sql verbatim).
+      #
+      # 🔴 [2026-08-07 O50] **뷰 계층 소유주 규칙 — 명문화.** 트리거 = 사용자 질의
+      #   *"테이블은 DDL 이 만들고 dbt 가 채우는데 view 는 dbt 가 만든다. view 도 DDL 로 하는 게 거버넌스에 좋은가?"*
+      #   **답 = 아니다.** 테이블을 DDL 이 소유하는 근거는 「CTAS 가 타입·주석·FK 를 파괴한다」(순서9 G-1/G-2,
+      #   fact FK 23개 드롭)이고 그래서 `+full_refresh:false` 로 **물리를 보호**한다. 뷰에는 보호할 물리 상태가 없다
+      #   (`CREATE OR REPLACE VIEW` 는 멱등·저장 0). 반대로 뷰는 **의존성**이 있어 `ref()` 의 위상정렬·리니지·
+      #   build 게이트가 필요하다. 뷰를 SQL 스크립트로 되돌리면 BLOCKING-4 를 되돌리는 것이다.
+      #   GRANT 소실 우려도 해당 없음 — `07_ENVIRONMENT_RBAC_setup.sql` D.2 가 GOLD 에
+      #   `GRANT SELECT ON FUTURE VIEWS`(ENGINEER·ANALYST·VIEWER·SERVICE) 를 걸어 두어 재생성분에 자동 적용된다.
+      #   ⚠️ 따라서 **FUTURE VIEWS grant 는 이 아키텍처의 전제**다 — 제거하면 매 build 마다 소비 3역할이 뷰를 잃는다.
+      #
+      #   소유주 표 (변경 시 여기부터 고칠 것):
+      #     · GOLD 테이블 31(17 DIM+14 FACT) = `03_top-down_gold/06_DDL.sql`   ← CTAS 로부터 타입·FK·COMMENT 보호
+      #     · GOLD 뷰 16                      = **dbt** (`models/gold/wide/` 14 + `models/gold/dim/` 2)
+      #     · SILVER 테이블                   = `04_silver_design/08_SILVER_테이블DDL_*.sql`
+      #     · SERVING 일반 뷰 3(helper)     = 🔴 **소유주 2분할** — dbt 모델은 없다(grep 확인).
+      #         `DIM_MONTH`·`DIM_MEMBER_CURRENT` = `02_GN_DW_building/08_After_Deploy_DBT.sql` §G.1/§G.2
+      #         `FACT_AD_COMBINED`               = `05_SV-Agent_ai/05_7_SV_DDL_AD.sql:57` (SV DDL 파일 **내부**)
+      #       ⚠️ 프로젝트 문서가 일관되게 "§G = helper 뷰 **2종**" 이라 쓴 이유가 이것이다 — §G 에 G.4 는 없다.
+      #       ⚠️ 설계 문서 `02_GN_DW_building/03_GOLD_SERVING.md` §3.6 `serving_helper_views` 는 **2개만** 등재
+      #          (`FACT_AD_COMBINED` 누락) · 같은 절의 `semantic_views: # 5 배포` 도 실측 7 과 어긋난다(O50-D).
+      #       ⚠️ `05_SV-Agent_ai/02_SERVING_setup.sql` 은 **스텁(실행 라인 0)** 이다 — O36 ③ 이 이미 교정한 오지목.
+      #
+      #   🟢 [2026-08-07 O50-C 해소] **SV base 객체 선택 규칙 = DEC-34** 신설.
+      #     정본 = `05_SV-Agent_ai/04_SV_설계.md` **§0.8**. 요지(성격 기반, 객체 타입 기반 아님):
+      #       ① GOLD base FACT 직접 (기본값) — 단일 팩트 star 로 완결 · role 중복 축 없음        [DDL 소유, 6 SV]
+      #       ② SERVING helper 뷰        — SV 엔진 제약 우회는 필요하나 **팩트 재구성 없음**      [DDL 소유, SV_AD]
+      #       ③ **dbt 소유 GOLD 뷰**      — **팩트를 재구성**해야 함(팩트↔팩트 조인·사전집계·
+      #                                     행 단위 상호 스코프 플래그) → `ref()` 위상정렬 필수  [SV_DEV_ACHIEVEMENT]
+      #     ②/③ 경계 = 「팩트를 재구성하는가」. ③은 GOLD 팩트 의존성이 있어 dbt 가 맞다(BLOCKING-4).
+      #     ⚠️ ③ 선택의 대가: 그 SV 는 `dbt build` 없이 **배포 자체가 불가**하다 — 실증됨(아래).
+      #   ⚠️ 이 취약성은 가설이 아니다: 실측(2026-08-07) SERVING semantic view = **7개**이고
+      #     없는 2개가 정확히 ③ 계열(`SV_DEV_ACHIEVEMENT`·`SV_MEMBER_FEE`)이다. DDL 계열 7 은 GOLD 0행에서도 생성됐다.
+      #   🟠 `SV_MEMBER_FEE` 는 ②로 내릴 수 있는 유일 후보 — **판단 보류**(GOLD 0행이라
+      #     `FACT_MEMBER_COHORT.MEMBER_DK` 유일성 실측 불가). 결정 트리거 = §0.8-C.
+      #   🔴 [2026-08-07 O51 재정정] 컬럼/뷰 COMMENT 정본 = **`_wide_schema.yml` 의 description/columns[]**,
+      #     적용 = `materialized='gn_view_commented'`(`macros/gn_view_commented.sql`).
+      #     ⚠️ O50 에서 적었던 *"post_hook 이 정본(16/16)"* 은 **틀렸다** — 파일 존재만 세고 효과를 확인하지
+      #     않았다(P33 위반). 실측 GOLD 뷰 520컬럼 중 COMMENT **0개**. post_hook 의
+      #     `ALTER VIEW ... ALTER COLUMN ... COMMENT` 는 Snowflake 에 **없는 문법**이라 15/16 뷰 build ERROR 를
+      #     냈다. 뷰 컬럼 COMMENT 의 유일 경로 = `CREATE VIEW` 인라인 컬럼목록. probe 10/10 물리 반영 확인.
+      #     ⚠️ dbt 내장 `persist_docs:{columns:true}` 도 동일 문법을 쓰므로 대안이 아니다.
+      #   게이트 = `tests/warn_gold_view_comment_coverage.sql` (⛔ 첫 clean build 후 error 승격 — 파일 헤더 참조).
       wide:
         +materialized: view
         +tags: ['gold_wide']

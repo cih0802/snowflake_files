@@ -5,7 +5,7 @@
 
 ⚠️ 설계 전환 (2026-08-06)
   구 판본은 객체 목록·한글 설명·행수를 HTML 안에 손으로 적어 두었다. 그래서 신설 객체
-  (`FACT_MEMBER_COHORT`·`FACT_AD_*` 3종·`DIM_SEND_TYPE`·`WIDE_AD_*` 3종·`WIDE_DEV_ACHIEVEMENT`)가
+  (`FACT_MEMBER_COHORT`·`FACT_AD_*` 3종·`DIM_SEND_TYPE`·`WIDE_AD_*` 3종·`FACT_DEV_ACHIEVEMENT`)가
   누락되고 이미 없는 객체(`ERP_BIZ_TARGET`)가 남아 있었다.
   → 이 판본은 카탈로그·census·dbt 계보를 읽어 만든다. 객체 목록을 손으로 적지 않는다.
 

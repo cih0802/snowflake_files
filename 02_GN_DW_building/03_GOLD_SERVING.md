@@ -93,7 +93,7 @@ gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
   - { id: WIDE_EVENT_PARTICIPATION, base: FEP, note: "×DATE·MEMBER[현재]·EVENT·CAMPAIGN·SPONSORSHIP" }
   - { id: WIDE_BUDGET, base: FBD, note: "×ORG[as-was]·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain" }
   - { id: WIDE_TARGET_DEV, base: FTG-D, note: "×ORG[as-was]. 월 grain" }
-  - { id: WIDE_DEV_ACHIEVEMENT, base: "FTG-D × FME", note: "목표 대비 실적 월 conform(FULL OUTER). 마케팅 장표 「개발현황(목표,실적)」 정본 · 공#1~3 산출 base. 달성율은 SUM/SUM 재계산 + **HAS_POSITIVE_GOAL**(=GOAL_CNT>0) 스코프 필수 — 목표 행의 과반이 0 이라 HAS_GOAL_ROW(행 존재)로 스코프하면 비율이 폭증한다. 신설 2026-08-05 O38" }
+  - { id: FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화), base: "FTG-D × FME", note: "목표 대비 실적 월 conform(FULL OUTER). 마케팅 장표 「개발현황(목표,실적)」 정본 · 공#1~3 산출 base. 달성율은 SUM/SUM 재계산 + **HAS_POSITIVE_GOAL**(=GOAL_CNT>0) 스코프 필수 — 목표 행의 과반이 0 이라 HAS_GOAL_ROW(행 존재)로 스코프하면 비율이 폭증한다. 신설 2026-08-05 O38" }
   - { id: WIDE_TARGET_BIZ, base: FTG-B, note: "×ORG·SPONSORSHIP·CAMPAIGN. 월 grain. E-6 입고 대기·0행" }
 ```
 

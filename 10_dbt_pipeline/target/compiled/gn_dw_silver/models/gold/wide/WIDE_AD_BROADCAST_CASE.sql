@@ -10,6 +10,10 @@
 --    방송 횟수는 COUNT(DISTINCT AD_PERF_DK) 로 세야 한다.
 -- ⚠️ 전 속성 NULL 인 사례는 애초에 미적재(희소행 방지) → 방송 1건당 사례 수는 0~3 로 가변이다.
 -- ⚠️ 아동명(CASEn_CHILD_NM)은 **미노출** — PII 판정 대기(O14). SILVER staging 에 원형 보존됨.
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 
 
 select

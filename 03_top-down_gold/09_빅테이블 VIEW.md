@@ -1,15 +1,27 @@
 <!-- LLM-METADATA
 doc_id: GOLD_WIDE_VIEWS
-doc_role: consumption_wide_view (DDL)
+doc_role: consumption_wide_view (설계 참고본 — 비실행. 물리 정본 = dbt 모델)
 project: GN_DW (굿네이버스)
 derived_from: 06_DDL.sql + 03_테이블 설계.md §4 팩트×차원 참조
-structure: 12 WIDE VIEW (팩트 12개 = 1 per FACT)
-status: 12개 뷰 **배포·적재 완료**(2026-07-28 순서9-I — `GN_DW.GOLD` WIDE VIEW 12개 실측, 컬럼 COMMENT 적용)
+structure: 12 WIDE VIEW 수록 — ⚠️ 실제 GOLD dbt 뷰는 16개(O50). 이 문서는 12/16 만 담는다.
+status: 🔴 강등(2026-08-07 O50) — 비실행 설계 참고본. 물리 뷰·COMMENT 정본 = `10_dbt_pipeline/models/gold/{wide,dim}/*.sql`
 END-METADATA -->
 
 # GOLD 빅테이블 VIEW (GN_DW.GOLD)
 
-팩트 12개를 각각 참조 DIM과 LEFT JOIN하여 평탄화한 소비용 VIEW. 스타스키마 정합성은 원본 테이블이 유지하고, VIEW는 현업 셀프서비스용(물리 저장 0).
+> 🔴🔴 **[2026-08-07 O50] 위상 강등 — 이 문서의 `CREATE OR REPLACE VIEW` 문을 실행하지 말 것.**
+> **물리 뷰의 소유주는 dbt** 다(`models/gold/wide/` 14 + `models/gold/dim/` 2 = **16 view 모델**).
+> 이 문서는 그중 **12개만** 수록하며 `FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화)`(O38) · `WIDE_MEMBER_FEE`(O45) ·
+> `DIM_MEMBER_CURRENT` · `DIM_MEMBER_ACQUISITION` **4종이 누락**돼 있다.
+> ⚠️ 누락 2종은 하위 Semantic View 의 **base** 다(`SV_DEV_ACHIEVEMENT` · `SV_MEMBER_FEE`) —
+> 이 문서만 보고 뷰 계층을 파악하면 **소비 계층의 절반을 놓친다.**
+> ⚠️ 여기의 DDL 을 실행하면 dbt 가 만든 뷰를 **구 정의로 덮고**, 다음 `dbt build` 가 다시 되돌린다
+> (조용한 왕복 drift). 정의를 바꾸려면 **dbt 모델을 고칠 것.**
+> 용도: 평탄화 **설계 의도·조인 시맨틱·DEC 근거**의 열람. 아래 §1 설계 원칙은 여전히 유효하다.
+> ⚠️ §1 의 *"팩트 12개 = 1 per FACT"* 전제도 **이미 깨졌다** — `FACT_DEV_ACHIEVEMENT` 는 팩트 2개
+> (FTG_D×FME)의 conform 뷰이고, `FACT_MEMBER_COHORT` 에는 대응 WIDE 가 없다.
+
+팩트를 각각 참조 DIM과 LEFT JOIN하여 평탄화한 소비용 VIEW. 스타스키마 정합성은 원본 테이블이 유지하고, VIEW는 현업 셀프서비스용(물리 저장 0).
 
 > ⚠️ **[2026-07-28 순서9-I] 개수 정정** — AGENCY 광고 위성 팩트 3종 신설(DEC-8)로 WIDE 는 **9 → 12개**다.
 > 문서50·문서00 의 "13종" 표기는 `models/gold/wide/` 파일 수(`.sql` 12 + `_wide_schema.yml` 1)를
@@ -196,12 +208,12 @@ LEFT JOIN GN_DW.GOLD.DIM_ORG o ON f.ORG_SK = o.ORG_SK;
 
 > 🔴 **[2026-08-05 O38]** `CAL_YEAR` 는 O38 이전에 **전건 0** 이었다. DIM_DATE 조인 실패나 센티넬이
 > 아니라 `FACT_TARGET_DEV.MONTH_KEY` 가 **1~12 월 번호**여서 `FLOOR(MONTH_KEY/100)` 이 0 을 낸
-> 자릿수 문제였다. 연도 복원으로 해소. 목표 대비 실적은 아래 `WIDE_DEV_ACHIEVEMENT` 소관.
+> 자릿수 문제였다. 연도 복원으로 해소. 목표 대비 실적은 아래 `FACT_DEV_ACHIEVEMENT` 소관.
 
-### 3-A. WIDE_DEV_ACHIEVEMENT (FTG_D × FME) — 목표 대비 실적 [신설 2026-08-05 O38]
+### 3-A. FACT_DEV_ACHIEVEMENT (FTG_D × FME) — 목표 대비 실적 [신설 2026-08-05 O38]
 
 마케팅 장표 「1. 개발현황(목표, 실적)」 정본이며 정본 지표 **공#1(월 목표 달성율)·#2(누계)·#3(연)** 의 산출 base 다.
-정본 SQL = dbt 모델 `models/gold/wide/WIDE_DEV_ACHIEVEMENT.sql`(설계 근거·실측치는 모델 헤더 주석).
+정본 SQL = dbt 모델 `models/gold/wide/FACT_DEV_ACHIEVEMENT.sql`(설계 근거·실측치는 모델 헤더 주석).
 
 설계 요점 5가지 — 각각 실측 근거가 있다:
 

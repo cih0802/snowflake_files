@@ -9,6 +9,10 @@
 --    `AD_TYPE` 이라 혼동 소지가 있었으므로 내용에 맞게 분리 명명했다(소비자 부재 확인 후 적용).
 -- ⚠️ CAMPAIGN_SK·AD_CREATIVE_SK 는 여전히 0 스캐폴드(Q10 이름매칭·소재 부분키 대기) → 관련 컬럼 NULL.
 --    DEVICE_SK 는 DEC-10 으로 실배선 완료(방송행은 `(해당없음)` 멤버).
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 
 
 select

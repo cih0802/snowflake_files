@@ -1,6 +1,52 @@
--- GN_DW.GOLD WIDE VIEW 12개의 뷰 컬럼 COMMENT를 ALTER VIEW로 일괄 적용하는 스크립트.
+-- GN_DW.GOLD WIDE VIEW 컬럼 COMMENT 참고본 (구 일괄 적용 스크립트).
 -- Co-authored with CoCo
--- ✅ [2026-07-20 적용 완료] GOLD 배포·적재 후 본 스크립트 실행 완료(9뷰 330컬럼 COMMENT 적용). idempotent — 재실행 안전.
+--
+-- 🔴🔴 [2026-08-07 O50 → **O51 재정정**] **이 파일은 실행하지 말 것 — 문법 자체가 성립하지 않는다.**
+--    ⚠️⚠️ O50 당시 이 파일을 "13/16 로 뒤처진 사본", dbt post_hook 을 "16/16 정본" 으로 적었다. **둘 다 틀렸다.**
+--       실측(2026-08-07): GOLD 뷰 **520컬럼 중 COMMENT 보유 0개(0.0%)** / 같은 시점 GOLD 테이블 **535/535(100%)**.
+--       ⇒ `09`(12) · 이 파일(13) · post_hook(16) **세 사본이 전부 물리에 0 을 반영**했다.
+--         사본 개수 비교는 무의미한 지표였고, 진짜 원인은 **메커니즘 부재**다.
+--    🔴 원인: `ALTER VIEW ... ALTER COLUMN ... COMMENT` 는 **Snowflake 에 존재하지 않는 문법**이다. 4변형 전부 실패:
+--       · ALTER VIEW x ALTER  COLUMN c COMMENT '...'     → syntax error position 61 unexpected 'COMMENT'
+--       · ALTER VIEW x ALTER  COLUMN c SET COMMENT '...' → position 65
+--       · ALTER VIEW x MODIFY COLUMN c COMMENT '...'     → position 62
+--       · COMMENT ON COLUMN x.c IS '...'                 → "Object found is of type 'VIEW', not 'TABLE'"
+--       문서 스펙상 ALTER VIEW 는 `SET COMMENT = '...'`(뷰 레벨)만 있고 컬럼에는 마스킹정책·태그만 걸린다.
+--       이 파일이 참조한 `, [COLUMN] <col> COMMENT '<string>'` 는 **ALTER TABLE 스펙**이다.
+--    🔴 이 파일 헤더의 종전 기재 *"✅ 적용 완료 · 12뷰 411컬럼 전량 COMMENT 적용(누락 0)"* 은 **거짓 성공 기록**이다
+--       (실행된 적이 없거나 실패를 성공으로 기록). 같은 문법을 verbatim 복제한 dbt post_hook 이 15/16 뷰 build ERROR 를 냈다.
+--    ✅ 유일 경로 = **`CREATE VIEW` 인라인 컬럼목록**(`(col COMMENT '...', ...)`). probe 로 10/10 물리 반영 확인.
+--       구현 = `10_dbt_pipeline/macros/gn_view_commented.sql` · 정본 = `_wide_schema.yml` 의 `description`/`columns[]`.
+--       ⚠️ dbt 내장 `persist_docs:{columns:true}` 도 위 1번 형태를 쓰므로 **대안이 아니다**.
+--    용도: 컬럼 COMMENT **문안의 설계 이력·근거 열람용**. 실행 대상 아님.
+--
+-- 🟢🟢 [2026-08-07 O51-D **정본 이관 완료** — 이 파일은 이제 이력 전용이다]
+--    이 파일의 문안은 전부 `10_dbt_pipeline/models/gold/**/_*_schema.yml` 의 `columns[].description` 으로 이관됐다.
+--    정본은 그쪽이고 **여기를 고쳐도 물리에 반영되지 않는다.** 생성기 = `scripts/o51d_view_comments/`.
+--    ⇒ 물리 커버리지 목표 = **10객체 423컬럼**(WIDE 8 + DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION).
+--    🔄 **[2026-08-10 O51-F 정정]** 종전 기재 *"`WIDE_AD_BROADCAST`·`WIDE_AD_DIGITAL` 은 DROP 예정이라 제외"* 는
+--       **철회됐다.** 두 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리고, DEC-8/DEC-10 이 위성 단독 완결을
+--       설계 의도로 명시한다 ⇒ **보존 + §7-A·§7-B 문안 68컬럼 이관 완료**(생성기 `build_ad_yml.py`).
+--       ⚠️ 이관 시 §7-A 의 `AD_VIEW_RT_SRC`·`CPC_SRC` 에 **VIDEO 전용 표기가 누락**돼 있어 보강했고,
+--       `CONV_CALL_CNT` 는 **원천에서 전건 비어 있음**이 실측돼 경고를 덧붙였다(이슈원장 §O51-F).
+--
+--    🔴 **이관 시 이 파일에서 적발된 결함 2종 (다음에 이 파일을 인용할 사람은 반드시 볼 것)**
+--    ① **존재하지 않는 컬럼 20건** — O26 리네임(2026-08-03)이 이 파일에 반영되지 않았다.
+--       `MEMBER_GENDER`→`MEMBER_GENDER_NAME` · `MEMBER_STATUS`→`..._NAME` · `MEMBER_TYPE`→`..._NAME` ·
+--       `MEMBER_ENROLL_PATH`→`..._NAME` · `SERVICE_SEND_TYPE_L/M/S`→`SEND_TYPE_L/M/S` ·
+--       `RECRUIT_CNT`→`EVENT_RECRUIT_HEADCOUNT` · `MEMBER_NEW_EXISTING`·`MEMBER_CURRENT_SPONSORSHIP`(컬럼 자체 폐기).
+--       🔴 `CREATE VIEW` 인라인 컬럼목록은 **한 컬럼만 틀려도 뷰 전체가 실패**한다 ⇒ 이 파일을 그대로 쓰면 build ERROR 다.
+--    ② **`(as-was)` 표기 16건이 거짓** — 아래 §정정(2026-07-07)이 `DIM_ORG` = **SCD1**(DEC-2) 을 이미 적었는데도
+--       본문 문안은 그대로 남았고, **O51-C 가 그 거짓을 3뷰(WIDE_TARGET_DEV·TARGET_BIZ·BUDGET)의 물리 COMMENT 로 배포**했다.
+--       ⇒ **P62-B 의 물리 계층 실증**: 헤더 정정은 본문에도 물리에도 전파되지 않았고 3개월간 아무도 밟지 않았다.
+--       교정기 = `scripts/o51d_view_comments/fix_as_was.py`(멱등).
+--
+--    ⚠️ **이 파일의 문안은 「라벨」 수준이다** — 이관 206컬럼 평균 **26자** · 수치 주장 **0건** · 경고 보유 13건뿐.
+--       O51-D 신규 149컬럼은 평균 **283자**(코드그룹·실측 분포·금지 규칙 포함). 즉 이 파일을 문안 품질의 기준으로 삼지 말 것.
+--    신규 교훈 **P105**: 경고문은 게이트가 아니다 / **P33 재확인**: 완료 판정은 `INFORMATION_SCHEMA` 스캔이다.
+--
+-- ── 이하 이력 기록(보존 · 위 정정이 우선한다) ──────────────────────────────────
+-- ⚠️ [2026-07-20] "적용 완료(9뷰 330컬럼)" ← **거짓 기록**(위 O51 참조)
 -- ✅ [2026-07-28 순서9-I 확장·적용 완료] AGENCY 광고 위성 팩트 3종(DEC-8)에 맞춰 **9뷰 → 12뷰**로 확장.
 --    실행 검증: ALTER VIEW 12/12 성공(컬럼명 오류 0) · 실측 **12뷰 411컬럼 전량 COMMENT 적용(누락 0)**.
 --    · 7   WIDE_AD_PERFORMANCE  = 코어화(방송 degen 5종 제거 · AD_PERF_DK·AD_SOURCE_TYPE·DEVICE_SCOPE_DESC 추가)
@@ -14,7 +60,7 @@
 ================================================================================
   GN_DW.GOLD — WIDE VIEW 컬럼 COMMENT
   적용 대상  : WIDE_MEMBER_MONTHLY / WIDE_MEMBER_EVENT / WIDE_TARGET_DEV /
-               WIDE_DEV_ACHIEVEMENT(신설 2026-08-05 O38) /
+               FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화)(신설 2026-08-05 O38) /
                WIDE_TARGET_BIZ / WIDE_SERVICE_EVENT / WIDE_GA_BEHAVIOR /
                WIDE_AD_PERFORMANCE / WIDE_AD_BROADCAST / WIDE_AD_DIGITAL /
                WIDE_AD_BROADCAST_CASE / WIDE_EVENT_PARTICIPATION / WIDE_BUDGET
@@ -177,14 +223,14 @@ ALTER VIEW GN_DW.GOLD.WIDE_TARGET_DEV
           COLUMN ORG_TEAM         COMMENT 'DIM_ORG.TEAM — 팀 (as-was)';
 
 -- ============================================================================
--- 3-A. WIDE_DEV_ACHIEVEMENT  [신설 2026-08-05 O38 — 목표 대비 실적]
+-- 3-A. FACT_DEV_ACHIEVEMENT  [신설 2026-08-05 O38 — 목표 대비 실적]
 --   설계 근거·실측치 = dbt 모델 헤더 + 09_빅테이블 VIEW.md §3-A. 정본 SQL 은 dbt 모델이다.
 --   🔴 [2026-08-05 후속] 플래그를 **HAS_GOAL_ROW(행 존재) / HAS_POSITIVE_GOAL(값 편성)** 로 분리했다.
 --      종전 단일 `HAS_GOAL` 은 이름이 「목표 편성」으로 읽혀 달성율 분자 스코프에 오용됐고
 --      목표 0 행의 실적이 분모 없이 분자에 들어가 비율이 폭증했다. COMMENT 교정만으로는
 --      이름이 계속 오해를 부르므로 **개명**으로 구조에서 막았다.
 -- ============================================================================
-ALTER VIEW GN_DW.GOLD.WIDE_DEV_ACHIEVEMENT
+ALTER VIEW GN_DW.GOLD.FACT_DEV_ACHIEVEMENT
     ALTER COLUMN MONTH_KEY        COMMENT '목표·실적 공통 월키 YYYYMM (월 conform 축)',
           COLUMN CAL_YEAR         COMMENT 'FLOOR(MONTH_KEY/100) — 연도',
           COLUMN CAL_MONTH        COMMENT 'MOD(MONTH_KEY,100) — 월',

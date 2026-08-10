@@ -110,12 +110,18 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       WITH SYNONYMS ('미납금액', '총미납금액', '미납액')
       COMMENT = '미납 청구액(원) 합계 — **DEC-3 정본**(결제상태 실패 F 또는 NULL 인 청구액). F(가산). 🔴「청구−납입」 차감식이 아니다(차감식은 기부금이 미납을 상쇄해 음수가 나온다 · O40). ⚠️**조회 시점 스냅샷**이다 — 과거 연도 미납이 이후에 납입되면 값이 바뀐다. 「마감·확정」이라 단정하지 말 것.',
     -- ── 비율 (N 비가산 — 재집계 금지) ──────────────────────────────────────────
-    fee.PAYMENT_RATE_FEE AS SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0)
+    -- 🔴 [2026-08-10 O52-A] 단위를 **percent 로 통일**했다(`×100` 부여). 종전에는 이 두 metric 만
+    --   분수(0~1)였고 동명 지표인 `SV_MEMBER_MONTHLY.PAYMENT_RATE_FEE`·`UNPAID_RATIO_DEC3` 는 percent 라
+    --   **같은 이름의 값이 100배 어긋났다**(실측 86.19 vs 0.8619 · 13.75 vs 0.1375).
+    --   Agent instruction 이 「비율=% 2자리」이고 orchestration 이 「납입방식별 납부율 → analyst_member_fee」로
+    --   명시 라우팅하므로 **에러 없이 "0.86%" 라고 답하는 활성 경로**였다(AD-4/P19 무증상 오답).
+    --   ⇒ 비율 metric 은 프로젝트 전역이 percent 다(정본 공64 자체가 「납부율(%)」). 문안에 단위를 명시한다.
+    fee.PAYMENT_RATE_FEE AS SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100
       WITH SYNONYMS ('납부율', '납입율', '수납율')
-      COMMENT = '납부율 = **회비** 납입액 ÷ **회비** 청구액. N(비가산 — 분자·분모를 각각 집계한 뒤 나눈다). 🔴분자·분모가 모두 회비라 모집단이 일치한다. `TOTAL_PAID_ALL` 을 분자로 바꾸면 기부금이 섞여 100% 를 넘는다(O40 에서 실제로 100.36% 가 배포됐다). ⚠️기간 스코프 없이 답하지 말 것 — 미납이 이후 납입되는 구조라 최근 기간은 낮게 보인다.',
-    fee.UNPAID_RATIO AS SUM(fee.UNPAID_BILLED_AMT) / NULLIF(SUM(fee.BILLED_AMT), 0)
+      COMMENT = '납부율(**%**) = **회비** 납입액 ÷ **회비** 청구액 ×100. N(비가산 — 분자·분모를 각각 집계한 뒤 나눈다). 🔴분자·분모가 모두 회비라 모집단이 일치한다. `TOTAL_PAID_ALL` 을 분자로 바꾸면 기부금이 섞여 100% 를 넘는다(O40 에서 실제로 100.36% 가 배포됐다). ⚠️기간 스코프 없이 답하지 말 것 — 미납이 이후 납입되는 구조라 최근 기간은 낮게 보인다. 🔴[O52-A] 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것. `SV_MEMBER_MONTHLY.PAYMENT_RATE_FEE`(공64 정본)와 **같은 단위**이므로 전체 합계는 두 SV 가 일치해야 한다(GATE-D).',
+    fee.UNPAID_RATIO AS SUM(fee.UNPAID_BILLED_AMT) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100
       WITH SYNONYMS ('미납비중', '미납율', '미납률')
-      COMMENT = '미납비중 = 미납 청구액 ÷ 회비 청구액. N(비가산). DEC-3 정본 분자.',
+      COMMENT = '미납비중(**%**) = 미납 청구액 ÷ 회비 청구액 ×100. N(비가산). DEC-3 정본 분자. 🔴[O52-A] 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것. `SV_MEMBER_MONTHLY.UNPAID_RATIO_DEC3` 와 같은 단위이며 전체 합계가 일치해야 한다(GATE-D 실측 13.747454% 일치).',
     -- ── 규모 ──────────────────────────────────────────────────────────────────
     fee.DISTINCT_PAYING_MEMBERS AS COUNT(DISTINCT fee.MEMBER_DK)
       WITH SYNONYMS ('납입 회원수', '회비 회원수', '납입(명)')
@@ -148,11 +154,14 @@ SELECT (SELECT TOTAL_BILLED_AMT FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_FEE M
 --   ⚠️ metric 명이 다르면 SV_MEMBER_MONTHLY 쪽 이름으로 교체할 것(정본 = 05_1 파일).
 
 -- (F-3) 🔴 비율 상한 불변식 — 납부율이 100% 를 넘지 않는가 (O40 재발 감시 · P73/P80)
+--   🔴 [O52-A] 단위를 percent 로 통일했으므로 판정 상한을 **1.0 → 100** 으로 고쳤다.
+--     ⚠️ 종전 판정이 `<= 1.0` 이었다는 사실 자체가 단위 분기의 흔적이었다 — 이슈원장 §O45-D 에도
+--     *"max(PAYMENT_RATE_FEE) = 1.0"* 로 기록돼 있었으나 **동명 지표가 percent 라는 점과 대조되지 않았다.**
 SELECT MAX(PAYMENT_RATE_FEE) AS max_rate
 FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_FEE
        DIMENSIONS CAL_YEAR
        METRICS PAYMENT_RATE_FEE);
---   판정: max_rate <= 1.0
+--   판정: max_rate <= 100
 
 -- (F-4) 🔴 「명」이 행수와 다른가 — DISTINCT 가 실제로 작동하는지 확인(O39 유형)
 SELECT (SELECT DISTINCT_PAYING_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_FEE METRICS DISTINCT_PAYING_MEMBERS)) AS distinct_members,

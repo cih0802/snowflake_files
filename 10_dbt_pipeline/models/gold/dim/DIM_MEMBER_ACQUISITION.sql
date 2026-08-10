@@ -1,4 +1,4 @@
--- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 위의 뷰
+-- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
 -- Co-authored with CoCo
 --
 -- ============================================================================
@@ -31,13 +31,24 @@
 --      · **연간분석(회비)**의 부서 = **획득 부서** → 이 차원의 `ACQ_ORG_*` 를 쓴다
 --    두 값은 다르다. 이름으로 구분되지 않으면 소비 측이 조용히 틀린다.
 -- ============================================================================
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+-- 🔴🔴 [2026-08-10 O53] **뷰 → 테이블 전환.**
+--   ① 컬럼 COMMENT 정본이 `03_top-down_gold/06_DDL.sql` 인라인 COMMENT 로 이동했다(사용자 결정).
+--      schema.yml `columns[]` 는 제거 — 같은 사실을 두 곳에 두면 갈라진다(P85).
+--   ② `incremental` + `append` + `pre_hook TRUNCATE` — merge 금지(완전 재산출 차원에서 grain 이동 시
+--      구 행 잔존 · 문서50 §300 R1 · P131). base 인 FACT_MEMBER_COHORT 가 회원 집합을 매 build 재산출한다.
+--   ③ 감사컬럼 4종을 신설했다(GOLD 35테이블 전수 관례 · 뷰 시절에는 없었다).
+--   🔴 SELECT 컬럼 변경 시 06_DDL 블록을 동시에 재생성할 것(`scripts/gen_o53_gold_ddl.py`).
 {{ config(
-    materialized='view',
-    tags=['gold_ready'],
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '회원 획득(가입) 귀속 차원 — 1행=1회원. base=FACT_MEMBER_COHORT(단일 정의 지점). 🔴모든 ACQ_* 는 **획득 시점** 값이며 현재 속성이 아니다(현재 연령·현주소는 BRONZE 에 축이 없어 산출 불가). 🔴「부서」·「후원사업」은 같은 라벨로 두 축이 존재한다 — 사건 부서=FACT_MEMBER_EVENT.ORG_SK · 납입 대상 후원사업=FACT_MEMBER_FEE.SPONSORSHIP_SK. 팩트와는 반드시 LEFT JOIN(개발 사건이 없는 회원이 사라진다).'",
-      "ALTER VIEW {{ this }} ALTER COLUMN MEMBER_DK COMMENT '회원 불변키 — 팩트 조인키(VARCHAR(10) 규약)', COLUMN ACQ_CAMPAIGN_SK COMMENT '획득 캠페인 대리키 (FK→DIM_CAMPAIGN). 미매칭·부재는 0(Unknown 멤버)', COLUMN ACQ_DATE_SK COMMENT '획득일 (FK→DIM_DATE). 캘린더 범위밖·무효는 0', COLUMN ACQ_BASIS COMMENT '획득 판정 근거. NEW=개발구분 신규(MM015 코드1) 사건으로 판정 / FALLBACK=신규 사건이 없어 최초 개발 사건으로 대체. 🔴캠페인 비교 시 NEW 한정을 권한다', COLUMN ACQ_CAMPAIGN_NAME COMMENT '가입캠페인명. 🔴FACT_MEMBER_MONTHLY.CAMPAIGN_SK 는 다중귀속 규칙 미확정(O8)으로 센티넬이다 — 회원 단위 캠페인 분해는 이 축으로 한다', COLUMN ACQ_PARENT_CAMPAIGN_NAME COMMENT '획득 캠페인의 상위캠페인명', COLUMN ACQ_PROMO_METHOD_NAME COMMENT '획득 캠페인의 홍보방법명(CM008 라벨)', COLUMN ACQ_MARKETING_CAMPAIGN COMMENT '획득 캠페인의 마케팅캠페인명(광고↔CRM conformed 축). 광고비와 결합할 때 이 축을 쓴다 — 개발캠페인 grain 으로 내리면 광고비가 복제된다', COLUMN ACQ_BRAND COMMENT '획득 캠페인의 공통브랜드명', COLUMN ACQ_ORG_SK COMMENT '획득 시점 실적부서 대리키 (FK→DIM_ORG)', COLUMN ACQ_DEPARTMENT COMMENT '🔴**획득 시점 부서명**이다. 개발실적보고의 「부서」(=사건 부서, WIDE_MEMBER_EVENT.ORG_DEPARTMENT)와 다른 축이다', COLUMN ACQ_SPONSORSHIP_SK COMMENT '획득 시점 후원사업 대리키 (FK→DIM_SPONSORSHIP)', COLUMN ACQ_SPONSORSHIP_NAME COMMENT '🔴**획득 시점 후원사업명**(그 회원을 데려온 사업)이다. 납입 대상 후원사업(FACT_MEMBER_FEE.SPONSORSHIP_SK)과 다른 축 — 한 회원이 여러 후원사업에 낸다', COLUMN ACQ_AGE_CD COMMENT '획득 시점 연령대 코드(CM014). 🔴연속형 나이가 아니다 — 평균·구간 재계산 금지', COLUMN ACQ_AGE_BAND COMMENT '획득 시점 연령대명(CM014 라벨). 🔴현재 나이가 아니다. 이 축의 ''10대 미만'' 상위는 오류가 아니며 편지쓰기대회 계열 아동 모집 캠페인 때문이다 — 결측·기본값 오염으로 설명하지 말 것', COLUMN ACQ_AREA_CD COMMENT '획득 시점 지역 코드(CM018 + 라벨 없는 센티넬 0)', COLUMN ACQ_REGION COMMENT '획득 시점 지역명(CM018 약칭). 🔴현재 거주지가 아니다. 센티넬은 사전 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다', COLUMN ACQ_SEX_CD COMMENT '획득 시점 성별 코드(CM013). ⚠️DIM_MEMBER 의 성별(CM017 계열·현재 스냅샷)과 코드체계가 다르다', COLUMN ACQ_GENDER COMMENT '획득 시점 성별명(CM013 라벨)', COLUMN ACQ_DVLP_DIV_CD COMMENT '획득 사건의 개발구분 코드(MM015)', COLUMN ACQ_SPNSR_AMT COMMENT '획득 사건의 후원금액(원, raw). 🔴건수로 환산하지 말 것 — 정본 (건) 은 금액÷10,000 규약이다(CONF-2)', COLUMN FIRST_STOP_DATE_SK COMMENT '최초 중단일 (FK→DIM_DATE). 🔴미중단 회원은 NULL 이며 0 이 아니다 — 0 은 「날짜 미상」이라는 다른 뜻이다', COLUMN FIRST_STOP_REASON_NM COMMENT '최초 중단사유명(MM005 라벨). 미중단은 NULL. ⚠️USE_YN 무필터 — 폐지코드도 실적재에 남아 있다', COLUMN TENURE_DAYS COMMENT '유지기간(일) = 최초 중단일 − 획득일. 🔴미중단 회원은 NULL(아직 종료되지 않은 관측이다 — 0 이나 경과일로 채우면 평균 유지기간이 조용히 틀린다)', COLUMN IS_12M_OBSERVABLE COMMENT '12개월 관측 가능 여부 = 획득일 + 12개월 ≤ 데이터 최종 사건일. 🔴12개월 이탈률의 **분모 자격**이다 — 최근 획득 회원을 포함시키면 최근 캠페인의 이탈률이 실제보다 낮게 보인다'"
-    ]
+    materialized='incremental',
+    incremental_strategy='append',
+    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
+    tags=['gold_ready']
 ) }}
 
 select
@@ -69,7 +80,9 @@ select
     c.FIRST_STOP_DATE_SK                            as FIRST_STOP_DATE_SK,
     c.FIRST_STOP_REASON_NM                          as FIRST_STOP_REASON_NM,
     c.TENURE_DAYS                                   as TENURE_DAYS,
-    c.IS_12M_OBSERVABLE                             as IS_12M_OBSERVABLE
+    c.IS_12M_OBSERVABLE                             as IS_12M_OBSERVABLE,
+    -- [O53] 감사컬럼 — GOLD 테이블 전수 관례. 원천계통은 base(FMC)와 동일한 CRM.
+    {{ gold_meta('CRM') }}
 from {{ ref('FACT_MEMBER_COHORT') }} c
 left join {{ ref('DIM_CAMPAIGN') }}     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
 left join {{ ref('DIM_ORG') }}          org on org.ORG_SK          = c.ACQ_ORG_SK

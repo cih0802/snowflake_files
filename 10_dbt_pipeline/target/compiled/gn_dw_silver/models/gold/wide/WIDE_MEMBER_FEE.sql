@@ -7,6 +7,12 @@
 --           납입일 기준 조회, 획득 캠페인·부서·후원사업별 회비 분해
 --   답하지 않는다: 회원 **상태**(활동/미납 플래그)·개발/중단 건수 → `WIDE_MEMBER_MONTHLY` 를 쓴다
 --   🔴 두 뷰의 회비를 **같은 표에서 합하지 말 것** — 같은 원천이라 이중계상이다.
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 
 
 select

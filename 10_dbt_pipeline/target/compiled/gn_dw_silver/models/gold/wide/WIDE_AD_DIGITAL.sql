@@ -1,6 +1,7 @@
 -- WIDE_AD_DIGITAL: 디지털광고 위성 팩트(FAD_D) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- Co-authored with CoCo
--- grain = AD_PERF_DK (FAD_D 와 1:1). 실측 197,686행 (DGT).
+-- grain = AD_PERF_DK (FAD_D 와 1:1). 원천유형 DIGITAL 단독 지분이다.
+-- 🔴 행수를 여기에 적지 않는다(규칙 7) — 종전 하드코딩이 재적재로 stale 이 됐다. 규모는 이슈원장 §O51-F.
 --
 -- ⚠️ 설계 의도: 분석가·SV·Agent 가 **이 뷰 하나로 디지털광고 분석을 끝낼 수 있게** 만든다.
 --    위성은 코어와 1:1 이므로 코어 measure 를 함께 노출해도 fan-out 이 없다.
@@ -12,6 +13,14 @@
 --    집계 시에는 반드시 base 로 재계산할 것 — 예: CTR = SUM(CLICKS)/SUM(IMPRESSIONS).
 --    `_SRC` 는 대행사 산식과 DW 산식을 **대조**하는 용도이며, 행 단위 참조만 유효하다.
 --    VTR_SRC 는 base 가 원천에 없어 재계산이 불가하다(대조 대상 아님).
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-10 O51-F] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--   🔄 종전 「DROP 예정」 결정 철회(2026-08-10): 이 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리며,
+--     DEC-8/DEC-10 이 위성 단독 완결을 설계 의도로 명시한다. 보존 + COMMENT 이관으로 확정했다.
 
 
 select

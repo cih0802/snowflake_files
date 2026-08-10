@@ -1,9 +1,78 @@
-
-  create or replace   view GN_DW.GOLD.WIDE_MEMBER_EVENT
-  
-   as (
-    -- WIDE_MEMBER_EVENT: 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
+create or replace view GN_DW.GOLD.WIDE_MEMBER_EVENT
+    (
+      DATE_SK COMMENT $$사건일 YYYYMMDD$$,
+      MEMBER_DK COMMENT $$상태전이 대상 회원 (불변키)$$,
+      EVENT_TYPE COMMENT $$상태전이 유형(개발/중단/증액/미납중단)$$,
+      DVLP_DIV_CD COMMENT $$FACT_MEMBER_EVENT.DVLP_DIV_CD — 개발구분 코드 raw. 코드그룹 **MM015(개발구분)**. 코드사전 = 1신규·2증액·3감액·4재후원·5후원중단. 실적재(TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD)에 **사전 전종이 등장**한다. 🔴MM015 는 회원상태 MM010 이 **아니다** — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다(회원상태는 MBER_STAT_CD). ⚠️중단원천(EVENT_TYPE='STOP') 행은 원천에 이 컬럼이 부재해 NULL 이다. 라벨 = DVLP_DIV_NM.$$,
+      DVLP_DIV_NM COMMENT $$FACT_MEMBER_EVENT.DVLP_DIV_NM — 개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단. 코드 = DVLP_DIV_CD. MM015 는 폐지코드가 없고 실적재가 사전과 일치한다. 🔴🔴값 '후원중단' 은 EVENT_TYPE='STOP' 과 **동일 사건이 거의 전부 중복 존재**한다(동일 회원·일자) — 두 축을 합산하면 이중계상이다(O24 · 현업확인 대기).$$,
+      SPNSR_AMT COMMENT $$FACT_MEMBER_EVENT.SPNSR_AMT — 후원금액(원) raw. 원천 TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT 무변환 전파. 🔴감액·후원중단 사건은 **음수**다 — 무조건 SUM 하면 개발금액이 상계된다. 🔴정본 공#38 감액(건)·#151 증액(건)이 **금액을 만원 단위로 나눈 값**이라는 규약이므로 원금액을 보존한다(설계 §1·CONF-2) — 이 컬럼을 그대로 '건수'로 쓰지 말 것. ⚠️중단원천 행은 NULL.$$,
+      DEV_CNT COMMENT $$개발(건) (#149)$$,
+      DEV_MEMBERS COMMENT $$개발(명) (#148)$$,
+      STOP_CNT COMMENT $$중단(건) (#35)$$,
+      STOP_MEMBERS COMMENT $$중단(명)$$,
+      UNPAID_STOP_CNT COMMENT $$미납중단(건)$$,
+      UNPAID_STOP_MEMBERS COMMENT $$미납중단(명)$$,
+      JOIN_DATE COMMENT $$가입일$$,
+      STOP_DATE COMMENT $$중단일$$,
+      STOP_REASON COMMENT $$중단사유$$,
+      STOP_CHANNEL COMMENT $$중단채널$$,
+      STOP_REASON_NM COMMENT $$FACT_MEMBER_EVENT.STOP_REASON_NM — 중단사유명(정본 공#162). 코드그룹 **MM005(후원중단사유)**. 코드 = STOP_REASON. 코드사전에는 **폐지코드(USE_YN='N')가 다수 섞여** 있고 실적재는 사전의 일부만 쓴다. 최빈 코드 = 1개인(경제적)사유 · 14장기미납 · 16신규미납 · 8다른곳지원. 🔴🔴**USE_YN 필터 금지** — 실적재에 **폐지코드가 실재**한다(26은행자동납부해지 · 13반송미납 · 21~25 지라니 계열) ⇒ USE_YN='Y' 로 걸면 그 행들의 라벨이 사라진다. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️사전에만 있고 실적재에 없는 코드도 다수다.$$,
+      STOP_CHANNEL_NM COMMENT $$FACT_MEMBER_EVENT.STOP_CHANNEL_NM — 중단경로명. 코드그룹 **MM287(중단경로)**. 코드 = STOP_CHANNEL. 코드사전 = 1 SYSTEM · 2 CRM · 3 홈페이지 · 실적재에 **사전 전종이 등장**한다. ⚠️'SYSTEM' 은 배치가 자동 처리한 중단(장기미납 등)이며 회원의 능동적 해지 채널이 아니다 — 채널 분석 시 분리할 것. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️215지표 밖 — 현업 수요 확인 대상(O25).$$,
+      NEW_EXISTING_FLAG COMMENT $$신규기존 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MEMBER_EVENT.NEW_EXISTING_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      AGE_AT_EVENT COMMENT $$FACT_MEMBER_EVENT.AGE_AT_EVENT — 연령대 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM014**. 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 의 사건행별 값을 무변환 전파한다. 🔴**연속형 나이가 아니다** — 평균·구간 재계산 금지(1'10대 미만'~9'70대 이상'·10단체·11기업·12기타). 🔴MEMBER_AGE_CD(=현재버전 경유 '최근 약정' 스냅샷)와 **다른 축**이며 같은 회원도 사건마다 값이 다를 수 있다 — 이 컬럼이 그 사건 당시의 정확값이다. ⚠️중단원천 행은 원천 컬럼 부재로 NULL(0 아님, P21). 라벨 = AGE_BAND_AT_EVENT.$$,
+      AGE_BAND_AT_EVENT COMMENT $$FACT_MEMBER_EVENT.AGE_BAND_AT_EVENT — **사건 시점** 연령대명(CM014 사전 조인, 하드코딩 아님 P31). 코드 = AGE_AT_EVENT. ✅'10대 미만'이 상위인 것은 **오류가 아니다** — 편지쓰기대회 계열 캠페인(희망편지·가족그림편지·세계시민교육편지)이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B). ⚠️사전에 8'70대'·9'70대 이상'이 의미 중복으로 공존한다. 🔴MEMBER_AGE_BAND(현재버전 스냅샷)와 값이 다를 수 있다. 중단원천 행은 NULL.$$,
+      AREA_CD_AT_EVENT COMMENT $$FACT_MEMBER_EVENT.AREA_CD_AT_EVENT — 지역 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM018**(지표 공#131). 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD` 무변환 전파 · 실적재에 **사전 전종 + 라벨 없는 센티넬 '0'** 이 나타난다. 🔴MEMBER_AREA_CD(현재버전 경유 최근 약정 스냅샷)와 **다른 축** — 이사 등으로 사건마다 값이 다를 수 있다. ⚠️**현재 거주지가 아니다** — BRONZE 전체에 현주소 축이 없어 현재 지역은 산출 불가(O34). ⚠️중단원천 행은 원천 컬럼 부재로 NULL. 라벨 = REGION_AT_EVENT.$$,
+      REGION_AT_EVENT COMMENT $$FACT_MEMBER_EVENT.REGION_AT_EVENT — **사건 시점** 지역명(CM018 약칭 라벨, 지표 공#131). 코드 = AREA_CD_AT_EVENT. ⚠️센티넬 코드 '0' 은 사전에 라벨이 없어 NULL 이다 — '미상'으로 창작하지 않는다. ⚠️**현재 거주지가 아니다**(O34). 🔴MEMBER_REGION(현재버전 스냅샷)과 값이 다를 수 있다. 중단원천 행은 NULL. 🟢이 뷰 안에 캠페인 축이 함께 있어 지역 × 캠페인 교차가 성립한다.$$,
+      DW_SOURCE_SYSTEM COMMENT $$원천 시스템 식별$$,
+      FULL_DATE COMMENT $$DIM_DATE.FULL_DATE — 실제 일자$$,
+      YEAR COMMENT $$DIM_DATE.YEAR — 년$$,
+      MONTH COMMENT $$DIM_DATE.MONTH — 월$$,
+      DAY_OF_WEEK COMMENT $$DIM_DATE.DAY_OF_WEEK — 요일$$,
+      WEEK_OF_YEAR COMMENT $$DIM_DATE.WEEK_OF_YEAR — 주차$$,
+      QUARTER COMMENT $$DIM_DATE.QUARTER — 분기$$,
+      IS_HOLIDAY COMMENT $$DIM_DATE.IS_HOLIDAY — 휴일여부$$,
+      SEX COMMENT $$DIM_MEMBER.SEX — 성별 원천코드 raw. 코드그룹 **CM013(성별)**. 코드사전(BRONZE `TC_CMMN_DTL_CD`) = 1국내(남자)·2국내(여자)·3외국인(남자)·4외국인(여자)·5외국인(기타)·6단체·7기업·8기타 · 실적재(TM_MM_FDRM_MBER_INFO)에 **사전 전종이 등장**하며 폐지코드는 없다. ⚠️개발약정 원천(TM_MM_FDRM_MBER_DVLP_AMT.SEX)에는 사전에 없는 **사전에 없는 센티넬 '0'** 이 더 있다. 🔴정본 비고가 '성별만으로는 사용하지 않음'을 명시한다 — 성별 단일축 분석은 MEMBER_GENDER_NAME 을 쓴다. 라벨 = SEX_NM(원천 라벨)·MEMBER_GENDER_NAME(분석 라벨). 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      SEX_NM COMMENT $$DIM_MEMBER.SEX_NM — CM013 **원천 라벨 그대로**(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 코드 = SEX. 🔴이 컬럼만이 **국내·외국인 축**을 보존한다 — MEMBER_GENDER_NAME(CM017)은 그 축을 지운다. CM013 은 코드와 라벨이 1:1 이다. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_GENDER_NAME COMMENT $$DIM_MEMBER.GENDER_NAME — 성별 분석 라벨(정본 공#130). 코드그룹 **CM017(회원특성(성별))**. CM017 은 CM013 과 **코드 도메인이 동일(1~8)한 재라벨 그룹**이며 국내/외국인 구분을 지운다 — 1남자·2여자·3남자·4여자·5기타·6단체·7기업·8기타 ⇒ **서로 다른 코드가 같은 라벨로 합쳐진다**(남자/여자/기타/단체/기업). 정본 공#130 값정의와 일치. ⚠️CM017 은 정본 컬럼정의서가 어떤 컬럼에도 지정하지 않은 그룹이다(현업 확인 대상). ⚠️종전 하드코딩 '여성/남성/미상'은 라벨을 축약하고 법인·단체를 '미상'으로 오라벨했다(O26 교정). 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_AREA_CD COMMENT $$DIM_MEMBER.AREA_CD — 지역 원천코드 raw. 코드그룹 **CM018**. 코드사전 = (1서울·2경기·3인천·4강원·5대전·6충남·7충북·8광주·9전북·10전남·11대구·12경북·13경남·14울산·15부산·16제주·17기타·18세종) · 실적재(TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD)에 **사전 전종 + 라벨 없는 센티넬 '0'** 이 나타난다. ⚠️CM018 의 그룹명은 '신규시도구분'이지만 상세코드 값은 전부 시·도다(정본 공#131 지역정의가 약칭이라 정식명 그룹 CM011 이 아니다). 🔴**현재 거주지가 아니다** — 이 값은 그 버전 시점까지 최근 개발약정의 스냅샷이며 BRONZE 전체에 현주소 축이 없다(O34). 라벨 = MEMBER_REGION. 사건 시점 정확값은 WIDE_MEMBER_EVENT.AREA_CD_AT_EVENT. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_REGION COMMENT $$DIM_MEMBER.REGION — 지역 (#131)$$,
+      MEMBER_AGE_CD COMMENT $$DIM_MEMBER.AGE — 연령대 원천코드 raw. 코드그룹 **CM014(나이)**. 코드사전 = 1'10대 미만'·2'10대'·3'20대'·4'30대'·5'40대'·6'50대'·7'60대'·8'70대'·9'70대 이상'·10단체·11기업·12기타 · 실적재(TM_MM_FDRM_MBER_DVLP_AMT.AGE)에 **사전 전종이 등장**한다. 🔴**연속형 나이가 아니다** — 평균·구간 재계산 금지. 구간은 우리가 만든 것이 아니라 원천이 이미 구간화해 제공한다(DEC-28). ⚠️사전 자체에 8'70대'와 9'70대 이상'이 **의미 중복**으로 공존한다 — 70대 이상 집계 시 두 코드를 함께 취할 것. ⚠️BRONZE 원천 컬럼 COMMENT '연령'(NUMBER)은 오류다. 라벨 = MEMBER_AGE_BAND. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_AGE_BAND COMMENT $$DIM_MEMBER.AGE_BAND — 연령대$$,
+      MBER_STAT_CD COMMENT $$DIM_MEMBER.MBER_STAT_CD — 회원상태 원천코드 raw(정본 공#132 '회원상태코드'). 코드그룹 **MM010(회원상태)**. 코드사전 = 1활동회원·2~6신규미납1~5·7~11장기미납1~5·12후원중단 · `TH_MM_FDRM_MBER_STNG_DTLS.CHN_STAT_CD` 와 `TM_MM_FDRM_MBER_INFO.MBER_STAT_CD` **양쪽 모두 사전 전종이 등장**한다. SCD2 버전행은 CHN_STAT_CD(변경상태코드), 무이력행은 MBER_STAT_CD 에서 온다(둘 다 MM010). 🔴MM010 은 개발구분 MM015 가 아니다 — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다. 🔴일시회원(MEMBER_TYPE='ONCE')은 회원상태 개념이 원천에 없어 NULL 이다. 라벨 = MEMBER_STATUS_NAME. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_STATUS_NAME COMMENT $$DIM_MEMBER.MEMBER_STATUS_NAME — 회원상태명(MM010 라벨, 정본 공#132). 코드 = MBER_STAT_CD. MM010 은 **폐지코드가 없고 실적재가 사전과 일치**한다 ⇒ 사전 조인만으로 전건 라벨화된다(하드코딩 금지 P31). 값 = 활동회원 / 신규미납1~5 / 장기미납1~5 / 후원중단. 미매핑은 '미상'. ⚠️미납 단계(1~5)는 **경과 차수**이며 금액 규모가 아니다. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      PREV_MBER_STAT_CD COMMENT $$DIM_MEMBER.PREV_MBER_STAT_CD — 상태전이의 **이전상태** 코드 raw(MM010). 현재상태 MBER_STAT_CD 와 짝지어 전이를 표현한다. 원천 `TH_MM_FDRM_MBER_STNG_DTLS.BF_STAT_CD` 에 **사전 전종이 등장**한다. ⚠️이력 미보유행(FDRM 무이력·ONCE 전체)은 NULL — '이전상태가 없다'가 아니라 '이력이 없다'. ⚠️동일자 다중전이는 최종 전이로 축약된다(중간 단계 소실). 라벨 = PREV_MEMBER_STATUS_NAME. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      PREV_MEMBER_STATUS_NAME COMMENT $$DIM_MEMBER.PREV_MEMBER_STATUS_NAME — 이전상태명(MM010 라벨). 코드 = PREV_MBER_STAT_CD. 사전과 실적재가 일치한다. 이력 미보유행은 NULL. 🔷(PREV_MEMBER_STATUS_NAME → MEMBER_STATUS_NAME) 쌍이 전이 매트릭스의 두 축이다 — 이 버전행 자체가 전이 사건이므로 fan-out 0. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MBER_DIV_CD COMMENT $$DIM_MEMBER.MBER_DIV_CD — 회원구분 원천코드 raw. 코드그룹 **MM018(회원구분)**. 코드사전 = 1개인·2기업·3단체 · 실적재에 **사전 전종이 등장**한다. 🟢독립 교차검증: `MBER_DIV_CD`='2'(기업)·'3'(단체) 의 행수가 `SEX`='7'(기업)·'6'(단체) 와 **완전히 일치**한다 — 두 축이 같은 사실을 다르게 표현한다. 🔴DIM_MEMBER.MEMBER_TYPE(FDRM/ONCE 등록계통)과 **완전히 다른 축**이다. 라벨 = MEMBER_TYPE_NAME. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_TYPE_NAME COMMENT $$DIM_MEMBER.MEMBER_TYPE_NAME — 회원구분명(MM018 라벨): 개인·기업·단체. 코드 = MBER_DIV_CD. MM018 은 폐지코드가 없고 실적재가 사전과 일치한다. 미매핑은 '미상'. 🔴이름이 비슷한 DIM_MEMBER.MEMBER_TYPE(=FDRM 정기회원 / ONCE 일시회원)의 라벨이 **아니다** — 다른 축이다. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      JOIN_PATH_CD COMMENT $$DIM_MEMBER.JOIN_PATH_CD — 가입경로 원천코드 raw. 코드그룹 **MM014(가입경로)**. 코드사전 = 1홈페이지·2CRM·3모바일웹·4희망TV·5외주콜센터·6모바일앱·7REG·8EDU 이나 실적재에는 **1·2·3·5·6·7 만 나타난다** — 🔴**4(희망TV)·8(EDU)는 실적재에 없다.** ⇒ 가입경로 분포에서 이 두 값을 기대하지 말 것. 🔴일시회원(ONCE)은 가입경로 개념이 원천에 없어 NULL. 라벨 = MEMBER_ENROLL_PATH_NAME. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      MEMBER_ENROLL_PATH_NAME COMMENT $$DIM_MEMBER.ENROLL_PATH_NAME — 가입경로명(MM014 라벨). 코드 = JOIN_PATH_CD. 실제로 나타나는 라벨은 **홈페이지·CRM·모바일웹·외주콜센터·모바일앱·REG** 다 — 사전에는 희망TV·EDU 도 있으나 **실적재에 없으므로** 그 둘을 포함해 열거하면 거짓이다. 미매핑은 '미상'. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
+      CAMPAIGN_BK COMMENT $$DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키$$,
+      CAMPAIGN_BRAND COMMENT $$DIM_CAMPAIGN.BRAND — 공통브랜드 (#117)$$,
+      CAMPAIGN_PARENT COMMENT $$DIM_CAMPAIGN.PARENT_CAMPAIGN — 공통상위캠페인 (#119)$$,
+      CAMPAIGN_NAME COMMENT $$DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120)$$,
+      CAMPAIGN_PROMO_METHOD COMMENT $$DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118)$$,
+      CAMPAIGN_CATEGORY COMMENT $$DIM_CAMPAIGN.CAMPAIGN_TYPE — 캠페인 **카테고리** 라벨(정본 공#17). 코드그룹 **MM294(캠페인 카테고리)**. 🔴[O51-D 실측] 원천 `TM_CM_CMPGN_MNG.CMPGN_CTGR_CD` 에 **사전에 없는 코드 '58' 이 실재**하므로 그 값은 (미매핑)이 된다. 미채움 행도 있다. ⚠️**사전 자체에 동일 라벨 중복**이 있다(코드 44·45 둘 다 '콜 기타') — 라벨로 GROUP BY 하면 두 코드가 합쳐진다. ⚠️컬럼명 주의: DIM_CAMPAIGN 의 컬럼명은 CAMPAIGN_TYPE 이지만 업무용어는 '카테고리'다. 상위캠페인은 CAMPAIGN_PARENT.$$,
+      CAMPAIGN_INFLOW_PATH COMMENT $$DIM_CAMPAIGN.INFLOW_PATH — 개발인입경로 라벨 = **모집 채널**. 코드그룹 **MM293(개발인입경로)**. 코드사전 = (교육기관·기업·뉴미디어·대면모금·디지털·마케팅콜개발·방송·영상광고·일시·재송출·지역개발·회원 기타·회원 오프라인개발·회원 온라인개발·회원 콜개발·직원개발) · 실적재에 **사전 전종이 등장**하며 **'디지털'(5)이 압도적 최빈값**이다. 🔴이 축을 「현업 주요캠페인 분류축」이라고 적었던 기술은 **거짓이므로 회수됐다**(O37) — 모집 채널이다. 캠페인 카테고리 = CAMPAIGN_CATEGORY(MM294) · 상위캠페인 = CAMPAIGN_PARENT.$$,
+      SPONSORSHIP_BK COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키$$,
+      SPONSORSHIP_NAME COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)$$,
+      ORG_CORP COMMENT $$DIM_ORG.CORP — 법인 (#114). 🔴DIM_ORG 는 **SCD1**(DEC-2)이라 as-was 가 아니다 — 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다(조직 변경이력 원천·as-was 요구가 없어 SCD1 로 확정). 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.CORP`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      ORG_DIVISION COMMENT $$DIM_ORG.DIVISION — 본부/지부 (#115). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.DIVISION`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      ORG_DEPARTMENT COMMENT $$DIM_ORG.DEPARTMENT — 부서 (#116). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴「부서」는 축이 둘이다 — 이 컬럼은 **사건 부서**이고 획득 부서는 DIM_MEMBER_ACQUISITION.ACQ_DEPARTMENT 다(O34). 🔴[O51-D 실측] `'(미매핑)'` 이 **다수**다 — 중단원천 행은 부서가 없다. 부서별 집계 시 이 그룹이 상위권 규모로 나타나며 **실재 부서가 아니다.** 실측 규모는 이슈원장 §O51-D-C.$$,
+      ORG_TEAM COMMENT $$DIM_ORG.TEAM — 팀. 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.TEAM`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      REASON_CODE COMMENT $$DIM_REASON.REASON_CODE — 사유코드$$,
+      REASON_NAME COMMENT $$DIM_REASON.REASON_NAME — 중단/미납사유$$,
+      REASON_TYPE COMMENT $$DIM_REASON.REASON_TYPE — 중단/미납 구분$$
+    )
+    comment = $$회원 이벤트 팩트(FME) 평탄화 — DATE·MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·ORG·REASON.$$
+    as (
+      -- WIDE_MEMBER_EVENT: 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
 -- Co-authored with CoCo
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 
 
 select
@@ -75,5 +144,4 @@ left join GN_DW.GOLD.DIM_CAMPAIGN    c on f.CAMPAIGN_SK    = c.CAMPAIGN_SK
 left join GN_DW.GOLD.DIM_SPONSORSHIP s on f.SPONSORSHIP_SK = s.SPONSORSHIP_SK
 left join GN_DW.GOLD.DIM_ORG         o on f.ORG_SK         = o.ORG_SK
 left join GN_DW.GOLD.DIM_REASON      r on f.REASON_SK      = r.REASON_SK
-  );
-
+    );

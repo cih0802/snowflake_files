@@ -149,9 +149,14 @@ CREATE OR REPLACE SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.TOTAL_ACQ_MEMBERS AS SUM(fmc.ACQ_MEMBERS)
       WITH SYNONYMS ('획득회원수', '모집회원수', '신규회원수') COMMENT = '획득 회원수. D(회원 grain이라 SUM 이 곧 distinct 회원수 — 이 팩트는 회원당 1행이므로 다기간 중복이 없다). 캠페인별 모집 규모.',
     -- ── 🔴 중단률(정본) ────────────────────────────────────────────────────────
-    fmc.CHURN_RATE_12M AS SUM(fmc.STOPPED_12M_MEMBERS) / NULLIF(SUM(fmc.OBSERVABLE_12M_MEMBERS), 0)
+    -- 🔴 [2026-08-10 O52-A] 단위를 **percent 로 통일**했다(`×100` 부여). 종전에는 분수(0~1)였고
+    --   프로젝트의 다른 비율 metric 은 전부 percent 였다(CTR·CVR·납부율·미납비중·집행율·달성율).
+    --   Agent instruction 이 「비율=% 2자리」이고 orchestration 이 「중단률/이탈률 → analyst_member_cohort」로
+    --   명시 라우팅하므로 **에러 없이 "0.20%" 라고 답하는 활성 경로**였다(정답 20.05% · AD-4/P19 무증상 오답).
+    --   ⚠️ 아래 §검증 쿼리의 `* 100` 도 함께 제거했다 — 남겨두면 **10000배**가 된다(산식과 쿼리 이중 곱).
+    fmc.CHURN_RATE_12M AS SUM(fmc.STOPPED_12M_MEMBERS) / NULLIF(SUM(fmc.OBSERVABLE_12M_MEMBERS), 0) * 100
       WITH SYNONYMS ('중단률', '이탈률', '12개월 이탈률', '12개월 중단률', '해지율', '이탈율')
-      COMMENT = '🔴**캠페인별 중단률의 정본** = 획득 후 12개월 내 이탈 회원수 ÷ 12개월 관측 가능 회원수. 비율(N) — 재집계 금지, 분자·분모를 각각 집계한 뒤 나눈다. **왜 12개월 고정인가**: 누적 이탈률은 관측 기간에 지배되어(획득이 이를수록 높다) 실행 연도가 다른 캠페인을 비교하면 오래된 캠페인이 자동으로 「중단률 높음」이 된다 — 값이 정상인데 답이 틀리는 결함이다. 12개월로 고정하면 캠페인 간 공정 비교가 된다. 분모는 IS_12M_OBSERVABLE=TRUE 회원으로 자동 제한된다.',
+      COMMENT = '🔴**캠페인별 중단률의 정본(단위 %)** = 획득 후 12개월 내 이탈 회원수 ÷ 12개월 관측 가능 회원수 ×100. 비율(N) — 재집계 금지, 분자·분모를 각각 집계한 뒤 나눈다. **왜 12개월 고정인가**: 누적 이탈률은 관측 기간에 지배되어(획득이 이를수록 높다) 실행 연도가 다른 캠페인을 비교하면 오래된 캠페인이 자동으로 「중단률 높음」이 된다 — 값이 정상인데 답이 틀리는 결함이다. 12개월로 고정하면 캠페인 간 공정 비교가 된다. 분모는 IS_12M_OBSERVABLE=TRUE 회원으로 자동 제한된다. 🔴[O52-A] 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것(종전 분수 시절의 쿼리를 재사용하면 100배 과대해진다).',
     fmc.TOTAL_STOPPED_12M_MEMBERS AS SUM(fmc.STOPPED_12M_MEMBERS)
       WITH SYNONYMS ('12개월 이탈회원수', '12개월 중단회원수') COMMENT = '획득 후 12개월 내 이탈한 회원수(분자). F(가산). 🔴 관측 가능 회원에 한해서만 1 로 집계된다 — 분모는 반드시 TOTAL_OBSERVABLE_12M_MEMBERS 를 쓴다. TOTAL_ACQ_MEMBERS 로 나누면 과소추정된다.',
     fmc.TOTAL_OBSERVABLE_12M_MEMBERS AS SUM(fmc.OBSERVABLE_12M_MEMBERS)
@@ -190,20 +195,22 @@ SELECT (SELECT TOTAL_ACQ_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_COHO
        (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_MEMBER_COHORT) AS fact_val;
 --   판정: sv_val == fact_val (불일치 = 차원 조인 fan-out)
 
--- (C-2) 🔴 이탈률 상한 불변식: 어떤 캠페인 카테고리에서도 12개월 이탈률이 1.0 을 넘지 않는다.
+-- (C-2) 🔴 이탈률 상한 불변식: 어떤 캠페인 카테고리에서도 12개월 이탈률이 100% 를 넘지 않는다.
 --       종전 「사건 기준」 산식이 100% 를 넘겼던 지점이며 이 SV 의 설계 목적 자체다.
+--       🔴 [O52-A] 단위가 percent 로 바뀌었으므로 판정 상한도 1.0 → 100 으로 고쳤다.
 SELECT MAX(CHURN_RATE_12M) AS max_rate
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_MEMBER_COHORT
   DIMENSIONS acq_campaign.CAMPAIGN_TYPE
   METRICS CHURN_RATE_12M
 );
---   판정: max_rate <= 1.0
+--   판정: max_rate <= 100
 
 -- (C-3) 본래 목표 재현: 캠페인 카테고리별 12개월 중단률 상위/하위 비교
 --       (모집 규모 하한을 걸어 소표본 노이즈를 배제 — AI_SQL_GENERATION 규칙(9)와 동일 원칙)
+--       🔴 [O52-A] metric 이 이미 percent 다 — 종전의 `* 100` 을 제거했다(남기면 10000배).
 SELECT CAMPAIGN_TYPE, TOTAL_ACQ_MEMBERS, TOTAL_OBSERVABLE_12M_MEMBERS, TOTAL_STOPPED_12M_MEMBERS,
-       ROUND(CHURN_RATE_12M * 100, 2) AS CHURN_12M_PCT
+       ROUND(CHURN_RATE_12M, 2) AS CHURN_12M_PCT
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_MEMBER_COHORT
   DIMENSIONS acq_campaign.CAMPAIGN_TYPE
@@ -211,11 +218,12 @@ FROM SEMANTIC_VIEW(
 )
 WHERE TOTAL_OBSERVABLE_12M_MEMBERS >= 5000
 ORDER BY CHURN_12M_PCT DESC NULLS LAST;
---   판정: 상위·하위 스프레드가 유의미하게 벌어지고 전 행 <= 100%
+--   판정: 상위·하위 스프레드가 유의미하게 벌어지고 전 행 <= 100
 --   ⚠ FILTER 절에 별칭 컬럼을 쓸 수 없어 바깥 WHERE 로 거른다(04 §6.9-(6))
 
 -- (C-4) 획득시점 회원특성 × 캠페인 교차 (O35 계열 검증 — 한 SV 안에서 성립하는지)
-SELECT ACQ_AGE_BAND, TOTAL_ACQ_MEMBERS, ROUND(CHURN_RATE_12M * 100, 2) AS CHURN_12M_PCT
+--       🔴 [O52-A] `* 100` 제거(metric 이 percent).
+SELECT ACQ_AGE_BAND, TOTAL_ACQ_MEMBERS, ROUND(CHURN_RATE_12M, 2) AS CHURN_12M_PCT
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_MEMBER_COHORT
   DIMENSIONS fmc.ACQ_AGE_BAND

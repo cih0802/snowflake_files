@@ -1,12 +1,12 @@
 -- WIDE_BUDGET: 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
 -- Co-authored with CoCo
 -- ⚠️ FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1)·AD_COST(E-4) 원천부재로 현재 NULL(외부 입고 대기).
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
-    materialized='view',
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '예산 팩트 평탄화 (FBD × ORG[as-was]·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP). 월 grain=MONTH_KEY.'",
-      "ALTER VIEW {{ this }} ALTER COLUMN MONTH_KEY COMMENT '예산월 YYYYMM', COLUMN CAL_YEAR COMMENT 'FLOOR(MONTH_KEY/100) — 연도', COLUMN CAL_MONTH COMMENT 'MOD(MONTH_KEY,100) — 월', COLUMN PLAN_BUDGET_MONTH COMMENT '편성예산(월, 원)', COLUMN PLAN_BUDGET_YEAR COMMENT '편성예산(연, 원)', COLUMN EXEC_BUDGET_ERP COMMENT '집행예산(ERP 월, 원)', COLUMN EXEC_BUDGET_EST COMMENT '집행예산(추정, 원)', COLUMN FUNDRAISING_COST COMMENT '모금성비용(원)', COLUMN AD_COST COMMENT '광고비(원)', COLUMN DW_SOURCE_SYSTEM COMMENT '원천 시스템 식별', COLUMN ORG_CORP COMMENT 'DIM_ORG.CORP — 법인 (as-was #114)', COLUMN ORG_DIVISION COMMENT 'DIM_ORG.DIVISION — 본부/지부 (as-was #115)', COLUMN ORG_DEPARTMENT COMMENT 'DIM_ORG.DEPARTMENT — 부서 (as-was #116)', COLUMN ORG_TEAM COMMENT 'DIM_ORG.TEAM — 팀 (as-was)', COLUMN BUDGET_ITEM_NAME COMMENT 'DIM_BUDGET_ITEM.BUDGET_ITEM_NAME — 세세목명', COLUMN BUDGET_CATEGORY COMMENT 'DIM_BUDGET_ITEM.BUDGET_CATEGORY — 예산구분', COLUMN CAMPAIGN_BK COMMENT 'DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키', COLUMN CAMPAIGN_BRAND COMMENT 'DIM_CAMPAIGN.BRAND — 공통브랜드 (#117)', COLUMN CAMPAIGN_NAME COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120)', COLUMN SPONSORSHIP_BK COMMENT 'DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키', COLUMN SPONSORSHIP_NAME COMMENT 'DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)'"
-    ]
+    materialized='gn_view_commented'
 ) }}
 
 select

@@ -1,8 +1,28 @@
-
-  create or replace   view GN_DW.GOLD.WIDE_DEV_ACHIEVEMENT
-  
-   as (
-    -- WIDE_DEV_ACHIEVEMENT: 회원개발 목표 대비 실적 월 conform 소비뷰 (FTG_D × FME)
+create or replace view GN_DW.GOLD.WIDE_DEV_ACHIEVEMENT
+    (
+      MONTH_KEY COMMENT $$목표·실적 공통 월키 YYYYMM (월 conform 축)$$,
+      CAL_YEAR COMMENT $$FLOOR(MONTH_KEY/100) — 연도$$,
+      CAL_MONTH COMMENT $$MOD(MONTH_KEY,100) — 월$$,
+      ORG_SK COMMENT $$조직 대리키 (FK→DIM_ORG). 실적측은 실적부서(ACMSLT_DEPT_CD) 기준$$,
+      ORG_DEPARTMENT COMMENT $$부서명 (정본 #116) — 장표 첫 축. DIM_ORG.DEPARTMENT$$,
+      ORG_DIVISION COMMENT $$DIM_ORG.DIVISION — 실적지부. ⚠️산출규칙 미확정으로 전건 NULL (CONF-4)$$,
+      ORG_TEAM COMMENT $$DIM_ORG.TEAM — 팀. ⚠️보류로 전건 NULL (CONF-4)$$,
+      ORG_CORP COMMENT $$DIM_ORG.CORP — 법인. ⚠️부서 차원에서 산출 불가로 전건 NULL (CONF-4)$$,
+      DEV_TYPE COMMENT $$개발구분 코드 (MM015 중 1신규·2증액·4재후원). 정본 공#121 개발 정의와 일치하는 축 — 목표·실적 공통$$,
+      DEV_TYPE_NAME COMMENT $$개발구분명 (MM015 라벨). 코드는 DEV_TYPE$$,
+      GOAL_CNT COMMENT $$월 회원개발목표(건) — 장표 「월 목표」. 원천 CRM TM_CM_MBER_DVLP_GOAL$$,
+      ACTUAL_CNT COMMENT $$월 개발실적(건) — 장표 「월 실적」. FME.DEV_CNT 월 롤업(코드 1·2·4 한정)$$,
+      GOAL_CNT_YTD COMMENT $$(누계)월 목표(건) — 당해년 1월~당월 누적. 🔴월 비가산 — 월을 가로질러 합산 금지$$,
+      ACTUAL_CNT_YTD COMMENT $$(누계)월 실적(건) — 당해년 1월~당월 누적. 🔴월 비가산$$,
+      GOAL_CNT_YEAR COMMENT $$연 목표(건) — 당해년 12개월 합. 별도 저장 지표가 아니라 월 목표의 연 합계다(정본 공#3). 🔴월 비가산$$,
+      ACTUAL_CNT_YEAR COMMENT $$연 실적(건) — 당해년 12개월 합. 🔴월 비가산$$,
+      HAS_GOAL_ROW COMMENT $$목표 **행**의 존재 여부 — 값이 0 이거나 NULL 이어도 TRUE 다. 🔴**달성율 스코프로 쓰지 말 것**: 원천이 2020년부터 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채우므로 목표 행의 과반이 0 이다. 이 플래그로 분자를 스코프하면 목표 0 행의 실적이 분모 없이 분자에 들어가 달성율이 폭증한다(실측 확인 후 교정). 달성율은 HAS_POSITIVE_GOAL 을 쓴다. 이 컬럼의 용도는 「목표 행 자체가 없는 조합」(=FALSE)을 찾는 것이다$$,
+      HAS_POSITIVE_GOAL COMMENT $$🟢**목표가 실제로 편성됐는지**(GOAL_CNT>0) — 달성율 분모·분자 스코프의 **정본**이다. 목표 미편성 부서·월의 실적이 분자에 섞이면 달성율이 조용히 과대해진다(P18·P63). SV_DEV_ACHIEVEMENT.ACHIEVEMENT_RATE 는 이 조건을 식에 못박아 두었으므로 소비 시 별도 필터가 불필요하다. ⚠️FALSE 는 「목표 0 건으로 명시」와 「목표 미입력(원천 NULL)」을 함께 담는다 — 구분이 필요하면 FACT_TARGET_DEV.GOAL_CNT IS NULL 로 팩트에서 본다$$,
+      HAS_ACTUAL COMMENT $$실적 발생 여부. FALSE 는 목표만 편성된 월(미래월 포함)이다 — 실적 0 으로 읽되 「미달」로 단정하지 말 것$$
+    )
+    comment = $$[2026-08-05 O38 신설] 회원개발 **목표 대비 실적** 월 conform 뷰 — FTG_D(목표) × FME(실적) FULL OUTER. grain=MONTH_KEY×ORG_SK×DEV_TYPE. 마케팅 장표 「1. 개발현황(목표,실적)」의 정본이며 정본 지표 공#1(월 목표 달성율)·#2(누계)·#3(연)의 산출 base 다. 🔴달성율 컬럼은 두지 않는다 — SUM(실적)/SUM(목표) 로 재계산할 것(행 단위 비율의 평균은 항상 틀린다). 🔴달성율 분모·분자는 **HAS_POSITIVE_GOAL=TRUE**(=GOAL_CNT>0) 로 스코프해야 한다 — 목표 미편성분의 실적이 분자에 섞이면 조용히 과대해진다(P18·P63). ⚠️**HAS_GOAL_ROW(목표 행 존재)로 스코프하면 안 된다**: 원천이 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채워 목표 행의 과반이 0 이므로, 그 행들의 실적이 분모 없이 분자에 들어가 비율이 폭증한다(실측 확인 후 교정). ⚠️_YTD·_YEAR 컬럼은 월에 대해 비가산 — 월을 가로질러 합산 금지. ⚠️일별 실적은 WIDE_MEMBER_EVENT(일 grain) 소관 — 월 목표를 일자에 반복하면 이중계상된다. ⚠️매체(브랜드2)별 목표는 원천에 없다(정본 마케팅 인벤토리 §1 「부서별 목표만 존재·매체별 목표 확인 불가」).$$
+    as (
+      -- WIDE_DEV_ACHIEVEMENT: 회원개발 목표 대비 실적 월 conform 소비뷰 (FTG_D × FME)
 -- Co-authored with CoCo
 --
 -- ============================================================================
@@ -69,6 +89,12 @@
 --   O38 이전에는 `MONTH_KEY` 가 1~12 였기 때문에 이 산술이 **전건 0** 을 만들었다 —
 --   센티넬로 오해하기 쉬우나 조인 실패가 아니라 자릿수 부족이었다. 연도 복원으로 해소된다.
 -- ============================================================================
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 
 
 -- 목표: 이미 MONTH_KEY × ORG_SK × DEV_TYPE grain(O38 연도 복원 후 25,344행 유일 예상).
@@ -157,5 +183,4 @@ left join GN_DW.GOLD.DIM_ORG o on c.ORG_SK = o.ORG_SK
 left join (
     select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'MM015'
 ) cd on c.DEV_TYPE = cd.DTL_CD_ID
-  );
-
+    );

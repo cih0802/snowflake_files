@@ -10,12 +10,12 @@
 --    방송 횟수는 COUNT(DISTINCT AD_PERF_DK) 로 세야 한다.
 -- ⚠️ 전 속성 NULL 인 사례는 애초에 미적재(희소행 방지) → 방송 1건당 사례 수는 0~3 로 가변이다.
 -- ⚠️ 아동명(CASEn_CHILD_NM)은 **미노출** — PII 판정 대기(O14). SILVER staging 에 원형 보존됨.
+-- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
+--   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
+--   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
+--   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
-    materialized='view',
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '재방송 사례 위성 팩트 평탄화 (FAD_BC × DATE·CAMPAIGN, grain=AD_PERF_DK×CASE_SEQ, 5,327행). ⚠️코어에 1:N — 코어 measure 미노출(fan-out 방지). 사례 속성 분포 분석 전용. 방송 횟수는 COUNT(DISTINCT AD_PERF_DK). 아동명 미노출(PII O14).'",
-      "ALTER VIEW {{ this }} ALTER COLUMN AD_PERF_DK COMMENT 'grain 1/2 · 광고성과 행 식별자 — 코어 WIDE_AD_PERFORMANCE 조인키(1:N)', COLUMN CASE_SEQ COMMENT 'grain 2/2 · 사례 순번 1~3 (원천 CASE1~CASE3 언피벗축)', COLUMN AD_SOURCE_TYPE COMMENT '광고 원천유형 — 본 뷰는 REBROADCAST 만', COLUMN PERF_DATE_SK COMMENT '광고 실적일 YYYYMMDD', COLUMN BIZ_DIV COMMENT '사례 사업구분', COLUMN FAMILY_TYPE COMMENT '사례 가족유형', COLUMN APPEAL_POINT COMMENT '사례 어필포인트', COLUMN CASE_DIV COMMENT '사례구분', COLUMN RT_TYPE COMMENT 'RT(재방송)유형 — 위성 FAD_B 에서 동반', COLUMN PROGRAM_NM COMMENT '프로그램/편성명 — 위성 FAD_B 에서 동반', COLUMN CHANNEL_COMPANY COMMENT '채널사 — 위성 FAD_B 에서 동반', COLUMN BROADCAST_DATE COMMENT '송출일 — 위성 FAD_B 에서 동반', COLUMN DW_SOURCE_SYSTEM COMMENT '원천 시스템 식별', COLUMN PERF_FULL_DATE COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자', COLUMN PERF_YEAR COMMENT 'DIM_DATE.YEAR — 실적일 년', COLUMN PERF_MONTH COMMENT 'DIM_DATE.MONTH — 실적일 월', COLUMN PERF_QUARTER COMMENT 'DIM_DATE.QUARTER — 실적일 분기', COLUMN CAMPAIGN_NAME COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명'"
-    ]
+    materialized='gn_view_commented'
 ) }}
 
 select

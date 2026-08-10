@@ -6,7 +6,7 @@ GN_DW 데이터 계보(lineage) 산출물 생성기 — **전량 실측 파생**
 ⚠️ 설계 전환 (2026-08-06)
   구 판본은 계보 84행을 파이썬 리터럴로 **하드코딩**했다. 그래서 O24·O26·O34·O37·O38·O39 의
   개명·재정의가 하나도 반영되지 않았고(`MEMBER_STATUS`·`MEMBER_TYPE` 등 없는 컬럼을 계속 실었다),
-  WIDE 9종만 다뤄 신설 4종(`WIDE_AD_*` 3 · `WIDE_DEV_ACHIEVEMENT`)이 누락됐다.
+  WIDE 9종만 다뤄 신설 4종(`WIDE_AD_*` 3 · `FACT_DEV_ACHIEVEMENT`)이 누락됐다.
   → 이 판본은 **인벤토리·계보·상태를 전부 측정해서 만든다**. 하드코딩 계보표는 없다.
 
 측정 원천 (4원)
@@ -269,7 +269,7 @@ def main():
                     gc = mm.group(1).upper()
             wide_conf = "직접참조" if gt else ""
             if not gt:
-                # CTE 경유(WIDE_DEV_ACHIEVEMENT 류) — 이 WIDE 가 ref 하는 GOLD 테이블에서 동명 대조.
+                # CTE 경유(FACT_DEV_ACHIEVEMENT 류) — 이 WIDE 가 ref 하는 GOLD 테이블에서 동명 대조.
                 grefs = sorted(r for r in (m["refs"] if m else set())
                                if r in schema["gold_cols"] or r in schema["view_cols"])
                 cand = [r for r in grefs if (gc or c) in set(schema["gold_cols"].get(r, []))]
@@ -382,7 +382,7 @@ def main():
         ("회원 상태·지역·연령대별 납입회비 추이", "`WIDE_MEMBER_MONTHLY`", "✅ (지역·연령대는 **약정시점 스냅샷**)"),
         ("개발/중단 건별 사유·경로·부서·일자 상세", "`WIDE_MEMBER_EVENT`", "✅ (부서는 **개발 사건 전용**)"),
         ("캠페인별 중단률(이탈률)·유지기간", "`SV_MEMBER_COHORT`(회원 grain)", "✅ **12개월 고정률만 사용**"),
-        ("부서별 회원개발 **목표 대비 달성률**", "`WIDE_DEV_ACHIEVEMENT`", "◐ 부서 단위 O · 상위조직 불가(CONF-4)"),
+        ("부서별 회원개발 **목표 대비 달성률**", "`FACT_DEV_ACHIEVEMENT`", "◐ 부서 단위 O · 상위조직 불가(CONF-4)"),
         ("알림톡/서신 발송 실적", "`WIDE_SERVICE_EVENT`", "◐ 발송수·고유회원수 O · 성공/실패/오픈·+5일 반응 ⛔"),
         ("행사별 참여 회원·참여자수", "`WIDE_EVENT_PARTICIPATION`", "◐ 참여수 O · 상태별 카운트 ⛔(O28 코드체계)"),
         ("예산 편성 대비 집행 현황", "`WIDE_BUDGET`", "◐ 편성(월)·집행 O · 연편성·모금성비용·광고비 ⛔(E-1/E-4)"),

@@ -37,10 +37,10 @@ FIELD_MAPPING_OVERRIDE = {
         "일 grain 은 `FME.DATE_SK` 뿐이다. ⚠️단 목표(`FACT_TARGET_DEV`)에는 일자 축이 없으므로 "
         "**목표 대비 일별 달성률은 여전히 불가**하다(목표 원천 `TM_CM_MBER_DVLP_GOAL` 시간축 = `STDYY`+`STDR_MT`)."),
     "월 실적": (
-        "WIDE_DEV_ACHIEVEMENT.ACTUAL_CNT", "WRONG_GRAIN",
+        "FACT_DEV_ACHIEVEMENT.ACTUAL_CNT", "WRONG_GRAIN",
         "부서별 실적을 `FMM` 에서 낼 수 없다 — **`FMM` 에 `ORG_SK` 가 없다**(물리 확인). "
         "원천이 부서를 주는 곳은 개발 사건(`ACMSLT_DEPT_CD`)뿐이다. "
-        "목표·실적 대응 정본은 `WIDE_DEV_ACHIEVEMENT`(grain `MONTH_KEY × ORG_SK × DEV_TYPE`)."),
+        "목표·실적 대응 정본은 `FACT_DEV_ACHIEVEMENT`(grain `MONTH_KEY × ORG_SK × DEV_TYPE`)."),
     "기준년월": (
         "FACT_MEMBER_MONTHLY.MONTH_KEY", "WRONG_GRAIN",
         "월 팩트에 `DIM_DATE`(일 차원)를 걸 수 없다. 월 축은 `MONTH_KEY` 이고 라벨은 `SERVING.DIM_MONTH` 다."),

@@ -1,6 +1,7 @@
 -- WIDE_AD_DIGITAL: 디지털광고 위성 팩트(FAD_D) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- Co-authored with CoCo
--- grain = AD_PERF_DK (FAD_D 와 1:1). 실측 197,686행 (DGT).
+-- grain = AD_PERF_DK (FAD_D 와 1:1). 원천유형 DIGITAL 단독 지분이다.
+-- 🔴 행수를 여기에 적지 않는다(규칙 7) — 종전 하드코딩이 재적재로 stale 이 됐다. 규모는 이슈원장 §O51-F.
 --
 -- ⚠️ 설계 의도: 분석가·SV·Agent 가 **이 뷰 하나로 디지털광고 분석을 끝낼 수 있게** 만든다.
 --    위성은 코어와 1:1 이므로 코어 measure 를 함께 노출해도 fan-out 이 없다.
@@ -12,12 +13,16 @@
 --    집계 시에는 반드시 base 로 재계산할 것 — 예: CTR = SUM(CLICKS)/SUM(IMPRESSIONS).
 --    `_SRC` 는 대행사 산식과 DW 산식을 **대조**하는 용도이며, 행 단위 참조만 유효하다.
 --    VTR_SRC 는 base 가 원천에 없어 재계산이 불가하다(대조 대상 아님).
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-10 O51-F] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--   🔄 종전 「DROP 예정」 결정 철회(2026-08-10): 이 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리며,
+--     DEC-8/DEC-10 이 위성 단독 완결을 설계 의도로 명시한다. 보존 + COMMENT 이관으로 확정했다.
 {{ config(
-    materialized='view',
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '디지털광고 위성 팩트 평탄화 (FAD_D × DATE·CAMPAIGN·AD_CREATIVE·DEVICE, grain=AD_PERF_DK, 197,686행). 코어 measure 동반 노출(1:1이라 fan-out 없음) — 단 WIDE_AD_PERFORMANCE 와 합산 시 이중계상 주의. _SRC 는 비가산(N), 집계는 base 재계산.'",
-      "ALTER VIEW {{ this }} ALTER COLUMN AD_PERF_DK COMMENT '광고성과 행 식별자(grain) — 코어 WIDE_AD_PERFORMANCE 조인키', COLUMN AD_SOURCE_TYPE COMMENT '광고 원천유형 — 본 뷰는 DIGITAL 만', COLUMN PERF_DATE_SK COMMENT '광고 실적일 YYYYMMDD', COLUMN AD_COST COMMENT '[코어] GA 광고비(원)', COLUMN IMPRESSIONS COMMENT '[코어] 노출수 — CTR 분모', COLUMN CLICKS COMMENT '[코어] 클릭수 — CTR 분자', COLUMN GA_CONV_MEMBERS COMMENT '[코어] GA전환수(명) — CVR 분자(O16 교정 후 디지털 전용)', COLUMN GA_CONV_CNT COMMENT '[코어] GA전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용)', COLUMN PAGE_TYPE COMMENT '페이지유형', COLUMN AD_GROUP_NM COMMENT '광고그룹명', COLUMN GROUP_DIV COMMENT '그룹구분', COLUMN CREATIVE_TYPE COMMENT '소재유형(원천 표기)', COLUMN AD_TYPE_NM COMMENT '광고유형명(대행사 표기) — ⚠️AD_SOURCE_TYPE 과 다른 개념', COLUMN READ_CNT COMMENT '읽음수', COLUMN MEDIA_POTENTIAL_CUST_CNT COMMENT '매체 잠재고객수', COLUMN CRM_DEV_CNT COMMENT 'CRM 개발건수', COLUMN CTR_SRC COMMENT 'CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS)', COLUMN CVR_SRC COMMENT 'CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(GA_CONV_MEMBERS)/SUM(CLICKS)', COLUMN CPC_SRC COMMENT 'CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS)', COLUMN CPM_SRC COMMENT 'CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000', COLUMN CPA_SRC COMMENT 'CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(GA_CONV_CNT)', COLUMN DEV_UNIT_PRICE_SRC COMMENT '개발단가(대행사 산정) — 비가산 N', COLUMN VTR_SRC COMMENT 'VTR(대행사 산정) — 비가산 N, base 부재로 재계산 불가', COLUMN DW_SOURCE_SYSTEM COMMENT '원천 시스템 식별', COLUMN PERF_FULL_DATE COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자', COLUMN PERF_YEAR COMMENT 'DIM_DATE.YEAR — 실적일 년', COLUMN PERF_MONTH COMMENT 'DIM_DATE.MONTH — 실적일 월', COLUMN PERF_QUARTER COMMENT 'DIM_DATE.QUARTER — 실적일 분기', COLUMN PERF_IS_HOLIDAY COMMENT 'DIM_DATE.IS_HOLIDAY — 실적일 휴일여부', COLUMN CAMPAIGN_NAME COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명', COLUMN AD_MEDIA_NAME COMMENT 'DIM_AD_CREATIVE.MEDIA_NAME — 매체명', COLUMN AD_CREATIVE COMMENT 'DIM_AD_CREATIVE.CREATIVE — 소재', COLUMN DEVICE_TYPE COMMENT 'DIM_DEVICE.DEVICE_TYPE — M / PC (디지털은 기기 실존)'"
-    ]
+    materialized='gn_view_commented'
 ) }}
 
 select

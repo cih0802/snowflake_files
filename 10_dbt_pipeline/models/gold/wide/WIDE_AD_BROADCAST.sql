@@ -1,6 +1,8 @@
 -- WIDE_AD_BROADCAST: 방송광고 위성 팩트(FAD_B) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- Co-authored with CoCo
--- grain = AD_PERF_DK (FAD_B 와 1:1). 실측 37,886행 (VIDEO 35,822 + REBRDC 2,064).
+-- grain = AD_PERF_DK (FAD_B 와 1:1). 원천유형 VIDEO·REBROADCAST 2종의 완전 수직분할 지분이다.
+-- 🔴 행수를 여기에 적지 않는다(규칙 7) — 종전 하드코딩이 재적재로 stale 이 됐고 그 불일치가
+--   「원인 미규명」으로 방치됐다. 원인은 재적재였다(O51-F 실측). 규모는 이슈원장 §O51-F.
 --
 -- ⚠️ 설계 의도: 분석가·SV·Agent 가 **이 뷰 하나로 방송광고 분석을 끝낼 수 있게** 만든다.
 --    위성은 코어와 1:1 이므로 코어 measure(AD_COST·INBOUND_CALL 등)를 함께 노출해도 fan-out 이 없다.
@@ -10,16 +12,22 @@
 -- ⚠️ 디지털 광고는 본 뷰에 없다(방송 전용 위성). 전 유형 집계는 `WIDE_AD_PERFORMANCE`.
 -- ⚠️ 컬럼 NULL 은 '두 방송 원천 중 한쪽 전용 속성'이며 결측이 아니다.
 --    VIDEO 전용: CM_POSITION·AD_START_TIME·AD_END_TIME·CHANNEL_COMPANY_TYPE·SPOT_TYPE·
---                DURATION_SEC·DAY_DIV·PRG_START_TIME·CTV_DIV·CONV_CALL_CNT·AD_VIEW_RT_SRC·CPC_SRC
+--                DURATION_SEC·DAY_DIV·PRG_START_TIME·CTV_DIV·AD_VIEW_RT_SRC·CPC_SRC
+--    🔴 [O51-F 실측] CONV_CALL_CNT 는 VIDEO 전용 컬럼이 맞지만 **원천에서 전건 비어 있다** —
+--      종전 「VIDEO 는 개발 대신 전환콜을 보고한다」는 기술은 컬럼 존재 기준으로만 참이다(AD-5 보강).
 --    REBRDC 전용: RT_TYPE·BRDC_DIV·DVLP_MEMBER_CNT·DVLP_CNT
 -- ⚠️ `_SRC` = 대행사 산정 파생값(DEC-9) — **비가산(N)**. SUM/AVG 재합산 금지.
 -- ⚠️ DVLP_* = 재방송 개발실적. 종전 코어 GA_CONV_* 로 혼입돼 있던 값(O16). GA 전환과 **다른 개념**.
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-10 O51-F] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--   🔄 종전 「DROP 예정」 결정 철회(2026-08-10): 이 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리며,
+--     DEC-8/DEC-10 이 위성 단독 완결을 설계 의도로 명시한다. 보존 + COMMENT 이관으로 확정했다.
 {{ config(
-    materialized='view',
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '방송광고 위성 팩트 평탄화 (FAD_B × DATE·CAMPAIGN·AD_CREATIVE, grain=AD_PERF_DK). 코어 measure 동반 노출(1:1이라 fan-out 없음) — 단 WIDE_AD_PERFORMANCE 와 합산 시 이중계상 주의. 방송 전용(디지털 제외). ⚠️행수는 하드코딩하지 않는다 — 종전 기재 37,886 이 2026-08-04 실측 38,486 과 어긋났다(원인 미규명).'",
-      "ALTER VIEW {{ this }} ALTER COLUMN AD_PERF_DK COMMENT '광고성과 행 식별자(grain) — 코어 WIDE_AD_PERFORMANCE 조인키', COLUMN AD_SOURCE_TYPE COMMENT '광고 원천유형 VIDEO/REBROADCAST (본 뷰는 방송 2종만)', COLUMN PERF_DATE_SK COMMENT '광고 실적일 YYYYMMDD', COLUMN AD_COST COMMENT '[코어] 광고비(원) — VIDEO=실집행·REBRDC=편성비용', COLUMN INBOUND_CALL COMMENT '[코어] 인입콜수', COLUMN TIME_BAND COMMENT '시간대', COLUMN CM_POSITION COMMENT 'CM위치 (VIDEO 전용)', COLUMN RT_TYPE COMMENT 'RT(재방송)유형 (REBRDC 전용)', COLUMN AD_START_TIME COMMENT '광고시작시간 (VIDEO 전용)', COLUMN AD_END_TIME COMMENT '광고종료시간 (VIDEO 전용)', COLUMN BROADCAST_DATE COMMENT '송출일 — 실적일(PERF_DATE_SK)과 다를 수 있음', COLUMN PROGRAM_NM COMMENT '프로그램/편성명', COLUMN CHANNEL_COMPANY COMMENT '채널사', COLUMN CHANNEL_COMPANY_TYPE COMMENT '채널사유형 (VIDEO 전용)', COLUMN SPOT_TYPE COMMENT 'SPOT유형 (VIDEO 전용)', COLUMN DURATION_SEC COMMENT '🔴 광고 초수 (VIDEO 전용) — **현재 값을 신뢰하지 말 것**(O29). 적재값이 30,000,000/60,000,000/90,000,000 이라 「초」로 읽으면 오답이다(µs 해석 유력하나 미확정·현업 확인 대기). 또한 원천 HH:MM:SS 표기 **32,739행(96.6%)이 TRY_TO_NUMBER 캐스팅에서 무성 소실**됐다 → 유효 커버리지 1,151/36,416=3.2%(파싱 시 93.1% 회복). REBRDC 의 NULL 은 결손이 아니라 원천 부재', COLUMN DAY_DIV COMMENT '요일구분 평일/주말 (VIDEO 전용)', COLUMN PRG_START_TIME COMMENT '프로그램 시작시간 (VIDEO 전용)', COLUMN CTV_DIV COMMENT 'CTV구분 (VIDEO 전용)', COLUMN BRDC_DIV COMMENT '방송구분 (REBRDC 전용)', COLUMN AD_CNT COMMENT '광고횟수', COLUMN CONV_CALL_CNT COMMENT '전환콜 (VIDEO 전용) — 인입콜과 별개', COLUMN DVLP_MEMBER_CNT COMMENT '개발회원수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)', COLUMN DVLP_CNT COMMENT '개발건수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)', COLUMN AD_VIEW_RT_SRC COMMENT '광고시청률(대행사 산정) — 비가산 N, 재합산 금지', COLUMN CPC_SRC COMMENT 'CPC(대행사 산정) — 비가산 N, 재합산 금지', COLUMN DW_SOURCE_SYSTEM COMMENT '원천 시스템 식별', COLUMN PERF_FULL_DATE COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자', COLUMN PERF_YEAR COMMENT 'DIM_DATE.YEAR — 실적일 년', COLUMN PERF_MONTH COMMENT 'DIM_DATE.MONTH — 실적일 월', COLUMN PERF_QUARTER COMMENT 'DIM_DATE.QUARTER — 실적일 분기', COLUMN PERF_IS_HOLIDAY COMMENT 'DIM_DATE.IS_HOLIDAY — 실적일 휴일여부', COLUMN CAMPAIGN_NAME COMMENT 'DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명', COLUMN AD_MEDIA_NAME COMMENT 'DIM_AD_CREATIVE.MEDIA_NAME — 매체명', COLUMN AD_CREATIVE COMMENT 'DIM_AD_CREATIVE.CREATIVE — 소재'"
-    ]
+    materialized='gn_view_commented'
 ) }}
 
 select

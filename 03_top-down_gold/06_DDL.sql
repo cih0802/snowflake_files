@@ -1,14 +1,23 @@
--- GN_DW.GOLD 스키마 전체 DDL(31개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
+-- GN_DW.GOLD 스키마 전체 DDL(35개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
 -- Co-authored with CoCo
 /*
 ================================================================================
-  GN_DW.GOLD — 전체 테이블 DDL (31개: DIM 17 + FACT 14)
+  GN_DW.GOLD — 전체 테이블 DDL (35개: DIM 20 + FACT 15)
   작성일   : 2026-07-02 (컬럼 COMMENT: 2026-07-03 / 배포·적재: 2026-07-20 / 광고 위성 3종 증설: 2026-07-28 순서9-I
-             / **O45 조립축 증설: 2026-08-06** — DIM_MARKETING_CAMPAIGN·FACT_MEMBER_FEE 신설 + 신규 컬럼 3 + FK 8)
+             / **O45 조립축 증설: 2026-08-06** — DIM_MARKETING_CAMPAIGN·FACT_MEMBER_FEE 신설 + 신규 컬럼 3 + FK 8
+             / **O53 GOLD 최종형: 2026-08-10** — DIM_MONTH 신설 + DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION 뷰→테이블
+               + FACT_DEV_ACHIEVEMENT 신설(구 WIDE_DEV_ACHIEVEMENT 개명) = 31 → **35테이블 · 신규 84컬럼**)
   실측대조 : 2026-07-29 — INFORMATION_SCHEMA GOLD = BASE TABLE 27 + VIEW 12, FK 38 · 본 파일과 전 컬럼 일치.
              **2026-08-06 재대조 — BASE TABLE 31 + VIEW 16, FK 50 · 본 파일과 전 컬럼·순서 일치(기계 대조).**
              (대조 방법: 06_DDL 파싱 결과 31테이블 vs INFORMATION_SCHEMA 31테이블 · 컬럼명·순서 불일치 0 ·
               선언 FOREIGN KEY 50 = 라이브 50. ⚠️ 초안에 「FK 53」이라 적었던 것은 미측정 오기였다 → 교정.)
+             **2026-08-10 O53 — 파일 선언 35테이블. 물리 반영·COMMENT 커버리지는 O53 2단계 스캔으로 판정한다.**
+  🔴 O53 신규 4블록은 **COMMENT 정본이 본 파일로 이동**했다(종전 정본 = dbt schema.yml `columns[]`).
+     근거 = 사용자 결정(2026-08-10) + 재구축 시 본 파일이 replay 스크립트이므로 여기서 빠진 문안은 영구 소실된다.
+     생성기 = `scripts/gen_o53_gold_ddl.py`(손 편집 금지 · 문안은 yml 에서 기계 이관 · 게이트 자기검사 9/9).
+  ⛔ **부분 실행 규칙(O53)**: 이미 적재된 환경에서 본 파일을 **전체 재실행하지 말 것** — `CREATE OR REPLACE`
+     가 기존 31테이블의 데이터를 날린다. 신규 블록만 실행하려면 `scripts/run_o53_new_tables.py` 를 쓴다.
+     (신규 환경 재구축 시에는 전체 실행이 정상 경로다.)
   🔴 재현성 : 이 파일 + `04_silver_design/08_SILVER_테이블DDL_20260714.sql` + `dbt build` 만으로
              신규 환경이 현재 구조와 동일하게 재현된다. O45 임시 스크립트(`O45_ASSEMBLY_AXES.sql`)는
              본 파일에 **전량 이관 완료**되어 `_archive/` 로 이관했다(2026-08-06).
@@ -17,8 +26,9 @@
 --------------------------------------------------------------------------------
   실행 규칙
   ─────────────────────────────────────────────────────────────────────────────
-  1. DIM 17개를 모두 생성한 뒤 FACT 14개를 생성한다. [2026-08-06 O45 로 15/12 → 17/14]
-     신규 DIM = DIM_MARKETING_CAMPAIGN · 신규 FACT = FACT_MEMBER_FEE.
+  1. DIM 20개를 모두 생성한 뒤 FACT 15개를 생성한다. [2026-08-06 O45 로 15/12 → 17/14 · 2026-08-10 O53 로 20/15]
+     O45 신규 DIM = DIM_MARKETING_CAMPAIGN · 신규 FACT = FACT_MEMBER_FEE.
+     O53 신규 DIM = DIM_MONTH·DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION · 신규 FACT = FACT_DEV_ACHIEVEMENT.
   2. DIM_DATE → DIM_ORG → DIM_MEMBER → 나머지 DIM → FACT 순서 준수.
      FACT 내부는 코어 FACT_AD_PERFORMANCE 를 위성 3종(FAD_B·FAD_D·FAD_BC)보다 먼저 생성.
   3. FK_타깃에 '※비강제' 표기된 컬럼은 FOREIGN KEY 제약 없이 일반 컬럼으로 생성.
@@ -75,6 +85,24 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DATE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '날짜 차원 (1일 grain)';
+
+
+-- ============================================================================
+-- DIM 18: DIM_MONTH — 월 차원 (DIM_DATE 월 축 사영 · 월팩트 fan-out 차단)
+--   [2026-08-10 O53] 신설. 구조·COMMENT 소유주 = 본 파일 / 적재 = dbt(incremental append + pre-hook TRUNCATE).
+--   🔴 merge 금지: 완전 재산출 차원에 merge 를 쓰면 grain 이동 시 구 행이 잔존한다(문서50 §300 R1 · P131).
+--   PK(정보성) = MONTH_KEY
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MONTH (
+    MONTH_KEY        NUMBER(6,0)     NOT NULL PRIMARY KEY COMMENT '월 conform 키 YYYYMM. 🔴🔴**월 팩트는 DIM_DATE 를 직접 조인하지 말고 이 차원을 쓴다** — DIM_DATE 는 일 grain 이라 월팩트와 조인하면 월당 일수만큼 행이 증폭되고 금액·건수가 그 배수로 과대해진다(SV 설계 원칙10·R1 fan-out 차단). 대상 팩트 = FACT_MEMBER_MONTHLY·FACT_BUDGET·FACT_TARGET_DEV·FACT_TARGET_BIZ. 🟢본 차원은 DIM_DATE 의 **월 축 사영**이므로 별도 원천이 없고 값이 갈라질 수 없다. ⚠️월키가 YYYYMM 규약을 벗어난 원천 행은 팩트에서 0 으로 라우팅된다 — 이 차원에는 그 멤버가 없다.',
+    YEAR             NUMBER(4,0)     COMMENT '연도 — MONTH_KEY 의 연 부분. DIM_DATE.YEAR 와 동일 정의. 🔴연 집계의 축이며 회계연도가 아니라 역년이다.',
+    MONTH            NUMBER(2,0)     COMMENT '월(1~12) — MONTH_KEY 의 월 부분. DIM_DATE.MONTH 와 동일 정의. ⚠️연을 가로질러 이 축만으로 집계하면 서로 다른 해의 같은 달이 합쳐진다 — 계절성 분석 외에는 MONTH_KEY 를 쓴다.',
+    QUARTER          NUMBER(1,0)     COMMENT '분기(1~4) — DIM_DATE.QUARTER 와 동일 정의. 역년 기준이다.',
+    DW_SOURCE_SYSTEM VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS       TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '월 차원 — DIM_DATE 의 **월 축 사영**(1행 = 1개월). 🔴🔴존재 이유는 **fan-out 차단**이다: 월 팩트(FACT_MEMBER_MONTHLY·FACT_BUDGET·FACT_TARGET_DEV·FACT_TARGET_BIZ)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 행이 증폭되고 금액·건수가 그 배수로 과대해진다(SV 설계 원칙10·R1). 월 팩트의 시간축은 **반드시 이 차원**을 쓴다. 🟢DIM_DATE 파생이라 별도 원천이 없고 값이 갈라질 수 없다 — 캘린더 범위는 DIM_DATE 와 동일하다. 🔴 [O53] 종전에는 SERVING.DIM_MONTH(helper 뷰)만 있었다. SV 가 GOLD 만 참조하도록 GOLD 로 올렸다 — SERVING helper 정리는 로드맵 7단계 소관이다.';
 
 
 -- ============================================================================
@@ -146,22 +174,76 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
 
 
 -- ============================================================================
--- DIM 3-V: DIM_MEMBER_CURRENT — 분석가 기본 진입점 (현재행 뷰) [2026-08-03 신설 · DEC-27 §17-A]
+-- DIM 19: DIM_MEMBER_CURRENT — 회원 현재행 차원 (SCD2 IS_CURRENT 투영 · 분석가 기본 진입점)
+--   [2026-08-10 O53] 신설. 구조·COMMENT 소유주 = 본 파일 / 적재 = dbt(incremental append + pre-hook TRUNCATE).
+--   🔴 merge 금지: 완전 재산출 차원에 merge 를 쓰면 grain 이동 시 구 행이 잔존한다(문서50 §300 R1 · P131).
+--   PK(정보성) = MEMBER_DK
 -- ============================================================================
--- 🔴 본 파일은 **테이블 구조 소유주**이며 뷰는 소유하지 않는다.
---    `DIM_MEMBER_CURRENT` 정본 = dbt 모델 `10_dbt_pipeline/models/gold/dim/DIM_MEMBER_CURRENT.sql`
---    (materialized='view' · `ref('DIM_MEMBER')` · COMMENT 는 post_hook).
---
--- ▶ 왜 dbt 가 소유하는가 (`dbt_project.yml` §67~72 확립 원칙)
---    "ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보
---     (BLOCKING-4 해소, **미거버넌스 객체 재발방지**)" — WIDE 소비뷰와 동일 근거다.
---    ⚠️ 2026-08-03 초판이 이 뷰를 본 파일에 CREATE VIEW + GRANT 로 넣었다가 위 원칙 위반으로 철회했다.
---       GRANT 도 불요다 — GOLD 스키마에 VIEW future grant(SELECT → ANALYST/VIEWER/SERVICE)가
---       이미 있어 매 build 시 자동 부여된다(실측 확인).
---
--- ▶ 존재 이유(요약): 회원 FACT 4개가 전부 MEMBER_DK 로 조인하는데 DIM_MEMBER 는 SCD2(평균 4.50버전)라
---    순진한 조인이 조용히 팬아웃한다 — 실측 202606 단월 3.60배 · 납입회비 171.3억→507.5억(2.96배 과대).
---    상세·전건 NULL 7컬럼 미노출 판정 = 문서30 DEC-27 §17-A·§17-C.
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_CURRENT (
+    MEMBER_SK           NUMBER(38,0)    NOT NULL COMMENT 'DIM_MEMBER 의 **버전 대리키**. ⚠️본 뷰는 IS_CURRENT 행만 담으므로 회원 1명당 1값이지만, 그 의미는 여전히 ''현재 버전 행의 키''다 — 회원 식별에는 MEMBER_DK 를 쓴다(MEMBER_SK 는 재빌드 시 달라질 수 있다).',
+    MEMBER_DK           VARCHAR(10)     NOT NULL PRIMARY KEY COMMENT '불변 회원키(조인용 자연키). 🔴모든 회원 팩트(FMM·FME·FSE·FEP·FMF)가 이 키로 조인한다. 🔴VARCHAR(10) 규약(O12/AC-1) — 원천 MBER_NO 최대길이 9 실측.',
+    MEMBER_TYPE         VARCHAR         COMMENT '회원 **등록계통** 구분 — FDRM=정기회원(원천 `BRONZE_CRM.TM_MM_FDRM_MBER_INFO`) / ONCE=일시회원(원천 `TM_MM_ONCE_MBER_INFO`). 🔴🔴일시회원은 회원상태(MM010)·가입경로(MM014) 개념이 **원천에 없다** — 상태 기반 분포·이탈률·예측 모집단은 MEMBER_TYPE=''FDRM'' 으로 한정할 것. ⚠️MEMBER_TYPE_NAME(개인/기업/단체, MM018)은 이 컬럼의 라벨이 **아니다** — 완전히 다른 축이며 코드는 MBER_DIV_CD 다.',
+    SEX                 VARCHAR         COMMENT '성별 원천코드 raw. 코드그룹 **CM013(성별)**. 코드사전 = 1국내(남자)·2국내(여자)·3외국인(남자)·4외국인(여자)·5외국인(기타)·6단체·7기업·8기타. 정기회원·일시회원 **양쪽 원천 모두 사전 전종이 등장**한다(일시회원은 소수의 NULL 이 있다). 🔴정본 비고가 ''성별만으로는 사용하지 않음''을 명시한다 — 성별 단일축은 GENDER_NAME 을 쓴다. 라벨 = SEX_NM·GENDER_NAME.',
+    SEX_NM              VARCHAR         COMMENT 'CM013 **원천 라벨 그대로**(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 코드 = SEX. 🔴이 컬럼만이 **국내·외국인 축**을 보존한다 — GENDER_NAME(CM017)은 그 축을 지운다.',
+    GENDER_NAME         VARCHAR         COMMENT '성별 분석 라벨(정본 공#130). 코드그룹 **CM017(회원특성(성별))**. [O51-D BRONZE 실측] CM017 은 CM013 과 코드 도메인이 동일(1~8)한 재라벨 그룹이며 국내/외국인 구분을 지운다 — 1남자·2여자·3남자·4여자·5기타·6단체·7기업·8기타 ⇒ **라벨 5종**(남자/여자/기타/단체/기업). 정본 공#130 값정의와 일치. ⚠️CM017 은 정본 컬럼정의서가 어떤 컬럼에도 지정하지 않은 그룹이다(현업 확인 대상). ⚠️종전 하드코딩 ''여성/남성/미상''은 5종을 3종으로 축약하고 법인·단체를 ''미상''으로 오라벨했다(O26 교정).',
+    MBER_STAT_CD        VARCHAR         COMMENT '회원상태 원천코드 raw(정본 공#132 ''회원상태코드''). 코드그룹 **MM010(회원상태)**. 코드사전 = 1활동회원·2~6신규미납1~5·7~11장기미납1~5·12후원중단 · `TH_MM_FDRM_MBER_STNG_DTLS.CHN_STAT_CD` 와 `TM_MM_FDRM_MBER_INFO.MBER_STAT_CD` **양쪽 모두 사전 전종이 등장**한다. SCD2 버전행은 CHN_STAT_CD, 무이력행은 MBER_STAT_CD 에서 온다. 🔴개발구분 MM015 가 아니다(두 그룹 모두 ''후원중단''을 포함한다). 🔴일시회원(ONCE)은 NULL. 라벨 = MEMBER_STATUS_NAME.',
+    MEMBER_STATUS_NAME  VARCHAR         COMMENT '회원상태명(MM010 라벨, 정본 공#132). 코드 = MBER_STAT_CD. 값 = 활동회원 / 신규미납1~5 / 장기미납1~5 / 후원중단. 미매핑은 ''미상''. MM010 은 **폐지코드가 없고 실적재가 사전과 일치**한다 ⇒ 사전 조인만으로 전건 라벨화된다(하드코딩 금지 P31). ⚠️미납 단계(1~5)는 경과 차수이며 금액 규모가 아니다.',
+    MEMBER_STATUS_GROUP VARCHAR         COMMENT '회원상태 **대분류**(파생): MM010 코드 1→''정상'' · 2~11→''미납'' · 12→''중단'' · NULL→''미상''. 🔴신규미납(2~6)과 장기미납(7~11)을 한 값으로 묶는다 — 두 단계를 구분해야 하면 MEMBER_STATUS_NAME 을 쓴다. ⚠️원천 코드그룹이 아니라 DW 파생 축이다(DIM_MEMBER.sql 단일 소유).',
+    MBER_DIV_CD         VARCHAR         COMMENT '회원구분 원천코드 raw. 코드그룹 **MM018(회원구분)**: 1개인·2기업·3단체. 정기회원·일시회원 **양쪽 모두 사전 전종이 등장**한다. 🟢독립 교차검증: `2`(기업)·`3`(단체) 의 행수가 `SEX`=''7''(기업)·''6''(단체) 와 **완전히 일치**한다. 🔴MEMBER_TYPE(FDRM/ONCE)과 다른 축이다. 라벨 = MEMBER_TYPE_NAME.',
+    MEMBER_TYPE_NAME    VARCHAR         COMMENT '회원구분명(MM018 라벨): 개인·기업·단체. 코드 = MBER_DIV_CD. 미매핑은 ''미상''. 🔴🔴이름이 비슷한 MEMBER_TYPE(FDRM 정기회원 / ONCE 일시회원)의 라벨이 **아니다** — 이 뷰에 두 컬럼이 나란히 있어 특히 혼동되기 쉽다.',
+    JOIN_PATH_CD        VARCHAR         COMMENT '가입경로 원천코드 raw. 코드그룹 **MM014(가입경로)**. 코드사전 = 1홈페이지·2CRM·3모바일웹·4희망TV·5외주콜센터·6모바일앱·7REG·8EDU 이나 실적재에는 **1·2·3·5·6·7 만 나타난다** — 🔴**4(희망TV)·8(EDU)는 실적재에 없다.** 🔴일시회원(ONCE)은 가입경로 개념이 원천에 없어 NULL. 라벨 = ENROLL_PATH_NAME.',
+    ENROLL_PATH_NAME    VARCHAR         COMMENT '가입경로명(MM014 라벨). 코드 = JOIN_PATH_CD. 실제로 나타나는 라벨은 **홈페이지·CRM·모바일웹·외주콜센터·모바일앱·REG** 다 — 사전에는 희망TV·EDU 도 있으나 **실적재에 없으므로** 그 둘을 포함해 열거하면 거짓이다. 미매핑은 ''미상''.',
+    FIRST_JOIN_DATE     DATE            COMMENT '최초가입일 = 회원번호 생성일(정본 공#28). ⚠️후원 개시일이 아니다 — 첫 개발약정일은 DIM_MEMBER_ACQUISITION.ACQ_DATE_SK 로 답한다.',
+    FIRST_CAMPAIGN      VARCHAR         COMMENT '최초캠페인(정본 공#29). ⚠️획득 귀속 캠페인(DIM_MEMBER_ACQUISITION.ACQ_CAMPAIGN_NAME)과 **판정 규칙이 다르다** — 획득 축은 개발구분 ''신규'' 사건(없으면 최초 개발 사건)을 근거로 정한다(ACQ_BASIS).',
+    REGION              VARCHAR         COMMENT '지역명 — 코드그룹 **CM018** 약칭 라벨(정본 공#131). 코드 raw 는 DIM_MEMBER.AREA_CD. 🔴🔴**현재 거주지가 아니다** — 원천이 `CRM_MEMBER_DEV`(BRONZE `TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD`)의 **개발약정 시점 스냅샷**이다. 현주소 축은 BRONZE 에 없다(O34). 🔴**SCD2 축**이다 — 회원의 버전이 바뀌면 값이 달라질 수 있고, 본 뷰는 현재 버전 행의 값만 담는다. 🔴일시회원(MEMBER_TYPE=''ONCE'')은 개발약정 개념이 원천에 없어 **NULL** 이다 — 지역 분포는 MEMBER_TYPE=''FDRM'' 으로 스코프할 것(ONCE 를 분모에 넣으면 채움률이 조용히 낮아진다 · P128). ⚠️센티넬 ''0'' 은 사전에 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다. ⚠️획득 시점 지역축(DIM_MEMBER_ACQUISITION.ACQ_REGION)과 같은 원천이나 축의 이름과 용도가 다르다.',
+    AGE_BAND            VARCHAR         COMMENT '연령대명 — 코드그룹 **CM014** 라벨. 코드 raw 는 DIM_MEMBER.AGE. 🔴🔴**연속형 나이가 아니다** — CM014 는 코드 12종(''10대 미만''·''10대''~''70대''·''70대 이상''·단체·기업·기타)이며 평균·구간 재계산을 하면 뜻이 깨진다. BRONZE `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 의 원천 COMMENT ''연령''은 오류다. 🔴🔴**현재 나이가 아니다** — `CRM_MEMBER_DEV` 의 **개발약정 시점 스냅샷**이고 BRONZE 에 생년월일 축이 없어 시점정확 연령은 산출 불가다(O34). 🔴**SCD2 축**이다. 🔴일시회원(MEMBER_TYPE=''ONCE'')은 **NULL** — 연령 분포는 MEMBER_TYPE=''FDRM'' 으로 스코프할 것(P128). 🟢독립 교차검증으로 코드 해석이 확정됐다 — 단체 코드는 SEX 단체와, 기업 코드는 SEX 기업과 전건 일치한다. ⚠️사전 자체에 ''70대''와 ''70대 이상''이 의미 중복으로 공존한다.',
+    FIRST_SPONSORSHIP   VARCHAR         COMMENT '최초 후원사업 식별자 raw ← `CRM_MEMBER_DEV.SPNSR_BSNS_ID`(BRONZE `TM_MM_FDRM_MBER_DVLP_AMT`). 🔴**라벨이 아니라 사업 ID** 다 — 사업명이 필요하면 DIM_SPONSORSHIP 을 조인하거나 DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_NAME 을 쓴다. 🔴🔴회비 **납입 대상** 후원사업(FACT_MEMBER_FEE.SPONSORSHIP_SK)과 **의미가 다르다** — 한 회원이 A 사업으로 가입한 뒤 B 사업에 낼 수 있다. 🔴일시회원(MEMBER_TYPE=''ONCE'')은 **NULL**(P128 스코프 주의). ⚠️최초 약정 기준이며 이후 사업 변경은 반영되지 않는다.',
+    LAST_STOP_DATE      DATE            COMMENT '최종 중단일 ← `CRM_MEMBER_DISCONTINUE.STOP_DT`. 🔴**미중단 회원은 NULL** 이며 0 이나 특정 날짜로 채우지 않는다 — NULL 은 「아직 중단하지 않았다」는 1급 정보다(P21). 🔴**SCD2 축**이다 — 재후원·재중단이 있으면 버전마다 값이 다르고 본 뷰는 현재 버전 행의 값만 담는다. 🔴🔴**최초** 중단일이 아니다 — 최초 중단은 DIM_MEMBER_ACQUISITION.FIRST_STOP_DATE_SK 이고, 유지기간(TENURE_DAYS)의 분자는 그쪽이다. 두 축을 섞으면 재후원 회원의 유지기간이 조용히 늘어난다. 🔴일시회원(MEMBER_TYPE=''ONCE'')은 **NULL**(P128 스코프 주의). ⚠️중단 총계·중단 사유는 FACT_MEMBER_EVENT 를 쓴다 — 이 컬럼은 회원 단위 최종 상태다.',
+    EFFECTIVE_FROM      DATE            COMMENT 'SCD2 유효 시작 시각. 🔴본 뷰는 현재행만 담으므로 이 값은 ''현재 상태가 시작된 시점''이다. 🔴과거 시점 상태가 필요하면 이 뷰가 아니라 DIM_MEMBER 를 EFFECTIVE_FROM/EFFECTIVE_TO 로 시점조인할 것 — 예측·피처 생성은 그 시점조인이 정답이며 현재값을 과거 행에 붙이면 정답 누설이다.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별(공통감사). 업무 축이 아니다 — GROUP BY 대상이 아니다.',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각(공통감사). 업무 축이 아니다.',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각(공통감사). ⚠️원천 변경 시각이 아니라 DW 적재 시각이다.',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id(공통감사). 재현·감사 추적용.'
+) COMMENT = '🟢 GOLD 직접조회 분석가의 기본 진입점 — 회원 1명 = 1행. DIM_MEMBER 는 **SCD2 다버전**이므로 FACT 와 MEMBER_DK 직접 조인 시 팬아웃한다(단월·회비 측정에서 배수 과대 실측 — 규모는 이슈원장 §O51-D). 과거 시점 상태가 필요할 때만 DIM_MEMBER 를 EFFECTIVE_FROM/EFFECTIVE_TO 로 시점조인할 것 — 예측·피처 생성은 이 시점조인이 정답이며 현재값을 과거 행에 붙이면 정답 누설이다. 🔴 상태 기반 분포·이탈률·예측 모집단은 MEMBER_TYPE=''FDRM'' 으로 한정할 것(일시회원 ONCE 는 회원상태·가입경로 개념이 원천에 없고 REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 도 전건 NULL 이다). 본 테이블은 DIM_MEMBER 의 순수 투영이며 라벨 정의는 DIM_MEMBER.sql 단일 소유. 🔴 [O53] REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 를 노출한다 — 종전 미노출 근거였던 「전건 NULL 7컬럼」은 stale 이다(DEC-28 §18-B 가 이미 정정 · 3컬럼은 DIM_MEMBER 에 부재하고 4컬럼은 채워져 있다). ⚠️네 컬럼 전부 **개발약정 시점 스냅샷**이고 SCD2 축이다 — 현재 거주지·현재 나이로 읽으면 틀린다. ⚠️SERVING.DIM_MEMBER_CURRENT 와 동명이나 컬럼 집합이 다르다.';
+
+
+-- ============================================================================
+-- DIM 20: DIM_MEMBER_ACQUISITION — 회원 획득 귀속 차원 (1행 = 1회원)
+--   [2026-08-10 O53] 신설. 구조·COMMENT 소유주 = 본 파일 / 적재 = dbt(incremental append + pre-hook TRUNCATE).
+--   🔴 merge 금지: 완전 재산출 차원에 merge 를 쓰면 grain 이동 시 구 행이 잔존한다(문서50 §300 R1 · P131).
+--   PK(정보성) = MEMBER_DK
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_ACQUISITION (
+    MEMBER_DK                VARCHAR(10)     NOT NULL PRIMARY KEY COMMENT '회원 자연키(= 팩트 조인키). 🔴본 뷰는 **1행 = 1회원**이다(O51-D 실측: base FACT_MEMBER_COHORT 의 행수 = 고유회원 수) ⇒ 팩트와 조인해도 팬아웃 0. 🔴단 **LEFT JOIN 필수** — 개발 사건이 없는 회원은 이 뷰에 존재하지 않는다🔴🔴[O51-D 실측] 손실 규모는 **분모를 무엇으로 잡느냐로 크게 달라진다** — INNER 조인이 잃는 것은 **회원**이므로 **회원 기준 비율이 정본**이다(FMM·FSE·FEP 실측치는 이슈원장 §O51-D-B). ⚠️종전 문안이 쓰던 비율은 **행 가중**이어서 손실을 크게 축소해 보이게 했다(O51-D 정정).',
+    ACQ_CAMPAIGN_SK          NUMBER(38,0)    COMMENT '획득 캠페인 대리키(FK→DIM_CAMPAIGN). 0=미매핑·부재. 🔴**회원을 처음 데려온** 캠페인이다 — 회비·월실적 팩트의 캠페인 축은 전건 센티넬인데, 그 이유는 원천 부재가 아니라 **다중캠페인 후원의 귀속 규칙이 없었다**는 것이다(O45 판정) 이 뷰가 「획득 시점」이라는 명시된 규칙으로 대체한다(O45·O8 우회).',
+    ACQ_ORG_SK               NUMBER(38,0)    COMMENT '획득 시점 담당조직 대리키(FK→DIM_ORG). 0=미매핑. 🔴「현재 소속」이 아니다. 🔴🔴「부서」는 축이 둘이다 — 개발실적보고의 부서 = **사건 부서**(FACT_MEMBER_EVENT.ORG_SK) · 연간분석(회비)의 부서 = **획득 부서**(이 축). 이름으로 구분되지 않으면 소비 측이 조용히 틀린다(O34 규약).',
+    ACQ_SPONSORSHIP_SK       NUMBER(38,0)    COMMENT '획득 시점 후원사업 대리키(FK→DIM_SPONSORSHIP). 0=미매핑. 🔴🔴회비 **납입 대상** 후원사업(FACT_MEMBER_FEE.SPONSORSHIP_SK)과 **의미가 다르다** — 같은 라벨로 두 축이다. 한 회원이 A 사업으로 가입한 뒤 B 사업에 낼 수 있다.',
+    ACQ_DATE_SK              NUMBER(8,0)     COMMENT '획득일 대리키(FK→DIM_DATE) — 획득 사건의 발생일. 0=캘린더 범위밖·무효. ⚠️회원번호 생성일(DIM_MEMBER_CURRENT.FIRST_JOIN_DATE)과 다르다 — 이 값은 **개발약정 사건일**이다.',
+    ACQ_BASIS                VARCHAR         COMMENT '획득 판정 근거. ''NEW''=개발구분 **신규**(MM015 코드 ''1'') 사건으로 판정 / ''FALLBACK''=신규 사건이 없어 **최초 개발 사건**으로 대체 판정. 🔴FALLBACK 은 획득캠페인 신뢰도가 낮다 — 캠페인·브랜드 비교 시 ACQ_BASIS=''NEW'' 로 한정할 것을 권한다. ⚠️개발 이력이 아예 없는 중단회원은 획득 캠페인을 알 수 없어 이 뷰에 **존재하지 않는다**(중단 총계는 FACT_MEMBER_EVENT 를 쓴다).',
+    ACQ_DVLP_DIV_CD          VARCHAR         COMMENT '획득 사건의 개발구분 코드. 코드그룹 **MM015(개발구분)**. 코드사전 = 1신규·2증액·3감액·4재후원·5후원중단 · 실적재에 **사전 전종이 등장**한다. ⚠️ACQ_BASIS=''NEW'' 이면 이 값은 항상 ''1''이다 — 그 외 값은 FALLBACK 경로를 뜻한다. 🔴MM015 는 회원상태 MM010 이 아니다(두 그룹 모두 ''후원중단''을 포함한다).',
+    ACQ_AGE_CD               NUMBER(2,0)     COMMENT '획득 시점 연령대 코드. 코드그룹 **CM014(나이)**. 코드사전 = 1''10대 미만''·2''10대''·3''20대''·4''30대''·5''40대''·6''50대''·7''60대''·8''70대''·9''70대 이상''·10단체·11기업·12기타 · 실적재에 **사전 전종이 등장**한다. 🔴**연속형 나이가 아니다** — 평균·구간 재계산 금지. ⚠️사전 자체에 8''70대''·9''70대 이상''이 의미 중복으로 공존한다. 라벨 = ACQ_AGE_BAND.',
+    ACQ_AGE_BAND             VARCHAR         COMMENT '획득 시점 연령대명(CM014 라벨, 사전 조인 — 하드코딩 아님 P31). 코드 = ACQ_AGE_CD. 🔴**현재 나이가 아니다** — BRONZE 에 생년월일이 없어 현재 연령은 산출 불가(O34). ✅''10대 미만''이 상위인 것은 오류가 아니다 — 편지쓰기대회 계열 캠페인이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B).',
+    ACQ_AREA_CD              VARCHAR         COMMENT '획득 시점 지역 코드. 코드그룹 **CM018**. 코드사전은 시·도 목록이고 실적재에 **사전 전종 + 라벨 없는 센티넬 ''0''** 이 나타난다. ⚠️CM018 의 그룹명은 ''신규시도구분''이지만 상세코드는 전부 시·도다. 라벨 = ACQ_REGION.',
+    ACQ_REGION               VARCHAR         COMMENT '획득 시점 지역명(CM018 약칭 라벨, 정본 공#131). 코드 = ACQ_AREA_CD. 🔴**현재 거주지가 아니다** — BRONZE 에 현주소 축이 없다(O34). ⚠️센티넬 ''0'' 은 사전에 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다.',
+    ACQ_SEX_CD               VARCHAR         COMMENT '획득 시점 성별 코드. 코드그룹 **CM013(성별)**. 실적재(`TM_MM_FDRM_MBER_DVLP_AMT.SEX`)에 **사전 전종 + 사전에 없는 센티넬 ''0''** 이 나타난다. 🔴DIM_MEMBER 의 분석 성별(GENDER_NAME·CM017 계열)과 **라벨 체계가 다르다** — 이 축은 국내/외국인 구분을 보존한다. 라벨 = ACQ_GENDER.',
+    ACQ_GENDER               VARCHAR         COMMENT '획득 시점 성별명(CM013 라벨): 국내(남자)·국내(여자)·외국인(남자)·외국인(여자)·외국인(기타)·단체·기업·기타. 코드 = ACQ_SEX_CD. 🔴DIM_MEMBER_CURRENT.GENDER_NAME(CM017 · 5종)과 값 집합이 다르다 — 두 축을 같은 표에서 비교하지 말 것. ⚠️센티넬 ''0'' 은 사전 라벨이 없어 NULL.',
+    ACQ_SPNSR_AMT            NUMBER(18,0)    COMMENT '획득 사건의 후원금액(원, raw) ← TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT. 🔴**건수로 환산하지 말 것** — 정본 공#38·#151 이 **금액을 만원 단위로 나눈 값**이라는 규약이라 혼용하면 정의가 깨진다(CONF-2). ⚠️획득 시점 약정액이며 이후 증액·감액은 반영되지 않는다(현재 약정액이 아니다).',
+    ACQ_BRAND                VARCHAR         COMMENT '획득 캠페인의 브랜드 ← DIM_CAMPAIGN.BRAND. 차원 단독 조회로도 뜻이 통하게 라벨을 비정규화했다(DEC-10). ⚠️ACQ_BASIS=''FALLBACK'' 인 회원은 귀속 신뢰도가 낮다.',
+    ACQ_CAMPAIGN_NAME        VARCHAR         COMMENT '획득 캠페인명 ← DIM_CAMPAIGN.CAMPAIGN_NAME. ⚠️광고비와 결합할 때는 이 축이 아니라 ACQ_MARKETING_CAMPAIGN 을 쓴다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
+    ACQ_PARENT_CAMPAIGN_NAME VARCHAR         COMMENT '획득 캠페인의 **상위캠페인**명 ← DIM_CAMPAIGN.PARENT_CAMPAIGN_NAME (원천 UPPER_CMPGN_CD 계층). 🔴캠페인 카테고리(MM294)와 다른 축이다 — 카테고리는 코드 기반 분류, 상위캠페인은 캠페인 자체의 부모다.',
+    ACQ_PROMO_METHOD_NAME    VARCHAR         COMMENT '획득 캠페인의 홍보방법명 ← DIM_CAMPAIGN.PROMO_METHOD_NAME. 코드그룹 **CM008(홍보방법)**. [O51-D BRONZE 실측] CM008 사전은 100종을 넘는 대형 그룹이며 채널·랜딩·매체가 한 축에 섞여 있다(PC캠페인-홈페이지·M배너광고(DA)·TM·TS·가두·교회개발·직원개발·서신 등) — 🔴상위 집계가 필요하면 이 축이 아니라 개발인입경로(MM293 · DIM_CAMPAIGN.INFLOW_PATH)를 쓴다.',
+    ACQ_MARKETING_CAMPAIGN   VARCHAR         COMMENT '획득 캠페인의 마케팅캠페인(O45 conformed 축) ← DIM_CAMPAIGN.MARKETING_CAMPAIGN (원천 MKTG_CMPGN_NM). 🟢**광고비와 결합하는 정본 축**이다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
+    ACQ_DEPARTMENT           VARCHAR         COMMENT '획득 시점 부서명 ← DIM_ORG.DEPARTMENT. 코드 = ACQ_ORG_SK. 🔴**획득(최초개발) 시점 부서**다 — 개발실적보고의 「부서」(=사건 부서)와 다르다. 사건 부서는 WIDE_MEMBER_EVENT.ORG_DEPARTMENT 를 쓴다(O34 _AT_PLEDGE/_AT_EVENT 규약의 재적용). ⚠️DIM_ORG 는 SCD1(DEC-2)이라 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다.',
+    ACQ_SPONSORSHIP_NAME     VARCHAR         COMMENT '획득 시점 후원사업명 ← DIM_SPONSORSHIP.SPONSORSHIP_NAME(정본 공#123). 코드 = ACQ_SPONSORSHIP_SK. 🔴회비 **납입 대상** 후원사업명(WIDE_MEMBER_FEE.SPONSORSHIP_NAME)과 다른 축이다.',
+    FIRST_STOP_DATE_SK       NUMBER(8,0)     COMMENT '최초 중단일 대리키(FK→DIM_DATE) — 중단원천(EVENT_TYPE=''STOP'') 기준 최초 사건. 🔴**미중단 회원은 NULL** 이며 0 이 아니다 — 0 은 「날짜 미상」이라는 다른 뜻이다(P21). 중단했으나 일자가 캘린더 범위밖이면 0.',
+    FIRST_STOP_REASON_NM     VARCHAR         COMMENT '최초 중단의 사유명. 코드그룹 **MM005(후원중단사유)**. 미중단 회원은 NULL. 코드사전에는 **폐지코드(USE_YN=''N'')가 다수 섞여** 있고 실적재는 사전의 일부만 쓴다. 🔴🔴**USE_YN 필터 금지** — 실적재 20종 중 6종(366행)이 폐지코드이며 필터를 걸면 그 라벨이 사라진다.',
+    TENURE_DAYS              NUMBER(9,0)     COMMENT '유지기간(일) = 최초 중단일 − 획득일. 🔴**미중단 회원은 NULL** 이다 — 아직 종료되지 않은 관측(우측 절단)이며 0 이나 ''현재까지 경과일''로 채우면 평균 유지기간이 조용히 틀린다. 획득일·중단일 중 하나가 무효면 NULL. ⇒ 평균 유지기간은 중단 회원만으로 계산하거나 생존분석을 쓸 것.',
+    IS_12M_OBSERVABLE        BOOLEAN         COMMENT '12개월 관측 가능 여부 = 획득일 + 12개월 ≤ 데이터 최종 사건일. 🔴🔴**12개월 이탈률의 분모 자격**이다 — 최근 획득 회원은 아직 12개월이 지나지 않아 FALSE 이며, 포함시키면 최근 캠페인이 실제보다 이탈률이 낮게 보인다(분모에 아직 이탈할 시간이 없는 회원이 섞인다).',
+    DW_SOURCE_SYSTEM         VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS               TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS             TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID              VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '회원 획득(가입) 귀속 차원 — 1행=1회원. 원천 = FACT_MEMBER_COHORT(단일 정의 지점). 🔴모든 ACQ_* 는 **획득 시점** 값이며 현재 속성이 아니다(현재 연령·현주소는 BRONZE 에 축이 없어 산출 불가·O34). 🔴「부서」·「후원사업」은 같은 라벨로 두 축이 존재한다 — 사건 부서=FACT_MEMBER_EVENT.ORG_SK · 납입 대상 후원사업=FACT_MEMBER_FEE.SPONSORSHIP_SK. 🔴팩트와는 반드시 LEFT JOIN — 개발 사건이 없는 회원이 사라진다 — 🔴손실은 **회원 기준**으로 읽어야 한다(행 가중 비율은 손실을 축소해 보이게 한다 · 규모는 이슈원장 §O51-D-B). 신설 경위(O45): FMM 의 CAMPAIGN_SK·SPONSORSHIP_SK 가 전건 센티넬인 것은 원천 부재가 아니라 **다중캠페인 후원의 귀속 규칙이 없어서**였고, 임의 귀속 대신 「획득 시점」이라는 명시된 규칙을 채택했다(O8 우회). 🔴 [O53] 뷰 → 테이블 전환. 적재는 dbt(append + pre-hook TRUNCATE)가 하고 구조·COMMENT 는 06_DDL.sql 이 소유한다.';
 
 
 -- ============================================================================
@@ -969,6 +1051,40 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '[O45] 회비 분해 팩트. grain = 회원 × 회비월 × 후원사업 × 납입방식 × 회비구분 × 납입유형 × 결제수단(실측 40,262,076행 · 2026-08-07 확정). 🔴FACT_MEMBER_MONTHLY 와 **동일 원천**(SILVER.CRM_PAYMENT_BILLING)이므로 두 팩트를 같은 표에서 SUM 하면 이중계상이다 — 실측 조인 시 청구액이 891,959,790,888 → 1,056,821,121,099(+18.5%)로 부푼다. 납입방식·회비구분·납입일 축이 필요할 때만 이 팩트를 앵커로 쓰고, 그 외에는 FACT_MEMBER_MONTHLY 를 정본으로 쓸 것. measure 식은 FMM 과 동일(O40 정본).';
+
+
+-- ============================================================================
+-- FACT 15: FACT_DEV_ACHIEVEMENT — 회원개발 목표 대비 실적 (월 conform · 구 WIDE_DEV_ACHIEVEMENT)
+--   [2026-08-10 O53] 신설. 구조·COMMENT 소유주 = 본 파일 / 적재 = dbt(incremental append + pre-hook TRUNCATE).
+--   🔴 merge 금지: 완전 재산출 차원에 merge 를 쓰면 grain 이동 시 구 행이 잔존한다(문서50 §300 R1 · P131).
+--   PK(정보성) = MONTH_KEY, ORG_SK, DEV_TYPE
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_DEV_ACHIEVEMENT (
+    MONTH_KEY         NUMBER(6,0)     NOT NULL COMMENT '목표·실적 공통 월키 YYYYMM (월 conform 축)',
+    CAL_YEAR          NUMBER(4,0)     COMMENT 'FLOOR(MONTH_KEY/100) — 연도',
+    CAL_MONTH         NUMBER(2,0)     COMMENT 'MOD(MONTH_KEY,100) — 월',
+    ORG_SK            NUMBER(38,0)    NOT NULL COMMENT '조직 대리키 (FK→DIM_ORG). 실적측은 실적부서(ACMSLT_DEPT_CD) 기준',
+    ORG_DEPARTMENT    VARCHAR         COMMENT '부서명 (정본 #116) — 장표 첫 축. DIM_ORG.DEPARTMENT',
+    ORG_DIVISION      VARCHAR         COMMENT 'DIM_ORG.DIVISION — 실적지부. ⚠️산출규칙 미확정으로 전건 NULL (CONF-4)',
+    ORG_TEAM          VARCHAR         COMMENT 'DIM_ORG.TEAM — 팀. ⚠️보류로 전건 NULL (CONF-4)',
+    ORG_CORP          VARCHAR         COMMENT 'DIM_ORG.CORP — 법인. ⚠️부서 차원에서 산출 불가로 전건 NULL (CONF-4)',
+    DEV_TYPE          VARCHAR         NOT NULL COMMENT '개발구분 코드 (MM015 중 1신규·2증액·4재후원). 정본 공#121 개발 정의와 일치하는 축 — 목표·실적 공통',
+    DEV_TYPE_NAME     VARCHAR(100)    COMMENT '개발구분명 (MM015 라벨). 코드는 DEV_TYPE',
+    GOAL_CNT          NUMBER(18,4)    COMMENT '월 회원개발목표(건) — 장표 「월 목표」. 원천 CRM TM_CM_MBER_DVLP_GOAL',
+    ACTUAL_CNT        NUMBER(18,4)    COMMENT '월 개발실적(건) — 장표 「월 실적」. FME.DEV_CNT 월 롤업(코드 1·2·4 한정)',
+    GOAL_CNT_YTD      NUMBER(18,4)    COMMENT '(누계)월 목표(건) — 당해년 1월~당월 누적. 🔴월 비가산 — 월을 가로질러 합산 금지',
+    ACTUAL_CNT_YTD    NUMBER(18,4)    COMMENT '(누계)월 실적(건) — 당해년 1월~당월 누적. 🔴월 비가산',
+    GOAL_CNT_YEAR     NUMBER(18,4)    COMMENT '연 목표(건) — 당해년 12개월 합. 별도 저장 지표가 아니라 월 목표의 연 합계다(정본 공#3). 🔴월 비가산',
+    ACTUAL_CNT_YEAR   NUMBER(18,4)    COMMENT '연 실적(건) — 당해년 12개월 합. 🔴월 비가산',
+    HAS_GOAL_ROW      BOOLEAN         COMMENT '목표 **행**의 존재 여부 — 값이 0 이거나 NULL 이어도 TRUE 다. 🔴**달성율 스코프로 쓰지 말 것**: 원천이 2020년부터 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채우므로 목표 행의 과반이 0 이다. 이 플래그로 분자를 스코프하면 목표 0 행의 실적이 분모 없이 분자에 들어가 달성율이 폭증한다(실측 확인 후 교정). 달성율은 HAS_POSITIVE_GOAL 을 쓴다. 이 컬럼의 용도는 「목표 행 자체가 없는 조합」(=FALSE)을 찾는 것이다',
+    HAS_POSITIVE_GOAL BOOLEAN         COMMENT '🟢**목표가 실제로 편성됐는지**(GOAL_CNT>0) — 달성율 분모·분자 스코프의 **정본**이다. 목표 미편성 부서·월의 실적이 분자에 섞이면 달성율이 조용히 과대해진다(P18·P63). SV_DEV_ACHIEVEMENT.ACHIEVEMENT_RATE 는 이 조건을 식에 못박아 두었으므로 소비 시 별도 필터가 불필요하다. ⚠️FALSE 는 「목표 0 건으로 명시」와 「목표 미입력(원천 NULL)」을 함께 담는다 — 구분이 필요하면 FACT_TARGET_DEV.GOAL_CNT IS NULL 로 팩트에서 본다',
+    HAS_ACTUAL        BOOLEAN         COMMENT '실적 발생 여부. FALSE 는 목표만 편성된 월(미래월 포함)이다 — 실적 0 으로 읽되 「미달」로 단정하지 말 것',
+    DW_SOURCE_SYSTEM  VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS        TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS      TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID       VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
+) COMMENT = '회원개발 **목표 대비 실적** 월 conform 팩트 — FACT_TARGET_DEV(목표) × FACT_MEMBER_EVENT(실적) FULL OUTER. grain=MONTH_KEY×ORG_SK×DEV_TYPE. 마케팅 장표 「1. 개발현황(목표,실적)」의 정본이며 정본 지표 공#1(월 목표 달성율)·#2(누계)·#3(연)의 산출 base 다. 🔴달성율 컬럼은 두지 않는다 — SUM(실적)/SUM(목표) 로 재계산할 것(행 단위 비율의 평균은 항상 틀린다). 🔴달성율 분모·분자는 **HAS_POSITIVE_GOAL=TRUE**(=GOAL_CNT>0) 로 스코프해야 한다 — 목표 미편성분의 실적이 분자에 섞이면 조용히 과대해진다(P18·P63). ⚠️**HAS_GOAL_ROW(목표 행 존재)로 스코프하면 안 된다**: 원천이 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채워 목표 행의 과반이 0 이므로, 그 행들의 실적이 분모 없이 분자에 들어가 비율이 폭증한다. ⚠️_YTD·_YEAR 컬럼은 월에 대해 비가산 — 월을 가로질러 합산 금지. ⚠️일별 실적은 WIDE_MEMBER_EVENT(일 grain) 소관 — 월 목표를 일자에 반복하면 이중계상된다. ⚠️매체(브랜드2)별 목표는 원천에 없다(정본 마케팅 인벤토리 §1 「부서별 목표만 존재·매체별 목표 확인 불가」). 🔴 [O53] 종전 이름 = GOLD.WIDE_DEV_ACHIEVEMENT(뷰). 팩트를 재구성하는 객체이므로 WIDE_ 접두가 아니라 FACT_ 로 개명하고 테이블화했다 — SV_DEV_ACHIEVEMENT 의 base 다.';
 
 
 -- ============================================================================

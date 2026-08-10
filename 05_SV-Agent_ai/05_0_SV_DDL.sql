@@ -34,7 +34,7 @@
 --      **SV 6종 정의 전부 byte-identical** · owner 통일 · GRANT 3역할 보존 실측.
 --   🆕 **SV 7종**(2026-08-05 O37): `SV_MEMBER_COHORT` 신설 — **캠페인별 중단률(이탈률)의 정본**.
 --   🆕 **SV 8종**(2026-08-05 O38): `SV_DEV_ACHIEVEMENT` 신설 — **회원개발 목표 대비 실적·달성율의 정본**
---      (마케팅 장표 「1. 개발현황(목표,실적)」 · 정본 지표 공#1·#2·#3). base = `GOLD.WIDE_DEV_ACHIEVEMENT`.
+--      (마케팅 장표 「1. 개발현황(목표,실적)」 · 정본 지표 공#1·#2·#3). base = `GOLD.FACT_DEV_ACHIEVEMENT`.
 --      🔴 이 SV 는 **단일 논리테이블**이라 SERVING helper 뷰에 의존하지 않는다(다른 SV 와 선행조건이 다르다).
 --      종전 Agent 가 "중단 사건에 캠페인이 없어 산출 불가"라고 답했던 것을 해소했다.
 --      🔴 중단 **건수**는 `SV_MEMBER_EVENT`, 중단 **률**은 `SV_MEMBER_COHORT` 다(grain 이 다르다 —

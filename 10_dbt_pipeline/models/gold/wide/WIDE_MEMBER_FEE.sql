@@ -7,13 +7,15 @@
 --           납입일 기준 조회, 획득 캠페인·부서·후원사업별 회비 분해
 --   답하지 않는다: 회원 **상태**(활동/미납 플래그)·개발/중단 건수 → `WIDE_MEMBER_MONTHLY` 를 쓴다
 --   🔴 두 뷰의 회비를 **같은 표에서 합하지 말 것** — 같은 원천이라 이중계상이다.
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 {{ config(
-    materialized='view',
-    tags=['gold_ready'],
-    post_hook=[
-      "COMMENT ON VIEW {{ this }} IS '회비 분해 소비뷰(O45). grain = 회원 × 회비월 × 후원사업 × 회비구분 × 납입유형 × 결제수단. 🔴WIDE_MEMBER_MONTHLY 의 회비 measure 와 같은 표에서 합산 금지 — 동일 원천이라 이중계상이다. 획득귀속 축(ACQ_*)은 「이 회원을 데려온」 캠페인·부서·후원사업이며 납입 대상 후원사업(SPONSORSHIP_NAME)과 의미가 다르다.'",
-      "ALTER VIEW {{ this }} ALTER COLUMN MONTH_KEY COMMENT '회비월 YYYYMM (무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 — FMM 과 동일 규칙)', COLUMN CAL_YEAR COMMENT 'FLOOR(MONTH_KEY/100) — 연도', COLUMN CAL_MONTH COMMENT 'MOD(MONTH_KEY,100) — 월', COLUMN SPONSORSHIP_NAME COMMENT '🔴**납입 대상** 후원사업 — 회비 행에 붙은 값이다(원천 SPNSR_BSNS_ID 채움 99.83%·36종). 획득 후원사업(ACQ_SPONSORSHIP_NAME)과 다르다: 한 회원이 여러 후원사업에 낸다(회원-월 조합 37,148,615 → 회원-월-후원사업 39,563,730 = 6.5% 증가). 이것이 이 팩트를 FMM 과 분리한 이유다', COLUMN FEE_DIV_NAME COMMENT '회비구분(PM010 실측 확정): 정기·선물금·일시·긴급구호. 🔴기부금 행은 원천이 NULL 이다 — 결측이 아니라 해당없음(P21)', COLUMN PAYMENT_TYPE COMMENT '납입유형 = 회비/기부금. 🔴납부율·미납 분석은 회비만으로 스코프할 것 — 기부금은 원천에 청구(RQEST_AMT)가 전건 NULL 이라 분모에 들어갈 수 없다(O40)', COLUMN PAYMENT_METHOD_NAME COMMENT '결제수단 라벨. ⚠️커버리지 99.3%(6종=자동이체·신용카드·네이버페이·회비통장·OCR·휴대폰) — 원천 11종 중 5종(3·10·6·13·7, 225,855행=0.48%)은 **코드그룹 미특정**으로 (미매핑)이다. CRM_CODE 에서 11종을 덮는 그룹이 6개 나왔으나 전부 의미 무관(간사/질병/취미…)이라 추측하지 않았다 — 숫자 코드 우연 일치(P36). 원본 코드는 SETLE_CD 로 보존', COLUMN SETLE_CD COMMENT '결제수단 원본 코드(degen). 라벨 없는 5종을 잃지 않기 위해 보존한다 — 현업 코드그룹 확인 대상(O45-B)', COLUMN LAST_PAY_DATE_SK COMMENT '해당 조합의 **최종 납입일** (FK→DIM_DATE). 🔴합계가 아니라 시점 축이다. FMM 은 월 팩트라 일자 분해가 불가하므로 「기준일(납입일)」 요구는 이 뷰에서만 답한다', COLUMN ACQ_DEPARTMENT COMMENT '🔴**획득(최초개발) 시점 부서**다. 개발실적보고의 「부서」(=사건 부서)와 다르다 — 사건 부서는 WIDE_MEMBER_EVENT.ORG_DEPARTMENT 를 쓴다(O34 _AT_PLEDGE/_AT_EVENT 규약의 재적용)', COLUMN ACQ_MARKETING_CAMPAIGN COMMENT '획득 캠페인의 마케팅캠페인(O45 conformed 축). 광고비와 결합할 때 이 축을 쓴다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃)', COLUMN BILLED_AMT COMMENT '청구액(원) = SUM(RQEST_AMT). FMM 과 동일 식이므로 전체 합계가 일치해야 한다(기준값 891,959,790,888)', COLUMN PAID_FEE COMMENT '납입 총액(원) = 회비 + 기부금. 🔴납부율 분자로 쓰지 말 것(O40) — PAID_FEE_BILLABLE 을 쓴다', COLUMN PAID_FEE_BILLABLE COMMENT '회비 납입액(원) — 납부율 분자 정본(O40)', COLUMN UNPAID_BILLED_AMT COMMENT '미납 청구액(원) — DEC-3 정본 = PAY_STAT_CD IN (F, NULL) 인 청구액. 🔴차감식(청구−납입) 아님. ⚠️조회 시점 스냅샷 — 과거 미납이 이후 납입되면 값이 바뀐다', COLUMN BILLING_ROWS COMMENT '집계된 원천 회비행 수. 🔴금액이 아니다 — 「건수」로 쓰지 말 것(정본 (건) 정의는 CONF-2 미결)', COLUMN UNPAID_FLAG COMMENT '해당 조합에 미납 청구행이 하나라도 있는가(BOOLOR_AGG). 회원 단위 미납 여부는 WIDE_MEMBER_MONTHLY 의 UNPAID_FLAG_EOM 을 쓴다'"
-    ]
+    materialized='gn_view_commented',
+    tags=['gold_ready']
 ) }}
 
 select
