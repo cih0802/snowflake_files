@@ -108,12 +108,12 @@ DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;   -- default_version / default_versi
 --        변경 요약은 ① 선택적 **alias**(식별자 규칙: 공백·특수문자 불가) ② 프로젝트 COMMENT(아래 3)
 --        ③ 본 문서/`00_배포운영_통합 §0` 이력에 남긴다.
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION CIRCULAR_PIPE_BREAK_20260806
+  ADD VERSION SV_CHECK_20260811
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260806] 파이프라인 순환참조 해체. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260811] SV검증 업데이트. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
 
 -- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;

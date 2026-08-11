@@ -324,7 +324,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '[O45] 마케팅캠페인 conformed 차원 (323행+Unknown). 광고 ↔ CRM 후원 결합이 성립하는 **유일한 grain**. 실측 2026-08-06: 광고 도달 89.7%(218,402/243,545) · 개발실적 도달 99.42% · 마케팅캠페인 grain 개발단가 73,842원. 🔴개발캠페인 grain 으로 내리면 181.6배 팬아웃(218,402행 → 39,669,103행) — 현업 광고비 배분 규칙 필요(Q10 재정의).';
+) COMMENT = '[O45] 마케팅캠페인 conformed 차원 (마스터 전량 + Unknown 센티넬). 광고 ↔ CRM 후원 결합이 성립하는 **유일한 grain**. 🔴개발캠페인 grain 으로 내리면 대규모 팬아웃이 일어난다 — 결합은 마케팅캠페인 grain 에서만 할 것이고 현업 광고비 배분 규칙이 필요하다(Q10 재정의). 광고·개발실적 도달률 · 개발단가 · 팬아웃 배수 실측치는 문서10 §26-B 참조';
 
 
 -- ============================================================================
@@ -440,7 +440,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_TYPE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '발송구분 차원 — 대/중/소 3단 계층 평탄화 (정본 지표 #133·#134·#135). grain=(대,중,소) 코드 경로 65조합 + 센티넬. 🟢FACT_SERVICE_EVENT 소비 커버리지 실측 21.58%(8,300,272/38,470,780) — 요청 grain 0.106% 는 잘못된 분모다(P39). ⚠️DEC-28 §18-C 가 DIM_SERVICE grain 확장 대신 차원 분리를 택한 이유 = SERVICE_SK(FSE 99.97% 적재) 보존.';
+) COMMENT = '발송구분 차원 — 대/중/소 3단 계층 평탄화 (정본 지표 #133·#134·#135). grain=(대,중,소) 코드 경로 + 센티넬. 🟢FACT_SERVICE_EVENT 소비 커버리지 실측치는 문서10 §26 — 요청 grain 을 분모로 잡은 종전 값은 **잘못된 분모**였다(P39). 미매칭은 센티넬 0. ⚠️DEC-28 §18-C 가 DIM_SERVICE grain 확장 대신 차원 분리를 택한 이유 = SERVICE_SK 보존.';
 
 
 -- ============================================================================
@@ -735,7 +735,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
     --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다**(이 파일 line 298 과 동일 근거) — 라이브에는
     --      `ALTER TABLE ADD COLUMN` 으로 붙어 물리 ordinal 이 맨 끝이 된다. 앞에 적으면 재구축 시 순서가 갈라진다.
     --   ⚠️ 규칙7: 이 문안에 실측 수치를 넣지 않는다 — 규모는 문서10 §26·원장 참조(게이트 `audit_ddl_rule7.py`).
-    SEND_STATUS_GROUP   VARCHAR(10)     COMMENT '축A(채널상태) 코드군 ID (조인키 · MSG_AT→MS282). 🔴SEND_STATUS 는 채널별로 다른 코드체계가 한 컬럼에 모여 있다 — **SEND_TYPE 또는 이 컬럼 동반 필수**(단독 필터는 채널 간 오조인). 🔴등급 C(정황) 조건부 — 문서20 §M-3 회신이 다르면 되돌린다. EMAIL·SND·PSTMTR 은 NULL',
+    SEND_STATUS_GROUP   VARCHAR(10)     COMMENT '축A(채널상태) 코드군 ID (조인키 · MSG_AT→MS282). 🔴SEND_STATUS 는 채널별로 다른 코드체계가 한 컬럼에 모여 있다 — **SEND_TYPE 또는 이 컬럼 동반 필수**(단독 필터는 채널 간 오조인). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B). EMAIL·SND·PSTMTR 은 NULL',
     SEND_STATUS_NAME    VARCHAR         COMMENT '축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 **의도적 NULL** 이다 — 코드값은 있으나 코드사전에 라벨 문자열이 없어(코드군 미특정·Y/N 플래그) 조인으로 얻을 수 없고, 의미 해석을 라벨로 넣는 것은 창작이다(문서30 §23-J 결정 3 · 현업 문서20 §M-4). PSTMTR 은 원천 컬럼 부재',
     SEND_RESULT_CD      VARCHAR(10)     COMMENT '축B(통신사 결과) 코드 raw — MSG_AT 은 전송실패코드 · SND 는 통화상태. 🟢**conformed 축**이다: 두 채널이 같은 코드공간을 공유하므로 채널이 늘어도 체계가 유지된다(축A 와 대비). 원천에 값이 없는 채널은 NULL',
     SEND_RESULT_GROUP   VARCHAR(10)     COMMENT '축B 코드군 ID — 코드사전 MS283 이 정의한 4종(공통·알림톡·SMS·MMS). 🟢**리터럴 지정이 아니라 조인 결과에서 얻는다**: 4그룹에 걸쳐 코드값 중복이 없어 값 자체가 그룹을 결정한다(실측). 사전에 값이 추가되면 게이트가 잡는다',
@@ -810,7 +810,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     --      GOLD 로 전파되지 않은 **배선 누락**이었다(원천 부재가 아니다 — Q10 과 별개다).
     --   ⚠️ `CAMPAIGN_SK`(개발캠페인)는 여전히 전건 센티넬이다. 이 컬럼이 그 대체가 아니라 **다른 grain** 이다.
     MKTG_CAMPAIGN_SK    NUMBER(38,0)    COMMENT '[O45] 마케팅캠페인 대리키 (FK→DIM_MARKETING_CAMPAIGN). 광고↔CRM 결합축. 도달·미도달 커버리지는 문서10 §26 이며 미도달은 0(미매핑) — 이 버킷을 「미집행」으로 읽지 말 것. 🔴개발캠페인(CAMPAIGN_SK) grain 결합 금지 — 대규모 팬아웃(배수·행수는 문서10 §26)'
-) COMMENT = '광고 성과 코어 팩트 (grain=AD_PERF_DK, 실측 243,545행 · 분석축 PERF_DATE × MKTG_CAMPAIGN × AD_CREATIVE × DEVICE). 3원천 공통속성만 보유 — 유형 고유속성은 위성 FACT_AD_BROADCAST/DIGITAL/BROADCAST_CASE';
+) COMMENT = '광고 성과 코어 팩트 (grain=AD_PERF_DK · 분석축 PERF_DATE × MKTG_CAMPAIGN × AD_CREATIVE × DEVICE). 3원천 공통속성만 보유 — 유형 고유속성은 위성 FACT_AD_BROADCAST/DIGITAL/BROADCAST_CASE. 행수는 문서10 §26-B 참조';
 
 
 -- ============================================================================
@@ -846,7 +846,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고성과 위성 — 방송(VIDEO 35,822 + REBRDC 2,064 = 37,886행) 고유속성. 코어와 AD_PERF_DK 1:1. DEC-8 이관 + O16 해소(개발실적 분리)';
+) COMMENT = '광고성과 위성 — 방송(VIDEO ∪ REBRDC) 고유속성. 코어와 AD_PERF_DK 1:1. DEC-8 이관 + O16 해소(개발실적 분리). 원천별·합계 행수는 문서10 §26-B 참조';
 
 
 -- ============================================================================
@@ -877,7 +877,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_DIGITAL (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고성과 위성 — 디지털(DGT 197,686행) 고유속성 + 대행사 산정 _SRC 7종(비가산). 코어와 AD_PERF_DK 1:1. DEC-8·DEC-9';
+) COMMENT = '광고성과 위성 — 디지털(DGT) 고유속성 + 대행사 산정 _SRC 7종(비가산). 코어와 AD_PERF_DK 1:1. DEC-8·DEC-9. 행수는 문서10 §26-B 참조';
 
 
 -- ============================================================================
@@ -901,7 +901,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK, CASE_SEQ)
-) COMMENT = '광고성과 위성 — 재방송 사례 정규화(15컬럼 반복군 → CASE_SEQ 언피벗, 실측 5,327행). 코어에 1:N(fan-out 주의). ⚠️아동명 미적재(PII O14)';
+) COMMENT = '광고성과 위성 — 재방송 사례 정규화(15컬럼 반복군 → CASE_SEQ 언피벗). 코어에 1:N(fan-out 주의). ⚠️아동명 미적재(PII O14). 행수는 문서10 §26-B 참조';
 
 
 -- ============================================================================
@@ -946,11 +946,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
     --   ⚠️ 규칙7: 이 문안에 실측 수치를 넣지 않는다 — 규모는 문서10 §26·원장 참조(게이트 `audit_ddl_rule7.py`).
     PART_STATUS_GROUP   VARCHAR(10)     COMMENT '참여상태 코드군 ID (조인키 · 일반행사→MS304 · 캠페인행사→MS006). 🔴O28 다체계의 **구조적 해소축**이다 — PART_STATUS 단독 필터·GROUP BY 는 두 체계를 섞는다(판별자 = 이 컬럼 또는 EVENT_BK 접두). 🔴두 원천의 「참여」 정의 자체가 다르므로 합산 금지',
     PART_STATUS_NAME    VARCHAR         COMMENT '참여상태 라벨 (CRM_CODE 조인). ⚠️일반행사(MS304) 라벨은 코드사전에 **영문**으로 등록돼 있다(Success·N_step_right 계열) — 현업 한글 표기 회신 대기(문서20 §M-1)이며 우리가 창작하지 않았다. 미등재·오염 코드는 NULL',
-    PART_PATH_GROUP     VARCHAR(10)     COMMENT '참여경로 코드군 ID (조인키 · 일반행사→MS303 · 캠페인행사→MS004=신청경로). 🔴코드군 근거 등급 C(정황) — 문서20 §M-3 회신이 다르면 이 값과 라벨을 되돌린다(조건부 적용 · 문서30 §23-J 결정 2)',
-    PART_PATH_NAME      VARCHAR         COMMENT '참여경로 라벨 (CRM_CODE 조인 · 등급 C 조건부). 미등재·오염 코드는 NULL 유지',
+    PART_PATH_GROUP     VARCHAR(10)     COMMENT '참여경로 코드군 ID (조인키 · 일반행사→MS303 · 캠페인행사→MS004=신청경로). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B) — 조건부 적용은 해소됐고 롤백은 발동하지 않았다',
+    PART_PATH_NAME      VARCHAR         COMMENT '참여경로 라벨 (CRM_CODE 조인 · 코드군 확정). 미등재·오염 코드는 NULL 유지',
     PART_CHANNEL_GROUP  VARCHAR(10)     COMMENT '참여채널 코드군 ID (조인키 · 일반행사→MS302 · 등급 B 배타 확정). 캠페인행사는 원천에 채널 축이 없어 NULL(구조적 부재 · P21)',
     PART_CHANNEL_NAME   VARCHAR         COMMENT '참여채널 라벨 (CRM_CODE 조인). 미등재·오염 코드는 NULL 유지'
-) COMMENT = '행사 참여 팩트 (DATE_SK × MEMBER_DK × EVENT_SK) · 1,134,126행(2026-08-04 실측). 🔴O28: PART_STATUS 에 코드체계 2개 혼입 — 행사종류 미분리 집계는 조용히 틀린다. 🔴미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2) 전건 0/NULL — 0 을 실측값으로 읽지 말 것. 🟡행 식별자 부재(유일조합=EVENT_KEY,MEMBER_DK,PARTCPT_SEQ). ⚠️고아 EVENT_SK=0 263,611행(23.2%)';
+) COMMENT = '행사 참여 팩트 (DATE_SK × MEMBER_DK × EVENT_SK). 🔴O28: PART_STATUS 에 코드체계 2개 혼입 — 행사종류 미분리 집계는 조용히 틀린다. 🔴미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2) 전건 0/NULL — 0 을 실측값으로 읽지 말 것. 🟡행 식별자 부재(유일조합=EVENT_KEY,MEMBER_DK,PARTCPT_SEQ). ⚠️마스터 부재로 고아 EVENT_SK=0 이 존재한다 — 총행수·고아 규모는 문서10 §26·§26-B 참조';
 
 
 -- ============================================================================
@@ -1075,7 +1075,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '[O45] 회비 분해 팩트. grain = 회원 × 회비월 × 후원사업 × 납입방식 × 회비구분 × 납입유형 × 결제수단(실측 40,262,076행 · 2026-08-07 확정). 🔴FACT_MEMBER_MONTHLY 와 **동일 원천**(SILVER.CRM_PAYMENT_BILLING)이므로 두 팩트를 같은 표에서 SUM 하면 이중계상이다 — 실측 조인 시 청구액이 891,959,790,888 → 1,056,821,121,099(+18.5%)로 부푼다. 납입방식·회비구분·납입일 축이 필요할 때만 이 팩트를 앵커로 쓰고, 그 외에는 FACT_MEMBER_MONTHLY 를 정본으로 쓸 것. measure 식은 FMM 과 동일(O40 정본).';
+) COMMENT = '[O45] 회비 분해 팩트. grain = 회원 × 회비월 × 후원사업 × 납입방식 × 회비구분 × 납입유형 × 결제수단. 🔴FACT_MEMBER_MONTHLY 와 **동일 원천**(SILVER.CRM_PAYMENT_BILLING)이므로 두 팩트를 같은 표에서 SUM 하면 이중계상이다 — 실측 조인 시 청구액이 부풀며 그 규모는 문서10 §26·§26-B 참조. 납입방식·회비구분·납입일 축이 필요할 때만 이 팩트를 앵커로 쓰고, 그 외에는 FACT_MEMBER_MONTHLY 를 정본으로 쓸 것. measure 식은 FMM 과 동일(O40 정본).';
 
 
 -- ============================================================================

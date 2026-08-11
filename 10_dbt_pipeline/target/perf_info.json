@@ -5,20 +5,20 @@
     "static_analysis_parsed_path_count": 0,
     "is_partial_parse_enabled": true,
     "is_static_analysis_enabled": true,
-    "read_files_elapsed": 0.1181251360000033,
-    "load_macros_elapsed": 0.0007044459999860919,
-    "parse_project_elapsed": 0.16099720599999046,
-    "patch_sources_elapsed": 7.387400000880007e-05,
-    "process_manifest_elapsed": 0.0009758219999866924,
-    "load_all_elapsed": 0.9615410250000309,
+    "read_files_elapsed": 0.12119328300002508,
+    "load_macros_elapsed": 0.0006514909999850715,
+    "parse_project_elapsed": 0.15187151999998605,
+    "patch_sources_elapsed": 7.163199998672098e-05,
+    "process_manifest_elapsed": 0.0010046459999841773,
+    "load_all_elapsed": 0.9571246590000158,
     "projects": [
         {
             "project_name": "gn_dw_silver",
-            "elapsed": 0.16047352900000078,
+            "elapsed": 0.15129308299998456,
             "parsers": [
                 {
                     "parser": "test",
-                    "elapsed": 0.16045827099998178,
+                    "elapsed": 0.1512815190000083,
                     "parsed_path_count": 1
                 }
             ],

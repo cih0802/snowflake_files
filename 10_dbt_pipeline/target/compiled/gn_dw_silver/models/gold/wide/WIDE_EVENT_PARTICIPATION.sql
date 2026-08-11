@@ -18,6 +18,14 @@ select
     f.REGULAR_DONATION,
     f.WIN_FLAG, f.SELF_PART_FLAG, f.PART_STATUS,
     f.PART_PATH, f.PART_CHANNEL, f.INCREASE_FLAG,
+    -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
+    --   🔴 O59-N 이 GOLD 에 라벨을 붙였는데 WIDE 는 코드축만 노출하고 있었다 — 소비계층이 라벨을 못 본다.
+    --   🔴 PART_STATUS 는 원천 2체계가 한 컬럼에 있다(O28): EVENT=MS304(단계 통과) · CRMN=MS006(신청/참여).
+    --      **두 원천의 「참여」 정의가 다르므로 코드 단독 합산·GROUP BY 금지** — 판별자 = *_GROUP 또는 EVENT_KIND.
+    --   ⚠️ 라벨 NULL 6행은 O28 오염값이다(라벨을 붙이지 않는다 · 정본 = 원장 §O59-O ③).
+    f.PART_STATUS_GROUP, f.PART_STATUS_NAME,
+    f.PART_PATH_GROUP, f.PART_PATH_NAME,
+    f.PART_CHANNEL_GROUP, f.PART_CHANNEL_NAME,
     -- [DEC-30] degen key 2종. 🔷유일 식별 = (PART_EVENT_BK, MEMBER_DK, PARTCPT_SEQ).
     --   ⚠️PART_EVENT_BK(팩트·고아 포함 전건) 와 EVENT_BK(차원 매칭·고아는 '(미매핑)') 는 다르다.
     f.EVENT_BK            as PART_EVENT_BK,
@@ -39,7 +47,11 @@ select
     m.MEMBER_TYPE_NAME    as MEMBER_TYPE_NAME,        -- MM018 분석 라벨
     e.EVENT_BK            as EVENT_BK,
     e.EVENT_KIND          as EVENT_KIND,
+    -- [O59-P · DEC-35 R1] 🔴 판별자 라벨축이 WIDE 에 없었다 — O58-C 와 같은 유형(라벨이 옆에 있는데 코드축만 노출).
+    e.EVENT_KIND_NAME     as EVENT_KIND_NAME,
     e.EVENT_CATEGORY      as EVENT_CATEGORY,
+    e.EVENT_CATEGORY_GROUP as EVENT_CATEGORY_GROUP,
+    e.EVENT_CATEGORY_NAME  as EVENT_CATEGORY_NAME,
     e.EVENT_NAME          as EVENT_NAME,
     e.EVENT_START_DATE    as EVENT_START_DATE,
     e.EVENT_END_DATE      as EVENT_END_DATE,

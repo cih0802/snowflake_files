@@ -69,6 +69,16 @@ WHITE = re.compile(r'#[0-9]+|(?:CM|MM|MS|PM|CONF|DEC|O|P|E|G|Q|AD|SVL|R)-?[0-9]+
 COLDECL = re.compile(r'^\s{2,}([A-Z0-9_]+)\s+'
                      r'(?:NUMBER|VARCHAR|TEXT|DATE|TIMESTAMP|BOOLEAN|FLOAT|TIME)\S*')
 
+# 🔴🔴 [2026-08-11 O59-P 신설] **네 번째·다섯 번째 표면 = 테이블레벨 COMMENT.**
+#   이 게이트는 컬럼 선언 라인만 매칭했고 `) COMMENT = '…';` 는 **애초에 분모에 없었다** —
+#   그래서 O59-M 이 「위반 0 · 커버리지 632/632」로 판정한 상태에서도 이 표면은 한 번도
+#   검사되지 않았고, 실측하니 진짜 위반 **16건**(GOLD 8 + SILVER 8)이 있었다.
+#   🔴 P197(분모 공백)의 재현이며 이번 원인은 블록 경계가 아니라 **표면 자체의 누락**이다.
+#   🆕 **P202: 커버리지 자기판정은 「그 표면 안에서」만 성립한다** — 표면이 빠지면 100% 를 보고한다.
+#      ⇒ 표면을 추가할 때 **표면별 분모를 따로 센다**(아래 surface_report).
+#   ⚠️ `re.S` 필수: `)` 와 `COMMENT =` 가 **줄바꿈으로 분리된 블록이 실재**한다(SILVER 마지막 테이블).
+TBLCMT = re.compile(r"\)\s*COMMENT\s*=\s*'(.*?)'\s*;", re.S)
+
 
 def hits_for(cmt):
     """WHITE 로 오탐군을 제거한 뒤 위반 토큰을 찾는다. 소규모 패턴에는 의미 예외를 적용한다.
@@ -101,11 +111,39 @@ def blocks(path=None, schema='GOLD'):
        ⇒ 「하한이다」라는 docstring 경고는 원인을 다중행 COMMENT 로 잘못 지목하고 있었다(실제 미파싱 0).
     """
     s = io.open(path or DDL, encoding='utf-8').read()
+    # 🔴 [2026-08-11 O59-P] 종전 시작 패턴은 `CREATE OR REPLACE TABLE` 만이었다 —
+    #   SILVER 정본에 `CREATE TABLE IF NOT EXISTS …CRM_MARKETING_CAMPAIGN` 이 실재하는데
+    #   블록 시작으로 인식되지 않아 **앞 블록에 흡수**됐다. 그 결과 그 테이블의 위반이
+    #   `IDENTITY_MEMBER_XREF` 의 것으로 보고됐다 — **위치는 맞고 이름이 틀린** 유형이고,
+    #   이름을 믿고 파일을 열면 다른 테이블을 고친다. ⇒ 두 형태를 모두 블록 시작으로 잡는다.
     starts = [(m.start(), m.group(1))
-              for m in re.finditer(r'CREATE OR REPLACE TABLE GN_DW\.' + schema + r'\.(\w+) \(', s)]
+              for m in re.finditer(r'CREATE (?:OR REPLACE )?TABLE (?:IF NOT EXISTS )?'
+                                   r'GN_DW\.' + schema + r'\.(\w+)\s*\(', s)]
     for k, (i, t) in enumerate(starts):
         end = starts[k + 1][0] if k + 1 < len(starts) else len(s)
         yield t, s[i:end]
+
+
+def table_surface(path, schema):
+    """표면 3/4 — **테이블레벨 COMMENT**(`) COMMENT = '…';`) 를 블록별로 1건씩 검사한다.
+
+    반환 = (블록 수, 파싱된 테이블 COMMENT 수, [(테이블, 첫 위반)]).
+    🔴 분모를 **블록 수**로 따로 센다(P202) — 컬럼 커버리지가 100% 라도 이 표면은 별개다.
+    ⚠️ 블록당 COMMENT 는 0 또는 1 이다. 0 인 블록(테이블 COMMENT 미작성)은 파싱 수에 안 잡히므로
+       블록 수와의 차가 곧 **미작성 테이블 수**다 — 위반은 아니지만 분모 추적에 쓴다.
+    """
+    nblk = nparsed = 0
+    bad = []
+    for t, body in blocks(path, schema):
+        nblk += 1
+        m = TBLCMT.search(body)
+        if not m:
+            continue
+        nparsed += 1
+        h = hits_for(m.group(1))
+        if h:
+            bad.append((t, h[0]))
+    return nblk, nparsed, bad
 
 
 def main():
@@ -162,6 +200,24 @@ def main():
                 print(f'      · {x[0]}.{x[1]}  {x[2][0]}:{x[2][1]}')
         sys.exit(1)
     print('  🟢 신규 유입 0')
+    # ── 표면 3·4: 테이블레벨 COMMENT (GOLD·SILVER) ────────────────────────────
+    # 🔴 [O59-P] 여기가 종전에 **분모 밖**이었다. 치환을 끝냈으므로 두 표면 모두 0 을 요구한다.
+    fail = 0
+    for label, path, schema in [('GOLD  테이블레벨', DDL, 'GOLD'),
+                                ('SILVER 테이블레벨', SILVER_DDL, 'SILVER')]:
+        nblk, nparsed, bad = table_surface(path, schema)
+        print(f'\n  {label} COMMENT — 블록 {nblk} · 파싱 {nparsed} · 위반 {len(bad)}')
+        if nblk != nparsed:
+            print(f'  ⚠️ COMMENT 미작성 테이블 {nblk - nparsed}건 (위반은 아니나 분모 추적)')
+        if bad:
+            fail += len(bad)
+            for t, h in bad:
+                print(f'      🔴 {t:<28} {h[0]}:{h[1]}')
+        else:
+            print('  🟢 위반 0')
+    if fail:
+        print(f'\n🔴 테이블레벨 위반 {fail}건 — 지우기 전에 수치를 문서10 §26-B 로 옮길 것(P107)')
+        sys.exit(1)
     if not detail:
         print('\n  (--detail 로 위반 스니펫 확인)')
 

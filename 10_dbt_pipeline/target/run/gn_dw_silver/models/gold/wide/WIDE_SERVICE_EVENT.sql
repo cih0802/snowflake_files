@@ -24,6 +24,11 @@ create or replace view GN_DW.GOLD.WIDE_SERVICE_EVENT
       SEND_STATUS COMMENT $$발송상태 (#138)$$,
       SEND_STATUS2 COMMENT $$발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_SERVICE_EVENT.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢대체 경로 = `SEND_STATUS`(대부분 채워져 있다).$$,
       SEND_TYPE COMMENT $$발송유형$$,
+      SEND_STATUS_GROUP COMMENT $$축A(채널상태) 코드군 ID (조인키 · MSG_AT→MS282). 🔴`SEND_STATUS` 는 채널별로 다른 코드체계가 한 컬럼에 모여 있다 — **`SEND_TYPE` 또는 이 컬럼 동반 필수**(단독 필터는 채널 간 오조인). EMAIL·SND·PSTMTR 은 NULL$$,
+      SEND_STATUS_NAME COMMENT $$축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 **의도적 NULL** — 코드값은 있으나 코드사전에 라벨 문자열이 없어 조인으로 얻을 수 없고 의미 해석을 라벨로 넣는 것은 창작이다(문서30 §23-J 결정 3 · 현업 문서20 §M-4). PSTMTR 은 원천 컬럼 부재$$,
+      SEND_RESULT_CD COMMENT $$축B(통신사 결과) 코드 raw — MSG_AT 은 전송실패코드 · SND 는 통화상태. 🟢**conformed 축**이다: 두 채널이 같은 코드공간을 공유하므로 채널이 늘어도 체계가 유지된다. 원천에 값이 없는 채널은 NULL$$,
+      SEND_RESULT_GROUP COMMENT $$축B 코드군 ID — 코드사전 MS283 이 정의한 4종(공통·알림톡·SMS·MMS). 🟢리터럴 지정이 아니라 **조인 결과에서 얻는다**(4그룹에 걸쳐 코드값 중복이 없어 값 자체가 그룹을 결정한다)$$,
+      SEND_RESULT_NAME COMMENT $$축B 라벨 (CRM_CODE 조인). 사전 초과값은 NULL 유지 + dbt warn 관측(DEC-17-B · 센티넬 창작 금지) — 미매칭 규모는 이슈원장 §O59-N·문서20 §M-5$$,
       MAIL_RECEIVE_FLAG COMMENT $$메일수신여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_SERVICE_EVENT.MAIL_RECEIVE_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.$$,
       MEMBER_STOP_FLAG COMMENT $$결연회원 중단여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_SERVICE_EVENT.MEMBER_STOP_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.$$,
       DW_SOURCE_SYSTEM COMMENT $$원천 시스템 식별$$,
@@ -81,6 +86,13 @@ select
     f.D5_STOP_MEMBERS, f.D5_STOP_CNT,
     f.SERVICE_MEMBERS, f.SERVICE_CNT,
     f.SEND_TITLE, f.SEND_STATUS, f.SEND_STATUS2, f.SEND_TYPE,
+    -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
+    --   🔴 O59-N 이 SILVER·GOLD 에 라벨을 붙였지만 WIDE 는 **코드축만** 노출하고 있었다 —
+    --      소비계층(SV·Analyst·현업 직접조회)이 라벨을 볼 수 없으면 라벨을 만든 목적이 달성되지 않는다.
+    --   축A(채널상태) = SEND_STATUS 옆에 코드군·라벨 / 축B(통신사 결과) = 3컬럼 세트 전량.
+    --   ⚠️ SEND_STATUS 단독 필터는 채널 간 오조인이다 — SEND_TYPE 또는 SEND_STATUS_GROUP 동반 필수(§23-G).
+    f.SEND_STATUS_GROUP, f.SEND_STATUS_NAME,
+    f.SEND_RESULT_CD, f.SEND_RESULT_GROUP, f.SEND_RESULT_NAME,
     f.MAIL_RECEIVE_FLAG, f.MEMBER_STOP_FLAG,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.IS_HOLIDAY,

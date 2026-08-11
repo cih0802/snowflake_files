@@ -68,6 +68,29 @@
 -- depends_on: GN_DW.GOLD.WIDE_AD_COMBINED
 -- depends_on: GN_DW.GOLD.WIDE_EVENT_PARTICIPATION
 -- depends_on: GN_DW.GOLD.WIDE_BUDGET
+-- 🔴🔴 [2026-08-11 O59-Q] **이 게이트가 「무엇이 위반인지」를 남기지 않아 규명이 막혔다 — store_failures 를 켠다.**
+--   경위: 2026-08-11 build 에서 이 테스트가 **WARN 1** 을 냈다(마지막 418/418). 그런데 dbt 요약·로그는
+--   **행 수만** 알려주고 어느 뷰인지 말하지 않는다. build 직후 같은 SQL 을 라이브로 재실행하니 **0행(PASS)** 이라
+--   대상을 특정할 수 없었다 — 한 세션을 이 규명에 썼고 결국 「특정 불가」로 남겼다.
+--   ⚠️ 정황: 마지막 뷰 `WIDE_MEMBER_MONTHLY` 생성 완료(07:56:20)와 이 테스트 START(07:56:20)가 **같은 초**다.
+--      `depends_on` 은 **실행 순서**를 보장하지만 `INFORMATION_SCHEMA` 의 **메타데이터 가시성 지연**은 막지 못한다.
+--      ⇒ 「생성 직후 조회」 경합이 유력하나 **단정하지 않는다**(재현 근거가 1회뿐이다).
+--   ⇒ 🆕 **P207: warn 게이트는 「몇 건」이 아니라 「무엇」을 남겨야 한다.** 행 수만 남기는 관측은 재실행 시 조건이
+--      사라지면 영구히 규명 불가가 된다 — 특히 시점 의존 조건에서. `store_failures` 로 실패 행을 테이블에 고정한다.
+--
+--   🔴 [2026-08-11 O59-Q 정정] 위 문단을 처음 쓸 때 `store_failures=true` 만 달고 적재 위치를
+--      `GN_DW.SILVER.warn_gold_view_comment_coverage`「dbt 기본 규칙」이라고 적었다. **두 군데가 틀렸다.**
+--      ① dbt 기본값은 `target.schema` 가 아니라 **별도 `dbt_test__audit` 스키마**다. 이 프로젝트의
+--         `macros/generate_schema_name.sql` 은 custom schema 를 그대로 반환하므로 `GN_DW.dbt_test__audit` 가 되고,
+--         그 스키마는 **존재하지 않는다** ⇒ dbt 가 `create schema` 를 시도 ⇒ GN_DW_ENGINEER 에 DB 레벨
+--         CREATE SCHEMA 가 없어 **build 전체가 첫 노드에서 죽었다**(003001). 테스트 1건의 관측 설정이
+--         파이프라인 88모델 전량을 세운 것이다 — ⚠️ 관측 장치 추가는 그 자체로 실행 권한 변경이다(🆕 P208).
+--      ② 적재 위치는 SILVER 가 아니라 **OPS** 가 맞다. SILVER COMMENT 는 「dbt 38테이블」로 정본 개수를
+--         명시하므로 audit 테이블이 섞이면 그 서술이 깨진다. OPS COMMENT = 「ETL 운영 인프라 — dbt 프로젝트」.
+--         ⇒ `schema='OPS'` 를 명시한다. OPS 는 이미 존재해 `create schema` 가 호출되지 않고,
+--            권한은 `07_ENVIRONMENT_RBAC_setup.sql` **D.6**(OPS 한정 CREATE TABLE)로 좁혀 부여했다.
+--      다음 발생 시 조회 대상: **`GN_DW.OPS.warn_gold_view_comment_coverage`** —
+--      `TABLE_NAME`·`VIEW_COMMENT_STATUS`·`COLS`·`COLS_NO_COMMENT` 를 그대로 읽으면 된다.
 
 
 

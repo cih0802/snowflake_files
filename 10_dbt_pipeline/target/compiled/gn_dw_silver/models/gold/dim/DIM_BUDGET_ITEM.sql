@@ -15,7 +15,7 @@ select
     'ERP'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ef7eb47e-3629-4d48-b7bd-658cf3868918'                    AS DW_BATCH_ID
+    'bc494410-1de4-4551-8a46-6f1b99eb6fbd'                    AS DW_BATCH_ID
 from s
 
 union all
@@ -24,4 +24,4 @@ select 0, '(미매핑)', NULL,
     'ERP'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ef7eb47e-3629-4d48-b7bd-658cf3868918'                    AS DW_BATCH_ID
+    'bc494410-1de4-4551-8a46-6f1b99eb6fbd'                    AS DW_BATCH_ID

@@ -398,7 +398,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다**(이 파일의 확립된 규약 · 06_DDL.sql:298 과 동일 근거) —
     --      라이브에는 `ALTER TABLE ADD COLUMN` 으로 추가되어 물리 ordinal 이 맨 끝이 된다. 감사컬럼 앞에 적으면
     --      신규 환경 재구축 시 컬럼 순서가 라이브와 달라진다.
-    SEND_STATUS_GROUP   VARCHAR(10)     COMMENT '축A 코드군 ID (조인키 · MSG_AT=MS282). 🔴등급 C 조건부 — 문서20 §M-3 회신이 다르면 되돌린다. EMAIL·SND·PSTMTR 은 NULL',
+    SEND_STATUS_GROUP   VARCHAR(10)     COMMENT '축A 코드군 ID (조인키 · MSG_AT=MS282). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B) — 종전 「정황 등급」 표기는 해소됐다. EMAIL·SND·PSTMTR 은 NULL',
     SEND_STATUS_NAME    VARCHAR         COMMENT '축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 사전에 라벨 문자열이 없어 **의도적 NULL**(문서30 §23-J 결정 3 · 현업 §M-4) · PSTMTR 은 원천 부재',
     SEND_RESULT_CD      VARCHAR(10)     COMMENT '축B(신설) 통신사 결과코드 raw — MSG_AT=TRNSMS_FAILR_CD_ID · SND=CALL_STATUS. 🟢두 채널이 같은 코드공간을 공유(conformed)',
     SEND_RESULT_GROUP   VARCHAR(10)     COMMENT '축B 코드군 ID = MS283 이 정의한 4종(MS056 공통·MS057 알림톡·MS058 SMS·MS059 MMS). 🟢리터럴이 아니라 조인 결과에서 얻는다 — 4그룹 코드값 중복 0(실측)',
@@ -470,7 +470,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT_PARTICIPATION (
     PARTCPT_STAT_NM     VARCHAR         COMMENT '참여상태 라벨 (CRM_CODE 조인). ⚠️EVENT 계열은 사전 라벨이 **영문**(Success·1_step_right…)이며 현업 한글 표기 회신 대기(문서20 §M-1) — 창작하지 않았다',
     PARTCPT_CHNNL_GROUP VARCHAR(10)     COMMENT '참여채널 코드군 ID (EVENT=MS302 · 등급 B 배타 확정 — 근거·규모는 문서31 §3). CRMN 은 원천 컬럼 부재로 NULL',
     PARTCPT_CHNNL_NM    VARCHAR         COMMENT '참여채널 라벨 (CRM_CODE 조인)',
-    PARTCPT_PATH_GROUP  VARCHAR(10)     COMMENT '참여경로 코드군 ID (EVENT=MS303 · CRMN=MS004). 🔴등급 C 조건부 — 문서20 §M-3 회신이 다르면 되돌린다',
+    PARTCPT_PATH_GROUP  VARCHAR(10)     COMMENT '참여경로 코드군 ID (EVENT=MS303 · CRMN=MS004). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B)',
     PARTCPT_PATH_NM     VARCHAR         COMMENT '참여경로 라벨 (CRM_CODE 조인)',
     PRIMARY KEY (EVENT_KEY, MBER_NO, PARTCPT_SEQ)
 ) COMMENT = '행사×참여자';
@@ -625,7 +625,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고성과 3소스 UNION(235,572행). 파생 미적재. → FACT_AD_PERFORMANCE';
+) COMMENT = '광고성과 3소스 UNION. 파생 미적재. → FACT_AD_PERFORMANCE. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 3: AGENCY_AD_ROW_DGT (DGT 무손실 staging + AD_PERF_DK 발급)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
@@ -675,7 +675,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급. 197,686행';
+) COMMENT = 'DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 4: AGENCY_AD_ROW_VIDEO (VIDEO 무손실 staging + AD_PERF_DK 발급)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
@@ -721,7 +721,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급. 35,822행';
+) COMMENT = 'VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 5: AGENCY_AD_ROW_REBRDC (REBRDC 무손실 staging + AD_PERF_DK 발급)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
@@ -769,7 +769,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함) + AD_PERF_DK 발급. 2,064행';
+) COMMENT = 'REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 6: AGENCY_AD_DIGITAL (디지털 고유속성 위성)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
@@ -795,7 +795,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '디지털광고 고유속성 위성(197,686행, 코어 1:1). → FACT_AD_DIGITAL';
+) COMMENT = '디지털광고 고유속성 위성(코어 1:1). → FACT_AD_DIGITAL. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 7: AGENCY_AD_BROADCAST (방송 고유속성 위성)
 --   ⚠️ [VIDEO 전용]/[REBRDC 전용] 표기 컬럼의 NULL 은 결측이 아니라 **해당 원천에 항목이 없음**이다.
@@ -832,7 +832,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '방송광고 고유속성 위성(VIDEO+REBRDC 37,886행, 코어 1:1). → FACT_AD_BROADCAST';
+) COMMENT = '방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1). → FACT_AD_BROADCAST. 행수는 문서10 §26-B 참조';
 
 -- AGENCY 8: AGENCY_AD_BROADCAST_CASE (REBRDC 사례 언피벗)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
@@ -848,7 +848,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK, CASE_SEQ)
-) COMMENT = '재방송 사례 언피벗 위성(5,327행, 코어에 1:N). → FACT_AD_BROADCAST_CASE. CHILD_NM 미적재(PII)';
+) COMMENT = '재방송 사례 언피벗 위성(코어에 1:N). → FACT_AD_BROADCAST_CASE. CHILD_NM 미적재(PII). 행수는 문서10 §26-B 참조';
 
 -- ============================================================================
 -- STEP 5 — GA4 5테이블 (트랙 B)
@@ -1007,4 +1007,4 @@ CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
     DW_UPDATE_TS       TIMESTAMP_NTZ COMMENT '갱신 시각',
     DW_BATCH_ID        VARCHAR       COMMENT '배치 식별'
 )
-COMMENT = '[O45] 마케팅캠페인 마스터(323행). AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천.';
+COMMENT = '[O45] 마케팅캠페인 마스터. AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천. 행수는 문서10 §26-B 참조';

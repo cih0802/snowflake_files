@@ -48,7 +48,7 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_service
-    description: '서비스 발송 팩트(FSE, grain=일×회원×서비스). 원천=CRM(UMS 발송) → GN_DW.BRONZE_CRM. 전사 요약용: 발송수, 발송 대상 고유 회원수. 차원: 발송일·연·월, 서비스구분·발송상태. 전사 발송 규모 요약 질문에 사용.'
+    description: '서비스 발송 팩트(FSE, grain=일×회원×서비스). 원천=CRM(UMS 발송) → GN_DW.BRONZE_CRM. 전사 요약용: 발송수, 발송 대상 고유 회원수. 차원: 발송일·연·월, 서비스구분·채널, **발송상태 라벨(축A)**·**통신사 도달결과 라벨(축B)**. 전사 발송 규모 요약 질문에 사용. 🔴 발송결과를 물으면 **코드축이 아니라 라벨축**으로 답하고, **두 축을 섞거나 합산하지 않는다**(축A=우리 발송 시스템 상태 · 축B=통신사 도달 결과). 🔴 라벨 NULL 은 결측이 아니라 채널별 사전 라벨 부재·원천 부재이므로 **성공/실패·도달률을 전 채널 기준으로 단정하지 말고 채널과 NULL 버킷을 함께 밝힌다**.'
 tool_resources:
   analyst_budget:
     semantic_view: GN_DW.SERVING.SV_BUDGET

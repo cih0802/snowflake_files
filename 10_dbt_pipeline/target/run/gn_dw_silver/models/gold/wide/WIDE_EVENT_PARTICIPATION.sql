@@ -20,6 +20,12 @@ create or replace view GN_DW.GOLD.WIDE_EVENT_PARTICIPATION
       PART_PATH COMMENT $$참여경로$$,
       PART_CHANNEL COMMENT $$참여채널$$,
       INCREASE_FLAG COMMENT $$증액여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_EVENT_PARTICIPATION.INCREASE_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      PART_STATUS_GROUP COMMENT $$참여상태 코드군 ID (조인키 · 일반행사→MS304 · 캠페인행사→MS006). 🔴O28 다체계의 **구조적 해소축**이다 — `PART_STATUS` 단독 필터·GROUP BY 는 두 체계를 섞는다(판별자 = 이 컬럼 또는 `EVENT_KIND`). 🔴두 원천의 「참여」 정의 자체가 다르므로 합산 금지$$,
+      PART_STATUS_NAME COMMENT $$참여상태 라벨 (CRM_CODE 조인). ⚠️일반행사(MS304) 라벨은 코드사전에 **영문**으로 등록돼 있다(Success·N_step_right 계열) — 현업 한글 표기 회신 대기(문서20 §M-1)이며 우리가 창작하지 않았다. 미등재·오염 코드는 NULL$$,
+      PART_PATH_GROUP COMMENT $$참여경로 코드군 ID (조인키 · 일반행사→MS303 · 캠페인행사→MS004=신청경로). 🟢운영서버 코드사전 대조로 확정(2026-08-11)$$,
+      PART_PATH_NAME COMMENT $$참여경로 라벨 (CRM_CODE 조인 · 코드군 확정). 미등재·오염 코드는 NULL 유지$$,
+      PART_CHANNEL_GROUP COMMENT $$참여채널 코드군 ID (조인키 · 일반행사→MS302). 캠페인행사는 원천에 채널 축이 없어 NULL(구조적 부재 · P21)$$,
+      PART_CHANNEL_NAME COMMENT $$참여채널 라벨 (CRM_CODE 조인). 미등재·오염 코드는 NULL 유지$$,
       PART_EVENT_BK COMMENT $$FACT_EVENT_PARTICIPATION.EVENT_BK — degenerate key: **팩트가 보유한 원천 행사키**(전건 채움). 🔴같은 뷰의 EVENT_BK(=DIM_EVENT 매칭분)와 **다르다** — 행사 마스터가 없는 **고아 행사**가 EVENT_SK=0 으로 뭉개져 서로 구별되지 않으므로 이 컬럼으로 식별을 보존한다. 차원 미매칭분의 EVENT_BK 는 '(미매핑)'이지만 **PART_EVENT_BK 는 원천값을 그대로 갖는다.** 차원 미매칭분의 EVENT_BK 는 '(미매핑)'이지만 PART_EVENT_BK 는 원천값을 그대로 갖는다. 🔷행 유일 식별 = (PART_EVENT_BK, MEMBER_DK, PARTCPT_SEQ). ⚠️접두(EVENT_/CRMN_)가 원천 코드체계 판별자(O28).$$,
       PARTCPT_SEQ COMMENT $$FACT_EVENT_PARTICIPATION.PARTCPT_SEQ — degenerate key: 참여 일련번호 ← `BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL.PARTCPT_SEQ`. 🔷(PART_EVENT_BK, MEMBER_DK, PARTCPT_SEQ) 가 행을 유일 식별한다 — **(행사,회원)만으로는 중복**이다. 🔴**전역 순번이 아니다**((행사,SEQ) 조합도 유일하지 않다) · **음수·INT_MIN 값이 존재**한다 ⇒ **식별자 전용**이며 정렬·범위조건·MAX 로 '참여 횟수'를 세지 말 것.$$,
       DW_SOURCE_SYSTEM COMMENT $$원천 시스템 식별$$,
@@ -41,8 +47,11 @@ create or replace view GN_DW.GOLD.WIDE_EVENT_PARTICIPATION
       MBER_DIV_CD COMMENT $$DIM_MEMBER.MBER_DIV_CD — 회원구분 원천코드 raw. 코드그룹 **MM018(회원구분)**. 코드사전 = 1개인·2기업·3단체 · 실적재에 **사전 전종이 등장**한다. 🟢독립 교차검증: `MBER_DIV_CD`='2'(기업)·'3'(단체) 의 행수가 `SEX`='7'(기업)·'6'(단체) 와 **완전히 일치**한다 — 두 축이 같은 사실을 다르게 표현한다. 🔴DIM_MEMBER.MEMBER_TYPE(FDRM/ONCE 등록계통)과 **완전히 다른 축**이다. 라벨 = MEMBER_TYPE_NAME. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
       MEMBER_TYPE_NAME COMMENT $$DIM_MEMBER.MEMBER_TYPE_NAME — 회원구분명(MM018 라벨): 개인·기업·단체. 코드 = MBER_DIV_CD. MM018 은 폐지코드가 없고 실적재가 사전과 일치한다. 미매핑은 '미상'. 🔴이름이 비슷한 DIM_MEMBER.MEMBER_TYPE(=FDRM 정기회원 / ONCE 일시회원)의 라벨이 **아니다** — 다른 축이다. 🔴 회원 **현재버전**(DIM_MEMBER IS_CURRENT 1건) 스냅샷이며 사건 시점 값이 아니다 — SCD2 다버전을 순진하게 조인하면 조용히 팬아웃한다(회원당 버전 수는 이슈원장 참조)$$,
       EVENT_BK COMMENT $$DIM_EVENT.EVENT_BK — 행사 업무키 🔴[O51-D 실측] `'(미매핑)'` 이 **다수**다 — 행사 마스터 없는 고아 행사가 한 그룹으로 뭉친다. 행사 식별은 `PART_EVENT_BK` 를 쓴다. 실측 규모는 이슈원장 §O51-D-C.$$,
-      EVENT_KIND COMMENT $$DIM_EVENT.EVENT_KIND — 온라인/오프라인$$,
-      EVENT_CATEGORY COMMENT $$DIM_EVENT.EVENT_CATEGORY — 행사구분$$,
+      EVENT_KIND COMMENT $$DIM_EVENT.EVENT_KIND — 🔴[O59-P 정정] 종전 설명 「온라인/오프라인」은 **거짓이었다**. 실제 값은 `EVENT`(일반행사) · `CRMN`(캠페인행사) = **원천 판별자**다(온·오프라인 구분은 `EVENT_CATEGORY` 소관). 🔴이 컬럼이 O28 다체계의 판별자다 — 참여상태·경로를 이 축 없이 합산하면 정의가 다른 두 체계를 섞는다. 라벨축 = `EVENT_KIND_NAME`$$,
+      EVENT_KIND_NAME COMMENT $$DIM_EVENT.EVENT_KIND_NAME — 행사종류 라벨(일반행사/캠페인행사). ⚠️판별자 라벨은 코드사전에 존재할 수 없어 `CASE` 로 만든다(DEC-35 §23-B 헛점4 의 명문 예외 · 미등재 값은 NULL 로 떨어져 warn 이 잡는다)$$,
+      EVENT_CATEGORY COMMENT $$DIM_EVENT.EVENT_CATEGORY — 행사구분 코드 raw. 🔴원천별 2체계다: 일반행사=100~500(MS286) · 캠페인행사=1~16(MS002) ⇒ **코드 단독 GROUP BY 금지**(판별자 = `EVENT_KIND` 또는 `EVENT_CATEGORY_GROUP`)$$,
+      EVENT_CATEGORY_GROUP COMMENT $$행사구분 코드군 ID (조인키 · 일반행사→MS286 · 캠페인행사→MS002). 두 체계는 코드값이 겹치지 않으나 **의미가 다르므로 합산하지 말 것**$$,
+      EVENT_CATEGORY_NAME COMMENT $$행사구분 라벨 (CRM_CODE 조인). ⚠️센티넬 행('(미매핑)')은 라벨이 NULL 이다 — 코드가 없으므로 조인 대상이 아니다$$,
       EVENT_NAME COMMENT $$DIM_EVENT.EVENT_NAME — 행사명 🔴[O51-D 실측] `'(미매핑)'` 이 **다수**다 — 고아 행사들이 한 이름으로 합쳐진다. 실측 규모는 이슈원장 §O51-D-C.$$,
       EVENT_START_DATE COMMENT $$DIM_EVENT.EVENT_START_DATE — 행사기간 시작$$,
       EVENT_END_DATE COMMENT $$DIM_EVENT.EVENT_END_DATE — 행사기간 종료$$,
@@ -76,6 +85,14 @@ select
     f.REGULAR_DONATION,
     f.WIN_FLAG, f.SELF_PART_FLAG, f.PART_STATUS,
     f.PART_PATH, f.PART_CHANNEL, f.INCREASE_FLAG,
+    -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
+    --   🔴 O59-N 이 GOLD 에 라벨을 붙였는데 WIDE 는 코드축만 노출하고 있었다 — 소비계층이 라벨을 못 본다.
+    --   🔴 PART_STATUS 는 원천 2체계가 한 컬럼에 있다(O28): EVENT=MS304(단계 통과) · CRMN=MS006(신청/참여).
+    --      **두 원천의 「참여」 정의가 다르므로 코드 단독 합산·GROUP BY 금지** — 판별자 = *_GROUP 또는 EVENT_KIND.
+    --   ⚠️ 라벨 NULL 6행은 O28 오염값이다(라벨을 붙이지 않는다 · 정본 = 원장 §O59-O ③).
+    f.PART_STATUS_GROUP, f.PART_STATUS_NAME,
+    f.PART_PATH_GROUP, f.PART_PATH_NAME,
+    f.PART_CHANNEL_GROUP, f.PART_CHANNEL_NAME,
     -- [DEC-30] degen key 2종. 🔷유일 식별 = (PART_EVENT_BK, MEMBER_DK, PARTCPT_SEQ).
     --   ⚠️PART_EVENT_BK(팩트·고아 포함 전건) 와 EVENT_BK(차원 매칭·고아는 '(미매핑)') 는 다르다.
     f.EVENT_BK            as PART_EVENT_BK,
@@ -97,7 +114,11 @@ select
     m.MEMBER_TYPE_NAME    as MEMBER_TYPE_NAME,        -- MM018 분석 라벨
     e.EVENT_BK            as EVENT_BK,
     e.EVENT_KIND          as EVENT_KIND,
+    -- [O59-P · DEC-35 R1] 🔴 판별자 라벨축이 WIDE 에 없었다 — O58-C 와 같은 유형(라벨이 옆에 있는데 코드축만 노출).
+    e.EVENT_KIND_NAME     as EVENT_KIND_NAME,
     e.EVENT_CATEGORY      as EVENT_CATEGORY,
+    e.EVENT_CATEGORY_GROUP as EVENT_CATEGORY_GROUP,
+    e.EVENT_CATEGORY_NAME  as EVENT_CATEGORY_NAME,
     e.EVENT_NAME          as EVENT_NAME,
     e.EVENT_START_DATE    as EVENT_START_DATE,
     e.EVENT_END_DATE      as EVENT_END_DATE,

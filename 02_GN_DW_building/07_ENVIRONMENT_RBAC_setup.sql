@@ -247,4 +247,32 @@ GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO 
 GRANT INSERT, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 GRANT INSERT, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 
+/* =====================================================================
+   D.6 dbt test store_failures 적재 권한 — GN_DW_ENGINEER (OPS 한정 CREATE TABLE)
+      [2026-08-11 O59-Q] 신설. D.5 의 "CREATE TABLE 불요" 는 데이터 계층(SILVER/GOLD)
+      기준이며 여기서 뒤집히지 않는다 — 구조 소유는 여전히 06/08 DDL(ADMIN)이다.
+      이 구간이 필요한 이유는 dbt 가 만드는 대상이 **데이터가 아니라 테스트 실패 이력**이라서다.
+
+      경위: warn 게이트가 「몇 건」만 남기고 「무엇」을 남기지 않아 규명이 막혔다(P207).
+            `store_failures=true` 를 켜자 dbt 가 기본 감사 스키마를 만들려 했고 실패했다:
+              create schema if not exists GN_DW.dbt_test__audit
+              → 003001: GN_DW_ENGINEER must have CREATE SCHEMA granted on DATABASE GN_DW
+            ⚠️ 이 에러의 요구사항(DB 레벨 CREATE SCHEMA)을 그대로 부여하면 ENGINEER 가
+               GN_DW 안에 **임의 스키마**를 만들 수 있게 된다 — 에러 메시지가 제안하는 권한이
+               최소권한이라는 보장은 없다. 요구를 좁혀서 충족시킨다.
+
+      배치 결정: 실패 테이블은 GN_DW.OPS 에 둔다(dbt config 의 schema='OPS').
+        · OPS COMMENT = 「ETL 운영 인프라 — dbt 프로젝트」 ⇒ 테스트 실패 이력의 제자리.
+        · SILVER 는 부적합: COMMENT 가 「dbt 38테이블」로 **정본 개수를 명시**한다.
+          audit 테이블이 섞이면 그 서술이 깨지고 개수를 세는 검증도 오염된다.
+        ⇒ 스키마가 이미 존재하므로 dbt 는 create schema 를 호출하지 않고,
+           DB 레벨 CREATE SCHEMA 없이 **스키마 1개 범위**의 CREATE TABLE 로 끝난다.
+
+      🔴 FUTURE TABLES 를 쓰지 않는다: 이 권한의 대상은 dbt 가 스스로 만들고 스스로 소유하는
+         테이블이다(생성자 = ENGINEER ⇒ OWNERSHIP 자동 취득 ⇒ 추가 grant 불요).
+         FUTURE 를 걸면 ADMIN 이 나중에 OPS 에 만드는 운영 테이블까지 ENGINEER 에게
+         새는데, 그건 이 요구와 무관한 확대다.
+   ===================================================================== */
+GRANT CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
+
 

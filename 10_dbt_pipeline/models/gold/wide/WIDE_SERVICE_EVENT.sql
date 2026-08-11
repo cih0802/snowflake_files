@@ -21,6 +21,13 @@ select
     f.D5_STOP_MEMBERS, f.D5_STOP_CNT,
     f.SERVICE_MEMBERS, f.SERVICE_CNT,
     f.SEND_TITLE, f.SEND_STATUS, f.SEND_STATUS2, f.SEND_TYPE,
+    -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
+    --   🔴 O59-N 이 SILVER·GOLD 에 라벨을 붙였지만 WIDE 는 **코드축만** 노출하고 있었다 —
+    --      소비계층(SV·Analyst·현업 직접조회)이 라벨을 볼 수 없으면 라벨을 만든 목적이 달성되지 않는다.
+    --   축A(채널상태) = SEND_STATUS 옆에 코드군·라벨 / 축B(통신사 결과) = 3컬럼 세트 전량.
+    --   ⚠️ SEND_STATUS 단독 필터는 채널 간 오조인이다 — SEND_TYPE 또는 SEND_STATUS_GROUP 동반 필수(§23-G).
+    f.SEND_STATUS_GROUP, f.SEND_STATUS_NAME,
+    f.SEND_RESULT_CD, f.SEND_RESULT_GROUP, f.SEND_RESULT_NAME,
     f.MAIL_RECEIVE_FLAG, f.MEMBER_STOP_FLAG,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.IS_HOLIDAY,

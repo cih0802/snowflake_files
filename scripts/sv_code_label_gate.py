@@ -56,11 +56,20 @@ LABEL_PAIRS = {
     'EVENT_KIND':      'EVENT_KIND_NAME',
     'FEE_DIV_CD':      'FEE_DIV',
     'SETLE_CD':        'PAYMENT_METHOD',
-    # 🔴 아래 4종은 **라벨 컬럼이 아직 없다**(DEC-35 1~2단계 대상 · 원장 §O59 §23-E).
-    #    None 은 「짝이 없음을 확인했다」는 뜻이며 미등재와 구별된다 — 라벨을 만들면 이름을 채운다.
-    'SEND_STATUS':     None,
-    'EVENT_CATEGORY':  None,
-    'PART_STATUS':     None,
+    # 🟢🟢 [2026-08-11 O59-R] **DEC-35 1·2단계로 라벨 컬럼이 실재하게 됐다 — `None` 을 실명으로 교체한다.**
+    #   🔴 왜 중요한가: 종전 `None` 은 「짝이 없음을 확인했다」는 **단정**이라 게이트가
+    #      *"라벨 컬럼 부재 확인됨"* 이라는 **거짓 정보**를 출력하고 있었다(라이브에는 컬럼이 있었다).
+    #      O59-N 이 GOLD 에 컬럼을 만들면서 이 등재부를 같은 커밋에서 갱신하지 않은 결과다 ⇒ **P149 재발**.
+    #      등재부가 stale 이면 검사 ②(라벨축 미노출)가 **대상에서 빠져 침묵**한다 — 미탐이다.
+    'SEND_STATUS':     'SEND_STATUS_NAME',
+    'SEND_RESULT_CD':  'SEND_RESULT_NAME',
+    'EVENT_CATEGORY':  'EVENT_CATEGORY_NAME',
+    'PART_STATUS':     'PART_STATUS_NAME',
+    'PART_PATH':       'PART_PATH_NAME',
+    'PART_CHANNEL':    'PART_CHANNEL_NAME',
+    # 🔴 `SUBTYPE` 만 `None` 을 유지한다 — 라벨을 **의도적으로 만들지 않았다**(등급 D).
+    #   채널별 다체계라 코드군을 배타 특정할 수 없어 `CRM_CODE` 에서 가져올 라벨 문자열이 없다.
+    #   추정 라벨을 붙이면 라벨 창작이다(DEC-17-B) ⇒ 현업 확인 대기(문서20 §M-2 · 등재부 §5).
     'SUBTYPE':         None,
 }
 
