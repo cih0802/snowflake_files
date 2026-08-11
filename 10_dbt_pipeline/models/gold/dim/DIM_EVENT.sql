@@ -32,7 +32,11 @@ select
     --      (행사 grain 참값 4,513,184 vs 참여 grain 456,007,553 · 최대 3,718참여/행사).
     --      §18-D ②(grain 함수종속) 실패 사례 → FEP 컬럼은 DROP 하고 여기로 옮겼다.
     RCRIT_PSNNL_CO                                as RECRUIT_HEADCOUNT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 행사구분 코드→라벨. 전파만 한다 — 코드사전 조인은 SILVER 소관이다
+    --    (같은 조인을 두 계층에 두면 갈라진다 · 문서30 §23-J). 신설 위치 = 감사컬럼 뒤(정본 DDL 규약).
+    EVENT_DIV_GROUP                               as EVENT_CATEGORY_GROUP,
+    EVENT_DIV_NM                                  as EVENT_CATEGORY_NAME
 from e
 
 union all
@@ -41,4 +45,7 @@ union all
 --   종전에는 같은 한 행 안에서 다른 컬럼은 '(미매핑)' 인데 이 컬럼만 '미상' 이었다(표기 분열).
 --   이 1행이 GOLD 전체에 남아 있던 마지막 '미상' 이다(문서10 §14-D 실측) → 이로써 GOLD '미상' 은 소멸.
 select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, NULL, NULL, NULL,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- ⚠️ 센티넬 행도 컬럼 수를 맞춰야 한다(UNION ALL 위치 대응). 코드군·라벨은 값이 없으므로 NULL —
+    --    '(미매핑)' 을 넣지 않는다: 이 행은 「행사 미매핑」을 뜻하고 코드군·라벨 축의 미매핑이 아니다.
+    NULL, NULL

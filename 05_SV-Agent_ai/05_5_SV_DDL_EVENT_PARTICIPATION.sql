@@ -57,15 +57,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     date.CAL_YEAR        AS date.YEAR            WITH SYNONYMS ('연도', '년')  COMMENT = '연도',
     date.CAL_MONTH       AS date.MONTH           WITH SYNONYMS ('월')         COMMENT = '월(1~12)',
     event.EVENT_NAME     AS event.EVENT_NAME     WITH SYNONYMS ('행사명', '이벤트명') COMMENT = '행사명',
-    event.EVENT_KIND     AS event.EVENT_KIND     WITH SYNONYMS ('행사종류', '온오프라인') COMMENT = '행사 종류(온라인/오프라인)',
-    event.EVENT_CATEGORY AS event.EVENT_CATEGORY WITH SYNONYMS ('행사구분') COMMENT = '행사 구분',
+    event.EVENT_KIND     AS event.EVENT_KIND     WITH SYNONYMS ('행사종류코드', '행사계통코드') COMMENT = '행사 종류 **원천 판별자 코드**. 실제값 2종 + NULL: ''CRMN''·''EVENT'' · NULL(행사 마스터 미매핑). 🔴 이 값은 업무 분류가 아니라 **행사 마스터가 두 원천의 결합이라는 사실**을 나타낸다 — ''EVENT''=일반행사 원천 · ''CRMN''=캠페인행사 원천. ✅ **사람이 읽는 라벨은 EVENT_KIND_NAME 축을 쓴다**(''일반행사''·''캠페인행사''·''(미매핑)''). 🔴 이 코드축으로 답하지 말고 라벨축으로 답할 것 — 현업은 코드를 모른다. ⚠️ 위 2종 외의 값으로 필터하면 0행이다',
+    event.EVENT_KIND_NAME AS event.EVENT_KIND_NAME WITH SYNONYMS ('행사종류', '행사구분계통') COMMENT = '행사 종류 라벨 — **현업 응답용 정본 축**이다. 실제값 3종: ''일반행사''·''캠페인행사''·''(미매핑)''. 🔴 이 라벨은 원천 계통을 뜻한다(일반행사 마스터 / 캠페인행사 마스터) — 온·오프라인 구분이 아니다. ⚠️ ''(미매핑)''은 참여 행이 행사 마스터에 붙지 않은 경우이며 비중이 작지 않다 — 이 축으로 분해하면 그 덩어리를 함께 밝힌다',
+    event.EVENT_CATEGORY AS event.EVENT_CATEGORY WITH SYNONYMS ('행사구분코드') COMMENT = '행사 구분 **원천 코드**(라벨 아님). 🔴🔴 **두 원천의 코드체계가 한 컬럼에 혼재한다** — 일반행사 계열은 소수 코드, 캠페인행사 계열은 백 단위 코드를 쓴다. 따라서 **EVENT_KIND_NAME 과 함께 보지 않으면 서로 다른 체계를 한 표에 섞는다.** 🔴 **라벨 미배선 상태**이므로 코드값을 그대로 제시하고 라벨이 없다는 사실을 밝힌다 — 의미를 창작하지 말 것. 현업이 「행사 구분별」을 물으면 이 축 대신 EVENT_KIND_NAME 또는 EVENT_NAME 으로 답한다. 실제값 19종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''9''·''12''·''13''·''14''·''15''·''16''·''100''·''200''·''300''·''400''·''500'' + NULL',
     member.GENDER_NAME   AS member.GENDER_NAME   WITH SYNONYMS ('성별')     COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨). ⚠ 종전 코드값(''M''/''F''/''U'') 노출 → O26 교정',
     member.SEX           AS member.SEX           WITH SYNONYMS ('성별코드') COMMENT = '성별 원천코드(CM013). 이 차원의 실제값 8종 1~8 (+미기재 NULL). ⚠회원 마스터에 ''0''은 없다 — sentinel ''0''은 개발·증감 원천에만 존재하므로 ''0'' 조건은 0행. 라벨은 GENDER_NAME(분석)·SEX_NM(원천)',
-    member.SEX_NM        AS member.SEX_NM        WITH SYNONYMS ('성별상세', '국내외국인') COMMENT = 'CM013 원천 라벨 8종(국내(남자)·외국인(여자)·단체·기업 등). 국내/외국인 구분용',
-    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(공#132, MM010)',
-    member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드') COMMENT = '회원상태 원천코드(MM010 1~12)',
-    member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018): 개인·기업·단체',
-    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018)'
+    member.SEX_NM        AS member.SEX_NM        WITH SYNONYMS ('성별상세', '국내외국인') COMMENT = 'CM013 원천 라벨 8종(국내(남자)·외국인(여자)·단체·기업 등). 국내/외국인 구분용. 실제값 8종: ''기업''·''기타''·''단체''·''국내(남자)''·''국내(여자)''·''외국인(기타)''·''외국인(남자)''·''외국인(여자)'' + NULL',
+    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(공#132, MM010). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''. 🔴 **라벨에 숫자 접두가 없다** — 상태 코드번호를 라벨 앞에 붙인 형태로 필터하면 0행 무증상 오답이다(경위는 원장 §O58-C). ⚠️ ''(해당없음)''은 일시회원이며 정기후원 상태축의 **구조적 부재**다 — 결측이 아니다',
+    member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드') COMMENT = '회원상태 원천코드(MM010 1~12). 실제값 12종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''9''·''10''·''11''·''12'' + NULL',
+    member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018): 개인·기업·단체. 실제값 3종: ''개인''·''기업''·''단체''',
+    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018). 실제값 3종: ''1''·''2''·''3'''
   )
   METRICS (
     fep.TOTAL_PARTICIPANTS AS SUM(fep.PARTICIPANT_CNT)

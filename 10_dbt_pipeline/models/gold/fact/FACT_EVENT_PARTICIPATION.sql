@@ -50,7 +50,16 @@ select
     --    원천에 음수 20,844행·INT_MIN 1행이 있어 정렬·범위 조건에 쓰면 안 된다.
     p.EVENT_KEY                                   as EVENT_BK,
     p.PARTCPT_SEQ                                 as PARTCPT_SEQ,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 참여 3축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
+    --    🔴 PART_STATUS_GROUP 이 O28 다체계의 **구조적 판별축**이다(종전에는 COMMENT 경고뿐이었다).
+    --    신설 위치 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝).
+    p.PARTCPT_STAT_GROUP                          as PART_STATUS_GROUP,
+    p.PARTCPT_STAT_NM                             as PART_STATUS_NAME,
+    p.PARTCPT_PATH_GROUP                          as PART_PATH_GROUP,
+    p.PARTCPT_PATH_NM                             as PART_PATH_NAME,
+    p.PARTCPT_CHNNL_GROUP                         as PART_CHANNEL_GROUP,
+    p.PARTCPT_CHNNL_NM                            as PART_CHANNEL_NAME
 from p
 left join {{ ref('DIM_EVENT') }} e
     on e.EVENT_BK = p.EVENT_KEY

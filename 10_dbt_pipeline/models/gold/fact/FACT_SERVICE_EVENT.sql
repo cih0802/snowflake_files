@@ -44,7 +44,17 @@ select
     --      평균 4,862.5명 발송(없는 요청 18.7명)이라 소비 grain 에서는 200배 차이가 난다(P39).
     CASE WHEN r.SEND_GBN_TOP IS NULL THEN 0
          ELSE {{ gold_sk(['r.SEND_GBN_TOP', 'r.SEND_GBN_MID', 'r.SEND_GBN_BOT']) }} END as SEND_TYPE_SK,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 발송 결과 2축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
+    --    🔴 축A(SEND_STATUS)는 채널별 다체계라 SEND_STATUS_GROUP 이 판별축이다 — 종전 B1 미해소 주석의
+    --       *"SNDNG_RST_CD→성공/실패 코드매핑 확정 후"* 는 **축A 라벨로는 아직 못 채운다**(EMAIL·SND 는
+    --       사전 라벨 부재 · 문서20 §M-4 회신 대기) ⇒ SUCCESS/FAIL measure 는 여전히 0 이다.
+    --    🟢 축B(SEND_RESULT_*)는 conformed 이고 라벨이 실제로 붙는다.
+    s.SEND_STATUS_GROUP                           as SEND_STATUS_GROUP,
+    s.SEND_STATUS_NAME                            as SEND_STATUS_NAME,
+    s.SEND_RESULT_CD                              as SEND_RESULT_CD,
+    s.SEND_RESULT_GROUP                           as SEND_RESULT_GROUP,
+    s.SEND_RESULT_NAME                            as SEND_RESULT_NAME
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY      -- SNDNG_KEY unique → fan-out 없음
 where s.MBER_NO is not null                       -- 순수 불량 745행 제외(NOT NULL MEMBER_DK)

@@ -22,6 +22,10 @@ import subprocess
 import sys
 
 WS = 'USER$.PUBLIC."snowflake_files"'
+# 🔴 [2026-08-11 O59-E] **경로를 워크스페이스 루트에 고정한다.** 종전에는 `os.path.exists(f)` 가
+#   상대 경로였고, `scripts/` 에서 실행하면 `scripts/scripts/...` 를 찾아 **전건 「로컬 부재」**가 됐다.
+#   O53 실행이 통과한 것은 그때 CWD 가 우연히 `/workspace` 였기 때문이다(P85 계열: 통과가 신선함을 뜻하지 않는다).
+ROOT = '/workspace'
 
 O53_FILES = [
     '99_NEXT_SESSION.md',
@@ -79,12 +83,14 @@ def main():
         sys.exit(__doc__)
 
     idx = stage_index({os.path.dirname(f) for f in files} | {os.path.dirname(f) for f in deleted})
-    ok = bad = miss = 0
+    ok = bad = miss = absent = 0
     for f in files:
-        if not os.path.exists(f):
-            print(f'  ⚪ 로컬 부재      {f}')
+        path = os.path.join(ROOT, f)
+        if not os.path.exists(path):
+            absent += 1
+            print(f'  🔴 로컬 부재      {f}')
             continue
-        loc = os.path.getsize(f)
+        loc = os.path.getsize(path)
         st = idx.get(f)
         allowed = {math.ceil(loc / 16) * 16, math.ceil((loc + 1) / 16) * 16}
         if st is None:
@@ -95,12 +101,17 @@ def main():
         else:
             bad += 1
             print(f'  🔴 반영 불일치    {f}  로컬 {loc}B → 스테이지 {st}B (기대 {sorted(allowed)})')
-    print(f'\n반영 확인 {ok} · 불일치 {bad} · 부재 {miss} / 대상 {len(files)}')
+    print(f'\n반영 확인 {ok} · 불일치 {bad} · 스테이지부재 {miss} · 로컬부재 {absent} / 대상 {len(files)}')
     for g in deleted:
         print(('  🔴 삭제 미반영  ' if g in idx else '  ✅ 삭제 반영    ') + g)
-    if bad or miss:
+    # 🔴🔴 [2026-08-11 O59-E] **분모 0 은 SKIP 이 아니라 실패다**(P106 의 처방인데 이 게이트에 빠져 있었다).
+    #   종전 판정은 `if bad or miss` 뿐이어서 **로컬 부재를 아무 카운터에도 넣지 않았고**,
+    #   전건 부재여도 `반영 확인 0` 과 함께 **`✅ 전건 반영` 을 출력**했다 — 실측으로 재현했다(O59-E).
+    if bad or miss or absent:
         sys.exit('🔴 스테이지 반영 실패 — 파일 단위 재복사 후 재검사할 것(P99)')
-    print('✅ 전건 반영')
+    if not ok:
+        sys.exit('🔴 공집합 통과 — 검사한 파일이 0 이다(P106: 분모 0 은 통과가 아니다)')
+    print(f'✅ 전건 반영 — {ok}/{len(files)}')
 
 
 if __name__ == '__main__':

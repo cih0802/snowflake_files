@@ -76,14 +76,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.SPONSORSHIP      AS fee.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '납입 후원사업', '사업') COMMENT = '🔴**납입 대상** 후원사업명(정본 #123) — 그 회비가 어느 사업으로 들어갔는가다. ⚠️**획득 시점 후원사업과 다른 축**이다: 그 회원을 데려온 사업은 `SV_MEMBER_COHORT` 의 획득 후원사업(또는 이 SV 의 ACQ_SPONSORSHIP)이며, 한 회원이 여러 후원사업에 내므로 두 축의 값이 다르다. ⚠️개발 사건의 후원사업(`SV_MEMBER_EVENT`)과도 또 다른 축이다 — 세 축을 합산하지 말고 어느 축으로 답했는지 밝힌다. ⚠️미매칭은 ''(미매핑)''',
     -- ── 회비 구분·납입유형 (코드값 전수 열거 — §6.9-(5)) ────────────────────────
     fee.FEE_DIV          AS fee.FEE_DIV_NAME WITH SYNONYMS ('회비구분', '회비 종류') COMMENT = '회비구분명(정본 PM010). 실제값 4종: ''정기''·''선물금''·''일시''·''긴급구호''. 🔴**기부금 행은 원천이 NULL** 이다 — 결측이 아니라 「해당없음」이며 ''미상''으로 창작하지 말 것(P21). 기부금을 보려면 PAYMENT_TYPE 을 쓴다',
-    fee.FEE_DIV_CD       AS fee.FEE_DIV_CD  WITH SYNONYMS ('회비구분코드') COMMENT = '회비구분 원천코드(PM010: E=정기 · G=선물금 · I=일시 · U=긴급구호). 라벨은 FEE_DIV',
+    fee.FEE_DIV_CD       AS fee.FEE_DIV_CD  WITH SYNONYMS ('회비구분코드') COMMENT = '회비구분 원천코드(PM010: E=정기 · G=선물금 · I=일시 · U=긴급구호). 라벨은 FEE_DIV. 실제값 4종: ''E''·''G''·''I''·''U'' + NULL',
     fee.PAYMENT_TYPE     AS fee.PAYMENT_TYPE WITH SYNONYMS ('납입유형', '회비/기부금 구분') COMMENT = '납입유형. 실제값 2종: ''회비''·''기부금''. 🔴**납부율·미납 분석은 회비만으로 스코프해야 한다** — 기부금은 원천에 청구액(RQEST_AMT)이 전건 NULL 이라 분모에 들어갈 수 없다(O40). 정본 납부율 metric 은 이 스코프를 이미 반영하고 있다',
     -- ── 납입방식(결제수단) ─────────────────────────────────────────────────────
     fee.PAYMENT_METHOD   AS fee.PAYMENT_METHOD_NAME WITH SYNONYMS ('납입방식', '결제수단', '결제방식', '수납방법') COMMENT = '결제수단 라벨. 실제값 6종: ''자동이체''·''신용카드''·''네이버페이''·''회비통장''·''OCR''·''휴대폰''. 🔴**라벨 커버리지가 100% 가 아니다** — 원천 결제수단 코드 11종 중 5종은 코드그룹이 특정되지 않아 ''(미매핑)''으로 모인다(O45-B 현업 확인 대상). 따라서 **결제수단별 합계는 전체 합계보다 작다** — 총계는 이 축 없이 답한다. 원본 코드는 SETLE_CD 로 확인한다. ⚠️CRM_CODE 에서 11종을 덮는 그룹이 여럿 나왔으나 전부 의미 무관(간사/질병/취미…)이어서 **추측하지 않았다**(숫자 코드 우연 일치 · P36)',
-    fee.SETLE_CD         AS fee.SETLE_CD    WITH SYNONYMS ('결제수단코드', '수납코드') COMMENT = 'degen: 결제수단 **원본 코드**. 라벨이 없는 5종을 잃지 않기 위해 보존한다 — ''(미매핑)'' 버킷의 정체를 이 축으로 확인할 수 있다(O45-B). 🔴코드값 자체의 업무 의미는 현업 미확인이므로 **코드로 의미를 추정해 답하지 말 것**',
+    fee.SETLE_CD         AS fee.SETLE_CD    WITH SYNONYMS ('결제수단코드', '수납코드') COMMENT = 'degen: 결제수단 **원본 코드**. 라벨이 없는 5종을 잃지 않기 위해 보존한다 — ''(미매핑)'' 버킷의 정체를 이 축으로 확인할 수 있다(O45-B). 🔴코드값 자체의 업무 의미는 현업 미확인이므로 **코드로 의미를 추정해 답하지 말 것**. 실제값 11종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''10''·''12''·''13'' + NULL',
     fee.UNPAID_FLAG      AS fee.UNPAID_FLAG WITH SYNONYMS ('미납여부') COMMENT = '해당 조합에 미납 청구행이 하나라도 있는가(TRUE/FALSE). ⚠️**회원 단위 미납 여부가 아니다** — 회원 월말 미납 여부는 `SV_MEMBER_MONTHLY` 의 UNPAID_FLAG_EOM 이다',
     -- ── 회원 속성 (현재 스냅샷) ────────────────────────────────────────────────
-    fee.MEMBER_STATUS    AS fee.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '회원상태 라벨(MM010). 🔴**현재 스냅샷**이다 — 과거 회비월 행에도 현재 상태가 붙는다',
+    fee.MEMBER_STATUS    AS fee.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '회원상태 라벨(MM010). 🔴**현재 스냅샷**이다 — 과거 회비월 행에도 현재 상태가 붙는다. 실제값 13종: ''활동회원''·''후원중단''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''(해당없음)'' + NULL',
     fee.MEMBER_TYPE      AS fee.MEMBER_TYPE_NAME   WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018). 실제값 3종: ''개인''·''기업''·''단체''. 🔴현재 스냅샷',
     fee.MEMBER_GENDER    AS fee.GENDER_NAME        WITH SYNONYMS ('성별') COMMENT = '회원 성별 라벨(CM017). 실제값 5종: ''남자''·''여자''·''기타''·''단체''·''기업''. 🔴현재 스냅샷. ⚠️`SV_MEMBER_COHORT` 의 획득시점 성별(CM013)과 **코드체계가 다르다** — 합산 금지',
     -- ── 🔴 획득 귀속축 (회비 × 획득 캠페인 교차 = 이 SV 의 부가가치) ─────────────
@@ -94,8 +94,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.ACQ_MARKETING_CAMPAIGN AS fee.ACQ_MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인') COMMENT = '획득 캠페인의 마케팅캠페인명(광고↔CRM conformed 축 · O45). 광고비와 대응시킬 때 이 축을 쓴다 — 단 광고비 자체는 `SV_AD` 소관이며 두 SV 를 조인할 수 없다(각각 조회해 표를 분리한다)',
     fee.ACQ_DEPARTMENT   AS fee.ACQ_DEPARTMENT   WITH SYNONYMS ('부서', '가입부서', '획득부서') COMMENT = '🔴**획득 시점 부서명**. ⚠️개발실적보고의 「부서」는 **사건 부서**(`SV_MEMBER_EVENT.ORG_DEPARTMENT`)이며 **다른 축**이다 — 같은 라벨, 다른 값. 연간분석(회비)의 부서가 이 축이다. ⚠️상위 조직(본부/지부·팀·법인)은 산출 불가(CONF-4)',
     fee.ACQ_SPONSORSHIP  AS fee.ACQ_SPONSORSHIP_NAME WITH SYNONYMS ('획득 후원사업', '가입 후원사업') COMMENT = '🔴**획득 시점** 후원사업명(그 회원을 데려온 사업). ⚠️이 SV 의 SPONSORSHIP(=납입 대상)과 **다른 축**이다 — 회비가 들어간 사업과 회원을 데려온 사업은 다를 수 있다',
-    fee.ACQ_AGE_BAND     AS fee.ACQ_AGE_BAND     WITH SYNONYMS ('연령대', '나이대') COMMENT = '🔴**획득 시점** 연령대(CM014) — **현재 나이가 아니다**(현재 연령은 BRONZE 에 생년월일이 없어 산출 불가 · O34). ''10대 미만''이 많은 것은 오류가 아니며 편지쓰기대회 계열 아동 모집 캠페인 때문이다 — 결측·오염으로 설명하지 말 것. ⚠️''단체''·''기업''은 나이가 아니라 법인 구분이므로 연령 추이에서 제외한다',
-    fee.ACQ_REGION       AS fee.ACQ_REGION       WITH SYNONYMS ('지역', '시도') COMMENT = '🔴**획득 시점** 지역(CM018 약칭) — **현재 거주지가 아니다**(O34). 센티넬은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다'
+    fee.ACQ_AGE_BAND     AS fee.ACQ_AGE_BAND     WITH SYNONYMS ('연령대', '나이대') COMMENT = '🔴**획득 시점** 연령대(CM014) — **현재 나이가 아니다**(현재 연령은 BRONZE 에 생년월일이 없어 산출 불가 · O34). ''10대 미만''이 많은 것은 오류가 아니며 편지쓰기대회 계열 아동 모집 캠페인 때문이다 — 결측·오염으로 설명하지 말 것. ⚠️''단체''·''기업''은 나이가 아니라 법인 구분이므로 연령 추이에서 제외한다. 실제값 12종: ''기업''·''기타''·''단체''·''10대''·''20대''·''30대''·''40대''·''50대''·''60대''·''70대''·''10대 미만''·''70대 이상'' + NULL',
+    fee.ACQ_REGION       AS fee.ACQ_REGION       WITH SYNONYMS ('지역', '시도') COMMENT = '🔴**획득 시점** 지역(CM018 약칭) — **현재 거주지가 아니다**(O34). 센티넬은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다. 실제값 18종: ''강원''·''경기''·''경남''·''경북''·''광주''·''기타''·''대구''·''대전''·''부산''·''서울''·''세종''·''울산''·''인천''·''전남''·''전북''·''제주''·''충남''·''충북'' + NULL'
   )
   METRICS (
     -- ── 금액 (🔴 metric 명은 컬럼명과 달라야 한다 — 같으면 컴파일 실패, P65) ─────

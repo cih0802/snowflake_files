@@ -101,6 +101,18 @@ models:
     columns:
       - name: EVENT_KEY
         tests: [not_null, unique]
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 행사구분 코드군·라벨 (매핑 = 문서31 §4 · 결정 = 문서30 §23-J) ──
+      #   코드군은 원천(EVENT_SOURCE)이 판별한다 — 두 체계 겹침 0(실측). 값이 늘면 이 테스트가 잡는다.
+      - name: EVENT_DIV_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS286', 'MS002']
+              quote: true
+              config: { where: "EVENT_DIV_GROUP is not null" }
+      - name: EVENT_DIV_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "EVENT_DIV_CD is not null" }   # 코드가 있는데 라벨 NULL = 코드사전 미등재(DEC-17-B 관측). 라벨은 항상 warn(§헤더 정책)
 
   - name: CRM_CAMPAIGN
     columns:
@@ -229,6 +241,40 @@ models:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
               config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 참여 3축 코드군·라벨 (매핑 = 문서31 §3 · 결정 = 문서30 §23-J) ──
+      #   🔴 원천별로 코드체계가 다르다(겹침 0) ⇒ 코드군은 EVENT_KEY 접두가 판별한다.
+      #   ⚠️ 라벨 NULL 은 사전 미등재 + **O28 오염값 `)`** 두 원인이 섞인다 — warn 으로 관측만 한다(문서31 §6).
+      #   🔴 PATH 2건(MS303·MS004)은 **등급 C 조건부 적용**이다 — 문서20 §M-3 회신이 다르면 되돌린다.
+      - name: PARTCPT_STAT_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS304', 'MS006']
+              quote: true
+              config: { where: "PARTCPT_STAT_GROUP is not null" }
+      - name: PARTCPT_PATH_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS303', 'MS004']
+              quote: true
+              config: { where: "PARTCPT_PATH_GROUP is not null" }
+      - name: PARTCPT_CHNNL_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS302']
+              quote: true
+              config: { where: "PARTCPT_CHNNL_GROUP is not null" }
+      - name: PARTCPT_STAT_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_STAT_CD is not null" }
+      - name: PARTCPT_PATH_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_PATH_CD is not null" }
+      - name: PARTCPT_CHNNL_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_CHNNL_CD is not null" }
 
   - name: CRM_MEMBER_DEV
     columns:
@@ -510,6 +556,31 @@ models:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
               config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 31,486). 전량입고 후 제거
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 발송 결과 2축 코드군·라벨 (매핑 = 문서31 §1·§2 · 결정 = 문서30 §23-J) ──
+      #   축A = 채널 상태(원천별 다체계) · 축B = 통신사 결과(conformed · 신설).
+      #   🔴 EMAIL·SND·PSTMTR 의 축A 라벨은 **의도적으로 NULL** 이다(§23-J 결정 3 — 사전에 라벨 문자열이 없다)
+      #      ⇒ 축A 라벨 관측은 **MSG_AT 로 한정**한다. 전 채널에 걸면 의도된 NULL 이 매번 warn 을 내 게이트가 무시된다.
+      #   🔴 축A MSG_AT 코드군(MS282)은 **등급 C 조건부 적용** — 문서20 §M-3 회신이 다르면 되돌린다.
+      - name: SEND_STATUS_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS282']
+              quote: true
+              config: { where: "SEND_STATUS_GROUP is not null" }
+      - name: SEND_STATUS_NAME
+        tests:
+          - not_null:
+              config: { severity: warn, where: "SEND_CHANNEL = 'MSG_AT' and SNDNG_RST_CD is not null" }
+      - name: SEND_RESULT_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS056', 'MS057', 'MS058', 'MS059']
+              quote: true
+              config: { where: "SEND_RESULT_GROUP is not null" }   # 🔴 코드군을 조인 결과에서 얻으므로, 사전에 새 그룹이 생기면 여기서 잡힌다
+      - name: SEND_RESULT_NAME
+        tests:
+          - not_null:
+              config: { severity: warn, where: "SEND_RESULT_CD is not null" }   # 사전 초과값 실재(DEC-17-B 관측 · 라벨 NULL 유지)
 
   - name: CRM_SEND_RESULT
     columns:

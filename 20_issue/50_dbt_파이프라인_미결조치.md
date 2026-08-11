@@ -333,13 +333,13 @@ GOLD 스키마 COMMENT 는 "WIDE VIEW 9개 제공"이라 기재됐으나 실측 
 | 10 | `not_null CRM_PAYMENT_BILLING.RQEST_RST_CD` ⚠️`where PAY_STAT_CD='F'` | 1,096 | O17 W1 사유 커버리지 | 사유 커버리지 회귀 감지용(0.018%) |
 | 11 | `not_null CRM_CAMPAIGN.CMPGN_TYPE1_NM` ⚠️`where CMPGN_TYPE1_BSN IS NOT NULL` | 740 | 순서9-C 캠페인축 | 기지 고아(코드 4종) |
 | 12 | `not_null CRM_CAMPAIGN.CMPGN_CTGR_NM` | 23 | 순서9-C 캠페인축 | 기지 고아 |
-| 13 | `accepted_values FACT_EVENT_PARTICIPATION.PART_STATUS` | 1 | 🟡 **실결함 — 2026-08-07 행 특정 완료** | 오염값 **`)` 2행**(distinct 1로 보고). ✅ **BRONZE 원본까지 4행 전량 식별**: `TD_MS_EVENT_PRTCPNT_DTL` — 회원 `0526424`×행사 `118`(SEQ 1087 NULL·1138 `)`) · 회원 `1377663`×행사 `153`(SEQ 3787 NULL·3839 `)`). **4행 전부 2024-02-14 · `FRST_RGSTR_ID='HomePage'` · `DIV/CHNL/PATH` = 100/100/200 동일** → 단일 입력 사고. 🟢 **정정값 후보 = `110`** — 두 행사의 정상값이 `110` **단일**(118: 2,598행 · 153: 5,174행 = **7,772/7,772 = 100%**). 🔴 인접 컬럼 전건 정상이라 **필드 밀림 아님**(O28 재분류 재확인). ⇒ **원천 정정 요청**(우리가 원천을 못 고친다) vs 센티넬 라우팅 결정 · 상세 = 00 §O28 |
+| 13 | `accepted_values FACT_EVENT_PARTICIPATION.PART_STATUS` | 1 | 🟡 **실결함 — 2026-08-07 행 특정 완료** | 오염값 **`)` 2행**(distinct 1로 보고). 🔴 **[2026-08-11 O59-G 정정] 「4행 전량」은 2/9 표본이었다 — 실제 사고는 18행**(TEXT 6컬럼 `)` 12행 + 같은 사고 빈값 6행 · 전량 표는 문서20 §I-2 #4). 🔴 **`MBER_NO=')'` 2행은 GOLD 까지 라이브이고 `DIM_MEMBER` 매칭 0 = 고아 참조**(신규 · O59-G). 아래는 그 중 `PART_STATUS` 축 4행이다: ✅ **BRONZE 원본까지 4행 식별**: `TD_MS_EVENT_PRTCPNT_DTL` — 회원 `0526424`×행사 `118`(SEQ 1087 NULL·1138 `)`) · 회원 `1377663`×행사 `153`(SEQ 3787 NULL·3839 `)`). **4행 전부 2024-02-14 · `FRST_RGSTR_ID='HomePage'` · `DIV/CHNL/PATH` = 100/100/200 동일** → 단일 입력 사고. 🟢 **정정값 후보 = `110`** — 두 행사의 정상값이 `110` **단일**(118: 2,598행 · 153: 5,174행 = **7,772/7,772 = 100%**). 🔴 인접 컬럼 전건 정상이라 **필드 밀림 아님**(O28 재분류 재확인). ⇒ **원천 정정 요청**(우리가 원천을 못 고친다) vs 센티넬 라우팅 결정 · 상세 = 00 §O28 |
 | 14~22 | `relationships *.MBER_NO → CRM_MEMBER` **SILVER 9건** — `CRM_SEND_MEMBER` 31,486 · `CRM_EVENT_PARTICIPATION` 9,480 · `CRM_PAYMENT_BILLING` 309 · `CRM_MEMBER_DEV` 270 · `GA4_IDENTITY` 172 · `CRM_MEMBER_STATUS_HIST` 85 · `CRM_PAYMENT_METHOD` 37 · `CRM_MEMBER_DISCONTINUE` 1 · `CRM_MEMBER_RESPONSOR` 1 | 41,841 | **BLOCKING-1** | 회원 마스터 전량입고 |
 | 23~27 | `relationships *.MEMBER_DK → DIM_MEMBER` **GOLD 5건** — `FACT_SERVICE_EVENT` 31,486 · `FACT_EVENT_PARTICIPATION` 9,480 · `FACT_MEMBER_EVENT` 271 · `FACT_MEMBER_MONTHLY` 199 · `FACT_MEMBER_COHORT` 16 | 41,452 | **BLOCKING-1 하류 전파** | 〃 |
 
 **해석**
 - 🟢 **27건 중 26건이 「알려진 외부 원천 미완전」**이고, 그중 **14건(SILVER 9 + GOLD 5)이 단일 원인** — 고아 회원 **9,247명**이 BRONZE 회원 마스터에 부재(O41 실측: 존재 0명·부재 9,247명, BRONZE 키 1,763,065 = SILVER `CRM_MEMBER` 1,763,065 완전 일치 → SILVER 로직 결함 아님).
-- 🟡 **실결함은 1건뿐** = #13 `PART_STATUS` 오염값 `)` 2행(O28 잔여).
+- 🟡 **실결함은 1건뿐** = #13 `PART_STATUS` 오염값 `)` 2행(O28 잔여 · **테스트가 보는 축 기준**이며 원천 사고 규모는 **18행** = O59-G). 🔴 이 테스트는 STAT 축만 보므로 **나머지 16행은 dbt 로 드러나지 않는다.**
 - 🟢 **2026-08-07 재확인 — 회귀 0**: 오늘 build 의 WARN 27 을 로그에서 전량 추출해 O41 기재 기지값과 대조, **항목·건수 전량 일치**. ⚠️ 구 실행분 로그는 `dbt.log.1` 로 로테이션돼 로그 대 로그 대조는 불가 — 문서 기재값 대조로 검증했다.
 - 🔴 **추적표 미등재였던 것 4건**(#10·#11·#12·#13) 과 **누락 1건**(#27 `FACT_MEMBER_COHORT` — O37 신설 팩트라 추적표가 「FMM·FEP·FME·FSE 4건」으로 굳어 있었다) 을 이 표로 흡수했다.
 

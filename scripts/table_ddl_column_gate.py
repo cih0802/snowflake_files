@@ -38,6 +38,13 @@ TARGETS = {
     'DIM_MEMBER_CURRENT':     MB + 'dim/DIM_MEMBER_CURRENT.sql',
     'DIM_MEMBER_ACQUISITION': MB + 'dim/DIM_MEMBER_ACQUISITION.sql',
     'FACT_DEV_ACHIEVEMENT':   MB + 'fact/FACT_DEV_ACHIEVEMENT.sql',
+    # 🔴 [2026-08-11 O59-N] **분모 확장.** 종전 대상은 O53 신규 4종뿐이어서, 다른 테이블에 컬럼을
+    #   추가하면 **어떤 게이트도 순서를 보지 않았다**(P197 계열: 게이트의 분모를 세지 않으면 공백이 보이지 않는다).
+    #   DEC-35 1·2단계로 이 3종에 라벨 컬럼을 신설했으므로 함께 검사한다.
+    #   ⚠️ 여기 없는 GOLD 테이블은 여전히 미검사다 — 컬럼을 건드리면 이 표에 추가할 것.
+    'DIM_EVENT':                MB + 'dim/DIM_EVENT.sql',
+    'FACT_EVENT_PARTICIPATION': MB + 'fact/FACT_EVENT_PARTICIPATION.sql',
+    'FACT_SERVICE_EVENT':       MB + 'fact/FACT_SERVICE_EVENT.sql',
 }
 AUDIT_SQL = ("'{src}' AS DW_SOURCE_SYSTEM,\n"
              "CURRENT_TIMESTAMP()::TIMESTAMP_NTZ AS DW_LOAD_TS,\n"
@@ -49,7 +56,11 @@ def ddl_columns(table):
     """06_DDL.sql 의 CREATE 블록에서 선언 컬럼을 순서대로 뽑는다(정본)."""
     s = io.open(DDL, encoding='utf-8').read()
     i = s.index(f'CREATE OR REPLACE TABLE GN_DW.GOLD.{table} (')
-    j = s.index(';', i)
+    # 🔴 [2026-08-11 O59-N] 종전 경계는 `s.index(';', i)` 였다 — **COMMENT 문안 속 `;` 에 걸려 블록이
+    #   조용히 잘린다**(같은 결함을 `audit_ddl_rule7.py` 에서 실측 확인: 파싱 579/619 · 진짜 위반 11건 은닉).
+    #   블록이 잘리면 이 게이트는 **DDL 컬럼을 적게 읽고 「누락 0」을 보고**한다 = 거짓 안전.
+    #   ⇒ 경계를 블록 종료 토큰 `\n) COMMENT =` 로 잡는다(P195: 같은 규약은 판정식을 1벌로).
+    j = s.index('\n) COMMENT =', i)
     out = []
     for line in s[i:j].split('\n')[1:]:
         t = line.strip()
@@ -95,12 +106,25 @@ def render(cn, path):
     s = re.sub(r"\{\{\s*ref\('([A-Z0-9_]+)'\)\s*\}\}",
                lambda m: resolve_ref(cn, m.group(1)), s)
     # 프로젝트 매크로 — 정본 = macros/gold_helpers.sql. 컬럼 이름·순서 판정에만 쓰이므로 식은 등가면 된다.
-    s = re.sub(r'\{\{\s*month_key\("?([^")]+)"?\)\s*\}\}',
-               lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMM'))", s)
-    s = re.sub(r'\{\{\s*date_sk\("?([^")]+)"?\)\s*\}\}',
-               lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMMDD'))", s)
-    s = re.sub(r'\{\{\s*month_key_clamp\("?([^")]+)"?\)\s*\}\}',
-               lambda m: f"({m.group(1)})", s)
+    # 🔴 [2026-08-11 O59-N] 인자 따옴표를 벗겨야 한다 — 종전 패턴은 `"` 만 고려해 `date_sk('x::DATE')`
+    #   에서 **작은따옴표째로 치환**돼 `TO_CHAR('p.PARTCPT_DT::DATE','YYYYMMDD')` 가 됐다(실측 컴파일 에러).
+    #   대상을 넓히기 전에는 이 형태를 쓰는 모델이 없어 드러나지 않았다(P197: 분모가 좁으면 결함도 숨는다).
+    def _arg(x):
+        return x.strip().strip('\'"')
+    s = re.sub(r'\{\{\s*month_key\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)\s*\}\}',
+               lambda m: f"TRY_TO_NUMBER(TO_CHAR({_arg(m.group(1))}, 'YYYYMM'))", s)
+    s = re.sub(r'\{\{\s*date_sk\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)\s*\}\}',
+               lambda m: f"TRY_TO_NUMBER(TO_CHAR({_arg(m.group(1))}, 'YYYYMMDD'))", s)
+    s = re.sub(r'\{\{\s*month_key_clamp\(\s*[\'"]?([^\'")]+)[\'"]?\s*\)\s*\}\}',
+               lambda m: f"({_arg(m.group(1))})", s)
+    # 🔴 [2026-08-11 O59-N] `gold_sk()` 미지원이라 대상을 넓히자마자 게이트가 죽었다(leftover jinja).
+    #   정본 = macros/gold_helpers.sql `gold_sk` = ABS(HASH(COALESCE(CAST(c AS VARCHAR),'∅') || '‖' || …)).
+    #   ⚠️ 컬럼 이름·순서 판정용이므로 **값이 아니라 타입·개수만 등가**면 된다.
+    def _gold_sk(m):
+        cols = [c.strip().strip('\'"') for c in m.group(1).split(',')]
+        expr = " || '‖' || ".join(f"COALESCE(CAST({c} AS VARCHAR), '∅')" for c in cols)
+        return f"ABS(HASH({expr}))"
+    s = re.sub(r"\{\{\s*gold_sk\(\[([^\]]*)\]\)\s*\}\}", _gold_sk, s)
     leftover = re.findall(r'\{\{[^}]*\}\}', s)
     if leftover:
         sys.exit(f'🔴 렌더되지 않은 jinja 가 남았다 — 게이트를 신뢰할 수 없다: {leftover[:3]}')

@@ -34,6 +34,83 @@ NOT_RATIO = {
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')
 
+# ── COMMENT 수치 금지 토큰 검출 (05_0 COMMENT 작성 규약 (1) · 04 §6.9-(8) · 작업규칙 7) ──
+# 🔴 [2026-08-11 O59-D] main() 안에 있던 판정식을 모듈 수준으로 올렸다 — `--self-check` 로
+#   패턴 자체를 대조하려면 DB 접속 없이 호출 가능해야 한다(P106: 게이트는 대상이 있는 상태에서 돌린다).
+NUM_BAN = re.compile(
+    r'\d{1,3}(?:,\d{3})+'          # 천단위 구분 실측치 (행수·금액)
+    # 🔴 [2026-08-11 O59-E] **`%p` 를 `%` 보다 먼저** 둔다. 반대 순서면 `2.3%p` 가 `%` 분기에서
+    #   `'2.3%'` 로 먼저 소비돼 **`%p` 분기가 영원히 도달 불가**(dead code)였다. 실측으로 확인했다.
+    r'|\d+\.\d+\s*%p'              # 퍼센트포인트 차이
+    r'|(?<!10)\d+\.\d+\s*%'        # 소수점 백분율 (커버리지·비율 실측치 · 100% 임계는 제외)
+    r'|\b\d+\.\d{4,}\b'            # 고정밀 실측치 (13.747454 등)
+    r'|\b\d+(?:\.\d+)?\s*배\b'     # 배수
+    # 🔴 [2026-08-11 O59-D 신설] **소규모 실측치**(천단위 구분이 없어 위 패턴을 빠져나간다).
+    #   경위: O59-B 에서 내가 `CM_POSITION` COMMENT 에 *"백틱 1문자 **1행**"* 을 넣었고
+    #   게이트는 「신규 유입 0」으로 **통과시켰다**. 「1행」은 쉼표가 없어 첫 패턴에 걸리지 않는다.
+    #   🔴 정본은 이미 이것을 이름으로 금지하고 있었다 — `05_0` COMMENT 작성 규약 (1) ·
+    #     `04_SV_설계.md` §6.9-(8) = *"행수·합계·커버리지%·건수·금액·적재기간"*. 규모와 무관하다.
+    # 🔴 **선행 문자 차단 `(?<![\d,§#])` 필수**
+    #   · `\d`·`,` — `1,010,680건` 이 `680건` 으로 쪼개지는 것을 막는다(패턴 단독 사용 시 방어).
+    #   · `§`·`#` — **절 참조·지표번호 뒤에 단위어가 오면 붙어 잡힌다.** 실측 오탐:
+    #     `'미납중단(명) — 05 2-2 원천 확인(정본 §3 건·명)'` 이 `§3` + `건` = **`'3 건'`** 으로 검출됐다(O59-E).
+    r'|(?<![\d,§#])\d+\s*행\b'     # 행수 (1행·53건 유형)
+    r'|(?<![\d,§#])\d+\s*건\b'     # 건수
+    r'|(?<![\d,§#])\d+\s*명\b'     # 인원
+    r'|(?<![\d,§#])\d+\s*원\b'     # 금액
+)
+# ⚠️ **「N종」은 금지하지 않는다** — 코드 도메인의 크기이고 §6.9-(5) 가 열거와 함께 요구하는 값이다.
+#   적재량이 아니라 **코드체계**에 종속되며, stale 이 되면 `sv_code_label_gate` ①(종수 선언 정합)이
+#   **즉시 실패**시킨다. 즉 게이트로 보호되는 유일한 수치이므로 예외로 둔다(근거 = 04 §6.9-(5)).
+
+# 🔴 [2026-08-11 O59-D] **의미 예외 — 문맥으로 판정한다**(NOT_RATIO 와 같은 사상 · P122).
+#   규칙 7 이 금지하는 것은 **적재량에 따라 변하는 실측치**다. 아래는 형태만 수치이고 적재량과 무관하다.
+#   ⇒ 예외를 두지 않으면 오탐 15건이 진짜 2건을 덮는다(**P177**: 오탐이 진짜를 덮으면 P103-⑤ 로 뒤집힌다).
+#   판정은 **토큰이 예외 패턴의 매치 구간에 포함될 때만** 면제한다(값 전체를 면제하지 않는다).
+#   ⚠️ 문안에 마크다운 강조(`**`)가 섞이므로 인접 판정에 `[*\s]*` 를 넣는다 — 없으면
+#     *"회원×월 정확히 1행** grain"* 처럼 강조가 끼인 grain 서술을 놓쳐 오탐이 된다(실측 1건).
+NUM_EXEMPT = [
+    (re.compile(r'\d+\s*행[*\s]*=[^,·.]{0,12}'),   'grain 정의(1행=1회원) — 구조이고 적재량과 무관'),
+    (re.compile(r'\d+\s*행[*\s]*grain', re.I),     'grain 정의'),
+    (re.compile(r'\d+\s*행[*\s]*vs'),              'grain 대비 서술'),
+    (re.compile(r'0\s*행'),                        '논리 공집합 서술(그 조건은 구조적으로 항상 0행) — 실측치가 아니다'),
+    (re.compile(r'규칙\s*\d+\s*건'),               '업무 규칙 개수 — 적재량과 무관'),
+    # 🔴🔴 [2026-08-11 O59-E] **규약 상수는 실측치가 아니라 정의다.** `audit_ddl_rule7.py` 의 `WHITE` 가
+    #   이미 `÷[0-9,]+` 를 예외로 두고 있었는데 **이 게이트에 전파되지 않았다**(P62-B).
+    #   그 결과 `CMT_BASELINE` 이 `'10,000'` 3건을 「기지 부채」로 등재했고, §O56-D 정리 계획대로
+    #   지웠다면 **정본 `(건)` = 금액÷10,000(CONF-2) 규약 자체를 COMMENT 에서 파괴**했을 것이다.
+    (re.compile(r'÷\s*[\d,]+'),                    '규약 상수(정본 `(건)` = 금액÷10,000 · CONF-2) — 적재량과 무관한 정의'),
+    (re.compile(r'[\d,]+\s*(?:원|건)\s*단위'),      '단위 규약 표기 — 정의'),
+    # 🔴 [2026-08-11 O59-L] `÷` 뿐 아니라 **슬래시 표기**도 규약 상수다 — `06_DDL` 실측:
+    #   *"정본 감액(건)(=감액금액/10,000)과 다름"*. `÷\s*[\d,]+` 만으로는 못 잡았다.
+    #   ⚠️ `/[\d,]+` 로 넓히면 **분수 실측치**(`218,402/243,545 = 89.7%`)의 분모까지 면제된다 ⇒ 상수 `10,000` 만 지정한다.
+    (re.compile(r'[÷/]\s*10,000\b'),               '규약 상수 CONF-2(정본 `(건)` = 금액/10,000)'),
+    # 🔴 [O59-L] 「0건」은 「0행」과 같은 **논리적 부재 서술**이다 — `06_DDL` 실측:
+    #   *"''중단''/''미납'' 리터럴 0건"* = 그 값이 존재하지 않는다는 구조 서술이다.
+    (re.compile(r'0\s*건'),                         '논리 부재 서술(그 값이 존재하지 않는다) — 실측 규모가 아니다'),
+    # 🔴 [2026-08-11 O59-M] dbt yml `columns[]`(= GOLD **뷰** 라이브 COMMENT 원천)을 같은 판정식으로 재면서
+    #   드러난 오탐 2유형이다(56건 전량 · 진짜 위반 0). 두 문안 모두 **적재량과 무관한 구조·논리 서술**이다.
+    #   ⚠️ 이 표면은 종전에 어느 게이트도 검사하지 않았다 — `audit_ddl_rule7` 은 `06_DDL` 만,
+    #      `sv_unit_gate` 는 SV·라이브 COMMENT 만 봤다(P194 계열: 같은 규칙의 형제 표면).
+    (re.compile(r'IS_CURRENT\s*1\s*건'),            'grain 서술(회원당 현재버전은 1건) — 구조이고 적재량과 무관'),
+    (re.compile(r'총계\s*1\s*행'),                   '논리 서술(분해축이 없으면 결과가 총계 1행) — 실측 규모가 아니다'),
+]
+
+
+def scan_numbers(text):
+    """COMMENT 문안에서 금지 수치 토큰을 찾아 (위반, 면제) 로 분리한다.
+
+    면제 판정은 토큰 위치가 `NUM_EXEMPT` 매치 구간과 겹치는지로 한다 —
+    같은 COMMENT 안에 grain 서술과 실측치가 함께 있어도 실측치만 남는다.
+    """
+    t = ' '.join(str(text).split())
+    spans = [(m.start(), m.end(), why) for pat, why in NUM_EXEMPT for m in pat.finditer(t)]
+    bad, exempt = set(), set()
+    for m in NUM_BAN.finditer(t):
+        why = next((w for a, b, w in spans if a <= m.start() and m.end() <= b), None)
+        (exempt if why else bad).add(m.group(0))
+    return bad, exempt
+
 
 def main():
     cn = conn()
@@ -150,13 +227,7 @@ def main():
     #   순간 Agent 가 **틀린 값을 사실로 말한다**(계정 재현 시 전 수치 불일치 실측 · 04 §6.9-(8)).
     # 판정 대상 = 라이브 SV 의 COMMENT·AI_SQL_GENERATION 문안.
     # ⚠️ 보존해야 하는 것(규약 (3) 등)은 잡지 않는다 — 코드값·지표번호·절 참조·불변식 임계(100%).
-    NUM_BAN = re.compile(
-        r'\d{1,3}(?:,\d{3})+'          # 천단위 구분 실측치 (행수·금액)
-        r'|(?<!10)\d+\.\d+\s*%'        # 소수점 백분율 (커버리지·비율 실측치 · 100% 임계는 제외)
-        r'|\d+\.\d+\s*%p'              # 퍼센트포인트 차이
-        r'|\b\d+\.\d{4,}\b'            # 고정밀 실측치 (13.747454 등)
-        r'|\b\d+(?:\.\d+)?\s*배\b'     # 배수
-    )
+    # 판정식·의미 예외는 모듈 수준 `NUM_BAN`·`NUM_EXEMPT`·`scan_numbers()` 에 있다(O59-D).
     cmt_bad = []
     # 🔴 기지 잔존 baseline (2026-08-10 O56-D 실측 · **선행 세션 유래 · 이번 세션 추가분 아님**)
     #   O51-D-D 는 *"SV COMMENT 에 박혀 있던 절대값을 05 DDL 에서 전부 제거"* 를 ✅해소로 기록했으나
@@ -164,31 +235,38 @@ def main():
     #   ⚠️ 이 baseline 은 **면제가 아니라 기지 부채 목록**이다. 정리 계획은 이슈원장 §O56-D 에 등재했다.
     #   ⇒ 게이트는 **신규 유입만 실패**시킨다(항상 빨간 게이트는 무시되어 결국 무력화된다).
     #   baseline 에 없는 조합이 나오거나 기지 조합에 **새 토큰이 추가되면** 실패한다.
+    # 🔴🔴 [2026-08-11 O59-E] **부채 목록에서 오탐 4개 객체를 회수했다.** `'10,000'` 은 실측치가 아니라
+    #   정본 `(건)` = 금액÷10,000(CONF-2) **규약 상수**다(라이브 5곳 전부 `÷10,000` 문맥으로 실측 확인).
+    #   회수 대상 = `SV_MEMBER_EVENT` AI_SQL · 동 `DECREASE_EVENT_AMT` · `SV_MEMBER_FEE` AI_SQL · 동 `TOTAL_BILLING_ROWS`.
+    #   ⇒ 토큰만 남은 2개 객체는 **키 자체를 삭제**했다(검출 0 이므로 부채가 아니다) · 기지 부채 14 → 12.
+    #   🔴 이것을 못 잡으면 §O56-D 정리 작업이 **지표 정의를 지우는** 작업이 된다.
     CMT_BASELINE = {
         # 키 = (SV, kind, name, property) — 라이브 `DESC SEMANTIC VIEW` 출력 그대로 실측한 값이다.
         ('SV_MEMBER_COHORT', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'1,000'},
         ('SV_MEMBER_COHORT', 'METRIC', 'CHURN_RATE_12M', 'COMMENT'): {'100배'},
-        ('SV_MEMBER_EVENT', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'99.99%', '10,000'},
-        ('SV_MEMBER_EVENT', 'METRIC', 'DECREASE_EVENT_AMT', 'COMMENT'): {'10,000'},
+        ('SV_MEMBER_EVENT', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'99.99%'},
         ('SV_MEMBER_EVENT', 'DIMENSION', 'DVLP_DIV_NM', 'COMMENT'): {'1,010,680', '1,038,262'},
         ('SV_MEMBER_EVENT', 'METRIC', 'TOTAL_DEV_CNT', 'COMMENT'): {'56.86%', '2,291,878', '3,594,843'},
         ('SV_MEMBER_FEE', 'None', 'None', 'COMMENT'): {'18.5%', '891,959,790,888', '1,056,821,121,099'},
-        ('SV_MEMBER_FEE', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'18.5%', '10,000'},
-        ('SV_MEMBER_FEE', 'METRIC', 'TOTAL_BILLING_ROWS', 'COMMENT'): {'10,000'},
+        ('SV_MEMBER_FEE', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'18.5%'},
         ('SV_MEMBER_FEE', 'METRIC', 'UNPAID_RATIO', 'COMMENT'): {'13.747454%'},
         ('SV_MEMBER_MONTHLY', 'None', 'None', 'COMMENT'): {'18.5%', '891,959,790,888', '1,056,821,121,099'},
         ('SV_MEMBER_MONTHLY', 'CUSTOM_INSTRUCTION', 'None', 'AI_SQL_GENERATION'): {'18.5%'},
-        ('SV_MEMBER_MONTHLY', 'METRIC', 'TOTAL_PAID_ALL', 'COMMENT'): {'8.32%'},
+        # 🔴 [O59-E] `'8.32%'` → **`'8.32%p'`**. 라이브 문안은 처음부터 **퍼센트포인트**였는데
+        #   `%p` 분기가 dead code 여서 `%` 분기가 `'8.32%'` 로 잘라 등재했다.
+        #   ⇒ 죽은 패턴은 「검출 실패」로만 끝나지 않고 **부채 대장에 잘린 값을 남긴다.**
+        ('SV_MEMBER_MONTHLY', 'METRIC', 'TOTAL_PAID_ALL', 'COMMENT'): {'8.32%p'},
         ('SV_MEMBER_MONTHLY', 'METRIC', 'UNPAID_RATIO', 'COMMENT'): {'14.29%', '85.65%'},
     }
-    cmt_known = 0
+    cmt_known, cmt_exempt = 0, 0
     cn4 = conn()
     for s in names:
         _, rows4 = q(f'desc semantic view {SCHEMA}.{s}', cn4)
         for kind, name, parent, prop, val in rows4:
             if prop not in ('COMMENT', 'AI_SQL_GENERATION') or not val:
                 continue
-            found = set(NUM_BAN.findall(str(val)))
+            found, ex = scan_numbers(val)
+            cmt_exempt += len(ex)
             if not found:
                 continue
             key = (s, str(kind), str(name), prop)
@@ -202,7 +280,7 @@ def main():
     for s, obj, prop, found in cmt_bad:
         print(f"  🔴 COMMENT 수치 **신규 유입**: {s}.{obj} [{prop}] {', '.join(found)}")
     print(f"  ⇒ COMMENT 수치 금지 검사: SV {len(names)}종 · **신규 유입 {len(cmt_bad)}건** · "
-          f"기지 부채 {cmt_known}건(baseline · 정리 계획 = 원장 §O56-D)")
+          f"기지 부채 {cmt_known}건(baseline · 정리 계획 = 원장 §O56-D) · 의미 예외 {cmt_exempt}토큰")
 
     fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad)
     print("\n" + ("🔴 게이트 실패" if fail else
@@ -210,5 +288,74 @@ def main():
     return 1 if fail else 0
 
 
+def self_check():
+    """DB 접속 없이 `scan_numbers()` 를 양성·음성 대조군으로 검사한다.
+
+    🔴 **P177**: 오탐 대조군(음성)을 양성 이상으로 둔다 — O59-D 착수 시 신규 유입 17건 중
+       **진짜는 2건**이고 15건이 오탐이었다(grain 정의 6 · 논리 공집합 8 · 업무 규칙 개수 1).
+       오탐이 진짜를 덮으면 게이트는 「빨간 채로 무시」되어 무력화되고, 나아가 **baseline 객체에
+       오탐 토큰이 붙어 기지 부채 대장까지 흐린다**(집계가 14 → 11 로 줄었다).
+    문안은 **라이브 SV COMMENT 실측 발췌**를 쓴다(가공 예제가 아니라 실제로 게이트가 만난 문안).
+    🔴 [2026-08-11 O59-E] **판정을 부분문자열 → 정확 집합 일치로 바꿨다.** 종전 판정은
+       `'1행' in ' '.join(검출토큰)` 이었는데 **`'1행'` 은 `'421행'` 의 부분문자열**이므로
+       엉뚱한 토큰만 잡혀도 통과했다 — 자기검사가 **거짓 통과**할 수 있었다(P106 계열).
+    """
+    POS = [  # (문안, 검출 토큰이 **정확히** 이 집합이어야 한다)
+        ("실제값 16종: '`'(🔴 오염값 — 백틱 1문자 1행 · 정상 CM 위치가 아니다)", {'1행'}),
+        ("실제값 8종 (+미기재 NULL 421행)", {'421행'}),
+        ("sentinel '0'은 개발·증감 원천(CRM_MEMBER_DEV 9행·CRM_MEMBER_AMT_CHANGE 1행)에만 있다", {'9행', '1행'}),
+        ("전 기간 미납 122,621,758,323 / 13.747454%", {'122,621,758,323', '13.747454%'}),
+        ("직접 조인하면 4.49배 팬아웃한다", {'4.49배'}),
+        ("커버리지 96.79% 이며 격차는 2.3%p 다", {'96.79%', '2.3%p'}),   # 🔴 `%p` 도달성 회귀 고정
+        ("회비 단가는 15000원 이고 대상은 53건 · 12명 이다", {'15000원', '53건', '12명'}),
+        ("실적재 20종 중 6종(366행)이 폐지코드다", {'366행'}),            # 🔴 `06_DDL` 실측 위반 문안(O59-E)
+    ]
+    NEG = [  # 하나라도 잡으면 오탐 — 적재량과 무관한 문안
+        "회원 획득 코호트 SV(base FMC, 회원 grain 1행=1회원)",
+        "회원 상태전이 사건 팩트. 1행=1개발/중단 사건.",
+        "이 SV 는 회원×월 1행 grain 이라 그 축들이 없다",
+        "이 팩트(FMM)는 **회원×월 정확히 1행** grain 이라 후원사업을 붙이면 grain 이 깨진다",  # 마크다운 강조 끼임
+        "grain 이 회원 1행 vs 회비 상세 행이다",
+        "상태 코드번호를 라벨 앞에 붙인 형태로 필터하면 0행 무증상 오답이다",
+        "sentinel '0'은 개발·증감 원천에만 존재하므로 '0' 조건은 0행",
+        "해소 경로는 원천 입고가 아니라 현업 배분 규칙 1건 이다",
+        "미납중단(명) — 05 2-2 원천 확인(정본 §3 건·명)",                  # 🔴 절 참조 `§3`+`건` 오탐(O59-E)
+        "감액(건) = 금액 ÷ 10,000 으로 산출한다 · 공#38 건 기준",           # 🔴 지표번호 `#38`+`건` 오탐
+        "불변식: 납부율은 100% 를 넘지 않는다",                             # 100% 임계는 보존
+        "개발구분(정본 MM015). 실제값 5종: '신규'·'증액'·'감액'·'재후원'·'후원중단'",   # 코드값·N종은 보존
+        "성별 원천코드(CM013) · 지표번호 공64·#69·70 · 경위는 원장 §O59-C",  # 코드·지표번호·절 참조
+    ]
+    # 🔴 **천단위 분할 금지 대조군** — 수치 자체는 잡아야 하지만(기지 부채) **쪼갠 토큰은 안 된다.**
+    #   쪼개면 baseline 키와 어긋나 기지 부채가 「신규 유입」으로 되살아난다(O59-D 오탐 3건의 정체).
+    NOSPLIT = [
+        ("'후원중단'(1,010,680건)은 EVENT_TYPE='STOP'(1,038,262건)과 동일 사건이다",
+         {'680건', '262건'}, {'1,010,680', '1,038,262'}),
+        ("관측 가능 회원 1,000명 이상을 적용했음을 밝힌다", {'000명'}, {'1,000'}),
+    ]
+    fails = []
+    for text, want in POS:
+        bad, _ = scan_numbers(text)
+        if bad != want:
+            fails.append(f"  🔴 양성 불일치: want {sorted(want)} · got {sorted(bad)} ▸ {text[:60]}")
+    for text in NEG:
+        bad, _ = scan_numbers(text)
+        if bad:
+            fails.append(f"  🔴 오탐: {sorted(bad)} ▸ {text[:60]}")
+    for text, forbid, want in NOSPLIT:
+        bad, _ = scan_numbers(text)
+        if bad & forbid:
+            fails.append(f"  🔴 천단위 분할 오탐: {sorted(bad & forbid)} ▸ {text[:60]}")
+        if not want <= bad:
+            fails.append(f"  🔴 원 수치 미검출: want {sorted(want)} · got {sorted(bad)} ▸ {text[:60]}")
+    print(f"[sv_unit_gate 자기검사] 양성 {len(POS)} · 음성 {len(NEG)} · 분할금지 {len(NOSPLIT)} "
+          f"(오탐 대조군 {len(NEG) + len(NOSPLIT)} ≥ 양성 {len(POS)} · P177)")
+    for f in fails:
+        print(f)
+    print("\n" + ("🔴 자기검사 실패" if fails else
+                  f"✅ 자기검사 통과 — 양성 {len(POS)}/{len(POS)} 검출 · "
+                  f"음성 {len(NEG)}/{len(NEG)} 오탐 0 · 분할금지 {len(NOSPLIT)}/{len(NOSPLIT)}"))
+    return 1 if fails else 0
+
+
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(self_check() if '--self-check' in sys.argv else main())

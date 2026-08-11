@@ -387,13 +387,22 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SNDNG_DTL_KEY       NUMBER(10,0)    NOT NULL COMMENT '발송상세키 (PK)',
     MBER_NO             VARCHAR(10)     COMMENT '회원번호',
     SNDNG_DE            TIMESTAMP_NTZ   COMMENT '발송일시',
-    SNDNG_RST_CD        VARCHAR(3)      COMMENT '발송결과코드',
-    SEND_CHANNEL        VARCHAR         COMMENT '발송채널',
+    SNDNG_RST_CD        VARCHAR(3)      COMMENT '발송결과코드 (축A raw · 🔴채널별 다체계 — SEND_CHANNEL 또는 SEND_STATUS_GROUP 동반 필수)',
+    SEND_CHANNEL        VARCHAR         COMMENT '발송채널 (축A 판별자)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 매핑 = 문서31 · 결정 = 문서30 §23-J.
+    --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다**(이 파일의 확립된 규약 · 06_DDL.sql:298 과 동일 근거) —
+    --      라이브에는 `ALTER TABLE ADD COLUMN` 으로 추가되어 물리 ordinal 이 맨 끝이 된다. 감사컬럼 앞에 적으면
+    --      신규 환경 재구축 시 컬럼 순서가 라이브와 달라진다.
+    SEND_STATUS_GROUP   VARCHAR(10)     COMMENT '축A 코드군 ID (조인키 · MSG_AT=MS282). 🔴등급 C 조건부 — 문서20 §M-3 회신이 다르면 되돌린다. EMAIL·SND·PSTMTR 은 NULL',
+    SEND_STATUS_NAME    VARCHAR         COMMENT '축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 사전에 라벨 문자열이 없어 **의도적 NULL**(문서30 §23-J 결정 3 · 현업 §M-4) · PSTMTR 은 원천 부재',
+    SEND_RESULT_CD      VARCHAR(10)     COMMENT '축B(신설) 통신사 결과코드 raw — MSG_AT=TRNSMS_FAILR_CD_ID · SND=CALL_STATUS. 🟢두 채널이 같은 코드공간을 공유(conformed)',
+    SEND_RESULT_GROUP   VARCHAR(10)     COMMENT '축B 코드군 ID = MS283 이 정의한 4종(MS056 공통·MS057 알림톡·MS058 SMS·MS059 MMS). 🟢리터럴이 아니라 조인 결과에서 얻는다 — 4그룹 코드값 중복 0(실측)',
+    SEND_RESULT_NAME    VARCHAR         COMMENT '축B 라벨 (CRM_CODE 조인). 사전 초과값은 NULL 유지 + warn 관측(DEC-17-B)',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '발송×회원 상세';
 
@@ -417,7 +426,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_RESULT (
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
     EVENT_KEY           VARCHAR         NOT NULL COMMENT '행사키 (PK)',
     EVENT_SOURCE        VARCHAR         COMMENT '행사출처 (이벤트/캠페인행사)',
-    EVENT_DIV_CD        VARCHAR(3)      COMMENT '행사구분코드',
+    EVENT_DIV_CD        VARCHAR(3)      COMMENT '행사구분코드 (raw · 🔴원천별 다체계 — EVENT_SOURCE 동반 필수)',
     EVENT_NM            VARCHAR(200)    COMMENT '행사명',
     STRT_DE             VARCHAR(8)      COMMENT '시작일자 YYYYMMDD',
     END_DE              VARCHAR(8)      COMMENT '종료일자 YYYYMMDD',
@@ -428,6 +437,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 매핑 = 문서31 · 결정 = 문서30 §23-J.
+    --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다**(이 파일의 확립된 규약 · 06_DDL.sql:298 과 동일 근거) —
+    --      라이브에는 `ALTER TABLE ADD COLUMN` 으로 추가되어 물리 ordinal 이 맨 끝이 된다. 감사컬럼 앞에 적으면
+    --      신규 환경 재구축 시 컬럼 순서가 라이브와 달라진다.
+    EVENT_DIV_GROUP     VARCHAR(10)     COMMENT '행사구분 코드군 ID (EVENT=MS286 · CRMN=MS002 · 등급 B 배타 확정)',
+    EVENT_DIV_NM        VARCHAR         COMMENT '행사구분 라벨 (CRM_CODE 조인 · 두 체계 겹침 0)',
     PRIMARY KEY (EVENT_KEY)
 ) COMMENT = '행사 마스터(이벤트∪캠페인행사)';
 
@@ -436,9 +451,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT_PARTICIPATION (
     EVENT_KEY           VARCHAR         NOT NULL COMMENT '행사키 (PK, →CRM_EVENT)',
     MBER_NO             VARCHAR(10)     NOT NULL COMMENT '회원번호 (PK)',
     PARTCPT_SEQ         NUMBER(10,0)    NOT NULL COMMENT '참여 일련번호 (PK)',
-    PARTCPT_STAT_CD     VARCHAR(3)      COMMENT '참여상태코드',
-    PARTCPT_CHNNL_CD    VARCHAR(3)      COMMENT '참여채널코드',
-    PARTCPT_PATH_CD     VARCHAR(3)      COMMENT '참여경로코드',
+    PARTCPT_STAT_CD     VARCHAR(3)      COMMENT '참여상태코드 (raw · 🔴원천별 2체계 O28 — EVENT_KEY 접두 또는 PARTCPT_STAT_GROUP 동반 필수)',
+    PARTCPT_CHNNL_CD    VARCHAR(3)      COMMENT '참여채널코드 (raw · EVENT 전용 — CRMN 은 원천 컬럼 부재)',
+    PARTCPT_PATH_CD     VARCHAR(3)      COMMENT '참여경로코드 (raw · CRMN 원천 컬럼명은 RQST_PATH_CD 신청경로)',
     PRZWIN_CD           NUMBER(10,0)    COMMENT '당첨코드',
     RCPMNY_AMT          NUMBER(19,0)    COMMENT '입금금액 (원단위)',
     PARTCPT_DT          TIMESTAMP_NTZ   COMMENT '참여일시',
@@ -447,6 +462,16 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT_PARTICIPATION (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 매핑 = 문서31 · 결정 = 문서30 §23-J.
+    --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다**(이 파일의 확립된 규약 · 06_DDL.sql:298 과 동일 근거) —
+    --      라이브에는 `ALTER TABLE ADD COLUMN` 으로 추가되어 물리 ordinal 이 맨 끝이 된다. 감사컬럼 앞에 적으면
+    --      신규 환경 재구축 시 컬럼 순서가 라이브와 달라진다.
+    PARTCPT_STAT_GROUP  VARCHAR(10)     COMMENT '참여상태 코드군 ID (EVENT=MS304 · CRMN=MS006). 🔴두 원천의 「참여」 정의가 다르다 — 합산 금지',
+    PARTCPT_STAT_NM     VARCHAR         COMMENT '참여상태 라벨 (CRM_CODE 조인). ⚠️EVENT 계열은 사전 라벨이 **영문**(Success·1_step_right…)이며 현업 한글 표기 회신 대기(문서20 §M-1) — 창작하지 않았다',
+    PARTCPT_CHNNL_GROUP VARCHAR(10)     COMMENT '참여채널 코드군 ID (EVENT=MS302 · 등급 B 배타 확정 — 근거·규모는 문서31 §3). CRMN 은 원천 컬럼 부재로 NULL',
+    PARTCPT_CHNNL_NM    VARCHAR         COMMENT '참여채널 라벨 (CRM_CODE 조인)',
+    PARTCPT_PATH_GROUP  VARCHAR(10)     COMMENT '참여경로 코드군 ID (EVENT=MS303 · CRMN=MS004). 🔴등급 C 조건부 — 문서20 §M-3 회신이 다르면 되돌린다',
+    PARTCPT_PATH_NM     VARCHAR         COMMENT '참여경로 라벨 (CRM_CODE 조인)',
     PRIMARY KEY (EVENT_KEY, MBER_NO, PARTCPT_SEQ)
 ) COMMENT = '행사×참여자';
 
