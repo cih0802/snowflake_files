@@ -64,10 +64,10 @@ END-METADATA -->
 
 | # (06 §4) | 지침 | 반영 위치 |
 |---|---|---|
-| ① 납부율 기간 스코프 필수(전기간 100.36% vs 연도별 ~94%) | 무필터 시 최근 연/명시 기간 한정, 전기간 총율은 참고치 | 두 Agent `orchestration` |
+| ① 납부율 기간 스코프 필수 — 🔴 **[2026-08-10 O57 정정]** 종전 근거 「전기간 100.36% vs 연도별 ~94%」는 **제거된 `PAYMENT_RATE`**(분자 기부금 혼입)의 폐기값이다. 정본 `PAYMENT_RATE_FEE` 기준 = 전기간 **86.19%** vs 연도별 **~85.7%** | 무필터 시 최근 연/명시 기간 한정, 전기간 총율은 참고치 | 두 Agent `orchestration` |
 | ② 미납회원(수)·감소율 = 월 그룹 전제(COUNT DISTINCT) | 반드시 month(연/월) 차원과 함께 | MEMBER `orchestration` |
 | ③ 행사·서비스 Unknown 고지(행사 ~23%) | 부분 커버 고지·확정치 단정 금지 | MEMBER `orchestration`+`response` |
-| ④ 회원 속성 = 현재 스냅샷(성별·상태·구분), 지역/연령대/후원사업 비활성 | 과거월도 현재값, 미적재 속성 사용 금지 | 두 Agent `system` |
+| ④ 회원 속성 = 현재 스냅샷(성별·상태·구분) — 🔴 **[2026-08-10 O57 정정 · P61]** 종전 「지역/연령대/후원사업 비활성」 중 **지역·연령대는 활성화됐다**(`DIM_MEMBER_CURRENT.REGION` 1,566,416 · `AGE_BAND` 1,575,863 채움 · O35/O45 배선). ⚠️ 분모는 **정기후원(FDRM) 모집단**이고 일시회원(ONCE)은 구조적 부재다(P128). **FMM 경유 후원사업·캠페인·납입방식 축은 여전히 비활성**(`SPONSORSHIP_SK`·`CAMPAIGN_SK`·`PAYMENT_SK` 전건 0 실측) · 🆕 **미납사유 축은 활성**(`REASON_SK` 비-0 3,164,724) | 과거월도 현재값, **비활성로 남은 축만** 사용 금지 | 두 Agent `system` |
 | ⑤ 회비 지표 = HAS_BILLING=TRUE 전제 권장 | 회비 관련 질의 전제 | 두 Agent `orchestration` |
 | ⑥ 비활성 지표 = Phase-2 안내(추정 금지, R8) | 캠페인/납입방식/조직/후원사업별·성공/실패/오픈·D5·활동/누계·유지율/LTV·목표대비·개발단가/ROI | 두 Agent `system` |
 | 시간(04 §0.4·07_메타) | 절대 연/월 표기, 상대 표현 지양, 미래연도(2026~) 미유입 가능 | 두 Agent `orchestration` |
@@ -363,23 +363,28 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 | M3 | 2024년 납부율은? | member_monthly / **PAYMENT_RATE_FEE**·CAL_YEAR=2024 | **85.77%** | 🔴[O56-C EXPO-2] `PAYMENT_RATE` 제거 · 종전 기대값은 폐기식 값 |
 | M4 | 연도별 납부율 추이(2023~2025) | member_monthly / **PAYMENT_RATE_FEE**·CAL_YEAR | **86.05·85.77·85.65%** | 🔴[O56-C EXPO-2 재측정] |
 | M5 | 회원구분별 **총수납액** | member_monthly / **TOTAL_PAID_ALL**·MEMBER_TYPE_NAME | 개인=756.6B·기업=132.1B·단체=6.36B | 🔴[O56-C] 개명 · 값 불변 |
-| E4 | 전이유형별 개발/중단 건수·회원수 | member_event / EVENT_TYPE | 개발 3,594,843/회원 1,585,949 · 중단 1,038,262/903,064 |
-| S3 | 채널별 발송수 | service / TOTAL_SEND_MEMBERS·CHANNEL | MSG_AT 20.56M·SND 8.30M·EMAIL 7.81M·PSTMTR 1.79M·(미매핑)11,313 |
-| P3 | 행사종류별 참여자수 | event_participation / EVENT_KIND | EVENT 718,438·(Unknown)263,611·CRMN 152,077 |
-| **M10ⓖ** | 캠페인별 납부율 | (비활성) | "캠페인 FK 미적재→Phase-2" 안내(산출 금지) |
-| **E5ⓖ** | 평균 유지기간 | (비활성) | "페어링 불가→Agent/Phase-2" 안내 |
+| E4 | 전이유형별 개발/중단 건수·회원수 | member_event / EVENT_TYPE | 개발 **2,291,878**/회원 **1,585,923** · 중단 1,038,262/903,064 | 🔴[2026-08-10 O57] 종전 3,594,843/1,585,949 는 **개발원천 행수·원천 distinct 회원수**이고 개발 건수·개발 회원수가 아니다(O24 = 신규1·증액2·재후원4 한정). Agent 가 3,594,843 을 답하면 **FAIL** |
+| S3 | 채널별 발송수 | service / TOTAL_SEND_MEMBERS·CHANNEL | MSG_AT 20.56M·SND 8.30M·EMAIL 7.81M·PSTMTR 1.79M·(미매핑)11,313 | ✅[O57] 재실측 일치 |
+| P3 | 행사종류별 참여자수 | event_participation / EVENT_KIND | EVENT 718,438·**(NULL)**263,611·CRMN 152,077 | ✅[O57] 값 일치 · ⚠️ 미매핑 반환값은 `(Unknown)` 문자열이 아니라 **NULL** 이다 |
+| **M10ⓖ** | 캠페인별 납부율 | (비활성) | "캠페인 FK 미적재→Phase-2" 안내(산출 금지) — 🟢 `FMM.CAMPAIGN_SK` **전건 0** 재확인(O57) |
+| **E5ⓖ** | 평균 유지기간 | (비활성) | "페어링 불가→Agent/Phase-2" 안내 — 🔴 **[O57] 근거 절반 무효**: `DIM_MEMBER_CURRENT.LAST_STOP_DATE` 는 채움 **898,425**(종전 「실측 0」)이고 유지기간이 **산출된다**(평균 42.39개월). FME 행별 페어링 불가는 여전히 참. ⚠️ 분모가 중단 이력 보유 회원 **50.96%** 로 생존 편향 ⇒ **노출 여부는 결정 사안**(06 §4-7) · 결정 전까지 현행 안내 유지 |
 | **S5ⓖ** | 발송 성공률 | (비활성) | "SUCCESS/FAIL 미적재→Phase-2" 안내 |
+| 🆕 **G-개발건수** | 전체 개발 건수는? | member_event 또는 member_monthly / TOTAL_DEV_CNT | **2,291,878** — 3,594,843(개발원천 행수)으로 답하면 **FAIL**(감액·후원중단 계상 · O24 56.86% 과대) |
 
 ### 5.2 AGENT_OVERALL (07 §5)
 | # | 질문 | 기대 라우팅 | 기대값 |
 |---|---|---|---|
-| B1 | 전체 편성예산 | budget / TOTAL_PLAN_BUDGET | 503,070,876,000 |
-| B3 | 전체 집행율 | budget / EXEC_RATE | 39.61% |
-| B4 | 예산구분별 편성·집행·집행율 | budget / BUDGET_CATEGORY | 지출 254.06B/80.49B/31.68% · 수입 249.01B/118.79B/47.71% |
-| — | 전사 **총수납액**(회비+기부금) | member_monthly / **TOTAL_PAID_ALL** | 895,178,309,108 | 🔴[O56-C] 회비만은 `TOTAL_PAID_FEE_BILLABLE` 768,800,286,349 |
+| B1 | 전체 편성예산 | budget / TOTAL_PLAN_BUDGET | **547,614,848,306** | 🔴[2026-08-10 O57] 종전 503,070,876,000 은 **2026년 단독 적재 시점** 값(2024·2025 추가 적재로 변동 · 결함 아님) |
+| B3 | 전체 집행율 | budget / EXEC_RATE | **54.24%** | 🔴[O57] 종전 39.61% |
+| B4 | 예산구분별 편성·집행·집행율 | budget / BUDGET_CATEGORY | 지출 **298.60B/151.18B/50.63%** · 수입 **249.01B/145.86B/58.58%** | 🔴[O57] ⚠️ 2026 진행연도라 집행 계열은 재적재마다 변동 |
+| — | 전사 **총수납액**(회비+기부금) | member_monthly / **TOTAL_PAID_ALL** | 895,178,309,108 | 🔴[O56-C] 회비만은 `TOTAL_PAID_FEE_BILLABLE` 768,800,286,349 · ✅[O57] 재실측 일치 |
 | **B5ⓖ** | 캠페인별 ROI(개발단가) | (비활성) | "CAMPAIGN_SK·비용·FMM 연계 미적재→Phase-2(신9~11)" 안내 |
 
-> **가드레일(ⓖ)**: 비활성 지표는 임의 산출 없이 Phase-2 안내(R8). 납부율 무필터는 기간 스코프로 재해석(전기간 100.36% 단정 금지). 행사/서비스 Unknown 커버리지 고지.
+> **가드레일(ⓖ)**: 비활성 지표는 임의 산출 없이 Phase-2 안내(R8). 납부율 무필터는 기간 스코프로 재해석.
+> 🔴 **[2026-08-10 O57 정정] 종전 「전기간 100.36% 단정 금지」의 100.36% 는 제거된 `PAYMENT_RATE`(분자 기부금 혼입)의 값이다.**
+> 정본 `PAYMENT_RATE_FEE` 기준 전기간은 **86.19%** 다 — 지침 근거를 이 값으로 읽는다(폐기값을 금지 근거로 인용하면 Agent 가 없는 값을 경계한다).
+> 행사/서비스 미매핑 커버리지 고지(⚠️ 행사 미매핑 반환값은 **NULL**).
+> 🔴 **기대값 전량의 정본은 `07_평가셋_eval.md`(2026-08-10 O57 재실측)다** — 이 표는 사본이므로 07 갱신 시 함께 갱신한다(P140).
 
 ### 5.3 VQR 등록(정확도 1순위 · 06 §3)
 > 각 SV의 검증쿼리(06 §3)를 `AI_VERIFIED_QUERIES`(또는 SVA vqr_management)로 등록해 Cortex Analyst 스티어링. Agent 배포와 병행/후속. (semantic_studio `semantic_view/vqr_management`)
