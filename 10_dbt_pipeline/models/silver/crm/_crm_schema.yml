@@ -263,18 +263,25 @@ models:
               values: ['MS302']
               quote: true
               config: { where: "PARTCPT_CHNNL_GROUP is not null" }
+      # [2026-08-12 O61 · ②] 🔴 store_failures 확장 — 이 3건은 WARN 이라 종전에는 「Got N results」만 남고
+      #   **어느 행이 라벨 NULL 인지** 사라졌다(사전 미등재 / O28 오염값 두 원인이 섞여 있다고만 적혀 있었다).
+      #   🟢 **확장 즉시 규명됐다(실측)**: 3축의 라벨 NULL 은 **서로 다른 6행**이고 각 행에서 `)` 가 들어간
+      #      축은 정확히 하나다(나머지는 정상값). 회원 2명 × 3행 = 문서20 §I-2 점검도구 유입과 일치
+      #      ⇒ **원인은 오염값 단일**이고 **사전 미등재분은 0** 이다
+      #      (캠페인행사 계열 MS006·MS004 는 라벨 커버리지 100%). 종전 「두 원인이 섞인다」 서술은 미실측이었다.
+      #   ⚠️ 판정은 감사 테이블 **행수 = WARN 건수** 대조다(P33). 원천 충실 원칙상 삭제·치환하지 않는다(DEC-17-B).
       - name: PARTCPT_STAT_NM
         tests:
           - not_null:
-              config: { severity: warn, where: "PARTCPT_STAT_CD is not null" }
+              config: { severity: warn, where: "PARTCPT_STAT_CD is not null", store_failures: true, schema: OPS }
       - name: PARTCPT_PATH_NM
         tests:
           - not_null:
-              config: { severity: warn, where: "PARTCPT_PATH_CD is not null" }
+              config: { severity: warn, where: "PARTCPT_PATH_CD is not null", store_failures: true, schema: OPS }
       - name: PARTCPT_CHNNL_NM
         tests:
           - not_null:
-              config: { severity: warn, where: "PARTCPT_CHNNL_CD is not null" }
+              config: { severity: warn, where: "PARTCPT_CHNNL_CD is not null", store_failures: true, schema: OPS }
 
   - name: CRM_MEMBER_DEV
     columns:

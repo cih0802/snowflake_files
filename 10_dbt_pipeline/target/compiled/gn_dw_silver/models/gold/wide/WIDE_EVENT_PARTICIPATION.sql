@@ -30,6 +30,11 @@ select
     --   ⚠️PART_EVENT_BK(팩트·고아 포함 전건) 와 EVENT_BK(차원 매칭·고아는 '(미매핑)') 는 다르다.
     f.EVENT_BK            as PART_EVENT_BK,
     f.PARTCPT_SEQ         as PARTCPT_SEQ,
+    -- [2026-08-12 O61 · D2] 🔴 **팩트가 자체 보유한 계열 판별자**를 WIDE 까지 전파한다(P204).
+    --   아래 e.EVENT_KIND(_NAME) 은 **차원**에서 오므로 행사 미매칭 구간이 '(미매핑)' 이고 계열을 못 가른다.
+    --   이 두 컬럼은 원천 분기에서 와 전건 값을 가진다 ⇒ **계열 분해는 이 축(PART_*)으로 한다.**
+    f.EVENT_KIND          as PART_EVENT_KIND,
+    f.EVENT_KIND_NAME     as PART_EVENT_KIND_NAME,
     f.DW_SOURCE_SYSTEM,
     d.FULL_DATE, d.YEAR, d.MONTH, d.DAY_OF_WEEK, d.WEEK_OF_YEAR, d.IS_HOLIDAY,
     -- [2026-08-03 O26] 회원 속성 노출 재구성 — 코드=BRONZE 원천명 · 라벨=분석 용어.

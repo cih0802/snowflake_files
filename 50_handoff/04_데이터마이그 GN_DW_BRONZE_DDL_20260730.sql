@@ -12,17 +12,22 @@
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/05_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
--- 원천 정의 문서 / SOURCE OF TRUTH  (본 파일은 아래 5개 문서를 병합해 생성)
+-- 원천 정의 문서 / SOURCE OF TRUTH  (본 파일은 아래 문서를 병합해 생성)
+--   50_handoff/02_1_A DB정보.sql                            (A 계정 GET_DDL 실측 — 최우선 정본)
 --   99_provided_definition/11_bronze_crm_ddl.sql            (CRM DDL, 컬럼 코멘트 없음)
 --   99_provided_definition/12_bronze_agency_ddl.sql         (AGENCY DDL, 컬럼 코멘트 있음)
 --   99_provided_definition/13_bronze_erp_ddl.sql            (ERP DDL, 컬럼 코멘트 있음)
 --   99_provided_definition/14_bronze_ga4_events_schema.md   (GA4 스키마 명세 — 컬럼 코멘트 출처)
 --   99_provided_definition/15_bronze_ga4_ddl.sql            (GA4 DDL, 컬럼 코멘트 없음)
+--   99_provided_definition/컬럼정의서 20260714.csv           (한글 컬럼 코멘트 출처)
 --
 -- 병합 규칙 / MERGE RULE
---   - 구조(컬럼 순서/타입/DEFAULT)는 원천 정의 문서(11~13, 15)를 따른다.
+--   - 구조(컬럼 순서/타입/DEFAULT)는 A 계정 실측 DDL(02_1_A DB정보.sql)을 최우선 정본으로 한다.
+--     원천 정의 문서(11~13, 15)와 어긋나면 실측값을 따른다.
 --   - 컬럼 코멘트: 원천 문서에 있으면 그것을 사용(AGENCY/ERP), 없으면 기존 스냅샷 코멘트를 유지(CRM).
 --   - GA4는 DDL에 코멘트가 없어 14번 스키마 명세서(§3 전체 스키마)의 필드 설명을 코멘트로 사용.
+--   - 컬럼정의서 CSV의 '컬럼설명(한글)'이 공백인 컬럼은 명명 규칙에 따라 부여한다.
+--     예) BF_STAT_CD='이전상태코드' ↔ AF_STAT_CD='이후상태코드', SER_NO='일련번호'
 --   - 적재 프로시저(SP_LOAD_*)는 **제외**한다: 적재 전 구조 생성에 불필요하고
 --     외부 스테이지/API 통합에 의존해 C 계정에서 생성이 실패할 수 있다.
 --     → 필요 시 원천 정의 문서(12/13/15)에서 직접 가져올 것.
@@ -32,12 +37,19 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-07-30  (초판 2026-07-13)
+--   - 갱신일자    : 2026-08-12  (초판 2026-07-13, 2판 2026-07-30)
 --   - 스키마 수   : 4   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4)
---   - 테이블 수   : 51  (CRM 43, AGENCY 4, ERP 1, GA4 3)
+--   - 테이블 수   : 53  (CRM 45, AGENCY 4, ERP 1, GA4 3)
 --   - 시퀀스 수   : 2   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 3   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT_EUCKR)
---   - 컬럼 코멘트 : 전 컬럼 부여 완료 (원천 문서 166 / 기존 유지 957 / 명세서·규칙 기반 39)
+--   - 컬럼 코멘트 : 전 컬럼 부여 완료 (원천 문서 166 / 기존 유지 957 / 명세서·규칙 기반 39 / 컬럼정의서 20)
+--
+-- 2판(2026-07-30) 대비 변경 / CHANGES  ← 2026-08-12 3판
+--   + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT  (13컬럼, 1,134,848행)
+--   + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR              (9컬럼, 2,228,064행)
+--   * 위 2개는 2판에서 누락되어 있었다(51 → 53). A 계정 실측 목록과 대조해 확인.
+--     구조는 02_1_A DB정보.sql 의 A3(BRONZE_CRM GET_DDL) 결과, 한글 코멘트는 컬럼정의서 CSV 기준.
+--   * CRM 43 → 45 로 정정. AGENCY/ERP/GA4 는 변경 없음.
 --
 -- 초판(2026-07-13) 대비 변경 / CHANGES
 --   + [TABLE]    GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO      (신규, 적재 프로시저 오류 로그)
@@ -66,7 +78,7 @@
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
 --
 -- 객체 인덱스 / OBJECT INDEX
---   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 43개
+--   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 45개
 --     SND_MEMBER_LIST, SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD,
 --     TD_MS_AT_TMPLAT_BTN_LIST, TD_MS_CRMN_PRTCPNT, TD_MS_EMAIL_LQY_SNDNG,
 --     TD_MS_EMAIL_SNDNG_DTLS, TD_MS_EVENT_PRTCPNT_DTL, TD_MS_MSG_AT_LQY_SNDNG,
@@ -74,7 +86,8 @@
 --     TH_MM_FDRM_MBER_STNG_DTLS, TH_PM_SETLE_INFO_HIST, TM_CM_BRND_MNG,
 --     TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL, TM_CM_MKTNG_CMPGN_MNG,
 --     TM_CM_SPNSR_BSNS_INFO, TM_MM_FDRM_MBER_DVLP_AMT, TM_MM_FDRM_MBER_INFO,
---     TM_MM_FDRM_MBER_IRSD, TM_MM_FDRM_MBER_RE_SPNSR, TM_MM_FDRM_MBER_SPNSR_BSNS,
+--     TM_MM_FDRM_MBER_IRSD, TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT, TM_MM_FDRM_MBER_RE_SPNSR,
+--     TM_MM_FDRM_MBER_SPNSR, TM_MM_FDRM_MBER_SPNSR_BSNS,
 --     TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_ONCE_MBER_INFO, TM_MS_CRMN,
 --     TM_MS_EMAIL_SNDNG, TM_MS_EMAIL_TMPLAT_MNG, TM_MS_EVENT, TM_MS_MSG_AT_SNDNG,
 --     TM_MS_PSTMTR_SNDNG, TM_PM_DNTN_DTLS, TM_PM_MBRFEE_ACMSLT, TM_PM_SETLE_INFO,
@@ -695,12 +708,38 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_IRSD (
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
   _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
 );
+create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT (
+  OCCRRNC_DE VARCHAR(8) COMMENT '발생일자',
+  SER_NO NUMBER(10,0) COMMENT '일련번호',
+  SPNSR_NO NUMBER(19,0) COMMENT '후원번호',
+  SPNSR_BSNS_NO NUMBER(19,0) COMMENT '후원사업번호',
+  MBER_NO VARCHAR(10) COMMENT '회원번호',
+  SPNSR_AMT NUMBER(19,0) COMMENT '후원금액',
+  BF_STAT_CD VARCHAR(3) COMMENT '이전상태코드',
+  AF_STAT_CD VARCHAR(3) COMMENT '이후상태코드',
+  RELATNSP_DVLP_DIV_CD VARCHAR(3) COMMENT '관계개발구분코드',
+  ACCNUT_STATS_CD VARCHAR(3) COMMENT '회계상태코드',
+  CHILD_STATS_CD VARCHAR(3) COMMENT '아동상태코드',
+  _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+);
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR (
   MBER_NO VARCHAR(10) COMMENT '회원번호',
   SER_NO NUMBER(10,0) COMMENT '일련번호',
   RE_SPNSR_DE VARCHAR(8) COMMENT '재후원일',
   REGIST_DEPT_CD VARCHAR(10) COMMENT '등록부서코드',
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
+  _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+);
+create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR (
+  SPNSR_NO VARCHAR(9) COMMENT '후원번호',
+  MBER_NO VARCHAR(10) COMMENT '회원번호',
+  CMPGN_CD VARCHAR(20) COMMENT '캠페인코드',
+  ACMSLT_DEPT_CD VARCHAR(10) COMMENT '실적부서코드 (참조: TM_CM_DEPT_INFO)',
+  JOIN_PATH_CD VARCHAR(3) COMMENT '가입경로코드 (코드그룹: MM014)',
+  FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자',
+  FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
   _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
 );

@@ -163,8 +163,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
 /* =====================================================================================
    GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
       ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
-      🔴 `CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다(OWNERSHIP 만 잔존) →
-         이 파일을 재실행할 때 **아래 GRANT 를 반드시 함께 실행**한다.
+      🟢 [2026-08-12 O61 · R1-3 전량독해에서 적발·교정] 이 파일 본문은 `CREATE OR ALTER` 다(line 65) ⇒
+         **GRANT 는 파괴되지 않으므로 아래는 멱등 재확인**이다. 🔴 종전 이 자리의
+         *"`CREATE OR REPLACE` 는 기존 GRANT 를 전부 삭제한다 → 재실행 시 반드시 함께 실행"* 은
+         **폐기된 규약을 인용한 stale 주석**이었고 같은 파일 헤더(line 7 OWN-1 해소)와 모순됐다.
+         ⛔ 단 `CREATE OR REPLACE` 로 **되돌리지는 말 것** — 그러면 GRANT 파괴 + owner 리셋이 재발한다(P125).
    ===================================================================================== */
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT TO ROLE GN_DW_VIEWER;

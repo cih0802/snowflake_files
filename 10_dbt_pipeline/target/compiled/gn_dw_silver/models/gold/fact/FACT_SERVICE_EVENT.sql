@@ -46,7 +46,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'bc494410-1de4-4551-8a46-6f1b99eb6fbd'                    AS DW_BATCH_ID,
+    '3597d1ab-90a3-4cbe-8064-e4fa5228209e'                    AS DW_BATCH_ID,
     -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 발송 결과 2축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
     --    🔴 축A(SEND_STATUS)는 채널별 다체계라 SEND_STATUS_GROUP 이 판별축이다 — 종전 B1 미해소 주석의
     --       *"SNDNG_RST_CD→성공/실패 코드매핑 확정 후"* 는 **축A 라벨로는 아직 못 채운다**(EMAIL·SND 는

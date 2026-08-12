@@ -181,7 +181,23 @@ models:
           - accepted_values:
               values: ['1','2','3','4','5','6',
                        '110','120','130','140','150','160','170','180','190','200','210','220']
-              config: { severity: warn }
+              # [2026-08-12 O61 · ②] store_failures 확장(P207). 🔴 WARN 은 「Got N results」만 남겨
+              #   **어느 값이 위반인지** 규명이 불가했다 — 소수 행이라 감사 테이블이 가볍다.
+              #   ⚠️ 「테이블이 생겼다」를 「실패를 남긴다」로 읽지 말 것 — 판정은 **행수 대조**다(P33 한 단계 안쪽).
+              config: { severity: warn, store_failures: true, schema: OPS }
+      # [2026-08-12 O61 · D2] 원천 계열 판별 2컬럼 — 도메인 2종 고정.
+      #   🔴 이 가드가 **확장 대비 장치**다: 새 원천이 인입되면 모델 CASE 가 NULL 을 내고
+      #      not_null 이 즉시 실패해 매핑 갱신을 강제한다(추측 라벨 방지 · DEC-17-B).
+      - name: EVENT_KIND
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['EVENT', 'CRMN']
+      - name: EVENT_KIND_NAME
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['일반행사', '캠페인행사']
       - name: DATE_SK
         tests:
           - not_null

@@ -48,9 +48,18 @@ GRANT USAGE ON SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT TO R
    G. ⛔⛔ [2026-08-10 O55] **절 폐지 — 삭제 완료. 실행 라인 0.**
       종전 내용 = SERVING helper 뷰 3종 생성(`DIM_MONTH`·`DIM_MEMBER_CURRENT`) + 소비 3역할 SELECT GRANT.
       O54 에서 SV 9종 base 를 GOLD 정본으로 재배선했고, O55 에서 **물리 객체를 DROP** 했다.
-        · `SERVING.DIM_MONTH`          → `GOLD.DIM_MONTH`(BASE TABLE · 06_DDL 소유)
-        · `SERVING.DIM_MEMBER_CURRENT` → `GOLD.DIM_MEMBER_CURRENT`(BASE TABLE · dbt 소유)
-        · `SERVING.FACT_AD_COMBINED`   → `GOLD.WIDE_AD_COMBINED`(VIEW · dbt 소유)
+        · `SERVING.DIM_MONTH`          → `GOLD.DIM_MONTH`(BASE TABLE)
+        · `SERVING.DIM_MEMBER_CURRENT` → `GOLD.DIM_MEMBER_CURRENT`(BASE TABLE)
+        · `SERVING.FACT_AD_COMBINED`   → `GOLD.WIDE_AD_COMBINED`(VIEW · 구조·COMMENT 모두 dbt 소유)
+      🔴 [2026-08-12 O64 소유주 기재 교정] 종전 이 자리는 `DIM_MONTH` 를 「06_DDL 소유」, `DIM_MEMBER_CURRENT` 를
+         「**dbt 소유**」로 적어 **성격이 같은 두 객체를 다르게** 기재했다(`dbt_project.yml` 소유주 표·`06_DDL.sql` 과도 어긋났다).
+         실측 = 둘 다 `06_DDL.sql` 에 `CREATE OR REPLACE TABLE` 로 선언돼 있고(96행·182행) 둘 다 dbt dim 모델이 있다.
+         ⇒ 정확한 서술은 **소유가 두 층으로 갈린다**는 것이다:
+           · **구조·타입·제약·COMMENT = `06_DDL.sql` 소유** — dbt 는 `incremental` + `+full_refresh:false` 라 구조를 덮지 않고,
+             `persist_docs` 를 쓰지 않으므로 build 가 COMMENT 를 덮지 않는다(O63 실측 = 파일↔라이브 634/634 일치).
+           · **데이터 적재 = dbt 모델**(`models/gold/dim/`).
+         ⚠️ 따라서 GOLD **테이블** COMMENT 를 고칠 때는 `06_DDL.sql` + `ALTER TABLE … ALTER COLUMN … COMMENT` 이고
+            **`dbt build` 는 정지점이 아니다**. GOLD **뷰**만 `_wide_schema.yml` + build 가 유일 경로다(O63).
       🔴 DROP 전 사전 검증(3원 교차): SV base 참조 0(`INFORMATION_SCHEMA.SEMANTIC_TABLES`
          `BASE_TABLE_SCHEMA='SERVING'`) · 뷰 정의 참조 0(자기 제외) · `ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 0.
       🔴 DROP 후 판정: SERVING 잔존 helper **0** · SV **9종·논리테이블 32건 전건 GOLD 유지**.

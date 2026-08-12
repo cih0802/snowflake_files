@@ -11,7 +11,8 @@ END-METADATA -->
 
 # 5단계 — Cortex Agent 스펙 (GN_DW · Phase-1)
 
-> 배포된 5 SV(`GN_DW.SERVING`)를 도구로 하는 **2개 Cortex Agent 스펙**을 확정한다.
+> 배포된 **SV 9종**(`GN_DW.SERVING`)을 도구로 하는 **2개 Cortex Agent 스펙**을 확정한다.
+> 🔴 [2026-08-12 O61 교정] 종전 「5 SV」는 stale 이었다 — `depends_on` 은 이미 그 사실을 적어 두었는데 본문이 갱신되지 않았다(같은 파일 내 모순).
 > 결정(2026-07-22): **2 Agent 우선(회원·overall)**, 마케팅 Agent는 SV_AD·SV_GA 미배포로 **Phase-2 유예**.
 > **스코프(사용자 확정)**: 이 세션은 **스펙 작성까지**(workspace YAML + 본 문서). `CREATE AGENT`/save/publish/CoWork 연결은 **사용자(GN_DW_ADMIN)** 실행(§4). Cortex Search 백킹(R2)은 **Phase-2 유예**.
 
@@ -21,7 +22,7 @@ END-METADATA -->
 
 | 항목 | 값 |
 |---|---|
-| 도구 SV(**6**, live) | `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·**`SV_AD`**(2026-07-28 신설) (owner=GN_DW_ADMIN) |
+| 도구 SV(**9**, live · 2026-08-12 O61 재실측) | `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·`SV_AD`·**`SV_MEMBER_COHORT`**·**`SV_DEV_ACHIEVEMENT`**·**`SV_MEMBER_FEE`** (owner=`GN_DW_ADMIN` 전건 · `SHOW SEMANTIC VIEWS` 실측) |
 | Agent 실행 WH | **`GN_DW_ANALYTICS_WH`** (Medium · comment "SV·Agent 소비") |
 | Agent 배치/소유 | `GN_DW.SERVING` / `GN_DW_ADMIN` (P7 serving_separation) |
 | CoWork object | `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT` (02 §F 생성 완료 · step6 ADD AGENT) |
@@ -153,7 +154,7 @@ tools:
   - tool_spec:
       type: cortex_analyst_text_to_sql
       name: analyst_event_participation
-      description: "행사 참여 팩트(FEP, 1.13M). 활성 지표: 참여자수·참여건수·고유 참여회원수. 차원: 참여일·연·월, 행사명·행사종류(일반행사/캠페인행사), 행사구분 라벨·참여상태 라벨·참여경로 라벨·참여채널 라벨, 성별·회원상태·회원구분. 행사/이벤트 참여 질문에 사용. 행사 미매핑 약 23% 존재. 구분·상태·경로 축은 두 원천의 코드체계가 섞여 있어 행사종류를 반드시 동반한다."
+      description: "행사 참여 팩트(FEP, 1.13M). 활성 지표: 참여자수·참여건수·고유 참여회원수. 차원: 참여일·연·월, 행사명·행사종류(일반행사/캠페인행사), 행사구분 라벨·참여상태 라벨·참여경로 라벨·참여채널 라벨, 성별·회원상태·회원구분. 행사/이벤트 참여 질문에 사용. 행사 미매핑 약 23% 존재. 구분·상태·경로 축은 두 원천의 코드체계가 섞여 있어 **원천계열(PART_EVENT_KIND_NAME)** 을 반드시 동반한다 — [2026-08-12 O61 · D2] 차원의 행사종류(EVENT_KIND_NAME)는 행사 미매핑 구간이 '(미매핑)' 이라 판별자로 쓸 수 없다."
 
 tool_resources:
   analyst_member_monthly:
@@ -193,7 +194,7 @@ instructions:
     - 대행사 산정 비율(_SRC: CTR_SRC·CVR_SRC·CPC_SRC·DEV_UNIT_PRICE_SRC 등)은 행 단위 참고값이며 SUM/AVG 재집계 금지.
   response: |
     한국어·간결·데이터 중심. 금액=원 천단위(예: 1,234,567원), 비율=% 소수점 2자리, 여러 행은 표로 제시하고 조회 기간·필터를 명시.
-    지표·컬럼은 영문 식별자 대신 한글 명칭(SV synonyms/comment 기준, 표 헤더 포함)으로 표기. 코드값은 라벨이 있으면 라벨, 없으면 코드값+"해당 라벨은 데이터가 준비되는 대로 제공하겠습니다" 안내, 미매핑은 '미상'.
+    지표·컬럼은 영문 식별자 대신 한글 명칭(SV synonyms/comment 기준, 표 헤더 포함)으로 표기. 코드값은 라벨이 있으면 라벨, 없으면 코드값+"해당 라벨은 데이터가 준비되는 대로 제공하겠습니다" 안내, 미매핑은 산출물의 '(미매핑)' 표기를 **그대로** 쓰고 「마스터에 연결되지 않은 건」이라고 설명한다 — '미상'으로 바꾸지 않는다(2026-08-12 O61 교정).
     기간·그룹이 없는 러프한 질문은 기본 창 총계를 먼저, 이어 기간별 추이 표를 제시한 뒤, 다른 기준(분기·특정 연도·세세목/예산구분별)이나 전체 기간이 필요한지 되묻기. "합계/총액만" 요청 시 단일값.
     기간 범위는 물결표(~)가 아니라 하이픈(-)으로 표기합니다. 예: "2024-01 - 2024-12"(O), "2024-01~2024-12"(X).
     데이터 포인트가 충분하면(여러 기간의 추이 또는 여러 범주 비교) 표와 함께 그래프로 시각화합니다 — 시계열 추이는 선 그래프, 범주 비교는 막대 그래프.

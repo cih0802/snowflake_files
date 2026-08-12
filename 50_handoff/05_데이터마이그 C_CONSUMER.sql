@@ -1,5 +1,25 @@
--- Bronze 4개 스키마 데이터 적재 (GN_DW: CRM/AGENCY/ERP/GA4)
+-- C 계정(Target) 실행 SQL — Bronze 4개 스키마 데이터 적재 (GN_DW: CRM/AGENCY/ERP/GA4)
 -- Co-authored with CoCo
+-- =====================================================================
+-- 문서 목적 / PURPOSE
+--   로컬에서 업로드한 CSV(GZIP)를 검증한 뒤 GN_DW 브론즈 53개 테이블에 적재하고,
+--   GA4 VARIANT 컬럼을 TRY_PARSE_JSON 으로 복원한 다음 행수·무결성을 대조한다.
+--
+-- 실행 계정 / 역할
+--   C (Target), ACCOUNTADMIN, WH=COMPUTE_WH — 계정 zx03676
+--
+-- 연계 문서 / RELATED DOCUMENTS
+--   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
+--              → 5.2(파일포맷/스테이지) / 5.3.1(적재 전 검증) / 5.4(일괄 적재) / 5.5(GA4) / 6장(검증) / 7장(정리)
+--   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql
+--              → 반드시 먼저 실행해 테이블 53개를 생성한다. 미실행 시 loaded tables: 0.
+--   [선행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql  (A: 공유/DDL 추출)
+--              50_handoff/03_데이터마이그 B_BROKER.sql    (B: 공유 마운트/CSV 언로드)
+--
+-- 식별자 / IDENTIFIERS
+--   적재 스테이지 = @SANDBOX.TOOLS.MIG_LOAD_STAGE/<SCHEMA>/<TABLE>/
+--   파일 포맷 = SANDBOX.TOOLS.FF_CSV_LOAD (적재) · SANDBOX.TOOLS.FF_CSV_PEEK (진단)
+-- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE COMPUTE_WH;
@@ -17,9 +37,20 @@ USE SCHEMA SANDBOX.TOOLS;
 --     (2) 동일 스키마 테이블 → 오류 없이 중복 적재
 --   업로드 직후 여기서 잡아야 한다. 이상이 있으면 REMOVE 후 재업로드할 것.
 ------------------------------------------------------------
--- (1) 파일 수 대조: B의 unloaded_files(03번 6단계) 값과 같아야 함
+-- (1) 파일 수 대조: B의 언로드 결과(03번 6단계)와 같아야 함
+--     2026-08-12 B 기준값: 435 파일 / 52 폴더 / 3,427,853,840 B
+--       BRONZE_AGENCY 4폴더 5파일 · BRONZE_CRM 45폴더 389파일
+--       BRONZE_ERP    1폴더 1파일 · BRONZE_GA4 2폴더  40파일
+--     ⚠️ 폴더가 52개인 이유: BRONZE_GA4.SYNC_ERR_INFO 는 0행이라 언로드 파일이 없다.
+--        테이블은 53개를 만들되 이 테이블만 0건 적재되는 것이 정상이다.
 LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE;
-SELECT COUNT(*) AS staged_files FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+
+SELECT SPLIT_PART("name", '/', 2) AS table_schema,
+       COUNT(DISTINCT SPLIT_PART("name", '/', 3)) AS table_folders,
+       COUNT(*)    AS files,
+       SUM("size") AS bytes
+FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+GROUP BY 1 ORDER BY 1;
 
 -- (2) 진단용 포맷: 줄 전체를 $1 로 읽는다(FIELD_DELIMITER=NONE, 헤더 포함).
 --     → 헤더 문자열 비교로 컬럼 수·순서 차이를, 줄 전체 해시로 파일 중복을 동시에 잡는다.
@@ -106,17 +137,14 @@ BEGIN
 END;
 $$;
 
-
-
-
-
-
-
 ------------------------------------------------------------
 -- A.4 CSV 스키마 적재 실행 (ERP → AGENCY → CRM 순)
 --   BRONZE_GA4 는 프로시저로 적재하지 않는다.
 --   events_* 의 VARIANT 컬럼이 JSON '문자열'로 들어가 col:key / col[0] 탐색이 불가해진다.
 --   → GA4 는 전부 A.5 에서 개별 처리.
+--   프로시저는 INFORMATION_SCHEMA 를 순회하므로 04번 DDL로 생성된 테이블 수를 그대로 따른다.
+--   기대 반환값: ERP 'loaded tables: 1' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 45'
+--   ⚠️ CRM 이 43 으로 나오면 04번 DDL 2판(51테이블)을 실행한 것이다. 3판으로 다시 생성할 것.
 ------------------------------------------------------------
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
@@ -171,8 +199,16 @@ SELECT table_schema, COUNT(*) AS tables, SUM(row_count) AS total_rows
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_schema LIKE 'BRONZE_%' AND table_type='BASE TABLE'
 GROUP BY 1 ORDER BY 1;
+-- 기대값 (2026-08-12 A/B 실측):
+--   BRONZE_AGENCY   4 /     243,550
+--   BRONZE_CRM     45 / 115,875,113
+--   BRONZE_ERP      1 /       4,301
+--   BRONZE_GA4      3 /     576,441
+--   합계           53 / 116,699,405
 
--- (2) 빈 테이블 점검 (SYNC_ERR_INFO 는 원본이 비어 있을 수 있어 정상)
+-- (2) 빈 테이블 점검
+--     기대: BRONZE_GA4.SYNC_ERR_INFO 1건만 나온다 (원본 A도 0행 → 정상).
+--     그 외 테이블이 나오면 해당 폴더의 파일이 누락된 것이므로 재업로드·재적재한다.
 SELECT table_schema, table_name
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_schema LIKE 'BRONZE_%' AND table_type='BASE TABLE' AND row_count=0;
@@ -184,5 +220,43 @@ FROM GN_DW.BRONZE_GA4."events_20260501" GROUP BY 1, 4
 UNION ALL
 SELECT 'events_20260719', COUNT(*), COUNT("event_params"[0]), TYPEOF("event_params")
 FROM GN_DW.BRONZE_GA4."events_20260719" GROUP BY 1, 4;
+
+-- (4) 테이블별 행수 대조표 (⚠️ 01번 문서 6.2의 '미완료(권장)' 항목)
+--     이 결과를 03번 3.1(B의 GN_DW_SHARED 스냅샷)과 테이블 단위로 비교한다.
+--     스키마별 합계만 맞고 테이블별로 어긋나는 경우(중복 적재 + 누락 상쇄)를 잡는 유일한 검사다.
+SELECT table_schema, table_name, row_count, bytes
+FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE table_schema LIKE 'BRONZE_%' AND table_type = 'BASE TABLE'
+ORDER BY table_schema, table_name;
+
+-- (5) VALIDATE — 직전 COPY의 거부 행 확인 (기대: 0건)
+--     ⚠️ JOB_ID => '_last' 는 '현재 세션의 마지막 COPY' 기준이므로,
+--        각 COPY 직후에 실행해야 의미가 있다. 사후 점검은 아래 COPY_HISTORY를 쓴다.
+-- SELECT * FROM TABLE(VALIDATE(GN_DW.BRONZE_GA4."events_20260719", JOB_ID => '_last'));
+
+--     세션이 끊긴 뒤에는 COPY_HISTORY 로 전체 적재 이력을 확인한다.
+--     기대: STATUS = 'Loaded', ERROR_COUNT = 0, ROW_PARSED = ROW_COUNT
+SELECT table_schema_name, table_name, file_name, status,
+       row_count, row_parsed, error_count, first_error_message, last_load_time
+FROM SNOWFLAKE.ACCOUNT_USAGE.COPY_HISTORY
+WHERE table_schema_name LIKE 'BRONZE_%'
+  AND last_load_time >= DATEADD('day', -2, CURRENT_TIMESTAMP())
+  AND (status <> 'Loaded' OR error_count > 0)
+ORDER BY last_load_time DESC;
+-- → 0건이어야 정상. (ACCOUNT_USAGE 는 최대 2시간 지연될 수 있다.
+--    즉시 확인이 필요하면 INFORMATION_SCHEMA.COPY_HISTORY 테이블 함수를 쓴다.)
+
+------------------------------------------------------------
+-- A.7 정리(Teardown) — 01번 문서 7장
+--   ⚠️ A.6 검증이 전부 통과한 뒤에만 실행한다.
+--      스테이지를 비우면 재적재 시 로컬 업로드부터 다시 해야 한다.
+------------------------------------------------------------
+-- REMOVE @SANDBOX.TOOLS.MIG_LOAD_STAGE/;
+-- LIST   @SANDBOX.TOOLS.MIG_LOAD_STAGE;    -- 0건이어야 함
+
+-- 진단용 임시 객체 정리 (FF_CSV_LOAD 는 재적재 대비 남겨둘 수 있다)
+-- DROP FILE FORMAT IF EXISTS SANDBOX.TOOLS.FF_CSV_PEEK;
+-- DROP PROCEDURE  IF EXISTS SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA(STRING);
+
 
 

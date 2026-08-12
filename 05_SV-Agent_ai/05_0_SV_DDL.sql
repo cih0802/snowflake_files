@@ -163,11 +163,12 @@ GROUP BY 1 ORDER BY 1;
 -- (8-11) SV 9개 · owner 통일
 SHOW SEMANTIC VIEWS IN SCHEMA GN_DW.SERVING;
 --   판정: 9행 전부 owner = GN_DW_ADMIN
---   🟠 [2026-08-10 OWN-1 · 미해소] 현재 계정 실측 = 7종 GN_DW_ADMIN + **2종 ACCOUNTADMIN**
---      (`SV_MEMBER_COHORT`·`SV_MEMBER_FEE`). 두 파일만 아직 `CREATE OR REPLACE` 이고 owner 를
---      실행 역할로 리셋한다(나머지 7종은 `CREATE OR ALTER` 라 owner 가 보존됐다).
---      소비 GRANT 는 같은 파일 §GRANT 절이 재부여해 3역할 × REFERENCES/SELECT 살아 있고
---      3역할 세션 조회 9/9 성공을 실측했다 ⇒ **소비 영향 없음 · 거버넌스 드리프트만 남았다**.
+--   🟢 [2026-08-12 O61 · OWN-1 **해소 확인** · R1-3 전량독해에서 적발] 라이브 재실측 = **9종 전건
+--      owner `GN_DW_ADMIN`** 이고 `SV_MEMBER_COHORT`·`SV_MEMBER_FEE` 두 파일도 **이미 `CREATE OR ALTER`** 다.
+--      🔴 종전 이 자리의 *"🟠 미해소 · 7종 + 2종 ACCOUNTADMIN · 두 파일만 아직 CREATE OR REPLACE"* 는
+--      **stale 서술**이었다 — 두 파일 헤더가 각각 OWN-1 해소를 기록하고 있는데도 이 종합 문서만
+--      과거 상태에 머물러 있었다(**분산 문서 간 드리프트** · 종합 문서가 개별 파일보다 늦게 갱신되는 유형).
+--      ⇒ 「미해소」로 읽고 복구 절차를 다시 밟지 말 것. 아래 복구 절차는 **재발 시 참조용**으로 남긴다.
 --   ⚠ owner 가 ACCOUNTADMIN 이면 그 SV 를 GN_DW_ADMIN 이 아닌 역할로 배포한 것이다. 복구:
 --     USE ROLE ACCOUNTADMIN;
 --     GRANT OWNERSHIP ON SEMANTIC VIEW GN_DW.SERVING.<SV명> TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;

@@ -53,7 +53,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'bc494410-1de4-4551-8a46-6f1b99eb6fbd'                    AS DW_BATCH_ID,
+    '3597d1ab-90a3-4cbe-8064-e4fa5228209e'                    AS DW_BATCH_ID,
     -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 참여 3축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
     --    🔴 PART_STATUS_GROUP 이 O28 다체계의 **구조적 판별축**이다(종전에는 COMMENT 경고뿐이었다).
     --    신설 위치 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝).
@@ -62,7 +62,20 @@ select
     p.PARTCPT_PATH_GROUP                          as PART_PATH_GROUP,
     p.PARTCPT_PATH_NM                             as PART_PATH_NAME,
     p.PARTCPT_CHNNL_GROUP                         as PART_CHANNEL_GROUP,
-    p.PARTCPT_CHNNL_NM                            as PART_CHANNEL_NAME
+    p.PARTCPT_CHNNL_NM                            as PART_CHANNEL_NAME,
+    -- 🟢 [2026-08-12 O61 · D2 구조 처방] 원천 계열 판별 2컬럼 (명세 = 99 §0-Y-1 · 근거 = 원장 §O59-S ③④).
+    --   🔴 종전 판별자는 `DIM_EVENT.EVENT_KIND(_NAME)` 뿐이었고 그것은 **아래 left join 에서 온다** ⇒
+    --      행사 마스터 미매칭 구간은 `'(미매핑)'` 이라 **계열을 알려주지 못했다**(가장 큰 단일 버킷).
+    --      이 2컬럼은 SILVER 의 **원천 분기**(`DW_SOURCE_TABLE`)에서 오므로 조인 성패와 무관하다.
+    --   🔴 어휘는 `DIM_EVENT` 와 conform 한다 — 새 어휘를 만들면 두 축의 교차 검증이 깨진다.
+    --   🔴 `ELSE` 를 쓰지 않는다(P31) — 매핑에 없는 원천이 인입되면 NULL 로 드러나고,
+    --      yml `accepted_values`(2종)와 게이트 종수 검사가 즉시 실패해 갱신을 강제한다.
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then 'EVENT'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then 'CRMN' end as EVENT_KIND,
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then '일반행사'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then '캠페인행사' end as EVENT_KIND_NAME
 from p
 left join GN_DW.GOLD.DIM_EVENT e
     on e.EVENT_BK = p.EVENT_KEY

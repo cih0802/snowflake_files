@@ -266,7 +266,12 @@ def main():
         #      그 조합의 수치가 영구 면제되어 부채가 고착된다(인수인계 §미결 지시).
         #   ⇒ 이후로는 **모든 검출이 실패**다. 새 부채를 여기 등재하지 말고 문안을 고친다.
     }
-    cmt_known, cmt_exempt = 0, 0
+    # 🟢 [2026-08-12 O62 자기검토] `cmt_known` 카운터를 제거했다 — **도달 불가 분기였다.**
+    #   O59-R 이 CMT_BASELINE 을 비운 뒤로는 `base` 가 항상 공집합이라 `new = found` 가 되고,
+    #   `found` 가 비면 위에서 `continue` 하므로 else 분기에 들어갈 경로가 **없다**.
+    #   그런데 출력은 「기지 부채 0건(정리 계획 = 원장 §O56-D)」로 **종결된 계획을 진행 중처럼** 알렸다.
+    #   ⇒ 죽은 카운터가 만든 거짓 안내다(P105 계열: 문구는 게이트가 아니고, 여기선 문구가 사실도 아니었다).
+    cmt_exempt = 0
     cn4 = conn()
     for s in names:
         _, rows4 = q(f'desc semantic view {SCHEMA}.{s}', cn4)
@@ -282,13 +287,11 @@ def main():
             new = found - base
             if new:
                 cmt_bad.append((s, f'{kind}.{name}', prop, sorted(new)))
-            else:
-                cmt_known += 1
     cn4.close()
     for s, obj, prop, found in cmt_bad:
         print(f"  🔴 COMMENT 수치 **신규 유입**: {s}.{obj} [{prop}] {', '.join(found)}")
-    print(f"  ⇒ COMMENT 수치 금지 검사: SV {len(names)}종 · **신규 유입 {len(cmt_bad)}건** · "
-          f"기지 부채 {cmt_known}건(baseline · 정리 계획 = 원장 §O56-D) · 의미 예외 {cmt_exempt}토큰")
+    print(f"  ⇒ COMMENT 수치 금지 검사: SV {len(names)}종 · **검출 {len(cmt_bad)}건** · "
+          f"의미 예외 {cmt_exempt}토큰 (baseline 비움 = 모든 검출이 실패 · O59-R 정리 종결)")
 
     fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad)
     print("\n" + ("🔴 게이트 실패" if fail else

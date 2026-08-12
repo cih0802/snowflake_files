@@ -98,11 +98,11 @@ $$;
 -- ============================================================================
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MEMBER'
-  COMMENT = 'agent_spec.yaml 정본 반영';
+  COMMENT = 'agent_spec.yaml 실측근거 적용';
 
 ALTER AGENT GN_DW.SERVING.AGENT_OVERALL
   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_OVERALL'
-  COMMENT = 'agent_spec.yaml 정본 반영';
+  COMMENT = 'agent_spec.yaml 실측근거 적용';
 
 
 -- ============================================================================

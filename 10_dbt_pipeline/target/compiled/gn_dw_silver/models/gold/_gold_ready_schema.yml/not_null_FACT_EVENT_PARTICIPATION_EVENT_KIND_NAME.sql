@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select EVENT_KIND_NAME
+from GN_DW.GOLD.FACT_EVENT_PARTICIPATION
+where EVENT_KIND_NAME is null
+
+
