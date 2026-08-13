@@ -130,6 +130,19 @@ LINEAGE_MAP = {
     ("TM_PM_DNTN_DTLS",     "SPNSR_BSNS_ID"): ("SPONSORSHIP_SK", "FACT_MEMBER_FEE.sql"),
     # 후원사업 마스터 → 차원 자연키
     ("TM_CM_SPNSR_BSNS_INFO", "SPNSR_BSNS_ID"): ("SPONSORSHIP_BK", "DIM_SPONSORSHIP.sql"),
+    # ── CRM 개명 계보 (2026-08-13 O65 등재 · O59-N DEC-35 2단계 축B 배선분) ──
+    # 🔴 왜 등재하는가: 이 2건은 `classify()` 의 (5) 동명 매칭에 걸리지 않고 `silver_refs`(SILVER SQL
+    #    토큰) 경로로 떨어져 「SILVER까지만 · 중간(SQL참조)」이 됐다. 그러나 **GOLD 도달이 실측 확증**된다:
+    #      · SILVER 에 동명 컬럼 없음 — INFORMATION_SCHEMA 조회 0행(이름으로는 찾을 수 없다)
+    #      · `CRM_SEND_MEMBER.sql` 28·41행이 두 컬럼을 **축B `SEND_RESULT_CD` 로 개명 적재**
+    #      · `FACT_SERVICE_EVENT.sql:55` 가 그것을 투영 · 라이브 채움을 채널로 분해하면 귀속이 갈린다:
+    #        MSG_AT(`TRNSMS_FAILR_CD_ID`) **18,439,718** · SND(`CALL_STATUS`) **7,815,657**
+    #        · EMAIL·PSTMTR 은 모델이 NULL 고정이라 0 (합 26,255,375 / 전체 38,470,780)
+    #    ⇒ P90 ② 의 재현이다(신규 배선을 만들면 이 등록부가 그 사실을 모른다). 2026-08-06 8건과 같은 유형.
+    # ⚠️ 이 2건은 「실측으로 확정된 것」만이다. 같은 버킷(SILVER까지만 · 신뢰도 「높음」 아님)에
+    #    95건이 남아 있고 그것은 **후보**이지 오류 확정이 아니다 — 전수 판정은 별건(원장 O65 잔여).
+    ("TD_MS_MSG_AT_SNDNG_DTLS", "TRNSMS_FAILR_CD_ID"): ("SEND_RESULT_CD", "FACT_SERVICE_EVENT.sql"),
+    ("SND_MEMBER_LIST",         "CALL_STATUS"):        ("SEND_RESULT_CD", "FACT_SERVICE_EVENT.sql"),
 }
 
 

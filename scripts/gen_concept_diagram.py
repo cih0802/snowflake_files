@@ -335,7 +335,7 @@ tr.row:hover td {{ background: light-dark(#f8fafc, #172033); }}
   <thead><tr><th>알고 싶은 것</th><th>문서</th></tr></thead>
   <tbody>
     <tr><td>지표 정의 · 지금 쓸 수 있는 범위 · 오독 방지</td><td class="mono">01_DW_현업활용가이드.md</td></tr>
-    <tr><td>무엇이 왜 안 되나(원천 결손 · 해소 주체)</td><td class="mono">02_원천결손_Gap분석.md</td></tr>
+    <tr><td>무엇이 왜 안 되나(원천 결손 · 해소 주체)</td><td class="mono">_archive/20260806/02_원천결손_Gap분석.md (수기 · 측정일 2026-08-06)</td></tr>
     <tr><td>이 컬럼 값이 어디서 왔나(계보)</td><td class="mono">04_컬럼계보매핑.md</td></tr>
     <tr><td>지표번호 → GOLD 배속</td><td class="mono">05_지표GOLD매핑.md</td></tr>
     <tr><td>BRONZE 원천이 다 보여지고 있나</td><td class="mono">06_BRONZE노출감사.md</td></tr>

@@ -35,6 +35,7 @@
 import argparse
 import collections
 import csv
+import hashlib
 import json
 import os
 import random
@@ -123,10 +124,64 @@ def _guard(m, key, fn):
         m.setdefault("_read_errors", []).append(f"{key}: {type(e).__name__} {e}")
 
 
+# ── 산출물 기대 목록·신선도 (2026-08-13 O65 신설) ─────────────────────────────
+# 🔴 이 목록이 **계약**이다. 종전에는 「한 폴더에 9종이 있다」가 암묵 전제였고, 판본 교체(O59-T)가
+#   그 전제를 조용히 깼다. 파일을 옮기는 작업은 앞으로도 있을 것이므로 목록을 코드에 고정한다.
+# ⚠️ `02_원천결손_Gap분석.md` 는 **수기 문서이고 생성기가 없어** 아카이브에만 있다 ⇒ 의도적 제외.
+#   (제외를 주석으로 남기지 않으면 다음 세션이 「누락」으로 오인해 되돌린다.)
+MANIFEST = [
+    "01_DW_현업활용가이드.md",                 # 수기
+    "03_GN_DW_개념도.html",
+    "04_컬럼계보매핑.csv", "04_컬럼계보매핑.md", "04_컬럼계보매핑.xlsx",
+    "05_지표GOLD매핑.csv", "05_지표GOLD매핑.md", "05_지표GOLD매핑.xlsx",
+    "06_BRONZE노출감사.csv", "06_BRONZE노출감사.md", "06_BRONZE노출감사.xlsx",
+    "07_코드체계_관문측정.md",
+    "08_SILVER→GOLD_보존율.csv", "08_SILVER→GOLD_보존율.md",
+    "09_보고서필드_조립가능성.csv", "09_보고서필드_조립가능성.md", "09_섹션배너.json",
+]
+# 측정일을 헤더에서 읽을 수 있는 산출물. 🔴 키 이름이 파일마다 다르다(실측):
+#   `measured:`(04·05·07·08·09) · `audit_date:`(06) · `updated:`(01 수기) · JSON `"generated"`(03)
+MEASURED_KEYS = ["01_DW_현업활용가이드.md", "03_GN_DW_개념도.html",
+                 "04_컬럼계보매핑.md", "05_지표GOLD매핑.md", "06_BRONZE노출감사.md",
+                 "07_코드체계_관문측정.md", "08_SILVER→GOLD_보존율.md",
+                 "09_보고서필드_조립가능성.md"]
+DATE_RE = re.compile(r'(?:measured|audit_date|updated|"generated")\s*[:=]?\s*"?\s*(\d{4}-\d{2}-\d{2})')
+
+
+def artifact_measured(path):
+    """산출물 헤더의 측정일을 읽는다. 없거나 파일이 없으면 None(= 골든 대조에서 드러난다)."""
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8", errors="replace") as f:
+        head = f.read(4000)          # 헤더 블록만 본다(본문의 과거 측정일 인용에 걸리지 않도록)
+    mt = DATE_RE.search(head)
+    return mt.group(1) if mt else None
+
+
+def schema_fingerprint():
+    """GOLD·SILVER 컬럼 목록의 지문. 스키마가 바뀌면 산출물은 stale 이다.
+
+    🔴 왜 「파일 존재」가 아니라 지문인가: O64 는 인벤토리 파일이 **있는데도** A4 로 6컬럼이 바뀌어
+       stale 이 된 것을 겪었다. 존재 검사로는 그 상태를 구별할 수 없다.
+    ⚠️ DB 를 직접 조회하지 않는다 — `/tmp/schema.json`(dump_schema.py 산출)이 있을 때만 계산하고,
+       없으면 None 을 돌려 **「미측정」으로 보고**한다(없는 것을 통과로 만들지 않는다).
+    """
+    p = os.environ.get("GN_DW_SCHEMA", "/tmp/schema.json")
+    if not os.path.exists(p):
+        return None
+    s = json.load(open(p, encoding="utf-8"))
+    payload = json.dumps({
+        "gold": {k: v for k, v in sorted(s.get("gold_cols", {}).items())},
+        "silver": {k: v for k, v in sorted(s.get("silver_cols", {}).items())},
+        "views": sorted(s.get("views", [])),
+        "tables": sorted(s.get("tables", [])),
+    }, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
 def measure():
     """산출물에서 골든 지표를 측정한다. 골든 생성과 대조가 **같은 코드**를 쓴다."""
     m = {}
-
     # 09 — 조립가능성
     def _09():
         _, r09 = load_09()
@@ -186,6 +241,17 @@ def measure():
     p07 = os.path.join(OUT, "07_코드체계_관문측정.md")
     m["07.exists"] = os.path.exists(p07)
 
+    # ── 산출물 축 (2026-08-13 O65 신설) ──────────────────────────────────────
+    # 🔴 왜 신설하는가: O59-T 가 구 판본을 아카이브로 옮기고 4종만 재생성했을 때,
+    #   `06`~`09` 부재를 이 게이트는 **골든 대조 실패로만** 드러냈다(계산이 뒤달려 원인이 묻혔다).
+    #   더 나쁜 것은 **부재를 못 잡는 파일이 있었다**는 점이다 — md·xlsx·`09_섹션배너.json`·`07` 은
+    #   measure() 가 읽지 않으므로 **사라져도 게이트가 통과**한다. ⇒ 기대 목록을 명시 고정한다.
+    # 🔴 그리고 「파일이 있다」는 **신선하다는 뜻이 아니다**(O64 가 인벤토리에서 같은 것을 겪었다).
+    #   산출물별 측정일을 골든에 박아 **판본 혼재가 드러나게** 한다 — 종전 골든은 최상위
+    #   `measured` 1개뿐이라 `04`(08-11) 와 `09`(08-13) 가 한 날짜로 뭉개졌다.
+    m["art.files"] = {rel: os.path.exists(os.path.join(OUT, rel)) for rel in MANIFEST}
+    m["art.measured"] = {rel: artifact_measured(os.path.join(OUT, rel)) for rel in MEASURED_KEYS}
+
     # 결손·파싱 실패는 **골든 차이가 아니라 그 자체로 불합격**이다(골든에 넣으면 「결손이 정상」이 된다).
     m["_read_errors"] = sorted(m.get("_read_errors", []))
 
@@ -228,7 +294,7 @@ def diff(name, want, got, path=""):
 
 
 def test_golden():
-    print("[G] 골든 대조 — 30_output_share/{04,05,06,08,09}")
+    print("[G] 골든 대조 — 30_output_share/{04,05,06,08,09} + 산출물별 측정일·기대목록")
     got = measure()
     # 🔴 결손·파싱 실패는 **골든 대조와 별개의 독립 불합격**이다. 골든에 담으면 「결손이 정상」이 된다.
     if got.get("_read_errors"):
@@ -251,6 +317,43 @@ def test_golden():
         print("          ⇒ 🔴 차이를 **전량 규명**한 뒤 --update-golden. 규명 없이 갱신하면 골든이 무의미하다.")
     else:
         ok("G.golden-match", f"{len(got)}개 지표 일치 (골든 {g.get('measured')})")
+
+
+# ── T5. 산출물 축 — 기대 목록·측정일·신선도 (2026-08-13 O65 신설) ─────────────
+def test_artifact_axis():
+    print("[T5] 산출물 축 — 기대 목록 · 측정일 · 신선도 (O65)")
+    missing = [rel for rel in MANIFEST if not os.path.exists(os.path.join(OUT, rel))]
+    if missing:
+        bad("T5.manifest", f"기대 산출물 {len(missing)}/{len(MANIFEST)}종 부재 — {', '.join(missing)}")
+    else:
+        ok("T5.manifest", f"기대 산출물 {len(MANIFEST)}종 전부 존재(`02` 는 수기·아카이브 전용으로 의도적 제외)")
+
+    # 측정일 — 파싱 실패는 그 자체로 불합격이다(헤더 규약이 깨진 것이므로).
+    dates = {rel: artifact_measured(os.path.join(OUT, rel)) for rel in MEASURED_KEYS}
+    nod = [k for k, v in dates.items() if v is None]
+    if nod:
+        bad("T5.measured-parsable", f"측정일 헤더를 읽을 수 없는 산출물 {len(nod)}종 — {', '.join(nod)}")
+    else:
+        uniq = sorted(set(dates.values()))
+        msg = f"{len(dates)}종 전부 측정일 보유 · 판본 {len(uniq)}종({' · '.join(uniq)})"
+        if len(uniq) > 1:
+            msg += " ⚠️ 혼재 — 인용 시 산출물별 측정일을 밝힐 것"
+        ok("T5.measured-parsable", msg)
+
+    # 신선도 — 스키마 지문이 골든과 다르면 산출물이 stale 이다.
+    fp = schema_fingerprint()
+    g = json.load(open(GOLDEN, encoding="utf-8")) if os.path.exists(GOLDEN) else {}
+    want = g.get("schema_fingerprint")
+    if fp is None:
+        ok("T5.freshness", "⚪ 미측정 — `/tmp/schema.json` 없음(먼저 `dump_schema.py`). "
+                           "🔴 미측정을 통과로 읽지 말 것")
+    elif want is None:
+        bad("T5.freshness", f"골든에 스키마 지문이 없다(현재 {fp}) — 산출물 재생성 후 --update-golden")
+    elif fp != want:
+        bad("T5.freshness", f"스키마가 바뀌었다(골든 {want} ≠ 현재 {fp}) ⇒ 산출물 06~09 는 **stale** "
+                            "— 재생성 후 차이를 규명하고 --update-golden")
+    else:
+        ok("T5.freshness", f"스키마 지문 일치({fp}) — 산출물이 현행 스키마 기준이다")
 
 
 # ── T1. 앵커 동점 순서 독립 (O47-B) ─────────────────────────────────────────
@@ -541,9 +644,9 @@ def _run_isolated(fn, out_dir=None):
 
 
 def self_check():
-    """🔴 테스트가 통과만 하면 검증이 아니다. 생성기 3종 + 산출물 2종을 실제로 깨뜨려 본다."""
+    """🔴 테스트가 통과만 하면 검증이 아니다. 생성기 3종 + 산출물 5종을 실제로 깨뜨려 본다."""
     print("=" * 78)
-    print("[SELF] 일부러 깨뜨려 테스트가 실패하는지 확인 — 5종")
+    print("[SELF] 일부러 깨뜨려 테스트가 실패하는지 확인 — 8종(O65 에서 산출물 축 2종 추가)")
     print("=" * 78)
     import gen_section_assembly as GSA
     import gen_metric_gold_mapping as GMM
@@ -592,7 +695,30 @@ def self_check():
     os.remove(os.path.join(d3, "08_SILVER→GOLD_보존율.csv"))
     detected = _run_isolated(test_golden, d3)
     results.append(("ⓕ 산출물 1종 결손 → 크래시 없이 판정", detected))
-    for tmp in (d, d2, d3):
+
+    # ── T5 축 자기검사 (2026-08-13 O65) ──────────────────────────────────────
+    # 🔴 ⓖ 는 **종전 사각을 정확히 겨냥한다**: `07` 은 measure() 가 읽지 않으므로 사라져도 골든이
+    #   통과했다. 그래서 골든이 아니라 **manifest 축**이 잡는지를 본다.
+    d4 = _mutated_out(lambda rows: None)
+    # 🔴 음성 샘플 먼저 — 온전한 사본에서 manifest 가 통과해야 「깨서 잡혔다」가 의미를 갖는다(P106).
+    clean_ok = not _run_isolated(lambda: test_artifact_axis(), d4)
+    os.remove(os.path.join(d4, "07_코드체계_관문측정.md"))
+    broke = _run_isolated(lambda: test_artifact_axis(), d4)
+    results.append(("ⓖ 산출물 → 골든이 읽지 않는 파일(`07`) 삭제 → manifest 축이 잡는다",
+                    broke and clean_ok))
+
+    # ⓗ 신선도 — 스키마가 바뀐 상태를 흉내내 stale 판정이 나오는지 본다.
+    orig_fp = globals()["schema_fingerprint"]
+    globals()["schema_fingerprint"] = lambda: "deadbeefdeadbeef"
+    stale_detected = _run_isolated(lambda: test_artifact_axis())
+    globals()["schema_fingerprint"] = orig_fp
+    # ⚠️ 골든에 지문이 없으면 이 항목은 「골든에 지문 없음」으로도 FAIL 하므로 구별해 둔다.
+    _g = json.load(open(GOLDEN, encoding="utf-8")) if os.path.exists(GOLDEN) else {}
+    results.append(("ⓗ 스키마 지문 변경 → stale 판정"
+                    + ("" if _g.get("schema_fingerprint") else " ⚠️ 골든에 지문 미기록 상태"),
+                    stale_detected))
+
+    for tmp in (d, d2, d3, d4):
         shutil.rmtree(tmp, ignore_errors=True)
 
     print("-" * 78)
@@ -615,19 +741,26 @@ def update_golden():
         for line in d:
             print("  · " + line)
     from datetime import date
+    fp = schema_fingerprint()
+    if fp is None:
+        print("  ⚠️ `/tmp/schema.json` 이 없어 **스키마 지문을 기록하지 못했다** — "
+              "`dump_schema.py` 를 먼저 돌리고 다시 갱신할 것(지문 없는 골든은 신선도 검사를 못 한다).")
     json.dump({
         "_doc": "산출물 생성기 회귀 골든. 생성/대조 = scripts/test_generators.py (measure()). "
-                "🔴 수기 편집 금지 — 차이를 전량 규명한 뒤 --update-golden 으로 갱신한다.",
+                "🔴 수기 편집 금지 — 차이를 전량 규명한 뒤 --update-golden 으로 갱신한다. "
+                "⚠️ 최상위 `measured` 는 **이 골든을 갱신한 날**이고 산출물의 측정일이 아니다 — "
+                "산출물별 측정일은 metrics['art.measured'] 에 있다(판본 혼재가 여기서 드러난다).",
         "measured": os.environ.get("GN_DW_MEASURED", date.today().isoformat()),
+        "schema_fingerprint": fp,
         "metrics": m,
     }, open(GOLDEN, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
-    print("WROTE:", GOLDEN)
+    print("WROTE:", GOLDEN, f"· 스키마 지문 {fp}")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--update-golden", action="store_true")
-    ap.add_argument("--self-check", action="store_true", help="일부러 깨뜨려 검출 여부 확인(생성기 3종 + 산출물 3종)")
+    ap.add_argument("--self-check", action="store_true", help="일부러 깨뜨려 검출 여부 확인(생성기 3종 + 산출물 5종)")
     a = ap.parse_args()
     if a.update_golden:
         update_golden()
@@ -639,6 +772,7 @@ def main():
     print("산출물 생성기 회귀 테스트 — 99_NEXT_SESSION §2-A·§2-B")
     print("=" * 78)
     test_golden()
+    test_artifact_axis()
     test_anchor_order()
     test_label_dict()
     test_string_contract()

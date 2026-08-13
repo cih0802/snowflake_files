@@ -1,15 +1,18 @@
 -- =====================================================================
 -- AI 비용 가드 구축 (사용자 기반 하드 차단 + 관찰)
---   대상 계정 : os09358 (TRIALADMIN)
---   구축일    : 2026-08-12
+--   최초 구축 : 2026-08-12 · 계정 os09358 (TRIALADMIN)
+--   재검증    : 2026-08-13 · 계정 ad50130 (TRIALADMIN) — 전 구문 재실행하여 재구축·검증
 --   실행 역할 : ACCOUNTADMIN
+--   자매 문서 : 06_웨어하우스비용가드_구축.sql (웨어하우스 컴퓨트 담당)
 -- ---------------------------------------------------------------------
 -- 오브젝트 배치 원칙 (GN_DW 설계의도 기준)
 --   GN_DW.OPS      = 운영/비용 객체 → quota 인스턴스, 관찰 뷰
 --                    (기존 GN_DW.OPS.DW_PIPELINE = dbt 프로젝트와 동일 계층)
 --   GN_DW.SECURITY = 거버넌스 정책 객체 → 적용대상 판별 TAG
 -- ---------------------------------------------------------------------
--- 본 파일의 모든 구문은 2026-08-12 세션에서 실제 실행·검증되었다.
+-- 본 파일의 모든 구문은 2026-08-12 세션에서 실제 실행·검증되었고,
+-- 2026-08-13 세션에서 별개 계정(ad50130)에 전량 재실행하여 재검증되었다.
+-- 재검증에서 새로 밝혀진 사항은 각 섹션에 ★ 또는 ⚠️⚠️ 로 표시했다.
 -- 주석으로 남긴 구문(-- [옵션])은 의도적으로 미적용 상태다.
 -- Co-authored with CoCo
 -- =====================================================================
@@ -27,7 +30,7 @@ USE WAREHOUSE COMPUTE_WH;
 --    associated with serverless features and AI services.")
 --   따라서 CoCo·CoWork·Agent·AI 함수의 하드 차단 수단은 아래 둘뿐이다.
 --     (1) Per-user quota  → 사용자별 상한 + 내장 Block  ★본 파일
---     (2) RBAC            → 접근 자체 차단             (07 섹션)
+--     (2) RBAC            → 접근 자체 차단             (10번 섹션)
 --   Budget 은 알림·커스텀액션 전용이며 그 자체로는 차단하지 않는다.
 
 
@@ -36,11 +39,27 @@ USE WAREHOUSE COMPUTE_WH;
 ------------------------------------------------------------
 --   quota 의 기본 스코프는 "계정 전체 사용자"다. 그대로 두면 관리자도 차단 대상이 된다.
 --   EXCLUDE_USERS('USER', [...]) 로 개별 제외를 시도했으나 Preview 결함으로 실패한다
---   (INVALID_TARGET_TYPE: 허용값으로 'USER' 를 안내하면서 'USER' 를 거부. 2026-08-12 실측).
+--   (INVALID_TARGET_TYPE: 허용값으로 'USER' 를 안내하면서 'USER' 를 거부. 2026-08-12 실측,
+--    2026-08-13 다른 계정에서 동일하게 재현됨).
+--     ⚠️ 우회 시도도 막힌다: 참조 형태로 넘기면
+--        "Domain USER not valid for reference creation with scope SESSION" 로 실패한다.
 --   ⇒ 태그 기반 스코프로 구현한다. 태그가 없는 사용자는 스코프에서 제외된다.
 CREATE TAG IF NOT EXISTS GN_DW.SECURITY.AI_COST_SCOPE
   ALLOWED_VALUES 'GOVERNED', 'EXEMPT'
   COMMENT = 'AI 비용 quota 적용 대상 구분. GOVERNED=사용자별 한도 적용, EXEMPT=제외(관리자·서비스계정). 미부여 사용자는 quota 스코프에서 제외됨.';
+
+--   ★ 2026-08-13 추가 검증: EXCLUDE_USERS 는 TARGET_TYPE='TAG' 로는 정상 동작한다.
+--     즉 ALLOWED_VALUES 의 'EXEMPT' 를 실제 기능으로 쓸 수 있다(장식이 아니다).
+--     "GOVERNED 는 포함, EXEMPT 는 명시적 제외" 라는 이중 안전장치를 구성할 수 있다.
+-- CALL GN_DW.OPS.AI_USER_QUOTA!EXCLUDE_USERS('TAG',
+--   [[(SELECT SYSTEM$REFERENCE('TAG', 'GN_DW.SECURITY.AI_COST_SCOPE', 'SESSION', 'APPLYBUDGET')), 'EXEMPT']]);
+--
+--   ⚠️⚠️ 호출 순서 함정: SET_USER_TAGS 는 EXCLUDE_USERS 설정을 덮어써 삭제한다.
+--      실측: EXCLUDE_USERS('TAG', EXEMPT) 후 SET_USER_TAGS(GOVERNED) 를 호출하면
+--            "Successfully removed 1 and set 1 user tag(s)" — 방금 넣은 제외가 사라진다.
+--      ⇒ 반드시 4번 SET_USER_TAGS 를 먼저, EXCLUDE_USERS 를 나중에 호출할 것.
+--   ⚠️ GET_QUOTA_SCOPE 출력에는 제외(exclusion) 항목이 표시되지 않는다.
+--      제외 설정을 사후 감사할 수단이 없으므로 본 파일에 기록해 관리한다.
 
 --   신규 사용자를 한도 적용 대상으로 넣을 때:
 -- ALTER USER <username> SET TAG GN_DW.SECURITY.AI_COST_SCOPE = 'GOVERNED';
@@ -67,16 +86,37 @@ CREATE SNOWFLAKE.CORE.QUOTA GN_DW.OPS.AI_USER_QUOTA();
 ------------------------------------------------------------
 --   ⚠️ 한 quota 에 WAREHOUSE 와 AI 도메인을 섞을 수 없다.
 --      측정단위가 다르다(credits vs AI credits). 웨어하우스는 별도 quota 로 분리.
+--      → 06_웨어하우스비용가드_구축.sql 의 GN_DW.OPS.ML_WH_USER_QUOTA 참조.
 --   ⚠️ Block 은 AI 도메인에만 적용된다. WAREHOUSE 는 추적만 되고 차단되지 않는다.
+--      ⚠️⚠️ 06 파일 실측: 웨어하우스 quota 에서 SET_BLOCK_ENFORCEMENT_ENABLED(TRUE) 를
+--         호출하면 오류 없이 "enabled" 를 반환한다. 설정값만 보고 차단됐다고 오인하지 말 것.
 CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('AI FUNCTION');            -- AI_COMPLETE, AI_CLASSIFY 등
 CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('CORTEX CODE');            -- CoCo (CLI + Snowsight + Desktop)
 CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('SNOWFLAKE INTELLIGENCE'); -- CoWork
 CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('CORTEX AGENT');           -- Cortex Agents
 
+--   ⚠️ 이 4개 호출은 반환값이 None 이다(성공 메시지 없음). 성공 여부는 9-2 로 확인할 것.
+--      실측 GET_QUOTA_SCOPE 결과 — 4개 모두 [ALL-*] 로 등록됨:
+--        AI_FUNCTION / CORTEX_AGENT / SNOWFLAKE_INTELLIGENCE / CORTEX_CODE
+--
+--   ★★ 통제 범위의 공백: CORTEX ANALYST 는 quota 도메인이 아니다 (2026-08-13 실측)
+--      CALL ...!ADD_SHARED_RESOURCE('CORTEX ANALYST') → "Operation not supported."
+--      ⇒ 8번 관찰뷰는 5개 도메인을 보지만 quota 는 4개만 통제한다.
+--         Cortex Analyst 지출은 "관찰 가능하나 차단 불가"다.
+--         Analyst 를 막아야 하면 10번 RBAC(세만틱뷰 접근권한 회수)로 처리할 것.
+
 --   특정 객체만 좁혀 감시하려면 2번째 인자에 참조를 전달한다.
+--   ⚠️ 실행 순서 제약 (2026-08-13 실측): [ALL-*] 이 이미 등록된 상태에서 개별 객체를 추가하면
+--      "All resources already added to the budget. Cannot add individual resources." 로 실패한다.
+--      ⇒ 먼저 REMOVE_SHARED_RESOURCE 로 ALL 을 제거한 뒤 개별 추가해야 한다.
+--        (개별 추가 성공 시에는 "Successfully operated the shared ai function to quota" 를 반환한다)
+-- CALL GN_DW.OPS.AI_USER_QUOTA!REMOVE_SHARED_RESOURCE('AI FUNCTION');
 -- CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('AI FUNCTION', 'AI_CLASSIFY');
 -- CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('CORTEX AGENT',
 --        (SELECT SYSTEM$REFERENCE('CORTEX AGENT', 'myagent')));
+--   되돌리기
+-- CALL GN_DW.OPS.AI_USER_QUOTA!REMOVE_SHARED_RESOURCE('AI FUNCTION', 'AI_CLASSIFY');
+-- CALL GN_DW.OPS.AI_USER_QUOTA!ADD_SHARED_RESOURCE('AI FUNCTION');
 
 
 ------------------------------------------------------------
@@ -98,6 +138,13 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 --   실측 근거 (2026-08-12, SNOWFLAKE_COCO_USAGE_HISTORY):
 --      TRIALADMIN 1인이 CoCo Snowsight 로 하루 37요청 / 5.50 credits 소비.
 --      요청당 약 0.15 credits.
+--   재측정 (2026-08-13, 계정 ad50130 · V_AI_SPEND_BY_USER):
+--      08-12  33요청 / 4.9553 cr  (요청당 0.150)
+--      08-13  52요청 / 5.7731 cr  (요청당 0.111)
+--      ⇒ 하루 5~6 credits, 요청당 0.11~0.15 credits 로 재현성 있음.
+--         월 환산 약 150~180 credits/사용자(상시 사용 기준).
+--      ⚠️ 아래 옵션 A(30)/B(100) 는 이 실측치보다 낮다. 상시 CoCo 사용자에게 적용하면
+--         월중에 차단된다. 실제 운영 한도는 재측정치 기준으로 재검토할 것.
 --
 --   [옵션 A] 30 credits/사용자/월 — 보수적. 토이모델 생산이 아닌 일반 사용 기준.
 --            하루 3.3 credits 속도면 약 9일치.
@@ -144,10 +191,16 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 ------------------------------------------------------------
 --   SPEND_STRATEGY: 'ACTUAL'(실지출) | 'PROJECTED'(월말 추정치)
 --   THRESHOLD     : 월 한도에 대한 백분율
+--   ⚠️⚠️ 침묵 함정 (2026-08-13 실측): PER_USER_LIMIT 가 NULL 인 상태에서도
+--      ADD_NOTIFICATION_THRESHOLD 는 "added successfully" 로 성공한다.
+--      임계값은 "월 한도의 %" 이므로 한도가 없으면 영원히 발동하지 않는다.
+--      ⇒ 알림을 걸었다고 안심하지 말 것. 5번 한도 설정이 선행되어야 한다.
+--      GET_NOTIFICATION_THRESHOLDS() 는 CYCLE=MONTHLY 로 등록만 보여준다.
 -- CALL GN_DW.OPS.AI_USER_QUOTA!SET_ADMIN_EMAILS('admin@example.com');
 -- CALL GN_DW.OPS.AI_USER_QUOTA!ADD_NOTIFICATION_THRESHOLD(80, 'PROJECTED', TRUE);
 -- CALL GN_DW.OPS.AI_USER_QUOTA!ADD_NOTIFICATION_THRESHOLD(100, 'ACTUAL',   TRUE);
 -- CALL GN_DW.OPS.AI_USER_QUOTA!GET_NOTIFICATION_THRESHOLDS();
+-- CALL GN_DW.OPS.AI_USER_QUOTA!REMOVE_NOTIFICATION_THRESHOLD(80, 'PROJECTED');
 --   ⚠️ 이메일은 사전 검증(verified)된 주소만 발송된다.
 
 
@@ -157,6 +210,8 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 --   ⚠️ 중복 합산 함정: CORTEX_CODE_{CLI,SNOWSIGHT,DESKTOP}_USAGE_HISTORY 는
 --      SNOWFLAKE_COCO_USAGE_HISTORY 의 인터페이스별 부분집합이다.
 --      2026-08-12 실측: COCO 34행/4.4743cr == CODE_SNOWSIGHT 34행/4.4743cr
+--      2026-08-13 재현: COCO 92행/11.0024cr == CODE_SNOWSIGHT 92행/11.0024cr
+--                      (CLI 0행 / DESKTOP 0행 — Snowsight 만 사용한 계정)
 --      ⇒ 함께 더하면 2배로 과대집계된다. 통합뷰만 쓴다.
 --   ⚠️ CORTEX_AISQL_USAGE_HISTORY 에는 USER_NAME 이 없다(USER_ID 만).
 --      ACCOUNT_USAGE.USERS 조인으로 해석해야 한다.
@@ -216,6 +271,8 @@ GROUP BY 1, 2, 3
 ORDER BY credits DESC;
 
 -- 9-5 quota 자체 집계로 교차검증
+--     ⚠️ 실측: GET_USERS() 가 0행이면 이 호출도 0행을 반환한다(스코프 밖 소비는 집계하지 않음).
+--        즉 관찰 단계에서는 교차검증 수단이 되지 못한다. 9-4 의 뷰를 정본으로 쓸 것.
 CALL GN_DW.OPS.AI_USER_QUOTA!GET_SPENDING_DETAILS_BY_USERS(
        DATEADD('day', -30, CURRENT_DATE()), CURRENT_DATE());
 
@@ -227,6 +284,9 @@ CALL GN_DW.OPS.AI_USER_QUOTA!GET_ENFORCEMENT_HISTORY(
 -- 9-7 계정 전체 AI 크레딧 (metering 기준)
 --     ⚠️ service_type 실측값은 SNOWFLAKE_COCO_SNOWSIGHT 다.
 --        구 문서의 CORTEX_CODE_SNOWSIGHT 는 metering 의 service_type 이 아니다.
+--     ⚠️ metering 과 usage_history 는 정확히 일치하지 않는다(집계 지연·granularity 차이).
+--        2026-08-13 동시각 실측: metering 10.0665cr vs COCO usage_history 11.0024cr.
+--        ⇒ 청구 대조는 metering, 사용자별 귀속은 usage_history 로 용도를 분리할 것.
 SELECT service_type, ROUND(SUM(credits_used), 4) AS credits
 FROM SNOWFLAKE.ACCOUNT_USAGE.METERING_DAILY_HISTORY
 WHERE usage_date >= DATEADD('day', -30, CURRENT_DATE())
@@ -239,7 +299,12 @@ ORDER BY credits DESC;
 ------------------------------------------------------------
 --   quota 는 "얼마나" 를 막고, RBAC 는 "누가" 를 막는다.
 --   SNOWFLAKE.CORTEX_USER 가 PUBLIC 에 부여되어 있으면 전 사용자가 LLM 함수를 쓸 수 있다.
+--   ★ 2026-08-13 실측: 본 계정은 실제로 PUBLIC 에 부여되어 있다(계정 프로비저닝 기본값).
+--     SHOW GRANTS OF DATABASE ROLE SNOWFLAKE.CORTEX_USER 결과 3행:
+--       ROLE ACCOUNTADMIN / ROLE PUBLIC / APPLICATION SNOWFLAKE
+--     ⇒ 전제가 사실이므로 아래 회수 절차가 유효하다.
 --   ⚠️ 회수는 조직 전체에 영향을 준다. 사전 공지·영향도 검토 후 적용할 것.
+--   ⚠️ APPLICATION SNOWFLAKE 부여분은 건드리지 말 것(내부 기능이 의존한다).
 -- SHOW GRANTS OF DATABASE ROLE SNOWFLAKE.CORTEX_USER;
 -- CREATE ROLE IF NOT EXISTS GN_AI_USER;
 -- GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE GN_AI_USER;
@@ -256,14 +321,37 @@ ORDER BY credits DESC;
 
 
 -- =====================================================================
--- 현재 상태 요약 (2026-08-12 실측)
---   GN_DW.OPS.AI_USER_QUOTA        생성 완료 · 4개 AI 도메인 감시
---   GN_DW.SECURITY.AI_COST_SCOPE   생성 완료 · quota 스코프로 연결
---   GN_DW.OPS.V_AI_SPEND_BY_USER   생성 완료 · 관찰 가능
+-- 현재 상태 요약 (2026-08-13 계정 ad50130 실측)
+--   GN_DW.OPS.AI_USER_QUOTA        생성 완료 · QUOTA_ID=8 · 4개 AI 도메인 감시
+--   GN_DW.SECURITY.AI_COST_SCOPE   생성 완료 · tagId=11 · quota 스코프로 연결(GOVERNED)
+--   GN_DW.OPS.V_AI_SPEND_BY_USER   생성 완료 · 관찰 가능(실데이터 반환 확인)
 --   PER_USER_LIMIT                 NULL  (무한대 — 미적용)
 --   PER_USER_LIMIT_DAILY           NULL  (미적용)
 --   BLOCK_ENFORCEMENT_ENABLED      FALSE (미적용)
+--   NOTIFICATION_THRESHOLDS        0건   (미적용)
+--   REFRESH_TIER                   TIER_1H (기본값)
 --   GET_USERS()                    0행   (TRIALADMIN 태그 미부여 = 제외)
 --   ⇒ 현재는 순수 관찰 상태이며 어떤 사용자도 차단되지 않는다.
 --   ⇒ 차단 전환 절차: 5번 한도 설정 → 1번 태그 부여 → 9-3 대상 확인 → 6번 활성화
+-- ---------------------------------------------------------------------
+-- 2026-08-13 재검증 결과 — 기존 기술이 사실로 확인된 항목
+--   · AI 도메인 4종 등록(CoWork = SNOWFLAKE INTELLIGENCE 포함)
+--   · EXCLUDE_USERS('USER', ...) 결함 — 다른 계정에서도 동일 재현
+--   · CoCo 중복 합산 함정 — COCO == CODE_SNOWSIGHT 정확히 일치
+--   · AISQL 에 USER_NAME 없음 / ANALYST 는 USERNAME·CREDITS 컬럼명 상이
+--   · metering service_type = SNOWFLAKE_COCO_SNOWSIGHT
+--   · SNOWFLAKE.CORTEX_USER 가 PUBLIC 에 부여됨
+--
+-- 2026-08-13 재검증에서 새로 발견 — 문서에 반영한 항목
+--   1) CORTEX ANALYST 는 quota 도메인이 아니다("Operation not supported").
+--      관찰뷰 5도메인 vs quota 4도메인 → Analyst 는 차단 불가 (3번)
+--   2) EXCLUDE_USERS 는 TARGET_TYPE='TAG' 로 동작한다 → 'EXEMPT' 값을 실기능화 가능 (1번)
+--   3) SET_USER_TAGS 가 EXCLUDE_USERS 설정을 덮어써 삭제한다 → 호출 순서 주의 (1번)
+--   4) GET_QUOTA_SCOPE 는 제외(exclusion) 항목을 표시하지 않는다 → 감사 불가 (1번)
+--   5) 한도 NULL 상태에서도 ADD_NOTIFICATION_THRESHOLD 가 성공한다(영구 미발동) (7번)
+--   6) [ALL-*] 등록 후에는 개별 객체 추가가 거부된다 → REMOVE 선행 필요 (3번)
+--   7) ADD_SHARED_RESOURCE 의 ALL 형태는 반환값이 None (성공 확인은 9-2 로) (3번)
+--   8) GET_USERS() 가 0행이면 GET_SPENDING_DETAILS_BY_USERS 도 0행 (9-5)
+--   9) metering 과 usage_history 는 수치가 일치하지 않는다 (9-7)
+--  10) 실사용량 재측정치(월 150~180cr/인)가 기존 옵션 A·B 한도보다 크다 (5번)
 -- =====================================================================

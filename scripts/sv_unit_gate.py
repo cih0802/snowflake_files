@@ -34,6 +34,30 @@ NOT_RATIO = {
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')
 
+# ── [2026-08-13 O68 신설] **필수 문안 존재** 축 (O67-B C1 = `P227` 재발 방지) ──────────
+# 🔴🔴 왜 필요한가: 이 게이트의 문안 관련 축은 **금지만** 봤다(`NUM_BAN`·`RETIRED_EXPR`).
+#   실측(O67-B): `REQUIRED`/`must_contain` 검색 **0건**. 그래서 O67 이 SV 5종에 발행한
+#   판정 4종 문안이 **다음 재배포에서 조용히 사라져도 게이트가 통과**하는 상태였다.
+#   ⇒ `P227`(「복구」와 「재발 방지」는 다른 작업이다)의 직접 적용: 발행물에는 그것을 지킬 축이 있어야 한다.
+# 판정 = 해당 SV 의 라이브 **SV 레벨 COMMENT + AI_SQL_GENERATION** 에 토큰이 전부 있어야 한다.
+#   ⚠️ 토큰은 **적재량과 무관한 규약어**만 쓴다 — 수치를 넣으면 규칙 7(`NUM_BAN`)과 정면 충돌한다.
+#   ⚠️ 발행을 의도적으로 회수할 때는 여기서 지운다(지우지 않으면 게이트가 잡는다 = 의도된 동작).
+REQUIRED_TEXT = {
+    'SV_MEMBER_MONTHLY': ['집계필요', '배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'],
+    'SV_MEMBER_EVENT':   ['집계필요', '배분규칙필요', '앵커_경합'],
+    'SV_SERVICE':        ['배분규칙필요', '앵커_경합', 'WIDE_GA_BEHAVIOR'],
+    'SV_DEV_ACHIEVEMENT': ['앵커_경합'],
+    'SV_MEMBER_FEE':     ['배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'],
+}
+
+
+def scan_required(sv, text):
+    """그 SV 에 등재된 필수 토큰 중 **없는 것**을 돌려준다."""
+    want = REQUIRED_TEXT.get(sv, [])
+    t = ' '.join(str(text or '').split())
+    return [w for w in want if w not in t]
+
+
 # ── COMMENT 수치 금지 토큰 검출 (05_0 COMMENT 작성 규약 (1) · 04 §6.9-(8) · 작업규칙 7) ──
 # 🔴 [2026-08-11 O59-D] main() 안에 있던 판정식을 모듈 수준으로 올렸다 — `--self-check` 로
 #   패턴 자체를 대조하려면 DB 접속 없이 호출 가능해야 한다(P106: 게이트는 대상이 있는 상태에서 돌린다).
@@ -293,9 +317,32 @@ def main():
     print(f"  ⇒ COMMENT 수치 금지 검사: SV {len(names)}종 · **검출 {len(cmt_bad)}건** · "
           f"의미 예외 {cmt_exempt}토큰 (baseline 비움 = 모든 검출이 실패 · O59-R 정리 종결)")
 
-    fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad)
+    # ── [2026-08-13 O68 신설] 필수 문안 존재 검사 (O67-B C1 · P227) ──────────────
+    # 🔴 이 축이 없던 동안 게이트는 **금지만** 봤다 ⇒ 발행 문안이 사라져도 통과했다.
+    #   판정 대상 = SV 레벨 COMMENT(`object_kind IS NULL`) + `CUSTOM_INSTRUCTION` AI_SQL.
+    #   ⚠️ 라이브 형상은 실측으로 확인했다 — `SEMANTIC_VIEW` 로 거르면 **공집합**이 되어
+    #      「전건 누락」이라는 반대 방향 오판이 난다(O68 착수 중 자기적발).
+    req_bad = []
+    cn5 = conn()
+    for s in names:
+        _, rows5 = q(f'desc semantic view {SCHEMA}.{s}', cn5)
+        blob = ' '.join(
+            str(v) for k, n, par, p, v in rows5
+            if v and ((k is None and p == 'COMMENT') or (k == 'CUSTOM_INSTRUCTION' and p == 'AI_SQL_GENERATION'))
+        )
+        miss = scan_required(s, blob)
+        if miss:
+            req_bad.append((s, miss))
+    cn5.close()
+    for s, miss in req_bad:
+        print(f"  🔴 필수 문안 소실: {s}  ({len(miss)}건) {', '.join(miss)}")
+    print(f"  ⇒ 필수 문안 검사: 등재 SV {len(REQUIRED_TEXT)}종 · 토큰 "
+          f"{sum(len(v) for v in REQUIRED_TEXT.values())}개 · 소실 {len(req_bad)}건")
+
+    fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad) + len(req_bad)
     print("\n" + ("🔴 게이트 실패" if fail else
-                  "✅ 게이트 통과 — 비율 metric 전량 percent · GRANT 전량 정상 · 폐기식 노출 0 · COMMENT 수치 0"))
+                  "✅ 게이트 통과 — 비율 metric 전량 percent · GRANT 전량 정상 · 폐기식 노출 0 · "
+                  "COMMENT 수치 0 · 필수 문안 전량 존재"))
     return 1 if fail else 0
 
 
@@ -358,13 +405,33 @@ def self_check():
             fails.append(f"  🔴 천단위 분할 오탐: {sorted(bad & forbid)} ▸ {text[:60]}")
         if not want <= bad:
             fails.append(f"  🔴 원 수치 미검출: want {sorted(want)} · got {sorted(bad)} ▸ {text[:60]}")
-    print(f"[sv_unit_gate 자기검사] 양성 {len(POS)} · 음성 {len(NEG)} · 분할금지 {len(NOSPLIT)} "
+
+    # ── [2026-08-13 O68 신설] 필수 문안 축 자기검사 (P106 — 음성 샘플을 먼저 통과시킨다) ──
+    sv0 = 'SV_MEMBER_MONTHLY'
+    full = ' '.join(REQUIRED_TEXT[sv0]) + ' 그 밖의 문안'
+    req_cases = [
+        ('ⓞ 전량 존재하면 통과(음성 샘플)', scan_required(sv0, full) == []),
+        ('ⓐ 토큰 1개 소실 검출', scan_required(sv0, full.replace('앵커_경합', '')) == ['앵커_경합']),
+        ('ⓑ 문안 전체 소실 검출(전건 보고)', scan_required(sv0, '') == REQUIRED_TEXT[sv0]),
+        ('ⓒ 미등재 SV 는 검사 대상이 아니다(오탐 0)', scan_required('SV_BUDGET', '') == []),
+        # 🔴 공백·개행 정규화 회귀 고정 — 이번 접기로 라이브 값에 **개행이 들어간다**.
+        #   정규화하지 않으면 토큰이 개행에 걸쳐 있을 때 조용히 「소실」로 보고된다.
+        ('ⓓ 개행이 섞여도 검출된다(접기 회귀 고정)',
+         scan_required(sv0, '\n'.join(REQUIRED_TEXT[sv0])) == []),
+    ]
+    for n, ok in req_cases:
+        if not ok:
+            fails.append(f'  🔴 필수 문안 축 자기검사 실패: {n}')
+
+    print(f"[sv_unit_gate 자기검사] 양성 {len(POS)} · 음성 {len(NEG)} · 분할금지 {len(NOSPLIT)} · "
+          f"필수문안 {len(req_cases)} "
           f"(오탐 대조군 {len(NEG) + len(NOSPLIT)} ≥ 양성 {len(POS)} · P177)")
     for f in fails:
         print(f)
     print("\n" + ("🔴 자기검사 실패" if fails else
                   f"✅ 자기검사 통과 — 양성 {len(POS)}/{len(POS)} 검출 · "
-                  f"음성 {len(NEG)}/{len(NEG)} 오탐 0 · 분할금지 {len(NOSPLIT)}/{len(NOSPLIT)}"))
+                  f"음성 {len(NEG)}/{len(NEG)} 오탐 0 · 분할금지 {len(NOSPLIT)}/{len(NOSPLIT)} · "
+                  f"필수문안 {len(req_cases)}/{len(req_cases)}"))
     return 1 if fails else 0
 
 

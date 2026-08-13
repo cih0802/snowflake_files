@@ -1,8 +1,8 @@
 {
- "_doc": "산출물 생성기 회귀 골든. 생성/대조 = scripts/test_generators.py (measure()). 🔴 수기 편집 금지 — 차이를 전량 규명한 뒤 --update-golden 으로 갱신한다.",
- "measured": "2026-08-10",
+ "_doc": "산출물 생성기 회귀 골든. 생성/대조 = scripts/test_generators.py (measure()). 🔴 수기 편집 금지 — 차이를 전량 규명한 뒤 --update-golden 으로 갱신한다. ⚠️ 최상위 `measured` 는 **이 골든을 갱신한 날**이고 산출물의 측정일이 아니다 — 산출물별 측정일은 metrics['art.measured'] 에 있다(판본 혼재가 여기서 드러난다).",
+ "measured": "2026-08-13",
  "metrics": {
-  "04.rows": 534,
+  "04.rows": 548,
   "05.field_sections": {
    "## 마케팅 보고서필드 → 지표#/GOLD": 73,
    "## 회원 보고서필드 → 지표#/GOLD": 434
@@ -17,18 +17,18 @@
   "06.rows": 1162,
   "06.verdicts": {
    "SILVER까지만": 380,
-   "노출됨(GOLD)": 116,
+   "노출됨(GOLD)": 118,
    "대체노출(파생)": 14,
-   "미노출(검토대상)": 588,
+   "미노출(검토대상)": 586,
    "제외(PII·본문·메타)": 51,
    "판정보류(동명이의)": 13
   },
   "07.exists": true,
-  "08.rows": 523,
+  "08.rows": 536,
   "08.status": {
    "DROPPED": 143,
    "NO_CONSUMER": 28,
-   "REFERENCED": 225,
+   "REFERENCED": 238,
    "SILVER_ONLY_CHAIN": 127
   },
   "09.anchors": {
@@ -97,10 +97,40 @@
    "형제팩트중복": 4
   },
   "_read_errors": [],
+  "art.files": {
+   "01_DW_현업활용가이드.md": true,
+   "03_GN_DW_개념도.html": true,
+   "04_컬럼계보매핑.csv": true,
+   "04_컬럼계보매핑.md": true,
+   "04_컬럼계보매핑.xlsx": true,
+   "05_지표GOLD매핑.csv": true,
+   "05_지표GOLD매핑.md": true,
+   "05_지표GOLD매핑.xlsx": true,
+   "06_BRONZE노출감사.csv": true,
+   "06_BRONZE노출감사.md": true,
+   "06_BRONZE노출감사.xlsx": true,
+   "07_코드체계_관문측정.md": true,
+   "08_SILVER→GOLD_보존율.csv": true,
+   "08_SILVER→GOLD_보존율.md": true,
+   "09_보고서필드_조립가능성.csv": true,
+   "09_보고서필드_조립가능성.md": true,
+   "09_섹션배너.json": true
+  },
+  "art.measured": {
+   "01_DW_현업활용가이드.md": "2026-08-11",
+   "03_GN_DW_개념도.html": "2026-08-13",
+   "04_컬럼계보매핑.md": "2026-08-11",
+   "05_지표GOLD매핑.md": "2026-08-11",
+   "06_BRONZE노출감사.md": "2026-08-13",
+   "07_코드체계_관문측정.md": "2026-08-13",
+   "08_SILVER→GOLD_보존율.md": "2026-08-13",
+   "09_보고서필드_조립가능성.md": "2026-08-13"
+  },
   "inv.desc_cells": 53,
   "inv.entries": 328,
   "inv.index_keys": 311,
   "inv.label_collisions": 14,
   "inv.unreachable": []
- }
+ },
+ "schema_fingerprint": "3581c638b4260bd9"
 }
