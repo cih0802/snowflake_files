@@ -80,6 +80,43 @@ CANON_CODE = [
     '10_dbt_pipeline/models/gold/_gold_ready_schema.yml',
 ]
 
+# ── [2026-08-13 O71-C] 🔴 분모 **일괄 확장** — `P229` 자기위반 청산(착수표 ③)
+#   경위: O68 이 `P229`(분모 = 조문의 적용 범위)를 신설했으나 **자기가 저작한 `scripts/*.py`
+#   4개와 골든 json 을 분모 밖에 뒀고**(§O68-B C1), O70 이 신설한 `o70_stale_scan.py` 도
+#   같은 상태였다(§O70-B 구조1). O70-B 는 **부분 확장이 「통과 착시」를 만든다**고 판단해
+#   1개만 넣지 않고 이 자리(착수표 ③)로 모았다 — 그 판단대로 **일괄로 닫는다.**
+#
+#   🔴 규약(신설): **우리가 저작·유지하는 파일은 만들 때 분모에 들어온다.**
+#      개별 파일명을 손으로 추가하는 방식은 새 파일이 생길 때마다 빠지므로(3세션 연속 재현)
+#      **glob 패턴**으로 선언한다 — 파일이 늘면 분모가 자동으로 따라온다.
+#   ⚠️ 제외 기준은 그대로다(`P130` — 항상 빨간 게이트는 무력화된다):
+#      자동 생성 산출물(`30_output_share/*.csv` 등) · `_archive` · `logs` · legacy·PoC.
+#   🟢 착수 전 실측(2026-08-13): 확장 후보 **149파일 전부 2,000자 초과 0 · 1,000자 관측 0**
+#      ⇒ 넓혀도 FAIL 이 나지 않는다(부분 확장이 아니라 일괄이므로 통과 착시가 아니다).
+CANON_GLOB = [
+    'scripts/*.py',                              # 게이트·생성기 (우리 저작)
+    'scripts/golden/*.json',                     # 회귀 기준선
+    'scripts/o51d_view_comments/*.py',
+    '99_provided_definition/07_추가_지표사전_*.md',  # O71 신설 정본
+    '10_dbt_pipeline/models/**/*.sql',            # dbt 모델
+    '10_dbt_pipeline/models/**/*.yml',            # dbt 스키마·테스트
+]
+
+
+def expand_globs(patterns=None):
+    """glob 패턴 → 정렬된 상대경로 목록. `_archive`·`logs`·`__pycache__` 는 제외한다."""
+    import glob as _glob
+    out = []
+    for pat in (patterns if patterns is not None else CANON_GLOB):
+        for p in _glob.glob(os.path.join(ROOT, pat), recursive=True):
+            rel = os.path.relpath(p, ROOT)
+            parts = rel.replace('\\', '/').split('/')
+            if any(x in ('_archive', 'logs', '__pycache__', 'target') for x in parts):
+                continue
+            if os.path.isfile(p):
+                out.append(rel)
+    return sorted(set(out))
+
 
 def read_lines(path):
     with io.open(path, encoding='utf-8') as fh:
@@ -217,7 +254,29 @@ def self_check():
                 print('      ', x)
         os.unlink(p)
     print('\n자기검사 %d/%d' % (ok, len(cases)))
-    return 0 if ok == len(cases) else 1
+
+    # ── [O71-C 신설] 분모 확장 축 — glob 이 조용히 0건이 되면 「통과」가 착시가 된다(`P106`).
+    #   각 패턴이 최소 1건을 잡는지, 제외 규칙이 실제로 작동하는지 검사한다.
+    gok, gtotal = 0, len(CANON_GLOB) + 2
+    for pat in CANON_GLOB:
+        hit = expand_globs([pat])
+        good = len(hit) > 0
+        gok += 1 if good else 0
+        print('%s glob %-42s %d건' % ('🟢' if good else '🔴', pat, len(hit)))
+    every = expand_globs()
+    excluded = [r for r in every
+                if any(x in ('_archive', 'logs', '__pycache__', 'target')
+                       for x in r.replace('\\', '/').split('/'))]
+    print('%s 제외 규칙(_archive·logs·__pycache__·target) 잔존 %d건(0이어야 한다)'
+          % ('🟢' if not excluded else '🔴', len(excluded)))
+    gok += 1 if not excluded else 0
+    dup = len(CANON) + len(CANON_CODE) + len(every) - len(set(CANON + CANON_CODE + every))
+    print('%s 정적 목록 ↔ glob 중복 %d건(중복은 무해하나 관측한다)' % ('🟢', dup))
+    gok += 1
+    print('분모 확장 자기검사 %d/%d · 총 대상 %d파일'
+          % (gok, gtotal, len(set(CANON + CANON_CODE + every))))
+
+    return 0 if (ok == len(cases) and gok == gtotal) else 1
 
 
 if __name__ == '__main__':
@@ -235,4 +294,4 @@ if __name__ == '__main__':
                 if f.endswith('.md'):
                     targets.append(os.path.relpath(os.path.join(base, f), ROOT))
         sys.exit(run(sorted(targets), '전 .md'))
-    sys.exit(run(CANON + CANON_CODE, '정본 + 코드 발행표면'))
+    sys.exit(run(CANON + CANON_CODE + expand_globs(), '정본 + 코드 발행표면 + glob 확장'))
