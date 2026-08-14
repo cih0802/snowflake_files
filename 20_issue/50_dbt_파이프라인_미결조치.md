@@ -1513,7 +1513,7 @@ O59-M 이 「위반 0 · 커버리지 632/632」로 판정한 상태에서도 �
 | FACT | ✅ 적재(활성 가능) | ❌ 전건 0/NULL (미적재) |
 |---|---|---|
 | FMM 37.8M→40.05M | PAID_FEE(36.09M)·BILLED_AMT·UNPAID_FLAG_BOM/EOM · ✅**DEV/STOP 건·명(A1: FME 롤업)** · ✅**HAS_BILLING(A1 출처플래그)** | UNPAID/ACTIVE/CUM/MONTH_END/YEAR_*·INCREASE 건·명·CAMPAIGN_UNPAID·STATUS_UNPAID·INBOUND/TS_CALL·REGULAR_FEE·SPONSOR/PAID_MONTHS·DEV_TYPE·밴드·JOIN_DATE·NEW_FLAG·NEW_EXISTING_FLAG·**CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK** |
-| FME 4.6M | DEV_CNT/MEMBERS·JOIN_DATE(3.59M)·STOP_CNT/MEMBERS/STOP_DATE(1.04M) · ✅**CAMPAIGN_SK(DEV 한정, 2026-07-30 실측: DEV 3,594,825/3,594,843 · 16,318종)** | UNPAID_STOP·**ORG_SK**·**CAMPAIGN_SK(STOP 한정 — 원천 `CRM_MEMBER_DISCONTINUE`에 캠페인 컬럼 부재)**·**SPONSORSHIP_SK·REASON_SK·NEW_EXISTING_FLAG** |
+| FME 4.6M | DEV_CNT/MEMBERS·JOIN_DATE(3.59M)·STOP_CNT/MEMBERS/STOP_DATE(1.04M) · ✅**CAMPAIGN_SK(DEV 한정, 2026-07-30 실측: DEV 3,594,825/3,594,843 · 16,318종)** · ✅**SPONSORSHIP_SK(DEV 한정 · 2026-08-06 O45 배선 · 2026-08-14 O73-C 실측 3,594,843/3,594,843)** | UNPAID_STOP·**ORG_SK**·**CAMPAIGN_SK(STOP 한정 — 원천 `CRM_MEMBER_DISCONTINUE`에 캠페인 컬럼 부재)**·**SPONSORSHIP_SK(STOP 한정 — 🔴 사유는 「원천 부재」가 아니다 · 아래 O73-C 주 참조)**·**REASON_SK·NEW_EXISTING_FLAG** |
 | FSE 38.5M | SEND_MEMBERS(전행)·SEND_STATUS(35.75M) · ✅**SERVICE_SK(A3: 요청마스터 조인, 99.97%)** · ✅**SEND_TITLE(A3)** | SUCCESS/FAIL/OPEN/LETTER/GIFT·**D5_\*(증액·서신·선물·중단)**·**CAMPAIGN_SK**(원천 캠페인 컬럼 부재) |
 | FEP 1.1M | MEMBER_DK·PARTICIPANT_CNT·EVENT_SK(76.8%) | TOTAL/RECRUIT_CNT·CAMPAIGN_SK·SPONSORSHIP_SK |
 | FBD 24.5K | BUDGET_ITEM_SK(전행)·PLAN_BUDGET_MONTH(7,290)·EXEC_BUDGET_ERP(3,244) | PLAN_BUDGET_YEAR·FUNDRAISING_COST·AD_COST·CAMPAIGN_SK·ORG_SK |
@@ -1523,6 +1523,42 @@ O59-M 이 「위반 0 · 커버리지 632/632」로 판정한 상태에서도 �
   - 🟡 **[2026-07-21 규명 결과]**: 원인은 대부분 **①(스캐폴드 컬럼 잔존, 로직 미구현)** — SILVER 원천은 입고돼 있음(FME dev/stop·CRM_SEND_REQUEST 등). 입고 대기(②/외부)는 소수(INBOUND/TS_CALL=C-8·FTG_BIZ=E-6·D5 코호트·FSE CAMPAIGN_SK[원천 캠페인 컬럼 부재]).
 - **조치**: (a) 좁은 Phase-1 SV는 실적재 컬럼만으로 배포(진행), (b) 본 항목 원인규명 후 measure/FK 적재 → SV metric 순차 활성(구조 DDL 불변). 
 - **검증 재현**: `SELECT COUNT_IF(<col><>0) FROM GN_DW.GOLD.<fact>` (상세 매트릭스 = `05_SV-Agent_ai/04_SV_설계.md §0.6`).
+
+### 🔴🔴 [신규 2026-08-14 O73-C] BLOCKING-5 표 정정 — `FME.SPONSORSHIP_SK(STOP)` 의 미적재 사유가 틀렸다
+
+> **왜 지금 나왔나**: O73 이 Agent 의 「후원사업변경+감액 산출 불가」를 반박하려고 FME 를 실측했는데,
+> 그 과정에서 위 표의 `SPONSORSHIP_SK` 기재가 **DEV/STOP 을 구별하지 않고 있었다**는 것이 드러났다.
+
+**① 표 기재는 절반이 stale 이었다** — 라이브 실측(2026-08-14):
+- FME 전체 **4,633,105**행 중 `SPONSORSHIP_SK<>0` = **3,594,843**(77.6%) = **DEV 전건**
+- **STOP 1,038,262행은 전건 0** ⇒ 「전건 0/NULL」은 **STOP 에만 참**이다
+- 배선 시점·주체 = `models/gold/fact/FACT_MEMBER_EVENT.sql` **179행** 주석 `[2026-08-06 O45] 후원사업 축 실배선`
+- STOP 분기는 같은 파일 **232행** 이 `0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK` 로 하드코딩한다
+
+**② 🔴 STOP 측 후원사업 원천은 존재한다 — 「원천 부재」는 캠페인 축의 사유이고 후원사업에는 적용되지 않는다**
+- 위 표의 `CAMPAIGN_SK(STOP 한정)` 주석 *"원천 `CRM_MEMBER_DISCONTINUE`에 캠페인 컬럼 부재"* 는 **캠페인에만 맞다.**
+  그 원천(`TM_MM_FDRM_MBER_SPNSR_DSCNTC`)에 후원사업 컬럼도 없는 것은 사실이나, **다른 원천에 있다.**
+- 실측 경로 = `TM_MM_FDRM_MBER_SPNSR`(약정 헤더) × `TM_MM_FDRM_MBER_SPNSR_BSNS`(`SPNSR_DSCNTC_YN='Y'` · `SPNSR_DSCNTC_DE`)
+- 도달률 = 중단 사건의 (회원, 중단일) 키 **970,486 / 973,207 = 99.72%** · 후원사업 **27종**
+
+**③ 🔴 그러나 그대로 조인하면 팬아웃한다 — 이것이 진짜 미적재 사유다**
+- matched pairs **1,517,797** / 키 **970,486** = **1.56배** ⇒ **한 중단일에 여러 사업이 동시 중단된다**
+- ⚠️ O45 주석 180~181행의 *"사건 grain 에서는 그 사건의 후원사업이 하나로 확정되므로 (O8) 귀속 규칙이 필요 없다"* 는
+  **DEV 에만 참**이다. STOP 에 그대로 적용하면 **O8 과 같은 유형의 팬아웃**이 조용히 생긴다.
+- ⇒ 🔴 **정확한 미적재 사유 = 「원천 부재」가 아니라 「동시중단 다중사업 귀속 규칙 미확정」이다.**
+
+**④ 조치 — 신설 결정 항목(현업)**
+- **선택지** = (a) 대표사업 1건 선정(최대 약정금액/최소 사업번호 등) (b) 최빈 (c) 사업 단위로 행 전개(grain 변경)
+  (d) STOP 후원사업 축 미노출 유지 + COMMENT 로 사유 명시
+- 🔴 **(c) 는 FME grain 을 바꾸므로 FMM 롤업(40,054,883 기준선)에 영향**한다 ⇒ 단독 결정 금지
+- 현재 처리 = **0 센티넬 유지 + 사유를 COMMENT 로 명시**(추론으로 채우지 않는다 · `P21`·`R2-7`)
+- 🟠 **B 계열에 편입** — 아래 `B2`(FMM SPONSORSHIP_SK)와 **같은 뿌리(O8 귀속 규칙)**이나 **다른 grain**이다.
+  B2 는 월×회원 grain 이고 이 건은 사건 grain 이다 ⇒ 규칙을 하나로 합치지 말 것.
+
+> 🔴 **이 절이 남긴 교훈** — 위 표는 「미적재」 열에 컬럼명만 적어 **DEV/STOP 처럼 부분 적재된 축을 표현할 수 없었다.**
+> `CAMPAIGN_SK` 는 `(DEV 한정)`·`(STOP 한정)` 표기 관례가 이미 있었는데 `SPONSORSHIP_SK` 에는 적용되지 않았다.
+> ⇒ **부분 적재 축은 반드시 한정 표기를 붙인다.** 붙이지 않으면 다음 세션이 「전건 0」으로 읽거나(O73 이 그랬다)
+> 반대로 「해소됐다」고 뭉갠다.
 
 ### 🟡 [2026-07-21 진행분] BLOCKING-5 A-계열 착수 (입고 데이터로 구현 가능분)
 > "할 수 있는 것만" 원칙: 입고된 SILVER 데이터로 결정·외부의존 없이 채울 수 있는 항목을 우선 구현. build 는 사용자 실행.

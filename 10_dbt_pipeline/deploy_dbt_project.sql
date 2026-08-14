@@ -113,7 +113,7 @@ ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
 
 -- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260811] SV검증 업데이트. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260813] default 반영. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
 
 -- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;

@@ -31,11 +31,25 @@ USE SCHEMA SANDBOX.TOOLS;
 
 ------------------------------------------------------------
 -- A.1 적재 전 스테이지 검증 (⚠️ 반드시 먼저 수행)
---   과거 사고: B 언로드 스테이지를 비우지 않아 이전 배치 파일이 살아남고,
---   그것이 로컬·C 스테이지까지 함께 옮겨져 아래 두 문제를 일으켰다.
---     (1) 컬럼 수 불일치 → 적재 실패 (BRONZE_ERP 62 vs 64)
---     (2) 동일 스키마 테이블 → 오류 없이 중복 적재
---   업로드 직후 여기서 잡아야 한다. 이상이 있으면 REMOVE 후 재업로드할 것.
+--   여기서 잡아야 하는 사고는 원인이 두 종류다. 둘 다 증상이 '컬럼 수 불일치'로 같아서
+--   혼동하기 쉬우므로 검사도 두 갈래로 나눠 둔다.
+--
+--   [원인 A] 스테이지에 이전 배치 파일이 남았다 (파일 쪽 문제)
+--     B 언로드 스테이지를 비우지 않아 구 스키마 파일이 살아남고, 그것이 로컬·C까지 옮겨졌다.
+--       (1) 구/신 파일 혼재    → 컬럼 수 불일치로 적재 실패
+--       (2) 동일 스키마 중복본 → 오류 없이 중복 적재 (더 위험)
+--     → 아래 (3) 에서 파일끼리 헤더·지문을 비교해 잡는다.
+--
+--   [원인 B] 04번 DDL 테이블 구조가 CSV와 다르다 (테이블 쪽 문제)
+--     B 언로드는 'SELECT * FROM GN_DW_SHARED...' 이므로 CSV 헤더가 곧 A 원본 구조다.
+--     즉 CSV 가 정본이고, 04번 DDL 이 원본과 어긋나면 그 테이블만 적재가 깨진다.
+--     실제 발생: 2026-08-13 BRONZE_ERP.BDGT_ACMSLT_LEDGER
+--       "Number of columns in file (65) does not match that of the corresponding table (64)"
+--       원인 — 04번 DDL 에 MNYRS_COST_DIV_YN(13번째, '모금비구분') 이 누락되어 있었다.
+--     ⚠️ (3) 은 파일끼리만 비교하므로 이 유형을 절대 잡지 못한다(모든 파일 헤더가 동일하므로 통과).
+--     → 아래 (4) 에서 CSV 헤더 ↔ 대상 테이블 컬럼을 대조해 잡는다. 이것이 유일한 방어선이다.
+--
+--   이상이 있으면: 원인 A → REMOVE 후 재업로드 / 원인 B → 04번 DDL 수정 후 테이블 재생성.
 ------------------------------------------------------------
 -- (1) 파일 수 대조: B의 언로드 결과(03번 6단계)와 같아야 함
 --     2026-08-12 B 기준값: 435 파일 / 52 폴더 / 3,427,853,840 B
@@ -86,6 +100,54 @@ ORDER BY 1;
 --   distinct_headers > 1 : 구/신 스키마 파일 혼재 → 구본 REMOVE
 --   dup_files > 0        : 동일 내용 파일 중복 → 하나만 남기고 REMOVE
 --   조치 후 (1)부터 다시 확인한다.
+
+-- (4) ⭐ CSV 헤더 ↔ 대상 테이블 구조 대조 — [원인 B] 방어선 (04번 DDL 오류 탐지)
+--     COPY 는 '위치 기반' 적재이므로 컬럼 수뿐 아니라 순서까지 같아야 한다.
+--     헤더 1줄만 읽으므로 (3) 과 달리 비용이 거의 없다. 04번 DDL 실행 직후 반드시 실행할 것.
+--     ⚠️ 04번 DDL(테이블 생성)이 끝난 뒤에 실행해야 한다. 미실행 시 전 테이블이 TABLE_MISSING 으로 나온다.
+WITH stage_hdr AS (
+  SELECT SPLIT_PART(METADATA$FILENAME, '/', 1)                              AS sch,
+         SPLIT_PART(METADATA$FILENAME, '/', 2)                              AS tbl,
+         MIN(CASE WHEN METADATA$FILE_ROW_NUMBER = 1 THEN $1::VARCHAR END)   AS header_line
+  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE
+       (FILE_FORMAT => 'SANDBOX.TOOLS.FF_CSV_PEEK', PATTERN => '.*[.]csv[.]gz')
+  GROUP BY 1, 2
+),
+f AS (
+  SELECT sch, tbl,
+         ARRAY_SIZE(SPLIT(header_line, ','))              AS file_cols,
+         UPPER(REPLACE(header_line, '"', ''))             AS file_col_list
+  FROM stage_hdr
+),
+t AS (
+  SELECT table_schema AS sch, table_name AS tbl,
+         COUNT(*)                                                                       AS tbl_cols,
+         UPPER(LISTAGG(column_name, ',') WITHIN GROUP (ORDER BY ordinal_position))       AS tbl_col_list
+  FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+  WHERE table_schema LIKE 'BRONZE_%'
+  GROUP BY 1, 2
+)
+SELECT COALESCE(f.sch, t.sch) AS sch,
+       COALESCE(f.tbl, t.tbl) AS tbl,
+       f.file_cols, t.tbl_cols,
+       CASE
+         WHEN t.tbl_cols IS NULL                        THEN 'TABLE_MISSING — 04번 DDL 미실행/테이블명 불일치'
+         WHEN f.file_cols IS NULL                       THEN 'FILE_MISSING — 스테이지 폴더 없음 (0행 테이블이면 정상)'
+         WHEN f.file_cols <> t.tbl_cols                 THEN 'COUNT_MISMATCH — 04번 DDL 컬럼 누락/추가'
+         WHEN f.file_col_list <> t.tbl_col_list          THEN 'ORDER_OR_NAME_MISMATCH — 위치 적재 시 값 밀림 위험'
+       END AS diagnosis,
+       f.file_col_list, t.tbl_col_list
+FROM f FULL OUTER JOIN t ON f.sch = t.sch AND f.tbl = t.tbl
+WHERE f.file_cols     IS DISTINCT FROM t.tbl_cols
+   OR f.file_col_list IS DISTINCT FROM t.tbl_col_list
+ORDER BY 1, 2;
+-- → 기대 결과: BRONZE_GA4 / SYNC_ERR_INFO 의 FILE_MISSING 1건만 나온다 (원본 A도 0행 → 정상).
+--   COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 나오면 절대 적재하지 말고 04번 DDL 을 먼저 고친다.
+--     · 정본은 50_handoff/02_1_A DB정보.sql (A 계정 GET_DDL 실측) 이다.
+--     · file_col_list 와 tbl_col_list 를 나란히 놓고 어긋나는 지점을 찾는다.
+--     · 수정 후 해당 테이블만 CREATE OR REPLACE 하고 이 쿼리를 다시 돌린다.
+--   TABLE_MISSING 이 다수면 04번 DDL 자체를 실행하지 않은 것이다.
+--   ORDER_OR_NAME_MISMATCH 는 COPY 가 오류 없이 통과할 수 있어 가장 위험하다. 반드시 해소할 것.
 
 ------------------------------------------------------------
 -- A.2 적재용 파일 포맷 생성 (NULL 토큰 \\N 3글자 대응)
@@ -145,10 +207,15 @@ $$;
 --   프로시저는 INFORMATION_SCHEMA 를 순회하므로 04번 DDL로 생성된 테이블 수를 그대로 따른다.
 --   기대 반환값: ERP 'loaded tables: 1' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 45'
 --   ⚠️ CRM 이 43 으로 나오면 04번 DDL 2판(51테이블)을 실행한 것이다. 3판으로 다시 생성할 것.
+--   ⚠️ 선행 조건: A.1 (4) 가 'FILE_MISSING 1건(BRONZE_GA4.SYNC_ERR_INFO)' 외 0건이어야 한다.
+--      COUNT_MISMATCH 가 남아 있으면 해당 테이블에서 ON_ERROR=ABORT_STATEMENT 로 CALL 전체가 중단된다.
+--        예) 2026-08-13 BRONZE_ERP — file 65 vs table 64 로 프로시저 21행(EXECUTE IMMEDIATE)에서 실패.
+--   ⚠️ 중단 후 재실행은 안전하다. COPY 는 FORCE=TRUE 가 없으면 이미 적재된 파일을 건너뛴다(적재 메타데이터 64일).
+--      단, 실패한 테이블을 CREATE OR REPLACE 로 다시 만들었다면 그 테이블의 메타데이터도 초기화되어 정상 재적재된다.
 ------------------------------------------------------------
-CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
-CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_CRM');
+CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
+CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
 -- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GA4');   -- 사용 금지 (위 주석 참조)
 
 ------------------------------------------------------------
