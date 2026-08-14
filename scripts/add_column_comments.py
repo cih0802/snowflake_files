@@ -94,7 +94,7 @@ for ln in lines:
             indent, q1, col, q2, sp, typ, comma = cm.groups()
             colU = col.upper()
             desc = None
-            if cur_schema == "BRONZE_GA4":
+            if cur_schema == "BRONZE_BIGQUERY":
                 desc = ga4.get(col) or ga4.get(colU)
             else:
                 desc = pair.get((cur_table, colU)) or meta.get(colU) or fallback.get(colU)

@@ -125265,3 +125265,629 @@ select
 [0m21:47:24.897380 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 189.02916, "process_in_blocks": "0", "process_kernel_time": 3.3, "process_mem_max_rss": "586208", "process_out_blocks": "0", "process_user_time": 41.8}
 [0m21:47:24.898027 [debug] [Dummy-1   ]: Command `cli build` succeeded at 21:47:24.897764 after 189.03 seconds
 [0m21:47:24.898602 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 20:53:00.986788 | c6591046-c27a-4dd0-b97f-f4f4e1f8e0e8 ==============================
+[0m20:53:00.986788 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m20:53:00.987719 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt/', 'version_check': 'True', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'warn_error': 'None', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'invocation_command': 'dbt ', 'log_format': 'default', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m20:53:01.282572 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m20:53:01.832992 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m20:53:02.206857 [info ] [Dummy-1   ]: Unable to do partial parsing because profile has changed
+[0m20:53:05.977941 [info ] [Dummy-1   ]: Performance info: /tmp/dbt/target/perf_info.json
+[0m20:53:06.269639 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:53:06.272888 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:53:06.274715 [debug] [Dummy-1   ]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 5.3668003, "process_in_blocks": "0", "process_kernel_time": 1.42, "process_mem_max_rss": "469700", "process_out_blocks": "0", "process_user_time": 8.11}
+[0m20:53:06.275357 [debug] [Dummy-1   ]: Command `cli parse` succeeded at 20:53:06.275095 after 5.37 seconds
+[0m20:53:06.275945 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 20:53:50.558358 | a6ccbb06-f1d7-465d-8456-f4aa66e4e5f0 ==============================
+[0m20:53:50.558358 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m20:53:50.559354 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt/', 'fail_fast': 'False', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'warn_error': 'None', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt ', 'introspect': 'True', 'log_format': 'default', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m20:53:50.862522 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m20:53:51.410962 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m20:53:51.895008 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m20:53:51.895639 [debug] [Dummy-1   ]: Partial parsing enabled, no changes found, skipping parsing
+[0m20:53:52.255366 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:53:52.259086 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:53:52.341935 [info ] [Dummy-1   ]: Found 88 models, 334 data tests, 40 sources, 485 macros
+[0m20:53:52.350498 [info ] [Dummy-1   ]: 
+[0m20:53:52.351122 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m20:53:52.351650 [info ] [Dummy-1   ]: 
+[0m20:53:52.352482 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m20:53:52.364503 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m20:53:52.366563 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m20:53:52.368645 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m20:53:52.471647 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:53:52.472464 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:53:52.473164 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:53:52.473790 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:53:52.474331 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:53:52.474814 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:53:52.475300 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:53:52.475746 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:53:52.476181 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:53:52.912013 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.436 seconds
+[0m20:53:52.916760 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:53:52.917355 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m20:53:52.954100 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.478 seconds
+[0m20:53:52.956303 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:53:52.956851 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m20:53:52.989900 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.514 seconds
+[0m20:53:52.991990 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:53:52.992571 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m20:53:53.053094 [debug] [ThreadPool]: SQL status: SUCCESS 5 in 0.096 seconds
+[0m20:53:53.055401 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:53:53.055923 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:53:53.105343 [debug] [ThreadPool]: SQL status: SUCCESS 49 in 0.187 seconds
+[0m20:53:53.109159 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:53:53.109763 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:53:53.152528 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.096 seconds
+[0m20:53:53.193172 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.083 seconds
+[0m20:53:53.278845 [debug] [ThreadPool]: SQL status: SUCCESS 39 in 0.286 seconds
+[0m20:53:53.283049 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:53:53.283648 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:53:53.394138 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.110 seconds
+[0m20:53:53.419266 [debug] [Thread-2 (]: Began running node model.gn_dw_silver.GA4_DEVICE
+[0m20:53:53.419967 [debug] [Thread-3 (]: Began running node model.gn_dw_silver.GA4_EVENT
+[0m20:53:53.420606 [debug] [Thread-4 (]: Began running node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:53:53.421227 [debug] [Thread-5 (]: Began running node model.gn_dw_silver.GA4_IDENTITY
+[0m20:53:53.422015 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_SILVER, now model.gn_dw_silver.GA4_DEVICE)
+[0m20:53:53.423061 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly list_GN_DW_OPS, now model.gn_dw_silver.GA4_EVENT)
+[0m20:53:53.423702 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now model.gn_dw_silver.GA4_EVENT_DIM)
+[0m20:53:53.424420 [debug] [Thread-5 (]: Acquiring new snowflake connection 'model.gn_dw_silver.GA4_IDENTITY'
+[0m20:53:53.424970 [debug] [Thread-2 (]: Began compiling node model.gn_dw_silver.GA4_DEVICE
+[0m20:53:53.425536 [debug] [Thread-3 (]: Began compiling node model.gn_dw_silver.GA4_EVENT
+[0m20:53:53.426135 [debug] [Thread-4 (]: Began compiling node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:53:53.426645 [debug] [Thread-5 (]: Began compiling node model.gn_dw_silver.GA4_IDENTITY
+[0m20:53:53.441480 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.GA4_DEVICE"
+[0m20:53:53.448445 [debug] [Thread-3 (]: Using snowflake connection "model.gn_dw_silver.GA4_EVENT"
+[0m20:53:53.454782 [debug] [Thread-4 (]: Using snowflake connection "model.gn_dw_silver.GA4_EVENT_DIM"
+[0m20:53:53.460956 [debug] [Thread-5 (]: Using snowflake connection "model.gn_dw_silver.GA4_IDENTITY"
+[0m20:53:53.461666 [debug] [Thread-2 (]: On model.gn_dw_silver.GA4_DEVICE: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_DEVICE"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:53:53.462400 [debug] [Thread-3 (]: On model.gn_dw_silver.GA4_EVENT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_EVENT"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:53:53.463033 [debug] [Thread-4 (]: On model.gn_dw_silver.GA4_EVENT_DIM: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_EVENT_DIM"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:53:53.463639 [debug] [Thread-5 (]: On model.gn_dw_silver.GA4_IDENTITY: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_IDENTITY"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:53:53.464237 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:53:53.464734 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:53:53.465242 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:53:53.465807 [debug] [Thread-5 (]: Opening a new connection, currently in state init
+[0m20:53:54.837925 [debug] [Thread-2 (]: SQL status: SUCCESS 2 in 1.373 seconds
+[0m20:53:54.839942 [debug] [Thread-2 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_DEVICE"
+[0m20:53:54.840831 [debug] [Thread-2 (]: Began executing node model.gn_dw_silver.GA4_DEVICE
+[0m20:53:54.841841 [debug] [Thread-2 (]: Finished running node model.gn_dw_silver.GA4_DEVICE
+[0m20:53:54.842498 [debug] [Thread-2 (]: Began running node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:53:54.843516 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_DEVICE, now model.gn_dw_silver.GA4_TRAFFIC_SOURCE)
+[0m20:53:54.844100 [debug] [Thread-2 (]: Began compiling node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:53:54.850465 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"
+[0m20:53:54.851142 [debug] [Thread-2 (]: On model.gn_dw_silver.GA4_TRAFFIC_SOURCE: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:53:54.851728 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:53:54.856301 [debug] [Thread-5 (]: SQL status: SUCCESS 2 in 1.390 seconds
+[0m20:53:54.858272 [debug] [Thread-5 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_IDENTITY"
+[0m20:53:54.859167 [debug] [Thread-5 (]: Began executing node model.gn_dw_silver.GA4_IDENTITY
+[0m20:53:54.860165 [debug] [Thread-5 (]: Finished running node model.gn_dw_silver.GA4_IDENTITY
+[0m20:53:54.860836 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:53:54.861928 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_IDENTITY, now test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc)
+[0m20:53:54.862469 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:53:54.877762 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc"
+[0m20:53:54.878696 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:53:54.879563 [debug] [Thread-4 (]: SQL status: SUCCESS 2 in 1.414 seconds
+[0m20:53:54.880586 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:53:54.882991 [debug] [Thread-4 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_EVENT_DIM"
+[0m20:53:54.884186 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:53:54.885390 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc, now test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d)
+[0m20:53:54.886189 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:53:54.886769 [debug] [Thread-4 (]: Began executing node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:53:54.893353 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d"
+[0m20:53:54.894525 [debug] [Thread-4 (]: Finished running node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:53:54.895423 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:53:54.896632 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_EVENT_DIM, now test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46)
+[0m20:53:54.897180 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:53:54.897846 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:53:54.898810 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:53:54.911693 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46"
+[0m20:53:54.912456 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:53:54.913643 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d, now test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb)
+[0m20:53:54.914318 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:53:54.914862 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:53:54.915758 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:53:54.929430 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb"
+[0m20:53:54.931418 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:53:54.932468 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:53:54.975920 [debug] [Thread-3 (]: SQL status: SUCCESS 2 in 1.511 seconds
+[0m20:53:54.977935 [debug] [Thread-3 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_EVENT"
+[0m20:53:54.978842 [debug] [Thread-3 (]: Began executing node model.gn_dw_silver.GA4_EVENT
+[0m20:53:54.979734 [debug] [Thread-3 (]: Finished running node model.gn_dw_silver.GA4_EVENT
+[0m20:53:54.980741 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:53:54.981302 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:53:54.981945 [debug] [Thread-3 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:53:54.982669 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46, now test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0)
+[0m20:53:54.983388 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb, now test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400)
+[0m20:53:54.984037 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_EVENT, now test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a)
+[0m20:53:54.984590 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:53:54.985123 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:53:54.985627 [debug] [Thread-3 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:53:54.992282 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0"
+[0m20:53:54.998678 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400"
+[0m20:53:55.005204 [debug] [Thread-3 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a"
+[0m20:53:55.006555 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:53:55.007449 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:53:55.008630 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:53:55.009197 [debug] [Thread-3 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:53:55.010151 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:53:55.010834 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:53:55.011803 [debug] [Thread-3 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:53:55.012457 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:53:55.013215 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0, now test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6)
+[0m20:53:55.014316 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400, now test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb)
+[0m20:53:55.015723 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:53:55.016345 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:53:55.024323 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6"
+[0m20:53:55.032800 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb"
+[0m20:53:55.034046 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:53:55.035153 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:53:55.035741 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:53:55.036807 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:53:55.817185 [debug] [Thread-2 (]: SQL status: SUCCESS 2 in 0.965 seconds
+[0m20:53:55.819124 [debug] [Thread-2 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"
+[0m20:53:55.819981 [debug] [Thread-2 (]: Began executing node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:53:55.820823 [debug] [Thread-2 (]: Finished running node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:53:55.823745 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m20:53:55.824620 [debug] [Dummy-1   ]: Connection 'model.gn_dw_silver.GA4_TRAFFIC_SOURCE' was properly closed.
+[0m20:53:55.825353 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6' was properly closed.
+[0m20:53:55.825891 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a' was properly closed.
+[0m20:53:55.826353 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb' was properly closed.
+[0m20:53:55.828628 [debug] [Dummy-1   ]: Command end result
+[0m20:53:56.039112 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:53:56.042448 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:53:56.050419 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m20:53:56.050938 [debug] [Dummy-1   ]: Excluded node 'GA4_DEVICE' from results
+[0m20:53:56.051360 [debug] [Dummy-1   ]: Excluded node 'GA4_IDENTITY' from results
+[0m20:53:56.051742 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_DEVICE_DEVICE_TYPE' from results
+[0m20:53:56.052129 [debug] [Dummy-1   ]: Excluded node 'GA4_EVENT_DIM' from results
+[0m20:53:56.052495 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_IDENTITY_USER_PSEUDO_ID' from results
+[0m20:53:56.052887 [debug] [Dummy-1   ]: Excluded node 'relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_' from results
+[0m20:53:56.053257 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_DIM_EVENT_NAME' from results
+[0m20:53:56.053632 [debug] [Dummy-1   ]: Excluded node 'GA4_EVENT' from results
+[0m20:53:56.054103 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_BATCH_ORDERING_ID' from results
+[0m20:53:56.054470 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_EVENT_NAME' from results
+[0m20:53:56.054833 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_EVENT_TIMESTAMP' from results
+[0m20:53:56.055184 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_USER_PSEUDO_ID' from results
+[0m20:53:56.055581 [debug] [Dummy-1   ]: Excluded node 'relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_' from results
+[0m20:53:56.055953 [debug] [Dummy-1   ]: Excluded node 'GA4_TRAFFIC_SOURCE' from results
+[0m20:53:56.057635 [debug] [Dummy-1   ]: Resource report: {"command_name": "compile", "command_success": true, "command_wall_clock_time": 5.5808926, "process_in_blocks": "0", "process_kernel_time": 1.41, "process_mem_max_rss": "467176", "process_out_blocks": "0", "process_user_time": 5.45}
+[0m20:53:56.058317 [debug] [Dummy-1   ]: Command `cli compile` succeeded at 20:53:56.058070 after 5.58 seconds
+[0m20:53:56.058842 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 20:55:24.514535 | 2bdb3575-0374-42d6-bb1c-2712f3ea18b6 ==============================
+[0m20:55:24.514535 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m20:55:24.515606 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt/', 'version_check': 'True', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'fail_fast': 'False', 'warn_error': 'None', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'introspect': 'True', 'invocation_command': 'dbt ', 'target_path': 'None', 'log_format': 'default', 'send_anonymous_usage_stats': 'False'}
+[0m20:55:24.833932 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m20:55:25.401114 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m20:55:25.903353 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m20:55:25.904159 [debug] [Dummy-1   ]: Partial parsing enabled, no changes found, skipping parsing
+[0m20:55:26.278988 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:55:26.283104 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:55:26.367601 [info ] [Dummy-1   ]: Found 88 models, 334 data tests, 40 sources, 485 macros
+[0m20:55:26.385520 [info ] [Dummy-1   ]: 
+[0m20:55:26.386232 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m20:55:26.386783 [info ] [Dummy-1   ]: 
+[0m20:55:26.387696 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m20:55:26.400324 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m20:55:26.402609 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m20:55:26.404933 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m20:55:26.510675 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:55:26.511574 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:55:26.512562 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:55:26.513231 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:55:26.513875 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:55:26.514459 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:55:26.515016 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:55:26.515539 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:55:26.516159 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:55:26.951132 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.435 seconds
+[0m20:55:26.952076 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.437 seconds
+[0m20:55:26.952941 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.437 seconds
+[0m20:55:26.958037 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:55:26.960386 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:55:26.962520 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:55:26.963120 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m20:55:26.963676 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m20:55:26.964290 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m20:55:27.048429 [debug] [ThreadPool]: SQL status: SUCCESS 5 in 0.083 seconds
+[0m20:55:27.051031 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:55:27.051640 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:55:27.085934 [debug] [ThreadPool]: SQL status: SUCCESS 49 in 0.121 seconds
+[0m20:55:27.090231 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:55:27.090840 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:55:27.094205 [debug] [ThreadPool]: SQL status: SUCCESS 39 in 0.129 seconds
+[0m20:55:27.097608 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:55:27.098207 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:55:27.111036 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.059 seconds
+[0m20:55:27.174229 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.083 seconds
+[0m20:55:27.175104 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.076 seconds
+[0m20:55:27.219583 [debug] [Thread-2 (]: Began running node model.gn_dw_silver.GA4_DEVICE
+[0m20:55:27.220478 [debug] [Thread-3 (]: Began running node model.gn_dw_silver.GA4_EVENT
+[0m20:55:27.221188 [debug] [Thread-4 (]: Began running node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:55:27.221831 [debug] [Thread-5 (]: Began running node model.gn_dw_silver.GA4_IDENTITY
+[0m20:55:27.222602 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_OPS, now model.gn_dw_silver.GA4_DEVICE)
+[0m20:55:27.223355 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now model.gn_dw_silver.GA4_EVENT)
+[0m20:55:27.224149 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly list_GN_DW_SILVER, now model.gn_dw_silver.GA4_EVENT_DIM)
+[0m20:55:27.225020 [debug] [Thread-5 (]: Acquiring new snowflake connection 'model.gn_dw_silver.GA4_IDENTITY'
+[0m20:55:27.225672 [debug] [Thread-2 (]: Began compiling node model.gn_dw_silver.GA4_DEVICE
+[0m20:55:27.226237 [debug] [Thread-3 (]: Began compiling node model.gn_dw_silver.GA4_EVENT
+[0m20:55:27.226817 [debug] [Thread-4 (]: Began compiling node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:55:27.227829 [debug] [Thread-5 (]: Began compiling node model.gn_dw_silver.GA4_IDENTITY
+[0m20:55:27.243526 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.GA4_DEVICE"
+[0m20:55:27.251025 [debug] [Thread-3 (]: Using snowflake connection "model.gn_dw_silver.GA4_EVENT"
+[0m20:55:27.257732 [debug] [Thread-4 (]: Using snowflake connection "model.gn_dw_silver.GA4_EVENT_DIM"
+[0m20:55:27.264494 [debug] [Thread-5 (]: Using snowflake connection "model.gn_dw_silver.GA4_IDENTITY"
+[0m20:55:27.265269 [debug] [Thread-2 (]: On model.gn_dw_silver.GA4_DEVICE: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_DEVICE"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:55:27.265956 [debug] [Thread-3 (]: On model.gn_dw_silver.GA4_EVENT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_EVENT"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:55:27.266603 [debug] [Thread-4 (]: On model.gn_dw_silver.GA4_EVENT_DIM: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_EVENT_DIM"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:55:27.267251 [debug] [Thread-5 (]: On model.gn_dw_silver.GA4_IDENTITY: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_IDENTITY"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:55:27.268017 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:55:27.268661 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:55:27.269212 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:55:27.269748 [debug] [Thread-5 (]: Opening a new connection, currently in state init
+[0m20:55:28.359187 [debug] [Thread-3 (]: SQL status: SUCCESS 2 in 1.090 seconds
+[0m20:55:28.361452 [debug] [Thread-3 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_EVENT"
+[0m20:55:28.362348 [debug] [Thread-4 (]: SQL status: SUCCESS 2 in 1.093 seconds
+[0m20:55:28.364917 [debug] [Thread-4 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_EVENT_DIM"
+[0m20:55:28.365685 [debug] [Thread-3 (]: Began executing node model.gn_dw_silver.GA4_EVENT
+[0m20:55:28.366608 [debug] [Thread-2 (]: SQL status: SUCCESS 2 in 1.099 seconds
+[0m20:55:28.368194 [debug] [Thread-3 (]: Finished running node model.gn_dw_silver.GA4_EVENT
+[0m20:55:28.368929 [debug] [Thread-4 (]: Began executing node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:55:28.370814 [debug] [Thread-2 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_DEVICE"
+[0m20:55:28.371565 [debug] [Thread-3 (]: Began running node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:55:28.373121 [debug] [Thread-4 (]: Finished running node model.gn_dw_silver.GA4_EVENT_DIM
+[0m20:55:28.374292 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_EVENT, now model.gn_dw_silver.GA4_TRAFFIC_SOURCE)
+[0m20:55:28.374918 [debug] [Thread-2 (]: Began executing node model.gn_dw_silver.GA4_DEVICE
+[0m20:55:28.375732 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:55:28.376876 [debug] [Thread-3 (]: Began compiling node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:55:28.377891 [debug] [Thread-2 (]: Finished running node model.gn_dw_silver.GA4_DEVICE
+[0m20:55:28.378671 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_EVENT_DIM, now test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0)
+[0m20:55:28.385854 [debug] [Thread-3 (]: Using snowflake connection "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"
+[0m20:55:28.386735 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:55:28.387652 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:55:28.388416 [debug] [Thread-3 (]: On model.gn_dw_silver.GA4_TRAFFIC_SOURCE: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"} */
+-- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
+    SELECT table_name
+    FROM GN_DW.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_BIGQUERY'
+      AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
+      AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '20000101' AND '99991231'
+    ORDER BY table_name
+[0m20:55:28.389236 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly model.gn_dw_silver.GA4_DEVICE, now test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400)
+[0m20:55:28.406458 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0"
+[0m20:55:28.407214 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:55:28.407990 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:55:28.415081 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:55:28.416112 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400"
+[0m20:55:28.417218 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0
+[0m20:55:28.418486 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:55:28.419229 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:55:28.420103 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_BATCH_ORDERING_ID.edab4c10c0, now test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a)
+[0m20:55:28.421151 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400
+[0m20:55:28.421777 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:55:28.422485 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:55:28.431235 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a"
+[0m20:55:28.432171 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_EVENT_NAME.fccbf98400, now test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6)
+[0m20:55:28.433305 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:55:28.433912 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:55:28.440588 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6"
+[0m20:55:28.441979 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a
+[0m20:55:28.443750 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:55:28.444629 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:55:28.445500 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_EVENT_TIMESTAMP.09fca07a3a, now test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb)
+[0m20:55:28.446508 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6
+[0m20:55:28.447144 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:55:28.447884 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:55:28.454896 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb"
+[0m20:55:28.455761 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_USER_PSEUDO_ID.5a2026f8f6, now test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb)
+[0m20:55:28.456981 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:55:28.457799 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:55:28.470365 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb"
+[0m20:55:28.471509 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb
+[0m20:55:28.481214 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:55:28.482026 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:55:28.482822 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_EVENT_DIM_EVENT_NAME.19239bd9cb, now test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc)
+[0m20:55:28.483809 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb
+[0m20:55:28.484560 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:55:28.492195 [debug] [Thread-5 (]: SQL status: SUCCESS 2 in 1.222 seconds
+[0m20:55:28.492824 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc"
+[0m20:55:28.494805 [debug] [Thread-5 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_IDENTITY"
+[0m20:55:28.495846 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:55:28.497186 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc
+[0m20:55:28.497923 [debug] [Thread-5 (]: Began executing node model.gn_dw_silver.GA4_IDENTITY
+[0m20:55:28.499175 [debug] [Thread-5 (]: Finished running node model.gn_dw_silver.GA4_IDENTITY
+[0m20:55:28.500252 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:55:28.500884 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:55:28.501713 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_.ce370c84eb, now test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d)
+[0m20:55:28.502435 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_GA4_DEVICE_DEVICE_TYPE.8e700b74bc, now test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46)
+[0m20:55:28.503054 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:55:28.503615 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:55:28.511829 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d"
+[0m20:55:28.520911 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46"
+[0m20:55:28.522208 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:55:28.522972 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:55:28.523898 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d
+[0m20:55:28.524961 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46
+[0m20:55:29.474151 [debug] [Thread-3 (]: SQL status: SUCCESS 2 in 1.067 seconds
+[0m20:55:29.476320 [debug] [Thread-3 (]: Writing injected SQL for node "model.gn_dw_silver.GA4_TRAFFIC_SOURCE"
+[0m20:55:29.477315 [debug] [Thread-3 (]: Began executing node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:55:29.478320 [debug] [Thread-3 (]: Finished running node model.gn_dw_silver.GA4_TRAFFIC_SOURCE
+[0m20:55:29.482424 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m20:55:29.483506 [debug] [Dummy-1   ]: Connection 'model.gn_dw_silver.GA4_TRAFFIC_SOURCE' was properly closed.
+[0m20:55:29.484215 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.not_null_GA4_IDENTITY_USER_PSEUDO_ID.e590c09e0d' was properly closed.
+[0m20:55:29.484780 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_.c7b0de4b46' was properly closed.
+[0m20:55:29.485286 [debug] [Dummy-1   ]: Connection 'model.gn_dw_silver.GA4_IDENTITY' was properly closed.
+[0m20:55:29.487539 [debug] [Dummy-1   ]: Command end result
+[0m20:55:29.717793 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:55:29.721766 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:55:29.730696 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m20:55:29.731304 [debug] [Dummy-1   ]: Excluded node 'GA4_EVENT_DIM' from results
+[0m20:55:29.731811 [debug] [Dummy-1   ]: Excluded node 'GA4_DEVICE' from results
+[0m20:55:29.732369 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_BATCH_ORDERING_ID' from results
+[0m20:55:29.732804 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_EVENT_NAME' from results
+[0m20:55:29.733209 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_EVENT_TIMESTAMP' from results
+[0m20:55:29.733589 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_USER_PSEUDO_ID' from results
+[0m20:55:29.733992 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_EVENT_DIM_EVENT_NAME' from results
+[0m20:55:29.734400 [debug] [Dummy-1   ]: Excluded node 'relationships_GA4_EVENT_EVENT_NAME__EVENT_NAME__ref_GA4_EVENT_DIM_' from results
+[0m20:55:29.734815 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_DEVICE_DEVICE_TYPE' from results
+[0m20:55:29.735213 [debug] [Dummy-1   ]: Excluded node 'GA4_IDENTITY' from results
+[0m20:55:29.735599 [debug] [Dummy-1   ]: Excluded node 'not_null_GA4_IDENTITY_USER_PSEUDO_ID' from results
+[0m20:55:29.736075 [debug] [Dummy-1   ]: Excluded node 'relationships_GA4_IDENTITY_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_' from results
+[0m20:55:29.736523 [debug] [Dummy-1   ]: Excluded node 'GA4_TRAFFIC_SOURCE' from results
+[0m20:55:29.737652 [info ] [Dummy-1   ]: Compiled node 'GA4_EVENT' is:
+-- GA4_EVENT: 이벤트 팩트 소스 (FLATTEN + param 승격 + 07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
+-- Co-authored with CoCo
+-- 단방향: BRONZE_BIGQUERY(매크로)만 참조. n_id>=2=CONFLICT(미채움). PK GROUP BY dedup.
+
+WITH ev AS (
+    SELECT
+        e.user_pseudo_id                                                     AS user_pseudo_id,
+        e.event_timestamp                                                    AS event_timestamp,
+        e.event_name                                                         AS event_name,
+        e.batch_ordering_id                                                  AS batch_ordering_id,
+        e.event_date                                                         AS event_date,
+        e.user_id                                                            AS user_id,
+        e.device                                                             AS device,
+        e.geo                                                                AS geo,
+        e.platform                                                           AS platform,
+        e.is_active_user                                                     AS is_active_user,
+        e.session_traffic_source_last_click                                  AS stlc,
+        MAX(IFF(p.value:key::STRING='ga_session_id',     p.value:value:int_value::NUMBER, NULL)) AS ga_session_id,
+        MAX(IFF(p.value:key::STRING='ga_session_number', p.value:value:int_value::NUMBER, NULL)) AS ga_session_number,
+        MAX(IFF(p.value:key::STRING='session_engaged',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS session_engaged,
+        MAX(IFF(p.value:key::STRING='engagement_time_msec', p.value:value:int_value::NUMBER, NULL)) AS engagement_time_msec,
+        MAX(IFF(p.value:key::STRING='page_location', p.value:value:string_value::STRING, NULL))     AS page_location,
+        MAX(IFF(p.value:key::STRING='page_title',    p.value:value:string_value::STRING, NULL))     AS page_title,
+        MAX(IFF(p.value:key::STRING='page_referrer', p.value:value:string_value::STRING, NULL))     AS page_referrer,
+        MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL))    AS event_category,
+        MAX(IFF(p.value:key::STRING='event_action',   p.value:value:string_value::STRING, NULL))    AS event_action,
+        MAX(IFF(p.value:key::STRING='event_label',
+            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))   AS event_label,
+        MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))     AS percent_scrolled,
+        MAX(IFF(p.value:key::STRING='link_url',  p.value:value:string_value::STRING, NULL))         AS link_url,
+        MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))         AS link_text
+    FROM ( 
+  
+  
+    
+    
+      
+        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        SELECT
+          "event_date"                        AS event_date,
+          "event_timestamp"                   AS event_timestamp,
+          "event_name"                        AS event_name,
+          "event_params"                      AS event_params,       -- VARIANT: LATERAL FLATTEN은 모델에서
+          "user_id"                           AS user_id,            -- ⚠️VARCHAR 필수(선행0·S접두 보존)
+          "user_pseudo_id"                    AS user_pseudo_id,
+          "device"                            AS device,
+          "geo"                               AS geo,
+          "traffic_source"                    AS traffic_source,
+          "collected_traffic_source"          AS collected_traffic_source,
+          "session_traffic_source_last_click" AS session_traffic_source_last_click,
+          "platform"                          AS platform,
+          "is_active_user"                    AS is_active_user,
+          "batch_ordering_id"                 AS batch_ordering_id
+        FROM GN_DW.BRONZE_BIGQUERY."events_20260501"
+        UNION ALL
+      
+        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        SELECT
+          "event_date"                        AS event_date,
+          "event_timestamp"                   AS event_timestamp,
+          "event_name"                        AS event_name,
+          "event_params"                      AS event_params,       -- VARIANT: LATERAL FLATTEN은 모델에서
+          "user_id"                           AS user_id,            -- ⚠️VARCHAR 필수(선행0·S접두 보존)
+          "user_pseudo_id"                    AS user_pseudo_id,
+          "device"                            AS device,
+          "geo"                               AS geo,
+          "traffic_source"                    AS traffic_source,
+          "collected_traffic_source"          AS collected_traffic_source,
+          "session_traffic_source_last_click" AS session_traffic_source_last_click,
+          "platform"                          AS platform,
+          "is_active_user"                    AS is_active_user,
+          "batch_ordering_id"                 AS batch_ordering_id
+        FROM GN_DW.BRONZE_BIGQUERY."events_20260719"
+        
+      
+    
+  
+ ) e, LATERAL FLATTEN(input => e.event_params) p
+    GROUP BY
+        e.user_pseudo_id, e.event_timestamp, e.event_name, e.batch_ordering_id, e.event_date,
+        e.user_id, e.device, e.geo, e.platform, e.is_active_user, e.session_traffic_source_last_click
+),
+sess AS (
+    SELECT
+        user_pseudo_id || '-' || ga_session_id AS ga_session_key,
+        COUNT(DISTINCT user_id)                 AS n_id,
+        MAX(user_id)                            AS sess_uid
+    FROM ev
+    WHERE ga_session_id IS NOT NULL
+    GROUP BY user_pseudo_id || '-' || ga_session_id
+)
+SELECT
+    ev.user_pseudo_id                                            AS USER_PSEUDO_ID,
+    ev.event_timestamp                                           AS EVENT_TIMESTAMP,
+    ev.event_name                                                AS EVENT_NAME,
+    ev.batch_ordering_id                                         AS BATCH_ORDERING_ID,
+    ev.event_date                                                AS EVENT_DATE,
+    TO_DATE(ev.event_date,'YYYYMMDD')                            AS EVENT_DT,
+    TO_TIMESTAMP(ev.event_timestamp/1000000)                     AS EVENT_TS,
+    ev.user_id                                                   AS USER_ID,
+    ev.ga_session_id                                             AS GA_SESSION_ID,
+    ev.ga_session_number                                         AS GA_SESSION_NUMBER,
+    IFF(ev.ga_session_id IS NULL, NULL, ev.user_pseudo_id || '-' || ev.ga_session_id) AS GA_SESSION_KEY,
+    CASE WHEN ev.user_id IS NOT NULL   THEN ev.user_id
+         WHEN ev.ga_session_id IS NULL THEN NULL
+         WHEN s.n_id = 1               THEN s.sess_uid
+         ELSE NULL END                                           AS USER_ID_FILLED,
+    CASE WHEN ev.user_id IS NOT NULL   THEN 'DIRECT'
+         WHEN ev.ga_session_id IS NULL THEN 'UNRESOLVED'
+         WHEN s.n_id = 1               THEN 'SESSION_FILL'
+         WHEN s.n_id >= 2              THEN 'CONFLICT'
+         ELSE 'UNRESOLVED' END                                   AS ID_RESOLUTION,
+    ev.session_engaged                                           AS SESSION_ENGAGED,
+    ev.engagement_time_msec                                      AS ENGAGEMENT_TIME_MSEC,
+    ev.page_location                                             AS PAGE_LOCATION,
+    ev.page_title                                                AS PAGE_TITLE,
+    ev.page_referrer                                             AS PAGE_REFERRER,
+    ev.event_category                                            AS EVENT_CATEGORY,
+    ev.event_action                                              AS EVENT_ACTION,
+    ev.event_label                                               AS EVENT_LABEL,
+    ev.percent_scrolled                                          AS PERCENT_SCROLLED,
+    ev.link_url                                                  AS LINK_URL,
+    ev.link_text                                                 AS LINK_TEXT,
+    -- GA4 공식 기준: platform × device.category 조합(platform 단독 불가). 미분류는 '(unknown)' 격리(2026-07-27 교정).
+    CASE WHEN ev.platform IN ('ANDROID','IOS') THEN 'APP'
+         WHEN ev.platform = 'WEB' AND ev.device:category::STRING IN ('mobile','tablet') THEN 'M'
+         WHEN ev.platform = 'WEB' AND ev.device:category::STRING = 'desktop' THEN 'PC'
+         ELSE '(unknown)' END AS DEVICE_TYPE,
+    ev.device:category::STRING                                   AS DEVICE_CATEGORY,
+    ev.device:operating_system::STRING                           AS OS,
+    ev.geo:country::STRING                                       AS GEO_COUNTRY,
+    ev.geo:city::STRING                                          AS GEO_CITY,
+    NULLIF(NULLIF(ev.stlc:manual_campaign:source::STRING,'(not set)'),'(direct)')                 AS UTM_SOURCE,
+    NULLIF(NULLIF(NULLIF(ev.stlc:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)') AS UTM_MEDIUM,
+    NULLIF(ev.stlc:manual_campaign:campaign_name::STRING,'(not set)')                             AS UTM_CAMPAIGN,
+    ev.stlc:cross_channel_campaign:default_channel_group::STRING AS DEFAULT_CHANNEL_GROUP,
+    ev.platform                                                  AS PLATFORM,
+    ev.is_active_user                                            AS IS_ACTIVE_USER,
+    'GA4'               AS DW_SOURCE_SYSTEM,
+    'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
+    CURRENT_TIMESTAMP() AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
+    NULL                AS DW_BATCH_ID
+FROM ev
+LEFT JOIN sess s
+    ON ev.ga_session_id IS NOT NULL
+   AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id
+[0m20:55:29.740183 [debug] [Dummy-1   ]: Resource report: {"command_name": "compile", "command_success": true, "command_wall_clock_time": 5.311821, "process_in_blocks": "0", "process_kernel_time": 1.21, "process_mem_max_rss": "477608", "process_out_blocks": "0", "process_user_time": 6.07}
+[0m20:55:29.741029 [debug] [Dummy-1   ]: Command `cli compile` succeeded at 20:55:29.740695 after 5.31 seconds
+[0m20:55:29.741663 [debug] [Dummy-1   ]: Flushing usage events

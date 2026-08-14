@@ -110,7 +110,7 @@ BRONZE_EVIDENCE = {
         "발송은 캠페인이 아니라 **발송요청 단위**로 관리된다.",
     ("FACT_GA_BEHAVIOR", "DIM_MEMBER"):
         "GA4 는 `user_pseudo_id` 기반이고 회원번호는 `user_id` 가 있을 때만 잡힌다. "
-        "현재 BRONZE_GA4 는 **2일 샤드**(`events_20260501`·`events_20260719`)뿐이고 "
+        "현재 BRONZE_BIGQUERY 는 **2일 샤드**(`events_20260501`·`events_20260719`)뿐이고 "
         "`SILVER.IDENTITY_MEMBER_XREF` 2,009행에 불과하다(G-5).",
     ("FACT_GA_BEHAVIOR", "DIM_CAMPAIGN"):
         "`FGA.CAMPAIGN_SK` 전건 센티넬 — GA4 `utm_campaign` 문자열과 CRM 캠페인 코드를 잇는 키가 없다(Q10).",

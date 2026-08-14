@@ -15,7 +15,7 @@ SELECT DISTINCT
   device:browser::STRING       AS BROWSER,
   device:language::STRING      AS LANGUAGE,
   'GA4'                        AS DW_SOURCE_SYSTEM,
-  'BRONZE_GA4.events'          AS DW_SOURCE_TABLE,
+  'BRONZE_BIGQUERY.events'          AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP()          AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()          AS DW_UPDATE_TS,
   NULL                         AS DW_BATCH_ID

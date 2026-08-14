@@ -35,7 +35,7 @@ TBLDEF = os.path.join(WS, "99_provided_definition", "테이블정의 20260629.cs
 AUDIT = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"}
 
 LAYERS = [
-    ("BRONZE", ["BRONZE_CRM", "BRONZE_AGENCY", "BRONZE_ERP", "BRONZE_GA4"], "원천 적재 — 무손실"),
+    ("BRONZE", ["BRONZE_CRM", "BRONZE_AGENCY", "BRONZE_ERP", "BRONZE_BIGQUERY"], "원천 적재 — 무손실"),
     ("SILVER", ["SILVER"], "정제·표준화 — 코드 보존·ID 통합"),
     ("GOLD", ["GOLD"], "표준 지표 — 팩트/차원 + WIDE 소비뷰"),
     ("SERVING", ["SERVING"], "소비 — Semantic View / Agent 전용"),
@@ -66,11 +66,11 @@ def main():
     cn = conn()
     _, trows = q("""select table_schema, table_name, table_type, row_count, comment
                     from GN_DW.INFORMATION_SCHEMA.TABLES
-                    where table_schema in ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4',
+                    where table_schema in ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_BIGQUERY',
                                            'SILVER','GOLD','SERVING')""", cn)
     _, crows = q("""select table_schema, table_name, column_name, data_type, comment
                     from GN_DW.INFORMATION_SCHEMA.COLUMNS
-                    where table_schema in ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4',
+                    where table_schema in ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_BIGQUERY',
                                            'SILVER','GOLD','SERVING')
                     order by table_schema, table_name, ordinal_position""", cn)
     try:

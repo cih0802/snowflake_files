@@ -54,8 +54,8 @@ USE SCHEMA SANDBOX.TOOLS;
 -- (1) 파일 수 대조: B의 언로드 결과(03번 6단계)와 같아야 함
 --     2026-08-12 B 기준값: 435 파일 / 52 폴더 / 3,427,853,840 B
 --       BRONZE_AGENCY 4폴더 5파일 · BRONZE_CRM 45폴더 389파일
---       BRONZE_ERP    1폴더 1파일 · BRONZE_GA4 2폴더  40파일
---     ⚠️ 폴더가 52개인 이유: BRONZE_GA4.SYNC_ERR_INFO 는 0행이라 언로드 파일이 없다.
+--       BRONZE_ERP    1폴더 1파일 · BRONZE_BIGQUERY 2폴더  40파일
+--     ⚠️ 폴더가 52개인 이유: BRONZE_BIGQUERY.SYNC_ERR_INFO 는 0행이라 언로드 파일이 없다.
 --        테이블은 53개를 만들되 이 테이블만 0건 적재되는 것이 정상이다.
 LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE;
 
@@ -141,7 +141,7 @@ FROM f FULL OUTER JOIN t ON f.sch = t.sch AND f.tbl = t.tbl
 WHERE f.file_cols     IS DISTINCT FROM t.tbl_cols
    OR f.file_col_list IS DISTINCT FROM t.tbl_col_list
 ORDER BY 1, 2;
--- → 기대 결과: BRONZE_GA4 / SYNC_ERR_INFO 의 FILE_MISSING 1건만 나온다 (원본 A도 0행 → 정상).
+-- → 기대 결과: BRONZE_BIGQUERY / SYNC_ERR_INFO 의 FILE_MISSING 1건만 나온다 (원본 A도 0행 → 정상).
 --   COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 나오면 절대 적재하지 말고 04번 DDL 을 먼저 고친다.
 --     · 정본은 50_handoff/02_1_A DB정보.sql (A 계정 GET_DDL 실측) 이다.
 --     · file_col_list 와 tbl_col_list 를 나란히 놓고 어긋나는 지점을 찾는다.
@@ -201,13 +201,13 @@ $$;
 
 ------------------------------------------------------------
 -- A.4 CSV 스키마 적재 실행 (ERP → AGENCY → CRM 순)
---   BRONZE_GA4 는 프로시저로 적재하지 않는다.
+--   BRONZE_BIGQUERY 는 프로시저로 적재하지 않는다.
 --   events_* 의 VARIANT 컬럼이 JSON '문자열'로 들어가 col:key / col[0] 탐색이 불가해진다.
 --   → GA4 는 전부 A.5 에서 개별 처리.
 --   프로시저는 INFORMATION_SCHEMA 를 순회하므로 04번 DDL로 생성된 테이블 수를 그대로 따른다.
 --   기대 반환값: ERP 'loaded tables: 1' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 45'
 --   ⚠️ CRM 이 43 으로 나오면 04번 DDL 2판(51테이블)을 실행한 것이다. 3판으로 다시 생성할 것.
---   ⚠️ 선행 조건: A.1 (4) 가 'FILE_MISSING 1건(BRONZE_GA4.SYNC_ERR_INFO)' 외 0건이어야 한다.
+--   ⚠️ 선행 조건: A.1 (4) 가 'FILE_MISSING 1건(BRONZE_BIGQUERY.SYNC_ERR_INFO)' 외 0건이어야 한다.
 --      COUNT_MISMATCH 가 남아 있으면 해당 테이블에서 ON_ERROR=ABORT_STATEMENT 로 CALL 전체가 중단된다.
 --        예) 2026-08-13 BRONZE_ERP — file 65 vs table 64 로 프로시저 21행(EXECUTE IMMEDIATE)에서 실패.
 --   ⚠️ 중단 후 재실행은 안전하다. COPY 는 FORCE=TRUE 가 없으면 이미 적재된 파일을 건너뛴다(적재 메타데이터 64일).
@@ -216,7 +216,7 @@ $$;
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_CRM');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
--- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GA4');   -- 사용 금지 (위 주석 참조)
+-- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_BIGQUERY');   -- 사용 금지 (위 주석 참조)
 
 ------------------------------------------------------------
 -- A.5 GA4 적재 — CSV + TRY_PARSE_JSON 변환
@@ -226,34 +226,34 @@ CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
 --   SYNC_ERR_INFO   : VARIANT 없음 → 일반 COPY
 ------------------------------------------------------------
 -- A.5.1 events_20260501 (30컬럼)
-COPY INTO GN_DW.BRONZE_GA4."events_20260501"
+COPY INTO GN_DW.BRONZE_BIGQUERY."events_20260501"
 FROM (
   SELECT $1,$2,$3, TRY_PARSE_JSON($4), $5,$6,$7,$8,$9,$10,
          TRY_PARSE_JSON($11), TRY_PARSE_JSON($12), $13, TRY_PARSE_JSON($14),
          TRY_PARSE_JSON($15), TRY_PARSE_JSON($16), $17, TRY_PARSE_JSON($18),
          $19,$20,$21, TRY_PARSE_JSON($22), TRY_PARSE_JSON($23), TRY_PARSE_JSON($24),
          $25,$26,$27,$28, TRY_PARSE_JSON($29), $30
-  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_GA4/events_20260501/
+  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/events_20260501/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT;
 
 -- A.5.2 events_20260719 (31컬럼 — $31 은 스칼라)
-COPY INTO GN_DW.BRONZE_GA4."events_20260719"
+COPY INTO GN_DW.BRONZE_BIGQUERY."events_20260719"
 FROM (
   SELECT $1,$2,$3, TRY_PARSE_JSON($4), $5,$6,$7,$8,$9,$10,
          TRY_PARSE_JSON($11), TRY_PARSE_JSON($12), $13, TRY_PARSE_JSON($14),
          TRY_PARSE_JSON($15), TRY_PARSE_JSON($16), $17, TRY_PARSE_JSON($18),
          $19,$20,$21, TRY_PARSE_JSON($22), TRY_PARSE_JSON($23), TRY_PARSE_JSON($24),
          $25,$26,$27,$28, TRY_PARSE_JSON($29), $30, $31
-  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_GA4/events_20260719/
+  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/events_20260719/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT;
 
 -- A.5.3 SYNC_ERR_INFO (운영 로그 — 이관 대상 데이터가 없을 수 있음)
-COPY INTO GN_DW.BRONZE_GA4.SYNC_ERR_INFO
-FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_GA4/SYNC_ERR_INFO/
+COPY INTO GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO
+FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/SYNC_ERR_INFO/
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT
 PURGE = FALSE;
@@ -270,11 +270,11 @@ GROUP BY 1 ORDER BY 1;
 --   BRONZE_AGENCY   4 /     243,550
 --   BRONZE_CRM     45 / 115,875,113
 --   BRONZE_ERP      1 /       4,301
---   BRONZE_GA4      3 /     576,441
+--   BRONZE_BIGQUERY      3 /     576,441
 --   합계           53 / 116,699,405
 
 -- (2) 빈 테이블 점검
---     기대: BRONZE_GA4.SYNC_ERR_INFO 1건만 나온다 (원본 A도 0행 → 정상).
+--     기대: BRONZE_BIGQUERY.SYNC_ERR_INFO 1건만 나온다 (원본 A도 0행 → 정상).
 --     그 외 테이블이 나오면 해당 폴더의 파일이 누락된 것이므로 재업로드·재적재한다.
 SELECT table_schema, table_name
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
@@ -283,10 +283,10 @@ WHERE table_schema LIKE 'BRONZE_%' AND table_type='BASE TABLE' AND row_count=0;
 -- (3) GA4 JSON 파싱 확인 → PTYPE=ARRAY, PARSED=N_ROWS 여야 정상
 SELECT 'events_20260501' AS tbl, COUNT(*) AS n_rows,
        COUNT("event_params"[0]) AS parsed, TYPEOF("event_params") AS ptype
-FROM GN_DW.BRONZE_GA4."events_20260501" GROUP BY 1, 4
+FROM GN_DW.BRONZE_BIGQUERY."events_20260501" GROUP BY 1, 4
 UNION ALL
 SELECT 'events_20260719', COUNT(*), COUNT("event_params"[0]), TYPEOF("event_params")
-FROM GN_DW.BRONZE_GA4."events_20260719" GROUP BY 1, 4;
+FROM GN_DW.BRONZE_BIGQUERY."events_20260719" GROUP BY 1, 4;
 
 -- (4) 테이블별 행수 대조표 (⚠️ 01번 문서 6.2의 '미완료(권장)' 항목)
 --     이 결과를 03번 3.1(B의 GN_DW_SHARED 스냅샷)과 테이블 단위로 비교한다.
@@ -299,7 +299,7 @@ ORDER BY table_schema, table_name;
 -- (5) VALIDATE — 직전 COPY의 거부 행 확인 (기대: 0건)
 --     ⚠️ JOB_ID => '_last' 는 '현재 세션의 마지막 COPY' 기준이므로,
 --        각 COPY 직후에 실행해야 의미가 있다. 사후 점검은 아래 COPY_HISTORY를 쓴다.
--- SELECT * FROM TABLE(VALIDATE(GN_DW.BRONZE_GA4."events_20260719", JOB_ID => '_last'));
+-- SELECT * FROM TABLE(VALIDATE(GN_DW.BRONZE_BIGQUERY."events_20260719", JOB_ID => '_last'));
 
 --     세션이 끊긴 뒤에는 COPY_HISTORY 로 전체 적재 이력을 확인한다.
 --     기대: STATUS = 'Loaded', ERROR_COUNT = 0, ROW_PARSED = ROW_COUNT

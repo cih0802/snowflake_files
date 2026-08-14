@@ -15,10 +15,10 @@
 --   - Database   : GN_DW
 --   - 생성일자   : 2026-07-13
 --   - 추출 방법  : GET_DDL('SCHEMA', ..., TRUE)   (완전수식명 포함)
---   - 스키마 수  : 4  (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4)
---   - 테이블 수  : 48 (BRONZE_CRM 43, BRONZE_AGENCY 3, BRONZE_ERP 1, BRONZE_GA4 1)
+--   - 스키마 수  : 4  (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_BIGQUERY)
+--   - 테이블 수  : 48 (BRONZE_CRM 43, BRONZE_AGENCY 3, BRONZE_ERP 1, BRONZE_BIGQUERY 1)
 --   - 파일 포맷  : 2  (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT)
---   - 반정형 주의 : BRONZE_GA4."events_20260501" 은 VARIANT 컬럼 다수 → CSV 부적합.
+--   - 반정형 주의 : BRONZE_BIGQUERY."events_20260501" 은 VARIANT 컬럼 다수 → CSV 부적합.
 --                   해당 테이블은 마이그레이션 문서 4.4/5.5의 Parquet(SNAPPY) 경로로 이관.
 --
 -- 사용법 / USAGE (C 계정에서)
@@ -50,7 +50,7 @@
 --     BDGT_ACMSLT_LEDGER
 --     [FILE FORMAT] GN_CSV_FORMAT (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --
---   [SCHEMA] GN_DW.BRONZE_GA4 — 원천 적재: GA4 (웹/앱 방문, Google 광고), 테이블 1개
+--   [SCHEMA] GN_DW.BRONZE_BIGQUERY — 원천 적재: GA4 (웹/앱 방문, Google 광고), 테이블 1개
 --     "events_20260501"  ※ 컬럼명 소문자 대소문자 구분(따옴표 식별자), VARIANT 컬럼 다수
 --       (event_params, user_properties, user_ltv, device, geo, traffic_source,
 --        ecommerce, items, collected_traffic_source, session_traffic_source_last_click, privacy_info)
@@ -1280,11 +1280,11 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT
 
 
 -- #####################################################################
--- # SCHEMA 4/4 : GN_DW.BRONZE_GA4  (GA4 원천 - 웹/앱 방문, Google 광고) — VARIANT 다수, Parquet 경로
+-- # SCHEMA 4/4 : GN_DW.BRONZE_BIGQUERY  (GA4 원천 - 웹/앱 방문, Google 광고) — VARIANT 다수, Parquet 경로
 -- #####################################################################
-create or replace schema GN_DW.BRONZE_GA4 with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
+create or replace schema GN_DW.BRONZE_BIGQUERY with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
 
-create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
+create or replace TABLE GN_DW.BRONZE_BIGQUERY."events_20260501" (
 	"event_date" VARCHAR(16777216),
 	"event_timestamp" NUMBER(38,0),
 	"event_name" VARCHAR(16777216),

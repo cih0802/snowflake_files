@@ -64,6 +64,44 @@ END-METADATA -->
 | `20_issue/90_해소완료_로그.md` | 닫힌 항목 이력 |
 
 ---
+
+## 5. 스키마 개명 이력 (정본)
+
+> 물리 스키마명이 바뀌면 **이 표에 먼저 적고** 코드 결합점을 고친다. dbt 모델·매크로명은 개명 대상이 아니다.
+
+| 일자 | 변경 | 유형 | 실행 DDL |
+|---|---|---|---|
+| 2026-08-14 | `GN_DW.BRONZE_GA4` → **`GN_DW.BRONZE_BIGQUERY`** | 스키마명만 | `ALTER SCHEMA BRONZE_GA4 RENAME TO BRONZE_BIGQUERY;` |
+
+### 왜 바꿨나
+이 BRONZE 스키마의 원천은 **GA4 제품이 아니라 BigQuery export**다. GA4 외 BigQuery 유입도 같은
+스키마로 수용할 수 있도록 **원천 시스템(BigQuery) 기준 명명**으로 통일했다.
+
+### 무엇이 바뀌지 않았나 (혼동 주의)
+🔴 개명된 것은 **스키마명 하나뿐**이다. 아래는 전부 **불변**이며, "왜 아직 GA4냐"는 결함이 아니다.
+
+| 대상 | 값 | 왜 그대로인가 |
+|---|---|---|
+| 매크로 | `ga4_union_shards` | GA4 = 데이터 도메인 명칭(스키마 위치와 무관) |
+| SILVER 모델 | `GA4_EVENT`·`GA4_EVENT_DIM`·`GA4_IDENTITY`·`GA4_DEVICE`·`GA4_TRAFFIC_SOURCE` | 하류 GOLD·SV·Agent 전량이 이 이름에 결합 |
+| 샤드 테이블 | `events_YYYYMMDD` (소문자 인용식별자) | BigQuery export 산출물 원형 |
+| dbt source 이름 | (GA4는 source 선언 없음) | `INFORMATION_SCHEMA` 동적조회 설계 — 설계결정서 §2 |
+
+### 코드 결합점 (다시 개명할 때 고칠 곳)
+GA4 스키마명은 dbt 안에서 **`macros/ga4_union_shards.sql` 의 리터럴 2곳**에만 존재한다.
+
+1. `WHERE table_schema = 'BRONZE_BIGQUERY'` — 샤드 목록 동적 조회
+2. `FROM {{ target.database }}.BRONZE_BIGQUERY."{{ t }}"` — 샤드 UNION 본문
+
+⚠️ 매크로는 `ref()`/`source()` 를 쓰지 않으므로 **dbt 가 개명 누락을 컴파일 단계에서 잡아주지 못한다.**
+개명 후 검증은 `dbt build --select +GA4_EVENT` 로 **실행**해야 드러난다(compile 만으로는 통과한다).
+
+### 데이터 값에 남는 영향
+SILVER GA4 5모델의 `DW_SOURCE_TABLE` 리터럴이 `'BRONZE_GA4.events'` → `'BRONZE_BIGQUERY.events'` 로
+바뀌었다. 🔴 **이미 적재된 행의 값은 자동으로 갱신되지 않는다** — 다음 `dbt build` 로 재적재되는
+행부터 새 값이 들어가므로, 한동안 두 값이 공존한다. 계보 조회 시 `LIKE 'BRONZE_%.events'` 로 볼 것.
+
+---
 _Co-authored with CoCo_
 
 ---

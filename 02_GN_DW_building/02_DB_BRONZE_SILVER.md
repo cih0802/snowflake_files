@@ -45,7 +45,7 @@ schemas:
     owner: GN_DW_ADMIN
     access: MANAGED ACCESS
     note: "1테이블 실측"
-  - id: BRONZE_GA4
+  - id: BRONZE_BIGQUERY
     purpose: 원천 적재 — GA4 (웹/앱 방문)
     owner: GN_DW_ADMIN
     access: MANAGED ACCESS
@@ -74,7 +74,7 @@ schema_contents:
   BRONZE_CRM: { tables: 43, note: "CRM 원천 1:1 (원천정의 41 + 템플릿 2)" }
   BRONZE_AGENCY: { tables: 3, note: "DGT/REBRDC/VIDEO 광고 성과 내역" }
   BRONZE_ERP: { tables: 1, note: "BDGT_ACMSLT_LEDGER 예산 실적 원장" }
-  BRONZE_GA4: { tables: 1, note: "events_20260501 (1일 샤드, 소문자명)" }
+  BRONZE_BIGQUERY: { tables: 1, note: "events_20260501 (1일 샤드, 소문자명)" }
   SILVER: { tables: 32, pipeline: "dbt DW_PIPELINE", note: "CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1" }
   GOLD: { star_schema: 24, wide_views: 9, forecast_tables: 0, note: "star 24(15 DIM+9 FACT) + WIDE VIEW 9. forecast 제외(2026-07-10)" }
   SERVING: { semantic_views: 9, agents: 2, helper_views: 0, streamlit_apps: 0, note: "[2026-08-10 O55] SV 9종(base 전건 GOLD) · helper 뷰 3종 물리 DROP 완료" }
@@ -205,7 +205,7 @@ bronze_schemas:
   BRONZE_ERP:   # 1테이블 (예산 원장)
     - { id: BDGT_ACMSLT_LEDGER, rows: 2041, desc: "예산 실적 원장 (예산과목·예산단위·재원 + 월별금액). ⚠️[결론7] 캠페인·매체 연결키 없음" }
 
-  BRONZE_GA4:   # 1테이블 (1일 샤드)
+  BRONZE_BIGQUERY:   # 1테이블 (1일 샤드)
     - { id: events_20260501, rows: 287025, desc: "GA4 이벤트 (2026-05-01 전체 1일 샤드, 소문자 테이블명). user_id 채움 4.22%. ⚠️[G-5] 전기간 샤드 입고 대기" }
 
 bronze_total: 48   # CRM 43 + AGENCY 3 + ERP 1 + GA4 1

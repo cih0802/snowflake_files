@@ -1,6 +1,6 @@
 # GA4 파이프라인 작업 전 주의사항
 
-> 작성일: 2026-07-02 · 대상: Bronze_GA4 → Silver GA4 파이프라인 개발자
+> 작성일: 2026-07-02 · 대상: Bronze_BIGQUERY → Silver GA4 파이프라인 개발자
 
 > **[2026-07-10 실적재 검증 — 후속 정정]**
 > - 🟥 **샤드 테이블명 대소문자 버그**: 실적재 샤드가 **소문자** `events_20260501` → §1 동적조회의 `LIKE 'EVENTS_%'`·`REPLACE(...,'EVENTS_','')`(대문자)는 **0건 매칭**. `ILIKE`/`UPPER(table_name)`로 수정하고 UNION의 `FROM` 식별자도 소문자라 따옴표 필요. (dbt 버전 짝 문서와 동일 이슈.)
@@ -11,7 +11,7 @@
 
 ## 1. Bronze 구조 — date-shard 고정
 
-- `BRONZE_GA4.EVENTS_YYYYMMDD` 형식으로 날짜별 테이블 생성 (개발환경 제약)
+- `BRONZE_BIGQUERY.EVENTS_YYYYMMDD` 형식으로 날짜별 테이블 생성 (개발환경 제약)
 - **trial dbt deps 불가** → **동적 스크립트 기반 Stored Procedure**로 대체
 - 테이블 목록은 하드코딩 금지 — `INFORMATION_SCHEMA.TABLES`에서 동적 조회
 
@@ -19,7 +19,7 @@
 -- 처리 대상 테이블 자동 발견
 SELECT table_name
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
-WHERE table_schema = 'BRONZE_GA4'
+WHERE table_schema = 'BRONZE_BIGQUERY'
   AND table_name LIKE 'EVENTS_%'
   AND REPLACE(table_name, 'EVENTS_', '') BETWEEN :START_DATE AND :END_DATE
 ORDER BY table_name;
@@ -75,6 +75,6 @@ CALL SP_REFINE_GA4(
 ## 5. 착수 전 선결 확인
 
 - [ ] Bronze 전체 기간 날짜별 CSV 적재 완료 여부
-- [ ] `BRONZE_GA4.GA4_CSV_FMT` 파일 포맷 존재 확인
+- [ ] `BRONZE_BIGQUERY.GA4_CSV_FMT` 파일 포맷 존재 확인
 - [ ] Silver 테이블 26개 DDL 생성 완료 확인 (`SILVER_DDL_20260702.sql`)
 - [ ] GA4_IDENTITY는 Q1 행매칭 실증 전까지 TASK 체인에서 **제외**

@@ -37,7 +37,7 @@ SELECT
     IFF(MAX(member_id) ILIKE 'S%', MAX(member_id), NULL)                     AS ONCE_MBER_NO,
     IFF(MIN(IFF(id_resolution='DIRECT',0,1)) = 0, 'DIRECT', 'SESSION_FILL')  AS ID_RESOLUTION,
     'GA4'               AS DW_SOURCE_SYSTEM,
-    'BRONZE_GA4.events' AS DW_SOURCE_TABLE,
+    'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP() AS DW_LOAD_TS,
     CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
     NULL                AS DW_BATCH_ID

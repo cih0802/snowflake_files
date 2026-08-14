@@ -16,7 +16,7 @@ SELECT DISTINCT
   s:cross_channel_campaign:campaign_name::STRING                                                 AS XCHAN_CAMPAIGN,
   s:cross_channel_campaign:default_channel_group::STRING                                         AS DEFAULT_CHANNEL_GROUP,
   'GA4'               AS DW_SOURCE_SYSTEM,
-  'BRONZE_GA4.events' AS DW_SOURCE_TABLE,
+  'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP() AS DW_LOAD_TS,
   CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
   NULL                AS DW_BATCH_ID

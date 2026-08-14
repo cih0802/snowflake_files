@@ -12,7 +12,7 @@ WITH ev AS (
     
     
       
-        -- ⚠️ BRONZE_GA4 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
         SELECT
           "event_date"                        AS event_date,
           "event_timestamp"                   AS event_timestamp,
@@ -28,10 +28,10 @@ WITH ev AS (
           "platform"                          AS platform,
           "is_active_user"                    AS is_active_user,
           "batch_ordering_id"                 AS batch_ordering_id
-        FROM GN_DW.BRONZE_GA4."events_20260501"
+        FROM GN_DW.BRONZE_BIGQUERY."events_20260501"
         UNION ALL
       
-        -- ⚠️ BRONZE_GA4 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
         SELECT
           "event_date"                        AS event_date,
           "event_timestamp"                   AS event_timestamp,
@@ -47,7 +47,7 @@ WITH ev AS (
           "platform"                          AS platform,
           "is_active_user"                    AS is_active_user,
           "batch_ordering_id"                 AS batch_ordering_id
-        FROM GN_DW.BRONZE_GA4."events_20260719"
+        FROM GN_DW.BRONZE_BIGQUERY."events_20260719"
         
       
     
@@ -83,7 +83,7 @@ SELECT
     IFF(MAX(member_id) ILIKE 'S%', MAX(member_id), NULL)                     AS ONCE_MBER_NO,
     IFF(MIN(IFF(id_resolution='DIRECT',0,1)) = 0, 'DIRECT', 'SESSION_FILL')  AS ID_RESOLUTION,
     'GA4'               AS DW_SOURCE_SYSTEM,
-    'BRONZE_GA4.events' AS DW_SOURCE_TABLE,
+    'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP() AS DW_LOAD_TS,
     CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
     NULL                AS DW_BATCH_ID

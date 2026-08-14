@@ -16,7 +16,7 @@ SHOW VERSIONS IN DBT PROJECT GN_DW.SILVER.GN_DW_SILVER_PIPELINE;
 -- B2. GOLD 모델이 배포 버전에 포함됐는지 (컴파일만, 실행 아님)
 
 -- C1. [G-5 하드블로커] GA4 샤드가 1일뿐인가, 전기간 입고됐나
-SHOW TABLES LIKE 'events_%' IN SCHEMA GN_DW.BRONZE_GA4;
+SHOW TABLES LIKE 'events_%' IN SCHEMA GN_DW.BRONZE_BIGQUERY;
 
 -- C2. [E-6] ERP_BIZ_TARGET 원천 0행 여부 (사업목표 FTG-B)
 SELECT COUNT(*) AS erp_biz_target_rows FROM GN_DW.SILVER.ERP_BIZ_TARGET;

@@ -7,7 +7,7 @@
 - GOLD 의존성 → `03_top-down_gold/08_silver의존.md` §2·§3·§5
 
 > **[2026-07-10 실적재 검증 반영]**
-> - **샤드 현황**: `BRONZE_GA4.events_20260501` 1일 샤드만 적재(287,025행). **전체 기간 아님** — 다일 샤드 UNION 실증은 미완, 나머지 샤드 입고 후 §2 매크로로 재검증 필요.
+> - **샤드 현황**: `BRONZE_BIGQUERY.events_20260501` 1일 샤드만 적재(287,025행). **전체 기간 아님** — 다일 샤드 UNION 실증은 미완, 나머지 샤드 입고 후 §2 매크로로 재검증 필요.
 > - **컬럼 안정성**: 실적재 30컬럼이 §2 매크로 나열과 정합(단 `app_info`·`event_dimensions`·`publisher`는 실적재상 NUMBER/NULL 계열 — VARIANT FLATTEN 대상 아님, model 매핑 시 주의).
 > - 🟥 **`user_id` 채움률 = 4.2%**(12,120/287,025·식별회원 1,290명·익명 95.8%·`user_pseudo_id` distinct 27,840). **`GA4_IDENTITY`/`DIM_MEMBER_IDENTITY` 조인키(G-1)는 유효하나 커버리지가 낮음** → 회원단위 GA 지표(#81·신#32·#33)는 로그인 세션만 커버. §5 체크리스트에 커버리지 측정 항목 추가(아래).
 
@@ -15,7 +15,7 @@
 
 ## 1. 설계 결정 배경
 
-`BRONZE_GA4.EVENTS_YYYYMMDD`는 날짜마다 새 테이블이 생기고 Google이 컬럼 순서를 보장하지 않는 구조다. SILVER에서 이를 단일 모델로 통합할 때 두 가지 방식이 있다.
+`BRONZE_BIGQUERY.EVENTS_YYYYMMDD`는 날짜마다 새 테이블이 생기고 Google이 컬럼 순서를 보장하지 않는 구조다. SILVER에서 이를 단일 모델로 통합할 때 두 가지 방식이 있다.
 
 | 방식 | 설명 | 결과 |
 |---|---|---|
@@ -38,7 +38,7 @@
   {% set q %}
     SELECT table_name
     FROM {{ target.database }}.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'BRONZE_GA4'
+    WHERE table_schema = 'BRONZE_BIGQUERY'
       AND table_name LIKE 'EVENTS_%'
       AND REPLACE(table_name,'EVENTS_','') BETWEEN '{{ start_date }}' AND '{{ end_date }}'
     ORDER BY table_name
@@ -60,7 +60,7 @@
         session_traffic_source_last_click,
         publisher,
         batch_event_index, batch_page_id, batch_ordering_id
-      FROM {{ target.database }}.BRONZE_GA4.{{ t }}
+      FROM {{ target.database }}.BRONZE_BIGQUERY.{{ t }}
       {% if not loop.last %}UNION ALL{% endif %}
     {% endfor %}
   {% endif %}
@@ -100,7 +100,7 @@ dbt 샤드 통합은 **BRONZE→SILVER** 구간의 일이다. GOLD는 SILVER의 
 ## 4. BRONZE→SILVER GA4 변환 레이어 구조 (요약)
 
 ```
-BRONZE_GA4.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
+BRONZE_BIGQUERY.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
         │
         │ ga4_union_shards 매크로
         │ (컬럼명 명시 UNION ALL)

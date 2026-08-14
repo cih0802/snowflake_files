@@ -1,11 +1,11 @@
 # GA4 파이프라인 작업 전 주의사항 (dbt 버전)
 
-> 작성일: 2026-07-02 · 대상: Bronze_GA4 → Silver GA4 dbt 파이프라인 개발자
+> 작성일: 2026-07-02 · 대상: Bronze_BIGQUERY → Silver GA4 dbt 파이프라인 개발자
 > 짝 문서: `08_GA4_파이프라인_SP로 작업전_주의사항.md` (Stored Procedure 버전)
 > 방식: **C-2 — dbt + 프로젝트 내장 커스텀 매크로 (외부 패키지 無)**
 
 > **[2026-07-10 실적재 검증 — 후속 버그·전제 정정]**
-> - 🟥 **샤드 테이블명 대소문자 버그**: 실적재된 샤드는 **소문자** `BRONZE_GA4.events_20260501`(따옴표 생성 식별자). `INFORMATION_SCHEMA.TABLES.table_name`에도 소문자로 저장됨 → §1 매크로의 `LIKE 'EVENTS_%'`·`REPLACE(table_name,'EVENTS_','')`(대문자)는 **매칭 0건**. **`ILIKE 'events\_%'` 또는 `UPPER(table_name) LIKE 'EVENTS_%'`로 수정**하고, `FROM {{t}}`도 소문자 식별자라 **따옴표 필요**(`"{{t}}"`). ⇒ `macros/ga4_union_shards.sql` 실제 코드 동반 수정 필요.
+> - 🟥 **샤드 테이블명 대소문자 버그**: 실적재된 샤드는 **소문자** `BRONZE_BIGQUERY.events_20260501`(따옴표 생성 식별자). `INFORMATION_SCHEMA.TABLES.table_name`에도 소문자로 저장됨 → §1 매크로의 `LIKE 'EVENTS_%'`·`REPLACE(table_name,'EVENTS_','')`(대문자)는 **매칭 0건**. **`ILIKE 'events\_%'` 또는 `UPPER(table_name) LIKE 'EVENTS_%'`로 수정**하고, `FROM {{t}}`도 소문자 식별자라 **따옴표 필요**(`"{{t}}"`). ⇒ `macros/ga4_union_shards.sql` 실제 코드 동반 수정 필요.
 > - **샤드 1일만 적재**: `events_20260501`(287,025행)뿐 — 전체기간 아님. §6 "전체 기간 적재 완료" 선결조건 **미충족**.
 > - 🟥 **`user_id` 채움률 4.2%**(12,120/287,025·식별 1,290명). §4-⑤ `ga4_identity` 활성화 시 커버리지 DQ 노출 필요(회원단위 GA 지표는 로그인 세션 한정).
 
@@ -25,7 +25,7 @@
 
 ## 1. Bronze 구조 — date-shard 고정 (dbt로 처리)
 
-- `BRONZE_GA4.EVENTS_YYYYMMDD` 날짜별 테이블 (개발환경 제약, 유지)
+- `BRONZE_BIGQUERY.EVENTS_YYYYMMDD` 날짜별 테이블 (개발환경 제약, 유지)
 - date-shard여도 dbt로 처리 가능 — **커스텀 매크로가 `INFORMATION_SCHEMA` 동적 조회 후 UNION 조립**
 - 테이블 목록 하드코딩 금지
 
@@ -34,14 +34,14 @@
 {% macro ga4_union_shards(start_date, end_date) %}
   {% set q %}
     SELECT table_name FROM {{ target.database }}.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'BRONZE_GA4' AND table_name LIKE 'EVENTS_%'
+    WHERE table_schema = 'BRONZE_BIGQUERY' AND table_name LIKE 'EVENTS_%'
       AND REPLACE(table_name,'EVENTS_','') BETWEEN '{{ start_date }}' AND '{{ end_date }}'
     ORDER BY table_name
   {% endset %}
   {% if execute %}
     {% set tabs = run_query(q).columns[0].values() %}
     {% for t in tabs %}
-      SELECT * FROM {{ target.database }}.BRONZE_GA4.{{ t }}
+      SELECT * FROM {{ target.database }}.BRONZE_BIGQUERY.{{ t }}
       {% if not loop.last %}UNION ALL{% endif %}
     {% endfor %}
   {% endif %}
@@ -137,7 +137,7 @@ models:
 ## 6. 착수 전 선결 확인
 
 - [ ] Bronze 전체 기간 날짜별 CSV 적재 완료 여부
-- [ ] `BRONZE_GA4.GA4_CSV_FMT` 파일 포맷 존재 확인
+- [ ] `BRONZE_BIGQUERY.GA4_CSV_FMT` 파일 포맷 존재 확인
 - [ ] Silver 테이블 26개 DDL 생성 완료 (`SILVER_DDL_20260702.sql`) — 또는 dbt `materialized`로 대체 생성
 - [ ] **`packages.yml` 없이** 프로젝트 구성 (trial EAI 불가 재확인)
 - [ ] `profiles.yml` — account·user 빈 문자열, `env_var()` 금지, password 계열 금지

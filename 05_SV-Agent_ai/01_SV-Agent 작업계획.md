@@ -81,7 +81,7 @@ END-METADATA -->
     | `GN_DW.BRONZE_CRM` | CRM (eCRM · UMS) | 직적재 (43테이블/927컬럼 실측) | SV_MEMBER_MONTHLY · SV_MEMBER_EVENT · SV_SERVICE · SV_EVENT_PARTICIPATION |
     | `GN_DW.BRONZE_ERP` | ERP 예산·실적 원장 | 파일 업로드 → 테이블화 | SV_BUDGET |
     | `GN_DW.BRONZE_AGENCY` | 대행사 일별 리포트 | Google Sheet · Drive Excel · SharePoint Excel (3테이블) | SV_AD |
-    | `GN_DW.BRONZE_GA4` | GA4 (BigQuery 경유) | events 일별 샤드 | SV_AD (전환·기기) · *(Phase-2 SV_GA)* |
+    | `GN_DW.BRONZE_BIGQUERY` | GA4 (BigQuery 경유) | events 일별 샤드 | SV_AD (전환·기기) · *(Phase-2 SV_GA)* |
 
     - **정본 계보 문서** (SV COMMENT는 요약, 상세는 여기):
       - `30_output_share/04_컬럼계보매핑.md` — GOLD 컬럼 → SILVER → BRONZE **1:1 컬럼 매핑** + 변환 규칙 (자동생성: `scripts/gen_column_mapping.py`)

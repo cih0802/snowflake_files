@@ -898,8 +898,8 @@ WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,ENGAGED_SESSIONS,"NUMBER(38,0)
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,SCROLL_DEPTH,"NUMBER(9,4)",Y,,,[비가산] 스크롤깊이 — 재합산 금지,
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,ACTIVE_USERS,"NUMBER(38,0)",Y,,,[비가산] 활성사용자 — 재합산 금지,
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,TOTAL_USERS,"NUMBER(38,0)",Y,,,[비가산] 총사용자 — 재합산 금지,
-WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,AVG_SESSION_DURATION,"NUMBER(9,4)",Y,,,[비가산] 평균세션시간 — 재합산 금지 (#98) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`BRONZE_GA4 세션 지표`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). 실측 규모는 이슈원장 §O51-F.,
-WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,BOUNCE_RATE,"NUMBER(9,4)",Y,,,[비가산] 이탈율 — 재합산 금지 (#108) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`BRONZE_GA4 세션 지표`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). 실측 규모는 이슈원장 §O51-F.,
+WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,AVG_SESSION_DURATION,"NUMBER(9,4)",Y,,,[비가산] 평균세션시간 — 재합산 금지 (#98) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`BRONZE_BIGQUERY 세션 지표`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). 실측 규모는 이슈원장 §O51-F.,
+WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,BOUNCE_RATE,"NUMBER(9,4)",Y,,,[비가산] 이탈율 — 재합산 금지 (#108) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`BRONZE_BIGQUERY 세션 지표`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). 실측 규모는 이슈원장 §O51-F.,
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,ENGAGEMENT_RATE,"NUMBER(9,4)",Y,,,[비가산] 참여율 — 재합산 금지,
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,AVG_ENGAGEMENT_TIME_PER_SESSION,"NUMBER(9,4)",Y,,,[비가산] 세션당 평균참여시간 — 재합산 금지,
 WIDE_GA_BEHAVIOR,GA행동 1행(비정규화),WIDE,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별,공통감사

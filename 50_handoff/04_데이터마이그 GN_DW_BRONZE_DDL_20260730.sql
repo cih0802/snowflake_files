@@ -33,14 +33,14 @@
 --     → 필요 시 원천 정의 문서(12/13/15)에서 직접 가져올 것.
 --       BRONZE_AGENCY: SP_LOAD_DGT_AD_FROM_GSHEET, SP_LOAD_REBRDC_FROM_SHAREPOINT, SP_LOAD_VIDEO_AD_FROM_GDRIVE
 --       BRONZE_ERP   : SP_LOAD_BUDGET_BY_YEAR
---       BRONZE_GA4   : SP_LOAD_BIGQUERY
+--       BRONZE_BIGQUERY   : SP_LOAD_BIGQUERY
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
 --   - 갱신일자    : 2026-08-12  (초판 2026-07-13, 2판 2026-07-30)
---   - 스키마 수   : 4   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4)
+--   - 스키마 수   : 4   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_BIGQUERY)
 --   - 테이블 수   : 53  (CRM 45, AGENCY 4, ERP 1, GA4 3)
---   - 시퀀스 수   : 2   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO)
+--   - 시퀀스 수   : 2   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 3   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT_EUCKR)
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료 (원천 문서 166 / 기존 유지 957 / 명세서·규칙 기반 39 / 컬럼정의서 20)
 --
@@ -53,10 +53,10 @@
 --
 -- 초판(2026-07-13) 대비 변경 / CHANGES
 --   + [TABLE]    GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO      (신규, 적재 프로시저 오류 로그)
---   + [TABLE]    GN_DW.BRONZE_GA4.SYNC_ERR_INFO         (신규, 적재 프로시저 오류 로그)
---   + [TABLE]    GN_DW.BRONZE_GA4."events_20260719"     (신규, 20260501 대비 컬럼 1개 추가)
+--   + [TABLE]    GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO         (신규, 적재 프로시저 오류 로그)
+--   + [TABLE]    GN_DW.BRONZE_BIGQUERY."events_20260719"     (신규, 20260501 대비 컬럼 1개 추가)
 --   + [COLUMN]   GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER : BDGT_ITEM_NM, DVLP_INBOUND_PATH, MNYRS_COST_DIV_YN (62 → 65 컬럼)
---   + [COLUMN]   GN_DW.BRONZE_GA4."events_20260719"  : "event_original_occurrence_timestamp" (30 → 31 컬럼)
+--   + [COLUMN]   GN_DW.BRONZE_BIGQUERY."events_20260719"  : "event_original_occurrence_timestamp" (30 → 31 컬럼)
 --   + [SEQUENCE] SEQ_SYNC_ERR_INFO x2, [FILE FORMAT] BRONZE_ERP.GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, EUC-KR)
 --   * CRM 43개 / AGENCY 기존 3개 테이블은 컬럼 구조·타입 변경 없음.
 --   * GA4 이관 경로 정정: 초판의 Parquet(SNAPPY) 경로 대신 **CSV+GZIP 언로드 후 TRY_PARSE_JSON 복원**
@@ -104,7 +104,7 @@
 --     [FILE FORMAT] GN_CSV_FORMAT       (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --     [FILE FORMAT] GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, ENCODING='EUC-KR')
 --
---   [SCHEMA] GN_DW.BRONZE_GA4 — 원천 적재: GA4 (웹/앱 방문, Google 광고), 테이블 3개
+--   [SCHEMA] GN_DW.BRONZE_BIGQUERY — 원천 적재: GA4 (웹/앱 방문, Google 광고), 테이블 3개
 --     "events_20260501"(30컬럼), "events_20260719"(31컬럼), SYNC_ERR_INFO
 --     ※ 컬럼명 소문자 대소문자 구분(따옴표 식별자), VARIANT 컬럼 11개
 --       (event_params, user_properties, user_ltv, device, geo, traffic_source,
@@ -129,7 +129,7 @@ USE ROLE GN_DW_ADMIN;
 -- drop schema GN_DW.BRONZE_CRM; 
 -- drop schema GN_DW.BRONZE_AGENCY;
 -- drop schema GN_DW.BRONZE_ERP;
--- drop schema GN_DW.BRONZE_GA4;
+-- drop schema GN_DW.BRONZE_BIGQUERY;
 create or replace schema GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
 
 create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (
@@ -1391,13 +1391,13 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR
 
 
 -- #####################################################################
--- # SCHEMA 4/4 : GN_DW.BRONZE_GA4  (GA4 원천 - 웹/앱 방문, Google 광고 (VARIANT 다수))
+-- # SCHEMA 4/4 : GN_DW.BRONZE_BIGQUERY  (GA4 원천 - 웹/앱 방문, Google 광고 (VARIANT 다수))
 -- #####################################################################
-create or replace schema GN_DW.BRONZE_GA4 with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
+create or replace schema GN_DW.BRONZE_BIGQUERY with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
 
-create or replace sequence GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+create or replace sequence GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 
-create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
+create or replace TABLE GN_DW.BRONZE_BIGQUERY."events_20260501" (
   "event_date" VARCHAR(16777216) COMMENT '이벤트가 기록된 날짜(YYYYMMDD, 속성 시간대 기준)',
   "event_timestamp" NUMBER(38,0) COMMENT 'GA4 서버가 이벤트를 수신한 시각(UTC 마이크로초)',
   "event_name" VARCHAR(16777216) COMMENT '이벤트 이름(자동수집/커스텀 이벤트명)',
@@ -1429,7 +1429,7 @@ create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
   "session_traffic_source_last_click" VARIANT COMMENT '세션 마지막 클릭 트래픽 소스(Session-scoped, GA4 UI 일치, RECORD → OBJECT)',
   "publisher" NUMBER(38,0) COMMENT '퍼블리셔 광고 수익 정보(RECORD → OBJECT)'
 );
-create or replace TABLE GN_DW.BRONZE_GA4."events_20260719" (
+create or replace TABLE GN_DW.BRONZE_BIGQUERY."events_20260719" (
   "event_date" VARCHAR(16777216) COMMENT '이벤트가 기록된 날짜(YYYYMMDD, 속성 시간대 기준)',
   "event_timestamp" NUMBER(38,0) COMMENT 'GA4 서버가 이벤트를 수신한 시각(UTC 마이크로초)',
   "event_name" VARCHAR(16777216) COMMENT '이벤트 이름(자동수집/커스텀 이벤트명)',
@@ -1462,8 +1462,8 @@ create or replace TABLE GN_DW.BRONZE_GA4."events_20260719" (
   "publisher" NUMBER(38,0) COMMENT '퍼블리셔 광고 수익 정보(RECORD → OBJECT)',
   "event_original_occurrence_timestamp" NUMBER(38,0) COMMENT '이벤트가 기기에서 실제 발생한 원본 시각(UTC 마이크로초, 오프라인 재전송 시 원래 발생 시각 보존)'
 );
-create or replace TABLE GN_DW.BRONZE_GA4.SYNC_ERR_INFO (
-  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+create or replace TABLE GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO (
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
   ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
   DATA_TYPE VARCHAR(16777216) COMMENT '오류 발생 데이터 구분',
   ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'

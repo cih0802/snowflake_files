@@ -79,7 +79,7 @@ REMOVE @SANDBOX.TOOLS.my_export_stage;
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 5. INFORMATION_SCHEMA를 순회하며 각 테이블을 동적으로 COPY INTO
---    대상 스키마: BRONZE_AGENCY, BRONZE_CRM, BRONZE_ERP, BRONZE_GA4 (총 53 테이블)
+--    대상 스키마: BRONZE_AGENCY, BRONZE_CRM, BRONZE_ERP, BRONZE_BIGQUERY (총 53 테이블)
 --    경로 규칙: @stage/<스키마>/<테이블>/ , GZIP CSV
 --    ⚠️ EXECUTE IMMEDIATE $$ ... $$ 로 감싼 이유:
 --       Workspace의 '파일 전체 실행'은 세미콜론 단위로 문장을 잘라 보낸다.
@@ -125,11 +125,11 @@ GROUP BY 1 ORDER BY 1;
 --   BRONZE_AGENCY    4 폴더 /   5 파일 /     4,129,568 B
 --   BRONZE_CRM      45 폴더 / 389 파일 / 3,239,132,784 B
 --   BRONZE_ERP       1 폴더 /   1 파일 /        55,888 B
---   BRONZE_GA4       2 폴더 /  40 파일 /   184,535,600 B
+--   BRONZE_BIGQUERY       2 폴더 /  40 파일 /   184,535,600 B
 --   합계            52 폴더 / 435 파일 / 3,427,853,840 B (약 3.19 GiB)
 --
 --   ⚠️ 테이블은 53개인데 폴더는 52개다. 정상이다.
---      BRONZE_GA4.SYNC_ERR_INFO 는 0행이라 COPY INTO 가 파일을 만들지 않아 폴더가 생기지 않는다.
+--      BRONZE_BIGQUERY.SYNC_ERR_INFO 는 0행이라 COPY INTO 가 파일을 만들지 않아 폴더가 생기지 않는다.
 --      → C에서는 이 테이블을 '구조만 생성'하고 적재 대상에서 빠지는 것이 정상 동작이다.
 
 -- 7. 정리(Teardown) — 01번 문서 7장

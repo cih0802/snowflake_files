@@ -18,7 +18,7 @@ BRONZE(원천 1:1) → **SILVER(정제·통합)** → GOLD(star schema). GOLD FA
 | # | 원천 레이어(현업 용어) | BRONZE 스키마(권장) | 수집 방식 | 현황 | 지표정의 원천코드 |
 |---|---|---|---|---|---|
 | 1 | CRM | `GN_DW.BRONZE_CRM` | CRM 시스템 직적재 | ✅ 적재(전량) | CRM, CRM(UMS) |
-| 2 | BigQuery(GA4) | `GN_DW.BRONZE_GA4` | BigQuery에서 가져와 구성 | ✅ 적재(1일 샤드=전체 간주, 추가 입고 예정 없음) | GA, GA4 |
+| 2 | BigQuery(GA4) | `GN_DW.BRONZE_BIGQUERY` | BigQuery에서 가져와 구성 | ✅ 적재(1일 샤드=전체 간주, 추가 입고 예정 없음) | GA, GA4 |
 | 3 | ERP | `GN_DW.BRONZE_ERP` | Snowflake에 파일 업로드 → 테이블화(bronze) | ✅ 적재 | ERP |
 | 4 | 대행사(Agency) | `GN_DW.BRONZE_AGENCY` | Google Sheet · Google Drive Excel · MS SharePoint Excel | ✅ 적재(3테이블) | AGENCY(대행사 일별레포트), GADS |
 

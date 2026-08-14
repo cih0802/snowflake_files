@@ -2,12 +2,22 @@
 -- Co-authored with CoCo
 -- ⚠️ 설계결정서 §2: SELECT * 금지 → 컬럼명 명시(위치기반 오염 차단, SILVER 출력 스키마 고정)
 -- ⚠️ 컬럼 추가 시 본 매크로 + SILVER DDL 동시 갱신(자동 전파 차단 = 의도된 설계)
+--
+-- 🔄 [2026-08-14 스키마 개명] 물리 스키마 `GN_DW.BRONZE_GA4` → `GN_DW.BRONZE_BIGQUERY`
+--    (`ALTER SCHEMA BRONZE_GA4 RENAME TO BRONZE_BIGQUERY;` 실행 완료).
+--    왜: 이 BRONZE 스키마의 원천은 GA4 제품이 아니라 **BigQuery export**이며, GA4 외 BigQuery 유입도
+--        수용할 수 있도록 원천 시스템(BigQuery) 기준 명명으로 통일했다.
+--    ⚠️ 개명된 것은 **스키마명뿐**이다 — 매크로명 `ga4_union_shards`·모델명 `GA4_*`·샤드
+--        테이블명 `events_YYYYMMDD`·SILVER 산출 객체명은 모두 불변(GA4 = 데이터 도메인 명칭).
+--    ⚠️ INFORMATION_SCHEMA 동적 조회이므로 아래 `table_schema` 리터럴이 유일한 결합점이다.
+--        스키마가 다시 개명되면 이 한 줄과 §FROM 절(둘 다) 을 반드시 함께 고칠 것.
+--    이력 정본: `10_dbt_pipeline/README.md` §5 스키마 개명 이력.
 {% macro ga4_union_shards(start_date, end_date) %}
   {% set q %}
     -- ⚠️ 샤드 테이블명이 소문자 인용식별자("events_YYYYMMDD")로 저장될 수 있어 대소문자 무관 매칭 필수.
     SELECT table_name
     FROM {{ target.database }}.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'BRONZE_GA4'
+    WHERE table_schema = 'BRONZE_BIGQUERY'
       AND UPPER(table_name) LIKE 'EVENTS\\_%' ESCAPE '\\'
       AND REPLACE(UPPER(table_name),'EVENTS_','') BETWEEN '{{ start_date }}' AND '{{ end_date }}'
     ORDER BY table_name
@@ -34,7 +44,7 @@
       WHERE 1=0
     {% else %}
       {% for t in tabs %}
-        -- ⚠️ BRONZE_GA4 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
+        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
         SELECT
           "event_date"                        AS event_date,
           "event_timestamp"                   AS event_timestamp,
@@ -50,7 +60,7 @@
           "platform"                          AS platform,
           "is_active_user"                    AS is_active_user,
           "batch_ordering_id"                 AS batch_ordering_id
-        FROM {{ target.database }}.BRONZE_GA4."{{ t }}"
+        FROM {{ target.database }}.BRONZE_BIGQUERY."{{ t }}"
         {% if not loop.last %}UNION ALL{% endif %}
       {% endfor %}
     {% endif %}

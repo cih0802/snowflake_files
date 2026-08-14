@@ -6,7 +6,7 @@
 
 > **설계 2축(top-down)**:
 > 1. **GOLD가 요구하는 SILVER** — `03_top-down_gold/08_silver의존.md` (GOLD star schema **24테이블 = 15 DIM + 9 FACT** → SILVER 소스·엔티티 역산)
-> 2. **BRONZE에서 구성 가능한 SILVER** — 물리 실측(2026-07-14): `GN_DW.BRONZE_CRM` 43테이블 · `BRONZE_GA4` 1(287,025행) · `BRONZE_ERP` 1(2,041행) · `BRONZE_AGENCY` 3(235,572행) 모두 입고.
+> 2. **BRONZE에서 구성 가능한 SILVER** — 물리 실측(2026-07-14): `GN_DW.BRONZE_CRM` 43테이블 · `BRONZE_BIGQUERY` 1(287,025행) · `BRONZE_ERP` 1(2,041행) · `BRONZE_AGENCY` 3(235,572행) 모두 입고.
 > 위치: `GN_DW.SILVER` 단일 스키마. 테이블명 소스 접두사(`CRM_*`·`GA4_*`·`ERP_*`·`AGENCY_*`)로 구분.
 
 ---

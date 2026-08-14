@@ -641,7 +641,7 @@ O59-T 가 구 판본 전량(18파일)을 `_archive/20260806/` 로 이관하고 *
 
 | 단계 | 결과 |
 |---|---|
-| 입력 재생성 | `dump_schema.py` = GOLD 뷰 **14** · 테이블 **35** · SILVER **39** · BRONZE **50**(⚠️ 실측 51 · `P215` 키 충돌 — 🟢 **O65 에서 실체 확정**: `SYNC_ERR_INFO` 가 `BRONZE_AGENCY`·`BRONZE_GA4` **두 스키마에 동명**(각 4컬럼)이고 덤프가 테이블명만 키로 써 1건이 겹쳐 먹힌다 · 이 산출물에 영향 0) · FK 엣지 50 |
+| 입력 재생성 | `dump_schema.py` = GOLD 뷰 **14** · 테이블 **35** · SILVER **39** · BRONZE **50**(⚠️ 실측 51 · `P215` 키 충돌 — 🟢 **O65 에서 실체 확정**: `SYNC_ERR_INFO` 가 `BRONZE_AGENCY`·`BRONZE_BIGQUERY` **두 스키마에 동명**(각 4컬럼)이고 덤프가 테이블명만 키로 써 1건이 겹쳐 먹힌다 · 이 산출물에 영향 0) · FK 엣지 50 |
 | 〃 | `census_columns.py` = **74테이블**(GOLD 35 + SILVER 39) · **ERR 0** ⇒ O59-T 재덤프와 동일 |
 | `06` | `run_bronze_audit_host.py`(**정본 러너** — 커널판 `gen_bronze_exposure_audit.py` 는 dbt 스캔 불가) · BRONZE **1,162**컬럼 · 하드코딩 70 · 실적재 projection 681 |
 | `07` | `gen_code_system_gates.py` · 모집단 85 · G1 55/55 · G3 보존 79/미보존 6 · G4 도달 30 |

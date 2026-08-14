@@ -54,9 +54,9 @@ BRONZE_CRM	TM_RM_RELATNSP_GFTMNEY_INFO	180664	4315136
 BRONZE_CRM	TM_RM_RELATNSP_LETTER_INFO	207609	3514368
 BRONZE_CRM	TM_RM_RELATNSP_MSTR_INFO	862610	14353408
 BRONZE_ERP	BDGT_ACMSLT_LEDGER	4301	328704
-BRONZE_GA4	SYNC_ERR_INFO	0	0
-BRONZE_GA4	events_20260501	287025	54060032
-BRONZE_GA4	events_20260719	289416	75846656
+BRONZE_BIGQUERY	SYNC_ERR_INFO	0	0
+BRONZE_BIGQUERY	events_20260501	287025	54060032
+BRONZE_BIGQUERY	events_20260719	289416	75846656
 */
 -- # A2
 SELECT table_schema,
@@ -70,7 +70,7 @@ GROUP BY 1 ORDER BY 1;
 BRONZE_AGENCY	4	243550	5719040
 BRONZE_CRM	45	115875113	2834600960
 BRONZE_ERP	1	4301	328704
-BRONZE_GA4	3	576441	129906688
+BRONZE_BIGQUERY	3	576441	129906688
 */
 -- # A3
 SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_CRM', TRUE);
@@ -1118,18 +1118,18 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
 );
 */
 -- # A4
-SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_GA4', TRUE);
+SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_BIGQUERY', TRUE);
 /*
-create or replace schema GN_DW.BRONZE_GA4 with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
+create or replace schema GN_DW.BRONZE_BIGQUERY with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
 
-create or replace sequence GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
-create or replace TABLE GN_DW.BRONZE_GA4.SYNC_ERR_INFO (
-	ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL,
+create or replace sequence GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+create or replace TABLE GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO (
+	ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO.NEXTVAL,
 	ERR_DATETIME TIMESTAMP_NTZ(9),
 	DATA_TYPE VARCHAR(16777216),
 	ERR_INFO VARCHAR(16777216)
 );
-create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
+create or replace TABLE GN_DW.BRONZE_BIGQUERY."events_20260501" (
 	"event_date" VARCHAR(16777216),
 	"event_timestamp" NUMBER(38,0),
 	"event_name" VARCHAR(16777216),
@@ -1161,7 +1161,7 @@ create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
 	"session_traffic_source_last_click" VARIANT,
 	"publisher" NUMBER(38,0)
 );
-create or replace TABLE GN_DW.BRONZE_GA4."events_20260719" (
+create or replace TABLE GN_DW.BRONZE_BIGQUERY."events_20260719" (
 	"event_date" VARCHAR(16777216),
 	"event_timestamp" NUMBER(38,0),
 	"event_name" VARCHAR(16777216),
@@ -1194,13 +1194,13 @@ create or replace TABLE GN_DW.BRONZE_GA4."events_20260719" (
 	"publisher" NUMBER(38,0),
 	"event_original_occurrence_timestamp" NUMBER(38,0)
 );
-CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_GA4.SP_LOAD_BIGQUERY("INPUT_YYYYMMDD" VARCHAR DEFAULT null)
+CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_BIGQUERY.SP_LOAD_BIGQUERY("INPUT_YYYYMMDD" VARCHAR DEFAULT null)
 RETURNS VARCHAR
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.12'
 PACKAGES = ('snowflake-snowpark-python','pandas','google-cloud-bigquery','google-cloud-bigquery-storage','google-auth','db-dtypes')
 HANDLER = 'main'
-IMPORTS = ('@GN_DW.BRONZE_GA4.CREDENTIALS_STAGE/gn_google_bq_service_account.json')
+IMPORTS = ('@GN_DW.BRONZE_BIGQUERY.CREDENTIALS_STAGE/gn_google_bq_service_account.json')
 EXTERNAL_ACCESS_INTEGRATIONS = (GOOGLE_BQ_ACCESS_INTEGRATION)
 EXECUTE AS CALLER
 AS '
@@ -1259,7 +1259,7 @@ def main(session, input_yyyymmdd=None):
         session.write_pandas(
             df=df,
             database="GN_DW",
-            schema="BRONZE_GA4",
+            schema="BRONZE_BIGQUERY",
             table_name=BQ_TABLE_ID,
             auto_create_table=True,
             overwrite=True
@@ -1270,7 +1270,7 @@ def main(session, input_yyyymmdd=None):
     except Exception as global_err:
         try:
             error_msg = str(global_err).replace("''", "''''")
-            error_query = f"INSERT INTO GN_DW.BRONZE_GA4.SYNC_ERR_INFO VALUES (CURRENT_TIMESTAMP(), ''{error_msg}'')"
+            error_query = f"INSERT INTO GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO VALUES (CURRENT_TIMESTAMP(), ''{error_msg}'')"
             session.sql(error_query).collect()
         except:
             pass

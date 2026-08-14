@@ -5,10 +5,10 @@ from sfconn import conn, q
 
 cn = conn()
 _, tr = q("""select table_schema, table_name, table_type from GN_DW.INFORMATION_SCHEMA.TABLES
-             where table_schema in ('GOLD','SERVING','SILVER','BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4')""", cn)
+             where table_schema in ('GOLD','SERVING','SILVER','BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_BIGQUERY')""", cn)
 _, cr = q("""select table_schema, table_name, column_name, data_type, ordinal_position, comment
              from GN_DW.INFORMATION_SCHEMA.COLUMNS
-             where table_schema in ('GOLD','SERVING','SILVER','BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_GA4')
+             where table_schema in ('GOLD','SERVING','SILVER','BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_BIGQUERY')
              order by table_schema, table_name, ordinal_position""", cn)
 
 # [2026-08-07 O47] FK 를 **실선언에서 읽는다.** 종전에는 소비 생성기가

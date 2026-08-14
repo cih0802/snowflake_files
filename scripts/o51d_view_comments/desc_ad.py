@@ -119,9 +119,9 @@ AD_EMPTY = {
     ('WIDE_GA_BEHAVIOR', 'CAMPAIGN_BRAND'): _fk_null('FACT_GA_BEHAVIOR', 'CAMPAIGN_SK'),
     ('WIDE_GA_BEHAVIOR', 'IS_HOLIDAY'):    _HOLIDAY,
     ('WIDE_GA_BEHAVIOR', 'AVG_SESSION_DURATION'):
-        _src_empty('BRONZE_GA4 세션 지표', "GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). "),
+        _src_empty('BRONZE_BIGQUERY 세션 지표', "GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). "),
     ('WIDE_GA_BEHAVIOR', 'BOUNCE_RATE'):
-        _src_empty('BRONZE_GA4 세션 지표', "GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). "),
+        _src_empty('BRONZE_BIGQUERY 세션 지표', "GA4 원천 적재 범위 자체가 좁다(G-5 하드블로커). "),
     ('WIDE_GA_BEHAVIOR', 'IDENTITY_MEMNUM'):
         _fk_null('FACT_GA_BEHAVIOR', 'IDENTITY_SK',
                  "🔴익명 세션이 다수라 회원번호가 붙지 않는다 — 회원 귀속 분석은 `IDENTITY_SK` 를 "

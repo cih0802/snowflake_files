@@ -28,7 +28,7 @@ flowchart LR
       BCRM["BRONZE_CRM 43"]
       BAGN["BRONZE_AGENCY 3"]
       BERP["BRONZE_ERP 1"]
-      BGA4["BRONZE_GA4 1"]
+      BGA4["BRONZE_BIGQUERY 1"]
     end
     SILVER["SILVER<br/>정제·통합 (32)"]
     GOLD["GOLD<br/>스타 스키마 24<br/>(15 DIM + 9 FACT)<br/>+ WIDE VIEW 9"]
@@ -64,7 +64,7 @@ flowchart LR
 | 거버넌스 | SECURITY | 정책 객체 | 보안 격리 |
 
 > 원천 현황: **CRM 43테이블 전수 수령**. GA4·ERP·AGENCY는 부분 입고(GA4 1일 샤드·ERP 예산원장·AGENCY 광고 스캐폴드) → 전기간/잔여 입고 후 SILVER/GOLD/SV 자동 확장(S-6). GADS·ADMIN은 AGENCY/CRM 통합 예정(목적지·접두사 미정) — GOLD 귀속(GADS→FAD / ADMIN→FSE)만 확정.
-> BRONZE는 **원천별 스키마 분리**(`BRONZE_CRM`·`BRONZE_AGENCY`·`BRONZE_ERP`·`BRONZE_GA4`)로 구현(단일 BRONZE 아님). [실측] CRM 43·GA4 `events_20260501` 287,025행·AGENCY 3(DGT 197,686/VIDEO 35,822/REBRDC 2,064)·ERP `BDGT_ACMSLT_LEDGER` 2,041행. **SILVER 32·GOLD 24+WIDE 9·SERVING SV5/Agent2 전량 배포 완료.**
+> BRONZE는 **원천별 스키마 분리**(`BRONZE_CRM`·`BRONZE_AGENCY`·`BRONZE_ERP`·`BRONZE_BIGQUERY`)로 구현(단일 BRONZE 아님). [실측] CRM 43·GA4 `events_20260501` 287,025행·AGENCY 3(DGT 197,686/VIDEO 35,822/REBRDC 2,064)·ERP `BDGT_ACMSLT_LEDGER` 2,041행. **SILVER 32·GOLD 24+WIDE 9·SERVING SV5/Agent2 전량 배포 완료.**
 
 ---
 

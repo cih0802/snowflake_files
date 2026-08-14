@@ -88,7 +88,7 @@
 --   2) `[원천]` 절은 **테이블·컬럼 이름만** 적는다 — 형식:
 --      `[원천] 시스템=<원천시스템> · BRONZE=<DB.스키마.테이블(핵심컬럼)> · SILVER=<정제테이블>`
 --      BRONZE 스키마 4종: GN_DW.BRONZE_CRM(eCRM·UMS) · GN_DW.BRONZE_ERP(예산원장) ·
---                        GN_DW.BRONZE_AGENCY(대행사 일별 리포트) · GN_DW.BRONZE_GA4(GA4 일별 샤드)
+--                        GN_DW.BRONZE_AGENCY(대행사 일별 리포트) · GN_DW.BRONZE_BIGQUERY(GA4 일별 샤드)
 --      컬럼 단위 완전 매핑은 넣지 않는다(토큰 낭비·이중화) → 30_output_share/04_컬럼계보매핑.md로 안내.
 --   3) 저카디널리티 코드 차원은 **실제 코드값을 열거**한다. 코드값이 틀리면 Analyst가 0행을 반환하는
 --      무증상 오답이 된다(DEVICE_TYPE 사례 · 04 §6.9-(5)).

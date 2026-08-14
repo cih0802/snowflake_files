@@ -1,4 +1,4 @@
-# BRONZE_GA4.events_YYYYMMDD — 테이블 스키마 명세서
+# BRONZE_BIGQUERY.events_YYYYMMDD — 테이블 스키마 명세서
 
 > GA4(BigQuery Export) 원본 이벤트 데이터를 Snowflake Bronze 레이어에 적재하기 위한 스키마 정의 문서.
 > 이 문서는 LLM이 스키마 구조·중첩 관계·적재 규칙을 정확히 이해하고 Silver 변환 SQL을 생성할 수 있도록 작성됨.
@@ -10,7 +10,7 @@
 | 항목 | 내용 |
 |------|------|
 | **소스 테이블** | `todaydata_goodneighbors` 데이터셋 > `events_YYYYMMDD` |
-| **Snowflake 적재 위치** | `GN_DW.BRONZE_GA4.events_YYYYMMDD` |
+| **Snowflake 적재 위치** | `GN_DW.BRONZE_BIGQUERY.events_YYYYMMDD` |
 | **테이블 구조** | 일자별 date-sharded 테이블 (하루 1개 테이블). `_TABLE_SUFFIX` 필터로 날짜 범위 쿼리. |
 | **데이터 지연 (Latency)** | daily 테이블은 이벤트 발생 후 **최대 72시간**까지 업데이트됨. 72시간 이후 도착한 이벤트는 미수집. |
 | **세션 테이블** | GA4는 별도 세션 테이블 없음 (아래 §3 세션 식별자 참조). |

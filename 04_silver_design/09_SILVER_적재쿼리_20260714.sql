@@ -536,14 +536,14 @@ FROM (
 
 
 -- ============================================================================
--- STEP 6 — GA4 (트랙 B, 1차) 정제 적재 : BRONZE_GA4.events_YYYYMMDD → SILVER 5객체
+-- STEP 6 — GA4 (트랙 B, 1차) 정제 적재 : BRONZE_BIGQUERY.events_YYYYMMDD → SILVER 5객체
 --   근거 : 07_GA4_SILVER_샤드통합 설계결정.md · 14_GA4_작업지시 프롬프트_20260714.md · 08 STEP 6 DDL.
---   원천 : 1일 샤드 GN_DW.BRONZE_GA4."events_20260501" (287,025행, 소문자·인용 식별자).
+--   원천 : 1일 샤드 GN_DW.BRONZE_BIGQUERY."events_20260501" (287,025행, 소문자·인용 식별자).
 --          ⚠️ 전기간 샤드 입고 시 FROM 절을 ga4_union_shards(명시 30컬럼 UNION)로 교체하면 동일 로직 멱등 재적재.
 --   규칙 : 명시컬럼(SELECT * 금지) · session_traffic_source_last_click(UI 일치) · float=double, 세션/카운트=int_value ·
 --          event_date→TO_DATE(TRY_TO_NUMBER 금지) · 비가산 raw · 멱등 INSERT OVERWRITE · 메타 4+1컬럼.
 --   ⚠️ 병렬 금지(credential cache 락) — 아래 6개 INSERT 는 순차 실행.
---   ⚠️ 단방향 : 5개 모두 BRONZE_GA4 만 참조(GA4_IDENTITY 도 GA4_EVENT 참조 금지 → session-fill CTE 재계산).
+--   ⚠️ 단방향 : 5개 모두 BRONZE_BIGQUERY 만 참조(GA4_IDENTITY 도 GA4_EVENT 참조 금지 → session-fill CTE 재계산).
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -568,10 +568,10 @@ SELECT DISTINCT
     s:cross_channel_campaign:medium::STRING,
     s:cross_channel_campaign:campaign_name::STRING,
     s:cross_channel_campaign:default_channel_group::STRING,
-    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+    'GA4', 'BRONZE_BIGQUERY.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM (
     SELECT "session_traffic_source_last_click" AS s
-    FROM GN_DW.BRONZE_GA4."events_20260501"
+    FROM GN_DW.BRONZE_BIGQUERY."events_20260501"
 );
 
 -- ----------------------------------------------------------------------------
@@ -581,14 +581,14 @@ INSERT OVERWRITE INTO GN_DW.SILVER.GA4_EVENT_DIM
 (EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 SELECT DISTINCT EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
-    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+    'GA4', 'BRONZE_BIGQUERY.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM (
     SELECT e."event_name" AS EVENT_NAME,
         MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL)) AS EVENT_CATEGORY,
         MAX(IFF(p.value:key::STRING='event_label',
             COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS EVENT_LABEL,
         MAX(IFF(p.value:key::STRING='event_action', p.value:value:string_value::STRING, NULL)) AS EVENT_ACTION
-    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    FROM GN_DW.BRONZE_BIGQUERY."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
     GROUP BY e."event_name", e."event_timestamp", e."user_pseudo_id", e."batch_ordering_id"
 );
 
@@ -607,8 +607,8 @@ SELECT DISTINCT
     "device":operating_system::STRING,
     "device":browser::STRING,
     "device":language::STRING,
-    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
-FROM GN_DW.BRONZE_GA4."events_20260501";
+    'GA4', 'BRONZE_BIGQUERY.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM GN_DW.BRONZE_BIGQUERY."events_20260501";
 
 -- ----------------------------------------------------------------------------
 -- GA4 B-4 : GA4_EVENT  (팩트 소스 — FLATTEN + param 승격 + 07 §5-A 세션 채움)
@@ -653,7 +653,7 @@ WITH ev AS (
         MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))     AS percent_scrolled,
         MAX(IFF(p.value:key::STRING='link_url',  p.value:value:string_value::STRING, NULL))         AS link_url,
         MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))         AS link_text
-    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    FROM GN_DW.BRONZE_BIGQUERY."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
     GROUP BY
         e."user_pseudo_id", e."event_timestamp", e."event_name", e."batch_ordering_id", e."event_date",
         e."user_id", e."device", e."geo", e."platform", e."is_active_user", e."session_traffic_source_last_click"
@@ -711,7 +711,7 @@ SELECT
     ev.stlc:cross_channel_campaign:default_channel_group::STRING,
     ev.platform,
     ev.is_active_user,
-    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+    'GA4', 'BRONZE_BIGQUERY.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM ev
 LEFT JOIN sess s
     ON ev.ga_session_id IS NOT NULL
@@ -730,7 +730,7 @@ WITH ev AS (
         e."user_pseudo_id" AS user_pseudo_id,
         e."user_id"        AS user_id,
         MAX(IFF(p.value:key::STRING='ga_session_id', p.value:value:int_value::NUMBER, NULL)) AS ga_session_id
-    FROM GN_DW.BRONZE_GA4."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
+    FROM GN_DW.BRONZE_BIGQUERY."events_20260501" e, LATERAL FLATTEN(input => e."event_params") p
     GROUP BY e."user_pseudo_id", e."event_timestamp", e."event_name", e."batch_ordering_id", e."user_id"
 ),
 sess AS (
@@ -760,7 +760,7 @@ SELECT
     IFF(MAX(member_id) ILIKE 'S%', NULL, MAX(member_id))                            AS mber_no,
     IFF(MAX(member_id) ILIKE 'S%', MAX(member_id), NULL)                            AS once_mber_no,
     IFF(MIN(IFF(id_resolution='DIRECT',0,1)) = 0, 'DIRECT', 'SESSION_FILL')         AS id_resolution,
-    'GA4', 'BRONZE_GA4.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+    'GA4', 'BRONZE_BIGQUERY.events_20260501', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM filled
 WHERE member_id IS NOT NULL
 GROUP BY user_pseudo_id;

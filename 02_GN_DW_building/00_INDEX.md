@@ -8,7 +8,7 @@ design_direction: SERVING 스키마 도입 (재설계안·라이브 배포 완�
 timezone: Asia/Seoul (UTC+9)
 target_database: GN_DW
 source_poc_database: GN_DW_POC
-schemas: [BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, SILVER, GOLD, SERVING, OPS, SECURITY]
+schemas: [BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_BIGQUERY, SILVER, GOLD, SERVING, OPS, SECURITY]
 layer_flow: BRONZE -> SILVER -> GOLD -> SERVING
 chapter_files:
   - { file: "01_환경_Role.md",        sections: [1, 2],            topic: warehouse/timezone + rbac }
@@ -51,7 +51,7 @@ scope_out:
 ```yaml
 deliverables:
   databases: { GN_DW: 1 }
-  schemas: [BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, SILVER, GOLD, SERVING, OPS, SECURITY]   # 9 (+PUBLIC)
+  schemas: [BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_BIGQUERY, SILVER, GOLD, SERVING, OPS, SECURITY]   # 9 (+PUBLIC)
   warehouses: 3
   roles: 6
   bronze_tables: 48       # CRM 43 + AGENCY 3 + ERP 1 + GA4 1 (원천별 4스키마 분리)
