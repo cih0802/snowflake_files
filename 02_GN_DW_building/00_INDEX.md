@@ -143,7 +143,7 @@ principles:
     desc: "모든 GOLD View는 SILVER 또는 GOLD 내부 객체만 참조. BRONZE 직접참조 금지"
   - id: P3
     name: owners_rights_gold
-    desc: "GOLD View는 GN_DW_ADMIN 소유(owner's rights). ANALYST/VIEWER는 GOLD SELECT만으로 SILVER/BRONZE 직접 권한 없이 조회"
+    desc: "GOLD View는 GN_DW_ADMIN 소유(owner's rights). VIEWER는 GOLD SELECT만으로 SILVER/BRONZE 직접 권한 없이 조회. 🟢 [2026-08-18] ANALYST는 요건 변경으로 BRONZE_*/SILVER SELECT를 직접 보유(07 §D.4) → 이 원칙의 적용 대상은 VIEWER/SERVICE로 축소됐다"
   - id: P4
     name: role_hierarchy_best_practice
     desc: "모든 Custom Role은 SYSADMIN에 귀속. ACCOUNTADMIN으로 직접 오브젝트 생성 금지"

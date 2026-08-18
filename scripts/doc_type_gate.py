@@ -55,6 +55,7 @@ INDEX = os.path.join(DOC_DIR, '00_INDEX_이슈원장.md')
 EXTRA_DOCS = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',
+    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
     '99_NEXT_SESSION.md',
 ]
 

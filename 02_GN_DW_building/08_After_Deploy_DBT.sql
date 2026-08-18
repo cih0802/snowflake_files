@@ -23,6 +23,9 @@ GRANT USAGE ON SCHEMA GN_DW.SERVING TO ROLE GN_DW_SERVICE;
 --    → SV/Agent별 USAGE는 3·5단계 CREATE 직후 대상 객체에 명시 부여한다:
 --        GRANT USAGE ON SEMANTIC VIEW GN_DW.SERVING.<SV> TO ROLE GN_DW_ANALYST; (VIEWER/SERVICE 동일)
 --        GRANT USAGE ON AGENT GN_DW.SERVING.<AGENT> TO ROLE GN_DW_ANALYST; (VIEWER/SERVICE 동일)
+-- 🟢 [2026-08-18] STREAMLIT 도 동일 제약(FUTURE grant 미지원)이며 앱 배포 후 개별 부여한다.
+--    부여 템플릿·소유 통제(앱 소유 = GN_DW_SERVICE, caller's rights 표준)는 07 §D.7-3 참조.
+--    ANALYST 의 Streamlit "저작"은 개인 Workspace 에서 수행 → SERVING 에 CREATE STREAMLIT 부여 없음(07 §D.8).
 
 /* =====================================================================
    F. CoWork object (Snowflake Intelligence) — Agent 가시성 큐레이션

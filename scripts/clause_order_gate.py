@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DOCS = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',
+    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
 ]
 
 # 조문 정의 줄 = 불릿 + (선택)🆕 + **R<계열>-<번호>[-<접미>]

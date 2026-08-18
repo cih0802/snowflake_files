@@ -118,6 +118,25 @@ ORDER BY r.AGENT_NAME, r.SV_NAME;
 
 
 -- ============================================================================
+-- [1] 갱신 전 상태 확인 — 어느 버전이 서비스 중이고 live 가 있는지
+--     live 존재 판별 = spec_file_path 가 `…/versions/live/` 인 행("name" IS NULL)
+-- ============================================================================
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
+--   2026-08-18 실측: MEMBER=VERSION$3(도구 7) · OVERALL=VERSION$3(도구 4) · MARKETING=VERSION$1(빈 스펙)
+--   🔴 라이브 도구 수가 정본 yaml(10·8·6)보다 적다 = **O74 의 버전업이 이 계정에 미이행**이다.
+--      본 파일 [3] 이 그 격차를 해소한다.
+
+-- 정본 파일이 stage 에 실제로 있는지 확인 (파일명 `agent_spec.yaml` 필수)
+LIST 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/';
+--   기대: AGENT_MEMBER/agent_spec.yaml · AGENT_OVERALL/agent_spec.yaml · AGENT_MARKETING/agent_spec.yaml
+--   ※ 워크스페이스에 방금 추가·수정한 파일도 versions/live 에 즉시 반영된다(실측).
+--   ⚠ 단 **스테이지 동기화에는 짧은 지연이 있다** — 방금 저장했다면 파일 크기가
+--     로컬과 일치하는지 확인한 뒤 진행할 것(동기화 중 읽으면 잘린 내용이 보인다 · O84 실측).
+
+
+-- ============================================================================
 -- [0-B] 🆕 정본 yaml 을 OPS 배포 스테이지로 동기화 (2026-08-18 O85-C 신설 · 착수표 ㉔ ⑦ 처방)
 --     🔴 **왜 필요한가**: [3] 이 읽던 경로는 `USER$.PUBLIC."snowflake_files"` =
 --        **TRIALADMIN 개인 워크스페이스**였다. `USER$` 는 **실행하는 사용자의 개인 DB 별칭**이라
@@ -204,36 +223,6 @@ $$;
 --   🟢 [2026-08-18 O85-C 최초 실행 결과] 3종 전건 `OK`
 --      (MARKETING 32,256 · MEMBER 40,256 · OVERALL 31,248 · 계정 `UA93987`).
 --   🔴 이 수치는 스펙을 고치면 바뀐다 — **판정은 `verdict` 로 하고 수치를 인용하지 마라**(`R2-8-4-a`).
-
-
--- ============================================================================
--- [1] 갱신 전 상태 확인 — 어느 버전이 서비스 중이고 live 가 있는지
---     live 존재 판별 = spec_file_path 가 `…/versions/live/` 인 행("name" IS NULL)
--- ============================================================================
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
---   2026-08-18 실측: MEMBER=VERSION$3(도구 7) · OVERALL=VERSION$3(도구 4) · MARKETING=VERSION$1(빈 스펙)
---   🔴 라이브 도구 수가 정본 yaml(10·8·6)보다 적다 = **O74 의 버전업이 이 계정에 미이행**이다.
---      본 파일 [3] 이 그 격차를 해소한다.
-
---   🔴 [2026-08-18 O85-C2 정정] 위 「2026-08-18 실측」은 계정 `DV07626` 시점이다(`P169`).
---      현 계정(`UA93987`)에는 **Agent 0종**이라 이 세 SHOW 는 모두 객체 부재로 실패한다.
---      ⇒ **`09_1` 을 먼저 돌려 Agent 3종을 만든 뒤** 이 파일을 실행한다(`09_1 [0-E]` 로 확인).
-
--- 정본 파일이 stage 에 실제로 있는지 확인 (파일명 `agent_spec.yaml` 필수)
---   🟠 [2026-08-18 O85-C2] 이 LIST 는 이제 **`[0-C]` 대조와 중복**이다(참고용으로 남긴다).
---      배포 판정은 `[0-C]` 의 `verdict` 로 한다 — 이 LIST 결과를 근거로 쓰지 말 것.
-LIST 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/';
---   기대: AGENT_MEMBER/agent_spec.yaml · AGENT_OVERALL/agent_spec.yaml · AGENT_MARKETING/agent_spec.yaml
---   ※ 워크스페이스에 방금 추가·수정한 파일도 versions/live 에 즉시 반영된다(실측).
---   🟢 **[2026-08-18 O85-C2 실측] `versions/head` 와 `versions/live` 는 구별되지 않는다.**
---      같은 파일을 두 경로로 `LIST` 하면 **size·md5·시각이 완전히 동일**하고, `head` 로 조회해도
---      반환 `name` 이 **`/versions/live/…` 로 정규화**돼 나온다(`USER$` 개인 워크스페이스 · 25,680B 실측).
---      ⇒ **`ALTER WORKSPACE … COMMIT` 은 이 파일의 선행조건이 아니다.** 저장만 하면 곧 반영된다.
---      ⚠️ Git 연동 워크스페이스·공유 워크스페이스에서는 다를 수 있다 — 그때는 다시 실측하라.
---   ⚠ 단 **스테이지 동기화에는 짧은 지연이 있다** — 방금 저장했다면 파일 크기가
---     로컬과 일치하는지 확인한 뒤 진행할 것(동기화 중 읽으면 잘린 내용이 보인다 · O84 실측).
 
 
 -- ============================================================================
@@ -358,10 +347,6 @@ SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MARKETING; -- 동일 4행
 --   판정: created_on 이 09_1 실행 시각 그대로면 보존된 것이다(재부여되지 않았다는 증거).
 USE ROLE ACCOUNTADMIN;
 SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;  -- **3행** 유지
---   🔴 [2026-08-18 O85-C2] **SI 객체가 없으면 이 한 줄이 컴파일 단계에서 죽는다**
---      (실측 = 계정 `UA93987` 에 부재 · `09_1 [0-D]`·`[4]` 와 같은 축).
---      ⇒ `09_1 [4-㉠]` 을 돌리지 않았다면 이 줄을 건너뛰고 **CoWork UI 에서 눈으로 확인**한다.
---      🔴 그 경우 판정은 「미확인」이다 — 「노출됨」으로 적지 마라.
 USE ROLE GN_DW_ADMIN;
 
 -- 🔴 마지막으로 COMMENT 동기화가 필요한지 확인한다 — 도구 수를 늘렸다면 09_1 [5] 를 실행한다.

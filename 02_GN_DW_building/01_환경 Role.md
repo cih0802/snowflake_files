@@ -69,7 +69,7 @@ role_hierarchy:
     SYSADMIN:
       GN_DW_ADMIN:        # DB/스키마 관리, DDL, SV/Agent 소유
         - GN_DW_ENGINEER  # ETL 개발, dbt 파이프라인 운영
-        - GN_DW_ANALYST:  # 분석 쿼리 (SELECT only)
+        - GN_DW_ANALYST:  # 분석 쿼리 (SELECT only — BRONZE 포함)
             - GN_DW_VIEWER # 읽기 전용 (GOLD/WIDE 읽기 + SERVING 소비)
         - GN_DW_LOADER    # 외부팀 BRONZE 적재
         - GN_DW_SERVICE   # 서비스 계정 (API, Streamlit)
@@ -92,7 +92,12 @@ roles:
   - id: GN_DW_ANALYST
     purpose: 분석 쿼리
     warehouse: [GN_DW_ANALYTICS_WH]
-    scope: "SILVER(읽기), GOLD(읽기), SERVING(SV/Agent 소비)"
+    scope: "BRONZE_*(읽기), SILVER(읽기), GOLD(읽기), SERVING(SV/Agent/Streamlit 소비)"
+    note: |
+      🟢 [2026-08-18 요건 변경] BRONZE_* 4스키마 SELECT 추가(종전 "-") + Streamlit 소비·저작.
+      구현 = 07 §D.4(BRONZE 읽기) · §D.7(Agent·Streamlit 소비) · §D.8(Workspace 저작 2단계 모델).
+      ⚠️ BRONZE 추가로 owner's rights 경유 확산이 새 위험 → 앱 소유는 최소권한 롤(GN_DW_SERVICE),
+         앱 코드는 caller's rights 연결을 표준으로 한다(07 §D.7 통제 3원칙).
   - id: GN_DW_VIEWER
     purpose: 대시보드/리포트
     warehouse: [GN_DW_ANALYTICS_WH]

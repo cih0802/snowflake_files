@@ -100,7 +100,8 @@ GN_DW_ADMIN     │ ALL      │ ALL    │ ALL         │ ALL            │ A
 GN_DW_ENGINEER  │ SELECT   │ ALL    │ ALL         │ USAGE          │ USAGE  │ -
                 │          │        │ (dbt CREATE │                │ (dbt)  │
                 │          │        │  TABLE/VIEW)│                │        │
-GN_DW_ANALYST   │ -        │ SELECT │ SELECT      │ SV/Agent       │ -      │ -
+GN_DW_ANALYST   │ SELECT   │ SELECT │ SELECT      │ SV/Agent       │ -      │ -
+                │          │        │             │ /Streamlit     │        │
 GN_DW_VIEWER    │ -        │ -      │ SELECT      │ SV/Agent       │ -      │ -
 GN_DW_LOADER    │ INSERT   │ -      │ -           │ -              │ -      │ -
                 │ UPDATE   │        │             │                │        │
@@ -108,6 +109,9 @@ GN_DW_SERVICE   │ -        │ -      │ SELECT      │ SV/Agent       │ -
 ```
 
 > GOLD는 물리 테이블(DIM/FACT)+WIDE VIEW 계층이므로 ENGINEER는 dbt 실행을 위한 `CREATE TABLE`·`CREATE VIEW` 권한을 가진다. 소비 역할(ANALYST/VIEWER/SERVICE)은 GOLD SELECT + SERVING SV/Agent 접근. Role 6종·WH 3종은 라이브 실측 확인.
+>
+> 🟢 **[2026-08-18 요건 변경]** `GN_DW_ANALYST`의 `BRONZE_*`가 `-` → `SELECT`로 바뀌었고 Streamlit 소비가 추가됐다(구현 07 §D.4·§D.7·§D.8). VIEWER/SERVICE는 `-`를 유지한다 — 롤 계층이 `VIEWER→ANALYST` **단방향**이라 상속으로 새지 않는다.
+> 🔴 단 **owner's rights 경유는 이 표의 예외**다. ANALYST 소유 Streamlit/뷰에 `USAGE`만 받은 VIEWER는 BRONZE를 간접 조회할 수 있다 ⇒ 앱 소유는 최소권한 롤(`GN_DW_SERVICE`), 앱 연결은 caller's rights를 표준으로 한다(07 §D.7 통제 3원칙).
 
 ---
 

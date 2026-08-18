@@ -7,6 +7,19 @@
 #    · 파일명은 반드시 `agent_spec.yaml` (공식 문서의 `agent.yaml` 예시는 부정확 — 틀리면
 #      "No spec file present for the agent" 로 실패한다. 2026-07-31 실측)
 #
+# 🆕 🔴🔴 **[2026-08-18 O85-C] 배포가 읽는 경로가 바뀌었다 — 정본 경로는 그대로다.**
+#    · **정본(편집하는 곳) = 이 워크스페이스의 `agents/<AGENT>/agent_spec.yaml`** ← 변경 없음
+#    · **배포가 읽는 곳 = `@GN_DW.OPS.AGENT_SPEC_STAGE/<AGENT>`** ← 신설
+#    왜: 종전 배포 경로 `snow://workspace/USER$.PUBLIC."snowflake_files"/…` 의 `USER$` 는
+#    **실행하는 사용자의 개인 DB 별칭**이라 다른 사용자·다른 계정에서 **재현이 불가능**했다(착수표 ㉔ ⑦).
+#    ⇒ `09_2` 가 배포 직전에 `COPY FILES`(서버측 · PUT 불요)로 **동기화**하고
+#      `[0-C]` 가 **stale 여부를 blocking 으로 대조**한다.
+#    🔴 **md5 로 대조하지 않는다** — 내부 스테이지는 암호화 저장이라 `LIST` 의 md5 는
+#      **암호화 blob 의 해시**이고 스테이지가 다르면 값이 다르다(같은 파일도 불일치 · O85-C 실측).
+#      판정축은 **`size` 동일 + 스테이지 `last_modified` ≥ 워크스페이스 `last_modified`** 다.
+#    ⚠️ dbt(`10_dbt_pipeline`)는 **의도적으로 워크스페이스 경로를 유지**한다(모델 수가 많아 복사 비용이 크다)
+#      — 사용자 결정 · 경위와 담당은 `10_dbt_pipeline/deploy_dbt_project.sql` 머리말 참조.
+#
 # ⚠️ 종전에 루트에 있던 `AGENT_MEMBER.agent.yaml` · `AGENT_OVERALL.agent.yaml` 은
 #    **`_archive/` 로 이관됐다**(2026-08-05). 정본이 아니다 — 복원하지 말 것.
 #    · `AGENT_MEMBER.agent_STALE_20260804.yaml` = 도구 4개·샘플 8개로 **O33 이전 판본**

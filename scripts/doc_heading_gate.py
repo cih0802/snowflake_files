@@ -37,6 +37,7 @@ GOLDEN = ROOT / 'scripts' / 'golden' / 'doc_headings.json'
 DOCS = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
+    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
     '20_issue/00_INDEX_이슈원장.md',
     '20_issue/01_세션이력.md',
     '20_issue/02_상태상세_대시보드_갱신형.md',

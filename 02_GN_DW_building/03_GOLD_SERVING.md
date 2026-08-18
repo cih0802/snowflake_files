@@ -160,14 +160,19 @@ schema_grants:
   GN_DW_ADMIN:    { BRONZE_*: ALL, SILVER: ALL, GOLD: ALL, SERVING: ALL, OPS: ALL, SECURITY: ALL }
   GN_DW_ENGINEER: { BRONZE_*: SELECT, SILVER: "ALL (CREATE TABLE 포함)", GOLD: "ALL (dbt CREATE TABLE/VIEW)", SERVING: USAGE, OPS: "USAGE (dbt 실행)" }
   GN_DW_LOADER:   { BRONZE_*: "INSERT, UPDATE", SILVER: "-", GOLD: "-", SERVING: "-" }
-  GN_DW_ANALYST:  { BRONZE_*: "-", SILVER: SELECT, GOLD: "USAGE, SELECT", SERVING: "USAGE + USAGE ON SV/AGENT" }
+  GN_DW_ANALYST:  { BRONZE_*: SELECT, SILVER: SELECT, GOLD: "USAGE, SELECT", SERVING: "USAGE + USAGE ON SV/AGENT/STREAMLIT" }
   GN_DW_VIEWER:   { BRONZE_*: "-", SILVER: "-", GOLD: "USAGE, SELECT", SERVING: "USAGE + USAGE ON SV/AGENT" }
   GN_DW_SERVICE:  { BRONZE_*: "-", SILVER: "-", GOLD: "USAGE, SELECT", SERVING: "USAGE + USAGE ON SV/AGENT" }
 grant_notes:
   - "SV/Agent가 SERVING에 위치(P7) → USAGE ON SV/AGENT는 SERVING에서 부여."
   - "dbt가 GOLD/SILVER에 테이블 생성 → ENGINEER에 해당 스키마 CREATE TABLE 권한(구설계 CREATE VIEW만에서 확장)."
   - "CoWork Agent text-to-SQL은 호출자 세션에서 base(GOLD FACT/WIDE)에 직접 실행 → 소비역할 GOLD SELECT 필요."
-  - "Streamlit 미배포 → STREAMLIT USAGE 부여 대상 없음(향후 배포 시 SERVING에서 부여)."
+  - "🟢 [2026-08-18] ANALYST BRONZE_* SELECT 신설(종전 '-'). 구현 = 07 §D.4. VIEWER/SERVICE는 '-' 유지 —
+     롤 계층이 VIEWER→ANALYST 단방향이라 상속으로 새지 않는다."
+  - "🔴 [2026-08-18] 단 owner's rights 경유는 예외다. ANALYST 소유 Streamlit/뷰에 USAGE만 받은 VIEWER는
+     BRONZE를 간접 조회할 수 있다 ⇒ 앱 소유는 GN_DW_SERVICE, 앱 연결은 caller's rights (07 §D.7 통제 3원칙)."
+  - "Streamlit 미배포 → STREAMLIT USAGE 부여 대상 없음(향후 배포 시 SERVING에서 부여).
+     저작은 분석가 개인 Workspace에서 수행 → GN_DW에 CREATE STREAMLIT 부여 없음(07 §D.8 2단계 모델)."
 ops_security_grants:
   OPS: "GN_DW_ADMIN ALL; GN_DW_ENGINEER USAGE(dbt 실행)"
   SECURITY: "GN_DW_ADMIN만 관리 (MANAGED ACCESS)"

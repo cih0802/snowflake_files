@@ -26,6 +26,7 @@ import argparse
 import io
 import os
 import sys
+import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -42,11 +43,21 @@ WARN_LINE = 1000    # 관측 임계
 #   이 상수로 막을 수 없다 — `R1-3-7` 의 호출별 도착 확인만이 잡는다.
 READ_OUTPUT = 40000
 
+# 🆕 [2026-08-18 O85 신설 · 착수표 ㉖] 파일 읽기 실패 격리 파라미터.
+#   🔴 왜: 이 워크스페이스의 파일은 **스테이지 마운트**라 타 세션 쓰기·동기화 중에 읽으면
+#     torn read(UTF-8 절단)·`OSError [Errno 5]`·중도 소멸이 난다. O84 에서 게이트가 그 때문에
+#     **두 번 크래시**해 나머지 파일 전체의 판정을 잃었다.
+#   재시도 3회 = `R1-7-3` 의 「2~3회 재읽어 대조」를 코드에 옮긴 값이다(사람 규율과 동일).
+#   🔴 이 값을 바꾸면 `--self-check` 의 재시도 케이스 기대값도 함께 본다(`R1-6-17` 축).
+READ_RETRIES = 3
+READ_RETRY_DELAY = 0.4   # 초 · 스테이지 동기화가 끝날 여유
+
 # 정본 목록 — 지침 R1-3-6 과 같은 집합을 유지한다(이력 파일은 제외 대상이 아니라
 # 「전량 독해 의무 예외」일 뿐이고, 줄길이 절단은 이력에서도 손실이므로 검사한다).
 CANON = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
+    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
     '20_issue/00_INDEX_이슈원장.md',
     '20_issue/01_세션이력.md',
     '20_issue/02_상태상세_대시보드_갱신형.md',
@@ -150,9 +161,52 @@ def expand_globs(patterns=None):
     return sorted(set(out))
 
 
-def read_lines(path):
-    with io.open(path, encoding='utf-8') as fh:
-        return fh.read().split('\n')
+class Unreadable(Exception):
+    """파일 단위 읽기 실패 — 게이트 전체를 죽이지 않고 이 파일만 격리한다.
+
+    🔴 [2026-08-18 O85 신설 · 착수표 ㉖] 종전에는 read 실패가 **게이트 전체를 크래시**시켰다.
+       실측 사고 2형태(O84):
+         ㉠ 스테이지 동기화 중 읽어 `UnicodeDecodeError`
+            (9,742B 파일이 8,081B 만 도착 = torn read · `C5`·`R1-7-3` 과 같은 축)
+         ㉡ 타 세션 in-flight 파일이 스캔 도중 사라져 `OSError [Errno 5]`
+       ⇒ 둘 다 **파일의 결함이 아니라 관측 시점의 문제**인데 게이트가 죽어서
+         **나머지 300여 파일의 판정을 함께 잃었다.** 그것이 이 예외의 존재 이유다.
+    """
+
+    def __init__(self, kind, detail):
+        super().__init__(detail)
+        self.kind = kind        # 'torn' | 'vanished' | 'io'
+        self.detail = detail
+
+
+def read_lines(path, retries=READ_RETRIES, delay=READ_RETRY_DELAY):
+    """UTF-8 로 전량 읽는다. 일시적 실패는 재시도하고, 끝내 실패하면 `Unreadable` 로 격리한다.
+
+    🔴 재시도가 정당한 이유 = `R1-7-3`(「손상」 판정 전에 2~3회 재읽어라).
+       O82-B 는 torn read 를 **영구 손상으로 오판**해 사용자에게 불필요한 복원을 요청했다.
+       게이트도 같은 오판을 하고 있었다 ⇒ 사람과 같은 규율을 코드에 넣는다.
+    ⚠️ 재시도는 `R0-6`(같은 명령 재시도 금지)의 예외다 — 미반환·부분반환 복구는 재호출이 정답이다.
+    """
+    last = None
+    for attempt in range(1, retries + 1):
+        try:
+            with io.open(path, encoding='utf-8') as fh:
+                return fh.read().split('\n')
+        except FileNotFoundError as e:
+            # 스캔 중 사라진 파일 = 타 세션 in-flight 임시파일. 내용이 없으니 위반도 없다.
+            raise Unreadable('vanished', '스캔 도중 사라졌다(타 세션 in-flight 추정): %s' % e)
+        except UnicodeDecodeError as e:
+            last = ('torn', 'UTF-8 절단 — 부분 반환/동기화 중 추정 (시도 %d/%d): %s'
+                    % (attempt, retries, e))
+        except OSError as e:
+            # Errno 5(EIO) 등 — 스테이지 마운트의 일시 오류. 사라진 경우도 여기로 온다.
+            if not os.path.exists(path):
+                raise Unreadable('vanished', '스캔 도중 사라졌다(OSError 후 부재 확인): %s' % e)
+            last = ('io', 'OSError — 스테이지 일시 오류 추정 (시도 %d/%d): %s'
+                    % (attempt, retries, e))
+        if attempt < retries:
+            time.sleep(delay)
+    raise Unreadable(last[0], last[1])
 
 
 def split_row(line):
@@ -232,28 +286,56 @@ def check_file(path, rel):
 
 def run(paths, label):
     allv, allw, missing = [], [], []
+    unreadable, vanished = [], []
     for rel in paths:
         p = os.path.join(ROOT, rel)
         if not os.path.exists(p):
             missing.append(rel)
             continue
-        v, w = check_file(p, rel)
+        # 🆕 [O85 · ㉖] 파일 단위 격리 — 한 파일의 읽기 실패로 게이트 전체를 죽이지 않는다.
+        try:
+            v, w = check_file(p, rel)
+        except Unreadable as e:
+            if e.kind == 'vanished':
+                # 사라진 파일은 위반의 담지자가 아니다 ⇒ 관측만 하고 통과시킨다.
+                vanished.append((rel, e.detail))
+            else:
+                # torn/io = **판정 불가**다. 「위반 0」이라고 말할 수 없으므로 blocking 이다.
+                unreadable.append((rel, e.kind, e.detail))
+            continue
         allv.extend(v)
         allw.extend(w)
 
-    print('== 문서 줄길이 게이트 (%s · 대상 %d파일) ==' % (label, len(paths) - len(missing)))
+    scanned = len(paths) - len(missing) - len(unreadable) - len(vanished)
+    print('== 문서 줄길이 게이트 (%s · 대상 %d파일 · 판독 %d파일) =='
+          % (label, len(paths) - len(missing), scanned))
     if missing:
         print('🔴 대상 파일 부재 %d건 (정본 목록과 실체가 어긋난다):' % len(missing))
         for m in missing:
             print('   -', m)
+    if vanished:
+        print('⚪ 스캔 중 소멸 %d건 (타 세션 in-flight 추정 · 위반 판정 대상 아님):' % len(vanished))
+        for rel, detail in vanished:
+            print('   -', rel, '·', detail)
+    if unreadable:
+        print('🔴 판독 불가 %d건 (재시도 %d회 후에도 실패 ⇒ 이 파일들의 위반 여부는 **미판정**이다):'
+              % (len(unreadable), READ_RETRIES))
+        for rel, kind, detail in unreadable:
+            print('   -', rel, '[%s]' % kind, detail)
+        print('   🔴 처방: 타 세션 쓰기가 끝난 뒤 재실행한다. 2회 연속 같은 파일이면 실제 손상을'
+              ' 의심하고 `_archive/` 스냅샷과 해시를 대조한다(`R1-7-3`).')
+        print('   🔴 **「판독 불가」를 「위반 0」으로 보고하지 마라** — 그것이 이 축을 만든 이유다.')
     print('위반(blocking) %d건 · 관측 %d건' % (len(allv), len(allw)))
     for x in allv:
         print('  🔴', x)
     for x in allw:
         print('  ⚠️', x)
 
-    failed = bool(allv) or bool(missing)
-    print('\n%s' % ('🔴 FAIL' if failed else '🟢 PASS — 2,000자 초과 0 · 표 열수 위반 0'))
+    failed = bool(allv) or bool(missing) or bool(unreadable)
+    if failed:
+        print('\n🔴 FAIL')
+    else:
+        print('\n🟢 PASS — 2,000자 초과 0 · 표 열수 위반 0 · 판독 불가 0 (판독 %d파일)' % scanned)
     return 1 if failed else 0
 
 
@@ -308,7 +390,73 @@ def self_check():
     print('분모 확장 자기검사 %d/%d · 총 대상 %d파일'
           % (gok, gtotal, len(set(CANON + CANON_CODE + every))))
 
-    return 0 if (ok == len(cases) and gok == gtotal) else 1
+    iok, itotal = read_isolation_self_check()
+    return 0 if (ok == len(cases) and gok == gtotal and iok == itotal) else 1
+
+
+def read_isolation_self_check():
+    """🆕 [O85 · ㉖] 읽기 실패 격리 축의 **음성 테스트**.
+
+    🔴 `R3` 게이트 2 = *"새로 만든 게이트를 실패 케이스로 음성 테스트했는가?"*
+       통과만 보면 그 게이트가 무엇을 못 잡는지 모른다. ⇒ 실패를 **인공적으로 만들어** 확인한다.
+    검사 3축 = ① torn read 를 blocking 으로 잡는가 ② 소멸 파일을 통과시키는가
+              ③ **격리가 실제로 되는가**(나쁜 파일 1개가 있어도 정상 파일이 판정되는가)
+    """
+    import tempfile
+    print('\n== 읽기 실패 격리 자기검사 (O85 · ㉖) ==')
+    ok, total = 0, 3
+    tmpdir = tempfile.mkdtemp(prefix='o85_iso_')
+
+    # ① torn read — 유효하지 않은 UTF-8 바이트열을 심는다
+    torn = os.path.join(tmpdir, 'torn.md')
+    with io.open(torn, 'wb') as fh:
+        fh.write('# 정상 머리\n본문 '.encode('utf-8') + b'\xed\x95\x9c'[:2])   # 3바이트 한글의 2바이트만
+    try:
+        read_lines(torn, retries=1, delay=0)
+        got1 = 'no-error'
+    except Unreadable as e:
+        got1 = e.kind
+    good1 = got1 == 'torn'
+    ok += 1 if good1 else 0
+    print('%s ① torn read 검출 = %s (기대 torn)' % ('🟢' if good1 else '🔴', got1))
+
+    # ② 소멸 — 존재하지 않는 경로
+    try:
+        read_lines(os.path.join(tmpdir, 'gone.md'), retries=1, delay=0)
+        got2 = 'no-error'
+    except Unreadable as e:
+        got2 = e.kind
+    good2 = got2 == 'vanished'
+    ok += 1 if good2 else 0
+    print('%s ② 소멸 검출 = %s (기대 vanished)' % ('🟢' if good2 else '🔴', got2))
+
+    # ③ 격리 — torn 1개 + 위반 있는 정상 1개를 함께 돌려 **정상 파일이 판정되는지** 본다
+    bad = os.path.join(tmpdir, 'bad.md')
+    with io.open(bad, 'wb') as fh:
+        fh.write(b'# x\n' + b'\xff\xfe\xfd')
+    okfile = os.path.join(tmpdir, 'ok.md')
+    with io.open(okfile, 'w', encoding='utf-8') as fh:
+        fh.write('# t\n\n' + 'x' * 2500 + '\n')
+    crashed, v_bad, v_ok = False, None, None
+    try:
+        v_bad = read_lines(bad, retries=1, delay=0)
+    except Unreadable:
+        v_bad = 'isolated'
+    try:
+        v_ok, _w = check_file(okfile, 'ok.md')
+    except Exception:            # noqa: BLE001 — 어떤 예외든 격리 실패로 본다
+        crashed = True
+    good3 = (v_bad == 'isolated') and (not crashed) and bool(v_ok)
+    ok += 1 if good3 else 0
+    print('%s ③ 격리 = 나쁜 파일 %s · 정상 파일 위반 %s건 (기대 isolated / 1건 이상)'
+          % ('🟢' if good3 else '🔴', v_bad, 0 if v_ok is None else len(v_ok)))
+
+    for f in (torn, bad, okfile):
+        if os.path.exists(f):
+            os.unlink(f)
+    os.rmdir(tmpdir)
+    print('읽기 실패 격리 자기검사 %d/%d' % (ok, total))
+    return ok, total
 
 
 if __name__ == '__main__':

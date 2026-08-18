@@ -320,7 +320,17 @@ ALTER WAREHOUSE GN_DW_ETL_WH RESUME;
 
 ### 6.2 권한 점검
 
+> 🔴 **[2026-08-18 실측] 롤별 권한을 점검할 때는 반드시 `USE SECONDARY ROLES NONE` 을 먼저 실행한다.**
+> 기본 세션은 secondary roles 가 활성(ALL)이라 **사용자가 보유한 전 롤의 권한이 합집합으로 평가**된다.
+> 이 상태에서 아래처럼 `USE ROLE GN_DW_VIEWER` 만 하면, VIEWER 에 없는 권한도 성공해서
+> **차단돼야 할 것이 통과하는 거짓 결과**가 나온다(실제 오탐 발생 — BRONZE 차단 테스트가 PASS 로 나옴).
+> 유효성 확인: `SELECT CURRENT_SECONDARY_ROLES()` 가 빈 값이어야 한다. 점검 후 `USE SECONDARY ROLES ALL` 로 복원.
+
 ```sql
+-- 🔴 필수 선행: 권한 합집합 평가 차단
+USE SECONDARY ROLES NONE;
+SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES();   -- SEC 가 빈 값인지 확인
+
 -- Viewer가 Agent를 사용할 수 있는지 확인
 USE ROLE GN_DW_VIEWER;
 SHOW GRANTS ON SCHEMA GN_DW.SERVING;
@@ -331,6 +341,15 @@ SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL;
 
 -- CoWork Agent text-to-SQL은 호출자 세션에서 base(GOLD)에 직접 실행
 SELECT * FROM GN_DW.GOLD.WIDE_MEMBER_MONTHLY LIMIT 1;
+
+-- 🟢 [2026-08-18] ANALYST 요건 변경 검증 — BRONZE 읽기 PASS / VIEWER 차단 FAIL 이어야 정상
+USE ROLE GN_DW_ANALYST;
+SELECT COUNT(*) FROM GN_DW.BRONZE_CRM.<TABLE>;   -- expect PASS (07 §D.4)
+USE ROLE GN_DW_VIEWER;
+SELECT COUNT(*) FROM GN_DW.BRONZE_CRM.<TABLE>;   -- expect FAIL (schema not authorized)
+
+-- 점검 종료 후 세션 복원
+USE SECONDARY ROLES ALL;
 ```
 
 ### 6.3 Semantic View 테스트
