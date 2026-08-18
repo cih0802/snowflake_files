@@ -100,6 +100,21 @@ DEF_EXCLUDE_FILES = {
 # [O64] 문서 간 정의 중복 축에서만 추가 제외 — 이력은 정본이 아니다(R1-3-6).
 CROSS_EXCLUDE_FILES = {'01_세션이력.md'}
 
+
+def _hub_name(fname):
+    """[2026-08-18 O82-C] 조각 파일명 → 허브 파일명.
+
+    🔴 왜 필요한가: `split_doc.py` 가 정본을 허브 + `-001…-0NN` 조각으로 나누면
+    제외 목록의 파일명(`02_상태상세_….md`)이 조각명(`02_상태상세_…-001.md`)과
+    **문자열로 일치하지 않아 제외가 풀린다.** 실제로 분할 직후 이 게이트가
+    `P224` 를 「02-001 내 정의 2회」로 잡아 **blocking 실패**했다 — 내용은 한 글자도
+    바뀌지 않았고 **게이트의 분모만 바뀐 것**이다(O66 이 같은 사고를 이미 겪었고
+    그 처방이 이 제외 목록이다 · `P224` 자신의 재현).
+    ⇒ 제외 판정은 **허브 이름으로 정규화**해서 한다.
+    """
+    m = re.match(r'^(.*)-\d{3}(\.[^.]+)$', fname)
+    return (m.group(1) + m.group(2)) if m else fname
+
 DEF_TABLE_ROW = re.compile(r'^\s*\|([^|]*)\|')
 DEF_NEW_DECL = re.compile(r'🆕\s*\*\*')
 DEF_SESSION = re.compile(r'^\s*>\s*#{2,6}\s')
@@ -178,10 +193,17 @@ def main():
     defs = defaultdict(list)   # (file, id) -> [lineno]   ← 중복 검사용(세션 형태 제외)
     all_ids = set()            # 최대값 산정용(세션 형태 포함)
     refs = defaultdict(int)    # id -> count
+    # 🔴 [2026-08-18 O83] 폴더 분할분을 분모에 포함한다.
+    #   `01_세션이력.md` 는 `--outdir` 로 `20_issue/01_세션이력/` 폴더에 조각화됐다.
+    #   `*.md` 만 스캔하면 그 안의 `§O##` 정의가 **전량 분모 밖**이 되어
+    #   `--next O` 최대값이 조용히 **퇴행**한다(R1-4-2 「정의 기준 과소」의 재발).
+    #   `_hub_name()` 이 조각명 → 허브명으로 정규화하므로 제외 규칙은 그대로 듣는다.
     files = sorted(DOC_DIR.glob('*.md'))
+    files += sorted(p for p in DOC_DIR.glob('*/*.md')
+                    if p.parent.name not in ('_archive', '__pycache__'))
     for f in files:
         for i, line in enumerate(f.read_text(encoding='utf-8').splitlines(), 1):
-            if f.name not in DEF_EXCLUDE_FILES:
+            if _hub_name(f.name) not in DEF_EXCLUDE_FILES:
                 # 🔴 [O64] 한 줄이 두 형태로 잡히면 **같은 ID 를 두 번 세면 안 된다.**
                 #   실측 오탐: `| 🆕 **P224** | …` 표 행은 'row'(첫 셀 볼드 = ID)와 'new'(🆕 **ID)에
                 #   **동시에** 걸려 한 줄이 정의 2회로 보고됐다 — 게이트 실패를 스스로 만드는 형태다.
@@ -235,7 +257,7 @@ def main():
     #      빼면 `O` 계열이 63→59 로 과소 보고돼 R1-4-2 가 막으려던 재발급 사고가 돌아온다.
     by_id = defaultdict(dict)
     for (fname, _id), lines in defs.items():
-        if fname in CROSS_EXCLUDE_FILES:
+        if _hub_name(fname) in CROSS_EXCLUDE_FILES:
             continue
         by_id[_id][fname] = lines
     cross = {i: fl for i, fl in by_id.items() if len(fl) > 1}

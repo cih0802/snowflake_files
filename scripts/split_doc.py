@@ -1,0 +1,824 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""[2026-08-14 O82] 장문 정본 문서 → 연번 조각 + 허브 무변경 분할.
+
+문제: 정본 문서가 `read` 1회 한도를 넘겨 여러 세션 연속 미독이 된다.
+      `10_진단_원인분석.md` 3,318줄/355.6KB · `01_세션이력.md` 6,188줄/692.5KB.
+      R1-3-6 이 규정한 대로 **크기는 증상이고 원인은 한 파일에 몰아쓴 형태**다.
+
+처방: 절 경계에서만 잘라 **바이트 동일한 조각**으로 나누고, 원 파일명을
+      **허브**(목차 + 좌표 대응표)로 바꾼다. 본문 문자 수정은 0 이다.
+
+무변경의 정의(이 스크립트의 계약 · O59-J·O66 상속):
+  조각 본문을 순서대로 이어붙인 바이트열이 원문과 **SHA256 완전 일치**해야 한다.
+  조각 파일에는 머리말 주석이 붙지만 `BODY-BEGIN` 센티넬 **아래**만 본문이며,
+  게이트는 센티넬 아래만 모아 대조한다. ⇒ 본문에 대한 추가·삭제·수정 0건.
+
+조각 상한(직전 세션 실측 산출):
+  **300줄 AND 40KB** 를 둘 다 만족한다. 줄 수가 적어도 바이트가 크면
+  `read` 가 `Output too large` 로 본문을 돌려주지 않는다(인덱스 321줄/100.8KB 실패).
+
+경계 우선순위:
+  section 모드 = `## ` → `### ` → `#### ` → 빈 줄(문단) → 표 행
+  entry   모드 = `> #### [날짜 O##]` → 빈 줄 → 표 행   (append-only 이력용)
+  **경계에서만 자르고 경계를 못 찾으면 그 원자를 쪼개지 않는다**(초과를 보고한다).
+
+실행:
+  python3 scripts/split_doc.py 20_issue/10_진단_원인분석.md --dry-run
+  python3 scripts/split_doc.py 20_issue/10_진단_원인분석.md
+  python3 scripts/split_doc.py 20_issue/10_진단_원인분석.md --verify
+"""
+import argparse
+import hashlib
+import io
+import os
+import re
+import shutil
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ARCHIVE = os.path.join(ROOT, '_archive')
+
+# 표 열수 판정은 O66 계약을 그대로 상속한다 — `|` 개수 세기는 백틱 코드스팬에서 오탐한다.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from split_issue_index import split_row  # noqa: E402
+
+MAX_LINES = 300
+MAX_BYTES = 40 * 1024
+
+# 조각 파일에 붙는 머리말 3줄. 🔴 [2026-08-18 O83] 상한 판정은 **본문이 아니라 파일**을 재야 한다 —
+#   `read` 가 읽는 것은 머리말이 붙은 **파일**이고 게이트 6 도 파일을 잰다.
+#   실측 사고: 본문 299줄 조각이 파일 **302줄**이 되어 4개가 게이트 6 FAIL 이었다.
+#   기존 6종은 본문 최대가 297줄이라 **우연히** 걸리지 않았다(잠복 결함).
+HEADER_LINES = 3
+# 🆕 [2026-08-18 O83-H] 실측 근거 확보 — 종전 400 은 관례값이었다(자기검토 C2 잔여 항목).
+#   조각 머리말 **89개 전수 측정** = min 332 · median 349 · **max 381** B.
+#   ⇒ 400 은 max 대비 마진이 **19B 뿐**이고, 파일명이 길거나 원문 행번호가 5자리가 되면
+#   **예약이 부족해져** `fits()` 가 과소 예약하고 조각이 상한을 넘을 수 있다(잠복 결함).
+#   ⇒ **max(381) + 여유 67 = 448**. 올리는 방향이므로 조각이 조금 작아지고 **안전측**이다.
+HEADER_BYTES = 448
+
+BODY_BEGIN = '<!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->'
+
+# [2026-08-18 O83] 폴더 분할 마커 — 허브가 조각 위치를 **자기기술**한다.
+#   🔴 왜 마커인가: `--verify` 를 나중에 실행할 때 `--outdir` 을 다시 입력하게 만들면
+#   입력을 빠뜨린 호출이 「조각이 없다」로 실패하고, 그 실패가 **분할 사고처럼 보인다**.
+#   ⇒ 위치는 허브에 적어 두고 게이트가 읽는다(사람 입력에 의존하지 않는다).
+OUTDIR_MARK = '<!-- SPLIT-OUTDIR: %s -->'
+OUTDIR_RX = re.compile(r'<!--\s*SPLIT-OUTDIR:\s*(.+?)\s*-->')
+
+# [2026-08-18 O83-B] 경계 모드 마커. 🔴 `--rebalance` 는 **원문이 아니라 현재 조각 내용**을
+#   다시 쪼개므로 최초 분할과 **같은 경계 모드**를 써야 한다. 사람이 매번 `--boundary` 를
+#   다시 입력하게 만들면 빠뜨린 호출이 `entry` 문서를 `section` 으로 쪼개
+#   조각 배치를 조용히 망친다 ⇒ 허브가 자기기술한다(OUTDIR_MARK 와 같은 취지).
+BOUNDARY_MARK = '<!-- SPLIT-BOUNDARY: %s -->'
+BOUNDARY_RX = re.compile(r'<!--\s*SPLIT-BOUNDARY:\s*(section|entry)\s*-->')
+
+LEVELS_SECTION = [r'^## ', r'^### ', r'^#### ']
+LEVELS_ENTRY = [r'^> #### ']
+
+
+def read_text(path):
+    with io.open(path, encoding='utf-8') as fh:
+        return fh.read()
+
+
+def write_text(path, text):
+    with io.open(path, 'w', encoding='utf-8') as fh:
+        fh.write(text)
+
+
+def sha(s):
+    return hashlib.sha256(s.encode('utf-8')).hexdigest()
+
+
+def nbytes(s):
+    return len(s.encode('utf-8'))
+
+
+def seg_text(lines, a, b):
+    """[a, b) 구간을 원문 그대로 복원한다(줄 사이 개행만 되살린다)."""
+    return '\n'.join(lines[a:b])
+
+
+def fits(lines, a, b, fill=1.0):
+    """구간이 조각 상한에 맞는가. 🔴 머리말(HEADER_LINES/BYTES)을 **선반영**한다.
+
+    🔴 [2026-08-18 O83-D] `fill` 인자 추가. **원자화도 fill 을 봐야 한다** —
+    `pack(fill)` 만 부분 충전하고 `atomize()` 가 하드 상한으로 판정하면
+    **하드 상한 이내의 큰 원자가 그대로 한 조각**이 되어 여유가 생기지 않는다.
+    실측: `10_진단_원인분석` §13 이 **33,464B 원자**로 남아 재균형 후에도 여유가
+    7,146B(<20%)였다. `pack(fill)` 을 도입할 때와 **같은 축의 누락**이었다.
+    """
+    lim_lines = max(1, int(MAX_LINES * fill))
+    lim_bytes = max(1, int(MAX_BYTES * fill))
+    if b - a + HEADER_LINES > lim_lines:
+        return False
+    return nbytes(seg_text(lines, a, b)) + HEADER_BYTES <= lim_bytes
+
+
+def cut_points(lines, a, b, pat):
+    """[a, b) 안에서 pat 이 매칭되는 줄 번호 목록(구간 시작은 항상 포함)."""
+    rx = re.compile(pat)
+    idx = [i for i in range(a, b) if rx.match(lines[i])]
+    if not idx or idx[0] != a:
+        idx = [a] + idx
+    return sorted(set(idx))
+
+
+def _unquote(s):
+    """블록인용 접두(`>`·`> `·`>>`)를 벗긴 본문.
+
+    🔴 [2026-08-18 O83 신설 · 첫 실사용에서 드러난 도구 결함] `01_세션이력.md` 는
+    **항목 전체가 블록인용**이라 문단 구분선이 빈 줄이 아니라 **`>`** 이고, 표 행도
+    **`> |`** 로 시작한다. 그래서 `blank_cuts`·`row_cuts` 가 경계를 **0개** 찾았고
+    entry 모드가 큰 항목을 못 쪼개 조각 2개가 상한을 초과했다(485줄/58.3KB · 715줄/72.3KB).
+    `-016` 의 72.3KB 는 실측 하드 한도 **(37.6KB, 71.6KB]** 를 넘어 `read` 가 본문을
+    아예 돌려주지 못하는 크기다 ⇒ 「분할했지만 여전히 못 읽는」 상태가 된다.
+    ⇒ 경계 판정을 **인용 접두에 무관**하게 만든다(`R1-6-7` ⑤ 가 `|` 개수 세기를
+    금지한 것과 같은 축 — 마크다운 표면 문자를 그대로 믿으면 안 된다).
+    """
+    t = s.lstrip()
+    while t.startswith('>'):
+        t = t[1:].lstrip()
+    return t
+
+
+def blank_cuts(lines, a, b):
+    """빈 줄 뒤(= 다음 문단 시작)를 경계로 삼는다. 인용 블록의 `>` 도 빈 줄로 본다."""
+    idx = [a]
+    for i in range(a + 1, b):
+        if _unquote(lines[i - 1]) == '' and _unquote(lines[i]) != '':
+            idx.append(i)
+    return sorted(set(idx))
+
+
+def row_cuts(lines, a, b):
+    """표 행마다 경계. 헤더 2줄(제목·구분)은 붙여 둔다. 인용 접두(`> |`)를 허용한다."""
+    idx = [a]
+    for i in range(a + 1, b):
+        prev = _unquote(lines[i - 1])
+        cur = _unquote(lines[i])
+        if not cur.startswith('|'):
+            continue
+        if set(prev.replace('|', '').replace('-', '').replace(':', '').strip()) == set():
+            continue
+        idx.append(i)
+    return sorted(set(idx))
+
+
+def to_blocks(idx, end):
+    return [(idx[k], idx[k + 1] if k + 1 < len(idx) else end) for k in range(len(idx))]
+
+
+def atomize(lines, a, b, levels, depth=0, fill=1.0):
+    """[a, b) 를 상한에 맞는 원자 목록으로 분해한다. 경계에서만 자른다.
+
+    🔴 [2026-08-18 O83-D] `fill` 전파. 부분 충전 목표는 **원자화 단계에서** 적용해야
+    효과가 있다(위 `fits` docstring 의 33,464B 실측 참조).
+    """
+    if fits(lines, a, b, fill):
+        return [(a, b)]
+    if depth < len(levels):
+        idx = cut_points(lines, a, b, levels[depth])
+    elif depth == len(levels):
+        idx = blank_cuts(lines, a, b)
+    elif depth == len(levels) + 1:
+        idx = row_cuts(lines, a, b)
+    else:
+        return [(a, b)]          # 더 쪼갤 경계가 없다 — 초과를 그대로 보고한다
+    blocks = to_blocks(idx, b)
+    if len(blocks) <= 1:
+        return atomize(lines, a, b, levels, depth + 1, fill)
+    out = []
+    for x, y in blocks:
+        out.extend(atomize(lines, x, y, levels, depth + 1, fill))
+    return out
+
+
+def pack(lines, atoms, fill=1.0):
+    """원자를 순서대로 그리디 적재한다. 원자 순서·내용은 바꾸지 않는다.
+
+    🔴 [2026-08-18 O83-B] `fill` = 목표 채움 비율(0 < fill ≤ 1). 상한이 아니라
+    **상한 × fill** 까지만 채운다.
+    **왜 필요한가**: 그리디로 상한까지 채우면 앞 조각이 전부 포화되고, 갱신형 원장은
+    신규 행이 **첫 조각**(표 머리 = 최신 우선)에 떨어지므로 재균형이 여유를
+    **0 그대로** 남긴다 — 실측: 인덱스 재균형 전후 모두 최소 여유 **178B** 였다.
+    ⇒ B-tree 가 노드를 **부분 충전**으로 유지하는 것과 같은 이유다: 삽입을 흡수할
+    공간이 없으면 「재균형했다」가 아무 효과가 없다.
+    ⚠️ 단일 원자가 상한×fill 을 넘으면 그 원자는 **상한 판정으로만** 통과시킨다 —
+    더 쪼갤 경계가 없는 원자를 fill 때문에 버리면 분할 자체가 실패한다.
+    """
+    def ok(a, b):
+        return fits(lines, a, b, fill)
+
+    chunks = []
+    cur = None
+    for a, b in atoms:
+        if cur is None:
+            cur = [a, b]
+            continue
+        if ok(cur[0], b):
+            cur[1] = b
+        else:
+            chunks.append(tuple(cur))
+            cur = [a, b]
+    if cur is not None:
+        chunks.append(tuple(cur))
+    return chunks
+
+
+HEAD_RX = re.compile(r'^(#{2,4}|> #{4}) ')
+
+
+def head_of(lines, a, b):
+    """조각의 대표 제목 — 구간 안 첫 제목 줄."""
+    for i in range(a, b):
+        if HEAD_RX.match(lines[i]):
+            return lines[i].lstrip('> ').lstrip('#').strip()
+    return '(제목 없는 선두 구간)'
+
+
+def chunk_path(src, n, outdir=None):
+    """조각 경로. `outdir` 이 주어지면 **하위 폴더**에 둔다(허브는 원 위치·원 파일명 유지 · R1-6-5).
+
+    🔴 [2026-08-18 O83 신설] 폴더 방식 사유 = `01_세션이력.md` 는 조각이 수십 개라
+    형제로 두면 `20_issue/` 가 조각 파일로 덮여 **허브를 찾기 어려워진다**
+    (사용자 지시 = 「폴더를 만들어 분리하고 기존 문서는 포인터만」).
+    ⚠️ 폴더 방식은 **기존 게이트 분모를 벗어난다** — `doc_heading_gate`·`index_row_gate` 의
+    `chunk_files()` 와 `doc_line_length_gate` 의 glob 을 함께 넓혀야 한다(`R1-6-8`).
+    넓히지 않으면 조각으로 **이동한** 제목·표 행이 **유실로 대량 오탐**된다.
+    """
+    stem, ext = os.path.splitext(src)
+    if outdir:
+        return os.path.join(os.path.dirname(src), outdir,
+                            '%s-%03d%s' % (os.path.basename(stem), n, ext))
+    return '%s-%03d%s' % (stem, n, ext)
+
+
+def hub_outdir(src):
+    """허브에 기록된 조각 폴더명(없으면 None = 형제 조각 방식)."""
+    if not os.path.exists(src):
+        return None
+    m = OUTDIR_RX.search(read_text(src))
+    return m.group(1) if m else None
+
+
+def hub_boundary(src, fallback='section'):
+    """허브에 기록된 경계 모드. 마커가 없으면 `fallback`(구 허브 호환)."""
+    if not os.path.exists(src):
+        return fallback
+    m = BOUNDARY_RX.search(read_text(src))
+    return m.group(1) if m else fallback
+
+
+def chunk_header(src, n, total, a, b):
+    base = os.path.basename(src)
+    return [
+        '<!-- SPLIT-CHUNK %s | %03d/%03d | 허브 = %s | 원문 %d~%d행 -->' % (
+            base, n, total, base, a + 1, b),
+        '<!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다'
+        ' (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->',
+        BODY_BEGIN,
+    ]
+
+
+def build_hub(src, lines, chunks, digest, outdir=None, mode='section', label='원문'):
+    base = os.path.basename(src)
+    stem = os.path.splitext(base)[0]
+    disp = ('%s/' % outdir) if outdir else ''
+    orig_meta = []
+    for l in lines[:40]:
+        orig_meta.append(l)
+        if 'END-METADATA' in l:
+            break
+    else:
+        orig_meta = []
+
+    out = []
+    out.append('<!-- LLM-METADATA')
+    out.append('doc_id: %s_HUB' % re.sub(r'[^0-9A-Za-z]+', '_', stem).upper().strip('_'))
+    out.append('doc_role: %s 의 허브 — 조각 목차 · 구 행번호 좌표 대응표' % base)
+    out.append('project: GN_DW (굿네이버스)')
+    out.append('created: 2026-08-14')
+    out.append('created_by: O82')
+    out.append('parent: %s' % base)
+    out.append('END-METADATA -->')
+    out.append('')
+    if outdir:
+        out.append(OUTDIR_MARK % outdir)
+    out.append(BOUNDARY_MARK % mode)
+    out.append('')
+    out.append('# %s (허브)' % stem)
+    out.append('')
+    out.append('> 이 파일은 **목차**다. 본문은 `%s%s-001.md` … `-%03d.md` 조각에 있다.'
+               % (disp, stem, len(chunks)))
+    out.append('> 조각은 **원문 무변경**이다 — 조각 본문을 순서대로 이어붙이면')
+    out.append('> 원문과 **SHA256 완전 일치**한다(`scripts/split_doc.py <허브> --verify`).')
+    out.append('')
+    out.append('> 🔴 **%s SHA256** = `%s`' % (label, digest))
+    out.append('> · %s = **%d줄 / %s바이트** · 조각 **%d개** · 상한 **%d줄 AND %dKB**'
+               % (label, len(lines), format(nbytes('\n'.join(lines)), ','),
+                  len(chunks), MAX_LINES, MAX_BYTES // 1024))
+    out.append('')
+    out.append('> 🔴 **읽기 규약** — 특정 주제를 찾을 때 조각을 처음부터 다 읽지 말고')
+    out.append('> 아래 목차에서 절 이름으로 조각을 고른 뒤 그 조각만 `read` 한다.')
+    out.append('> 전량 독해가 필요하면 `-001` 부터 순서대로 읽는다(조각당 `read` 1회).')
+    out.append('')
+    out.append('> 🔴🔴 **이 허브는 자동 생성물이다 — 여기에 내용을 쓰지 마라.**')
+    out.append('> `--republish`·`--rebalance`·`--rollover` 는 이 파일을 **통째로 다시 쓴다**')
+    out.append('> ⇒ 허브에 손으로 적은 문장은 **조용히 사라진다**(경고도 나오지 않는다).')
+    out.append('> 내용은 **조각(`-001`…)에 쓰고** 아래 명령으로 이 허브를 재발행한다.')
+    out.append('')
+    out.append('> 🔴 **편집 규약** — 조각 본문을 고치면 위 SHA256 이 깨진다.')
+    out.append('> 내용을 갱신할 때는 조각을 직접 편집하고 **이 허브의 SHA256 을 재발행**한다')
+    out.append('> (`--verify` 는 「분할 시점 원문과 동일한가」를 묻는 게이트다).')
+    out.append('')
+    out.append('## 조각 목차')
+    out.append('')
+    out.append('| 조각 | 구 행범위 | 줄 | KB | 선두 절 |')
+    out.append('|---|---|---|---|---|')
+    for n, (a, b) in enumerate(chunks, 1):
+        t = seg_text(lines, a, b)
+        out.append('| `%s%s-%03d.md` | %d~%d | %d | %.1f | %s |' % (
+            disp, stem, n, a + 1, b, b - a, nbytes(t) / 1024.0, head_of(lines, a, b)))
+    out.append('')
+    out.append('## 구 행번호 → 신 좌표 대응표')
+    out.append('')
+    out.append('> 분할 전 이 문서를 **「N행」으로 인용한 기존 문장은 수정하지 않았다**')
+    out.append('> (O59-K · R2-8 무변경 계약 유지). 대신 이 표로 좌표를 옮긴다.')
+    out.append('> 환산식 = **신 행번호 = 구 행번호 − 구간시작 + 1 + %d**' % HEADER_LINES)
+    out.append('> (`+%d` = 조각 머리말 %d줄).' % (HEADER_LINES, HEADER_LINES))
+    out.append('')
+    out.append('| 구 행범위 | 조각 | 그 조각에서의 행 |')
+    out.append('|---|---|---|')
+    for n, (a, b) in enumerate(chunks, 1):
+        out.append('| %d~%d | `%s%s-%03d.md` | %d~%d |' % (
+            a + 1, b, disp, stem, n, HEADER_LINES + 1, HEADER_LINES + (b - a)))
+    out.append('')
+    return '\n'.join(out) + '\n'
+
+
+def snapshot_path(src):
+    base = os.path.basename(src)
+    return os.path.join(ARCHIVE, '%s.O82-presplit' % base)
+
+
+def build(src, dry_run, mode, outdir=None):
+    text = read_text(src)
+    lines = text.split('\n')
+    digest = sha(text)
+    levels = LEVELS_ENTRY if mode == 'entry' else LEVELS_SECTION
+
+    atoms = atomize(lines, 0, len(lines), levels)
+    chunks = pack(lines, atoms)
+
+    print('원문 %s' % os.path.basename(src))
+    print('  %d줄 · %s바이트 · SHA256 %s' % (len(lines), format(nbytes(text), ','), digest[:16]))
+    print('  경계 모드 = %s · 원자 %d개 → 조각 %d개' % (mode, len(atoms), len(chunks)))
+    over = []
+    for n, (a, b) in enumerate(chunks, 1):
+        t = seg_text(lines, a, b)
+        flag = ''
+        # 🔴 [2026-08-18 O83-H] 판정·표시를 「본문」이 아니라 **머리말 포함 파일**로 바꿨다(`R1-6-11`).
+        #   종전 `b - a` · `nbytes(t)` 는 머리말 3줄/448B 를 빼고 재어, **파일이 상한을 넘어도
+        #   🟢 「전 조각 상한 이내」로 표시**했다. 배치 자체는 `fits()` 가 머리말을 선반영하므로
+        #   안전했고, 따라서 이 지점은 **표시상 과소보고**였다(`--verify` 게이트6 은 실제 파일을
+        #   읽으므로 정확 — 두 축의 판정 기준이 어긋나 있었다).
+        #   🔴 근인 = `HEADER_BYTES 400 → 448` 교정이 **이 지점에 전파되지 않았다** ⇒ `R1-6-17`
+        #   「파라미터는 보는 지점을 전수 조사한다」의 3차 누락.
+        f_lines = b - a + HEADER_LINES
+        f_bytes = nbytes(t) + HEADER_BYTES
+        if f_lines > MAX_LINES or f_bytes > MAX_BYTES:
+            flag = '  🔴 상한 초과'
+            over.append(n)
+        print('  -%03d  %5d~%-5d  %3d줄  %5.1fKB  %s%s' % (
+            n, a + 1, b, f_lines, f_bytes / 1024.0, head_of(lines, a, b)[:44], flag))
+    if over:
+        print('🔴 상한 초과 조각 %d개: %s' % (len(over), over))
+    else:
+        print('🟢 전 조각 상한 이내(%d줄 AND %dKB · 머리말 포함 파일 기준)'
+              % (MAX_LINES, MAX_BYTES // 1024))
+
+    if dry_run:
+        print('\n--dry-run — 파일을 쓰지 않았다.')
+        return 0
+
+    if not os.path.isdir(ARCHIVE):
+        os.makedirs(ARCHIVE)
+    snap = snapshot_path(src)
+    shutil.copyfile(src, snap)
+    print('\n원본 스냅샷 = %s' % os.path.relpath(snap, ROOT))
+
+    total = len(chunks)
+    if outdir:
+        d = os.path.join(os.path.dirname(src), outdir)
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        print('조각 폴더 = %s' % os.path.relpath(d, ROOT))
+    for n, (a, b) in enumerate(chunks, 1):
+        body = seg_text(lines, a, b)
+        head = chunk_header(src, n, total, a, b)
+        write_text(chunk_path(src, n, outdir), '\n'.join(head) + '\n' + body)
+    write_text(src, build_hub(src, lines, chunks, digest, outdir, mode))
+    print('조각 %d개 + 허브 1개 기록 완료.' % total)
+    return verify(src)
+
+
+def collect_bodies(src, outdir=None):
+    """조각 본문(센티넬 아래)을 연번 순서로 모아 이어붙인다."""
+    n = 1
+    parts = []
+    paths = []
+    while True:
+        p = chunk_path(src, n, outdir)
+        if not os.path.exists(p):
+            break
+        t = read_text(p)
+        if BODY_BEGIN not in t:
+            raise SystemExit('🔴 센티넬 부재: %s' % p)
+        body = t.split(BODY_BEGIN + '\n', 1)[1]
+        parts.append(body)
+        paths.append(p)
+        n += 1
+    return parts, paths
+
+
+def family_text(src, chunk_paths):
+    """같은 원장 폴더의 **다른 문서** 전문(자기 자신과 자기 조각은 제외).
+
+    🔴 [2026-08-18 O83-B 신설] 게이트 3 이 「유실」과 「이동」을 구별하기 위한 분모다.
+    은퇴 이관(`retire_rows.py`)은 토큰을 **같은 폴더의 append형 로그로** 옮기므로
+    이 분모에서 찾히면 사고가 아니다. 찾히지 않으면 진짜 유실이다.
+    ⚠️ 분모는 **1단계 하위 폴더까지** 본다(조각 폴더 = `01_세션이력_조각/`).
+    """
+    skip = set(os.path.abspath(p) for p in chunk_paths)
+    skip.add(os.path.abspath(src))
+    d = os.path.dirname(os.path.abspath(src))
+    buf = []
+    for root, dirs, files in os.walk(d):
+        dirs[:] = [x for x in dirs if x not in ('_archive', '__pycache__', 'logs')]
+        if os.path.relpath(root, d).count(os.sep) > 0:
+            continue                       # 1단계 하위까지만
+        for f in sorted(files):
+            if not f.endswith(('.md', '.sql', '.yml', '.csv')):
+                continue
+            p = os.path.join(root, f)
+            if os.path.abspath(p) in skip:
+                continue
+            try:
+                buf.append(read_text(p))
+            except (IOError, OSError, UnicodeDecodeError):
+                continue
+    return '\n'.join(buf)
+
+
+def verify(src):
+    fails = []
+    hub = read_text(src)
+
+    m = re.search(r'\*\*(?:원문|발행) SHA256\*\* = `([0-9a-f]{64})`', hub)
+    if not m:
+        print('🔴 허브에 SHA256 이 없다 — 허브가 아니거나 손상됐다.')
+        print('   기대 형식: `> 🔴 **원문 SHA256** = ...` (분할 직후)')
+        print('             `> 🔴 **발행 SHA256** = ...` (조각 편집 후 재발행 · R1-6-9)')
+        return 1
+    want = m.group(1)
+    republished = '발행 SHA256' in hub
+
+    parts, paths = collect_bodies(src, hub_outdir(src))
+    if not parts:
+        print('🔴 조각이 없다.')
+        return 1
+    joined = '\n'.join(parts)
+
+    # 게이트 1 — 조각 본문 concat == 허브가 발행한 해시
+    got = sha(joined)
+    ok1 = (got == want)
+    label = '발행' if republished else '원문'
+    print('게이트1 concat SHA256: %s' % ('일치 (%s 기준)' % label if ok1
+                                       else '불일치 (%s %s / 현재 %s)' % (label, want[:16], got[:16])))
+    if not ok1:
+        fails.append('SHA256 불일치 — 본문이 변경됐다')
+
+    # 게이트 2·3 — 원문 스냅샷 대조.
+    # 🔴 [2026-08-18 O82-C] **재발행 상태에서는 이 두 축이 정상적으로 어긋난다.**
+    #   `R1-6-9` 는 조각을 편집한 뒤 허브 해시를 재발행하라고 규정하는데, 그렇게 하면
+    #   내용이 원문과 달라지므로 「줄 수 동일·토큰 유실 0」을 요구하면 **정상 갱신이 FAIL** 이 된다.
+    #   ⇒ 재발행 상태에서는 **토큰 유실만 관측**하고(갱신은 추가가 정상) FAIL 로 올리지 않는다.
+    #   ⚠️ 단 **토큰이 줄어들면** 그것은 갱신이 아니라 소실이므로 그대로 보고한다.
+    snap = snapshot_path(src)
+    if os.path.exists(snap):
+        orig = read_text(snap)
+        ol = len(orig.split('\n'))
+        nl = len(joined.split('\n'))
+        print('게이트2 줄 수: 원문 %d · concat %d%s'
+              % (ol, nl, '  (재발행 — 차이 허용)' if republished else ''))
+        if ol != nl and not republished:
+            fails.append('줄 수 불일치 %d ≠ %d' % (ol, nl))
+
+        # 게이트 3 — 수치·ID 토큰 종수 보존(O66 정규식 상속)
+        def toks(s):
+            return set(re.findall(
+                r'\d[\d,\.]*%?|(?:O|P|DEC|Q|CONF|PROC|OPS|BLOCKING|AD|SVL|R)\d+(?:-[0-9A-Z]+)?', s))
+        ot, nt = toks(orig), toks(joined + hub)
+        lost = sorted(ot - nt)
+        print('게이트3 토큰 종수: 원문 %d · 이후 %d · 유실 %d' % (len(ot), len(nt), len(lost)))
+        if lost:
+            # 🔴 [2026-08-18 O83-B 교정] 종전 전제 **「갱신은 토큰을 늘리지 줄이지 않는다」는 깨졌다.**
+            #   `retire_rows.py` 의 **은퇴 이관**(사용자 결정 C)은 닫힌 행의 장문 셀을
+            #   `90_해소완료_로그.md` 로 **의도적으로** 내보낸다 ⇒ 이 문서에서 토큰이 줄어드는 것이
+            #   **정상**이다. 실측: 은퇴 6행 후 이 게이트가 **33종 유실**로 FAIL 했다(오탐).
+            #   🔴 그렇다고 검사를 끄면 진짜 유실이 조용해진다(`P106`) ⇒ **행선지를 찾는다**:
+            #   같은 원장 폴더(문서 계열)에 그 토큰이 있으면 **「이동」**, 어디에도 없으면 **「유실」**이다.
+            #   이것이 `R2-8-1`(삭제 전 토큰 대조)의 이 게이트판이다.
+            elsewhere = family_text(src, paths)
+            movedt = [t for t in lost if t in elsewhere]
+            gone = [t for t in lost if t not in elsewhere]
+            print('  ├ 이동 확인(같은 폴더 타 문서에 실재) %d종' % len(movedt))
+            print('  └ 행선지 없음 %d종' % len(gone))
+            if gone:
+                fails.append('토큰 유실 %d종(행선지 없음): %s' % (len(gone), ', '.join(gone[:20])))
+    else:
+        print('게이트2·3 건너뜀 — 스냅샷 부재(%s)' % os.path.relpath(snap, ROOT))
+
+    # 게이트 4 — 한 줄 2,000자 (R1-5-4)
+    over = []
+    for p in [src] + paths:
+        for n, l in enumerate(read_text(p).split('\n'), 1):
+            if len(l) > 2000:
+                over.append('%s:%d (%d자)' % (os.path.basename(p), n, len(l)))
+    print('게이트4 2,000자 초과 줄: %d' % len(over))
+    if over:
+        fails.append('한도 초과: ' + ', '.join(over[:10]))
+
+    # 게이트 5 — 표 열수 정합(조각 경계가 표를 깨지 않았는가)
+    #   🔴 `|` 개수를 세면 안 된다 — 백틱 코드스팬·이스케이프 `\|` 때문에 오탐이 난다
+    #   (O66 최초 실행이 이 축이 없어 실제로 표를 깨뜨렸다) ⇒ split_row 를 상속한다.
+    #   🔴 판정은 절대건수가 아니라 **원문 대비 증가분**이다. 원문에 이미 있던
+    #   열수 결손을 이 스크립트가 고칠 권한은 없다(무변경 계약).
+    def col_violations(text):
+        bad = []
+        hdr_n, hdr_line = None, 0
+        for n, l in enumerate(text.split('\n'), 1):
+            s = l.strip()
+            if not s.startswith('|'):
+                hdr_n = None
+                continue
+            if set(s.replace('|', '').replace('-', '').replace(':', '').strip()) == set():
+                continue
+            try:
+                got = len(split_row(s))
+            except AssertionError:
+                continue
+            if hdr_n is None:
+                hdr_n, hdr_line = got, n
+                continue
+            if got != hdr_n:
+                bad.append('%d행 %d열 (헤더 %d행 = %d열)' % (n, got, hdr_line, hdr_n))
+        return bad
+
+    chunk_bad = []
+    for p in paths:
+        for b in col_violations(read_text(p)):
+            chunk_bad.append('%s:%s' % (os.path.basename(p), b))
+    if os.path.exists(snap):
+        orig_bad = col_violations(read_text(snap))
+        print('게이트5 표 열수 결손: 원문 %d · 조각 %d (증가 %d)'
+              % (len(orig_bad), len(chunk_bad), len(chunk_bad) - len(orig_bad)))
+        if len(chunk_bad) > len(orig_bad):
+            fails.append('분할이 표를 깼다(증가 %d): %s'
+                         % (len(chunk_bad) - len(orig_bad), ' / '.join(chunk_bad[:10])))
+        elif chunk_bad:
+            print('  ⚠️ 원문에 이미 있던 결손 %d건이 조각에 그대로 있다(무변경 계약상 정상):'
+                  % len(chunk_bad))
+            for b in chunk_bad[:10]:
+                print('     ', b)
+    else:
+        print('게이트5 표 열수 결손: 조각 %d (원문 대조 불가 — 스냅샷 부재)' % len(chunk_bad))
+        if chunk_bad:
+            fails.append('열수 결손: ' + ' / '.join(chunk_bad[:10]))
+
+    # 게이트 6 — 조각 상한(300줄 AND 40KB)
+    big = []
+    for p in paths:
+        t = read_text(p)
+        n = len(t.split('\n'))
+        if n > MAX_LINES or nbytes(t) > MAX_BYTES:
+            big.append('%s (%d줄 %.1fKB)' % (os.path.basename(p), n, nbytes(t) / 1024.0))
+    print('게이트6 조각 상한 초과: %d' % len(big))
+    if big:
+        fails.append('상한 초과: ' + ' / '.join(big[:10]))
+
+    if fails:
+        print('\n🔴 FAIL')
+        for f in fails:
+            print(' -', f)
+        return 1
+    print('\n🟢 PASS — 본문 바이트 동일 · 유실 0 · 상한 초과 0')
+    return 0
+
+
+def republish(src):
+    """조각을 편집한 뒤 허브의 **발행 SHA256** 을 갱신한다(`R1-6-9` 의 집행 도구).
+
+    🔴 [2026-08-18 O83 신설] `R1-6-9` 는 「조각 편집 후 허브 SHA256 재발행」을 규정하고
+    `verify()` 는 `발행 SHA256` 라벨을 **읽을 수** 있는데, 그 라벨을 **쓰는 도구가 없었다**
+    (O82-C 가 읽는 쪽만 열었다). 그래서 사람이 64자 해시를 **손으로** 적어야 했고,
+    그것은 오타 1글자로 게이트를 영구 FAIL 로 만드는 손 편집이다.
+    ⇒ 규정만 있고 도구가 없는 구간을 닫는다(조문 = 집행 장치가 있어야 지켜진다).
+    """
+    hub = read_text(src)
+    parts, _ = collect_bodies(src, hub_outdir(src))
+    if not parts:
+        print('🔴 조각이 없다 — 재발행 대상이 아니다.')
+        return 1
+    digest = sha('\n'.join(parts))
+    new, n = re.subn(r'(\*\*)(?:원문|발행)( SHA256\*\* = `)[0-9a-f]{64}(`)',
+                     r'\g<1>발행\g<2>' + digest + r'\g<3>', hub, count=1)
+    if not n:
+        print('🔴 허브에 SHA256 줄이 없다 — 재발행할 수 없다.')
+        return 1
+    write_text(src, new)
+    print('🟢 발행 SHA256 재발행 = %s' % digest[:16])
+    return verify(src)
+
+
+def rebalance(src, mode=None, fill=0.7):
+    """허브+조각을 **현재 내용**으로 재분할해 상한 여유를 회복한다(`R1-6-14`).
+
+    🔴 왜 필요한가 (2026-08-18 O83-B 실측): 갱신형 원장은 신규 행이 표 머리(최신 우선)에
+    떨어져 **항상 같은 조각**으로 간다. 인덱스 `-001` 여유 **178B** ↔ 세션당 추가 ≈ **1,200B**
+    ⇒ 다음 편집에서 **반드시** 초과한다. 조각 편집은 국소 연산인데 상한 회복은
+    **문서 전체 재분할**을 요구한다(B-tree 의 split 과 같은 구조) — 그 연산이 없었다.
+    ⚠️ `--republish` 는 해시만 갱신하고 **배치는 그대로 둔다** ⇒ 초과를 해결하지 못한다.
+
+    계약:
+    * 기준은 **원문 스냅샷이 아니라 현재 조각 내용**이다(그 사이 편집이 정본이다).
+    * 재분할 전 논리 문서를 `_archive/<base>.O83B-prerebalance` 로 스냅샷한다.
+    * 조각 수가 줄면 **남는 조각 파일을 개별 삭제**한다 —
+      🔴 폴더를 `rm -rf` 하지 않는다(`R1-6-10`: 스테이지 접두 삭제로 허브까지 지워진다).
+    * 허브는 `발행 SHA256` 라벨로 재발행한다(원문과 이미 다르기 때문이다).
+    """
+    outdir = hub_outdir(src)
+    mode = mode or hub_boundary(src)
+    parts, paths = collect_bodies(src, outdir)
+    if not parts:
+        print('🔴 조각이 없다 — 재균형 대상이 아니다.')
+        return 1
+    logical = '\n'.join(parts)
+    lines = logical.split('\n')
+    digest = sha(logical)
+    print('재균형 대상 %s' % os.path.basename(src))
+    print('  현재 조각 %d개 · 논리 문서 %d줄 · %s바이트 · 경계 %s · 목표 채움 %.0f%%'
+          % (len(paths), len(lines), format(nbytes(logical), ','), mode, fill * 100))
+
+    levels = LEVELS_ENTRY if mode == 'entry' else LEVELS_SECTION
+    chunks = pack(lines, atomize(lines, 0, len(lines), levels, 0, fill), fill)
+    over = [n for n, (a, b) in enumerate(chunks, 1) if not fits(lines, a, b)]
+    if over:
+        print('🔴 재분할 후에도 상한 초과 조각 %s — 경계를 못 찾았다.' % over)
+        return 1
+
+    if not os.path.isdir(ARCHIVE):
+        os.makedirs(ARCHIVE)
+    snap = os.path.join(ARCHIVE, '%s.O83B-prerebalance' % os.path.basename(src))
+    write_text(snap, logical)
+    print('  재균형 전 스냅샷 = %s' % os.path.relpath(snap, ROOT))
+
+    total = len(chunks)
+    for n, (a, b) in enumerate(chunks, 1):
+        head = chunk_header(src, n, total, a, b)
+        write_text(chunk_path(src, n, outdir), '\n'.join(head) + '\n' + seg_text(lines, a, b))
+    # 조각 수가 줄었으면 잉여 파일을 개별 삭제한다(폴더 삭제 금지 · R1-6-10)
+    removed = 0
+    n = total + 1
+    while True:
+        p = chunk_path(src, n, outdir)
+        if not os.path.exists(p):
+            break
+        os.remove(p)
+        removed += 1
+        n += 1
+    write_text(src, build_hub(src, lines, chunks, digest, outdir, mode, label='발행'))
+    print('  조각 %d개 재기록 · 잉여 삭제 %d개 · 허브 재발행 %s' % (total, removed, digest[:16]))
+    sizes = [nbytes(read_text(chunk_path(src, k, outdir))) for k in range(1, total + 1)]
+    print('  조각 크기 max %d B · 최소 여유 %d B' % (max(sizes), MAX_BYTES - max(sizes)))
+    return verify(src)
+
+
+def rollover(src, text_path=None):
+    """append형 문서의 **꼬리 조각**에 항목을 추가한다. 차면 새 조각을 만든다(`R1-6-15`).
+
+    🔴 왜 필요한가 (2026-08-18 O83-B): append형은 구조적으로 갱신형보다 쉽다 —
+    추가가 **항상 꼬리**에 떨어지므로 기존 조각은 **불변**이고, 꼬리가 차면
+    **새 조각 1개를 만들면 끝**이다(O(1) 국소 연산 · 재균형 불요).
+    그런데 도구에는 그 연산이 없어 `--rebalance` 로 전체를 다시 쪼개야 했고,
+    그러면 조각 경계가 매번 이동해 **append형의 유일한 장점인 불변성이 사라진다**.
+    ⇒ 이 함수가 그 공백을 닫는다.
+
+    사용:
+      python3 scripts/split_doc.py <허브> --rollover --entry-file <추가할.md>
+
+    계약:
+    * 꼬리 조각에 넣어 **상한 이내면 append**, 넘치면 **다음 연번 조각을 신설**한다.
+    * 기존 조각(`-001`…`-0NN-1`)은 **한 바이트도 건드리지 않는다**.
+    * 허브는 `발행 SHA256` 으로 재발행하고 게이트 6종을 돌린다.
+    """
+    if not text_path:
+        print('🔴 --entry-file 이 필요하다(추가할 본문 파일).')
+        return 1
+    if not os.path.exists(text_path):
+        print('🔴 추가할 본문 파일이 없다: %s' % text_path)
+        return 1
+    entry = read_text(text_path).rstrip('\n')
+    if not entry.strip():
+        print('🔴 추가할 본문이 비어 있다.')
+        return 1
+
+    outdir = hub_outdir(src)
+    parts, paths = collect_bodies(src, outdir)
+    if not parts:
+        print('🔴 조각이 없다 — 롤오버 대상이 아니다.')
+        return 1
+
+    tail_n = len(paths)
+    tail_body = parts[-1]
+    merged = tail_body.rstrip('\n') + '\n\n' + entry + '\n'
+    mlines = merged.split('\n')
+    if fits(mlines, 0, len(mlines)):
+        # 꼬리 조각에 여유가 있다 — append
+        head = read_text(paths[-1]).split(BODY_BEGIN + '\n', 1)[0] + BODY_BEGIN + '\n'
+        write_text(paths[-1], head + merged)
+        target, created = os.path.basename(paths[-1]), False
+    else:
+        # 꼬리가 찼다 — 다음 연번 조각을 신설한다(기존 조각 불변)
+        new_n = tail_n + 1
+        body = entry + '\n'
+        blines = body.split('\n')
+        if not fits(blines, 0, len(blines)):
+            print('🔴 추가할 항목 자체가 상한을 넘는다(%d줄 / %s B) — 항목을 나눠라.'
+                  % (len(blines), format(nbytes(body), ',')))
+            return 1
+        head = chunk_header(src, new_n, new_n, 0, len(blines))
+        write_text(chunk_path(src, new_n, outdir), '\n'.join(head) + '\n' + body)
+        target, created = os.path.basename(chunk_path(src, new_n, outdir)), True
+
+    print('🟢 %s %s (항목 %s B)'
+          % (target, '신설' if created else 'append', format(nbytes(entry), ',')))
+    parts, paths = collect_bodies(src, outdir)
+    logical = '\n'.join(parts)
+    lines = logical.split('\n')
+    chunks = []
+    off = 0
+    for p in parts:                     # 허브 목차용 구간 재계산(내용은 이미 확정이다)
+        n = len(p.split('\n'))
+        chunks.append((off, off + n))
+        off += n
+    write_text(src, build_hub(src, lines, chunks, sha(logical), outdir,
+                              hub_boundary(src), label='발행'))
+    sizes = [nbytes(read_text(p)) for p in paths]
+    print('  조각 %d개 · max %d B · 최소 여유 %d B' % (len(paths), max(sizes), MAX_BYTES - max(sizes)))
+    return verify(src)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('path', help='분할 대상(또는 --verify 시 허브) 경로')
+    ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument('--verify', action='store_true')
+    ap.add_argument('--republish', action='store_true',
+                    help='조각 편집 후 허브의 발행 SHA256 을 재계산·기록한다(R1-6-9)')
+    ap.add_argument('--rebalance', action='store_true',
+                    help='현재 조각 내용으로 재분할해 상한 여유를 회복한다(R1-6-14)')
+    ap.add_argument('--rollover', action='store_true',
+                    help='append형 꼬리 조각에 항목 추가 · 차면 새 조각 신설(R1-6-15)')
+    ap.add_argument('--entry-file', default=None,
+                    help='--rollover 로 추가할 본문 파일 경로')
+    # 🔴 default=None — 「미지정」과 「section 지정」을 구별해야 한다.
+    #   `--rebalance` 는 미지정이면 허브의 SPLIT-BOUNDARY 마커를 따른다.
+    ap.add_argument('--boundary', choices=['section', 'entry'], default=None)
+    ap.add_argument('--fill', type=float, default=0.7,
+                    help='--rebalance 목표 채움 비율(기본 0.7 = 조각당 약 12KB 여유 확보)')
+    ap.add_argument('--outdir', default=None,
+                    help='조각을 이 하위 폴더에 둔다(허브는 원 위치 유지). 예: 01_세션이력_조각')
+    a = ap.parse_args()
+    src = a.path if os.path.isabs(a.path) else os.path.join(ROOT, a.path)
+    if not os.path.exists(src):
+        raise SystemExit('🔴 경로 부재: %s' % src)
+    if a.rollover:
+        p = a.entry_file
+        if p and not os.path.isabs(p):
+            p = os.path.join(ROOT, p)
+        return rollover(src, p)
+    if a.rebalance:
+        return rebalance(src, a.boundary, a.fill)
+    if a.republish:
+        return republish(src)
+    if a.verify:
+        return verify(src)
+    return build(src, a.dry_run, a.boundary or 'section', a.outdir)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

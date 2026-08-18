@@ -1,5 +1,3 @@
--- 입력: SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
--- 출력:
 create or replace schema GN_DW.ML;
 
 create or replace TABLE GN_DW.ML.CMPGN_MBER_SNAPSHOT (
@@ -3213,4 +3211,3 @@ AS 'BEGIN
             RETURN ''FAILED: '' || :V_ERR_MSG;
     END;
 END';
-

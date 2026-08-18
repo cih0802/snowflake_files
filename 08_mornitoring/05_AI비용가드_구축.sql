@@ -62,7 +62,7 @@ CREATE TAG IF NOT EXISTS GN_DW.SECURITY.AI_COST_SCOPE
 --      제외 설정을 사후 감사할 수단이 없으므로 본 파일에 기록해 관리한다.
 
 --   신규 사용자를 한도 적용 대상으로 넣을 때:
--- ALTER USER <username> SET TAG GN_DW.SECURITY.AI_COST_SCOPE = 'GOVERNED';
+ALTER USER choih SET TAG GN_DW.SECURITY.AI_COST_SCOPE = 'GOVERNED';
 --
 --   TRIALADMIN 은 의도적으로 태그를 부여하지 않는다(= 제외).
 --   ⚠️ 운영 전환 시 주의: 태그를 부여하지 않으면 한도도 걸리지 않는다.
@@ -148,7 +148,7 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 --
 --   [옵션 A] 30 credits/사용자/월 — 보수적. 토이모델 생산이 아닌 일반 사용 기준.
 --            하루 3.3 credits 속도면 약 9일치.
--- CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(30);
+CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(30);
 --
 --   [옵션 B] 100 credits/사용자/월 — 상시 개발 사용자 1인 실사용량 기준(3.3/일 × 30일).
 -- CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(100);
@@ -159,7 +159,7 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 --
 --   [옵션] 일 한도 — 2번째 인자에 CYCLE 을 준다. 일·월은 독립 평가된다.
 --            (월 한도 내에 있어도 일 한도로 차단될 수 있고, 그 역도 성립)
--- CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(5,  'DAILY');   -- 실측 3.3/일 대비 약간 여유
+CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(5,  'DAILY');   -- 실측 3.3/일 대비 약간 여유
 -- CALL GN_DW.OPS.AI_USER_QUOTA!SET_PER_USER_LIMIT(10, 'DAILY');   -- 집중 작업일 허용, 폭증만 차단
 --
 --   해제
@@ -181,7 +181,7 @@ CALL GN_DW.OPS.AI_USER_QUOTA!SET_USER_TAGS(
 --   ⚠️ 일·월 사이클은 UTC 자정 리셋. 경계 직전 사용자는 리셋 전 한도 + 리셋 후 한도를
 --      연속 소비할 수 있다.
 --
--- CALL GN_DW.OPS.AI_USER_QUOTA!SET_BLOCK_ENFORCEMENT_ENABLED(TRUE);
+CALL GN_DW.OPS.AI_USER_QUOTA!SET_BLOCK_ENFORCEMENT_ENABLED(TRUE);
 --   2번째 인자는 차단 시 사용자 이메일 발송 여부
 -- CALL GN_DW.OPS.AI_USER_QUOTA!SET_BLOCK_ENFORCEMENT_ENABLED(TRUE, TRUE);
 

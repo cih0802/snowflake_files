@@ -2445,3 +2445,39 @@ def main(session, input_yyyymm=None):
     return "\\n".join(log_messages)
 ';
 */
+
+-- # A7  (🆕 2026-08-14 신설 · ML 예측결과 16종 실측 — **미실측 · 실행 후 결과를 아래에 붙일 것**)
+-- 실행 계정: A (Provider) · 관련 절차: 01번 문서 §3.1-B · §6.2
+-- ⚠️ ML 스키마 통짜로 세지 말 것. 학습 20 · 스냅샷 12 · 로그 1 이 섞여 기준값이 부풀어
+--    C 검증(05번 A.6 (1) · A.5-B.4)이 전부 어긋난다. 필터는 ML_RST_DATA_ 접두다.
+SELECT table_schema, table_name, row_count, bytes
+FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE table_type = 'BASE TABLE'
+  AND table_schema = 'ML'
+  AND table_name LIKE 'ML_RST_DATA_%'
+ORDER BY table_name;
+/*
+-- 기대: 16행. 결과를 이 블록에 그대로 붙인다.
+-- 참고값(A 실측 아님 · 원천 계정 라이브 2026-08-14 O74 · 정본 05_SV-Agent_ai/20_ML_SV_설계.md §0-A):
+--   SPNSR_CHURN_12M 829,609 / MBER_CHURN_12M 91,423 / MBER_INC_12M 91,423 / LOYAL_MBER 29,471
+--   CMPGN_CTGR_AMT 660 / MONTHLY_DEPT_DVLP_AMT 360 / MONTHLY_SPNSR_BSNS_ID_DVLP_AMT 228
+--   MONTHLY_NEW_OLD_DVLP_AMT 24 / MONTHLY_DVLP_AMT 12 / MONTHLY_CMPGN_DVLP_AMT 1,200
+--   UCMPGN_LTV 600 / UCMPGN_LTV_SCORE 50 / CMPGN_LTV 600 / CMPGN_LTV_SCORE 50
+--   CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 11 / DVLP_INC_CONTRIBUTION 11
+--   합계 1,045,732 행 (기준월 202606 단일 기준) · 용량 미측정
+-- 🔴 기준월이 늘면 행수가 증가한다(프로시저가 월별 DELETE+INSERT 누적).
+--    ⇒ 참고값과 다르면 오류가 아니다. 이관 시점 실측값만 대조 기준으로 쓴다.
+*/
+
+-- # A8  (🆕 2026-08-14 · ML 부여 상태 확인 — 미실측)
+-- 기대: 16행 (전부 GN_DW.ML.ML_RST_DATA_ 접두)
+SHOW GRANTS TO SHARE mig_share;
+SELECT "granted_on", "name"
+FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+WHERE "name" LIKE 'GN_DW.ML.%'
+ORDER BY 2;
+/*
+-- 결과를 이 블록에 붙인다.
+-- 16 초과 = ALL TABLES 오사용(학습·스냅샷 노출) ⇒ 회수 후 02번 2-B 재실행
+-- 16 미만 = 결과 테이블 재생성으로 GRANT 소실 ⇒ 02번 2-B 재실행
+*/

@@ -12,10 +12,17 @@
 --     지켜지지 않아 **동일 유형 drift 가 4회 재발**(교훈 P23)했다. 이제 SQL 파일에 스펙 사본이
 --     0개이므로 구조적으로 drift 가 불가능하다.
 --
+-- ▶ 대상 Agent = **3종** (2026-08-18 O84 에서 AGENT_MARKETING 추가)
+--   · AGENT_MEMBER    회원 도메인      정본 = cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+--   · AGENT_OVERALL   전사·재무 요약    정본 = cortex_project/agents/AGENT_OVERALL/agent_spec.yaml
+--   · AGENT_MARKETING 마케팅            정본 = cortex_project/agents/AGENT_MARKETING/agent_spec.yaml
+--
 -- ▶ 실행 순서
 --   02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql → dbt(BRONZE→GOLD)
---   → 05_1~05_9_SV_DDL_*.sql(SV 9종 + 각 파일 GRANT·스모크) → **본 파일** → 09_2_AGENT_버전업.sql
+--   → 05_1~05_9_SV_DDL_*.sql(실적 SV 9종) → 21_ML_SERVING_뷰_DDL.sql → 22_ML_SV_DDL.sql(ML SV)
+--   → **본 파일** → 09_2_AGENT_버전업.sql
 --   ⚠ SV 가 없으면 Agent 는 만들어지지만 질의 시 도구가 깨진다(tool_resources 가 SV 를 참조).
+--     ⇒ 09_2 [0] 이 **참조 SV 실재를 사전검증**하므로 SV 배포를 건너뛰면 그 단계에서 막힌다.
 --
 -- ▶ 언제 이 파일을 다시 실행하는가
 --   · 신규 계정 재현 / Agent 를 실수로 DROP 한 경우 → 전체 실행
@@ -24,6 +31,9 @@
 --   🔴 이미 운영 중인 Agent 에 `CREATE OR REPLACE` 를 다시 쓰면 **버전 이력이 VERSION$1 로
 --      초기화되고 USAGE grant·CoWork SI 등록이 파괴**된다([2][3][4] 재실행 필요).
 --      운영 계정에서 스펙만 갱신하려면 반드시 09_2 를 쓴다.
+--   🔴🔴 **[2026-08-18 O84] 기존 2종(MEMBER·OVERALL)에는 [1] 을 재실행하지 말 것.**
+--      실측 = 두 Agent 는 이미 VERSION$3 가 default 로 서비스 중이다. `CREATE OR REPLACE` 는
+--      그 이력을 파괴한다. **신규 AGENT_MARKETING 만** [1-C] 를 골라 실행한다.
 --
 -- ▶ 실측 근거 (2026-07-31 mq60369, AGENT_ZZ_PROBE 로 검증 후 DROP)
 --   · `CREATE AGENT` 는 `FROM SPECIFICATION` 이 **필수**다(생략 불가). 다만 최소 스펙
@@ -36,15 +46,29 @@ USE WAREHOUSE GN_DW_ANALYTICS_WH;
 
 
 -- ============================================================================
+-- [0] 현행 상태 확인 — 어느 Agent 가 이미 있는지 먼저 본다
+--     🔴 [1] 은 파괴적이므로 **여기서 확인한 뒤 필요한 블록만** 실행한다.
+-- ============================================================================
+SHOW AGENTS IN SCHEMA GN_DW.SERVING;
+--   2026-08-18 실측: AGENT_MEMBER(VERSION$3 default) · AGENT_OVERALL(VERSION$3 default) 2행.
+--   AGENT_MARKETING 은 부재 ⇒ [1-C] 만 실행 대상이다.
+
+
+-- ============================================================================
 -- [1] Agent 껍데기 생성 — 최소 스펙
 --     COMMENT·PROFILE 은 spec 이 아닌 DDL 속성이라 09_2 의 버전업으로는 바뀌지 않는다.
 --     따라서 이 파일이 COMMENT·PROFILE 의 정본이다.
+--     🔴 블록을 A/B/C 로 쪼갠 이유 = 기존 Agent 를 파괴하지 않고 신규만 만들 수 있게 하려는 것이다.
 -- ============================================================================
-CREATE OR REPLACE AGENT GN_DW.SERVING.AGENT_MEMBER
-  -- 🔴 [2026-08-10 O52] 종전 COMMENT 는 "SV 4종" 이었는데 `09_2` 가 도구를 **7종**으로 늘렸다.
-  --   즉 이 파일만 보면 도구 수를 오인한다 — `09_1` 은 껍데기이고 정본 도구 목록은 `09_2` 다.
-  --   ⇒ COMMENT 를 실제 7종으로 맞췄다(`SHOW AGENTS` 의 comment 로 노출되는 값이다).
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent(Phase-1). SV 7종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해.'
+
+-- ---- [1-A] AGENT_MEMBER ---- 🔴 운영 중(VERSION$3). 신규 계정 재현 시에만 실행.
+-- 🔴 [2026-08-10 O52] 종전 COMMENT 는 "SV 4종" 이었는데 `09_2` 가 도구를 **7종**으로 늘렸다.
+--   즉 이 파일만 보면 도구 수를 오인한다 — `09_1` 은 껍데기이고 정본 도구 목록은 `09_2` 다.
+-- 🔴 [2026-08-18 O84] 정본 yaml 이 **10종**(실적 7 + ML 예측 3)으로 늘었다. COMMENT 를 맞췄다.
+--   ⚠ COMMENT 는 「정본 yaml 의 도구 수」를 적는 값이며 **라이브 버전의 도구 수가 아니다**.
+--     09_2 를 돌리기 전까지 라이브는 7종이다 — 두 수를 혼동하지 말 것(O84 실측 격차).
+CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 10종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해 + ML 예측 3종(회원중단·후원중단·회비예측).'
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}'
   FROM SPECIFICATION
   $$
@@ -52,9 +76,24 @@ CREATE OR REPLACE AGENT GN_DW.SERVING.AGENT_MEMBER
     orchestration: auto
   $$;
 
-CREATE OR REPLACE AGENT GN_DW.SERVING.AGENT_OVERALL
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent(Phase-1). 예산 + 광고 실적 + 회원월실적·발송 전사 요약.'
+-- ---- [1-B] AGENT_OVERALL ---- 🔴 운영 중(VERSION$3). 신규 계정 재현 시에만 실행.
+-- 🔴 [2026-08-18 O84] 정본 yaml 이 **8종**(예산·광고·회원월실적·발송 + ML 예측 4)이다.
+CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_OVERALL
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).'
   PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}'
+  FROM SPECIFICATION
+  $$
+  models:
+    orchestration: auto
+  $$;
+
+-- ---- [1-C] AGENT_MARKETING ---- 🆕 [2026-08-18 O84] 신규. 이 블록은 실행 대상이다.
+--   정본 = `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`(도구 6 = 리소스 6 · 문항 10)
+--   설계 정본 = `05_SV-Agent_ai/30_마케팅_AGENT_설계.md`
+--   🟢 참조 SV 6종은 전건 라이브 실재다(2026-08-18 확인) ⇒ 죽은 도구가 생기지 않는다.
+CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MARKETING
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 6종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.'
+  PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}'
   FROM SPECIFICATION
   $$
   models:
@@ -64,16 +103,19 @@ CREATE OR REPLACE AGENT GN_DW.SERVING.AGENT_OVERALL
 
 -- ============================================================================
 -- [2] 소유권 — 위 [1] 을 GN_DW_ADMIN 으로 실행했다면 **불요(SKIP)**
---     owner 가 ACCOUNTADMIN 으로 찍혔을 때만 아래를 실행한다(SV 9종과 소유 정합 = GN_DW_ADMIN · O55 실측).
+--     owner 가 ACCOUNTADMIN 으로 찍혔을 때만 아래를 실행한다(SV 와 소유 정합 = GN_DW_ADMIN · O55 실측).
 -- ============================================================================
 -- USE ROLE ACCOUNTADMIN;
--- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
--- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+-- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_MEMBER    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+-- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_OVERALL   TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+-- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 
 
 -- ============================================================================
 -- [3] 소비 USAGE grant (소유자 GN_DW_ADMIN 이 부여)
 --     ⚠ `CREATE OR REPLACE AGENT` 로 소실되므로 [1] 재실행 시 반드시 함께 재실행.
+--     🔴 기존 2종은 grant 가 이미 살아 있다(09_2 경로는 grant 를 파괴하지 않는다) —
+--        재부여는 무해하지만 `created_on` 이 갱신돼 보존 판정 근거가 사라진다 ⇒ 신규만 실행 권장.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_ANALYST;
@@ -82,6 +124,9 @@ GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_SERVICE;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_VIEWER;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_SERVICE;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_ANALYST;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_VIEWER;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_SERVICE;
 
 
 -- ============================================================================
@@ -92,6 +137,7 @@ GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_SERVICE;
 --     · SHOW 결과 컬럼명은 소문자 → RESULT_SCAN 에서 큰따옴표 필수.
 --     · `FOR rec IN (…) DO` 커서 변수는 스크립팅 표현식에서 참조 불가 → 루프 대신 명시 분기.
 --     근거·검증 상세 = 08 §4.4 · 20_issue/10_진단_원인분석.md §11-D (교훈 P26)
+--     🔴 [2026-08-18 O84] AGENT_MARKETING 분기 추가 — 3종 전부 멱등이다.
 -- ============================================================================
 USE ROLE ACCOUNTADMIN;
 
@@ -118,9 +164,21 @@ BEGIN
   IF (c2 = 0) THEN
     ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT
       ADD AGENT GN_DW.SERVING.AGENT_OVERALL;
-    res := res || 'AGENT_OVERALL=added';
+    res := res || 'AGENT_OVERALL=added ';
   ELSE
-    res := res || 'AGENT_OVERALL=skipped';
+    res := res || 'AGENT_OVERALL=skipped ';
+  END IF;
+
+  SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;
+  LET c3 INT := (SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+                  WHERE "database_name" = 'GN_DW' AND "schema_name" = 'SERVING'
+                    AND "name" = 'AGENT_MARKETING');
+  IF (c3 = 0) THEN
+    ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT
+      ADD AGENT GN_DW.SERVING.AGENT_MARKETING;
+    res := res || 'AGENT_MARKETING=added';
+  ELSE
+    res := res || 'AGENT_MARKETING=skipped';
   END IF;
 
   RETURN res;
@@ -131,28 +189,35 @@ $$;
 -- ============================================================================
 -- [5] COMMENT·PROFILE 갱신 (선택) — spec 경로(09_2)로는 안 바뀌는 DDL 속성
 --     ⚠ SET 절은 콤마 구분 필수. 현행값이 이미 최신이면 생략 가능(무해).
+--     🔴 **09_2 로 도구 수를 늘린 뒤에는 이 블록으로 COMMENT 를 맞춰야 한다** —
+--        그렇지 않으면 `SHOW AGENTS` 의 comment 가 실제 도구 수와 어긋난다.
+--        실측 사례(2026-08-18 O84) = 라이브 comment "SV 7종" ↔ 정본 yaml 도구 10종.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 -- ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET
---   COMMENT = '굿네이버스 회원 도메인 분석 Agent(Phase-1). SV 4종: 월실적·상태전이·서비스발송·행사참여.',
+--   COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 10종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해 + ML 예측 3종(회원중단·후원중단·회비예측).',
 --   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
 -- ALTER AGENT GN_DW.SERVING.AGENT_OVERALL SET
---   COMMENT = '굿네이버스 전사·재무 요약 분석 Agent(Phase-1). 예산 + 광고 실적 + 회원월실적·발송 전사 요약.',
+--   COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).',
 --   PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}';
+-- ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET
+--   COMMENT = '굿네이버스 마케팅 분석 Agent. SV 6종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.',
+--   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}';
 
 
 -- ============================================================================
 -- [6] 검증
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
-SHOW AGENTS IN SCHEMA GN_DW.SERVING;              -- 2행 · owner=GN_DW_ADMIN · comment/profile 최신
-SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;  -- OWNERSHIP + USAGE×3 = 4행
-SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL; -- 동일 4행
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
+SHOW AGENTS IN SCHEMA GN_DW.SERVING;                -- **3행** · owner=GN_DW_ADMIN · comment/profile 최신
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;    -- OWNERSHIP + USAGE×3 = 4행
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL;   -- 동일 4행
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MARKETING; -- 동일 4행
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 --   기대: VERSION$1(최소 스펙) + live. 스펙 본문은 아직 비어 있다 → 09_2 로 채운다.
 
 USE ROLE ACCOUNTADMIN;
-SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;  -- 2행(CoWork 노출)
+SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;  -- **3행**(CoWork 노출)
 
 --   ▶ 다음 단계: `09_2_AGENT_버전업.sql` 로 정본 yaml 을 적용해야 도구가 붙는다.
 --     이 파일만 실행한 상태의 Agent 는 tool 이 없어 데이터 질문에 답하지 못한다.

@@ -36,6 +36,7 @@ GOLDEN = ROOT / 'scripts' / 'golden' / 'doc_headings.json'
 #   **제목 유실은 이력에서도 사고**이므로 포함한다 — 이 게이트는 독해 의무가 아니라 구조 보존을 본다.
 DOCS = [
     '00_guides/00_작업지침_세션운영규칙.md',
+    '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
     '20_issue/00_INDEX_이슈원장.md',
     '20_issue/01_세션이력.md',
     '20_issue/02_상태상세_대시보드_갱신형.md',
@@ -64,6 +65,50 @@ def headings(text):
     return out
 
 
+def chunk_files(p):
+    """[2026-08-14 O82] 허브로 분할된 문서의 조각 파일 목록(연번 순).
+
+    🔴 왜 필요한가: `split_doc.py` 가 정본을 허브 + `-001…-00N` 조각으로 나누면
+    제목이 조각으로 이동한다. 이 게이트의 분모(`DOCS`)는 허브만 보므로
+    **제목 219건이 「유실」로 오탐**됐다(실제로는 조각에 그대로 있고 concat
+    SHA256 이 원문과 일치한다). 분모를 조각까지 넓히지 않으면 게이트가
+    「이동」을 「삭제」로 판정해 정상 작업을 막는다 — `P106` 의 반대 방향 사고다.
+    ⇒ 조각 제목을 **허브 문서의 제목 집합에 합산**한다(골든 재발행 불요).
+
+    ⚠️ 이 함수는 2026-08-18 사용자 discard 로 한 번 소실됐다가 재적용됐다.
+    `C7`(동시 편집) 환경에서 파일 단위 discard 는 **타 세션 변경까지 되돌린다**.
+    """
+    out = []
+    n = 1
+    while True:
+        c = p.with_name('%s-%03d%s' % (p.stem, n, p.suffix))
+        if not c.exists():
+            break
+        out.append(c)
+        n += 1
+    if out:
+        return out
+    # [2026-08-18 O83] 폴더 분할(`split_doc.py --outdir`) 대응.
+    #   🔴 왜 필요한가: `01_세션이력.md` 조각은 `20_issue/01_세션이력_조각/` 폴더에 있다.
+    #   형제만 찾으면 조각으로 **이동한** 제목 전량이 「유실」로 잡혀 게이트가 실패한다
+    #   (`R1-6-8` 이 219건 오탐으로 이미 실증한 사고의 폴더판 — 실제로 104건+ 로 재발했다).
+    #   🔴 폴더명을 **stem 으로 추측하지 않는다** — 추측판이 실제 폴더명과 달라 한 번 실패했다.
+    #   허브가 `<!-- SPLIT-OUTDIR: … -->` 로 자기기술하므로 그것을 읽는다.
+    m = re.search(r'<!--\s*SPLIT-OUTDIR:\s*(.+?)\s*-->', p.read_text(encoding='utf-8'))
+    if not m:
+        return out
+    d = p.parent / m.group(1).strip()
+    if d.is_dir():
+        n = 1
+        while True:
+            c = d / ('%s-%03d%s' % (p.stem, n, p.suffix))
+            if not c.exists():
+                break
+            out.append(c)
+            n += 1
+    return out
+
+
 def collect():
     cur = {}
     for d in DOCS:
@@ -71,7 +116,10 @@ def collect():
         if not p.exists():
             cur[d] = None          # 파일 부재도 사고다 — 아래 판정에서 FAIL 로 다룬다
             continue
-        cur[d] = headings(p.read_text(encoding='utf-8'))
+        hs = headings(p.read_text(encoding='utf-8'))
+        for c in chunk_files(p):
+            hs.extend(headings(c.read_text(encoding='utf-8')))
+        cur[d] = hs
     return cur
 
 
@@ -94,7 +142,16 @@ def judge(cur, golden):
             added.append(f'{d}: 신설 {len(new)}개 (예: {new[0][:70]})')
     for d, now in cur.items():
         if d not in golden and now is not None:
-            added.append(f'{d}: 골든 미등재 문서 — 제목 {len(now)}개')
+            # 🔴 [2026-08-18 O83-H] **⚪ 신설 → 🔴 FAIL 로 격상했다.**
+            #   종전에는 골든에 없는 문서를 `added`(⚪ 정보)로 흘렸다. 그래서
+            #   `00_guides/01_문서분할_규약.md` 이 `DOCS` 분모에는 있는데 골든이 없어
+            #   **그 문서의 제목 유실이 실질적으로 미검사**인 상태가 조용히 유지됐다.
+            #   ⇒ 분모에 있으면서 골든에 없는 것은 **게이트의 침묵**이므로 blocking 이다.
+            #   🔴 이것이 O83-E 의 「분모를 넓혔는데 게이트가 침묵했다」와 같은 유형이다:
+            #   **분모 등재와 기준선 발행은 별개의 두 동작**이고, 하나만 하면 0 이 나온다.
+            fails.append(
+                f'{d}: 골든 미등재 — 제목 {len(now)}개가 **유실 검사 대상 밖**이다. '
+                f'유실 0 을 먼저 확인한 뒤 `--update-golden --reason "<사유>"` 로 발행하라')
     return fails, added
 
 

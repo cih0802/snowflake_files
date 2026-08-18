@@ -34,3 +34,16 @@ artifacts:
     targets:
       default:
         object: GN_DW.SERVING.AGENT_OVERALL
+  # 🔴 [2026-08-18 O84] AGENT_MARKETING 등록 보충.
+  #    경위: O76 이 `cortex_agent_write` 를 쓰지 않고 `write` 툴로 스펙을 저작해
+  #    (semantic_studio 스킬 미사용 = O76-C A14) **등록이 생기지 않았다**.
+  #    결과: `cortex_agent_read(source=workspace)` 가 이 스펙을 "File not found" 로 거부했다
+  #    — 파일은 로컬·스테이지 양쪽에 실재했다(스테이지 32,352B · 2026-08-18 00:35 확인).
+  #    ⇒ 정본 경로 규약(`agents/<AGENT>/agent_spec.yaml`)을 그대로 두고 등록만 보충한다.
+  #      루트 `AGENT_MARKETING.agent.yaml` 는 만들지 않는다(위 ⚠️ 「복원하지 말 것」 준수).
+  #    ⛔ 이 Agent 는 **미배포**다 — `object` 는 배포 시 대상이며 현재 실재하지 않는다.
+  - path: agents/AGENT_MARKETING/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MARKETING
