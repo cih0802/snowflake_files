@@ -50,6 +50,7 @@ schemas:
     owner: GN_DW_ADMIN
     access: MANAGED ACCESS
     note: "1테이블(1일 샤드) 실측"
+    note_20260818_O86: "🟢 G-5 해소 — EVENTS 통합 1테이블 285,676,588행 / 911일(events_20240101~20260719) + SYNC_ERR_INFO + 빈 events_20260501/20260719 = 4테이블. 일별 911테이블을 만들지 않았다(31컬럼 상위집합 통합). 🔴 04번 BRONZE DDL 재실행 금지(create or replace schema → 적재분 전량 삭제 · DDL-ORDER-1)"
   - id: SILVER
     purpose: 정제/통합 레이어
     owner: GN_DW_ADMIN
@@ -205,8 +206,10 @@ bronze_schemas:
   BRONZE_ERP:   # 1테이블 (예산 원장)
     - { id: BDGT_ACMSLT_LEDGER, rows: 2041, desc: "예산 실적 원장 (예산과목·예산단위·재원 + 월별금액). ⚠️[결론7] 캠페인·매체 연결키 없음" }
 
-  BRONZE_BIGQUERY:   # 1테이블 (1일 샤드)
-    - { id: events_20260501, rows: 287025, desc: "GA4 이벤트 (2026-05-01 전체 1일 샤드, 소문자 테이블명). user_id 채움 4.22%. ⚠️[G-5] 전기간 샤드 입고 대기" }
+  BRONZE_BIGQUERY:   # [2026-08-18 O86] 4테이블 — EVENTS(통합) + SYNC_ERR_INFO + 빈 샤드 2
+    - { id: events_20260501, rows: 287025, desc: "GA4 이벤트 (2026-05-01 전체 1일 샤드, 소문자 테이블명). user_id 채움 4.22%. ⚠️[G-5] 전기간 샤드 입고 대기 → 🟢 해소(아래 EVENTS). 현 계정에서는 0행이며 그것이 정상" }
+    - { id: EVENTS, rows: 285676588, desc: "🟢[2026-08-18 O86 · G-5 해소] GA4 통합 테이블 — 원천 일별 911테이블(events_20240101~20260719, 결번 0)을 31컬럼 상위집합 1테이블로 통합. 35컬럼 = 데이터 31 + SRC_TABLE/EVENT_DT/SRC_FILE_NAME/LOAD_TS(전부 NOT NULL). 통제총계 911건 전수 일치·불일치 0·중복파일 0. 🔴 조회 시 EVENT_DT 범위 제한 필수(프루닝 3,006중 19파티션). 전건 NULL 4종=app_info/event_dimensions/publisher/event_original_occurrence_timestamp. platform=WEB 단독(APP 0건). 적재=SANDBOX.TOOLS.LOAD_GA4_EVENTS" }
+    - { id: SYNC_ERR_INFO, rows: 0, desc: "적재 프로시저 오류 로그(04번 DDL 산물). EVENTS 와 무관" }
 
 bronze_total: 48   # CRM 43 + AGENCY 3 + ERP 1 + GA4 1
 
@@ -214,8 +217,9 @@ ingest_status:
   CRM: "✅ 전수 수령 (43테이블)"
   AGENCY: "◐ 부분 (3테이블 스캐폴드)"
   ERP: "◐ 부분 (예산원장 1 · 모금성비용 원천 부재 E-1)"
-  GA4: "◐ 부분 (1일 샤드만 · 전기간 대기 G-5)"
-  note: "잔여 입고분(GA4 전기간·ERP 모금성비용·CRM 사업목표 등)은 입고 후 SILVER/GOLD/SV로 자동 확장(의도된 대기)."
+  GA4: "🟢 전기간 완료 (EVENTS 285,676,588행 / 911일 · G-5 해소 2026-08-18 O86). ⚠️ SILVER 는 GA4-PK-1·GA4-LEN-1 로 차단"
+  note: "잔여 입고분(ERP 모금성비용·CRM 사업목표 등)은 입고 후 SILVER/GOLD/SV로 자동 확장(의도된 대기)."
+  note_20260818_O86: "🔴 GA4 는 '입고되면 자동 확장' 가정이 깨진 사례다 — 입고는 끝났으나 SILVER 구조 결함 2건(PK·컬럼길이)이 드러나 자동 확장되지 않았다. 다른 원천도 입고 시 동일 검증이 필요하다."
 ```
 
 ```yaml

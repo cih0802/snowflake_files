@@ -1,9 +1,45 @@
 version: 2
 
 # SILVER GA4 모델 — PK 정의 + inter-model relationships (DBTERD ERD 생성용 포함)
-# GA4_IDENTITY 는 enabled=false (비활성) — relationships만 정의하여 ERD 표시.
 # 실행: dbt test --select silver.ga4
+#
+# 🔄 [2026-08-19 O87] 계열 구조가 바뀌었다 — BIGQUERY_REFINED_DATA(기반) + GA4_* 5(파생).
+#    · 종전 머리말 「GA4_IDENTITY 는 enabled=false (비활성)」은 **stale** 이었다 —
+#      2026-07-15(ID-활성)에 활성화·배선 완료됐고 dbt_project.yml 에 enabled:false 가 없다.
+#      그 문장만 남아 있어 다음 작업자가 「비활성이니 안 봐도 된다」고 오독할 수 있었다 ⇒ 삭제.
+#    · GA4-PK-1 해소로 GA4_EVENT PK 4번째 키가 BATCH_ORDERING_ID → EVENT_SEQ 로 교체됐다.
 models:
+  # ── 기반 테이블 (계열의 유일 입력) ─────────────────────────────────────────
+  - name: BIGQUERY_REFINED_DATA
+    description: >
+      BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블. GA4_* 5종의 유일한 입력.
+      grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ).
+      계층 내 파생 허용 근거 = DEC-36 · 원천 접두 명명 근거 = DEC-37.
+    columns:
+      - name: USER_PSEUDO_ID
+        tests: [not_null]
+      - name: EVENT_TIMESTAMP
+        tests: [not_null]
+      - name: EVENT_NAME
+        tests: [not_null]
+      - name: EVENT_SEQ
+        description: "GA4-PK-1 조치① surrogate tiebreaker. 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순."
+        tests: [not_null]
+      - name: EVENT_DT
+        description: "프루닝 키. 모든 range 모델의 범위 제한 컬럼."
+        tests: [not_null]
+      - name: ID_SCHEME
+        description: >
+          GA4-LEN-1 조치② ID 체계 분류축. CRM 조인 가능한 것은 MBER_NO·ONCE_MBER_NO 뿐이다.
+          UNCLASSIFIED 가 나오면 원천에 신규 ID 포맷이 등장했다는 신호다(조용히 섞이지 않게 격리).
+        tests:
+          - accepted_values:
+              values: ['MBER_NO','ONCE_MBER_NO','APP','EMAIL','INVALID','UNCLASSIFIED']
+              config: { where: "ID_SCHEME IS NOT NULL", severity: warn }
+      - name: SRC_FILE_NAME
+        tests: [not_null]
+
+  # ── 파생 5종 ───────────────────────────────────────────────────────────────
   - name: GA4_EVENT
     columns:
       - name: USER_PSEUDO_ID
@@ -14,7 +50,12 @@ models:
         tests:
           - not_null
           - relationships: { to: ref('GA4_EVENT_DIM'), field: EVENT_NAME }
-      - name: BATCH_ORDERING_ID
+      # 🔄 [O87] BATCH_ORDERING_ID not_null 제거 — 그 컬럼은 원천 events_20240719 부터 생겼고
+      #    2024-01-01~07-18(199일 · 48,862,926행 = 17.10%)에는 없다. not_null 을 유지하면
+      #    전 기간 적재가 그 구간에서 실패한다(GA4-PK-1 의 발화 지점). PK 는 EVENT_SEQ 가 받는다.
+      - name: EVENT_SEQ
+        tests: [not_null]
+      - name: EVENT_DT
         tests: [not_null]
 
   - name: GA4_EVENT_DIM
@@ -33,6 +74,12 @@ models:
   - name: GA4_IDENTITY
     columns:
       - name: USER_PSEUDO_ID
+        tests: [not_null]
+      - name: ID_SCHEME
+        description: >
+          🔴 이 컬럼이 매칭 분모의 정본이다 — MBER_NO·ONCE_MBER_NO 만 CRM 조인 대상이고
+          APP·EMAIL·INVALID 는 회원번호가 아니다(GA4-LEN-1). 채움률을 계산할 때
+          분모에 뒤 3종을 넣으면 조용히 과소 보고된다.
         tests: [not_null]
       - name: MBER_NO
         tests:

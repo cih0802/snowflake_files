@@ -7,6 +7,29 @@
 > - **샤드 1일만 적재**(`events_20260501` 287,025행) — §5 "전체 기간 적재 완료" 미충족.
 > - 🟥 **`user_id` 채움률 4.2%** → §4-⑤ GA4_IDENTITY 활성 시 커버리지 DQ 필요.
 
+> ## 🔴🔴 [2026-08-18 O86] §1 「Bronze 구조 — date-shard 고정」이 **폐기**됐다 — 먼저 읽어라
+>
+> BRONZE 는 더 이상 date-shard 가 아니다. **통합 1테이블**로 적재됐다(G-5 해소).
+> `GN_DW.BRONZE_BIGQUERY.EVENTS` = **285,676,588행 / 911일**(`events_20240101`~`events_20260719`)
+> · 6,517파일 · 통제총계 911건 전수 일치 · errors 0.
+> 정본 = `50_handoff/07_동적적재_GA4_EVENTS.sql`(2판) · 설계 = `07_GA4_SILVER_샤드통합 설계결정.md` 머리말.
+>
+> ⇒ **§1 의 `INFORMATION_SCHEMA` 동적 샤드 조회 + UNION 생성 SP 는 불필요하다.**
+> SILVER 적재는 `FROM GN_DW.BRONZE_BIGQUERY.EVENTS WHERE EVENT_DT >= ... AND EVENT_DT < ...` 이다.
+> 🟢 따라서 위 머리말의 **대소문자 버그도 무효(moot)** — 샤드를 열거하지 않으므로 해당 없음.
+>
+> 🟢 **동적 SQL 생성 자체는 살아 있다 — 다만 위치가 BRONZE 적재 쪽으로 옮겨갔다.**
+> `SANDBOX.TOOLS.LOAD_GA4_EVENTS`(월 단위 동적 COPY · 컬럼 목록을
+> `SANDBOX.TOOLS.V_GA4_EVENTS_DATA_COLS` 뷰에서 생성)가 그 역할을 한다.
+> 이 문서의 SP 접근법을 참고하려면 그 프로시저를 실물 예시로 볼 것(07번 §5).
+>
+> 🔴 **SILVER 착수 전 미해소 2건** — `GA4-PK-1`(2024-01-01~07-18 · 199일 · 48,862,926행 = 17.10%
+> 가 PK `BATCH_ORDERING_ID` NOT NULL 위반) · `GA4-LEN-1`(`USER_ID VARCHAR(10)` 초과 12,690행 +
+> CRM 조인불가 ID 4종 혼재). 상세 = `20_issue/90_해소완료_로그.md` §1-A.
+>
+> 🔴 **비용 가드** — 모든 SILVER 조회에 `EVENT_DT` 범위 제한을 강제할 것.
+> 빼면 2.86억행 × VARIANT 11개를 전량 스캔한다(BRONZE 프루닝은 3,006 중 19 파티션으로 양호).
+
 ---
 
 ## 1. Bronze 구조 — date-shard 고정

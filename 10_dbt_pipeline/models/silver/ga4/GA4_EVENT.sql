@@ -1,102 +1,100 @@
--- GA4_EVENT: 이벤트 팩트 소스 (FLATTEN + param 승격 + 07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
+-- GA4_EVENT: 이벤트 팩트 소스 (07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
 -- Co-authored with CoCo
--- 단방향: BRONZE_BIGQUERY(매크로)만 참조. n_id>=2=CONFLICT(미채움). PK GROUP BY dedup.
+--
+-- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
+--    FLATTEN·param 승격·VARIANT 경로 추출·DEVICE_TYPE 파생은 전부 기반 테이블로 이동했다.
+--    이 모델에 남은 고유 로직은 **세션 채움(session-fill) 2단계 CTE** 하나다.
+--
+-- 🟢 GA4-PK-1 해소 — PK 4번째 키를 BATCH_ORDERING_ID → EVENT_SEQ 로 교체(손실 0 · 사용자 결정).
+--    종전 PK 는 2024-01-01~07-18 · 199일 · 48,862,926행(17.10%)을 NOT NULL 위반으로 배제했다.
+--    EVENT_SEQ 는 기반 테이블이 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순으로 부여한 surrogate 다.
+--    ⚠️ BATCH_ORDERING_ID 는 컬럼으로는 보존한다(2024 상반기 NULL) — 계보·정렬 근거.
+--
+-- 🟢 GA4-LEN-1 해소 — USER_ID·USER_ID_FILLED VARCHAR(10) → VARCHAR(64) + ID_SCHEME 분류축 승계.
+--    길이 확장만 하면 IDENTITY_MEMBER_XREF 매칭 분모에 비회원 ID(app-·이메일·'null')가 섞여
+--    채움률이 조용히 왜곡된다 ⇒ ID_SCHEME 을 함께 노출한다(설계문서 07 §7-B).
+--
+-- 🔴 세션 채움의 범위 경계 — sess CTE 는 **기반 테이블 전량**을 본다(범위 제한 없음).
+--    근거: 세션은 자정을 넘고 GA4 는 D+3 소급 수정된다 ⇒ 범위로 자르면 세션이 경계에서 끊겨
+--    CONFLICT·부분채움 오류가 난다(설계문서 07 §5-A ⚠️ 항목). 반면 최종 SELECT 는
+--    적재 범위(pre-hook DELETE 와 동일 범위)로 제한해 멱등성을 지킨다.
+--    n_id >= 2 = CONFLICT(미채움). 원본 USER_ID 는 불변 보존.
+-- 🔴 pre-hook 은 여기서 선언하지 않는다 — `macros/silver_purge.sql` 이 이 모델을 range 모델로
+--    인식해 **TRUNCATE 대신 범위 DELETE** 를 낸다(dbt hook 누적 사고 방지 · dbt_project.yml 참조).
+--    ⚠️ 모델명을 바꾸면 `silver_purge.RANGED_MODELS` 도 함께 고쳐야 한다.
 {{ config(materialized='incremental') }}
-WITH ev AS (
-    SELECT
-        e.user_pseudo_id                                                     AS user_pseudo_id,
-        e.event_timestamp                                                    AS event_timestamp,
-        e.event_name                                                         AS event_name,
-        e.batch_ordering_id                                                  AS batch_ordering_id,
-        e.event_date                                                         AS event_date,
-        e.user_id                                                            AS user_id,
-        e.device                                                             AS device,
-        e.geo                                                                AS geo,
-        e.platform                                                           AS platform,
-        e.is_active_user                                                     AS is_active_user,
-        e.session_traffic_source_last_click                                  AS stlc,
-        MAX(IFF(p.value:key::STRING='ga_session_id',     p.value:value:int_value::NUMBER, NULL)) AS ga_session_id,
-        MAX(IFF(p.value:key::STRING='ga_session_number', p.value:value:int_value::NUMBER, NULL)) AS ga_session_number,
-        MAX(IFF(p.value:key::STRING='session_engaged',
-            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS session_engaged,
-        MAX(IFF(p.value:key::STRING='engagement_time_msec', p.value:value:int_value::NUMBER, NULL)) AS engagement_time_msec,
-        MAX(IFF(p.value:key::STRING='page_location', p.value:value:string_value::STRING, NULL))     AS page_location,
-        MAX(IFF(p.value:key::STRING='page_title',    p.value:value:string_value::STRING, NULL))     AS page_title,
-        MAX(IFF(p.value:key::STRING='page_referrer', p.value:value:string_value::STRING, NULL))     AS page_referrer,
-        MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL))    AS event_category,
-        MAX(IFF(p.value:key::STRING='event_action',   p.value:value:string_value::STRING, NULL))    AS event_action,
-        MAX(IFF(p.value:key::STRING='event_label',
-            COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL))   AS event_label,
-        MAX(IFF(p.value:key::STRING='percent_scrolled', p.value:value:int_value::NUMBER, NULL))     AS percent_scrolled,
-        MAX(IFF(p.value:key::STRING='link_url',  p.value:value:string_value::STRING, NULL))         AS link_url,
-        MAX(IFF(p.value:key::STRING='link_text', p.value:value:string_value::STRING, NULL))         AS link_text
-    FROM ( {{ ga4_union_shards(var('ga4_start'), var('ga4_end')) }} ) e, LATERAL FLATTEN(input => e.event_params) p
-    GROUP BY
-        e.user_pseudo_id, e.event_timestamp, e.event_name, e.batch_ordering_id, e.event_date,
-        e.user_id, e.device, e.geo, e.platform, e.is_active_user, e.session_traffic_source_last_click
+WITH base AS (
+    SELECT * FROM {{ ref('BIGQUERY_REFINED_DATA') }}
 ),
+-- 세션 단위 신원 집계 — 🔴 Snowflake 는 COUNT(DISTINCT x) OVER(...) 를 지원하지 않는다.
+--    MAX(user_id) OVER(파티션) 단독으로 채우면 CONFLICT 세션이 조용히 오귀속된다
+--    ⇒ 반드시 2단계(집계 CTE → LEFT JOIN). 설계문서 07 §5-A 「구현 주의」.
+--    세션 키는 복합(GA_SESSION_KEY = user_pseudo_id ∥ '-' ∥ ga_session_id).
 sess AS (
     SELECT
-        user_pseudo_id || '-' || ga_session_id AS ga_session_key,
-        COUNT(DISTINCT user_id)                 AS n_id,
-        MAX(user_id)                            AS sess_uid
-    FROM ev
-    WHERE ga_session_id IS NOT NULL
-    GROUP BY user_pseudo_id || '-' || ga_session_id
+        GA_SESSION_KEY,
+        COUNT(DISTINCT USER_ID) AS n_id,
+        MAX(USER_ID)            AS sess_uid
+    FROM base
+    WHERE GA_SESSION_KEY IS NOT NULL
+    GROUP BY GA_SESSION_KEY
 )
 SELECT
-    ev.user_pseudo_id                                            AS USER_PSEUDO_ID,
-    ev.event_timestamp                                           AS EVENT_TIMESTAMP,
-    ev.event_name                                                AS EVENT_NAME,
-    ev.batch_ordering_id                                         AS BATCH_ORDERING_ID,
-    ev.event_date                                                AS EVENT_DATE,
-    TO_DATE(ev.event_date,'YYYYMMDD')                            AS EVENT_DT,
-    TO_TIMESTAMP(ev.event_timestamp/1000000)                     AS EVENT_TS,
-    ev.user_id                                                   AS USER_ID,
-    ev.ga_session_id                                             AS GA_SESSION_ID,
-    ev.ga_session_number                                         AS GA_SESSION_NUMBER,
-    IFF(ev.ga_session_id IS NULL, NULL, ev.user_pseudo_id || '-' || ev.ga_session_id) AS GA_SESSION_KEY,
-    CASE WHEN ev.user_id IS NOT NULL   THEN ev.user_id
-         WHEN ev.ga_session_id IS NULL THEN NULL
-         WHEN s.n_id = 1               THEN s.sess_uid
+    b.USER_PSEUDO_ID                                             AS USER_PSEUDO_ID,
+    b.EVENT_TIMESTAMP                                            AS EVENT_TIMESTAMP,
+    b.EVENT_NAME                                                 AS EVENT_NAME,
+    b.EVENT_SEQ                                                  AS EVENT_SEQ,
+    b.EVENT_DATE                                                 AS EVENT_DATE,
+    b.EVENT_DT                                                   AS EVENT_DT,
+    b.EVENT_TS                                                   AS EVENT_TS,
+    b.USER_ID                                                    AS USER_ID,
+    b.ID_SCHEME                                                  AS ID_SCHEME,
+    b.GA_SESSION_ID                                              AS GA_SESSION_ID,
+    b.GA_SESSION_NUMBER                                          AS GA_SESSION_NUMBER,
+    b.GA_SESSION_KEY                                             AS GA_SESSION_KEY,
+    CASE WHEN b.USER_ID IS NOT NULL      THEN b.USER_ID
+         WHEN b.GA_SESSION_KEY IS NULL   THEN NULL
+         WHEN s.n_id = 1                 THEN s.sess_uid
          ELSE NULL END                                           AS USER_ID_FILLED,
-    CASE WHEN ev.user_id IS NOT NULL   THEN 'DIRECT'
-         WHEN ev.ga_session_id IS NULL THEN 'UNRESOLVED'
-         WHEN s.n_id = 1               THEN 'SESSION_FILL'
-         WHEN s.n_id >= 2              THEN 'CONFLICT'
+    CASE WHEN b.USER_ID IS NOT NULL      THEN 'DIRECT'
+         WHEN b.GA_SESSION_KEY IS NULL   THEN 'UNRESOLVED'
+         WHEN s.n_id = 1                 THEN 'SESSION_FILL'
+         WHEN s.n_id >= 2                THEN 'CONFLICT'
          ELSE 'UNRESOLVED' END                                   AS ID_RESOLUTION,
-    ev.session_engaged                                           AS SESSION_ENGAGED,
-    ev.engagement_time_msec                                      AS ENGAGEMENT_TIME_MSEC,
-    ev.page_location                                             AS PAGE_LOCATION,
-    ev.page_title                                                AS PAGE_TITLE,
-    ev.page_referrer                                             AS PAGE_REFERRER,
-    ev.event_category                                            AS EVENT_CATEGORY,
-    ev.event_action                                              AS EVENT_ACTION,
-    ev.event_label                                               AS EVENT_LABEL,
-    ev.percent_scrolled                                          AS PERCENT_SCROLLED,
-    ev.link_url                                                  AS LINK_URL,
-    ev.link_text                                                 AS LINK_TEXT,
-    -- GA4 공식 기준: platform × device.category 조합(platform 단독 불가). 미분류는 '(unknown)' 격리(2026-07-27 교정).
-    CASE WHEN ev.platform IN ('ANDROID','IOS') THEN 'APP'
-         WHEN ev.platform = 'WEB' AND ev.device:category::STRING IN ('mobile','tablet') THEN 'M'
-         WHEN ev.platform = 'WEB' AND ev.device:category::STRING = 'desktop' THEN 'PC'
-         ELSE '(unknown)' END AS DEVICE_TYPE,
-    ev.device:category::STRING                                   AS DEVICE_CATEGORY,
-    ev.device:operating_system::STRING                           AS OS,
-    ev.geo:country::STRING                                       AS GEO_COUNTRY,
-    ev.geo:city::STRING                                          AS GEO_CITY,
-    NULLIF(NULLIF(ev.stlc:manual_campaign:source::STRING,'(not set)'),'(direct)')                 AS UTM_SOURCE,
-    NULLIF(NULLIF(NULLIF(ev.stlc:manual_campaign:medium::STRING,'(not set)'),'(none)'),'(direct)') AS UTM_MEDIUM,
-    NULLIF(ev.stlc:manual_campaign:campaign_name::STRING,'(not set)')                             AS UTM_CAMPAIGN,
-    ev.stlc:cross_channel_campaign:default_channel_group::STRING AS DEFAULT_CHANNEL_GROUP,
-    ev.platform                                                  AS PLATFORM,
-    ev.is_active_user                                            AS IS_ACTIVE_USER,
-    'GA4'               AS DW_SOURCE_SYSTEM,
-    'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
-    CURRENT_TIMESTAMP() AS DW_LOAD_TS,
-    CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
-    NULL                AS DW_BATCH_ID
-FROM ev
+    b.SESSION_ENGAGED                                            AS SESSION_ENGAGED,
+    b.ENGAGEMENT_TIME_MSEC                                       AS ENGAGEMENT_TIME_MSEC,
+    b.PAGE_LOCATION                                              AS PAGE_LOCATION,
+    b.PAGE_TITLE                                                 AS PAGE_TITLE,
+    b.PAGE_REFERRER                                              AS PAGE_REFERRER,
+    b.EVENT_CATEGORY                                             AS EVENT_CATEGORY,
+    b.EVENT_ACTION                                               AS EVENT_ACTION,
+    b.EVENT_LABEL                                                AS EVENT_LABEL,
+    b.PERCENT_SCROLLED                                           AS PERCENT_SCROLLED,
+    b.LINK_URL                                                   AS LINK_URL,
+    b.LINK_TEXT                                                  AS LINK_TEXT,
+    b.DEVICE_TYPE                                                AS DEVICE_TYPE,
+    b.DEVICE_CATEGORY                                            AS DEVICE_CATEGORY,
+    b.OS                                                         AS OS,
+    b.GEO_COUNTRY                                                AS GEO_COUNTRY,
+    b.GEO_CITY                                                   AS GEO_CITY,
+    b.UTM_SOURCE                                                 AS UTM_SOURCE,
+    b.UTM_MEDIUM                                                 AS UTM_MEDIUM,
+    b.UTM_CAMPAIGN                                               AS UTM_CAMPAIGN,
+    b.DEFAULT_CHANNEL_GROUP                                      AS DEFAULT_CHANNEL_GROUP,
+    b.PLATFORM                                                   AS PLATFORM,
+    b.IS_ACTIVE_USER                                             AS IS_ACTIVE_USER,
+    b.BATCH_ORDERING_ID                                          AS BATCH_ORDERING_ID,
+    b.SRC_TABLE                                                  AS SRC_TABLE,
+    b.SRC_FILE_NAME                                              AS SRC_FILE_NAME,
+    'GA4'                             AS DW_SOURCE_SYSTEM,
+    'SILVER.BIGQUERY_REFINED_DATA'    AS DW_SOURCE_TABLE,
+    CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
+    NULL                              AS DW_BATCH_ID
+FROM base b
 LEFT JOIN sess s
-    ON ev.ga_session_id IS NOT NULL
-   AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id
+    ON b.GA_SESSION_KEY IS NOT NULL
+   AND s.GA_SESSION_KEY = b.GA_SESSION_KEY
+-- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
+WHERE b.EVENT_DT >= TO_DATE('{{ var("ga4_dt_start") }}')
+  AND b.EVENT_DT <= TO_DATE('{{ var("ga4_dt_end") }}')

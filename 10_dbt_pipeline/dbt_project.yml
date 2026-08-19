@@ -15,10 +15,20 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
-# GA4 샤드 범위 var (전기간 입고 후 조정; PoC 기본 = 전범위 UNION).
+# GA4 적재 범위 var.
+#   🔄 [2026-08-19 O87] `ga4_start`/`ga4_end`(YYYYMMDD 샤드 테이블명 접미) → `ga4_dt_start`/`ga4_dt_end`(DATE).
+#      왜: BRONZE 가 일별 샤드가 아니라 통합 1테이블(`EVENTS`)이 됐다(G-5 해소 · O86).
+#      샤드명을 문자열 비교할 대상이 사라졌고, 이제 필요한 것은 `EVENT_DT` **프루닝 범위**다.
+#   🔴 이 두 값이 GA4 계열의 **유일한 비용 방어선**이다 — 빼거나 전범위로 두면 2.86억행 ×
+#      VARIANT 11개를 전량 스캔한다(프루닝 실측 3,006 파티션 중 19개 = 0.632%).
+#   🔴 range 모델(`BIGQUERY_REFINED_DATA`·`GA4_EVENT`)은 pre-hook 이 **이 범위만 DELETE** 한다
+#      (`macros/ga4_range_purge.sql`) ⇒ 월 단위 분할 적재에서 앞 달이 지워지지 않는다.
+#      DISTINCT 차원 4종은 범위 제한 없이 기반 테이블 전량을 읽고 TRUNCATE 재적재한다(값 집합 보존).
+#   실측 참고: 2025-06 1개월 = GN_DW_ETL_WH(Small) 68초 / bronze 9,028,480행 → 8,161,106행.
+#      전 기간 285,676,588행(2024-01-01~2026-07-19 · 911일) 환산 ≈ 36분.
 vars:
-  ga4_start: '20000101'
-  ga4_end:   '99991231'
+  ga4_dt_start: '2024-01-01'
+  ga4_dt_end:   '2026-07-19'
   # 순서9: GOLD 날짜차원(DIM_DATE) 고정 연속범위. date_sk 매크로가 이 범위 밖/NULL 을 NULL 로 클램프
   #   → fact 에서 COALESCE(date_sk(...),0) 로 Unknown 멤버(DATE_SK=0) 라우팅. 범위 변경 시 DIM_DATE 도 자동 반영.
   cal_start: '1991-01-01'
@@ -44,10 +54,18 @@ models:
       #     · unique_key 불필요 → grain 비유일 모델 행소실 없음. 멱등(재실행 Δ0).
       #     · full_refresh:false → --full-refresh 시에도 CTAS 재생성 차단(DDL 구조 보호).
       #   ⚠️ 전제: 08 DDL 선행 실행(테이블 미존재 시 incremental 첫 run 이 CTAS 로 구조 없이 생성됨).
+      #
+      # 🔴🔴 [2026-08-19 O87] pre-hook 을 매크로 1개로 통합했다 — `macros/silver_purge.sql`.
+      #   왜: dbt 는 hook 을 **누적(append)** 한다. 여기 TRUNCATE 를 두고 모델에 범위 DELETE 를
+      #   추가하면 **둘 다 실행되어** 전체가 비워진 뒤 범위만 append 된다(행수만 줄고 에러는 없다).
+      #   ⇒ pre-hook 정의 지점은 **이 한 줄뿐**이고 분기는 `silver_purge` 안에서만 한다.
+      #     · GA4 range 모델(`BIGQUERY_REFINED_DATA`·`GA4_EVENT`) = var 범위만 DELETE(멱등)
+      #     · 그 밖 SILVER 전 모델                                 = 종전과 동일 TRUNCATE
+      #   🔴 **모델 파일에 `pre_hook` 을 쓰지 말 것.** 쓰면 위 누적 사고가 재발한다.
       +materialized: incremental
       +incremental_strategy: append
       +full_refresh: false
-      +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
+      +pre-hook: "{{ silver_purge(this) }}"
     # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(**35테이블** 선생성 · 2026-08-10 O53. 종전 기재 「24」는 stale 이었다 — 실측 31 → O53 로 35).
     #   - dim  = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
     #   - fact = incremental + append + pre-hook TRUNCATE + full_refresh:false (SILVER 동일 패턴)

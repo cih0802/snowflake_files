@@ -3,69 +3,25 @@
 --    GOLD DIM_GA_EVENT 가 여기서 distinct (category,label,action) 를 추출해 분류차원 SK 생성 → 조합 커버리지 필수.
 --    ▶▶ unique(EVENT_NAME) 테스트 금지(순서9-C: 조합 grain 파괴 사고). GA4_EVENT relationships 는 존재성만 요구.
 -- Co-authored with CoCo
+--
+-- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
+--    종전에는 이 모델이 **자체 FLATTEN + GROUP BY** 로 category/label/action 을 승격했고,
+--    그 GROUP BY 절(event_name, event_timestamp, user_pseudo_id, batch_ordering_id)이
+--    GA4_EVENT 의 것과 **미묘하게 달랐다**(GA4_EVENT 는 11컬럼). 기반 테이블에서 1회 승격하므로
+--    두 모델이 같은 승격 결과를 보게 되어 그 불일치 위험이 사라진다.
+-- 🔴 범위 제한을 걸지 않는다(의도) — DISTINCT 차원은 전기간 값 집합이 정본이다.
+--    ⚠️ GA-2 카디널리티 리스크는 그대로다 — EVENT_LABEL 이 혼합타입 고카디널리티라 전기간에서
+--       이 차원이 사실상 팩트화된다(1일 실측 event_name 49 대비 3,633행). GOLD DIM_GA_EVENT 는
+--       event_name(+안정 category/action)으로 conform 하고 label 은 팩트측에 유지할 것.
 
 SELECT DISTINCT
-  EVENT_NAME          AS EVENT_NAME,
-  EVENT_CATEGORY      AS EVENT_CATEGORY,
-  EVENT_LABEL         AS EVENT_LABEL,
-  EVENT_ACTION        AS EVENT_ACTION,
-  'GA4'               AS DW_SOURCE_SYSTEM,
-  'BRONZE_BIGQUERY.events' AS DW_SOURCE_TABLE,
-  CURRENT_TIMESTAMP() AS DW_LOAD_TS,
-  CURRENT_TIMESTAMP() AS DW_UPDATE_TS,
-  NULL                AS DW_BATCH_ID
-FROM (
-  SELECT e.event_name AS EVENT_NAME,
-    MAX(IFF(p.value:key::STRING='event_category', p.value:value:string_value::STRING, NULL)) AS EVENT_CATEGORY,
-    MAX(IFF(p.value:key::STRING='event_label',
-        COALESCE(p.value:value:string_value::STRING, p.value:value:int_value::STRING), NULL)) AS EVENT_LABEL,
-    MAX(IFF(p.value:key::STRING='event_action', p.value:value:string_value::STRING, NULL)) AS EVENT_ACTION
-  FROM ( 
-  
-  
-    
-    
-      
-        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
-        SELECT
-          "event_date"                        AS event_date,
-          "event_timestamp"                   AS event_timestamp,
-          "event_name"                        AS event_name,
-          "event_params"                      AS event_params,       -- VARIANT: LATERAL FLATTEN은 모델에서
-          "user_id"                           AS user_id,            -- ⚠️VARCHAR 필수(선행0·S접두 보존)
-          "user_pseudo_id"                    AS user_pseudo_id,
-          "device"                            AS device,
-          "geo"                               AS geo,
-          "traffic_source"                    AS traffic_source,
-          "collected_traffic_source"          AS collected_traffic_source,
-          "session_traffic_source_last_click" AS session_traffic_source_last_click,
-          "platform"                          AS platform,
-          "is_active_user"                    AS is_active_user,
-          "batch_ordering_id"                 AS batch_ordering_id
-        FROM GN_DW.BRONZE_BIGQUERY."events_20260501"
-        UNION ALL
-      
-        -- ⚠️ BRONZE_BIGQUERY 컬럼도 소문자 인용식별자로 저장됨 → "col" AS COL 로 참조/승격(하류는 unquoted 대문자 참조).
-        SELECT
-          "event_date"                        AS event_date,
-          "event_timestamp"                   AS event_timestamp,
-          "event_name"                        AS event_name,
-          "event_params"                      AS event_params,       -- VARIANT: LATERAL FLATTEN은 모델에서
-          "user_id"                           AS user_id,            -- ⚠️VARCHAR 필수(선행0·S접두 보존)
-          "user_pseudo_id"                    AS user_pseudo_id,
-          "device"                            AS device,
-          "geo"                               AS geo,
-          "traffic_source"                    AS traffic_source,
-          "collected_traffic_source"          AS collected_traffic_source,
-          "session_traffic_source_last_click" AS session_traffic_source_last_click,
-          "platform"                          AS platform,
-          "is_active_user"                    AS is_active_user,
-          "batch_ordering_id"                 AS batch_ordering_id
-        FROM GN_DW.BRONZE_BIGQUERY."events_20260719"
-        
-      
-    
-  
- ) e, LATERAL FLATTEN(input => e.event_params) p
-  GROUP BY e.event_name, e.event_timestamp, e.user_pseudo_id, e.batch_ordering_id
-)
+  EVENT_NAME                     AS EVENT_NAME,
+  EVENT_CATEGORY                 AS EVENT_CATEGORY,
+  EVENT_LABEL                    AS EVENT_LABEL,
+  EVENT_ACTION                   AS EVENT_ACTION,
+  'GA4'                          AS DW_SOURCE_SYSTEM,
+  'SILVER.BIGQUERY_REFINED_DATA' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()            AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()            AS DW_UPDATE_TS,
+  NULL                           AS DW_BATCH_ID
+FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA

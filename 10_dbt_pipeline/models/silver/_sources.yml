@@ -1,17 +1,47 @@
 version: 2
 
 # BRONZE 원천 선언 (순서 7, 2026-07-14 실측: CRM/ERP/AGENCY 전량 적재 완료).
-# GA4(BRONZE_BIGQUERY.events_YYYYMMDD 샤드)는 ga4_union_shards 매크로가 INFORMATION_SCHEMA 로
-# 동적 조회하므로 source() 로 선언하지 않음(설계결정서 §2, 정본 09 STEP 6 주석).
+#
+# 🔴🔴 [2026-08-19 O87] GA4 source 선언이 신설됐다 — 종전 「동적조회라 선언하지 않음」은 폐기.
+#    종전 기재(역사 기록): *"GA4(BRONZE_BIGQUERY.events_YYYYMMDD 샤드)는 ga4_union_shards 매크로가
+#    INFORMATION_SCHEMA 로 동적 조회하므로 source() 로 선언하지 않음"*.
+#    무엇이 바뀌었나 = BRONZE 가 **일별 샤드가 아니라 통합 1테이블**로 적재됐다(G-5 해소 · O86).
+#      `GN_DW.BRONZE_BIGQUERY.EVENTS` = 285,676,588행 / 911일 · 통제총계 911건 전수 일치.
+#    ⇒ 샤드를 열거할 이유가 사라졌으므로 **정식 source 로 선언**한다. 그 결과 리니지·`dbt docs`·
+#      `source freshness` 축이 GA4 에도 생긴다(동적조회 방식에서는 불가능했던 것).
+#    ⚠️ `macros/ga4_union_shards.sql` 은 **폐기**됐다 — 어느 모델도 참조하지 않는다.
 #
 # 🔄 [2026-08-14 스키마 개명] `GN_DW.BRONZE_GA4` → `GN_DW.BRONZE_BIGQUERY`.
 #    왜: 원천이 GA4 제품이 아니라 **BigQuery export** 이고, GA4 외 BigQuery 유입도 수용하기 위해
-#        원천 시스템 기준 명명으로 통일했다. 개명 대상은 **스키마명뿐** — `GA4_*` 모델명·
-#        샤드 테이블명(`events_YYYYMMDD`)·`ga4_union_shards` 매크로명은 불변이다.
-#    ⚠️ 이 파일에 GA4 source 선언이 없는 이유는 위 동적조회 설계 때문이며, 개명과 무관하다.
-#        GA4 스키마명의 유일한 코드 결합점 = `macros/ga4_union_shards.sql`(리터럴 2곳).
+#        원천 시스템 기준 명명으로 통일했다. 개명 대상은 **스키마명뿐** — `GA4_*` 모델명은 불변이다.
+#    🆕 [O87] 그 분리 원칙은 유지되며, **기반 테이블 1종만 원천 접두**를 쓴다(`BIGQUERY_REFINED_DATA`).
+#        근거·경계 = `20_issue/30_설계_의사결정.md` **DEC-37**.
 #    이력 정본: `10_dbt_pipeline/README.md` §5 스키마 개명 이력.
 sources:
+  - name: bronze_bigquery
+    database: GN_DW
+    schema: BRONZE_BIGQUERY
+    description: >
+      BigQuery export 원천 적재 레이어 — SILVER GA4 계열 6객체의 원천.
+      🔴 EVENTS 는 2.86억행이다. 모든 조회에 EVENT_DT 범위 제한을 걸 것
+      (빼면 VARIANT 11개를 전량 스캔 — 프루닝 실측 3,006 파티션 중 19개 = 0.632%).
+    tables:
+      - name: EVENTS                       # GA4 통합 이벤트 → BIGQUERY_REFINED_DATA
+        description: >
+          GA4 통합 테이블. 원천 일별 911테이블(events_20240101~20260719 · 결번 0)을
+          31컬럼 상위집합 1테이블로 통합한 것. 35컬럼 = 데이터 31 + 계보 4
+          (SRC_TABLE · EVENT_DT · SRC_FILE_NAME · LOAD_TS · 전부 NOT NULL).
+          🔴 전건 NULL 4종(매핑 제외) = app_info · event_dimensions · publisher
+          · event_original_occurrence_timestamp.
+          🔴 데이터 31컬럼은 **소문자 인용식별자**("event_params" 등) · 계보 4컬럼은 대문자 무따옴표.
+          ⚠️ 04번 BRONZE DDL 재실행 금지 — create or replace schema 가 적재분을 전량 삭제한다(DDL-ORDER-1).
+        columns:
+          - name: EVENT_DT
+            description: "업무일자 DATE(프루닝 키). 모든 하류 조회의 범위 제한 컬럼."
+            tests: [not_null]
+          - name: SRC_FILE_NAME
+            description: "파일 단위 계보. BIGQUERY_REFINED_DATA.EVENT_SEQ tiebreaker 의 정렬 근거(GA4-PK-1)."
+            tests: [not_null]
   - name: bronze_crm
     database: GN_DW
     schema: BRONZE_CRM

@@ -18,7 +18,7 @@ BRONZE(원천 1:1) → **SILVER(정제·통합)** → GOLD(star schema). GOLD FA
 | # | 원천 레이어(현업 용어) | BRONZE 스키마(권장) | 수집 방식 | 현황 | 지표정의 원천코드 |
 |---|---|---|---|---|---|
 | 1 | CRM | `GN_DW.BRONZE_CRM` | CRM 시스템 직적재 | ✅ 적재(전량) | CRM, CRM(UMS) |
-| 2 | BigQuery(GA4) | `GN_DW.BRONZE_BIGQUERY` | BigQuery에서 가져와 구성 | ✅ 적재(1일 샤드=전체 간주, 추가 입고 예정 없음) | GA, GA4 |
+| 2 | BigQuery(GA4) | `GN_DW.BRONZE_BIGQUERY` | BigQuery에서 가져와 구성 | 🟢 **[2026-08-18 O86 정정] 전기간 적재 완료** — `EVENTS` 통합 1테이블 285,676,588행 / 911일. ~~1일 샤드=전체 간주, 추가 입고 예정 없음~~ ← **이 판단은 틀렸다**(실제 911일 · 종전 대비 496배) | GA, GA4 |
 | 3 | ERP | `GN_DW.BRONZE_ERP` | Snowflake에 파일 업로드 → 테이블화(bronze) | ✅ 적재 | ERP |
 | 4 | 대행사(Agency) | `GN_DW.BRONZE_AGENCY` | Google Sheet · Google Drive Excel · MS SharePoint Excel | ✅ 적재(3테이블) | AGENCY(대행사 일별레포트), GADS |
 
@@ -32,7 +32,7 @@ BRONZE(원천 1:1) → **SILVER(정제·통합)** → GOLD(star schema). GOLD FA
 | GOLD가 기대하는 원천 | SILVER 상태 | 비고 |
 |---|---|---|
 | CRM (+UMS) | ✅ 적재 (`SILVER.CRM_*` 22개, `CRM_BIZ_TARGET` 포함·0행) | 회원·약정·납입·발송·행사·조직·코드·사업목표 등 |
-| BigQuery(GA4) | ✅ 적재 (`SILVER.GA4_*` 5개) | 1일 샤드=전체 간주(추가 입고 예정 없음). 샤드 통합 → `04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md` |
+| BigQuery(GA4) | ✅ 적재 (`SILVER.GA4_*` 5개) | ~~1일 샤드=전체 간주(추가 입고 예정 없음)~~ → 🟢 **[2026-08-18 O86] 전기간 적재 완료**(`BRONZE_BIGQUERY.EVENTS` 통합 1테이블 285,676,588행 / 911일). 🔴 **BRONZE 는 더 이상 샤드가 아니다** — `ga4_union_shards` 매크로 폐기. 🔴 **SILVER 는 현 계정 5객체 전부 0행**이고 `GA4-PK-1`(2024상반기 17.10% PK 불가)·`GA4-LEN-1`(USER_ID 길이초과) 로 차단됨. 설계 → `04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md` 머리말 · 이슈 → `20_issue/90_해소완료_로그.md` §1-A |
 | ERP | ✅ 적재 (`SILVER.ERP_BUDGET`·`ERP_BUDGET_ITEM`) | 편성/집행예산. 모금성비용은 원천 부재(미해소) |
 | 대행사(Agency, GADS 포함) | ✅ 적재 (`SILVER.AGENCY_AD_CREATIVE`·`AGENCY_AD_PERFORMANCE`) | 광고소재·광고비·노출/클릭/인입콜 |
 | 신원 브리지 | ✅ 적재 (`SILVER.IDENTITY_MEMBER_XREF`) | GA↔CRM 회원 매칭(DIM_MEMBER_IDENTITY 근간) |
