@@ -15,7 +15,7 @@ version: 2
 #    왜: 원천이 GA4 제품이 아니라 **BigQuery export** 이고, GA4 외 BigQuery 유입도 수용하기 위해
 #        원천 시스템 기준 명명으로 통일했다. 개명 대상은 **스키마명뿐** — `GA4_*` 모델명은 불변이다.
 #    🆕 [O87] 그 분리 원칙은 유지되며, **기반 테이블 1종만 원천 접두**를 쓴다(`BIGQUERY_REFINED_DATA`).
-#        근거·경계 = `20_issue/30_설계_의사결정.md` **DEC-37**.
+#        근거·경계 = `20_issue/30_설계_의사결정.md` **DEC-38**.
 #    이력 정본: `10_dbt_pipeline/README.md` §5 스키마 개명 이력.
 sources:
   - name: bronze_bigquery

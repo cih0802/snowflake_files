@@ -13,6 +13,87 @@
 
 ---
 
+> ### 🟢 [2026-08-19 O87] SILVER 평탄화 통합 테이블 **구현 완료** — 예정 → 확정
+>
+> 아래 §「🟠 예정」이 실제 코드가 됐다. 신설 = **`GN_DW.SILVER.BIGQUERY_REFINED_DATA`**
+> (`10_dbt_pipeline/models/silver/ga4/BIGQUERY_REFINED_DATA.sql` · DDL = `08` STEP 5 「GA4 0」).
+> ⚠️ **코드·문서까지이고 라이브에는 미적용이다** — DDL 실행·`dbt run` 은 사용자 승인 대기(정지점).
+>
+> #### 무엇을 왜 이렇게 했나
+> | 축 | 결정 | 근거 |
+> |---|---|---|
+> | 위치 | **SILVER** 기반 테이블. BRONZE 아님 | 평탄화는 정제이고 BRONZE 원칙은 원천 1:1 보존이다 |
+> | 이름 | **`BIGQUERY_REFINED_DATA`**(원천 접두) · 나머지는 `GA4_*`(도메인 접두) | 사용자 결정 2026-08-19 · 규약 이원화 = **DEC-38** |
+> | 의존 | 하류 5종이 이 테이블을 `ref()` — **SILVER→SILVER 파생** | 허용 근거 = **DEC-37** |
+> | grain | 1행 / (`USER_PSEUDO_ID`,`EVENT_TIMESTAMP`,`EVENT_NAME`,`EVENT_SEQ`) | 이벤트 grain 유지(집계 아님) |
+> | 범위 | `EVENT_DT` var 범위 · pre-hook 은 **범위 DELETE** | 아래 「멱등성 재설계」 |
+>
+> #### 🟢 이 통합이 실제로 해결한 것
+> · **스캔 5회 → 1회.** 종전 5모델이 각자 2.86억행을 읽고 3개가 `LATERAL FLATTEN` 을 했다.
+> · **중복 구현 제거.** `DEVICE_TYPE` CASE 가 `GA4_EVENT`·`GA4_DEVICE` 두 곳에 있었고
+>   2026-07-27 교정 때 두 곳을 따로 고쳐야 했다. `event_params` 승격 `GROUP BY` 절도
+>   `GA4_EVENT`(11컬럼) ↔ `GA4_EVENT_DIM`(4컬럼) ↔ `GA4_IDENTITY`(5컬럼)가 **서로 달랐다** —
+>   같은 값을 세 가지로 만들고 있었고 그 불일치가 아무 게이트에도 걸리지 않았다.
+> · **`GA4-PK-1` 해소.** 아래 별항.
+> · **`GA4-LEN-1` 해소.** 아래 별항.
+>
+> #### 🟢 GA4-PK-1 해소 — `EVENT_SEQ` surrogate tiebreaker (사용자 결정 · 손실 0)
+> PK 4번째 키를 `BATCH_ORDERING_ID` → **`EVENT_SEQ`** 로 교체했다.
+> `EVENT_SEQ = ROW_NUMBER() OVER (PARTITION BY 3키 ORDER BY BATCH_ORDERING_ID NULLS LAST,
+> SRC_FILE_NAME, EVENT_DATE, USER_ID, PLATFORM, device.category, device.os, geo.country,
+> geo.city, GA_SESSION_ID)`. ⇒ **48,862,926행(17.10%) 을 살리고 3.679% 중복도 흡수**한다.
+> 🔴 **결정성의 한계를 명시한다** — 위 정렬 전 컬럼이 동일한 두 행은 순번이 뒤바뀔 수 있다.
+> 그런 행은 기반 테이블 `GROUP BY`(11컬럼 + 계보 3컬럼)에서 이미 접히므로 잔존은 이론적이지만,
+> **재실행 간 `EVENT_SEQ` 안정성은 적재 후 실측으로 확인해야 한다** ⇒ 미결 **`GA4-SEQ-1`**.
+> ⚠️ 안정성이 깨지면 `GA4_EVENT` PK 가 run 마다 재배치되고 GOLD 재적재 diff 가 무의미해진다.
+>
+> #### 🟢 GA4-LEN-1 해소 — 길이 확장 **+** `ID_SCHEME` 분류축 (둘 다 해야 한다)
+> `USER_ID`·`USER_ID_FILLED`·`GA_MEMBER_ID` **VARCHAR(10) → VARCHAR(64)** 로 확장하고,
+> **`ID_SCHEME`**(`MBER_NO`/`ONCE_MBER_NO`/`APP`/`EMAIL`/`INVALID`/`UNCLASSIFIED`)을 신설했다.
+> 🔴 확장만 하면 안 되는 이유가 실측으로 있다 — 종전 `GA4_IDENTITY` 의 `S%` / `else` 2분기는
+> `app-`(241 id)·이메일(1)·문자열 `'null'`(1) 을 **전부 `FDRM`/`MBER_NO` 로 밀어넣었다**.
+> 그 상태로 확장하면 `IDENTITY_MEMBER_XREF` 매칭 분모에 비회원 ID 가 들어가 채움률이 조용히 왜곡된다.
+> ⇒ `IDENTITY_MEMBER_XREF.MATCH_METHOD` 에 **`NOT_A_MEMBER_ID`** 를 신설해
+> 「회원번호인데 못 찾음(`UNMATCHED`)」과 「애초에 회원번호가 아님」을 분리했다.
+> **채움률 = `MEMBER_ID_EXACT` / (`MEMBER_ID_EXACT` + `UNMATCHED`)** — 비회원 체계는 분모 밖이다.
+> 🔴 `UNCLASSIFIED` 는 **신규 포맷 조기경보**다(경고 테스트 부착). 0 이 아니면 원천이 변한 것이다.
+>
+> #### 🟢 멱등성 재설계 — `TRUNCATE` → **범위 `DELETE`** (§7-A 가 제기한 상충의 해법)
+> §7-A 는 *"멱등 `INSERT OVERWRITE` 는 월 단위 분할 적재와 상충한다"* 고 경고하고
+> ① 전량 `OVERWRITE` ② `DELETE WHERE EVENT_DT` + `INSERT` 를 제시했다. **②를 채택했다.**
+> · `macros/ga4_range_purge.sql` = var 범위만 `DELETE`.
+> · `macros/silver_purge.sql` = SILVER pre-hook **단일 진입점**. range 모델 2종만 범위 DELETE,
+>   나머지 SILVER 전 모델은 종전 `TRUNCATE`.
+> 🔴🔴 **왜 매크로 1개로 합쳤나 — dbt 는 hook 을 「누적」한다.** 프로젝트 레벨 `TRUNCATE` 를 두고
+> 모델 레벨에 범위 `DELETE` 를 추가하면 **둘 다 실행되어** 전체가 비워진 뒤 범위만 append 된다.
+> **이 사고는 에러를 내지 않는다**(행수만 줄어든다) ⇒ 구조로 막았다.
+> ⚠️ 대상 판정은 `silver_purge.RANGED_MODELS` 문자열 목록이 유일한 지점이다 — 모델을 개명하면
+> 여기도 고쳐야 하고, 빠뜨리면 조용히 `TRUNCATE` 경로로 돌아간다.
+>
+> #### 🔴 range 모델과 DISTINCT 모델의 범위 경계 (섞으면 값이 사라진다)
+> | 모델 | 범위 제한 | 근거 |
+> |---|---|---|
+> | `BIGQUERY_REFINED_DATA` · `GA4_EVENT` | ✅ `EVENT_DT` var 범위 | `EVENT_DT` 보유 ⇒ 범위 멱등 가능 |
+> | `GA4_EVENT_DIM` · `GA4_DEVICE` · `GA4_TRAFFIC_SOURCE` · `GA4_IDENTITY` | ❌ 전기간 | `EVENT_DT` 없는 DISTINCT/집약. **범위 제한하면 그 창 밖에만 등장한 값이 사라진다**(특정 월에만 집행된 UTM ⇒ `DIM_GA_SOURCE` 에 구멍) |
+> | `GA4_EVENT` 의 `sess` CTE | ❌ 전기간(최종 SELECT 만 범위) | 세션은 자정을 넘고 GA4 는 D+3 소급 수정된다 ⇒ 범위로 자르면 세션이 경계에서 끊겨 `CONFLICT`·부분채움 오류가 난다(§5-A) |
+>
+> #### 🔴 남는 대가 — 저장 중복을 명시한다
+> `BIGQUERY_REFINED_DATA` 와 `GA4_EVENT` 는 **둘 다 이벤트 grain** 이다.
+> 실측 환산 = `GA4_EVENT` 8,161,106행 / 806MB ⇒ 전기간 약 **25GB 씩 · 합계 약 50GB**
+> (BRONZE `EVENTS` 49GB 와 별도). 「중복 소유권 금지」의 경계에 가장 가까운 지점이므로 등재한다.
+> 🟠 **대안 = `GA4_EVENT` 를 기반 테이블 위의 뷰로 내리는 것**(저장 중복 0). 채택하지 않은 이유는
+> ① `08` DDL 이 `GA4_EVENT` 를 물리 테이블로 소유하고 ② `GOLD.FACT_GA_BEHAVIOR` 가 그것을
+> `ref()` 하며 ③ 「SILVER = 물리 테이블」 규약을 건드린다 — 셋 다 이번 요건 범위 밖이다.
+> ⇒ 미결 **`GA4-DUP-1`** 로 등재한다. **저장비가 문제가 되면 이 안을 먼저 검토할 것.**
+>
+> #### ⚠️ `dbt run` 전에 알아야 하는 것
+> · 라이브 `SILVER.GA4_EVENT` **8,161,106행**은 dbt 를 우회해 `09` 번 SQL 로 적재된 것이고
+>   구 `DEVICE_TYPE` 로직(`else 'PC'`)이라 **`smart tv` 가 `PC` 로 오분류**돼 있다 ⇒ 재적재 대상.
+> · `08` DDL 의 GA4 구간은 `CREATE OR REPLACE` 이므로 그 8,161,106행을 지운다(의도된 것).
+> · `ga4_union_shards` 매크로는 **폐기 표기**만 했다(파일 삭제는 승인 대상). 어느 모델도 참조하지 않는다.
+
+---
+
 > ## 🔴🔴 [2026-08-18 O86] 본 문서의 §1·§2·§4·§5 는 **폐기·대체**됐다 — 먼저 읽어라
 >
 > **G-5 가 해소됐고, 그 결과 「일별 샤드를 SILVER 에서 UNION 한다」는 전제 자체가 사라졌다.**
@@ -50,19 +131,24 @@
 > 🔴 그러나 **SILVER 조회가 `EVENT_DT` 제한을 빼면 2.86억행 × VARIANT 11개를 전량 스캔**한다.
 > 비용이 즉시 문제가 되므로 모델·테스트·DQ 전부에 범위 제한을 강제할 것.
 >
-> ### 🔴 SILVER 착수를 막는 신규 하드블로커 2건 (G-5 는 자동 해소가 아니었다)
-> | ID | 내용 | 실측 |
-> |---|---|---|
-> | **GA4-PK-1** | §7-B 의 `GA4_EVENT` 복합 PK 4번째 키 `BATCH_ORDERING_ID`(NOT NULL)가 **2024 상반기를 배제**한다. 그 컬럼은 원천 `events_20240719` 부터 생겼다 | **2024-01-01~07-18 · 199일 · 48,862,926행 = 전체 17.10% 적재 불가**. 3키로 낮춰도 2024-06 기준 **3.679% 중복(238,454행)** 잔존 |
-> | **GA4-LEN-1** | `GA4_EVENT.USER_ID VARCHAR(10)` 초과 + **CRM 조인 불가 ID 체계 혼재** | `user_id` **6종** — 7자리 CRM 399,773id · `S`+8자리 16,907id(§7-B Q1 `ONCE_MBER_NO`) · `app-`+32hex 233id · `app-`+uuid 8id · 이메일 1 · 문자열 `'null'` 1 ⇒ **12,690행 길이 초과 실패** |
+> ### 🟢 SILVER 착수를 막았던 신규 하드블로커 2건 — **[2026-08-19 O87] 둘 다 해소(코드)**
+> | ID | 내용 | 실측 | 상태 |
+> |---|---|---|---|
+> | **GA4-PK-1** | §7-B 의 `GA4_EVENT` 복합 PK 4번째 키 `BATCH_ORDERING_ID`(NOT NULL)가 **2024 상반기를 배제**한다. 그 컬럼은 원천 `events_20240719` 부터 생겼다 | **2024-01-01~07-18 · 199일 · 48,862,926행 = 전체 17.10% 적재 불가**. 3키로 낮춰도 2024-06 기준 **3.679% 중복(238,454행)** 잔존 | 🟢 **해소** — `EVENT_SEQ` surrogate(손실 0 · 위 O87 절) |
+> | **GA4-LEN-1** | `GA4_EVENT.USER_ID VARCHAR(10)` 초과 + **CRM 조인 불가 ID 체계 혼재** | `user_id` **6종** — 7자리 CRM 399,773id · `S`+8자리 16,907id(§7-B Q1 `ONCE_MBER_NO`) · `app-`+32hex 233id · `app-`+uuid 8id · 이메일 1 · 문자열 `'null'` 1 ⇒ **12,690행 길이 초과 실패** | 🟢 **해소** — VARCHAR(64) + `ID_SCHEME` + `NOT_A_MEMBER_ID`(위 O87 절) |
 >
-> 조치 후보·상세 = `20_issue/90_해소완료_로그.md` §1-A. **결정 전에는 전기간 SILVER 적재 불가.**
+> 조치 후보·상세 = `20_issue/90_해소완료_로그.md` §1-A.
+> 🟢 **[O87] 「결정 전에는 전기간 SILVER 적재 불가」 조건은 풀렸다** — 단 **코드까지**이고
+> DDL 실행·`dbt run` 은 사용자 승인 대기다. 신규 미결 3건이 파생됐다: `GA4-SEQ-1`(순번 안정성)
+> · `GA4-DUP-1`(저장 중복 ~50GB) · `GA4-TV-1`(`smart tv` 499행 라벨).
 >
-> ### 🟠 예정 — SILVER 평탄화 통합 테이블
+> ### 🟢 [O87 완료] SILVER 평탄화 통합 테이블 — 종전 「🟠 예정」
 > 사용자 고지(2026-08-18): *"미래에 silver 에 이 bronze_bigquery 데이터를 평탄화한 통합 테이블이
-> 생성될 예정"*. ⇒ 아래 §4 의 5모델 구조는 **그 통합 테이블로 재편될 수 있다.**
-> 설계 시 전제 = ① 소스는 `EVENTS` 단일 ② `EVENT_DT` 파티션 키 유지 ③ `SRC_TABLE`·`SRC_FILE_NAME`
-> 계보 컬럼을 SILVER 까지 승계(그러면 GA4-PK-1 의 tiebreaker 를 계보로 대체할 수 있다).
+> 생성될 예정"*. 🟢 **2026-08-19 O87 에 구현됐다** — `SILVER.BIGQUERY_REFINED_DATA`.
+> 아래 §4 의 5모델 구조는 **기반 1 + 파생 5 로 재편됐다**(§4 도식은 역사 기록).
+> 전제 3개는 전건 이행했다: ① 소스 = `EVENTS` 단일 ② `EVENT_DT` 파티션 키 유지
+> ③ `SRC_TABLE`·`SRC_FILE_NAME` 계보 승계 ⇒ 🟢 **그 계보로 `GA4-PK-1` tiebreaker 를 대체했다**
+> (이 문서가 예고한 바로 그 경로다).
 >
 > ### 🟢 성능은 병목이 아니다 (실측)
 > `GA4_EVENT` 2025-06 1개월 = `GN_DW_ETL_WH`(**Small**) **68초** ·

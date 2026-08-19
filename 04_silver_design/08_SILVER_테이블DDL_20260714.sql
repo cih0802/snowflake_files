@@ -1,13 +1,20 @@
--- GN_DW SILVER 테이블 정의 DDL (STEP 1 스키마 + 38테이블 CREATE). 적재쿼리는 09 참조.
+-- GN_DW SILVER 테이블 정의 DDL (STEP 1 스키마 + 39테이블 CREATE). 적재쿼리는 09 참조.
 -- Co-authored with CoCo
 /*
-  GN_DW.SILVER — 38테이블 정의 DDL (테이블 구조 정본)
-    구성: CRM 22 + ERP 2 + AGENCY 8 + GA4 5 + bridge 1 = 38.
-    dbt SILVER 모델 38개와 1:1 대응(구조 소유주 = 이 파일, dbt 는 데이터만 갱신).
+  GN_DW.SILVER — 39테이블 정의 DDL (테이블 구조 정본)
+    구성: CRM 22 + ERP 2 + AGENCY 8 + GA4 6 + bridge 1 = 39.
+    dbt SILVER 모델 39개와 1:1 대응(구조 소유주 = 이 파일, dbt 는 데이터만 갱신).
     ※ 2026-07-29 실측 대조 완료 — INFORMATION_SCHEMA 38테이블·전 컬럼 일치.
+    🟢 [2026-08-19 O87] GA4 5 → 6 (`BIGQUERY_REFINED_DATA` 신설) ⇒ 총계 38 → **39**.
+       ⚠️ 위 「2026-07-29 실측 38」은 그 시점 기록이고 **아직 39 로 재실측되지 않았다**
+          (이 판본은 라이브에 미적용 · 적재 전 정지). 실측 갱신은 DDL 실행 후에 한다.
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
+  🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 GA4_EVENT 에 8,161,106행이 있다.**
+     `CREATE OR REPLACE` 는 그것을 지운다. GA4 구간을 재실행할 때는 그 사실을 먼저 확인할 것
+     (그 8,161,106행은 dbt 를 우회해 09번 SQL 로 적재된 것이고 구 DEVICE_TYPE 로직(else 'PC')
+      기준이라 `smart tv` 가 `PC` 로 오분류돼 있다 ⇒ **재적재 대상이며 보존 가치가 없다**).
 
   ▣ 본 파일의 범위 = 구조 계약(타입·PK·COMMENT)만. 설계근거·실측이력·리뷰기록은 이관됨:
       CRM        → 03_SILVER_작업계획_CRM전용 20260714.md
@@ -851,10 +858,78 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 ) COMMENT = '재방송 사례 언피벗 위성(코어에 1:N). → FACT_AD_BROADCAST_CASE. CHILD_NM 미적재(PII). 행수는 문서10 §26-B 참조';
 
 -- ============================================================================
--- STEP 5 — GA4 5테이블 (트랙 B)
---   ⚠️ 현재 BRONZE 는 1일 샤드(events_20260501)만 입고된 PoC 상태다(G-5 하드블로커).
---      전기간 샤드 입고 후 본 DDL·적재를 그대로 멱등 재실행한다 — 구조 변경 불요.
+-- STEP 5 — GA4 6테이블 (트랙 B)
+--   🟢 [2026-08-18 O86] G-5 해소 — BRONZE 는 일별 샤드가 아니라 통합 1테이블이다.
+--      `GN_DW.BRONZE_BIGQUERY.EVENTS` = 285,676,588행 / 911일(events_20240101~20260719 · 결번 0).
+--      ⇒ 종전 헤더의 「1일 샤드 PoC 상태(G-5 하드블로커)」·「구조 변경 불요」는 **둘 다 폐기**다.
+--        구조 변경은 실제로 필요했다 — 아래 O87 항목 2건.
+--   🟢 [2026-08-19 O87] 신설 1 + 구조 개정 3.
+--      · 신설 `BIGQUERY_REFINED_DATA` = 평탄화 통합 **기반 테이블**(GA4_* 5종의 유일 입력).
+--        계층 내 파생 허용 근거 = DEC-37 · 원천 접두 명명 근거 = DEC-38.
+--      · `GA4_EVENT` PK 4번째 키 `BATCH_ORDERING_ID` → **`EVENT_SEQ`**(GA4-PK-1 해소 · 손실 0).
+--      · `USER_ID`·`USER_ID_FILLED`·`GA_MEMBER_ID` **VARCHAR(10) → VARCHAR(64)**
+--        + `ID_SCHEME` 분류축 신설(GA4-LEN-1 해소). 길이 확장만 하면 매칭 분모가 왜곡된다.
+--   🔴 GA4 5테이블 → **6테이블**이 됐다. SILVER 총계 38 → **39**.
 -- ============================================================================
+
+-- GA4 0: BIGQUERY_REFINED_DATA (평탄화 통합 기반 테이블) — 🆕 [2026-08-19 O87]
+--   grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
+--   설계근거·전제·비용 = 07_GA4_SILVER_샤드통합 설계결정.md 머리말 §「SILVER 평탄화 통합 테이블」
+--   ⚠️ 이 테이블만 SILVER 에서 **원천 접두(BIGQUERY_)** 를 쓴다. 나머지는 도메인 접두(GA4_).
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
+    USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
+    EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
+    EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 결정적 정렬. BATCH_ORDERING_ID 가 2024-01-01~07-18 에 없어 PK 로 쓸 수 없던 문제를 손실 0 으로 대체',
+    EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
+    EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
+    EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
+    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 실측 6종 중 3종(이메일 14자·app-+32hex 36자·app-+uuid 40자 = 12,690행)에서 초과 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것',
+    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 실측값 = MBER_NO(7자리 CRM · 399,773id) / ONCE_MBER_NO(S+8자리 · 16,907id) / APP(app- 접두 · 241id) / EMAIL(1id) / INVALID(원천 문자열 "null" · 1id) / UNCLASSIFIED(신규 포맷 격리). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7)',
+    GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID. 🔴 user_pseudo_id 내에서만 유일 — 단독 세션키 사용 금지(다른 사용자 세션 오병합)',
+    GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
+    GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id (복합 필수)',
+    SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부. 혼합타입 원천 → COALESCE(string_value, int_value)',
+    ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec (비가산 raw — 율·평균은 GOLD/SV 소관)',
+    PAGE_LOCATION           VARCHAR         COMMENT '페이지 URL',
+    PAGE_TITLE              VARCHAR         COMMENT '페이지 제목',
+    PAGE_REFERRER           VARCHAR         COMMENT '리퍼러 URL',
+    EVENT_CATEGORY          VARCHAR         COMMENT '이벤트 카테고리 (event_params 승격)',
+    EVENT_ACTION            VARCHAR         COMMENT '이벤트 액션 (event_params 승격)',
+    EVENT_LABEL             VARCHAR         COMMENT '이벤트 라벨. 혼합타입(문자+숫자) 고카디널리티 — GA-2 리스크',
+    PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
+    LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
+    LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
+    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 실측값 M/PC/(unknown) — APP 0건(platform=WEB 단독 · O2 APP 휴면이 전 기간에서도 유효). ⚠️ device:category 는 4종이고 smart tv 499행이 (unknown) 으로 격리된다(TV 라벨 신설 여부 = 미결 GA4-TV-1)',
+    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 전 기간 실측 4종 = mobile 202,329,180 · desktop 79,892,714 · tablet 3,454,195 · smart tv 499',
+    OS                      VARCHAR         COMMENT '운영체제',
+    BROWSER                 VARCHAR         COMMENT '브라우저',
+    LANGUAGE                VARCHAR         COMMENT '언어',
+    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건)',
+    IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
+    GEO_COUNTRY             VARCHAR         COMMENT '국가',
+    GEO_CITY                VARCHAR         COMMENT '도시',
+    UTM_SOURCE              VARCHAR         COMMENT 'UTM source (센티넬 (not set)/(direct) NULLIF)',
+    UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium (센티넬 (not set)/(none)/(direct) NULLIF)',
+    UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
+    UTM_CONTENT             VARCHAR         COMMENT 'UTM content',
+    UTM_TERM                VARCHAR         COMMENT 'UTM term',
+    SOURCE_MEDIUM           VARCHAR         COMMENT '파생 source / medium',
+    XCHAN_SOURCE            VARCHAR         COMMENT 'cross_channel source',
+    XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium',
+    XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign',
+    DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹. 🔴 정규화 금지(정상 라벨 — 센티넬 아님)',
+    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024-01-01~07-18(199일 · 48,862,926행 = 17.10%)은 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다',
+    SRC_TABLE               VARCHAR(64)     NOT NULL COMMENT '원본 일별 테이블명(events_YYYYMMDD). 원천 대조 키 — BRONZE 계보 승계',
+    SRC_FILE_NAME           VARCHAR(512)    NOT NULL COMMENT '파일 단위 계보. 중복 적재 검출 + EVENT_SEQ 결정적 정렬 근거 — BRONZE 계보 승계',
+    BRONZE_LOAD_TS          TIMESTAMP_LTZ   NOT NULL COMMENT 'BRONZE 적재 배치 식별(= EVENTS.LOAD_TS). 업무일자 EVENT_DT 와 구분',
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE         VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
+) COMMENT = 'BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블(GA4 계열의 유일 입력). event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합 — 종전 5모델이 각자 2.86억행을 읽던 것을 1회로 줄인다. 계층 내 파생 허용 = DEC-37 · 원천 접두 명명 = DEC-38. 🔴 조회 시 EVENT_DT 범위 제한 필수';
 
 -- GA4 1: GA4_TRAFFIC_SOURCE (트래픽소스 차원)
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_TRAFFIC_SOURCE (
@@ -904,20 +979,23 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_DEVICE (
 ) COMMENT = 'GA 디바이스. DISTINCT 그레인(PK 없음) → DIM_DEVICE(GA분)';
 
 -- GA4 4: GA4_EVENT (이벤트 팩트 소스)
+--   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
-    BATCH_ORDERING_ID       NUMBER          NOT NULL COMMENT '배치 내 정렬 ID (PK)',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 원천 events_20240719 부터 생긴 컬럼이라 2024-01-01~07-18(199일 · 48,862,926행 = 17.10%)을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 2024-06 기준 3.679%(238,454행) 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순 결정적 정렬로 부여한 surrogate 로 대체(손실 0)',
+    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 PK 아님 · NOT NULL 아님(2024 상반기 NULL) — 계보·정렬 근거로만 보존',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
-    EVENT_DT                DATE            COMMENT '파생 DATE',
+    EVENT_DT                DATE            NOT NULL COMMENT '파생 DATE. 🔴 프루닝 키 — 이 모델은 range 모델이고 pre-hook 이 이 컬럼으로 범위 DELETE 한다(silver_purge)',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(10)     COMMENT 'CRM 회원번호(원본 불변)',
+    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 12,690행(이메일 14자·app- 36/40자)이 초과 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것',
+    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(기반 테이블 승계). MBER_NO/ONCE_MBER_NO 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호 아님. 🔴 채움률 분모 판정의 정본',
     GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID',
     GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
-    GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키',
-    USER_ID_FILLED          VARCHAR(10)     COMMENT '파생 세션 전파 회원번호',
-    ID_RESOLUTION           VARCHAR(20)     COMMENT '신원해소 DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT',
+    GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 (복합 = pseudo ∥ "-" ∥ session_id)',
+    USER_ID_FILLED          VARCHAR(64)     COMMENT '파생 세션 전파 회원번호. 🟢 GA4-LEN-1 해소로 VARCHAR(10) → VARCHAR(64). 신뢰도는 ID_RESOLUTION 참조(SESSION_FILL 은 추론값)',
+    ID_RESOLUTION           VARCHAR(20)     COMMENT '신원해소 DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT. CONFLICT(세션 내 상이 user_id ≥2)는 미채움',
     SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부',
     ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec (비가산 raw)',
     PAGE_LOCATION           VARCHAR         COMMENT '페이지 URL',
@@ -929,8 +1007,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
     LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
     LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
-    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생. 실측값 PC/M 2종만(APP 휴면·O2)',
-    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리 (원본)',
+    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생. 실측값 M/PC/(unknown) — APP 0건(platform=WEB 단독). smart tv 499행은 (unknown) 격리(GA4-TV-1)',
+    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리 (원본). 전 기간 4종(mobile/desktop/tablet/smart tv)',
     OS                      VARCHAR         COMMENT '운영체제',
     GEO_COUNTRY             VARCHAR         COMMENT '국가',
     GEO_CITY                VARCHAR         COMMENT '도시',
@@ -938,31 +1016,35 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium',
     UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹',
-    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고)',
+    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건)',
     IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
+    SRC_TABLE               VARCHAR(64)     COMMENT '원본 일별 테이블명 계보 (기반 테이블 승계)',
+    SRC_FILE_NAME           VARCHAR(512)    COMMENT '파일 단위 계보 (기반 테이블 승계)',
     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE         VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, BATCH_ORDERING_ID)
-) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 원천 PK 중복은 적재 GROUP BY dedup';
+    PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
+) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다(2025-06 실측 9.6%)';
 
 -- GA4 5: GA4_IDENTITY (신원)
+--   🟢 [2026-08-19 O87] GA_MEMBER_ID VARCHAR(10) → VARCHAR(64) + ID_SCHEME 신설(GA4-LEN-1).
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_IDENTITY (
     USER_PSEUDO_ID      VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
-    GA_MEMBER_ID        VARCHAR(10)     COMMENT '= user_id_filled(세션 채움 후 회원번호)',
-    MEMBER_TYPE         VARCHAR(10)     COMMENT '파생: S%→ONCE else FDRM',
-    MBER_NO             VARCHAR(10)     COMMENT '정기 회원번호',
-    ONCE_MBER_NO        VARCHAR(10)     COMMENT '일시 회원번호',
-    ID_RESOLUTION       VARCHAR(20)     COMMENT '신원해소 DIRECT/SESSION_FILL',
+    GA_MEMBER_ID        VARCHAR(64)     COMMENT '= user_id_filled(세션 채움 후 GA 식별자). 🟢 GA4-LEN-1 해소로 확장 — 🔴 CRM 회원번호가 아닌 값(app-·이메일·"null")도 여기 들어온다. 회원번호로 쓰기 전에 ID_SCHEME 을 볼 것',
+    ID_SCHEME           VARCHAR(20)     COMMENT '🔴 매칭 분모의 정본(GA4-LEN-1 조치②). MBER_NO(7자리)/ONCE_MBER_NO(S+8자리) 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호가 아니다. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED) 이고 비회원 체계는 분모 밖이다',
+    MEMBER_TYPE         VARCHAR(10)     COMMENT '회원구분 ONCE(S+8자리) / FDRM(7자리). 🔴 그 밖의 ID 체계는 NULL — 종전 「S%→ONCE else FDRM」은 app-·이메일까지 FDRM 으로 밀어넣어 분모를 오염시켰다(라벨 창작 금지 · R2-7)',
+    MBER_NO             VARCHAR(10)     COMMENT '정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움',
+    ONCE_MBER_NO        VARCHAR(10)     COMMENT '일시 회원번호. ID_SCHEME=ONCE_MBER_NO 일 때만 채움',
+    ID_RESOLUTION       VARCHAR(20)     COMMENT '신원해소 DIRECT/SESSION_FILL. SESSION_FILL 은 추론값(공유기기 오귀속 가능) — DIRECT 보다 낮은 신뢰',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
-) COMMENT = 'GA 신원(Q1 확정) → S-7 IDENTITY_MEMBER_XREF. 접두사 분기: S%→ONCE / else→정기';
+) COMMENT = 'GA 신원(Q1 확정) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
 
 -- ============================================================================
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)
@@ -974,12 +1056,13 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_IDENTITY (
 --     FACT 결합은 LEFT JOIN — 익명 세션이 95%다(실측 커버리지 4.84%).
 CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     USER_PSEUDO_ID      VARCHAR(200)    NOT NULL COMMENT 'GA 세션 스파인 (PK)',
-    GA_MEMBER_ID        VARCHAR(10)     COMMENT 'GA측 회원번호(=user_id_filled)',
-    MEMBER_TYPE         VARCHAR(10)     COMMENT '회원구분 ONCE(S%)/FDRM',
+    GA_MEMBER_ID        VARCHAR(64)     COMMENT 'GA측 식별자(=user_id_filled). 🟢 [O87] VARCHAR(10) → VARCHAR(64)(GA4-LEN-1) — 회원번호가 아닌 값도 포함되므로 ID_SCHEME 과 함께 읽을 것',
+    ID_SCHEME           VARCHAR(20)     COMMENT '🔴 [O87 신설] GA측 ID 체계. 매칭 분모 판정의 정본 — MBER_NO/ONCE_MBER_NO 만 조인 대상이다',
+    MEMBER_TYPE         VARCHAR(10)     COMMENT '회원구분 ONCE/FDRM. 비회원 ID 체계는 NULL',
     MEMBER_DK           VARCHAR(10)     COMMENT '매칭된 CRM 불변회원키(미매칭 NULL)',
     HOMEPAGE_ID         VARCHAR         COMMENT '매칭 CRM 회원의 HMPG_ID(미매칭 NULL)',
     ID_RESOLUTION       VARCHAR(20)     COMMENT 'GA측 신뢰도: DIRECT/SESSION_FILL',
-    MATCH_METHOD        VARCHAR(30)     COMMENT '매칭방법 MEMBER_ID_EXACT / UNMATCHED',
+    MATCH_METHOD        VARCHAR(30)     COMMENT '매칭방법 MEMBER_ID_EXACT / UNMATCHED / 🆕 NOT_A_MEMBER_ID. 🔴 [O87] 종전 2분기는 「회원번호인데 CRM 에서 못 찾음」과 「애초에 회원번호가 아님」을 UNMATCHED 로 뭉개 채움률 분모를 왜곡했다 ⇒ 세 번째 값을 신설해 분리 표기. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED)',
     MATCH_CONFIDENCE    VARCHAR(10)     COMMENT '매칭신뢰도 HIGH/MEDIUM/NONE',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',

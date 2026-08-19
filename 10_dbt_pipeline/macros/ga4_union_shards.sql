@@ -1,3 +1,24 @@
+-- 🔴🔴 [2026-08-19 O87] 이 매크로는 **폐기(DEPRECATED)** 됐다. 어느 모델도 참조하지 않는다.
+--    삭제 대상이나 파일 삭제는 사용자 승인이 필요해(R4-4-3) 폐기 표기만 남긴다.
+--
+--    왜 폐기했나: BRONZE 가 **일별 샤드가 아니라 통합 1테이블**로 적재됐다(G-5 해소 · O86).
+--      `GN_DW.BRONZE_BIGQUERY.EVENTS` = 285,676,588행 / 911일 · 통제총계 911건 전수 일치.
+--      ⇒ INFORMATION_SCHEMA 로 샤드를 열거할 대상이 사라졌다.
+--
+--    🔴 **이 매크로는 살아 있는 동안 라이브 지뢰였다.** 패턴이 `UPPER(table_name) LIKE 'EVENTS\_%'`
+--      이므로 통합 테이블 `EVENTS`(뒤에 언더스코어 없음)를 **매칭하지 못하고**, 빈 레거시 샤드
+--      `events_20260501`·`events_20260719`(둘 다 0행)만 잡았다. 그 상태로 `dbt run` 을 돌리면
+--      pre-hook TRUNCATE 후 **0행 append** 로 끝나고 **에러가 나지 않는다** ⇒ SILVER·GOLD 가
+--      조용히 비워진다. 실제로 `SILVER.GA4_EVENT` 8,161,106행이 이 경로로 소실될 상태였다.
+--      ⇒ 🔴 **되살리지 마라.** 되살리려면 먼저 위 패턴 불일치를 이해했음을 확인할 것.
+--
+--    대체 경로 = `{{ source('bronze_bigquery','EVENTS') }}` + `WHERE EVENT_DT BETWEEN var(...)`.
+--      정본 = `models/silver/ga4/BIGQUERY_REFINED_DATA.sql` · 설계 = `04_silver_design/07` 머리말.
+--    ⚠️ 종전 var `ga4_start`/`ga4_end`(YYYYMMDD)도 함께 폐기됐다 → `ga4_dt_start`/`ga4_dt_end`(DATE).
+--
+-- ────────────────────────────────────────────────────────────────────────────
+-- 이하 본문은 **역사 기록**이다(실행 경로 없음).
+--
 -- GA4 date-shard 동적 UNION 매크로 (dbt_utils.get_relations_by_pattern 대체, trial EAI 불가 대응)
 -- Co-authored with CoCo
 -- ⚠️ 설계결정서 §2: SELECT * 금지 → 컬럼명 명시(위치기반 오염 차단, SILVER 출력 스키마 고정)

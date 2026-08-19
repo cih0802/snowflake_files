@@ -237,6 +237,35 @@ bronze_load_policy:
 > SILVER는 BRONZE 48테이블을 **정제·통합**하여 GOLD가 소비할 **32개** 테이블로 재구성한다(dbt 모델).
 > 역할: (1) 타입 캐스팅·NULL 처리·코드→라벨 (2) 정기∪일시 등 UNION/JOIN 통합 (3) 행 granularity 유지(집계는 GOLD).
 > 명명: 소스 접두 `CRM_*` / `GA4_*` / `ERP_*` / `AGENCY_*` + 교차소스 브리지 1(`IDENTITY_MEMBER_XREF`).
+>
+> ### 🆕 [2026-08-19 O87] SILVER 명명 규약 — **두 축의 이원화**를 명문화한다
+>
+> 이 절이 반복 질문되는 지점이다(*"BRONZE_GA4 → BRONZE_BIGQUERY 로 바꿨는데 SILVER 의 GA4_* 는
+> 왜 그대로인가"*). 답 = **두 이름은 서로 다른 축이고, 그 분리는 의도된 것이다.**
+>
+> | 계층 | 명명 축 | 예 | 왜 |
+> |---|---|---|---|
+> | **BRONZE 스키마** | **원천 시스템**(어디서 왔나) | `BRONZE_BIGQUERY` · `BRONZE_CRM` | 한 스키마가 그 시스템에서 온 것을 **전부** 받는다. `BRONZE_BIGQUERY` 는 GA4 외 BigQuery 유입도 수용하려고 2026-08-14 에 개명됐다 |
+> | **SILVER·GOLD 객체** | **데이터 도메인**(무엇인가) | `GA4_EVENT` · `DIM_GA_EVENT` | 도메인은 전달 경로보다 **덜 자주 변한다**. GA4 export 경로가 Openflow·GA4 Data API·GCS 로 바뀌면 `BIGQUERY_EVENT` 는 거짓이 되지만 `GA4_EVENT` 는 계속 참이다 |
+>
+> 🔴 **`BRONZE_CRM` ↔ `CRM_*` 가 같아 보이는 것은 우연이다** — CRM 은 시스템명과 도메인명이 같은 단어다.
+> GA4/BigQuery 가 그 둘이 갈라지는 유일한 사례이고, 그래서 이 규약이 여기서만 눈에 띈다.
+>
+> #### 예외 1건 — **기반 테이블은 원천 접두를 쓴다**
+> `SILVER.BIGQUERY_REFINED_DATA`(2026-08-19 O87 신설 · 사용자 결정 · **DEC-38**).
+> 근거 = 이 테이블은 도메인 해석이 아니라 **「BigQuery export 를 평탄화한 것」이라는 원천 사실**이
+> 내용의 전부다(FLATTEN·컬럼 승격만 하고 업무 의미를 부여하지 않는다).
+> 도메인 해석이 들어간 산출물은 그 위의 `GA4_*` 5종이 담당한다.
+> ⇒ 규약 = **「도메인 접두가 기본 · 원천 평탄화 기반 테이블만 원천 접두」**.
+> ⚠️ 이 예외를 확대하지 말 것 — 기반 테이블이 아닌 새 SILVER 객체는 `GA4_*`/`CRM_*` 를 쓴다.
+>
+> #### 🆕 계층 내 파생(SILVER→SILVER)에 대해
+> 종전 문서 여러 곳이 *"SILVER→SILVER 파생 금지(단방향)"* 라 적지만 **라이브 코드는 이미 31곳에서
+> 하고 있다**(`AGENCY_AD_ROW_*` → 성과·방송·사례·디지털 7 · `CRM_CODE` → CRM 11모델 20 ·
+> `CRM_MEMBER_SPONSOR_BIZ` → `CRM_SPONSOR_RELATION` 1 · `GA4_IDENTITY` → `IDENTITY_MEMBER_XREF` 1).
+> 🔴 `AGENCY_COST` 가 2026-07-14 리뷰에서 삭제된 실제 이유는 **월 롤업(집계)** 이고, 같은 리뷰가
+> `CRM_SEND_RESULT` 의 SILVER 집계는 *"검토된 집계"* 로 **유지**했다 ⇒ 판정 기준은 「계층 내 참조인가」가
+> 아니라 **「롤업인가 · 중복 소유권인가」**였다. 규약 정본 = **DEC-37**(`20_issue/30_설계_의사결정.md`).
 
 ```yaml
 silver_total: 32   # CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1
@@ -265,12 +294,13 @@ silver_tables:
     - { id: CRM_SEND_RESULT, desc: "발송×채널 집계" }
     - { id: CRM_RELATION_ACTIVITY, desc: "결연활동(서신∪선물금)" }
     - { id: CRM_SPONSOR_RELATION, desc: "결연(아동). Q15 크로스워크" }
-  ga4:   # 5
-    - { id: GA4_EVENT, desc: "GA 이벤트 팩트 소스 → FGA. 원천 PK 중복 dedup(GA-1)" }
-    - { id: GA4_EVENT_DIM, desc: "GA 이벤트분류 → DIM_GA_EVENT" }
-    - { id: GA4_TRAFFIC_SOURCE, desc: "GA 트래픽소스(session/last-click) → DIM_GA_SOURCE" }
-    - { id: GA4_DEVICE, desc: "GA 디바이스 → DIM_DEVICE(GA분)" }
-    - { id: GA4_IDENTITY, desc: "GA 신원(Q1) → 브리지 입력. 접두사 분기 S%→ONCE_MBER_NO" }
+  ga4:   # 6 — 🆕 [2026-08-19 O87] 기반 1 + 파생 5 (종전 5 → 6)
+    - { id: BIGQUERY_REFINED_DATA, desc: "🆕 BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 — GA4_* 5종의 유일 입력. event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합(종전 5모델이 각자 2.86억행 스캔 → 1회). grain = 이벤트 1행(USER_PSEUDO_ID×EVENT_TIMESTAMP×EVENT_NAME×EVENT_SEQ). 계보 승계 = SRC_TABLE·SRC_FILE_NAME·BRONZE_LOAD_TS. 🔴 원천 접두 예외(DEC-38) · 계층 내 파생 허용(DEC-37) · EVENT_DT 범위 제한 필수" }
+    - { id: GA4_EVENT, desc: "GA 이벤트 팩트 소스 → FGA. 고유 로직 = 세션 채움(session-fill)만. 🟢 [O87] PK 4번째 키 BATCH_ORDERING_ID → EVENT_SEQ(GA4-PK-1 해소 · 2024 상반기 17.10% 복구 · 손실 0). USER_ID VARCHAR(64) + ID_SCHEME(GA4-LEN-1 해소)" }
+    - { id: GA4_EVENT_DIM, desc: "GA 이벤트분류 → DIM_GA_EVENT. 전기간 DISTINCT(범위 제한 금지 — 값 집합이 정본)" }
+    - { id: GA4_TRAFFIC_SOURCE, desc: "GA 트래픽소스(session/last-click) → DIM_GA_SOURCE. 전기간 DISTINCT" }
+    - { id: GA4_DEVICE, desc: "GA 디바이스 → DIM_DEVICE(GA분). 전기간 DISTINCT. 실측 DEVICE_TYPE = M/PC/(unknown) · PLATFORM = WEB 단독(APP 0건)" }
+    - { id: GA4_IDENTITY, desc: "GA 신원(Q1) → 브리지 입력. 🟢 [O87] 종전 「S%→ONCE else FDRM」 2분기는 app-·이메일·'null' 을 FDRM 으로 밀어넣어 매칭 분모를 오염시켰다 ⇒ ID_SCHEME 6분류로 교체하고 비회원 체계는 MEMBER_TYPE·MBER_NO 를 NULL 로 둔다(R2-7)" }
   erp:   # 2
     - { id: ERP_BUDGET, desc: "예산 편성/추경/조정/집행 월 grain(wide→long) → FBD" }
     - { id: ERP_BUDGET_ITEM, desc: "예산과목 마스터(장/관/항/목/세목/세세목×재원) → DIM_BUDGET_ITEM" }

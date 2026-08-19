@@ -31,6 +31,57 @@
 >
 > 🔴 **SILVER 착수 전 미해소 2건** — `GA4-PK-1`(2024-01-01~07-18 · 17.10% PK 불가)
 > · `GA4-LEN-1`(`USER_ID VARCHAR(10)` 초과 12,690행). 상세 = `20_issue/90_해소완료_로그.md` §1-A.
+> 🟢 **[2026-08-19 O87 갱신] 위 2건은 코드 레벨에서 해소됐다** — 상세는 아래 O87 절.
+
+> ## 🟢🟢 [2026-08-19 O87] §2 증분 전략·§4 모델 구조도 **폐기·대체**됐다
+>
+> 이 문서는 이제 **§0 trial 제약**과 **§3 주의사항 일부**만 유효하다. 나머지는 역사 기록이다.
+>
+> ### 무엇이 바뀌었나 — 기반 1 + 파생 5
+> ```
+> BRONZE_BIGQUERY.EVENTS  (2.86억행 · 통합 1테이블)
+>         │  source('bronze_bigquery','EVENTS') + WHERE EVENT_DT BETWEEN var(...)
+>         ▼
+> SILVER.BIGQUERY_REFINED_DATA   ← 🆕 평탄화 통합 기반(FLATTEN·param 승격·VARIANT 추출 1회)
+>         │  ref()
+>         ├─ GA4_EVENT           (range · 세션 채움만 고유 로직)
+>         ├─ GA4_EVENT_DIM       (전기간 DISTINCT)
+>         ├─ GA4_DEVICE          (전기간 DISTINCT)
+>         ├─ GA4_TRAFFIC_SOURCE  (전기간 DISTINCT)
+>         └─ GA4_IDENTITY        (전기간 1행/pseudo)
+>                 │  ref()
+>                 └─ IDENTITY_MEMBER_XREF  (교차소스 브리지)
+> ```
+> 근거·경계 = `07_GA4_SILVER_샤드통합 설계결정.md` 머리말 §O87 · `20_issue/30_설계_의사결정.md` DEC-37/37.
+>
+> ### 🔴 §2 「incremental + 72시간 보정 merge」는 채택되지 않았다
+> §2 는 `incremental_strategy='merge'` + `unique_key` 4키 + D-3~D-1 창을 제시하는데,
+> **실제 구현은 `append` + pre-hook 범위 `DELETE`** 다. 세 가지가 달라졌다.
+> · **PK 4키가 바뀌었다** — `BATCH_ORDERING_ID` 는 2024 상반기에 없다(`GA4-PK-1`) ⇒ `EVENT_SEQ`.
+>   §2 의 `unique_key` 를 그대로 쓰면 그 구간에서 실패한다.
+> · **`merge` 를 쓰지 않는다** — SILVER 전체가 `incremental + append + full_refresh:false` 규약이고
+>   (`dbt_project.yml` 순서 8-B) grain 비유일 모델의 행 소실을 막기 위한 선택이다.
+> · **D-3 창이 아니라 var 범위다** — 이 프로젝트는 아직 배치 스케줄이 없고 전기간 초기 적재 단계다.
+>   🟠 **D+3 소급 수정 문제 자체는 유효하다** — 일상 운행에 들어가면 `ga4_dt_start` 를
+>   `D-3` 로 두고 돌리는 것으로 같은 효과를 얻는다(범위 DELETE 가 merge 를 대신한다).
+>
+> ### 🔴 §4 의 materialized 표는 stale 이다
+> §4 는 `①②③⑤ = table · ④ = incremental` 이라 적지만 **실제는 6종 전부 `incremental`** 이다
+> (SILVER 규약 = `incremental + append + pre-hook + full_refresh:false`, 구조는 08 DDL 소유).
+> 그리고 §4 의 *"⑤ ga4_identity … Q1 행매칭 실증 후 활성화"* 는 **2026-07-15 에 이미 활성화**됐다.
+>
+> ### 🟢 §3 에서 여전히 유효한 것
+> · **외부 패키지 금지**(trial EAI 불가) — `packages.yml` 없음 · 커스텀 매크로만. **불변**.
+> · **`USER_ID` VARCHAR 필수 · NUMBER 캐스팅 절대 금지**(선행0·`S` 접두 보존). **불변**.
+>   🟢 단 **길이는 VARCHAR(10) → VARCHAR(64)** 로 확장됐다(`GA4-LEN-1`).
+> · **incremental 로직 수정 시 `--full-refresh` 재실행** — ⚠️ 이 프로젝트는 `+full_refresh:false`
+>   라서 `--full-refresh` 가 **차단된다**(DDL 구조 보호). 대신 **var 범위를 전기간으로 두고
+>   재실행**하는 것이 이 프로젝트의 등가 조치다.
+> · `{% if execute %}` 가드 — ⚠️ `run_query` 를 쓰는 매크로가 이제 없다(모두 폐기) ⇒ **적용 대상 0**.
+>
+> ### ⚠️ §1 매크로 코드와 §6 선결 확인은 전부 역사 기록이다
+> `ga4_union_shards` 는 폐기됐다(파일에 폐기 표기). §6 의 「Bronze 전체 기간 CSV 적재 완료 여부」·
+> 「`GA4_CSV_FMT` 존재 확인」·「GA4_IDENTITY 제외」는 모두 충족 또는 무효화됐다.
 
 ---
 

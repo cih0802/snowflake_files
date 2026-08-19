@@ -14,7 +14,7 @@ models:
     description: >
       BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블. GA4_* 5종의 유일한 입력.
       grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ).
-      계층 내 파생 허용 근거 = DEC-36 · 원천 접두 명명 근거 = DEC-37.
+      계층 내 파생 허용 근거 = DEC-37 · 원천 접두 명명 근거 = DEC-38.
     columns:
       - name: USER_PSEUDO_ID
         tests: [not_null]
