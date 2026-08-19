@@ -11,9 +11,11 @@
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
-  🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 GA4_EVENT 에 8,161,106행이 있다.**
+  🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 GA4_EVENT 에 행이 있다.**
+     실측 = 계정 `UA93987` · 2026-08-19 · `SILVER.GA4_EVENT` **8,161,106행**(정본 = 원장 §O87).
+     🔴 이 수치는 **계정·시점에 종속**이다(`R2-8-4`) — 계정이 바뀌면 재실측할 것(`P169` 3회 발생).
      `CREATE OR REPLACE` 는 그것을 지운다. GA4 구간을 재실행할 때는 그 사실을 먼저 확인할 것
-     (그 8,161,106행은 dbt 를 우회해 09번 SQL 로 적재된 것이고 구 DEVICE_TYPE 로직(else 'PC')
+     (그 행은 dbt 를 우회해 09번 SQL 로 적재된 것이고 구 DEVICE_TYPE 로직(else 'PC')
       기준이라 `smart tv` 가 `PC` 로 오분류돼 있다 ⇒ **재적재 대상이며 보존 가치가 없다**).
 
   ▣ 본 파일의 범위 = 구조 계약(타입·PK·COMMENT)만. 설계근거·실측이력·리뷰기록은 이관됨:
@@ -880,12 +882,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
-    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 결정적 정렬. BATCH_ORDERING_ID 가 2024-01-01~07-18 에 없어 PK 로 쓸 수 없던 문제를 손실 0 으로 대체',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
     EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 실측 6종 중 3종(이메일 14자·app-+32hex 36자·app-+uuid 40자 = 12,690행)에서 초과 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것',
-    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 실측값 = MBER_NO(7자리 CRM · 399,773id) / ONCE_MBER_NO(S+8자리 · 16,907id) / APP(app- 접두 · 241id) / EMAIL(1id) / INVALID(원천 문자열 "null" · 1id) / UNCLASSIFIED(신규 포맷 격리). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7)',
+    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 이메일·app- 접두 포맷에서 길이 초과로 적재 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측(R2-6: COMMENT 에 수치 미기재)',
+    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 값 = MBER_NO(7자리 CRM) / ONCE_MBER_NO(S+8자리) / APP(app- 접두) / EMAIL(@ 포함) / INVALID(원천 오류값 "null"·"undefined") / UNCLASSIFIED(미분류 = 신규 포맷 조기경보 · 기대값 0). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
     GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID. 🔴 user_pseudo_id 내에서만 유일 — 단독 세션키 사용 금지(다른 사용자 세션 오병합)',
     GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
     GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id (복합 필수)',
@@ -900,8 +902,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
     PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
     LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
     LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
-    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 실측값 M/PC/(unknown) — APP 0건(platform=WEB 단독 · O2 APP 휴면이 전 기간에서도 유효). ⚠️ device:category 는 4종이고 smart tv 499행이 (unknown) 으로 격리된다(TV 라벨 신설 여부 = 미결 GA4-TV-1)',
-    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 전 기간 실측 4종 = mobile 202,329,180 · desktop 79,892,714 · tablet 3,454,195 · smart tv 499',
+    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 값 = APP / M / PC / (unknown). 🔴 라이브 관측은 M·PC·(unknown) 3종이고 APP 은 0건이다(platform=WEB 단독 · O2 APP 휴면). ⚠️ device:category 의 smart tv 가 (unknown) 으로 격리된다 — TV 라벨 신설 여부 = 미결 GA4-TV-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 값 = mobile / desktop / tablet / smart tv 4종. 🔴 smart tv 는 DEVICE_TYPE 에서 (unknown) 으로 격리된다(미결 GA4-TV-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
     OS                      VARCHAR         COMMENT '운영체제',
     BROWSER                 VARCHAR         COMMENT '브라우저',
     LANGUAGE                VARCHAR         COMMENT '언어',
@@ -919,7 +921,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
     XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium',
     XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign',
     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹. 🔴 정규화 금지(정상 라벨 — 센티넬 아님)',
-    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024-01-01~07-18(199일 · 48,862,926행 = 17.10%)은 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다',
+    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024 상반기는 전건 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다. ⚠️ 2024 상반기는 이 컬럼이 전건 NULL 이므로 EVENT_SEQ 정렬이 사실상 SRC_FILE_NAME 부터 시작한다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
     SRC_TABLE               VARCHAR(64)     NOT NULL COMMENT '원본 일별 테이블명(events_YYYYMMDD). 원천 대조 키 — BRONZE 계보 승계',
     SRC_FILE_NAME           VARCHAR(512)    NOT NULL COMMENT '파일 단위 계보. 중복 적재 검출 + EVENT_SEQ 결정적 정렬 근거 — BRONZE 계보 승계',
     BRONZE_LOAD_TS          TIMESTAMP_LTZ   NOT NULL COMMENT 'BRONZE 적재 배치 식별(= EVENTS.LOAD_TS). 업무일자 EVENT_DT 와 구분',
@@ -984,12 +986,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
-    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 원천 events_20240719 부터 생긴 컬럼이라 2024-01-01~07-18(199일 · 48,862,926행 = 17.10%)을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 2024-06 기준 3.679%(238,454행) 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순 결정적 정렬로 부여한 surrogate 로 대체(손실 0)',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 2024 상반기에 없어 그 구간을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순으로 부여한 surrogate 로 대체한다. 🔴 [O87-B] 성립하는 것은 「NOT NULL 위반 해소」까지다 — 「손실 0」은 미실증이고 정렬 튜플 동일 행이 실재한다(미결 GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
     BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 PK 아님 · NOT NULL 아님(2024 상반기 NULL) — 계보·정렬 근거로만 보존',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
     EVENT_DT                DATE            NOT NULL COMMENT '파생 DATE. 🔴 프루닝 키 — 이 모델은 range 모델이고 pre-hook 이 이 컬럼으로 범위 DELETE 한다(silver_purge)',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 12,690행(이메일 14자·app- 36/40자)이 초과 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것',
+    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 이메일·app- 접두 포맷이 길이 초과로 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
     ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(기반 테이블 승계). MBER_NO/ONCE_MBER_NO 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호 아님. 🔴 채움률 분모 판정의 정본',
     GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID',
     GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',

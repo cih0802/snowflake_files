@@ -10,14 +10,16 @@
 --    ⚠️ 여전히 GA4_EVENT 를 참조하지 않는다 — 둘은 **형제**이고 기반 테이블을 공유한다.
 --       (팩트를 차원의 원천으로 삼으면 GOLD 의 팩트 재적재가 차원을 흔든다.)
 --
--- 🟢 GA4-LEN-1 해소 — Q1 의 2분기(S% / else)로는 부족했다. 전 기간 user_id 실측 6종 중
---    **CRM 조인 가능한 것은 7자리 포맷뿐**이고 `app-`(241id)·이메일(1)·문자열 'null'(1)은
---    회원번호가 아니다. 종전 로직은 그것들을 전부 `else → FDRM/MBER_NO` 로 밀어넣어
---    IDENTITY_MEMBER_XREF 매칭 분모를 오염시켰다.
---    ⇒ 기반 테이블의 ID_SCHEME 으로 분기한다:
---       MBER_NO → MBER_NO 채움 / ONCE_MBER_NO → ONCE_MBER_NO 채움 /
---       APP·EMAIL·INVALID·UNCLASSIFIED → **둘 다 NULL** (MEMBER_TYPE 도 NULL).
+-- 🟢 GA4-LEN-1 해소 — Q1 의 2분기(S% / else)로는 부족했다. 전 기간 `user_id` 실측
+--    (O87-B · 계정 UA93987 · 정본 = `20_issue/90_해소완료_로그.md` §1-B-실측)에서
+--    **CRM 조인 가능한 것은 `MBER_NO`(7자리)·`ONCE_MBER_NO`(S+8자리) 두 종뿐**이고
+--    `APP`·`EMAIL`·`INVALID` 는 회원번호가 아니다. 종전 로직은 그것들을 전부
+--    `else → FDRM/MBER_NO` 로 밀어넣어 IDENTITY_MEMBER_XREF 매칭 분모를 오염시켰다.
+--    ⇒ ID_SCHEME 으로 분기한다: 회원 체계 2종만 채우고 나머지는 **둘 다 NULL**(MEMBER_TYPE 도 NULL).
 --    🔴 R2-7 준수 — 값이 없는 자리를 라벨로 창작하지 않는다. 「왜 NULL 인가」는 ID_SCHEME 이 답한다.
+--    🔴 **[O87-B 정정] 종전 문서의 「6종」은 불완전했다** — 리터럴 `undefined`(293행·1id)가
+--       누락돼 `ONCE_MBER_NO` 버킷에 흡수 계상돼 있었다. 실측 확정 = **7종**이고
+--       `ONCE_MBER_NO` 는 종전 기재 194,763행/16,907id → **194,470행/16,906id** 다.
 --
 -- grain = 1행 / USER_PSEUDO_ID. 🔴 범위 제한 없음(전기간) — 신원은 누적 상태이고,
 --    범위 제한하면 그 창 밖에서만 로그인한 pseudo 가 익명으로 바뀐다.
@@ -72,7 +74,10 @@ SELECT
          WHEN a.ga_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE_MBER_NO'
          WHEN STARTSWITH(a.ga_member_id, 'app-') THEN 'APP'
          WHEN POSITION('@', a.ga_member_id) > 0  THEN 'EMAIL'
-         WHEN LOWER(a.ga_member_id) = 'null'     THEN 'INVALID'
+         -- 원천 오류값 2종(프런트엔드 미정의/널이 문자열로 흘러든 것). 회원번호가 아니다.
+         -- 🔴 `undefined` 는 O87-B 실측으로 발견됐다(293행 · 1id · 2024-03-25~2026-06-08) —
+         --    종전 문서의 「6종」에 없었고 `ONCE_MBER_NO` 에 흡수 계상돼 그 버킷이 과대였다.
+         WHEN LOWER(a.ga_member_id) IN ('null', 'undefined') THEN 'INVALID'
          ELSE 'UNCLASSIFIED' END                                AS ID_SCHEME,
     -- 🔴 회원구분은 CRM 회원번호 체계일 때만 부여한다. 그 밖은 NULL(창작 금지 · R2-7).
     CASE WHEN a.ga_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE'

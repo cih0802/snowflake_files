@@ -148,16 +148,20 @@ SELECT
     f.user_id                                                    AS USER_ID,
     -- 🟢 GA4-LEN-1 조치② — ID 체계 분류축. 조치①만 하면 IDENTITY_MEMBER_XREF 매칭 분모에
     --    비회원 ID 가 섞여 채움률이 조용히 왜곡된다(설계문서 07 §7-B).
-    --    실측 6종(전 기간): 7자리 CRM 399,773id · S+8자리 16,907id · app-+32hex 233id
-    --                      · app-+uuid 8id · 이메일 1id · 문자열 'null' 1id.
+    --    실측 정본 = `20_issue/90_해소완료_로그.md` §1-B-실측 (계정 UA93987 · 2026-08-19 O87-B 전기간).
+    --    🔴 그 실측이 종전 문서의 「6종」을 **7종으로 교정**했다 — 누락돼 있던 리터럴 `undefined` 가
+    --       `ONCE_MBER_NO` 에 흡수 계상돼 그 버킷이 **293행·1id 과대**였다. 이 CASE 는 그것을 분리한다.
     --    ⚠️ 라벨 창작 금지(DEC-17-B · R2-7) — 원천 문자열은 USER_ID 에 그대로 보존하고
-    --       여기서는 분류만 부여한다. 신규 포맷은 'UNCLASSIFIED' 로 격리해 조용히 섞이지 않게 한다.
-    CASE WHEN f.user_id IS NULL                       THEN NULL
-         WHEN f.user_id RLIKE '^[0-9]{7}$'            THEN 'MBER_NO'
-         WHEN f.user_id RLIKE '^S[0-9]{8}$'           THEN 'ONCE_MBER_NO'
-         WHEN STARTSWITH(f.user_id, 'app-')           THEN 'APP'
-         WHEN POSITION('@', f.user_id) > 0            THEN 'EMAIL'
-         WHEN LOWER(f.user_id) = 'null'               THEN 'INVALID'
+    --       여기서는 분류만 부여한다.
+    --    🔴 `UNCLASSIFIED` 는 「신규 포맷 등장」 조기경보다 ⇒ **현재 기대값은 0 이다**
+    --       (`undefined` 를 INVALID 로 편입했으므로). 0 이 아니면 원천에 새 포맷이 생긴 것이다.
+    CASE WHEN f.user_id IS NULL                            THEN NULL
+         WHEN f.user_id RLIKE '^[0-9]{7}$'                 THEN 'MBER_NO'
+         WHEN f.user_id RLIKE '^S[0-9]{8}$'                THEN 'ONCE_MBER_NO'
+         WHEN STARTSWITH(f.user_id, 'app-')                THEN 'APP'
+         WHEN POSITION('@', f.user_id) > 0                 THEN 'EMAIL'
+         -- 원천 오류값. 둘 다 프런트엔드 미정의/널이 문자열로 흘러든 것이다(회원번호 아님).
+         WHEN LOWER(f.user_id) IN ('null', 'undefined')    THEN 'INVALID'
          ELSE 'UNCLASSIFIED' END                                 AS ID_SCHEME,
 
     -- ── 세션 (event_params 승격) ───────────────────────────────────────────────

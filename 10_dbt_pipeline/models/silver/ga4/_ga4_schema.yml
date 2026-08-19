@@ -31,7 +31,11 @@ models:
       - name: ID_SCHEME
         description: >
           GA4-LEN-1 조치② ID 체계 분류축. CRM 조인 가능한 것은 MBER_NO·ONCE_MBER_NO 뿐이다.
-          UNCLASSIFIED 가 나오면 원천에 신규 ID 포맷이 등장했다는 신호다(조용히 섞이지 않게 격리).
+          실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측 (계정 UA93987 · O87-B 전기간).
+          🔴 UNCLASSIFIED 기대값은 0 이다 — undefined 를 INVALID 로 편입했으므로.
+          0 이 아니면 원천에 신규 ID 포맷이 등장했다는 신호다.
+          조기경보 본체 = tests/warn_ga4_id_scheme_unclassified.sql
+          (accepted_values 는 UNCLASSIFIED 를 허용값으로 두므로 그것만으로는 잡지 못한다).
         tests:
           - accepted_values:
               values: ['MBER_NO','ONCE_MBER_NO','APP','EMAIL','INVALID','UNCLASSIFIED']
