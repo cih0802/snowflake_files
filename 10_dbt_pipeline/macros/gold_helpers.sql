@@ -45,3 +45,16 @@
           AND MOD({{ mk_num }}, 100) BETWEEN 1 AND 12
          THEN {{ mk_num }} END
 {%- endmacro %}
+
+-- MONTH_KEY 오프셋: YYYYMM 을 n 개월 이동. as-of 재평가용(DEC-19 「동일 함수에 ADD_MONTHS 적용」).
+--   🔴 Unknown 월(0)·무효 월키는 NULL 을 돌려준다 — 0 을 '000001' 로 읽어 유령 월키를 만들지 않기 위함이다
+--      (month_key_clamp 와 동일 철학). 호출측은 NULL 이면 그 축 판정을 건너뛴다.
+--   ⚠️ LAG 로 전월을 구하지 않는 이유: FMM 스파인은 sparse 해서(결측월 존재) 직전 「존재하는」 행이
+--      전월이 아닐 수 있다. 달력상 전월을 직접 계산해야 as-of 정의가 유지된다.
+{% macro month_key_offset(mk_num, n) -%}
+    CASE WHEN MOD({{ mk_num }}, 100) BETWEEN 1 AND 12 AND {{ mk_num }} >= 100001
+         THEN TRY_TO_NUMBER(TO_CHAR(
+                  ADD_MONTHS(TRY_TO_DATE(TO_VARCHAR({{ mk_num }}) || '01', 'YYYYMMDD'), {{ n }}),
+                  'YYYYMM'))
+    END
+{%- endmacro %}

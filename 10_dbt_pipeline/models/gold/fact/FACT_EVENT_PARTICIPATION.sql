@@ -1,12 +1,17 @@
 -- FACT_EVENT_PARTICIPATION: 행사 참여 팩트 (SILVER.CRM_EVENT_PARTICIPATION 1,134,126행 적재 완료)
 -- Co-authored with CoCo
 -- 🔴 [O28 2026-08-04 주석 회수] 종전 주석은 *"Bronze 입고 후 실행"* · *"상태별 집계는 입고 후"* 였다.
---    **원인 오진이다** — BRONZE·SILVER 모두 적재 완료됐고(1,134,126행) 막고 있는 것은 입고가 아니라
---    `PARTCPT_STAT_CD` **코드체계 미확정**이다. 실측: 한 컬럼에 두 체계가 혼입돼 있다 —
---      · 일반행사(EVENT_KEY 접두 `EVENT_`)  = MS304 12종 110~220  970,788행
---      · 캠페인행사(접두 `CRMN_`)           = 소정수 1~6           152,096행 ← **의미 미확정**
---    소정수 1~6 은 대조로 확정 불가(코드사전 336그룹 중 1~6 포함 118그룹) → **현업 회신 필수**(문서20 §I).
---    그 확정 전에는 상태별 카운트 5종을 배선하면 **결손 창작**이다(P38) → 의도적 0 유지.
+--    **원인 오진이다** — BRONZE·SILVER 모두 적재 완료됐고 막고 있는 것은 입고가 아니라
+--    `PARTCPT_STAT_CD` 코드체계였다. 한 컬럼에 두 체계가 혼입돼 있다(일반행사 ↔ 캠페인행사).
+-- 🟢🟢 [2026-08-20 O93 재정정] **그 차단은 절반 해소됐다.** 종전 O28 서술 2가지가 지금은 틀리다:
+--    ① *"캠페인행사 소정수 1~6 = 의미 미확정 → 현업 회신 필수"* → **회신 없이 확정됐다.**
+--       O59-N/DEC-35 2단계의 `MS006` 사전 조인으로 6종에 한글 라벨이 달렸다
+--       (신청·참여·대기·대기(결제)·취소·불참).
+--    ② 두 체계의 **성격이 반대로 적혀 있었다** — 참여 상태 축은 일반행사가 아니라 **캠페인행사**다.
+--       일반행사(`MS304`)는 `Success`·`N_step_right`·`N_step_fail` 로 **퍼널 단계** 축이라
+--       신청확정/대기/취소/불참에 매핑되지 않는다.
+--    ⇒ 대기·취소·불참 3종을 **캠페인행사 구간에 한해** 배선했다(상세는 아래 SELECT 주석).
+--    ⚠️ 잔여 미해소 = `CONFIRM_CNT`(신청확정) 1종 — 사전에 그 라벨이 없다(문서20 §I 회신 대기).
 -- ⚠️ 미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2)의 사유는 컬럼 COMMENT 에 개별 명시했다
 --    (정본 = `03_top-down_gold/06_DDL.sql` FEP 블록 · 가드 스크립트 = `_archive/O28_O29_COMMENT_GUARD.sql`).
 -- 🟢 단 `PARTICIPATION_TIMES`·`CUM_APPLY_TIMES` 는 `PARTCPT_SEQ`(채움 100%) 기반이라 O28 과 무관하게
@@ -27,10 +32,36 @@ select
     COALESCE(e.EVENT_SK, 0)                        as EVENT_SK,
     0                                             as CAMPAIGN_SK,
     0                                             as SPONSORSHIP_SK,
-    0 as TOTAL_CNT, 0 as WAIT_CNT, 0 as CANCEL_CNT, 0 as CONFIRM_CNT,
+    -- ═══ [2026-08-20 O93] 상태별 카운트 부분 배선 — O28 차단이 **절반 해소됐다** ══════════════
+    -- 🔴 위 O28 주석(3~9행)은 이제 **stale** 이다. 종전 판정은
+    --    *"캠페인행사 소정수 1~6 은 의미 미확정 → 현업 회신 필수"* 였으나,
+    --    O59-N/DEC-35 2단계가 `MS006` 사전을 붙인 뒤 그 6종에 **한글 라벨이 실제로 달렸다**:
+    --      신청 · 참여 · 대기 · 대기(결제) · 취소 · 불참  ⇒ 회신 없이 판정 가능하다.
+    -- 🔴 그리고 두 체계의 성격이 종전 서술과 **반대**다:
+    --      · 캠페인행사(CRMN · MS006) = **참여 상태** 축 ⇒ 대기·취소·불참이 여기 있다.
+    --      · 일반행사(EVENT · MS304)   = 라벨이 `Success`·`N_step_right`·`N_step_fail` 로
+    --        **퍼널 단계** 축이다 ⇒ 신청확정/대기/취소/불참에 **매핑되지 않는다**(억지 매핑은 창작).
+    --    ⇒ 그래서 아래 3종은 **CRMN 구간만** 채워지고 EVENT 구간은 0 이다. 판별자 = `EVENT_KIND`.
+    --    🔴 이 0 을 「해당 없음」으로 읽어야 한다 — 「대기 0명」이 아니다.
+    -- 🟢 라벨 문자열로 매칭하는 이유: 사전 문안이 바뀌면 매칭이 풀려 **0 으로 떨어진다**(안전한 방향).
+    --    코드값(1~6)으로 매칭하면 사전이 재코딩될 때 **조용히 다른 상태로 배정**된다(위험한 방향).
+    --    `PART_STATUS_GROUP` 가드로 사전 조인이 성립한 행만 판정한다.
+    -- 🔴 R2-6: 구간별 실측 행수는 여기 적지 않는다 — 정본은 `20_issue/03_이슈상세.md` O28 항목이다.
+    1 as TOTAL_CNT,   -- 총인원 = 참여행 1건 = 1. 상태 무관이라 코드체계와 독립적이다(전건 안전).
+    -- 대기: '대기' 와 '대기(결제)' 를 함께 센다 — 둘 다 대기 상태의 하위 구분이다.
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)  as WAIT_CNT,
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '취소', 1, 0)      as CANCEL_CNT,
+    -- 🔴 신청확정 = 0 유지. 사전에 **'신청확정' 라벨이 없다** — 있는 것은 '신청' 과 '참여' 뿐이고
+    --    「신청 → 신청확정」 또는 「참여 → 신청확정」 중 어느 쪽인지는 업무 정의라 우리가 고를 수 없다
+    --    (고르면 라벨 창작 · DEC-17-B). ⇒ 현업 확인 항목으로 남긴다(문서20 §I 에 병기).
+    0 as CONFIRM_CNT,
     -- 🔴 [DEC-30 2026-08-04] `RECRUIT_CNT` 제거 — `DIM_EVENT.RECRUIT_HEADCOUNT` 로 이관했다.
     --   모집인원은 행사 속성이므로 참여행 grain 에 두면 SUM 이 101.0배 과대계상된다(§18-D ② 실패).
-    1 as PARTICIPATE_CNT, 0 as ABSENT_CNT, 1 as PARTICIPANT_CNT,
+    -- ⚠️ `PARTICIPATE_CNT`·`PARTICIPANT_CNT` 는 **이번에 건드리지 않았다** — 빈 컬럼이 아니라
+    --    이미 상수 1 이 들어 있고(취소·불참 행도 1 = 기지 결함) 값을 바꾸면 기존 소비 쿼리의
+    --    의미가 조용히 달라진다. 🟢 정확한 참여수가 필요하면 `PART_STATUS_NAME = '참여'` 로 필터할 것.
+    1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '불참', 1, 0)      as ABSENT_CNT,
     0 as PARTICIPATION_TIMES, 0 as WAIT_TIMES, 0 as ABSENT_TIMES, 0 as CUM_APPLY_TIMES,
     p.RCPMNY_AMT                                  as REGULAR_DONATION,
     (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,

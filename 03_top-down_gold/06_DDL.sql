@@ -572,18 +572,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명)(#148) — A1: 월×회원 개발발생=1. 🟢이 컬럼은 **옳다**: grain 이 월×회원이라 SUM 이 곧 개발(명)이며 466개월 전부 COUNT(DISTINCT MEMBER_DK) 와 일치 실측(O39). ⚠️동명의 FACT_MEMBER_EVENT.DEV_MEMBERS 는 사건 플래그로 SUM 이 건수다 — 혼용 금지.',
     STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)',
     UNPAID_CNT                  NUMBER(18,4)    COMMENT '미납(건) (#36)',
-    ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157)',
-    ACTIVE_MEMBERS              NUMBER(38,0)    COMMENT '활동(명) (#156)',
-    ACTIVE_CUM_CNT              NUMBER(18,4)    COMMENT '활동누계(건) (#159)',
-    ACTIVE_CUM_MEMBERS          NUMBER(38,0)    COMMENT '활동누계(명) (#158)',
+    ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157) — 🟢 [O93] 배선 완료. 정본 #52 = 활동회원의 전체후원사업금액/10,000. 판정축 = **as-of 월말 미중단 후원사업 보유**(상태코드가 아니다 — 상태는 현재값이라 과거 월을 평가할 수 없다). 🔴 NULL = 판정 불가(Unknown 월 또는 후원사업 이력 없음)이고 0 = 활동 아님이다 — 둘을 같게 읽지 말 것. ⚠️ ACTIVE_MEMBERS 와 단위가 달라 서로 더하면 안 된다.',
+    ACTIVE_MEMBERS              NUMBER(38,0)    COMMENT '활동(명) (#156) — 🟢 [O93] 배선 완료. 정본 #51 월말활동회원. 행당 1/0 이므로 회원수는 SUM 으로 구한다. 🔴 NULL = 판정 불가 · 0 = 활동 아님. ⚠️ 정본 #42 미납회원은 활동회원의 **부분집합**이라 활동+미납 합산은 이중계상이다(CONF-1).',
+    ACTIVE_CUM_CNT              NUMBER(18,4)    COMMENT '활동누계(건) (#159) — 🔴 전건 NULL(미배선). 원인 = 정본에 「활동 누계」의 정의가 없다(누적 개월수·누적 금액·기수 누계 중 무엇인지 미확정). 임의 선택은 정의 창작이므로 보류한다. NULL 을 0 으로 읽지 말 것.',
+    ACTIVE_CUM_MEMBERS          NUMBER(38,0)    COMMENT '활동누계(명) (#158) — 🔴 전건 NULL(미배선). 사유는 ACTIVE_CUM_CNT 와 동일(정본 정의 부재).',
     INCREASE_CNT                NUMBER(18,4)    COMMENT '증액(건) (#151)',
     INCREASE_MEMBERS            NUMBER(38,0)    COMMENT '증액(명) (#150)',
     DECREASE_CNT                NUMBER(18,4)    COMMENT '감액(건) SUM(감액금액)/10000 (#38)',
     CHURN_CNT                   NUMBER(18,4)    COMMENT '이탈(건) SUM(취소+감액)/10000 (신규#20)',
-    YEAR_START_ACTIVE_CNT       NUMBER(18,4)    COMMENT '연도초 활동회원(건) (#49)',
-    YEAR_END_ACTIVE_CNT         NUMBER(18,4)    COMMENT '연도말 활동회원(건) (#50)',
-    MONTH_END_ACTIVE_CNT        NUMBER(18,4)    COMMENT '월말활동회원(건) (#52)',
-    PREV_MONTH_END_ACTIVE_CNT   NUMBER(18,4)    COMMENT '전월말 활동회원(건) (#53)',
+    YEAR_START_ACTIVE_CNT       NUMBER(18,4)    COMMENT '연도초 활동회원(건) (#49) — 🟢 [O93] 배선 완료. 해당 연도 YYYY01 시점 as-of 재평가값이다(당월값의 복제가 아니다).',
+    YEAR_END_ACTIVE_CNT         NUMBER(18,4)    COMMENT '연도말 활동회원(건) (#50) — 🟢 [O93] 배선 완료. 해당 연도 YYYY12 시점 as-of. ⚠️ 미래 연도 행에서는 아직 오지 않은 시점이라 당월값과 같아질 수 있다.',
+    MONTH_END_ACTIVE_CNT        NUMBER(18,4)    COMMENT '월말활동회원(건) (#52) — 🟢 [O93] 배선 완료. 🟢 ACTIVE_CNT 와 **같은 값이다** — 판정 자체가 as-of 월말이라 축이 하나다. 두 컬럼 병존은 소비 호환 목적이며 불일치가 아니다.',
+    PREV_MONTH_END_ACTIVE_CNT   NUMBER(18,4)    COMMENT '전월말 활동회원(건) (#53) — 🟢 [O93] 배선 완료(DEC-19 (d) 해소). 🔴 LAG 가 아니라 **달력상 전월을 직접 as-of 재평가**한 값이다 — 팩트 스파인이 sparse 해서 LAG 는 직전 「존재하는」 행을 집어 전월이 아닐 수 있다.',
     CAMPAIGN_UNPAID_CNT         NUMBER(18,4)    COMMENT '캠페인별 미납(건) (#83)',
     STATUS_UNPAID_CNT           NUMBER(18,4)    COMMENT '회원상태별 미납(건) (#84)',
     REGULAR_FEE                 NUMBER(18,2)    COMMENT '정기회비(원) (#66)',
@@ -618,6 +618,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     AMT_DECREASE_CUM_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 해당 월말까지 누적 감액 이력 횟수 (RDCAMT_YN=Y 건수). 🔴 정본 감액(건)#38(=감액금액/10,000)과 다름 — 혼용 금지',  -- snapshot
     PAID_SPONSOR_BIZ_CNT        NUMBER(38,0)    COMMENT 'W4/ML: 그 달 실제 납입(PAY_AMT>0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL',
     IS_MULTI_PAID_BIZ           BOOLEAN         COMMENT 'W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT>1). HAS_BILLING=FALSE면 NULL',
+    IS_MULTI_SPONSORSHIP        BOOLEAN         COMMENT '[DEC-41] 그 달 회비 행이 귀속된 후원사업이 2개 이상인지 = SPONSORSHIP_SK 가 0 인 사유의 구분자. 🔴 SPONSORSHIP_SK=0 에는 두 사유가 섞인다: TRUE=다중 사업이라 대표를 고르지 않았다(정책) / FALSE=회비 행에 후원사업이 없거나 회비 행 자체가 없다. 이 플래그가 없으면 두 사유를 가를 수 없다. 🔴 IS_MULTI_PAID_BIZ 와 **모집단이 다르다**: 그쪽은 회비·PAY_AMT>0 한정 「납입 발생」 사업수이고 이 컬럼은 청구·기부금 포함 전 행의 「귀속」 사업이다 ⇒ 두 값이 어긋나는 것은 결함이 아니다. 규칙·실측 근거 = 20_issue/30_설계_의사결정.md §28(DEC-41)',
     HAS_BILLING                 BOOLEAN         NOT NULL COMMENT '결제(billing) 행 존재 여부 — TRUE=결제 스파인(구 37.79M), FALSE=개발/중단 전용 월(회비 measure NULL). 🔴**「회비만」 스코프가 아니다**(O40): 기저 CTE 가 회비와 **기부금을 함께** 담으므로 TRUE 행에도 기부금이 섞이고 청구 없는 기부금 전용 월도 TRUE 다. 이 필터를 걸어도 납부율 분자는 정화되지 않는다 — 회비 기준이 필요하면 PAID_FEE_BILLABLE 을 쓴다.',  -- 출처 플래그
     DW_SOURCE_SYSTEM            VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                  TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
@@ -729,9 +730,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
     SERVICE_SK                  NUMBER(38,0)    NOT NULL COMMENT '발송 서비스 유형 (FK→DIM_SERVICE)',
     CAMPAIGN_SK                 NUMBER(38,0)    NOT NULL COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SEND_MEMBERS                NUMBER(38,0)    COMMENT '🔴「명」이 아니다 — 발송 플래그(전 행 1). SUM 은 행수=발송 건수이며 실제 고유회원 대비 크게 과대다(규모·배수는 문서10 §26 · O39). 발송(명)(#85)은 COUNT(DISTINCT MEMBER_DK).',
-    SUCCESS_MEMBERS             NUMBER(38,0)    COMMENT '성공수(명) (#86)',
-    FAIL_MEMBERS                NUMBER(38,0)    COMMENT '실패수(명) (#87)',
-    OPEN_MEMBERS                NUMBER(38,0)    COMMENT '오픈(명) (overview)',
+    SUCCESS_MEMBERS             NUMBER(38,0)    COMMENT '성공수(명) (#86) — 🟢 [O93] 배선 완료(부분). 🔴 **채널별 근거 강도가 다르다**: EMAIL = 원천 집계와 교차검증해 확정(1=성공) · MSG_AT = 사전 MS282 라벨(발송완료) · **SND·PSTMTR = 0(판정 보류)**. SND 는 요청 마스터의 집계 컬럼이 전건 0 이라 교차검증 대상이 없고 SND_YN 은 사전 라벨이 없다(「발송 여부」일 가능성). PSTMTR 은 상태 컬럼 자체가 없다. ⇒ 이 컬럼의 0 은 「실패」가 아니라 채널에 따라 「판정 보류」다. 판별자 = SEND_TYPE. 채널 무시 합산은 과소집계.',
+    FAIL_MEMBERS                NUMBER(38,0)    COMMENT '실패수(명) (#87) — 🟢 [O93] 배선 완료(부분). 채널별 근거는 SUCCESS_MEMBERS 주석과 동일. EMAIL 0=실패 · MSG_AT 사전 라벨 「에러」 · SND·PSTMTR = 0(판정 보류). ⚠️ MSG_AT 「예약취소」는 성공도 실패도 아니다(발송 미발생) — 양쪽 0.',
+    OPEN_MEMBERS                NUMBER(38,0)    COMMENT '오픈(명) (overview) — 🟢 [O93] 배선 · 🔴 [O95 자기시정] 종전 O93 은 값 없음을 0 으로 뒀는데 그것은 「미주입 0 스캐폴드」를 새로 만든 것이었다(자기모순) ⇒ **0 과 NULL 을 의미로 분리했다**: SND 아닌 채널 = NULL(원천에 오픈 컬럼 자체가 없다) · SND 값 있음 = 1 · SND 추적개시 이후 미오픈 = 0(진짜 0) · SND 추적개시 이전 = NULL(측정 자체가 없다). 추적 개시 시점은 모델이 데이터에서 유도한다(리터럴 아님 · P31). 🔴 오픈율 = SUM(OPEN_MEMBERS)/COUNT(OPEN_MEMBERS) — 분모에 COUNT(*) 를 쓰면 NULL 구간이 섞여 과소해진다. ⚠️ 이메일·알림톡 오픈/클릭은 원천 전건 NULL 이라 NULL 이다(진짜 입고 대기 · C-9-R).',
     LETTER_PART_MEMBERS         NUMBER(38,0)    COMMENT '서신참여(명) (#88)',
     LETTER_PART_CNT             NUMBER(18,4)    COMMENT '서신참여(건) (#89)',
     GIFT_PART_MEMBERS           NUMBER(38,0)    COMMENT '선물금참여(명) (#90)',
@@ -941,12 +942,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '분석축(캠페인) — 🔴 전건 0 하드코딩(미배선). 차단=O8 다중캠페인 귀속규칙 현업 미회신. 0 은 (미매핑) 센티넬이며 "캠페인 없음" 아님',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '분석축(후원사업) — 🔴 전건 0 하드코딩(미배선). 차단=O8 동일 게이트. 0 은 (미매핑) 센티넬',
     -- 🔴 [DEC-30 2026-08-04] RECRUIT_CNT 제거 → DIM_EVENT.RECRUIT_HEADCOUNT 로 이관(§18-D ② grain 실패).
-    TOTAL_CNT           NUMBER(38,0)    COMMENT '총인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정. 0 을 실측값으로 읽지 말 것',
-    WAIT_CNT            NUMBER(38,0)    COMMENT '대기인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
-    CANCEL_CNT          NUMBER(38,0)    COMMENT '취소인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
-    CONFIRM_CNT         NUMBER(38,0)    COMMENT '신청확정인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
-    PARTICIPATE_CNT     NUMBER(38,0)    COMMENT '참여인원 — ⚠️행당 상수 1 하드코딩(집계 아님). 취소·불참 행도 1',
-    ABSENT_CNT          NUMBER(38,0)    COMMENT '불참인원 — 🔴 전건 0(미배선). 원인=O28 코드체계 미확정',
+    TOTAL_CNT           NUMBER(38,0)    COMMENT '총인원 — 🟢 [O93] 배선 완료. 참여행 1건 = 1 이며 상태 무관이라 코드체계와 독립적이다(전건 유효).',
+    WAIT_CNT            NUMBER(38,0)    COMMENT '대기인원 — 🟢 [O93] **캠페인행사(EVENT_KIND=CRMN) 구간만** 배선. MS006 라벨 「대기」·「대기(결제)」 합. 🔴 일반행사 구간의 0 은 「대기 0명」이 아니라 **「해당 없음」**이다 — 일반행사 코드체계(MS304)는 퍼널 단계 축이라 대기 상태가 없다. 판별자 = EVENT_KIND.',
+    CANCEL_CNT          NUMBER(38,0)    COMMENT '취소인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「취소」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.',
+    CONFIRM_CNT         NUMBER(38,0)    COMMENT '신청확정인원 — 🔴 전건 0(미배선). 원인 = 코드사전에 「신청확정」 라벨이 없다. 있는 것은 「신청」·「참여」뿐이고 어느 쪽이 신청확정인지는 업무 정의라 임의 선택 불가(라벨 창작 금지). 현업 회신 대기(문서20 §I). 0 을 실측값으로 읽지 말 것.',
+    PARTICIPATE_CNT     NUMBER(38,0)    COMMENT '참여인원 — ⚠️행당 상수 1 하드코딩(집계 아님). 취소·불참 행도 1. 🟢 [O93] 정확한 참여수는 PART_STATUS_NAME=''참여'' 로 필터할 것(캠페인행사 구간). 이 컬럼 값은 기존 소비 호환을 위해 유지한다.',
+    ABSENT_CNT          NUMBER(38,0)    COMMENT '불참인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「불참」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.',
     PARTICIPANT_CNT     NUMBER(38,0)    COMMENT '참여자수 — ⚠️행당 상수 1(=행수). 회원 중복 미제거 → 명수는 COUNT(DISTINCT MEMBER_DK)',
     PARTICIPATION_TIMES NUMBER(38,0)    COMMENT '참여횟수 — 🔴 전건 0(미배선). 🟢 PARTCPT_SEQ 로 O28 무관하게 산출 가능',
     WAIT_TIMES          NUMBER(38,0)    COMMENT '대기횟수 — 🔴 전건 0(미배선). O28 확정 후 산출',
@@ -1008,6 +1009,38 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '예산 팩트 (MONTH × ORG × BUDGET_ITEM · ERP 편성/집행 적재 · 모금성비용 원천 부재·광고비 AGENCY 보강)';
+
+
+-- ============================================================================
+-- FACT 16: FACT_BUDGET_YEARLY (FBY) — 연 예산 팩트  [2026-08-20 O93 신설]
+-- ----------------------------------------------------------------------------
+-- 왜 신설했나: ERP 원장 `BDGT_ACMSLT_LEDGER` 는 **연 총액 4종**(편성·추경·조정·집행)과
+--   **월별 12벌**을 한 행에 함께 담는다. 종전에는 월 12벌만 언피벗해 `FACT_BUDGET` 에 넣고
+--   연 총액은 버렸다 ⇒ `FACT_BUDGET.PLAN_BUDGET_YEAR` 가 **전건 NULL** 이었다.
+-- 🔴 연 총액을 월 팩트에 넣지 않는 이유 = **grain 혼입**이다. 연값을 12개월에 복제하면
+--    `SUM(PLAN_BUDGET_YEAR)` 이 **12배**로 부풀고, 그 오류는 에러 없이 조용히 나온다.
+--    (같은 함정을 DIM_MONTH COMMENT 가 fan-out 으로 이미 경고한다 — 이건 그 반대 방향이다.)
+--    ⇒ 사용자 결정(2026-08-20) = **연 grain 을 별도 팩트로 분리**한다.
+-- 🟢 그래서 이 팩트는 SUM 이 항상 안전하다 — 1행 = 1(연 × 조직 × 예산과목)이고 중복이 없다.
+-- ⚠️ `FACT_BUDGET.PLAN_BUDGET_YEAR` 는 **NULL 로 남긴다**(값을 두 곳에 두지 않는다).
+--    소비는 이 팩트를 쓰고, 월 편성은 `FACT_BUDGET.PLAN_BUDGET_MONTH` 를 쓴다.
+-- ⚠️ ORG_SK=0 고정 — ERP 원장에 조직 귀속 축이 없다(월 팩트와 같은 사유).
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY (
+    BUDGET_YEAR         NUMBER(4,0)     NOT NULL COMMENT '예산연도 YYYY. 🔴본 팩트의 시간 grain 은 **연**이다 — 월 팩트(FACT_BUDGET)와 조인해 합산하지 말 것(연값이 월수만큼 증폭된다).', -- GRAIN
+    ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG). ⚠️ERP 원장에 조직 귀속이 없어 전건 0(Unknown) 이다.',
+    BUDGET_ITEM_SK      NUMBER(38,0)    NOT NULL COMMENT '예산 세세목 (FK→DIM_BUDGET_ITEM). 월 팩트와 **동일 MD5 산식**이라 두 팩트가 같은 과목축으로 대조된다.',
+    CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN). ⚠️원천 연결 없음 → 0.',
+    SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (선택 FK→DIM_SPONSORSHIP). ⚠️원천 연결 없음 → NULL.',
+    PLAN_BUDGET_YEAR    NUMBER(18,2)    COMMENT '연 편성예산 = 원천 YEAR_BDGT_TOT_AMT. 🟢SUM 안전(연 grain).',
+    CHN_BUDGET_YEAR     NUMBER(18,2)    COMMENT '연 추경예산 = 원천 CHN_BDGT_TOT_AMT.',
+    ADJ_BUDGET_YEAR     NUMBER(18,2)    COMMENT '연 조정예산 = 원천 ADJ_BDGT_TOT_AMT. ⚠️편성보다 클 수 있다(추경·전용 반영분).',
+    EXEC_BUDGET_YEAR    NUMBER(18,2)    COMMENT '연 집행예산 = 원천 EXEC_TOT_AMT. ⚠️월 팩트 EXEC_BUDGET_ERP 의 12개월 합과 반드시 일치하지는 않는다 — 원천이 두 값을 따로 관리한다. 불일치 자체가 원천 상태이므로 맞추지 말 것.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '연 예산 팩트 (YEAR × ORG × BUDGET_ITEM · ERP 연 총액 4종) — 🔴 [O93] FACT_BUDGET 은 월 grain 이라 연 총액을 담으면 SUM 이 12배가 된다. 그래서 연축을 분리했다. 🟢 이 팩트는 SUM 이 항상 안전하다. ⚠️ 월 편성·월 집행은 FACT_BUDGET 을 쓴다.';
 
 
 -- ============================================================================
@@ -1320,6 +1353,16 @@ ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_BUDGET_ITEM
 ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_CAMPAIGN
     FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_BUDGET ADD CONSTRAINT FK_FBD_DIM_SPONSORSHIP
+    FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
+
+-- FACT_BUDGET_YEARLY  [2026-08-20 O93]
+ALTER TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY ADD CONSTRAINT FK_FBY_DIM_ORG
+    FOREIGN KEY (ORG_SK) REFERENCES GN_DW.GOLD.DIM_ORG (ORG_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY ADD CONSTRAINT FK_FBY_DIM_BUDGET_ITEM
+    FOREIGN KEY (BUDGET_ITEM_SK) REFERENCES GN_DW.GOLD.DIM_BUDGET_ITEM (BUDGET_ITEM_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY ADD CONSTRAINT FK_FBY_DIM_CAMPAIGN
+    FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY ADD CONSTRAINT FK_FBY_DIM_SPONSORSHIP
     FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
 
 -- FACT_MEMBER_COHORT  [2026-08-05 O37]

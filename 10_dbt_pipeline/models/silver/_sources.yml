@@ -59,6 +59,10 @@ sources:
       - name: TM_MM_FDRM_MBER_SPNSR_DSCNTC  # 후원중단 → CRM_MEMBER_DISCONTINUE
       - name: TM_MM_FDRM_MBER_RE_SPNSR      # 재후원 → CRM_MEMBER_RESPONSOR
       - name: TM_MM_FDRM_MBER_SPNSR_BSNS    # 회원×후원사업 → CRM_MEMBER_SPONSOR_BIZ
+      # [2026-08-20 O93] 후원 마스터 — 종전 dbt 계보 0회(미사용 BRONZE 3종의 하나).
+      #   활동회원 as-of 판정에 필요한 **후원 등록일**(FRST_REGIST_DT)과 SPNSR_NO→MBER_NO 연결을 가진
+      #   유일한 원천이다. TM_MM_FDRM_MBER_SPNSR_BSNS 에는 MBER_NO 도 시작일도 없다.
+      - name: TM_MM_FDRM_MBER_SPNSR         # 후원 마스터(SPNSR_NO→MBER_NO·등록일) → CRM_MEMBER_SPONSOR_SPAN
       - name: TM_RM_RELATNSP_MSTR_INFO      # 결연(아동) → CRM_SPONSOR_RELATION
       - name: TM_PM_SETLE_INFO              # 결제수단(현재) → CRM_PAYMENT_METHOD
       - name: TM_MS_EVENT                   # 행사 마스터 → CRM_EVENT

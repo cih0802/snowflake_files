@@ -50,8 +50,11 @@ joined as (
         on  x.USER_PSEUDO_ID = e.USER_PSEUDO_ID
     left join GN_DW.GOLD.DIM_MEMBER_IDENTITY dmi
         on  dmi.MEMBER_DK = x.MEMBER_DK
-)
+),
 
+-- ⚠️ [O94] 집계를 CTE 로 분리한 이유 = AVG_ENGAGEMENT_TIME_PER_SESSION 상한 가드를 outer 에서 1회만 걸기 위함.
+--    컬럼 이름·순서는 종전과 동일하다(DDL insert 순서 보존 · WIDE_GA_BEHAVIOR 영향 없음).
+agg as (
 select
     DATE_SK,
     IDENTITY_SK,
@@ -77,10 +80,23 @@ select
         COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID)
     )                                                                        as ENGAGEMENT_RATE,
     DIV0(SUM(ENGAGEMENT_TIME_MSEC) / 1000.0,
-        COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID))              as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4))
+        COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID))              as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4)) — 상한 가드는 아래 outer select
     'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID
+    'b293c87f-c2c1-42e5-b50c-69029085db76'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, GA_EVENT_SK, GA_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
+)
+
+-- ⚠️ [O94] 상한 가드 — 봇/크롤러성 장기 세션이 누적 참여시간으로 DDL 타입 NUMBER(9,4) 상한을 넘겨
+--    build 를 죽였다(100046/22003). 범위 초과분만 NULL 로 두고 타입은 보존한다(06_DDL 무변경).
+--    가드 상수 100000 = NUMBER(9,4) 정수부 5자리 한계에서 나온 값이며 실측치가 아니다(R2-6).
+--    🔴 근본 처리(봇 세션 필터 정책 · 임계값 업무 합의)는 미정 — 원장 §O94 승계.
+--    🔴 이 가드는 이 1컬럼만 막는다 — EVENT_CNT·SESSION_CNT 등 가산 지표에는 해당 세션이 그대로 남는다.
+--    `* replace` 를 쓰는 이유 = 컬럼 이름·순서를 손으로 다시 적지 않아 DDL insert 순서가 어긋날 수 없다.
+select * replace (
+    IFF(ABS(AVG_ENGAGEMENT_TIME_PER_SESSION) < 100000,
+        AVG_ENGAGEMENT_TIME_PER_SESSION, NULL) as AVG_ENGAGEMENT_TIME_PER_SESSION
+)
+from agg

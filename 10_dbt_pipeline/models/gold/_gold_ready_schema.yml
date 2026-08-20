@@ -526,12 +526,21 @@ models:
               field: CAMPAIGN_SK
               config: { where: "CAMPAIGN_SK != 0" }
       - name: SPONSORSHIP_SK
+        # [2026-08-20 O92 / DEC-41] 단일 확정 월만 배선 · 다중 월은 0(센티넬) 유지.
+        #   🟢 이 relationships 는 종전에는 전건 0 이라 공허하게 통과했다(where 절이 전 행을 제외).
+        #      DEC-41 배선 후 처음으로 실제 FK 를 검사한다 ⇒ 이 build 에서 처음 의미를 갖는 테스트다.
         tests:
           - not_null
           - relationships:
               to: ref('DIM_SPONSORSHIP')
               field: SPONSORSHIP_SK
               config: { where: "SPONSORSHIP_SK != 0" }
+      - name: IS_MULTI_SPONSORSHIP
+        # [2026-08-20 O92 / DEC-41] SPONSORSHIP_SK=0 의 사유 구분자(다중 여부).
+        #   🔴 IS_MULTI_PAID_BIZ 와 모집단이 다르므로 두 값의 일치를 테스트하지 않는다(다른 질문에 답한다).
+        #   🟢 모델이 COALESCE(..., FALSE) 로 채우므로 NULL 이 나오면 배선이 깨진 것이다.
+        tests:
+          - not_null
       - name: PAYMENT_SK
         tests:
           - not_null

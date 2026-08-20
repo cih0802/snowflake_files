@@ -412,6 +412,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SEND_RESULT_CD      VARCHAR(10)     COMMENT '축B(신설) 통신사 결과코드 raw — MSG_AT=TRNSMS_FAILR_CD_ID · SND=CALL_STATUS. 🟢두 채널이 같은 코드공간을 공유(conformed)',
     SEND_RESULT_GROUP   VARCHAR(10)     COMMENT '축B 코드군 ID = MS283 이 정의한 4종(MS056 공통·MS057 알림톡·MS058 SMS·MS059 MMS). 🟢리터럴이 아니라 조인 결과에서 얻는다 — 4그룹 코드값 중복 0(실측)',
     SEND_RESULT_NAME    VARCHAR         COMMENT '축B 라벨 (CRM_CODE 조인). 사전 초과값은 NULL 유지 + warn 관측(DEC-17-B)',
+    -- [2026-08-20 O93] 오픈시각 — GOLD.FACT_SERVICE_EVENT.OPEN_MEMBERS 의 유일 원천.
+    --   선언 위치가 맨 끝인 것도 위와 같은 규약 근거다(라이브 ALTER ADD COLUMN).
+    OPEN_DT             TIMESTAMP_NTZ   COMMENT '오픈시각 — 🔴 **SND 채널만 존재**한다(원천 SND_MEMBER_LIST.OPEN_DT · 원천에서도 ALTER 로 나중에 붙은 컬럼). EMAIL·MSG_AT·PSTMTR 은 원천에 오픈 컬럼이 없어 NULL 이다. ⚠️ NULL 의 뜻이 두 가지다: ㉠ 채널이 SND 가 아니다 ㉡ SND 이지만 측정 개시 이전 발송이다(= 미측정, 「열지 않았다」가 아니다). 오픈율 분모는 관측 구간의 SND 발송으로 한정할 것.',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '발송×회원 상세';
 
@@ -559,6 +562,46 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BUDGET_ITEM_DK, MONTH_NO)
 ) COMMENT = '예산 편성/추경/조정/집행 월 grain(wide→long). → FACT_BUDGET';
+
+-- ERP 3: ERP_BUDGET_YEARLY (예산 연 총액)  [2026-08-20 O93 신설]
+--   🔴 왜 ERP_BUDGET 에 합치지 않았나 = grain 이 다르다. 그쪽은 월 grain(원장 1행 → 12행)이라
+--      연 총액을 넣으면 12벌로 복제되고 SUM 이 12배가 된다. 원장은 연 총액과 월별 12벌을 **한 행에** 담는다.
+CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
+    BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '예산과목 대체키 (PK, →ERP_BUDGET_ITEM). 🟢 ERP_BUDGET·ERP_BUDGET_ITEM 과 **동일 MD5 산식** — 식을 바꿀 때 세 곳을 함께 바꿔야 한다.',
+    BUDGET_YEAR         NUMBER(4,0)     NOT NULL COMMENT '예산연도 YYYY (PK). 본 테이블의 grain 은 **연**이다.',
+    YEAR_BUDGET_TOT_AMT NUMBER(38,0)    COMMENT '연 편성예산 총액 원단위 = 원천 YEAR_BDGT_TOT_AMT',
+    CHN_BUDGET_TOT_AMT  NUMBER(38,0)    COMMENT '연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT',
+    ADJ_BUDGET_TOT_AMT  NUMBER(38,0)    COMMENT '연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT. ⚠️편성보다 클 수 있다(추경·전용 반영).',
+    EXEC_TOT_AMT        NUMBER(38,0)    COMMENT '연 집행 총액 원단위 = 원천 EXEC_TOT_AMT. ⚠️ERP_BUDGET 의 월 집행 12개월 합과 반드시 일치하지 않는다 — 원천이 두 값을 따로 관리한다. 불일치는 원천 상태이므로 맞추지 말 것.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (BUDGET_ITEM_DK, BUDGET_YEAR)
+) COMMENT = '예산 연 총액 grain (편성·추경·조정·집행 4종). → FACT_BUDGET_YEARLY. 🔴 월 값은 ERP_BUDGET 을 쓴다.';
+
+-- CRM 24: CRM_MEMBER_SPONSOR_SPAN (회원×후원사업 활동구간)  [2026-08-20 O93 신설]
+--   🔴 존재 이유 = 정본 #51「월말활동회원」의 **as-of 판정**에 구간이 필요한데 기존 모델에는 없었다:
+--      CRM_MEMBER_SPONSOR_BIZ 는 MBER_NO·시작일이 없고(키가 SPNSR_NO), CRM_MEMBER_STATUS_HIST 는
+--      회원 커버리지가 부분이다. 후원 마스터(TM_MM_FDRM_MBER_SPNSR)를 붙여 두 축을 얻는다.
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
+    MBER_NO             VARCHAR(10)     COMMENT '회원번호 — 후원 마스터에서 얻는다(후원사업 테이블에는 없다).',
+    SPNSR_NO            VARCHAR         NOT NULL COMMENT '후원번호 (PK)',
+    SPNSR_BSNS_NO       NUMBER          NOT NULL COMMENT '후원사업번호 (PK). 🟢재후원 시 **새 번호가 발급**되므로 「재후원 넘버링 > 중단 넘버링」 조건이 이 축에 이미 반영돼 있다(정본 #51 비고의 tie-break 가 불필요해지는 이유). ⚠️채번의 시간 단조성은 초기 구간에서 성립하지 않는다 — tie-break 를 쓰는 설계라면 그 구간에서 작동하지 않는다. 구간 경계와 규모는 20_issue/30_설계_의사결정 §13-D 2 를 보라(R2-6: 수치는 문서에만).',
+    SPNSR_BSNS_ID       VARCHAR         COMMENT '후원사업 ID (→CRM_SPONSORSHIP)',
+    SPNSR_AMT           NUMBER(38,0)    COMMENT '후원사업 약정금액 원단위. 🟢정본 #52 활동회원(건) = 활동 사업의 이 금액 합 / 10,000.',
+    START_MONTH_KEY     NUMBER(6,0)     COMMENT '활동 개시 월키 YYYYMM. ⚠️**후원(SPNSR_NO) 등록월의 근사**다 — 원천에 후원사업 단위 시작일이 없다. 같은 후원 아래 사업이 나중에 추가되면 시작을 실제보다 이르게 본다(활동 과대 방향). 사업 단위 시작일이 입고되면 교체할 자리.',
+    DSCNTC_MONTH_KEY    NUMBER(6,0)     COMMENT '중단 월키 YYYYMM. 🔴 NULL = **미중단**(현재까지 활동)이며 결측이 아니다 — 중단 기록의 부재가 곧 「중단하지 않았다」는 정보다. 이 성질 덕분에 활동 판정에 커버리지 공백이 없다.',
+    SPNSR_DSCNTC_DE     VARCHAR(8)      COMMENT '중단일 raw YYYYMMDD (원천 TEXT)',
+    SPNSR_DSCNTC_YN     VARCHAR(1)      COMMENT '중단여부 raw',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
+) COMMENT = '회원×후원사업 활동구간(시작월~중단월) — GOLD.FACT_MEMBER_MONTHLY 활동 8컬럼의 as-of 판정 기반. 🟢 CONF-3(정본 #51 판정조건 내부 모순)이 이 구조에서 해소된다: 중단일 vs 재후원일 비교와 동일자 tie-break 가 「미중단 사업 보유」 하나로 대체된다.';
 
 -- CRM 22: CRM_BIZ_TARGET (사업목표 — ⛔ 입고 대기)
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (

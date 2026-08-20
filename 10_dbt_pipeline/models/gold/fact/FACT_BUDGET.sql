@@ -3,8 +3,12 @@
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
---   NULL(원천 부재/미해소): PLAN_BUDGET_YEAR(추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO)·
---     EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재)·AD_COST(E-4 원천부재).
+--   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재)·AD_COST(E-4 원천부재).
+-- 🔴 [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
+--    *"추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO"* 는 해소됐다.
+--    원장의 연 총액 4종(편성·추경·조정·집행)은 **`FACT_BUDGET_YEARLY`(연 grain)** 로 분리했다.
+--    ⚠️ 여기에 연값을 넣지 말 것 — 이 팩트는 월 grain 이라 12개월에 복제되고 `SUM()` 이 12배가 된다.
+--    소비 안내: 연 편성 = `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` · 월 편성 = 아래 `PLAN_BUDGET_MONTH`.
 {{ config(
     tags=['gold_pending']
 ) }}

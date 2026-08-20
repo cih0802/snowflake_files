@@ -84,6 +84,18 @@ models:
       +incremental_strategy: append
       +full_refresh: false
       +pre-hook: "{{ silver_purge(this) }}"
+      # 🔴🔴 [2026-08-20 O95 신설] 신규 컬럼 무증상 폐기 차단 — SILVER 에는 이 방어가 **없었다.**
+      #   GOLD `fact` 는 O40-B 에서 이미 `append_new_columns` 를 넣었는데 SILVER 는 빠져 있었고,
+      #   기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러·워닝 없이 버린다**(`P82`).
+      #   🔴 실제로 걸렸다: O93-B 가 `CRM_SEND_MEMBER` 에 `OPEN_DT` 를 추가했는데 SILVER 는
+      #   ERROR 0 으로 끝났고 컬럼이 생기지 않았다 ⇒ 다음 build 에서 이를 참조하는
+      #   `GOLD.FACT_SERVICE_EVENT` 가 `invalid identifier 'S.OPEN_DT'` 로 죽었다.
+      #   즉 **결함은 SILVER 에서 조용히 발생하고 GOLD 에서 시끄럽게 터진다** — 진단이 한 단계 밀린다.
+      #   ⚠️ 이 설정은 컬럼 **추가**만 자동화한다. 타입 변경·삭제는 여전히 수동 ALTER 대상이다.
+      #   ⚠️ 그리고 이것이 DDL 선행 절차를 대체하지 않는다(구조 정본은 `04_silver_design/08_…sql`) —
+      #      절차는 GOLD 와 동일하다: ① DDL 수정 ② ALTER 실행 ③ INFORMATION_SCHEMA 확인
+      #      ④ 모델 수정 ⑤ build ⑥ 신규 컬럼 비NULL 건수 검증.
+      +on_schema_change: append_new_columns
     # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(**35테이블** 선생성 · 2026-08-10 O53. 종전 기재 「24」는 stale 이었다 — 실측 31 → O53 로 35).
     #   - dim  = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
     #   - fact = incremental + append + pre-hook TRUNCATE + full_refresh:false (SILVER 동일 패턴)

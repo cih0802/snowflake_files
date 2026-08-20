@@ -7,8 +7,15 @@
 --    · 개발/중단이 난 달(납입無 ~2.26M 월×회원)도 포함 → DEV/STOP 온전 집계(과소집계 해소).
 --    · HAS_BILLING=TRUE  → 구 billing 스파인(≈37.79M)과 동일. 회비/청구/미납 지표 불변. (보수적 소비: WHERE HAS_BILLING)
 --    · HAS_BILLING=FALSE → 개발/중단만 있는 월(회비 measure NULL). (정확 소비: 필터 없이 전체)
--- ⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/SPONSORSHIP/PAYMENT_SK·DEV_TYPE·밴드·플래그
+-- ⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그
 --    → 상태이력(CRM_MEMBER_STATUS_HIST)·금액변경(CRM_MEMBER_AMT_CHANGE) 원천 + O8 grain 규칙(B2) 후속.
+-- ✅ DEC-41(2026-08-20 O92): SPONSORSHIP_SK 배선 — **그 달 후원사업이 하나로 확정된 월만** 채운다.
+--    · 다중 사업 월은 `SPONSORSHIP_SK=0`(센티넬) 유지 + `IS_MULTI_SPONSORSHIP=TRUE` 로 표시한다.
+--    · 🔴 대표 규칙(최대 납입액·최빈 등)을 쓰지 않는다 — 금액 기준은 다중 월의 상당 비율에서 **동점**이라
+--      결정되지 않고, 2차 tiebreak 는 업무 의미 없는 임의 규칙이 된다(P21 창작 금지).
+--      판정 근거·실측 수치는 **`20_issue/30_설계_의사결정.md` §28**(DEC-41)에만 둔다(R2-6 = 코드에 수치 금지).
+--    · 🔴 이 결정은 후원사업 축 한정이다 — `PAYMENT_SK`(별건·O51-D-P1 연동)·`CAMPAIGN_SK`(B3 원천 부재)는 그대로 0.
+--    · 🔴 `FME.SPONSORSHIP_SK`(STOP 한정)와 **규칙을 합치지 말 것** — 그쪽은 사건 grain 이고 동시중단 팬아웃이 있다.
 -- ✅ W3(DEC-24, 2026-07-31): REASON_SK 배선 — 미납(F) 대표사유 = 최종차수(MBRFEE_SQNC 최대)의 결과코드.
 --    코드그룹 매핑(SETLE_CD→PM002/PM032/PM018/PM033/PM019) + DIM_REASON 해시 조인.
 --    🔴 F 행에 한정. S 행 매핑 시 라벨 의미 역전 — 절대 금지.
@@ -151,6 +158,38 @@ paid_biz as (
     group by MONTH_KEY, MEMBER_DK
 ),
 
+-- [2026-08-20 O92 / DEC-41] 월×회원 대표 후원사업 — 단일 확정 월만 SK 배선, 다중은 센티넬 0 + 플래그.
+-- 🔴 축 주의 — 위 `paid_biz`(W4 요건3)와 **모집단이 다르다.** 두 플래그가 어긋나는 것은 결함이 아니다:
+--    · `IS_MULTI_PAID_BIZ`     = 회비 한정 + `PAY_AMT>0` ⇒ 「그 달 실제 **납입이 발생한** 사업이 여럿인가」
+--    · `IS_MULTI_SPONSORSHIP`  = 청구·기부금 포함 전 행     ⇒ 「그 달 회비 행이 **귀속된** 사업이 여럿인가」
+--    ⇒ 미납만 있는 월은 앞이 0/FALSE 인데 뒤는 TRUE 일 수 있다. 같은 것을 다르게 재는 것이 아니라 다른 질문이다.
+-- 🟢 `MIN(SPNSR_BSNS_ID)` 는 대표 선정이 아니다 — `SPONSOR_BIZ_CNT = 1` 일 때만 쓰므로 그 값이 유일값이다.
+--    다중 월에서는 이 값을 **쓰지 않는다**(대표를 고르지 않는 것이 DEC-41 의 내용이다).
+-- 🟢 DIM_SPONSORSHIP 직접 조인으로 FK 무결성 보장(해시 독립계산 시 orphan 위험 — reason_rep 와 동일 패턴).
+--    fan-out 0 근거 = `SPONSORSHIP_BK` 유일성 **실측 확인**(중복 초과 0 · NULL 0 · 2026-08-20 O92-B).
+--    🔴 R2-6: 카디널리티 수치는 여기 적지 않는다 — 정본은 `20_issue/30_설계_의사결정.md` §28-D 다.
+--    (O92 가 이 자리에 미실측 수치 「50」을 적었고 실측은 51행이었다 ⇒ 수치를 코드에 두면 이렇게 틀린다.)
+sponsor_rep as (
+    select
+        agg.MONTH_KEY,
+        agg.MEMBER_DK,
+        agg.SPONSOR_BIZ_CNT,
+        CASE WHEN agg.SPONSOR_BIZ_CNT = 1 THEN COALESCE(ds.SPONSORSHIP_SK, 0) ELSE 0 END as SPONSORSHIP_SK
+    from (
+        select
+            COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp("TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))") }}, 0) as MONTH_KEY,
+            MBER_NO                                       as MEMBER_DK,
+            COUNT(DISTINCT SPNSR_BSNS_ID)                 as SPONSOR_BIZ_CNT,
+            MIN(SPNSR_BSNS_ID)                            as SOLE_SPNSR_BSNS_ID
+        from b
+        where MBER_NO is not null
+          and SPNSR_BSNS_ID is not null
+        group by MONTH_KEY, MEMBER_DK
+    ) agg
+    left join {{ ref('DIM_SPONSORSHIP') }} ds
+        on ds.SPONSORSHIP_BK = agg.SOLE_SPNSR_BSNS_ID
+),
+
 -- W4 요건1(DEC-22) step1: 금액변경 이력을 월×회원 증액/감액 횟수로 집계.
 -- 범위 밖 발생일 88행(19000101 등)은 month_key_clamp → 0(Unknown월) 라우팅.
 amt_month as (
@@ -184,6 +223,57 @@ spine as (
     select MONTH_KEY, MEMBER_DK from fme_rollup
 ),
 
+-- ═══ [2026-08-20 O93 · CONF-3 해소] 활동회원 as-of 판정 ═══════════════════════
+-- 정본 = `02_지표사전 공통.md` #51 월말활동회원 · #52 월말활동회원(건).
+--   #51 = 조회년월 기준 해당월 활동회원 (활동 + 미납1~미납5 포함 = 상태코드 1~11)
+--   #52 = 월 활동회원의 **전체후원사업금액 / 10,000**
+--
+-- 🟢 판정축을 상태코드가 아니라 **후원사업 미중단 보유**로 잡았다. 이유 3가지:
+--   ① 상태코드는 **현재값**이라 과거 월을 as-of 로 평가할 수 없다(소급 적용은 과거 활동회원 창작이다).
+--   ② 상태이력(`CRM_MEMBER_STATUS_HIST`)은 회원 커버리지가 부분이다 — 이력 없는 회원이
+--      「무변경」인지 「미기록」인지 원천이 구분해 주지 않는다.
+--   ③ 후원사업 중단일은 **사업 단위로 완비**돼 있고, 중단 기록의 부재는 결측이 아니라
+--      「중단하지 않았다」는 정보다 ⇒ 커버리지 공백이 원리적으로 없다.
+--   🔴 그리고 이 축이 #52(건)의 분자(`SPNSR_AMT`)를 **같은 판정 안에서** 제공한다 —
+--      상태코드 축으로는 (건)을 만들 수 없다(금액이 상태에 붙어 있지 않다).
+--   🟢 현업 앵커(코드 1~11 현재값)와의 대조 결과는 `20_issue/30_설계_의사결정.md` §29 에 둔다(R2-6).
+--
+-- ⚠️ MONTH_KEY=0(Unknown 월)은 as-of 를 정의할 수 없다 ⇒ 활동 measure 를 **NULL** 로 둔다.
+--    🔴 0 으로 두지 않는다 — 0 은 「활동 없음」이고 NULL 은 「판정 불가」다. 이 구분이 이 작업의 출발점이었다
+--       (전건 0 이 *"활동회원 0명"* 으로 에러 없이 조회되던 문제).
+-- ⚠️ (건)은 **비가산 축이 아니다** — 회원 grain 금액/10,000 이므로 회원 간 합산은 정당하다.
+--    다만 `ACTIVE_CNT` 와 `ACTIVE_MEMBERS` 를 **더하지 말 것**(단위가 다르다).
+active_asof as (
+    select
+        sp.MONTH_KEY,
+        sp.MEMBER_DK,
+        -- 당월말(=#51·#52 정본 축)
+        COUNT(DISTINCT case when sv.DSCNTC_MONTH_KEY is null or sv.DSCNTC_MONTH_KEY > sp.MONTH_KEY
+                            then sv.SPNSR_BSNS_NO end)                       as ACTIVE_BIZ_CNT,
+        SUM(case when sv.DSCNTC_MONTH_KEY is null or sv.DSCNTC_MONTH_KEY > sp.MONTH_KEY
+                 then sv.SPNSR_AMT else 0 end)                               as ACTIVE_BIZ_AMT,
+        -- 전월말 (DEC-19 「동일 함수에 ADD_MONTHS(-1) 적용」)
+        SUM(case when sv.START_MONTH_KEY <= {{ month_key_offset('sp.MONTH_KEY', -1) }}
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY > {{ month_key_offset('sp.MONTH_KEY', -1) }})
+                 then sv.SPNSR_AMT else 0 end)                               as PREV_BIZ_AMT,
+        -- 연초(YYYY01)·연말(YYYY12) as-of. 월키 산술로 구한다(FLOOR/100 → *100+01·+12).
+        SUM(case when sv.START_MONTH_KEY <= FLOOR(sp.MONTH_KEY/100)*100 + 1
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY > FLOOR(sp.MONTH_KEY/100)*100 + 1)
+                 then sv.SPNSR_AMT else 0 end)                               as YEAR_START_BIZ_AMT,
+        SUM(case when sv.START_MONTH_KEY <= FLOOR(sp.MONTH_KEY/100)*100 + 12
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY > FLOOR(sp.MONTH_KEY/100)*100 + 12)
+                 then sv.SPNSR_AMT else 0 end)                               as YEAR_END_BIZ_AMT
+    from spine sp
+    join {{ ref('CRM_MEMBER_SPONSOR_SPAN') }} sv
+      on sv.MBER_NO = sp.MEMBER_DK
+     and sv.START_MONTH_KEY <= sp.MONTH_KEY   -- 당월 기준 개시 필터(다른 as-of 축은 위 case 안에서 재평가)
+    where sp.MONTH_KEY > 0                    -- Unknown 월 제외 ⇒ 아래 left join 에서 NULL 로 남는다
+    group by sp.MONTH_KEY, sp.MEMBER_DK
+),
+
 -- W4 요건1 step2: 월말까지 누적 증액/감액 횟수 (running total).
 -- 🟢 sparse 스파인에서도 정확 — 직전 행을 참조하지 않고 "그 월 이하 전체 합"이라 결측월 영향 없음.
 --    (요건2 연속미납은 반대로 직전 행 의존이라 gap 3.94%에서 오판 → W4 범위 제외, dense 스파인 선행 필요)
@@ -207,16 +297,33 @@ joined as (
     select
         sp.MONTH_KEY,
         sp.MEMBER_DK,
-        0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK, 0 as PAYMENT_SK,
+        0 as CAMPAIGN_SK,
+        -- [2026-08-20 O92 / DEC-41] 단일 확정 월만 배선. 다중 월·후원사업 부재 월은 0(센티넬) 유지.
+        COALESCE(sr.SPONSORSHIP_SK, 0) as SPONSORSHIP_SK,
+        0 as PAYMENT_SK,
         COALESCE(rr.REASON_SK, 0) as REASON_SK,   -- W3(DEC-24): 미납 대표사유. 비미납/미매핑=0
         COALESCE(fr.DEV_CNT, 0)      as DEV_CNT,
         COALESCE(fr.DEV_MEMBERS, 0)  as DEV_MEMBERS,
         COALESCE(fr.STOP_CNT, 0)     as STOP_CNT,
         0 as UNPAID_CNT,
-        0 as ACTIVE_CNT, 0 as ACTIVE_MEMBERS, 0 as ACTIVE_CUM_CNT, 0 as ACTIVE_CUM_MEMBERS,
+        -- ═══ [2026-08-20 O93] 활동 계열 실배선 — 종전 `0 as …` 하드코딩 폐기 ═══════════
+        -- 🔴 NULL vs 0 의 의미를 분리한다: `active_asof` 미매칭(= Unknown 월이거나 후원사업 이력 없음)은
+        --    **NULL**(판정 불가/해당 없음)이고, 매칭됐지만 미중단 사업이 없으면 **0**(활동 아님)이다.
+        --    종전에는 둘 다 0 이라 *"활동회원 0명"* 이 정상값처럼 반환됐다.
+        aa.ACTIVE_BIZ_AMT / 10000            as ACTIVE_CNT,        -- #52 (건) = 활동 후원사업금액/10,000
+        IFF(aa.ACTIVE_BIZ_CNT > 0, 1, 0)     as ACTIVE_MEMBERS,    -- #51 (명) = 월말 활동 1/0 (SUM 시 회원수)
+        -- 🔴 누계 2종은 채우지 않는다 — 정본에 **`활동 누계`의 정의가 없다.**
+        --    「누적 활동 개월수」인지 「누적 활동 금액」인지 「기수 누계」인지 결정되지 않았고,
+        --    아무 것이나 고르면 정의 창작이다(DEC-17-B). 정의가 오면 이 두 줄만 교체하면 된다.
+        CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT,
+        CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS,
         0 as INCREASE_CNT, 0 as INCREASE_MEMBERS, 0 as DECREASE_CNT, 0 as CHURN_CNT,
-        0 as YEAR_START_ACTIVE_CNT, 0 as YEAR_END_ACTIVE_CNT,
-        0 as MONTH_END_ACTIVE_CNT, 0 as PREV_MONTH_END_ACTIVE_CNT,
+        aa.YEAR_START_BIZ_AMT / 10000        as YEAR_START_ACTIVE_CNT,   -- 연초(YYYY01) as-of
+        aa.YEAR_END_BIZ_AMT   / 10000        as YEAR_END_ACTIVE_CNT,     -- 연말(YYYY12) as-of
+        -- 🟢 당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.
+        --    두 컬럼을 남겨 두는 이유는 DDL 구조 보존(소비 쿼리 호환)이다. 값 불일치가 아니다.
+        aa.ACTIVE_BIZ_AMT / 10000            as MONTH_END_ACTIVE_CNT,
+        aa.PREV_BIZ_AMT   / 10000            as PREV_MONTH_END_ACTIVE_CNT,  -- DEC-19 (d) ADD_MONTHS(-1)
         0 as CAMPAIGN_UNPAID_CNT, 0 as STATUS_UNPAID_CNT,
         -- [O27/DEC-28] 회비 3분해 실배선. NULL(해당 구분 납입 없음)은 0 으로 보정하지 않는다
         --   — 0 은 "납입액 0원", NULL 은 "그 구분의 납입이 없음"이라 의미가 다르다(P21).
@@ -242,6 +349,11 @@ joined as (
         -- HAS_BILLING=FALSE(개발/중단 전용 월)는 NULL — 0으로 채우면 "납입 사업 0개"로 오독되어 완납률 왜곡.
         CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) END  as PAID_SPONSOR_BIZ_CNT,
         CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) > 1 END as IS_MULTI_PAID_BIZ,
+        -- [2026-08-20 O92 / DEC-41] 그 달 귀속 후원사업이 여럿인가 = SPONSORSHIP_SK 가 0 인 이유의 구분자.
+        --   🔴 0 에는 두 사유가 섞인다: ㉠ 다중(여기 TRUE) ㉡ 회비 행에 후원사업 자체가 없음(FALSE).
+        --      플래그 없이 0 만 보면 두 사유를 가를 수 없다 — 그것이 이 컬럼의 존재 이유다(감사 가능성).
+        --   ⚠️ HAS_BILLING=FALSE(개발/중단 전용 월)는 FALSE 다 — 회비 행이 없으니 다중일 수 없다.
+        COALESCE(sr.SPONSOR_BIZ_CNT > 1, FALSE)        as IS_MULTI_SPONSORSHIP,
         -- A1: 출처 플래그. billing 매칭 행 존재 여부(billing MEMBER_DK 는 group 키라 매칭 시 non-null).
         IFF(bl.MEMBER_DK IS NOT NULL, TRUE, FALSE)     as HAS_BILLING,
         {{ gold_meta('CRM') }}
@@ -251,6 +363,9 @@ joined as (
     left join reason_rep rr on sp.MONTH_KEY = rr.MONTH_KEY and sp.MEMBER_DK = rr.MEMBER_DK
     left join paid_biz   pb on sp.MONTH_KEY = pb.MONTH_KEY and sp.MEMBER_DK = pb.MEMBER_DK
     left join amt_cum    ac on sp.MONTH_KEY = ac.MONTH_KEY and sp.MEMBER_DK = ac.MEMBER_DK
+    left join sponsor_rep sr on sp.MONTH_KEY = sr.MONTH_KEY and sp.MEMBER_DK = sr.MEMBER_DK  -- DEC-41
+    -- [2026-08-20 O93] 활동 as-of. left join 이라 미매칭 월은 활동 measure 가 NULL 로 남는다(의도).
+    left join active_asof aa on sp.MONTH_KEY = aa.MONTH_KEY and sp.MEMBER_DK = aa.MEMBER_DK
 )
 
 select
