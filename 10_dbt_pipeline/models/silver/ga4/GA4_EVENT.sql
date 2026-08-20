@@ -96,5 +96,6 @@ LEFT JOIN sess s
     ON b.GA_SESSION_KEY IS NOT NULL
    AND s.GA_SESSION_KEY = b.GA_SESSION_KEY
 -- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
-WHERE b.EVENT_DT >= TO_DATE('{{ var("ga4_dt_start") }}')
-  AND b.EVENT_DT <= TO_DATE('{{ var("ga4_dt_end") }}')
+-- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
+--    정의 지점은 `macros/ga4_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
+WHERE {{ ga4_range_predicate('b.EVENT_DT') }}

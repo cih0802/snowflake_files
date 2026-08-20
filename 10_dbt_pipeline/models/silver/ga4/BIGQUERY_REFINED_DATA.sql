@@ -54,11 +54,22 @@ WITH src AS (
         SRC_FILE_NAME                       AS src_file_name,
         LOAD_TS                             AS bronze_load_ts
     FROM {{ source('bronze_bigquery', 'EVENTS') }}
-    WHERE EVENT_DT >= TO_DATE('{{ var("ga4_dt_start") }}')
-      AND EVENT_DT <= TO_DATE('{{ var("ga4_dt_end") }}')
+    -- 🔴 [2026-08-19 O88] 범위 술어의 정의 지점은 `macros/ga4_range_predicate.sql` 하나다.
+    --    여기에 술어를 다시 쓰지 마라 — pre-hook DELETE 범위와 어긋나면 행이 남거나 사라진다
+    --    (종전에는 이 술어가 3곳에 하드코딩돼 있었고 어긋남을 잡는 게이트가 없었다 · R1-6-17).
+    WHERE {{ ga4_range_predicate('EVENT_DT') }}
 ),
 
 -- event_params(VARIANT ARRAY) → 스칼라 승격. 혼합타입은 COALESCE(string, int) (설계문서 07 §7-B).
+-- 🔴 [2026-08-19 O88 결함 시정] `OUTER => TRUE` 를 붙였다 — 없으면 **행이 조용히 사라진다.**
+--    `LATERAL FLATTEN` 은 기본이 INNER 다: `event_params` 가 NULL 이거나 빈 배열인 행은
+--    전개 결과가 0행이므로 그 이벤트 자체가 결과에서 **탈락**한다. 에러도 워닝도 없다.
+--    O87 은 이 CTE 를 「종전 GA4_EVENT 와 동일 동작」으로 계승했고 그 동작에 이 소실이 포함돼
+--    있었다. `GA4-SEQ-1`(「손실 0」 철회)과 **같은 축의 두 번째 손실원**이다.
+--    ⇒ `OUTER => TRUE` 는 params 가 있는 행에는 결과가 동일하고(전개 결과 불변),
+--       없는 행만 param 컬럼 전건 NULL 로 **보존**한다 ⇒ 엄격히 비손실 방향의 변경이다.
+--    ⚠️ 그래서 이 모델의 행수는 O87 기준선보다 **늘 수 있다**(줄지 않는다).
+--       실제 규모는 적재 후 실측한다 — `event_params IS NULL` 행수 = 종전 소실량이다.
 flat AS (
     SELECT
         e.user_pseudo_id,
@@ -104,7 +115,7 @@ flat AS (
             p.value:value:string_value::STRING, NULL))                     AS link_url,
         MAX(IFF(p.value:key::STRING = 'link_text',
             p.value:value:string_value::STRING, NULL))                     AS link_text
-    FROM src e, LATERAL FLATTEN(input => e.event_params) p
+    FROM src e, LATERAL FLATTEN(input => e.event_params, OUTER => TRUE) p
     GROUP BY
         e.user_pseudo_id, e.event_timestamp, e.event_name, e.event_date, e.event_dt,
         e.user_id, e.device, e.geo, e.platform, e.is_active_user, e.batch_ordering_id,

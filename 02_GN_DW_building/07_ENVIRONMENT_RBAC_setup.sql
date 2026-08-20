@@ -21,6 +21,20 @@
 --      당시 실행 정본은 `08_After_Deploy_DBT.sql` §G 였다. 🟢 [2026-08-10 O55] **그 §G 절도 삭제됐다** —
 --      helper 3종 물리 DROP 완료 ⇒ 어느 파일도 helper 를 만들지 않는다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
 --   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
+--
+-- 🔴🔴 [2026-08-20 O91 신설 — C 항목] **스키마를 드롭·재생성하면 그 스키마의 grant 는 FUTURE grant 까지 전부 사라진다.**
+--   ⇒ **재생성 후 §D 전량 재실행이 DoD 다.** 이것은 「권장」이 아니라 필수 조건이다.
+--   실측 근거(2026-08-20) = `SNOWFLAKE.ACCOUNT_USAGE.SCHEMATA` 에서 `GN_DW.SILVER` 가
+--     `SCHEMA_ID=44`(created 2026-08-18 20:50:41.247) → **DELETED 21:27:04.683** → `SCHEMA_ID=105`(21:34:28.101) 로 재생성됐고,
+--     그 결과 SILVER 는 `OWNERSHIP` 1건만 남아 ENGINEER grant·FUTURE grant 가 **0건**이 됐다.
+--     대조 증거 = 같은 기간 드롭되지 않은 `GOLD`(64)·`OPS`(65)는 FUTURE grant **35건**을 그대로 유지했다.
+--   ⇒ 이 사고로 `dbt build` 가 `003001 (42501)` 로 차단됐다(정본 = `20_issue/50_dbt_파이프라인_미결조치.md` §O90·§O91).
+--   🔴 **`ON ALL TABLES` 는 시점 grant 다** — 부여 당시 존재한 테이블에만 걸린다. 그래서 §D 는
+--      항상 `ALL` + `FUTURE` 를 **쌍으로** 부여하며, 그 쌍조차 **스키마 자체가 재생성되면 무효**다.
+--   🟢 재발 방지 2원칙: ㉠ **적재·부여 완료 후 스키마 재생성 금지**(O86 `DDL-ORDER-1` 과 동일 계열)
+--      ㉡ 재생성이 불가피하면 **§D 전량 재실행을 완료 조건으로 고정**하고 `SHOW FUTURE GRANTS IN SCHEMA` 로 실측 확인.
+--   ⚠️ **21:27 에 SILVER 를 드롭한 주체는 미확정이다**(`08_SILVER_테이블DDL:36` 은 `CREATE SCHEMA IF NOT EXISTS` 라
+--      드롭하지 않는다 · 워크스페이스 루트에 `TEARDOWN.sql` 이 있다). 추가 조사 대상으로 남긴다.
 -- 소유 모델: GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위).
 --            커스텀 롤은 적재·조회만. 계정 레벨(네트워크/인증 정책·Resource Monitor·CoWork·CORTEX)은 ACCOUNTADMIN 유지.
 -- 멱등: 전 구간 IF NOT EXISTS / OR REPLACE / OWNERSHIP 재이관 안전. 반복 실행 가능.
@@ -202,6 +216,9 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_SERVICE;
 GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_SERVICE;
 
 -- D.3 SILVER (ENGINEER 개발 + ANALYST 읽기)
+--   🔴 [2026-08-20 O91 — C 항목 포인터] 이 절의 `ON ALL TABLES` 는 **시점 grant** 이고
+--      SILVER 스키마가 재생성되면 `FUTURE` 까지 함께 사라진다. 상세·실측 근거는 이 파일 머리말 25~37행.
+--      ⇒ SILVER 를 드롭·재생성했다면 **이 절과 §D.5 를 전량 재실행**한다(DoD).
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.SILVER TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL VIEWS  IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ADMIN;
@@ -294,9 +311,14 @@ USE ROLE GN_DW_ADMIN;  -- GOLD/SILVER/OPS 소유자 = GN_DW_ADMIN(처음부터 �
 GRANT INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
 GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
 
--- SILVER: append(INSERT) + pre-hook TRUNCATE. (merge 없음 → UPDATE/DELETE 불요. USAGE·SELECT·CREATE TABLE 는 D.3 기보유)
-GRANT INSERT, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
-GRANT INSERT, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
+-- SILVER: append(INSERT) + pre-hook TRUNCATE + 범위 DELETE. (USAGE·SELECT·CREATE TABLE 는 D.3 기보유)
+--   🔴🔴 [2026-08-20 O91 정정 — D 항목] 종전 이 줄은 *"merge 없음 → UPDATE/DELETE 불요"* 였고 **stale 이었다.**
+--      반증 = O87 이 신설한 `silver_purge` 매크로가 range 모델에 **범위 DELETE 문**을 낸다
+--      (`macros/ga4_range_purge.sql` · pre-hook 경유) ⇒ `DELETE` 없이는 GA4 SILVER 모델이 실패한다.
+--      🟢 `UPDATE` 는 여전히 불요다(SILVER 에 merge 전략 모델이 없다) — 좁힌 상태를 유지한다.
+--      🟢 2026-08-20 라이브 부여·실측 확인(FUTURE 4종 = SELECT·INSERT·TRUNCATE·DELETE).
+GRANT INSERT, TRUNCATE, DELETE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
+GRANT INSERT, TRUNCATE, DELETE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
    D.6 dbt test store_failures 적재 권한 — GN_DW_ENGINEER (OPS 한정 CREATE TABLE)
@@ -323,8 +345,30 @@ GRANT INSERT, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENG
          테이블이다(생성자 = ENGINEER ⇒ OWNERSHIP 자동 취득 ⇒ 추가 grant 불요).
          FUTURE 를 걸면 ADMIN 이 나중에 OPS 에 만드는 운영 테이블까지 ENGINEER 에게
          새는데, 그건 이 요구와 무관한 확대다.
+
+      🔴🔴 [2026-08-20 O91 정정 — A 항목] 위 「배치 결정」의 결론 문장(*"스키마가 이미 존재하므로
+         dbt 는 create schema 를 호출하지 않고 … CREATE TABLE 로 끝난다"*)은 **실측으로 반증됐다.**
+         · 반증 = `target/manifest.json` 기준 테스트 **343노드**가 `GN_DW.dbt_test__audit` 소속이다.
+           `logs/dbt.log:455~460` 은 `create schema if not exists GN_DW.dbt_test__audit` **1건**을 시도하고
+           `003001 (42501)` 로 죽는다 ⇒ `store_failures` 대상을 OPS 로 돌려도 **audit 스키마는 우회되지 않는다.**
+         · 원인 = `macros/generate_schema_name.sql` 이 커스텀 스키마 값을 **접두 없이 그대로** 반환한다
+           ⇒ dbt 의 감사 스키마 이름은 `OPS` 로 치환되지 않고 `dbt_test__audit` 로 남는다.
+         · 🔴 처방은 **DB 레벨 `CREATE SCHEMA` 부여가 아니다** — 위 311~313 의 거부 판단은 그대로 옳다.
+           `GN_DW_ADMIN` 이 audit 스키마를 **선생성**하면 dbt 는 `create schema` 를 호출하지 않는다
+           (SILVER·GOLD 가 그 경로로 통과하는 것이 증거다) ⇒ 아래 선생성 + 스키마 1개 범위 grant 로 좁힌다.
+         · 🟢 2026-08-20 라이브 실행·실측 확인(스키마 실재 1 · ENGINEER `USAGE`+`CREATE TABLE` 2건).
    ===================================================================== */
-GRANT CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
+-- D.6-1 audit 스키마 선생성 (🆕 [O91] A 항목 처방 · DB 레벨 CREATE SCHEMA 회피의 핵심)
+CREATE SCHEMA IF NOT EXISTS GN_DW.dbt_test__audit
+  COMMENT = 'dbt 테스트 실패 감사 — dbt 자동 생성 회피용 선생성';
+GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit TO ROLE GN_DW_ENGINEER;
+
+-- D.6-2 store_failures 테이블 적재 대상 스키마
+--   🔴🔴 [2026-08-20 O91 정정 — B 항목] 종전에는 `CREATE TABLE` 만 부여하고 **`USAGE` 가 누락**돼 있었다.
+--      스키마 `USAGE` 없이는 그 안의 객체를 참조할 수 없으므로 `store_failures` 테이블 조회·적재가 막힌다.
+--      🟠 미측정 = 「`USAGE` 없으면 store_failures 테스트가 실제로 실패하는가」는 재현하지 않았다
+--         (O90 ⑩ 승계). 부여는 필요조건 충족이고 실패 재현은 별건이다 — 인용 전 실측할 것.
+GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
    D.7 ANALYST 의 Agent · Streamlit "소비" 권한 — 🟢 [2026-08-18] 신설

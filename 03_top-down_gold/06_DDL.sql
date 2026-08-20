@@ -334,12 +334,39 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SPONSORSHIP (
     SPONSORSHIP_SK      NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '후원사업 대리키 (ETL 일련번호, PK)',
     SPONSORSHIP_BK      VARCHAR         NOT NULL COMMENT '후원사업 업무키(BK, 자연키)',
     SPONSORSHIP_NAME    VARCHAR         COMMENT '후원사업 전체(#123)',
-    SPONSORSHIP_ABBR    VARCHAR         COMMENT '약칭(#124)',
+    SPONSORSHIP_ABBR    VARCHAR         COMMENT '약칭(#124) — 코드 raw ← 원천 SPNSR_BSNS_ABRV_CD. 🔴**코드다(1~6)**, 라벨은 SPONSORSHIP_GROUP_NAME(코드사전 CM003 · O89). 종전 SPB-G 의 "약칭인지 분류코드인지 불명"은 O89 로 해소 — CM003 그룹명이 「후원약칭」이므로 컬럼명은 오명이 아니었다',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '후원사업 차원 (1후원사업 · 실측 distinct=50)';
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨 신설(ALTER TABLE ADD COLUMN 으로 물리 반영, 위치=맨 끝).
+    --   🔴 **선언 위치가 감사컬럼 뒤인 것은 의도다** — 라이브 환경에서는 `ALTER TABLE ADD COLUMN` 으로
+    --      붙어 물리 ordinal 이 맨 끝이 된다. 앞에 적으면 신규 환경 재구축 시 순서가 갈라진다(O45 선례).
+    --   현업 요구 = "후원사업 상위분류/하위분류를 각각 라벨로 GOLD 에서 보고 싶다".
+    --   🔴 **요구가 지목한 컬럼은 실측으로 교정됐다** — 현업은 `SPNSR_BSNS_ID`(상위)/`SPNSR_BSNS_NO`(하위)
+    --      라고 말했으나 `SPNSR_BSNS_NO` 는 분류가 아니라 **회원별 후원약정 일련번호**다:
+    --      distinct **2,170,574**(vs ID 29) · 범위 4~2,638,655 · **99.999%(2,170,544/2,170,574)가 단일
+    --      회원 전속** · 동일 `SPNSR_BSNS_ID` 아래 한 회원이 복수 `NO` 보유(실측 예: MBER_NO 0853739 가
+    --      ID=4 아래 NO 3개). 분류라면 다수 회원이 공유해야 하므로 성립하지 않는다. 코드사전 대응 그룹도 없다.
+    --      ⇒ `NO` 하위의 실체는 결연 아동(`TM_RM_RELATNSP_MSTR_INFO.CHILD_CD` 469,402)이고 라벨 가능한 축은
+    --        사업장(`TM_RM_BPLC_MNG.BPLC_KORNM` 220종)·국가(`NATION_CD` 34종)다. 단 **해외아동결연(ID=1)
+    --        99.99% 한정**이고 나머지 27개 사업은 0.00% 이며, 회원이 아동 복수 결연을 하므로 이 디멘션(50행)에
+    --        넣을 수 없다(O8 과 동일한 fan-out 구조) → **별건 설계 대기**.
+    --   ✅ 실재하며 즉시 라벨 가능한 3계층 = SPONSORSHIP_DIV_CD(CM035 정기/일시 2종)
+    --      → SPONSORSHIP_ABBR(CM003 약칭 6종) → SPONSORSHIP_NAME(사업명 29 사용/50 정의).
+    --      `SPONSORSHIP_ABBR` 은 기존 컬럼이고 **라벨만 없었다** → GROUP_NAME 병설로 해소(O25/G3/O37 동일 패턴).
+    --   🟡 **SPB-G 근거 확보 · 라이브 대조 대기** — "ABBR 값 1~6, 약칭인지 분류코드인지 불명 · 코드사전 미특정 ·
+    --      현업 라벨 회신 대기"가 코드사전 **CM003(그룹명 「후원약칭」)** 으로 특정됐다(사업수 분포가 SPB-G 실측과 일치).
+    --      🔴 **「종결」이라고 적었던 것은 오판정이라 격하했다** — 라이브 DIM_SPONSORSHIP 이 0행이어서 값 대조가
+    --      불가하다(R2-8-4-c). 계정 = NX55103 · dbt build 후 확정. 상세·수치는 원장 02 §O89.
+    --   🔴 **`SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다** — 정본 결론 = "ID=DIM 키(마스터 50) · NO=관계번호 ·
+    --      크로스워크"(크로스워크 = SILVER.CRM_SPONSOR_RELATION). 위 기술은 Q15 와 일치하며 신규 발견이 아니다.
+    --      현업이 NO 를 「하위 분류」로 재요구하면 Q15 를 먼저 제시할 것.
+    --   🔴 라벨 없이 이 축을 SV 에 노출하면 Analyst 가 코드를 추측해 0행 무증상 오답을 낸다(O37 PROMO_METHOD 선례).
+    SPONSORSHIP_DIV_CD     VARCHAR      COMMENT '[O89] 정기일시후원구분 코드 raw ← 원천 TM_CM_SPNSR_BSNS_INFO.SPNSR_DIV_CD (SILVER CRM_SPONSORSHIP.SPNSR_DIV_CD). 코드사전 CM035. 실측 2종(1·2) · 50개 사업 전건 채움. 🔴**최상위 분류축**이다 — 라벨은 SPONSORSHIP_DIV_NAME. ⚠️회비/기부금 지류 구분(FEE_DIV)과 다른 축이다',
+    SPONSORSHIP_DIV_NAME   VARCHAR      COMMENT '[O89] 정기일시후원구분명 — 코드 SPONSORSHIP_DIV_CD 를 코드사전 CM035(정기일시후원구분코드)로 해소한 라벨. 값 = 1→정기후원 · 2→일시후원. 🔴**후원사업 분류 3계층의 최상위**(정기일시 → 약칭 → 사업명). ⚠️원천 코드 부재 시 NULL 이며 ''(미매핑)''으로 창작하지 않는다(P21). ⚠️USE_YN 무필터 조인',
+    SPONSORSHIP_GROUP_NAME VARCHAR      COMMENT '[O89] 후원약칭명 — 기존 코드컬럼 SPONSORSHIP_ABBR(원천 SPNSR_BSNS_ABRV_CD)을 코드사전 CM003(후원약칭)으로 해소한 라벨. 값 = 1→국내 · 2→결연 · 3→해외구호 · 4→북한 · 5→기타 · 6→해외 · 7→선물금(7은 미사용). 사업수 17/1/6/3/21/2 = 50. 🔴**3계층의 중위**다 — 상위는 SPONSORSHIP_DIV_NAME, 하위는 SPONSORSHIP_NAME. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 3(해외구호)과 6(해외)이 둘 다 해외이고 6은 SPONSORSHIP_DIV_CD=2(일시후원)에서만 나타난다(실측) ⇒ 정확한 분류축은 **(DIV, ABBR) 쌍**이다. ⚠️원천 코드 부재 시 NULL(P21)'
+) COMMENT = '후원사업 차원 (1후원사업 · 실측 distinct=50). 분류 3계층 = SPONSORSHIP_DIV_NAME(정기일시 CM035) → SPONSORSHIP_GROUP_NAME(약칭 CM003) → SPONSORSHIP_NAME(사업명). DIV_CD·ABBR 은 코드이고 각 라벨 컬럼을 병설한다(O89). 🔴 SPNSR_BSNS_NO 는 분류가 아니라 회원별 약정 일련번호여서 이 차원에 없다 — 상세는 O89 주석';
 
 
 -- ============================================================================

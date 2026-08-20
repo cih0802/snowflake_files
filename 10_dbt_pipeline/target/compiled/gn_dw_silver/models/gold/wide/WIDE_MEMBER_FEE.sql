@@ -23,6 +23,11 @@ select
     -- ── 납입 대상 축 ──────────────────────────────────────────────────────────
     f.SPONSORSHIP_SK,
     s.SPONSORSHIP_NAME                          as SPONSORSHIP_NAME,
+    -- [2026-08-19 O89] 납입 대상 후원사업의 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
+    --   🟢 이 뷰의 SPONSORSHIP_SK 는 거의 전건 채움이라 분류 집계의 정본 경로다.
+    --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
+    s.SPONSORSHIP_DIV_NAME                      as SPONSORSHIP_DIV_NAME,
+    s.SPONSORSHIP_GROUP_NAME                    as SPONSORSHIP_GROUP_NAME,
     f.FEE_DIV_CD,
     f.FEE_DIV_NAME                              as FEE_DIV_NAME,
     f.PAYMENT_TYPE                              as PAYMENT_TYPE,

@@ -11,9 +11,14 @@
     GA4 는 2.86억행이라 ① 이 현실적이지 않다(전기간 환산 ≈ 36분 + 하류). ⇒ **②를 채택한다.**
 
   동작
-    `DELETE FROM <this> WHERE EVENT_DT BETWEEN var(ga4_dt_start) AND var(ga4_dt_end)`
+    `DELETE FROM <this> WHERE <ga4_range_predicate()>`
     ⇒ 그 범위만 지우고 모델 SELECT 가 같은 범위를 append 하므로 **범위 단위 멱등**이다.
     범위 밖 데이터는 보존된다 ⇒ 월별 분할 적재가 안전해진다.
+    🔴 [2026-08-19 O88] 술어를 **`macros/ga4_range_predicate.sql` 로 외부화**했다.
+       종전에는 이 파일과 두 모델이 술어를 **각각 하드코딩**했고, DELETE 범위와 append
+       범위가 어긋나면 행이 남거나(중복) 사라지는데(누락) **그 어긋남을 잡는 게이트가
+       없었다**(`R1-6-17`). 이제 정의 지점이 하나라 어긋남이 구조적으로 불가능하다.
+       ⇒ 불연속 구간(3개월 샘플링)도 그 매크로가 OR 로 전개한다.
 
   🔴 적용 대상 = EVENT_DT 를 보유한 range 모델만이다.
      · BIGQUERY_REFINED_DATA · GA4_EVENT     → 이 매크로 사용
@@ -29,8 +34,7 @@
 {% macro ga4_range_purge(relation) %}
   {%- if is_incremental() -%}
     DELETE FROM {{ relation }}
-     WHERE EVENT_DT >= TO_DATE('{{ var("ga4_dt_start") }}')
-       AND EVENT_DT <= TO_DATE('{{ var("ga4_dt_end") }}')
+     WHERE {{ ga4_range_predicate('EVENT_DT') }}
   {%- else -%}
     SELECT 1 /* ga4_range_purge no-op: 대상 테이블 미존재(최초 run) */
   {%- endif -%}

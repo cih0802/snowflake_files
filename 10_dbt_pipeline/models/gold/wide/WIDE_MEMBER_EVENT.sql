@@ -59,6 +59,12 @@ select
     c.INFLOW_PATH         as CAMPAIGN_INFLOW_PATH,
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
+    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
+    --   🟢 DEV 브랜치는 O45 로 배선(3,594,843) — 분류별 개발실적 집계 경로.
+    --   ⚠️ STOP 브랜치는 SPONSORSHIP_SK 센티넬 0 이라 라벨도 '(미매핑)' 이다(DEC-32 철회 근거·O47).
+    --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
+    s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
+    s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,
     o.CORP                as ORG_CORP,
     o.DIVISION            as ORG_DIVISION,
     o.DEPARTMENT          as ORG_DEPARTMENT,

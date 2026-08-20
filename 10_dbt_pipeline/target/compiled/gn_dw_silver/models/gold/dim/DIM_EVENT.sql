@@ -31,7 +31,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '3597d1ab-90a3-4cbe-8064-e4fa5228209e'                    AS DW_BATCH_ID,
+    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID,
     -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 행사구분 코드→라벨. 전파만 한다 — 코드사전 조인은 SILVER 소관이다
     --    (같은 조인을 두 계층에 두면 갈라진다 · 문서30 §23-J). 신설 위치 = 감사컬럼 뒤(정본 DDL 규약).
     EVENT_DIV_GROUP                               as EVENT_CATEGORY_GROUP,
@@ -47,7 +47,7 @@ select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, NULL, N
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '3597d1ab-90a3-4cbe-8064-e4fa5228209e'                    AS DW_BATCH_ID,
+    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID,
     -- ⚠️ 센티넬 행도 컬럼 수를 맞춰야 한다(UNION ALL 위치 대응). 코드군·라벨은 값이 없으므로 NULL —
     --    '(미매핑)' 을 넣지 않는다: 이 행은 「행사 미매핑」을 뜻하고 코드군·라벨 축의 미매핑이 아니다.
     NULL, NULL

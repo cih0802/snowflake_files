@@ -10,12 +10,12 @@
 --     ① 소스는 EVENTS 단일  ② EVENT_DT 파티션 키 유지  ③ SRC_TABLE·SRC_FILE_NAME 계보 승계
 --
 -- ⚠️ 계층 규칙 — 이 테이블은 SILVER 안에서 하류가 참조하는 **기반 테이블**이다(계층 내 파생).
---    허용 근거 = DEC-36(30_설계_의사결정). 선례 = AGENCY_AD_ROW_DGT/_REBRDC/_VIDEO → 성과·방송·사례·디지털 4테이블.
+--    허용 근거 = DEC-37(30_설계_의사결정). 선례 = AGENCY_AD_ROW_DGT/_REBRDC/_VIDEO → 성과·방송·사례·디지털 4테이블.
 --    금지선은 그대로다: **집계 롤업(월·코호트)과 중복 소유권은 여기서도 금지**. 이 모델은
 --    grain 을 바꾸지 않고(이벤트 1행) DISTINCT 축소도 하지 않는다.
 --
 -- ⚠️ 명명 — SILVER 는 도메인 접두(GA4_*)가 규약이고 이 테이블만 **원천 접두(BIGQUERY_)** 다.
---    근거 = DEC-37. 기반 테이블은 「BigQuery export 를 평탄화한 것」이라는 원천 사실을 이름에 담고,
+--    근거 = DEC-38. 기반 테이블은 「BigQuery export 를 평탄화한 것」이라는 원천 사실을 이름에 담고,
 --    도메인 해석이 들어간 산출물은 GA4_* 로 남긴다.
 --
 -- 🔴 비용 — EVENT_DT 범위 제한이 이 모델의 유일한 방어선이다(설계문서 07: 빼면 2.86억행 전량 스캔).
@@ -54,11 +54,26 @@ WITH src AS (
         SRC_FILE_NAME                       AS src_file_name,
         LOAD_TS                             AS bronze_load_ts
     FROM GN_DW.BRONZE_BIGQUERY.EVENTS
-    WHERE EVENT_DT >= TO_DATE('2024-01-01')
-      AND EVENT_DT <= TO_DATE('2026-07-19')
+    -- 🔴 [2026-08-19 O88] 범위 술어의 정의 지점은 `macros/ga4_range_predicate.sql` 하나다.
+    --    여기에 술어를 다시 쓰지 마라 — pre-hook DELETE 범위와 어긋나면 행이 남거나 사라진다
+    --    (종전에는 이 술어가 3곳에 하드코딩돼 있었고 어긋남을 잡는 게이트가 없었다 · R1-6-17).
+    WHERE (
+    (EVENT_DT >= TO_DATE('2024-06-01') AND EVENT_DT <= TO_DATE('2024-06-30'))
+    OR (EVENT_DT >= TO_DATE('2025-06-01') AND EVENT_DT <= TO_DATE('2025-06-30'))
+    OR (EVENT_DT >= TO_DATE('2026-06-01') AND EVENT_DT <= TO_DATE('2026-06-30'))
+  )
 ),
 
 -- event_params(VARIANT ARRAY) → 스칼라 승격. 혼합타입은 COALESCE(string, int) (설계문서 07 §7-B).
+-- 🔴 [2026-08-19 O88 결함 시정] `OUTER => TRUE` 를 붙였다 — 없으면 **행이 조용히 사라진다.**
+--    `LATERAL FLATTEN` 은 기본이 INNER 다: `event_params` 가 NULL 이거나 빈 배열인 행은
+--    전개 결과가 0행이므로 그 이벤트 자체가 결과에서 **탈락**한다. 에러도 워닝도 없다.
+--    O87 은 이 CTE 를 「종전 GA4_EVENT 와 동일 동작」으로 계승했고 그 동작에 이 소실이 포함돼
+--    있었다. `GA4-SEQ-1`(「손실 0」 철회)과 **같은 축의 두 번째 손실원**이다.
+--    ⇒ `OUTER => TRUE` 는 params 가 있는 행에는 결과가 동일하고(전개 결과 불변),
+--       없는 행만 param 컬럼 전건 NULL 로 **보존**한다 ⇒ 엄격히 비손실 방향의 변경이다.
+--    ⚠️ 그래서 이 모델의 행수는 O87 기준선보다 **늘 수 있다**(줄지 않는다).
+--       실제 규모는 적재 후 실측한다 — `event_params IS NULL` 행수 = 종전 소실량이다.
 flat AS (
     SELECT
         e.user_pseudo_id,
@@ -104,7 +119,7 @@ flat AS (
             p.value:value:string_value::STRING, NULL))                     AS link_url,
         MAX(IFF(p.value:key::STRING = 'link_text',
             p.value:value:string_value::STRING, NULL))                     AS link_text
-    FROM src e, LATERAL FLATTEN(input => e.event_params) p
+    FROM src e, LATERAL FLATTEN(input => e.event_params, OUTER => TRUE) p
     GROUP BY
         e.user_pseudo_id, e.event_timestamp, e.event_name, e.event_date, e.event_dt,
         e.user_id, e.device, e.geo, e.platform, e.is_active_user, e.batch_ordering_id,
@@ -148,16 +163,20 @@ SELECT
     f.user_id                                                    AS USER_ID,
     -- 🟢 GA4-LEN-1 조치② — ID 체계 분류축. 조치①만 하면 IDENTITY_MEMBER_XREF 매칭 분모에
     --    비회원 ID 가 섞여 채움률이 조용히 왜곡된다(설계문서 07 §7-B).
-    --    실측 6종(전 기간): 7자리 CRM 399,773id · S+8자리 16,907id · app-+32hex 233id
-    --                      · app-+uuid 8id · 이메일 1id · 문자열 'null' 1id.
+    --    실측 정본 = `20_issue/90_해소완료_로그.md` §1-B-실측 (계정 UA93987 · 2026-08-19 O87-B 전기간).
+    --    🔴 그 실측이 종전 문서의 「6종」을 **7종으로 교정**했다 — 누락돼 있던 리터럴 `undefined` 가
+    --       `ONCE_MBER_NO` 에 흡수 계상돼 그 버킷이 **293행·1id 과대**였다. 이 CASE 는 그것을 분리한다.
     --    ⚠️ 라벨 창작 금지(DEC-17-B · R2-7) — 원천 문자열은 USER_ID 에 그대로 보존하고
-    --       여기서는 분류만 부여한다. 신규 포맷은 'UNCLASSIFIED' 로 격리해 조용히 섞이지 않게 한다.
-    CASE WHEN f.user_id IS NULL                       THEN NULL
-         WHEN f.user_id RLIKE '^[0-9]{7}$'            THEN 'MBER_NO'
-         WHEN f.user_id RLIKE '^S[0-9]{8}$'           THEN 'ONCE_MBER_NO'
-         WHEN STARTSWITH(f.user_id, 'app-')           THEN 'APP'
-         WHEN POSITION('@', f.user_id) > 0            THEN 'EMAIL'
-         WHEN LOWER(f.user_id) = 'null'               THEN 'INVALID'
+    --       여기서는 분류만 부여한다.
+    --    🔴 `UNCLASSIFIED` 는 「신규 포맷 등장」 조기경보다 ⇒ **현재 기대값은 0 이다**
+    --       (`undefined` 를 INVALID 로 편입했으므로). 0 이 아니면 원천에 새 포맷이 생긴 것이다.
+    CASE WHEN f.user_id IS NULL                            THEN NULL
+         WHEN f.user_id RLIKE '^[0-9]{7}$'                 THEN 'MBER_NO'
+         WHEN f.user_id RLIKE '^S[0-9]{8}$'                THEN 'ONCE_MBER_NO'
+         WHEN STARTSWITH(f.user_id, 'app-')                THEN 'APP'
+         WHEN POSITION('@', f.user_id) > 0                 THEN 'EMAIL'
+         -- 원천 오류값. 둘 다 프런트엔드 미정의/널이 문자열로 흘러든 것이다(회원번호 아님).
+         WHEN LOWER(f.user_id) IN ('null', 'undefined')    THEN 'INVALID'
          ELSE 'UNCLASSIFIED' END                                 AS ID_SCHEME,
 
     -- ── 세션 (event_params 승격) ───────────────────────────────────────────────

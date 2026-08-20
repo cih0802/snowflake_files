@@ -88,7 +88,15 @@ roles:
   - id: GN_DW_ENGINEER
     purpose: ETL 개발, dbt 파이프라인
     warehouse: [GN_DW_ETL_WH, GN_DW_DEV_WH]
-    scope: "BRONZE, SILVER, GOLD, SERVING(USAGE)"
+    scope: "BRONZE, SILVER, GOLD, SERVING(USAGE), OPS, dbt_test__audit"
+    note: |
+      🔴 [2026-08-20 O91 정정 ㉠] 종전 scope 는 "BRONZE, SILVER, GOLD, SERVING(USAGE)" 였고
+      **`OPS` 와 `dbt_test__audit` 이 누락**돼 있었다. 둘 다 dbt 실행에 필수인 실권한이다:
+      · `OPS` = dbt 프로젝트 객체(`GN_DW.OPS.DW_PIPELINE`)와 `store_failures` 테이블의 자리
+        ⇒ `USAGE, CREATE TABLE` 필요(07 §D.6-2). 🔴 종전 라이브에는 `USAGE` 가 빠져 있었다.
+      · `dbt_test__audit` = dbt 테스트 실패 감사 스키마. 테스트 **343노드**가 이 스키마 소속이라
+        `store_failures` 를 OPS 로 돌려도 우회되지 않는다 ⇒ **선생성 + `USAGE, CREATE TABLE`**(07 §D.6-1).
+      🟢 2026-08-20 라이브 부여·실측 확인. 구현 정본 = `07_ENVIRONMENT_RBAC_setup.sql` §D.6.
   - id: GN_DW_ANALYST
     purpose: 분석 쿼리
     warehouse: [GN_DW_ANALYTICS_WH]
@@ -137,6 +145,16 @@ note: "실제 유저 정보(이름/이메일)는 조직 정책에 따라 기입.
 > **현재 상태(라이브 2026-07-22)**: dbt 파이프라인 `GN_DW.OPS.DW_PIPELINE`이 **배포·운영 중**이며, 실행 role은 **`GN_DW_ENGINEER`**(최소권한). 전용 `GN_DW_DBT` Role은 **불필요**(SHOW ROLES 실측 6종).
 > **정정(중요)**: dbt는 GOLD/SILVER에 테이블을 **생성하지 않고 적재만** 한다 — dim=incremental merge, fact·silver=append+pre-hook TRUNCATE, WIDE=view. 구조·컬럼 COMMENT·FK는 `06_DDL`/`08_DDL`(소유=GN_DW_ADMIN)이 보존한다. 따라서 dbt 롤에 **GOLD `CREATE TABLE`은 불요**이며, 필요한 것은 granular DML(INSERT/UPDATE/DELETE)·`TRUNCATE`·WIDE용 `CREATE VIEW`뿐이다.
 > 권한 사실: `TRUNCATE`는 개별 grant 가능한 TABLE 권한이고, `EXECUTE DBT PROJECT`는 `USAGE ON DBT PROJECT`로 충분 → **소유권 없이 실행 가능**. 구현 grant는 `07_ENVIRONMENT_RBAC_setup.sql` §D.5.
+>
+> 🔴🔴 **[2026-08-20 O91 정정 ㉡] 위 「dbt 롤에 `CREATE TABLE` 불요」는 데이터 계층(SILVER/GOLD)에만 성립한다 — 무조건 명제가 아니다.**
+> 종전 문안은 조건 없이 「불요」로 읽혀 `07 §D.6` 의 예외 2건과 **정면으로 모순**됐다. 축을 명시해 정정한다:
+> · 🟢 **여전히 불요** = `GOLD`·`SILVER` 의 구조 생성. 구조·컬럼 COMMENT·FK 는 `06_DDL`/`08_DDL`(소유 = `GN_DW_ADMIN`)이 보존한다.
+>   ⚠️ 단 `SILVER` 는 `07 §D.3:225` 가 ENGINEER 에게 `CREATE TABLE` 을 **이미 부여**하고 있다 — 「불요」는 *필요 없다*는 뜻이고 *부여돼 있지 않다*는 뜻이 아니다.
+> · 🔴 **필요한 예외 2건**(둘 다 대상이 **데이터가 아니라 테스트 실패 이력**이다):
+>   ㉠ `GN_DW.OPS` = `USAGE, CREATE TABLE`(`store_failures` 테이블 · `07 §D.6-2`)
+>   ㉡ `GN_DW.dbt_test__audit` = `USAGE, CREATE TABLE`(테스트 **343노드**의 감사 스키마 · `07 §D.6-1`)
+> · 🔴 **DB 레벨 `CREATE SCHEMA` 는 여전히 부여하지 않는다** — audit 스키마를 `GN_DW_ADMIN` 이 선생성해 요구를 좁힌다(`07 §D.6` A 항목).
+> · 🟢 **판단 기준(일반화)** = 「구조 소유가 DDL 에 있는가」로 가른다. 있으면 불요, dbt 가 스스로 만들고 소유하는 객체면 필요다.
 
 ### 3.1 GN_DW_DBT 분리 시점 (trigger) — 현재 **미충족**
 
@@ -144,6 +162,15 @@ note: "실제 유저 정보(이름/이메일)는 조직 정책에 따라 기입.
 - ~~dbt가 Gold 스키마에 테이블을 직접 생성해야 하는 경우~~ → **해당 없음**: dbt는 적재 전용(구조는 DDL 소유).
 - dbt 파이프라인과 수동 ETL의 권한을 물리적으로 격리해야 하는 경우(감사/규제 요구)
 - dbt 전용 서비스 계정을 CI/CD에서 별도 자격증명으로 운용하는 경우
+- 🆕 🟠 **[2026-08-20 O91 신설 ㉢ — 재검토 트리거] GA4 평탄화가 Python 저장 프로시저로 이전되는 경우**
+  · 배경 = 사용자 제시 방향(「다음주 Python 프로시저가 평탄화 담당」) + **▣4 결정 = ㉡ SILVER 원천 겸용**.
+    ⇒ SILVER 에 **원천을 쓰는 주체**가 dbt 외에 하나 더 생긴다 ⇒ 이 절이 요구하는 「권한 물리 격리」 조건에 접근한다.
+  · 🟢 **격리가 불필요해질 수도 있다**(방향이 반대로도 작동한다) — SP 를 `GN_DW_ADMIN` 소유 +
+    **`EXECUTE AS OWNER`**(기본)로 만들면 SILVER 쓰기가 소유자 권한으로 실행되므로
+    ENGINEER 에게는 **`USAGE ON PROCEDURE` 만** 필요해지고 DML grant 대부분이 불요해진다.
+    ⚠️ 반대로 `EXECUTE AS CALLER` 면 SILVER 전체 DML 이 필요해진다 ⇒ **OWNER 권장**(「커스텀 롤은 소유 없음」 원칙과 정합).
+  · 🔴 **판정 시점** = 프로시저 소유·실행 모델이 확정될 때. 그때 이 트리거를 **충족/미충족으로 닫는다**.
+    SP **생성** 권한(`CREATE PROCEDURE ON SCHEMA SILVER`)은 `07 §D.3:225` 에 이미 있고 2026-08-20 라이브 부여도 확인됐다.
 
 ### 3.2 목표 계층 구조
 

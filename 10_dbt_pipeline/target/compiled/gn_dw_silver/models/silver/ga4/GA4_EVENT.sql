@@ -96,5 +96,10 @@ LEFT JOIN sess s
     ON b.GA_SESSION_KEY IS NOT NULL
    AND s.GA_SESSION_KEY = b.GA_SESSION_KEY
 -- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
-WHERE b.EVENT_DT >= TO_DATE('2024-01-01')
-  AND b.EVENT_DT <= TO_DATE('2026-07-19')
+-- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
+--    정의 지점은 `macros/ga4_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
+WHERE (
+    (b.EVENT_DT >= TO_DATE('2024-06-01') AND b.EVENT_DT <= TO_DATE('2024-06-30'))
+    OR (b.EVENT_DT >= TO_DATE('2025-06-01') AND b.EVENT_DT <= TO_DATE('2025-06-30'))
+    OR (b.EVENT_DT >= TO_DATE('2026-06-01') AND b.EVENT_DT <= TO_DATE('2026-06-30'))
+  )

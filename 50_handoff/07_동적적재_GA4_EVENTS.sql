@@ -34,11 +34,103 @@
 --     ⑤ 감사 컬럼 SRC_FILE_NAME / LOAD_TS 추가. 1판은 중복 적재를 검출할 수단이 없었다
 --     ⑥ 통제총계(A 실측 행수) 대조 절차 신설(4장/7장). 1판은 완료를 증명할 수 없었다
 --     ⑦ 복구 경로 CREATE OR REPLACE ... LIKE → TRUNCATE. 1판은 테이블 코멘트를 소실시켰다
+--   2026-08-19 3판 — **3개월 샘플링 + SILVER 이후는 dbt 소관**으로 실행 범위를 좁혔다(0-B장).
+--   2026-08-19 4판 — **문서 전체를 그냥 실행하면 되도록** 만들었다. 실행 불가 블록(4장·7장 (2))을
+--     끄고 **7장 (2-B) 스테이지 직접 대조**를 신설해 완료 판정을 대체했다(0-B장 ▣ 4판).
 --
--- ▣▣ 적재 상태 : ✅ **완료 (2026-08-18)** ▣▣
+-- =====================================================================
+-- 0-B장. 🔴🔴 [2026-08-19 O88 · O88-B] 이 판의 실행 범위 — 어디까지 활성이고 왜 주석인가
+-- =====================================================================
+--   ▣▣ 4판 사용법 = **이 문서를 위에서 아래로 전부 실행하면 된다.** ▣▣
+--     건너뛸 것은 이미 주석이라 저절로 건너뛰어진다 ⇒ 블록을 골라 실행할 필요가 없다.
+--     사용자 진행 순서 = **① 스테이지 업로드 완료 대기 → ② 이 문서 전체 실행 → ③ `dbt build`**.
+--     🔴 ①을 지키는 것이 유일한 수동 판단이다. 업로드 중에 실행하면 **조용히 누락**된다(0장 (4)).
+--        🟢 다만 복구 경로가 있다 — 업로드가 끝난 뒤 이 문서를 **다시 전체 실행**하면
+--           프로시저가 파일 단위로 스킵하므로 누락분만 채워지고 7장 (2-B) 가 0건이 된다.
+--     🔴 ③ 전에 **7장 (2-B) 가 0건인지 반드시 눈으로 확인**한다. 그것이 이 판의 완료 게이트다.
+--
+--   사용자 지시 3건이 이 판을 만들었다.
+--     ㉠ *"bronze_bigquery 데이터가 너무 커서 **2024년 6월 · 2025년 6월 · 2026년 6월만**
+--        샘플링해 진행하기로 했다"*
+--     ㉡ *"dbt 로 작업을 지정하니 **bronze 에 데이터를 적재하는 부분만 남기고** 나머지는 주석처리"*
+--        → 경계 확정(사용자 선택) = **적재 + 완료판정까지 활성**.
+--     ㉢ *"권장순서에서 지시하는 걸 **문서 전체를 실행했을 때 건너뛸 건 자동으로 건너뛰도록**"*
+--        → 4판 = 실행 불가 블록을 전부 주석으로 내리고 **대체 게이트를 활성으로 신설**.
+--
+--   ▣ 활성 / 주석 경계 (4판 확정)
+--     활성  1장 스테이지 DIRECTORY ENABLE·REFRESH·현황   2장 FF_CSV_LOAD 확인
+--           3장 EVENTS DDL · 3-B 뷰 · 3-C 부속테이블 2종   5장 LOAD_GA4_EVENTS 프로시저
+--           6장 (1) DRY RUN · (2) 스모크(202406) · (3) 전량 CALL · (4)(5) 이력·COPY_HISTORY
+--           7장 (1) 총량 개요 · **(2-B) 스테이지 직접 대조 = 완료 판정 게이트**
+--     주석  **4장 전체**(A-1·A-2 는 종전부터 `/* */` · **A-3 은 4판에서 껐다**)
+--           **7장 (2) 통제총계 대조**(4판에서 껐다 — 기준선을 만들 수 없다)
+--           7장 (3) 중복적재 · (4) VARIANT 파싱 · (5) 일자 불일치 · (6) 프루닝 실측
+--           8장 헤더 prefix 사전검증 · 10장 Teardown · 부록 LOAD_SCHEMA_DYNAMIC
+--
+--   ▣ 🔴🔴 4판에서 새로 끈 것 2개 — **실행할 수 없는 블록이었다**(실측 근거)
+--     실측 = 현 계정 `NX55103` 의 `GN_DW.BRONZE_BIGQUERY` 에 `events_YYYYMMDD` 가
+--     **2개뿐이고 둘 다 0행**이다 ⇒ **A 계정 원천 911테이블이 이 계정에 없다.**
+--     ⓐ **4장 A-3** — 통제총계 등재 확인. 등재할 원천이 없으니 **항상 0 / NULL** 을 낸다.
+--     ⓑ **7장 (2)** — 그 통제총계를 기준선으로 쓰는 대조. 기준선이 비면 **전 폴더가
+--        `NOT_IN_CONTROL_TOTAL` 로 쏟아진다**(판정 불가).
+--     🔴 **O88(3판)이 4장에 적은 「통제총계도 3개월분만 등재하라」는 불완전한 지시였다** —
+--        등재할 원천 자체가 없다는 것을 확인하지 않았다. 4판에서 그 자리에 정정을 붙였다.
+--
+--   ▣ 🟢 4판에서 새로 켠 것 1개 = **7장 (2-B) 스테이지 직접 대조**
+--     기준선을 **A 원천**이 아니라 **스테이지 자신**으로 바꾼다(스테이지는 적재의 실제 입력이고
+--     지금 여기 있다). 폴더명으로 조인해 **폴더 수 · 폴더별 파일 수**를 대조한다.
+--     🟢 지금의 실제 위험과 정확히 겹친다 — 0장 (4)의 사고는 **파일 단위 누락**이다.
+--     🔴 한계를 명시한다: **파일 안의 행이 다 들어왔는지는 증명하지 못한다.**
+--        보완 근거 = ① COPY `errors=0`(부분 적재는 엄격 PARSE_JSON 에서 중단) ② 파일은 COPY 의
+--        최소 원자 단위다 ⇒ 「파일 전수 일치 + errors 0」이면 행 누락 경로는 실질적으로 닫힌다.
+--     🟢 7장 (2) 는 삭제하지 않았다 — A 계정 접근이 생기면 되살려 **(2-B) 와 함께** 쓴다.
+--
+--   ▣ 왜 8장을 주석하는가 (사용자 판단)
+--     8장은 **스테이지 전량 CSV 헤더 스캔**이다(원 규모 압축 63.7GB). 3개월 샘플링 취지와 어긋난다.
+--     🔴 **대가를 명시한다** — 8장은 0장 (3)ⓑ 정정에 따라 **위치 기반 적재의 유일한 사전 방어선**이다.
+--        파일 포맷 옵션은 아무 것도 막아주지 않는다. 이 판은 그 방어를 **사후 확증으로 대체**한다:
+--          ① 7장 (2-B) 파일 전수 대조 ② 엄격 PARSE_JSON 이 VARIANT 11위치에서 오류 0
+--        ⇒ 2026-08-18 이관에서 쓴 것과 같은 대체 논리다(8장 머리말 🟢 항목).
+--        ⚠️ **사후 확증은 「이미 적재한 뒤」 판정이므로 사전 방어가 아니다.** 전 기간으로 범위를
+--           넓히거나 새 폴더 계열을 추가할 때는 8장을 **정식으로 1회** 돌릴 것.
+--
+--   ▣ CALL 에 연월 하드코딩은 없다 (사용자 질의에 대한 답)
+--     6장 (3) `CALL(NULL, NULL, FALSE)` 는 5장 (2) 가 **디렉터리 테이블에서 실제 존재하는 연월**을
+--     읽어 처리한다 ⇒ 스테이지에 3개월만 올리면 **그 3개월만 적재된다.** 전량 CALL 을 그대로 쓴다.
+--     🔴 예외 = 6장 (2) 스모크만 `'202503'` 하드코딩이었다 ⇒ **`'202406'` 으로 교체**했다.
+--        종전 값을 그대로 두면 그 달이 스테이지에 없어 `NO_FILES` 로 조용히 지나가고
+--        「스모크를 통과했다」는 착시가 생긴다(files=0 / errors=0 이 나온다).
+--     🟢 스모크(202406) 직후 전량 CALL 을 돌려도 **중복되지 않는다** — 파일 단위 스킵이다.
+--
+--   ▣ 🟢 4판 시점에 확인된 선행 조건 (전체 실행이 성립하는 근거 · 실측)
+--     · `SANDBOX.TOOLS.FF_CSV_LOAD` **존재**(CSV · SKIP_HEADER=1) ⇒ 6장 COPY 가 성립한다.
+--     · `MIG_GA4_SRC_ROWCOUNT`·`MIG_GA4_LOAD_LOG`·`V_GA4_EVENTS_DATA_COLS`·`LOAD_GA4_EVENTS`
+--       **전부 부재** ⇒ 3장·3-B·3-C·5장이 **반드시 실행돼야** 하고, 4판은 그것을 전부 활성으로 둔다.
+--     · 스테이지 `DIRECTORY` 가 **아직 비활성**이었다(조회 시 *"DIRECTORY not enabled"*)
+--       ⇒ 🔴 **1장을 건너뛸 수 없다.** 5장 프로시저는 디렉터리 테이블로 연월을 찾으므로
+--          1장의 `SET DIRECTORY = (ENABLE = TRUE)` + `REFRESH` 가 없으면 **폴더를 0개로 본다.**
+--     · SILVER 40 / GOLD 35 테이블 선생성 완료 · BRONZE_CRM 45테이블 115,871,475행 ·
+--       BRONZE_ERP 4,301 · BRONZE_AGENCY 243,550 **적재 완료** ⇒ GA4 만 채우면 `dbt build` 가 성립한다.
+--
+--   ▣ 🔴🔴 계정이 또 바뀌었다 — 아래 「적재 상태 ✅ 완료」는 **이 계정에서 성립하지 않는다**
+--     실측(2026-08-19 O88 · `CURRENT_ACCOUNT()`) = **`NX55103`**. 문서·인수인계 기재는 `UA93987`
+--     이었고 그 전은 `DV07626`·`os09358`·`ls82944` 였다 ⇒ **`P169` 4차 발생**.
+--     실측 = `GN_DW.BRONZE_BIGQUERY` 에 **`EVENTS` 테이블이 없다**(빈 `events_20260501`·
+--     `events_20260719` + `SYNC_ERR_INFO` 3개뿐 = 04번 DDL 까지만 집행된 상태).
+--     ⇒ **3장부터 다시 실행해야 한다.** 아래 「✅ 완료 (2026-08-18)」는 **구 계정 기록**이다.
+--     🔴 이 문서의 전체 수치(911테이블 · 285,676,588행 · 6,517파일 · 63.7GB 등)는
+--        **사용자 지시로 현행 유지**한다(*"전체 데이터 수치는 강력히 수정하라 하지 않는 한 현행"*).
+--        ⇒ 그 수치는 **구 계정 원천 실측**이고 이번 3개월 샘플 적재 결과와 **대조하지 말 것**.
+--        (`R2-8-4` — 계정이 바뀌면 완료 판정은 재실측 전까지 인용 금지)
+-- =====================================================================
+--
+-- ▣▣ 적재 상태 : ✅ **완료 (2026-08-18)** ▣▣  🔴 **구 계정 기록이다 — 0-B장을 먼저 읽어라**
 --     GN_DW.BRONZE_BIGQUERY.EVENTS = 285,676,588행 / 911일(2024-01-01~2026-07-19) / 6,517파일
 --     통제총계 대조(7장 (2)) = 911테이블 전수 일치, **불일치 0건** · 중복 파일 0건 · errors 0
 --     남은 작업 = 01번 문서 §대조표의 BRONZE_BIGQUERY 행 갱신(0장 (5)) → 그 후 SILVER 착수
+--     🔴 **[2026-08-19 O88] 현 계정 `NX55103` 에서는 `EVENTS` 가 존재하지 않는다**(실측).
+--        위 3줄은 구 계정 실측 기록으로 보존한 것이다(사용자 지시 = 전체 수치 현행 유지).
+--        현 상태 = **재적재 대기**(`R2-8-4-b` — 「과거에 됐으니 완료」로 닫지 않는다).
 --
 -- 🔴🔴🔴 최우선 경고 — 04번 DDL 을 **다시 실행하지 마라** 🔴🔴🔴
 --     04번은 `create or replace schema GN_DW.BRONZE_BIGQUERY` 를 한다 ⇒ **EVENTS 전량 삭제.**
@@ -378,12 +470,39 @@ ORDER BY 1;
 */
 -- ⚠️ row_count / bytes 는 메타데이터다(테이블 스캔 없음). 즉시 반환된다.
 -- ⚠️ A 에서 이후에 원천이 더 늘어나면 통제총계도 다시 뽑아야 한다.
+--
+-- 🔴🔴 [2026-08-19 O88] **통제총계도 3개월분만 등재하라 — 이것을 빼면 7장 (2) 가 무용해진다.**
+--   🔴🔴 **[2026-08-19 O88-B 정정] 위 지시는 불완전했다 — 현 계정에는 등재할 원천이 아예 없다.**
+--     실측 = `GN_DW.BRONZE_BIGQUERY` 의 `events_YYYYMMDD` **2개 · 둘 다 0행**
+--     ⇒ A-1/A-2 를 돌릴 원천 911테이블이 이 계정에 없으므로 **3개월 필터를 논할 단계가 아니다.**
+--     ⇒ 4장 전체가 이 판에서 **비활성**이고, 완료 판정은 **7장 (2-B)** 가 담당한다.
+--     🟢 아래 필터 지시는 **A 계정 접근이 생겨 4장을 되살릴 때 유효**하므로 삭제하지 않고 남긴다.
+--   이유: 7장 (2) 는 `MIG_GA4_SRC_ROWCOUNT` FULL OUTER JOIN 이라
+--   **등재됐는데 C 에 없는 테이블을 `MISSING_IN_C` 로 낸다.** 911건을 등재하고 3개월만 적재하면
+--   `MISSING_IN_C` 가 **821건**(911 − 3개월 90폴더) 쏟아지고, 그 안에 섞인 진짜 `SHORT_LOAD` 를 못 찾는다
+--   🔴 [2026-08-19 O88-C 정정] 종전 기재 **「약 880건」은 세지 않고 쓴 숫자**였다(`R3-1` 위반).
+--      실제 = 911 − (2024-06 30 + 2025-06 30 + 2026-06 30) = **821**.
+--   ⇒ 「0건이어야 완료」라는 판정식이 **구조적으로 성립 불가**가 된다(게이트 사문화).
+--   ⇒ 위 A-2 쿼리에 아래 필터를 추가해 **3개월만** 등재한다(A-1 요약도 같은 필터로 본다):
+--        AND SUBSTR(table_name, 8, 6) IN ('202406', '202506', '202606')
+--   🟢 그러면 7장 (2) 의 「0건」이 「이 3개월이 전수 일치한다」를 정확히 뜻한다.
+--   ⚠️ 전 기간으로 확장할 때는 이 필터를 빼고 `TRUNCATE ... MIG_GA4_SRC_ROWCOUNT` 후 재등재한다
+--      (누적하면 구 판본 행이 남아 대조가 오염된다).
 --    그때는 C 에서 아래로 비우고 재등재한다:
 --    TRUNCATE TABLE SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT;
 
 -- ── A-3. (C 계정) 등재 확인 ──────────────────────────────────────────────
-SELECT COUNT(*) AS n_tables, SUM(SRC_ROW_COUNT) AS total_rows, MAX(CAPTURED_AT) AS captured
-FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT;
+-- 🔴🔴 [2026-08-19 O88-B] **주석 처리 — 현 계정에는 등재할 원천이 없다.**
+--    A-1/A-2 는 위에서 이미 `/* */` 로 감싸인 **A 계정 전용** 절차다(구 계정 시절 기준).
+--    현 계정 `NX55103` 의 `GN_DW.BRONZE_BIGQUERY` 에는 `events_YYYYMMDD` 가 **2개뿐이고
+--    둘 다 0행**이다(실측) ⇒ 뽑을 통제총계가 없고, 이 확인 쿼리는 **항상 0 / NULL** 을 낸다.
+--    🔴 그것을 활성으로 두면 「0 이 나왔으니 뭔가 잘못됐다」는 잡음만 남는다 ⇒ 끈다.
+--    🟢 그래서 이 판의 완료 판정은 **7장 (2-B) 스테이지 직접 대조**가 담당한다.
+--    🟢 되살리는 조건 = A 계정 접근이 생겨 A-1/A-2 를 실행한 뒤. 그때 이 3줄의 "-- " 를 제거한다.
+--    ⚠️ 3-C 의 `MIG_GA4_SRC_ROWCOUNT` **테이블 생성은 그대로 남겨 둔다** — `IF NOT EXISTS` 라
+--       무해하고, 되살릴 때 구조가 이미 있어야 하기 때문이다(이 판에서는 빈 테이블로 남는다).
+-- SELECT COUNT(*) AS n_tables, SUM(SRC_ROW_COUNT) AS total_rows, MAX(CAPTURED_AT) AS captured
+-- FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT;
 -- A-1 의 n_tables / total_rows 와 **정확히** 일치해야 한다. 다르면 붙여넣기가 누락된 것이다.
 -- ✅ 2026-08-18 실측 = 911 / 285,676,588 / 48,362,186,752 → A-1 과 완전 일치
 
@@ -511,15 +630,32 @@ BEGIN
     v_rows  := 0;
     v_qid   := NULL;
 
-    -- 🔴 PATTERN 은 FROM 경로(@stage/BRONZE_BIGQUERY/) 기준 **상대 경로**에 매칭된다.
-    --    1판은 '스테이지 루트 기준'이라고 썼다. 틀렸다.
-    --    실측: PATTERN => 'events_20250301/.*[.]csv[.]gz' 가 선행 '.*' 없이 4파일 매칭.
-    --    ⚠️ 그래서 선행 '/' 를 붙이면 **0건이 되고, 오류 없이 조용히 넘어간다.**
-    --       (실제로 그 실수로 files=0 / errors=0 을 한 번 만들었다.)
+    -- 🔴🔴 [2026-08-20 O90 실측 정정] PATTERN 은 **스테이지 루트 기준 전체 경로**에 매칭된다.
+    --    ⚠️ [O90 라벨 정정] 이 블록은 최초에 「O89」로 새겼으나 **O89 는 다른 세션**(후원사업 분류
+    --       3계층 라벨 · `20_issue/01_세션이력_조각/01_세션이력-031.md:67`)이었다 = 타 세션 라벨 도용.
+    --       `id_collision_gate.py --next O` 실측(정의 최대 89 · 참조 89) ⇒ 본 세션 라벨은 **O90** 이다.
+    --       🔴 교훈 = 라벨은 게이트로 확인하고 원장에 선점 등재한 뒤 코드에 새긴다(`R1-4-3`).
+    --    ⚠️ 아래 O86 ④ 기재는 **철회한다**(R2-8 정정 병기 — 지우지 않고 남긴다):
+    --      구 기재: "PATTERN 은 FROM 경로(@stage/BRONZE_BIGQUERY/) 기준 상대 경로에 매칭된다.
+    --               1판은 '스테이지 루트 기준'이라고 썼다. 틀렸다.
+    --               실측: PATTERN => 'events_20250301/.*[.]csv[.]gz' 가 선행 '.*' 없이 4파일 매칭."
+    --      ⇒ 🔴 **1판이 맞았고 O86 의 정정이 오히려 틀렸다.** 그 결과 이 프로시저는
+    --         선행 '.*' 없는 패턴을 만들어 **0파일을 매칭**했다.
+    --    🟢 O90 실측 근거 2개 —
+    --      ① 6장 (2) 스모크 CALL('202406','202406',FALSE) = files=0 / rows=0 / errors=0,
+    --         MIG_GA4_LOAD_LOG.STATUS='NO_FILES', EVENTS 실행 후 COUNT(*)=0.
+    --      ② 같은 COPY 를 PATTERN='.*events_20240107/.*[.]csv[.]gz' 로만 바꿔 재실행
+    --         → 4파일 LOADED · rows_loaded 9,981+28,672+36,864+36,864 = 112,381 · errors 0.
+    --      ⇒ 차이는 선행 '.*' 하나뿐이므로 매칭 기준이 스테이지 루트임이 확정된다.
+    --      🟢 교차 확증: 적재된 SRC_FILE_NAME(=METADATA$FILENAME) 이
+    --         'mig_load_stage/BRONZE_BIGQUERY/events_20240107/...' 로 **스테이지명 접두까지** 포함한다.
+    --    ⚠️ 이것이 0장 (4) 가 경고한 「files=0 / errors=0 조용한 실패」의 실제 발현이다 —
+    --       원인은 업로드 지연이 아니라 **이 문서의 패턴 기재**였다.
+    --    🔴 'BRONZE_BIGQUERY/' 를 패턴에 명시해 다른 스키마 폴더 오매칭을 막는다(선행 '.*' 는 스테이지명 몫).
     v_sql := 'COPY INTO GN_DW.BRONZE_BIGQUERY.EVENTS (' || :v_cols || ') '
           || 'FROM (SELECT ' || :v_sel
           || ' FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/) '
-          || 'PATTERN = ''events_' || :v_ym || '[0-9]{2}/.*[.]csv[.]gz'' '
+          || 'PATTERN = ''.*BRONZE_BIGQUERY/events_' || :v_ym || '[0-9]{2}/.*[.]csv[.]gz'' '
           || 'FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD) '
           || 'ON_ERROR = ABORT_STATEMENT PURGE = FALSE';
 
@@ -612,9 +748,14 @@ ORDER BY YM;
 --     ✅ 실측 — PATTERN = 'events_202503[0-9]{2}/.*[.]csv[.]gz'
 
 -- (2) 한 달만 실전 적재해 스모크 테스트
-CALL SANDBOX.TOOLS.LOAD_GA4_EVENTS('202503', '202503', FALSE);
--- ✅ 2026-08-18 실측(X-Small) = 177파일 / 8,396,742행 / errors=0
---    이어서 7장 (1)(3)(4)(5) 를 이 한 달에 대해 먼저 통과시킨 뒤 (3) 전량으로 넘어간다.
+--   🔴 [2026-08-19 O88] `'202503'` → `'202406'` 교체. 이 문서의 **유일한 연월 하드코딩**이었고,
+--      3개월 샘플(2024-06·2025-06·2026-06)에 202503 이 없으므로 종전 값은 `NO_FILES`(files=0 /
+--      errors=0)를 내며 **조용히 통과**한다 ⇒ 「스모크했다」는 착시가 된다.
+CALL SANDBOX.TOOLS.LOAD_GA4_EVENTS('202406', '202406', FALSE);
+-- ✅ 2026-08-18 실측(X-Small · 구 계정 · 202503 기준) = 177파일 / 8,396,742행 / errors=0
+--    ⚠️ 위 수치는 **다른 달·다른 계정** 기록이다. 202406 기대값이 아니다(대조하지 말 것).
+--    이어서 7장 (1)(2) 를 이 한 달에 대해 먼저 통과시킨 뒤 (3) 전량으로 넘어간다.
+--    🔴 (3)~(6) 는 이 판에서 주석이다 — 근거 = 0-B장.
 
 -- (3) 전량 적재
 --   ✅ 2026-08-18 실측(X-Small) = **months=31 / files=6,338 / rows=277,140,582 / errors=0**
@@ -675,42 +816,122 @@ FROM GN_DW.BRONZE_BIGQUERY.EVENTS;
 
 -- (2) 🔴 통제총계 대조 — A 실측 대비 SRC_TABLE 단위 행수 일치
 --     폴더 존재만 보는 검사로는 '폴더 안 파일 1개 누락' 을 절대 못 잡는다.
-WITH tgt AS (
-  SELECT SRC_TABLE, COUNT(*) AS c_rows, COUNT(DISTINCT SRC_FILE_NAME) AS c_files
-  FROM GN_DW.BRONZE_BIGQUERY.EVENTS GROUP BY 1
-),
-src AS (
-  SELECT SRC_TABLE, SRC_ROW_COUNT FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT
-)
-SELECT COALESCE(s.SRC_TABLE, t.SRC_TABLE)   AS src_table,
-       s.SRC_ROW_COUNT                      AS a_rows,
-       t.c_rows                              AS c_rows,
-       t.c_rows - s.SRC_ROW_COUNT            AS diff,
-       t.c_files,
-       CASE WHEN s.SRC_TABLE IS NULL        THEN 'NOT_IN_CONTROL_TOTAL — A 실측 미등재(4장 미실행)'
-            WHEN t.SRC_TABLE IS NULL        THEN 'MISSING_IN_C — 미적재. 그 연월 재호출'
-            WHEN t.c_rows < s.SRC_ROW_COUNT THEN 'SHORT_LOAD — 파일 누락. 6장 (3) 재호출'
-            WHEN t.c_rows > s.SRC_ROW_COUNT THEN 'OVER_LOAD — 중복 적재 의심. (3) 확인'
-            ELSE 'OK' END                    AS diagnosis
-FROM src s FULL OUTER JOIN tgt t ON s.SRC_TABLE = t.SRC_TABLE
-WHERE s.SRC_TABLE IS NULL OR t.SRC_TABLE IS NULL OR t.c_rows <> s.SRC_ROW_COUNT
-ORDER BY 1;
+-- 🔴🔴 [2026-08-19 O88-B] **이 블록은 현 계정에서 실행 불가라 주석 처리했다.** 대신 (2-B) 를 쓴다.
+--    실행 불가 사유(실측) = 이 대조의 기준선 `MIG_GA4_SRC_ROWCOUNT` 는 **4장이 A 계정 원천
+--    911테이블의 `INFORMATION_SCHEMA` 에서** 뽑아 채우는데, 현 계정 `NX55103` 의
+--    `GN_DW.BRONZE_BIGQUERY` 에는 `events_YYYYMMDD` 테이블이 **2개뿐이고 둘 다 0행**이다
+--    ⇒ 4장 A-1/A-2 를 돌릴 원천이 없고, 기준선이 빈 채로 이 쿼리를 돌리면
+--    **전 폴더가 `NOT_IN_CONTROL_TOTAL` 로 쏟아진다**(판정 불가 · 게이트 사문화).
+--    🔴 O88 이 4장에 적은 「통제총계도 3개월분만 등재하라」도 **등재할 원천이 없어 성립하지 않는다**
+--       — 그 지시는 불완전했다. 정정 = 이 계정에서는 (2-B) 가 완료 판정 게이트다.
+--    🟢 되살리는 조건 = A 계정(원천 911테이블 보유)에 접근이 생겨 4장 A-1/A-2 를 실행한 뒤.
+--       그때는 이 블록의 선행 "-- " 를 제거하고 (2-B) 와 **함께** 쓴다(둘은 배타가 아니다).
+-- WITH tgt AS (
+--   SELECT SRC_TABLE, COUNT(*) AS c_rows, COUNT(DISTINCT SRC_FILE_NAME) AS c_files
+--   FROM GN_DW.BRONZE_BIGQUERY.EVENTS GROUP BY 1
+-- ),
+-- src AS (
+--   SELECT SRC_TABLE, SRC_ROW_COUNT FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT
+-- )
+-- SELECT COALESCE(s.SRC_TABLE, t.SRC_TABLE)   AS src_table,
+--        s.SRC_ROW_COUNT                      AS a_rows,
+--        t.c_rows                              AS c_rows,
+--        t.c_rows - s.SRC_ROW_COUNT            AS diff,
+--        t.c_files,
+--        CASE WHEN s.SRC_TABLE IS NULL        THEN 'NOT_IN_CONTROL_TOTAL — A 실측 미등재(4장 미실행)'
+--             WHEN t.SRC_TABLE IS NULL        THEN 'MISSING_IN_C — 미적재. 그 연월 재호출'
+--             WHEN t.c_rows < s.SRC_ROW_COUNT THEN 'SHORT_LOAD — 파일 누락. 6장 (3) 재호출'
+--             WHEN t.c_rows > s.SRC_ROW_COUNT THEN 'OVER_LOAD — 중복 적재 의심. (3) 확인'
+--             ELSE 'OK' END                    AS diagnosis
+-- FROM src s FULL OUTER JOIN tgt t ON s.SRC_TABLE = t.SRC_TABLE
+-- WHERE s.SRC_TABLE IS NULL OR t.SRC_TABLE IS NULL OR t.c_rows <> s.SRC_ROW_COUNT
+-- ORDER BY 1;
 -- 🔴 **0건이어야 적재 완료다.** 이 쿼리가 0건이 되기 전에는 어떤 후속 작업도 시작하지 말 것.
 -- ✅ 2026-08-18 **최종 실측 = 0건** (911테이블 전수 행수 일치) → 적재 완료 확정
 -- 총계 한 줄 확인:
-SELECT (SELECT SUM(SRC_ROW_COUNT) FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT) AS a_total,
-       (SELECT COUNT(*)           FROM GN_DW.BRONZE_BIGQUERY.EVENTS)        AS c_total,
-       (SELECT COUNT(*)           FROM GN_DW.BRONZE_BIGQUERY.EVENTS)
-     - (SELECT SUM(SRC_ROW_COUNT) FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT)  AS diff;
+-- SELECT (SELECT SUM(SRC_ROW_COUNT) FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT) AS a_total,
+--        (SELECT COUNT(*)           FROM GN_DW.BRONZE_BIGQUERY.EVENTS)        AS c_total,
+--        (SELECT COUNT(*)           FROM GN_DW.BRONZE_BIGQUERY.EVENTS)
+--      - (SELECT SUM(SRC_ROW_COUNT) FROM SANDBOX.TOOLS.MIG_GA4_SRC_ROWCOUNT)  AS diff;
 -- ✅ 최종 실측 = 285,676,588 / 285,676,588 / **diff = 0**
 -- 🟢 이 a_total 값으로 01번 문서 §대조표의 BRONZE_BIGQUERY 행을 갱신한다(0장 (5)).
 
--- (3) 중복 적재 검출 — SRC_FILE_NAME / LOAD_TS 로만 가능하다(1판에는 불가능했다)
-SELECT SRC_FILE_NAME, COUNT(DISTINCT LOAD_TS) AS n_load_batches, COUNT(*) AS n_rows
-FROM GN_DW.BRONZE_BIGQUERY.EVENTS
-GROUP BY 1
-HAVING COUNT(DISTINCT LOAD_TS) > 1
+-- =====================================================================
+-- (2-B) 🔴🔴 [2026-08-19 O88-B 신설] **스테이지 직접 대조 — 이 판의 완료 판정 게이트**
+-- =====================================================================
+--   무엇을 대체하는가: (2) 는 「A 원천 행수 ↔ C 적재 행수」를 봤다. 그 기준선을 만들 수 없으므로
+--   기준선을 **스테이지 자신**으로 바꾼다 — 스테이지는 적재의 실제 입력이고 지금 여기 있다.
+--
+--   🟢 무엇을 증명하는가 = **폴더 누락 · 폴더 내 파일 누락 · 중복 적재**.
+--      이것이 지금의 실제 위험과 정확히 겹친다. 0장 (4)가 경고한 사고는
+--      *"업로드 진행 중 1회만 적재하면 조용히 누락되고 status=LOADED / errors=0 을 반환한다"*
+--      = **파일 단위 누락**이다 ⇒ 파일 수 대조가 그 사고를 정면으로 잡는다.
+--   🔴 무엇을 증명하지 못하는가 = **파일 안의 행이 다 들어왔는지**. 그것은 원천 행수가 있어야
+--      알 수 있다(그래서 (2) 가 원래 게이트였다). ⇒ 이 게이트를 (2) 와 동급으로 읽지 말 것.
+--      🟢 보완 근거 2개가 남아 있다: ① COPY 의 `errors=0`(부분 적재는 엄격 PARSE_JSON 에서 중단)
+--      ② 파일은 COPY 의 최소 원자 단위다 — 파일이 `LOADED` 면 그 파일의 행은 전량 들어온다.
+--      ⇒ 「파일 전수 일치 + errors 0」이면 행 누락 경로는 실질적으로 닫힌다.
+--
+--   🔴 문자열이 아니라 **건수**로 비교한다 — `DIRECTORY().RELATIVE_PATH` 는 스테이지 루트 기준이고
+--      `METADATA$FILENAME`(= `SRC_FILE_NAME`) 은 COPY 의 `FROM` 경로 기준이라 **접두가 다를 수 있다.**
+--      경로 문자열을 직접 조인하면 전건 불일치로 오판한다 ⇒ 폴더명으로 조인하고 파일은 세기만 한다.
+--
+--   ⚠️ 스테이지 파일을 읽지 않는다 — `DIRECTORY()` 는 메타데이터 테이블이라 즉시 반환된다(무료 스캔).
+--      🔴 단 **1장의 `REFRESH` 가 선행돼야** 새로 올라온 파일이 여기 보인다.
+WITH stg AS (
+  SELECT REGEXP_SUBSTR(RELATIVE_PATH, 'events_[0-9]{8}') AS folder,
+         COUNT(*)                                        AS s_files
+  FROM DIRECTORY(@SANDBOX.TOOLS.MIG_LOAD_STAGE)
+  WHERE RELATIVE_PATH RLIKE 'BRONZE_BIGQUERY/events_[0-9]{8}/.*[.]csv[.]gz'
+  GROUP BY 1
+),
+tgt AS (
+  SELECT SRC_TABLE                      AS folder,
+         COUNT(DISTINCT SRC_FILE_NAME)  AS c_files,
+         COUNT(*)                       AS c_rows
+  FROM GN_DW.BRONZE_BIGQUERY.EVENTS GROUP BY 1
+)
+SELECT COALESCE(s.folder, t.folder)  AS folder,
+       s.s_files                     AS stage_files,
+       t.c_files                     AS loaded_files,
+       COALESCE(t.c_files, 0) - COALESCE(s.s_files, 0) AS diff_files,
+       t.c_rows                      AS loaded_rows,
+       CASE WHEN t.folder IS NULL      THEN 'MISSING_IN_C — 이 폴더가 전혀 적재되지 않았다. 6장 (3) 재호출'
+            WHEN s.folder IS NULL      THEN 'EXTRA_IN_C — 스테이지에 없는 폴더가 적재돼 있다. 스테이지 REFRESH 또는 오적재 확인'
+            WHEN t.c_files < s.s_files THEN 'SHORT_LOAD — 파일 누락(업로드 중 적재 의심). 6장 (3) 재호출로 채워진다'
+            WHEN t.c_files > s.s_files THEN 'DUP_LOAD — 중복 적재. 7장 (3) 블록을 되살려 확인'
+            ELSE 'OK' END             AS diagnosis
+FROM stg s FULL OUTER JOIN tgt t ON s.folder = t.folder
+WHERE s.folder IS NULL OR t.folder IS NULL
+   OR t.c_files <> s.s_files
 ORDER BY 1;
+-- 🔴 **0건이어야 적재 완료다.** 0건이 되기 전에는 `dbt build` 를 시작하지 말 것.
+--    🟢 `SHORT_LOAD` / `MISSING_IN_C` 는 **6장 (3) 을 다시 호출하면 해소된다**(파일 단위 스킵이므로
+--       이미 적재된 파일은 건너뛰고 누락분만 채운다) ⇒ 업로드가 늦게 끝났어도 복구 경로가 있다.
+-- 총계 한 줄 확인 — 폴더/파일 수가 스테이지와 일치하는가:
+SELECT (SELECT COUNT(DISTINCT REGEXP_SUBSTR(RELATIVE_PATH,'events_[0-9]{8}'))
+          FROM DIRECTORY(@SANDBOX.TOOLS.MIG_LOAD_STAGE)
+         WHERE RELATIVE_PATH RLIKE 'BRONZE_BIGQUERY/events_[0-9]{8}/.*[.]csv[.]gz') AS stage_folders,
+       (SELECT COUNT(*) FROM DIRECTORY(@SANDBOX.TOOLS.MIG_LOAD_STAGE)
+         WHERE RELATIVE_PATH RLIKE 'BRONZE_BIGQUERY/events_[0-9]{8}/.*[.]csv[.]gz') AS stage_files,
+       (SELECT COUNT(DISTINCT SRC_TABLE)     FROM GN_DW.BRONZE_BIGQUERY.EVENTS)     AS loaded_folders,
+       (SELECT COUNT(DISTINCT SRC_FILE_NAME) FROM GN_DW.BRONZE_BIGQUERY.EVENTS)     AS loaded_files,
+       (SELECT COUNT(*)                      FROM GN_DW.BRONZE_BIGQUERY.EVENTS)     AS loaded_rows;
+-- 🔴 stage_folders = loaded_folders **AND** stage_files = loaded_files 여야 완료다.
+--    ⚠️ `loaded_rows` 에는 **기대값이 없다**(이 계정에 원천 행수가 없다) ⇒ 관측값으로만 기록하고
+--       구 계정 수치 285,676,588(전 기간)과 **대조하지 말 것** — 이번은 3개월 샘플이다(`R2-8-4`).
+-- =====================================================================
+
+-- (3) 중복 적재 검출 — SRC_FILE_NAME / LOAD_TS 로만 가능하다(1판에는 불가능했다)
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    7장 (3) 중복 적재 검출 — 64일 경과 재실행이 없는 단발 적재라 이번 범위에서는 발생 경로가 없다.
+--    ⚠️ 64일 이후 재적재하거나 files>0 이 반복되면 이 블록을 되살려 먼저 확인할 것.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- SELECT SRC_FILE_NAME, COUNT(DISTINCT LOAD_TS) AS n_load_batches, COUNT(*) AS n_rows
+-- FROM GN_DW.BRONZE_BIGQUERY.EVENTS
+-- GROUP BY 1
+-- HAVING COUNT(DISTINCT LOAD_TS) > 1
+-- ORDER BY 1;
 -- → 0건이어야 정상. ✅ **최종 실측 0건** (6,517파일 전수, 3회에 걸친 적재 후에도 중복 없음).
 -- 나오면 같은 파일이 두 배치에서 적재됐다는 뜻이다(64일 경과 재실행 등).
 -- 처방: TRUNCATE TABLE GN_DW.BRONZE_BIGQUERY.EVENTS 후 6장부터 전량 재적재.
@@ -720,20 +941,23 @@ ORDER BY 1;
 --        2.86억행에서 100만 표본은 '특정 하루만 이상' 한 경우를 놓친다.
 --     🟢 엄격 PARSE_JSON(5장 ▣)이므로 파싱 실패는 애초에 COPY 중단으로 드러난다.
 --        따라서 이 검사의 역할은 '타입이 기대와 같은지' 와 '구간별 커버리지' 확인이다.
-SELECT DATE_TRUNC('month', EVENT_DT)                          AS ym,
-       COUNT(*)                                               AS n_rows,
-       COUNT(DISTINCT TYPEOF("event_params"))                 AS ep_typecnt,
-       MAX(TYPEOF("event_params"))                            AS ep_type,     -- ARRAY
-       MAX(TYPEOF("device"))                                  AS dev_type,    -- OBJECT
-       COUNT("event_params"[0])                               AS ep_indexable,
-       COUNT("device":category)                               AS dev_key,
-       COUNT("geo":country)                                   AS geo_key,
-       COUNT("batch_event_index")                             AS c26,
-       COUNT("session_traffic_source_last_click")             AS c29,
-       MAX(TYPEOF("session_traffic_source_last_click"))        AS c29_type,
-       COUNT("event_original_occurrence_timestamp")            AS c31
-FROM GN_DW.BRONZE_BIGQUERY.EVENTS
-GROUP BY 1 ORDER BY 1;
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    7장 (4) VARIANT 파싱 확인 — 엄격 PARSE_JSON 이므로 파싱 실패는 COPY 중단으로 먼저 드러난다.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- SELECT DATE_TRUNC('month', EVENT_DT)                          AS ym,
+--        COUNT(*)                                               AS n_rows,
+--        COUNT(DISTINCT TYPEOF("event_params"))                 AS ep_typecnt,
+--        MAX(TYPEOF("event_params"))                            AS ep_type,     -- ARRAY
+--        MAX(TYPEOF("device"))                                  AS dev_type,    -- OBJECT
+--        COUNT("event_params"[0])                               AS ep_indexable,
+--        COUNT("device":category)                               AS dev_key,
+--        COUNT("geo":country)                                   AS geo_key,
+--        COUNT("batch_event_index")                             AS c26,
+--        COUNT("session_traffic_source_last_click")             AS c29,
+--        MAX(TYPEOF("session_traffic_source_last_click"))        AS c29_type,
+--        COUNT("event_original_occurrence_timestamp")            AS c31
+-- FROM GN_DW.BRONZE_BIGQUERY.EVENTS
+-- GROUP BY 1 ORDER BY 1;
 -- 기대 (0장 (2) 표와 일치해야 한다)
 --   ep_type='ARRAY' · dev_type='OBJECT' · ep_typecnt=1 (전 구간)
 --   c26 은 어느 달부터 > 0 / c29 는 그보다 늦게 > 0, c29_type='OBJECT'
@@ -791,12 +1015,15 @@ LIMIT 100;
 --   · 언로드 파손이면 → B 에서 그 폴더만 재언로드·재업로드 후 재적재
 
 -- (5) EVENT_DT(파일 기준) ↔ "event_date"(GA4 기준) 불일치 — SRC_TABLE 단위
-SELECT SRC_TABLE, COUNT(*) AS n_rows,
-       SUM(IFF(TO_CHAR(EVENT_DT,'YYYYMMDD') <> "event_date", 1, 0)) AS mismatch
-FROM GN_DW.BRONZE_BIGQUERY.EVENTS
-GROUP BY 1
-HAVING SUM(IFF(TO_CHAR(EVENT_DT,'YYYYMMDD') <> "event_date", 1, 0)) > 0
-ORDER BY 1;
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    7장 (5) EVENT_DT ↔ "event_date" 불일치 — 구 계정 911테이블 전수 0건으로 확정됐다.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- SELECT SRC_TABLE, COUNT(*) AS n_rows,
+--        SUM(IFF(TO_CHAR(EVENT_DT,'YYYYMMDD') <> "event_date", 1, 0)) AS mismatch
+-- FROM GN_DW.BRONZE_BIGQUERY.EVENTS
+-- GROUP BY 1
+-- HAVING SUM(IFF(TO_CHAR(EVENT_DT,'YYYYMMDD') <> "event_date", 1, 0)) > 0
+-- ORDER BY 1;
 -- → 0건이면 두 컬럼을 구분할 필요가 없다.
 -- ✅ 2026-08-18 **최종 실측 = 0건** (911테이블 285,676,588행 전수).
 --    ⇒ EVENT_DT(파일 기준)와 "event_date"(GA4 기준)가 완전히 일치한다. 늦게 도착한
@@ -808,10 +1035,14 @@ ORDER BY 1;
 -- (6) 프루닝 실측 — 클러스터링 키가 필요한지 판단(3장 참조)
 --     🔴 1판은 날짜를 하드코딩해서 부분 적재 상태면 0행이 나와 판정이 무의미했다.
 --        실제 적재된 구간에서 7일을 자동으로 고른다.
-SET prune_from = (SELECT MIN(EVENT_DT) FROM GN_DW.BRONZE_BIGQUERY.EVENTS);
-SELECT COUNT(*) AS n_rows_7d
-FROM GN_DW.BRONZE_BIGQUERY.EVENTS
-WHERE EVENT_DT BETWEEN $prune_from AND DATEADD('day', 6, $prune_from);
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    7장 (6) 프루닝 실측 — CLUSTER BY 불필요는 구 계정에서 이미 확정됐다(3,006 중 19 파티션).
+--    3개월 샘플에서 다시 재도 판정이 달라지지 않는다.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- SET prune_from = (SELECT MIN(EVENT_DT) FROM GN_DW.BRONZE_BIGQUERY.EVENTS);
+-- SELECT COUNT(*) AS n_rows_7d
+-- FROM GN_DW.BRONZE_BIGQUERY.EVENTS
+-- WHERE EVENT_DT BETWEEN $prune_from AND DATEADD('day', 6, $prune_from);
 -- 실행 후 Query Profile 의 TableScan → 'Partitions scanned / Partitions total' 확인.
 -- 판정 기준: scanned/total 이 (7 / 전체적재일수) 의 2배 이내면 정상 → CLUSTER BY 불필요.
 --            그보다 크게 나오면 ALTER TABLE ... CLUSTER BY (EVENT_DT) 를 검토한다.
@@ -853,41 +1084,46 @@ WHERE EVENT_DT BETWEEN $prune_from AND DATEADD('day', 6, $prune_from);
 --      ⇒ 다음 이관(신규 폴더 추가)에서는 아래 검사를 정식으로 1회 돌리는 것을 권한다.
 --         사후 확증은 '이미 적재한 뒤' 판정이므로 사전 방어가 아니다.
 ------------------------------------------------------------
-CREATE OR REPLACE FILE FORMAT SANDBOX.TOOLS.FF_CSV_PEEK
-  TYPE = CSV COMPRESSION = GZIP FIELD_DELIMITER = NONE SKIP_HEADER = 0;
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    8장 헤더 prefix 사전검증 — 스테이지 전량 CSV 헤더 스캔이라 3개월 샘플링 취지와 어긋난다.
+--    🔴 대가 = 이것이 위치 기반 적재의 유일한 사전 방어선이다(0장 (3)ⓑ).
+--       이 판은 사후 확증(7장 (2) + 엄격 PARSE_JSON)으로 대체한다 — 상세·한계는 0-B장.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- CREATE OR REPLACE FILE FORMAT SANDBOX.TOOLS.FF_CSV_PEEK
+--   TYPE = CSV COMPRESSION = GZIP FIELD_DELIMITER = NONE SKIP_HEADER = 0;
 
-WITH stage_hdr AS (
-  SELECT REGEXP_SUBSTR(METADATA$FILENAME, 'events_[0-9]{8}')                AS folder,
-         MIN(CASE WHEN METADATA$FILE_ROW_NUMBER = 1 THEN $1::VARCHAR END)   AS hdr
-  FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/
-       (FILE_FORMAT => 'SANDBOX.TOOLS.FF_CSV_PEEK', PATTERN => 'events_[0-9]{8}/.*[.]csv[.]gz')
-  GROUP BY 1
-),
-f AS (
-  SELECT folder,
-         ARRAY_SIZE(SPLIT(hdr, ','))  AS file_cols,
-         UPPER(REPLACE(hdr, '"', ''))  AS file_col_list
-  FROM stage_hdr
-  WHERE folder IS NOT NULL
-),
-t AS (
-  SELECT COUNT(*)                                                          AS tbl_cols,
-         UPPER(LISTAGG(column_name, ',') WITHIN GROUP (ORDER BY pos))       AS tbl_col_list
-  FROM SANDBOX.TOOLS.V_GA4_EVENTS_DATA_COLS      -- 3-B 뷰 = 5장 프로시저와 같은 근거
-)
-SELECT f.folder, f.file_cols, t.tbl_cols,
-       CASE
-         WHEN t.tbl_cols = 0             THEN 'VIEW_EMPTY — 3-B 뷰/EVENTS 확인'
-         WHEN f.file_cols > t.tbl_cols   THEN 'TOO_MANY_COLS — GA4 신규 컬럼. EVENTS 에 ADD COLUMN 필요'
-         WHEN NOT STARTSWITH(t.tbl_col_list, f.file_col_list)
-                                         THEN 'NOT_A_PREFIX — 컬럼 순서/이름 불일치. 위치 적재 시 값 밀림'
-       END AS diagnosis,
-       f.file_col_list
-FROM f CROSS JOIN t
-WHERE t.tbl_cols = 0
-   OR f.file_cols > t.tbl_cols
-   OR NOT STARTSWITH(t.tbl_col_list, f.file_col_list)
-ORDER BY 1;
+-- WITH stage_hdr AS (
+--   SELECT REGEXP_SUBSTR(METADATA$FILENAME, 'events_[0-9]{8}')                AS folder,
+--          MIN(CASE WHEN METADATA$FILE_ROW_NUMBER = 1 THEN $1::VARCHAR END)   AS hdr
+--   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/BRONZE_BIGQUERY/
+--        (FILE_FORMAT => 'SANDBOX.TOOLS.FF_CSV_PEEK', PATTERN => 'events_[0-9]{8}/.*[.]csv[.]gz')
+--   GROUP BY 1
+-- ),
+-- f AS (
+--   SELECT folder,
+--          ARRAY_SIZE(SPLIT(hdr, ','))  AS file_cols,
+--          UPPER(REPLACE(hdr, '"', ''))  AS file_col_list
+--   FROM stage_hdr
+--   WHERE folder IS NOT NULL
+-- ),
+-- t AS (
+--   SELECT COUNT(*)                                                          AS tbl_cols,
+--          UPPER(LISTAGG(column_name, ',') WITHIN GROUP (ORDER BY pos))       AS tbl_col_list
+--   FROM SANDBOX.TOOLS.V_GA4_EVENTS_DATA_COLS      -- 3-B 뷰 = 5장 프로시저와 같은 근거
+-- )
+-- SELECT f.folder, f.file_cols, t.tbl_cols,
+--        CASE
+--          WHEN t.tbl_cols = 0             THEN 'VIEW_EMPTY — 3-B 뷰/EVENTS 확인'
+--          WHEN f.file_cols > t.tbl_cols   THEN 'TOO_MANY_COLS — GA4 신규 컬럼. EVENTS 에 ADD COLUMN 필요'
+--          WHEN NOT STARTSWITH(t.tbl_col_list, f.file_col_list)
+--                                          THEN 'NOT_A_PREFIX — 컬럼 순서/이름 불일치. 위치 적재 시 값 밀림'
+--        END AS diagnosis,
+--        f.file_col_list
+-- FROM f CROSS JOIN t
+-- WHERE t.tbl_cols = 0
+--    OR f.file_cols > t.tbl_cols
+--    OR NOT STARTSWITH(t.tbl_col_list, f.file_col_list)
+-- ORDER BY 1;
 -- 🔴 0건이어야 6장을 실행한다.
 --
 -- 🔴 1판 정정 ② — 1판은 `t.tbl_col_list NOT LIKE f.file_col_list || '%'` 였다.
@@ -979,6 +1215,12 @@ ORDER BY 1;
 -- DROP FILE FORMAT IF EXISTS SANDBOX.TOOLS.FF_CSV_PEEK;
 
 -- 디렉터리 테이블을 끄면 DIRECTORY() 조회가 실패한다. 재적재 계획이 없을 때만.
+-- 🔴🔴 [2026-08-20 O90] **주석 처리했다 — 종전에는 이 한 줄만 비주석이었다.**
+--   왜: 이 문서는 「위에서 아래로 전량 실행」이 전제인데, 그렇게 실행하면 마지막에 이 줄이 돌아
+--   **디렉터리 테이블이 꺼진다**. 그러면 7장 (2-B) 가 `DIRECTORY()` 를 쓰므로 **완료 게이트를
+--   다시 돌릴 수 없다**(dbt build 후 재검증·재적재 시 반드시 필요하다).
+--   ⇒ 전량 실행 시 「검증 수단을 스스로 파괴」하는 구조였다. 되살릴 조건 = GA4 재적재 계획이
+--   완전히 종료되고 (2-B) 재검증도 불필요해진 시점. 그때 아래 "-- " 를 제거한다.
 -- ALTER STAGE SANDBOX.TOOLS.MIG_LOAD_STAGE SET DIRECTORY = (ENABLE = FALSE);
 
 
@@ -992,106 +1234,111 @@ ORDER BY 1;
 --      ML 원천의 JSON 청결도는 아직 실측하지 않았다. 중단되면 그것이 신호다 —
 --      7장 (4) 진단 쿼리를 그 테이블에 맞춰 쓰면 불량 행을 특정할 수 있다.
 -- =====================================================================
-CREATE OR REPLACE PROCEDURE SANDBOX.TOOLS.LOAD_SCHEMA_DYNAMIC(
-  P_SCHEMA STRING, P_TABLE_LIKE STRING, P_DRY_RUN BOOLEAN)
-RETURNS TABLE(TARGET_TABLE STRING, N_COLS NUMBER, N_VARIANT NUMBER,
-              STATUS STRING, FILES_LOADED NUMBER, ROWS_LOADED NUMBER,
-              ERROR_MESSAGE STRING, COPY_SQL STRING)
-LANGUAGE SQL
-COMMENT = 'GN_DW 임의 스키마를 대상 테이블 타입 기반으로 동적 COPY. VARIANT 는 자동 PARSE_JSON(엄격).'
-AS
-$$
-DECLARE
-  v_sql   STRING;
-  v_sel   STRING;
-  v_tbl   STRING;
-  v_nc    NUMBER;
-  v_nv    NUMBER;
-  v_qid   STRING;
-  v_files NUMBER;
-  v_rows  NUMBER;
-  res     RESULTSET;
-  c1 CURSOR FOR
-    SELECT table_name FROM GN_DW.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = ? AND table_type = 'BASE TABLE' AND table_name LIKE ?
-    ORDER BY table_name;
-BEGIN
-  CREATE OR REPLACE TEMPORARY TABLE dyn_log (
-    TARGET_TABLE STRING, N_COLS NUMBER, N_VARIANT NUMBER, STATUS STRING,
-    FILES_LOADED NUMBER, ROWS_LOADED NUMBER, ERROR_MESSAGE STRING, COPY_SQL STRING);
+-- 🔴🔴 [2026-08-19 O88] 아래 블록은 주석 처리했다 (경계 근거 = 0-B장).
+--    부록 LOAD_SCHEMA_DYNAMIC — 범용 동적 로더(ML·BRONZE_CRM 등 타 스키마용).
+--    이 판의 대상은 BRONZE_BIGQUERY 적재뿐이므로 실행하지 않는다.
+--    이 문서 1110행이 스스로 "BRONZE_BIGQUERY 에는 쓰지 않는다" 고 못박고 있다.
+--    되살리려면 이 마커부터 블록 끝까지 선행 "-- " 를 제거한다.
+-- CREATE OR REPLACE PROCEDURE SANDBOX.TOOLS.LOAD_SCHEMA_DYNAMIC(
+--   P_SCHEMA STRING, P_TABLE_LIKE STRING, P_DRY_RUN BOOLEAN)
+-- RETURNS TABLE(TARGET_TABLE STRING, N_COLS NUMBER, N_VARIANT NUMBER,
+--               STATUS STRING, FILES_LOADED NUMBER, ROWS_LOADED NUMBER,
+--               ERROR_MESSAGE STRING, COPY_SQL STRING)
+-- LANGUAGE SQL
+-- COMMENT = 'GN_DW 임의 스키마를 대상 테이블 타입 기반으로 동적 COPY. VARIANT 는 자동 PARSE_JSON(엄격).'
+-- AS
+-- $$
+-- DECLARE
+--   v_sql   STRING;
+--   v_sel   STRING;
+--   v_tbl   STRING;
+--   v_nc    NUMBER;
+--   v_nv    NUMBER;
+--   v_qid   STRING;
+--   v_files NUMBER;
+--   v_rows  NUMBER;
+--   res     RESULTSET;
+--   c1 CURSOR FOR
+--     SELECT table_name FROM GN_DW.INFORMATION_SCHEMA.TABLES
+--     WHERE table_schema = ? AND table_type = 'BASE TABLE' AND table_name LIKE ?
+--     ORDER BY table_name;
+-- BEGIN
+--   CREATE OR REPLACE TEMPORARY TABLE dyn_log (
+--     TARGET_TABLE STRING, N_COLS NUMBER, N_VARIANT NUMBER, STATUS STRING,
+--     FILES_LOADED NUMBER, ROWS_LOADED NUMBER, ERROR_MESSAGE STRING, COPY_SQL STRING);
 
   -- 식별자 방어. 이 프로시저는 소유자 권한으로 실행되고 P_SCHEMA 를 문자열로 조립한다.
   -- (P_TABLE_LIKE 는 커서 바인드 변수라 조립되지 않으므로 검증 불필요)
   -- ✅ 실측 — CALL ...('ML"; DROP TABLE X; --','%',TRUE) → INVALID_SCHEMA_NAME 반환, 실행 차단
-  IF (NOT (P_SCHEMA RLIKE '^[A-Za-z_][A-Za-z0-9_$]*$')) THEN
-    INSERT INTO dyn_log
-    SELECT 'ABORT', NULL, NULL, 'INVALID_SCHEMA_NAME', NULL, NULL,
-           '허용되지 않는 스키마명: ' || :P_SCHEMA, NULL;
-    res := (SELECT * FROM dyn_log);
-    RETURN TABLE(res);
-  END IF;
+--   IF (NOT (P_SCHEMA RLIKE '^[A-Za-z_][A-Za-z0-9_$]*$')) THEN
+--     INSERT INTO dyn_log
+--     SELECT 'ABORT', NULL, NULL, 'INVALID_SCHEMA_NAME', NULL, NULL,
+--            '허용되지 않는 스키마명: ' || :P_SCHEMA, NULL;
+--     res := (SELECT * FROM dyn_log);
+--     RETURN TABLE(res);
+--   END IF;
 
-  OPEN c1 USING (P_SCHEMA, P_TABLE_LIKE);
-  LOOP
-    v_tbl := NULL;
-    FETCH c1 INTO v_tbl;
-    IF (v_tbl IS NULL) THEN BREAK; END IF;
+--   OPEN c1 USING (P_SCHEMA, P_TABLE_LIKE);
+--   LOOP
+--     v_tbl := NULL;
+--     FETCH c1 INTO v_tbl;
+--     IF (v_tbl IS NULL) THEN BREAK; END IF;
 
     -- 대상 테이블 타입에서 전개식을 만든다. VARIANT/OBJECT/ARRAY → PARSE_JSON.
-    SELECT COUNT(*),
-           COUNT_IF(data_type IN ('VARIANT','OBJECT','ARRAY')),
-           LISTAGG(CASE WHEN data_type IN ('VARIANT','OBJECT','ARRAY')
-                        THEN 'PARSE_JSON($' || ordinal_position || ')'
-                        ELSE '$' || ordinal_position END, ',')
-             WITHIN GROUP (ORDER BY ordinal_position)
-      INTO :v_nc, :v_nv, :v_sel
-    FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
-    WHERE table_schema = :P_SCHEMA AND table_name = :v_tbl;
+--     SELECT COUNT(*),
+--            COUNT_IF(data_type IN ('VARIANT','OBJECT','ARRAY')),
+--            LISTAGG(CASE WHEN data_type IN ('VARIANT','OBJECT','ARRAY')
+--                         THEN 'PARSE_JSON($' || ordinal_position || ')'
+--                         ELSE '$' || ordinal_position END, ',')
+--              WITHIN GROUP (ORDER BY ordinal_position)
+--       INTO :v_nc, :v_nv, :v_sel
+--     FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+--     WHERE table_schema = :P_SCHEMA AND table_name = :v_tbl;
 
     -- VARIANT 가 없으면 변환 없는 일반 COPY 가 더 빠르다.
     -- 🟢 이 경로에서는 FF_CSV_LOAD 의 ERROR_ON_COLUMN_COUNT_MISMATCH=TRUE 가 **실제로 작동**한다
     --    (변환 COPY 가 아니므로). 브론즈/ML 의 컬럼 누락 사고를 여기서 잡아준다.
-    IF (:v_nv = 0) THEN
-      v_sql := 'COPY INTO GN_DW."' || :P_SCHEMA || '"."' || :v_tbl || '" '
-            || 'FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/' || :P_SCHEMA || '/' || :v_tbl || '/ '
-            || 'FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD) '
-            || 'ON_ERROR = ABORT_STATEMENT PURGE = FALSE';
-    ELSE
-      v_sql := 'COPY INTO GN_DW."' || :P_SCHEMA || '"."' || :v_tbl || '" '
-            || 'FROM (SELECT ' || :v_sel
-            || ' FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/' || :P_SCHEMA || '/' || :v_tbl || '/) '
-            || 'FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD) '
-            || 'ON_ERROR = ABORT_STATEMENT PURGE = FALSE';
-    END IF;
+--     IF (:v_nv = 0) THEN
+--       v_sql := 'COPY INTO GN_DW."' || :P_SCHEMA || '"."' || :v_tbl || '" '
+--             || 'FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/' || :P_SCHEMA || '/' || :v_tbl || '/ '
+--             || 'FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD) '
+--             || 'ON_ERROR = ABORT_STATEMENT PURGE = FALSE';
+--     ELSE
+--       v_sql := 'COPY INTO GN_DW."' || :P_SCHEMA || '"."' || :v_tbl || '" '
+--             || 'FROM (SELECT ' || :v_sel
+--             || ' FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/' || :P_SCHEMA || '/' || :v_tbl || '/) '
+--             || 'FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD) '
+--             || 'ON_ERROR = ABORT_STATEMENT PURGE = FALSE';
+--     END IF;
 
-    IF (P_DRY_RUN) THEN
-      INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv, 'DRY_RUN', NULL, NULL, NULL, :v_sql;
-    ELSE
-      BEGIN
-        EXECUTE IMMEDIATE :v_sql;
-        v_qid := SQLID;
-        BEGIN
-          SELECT COUNT(*), COALESCE(SUM("rows_loaded"), 0) INTO :v_files, :v_rows
-          FROM TABLE(RESULT_SCAN(:v_qid));
-        EXCEPTION WHEN OTHER THEN v_files := 0; v_rows := 0;
-        END;
-        INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv,
-          CASE WHEN :v_files = 0 THEN 'NO_FILES' ELSE 'LOADED' END,
-          :v_files, :v_rows, NULL, :v_sql;
-      EXCEPTION
-        WHEN OTHER THEN
+--     IF (P_DRY_RUN) THEN
+--       INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv, 'DRY_RUN', NULL, NULL, NULL, :v_sql;
+--     ELSE
+--       BEGIN
+--         EXECUTE IMMEDIATE :v_sql;
+--         v_qid := SQLID;
+--         BEGIN
+--           SELECT COUNT(*), COALESCE(SUM("rows_loaded"), 0) INTO :v_files, :v_rows
+--           FROM TABLE(RESULT_SCAN(:v_qid));
+--         EXCEPTION WHEN OTHER THEN v_files := 0; v_rows := 0;
+--         END;
+--         INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv,
+--           CASE WHEN :v_files = 0 THEN 'NO_FILES' ELSE 'LOADED' END,
+--           :v_files, :v_rows, NULL, :v_sql;
+--       EXCEPTION
+--         WHEN OTHER THEN
           -- 한 테이블이 실패해도 나머지는 계속한다 (06번 A.3 은 전체가 중단된다).
-          INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv, 'ERROR',
-            NULL, NULL, :SQLCODE || ' | ' || :SQLERRM, :v_sql;
-      END;
-    END IF;
-  END LOOP;
-  CLOSE c1;
+--           INSERT INTO dyn_log SELECT :v_tbl, :v_nc, :v_nv, 'ERROR',
+--             NULL, NULL, :SQLCODE || ' | ' || :SQLERRM, :v_sql;
+--       END;
+--     END IF;
+--   END LOOP;
+--   CLOSE c1;
 
-  res := (SELECT * FROM dyn_log ORDER BY TARGET_TABLE);
-  RETURN TABLE(res);
-END;
-$$;
+--   res := (SELECT * FROM dyn_log ORDER BY TARGET_TABLE);
+--   RETURN TABLE(res);
+-- END;
+-- $$;
 
 -- 사용 예 — 반드시 DRY_RUN 을 먼저 본다.
 -- CALL SANDBOX.TOOLS.LOAD_SCHEMA_DYNAMIC('ML', 'ML_RST_DATA_%', TRUE);
