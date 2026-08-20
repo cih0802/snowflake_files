@@ -159,7 +159,7 @@ FGA GA4 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(�
 |---|---|---|---|
 | 세세목명 · 예산구분 · 월 편성예산 · 월 집행예산(ERP) | `analyst_budget` | 🟢 | SV metric **`TOTAL_PLAN_BUDGET`·`TOTAL_EXEC_BUDGET`** · 차원 `BUDGET_ITEM_NAME`·`BUDGET_CATEGORY` · 🔴 **[O76-B A8 정정]** 최초 `PLAN_BUDGET_MONTH`·`EXEC_BUDGET_ERP` 는 **FACT 컬럼명**이다 |
 | (누계)편성·(누계)집행 · 월/연 편성 집행율 | `analyst_budget` | 🟢 | SV 파생(기간 필터·집행율 metric) |
-| 연 편성예산 | — | 🔴 | `FACT_BUDGET.PLAN_BUDGET_YEAR` 미적재 ⇒ **SV 에 아예 노출되지 않는다**(2026-08-14 확인) |
+| 연 편성예산 | `FACT_BUDGET_YEARLY` (SV 미노출) | 🟡 | 🆕 **[2026-08-20 O96·DEC42] 데이터는 해소됐다** — O93 이 연 grain 팩트를 신설·적재(실측 `FACT_BUDGET_YEARLY` 4,298행 · `PLAN_BUDGET_YEAR` non-NULL **4,255**). 🔴 종전 판정 *「`FACT_BUDGET.PLAN_BUDGET_YEAR` 미적재」* 는 **원천 부재를 뜻하지 않는다** — 그 컬럼은 **폐기 슬롯(의도적 영구 NULL)** 이고 연 편성은 `FACT_BUDGET_YEARLY` 소관이다. 🟠 **잔여 = SV 배선** — 연 grain 팩트를 `analyst_budget` SV 에 아직 등재하지 않았다(월 팩트와 **조인 합산 금지** · 연값이 12배 증폭된다) |
 | 월·(누계) 집행예산(추정치) | — | 🔴 | `EXEC_BUDGET_EST` 미적재 — 원천이 **대행사 리포트**이고 예산 원장에 없다(`E-4`) |
 | 매체명(브랜드2) · 기준일시 | — | 🔴 | 위 §3.1 과 동일 사유 |
 

@@ -570,7 +570,8 @@ ALTER VIEW GN_DW.GOLD.WIDE_BUDGET
           COLUMN CAL_YEAR          COMMENT 'FLOOR(MONTH_KEY/100) — 연도',
           COLUMN CAL_MONTH         COMMENT 'MOD(MONTH_KEY,100) — 월',
           COLUMN PLAN_BUDGET_MONTH COMMENT '편성예산(월, 원)',
-          COLUMN PLAN_BUDGET_YEAR  COMMENT '편성예산(연, 원)',
+          -- 🔴 [2026-08-20 O96 · DEC42] 폐기 슬롯 — 의도적 영구 NULL. 연 편성은 FACT_BUDGET_YEARLY 소관.
+          COLUMN PLAN_BUDGET_YEAR  COMMENT '편성예산(연, 원) 🔴폐기 슬롯 — **의도적 영구 NULL**. 연 편성예산은 `GOLD.FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`(연 grain) 를 쓴다. 🔴원천 부재가 아니다(종전의 「원천 부재」 주장은 O96 철회) — 원천 `YEAR_BDGT_TOT_AMT` 실재·적재됨. 월 grain 에 연값을 넣으면 SUM 이 12배 부푼다.',
           COLUMN EXEC_BUDGET_ERP   COMMENT '집행예산(ERP 월, 원)',
           COLUMN EXEC_BUDGET_EST   COMMENT '집행예산(추정, 원)',
           COLUMN FUNDRAISING_COST  COMMENT '모금성비용(원)',

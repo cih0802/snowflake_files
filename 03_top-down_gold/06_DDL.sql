@@ -999,7 +999,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (선택 FK→DIM_SPONSORSHIP)',
     PLAN_BUDGET_MONTH   NUMBER(18,2)    COMMENT '편성예산(월)',
-    PLAN_BUDGET_YEAR    NUMBER(18,2)    COMMENT '편성예산(연)',
+    -- 🔴 [2026-08-20 O96 · DEC42] 아래 컬럼은 **의도적 영구 NULL** 이다 — 폐기(deprecated) 슬롯.
+    --    생성 근거는 실재했다(필드인벤토리 「편성예산(연)」 · 지표 「연 편성예산」 매핑 교정 2026-07-27)
+    --    그러나 O93 에서 연 grain 을 `FACT_BUDGET_YEARLY` 로 분리해 **근거가 대체**됐다.
+    --    ⚠️ 이 컬럼에 값을 넣지 마라 — 월 grain 에 연값을 넣으면 SUM 이 12배로 부풀고 조용히 틀린다.
+    PLAN_BUDGET_YEAR    NUMBER(18,2)    COMMENT '🔴폐기 슬롯 — **의도적 영구 NULL**(값 없음이 정상). 연 편성예산은 **`FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`(연 grain)** 를 쓴다. 🔴원천 부재가 아니다 — 원천 `YEAR_BDGT_TOT_AMT` 는 실재하며 연 팩트에 적재돼 있다(종전의 「원천 부재」 주장은 O96 에서 철회). 이 컬럼을 월 팩트에 채우면 grain 혼입으로 SUM 이 12배 부푼다. 처분 결정 = DEC42.',
     EXEC_BUDGET_ERP     NUMBER(18,2)    COMMENT '집행예산(ERP)',
     EXEC_BUDGET_EST     NUMBER(18,2)    COMMENT '집행예산(추정)',
     FUNDRAISING_COST    NUMBER(18,2)    COMMENT '모금성비용',
