@@ -1,99 +1,80 @@
--- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 2026-08-20
+-- GN_DW 브론즈 계층 DDL 스냅샷 (데이터 마이그레이션 A→B→로컬→C 용 스키마 정의)
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
---   원본(A) 계정 GN_DW 브론즈 스키마의 DDL 스냅샷이다.
+--   원본(A) 계정 GN_DW 데이터베이스의 브론즈 스키마 DDL 스냅샷이다.
 --   최종 대상(C) 계정에 동일 구조를 재현하기 위한 "적재 전 테이블 생성" 스크립트로 사용한다.
---   CSV 적재는 위치(순서) 기반이므로 적재 전에 반드시 이 파일을 먼저 실행해야 한다.
---
--- 이관 경로 / TOPOLOGY
---   A ──(Direct Share · 동일 리전)──▶ B ──(로컬 다운로드)──▶ 로컬 ──(업로드)──▶ C (다른 리전)
 --
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
---              → 3.2(DDL 추출) / 5.1(DDL로 스키마·테이블 재생성)
---   [형제 DDL] 50_handoff/04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql
---              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
---              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
---              → GN_DW.ML.ML_RST_DATA_* (예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 67 테이블이 완성된다. 선후 관계는 없다.
+--              → 3.2(DDL 추출) / 5.1(DDL로 스키마·테이블 재생성) 단계에서 본 파일을 사용.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
---
--- 본 파일의 범위 / SCOPE
---   GN_DW.BRONZE_CRM (45) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (1) = 50 테이블
---   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
---      해당 원천의 정제 결과는 04_2번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
+--              50_handoff/05_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH  (본 파일은 아래 문서를 병합해 생성)
 --   50_handoff/02_1_A DB정보.sql                            (A 계정 GET_DDL 실측 — 최우선 정본)
 --   99_provided_definition/11_bronze_crm_ddl.sql            (CRM DDL, 컬럼 코멘트 없음)
 --   99_provided_definition/12_bronze_agency_ddl.sql         (AGENCY DDL, 컬럼 코멘트 있음)
 --   99_provided_definition/13_bronze_erp_ddl.sql            (ERP DDL, 컬럼 코멘트 있음)
+--   99_provided_definition/14_bronze_ga4_events_schema.md   (GA4 스키마 명세 — 컬럼 코멘트 출처)
+--   99_provided_definition/15_bronze_ga4_ddl.sql            (GA4 DDL, 컬럼 코멘트 없음)
 --   99_provided_definition/컬럼정의서 20260714.csv           (한글 컬럼 코멘트 출처)
 --
 -- 병합 규칙 / MERGE RULE
 --   - 구조(컬럼 순서/타입/DEFAULT)는 A 계정 실측 DDL(02_1_A DB정보.sql)을 최우선 정본으로 한다.
---     원천 정의 문서(11~13)와 어긋나면 실측값을 따른다.
+--     원천 정의 문서(11~13, 15)와 어긋나면 실측값을 따른다.
 --   - 컬럼 코멘트: 원천 문서에 있으면 그것을 사용(AGENCY/ERP), 없으면 기존 스냅샷 코멘트를 유지(CRM).
+--   - GA4는 DDL에 코멘트가 없어 14번 스키마 명세서(§3 전체 스키마)의 필드 설명을 코멘트로 사용.
 --   - 컬럼정의서 CSV의 '컬럼설명(한글)'이 공백인 컬럼은 명명 규칙에 따라 부여한다.
 --     예) BF_STAT_CD='이전상태코드' ↔ AF_STAT_CD='이후상태코드', SER_NO='일련번호'
 --   - 적재 프로시저(SP_LOAD_*)는 **제외**한다: 적재 전 구조 생성에 불필요하고
 --     외부 스테이지/API 통합에 의존해 C 계정에서 생성이 실패할 수 있다.
---     → 필요 시 원천 정의 문서(12/13)에서 직접 가져올 것.
+--     → 필요 시 원천 정의 문서(12/13/15)에서 직접 가져올 것.
 --       BRONZE_AGENCY: SP_LOAD_DGT_AD_FROM_GSHEET, SP_LOAD_REBRDC_FROM_SHAREPOINT, SP_LOAD_VIDEO_AD_FROM_GDRIVE
 --       BRONZE_ERP   : SP_LOAD_BUDGET_BY_YEAR
+--       BRONZE_GA4   : SP_LOAD_BIGQUERY
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-08-20
---   - 스키마 수   : 3   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP)
---   - 테이블 수   : 50  (CRM 45, AGENCY 4, ERP 1)
---   - 시퀀스 수   : 1   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO)
+--   - 갱신일자    : 2026-08-12  (초판 2026-07-13, 2판 2026-07-30)
+--   - 스키마 수   : 4   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4)
+--   - 테이블 수   : 53  (CRM 45, AGENCY 4, ERP 1, GA4 3)
+--   - 시퀀스 수   : 2   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 3   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT_EUCKR)
---   - 컬럼 코멘트 : 전 컬럼 부여 완료
+--   - 컬럼 코멘트 : 전 컬럼 부여 완료 (원천 문서 166 / 기존 유지 957 / 명세서·규칙 기반 39 / 컬럼정의서 20)
 --
--- 변경 이력 / CHANGES
---   2026-08-20
---     - [SCHEMA] GN_DW.BRONZE_GA4 블록 삭제 — 이관 대상에서 제외되었다.
---       (A 에서 BRONZE_BIGQUERY 로 개편되었고, 정제 결과인 SILVER 테이블을 대신 받는다.)
---     * 스키마 4 → 3, 테이블 53 → 50, 시퀀스 2 → 1
---     * CRM / AGENCY / ERP 의 구조·컬럼·코멘트는 변경 없다.
---     → 삭제된 GA4 DDL 이 필요하면 _archive/20260812_3판/ 의 동명 파일을 참조.
---   2026-08-12
---     + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT  (13컬럼)
---     + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR              (9컬럼)
---     * 위 2개는 이전 판에서 누락되어 있었다. A 계정 실측 목록과 대조해 확인.
---       구조는 02_1_A DB정보.sql 의 BRONZE_CRM GET_DDL 결과, 한글 코멘트는 컬럼정의서 CSV 기준.
---     * CRM 43 → 45 로 정정. AGENCY/ERP 는 변경 없음.
---   2026-07-30
---     + [TABLE]    GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO      (신규, 적재 프로시저 오류 로그)
---     + [COLUMN]   GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER : BDGT_ITEM_NM, DVLP_INBOUND_PATH (62 → 64 컬럼)
---     + [SEQUENCE] BRONZE_AGENCY.SEQ_SYNC_ERR_INFO
---     + [FILE FORMAT] BRONZE_ERP.GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, EUC-KR)
+-- 2판(2026-07-30) 대비 변경 / CHANGES  ← 2026-08-12 3판
+--   + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT  (13컬럼, 1,134,848행)
+--   + [TABLE] GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR              (9컬럼, 2,228,064행)
+--   * 위 2개는 2판에서 누락되어 있었다(51 → 53). A 계정 실측 목록과 대조해 확인.
+--     구조는 02_1_A DB정보.sql 의 A3(BRONZE_CRM GET_DDL) 결과, 한글 코멘트는 컬럼정의서 CSV 기준.
+--   * CRM 43 → 45 로 정정. AGENCY/ERP/GA4 는 변경 없음.
+--
+-- 초판(2026-07-13) 대비 변경 / CHANGES
+--   + [TABLE]    GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO      (신규, 적재 프로시저 오류 로그)
+--   + [TABLE]    GN_DW.BRONZE_GA4.SYNC_ERR_INFO         (신규, 적재 프로시저 오류 로그)
+--   + [TABLE]    GN_DW.BRONZE_GA4."events_20260719"     (신규, 20260501 대비 컬럼 1개 추가)
+--   + [COLUMN]   GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER : BDGT_ITEM_NM, DVLP_INBOUND_PATH (62 → 64 컬럼)
+--   + [COLUMN]   GN_DW.BRONZE_GA4."events_20260719"  : "event_original_occurrence_timestamp" (30 → 31 컬럼)
+--   + [SEQUENCE] SEQ_SYNC_ERR_INFO x2, [FILE FORMAT] BRONZE_ERP.GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, EUC-KR)
+--   * CRM 43개 / AGENCY 기존 3개 테이블은 컬럼 구조·타입 변경 없음.
+--   * GA4 이관 경로 정정: 초판의 Parquet(SNAPPY) 경로 대신 **CSV+GZIP 언로드 후 TRY_PARSE_JSON 복원**
+--     을 실제로 사용했다(01번 문서 5.5 참조).
 --
 -- 사용법 / USAGE (C 계정에서)
 --   1) DB/스키마명을 C 환경에 맞게 치환 (예: GN_DW -> <TARGET_DB>).
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
---   4) 이어서 04_2번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 45 / ERP 1 / ML 16 / SILVER 1 = 67):
+--   4) 생성 확인:
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
---        WHERE table_type='BASE TABLE'
---          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY')
---               OR (table_schema='SILVER' AND table_name='BIGQUERY_REFINED_DATA')
---               OR (table_schema='ML' AND table_name LIKE 'ML_RST_DATA_%'))
---        GROUP BY 1 ORDER BY 1;
---   6) 06번 A.1 (4) 로 CSV 헤더 ↔ 테이블 구조를 대조한 뒤 적재한다.
+--        WHERE table_schema LIKE 'BRONZE_%' AND table_type='BASE TABLE' GROUP BY 1 ORDER BY 1;
+--   5) 이후 01번 문서 5.4(CSV 일괄 적재) / 5.5(GA4 JSON 복원) 절차로 데이터 적재.
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 50개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
---     → 06번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
---     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 04_2번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
---     각각 06번 A.5 · A.5-B.2 가 담당한다.
+--   - GA4 "events_*" 는 VARIANT 컬럼 11개(4,11,12,14,15,16,18,22,23,24,29 번째)를
+--     TRY_PARSE_JSON 으로 변환 적재해야 한다. 그냥 COPY 하면 JSON이 문자열로 저장된다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
 --
 -- 객체 인덱스 / OBJECT INDEX
@@ -123,13 +104,17 @@
 --     [FILE FORMAT] GN_CSV_FORMAT       (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --     [FILE FORMAT] GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, ENCODING='EUC-KR')
 --
---   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 04_2번 참조 (118컬럼, ITEMS=ARRAY)
---   [별도 파일] GN_DW.ML.ML_RST_DATA_* 16종        — 05번 참조 (PREDICTION=VARIANT 4종 포함)
+--   [SCHEMA] GN_DW.BRONZE_GA4 — 원천 적재: GA4 (웹/앱 방문, Google 광고), 테이블 3개
+--     "events_20260501"(30컬럼), "events_20260719"(31컬럼), SYNC_ERR_INFO
+--     ※ 컬럼명 소문자 대소문자 구분(따옴표 식별자), VARIANT 컬럼 11개
+--       (event_params, user_properties, user_ltv, device, geo, traffic_source,
+--        ecommerce, items, collected_traffic_source, session_traffic_source_last_click, privacy_info)
+--     [SEQUENCE] SEQ_SYNC_ERR_INFO
 -- =====================================================================
 
 
 -- #####################################################################
--- # SCHEMA 1/3 : GN_DW.BRONZE_CRM  (CRM 원천 - 회원/납입/캠페인)
+-- # SCHEMA 1/4 : GN_DW.BRONZE_CRM  (CRM 원천 - 회원/납입/캠페인)
 -- #####################################################################
 USE ROLE SYSADMIN;
 CREATE DATABASE IF NOT EXISTS GN_DW
@@ -141,10 +126,6 @@ USE ROLE ACCOUNTADMIN;
 GRANT OWNERSHIP ON DATABASE GN_DW TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 
 USE ROLE GN_DW_ADMIN;
--- drop schema GN_DW.BRONZE_CRM; 
--- drop schema GN_DW.BRONZE_AGENCY;
--- drop schema GN_DW.BRONZE_ERP;
--- (BRONZE_BIGQUERY 는 이관 대상이 아니다 — 본 파일에서 생성하지 않는다)
 create or replace schema GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
 
 create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (
@@ -223,8 +204,7 @@ create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (
   REAL_SEND_DT TIMESTAMP_NTZ(9) COMMENT '실제발신일시',
   LAST_UPPER_CMPGN VARCHAR(255) COMMENT '최종상위캠페인',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
-  OPEN_DT TIMESTAMP_NTZ(9) COMMENT '오픈일시'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.SND_REQ_MST (
   SEQ_NO NUMBER(19,0) COMMENT '순번',
@@ -1190,7 +1170,7 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
 
 
 -- #####################################################################
--- # SCHEMA 2/3 : GN_DW.BRONZE_AGENCY  (대행사 원천 - 디지털/DRTV/재송출 광고)
+-- # SCHEMA 2/4 : GN_DW.BRONZE_AGENCY  (대행사 원천 - 디지털/DRTV/재송출 광고)
 -- #####################################################################
 create or replace schema GN_DW.BRONZE_AGENCY with managed access COMMENT='원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)';
 
@@ -1322,7 +1302,7 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 
 
 -- #####################################################################
--- # SCHEMA 3/3 : GN_DW.BRONZE_ERP  (ERP 원천 - SMS/알림톡/마케팅 발송)
+-- # SCHEMA 3/4 : GN_DW.BRONZE_ERP  (ERP 원천 - SMS/알림톡/마케팅 발송)
 -- #####################################################################
 create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
 
@@ -1339,7 +1319,6 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
   FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
   BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
   DVLP_INBOUND_PATH VARCHAR(16777216) COMMENT '개발인입경로',
-  MNYRS_COST_DIV_YN VARCHAR(16777216) COMMENT '모금비구분',
   YEAR_BDGT_TOT_AMT NUMBER(38,0) COMMENT '연예산_합계',
   CHN_BDGT_TOT_AMT NUMBER(38,0) COMMENT '변경예산_합계',
   ADJ_BDGT_TOT_AMT NUMBER(38,0) COMMENT '조정예산_합계',
@@ -1404,3 +1383,85 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR
 	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 	ENCODING = 'EUC-KR'
 ;
+
+
+-- #####################################################################
+-- # SCHEMA 4/4 : GN_DW.BRONZE_GA4  (GA4 원천 - 웹/앱 방문, Google 광고 (VARIANT 다수))
+-- #####################################################################
+create or replace schema GN_DW.BRONZE_GA4 with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
+
+create or replace sequence GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+
+create or replace TABLE GN_DW.BRONZE_GA4."events_20260501" (
+  "event_date" VARCHAR(16777216) COMMENT '이벤트가 기록된 날짜(YYYYMMDD, 속성 시간대 기준)',
+  "event_timestamp" NUMBER(38,0) COMMENT 'GA4 서버가 이벤트를 수신한 시각(UTC 마이크로초)',
+  "event_name" VARCHAR(16777216) COMMENT '이벤트 이름(자동수집/커스텀 이벤트명)',
+  "event_params" VARIANT COMMENT '이벤트 파라미터 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "event_previous_timestamp" NUMBER(38,0) COMMENT '동일 기기 직전 이벤트 수신 시각(UTC 마이크로초)',
+  "event_value_in_usd" FLOAT COMMENT '이벤트 value 파라미터의 USD 환산값',
+  "event_bundle_sequence_id" NUMBER(38,0) COMMENT '기기→서버 전송 배치(bundle) 요청 순번 ID',
+  "event_server_timestamp_offset" NUMBER(38,0) COMMENT '기기 수집 시각과 서버 업로드 시각의 차이(마이크로초)',
+  "user_id" VARCHAR(16777216) COMMENT '개발자가 설정한 사용자 고유 ID(로그인 사용자, CRM 연계 키)',
+  "user_pseudo_id" VARCHAR(16777216) COMMENT 'GA4 자동 생성 익명 사용자 식별자',
+  "privacy_info" VARIANT COMMENT '동의모드 데이터 저장 동의 정보(RECORD → OBJECT)',
+  "user_properties" VARIANT COMMENT '사용자 속성 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "user_first_touch_timestamp" NUMBER(38,0) COMMENT '사용자 최초 앱실행/웹방문 시각(UTC 마이크로초)',
+  "user_ltv" VARIANT COMMENT '사용자 생애가치(LTV) 정보(RECORD → OBJECT)',
+  "device" VARIANT COMMENT '기기 정보(RECORD → OBJECT)',
+  "geo" VARIANT COMMENT '지리 정보(IP 기반, RECORD → OBJECT)',
+  "app_info" NUMBER(38,0) COMMENT '앱 정보(RECORD → OBJECT)',
+  "traffic_source" VARIANT COMMENT '최초 유입 트래픽 소스(First-touch, User-scoped, RECORD → OBJECT)',
+  "stream_id" VARCHAR(16777216) COMMENT '이벤트가 수집된 GA4 데이터 스트림 고유 ID',
+  "platform" VARCHAR(16777216) COMMENT '이벤트 발생 플랫폼(WEB/ANDROID/IOS)',
+  "event_dimensions" NUMBER(38,0) COMMENT '이벤트 차원 정보(hostname 등, RECORD → OBJECT)',
+  "ecommerce" VARIANT COMMENT '전자상거래 정보(RECORD → OBJECT)',
+  "items" VARIANT COMMENT '상품 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "collected_traffic_source" VARIANT COMMENT '이벤트 시점 원시 UTM 트래픽 소스(Event-scoped, RECORD → OBJECT)',
+  "is_active_user" BOOLEAN COMMENT '해당 날짜 사용자 활성 여부(True=활성)',
+  "batch_event_index" NUMBER(38,0) COMMENT '동일 배치 내 이벤트 발생 순번',
+  "batch_page_id" NUMBER(38,0) COMMENT '세션 내 페이지뷰 순번',
+  "batch_ordering_id" NUMBER(38,0) COMMENT '페이지 내 네트워크 요청 단조 증가 순번',
+  "session_traffic_source_last_click" VARIANT COMMENT '세션 마지막 클릭 트래픽 소스(Session-scoped, GA4 UI 일치, RECORD → OBJECT)',
+  "publisher" NUMBER(38,0) COMMENT '퍼블리셔 광고 수익 정보(RECORD → OBJECT)'
+);
+create or replace TABLE GN_DW.BRONZE_GA4."events_20260719" (
+  "event_date" VARCHAR(16777216) COMMENT '이벤트가 기록된 날짜(YYYYMMDD, 속성 시간대 기준)',
+  "event_timestamp" NUMBER(38,0) COMMENT 'GA4 서버가 이벤트를 수신한 시각(UTC 마이크로초)',
+  "event_name" VARCHAR(16777216) COMMENT '이벤트 이름(자동수집/커스텀 이벤트명)',
+  "event_params" VARIANT COMMENT '이벤트 파라미터 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "event_previous_timestamp" NUMBER(38,0) COMMENT '동일 기기 직전 이벤트 수신 시각(UTC 마이크로초)',
+  "event_value_in_usd" FLOAT COMMENT '이벤트 value 파라미터의 USD 환산값',
+  "event_bundle_sequence_id" NUMBER(38,0) COMMENT '기기→서버 전송 배치(bundle) 요청 순번 ID',
+  "event_server_timestamp_offset" NUMBER(38,0) COMMENT '기기 수집 시각과 서버 업로드 시각의 차이(마이크로초)',
+  "user_id" VARCHAR(16777216) COMMENT '개발자가 설정한 사용자 고유 ID(로그인 사용자, CRM 연계 키)',
+  "user_pseudo_id" VARCHAR(16777216) COMMENT 'GA4 자동 생성 익명 사용자 식별자',
+  "privacy_info" VARIANT COMMENT '동의모드 데이터 저장 동의 정보(RECORD → OBJECT)',
+  "user_properties" VARIANT COMMENT '사용자 속성 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "user_first_touch_timestamp" NUMBER(38,0) COMMENT '사용자 최초 앱실행/웹방문 시각(UTC 마이크로초)',
+  "user_ltv" VARIANT COMMENT '사용자 생애가치(LTV) 정보(RECORD → OBJECT)',
+  "device" VARIANT COMMENT '기기 정보(RECORD → OBJECT)',
+  "geo" VARIANT COMMENT '지리 정보(IP 기반, RECORD → OBJECT)',
+  "app_info" NUMBER(38,0) COMMENT '앱 정보(RECORD → OBJECT)',
+  "traffic_source" VARIANT COMMENT '최초 유입 트래픽 소스(First-touch, User-scoped, RECORD → OBJECT)',
+  "stream_id" VARCHAR(16777216) COMMENT '이벤트가 수집된 GA4 데이터 스트림 고유 ID',
+  "platform" VARCHAR(16777216) COMMENT '이벤트 발생 플랫폼(WEB/ANDROID/IOS)',
+  "event_dimensions" NUMBER(38,0) COMMENT '이벤트 차원 정보(hostname 등, RECORD → OBJECT)',
+  "ecommerce" VARIANT COMMENT '전자상거래 정보(RECORD → OBJECT)',
+  "items" VARIANT COMMENT '상품 배열(REPEATED RECORD → ARRAY, FLATTEN 대상)',
+  "collected_traffic_source" VARIANT COMMENT '이벤트 시점 원시 UTM 트래픽 소스(Event-scoped, RECORD → OBJECT)',
+  "is_active_user" BOOLEAN COMMENT '해당 날짜 사용자 활성 여부(True=활성)',
+  "batch_event_index" NUMBER(38,0) COMMENT '동일 배치 내 이벤트 발생 순번',
+  "batch_page_id" NUMBER(38,0) COMMENT '세션 내 페이지뷰 순번',
+  "batch_ordering_id" NUMBER(38,0) COMMENT '페이지 내 네트워크 요청 단조 증가 순번',
+  "session_traffic_source_last_click" VARIANT COMMENT '세션 마지막 클릭 트래픽 소스(Session-scoped, GA4 UI 일치, RECORD → OBJECT)',
+  "publisher" NUMBER(38,0) COMMENT '퍼블리셔 광고 수익 정보(RECORD → OBJECT)',
+  "event_original_occurrence_timestamp" NUMBER(38,0) COMMENT '이벤트가 기기에서 실제 발생한 원본 시각(UTC 마이크로초, 오프라인 재전송 시 원래 발생 시각 보존)'
+);
+create or replace TABLE GN_DW.BRONZE_GA4.SYNC_ERR_INFO (
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
+  DATA_TYPE VARCHAR(16777216) COMMENT '오류 발생 데이터 구분',
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
+)COMMENT='적재 프로시저 오류 로그'
+;
+

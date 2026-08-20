@@ -1,3 +1,42 @@
+-- A 계정 DB 정보 실측 스냅샷 (02번 5·6단계 실행 결과)
+-- 측정일 2026-08-12 (브론즈) · A7/A8 은 미실측
+-- =====================================================================
+-- 본 파일의 성격
+--   A 계정에서 실행한 조회 결과를 그대로 보존한 기록이다. B(03번 3.1)·C(06번 A.6)가
+--   대조하는 **정본**이며, DDL 정합성 판정(06번 A.1 (4))의 기준도 여기다.
+--
+-- 섹션 / SECTIONS
+--   A1  이관 대상 테이블 목록 (스키마·테이블·행수·용량)
+--   A2  스키마별 요약
+--   A3  GET_DDL — BRONZE_CRM
+--   A4  GET_DDL — BRONZE_AGENCY
+--   A5  GET_DDL — BRONZE_ERP
+--   A6  GET_DDL — BRONZE_GA4   ⛔ **현재 이관 대상 아님** (아래 참조)
+--   A7  ML 예측결과 16종 실측  — 미실측
+--   A8  ML 부여 상태 확인      — 미실측
+--
+-- ⛔ 현재 이관 범위와 다른 구간 — 읽을 때 주의
+--   아래는 측정 당시의 기록이며 **현재 공유 대상이 아니다.** 참고용으로만 남겨둔다.
+--     · A1/A2 결과 중 BRONZE_GA4 행
+--     · A6 전체 — GET_DDL('SCHEMA','GN_DW.BRONZE_GA4')
+--       (SYNC_ERR_INFO, events_20260501, events_20260719, SEQ_SYNC_ERR_INFO, SP_LOAD_BIGQUERY)
+--   ⚠️ A1/A2 의 WHERE 절은 측정 당시 그대로인 `LIKE 'BRONZE_%'` 다.
+--      A 계정에서 BRONZE_GA4 → BRONZE_BIGQUERY 로 개편된 뒤에는 그대로 재실행하면
+--      공유 대상이 아닌 스키마가 섞인다. **재측정은 02번 5단계의 쿼리를 쓸 것.**
+--
+-- 🔴 미측정 항목 — 이관 착수 전에 채워야 한다
+--   ① SILVER.BIGQUERY_REFINED_DATA 목록/행수     → 02번 5단계
+--   ② 반정형 컬럼 통제총계 (SILVER.ITEMS · ML.PREDICTION 4종) → 02번 5.1
+--      ⚠️ 이 값이 없으면 C 에서 TRY_PARSE_JSON 파싱 실패와 원래 NULL 을 구분할 수 없다.
+--   ③ SILVER 컬럼 수/ARRAY 위치                  → 02번 5.2
+--   ④ A7 / A8 (ML)                               → 02번 5단계 · 4.1
+--
+--   현재 공유 대상: BRONZE_CRM(45) · BRONZE_AGENCY(4) · BRONZE_ERP(1)
+--                   + SILVER.BIGQUERY_REFINED_DATA(1) + ML.ML_RST_DATA_*(16) = 67 테이블
+--   절차 문서: 50_handoff/01_데이터마이그레이션 20260730.md
+-- =====================================================================
+
+
 -- # A1
 SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
@@ -1121,7 +1160,6 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
 SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_BIGQUERY', TRUE);
 /*
 create or replace schema GN_DW.BRONZE_BIGQUERY with managed access COMMENT='원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)';
-
 create or replace sequence GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 create or replace TABLE GN_DW.BRONZE_BIGQUERY.SYNC_ERR_INFO (
 	ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_BIGQUERY.SEQ_SYNC_ERR_INFO.NEXTVAL,

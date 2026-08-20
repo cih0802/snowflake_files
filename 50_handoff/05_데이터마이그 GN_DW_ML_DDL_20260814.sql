@@ -11,7 +11,7 @@
 --              → 3.1(ML 공유 부여) / 5.1-B(ML DDL 실행) / 5.6(ML 적재·VARIANT 복원) 단계에서 본 파일을 사용.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/ML 16종 SELECT 부여)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/05_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql  (BRONZE 4스키마 53테이블)
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH

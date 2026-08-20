@@ -1,33 +1,55 @@
 -- A 계정(Provider) 실행 SQL — Direct Share 생성 및 DDL 추출
+-- 2026-08-20
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
---   원본(A) 계정에서 GN_DW 브론즈 4개 스키마 + ML 예측결과 16종을 B 계정으로 Direct Share 하고,
+--   원본(A) 계정의 이관 대상을 B 계정으로 Direct Share 하고,
 --   C 계정에 동일 구조를 재현하기 위한 DDL 스냅샷을 추출한다.
+--
+-- 이관 경로 / TOPOLOGY
+--   A ──(Direct Share · 동일 리전)──▶ B ──(로컬 다운로드)──▶ 로컬 ──(업로드)──▶ C (다른 리전)
+--   본 파일은 그 중 **A 구간**을 담당한다.
 --
 -- 실행 계정 / 역할
 --   A (Provider), ACCOUNTADMIN
 --
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
---              → 3.1(Share 생성/부여) / 3.1-B(ML 부여) / 3.2(GET_DDL 추출) / 7장(정리) 단계에서 본 파일을 사용.
---   [산출물]   50_handoff/02_1_A DB정보.sql  (본 스크립트 5·6단계 실행 결과 — A1~A6)
---              50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql  (위 A3~A6 DDL을 병합·정리)
---              50_handoff/06_데이터마이그 GN_DW_ML_DDL_20260814.sql      (ML 예측결과 16종 구조)
+--              → 3.1(Share 생성/부여) / 3.1-B(ML 부여) / 3.2(GET_DDL 추출) / 7장(정리)
+--   [산출물]   50_handoff/02_1_A DB정보.sql  (본 스크립트 5·6단계 실행 결과)
+--              50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql   (브론즈 3스키마)
+--              50_handoff/04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql (SILVER 정제 테이블)
+--              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       (ML 예측결과 16종)
 --   [후속 SQL] 50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/05_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 식별자 / IDENTIFIERS
 --   A(Provider) = CMRQTUT.XC97295 · B(Consumer) locator = GB72026 · 공유명 = MIG_SHARE
---   대상 DB/스키마 = GN_DW / BRONZE_CRM(45) · BRONZE_AGENCY(4) · BRONZE_ERP(1) · BRONZE_BIGQUERY(3) = 53 테이블
---                        + ML(예측결과 16종만 · 학습·스냅샷·로그 33종 제외) = 총 69 테이블
 --
--- 🔴 ML 부여 원칙 (2026-08-14 신설)
---   브론즈는 `GRANT SELECT ON ALL TABLES` 로 스키마 통짜 부여지만 **ML 은 테이블을 하나씩 부여한다.**
---   이유 = ML 스키마에는 학습용 `ML_TRAIN_DATA_*` 20종·원천 스냅샷 12종·로그 1종이 함께 있고,
---          사용자 지시로 **학습용은 Agent 노출 금지**다. `ALL TABLES` 를 쓰면 33종이 함께 열린다.
---   부수 효과(의도한 것) = 공유받은 DB의 INFORMATION_SCHEMA 에는 **부여된 16종만 보인다**
---          ⇒ B 의 언로드 루프(03번 5단계)가 자동으로 16종만 대상으로 삼는다.
+-- 공유 대상 / SCOPE
+--   ① GN_DW.BRONZE_CRM      — 스키마 통짜 (45 테이블)
+--   ② GN_DW.BRONZE_AGENCY   — 스키마 통짜 (4 테이블)
+--   ③ GN_DW.BRONZE_ERP      — 스키마 통짜 (1 테이블)
+--   ④ GN_DW.SILVER          — **테이블 1개만** (BIGQUERY_REFINED_DATA · 118컬럼)
+--   ⑤ GN_DW.ML              — **테이블 16개만** (ML_RST_DATA_* 예측결과)
+--   ⇒ 합계 67 테이블 / 스키마 5개
+--
+--   ⛔ 공유하지 않는 것
+--      · GN_DW.BRONZE_BIGQUERY — ④ SILVER 가 이 원천의 정제 결과를 대신한다.
+--      · GN_DW.SILVER 의 나머지 테이블
+--      · GN_DW.ML 의 학습용 ML_TRAIN_DATA_* 20종 · 원천 스냅샷 12종 · 로그 1종 · 뷰 4종
+--
+-- 🔴 테이블 단위 부여 원칙 (SILVER · ML)
+--   브론즈는 `GRANT SELECT ON ALL TABLES` 로 스키마 통짜 부여지만
+--   **SILVER 와 ML 은 테이블을 하나씩 부여한다.**
+--     · ML : 학습용 데이터는 사용자 지시로 **Agent 노출 금지**다. `ALL TABLES` 를 쓰면 33종이 함께 열린다.
+--     · SILVER : 이관 대상이 아닌 테이블이 같은 스키마에 함께 있다.
+--   부수 효과(의도한 것) = 공유받은 DB의 INFORMATION_SCHEMA 에는 **부여된 것만 보인다**
+--     ⇒ B 의 언로드 루프(03번 5단계)가 자동으로 대상만 집는다.
+--
+--   ⚠️ 원천이 `create or replace TABLE` 로 재생성되면 테이블 단위 부여가 **소실된다.**
+--      · ML : 모델·프로시저 재실행 후 → 2-B 를 다시 실행
+--      · SILVER : 정제 파이프라인 재실행 후 → 2.1 을 다시 실행
 -- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
@@ -38,27 +60,36 @@ USE ROLE ACCOUNTADMIN;
 CREATE SHARE mig_share COMMENT = 'A->B 데이터 마이그레이션 공유';
 
 ------------------------------------------------------------
--- 2. 공유할 DB/스키마/테이블에 대한 사용 권한 부여
+-- 2. 브론즈 3개 스키마 부여
 --    ⚠️ 스키마 단위 USAGE가 필수. DB USAGE만 주면 B에서 테이블이 보이지 않는다.
+--    ⚠️ ALL TABLES 는 '현재 존재하는' 테이블만 대상. 이후 추가된 테이블은 재부여 필요.
 ------------------------------------------------------------
-GRANT USAGE   ON DATABASE  GN_DW            TO SHARE mig_share;
-GRANT USAGE   ON SCHEMA  GN_DW.BRONZE_CRM            TO SHARE mig_share;
-GRANT USAGE   ON SCHEMA  GN_DW.BRONZE_BIGQUERY            TO SHARE mig_share;
-GRANT USAGE   ON SCHEMA  GN_DW.BRONZE_ERP            TO SHARE mig_share;
-GRANT USAGE   ON SCHEMA  GN_DW.BRONZE_AGENCY            TO SHARE mig_share;
-GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_CRM TO SHARE mig_share;
-GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_BIGQUERY TO SHARE mig_share;
-GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_ERP TO SHARE mig_share;
+GRANT USAGE   ON DATABASE  GN_DW                          TO SHARE mig_share;
+GRANT USAGE   ON SCHEMA    GN_DW.BRONZE_CRM               TO SHARE mig_share;
+GRANT USAGE   ON SCHEMA    GN_DW.BRONZE_ERP               TO SHARE mig_share;
+GRANT USAGE   ON SCHEMA    GN_DW.BRONZE_AGENCY            TO SHARE mig_share;
+GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_CRM    TO SHARE mig_share;
+GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_ERP    TO SHARE mig_share;
 GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_AGENCY TO SHARE mig_share;
--- 특정 테이블만: GRANT SELECT ON TABLE src_db.src_schema.tbl TO SHARE mig_share;
--- 주의: ALL TABLES는 '현재 존재하는' 테이블만 대상. 이후 추가된 테이블은 재부여 필요.
 
 ------------------------------------------------------------
--- 2-B. ML 스키마 부여 (2026-08-14 신설) — 예측결과 16종만 테이블 단위로 부여
---    ⚠️ ALL TABLES 금지. 학습용 ML_TRAIN_DATA_* 20종 + 원천 스냅샷 12종 + 로그 1종이
---       함께 열려 Agent 노출 금지 지시를 위반한다(상단 'ML 부여 원칙' 참조).
---    ⚠️ ML 테이블은 원천이 `create or replace TABLE` 로 재생성될 수 있다(20_ML_ddl.sql).
---       재생성되면 아래 SELECT 부여가 소실되므로 **모델 재실행 후에는 이 구간을 다시 실행**한다.
+-- 2.1 SILVER 부여 — 정제 테이블 1개만
+--    ⚠️ ALL TABLES 금지. 이관 대상이 아닌 테이블이 함께 열린다.
+------------------------------------------------------------
+GRANT USAGE  ON SCHEMA GN_DW.SILVER                        TO SHARE mig_share;
+GRANT SELECT ON TABLE  GN_DW.SILVER.BIGQUERY_REFINED_DATA  TO SHARE mig_share;
+
+------------------------------------------------------------
+-- 2.2 ⛔ BRONZE_BIGQUERY — 부여하지 않는다
+--    실수로 부여했다면 즉시 회수할 것:
+------------------------------------------------------------
+-- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.BRONZE_BIGQUERY  FROM SHARE mig_share;
+-- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_BIGQUERY                FROM SHARE mig_share;
+
+------------------------------------------------------------
+-- 2-B. ML 스키마 부여 — 예측결과 16종만
+--    ⚠️ ALL TABLES 금지. 학습용 20종 + 스냅샷 12종 + 로그 1종이 함께 열려
+--       Agent 노출 금지 지시를 위반한다(상단 '테이블 단위 부여 원칙' 참조).
 ------------------------------------------------------------
 GRANT USAGE ON SCHEMA GN_DW.ML TO SHARE mig_share;
 
@@ -89,89 +120,112 @@ GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION               T
 --    SNPSR_BSNS_NO_DSCNT_ML_DATA (스냅샷 12종) / ML_PROCEDURE_LOG (로그 1종)
 --    · 뷰 4종(ML_TRAIN_DATA_*_V) 도 부여하지 않는다.
 
--- ML 부여 확인 (기대: 16행)
-SHOW GRANTS TO SHARE mig_share;
-SELECT COUNT(*) AS ml_table_grants
-FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
-WHERE "granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%';
-
 ------------------------------------------------------------
 -- 3. B 계정을 공유 대상으로 추가 (B의 account locator 또는 org.account 사용)
 ------------------------------------------------------------
 -- ALTER SHARE mig_share ADD ACCOUNTS = <account locator>;
-ALTER SHARE mig_share ADD ACCOUNTS = GB72026;
+ALTER SHARE mig_share ADD ACCOUNTS = AD50130;
 
 ------------------------------------------------------------
--- 4. 확인
---    기대: 권한 = DB 1 + 스키마 5(BRONZE 4 + ML) + 테이블 69(BRONZE 53 + ML 16),
---          SHOW SHARES의 to 컬럼에 GB72026
+-- 4. 부여 결과 확인
+--    기대: DB 1 + 스키마 5(BRONZE 3 + SILVER + ML) + 테이블 67(브론즈 50 + SILVER 1 + ML 16)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
-SHOW SHARES LIKE 'MIG_SHARE';
+SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 BHZYJSX.AB90688 이 보여야 함
+
+-- 4.1 부여 집계 점검 (한 번에 판정)
+SHOW GRANTS TO SHARE mig_share;
+SELECT
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 16
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 1
+  COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 5
+  COUNT_IF("name" ILIKE '%BRONZE_BIGQUERY%')                         AS bigquery_grants   -- 기대 0
+FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+-- → bigquery_grants ≠ 0 이면 2.2 하단의 REVOKE 로 즉시 회수한다.
+--   ml_tables ≠ 16 또는 silver_tables ≠ 1 이면 2.1 / 2-B 를 다시 실행한다.
 
 ------------------------------------------------------------
--- 5. 이관 대상 목록/규모 스냅샷 (⚠️ 공유 전에 기록해 둘 기준값)
---    테이블 53개(브론즈) + 16개(ML)인지, 스키마별 행수/용량이 얼마인지 여기서 확정한다.
---    → 6장 검증에서 C의 GN_DW 집계와 테이블 단위로 대조하는 원본 기준값이다.
---    ⚠️ ML 필터는 `table_schema='ML' AND table_name LIKE 'ML_RST_DATA_%'` 다.
---       스키마 통짜로 세면 학습·스냅샷 33종이 섞여 기준값이 부풀어 C 검증이 전부 어긋난다.
+-- 5. 대조 기준값 스냅샷 (⚠️ 공유 직후 기록)
+--    결과를 02_1_A DB정보.sql 에 보관한다.
+--    → B(03번 3.1) · C(06번 A.6) 가 테이블 단위로 대조하는 원본 기준값이다.
+--    ⚠️ ML 필터는 `table_name LIKE 'ML_RST_DATA_%'` 다. 스키마 통짜로 세면
+--       학습·스냅샷 33종이 섞여 기준값이 부풀고 C 검증이 전부 어긋난다.
+--    ⚠️ 브론즈 필터를 `LIKE 'BRONZE_%'` 로 되돌리지 말 것 — 공유 대상 아닌 스키마가 섞인다.
 ------------------------------------------------------------
 SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema LIKE 'BRONZE_%'
-        OR (table_schema = 'ML' AND table_name LIKE 'ML_RST_DATA_%') )
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (테이블 수 / 총 행수 / 총 용량)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 45 · ERP 1 · ML 16 · SILVER 1 = 67)
 SELECT table_schema,
-       COUNT(*)        AS tables,
-       SUM(row_count)  AS total_rows,
-       SUM(bytes)      AS total_bytes
+       COUNT(*)       AS tables,
+       SUM(row_count) AS total_rows,
+       SUM(CASE WHEN row_count = 0 THEN 1 ELSE 0 END) AS zero_row_tables
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema LIKE 'BRONZE_%'
-        OR (table_schema = 'ML' AND table_name LIKE 'ML_RST_DATA_%') )
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 GROUP BY 1 ORDER BY 1;
 
--- 2026-08-12 실측 결과 (02_1_A DB정보.sql 의 A1/A2. B의 공유 DB 집계와 완전 일치 확인)
---   BRONZE_AGENCY   4 테이블 /     243,550 행 /     5,719,040 B
---   BRONZE_CRM     45 테이블 / 115,875,113 행 / 2,834,600,960 B
---   BRONZE_ERP      1 테이블 /       4,301 행 /       328,704 B
---   BRONZE_BIGQUERY      3 테이블 /     576,441 행 /   129,906,688 B
---   합계           53 테이블 / 116,699,405 행 / 2,970,555,392 B (약 2.77 GiB)
---
---   ⚠️ 2026-07-30 시점 문서는 51 테이블(CRM 43)로 기재되어 있었다. 실측은 53(CRM 45)이다.
---      누락되어 있던 2개: BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT,
---                        BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR
---      → 04번 DDL 3판(2026-08-12)에 추가 완료. 이 스냅샷이 대조의 정본이다.
---
--- 🔴 ML 16종 = **A 계정 실측 미확보**. 위 쿼리를 실행해 결과를 02_1_A DB정보.sql 에 A7 로 추가한다.
---    참고 기준값(A 실측 아님 · 원천 계정 라이브 · 2026-08-14 O74):
---      정본 = 05_SV-Agent_ai/20_ML_SV_설계.md §0-A (테이블별 행수 16종 전량 · STDR_MT='202606' 단일)
---      합계 1,045,732 행 · 용량 미측정
---    ⚠️ 이 값은 **A 계정에서 재확인해야 한다.** ML 은 프로시저가 월별로 DELETE+INSERT 하므로
---       기준월이 늘어나면 행수가 증가한다 ⇒ 이관 시점에 다시 측정한 값만 대조 기준으로 쓴다.
+-- 5.1 반정형 컬럼 통제총계 (⚠️ C 검증에 필수 — 없으면 파싱 실패를 검출할 수 없다)
+--   CSV 왕복 시 반정형은 JSON 문자열이 되고 C 에서 TRY_PARSE_JSON 으로 복원한다.
+--   TRY_PARSE_JSON 은 실패 시 조용히 NULL 을 돌려주므로, **A 측 기대 NULL 수**가 없으면
+--   '파싱 실패'와 '원래 NULL'을 구분할 수 없다. 아래 결과를 반드시 C 에 전달한다.
+SELECT 'SILVER.BIGQUERY_REFINED_DATA' AS tbl, 'ITEMS' AS col,
+       COUNT(*) AS n_rows, COUNT(*) - COUNT(ITEMS) AS n_null, SUM(ARRAY_SIZE(ITEMS)) AS total_elements
+FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA
+UNION ALL
+SELECT 'ML.ML_RST_DATA_SPNSR_CHURN_12M', 'PREDICTION',
+       COUNT(*), COUNT(*) - COUNT(PREDICTION), NULL FROM GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M
+UNION ALL
+SELECT 'ML.ML_RST_DATA_MBER_CHURN_12M', 'PREDICTION',
+       COUNT(*), COUNT(*) - COUNT(PREDICTION), NULL FROM GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M
+UNION ALL
+SELECT 'ML.ML_RST_DATA_MBER_INC_12M', 'PREDICTION',
+       COUNT(*), COUNT(*) - COUNT(PREDICTION), NULL FROM GN_DW.ML.ML_RST_DATA_MBER_INC_12M
+UNION ALL
+SELECT 'ML.ML_RST_DATA_LOYAL_MBER', 'PREDICTION',
+       COUNT(*), COUNT(*) - COUNT(PREDICTION), NULL FROM GN_DW.ML.ML_RST_DATA_LOYAL_MBER;
 
+-- 5.2 SILVER 구조 확인 (기대: 118 컬럼 · ITEMS 가 118번째 · ARRAY)
+--   이 값이 04_2번 DDL 및 06번 A.5 의 TRY_PARSE_JSON($118) 위치와 일치해야 한다.
+SELECT MAX(ordinal_position)                                        AS n_cols,
+       MAX(CASE WHEN data_type = 'ARRAY' THEN column_name END)      AS array_col,
+       MAX(CASE WHEN data_type = 'ARRAY' THEN ordinal_position END) AS array_pos
+FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA';
+
+-- ⚠️ ML 은 프로시저가 월별로 DELETE+INSERT 하므로 기준월이 늘어나면 행수가 증가한다.
+--    ⇒ 이관 시점에 다시 측정한 값만 대조 기준으로 쓴다.
+--    ⚠️ BRONZE_CRM 은 과거 문서에 43 테이블로 기재된 적이 있으나 실측은 45 다.
+--       (누락분: TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT · TM_MM_FDRM_MBER_SPNSR)
 
 ------------------------------------------------------------
--- 6. C 계정 재현용 DDL 추출 ========================
+-- 6. C 계정 재현용 DDL 추출
 --    ⚠️ 공유받은(imported) DB에서는 GET_DDL이 제한될 수 있으므로 반드시 원본 A에서 수행한다.
---    결과를 04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql 로 저장한다.
 ------------------------------------------------------------
--- DB 전체를 한 번에 (스키마/시퀀스/파일포맷 포함)
--- SELECT GET_DDL('DATABASE', 'GN_DW', TRUE);
-
--- 스키마 단위로 분리 추출
+-- 6.1 브론즈 3개 스키마 → 04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql 로 저장
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_CRM', TRUE);
--- SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_BIGQUERY', TRUE);
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_ERP', TRUE);
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_AGENCY', TRUE);
+--   ⚠️ GET_DDL('DATABASE', 'GN_DW', TRUE) 는 쓰지 않는다.
+--      공유 대상이 아닌 스키마·테이블까지 전부 덤프된다.
 
--- 🟢 ML 은 이미 추출되어 있다 — 재추출 불필요..,
---    산출물 = 99_provided_definition/20_ML_ddl.sql (3,217줄 · 프로시저·모델 포함 전량)
---    이관용 구조 발췌 = 50_handoff/06_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 16종만)
---    ⚠️ 모델·프로시저가 교체되어 결과 테이블 컬럼이 바뀌면 아래를 재실행해 06번을 갱신한다.
+-- 6.2 SILVER 정제 테이블 1개 → 04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql 로 저장
+-- SELECT GET_DDL('TABLE', 'GN_DW.SILVER.BIGQUERY_REFINED_DATA', TRUE);
+--   ⚠️ SCHEMA 단위로 뽑지 말 것. 대상 아닌 테이블까지 포함된다.
+--   ⚠️ 컬럼 수/순서가 04_2번 파일과 다르면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
+--      이관 직전 반드시 04_2번 파일과 대조할 것 (5.2 결과와 함께 본다).
+
+-- 🟢 ML 은 이미 추출되어 있다 — 재추출 불필요
+--    산출물 = 99_provided_definition/20_ML_ddl.sql (프로시저·모델 포함 전량)
+--    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 16종만)
+--    ⚠️ 모델·프로시저가 교체되어 결과 테이블 컬럼이 바뀌면 아래를 재실행해 05번을 갱신한다.
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
 
 ------------------------------------------------------------
@@ -187,15 +241,15 @@ GROUP BY 1 ORDER BY 1;
 -- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.BRONZE_CRM    FROM SHARE mig_share;
 -- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.BRONZE_AGENCY FROM SHARE mig_share;
 -- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.BRONZE_ERP    FROM SHARE mig_share;
--- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.BRONZE_BIGQUERY    FROM SHARE mig_share;
--- -- ML: 부여를 테이블 단위로 했으므로 회수도 테이블 단위다.
--- --     🟢 여기서는 ALL TABLES 를 써도 안전하다(부여하지 않은 33종은 회수할 것이 없다).
--- --        단 회수 결과를 확인해 16건만 사라졌는지 본다.
--- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.ML             FROM SHARE mig_share;
+-- -- SILVER / ML: 부여를 테이블 단위로 했으므로 회수도 테이블 단위다.
+-- --   🟢 ALL TABLES 를 써도 안전하다(부여하지 않은 것은 회수할 것이 없다).
+-- --      단 회수 후 4.1 을 다시 돌려 ml_tables=0 · silver_tables=0 인지 확인한다.
+-- REVOKE SELECT ON TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA FROM SHARE mig_share;
+-- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.ML            FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_CRM    FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_AGENCY FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_ERP    FROM SHARE mig_share;
--- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_BIGQUERY    FROM SHARE mig_share;
+-- REVOKE USAGE  ON SCHEMA GN_DW.SILVER        FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.ML            FROM SHARE mig_share;
 -- REVOKE USAGE  ON DATABASE GN_DW             FROM SHARE mig_share;
 --
