@@ -33,11 +33,11 @@ select
     'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID
 from src
 union all
 -- 순서9 Unknown 멤버(GA_SOURCE_SK=0): fact 의 미매핑 GA_SOURCE_SK 센티넬 라우팅 대상.
 select 0, '(unknown)', '(unknown)', NULL, NULL, NULL, NULL, 'GA4'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID

@@ -7,7 +7,133 @@ index: 20_issue/00_INDEX_이슈원장.md
 priority: HIGH — 후속 세션 착수 시 먼저 확인
 END-METADATA -->
 
+## 🟢 O91 — `dbt build` 차단 3건 **전건 해소**(라이브) + 방법론 문서 7건 시정 (2026-08-20)
+
+> 🟢 **이 절이 §O90 의 후속이고 `dbt build` 선결조건의 현행 정본이다.** §O90 은 「발견·기록」까지였고 **라이브 적용은 미이행**이었다.
+> 🔒 라벨 = `id_collision_gate --next O` = **O91**(정의 최대 **90** ↔ 참조 최대 **90** 양축 일치) ⇒ 코드·라이브에 새기기 **전에**
+> 원장 §1 에 선점 등재했다(`R1-4-3` 이행 · **O89·O90 의 3연속 위반 중단**).
+> 승인 = 사용자 2건(① GRANT 8문장 전부 실행 ② `99_NEXT §0-CCC ▣4` = **㉡ SILVER 원천 겸용**).
+
+### O91-1 🟢 RBAC 3블로커 — 실행·실측 확인
+
+| # | 블로커 | O90 실측 | O91 처방 | 실측 확인 |
+|---|---|---|---|---|
+| ㉠ | `GN_DW.dbt_test__audit` 스키마 부재 | 0(부재) | `GN_DW_ADMIN` 선생성 + `USAGE, CREATE TABLE` | 🟢 스키마 **1** · ENGINEER grant **2건**(`USAGE`·`CREATE TABLE`) |
+| ㉡ | `GN_DW.SILVER` ENGINEER grant 전무 | `OWNERSHIP` 1건뿐 | §D.3 + §D.5 재실행 상당 8문장 | 🟢 스키마 권한 **5종**(`USAGE`·`CREATE TABLE/VIEW/PROCEDURE/FUNCTION`) · 테이블 **40종** DML · **FUTURE 4종** |
+| ㉢ | `GN_DW.OPS` `USAGE` 누락 | `CREATE TABLE` 만 | `USAGE` 추가 | 🟢 `USAGE`+`CREATE TABLE` 2건 |
+
+· 🟢 **FUTURE grant 실측** = `SHOW FUTURE GRANTS IN SCHEMA GN_DW.SILVER` → `SELECT`·`INSERT`·`TRUNCATE`·`DELETE` **4건**.
+  🔴 `SHOW GRANTS TO ROLE` 은 FUTURE 를 **보여주지 않는다** — 두 축을 따로 확인해야 한다(이번에 실제로 갈렸다).
+· 🔴 **`DELETE` 포함 근거** = O87 `silver_purge` 가 range 모델에 **범위 DELETE** 를 낸다 ⇒ `07 §D.5` 의 종전 문안
+  *"merge 없음 ⇒ UPDATE/DELETE 불요"* 는 stale 이었다(D 항목). 🟢 `UPDATE` 는 부여하지 않았다(merge 전략 모델 부재 · 최소권한).
+· 🔴 **DB 레벨 `CREATE SCHEMA` 는 부여하지 않았다** — `07 §D.6` 거부 판단 유지 + audit 스키마 **선생성**으로 요구를 좁혔다.
+· 🟠 **③ `dbt build` 는 O91 이 실행하지 않았다**(승인 범위가 「8문장」까지 · `R4-1` 정지점) ⇒ **차단 제거 ≠ build 통과.**
+  🟢 다만 사용자가 그 뒤 직접 돌려 **RBAC 통과가 실증됐다** — 아래 O91-4 참조.
+
+### O91-2 🟢 방법론 문서 7건 — 전건 시정(§O90 이 목록만 남겼던 것)
+
+| # | 파일 | 항목 | 시정 내용 |
+|---|---|---|---|
+| A | `07_ENVIRONMENT_RBAC_setup.sql` §D.6 | 「스키마 존재 ⇒ create schema 미호출」 전제 반증 | 반증 근거(테스트 343노드 · `generate_schema_name` 접두 없음) 명기 + **§D.6-1 선생성 블록 신설** |
+| B | 〃 §D.6 | `OPS` `USAGE` 누락 | **§D.6-2** 로 분리 + `USAGE, CREATE TABLE` 로 교체 |
+| C | 〃 머리말 + §D.3 | `ON ALL TABLES` 는 시점 grant · 재생성 시 소실 | 머리말에 **「재생성 후 §D 전량 재실행 = DoD」** 신설(`SCHEMA_ID 44→105` 실측 근거 포함) + §D.3 포인터 |
+| D | 〃 §D.5 | *"merge 없음 ⇒ UPDATE/DELETE 불요"* stale | `DELETE` 추가 + `UPDATE` 불요 근거 병기(`R2-8` 철회 병기) |
+| ㉠ | `01_환경 Role.md` §2.2 | ENGINEER `scope` 에 `OPS`·`dbt_test__audit` 누락 | scope 문안 확장 + 근거 note 신설 |
+| ㉡ | 〃 §3 | 「dbt 롤에 `CREATE TABLE` 불요」가 §D.6 예외와 모순 | **축 명시로 정정** — 데이터 계층만 불요 / 예외 2건 명기 / 판단 기준 일반화 |
+| ㉢ | 〃 §3.1 | Python 프로시저 전환 재검토 트리거 미등재 | **4번째 트리거 신설** + `EXECUTE AS OWNER` 권장 근거 |
+
+· 🟢 라이브 프로시저 라벨 도용도 함께 닫았다 — `SANDBOX.TOOLS.LOAD_GA4_EVENTS` COMMENT 의 `[O89]` 문장을
+  **`ALTER PROCEDURE … SET COMMENT`** 로 제거해 정본(`07:548`)과 문자열 동일하게 만들었다. 🟢 `CREATE OR REPLACE` 를
+  쓰지 않은 이유 = 본문 재작성 위험(`R1-7-1` 계열)이고 메타데이터만 바꾸면 충분하다.
+
+### O91-4 🟢 `dbt build` 선결조건 2건 검증 완료 (2026-08-20 O91-B · 사용자 지시)
+
+지시 = *"Verify the BLOCKING-5 and 06_DDL rerun prerequisites before executing dbt build"*. **build 는 실행하지 않았다.**
+🔴 `99_NEXT §0-DDD ▣2` 가 `BLOCKING-5` 를 「build 전 확인 대상」으로 적은 것은 **과대였다** — 정본 `-012` §O91-B 에서 정정했다.
+🟢 **부수 실증** — 사용자 런(`QUERY_ID 01c6819f-…-d6ba2` · 19:07:08→19:11:49 · **281초** · `GN_DW_ENGINEER`/`GN_DW_ETL_WH`)이
+**`604 canceled`** 로 끝났다. 종전 실패는 15초에 `003001 (42501)` 이었다 ⇒ **RBAC 은 더 이상 차단하지 않는다**(O91-1 사후 실증).
+
+| 선결조건 | 판정 | 근거 |
+|---|---|---|
+| `06_DDL` 재실행 | 🟢 **이미 충족 · 재실행 불요** | DDL 35테이블 ↔ 라이브 35테이블 · **컬럼수 35/35 일치** · FMM **58컬럼 이름·순서 완전 일치** · `HAS_BILLING` 실재 |
+| `BLOCKING-5` | 🟢 **build 게이트가 아니다**(SV/Agent 배포 게이트) | 취소된 런이 같은 미적재 상태에서 **4팩트 정상 적재 + WIDE 7종 생성** |
+
+**🔴 그 취소가 남긴 것 3건 — build 재실행 전에 알고 있어야 한다**
+
+| # | 잔존물 | 실측 | 처리 |
+|---|---|---|---|
+| ㉠ | `GOLD.FACT_MEMBER_MONTHLY` **0행** | 기준선 **40,054,883** → **0**(`LAST_ALTERED 19:10:13`) | 🟢 append 모델 ⇒ **build 재실행이 복구 경로** |
+| ㉡ | `FACT_MEMBER_MONTHLY__DBT_TMP` 고아 뷰 | created `19:10:13.411` | 🟠 **미거버넌스 객체**(`BLOCKING-3` 계열) · 정리 승인 대상 |
+| ㉢ | WIDE 뷰 **7 / 14** | `MEMBER_MONTHLY`·`GA_BEHAVIOR`·`AD_*` 4종·`AD_COMBINED` 부재 | 🟢 DAG 후반 미도달 · build 로 해소 |
+
+· 🔴🔴 **㉠ 의 교훈 = fact 는 append + pre-hook TRUNCATE 라 「취소」가 팩트를 비운다**(TRUNCATE 는 돌고 INSERT 는 못 끝난다).
+  ⇒ **build 를 중간에 끊지 않는다. 끊었으면 반드시 재실행한다.** 이 때문에 A1 축(`DEV_CNT`·`HAS_BILLING` 등)은 **이번에 검증 불가**였다.
+· 🔴 **새 결함 — `FACT_BUDGET` 적재량 이상**(미적재와 다른 계열): 행 **51,576**(대장 24.5K 대비 약 2배)인데 `PLAN_BUDGET_MONTH<>0` **1,112**(−85%) · `EXEC_BUDGET_ERP<>0` **1,018**(−69%). 행이 늘고 실적재가 줄은 조합은 원천 증가로 설명되지 않는다.
+  🔴 원인 미확정 — **판정하지 않았다.** ⇒ build 후 `COUNT(*)` vs `COUNT(DISTINCT <grain>)` 로 중복부터 가른다.
+· 🔴 **대장 stale 2건 시정** — `FME.ORG_SK`(**3,594,835** · DEV 한정) · `FME.REASON_SK`(**1,038,262** · STOP 한정)이 「전건 0/NULL」로 적혀 있었으나 **부분 적재**다. 🔴 O73-C 의 *"부분 적재 축은 한정 표기를 붙인다"* 교훈이 **같은 표 안에서 재발**했다.
+
+### O91-3 🟠 남은 것 — 이 절이 닫지 않은 것
+
+· 🔴 **③ `dbt build` 미실행** — 통과 시 `-013` §「WARN 27건 전량 목록」과 대조해 회귀를 판정한다. 취소 잔존물은 O91-4 표 참조.
+· ⚠️ **21:27 에 SILVER 를 드롭한 주체 미확정**(`TEARDOWN.sql` 의심 · §O90 승계) ⇒ C 항목은 **증상 차단**이고 원인 제거가 아니다.
+· 🟠 **미측정 2건 승계**(O90 ⑩⑪) = 「`OPS` `USAGE` 없으면 store_failures 가 실제 실패하는가」 · `EVENT_DATE` 클러스터링. **인용 전 재라.**
+· 🟢 **▣4 = `DEC-39` 등재**(`30_설계_의사결정-007.md` §26) — 「자리」만 정했고 **배선 미정**(선결 = 컬럼 델타 **41개** 매핑표).
+  🔴 **`FACT_BUDGET` 적재량 이상**(O91-4)도 별건으로 남는다 — build 후 grain 중복 검사가 선결이다.
+
+---
+
+## 🔴🔴 O90 — `dbt build` 차단 3건 (RBAC) · `dbt run` 실측 실패 (2026-08-20)
+
+> 🔴 **이 절이 `dbt build` 의 현 선결조건 정본이다.** 착수표 ③ 은 아래 3건이 풀리기 전에는 반드시 실패한다.
+> 🔴🔴 **[2026-08-20 O91 철회 병기] 위 한 줄은 stale 이다 — 「현 정본」은 위 §O91 이다.** 아래 3건은 O91 에서 **전건 해소**됐다
+> (원문은 `R2-8` 로 보존). ⇒ 이 절은 **원인 기록**으로 읽어라. ⚠️ 단 아래 「㉡ 의 원인 = 스키마 재생성이 grant 를 지웠다」는 **여전히 유효**하다.
+> 실측 = `EXECUTE DBT PROJECT … args='build --target dev'` → `003001 (42501)` ·
+> *"Your primary role GN_DW_ENGINEER must have CREATE SCHEMA granted on DATABASE 'GN_DW'"*.
+> 상세 근거·좌표 = `02_상태상세_대시보드_갱신형.md` **§O90 발견3**.
+
+| # | 블로커 | 실측 | 처방 |
+|---|---|---|---|
+| ㉠ | `GN_DW.dbt_test__audit` **스키마 부재** | `logs/dbt.log:455~460` 이 이 스키마에만 `create schema` 시도(로그 전체 1건). `target/manifest.json` = 테스트 **343노드**가 이 스키마 소속 | `GN_DW_ADMIN` 이 **선생성** + `USAGE, CREATE TABLE` 부여. 🔴 DB 레벨 `CREATE SCHEMA` 는 부여하지 않는다(`07 §D.6` 판단 유지) |
+| ㉡ | `GN_DW.SILVER` ENGINEER grant **전무** | `SHOW GRANTS ON SCHEMA` = `OWNERSHIP` 1건 · FUTURE **0건** ↔ GOLD FUTURE **35건** 생존 | `07 §D.3`(208~217) + `§D.5`(298~299) 를 **지금 재실행** |
+| ㉢ | `GN_DW.OPS` **`USAGE` 누락** | `CREATE TABLE` 만 부여됨(`07 §D.6:327`) | `USAGE` 추가 |
+
+**🔴 ㉡ 의 원인 = 스키마 재생성이 grant 를 전부 지웠다** (순서 문제가 아니다)
+
+· `SNOWFLAKE.ACCOUNT_USAGE.SCHEMATA` 실측 —
+  `SILVER` `SCHEMA_ID=44` created `2026-08-18 20:50:41.247` **DELETED `21:27:04.683`** →
+  `SCHEMA_ID=105` created `21:34:28.101`(현재). `GOLD`(64)·`OPS`(65)는 `DELETED` 없음.
+· ⇒ `07` 은 20:50~52 에 정상 부여했고, **그 뒤 SILVER 가 드롭·재생성되며 grant·FUTURE grant 가 함께 사라졌다.**
+  GOLD 가 FUTURE 35건을 유지한 것이 대조 증거다.
+· 🔴 **따라서 「DDL 이후 §D 를 재실행하라」는 순서 제약만으로는 재발을 막지 못한다.** 필요한 것은
+  ㉠ **적재·부여 후 스키마 재생성 금지**(O86 `DDL-ORDER-1` 과 동일 계열) ㉡ 재생성이 불가피하면
+  **§D 전량 재실행을 DoD 로 고정**. ⇒ `07_ENVIRONMENT_RBAC_setup.sql` 수정 대상.
+· ⚠️ **무엇이 21:27 에 SILVER 를 드롭했는지는 미확정**이다(`08_SILVER_테이블DDL:36` 은
+  `CREATE SCHEMA IF NOT EXISTS` 라 드롭하지 않는다 · 워크스페이스에 `TEARDOWN.sql` 이 있다).
+  **추가 조사 대상**으로 남긴다 — 원인 미확정 상태에서 재발 방지책만 넣는 것은 불완전하다.
+
+**🔴 `07_ENVIRONMENT_RBAC_setup.sql` 수정 항목 4건** (검토 결과 · 미이행)
+
+| # | 위치 | 문제 | 처방 |
+|---|---|---|---|
+| A | `§D.6` 302~327 | *"스키마가 이미 존재하므로 dbt 는 create schema 를 호출하지 않고 … CREATE TABLE 로 끝난다"*(`07:319~320`) 전제가 **반증**됐다 — 테스트 343노드가 `dbt_test__audit` 소속이라 `store_failures` 를 OPS 로 돌려도 dbt 는 audit 스키마를 만든다. 원인 = `macros/generate_schema_name.sql` 이 커스텀 값을 **접두 없이** 반환 | `dbt_test__audit` **선생성 + 좁은 grant** 로 교체 |
+| B | `§D.6:327` | `USAGE ON SCHEMA GN_DW.OPS` 누락 | 같은 줄에 `USAGE` 추가 |
+| C | `§D.3`·`§D.5` | `ON ALL TABLES` 는 **시점 grant** · 스키마 재생성 시 전부 소실 | 실행 순서 제약 + **재생성 시 §D 전량 재실행**을 머리말에 박는다 |
+| D | `§D.5:297` | *"merge 없음 ⇒ UPDATE/DELETE 불요"* 가 **stale** — O87 `silver_purge` 가 range 모델에 **범위 DELETE** 를 낸다 | SILVER `DELETE` 부여 근거로 갱신 |
+
+**🟠 `01_환경 Role.md` 수정 항목 3건** — ㉠ `§2.2` ENGINEER `scope` 에 **`OPS`·`dbt_test__audit` 누락**
+㉡ `§3`(138행) *"dbt 롤에 CREATE TABLE 불요"* 가 `§D.6` 예외와 **모순** ㉢ `§3.1` `GN_DW_DBT` 분리 조건에
+**다음주 Python 프로시저 전환**(권한 물리 격리)이 걸릴 수 있어 재검토 트리거 등재 필요.
+
+**🟢 Python 프로시저 전환 시 권한 영향** — SP 를 `GN_DW_ADMIN` 소유 + **`EXECUTE AS OWNER`**(기본)로 만들면
+SILVER 쓰기는 소유자 권한으로 실행되므로 ENGINEER 에게는 **`USAGE ON PROCEDURE` 만** 필요해진다
+(위 ㉡ DML grant 대부분 불요). ⚠️ `EXECUTE AS CALLER` 면 정반대로 SILVER 전체 DML 이 필요하다
+⇒ **OWNER 권장**(「커스텀 롤은 소유 없음」 원칙과 정합). 단 SP **생성**에는 `CREATE PROCEDURE ON SCHEMA SILVER`
+가 필요하고 그 문장은 `07 §D.3:208` 에 이미 있으나 **라이브에 미적용**이다(위 ㉡ 와 같은 원인).
+
+---
+
 ## 🔴🔴 O88-C — O88/O88-B 자기검토: 확정위반 7 · 판정약점 3 · 범위누락 1 (2026-08-19)
+
 
 > **왜 이 절이 여기 있나**: 사용자 지시 = *"데이터 아키텍처 전문가의 관점에서 이번 세션에서의 작업이
 > 작업지침을 지켰는지, 작업지침에 따르지 않은 항목이 있는지 비판적으로 검토해"*.
@@ -124,11 +250,41 @@ O88/O88-B 는 **한 번도 열지 않았고, 다루지 않았다는 사실도 �
 
 | # | 조치 | 상태 |
 |---|---|---|
-| V5 | `07` 482행 「약 880건」 → **821건** 정정 | 🔴 미이행 |
-| V6 | 원장 §1 O88 행에 **4판·(2-B)·4장 비활성** 반영 | 🔴 미이행 |
+| V5 | `07` 482행 「약 880건」 → **821건** 정정 | 🟢 **[O88-D] 완료** — 산식 근거 병기(911 − 90) |
+| V6 | 원장 §1 O88 행에 **4판·(2-B)·4장 비활성** 반영 | 🟢 **[O88-D] 완료** — O88-B/O88-C 편입 + 2,000자 이내로 압축 |
 | V4 | `dbt build` 전 **BLOCKING-5 열린 상태**를 사용자에게 제시 | 🟢 이 절로 이행 |
-| X1 | Semantic View 소관 여부 판정(지금 불가면 그 사유) | 🔴 미이행 |
-| V1·V2 | 다음 세션 재발 방지 = **`edit` 부분 치환 + 해시 2회 확인**을 착수 전 자문 | 🟠 규율 |
+| X1 | Semantic View 소관 여부 판정(지금 불가면 그 사유) | 🟢 **[O88-D] 판정 완료 — 아래 §X1 판정** |
+| — | `50_dbt-001` 상한 초과(O88-C 절 삽입 결과) | 🟢 **[O88-D] `--rebalance`**(사용자 승인) 조각 12→13 · 최소 여유 13,538 B |
+| V1·V2 | 다음 세션 재발 방지 = **`edit` 부분 치환 + 해시 2회 확인**을 착수 전 자문 | 🟢 **[O88-D] 실행 중** — 이 세션의 편집 3파일 전건 해시 2회 확인 후 `edit` |
+
+### §X1 판정 — Semantic View 는 이번 범위에서 **작업 불가**였다 (2026-08-19 O88-D 실측)
+
+사용자 최초 지시에 *"dbt 파이프라인 작업과 **semantic view 수정 작업등**은 3개월치 샘플링된
+데이터로만 진행하자"* 가 있었고 O88/O88-B 는 그것을 **다루지도, 다루지 않았다고 말하지도 않았다**
+(`X1` 범위누락). O88-D 가 실측으로 판정한다.
+
+**판정 = 🔴 「지금 SV 수정·검증은 성립하지 않는다」. 근거 3개:**
+
+| # | 근거 | 실측값 |
+|---|---|---|
+| ㉠ | **라이브 SV 가 0개**다 — 고칠 대상이 배포돼 있지 않다 | `TABLE_TYPE='SEMANTIC VIEW'` **0** · `SERVING` 뷰 **0** |
+| ㉡ | SV DDL 의 GA4 참조는 **COMMENT 계보 서술뿐**이고 base 는 `GOLD.WIDE_AD_COMBINED` 다 ⇒ 3개월 샘플링이 **정의를 바꾸지 않는다** | GA4 참조 SV 파일 **1개**(`05_7_SV_DDL_AD.sql`) |
+| ㉢ | GA4 SILVER 6종 전건 **0행** ⇒ SV 를 손봐도 **VQR 검증이 불가**하다 | `BIGQUERY_REFINED_DATA`·`GA4_*` 5 = 0행 |
+
+🔴 ㉠ 은 계정 4차 이관(`P169`)의 파생이다 — O84 가 「SV 6/7 배포」로 닫았고 O85 가 「SV 0」을
+실측했는데, **그 상태가 이번 세션 착수 판단에 반영되지 않았다.** 이것이 `C8`(은퇴 판정이 라이브
+실재를 검증하지 않는다)의 또 다른 발현이다.
+
+**🟢 부수 발견 = 실제로 고칠 것이 1건 있었고 고쳤다** (판정만 하고 끝내지 않았다)
+`05_7_SV_DDL_AD.sql` 의 COMMENT **3곳**이 BRONZE 를 `GN_DW.BRONZE_BIGQUERY.events_YYYYMMDD`
+(**일별 샤드**)로 적고 있었다. 🔴 그것은 **stale** 이다 — BRONZE 는 통합 1테이블 `EVENTS` 로
+바뀌었다(G-5 해소 · O86 · `_sources.yml` 이 정본). ⇒ `EVENTS` 로 정정(51·55·147행).
+🔴 **이 COMMENT 는 배포되면 Cortex Analyst 가 현업에게 그대로 노출한다** ⇒ 존재하지 않는 객체명을
+답변 근거로 쓰게 되는 자리였다. `R1-6-17`(같은 것을 다르게 아는 지점)의 실제 사례다.
+🟢 검증 = `grep -c events_YYYYMMDD` **0** · `line_len` PASS · 해시 2회 확인 후 `edit`.
+⚠️ `models/silver/_sources.yml` 의 같은 문자열 1건은 **O87 이 「종전 기재(역사 기록)」로 명시**한
+인용이므로 고치지 않았다(정상).
+
 
 
 # 50. dbt 파이프라인 미결 후속조치 (업무단계: 실행/운영)
@@ -1684,11 +1840,74 @@ O59-M 이 「위반 0 · 커버리지 632/632」로 판정한 상태에서도 �
 > ⇒ **부분 적재 축은 반드시 한정 표기를 붙인다.** 붙이지 않으면 다음 세션이 「전건 0」으로 읽거나(O73 이 그랬다)
 > 반대로 「해소됐다」고 뭉갠다.
 
+### 🔴🔴 [신규 2026-08-20 O91-B] BLOCKING-5 표 재실측 — **stale 2건 · 판정 1건 정정 · 신 결함 3건**
+
+> **왜 지금 나왔나**: 사용자 지시 = *"Verify the BLOCKING-5 and 06_DDL rerun prerequisites before executing dbt build"*.
+> `dbt build` 착수 전 선결조건 검증으로 표 전건을 라이브 재실측했다(계정 **`NX55103`** · 2026-08-20).
+> 🔴 **표의 종전 수치는 구 계정(`cs94293`) 산출물이다** — 계정 이전 후 재실측된 적이 없었다.
+> 검증식 = 정본 규약대로 `COUNT_IF(<col> <> 0)`(`COUNT()` 금지 · 위 §FMM census 주의사항).
+
+**① 🔴 표 「미적재」 열이 stale 인 것 2건 — FME 두 축은 실제로 적재돼 있다**
+
+| 축 | 표 기재 | 2026-08-20 실측 | 판정 |
+|---|---|---|---|
+| `FME.ORG_SK` | **ORG_SK** = 전건 0/NULL | **3,594,835 / 4,633,105** (77.6%) | 🔴 stale — **`(DEV 한정)` 부분 적재** |
+| `FME.REASON_SK` | **REASON_SK** = 전건 0/NULL | **1,038,262 / 4,633,105** (22.4%) | 🔴 stale — **`(STOP 한정)` 부분 적재** |
+
+· 🔴 `REASON_SK` 의 1,038,262 는 `STOP_CNT<>0` 건수와 **정확히 동일**하다 ⇒ 중단 사유가 STOP 전건에 배선돼 있다.
+· 🔴 `ORG_SK` 의 3,594,835 는 `CAMPAIGN_SK`(3,594,825)·`SPONSORSHIP_SK`(3,594,843)와 같은 DEV 대역이다.
+· 🔴🔴 **이것은 위 O73-C 가 남긴 교훈이 그대로 재발한 것이다** — O73-C 는 *"부분 적재 축은 반드시 한정 표기를 붙인다"*
+  고 적었으나 **그 자리에서 `SPONSORSHIP_SK` 만 고치고 같은 표의 `ORG_SK`·`REASON_SK` 는 검사하지 않았다.**
+  ⇒ 교훈을 적는 것과 **그 교훈을 같은 표 전건에 적용하는 것은 다른 작업**이다. 다음에는 표를 전수로 재실측한다.
+
+**② 🟢 재현 확인 5건 — 표가 맞는 것 (구 계정 수치와 일치)**
+
+`FME` 4,633,105행 · `CAMPAIGN_SK(DEV)` **3,594,825** · `SPONSORSHIP_SK(DEV)` **3,594,843**(O73-C 값과 완전 일치) ·
+`FEP.EVENT_SK` **870,515 / 1,134,126 = 76.8%**(표의 「76.8%」와 일치) · `FSE.SERVICE_SK` **38,455,829 / 38,467,142 = 99.97%**(A3 커버율 유지).
+🟢 미적재 축도 재확인 — `FSE`: `CAMPAIGN_SK`·`SUCCESS_MEMBERS`·`FAIL_MEMBERS`·`OPEN_MEMBERS` **전건 0** ·
+`FEP`: `TOTAL_CNT`·`CAMPAIGN_SK`·`SPONSORSHIP_SK` **전건 0** · `FBD`: `PLAN_BUDGET_YEAR`·`CAMPAIGN_SK`·`ORG_SK` **전건 0**.
+
+**③ 🔴 신 결함 — `FACT_BUDGET` 이 행은 2배인데 실적재 measure 는 줄었다 (원인 미확정)**
+
+| 항목 | 표 기재(구 계정) | 2026-08-20 실측 | 변화 |
+|---|---|---|---|
+| 행수 | 24.5K | **51,576** | 🔴 **약 2배** |
+| `PLAN_BUDGET_MONTH<>0` | 7,290 | **1,112** | 🔴 **−85%** |
+| `EXEC_BUDGET_ERP<>0` | 3,244 | **1,018** | 🔴 **−69%** |
+
+· 🔴 **행이 늘고 실적재가 줄었다** = 「원천이 커졌다」로 설명되지 않는 조합이다. 후보 = ㉠ 원천 스냅샷 차이(계정 이전)
+  ㉡ pre-hook TRUNCATE 미발동 후 중복 append ㉢ 조인 팬아웃. **어느 쪽인지 측정하지 않았다.**
+· 🔴 **`51,576 / 2 = 25,788` 로 구 24.5K 와 정확히 맞지 않으므로 「정확히 2배 중복」이라 단정할 수 없다.**
+  ⇒ **`build` 후 재측정 + grain 중복 검사**(`COUNT(*)` vs `COUNT(DISTINCT <grain>)`)가 선결이다. 지금 판정하지 않는다.
+· 🟠 이 건은 BLOCKING-5(미적재)와 **다른 계열**이다 — 미적재가 아니라 **적재량 이상**이다. 별건으로 추적한다.
+
+**④ 🔴 `FMM` 은 측정 불가 — 취소된 `build` 가 TRUNCATE 상태로 남겼다**
+
+· `GOLD.FACT_MEMBER_MONTHLY` **0행**(`LAST_ALTERED 2026-08-19 19:10:13`). 종전 기준선 = **40,054,883**.
+· 원인 = `build` 실행(`QUERY_ID 01c6819f-…-d6ba2` · 19:07:08→19:11:49 · **281초** · `GN_DW_ENGINEER`/`GN_DW_ETL_WH`)이
+  **`604 SQL execution canceled`** 로 끝났다. fact 는 **append + pre-hook TRUNCATE** 라 TRUNCATE 는 돌고 INSERT 는 못 끝났다.
+· ⇒ **표의 A1 축(`DEV_CNT`·`DEV_MEMBERS`·`STOP_CNT`·`HAS_BILLING`)은 이번에 검증할 수 없었다.** 미검증으로 남긴다.
+· 🟢 **`build` 재실행이 곧 복구 경로다**(append 모델이므로 별도 복구 작업 불요).
+
+**⑤ 🟢 판정 정정 — BLOCKING-5 는 `dbt build` 를 막지 않는다**
+
+표 머리말은 *"Cortex Analyst SV가 이 위에 서면 0/오답 → **배포 전** 원인규명 필수"* 로 **SV/Agent 배포 게이트**를 말한다.
+🟢 **실증**: 위 취소된 런이 같은 미적재 상태에서 `FBD`·`FME`·`FSE`·`FEP` **4팩트를 정상 적재**하고 WIDE 뷰 7종까지 만들었다.
+⇒ **BLOCKING-5 는 `build` 선결조건이 아니다.** `99_NEXT §0-DDD ▣2` 가 이를 「build 전 확인 대상」으로 적은 것은 과대였고
+이 절로 **정정한다** — 단 SV/Agent 배포 게이트로서는 **여전히 유효**하다(등급 유지).
+
 ### 🟡 [2026-07-21 진행분] BLOCKING-5 A-계열 착수 (입고 데이터로 구현 가능분)
 > "할 수 있는 것만" 원칙: 입고된 SILVER 데이터로 결정·외부의존 없이 채울 수 있는 항목을 우선 구현. build 는 사용자 실행.
 - ✅ **A3 — FSE SERVICE_SK·SEND_TITLE** (`models/gold/fact/FACT_SERVICE_EVENT.sql`): `CRM_SEND_MEMBER × CRM_SEND_REQUEST`(SNDNG_KEY, unique) 조인 → `SERVICE_SK = gold_sk([SEND_CHANNEL, SNDNG_TY_CD])`(DIM_SERVICE 동일 산식)·`SEND_TITLE=TIT`. **시뮬 검증: 커버 99.97%(38.46M/38.47M)·DIM_SERVICE 미매칭 SK=0건**. 미매칭 → SERVICE_SK=0(Unknown).
 - ✅ **A1 — FMM DEV/STOP 건·명 + HAS_BILLING** (`models/gold/fact/FACT_MEMBER_MONTHLY.sql` + `06_DDL.sql`): 스파인 = 회비(billing) ∪ 개발/중단(FME 월 롤업). `DEV_CNT/DEV_MEMBERS/STOP_CNT/STOP_MEMBERS` 실채움. **신규 컬럼 `HAS_BILLING BOOLEAN`**(출처 플래그)로 보수(billing-only)·정확(전체) 양립. **시뮬 검증: 40,054,883행=distinct grain(fan-out 0)·HAS_BILLING=TRUE 37,792,336(구 스파인과 정확 일치)·EVENT_ONLY 2,262,547·DEV 2.97M/STOP 0.97M 월×회원**.
   - ⚠️ **DDL 변경**: FMM에 `HAS_BILLING` 1컬럼 추가(06_DDL.sql). fact는 append+pre-hook TRUNCATE라 **build 전 06_DDL 재실행(ALTER/재생성) 필요** — 미실행 시 신컬럼 부재로 append 실패.
+    - 🟢🟢 **[2026-08-20 O91-B 충족 · 철회 병기] 위 「build 전 06_DDL 재실행 필요」는 이미 충족됐다 — 재실행 불요.**
+      실측 = `GN_DW.GOLD` 전수 대조에서 **DDL 35테이블 ↔ 라이브 35테이블 · 컬럼수 35/35 전건 일치**.
+      `FACT_MEMBER_MONTHLY` 는 **58컬럼이 이름·순서까지 완전 일치**하고 `HAS_BILLING` 도 실재한다
+      (`06_DDL.sql:564` 블록 ↔ `INFORMATION_SCHEMA.COLUMNS` `ORDINAL_POSITION` 순 대조).
+      🟢 반영 시점 = `07`/`06_DDL` 실행분(`FACT_GA_BEHAVIOR` `LAST_ALTERED 2026-08-18 20:51:48` 등).
+      🔴 **다만 이 판정의 유효 조건은 「`06_DDL.sql` 을 그 뒤에 고치지 않았다」다** — DDL 을 수정했다면 이 줄은 다시 stale 이 된다.
+      ⇒ **build 착수 직전에 위 대조를 다시 돌려라**(컬럼수 35/35 + FMM 58 이름 일치가 판정식이다).
   - ⚠️ **DEV_CNT 의미**: FME 사건수(금액/10000 아님). 금액기반 "건"은 원천 금액컬럼+FME 변경 필요(별도트랙).
 - 🔜 **잔여(B계열) — ⏸️ Agent 오픈(SV 배포) 후 진행 결정**: SV/Agent를 먼저 열어 실사용 피드백을 받은 뒤 우선순위대로 착수. 데이터·조인은 준비됨, 각 게이트만 남음.
   - **B1 FSE SUCCESS/FAIL_MEMBERS**: SNDNG_RST_CD 채워짐(2/1/Y/4/3/N/0) → **채널별 성공/실패 코드매핑 업무확정** 후 파생.
@@ -1913,6 +2132,137 @@ SILVER 32모델 ↔ `04_silver_design/09_SILVER_적재쿼리_20260714.sql`(912�
 > 참고: `DIM_MEMBER_IDENTITY`는 2026-07-15 세션에서 `enabled=true` 전환·XREF dedup 조인 배선 완료(문서40 E-6 인접). 위 §"결정 대기 GOLD 6"의 "disabled 유지 권고"는 이로써 갱신됨.
 >
 > **⚠️ [G-5 재확인·재실행 필수] identity 결선 다운스트림 3모델** — `DIM_MEMBER_IDENTITY`·`FACT_GA_BEHAVIOR`(IDENTITY_SK)·`WIDE_GA_BEHAVIOR`(IDENTITY_* 4컬럼)는 **GA4 1일 샤드(커버리지 4.22%, 매칭 1,274명) 기반으로 배선**된 상태. GA4 전기간 입고(G-5) 시 반드시: ① `GA4_IDENTITY`·`IDENTITY_MEMBER_XREF` 재적재 → ② `DIM_MEMBER_IDENTITY`·`FACT_GA_BEHAVIOR`·`WIDE_GA_BEHAVIOR` 재빌드 → ③ 매칭 커버리지·fan-out(IDENTITY_SK 유일성)·FK 무결성 재검증. 커버리지 급증으로 매칭수·grain이 크게 변동하므로 **1일 기반 수치를 확정치로 오인 금지**.
+
+---
+
+### 🔴 [2026-08-20 O91-C] `06_DDL` 재실행 후 `build` 실측 — **1 ERROR / 18 모델 SKIP · WARN 회귀 0**
+
+> 경위: 사용자가 `06_DDL` 전량 재실행(19:29:40~56 · 35테이블 `CREATE OR REPLACE`) 후 `build` 를 돌렸고
+> *"중간에 멈춘 것 같다"* 고 보고했다. 🔴 **멈춘 것이 아니라 명확히 실패했다.**
+> 근거 정본 = `10_dbt_pipeline/target/run_results.json`(dbt **1.9.4** · elapsed **530.3s** · nodes **437**)
+> + `QUERY_ID 01c681b7-3204-689b-0008-215e000e2516`(19:31:09→19:40:17 · `GN_DW_ENGINEER`/`GN_DW_ETL_WH`).
+> 🔴 **`SHOW ... / INFORMATION_SCHEMA` 만으로 판정하지 말 것** — 「LAST_ALTERED 가 build 이전」인 팩트를
+> 「build 가 건드리지 않았다」로 읽으려면 **SKIP 목록이 필요하다**. 이번에 실제로 그 함정에 빠졌다가 정본으로 교정했다.
+
+**① 상태 집계 (`run_results.json` 확정 · 437노드)**
+
+| status | n | 비고 |
+|---|---:|---|
+| `pass`(테스트) | 256 | |
+| `success`(모델) | 70 | |
+| `warn` | **31** | 아래 ③ |
+| `skipped` | **79** | 모델 **18** + 테스트 **61** |
+| `error` | **1** | `model.gn_dw_silver.BIGQUERY_REFINED_DATA` |
+
+**② 🔴 근인 = `USER_PSEUDO_ID` NOT NULL 위반 111행 (0.0003%) 이 19노드를 막았다**
+
+`100072: DML operation to table GN_DW.SILVER.BIGQUERY_REFINED_DATA failed on column USER_PSEUDO_ID with error: NULL result in a non-nullable column`
+
+· 원천 실측 = `BRONZE_BIGQUERY.EVENTS` **32,718,672행 중 `"user_pseudo_id"` NULL 111행**(빈문자 0).
+  🟢 창 = **2024-06-05 ~ 2024-06-10 6일 · 6샤드**에 국한 · 전건 `"user_id"` 도 NULL · `"stream_id"` 는 존재 ·
+  이벤트는 정상 4종(`scroll`·`page_view`·`session_start`·`first_visit`) ⇒ **동의모드/쿠키리스 추정**(미확정).
+· 🟢 **연쇄 위험 없음** — SILVER 정본의 `NOT NULL` **10컬럼** 전수를 원천에서 검사해 **`USER_PSEUDO_ID` 하나만** 걸렸다
+  (`event_timestamp`·`event_name`·`EVENT_DT`·`SRC_TABLE`·`SRC_FILE_NAME`·`LOAD_TS` 전부 NULL 0).
+  ⇒ **이 한 축만 처리하면 19노드가 함께 풀린다.**
+· 🔴 **파급 = 스킵된 18모델** — GA4 SILVER 파생 5(`GA4_DEVICE`·`GA4_EVENT`·`GA4_EVENT_DIM`·`GA4_IDENTITY`·`GA4_TRAFFIC_SOURCE`) ·
+  `IDENTITY_MEMBER_XREF` · DIM 4(`DIM_GA_SOURCE`·**`DIM_DEVICE`**·`DIM_GA_EVENT`·`DIM_MEMBER_IDENTITY`) ·
+  FACT 2(**`FACT_AD_PERFORMANCE`**·`FACT_GA_BEHAVIOR`) · WIDE 6(`AD_BROADCAST`·`AD_BROADCAST_CASE`·`AD_COMBINED`·`AD_DIGITAL`·`AD_PERFORMANCE`·`GA_BEHAVIOR`).
+· 🔴🔴 **왜 광고 계열까지 죽었나 = `DIM_DEVICE` 가 GA4 파생이다.** `FACT_AD_PERFORMANCE` 가 `DIM_DEVICE` 를 `ref` 하므로
+  **GA4 실패가 광고 도메인 전체로 전파**된다. ⇒ 「GA4 실패는 GA4 만 막는다」는 직관은 **틀렸다.**
+  🟠 이 결합은 구조 리스크로 별도 등재 대상이다(광고 성과가 GA4 입고 상태에 인질로 잡힌다).
+· 🔴 **처리 방향은 결정 사안이다**(임의 선택 금지): ㉠ 원천 정정 요청 ㉡ 111행 필터 제외(계보에 기록) ㉢ 센티넬 라우팅
+  ㉣ `NOT NULL` 완화. ⚠️ `USER_PSEUDO_ID` 는 **grain 1번 컬럼**이라 ㉣ 는 키 정의를 바꾼다 — 가볍지 않다.
+  🔴 `DEC-39`(SILVER 원천 겸용 · `30 §26`)로 가면 **119컬럼 고정 DDL 이 같은 제약을 영구화**하므로 그 결정과 함께 판단할 것.
+
+**③ 🟢 WARN 31 판정 = 기지 축 회귀 0** (기지값 = 위 §「WARN 27건 전량 목록」 · 2026-08-07 `TOTAL=402`)
+
+· 🟢 **기지 27건 중 26건이 항목·건수까지 전량 일치**(263,611 · 31,486 · 18,091 · 11,313 · 9,480 · 1,096 · 745 · 740 · 309 · 271 · 270 · 199 · 85 · 37 · 23 · 18 · 16 · 9 · 5 · 4 · 1 · 1 · 1 …).
+· ⚠️ **미평가 1건** = `relationships GA4_IDENTITY.MBER_NO → CRM_MEMBER`(기지 172). GA4 체인 SKIP 으로 **실행되지 않았다** —
+  🔴 **「해소」가 아니라 「미측정」이다.** 재실행 후 172 와 대조할 것.
+· 🟢 **신규 5건은 전부 「나중에 추가된 테스트가 기지 이슈를 드러낸 것」이고 회귀가 아니다**(노드 총계 **402 → 437 = +35** 가 방증):
+  ㉠ `warn_fep_nonnumeric_member_dk` **62** = O59-H 가 신설한 테스트. **문서 기재 「비수치 62종」과 정확히 일치**(스캐너 페이로드 `bxss.me` 등).
+  ㉡ `not_null CRM_SEND_MEMBER.SEND_RESULT_NAME` **1,401,419** — `where SEND_RESULT_CD is not null` ⇒ **코드는 있고 이름 매핑이 없는 행**.
+     🟢 이것은 위 **B1(채널별 성공/실패 코드매핑 업무확정 대기)** 축 그 자체다. 신규 결함이 아니라 **기지 결손의 계량**이다.
+  ㉢~㉤ `not_null CRM_EVENT_PARTICIPATION.PARTCPT_{CHNNL,PATH,STAT}_NM` **각 2** (`where *_CD is not null`)
+     = O59-G 가 *"나머지 16행은 dbt 로 드러나지 않는다"* 고 적은 **빈값 6행 축**을 테스트로 노출한 것(2×3=6 로 정합).
+· 🔴 **따라서 「WARN 이 27이 아니면 회귀」라는 단순 판정식은 쓰지 말 것** — 테스트가 추가되면 총계는 당연히 변한다.
+  **판정은 항목 단위 대조로 한다**(기지 항목의 건수 변화 + 신규 항목의 출처 규명). 이 절이 그 방식의 선례다.
+
+**④ 🟢 부수 확인 — 지난 취소가 남긴 3건은 이 build 가 전부 정리했다**
+
+· `FACT_MEMBER_MONTHLY` **0 → 40,054,883** = **기준선과 정확히 일치**(강한 회귀 무증거). `WIDE_MEMBER_MONTHLY` 도 생성됨.
+· `FACT_MEMBER_MONTHLY__DBT_TMP` 고아 뷰 **소멸**(`%__DBT_TMP` 잔존 0) ⇒ 별도 정리 승인 **불요**.
+· GOLD 팩트 적재 = `FACT_MEMBER_FEE` 40,262,076 · `FACT_SERVICE_EVENT` 38,467,142 · `FACT_MEMBER_EVENT` 4,633,105 ·
+  `FACT_MEMBER_COHORT` 1,585,949 · `FACT_EVENT_PARTICIPATION` 1,134,126 · `FACT_AD_DIGITAL` 205,059 ·
+  `FACT_BUDGET` 51,576 · `FACT_AD_BROADCAST` 38,486 · `FACT_DEV_ACHIEVEMENT` 37,522 · `FACT_TARGET_DEV` 25,344 ·
+  `FACT_AD_BROADCAST_CASE` 5,340. **0행 = `FACT_AD_PERFORMANCE`(SKIP) · `FACT_GA_BEHAVIOR`(SKIP) · `FACT_TARGET_BIZ`(실행됨·원천 결손)**.
+· 🟢 **`06_DDL` 의 `CREATE OR REPLACE` 가 GOLD grant 를 지우지 않았다** — GOLD FUTURE grant 35건이 새 테이블에 자동 적용돼
+  ENGINEER 적재가 성공했다. ⇒ `07` 머리말 C 항목(재생성 시 §D 재실행)의 **예외 조건**이 실증됐다:
+  **FUTURE grant 가 살아 있으면 테이블 재생성은 안전하다. 위험한 것은 「스키마」 재생성이다**(그때 FUTURE 까지 사라진다).
+· 🟢 `dbt_test__audit` 테이블 **0** · `OPS` 테이블 **4**(`store_failures`) ⇒ O91 의 audit 스키마 선생성·grant 가 **실동작 확인**됐다.
+· 🔴 **`FACT_BUDGET` 51,576 은 이 build 에서도 동일** ⇒ 「취소 때문」 가설은 **반증**됐다. 대장 24.5K 대비 2배 괴리는
+  **재현되는 현상**이므로 원천/조인 축으로 좁혀야 한다(정본 = `-012` §O91-B ③).
+
+---
+
+### 🟢 [2026-08-20 O91-D] `DEC-40` — GA4 `USER_PSEUDO_ID` 결측 행은 **DW 미편입(필터 제외)** · 이 절이 내용 정본
+
+> 사용자 결정(2026-08-20) = **필터 제외**. 원천 정정은 불가하다고 확인됐다.
+> 🔒 라벨 = `id_collision_gate --next DEC` = **DEC40**(정의 36 ↔ 참조 39).
+> 🟢 **[2026-08-20 갱신] 정식 `30_설계_의사결정.md` §27 등재 완료** — 사용자 승인으로 `--rebalance`(7→8조각)를 돌려
+> 자리를 확보한 뒤 등재했다. ⇒ **결정 정본은 `30 §27` 이고, 이 절은 실측 근거·경위의 정본이다**(역할 분리).
+> 🟠 `id_collision_gate` 정의축이 `DEC-40` 을 못 세는 것은 **기지 한계**다 — 게이트가 표 행 형태만 인식하고
+> `30_설계` 는 헤딩 형태를 쓴다(`DEC-37~39` 동일 · 게이트 주석 `:224` 에 명시 · 규약 미결 = 원장 §O64).
+> `R1-4-2` 의 **양축 최댓값 + 1** 규칙이 이를 보정하므로 관례를 유지했다.
+
+**① 규칙 (구현 세부가 아니라 규칙으로 적는 이유)**
+
+> **「`USER_PSEUDO_ID` 없는 GA4 이벤트는 DW 에 넣지 않는다.」**
+
+🔴 `WHERE` 절이 아니라 규칙으로 등재한 이유 = `DEC-39`(SILVER 원천 겸용)로 Python 프로시저가 119컬럼
+고정 DDL 을 직접 채우게 되면 **같은 `NOT NULL` 제약이 그대로 재발**한다. 필터가 dbt 모델에만 있으면
+프로시저 경로에서 다시 터진다. ⇒ **프로시저 이관 시 이 필터를 함께 옮기는 것이 DoD 다.**
+
+**② 왜 센티넬이 아닌가 — 판단 기준을 남긴다**
+
+| | 센티넬(`SK=0`)이 맞는 경우 | 이 건(`USER_PSEUDO_ID`) |
+|---|---|---|
+| 컬럼 역할 | **차원 FK**(부가 축) | **grain 구성 컬럼 = 사실의 정체성** |
+| 행을 버리면 | 총계가 틀어진다 | 이벤트 111건만 빠진다(0.0003%) |
+| 센티넬을 넣으면 | 총계 보존 · 축만 Unknown | 111행이 `COUNT(DISTINCT USER_PSEUDO_ID)` 에서 **1명으로 뭉친다** |
+
+· 🔴 센티넬은 「정체불명 1명이 6일간 111번 활동」이라는 **없는 사실을 만든다.** `user_id` 도 전건 NULL 이라
+  실제 인원 복원은 **원천적으로 불가**하다 ⇒ 어떤 값을 넣어도 틀린다. 제외하면 「모수에서 빠졌다」는
+  사실만 남고 그건 정확히 기록할 수 있다.
+· 🟢 **판정 기준(일반화)** = **grain 구성 컬럼이면 제외 · 차원 FK 면 센티넬.**
+  🔴 이 예외는 **grain 컬럼 한정**이다 — `SERVICE_SK=0`·`EVENT_SK=0` 등 센티넬 관례(`P21`·`DEC-17-B`)는 그대로 유지한다.
+· ⚠️ 참고로 센티넬은 **기술적으로는 가능**했다 — 111행의 `(event_timestamp, event_name)` 이 전부 유일해
+  `EVENT_SEQ` tiebreak 없이도 grain 충돌이 없다(실측). 즉 **기술 제약이 아니라 의미 판단으로 제외를 골랐다.**
+
+**③ 구현 3종 (전부 완료 · compile 검증됨)**
+
+| # | 산출물 | 내용 |
+|---|---|---|
+| ㉠ | `models/silver/ga4/BIGQUERY_REFINED_DATA.sql` | `src` CTE 에 `AND "user_pseudo_id" IS NOT NULL` + **계보 주석 32줄**(규모·창·근거·승계 의무) |
+| ㉡ | `tests/warn_ga4_null_user_pseudo_id.sql` | **신규** · `severity=warn` · **기지 창(2024-06-05~10) 제외** ⇒ 새 사고만 울린다 |
+| ㉢ | 원장 §1 `DEC-40` 행 | 라벨 선점 등재(`R1-4-3`) |
+
+· 🟢 **검증** = `EXECUTE DBT PROJECT FROM WORKSPACE … args='compile --select BIGQUERY_REFINED_DATA warn_ga4_null_user_pseudo_id'`
+  → **SUCCESS=TRUE** · `Found 89 models, 349 data tests`(종전 **348** ⇒ 신규 테스트 1건 등록 확인).
+  렌더링 확인 = 범위 술어 뒤에 `AND "user_pseudo_id" IS NOT NULL` 이 정상 결합(술어 재작성 없음 · `R1-6-17` 준수).
+· 🟢 **테스트 사전 실측** = 기지 창 밖 NULL **0행** ⇒ 창이 111행을 **완전히 덮는다**(현재 정상 상태 = 0행).
+· 🔴 **`--project-dir` 로컬 dbt 는 쓸 수 없다** — 스테이지 경로 로깅이 `OSError: [Errno 95] Operation not supported`
+  로 죽는다. ⇒ **컴파일 검증은 `EXECUTE DBT PROJECT … args='compile …'` 로 한다**(환경 지뢰 · 다음 세션 승계).
+
+**④ 🔴 이 절이 만드는 새 부채 — 반드시 승계할 것**
+
+· **BRONZE ↔ SILVER 행수가 111행 어긋난다**(32,718,672 ↔ 32,718,561 예상). 🔴 **이것을 적재 손실로 오진하지 마라.**
+  🟠 `warn_ga4_base_row_reconciliation`(O88 신설)이 이 차이를 어떻게 취급하는지 **미확인**이다 —
+  그 게이트가 BRONZE 기준으로 대조하면 **111행 차이로 상시 WARN** 이 될 수 있다. ⇒ `build` 후 확인 대상.
+· 🟠 **`P103-⑤` 위험은 옮겨간 것이지 사라진 것이 아니다** — 기지 창을 뺀 것은 이 테스트를 살리기 위한 선택이고,
+  그 대가로 **창 안의 변화는 보이지 않는다**. 그 창을 재적재하면 이 테스트가 아니라 위 §O91-C 수치를 직접 재라.
+· ⚠️ **원인은 여전히 미확정**(동의모드/쿠키리스 **추정**). 원천 정정 불가라 규명 실익이 낮아 **추정으로 남긴다** —
+  🔴 추정을 확정으로 인용하지 말 것.
 
 ---
 _생성: 순서 9-B 세션. 갱신 시 항목별 `[DONE]`·날짜 표기._

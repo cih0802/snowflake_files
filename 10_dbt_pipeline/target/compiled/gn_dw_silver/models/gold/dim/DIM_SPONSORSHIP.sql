@@ -9,7 +9,10 @@
 --      들어갈 수 없다(O8 과 동일 fan-out) → 별건 설계 대기.
 --   ✅ 실재하는 3계층 = DIV_NAME(정기/일시) → GROUP_NAME(약칭 6종) → SPONSORSHIP_NAME(사업명).
 --      `SPONSORSHIP_ABBR` 은 기존 컬럼이고 라벨만 없었다(O25/G3/O37 동일 패턴).
---   🟢 SPB-G 종결 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
+--   🟡 SPB-G 근거 확보 · 라이브 대조 대기 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
+--      🔴 「종결」이라고 적었던 것은 오판정이라 격하했다(라이브 0행이라 대조 불가 · R2-8-4-c · 계정 NX55103).
+--   🔴 `SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다 — "ID=DIM 키(마스터 50)·NO=관계번호·크로스워크"
+--      (크로스워크 = SILVER.CRM_SPONSOR_RELATION). 위 기술은 Q15 와 일치하며 신규 발견이 아니다.
 --   ⚠️ 코드 조인은 USE_YN 무필터다(O37 선례). 원천 코드 부재 시 NULL 이며 '(미매핑)' 창작 금지(P21).
 
 
@@ -37,7 +40,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ab91fe72-d309-4d6a-a8f0-c14746eaa13f'                    AS DW_BATCH_ID,
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID,
     s.SPNSR_DIV_CD                                as SPONSORSHIP_DIV_CD,
     cd_div.DTL_CD_NM                              as SPONSORSHIP_DIV_NAME,
     cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME
@@ -51,5 +54,5 @@ select 0, '(미매핑)', '(미매핑)', NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ab91fe72-d309-4d6a-a8f0-c14746eaa13f'                    AS DW_BATCH_ID,
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID,
     NULL, NULL, NULL

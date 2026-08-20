@@ -55,6 +55,8 @@ create or replace view GN_DW.GOLD.WIDE_MEMBER_EVENT
       CAMPAIGN_INFLOW_PATH COMMENT $$DIM_CAMPAIGN.INFLOW_PATH — 개발인입경로 라벨 = **모집 채널**. 코드그룹 **MM293(개발인입경로)**. 코드사전 = (교육기관·기업·뉴미디어·대면모금·디지털·마케팅콜개발·방송·영상광고·일시·재송출·지역개발·회원 기타·회원 오프라인개발·회원 온라인개발·회원 콜개발·직원개발) · 실적재에 **사전 전종이 등장**하며 **'디지털'(5)이 압도적 최빈값**이다. 🔴이 축을 「현업 주요캠페인 분류축」이라고 적었던 기술은 **거짓이므로 회수됐다**(O37) — 모집 채널이다. 캠페인 카테고리 = CAMPAIGN_CATEGORY(MM294) · 상위캠페인 = CAMPAIGN_PARENT.$$,
       SPONSORSHIP_BK COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키$$,
       SPONSORSHIP_NAME COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)$$,
+      SPONSORSHIP_DIV_NAME COMMENT $$[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선(3,594,843)이라 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24).$$,
+      SPONSORSHIP_GROUP_NAME COMMENT $$[2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️STOP 브랜치 센티넬은 위 DIV_NAME 주석과 동일.$$,
       ORG_CORP COMMENT $$DIM_ORG.CORP — 법인 (#114). 🔴DIM_ORG 는 **SCD1**(DEC-2)이라 as-was 가 아니다 — 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다(조직 변경이력 원천·as-was 요구가 없어 SCD1 로 확정). 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.CORP`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C.$$,
       ORG_DIVISION COMMENT $$DIM_ORG.DIVISION — 본부/지부 (#115). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.DIVISION`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C.$$,
       ORG_DEPARTMENT COMMENT $$DIM_ORG.DEPARTMENT — 부서 (#116). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴「부서」는 축이 둘이다 — 이 컬럼은 **사건 부서**이고 획득 부서는 DIM_MEMBER_ACQUISITION.ACQ_DEPARTMENT 다(O34). 🔴[O51-D 실측] `'(미매핑)'` 이 **다수**다 — 중단원천 행은 부서가 없다. 부서별 집계 시 이 그룹이 상위권 규모로 나타나며 **실재 부서가 아니다.** 실측 규모는 이슈원장 §O51-D-C.$$,
@@ -124,6 +126,12 @@ select
     c.INFLOW_PATH         as CAMPAIGN_INFLOW_PATH,
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
+    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
+    --   🟢 DEV 브랜치는 O45 로 배선(3,594,843) — 분류별 개발실적 집계 경로.
+    --   ⚠️ STOP 브랜치는 SPONSORSHIP_SK 센티넬 0 이라 라벨도 '(미매핑)' 이다(DEC-32 철회 근거·O47).
+    --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
+    s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
+    s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,
     o.CORP                as ORG_CORP,
     o.DIVISION            as ORG_DIVISION,
     o.DEPARTMENT          as ORG_DEPARTMENT,

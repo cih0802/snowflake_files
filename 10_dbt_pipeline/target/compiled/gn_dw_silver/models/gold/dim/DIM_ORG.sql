@@ -41,7 +41,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID
 from o
 
 union all
@@ -50,4 +50,4 @@ select 0, 0, NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '17b6585e-5115-4071-a904-810c19eaeb12'                    AS DW_BATCH_ID
+    '1d13a601-ad24-41f9-ace2-8e070d87b9ca'                    AS DW_BATCH_ID

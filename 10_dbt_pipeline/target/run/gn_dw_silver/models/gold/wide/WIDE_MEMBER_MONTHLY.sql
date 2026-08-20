@@ -73,7 +73,9 @@ create or replace view GN_DW.GOLD.WIDE_MEMBER_MONTHLY
       CAMPAIGN_TYPE COMMENT $$DIM_CAMPAIGN.CAMPAIGN_TYPE — 캠페인 유형 (#17) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C.$$,
       SPONSORSHIP_BK COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C.$$,
       SPONSORSHIP_NAME COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C.$$,
-      SPONSORSHIP_ABBR COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_ABBR — 약칭 (#124) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.SPONSORSHIP_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C.$$,
+      SPONSORSHIP_ABBR COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_ABBR — 약칭 (#124) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.SPONSORSHIP_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C. 🟢[2026-08-19 O89] 이 컬럼은 **코드(1~6)** 이고 라벨은 SPONSORSHIP_GROUP_NAME 이다 — 코드사전 CM003(후원약칭)으로 특정됐다(SPB-G 종결).$$,
+      SPONSORSHIP_DIV_NAME COMMENT $$[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🔴🔴 이 뷰에서는 `FACT_MEMBER_MONTHLY.SPONSORSHIP_SK` 가 **전건 센티넬(0)** 이라 이 라벨도 `'(미매핑)'` 이다 — 분류별 분해는 `WIDE_MEMBER_FEE`(거의 전건 채움) 또는 `WIDE_MEMBER_EVENT`(DEV 브랜치 배선)를 쓸 것. 센티넬 원인은 O8(다중후원·다중캠페인 귀속 규칙 현업 미회신)이다.$$,
+      SPONSORSHIP_GROUP_NAME COMMENT $$[2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. 🔴🔴 이 뷰에서는 팩트 FK 가 전건 센티넬이라 `'(미매핑)'` 이다(위 DIV_NAME 주석과 동일).$$,
       PAYMENT_METHOD COMMENT $$DIM_PAYMENT.PAYMENT_METHOD — 납입방식 (#125) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.PAYMENT_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C.$$,
       PAYMENT_SETTLE_METHOD COMMENT $$DIM_PAYMENT.SETTLE_METHOD — 결제방식 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.PAYMENT_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C.$$,
       PAYMENT_FEE_TYPE COMMENT $$DIM_PAYMENT.FEE_TYPE — 회비유형(정기/일시) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.PAYMENT_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C. ⚠️게다가 `DIM_PAYMENT.FEE_TYPE` 자체도 전건 비어 있다(이중 결손).$$,
@@ -146,6 +148,10 @@ select
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
     s.SPONSORSHIP_ABBR    as SPONSORSHIP_ABBR,
+    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨. ⚠️ 이 뷰의 SPONSORSHIP_SK 는 O8 미회신으로 전건 센티넬(0)
+    --   이므로 이 두 라벨도 '(미매핑)' 이다 — 실제 분류 분석은 WIDE_MEMBER_FEE·WIDE_MEMBER_EVENT 를 쓸 것.
+    s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
+    s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,
     p.PAYMENT_METHOD      as PAYMENT_METHOD,
     p.SETTLE_METHOD       as PAYMENT_SETTLE_METHOD,
     p.FEE_TYPE            as PAYMENT_FEE_TYPE,

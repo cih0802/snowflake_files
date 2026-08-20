@@ -6,6 +6,8 @@ create or replace view GN_DW.GOLD.WIDE_MEMBER_FEE
       MEMBER_DK COMMENT $$회원 자연키(= 팩트 조인키, FK→DIM_MEMBER.MEMBER_DK). 🔴VARCHAR(10) 규약(O12/AC-1) — 원천 MBER_NO 최대길이 9 실측. 🔴기부금 지류(BRONZE_CRM.TM_PM_DNTN_DTLS)에는 MBER_NO 컬럼이 **아예 없다**(회원키가 ONCE_MBER_NO) — 기부금 행의 회원 축은 구조적으로 부재하다. ⚠️FMM 규약과 일치시키기 위해 MBER_NO IS NOT NULL 을 적용한다(O45-C).$$,
       SPONSORSHIP_SK COMMENT $$🔴**납입 대상** 후원사업 대리키(FK→DIM_SPONSORSHIP) ← 원천 SPNSR_BSNS_ID. 0=미매핑. [O51-D 실측] **거의 전건 채움**이며 후원사업 종류는 수십 개다. 🔴획득 후원사업 ACQ_SPONSORSHIP_SK 와 **의미가 다르다** — 같은 라벨로 두 축이 존재한다. 이 축이 grain 에 들어간 것이 이 팩트를 FMM 과 분리한 이유다 — [O51-D 실측] 이 축을 붙이면 **회원-월 조합 수가 늘어 grain 이 깨진다**(증가율은 이슈원장 §O45·§O51-D). ⚠️인용 시 스코프를 함께 적을 것 — 종전 수치는 **BRONZE 회비 지류만**(MBER_NO not null) 스코프여서 분모가 다르다.$$,
       SPONSORSHIP_NAME COMMENT $$🔴**납입 대상** 후원사업 — 회비 행에 붙은 값이다(원천 SPNSR_BSNS_ID · 거의 전건 채움). 획득 후원사업(ACQ_SPONSORSHIP_NAME)과 다르다: 한 회원이 여러 후원사업에 낸다. 🔴이 축을 grain 에 넣으면 회원-월 조합 수가 늘어난다 — 그것이 이 팩트를 FMM 과 분리한 이유다(증가율 실측은 이슈원장 §O45·§O51-D).$$,
+      SPONSORSHIP_DIV_NAME COMMENT $$[2026-08-19 O89] 납입 대상 후원사업 분류의 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢**이 뷰가 분류 집계의 정본 경로다** — `SPONSORSHIP_SK` 가 거의 전건 채움이라 FMM(전건 센티넬)과 달리 실제 분해가 된다. ⚠️획득 후원사업 축(ACQ_*)과 다른 축이다 — 같은 표에서 섞지 말 것.$$,
+      SPONSORSHIP_GROUP_NAME COMMENT $$[2026-08-19 O89] 납입 대상 후원사업 분류의 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️인용 시 스코프 병기 — 기부금 지류는 회비구분이 구조적으로 부재하다(O40).$$,
       FEE_DIV_CD COMMENT $$회비구분 코드 raw. 코드그룹 **PM010(회비구분)**. [O51-D BRONZE 실측] 사전 4종이며 **숫자가 아니라 알파벳 코드**다 — E정기·I일시·U긴급구호·G선물금. 실적재에 **사전 전종이 등장**하며 **E(정기)가 압도적**이다. 🔴기부금 행은 원천에 이 컬럼이 없어 NULL 이다 — **결측이 아니라 해당없음**(P21). 라벨 = FEE_DIV_NAME.$$,
       FEE_DIV_NAME COMMENT $$회비구분(PM010 실측 확정): 정기·선물금·일시·긴급구호. 🔴기부금 행은 원천이 NULL 이다 — 결측이 아니라 해당없음(P21)$$,
       PAYMENT_TYPE COMMENT $$납입유형 = 회비/기부금. 🔴납부율·미납 분석은 회비만으로 스코프할 것 — 기부금은 원천에 청구(RQEST_AMT)가 전건 NULL 이라 분모에 들어갈 수 없다(O40)$$,
@@ -67,6 +69,11 @@ select
     -- ── 납입 대상 축 ──────────────────────────────────────────────────────────
     f.SPONSORSHIP_SK,
     s.SPONSORSHIP_NAME                          as SPONSORSHIP_NAME,
+    -- [2026-08-19 O89] 납입 대상 후원사업의 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
+    --   🟢 이 뷰의 SPONSORSHIP_SK 는 거의 전건 채움이라 분류 집계의 정본 경로다.
+    --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
+    s.SPONSORSHIP_DIV_NAME                      as SPONSORSHIP_DIV_NAME,
+    s.SPONSORSHIP_GROUP_NAME                    as SPONSORSHIP_GROUP_NAME,
     f.FEE_DIV_CD,
     f.FEE_DIV_NAME                              as FEE_DIV_NAME,
     f.PAYMENT_TYPE                              as PAYMENT_TYPE,

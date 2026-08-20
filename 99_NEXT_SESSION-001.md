@@ -58,6 +58,21 @@ END-METADATA -->
 | ② | `07` 전량 실행 | 🟢 완료 — `EVENTS` **32,718,672행 / 106폴더** (O91 재측정 일치) |
 | ③ | `dbt build` | 🟠 **차단 해소 · 미실행** — RBAC 3건 0 · `SILVER.BIGQUERY_REFINED_DATA` 여전히 **0행** |
 
+🟢🟢 **[2026-08-20 O91-E 갱신 · 위 ③ 행은 stale] `build` 2차 실행 결과 = 사실상 통과에 근접했다.**
+· 실측(`QUERY_ID 01c681ed-…-f6612` · 415초) = **`PASS=385 WARN=33 ERROR=1 SKIP=19 TOTAL=438`** ·
+  모델 **86 성공** · `SILVER.BIGQUERY_REFINED_DATA` **28,655,586행**(0 → 적재) ⇒ **`DEC-40` 필터가 통했다.**
+· 🟢 **광고 도메인 복구** = `FACT_AD_PERFORMANCE` **243,545행** · `WIDE_AD_*` 5종 · WIDE **13/14**.
+· 🔴 **잔여 실패 1건은 stale 테스트였고 시정 완료다** — `accepted_values` 에 `'NOT_A_MEMBER_ID'` 누락
+  (라이브 **113행**). `_silver_bridge_schema.yml` 에 추가 + `parse` SUCCESS 검증.
+  ⇒ **다음 `build` 는 이 1건이 통과할 것으로 예상되지만 실측 전에는 단정하지 말 것.**
+· 🟠 **미도달 잔여 = 모델 3**(`DIM_MEMBER_IDENTITY`·`FACT_GA_BEHAVIOR`·`WIDE_GA_BEHAVIOR`) **+ 테스트 16**.
+  🔴 `WIDE_GA_BEHAVIOR` 는 **SERVICE SV COMMENT 가 Agent 에게 안내하는 객체**인데 **라이브에 없다**
+  ⇒ Agent 가 존재하지 않는 객체로 안내한다(구조 의존은 아니나 답변 품질 누수). build 재실행으로 해소된다.
+· 🟢 **WARN 33 = 기지 31건 항목·건수 전량 일치**(회귀 0) + 신규 2건(`GA4_IDENTITY` **153** · 정합성 게이트 **1**).
+· 🟢 **정합성 게이트 숙제 해소** = `FOLDED 623,660` = **접힘 623,549** + **`DEC-40` 제외 111**(gap 의 0.0178%)
+  ⇒ `DEC-40` 과 무관하게 발화했을 게이트다. 🟠 단 `FOLDED_ROWS` 라벨이 111행만큼 부정확(개선 대상).
+· 정본 = `50_dbt_…` **§O91-E**.
+
 · 🔴 **세션 시작에 라이브를 다시 재라**(`P33`). 최소 3축:
   `SELECT COUNT(*), COUNT(DISTINCT SRC_TABLE) FROM GN_DW.BRONZE_BIGQUERY.EVENTS;`
   `SHOW GRANTS TO ROLE GN_DW_ENGINEER;` · `SHOW FUTURE GRANTS IN SCHEMA GN_DW.SILVER;`
@@ -76,6 +91,34 @@ END-METADATA -->
 · 🔴 **선결조건 2건이 별도로 남아 있다**(O88-C 가 「미보고」로 지적한 것 · `-012`·`-013`):
   ㉠ `BLOCKING-5` = GOLD 팩트 measure·차원FK 대규모 미적재 ㉡ `06_DDL` 재실행 요건.
   ⇒ build 전에 이 둘의 현재 상태를 확인한다. **RBAC 만 풀렸다고 build 가 green 이 되는 것은 아니다.**
+  🟢🟢 **[2026-08-20 O91-B 검증 완료 · 위 두 줄 정정] 둘 다 build 를 막지 않는다 — 확인은 끝났다.**
+  · ㉡ `06_DDL` **재실행 불요** = DDL 35테이블 ↔ 라이브 35테이블 · **컬럼수 35/35 일치** ·
+    `FACT_MEMBER_MONTHLY` **58컬럼 이름·순서 완전 일치** · `HAS_BILLING` 실재.
+    🔴 유효 조건 = 「`06_DDL.sql` 을 그 뒤에 고치지 않았다」 ⇒ **착수 직전 이 대조를 한 번 더 돌려라.**
+  · ㉠ `BLOCKING-5` 는 **SV/Agent 배포 게이트이고 build 게이트가 아니다.** 🔴 위 「선결조건」 표현은 **과대였다** —
+    실증 = 취소된 런이 같은 미적재 상태에서 **4팩트 정상 적재 + WIDE 7종 생성**까지 갔다.
+  🔴 **대신 진짜 확인할 것이 3건 생겼다** — 아래 ▣2-B 를 보라.
+
+### ▣2-B 🔴 취소된 `build` 가 남긴 것 — **재실행 전에 이것을 알고 있어라**
+
+사용자 런 = `QUERY_ID 01c6819f-…-d6ba2` · 19:07:08→19:11:49 · **281초** · `GN_DW_ENGINEER`/`GN_DW_ETL_WH` ·
+종료 = **`604 SQL execution canceled`**.
+🟢 **이 런이 O91 의 GRANT 를 사후 실증한다** — 종전 실패는 15초에 `003001 (42501)` 이었다. **RBAC 은 더는 차단하지 않는다.**
+
+| # | 잔존물 | 실측 | 처리 |
+|---|---|---|---|
+| ㉠ | `GOLD.FACT_MEMBER_MONTHLY` **0행** | 기준선 **40,054,883** → **0** | 🟢 build 재실행이 복구 경로(append 모델) |
+| ㉡ | `FACT_MEMBER_MONTHLY__DBT_TMP` 고아 뷰 | created `19:10:13.411` | 🟠 **미거버넌스 객체**(`BLOCKING-3` 계열) · 정리 승인 대상 |
+| ㉢ | WIDE 뷰 **7 / 14** | `MEMBER_MONTHLY`·`GA_BEHAVIOR`·`AD_*` 4종·`AD_COMBINED` 부재 | 🟢 build 재실행으로 해소 |
+
+· 🔴🔴 **교훈 = fact 는 append + pre-hook TRUNCATE 라 「취소」가 팩트를 비운다.**
+  TRUNCATE 는 돌고 INSERT 는 못 끝난다. ⇒ **build 를 중간에 끊지 마라. 끊었으면 반드시 재실행하라.**
+· 🔴 **새 결함 — `FACT_BUDGET` 적재량 이상**: 행 **51,576**(대장 24.5K 대비 약 2배)인데
+  `PLAN_BUDGET_MONTH<>0` **1,112**(−85%) · `EXEC_BUDGET_ERP<>0` **1,018**(−69%).
+  **행이 늘고 실적재가 줄은 조합은 원천 증가로 설명되지 않는다.** 원인 미확정 ⇒ build 후
+  `COUNT(*)` vs `COUNT(DISTINCT <grain>)` 로 중복을 먼저 가른다. 정본 = `-012` §O91-B ③.
+· 🔴 **대장 stale 2건 시정됨** — `FME.ORG_SK`(3,594,835 · DEV 한정) · `FME.REASON_SK`(1,038,262 · STOP 한정)이
+  「전건 0」으로 적혀 있었으나 **부분 적재**였다. O73-C 교훈이 같은 표에서 재발한 건이다.
 · ⚠️ **미측정** = 「`OPS` `USAGE` 없으면 store_failures 테스트가 실제 실패하는가」는 재현하지 않았다.
   부여는 했으니 실패하지 않겠지만, **음성 테스트를 한 적은 없다**(O90 ⑩ 승계 · 인용 전 재라).
 

@@ -62,6 +62,39 @@ WITH src AS (
     OR (EVENT_DT >= TO_DATE('2025-06-01') AND EVENT_DT <= TO_DATE('2025-06-30'))
     OR (EVENT_DT >= TO_DATE('2026-06-01') AND EVENT_DT <= TO_DATE('2026-06-30'))
   )
+    -- 🔴🔴 [2026-08-20 O91-D · 사용자 결정 = 「필터 제외」] `user_pseudo_id` NULL 행을 DW 에 넣지 않는다.
+    --    ⚠️ **이것은 의도된 행 제외이고 적재 손실이 아니다.** 아래 계보를 지우지 마라 —
+    --       BRONZE ↔ SILVER 행수 대조가 이 111행만큼 어긋나며, 근거가 없으면 다음 세션이 사고로 오진한다.
+    --
+    --    ▣ 왜 넣을 수 없었나 (선택이 아니라 물리적 제약)
+    --      정본 DDL 이 `USER_PSEUDO_ID NOT NULL`(grain 1번 컬럼)로 선언한다 ⇒ NULL 이 1행만 있어도
+    --      `100072: NULL result in a non-nullable column` 으로 **모델 전체가 실패**한다.
+    --      2026-08-20 실측 = 이 111행이 `build` 를 죽여 **모델 18개 + 테스트 61개가 SKIP** 됐다
+    --      (GA4 5 · DIM 4 · IDENTITY_MEMBER_XREF · FACT 2 · WIDE 6). 🔴 `DIM_DEVICE` 가 GA4 파생이라
+    --      **광고 도메인(FACT_AD_PERFORMANCE·WIDE_AD_*)까지 함께 죽었다** — 파급이 GA4 안에 갇히지 않는다.
+    --
+    --    ▣ 제외 규모·창 (2026-08-20 실측 · 계정 NX55103)
+    --      **111행 / 32,718,672행 = 0.0003%** · 빈문자 0 · `EVENT_DT` **2024-06-05 ~ 2024-06-10 6일 · 6샤드**
+    --      전건 `user_id` 도 NULL · `stream_id` 는 존재(1종) · 이벤트는 정상 4종
+    --      (`scroll`·`page_view`·`session_start`·`first_visit`) ⇒ 동의모드/쿠키리스 **추정**(미확정).
+    --      🟢 `NOT NULL` 10컬럼 전수 검사에서 걸린 것은 이 컬럼 **하나뿐**이다(나머지 전부 NULL 0).
+    --
+    --    ▣ 왜 센티넬(`COALESCE(...,'(unknown)')`)이 아니라 제외인가 — 사용자 결정 근거
+    --      · 센티넬은 **차원 FK 미매칭**에 맞는 도구다(`SERVICE_SK=0` 등 · `P21`·`DEC-17-B`).
+    --        그 경우 사실은 유효하고 축만 모르므로 행을 버리면 총계가 틀어진다.
+    --      · 그런데 `USER_PSEUDO_ID` 는 **grain 구성 컬럼 = 사실의 정체성**이다. 센티넬을 넣으면
+    --        111행이 `COUNT(DISTINCT USER_PSEUDO_ID)` 에서 **1명으로 뭉쳐** 「정체불명 1명이 6일간
+    --        111번 활동」이라는 **없는 사실을 만든다**. `user_id` 도 전건 NULL 이라 실제 인원 복원은 불가다.
+    --      · ⇒ 어떤 값을 넣어도 틀리므로 **모수에서 빼고 그 사실을 기록**하는 편이 정확하다.
+    --      🔴 이 판단은 **grain 컬럼에 한정**된다. 차원 FK 에는 센티넬 관례를 그대로 유지한다.
+    --
+    --    ▣ 승계 의무 (🔴 `DEC-40` · `20_issue/30_설계_의사결정.md`)
+    --      규칙 = **「`USER_PSEUDO_ID` 없는 GA4 이벤트는 DW 에 넣지 않는다」**. 이 `WHERE` 절은 그 규칙의
+    --      dbt 구현체 하나일 뿐이다. `DEC-39`(SILVER 원천 겸용)로 Python 프로시저가 119컬럼 고정 DDL 을
+    --      직접 채우게 되면 **같은 제약이 그대로 재발**하므로 프로시저에도 이 필터를 넣어야 한다.
+    --      ⇒ 규칙으로 등재한 이유가 이것이다. 여기만 고치고 끝내지 마라.
+    --      재발 감지 = `tests/warn_ga4_null_user_pseudo_id.sql`(기지 창 밖에서만 WARN).
+      AND "user_pseudo_id" IS NOT NULL
 ),
 
 -- event_params(VARIANT ARRAY) → 스칼라 승격. 혼합타입은 COALESCE(string, int) (설계문서 07 §7-B).
