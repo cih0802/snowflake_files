@@ -4,10 +4,14 @@
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
 --    FLATTEN·param 승격·VARIANT 경로 추출·DEVICE_TYPE 파생은 전부 기반 테이블로 이동했다.
 --    이 모델에 남은 고유 로직은 **세션 채움(session-fill) 2단계 CTE** 하나다.
+-- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
+--    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
 --
--- 🟢 GA4-PK-1 해소 — PK 4번째 키를 BATCH_ORDERING_ID → EVENT_SEQ 로 교체(손실 0 · 사용자 결정).
+-- 🟢 GA4-PK-1 해소 — PK 4번째 키를 BATCH_ORDERING_ID → EVENT_SEQ 로 교체(NOT NULL 위반 해소).
 --    종전 PK 는 2024-01-01~07-18 · 199일 · 48,862,926행(17.10%)을 NOT NULL 위반으로 배제했다.
---    EVENT_SEQ 는 기반 테이블이 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순으로 부여한 surrogate 다.
+--    EVENT_SEQ 는 GA4_BASIC 이 3키 내에서 BATCH_EVENT_INDEX+EVENT_BUNDLE_SEQUENCE_ID 순으로
+--    부여한 surrogate 다. 🔴 「손실 0」은 아니다 — 두 컬럼으로도 2025-06 실측 8.66% 중복이
+--    남고(값 자체가 원천에서 중복 · 미결 GA4-SEQ-1), SRC_FILE_NAME 계보는 외부 적재에 없다.
 --    ⚠️ BATCH_ORDERING_ID 는 컬럼으로는 보존한다(2024 상반기 NULL) — 계보·정렬 근거.
 --
 -- 🟢 GA4-LEN-1 해소 — USER_ID·USER_ID_FILLED VARCHAR(10) → VARCHAR(64) + ID_SCHEME 분류축 승계.
@@ -24,7 +28,7 @@
 --    ⚠️ 모델명을 바꾸면 `silver_purge.RANGED_MODELS` 도 함께 고쳐야 한다.
 
 WITH base AS (
-    SELECT * FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA
+    SELECT * FROM GN_DW.SILVER.GA4_BASIC
 ),
 -- 세션 단위 신원 집계 — 🔴 Snowflake 는 COUNT(DISTINCT x) OVER(...) 를 지원하지 않는다.
 --    MAX(user_id) OVER(파티션) 단독으로 채우면 CONFLICT 세션이 조용히 오귀속된다
@@ -84,10 +88,10 @@ SELECT
     b.PLATFORM                                                   AS PLATFORM,
     b.IS_ACTIVE_USER                                             AS IS_ACTIVE_USER,
     b.BATCH_ORDERING_ID                                          AS BATCH_ORDERING_ID,
-    b.SRC_TABLE                                                  AS SRC_TABLE,
-    b.SRC_FILE_NAME                                              AS SRC_FILE_NAME,
+    NULL                                                          AS SRC_TABLE,
+    NULL                                                          AS SRC_FILE_NAME,
     'GA4'                             AS DW_SOURCE_SYSTEM,
-    'SILVER.BIGQUERY_REFINED_DATA'    AS DW_SOURCE_TABLE,
+    'SILVER.GA4_BASIC'    AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
     NULL                              AS DW_BATCH_ID

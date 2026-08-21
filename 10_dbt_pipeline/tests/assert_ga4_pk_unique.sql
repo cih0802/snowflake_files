@@ -1,6 +1,8 @@
 -- [2026-08-19 O88] GA4 계열 PK 4키 유일성 게이트 — `GA4-SEQ-1` 의 유일한 기계 검사.
 -- Co-authored with CoCo
 --
+-- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
+--    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
 -- 🔴🔴 왜 필요한가 — 이 축을 검사하는 게이트가 **하나도 없었다.**
 --   `08_SILVER_테이블DDL` 이 두 테이블에 `PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP,
 --   EVENT_NAME, EVENT_SEQ)` 를 선언하지만 **Snowflake 는 PK 를 강제하지 않는다**(informational).
@@ -35,7 +37,7 @@
 --   ⚠️ 규모 수치는 여기 하드코딩하지 않는다(`R2-6`) — 정본은 `90` §1-B 다.
 
 select
-      'BIGQUERY_REFINED_DATA'   as MODEL_NAME
+      'GA4_BASIC'               as MODEL_NAME
     , USER_PSEUDO_ID            as USER_PSEUDO_ID
     , EVENT_TIMESTAMP           as EVENT_TIMESTAMP
     , EVENT_NAME                as EVENT_NAME
@@ -43,7 +45,7 @@ select
     , count(*)                  as DUP_ROWS
     , min(EVENT_DT)             as FIRST_DT
     , max(EVENT_DT)             as LAST_DT
-from {{ ref('BIGQUERY_REFINED_DATA') }}
+from {{ ref('GA4_BASIC') }}
 group by all
 having count(*) > 1
 

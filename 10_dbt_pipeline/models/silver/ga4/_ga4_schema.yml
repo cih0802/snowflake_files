@@ -18,13 +18,15 @@ version: 2
 #       = `GA4-SEQ-1` ① 선결의 기계 구현).
 #    ⚠️ 둘 다 **재실행 간 순번 안정성**(`GA4-SEQ-1` 본체)은 잡지 못한다 — 그것은 두 run 의
 #       결과 대조가 필요하고 단일 시점 테스트의 범위가 아니다. 통과를 해소로 읽지 말 것.
+#
+# 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 는 이제 dbt 모델이 아니다(외부 Python 이 GN_DW.SILVER.
+#    BIGQUERY_REFINED_DATA 를 118컬럼 평탄화만으로 직접 적재) — 신설 `GA4_BASIC`(dbt) 이 그 파생
+#    (EVENT_DT·EVENT_SEQ·ID_SCHEME·DEVICE_TYPE·UTM/XCHAN 등)을 되살린다. GA4_* 5종은 다시
+#    ref('GA4_BASIC') 으로 읽는다. 원천 not_null 테스트(USER_PSEUDO_ID/EVENT_TIMESTAMP/
+#    EVENT_NAME)는 `_sources.yml` silver_external 소관, 파생 컬럼 테스트는 아래 GA4_BASIC 소관.
 models:
-  # ── 기반 테이블 (계열의 유일 입력) ─────────────────────────────────────────
-  - name: BIGQUERY_REFINED_DATA
-    description: >
-      BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블. GA4_* 5종의 유일한 입력.
-      grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ).
-      계층 내 파생 허용 근거 = DEC-37 · 원천 접두 명명 근거 = DEC-38.
+  # ── 재파생 기반 1종 (유일 입력 = source('silver_external', 'BIGQUERY_REFINED_DATA')) ──
+  - name: GA4_BASIC
     columns:
       - name: USER_PSEUDO_ID
         tests: [not_null]
@@ -33,27 +35,19 @@ models:
       - name: EVENT_NAME
         tests: [not_null]
       - name: EVENT_SEQ
-        description: "GA4-PK-1 조치① surrogate tiebreaker. 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순."
         tests: [not_null]
       - name: EVENT_DT
-        description: "프루닝 키. 모든 range 모델의 범위 제한 컬럼."
         tests: [not_null]
       - name: ID_SCHEME
         description: >
-          GA4-LEN-1 조치② ID 체계 분류축. CRM 조인 가능한 것은 MBER_NO·ONCE_MBER_NO 뿐이다.
-          실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측 (계정 UA93987 · O87-B 전기간).
-          🔴 UNCLASSIFIED 기대값은 0 이다 — undefined 를 INVALID 로 편입했으므로.
-          0 이 아니면 원천에 신규 ID 포맷이 등장했다는 신호다.
-          조기경보 본체 = tests/warn_ga4_id_scheme_unclassified.sql
-          (accepted_values 는 UNCLASSIFIED 를 허용값으로 두므로 그것만으로는 잡지 못한다).
+          🔴 매칭 분모의 정본 — MBER_NO·ONCE_MBER_NO 만 CRM 조인 대상이고
+          APP·EMAIL·INVALID·UNCLASSIFIED 는 회원번호가 아니다(GA4-LEN-1).
         tests:
           - accepted_values:
               values: ['MBER_NO','ONCE_MBER_NO','APP','EMAIL','INVALID','UNCLASSIFIED']
               config: { where: "ID_SCHEME IS NOT NULL", severity: warn }
-      - name: SRC_FILE_NAME
-        tests: [not_null]
 
-  # ── 파생 5종 ───────────────────────────────────────────────────────────────
+  # ── 파생 5종 (유일 입력 = ref('GA4_BASIC')) ──────────────────────────────
   - name: GA4_EVENT
     columns:
       - name: USER_PSEUDO_ID

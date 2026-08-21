@@ -8,6 +8,12 @@
     🟢 [2026-08-19 O87] GA4 5 → 6 (`BIGQUERY_REFINED_DATA` 신설) ⇒ 총계 38 → **39**.
        ⚠️ 위 「2026-07-29 실측 38」은 그 시점 기록이고 **아직 39 로 재실측되지 않았다**
           (이 판본은 라이브에 미적용 · 적재 전 정지). 실측 갱신은 DDL 실행 후에 한다.
+    🔄 [2026-08-21] `BIGQUERY_REFINED_DATA` 가 외부 Python 적재로 전환되며 평탄화만 남기고
+       파생(EVENT_DT·EVENT_SEQ·ID_SCHEME·DEVICE_TYPE·UTM/XCHAN 등)을 잃었다 ⇒ 그 파생을
+       되살리는 dbt 모델 `GA4_BASIC` 을 신설한다(GA4 5 → 6, 총계 39 → **40**).
+       구조는 종전 커밋아웃된 `BIGQUERY_REFINED_DATA` DDL 을 계승하되 `SRC_TABLE`·
+       `SRC_FILE_NAME`·`BRONZE_LOAD_TS`(외부 적재에 계보 없음)는 제거하고
+       `GAC_*`(google_ads_campaign) 3컬럼을 추가한다. `EVENT_SEQ` 결정성은 미해결(`GA4-SEQ-1`).
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
@@ -914,67 +920,132 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 --      · `GA4_EVENT` PK 4번째 키 `BATCH_ORDERING_ID` → **`EVENT_SEQ`**(GA4-PK-1 해소 · 손실 0).
 --      · `USER_ID`·`USER_ID_FILLED`·`GA_MEMBER_ID` **VARCHAR(10) → VARCHAR(64)**
 --        + `ID_SCHEME` 분류축 신설(GA4-LEN-1 해소). 길이 확장만 하면 매칭 분모가 왜곡된다.
---   🔴 GA4 5테이블 → **6테이블**이 됐다. SILVER 총계 38 → **39**.
+--   🟢 [2026-08-21] 구조 개정 3.
+--   🔴 GA4 5테이블로 원복했다.
+--   🔄 [2026-08-21] `BIGQUERY_REFINED_DATA` 외부 Python 전환으로 파생 컬럼 소실 ⇒
+--      `GA4_BASIC` 신설로 GA4 5 → 6 재복원(아래 실제 CREATE — 커밋아웃 블록 계승).
 -- ============================================================================
 
--- GA4 0: BIGQUERY_REFINED_DATA (평탄화 통합 기반 테이블) — 🆕 [2026-08-19 O87]
+-- -- GA4 0: BIGQUERY_REFINED_DATA (평탄화 통합 기반 테이블) — 🆕 [2026-08-19 O87]
+-- --   grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
+-- --   설계근거·전제·비용 = 07_GA4_SILVER_샤드통합 설계결정.md 머리말 §「SILVER 평탄화 통합 테이블」
+-- --   ⚠️ 이 테이블만 SILVER 에서 **원천 접두(BIGQUERY_)** 를 쓴다. 나머지는 도메인 접두(GA4_).
+-- CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
+--     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
+--     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
+--     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
+--     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
+--     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
+--     EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
+--     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
+--     USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 이메일·app- 접두 포맷에서 길이 초과로 적재 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측(R2-6: COMMENT 에 수치 미기재)',
+--     ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 값 = MBER_NO(7자리 CRM) / ONCE_MBER_NO(S+8자리) / APP(app- 접두) / EMAIL(@ 포함) / INVALID(원천 오류값 "null"·"undefined") / UNCLASSIFIED(미분류 = 신규 포맷 조기경보 · 기대값 0). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID. 🔴 user_pseudo_id 내에서만 유일 — 단독 세션키 사용 금지(다른 사용자 세션 오병합)',
+--     GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
+--     GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id (복합 필수)',
+--     SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부. 혼합타입 원천 → COALESCE(string_value, int_value)',
+--     ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec (비가산 raw — 율·평균은 GOLD/SV 소관)',
+--     PAGE_LOCATION           VARCHAR         COMMENT '페이지 URL',
+--     PAGE_TITLE              VARCHAR         COMMENT '페이지 제목',
+--     PAGE_REFERRER           VARCHAR         COMMENT '리퍼러 URL',
+--     EVENT_CATEGORY          VARCHAR         COMMENT '이벤트 카테고리 (event_params 승격)',
+--     EVENT_ACTION            VARCHAR         COMMENT '이벤트 액션 (event_params 승격)',
+--     EVENT_LABEL             VARCHAR         COMMENT '이벤트 라벨. 혼합타입(문자+숫자) 고카디널리티 — GA-2 리스크',
+--     PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
+--     LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
+--     LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
+--     DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 값 = APP / M / PC / (unknown). 🔴 라이브 관측은 M·PC·(unknown) 3종이고 APP 은 0건이다(platform=WEB 단독 · O2 APP 휴면). ⚠️ device:category 의 smart tv 가 (unknown) 으로 격리된다 — TV 라벨 신설 여부 = 미결 GA4-TV-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 값 = mobile / desktop / tablet / smart tv 4종. 🔴 smart tv 는 DEVICE_TYPE 에서 (unknown) 으로 격리된다(미결 GA4-TV-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     OS                      VARCHAR         COMMENT '운영체제',
+--     BROWSER                 VARCHAR         COMMENT '브라우저',
+--     LANGUAGE                VARCHAR         COMMENT '언어',
+--     PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건)',
+--     IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
+--     GEO_COUNTRY             VARCHAR         COMMENT '국가',
+--     GEO_CITY                VARCHAR         COMMENT '도시',
+--     UTM_SOURCE              VARCHAR         COMMENT 'UTM source (센티넬 (not set)/(direct) NULLIF)',
+--     UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium (센티넬 (not set)/(none)/(direct) NULLIF)',
+--     UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
+--     UTM_CONTENT             VARCHAR         COMMENT 'UTM content',
+--     UTM_TERM                VARCHAR         COMMENT 'UTM term',
+--     SOURCE_MEDIUM           VARCHAR         COMMENT '파생 source / medium',
+--     XCHAN_SOURCE            VARCHAR         COMMENT 'cross_channel source',
+--     XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium',
+--     XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign',
+--     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹. 🔴 정규화 금지(정상 라벨 — 센티넬 아님)',
+--     BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024 상반기는 전건 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다. ⚠️ 2024 상반기는 이 컬럼이 전건 NULL 이므로 EVENT_SEQ 정렬이 사실상 SRC_FILE_NAME 부터 시작한다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     SRC_TABLE               VARCHAR(64)     NOT NULL COMMENT '원본 일별 테이블명(events_YYYYMMDD). 원천 대조 키 — BRONZE 계보 승계',
+--     SRC_FILE_NAME           VARCHAR(512)    NOT NULL COMMENT '파일 단위 계보. 중복 적재 검출 + EVENT_SEQ 결정적 정렬 근거 — BRONZE 계보 승계',
+--     BRONZE_LOAD_TS          TIMESTAMP_LTZ   NOT NULL COMMENT 'BRONZE 적재 배치 식별(= EVENTS.LOAD_TS). 업무일자 EVENT_DT 와 구분',
+--     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+--     DW_SOURCE_TABLE         VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+--     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+--     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+--     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+--     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
+-- ) COMMENT = 'BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블(GA4 계열의 유일 입력). event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합 — 종전 5모델이 각자 2.86억행을 읽던 것을 1회로 줄인다. 계층 내 파생 허용 = DEC-37 · 원천 접두 명명 = DEC-38. 🔴 조회 시 EVENT_DT 범위 제한 필수';
+
+-- GA4 0: GA4_BASIC (평탄화 재파생 기반 테이블) — 🆕 [2026-08-21]
 --   grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
---   설계근거·전제·비용 = 07_GA4_SILVER_샤드통합 설계결정.md 머리말 §「SILVER 평탄화 통합 테이블」
---   ⚠️ 이 테이블만 SILVER 에서 **원천 접두(BIGQUERY_)** 를 쓴다. 나머지는 도메인 접두(GA4_).
-CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA (
+--   입력 = source('silver_external','BIGQUERY_REFINED_DATA')(외부 Python 적재 · 118컬럼 평탄화 · 파생 0).
+--   위 커밋아웃 블록(구 `BIGQUERY_REFINED_DATA` dbt 모델 DDL)을 계승 — SRC_TABLE·SRC_FILE_NAME·
+--   BRONZE_LOAD_TS 는 외부 적재에 계보가 없어 제거. GAC_*(google_ads_campaign) 3컬럼 신설.
+--   🔴 EVENT_SEQ 결정성 미해결(GA4-SEQ-1) — ROW_NUMBER 는 PK 유일성만 보장하고 재실행 간
+--      순번 안정성은 보장하지 않는다(정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1).
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_BASIC (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
-    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). ROW_NUMBER OVER(PARTITION BY 3키 ORDER BY BATCH_EVENT_INDEX,EVENT_BUNDLE_SEQUENCE_ID). 🔴 두 컬럼 모두 100% 비NULL인데도 3키 중복의 8.66%(2025-06 실측)가 그대로 남는다 — 값 자체가 원천에서 중복. PK 유일성은 ROW_NUMBER 구조상 보장되지만 재실행 간 순번 안정성은 미실증(GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
-    EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
+    EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 이메일·app- 접두 포맷에서 길이 초과로 적재 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측(R2-6: COMMENT 에 수치 미기재)',
-    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 값 = MBER_NO(7자리 CRM) / ONCE_MBER_NO(S+8자리) / APP(app- 접두) / EMAIL(@ 포함) / INVALID(원천 오류값 "null"·"undefined") / UNCLASSIFIED(미분류 = 신규 포맷 조기경보 · 기대값 0). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
-    GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID. 🔴 user_pseudo_id 내에서만 유일 — 단독 세션키 사용 금지(다른 사용자 세션 오병합)',
-    GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
-    GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id (복합 필수)',
-    SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부. 혼합타입 원천 → COALESCE(string_value, int_value)',
-    ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec (비가산 raw — 율·평균은 GOLD/SV 소관)',
-    PAGE_LOCATION           VARCHAR         COMMENT '페이지 URL',
-    PAGE_TITLE              VARCHAR         COMMENT '페이지 제목',
-    PAGE_REFERRER           VARCHAR         COMMENT '리퍼러 URL',
-    EVENT_CATEGORY          VARCHAR         COMMENT '이벤트 카테고리 (event_params 승격)',
-    EVENT_ACTION            VARCHAR         COMMENT '이벤트 액션 (event_params 승격)',
-    EVENT_LABEL             VARCHAR         COMMENT '이벤트 라벨. 혼합타입(문자+숫자) 고카디널리티 — GA-2 리스크',
-    PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
-    LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
-    LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
-    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 값 = APP / M / PC / (unknown). 🔴 라이브 관측은 M·PC·(unknown) 3종이고 APP 은 0건이다(platform=WEB 단독 · O2 APP 휴면). ⚠️ device:category 의 smart tv 가 (unknown) 으로 격리된다 — TV 라벨 신설 여부 = 미결 GA4-TV-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
-    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 값 = mobile / desktop / tablet / smart tv 4종. 🔴 smart tv 는 DEVICE_TYPE 에서 (unknown) 으로 격리된다(미결 GA4-TV-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
-    OS                      VARCHAR         COMMENT '운영체제',
-    BROWSER                 VARCHAR         COMMENT '브라우저',
-    LANGUAGE                VARCHAR         COMMENT '언어',
-    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건)',
-    IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
-    GEO_COUNTRY             VARCHAR         COMMENT '국가',
-    GEO_CITY                VARCHAR         COMMENT '도시',
-    UTM_SOURCE              VARCHAR         COMMENT 'UTM source (센티넬 (not set)/(direct) NULLIF)',
-    UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium (센티넬 (not set)/(none)/(direct) NULLIF)',
-    UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
-    UTM_CONTENT             VARCHAR         COMMENT 'UTM content',
-    UTM_TERM                VARCHAR         COMMENT 'UTM term',
-    SOURCE_MEDIUM           VARCHAR         COMMENT '파생 source / medium',
-    XCHAN_SOURCE            VARCHAR         COMMENT 'cross_channel source',
-    XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium',
-    XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign',
-    DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹. 🔴 정규화 금지(정상 라벨 — 센티넬 아님)',
-    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024 상반기는 전건 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다. ⚠️ 2024 상반기는 이 컬럼이 전건 NULL 이므로 EVENT_SEQ 정렬이 사실상 SRC_FILE_NAME 부터 시작한다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
-    SRC_TABLE               VARCHAR(64)     NOT NULL COMMENT '원본 일별 테이블명(events_YYYYMMDD). 원천 대조 키 — BRONZE 계보 승계',
-    SRC_FILE_NAME           VARCHAR(512)    NOT NULL COMMENT '파일 단위 계보. 중복 적재 검출 + EVENT_SEQ 결정적 정렬 근거 — BRONZE 계보 승계',
-    BRONZE_LOAD_TS          TIMESTAMP_LTZ   NOT NULL COMMENT 'BRONZE 적재 배치 식별(= EVENTS.LOAD_TS). 업무일자 EVENT_DT 와 구분',
+    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). USER_ID 사용 — UP_MEMBER_ID 는 선행 0 소실 확인(예: "0470071"→"470071")로 ID_SCHEME 정규식과 불일치',
+    ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축. 값 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)/APP(app- 접두)/EMAIL(@ 포함)/INVALID("null"·"undefined")/UNCLASSIFIED. USER_ID NULL 이면 이 컬럼도 NULL',
+    GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID(EP_GA_SESSION_ID TRY_CAST)',
+    GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호(EP_GA_SESSION_NUMBER TRY_CAST)',
+    GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id',
+    SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부(EP_SESSION_ENGAGED)',
+    ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec(EP_ENGAGEMENT_TIME_MSEC TRY_CAST)',
+    PAGE_LOCATION           VARCHAR         COMMENT '페이지 URL(EP_PAGE_LOCATION)',
+    PAGE_TITLE              VARCHAR         COMMENT '페이지 제목(EP_PAGE_TITLE)',
+    PAGE_REFERRER           VARCHAR         COMMENT '리퍼러 URL(EP_PAGE_REFERRER)',
+    EVENT_CATEGORY          VARCHAR         COMMENT '이벤트 카테고리(EP_EVENT_CATEGORY, 센티넬 NULLIF)',
+    EVENT_ACTION            VARCHAR         COMMENT '이벤트 액션(EP_EVENT_ACTION, 센티넬 NULLIF)',
+    EVENT_LABEL             VARCHAR         COMMENT '이벤트 라벨(EP_EVENT_LABEL, 센티넬 NULLIF)',
+    PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율(EP_PERCENT_SCROLLED TRY_CAST)',
+    LINK_URL                VARCHAR         COMMENT '클릭 링크 URL(EP_LINK_URL)',
+    LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트(EP_LINK_TEXT)',
+    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생. PC=platform WEB×device_category desktop / M=device_category mobile·tablet / APP=platform ANDROID·IOS. smart tv 등 미분류는 (unknown)(GA4-TV-1)',
+    DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본)',
+    OS                      VARCHAR         COMMENT '운영체제(DEVICE_OPERATING_SYSTEM)',
+    BROWSER                 VARCHAR         COMMENT '브라우저(DEVICE_WEB_INFO_BROWSER)',
+    LANGUAGE                VARCHAR         COMMENT '언어(DEVICE_LANGUAGE)',
+    PLATFORM                VARCHAR(50)     COMMENT '플랫폼(원본)',
+    IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부(원본)',
+    GEO_COUNTRY             VARCHAR         COMMENT '국가(원본)',
+    GEO_CITY                VARCHAR         COMMENT '도시(원본)',
+    UTM_SOURCE              VARCHAR         COMMENT 'UTM source(STSLC_MC_SOURCE, 센티넬 NULLIF)',
+    UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium(STSLC_MC_MEDIUM, 센티넬 NULLIF)',
+    UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign(STSLC_MC_CAMPAIGN_NAME)',
+    UTM_CONTENT             VARCHAR         COMMENT 'UTM content(STSLC_MC_CONTENT)',
+    UTM_TERM                VARCHAR         COMMENT 'UTM term(STSLC_MC_TERM)',
+    SOURCE_MEDIUM           VARCHAR         COMMENT '파생 source / medium = XCHAN_SOURCE || " / " || XCHAN_MEDIUM',
+    XCHAN_SOURCE            VARCHAR         COMMENT 'cross_channel source(STSLC_CRC_SOURCE)',
+    XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium(STSLC_CRC_MEDIUM)',
+    XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign(STSLC_CRC_CAMPAIGN_NAME)',
+    DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹(STSLC_CRC_DEFAULT_CHANNEL_GROUP). 정규화 금지(정상 라벨)',
+    GAC_AD_GROUP_ID         VARCHAR         COMMENT 'google_ads_campaign 광고그룹 ID(STSLC_GAC_AD_GROUP_ID) — 🆕 [2026-08-21] 신설, 현재 하류 미소비',
+    GAC_AD_GROUP_NAME       VARCHAR         COMMENT 'google_ads_campaign 광고그룹명(STSLC_GAC_AD_GROUP_NAME) — 🆕 [2026-08-21] 신설, 현재 하류 미소비',
+    GAC_CAMPAIGN_NAME       VARCHAR         COMMENT 'google_ads_campaign 캠페인명(STSLC_GAC_CAMPAIGN_NAME) — 🆕 [2026-08-21] 신설, 현재 하류 미소비',
+    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID(BATCH_EVENT_INDEX 승계). EVENT_SEQ 정렬 1순위 근거로만 사용',
     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE         VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블(GA4 계열의 유일 입력). event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합 — 종전 5모델이 각자 2.86억행을 읽던 것을 1회로 줄인다. 계층 내 파생 허용 = DEC-37 · 원천 접두 명명 = DEC-38. 🔴 조회 시 EVENT_DT 범위 제한 필수';
+) COMMENT = 'source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블(GA4_* 5종의 유일 입력). 외부 Python 적재가 평탄화만 남기고 파생을 잃어 이 dbt 모델이 되살린다. SRC_TABLE/SRC_FILE_NAME 계보 없음(외부 적재 · NULL). 🔴 조회 시 EVENT_DT 범위 제한 필수. EVENT_SEQ 결정성 미해결(GA4-SEQ-1)';
 
 -- GA4 1: GA4_TRAFFIC_SOURCE (트래픽소스 차원)
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_TRAFFIC_SOURCE (

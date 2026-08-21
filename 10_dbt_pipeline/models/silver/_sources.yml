@@ -42,6 +42,32 @@ sources:
           - name: SRC_FILE_NAME
             description: "파일 단위 계보. BIGQUERY_REFINED_DATA.EVENT_SEQ tiebreaker 의 정렬 근거(GA4-PK-1)."
             tests: [not_null]
+  # 🆕 [2026-08-21] BIGQUERY_REFINED_DATA 는 더 이상 dbt 모델이 아니다 — 외부 Python 파이프라인이
+  #    GN_DW.SILVER.BIGQUERY_REFINED_DATA 를 직접 적재한다(118컬럼 평탄화만 · 파생 0).
+  #    🔴 이 source 의 유일한 소비자는 신설 dbt 모델 `GA4_BASIC` 이다 — GA4_* 5종은 더 이상
+  #    이 source 를 직접 읽지 않는다(ref('GA4_BASIC') 로 읽는다). EVENT_SEQ·EVENT_DT·ID_SCHEME·
+  #    SRC_FILE_NAME 은 원천에 없는 파생/계보 컬럼이라 여기서 테스트하지 않는다
+  #    (그 컬럼들의 not_null/accepted_values 테스트는 `_ga4_schema.yml` GA4_BASIC 항목으로 이전).
+  - name: silver_external
+    database: GN_DW
+    schema: SILVER
+    description: >
+      SILVER 계층 내 dbt 밖에서(외부 Python) 적재되는 테이블의 원천 선언.
+    tables:
+      - name: BIGQUERY_REFINED_DATA
+        description: >
+          BRONZE_BIGQUERY.EVENTS 평탄화 통합 테이블(파생 없음 · 118컬럼). `GA4_BASIC`(dbt) 의
+          유일한 입력. grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME) — 3키 중복
+          8.66%(2025-06 실측) 잔존, GA4_BASIC 이 ROW_NUMBER 로 EVENT_SEQ 를 부여해 흡수한다.
+          🔄 [2026-08-21] dbt 모델에서 외부 Python 적재로 전환(원천 접두 명명 근거 = DEC-38).
+        columns:
+          - name: USER_PSEUDO_ID
+            tests: [not_null]
+          - name: EVENT_TIMESTAMP
+            tests: [not_null]
+          - name: EVENT_NAME
+            tests: [not_null]
+
   - name: bronze_crm
     database: GN_DW
     schema: BRONZE_CRM

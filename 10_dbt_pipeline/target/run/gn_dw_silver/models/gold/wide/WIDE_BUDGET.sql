@@ -4,7 +4,7 @@ create or replace view GN_DW.GOLD.WIDE_BUDGET
       CAL_YEAR COMMENT $$FLOOR(MONTH_KEY/100) — 연도$$,
       CAL_MONTH COMMENT $$MOD(MONTH_KEY,100) — 월$$,
       PLAN_BUDGET_MONTH COMMENT $$편성예산(월, 원)$$,
-      PLAN_BUDGET_YEAR COMMENT $$편성예산(연, 원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 연간 편성 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(E-1/E-4 하드블로커). 실측 규모는 이슈원장 §O51-F.$$,
+      PLAN_BUDGET_YEAR COMMENT $$편성예산(연, 원) 🔴🔴**[2026-08-20 O96 · DEC42] 폐기 슬롯 — 의도적 영구 NULL 이다.** 🔴 종전의 「원천 부재 · 대행사 미보고 · 외부 원천 미입고(E-1/E-4 하드블로커)」 주장은 **철회한다 — 거짓이었다**(원문 인용은 이슈원장 문서30 §7-A 에 보존). 원천 `BDGT_ACMSLT_LEDGER.YEAR_BDGT_TOT_AMT` 는 실재하며 O93 에서 적재됐다 (적재 규모 실측은 이슈원장 문서30 §7-A · `R2-6` 수치 분리). 🟢 **연 편성예산은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`(연 grain)를 쓴다.** 🔴 이 컬럼(월 grain)에 연값을 채우지 않는 이유 = **grain 혼입**이다 — 연값을 12개월에 복제하면 `SUM` 이 12배로 부풀고 그 오류는 에러 없이 조용히 나온다. ⚠️ 여전히 필터 조건으로 쓰면 전건이 탈락한다(값이 없는 것은 정상이다).$$,
       EXEC_BUDGET_ERP COMMENT $$집행예산(ERP 월, 원)$$,
       EXEC_BUDGET_EST COMMENT $$집행예산(추정, 원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 집행 추정 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(E-1/E-4 하드블로커). 실측 규모는 이슈원장 §O51-F.$$,
       FUNDRAISING_COST COMMENT $$모금성비용(원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 모금성비용 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(**E-1** 하드블로커) — 모금성비용은 원천 확정 대기다. 실측 규모는 이슈원장 §O51-F.$$,
@@ -22,7 +22,7 @@ create or replace view GN_DW.GOLD.WIDE_BUDGET
       SPONSORSHIP_BK COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BUDGET.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F.$$,
       SPONSORSHIP_NAME COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BUDGET.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F.$$
     )
-    comment = $$예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 연간 편성·집행 추정 · FUNDRAISING_COST(**E-1**) · AD_COST(**E-4**). ⚠️광고비는 예산 원장에 항목이 없다 — 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4).$$
+    comment = $$예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 집행 추정 · FUNDRAISING_COST(**E-1**) · AD_COST(**E-4**). 🔴🔴[2026-08-20 O96] **연간 편성은 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 `WIDE_BUDGET` 이 아니라 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 항목이 없다 — 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4).$$
     as (
       -- WIDE_BUDGET: 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
 -- Co-authored with CoCo

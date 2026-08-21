@@ -2,6 +2,8 @@
 -- Co-authored with CoCo
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
+-- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
+--    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
 --    🟢 종전 주석 「단방향 유지 : GA4_EVENT 참조 금지 → BRONZE 에서 세션 채움 CTE 재계산」은 폐기.
 --       그 제약이 만든 것은 **동일 로직의 중복 구현 2벌**이었고, 실제로 GA4_EVENT 와
 --       이 모델의 GROUP BY 절이 서로 달랐다(11컬럼 ↔ 5컬럼). 계층 내 파생을 허용하면
@@ -29,7 +31,7 @@ WITH base AS (
         USER_PSEUDO_ID,
         USER_ID,
         GA_SESSION_KEY
-    FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA
+    FROM GN_DW.SILVER.GA4_BASIC
 ),
 -- 세션 단위 집계 → 2단계 채움(설계문서 07 §5-A). COUNT(DISTINCT) OVER 미지원 대응.
 sess AS (
@@ -87,7 +89,7 @@ SELECT
     IFF(a.ga_member_id RLIKE '^S[0-9]{8}$', a.ga_member_id, NULL) AS ONCE_MBER_NO,
     a.id_resolution                                             AS ID_RESOLUTION,
     'GA4'                             AS DW_SOURCE_SYSTEM,
-    'SILVER.BIGQUERY_REFINED_DATA'    AS DW_SOURCE_TABLE,
+    'SILVER.GA4_BASIC'    AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
     NULL                              AS DW_BATCH_ID

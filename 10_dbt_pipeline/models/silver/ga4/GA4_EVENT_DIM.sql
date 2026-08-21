@@ -5,6 +5,8 @@
 -- Co-authored with CoCo
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
+-- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
+--    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
 --    종전에는 이 모델이 **자체 FLATTEN + GROUP BY** 로 category/label/action 을 승격했고,
 --    그 GROUP BY 절(event_name, event_timestamp, user_pseudo_id, batch_ordering_id)이
 --    GA4_EVENT 의 것과 **미묘하게 달랐다**(GA4_EVENT 는 11컬럼). 기반 테이블에서 1회 승격하므로
@@ -20,8 +22,8 @@ SELECT DISTINCT
   EVENT_LABEL                    AS EVENT_LABEL,
   EVENT_ACTION                   AS EVENT_ACTION,
   'GA4'                          AS DW_SOURCE_SYSTEM,
-  'SILVER.BIGQUERY_REFINED_DATA' AS DW_SOURCE_TABLE,
+  'SILVER.GA4_BASIC' AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP()            AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()            AS DW_UPDATE_TS,
   NULL                           AS DW_BATCH_ID
-FROM {{ ref('BIGQUERY_REFINED_DATA') }}
+FROM {{ ref('GA4_BASIC') }}
