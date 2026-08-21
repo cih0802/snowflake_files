@@ -1185,6 +1185,33 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_DEV_ACHIEVEMENT (
 
 
 -- ============================================================================
+-- FACT 17: FACT_MEMBER_SPONSOR_BIZ (FMSB) — 회원×후원약정 팩트 [2026-08-21 신설]
+--   목적 = "캠페인별/후원사업별 활동회원" 질의. FMM.CAMPAIGN_SK 는 회원grain 다중캠페인
+--   (19.0%·최대690, O8 미결)이라 전건 센티넬(0)인데, 약정(SPNSR_BSNS_NO) grain 에서는
+--   캠페인이 거의 1:1(다중 137건=0.01%·최대2, 실측)이라 이 grain 에서는 O8 이 사실상 무해하다.
+--   grain = MEMBER_DK × SPNSR_BSNS_NO(2,170,572행, 실측). PK 는 SPNSR_BSNS_NO 단독이 아니다 —
+--   28건이 서로 다른 두 회원(공동후원 쌍)에 공유된다(실측). (MEMBER_DK,SPNSR_BSNS_NO) 쌍은 전건 유일.
+--   월 확장(B안) 대신 이 span grain(A안)을 채택 — B안 실측 105,428,370행(FMM 40,054,883의 2.6배)은
+--   비용 대비 이점이 없다. as-of 활동판정은 소비 계층(SV)에서 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산.
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ (
+    MEMBER_DK         VARCHAR(10)     NOT NULL COMMENT '회원 (불변키). ※비강제 FK→DIM_MEMBER',
+    SPNSR_NO          VARCHAR(9)      NOT NULL COMMENT '후원번호(Q15) — 한 회원이 여러 SPNSR_NO 를 가질 수 있고, 한 SPNSR_NO 가 여러 SPNSR_BSNS_NO 를 가질 수 있다(다대다, distinct 2,103,041 vs 총행 2,170,572, 실측)',
+    SPNSR_BSNS_NO     NUMBER(19,0)    NOT NULL COMMENT '후원사업번호(회원별 약정 일련번호, Q15) — 🔴 분류축이 아니다(DIM_SPONSORSHIP 참조). 🔴 단독 유일키 아님 — 실측 28건이 공동후원 쌍(부부 등) 2개 회원에 공유된다',
+    SPONSORSHIP_SK    NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP, SPNSR_BSNS_ID 경유). 0=미매핑',
+    CAMPAIGN_SK       NUMBER(38,0)    COMMENT '대표캠페인 (FK→DIM_CAMPAIGN). 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규(DVLP_DIV_CD=1) ②그 외, 그 안에서 최초일자·최소일련번호 1건. 실측: 신규사건 보유 1,687,546건 · 신규사건 부재 483,028건(22.3%)은 전체사건 최초사건으로 대체(동률 0, 100% 클린) · 사건 자체가 없는 6건은 0(미매핑)',
+    IS_MULTI_CAMPAIGN BOOLEAN         COMMENT '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 distinct CMPGN_CD>1 인지(실측 137건=0.01%·최대2). 대표캠페인 채택 규칙과 별개로 다중이었다는 사실을 감추지 않는다',
+    START_MONTH_KEY   NUMBER(6,0)     COMMENT '활동 개시 월키 YYYYMM(CRM_MEMBER_SPONSOR_SPAN 원값 그대로) — 후원(SPNSR_NO) 등록월의 근사',
+    DSCNTC_MONTH_KEY  NUMBER(6,0)     COMMENT '중단 월키 YYYYMM. 🔴 NULL=미중단(현재까지 활동)이며 결측이 아니다',
+    SPNSR_AMT         NUMBER(38,0)    COMMENT '후원사업 약정금액 원단위(CRM_MEMBER_SPONSOR_SPAN 원값)',
+    DW_SOURCE_SYSTEM  VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS        TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS      TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID       VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '회원×후원약정 팩트 (MEMBER_DK × SPNSR_BSNS_NO). "캠페인별/후원사업별 활동회원" 질의 전용 — 약정grain 에서는 캠페인이 거의 1:1 이라 FMM.CAMPAIGN_SK 를 막고 있는 O8(회원grain 다중귀속 미결)이 이 테이블에는 적용되지 않는다. as-of 활동판정은 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 소비 계층에서 계산한다(FMM#51 과 동일 철학, 월 확장 없음).';
+
+
+-- ============================================================================
 -- [관계 제약] 정보성 FK 선언 (NOT ENFORCED NORELY)
 -- ----------------------------------------------------------------------------
 --  목적   : ERD 자동생성 · BI 관계 인식 · 인수인계 문서화.
@@ -1192,7 +1219,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_DEV_ACHIEVEMENT (
 --           정보성이며 NORELY(옵티마이저가 무결성 가정 안 함) — GOLD 데이터
 --           검증 완료 후 RELY 승격 검토(그 전까지 조인제거 오답 위험 차단).
 --  전제   : 참조 대상이 실제 PK 인 컬럼만 선언(Snowflake FK 대상 = PK/UNIQUE).
---           본 ALTER 는 27개 테이블 생성 이후 실행.
+--           본 ALTER 는 전체 테이블 생성 이후 실행. 🔴 [2026-08-21] 종전 "27개"는 본 편집 이전부터
+--           이미 stale 이었다(실측 CREATE TABLE 37개 + 이번 신설 FACT_MEMBER_SPONSOR_BIZ = 38개).
+--           개수를 하드코딩하면 다시 stale 이 된다 — 정확한 개수는 항상 재라:
+--           grep -c '^CREATE OR REPLACE TABLE GN_DW.GOLD' 06_DDL.sql
 --  명명   : FK_<자식테이블>_<부모차원>[_<역할>]
 --  타입정합: 자식 FK 컬럼 ↔ 부모 PK 타입 일치 검증 완료
 --           (DATE_SK=NUMBER(8,0), 그 외 SK=NUMBER(38,0)).
@@ -1251,6 +1281,8 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_DATE_ACQ; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT DROP CONSTRAINT FK_FMC_DIM_DATE_STOP; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ DROP CONSTRAINT FK_FMSB_DIM_SPONSORSHIP; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ DROP CONSTRAINT FK_FMSB_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   RETURN 'FK drop (idempotent) done';
 END;
 $$;
@@ -1408,6 +1440,12 @@ ALTER TABLE GN_DW.GOLD.DIM_CAMPAIGN ADD CONSTRAINT FK_DIM_CAMPAIGN_MKTG
     FOREIGN KEY (MKTG_CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (MKTG_CAMPAIGN_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE ADD CONSTRAINT FK_FAP_MKTG_CAMPAIGN
     FOREIGN KEY (MKTG_CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (MKTG_CAMPAIGN_SK) NOT ENFORCED NORELY;
+
+-- FACT_MEMBER_SPONSOR_BIZ → 차원 2종  [2026-08-21 신설]
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ ADD CONSTRAINT FK_FMSB_DIM_SPONSORSHIP
+    FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ ADD CONSTRAINT FK_FMSB_DIM_CAMPAIGN
+    FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
 
 -- ============================================================================
 -- [관계 제약 — 보류(FK 미선언)] 인수인계 필독

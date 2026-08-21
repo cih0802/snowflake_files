@@ -31,7 +31,7 @@
 --       구 계정의 VERSION 드리프트 이슈 무관.
 --
 -- 🔴🔴 [2026-08-18 O85-C · 사용자 결정] **dbt 는 워크스페이스 경로를 유지한다 — 의식적 선택이다.**
---   경위: 착수표 ㉔ ⑦ 로 「배포 원본이 `USER$.PUBLIC."snowflake_files"` = **개인 워크스페이스**여서
+--   경위: 착수표 ㉔ ⑦ 로 「배포 원본이 `USER%24.PUBLIC."snowflake_files"` = **개인 워크스페이스**여서
 --   다른 사용자·다른 계정에서 재현 불가」라는 결함을 적발했고, Agent 정본 yaml 은
 --   **`GN_DW.OPS.AGENT_SPEC_STAGE` 로 이관**했다(`05_SV-Agent_ai/09_2` [0-B]·[0-C]).
 --   🔴 **dbt 는 같은 결함을 갖고 있으나 같은 처방을 쓰지 않는다.** 아래 78·112·175행의
@@ -95,7 +95,7 @@ USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
 
 CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
+  FROM 'snow://workspace/USER%24.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
   COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. 정본 09_SILVER_적재쿼리_20260714, 03_top-down_gold/06_DDL.';
 
 SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;
@@ -128,12 +128,12 @@ DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;   -- default_version / default_versi
 --        변경 요약은 ① 선택적 **alias**(식별자 규칙: 공백·특수문자 불가) ② 프로젝트 COMMENT(아래 3)
 --        ③ 본 문서/`00_배포운영_통합 §0` 이력에 남긴다.
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION SV_CHECK_20260811
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+  ADD VERSION bigquery_20260821
+  FROM 'snow://workspace/USER%24.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260813] default 반영. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260821] bigquery-ga4데이터 반영. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
 
 -- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
@@ -192,7 +192,7 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 
 -- 이후 워크스페이스 코드 수정 시 새 버전 고정(거버넌스·재현성):
 -- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
---   ADD VERSION FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
+--   ADD VERSION FROM 'snow://workspace/USER%24.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
 --   COMMENT = '<변경 요약>';
 
 -- ─────────────────────────────────────────────────────────────────────────────

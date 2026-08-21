@@ -126,8 +126,10 @@ SHOW AGENTS IN SCHEMA GN_DW.SERVING;
 --     09_2 를 돌리기 전까지 라이브는 7종이다 — 두 수를 혼동하지 말 것(O84 실측 격차).
 --   🔴 [2026-08-18 O85] `IF NOT EXISTS` 이므로 **이미 있으면 이 COMMENT 는 적용되지 않는다** —
 --     적용은 상시 블록 `[5]` 가 담당한다(㉔ ②). 두 곳의 문안을 **함께** 고쳐라.
+-- 🔴 [2026-08-21 신설] 정본 yaml 이 **11종**(실적 8 + ML 예측 3)으로 늘었다 —
+--   `analyst_member_sponsor_biz`(SV_MEMBER_SPONSOR_BIZ, 회원×후원약정) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 10종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해 + ML 예측 3종(회원중단·후원중단·회비예측).'
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 11종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정(활동회원) + ML 예측 3종(회원중단·후원중단·회비예측).'
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}'
   FROM SPECIFICATION
   $$
@@ -148,13 +150,15 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_OVERALL
   $$;
 
 -- ---- [1-C] AGENT_MARKETING ---- 🆕 [2026-08-18 O84] 신규. 이 블록은 실행 대상이다.
---   정본 = `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`(도구 6 = 리소스 6 · 문항 10)
+--   정본 = `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`(도구 7 = 리소스 7 · 문항 11, 2026-08-21 실측)
 --   설계 정본 = `05_SV-Agent_ai/30_마케팅_AGENT_설계.md`
 --   🔴 **[2026-08-18 O85 정정]** 종전 *"참조 SV 6종은 전건 라이브 실재다(2026-08-18 확인)"* 는
 --     계정 `DV07626` 시점 판정이다. 현 계정(`UA93987`)은 **SV 0종**이므로 그대로 만들면
 --     **도구 6종이 전부 죽는다** ⇒ `[0-B]` 를 먼저 통과시켜라(`R2-8-4-d`).
+-- 🔴 [2026-08-21 신설] 정본 yaml 이 **7종**으로 늘었다 — `analyst_member_sponsor_biz`
+--   (SV_MEMBER_SPONSOR_BIZ, 캠페인별/후원사업별 활동회원) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MARKETING
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 6종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.'
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비·후원약정(활동회원). 마케팅 보고서 5분석구분의 정본 Agent.'
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}'
   FROM SPECIFICATION
   $$
@@ -314,13 +318,13 @@ $$;
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 10종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해 + ML 예측 3종(회원중단·후원중단·회비예측).',
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 11종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정(활동회원) + ML 예측 3종(회원중단·후원중단·회비예측).',
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
 ALTER AGENT GN_DW.SERVING.AGENT_OVERALL SET
   COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).',
   PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}';
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 6종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.',
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비·후원약정(활동회원). 마케팅 보고서 5분석구분의 정본 Agent.',
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}';
 
 

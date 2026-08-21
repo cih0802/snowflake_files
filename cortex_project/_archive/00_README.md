@@ -30,6 +30,17 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 |---|---|
 | `AGENT_MEMBER.agent_STALE_20260804.yaml` | 🔴 **O33 이전 판본**. 도구 **4개**·샘플 **8개**·`system` 에 O33·O35·O38 흔적 없음. 정본은 도구 **6개**(`analyst_member_cohort`·`analyst_dev_achievement` 추가)·샘플 **19개**. **이 파일로 재배포하면 O33~O38 규칙과 도구 2개가 통째로 소실된다.** |
 | `AGENT_OVERALL.agent_DUPLICATE_20260804.yaml` | 🟢 `agents/AGENT_OVERALL/agent_spec.yaml` 과 **byte-identical** 중복이었다 — 내용 손실 없음. |
+| `AGENT_MEMBER.agent_STALE_20260821.yaml` | 🔴 **동일 결함 재발(2회차)**. `cortex_agent_write` 를 `file_path` 없이 호출해 루트에 `AGENT_MEMBER.agent.yaml` 이 또 생겼다(도구 10개 → 신규 SV_MEMBER_SPONSOR_BIZ 도구 추가분 11개가 정본에 반영 안 된 상태). 정본을 이 파일로 교체하면 `analyst_member_sponsor_biz` 도구가 소실된다. |
+| `AGENT_MARKETING.agent_STALE_20260821.yaml` | 🔴 위와 동일 사유(도구 6개 → 7개 누락분). |
+
+## 2026-08-21 재발 경위 (O38 과 동일 결함)
+
+`semantic_studio.cortex_agent_write` 를 `source_object` 만 주고 `file_path` 없이 호출하면
+**루트에 `<AGENT>.agent.yaml`** 을 새로 만든다(정본 `agents/<AGENT>/agent_spec.yaml` 이 아니다).
+🔴 **`file_path` 를 명시해도 `.agent.yaml` 접미가 강제로 붙는다** — `agent_spec.yaml` 을 지정하면
+도구가 `agent_spec.agent.yaml` 을 만든다. 정본 파일명(`agent_spec.yaml`)을 만들려면
+**도구 실행 후 `mv` 로 접미를 제거하는 수작업이 필수**다(도구만으로는 정본 파일명이 나오지 않는다).
+`cortex-project.yaml` 도 도구가 자동으로 `agent_spec.agent.yaml` 항목을 추가하므로 함께 정리해야 한다.
 
 ## 함께 정리한 것
 

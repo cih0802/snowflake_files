@@ -78,6 +78,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_MEMBER_RISK'),
     ('AGENT_MEMBER',    'SV_ML_SPONSOR_RISK'),
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST'),
+    ('AGENT_MEMBER',    'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
     ('AGENT_OVERALL',   'SV_BUDGET'),
     ('AGENT_OVERALL',   'SV_AD'),
     ('AGENT_OVERALL',   'SV_MEMBER_MONTHLY'),
@@ -91,7 +92,8 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_BUDGET'),
     ('AGENT_MARKETING', 'SV_MEMBER_EVENT'),
     ('AGENT_MARKETING', 'SV_MEMBER_COHORT'),
-    ('AGENT_MARKETING', 'SV_MEMBER_FEE')
+    ('AGENT_MARKETING', 'SV_MEMBER_FEE'),
+    ('AGENT_MARKETING', 'SV_MEMBER_SPONSOR_BIZ')   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -104,6 +106,8 @@ ORDER BY r.AGENT_NAME, r.SV_NAME;
 --      (`TABLE_SCHEMA`/`SEMANTIC_VIEW_NAME` 이 아니다 · 2026-08-18 실측).
 --      `SCHEMA`·`NAME` 은 예약어라 **큰따옴표가 필수**다. 빼면 `invalid identifier` 로 실패한다.
 --   🟢 2026-08-18 실행 검증: 24건 검사 → **1행 반환**(아래 실측과 일치) · 나머지 23건 통과.
+--   🔴 [2026-08-21] SV_MEMBER_SPONSOR_BIZ 2건(MEMBER·MARKETING) 추가로 검사 대상 **26건**으로 변경 —
+--      위 24건 실측 수치는 이 시점 이후 stale 이다. 재실행해 새 총건수로 판정할 것.
 --   🟢 기대 = **0행**.
 --   🔴 2026-08-18 현재 실측 = **1행** → `AGENT_MEMBER / SV_ML_MEMBER_RISK`
 --      원인: base `SERVING.ML_MEMBER_RISK_V` 미배포. 그 뷰의 dedup CTE 가
@@ -294,20 +298,22 @@ $$;
 --     🔴 **[0] 이 0행이 아닌 Agent 는 그 블록을 실행하지 말 것.** 죽은 도구가 생긴다.
 -- ============================================================================
 
--- ---- [3-A] AGENT_MEMBER ---- ⛔ 2026-08-18 현재 [0] 에서 1행(SV_ML_MEMBER_RISK) → 선결 후 실행
--- ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
---   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
---   COMMENT = 'agent_spec.yaml 정본 적용 — 도구 10종(ML 3 포함) · 추천질문 10';
+-- ---- [3-A] AGENT_MEMBER ---- 🟢 [2026-08-21 재검증] [0] 26건 검사 → **0행**(전건 통과, SV_ML_MEMBER_RISK
+--   포함). 종전 차단 사유("AGENT_MEMBER / SV_ML_MEMBER_RISK 라이브 부재")는 이 계정에서 해소됐다.
+--   실행 전 반드시 이 세션에서 [0] 을 다시 돌려 0행을 직접 확인할 것(계정 상태는 재이관 시 달라진다).
+ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
+  ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
+  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 11종(ML 3 포함, SV_MEMBER_SPONSOR_BIZ 신설) · 추천질문 31';
 
 -- ---- [3-B] AGENT_OVERALL ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_OVERALL
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_OVERALL'
   COMMENT = 'agent_spec.yaml 정본 적용 — 도구 8종(ML 4 포함) · 추천질문 10';
 
--- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 6종 전건 라이브) ⇒ 실행 가능
+-- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 6종 · 추천질문 10 · 마케팅 보고서 5분석구분';
+  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 7종(SV_MEMBER_SPONSOR_BIZ 신설) · 추천질문 11 · 마케팅 보고서 5분석구분';
 
 --   🆕 🔴 **[2026-08-18 O85-C] 경로가 개인 워크스페이스 → OPS 스테이지로 바뀌었다**(착수표 ㉔ ⑦).
 --      종전 = `snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/<AGENT>`
@@ -349,7 +355,8 @@ SELECT "name" AS VER, "is_default" AS IS_DEF,
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 ORDER BY VER;
 --   기대(AGENT_OVERALL 버전업 후): 최신 버전 TOOLS=8 · QUESTIONS=10 · ML_REFS≥4
---   같은 패턴으로 MEMBER(10·10) · MARKETING(6·10 · ML_REFS=0) 를 확인한다.
+--   같은 패턴으로 MEMBER(11·31) · MARKETING(7·11 · ML_REFS=0) 를 확인한다.
+--   🔴 [2026-08-21] MEMBER·MARKETING 값은 SV_MEMBER_SPONSOR_BIZ 신설분 반영(종전 10·10 · 6·10 은 stale).
 
 -- grant·SI 가 보존됐는지 (이 경로는 파괴하지 않아야 정상)
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;    -- OWNERSHIP + USAGE×3 = 4행
