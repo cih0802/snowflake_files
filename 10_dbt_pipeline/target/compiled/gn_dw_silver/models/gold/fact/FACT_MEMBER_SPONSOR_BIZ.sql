@@ -73,7 +73,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'd6834572-9cf5-4dc2-82a0-1eb0e878eea8'                    AS DW_BATCH_ID
+    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
 from span
 left join campaign_rep cr
        on cr.SPNSR_BSNS_NO = span.SPNSR_BSNS_NO

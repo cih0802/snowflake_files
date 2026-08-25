@@ -30,6 +30,6 @@ select
     'ERP'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '57be0253-4fb4-4b86-9e2e-7ed1d1292984'                    AS DW_BATCH_ID
+    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
 from y
 where BUDGET_YEAR is not null   -- 연도 파싱 실패행 제외(NOT NULL grain 보호)

@@ -53,6 +53,10 @@ create or replace view GN_DW.GOLD.WIDE_MEMBER_EVENT
       CAMPAIGN_PROMO_METHOD COMMENT $$DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118)$$,
       CAMPAIGN_CATEGORY COMMENT $$DIM_CAMPAIGN.CAMPAIGN_TYPE — 캠페인 **카테고리** 라벨(정본 공#17). 코드그룹 **MM294(캠페인 카테고리)**. 🔴[O51-D 실측] 원천 `TM_CM_CMPGN_MNG.CMPGN_CTGR_CD` 에 **사전에 없는 코드 '58' 이 실재**하므로 그 값은 (미매핑)이 된다. 미채움 행도 있다. ⚠️**사전 자체에 동일 라벨 중복**이 있다(코드 44·45 둘 다 '콜 기타') — 라벨로 GROUP BY 하면 두 코드가 합쳐진다. ⚠️컬럼명 주의: DIM_CAMPAIGN 의 컬럼명은 CAMPAIGN_TYPE 이지만 업무용어는 '카테고리'다. 상위캠페인은 CAMPAIGN_PARENT.$$,
       CAMPAIGN_INFLOW_PATH COMMENT $$DIM_CAMPAIGN.INFLOW_PATH — 개발인입경로 라벨 = **모집 채널**. 코드그룹 **MM293(개발인입경로)**. 코드사전 = (교육기관·기업·뉴미디어·대면모금·디지털·마케팅콜개발·방송·영상광고·일시·재송출·지역개발·회원 기타·회원 오프라인개발·회원 온라인개발·회원 콜개발·직원개발) · 실적재에 **사전 전종이 등장**하며 **'디지털'(5)이 압도적 최빈값**이다. 🔴이 축을 「현업 주요캠페인 분류축」이라고 적었던 기술은 **거짓이므로 회수됐다**(O37) — 모집 채널이다. 캠페인 카테고리 = CAMPAIGN_CATEGORY(MM294) · 상위캠페인 = CAMPAIGN_PARENT.$$,
+      CAMPAIGN_SPNSR_DIV_CD COMMENT $$[2026-08-25 안내2] DIM_CAMPAIGN.SPNSR_DIV_CD — 세부캠페인 후원구분 원천코드. 코드그룹 **CM035**: 1=정기후원 · 2=일시후원. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_SPNSR_DIV_NM.$$,
+      CAMPAIGN_SPNSR_DIV_NM COMMENT $$[2026-08-25 안내2] DIM_CAMPAIGN.SPNSR_DIV_NM — CAMPAIGN_SPNSR_DIV_CD 를 CM035 로 해소한 라벨(정기후원/일시후원). ⚠️ DIM_SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 **적용 대상이 다르다** — 이 컬럼은 세부캠페인 단위 구분이다.$$,
+      CAMPAIGN_CPR_DIV_CD COMMENT $$[2026-08-25 안내2] DIM_CAMPAIGN.CPR_DIV_CD — 세부캠페인 법인구분 원천코드. 코드그룹 **CM019**: A=통합 · I=사단 · S=사복. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_CPR_DIV_NM.$$,
+      CAMPAIGN_CPR_DIV_NM COMMENT $$[2026-08-25 안내2] DIM_CAMPAIGN.CPR_DIV_NM — CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복).$$,
       SPONSORSHIP_BK COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키$$,
       SPONSORSHIP_NAME COMMENT $$DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)$$,
       SPONSORSHIP_DIV_NAME COMMENT $$[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선(3,594,843)이라 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24).$$,
@@ -124,6 +128,14 @@ select
     --   INFLOW_PATH(MM293 MBER_INFLOW_PATH_NM) = 현업 '주요캠페인' → CAMPAIGN_INFLOW_PATH 로 노출
     c.CAMPAIGN_TYPE       as CAMPAIGN_CATEGORY,
     c.INFLOW_PATH         as CAMPAIGN_INFLOW_PATH,
+    -- [2026-08-25 안내2] 세부캠페인 후원구분·법인구분. WIDE 는 현업 가독성이 원칙이라(DIM/FACT 는
+    --   개발자·AI 추적성) 다른 캠페인 축들 바로 옆에 코드+라벨을 나란히 둔다 — ALTER ADD COLUMN 규약은
+    --   물리 테이블(DIM/FACT)에만 적용되고 뷰(WIDE)는 CREATE OR REPLACE 라 매번 전체 재정의되므로
+    --   물리 ordinal 제약이 없다. 그래서 뷰에서는 의미 순서로 자유롭게 재배치해도 안전하다.
+    c.SPNSR_DIV_CD        as CAMPAIGN_SPNSR_DIV_CD,   -- CM035 1=정기후원·2=일시후원
+    c.SPNSR_DIV_NM        as CAMPAIGN_SPNSR_DIV_NM,
+    c.CPR_DIV_CD          as CAMPAIGN_CPR_DIV_CD,     -- CM019 A=통합·I=사단·S=사복
+    c.CPR_DIV_NM          as CAMPAIGN_CPR_DIV_NM,
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
     -- [2026-08-19 O89] 후원사업 분류 3계층 라벨(정기일시 → 약칭 → 사업명).

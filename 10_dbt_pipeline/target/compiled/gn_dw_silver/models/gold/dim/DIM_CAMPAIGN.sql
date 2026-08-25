@@ -59,21 +59,27 @@ select
     --   실측: 브리지 조인 `MK_CMPGN_CD = MKTG_CMPGN_NM::varchar` **33,915/33,915 = 100% 해소** ·
     --   개발실적 커버리지 **2,278,685/2,291,878 = 99.42%**.
     COALESCE(mk.MKTG_CAMPAIGN_SK, 0)              as MKTG_CAMPAIGN_SK,
+    -- [2026-08-25 안내2] 세부캠페인 후원구분·법인구분(현업 요건 — Gold 까지 적재). SILVER CRM_CAMPAIGN 라벨 그대로 승계.
+    c.SPNSR_DIV_CD                                 as SPNSR_DIV_CD,   -- CM035 1=정기후원·2=일시후원
+    c.SPNSR_DIV_NM                                 as SPNSR_DIV_NM,
+    c.CPR_DIV_CD                                   as CPR_DIV_CD,     -- CM019 A=통합·I=사단·S=사복
+    c.CPR_DIV_NM                                   as CPR_DIV_NM,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '57be0253-4fb4-4b86-9e2e-7ed1d1292984'                    AS DW_BATCH_ID
+    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
 from c
 left join parent p      on p.PARENT_CD  = c.UPPER_CMPGN_CD
 left join code_promo cp on cp.DTL_CD_ID = c.PR_MTH_CD
--- [2026-08-06 O45] MKTG_CAMPAIGN_BK 는 차원에서 유일이라 fan-out 0.
+-- [2026-08-06 O45] MKTG_CAMPAIGN_BK 는 차원에서 유일하다 fan-out 0.
 left join GN_DW.GOLD.DIM_MARKETING_CAMPAIGN mk
        on mk.MKTG_CAMPAIGN_BK = TO_VARCHAR(c.MKTG_CMPGN_NM)
 
 union all
 -- unknown 멤버(SK=0): 팩트 CAMPAIGN_SK=0(미매핑) 조인 유실 방지
 select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0,
+    NULL, NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '57be0253-4fb4-4b86-9e2e-7ed1d1292984'                    AS DW_BATCH_ID
+    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID

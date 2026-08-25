@@ -1,0 +1,218 @@
+# GN_DW SILVER dbt 파이프라인 — BRONZE 정제 → SILVER 적재 (순서 7, 정본 09_SILVER_적재쿼리_20260714)
+# Co-authored with CoCo
+name: 'gn_dw_silver'
+version: '1.0.0'
+config-version: 2
+
+profile: 'default'
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# GA4 적재 범위 var.
+#   🔄 [2026-08-19 O87] `ga4_start`/`ga4_end`(YYYYMMDD 샤드 테이블명 접미) → `ga4_dt_start`/`ga4_dt_end`(DATE).
+#      왜: BRONZE 가 일별 샤드가 아니라 통합 1테이블(`EVENTS`)이 됐다(G-5 해소 · O86).
+#      샤드명을 문자열 비교할 대상이 사라졌고, 이제 필요한 것은 `EVENT_DT` **프루닝 범위**다.
+#   🔄🔄 [2026-08-19 O88] `ga4_dt_start`/`ga4_dt_end`(연속 구간 1개) → **`ga4_dt_ranges`(구간 목록)**.
+#      왜 바꿨나 = 종전 형태로는 **불연속 월 샘플링을 표현할 수 없었다.**
+#        사용자 결정(2026-08-19) = BRONZE_BIGQUERY 가 너무 커서 **2024-06 · 2025-06 · 2026-06
+#        3개월만 샘플링**해 dbt·Semantic View 작업을 진행한다.
+#        연속 구간 1개로 그것을 표현하면 `2024-06-01`~`2026-06-30` = **2년치 전량**이 되어
+#        아래 비용 방어선이 무력화된다(샘플링 실패).
+#      🔴 술어의 **정의 지점은 `macros/ga4_range_predicate.sql` 하나**다.
+#        종전에는 같은 술어가 **3곳**(`ga4_range_purge`·`BIGQUERY_REFINED_DATA`·`GA4_EVENT`)에
+#        하드코딩돼 있었고, DELETE 범위와 append 범위가 어긋나면 행이 남거나 사라지는데
+#        그 어긋남을 잡는 게이트가 없었다(`R1-6-17` 「같은 것을 다르게 재는 지점」).
+#   🔴 이 값이 GA4 계열의 **유일한 비용 방어선**이다 — 빼거나 전범위로 두면 2.86억행 ×
+#      VARIANT 11개를 전량 스캔한다(프루닝 실측 3,006 파티션 중 19개 = 0.632%).
+#      ⇒ 빈 목록은 「전 범위」가 아니라 **컴파일 실패**로 처리한다(매크로 fail-fast).
+#   🔴 range 모델(`BIGQUERY_REFINED_DATA`·`GA4_EVENT`)은 pre-hook 이 **이 범위만 DELETE** 한다
+#      (`macros/ga4_range_purge.sql`) ⇒ 월 단위 분할 적재에서 앞 달이 지워지지 않는다.
+#      DISTINCT 차원 4종은 범위 제한 없이 기반 테이블 전량을 읽고 TRUNCATE 재적재한다(값 집합 보존).
+#   ⚠️ 전 기간으로 되돌릴 때는 목록을 한 구간으로 바꾼다(값을 지우지 말고 교체):
+#        ga4_dt_ranges: [['2024-01-01','2026-07-19']]
+#   실측 참고: 2025-06 1개월 = GN_DW_ETL_WH(Small) 68초 / bronze 9,028,480행 → 8,161,106행.
+#      전 기간 285,676,588행(2024-01-01~2026-07-19 · 911일) 환산 ≈ 36분.
+#      ⚠️ 위 두 수치는 **구 계정 실측**이다(계정이 4번 바뀌었다 · `P169`). 현 계정
+#      `NX55103` 에서는 재실측 전까지 인용하지 말 것(`R2-8-4`).
+vars:
+  # 🔒 3개월 샘플링 구간 (사용자 결정 2026-08-19). 각 원소 = [시작일, 종료일] · 경계 포함.
+  ga4_dt_ranges:
+    - ['2024-06-01', '2024-06-30']
+    - ['2025-06-01', '2025-06-30']
+    - ['2026-06-01', '2026-06-30']
+  # 순서9: GOLD 날짜차원(DIM_DATE) 고정 연속범위. date_sk 매크로가 이 범위 밖/NULL 을 NULL 로 클램프
+  #   → fact 에서 COALESCE(date_sk(...),0) 로 Unknown 멤버(DATE_SK=0) 라우팅. 범위 변경 시 DIM_DATE 도 자동 반영.
+  cal_start: '1991-01-01'
+  cal_end:   '2035-12-31'
+
+# ---------------------------------------------------------------------------
+# materialization 방침
+#   - SILVER (순서 8-B 개정): 구조 소유주 = 08_SILVER_테이블DDL. dbt = incremental +
+#     pre-hook TRUNCATE + append + full_refresh:false → DDL 구조 보존하며 데이터만 전체 갱신(멱등).
+#     (순서 7 의 materialized='table'/INSERT OVERWRITE 를 구조보존형으로 대체.)
+#   - DW_LOAD_TS = CURRENT_TIMESTAMP() (재실행 시 갱신) — 프로젝트 관례, 변경 금지(7-E).
+#   - GOLD (순서 8): dim=incremental(merge, DDL 보존) / fact=table. 상세는 아래 gold 블록 주석.
+# ---------------------------------------------------------------------------
+models:
+  gn_dw_silver:
+    silver:
+      +database: GN_DW
+      +schema: SILVER
+      # 순서 8-B: 구조 소유주 = 04_silver_design/08_SILVER_테이블DDL_20260714.sql (33테이블 선생성).
+      #   dbt 는 구조를 덮지 않고 데이터만 갱신 → INSERT OVERWRITE 동치를 구조보존형으로 구현.
+      #   전략: incremental + pre-hook TRUNCATE + append + full_refresh:false.
+      #     · 매 run: 기존 DDL 테이블 TRUNCATE(제약·주석·구조 보존) 후 전체 SELECT 재적재(append).
+      #     · unique_key 불필요 → grain 비유일 모델 행소실 없음. 멱등(재실행 Δ0).
+      #     · full_refresh:false → --full-refresh 시에도 CTAS 재생성 차단(DDL 구조 보호).
+      #   ⚠️ 전제: 08 DDL 선행 실행(테이블 미존재 시 incremental 첫 run 이 CTAS 로 구조 없이 생성됨).
+      #
+      # 🔴🔴 [2026-08-19 O87] pre-hook 을 매크로 1개로 통합했다 — `macros/silver_purge.sql`.
+      #   왜: dbt 는 hook 을 **누적(append)** 한다. 여기 TRUNCATE 를 두고 모델에 범위 DELETE 를
+      #   추가하면 **둘 다 실행되어** 전체가 비워진 뒤 범위만 append 된다(행수만 줄고 에러는 없다).
+      #   ⇒ pre-hook 정의 지점은 **이 한 줄뿐**이고 분기는 `silver_purge` 안에서만 한다.
+      #     · GA4 range 모델(`BIGQUERY_REFINED_DATA`·`GA4_EVENT`) = var 범위만 DELETE(멱등)
+      #     · 그 밖 SILVER 전 모델                                 = 종전과 동일 TRUNCATE
+      #   🔴 **모델 파일에 `pre_hook` 을 쓰지 말 것.** 쓰면 위 누적 사고가 재발한다.
+      +materialized: incremental
+      +incremental_strategy: append
+      +full_refresh: false
+      +pre-hook: "{{ silver_purge(this) }}"
+      # 🔴🔴 [2026-08-20 O95 신설] 신규 컬럼 무증상 폐기 차단 — SILVER 에는 이 방어가 **없었다.**
+      #   GOLD `fact` 는 O40-B 에서 이미 `append_new_columns` 를 넣었는데 SILVER 는 빠져 있었고,
+      #   기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러·워닝 없이 버린다**(`P82`).
+      #   🔴 실제로 걸렸다: O93-B 가 `CRM_SEND_MEMBER` 에 `OPEN_DT` 를 추가했는데 SILVER 는
+      #   ERROR 0 으로 끝났고 컬럼이 생기지 않았다 ⇒ 다음 build 에서 이를 참조하는
+      #   `GOLD.FACT_SERVICE_EVENT` 가 `invalid identifier 'S.OPEN_DT'` 로 죽었다.
+      #   즉 **결함은 SILVER 에서 조용히 발생하고 GOLD 에서 시끄럽게 터진다** — 진단이 한 단계 밀린다.
+      #   ⚠️ 이 설정은 컬럼 **추가**만 자동화한다. 타입 변경·삭제는 여전히 수동 ALTER 대상이다.
+      #   ⚠️ 그리고 이것이 DDL 선행 절차를 대체하지 않는다(구조 정본은 `04_silver_design/08_…sql`) —
+      #      절차는 GOLD 와 동일하다: ① DDL 수정 ② ALTER 실행 ③ INFORMATION_SCHEMA 확인
+      #      ④ 모델 수정 ⑤ build ⑥ 신규 컬럼 비NULL 건수 검증.
+      +on_schema_change: append_new_columns
+    # GOLD: 순서 8 활성화 → 순서 9 개정. 구조는 03_top-down_gold/06_DDL.sql 소유(**35테이블** 선생성 · 2026-08-10 O53. 종전 기재 「24」는 stale 이었다 — 실측 31 → O53 로 35).
+    #   - dim  = incremental(merge) + full_refresh:false → DDL 구조·제약·주석 보존, INSERT/UPSERT.
+    #   - fact = incremental + append + pre-hook TRUNCATE + full_refresh:false (SILVER 동일 패턴)
+    #            → DDL 구조·타입·주석·FK 보존하며 데이터만 전체 갱신(멱등 Δ0). table(CTAS) 폐기.
+    #            (table 이 매 run DDL 을 덮어써 타입 소실·fact FK 23개 드롭하던 문제 = 순서9 G-1/G-2 해소.)
+    #   - fact grain 비유일(스캐폴드 SK=0)이라 merge 대신 append(unique_key 불요·행소실 없음).
+    #   ⚠️ 전제: 06_DDL 선행 실행(테이블 미존재 시 incremental 첫 run 이 CTAS 로 구조 없이 생성됨).
+    gold:
+      +database: GN_DW
+      +schema: GOLD
+      +enabled: true
+      +full_refresh: false
+      fact:
+        +materialized: incremental
+        +incremental_strategy: append
+        +pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"
+        # [2026-08-05 O40-B] 🔴 신규 컬럼 무증상 폐기 차단 (P82)
+        #   기본값 'ignore' 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러·워닝 없이 버린다.**
+        #   실제로 겪었다: O40 에서 컬럼 2종을 추가하고 build 가 ERROR=0 으로 끝났는데
+        #   INSERT 가 대상 테이블의 56컬럼만 써서 신규 컬럼이 생기지 않았다(문서10 §24-H).
+        #   ⚠️컬럼 추가 절차: ① 06_DDL.sql 수정 ② ALTER TABLE 실행 ③ INFORMATION_SCHEMA 로
+        #   컬럼 존재 확인 ④ 모델 수정 ⑤ build ⑥ **신규 컬럼 비NULL 건수 검증**.
+        #
+        # 🔴 [2026-08-05 O42] 종전 'fail' 은 **파이프라인을 세웠다.** 그리고 그 자리 주석의
+        #   *"13개 팩트 전량 컴파일 대조로 드리프트 0 확인"* 은 **거짓 안전 신호**였다 —
+        #   그 대조는 **컬럼만** 봤는데 dbt 는 **컬럼 + 타입**을 함께 diff 하고 하나라도 있으면 던진다.
+        #   결과: 도입 후 첫 build 부터 팩트 10종 ERROR · 145 SKIP(PASS=221). 3회 재시도 전부 동일.
+        #   실패 10종 모두 컬럼 집합은 일치(추가 0·삭제 0)였고 발화 원인은 **타입 101컬럼**뿐이었다.
+        #   타입 차이는 이 아키텍처의 **정상 상태**다(정본 DDL 이 의도한 폭을 선언 / 모델은 센티넬
+        #   리터럴·HASH()·나눗셈을 낸다). 게다가 'fail' 의 해법 3개가 전부 금지다:
+        #   자동 ALTER(기각) · full_refresh(CTAS 가 DDL·제약·주석·FK 파괴 → +full_refresh:false) ·
+        #   수동 스키마 변경(정본을 추론 타입에 맞춰 넓히라는 뜻 = 거꾸로) ⇒ **해소 경로 없는 교착**.
+        #
+        # ✅ [2026-08-05 O42 조치] 'append_new_columns' 채택. dbt 원본 동작 확인:
+        #   `sync_column_schemas('append_new_columns', …)` 는 **타입 변경을 아예 처리하지 않고**
+        #   `source_not_in_target` 만 ALTER 한다 → 현재 그 집합이 **공집합**이라 **완전 no-op**이며
+        #   타입 오탐이 사라진다. 그리고 'ignore' 가 아니므로 `process_schema_changes` 반환이
+        #   **source_columns(=모델 컬럼)** 이고 그것이 INSERT 의 dest_columns 가 된다
+        #   → **O40 무증상 폐기 차단은 그대로 유지된다**(이것이 'ignore' 로 되돌리지 않는 이유).
+        #   ⚠️ 남는 대가 = 훗날 모델에만 있는 신규 컬럼이 생기면 dbt 가 **자동 ALTER** 하므로
+        #      물리가 06_DDL.sql 보다 앞서 나갈 수 있다(O30 유형 드리프트) → 위 ①~⑥ 절차를
+        #      반드시 지킬 것. 감시 항목으로 O42-C 등재.
+        #   ⚠️ 시도했다가 철회한 안: `macros/gn_on_schema_change.sql` 로 전역 매크로
+        #      `snowflake__process_schema_changes` 를 오버라이드해 「컬럼 전용 가드」로 좁히려 했으나
+        #      **Snowflake 서버측 dbt 런타임에서 발화하지 않았다**(워크스페이스 실행·배포객체
+        #      VERSION$2 양쪽 모두 dbt 원본 문구 그대로). 발화하지 않는 가드는 거짓 안전 신호이므로
+        #      **파일을 삭제**했다. 근거·재현 = 20_issue/00_INDEX_이슈원장.md §O42
+        +on_schema_change: append_new_columns
+      # WIDE 소비뷰(순서9-D): 팩트×차원 LEFT JOIN 평탄화. 물리저장 0(view).
+      #   ref() 로 GOLD 모델 참조 → 거버넌스·리니지·build 게이트 확보(BLOCKING-4 해소, 미거버넌스 객체 재발방지).
+      #
+      # 🔴 [2026-08-07 O50] **뷰 계층 소유주 규칙 — 명문화.** 트리거 = 사용자 질의
+      #   *"테이블은 DDL 이 만들고 dbt 가 채우는데 view 는 dbt 가 만든다. view 도 DDL 로 하는 게 거버넌스에 좋은가?"*
+      #   **답 = 아니다.** 테이블을 DDL 이 소유하는 근거는 「CTAS 가 타입·주석·FK 를 파괴한다」(순서9 G-1/G-2,
+      #   fact FK 23개 드롭)이고 그래서 `+full_refresh:false` 로 **물리를 보호**한다. 뷰에는 보호할 물리 상태가 없다
+      #   (`CREATE OR REPLACE VIEW` 는 멱등·저장 0). 반대로 뷰는 **의존성**이 있어 `ref()` 의 위상정렬·리니지·
+      #   build 게이트가 필요하다. 뷰를 SQL 스크립트로 되돌리면 BLOCKING-4 를 되돌리는 것이다.
+      #   GRANT 소실 우려도 해당 없음 — `07_ENVIRONMENT_RBAC_setup.sql` D.2 가 GOLD 에
+      #   `GRANT SELECT ON FUTURE VIEWS`(ENGINEER·ANALYST·VIEWER·SERVICE) 를 걸어 두어 재생성분에 자동 적용된다.
+      #   ⚠️ 따라서 **FUTURE VIEWS grant 는 이 아키텍처의 전제**다 — 제거하면 매 build 마다 소비 3역할이 뷰를 잃는다.
+      #
+      #   소유주 표 (변경 시 여기부터 고칠 것):
+      #     · GOLD 테이블 35(20 DIM+15 FACT) = `03_top-down_gold/06_DDL.sql`   ← CTAS 로부터 타입·FK·COMMENT 보호
+      #     · GOLD 뷰 14                      = **dbt** (`models/gold/wide/` 14 — 전부 `WIDE_*`)
+      #       🔴 [2026-08-12 O64 실측 정정] 종전 기재 「테이블 31(17 DIM+14 FACT)」·「뷰 16(wide 14 + dim 2)」은 **둘 다 stale** 이었다.
+      #         실측(계정 os09358 · INFORMATION_SCHEMA.TABLES) = BASE TABLE **35**(DIM 20 · FACT 15) · VIEW **14**(전부 `WIDE_*`).
+      #         `models/gold/dim/` 은 **20 모델 전부 incremental 테이블**이라 「dim 뷰 2」는 실체가 없다.
+      #         유래 = `DIM_MONTH`·`DIM_MEMBER_CURRENT` 가 원래 SERVING helper **뷰**였고 O53~O55 에서 GOLD BASE TABLE 로
+      #         승격됐는데 이 표가 따라오지 않은 것이다(같은 승격이 COMMENT 문안에도 「뷰」를 남겼다 = O63-J ③).
+      #         ⚠️ 같은 파일 51행은 이미 「35테이블」로 갱신돼 있었다 ⇒ **한 파일 안에서 두 기재가 서로 어긋난 상태**였다.
+      #     · SILVER 테이블                   = `04_silver_design/08_SILVER_테이블DDL_*.sql`
+      #     · SERVING 일반 뷰 **0** (helper 3종은 전부 GOLD 로 이관됨)
+      #       🔴 [2026-08-12 O64 실측 정정] 종전 기재 「SERVING 일반 뷰 3(helper) · 소유주 2분할」은 **라이브에 실체가 없다**.
+      #         실측 = `SERVING` 스키마의 `INFORMATION_SCHEMA.TABLES` **0행** (semantic view 9종만 있고 SV 는 TABLES 에 안 나온다).
+      #         3종의 현재 위치 = `DIM_MONTH`·`DIM_MEMBER_CURRENT` → **`GOLD` BASE TABLE**(dbt `models/gold/dim/` 소유) ·
+      #         `FACT_AD_COMBINED` → **`GOLD.WIDE_AD_COMBINED` VIEW**(dbt `models/gold/wide/` 소유 · `SV_AD` 의 base 도 이 뷰다).
+      #         ⇒ 아래 「§G 가 소유」·「SV DDL 파일 내부에서 만든다」 서술은 **역사 기록**으로만 읽을 것.
+      #         과거 기재(참고용): §G.1/§G.2 = `02_GN_DW_building/08_After_Deploy_DBT.sql` · `05_SV-Agent_ai/05_7_SV_DDL_AD.sql:57`.
+      #       ⚠️ 설계 문서 `02_GN_DW_building/03_GOLD_SERVING.md` §3.6 `serving_helper_views` 와 `semantic_views: # 5 배포` 는
+      #          이 이관 이전 판본이라 **둘 다 stale** 이다(O50-D 가 이미 후자를 지적했다 · 실측 SV = **9**).
+      #       ⚠️ `05_SV-Agent_ai/02_SERVING_setup.sql` 은 **스텁(실행 라인 0)** 이다 — O36 ③ 이 이미 교정한 오지목.
+      #
+      #   🟢 [2026-08-07 O50-C 해소] **SV base 객체 선택 규칙 = DEC-34** 신설.
+      #     정본 = `05_SV-Agent_ai/04_SV_설계.md` **§0.8**. 요지(성격 기반, 객체 타입 기반 아님):
+      #       ① GOLD base FACT 직접 (기본값) — 단일 팩트 star 로 완결 · role 중복 축 없음        [DDL 소유]
+      #       ② SERVING helper 뷰        — SV 엔진 제약 우회는 필요하나 **팩트 재구성 없음**      [DDL 소유]
+      #       ③ **dbt 소유 GOLD 뷰**      — **팩트를 재구성**해야 함(팩트↔팩트 조인·사전집계·
+      #                                     행 단위 상호 스코프 플래그) → `ref()` 위상정렬 필수
+      #     ②/③ 경계 = 「팩트를 재구성하는가」. ③은 GOLD 팩트 의존성이 있어 dbt 가 맞다(BLOCKING-4).
+      #     ⚠️ ③ 선택의 대가: 그 SV 는 `dbt build` 없이 **배포 자체가 불가**하다 — 실증됨(아래).
+      #   🔴 [2026-08-12 O64 실측] **종전에 여기 적힌 계열별 SV 예시가 지금은 전부 어긋난다.**
+      #     실측 방법 = `DESCRIBE SEMANTIC VIEW` 의 `BASE_TABLE_NAME` × `INFORMATION_SCHEMA.TABLES.TABLE_TYPE`
+      #     (COMMENT 문안이 아니라 정의로 판정 · `R2-3`). SV **9종** 전건:
+      #       · base 가 전부 BASE TABLE = **7종** — `SV_BUDGET`·`SV_EVENT_PARTICIPATION`·`SV_MEMBER_COHORT`·
+      #         `SV_MEMBER_EVENT`·`SV_MEMBER_MONTHLY`·`SV_SERVICE`·**`SV_DEV_ACHIEVEMENT`**
+      #       · base 에 GOLD 뷰 포함 = **2종** — `SV_AD`(`WIDE_AD_COMBINED`) · `SV_MEMBER_FEE`(`WIDE_MEMBER_FEE`)
+      #     ⇒ 종전 기재 「① 6 SV」는 실측 **7** 이고, 「② = `SV_AD`」·「③ = `SV_DEV_ACHIEVEMENT`」는 **서로 반대**가 됐다:
+      #       `SV_AD` 는 base 가 dbt 뷰라 ③ 쪽이고, `SV_DEV_ACHIEVEMENT` 는 base 가 GOLD FACT 테이블이라 ① 쪽이다.
+      #       또한 ② 는 SERVING helper 뷰가 **0개**가 되어(위 소유주 표) 현재 구현체가 없다.
+      #     ⚠️ **여기서 DEC-34 를 다시 정의하지 않는다** — 계열 재분류는 설계 결정이고 정본은 `04_SV_설계.md` §0.8 이다.
+      #       위 실측만 남기고 **재분류 판단은 미결로 등재**했다(원장 §O64). 「지금 이 표를 근거로 계열을 인용하지 말 것」.
+      #     ⚠️ 실무 영향 하나는 확정이다 — ③ 의 대가(build 없이 배포 불가)가 이제 **`SV_AD` 에도 걸린다**.
+      #   ⚠️ 아래 2줄은 **2026-08-07 시점 기록**이며 위 실측이 대체한다(당시 SV 7개 · 없는 2개가 ③ 계열):
+      #     · 당시 실측 SERVING semantic view = 7개 · 없는 2개 = `SV_DEV_ACHIEVEMENT`·`SV_MEMBER_FEE` · DDL 계열 7 은 GOLD 0행에서도 생성됐다.
+      #     · 🟠 `SV_MEMBER_FEE` 를 ②로 내리는 안은 ② 에 구현체가 없어져 **성립하지 않는다**(종전 「유일 후보·판단 보류」 · 트리거 §0.8-C).
+      #   🔴 [2026-08-07 O51 재정정] 컬럼/뷰 COMMENT 정본 = **`_wide_schema.yml` 의 description/columns[]**,
+      #     적용 = `materialized='gn_view_commented'`(`macros/gn_view_commented.sql`).
+      #     ⚠️ O50 에서 적었던 *"post_hook 이 정본(16/16)"* 은 **틀렸다** — 파일 존재만 세고 효과를 확인하지
+      #     않았다(P33 위반). 실측 GOLD 뷰 520컬럼 중 COMMENT **0개**. post_hook 의
+      #     `ALTER VIEW ... ALTER COLUMN ... COMMENT` 는 Snowflake 에 **없는 문법**이라 15/16 뷰 build ERROR 를
+      #     냈다. 뷰 컬럼 COMMENT 의 유일 경로 = `CREATE VIEW` 인라인 컬럼목록. probe 10/10 물리 반영 확인.
+      #     ⚠️ dbt 내장 `persist_docs:{columns:true}` 도 동일 문법을 쓰므로 대안이 아니다.
+      #   게이트 = `tests/warn_gold_view_comment_coverage.sql` — **`severity=warn` 유지**(2026-08-10 O51-F 사용자 결정).
+      #     🔴 [2026-08-12 O64] 종전 이 자리의 「첫 clean build 후 error 승격 — 파일 헤더 참조」는 **지시가 이미 철회된 뒤에도 남아 있었다**.
+      #       게이트 파일 헤더는 O53 이 그 자동 승격 지시를 철회했고(`P130`) 승격 트리거는 그때 이미 충족돼 있었다
+      #       ⇒ 이 줄만 따라간 세션은 **철회된 지시를 실행할 수 있었다**. 승격은 **사용자가 명시 지시할 때만** 한다.
+      #       근거(유지 이유) = 원천 증량 시 새 뷰·새 컬럼이 error 게이트를 물어 build 전체를 세운다 · 문안 누락은 구조 불변식 위반이 아니다.
+      wide:
+        +materialized: view
+        +tags: ['gold_wide']

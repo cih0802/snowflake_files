@@ -84,7 +84,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '57be0253-4fb4-4b86-9e2e-7ed1d1292984'                    AS DW_BATCH_ID,
+    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID,
     -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 참여 3축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
     --    🔴 PART_STATUS_GROUP 이 O28 다체계의 **구조적 판별축**이다(종전에는 COMMENT 경고뿐이었다).
     --    신설 위치 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝).

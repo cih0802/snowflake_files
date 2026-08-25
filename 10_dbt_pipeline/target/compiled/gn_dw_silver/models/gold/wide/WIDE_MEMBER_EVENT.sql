@@ -55,6 +55,14 @@ select
     --   INFLOW_PATH(MM293 MBER_INFLOW_PATH_NM) = 현업 '주요캠페인' → CAMPAIGN_INFLOW_PATH 로 노출
     c.CAMPAIGN_TYPE       as CAMPAIGN_CATEGORY,
     c.INFLOW_PATH         as CAMPAIGN_INFLOW_PATH,
+    -- [2026-08-25 안내2] 세부캠페인 후원구분·법인구분. WIDE 는 현업 가독성이 원칙이라(DIM/FACT 는
+    --   개발자·AI 추적성) 다른 캠페인 축들 바로 옆에 코드+라벨을 나란히 둔다 — ALTER ADD COLUMN 규약은
+    --   물리 테이블(DIM/FACT)에만 적용되고 뷰(WIDE)는 CREATE OR REPLACE 라 매번 전체 재정의되므로
+    --   물리 ordinal 제약이 없다. 그래서 뷰에서는 의미 순서로 자유롭게 재배치해도 안전하다.
+    c.SPNSR_DIV_CD        as CAMPAIGN_SPNSR_DIV_CD,   -- CM035 1=정기후원·2=일시후원
+    c.SPNSR_DIV_NM        as CAMPAIGN_SPNSR_DIV_NM,
+    c.CPR_DIV_CD          as CAMPAIGN_CPR_DIV_CD,     -- CM019 A=통합·I=사단·S=사복
+    c.CPR_DIV_NM          as CAMPAIGN_CPR_DIV_NM,
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
     -- [2026-08-19 O89] 후원사업 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
