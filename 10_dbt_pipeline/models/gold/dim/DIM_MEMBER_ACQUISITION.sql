@@ -69,13 +69,24 @@ select
     c.ACQ_GENDER                                    as ACQ_GENDER,
     c.ACQ_SPNSR_AMT                                 as ACQ_SPNSR_AMT,
     -- ── 라벨(차원 단독 조회로도 뜻이 통하게 — DEC-10 전제) ────────────────────
-    cmp.BRAND                                       as ACQ_BRAND,
+    -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(cmp.*) → `FACT_MEMBER_COHORT.ACQ_*` 동결값으로 전환.
+    --   캠페인 마스터가 이후 정정돼도 과거 획득 회원의 값은 바뀌지 않는다(O99 설계부채 해소).
+    c.ACQ_BRAND                                     as ACQ_BRAND,
     cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,
-    cmp.PARENT_CAMPAIGN_NAME                        as ACQ_PARENT_CAMPAIGN_NAME,
-    cmp.PROMO_METHOD_NAME                           as ACQ_PROMO_METHOD_NAME,
-    cmp.MARKETING_CAMPAIGN                          as ACQ_MARKETING_CAMPAIGN,
+    c.ACQ_PARENT_CAMPAIGN_NAME                      as ACQ_PARENT_CAMPAIGN_NAME,
+    c.ACQ_PROMO_METHOD_NAME                         as ACQ_PROMO_METHOD_NAME,
+    c.ACQ_MKTG_CMPGN_NM                             as ACQ_MARKETING_CAMPAIGN,
     org.DEPARTMENT                                  as ACQ_DEPARTMENT,
     spb.SPONSORSHIP_NAME                            as ACQ_SPONSORSHIP_NAME,
+    -- [DEC-43] 잔여 8속성(9속성 중 나머지 5 + 후원/법인구분 2 + UTM 1) 신규 노출.
+    c.ACQ_MBER_INFLOW_PATH_NM                       as ACQ_INFLOW_PATH,
+    c.ACQ_CMPGN_CTGR_NM                             as ACQ_CAMPAIGN_TYPE,
+    c.ACQ_CMPGN_TYPE1_NM                            as ACQ_DOMESTIC_OVERSEAS,
+    c.ACQ_CMPGN_TYPE2_NM                            as ACQ_BIZ_CASE_TYPE,
+    c.ACQ_CMMN_BRND_NM                              as ACQ_CMMN_BRND_NM,
+    c.ACQ_MKTG_UTM_NM                               as ACQ_MKTG_UTM_NM,
+    c.ACQ_SPNSR_DIV_NM                              as ACQ_SPNSR_DIV_NM,
+    c.ACQ_CPR_DIV_NM                                as ACQ_CPR_DIV_NM,
     -- ── 코호트 결과 measure (중단률·유지기간은 이 차원이 아니라 FMC 에서 집계) ──
     c.FIRST_STOP_DATE_SK                            as FIRST_STOP_DATE_SK,
     c.FIRST_STOP_REASON_NM                          as FIRST_STOP_REASON_NM,

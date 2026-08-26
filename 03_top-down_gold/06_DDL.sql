@@ -228,11 +228,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_ACQUISITION (
     ACQ_SEX_CD               VARCHAR         COMMENT '획득 시점 성별 코드. 코드그룹 **CM013(성별)**. 실적재(`TM_MM_FDRM_MBER_DVLP_AMT.SEX`)에 **사전 전종 + 사전에 없는 센티넬 ''0''** 이 나타난다. 🔴DIM_MEMBER 의 분석 성별(GENDER_NAME·CM017 계열)과 **라벨 체계가 다르다** — 이 축은 국내/외국인 구분을 보존한다. 라벨 = ACQ_GENDER.',
     ACQ_GENDER               VARCHAR         COMMENT '획득 시점 성별명(CM013 라벨): 국내(남자)·국내(여자)·외국인(남자)·외국인(여자)·외국인(기타)·단체·기업·기타. 코드 = ACQ_SEX_CD. 🔴DIM_MEMBER_CURRENT.GENDER_NAME(CM017 · 5종)과 값 집합이 다르다 — 두 축을 같은 표에서 비교하지 말 것. ⚠️센티넬 ''0'' 은 사전 라벨이 없어 NULL.',
     ACQ_SPNSR_AMT            NUMBER(18,0)    COMMENT '획득 사건의 후원금액(원, raw) ← TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT. 🔴**건수로 환산하지 말 것** — 정본 공#38·#151 이 **금액을 만원 단위로 나눈 값**이라는 규약이라 혼용하면 정의가 깨진다(CONF-2). ⚠️획득 시점 약정액이며 이후 증액·감액은 반영되지 않는다(현재 약정액이 아니다).',
-    ACQ_BRAND                VARCHAR         COMMENT '획득 캠페인의 브랜드 ← DIM_CAMPAIGN.BRAND. 차원 단독 조회로도 뜻이 통하게 라벨을 비정규화했다(DEC-10). ⚠️ACQ_BASIS=''FALLBACK'' 인 회원은 귀속 신뢰도가 낮다.',
-    ACQ_CAMPAIGN_NAME        VARCHAR         COMMENT '획득 캠페인명 ← DIM_CAMPAIGN.CAMPAIGN_NAME. ⚠️광고비와 결합할 때는 이 축이 아니라 ACQ_MARKETING_CAMPAIGN 을 쓴다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
-    ACQ_PARENT_CAMPAIGN_NAME VARCHAR         COMMENT '획득 캠페인의 **상위캠페인**명 ← DIM_CAMPAIGN.PARENT_CAMPAIGN_NAME (원천 UPPER_CMPGN_CD 계층). 🔴캠페인 카테고리(MM294)와 다른 축이다 — 카테고리는 코드 기반 분류, 상위캠페인은 캠페인 자체의 부모다.',
-    ACQ_PROMO_METHOD_NAME    VARCHAR         COMMENT '획득 캠페인의 홍보방법명 ← DIM_CAMPAIGN.PROMO_METHOD_NAME. 코드그룹 **CM008(홍보방법)**. [O51-D BRONZE 실측] CM008 사전은 100종을 넘는 대형 그룹이며 채널·랜딩·매체가 한 축에 섞여 있다(PC캠페인-홈페이지·M배너광고(DA)·TM·TS·가두·교회개발·직원개발·서신 등) — 🔴상위 집계가 필요하면 이 축이 아니라 개발인입경로(MM293 · DIM_CAMPAIGN.INFLOW_PATH)를 쓴다.',
-    ACQ_MARKETING_CAMPAIGN   VARCHAR         COMMENT '획득 캠페인의 마케팅캠페인(O45 conformed 축) ← DIM_CAMPAIGN.MARKETING_CAMPAIGN (원천 MKTG_CMPGN_NM). 🟢**광고비와 결합하는 정본 축**이다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
+    ACQ_BRAND                VARCHAR         COMMENT '획득 캠페인의 브랜드. 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_BRAND(구 DIM_CAMPAIGN.BRAND 실시간 조인 대체). 차원 단독 조회로도 뜻이 통하게 라벨을 비정규화했다(DEC-10). ⚠️ACQ_BASIS=''FALLBACK'' 인 회원은 귀속 신뢰도가 낮다.',
+    ACQ_CAMPAIGN_NAME        VARCHAR         COMMENT '획득 캠페인명 ← DIM_CAMPAIGN.CAMPAIGN_NAME(실시간 조인 — 12속성 범위 밖, 캠페인 자신의 이름이라 동결 대상이 아니다). ⚠️광고비와 결합할 때는 이 축이 아니라 ACQ_MARKETING_CAMPAIGN 을 쓴다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
+    ACQ_PARENT_CAMPAIGN_NAME VARCHAR         COMMENT '획득 캠페인의 **상위캠페인**명(원천 UPPER_CMPGN_CD 계층). 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_PARENT_CAMPAIGN_NAME(구 DIM_CAMPAIGN.PARENT_CAMPAIGN_NAME 실시간 조인 대체). 캠페인 카테고리(MM294)와 다른 축이다 — 카테고리는 코드 기반 분류, 상위캠페인은 캠페인 자체의 부모다.',
+    ACQ_PROMO_METHOD_NAME    VARCHAR         COMMENT '획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_PROMO_METHOD_NAME(구 DIM_CAMPAIGN.PROMO_METHOD_NAME 실시간 조인 대체). [O51-D BRONZE 실측] CM008 사전은 100종을 넘는 대형 그룹이며 채널·랜딩·매체가 한 축에 섞여 있다(PC캠페인-홈페이지·M배너광고(DA)·TM·TS·가두·교회개발·직원개발·서신 등) — 🔴상위 집계가 필요하면 이 축이 아니라 개발인입경로(MM293 · ACQ_INFLOW_PATH)를 쓴다.',
+    ACQ_MARKETING_CAMPAIGN   VARCHAR         COMMENT '획득 캠페인의 마케팅캠페인(O45 conformed 축, 원천 MKTG_CMPGN_NM). 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_MKTG_CMPGN_NM(구 DIM_CAMPAIGN.MARKETING_CAMPAIGN 실시간 조인 대체). 🟢**광고비와 결합하는 정본 축**이다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).',
     ACQ_DEPARTMENT           VARCHAR         COMMENT '획득 시점 부서명 ← DIM_ORG.DEPARTMENT. 코드 = ACQ_ORG_SK. 🔴**획득(최초개발) 시점 부서**다 — 개발실적보고의 「부서」(=사건 부서)와 다르다. 사건 부서는 WIDE_MEMBER_EVENT.ORG_DEPARTMENT 를 쓴다(O34 _AT_PLEDGE/_AT_EVENT 규약의 재적용). ⚠️DIM_ORG 는 SCD1(DEC-2)이라 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다.',
     ACQ_SPONSORSHIP_NAME     VARCHAR         COMMENT '획득 시점 후원사업명 ← DIM_SPONSORSHIP.SPONSORSHIP_NAME(정본 공#123). 코드 = ACQ_SPONSORSHIP_SK. 🔴회비 **납입 대상** 후원사업명(WIDE_MEMBER_FEE.SPONSORSHIP_NAME)과 다른 축이다.',
     FIRST_STOP_DATE_SK       NUMBER(8,0)     COMMENT '최초 중단일 대리키(FK→DIM_DATE) — 중단원천(EVENT_TYPE=''STOP'') 기준 최초 사건. 🔴**미중단 회원은 NULL** 이며 0 이 아니다 — 0 은 「날짜 미상」이라는 다른 뜻이다(P21). 중단했으나 일자가 캘린더 범위밖이면 0.',
@@ -242,8 +242,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_ACQUISITION (
     DW_SOURCE_SYSTEM         VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS               TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS             TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID              VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '회원 획득(가입) 귀속 차원 — 1행=1회원. 원천 = FACT_MEMBER_COHORT(단일 정의 지점). 🔴모든 ACQ_* 는 **획득 시점** 값이며 현재 속성이 아니다(현재 연령·현주소는 BRONZE 에 축이 없어 산출 불가·O34). 🔴「부서」·「후원사업」은 같은 라벨로 두 축이 존재한다 — 사건 부서=FACT_MEMBER_EVENT.ORG_SK · 납입 대상 후원사업=FACT_MEMBER_FEE.SPONSORSHIP_SK. 🔴팩트와는 반드시 LEFT JOIN — 개발 사건이 없는 회원이 사라진다 — 🔴손실은 **회원 기준**으로 읽어야 한다(행 가중 비율은 손실을 축소해 보이게 한다 · 규모는 이슈원장 §O51-D-B). 신설 경위(O45): FMM 의 CAMPAIGN_SK·SPONSORSHIP_SK 가 전건 센티넬인 것은 원천 부재가 아니라 **다중캠페인 후원의 귀속 규칙이 없어서**였고, 임의 귀속 대신 「획득 시점」이라는 명시된 규칙을 채택했다(O8 우회). 🔴 [O53] 뷰 → 테이블 전환. 적재는 dbt(append + pre-hook TRUNCATE)가 하고 구조·COMMENT 는 06_DDL.sql 이 소유한다.';
+    DW_BATCH_ID              VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [DEC-43 2026-08-25] 캠페인 12속성 중 잔여 8속성(라벨만 노출 — 코드는 FACT_MEMBER_COHORT 소관).
+    --   전부 획득 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_*(SILVER CRM_MEMBER_DEV 적재 시점 값 승계).
+    ACQ_INFLOW_PATH          VARCHAR         COMMENT '획득 캠페인의 모집 채널명(MM293 라벨). ⚠️채널이며 「주요캠페인」이 아니다 — 주요캠페인은 ACQ_CAMPAIGN_TYPE 이다.',
+    ACQ_CAMPAIGN_TYPE        VARCHAR         COMMENT '획득 캠페인의 카테고리 라벨(MM294) — 현업이 말하는 ''주요캠페인'' 축.',
+    ACQ_DOMESTIC_OVERSEAS    VARCHAR         COMMENT '획득 캠페인의 국내/해외 구분(MM295 라벨: 국내/통합/해외).',
+    ACQ_BIZ_CASE_TYPE        VARCHAR         COMMENT '획득 캠페인의 사업/사례 구분(MM296 라벨: 굿즈/기타/사례/사업).',
+    ACQ_CMMN_BRND_NM         VARCHAR         COMMENT '획득 캠페인의 공통브랜드명(MM297 라벨). ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지.',
+    ACQ_MKTG_UTM_NM          VARCHAR         COMMENT '획득 캠페인의 UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM).',
+    ACQ_SPNSR_DIV_NM         VARCHAR         COMMENT '획득 캠페인의 후원구분명(CM035 라벨: 정기후원/일시후원).',
+    ACQ_CPR_DIV_NM           VARCHAR         COMMENT '획득 캠페인의 법인구분명(CM019 라벨: 통합/사단/사복).'
+) COMMENT = '회원 획득(가입) 귀속 차원 — 1행=1회원. 원천 = FACT_MEMBER_COHORT(단일 정의 지점). 🔴모든 ACQ_* 는 **획득 시점** 값이며 현재 속성이 아니다(현재 연령·현주소는 BRONZE 에 축이 없어 산출 불가·O34). 🔴「부서」·「후원사업」은 같은 라벨로 두 축이 존재한다 — 사건 부서=FACT_MEMBER_EVENT.ORG_SK · 납입 대상 후원사업=FACT_MEMBER_FEE.SPONSORSHIP_SK. 🔴팩트와는 반드시 LEFT JOIN — 개발 사건이 없는 회원이 사라진다 — 🔴손실은 **회원 기준**으로 읽어야 한다(행 가중 비율은 손실을 축소해 보이게 한다 · 규모는 이슈원장 §O51-D-B). 신설 경위(O45): FMM 의 CAMPAIGN_SK·SPONSORSHIP_SK 가 전건 센티넬인 것은 원천 부재가 아니라 **다중캠페인 후원의 귀속 규칙이 없어서**였고, 임의 귀속 대신 「획득 시점」이라는 명시된 규칙을 채택했다(O8 우회). 🔴 [O53] 뷰 → 테이블 전환. 적재는 dbt(append + pre-hook TRUNCATE)가 하고 구조·COMMENT 는 06_DDL.sql 이 소유한다. [DEC-43 2026-08-25] 캠페인 12속성 중 12/12(ACQ_BRAND·ACQ_PARENT_CAMPAIGN_NAME·ACQ_PROMO_METHOD_NAME·ACQ_MARKETING_CAMPAIGN·ACQ_INFLOW_PATH·ACQ_CAMPAIGN_TYPE·ACQ_DOMESTIC_OVERSEAS·ACQ_BIZ_CASE_TYPE·ACQ_CMMN_BRND_NM·ACQ_MKTG_UTM_NM·ACQ_SPNSR_DIV_NM·ACQ_CPR_DIV_NM)이 DIM_CAMPAIGN 실시간 조인 → FACT_MEMBER_COHORT 적재시점 동결값으로 전환됐다. ACQ_CAMPAIGN_NAME 만 실시간 조인 잔존(캠페인 자신의 이름, 12속성 범위 밖).';
 
 
 -- ============================================================================
@@ -308,8 +318,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_CAMPAIGN (
     SPNSR_DIV_CD        VARCHAR         COMMENT '후원구분 원천코드(CM035): 1=정기후원 · 2=일시후원. 🔴 라벨이 아니다 — 사람이 읽는 이름은 SPNSR_DIV_NM.',
     SPNSR_DIV_NM        VARCHAR         COMMENT '후원구분명 — SPNSR_DIV_CD 를 코드사전 CM035 로 해소한 라벨(정기후원/일시후원).',
     CPR_DIV_CD          VARCHAR         COMMENT '법인구분 원천코드(CM019): A=통합 · I=사단 · S=사복. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CPR_DIV_NM.',
-    CPR_DIV_NM          VARCHAR         COMMENT '법인구분명 — CPR_DIV_CD 를 코드사전 CM019 로 해소한 라벨(통합/사단/사복).'
-) COMMENT = '캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN·SPNSR_DIV_NM(후원구분)·CPR_DIV_NM(법인구분). PARENT_CAMPAIGN·PROMO_METHOD·SPNSR_DIV_CD·CPR_DIV_CD 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)';
+    CPR_DIV_NM          VARCHAR         COMMENT '법인구분명 — CPR_DIV_CD 를 코드사전 CM019 로 해소한 라벨(통합/사단/사복).',
+    -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건의 잔여 2컬럼(공통브랜드·UTM) 신설. 물리 위치=맨 끝(ALTER TABLE ADD COLUMN 규약).
+    --   컬럼명은 SILVER CRM_CAMPAIGN 과 1:1 동일 — DIM 은 개발자·AI 추적성 우선(현업 가독성은 WIDE_MEMBER_EVENT 가 담당).
+    CMMN_BRND           VARCHAR         COMMENT '공통브랜드 원천코드(MM297, 14종). 🔴 라벨이 아니다 — 사람이 읽는 이름은 CMMN_BRND_NM.',
+    CMMN_BRND_NM        VARCHAR         COMMENT '공통브랜드명 — CMMN_BRND 를 코드사전 MM297 로 해소한 라벨. ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지.',
+    MKTG_UTM            NUMBER(38,0)    COMMENT 'UTM 원천코드 — 코드사전이 아니라 SILVER 신설 원천 TM_CM_MKTNG_UTM(MK_UTM)과 연동. 🔴 라벨이 아니다 — 사람이 읽는 이름은 MKTG_UTM_NM.',
+    MKTG_UTM_NM         VARCHAR         COMMENT 'UTM 라벨 — MKTG_UTM 을 TM_CM_MKTNG_UTM(MK_UTM_NM)으로 해소한 값.'
+) COMMENT = '캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN·SPNSR_DIV_NM(후원구분)·CPR_DIV_NM(법인구분)·CMMN_BRND_NM(공통브랜드)·MKTG_UTM_NM(UTM). PARENT_CAMPAIGN·PROMO_METHOD·SPNSR_DIV_CD·CPR_DIV_CD·CMMN_BRND·MKTG_UTM 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)';
 
 
 -- ============================================================================
@@ -689,7 +705,32 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-25 안내1/DEC-43] 회원 개발이력 비정규화 12속성 전파(ALTER TABLE ADD COLUMN, 물리 위치=맨 끝).
+    --   원천 = SILVER CRM_MEMBER_DEV(개발원천 행만 보유 — 중단원천 행은 개념 부재로 NULL, O34 규약과 동일).
+    --   적재 시점 값으로 고정(SCD 없음) — 캠페인 마스터가 이후 정정돼도 이 사건의 값은 바뀌지 않는다.
+    MBER_INFLOW_PATH_CD_AT_EVENT NUMBER(10,0) COMMENT '개발인입경로코드(MM293) — 사건 시점 동결값. 라벨=MBER_INFLOW_PATH_NM_AT_EVENT. 중단원천 행은 NULL',
+    MBER_INFLOW_PATH_NM_AT_EVENT VARCHAR      COMMENT '개발인입경로명(MM293 라벨) — 사건 시점 동결값. 중단원천 행은 NULL',
+    CMPGN_CTGR_CD_AT_EVENT       NUMBER(10,0) COMMENT '캠페인 카테고리코드(MM294) — 사건 시점 동결값. 라벨=CMPGN_CTGR_NM_AT_EVENT. 중단원천 행은 NULL',
+    CMPGN_CTGR_NM_AT_EVENT       VARCHAR      COMMENT '캠페인 카테고리명(MM294 라벨, 현업 ''주요캠페인'' 축) — 사건 시점 동결값. 중단원천 행은 NULL',
+    CMPGN_TYPE1_BSN_AT_EVENT     NUMBER(10,0) COMMENT '캠페인 유형1 코드(MM295, 국내/통합/해외) — 사건 시점 동결값. 라벨=CMPGN_TYPE1_NM_AT_EVENT. 중단원천 행은 NULL',
+    CMPGN_TYPE1_NM_AT_EVENT      VARCHAR      COMMENT '캠페인 유형1명(MM295 라벨: 국내/통합/해외) — 사건 시점 동결값. 중단원천 행은 NULL',
+    CMPGN_TYPE2_BSN_AT_EVENT     NUMBER(10,0) COMMENT '캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업) — 사건 시점 동결값. 라벨=CMPGN_TYPE2_NM_AT_EVENT. 중단원천 행은 NULL',
+    CMPGN_TYPE2_NM_AT_EVENT      VARCHAR      COMMENT '캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업) — 사건 시점 동결값. 중단원천 행은 NULL',
+    MKTG_CMPGN_CD_AT_EVENT       NUMBER(10,0) COMMENT '마케팅캠페인 코드(FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD) — 사건 시점 동결값. 라벨=MKTG_CMPGN_NM_AT_EVENT. 중단원천 행은 NULL',
+    MKTG_CMPGN_NM_AT_EVENT       VARCHAR      COMMENT '마케팅 캠페인명(Q16 라벨) — 사건 시점 동결값. 중단원천 행은 NULL',
+    CMMN_BRND_AT_EVENT           NUMBER(10,0) COMMENT 'MM297 공통브랜드 코드 — 사건 시점 동결값. 라벨=CMMN_BRND_NM_AT_EVENT. 중단원천 행은 NULL',
+    CMMN_BRND_NM_AT_EVENT        VARCHAR      COMMENT 'MM297 공통브랜드명 — 사건 시점 동결값. ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지. 중단원천 행은 NULL',
+    MKTG_UTM_AT_EVENT            NUMBER(10,0) COMMENT 'UTM 코드(TM_CM_MKTNG_UTM.MK_UTM) — 사건 시점 동결값. 라벨=MKTG_UTM_NM_AT_EVENT. 중단원천 행은 NULL',
+    MKTG_UTM_NM_AT_EVENT         VARCHAR      COMMENT 'UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM) — 사건 시점 동결값. 중단원천 행은 NULL',
+    SPNSR_DIV_CD_AT_EVENT        VARCHAR      COMMENT '후원구분 코드(CM035: 1=정기후원·2=일시후원) — 사건 시점 동결값. 라벨=SPNSR_DIV_NM_AT_EVENT. 중단원천 행은 NULL',
+    SPNSR_DIV_NM_AT_EVENT        VARCHAR      COMMENT '후원구분명(CM035 라벨) — 사건 시점 동결값. 중단원천 행은 NULL',
+    CPR_DIV_CD_AT_EVENT          VARCHAR      COMMENT '법인구분 코드(CM019: A=통합·I=사단·S=사복) — 사건 시점 동결값. 라벨=CPR_DIV_NM_AT_EVENT. 중단원천 행은 NULL',
+    CPR_DIV_NM_AT_EVENT          VARCHAR      COMMENT '법인구분명(CM019 라벨) — 사건 시점 동결값. 중단원천 행은 NULL',
+    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 3속성.
+    BRAND_AT_EVENT               VARCHAR      COMMENT '브랜드명 — 사건 시점 동결값. 중단원천 행은 NULL',
+    PARENT_CAMPAIGN_NAME_AT_EVENT VARCHAR     COMMENT '상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 사건 시점 동결값. 중단원천 행은 NULL',
+    PROMO_METHOD_NAME_AT_EVENT   VARCHAR      COMMENT '홍보방법명(CM008 라벨) — 사건 시점 동결값. 중단원천 행은 NULL'
 ) COMMENT = '회원 이벤트 팩트 (DATE_SK × MEMBER_DK × EVENT_TYPE · 1행=1상태전이)';
 
 
@@ -1107,8 +1148,34 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     --      팬아웃 0 실측(FMM 40,054,883 · FSE 38,470,780 · FEP 1,134,126 · FME 4,633,105 전부 불변).
     --   🔴 O8(다중귀속 규칙 미확정)을 임의로 푼 것이 아니라 **「획득 시점」 명시 규칙**을 쓴 것이다.
     ACQ_ORG_SK              NUMBER(38,0)    COMMENT '[O45] 획득 시점 담당조직 대리키 (FK→DIM_ORG). 0=미매핑. ⚠️ 「현재 소속」이 아니라 **획득 시점** 값이다',
-    ACQ_SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '[O45] 획득 시점 후원사업 대리키 (FK→DIM_SPONSORSHIP). 0=미매핑. ⚠️ 회비 납입 대상 후원사업(`FACT_MEMBER_FEE.SPONSORSHIP_SK`)과 **의미가 다르다** — 같은 라벨이 두 축이다'
-) COMMENT = '회원 획득 코호트 팩트 (1행=1회원 · grain 유일이라 PK 선언). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 🔴 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다. 개발 이력이 없는 중단회원은 획득 캠페인이 없어 미포함(중단 총계는 FACT_MEMBER_EVENT).';
+    ACQ_SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '[O45] 획득 시점 후원사업 대리키 (FK→DIM_SPONSORSHIP). 0=미매핑. ⚠️ 회비 납입 대상 후원사업(`FACT_MEMBER_FEE.SPONSORSHIP_SK`)과 **의미가 다르다** — 같은 라벨이 두 축이다',
+    -- [DEC-43 2026-08-25] 회원 개발이력 비정규화 12속성. 원천 = 획득 사건(ACQ_BASIS 채택 행)의
+    --   SILVER CRM_MEMBER_DEV 값을 그대로 승계(FACT_MEMBER_EVENT._AT_EVENT 경유 — SILVER 재조회 금지).
+    --   적재 시점 값으로 고정(SCD 없음) — 캠페인 마스터가 이후 정정돼도 이 회원의 획득 속성은 바뀌지 않는다.
+    --   🔴 `GOLD.DIM_MEMBER_ACQUISITION` 이 이 12속성 중 8속성(라벨만)을 그대로 승계해 노출한다.
+    ACQ_MBER_INFLOW_PATH_CD NUMBER(10,0)    COMMENT '획득 캠페인의 모집채널 코드(MM293) — 적재 시점 동결값. 라벨=ACQ_MBER_INFLOW_PATH_NM',
+    ACQ_MBER_INFLOW_PATH_NM VARCHAR         COMMENT '획득 캠페인의 모집채널명(MM293 라벨) — 적재 시점 동결값. ⚠️채널이며 「주요캠페인」이 아니다 — 주요캠페인은 ACQ_CMPGN_CTGR_NM 이다',
+    ACQ_CMPGN_CTGR_CD       NUMBER(10,0)    COMMENT '획득 캠페인의 카테고리 코드(MM294) — 적재 시점 동결값. 라벨=ACQ_CMPGN_CTGR_NM',
+    ACQ_CMPGN_CTGR_NM       VARCHAR         COMMENT '획득 캠페인의 카테고리 라벨(MM294, 현업 ''주요캠페인'' 축) — 적재 시점 동결값',
+    ACQ_CMPGN_TYPE1_BSN     NUMBER(10,0)    COMMENT '획득 캠페인 유형1 코드(MM295, 국내/통합/해외) — 적재 시점 동결값. 라벨=ACQ_CMPGN_TYPE1_NM',
+    ACQ_CMPGN_TYPE1_NM      VARCHAR         COMMENT '획득 캠페인 유형1명(MM295 라벨: 국내/통합/해외) — 적재 시점 동결값',
+    ACQ_CMPGN_TYPE2_BSN     NUMBER(10,0)    COMMENT '획득 캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업) — 적재 시점 동결값. 라벨=ACQ_CMPGN_TYPE2_NM',
+    ACQ_CMPGN_TYPE2_NM      VARCHAR         COMMENT '획득 캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업) — 적재 시점 동결값',
+    ACQ_MKTG_CMPGN_CD       NUMBER(10,0)    COMMENT '획득 캠페인의 마케팅캠페인 코드(FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD) — 적재 시점 동결값. 라벨=ACQ_MKTG_CMPGN_NM',
+    ACQ_MKTG_CMPGN_NM       VARCHAR         COMMENT '획득 캠페인의 마케팅 캠페인명(Q16 라벨) — 적재 시점 동결값',
+    ACQ_CMMN_BRND           NUMBER(10,0)    COMMENT '획득 캠페인의 MM297 공통브랜드 코드 — 적재 시점 동결값. 라벨=ACQ_CMMN_BRND_NM',
+    ACQ_CMMN_BRND_NM        VARCHAR         COMMENT '획득 캠페인의 MM297 공통브랜드명 — 적재 시점 동결값. ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지',
+    ACQ_MKTG_UTM            NUMBER(10,0)    COMMENT '획득 캠페인의 UTM 코드(TM_CM_MKTNG_UTM.MK_UTM) — 적재 시점 동결값. 라벨=ACQ_MKTG_UTM_NM',
+    ACQ_MKTG_UTM_NM         VARCHAR         COMMENT '획득 캠페인의 UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM) — 적재 시점 동결값',
+    ACQ_SPNSR_DIV_CD        VARCHAR         COMMENT '획득 캠페인의 후원구분 코드(CM035: 1=정기후원·2=일시후원) — 적재 시점 동결값. 라벨=ACQ_SPNSR_DIV_NM',
+    ACQ_SPNSR_DIV_NM        VARCHAR         COMMENT '획득 캠페인의 후원구분명(CM035 라벨) — 적재 시점 동결값',
+    ACQ_CPR_DIV_CD          VARCHAR         COMMENT '획득 캠페인의 법인구분 코드(CM019: A=통합·I=사단·S=사복) — 적재 시점 동결값. 라벨=ACQ_CPR_DIV_NM',
+    ACQ_CPR_DIV_NM          VARCHAR         COMMENT '획득 캠페인의 법인구분명(CM019 라벨) — 적재 시점 동결값',
+    -- [DEC-43] 캠페인 SV 3종 스냅샷 동결 잔여 3속성.
+    ACQ_BRAND               VARCHAR         COMMENT '획득 캠페인의 브랜드명 — 적재 시점 동결값',
+    ACQ_PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '획득 캠페인의 상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 적재 시점 동결값',
+    ACQ_PROMO_METHOD_NAME   VARCHAR         COMMENT '획득 캠페인의 홍보방법명(CM008 라벨) — 적재 시점 동결값'
+) COMMENT = '회원 획득 코호트 팩트 (1행=1회원 · grain 유일이라 PK 선언). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 🔴 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다. 개발 이력이 없는 중단회원은 획득 캠페인이 없어 미포함(중단 총계는 FACT_MEMBER_EVENT). [DEC-43 2026-08-25] 캠페인 12속성(ACQ_MBER_INFLOW_PATH_*·ACQ_CMPGN_CTGR_*·ACQ_CMPGN_TYPE1/2_*·ACQ_MKTG_CMPGN_*·ACQ_CMMN_BRND*·ACQ_MKTG_UTM*·ACQ_SPNSR_DIV_*·ACQ_CPR_DIV_*·ACQ_BRAND·ACQ_PARENT_CAMPAIGN_NAME·ACQ_PROMO_METHOD_NAME)을 획득 사건의 SILVER CRM_MEMBER_DEV 적재시점 값으로 신설 — DIM_MEMBER_ACQUISITION 이 이를 승계한다.';
 
 
 -- ============================================================================
@@ -1213,8 +1280,32 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ (
     DW_SOURCE_SYSTEM  VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS        TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS      TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID       VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '회원×후원약정 팩트 (MEMBER_DK × SPNSR_BSNS_NO). "캠페인별/후원사업별 활동회원" 질의 전용 — 약정grain 에서는 캠페인이 거의 1:1 이라 FMM.CAMPAIGN_SK 를 막고 있는 O8(회원grain 다중귀속 미결)이 이 테이블에는 적용되지 않는다. as-of 활동판정은 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 소비 계층에서 계산한다(FMM#51 과 동일 철학, 월 확장 없음).';
+    DW_BATCH_ID       VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [DEC-43 2026-08-25] 대표캠페인(CAMPAIGN_SK 판정에 쓰인 그 사건)의 캠페인 12속성 동결 승계.
+    --   원천 = SILVER CRM_MEMBER_DEV(대표사건 판정 행 그대로) — DIM_CAMPAIGN 실시간 조인 없이
+    --   대표 사건과 결정적으로 함께 딸려온다. 캠페인 마스터가 이후 정정돼도 이 약정의 값은 불변.
+    ACQ_MBER_INFLOW_PATH_CD NUMBER(10,0) COMMENT '대표캠페인의 모집채널 코드(MM293) — 동결값. 라벨=ACQ_MBER_INFLOW_PATH_NM',
+    ACQ_MBER_INFLOW_PATH_NM VARCHAR      COMMENT '대표캠페인의 모집채널명(MM293 라벨) — 동결값',
+    ACQ_CMPGN_CTGR_CD       NUMBER(10,0) COMMENT '대표캠페인의 카테고리 코드(MM294) — 동결값. 라벨=ACQ_CMPGN_CTGR_NM',
+    ACQ_CMPGN_CTGR_NM       VARCHAR      COMMENT '대표캠페인의 카테고리 라벨(MM294, 현업 ''주요캠페인'' 축) — 동결값',
+    ACQ_CMPGN_TYPE1_BSN     NUMBER(10,0) COMMENT '대표캠페인 유형1 코드(MM295, 국내/통합/해외) — 동결값. 라벨=ACQ_CMPGN_TYPE1_NM',
+    ACQ_CMPGN_TYPE1_NM      VARCHAR      COMMENT '대표캠페인 유형1명(MM295 라벨) — 동결값',
+    ACQ_CMPGN_TYPE2_BSN     NUMBER(10,0) COMMENT '대표캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업) — 동결값. 라벨=ACQ_CMPGN_TYPE2_NM',
+    ACQ_CMPGN_TYPE2_NM      VARCHAR      COMMENT '대표캠페인 유형2명(MM296 라벨) — 동결값',
+    ACQ_MKTG_CMPGN_CD       NUMBER(10,0) COMMENT '대표캠페인의 마케팅캠페인 코드(FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD) — 동결값. 라벨=ACQ_MKTG_CMPGN_NM',
+    ACQ_MKTG_CMPGN_NM       VARCHAR      COMMENT '대표캠페인의 마케팅 캠페인명(Q16 라벨) — 동결값',
+    ACQ_CMMN_BRND           NUMBER(10,0) COMMENT '대표캠페인의 MM297 공통브랜드 코드 — 동결값. 라벨=ACQ_CMMN_BRND_NM',
+    ACQ_CMMN_BRND_NM        VARCHAR      COMMENT '대표캠페인의 MM297 공통브랜드명 — 동결값',
+    ACQ_MKTG_UTM            NUMBER(10,0) COMMENT '대표캠페인의 UTM 코드(TM_CM_MKTNG_UTM.MK_UTM) — 동결값. 라벨=ACQ_MKTG_UTM_NM',
+    ACQ_MKTG_UTM_NM         VARCHAR      COMMENT '대표캠페인의 UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM) — 동결값',
+    ACQ_SPNSR_DIV_CD        VARCHAR      COMMENT '대표캠페인의 후원구분 코드(CM035) — 동결값. 라벨=ACQ_SPNSR_DIV_NM',
+    ACQ_SPNSR_DIV_NM        VARCHAR      COMMENT '대표캠페인의 후원구분명(CM035 라벨) — 동결값',
+    ACQ_CPR_DIV_CD          VARCHAR      COMMENT '대표캠페인의 법인구분 코드(CM019) — 동결값. 라벨=ACQ_CPR_DIV_NM',
+    ACQ_CPR_DIV_NM          VARCHAR      COMMENT '대표캠페인의 법인구분명(CM019 라벨) — 동결값',
+    ACQ_BRAND               VARCHAR      COMMENT '대표캠페인의 브랜드명 — 동결값',
+    ACQ_PARENT_CAMPAIGN_NAME VARCHAR     COMMENT '대표캠페인의 상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 동결값',
+    ACQ_PROMO_METHOD_NAME   VARCHAR      COMMENT '대표캠페인의 홍보방법명(CM008 라벨) — 동결값'
+) COMMENT = '회원×후원약정 팩트 (MEMBER_DK × SPNSR_BSNS_NO). "캠페인별/후원사업별 활동회원" 질의 전용 — 약정grain 에서는 캠페인이 거의 1:1 이라 FMM.CAMPAIGN_SK 를 막고 있는 O8(회원grain 다중귀속 미결)이 이 테이블에는 적용되지 않는다. as-of 활동판정은 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 소비 계층에서 계산한다(FMM#51 과 동일 철학, 월 확장 없음). [DEC-43 2026-08-25] 대표캠페인의 캠페인 12속성 동결값 신설(CAMPAIGN_TYPE 등) — SV_MEMBER_SPONSOR_BIZ 의 DIM_CAMPAIGN 실시간 조인을 대체한다.';
 
 
 -- ============================================================================

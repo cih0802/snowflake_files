@@ -108,6 +108,12 @@ models:
       +schema: GOLD
       +enabled: true
       +full_refresh: false
+      # 🔴🔴 [2026-08-25] GOLD dim 신규 컬럼 무증상 폐기 차단 (P82 동형 재발 · fact 는 O40-B 에서 이미 방어했으나 dim 은 누락돼 있었다)
+      #   실증: DIM_CAMPAIGN 에 CMMN_BRND 등 4컬럼을 추가하고 build 했는데 ERROR=0 으로 끝났고
+      #   물리 테이블에 컬럼이 생기지 않았다 → 하류 WIDE_MEMBER_EVENT 가 'invalid identifier C.CMMN_BRND_NM' 로 실패.
+      #   원인 = dim: 서브블록이 없어 on_schema_change 기본값 'ignore' 가 적용됨(fact: 만 append_new_columns 였음).
+      dim:
+        +on_schema_change: append_new_columns
       fact:
         +materialized: incremental
         +incremental_strategy: append

@@ -69,6 +69,18 @@ acq_ranked as (
         ORG_SK, SPONSORSHIP_SK,
         AGE_AT_EVENT, AGE_BAND_AT_EVENT, AREA_CD_AT_EVENT, REGION_AT_EVENT,
         SEX_AT_EVENT, GENDER_AT_EVENT, SPNSR_AMT,
+        -- [DEC-43] 캠페인 12속성 동결값. FME 가 이미 CRM_MEMBER_DEV 적재 시점 값으로 동결해 보유한다
+        --   (SILVER 재조회 금지 — 위와 동일 사유). 획득 사건(rn=1) 채택 후 ACQ_*_AT_ACQ 로 승계한다.
+        MBER_INFLOW_PATH_CD_AT_EVENT, MBER_INFLOW_PATH_NM_AT_EVENT,
+        CMPGN_CTGR_CD_AT_EVENT, CMPGN_CTGR_NM_AT_EVENT,
+        CMPGN_TYPE1_BSN_AT_EVENT, CMPGN_TYPE1_NM_AT_EVENT,
+        CMPGN_TYPE2_BSN_AT_EVENT, CMPGN_TYPE2_NM_AT_EVENT,
+        MKTG_CMPGN_CD_AT_EVENT, MKTG_CMPGN_NM_AT_EVENT,
+        CMMN_BRND_AT_EVENT, CMMN_BRND_NM_AT_EVENT,
+        MKTG_UTM_AT_EVENT, MKTG_UTM_NM_AT_EVENT,
+        SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
+        CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
+        BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
         case when DVLP_DIV_CD = '1' then 'NEW' else 'FALLBACK' end as ACQ_BASIS,
         row_number() over (
             partition by MEMBER_DK
@@ -128,6 +140,28 @@ joined as (
         a.SPNSR_AMT                                                 as ACQ_SPNSR_AMT,
         coalesce(a.ORG_SK, 0)                                       as ACQ_ORG_SK,
         coalesce(a.SPONSORSHIP_SK, 0)                               as ACQ_SPONSORSHIP_SK,
+        -- [DEC-43] 획득 사건(rn=1)의 캠페인 12속성 동결값 승계. a 자신의 컬럼이라 fan-out 없음.
+        a.MBER_INFLOW_PATH_CD_AT_EVENT                              as ACQ_MBER_INFLOW_PATH_CD,
+        a.MBER_INFLOW_PATH_NM_AT_EVENT                              as ACQ_MBER_INFLOW_PATH_NM,
+        a.CMPGN_CTGR_CD_AT_EVENT                                    as ACQ_CMPGN_CTGR_CD,
+        a.CMPGN_CTGR_NM_AT_EVENT                                    as ACQ_CMPGN_CTGR_NM,
+        a.CMPGN_TYPE1_BSN_AT_EVENT                                  as ACQ_CMPGN_TYPE1_BSN,
+        a.CMPGN_TYPE1_NM_AT_EVENT                                   as ACQ_CMPGN_TYPE1_NM,
+        a.CMPGN_TYPE2_BSN_AT_EVENT                                  as ACQ_CMPGN_TYPE2_BSN,
+        a.CMPGN_TYPE2_NM_AT_EVENT                                   as ACQ_CMPGN_TYPE2_NM,
+        a.MKTG_CMPGN_CD_AT_EVENT                                    as ACQ_MKTG_CMPGN_CD,
+        a.MKTG_CMPGN_NM_AT_EVENT                                    as ACQ_MKTG_CMPGN_NM,
+        a.CMMN_BRND_AT_EVENT                                        as ACQ_CMMN_BRND,
+        a.CMMN_BRND_NM_AT_EVENT                                     as ACQ_CMMN_BRND_NM,
+        a.MKTG_UTM_AT_EVENT                                         as ACQ_MKTG_UTM,
+        a.MKTG_UTM_NM_AT_EVENT                                      as ACQ_MKTG_UTM_NM,
+        a.SPNSR_DIV_CD_AT_EVENT                                     as ACQ_SPNSR_DIV_CD,
+        a.SPNSR_DIV_NM_AT_EVENT                                     as ACQ_SPNSR_DIV_NM,
+        a.CPR_DIV_CD_AT_EVENT                                       as ACQ_CPR_DIV_CD,
+        a.CPR_DIV_NM_AT_EVENT                                       as ACQ_CPR_DIV_NM,
+        a.BRAND_AT_EVENT                                            as ACQ_BRAND,
+        a.PARENT_CAMPAIGN_NAME_AT_EVENT                             as ACQ_PARENT_CAMPAIGN_NAME,
+        a.PROMO_METHOD_NAME_AT_EVENT                                as ACQ_PROMO_METHOD_NAME,
         -- 유효 중단일이 없고 무효 일자 중단행만 있으면 0(날짜 미상)으로 라우팅. 중단 이력이
         -- 전혀 없거나 획득 전 중단만 있으면 NULL(미중단) — 0 과 NULL 은 다른 뜻이다(P21).
         coalesce(sf.FIRST_STOP_VALID,
@@ -152,6 +186,17 @@ final as (
         MEMBER_DK, ACQ_CAMPAIGN_SK, ACQ_DATE_SK, ACQ_BASIS, ACQ_DVLP_DIV_CD,
         ACQ_AGE_CD, ACQ_AGE_BAND, ACQ_AREA_CD, ACQ_REGION, ACQ_SEX_CD, ACQ_GENDER,
         ACQ_SPNSR_AMT, ACQ_ORG_SK, ACQ_SPONSORSHIP_SK,
+        -- [DEC-43] 캠페인 12속성 동결값 승계.
+        ACQ_MBER_INFLOW_PATH_CD, ACQ_MBER_INFLOW_PATH_NM,
+        ACQ_CMPGN_CTGR_CD, ACQ_CMPGN_CTGR_NM,
+        ACQ_CMPGN_TYPE1_BSN, ACQ_CMPGN_TYPE1_NM,
+        ACQ_CMPGN_TYPE2_BSN, ACQ_CMPGN_TYPE2_NM,
+        ACQ_MKTG_CMPGN_CD, ACQ_MKTG_CMPGN_NM,
+        ACQ_CMMN_BRND, ACQ_CMMN_BRND_NM,
+        ACQ_MKTG_UTM, ACQ_MKTG_UTM_NM,
+        ACQ_SPNSR_DIV_CD, ACQ_SPNSR_DIV_NM,
+        ACQ_CPR_DIV_CD, ACQ_CPR_DIV_NM,
+        ACQ_BRAND, ACQ_PARENT_CAMPAIGN_NAME, ACQ_PROMO_METHOD_NAME,
         FIRST_STOP_DATE_SK, FIRST_STOP_REASON_NM,
         -- 유지기간 = 중단일 − 획득일. 🔴 미중단은 NULL(우절단 관측이다 — 0 이나 현재까지
         --   경과일로 채우면 평균 유지기간이 조용히 틀린다).
@@ -186,5 +231,16 @@ select
     OBSERVABLE_12M_MEMBERS,
     -- [2026-08-06 O45] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
     ACQ_ORG_SK, ACQ_SPONSORSHIP_SK,
+    -- [DEC-43] 캠페인 12속성 동결값 — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
+    ACQ_MBER_INFLOW_PATH_CD, ACQ_MBER_INFLOW_PATH_NM,
+    ACQ_CMPGN_CTGR_CD, ACQ_CMPGN_CTGR_NM,
+    ACQ_CMPGN_TYPE1_BSN, ACQ_CMPGN_TYPE1_NM,
+    ACQ_CMPGN_TYPE2_BSN, ACQ_CMPGN_TYPE2_NM,
+    ACQ_MKTG_CMPGN_CD, ACQ_MKTG_CMPGN_NM,
+    ACQ_CMMN_BRND, ACQ_CMMN_BRND_NM,
+    ACQ_MKTG_UTM, ACQ_MKTG_UTM_NM,
+    ACQ_SPNSR_DIV_CD, ACQ_SPNSR_DIV_NM,
+    ACQ_CPR_DIV_CD, ACQ_CPR_DIV_NM,
+    ACQ_BRAND, ACQ_PARENT_CAMPAIGN_NAME, ACQ_PROMO_METHOD_NAME,
     {{ gold_meta('CRM') }}
 from final

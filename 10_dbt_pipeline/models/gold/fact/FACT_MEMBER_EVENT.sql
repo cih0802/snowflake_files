@@ -130,6 +130,20 @@
 --   "부서별 중단건"이 조용히 틀린 집계를 낸다. → 등록부서 축의 배속은 별도 결정 사안으로 남긴다
 --   (이슈 O38-B). 추론으로 채우지 않는다(P21).
 -- ============================================================================
+--
+-- ============================================================================
+-- [2026-08-25 설계부채 해소] 회원 개발이력 비정규화 9속성 — FME 자체 컬럼으로 직배선
+-- ----------------------------------------------------------------------------
+-- 배경: SILVER `CRM_MEMBER_DEV` 는 이미 이 9속성(코드+라벨 18컬럼)을 SILVER 빌드
+--   시점(BRONZE `TM_CM_CMPGN_MNG` 값)으로 **동결**해 보유한다(현업 요청 — 캠페인
+--   마스터가 나중에 정정돼도 과거 개발이력 사건은 재계산되지 않아야 함).
+--   그런데 종전 SV(`SV_MEMBER_EVENT`)는 이 값을 `FME.CAMPAIGN_SK` → `DIM_CAMPAIGN`
+--   **실시간 조인**으로 가져왔다 — SILVER 가 동결한 값이 GOLD/SV 에서 캠페인 마스터가
+--   바뀌면 과거 사건 행도 조용히 따라 바뀌는 정합성 결함이 있었다.
+--
+-- 조치: 개발(DEV) 브랜치에 `CRM_MEMBER_DEV` 자신의 9속성을 그대로 실어 나른다(사건
+--   grain 이므로 fan-out 없음). 중단(STOP) 브랜치는 원천에 이 속성이 없어 NULL(P21).
+-- ============================================================================
 {{ config(
     tags=['gold_pending']
 ) }}
@@ -213,7 +227,32 @@ dev as (
         csx.DTL_CD_NM                                       as GENDER_AT_EVENT,
         -- 코드5(후원중단) 행만 1. 이 행은 CAMPAIGN_SK 를 보유하므로 캠페인별 중단 분해가 성립한다.
         -- 🔴 STOP_CNT 와 합산 금지(동일 사건 이중계상, O24) · 개발건으로 나눠 중단률로 쓰지 말 것.
-        case when d.DVLP_DIV_CD = '5' then 1 else 0 end      as CAMPAIGN_STOP_CNT
+        case when d.DVLP_DIV_CD = '5' then 1 else 0 end      as CAMPAIGN_STOP_CNT,
+        -- [2026-08-25 설계부채 해소] 회원 개발이력 비정규화 9속성 — SILVER CRM_MEMBER_DEV
+        --   자신의 동결값을 그대로 승계한다(DIM_CAMPAIGN 실시간 조인 대신). 사건 grain 이므로
+        --   d 자신의 컬럼이라 fan-out 없음.
+        d.MBER_INFLOW_PATH_CD                                as MBER_INFLOW_PATH_CD_AT_EVENT,
+        d.MBER_INFLOW_PATH_NM                                as MBER_INFLOW_PATH_NM_AT_EVENT,
+        d.CMPGN_CTGR_CD                                      as CMPGN_CTGR_CD_AT_EVENT,
+        d.CMPGN_CTGR_NM                                      as CMPGN_CTGR_NM_AT_EVENT,
+        d.CMPGN_TYPE1_BSN                                    as CMPGN_TYPE1_BSN_AT_EVENT,
+        d.CMPGN_TYPE1_NM                                     as CMPGN_TYPE1_NM_AT_EVENT,
+        d.CMPGN_TYPE2_BSN                                    as CMPGN_TYPE2_BSN_AT_EVENT,
+        d.CMPGN_TYPE2_NM                                     as CMPGN_TYPE2_NM_AT_EVENT,
+        d.MKTG_CMPGN_NM                                      as MKTG_CMPGN_CD_AT_EVENT,
+        d.MK_CMPGN_NM                                        as MKTG_CMPGN_NM_AT_EVENT,
+        d.CMMN_BRND                                          as CMMN_BRND_AT_EVENT,
+        d.CMMN_BRND_NM                                       as CMMN_BRND_NM_AT_EVENT,
+        d.MKTG_UTM                                           as MKTG_UTM_AT_EVENT,
+        d.MKTG_UTM_NM                                        as MKTG_UTM_NM_AT_EVENT,
+        d.SPNSR_DIV_CD                                       as SPNSR_DIV_CD_AT_EVENT,
+        d.SPNSR_DIV_NM                                       as SPNSR_DIV_NM_AT_EVENT,
+        d.CPR_DIV_CD                                         as CPR_DIV_CD_AT_EVENT,
+        d.CPR_DIV_NM                                         as CPR_DIV_NM_AT_EVENT,
+        -- [DEC-43] 잔여 3속성(브랜드·상위캠페인명·홍보방법) 동결 전파. d 자신의 컬럼이라 fan-out 없음.
+        d.BRND_NM                                            as BRAND_AT_EVENT,
+        d.PARENT_CAMPAIGN_NAME                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
+        d.PROMO_METHOD_NAME                                  as PROMO_METHOD_NAME_AT_EVENT
     from {{ ref('CRM_MEMBER_DEV') }} d
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
     left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
@@ -271,7 +310,31 @@ stop as (
         --   개발원천 코드5 행이 담당하므로 이 브랜치는 0 이다 — 두 축을 합산하면 이중계상된다(O24).
         CAST(NULL AS VARCHAR)                               as SEX_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as GENDER_AT_EVENT,
-        0                                                   as CAMPAIGN_STOP_CNT
+        0                                                   as CAMPAIGN_STOP_CNT,
+        -- [2026-08-25 설계부채 해소] 중단원천에는 개발이력 비정규화 9속성 컬럼이 구조적으로
+        --   부재(TM_MM_FDRM_MBER_SPNSR_DSCNTC) → NULL(0/'' 로 채우지 않는다, P21 동일 처리).
+        CAST(NULL AS NUMBER(38,0))                          as MBER_INFLOW_PATH_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as MBER_INFLOW_PATH_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as CMPGN_CTGR_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CMPGN_CTGR_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as CMPGN_TYPE1_BSN_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CMPGN_TYPE1_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as CMPGN_TYPE2_BSN_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CMPGN_TYPE2_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as MKTG_CMPGN_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as MKTG_CMPGN_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as CMMN_BRND_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CMMN_BRND_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as MKTG_UTM_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as MKTG_UTM_NM_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as SPNSR_DIV_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as SPNSR_DIV_NM_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CPR_DIV_CD_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as CPR_DIV_NM_AT_EVENT,
+        -- [DEC-43] 중단원천에는 이 3속성 컬럼도 구조적으로 부재 → NULL(동일 처리).
+        CAST(NULL AS VARCHAR)                               as BRAND_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as PROMO_METHOD_NAME_AT_EVENT
     from {{ ref('CRM_MEMBER_DISCONTINUE') }}
 ),
 
@@ -290,5 +353,17 @@ select
     AGE_AT_EVENT, AGE_BAND_AT_EVENT, AREA_CD_AT_EVENT, REGION_AT_EVENT,
     -- [2026-08-05 O37] 사건시점 성별 + 캠페인 귀속 중단건.
     SEX_AT_EVENT, GENDER_AT_EVENT, CAMPAIGN_STOP_CNT,
+    -- [2026-08-25 설계부채 해소] 회원 개발이력 비정규화 9속성(SILVER 동결값 직배선).
+    MBER_INFLOW_PATH_CD_AT_EVENT, MBER_INFLOW_PATH_NM_AT_EVENT,
+    CMPGN_CTGR_CD_AT_EVENT, CMPGN_CTGR_NM_AT_EVENT,
+    CMPGN_TYPE1_BSN_AT_EVENT, CMPGN_TYPE1_NM_AT_EVENT,
+    CMPGN_TYPE2_BSN_AT_EVENT, CMPGN_TYPE2_NM_AT_EVENT,
+    MKTG_CMPGN_CD_AT_EVENT, MKTG_CMPGN_NM_AT_EVENT,
+    CMMN_BRND_AT_EVENT, CMMN_BRND_NM_AT_EVENT,
+    MKTG_UTM_AT_EVENT, MKTG_UTM_NM_AT_EVENT,
+    SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
+    CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
+    -- [DEC-43] 잔여 3속성(브랜드·상위캠페인명·홍보방법) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
+    BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
     {{ gold_meta('CRM') }}
 from unioned

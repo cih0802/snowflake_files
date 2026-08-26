@@ -116,15 +116,18 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     --   🔴 이 SV 에서 캠페인은 전부 **획득 캠페인**이다(중단 시점 캠페인이 아니다).
     --      중단률의 분모(획득 회원)와 같은 축이라 비율이 성립한다 — 이것이 O37 의 핵심이다.
     --   ✅ `PROMO_METHOD_NAME`(홍보방법 라벨, CM008) 2026-08-05 적재 확인 후 활성화.
-    acq_campaign.CAMPAIGN_NAME        AS acq_campaign.CAMPAIGN_NAME        WITH SYNONYMS ('캠페인', '캠페인명', '획득캠페인명', '모집캠페인') COMMENT = '회원을 처음 데려온 캠페인명. 🔴**획득 캠페인**이다 — 이 축으로 중단률을 비교하면 「그 캠페인으로 모집한 회원이 얼마나 이탈했는가」가 된다. 개별 캠페인은 카디널리티가 매우 높으니 규모가 작은 캠페인의 비율은 불안정하다 — 관측 가능 회원 하한을 걸 것',
-    acq_campaign.CAMPAIGN_TYPE        AS acq_campaign.CAMPAIGN_TYPE        WITH SYNONYMS ('캠페인카테고리', '캠페인유형', '주요캠페인', '캠페인 종류', '캠페인 분류') COMMENT = '캠페인 카테고리(정본 MM294 라벨) — 현업이 말하는 **''주요캠페인''** 축이다. 실제값 예: ''초등캠페인''·''국내사례캠페인''·''굿즈캠페인''·''해외캠페인''·''기타 영상광고''·''홈페이지(PC/모바일)''·''국내여아지원캠페인''·''그외 지역개발캠페인''·''희망TV''·''인바운드''·''대학생캠페인''·''가두캠페인''·''유아캠페인''·''청소년캠페인''·''교회캠페인''·''기존회원캠페인 및 기타''. 🔴 캠페인별 중단률 비교의 **1순위 축**이다(개별 캠페인명보다 표본이 안정적이다)',
-    acq_campaign.CAMPAIGN_BRAND       AS acq_campaign.BRAND                WITH SYNONYMS ('브랜드', '캠페인 브랜드') COMMENT = '획득 캠페인의 공통브랜드',
-    acq_campaign.PARENT_CAMPAIGN_NAME AS acq_campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '캠페인 그룹') COMMENT = '획득 캠페인의 **상위캠페인명**(2026-08-05 O37 신설 — 종전에는 자기참조 코드만 있어 사람이 읽을 수 없었다). 캠페인을 묶어 보는 축이다. ⚠️ 상위가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 캠페인 카테고리(CAMPAIGN_TYPE)와 다른 축이다',
-    acq_campaign.PROMO_METHOD_NAME    AS acq_campaign.PROMO_METHOD_NAME    WITH SYNONYMS ('홍보방법', '광고방법', '매체', '홍보수단') COMMENT = '획득 캠페인의 **홍보방법** 라벨(코드사전 CM008, 2026-08-05 O37 신설). 실제값 계열: ''PC배너광고(DA)''·''M배너광고(DA)''·''PC검색광고(SA)''·''M검색광고(SA)''·''TM''·''TS''·''PC캠페인-홈페이지''·''M캠페인-홈페이지''·''PC캠페인-홍보''·''M캠페인-홍보''·''온라인''·''오프라인''·''APP캠페인''·''M모바일앱''·''M페이스북광고''·''기존회원메일''·''PC기업공동캠페인''·''M기업 공동캠페인''·''기타''. 🔴 원천 `PR_MTH_CD` 는 **숫자 코드**이며 종전에는 라벨이 없어 이 축을 쓸 수 없었다 — 코드로 필터하면 Analyst 가 0행을 반환한다. 반드시 이 라벨 컬럼으로 필터·그루핑한다. ⚠️ 원천 코드가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 모집 채널(CAMPAIGN_INFLOW_PATH)과 다른 축이다 — 이쪽은 광고·접촉 수단, 그쪽은 개발인입경로다',
-    acq_campaign.CAMPAIGN_INFLOW_PATH AS acq_campaign.INFLOW_PATH          WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '획득 캠페인의 **모집 채널**(정본 MM293 라벨). 실제값 16종: ''디지털''·''회원 온라인개발''·''지역개발''·''영상광고''·''방송''·''교육기관''·''회원 콜개발''·''일시''·''기업''·''회원 기타''·''뉴미디어''·''재송출''·''마케팅콜개발''·''회원 오프라인개발''·''대면모금''·''직원개발''. ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다(2026-08-05 O37 에서 종전 오표기 회수). ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다',
-    acq_campaign.DOMESTIC_OVERSEAS    AS acq_campaign.DOMESTIC_OVERSEAS    WITH SYNONYMS ('국내해외', '국내외') COMMENT = '획득 캠페인의 국내/해외 구분(MM295). 실제값 3종: ''국내''·''해외''·''통합''',
-    acq_campaign.BIZ_CASE_TYPE        AS acq_campaign.BIZ_CASE_TYPE        WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '획득 캠페인의 사업/사례 구분(MM296). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''',
-    acq_campaign.MARKETING_CAMPAIGN   AS acq_campaign.MARKETING_CAMPAIGN   WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '획득 캠페인의 마케팅캠페인명. 실제값 예: ''24년 이전컨텐츠''·''그외 지역개발캠페인''·''유어턴(통합A)''·''유어턴(통합B)''·''기존회원캠페인 및 기타''·''25년 이전컨텐츠(영상광고)''·''TS/TM''. 카디널리티가 높다',
+    --   [DEC-43] 아래 8속성은 `acq_campaign`(`DIM_CAMPAIGN` 실시간 조인)이 아니라
+    --     `fmc.ACQ_*`(SILVER CRM_MEMBER_DEV 적재 시점 동결값)에서 온다 — 캠페인 마스터가
+    --     이후 정정돼도 과거 획득 회원의 캠페인 속성은 바뀌지 않는다(O99 설계부채 해소).
+    acq_campaign.CAMPAIGN_NAME        AS acq_campaign.CAMPAIGN_NAME        WITH SYNONYMS ('캠페인', '캠페인명', '획득캠페인명', '모집캠페인') COMMENT = '회원을 처음 데려온 캠페인명. 🔴**획득 캠페인**이다 — 이 축으로 중단률을 비교하면 「그 캠페인으로 모집한 회원이 얼마나 이탈했는가」가 된다. 개별 캠페인은 카디널리티가 매우 높으니 규모가 작은 캠페인의 비율은 불안정하다 — 관측 가능 회원 하한을 걸 것. 🔴🔴 **[2026-08-26 O102] 이 축만 「현재 시점」이다** — 위·아래 캠페인 속성 8종(카테고리·브랜드·상위캠페인·홍보방법·모집채널·국내해외·사업사례·마케팅캠페인)은 **획득 시점 동결값**(`fmc.ACQ_*` · DEC-43)인데 이 캠페인명만 `DIM_CAMPAIGN` **실시간 조인**이다(DEC-43 12속성 범위 밖 = 캠페인 자신의 이름이라 의도적 존치). ⇒ 캠페인이 나중에 개칭되면 **이름은 최신이고 분류는 과거**인 조합이 나올 수 있다. 🔴 이름과 분류를 같은 시점으로 단정해 답하지 말 것. 획득 시점 동결로 확장할지는 현업 확인 중이다(`20_현업확인_요청.md` N-9)',
+    fmc.CAMPAIGN_TYPE        AS fmc.ACQ_CMPGN_CTGR_NM        WITH SYNONYMS ('캠페인카테고리', '캠페인유형', '주요캠페인', '캠페인 종류', '캠페인 분류') COMMENT = '캠페인 카테고리(정본 MM294 라벨) — 현업이 말하는 **''주요캠페인''** 축이다. 🔴적재 시점 동결값(구 acq_campaign.CAMPAIGN_TYPE 대체). 실제값 예: ''초등캠페인''·''국내사례캠페인''·''굿즈캠페인''·''해외캠페인''·''기타 영상광고''·''홈페이지(PC/모바일)''·''국내여아지원캠페인''·''그외 지역개발캠페인''·''희망TV''·''인바운드''·''대학생캠페인''·''가두캠페인''·''유아캠페인''·''청소년캠페인''·''교회캠페인''·''기존회원캠페인 및 기타''. 🔴 캠페인별 중단률 비교의 **1순위 축**이다(개별 캠페인명보다 표본이 안정적이다)',
+    fmc.CAMPAIGN_BRAND       AS fmc.ACQ_BRAND                WITH SYNONYMS ('브랜드', '캠페인 브랜드') COMMENT = '획득 캠페인의 브랜드. 🔴적재 시점 동결값(구 acq_campaign.BRAND 대체)',
+    fmc.PARENT_CAMPAIGN_NAME AS fmc.ACQ_PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '캠페인 그룹') COMMENT = '획득 캠페인의 **상위캠페인명**(2026-08-05 O37 신설 — 종전에는 자기참조 코드만 있어 사람이 읽을 수 없었다). 🔴적재 시점 동결값(구 acq_campaign.PARENT_CAMPAIGN_NAME 대체). 캠페인을 묶어 보는 축이다. ⚠️ 상위가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 캠페인 카테고리(CAMPAIGN_TYPE)와 다른 축이다',
+    fmc.PROMO_METHOD_NAME    AS fmc.ACQ_PROMO_METHOD_NAME    WITH SYNONYMS ('홍보방법', '광고방법', '매체', '홍보수단') COMMENT = '획득 캠페인의 **홍보방법** 라벨(코드사전 CM008, 2026-08-05 O37 신설). 🔴적재 시점 동결값(구 acq_campaign.PROMO_METHOD_NAME 대체). 실제값 계열: ''PC배너광고(DA)''·''M배너광고(DA)''·''PC검색광고(SA)''·''M검색광고(SA)''·''TM''·''TS''·''PC캠페인-홈페이지''·''M캠페인-홈페이지''·''PC캠페인-홍보''·''M캠페인-홍보''·''온라인''·''오프라인''·''APP캠페인''·''M모바일앱''·''M페이스북광고''·''기존회원메일''·''PC기업공동캠페인''·''M기업 공동캠페인''·''기타''. 🔴 원천 `PR_MTH_CD` 는 **숫자 코드**이며 종전에는 라벨이 없어 이 축을 쓸 수 없었다 — 코드로 필터하면 Analyst 가 0행을 반환한다. 반드시 이 라벨 컬럼으로 필터·그루핑한다. ⚠️ 원천 코드가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 모집 채널(CAMPAIGN_INFLOW_PATH)과 다른 축이다 — 이쪽은 광고·접촉 수단, 그쪽은 개발인입경로다',
+    fmc.CAMPAIGN_INFLOW_PATH AS fmc.ACQ_MBER_INFLOW_PATH_NM   WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '획득 캠페인의 **모집 채널**(정본 MM293 라벨). 🔴적재 시점 동결값(구 acq_campaign.INFLOW_PATH 대체). 실제값 16종: ''디지털''·''회원 온라인개발''·''지역개발''·''영상광고''·''방송''·''교육기관''·''회원 콜개발''·''일시''·''기업''·''회원 기타''·''뉴미디어''·''재송출''·''마케팅콜개발''·''회원 오프라인개발''·''대면모금''·''직원개발''. ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다(2026-08-05 O37 에서 종전 오표기 회수). ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다',
+    fmc.DOMESTIC_OVERSEAS    AS fmc.ACQ_CMPGN_TYPE1_NM       WITH SYNONYMS ('국내해외', '국내외') COMMENT = '획득 캠페인의 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 acq_campaign.DOMESTIC_OVERSEAS 대체). 실제값 3종: ''국내''·''해외''·''통합''',
+    fmc.BIZ_CASE_TYPE        AS fmc.ACQ_CMPGN_TYPE2_NM       WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '획득 캠페인의 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 acq_campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''',
+    fmc.MARKETING_CAMPAIGN   AS fmc.ACQ_MKTG_CMPGN_NM        WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '획득 캠페인의 마케팅캠페인명. 🔴적재 시점 동결값(구 acq_campaign.MARKETING_CAMPAIGN 대체). 실제값 예: ''24년 이전컨텐츠''·''그외 지역개발캠페인''·''유어턴(통합A)''·''유어턴(통합B)''·''기존회원캠페인 및 기타''·''25년 이전컨텐츠(영상광고)''·''TS/TM''. 카디널리티가 높다',
     -- ── [2026-08-06 O45] 획득 조직·후원사업 축 (종전 「비활성」 서술 회수) ──────────
     acq_org.ACQ_DEPARTMENT            AS acq_org.DEPARTMENT                WITH SYNONYMS ('획득부서', '가입부서', '모집부서', '획득 시점 부서') COMMENT = '🔴**획득(최초 약정) 시점의 실적부서명**(정본 #116). 개발실적보고의 「부서」와 **다른 축**이다 — 그쪽은 **사건 부서**(SV_MEMBER_EVENT.ORG_DEPARTMENT)이며 회원이 이후 다른 부서 실적으로 잡혀도 이 축은 변하지 않는다. ⚠️ 상위 조직(본부/지부·팀·법인)은 산출 불가(CONF-4) — 부서명에서 상위 조직을 추측하지 말 것. ⚠️ 획득 사건의 부서를 알 수 없는 회원은 ''(미매핑)''이다',
     acq_sponsorship.ACQ_SPONSORSHIP   AS acq_sponsorship.SPONSORSHIP_NAME  WITH SYNONYMS ('획득 후원사업', '가입 후원사업', '모집 후원사업', '후원사업(획득)') COMMENT = '🔴**획득 시점 후원사업명** — 그 회원을 데려온 사업이다(정본 #123). ⚠️ **회비를 낸 후원사업이 아니다**: 납입 대상 후원사업은 `SV_MEMBER_FEE` 의 SPONSORSHIP_NAME 이며, 한 회원이 여러 후원사업에 내므로 두 축의 값은 다르다. 회원 특성·이탈률 분석에는 이 축이 맞고, 회비 금액 분해에는 SV_MEMBER_FEE 가 맞다. ⚠️ 미매칭은 ''(미매핑)'''
@@ -194,7 +197,7 @@ SELECT (SELECT TOTAL_ACQ_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_COHO
 SELECT MAX(CHURN_RATE_12M) AS max_rate
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_MEMBER_COHORT
-  DIMENSIONS acq_campaign.CAMPAIGN_TYPE
+  DIMENSIONS fmc.CAMPAIGN_TYPE
   METRICS CHURN_RATE_12M
 );
 --   판정: max_rate <= 100
@@ -206,7 +209,7 @@ SELECT CAMPAIGN_TYPE, TOTAL_ACQ_MEMBERS, TOTAL_OBSERVABLE_12M_MEMBERS, TOTAL_STO
        ROUND(CHURN_RATE_12M, 2) AS CHURN_12M_PCT
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_MEMBER_COHORT
-  DIMENSIONS acq_campaign.CAMPAIGN_TYPE
+  DIMENSIONS fmc.CAMPAIGN_TYPE
   METRICS TOTAL_ACQ_MEMBERS, TOTAL_OBSERVABLE_12M_MEMBERS, TOTAL_STOPPED_12M_MEMBERS, CHURN_RATE_12M
 )
 WHERE TOTAL_OBSERVABLE_12M_MEMBERS >= 5000

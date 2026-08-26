@@ -17,23 +17,17 @@
 --   2) 🔴 종전 주석 4)의 *INFLOW_PATH = 현업 "주요캠페인" 분류축* 은 **거짓이므로 회수**한다.
 --      실제값이 디지털·방송·영상광고·지역개발·마케팅콜개발·대면모금·직원개발 = **모집 채널** 축이다.
 --      "주요캠페인(캠페인카테고리)"에 해당하는 축은 CAMPAIGN_TYPE(MM294)이다(실측 확인).
+-- 🔴🔴 [2026-08-25 O101 시정 · P85] `PARENT_CAMPAIGN_NAME`·`PROMO_METHOD_NAME` 이중 계산 해소.
+--   `DEC-43`(O100)이 같은 두 라벨을 SILVER `CRM_CAMPAIGN` 에 신설했는데 이 모델은 자체 CTE
+--   (`parent` 자기조인 · `code_promo` CM008)로 **같은 사실을 독립 재계산**하고 있었다
+--   ⇒ 「같은 사실을 두 곳에 두면 반드시 어긋난다」(`P85` · 이 프로젝트가 반복 강조하는 원칙).
+--   🟢 시정 시점 실측 = 두 경로 불일치 **0/36,163**(채움 34,704 동일) ⇒ **값 변화 없이** 계산 지점만
+--   SILVER 로 단일화한다. 🔴 지금 일치한다는 것은 안전의 근거가 아니다 — 한쪽 조인 규칙이
+--   바뀌는 순간 조용히 갈라지고, 그때는 어느 쪽이 맞는지 아무도 모른다.
 
 
 with c as (
     select * from GN_DW.SILVER.CRM_CAMPAIGN
-),
-
--- [2026-08-05 O37] 상위캠페인 라벨 해소용. PK(CMPGN_CD) 유일 → fan-out 없음.
-parent as (
-    select CMPGN_CD as PARENT_CD, CMPGN_NM as PARENT_NM from GN_DW.SILVER.CRM_CAMPAIGN
-),
-
--- [2026-08-05 O37] 홍보방법 라벨 = CM008. 하드코딩 CASE 금지(P31 — 사전과 조용히 갈라진다).
---   `DTL_CD_ID` 유일(119=119 실측)이라 fan-out 없음. USE_YN 무필터(프로젝트 규약).
---   🔴 종전에는 `PR_MTH_CD` 를 코드 그대로만 올려 라벨이 없었다 — 이 축을 SV 에 노출하면
---      Analyst 가 코드값을 추측해 0행 무증상 오답을 낸다(§6.9-(5)).
-code_promo as (
-    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM008'
 )
 
 select
@@ -50,10 +44,10 @@ select
     c.MK_CMPGN_NM                                 as MARKETING_CAMPAIGN,   -- Q16 마케팅캠페인
     TRY_TO_DATE(c.CMPGN_STRT_DE, 'YYYYMMDD')      as CAMPAIGN_OPEN_DATE,
     0                                             as ORG_SK,               -- ⚠️ 센티넬(O10 주관조직 미확정)
-    -- [2026-08-05 O37] 상위캠페인 라벨. 상위가 없으면 NULL — '(미매핑)'으로 창작하지 않는다(P21).
-    p.PARENT_NM                                   as PARENT_CAMPAIGN_NAME,
-    -- [2026-08-05 O37] 홍보방법 라벨. 원천 코드가 없으면 NULL — '(미매핑)'으로 창작하지 않는다(P21).
-    cp.DTL_CD_NM                                  as PROMO_METHOD_NAME,
+    -- [O101 · P85] 상위캠페인·홍보방법 라벨 = SILVER `CRM_CAMPAIGN` 승계(자체 재계산 제거).
+    --   상위가 없거나 원천 코드가 없으면 NULL 이며 '(미매핑)'으로 창작하지 않는다(P21).
+    c.PARENT_CAMPAIGN_NAME                        as PARENT_CAMPAIGN_NAME,
+    c.PROMO_METHOD_NAME                           as PROMO_METHOD_NAME,
     -- [2026-08-06 O45] 🔴 마케팅캠페인 **conformed FK**(물리 위치 = 맨 끝, ALTER ADD COLUMN 규약).
     --   `MARKETING_CAMPAIGN` 은 라벨이라 광고 팩트가 참조할 수 없었다 → 광고↔CRM 결합 불가(O44).
     --   실측: 브리지 조인 `MK_CMPGN_CD = MKTG_CMPGN_NM::varchar` **33,915/33,915 = 100% 해소** ·
@@ -64,13 +58,18 @@ select
     c.SPNSR_DIV_NM                                 as SPNSR_DIV_NM,
     c.CPR_DIV_CD                                   as CPR_DIV_CD,     -- CM019 A=통합·I=사단·S=사복
     c.CPR_DIV_NM                                   as CPR_DIV_NM,
+    -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건의 잔여 2컬럼(공통브랜드·UTM) — SILVER CRM_CAMPAIGN 라벨 그대로 승계.
+    c.CMMN_BRND                                    as CMMN_BRND,      -- MM297 공통브랜드 코드
+    c.CMMN_BRND_NM                                 as CMMN_BRND_NM,
+    c.MKTG_UTM                                     as MKTG_UTM,       -- TM_CM_MKTNG_UTM.MK_UTM 코드
+    c.MKTG_UTM_NM                                  as MKTG_UTM_NM,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
+    'f09a967e-da3c-4b45-b9fe-c59b7875bf77'                    AS DW_BATCH_ID
 from c
-left join parent p      on p.PARENT_CD  = c.UPPER_CMPGN_CD
-left join code_promo cp on cp.DTL_CD_ID = c.PR_MTH_CD
+-- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
+--   부수 효과 = `CRM_CAMPAIGN` 재스캔 1회 + `CRM_CODE` 스캔 1회 감소.
 -- [2026-08-06 O45] MKTG_CAMPAIGN_BK 는 차원에서 유일하다 fan-out 0.
 left join GN_DW.GOLD.DIM_MARKETING_CAMPAIGN mk
        on mk.MKTG_CAMPAIGN_BK = TO_VARCHAR(c.MKTG_CMPGN_NM)
@@ -79,7 +78,8 @@ union all
 -- unknown 멤버(SK=0): 팩트 CAMPAIGN_SK=0(미매핑) 조인 유실 방지
 select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0,
     NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL,
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
+    'f09a967e-da3c-4b45-b9fe-c59b7875bf77'                    AS DW_BATCH_ID

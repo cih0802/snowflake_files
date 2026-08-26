@@ -30,6 +30,10 @@
 -- 활동 판정은 이 팩트가 직접 하지 않는다 — START_MONTH_KEY·DSCNTC_MONTH_KEY 원본을 그대로 노출하고
 -- "특정 월 as-of 활동 여부"는 소비 계층(SV) 에서 계산한다(FMM#51 과 동일 판정식 재사용 — CONF-3 tie-break 불요,
 -- 재후원 시 새 SPNSR_BSNS_NO 발급으로 이미 반영됨, CRM_MEMBER_SPONSOR_SPAN 코멘트 참조).
+--
+-- [DEC-43] 대표캠페인(campaign_rep)의 캠페인 12속성을 함께 동결 승계한다(ACQ_* 접두).
+--   CRM_MEMBER_DEV 자신의 컬럼이라 `DIM_CAMPAIGN` 실시간 조인 없이 대표 사건과 결정적으로
+--   함께 딸려온다 — 캠페인 마스터가 이후 정정돼도 이 약정의 대표캠페인 속성은 바뀌지 않는다.
 {{ config(
     materialized='incremental',
     unique_key=['MEMBER_DK', 'SPNSR_BSNS_NO'],
@@ -45,6 +49,18 @@ campaign_pick as (
     select
         SPNSR_BSNS_NO,
         CMPGN_CD,
+        -- [DEC-43] 대표사건의 캠페인 12속성 동결값. CRM_MEMBER_DEV 자신의 컬럼이라
+        --   `DIM_CAMPAIGN` 실시간 조인 없이 대표 사건과 함께 결정적으로 딸려온다.
+        MBER_INFLOW_PATH_CD, MBER_INFLOW_PATH_NM,
+        CMPGN_CTGR_CD, CMPGN_CTGR_NM,
+        CMPGN_TYPE1_BSN, CMPGN_TYPE1_NM,
+        CMPGN_TYPE2_BSN, CMPGN_TYPE2_NM,
+        MKTG_CMPGN_NM, MK_CMPGN_NM,
+        CMMN_BRND, CMMN_BRND_NM,
+        MKTG_UTM, MKTG_UTM_NM,
+        SPNSR_DIV_CD, SPNSR_DIV_NM,
+        CPR_DIV_CD, CPR_DIV_NM,
+        BRND_NM, PARENT_CAMPAIGN_NAME, PROMO_METHOD_NAME,
         row_number() over (
             partition by SPNSR_BSNS_NO
             order by iff(DVLP_DIV_CD = '1', 0, 1), OCCRRNC_DE, SER_NO
@@ -52,7 +68,18 @@ campaign_pick as (
     from {{ ref('CRM_MEMBER_DEV') }}
 ),
 campaign_rep as (
-    select SPNSR_BSNS_NO, CMPGN_CD
+    select
+        SPNSR_BSNS_NO, CMPGN_CD,
+        MBER_INFLOW_PATH_CD, MBER_INFLOW_PATH_NM,
+        CMPGN_CTGR_CD, CMPGN_CTGR_NM,
+        CMPGN_TYPE1_BSN, CMPGN_TYPE1_NM,
+        CMPGN_TYPE2_BSN, CMPGN_TYPE2_NM,
+        MKTG_CMPGN_NM, MK_CMPGN_NM,
+        CMMN_BRND, CMMN_BRND_NM,
+        MKTG_UTM, MKTG_UTM_NM,
+        SPNSR_DIV_CD, SPNSR_DIV_NM,
+        CPR_DIV_CD, CPR_DIV_NM,
+        BRND_NM, PARENT_CAMPAIGN_NAME, PROMO_METHOD_NAME
     from campaign_pick
     where rn = 1
 ),
@@ -74,6 +101,28 @@ select
     span.START_MONTH_KEY,
     span.DSCNTC_MONTH_KEY,
     span.SPNSR_AMT,
+    -- [DEC-43] 대표캠페인 12속성 동결값 — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
+    cr.MBER_INFLOW_PATH_CD                           as ACQ_MBER_INFLOW_PATH_CD,
+    cr.MBER_INFLOW_PATH_NM                           as ACQ_MBER_INFLOW_PATH_NM,
+    cr.CMPGN_CTGR_CD                                 as ACQ_CMPGN_CTGR_CD,
+    cr.CMPGN_CTGR_NM                                 as ACQ_CMPGN_CTGR_NM,
+    cr.CMPGN_TYPE1_BSN                               as ACQ_CMPGN_TYPE1_BSN,
+    cr.CMPGN_TYPE1_NM                                as ACQ_CMPGN_TYPE1_NM,
+    cr.CMPGN_TYPE2_BSN                               as ACQ_CMPGN_TYPE2_BSN,
+    cr.CMPGN_TYPE2_NM                                as ACQ_CMPGN_TYPE2_NM,
+    cr.MKTG_CMPGN_NM                                 as ACQ_MKTG_CMPGN_CD,
+    cr.MK_CMPGN_NM                                   as ACQ_MKTG_CMPGN_NM,
+    cr.CMMN_BRND                                     as ACQ_CMMN_BRND,
+    cr.CMMN_BRND_NM                                  as ACQ_CMMN_BRND_NM,
+    cr.MKTG_UTM                                      as ACQ_MKTG_UTM,
+    cr.MKTG_UTM_NM                                   as ACQ_MKTG_UTM_NM,
+    cr.SPNSR_DIV_CD                                  as ACQ_SPNSR_DIV_CD,
+    cr.SPNSR_DIV_NM                                  as ACQ_SPNSR_DIV_NM,
+    cr.CPR_DIV_CD                                    as ACQ_CPR_DIV_CD,
+    cr.CPR_DIV_NM                                    as ACQ_CPR_DIV_NM,
+    cr.BRND_NM                                       as ACQ_BRAND,
+    cr.PARENT_CAMPAIGN_NAME                          as ACQ_PARENT_CAMPAIGN_NAME,
+    cr.PROMO_METHOD_NAME                             as ACQ_PROMO_METHOD_NAME,
     {{ gold_meta('CRM') }}
 from span
 left join campaign_rep cr

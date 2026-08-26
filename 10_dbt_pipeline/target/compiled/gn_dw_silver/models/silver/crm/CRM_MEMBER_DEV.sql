@@ -13,6 +13,10 @@
 --   조인원본 = CRM_CAMPAIGN(이미 CMPGN_CD 로 TM_CM_CMPGN_MNG·TM_CM_MKTNG_UTM 등을 라벨까지 조인해 둔 모델).
 --   fan-out 안전: TM_CM_CMPGN_MNG.CMPGN_CD 36,163=36,163 유일(2026-08-25 실측) → CRM_CAMPAIGN 도 CMPGN_CD 유일.
 --   적재 시점 값으로 고정(SCD 없음, 현업 확정) — 캠페인 마스터가 이후 바뀌어도 과거 개발이력 행은 재계산하지 않는다.
+-- [DEC-42] 캠페인 SV 3종(COHORT·FEE·SPONSOR_BIZ) 스냅샷 동결 결정으로 위 9속성에
+--   BRND_NM·PARENT_CAMPAIGN_NAME·PROMO_METHOD_NAME 3속성을 더해 12속성 전체를 동결한다.
+--   하류(FACT_MEMBER_EVENT·FACT_MEMBER_COHORT·FACT_MEMBER_SPONSOR_BIZ·DIM_MEMBER_ACQUISITION)는
+--   이 12컬럼을 그대로 승계하며 DIM_CAMPAIGN 실시간 조인을 대체한다.
 --
 -- [2026-08-25 증분 전략 오버라이드] 🔴 이 모델은 폴더 기본값(dbt_project.yml `models.gn_dw_silver.silver`:
 --   +materialized:incremental·+incremental_strategy:append·+pre-hook:silver_purge(TRUNCATE)·+full_refresh:false)
@@ -68,6 +72,11 @@ SELECT
   cp.SPNSR_DIV_NM                  AS SPNSR_DIV_NM,
   cp.CPR_DIV_CD                    AS CPR_DIV_CD,             -- CM019 통합/사단/사복
   cp.CPR_DIV_NM                    AS CPR_DIV_NM,
+  -- [DEC-42] 캠페인 SV 3종 스냅샷 동결 12속성 중 잔여 3속성(브랜드·상위캠페인명·홍보방법).
+  --   BRND_NM 은 종전 "미사용 — 제외" 결정(위 주석)을 DEC-42 로 뒤집는다 — 이제 동결 대상이다.
+  cp.BRND_NM                       AS BRND_NM,               -- 브랜드명
+  cp.PARENT_CAMPAIGN_NAME          AS PARENT_CAMPAIGN_NAME,  -- 상위캠페인명
+  cp.PROMO_METHOD_NAME             AS PROMO_METHOD_NAME,     -- CM008 홍보방법 라벨
   'CRM'                            AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,

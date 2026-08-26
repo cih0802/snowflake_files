@@ -55,6 +55,12 @@ select
     --   INFLOW_PATH(MM293 MBER_INFLOW_PATH_NM) = 현업 '주요캠페인' → CAMPAIGN_INFLOW_PATH 로 노출
     c.CAMPAIGN_TYPE       as CAMPAIGN_CATEGORY,
     c.INFLOW_PATH         as CAMPAIGN_INFLOW_PATH,
+    -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건 잔여 5축. DIM_CAMPAIGN 에는 있었으나 WIDE SELECT 에 빠져 있던 컬럼.
+    c.DOMESTIC_OVERSEAS   as CAMPAIGN_DOMESTIC_OVERSEAS,   -- MM295 국내/통합/해외
+    c.BIZ_CASE_TYPE       as CAMPAIGN_BIZ_CASE_TYPE,       -- MM296 굿즈/기타/사례/사업
+    c.MARKETING_CAMPAIGN  as CAMPAIGN_MARKETING_CAMPAIGN,  -- Q16 마케팅캠페인명
+    c.CMMN_BRND_NM        as CAMPAIGN_CMMN_BRND,           -- MM297 공통브랜드 라벨
+    c.MKTG_UTM_NM         as CAMPAIGN_MKTG_UTM,            -- TM_CM_MKTNG_UTM 라벨
     -- [2026-08-25 안내2] 세부캠페인 후원구분·법인구분. WIDE 는 현업 가독성이 원칙이라(DIM/FACT 는
     --   개발자·AI 추적성) 다른 캠페인 축들 바로 옆에 코드+라벨을 나란히 둔다 — ALTER ADD COLUMN 규약은
     --   물리 테이블(DIM/FACT)에만 적용되고 뷰(WIDE)는 CREATE OR REPLACE 라 매번 전체 재정의되므로

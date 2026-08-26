@@ -24,7 +24,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '0a0f03d1-d7c1-4e10-a7c3-7a79d0fcb1ad'                    AS DW_BATCH_ID
+    'f09a967e-da3c-4b45-b9fe-c59b7875bf77'                    AS DW_BATCH_ID
 from t
 left join GN_DW.GOLD.DIM_ORG o
     on o.DEPARTMENT = t.ORG_NM

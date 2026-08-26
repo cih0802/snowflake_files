@@ -75,7 +75,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     sponsorship.SPONSORSHIP_ABBR_CATEGORY AS sponsorship.SPONSORSHIP_GROUP_NAME WITH SYNONYMS ('후원사업 약칭', '후원사업 카테고리') COMMENT = '후원사업 약칭 그룹(CM003, 6종: 국내/결연/해외구호/북한/기타/해외)',
     -- ── 캠페인(대표) ──────────────────────────────────────────────────────────
     campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규(신규사건 보유 1,687,546건) ②그 외 최초사건(신규사건 부재 483,028건, 동률 0 확인). 사건 자체가 없는 6건은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
-    campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '캠페인 카테고리 라벨(MM294)',
+    -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSOR_BIZ.ACQ_*`
+    --   동결값으로 전환. 대표사건의 캠페인 마스터가 이후 정정돼도 이 약정의 카테고리는 바뀌지 않는다.
+    fmsb.CAMPAIGN_TYPE AS fmsb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '대표캠페인 카테고리 라벨(MM294). 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체)',
     fmsb.IS_MULTI_CAMPAIGN AS fmsb.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중캠페인 여부') COMMENT = '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 캠페인이 2개 이상이었는지(실측 137건=0.01%·최대2). 대표캠페인 채택 규칙과는 별개',
     -- ── 활동 구간(원시 as-of 축) ─────────────────────────────────────────────
     fmsb.START_MONTH_KEY  AS fmsb.START_MONTH_KEY WITH SYNONYMS ('활동개시월') COMMENT = '활동 개시 월키 YYYYMM. 특정월 as-of 활동 판정 시 이 축과 DSCNTC_MONTH_KEY 를 함께 WHERE 절로 비교한다(AI_SQL_GENERATION 참조)',

@@ -152,6 +152,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DEV (
     SPNSR_DIV_NM        VARCHAR(100)    COMMENT '후원구분명. CRM_CAMPAIGN 비정규화',
     CPR_DIV_CD          VARCHAR         COMMENT '법인구분 코드 raw (정본 CM019: I=사단/S=사복/A=통합). CRM_CAMPAIGN 비정규화',
     CPR_DIV_NM          VARCHAR(100)    COMMENT '법인구분명. CRM_CAMPAIGN 비정규화',
+    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 3속성(BRND_NM 은 종전 "미사용" 결정을 뒤집는다).
+    BRND_NM             VARCHAR         COMMENT '브랜드명. CRM_CAMPAIGN 비정규화',
+    PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨). CRM_CAMPAIGN 비정규화',
+    PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명 (CM008 라벨). CRM_CAMPAIGN 비정규화',
     SRC_LOAD_DT         TIMESTAMP_NTZ   COMMENT '원천(BRONZE) 적재시각 워터마크 — incremental merge 필터 기준값 (2026-08-25 증분 전략)',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO)
 ) COMMENT = '개발약정 (Q13 스파인). AREA_CD·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스';
@@ -349,8 +353,11 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     CMMN_BRND_NM        VARCHAR(100)    COMMENT 'MM297 공통브랜드명',
     MKTG_UTM            NUMBER(10,0)    COMMENT 'TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM',
     MKTG_UTM_NM         VARCHAR(200)    COMMENT 'TM_CM_MKTNG_UTM 라벨',
+    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 2속성(BRND_NM 은 위 327행에 이미 존재).
+    PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명 — PR_MTH_CD 라벨(CM008, 구 GOLD DIM_CAMPAIGN §O37 로직 이관)',
+    PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '상위캠페인명 — UPPER_CMPGN_CD 자기조인 라벨(구 GOLD DIM_CAMPAIGN §O37 로직 이관)',
     PRIMARY KEY (CMPGN_CD)
-) COMMENT = '캠페인 마스터. 분류 4축(카테고리 MM294·인입경로 MM293·유형1 국내해외 MM295·유형2 사업사례 MM296) 코드+라벨 병행보존 + 마케팅캠페인 라벨 + 법인구분·후원구분·공통브랜드·UTM 라벨';
+) COMMENT = '캠페인 마스터. 분류 4축(카테고리 MM294·인입경로 MM293·유형1 국내해외 MM295·유형2 사업사례 MM296) 코드+라벨 병행보존 + 마케팅캠페인 라벨 + 법인구분·후원구분·공통브랜드·UTM 라벨 + 상위캠페인명·홍보방법명 라벨(DEC-43)';
 
 -- CRM 12: CRM_SPONSORSHIP (후원사업 마스터)
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SPONSORSHIP (
