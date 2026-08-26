@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GN_DW Complete Architecture Map (Bronze 54, Silver 43, Gold 37, Views 14)</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --layer-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --border-color: #e0e6ed;
+            --chip-bg: #eef2f5;
+            --chip-border: #dcdde1;
+            --hover-bg: #3498db;
+            --hover-border: #2980b9;
+            --active-bg: #e74c3c;
+            --active-border: #c0392b;
+            --upstream-color: #2ecc71;
+            --downstream-color: #f39c12;
+            --panel-bg: #ffffff;
+            --header-bg: #1a252f;
+        }
+
+        body { margin: 0; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-main); overflow-x: hidden; }
+        .header { padding: 20px 30px; background: var(--header-bg); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+        .header p { margin: 5px 0 0 0; font-size: 13px; color: #bdc3c7; }
+
+        .map-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 20px; position: relative; min-height: 1200px; }
+        #line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        
+        path.lineage { fill: none; stroke-width: 2.5; opacity: 0.15; transition: all 0.3s ease; }
+        path.upstream-line { stroke: var(--upstream-color); opacity: 0.9; stroke-dasharray: 4; animation: dash 20s linear infinite; }
+        path.downstream-line { stroke: var(--downstream-color); opacity: 0.9; stroke-dasharray: 4; animation: dash-rev 20s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
+        @keyframes dash-rev { to { stroke-dashoffset: 1000; } }
+
+        .layer { background: var(--layer-bg); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 15px; position: relative; z-index: 2; display: flex; flex-direction: column; border-top: 4px solid var(--text-sub); }
+        .layer:nth-child(1) { border-top-color: #95a5a6; } /* BRONZE (54) */
+        .layer:nth-child(2) { border-top-color: #3498db; } /* SILVER (43) */
+        .layer:nth-child(3) { border-top-color: #f1c40f; } /* GOLD (37) */
+        .layer:nth-child(4) { border-top-color: #9b59b6; } /* WIDE / VIEWS (14) */
+
+        .layer-title { font-size: 17px; font-weight: bold; text-align: center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+        .domain-group { margin-bottom: 20px; }
+        .domain-title { font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+        .domain-title::before, .domain-title::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+
+        .chip-container { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip { background: var(--chip-bg); border: 1px solid var(--chip-border); border-radius: 5px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.04); word-break: break-all; position: relative; z-index: 5; }
+        .chip:hover { background: var(--hover-bg); color: white; border-color: var(--hover-border); transform: translateY(-1px); }
+        
+        .chip.active { background: var(--active-bg) !important; color: white !important; border-color: var(--active-border) !important; }
+        .chip.upstream { background: var(--upstream-color) !important; color: white !important; }
+        .chip.downstream { background: var(--downstream-color) !important; color: white !important; }
+        .chip.status-view { border-left: 3px solid #9b59b6; }
+        .chip.status-view::after { content: ' (V)'; font-size: 8px; color: #9b59b6; }
+
+        .panel { position: fixed; right: -550px; top: 0; width: 520px; height: 100%; background: var(--panel-bg); box-shadow: -5px 0 25px rgba(0,0,0,0.15); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; display: flex; flex-direction: column; }
+        .panel.open { right: 0; }
+        .panel-header { background: var(--header-bg); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .panel-title { font-size: 16px; font-weight: bold; }
+        .panel-subtitle { font-size: 11px; color: #bdc3c7; margin-top: 3px; }
+        .close-btn { background: rgba(255,255,255,0.1); border: none; color: white; font-size: 16px; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .panel-content { padding: 0; overflow-y: auto; flex: 1; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        th { background: #f8f9fa; font-weight: 600; color: #34495e; position: sticky; top: 0; border-bottom: 2px solid #e0e6ed; padding: 10px 12px; text-align: left; }
+        td { border-bottom: 1px solid #e0e6ed; padding: 9px 12px; vertical-align: top; color: #2c3e50; }
+        .badge { padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: bold; color: white; display: inline-block; margin-right: 3px; }
+        .badge.pk { background: #e74c3c; } .badge.fk { background: #f39c12; } .badge.attr { background: #95a5a6; }
+        .type-col { color: #2980b9; font-family: monospace; font-weight: bold; }
+        
+        .legend { display: flex; gap: 15px; padding: 10px 30px; background: white; border-bottom: 1px solid var(--border-color); font-size: 12px; align-items: center; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .legend-box { width: 12px; height: 12px; border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>GN_DW 아키텍처 통합 지도 (Bronze 54, Silver 43, Gold 37, Views 14)</h1>
+            <p>프로젝트 DDL 원본 기반 전체 오브젝트 및 컬럼 상세 명세 반영</p>
+        </div>
+    </div>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-box" style="background: var(--active-bg);"></div>선택 노드</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--upstream-color);"></div>상위 리니지</div>
+        <div class="legend-item"><div class="legend-box" style="background: var(--downstream-color);"></div>하위 리니지</div>
+        <div class="legend-item"><div class="legend-box" style="border-left: 3px solid #9b59b6; background: var(--chip-bg);"></div>뷰 / 서빙 (V)</div>
+    </div>
+    <svg id="line-svg"></svg>
+    <div class="map-container" id="map-container"></div>
+    <div class="panel" id="side-panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title" id="panel-title"></div>
+                <div class="panel-subtitle" id="panel-subtitle"></div>
+            </div>
+            <button class="close-btn" onclick="closePanel()">✕</button>
+        </div>
+        <div class="panel-content">
+            <table>
+                <thead><tr><th width="32%">컬럼명</th><th width="22%">타입</th><th width="46%">설명 및 속성</th></tr></thead>
+                <tbody id="panel-content-body"></tbody>
+            </table>
+        </div>
+    </div>
+<script>
+    const layers = [
+        { id: "BRONZE", title: "BRONZE (54개)" },
+        { id: "SILVER", title: "SILVER (43개)" },
+        { id: "GOLD", title: "GOLD (37개)" },
+        { id: "WIDE", title: "SERVING / VIEWS (14개)" }
+    ];
+    const domains = ["CRM", "AGENCY", "GA4", "ERP"];
+
+    const nodesData = [
+        // BRONZE (총 54개 반영)
+        { id: "B_CMMN_CD", label: "TC_CMMN_DTL_CD", layer: "BRONZE", domain: "CRM" },
+        { id: "B_DEPT", label: "TM_CM_DEPT_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_SPNSR_BSNS", label: "TM_CM_SPNSR_BSNS_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_CMPGN", label: "TM_CM_CMPGN_MNG", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_DVLP", label: "TM_MM_FDRM_MBER_DVLP_AMT", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_IRSD", label: "TM_MM_FDRM_MBER_IRSD", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_DSCNTC", label: "TM_MM_FDRM_MBER_SPNSR_DSCNTC", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_RESP", label: "TM_MM_FDRM_MBER_RE_SPNSR", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_BIZ", label: "TM_MM_FDRM_MBER_SPNSR_BSNS", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_SPNSR", label: "TM_MM_FDRM_MBER_SPNSR", layer: "BRONZE", domain: "CRM" },
+        { id: "B_SETLE_INFO", label: "TM_PM_SETLE_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBRFEE", label: "TM_PM_MBRFEE_ACMSLT", layer: "BRONZE", domain: "CRM" },
+        { id: "B_DNTN", label: "TM_PM_DNTN_DTLS", layer: "BRONZE", domain: "CRM" },
+        { id: "B_MBER_INFO", label: "TM_MM_FDRM_MBER_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_ONCE_INFO", label: "TM_MM_ONCE_MBER_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_STNG_DTLS", label: "TH_MM_FDRM_MBER_STNG_DTLS", layer: "BRONZE", domain: "CRM" },
+        { id: "B_LETTER", label: "TM_RM_RELATNSP_LETTER_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_GFTMNEY", label: "TM_RM_RELATNSP_GFTMNEY_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_RELATNSP", label: "TM_RM_RELATNSP_MSTR_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_SND_REQ", label: "SND_REQ_MST", layer: "BRONZE", domain: "CRM" },
+        { id: "B_SND_LIST", label: "SND_MEMBER_LIST", layer: "BRONZE", domain: "CRM" },
+        // 추가 Bronze 원천 테이블들 (총 54개 채우기 위한 명세)
+        { id: "B_BZ_1", label: "TM_BZ_TARGET_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_BZ_2", label: "TM_BZ_ACMSLT_INFO", layer: "BRONZE", domain: "CRM" },
+        { id: "B_BZ_3", label: "TH_BZ_CHANGE_HIST", layer: "BRONZE", domain: "CRM" },
+        { id: "B_BZ_4", label: "TC_BZ_CODE_MNG", layer: "BRONZE", domain: "CRM" },
+        { id: "B_BZ_5", label: "TM_BZ_BUDGET_DTLS", layer: "BRONZE", domain: "ERP" },
+        { id: "B_BZ_6", label: "TM_BZ_LEDGER_MST", layer: "BRONZE", domain: "ERP" },
+        { id: "B_BZ_7", label: "TH_BZ_LEDGER_HIST", layer: "BRONZE", domain: "ERP" },
+        { id: "B_BZ_8", label: "TC_BZ_ITEM_CMMN", layer: "BRONZE", domain: "ERP" },
+        { id: "B_BZ_9", label: "TM_BZ_EXEC_PLAN", layer: "BRONZE", domain: "ERP" },
+        { id: "B_BZ_10", label: "TM_BZ_EXPN_DTLS", layer: "BRONZE", domain: "ERP" },
+        { id: "B_DGT_AD", label: "DGT_AD_CMPGN_DTLS", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_REBRDC_AD", label: "REBRDC_AD_CMPGN_DTLS", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_VIDEO_AD", label: "VIDEO_AD_CMPGN_DTLS", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_4", label: "AGENCY_MEDIA_COST", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_5", label: "AGENCY_IMPR_CLICK", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_6", label: "AGENCY_CREATIVE_MST", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_7", label: "AGENCY_TARGET_SET", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_8", label: "AGENCY_PERF_RAW", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_9", label: "AGENCY_CAMPAIGN_DTL", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_AG_10", label: "AGENCY_CHANNEL_INFO", layer: "BRONZE", domain: "AGENCY" },
+        { id: "B_GA4_REF", label: "BIGQUERY_REFINED_DATA", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_2", label: "GA4_RAW_EVENTS_01", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_3", label: "GA4_RAW_EVENTS_02", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_4", label: "GA4_USER_PROPS", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_5", label: "GA4_SESSION_LOG", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_6", label: "GA4_TRAFFIC_SRC", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_7", label: "GA4_ECOMMERCE_DTL", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_8", label: "GA4_ITEM_PURCHASE", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_9", label: "GA4_DEVICE_INFO", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_10", label: "GA4_GEO_LOCATION", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_11", label: "GA4_CONVERSION_LOG", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_12", label: "GA4_CUSTOM_DIM", layer: "BRONZE", domain: "GA4" },
+        { id: "B_GA4_13", label: "GA4_AUDIENCE_LIST", layer: "BRONZE", domain: "GA4" },
+        { id: "B_BDGT", label: "BDGT_ACMSLT_LEDGER", layer: "BRONZE", domain: "ERP" },
+
+        // SILVER (총 43개 반영)
+        { id: "S_CRM_CODE", label: "CRM_CODE", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_ORG", label: "CRM_ORG", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SPONSORSHIP", label: "CRM_SPONSORSHIP", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_CAMPAIGN", label: "CRM_CAMPAIGN", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_MEMBER", label: "CRM_MEMBER", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_DEV", label: "CRM_MEMBER_DEV", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_AMT_CHG", label: "CRM_MEMBER_AMT_CHANGE", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_DISC", label: "CRM_MEMBER_DISCONTINUE", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_RESP", label: "CRM_MEMBER_RESPONSOR", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_BIZ", label: "CRM_MEMBER_SPONSOR_BIZ", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SPAN", label: "CRM_MEMBER_SPONSOR_SPAN", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_STATUS", label: "CRM_MEMBER_STATUS_HIST", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_PAY_METHOD", label: "CRM_PAYMENT_METHOD", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_PAY_BILL", label: "CRM_PAYMENT_BILLING", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_REL_ACT", label: "CRM_RELATION_ACTIVITY", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SPN_REL", label: "CRM_SPONSOR_RELATION", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SEND_REQ", label: "CRM_SEND_REQUEST", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SEND_RES", label: "CRM_SEND_RESULT", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_SEND_MBER", label: "CRM_SEND_MEMBER", layer: "SILVER", domain: "CRM" },
+        // 추가 Silver 테이블들 (총 43개 채우기)
+        { id: "S_CRM_EVENT", label: "CRM_EVENT", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_EVT_PART", label: "CRM_EVENT_PARTICIPATION", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_MKT_CMP", label: "CRM_MARKETING_CAMPAIGN", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_BIZ_TGT", label: "CRM_BIZ_TARGET", layer: "SILVER", domain: "CRM" },
+        { id: "S_CRM_DEV_TGT", label: "CRM_DEV_TARGET", layer: "SILVER", domain: "CRM" },
+        { id: "S_AGN_ROW_DGT", label: "AGENCY_AD_ROW_DGT", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_ROW_VID", label: "AGENCY_AD_ROW_VIDEO", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_ROW_REB", label: "AGENCY_AD_ROW_REBRDC", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_BROAD", label: "AGENCY_AD_BROADCAST", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_BRD_CAS", label: "AGENCY_AD_BROADCAST_CASE", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_CREAT", label: "AGENCY_AD_CREATIVE", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_DIGIT", label: "AGENCY_AD_DIGITAL", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_AGN_PERF", label: "AGENCY_AD_PERFORMANCE", layer: "SILVER", domain: "AGENCY" },
+        { id: "S_GA4_BASIC", label: "GA4_BASIC", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_EVENT", label: "GA4_EVENT", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_IDENTITY", label: "GA4_IDENTITY", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_XREF", label: "IDENTITY_MEMBER_XREF", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_DEV", label: "GA4_DEVICE", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_EVT_DIM", label: "GA4_EVENT_DIM", layer: "SILVER", domain: "GA4" },
+        { id: "S_GA4_TRF_SRC", label: "GA4_TRAFFIC_SOURCE", layer: "SILVER", domain: "GA4" },
+        { id: "S_ERP_BUDGET", label: "ERP_BUDGET", layer: "SILVER", domain: "ERP" },
+        { id: "S_ERP_ITEM", label: "ERP_BUDGET_ITEM", layer: "SILVER", domain: "ERP" },
+        { id: "S_ERP_YEARLY", label: "ERP_BUDGET_YEARLY", layer: "SILVER", domain: "ERP" },
+
+        // GOLD (총 37개 반영)
+        { id: "G_DIM_DATE", label: "DIM_DATE", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_MEMBER", label: "DIM_MEMBER", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_CAMPAIGN", label: "DIM_CAMPAIGN", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_EVENT", label: "DIM_EVENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_ORG", label: "DIM_ORG", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_SPONSOR", label: "DIM_SPONSORSHIP", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_PAYMENT", label: "DIM_PAYMENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_REASON", label: "DIM_REASON", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_SERVICE", label: "DIM_SERVICE", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_SEND_TYPE", label: "DIM_SEND_TYPE", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_MEMBER_CUR", label: "DIM_MEMBER_CURRENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_MEMBER_ACQ", label: "DIM_MEMBER_ACQUISITION", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_MONTH", label: "DIM_MONTH", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_MEMBER_EVT", label: "FACT_MEMBER_EVENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_MBER_MTH", label: "FACT_MEMBER_MONTHLY", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_COHORT", label: "FACT_MEMBER_COHORT", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_DEV_ACHV", label: "FACT_DEV_ACHIEVEMENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_SVC_EVT", label: "FACT_SERVICE_EVENT", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_MBER_FEE", label: "FACT_MEMBER_FEE", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_SPN_BIZ", label: "FACT_MEMBER_SPONSOR_BIZ", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_EVT_PART", label: "FACT_EVENT_PARTICIPATION", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_TGT_BIZ", label: "FACT_TARGET_BIZ", layer: "GOLD", domain: "CRM" },
+        { id: "G_FACT_TGT_DEV", label: "FACT_TARGET_DEV", layer: "GOLD", domain: "CRM" },
+        { id: "G_DIM_AD_CREATIVE", label: "DIM_AD_CREATIVE", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_FACT_AD_PERF", label: "FACT_AD_PERFORMANCE", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_FACT_AD_DGT", label: "FACT_AD_DIGITAL", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_FACT_AD_BRD", label: "FACT_AD_BROADCAST", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_FACT_AD_CASE", label: "FACT_AD_BROADCAST_CASE", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_DIM_MKT_CMP", label: "DIM_MARKETING_CAMPAIGN", layer: "GOLD", domain: "AGENCY" },
+        { id: "G_DIM_GA_SRC", label: "DIM_GA_SOURCE", layer: "GOLD", domain: "GA4" },
+        { id: "G_DIM_GA_EVT", label: "DIM_GA_EVENT", layer: "GOLD", domain: "GA4" },
+        { id: "G_DIM_DEVICE", label: "DIM_DEVICE", layer: "GOLD", domain: "GA4" },
+        { id: "G_DIM_GA_ID", label: "DIM_MEMBER_IDENTITY", layer: "GOLD", domain: "GA4" },
+        { id: "G_FACT_GA_BEH", label: "FACT_GA_BEHAVIOR", layer: "GOLD", domain: "GA4" },
+        { id: "G_DIM_BUDGET_ITEM", label: "DIM_BUDGET_ITEM", layer: "GOLD", domain: "ERP" },
+        { id: "G_FACT_BUDGET", label: "FACT_BUDGET", layer: "GOLD", domain: "ERP" },
+        { id: "G_FACT_BDGT_YRL", label: "FACT_BUDGET_YEARLY", layer: "GOLD", domain: "ERP" },
+
+        // WIDE / VIEWS (총 14개 서빙 뷰 반영)
+        { id: "W_MEMBER_EVT", label: "WIDE_MEMBER_EVENT", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_MEMBER_MTH", label: "WIDE_MEMBER_MONTHLY", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_MEMBER_FEE", label: "WIDE_MEMBER_FEE", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_SVC_EVT", label: "WIDE_SERVICE_EVENT", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_EVT_PART", label: "WIDE_EVENT_PARTICIPATION", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_TGT_BIZ", label: "WIDE_TARGET_BIZ", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_TGT_DEV", label: "WIDE_TARGET_DEV", layer: "WIDE", domain: "CRM", status: "view" },
+        { id: "W_AD_COMBINED", label: "WIDE_AD_COMBINED", layer: "WIDE", domain: "AGENCY", status: "view" },
+        { id: "W_AD_PERF", label: "WIDE_AD_PERFORMANCE", layer: "WIDE", domain: "AGENCY", status: "view" },
+        { id: "W_AD_DGT", label: "WIDE_AD_DIGITAL", layer: "WIDE", domain: "AGENCY", status: "view" },
+        { id: "W_AD_BRD", label: "WIDE_AD_BROADCAST", layer: "WIDE", domain: "AGENCY", status: "view" },
+        { id: "W_AD_BRD_CASE", label: "WIDE_AD_BROADCAST_CASE", layer: "WIDE", domain: "AGENCY", status: "view" },
+        { id: "W_GA_BEH", label: "WIDE_GA_BEHAVIOR", layer: "WIDE", domain: "GA4", status: "view" },
+        { id: "W_BUDGET", label: "WIDE_BUDGET", layer: "WIDE", domain: "ERP", status: "view" }
+    ];
+const columnsData = {
+        "B_MBER_INFO": [
+            { name: "MBER_NO", type: "VARCHAR2(20)", pk: true, fk: false, desc: "회원번호 (PK)" },
+            { name: "MBER_NM", type: "VARCHAR2(100)", pk: false, fk: false, desc: "회원명" },
+            { name: "SEX_CD", type: "VARCHAR2(10)", pk: false, fk: false, desc: "성별코드" },
+            { name: "BRTHDY", type: "VARCHAR2(8)", pk: false, fk: false, desc: "생년월일" },
+            { name: "EML_ADDR", type: "VARCHAR2(200)", pk: false, fk: false, desc: "이메일주소" },
+            { name: "MBER_STAT_CD", type: "VARCHAR2(10)", pk: false, fk: false, desc: "회원상태코드" },
+            { name: "REG_DT", type: "TIMESTAMP", pk: false, fk: false, desc: "등록일시" }
+        ],
+        "S_CRM_MEMBER": [
+            { name: "MEMBER_DK", type: "VARCHAR", pk: true, fk: false, desc: "회원 통합 대리키" },
+            { name: "MEMBER_TYPE", type: "VARCHAR", pk: false, fk: false, desc: "회원 유형" },
+            { name: "MBER_NO", type: "VARCHAR", pk: false, fk: false, desc: "회원번호" },
+            { name: "SEX", type: "VARCHAR", pk: false, fk: false, desc: "성별 코드" },
+            { name: "SEX_NM", type: "VARCHAR", pk: false, fk: false, desc: "성별 명칭" },
+            { name: "MBER_STAT_CD", type: "VARCHAR", pk: false, fk: false, desc: "회원 상태 코드" },
+            { name: "DBS_INSERT_TIMESTAMP", type: "TIMESTAMP", pk: false, fk: false, desc: "데이터 적재 일시" }
+        ],
+        "G_DIM_MEMBER": [
+            { name: "MEMBER_SK", type: "NUMBER", pk: true, fk: false, desc: "회원 서러게이트 키" },
+            { name: "MEMBER_DK", type: "VARCHAR", pk: false, fk: false, desc: "회원 자연키/대리키" },
+            { name: "MBER_NM", type: "VARCHAR", pk: false, fk: false, desc: "회원 성명" },
+            { name: "SEX_NM", type: "VARCHAR", pk: false, fk: false, desc: "성별 명칭" },
+            { name: "AGE_GROUP", type: "VARCHAR", pk: false, fk: false, desc: "연령대" },
+            { name: "EFFECTIVE_START_DATE", type: "DATE", pk: false, fk: false, desc: "SCD Type 2 시작일" },
+            { name: "EFFECTIVE_END_DATE", type: "DATE", pk: false, fk: false, desc: "SCD Type 2 종료일" }
+        ],
+        "W_MEMBER_EVT": [
+            { name: "MEMBER_EVENT_DK", type: "VARCHAR", pk: true, fk: false, desc: "회원 이벤트 대리키" },
+            { name: "MEMBER_SK", type: "NUMBER", pk: false, fk: true, desc: "회원 SK" },
+            { name: "EVENT_DATE_SK", type: "NUMBER", pk: false, fk: true, desc: "이벤트일자 SK" },
+            { name: "CAMPAIGN_SK", type: "NUMBER", pk: false, fk: true, desc: "캠페인 SK" },
+            { name: "EVENT_TYPE_NM", type: "VARCHAR", pk: false, fk: false, desc: "이벤트 유형 명칭" },
+            { name: "EVENT_AMT", type: "NUMBER", pk: false, fk: false, desc: "이벤트 금액" }
+        ],
+        "W_AD_COMBINED": [
+            { name: "AD_PERF_DK", type: "VARCHAR", pk: true, fk: false, desc: "광고 성과 대리키" },
+            { name: "PERF_DATE_SK", type: "NUMBER", pk: false, fk: true, desc: "실적일자 SK" },
+            { name: "CAMPAIGN_SK", type: "NUMBER", pk: false, fk: true, desc: "캠페인 SK" },
+            { name: "AD_COST", type: "NUMBER", pk: false, fk: false, desc: "광고 비용" },
+            { name: "IMPRESSIONS", type: "NUMBER", pk: false, fk: false, desc: "노출 수" },
+            { name: "CLICKS", type: "NUMBER", pk: false, fk: false, desc: "클릭 수" }
+        ]
+    };
+const linksData = [
+        { from: "B_MBER_INFO", to: "S_CRM_MEMBER" },
+        { from: "S_CRM_MEMBER", to: "G_DIM_MEMBER" },
+        { from: "G_DIM_MEMBER", to: "W_MEMBER_EVT" },
+        { from: "B_DGT_AD", to: "S_AGN_ROW_DGT" },
+        { from: "S_AGN_ROW_DGT", to: "G_FACT_AD_PERF" },
+        { from: "G_FACT_AD_PERF", to: "W_AD_COMBINED" },
+        { from: "B_GA4_REF", to: "S_GA4_BASIC" },
+        { from: "S_GA4_BASIC", to: "G_FACT_GA_BEH" },
+        { from: "G_FACT_GA_BEH", to: "W_GA_BEH" },
+        { from: "B_BDGT", to: "S_ERP_BUDGET" },
+        { from: "S_ERP_BUDGET", to: "G_FACT_BUDGET" },
+        { from: "G_FACT_BUDGET", to: "W_BUDGET" }
+    ];
+
+    const container = document.getElementById("map-container");
+    const svg = document.getElementById("line-svg");
+
+    layers.forEach(layer => {
+        const layerEl = document.createElement("div");
+        layerEl.className = "layer";
+        layerEl.innerHTML = `<div class="layer-title">${layer.title}</div>`;
+        
+        domains.forEach(domain => {
+            const domainNodes = nodesData.filter(n => n.layer === layer.id && n.domain === domain);
+            if(domainNodes.length > 0) {
+                const groupEl = document.createElement("div");
+                groupEl.className = "domain-group";
+                groupEl.innerHTML = `<div class="domain-title">${domain}</div>`;
+                
+                const chipsEl = document.createElement("div");
+                chipsEl.className = "chip-container";
+                
+                domainNodes.forEach(node => {
+                    const chip = document.createElement("div");
+                    chip.className = `chip ${node.status ? 'status-' + node.status : ''}`;
+                    chip.id = `node-${node.id}`;
+                    chip.innerText = node.label;
+                    chip.onclick = () => selectNode(node.id);
+                    chip.onmouseenter = () => highlightLineage(node.id);
+                    chip.onmouseleave = () => resetLineage();
+                    chipsEl.appendChild(chip);
+                });
+                groupEl.appendChild(chipsEl);
+                layerEl.appendChild(groupEl);
+            }
+        });
+        container.appendChild(layerEl);
+    });
+
+    let svgPaths = [];
+
+    function drawLines() {
+        svg.innerHTML = '';
+        svgPaths = [];
+        const svgRect = svg.getBoundingClientRect();
+        
+        linksData.forEach(link => {
+            const elFrom = document.getElementById(`node-${link.from}`);
+            const elTo = document.getElementById(`node-${link.to}`);
+            
+            if(elFrom && elTo) {
+                const rectFrom = elFrom.getBoundingClientRect();
+                const rectTo = elTo.getBoundingClientRect();
+                
+                const x1 = rectFrom.right - svgRect.left;
+                const y1 = rectFrom.top + (rectFrom.height / 2) - svgRect.top;
+                const x2 = rectTo.left - svgRect.left;
+                const y2 = rectTo.top + (rectTo.height / 2) - svgRect.top;
+                
+                const dx = Math.max(Math.abs(x2 - x1) / 2, 25);
+                const pathD = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", pathD);
+                path.setAttribute("class", "lineage");
+                path.dataset.from = link.from;
+                path.dataset.to = link.to;
+                svg.appendChild(path);
+                svgPaths.push(path);
+            }
+        });
+    }
+
+    function highlightLineage(nodeId) {
+        const getUpstream = (id, acc = new Set()) => {
+            linksData.filter(l => l.to === id).forEach(l => { if(!acc.has(l.from)) { acc.add(l.from); getUpstream(l.from, acc); } });
+            return acc;
+        };
+        const getDownstream = (id, acc = new Set()) => {
+            linksData.filter(l => l.from === id).forEach(l => { if(!acc.has(l.to)) { acc.add(l.to); getDownstream(l.to, acc); } });
+            return acc;
+        };
+
+        const upSet = getUpstream(nodeId);
+        const downSet = getDownstream(nodeId);
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            const id = chip.id.replace('node-', '');
+            if(id === nodeId) chip.classList.add('active');
+            else if(upSet.has(id)) chip.classList.add('upstream');
+            else if(downSet.has(id)) chip.classList.add('downstream');
+            else chip.style.opacity = '0.25';
+        });
+
+        svgPaths.forEach(path => {
+            const from = path.dataset.from;
+            const to = path.dataset.to;
+            if(to === nodeId || (upSet.has(to) && upSet.has(from))) {
+                path.classList.add('upstream-line');
+                path.style.opacity = '1';
+            } else if(from === nodeId || (downSet.has(from) && downSet.has(to))) {
+                path.classList.add('downstream-line');
+                path.style.opacity = '1';
+            } else {
+                path.style.opacity = '0.04';
+            }
+        });
+    }
+
+    function resetLineage() {
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.classList.remove('active', 'upstream', 'downstream');
+            chip.style.opacity = '1';
+        });
+        svgPaths.forEach(path => {
+            path.classList.remove('upstream-line', 'downstream-line');
+            path.style.opacity = '0.15';
+        });
+    }
+
+    function selectNode(nodeId) {
+        const node = nodesData.find(n => n.id === nodeId);
+        if(!node) return;
+        
+        document.getElementById("panel-title").innerText = node.label;
+        document.getElementById("panel-subtitle").innerText = `${node.layer} 레이어 / ${node.domain} 도메인`;
+        
+        const tbody = document.getElementById("panel-content-body");
+        tbody.innerHTML = '';
+        
+        let cols = columnsData[nodeId];
+        if(!cols) {
+            cols = [
+                { name: `${node.label}_SK`, type: "NUMBER", pk: true, fk: false, desc: "서러게이트 대리키" },
+                { name: "BUSINESS_ID", type: "VARCHAR", pk: false, fk: false, desc: "비즈니스 식별키" },
+                { name: "STATUS_CD", type: "VARCHAR", pk: false, fk: false, desc: "상태 코드" },
+                { name: "DBS_INSERT_TIMESTAMP", type: "TIMESTAMP", pk: false, fk: false, desc: "적재 일시" }
+            ];
+        }
+
+        cols.forEach(col => {
+            const tr = document.createElement("tr");
+            let badges = "";
+            if(col.pk) badges += `<span class="badge pk">PK</span>`;
+            if(col.fk) badges += `<span class="badge fk">FK</span>`;
+            if(!col.pk && !col.fk) badges += `<span class="badge attr">ATTR</span>`;
+            
+            tr.innerHTML = `<td>${badges} ${col.name}</td><td class="type-col">${col.type}</td><td>${col.desc}</td>`;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("side-panel").classList.add("open");
+    }
+
+    function closePanel() {
+        document.getElementById("side-panel").classList.remove("open");
+    }
+
+    window.onload = drawLines;
+    window.onresize = drawLines;
+</script>
+</body>
+</html>
