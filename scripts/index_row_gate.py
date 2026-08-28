@@ -32,6 +32,7 @@ import json
 import os
 import re
 import sys
+import time
 from collections import Counter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -242,22 +243,49 @@ def judge(cur, golden):
 def main(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument('--update-golden', action='store_true')
+    # 🔴 [2026-08-28 O109] 재발행 **사유·라벨·시각**을 기록한다.
+    #   종전에는 인자가 없어 골든 note 가 「O82-B 신설」에 고정돼 있었고, 이후의
+    #   모든 재발행이 **누가 왜 올렸는지 흔적 없이** 기준선을 갈아치웠다
+    #   (`R1-7-4` 는 「FAIL 을 골든으로 덮지 마라」인데, 정당한 재발행조차 근거가
+    #    남지 않으면 나중에 그 둘을 **구별할 수 없다**).
+    ap.add_argument('--reason', default=None,
+                    help='골든 재발행 사유(권고 · 미지정이면 경고를 낸다)')
+    ap.add_argument('--label', default=None,
+                    help='재발행 세션 라벨(예: O109). 생략하면 환경변수 SESSION_LABEL')
     a = ap.parse_args(argv)
 
     cur = collect()
 
     if a.update_golden:
         os.makedirs(os.path.dirname(GOLDEN), exist_ok=True)
+        prev = {}
+        if os.path.exists(GOLDEN):
+            prev = json.load(io.open(GOLDEN, encoding='utf-8'))
+        rows = {k: v for k, v in cur.items() if v is not None}
+        label = a.label or os.environ.get('SESSION_LABEL', '') or 'UNLABELED'
+        entry = {
+            'date': time.strftime('%Y-%m-%d %H:%M:%S'),
+            'label': label,
+            'reason': a.reason or '(사유 미기재)',
+            'rows_before': sum(len(v) for v in prev.get('rows', {}).values()),
+            'rows_after': sum(len(v) for v in rows.values()),
+        }
         payload = {
             'note': '원장 표 행 키 기준선 — C6 처방(착수표 ㉑) · O82-B 신설',
-            'rows': {k: v for k, v in cur.items() if v is not None},
+            'history': (prev.get('history') or []) + [entry],
+            'rows': rows,
         }
         with io.open(GOLDEN, 'w', encoding='utf-8') as fh:
             json.dump(payload, fh, ensure_ascii=False, indent=1, sort_keys=True)
             fh.write('\n')
         tot = sum(len(v) for v in payload['rows'].values())
-        print('🟢 골든 발행 — 표면 %d · 행 키 %d개 → %s'
-              % (len(payload['rows']), tot, os.path.relpath(GOLDEN, ROOT)))
+        print('🟢 골든 발행 — 표면 %d · 행 키 %d개 (이전 %d) → %s'
+              % (len(payload['rows']), tot, entry['rows_before'],
+                 os.path.relpath(GOLDEN, ROOT)))
+        print('   발행 이력 = %s · %s · %s'
+              % (entry['date'], entry['label'], entry['reason']))
+        if not a.reason:
+            print('   🟠 `--reason` 미지정 — 다음 세션이 「왜 올렸는지」를 알 수 없다.')
         for k, v in sorted(payload['rows'].items()):
             print('   %-46s %4d행' % (os.path.basename(k), len(v)))
         return 0

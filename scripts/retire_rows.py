@@ -32,11 +32,11 @@ O70 은 절을 옮기며 원문을 지웠는데 **삭제 전 중복 실재를 �
 사용
 --------------------------------------------------------------------------
     # 후보 보기(바이트 절감 큰 순)
-    python3 scripts/retire_rows.py --src 20_issue/00_INDEX_이슈원장-001.md --list
+    python3 scripts/retire_rows.py --src 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md --list
 
     # 실제 이관(키는 첫 셀의 정규화 문자열 · 쉼표 구분)
     python3 scripts/retire_rows.py \
-        --src 20_issue/00_INDEX_이슈원장-001.md \
+        --src 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md \
         --keys "ML 데이터 이관 문서화,ML 예측 SV·Agent 배포" \
         --to 20_issue/90_해소완료_로그.md \
         --to-section "6. 은퇴 이관 — 원장 §1 대시보드 (2026-08-18 O83-B)" \
@@ -58,6 +58,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 표 열수 판정·셀 분해는 O66 계약을 상속한다 — `|` 개수 세기는 백틱 코드스팬에서 오탐한다.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from split_issue_index import split_row  # noqa: E402
+# 🔴 [2026-08-28 O110 · `R1-7-10`] 스냅샷은 이 헬퍼만 경유한다(덮어쓰기 금지 · 라벨 인자화).
+from snapshot_util import add_label_arg, resolve_label, snapshot  # noqa: E402
 
 EMOJI = re.compile(
     '[\U0001F300-\U0001FAFF\u2190-\u21FF\u2460-\u24FF\u2500-\u27BF\uFE0F\u200D]+')
@@ -150,10 +152,15 @@ def main():
     ap.add_argument('--keys', default='', help='첫 셀 정규화 문자열 · 쉼표 구분')
     ap.add_argument('--to', default='20_issue/90_해소완료_로그.md', help='append형 목적지')
     ap.add_argument('--to-section', default=None, help='목적지에 만들 절 제목')
-    ap.add_argument('--label', default='O83-B', help='포인터에 적을 라벨')
+    # 🔴 [2026-08-28 O110] 기본값 하드코딩(`O83-B`)을 제거했다 — 지난 세션 라벨이 기본값이면
+    #   **어느 세션이 만든 포인터·스냅샷이든 그 옛 라벨로 기록**된다(O109 D2 · `R1-7-10`).
+    add_label_arg(ap, help_text='포인터·스냅샷에 적을 세션 라벨(예: O110). '
+                                '생략하면 환경변수 SESSION_LABEL, 그것도 없으면 UNLABELED')
     ap.add_argument('--list', action='store_true', help='후보만 보고 종료(절감 큰 순)')
     ap.add_argument('--apply', action='store_true', help='실제로 쓴다(기본은 dry-run)')
     a = ap.parse_args()
+    # 🔴 라벨은 여기서 한 번에 해소한다 — 포인터 문안·스냅샷 이름이 같은 값을 써야 한다.
+    a.label = resolve_label(a.label)
 
     src = a.src if os.path.isabs(a.src) else os.path.join(ROOT, a.src)
     dst = a.to if os.path.isabs(a.to) else os.path.join(ROOT, a.to)
@@ -271,10 +278,11 @@ def main():
     arch = os.path.join(ROOT, '_archive')
     if not os.path.isdir(arch):
         os.makedirs(arch)
+    # 🔴 [2026-08-28 O110] 스냅샷은 `snapshot_util` 만 경유한다(`R1-7-10`).
+    #   종전 `write_text` 직접 쓰기는 **같은 라벨 재실행 시 기존 스냅샷을 조용히 덮었다**
+    #   — 되돌림 경로가 유일한 이 워크스페이스에서 그것은 복구 불가를 만든다(O109 D2).
     for p in (src, dst):
-        snap = os.path.join(arch, '%s.%s-preretire' % (os.path.basename(p), a.label))
-        write_text(snap, read_text(p))
-        print('스냅샷 = %s' % os.path.relpath(snap, ROOT))
+        snapshot(p, 'preretire', label=a.label, archive=arch)
 
     write_text(dst, new_dtext)
     write_text(src, new_stext)

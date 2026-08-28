@@ -28,7 +28,39 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ISSUE = ROOT / "20_issue"
 
-DECISION_GLOB = "30_설계_의사결정-*.md"
+# 🔴🔴 [2026-08-28 O107-D] **분모를 형제 파일명에 의존시키지 않는다.**
+#   종전 = `DECISION_GLOB = "30_설계_의사결정-*.md"` + `ISSUE.glob("*.md")` 두 곳이
+#   **조각이 허브와 같은 폴더에 있다**는 전제를 갖고 있었다. 조각을 `--to-outdir` 로
+#   폴더로 옮기면(`R1-6-21`) ㉠ 결정 정의 분모가 **0건**이 되고(실측: 현재 12건 → 0건)
+#   ㉡ 인용처 분모에서 **폴더 조각 전량이 빠진다**(1단계 glob) ⇒ 게이트가 **조용히 통과**한다.
+#   그것이 `P106`(분모가 좁은 게이트)의 정확한 재현이고, 이 게이트는 blocking 이 아니라
+#   **경고 전용**이라 아무도 알아채지 못한다 — 가장 나쁜 조합이다.
+# ⇒ **허브 폴더까지 1단계 하위를 함께 본다.** 형제·폴더 어느 배치에서도 같은 분모가 된다.
+DECISION_STEM = "30_설계_의사결정"
+DECISION_GLOB = DECISION_STEM + "-*.md"          # (호환 표기 · 실제 수집은 아래 함수가 한다)
+
+
+def _md_files(stem_filter=None):
+    """`20_issue/` 직속 + **1단계 하위 폴더**의 `.md` 를 모은다(정렬 · 중복 제거).
+
+    🔴 `_archive`·`__pycache__` 는 제외한다. 하위 폴더를 보는 이유 = 조각 폴더
+      (`*_조각/`)가 분모에서 빠지면 이 게이트가 **침묵**한다(위 주석 참조).
+    """
+    out = []
+    for p in sorted(ISSUE.glob("*.md")):
+        out.append(p)
+    for d in sorted(x for x in ISSUE.iterdir() if x.is_dir()):
+        if d.name in ("_archive", "__pycache__", "logs", "target"):
+            continue
+        out.extend(sorted(d.glob("*.md")))
+    seen, uniq = set(), []
+    for p in out:
+        if p.resolve() in seen:
+            continue
+        seen.add(p.resolve())
+        if stem_filter is None or p.name.startswith(stem_filter):
+            uniq.append(p)
+    return uniq
 
 # 종결을 선언하는 어휘. 「닫지 않는다」 같은 부정문은 아래 NEGATIVE 로 걸러낸다.
 CLOSE_WORDS = re.compile(r"종결|닫힌다|닫혔|닫았|해소")
@@ -50,7 +82,7 @@ MAX_SHOW_PER_ID = 6
 def decision_sections():
     """(dec_label, 절 제목, [본문 줄]) 을 산출한다."""
     out = []
-    for path in sorted(ISSUE.glob(DECISION_GLOB)):
+    for path in _md_files(DECISION_STEM + "-"):
         lines = path.read_text(encoding="utf-8").split("\n")
         cur_head = None
         cur_dec = None
@@ -90,7 +122,7 @@ def citations(label):
     """20_issue/ 에서 그 라벨을 인용하는 (파일, 행번호, 줄) 을 전수 수집한다."""
     pat = re.compile(r"\b" + re.escape(label) + r"(?!\d)")
     hits = []
-    for path in sorted(ISSUE.glob("*.md")):
+    for path in _md_files():
         if path.name.startswith(EXCLUDE_PREFIX):
             continue
         try:

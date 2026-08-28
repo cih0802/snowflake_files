@@ -39,6 +39,7 @@ DOCS = [
     '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
     '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
     '20_issue/00_INDEX_이슈원장.md',
+    '20_issue/00_BRIEF.md',       # [O106] 세션 착수 브리핑(자동 생성 · session_brief.py)
     '20_issue/01_세션이력.md',
     '20_issue/02_상태상세_대시보드_갱신형.md',
     '20_issue/03_이슈상세.md',
@@ -49,6 +50,8 @@ DOCS = [
     '20_issue/40_입고대기_원천의존.md',
     '20_issue/50_dbt_파이프라인_미결조치.md',
     '20_issue/90_해소완료_로그.md',
+    '20_issue/91_사고사례집.md',   # [O106] 조문 경위 무변경 이관부
+    '20_issue/92_실측필요_후속작업.md',   # [O106] 자동 생성(gen_measure_backlog.py)
     '99_NEXT_SESSION.md',
 ]
 
