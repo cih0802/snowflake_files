@@ -301,19 +301,19 @@ $$;
 -- ---- [3-A] AGENT_MEMBER ---- 🟢 [2026-08-21 재검증] [0] 26건 검사 → **0행**(전건 통과, SV_ML_MEMBER_RISK
 --   포함). 종전 차단 사유("AGENT_MEMBER / SV_ML_MEMBER_RISK 라이브 부재")는 이 계정에서 해소됐다.
 --   실행 전 반드시 이 세션에서 [0] 을 다시 돌려 0행을 직접 확인할 것(계정 상태는 재이관 시 달라진다).
-ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
+ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 11종(ML 3 포함, SV_MEMBER_SPONSOR_BIZ 신설) · 추천질문 31';
+  COMMENT = '굿네이버스 회원 분석 Agent. SV 11종:ML 3 포함. 마케팅 보고서 5분석구분의 정본 Agent.';
 
 -- ---- [3-B] AGENT_OVERALL ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_OVERALL
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_OVERALL'
-  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 8종(ML 4 포함) · 추천질문 10';
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).';
 
 -- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = 'agent_spec.yaml 정본 적용 — 도구 7종(SV_MEMBER_SPONSOR_BIZ 신설) · 추천질문 11 · 마케팅 보고서 5분석구분';
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.';
 
 --   🆕 🔴 **[2026-08-18 O85-C] 경로가 개인 워크스페이스 → OPS 스테이지로 바뀌었다**(착수표 ㉔ ⑦).
 --      종전 = `snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/<AGENT>`
