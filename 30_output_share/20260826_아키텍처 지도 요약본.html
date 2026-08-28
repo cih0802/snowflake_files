@@ -19,7 +19,7 @@ body { margin:0; font-family:'Segoe UI','Malgun Gothic',sans-serif; background:v
 .map-container { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; padding:18px;
   position:relative; align-items:start; }
 #line-svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10; }
-path.lineage { fill:none; stroke-width:2; opacity:0.12; transition:opacity .25s ease; stroke:#7f8c8d; }
+path.lineage { fill:none; stroke-width:2; opacity:0; transition:opacity .25s ease; stroke:#7f8c8d; }
 path.upstream-line { stroke:var(--upstream-color); opacity:.95; stroke-dasharray:4;
   animation:dash 20s linear infinite; }
 path.downstream-line { stroke:var(--downstream-color); opacity:.95; stroke-dasharray:4;
@@ -4912,7 +4912,7 @@ function resetLineage() {
   });
   svgPaths.forEach(path => {
     path.classList.remove("upstream-line", "downstream-line");
-    path.style.opacity = "0.12";
+    path.style.opacity = "0";
   });
 }
 

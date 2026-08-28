@@ -474,8 +474,8 @@ def main(session):
         # 설정 정보
         TENANT_ID = "7670f1d7-520b-47f5-b0ef-597be6581d8d"
         CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
-        USERNAME = "sp_connector@gni.kr"
-        PASSWORD = "J.733333642334us"
+        USERNAME = ""
+        PASSWORD = ""
         SITE_ID = "gnikor.sharepoint.com,c2614570-b029-4496-a297-f68558cb87f0,83fbf0c7-cfc1-4332-88c9-1aa0be4d3dd8"
         ITEM_ID = "01TYTKR3XGYLL4L4FZHZH3CSTG2V7NZD4T"
 

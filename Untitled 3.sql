@@ -5,4 +5,6 @@ SELECT * FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG LIMIT 100;
 
 --snow dbt execute --project-dir 10_dbt_pipeline -- run --select FACT_MEMBER_SPONSOR_BIZ
 ;
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE accountadmin;
+
 select * from gn_dw.bronze_crm.TM_CM_MKTNG_UTM limit 10;
