@@ -11,7 +11,16 @@ END-METADATA -->
 
 # 5단계 — Cortex Agent 스펙 (GN_DW · Phase-1)
 
-> 배포된 **SV 9종**(`GN_DW.SERVING`)을 도구로 하는 **2개 Cortex Agent 스펙**을 확정한다.
+> 배포된 ~~**SV 9종**~~ **SV 10종**(`GN_DW.SERVING`)을 도구로 하는 **2개 Cortex Agent 스펙**을 확정한다.
+>
+> 🔴🔴 **[2026-08-29 O118 실측] 이 문서의 「배포 완료」류 기재를 두 축으로 갈라 읽어라.**
+> · 🟢 **SV = 이 계정에 실재한다** — 10종(`SHOW SEMANTIC VIEWS IN ACCOUNT` = 10행 · base 전건 `GOLD`).
+>   ~~9종~~ 은 stale 이다(`SV_MEMBER_SPONSOR_BIZ` 가 빠져 있었다).
+> · 🔴 **Agent = 이 계정에 0이다** — `show agents in account` **0행**.
+>   ⇒ 이 문서의 Agent 스펙은 **「설계 확정 / 이 계정 미배포」**로 읽어라. 「배포 완료」는 다른 계정의 이력이다.
+> · 🔴 **배포는 별도 승인 대상이다**(`R4-4-3`) — O118 은 배포하지 않았다.
+> 🟢 정본 = `04_SV_설계.md` **§0.9**(라이브 실측) · 개수는 그 절의 쿼리로 재라(`R3-9 ㉦`).
+
 > 🔴 [2026-08-12 O61 교정] 종전 「5 SV」는 stale 이었다 — `depends_on` 은 이미 그 사실을 적어 두었는데 본문이 갱신되지 않았다(같은 파일 내 모순).
 > 결정(2026-07-22): **2 Agent 우선(회원·overall)**, 마케팅 Agent는 SV_AD·SV_GA 미배포로 **Phase-2 유예**.
 > **스코프(사용자 확정)**: 이 세션은 **스펙 작성까지**(workspace YAML + 본 문서). `CREATE AGENT`/save/publish/CoWork 연결은 **사용자(GN_DW_ADMIN)** 실행(§4). Cortex Search 백킹(R2)은 **Phase-2 유예**.

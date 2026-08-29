@@ -37,7 +37,13 @@ USE SCHEMA GN_DW.SERVING;
       중복행의 **피처는 전건 동일**하고 `MBER_STAT_CD` 만 다르다(16,278명) —
       원인은 `ML.MBER_MONTHLY_INFO` 가 한 달에 상태 spell 을 여러 행 담기 때문이고,
       프로시저의 학습 STEP 은 dedup 하는데 **예측 STEP 만 누락**됐다.
-      ⇒ 그 달 **마지막 상태 spell**(STAT_START_DT 최대 · 동순위는 SER_NO 최대)을 대표로 잡는다.
+      🔴🔴 **[2026-08-29 O118-B] 그 `ML.MBER_MONTHLY_INFO` 는 이 계정에 없다** — `ML` 은 결과 16종만
+         적재됐고 피처/중간 테이블은 인도되지 않았다 ⇒ **`SILVER.CRM_MEMBER_STATUS_HIST` 로 대체**했다
+         (등가·커버리지 실증은 아래 `spell` CTE 주석).
+      🔴 **`MBER_STAT_CD` 는 모델 피처다** — 중복행의 나머지 피처는 전건 동일한데 **예측 확률이 16,278건에서
+         다르다**(실측). ⇒ 대표 선택은 **표시 라벨 문제가 아니라 발행 수치를 바꾸는 판정**이다.
+         🔴 따라서 임의 tiebreaker 로 갈음하지 마라 — 월말 상태 규칙을 재현하는 원천이어야 한다.
+      ⇒ 그 달 **마지막 상태 spell**(`EFFECTIVE_FROM` 최대 · 동순위는 `SER_NO` 최대)을 대표로 잡는다.
       🟢 검증 실측: 91,423 → 74,949 (1:1) · 조인 팬아웃 0 · spell 미매칭 0.
       ⚠️ 지표 영향(측정값) — 위험확률 평균 0.382907 → 0.441761 ·
          확률 0.5 이상 건수 29,690 → 29,121. **dedup 은 무해한 정리가 아니다**(값이 움직인다).
@@ -53,15 +59,41 @@ USE SCHEMA GN_DW.SERVING;
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_RISK_V
   COMMENT = 'ML 회원단위 예측(중단·증액·충성) 통합. grain=기준월×회원(dedup 후 유일). 원천 중복은 월말 상태 spell 기준으로 단일화했다(원천 미해소·완화). 예측치이며 실적이 아니다.'
 AS
-WITH spell AS (
+WITH mt AS (
+  -- 기준월 집합. 🔴 날짜를 하드코딩하지 않는다 — 원천이 가진 월에서 유도한다.
+  SELECT DISTINCT STDR_MT FROM GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M
+  UNION
+  SELECT DISTINCT STDR_MT FROM GN_DW.ML.ML_RST_DATA_MBER_INC_12M
+),
+spell AS (
   -- 회원-월-상태 조합의 마지막 spell 시각. GROUP BY 로 미리 접어 조인 팬아웃을 0으로 만든다.
-  SELECT STDR_MT,
-         MBER_NO,
-         STDR_MT_MBER_STAT_CD          AS STAT_CD,
-         MAX(STAT_START_DT)            AS LAST_STAT_START_DT,
-         MAX(SER_NO)                   AS LAST_SER_NO
-  FROM GN_DW.ML.MBER_MONTHLY_INFO
-  GROUP BY STDR_MT, MBER_NO, STDR_MT_MBER_STAT_CD
+  -- 🔴🔴 [2026-08-29 O118-B 대체] 원천을 `ML.MBER_MONTHLY_INFO` → `SILVER.CRM_MEMBER_STATUS_HIST` 로 교체했다.
+  --   이유 = `ML.MBER_MONTHLY_INFO` 는 **이 계정에 존재하지 않는다**(`ML` 은 결과 16종만 적재됐고
+  --   그 피처/중간 테이블은 인도되지 않았다) ⇒ 종전 DDL 은 `does not exist` 로 컴파일 실패했다.
+  --   🟢 **등가 실증(2026-08-29)** — dedup 결과가 종전 문서 기재와 **4개 축 전건 일치**했다:
+  --      행수 91,423 → **74,949**(1:1) · distinct 회원 **74,949** ·
+  --      위험확률 평균 **0.441761** · 확률 0.5 이상 **29,121**.
+  --   🟢 **커버리지 실증** — tiebreaker 가 실제로 필요한 **중복 그룹 32,764행에서 미매칭 0**
+  --      (종전 검증 기준 「spell 미매칭 0」 충족). 🔴 전체로 재면 미매칭 17.08% 지만 그 전량이
+  --      **단일행 그룹**이며 거기서는 대표 선택이 불필요하다(LEFT JOIN + ROW_NUMBER()=1 이 그 1행을 고른다).
+  --      미매칭 내역 = 회원 자체가 이력에 없음 6,726행(상태 변경 이력이 없는 회원) +
+  --      그 상태가 이력에 없음 8,726행. **둘 다 단일행 구간이라 결과에 영향이 없다.**
+  --   🔴 **컬럼 대응** = `STAT_START_DT`→`EFFECTIVE_FROM` · `SER_NO`→`SER_NO`(동명) ·
+  --      `STDR_MT_MBER_STAT_CD`→`CHN_STAT_CD`(상태 변경 후 코드 = 그 spell 의 상태).
+  --   🟢 `MBER_NO` 는 양쪽 모두 7자리 zero-pad TEXT 로 **캐스팅 없이 조인**된다(O12 준수).
+  --   ⚠️ 월이 늘면 이 CTE 는 (월 × 이력 7.5M) 스캔이 된다 — 다월 적재 시 성능을 재확인하라.
+  --   🔴 **이것은 완화이고 원천 해소가 아니다** — `ML.MBER_MONTHLY_INFO` 인도 또는 예측 STEP dedup 추가가
+  --      근본 처방이다(성현 프로 소관). 인도되면 이 CTE 를 원본으로 되돌리고 위 4개 값으로 회귀 검증하라.
+  SELECT m.STDR_MT,
+         h.MBER_NO,
+         h.CHN_STAT_CD          AS STAT_CD,
+         MAX(h.EFFECTIVE_FROM)  AS LAST_STAT_START_DT,
+         MAX(h.SER_NO)          AS LAST_SER_NO
+  FROM mt m
+  JOIN GN_DW.SILVER.CRM_MEMBER_STATUS_HIST h
+    ON  h.EFFECTIVE_FROM <  DATEADD(month, 1, TO_DATE(m.STDR_MT || '01', 'YYYYMMDD'))
+    AND (h.EFFECTIVE_TO IS NULL OR h.EFFECTIVE_TO >= TO_DATE(m.STDR_MT || '01', 'YYYYMMDD'))
+  GROUP BY 1, 2, 3
 ),
 churn AS (
   SELECT r.STDR_MT,

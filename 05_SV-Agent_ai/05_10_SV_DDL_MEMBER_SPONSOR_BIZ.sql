@@ -48,11 +48,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
   TABLES (
     fmsb AS GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ
       WITH SYNONYMS ('회원 후원약정', '캠페인별 활동회원', '후원사업별 활동회원')
-      COMMENT = '회원×후원약정 팩트. grain = MEMBER_DK × SPNSR_BSNS_NO(2,170,572행). "캠페인별/후원사업별 활동회원" 질의 전용 — 전체 활동회원수 정본은 SV_MEMBER_MONTHLY다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN(활동구간)+CRM_MEMBER_DEV(캠페인귀속) · GOLD=FACT_MEMBER_SPONSOR_BIZ.',
+      COMMENT = '회원×후원약정 팩트. grain = MEMBER_DK × SPNSR_BSNS_NO. "캠페인별/후원사업별 활동회원" 질의 전용 — 전체 활동회원수 정본은 SV_MEMBER_MONTHLY다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN(활동구간)+CRM_MEMBER_DEV(캠페인귀속) · GOLD=FACT_MEMBER_SPONSOR_BIZ.',
     sponsorship AS GN_DW.GOLD.DIM_SPONSORSHIP
       PRIMARY KEY (SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업 차원')
-      COMMENT = '후원사업 마스터(50행). PK 유일이라 조인이 행수를 늘리지 않는다.',
+      COMMENT = '후원사업 마스터. PK 유일이라 조인이 행수를 늘리지 않는다.',
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인 차원')
@@ -68,17 +68,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
   DIMENSIONS (
     -- ── 회원·약정 식별(degen) ──────────────────────────────────────────────────
     fmsb.MEMBER_DK        AS fmsb.MEMBER_DK    WITH SYNONYMS ('회원번호') COMMENT = '회원 (불변키)',
-    fmsb.SPNSR_BSNS_NO    AS fmsb.SPNSR_BSNS_NO WITH SYNONYMS ('후원사업번호', '약정번호') COMMENT = '회원별 후원약정 일련번호. 🔴단독 유일키 아니다 — 실측 28건이 공동후원 쌍(부부 등) 2개 회원에 공유된다. 분류축이 아니다(분류는 SPONSORSHIP 축)',
+    fmsb.SPNSR_BSNS_NO    AS fmsb.SPNSR_BSNS_NO WITH SYNONYMS ('후원사업번호', '약정번호') COMMENT = '회원별 후원약정 일련번호. 🔴단독 유일키 아니다 — 공동후원 쌍(부부 등)이 2개 회원에 공유되는 사례가 실재한다. 분류축이 아니다(분류는 SPONSORSHIP 축)',
     -- ── 후원사업(분류) ────────────────────────────────────────────────────────
-    sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '사업') COMMENT = '후원사업명(마스터 50종). 미매핑은 0건(전건 매칭 실측 확인)',
+    sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '사업') COMMENT = '후원사업명(마스터). 미매핑 없음(전건 매칭 실측 확인)',
     sponsorship.SPONSORSHIP_DIV AS sponsorship.SPONSORSHIP_DIV_NAME WITH SYNONYMS ('정기일시구분') COMMENT = '정기후원/일시후원 구분(CM035)',
     sponsorship.SPONSORSHIP_ABBR_CATEGORY AS sponsorship.SPONSORSHIP_GROUP_NAME WITH SYNONYMS ('후원사업 약칭', '후원사업 카테고리') COMMENT = '후원사업 약칭 그룹(CM003, 6종: 국내/결연/해외구호/북한/기타/해외)',
     -- ── 캠페인(대표) ──────────────────────────────────────────────────────────
-    campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규(신규사건 보유 1,687,546건) ②그 외 최초사건(신규사건 부재 483,028건, 동률 0 확인). 사건 자체가 없는 6건은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
+    campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규사건이 있으면 그 신규사건 ②없으면 최초사건(동률 0 확인). 사건 자체가 없는 약정은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
     -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSOR_BIZ.ACQ_*`
     --   동결값으로 전환. 대표사건의 캠페인 마스터가 이후 정정돼도 이 약정의 카테고리는 바뀌지 않는다.
     fmsb.CAMPAIGN_TYPE AS fmsb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '대표캠페인 카테고리 라벨(MM294). 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체)',
-    fmsb.IS_MULTI_CAMPAIGN AS fmsb.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중캠페인 여부') COMMENT = '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 캠페인이 2개 이상이었는지(실측 137건=0.01%·최대2). 대표캠페인 채택 규칙과는 별개',
+    fmsb.IS_MULTI_CAMPAIGN AS fmsb.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중캠페인 여부') COMMENT = '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 캠페인이 2개 이상이었는지. 대표캠페인 채택 규칙과는 별개. 🟢실측상 극소수이며 최대 2개다(규모는 이슈원장·04 §0.9 참조)',
     -- ── 활동 구간(원시 as-of 축) ─────────────────────────────────────────────
     fmsb.START_MONTH_KEY  AS fmsb.START_MONTH_KEY WITH SYNONYMS ('활동개시월') COMMENT = '활동 개시 월키 YYYYMM. 특정월 as-of 활동 판정 시 이 축과 DSCNTC_MONTH_KEY 를 함께 WHERE 절로 비교한다(AI_SQL_GENERATION 참조)',
     fmsb.DSCNTC_MONTH_KEY AS fmsb.DSCNTC_MONTH_KEY WITH SYNONYMS ('중단월') COMMENT = '중단 월키 YYYYMM. 🔴NULL=미중단(현재까지 활동)이며 결측이 아니다'
@@ -97,13 +97,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     -- ── 금액 ──────────────────────────────────────────────────────────────────
     fmsb.CURRENTLY_ACTIVE_SPNSR_AMT AS SUM(IFF(fmsb.DSCNTC_MONTH_KEY IS NULL, fmsb.SPNSR_AMT, 0))
       WITH SYNONYMS ('지금 활동 약정금액', '현재 활동 후원금액')
-      COMMENT = '**지금 시점** 미중단 약정의 SPNSR_AMT 합(원). F(가산). 🔴정본 (건) 표기(금액÷10,000)로 바꾸려면 이 값을 10,000 으로 나눈다(CONF-2 규약) — 이 SV 는 원단위로 노출하고 나누기는 소비 시 명시한다.',
+      COMMENT = '**지금 시점** 미중단 약정의 SPNSR_AMT 합(원). F(가산). 🔴정본 (건) 표기로 바꾸려면 이 값을 만원 단위로 환산한다(CONF-2 규약) — 이 SV 는 원단위로 노출하고 환산은 소비 시 명시한다.',
     fmsb.TOTAL_SPNSR_AMT AS SUM(fmsb.SPNSR_AMT)
       WITH SYNONYMS ('약정금액 총계')
       COMMENT = '활동여부 무관 SPNSR_AMT 합(원). F(가산)'
   )
-  COMMENT = 'Phase-1 회원×후원약정 SV(base FACT_MEMBER_SPONSOR_BIZ). grain = MEMBER_DK × SPNSR_BSNS_NO. **"캠페인별/후원사업별 활동회원" 질의의 정본**이다 — FACT_MEMBER_MONTHLY.CAMPAIGN_SK 는 회원grain 다중귀속(O8 미결)으로 전건 센티넬이지만 이 SV 의 약정grain 에서는 캠페인이 거의 1:1(다중 0.01%)이라 대표캠페인 결정적 규칙으로 100% 배선했다. [원천 요약] 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV · GOLD=FACT_MEMBER_SPONSOR_BIZ. 활성: 지금 시점 캠페인별/후원사업별 활동회원수·활동 약정금액 · 약정건수·고유회원수 · 특정월 as-of 는 원시축(START_MONTH_KEY·DSCNTC_MONTH_KEY)으로 직접 구성. 🔴🔴 **캠페인·후원사업별 합계는 SV_MEMBER_MONTHLY 의 전체 활동회원수와 다르다** — 다중 후원(캠페인 A·B 동시 활동)인 회원은 두 축 모두에 잡히는 정상 현상이며, 이 SV 로 "전체 활동회원수"를 답하지 않는다(그건 SV_MEMBER_MONTHLY 소관). 🔴 SPNSR_BSNS_NO 는 유일키가 아니다(공동후원 쌍 28건). 비활성: 특정 과거월 as-of 를 위한 사전정의 metric(원시축으로 직접 구성 — AI_SQL_GENERATION 참조).'
-  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **"전체 활동회원 수"를 물으면 이 SV 가 아니라 SV_MEMBER_MONTHLY.ACTIVE_MEMBERS 로 답한다** — 이 SV 를 캠페인·후원사업 없이 총계만 내면 다중 후원 회원 중복으로 SV_MEMBER_MONTHLY 총계와 어긋난다. 이 SV 는 "캠페인별/후원사업별" 분해가 명시적으로 요구될 때만 쓴다. (2) **"캠페인별/후원사업별 활동회원"은 CURRENTLY_ACTIVE_MEMBERS 로 답하고, 캠페인·후원사업별 합계가 전체 활동회원수보다 클 수 있다는 점을 결과에 명시한다**(다중 후원 정상 현상, SUM 하지 않는다 — N 비가산). (3) **특정 과거월(예: "2026년 6월 기준") as-of 질문**은 사전정의 metric 이 없다 — START_MONTH_KEY <= 그 월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 그 월) 조건을 직접 구성해 COUNT(DISTINCT MEMBER_DK) 한다. "지금/현재" 질문에만 CURRENTLY_ACTIVE_MEMBERS 를 쓴다. (4) **CAMPAIGN 축은 대표캠페인(결정적 규칙)이다** — 한 약정에 캠페인이 여러 개였어도 신규사건 우선 규칙으로 하나만 골랐다. IS_MULTI_CAMPAIGN=TRUE 인 행이 있으면 그 사실을 밝힌다. (5) **SPNSR_BSNS_NO 로 회원을 유추하지 않는다** — 유일키가 아니다(공동후원 쌍). 회원 식별은 항상 MEMBER_DK. (6) 적용 조건(기간·그룹 모두 미지정 시): CURRENTLY_ACTIVE_MEMBERS 기준으로 캠페인 또는 후원사업 TOP 20 을 낸다. (7) "(미매핑)" 캠페인·후원사업 버킷을 감추지 않는다 — 캠페인 6건은 원천 사건 자체가 없다.';
+  COMMENT = 'Phase-1 회원×후원약정 SV(base FACT_MEMBER_SPONSOR_BIZ). grain = MEMBER_DK × SPNSR_BSNS_NO. **"캠페인별/후원사업별 활동회원" 질의의 정본**이다 — FACT_MEMBER_MONTHLY.CAMPAIGN_SK 는 회원grain 다중귀속(O8 미결)으로 전건 센티넬이지만 이 SV 의 약정grain 에서는 캠페인이 거의 1:1(다중은 극소수·최대 2)이라 대표캠페인 결정적 규칙으로 전건 배선했다. [원천 요약] 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV · GOLD=FACT_MEMBER_SPONSOR_BIZ. 활성: 지금 시점 캠페인별/후원사업별 활동회원수·활동 약정금액 · 약정건수·고유회원수 · 특정월 as-of 는 원시축(START_MONTH_KEY·DSCNTC_MONTH_KEY)으로 직접 구성. 🔴🔴 **캠페인·후원사업별 합계는 SV_MEMBER_MONTHLY 의 전체 활동회원수와 다르다** — 다중 후원(캠페인 A·B 동시 활동)인 회원은 두 축 모두에 잡히는 정상 현상이며, 이 SV 로 "전체 활동회원수"를 답하지 않는다(그건 SV_MEMBER_MONTHLY 소관). 🔴 SPNSR_BSNS_NO 는 유일키가 아니다(공동후원 쌍이 실재한다). 비활성: 특정 과거월 as-of 를 위한 사전정의 metric(원시축으로 직접 구성 — AI_SQL_GENERATION 참조).'
+  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **"전체 활동회원 수"를 물으면 이 SV 가 아니라 SV_MEMBER_MONTHLY.ACTIVE_MEMBERS 로 답한다** — 이 SV 를 캠페인·후원사업 없이 총계만 내면 다중 후원 회원 중복으로 SV_MEMBER_MONTHLY 총계와 어긋난다. 이 SV 는 "캠페인별/후원사업별" 분해가 명시적으로 요구될 때만 쓴다. (2) **"캠페인별/후원사업별 활동회원"은 CURRENTLY_ACTIVE_MEMBERS 로 답하고, 캠페인·후원사업별 합계가 전체 활동회원수보다 클 수 있다는 점을 결과에 명시한다**(다중 후원 정상 현상, SUM 하지 않는다 — N 비가산). (3) **특정 과거월(예: "2026년 6월 기준") as-of 질문**은 사전정의 metric 이 없다 — START_MONTH_KEY <= 그 월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 그 월) 조건을 직접 구성해 COUNT(DISTINCT MEMBER_DK) 한다. "지금/현재" 질문에만 CURRENTLY_ACTIVE_MEMBERS 를 쓴다. (4) **CAMPAIGN 축은 대표캠페인(결정적 규칙)이다** — 한 약정에 캠페인이 여러 개였어도 신규사건 우선 규칙으로 하나만 골랐다. IS_MULTI_CAMPAIGN=TRUE 인 행이 있으면 그 사실을 밝힌다. (5) **SPNSR_BSNS_NO 로 회원을 유추하지 않는다** — 유일키가 아니다(공동후원 쌍). 회원 식별은 항상 MEMBER_DK. (6) 적용 조건(기간·그룹 모두 미지정 시): CURRENTLY_ACTIVE_MEMBERS 기준으로 캠페인 또는 후원사업 TOP 20 을 낸다. (7) "(미매핑)" 캠페인·후원사업 버킷을 감추지 않는다 — 극소수 약정은 원천 사건 자체가 없다.';
 
 -- ── GRANT ──────────────────────────────────────────────────────────────────
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ TO ROLE GN_DW_ANALYST;

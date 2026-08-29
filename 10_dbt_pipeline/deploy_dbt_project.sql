@@ -95,8 +95,7 @@ USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
 
 CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
-  FROM 'snow://workspace/USER%24.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline'
-  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. 정본 09_SILVER_적재쿼리_20260714, 03_top-down_gold/06_DDL.';
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/10_dbt_pipeline';
 
 SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
