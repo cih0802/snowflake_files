@@ -71,6 +71,16 @@ NEGATIVE = re.compile(r"닫지\s*않|종결이\s*아니|해소가\s*아니|닫�
 #   🔴 `O8` 이 `O85` 에 걸리지 않도록 뒤 숫자를 배제한다.
 ISSUE_LABEL = re.compile(r"\b(?:O\d{1,3}|Q\d{1,3}|B[1-9]|[A-Z]-\d{1,2})(?!\d)")
 
+# 🆕 🔴 [2026-08-28 O111 · 인수 `§0-NNN ▣WWW ⑥` 의 남은 판단] 허브 「조각 선택표」의
+#   `- ID: …` 줄은 **인용처가 아니다** — `split_doc.py --republish` 가 매번 통째로
+#   다시 쓰는 **자동 생성물**이라 「병기해 닫을」 자리가 원리적으로 없다.
+#   🔴 분모에 두면 경고가 **영구히 부풀고 고칠 방법이 없다**(`P130` 「항상 빨간 게이트」 축).
+#   🟢 판단 = **제외**. 근거는 이 워크스페이스의 기존 계약과 동일하다
+#     — 「허브는 자동 생성물이고 손으로 쓴 문장은 조용히 사라진다」(`R3-9 ㉧`).
+#   ⚠️ 이것은 **관측 손실이 아니다** — 같은 ID 의 실제 인용처(표 행·서술문)는 조각에 그대로 있고
+#     그쪽이 분모에 남는다(조각 선택표는 그 조각을 가리키는 색인일 뿐이다).
+GENERATED_ID_LINE = re.compile(r"^\s*-\s*ID:\s")
+
 # 인용처 검색에서 제외하는 문서.
 #   · 01_세션이력  = append-only 과거 기록이므로 소급 갱신 대상이 아니다(R1-3-6).
 #   · 30_설계_의사결정 = 결정 정본 자신.
@@ -130,6 +140,8 @@ def citations(label):
         except Exception:
             continue
         for i, line in enumerate(lines, 1):
+            if GENERATED_ID_LINE.match(line):
+                continue
             if pat.search(line):
                 hits.append((path.name, i, line))
     return hits

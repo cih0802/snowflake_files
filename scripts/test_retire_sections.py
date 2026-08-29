@@ -129,7 +129,7 @@ def t_token_block():
         # 본문에 있는 토큰을 목적지가 받지 못하도록 retire_sections 의 블록 생성을 우회하지 않고,
         # 대신 `tokens()` 가 목적지에 없어야 하는 토큰을 만들도록 원본에 긴 토큰을 심는다.
         # ⇒ 정상 경로에서는 부재 0 이어야 한다(오탐 축). 부재를 강제하는 축은 아래 단위 검사로 본다.
-        r = run(src, dst, ['--sections', 'O64 —'])
+        r = run(src, dst, ['--sections', 'O64 —', '--force'])
         check(r.returncode == 0, '축3-a 정상 경로가 FAIL: %s' % r.stdout[-300:])
         check('부재 0종' in r.stdout, '축3-b 정상 경로에서 부재가 0 이 아니다: %s' % r.stdout[:200])
 
@@ -148,13 +148,13 @@ def t_apply():
     tmp, src, dst = setup()
     try:
         s0, d0 = io.open(src, encoding='utf-8').read(), io.open(dst, encoding='utf-8').read()
-        r = run(src, dst, ['--sections', 'O64 —'])
+        r = run(src, dst, ['--sections', 'O64 —', '--force'])
         check(r.returncode == 0, '축4-a dry-run rc≠0: %s' % r.stdout[-300:])
         check(io.open(src, encoding='utf-8').read() == s0, '축4-b dry-run 이 원본을 고쳤다')
         check(io.open(dst, encoding='utf-8').read() == d0, '축4-c dry-run 이 목적지를 고쳤다')
         check('--apply 미지정' in r.stdout, '축4-d dry-run 안내 부재')
 
-        r = run(src, dst, ['--sections', 'O64 —', '--apply'])
+        r = run(src, dst, ['--sections', 'O64 —', '--apply', '--force'])
         check(r.returncode == 0, '축2-a apply rc≠0: %s' % r.stdout[-400:])
         s1 = io.open(src, encoding='utf-8').read()
         d1 = io.open(dst, encoding='utf-8').read()
@@ -200,7 +200,7 @@ def t_apply():
         check('본문 첫 줄' in snap, '축8-e 스냅샷이 이관 후 내용이다')
 
         # 축5 멱등 — 다시 은퇴시키면 중단
-        r2 = run(src, dst, ['--sections', 'O64 —', '--apply'])
+        r2 = run(src, dst, ['--sections', 'O64 —', '--apply', '--force'])
         check(r2.returncode == 1, '축5-a 재은퇴가 차단되지 않았다')
         check('이미 은퇴된 절' in r2.stdout, '축5-b 재은퇴 사유 문구 부재')
         check(io.open(src, encoding='utf-8').read() == s1, '축5-c 재은퇴가 원본을 고쳤다')
@@ -232,6 +232,26 @@ def t_guards():
 
         r = run(src, dst, ['--list', '--closed-only'])
         check('O90' not in r.stdout, '축7-g --closed-only 가 열린 절을 걸렀지 않았다')
+
+        # ── 🆕 축10: 열린 내용 차단 (2026-08-28 O111-B · `R1-6-24`) ──────────
+        #   🔴 픽스처 §O64 는 제목이 🟢 인데 하위 본문에 `BLOCKING-5` 가 있다 —
+        #     실문서에서 이 형태가 **닫힘 후보 5개 중 4개**였다(제목 닫힘 + 본문 열림).
+        #   ⇒ `--force` 없이는 **쓰지 않고 차단**해야 하고, `--force` 면 경고를 남기고 통과해야 한다.
+        before = io.open(src, encoding='utf-8').read()
+        r = run(src, dst, ['--sections', 'O64 —', '--apply'])          # --force 없음
+        check(r.returncode == 1, '축10-a 열린 내용이 있는데 차단되지 않았다')
+        check('열린 내용이 있는 절' in r.stdout, '축10-b 차단 사유 문구 부재')
+        check('BLOCKING 참조' in r.stdout, '축10-c 열림 신호 종류를 열거하지 않았다')
+        check(io.open(src, encoding='utf-8').read() == before,
+              '축10-d 🔴 차단인데 원본이 바뀌었다(쓰지 않아야 한다)')
+        r = run(src, dst, ['--sections', 'O64 —', '--force'])          # dry-run + force
+        check(r.returncode == 0, '축10-e --force 로도 통과하지 못했다')
+        check('`--force` 로 열린 내용 차단을 넘겼다' in r.stdout,
+              '축10-f --force 사용 사실을 출력하지 않았다(이력에 적을 근거가 사라진다)')
+        # 🟢 대조군 = `--list` 는 차단 대상이 아니라 **관측**이므로 항상 0 이어야 한다.
+        r = run(src, dst, ['--list', '--closed-only'])
+        check(r.returncode == 0 and '열림 신호 보유 후보' in r.stdout,
+              '축10-g --list 가 열림 신호 요약을 내지 않았다')
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -263,7 +283,7 @@ def t_hub_dst():
             check('90_해소완료_로그 (테스트)' in logical, '축9-d 논리 본문 추출 실패')
             check('조각 목차' not in logical, '축9-e 논리 본문에 허브 목차가 섞였다')
 
-            r = run(src, hub, ['--sections', 'O64 —', '--apply'])
+            r = run(src, hub, ['--sections', 'O64 —', '--apply', '--force'])
             check(r.returncode == 0, '축9-f apply rc≠0: %s' % r.stdout[-400:])
             check('허브' in r.stdout and 'rollover' in r.stdout, '축9-g 허브 경로 안내 부재')
 
@@ -302,7 +322,7 @@ def main():
         for f in FAILS:
             print(' -', f)
         return 1
-    print('🟢 PASS — 9축 음성 테스트 통과')
+    print('🟢 PASS — 10축 음성 테스트 통과 (축10 = 열린 내용 차단 · O111-B `R1-6-24`)')
     return 0
 
 

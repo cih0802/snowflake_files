@@ -88,6 +88,36 @@ CLOSED_RX = re.compile(r'^\s*(?:🟢|✅)')
 # 포인터 줄 — 멱등성 판정에 쓴다(이미 은퇴한 절을 다시 은퇴시키면 빈 이관이 된다).
 PTR_MARK = '은퇴 이관 →'
 
+# 🆕 🔴🔴 [2026-08-28 O111-B 신설] **본문 열린 내용 탐지** — 「닫힘」은 제목 판정일 뿐이다.
+#   🔴 실측 근거(O111-B 가 승인받아 실적용을 시도하며 후보를 **읽고** 발견했다):
+#     `50_dbt_…-014.md` §`✅ [DONE 순서9-C] dbt project 배포 + full build green 달성` 은
+#     제목이 ✅ 인데 본문에
+#       · **`warn→error 복귀 추적표`** = 복귀 트리거가 **아직 열린** 항목(BLOCKING-1 · 마스터 전량입고 대기) 7행
+#       · **WARN 27건 전량 목록** = *"🔴 이 표가 없어서 같은 질문이 두 번 나왔다"* 라고
+#         **존재 이유를 스스로 적어 둔** 표
+#     를 담고 있었다 ⇒ 은퇴시키면 **살아 있는 추적표를 닫힌 로그로 옮긴다.**
+#   🔴 이 워크스페이스의 관례상 **닫힌 제목 아래에 열린 추적이 붙는 것이 흔하다**
+#     (완료 보고 + 그 완료의 잔여 조건을 같은 절에 쓴다) ⇒ **제목 이모지만으로는 대량 적용이 불가**하다.
+#   🟢 처방 = 본문에서 「열림 신호」를 세어 **표시하고 기본 차단**한다(`--force` 로만 통과).
+#     ⚠️ 이것은 사람 판단을 대체하지 않는다 — **읽으라는 경고를 숫자로 만든 것**이다.
+OPEN_SIGNALS = (
+    ('상태 이모지 🔴/🟠/🟡', re.compile(r'🔴|🟠|🟡')),
+    ('복귀·전환 트리거', re.compile(r'복귀 트리거|복귀 조건|warn→error|전환 대기')),
+    ('미결·대기 표기', re.compile(r'미결|대기 중|회신 대기|승인 대기|미적용|미배선|미갱신')),
+    ('BLOCKING 참조', re.compile(r'BLOCKING-\d')),
+    ('존재 이유 자기선언', re.compile(r'이 표가 없어서|없으면 같은 질문')),
+)
+
+
+def open_signals(body):
+    """절 본문의 「열림 신호」를 (이름, 건수) 목록으로 돌려준다."""
+    out = []
+    for name, rx in OPEN_SIGNALS:
+        n = len(rx.findall(body))
+        if n:
+            out.append((name, n))
+    return out
+
 
 def sha(s):
     return hashlib.sha256(s.encode('utf-8')).hexdigest()
@@ -161,6 +191,9 @@ def main():
                     help='--list 에서 선두가 🟢/✅ 인 절만 보인다')
     ap.add_argument('--min-bytes', type=int, default=0, help='--list 하한(바이트)')
     ap.add_argument('--apply', action='store_true', help='실제로 쓴다(기본은 dry-run)')
+    # 🆕 [2026-08-28 O111-B] 열린 내용 차단을 넘긴다 — **읽었다는 선언**이다.
+    ap.add_argument('--force', action='store_true',
+                    help='열림 신호가 있어도 진행(그 절을 읽었을 때만 · 이력에 적을 것)')
     a = ap.parse_args()
     a.label = resolve_label(a.label)
 
@@ -185,19 +218,33 @@ def main():
             closed = bool(CLOSED_RX.match(title))
             if a.closed_only and not closed:
                 continue
-            rows.append((b, i, j, lv, title, closed, is_retired(slines, i, j)))
+            body = '\n'.join(slines[k] for k in bl)
+            rows.append((b, i, j, lv, title, closed, is_retired(slines, i, j),
+                         open_signals(body)))
         rows.sort(reverse=True)
         print('[절 은퇴 후보] %s · 절 %d개 (표시 %d개)'
               % (os.path.basename(src), len(secs), len(rows)))
-        print('%9s %6s %4s %5s  %s' % ('본문B', '행', 'lv', '상태', '절 제목'))
-        for b, i, _j, lv, title, closed, retired in rows[:40]:
+        print('%9s %6s %4s %5s %5s  %s'
+              % ('본문B', '행', 'lv', '상태', '열림신호', '절 제목'))
+        for b, i, _j, lv, title, closed, retired, sig in rows[:40]:
             st = '은퇴됨' if retired else ('닫힘' if closed else '열림')
-            print('%9d %6d %4d %5s  %s' % (b, i + 1, lv, st, title[:58]))
+            n = sum(c for _n, c in sig)
+            print('%9d %6d %4d %5s %5s  %s'
+                  % (b, i + 1, lv, st, ('🔴%d' % n) if n else '—', title[:52]))
+            for name, c in sig:
+                print('%28s · %s %d건' % ('', name, c))
         live = [r for r in rows if not r[6]]
+        risky = [r for r in live if r[7]]
         print('표시 절 본문 합계 = %s B (이미 은퇴 %d개 제외 시 %s B)'
               % (format(sum(r[0] for r in rows), ','), len(rows) - len(live),
                  format(sum(r[0] for r in live), ',')))
         print('🔴 「닫힘」은 제목 선두 이모지 판정일 뿐이다 — 은퇴 전에 그 절을 읽어라.')
+        # 🆕 [O111-B] 열림 신호가 있는 후보를 **숫자로** 분리해 보고한다.
+        print('🔴🔴 열림 신호 보유 후보 %d / %d — 이 절들은 제목이 닫힘이어도 **본문에 살아 있는'
+              ' 추적이 있다**(실측 선례 = §DONE 순서9-C 의 warn→error 복귀 추적표).'
+              % (len(risky), len(live)))
+        if risky:
+            print('   ⇒ 은퇴 대상에서 **먼저 빼라**. 넣으려면 그 절을 읽고 `--force` 를 준다.')
         return 0
 
     want = [w.strip() for w in a.sections.split(',') if w.strip()]
@@ -228,6 +275,28 @@ def main():
         for s in already:
             print('   -', s[1][:60])
         return 1
+
+    # 🆕 🔴🔴 [2026-08-28 O111-B] **열린 내용 차단** — 제목이 닫힘이어도 본문이 살아 있으면 막는다.
+    #   실측 선례 = §`✅ [DONE 순서9-C]` 안의 warn→error 복귀 추적표(열린 트리거 7행).
+    #   🔴 이 검사가 없으면 **살아 있는 추적표가 닫힌 로그로 옮겨진다** — 되돌리기 비용이 크다.
+    risky = []
+    for lv, title, i, j in picked:
+        bl = body_lines(slines, i, j)
+        sig = open_signals('\n'.join(slines[k] for k in bl))
+        if sig:
+            risky.append((title, sig))
+    if risky and not a.force:
+        print('🔴🔴 열린 내용이 있는 절이 대상에 있다 — 중단한다(살아 있는 추적을 닫지 않기 위해):')
+        for title, sig in risky:
+            print('   - %s' % title[:70])
+            for name, c in sig:
+                print('       · %s %d건' % (name, c))
+        print('   🟢 처방 = ㉠ 그 절을 **읽고** ㉡ 정말 닫혔으면 `--force` 를 준다')
+        print('             ㉢ 아니면 대상에서 빼라(부분 은퇴가 정답인 경우가 많다).')
+        return 1
+    if risky and a.force:
+        print('⚠️ `--force` 로 열린 내용 차단을 넘겼다 — 절 %d개에 열림 신호가 있다.' % len(risky))
+        print('   🔴 이 사실은 이력·원장에 **그대로 적어라**(판단의 근거가 사람에게 있다).')
 
     # ── 이동 본문 구성 + 좌표 대응표 ──────────────────────────────────────
     plan = []

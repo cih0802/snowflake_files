@@ -84,14 +84,23 @@ def build_fixture(root):
     w(os.path.join(root, '_o999_entry.md'),
       '부산물 = `20_issue/10_진단_원인분석-002.md:4` · `02_원천결손_Gap분석.md`\n')
 
+    # 🆕 [2026-08-28 O111] 축11 = **은퇴본만 존재**하는 대상.
+    #   🔴 실사고 = `basename_index()` 가 `_archive` 를 가지치기해서, `_archive/` 에만
+    #     남은 문서를 인용하면 「어디에도 없다」(축1b)로 찍혔다 ⇒ 실측 9건 중 **8건이 오분류**.
+    #     그 결과 인수인계가 **하지 않아도 되는 삭제/개칭 판단 8건**을 다음 세션에 넘겼다.
+    w(os.path.join(root, '30_output_share', '_archive', '20260716', '02_은퇴본.md'),
+      '은퇴본 본문\n')
+    w(os.path.join(root, '20_issue', '98_은퇴인용_조각', '98_은퇴인용-001.md'),
+      '축11 은퇴본 = `02_은퇴본.md` 를 보라\n')
+
 
 def main():
     tmp = tempfile.mkdtemp(prefix='coordtest_')
-    old_root, old_idx = G.ROOT, G._INDEX
+    old_root, old_idx, old_arch = G.ROOT, G._INDEX, G._ARCH
     try:
         build_fixture(tmp)
-        G.ROOT, G._INDEX = tmp, None
-        dead, hist, over, abbrev, amb = G.scan()
+        G.ROOT, G._INDEX, G._ARCH = tmp, None, None
+        dead, hist, over, abbrev, amb, arch = G.scan()
         fixable = [it for it in dead if it['fix']]
         unknown = [it for it in dead if not it['fix']]
         coords = lambda xs: sorted(it['coord'] for it in xs)  # noqa: E731
@@ -148,6 +157,17 @@ def main():
         check(not any(it['coord'] == '00_README.md' for it in dead),
               '모호 인용이 blocking 으로 올라갔다')
 
+        print('[축11] 🆕 은퇴본만 존재 = 축6(관측) — 「어디에도 없다」가 아니다')
+        check(any(it['coord'] == '02_은퇴본.md' for it in arch),
+              '은퇴본 인용이 축6 으로 분류된다')
+        check(not any(it['coord'] == '02_은퇴본.md' for it in dead),
+              '🔴 은퇴본 인용이 축1b(어디에도 없다)로 오분류됐다 — O111 이 고친 결함')
+        check(all('_archive' in (it['target'] or '') for it in arch),
+              '축6 항목은 은퇴본 실경로를 제시한다')
+        # 🔴 대조군(재현율) — 진짜 부재는 여전히 축1b 여야 한다.
+        check('02_원천결손_Gap분석.md' in coords(unknown),
+              '진짜 부재 참조는 여전히 축1b 에 남는다(은폐 0)')
+
         print('[축10] exit code — 축1a 만 FAIL 을 만든다')
         rc = G.main([])
         check(rc == 1, '축1a 가 있는데 exit 0 이다')
@@ -161,7 +181,7 @@ def main():
         rc2 = G.main([])
         check(rc2 == 0, '축1a 를 고쳤는데 여전히 FAIL 이다(축1b·축3 이 blocking 이 됐다)')
     finally:
-        G.ROOT, G._INDEX = old_root, old_idx
+        G.ROOT, G._INDEX, G._ARCH = old_root, old_idx, old_arch
         shutil.rmtree(tmp, ignore_errors=True)
 
     print('')
@@ -170,7 +190,7 @@ def main():
         for f in FAIL:
             print('   · %s' % f)
         return 1
-    print('✅ 전건 통과 — 10축 %d개 단정' % len(OK))
+    print('✅ 전건 통과 — 11축 %d개 단정' % len(OK))
     return 0
 
 

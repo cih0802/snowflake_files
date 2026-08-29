@@ -132,6 +132,43 @@ def basename_index():
     return idx
 
 
+_ARCH = None
+
+
+def archive_index():
+    """🆕 [2026-08-28 O111 신설] **은퇴본 전용** `basename → [상대경로]` 인덱스.
+
+    🔴🔴 왜 필요한가 (O111 실측 · 인수인계 진단이 틀렸던 지점)
+      `basename_index()` 는 `SKIP_DIRS`(= `_archive` 포함)를 **가지치기**한다.
+      그래서 `_archive/` 아래에만 남은 문서를 인용하면 등급이 `dead` 가 되고
+      게이트는 **「참조 대상이 어디에도 없다」**로 찍는다.
+      · 실측 = 축1b 9건 중 **8건**이 이 오분류였다
+        (`02_원천결손_Gap분석.md` 5 · `00_README_이관안내.md` 3 ⇒ 둘 다
+         `30_output_share/_archive/20260716·20260806/` 에 **실재**한다).
+      · 🔴 인수인계는 이 9건을 「`_archive` 에도 없다 ⇒ 삭제인지 개칭인지 사람 판단」
+        이라고 적었는데, **그 전제 자체가 게이트의 오분류**였다.
+        ⇒ 사람 판단이 필요한 것은 **1건**뿐이다(`00_통합이슈_레지스트리_20260715.md`).
+    🟢 처방 = `_archive` 를 **스캔 원본**에서는 계속 빼되(스냅샷은 정본이 아니다)
+      **실재 판정 분모**에는 넣고, 등급을 `archived` 로 따로 세운다(축6).
+      ⇒ ③ `index_row_gate` 와 같은 원리다: **제외 규칙은 그 근거가 성립하는 축에만.**
+    """
+    global _ARCH
+    if _ARCH is not None:
+        return _ARCH
+    idx = {}
+    skip = tuple(d for d in SKIP_DIRS if d != '_archive')
+    for dirpath, dirs, files in os.walk(ROOT):
+        dirs[:] = [d for d in dirs if d not in skip]
+        if '_archive' not in os.path.relpath(dirpath, ROOT).split(os.sep):
+            continue
+        for f in files:
+            if f.endswith('.md'):
+                rel = os.path.relpath(os.path.join(dirpath, f), ROOT)
+                idx.setdefault(f, []).append(rel)
+    _ARCH = idx
+    return idx
+
+
 def abbrev_match(base):
     """약칭 좌표(`10_진단-002.md`)가 가리킬 만한 실제 파일을 찾는다.
 
@@ -203,6 +240,10 @@ def resolve(coord):
     ab = abbrev_match(base)
     if ab:
         return 'abbrev', ab, ab
+    # 🆕 [2026-08-28 O111] 은퇴본만 남은 문서 = `dead` 가 아니라 `archived`(축6).
+    arch = archive_index().get(base)
+    if arch:
+        return 'archived', arch[0], None
     return 'dead', None, None
 
 
@@ -216,8 +257,9 @@ def is_history(path):
 
 
 def scan():
-    """(dead_canon, dead_history, overflow, abbrev, ambiguous) — 각 항목 = dict."""
+    """(dead_canon, dead_history, overflow, abbrev, ambiguous, archived) — 각 항목 = dict."""
     dead_canon, dead_hist, overflow, abbrev, ambiguous = [], [], [], [], []
+    archived = []
     for p in md_files():
         rel = os.path.relpath(p, ROOT)
         hist = is_history(p)
@@ -235,6 +277,9 @@ def scan():
                     (dead_hist if hist else dead_canon).append(item)
                     if got is None:
                         continue
+                elif grade == 'archived':
+                    archived.append(item)
+                    continue          # 은퇴본은 행 번호 대조 대상이 아니다
                 elif grade == 'abbrev':
                     abbrev.append(item)
                 elif grade == 'ambiguous':
@@ -247,7 +292,7 @@ def scan():
                         overflow.append({'src': rel, 'line': n, 'coord': coord,
                                          'target': got, 'want': int(lineno),
                                          'have': tot, 'hist': hist})
-    return dead_canon, dead_hist, overflow, abbrev, ambiguous
+    return dead_canon, dead_hist, overflow, abbrev, ambiguous, archived
 
 
 def main(argv=None):
@@ -255,7 +300,7 @@ def main(argv=None):
     ap.add_argument('--list', action='store_true', help='죽은 좌표 전건을 보인다')
     a = ap.parse_args(argv)
 
-    dead_canon, dead_hist, overflow, abbrev, ambiguous = scan()
+    dead_canon, dead_hist, overflow, abbrev, ambiguous, archived = scan()
     fixable = [it for it in dead_canon if it['fix']]
     unknown = [it for it in dead_canon if not it['fix']]
     print('[문서 좌표 실재 게이트] 스캔 %d파일' % len(md_files()))
@@ -285,6 +330,12 @@ def main(argv=None):
     for it in (ambiguous if a.list else ambiguous[:10]):
         print('    🟠 %s:%d  %s → %d곳에 있다(첫 후보 %s) ⇒ 경로를 붙여라'
               % (it['src'], it['line'], it['coord'], it['places'], it['target']))
+    # 🆕 [2026-08-28 O111] 축6 = 은퇴본만 존재. 종전에는 축1b「어디에도 없다」로 섞여
+    #   **삭제 판단을 요구**했으나, 실체는 `_archive/` 에 남아 있어 따라갈 수 있다.
+    print('  축6 은퇴본만 존재(`_archive/` 에 실재 · 관측): %d건' % len(archived))
+    for it in (archived if a.list else archived[:10]):
+        print('    ⚪ %s:%d  %s → 은퇴본 %s' % (
+            it['src'], it['line'], it['coord'], it['target']))
 
     print('')
     if fixable:

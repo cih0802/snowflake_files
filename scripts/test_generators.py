@@ -259,14 +259,26 @@ def measure():
     try:
         import gen_metric_gold_mapping as GMM
         idx, ents = GMM.load_gold_inventory()
+        # 🆕 🔴🔴 [2026-08-28 O111-B] **카운트 대신 키 목록을 저장한다.**
+        #   왜: O111 착수 시점에 이 세 지표가 골든과 **+3** 씩 달랐는데, 골든이 **개수만**
+        #   담고 있어 「어느 3건인가」를 귀속할 수 없었다(`_archive` 에 그 문서의 이전 판본도
+        #   없다) ⇒ `--update-golden` 의 전제 조건인 **「차이를 전량 규명」이 원리적으로 불가**했다.
+        #   🟢 `diff()` 는 이미 리스트를 **원소 단위로 열거**하므로, 목록으로 저장하면
+        #   다음 차이는 그 자리에서 「무엇이 늘고 무엇이 사라졌는가」로 나온다.
+        #   ⚠️ 개수도 함께 남긴다(사람이 읽는 요약 · 회귀 비교의 빠른 축).
+        ent_keys = sorted('%s.%s' % (e['table'], e['col']) for e in ents)
         m["inv.entries"] = len(ents)
+        m["inv.entry_keys"] = ent_keys
         m["inv.index_keys"] = len(idx)
+        m["inv.index_key_list"] = sorted(idx)
         m["inv.unreachable"] = sorted({f'{e["table"]}.{e["col"]}' for e in ents
                                        if e["label"][:1] in MARKERS_STATUS
                                        or EDIT_MARKER.match(e["label"])})
-        m["inv.desc_cells"] = len(sorted({f'{e["table"]}.{e["col"]}' for e in ents
-                                          if len(e["label"]) > 40 or "**" in e["label"]
-                                          or "←" in e["label"]}))
+        desc = sorted({f'{e["table"]}.{e["col"]}' for e in ents
+                       if len(e["label"]) > 40 or "**" in e["label"]
+                       or "←" in e["label"]})
+        m["inv.desc_cells"] = len(desc)
+        m["inv.desc_cell_list"] = desc
         per = collections.defaultdict(set)
         for e in ents:
             per[e["label_norm"]].add(f'{e["table"]}.{e["col"]}')
@@ -731,7 +743,7 @@ def self_check():
     return allgood
 
 
-def update_golden():
+def update_golden(reason=None, label=None):
     m = measure()
     os.makedirs(os.path.dirname(GOLDEN), exist_ok=True)
     prev = json.load(open(GOLDEN, encoding="utf-8")) if os.path.exists(GOLDEN) else None
@@ -742,28 +754,60 @@ def update_golden():
             print("  · " + line)
     from datetime import date
     fp = schema_fingerprint()
+    # 🆕 🔴🔴 [2026-08-28 O111-B 자기시정] **지문을 못 구했으면 이전 값을 보전한다.**
+    #   종전 구현은 `fp = None` 을 그대로 써서, `/tmp/schema.json` 이 없는 세션이
+    #   `--update-golden` 을 돌리면 **살아 있던 지문을 조용히 지웠다**
+    #   (`/tmp` 는 세션마다 비워지므로 이것은 예외가 아니라 **기본 상황**이다).
+    #   ⇒ 그러면 `T5.freshness` 가 「골든에 스키마 지문이 없다」로 바뀌어 **신선도 검사가 꺼진다**
+    #   — 검사가 꺼지는 것은 FAIL 보다 나쁘다(`P106`). 🔴 O111-B 가 실제로 한 번 지웠고
+    #   이 가드로 복원했다.
+    if fp is None and prev and prev.get("schema_fingerprint"):
+        fp = prev["schema_fingerprint"]
+        print("  🟢 스키마 지문 보전 — 현재 측정 불가(`/tmp/schema.json` 부재)라 "
+              "이전 골든 값(%s)을 유지한다(지우지 않는다)." % fp)
     if fp is None:
         print("  ⚠️ `/tmp/schema.json` 이 없어 **스키마 지문을 기록하지 못했다** — "
               "`dump_schema.py` 를 먼저 돌리고 다시 갱신할 것(지문 없는 골든은 신선도 검사를 못 한다).")
+    # 🆕 🔴 [2026-08-28 O111-B] **재발행 사유·라벨·시각을 이력으로 남긴다.**
+    #   O109 가 `index_row_gate`·`doc_heading_gate` 골든에는 이 계약을 넣었는데
+    #   **이 골든만 빠져 있었다** ⇒ 「정당한 재발행」과 「FAIL 을 덮은 재발행」을
+    #   나중에 **구별할 수 없다**(`R1-7-4` 가 막으려는 바로 그 상태).
+    import time as _t
+    entry = {
+        "date": _t.strftime("%Y-%m-%d %H:%M:%S"),
+        "label": label or os.environ.get("SESSION_LABEL", "") or "UNLABELED",
+        "reason": reason or "(사유 미기재)",
+        "diff_count": len(d) if prev else 0,
+    }
+    hist = (prev.get("history") if prev else None) or []
     json.dump({
         "_doc": "산출물 생성기 회귀 골든. 생성/대조 = scripts/test_generators.py (measure()). "
                 "🔴 수기 편집 금지 — 차이를 전량 규명한 뒤 --update-golden 으로 갱신한다. "
                 "⚠️ 최상위 `measured` 는 **이 골든을 갱신한 날**이고 산출물의 측정일이 아니다 — "
-                "산출물별 측정일은 metrics['art.measured'] 에 있다(판본 혼재가 여기서 드러난다).",
+                "산출물별 측정일은 metrics['art.measured'] 에 있다(판본 혼재가 여기서 드러난다). "
+                "🆕 `history` = 재발행 사유 이력(O111-B 신설 · 규명 없는 갱신을 사후 식별하기 위함).",
         "measured": os.environ.get("GN_DW_MEASURED", date.today().isoformat()),
         "schema_fingerprint": fp,
+        "history": hist + [entry],
         "metrics": m,
     }, open(GOLDEN, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
     print("WROTE:", GOLDEN, f"· 스키마 지문 {fp}")
+    print("   발행 이력 = %s · %s · %s" % (entry["date"], entry["label"], entry["reason"]))
+    if not reason:
+        print("   🟠 `--reason` 미지정 — 다음 세션이 「왜 올렸는지」를 알 수 없다.")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--update-golden", action="store_true")
+    ap.add_argument("--reason", default=None,
+                    help="골든 재발행 사유(권고 · 미지정이면 경고 · O111-B 신설)")
+    ap.add_argument("--label", default=None,
+                    help="재발행 세션 라벨(생략 시 환경변수 SESSION_LABEL)")
     ap.add_argument("--self-check", action="store_true", help="일부러 깨뜨려 검출 여부 확인(생성기 3종 + 산출물 5종)")
     a = ap.parse_args()
     if a.update_golden:
-        update_golden()
+        update_golden(a.reason, a.label)
         return 0
     if a.self_check:
         return 0 if self_check() else 1

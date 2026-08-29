@@ -498,6 +498,63 @@ def build_hub(src, lines, chunks, digest, outdir=None, mode='section', label='�
     return '\n'.join(out) + '\n'
 
 
+def expect_guard(where, text, expect, paths=None):
+    """🆕 [2026-08-28 O111-B 신설] 유지 연산의 **신선도·영속성 가드**.
+
+    🔴🔴 왜 필요한가 — 이 워크스페이스에서 **같은 지점에서 두 번** 편집이 사라졌다.
+      ㉠ **O107** = `edit` 로 넣은 절(67줄)이 직후 실측으로 확인됐는데, 승인받아 돌린
+         `--rebalance` 가 **낡은 내용을 읽어**(2,174줄 ↔ 2,107줄) 전 조각을 그것으로
+         재기록해 **편집이 사라졌다**.
+      ㉡ **O111** = 원장 §1 `O111` 행을 `edit` 로 넣고 **같은 명령에서 `grep -c` = 1** 을
+         확인한 뒤 `--republish` 를 돌렸는데, 나중에 다시 세니 **행이 없었다**
+         (조각 스냅샷이 없어 복원은 재작성뿐이었다).
+    🔴 **게이트 6종이 두 번 다 전부 🟢 였다.** 이유가 분명하다:
+      · `verify()` 는 **자기일관성**(concat ↔ 허브 해시)만 본다 — 내용이 낡아도 일관되면 🟢.
+      · `R1-7-2`(해시 안정성)는 **같은 시점 2회 읽기**만 본다 — 이 사고는 **시점 간 불일치**다.
+      ⇒ 두 축 모두 **원리적으로** 못 잡는다. 그래서 별도 가드가 필요하다.
+
+    🟢 설계 = **호출자가 「지금 반드시 있어야 하는 토큰」을 선언**하고(`--expect`) 도구가
+      ㉠ **쓰기 전** 방금 수집한 내용에 그 토큰이 있는지(신선도) ㉡ **쓴 뒤** 디스크에서
+      다시 읽어 여전히 있는지(영속성)를 **둘 다** 단정한다.
+      · ㉠ 이 O107 을 막고 ㉡ 가 O111 을 막는다 — **두 사고는 다른 축이므로 둘 다 필요하다.**
+      · 🔴 토큰이 없으면 **쓰지 않고 중단**한다(경고가 아니다 — 되돌릴 수 없는 연산이다).
+
+    ⚠️ 이것은 **선언 기반 가드**다 — `--expect` 를 안 주면 검사할 것이 없다.
+      그래서 `R1-6-23` 이 「유지 연산에는 `--expect` 를 준다」를 의무로 만든다.
+    """
+    if not expect:
+        return 0
+    missing = [t for t in expect if t not in text]
+    if missing:
+        print('🔴 %s 신선도 FAIL — 방금 수집한 내용에 이 토큰이 없다: %s'
+              % (where, ', '.join(missing)))
+        print('   ⇒ 파일을 쓰지 않았다. 낡은 내용을 읽었을 가능성이 있다(O107 형).')
+        print('   🟢 복구 = 그 편집을 다시 확인하고, 필요하면 다시 쓴 뒤 재실행하라.')
+        return 1
+    print('  🟢 신선도 가드 통과 — 기대 토큰 %d종 전건 실재' % len(expect))
+    return 0
+
+
+def persist_guard(where, paths, expect):
+    """쓰기 **후** 디스크에서 되읽어 토큰 영속성을 단정한다(`expect_guard` ㉡ 축)."""
+    if not expect:
+        return 0
+    blob = []
+    for p in paths:
+        if os.path.exists(p):
+            blob.append(read_text(p))
+    joined = '\n'.join(blob)
+    missing = [t for t in expect if t not in joined]
+    if missing:
+        print('🔴🔴 %s 영속성 FAIL — 쓴 뒤 되읽으니 토큰이 없다: %s'
+              % (where, ', '.join(missing)))
+        print('   ⇒ 쓰기가 반영되지 않았거나 다른 주체가 덮었다(O111 형 · `R1-7-2` 축 밖).')
+        print('   🔴 스냅샷 경로를 확인하고 **재작성 복원**을 준비하라.')
+        return 1
+    print('  🟢 영속성 가드 통과 — 되읽기에서 기대 토큰 %d종 전건 실재' % len(expect))
+    return 0
+
+
 def baseline_snapshot(src):
     """`verify()` 게이트2·3 이 「원문」으로 쓸 **최초 분할 스냅샷**을 찾는다.
 
@@ -774,7 +831,7 @@ def verify(src):
     return 0
 
 
-def republish(src, snap_label=None):
+def republish(src, snap_label=None, expect=None):
     """조각을 편집한 뒤 허브를 **다시 만든다**(`R1-6-9` 의 집행 도구).
 
     🔴 [2026-08-18 O83 신설] `R1-6-9` 는 「조각 편집 후 허브 SHA256 재발행」을 규정하고
@@ -816,6 +873,10 @@ def republish(src, snap_label=None):
         chunks.append((off, off + n))
         off += n
 
+    # 🆕 [O111-B] 쓰기 전 **신선도 가드** — 낡은 내용을 읽었으면 여기서 멈춘다(O107 형).
+    if expect_guard('republish', logical, expect):
+        return 1
+
     if not os.path.isdir(ARCHIVE):
         os.makedirs(ARCHIVE)
     snap, _st = snapshot(src, 'prehub', label=snap_label, archive=ARCHIVE)
@@ -827,10 +888,15 @@ def republish(src, snap_label=None):
     print('   허브 %s B (상한 %d B · 여유 %d B)'
           % (format(nbytes(read_text(src)), ','), MAX_BYTES,
              MAX_BYTES - nbytes(read_text(src))))
+    # 🆕 [O111-B] 쓴 뒤 **영속성 가드** — 조각을 되읽어 토큰이 살아 있는지 본다(O111 형).
+    #   🔴 `republish` 는 조각을 쓰지 않지만, 「조각이 지금도 그 내용인가」는 여기서 확인해야
+    #     의미가 있다(허브를 그 내용으로 발행했다고 선언하는 시점이 여기다).
+    if persist_guard('republish', paths, expect):
+        return 1
     return verify(src)
 
 
-def rebalance(src, mode=None, fill=0.7, snap_label=None):
+def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None):
     """허브+조각을 **현재 내용**으로 재분할해 상한 여유를 회복한다(`R1-6-14`).
 
     🔴 왜 필요한가 (2026-08-18 O83-B 실측): 갱신형 원장은 신규 행이 표 머리(최신 우선)에
@@ -866,6 +932,11 @@ def rebalance(src, mode=None, fill=0.7, snap_label=None):
         print('🔴 재분할 후에도 상한 초과 조각 %s — 경계를 못 찾았다.' % over)
         return 1
 
+    # 🆕 🔴🔴 [O111-B] **여기가 O107 사고 지점이다** — `collect_bodies` 가 낡은 내용을 읽으면
+    #   그 낡은 내용으로 **전 조각을 재기록**해 편집이 사라진다. 쓰기 전에 반드시 막는다.
+    if expect_guard('rebalance', logical, expect):
+        return 1
+
     if not os.path.isdir(ARCHIVE):
         os.makedirs(ARCHIVE)
     snap, _st = snapshot_content(src, 'prerebalance', logical, label=snap_label, archive=ARCHIVE)
@@ -889,6 +960,11 @@ def rebalance(src, mode=None, fill=0.7, snap_label=None):
     print('  조각 %d개 재기록 · 잉여 삭제 %d개 · 허브 재발행 %s' % (total, removed, digest[:16]))
     sizes = [nbytes(read_text(chunk_path(src, k, outdir))) for k in range(1, total + 1)]
     print('  조각 크기 max %d B · 최소 여유 %d B' % (max(sizes), MAX_BYTES - max(sizes)))
+    # 🆕 [O111-B] 재기록한 **새 조각 경로**를 되읽어 영속성을 단정한다.
+    if persist_guard('rebalance',
+                     [chunk_path(src, k, outdir) for k in range(1, total + 1)],
+                     expect):
+        return 1
     return verify(src)
 
 
@@ -1148,6 +1224,13 @@ def main():
                     help='조각을 이 하위 폴더에 둔다(허브는 원 위치 유지). 예: 01_세션이력_조각')
     # 🔴 [2026-08-28 O109] 스냅샷 라벨 — 하드코딩된 세션 라벨을 대체한다(인수 ▣WWW ①).
     add_label_arg(ap)
+    # 🆕 🔴🔴 [2026-08-28 O111-B] `--expect` = **이 연산 뒤에도 반드시 살아 있어야 하는 토큰**.
+    #   두 번 편집이 사라진 지점(O107 `--rebalance` · O111 `--republish` 직후)에 가드를 건다.
+    #   · 쓰기 **전** = 방금 수집한 내용에 있는가(신선도 · 낡은 읽기 차단)
+    #   · 쓴 **뒤** = 디스크에서 되읽어도 있는가(영속성 · 조용한 소실 차단)
+    #   🔴 없으면 **쓰지 않고 exit 1**. 여러 번 줄 수 있다.
+    ap.add_argument('--expect', action='append', default=None, metavar='TOKEN',
+                    help='유지 연산 전후로 실재를 단정할 토큰(반복 가능 · R1-6-23)')
     a = ap.parse_args()
     src = a.path if os.path.isabs(a.path) else os.path.join(ROOT, a.path)
     if not os.path.exists(src):
@@ -1160,9 +1243,9 @@ def main():
             p = os.path.join(ROOT, p)
         return rollover(src, p)
     if a.rebalance:
-        return rebalance(src, a.boundary, a.fill, snap_label=a.label)
+        return rebalance(src, a.boundary, a.fill, snap_label=a.label, expect=a.expect)
     if a.republish:
-        return republish(src, snap_label=a.label)
+        return republish(src, snap_label=a.label, expect=a.expect)
     if a.verify:
         return verify(src)
     return build(src, a.dry_run, a.boundary or 'section', a.outdir, label=a.label)

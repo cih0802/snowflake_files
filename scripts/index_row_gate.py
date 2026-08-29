@@ -210,25 +210,60 @@ def is_generated(key):
 
 
 def judge(cur, golden):
-    fails, added = [], []
+    """반환 = (fails, added, observed).
+
+    🆕 🔴🔴 [2026-08-28 O111] **제외 규칙(`is_generated`)은 「유실」 축에만 적용한다.**
+      종전에는 `base`·`now` 를 **한 번에** 걸러서 중복 축까지 같이 좁혔다.
+      · 자동 생성 표를 유실 축에서 빼는 근거(O83-B)는 **「값이 매번 바뀐다」**인데,
+        그 근거는 **중복 축에는 성립하지 않는다** — 도구가 같은 행을 두 번 찍는 것은
+        유실과 똑같이 사고다. ⇒ 근거가 없는 축까지 눈을 감고 있었다.
+      · 🟢 실측(O111 착수 시점) = 자동 생성 표의 중복은 **0건**이었다.
+        즉 이 분리로 오늘 당장 새 FAIL 이 생기지는 않는다(재현율만 회복한다).
+
+    🆕 🔴🔴 [2026-08-28 O111] **「절대 중복」을 별도로 관측해 보고한다.**
+      🔴 종전 요약은 `중복 0` 이라고 찍었지만, 그것은 **「골든 대비 증가 0」**이었다.
+        실측 = `00_INDEX` 리스트 291 ↔ 집합 281 ⇒ **중복 10행이 실재**하는데
+        출력만 보면 「중복이 없다」로 읽힌다(판정이 아니라 **문구가 은폐**했다).
+      🟢 그러나 절대 중복은 **blocking 이 아니다** — 실측 2종의 정체는
+        `🔷 Phase 배정 ¦ P1`(×4) · `¦ P2`(×8) 로, **첫 셀이 유일키가 아닌 정상 표**다.
+        ⇒ blocking 으로 올리면 정상 문서가 막힌다(`P130` 「항상 빨간 게이트」).
+      ⇒ 판정은 **골든 대비 증가**로 두고, 절대 중복은 **숫자로 노출**한다.
+        🔴 인수인계의 진단(「`GENERATED_SECTIONS` 제외 규칙에 가려졌다」)은 **틀렸다** —
+          가려진 것이 아니라 **다른 것을 세고 있었다.**
+    """
+    fails, added, observed = [], [], {}
     for t, base in golden.items():
         now = cur.get(t)
         if now is None:
             fails.append('%s: 파일이 없다(골든에는 행 %d개)' % (t, len(base)))
             continue
-        base = [k for k in base if not is_generated(k)]
-        now = [k for k in now if not is_generated(k)]
-        bc, nc = Counter(base), Counter(now)
 
-        lost = sorted(k for k in bc if nc[k] < bc[k])
+        # ── 유실 축: 자동 생성 표 제외(O83-B 근거가 성립하는 유일한 축) ──
+        base_l = [k for k in base if not is_generated(k)]
+        now_l = [k for k in now if not is_generated(k)]
+        bcl, ncl = Counter(base_l), Counter(now_l)
+        lost = sorted(k for k in bcl if ncl[k] < bcl[k])
         if lost:
             fails.append('%s: 행 유실 %d건 ▸ %s' % (
                 t, len(lost), ' / '.join(lost[:6])))
 
+        # ── 중복 축: 제외하지 않는다(전량) ──────────────────────────────
+        bc, nc = Counter(base), Counter(now)
         dup = sorted(k for k in nc if nc[k] > 1 and nc[k] > bc.get(k, 0))
         if dup:
             fails.append('%s: 행 중복 %d건 ▸ %s' % (
                 t, len(dup), ' / '.join('%s(×%d)' % (k, nc[k]) for k in dup[:6])))
+
+        # ── 관측 축: 절대 중복(판정 아님 · 문구 은폐 방지) ────────────────
+        dup_abs = {k: v for k, v in nc.items() if v > 1}
+        observed[t] = {
+            'rows': len(now),
+            'uniq': len(set(now)),
+            'dup_keys': len(dup_abs),
+            'dup_rows': len(now) - len(set(now)),
+            'dup_gen': len([k for k in dup_abs if is_generated(k)]),
+            'sample': sorted(dup_abs.items(), key=lambda x: -x[1])[:3],
+        }
 
         new = sorted(k for k in nc if bc[k] < nc[k] and k not in bc)
         if new:
@@ -237,7 +272,7 @@ def judge(cur, golden):
     for t in cur:
         if t not in golden:
             added.append((t, ['(골든에 없는 신규 파일)']))
-    return fails, added
+    return fails, added, observed
 
 
 def main(argv):
@@ -300,10 +335,23 @@ def main(argv):
     print('[원장 행 키 게이트] 표면 %d · 현재 행 %d · 골든 %d'
           % (len(TARGETS), tot, sum(len(v) for v in golden.values())))
 
-    fails, added = judge(cur, golden)
+    fails, added, observed = judge(cur, golden)
     for t, new in added:
         print('  ⚪ %s: 신설 %d행 (예: %s)'
               % (t, len(new), new[0][:70]))
+
+    # 🆕 [2026-08-28 O111] 절대 중복을 **숫자로** 노출한다(판정 아님 · 문구 은폐 방지).
+    for t in sorted(observed):
+        o = observed[t]
+        mark = '⚪' if o['dup_rows'] == 0 else '🟠'
+        print('  %s %s: 행 %d · 고유 %d · 중복 %d행(키 %d종 · 자동생성표 %d종)'
+              % (mark, os.path.basename(t), o['rows'], o['uniq'],
+                 o['dup_rows'], o['dup_keys'], o['dup_gen']))
+        for k, v in o['sample']:
+            print('       ×%d  %s' % (v, k[:80]))
+    print('  🔵 절대 중복은 blocking 이 아니다 — 「첫 셀이 유일키가 아닌 표」가 실재한다'
+          '(`🔷 Phase 배정`). 판정 축 = **골든 대비 증가**.')
+
     if fails:
         print('\n🔴 게이트 실패 — 행 집합이 깨졌다(전체 재작성 write 의 전형 · C5·C7)')
         for f in fails:
@@ -311,7 +359,13 @@ def main(argv):
         print('\n   복구: 소실 행을 `edit` 부분 치환으로 되살린 뒤 재실행한다.')
         print('   🔴 `--update-golden` 으로 덮지 마라 — 그것은 사고를 기준선으로 만드는 것이다.')
         return 1
-    print('\n✅ 게이트 통과 — 행 유실 0 · 중복 0')
+    # 🔴 [O111] 주의 문구는 **판정 줄보다 먼저** 찍고 이모지로 시작하지 않는다 —
+    #   `session_brief.gate_verdict` 는 **마지막 상태 이모지 줄**을 판정으로 읽으므로
+    #   판정 뒤에 🔴 로 시작하는 줄을 두면 브리핑이 이 게이트를 **FAIL 로 표시**한다
+    #   (O109 D5 와 같은 축의 사고를 만들 뻔했다 — 게이트 출력은 계약이다).
+    print('\n   (주의) 아래 통과 문장은 「중복이 없다」가 아니다 —'
+          ' 절대 중복은 위 관측 줄을 보라.')
+    print('✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0')
     return 0
 
 
