@@ -19,6 +19,11 @@
 ④ 무결성 — 스냅샷 바이트·SHA256 이 원본과 동일(인코딩·개행 변환 없음)
 ⑤ 거부 — 경로 구분자 라벨 · 빈 op · 없는 원본 · 접미 소진은 예외로 중단
 ⑥ 회귀 — `split_doc.py` 소스에 **하드코딩 라벨이 남아 있지 않다**
+⑦ 전수 회귀 — 스냅샷을 쓰는 도구가 전부 헬퍼를 경유한다(우회 경로 0)
+⑧ 회귀 — `--label` 기본값에 세션 라벨을 하드코딩하지 않는다
+⑨ 🆕 회귀 — **라벨 해소 산식을 재구현하지 않는다**(골든에 라벨을 적는 도구까지 · O114-B)
+   🔴 왜 축을 늘렸나: ⑦⑧ 은 「스냅샷을 쓰는 5종」만 봤고, **골든에 라벨만 적는 도구 2종**은
+   판정 밖이었다 ⇒ 그 2종이 `resolve_label()` 을 쓰지 않고 각자 재구현하고 있었다.
 """
 
 import io
@@ -33,6 +38,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import snapshot_util as S  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+#: 축9 판정에 쓰는 폴백 문자열. 🔴 리터럴을 여기 한 번만 두고 `snapshot_util` 에서 가져온다 —
+#   테스트가 그 값을 따로 적으면 그것이야말로 「다르게 재는 지점」이 된다.
+LABEL_FB = S.LABEL_FALLBACK
 
 FAIL = []
 OK = []
@@ -178,6 +187,28 @@ def main():
                            encoding='utf-8').read()
             bad = re.findall(r"add_argument\(\s*'--label'\s*,\s*default='O[\d\-A-Z]+'", body)
             check(not bad, '%s 라벨 기본값 하드코딩 없음 (%s)' % (name, bad[:1] or '없음'))
+
+        print('[축9] 🔴 회귀 — 라벨 해소 산식을 **재구현**하지 않는다 (O114-B 신설)')
+        # 🔴🔴 [2026-08-29 O114-B] 축7·축8 은 **스냅샷을 쓰는 5종**만 봤다. 그런데 골든 파일에
+        #   세션 라벨을 적는 도구(`index_row_gate`·`test_generators`)가 `resolve_label()` 을 쓰지 않고
+        #   `a.label or os.environ.get('SESSION_LABEL','') or 'UNLABELED'` 를 **각자 재구현**하고 있었다.
+        #   ⇒ 같은 것을 다르게 재는 지점이고(`R3-9 ㉡`), 정규화(`_sanitize`)를 건너뛰었다.
+        #   ⚠️ 축7 의 「스냅샷 우회」 판정으로는 **원리적으로 잡히지 않는다**(스냅샷을 쓰지 않으므로)
+        #      — 제외 근거가 성립하지 않는 축에 그 근거를 쓰면 안 된다는 `§C24 ㉡` 의 실물이다.
+        labelers = ('index_row_gate.py', 'test_generators.py')
+        for name in labelers:
+            body = io.open(os.path.join(ROOT, 'scripts', name),
+                           encoding='utf-8').read()
+            code = '\n'.join(ln for ln in body.split('\n')
+                             if not ln.lstrip().startswith('#'))
+            check('resolve_label(' in code,
+                  '%s 가 resolve_label() 을 경유한다' % name)
+            # 🔴 판정은 **주석을 뺀 코드**에서 「환경변수 + 폴백을 손으로 잇는 줄」만 본다.
+            #   (설명 문장에 `SESSION_LABEL` 이 나오는 것은 무해하다 — P130 오탐 회피.)
+            reimpl = [ln for ln in code.split('\n')
+                      if 'SESSION_LABEL' in ln and LABEL_FB in ln]
+            check(not reimpl, '%s 에 라벨 재구현 줄 없음 (%s)'
+                  % (name, reimpl[:1] or '없음'))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -187,7 +218,7 @@ def main():
         for f in FAIL:
             print('   · %s' % f)
         return 1
-    print('✅ 전건 통과 — 8축 %d개 단정' % len(OK))
+    print('✅ 전건 통과 — 9축 %d개 단정' % len(OK))
     return 0
 
 

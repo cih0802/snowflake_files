@@ -53,6 +53,11 @@ MAX_BRIEF_BYTES = 32 * 1024      # doc_type_gate 축3(여유 20%)을 만족하�
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from doc_census import census, stale_check, chunk_paths      # noqa: E402
 
+#: 분할 조각의 본문 시작 센티넬 — 🔴 **여기서 다시 정의하지 않는다.**
+#: 근거 = `R3-9 ㉡`(같은 것을 다르게 재는 지점이 어긋난다) ⇒ `split_doc.py` 가 유일한 정의 지점이고
+#: `index_row_gate.py` 도 같은 문자열을 쓴다. 문자열이 바뀌면 이 도구는 자동으로 따라간다.
+from split_doc import BODY_BEGIN                             # noqa: E402
+
 EMOJI_OPEN = ('🔴', '🟠', '🟡')
 EMOJI_DONE = ('🟢', '✅')
 STRIKE = re.compile(r'^\s*~~.*~~\s*$')
@@ -75,8 +80,49 @@ def clip(s, n):
     return s if len(s) <= n else s[:n - 1] + '…'
 
 
+def strip_chunk_preamble(lines):
+    """조각 머리말(`BODY-BEGIN` 위 3줄)을 걷어내 **논리 문서 스트림**을 만든다.
+
+    🔴🔴 [2026-08-29 O112 신설 · `99_NEXT §0-RRR ▣NNNN ⑦` 의 처방]
+    왜 필요한가 — **브리핑의 「열린 착수표」 수가 조각 경계에 의존했다.**
+    O111-B 실측: 재균형 직후 착수표가 **10 → 11** 로 늘었고 늘어난 ⑬은
+    `99_NEXT_SESSION-015.md:68` 의 **진짜 열린 항목**이었다. 종전 10 은 **과소 보고**였고,
+    더 나쁜 것은 그 감소가 **「닫아서 줄었다」와 구별되지 않는다**는 점이다
+    (`init_ihcho` 세션 종료 절차가 「열린 건수가 줄었는가」를 **닫힘의 판정식**으로 쓴다
+     ⇒ 경계가 바뀌면 그 판정식이 조용히 거짓말을 한다).
+
+    원인 = `family_lines` 가 조각을 **파일별로** 흘려보내는데, 조각 선두 3줄
+    (`SPLIT-CHUNK` · 편집 금지 경고 · `BODY-BEGIN`)이 `|` 로 시작하지 않으므로
+    `rows_of_table` 의 `inside` 를 **꺼 버린다** ⇒ 표 헤더가 앞 조각에 남은 채
+    경계 뒤 본문 행이 **헤더 없는 행**으로 보여 전부 탈락한다.
+
+    선례 = `index_row_gate.logical_text()` — **같은 사고를 35행 오탐으로 겪었다.**
+    ⇒ 같은 분할 계약(`BODY-BEGIN` 아래만 본문)을 상속한다.
+
+    🟢 **줄 번호는 보존한다** — 이 도구의 산출물은 좌표(`파일:행`)이고, 좌표가 틀리면
+    브리핑의 유일한 가치(무엇을 읽어야 하는가)가 무너진다. ⇒ 머리말을 **드롭**하되
+    남는 줄의 번호는 원본 그대로 둔다(재번호 부여 금지).
+    """
+    has_sentinel = set()
+    for rel, _ln, line in lines:
+        if line.strip() == BODY_BEGIN:
+            has_sentinel.add(rel)
+    out, passed = [], set()
+    for rel, ln, line in lines:
+        if rel in has_sentinel and rel not in passed:
+            if line.strip() == BODY_BEGIN:
+                passed.add(rel)          # 이 줄까지 버리고 다음 줄부터 본문
+            continue
+        out.append((rel, ln, line))
+    return out
+
+
 def family_lines(hub_rel, where='sibling'):
-    """(파일상대경로, 행번호, 줄) 스트림 — 허브+조각을 순서대로."""
+    """(파일상대경로, 행번호, 줄) 스트림 — 허브+조각을 순서대로.
+
+    🔴 [O112] 조각 머리말을 걷어낸 **논리 문서**를 돌려준다(`strip_chunk_preamble`).
+    걷어내지 않으면 조각 경계에 걸친 표·절 문맥이 끊긴다.
+    """
     out = []
     hub = os.path.join(ROOT, hub_rel)
     paths = [hub] + chunk_paths(hub_rel, where)
@@ -86,7 +132,7 @@ def family_lines(hub_rel, where='sibling'):
         rel = os.path.relpath(p, ROOT)
         for i, line in enumerate(read_text(p).split('\n'), 1):
             out.append((rel, i, line))
-    return out
+    return strip_chunk_preamble(out)
 
 
 # ── 표 범위 한정 헬퍼 ──────────────────────────────────────────────────

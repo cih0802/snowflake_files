@@ -105,14 +105,60 @@ models:
           - accepted_values:
               values: ['DIGITAL', 'VIDEO', 'REBROADCAST']   # DEC-8 출처 명시축
 
+  # 🆕 [2026-08-29 O114-B] 예산 3모델 테스트 보강.
+  #   🔴 종전에는 세 모델 모두 `BUDGET_ITEM_DK`에 `not_null` 하나뿐이었고 `ERP_BUDGET_YEARLY` 는
+  #     **항목 자체가 없어 테스트 0건**이었다 ⇒ 원천이 `BDGT_PRCD_NM`(편성 차수)을 신설해
+  #     **한 키에 연사업+추가경정이 섞이는** 그레인 사고가 **아무 테스트도 울리지 않고** 통과했다.
+  #   🔴 `unique`/그레인 판정은 `dbt_utils` 가 없어(패키지 미설치) **singular test** 로 둔다:
+  #     `tests/warn_erp_budget_procedure_merge.sql` · `warn_erp_budget_month_grain.sql` ·
+  #     `warn_erp_budget_yearly_grain.sql` (3종 모두 `severity: warn`).
+  #   ⚠️ **warn 인 이유** = 차수를 키에 넣을지는 **설계 결정**(`DEC-44`)이라 이 세션이 정할 수 없다.
+  #     🔴 결정이 내려지면 **`error` 로 올려라** — warn 으로 방치하면 「항상 노란 게이트」가 되어
+  #     아무도 안 본다(`P103-⑤`). 그 승격이 `DEC-44` 의 종결 조건이다.
   - name: ERP_BUDGET
     columns:
       - name: BUDGET_ITEM_DK
-        tests: [not_null]
+        description: >
+          예산과목 대체키(MD5 10컬럼). 🔴 [O114-B] 이 산식은 `ERP_BUDGET_ITEM`·`ERP_BUDGET_YEARLY`
+          와 **같아야 한다** — 세 곳 중 하나만 바꾸면 조인이 조용히 끊어진다(`R3-9 ㉡`).
+        tests:
+          - not_null
+          - relationships:      # 🆕 FK 계약을 기계로 고정한다(모델 주석의 「FK 정합」 선언을 집행).
+              to: ref('ERP_BUDGET_ITEM')
+              field: BUDGET_ITEM_DK
+      - name: MONTH_NO
+        description: "월 번호 1~12(wide→long 언피벗 결과). grain = (BUDGET_ITEM_DK × MONTH_NO)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
   - name: ERP_BUDGET_ITEM
     columns:
       - name: BUDGET_ITEM_DK
+        description: >
+          예산과목 마스터 PK. `SELECT DISTINCT` 로 만들어지므로 유일해야 한다.
+          🔴 [O114-B] 그런데 그 유일성은 **원천 행을 뭉개서** 얻어진다 — 원천 247행이 이 키로
+          179개가 된다(차수·과목명·유입경로가 키에 없다). `unique` 통과가 **정합의 증거는 아니다.**
+        tests:
+          - not_null
+          - unique              # 🆕 [O114-B] DISTINCT 가 실제로 유일성을 주는지 기계로 고정.
+
+  # 🆕 [2026-08-29 O114-B] O93 신설 모델인데 **이 파일에 없어 테스트가 0건**이었다.
+  - name: ERP_BUDGET_YEARLY
+    columns:
+      - name: BUDGET_ITEM_DK
+        description: >
+          `ERP_BUDGET`·`ERP_BUDGET_ITEM` 과 **동일 MD5 산식**(모델 주석이 그렇게 선언한다).
+          🔴 grain 은 (BUDGET_ITEM_DK × BUDGET_YEAR) 로 **의도**됐으나 현재 데이터에서 깨져 있다
+          ⇒ `tests/warn_erp_budget_yearly_grain.sql` 이 관측한다.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('ERP_BUDGET_ITEM')
+              field: BUDGET_ITEM_DK
+      - name: BUDGET_YEAR
+        description: "예산 연도(TRY_TO_NUMBER(YEAR))."
         tests: [not_null]
 
   - name: CRM_BIZ_TARGET

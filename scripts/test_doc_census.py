@@ -22,9 +22,12 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import doc_census as C                                       # noqa: E402
 from doc_census import scan_text                             # noqa: E402
 
 FAILS = []
+#: 🔴 [O112-B] 단정 수를 손으로 적지 않는다 — `check()` 가 센다(`R3-9 ㉦`).
+COUNTS = {'checks': 0}
 # 실측값(합성) — 이 값과 다른 기재가 stale 이다.
 ACTUAL = {
     '00_INDEX_이슈원장': 8,
@@ -42,6 +45,7 @@ SPLIT = {'90_해소완료_로그': True, '01_세션이력': True,
 
 
 def check(name, got, want):
+    COUNTS['checks'] += 1
     if got == want:
         print('  ✅ %s' % name)
     else:
@@ -146,12 +150,38 @@ def main():
     U4 = ("| `00_guides/01_문서분할_규약.md` | 갱신형 | " + "서술 " * 30 + " | 미분할 |")
     check('미분할 carry 오염 금지', scan_text(U4, ACTUAL, split=SPLIT), [])
 
+    print(' 축6 분할 분모 대조 — 분할 문서를 「미분할」로 취급하는 도구를 잡는가 (O112-B 신설)')
+    # 🔴 왜 음성 테스트인가: 이 검사는 **현재 상태가 정상이면 언제나 0건**이라
+    #   「잡는다」를 정상 입력으로는 증명할 수 없다(그것이 O112 가 겪은 침묵의 구조다).
+    #   ⇒ 분모를 **일부러 오염**시켜 검출을 확인하고, 되돌려 오탐 0 을 확인한다.
+    import fix_stale_counts as FS
+    import doc_line_length_gate as LL
+
+    base = C.split_denominator_check()
+    check('현행 위반 0건', base, [])
+
+    hub = C.FAMILIES[0][0]                       # 실재하는 분할 허브 1개
+    FS.FLAT_SOURCES.append(hub)                  # ㉡ 오염: 분할 문서를 미분할로 선언
+    got = C.split_denominator_check()
+    check('FLAT 오분류 검출', any('FLAT_SOURCES' in g for g in got), True)
+    FS.FLAT_SOURCES.remove(hub)
+    check('오염 복구 후 0건', C.split_denominator_check(), [])
+
+    saved = list(LL.CANON_GLOB)
+    LL.CANON_GLOB[:] = ['scripts/*.py']          # ㉠ 오염: 조각을 줄길이 분모에서 제거
+    got = C.split_denominator_check()
+    check('줄길이 분모 누락 검출', any('분모 밖' in g for g in got), True)
+    check('누락은 분할문서 전건에 보고', len([g for g in got if '분모 밖' in g]),
+          len(C.FAMILIES))
+    LL.CANON_GLOB[:] = saved
+    check('복구 후 0건(오탐 방지)', C.split_denominator_check(), [])
+
     print('')
     if FAILS:
         print('🔴 실패 %d건: %s' % (len(FAILS), ', '.join(FAILS)))
         return 1
-    print('✅ 전건 통과 — 5축 23개 단정'
-          '(재현율 4 · 정밀도 8 · 경계 2 · 바이트 5 · 미분할 4)')
+    print('✅ 전건 통과 — %d개 단정(축 = 재현율·정밀도·경계·바이트·미분할·분할분모)'
+          % COUNTS['checks'])
     return 0
 
 

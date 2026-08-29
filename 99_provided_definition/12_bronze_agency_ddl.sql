@@ -460,9 +460,13 @@ LANGUAGE PYTHON
 RUNTIME_VERSION = '3.12'
 PACKAGES = ('snowflake-snowpark-python','pandas','requests')
 HANDLER = 'main'
+IMPORTS = ('@GN_DW.BRONZE_AGENCY.CREDENTIALS_STAGE/msSharePointInfo.json')
 EXTERNAL_ACCESS_INTEGRATIONS = (MS_GRAPH_ACCESS)
 EXECUTE AS CALLER
 AS '
+import os
+import sys
+import json
 import pandas as pd
 import requests
 
@@ -472,12 +476,17 @@ def main(session):
 
     try:
         # 설정 정보
-        TENANT_ID = "7670f1d7-520b-47f5-b0ef-597be6581d8d"
-        CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
-        USERNAME = ""
-        PASSWORD = ""
-        SITE_ID = "gnikor.sharepoint.com,c2614570-b029-4496-a297-f68558cb87f0,83fbf0c7-cfc1-4332-88c9-1aa0be4d3dd8"
-        ITEM_ID = "01TYTKR3XGYLL4L4FZHZH3CSTG2V7NZD4T"
+        import_dir = sys._xoptions.get("snowflake_import_directory", "/tmp")
+        sa_file_path = os.path.join(import_dir, "msSharePointInfo.json")
+        with open(sa_file_path, ''r'') as f:
+            sa_info = json.load(f)
+        
+        TENANT_ID = sa_info["TENANT_ID"]
+        CLIENT_ID = sa_info["CLIENT_ID"]
+        USERNAME = sa_info["USERNAME"]
+        PASSWORD = sa_info["PASSWORD"]
+        SITE_ID = sa_info["SITE_ID"]
+        ITEM_ID = sa_info["ITEM_ID"]            
 
         # 엑세스 토큰 발급
         token_res = requests.post(
@@ -972,3 +981,8 @@ def main(session, input_yyyymm=None):
         return f"''{date_match_string}'' 결과가 없음"
     return "\\n".join(log_messages)
 ';
+create or replace task GN_DW.BRONZE_AGENCY.TASK_REBRDC
+	warehouse=GN_DW_ETL_WH
+	as BEGIN
+    CALL GN_DW.BRONZE_AGENCY.SP_LOAD_REBRDC_FROM_SHAREPOINT();
+END;

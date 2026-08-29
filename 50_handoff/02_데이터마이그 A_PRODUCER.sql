@@ -17,22 +17,28 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 3.1(Share 생성/부여) / 3.1-B(ML 부여) / 3.2(GET_DDL 추출) / 7장(정리)
 --   [산출물]   50_handoff/02_1_A DB정보.sql  (본 스크립트 5·6단계 실행 결과)
+--              🔴 현재 파일은 2026-08-29 기준 stale 이다(CRM 45 · ERP 1 · MNYRS_COST_DIV_YN 잔존).
+--                 5·6단계를 다시 실행해 갱신하기 전까지 **구조 정본으로 쓰지 마라**
+--                 — 현행 구조 정본은 99_provided_definition/11~13번이다(04번 병합 규칙 참조).
 --              50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql   (브론즈 3스키마)
---              50_handoff/04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql (SILVER 정제 테이블)
+--              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql   (SILVER 정제 테이블)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       (ML 예측결과 16종)
 --   [후속 SQL] 50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 식별자 / IDENTIFIERS
 --   A(Provider) = CMRQTUT.XC97295 · B(Consumer) locator = GB72026 · 공유명 = MIG_SHARE
 --
 -- 공유 대상 / SCOPE
---   ① GN_DW.BRONZE_CRM      — 스키마 통짜 (45 테이블)
+--   ① GN_DW.BRONZE_CRM      — 스키마 통짜 (46 테이블)
 --   ② GN_DW.BRONZE_AGENCY   — 스키마 통짜 (4 테이블)
---   ③ GN_DW.BRONZE_ERP      — 스키마 통짜 (1 테이블)
+--   ③ GN_DW.BRONZE_ERP      — 스키마 통짜 (2 테이블)
 --   ④ GN_DW.SILVER          — **테이블 1개만** (BIGQUERY_REFINED_DATA · 118컬럼)
 --   ⑤ GN_DW.ML              — **테이블 16개만** (ML_RST_DATA_* 예측결과)
---   ⇒ 합계 67 테이블 / 스키마 5개
+--   ⇒ 합계 69 테이블 / 스키마 5개
+--   🔴 [2026-08-29] 종전 기재 67(CRM 45 · ERP 1)은 stale 이었다 — 04번 2026-08-29 이력 참조.
+--      ①②③ 은 **스키마 통짜 부여**이므로 테이블이 늘어도 GRANT 문은 고칠 필요가 없다.
+--      고쳐야 하는 것은 **기대 수치**뿐이다(5단계 · 03번 3.1 · 07번 A.6).
 --
 --   ⛔ 공유하지 않는 것
 --      · GN_DW.BRONZE_BIGQUERY — ④ SILVER 가 이 원천의 정제 결과를 대신한다.
@@ -128,7 +134,7 @@ ALTER SHARE mig_share ADD ACCOUNTS = AD50130;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 5(BRONZE 3 + SILVER + ML) + 테이블 67(브론즈 50 + SILVER 1 + ML 16)
+--    기대: DB 1 + 스키마 5(BRONZE 3 + SILVER + ML) + 테이블 69(브론즈 52 + SILVER 1 + ML 16)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
 SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 BHZYJSX.AB90688 이 보여야 함
@@ -147,7 +153,7 @@ FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
 ------------------------------------------------------------
 -- 5. 대조 기준값 스냅샷 (⚠️ 공유 직후 기록)
 --    결과를 02_1_A DB정보.sql 에 보관한다.
---    → B(03번 3.1) · C(06번 A.6) 가 테이블 단위로 대조하는 원본 기준값이다.
+--    → B(03번 3.1) · C(07번 A.6) 가 테이블 단위로 대조하는 원본 기준값이다.
 --    ⚠️ ML 필터는 `table_name LIKE 'ML_RST_DATA_%'` 다. 스키마 통짜로 세면
 --       학습·스냅샷 33종이 섞여 기준값이 부풀고 C 검증이 전부 어긋난다.
 --    ⚠️ 브론즈 필터를 `LIKE 'BRONZE_%'` 로 되돌리지 말 것 — 공유 대상 아닌 스키마가 섞인다.
@@ -160,7 +166,7 @@ WHERE table_type = 'BASE TABLE'
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 45 · ERP 1 · ML 16 · SILVER 1 = 67)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 46 · ERP 2 · ML 16 · SILVER 1 = 69)
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
@@ -193,7 +199,7 @@ SELECT 'ML.ML_RST_DATA_LOYAL_MBER', 'PREDICTION',
        COUNT(*), COUNT(*) - COUNT(PREDICTION), NULL FROM GN_DW.ML.ML_RST_DATA_LOYAL_MBER;
 
 -- 5.2 SILVER 구조 확인 (기대: 118 컬럼 · ITEMS 가 118번째 · ARRAY)
---   이 값이 04_2번 DDL 및 06번 A.5 의 TRY_PARSE_JSON($118) 위치와 일치해야 한다.
+--   이 값이 06번 DDL 및 07번 A.5 의 TRY_PARSE_JSON($118) 위치와 일치해야 한다.
 SELECT MAX(ordinal_position)                                        AS n_cols,
        MAX(CASE WHEN data_type = 'ARRAY' THEN column_name END)      AS array_col,
        MAX(CASE WHEN data_type = 'ARRAY' THEN ordinal_position END) AS array_pos
@@ -202,8 +208,11 @@ WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA';
 
 -- ⚠️ ML 은 프로시저가 월별로 DELETE+INSERT 하므로 기준월이 늘어나면 행수가 증가한다.
 --    ⇒ 이관 시점에 다시 측정한 값만 대조 기준으로 쓴다.
---    ⚠️ BRONZE_CRM 은 과거 문서에 43 테이블로 기재된 적이 있으나 실측은 45 다.
+--    ⚠️ BRONZE_CRM 은 과거 문서에 43 테이블로 기재된 적이 있으나 2026-08-20 실측은 45 다.
 --       (누락분: TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT · TM_MM_FDRM_MBER_SPNSR)
+--    🔴 [2026-08-29] 그 뒤 46 으로 다시 늘었다 — TM_CM_MKTNG_UTM 추가.
+--       ⇒ 이 항목은 「43 → 45 → 46」 으로 두 번 움직였다. **수치를 기억으로 쓰지 말고
+--          매 이관 시점에 위 5단계 집계를 다시 돌려라.**
 
 ------------------------------------------------------------
 -- 6. C 계정 재현용 DDL 추출
@@ -216,11 +225,11 @@ WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA';
 --   ⚠️ GET_DDL('DATABASE', 'GN_DW', TRUE) 는 쓰지 않는다.
 --      공유 대상이 아닌 스키마·테이블까지 전부 덤프된다.
 
--- 6.2 SILVER 정제 테이블 1개 → 04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql 로 저장
+-- 6.2 SILVER 정제 테이블 1개 → 06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql 로 저장
 -- SELECT GET_DDL('TABLE', 'GN_DW.SILVER.BIGQUERY_REFINED_DATA', TRUE);
 --   ⚠️ SCHEMA 단위로 뽑지 말 것. 대상 아닌 테이블까지 포함된다.
---   ⚠️ 컬럼 수/순서가 04_2번 파일과 다르면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
---      이관 직전 반드시 04_2번 파일과 대조할 것 (5.2 결과와 함께 본다).
+--   ⚠️ 컬럼 수/순서가 06번 파일과 다르면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
+--      이관 직전 반드시 06번 파일과 대조할 것 (5.2 결과와 함께 본다).
 
 -- 🟢 ML 은 이미 추출되어 있다 — 재추출 불필요
 --    산출물 = 99_provided_definition/20_ML_ddl.sql (프로시저·모델 포함 전량)

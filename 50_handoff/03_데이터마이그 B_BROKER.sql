@@ -17,19 +17,23 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 3.3(공유 DB 생성) / 4.1(스테이지 준비) / 4.2(일괄 언로드) / 4.3(로컬 다운로드) / 7장(정리)
 --   [선행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/권한 부여/GET_DDL)
---   [후속 SQL] 50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--   [후속 SQL] 50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 식별자 / IDENTIFIERS
 --   공유 = CMRQTUT.XC97295.MIG_SHARE · 마운트 DB = GN_DW_SHARED (읽기 전용)
 --   언로드 스테이지 = @SANDBOX.TOOLS.my_export_stage/<SCHEMA>/<TABLE>/
 --
 -- 이관 대상 / SCOPE  (A가 MIG_SHARE 로 부여한 범위와 동일)
---   ① BRONZE_CRM (45 테이블)
+--   ① BRONZE_CRM (46 테이블)
 --   ② BRONZE_AGENCY (4 테이블)
---   ③ BRONZE_ERP (1 테이블)
+--   ③ BRONZE_ERP (2 테이블)
 --   ④ SILVER.BIGQUERY_REFINED_DATA (1 테이블 · 118컬럼 · ITEMS 가 ARRAY)
 --   ⑤ ML.ML_RST_DATA_* (예측결과 16종만)
---   ⇒ 합계 67 테이블
+--   ⇒ 합계 69 테이블
+--   🔴 **[2026-08-29] 종전 기재 67(CRM 45 · ERP 1)은 stale 이었다.**
+--      A 원천에 TM_CM_MKTNG_UTM · EXPENSE_RESOLUTION 이 추가되었다(04번 2026-08-29 이력).
+--      ⇒ 이 수치는 04번 DDL 과 **한 쌍**이다. 한쪽만 고치면 3.1 대조가 조용히 어긋난다.
+--        정합 검사 = python3 scripts/handoff_ddl_gate.py (축7 = 문서 기재 ↔ DDL 실측)
 --
 --   ⛔ 대상 아님 — BRONZE_BIGQUERY
 --      A가 공유하지 않는다. ④ SILVER 가 이 원천의 정제 결과를 대신한다.
@@ -97,7 +101,8 @@ WHERE table_type = 'BASE TABLE'
 ORDER BY table_schema, table_name;
 
 -- 스키마별 요약
---   기대: BRONZE_AGENCY 4 · BRONZE_CRM 45 · BRONZE_ERP 1 · ML 16 · SILVER 1 = 67 테이블
+--   기대: BRONZE_AGENCY 4 · BRONZE_CRM 46 · BRONZE_ERP 2 · ML 16 · SILVER 1 = 69 테이블
+--   🔴 [2026-08-29] 종전 기대값 45/1/67 은 stale 이다(SCOPE 절 참조).
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
@@ -122,8 +127,8 @@ WHERE table_schema = 'ML' AND table_type = 'BASE TABLE'
 ORDER BY 1;
 
 -- 3.1-C SILVER 구조 확인 (기대: 118 컬럼 · ITEMS 가 118번째 · ARRAY)
---   이 값이 04_2번 DDL 과 어긋나면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
---   ⚠️ 06번 A.5 의 TRY_PARSE_JSON($118) 위치와 반드시 일치해야 한다.
+--   이 값이 06번 DDL 과 어긋나면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
+--   ⚠️ 07번 A.5 의 TRY_PARSE_JSON($118) 위치와 반드시 일치해야 한다.
 SELECT MAX(ordinal_position)                                              AS n_cols,
        MAX(CASE WHEN data_type = 'ARRAY' THEN column_name END)            AS array_col,
        MAX(CASE WHEN data_type = 'ARRAY' THEN ordinal_position END)       AS array_pos
@@ -146,7 +151,7 @@ REMOVE @SANDBOX.TOOLS.my_export_stage;
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 5. INFORMATION_SCHEMA를 순회하며 각 테이블을 동적으로 COPY INTO
---    대상: BRONZE_CRM(45) · BRONZE_AGENCY(4) · BRONZE_ERP(1) · SILVER(1) · ML(16) = 67
+--    대상: BRONZE_CRM(46) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · SILVER(1) · ML(16) = 69
 --    경로 규칙: @stage/<스키마>/<테이블>/ , GZIP CSV
 --    ⚠️ WHERE 절을 LIKE 'BRONZE_%' 로 바꾸지 말 것 — 공유 구성 변경 시 의도 외 스키마가 섞인다.
 --    ⚠️ EXECUTE IMMEDIATE $$ ... $$ 로 감싼 이유:
@@ -156,9 +161,9 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 --    ℹ️ WHERE 절의 `table_schema = 'ML'`:
 --       ML 은 A 가 16종만 부여했으므로 이 조건만으로 정확히 16종이 대상이 된다(3.1-B 확인 완료).
 --    ℹ️ 반정형 컬럼은 **언로드 쪽에서 할 일이 없다.** CSV 로 나가면 JSON 문자열이 되고,
---       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 06번 A.5,
---       ML PREDICTION(VARIANT) 4종 → 06번 A.5-B.2.
---    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 67개 테이블' 이 나와야 정상.
+--       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 07번 A.5,
+--       ML PREDICTION(VARIANT) 4종 → 07번 A.5-B.2.
+--    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 69개 테이블' 이 나와야 정상.
 --       (0행 테이블도 COPY INTO 는 성공하므로 cnt 에 포함된다. 폴더만 생기지 않는다.)
 EXECUTE IMMEDIATE $$
 DECLARE
@@ -185,11 +190,11 @@ BEGIN
   RETURN 'UNLOAD 완료: ' || cnt || '개 테이블';
 END;
 $$;
--- 기대 반환값: 'UNLOAD 완료: 67개 테이블'
---   67 이 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
+-- 기대 반환값: 'UNLOAD 완료: 69개 테이블'
+--   69 가 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
 
 -- 6. Export 결과 확인
---    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(06번 A.1 (1)).
+--    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(07번 A.1 (1)).
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 스키마별 파일/폴더 수 집계 (위 LIST 직후에 실행해야 RESULT_SCAN 이 유효)
@@ -199,7 +204,7 @@ SELECT SPLIT_PART("name", '/', 2) AS table_schema,
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 GROUP BY 1 ORDER BY 1;
 --   판정: 스키마별 table_folders = 3.1 의 tables − zero_row_tables 여야 한다.
---   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 06번 A.1 (1) 에서 대조한다.
+--   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 07번 A.1 (1) 에서 대조한다.
 
 -- 6.1 대상 외 폴더 잔존 점검 (0건이어야 함)
 --     이전 배치 잔존 또는 대상 필터 오설정을 잡는다.
@@ -211,7 +216,7 @@ WHERE SPLIT_PART("name", '/', 2)
 -- → 0 이 아니면 4번 REMOVE 를 건너뛴 것이다. 스테이지를 비우고 5번부터 다시 실행한다.
 
 -- 7. 정리(Teardown) — 01번 문서 7장
---    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(06번 A.6)이 끝난 뒤에 실행한다.
+--    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(07번 A.6)이 끝난 뒤에 실행한다.
 --       스테이지를 먼저 비우면 재다운로드가 불가능해 B 언로드부터 다시 해야 한다.
 
 -- 7.1 공유 DB 정리 (export가 정상 완료된 것을 6번에서 확인한 뒤 실행)

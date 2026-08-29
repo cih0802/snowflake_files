@@ -49,6 +49,8 @@ TARGETS = [
 # 표 열수 판정은 O66 계약을 상속한다 — `|` 개수 세기는 백틱 코드스팬에서 오탐한다.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from split_issue_index import split_row  # noqa: E402
+# 🔴 [O114-B] 골든 이력의 세션 라벨은 `snapshot_util` 산식을 재사용한다(재구현 금지 · `R3-9 ㉡`).
+import snapshot_util as _snap  # noqa: E402
 
 EMOJI = re.compile(
     '[\U0001F300-\U0001FAFF\u2190-\u21FF\u2600-\u27BF\uFE0F\u2B00-\u2BFF\u3030\u303D]')
@@ -91,6 +93,18 @@ def logical_text(path):
     있었기 때문이다. 같은 시점 `split_doc --verify` 의 concat SHA256 은 **일치**했으므로
     내용은 온전했고 결함은 이 게이트의 분모에 있었다(`R1-6-8` 계열의 세 번째 재발).
     ⇒ 분할 계약(`BODY-BEGIN` 센티넬 아래만 본문)을 그대로 상속해 원문을 복원한 뒤 센다.
+
+    🔴🔴 [2026-08-29 O114-B] **이어붙일 때 빈 줄을 만들지 않는다.**
+    종전 구현은 `'\\n'.join(parts)` 였다. 조각 본문은 이미 개행으로 끝나므로 그 join 이
+    경계마다 **개행을 하나 더** 넣어 **빈 줄**을 만들었다. 마크다운에서 빈 줄은 **표를 끊는다**
+    ⇒ 표가 조각 경계를 넘으면 뒤쪽 행이 **새 표의 헤더·구분행으로 소비되어 탈락**한다.
+    · 실측(O114-B): `--rebalance` 가 `착수 순서` 표를 경계 위로 옮긴 직후
+      **조각 본문 기준 30행 ↔ 이 함수 기준 21행**(9행 탈락)이 되어 「행 유실 9건」 FAIL 이 났다.
+      같은 시점 `split_doc --verify` concat SHA256 은 **일치**했고 조각 본문은 스냅샷과
+      **공백 제외 문자 완전 동일**이었다 ⇒ **문서는 온전하고 결함은 이 분모에 있었다.**
+    · 🔴 이것은 위 docstring 이 이미 경고한 **`R1-6-8` 계열의 네 번째 재발**이고,
+      O112 가 `session_brief` 에서 고친 「조각 머리말이 `inside` 를 끈다」와 **같은 축**이다.
+    ⇒ 각 조각이 개행으로 끝나도록 보정한 뒤 **구분자 없이** 이어붙인다(빈 줄 0).
     """
     parts = [read_text(path)]
     for c in chunk_files(path):
@@ -98,7 +112,16 @@ def logical_text(path):
         if BODY_BEGIN + '\n' in t:
             t = t.split(BODY_BEGIN + '\n', 1)[1]
         parts.append(t)
-    return '\n'.join(parts)
+    # 🔴 구분자 없이 잇되, 각 조각이 개행으로 끝나도록만 보정한다.
+    #   ㉠ 개행을 더 넣으면 빈 줄이 생겨 표가 끊긴다(위 O114-B 사고).
+    #   ㉡ 개행이 없으면 앞 조각 마지막 줄과 뒤 조각 첫 줄이 **한 줄로 붙는다**(표 행 병합).
+    #   ⇒ 「정확히 하나」가 유일한 정답이다.
+    fixed = []
+    for i, t in enumerate(parts):
+        if t and not t.endswith('\n') and i != len(parts) - 1:
+            t += '\n'
+        fixed.append(t)
+    return ''.join(fixed)
 
 
 def collect_keys(text):
@@ -297,7 +320,11 @@ def main(argv):
         if os.path.exists(GOLDEN):
             prev = json.load(io.open(GOLDEN, encoding='utf-8'))
         rows = {k: v for k, v in cur.items() if v is not None}
-        label = a.label or os.environ.get('SESSION_LABEL', '') or 'UNLABELED'
+        # 🔴 [2026-08-29 O114-B] 라벨 해소를 **재구현하지 않는다** — `snapshot_util.resolve_label()`
+        #   이 유일한 산식이다(인자 → 환경변수 `SESSION_LABEL` → `UNLABELED` + 이름 정규화).
+        #   종전 `a.label or os.environ.get(...) or 'UNLABELED'` 는 같은 것을 **다르게 재는 지점**
+        #   이었고 정규화(`_sanitize`)를 건너뛰었다(`R3-9 ㉡` · `R1-7-10` 축).
+        label = _snap.resolve_label(a.label)
         entry = {
             'date': time.strftime('%Y-%m-%d %H:%M:%S'),
             'label': label,

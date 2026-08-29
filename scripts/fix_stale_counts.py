@@ -82,9 +82,13 @@ RULES = [
 #   허브의 `SPLIT-OUTDIR` 마커를 보고 확장한다(형제·폴더 어느 쪽이든 자동 추종).
 HUB_SOURCES = [
     '20_issue/00_INDEX_이슈원장.md',
+    # 🆕 🔴 [2026-08-29 O112-B 자기시정] O112 가 이 문서를 **허브+조각으로 분할**했는데
+    #   `FLAT_SOURCES` 에 남겨 둬 이 도구가 **허브만 보고 본문(조각)을 건너뛰고 있었다**.
+    #   ⇒ 같은 세션이 `clause_order_gate`(조문 0개로 침묵)에서 지적한 **분모 파괴와 같은 축**이다.
+    #   🔴 교훈 = **문서를 쪼개면 「그 문서를 읽는 도구」 전부의 분모를 점검하라**(분모 4곳으로 끝나지 않는다).
+    '00_guides/01_문서분할_규약.md',
 ]
 FLAT_SOURCES = [
-    '00_guides/01_문서분할_규약.md',
     '00_guides/00_작업지침_세션운영규칙.md',
     '.snowflake/cortex/skills/init_ihcho/SKILL.md',
 ]

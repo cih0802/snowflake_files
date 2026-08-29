@@ -25,6 +25,16 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import split_doc as S  # noqa: E402
+import snapshot_util as SU  # noqa: E402
+
+#: 🔴 [2026-08-29 O114] 스냅샷 파일명의 세션 라벨을 **하드코딩하지 않는다.**
+#   종전 구현은 `'T_문서.md.UNLABELED-prehub'` 로 박아 두어, 세션이 `R1-7-10` 처방대로
+#   `export SESSION_LABEL=O1NN` 을 하면 스냅샷이 `.O1NN-prehub` 로 생기고
+#   이 테스트가 **FileNotFoundError 로 실패**했다(O114 실측 · 전건 실행에서 1종 탈락).
+#   ⇒ 도구와 **같은 해석 규칙**(인자 → 환경변수 → 폴백)을 써서 기대값을 계산한다.
+#   🔴 이것이 `R3-9 ㉡`(같은 것을 다르게 재는 지점)의 실물이다 — 도구는 환경변수를 읽는데
+#      테스트는 상수를 읽고 있었다.
+SNAP_LABEL = SU.resolve_label()
 
 FAILS = []
 OKS = [0]
@@ -203,7 +213,9 @@ def t_roundtrip():
             check('발행 SHA256' in S.read_text(src), '축6-e 발행 라벨 미기록')
             # 🔴 [2026-08-28 O109] 스냅샷 이름의 세션 라벨이 **인자화**됐다 —
             #   라벨 미지정 시 `snapshot_util.LABEL_FALLBACK`(UNLABELED) 이 쓰인다.
-            snap_p = os.path.join(S.ARCHIVE, 'T_문서.md.UNLABELED-prehub')
+            # 🔴 [2026-08-29 O114] 그래서 이름을 하드코딩하면 `SESSION_LABEL` 이 있는
+            #   세션에서 실패한다 ⇒ `SNAP_LABEL` 로 계산한다(파일 머리 주석 참조).
+            snap_p = os.path.join(S.ARCHIVE, 'T_문서.md.%s-prehub' % SNAP_LABEL)
             check(os.path.exists(snap_p), '축6-f 재작성 전 허브 스냅샷이 없다')
             # 🔴 되돌림 스냅샷이 **재작성 전** 내용이어야 한다(후를 저장하면 되돌림이 무의미하다)
             snap = S.read_text(snap_p)
@@ -270,7 +282,7 @@ def t_to_outdir():
             check(rc == 0, '축8-i 1단계 rc≠0')
             check(all(os.path.exists(p) for p in sib), '축8-j1 1단계가 형제를 지웠다')
             check(S.hub_outdir(src) is None, '축8-j2 1단계가 마커를 바꿨다')
-            snap_p = os.path.join(S.ARCHIVE, 'T_이전.md.UNLABELED-pretooutdir')
+            snap_p = os.path.join(S.ARCHIVE, 'T_이전.md.%s-pretooutdir' % SNAP_LABEL)
             check(os.path.exists(snap_p), '축8-j3 1단계 스냅샷이 없다')
             snap = S.read_text(snap_p)
             check(S.sha(snap) == before, '축8-j4 스냅샷이 이전 전 논리 문서가 아니다')

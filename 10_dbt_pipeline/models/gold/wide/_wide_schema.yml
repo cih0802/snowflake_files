@@ -1060,7 +1060,16 @@ models:
       - name: CAL_MONTH
         description: "MOD(MONTH_KEY,100) — 월"
       - name: PLAN_BUDGET_MONTH
-        description: "편성예산(월, 원)"
+        description: >-
+          편성예산(월, 원).
+          🔴🔴 **[2026-08-29 O114-B] 이 컬럼을 12개월 합산해도 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`
+          와 일치하지 않는다** — 원천 원장의 **월 배분이 부분적**이어서 연 총액의 상당 부분이
+          월 컬럼에 배분되지 않는다(원천 특성 · 모델 결함 아님 · 실측 규모는 이슈원장·이력 소관 `R2-6`).
+          ⇒ 🔴 **「편성예산」을 답할 때 월·연 중 어느 축인지 밝혀라** — 밝히지 않으면 두 답이 갈린다.
+          🟢 대비: **집행은 연=월 정합**이다(`EXEC_BUDGET_ERP` 월합 = `FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR`).
+          🔴🔴 **또한 이 값은 예산 편성 차수(본예산 `연사업` / `추가경정`)가 합산된 값이다** —
+          원천이 신설한 `BDGT_PRCD_NM` 이 `BUDGET_ITEM_DK` 산식에 없어 두 차수가 같은 과목 키로
+          붕괴한다 ⇒ **차수별 분해는 현재 불가능**하다(처방 = `99_NEXT §0-UUU ▣UUU6` · `DEC-44`).
       - name: PLAN_BUDGET_YEAR
         description: >-
           편성예산(연, 원) 🔴🔴**[2026-08-20 O96 · DEC42] 폐기 슬롯 — 의도적 영구 NULL 이다.**

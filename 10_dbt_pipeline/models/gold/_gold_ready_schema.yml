@@ -630,6 +630,49 @@ models:
       - name: ORG_SK
         tests: [not_null]
 
+  # 🆕 [2026-08-29 O114-B] `FACT_BUDGET_YEARLY` 는 O93 에 신설됐으나 **이 파일에 등재되지 않아
+  #   테스트 0건 · 컬럼 COMMENT 0건**으로 방치돼 있었다(`R3-9 ㉢` — 분모 미등재는 조용히 0을 낸다).
+  #   ⇒ 등재한다. 🔴 이 팩트의 그레인 위반은 `tests/warn_erp_budget_*.sql` 3종이 관측한다.
+  - name: FACT_BUDGET_YEARLY
+    description: >
+      연 예산 팩트 — grain = (BUDGET_YEAR × BUDGET_ITEM_SK). 원천 = SILVER.ERP_BUDGET_YEARLY.
+      🔴🔴 [2026-08-29 O114-B] 모델 헤더가 선언한 「1행 = 1(연 × 예산과목) · SUM 이 항상 안전하다」
+      불변식은 **현재 데이터에서 깨져 있다** — 원천이 신설한 BDGT_PRCD_NM(편성 차수 · 연사업/추가경정)이
+      BUDGET_ITEM_DK 산식에 없어 **42개 키가 두 차수를 한 키에 합친다**(실측 규모·근거는 원장·이력 소관).
+      ⇒ 이 팩트를 BUDGET_ITEM_SK 로 GROUP BY 하면 **본예산과 추경이 합산**된다.
+      🔴 차수별 분해를 요구하면 현재 답할 수 없다 — 처방은 `99_NEXT §0-UUU ▣UUU6`(DEC-44) 참조.
+      ⚠️ CHN_BUDGET_YEAR·ADJ_BUDGET_YEAR 는 **현재 전건 0** 이다 — 추경이 그 컬럼이 아니라
+      **별도 행**으로 표현되도록 원천이 바뀌었기 때문이며 「추경 없음」이 아니다.
+    columns:
+      - name: BUDGET_YEAR
+        description: "예산 연도. 모델이 `BUDGET_YEAR IS NOT NULL` 로 파싱 실패행을 제외한다."
+        tests: [not_null]
+      - name: BUDGET_ITEM_SK
+        description: >
+          예산과목 SK — FACT_BUDGET 과 **동일 산식**(gold_sk(BUDGET_ITEM_DK)).
+          🔴 그래서 두 팩트의 차수 합산 문제도 동일하게 나타난다.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_BUDGET_ITEM')
+              field: BUDGET_ITEM_SK
+              config: { where: "BUDGET_ITEM_SK != 0" }
+      - name: ORG_SK
+        description: "🔴 전건 0(Unknown) — ERP 원장에 조직 귀속 축이 없다. 부서별 분해는 이 팩트로 불가능하다."
+        tests: [not_null]
+      - name: PLAN_BUDGET_YEAR
+        description: >
+          연 편성예산. ⚠️ **FACT_BUDGET.PLAN_BUDGET_MONTH 를 12개월 합산한 값과 일치하지 않는다** —
+          원천 원장의 월 배분이 부분적이기 때문이다(원천 특성 · 모델 결함 아님).
+          🟢 반면 **집행은 연=월 정합**이다(EXEC_BUDGET_YEAR ↔ FACT_BUDGET.EXEC_BUDGET_ERP 월합).
+          🔴 「편성예산」을 물을 때 어느 팩트를 쓰는지 밝히지 않으면 두 답이 갈린다.
+      - name: CHN_BUDGET_YEAR
+        description: "연 추경. 🔴 [O114-B 실측] **현재 전건 0** — 추경은 BDGT_PRCD_NM='추가경정' 별도 행으로 표현된다."
+      - name: ADJ_BUDGET_YEAR
+        description: "연 조정. 🔴 [O114-B 실측] **현재 전건 0** — CHN_BUDGET_YEAR 와 같은 사유."
+      - name: EXEC_BUDGET_YEAR
+        description: "연 집행. 🟢 원천에서 연 총액 = 월 12컬럼 합계로 **정합**이 확인된 유일한 측정치다."
+
   - name: FACT_AD_PERFORMANCE
     columns:
       - name: AD_PERF_DK

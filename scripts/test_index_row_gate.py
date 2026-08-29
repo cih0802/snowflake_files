@@ -22,8 +22,11 @@ O82-B 가 이 게이트를 신설할 때 「소실·중복·정상append 4종으
     python3 scripts/test_index_row_gate.py
 """
 
+import io
 import os
+import shutil
 import sys
+import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -116,13 +119,48 @@ def main():
     check(any('행 중복' in f for f in fails),
           '축5-e', '기존 중복이 더 늘면 FAIL (관측 축이 판정 축을 삼키지 않는다)')
 
+    # ── 축6: 🔴 조각 경계가 표를 끊지 않는다 (O114-B 신설 · 오염 기반) ──────
+    #   🔴🔴 왜: `logical_text()` 가 종전에 `'\n'.join(parts)` 를 써서 조각 경계마다
+    #     **빈 줄**을 만들었다. 마크다운에서 빈 줄은 **표를 끊으므로** 표가 경계를 넘으면
+    #     뒤쪽 행이 **새 표의 헤더·구분행으로 소비되어 탈락**했다.
+    #     실측(O114-B) = `--rebalance` 직후 `착수 순서` 표에서 **9행이 「유실」로 오탐**됐고
+    #     같은 시점 `split_doc --verify` 는 🟢 였다(문서는 온전했다 · `R1-6-8` 네 번째 재발).
+    #   ⇒ 이 축은 **표가 조각 경계를 넘는 문서를 실제로 만들어** 행 수를 센다.
+    print('\n축6 — 표가 조각 경계를 넘어도 행이 탈락하지 않는다 (O114-B 회귀)')
+    tmp = tempfile.mkdtemp(prefix='o114b_rowgate_')
+    try:
+        hub = os.path.join(tmp, 'T_문서.md')
+        io.open(hub, 'w', encoding='utf-8').write('# T\n')
+        # 조각 1 = 절 제목 + 표 헤더 + 본문 2행 / 조각 2 = 본문 3행(경계를 넘는 표)
+        c1 = ('## 착수 순서\n\n| 순 | 무엇 |\n|---|---|\n'
+              '| ① | a |\n| ② | b |\n')
+        c2 = '| ③ | c |\n| ④ | d |\n| ⑤ | e |\n'
+        for n, body in ((1, c1), (2, c2)):
+            p = os.path.join(tmp, 'T_문서-%03d.md' % n)
+            io.open(p, 'w', encoding='utf-8').write(
+                '<!-- SPLIT-CHUNK -->\n' + G.BODY_BEGIN + '\n' + body)
+        rows = [x for x in G.collect_keys(G.logical_text(hub))
+                if x.startswith('착수 순서')]
+        check(len(rows) == 5, '축6-a',
+              '경계를 넘는 표 5행이 전건 집계된다 (실제 %d행)' % len(rows))
+        check(all(('착수 순서 ¦ %s' % c) in rows for c in ('③', '④', '⑤')),
+              '축6-b', '경계 **뒤쪽** 3행(③④⑤)이 탈락하지 않는다')
+        # 🔴 오염 축 — 옛 구현(빈 줄 삽입)을 재현하면 반드시 탈락해야 한다(재현력 증명)
+        old = '\n'.join(['# T\n', c1, c2])
+        old_rows = [x for x in G.collect_keys(old) if x.startswith('착수 순서')]
+        check(len(old_rows) < 5, '축6-c',
+              '옛 방식(빈 줄 삽입)은 실제로 탈락한다 = 이 축이 그 사고를 잡는다 (%d행)'
+              % len(old_rows))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
     print('\n[결과] 단정 %d건 · 실패 %d건' % (N[0], len(FAILS)))
     if FAILS:
         for f in FAILS:
             print('  🔴 %s' % f)
         print('🔴 FAIL')
         return 1
-    print('🟢 PASS — 5축 %d단정 전건 통과' % N[0])
+    print('🟢 PASS — 6축 %d단정 전건 통과' % N[0])
     return 0
 
 

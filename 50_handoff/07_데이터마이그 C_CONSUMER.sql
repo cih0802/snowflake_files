@@ -20,19 +20,27 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 5.2(파일포맷/스테이지) / 5.3.1(적재 전 검증) / 5.4(일괄 적재) /
 --                5.5(SILVER) / 5.6(ML) / 6장(검증) / 7장(정리)
---   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql   → 브론즈 50 테이블 생성
---              50_handoff/04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql → SILVER 1 테이블 생성
+--   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql   → 브론즈 52 테이블 생성
+--              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql   → SILVER 1 테이블 생성
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       → ML 16 테이블 생성
 --              ⚠️ 셋 다 먼저 실행해야 한다. 미실행 시 loaded tables: 0. 상호 선후 관계는 없다.
 --   [선행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql  (A: 공유/DDL 추출)
 --              50_handoff/03_데이터마이그 B_BROKER.sql    (B: 공유 마운트/CSV 언로드)
 --
+-- 갱신 이력 / CHANGES
+--   2026-08-29  선행 DDL 3종의 2026-08-29 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
+--     · 브론즈 50 → **52** (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → **69**
+--     · 파일명 정정: 「04_2번 SILVER」 → **06번** (실제 파일명이 06_ 이다)
+--     · 🔴 A.1 [원인 B] 사례(2026-08-13 BDGT_ACMSLT_LEDGER)의 **결론이 뒤집혔다** — 아래 A.1 참조.
+--     · A.1 (4) · A.6 (1) 의 SQL 은 스키마 조건으로 돌기 때문에 **쿼리 수정이 불필요**했다
+--       (테이블이 늘어도 자동으로 포함된다). 고친 것은 주석의 기대값뿐이다.
+--
 -- 식별자 / IDENTIFIERS
 --   적재 스테이지 = @SANDBOX.TOOLS.MIG_LOAD_STAGE/<SCHEMA>/<TABLE>/
 --   파일 포맷 = SANDBOX.TOOLS.FF_CSV_LOAD (적재) · SANDBOX.TOOLS.FF_CSV_PEEK (진단)
 --
--- 적재 대상 / SCOPE (67 테이블)
---   BRONZE_CRM 45 · BRONZE_AGENCY 4 · BRONZE_ERP 1   → A.4 프로시저 일괄 적재
+-- 적재 대상 / SCOPE (69 테이블)
+--   BRONZE_CRM 46 · BRONZE_AGENCY 4 · BRONZE_ERP 2   → A.4 프로시저 일괄 적재
 --   SILVER.BIGQUERY_REFINED_DATA 1                    → A.5 개별 적재
 --   ML.ML_RST_DATA_* 16                               → A.5-B (12종 프로시저 + 4종 개별)
 --
@@ -42,7 +50,7 @@
 --   ML.ML_RST_DATA_MBER_CHURN_12M    18컬럼 · VARIANT $18  (PREDICTION)    → A.5-B.2
 --   ML.ML_RST_DATA_MBER_INC_12M      21컬럼 · VARIANT $21  (PREDICTION)    → A.5-B.2
 --   ML.ML_RST_DATA_LOYAL_MBER        22컬럼 · VARIANT $22  (PREDICTION)    → A.5-B.2
---   ⇒ 브론즈 50개 테이블에는 반정형 컬럼이 없다. A.4 프로시저로 그대로 처리 가능하다.
+--   ⇒ 브론즈 52개 테이블에는 반정형 컬럼이 없다. A.4 프로시저로 그대로 처리 가능하다.
 -- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
@@ -70,6 +78,24 @@ USE SCHEMA SANDBOX.TOOLS;
 --     실제 발생: 2026-08-13 BRONZE_ERP.BDGT_ACMSLT_LEDGER
 --       "Number of columns in file (65) does not match that of the corresponding table (64)"
 --       원인 — 04번 DDL 에 MNYRS_COST_DIV_YN(13번째, '모금비구분') 이 누락되어 있었다.
+--     🔴 **[2026-08-29] 위 처방을 그대로 실행하지 마라 — 결론이 뒤집혔다.**
+--        A 원천(99_provided_definition/13번)에서 그 컬럼은 **삭제**되었고 대신
+--        BDGT_PRCD_NM(3번째 삽입) · DIRECT_MNYRS_YN_1 · DIRECT_MNYRS_YN_2 가 추가되어
+--        **65 → 67 컬럼**이 되었다. 04번은 2026-08-29 자로 그 구조를 반영했다.
+--        ⇒ 지금 같은 오류를 만나면 **MNYRS_COST_DIV_YN 을 되살리는 것이 아니라**
+--           04번의 현행 67컬럼 구조와 CSV 헤더를 (4) 로 대조하는 것이 정답이다.
+--        ⇒ 🔴 **이 테이블은 컬럼 순서가 3번째부터 밀렸다.** 2026-08-29 이전에 적재한 데이터가
+--           남아 있으면 값이 한 칸씩 어긋나 있다 — TRUNCATE 후 재적재 대상이다.
+--        🟢 **[2026-08-29 O114 실측] 현 C 계정에는 그 「이전 적재분」이 없었다.**
+--           근거 3축 = ㉠ 라이브 67컬럼 · BDGT_PRCD_NM 3번째 실재 · MNYRS_COST_DIV_YN 부재
+--                      ㉡ 직접 COUNT(*) = 0행 (ROW_COUNT 0 · BYTES 0)
+--                      ㉢ 아래 (4) 를 BRONZE_ERP 로 범위 한정해 실행 → 67/67 MATCH
+--           ⇒ 🔴 **TRUNCATE 를 실행하지 마라 — 대상 행이 0이라 효과가 없다.**
+--              남은 일은 「재적재」가 아니라 **최초 적재**(A.4)다.
+--           ⚠️ 위 조문은 **다른 계정·다른 시점에는 여전히 유효**하므로 지우지 않는다
+--              (계정은 계속 바뀐다 · 판정 근거는 그때 다시 조회한 결과뿐이다 · R2-8-4).
+--        🟢 이 사례를 지우지 않고 남긴 이유: 「왜 (4) 검사가 유일한 방어선인가」의 실물 근거이고,
+--           결론만 바뀌었을 뿐 교훈은 그대로 유효하다.
 --     ⚠️ (3) 은 파일끼리만 비교하므로 이 유형을 절대 잡지 못한다(모든 파일 헤더가 동일하므로 통과).
 --     → 아래 (4) 에서 CSV 헤더 ↔ 대상 테이블 컬럼을 대조해 잡는다. 이것이 유일한 방어선이다.
 --
@@ -129,7 +155,7 @@ ORDER BY 1;
 --   dup_files > 0        : 동일 내용 파일 중복 → 하나만 남기고 REMOVE
 --   조치 후 (1)부터 다시 확인한다.
 
--- (4) ⭐ CSV 헤더 ↔ 대상 테이블 구조 대조 — [원인 B] 방어선 (04·04_2·05번 DDL 오류 탐지)
+-- (4) ⭐ CSV 헤더 ↔ 대상 테이블 구조 대조 — [원인 B] 방어선 (04·05·06번 DDL 오류 탐지)
 --     COPY 는 '위치 기반' 적재이므로 컬럼 수뿐 아니라 순서까지 같아야 한다.
 --     헤더 1줄만 읽으므로 (3) 과 달리 비용이 거의 없다. DDL 실행 직후 반드시 실행할 것.
 --     ⚠️ DDL(테이블 생성)이 끝난 뒤에 실행해야 한다. 미실행 시 전 테이블이 TABLE_MISSING 으로 나온다.
@@ -175,15 +201,24 @@ WHERE f.file_cols     IS DISTINCT FROM t.tbl_cols
 ORDER BY 1, 2;
 -- → 기대 결과: 0건. (원본이 0행인 테이블만 FILE_MISSING 으로 나오는 것은 정상 — 03번 3.1 로 확인)
 --   COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 나오면 절대 적재하지 말고 DDL 을 먼저 고친다.
---     · 브론즈 정본은 50_handoff/02_1_A DB정보.sql (A 계정 GET_DDL 실측) 이다.
---     · SILVER 정본은 02번 6.2 의 GET_DDL 결과이며, 04_2번 파일은 그 발췌다.
+--     · 🔴 **[2026-08-29 정본 교체] 브론즈 정본은 99_provided_definition/11~13번이다.**
+--       종전 기재 「02_1_A DB정보.sql (A 계정 GET_DDL 실측)」은 **낡았다** —
+--       그 파일은 CRM 45 · ERP 1 이고 삭제된 MNYRS_COST_DIV_YN 이 남아 있다(1341행).
+--       ⇒ 02_1 을 정본으로 쓰면 이 검사에서 나온 불일치를 **거꾸로** 고치게 된다.
+--       근거·판정식은 04번 「병합 규칙」 2026-08-29 개정 절을 읽어라.
+--     · SILVER 정본은 02번 6.2 의 GET_DDL 결과이며, 06번 파일은 그 발췌다
+--       (원천 대조본 = 99_provided_definition/18번 · 2026-08-29 차이 0건).
 --     · ML 정본은 99_provided_definition/20_ML_ddl.sql (A 계정 GET_DDL 실측) 이며,
 --       05번 파일은 그 파일에서 무변경 발췌한 것이다 ⇒ 어긋나면 **원천 ML 이 교체된 것**이므로
 --       20_ML_ddl.sql 을 A 에서 재추출한 뒤 05번을 갱신한다(모델 교체 시 실제로 일어난다).
+--     · 🟢 04·05·06번 ↔ 원천 11~13·18·20번의 대조는 **기계로 먼저 돌린다**:
+--         python3 scripts/handoff_ddl_gate.py
+--       6축(테이블집합·컬럼순서·타입·DEFAULT·컬럼COMMENT·테이블COMMENT)을 각각 숫자로 낸다.
+--       이 게이트가 FAIL 이면 C 계정에 DDL 을 실행하기 전에 해소한다(적재까지 가지 마라).
 --     · file_col_list 와 tbl_col_list 를 나란히 놓고 어긋나는 지점을 찾는다.
 --     · 수정 후 해당 테이블만 CREATE OR REPLACE 하고 이 쿼리를 다시 돌린다.
 --   TABLE_MISSING 이 다수면 DDL 자체를 실행하지 않은 것이다.
---     · ML 만 전량 → 05번 미실행 · SILVER 만 → 04_2번 미실행 · 브론즈만 전량 → 04번 미실행.
+--     · ML 만 전량 → 05번 미실행 · SILVER 만 → 06번 미실행 · 브론즈만 전량 → 04번 미실행.
 --   🔴 ORDER_OR_NAME_MISMATCH 는 COPY 가 오류 없이 통과할 수 있어 가장 위험하다. 반드시 해소할 것.
 --      A.5 의 $118 · A.5-B.2 의 $n 위치 기반 적재가 전부 이 검사에 의존한다.
 
@@ -242,8 +277,9 @@ $$;
 
 ------------------------------------------------------------
 -- A.4 브론즈 CSV 스키마 적재 실행 (ERP → AGENCY → CRM 순)
---   기대 반환값: ERP 'loaded tables: 1' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 45'
---   ⚠️ CRM 이 43 으로 나오면 04번 DDL 구판을 실행한 것이다. 최신판으로 다시 생성할 것.
+--   기대 반환값: ERP 'loaded tables: 2' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 46'
+--   ⚠️ CRM 이 43·45 로 나오면 04번 DDL 구판을 실행한 것이다(45 = 2026-08-20 판). 최신판으로 다시 생성할 것.
+--   ⚠️ ERP 가 1 로 나오면 EXPENSE_RESOLUTION 이 없는 구판이다. 04번 최신판으로 다시 생성할 것.
 --   ⚠️ 선행 조건: A.1 (4) 가 0건(또는 0행 테이블의 FILE_MISSING 만)이어야 한다.
 --
 --   🔴 SILVER · ML 은 이 프로시저로 적재하지 않는다.
@@ -262,7 +298,7 @@ CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_CRM');
 --   대상: GN_DW.SILVER.BIGQUERY_REFINED_DATA (118 컬럼)
 --   반정형 컬럼 위치(1-based): 118 = ITEMS (ARRAY) — 이 1개뿐이다.
 --   ⚠️ $1~$117 은 스칼라이므로 변환하지 않는다.
---   ⚠️ 컬럼 순서/개수가 04_2번 DDL 과 어긋나면 전량 실패하거나 한 칸씩 밀려 오적재된다.
+--   ⚠️ 컬럼 순서/개수가 06번 DDL 과 어긋나면 전량 실패하거나 한 칸씩 밀려 오적재된다.
 --      A.1 (4) 가 이 테이블에 대해 0건인 것을 반드시 먼저 확인한다.
 --      DDL 이 바뀌면 아래 $118 위치를 함께 갱신해야 한다.
 ------------------------------------------------------------
@@ -478,8 +514,10 @@ WHERE table_type = 'BASE TABLE'
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 GROUP BY 1 ORDER BY 1;
--- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 45 · BRONZE_ERP 1 · ML 16 · SILVER 1 = 67 테이블
+-- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 46 · BRONZE_ERP 2 · ML 16 · SILVER 1 = 69 테이블
 --       행수는 03번 3.1 / 02번 5단계 실측값과 일치해야 한다.
+--       🔴 이 수치는 04·05·06번 DDL 의 2026-08-29 판 기준이다. DDL 을 갱신하면 여기도 함께 고쳐라
+--          (수치가 문서 두 곳에 있으므로 한 곳만 고치면 조용히 어긋난다).
 
 -- (2) 빈 테이블 점검
 --     기대: 03번 3.1 의 zero_row_tables 와 같은 목록만 나온다.

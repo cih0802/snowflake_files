@@ -3,6 +3,7 @@ create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 �
 create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 	YEAR VARCHAR(16777216) COMMENT '연도',
 	INCOME_EXPS_DIV_NM VARCHAR(16777216) COMMENT '수지구분',
+	BDGT_PRCD_NM VARCHAR(16777216) COMMENT '예산절차',
 	BDGT_UNIT_NM VARCHAR(16777216) COMMENT '예산단위',
 	JANG_NM VARCHAR(16777216) COMMENT '장',
 	KWAN_NM VARCHAR(16777216) COMMENT '관',
@@ -13,7 +14,8 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 	FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
 	BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
 	DVLP_INBOUND_PATH VARCHAR(16777216) COMMENT '개발인입경로',
-	MNYRS_COST_DIV_YN VARCHAR(16777216) COMMENT '모금비구분',
+	DIRECT_MNYRS_YN_1 VARCHAR(16777216) COMMENT '직접모금비1',
+	DIRECT_MNYRS_YN_2 VARCHAR(16777216) COMMENT '직접모금비2',
 	YEAR_BDGT_TOT_AMT NUMBER(38,0) COMMENT '연예산_합계',
 	CHN_BDGT_TOT_AMT NUMBER(38,0) COMMENT '변경예산_합계',
 	ADJ_BDGT_TOT_AMT NUMBER(38,0) COMMENT '조정예산_합계',
@@ -68,12 +70,36 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 	EXEC_AMT_12 NUMBER(38,0) COMMENT '집행금액_12'
 )COMMENT='예산 실적 원장'
 ;
+create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
+	YEAR VARCHAR(16777216) COMMENT '연도',
+	WRITE_DATE VARCHAR(16777216) COMMENT '작성일자',
+	RESOLUTION_NO VARCHAR(16777216) COMMENT '결의번호',
+	RESOLUTION_DEPT_NM VARCHAR(16777216) COMMENT '결의부서',
+	EXPS_RESOLUTION_NM VARCHAR(16777216) COMMENT '지출결의명',
+	SOURCE_DIV_NM VARCHAR(16777216) COMMENT '원천구분',
+	SOURCE_NO VARCHAR(16777216) COMMENT '원천번호',
+	BDGT_UNIT_NM VARCHAR(16777216) COMMENT '예산단위',
+	MOK_NM VARCHAR(16777216) COMMENT '목',
+	DTL_ITEM_NM VARCHAR(16777216) COMMENT '세목',
+	SUBDTL_ITEM_NM VARCHAR(16777216) COMMENT '세세목',
+	FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
+	BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
+	DESCRIPTIONVARCHAR VARCHAR(16777216) COMMENT '적요',
+	SUM_AMT NUMBER(38,0) COMMENT '합계금액',
+	CONTENTS_DELIMITER VARCHAR(16777216) COMMENT '콘텐츠구분자'
+)COMMENT='지출 결의'
+;
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT
 	SKIP_HEADER = 1
 	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 ;
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR
 	SKIP_HEADER = 2
+	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+	ENCODING = 'EUC-KR'
+;
+CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR2
+	SKIP_HEADER = 1
 	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 	ENCODING = 'EUC-KR'
 ;
@@ -87,7 +113,6 @@ DECLARE
     v_delete_sql VARCHAR;
     v_copy_sql VARCHAR;
 BEGIN
-    USE WAREHOUSE GN_DW_ETL_WH;
     -- P_YEAR YYYY 형태 검증 (4자리 숫자)
     IF (:P_YEAR IS NULL OR LENGTH(:P_YEAR) != 4 OR TRY_TO_NUMBER(:P_YEAR) IS NULL) THEN
         RETURN ''ERROR: P_YEAR는 YYYY 형태의 4자리 연도여야 합니다 (입력값: '' || NVL(:P_YEAR, ''NULL'') || '')'';
@@ -118,9 +143,7 @@ BEGIN
             SELECT
                 '''''' || :P_YEAR || '''''',$1,$2,$3,$4,
                 $5,$6,$7,$8,$9,
-                $10,$11,$12,
-                NVL(TRY_TO_NUMBER(REPLACE($13, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($14, '''','''', '''''''')), 0),
+                $10,$11, $12, $13, $14,
                 NVL(TRY_TO_NUMBER(REPLACE($15, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($16, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($17, '''','''', '''''''')), 0),
@@ -170,9 +193,63 @@ BEGIN
                 NVL(TRY_TO_NUMBER(REPLACE($61, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($62, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($63, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($64, '''','''', '''''''')), 0)
+                NVL(TRY_TO_NUMBER(REPLACE($64, '''','''', '''''''')), 0),
+                NVL(TRY_TO_NUMBER(REPLACE($65, '''','''', '''''''')), 0),
+                NVL(TRY_TO_NUMBER(REPLACE($66, '''','''', '''''''')), 0)
             FROM @GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE
             (FILE_FORMAT => ''''GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR'''', PATTERN => ''''.*'' || v_file_name || '''''')
+        ) FORCE = TRUE'';
+    EXECUTE IMMEDIATE v_copy_sql;
+
+    RETURN :P_YEAR || '': '' || v_file_name || '' 적재완료'';
+END;
+';
+CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_ERP.SP_LOAD_EXPENSE_RESOLUTION_BY_YEAR("P_YEAR" VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS '
+DECLARE
+    v_file_name VARCHAR;
+    v_delete_sql VARCHAR;
+    v_copy_sql VARCHAR;
+BEGIN
+    -- P_YEAR YYYY 형태 검증 (4자리 숫자)
+    IF (:P_YEAR IS NULL OR LENGTH(:P_YEAR) != 4 OR TRY_TO_NUMBER(:P_YEAR) IS NULL) THEN
+        RETURN ''ERROR: P_YEAR는 YYYY 형태의 4자리 연도여야 합니다 (입력값: '' || NVL(:P_YEAR, ''NULL'') || '')'';
+    END IF;
+
+    -- 디렉터리 메타데이터 갱신
+    ALTER STAGE GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE2 REFRESH;
+
+    -- P_YEAR로 시작하고 _expense.csv로 끝나는 파일 중 가장 최근 업로드된 파일 선택
+    SELECT RELATIVE_PATH INTO :v_file_name
+    FROM DIRECTORY(@GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE2)
+    WHERE RELATIVE_PATH LIKE :P_YEAR || ''%_expense.csv''
+    ORDER BY LAST_MODIFIED DESC
+    LIMIT 1;
+
+    IF (v_file_name IS NULL) THEN
+        RETURN :P_YEAR || ''_expense.csv 패턴에 맞는 파일을 찾을 수 없습니다'';
+    END IF;
+
+    -- 해당 연도 기존 데이터 삭제
+    v_delete_sql := ''DELETE FROM GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION WHERE YEAR = '''''' || :P_YEAR || '''''''';
+    EXECUTE IMMEDIATE v_delete_sql;
+
+    -- 해당 파일 데이터 적재
+    v_copy_sql := ''
+        COPY INTO GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION
+        FROM (
+            SELECT
+                '''''' || :P_YEAR || '''''',
+                $1,$2,$3,$4,$5,
+                $6,$7,$8,$9,$10,
+                $11, $12, $13, 
+                NVL(TRY_TO_NUMBER(REPLACE($14, '''','''', '''''''')), 0),
+                $15 
+            FROM @GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE2
+            (FILE_FORMAT => ''''GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR2'''', PATTERN => ''''.*'' || v_file_name || '''''')
         ) FORCE = TRUE'';
     EXECUTE IMMEDIATE v_copy_sql;
 

@@ -773,9 +773,12 @@ def update_golden(reason=None, label=None):
     #   **이 골든만 빠져 있었다** ⇒ 「정당한 재발행」과 「FAIL 을 덮은 재발행」을
     #   나중에 **구별할 수 없다**(`R1-7-4` 가 막으려는 바로 그 상태).
     import time as _t
+    # 🔴 [2026-08-29 O114-B] 라벨 해소를 재구현하지 않는다 — `snapshot_util.resolve_label()` 이
+    #   유일한 산식이다(`R3-9 ㉡` 「같은 것을 다르게 재는 지점」 · `index_row_gate` 와 동일 시정).
+    import snapshot_util as _snap
     entry = {
         "date": _t.strftime("%Y-%m-%d %H:%M:%S"),
-        "label": label or os.environ.get("SESSION_LABEL", "") or "UNLABELED",
+        "label": _snap.resolve_label(label),
         "reason": reason or "(사유 미기재)",
         "diff_count": len(d) if prev else 0,
     }

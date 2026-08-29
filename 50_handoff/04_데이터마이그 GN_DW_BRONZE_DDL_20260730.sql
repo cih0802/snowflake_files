@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 2026-08-20
+-- 2026-08-29
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -13,49 +13,82 @@
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 3.2(DDL 추출) / 5.1(DDL로 스키마·테이블 재생성)
---   [형제 DDL] 50_handoff/04_2_데이터마이그 GN_DW_SILVER_DDL_20260820.sql
+--   [형제 DDL] 50_handoff/06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
 --              → GN_DW.ML.ML_RST_DATA_* (예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 67 테이블이 완성된다. 선후 관계는 없다.
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 69 테이블이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 본 파일의 범위 / SCOPE
---   GN_DW.BRONZE_CRM (45) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (1) = 50 테이블
+--   GN_DW.BRONZE_CRM (46) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2) = 52 테이블
 --   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
---      해당 원천의 정제 결과는 04_2번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
+--      해당 원천의 정제 결과는 06번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH  (본 파일은 아래 문서를 병합해 생성)
---   50_handoff/02_1_A DB정보.sql                            (A 계정 GET_DDL 실측 — 최우선 정본)
 --   99_provided_definition/11_bronze_crm_ddl.sql            (CRM DDL, 컬럼 코멘트 없음)
---   99_provided_definition/12_bronze_agency_ddl.sql         (AGENCY DDL, 컬럼 코멘트 있음)
+--   99_provided_definition/12_bronze_agency_ddl.sql         (AGENCY DDL, 컬럼 코멘트 대부분 있음)
 --   99_provided_definition/13_bronze_erp_ddl.sql            (ERP DDL, 컬럼 코멘트 있음)
---   99_provided_definition/컬럼정의서 20260714.csv           (한글 컬럼 코멘트 출처)
+--   99_provided_definition/컬럼정의서 20260714.csv           (CRM 한글 컬럼 코멘트 출처)
+--   50_handoff/02_1_A DB정보.sql                            (A 계정 GET_DDL 실측 — 🔴 낡았다. 아래 참조)
 --
 -- 병합 규칙 / MERGE RULE
---   - 구조(컬럼 순서/타입/DEFAULT)는 A 계정 실측 DDL(02_1_A DB정보.sql)을 최우선 정본으로 한다.
---     원천 정의 문서(11~13)와 어긋나면 실측값을 따른다.
---   - 컬럼 코멘트: 원천 문서에 있으면 그것을 사용(AGENCY/ERP), 없으면 기존 스냅샷 코멘트를 유지(CRM).
+--   🔴 **[2026-08-29 개정] 구조 정본이 02_1_A DB정보.sql → 99_provided_definition/11~13 으로 바뀌었다.**
+--     종전 규칙은 「02_1_A DB정보.sql 을 최우선 정본으로 하고, 원천 정의 문서와 어긋나면 실측값을 따른다」
+--     였다. 그 규칙을 그대로 따르면 2026-08-29 갱신분이 **되돌려진다.**
+--     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45 · BRONZE_ERP 1 · BRONZE_AGENCY 4
+--       · BRONZE_BIGQUERY 3** 이고, 삭제된 컬럼 `MNYRS_COST_DIV_YN` 이 아직 살아 있다(1341행).
+--       ⇒ 그 파일은 **더 이른 시점의 스냅샷**이다. 「실측」이라는 이유만으로 최신이 되지는 않는다.
+--     ⇒ 규칙 = **날짜가 더 최신인 스냅샷을 정본으로 한다.** 현재는 11~13 이다.
+--       02_1 을 다시 최우선으로 올리려면 **A 계정에서 GET_DDL 을 다시 떠서 02_1 을 갱신한 뒤** 그렇게 한다.
+--       🔴 갱신 없이 우선순위만 되돌리지 마라 — 그것이 이 규칙을 개정한 이유다.
+--   - 컬럼 코멘트: 원천 문서에 있으면 **그것을 그대로** 쓴다(변형 금지 · 게이트 축5 blocking).
+--     원천에 없으면 인수인계에서 보강한다(CRM 전량 · AGENCY.SYNC_ERR_INFO).
+--     🔴 「AGENCY 는 코멘트 있음」은 정확하지 않다 — SYNC_ERR_INFO 4컬럼은 원천에 코멘트가 없고
+--        본 파일이 보강한 것이다. 정책은 **스키마 단위가 아니라 컬럼 단위**로 판정한다.
 --   - 컬럼정의서 CSV의 '컬럼설명(한글)'이 공백인 컬럼은 명명 규칙에 따라 부여한다.
 --     예) BF_STAT_CD='이전상태코드' ↔ AF_STAT_CD='이후상태코드', SER_NO='일련번호'
---   - 적재 프로시저(SP_LOAD_*)는 **제외**한다: 적재 전 구조 생성에 불필요하고
+--   - 🟢 **이 규칙의 준수는 기계로 검사한다** (손으로 대조하지 마라):
+--       python3 scripts/handoff_ddl_gate.py
+--     6축(테이블집합 · 컬럼순서 · 타입 · DEFAULT · 컬럼COMMENT · 테이블COMMENT)을 각각 숫자로 낸다.
+--     음성 테스트 = scripts/test_handoff_ddl_gate.py (오염 기반 · 축10 · 단정 14).
+--   - 적재 프로시저(SP_LOAD_*)·TASK 는 **제외**한다: 적재 전 구조 생성에 불필요하고
 --     외부 스테이지/API 통합에 의존해 C 계정에서 생성이 실패할 수 있다.
 --     → 필요 시 원천 정의 문서(12/13)에서 직접 가져올 것.
 --       BRONZE_AGENCY: SP_LOAD_DGT_AD_FROM_GSHEET, SP_LOAD_REBRDC_FROM_SHAREPOINT, SP_LOAD_VIDEO_AD_FROM_GDRIVE
---       BRONZE_ERP   : SP_LOAD_BUDGET_BY_YEAR
+--                      TASK_REBRDC (12번 984행 · 재송출 적재 스케줄)
+--       BRONZE_ERP   : SP_LOAD_BUDGET_BY_YEAR, SP_LOAD_EXPENSE_RESOLUTION_BY_YEAR
+--     ⚠️ 위 프로시저는 GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE / CSV_UPLOAD_STAGE2 에 의존한다.
+--        본 파일은 그 스테이지도 생성하지 않는다(원천 운영 객체이며 이관 대상이 아니다).
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-08-20
+--   - 갱신일자    : 2026-08-29
 --   - 스키마 수   : 3   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP)
---   - 테이블 수   : 50  (CRM 45, AGENCY 4, ERP 1)
+--   - 테이블 수   : 52  (CRM 46, AGENCY 4, ERP 2)
 --   - 시퀀스 수   : 1   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO)
---   - 파일 포맷   : 3   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT_EUCKR)
+--   - 파일 포맷   : 4   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
+--                        BRONZE_ERP.GN_CSV_FORMAT_EUCKR, BRONZE_ERP.GN_CSV_FORMAT_EUCKR2)
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-08-29  (원천 정의 문서 11/12/13 재대조 — 기계 대조로 확정)
+--     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_MKTNG_UTM        (12컬럼, 신규 · 마케팅 UTM 매핑)
+--     + [TABLE]  GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION     (16컬럼, 신규 · 지출 결의)
+--     + [COLUMN] GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG : CMMN_BRND, MKTG_UTM (34 → 36 컬럼)
+--     🔴 [COLUMN] GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER : 65 → 67 컬럼 · **컬럼 순서가 바뀌었다**
+--        · + BDGT_PRCD_NM        (3번째로 삽입 — INCOME_EXPS_DIV_NM 과 BDGT_UNIT_NM 사이)
+--        · − MNYRS_COST_DIV_YN   (삭제)
+--        · + DIRECT_MNYRS_YN_1, DIRECT_MNYRS_YN_2 (DVLP_INBOUND_PATH 뒤)
+--        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 이 테이블을 이미 적재했다면 전량 재적재해야 한다.
+--           07번 A.1 (4)(CSV 헤더 ↔ 테이블 구조 대조)를 반드시 다시 통과시킨 뒤 적재할 것.
+--     + [FILE FORMAT] BRONZE_ERP.GN_CSV_FORMAT_EUCKR2 (SKIP_HEADER=1, EUC-KR · 지출결의 적재용)
+--     * 스키마 3 유지 · 테이블 50 → 52 · 파일 포맷 3 → 4 · 시퀀스 1 유지
+--     * AGENCY 4테이블은 구조·컬럼·코멘트 모두 변경 없다(기계 대조 결과 차이 0).
+--     * 신규 CRM 컬럼의 한글 코멘트는 컬럼정의서 CSV 에 없어 **명명 규칙으로 부여**했다
+--       (병합 규칙 3항 · 현업 확인 대상). ERP 신규분은 원천 DDL 의 COMMENT 를 그대로 옮겼다.
 --   2026-08-20
 --     - [SCHEMA] GN_DW.BRONZE_GA4 블록 삭제 — 이관 대상에서 제외되었다.
 --       (A 에서 BRONZE_BIGQUERY 로 개편되었고, 정제 결과인 SILVER 테이블을 대신 받는다.)
@@ -78,33 +111,35 @@
 --   1) DB/스키마명을 C 환경에 맞게 치환 (예: GN_DW -> <TARGET_DB>).
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
---   4) 이어서 04_2번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 45 / ERP 1 / ML 16 / SILVER 1 = 67):
+--   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 46 / ERP 2 / ML 16 / SILVER 1 = 69):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
 --          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY')
 --               OR (table_schema='SILVER' AND table_name='BIGQUERY_REFINED_DATA')
 --               OR (table_schema='ML' AND table_name LIKE 'ML_RST_DATA_%'))
 --        GROUP BY 1 ORDER BY 1;
---   6) 06번 A.1 (4) 로 CSV 헤더 ↔ 테이블 구조를 대조한 뒤 적재한다.
+--   6) 07번 A.1 (4) 로 CSV 헤더 ↔ 테이블 구조를 대조한 뒤 적재한다.
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 50개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
---     → 06번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
---     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 04_2번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
---     각각 06번 A.5 · A.5-B.2 가 담당한다.
+--   - 본 파일의 52개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
+--     → 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
+--     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
+--     각각 07번 A.5 · A.5-B.2 가 담당한다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
+--   - 🔴 BDGT_ACMSLT_LEDGER 는 2026-08-29 자로 컬럼 순서가 바뀌었다(변경 이력 참조).
+--     기존 CSV 로 적재하면 한 칸씩 밀려 조용히 오적재된다 — 07번 A.1 (4) 대조가 0건인지 먼저 확인한다.
 --
 -- 객체 인덱스 / OBJECT INDEX
---   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 45개
+--   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 46개
 --     SND_MEMBER_LIST, SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD,
 --     TD_MS_AT_TMPLAT_BTN_LIST, TD_MS_CRMN_PRTCPNT, TD_MS_EMAIL_LQY_SNDNG,
 --     TD_MS_EMAIL_SNDNG_DTLS, TD_MS_EVENT_PRTCPNT_DTL, TD_MS_MSG_AT_LQY_SNDNG,
 --     TD_MS_MSG_AT_SNDNG_DTLS, TD_MS_PSTMTR_LQY_SNDNG, TD_MS_PSTMTR_SNDNG_DTL,
 --     TH_MM_FDRM_MBER_STNG_DTLS, TH_PM_SETLE_INFO_HIST, TM_CM_BRND_MNG,
 --     TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL, TM_CM_MKTNG_CMPGN_MNG,
---     TM_CM_SPNSR_BSNS_INFO, TM_MM_FDRM_MBER_DVLP_AMT, TM_MM_FDRM_MBER_INFO,
+--     TM_CM_MKTNG_UTM, TM_CM_SPNSR_BSNS_INFO, TM_MM_FDRM_MBER_DVLP_AMT, TM_MM_FDRM_MBER_INFO,
 --     TM_MM_FDRM_MBER_IRSD, TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT, TM_MM_FDRM_MBER_RE_SPNSR,
 --     TM_MM_FDRM_MBER_SPNSR, TM_MM_FDRM_MBER_SPNSR_BSNS,
 --     TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_ONCE_MBER_INFO, TM_MS_CRMN,
@@ -118,12 +153,15 @@
 --     [SEQUENCE]    SEQ_SYNC_ERR_INFO
 --     [FILE FORMAT] GN_CSV_FORMAT (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --
---   [SCHEMA] GN_DW.BRONZE_ERP — 원천 적재: ERP (SMS/알림톡/마케팅 발송), 테이블 1개
---     BDGT_ACMSLT_LEDGER
---     [FILE FORMAT] GN_CSV_FORMAT       (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
---     [FILE FORMAT] GN_CSV_FORMAT_EUCKR (SKIP_HEADER=2, ENCODING='EUC-KR')
+--   [SCHEMA] GN_DW.BRONZE_ERP — 원천 적재: ERP (예산/지출 원장), 테이블 2개
+--     BDGT_ACMSLT_LEDGER (67컬럼), EXPENSE_RESOLUTION (16컬럼)
+--     [FILE FORMAT] GN_CSV_FORMAT        (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
+--     [FILE FORMAT] GN_CSV_FORMAT_EUCKR  (SKIP_HEADER=2, ENCODING='EUC-KR' · 예산원장 적재용)
+--     [FILE FORMAT] GN_CSV_FORMAT_EUCKR2 (SKIP_HEADER=1, ENCODING='EUC-KR' · 지출결의 적재용)
+--     ⚠️ 스키마 COMMENT 는 원천(13번)이 'SMS/알림톡/마케팅 발송'으로 되어 있어 실제 내용과 어긋난다.
+--        원천 무변경 원칙에 따라 COMMENT 문안은 그대로 두고 이 인덱스에만 실제 성격을 적는다.
 --
---   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 04_2번 참조 (118컬럼, ITEMS=ARRAY)
+--   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
 --   [별도 파일] GN_DW.ML.ML_RST_DATA_* 16종        — 05번 참조 (PREDICTION=VARIANT 4종 포함)
 -- =====================================================================
 
@@ -590,6 +628,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG (
   CMPGN_TYPE1_BSN NUMBER(10,0) COMMENT '캠페인유형(국내/해외)',
   CMPGN_TYPE2_BSN NUMBER(10,0) COMMENT '캠페인유형(사업/사례)',
   MKTG_CMPGN_NM NUMBER(10,0) COMMENT '마케팅갬페인명',
+  CMMN_BRND NUMBER(10,0) COMMENT '공통브랜드 (2026-08-29 신규 · 명명규칙 부여 · 현업 확인 대상)',
+  MKTG_UTM NUMBER(10,0) COMMENT '마케팅UTM (2026-08-29 신규 · 명명규칙 부여 · 현업 확인 대상)',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
   _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
 );
@@ -626,6 +666,22 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MKTNG_CMPGN_MNG (
   MK_CMPGN_CD VARCHAR(50) COMMENT '마케팅캠페인코드',
   MK_CMPGN_NM VARCHAR(200) COMMENT '마케팅캠페인명',
   USE_YN VARCHAR(1) COMMENT '사용여부',
+  RM VARCHAR(500) COMMENT '비고',
+  FRST_RGSTR_ID VARCHAR(50) COMMENT '최초등록자ID',
+  FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
+  LAST_UPDUSR_ID VARCHAR(50) COMMENT '최종수정자ID',
+  LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
+  _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+);
+-- 2026-08-29 신규 — 원천 11번 492행. 한글 코멘트는 컬럼정의서 CSV 미수록분이라
+--   명명 규칙으로 부여했다(병합 규칙 3항 · 현업 확인 대상).
+create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MKTNG_UTM (
+  CMPGN_CD VARCHAR(50) COMMENT '캠페인코드',
+  UPPER_CMPGN_CD VARCHAR(50) COMMENT '상위캠페인코드',
+  MK_UTM VARCHAR(50) COMMENT '마케팅UTM',
+  MK_UTM_NM VARCHAR(200) COMMENT '마케팅UTM명',
+  USE_YN VARCHAR(10) COMMENT '사용여부',
   RM VARCHAR(500) COMMENT '비고',
   FRST_RGSTR_ID VARCHAR(50) COMMENT '최초등록자ID',
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
@@ -1322,13 +1378,19 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 
 
 -- #####################################################################
--- # SCHEMA 3/3 : GN_DW.BRONZE_ERP  (ERP 원천 - SMS/알림톡/마케팅 발송)
+-- # SCHEMA 3/3 : GN_DW.BRONZE_ERP  (ERP 원천 - 예산/지출 원장)
 -- #####################################################################
+-- ⚠️ 스키마 COMMENT 는 원천(13번 1행)의 문안을 그대로 옮긴 것이며 실제 내용과 어긋난다.
+--    실제 성격은 예산·지출 원장이다. 원천 무변경 원칙에 따라 문안은 고치지 않는다.
 create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
 
+-- 🔴 2026-08-29 컬럼 순서 변경 — 65 → 67 컬럼.
+--    + BDGT_PRCD_NM(3번째 삽입) · − MNYRS_COST_DIV_YN · + DIRECT_MNYRS_YN_1/2
+--    ⇒ 이전 판 CSV 로 적재하면 3번째 이후가 한 칸씩 밀린다. 07번 A.1 (4) 를 먼저 통과시킬 것.
 create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
   YEAR VARCHAR(16777216) COMMENT '연도',
   INCOME_EXPS_DIV_NM VARCHAR(16777216) COMMENT '수지구분',
+  BDGT_PRCD_NM VARCHAR(16777216) COMMENT '예산절차',
   BDGT_UNIT_NM VARCHAR(16777216) COMMENT '예산단위',
   JANG_NM VARCHAR(16777216) COMMENT '장',
   KWAN_NM VARCHAR(16777216) COMMENT '관',
@@ -1339,7 +1401,8 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
   FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
   BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
   DVLP_INBOUND_PATH VARCHAR(16777216) COMMENT '개발인입경로',
-  MNYRS_COST_DIV_YN VARCHAR(16777216) COMMENT '모금비구분',
+  DIRECT_MNYRS_YN_1 VARCHAR(16777216) COMMENT '직접모금비1',
+  DIRECT_MNYRS_YN_2 VARCHAR(16777216) COMMENT '직접모금비2',
   YEAR_BDGT_TOT_AMT NUMBER(38,0) COMMENT '연예산_합계',
   CHN_BDGT_TOT_AMT NUMBER(38,0) COMMENT '변경예산_합계',
   ADJ_BDGT_TOT_AMT NUMBER(38,0) COMMENT '조정예산_합계',
@@ -1395,12 +1458,41 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 )COMMENT='예산 실적 원장'
 ;
 
+-- 2026-08-29 신규 — 원천 13번 73행 무변경 발췌(COMMENT 포함).
+--   ⚠️ DESCRIPTIONVARCHAR 는 원천의 컬럼명이 그대로다(오타로 보이지만 임의로 고치지 않는다).
+--      이름을 바꾸면 원천 GET_DDL 과 어긋나 위치 기반 적재 대조가 깨진다.
+create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
+  YEAR VARCHAR(16777216) COMMENT '연도',
+  WRITE_DATE VARCHAR(16777216) COMMENT '작성일자',
+  RESOLUTION_NO VARCHAR(16777216) COMMENT '결의번호',
+  RESOLUTION_DEPT_NM VARCHAR(16777216) COMMENT '결의부서',
+  EXPS_RESOLUTION_NM VARCHAR(16777216) COMMENT '지출결의명',
+  SOURCE_DIV_NM VARCHAR(16777216) COMMENT '원천구분',
+  SOURCE_NO VARCHAR(16777216) COMMENT '원천번호',
+  BDGT_UNIT_NM VARCHAR(16777216) COMMENT '예산단위',
+  MOK_NM VARCHAR(16777216) COMMENT '목',
+  DTL_ITEM_NM VARCHAR(16777216) COMMENT '세목',
+  SUBDTL_ITEM_NM VARCHAR(16777216) COMMENT '세세목',
+  FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
+  BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
+  DESCRIPTIONVARCHAR VARCHAR(16777216) COMMENT '적요',
+  SUM_AMT NUMBER(38,0) COMMENT '합계금액',
+  CONTENTS_DELIMITER VARCHAR(16777216) COMMENT '콘텐츠구분자'
+)COMMENT='지출 결의'
+;
+
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT
-	SKIP_HEADER = 1
-	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+  SKIP_HEADER = 1
+  FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 ;
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR
-	SKIP_HEADER = 2
-	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
-	ENCODING = 'EUC-KR'
+  SKIP_HEADER = 2
+  FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+  ENCODING = 'EUC-KR'
+;
+-- 2026-08-29 신규 — 원천 13번 101행. 지출결의 CSV 는 헤더가 1줄이다(예산원장은 2줄).
+CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR2
+  SKIP_HEADER = 1
+  FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+  ENCODING = 'EUC-KR'
 ;

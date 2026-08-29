@@ -1,5 +1,5 @@
 -- GN_DW.SILVER 정제 테이블 DDL — C 계정 재현용
--- 2026-08-20
+-- 2026-08-20 (초판) · 2026-08-29 갱신
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -16,10 +16,28 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md  → 5.1(DDL 재생성) / 5.5(SILVER 적재)
 --   [출처]     50_handoff/02_데이터마이그 A_PRODUCER.sql 6.2
 --              → SELECT GET_DDL('TABLE','GN_DW.SILVER.BIGQUERY_REFINED_DATA', TRUE);
---   [형제 DDL] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql (브론즈 3스키마 50테이블)
+--   [원천 정의] 99_provided_definition/18_silver_bigquery_refined.sql
+--              → 2026-08-29 기계 대조 결과 **본 파일과 차이 0**(컬럼명·순서·타입·COMMENT 전건 일치).
+--   [형제 DDL] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql (브론즈 3스키마 52테이블)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql     (ML 예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 67 테이블이 완성된다. 선후 관계는 없다.
---   [후속]     50_handoff/06_데이터마이그 C_CONSUMER.sql  A.5 (이 테이블 적재)
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 69 테이블이 완성된다. 선후 관계는 없다.
+--   [후속]     50_handoff/07_데이터마이그 C_CONSUMER.sql  A.5 (이 테이블 적재)
+--
+-- 변경 이력 / CHANGES
+--   2026-08-29
+--     · 원천 정의 문서(18번)와 기계 대조 — **구조 변경 0건**. DDL 본문은 손대지 않았다.
+--     · 형제·후속 문서 참조 정정: 「04_2번」 → 본 파일이 **06번**이다 ·
+--       「06번 C_CONSUMER」 → **07번** · 브론즈 50 → **52** · 총계 67 → **69**.
+--     · 스테이지 실측 절 신설(아래).
+--   2026-08-20  초판.
+--
+-- 스테이지 적재 실측 / STAGE STATE  (2026-08-29 · SANDBOX.TOOLS.MIG_LOAD_STAGE)
+--   🔴 SILVER/ 하위 = **0건**. 이 테이블은 아직 언로드되지 않았다.
+--        LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE/SILVER/;   -- 0 rows
+--   ⚠️ 같은 시점에 BRONZE_CRM 업로드가 **진행 중**이었다(파일이 계속 증가) ⇒
+--      「0건」은 「대상이 아니다」가 아니라 **「아직 오지 않았다」**로 읽는다.
+--      적재 착수 직전에 다시 LIST 해서 실재를 확인한 뒤 07번 A.5 를 실행한다.
+--   참고: 같은 시점 ML/ 하위는 16테이블/54파일로 완료 상태였다(05번 참조).
 --
 -- 본 파일의 범위 / SCOPE
 --   GN_DW.SILVER.BIGQUERY_REFINED_DATA — 1 테이블
@@ -29,11 +47,33 @@
 --   컬럼 수 : 118
 --   반정형  : 118번째 ITEMS (ARRAY) — 이 1개뿐이다.
 --             → CSV 왕복 시 JSON 문자열로 들어가므로 적재 시 TRY_PARSE_JSON($118) 필수.
---                (06번 A.5 참조. 이 위치가 어긋나면 전량 오적재된다.)
+--                (07번 A.5 참조. 이 위치가 어긋나면 전량 오적재된다.)
 --   접두어 규칙 : EP_=event_params · UP_=user_properties · CTS_=collected_traffic_source
 --                 STSLC_=session_traffic_source_last_click · TS_=traffic_source
 --                 ECOMMERCE_=ecommerce · DEVICE_/GEO_=device/geo 평탄화
 --   ⇒ event_params / user_properties 등의 평탄화가 A 원천에서 이미 끝나 있다.
+--
+-- 🟠 컬럼 COMMENT 공백 9건 / UNDOCUMENTED COLUMNS  (2026-08-29 게이트 실측 · 현업 확인 대상)
+--   118컬럼 중 **9컬럼이 원천(18번)·본 파일 양쪽 모두 COMMENT 가 없다.**
+--   ⇒ 이관 무결성 위반은 아니다(양쪽이 동일하다). **문서화 공백**이며 A 원천에서 물려받은 것이다.
+--   대상 — 전부 STSLC_(session_traffic_source_last_click) 계열이다:
+--     · STSLC_CRC_CAMPAIGN_NAME          · STSLC_CRC_DEFAULT_CHANNEL_GROUP
+--     · STSLC_CRC_PRIMARY_CHANNEL_GROUP  · STSLC_CRC_SOURCE_PLATFORM
+--     · STSLC_GAC_AD_GROUP_ID            · STSLC_GAC_AD_GROUP_NAME
+--     · STSLC_GAC_CAMPAIGN_NAME          · STSLC_MC_CAMPAIGN_NAME
+--     · STSLC_MC_SOURCE_PLATFORM
+--   🔴 임의로 문안을 창작해 채우지 않았다 — 같은 계열의 다른 컬럼(CRC_/GAC_/MC_ 접두)에는
+--      COMMENT 가 있어서 「빠진 것」인지 「의미가 확정되지 않은 것」인지 구별되지 않는다.
+--      원천 소관자 확인 후 채운다. 채울 때는 **원천(18번)을 먼저 고치고** 본 파일에 옮긴다
+--      (본 파일만 채우면 게이트 축5 가 「COMMENT 변형」으로 잡는다).
+--   판정 재현 = python3 scripts/handoff_ddl_gate.py  (SILVER 대상 · 🟠 경고 9건)
+--
+-- 🟢 구조 검증은 기계로 한다 / VERIFICATION
+--   python3 scripts/handoff_ddl_gate.py
+--     → 원천 18번과 6축(테이블집합·컬럼순서·타입·DEFAULT·컬럼COMMENT·테이블COMMENT) 대조.
+--     2026-08-29 결과 = **판정 축 0건**(무변경 이관 성립) · 🟠 경고 9건(위 절).
+--   🔴 손으로 118컬럼을 눈으로 대조하지 마라 — O113 이 그 방식의 임시 도구로
+--      「차이 0」을 냈을 때 실제로는 COMMENT·DEFAULT 축을 아예 보지 않고 있었다.
 --
 -- ⚠️ 주의
 --   - 이 SILVER 는 **A 계정 원천의 정제 계층**이다.
@@ -45,7 +85,7 @@
 --       스키마 단위 재생성(CREATE OR REPLACE SCHEMA)을 하면 유실되므로 주의한다.
 --   - 컬럼 수/순서가 A 원천과 다르면 CSV 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
 --     이관 직전 02번 6.2 의 GET_DDL 결과와 이 파일을 반드시 대조하고,
---     06번 A.1 (4)(CSV 헤더 ↔ 테이블 구조 대조)가 0건인 것을 확인한 뒤 적재한다.
+--     07번 A.1 (4)(CSV 헤더 ↔ 테이블 구조 대조)가 0건인 것을 확인한 뒤 적재한다.
 -- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
@@ -192,5 +232,5 @@ WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA'
   AND data_type IN ('ARRAY', 'VARIANT', 'OBJECT')
 ORDER BY 1;
 -- → 118 / ITEMS / ARRAY 한 줄만 나와야 한다.
---   여기서 나온 ordinal_position 이 05번 A.5 의 TRY_PARSE_JSON($n) 위치와 같아야 한다.
---   다르면 05번 A.5 의 $n 을 먼저 고친 뒤 적재할 것.
+--   여기서 나온 ordinal_position 이 07번 A.5 의 TRY_PARSE_JSON($n) 위치와 같아야 한다.
+--   다르면 07번 A.5 의 $n 을 먼저 고친 뒤 적재할 것.

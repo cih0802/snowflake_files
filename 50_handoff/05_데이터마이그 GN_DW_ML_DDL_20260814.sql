@@ -4,19 +4,24 @@
 -- 문서 목적 / PURPOSE
 --   원본(A) 계정 GN_DW.ML 스키마 중 **Agent 노출 대상 예측결과 16종**의 구조 스냅샷이다.
 --   최종 대상(C) 계정에 동일 구조를 재현하기 위한 "적재 전 테이블 생성" 스크립트로 사용한다.
---   04번(브론즈 53 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
+--   04번(브론즈 52 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
 --
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 3.1(ML 공유 부여) / 5.1-B(ML DDL 실행) / 5.6(ML 적재·VARIANT 복원) 단계에서 본 파일을 사용.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/ML 16종 SELECT 부여)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
---              50_handoff/06_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
---   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql  (BRONZE 4스키마 53테이블)
+--              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
+--   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql  (BRONZE 3스키마 52테이블)
+--   [실버]     50_handoff/06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql  (SILVER 1테이블 118컬럼)
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 69 테이블이 완성된다. 선후 관계는 없다.
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH
---   99_provided_definition/20_ML_ddl.sql  (3,217줄 · A 계정 GET_DDL('SCHEMA','GN_DW.ML',TRUE) 출력)
+--   99_provided_definition/20_ML_ddl.sql  (A 계정 GET_DDL('SCHEMA','GN_DW.ML',TRUE) 출력)
 --     → 본 파일의 16개 CREATE TABLE 문은 위 파일에서 **무변경 발췌**했다(컬럼 순서·타입·COMMENT 포함).
+--     🔴 줄 수는 여기 적지 않는다 — 적으면 다음 판에서 stale 이 된다.
+--        재려면 `wc -l 99_provided_definition/20_ML_ddl.sql` 를 실행한다.
+--        (종전 기재 「3,217줄」은 2026-08-29 실측과 어긋났다.)
 --   05_SV-Agent_ai/20_ML_SV_설계.md §0-A  (16종 행수·grain 실측 · O74)
 --
 -- 🔴 이관 범위 결정 / SCOPE (사용자 확정 2026-08-14)
@@ -38,6 +43,27 @@
 --   - 테이블 수         : 16 (예측 FORECAST 계열 8 · 분류 CLASSIFICATION 계열 4 · 스코어 2 · 요인분석 2)
 --   - VARIANT 보유      : 4 (PREDICTION 컬럼 — 전부 **마지막 컬럼**)
 --   - 작성일자          : 2026-08-14 (초판)
+--   - 갱신일자          : 2026-08-29 (원천 재대조 + 스테이지 실측)
+--
+-- 변경 이력 / CHANGES
+--   2026-08-29  원천 정의 문서 20_ML_ddl.sql 과 기계 대조 — **구조 변경 0건**.
+--     · 판정 근거 = python3 scripts/handoff_ddl_gate.py (ML_RST_DATA 대상 · 6축 전건 0건)
+--       6축 = 테이블집합 · 컬럼이름·순서 · 타입 · DEFAULT · 컬럼COMMENT · 테이블COMMENT.
+--       🔴 초판 판정은 **컬럼 COMMENT 와 DEFAULT 를 보지 않는 임시 도구**로 냈다(축 2개 누락).
+--          축을 6개로 늘려 재판정한 뒤에도 0건이었다 ⇒ 판정은 유지되고 **근거만 강해졌다**.
+--     · 원천 인벤토리도 그대로다 — 실측 분해: BASE TABLE 49 = ML_RST_DATA 16 + ML_TRAIN_DATA 20
+--       + 원천 스냅샷 12 + ML_PROCEDURE_LOG 1. 그 밖에 VIEW 4(고유명) · PROCEDURE 14.
+--     ⇒ 본 파일의 DDL 본문은 손대지 않았다. 고친 것은 머리말의 참조·수치뿐이다.
+--     · 형제 문서 참조 정정: 「06번 C_CONSUMER」 → **07번** · 「04_2번 SILVER」 → **06번**.
+--     · 총 이관 대상 67 → **69** (브론즈가 50 → 52 로 늘었다 · 04번 2026-08-29 이력 참조).
+--     · 자기참조 오류 정정: 적재 절차 「05번 A.5-B.x」는 실제로 **07번**(C_CONSUMER)의 절이다.
+--
+-- 스테이지 적재 실측 / STAGE STATE  (2026-08-29 · SANDBOX.TOOLS.MIG_LOAD_STAGE)
+--   ML/ 하위 = **16 테이블 / 54 파일 / 약 28.9 MB(gz)** — 본 파일의 16종과 **전건 일치**한다.
+--     LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/;
+--   ⇒ ML 축은 언로드가 끝났다. 남은 것은 C 계정에서 DDL 실행 + 07번 A.5-B 적재다.
+--   ⚠️ 같은 시점에 BRONZE_CRM · SILVER 는 **업로드 진행 중**이었다(파일이 계속 증가).
+--      따라서 ML 이외 스키마의 적재 완료 여부는 이 문서로 판정하지 않는다 — 그때 다시 LIST 한다.
 --
 -- 사용법 / USAGE (C 계정에서)
 --   1) 04번 DDL(브론즈)과 독립적으로 실행할 수 있다. 선후 관계 없음.
@@ -50,7 +76,7 @@
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
 --   - 🔴 **PREDICTION VARIANT 4종은 일반 COPY 로 적재하면 JSON 이 문자열로 저장된다.**
---     GA4 events_* 와 동일한 함정이며, TRY_PARSE_JSON 변환 COPY 가 필수다(05번 A.5-B.2).
+--     GA4 events_* 와 동일한 함정이며, TRY_PARSE_JSON 변환 COPY 가 필수다(07번 A.5-B.2).
 --     컬럼 위치(1-based · 전부 마지막 컬럼):
 --       · ML_RST_DATA_SPNSR_CHURN_12M                    18컬럼 → $18
 --       · ML_RST_DATA_MBER_CHURN_12M                     18컬럼 → $18
@@ -59,7 +85,7 @@
 --     평탄화 결과(`PREDICTION:probability:"1"`·`PREDICTION:class`)를 SERVING 뷰가 쓰므로,
 --     문자열로 적재되면 SV 층에서 조용히 NULL 이 된다.
 --   - 스키마 옵션: A 계정 실측 DDL 은 `create or replace schema GN_DW.ML;`(옵션 없음)이다.
---     본 파일은 C 계정 관례(BRONZE 4스키마 = MANAGED ACCESS · 소유 GN_DW_ADMIN)에 맞췄다.
+--     본 파일은 C 계정 관례(BRONZE 3스키마 = MANAGED ACCESS · 소유 GN_DW_ADMIN)에 맞췄다.
 --     원천과 다른 유일한 지점이며, 테이블 구조는 무변경이다.
 --
 -- 객체 인덱스 / OBJECT INDEX  (요건 = 260814 기준 머신러닝 개발 내용)
@@ -351,4 +377,4 @@ FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = 'ML' AND data_type = 'VARIANT'
 ORDER BY 1;
 
--- (4) 적재 전이므로 전 테이블 0행이 정상이다. 적재 후에는 05번 A.5-B.4 로 검증한다.
+-- (4) 적재 전이므로 전 테이블 0행이 정상이다. 적재 후에는 07번 A.5-B.4 로 검증한다.

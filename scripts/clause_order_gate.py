@@ -46,9 +46,46 @@ DEF_RX = re.compile(
 )
 
 
+#: 분할 조각의 본문 시작 센티넬 — 정의 지점은 `split_doc.py` 다(재정의 금지 · `R3-9 ㉡`).
+BODY_BEGIN = '<!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->'
+
+
+def logical_text(path):
+    """허브 + 조각 본문을 이어붙인 **논리 문서**.
+
+    🔴🔴 [2026-08-29 O112 신설] 왜 필요한가 — **분할하면 이 게이트가 조용히 눈을 감는다.**
+    실측: O112 가 `00_guides/01_문서분할_규약.md` 를 분할한 직후 이 게이트는
+    **`조문 0개 · 계열 0종`** 을 찍고도 **✅ 통과**를 냈다(총계 95 → 70).
+    허브는 **목차만** 담고 본문은 조각에 있으므로 `R1-6-1`~`R1-6-24` 전 계열이
+    **분모에서 사라졌는데** 판정은 「역전 0 · 중복 0」이라 초록이었다.
+    ⇒ `R3-9 ㉢`(분모 편입과 기준선은 별개) · `R1-6-8`(분모가 좁으면 게이트가 착시)의 재발이고,
+      선례 = `index_row_gate.logical_text()`(같은 사고를 35행 오탐으로 겪었다).
+    🔴 **분모가 0 이면 통과를 내지 않는다** — `main()` 이 0개 문서를 FAIL 로 잡는다.
+    """
+    parts = [path.read_text(encoding='utf-8')]
+    folder = path.parent / (path.stem + '_조각')
+    if folder.is_dir():
+        for c in sorted(folder.glob(path.stem + '-[0-9][0-9][0-9].md')):
+            t = c.read_text(encoding='utf-8')
+            if BODY_BEGIN + '\n' in t:
+                t = t.split(BODY_BEGIN + '\n', 1)[1]
+            parts.append(t)
+    else:                                   # 형제 조각 방식(`-001.md` 이 같은 폴더에 있다)
+        for c in sorted(path.parent.glob(path.stem + '-[0-9][0-9][0-9].md')):
+            t = c.read_text(encoding='utf-8')
+            if BODY_BEGIN + '\n' in t:
+                t = t.split(BODY_BEGIN + '\n', 1)[1]
+            parts.append(t)
+    return '\n'.join(parts)
+
+
 def collect(path):
-    """문서에서 (줄번호, 계열, 번호, 접미, 원문라벨) 목록을 뽑는다."""
-    text = path.read_text(encoding='utf-8')
+    """문서에서 (줄번호, 계열, 번호, 접미, 원문라벨) 목록을 뽑는다.
+
+    🔴 [O112] 분할 문서는 **허브+조각의 논리 문서**를 본다(`logical_text`).
+    줄번호는 논리 문서 기준이다 — 좌표 인용용이 아니라 **순서 판정용**이므로 무해하다.
+    """
+    text = logical_text(path)
     out = []
     for i, line in enumerate(text.split('\n'), 1):
         m = DEF_RX.match(line)
@@ -122,6 +159,13 @@ def main(argv):
         fams = sorted({fam for _, fam, _, _, _ in items})
         print('  %s: 조문 %d개 · 계열 %d종 (%s)'
               % (rel, len(items), len(fams), ' · '.join(fams)))
+        # 🆕 🔴🔴 [2026-08-29 O112] **조문 0개는 통과가 아니라 FAIL 이다.**
+        #   실측: 분할 직후 이 게이트가 `01_문서분할_규약.md: 조문 0개` 를 찍고도 ✅ 를 냈다
+        #   (총계 95 → 70). 「위반 0」은 **분모가 비었을 때도 참**이므로 판정 근거가 못 된다.
+        #   ⇒ 분모 문서는 **조문을 최소 1개 정의한다**는 것이 이 게이트의 전제다. 어기면 막는다.
+        if not items:
+            fails.append('%s — 조문 0개(분모가 비었다). 분할했다면 `logical_text` 가 '
+                         '조각을 못 찾는 것이고, 조문 문서가 아니라면 `DOCS` 에서 빼라.' % rel)
 
     for w in warns:
         print('  🟠 %s' % w)
@@ -187,7 +231,31 @@ def self_check():
             print('🔴 self-check 실패 — %s 에서 조문 0개: 정규식이 죽었다' % rel)
             ok = False
 
-    print('🟢 self-check 통과 — 역전·중복·접미·결번·정규식 5축 확인' if ok
+    # ⑦ 🆕 [O112] 분할 문서 = 허브(목차만) + 조각(본문). 조각의 조문을 세어야 한다.
+    #   🔴 이 축이 없어서 O112 가 분할한 직후 게이트가 **조문 0개로 ✅** 를 냈다.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td)
+        doc = base / '99_합성규약.md'
+        doc.write_text('# 허브\n\n| 조각 | 범위 |\n|---|---|\n| -001 | 1~9 |\n',
+                       encoding='utf-8')
+        folder = base / '99_합성규약_조각'
+        folder.mkdir()
+        (folder / '99_합성규약-001.md').write_text(
+            '<!-- SPLIT-CHUNK -->\n' + BODY_BEGIN + '\n'
+            '* **R9-1** 첫 조문\n* **R9-2** 둘째 조문\n', encoding='utf-8')
+        got = [x[4] for x in collect(doc)]
+        if got != ['R9-1', 'R9-2']:
+            print('🔴 self-check 실패 — 분할 조각의 조문을 못 센다: %r' % got)
+            ok = False
+        # 오탐 방지: 조각이 없으면 허브만 본다(빈 목록이어야 하고 예외가 없어야 한다).
+        solo = base / '98_미분할.md'
+        solo.write_text('# 미분할\n본문만 있다\n', encoding='utf-8')
+        if collect(solo):
+            print('🔴 self-check 실패 — 조문 없는 문서에서 조문을 만들어냈다')
+            ok = False
+
+    print('🟢 self-check 통과 — 역전·중복·접미·결번·정규식·분할조각 6축 확인' if ok
           else '🔴 self-check FAIL')
     return 0 if ok else 1
 

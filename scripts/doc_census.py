@@ -79,12 +79,15 @@ FAMILIES = [
     ('20_issue/50_dbt_파이프라인_미결조치.md', '50_dbt_파이프라인_미결조치_조각'),
     ('20_issue/90_해소완료_로그.md', '90_해소완료_로그_조각'),
     ('99_NEXT_SESSION.md', '99_NEXT_SESSION_조각'),
+    # 🆕 [2026-08-29 O112 · 사용자 결정 ㉠] 여유 부족(6,035 B · 20% 미달)으로 분할했다.
+    #   🔴 `20_issue/` 밖 문서라 `R1-6-18 ④` 대로 **분모 4곳을 손으로** 편입해야 한다
+    #   (여기 · `doc_type_gate.EXTRA_DOCS` · `doc_heading_gate.DOCS`+골든 · `doc_line_length_gate.CANON`).
+    ('00_guides/01_문서분할_규약.md', '01_문서분할_규약_조각'),
 ]
 
 # ── 미분할 상시 독해 문서 ────────────────────────────────────────────────
 SINGLES = [
     '00_guides/00_작업지침_세션운영규칙.md',
-    '00_guides/01_문서분할_규약.md',
     '00_guides/02_파일쓰기_안전규약.md',
     '20_issue/31_코드군_매핑등재부.md',
     '20_issue/40_입고대기_원천의존.md',
@@ -464,6 +467,64 @@ def read_budget(inv):
     return {'must': must, 'bytes': tot_b, 'chars': tot_c, 'all_chars': everything}
 
 
+def split_denominator_check():
+    """분할 문서가 **다른 도구의 분모에서 「미분할」로 취급되고 있지 않은가**.
+
+    🔴🔴 [2026-08-29 O112-B 신설] 왜 필요한가 — **문서를 쪼개면 분모가 조용히 깨진다.**
+    O112 가 `00_guides/01_문서분할_규약.md` 를 분할하며 실측한 사고 2건:
+      · `clause_order_gate` 가 **`조문 0개`를 찍고도 ✅** 를 냈다(허브는 목차만 담는다 · 총계 95 → 70).
+      · `fix_stale_counts` 가 그 문서를 **`FLAT_SOURCES`(미분할)** 로 계속 취급해 **본문을 건너뛰었다.**
+    🔴 두 번 다 **사람이 「분모 4곳 편입」 체크리스트를 이행했는데도** 남았다
+      (`R1-6-18 ④` 는 4곳만 열거하고 실제 의존 지점은 그보다 많다).
+    ⇒ 체크리스트를 **기계 판정으로 바꾼다.** 판정식은 「같은 것을 다르게 재는 지점」이 어긋났는가다(`R3-9 ㉡`).
+
+    검사 축:
+      ㉠ 모든 조각이 `doc_line_length_gate` 의 glob 분모에 들어오는가(줄길이·표 검사 밖이면 손실이 보이지 않는다).
+      ㉡ 분할 허브가 `fix_stale_counts.FLAT_SOURCES` 에 남아 있지 않은가(남으면 본문 미스캔).
+      ㉢ 조문 문서(`clause_order_gate.DOCS`)라면 논리 문서에서 조문이 **1개 이상** 잡히는가.
+    🔴 축이 늘면 여기 추가하라 — 이 함수가 「분할 후 점검」의 정본이다.
+    """
+    fails = []
+    try:
+        import doc_line_length_gate as LL
+        covered = set(LL.expand_globs())
+    except Exception as e:                                   # pragma: no cover
+        covered = None
+        fails.append('doc_line_length_gate 분모를 읽지 못했다: %s' % e)
+    try:
+        import fix_stale_counts as FS
+        flat = set(FS.FLAT_SOURCES)
+    except Exception as e:                                   # pragma: no cover
+        flat = set()
+        fails.append('fix_stale_counts 분모를 읽지 못했다: %s' % e)
+    try:
+        import clause_order_gate as CO
+        clause_docs = set(CO.DOCS)
+    except Exception as e:                                   # pragma: no cover
+        clause_docs = set()
+        fails.append('clause_order_gate 분모를 읽지 못했다: %s' % e)
+
+    for hub, where in FAMILIES:
+        chunks = [os.path.relpath(p, ROOT) for p in chunk_paths(hub, where)]
+        if covered is not None:
+            miss = [c for c in chunks if c not in covered]
+            if miss:
+                fails.append('%s — 조각 %d개가 `doc_line_length_gate` 분모 밖이다: %s'
+                             % (hub, len(miss), miss[0]))
+        if hub in flat:
+            fails.append('%s — 분할됐는데 `fix_stale_counts.FLAT_SOURCES` 에 있다'
+                         '(본문을 건너뛴다 ⇒ `HUB_SOURCES` 로 옮겨라)' % hub)
+        if hub in clause_docs:
+            try:
+                import clause_order_gate as CO
+                if not CO.collect(CO.ROOT / hub):
+                    fails.append('%s — `clause_order_gate` 가 조문 0개로 본다'
+                                 '(논리 문서를 안 읽는다)' % hub)
+            except Exception as e:                           # pragma: no cover
+                fails.append('%s — clause_order_gate.collect 실패: %s' % (hub, e))
+    return fails
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--strict', action='store_true', help='stale 1건이라도 있으면 exit 1')
@@ -529,11 +590,24 @@ def main():
         print('      %s' % s['text'])
 
     print('')
-    if stale:
-        print('🔴 stale %d건 — 숫자를 지우고 `doc_census.py` 포인터로 바꿔라' % len(stale))
-        print('   (`scripts/fix_stale_counts.py --apply` 가 자동 처리한다)')
+    dep = split_denominator_check()
+    print('[분할 분모 대조] 분할 문서가 타 도구 분모에서 「미분할」로 취급되는가 : 위반 %d건'
+          % len(dep))
+    for d in dep:
+        print('  🔴 %s' % d)
+    if not dep:
+        print('  ✅ 조각이 줄길이 분모에 전건 편입 · FLAT 오분류 0 · 조문 문서 0개 없음')
+
+    print('')
+    if stale or dep:
+        if stale:
+            print('🔴 stale %d건 — 숫자를 지우고 `doc_census.py` 포인터로 바꿔라' % len(stale))
+            print('   (`scripts/fix_stale_counts.py --apply` 가 자동 처리한다)')
+        if dep:
+            print('🔴 분할 분모 위반 %d건 — 🔴 **분할은 「분모 4곳」으로 끝나지 않는다**' % len(dep))
+            print('   정본 = `doc_census.split_denominator_check()` (축이 늘면 그 함수에 추가하라)')
         return 1 if a.strict else 0
-    print('✅ stale 0건 — 문서에 적힌 조각 수가 실측과 일치한다')
+    print('✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다')
     return 0
 
 
