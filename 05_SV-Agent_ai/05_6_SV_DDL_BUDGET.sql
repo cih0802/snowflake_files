@@ -76,7 +76,23 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     month.CAL_YEAR   AS month.YEAR      WITH SYNONYMS ('연도', '년')      COMMENT = '연도',
     month.CAL_MONTH  AS month.MONTH     WITH SYNONYMS ('월')             COMMENT = '월(1~12)',
     item.BUDGET_ITEM_NAME AS item.BUDGET_ITEM_NAME WITH SYNONYMS ('세세목명', '예산항목명') COMMENT = '예산 세세목명',
-    item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 2종: ''수입''·''지출'' + NULL'
+    -- 🔴🔴 [2026-08-29 O119] 이 축의 열거를 **라이브 실측으로 교체**했다(`sv_code_label_gate` 축1·축2 FAIL).
+    --   종전 문안 = 「실제값 2종: '수입'·'지출' + NULL」. 🔴 **`'수입'` 은 라이브에 존재하지 않는다**
+    --   (`GOLD.DIM_BUDGET_ITEM` 실측 = `'지출'` 과 NULL 뿐) ⇒ Agent 가 「수입 예산」을 물어
+    --   `BUDGET_CATEGORY='수입'` 으로 필터하면 **0행을 사실로 답한다**(무증상 오답 · `O58-C` 계열).
+    --   🔴 이것은 위 `DEC-44` 보류와 **다른 축이다** — metric·차수·`where` 를 건드리지 않았고
+    --      차원 COMMENT 의 열거만 실측으로 맞췄다. 재배포 시 metric 정의는 라이브와 전건 동일하다
+    --      (O119 가 `DESC SEMANTIC VIEW` 로 드리프트 0 을 확인한 뒤 재배포했다).
+    --   🔴🔴 **[2026-08-29 O119-B 자기시정] 초판의 라이브 문안과 이 주석이 서로 모순됐다.**
+    --      초판 COMMENT 는 「**원천에 지출 예산만 적재돼 있다는 사실**을 답한다」로 **단정**했는데,
+    --      바로 이 주석은 같은 것을 「**미규명**」이라고 적고 있었다 ⇒ Agent 가 읽는 쪽이 근거 없이 단정했다.
+    --   🟢 **O119-B 가 실측으로 규명했다** — `BRONZE_ERP.BDGT_ACMSLT_LEDGER` 의 장(`JANG_NM`)이
+    --      **모금비·사업비·일반관리비·사회복지법인예산 4종뿐이고 전부 비용(지출) 계정**이다
+    --      ⇒ **적재된 원천 자체에 수입 계정이 구조적으로 없다**(SILVER `INCOME_EXPENSE_DIV` 도 `지출` 단일).
+    --   🔴 **경계를 명시한다**: 확인된 것은 「**적재분에 수입이 없다**」이고,
+    --      「ERP 원본에 수입 예산이 있으나 업로드 범위에서 빠졌는가」는 **여전히 별개 질문**이다.
+    --      ⇒ 라이브 문안도 그 경계를 그대로 담는다(단정 범위를 넘기지 않는다 · `R2-7-4`).
+    item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 1종: ''지출'' + NULL. 🔴 **''수입''은 이 데이터에 존재하지 않는다** — ''수입'' 으로 필터하면 0행이 반환되므로 「수입 예산」 질문에 이 축으로 답하지 말 것. 🟢 사유는 실측으로 확인됐다: **적재된 예산 원장의 장(章) 계정이 전부 비용(지출) 계정**이므로 이 데이터에는 지출 예산만 있다. 🔴 다만 「ERP 원본에 수입 예산이 있는데 업로드 범위에서 빠진 것인지」는 **확인 전**이다 ⇒ 「조직에 수입 예산이 없다」로 확대해 답하지 말고 **「적재된 예산 데이터에는 지출만 있다」**로 답한다(추정치 생성 금지). ⚠️ 이 축은 사실상 단일값이라 그루핑 축으로서의 정보량이 없다'
   )
   METRICS (
     fbd.TOTAL_PLAN_BUDGET AS SUM(fbd.PLAN_BUDGET_MONTH)

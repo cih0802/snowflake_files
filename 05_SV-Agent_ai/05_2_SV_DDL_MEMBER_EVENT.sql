@@ -126,7 +126,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     --   더 이상 바뀌지 않는다. 친화명(컬럼명·synonyms)은 기존과 동일하게 유지해 소비측 영향 없음.
     fme.CAMPAIGN_TYPE      AS fme.CMPGN_CTGR_NM_AT_EVENT      WITH SYNONYMS ('캠페인카테고리', '캠페인유형', '주요캠페인', '캠페인 종류') COMMENT = '캠페인 카테고리(MM294 라벨) — 현업이 말하는 **''주요캠페인''** 축이다. 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체). 실제값 예: ''초등캠페인''·''국내사례캠페인''·''굿즈캠페인''·''해외캠페인''·''기타 영상광고''·''홈페이지(PC/모바일)''·''희망TV''·''인바운드''·''가두캠페인''·''대학생캠페인''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.CAMPAIGN_INFLOW_PATH AS fme.MBER_INFLOW_PATH_NM_AT_EVENT WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '캠페인의 **모집 채널**(MM293 라벨). 🔴적재 시점 동결값(구 campaign.INFLOW_PATH 대체). ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다. ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.DOMESTIC_OVERSEAS  AS fme.CMPGN_TYPE1_NM_AT_EVENT     WITH SYNONYMS ('국내해외', '국내외') COMMENT = '캠페인 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 campaign.DOMESTIC_OVERSEAS 대체). 실제값 3종: ''국내''·''해외''·''통합''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    -- 🔴 [2026-08-29 O119] `DOMESTIC_OVERSEAS` 종수·열거를 라이브 실측으로 교체했다
+    --   (`sv_code_label_gate` 축2 「종수 선언 불일치」). 종전 「3종」에 **`전체사업` 이 빠져 있었다.**
+    --   형제 축 `SV_MEMBER_COHORT.DOMESTIC_OVERSEAS`(`ACQ_CMPGN_TYPE1_NM`)도 같은 결함이어서 함께 시정했다.
+    --   🟠 **미시정 잔여(같은 파일)** = 바로 위 `CAMPAIGN_INFLOW_PATH` 는 열거가 아예 없다(게이트 🟠
+    --      「열거 누락」). 그 축의 라이브 라벨 집합은 `SV_MEMBER_COHORT` 쪽과 동일하며 O119 가
+    --      그쪽 열거를 실측으로 교체했다 ⇒ **여기에도 같은 열거를 넣는 것이 다음 후보**다.
+    fme.DOMESTIC_OVERSEAS  AS fme.CMPGN_TYPE1_NM_AT_EVENT     WITH SYNONYMS ('국내해외', '국내외') COMMENT = '캠페인 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 campaign.DOMESTIC_OVERSEAS 대체). 실제값 4종: ''국내''·''해외''·''통합''·''전체사업'' + NULL. ⚠️ ''통합''과 ''전체사업''은 서로 다른 값이다 — 하나로 묶지 말고 원천 라벨 그대로 노출한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.BIZ_CASE_TYPE      AS fme.CMPGN_TYPE2_NM_AT_EVENT     WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '캠페인 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MARKETING_CAMPAIGN AS fme.MKTG_CMPGN_NM_AT_EVENT      WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '마케팅캠페인명. 🔴적재 시점 동결값(구 campaign.MARKETING_CAMPAIGN 대체). 카디널리티가 높다 — 부분 일치로 추측하지 말고 실제값을 조회해 확인한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297, 14종). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',

@@ -426,11 +426,36 @@ def main():
 
     dims, dmap, bcols, exp, card, dtype = load_live()
     g, c, l, r, e, info = judge(dims, dmap, bcols, exp, card, dtype)
-    fail = report(g, c, l, r, e, info, len({d[0] for d in dims}), len(dims))
-    print("\n" + ("🔴 게이트 실패" if fail else
-                  "✅ 게이트 통과 — 열거 코드값 전량 실재 · 저카디널리티 코드축 전량 열거 · "
-                  "라벨축 노출 정상 · 폐기 리터럴 0"))
-    return 1 if fail else 0
+    report(g, c, l, r, e, info, len({d[0] for d in dims}), len(dims))
+
+    # 🔴🔴 [2026-08-29 O119-B 신설 · 사용자 승인] **severity 와 종료코드를 일치시켰다.**
+    #   결함: `report()` 가 🔴 축과 🟠 축을 한 수(`fail`)로 합쳐 종료코드로 썼다 ⇒ **🟠 로 표시한
+    #   「열거 누락」이 blocking** 이었다. 그래서 O119 종료 시점에 이 게이트는 **영구 빨강**이었다.
+    #   🔴 왜 문제인가 = 형제 게이트의 명시적 설계 원칙과 어긋난다:
+    #     · `sv_unit_gate` = *"항상 빨간 게이트는 무시되어 결국 무력화된다"* (그래서 신규 유입만 실패)
+    #     · `sv_rule7_scan`(O119-B) = 라이브 도달만 blocking · 문서 주석은 경고
+    #     · `agent_tool_claim_gate` = ① 모순만 blocking · ② 문안 이격은 advisory
+    #     ⇒ **같은 축(SV 품질)의 네 게이트 중 이것만 severity 표시와 차단 강도가 어긋났다**(`R3-9 ㉡`).
+    #   🟢 판정 = **blocking = 🔴 4축**(코드값 부재 · 종수 불일치 · 라벨축 · 폐기 리터럴) ·
+    #     **advisory = 🟠 열거 누락**. 🔴 근거: 🔴 4축은 **0행 오답·거짓 주장**을 만들지만(Agent 가
+    #     없는 코드값으로 필터하거나 틀린 종수를 사실로 말한다), 🟠 열거 누락은 **문안이 불완전한 것**이고
+    #     기지 부채(ML 계열 다수)라 0 을 요구하면 매 세션 실패한다.
+    #   🔴 **열거 누락을 무시하라는 뜻이 아니다** — 경고로 남고 건수가 출력되며 인수인계에 승계된다.
+    blocking = len(g) + len(c) + len(l) + len(r)
+    advisory = len(e)
+    print(f"\n  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) {blocking}건 · "
+          f"advisory(🟠 열거누락) {advisory}건")
+    if blocking:
+        print("🔴 게이트 실패 — 🔴 축은 blocking 이다(0행 오답·거짓 주장 경로).")
+        return 1
+    if advisory:
+        print("✅ 게이트 통과 — 🔴 축 0건 (열거 코드값 전량 실재 · 종수 일치 · 라벨축 정상 · 폐기 리터럴 0)")
+        print(f"🟠 잔여 경고 {advisory}건 = 저카디널리티 코드축 열거 누락(§6.9-(5)) — blocking 아님.")
+        print("   🔴 무시하라는 뜻이 아니다: 열거가 없으면 Agent 가 실재하는 코드값을 누락한 답을 낸다.")
+        return 0
+    print("✅ 게이트 통과 — 열거 코드값 전량 실재 · 저카디널리티 코드축 전량 열거 · "
+          "라벨축 노출 정상 · 폐기 리터럴 0")
+    return 0
 
 
 if __name__ == '__main__':

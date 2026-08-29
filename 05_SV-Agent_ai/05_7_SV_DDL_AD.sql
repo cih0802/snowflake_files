@@ -93,8 +93,19 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     -- 디지털 전용 차원
     ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용. 실제값 6종: ''DA''·''SA''·''BSA''·''CPM''·''CPT''·''하단DA'' + NULL',
     ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용. 원천에 일부 행만 채워져 있어 부분집합이다. 실제값 4종: ''기타''·''영상''·''이미지''·''키워드'' + NULL',
-    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용. 실제값 1종: ''네이티브'' + NULL',
-    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 실제값 13종: ''nf2134''·''nf3554''·''nf1834a''·''na2059_PC''·''ra2059_PC''·''na1849_interest''·''na2059_abroad_PC''·''ra2059_abroad_PC''·''na2059_domestic_PC''·''ra2059_domestic_PC''·''광고세트 20260612143116''·''auto targeting test_v2_control_260624''·''auto targeting test_v2_variant_260624'' + NULL',
+    -- 🔴 [2026-08-29 O119] 아래 두 축의 종수·열거를 **라이브 실측으로 교체**했다(`sv_code_label_gate` 축2 FAIL 2건).
+    --   경위: 원천에 값이 추가됐는데 COMMENT 가 갱신되지 않아 **선언 종수 < 실제 종수** 상태였다.
+    --   🔴 판정식 = 이 계열은 「0행 오답」이 아니라 **미열거**다 — 열거에 없는 값이 실재하므로
+    --      Agent 가 열거를 「전체 목록」으로 읽으면 실재하는 값을 누락한 답을 낸다.
+    --   ⇒ 원천에 값이 추가될 때마다 `sv_code_label_gate` 를 돌려 이 두 줄을 갱신한다.
+    --   🔴🔴 **[2026-08-29 O119-B 자기시정] 초판이 `PAGE_TYPE=''전체''` 를 「집계행 라벨로 **보인다**」고
+    --      추측해 라이브 COMMENT 에 실었다 — `R2-3`(COMMENT 근거 단정 금지) 위반이었다.**
+    --      실측하니 **집계행이 아니다**: `''전체''` 는 소수 행에 걸친 저빈도 값이고 광고그룹도 단일이라
+    --      전체 광고비의 극히 일부다(규모는 이슈원장 §O119-B 참조 · 규칙7 상 여기 적지 않는다).
+    --      ⇒ 추측을 지우고 **관측 사실만** 남겼다. 🔴 판정식 = **COMMENT 는 주장 발행이다**(`R2-7-4`) —
+    --      「~로 보인다」를 라이브 문안에 쓰지 마라. 모르면 「원천 확인 전」이라고 쓴다.
+    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용. 실제값 2종: ''네이티브''·''전체'' + NULL. ⚠️ ''전체''는 저빈도 값이며 **그 의미(랜딩 유형인지 대행사 리포트의 묶음 표기인지)는 원천 확인 전**이다 — 유형별 분해에 쓰되 그 사실을 밝히고, 의미를 추측해 설명하지 말 것. 🟢 집계행(총계 중복)은 아니다 — 광고비 합계가 전체와 겹치지 않음을 실측 확인했다',
+    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 실제값 14종: ''nf2134''·''nf3554''·''nf1834a''·''na2059_PC''·''ra2059_PC''·''na1849_interest''·''na2059_abroad_PC''·''ra2059_abroad_PC''·''na2059_domestic_PC''·''ra2059_domestic_PC''·''na_veteran26''·''광고세트 20260612143116''·''auto targeting test_v2_control_260624''·''auto targeting test_v2_variant_260624'' + NULL',
     -- 방송 전용 차원
     ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사') COMMENT = '방송 채널사. VIDEO/REBROADCAST 전용. ⚠광고비 기준 정렬 시 광고비가 없는 채널사가 섞이므로 NULLS LAST 를 명시할 것.',
     ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용.',

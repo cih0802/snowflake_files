@@ -209,7 +209,7 @@ tools:
     name: analyst_member_sponsor_biz
     description: '회원×후원약정 팩트(FMSB, grain=회원×후원사업번호 SPNSR_BSNS_NO). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV)
       → GOLD.FACT_MEMBER_SPONSOR_BIZ. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제
-      없이 약정(SPNSR_BSNS_NO) grain 에서 캠페인이 거의 1:1(다중 0.01%·최대2, 실측)이라 대표캠페인 규칙으로 분해 가능하다. 활성 지표: 지금 시점 활동회원수(CURRENTLY_ACTIVE_MEMBERS)·지금
+      없이 약정(SPNSR_BSNS_NO) grain 에서 캠페인이 거의 1:1(다중은 극소수·최대 2, 실측)이라 대표캠페인 규칙으로 분해 가능하다. 활성 지표: 지금 시점 활동회원수(CURRENTLY_ACTIVE_MEMBERS)·지금
       시점 활동 약정금액·약정건수·고유회원수. 차원: 후원사업(명·정기일시구분·약칭카테고리)·대표캠페인(명·카테고리)·다중캠페인여부·활동개시월·중단월. "캠페인별/후원사업별 활동회원"
       류 질문에 사용. 🔴🔴 **이 도구는 analyst_member_event(전환·개발/중단 사건)와 다른 질문이다** — 「지금 후원을 유지 중인 회원 수」이며 개발·전환
       건수가 아니다. 캠페인·후원사업별 합계는 다중후원 정상현상으로 서로 겹칠 수 있다(N 비가산 — SUM 금지, 「전체」와 각 캠페인 합계를 같게 기대하지 말 것). 🔴 특정
