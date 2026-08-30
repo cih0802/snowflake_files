@@ -63,6 +63,25 @@ def diff(a, b):
 
 
 if __name__ == '__main__':
+    # 🔴🔴 [2026-08-29 O120 신설] 인자 없이 부르면 종전에는 `IndexError` 로 죽었다.
+    #   실해: O120 이 「게이트 전건 실행」 루프에 이 파일을 넣었고, 크래시를 **게이트 FAIL(rc=1)로
+    #   오분류**했다. 이 스크립트는 **무인자 게이트가 아니라 스냅샷/비교 도구**다.
+    #   ⇒ 사용법을 출력하고 exit 2 로 끊는다(0=통과 · 1=위반 과 구별되는 코드).
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+        print(__doc__ or 'o54_sv_value_gate — SV metric 값 스냅샷/비교 도구')
+        print()
+        print('사용법 (🔴 무인자 게이트가 아니다 — 인자가 필수다):')
+        print('  python3 scripts/o54_sv_value_gate.py --snap <출력.json>     # 현재 값 스냅샷')
+        print('  python3 scripts/o54_sv_value_gate.py <before.json> <after.json>  # 값 변동 비교')
+        print()
+        print('종료코드: 0=값 불변 · 1=값 변동 검출 · 2=사용법 오류(판정 아님)')
+        sys.exit(2)
     if sys.argv[1] == '--snap':
+        if len(sys.argv) < 3:
+            print('🔴 --snap 은 출력 경로가 필요하다: --snap <출력.json>')
+            sys.exit(2)
         sys.exit(snap(sys.argv[2]))
-    sys.exit(diff(sys.argv[2], sys.argv[3]))
+    if len(sys.argv) < 3:
+        print('🔴 비교에는 두 파일이 필요하다: <before.json> <after.json>')
+        sys.exit(2)
+    sys.exit(diff(sys.argv[1], sys.argv[2]))

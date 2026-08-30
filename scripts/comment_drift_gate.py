@@ -55,6 +55,13 @@ YML = '/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml'
 RE_TABLE = re.compile(r'CREATE (?:OR REPLACE )?TABLE (?:IF NOT EXISTS )?GN_DW\.GOLD\.(\w+)\s*\(')
 RE_SILVER = re.compile(r'CREATE (?:OR REPLACE )?TABLE (?:IF NOT EXISTS )?GN_DW\.SILVER\.(\w+)\s*\(')
 RE_COL = re.compile(r"^\s+([A-Z][A-Z0-9_]*)\s+\S+.*?COMMENT\s+'(.*)'\s*,?\s*(?:--.*)?$")
+# 🆕 [O121-B] 테이블레벨 COMMENT. `)` 와 `COMMENT =` 가 줄바꿈으로 분리된 형태도 받는다.
+# 🔴🔴 초판은 `'(.*)'\s*;` + `re.S` 였다 ⇒ **탐욕 매칭이 파일 끝까지 삼켰다.**
+#    실측 = 파일 마지막 테이블(`FACT_MEMBER_SPONSOR_BIZ`)에서 파일 길이 **21,453자**를 값으로 뽑아
+#    라이브 354자와 「불일치」로 발행했다(**내가 만든 거짓 드리프트 1건**).
+#    ⇒ 🟢 SQL 문자열 본문 패턴 `(?:[^']|'')*` 을 쓴다 — `''` 이스케이프는 삼키고 홀 `'` 에서 멈춘다.
+#    🔴 이 회귀는 `test_comment_drift_table_level.py` 축②(파일 마지막 테이블)가 단정한다.
+RE_TBL_COMMENT = re.compile(r"^\)\s*(?:\n\s*)?COMMENT\s*=\s*'((?:[^']|'')*)'\s*;", re.M)
 RE_YML_MODEL = re.compile(r'^  - name: (\w+)\s*$')
 RE_YML_COL = re.compile(r'^      - name: (\w+)\s*$')
 RE_YML_DESC = re.compile(r'^        description: "(.*)"\s*$')
@@ -102,6 +109,44 @@ def parse_yml():
             out[f'{model}.{col}'] = m.group(1).replace('\\"', '"')
             col = None
     return out
+
+
+def parse_ddl_table_level(path=DDL, rx=RE_TABLE):
+    """🆕 [2026-08-30 O121-B] **테이블레벨** COMMENT (`) COMMENT = '…';`) 를 값으로 뽑는다.
+
+    🔴🔴 왜 신설했나(실측 경위): O121 이 `SILVER.GA4_EVENT` 의 테이블 COMMENT 에서 규칙7 위반을
+       시정할 때, 인수인계는 *"파일만 고치면 이 게이트가 드리프트로 잡는다"* 를 근거로 제시했다.
+       🔴 **그 근거는 거짓이었다** — 이 게이트의 분모는 전부 **컬럼** COMMENT 였고
+       (실측 = GOLD 테이블 743 · SILVER 테이블 830 · GOLD 뷰 575 = 모두 컬럼 수)
+       **테이블레벨 COMMENT 는 어느 축에도 없었다.** 즉 파일만 고쳤다면 게이트는 🟢 를 내면서
+       드리프트가 생겼을 것이다. O121 은 SHA256 으로 **손으로** 대조해 피했다.
+       ⇒ 🟢 손 대조를 게이트로 고정한다. 이것이 없으면 다음 세션이 같은 함정에 빠진다.
+
+    🔴 파싱 형태 2종을 모두 받는다:
+       ㉠ `) COMMENT = '…';`            (한 줄)
+       ㉡ `)` 다음 줄에 `COMMENT = '…';` (줄바꿈 분리 — 문서10 §26-B 가 이 형태의 귀속 오류를 기록)
+    """
+    src = io.open(path, encoding='utf-8').read()
+    hits = [(m.start(), m.group(1)) for m in rx.finditer(src)]
+    out = {}
+    for i, (pos, tbl) in enumerate(hits):
+        end = hits[i + 1][0] if i + 1 < len(hits) else len(src)
+        m = RE_TBL_COMMENT.search(src[pos:end])
+        if m:
+            out[tbl] = m.group(1).replace("''", "'")
+    return out
+
+
+def live_table_level(cn, kinds, schema='GOLD'):
+    """🆕 라이브 **테이블레벨** COMMENT. 🔴 빈 COMMENT 는 키를 만들지 않는다 —
+    파일에 선언이 없는 테이블까지 「부재」로 세면 분모가 부풀어 판정이 흐려진다."""
+    sql = f"""
+        SELECT t.TABLE_NAME, COALESCE(t.COMMENT,'')
+        FROM GN_DW.INFORMATION_SCHEMA.TABLES t
+        WHERE t.TABLE_SCHEMA='{schema}' AND t.TABLE_TYPE IN ({kinds})
+    """
+    _, rows = sfconn.q(sql, cn)
+    return {k: v for k, v in rows if v}
 
 
 def live(cn, kinds, schema='GOLD'):
@@ -185,7 +230,26 @@ def main():
                         view_live, a.detail, pending=not a.strict_view)
             fail += d if a.strict_view else 0
             if d and not a.strict_view:
-                print('    ⛔ 뷰 계열은 `dbt build` 로만 반영된다(O51) — 위 불일치는 build 전 정상 상태다.')
+                print('    ⛔ 뷰 계열은 dbt 적재로만 반영된다(O51) — 위 불일치는 적재 전 정상 상태다.')
+
+        # 🆕🔴 [2026-08-30 O121-B 신설 축] **테이블레벨 COMMENT** 드리프트.
+        #    종전 3축은 전부 **컬럼** COMMENT 였고 테이블 COMMENT 는 분모에 없었다
+        #    ⇒ 파일만 고치면 게이트가 🟢 를 내면서 드리프트가 생겼다(O121 이 손 대조로 피했다).
+        print('\n[테이블레벨 COMMENT] 🆕 O121-B 신설 — 종전 3축은 컬럼 COMMENT 만 봤다')
+        print('  ⚠️ 분모가 `audit_ddl_rule7` 의 「블록 수」와 다를 수 있다 — **둘 다 옳다.**')
+        print('     그 도구는 `CREATE TABLE` 줄을 세고(주석 처리된 선언 포함) 이 축은 **값이 있는 것**만')
+        print('     센다. 실측 = SILVER 블록 43 ↔ 이 축 42 · 차이는 `BIGQUERY_REFINED_DATA`')
+        print('     (파일에서 주석 처리된 선언 · 외부 Python 적재 · DEC-37) 1건이다.')
+        print('     🔴 「불일치」를 결함으로 단정하기 전에 두 판정식의 자격 조건을 읽어라(O120 ㉡).')
+        if a.surface in ('table', 'all'):
+            fail += compare('GOLD 테이블레벨 (06_DDL.sql)',
+                            parse_ddl_table_level(),
+                            live_table_level(cn, "'BASE TABLE'"), a.detail, pending=False)
+        if a.surface in ('silver', 'all'):
+            fail += compare('SILVER 테이블레벨 (08_SILVER_테이블DDL)',
+                            parse_ddl_table_level(SILVER_DDL, RE_SILVER),
+                            live_table_level(cn, "'BASE TABLE'", 'SILVER'),
+                            a.detail, pending=False)
 
         # [O64] 값 검사 축 — 파일·라이브 양측 모두 본다(한쪽만 보면 O63 상태를 놓친다)
         print('\n[금지 문안 검사] 폐기 규약(R2-7-1) · BASE TABLE 자기 「뷰」 지칭(O63-J ③)')

@@ -80,7 +80,11 @@ def main():
         files = [l.strip() for l in open(sys.argv[1], encoding='utf-8') if l.strip()]
         deleted = []
     else:
-        sys.exit(__doc__)
+        # 🔴 [2026-08-30 O121-B] 종전 `sys.exit(__doc__)` 은 **rc=1** 이었다 — 사용법 출력이
+        #    「위반」과 같은 코드를 내면 게이트 순회에서 **거짓 FAIL** 이 된다(O121 이 실제로 그렇게 셌다).
+        #    ⇒ 규약 = **0 통과 · 1 위반 · 2 사용법 오류**(O120 이 `o54_sv_value_gate` 에서 확립).
+        print(__doc__)
+        sys.exit(2)
 
     idx = stage_index({os.path.dirname(f) for f in files} | {os.path.dirname(f) for f in deleted})
     ok = bad = miss = absent = 0

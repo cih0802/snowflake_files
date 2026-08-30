@@ -97,7 +97,8 @@ instructions:
     \ · SILVER 정제테이블 이름**이다.\n- \U0001F534 **원천 답변에 수치를 넣지 않는다** — 행수·합계·커버리지%·건수·금액·적재기간은 SV COMMENT\
     \ 에\n  기재하지 않는 것이 규약이다. 원천 질문에는 이름만 답하고, 규모·기간·커버리지를 물으면 도구로 조회해\n  그 시점의 값으로 답한다. COMMENT 에 없는 수치를\
     \ 기억·추정해서 말하지 않는다.\n- **이 Agent 의 원천 지도는 4계열이다** — 광고(`analyst_ad`)=대행사 일별 리포트(`GN_DW.BRONZE_AGENCY`\n\
-    \  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(`GN_DW.BRONZE_GA4`) /\n\
+    \  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 `GN_DW.SILVER.BIGQUERY_REFINED_DATA`\n\
+    \  에 직접 적재된다 — `BRONZE_BIGQUERY` 는 비어 있고 `BRONZE_GA4` 스키마는 실재하지 않는다) /\n\
     \  예산(`analyst_budget`)=ERP 예산·실적 원장(`GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER`, 파일 업로드 적재) /\n  목표·실적(`analyst_dev_achievement`)=CRM(목표\
     \ TM_CM_MBER_DVLP_GOAL · 실적 TM_MM_FDRM_MBER_DVLP_AMT) /\n  전환회원·코호트·회비·활동회원(`analyst_member_event`·`_cohort`·`_fee`·`_sponsor_biz`)=CRM(eCRM)\
     \ → `GN_DW.BRONZE_CRM`.\n- SV COMMENT 에 없는 원천은 추측하지 말고 정본 문서(`30_output_share/04_컬럼계보매핑.md` GOLD컬럼→SILVER→BRONZE\n\
@@ -123,8 +124,9 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_ad
-    description: '광고 실적 팩트(FACT_AD_COMBINED = FAP 코어 + 디지털·방송 위성 1:1 pre-join). 원천=대행사 일별 리포트(GN_DW.BRONZE_AGENCY:
-      DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(GN_DW.BRONZE_GA4.events_YYYYMMDD).
+    description: '광고 실적 팩트(WIDE_AD_COMBINED = FAP 코어 + 디지털·방송 위성 1:1 pre-join). 원천=대행사 일별 리포트(GN_DW.BRONZE_AGENCY:
+      DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 GN_DW.SILVER.BIGQUERY_REFINED_DATA
+      에 직접 들어온다 — BRONZE_BIGQUERY 는 비어 있고 BRONZE_GA4 라는 스키마는 존재하지 않는다).
       🔴 **마케팅 보고서 「3. 매체별 개발효율 상세」의 정본 도구**다. 활성 지표: 광고비·노출수·클릭수·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7, 디지털)·조회수·매체잠재고객수
       / 인바운드콜·방송횟수(방송) / 재방송개발건·재방송개발회원·재방송 개발단가(공8, REBROADCAST 전용). 차원: 실적일·연/월/분기·**주차·요일**, 출처유형(DIGITAL/VIDEO/REBROADCAST)·기기유형(M/PC/(해당없음))·**광고유형**·소재유형·페이지유형·광고그룹(디지털)·**채널사·시간대·프로그램·스팟유형·CM위치·재방유형**(방송)·마케팅캠페인명·개발캠페인
       수. ⚠디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 필수. ⚠개발단가(공7)는 원천 포맷 변경 이후 구간 산출 불가(경계 연월은 조회로 확인).

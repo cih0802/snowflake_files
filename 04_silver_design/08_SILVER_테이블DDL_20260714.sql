@@ -1177,7 +1177,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다(2025-06 실측 9.6%)';
+) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
 
 -- GA4 5: GA4_IDENTITY (신원)
 --   🟢 [2026-08-19 O87] GA_MEMBER_ID VARCHAR(10) → VARCHAR(64) + ID_SCHEME 신설(GA4-LEN-1).

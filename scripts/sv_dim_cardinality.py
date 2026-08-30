@@ -72,6 +72,20 @@ def main():
         tot = [r for r in rows if 0 <= r[0] <= thr]
         print(f"  distinct <= {thr:>4}: 대상 {len(tot):>3}개 중 열거 없음 {len(miss):>3}개")
 
+    # 🔴🔴 [2026-08-29 O120 신설] 이 표를 `sv_code_label_gate` 의 「열거누락」 건수와 대조하지 마라.
+    #   O120 이 실제로 오독했다: 임계 20 에서 이 표는 「열거 없음 52」, 게이트는 「열거누락 16」이라
+    #   **「같은 규칙을 두 게이트가 다르게 재고 있다」(▣ZZZ6 ㉤)로 단정**했으나 **틀린 판정이었다.**
+    #   두 수는 **분모가 다르고 둘 다 옳다**:
+    #     · 이 도구  = 임계 이하 **전 타입** 차원을 센다(관측 축 · 판정 아님).
+    #     · 게이트   = `is_enum_target()` 이 **VARCHAR/CHAR/TEXT/STRING 만** 의무 대상으로 본다
+    #                 (NUMBER 는 자기설명적 · DATE 는 자명 · `ENUM_SKIP` 수동 제외) — 근거 =
+    #                 `sv_code_label_gate.py` 의 `ENUM_CARD_MAX`·`is_enum_target` 주석.
+    #   ⇒ 차이 = BOOLEAN(`HAS_*` 플래그) · NUMBER(피처값) · DATE 차원이며 **열거 의무가 없는 것들**이다.
+    print('\n🔴 이 표는 **관측 축**이고 열거 의무 판정이 아니다 — 판정 정본은 `sv_code_label_gate` 다.')
+    print('   두 수가 다른 것은 결함이 아니다: 이 표는 전 타입을 세고, 게이트는 VARCHAR 계열만')
+    print('   의무 대상으로 본다(NUMBER 자기설명 · DATE 자명 · ENUM_SKIP 제외).')
+    print('   ⇒ 🔴 이 표의 「열거 없음」을 게이트 위반 건수로 인용하지 마라(O120 이 그렇게 오독했다).')
+
 
 if __name__ == '__main__':
     sys.exit(main())

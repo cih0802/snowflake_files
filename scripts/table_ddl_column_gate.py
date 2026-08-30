@@ -166,6 +166,29 @@ def self_check(cn):
     if ok != len(cases):
         sys.exit('🔴 게이트가 기대대로 탐지하지 못한다')
 
+    # 🔴🔴 [2026-08-30 O121-B 신설 축] **severity 매핑이 무력화가 아님을 단정한다.**
+    #    O121-B 가 「순서 드리프트」를 blocking → advisory 로 강등했다(O120 실측 근거).
+    #    🔴 강등이 「검사 끄기」로 기울면 진짜 위험(집합 불일치)까지 조용해진다 ⇒ 양방향으로 못박는다.
+    #    판정식 = 누락·초과는 **blocking** 이고 순서만 어긋난 경우는 **blocking 이 아니다**.
+    print('\nseverity 매핑 자기검사 (강등이 무력화가 아님을 단정)')
+    sev_cases = [
+        ('누락 → blocking', base_d + ['GHOST_COL'], True),
+        ('초과 → blocking', [c for c in base_d if c != 'QUARTER'], True),
+        ('순서만 → advisory(blocking 아님)', swapped, False),
+        ('정상 → blocking 아님', base_d, False),
+    ]
+    sok = 0
+    for label, d, want_block in sev_cases:
+        missing = [c for c in d if c not in base_m]
+        extra = [c for c in base_m if c not in d]
+        got_block = bool(missing or extra)
+        hit = (got_block == want_block)
+        sok += hit
+        print(f"  {label:<34} blocking 기대={want_block} 실제={got_block} {'✅' if hit else '🔴'}")
+    print(f"\nseverity 자기검사 {sok}/{len(sev_cases)} 일치")
+    if sok != len(sev_cases):
+        sys.exit('🔴 severity 매핑이 어긋난다 — 강등이 진짜 위험까지 껐을 수 있다')
+
 
 def main():
     cn = sfconn.conn()
@@ -176,7 +199,9 @@ def main():
         return
     cn.cursor().execute('USE WAREHOUSE GN_DW_DEV_WH')
     fails = 0
-    print('DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (build 전 판정 · P120)\n')
+    drift = 0
+    print('DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (적재 전 판정 · P120)')
+    print('  🔴 blocking = **집합** 불일치(누락·초과) · 🟠 advisory = **순서** 드리프트(문서 축)\n')
     for table, path in TARGETS.items():
         d = ddl_columns(table)
         m = model_columns(cn, path)
@@ -185,23 +210,42 @@ def main():
         order_ok = (d == m)
         mism = [] if order_ok else [f'{k+1}:{a}≠{b}' for k, (a, b)
                                     in enumerate(zip(d, m)) if a != b][:5]
-        ok = order_ok and not missing and not extra
-        fails += (not ok)
+        # 🔴🔴 [2026-08-30 O121-B] **두 축을 분리했다 — 종전에는 둘을 합쳐 blocking 이었다.**
+        #    · 집합 불일치(누락·초과) = 🔴 **blocking**. 모델이 컬럼을 안 채우거나 물리가 정본을
+        #      앞서 나간 것이므로 실데이터 위험이다.
+        #    · 순서 드리프트 = 🟠 **advisory(문서 축)**. O120 이 실측으로 확정했다:
+        #      dbt 가 실제로 실행한 SQL 은 `insert into T ("A","B",…) (select "A","B",… )` 로
+        #      **양측 모두 이름 지정**이므로(`10_dbt_pipeline/logs/dbt.log:314-316`)
+        #      **위치 오삽입은 원리적으로 불가**하다.
+        #    🔴 종전 경고문(*"append 는 위치로 INSERT 한다 ⇒ 값이 다른 컬럼에 들어간다"*)은
+        #      **사실과 달랐고**, O120 은 그것을 알면서 문안을 고치지 않아 게이트가 **영구 빨강**이었다.
+        #      영구 빨강 게이트는 무력화된다(`O119-B` 원칙 = *"항상 빨간 게이트는 무력화된다"*).
+        blocking = bool(missing or extra)
+        fails += blocking
+        drift += (not order_ok)
         print(f"  {table:<24} DDL {len(d):>2} · 모델 {len(m):>2} · "
               f"누락 {len(missing)} · 초과 {len(extra)} · 순서 {'일치' if order_ok else '불일치'} "
-              f"{'✅' if ok else '🔴'}")
+              f"{'🔴' if blocking else ('🟠' if not order_ok else '✅')}")
         if missing:
             print(f"     🔴 DDL 에만(모델이 채우지 않는다): {', '.join(missing)}")
         if extra:
             print(f"     🔴 모델에만(물리가 정본보다 앞서 나간다 · O30 유형): {', '.join(extra)}")
         if mism:
-            print(f"     🔴 위치 불일치(앞 5건): {', '.join(mism)}")
-            print("        ⚠️ append 는 위치로 INSERT 한다 — 이 상태로 build 하면 값이 다른 컬럼에 들어간다")
+            print(f"     🟠 순서 드리프트(앞 5건): {', '.join(mism)}")
+            print("        🟢 적재는 안전하다 — dbt insert 는 **양측 이름 지정**이라 위치 오삽입이")
+            print("           원리적으로 불가하다(O120 실측 · logs/dbt.log:314-316).")
+            print("        🔴 이 경고를 근거로 모델·DDL 을 고치지 마라 — 고칠 것은 **DDL 파일의")
+            print("           컬럼 선언 순서**이고 그것은 문서 축이다(집합은 이미 일치한다).")
     cn.close()
     print()
+    print(f'집합 불일치(blocking) {fails}건 · 순서 드리프트(advisory) {drift}건 / 대상 {len(TARGETS)}개')
     if fails:
-        sys.exit(f'🔴 {fails}/{len(TARGETS)} 객체 불일치 — `dbt build` 하지 말 것')
-    print(f'✅ {len(TARGETS)}/{len(TARGETS)} 일치 — DDL 과 모델이 컬럼·순서까지 동일하다')
+        sys.exit(f'🔴 {fails}/{len(TARGETS)} 객체 **집합** 불일치 — 모델이 컬럼을 채우지 않거나 '
+                 f'물리가 정본을 앞서 나갔다. 적재 전에 정본을 맞출 것.')
+    if drift:
+        print(f'🟠 순서 드리프트 {drift}건 — **문서 축이며 적재 위험이 아니다**(종료코드 무영향).')
+        print('   🔴 다만 「파일이 정본」 주장은 약해진다 ⇒ DDL 파일 선언 순서를 모델에 맞출 것.')
+    print(f'✅ 집합 일치 {len(TARGETS)}/{len(TARGETS)} — 적재 안전')
 
 
 if __name__ == '__main__':
