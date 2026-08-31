@@ -71,7 +71,10 @@ sources:
 
   - name: bronze_crm
     database: GN_DW
-    schema: BRONZE_CRM
+    # 🆕 [11_일적재pipeline 구성] target=dev2 로 빌드하면 BRONZE_CRM_2(일적재 테스트 원천)를 읊는다.
+    #   나머지 bronze_erp/bronze_agency/silver_external 은 target 과 무관하게 원본 스키마를 그대로 쓴다
+    #   (사용자 결정: bronze_crm 만 교체, 나머지 bronze_* 는 재사용).
+    schema: "{{ 'BRONZE_CRM_2' if target.name == 'dev2' else 'BRONZE_CRM' }}"
     description: "CRM 원천 적재 레이어 — SILVER CRM 21객체의 원천(정본 09 STEP 3)."
     tables:
       - name: TC_CMMN_DTL_CD                # 공통 코드상세 → CRM_CODE

@@ -14,6 +14,19 @@ default:
       warehouse: GN_DW_ETL_WH
       schema: SILVER
       threads: 4
+    # 🆕 [11_일적재pipeline 구성] 일배치 테스트 target — bronze_crm_2 기반.
+    #   role/warehouse는 dev와 동일(기존 role 재사용 결정). 산출 스키마 분기는
+    #   target.name=='dev2' 를 보고 macros/generate_schema_name.sql · models/silver/_sources.yml 이 처리한다.
+    #   실행: dbt build --target dev2  (또는 EXECUTE DBT PROJECT ... ARGS='build --target dev2')
+    dev2:
+      type: snowflake
+      account: ""
+      user: ""
+      role: GN_DW_ENGINEER
+      database: GN_DW
+      warehouse: GN_DW_ETL_WH
+      schema: SILVER_2
+      threads: 4
     prod:
       type: snowflake
       account: ""
