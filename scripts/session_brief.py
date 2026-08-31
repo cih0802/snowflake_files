@@ -208,7 +208,31 @@ def open_sections(hub_rel, lines=None):
 #   🔴 `99_NEXT` 는 「여기서 시작한다」가 **적층**된다(O106 실측 8겹).
 #     승계된 것은 `~~여기서 시작한다~~` 취소선으로 표시되므로 **취소선이 아닌 것**만 고르고,
 #     그중 **날짜가 가장 최신**인 절을 현행으로 판정한다.
+#
+#   🆕 🔴🔴 [2026-08-30 O123-D 신설] **blockquote 접두를 걷어낸다.**
+#     실사고: O119 의 `§0-ZZZ` 는 `### ▣ ZZZ1` (비-quote)이라 추출됐는데,
+#     O123 의 `§0-AAAA` 는 `> ### ▣ AAAA1` (**blockquote**)로 쓰였다
+#     ⇒ `line.startswith('### ')` 가 **8건을 하나도 못 봤고 「항목 0」으로 조용히 흘렀다**.
+#     실측 = `grep -c "^> ### ▣ AAAA"` **8** · `grep -c "^### ▣ ZZZ"` **7**.
+#     🔴 그래서 O123-D 가 등재한 `▣ AAAA8` 이 **브리핑에 안 보였다** — 등재의 목적이 무력화된다.
+#     🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 실물이고,
+#       `doc_heading_gate`·`doc_census` 는 이 축을 **원리적으로 보지 않는다**(형식 드리프트다).
+#     ⇒ 🟢 판정식 = **마크다운 구조를 볼 때는 인용 접두(`>`)를 먼저 정규화하라.**
+#       문서가 절을 인용 블록으로 감싸는 것은 서식 선택이고 **의미 변경이 아니다.**
 DATE_RX = re.compile(r'(20\d\d-\d\d-\d\d)')
+#   🔴 `*` 이다(`+` 가 아니다) — 비-quote 줄도 통과시켜 **선행 공백까지 정규화**한다.
+#     이유(자기시정 · O123-D) = 처음엔 `\s?` 로 공백 1개만 먹었더니 `>   ### ▣ …`(들여쓴 quote)가
+#     `  ### ▣ …` 로 남아 `startswith('### ')` 가 **또 불성립**했다 — 같은 결함의 재발이다.
+#     🟢 마크다운은 제목 앞 공백을 허용하므로 **구조 판정 시 선행 공백은 의미가 없다.**
+QUOTE_RX = re.compile(r'^(?:\s*>)*\s*')
+
+
+def dequote(line):
+    """줄 앞의 blockquote 접두(`> ` · `>> ` · ` > `)와 **선행 공백**을 걷어낸다.
+
+    🔴 제목·표 판정 **전에** 반드시 통과시킨다(위 O123-D 경위 참조).
+    """
+    return QUOTE_RX.sub('', line)
 
 
 def current_handoff(lines=None):
@@ -216,13 +240,14 @@ def current_handoff(lines=None):
         lines = family_lines('99_NEXT_SESSION.md')
     cands = []
     for rel, ln, line in lines:
-        if not line.startswith('## '):
+        t = dequote(line)
+        if not t.startswith('## '):
             continue
-        if '여기서 시작한다' not in line or '~~여기서 시작한다' in line:
+        if '여기서 시작한다' not in t or '~~여기서 시작한다' in t:
             continue
-        m = DATE_RX.search(line)
+        m = DATE_RX.search(t)
         cands.append({'date': m.group(1) if m else '0000-00-00',
-                      'title': clip(strip_md(line[3:]), 120),
+                      'title': clip(strip_md(t[3:]), 120),
                       'where': '%s:%d' % (rel, ln)})
     if not cands:
         return None, []
@@ -231,13 +256,14 @@ def current_handoff(lines=None):
     subs, hit = [], False
     for rel, ln, line in lines:
         loc = '%s:%d' % (rel, ln)
+        t = dequote(line)
         if loc == cur['where']:
             hit = True
             continue
-        if hit and line.startswith('## '):
+        if hit and t.startswith('## '):
             break
-        if hit and line.startswith('### '):
-            subs.append({'title': clip(strip_md(line[4:]), 120), 'where': loc})
+        if hit and t.startswith('### '):
+            subs.append({'title': clip(strip_md(t[4:]), 120), 'where': loc})
     return cur, subs
 
 
@@ -380,6 +406,16 @@ def build(with_gates=True):
             a('|---|---|')
             for s in subs:
                 a('| %s | `%s` |' % (s['title'], s['where']))
+        else:
+            # 🆕 🔴🔴 [2026-08-30 O123-D 신설] 「항목 0」을 침묵으로 흘리지 않는다.
+            #   경위 = 이 자리에서 **8건이 0건으로 보였다**(blockquote 접두 · 위 `dequote` 주석).
+            #   🔴 현행 절을 찾았는데 하위 항목이 0 이면 그것은 「없다」보다 **「못 봤다」가 더 흔하다**
+            #     ⇒ `O111 ㉠` 의 제도화다. 분모를 의심할 근거를 **브리핑에 박아 넣는다.**
+            a('> 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**')
+            a('> 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.')
+            a('> ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**')
+            a('>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`%s`).' % cur['where'])
+            a('> 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).')
     else:
         a('⚪ 현행 인수인계 절을 찾지 못했다.')
     a('')

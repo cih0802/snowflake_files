@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""test_decision_closure_gate.py — `decision_closure_gate.py` 음성 테스트 (5축)
+"""test_decision_closure_gate.py — `decision_closure_gate.py` 음성 테스트
+
+🔴 **축 수를 이 문단에 적지 마라**(`R3-9 ㉦`) — 테스트가 스스로 세어 출력한다.
+   종전 판본이 「5축」을 적어 두었고 O124 가 축을 늘리자 그 문구가 즉시 stale 이 됐다.
 
 [2026-08-28 O111-B 신설 · `R3-2` 집행 · **O111 이 남긴 부채를 같은 세션에서 갚는다**]
+[2026-08-30 O124 확장 · 신설 제외 축 A~E 의 **오탐 축 + 재현율 축**을 쌍으로 단정]
 
 🔴 왜 필요한가
 --------------------------------------------------------------------------
@@ -132,6 +136,99 @@ def main():
               '축5-a', '제외를 전부로 넓히면 인용처가 0 이 된다 ⇒ **축3-c·d 가 이 실패를 잡는다**')
         check(len(G.citations('O8')) == 2,
               '축5-b', '원복 후 다시 2건(테스트가 전역 상태를 오염시키지 않는다)')
+
+        # ── 축6: 🔴🔴 축A 괄호 스코프 — **오탐 축과 재현율 축을 함께** 단정 ────────
+        print('\n축6 — 축A: 종결어와 라벨이 같은 괄호 스코프에 있어야 한다')
+        # 🔴 실측 오탐 ㉠ = 종결어는 괄호 밖 · 세션 라벨은 괄호 안(날짜 스탬프).
+        got = G.closed_targets(
+            ['### 7-A. 🆕 **`DEC42` 결정 (2026-08-20 O96) — 연 grain 은 종결 · 월 grain 은 미결**'])
+        check('O96' not in got,
+              '축6-a', '오탐 축 = 괄호 안 날짜 스탬프 세션 라벨을 대상으로 뽑지 않는다')
+        # 🔴 실측 오탐 ㉡ = 종결어는 괄호 **안**(다른 대상) · 라벨은 괄호 **밖**.
+        got = G.closed_targets(
+            ['> **거짓이었다.** `DEC42` 는 **O96 이 이미 사용**한 라벨이다'
+             '(`FACT_BUDGET.PLAN_BUDGET_YEAR` 부분 종결 · 정본 `30-001 §7-A`)'])
+        check('O96' not in got,
+              '축6-b', '오탐 축 = 괄호 안의 종결어가 괄호 밖 라벨을 끌어오지 않는다')
+        # 🔴🔴 재현율 축 = `DEC-41` 의 실제 종결 선언은 **그대로 잡혀야 한다**.
+        got = G.closed_targets(
+            ['> 🟢 이 절이 **정식 정본**이다. 이 결정으로 '
+             '**`O8`(회원 다중후원 귀속 규칙)의 FMM 축이 닫힌다.**'])
+        check('O8' in got,
+              '축6-c', '🔴 재현율 축 = 괄호가 라벨 **직후**에 끼어도 진성 종결은 잡는다')
+        check('O8' in G.closed_targets(['`O8`(주1)(주2)의 축이 닫혔다(2026-08-20 O92)']),
+              '축6-d', '재현율 축 = 괄호 다중·중첩에도 같은 스코프 판정이 산다')
+        check(G.paren_scopes('a(b(c))d')[0].strip().startswith('a'),
+              '축6-e', '`paren_scopes` 가 괄호 밖 잔여를 첫 세그먼트로 낸다')
+
+        # ── 축7: 축B — 미확정 절 + 표 행 종결어 ────────────────────────────
+        print('\n축7 — 축B: 종결 선언은 확정된 절의 서술문이어야 한다')
+        body = ['이 결정으로 `O8` 이 종결된다']
+        check('O8' not in G.closed_targets(body, head='31. 🔴 결정 대기 — DEC-45: …'),
+              '축7-a', '오탐 축 = `결정 대기` 절은 아무것도 닫지 않는다')
+        check('O8' not in G.closed_targets(body, head='31. 🔴 결정 보류 — DEC-99'),
+              '축7-b', '`결정 보류` 도 미확정으로 읽는다')
+        check('O8' in G.closed_targets(body, head='28. ✅ 결정 — DEC-41: …'),
+              '축7-c', '🔴 재현율 축 = 확정 절(`✅ 결정`)은 그대로 잡는다')
+        check('O8' in G.closed_targets(body, head='30. 결정 전환 이력 — DEC-7'),
+              '축7-d', '오탐 방지 = `결정 전환` 은 미확정이 아니다(제외를 넓히지 않았다)')
+        check('O8' not in G.closed_targets(
+                  ['| ② | 브릿지 정규화 | `O8` 센티넬 해소 경로가 열린다 | 신규 모델 1종 |']),
+              '축7-e', '오탐 축 = 선택지 비교표의 **표 행**은 종결 선언이 아니다')
+        check('O8' in G.closed_targets(['`O8` 의 FMM 축이 닫혔다']),
+              '축7-f', '🔴 재현율 축 = 서술문 종결 선언은 그대로 잡는다')
+
+        # ── 축8: 축C — 적발표 블록 ────────────────────────────────────────
+        print('\n축8 — 축C: 「적발표」 자기선언 블록만 제외한다')
+        lines = [
+            '| 인용처 | 좌표 | 상태 |',
+            '| `20_현업확인-002.md` | `:121` | 여전히 **미결** |',
+            '| `90_해소완료_로그.md` | — | 이 표는 「적발표」이고 stale 정본이 아니다 ⇒ **오탐**이다 |',
+            '',
+            '| 진짜 stale 표 | 상태 |',
+            '| `O8` 행 | 미갱신 |',
+        ]
+        marked = G.catch_table_lines(lines)
+        check(marked == {1, 2, 3},
+              '축8-a', '오탐 축 = 선언이 있는 블록 **전체**(1~3)만 제외 · 실제 %s' % sorted(marked))
+        check(5 not in marked and 6 not in marked,
+              '축8-b', '🔴 재현율 축 = 선언이 없는 다른 표는 그대로 남는다')
+        check(G.catch_table_lines(['| 적발표 라는 말만 있는 표 |']) == set(),
+              '축8-c', '「적발표」 단어만으로는 제외하지 않는다(두 조건 AND)')
+        check(G.catch_table_lines(['| 오탐 이라는 말만 있는 표 |']) == set(),
+              '축8-d', '「오탐」 단어만으로도 제외하지 않는다(두 조건 AND)')
+
+        # ── 축9: 축E — 세션 근거철 ────────────────────────────────────────
+        print('\n축9 — 축E: 세션 근거철은 인용처가 아니다(자기참조 루프 차단)')
+        for name in ('_o124_evidence.md', '_o99_evidence.md'):
+            check(bool(G.EVIDENCE_FILE.match(name)), '축9-a', '근거철로 인식: %s' % name)
+        for name in ('o124_evidence.md', '_o124_notes.md', '_evidence_o124.md',
+                     '00_INDEX_이슈원장.md'):
+            check(not G.EVIDENCE_FILE.match(name),
+                  '축9-b', '근거철이 아닌 것은 제외하지 않는다: %s' % name)
+
+        # ── 축10: 축D — 허브 stem 판정 ────────────────────────────────────
+        print('\n축10 — 축D: `<stem>_조각/` 이 있는 문서만 허브로 본다')
+        hubs = G.hub_stems()
+        check('00_INDEX_이슈원장' in hubs,
+              '축10-a', '분할된 원장은 허브로 인식된다 · 허브 %d종' % len(hubs))
+        check('32_컬럼개명표' not in hubs,
+              '축10-b', '🔴 재현율 축 = 미분할 정본은 허브가 아니다(분모에 남는다)')
+        check(all(not h.endswith('_조각') for h in hubs),
+              '축10-c', 'stem 에서 `_조각` 접미가 벗겨져 있다')
+
+        # ── 축11: 🔴 관측 축이 실제로 채워지는가 (제외를 조용히 버리지 않는다) ──
+        print('\n축11 — 음성: 제외분이 `observed` 로 관측된다(O111 ㉢)')
+        obs = []
+        G.closed_targets(['이 결정으로 `O8` 이 종결된다'],
+                         head='31. 🔴 결정 대기 — DEC-45', observed=obs)
+        check(any(a == 'B1' for a, _, _ in obs),
+              '축11-a', '축B1 제외가 관측 버킷에 남는다 · %d건' % len(obs))
+        obs = []
+        G.closed_targets(
+            ['### 7-A. **`DEC42` 결정 (2026-08-20 O96) — 연 grain 은 종결**'], observed=obs)
+        check(any(a == 'A' for a, _, _ in obs),
+              '축11-b', '축A 제외가 관측 버킷에 남는다(버려지지 않는다)')
     finally:
         G._md_files, G.EXCLUDE_PREFIX = old_files, old_excl
         import shutil
@@ -143,7 +240,7 @@ def main():
             print('  🔴 %s' % f)
         print('🔴 FAIL')
         return 1
-    print('🟢 PASS — 5축 %d단정 전건 통과' % N[0])
+    print('🟢 PASS — %d단정 전건 통과' % N[0])
     return 0
 
 

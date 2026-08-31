@@ -180,6 +180,32 @@ def main():
         G._INDEX = None
         rc2 = G.main([])
         check(rc2 == 0, '축1a 를 고쳤는데 여전히 FAIL 이다(축1b·축3 이 blocking 이 됐다)')
+
+        # ── 🆕 축12: 세션 근거철(`_o1NN_evidence.md`) 이 분모에 들어왔는가 ──────
+        #   🔴 실사고(O124-B) = O123-D 가 근거철을 4곳에서 인용했고 그 인용이
+        #     **어떤 게이트에도 잡히지 않았다** — `COORD` 가 `[0-9]{2}_` 접두만 봤기 때문이다.
+        #     🔴 그리고 O124 는 그 파일을 **경로 한정 `ls` 로 「부재」라 오판**했다(실제는 루트에 실재).
+        #     ⇒ 이 축은 **㉠ 인식** + **㉡ 넓히지 않음** 양방향을 단정한다.
+        print('[축12] 🆕 세션 근거철 관례가 좌표 분모에 있다')
+        hit = [c for c, _ln in G.COORD.findall('근거철 = `_o123c_evidence.md`(E0~E11)')]
+        check(hit == ['_o123c_evidence.md'],
+              '루트 근거철 인용을 좌표로 인식한다 · 실제 %r' % hit)
+        hit = [c for c, _ln in G.COORD.findall('근거철 = `20_issue/_o124_evidence.md` §E1')]
+        check(hit == ['20_issue/_o124_evidence.md'],
+              '`20_issue/` 접두 근거철도 인식한다 · 실제 %r' % hit)
+        hit = [c for c, _ln in G.COORD.findall('좌표 = `20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:5`')]
+        check(hit == ['20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md'],
+              '🔴 재현율 축 = 기존 좌표 형식이 그대로 인식된다(확장이 기존을 깨지 않았다)')
+        # 🔴 오탐 축 = 관례를 넓히지 않았다. 접미가 `_evidence` 가 아니면 좌표가 아니다.
+        for s in ('부산물 = `_o124_entry.md` 였다',
+                  '메모 = `_o124_notes.md`',
+                  '스냅샷 = `_prehub.md`',
+                  '`evidence_o124.md` 는 관례가 아니다'):
+            hit = [c for c, _ln in G.COORD.findall(s)]
+            check(hit == [], '관례 밖 `_` 파일은 좌표로 세지 않는다: %r → %r' % (s[:26], hit))
+        # 🔴🔴 실재 판정은 전역 인덱스여야 한다 — 폴더를 한정하면 O124 의 오판이 게이트에 박힌다.
+        check(G.basename_index.__doc__ and '전역' in G.basename_index.__doc__,
+              '실재 판정 분모가 전역임이 문서화돼 있다(경로 한정 금지)')
     finally:
         G.ROOT, G._INDEX, G._ARCH = old_root, old_idx, old_arch
         shutil.rmtree(tmp, ignore_errors=True)
@@ -190,7 +216,7 @@ def main():
         for f in FAIL:
             print('   · %s' % f)
         return 1
-    print('✅ 전건 통과 — 11축 %d개 단정' % len(OK))
+    print('✅ 전건 통과 — %d개 단정 (🔴 축 수를 적지 마라 · R3-9 ㉦)' % len(OK))
     return 0
 
 

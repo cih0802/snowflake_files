@@ -6,38 +6,52 @@
    "diff_count": 6,
    "label": "O111-B",
    "reason": "차이 3건 전량 규명 완료 — 출처는 라이브가 아니라 수기 문서 03_top-down_gold/05_필드 인벤토리.md 이고, 늘어난 3건은 [O89] 가 추가한 DIM_SPONSORSHIP 분류 3계층(SPONSORSHIP_DIV_CD·DIV_NAME·GROUP_NAME)이다. 세 지표(entries·index_keys·desc_cells)가 모두 +3 인 것은 그 3건이 각각 색인·설명셀 자격을 함께 갖기 때문이며 실측으로 3/3/3 확인했다. 동시에 골든 구조를 카운트 → 키 목록으로 바꿔 다음 차이는 원소 단위로 귀속되게 했다."
+  },
+  {
+   "date": "2026-08-30 14:18:22",
+   "diff_count": 24,
+   "label": "O123-C",
+   "label_note": "[2026-08-30 O124 소급 보정] 발행 시점 label 은 UNLABELED 였다(착수 직후 export SESSION_LABEL 미이행 · R1-7-10). 귀속 근거 = 이 항목 reason 본문이 스스로 'O123-C:' 로 시작하고, 원장 §1 O123-C 행과 이력 §O123-C 7절이 같은 발행 2건을 지목한다. 🔴 발행을 다시 하지 않았다 — diff_count·metrics·reason 무변경이고 label 1개만 채웠다.",
+   "reason": "O123-C: 30_output_share 산출물 17종 전량 재생성(2026-08-28 골든 → 2026-08-30 실측). 사용자 지시 = 아카이브 후 최신화. 실유실 0 확인 근거: (1) 08 은 행 536→752 이지만 키 중복 0 · 사라진 키 0 · 신규 키 216 순수 증가이고 SILVER 테이블 39→43(BIGQUERY_REFINED_DATA·GA4_BASIC·CRM_MEMBER_SPONSOR_SPAN·ERP_BUDGET_YEARLY 신규)로 규명됨. (2) SILVER_ONLY_CHAIN 127→292 급증은 대부분 GA4 축(118+46)이고 O120 이 실증한 'GA 축이 GOLD 에서 끊긴다'와 정합. (3) 06 은 미노출 586→523 감소·노출 118→138 증가로 개선 방향. (4) 04 rows 548→565 는 WIDE 컬럼 실측 565 와 일치. (5) 계정 KA98941 라이브 조회로 dump_schema(GOLD 뷰14·테이블37·SILVER43·BRONZE52)+census 선행 생성 후 실행. 측정일 갱신은 재생성의 정상 결과다."
+  },
+  {
+   "date": "2026-08-30 14:19:11",
+   "diff_count": 0,
+   "label": "O123-C",
+   "label_note": "[2026-08-30 O124 소급 보정] 같은 근거로 채웠다 — reason 본문이 'O123-C 후속:' 이다. 발행 재실행 0 · metrics 무변경.",
+   "reason": "O123-C 후속: 스키마 지문 정정. 직전 발행에서 /tmp/schema.json 이 세션 중간에 소실돼(생성 13:36 → 발행 14:18 부재) O111-B 가드가 구 지문 3581c638b4260bd9 을 보전했다 — 지우지는 않았지만 산출물은 신 스키마 기준이라 골든 지문과 어긋난 상태였다. 이번 발행은 dump_schema 를 같은 셸 호출 안에서 체인해 지문을 산출물과 일치시킨다. 산출물 수치 변경 0(직전 발행과 동일)."
   }
  ],
- "measured": "2026-08-28",
+ "measured": "2026-08-30",
  "metrics": {
-  "04.rows": 548,
+  "04.rows": 565,
   "05.field_sections": {
    "## 마케팅 보고서필드 → 지표#/GOLD": 73,
    "## 회원 보고서필드 → 지표#/GOLD": 434
   },
   "05.metric_rows": 215,
   "05.status": {
-   "OK": 99,
-   "PARTIAL": 74,
-   "WAIT": 42
+   "OK": 109,
+   "PARTIAL": 79,
+   "WAIT": 27
   },
   "05.sv_bound_rows": 79,
-  "06.rows": 1162,
+  "06.rows": 1153,
   "06.verdicts": {
-   "SILVER까지만": 380,
-   "노출됨(GOLD)": 118,
-   "대체노출(파생)": 14,
-   "미노출(검토대상)": 586,
-   "제외(PII·본문·메타)": 51,
+   "SILVER까지만": 410,
+   "노출됨(GOLD)": 138,
+   "대체노출(파생)": 15,
+   "미노출(검토대상)": 523,
+   "제외(PII·본문·메타)": 54,
    "판정보류(동명이의)": 13
   },
   "07.exists": true,
-  "08.rows": 536,
+  "08.rows": 752,
   "08.status": {
-   "DROPPED": 143,
+   "DROPPED": 141,
    "NO_CONSUMER": 28,
-   "REFERENCED": 238,
-   "SILVER_ONLY_CHAIN": 127
+   "REFERENCED": 291,
+   "SILVER_ONLY_CHAIN": 292
   },
   "09.anchors": {
    "FACT_AD_PERFORMANCE": 23,
@@ -92,14 +106,14 @@
   "09.verdict_kinds": 12,
   "09.verdicts": {
    "grain부정합": 5,
-   "값없음": 85,
+   "값없음": 66,
    "도달불가": 19,
    "배분규칙필요": 8,
    "요구grain부정합": 1,
    "원천부재": 10,
-   "조립가능": 276,
+   "조립가능": 294,
    "집계필요": 1,
-   "타원천": 2,
+   "타원천": 3,
    "판정불가": 4,
    "판정불가(SV파생)": 92,
    "형제팩트중복": 4
@@ -126,13 +140,13 @@
   },
   "art.measured": {
    "01_DW_현업활용가이드.md": "2026-08-11",
-   "03_GN_DW_개념도.html": "2026-08-13",
-   "04_컬럼계보매핑.md": "2026-08-11",
-   "05_지표GOLD매핑.md": "2026-08-11",
-   "06_BRONZE노출감사.md": "2026-08-13",
-   "07_코드체계_관문측정.md": "2026-08-13",
-   "08_SILVER→GOLD_보존율.md": "2026-08-13",
-   "09_보고서필드_조립가능성.md": "2026-08-13"
+   "03_GN_DW_개념도.html": "2026-08-30",
+   "04_컬럼계보매핑.md": "2026-08-30",
+   "05_지표GOLD매핑.md": "2026-08-30",
+   "06_BRONZE노출감사.md": "2026-08-30",
+   "07_코드체계_관문측정.md": "2026-08-30",
+   "08_SILVER→GOLD_보존율.md": "2026-08-30",
+   "09_보고서필드_조립가능성.md": "2026-08-30"
   },
   "inv.desc_cell_list": [
    "DIM_AD_CREATIVE.AD_TYPE",
@@ -847,5 +861,5 @@
   "inv.label_collisions": 14,
   "inv.unreachable": []
  },
- "schema_fingerprint": "3581c638b4260bd9"
+ "schema_fingerprint": "12ffa5c63c8ce470"
 }

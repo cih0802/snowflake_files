@@ -326,6 +326,76 @@ def t_to_outdir():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def t_title_discriminability():
+    """🆕 [2026-08-30 O124-B] **변별 붕괴 0** — `TITLE_MAX` 인하가 색인을 무력화하지 않는가.
+
+    🔴 왜 필요한가 = O124-B 가 허브 여유를 회복하려고 `TITLE_MAX` 를 **70 → 50** 으로 낮췄다.
+      색인의 유일한 기능은 **「어느 조각을 읽어야 하는가」를 고르게 하는 것**이므로,
+      제목을 짧게 자르다가 **서로 다른 절이 같은 문자열로 붕괴하면 그 기능이 죽는다.**
+      🔴 그런데 붕괴는 **허브가 여전히 그럴듯해 보이는 채로** 일어난다 ⇒ 게이트가 없으면 조용하다.
+    🟢 판정식 = 실 조각을 읽어 **같은 조각 안에서** 서로 다른 제목이 같은 절단 결과를 갖는 건수.
+      현재 값(`TITLE_MAX`)에서 **0** 이어야 한다.
+    🔴 이 축은 상수를 낮출 때마다 다시 돌려야 하므로 **실 문서군을 분모로 쓴다**(픽스처 아님).
+    """
+    import os
+    hubs = []
+    for root in ('.', '20_issue', '00_guides'):
+        base = os.path.join(S.ROOT, root) if hasattr(S, 'ROOT') else root
+        if not os.path.isdir(base):
+            continue
+        for f in sorted(os.listdir(base)):
+            p = os.path.join(base, f)
+            if f.endswith('.md') and os.path.isfile(p):
+                d = os.path.join(base, os.path.splitext(f)[0] + '_조각')
+                if os.path.isdir(d):
+                    hubs.append(d)
+    check(len(hubs) > 0, 'toc.discrim-분모 허브 조각 폴더 0종')
+    total, collapse, worst = 0, 0, []
+    for d in hubs:
+        for g in sorted(os.listdir(d)):
+            if not g.endswith('.md'):
+                continue
+            titles = []
+            for line in io.open(os.path.join(d, g), encoding='utf-8').read().split('\n'):
+                t = line.lstrip('> ').lstrip()
+                if t.startswith('## ') or t.startswith('### '):
+                    titles.append(t.lstrip('#').strip())
+            total += len(titles)
+            seen = {}
+            for t in titles:
+                seen.setdefault(S.clean_title(t), set()).add(t)
+            for cut, originals in seen.items():
+                if len(originals) > 1:
+                    collapse += len(originals) - 1
+                    if len(worst) < 3:
+                        worst.append('%s ▸ %r' % (g, cut[:44]))
+    check(total > 100, 'toc.discrim-규모 제목 %d개 (100 미만 = 분모 붕괴)' % total)
+    check(collapse == 0,
+          '🔴 toc.discrim-붕괴 TITLE_MAX=%d 에서 변별 붕괴 %d건 %s'
+          % (S.TITLE_MAX, collapse, worst))
+    # 🔴 음성 = 극단적으로 낮추면 이 축이 **실제로 깨지는가**(축이 살아 있는가).
+    saved = S.TITLE_MAX
+    try:
+        S.TITLE_MAX = 4
+        c2 = 0
+        for d in hubs:
+            for g in sorted(os.listdir(d)):
+                if not g.endswith('.md'):
+                    continue
+                titles = [l.lstrip('> ').lstrip().lstrip('#').strip()
+                          for l in io.open(os.path.join(d, g), encoding='utf-8').read().split('\n')
+                          if l.lstrip('> ').lstrip().startswith(('## ', '### '))]
+                seen = {}
+                for t in titles:
+                    seen.setdefault(S.clean_title(t), set()).add(t)
+                c2 += sum(len(v) - 1 for v in seen.values() if len(v) > 1)
+    finally:
+        S.TITLE_MAX = saved
+    check(c2 > 0,
+          '🔴 toc.discrim-음성 TITLE_MAX=4 에서도 붕괴 0 ⇒ 이 축이 아무것도 재지 않는다 · %d건' % c2)
+    check(S.TITLE_MAX == saved, 'toc.discrim-원복 전역 상수 오염')
+
+
 def main():
     t_titles()
     t_carryover()
@@ -333,13 +403,14 @@ def main():
     t_wrap()
     t_roundtrip()
     t_to_outdir()
+    t_title_discriminability()
     print('단정 %d건 통과 · 실패 %d건' % (OKS[0], len(FAILS)))
     if FAILS:
         print('🔴 FAIL')
         for f in FAILS:
             print(' -', f)
         return 1
-    print('🟢 PASS — 8축 음성 테스트 통과')
+    print('🟢 PASS — 음성 테스트 통과 (🔴 축 수를 적지 마라 · R3-9 ㉦)')
     return 0
 
 

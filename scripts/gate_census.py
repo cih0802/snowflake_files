@@ -73,8 +73,10 @@ JUDGE = {
 }
 
 OBSERVE = {
+    'alias_census':        '모델 SELECT 별칭 P/L/X 관측 — 🔴 판정 분모 정본은 `scripts/o122_name_drift.sql`(라이브) 이다',
     'classify_doc_type':   '문서 유형 추천(등재 정본은 원장 §0)',
     'comment_len_probe':   'COMMENT 길이 분포 관측',
+    'o123_member_dk_footprint': '컬럼명 소비처 footprint 관측(축 분리 = archive/현행/코드/문서) — 🔴 판정이 아니다 · 개명 전 grep 범위 산정용',
     'sv_dim_cardinality':  '차원 카디널리티 관측 — 🔴 판정 정본은 `sv_code_label_gate` 다',
     'wrap_for_read':       '긴 줄 접기 보조',
 }
@@ -91,13 +93,24 @@ GEN = {
     'gen_concept_diagram': '개념도', 'gen_measure_backlog': '실측필요 후속작업',
     'gen_metric_gold_mapping': '지표↔GOLD 매핑', 'gen_section_assembly': '절 조립',
     'gen_silver_gold_retention': 'SILVER·GOLD 보존', 'session_brief': '착수 브리핑(`00_BRIEF.md`)',
+    # 🆕 [2026-08-30 O123-C] MUTATES 오분류 2건을 GEN 으로 이동했다 — O121-B 가 고친 것과 **같은 유형**이다
+    #   (「DDL 문자열을 **입력으로 읽는**」 도구를 「DDL 을 **발행하는**」 도구로 오분류).
+    #   · gen_column_mapping  = 라이브 접속 참조 **0** · `.execute` **0** — `ALTER VIEW` 는
+    #       dbt 모델 `post_hook` 에서 컬럼 COMMENT 를 **파싱하는 대상 문자열**이다(같은 파일 143행 docstring).
+    #   · run_bronze_audit_host = DDL/DML 키워드 **0** · `SELECT`/`INFORMATION_SCHEMA` 조회만 + 파일 기록.
+    #   🔴 오분류의 실해 = 「실행 금지」로 표시돼 **30_output_share 정본 산출물 04·06 을 재생성할 수 없었다.**
+    'gen_column_mapping': '컬럼계보매핑 04 — 🔴 라이브 접속 0(모델 파싱 전용)',
+    'run_bronze_audit_host': 'BRONZE 노출감사 06 **정본 러너** — 조회 전용(무인자 = 직접조회)',
+    # 🆕 [2026-08-30 O124] 손으로 쓴 산출물 `미해결이슈_요약_O102.md` 를 생성기로 대체했다.
+    #   근거 = 그 판본이 2행 stale 이었고 파일명에 세션 라벨이 박혀 판본이 늘어났다.
+    'gen_unresolved_issue_summary': '미해결이슈 요약 11 — 정본 추출 전용(라이브 접속 0)',
 }
 
 MUTATES = {
     'apply_table_comment_drift': '라이브 COMMENT 반영',
     'deploy_ml_semantic_views': 'SV 배포', 'deploy_ml_serving_views': 'SERVING 뷰 배포',
     'deploy_sv': 'SV 배포', 'extract_sv_deploy': '배포 SQL 추출·실행',
-    'fix_stale_counts': '문서 다중 치환', 'gen_column_mapping': 'ALTER VIEW 발행',
+    'fix_stale_counts': '문서 다중 치환',
     'gen_o53_ad_combined': 'CREATE OR REPLACE', 'gen_o53_gold_ddl': 'CREATE OR REPLACE',
     'move_o63_history_entry': '이력 이동', 'o54_sv_header_patch': 'SV 헤더 패치',
     'o54_sv_note_patch': 'SV 주석 패치', 'o59d_snapshot': 'GRANT 포함 스냅샷',
@@ -105,7 +118,7 @@ MUTATES = {
     'patch_o63k_view_mislabel': '뷰 라벨 패치', 'patch_o64_wide_fee_lineage': '계보 패치',
     'patch_sv_enum_comments': 'SV 열거 패치', 'polish_sv_enum_comments': 'SV 열거 정리',
     'retire_rows': '원장 행 은퇴(다중 파일)', 'retire_sections': '절 본문 은퇴(다중 파일)',
-    'run_bronze_audit_host': 'BRONZE 감사 실행', 'run_o53_new_tables': '테이블 생성',
+    'run_o53_new_tables': '테이블 생성',
     'split_doc': '허브·조각 재작성', 'split_issue_index': '원장 분할',
     'split_narrative': '사례집 이관',
 }

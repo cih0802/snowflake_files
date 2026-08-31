@@ -26,19 +26,19 @@ ALL_SCHEMAS = BRONZE_SCHEMAS + ("SILVER", "GOLD", "SERVING")
 
 
 def connect():
-    tok_path = os.environ.get("SNOWFLAKE_TOKEN_FILE_PATH", "/snowflake/session/token")
-    with open(tok_path) as f:
-        token = f.read().strip()
-    return snowflake.connector.connect(
-        account="zl50263.ap-northeast-2.aws",
-        user="CHOIH",
-        authenticator="oauth",
-        token=token,
-        role="GN_DW_ADMIN",
-        warehouse="GN_DW_DEV_WH",
-        database="GN_DW",
-        schema="PUBLIC",
-    )
+    """🆕 [2026-08-30 O123-C] `sfconn` 경유로 시정 — 종전 판본은 계정·사용자·역할·웨어하우스를
+    **하드코딩**했다(`account="zl50263.ap-northeast-2.aws"` · `user="CHOIH"` ·
+    `role="GN_DW_ADMIN"` · `warehouse="GN_DW_DEV_WH"`).
+    🔴 이 워크스페이스는 **계정이 계속 바뀐다**(O120 `YQ47212` → O123 `KA98941` · `P169` 축)
+      ⇒ 하드코딩은 시간이 지나면 반드시 깨진다. 실제로 이 세션에서 **403 Forbidden** 으로 실패했고
+      그것이 이 제네레이터만 산출물을 만들지 못한 유일한 원인이었다.
+    🟢 판정식 = **접속 정보는 도구마다 적지 말고 단일 경유점(`scripts/sfconn.py`)에서 받는다**
+      (그 헬퍼는 `SNOWFLAKE_ACCOUNT`·`SNOWFLAKE_HOST` 환경변수와 세션 OAuth 토큰을 쓴다).
+    🔴 계정명을 이 파일에 다시 적지 마라 — 산출물 HTML 의 계정 표기는
+      아래 `select current_account()` **조회 결과**로 채운다(맥락이지 근거가 아니다 · `R3-9 ㉤`)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import sfconn
+    return sfconn.conn()
 
 
 def fmt_type(dt, clen, nprec, nscale, dtprec):

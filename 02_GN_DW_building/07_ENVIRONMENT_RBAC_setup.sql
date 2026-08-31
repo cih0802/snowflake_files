@@ -1,7 +1,7 @@
 -- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
+-- Co-authored with CoCo
 --   ⛔ [2026-08-10 O55] 종전 이 줄 끝의 「helper 뷰 생성」은 **삭제했다** — 이 파일에 helper 생성문이 없었고(O36),
 --      helper 자체가 물리 DROP 됐다(SV base 전건 GOLD).
--- Co-authored with CoCo
 --
 -- ★ 정본(canonical) 실행 스크립트 — 2026-07-22 05_SV-Agent_ai/02_SERVING_setup.sql 에서 이관.
 --   01_환경 Role.md(설계) 와 짝이 되는 프로젝트 전역 환경/RBAC 부트스트랩. 원위치는 포인터 스텁만 유지.
@@ -43,7 +43,8 @@
 --    · 신규: §D.4 에 ANALYST BRONZE 4스키마 읽기 / §D.7 Agent·Streamlit 소비 / §D.8 Workspace 저작(ACCOUNTADMIN).
 --    · 종전 ANALYST 범위는 SILVER·GOLD 읽기까지였다(01_환경 Role.md §2.2 scope = "SILVER(읽기), GOLD(읽기), SERVING 소비").
 --      BRONZE 가 추가되면서 **owner's rights 경유 확산**이 새 위험으로 들어온다 → §D.7 상단 경고 참조.
-
+use role accountadmin;
+alter user identifier('trialadmin') set default_secondary_roles=();
 /* =====================================================================
    A. 웨어하우스 (01_환경 Role.md §1.2)
    ===================================================================== */
@@ -245,6 +246,17 @@ GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ANALYST;
 --      · ANALYST BRONZE INSERT = FAIL(SELECT 전용 확인). 상세 = 04_운영 확인.md §6 executed_results.
 --      🔴 재검증 시 `USE SECONDARY ROLES NONE` 을 먼저 실행할 것 — 기본 세션은 secondary roles 활성(ALL)이라
 --         권한이 합집합으로 평가되어 VIEWER 차단 테스트가 **거짓 PASS** 로 나온다(실제 오탐 발생).
+--   🔴🔴 [2026-08-30 O121 · 계정 ka98941 실측] **이 절이 부분 실행된 상태로 방치돼 있었다.**
+--      증상 = dbt build(DW_PIPELINE) ERROR 17건 중 **16건**이
+--        `002003 (02000) Schema 'GN_DW.BRONZE_CRM' does not exist or not authorized` (CRM 11 · AGENCY 4 · ERP 1).
+--      🔴 스키마는 **존재했다** — 이 메시지의 뒷부분(`or not authorized`)이 진짜 원인이다.
+--         Snowflake 는 정보 노출을 막기 위해 「권한 없음」을 「없음」과 **같은 문구**로 보고한다.
+--         ⇒ 이 오류를 보고 DDL/스키마를 다시 만들러 가지 말 것. 먼저 `SHOW GRANTS TO ROLE` 을 봐라.
+--      원인 = 아래 4개 블록 중 **`BRONZE_BIGQUERY` 만 적용**되어 있었다(그래서 GA4 계열만 컴파일을 통과했다).
+--      ⇒ 2026-08-30 03:07(-0700) CRM·ERP·AGENCY 9문을 GN_DW_ADMIN 으로 재실행해 복구했다.
+--        부여 확인 = 스키마 USAGE 4종 전부 + BRONZE 테이블 SELECT 52건.
+--      🟢 교훈 = 이 절은 **멱등**이다(GRANT 재실행은 무해) ⇒ 의심되면 절 전체를 다시 실행하라.
+--         부분 실행은 조용히 남고, 몇 세션 뒤 **엉뚱한 계층(dbt)** 에서 터진다.
 --   BRONZE_CRM
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.BRONZE_CRM TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.BRONZE_CRM TO ROLE GN_DW_ADMIN;
@@ -315,10 +327,25 @@ GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO 
 --   🔴🔴 [2026-08-20 O91 정정 — D 항목] 종전 이 줄은 *"merge 없음 → UPDATE/DELETE 불요"* 였고 **stale 이었다.**
 --      반증 = O87 이 신설한 `silver_purge` 매크로가 range 모델에 **범위 DELETE 문**을 낸다
 --      (`macros/ga4_range_purge.sql` · pre-hook 경유) ⇒ `DELETE` 없이는 GA4 SILVER 모델이 실패한다.
---      🟢 `UPDATE` 는 여전히 불요다(SILVER 에 merge 전략 모델이 없다) — 좁힌 상태를 유지한다.
 --      🟢 2026-08-20 라이브 부여·실측 확인(FUTURE 4종 = SELECT·INSERT·TRUNCATE·DELETE).
 GRANT INSERT, TRUNCATE, DELETE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 GRANT INSERT, TRUNCATE, DELETE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
+
+--   🔴🔴 [2026-08-30 O121 재정정 — UPDATE] 위 O91 이 남긴 「🟢 `UPDATE` 는 여전히 불요다(SILVER 에
+--      merge 전략 모델이 없다)」는 **더는 사실이 아니다.** 그 문장은 2026-08-20 자이고, 닷새 뒤
+--      **2026-08-25** 에 `models/silver/crm/CRM_MEMBER_DEV.sql` 이 현업 요건("1개월 주기 변경분 증분 적재")
+--      으로 `incremental_strategy='merge'` + `unique_key`(SPNSR_NO·SPNSR_BSNS_NO·OCCRRNC_DE·SER_NO) 로
+--      전환됐다. merge 는 matched 행에 **UPDATE** 를 낸다 ⇒ UPDATE 없이는 이 모델이 실패한다.
+--      🔴 이 어긋남은 **모델 전략을 바꿀 때 이 절을 함께 고치지 않아서** 생겼다 — 권한은 모델 전략에 종속이다.
+--         2026-08-30 시점에는 BRONZE_CRM USAGE 부재(§D.4)가 이 모델을 먼저 막고 있어 **증상이 가려져 있었다**
+--         (ERROR 17건 중 CRM_MEMBER_DEV 는 스키마 권한 오류로 죽어서 UPDATE 부재까지 도달하지 못했다).
+--         ⇒ 결함이 결함을 가리는 구조였다. §D.4 를 고치면 이 항목이 곧바로 드러난다.
+--      ⚠️ 스키마 전체(ALL/FUTURE)로 넓히지 **않는다** — merge 모델이 현재 1개뿐이므로 테이블 단위로 좁게 준다
+--         (O91 의 「좁힌 상태를 유지한다」 원칙 계승). 새 merge 모델이 생기면 **여기에 한 줄을 추가**하라.
+--         빠뜨려도 조용한 오작동이 아니다 — `003001 … must have MODIFY granted on TABLE …` 로 시끄럽게 실패한다.
+--      교차검증 = `grep -rn "incremental_strategy='merge'" 10_dbt_pipeline/models/silver/` ↔ 아래 GRANT 목록.
+--         (2026-08-30 기준 1:1 = CRM_MEMBER_DEV 뿐)
+GRANT UPDATE ON TABLE GN_DW.SILVER.CRM_MEMBER_DEV TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
    D.6 dbt test store_failures 적재 권한 — GN_DW_ENGINEER (OPS 한정 CREATE TABLE)

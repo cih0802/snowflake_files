@@ -115,6 +115,26 @@ HANDOFF = """
 ### ▣ 최신 항목 둘
 """
 
+# ── 축 4-B: 🔴🔴 blockquote 인수인계 (2026-08-30 O123-D 신설 · 오염 기반) ──
+#   🔴 **이 축이 없어서 실사고를 놓쳤다.** 위 `HANDOFF` 는 `### ▣` 를 **비-quote** 로만 쓰는데,
+#     실제 `99_NEXT_SESSION-001.md` 의 현행 절(`§0-AAAA`)은 **전부 `> ### ▣`** 였다
+#     ⇒ 추출기가 **8건을 0건으로** 보고했고 정상 입력 테스트는 **전건 통과**했다.
+#   ⇒ 🟢 판정식 = **테스트 픽스처는 「정본이 실제로 쓰는 형태」를 그대로 넣어라.**
+#     내가 만든 깔끔한 형태만 넣으면 그 테스트는 **형식 드리프트를 구조적으로 못 잡는다.**
+HANDOFF_QUOTED = """
+## 0-ZZZ. 🔴 [2026-08-29 O119 필독 — ~~여기서 시작한다~~] → 승계됨
+### ▣ ZZZ1 비-quote 형태(옛 판본)
+## 0-AAAA. 🔴🔴 [2026-08-30 O123 필독 — **여기서 시작한다.** §0-ZZZ 는 승계됐다]
+>
+> ### ▣ AAAA1 quote 형태 하나
+> 본문 줄
+> ### ▣ AAAA2 quote 형태 둘
+>   ### ▣ AAAA3 들여쓴 quote
+>> ### ▣ AAAA4 이중 quote
+## 0-BBBB. 🔴 [2026-08-01 O99 필독 — **여기서 시작한다.**] 날짜가 더 옛것
+> ### ▣ 뽑히면 안 되는 항목
+"""
+
 
 def main():
     print('[음성 테스트] session_brief 추출기')
@@ -139,6 +159,22 @@ def main():
     check('현행 절 날짜', cur['date'], '2026-08-28')
     check('현행 절 O105', 'O105' in cur['title'], True)
     check('현행 절 하위 항목 수', len(subs), 2)
+
+    axis('🔴🔴 인수인계 blockquote — 8건을 0건으로 본 실사고 (O123-D)')
+    # 🔴 정상 형태(위 축4)만으로는 0건이었다. 아래가 실제 정본 형태다.
+    check('dequote 단일', sb.dequote('> ### ▣ X'), '### ▣ X')
+    check('dequote 들여쓰기', sb.dequote('>   ### ▣ X'), '### ▣ X')
+    check('dequote 이중', sb.dequote('>> ### ▣ X'), '### ▣ X')
+    check('dequote 비-quote 무변경', sb.dequote('### ▣ X'), '### ▣ X')
+    cq, sq = sb.current_handoff(L(HANDOFF_QUOTED))
+    check('현행 절 = 최신 O123', 'O123' in cq['title'], True)
+    check('현행 절 날짜', cq['date'], '2026-08-30')
+    check('quote 항목 전건 추출', len(sq), 4)
+    check('AAAA1 추출', any('AAAA1' in s['title'] for s in sq), True)
+    check('이중 quote 도 추출', any('AAAA4' in s['title'] for s in sq), True)
+    # 🔴 역방향 = 다른 절의 항목을 삼키지 않는다(`## ` 경계 판정이 quote 정규화 후에도 유효).
+    check('타 절 항목 미포함', any('뽑히면 안 되는' in s['title'] for s in sq), False)
+    check('승계 절 항목 미포함', any('ZZZ1' in s['title'] for s in sq), False)
 
     axis('빈 입력 — 예외 없이 0건')
     check('빈 착수표', len(sb.open_tasks(L(''))), 0)
