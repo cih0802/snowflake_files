@@ -1,7 +1,7 @@
 <!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 002/024 | 허브 = 99_NEXT_SESSION.md | 원문 95~294행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
-## 0-BBBB. 🔴🔴 [2026-08-30 O124 · O124-B 필독 — **여기서 시작한다.** §0-AAAA 는 승계됐다]
+## 0-BBBB. 🔴🔴 [2026-08-30 O124 · O124-B 필독 — ~~여기서 시작한다.~~ **⇒ [2026-08-31 O125] 시작점은 §0-CCCC 다**(`99_NEXT_SESSION-003.md` 선두 · 🔴 이 조각은 292/300줄이라 새 절을 담을 수 없었다) · §0-AAAA 는 승계됐다]
 
 > 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
 > `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.

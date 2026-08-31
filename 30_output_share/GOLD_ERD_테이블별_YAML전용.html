@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>GN_DW.GOLD ERD — 테이블별 문서</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', 'Malgun Gothic', sans-serif;
+        background: #f4f6f8; color: #222; line-height: 1.55; }
+nav { position: fixed; top: 0; left: 0; width: 250px; height: 100vh; overflow-y: auto;
+       background: #263238; color: #cfd8dc; padding: 14px 6px; font-size: 12.5px; }
+nav h3 { font-size: 14px; margin: 4px 8px 10px; color: #fff; }
+nav ul { list-style: none; }
+nav li.section { margin: 12px 8px 4px; font-size: 10.5px; font-weight: 700;
+                  color: #78909c; letter-spacing: .06em; }
+nav a { color: #b0bec5; text-decoration: none; display: block; padding: 3px 9px; border-radius: 3px; }
+nav a:hover { background: #37474f; color: #fff; }
+main { margin-left: 258px; padding: 26px 30px 60px; max-width: 1180px; }
+h1 { font-size: 25px; }
+.sub { color: #607d8b; font-size: 13px; margin: 6px 0 20px; }
+section { background: #fff; border-radius: 8px; padding: 20px 22px; margin-bottom: 18px;
+           box-shadow: 0 1px 3px rgba(0,0,0,.09); }
+h2 { font-size: 19px; margin-bottom: 9px; }
+.meta { font-size: 13px; color: #546e7a; margin-bottom: 8px; }
+.desc { font-size: 13px; background: #fafafa; border-left: 3px solid #b0bec5;
+         padding: 8px 11px; margin: 8px 0; color: #37474f; }
+.box { font-size: 13px; margin: 8px 0; padding: 9px 12px; background: #f1f8e9;
+        border-radius: 5px; }
+.box.refby { background: #e3f2fd; }
+.box ul { margin: 4px 0 0 18px; }
+details { margin-top: 12px; }
+summary { cursor: pointer; font-weight: 600; color: #1565c0; font-size: 13px; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 8px; }
+th { background: #37474f; color: #fff; padding: 6px 9px; text-align: left; font-weight: 600; }
+td { padding: 5px 9px; border-bottom: 1px solid #eceff1; vertical-align: top; }
+tr:hover td { background: #f5fafd; }
+code { background: #eceff1; padding: 1px 5px; border-radius: 3px;
+        font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+.mermaid { margin: 14px 0; overflow-x: auto; background: #fcfcfc;
+            border: 1px solid #eceff1; border-radius: 6px; padding: 10px; }
+.b { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 9px;
+      font-weight: 700; vertical-align: middle; }
+.b.both { background: #c8e6c9; color: #1b5e20; }
+.b.yaml { background: #ffe0b2; color: #e65100; }
+.b.live { background: #bbdefb; color: #0d47a1; }
+.b.logical { background: #f8bbd0; color: #880e4f; }
+.alert { background: #ffebee; border-left: 4px solid #c62828; padding: 12px 14px;
+          border-radius: 5px; font-size: 13px; margin-bottom: 18px; }
+.regen { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 12px 14px;
+          border-radius: 5px; font-size: 13px; margin-bottom: 18px; }
+.warn { color: #e65100; font-size: 12px; }
+table.stat th { width: 230px; }
+table.stat tr.hl td { background: #fff8e1; }
+table.stat tr.hl3 td { background: #fce4ec; }
+table.stat tr.hl3 th { background: #880e4f; }
+table.stat tr.tot th { background: #1b5e20; }
+#mmfail { display: none; background: #fff3e0; border-left: 4px solid #ef6c00;
+           padding: 10px 13px; border-radius: 5px; font-size: 13px; margin-bottom: 16px; }
+</style></head>
+<body>
+<nav><h3>GOLD ERD</h3><ul><li><a href="#overview">📊 전체 스타스키마</a></li><li><a href="#fkaudit">🔍 FK 소스 대조</a></li><li class="section">DIM (20)</li><li><a href="#DIM_AD_CREATIVE">DIM_AD_CREATIVE</a></li><li><a href="#DIM_BUDGET_ITEM">DIM_BUDGET_ITEM</a></li><li><a href="#DIM_CAMPAIGN">DIM_CAMPAIGN</a></li><li><a href="#DIM_DATE">DIM_DATE</a></li><li><a href="#DIM_DEVICE">DIM_DEVICE</a></li><li><a href="#DIM_EVENT">DIM_EVENT</a></li><li><a href="#DIM_GA_EVENT">DIM_GA_EVENT</a></li><li><a href="#DIM_GA_SOURCE">DIM_GA_SOURCE</a></li><li><a href="#DIM_MARKETING_CAMPAIGN">DIM_MARKETING_CAMPAIGN</a></li><li><a href="#DIM_MEMBER">DIM_MEMBER</a></li><li><a href="#DIM_MEMBER_ACQUISITION">DIM_MEMBER_ACQUISITION</a></li><li><a href="#DIM_MEMBER_CURRENT">DIM_MEMBER_CURRENT</a></li><li><a href="#DIM_MEMBER_IDENTITY">DIM_MEMBER_IDENTITY</a></li><li><a href="#DIM_MONTH">DIM_MONTH</a></li><li><a href="#DIM_ORG">DIM_ORG</a></li><li><a href="#DIM_PAYMENT">DIM_PAYMENT</a></li><li><a href="#DIM_REASON">DIM_REASON</a></li><li><a href="#DIM_SEND_TYPE">DIM_SEND_TYPE</a></li><li><a href="#DIM_SERVICE">DIM_SERVICE</a></li><li><a href="#DIM_SPONSORSHIP">DIM_SPONSORSHIP</a></li><li class="section">FACT (17)</li><li><a href="#FACT_AD_BROADCAST">FACT_AD_BROADCAST</a></li><li><a href="#FACT_AD_BROADCAST_CASE">FACT_AD_BROADCAST_CASE</a></li><li><a href="#FACT_AD_DIGITAL">FACT_AD_DIGITAL</a></li><li><a href="#FACT_AD_PERFORMANCE">FACT_AD_PERFORMANCE</a></li><li><a href="#FACT_BUDGET">FACT_BUDGET</a></li><li><a href="#FACT_BUDGET_YEARLY">FACT_BUDGET_YEARLY</a></li><li><a href="#FACT_DEV_ACHIEVEMENT">FACT_DEV_ACHIEVEMENT</a></li><li><a href="#FACT_EVENT_PARTICIPATION">FACT_EVENT_PARTICIPATION</a></li><li><a href="#FACT_GA_BEHAVIOR">FACT_GA_BEHAVIOR</a></li><li><a href="#FACT_MEMBER_COHORT">FACT_MEMBER_COHORT</a></li><li><a href="#FACT_MEMBER_EVENT">FACT_MEMBER_EVENT</a></li><li><a href="#FACT_MEMBER_FEE">FACT_MEMBER_FEE</a></li><li><a href="#FACT_MEMBER_MONTHLY">FACT_MEMBER_MONTHLY</a></li><li><a href="#FACT_MEMBER_SPONSOR_BIZ">FACT_MEMBER_SPONSOR_BIZ</a></li><li><a href="#FACT_SERVICE_EVENT">FACT_SERVICE_EVENT</a></li><li><a href="#FACT_TARGET_BIZ">FACT_TARGET_BIZ</a></li><li><a href="#FACT_TARGET_DEV">FACT_TARGET_DEV</a></li></ul></nav>
+<main>
+<h1>GN_DW.GOLD 스키마 ERD</h1>
+<div class="sub">생성 2026-08-31 01:48 · 계정 (미조회) · DIM 20 · FACT 17
+  </div>
+
+<div class="alert">🔴 <b>--yaml-only 모드로 생성됨</b> — FK 가 <b>불완전</b>하고 컬럼 타입·COMMENT·행수가 없다. 배포·인수인계용으로 쓰지 마라. 전량판은 플래그 없이 재실행한다.</div>
+<div id="mmfail">
+⚠️ <b>Mermaid 렌더러를 불러오지 못했다</b>(오프라인 또는 CDN 차단). 다이어그램은 아래에
+<b>텍스트 소스</b>로 그대로 남아 있어 관계를 읽을 수 있다 —
+<code>DIM_X ||--o{ FACT_Y : "COL"</code> 은 실선(선언 FK),
+<code>||..o{</code> 은 점선(논리 관계)이다.
+</div>
+<div class="regen">
+<b>재생성</b> — dbt 파이프라인에서 GOLD 테이블·컬럼·FK 를 바꾼 뒤 아래 <b>순서대로</b> 실행한다.<br>
+① <code>python3 scripts/gold_erd_coverage_gate.py</code>
+   &nbsp;🔴 <b>먼저 통과시켜라</b> — 미분류 고립이 있으면 그 축이 ERD 에서 빠진다<br>
+② <code>python3 scripts/gen_gold_erd.py</code> &nbsp;(권장 · INFORMATION_SCHEMA 조회 ~2초)<br>
+③ <code>python3 scripts/test_gold_erd.py</code> &nbsp;(음성 테스트 · 회귀 확인)<br>
+⚪ <code>python3 scripts/gen_gold_erd.py --yaml-only</code>
+   &nbsp;(컴퓨트 $0 · 🔴 FK 불완전 · 별도 경로에 쓴다)
+</div>
+
+<section id="overview">
+<h2>📊 전체 스타스키마 ERD</h2>
+<p class="desc">FACT → DIM 관계. 키 컬럼(PK·FK)만 표기하고 비즈니스 컬럼은 생략했다.
+  <b>실선 = 선언된 FK</b> · <b>점선 = 논리 관계</b>(FK 선언 불가 · 조인 경로로는 동등하게 유효).
+  각 테이블 상세는 좌측 목차에서 개별 섹션으로 볼 수 있다.</p>
+<div class="mermaid">erDiagram
+    DIM_AD_CREATIVE {
+        NUMBER AD_CREATIVE_SK PK
+    }
+    DIM_BUDGET_ITEM {
+        NUMBER BUDGET_ITEM_SK PK
+    }
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_DEVICE {
+        NUMBER DEVICE_SK PK
+    }
+    DIM_EVENT {
+        NUMBER EVENT_SK PK
+    }
+    DIM_GA_EVENT {
+        NUMBER GA_EVENT_SK PK
+    }
+    DIM_GA_SOURCE {
+        NUMBER GA_SOURCE_SK PK
+    }
+    DIM_MARKETING_CAMPAIGN {
+        NUMBER MKTG_CAMPAIGN_SK PK
+        NUMBER MKTG_CAMPAIGN_BK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_MEMBER_ACQUISITION {
+    }
+    DIM_MEMBER_CURRENT {
+    }
+    DIM_MEMBER_IDENTITY {
+        NUMBER IDENTITY_SK PK
+    }
+    DIM_MONTH {
+    }
+    DIM_ORG {
+        NUMBER ORG_SK PK
+    }
+    DIM_PAYMENT {
+        NUMBER PAYMENT_SK PK
+    }
+    DIM_REASON {
+        NUMBER REASON_SK PK
+    }
+    DIM_SEND_TYPE {
+        NUMBER SEND_TYPE_SK PK
+    }
+    DIM_SERVICE {
+        NUMBER SERVICE_SK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_AD_BROADCAST {
+        NUMBER AD_PERF_DK PK
+    }
+    FACT_AD_BROADCAST_CASE {
+        NUMBER AD_PERF_DK FK
+    }
+    FACT_AD_DIGITAL {
+        NUMBER AD_PERF_DK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    FACT_BUDGET {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    FACT_BUDGET_YEARLY {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    FACT_DEV_ACHIEVEMENT {
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_MEMBER_COHORT {
+        NUMBER MEMBER_DK PK
+        NUMBER ACQ_CAMPAIGN_SK FK
+        NUMBER ACQ_DATE_SK FK
+        NUMBER FIRST_STOP_DATE_SK FK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_FEE {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_SPONSOR_BIZ {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_TARGET_BIZ {
+    }
+    FACT_TARGET_DEV {
+        NUMBER ORG_SK FK
+    }
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST : "AD_PERF_DK"
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST_CASE : "AD_PERF_DK"
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_DIGITAL : "AD_PERF_DK"
+    DIM_AD_CREATIVE ||--o{ FACT_AD_PERFORMANCE : "AD_CREATIVE_SK"
+    DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK"
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET : "BUDGET_ITEM_SK"
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET_YEARLY : "BUDGET_ITEM_SK"
+    DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK"
+    DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK"
+    DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK"
+    DIM_DATE ||--o{ FACT_GA_BEHAVIOR : "DATE_SK"
+    DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK"
+    DIM_GA_EVENT ||--o{ FACT_GA_BEHAVIOR : "GA_EVENT_SK"
+    DIM_GA_SOURCE ||--o{ FACT_GA_BEHAVIOR : "GA_SOURCE_SK"
+    DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK"
+    DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "ACQ_DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "FIRST_STOP_DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_EVENT : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK"
+    DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
+    DIM_REASON ||--o{ FACT_MEMBER_EVENT : "REASON_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+    DIM_PAYMENT ||--o{ FACT_MEMBER_FEE : "PAYMENT_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK"
+    DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK"
+    DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
+    DIM_SEND_TYPE ||--o{ FACT_SERVICE_EVENT : "SEND_TYPE_SK"
+    DIM_DATE ||--o{ FACT_SERVICE_EVENT : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK"
+    DIM_SERVICE ||--o{ FACT_SERVICE_EVENT : "SERVICE_SK"
+    DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK"
+    DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK"</div>
+</section>
+
+<section id="fkaudit">
+<h2>🔍 FK 소스 대조</h2>
+<p class="desc">🔴 <b>세 소스는 서로를 포함하지 않는다</b> — 이 ERD 는 <b>3중 합집합</b>을 쓴다.
+  한쪽만 근거로 ERD 를 그리면 관계가 조용히 빠진다.
+  🔴 <b>「관계 수가 늘었는가」가 판정식이 아니다</b> — 판정식은
+  <b>「고립 키 컬럼이 전부 분류되었는가」</b>이고, 그것을
+  <code>gold_erd_coverage_gate.py</code> 가 blocking 으로 강제한다.</p>
+
+<details><summary>전체 관계 목록 (45)</summary>
+<table><thead><tr><th>팩트/차원</th><th>키 컬럼</th><th>참조 대상</th><th>출처</th></tr></thead>
+<tbody><tr><td>FACT_AD_BROADCAST</td><td><b>AD_PERF_DK</b></td><td>FACT_AD_PERFORMANCE.AD_PERF_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_AD_BROADCAST_CASE</td><td><b>AD_PERF_DK</b></td><td>FACT_AD_PERFORMANCE.AD_PERF_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_AD_DIGITAL</td><td><b>AD_PERF_DK</b></td><td>FACT_AD_PERFORMANCE.AD_PERF_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_AD_PERFORMANCE</td><td><b>AD_CREATIVE_SK</b></td><td>DIM_AD_CREATIVE.AD_CREATIVE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_AD_PERFORMANCE</td><td><b>DEVICE_SK</b></td><td>DIM_DEVICE.DEVICE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_BUDGET</td><td><b>BUDGET_ITEM_SK</b></td><td>DIM_BUDGET_ITEM.BUDGET_ITEM_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_BUDGET_YEARLY</td><td><b>BUDGET_ITEM_SK</b></td><td>DIM_BUDGET_ITEM.BUDGET_ITEM_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_EVENT_PARTICIPATION</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_EVENT_PARTICIPATION</td><td><b>DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_EVENT_PARTICIPATION</td><td><b>EVENT_SK</b></td><td>DIM_EVENT.EVENT_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_EVENT_PARTICIPATION</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_EVENT_PARTICIPATION</td><td><b>SPONSORSHIP_SK</b></td><td>DIM_SPONSORSHIP.SPONSORSHIP_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>DEVICE_SK</b></td><td>DIM_DEVICE.DEVICE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>GA_EVENT_SK</b></td><td>DIM_GA_EVENT.GA_EVENT_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>GA_SOURCE_SK</b></td><td>DIM_GA_SOURCE.GA_SOURCE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_GA_BEHAVIOR</td><td><b>IDENTITY_SK</b></td><td>DIM_MEMBER_IDENTITY.IDENTITY_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_COHORT</td><td><b>ACQ_CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_COHORT</td><td><b>ACQ_DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_COHORT</td><td><b>FIRST_STOP_DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_COHORT</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>ORG_SK</b></td><td>DIM_ORG.ORG_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>REASON_SK</b></td><td>DIM_REASON.REASON_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_EVENT</td><td><b>SPONSORSHIP_SK</b></td><td>DIM_SPONSORSHIP.SPONSORSHIP_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_FEE</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_FEE</td><td><b>PAYMENT_SK</b></td><td>DIM_PAYMENT.PAYMENT_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_FEE</td><td><b>SPONSORSHIP_SK</b></td><td>DIM_SPONSORSHIP.SPONSORSHIP_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_MONTHLY</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_MONTHLY</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_MONTHLY</td><td><b>PAYMENT_SK</b></td><td>DIM_PAYMENT.PAYMENT_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_MONTHLY</td><td><b>REASON_SK</b></td><td>DIM_REASON.REASON_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_MONTHLY</td><td><b>SPONSORSHIP_SK</b></td><td>DIM_SPONSORSHIP.SPONSORSHIP_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_SPONSOR_BIZ</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_SPONSOR_BIZ</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_MEMBER_SPONSOR_BIZ</td><td><b>SPONSORSHIP_SK</b></td><td>DIM_SPONSORSHIP.SPONSORSHIP_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_SERVICE_EVENT</td><td><b>CAMPAIGN_SK</b></td><td>DIM_CAMPAIGN.CAMPAIGN_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_SERVICE_EVENT</td><td><b>DATE_SK</b></td><td>DIM_DATE.DATE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_SERVICE_EVENT</td><td><b>MEMBER_DK</b></td><td>DIM_MEMBER.MEMBER_DK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_SERVICE_EVENT</td><td><b>SEND_TYPE_SK</b></td><td>DIM_SEND_TYPE.SEND_TYPE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_SERVICE_EVENT</td><td><b>SERVICE_SK</b></td><td>DIM_SERVICE.SERVICE_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr><tr><td>FACT_TARGET_DEV</td><td><b>ORG_SK</b></td><td>DIM_ORG.ORG_SK</td><td><span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></td></tr></tbody></table></details>
+</section>
+
+
+<section id="DIM_AD_CREATIVE">
+  <h2>🟦 DIM_AD_CREATIVE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>AD_CREATIVE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_AD_PERFORMANCE.AD_CREATIVE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_AD_CREATIVE {
+        NUMBER AD_CREATIVE_SK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    DIM_AD_CREATIVE ||--o{ FACT_AD_PERFORMANCE : "AD_CREATIVE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_BUDGET_ITEM">
+  <h2>🟦 DIM_BUDGET_ITEM</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>BUDGET_ITEM_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (2):</b><ul><li><code>FACT_BUDGET.BUDGET_ITEM_SK</code></li><li><code>FACT_BUDGET_YEARLY.BUDGET_ITEM_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_BUDGET_ITEM {
+        NUMBER BUDGET_ITEM_SK PK
+    }
+    FACT_BUDGET {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    FACT_BUDGET_YEARLY {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET : "BUDGET_ITEM_SK"
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET_YEARLY : "BUDGET_ITEM_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_CAMPAIGN">
+  <h2>🟦 DIM_CAMPAIGN</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>CAMPAIGN_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (7):</b><ul><li><code>FACT_EVENT_PARTICIPATION.CAMPAIGN_SK</code></li><li><code>FACT_GA_BEHAVIOR.CAMPAIGN_SK</code></li><li><code>FACT_MEMBER_COHORT.ACQ_CAMPAIGN_SK</code></li><li><code>FACT_MEMBER_EVENT.CAMPAIGN_SK</code></li><li><code>FACT_MEMBER_MONTHLY.CAMPAIGN_SK</code></li><li><code>FACT_MEMBER_SPONSOR_BIZ.CAMPAIGN_SK</code></li><li><code>FACT_SERVICE_EVENT.CAMPAIGN_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_MEMBER_COHORT {
+        NUMBER MEMBER_DK PK
+        NUMBER ACQ_CAMPAIGN_SK FK
+        NUMBER ACQ_DATE_SK FK
+        NUMBER FIRST_STOP_DATE_SK FK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_SPONSOR_BIZ {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
+    DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_DATE">
+  <h2>🟦 DIM_DATE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>DATE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (6):</b><ul><li><code>FACT_EVENT_PARTICIPATION.DATE_SK</code></li><li><code>FACT_GA_BEHAVIOR.DATE_SK</code></li><li><code>FACT_MEMBER_COHORT.ACQ_DATE_SK</code></li><li><code>FACT_MEMBER_COHORT.FIRST_STOP_DATE_SK</code></li><li><code>FACT_MEMBER_EVENT.DATE_SK</code></li><li><code>FACT_SERVICE_EVENT.DATE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_MEMBER_COHORT {
+        NUMBER MEMBER_DK PK
+        NUMBER ACQ_CAMPAIGN_SK FK
+        NUMBER ACQ_DATE_SK FK
+        NUMBER FIRST_STOP_DATE_SK FK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK"
+    DIM_DATE ||--o{ FACT_GA_BEHAVIOR : "DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "ACQ_DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "FIRST_STOP_DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_EVENT : "DATE_SK"
+    DIM_DATE ||--o{ FACT_SERVICE_EVENT : "DATE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_DEVICE">
+  <h2>🟦 DIM_DEVICE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>DEVICE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (2):</b><ul><li><code>FACT_AD_PERFORMANCE.DEVICE_SK</code></li><li><code>FACT_GA_BEHAVIOR.DEVICE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_DEVICE {
+        NUMBER DEVICE_SK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK"
+    DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_EVENT">
+  <h2>🟦 DIM_EVENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>EVENT_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_EVENT_PARTICIPATION.EVENT_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_EVENT {
+        NUMBER EVENT_SK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_GA_EVENT">
+  <h2>🟦 DIM_GA_EVENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>GA_EVENT_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_GA_BEHAVIOR.GA_EVENT_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_GA_EVENT {
+        NUMBER GA_EVENT_SK PK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_GA_EVENT ||--o{ FACT_GA_BEHAVIOR : "GA_EVENT_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_GA_SOURCE">
+  <h2>🟦 DIM_GA_SOURCE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>GA_SOURCE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_GA_BEHAVIOR.GA_SOURCE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_GA_SOURCE {
+        NUMBER GA_SOURCE_SK PK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_GA_SOURCE ||--o{ FACT_GA_BEHAVIOR : "GA_SOURCE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MARKETING_CAMPAIGN">
+  <h2>🟦 DIM_MARKETING_CAMPAIGN</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>MKTG_CAMPAIGN_SK, MKTG_CAMPAIGN_BK</code></div>
+  <p class='desc'>마케팅캠페인 conformed 차원(1행 = 1마케팅캠페인 + 센티넬) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 결합 grain. 🔴 `DIM_CAMPAIGN.MARKETING_CAMPAIGN` 은 라벨 컬럼이라 광고 팩트가 참조할 수 없고, 그래서 독립 차원으로 승격했다(O44). 🔴 `DEV_CAMPAIGN_CNT` 는 **팬아웃 경고축**이다 — 1보다 크면 개발캠페인 grain 으로 광고비를 내릴 때 복제된다. ⚠️ 광고측 도달은 **이름매칭**이므로 완전하지 않다 (AGENCY 원천에 캠페인 코드 컬럼이 0개 · P36) ⇒ 커버리지를 「완전」으로 서술하지 말 것. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+  
+  <div class="mermaid">erDiagram
+    DIM_MARKETING_CAMPAIGN {
+        NUMBER MKTG_CAMPAIGN_SK PK
+        NUMBER MKTG_CAMPAIGN_BK PK
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MEMBER">
+  <h2>🟦 DIM_MEMBER</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>MEMBER_SK, MEMBER_DK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (7):</b><ul><li><code>FACT_EVENT_PARTICIPATION.MEMBER_DK</code></li><li><code>FACT_MEMBER_COHORT.MEMBER_DK</code></li><li><code>FACT_MEMBER_EVENT.MEMBER_DK</code></li><li><code>FACT_MEMBER_FEE.MEMBER_DK</code></li><li><code>FACT_MEMBER_MONTHLY.MEMBER_DK</code></li><li><code>FACT_MEMBER_SPONSOR_BIZ.MEMBER_DK</code></li><li><code>FACT_SERVICE_EVENT.MEMBER_DK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    FACT_MEMBER_COHORT {
+        NUMBER MEMBER_DK PK
+        NUMBER ACQ_CAMPAIGN_SK FK
+        NUMBER ACQ_DATE_SK FK
+        NUMBER FIRST_STOP_DATE_SK FK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_FEE {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_SPONSOR_BIZ {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
+    DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MEMBER_ACQUISITION">
+  <h2>🟦 DIM_MEMBER_ACQUISITION</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
+  
+  <div class="mermaid">erDiagram
+    DIM_MEMBER_ACQUISITION {
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MEMBER_CURRENT">
+  <h2>🟦 DIM_MEMBER_CURRENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>회원 현재행 차원(1행 = 1회원) — SCD2 DIM_MEMBER 의 IS_CURRENT 투영. 분석가 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
+  
+  <div class="mermaid">erDiagram
+    DIM_MEMBER_CURRENT {
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MEMBER_IDENTITY">
+  <h2>🟦 DIM_MEMBER_IDENTITY</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>IDENTITY_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_GA_BEHAVIOR.IDENTITY_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_MEMBER_IDENTITY {
+        NUMBER IDENTITY_SK PK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_MONTH">
+  <h2>🟦 DIM_MONTH</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
+  
+  <div class="mermaid">erDiagram
+    DIM_MONTH {
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_ORG">
+  <h2>🟦 DIM_ORG</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>ORG_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (2):</b><ul><li><code>FACT_MEMBER_EVENT.ORG_SK</code></li><li><code>FACT_TARGET_DEV.ORG_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_ORG {
+        NUMBER ORG_SK PK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_TARGET_DEV {
+        NUMBER ORG_SK FK
+    }
+    DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
+    DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_PAYMENT">
+  <h2>🟦 DIM_PAYMENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>PAYMENT_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (2):</b><ul><li><code>FACT_MEMBER_FEE.PAYMENT_SK</code></li><li><code>FACT_MEMBER_MONTHLY.PAYMENT_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_PAYMENT {
+        NUMBER PAYMENT_SK PK
+    }
+    FACT_MEMBER_FEE {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    DIM_PAYMENT ||--o{ FACT_MEMBER_FEE : "PAYMENT_SK"
+    DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_REASON">
+  <h2>🟦 DIM_REASON</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>REASON_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (2):</b><ul><li><code>FACT_MEMBER_EVENT.REASON_SK</code></li><li><code>FACT_MEMBER_MONTHLY.REASON_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_REASON {
+        NUMBER REASON_SK PK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    DIM_REASON ||--o{ FACT_MEMBER_EVENT : "REASON_SK"
+    DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_SEND_TYPE">
+  <h2>🟦 DIM_SEND_TYPE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>SEND_TYPE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_SERVICE_EVENT.SEND_TYPE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_SEND_TYPE {
+        NUMBER SEND_TYPE_SK PK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_SEND_TYPE ||--o{ FACT_SERVICE_EVENT : "SEND_TYPE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_SERVICE">
+  <h2>🟦 DIM_SERVICE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>SERVICE_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (1):</b><ul><li><code>FACT_SERVICE_EVENT.SERVICE_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_SERVICE {
+        NUMBER SERVICE_SK PK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_SERVICE ||--o{ FACT_SERVICE_EVENT : "SERVICE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="DIM_SPONSORSHIP">
+  <h2>🟦 DIM_SPONSORSHIP</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>SPONSORSHIP_SK</code></div>
+  
+  <div class="box refby"><b>이 DIM 을 참조하는 팩트 (5):</b><ul><li><code>FACT_EVENT_PARTICIPATION.SPONSORSHIP_SK</code></li><li><code>FACT_MEMBER_EVENT.SPONSORSHIP_SK</code></li><li><code>FACT_MEMBER_FEE.SPONSORSHIP_SK</code></li><li><code>FACT_MEMBER_MONTHLY.SPONSORSHIP_SK</code></li><li><code>FACT_MEMBER_SPONSOR_BIZ.SPONSORSHIP_SK</code></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_FEE {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    FACT_MEMBER_SPONSOR_BIZ {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_AD_BROADCAST">
+  <h2>🟧 FACT_AD_BROADCAST</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>AD_PERF_DK</code></div>
+  
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>AD_PERF_DK</code> → <code>FACT_AD_PERFORMANCE.AD_PERF_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    FACT_AD_BROADCAST {
+        NUMBER AD_PERF_DK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST : "AD_PERF_DK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_AD_BROADCAST_CASE">
+  <h2>🟧 FACT_AD_BROADCAST_CASE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>AD_PERF_DK</code> → <code>FACT_AD_PERFORMANCE.AD_PERF_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    FACT_AD_BROADCAST_CASE {
+        NUMBER AD_PERF_DK FK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST_CASE : "AD_PERF_DK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_AD_DIGITAL">
+  <h2>🟧 FACT_AD_DIGITAL</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>AD_PERF_DK</code></div>
+  
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>AD_PERF_DK</code> → <code>FACT_AD_PERFORMANCE.AD_PERF_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    FACT_AD_DIGITAL {
+        NUMBER AD_PERF_DK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    FACT_AD_PERFORMANCE ||--o{ FACT_AD_DIGITAL : "AD_PERF_DK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_AD_PERFORMANCE">
+  <h2>🟧 FACT_AD_PERFORMANCE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>AD_PERF_DK</code></div>
+  
+  <div class="box"><b>참조하는 DIM (2):</b><ul><li><code>AD_CREATIVE_SK</code> → <code>DIM_AD_CREATIVE.AD_CREATIVE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DEVICE_SK</code> → <code>DIM_DEVICE.DEVICE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_AD_CREATIVE {
+        NUMBER AD_CREATIVE_SK PK
+    }
+    DIM_DEVICE {
+        NUMBER DEVICE_SK PK
+    }
+    FACT_AD_PERFORMANCE {
+        NUMBER AD_PERF_DK PK
+        NUMBER AD_CREATIVE_SK FK
+        NUMBER DEVICE_SK FK
+    }
+    DIM_AD_CREATIVE ||--o{ FACT_AD_PERFORMANCE : "AD_CREATIVE_SK"
+    DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_BUDGET">
+  <h2>🟧 FACT_BUDGET</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>BUDGET_ITEM_SK</code> → <code>DIM_BUDGET_ITEM.BUDGET_ITEM_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_BUDGET_ITEM {
+        NUMBER BUDGET_ITEM_SK PK
+    }
+    FACT_BUDGET {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET : "BUDGET_ITEM_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_BUDGET_YEARLY">
+  <h2>🟧 FACT_BUDGET_YEARLY</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>연 예산 팩트 — grain = (BUDGET_YEAR × BUDGET_ITEM_SK). 원천 = SILVER.ERP_BUDGET_YEARLY. 🔴🔴 [2026-08-29 O114-B] 모델 헤더가 선언한 「1행 = 1(연 × 예산과목) · SUM 이 항상 안전하다」 불변식은 **현재 데이터에서 깨져 있다** — 원천이 신설한 BDGT_PRCD_NM(편성 차수 · 연사업/추가경정)이 BUDGET_ITEM_DK 산식에 없어 **42개 키가 두 차수를 한 키에 합친다**(실측 규모·근거는 원장·이력 소관). ⇒ 이 팩트를 BUDGET_ITEM_SK 로 GROUP BY 하면 **본예산과 추경이 합산**된다. 🔴 차수별 분해를 요구하면 현재 답할 수 없다 — 처방은 `99_NEXT §0-UUU ▣UUU6`(DEC-44) 참조. ⚠️ CHN_BUDGET_YEAR·ADJ_BUDGET_YEAR 는 **현재 전건 0** 이다 — 추경이 그 컬럼이 아니라 **별도 행**으로 표현되도록 원천이 바뀌었기 때문이며 「추경 없음」이 아니다.</p>
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>BUDGET_ITEM_SK</code> → <code>DIM_BUDGET_ITEM.BUDGET_ITEM_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_BUDGET_ITEM {
+        NUMBER BUDGET_ITEM_SK PK
+    }
+    FACT_BUDGET_YEARLY {
+        NUMBER BUDGET_ITEM_SK FK
+    }
+    DIM_BUDGET_ITEM ||--o{ FACT_BUDGET_YEARLY : "BUDGET_ITEM_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_DEV_ACHIEVEMENT">
+  <h2>🟧 FACT_DEV_ACHIEVEMENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
+  
+  <div class="mermaid">erDiagram
+    FACT_DEV_ACHIEVEMENT {
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_EVENT_PARTICIPATION">
+  <h2>🟧 FACT_EVENT_PARTICIPATION</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (5):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>EVENT_SK</code> → <code>DIM_EVENT.EVENT_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SPONSORSHIP_SK</code> → <code>DIM_SPONSORSHIP.SPONSORSHIP_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_EVENT {
+        NUMBER EVENT_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_EVENT_PARTICIPATION {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER EVENT_SK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+    }
+    DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK"
+    DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK"
+    DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_GA_BEHAVIOR">
+  <h2>🟧 FACT_GA_BEHAVIOR</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (6):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DEVICE_SK</code> → <code>DIM_DEVICE.DEVICE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>GA_EVENT_SK</code> → <code>DIM_GA_EVENT.GA_EVENT_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>GA_SOURCE_SK</code> → <code>DIM_GA_SOURCE.GA_SOURCE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>IDENTITY_SK</code> → <code>DIM_MEMBER_IDENTITY.IDENTITY_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_DEVICE {
+        NUMBER DEVICE_SK PK
+    }
+    DIM_GA_EVENT {
+        NUMBER GA_EVENT_SK PK
+    }
+    DIM_GA_SOURCE {
+        NUMBER GA_SOURCE_SK PK
+    }
+    DIM_MEMBER_IDENTITY {
+        NUMBER IDENTITY_SK PK
+    }
+    FACT_GA_BEHAVIOR {
+        NUMBER DATE_SK FK
+        NUMBER IDENTITY_SK FK
+        NUMBER GA_EVENT_SK FK
+        NUMBER GA_SOURCE_SK FK
+        NUMBER DEVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_DATE ||--o{ FACT_GA_BEHAVIOR : "DATE_SK"
+    DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK"
+    DIM_GA_EVENT ||--o{ FACT_GA_BEHAVIOR : "GA_EVENT_SK"
+    DIM_GA_SOURCE ||--o{ FACT_GA_BEHAVIOR : "GA_SOURCE_SK"
+    DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK"
+    DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_MEMBER_COHORT">
+  <h2>🟧 FACT_MEMBER_COHORT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>MEMBER_DK</code></div>
+  <p class='desc'>회원 획득 코호트 팩트(1행=1회원). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다(P63).</p>
+  <div class="box"><b>참조하는 DIM (4):</b><ul><li><code>ACQ_CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>ACQ_DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>FIRST_STOP_DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    FACT_MEMBER_COHORT {
+        NUMBER MEMBER_DK PK
+        NUMBER ACQ_CAMPAIGN_SK FK
+        NUMBER ACQ_DATE_SK FK
+        NUMBER FIRST_STOP_DATE_SK FK
+    }
+    DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "ACQ_DATE_SK"
+    DIM_DATE ||--o{ FACT_MEMBER_COHORT : "FIRST_STOP_DATE_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_MEMBER_EVENT">
+  <h2>🟧 FACT_MEMBER_EVENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (6):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>ORG_SK</code> → <code>DIM_ORG.ORG_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>REASON_SK</code> → <code>DIM_REASON.REASON_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SPONSORSHIP_SK</code> → <code>DIM_SPONSORSHIP.SPONSORSHIP_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_ORG {
+        NUMBER ORG_SK PK
+    }
+    DIM_REASON {
+        NUMBER REASON_SK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_MEMBER_EVENT {
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER ORG_SK FK
+        NUMBER REASON_SK FK
+    }
+    DIM_DATE ||--o{ FACT_MEMBER_EVENT : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK"
+    DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
+    DIM_REASON ||--o{ FACT_MEMBER_EVENT : "REASON_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_MEMBER_FEE">
+  <h2>🟧 FACT_MEMBER_FEE</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>회비 분해 팩트 — grain = MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × FEE_DIV_CD × PAYMENT_TYPE × PAYMENT_SK × SETLE_CD. `SV_MEMBER_FEE` 의 상류(base = `WIDE_MEMBER_FEE`)다. 🔴🔴 `FACT_MEMBER_MONTHLY` 와 **한 표에 합산 금지** — 같은 원천(`SILVER.CRM_PAYMENT_BILLING`)을 다른 grain 으로 담은 형제 팩트이며 조인하면 청구액이 과대계상된다(O45). 🟢 measure 식은 FMM 과 동일하게 유지한다(다른 식을 쓰면 두 팩트 합계가 어긋나 어느 쪽이 맞는지 알 수 없다). 🔴 `SETLE_CD` 는 degen 보존 컬럼이다 — 라벨 없는 5종이 있고 표준 코드그룹은 **미특정**이다(추측 금지 · O45-B). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+  <div class="box"><b>참조하는 DIM (3):</b><ul><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>PAYMENT_SK</code> → <code>DIM_PAYMENT.PAYMENT_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SPONSORSHIP_SK</code> → <code>DIM_SPONSORSHIP.SPONSORSHIP_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_PAYMENT {
+        NUMBER PAYMENT_SK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_MEMBER_FEE {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+    }
+    DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+    DIM_PAYMENT ||--o{ FACT_MEMBER_FEE : "PAYMENT_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_MEMBER_MONTHLY">
+  <h2>🟧 FACT_MEMBER_MONTHLY</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (5):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>PAYMENT_SK</code> → <code>DIM_PAYMENT.PAYMENT_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>REASON_SK</code> → <code>DIM_REASON.REASON_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SPONSORSHIP_SK</code> → <code>DIM_SPONSORSHIP.SPONSORSHIP_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_PAYMENT {
+        NUMBER PAYMENT_SK PK
+    }
+    DIM_REASON {
+        NUMBER REASON_SK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_MEMBER_MONTHLY {
+        NUMBER MEMBER_DK FK
+        NUMBER CAMPAIGN_SK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER PAYMENT_SK FK
+        NUMBER REASON_SK FK
+    }
+    DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK"
+    DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK"
+    DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_MEMBER_SPONSOR_BIZ">
+  <h2>🟧 FACT_MEMBER_SPONSOR_BIZ</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>회원×후원약정 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+  <div class="box"><b>참조하는 DIM (3):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SPONSORSHIP_SK</code> → <code>DIM_SPONSORSHIP.SPONSORSHIP_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_SPONSORSHIP {
+        NUMBER SPONSORSHIP_SK PK
+    }
+    FACT_MEMBER_SPONSOR_BIZ {
+        NUMBER MEMBER_DK FK
+        NUMBER SPONSORSHIP_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
+    DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"
+    DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_SERVICE_EVENT">
+  <h2>🟧 FACT_SERVICE_EVENT</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (5):</b><ul><li><code>CAMPAIGN_SK</code> → <code>DIM_CAMPAIGN.CAMPAIGN_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>DATE_SK</code> → <code>DIM_DATE.DATE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>MEMBER_DK</code> → <code>DIM_MEMBER.MEMBER_DK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SEND_TYPE_SK</code> → <code>DIM_SEND_TYPE.SEND_TYPE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li><li><code>SERVICE_SK</code> → <code>DIM_SERVICE.SERVICE_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_CAMPAIGN {
+        NUMBER CAMPAIGN_SK PK
+    }
+    DIM_DATE {
+        NUMBER DATE_SK PK
+    }
+    DIM_MEMBER {
+        NUMBER MEMBER_SK PK
+        NUMBER MEMBER_DK PK
+    }
+    DIM_SEND_TYPE {
+        NUMBER SEND_TYPE_SK PK
+    }
+    DIM_SERVICE {
+        NUMBER SERVICE_SK PK
+    }
+    FACT_SERVICE_EVENT {
+        NUMBER SEND_TYPE_SK FK
+        NUMBER DATE_SK FK
+        NUMBER MEMBER_DK FK
+        NUMBER SERVICE_SK FK
+        NUMBER CAMPAIGN_SK FK
+    }
+    DIM_SEND_TYPE ||--o{ FACT_SERVICE_EVENT : "SEND_TYPE_SK"
+    DIM_DATE ||--o{ FACT_SERVICE_EVENT : "DATE_SK"
+    DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK"
+    DIM_SERVICE ||--o{ FACT_SERVICE_EVENT : "SERVICE_SK"
+    DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_TARGET_BIZ">
+  <h2>🟧 FACT_TARGET_BIZ</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  <p class='desc'>사업목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20). 🔴🔴 **현재 0행**이다 — CRM 신규 목표 테이블 **입고 대기**(문서40 `E-6`)이며 상류 `CRM_BIZ_TARGET` 은 `source()` 를 참조하지 않는 빈 스캐폴드(`WHERE 1=0`)다. ⇒ 🔴 **아래 테스트는 지금 공허하게 통과한다.** 🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒ 입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**. ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+  
+  <div class="mermaid">erDiagram
+    FACT_TARGET_BIZ {
+    }</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+<section id="FACT_TARGET_DEV">
+  <h2>🟧 FACT_TARGET_DEV</h2>
+  <div class="meta">행 수 <b>N/A</b> &nbsp;|&nbsp;
+    PK <code>선언 없음</code></div>
+  
+  <div class="box"><b>참조하는 DIM (1):</b><ul><li><code>ORG_SK</code> → <code>DIM_ORG.ORG_SK</code> <span class="b yaml" title="dbt relationships 테스트에만 존재 — 물리 FK 선언 불가/누락">yaml</span></li></ul></div>
+  <div class="mermaid">erDiagram
+    DIM_ORG {
+        NUMBER ORG_SK PK
+    }
+    FACT_TARGET_DEV {
+        NUMBER ORG_SK FK
+    }
+    DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK"</div>
+  <details><summary>컬럼 상세 (?)</summary>
+    <p><i>컬럼 메타 없음 — --yaml-only 모드로 생성됨</i></p></details>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+if (typeof mermaid === 'undefined') {
+  document.getElementById('mmfail').style.display = 'block';
+  document.querySelectorAll('.mermaid').forEach(function (d) {
+    d.style.whiteSpace = 'pre'; d.style.fontFamily = 'ui-monospace, Menlo, monospace';
+    d.style.fontSize = '11px';
+  });
+} else {
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral',
+    er: { useMaxWidth: true, layoutDirection: 'TB' } });
+}
+</script>
+</body></html>

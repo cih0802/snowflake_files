@@ -1,17 +1,36 @@
--- GN_DW.GOLD 스키마 전체 DDL(35개 테이블)에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
+-- GN_DW.GOLD 스키마 전체 테이블 DDL에 정보성 FK/PK 제약 및 인수인계용 문서 주석 추가.
 -- Co-authored with CoCo
 /*
 ================================================================================
-  GN_DW.GOLD — 전체 테이블 DDL (35개: DIM 20 + FACT 15)
+  GN_DW.GOLD — 전체 테이블 DDL
+  🔴🔴 **[2026-08-31 O126] 테이블 수·FK 수를 이 헤더에 적지 않는다** — 적으면 stale 이 된다
+     (`R3-9 ㉦` 「내가 만든 수를 문서에 박아 넣지 마라」). 실제로 두 곳이 낡아 있었다:
+       · 종전 표제 「35개: DIM 20 + FACT 15」  ↔ 실측 **파일 선언 37 = DIM 20 + FACT 17**
+       · 종전 실측대조 「선언 FOREIGN KEY 50 = 라이브 50」 ↔ 실측 **파일 실행 FK 56 = 라이브 56**
+     ⚠️ 파일 본문은 정상이었다 — **틀린 것은 헤더 산문뿐**이다(본문 신뢰도와 무관하게 오도한다).
+  🟢 **현재 값을 재는 방법**(값이 아니라 방법이 정본이다):
+       · 파일 선언 테이블  = `grep -oE 'CREATE OR REPLACE TABLE GN_DW\.GOLD\.[A-Z_]+' 06_DDL.sql | sort -u | wc -l`
+       · 파일 실행 FK      = `grep -cE '^\s+FOREIGN KEY' 06_DDL.sql`
+         🔴 `grep -c 'FOREIGN KEY'` 를 쓰지 마라 — 헤더 산문·주석·집계 SQL 이 섞여 **과대**해진다
+            (O126 실측: 전체 매칭 60 vs 실행 56 · 차이 4건이 전부 비실행 줄이었다).
+       · 라이브 대조       = `python3 scripts/gold_erd_coverage_gate.py` (FK 3소스 + 고립 키 컬럼 판정)
+       · ERD 문서 재발행   = `python3 scripts/gen_gold_erd.py` → `30_output_share/GOLD_ERD_테이블별.html`
   작성일   : 2026-07-02 (컬럼 COMMENT: 2026-07-03 / 배포·적재: 2026-07-20 / 광고 위성 3종 증설: 2026-07-28 순서9-I
              / **O45 조립축 증설: 2026-08-06** — DIM_MARKETING_CAMPAIGN·FACT_MEMBER_FEE 신설 + 신규 컬럼 3 + FK 8
              / **O53 GOLD 최종형: 2026-08-10** — DIM_MONTH 신설 + DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION 뷰→테이블
-               + FACT_DEV_ACHIEVEMENT 신설(구 WIDE_DEV_ACHIEVEMENT 개명) = 31 → **35테이블 · 신규 84컬럼**)
+               + FACT_DEV_ACHIEVEMENT 신설(구 WIDE_DEV_ACHIEVEMENT 개명) · 신규 84컬럼)
   실측대조 : 2026-07-29 — INFORMATION_SCHEMA GOLD = BASE TABLE 27 + VIEW 12, FK 38 · 본 파일과 전 컬럼 일치.
-             **2026-08-06 재대조 — BASE TABLE 31 + VIEW 16, FK 50 · 본 파일과 전 컬럼·순서 일치(기계 대조).**
-             (대조 방법: 06_DDL 파싱 결과 31테이블 vs INFORMATION_SCHEMA 31테이블 · 컬럼명·순서 불일치 0 ·
-              선언 FOREIGN KEY 50 = 라이브 50. ⚠️ 초안에 「FK 53」이라 적었던 것은 미측정 오기였다 → 교정.)
-             **2026-08-10 O53 — 파일 선언 35테이블. 물리 반영·COMMENT 커버리지는 O53 2단계 스캔으로 판정한다.**
+             **2026-08-06 재대조 — BASE TABLE 31 + VIEW 16 · 본 파일과 전 컬럼·순서 일치(기계 대조).**
+             (대조 방법: 06_DDL 파싱 결과 vs INFORMATION_SCHEMA · 컬럼명·순서 불일치 0.
+              ⚠️ 초안에 「FK 53」이라 적었던 것은 미측정 오기였다 → 교정.
+              🔴 이 절의 과거 수치는 **그 시점의 기록**이다 — 현재 값으로 인용하지 마라. 위 「재는 방법」을 써라.)
+             **2026-08-10 O53 — 물리 반영·COMMENT 커버리지는 O53 2단계 스캔으로 판정한다.**
+             🆕 **2026-08-31 O126 재대조 — 파일 선언 37테이블(DIM 20 + FACT 17) = 라이브 BASE TABLE 37 ·
+                파일 실행 FK 56 = 라이브 56 · 불일치 0.** 도구 = `scripts/gold_erd_coverage_gate.py`.
+                🔴 **다만 「FK 56 이 전량」이 아니다** — 월 conform 축(→ DIM_MONTH) **7건은 FK 선언이
+                   불가하고**(비유일 참조 · 아래 [관계 제약] [보류] 참조) dbt relationships 테스트도 없다
+                   ⇒ **선언 FK 만 근거로 ERD·BI 관계를 만들면 그 축이 통째로 빠진다.**
+                   🟢 그 축의 정본 = `scripts/gold_erd_coverage_gate.py` 의 `LOGICAL_FK`(사람 판정 등재부).
   🔴 O53 신규 4블록은 **COMMENT 정본이 본 파일로 이동**했다(종전 정본 = dbt schema.yml `columns[]`).
      근거 = 사용자 결정(2026-08-10) + 재구축 시 본 파일이 replay 스크립트이므로 여기서 빠진 문안은 영구 소실된다.
      생성기 = `scripts/gen_o53_gold_ddl.py`(손 편집 금지 · 문안은 yml 에서 기계 이관 · 게이트 자기검사 9/9).
@@ -26,7 +45,10 @@
 --------------------------------------------------------------------------------
   실행 규칙
   ─────────────────────────────────────────────────────────────────────────────
-  1. DIM 20개를 모두 생성한 뒤 FACT 15개를 생성한다. [2026-08-06 O45 로 15/12 → 17/14 · 2026-08-10 O53 로 20/15]
+  1. **모든 DIM 을 생성한 뒤 FACT 를 생성한다**(개수는 위 「재는 방법」으로 재라 · O126).
+     🔴 종전 문안 「DIM 20개를 모두 생성한 뒤 FACT 15개를 생성한다 … O53 로 20/15」의 **FACT 15 는 stale**
+        이었다 — 실측 **FACT 17**(O126). 개수를 적어 둔 탓에 O53 이후 증설이 반영되지 않았다.
+     이력: [2026-08-06 O45 로 15/12 → 17/14 · 2026-08-10 O53 로 DIM 20]
      O45 신규 DIM = DIM_MARKETING_CAMPAIGN · 신규 FACT = FACT_MEMBER_FEE.
      O53 신규 DIM = DIM_MONTH·DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION · 신규 FACT = FACT_DEV_ACHIEVEMENT.
   2. DIM_DATE → DIM_ORG → DIM_MEMBER → 나머지 DIM → FACT 순서 준수.

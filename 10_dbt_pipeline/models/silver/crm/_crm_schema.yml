@@ -713,3 +713,60 @@ models:
               to: ref('CRM_ORG')
               field: DEPT_ID
               config: { where: "DEPT_ID IS NOT NULL" }
+
+  # 🆕🆕 [2026-08-31 O125 등재] 아래 3모델은 **이 파일에 등재되지 않아 테스트 0건**이었다.
+  #   🔴 `FACT_BUDGET_YEARLY`(O114-B)·GOLD 4모델(O125)과 **같은 유형**이다 — 분모 미등재는 조용히 0을 낸다.
+  #   🔴🔴 특히 `CRM_MEMBER_SPONSOR_SPAN` 은 **모델 주석이 존재하지 않는 안전망을 근거로 dedup 을 생략**했다:
+  #      그 모델 48~49행 *"dedup 을 걸지 않는 이유 = 유일성이 성립하므로 … 유일성은 `_crm_schema.yml` 의
+  #      unique 테스트가 지킨다"* — 🔴 그 테스트가 **여기 없었다**. 이제 만든다(주석이 참이 된다).
+  #   🟢 아래 테스트는 **선언 전에 라이브로 실측**했다(2026-08-31 조회 시점 · 전건 위반 0):
+  #      · `CRM_MARKETING_CAMPAIGN` 394행 = distinct MK_CMPGN_CD 394 · NULL 0
+  #      · `CRM_RELATION_ACTIVITY` 388,153행 = distinct ACTIVITY_KEY 388,153 · NULL 0
+  #      · `CRM_MEMBER_SPONSOR_SPAN` (MBER_NO, SPNSR_BSNS_NO) 2,170,572 = distinct 2,170,572 · NULL 0
+  - name: CRM_MARKETING_CAMPAIGN
+    description: >
+      마케팅캠페인 마스터(1행 = 1마케팅캠페인) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 conformed 축.
+      🔴 `USE_YN` 으로 폐지분을 **제외하지 않는다** — 폐지된 캠페인도 과거 실적에 붙는다.
+      🔴 광고↔개발 결합은 **마케팅캠페인 grain 에서만** 성립한다(개발캠페인 grain 으로 내리면 광고비가 복제된다).
+    columns:
+      - name: MK_CMPGN_CD
+        tests: [not_null, unique]
+
+  - name: CRM_MEMBER_SPONSOR_SPAN
+    description: >
+      회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설).
+      `GOLD.FACT_MEMBER_SPONSOR_BIZ` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며
+      `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다.
+      ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다.
+      🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 🔴 회원 마스터 고아 축(문서50 §O116 ㉠) — 다른 CRM 모델과 같은 축이다
+      - name: SPNSR_BSNS_NO
+        tests: [not_null]
+      - name: SPNSR_NO
+        tests: [not_null]
+      # 🔴 모델 주석이 근거로 든 유일성 가드 — 이것이 없어서 dedup 생략의 안전망이 비어 있었다.
+      - name: "MBER_NO || '|' || SPNSR_BSNS_NO"
+        tests: [unique]
+
+  - name: CRM_RELATION_ACTIVITY
+    description: >
+      결연활동 = 서신 ∪ 선물금(EHGT 제외 · 원천별 PK dedup) — 정본 09 STEP3.
+      🔴 두 원천을 `UNION ALL` 한 팩트성 SILVER 이므로 **`ACTIVITY_TYPE` 을 고정하지 않고 합산하면
+      서신 건수와 선물금 건수가 한 수로 뭉개진다.** `ACTIVITY_KEY` 는 계열 접두(`LETTER_`/`GFT_`)를 포함한다.
+      ⚠️ `GFTMNEY`(선물금액)는 서신 계열에서 NULL 이다 — 개념 부재이며 0 이 아니다(`R2-7`).
+    columns:
+      - name: ACTIVITY_KEY
+        tests: [not_null, unique]
+      - name: ACTIVITY_TYPE
+        tests:
+          - not_null
+          - accepted_values: { values: ['서신', '선물금'] }
+      - name: RELATNSP_KEY
+        tests: [not_null]

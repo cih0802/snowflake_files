@@ -105,27 +105,62 @@ def snapshot_name(path, op, label):
     return '%s.%s-%s' % (os.path.basename(path), label, op)
 
 
-def snapshot(path, op, label=None, archive=None, quiet=False, env=None):
+def dated_snapshot_name(path, date_str):
+    """확장자를 보존하는 날짜 기반 이름 = `foo.html` + `20260830` → `foo_20260830.html`.
+
+    🆕 [2026-08-31 O126] **왜 별 이름 규칙이 필요한가** — 기본 `snapshot_name()` 은
+    `foo.html.O126-prerun` 을 만든다. 이것은 `_archive/` 안에서 **`.html` 확장자가
+    뒤로 밀려 브라우저가 열지 못한다**. 이력·원장처럼 「되돌리기용 원본」이면 무해하지만,
+    **현업에 배포하는 산출물의 과거 판본**은 그 자체로 열려야 값이 있다.
+    ⇒ 산출물 회전(rotation)에는 이 이름을, 문서 되돌리기에는 `snapshot_name()` 을 쓴다.
+    🔴 두 규칙 모두 **이 모듈 안에** 둔다 — 호출자가 경로를 조립하면 `R1-7-10` 우회다.
+    """
+    stem, ext = os.path.splitext(os.path.basename(path))
+    return '%s_%s%s' % (stem, date_str, ext)
+
+
+def _collide_name(base_path, n, keep_ext):
+    """충돌 시 후보 경로. `keep_ext` 면 접미를 **확장자 앞**에 넣는다.
+
+    🔴 종전 규칙(`base.2`)을 바꾸지 않는다 — `keep_ext=False` 가 기본이다.
+      `keep_ext=True` 일 때만 `foo_20260830_2.html` 처럼 확장자를 지킨다
+      (그러지 않으면 회전 산출물이 두 번째 판본부터 열리지 않는다).
+    """
+    if not keep_ext:
+        return '%s.%d' % (base_path, n)
+    stem, ext = os.path.splitext(base_path)
+    return '%s_%d%s' % (stem, n, ext)
+
+
+def snapshot(path, op, label=None, archive=None, quiet=False, env=None,
+             name=None, keep_ext=False):
     """`path` 를 `_archive/` 에 복사하고 `(스냅샷경로, 상태)` 를 돌려준다.
 
     상태 = `created`(새로 만들었다) · `reused`(바이트 동일 스냅샷이 이미 있다) ·
-           `suffixed`(내용이 다른 스냅샷이 있어 `.N` 을 붙여 새로 만들었다).
+           `suffixed`(내용이 다른 스냅샷이 있어 접미를 붙여 새로 만들었다).
 
     🔴 **어떤 경우에도 기존 파일을 덮지 않는다.**
+
+    🆕 [O126] `name` = 스냅샷 basename 을 직접 지정한다(기본 = `snapshot_name()`).
+       `keep_ext` = 충돌 접미를 **확장자 앞**에 넣는다(산출물 회전용).
+       🔴 둘 다 **기본값이 종전과 같다** ⇒ 기존 호출자 동작 불변.
     """
     if not os.path.exists(path):
         raise SnapshotError('스냅샷 원본이 없다: %s' % path)
-    return snapshot_content(path, op, _read_bytes(path),
-                            label=label, archive=archive, quiet=quiet, env=env)
+    return snapshot_content(path, op, _read_bytes(path), label=label,
+                            archive=archive, quiet=quiet, env=env,
+                            name=name, keep_ext=keep_ext)
 
 
 def snapshot_content(name_src, op, data, label=None, archive=None,
-                     quiet=False, env=None):
+                     quiet=False, env=None, name=None, keep_ext=False):
     """**메모리 상의 내용**을 스냅샷한다 — 파일과 같은 덮어쓰기 금지 규칙을 쓴다.
 
     쓰이는 곳 = `--rebalance` 처럼 스냅샷 대상이 디스크의 한 파일이 아니라
     **조각 concat(논리 문서)** 인 경우. 이름은 `name_src` 의 basename 에서 만든다.
     `data` 는 bytes 또는 str(UTF-8 로 인코딩한다).
+
+    🆕 [O126] `name` 을 주면 그 basename 을 쓴다(경로 구분자는 거부한다).
     """
     if not op or not str(op).strip():
         raise SnapshotError('연산명(op)이 비어 있다 — 스냅샷 이름을 만들 수 없다')
@@ -137,7 +172,9 @@ def snapshot_content(name_src, op, data, label=None, archive=None,
     if not os.path.isdir(arch):
         os.makedirs(arch)
 
-    base = os.path.join(arch, snapshot_name(name_src, op, lab))
+    # 🔴 이름을 직접 받더라도 경로 탈출은 막는다(`_sanitize` 를 통과시킨다).
+    fname = _sanitize(name) if name else snapshot_name(name_src, op, lab)
+    base = os.path.join(arch, fname)
     cand = base
     n = 1
     while os.path.exists(cand):
@@ -148,9 +185,9 @@ def snapshot_content(name_src, op, data, label=None, archive=None,
         n += 1
         if n > MAX_SUFFIX:
             raise SnapshotError(
-                '스냅샷 접미가 소진됐다(.2~.%d 전부 사용중) — `_archive/` 를 정리하라: %s'
+                '스냅샷 접미가 소진됐다(2~%d 전부 사용중) — `_archive/` 를 정리하라: %s'
                 % (MAX_SUFFIX, os.path.basename(base)))
-        cand = '%s.%d' % (base, n)
+        cand = _collide_name(base, n, keep_ext)
 
     with io.open(cand, 'wb') as fh:
         fh.write(data)

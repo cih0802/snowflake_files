@@ -1,0 +1,9 @@
+begin;
+    insert into GN_DW.SILVER.CRM_MARKETING_CAMPAIGN ("MK_CMPGN_CD", "MK_CMPGN_NM", "USE_YN", "RM", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "MK_CMPGN_CD", "MK_CMPGN_NM", "USE_YN", "RM", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.SILVER.CRM_MARKETING_CAMPAIGN__dbt_tmp
+    )
+
+;
+    commit;

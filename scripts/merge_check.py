@@ -99,11 +99,25 @@ def main() -> int:
         targets = sorted(ROOT.glob(DEFAULT_GLOB))
 
     safe, unsafe = [], []
+    unreadable = []
     for p in targets:
         if not p.exists():
             print("  ⚪ %-36s 파일 없음" % p.name)
             continue
-        lines = significant_lines(p.read_text(encoding="utf-8", errors="replace"))
+        # 🆕 [2026-08-31 O126] OSError 를 잡는다 — 종전 판본은 여기서 **크래시해 전수 스캔을 못 끝냈다.**
+        #   원인 = `_archive/` 로 이관된 파일의 **낡은 마운트 엔트리**가 남아 `exists()` 는 True 인데
+        #   `read()` 가 `Errno 5` 를 낸다(`OPS-3` 「낡은 뷰」 · 실물 = `_o125e_entry.md`).
+        #   🔴 실해 = 착수표 ㉝(`_o114b` 미이관분 판정)의 도구가 **한 파일 때문에 통째로 막혀 있었다.**
+        #   🟢 판정식 = 「읽을 수 없는 것」은 「내용이 없는 것」과 다르다 ⇒ **삭제 안전으로 세지 않고
+        #      별 축으로 보고**한다(안전으로 오분류하면 실제 원고를 지울 수 있다).
+        try:
+            raw = p.read_text(encoding="utf-8", errors="replace")
+        except OSError as e:
+            print("  🔴 %-36s 읽기 실패(%s) — 스테이지 실체를 `cortex ws ls` 로 확인하라"
+                  % (p.name, e.__class__.__name__))
+            unreadable.append(p)
+            continue
+        lines = significant_lines(raw)
         if not lines:
             print("  🟠 %-36s 유의 줄 0 ⇒ 내용 없음(삭제 무해)" % p.name)
             safe.append(p)
@@ -128,9 +142,18 @@ def main() -> int:
         for p in unsafe:
             print("   · %s" % p.name)
         print("   ⇒ 🔴 지우려면 **먼저 그 내용을 정본으로 이관**하라(`R2-8-1` 토큰 대조).")
+    if unreadable:
+        print("🔴 읽기 불가(판정 불가) = %d건" % len(unreadable))
+        for p in unreadable:
+            print("   · %s" % p.name)
+        print("   🔴 **「삭제 안전」이 아니다 — 판정을 하지 못한 것이다.**")
+        print("   ⇒ `cortex ws ls 'USER$.PUBLIC.\"snowflake_files\":/'` 로 스테이지 실체를 보라.")
+        print("      · 스테이지에 없고 `_archive/` 에 있으면 **이미 이관된 것**이고 마운트 엔트리만")
+        print("        낡은 것이다(`OPS-3`) ⇒ 그 항목은 처리 완료로 보아도 된다.")
+        print("      · 스테이지에 **있는데도** 읽기가 실패하면 손상 가능성이다 ⇒ 지우지 마라.")
     print()
     print("🔴 이 스크립트는 삭제하지 않는다 — 판정만 낸다.")
-    return 0 if not unsafe else 1
+    return 0 if not (unsafe or unreadable) else 1
 
 
 if __name__ == "__main__":

@@ -60,10 +60,16 @@ JUDGE = {
     'doc_type_gate':          '문서 유형 미선언·상한 초과·여유 부족',
     'eval_expectation_gate':  '평가셋 기대값',
     'gate_census':            '이 파일 — 게이트 분모 미분류',
+    # 🆕 [2026-08-31 O126] GOLD ERD 의 FK 커버리지 — 라이브를 **읽을 뿐** 바꾸지 않는다 ⇒ JUDGE.
+    #   🔴 판정식이 「고립 0」이 아니라 **「미분류 고립 0」**이다(degen key 는 고립이 정상).
+    #   🔴 `gen_gold_erd` 가 이 게이트를 import 해 `LOGICAL_FK` 를 읽는다 ⇒ 규칙 정본은 여기 1곳뿐이다.
+    'gold_erd_coverage_gate':  'GOLD ERD FK 3소스 커버리지 — FACT 키 컬럼 중 **미분류 고립** '
+                               '(dbt relationships·물리 FK 어디에도 없는 축)을 blocking 으로 강제',
     'handoff_ddl_gate':       '인수인계 DDL 주장',
     'id_collision_gate':      'ID 중복(`DEC`·`P`·`O`·`Q`)',
     'index_row_gate':         '원장 표 행 키 유실·중복',
     'merge_check':            '임시파일 내용이 정본에 반영됐는가(삭제 안전 판정)',
+    'o125_layer_census':      'SILVER·GOLD·SERVING 설계 정본 ↔ 라이브 객체·컬럼 집합 — 라이브를 **읽는다**',
     'sv_code_label_gate':     'SV 코드값·라벨 열거',
     'sv_identifier_gate':     'SV 식별자 실재(`DESCRIBE SEMANTIC VIEW` 대조)',
     'sv_rule7_scan':          'SV DDL 규칙7',
@@ -90,7 +96,8 @@ NEEDS_ARGS = {
 GEN = {
     'gen_arch_map': '아키텍처 지도', 'gen_bronze_exposure_audit': 'BRONZE 노출 감사',
     'gen_code_system_gates': '코드체계 게이트', 'gen_column_inventory_20260811': '컬럼 인벤토리',
-    'gen_concept_diagram': '개념도', 'gen_measure_backlog': '실측필요 후속작업',
+        'gen_concept_diagram':  '개념도',
+    'gen_gold_erd':         'GOLD 테이블별 ERD(HTML · Mermaid) — dbt yml + INFORMATION_SCHEMA · `--yaml-only` 로 라이브 없이도 돈다', 'gen_measure_backlog': '실측필요 후속작업',
     'gen_metric_gold_mapping': '지표↔GOLD 매핑', 'gen_section_assembly': '절 조립',
     'gen_silver_gold_retention': 'SILVER·GOLD 보존', 'session_brief': '착수 브리핑(`00_BRIEF.md`)',
     # 🆕 [2026-08-30 O123-C] MUTATES 오분류 2건을 GEN 으로 이동했다 — O121-B 가 고친 것과 **같은 유형**이다

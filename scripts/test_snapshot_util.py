@@ -166,7 +166,12 @@ def main():
         #   **손대지 않은 채 「결함을 고쳤다」고 보고**했다 — `R1-6-17 ㉡`(같은 파라미터를
         #   보는 지점 전수 조사) 미이행이다. ⇒ 이 축이 그 누락을 기계로 막는다.
         wired = ('split_doc.py', 'retire_rows.py', 'retire_sections.py',
-                 'split_narrative.py', 'fix_stale_counts.py')
+                 'split_narrative.py', 'fix_stale_counts.py',
+                 # 🆕 [2026-08-31 O126] 산출물 회전(`gen_gold_erd`)이 스냅샷을 쓰기 시작했다
+                 #   ⇒ **분모에 넣는다**. 넣지 않으면 그 도구의 우회는 검사되지 않는다
+                 #   — O110 이 4종을 빠뜨린 것과 같은 결함이고, 이 세션이 `gate_census`
+                 #   분모 미등재로 이미 한 번 당했다(`R3-9 ㉢` · `O111 ㉠`).
+                 'gen_gold_erd.py')
         for name in wired:
             body = io.open(os.path.join(ROOT, 'scripts', name),
                            encoding='utf-8').read()
