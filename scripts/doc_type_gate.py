@@ -152,6 +152,18 @@ def actual_docs():
                 break
             fam[hub].append(c)
             n += 1
+        # 🆕 [2026-09-01 O129-B] **폴더 방식 조각도 편입한다** (`<이름>_조각/` · `R1-6-21`).
+        #   🔴 왜: O107 이 `--to-outdir` 로 형제 → 폴더 이전을 도입했고 `99_NEXT_SESSION` 이 그 방식이다.
+        #   그런데 위 형제 루프만 있어서 이 게이트는 그 문서를 **허브 1개**로 셌다 ⇒ 조각 24개가
+        #   **분모 밖**이었고, 실측 여유 34 B 인 조각을 게이트는 6,503 B 로 보고했다(`R1-6-25` 유형).
+        #   🔴 O107 이 남긴 「이전 후 손으로 고칠 분모」 목록에 **이 게이트가 빠져 있었다** —
+        #   목록 자체가 분모였고 그 분모가 불완전했다. ⇒ 이제 두 방식을 **둘 다** 본다.
+        chunk_dir = os.path.join(os.path.dirname(p),
+                                 os.path.basename(stem) + '_조각')
+        if os.path.isdir(chunk_dir):
+            for f in sorted(os.listdir(chunk_dir)):
+                if f.endswith(('.md', '.sql')):
+                    fam[hub].append(os.path.join(chunk_dir, f))
     return fam
 
 

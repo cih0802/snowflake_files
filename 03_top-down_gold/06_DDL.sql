@@ -421,15 +421,19 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_AD_CREATIVE (
     AD_CREATIVE_BK      VARCHAR         NOT NULL COMMENT '광고소재 업무키(BK, 자연키)',
     MEDIA_NAME          VARCHAR         COMMENT '매체명/공동브랜드(#11)',
     PLATFORM            VARCHAR         COMMENT '플랫폼(#12)',
-    PLATFORM_TYPE       VARCHAR         COMMENT '플랫폼/매체유형(#13)',
+    PLATFORM_TYPE       VARCHAR         COMMENT '플랫폼/매체유형(#13). 🔴[O129] 전건 NULL이며 그 사유는 원천 부재다 — BRONZE AGENCY 3테이블(DGT/REBRDC/VIDEO)에 매체유형 축이 없다. 인접 유형축 AD_TY_NM·MATR_TY_NM·PAGE_TYPE_NM 은 전부 다른 목적지에 배선돼 있어 대체물이 아니다. 요건 #13 은 유효하므로 현업 확인 대상이다. NULL 을 0/미상 으로 대체 해석하지 말 것(R2-7-1). 정본 = 문서30 §7-C-1',
     CREATIVE            VARCHAR         COMMENT '소재(#20)',
     CM_POSITION         VARCHAR         COMMENT 'CM위치(#21)',
     -- 🔴 [DEC-30 2026-08-04] DURATION_SEC 제거 — 초수는 **소재 속성이 아니다**(실측: 소재 41종 중
     --   19종이 복수 초수를 가져 함수종속 53.7% 뿐 · 같은 소재가 30/60/90초 편집본으로 송출).
     --   정본 소재지 = FACT_AD_BROADCAST.DURATION_SEC(방송 grain). 본 컬럼은 오배치 중복축이었다.
-    RT_TYPE             VARCHAR         COMMENT 'RT유형',
-    AD_TYPE             VARCHAR         COMMENT '소재 광고유형. ⚠️코어 FACT_AD_PERFORMANCE.AD_SOURCE_TYPE(원천 출처축 DIGITAL/VIDEO/REBROADCAST)과 다른 개념 — WIDE 에서는 AD_CREATIVE_TYPE 으로 노출',
-    TARGET_GROUP        VARCHAR         COMMENT '타겟그룹',
+    -- 🔴🔴 [O129-B 2026-09-01] RT_TYPE 제거 — DEC-30 과 **동일 유형의 오배치 중복축**이었다(DEC-30 이 빠뜨린 건).
+    --   원천 REBRDC_AD_CMPGN_DTLS.RE_BRDC_TY_NM 은 실재하고, 정본 소재지는 FACT_AD_BROADCAST.RT_TYPE(DEC-8 위성 이관)이다.
+    --   드랍 전 blast radius 실측 = WIDE 노출 0건 · SV_AD 의 ad.RT_TYPE 은 ad=WIDE_AD_COMBINED 의 위성(brc.) 계열이라 무관
+    --   · 대체축 도달 실측 = FACT_AD_BROADCAST.RT_TYPE 채움 실재(P52 이행 — 「존재」가 아니라 「도달」로 판정).
+    --   ⇒ 소비처 0 이므로 뷰 재생성 없이 ALTER TABLE DROP COLUMN 으로 집행했다. 상세 = 문서30 §7-C-1.
+    AD_TYPE             VARCHAR         COMMENT '소재 광고유형. ⚠️코어 FACT_AD_PERFORMANCE.AD_SOURCE_TYPE(원천 출처축 DIGITAL/VIDEO/REBROADCAST)과 다른 개념 — WIDE 에서는 AD_CREATIVE_TYPE 으로 노출. ⚠️[O129-B] 3원천을 섞은 혼합축이다 — REBROADCAST 행에는 RE_BRDC_TY_NM(재방송유형)이 들어온다. RT유형만 필요하면 이 컬럼이 아니라 FACT_AD_BROADCAST.RT_TYPE 을 쓸 것',
+    TARGET_GROUP        VARCHAR         COMMENT '타겟그룹. 🟠[O129] 전건 NULL. AGENCY 원천에 없다는 것은 참이나 원천 트랙이 다르다 — 잠재고객(타겟그룹)은 원천표기 GA 이고 정본 경로는 GA4_USER 정제(phase-2 미착수)다. ⇒ 대행사 축으로는 영구 NULL 이며 대행사 입고로는 해소되지 않는다. 정본 = 문서30 §7-C-1',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',

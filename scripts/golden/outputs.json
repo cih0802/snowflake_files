@@ -20,9 +20,15 @@
    "label": "O123-C",
    "label_note": "[2026-08-30 O124 소급 보정] 같은 근거로 채웠다 — reason 본문이 'O123-C 후속:' 이다. 발행 재실행 0 · metrics 무변경.",
    "reason": "O123-C 후속: 스키마 지문 정정. 직전 발행에서 /tmp/schema.json 이 세션 중간에 소실돼(생성 13:36 → 발행 14:18 부재) O111-B 가드가 구 지문 3581c638b4260bd9 을 보전했다 — 지우지는 않았지만 산출물은 신 스키마 기준이라 골든 지문과 어긋난 상태였다. 이번 발행은 dump_schema 를 같은 셸 호출 안에서 체인해 지문을 산출물과 일치시킨다. 산출물 수치 변경 0(직전 발행과 동일)."
+  },
+  {
+   "date": "2026-09-01 01:42:45",
+   "diff_count": 13,
+   "label": "O129",
+   "reason": "O129/O129-B 편집분 13건 전량 규명 후 갱신 — 실유실 0. ① desc_cell +2 = DIM_AD_CREATIVE.PLATFORM_TYPE·TARGET_GROUP 에 NULL 사유를 병기(R2-7-2 이행) ② entry_keys -2 = DURATION_SEC(O129 stale 정정)·RT_TYPE(O129-B 드랍 완료)을 05_필드인벤토리 D7 에서 취소선 처리 ③ index_key 소멸 4/신설 2 = 위 취소선 2건 + 설명 셀 병기로 색인 키가 타겟그룹->타겟그룹O129전건null 형태로 변형된 2쌍. 골든 측정일 2026-08-30 -> 2026-09-01. 스키마 지문은 dump_schema.py 선행 실행으로 보전했다."
   }
  ],
- "measured": "2026-08-30",
+ "measured": "2026-09-01",
  "metrics": {
   "04.rows": 565,
   "05.field_sections": {
@@ -150,6 +156,8 @@
   },
   "inv.desc_cell_list": [
    "DIM_AD_CREATIVE.AD_TYPE",
+   "DIM_AD_CREATIVE.PLATFORM_TYPE",
+   "DIM_AD_CREATIVE.TARGET_GROUP",
    "DIM_DEVICE.DEVICE_SCOPE_DESC",
    "DIM_DEVICE.DEVICE_SK",
    "DIM_DEVICE.DEVICE_TYPE",
@@ -206,17 +214,15 @@
    "FACT_MEMBER_EVENT.STOP_CHANNEL",
    "FACT_MEMBER_EVENT.STOP_REASON"
   ],
-  "inv.desc_cells": 56,
-  "inv.entries": 331,
+  "inv.desc_cells": 58,
+  "inv.entries": 329,
   "inv.entry_keys": [
    "DIM_AD_CREATIVE.AD_TYPE",
    "DIM_AD_CREATIVE.CM_POSITION",
    "DIM_AD_CREATIVE.CREATIVE",
-   "DIM_AD_CREATIVE.DURATION_SEC",
    "DIM_AD_CREATIVE.MEDIA_NAME",
    "DIM_AD_CREATIVE.PLATFORM",
    "DIM_AD_CREATIVE.PLATFORM_TYPE",
-   "DIM_AD_CREATIVE.RT_TYPE",
    "DIM_AD_CREATIVE.TARGET_GROUP",
    "DIM_BUDGET_ITEM.BUDGET_CATEGORY",
    "DIM_BUDGET_ITEM.BUDGET_ITEM_NAME",
@@ -576,7 +582,6 @@
    "o89분류3계층의상위",
    "o89분류3계층의중위",
    "o89정기일시후원구분코드raw←`spnsr_div_cd`.코드사전cm035.실측2종50사업전건채움",
-   "rt유형",
    "rt유형←rebrdc.`re_brdc_ty_nm`",
    "scd2유효시작",
    "scd2유효종료",
@@ -785,7 +790,6 @@
    "채널사←video.`chnnl_nm`rebrdc.`chnnl_cmpny`",
    "채널사유형←video.`chnnl_cmpny_ty_nm`",
    "청구원",
-   "초수",
    "총사용자명",
    "총인원",
    "최종중단일",
@@ -808,7 +812,7 @@
    "코어11조인키",
    "코어조인키",
    "클릭수",
-   "타겟그룹",
+   "타겟그룹🟠o129전건null",
    "팀",
    "페이지경로+쿼리",
    "페이지위치",
@@ -819,7 +823,7 @@
    "프로그램시작시간←video.`prg_strt_time`",
    "프로그램편성명←video.`schdl_nm`rebrdc.`brdc_nm`",
    "플랫폼",
-   "플랫폼매체유형",
+   "플랫폼매체유형🔴o129전건null",
    "해시sk.단`unknown`0센티넬",
    "행사구분",
    "행사기간시작",
@@ -857,9 +861,9 @@
    "후원사업전체",
    "휴일여부"
   ],
-  "inv.index_keys": 314,
+  "inv.index_keys": 312,
   "inv.label_collisions": 14,
   "inv.unreachable": []
  },
- "schema_fingerprint": "12ffa5c63c8ce470"
+ "schema_fingerprint": "937a2dd3cd46ab80"
 }

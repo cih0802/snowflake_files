@@ -660,13 +660,13 @@ models:
       - name: AD_PLATFORM
         description: "DIM_AD_CREATIVE.PLATFORM — 플랫폼 (#12) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: AD_PLATFORM_TYPE
-        description: "DIM_AD_CREATIVE.PLATFORM_TYPE — 플랫폼/매체유형 (#13) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
+        description: "DIM_AD_CREATIVE.PLATFORM_TYPE — 플랫폼/매체유형 (#13) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL**. 🆕🔴🔴[2026-09-01 O129 정정] 종전 문안의 *「원인은 차원이 아니라 팩트 FK 가 전건 센티넬이다 · 차원 자체는 채워져 있다」* 는 **이 컬럼에 대해 거짓이었다**(O51-F 오버레이가 여러 컬럼에 같은 문안을 도포한 결과 · O96 이 재검증 대상으로 지목한 그 건이다). 원인이 **두 개**다: ① 팩트 FK 가 전건 센티넬(`FACT_AD_PERFORMANCE.AD_CREATIVE_SK`) ② **차원 컬럼 자체가 전건 NULL**(`GOLD.DIM_AD_CREATIVE.PLATFORM_TYPE`). ⇒ 🔴 **FK 를 고쳐도 이 축은 채워지지 않는다.** 사유 = BRONZE AGENCY 3테이블에 「매체유형」 축이 없다(인접 유형축은 전부 다른 목적지에 배선돼 대체물이 아니다) ⇒ 요건 #13 은 현업 확인 대상. 정본 = 문서30 §7-C-1."
       - name: AD_CREATIVE
         description: "DIM_AD_CREATIVE.CREATIVE — 소재 (#20) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 🔴🔴 원천에는 있는 축이다 — SILVER `AGENCY_AD_PERFORMANCE.MEDIA_CHANNEL_NM`·`CREATIVE_NM` 과 BRONZE 매체명은 **전건 채워져 있다.** GOLD 에서만 소실됐다 — 팩트 FK 가 0 하드코딩이다(기지 **P52·O38-C**, 연결키는 **Q10** 소관). 실측 규모는 이슈원장 §O51-F."
       - name: AD_CREATIVE_TYPE
         description: "DIM_AD_CREATIVE.AD_TYPE — 소재 광고유형 (⚠️AD_SOURCE_TYPE 과 다른 개념) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 🔴🔴 원천에는 있는 축이다 — SILVER `AGENCY_AD_PERFORMANCE.MEDIA_CHANNEL_NM`·`CREATIVE_NM` 과 BRONZE 매체명은 **전건 채워져 있다.** GOLD 에서만 소실됐다 — 팩트 FK 가 0 하드코딩이다(기지 **P52·O38-C**, 연결키는 **Q10** 소관). 실측 규모는 이슈원장 §O51-F."
       - name: AD_TARGET_GROUP
-        description: "DIM_AD_CREATIVE.TARGET_GROUP — 타겟그룹 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
+        description: "DIM_AD_CREATIVE.TARGET_GROUP — 타겟그룹 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL**. 🆕🔴🔴[2026-09-01 O129 정정] 종전 문안의 *「차원 자체는 채워져 있다」* 는 **이 컬럼에 대해 거짓이었다**(O51-F 도포본 · O96 이 재검증 대상으로 지목한 그 건이다). 원인이 **두 개**다: ① 팩트 FK 가 전건 센티넬(`FACT_AD_PERFORMANCE.AD_CREATIVE_SK`) ② **차원 컬럼 자체가 전건 NULL**(`GOLD.DIM_AD_CREATIVE.TARGET_GROUP`). ⇒ 🔴 **FK 를 고쳐도 이 축은 채워지지 않는다.** 사유 = 원천 트랙이 **GA4** 다(잠재고객=타겟그룹은 원천표기 GA → `GA4_USER` 정제 예정 · phase-2 미착수) ⇒ **대행사 축으로는 영구히 NULL** 이다. 정본 = 문서30 §7-C-1."
       - name: DEVICE_TYPE
         description: "DIM_DEVICE.DEVICE_TYPE — PC / M / (해당없음)방송 / (unknown)"
       - name: DEVICE_SCOPE_DESC
@@ -1253,7 +1253,7 @@ models:
       - name: READ_CNT
         description: "읽음수 ← DGT.READ_CNT (가산) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: MEDIA_POTENTIAL_CUST_CNT
-        description: "매체 잠재고객수 ← DGT.MEDIA_PTNT_CUST_CNT (가산) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "매체 잠재고객수 ← DGT.MEDIA_PTNT_CUST_CNT (가산) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. 🆕🔴🔴[2026-09-01 O129 보강] **디지털행도 전건 NULL 이다** — 원천 `BRONZE_AGENCY.DGT_AD_CMPGN_DTLS.MEDIA_PTNT_CUST_CNT` 는 컬럼은 실재하고 **값이 전건 공백**(대행사 미보고)이다. ⇒ 🔴 스코프를 디지털로 좁혀도 값은 나오지 않는다 — 이 컬럼은 현재 **어떤 스코프에서도 집계 불가**다(0/'해당없음' 대체 해석 금지 · P21). 정본 = 문서30 §7-C."
       - name: CRM_DEV_CNT
         description: "CRM 개발건수 ← DGT.CRM_DVLP_CNT (가산) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CTR_SRC
@@ -1303,7 +1303,7 @@ models:
       - name: AD_CNT
         description: "광고횟수 ← VIDEO·REBRDC.AD_CNT (가산) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CONV_CALL_CNT
-        description: "전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용]. 코어 INBOUND_CALL(인입콜)과 별개 measure ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용]. 코어 INBOUND_CALL(인입콜)과 별개 measure ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. 🆕🔴🔴[2026-09-01 O129 보강] **VIDEO 행도 전건 NULL 이다** — 원천 `BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT` 는 컬럼은 실재하고 **값이 전건 공백**(대행사 미보고)이다(REBROADCAST 원천에는 컬럼 자체가 없다). ⇒ 🔴 스코프를 VIDEO 로 좁혀도 값은 나오지 않는다 — **어떤 스코프에서도 집계 불가**다. ⚠️ 인입콜(`REBRDC.INBOUND_CALL_CNT`)은 채워져 있으니 **두 축을 혼동하지 말 것**. 정본 = 문서30 §7-C."
       - name: DVLP_MEMBER_CNT
         description: "개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전에 코어 GA_CONV_MEMBERS 로 혼입돼 있었다(GA 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: DVLP_CNT
