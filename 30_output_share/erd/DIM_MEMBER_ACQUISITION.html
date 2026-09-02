@@ -7,7 +7,7 @@
   <title>DIM_MEMBER_ACQUISITION - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_ACQUISITION",
     "table": "DIM_MEMBER_ACQUISITION",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -509,7 +494,7 @@ flowchart LR
     G_DIM_MEMBER_ACQUISITION["★ DIM_MEMBER_ACQUISITION<br/>회원 획득(가입) 귀속 차원(1행 = 1회원)"]:::target
     G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원 (1캠페인). 분류축 ="]:::gold
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
-    G_DIM_ORG["DIM_ORG"]:::gold
+    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
     G_FACT_MEMBER_COHORT["FACT_MEMBER_COHORT<br/>회원 획득 코호트 팩트(1행=1회원)"]:::gold
     G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
@@ -591,7 +576,7 @@ erDiagram
   DIM_MEMBER_ACQUISITION {
   }
   DIM_MEMBER_ACQUISITION {
-    string KEY PK
+    string ID PK
   }
           </pre>
         </div>

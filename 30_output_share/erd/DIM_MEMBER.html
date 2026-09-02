@@ -7,7 +7,7 @@
   <title>DIM_MEMBER - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER",
     "table": "DIM_MEMBER",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -578,25 +563,25 @@ erDiagram
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER_CURRENT {
-    string MEMBER_SK KEY
+    string MEMBER_SK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
-    string ACQ_CAMPAIGN_SK KEY
-    string ACQ_ORG_SK KEY
-    string ACQ_SPONSORSHIP_SK KEY
-    string ACQ_DATE_SK KEY
-    string FIRST_STOP_DATE_SK KEY
+    string DW_BATCH_ID
+    string ACQ_CAMPAIGN_SK
+    string ACQ_ORG_SK
+    string ACQ_SPONSORSHIP_SK
+    string ACQ_DATE_SK
+    string FIRST_STOP_DATE_SK
   }
   DIM_MEMBER_IDENTITY {
     string IDENTITY_SK PK
     string MEMBER_DK FK
-    string MEMBER_NO KEY
-    string GA_MEMBER_ID KEY
-    string HOMEPAGE_ID KEY
-    string DW_BATCH_ID KEY
+    string MEMBER_NO
+    string GA_MEMBER_ID
+    string HOMEPAGE_ID
+    string DW_BATCH_ID
   }
   FACT_EVENT_PARTICIPATION {
     string DATE_SK FK
@@ -604,7 +589,7 @@ erDiagram
     string EVENT_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
     string MEMBER_DK PK
@@ -613,7 +598,7 @@ erDiagram
     string FIRST_STOP_DATE_SK FK
     string ACQ_ORG_SK FK
     string ACQ_SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_EVENT {
     string DATE_SK FK
@@ -622,7 +607,7 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_FEE {
     string MONTH_KEY FK
@@ -631,7 +616,7 @@ erDiagram
     string PAYMENT_SK FK
     string LAST_BILL_DATE_SK FK
     string LAST_PAY_DATE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_MONTHLY {
     string MEMBER_DK FK
@@ -640,17 +625,17 @@ erDiagram
     string PAYMENT_SK FK
     string REASON_SK FK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_SPONSOR_BIZ {
     string MEMBER_DK FK
-    string SPNSR_BSNS_NO KEY
+    string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string SPNSR_NO KEY
+    string SPNSR_NO
     string START_MONTH_KEY FK
     string DSCNTC_MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_SERVICE_EVENT {
     string SEND_TYPE_SK FK
@@ -658,17 +643,17 @@ erDiagram
     string MEMBER_DK FK
     string SERVICE_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MEMBER ||--o{ DIM_MEMBER_IDENTITY : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ DIM_MEMBER_CURRENT : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK → MEMBER_DK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||..o{ DIM_MEMBER_IDENTITY : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK"
+  DIM_MEMBER ||..o{ DIM_MEMBER_CURRENT : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
           </pre>
         </div>
 
@@ -840,49 +825,49 @@ erDiagram
           <td><code>SEX</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>성별 원천코드 raw. 코드id:CM013</td>
         </tr>
         <tr>
           <td><code>SEX_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>CM013 원천 라벨 그대로(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 국내·외국인 축 보존용 — 이 축은 CM013 만 보유한다</td>
+          <td>성별 원천 라벨. 코드id:CM013</td>
         </tr>
         <tr>
           <td><code>GENDER_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>성별 (#130). 고유값:남자,여자,기타,단체,기업</td>
         </tr>
         <tr>
           <td><code>MBER_STAT_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>회원상태 원천코드 raw (#132). 코드id:MM010</td>
         </tr>
         <tr>
           <td><code>MBER_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회원구분 원천코드 raw — BRONZE MBER_DIV_CD(MM018 1개인·2기업·3단체). 라벨=MEMBER_TYPE_NAME</td>
+          <td>회원구분 원천코드 raw. 코드id:MM018</td>
         </tr>
         <tr>
           <td><code>MEMBER_TYPE_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>회원구분명 (라벨). 고유값:개인,기업,단체</td>
         </tr>
         <tr>
           <td><code>MEMBER_STATUS_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>회원상태명 (라벨). 코드id:MM010</td>
         </tr>
         <tr>
           <td><code>MEMBER_STATUS_GROUP</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>MEMBER_STATUS_GROUP. 코드id:MM010.</td>
         </tr>
         <tr>
           <td><code>FIRST_JOIN_DATE</code></td>
@@ -900,37 +885,37 @@ erDiagram
           <td><code>JOIN_PATH_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>가입경로 원천코드 raw — BRONZE JOIN_PATH_CD(MM014). 라벨=ENROLL_PATH_NAME</td>
+          <td>가입경로코드. 코드id:MM014</td>
         </tr>
         <tr>
           <td><code>ENROLL_PATH_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>ENROLL_PATH_NAME. 코드id:MM014. [사유:원천 부재]</td>
         </tr>
         <tr>
           <td><code>FIRST_SPONSORSHIP</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>최초 후원사업.</td>
         </tr>
         <tr>
           <td><code>LAST_STOP_DATE</code></td>
           <td><code>DATE</code></td>
           <td></td>
-          <td>최종 중단일 — 원천 CRM_MEMBER_DISCONTINUE.SPNSR_DSCNTC_DE. 🔴**그 버전 시점까지의 as-of max** 다(단순 max 아님). 단순 max 는 미래 정보를 과거 버전에 누설해 예측 피처(LTV·유지기간 신4·6~8)를 오염시킨다. 적중 규모는 문서10 §26 — 중단 이력이 없는 회원·중단 이전 버전은 NULL</td>
+          <td>최종 중단일.</td>
         </tr>
         <tr>
           <td><code>EFFECTIVE_FROM</code></td>
           <td><code>DATE</code></td>
           <td></td>
-          <td>SCD2 유효시작</td>
+          <td>SCD2 유효시작.</td>
         </tr>
         <tr>
           <td><code>EFFECTIVE_TO</code></td>
           <td><code>DATE</code></td>
           <td></td>
-          <td>SCD2 유효종료</td>
+          <td>SCD2 유효종료.</td>
         </tr>
         <tr>
           <td><code>IS_CURRENT</code></td>
@@ -966,7 +951,7 @@ erDiagram
           <td><code>MEMBER_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회원 등록계통 구분 — SILVER CRM_MEMBER.MEMBER_TYPE 전파: FDRM=정기회원(TM_MM_FDRM_MBER_INFO) / ONCE=일시회원(TM_MM_ONCE_MBER_INFO) — 모집단 규모는 문서10 §26. 🔴 일시회원은 회원상태(MM010)·가입경로(MM014) 개념이 원천에 없다 — 상태 기반 분포·이탈률·예측 모집단은 FDRM 으로 한정할 것. ⚠️ MEMBER_TYPE_NAME(개인/기업/단체, MM018)은 이 컬럼의 라벨이 아니다 — 완전히 다른 축이며 코드는 MBER_DIV_CD 다</td>
+          <td>회원 등록계통 구분. 코드id:MM010.</td>
         </tr>
             </tbody>
           </table>

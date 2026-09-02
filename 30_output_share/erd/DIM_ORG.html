@@ -7,7 +7,7 @@
   <title>DIM_ORG - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_ORG",
     "table": "DIM_ORG",
     "domain": "COMMON / 공통 기준",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -457,7 +442,7 @@
               <span>DIM_ORG</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">DIM_ORG</div>
+            <div class="korean-title">조직 차원 (SCD1 · 1조직노드)</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -467,9 +452,9 @@
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
           <span class="badge badge-domain">BRONZE 원천: 1개</span>
           <span class="badge badge-domain">SILVER 모델: 1개</span>
-          <span class="badge badge-domain">컬럼 수: 2개</span>
+          <span class="badge badge-domain">컬럼 수: 13개</span>
         </div>
-        
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>조직 차원 (SCD1 · 1조직노드)</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -492,7 +477,7 @@ flowchart LR
     S_CRM_ORG["CRM_ORG"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_DIM_ORG["★ DIM_ORG<br/>DIM_ORG"]:::target
+    G_DIM_ORG["★ DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::target
   end
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
   S_CRM_ORG --> G_DIM_ORG
@@ -532,11 +517,13 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_ORG {
     string ORG_SK PK
-    string ORG_DK KEY
+    string ORG_DK
+    string ACMSLT_UPPER_DEPT_ID
+    string DW_BATCH_ID
   }
   FACT_BUDGET {
     string MONTH_KEY FK
@@ -544,14 +531,14 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_BUDGET_YEARLY {
     string BUDGET_ITEM_SK FK
     string ORG_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
     string MEMBER_DK PK
@@ -560,7 +547,7 @@ erDiagram
     string FIRST_STOP_DATE_SK FK
     string ACQ_ORG_SK FK
     string ACQ_SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_EVENT {
     string DATE_SK FK
@@ -569,27 +556,27 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_TARGET_BIZ {
     string MONTH_KEY FK
     string ORG_SK FK
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_TARGET_DEV {
     string MONTH_KEY FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_MEMBER_COHORT : "ACQ_ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_BUDGET : "ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_BUDGET_YEARLY : "ORG_SK → ORG_SK"
-  DIM_ORG ||--o{ FACT_TARGET_BIZ : "ORG_SK → ORG_SK"
+  DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK"
+  DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
+  DIM_ORG ||--o{ FACT_MEMBER_COHORT : "ACQ_ORG_SK"
+  DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK"
+  DIM_ORG ||--o{ FACT_BUDGET : "ORG_SK"
+  DIM_ORG ||--o{ FACT_BUDGET_YEARLY : "ORG_SK"
+  DIM_ORG ||--o{ FACT_TARGET_BIZ : "ORG_SK"
           </pre>
         </div>
 
@@ -701,7 +688,73 @@ erDiagram
           <td><code>ORG_DK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-silver">DK</span></td>
+          <td>불변 비즈니스 식별자</td>
+        </tr>
+        <tr>
+          <td><code>CORP</code></td>
+          <td><code>VARCHAR</code></td>
           <td></td>
+          <td>법인 (#114). [사유:부서차원 산출불가]</td>
+        </tr>
+        <tr>
+          <td><code>DIVISION</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>실적지부 (#430). [사유:규칙 미확정]</td>
+        </tr>
+        <tr>
+          <td><code>DEPARTMENT</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>부서 (#116).</td>
+        </tr>
+        <tr>
+          <td><code>TEAM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>팀 (#152). [사유:원천 미입고]</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_UPPER_DEPT_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>실적상위부서ID (원천 그대로).</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_DEPT_YN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>실적부서 여부 Y/N (원천 그대로) — Y 455개</td>
+        </tr>
+        <tr>
+          <td><code>USE_YN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>사용여부 Y/N. 고유값:Y,N</td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
             </tbody>
           </table>

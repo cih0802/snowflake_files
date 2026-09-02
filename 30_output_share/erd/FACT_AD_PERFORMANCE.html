@@ -7,7 +7,7 @@
   <title>FACT_AD_PERFORMANCE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_PERFORMANCE",
     "table": "FACT_AD_PERFORMANCE",
     "domain": "AGENCY / 마케팅·광고",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -588,39 +573,39 @@ flowchart LR
 erDiagram
   DIM_AD_CREATIVE {
     string AD_CREATIVE_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_CAMPAIGN {
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DATE {
     string DATE_SK PK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DEVICE {
     string DEVICE_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MARKETING_CAMPAIGN {
     string MKTG_CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_BK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_AD_BROADCAST {
     string AD_PERF_DK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_AD_BROADCAST_CASE {
     string AD_PERF_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_AD_DIGITAL {
     string AD_PERF_DK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_AD_PERFORMANCE {
     string AD_PERF_DK PK
@@ -629,16 +614,16 @@ erDiagram
     string CAMPAIGN_SK FK
     string MKTG_CAMPAIGN_SK FK
     string DEVICE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_DATE ||--o{ FACT_AD_PERFORMANCE : "PERF_DATE_SK → DATE_SK"
-  DIM_AD_CREATIVE ||--o{ FACT_AD_PERFORMANCE : "AD_CREATIVE_SK → AD_CREATIVE_SK"
-  DIM_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "MKTG_CAMPAIGN_SK → MKTG_CAMPAIGN_SK"
-  DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK → DEVICE_SK"
-  FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST : "AD_PERF_DK → AD_PERF_DK"
-  FACT_AD_PERFORMANCE ||--o{ FACT_AD_DIGITAL : "AD_PERF_DK → AD_PERF_DK"
-  FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST_CASE : "AD_PERF_DK → AD_PERF_DK"
+  DIM_DATE ||--o{ FACT_AD_PERFORMANCE : "PERF_DATE_SK"
+  DIM_AD_CREATIVE ||--o{ FACT_AD_PERFORMANCE : "AD_CREATIVE_SK"
+  DIM_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "CAMPAIGN_SK"
+  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "MKTG_CAMPAIGN_SK"
+  DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK"
+  FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST : "AD_PERF_DK"
+  FACT_AD_PERFORMANCE ||--o{ FACT_AD_DIGITAL : "AD_PERF_DK"
+  FACT_AD_PERFORMANCE ||--o{ FACT_AD_BROADCAST_CASE : "AD_PERF_DK"
           </pre>
         </div>
 
@@ -753,7 +738,7 @@ erDiagram
           <td><code>AD_PERF_DK</code></td>
           <td><code>VARCHAR(32)</code></td>
           <td><span class="badge badge-dim">PK</span></td>
-          <td>행 식별자(GRAIN·PK) MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). 위성 3종 조인키. 발급지점=SILVER.AGENCY_AD_ROW_* (DEC-11)</td>
+          <td>불변 비즈니스 식별자</td>
         </tr>
         <tr>
           <td><code>PERF_DATE_SK</code></td>
@@ -765,67 +750,67 @@ erDiagram
           <td><code>AD_CREATIVE_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>광고소재/매체 (분석축, FK→DIM_AD_CREATIVE). ⚠️현재 0 스캐폴드 — 부분키 매칭 설계 대기</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>캠페인 (분석축, FK→DIM_CAMPAIGN). ⚠️현재 0 스캐폴드 — Q10 이름매칭 대기</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>MKTG_CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>[O45] 마케팅캠페인 대리키 (FK→DIM_MARKETING_CAMPAIGN). 광고↔CRM 결합축. 도달·미도달 커버리지는 문서10 §26 이며 미도달은 0(미매핑) — 이 버킷을 「미집행」으로 읽지 말 것. 🔴개발캠페인(CAMPAIGN_SK) grain 결합 금지 — 대규모 팬아웃(배수·행수는 문서10 §26)</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>DEVICE_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>디바이스 (분석축, FK→DIM_DEVICE). DEC-10 실배선: 실기기 해시SK / 방송=(해당없음) / 미매핑=0</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>AD_SOURCE_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>광고유형 DIGITAL/VIDEO/REBROADCAST (degen). 출처 명시축(DEC-8·§3-A-4) — DW_SOURCE_SYSTEM(시스템 출처)과 2단 추적. DEVICE_TYPE=(해당없음) 행의 방송 여부 판별 수단</td>
+          <td>AD_SOURCE_TYPE.</td>
         </tr>
         <tr>
           <td><code>AD_COST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>광고비(원) (#6). 원천별 컬럼 상이 — COST_TYPE 은 SILVER 보유</td>
+          <td>광고비(원) . 원천별 컬럼 상이 (#6).</td>
         </tr>
         <tr>
           <td><code>IMPRESSIONS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>노출수 (#23). DIGITAL 전용(방송 원천 부재)</td>
+          <td>노출수 . DIGITAL 전용 (#23). [사유:원천 부재]</td>
         </tr>
         <tr>
           <td><code>CLICKS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>클릭수(행동 횟수, ≠회원명) (#24). DIGITAL 전용. CTR 분자 공#9</td>
+          <td>CLICKS (#24).</td>
         </tr>
         <tr>
           <td><code>INBOUND_CALL</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>인입콜 (#25). REBRDC(TEXT→TRY_TO_NUMBER)·VIDEO 보유, DGT 부재</td>
+          <td>INBOUND_CALL (#25).</td>
         </tr>
         <tr>
           <td><code>GA_CONV_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>GA전환수(명) — **DIGITAL 전용**. ⚠️O16 교정 2026-07-28: 종전 REBRDC 개발회원수가 혼입돼 합계의 상당 부분을 차지했다(혼입 비중은 문서10 §26 · 재방송 개발실적은 FACT_AD_BROADCAST.DVLP_MEMBER_CNT 로 이관)</td>
+          <td>GA전환수(명).</td>
         </tr>
         <tr>
           <td><code>GA_CONV_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>GA전환수(건/VU) — **DIGITAL 전용**. ⚠️O16 교정 2026-07-28: 종전 REBRDC 개발건수가 혼입돼 합계의 과반을 차지했다(혼입 비중은 문서10 §26) → FACT_AD_BROADCAST.DVLP_CNT 로 이관. 합계 소수=비건수, 어의 현업확인 잔여(O5)</td>
+          <td>GA전환수(건/VU).</td>
         </tr>
         <tr>
           <td><code>DAY_OF_WEEK</code></td>

@@ -12,8 +12,8 @@ PATHS = [
     "/workspace/30_output_share/GOLD_ERD_테이블별_YAML전용.html",
 ]
 
-# 엔티티 속성행 = TYPE NAME [PK|FK] · 관계행 = A ||--o{ B : "col" 또는 A ||..o{ B : "col"
-ATTR = re.compile(r"^[A-Za-z0-9_]+\s+[A-Za-z0-9_]+(\s+(PK|FK))?$")
+# 엔티티 속성행 = TYPE NAME [PK|FK|UK] ["comment"] · 관계행 = A ||--o{ B : "col" 또는 A ||..o{ B : "col"
+ATTR = re.compile(r'^[A-Za-z0-9_]+\s+[A-Za-z0-9_]+(\s+(PK|FK|UK))?(\s+"[^"]*")?$')
 REL = re.compile(r'^[A-Za-z0-9_]+\s+\|\|[-.]{2}o\{\s+[A-Za-z0-9_]+\s+:\s+"[^"]*"$')
 
 rc = 0

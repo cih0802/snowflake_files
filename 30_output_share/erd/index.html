@@ -7,15 +7,14 @@
   <title>Good Neighbors DW - Pipeline ERD & Lineage Hub</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Full Data Pipeline ERD & Lineage Hub",
     "stats": {
       "bronze_sources": 44,
       "silver_models": 42,
-      "gold_tables": 51,
+      "gold_tables": 37,
       "dim_count": 20,
-      "fact_count": 17,
-      "wide_count": 14
+      "fact_count": 17
     }
   }
   </script>
@@ -390,7 +389,7 @@
         <div>
           <h1 style="margin: 0 0 8px 0;">🌐 Good Neighbors Data Warehouse - 파이프라인 ERD & Lineage</h1>
           <div style="font-size: 1.05rem; color: var(--text-muted);">
-            BRONZE (원천 데이터) ➔ SILVER (정제/표준화 모델) ➔ GOLD (차원/팩트/와이드마트) 엔드투엔드 계보 및 ERD 카탈로그
+            BRONZE (원천 데이터) ➔ SILVER (정제/표준화 모델) ➔ GOLD (차원/팩트) 엔드투엔드 계보 및 ERD 카탈로그
           </div>
         </div>
       </div>
@@ -410,8 +409,8 @@
       </div>
       <div class="stat-card stat-gold">
         <div class="stat-label">GOLD 마트 테이블</div>
-        <div class="stat-num">51</div>
-        <div style="font-size:0.75rem; color:var(--text-muted);">DIM 20 + FACT 17 + WIDE 14</div>
+        <div class="stat-num">37</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">DIM 20 + FACT 17</div>
       </div>
     </div>
 
@@ -419,10 +418,9 @@
     <div class="section-card">
       <div class="filter-bar">
         <span style="font-size: 0.85rem; font-weight: 700; margin-right: 8px;">필터:</span>
-        <button class="filter-btn active" data-filter="all">전체 (51)</button>
+        <button class="filter-btn active" data-filter="all">전체 (37)</button>
         <button class="filter-btn" data-filter="DIM">DIM 차원 (20)</button>
         <button class="filter-btn" data-filter="FACT">FACT 팩트 (17)</button>
-        <button class="filter-btn" data-filter="WIDE">WIDE 마트 (14)</button>
         <button class="filter-btn" data-filter="CRM">회원·후원 (CRM)</button>
         <button class="filter-btn" data-filter="ERP">예산·목표 (ERP)</button>
         <button class="filter-btn" data-filter="AGENCY">마케팅·광고 (AGENCY)</button>
@@ -634,11 +632,11 @@
             <span class="badge badge-domain">COMMON</span>
           </div>
           <h3 class="card-title"><a href="DIM_ORG.html">DIM_ORG</a></h3>
-          <div class="card-desc">DIM_ORG</div>
+          <div class="card-desc">조직 차원 (SCD1 · 1조직노드)</div>
           <div class="card-meta">
             <div><b>Bronze:</b> 1개 (TM_CM_DEPT_INFO)</div>
             <div><b>Silver:</b> 1개 (CRM_ORG)</div>
-            <div><b>컬럼:</b> 2개</div>
+            <div><b>컬럼:</b> 13개</div>
           </div>
           <a href="DIM_ORG.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
@@ -950,202 +948,6 @@
           </div>
           <a href="FACT_TARGET_DEV.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
-        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">AGENCY</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_AD_BROADCAST.html">WIDE_AD_BROADCAST</a></h3>
-          <div class="card-desc">1 이라 코어 measure(AD_COST·INBOUND_CALL) 동반 노출 → 방송 분석을 단일 뷰로 완결한다. ⚠️코어 뷰(WIDE_AD_PERFORMANCE)와 함께 합산하면 방송 행이 이중계상된다 — 전 유형 집계는 코어 뷰만. ⚠️컬럼 NULL 은 두 방송 원천(VIDEO·REBROADCAST) 중 한쪽 전용 속성이며 결측이 아니다. DVLP_MEMBER_CNT·DVLP_CNT = 재방송 개발실적(O16 분리 · GA 전환 아님). _SRC 는 대행사 산정 비가산(N). 🔴[O51-F] 매체·소재축과 캠페인명은 사용 불가 상태다(FK 미배선 = P52·O38-C·Q10) · 휴일축 미주입(HOL-1). 🔴행수는 하드코딩하지 않는다 — 재적재마다 변한다(규칙 7)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
-            <div><b>Silver:</b> 12개 (AGENCY_AD_BROADCAST, AGENCY_AD_CREATIVE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개)</div>
-            <div><b>컬럼:</b> 35개</div>
-          </div>
-          <a href="WIDE_AD_BROADCAST.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">AGENCY</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_AD_BROADCAST_CASE.html">WIDE_AD_BROADCAST_CASE</a></h3>
-          <div class="card-desc">N** 이므로 코어 measure 를 의도적으로 미노출한다(fan-out 방지) — 사례 속성 분포·빈도 분석 전용. 방송 횟수는 COUNT(DISTINCT AD_PERF_DK) 로 계수한다. 아동명 미노출(PII 판정 대기 O14). 🔴[O51-F] 캠페인명은 전건 센티넬이라 캠페인별 분해가 불가하다(P52·Q10 계열). 🔴행수는 하드코딩하지 않는다(규칙 7)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
-            <div><b>Silver:</b> 12개 (AGENCY_AD_BROADCAST, AGENCY_AD_BROADCAST_CASE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개)</div>
-            <div><b>컬럼:</b> 18개</div>
-          </div>
-          <a href="WIDE_AD_BROADCAST_CASE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">AGENCY</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_AD_COMBINED.html">WIDE_AD_COMBINED</a></h3>
-          <div class="card-desc">1 pre-join 한 소비뷰 — PK=AD_PERF_DK(전건 유일·fan-out 0). 위성은 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(디지털행=방송컬럼 NULL, 방송행=디지털컬럼 NULL — **결측이 아니라 원천 부재**). 🔴디지털/방송 measure 는 상호배타다 — AD_SOURCE_TYPE 필터 없이 혼합 집계하면 왜곡된다. 🔴1:N 위성 FACT_AD_BROADCAST_CASE 는 의도적으로 제외했다(사례 수만큼 광고비 복제). 🔴🔴[O53 신설] 종전 SERVING.FACT_AD_COMBINED(helper 뷰 · SQL 스크립트 소유)를 대체한다 — SV 가 GOLD 만 참조하도록 계층을 올리고 소유주를 dbt 로 옮겼다(DEC-34 ③ · 팩트를 재구성하므로 ref() 위상정렬 필수). 종전 helper 에 없던 **방송 시간축 4컬럼(AD_START_TIME·AD_END_TIME·BROADCAST_DATE·PRG_START_TIME)을 추가**했다 — 그 4컬럼은 VIDEO 전용이며 재방송에는 원천 자체가 없다. ⚠️SV_AD base 재배선은 로드맵 6단계 소관이다. ⚠️원천 증량(캠페인 상위코드·공통코드 신설 예정 · 문서40 CMP-1) 시 이 모델 1곳 + 차원만 고치면 반영된다</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
-            <div><b>Silver:</b> 12개 (AGENCY_AD_BROADCAST, AGENCY_AD_DIGITAL, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개)</div>
-            <div><b>컬럼:</b> 51개</div>
-          </div>
-          <a href="WIDE_AD_COMBINED.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">AGENCY</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_AD_DIGITAL.html">WIDE_AD_DIGITAL</a></h3>
-          <div class="card-desc">1 이라 코어 measure(AD_COST·IMPRESSIONS·CLICKS·GA_CONV_*) 동반 노출 → 비율 재계산 base 를 같은 뷰에서 확보한다. ⚠️코어 뷰와 함께 합산하면 디지털 행이 이중계상된다. _SRC 7종은 대행사 산정 **비가산(N)** — 집계는 base 재계산(예: CTR=SUM(CLICKS)/SUM(IMPRESSIONS))이고 _SRC 는 행 단위 대조용이다. DEVICE_TYPE 동반(디지털은 기기가 실존 · 실적재 PC·M). 🔴[O51-F] 매체·소재축과 캠페인명은 사용 불가 상태다(FK 미배선 = P52·O38-C·Q10) · 휴일축 미주입(HOL-1) · AD_SOURCE_TYPE 은 단일값이다. 🔴행수는 하드코딩하지 않는다(규칙 7)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
-            <div><b>Silver:</b> 12개 (AGENCY_AD_CREATIVE, AGENCY_AD_DIGITAL, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개)</div>
-            <div><b>컬럼:</b> 33개</div>
-          </div>
-          <a href="WIDE_AD_DIGITAL.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">AGENCY</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_AD_PERFORMANCE.html">WIDE_AD_PERFORMANCE</a></h3>
-          <div class="card-desc">광고 성과 **코어** 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. grain=AD_PERF_DK. [2026-07-28 DEC-8] 방송 degen 5종은 위성 뷰로 이관했다 — 본 뷰는 3원천 공통 컬럼만 담는다. **전 유형 집계는 본 뷰만 사용**할 것(위성 뷰와 합산하면 이중계상). 🔴[O51-F 실측] `CAMPAIGN_SK`·`AD_CREATIVE_SK` 는 **0 스캐폴드**이며 그 귀결이 컸다 — 캠페인·매체·소재 속성이 전건 NULL 또는 전건 `'(미매핑)'` 센티넬이다(기지 **P52·O38-C** · 연결키는 **Q10**). 센티넬은 GROUP BY 가 단일 그룹을 반환해 **오답이 에러 없이 나온다.** 🟢대안 = 마케팅캠페인 축(O45). 🔴휴일축(`PERF_IS_HOLIDAY`)도 전건 FALSE 로 미주입이다(**HOL-1**). DEVICE_SK 는 실배선 완료(DEC-10). ⚠️AD_SOURCE_TYPE(원천 출처축) ≠ AD_CREATIVE_TYPE(소재 광고유형). 🔴행수는 하드코딩하지 않는다 — 종전 기재가 재적재로 stale 이 됐다(규칙 7)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
-            <div><b>Silver:</b> 11개 (AGENCY_AD_CREATIVE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC 외 7개)</div>
-            <div><b>컬럼:</b> 32개</div>
-          </div>
-          <a href="WIDE_AD_PERFORMANCE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="ERP / 예산·목표" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">ERP</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_BUDGET.html">WIDE_BUDGET</a></h3>
-          <div class="card-desc">집행 추정 · FUNDRAISING_COST(**E-1**) · AD_COST(**E-4**). 🔴🔴[2026-08-20 O96] **연간 편성은 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 `WIDE_BUDGET` 이 아니라 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 항목이 없다 — 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 8개 (TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO 외 4개)</div>
-            <div><b>Silver:</b> 7개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_ORG 외 3개)</div>
-            <div><b>컬럼:</b> 20개</div>
-          </div>
-          <a href="WIDE_BUDGET.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="COMMON / 공통 기준" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">COMMON</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_EVENT_PARTICIPATION.html">WIDE_EVENT_PARTICIPATION</a></h3>
-          <div class="card-desc">행사 참여 팩트(FEP) 평탄화 — DATE·MEMBER[현재버전]·EVENT·CAMPAIGN·SPONSORSHIP</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 15개 (TC_CMMN_DTL_CD, TD_MS_CRMN_PRTCPNT, TD_MS_EVENT_PRTCPNT_DTL, TH_MM_FDRM_MBER_STNG_DTLS 외 11개)</div>
-            <div><b>Silver:</b> 10개 (CRM_CAMPAIGN, CRM_CODE, CRM_EVENT, CRM_EVENT_PARTICIPATION 외 6개)</div>
-            <div><b>컬럼:</b> 63개</div>
-          </div>
-          <a href="WIDE_EVENT_PARTICIPATION.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">GA4</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_GA_BEHAVIOR.html">WIDE_GA_BEHAVIOR</a></h3>
-          <div class="card-desc">1 이라 팬아웃이 없다(O49). 🔴🔴[O51-F 실측] **GA4 실적재 구간이 한 해의 일부뿐이다**(G-5 하드블로커) → `YEAR` 가 단일값이므로 연도·계절 추이를 이 뷰로 내면 **구간 하나를 전체로 오독**한다. 기간 비교는 광고·회원 팩트로 할 것. 🔴세션 품질 지표(AVG_SESSION_DURATION·BOUNCE_RATE)와 회원번호는 전건 비어 있고, 캠페인축은 전건 센티넬이다. 🔴휴일축(`IS_HOLIDAY`)도 전건 FALSE 로 미주입(**HOL-1**). ⚠️종전 기재 「GA4 1일 기반」은 stale 이었다 — 실적재 구간은 그보다 넓고, 정확한 범위는 이슈원장 §O51-F</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 8개 (TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_MKTNG_CMPGN_MNG 외 4개)</div>
-            <div><b>Silver:</b> 12개 (BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 8개)</div>
-            <div><b>컬럼:</b> 38개</div>
-          </div>
-          <a href="WIDE_GA_BEHAVIOR.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">CRM</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_MEMBER_EVENT.html">WIDE_MEMBER_EVENT</a></h3>
-          <div class="card-desc">회원 이벤트 팩트(FME) 평탄화 — DATE·MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·ORG·REASON</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 12개 (TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 8개)</div>
-            <div><b>Silver:</b> 9개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 5개)</div>
-            <div><b>컬럼:</b> 73개</div>
-          </div>
-          <a href="WIDE_MEMBER_EVENT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">CRM</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_MEMBER_FEE.html">WIDE_MEMBER_FEE</a></h3>
-          <div class="card-desc">BRONZE_CRM.TM_PM_MBRFEE_ACMSLT(회비) ∪ TM_PM_DNTN_DTLS(기부금) → SILVER.CRM_PAYMENT_BILLING → GOLD.FACT_MEMBER_FEE. 🔴기부금 지류의 청구액·회비구분 NULL 은 결측이 아니라 **구조적 부재**다 — TM_PM_DNTN_DTLS 30컬럼 전수 확인 결과 RQEST_AMT·MBRFEE_DIV_CD·MBER_NO 컬럼이 **아예 없다**(회원키는 ONCE_MBER_NO). ⇒ 납부율·미납 분모는 회비로 스코프(O40) · 분자는 PAID_FEE_BILLABLE. 🔴🔴WIDE_MEMBER_MONTHLY 와 **같은 표에서 회비 measure 합산 금지** — 같은 원천을 다른 grain 으로 담은 형제 팩트이며 실측 청구액이 **두 자리 % 로 부풀어 오른다**(DEC-31·GATE-D · 기준값은 이슈원장 §O45). 🔴「후원사업」·「부서」는 축이 둘이다 — SPONSORSHIP_NAME/ACQ_DEPARTMENT=획득·납입 대상, 사건 축은 WIDE_MEMBER_EVENT 소관</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 15개 (TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 11개)</div>
-            <div><b>Silver:</b> 11개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 7개)</div>
-            <div><b>컬럼:</b> 41개</div>
-          </div>
-          <a href="WIDE_MEMBER_FEE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">CRM</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_MEMBER_MONTHLY.html">WIDE_MEMBER_MONTHLY</a></h3>
-          <div class="card-desc">회원 월 팩트(FMM) 평탄화 — MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 18개 (TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 14개)</div>
-            <div><b>Silver:</b> 14개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 10개)</div>
-            <div><b>컬럼:</b> 82개</div>
-          </div>
-          <a href="WIDE_MEMBER_MONTHLY.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">CRM</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_SERVICE_EVENT.html">WIDE_SERVICE_EVENT</a></h3>
-          <div class="card-desc">서비스/발송 팩트(FSE) 평탄화 — DATE·MEMBER[현재버전]·SERVICE·CAMPAIGN</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 18개 (SND_MEMBER_LIST, SND_REQ_MST, TC_CMMN_DTL_CD, TD_MS_EMAIL_SNDNG_DTLS 외 14개)</div>
-            <div><b>Silver:</b> 9개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 5개)</div>
-            <div><b>컬럼:</b> 62개</div>
-          </div>
-          <a href="WIDE_SERVICE_EVENT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="ERP / 예산·목표" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">ERP</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_TARGET_BIZ.html">WIDE_TARGET_BIZ</a></h3>
-          <div class="card-desc">사업목표 팩트(FTG_B) 평탄화 — ORG·SPONSORSHIP·CAMPAIGN. 월 grain=MONTH_KEY. E-6 원천부재 0행(입고 시 자동 채워짐)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 7개 (TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO 외 3개)</div>
-            <div><b>Silver:</b> 6개 (CRM_BIZ_TARGET, CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN 외 2개)</div>
-            <div><b>컬럼:</b> 17개</div>
-          </div>
-          <a href="WIDE_TARGET_BIZ.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="ERP / 예산·목표" data-type="WIDE">
-          <div class="card-header">
-            <span class="badge badge-wide">WIDE</span>
-            <span class="badge badge-domain">ERP</span>
-          </div>
-          <h3 class="card-title"><a href="WIDE_TARGET_DEV.html">WIDE_TARGET_DEV</a></h3>
-          <div class="card-desc">회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY. [2026-08-05 O38] MONTH_KEY 연도 복원으로 CAL_YEAR 가 유효해졌다(종전 1~12 라 FLOOR(MONTH_KEY/100)=0 전건). 목표 대비 실적은 `FACT_DEV_ACHIEVEMENT`(구 WIDE_DEV_ACHIEVEMENT · O53 개명) 소관이다. 🔴[O51-F 실측] 조직 상위 계층(ORG_CORP·ORG_DIVISION·ORG_TEAM)은 차원 자체가 비어 있어 **부서 단위까지만 분해된다**(CONF-4)</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 2개 (TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL)</div>
-            <div><b>Silver:</b> 2개 (CRM_DEV_TARGET, CRM_ORG)</div>
-            <div><b>컬럼:</b> 10개</div>
-          </div>
-          <a href="WIDE_TARGET_DEV.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
       </div>
     </div>
 
@@ -1295,7 +1097,7 @@
         <tr data-domain="COMMON / 공통 기준" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_ORG.html"><b>DIM_ORG</b></a></td>
-          <td>DIM_ORG</td>
+          <td>조직 차원 (SCD1 · 1조직노드)</td>
           <td><span class="badge badge-domain">COMMON / 공통 기준</span></td>
           <td><code>TM_CM_DEPT_INFO</code></td>
           <td><code>CRM_ORG</code></td>
@@ -1498,132 +1300,6 @@
           <td><code>TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL</code></td>
           <td><code>CRM_DEV_TARGET, CRM_ORG</code></td>
           <td><a href="FACT_TARGET_DEV.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_AD_BROADCAST.html"><b>WIDE_AD_BROADCAST</b></a></td>
-          <td>1 이라 코어 measure(AD_COST·INBOUND_CALL) 동반 노출 → 방송 분석을 단일 뷰로 완결한다. ⚠️코어 뷰(WIDE_AD_PERFORMANCE)와 함께 합산하면 방송 행이 이중계상된다 — 전 유형 집계는 코어 뷰만. ⚠️컬럼 NULL 은 두 방송 원천(VIDEO·REBROADCAST) 중 한쪽 전용 속성이며 결측이 아니다. DVLP_MEMBER_CNT·DVLP_CNT = 재방송 개발실적(O16 분리 · GA 전환 아님). _SRC 는 대행사 산정 비가산(N). 🔴[O51-F] 매체·소재축과 캠페인명은 사용 불가 상태다(FK 미배선 = P52·O38-C·Q10) · 휴일축 미주입(HOL-1). 🔴행수는 하드코딩하지 않는다 — 재적재마다 변한다(규칙 7)</td>
-          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
-          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개</code></td>
-          <td><code>AGENCY_AD_BROADCAST, AGENCY_AD_CREATIVE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개</code></td>
-          <td><a href="WIDE_AD_BROADCAST.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_AD_BROADCAST_CASE.html"><b>WIDE_AD_BROADCAST_CASE</b></a></td>
-          <td>N** 이므로 코어 measure 를 의도적으로 미노출한다(fan-out 방지) — 사례 속성 분포·빈도 분석 전용. 방송 횟수는 COUNT(DISTINCT AD_PERF_DK) 로 계수한다. 아동명 미노출(PII 판정 대기 O14). 🔴[O51-F] 캠페인명은 전건 센티넬이라 캠페인별 분해가 불가하다(P52·Q10 계열). 🔴행수는 하드코딩하지 않는다(규칙 7)</td>
-          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
-          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개</code></td>
-          <td><code>AGENCY_AD_BROADCAST, AGENCY_AD_BROADCAST_CASE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개</code></td>
-          <td><a href="WIDE_AD_BROADCAST_CASE.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_AD_COMBINED.html"><b>WIDE_AD_COMBINED</b></a></td>
-          <td>1 pre-join 한 소비뷰 — PK=AD_PERF_DK(전건 유일·fan-out 0). 위성은 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(디지털행=방송컬럼 NULL, 방송행=디지털컬럼 NULL — **결측이 아니라 원천 부재**). 🔴디지털/방송 measure 는 상호배타다 — AD_SOURCE_TYPE 필터 없이 혼합 집계하면 왜곡된다. 🔴1:N 위성 FACT_AD_BROADCAST_CASE 는 의도적으로 제외했다(사례 수만큼 광고비 복제). 🔴🔴[O53 신설] 종전 SERVING.FACT_AD_COMBINED(helper 뷰 · SQL 스크립트 소유)를 대체한다 — SV 가 GOLD 만 참조하도록 계층을 올리고 소유주를 dbt 로 옮겼다(DEC-34 ③ · 팩트를 재구성하므로 ref() 위상정렬 필수). 종전 helper 에 없던 **방송 시간축 4컬럼(AD_START_TIME·AD_END_TIME·BROADCAST_DATE·PRG_START_TIME)을 추가**했다 — 그 4컬럼은 VIDEO 전용이며 재방송에는 원천 자체가 없다. ⚠️SV_AD base 재배선은 로드맵 6단계 소관이다. ⚠️원천 증량(캠페인 상위코드·공통코드 신설 예정 · 문서40 CMP-1) 시 이 모델 1곳 + 차원만 고치면 반영된다</td>
-          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
-          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개</code></td>
-          <td><code>AGENCY_AD_BROADCAST, AGENCY_AD_DIGITAL, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개</code></td>
-          <td><a href="WIDE_AD_COMBINED.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_AD_DIGITAL.html"><b>WIDE_AD_DIGITAL</b></a></td>
-          <td>1 이라 코어 measure(AD_COST·IMPRESSIONS·CLICKS·GA_CONV_*) 동반 노출 → 비율 재계산 base 를 같은 뷰에서 확보한다. ⚠️코어 뷰와 함께 합산하면 디지털 행이 이중계상된다. _SRC 7종은 대행사 산정 **비가산(N)** — 집계는 base 재계산(예: CTR=SUM(CLICKS)/SUM(IMPRESSIONS))이고 _SRC 는 행 단위 대조용이다. DEVICE_TYPE 동반(디지털은 기기가 실존 · 실적재 PC·M). 🔴[O51-F] 매체·소재축과 캠페인명은 사용 불가 상태다(FK 미배선 = P52·O38-C·Q10) · 휴일축 미주입(HOL-1) · AD_SOURCE_TYPE 은 단일값이다. 🔴행수는 하드코딩하지 않는다(규칙 7)</td>
-          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
-          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개</code></td>
-          <td><code>AGENCY_AD_CREATIVE, AGENCY_AD_DIGITAL, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT 외 8개</code></td>
-          <td><a href="WIDE_AD_DIGITAL.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="AGENCY / 마케팅·광고" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_AD_PERFORMANCE.html"><b>WIDE_AD_PERFORMANCE</b></a></td>
-          <td>광고 성과 **코어** 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. grain=AD_PERF_DK. [2026-07-28 DEC-8] 방송 degen 5종은 위성 뷰로 이관했다 — 본 뷰는 3원천 공통 컬럼만 담는다. **전 유형 집계는 본 뷰만 사용**할 것(위성 뷰와 합산하면 이중계상). 🔴[O51-F 실측] `CAMPAIGN_SK`·`AD_CREATIVE_SK` 는 **0 스캐폴드**이며 그 귀결이 컸다 — 캠페인·매체·소재 속성이 전건 NULL 또는 전건 `'(미매핑)'` 센티넬이다(기지 **P52·O38-C** · 연결키는 **Q10**). 센티넬은 GROUP BY 가 단일 그룹을 반환해 **오답이 에러 없이 나온다.** 🟢대안 = 마케팅캠페인 축(O45). 🔴휴일축(`PERF_IS_HOLIDAY`)도 전건 FALSE 로 미주입이다(**HOL-1**). DEVICE_SK 는 실배선 완료(DEC-10). ⚠️AD_SOURCE_TYPE(원천 출처축) ≠ AD_CREATIVE_TYPE(소재 광고유형). 🔴행수는 하드코딩하지 않는다 — 종전 기재가 재적재로 stale 이 됐다(규칙 7)</td>
-          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
-          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개</code></td>
-          <td><code>AGENCY_AD_CREATIVE, AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC 외 7개</code></td>
-          <td><a href="WIDE_AD_PERFORMANCE.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="ERP / 예산·목표" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_BUDGET.html"><b>WIDE_BUDGET</b></a></td>
-          <td>집행 추정 · FUNDRAISING_COST(**E-1**) · AD_COST(**E-4**). 🔴🔴[2026-08-20 O96] **연간 편성은 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 `WIDE_BUDGET` 이 아니라 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 항목이 없다 — 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)</td>
-          <td><span class="badge badge-domain">ERP / 예산·목표</span></td>
-          <td><code>TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO 외 4개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_ORG 외 3개</code></td>
-          <td><a href="WIDE_BUDGET.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="COMMON / 공통 기준" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_EVENT_PARTICIPATION.html"><b>WIDE_EVENT_PARTICIPATION</b></a></td>
-          <td>행사 참여 팩트(FEP) 평탄화 — DATE·MEMBER[현재버전]·EVENT·CAMPAIGN·SPONSORSHIP</td>
-          <td><span class="badge badge-domain">COMMON / 공통 기준</span></td>
-          <td><code>TC_CMMN_DTL_CD, TD_MS_CRMN_PRTCPNT, TD_MS_EVENT_PRTCPNT_DTL, TH_MM_FDRM_MBER_STNG_DTLS 외 11개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_EVENT, CRM_EVENT_PARTICIPATION 외 6개</code></td>
-          <td><a href="WIDE_EVENT_PARTICIPATION.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="GA4 / 디지털 행동" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_GA_BEHAVIOR.html"><b>WIDE_GA_BEHAVIOR</b></a></td>
-          <td>1 이라 팬아웃이 없다(O49). 🔴🔴[O51-F 실측] **GA4 실적재 구간이 한 해의 일부뿐이다**(G-5 하드블로커) → `YEAR` 가 단일값이므로 연도·계절 추이를 이 뷰로 내면 **구간 하나를 전체로 오독**한다. 기간 비교는 광고·회원 팩트로 할 것. 🔴세션 품질 지표(AVG_SESSION_DURATION·BOUNCE_RATE)와 회원번호는 전건 비어 있고, 캠페인축은 전건 센티넬이다. 🔴휴일축(`IS_HOLIDAY`)도 전건 FALSE 로 미주입(**HOL-1**). ⚠️종전 기재 「GA4 1일 기반」은 stale 이었다 — 실적재 구간은 그보다 넓고, 정확한 범위는 이슈원장 §O51-F</td>
-          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
-          <td><code>TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_MKTNG_CMPGN_MNG 외 4개</code></td>
-          <td><code>BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 8개</code></td>
-          <td><a href="WIDE_GA_BEHAVIOR.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="CRM / 회원·후원" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_MEMBER_EVENT.html"><b>WIDE_MEMBER_EVENT</b></a></td>
-          <td>회원 이벤트 팩트(FME) 평탄화 — DATE·MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·ORG·REASON</td>
-          <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 8개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 5개</code></td>
-          <td><a href="WIDE_MEMBER_EVENT.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="CRM / 회원·후원" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_MEMBER_FEE.html"><b>WIDE_MEMBER_FEE</b></a></td>
-          <td>BRONZE_CRM.TM_PM_MBRFEE_ACMSLT(회비) ∪ TM_PM_DNTN_DTLS(기부금) → SILVER.CRM_PAYMENT_BILLING → GOLD.FACT_MEMBER_FEE. 🔴기부금 지류의 청구액·회비구분 NULL 은 결측이 아니라 **구조적 부재**다 — TM_PM_DNTN_DTLS 30컬럼 전수 확인 결과 RQEST_AMT·MBRFEE_DIV_CD·MBER_NO 컬럼이 **아예 없다**(회원키는 ONCE_MBER_NO). ⇒ 납부율·미납 분모는 회비로 스코프(O40) · 분자는 PAID_FEE_BILLABLE. 🔴🔴WIDE_MEMBER_MONTHLY 와 **같은 표에서 회비 measure 합산 금지** — 같은 원천을 다른 grain 으로 담은 형제 팩트이며 실측 청구액이 **두 자리 % 로 부풀어 오른다**(DEC-31·GATE-D · 기준값은 이슈원장 §O45). 🔴「후원사업」·「부서」는 축이 둘이다 — SPONSORSHIP_NAME/ACQ_DEPARTMENT=획득·납입 대상, 사건 축은 WIDE_MEMBER_EVENT 소관</td>
-          <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 11개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 7개</code></td>
-          <td><a href="WIDE_MEMBER_FEE.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="CRM / 회원·후원" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_MEMBER_MONTHLY.html"><b>WIDE_MEMBER_MONTHLY</b></a></td>
-          <td>회원 월 팩트(FMM) 평탄화 — MEMBER[현재버전]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY</td>
-          <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>TC_CMMN_DTL_CD, TH_MM_FDRM_MBER_STNG_DTLS, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 14개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 10개</code></td>
-          <td><a href="WIDE_MEMBER_MONTHLY.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="CRM / 회원·후원" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_SERVICE_EVENT.html"><b>WIDE_SERVICE_EVENT</b></a></td>
-          <td>서비스/발송 팩트(FSE) 평탄화 — DATE·MEMBER[현재버전]·SERVICE·CAMPAIGN</td>
-          <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>SND_MEMBER_LIST, SND_REQ_MST, TC_CMMN_DTL_CD, TD_MS_EMAIL_SNDNG_DTLS 외 14개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 5개</code></td>
-          <td><a href="WIDE_SERVICE_EVENT.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="ERP / 예산·목표" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_TARGET_BIZ.html"><b>WIDE_TARGET_BIZ</b></a></td>
-          <td>사업목표 팩트(FTG_B) 평탄화 — ORG·SPONSORSHIP·CAMPAIGN. 월 grain=MONTH_KEY. E-6 원천부재 0행(입고 시 자동 채워짐)</td>
-          <td><span class="badge badge-domain">ERP / 예산·목표</span></td>
-          <td><code>TC_CMMN_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO 외 3개</code></td>
-          <td><code>CRM_BIZ_TARGET, CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN 외 2개</code></td>
-          <td><a href="WIDE_TARGET_BIZ.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="ERP / 예산·목표" data-type="WIDE">
-          <td><span class="badge badge-wide">WIDE</span></td>
-          <td><a href="WIDE_TARGET_DEV.html"><b>WIDE_TARGET_DEV</b></a></td>
-          <td>회원개발 목표 팩트(FTG_D) 평탄화 — ORG. 월 grain=MONTH_KEY. [2026-08-05 O38] MONTH_KEY 연도 복원으로 CAL_YEAR 가 유효해졌다(종전 1~12 라 FLOOR(MONTH_KEY/100)=0 전건). 목표 대비 실적은 `FACT_DEV_ACHIEVEMENT`(구 WIDE_DEV_ACHIEVEMENT · O53 개명) 소관이다. 🔴[O51-F 실측] 조직 상위 계층(ORG_CORP·ORG_DIVISION·ORG_TEAM)은 차원 자체가 비어 있어 **부서 단위까지만 분해된다**(CONF-4)</td>
-          <td><span class="badge badge-domain">ERP / 예산·목표</span></td>
-          <td><code>TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL</code></td>
-          <td><code>CRM_DEV_TARGET, CRM_ORG</code></td>
-          <td><a href="WIDE_TARGET_DEV.html" class="badge badge-dim">상세보기</a></td>
         </tr>
           </tbody>
         </table>

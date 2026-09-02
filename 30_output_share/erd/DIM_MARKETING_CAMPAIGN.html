@@ -7,7 +7,7 @@
   <title>DIM_MARKETING_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MARKETING_CAMPAIGN",
     "table": "DIM_MARKETING_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -554,12 +539,12 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MARKETING_CAMPAIGN {
     string MKTG_CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_BK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_AD_PERFORMANCE {
     string AD_PERF_DK PK
@@ -568,10 +553,10 @@ erDiagram
     string CAMPAIGN_SK FK
     string MKTG_CAMPAIGN_SK FK
     string DEVICE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK → MKTG_CAMPAIGN_SK"
-  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "MKTG_CAMPAIGN_SK → MKTG_CAMPAIGN_SK"
+  DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK"
+  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "MKTG_CAMPAIGN_SK"
           </pre>
         </div>
 
@@ -632,31 +617,31 @@ erDiagram
           <td><code>MKTG_CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-dim">PK</span></td>
-          <td>대리키 = gold_sk(MK_CMPGN_CD). 0 = (미매핑) Unknown 멤버</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>MKTG_CAMPAIGN_BK</code></td>
           <td><code>VARCHAR</code></td>
           <td><span class="badge badge-dim">PK</span></td>
-          <td>업무키 = 원천 MK_CMPGN_CD (SILVER.CRM_MARKETING_CAMPAIGN)</td>
+          <td>MKTG_CAMPAIGN_BK.</td>
         </tr>
         <tr>
           <td><code>MKTG_CAMPAIGN_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>마케팅캠페인명. 🔴광고측(AGENCY CAMPAIGN_NM)과의 **조인 키**다 — 이름매칭이 유일 경로다(AGENCY 원천 3종에 캠페인 코드 컬럼이 없다). 광고 도달·미도달 커버리지는 문서10 §26 이며 미도달은 SK=0 으로 간다</td>
+          <td>마케팅캠페인명.</td>
         </tr>
         <tr>
           <td><code>USE_YN</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>사용여부(원천 그대로 — 폐지분도 과거 실적에 붙으므로 제외하지 않는다)</td>
+          <td>사용여부 Y/N. 고유값:Y,N</td>
         </tr>
         <tr>
           <td><code>DEV_CAMPAIGN_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>🔴**팬아웃 경고축**: 이 마케팅캠페인에 매달린 개발캠페인 수. 1 보다 크면 개발캠페인 단위로 광고비를 내릴 때 그 배수만큼 복제된다. 모집단별(마스터 전체 / 광고 도달분 한정) 평균·최대·합과 naive 조인 팬아웃 배수는 문서10 §26. 결합은 마케팅캠페인 grain 에서만 할 것</td>
+          <td>DEV_CAMPAIGN_CNT.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>

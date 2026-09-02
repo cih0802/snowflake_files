@@ -7,7 +7,7 @@
   <title>DIM_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_CAMPAIGN",
     "table": "DIM_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -554,16 +539,18 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MARKETING_CAMPAIGN {
     string MKTG_CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_BK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_ORG {
     string ORG_SK PK
-    string ORG_DK KEY
+    string ORG_DK
+    string ACMSLT_UPPER_DEPT_ID
+    string DW_BATCH_ID
   }
   FACT_AD_PERFORMANCE {
     string AD_PERF_DK PK
@@ -572,7 +559,7 @@ erDiagram
     string CAMPAIGN_SK FK
     string MKTG_CAMPAIGN_SK FK
     string DEVICE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_BUDGET {
     string MONTH_KEY FK
@@ -580,14 +567,14 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_BUDGET_YEARLY {
     string BUDGET_ITEM_SK FK
     string ORG_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_EVENT_PARTICIPATION {
     string DATE_SK FK
@@ -595,7 +582,7 @@ erDiagram
     string EVENT_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_GA_BEHAVIOR {
     string DATE_SK FK
@@ -604,7 +591,7 @@ erDiagram
     string GA_SOURCE_SK FK
     string DEVICE_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
     string MEMBER_DK PK
@@ -613,7 +600,7 @@ erDiagram
     string FIRST_STOP_DATE_SK FK
     string ACQ_ORG_SK FK
     string ACQ_SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_EVENT {
     string DATE_SK FK
@@ -622,7 +609,7 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_MONTHLY {
     string MEMBER_DK FK
@@ -631,17 +618,17 @@ erDiagram
     string PAYMENT_SK FK
     string REASON_SK FK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_SPONSOR_BIZ {
     string MEMBER_DK FK
-    string SPNSR_BSNS_NO KEY
+    string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string SPNSR_NO KEY
+    string SPNSR_NO
     string START_MONTH_KEY FK
     string DSCNTC_MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_SERVICE_EVENT {
     string SEND_TYPE_SK FK
@@ -649,28 +636,28 @@ erDiagram
     string MEMBER_DK FK
     string SERVICE_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_TARGET_BIZ {
     string MONTH_KEY FK
     string ORG_SK FK
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK → MKTG_CAMPAIGN_SK"
-  DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK → ORG_SK"
-  DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_BUDGET : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_BUDGET_YEARLY : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_TARGET_BIZ : "CAMPAIGN_SK → CAMPAIGN_SK"
+  DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK"
+  DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK"
+  DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_BUDGET : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_BUDGET_YEARLY : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_TARGET_BIZ : "CAMPAIGN_SK"
           </pre>
         </div>
 
@@ -836,7 +823,7 @@ erDiagram
           <td><code>MKTG_CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>[O45] 마케팅캠페인 대리키 (FK→DIM_MARKETING_CAMPAIGN). 광고(AGENCY)와 개발실적(CRM)을 잇는 conformed 축. 0=미매핑. 🔴개발캠페인 grain 으로 광고비를 내리면 대규모 팬아웃이 발생한다(팬아웃 배수·마케팅캠페인당 개발캠페인 분포·광고 도달 범위는 문서10 §26) — 결합은 마케팅캠페인 grain 에서만 할 것</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>ORG_SK</code></td>
@@ -860,7 +847,7 @@ erDiagram
           <td><code>PARENT_CAMPAIGN</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>상위캠페인 코드(#119) — 자기참조 키(값 도메인 = CAMPAIGN_BK). 🔴 라벨이 아니다. 사람이 읽는 이름은 PARENT_CAMPAIGN_NAME 을 쓴다(O37 신설)</td>
+          <td>상위캠페인 코드 (#119).</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_NAME</code></td>
@@ -872,37 +859,37 @@ erDiagram
           <td><code>PROMO_METHOD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>홍보방법 원천코드(#118, 원천 PR_MTH_CD · 코드사전 CM008). 🔴 라벨이 아니라 숫자 코드다 — 사람·Agent 가 읽는 이름은 PROMO_METHOD_NAME 을 쓴다(O37 신설)</td>
+          <td>홍보방법 원천코드 (#118). 코드id:CM008.</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>캠페인 유형(#17) = 캠페인 카테고리 라벨(SILVER MM294, 56종). 예: 국내사례캠페인·굿즈캠페인·해외캠페인. ⚠️숫자코드 아님(2026-07-16 라벨화)</td>
+          <td>CAMPAIGN_TYPE (#17). 코드id:MM294.</td>
         </tr>
         <tr>
           <td><code>DOMESTIC_OVERSEAS</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>국내/해외(#15) = SILVER CMPGN_TYPE1_NM(MM295): 국내 / 통합 / 해외. (종전 전건 NULL — 2026-07-16 BRONZE 재입고로 채움)</td>
+          <td>DOMESTIC_OVERSEAS (#15). 코드id:MM295.</td>
         </tr>
         <tr>
           <td><code>BIZ_CASE_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>사업/사례(#16) = SILVER CMPGN_TYPE2_NM(MM296): 굿즈 / 기타 / 사례 / 사업. ⚠️종전 모델이 유형1(국내/해외)을 여기 매핑한 의미혼입을 2026-07-16 교정</td>
+          <td>BIZ_CASE_TYPE (#16). 코드id:MM296.</td>
         </tr>
         <tr>
           <td><code>INFLOW_PATH</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>개발인입경로 라벨(SILVER MM293). 예: 디지털·방송·영상광고·지역개발·마케팅콜개발·대면모금·직원개발. 🔴 이 축은 **모집 채널**이다 — 2026-07-16 신설 시 「현업 주요캠페인 분류축」이라 적었던 표기는 거짓이므로 회수한다(O37). 캠페인 카테고리 = CAMPAIGN_TYPE(MM294) · 상위캠페인 = PARENT_CAMPAIGN_NAME</td>
+          <td>INFLOW_PATH. 코드id:MM293.</td>
         </tr>
         <tr>
           <td><code>MARKETING_CAMPAIGN</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>마케팅캠페인명(SILVER MK_CMPGN_NM). Q16 해소(2026-07-16 신설)</td>
+          <td>MARKETING_CAMPAIGN.</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_OPEN_DATE</code></td>
@@ -914,13 +901,13 @@ erDiagram
           <td><code>PARENT_CAMPAIGN_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>상위캠페인명. 코드id:MM294.</td>
         </tr>
         <tr>
           <td><code>PROMO_METHOD_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>홍보방법명. 코드id:CM008.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -950,49 +937,49 @@ erDiagram
           <td><code>SPNSR_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>후원구분 원천코드(CM035): 1=정기후원 · 2=일시후원. 🔴 라벨이 아니다 — 사람이 읽는 이름은 SPNSR_DIV_NM.</td>
+          <td>후원구분 원천코드(CM035): 1=정기후원 · 2=일시후원. 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>SPNSR_DIV_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>후원구분명 — SPNSR_DIV_CD 를 코드사전 CM035 로 해소한 라벨(정기후원/일시후원).</td>
+          <td>후원구분명. 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>CPR_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>법인구분 원천코드(CM019): A=통합 · I=사단 · S=사복. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CPR_DIV_NM.</td>
+          <td>CPR_DIV_CD. 코드id:CM019.</td>
         </tr>
         <tr>
           <td><code>CPR_DIV_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>법인구분명 — CPR_DIV_CD 를 코드사전 CM019 로 해소한 라벨(통합/사단/사복).</td>
+          <td>법인구분명. 코드id:CM019.</td>
         </tr>
         <tr>
           <td><code>CMMN_BRND</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>공통브랜드 원천코드(MM297, 14종). 🔴 라벨이 아니다 — 사람이 읽는 이름은 CMMN_BRND_NM.</td>
+          <td>공통브랜드 원천코드(MM297, 14종). 코드id:MM297.</td>
         </tr>
         <tr>
           <td><code>CMMN_BRND_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>공통브랜드명 — CMMN_BRND 를 코드사전 MM297 로 해소한 라벨. ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지.</td>
+          <td>공통브랜드명. 코드id:MM297.</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>UTM 원천코드 — 코드사전이 아니라 SILVER 신설 원천 TM_CM_MKTNG_UTM(MK_UTM)과 연동. 🔴 라벨이 아니다 — 사람이 읽는 이름은 MKTG_UTM_NM.</td>
+          <td>UTM 원천코드.</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>UTM 라벨 — MKTG_UTM 을 TM_CM_MKTNG_UTM(MK_UTM_NM)으로 해소한 값.</td>
+          <td>UTM 라벨.</td>
         </tr>
             </tbody>
           </table>

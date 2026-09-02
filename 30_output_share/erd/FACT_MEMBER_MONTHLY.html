@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_MONTHLY - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_MONTHLY",
     "table": "FACT_MEMBER_MONTHLY",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -518,7 +503,7 @@ flowchart LR
   end
   subgraph GOLD [3. GOLD 마트]
     G_FACT_MEMBER_MONTHLY["★ FACT_MEMBER_MONTHLY<br/>회원 월 팩트 (MONTH_KEY × MEMB"]:::target
-    G_DIM_ORG["DIM_ORG"]:::gold
+    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
     G_DIM_REASON["DIM_REASON<br/>사유코드 차원 (중단/미납)"]:::gold
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
     G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
@@ -622,28 +607,28 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MONTH {
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_PAYMENT {
     string PAYMENT_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_REASON {
     string REASON_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_MONTHLY {
     string MEMBER_DK FK
@@ -652,14 +637,14 @@ erDiagram
     string PAYMENT_SK FK
     string REASON_SK FK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK → MEMBER_DK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK → PAYMENT_SK"
-  DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK → REASON_SK"
-  DIM_MONTH ||--o{ FACT_MEMBER_MONTHLY : "MONTH_KEY → MONTH_KEY"
+  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK"
+  DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK"
+  DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK"
+  DIM_MONTH ||..o{ FACT_MEMBER_MONTHLY : "MONTH_KEY"
           </pre>
         </div>
 
@@ -774,7 +759,7 @@ erDiagram
           <td><code>IS_MULTI_SPONSORSHIP</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>[DEC-41] 그 달 회비 행이 귀속된 후원사업이 2개 이상인지 = SPONSORSHIP_SK 가 0 인 사유의 구분자. 🔴 SPONSORSHIP_SK=0 에는 두 사유가 섞인다: TRUE=다중 사업이라 대표를 고르지 않았다(정책) / FALSE=회비 행에 후원사업이 없거나 회비 행 자체가 없다. 이 플래그가 없으면 두 사유를 가를 수 없다. 🔴 IS_MULTI_PAID_BIZ 와 **모집단이 다르다**: 그쪽은 회비·PAY_AMT&gt;0 한정 「납입 발생」 사업수이고 이 컬럼은 청구·기부금 포함 전 행의 「귀속」 사업이다 ⇒ 두 값이 어긋나는 것은 결함이 아니다. 규칙·실측 근거 = 20_issue/30_설계_의사결정.md §28(DEC-41)</td>
+          <td>[DEC.</td>
         </tr>
         <tr>
           <td><code>PAYMENT_SK</code></td>
@@ -786,7 +771,7 @@ erDiagram
           <td><code>REASON_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td></td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>MONTH_KEY</code></td>
@@ -798,19 +783,19 @@ erDiagram
           <td><code>DEV_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발(건) — A1: FME(CRM_MEMBER_DEV) 사건수 롤업. ⚠️금액/10000 의미는 원천 금액컬럼+FME 변경 필요(별도트랙, #4·5·149)</td>
+          <td>개발(건) (#4).</td>
         </tr>
         <tr>
           <td><code>DEV_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>개발(명)(#148) — A1: 월×회원 개발발생=1. 🟢이 컬럼은 **옳다**: grain 이 월×회원이라 SUM 이 곧 개발(명)이며 466개월 전부 COUNT(DISTINCT MEMBER_DK) 와 일치 실측(O39). ⚠️동명의 FACT_MEMBER_EVENT.DEV_MEMBERS 는 사건 플래그로 SUM 이 건수다 — 혼용 금지.</td>
+          <td>개발(명) (#148).</td>
         </tr>
         <tr>
           <td><code>STOP_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)</td>
+          <td>중단(건) (#35).</td>
         </tr>
         <tr>
           <td><code>UNPAID_CNT</code></td>
@@ -822,25 +807,25 @@ erDiagram
           <td><code>ACTIVE_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>활동(건) (#37·157) — 🟢 [O93] 배선 완료. 정본 #52 = 활동회원의 전체후원사업금액/10,000. 판정축 = **as-of 월말 미중단 후원사업 보유**(상태코드가 아니다 — 상태는 현재값이라 과거 월을 평가할 수 없다). 🔴 NULL = 판정 불가(Unknown 월 또는 후원사업 이력 없음)이고 0 = 활동 아님이다 — 둘을 같게 읽지 말 것. ⚠️ ACTIVE_MEMBERS 와 단위가 달라 서로 더하면 안 된다.</td>
+          <td>활동(건) (#37·157) (#37).</td>
         </tr>
         <tr>
           <td><code>ACTIVE_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>활동(명) (#156) — 🟢 [O93] 배선 완료. 정본 #51 월말활동회원. 행당 1/0 이므로 회원수는 SUM 으로 구한다. 🔴 NULL = 판정 불가 · 0 = 활동 아님. ⚠️ 정본 #42 미납회원은 활동회원의 **부분집합**이라 활동+미납 합산은 이중계상이다(CONF-1).</td>
+          <td>활동(명) (#156).</td>
         </tr>
         <tr>
           <td><code>ACTIVE_CUM_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>활동누계(건) (#159) — 🔴 전건 NULL(미배선). 원인 = 정본에 「활동 누계」의 정의가 없다(누적 개월수·누적 금액·기수 누계 중 무엇인지 미확정). 임의 선택은 정의 창작이므로 보류한다. NULL 을 0 으로 읽지 말 것.</td>
+          <td>활동누계(건) (#159). [사유:산출보류]</td>
         </tr>
         <tr>
           <td><code>ACTIVE_CUM_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>활동누계(명) (#158) — 🔴 전건 NULL(미배선). 사유는 ACTIVE_CUM_CNT 와 동일(정본 정의 부재).</td>
+          <td>활동누계(명) (#158).</td>
         </tr>
         <tr>
           <td><code>INCREASE_CNT</code></td>
@@ -870,25 +855,25 @@ erDiagram
           <td><code>YEAR_START_ACTIVE_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>연도초 활동회원(건) (#49) — 🟢 [O93] 배선 완료. 해당 연도 YYYY01 시점 as-of 재평가값이다(당월값의 복제가 아니다).</td>
+          <td>연도초 활동회원(건) (#49).</td>
         </tr>
         <tr>
           <td><code>YEAR_END_ACTIVE_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>연도말 활동회원(건) (#50) — 🟢 [O93] 배선 완료. 해당 연도 YYYY12 시점 as-of. ⚠️ 미래 연도 행에서는 아직 오지 않은 시점이라 당월값과 같아질 수 있다.</td>
+          <td>연도말 활동회원(건) (#50).</td>
         </tr>
         <tr>
           <td><code>MONTH_END_ACTIVE_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>월말활동회원(건) (#52) — 🟢 [O93] 배선 완료. 🟢 ACTIVE_CNT 와 **같은 값이다** — 판정 자체가 as-of 월말이라 축이 하나다. 두 컬럼 병존은 소비 호환 목적이며 불일치가 아니다.</td>
+          <td>월말활동회원(건) (#52).</td>
         </tr>
         <tr>
           <td><code>PREV_MONTH_END_ACTIVE_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>전월말 활동회원(건) (#53) — 🟢 [O93] 배선 완료(DEC-19 (d) 해소). 🔴 LAG 가 아니라 **달력상 전월을 직접 as-of 재평가**한 값이다 — 팩트 스파인이 sparse 해서 LAG 는 직전 「존재하는」 행을 집어 전월이 아닐 수 있다.</td>
+          <td>전월말 활동회원(건) (#53).</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_UNPAID_CNT</code></td>
@@ -924,31 +909,31 @@ erDiagram
           <td><code>PAID_FEE</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>납입 **총액**(원) = 회비+기부금 (#69·70 단일화). 🔴「납입회비」가 아니다(O40) — 회비만은 PAID_FEE_BILLABLE. 납부율 분자로 쓰지 말 것(분모 BILLED_AMT 는 회비 청구만이라 모집단 불일치).</td>
+          <td>납입 **총액**(원) = 회비+기부금 (#69·70 단일화) (#69).</td>
         </tr>
         <tr>
           <td><code>BILLED_AMT</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>회비 청구액(원) (#71). 기부금은 원천에 청구 컬럼이 없어 포함되지 않는다(O40).</td>
+          <td>BILLED_AMT (#71).</td>
         </tr>
         <tr>
           <td><code>PAID_FEE_BILLABLE</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td></td>
+          <td>회비만 납입액(원).</td>
         </tr>
         <tr>
           <td><code>UNPAID_BILLED_AMT</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td></td>
+          <td>미납 청구액(원).</td>
         </tr>
         <tr>
           <td><code>INBOUND_CALL_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>인바운드콜수 (overview) — 비-CRM 별도 입력</td>
+          <td>인바운드콜수 (overview).</td>
         </tr>
         <tr>
           <td><code>TS_CALL_CNT</code></td>
@@ -1068,13 +1053,13 @@ erDiagram
           <td><code>PAID_SPONSOR_BIZ_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>W4/ML: 그 달 실제 납입(PAY_AMT&gt;0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL</td>
+          <td>PAID_SPONSOR_BIZ_CNT.</td>
         </tr>
         <tr>
           <td><code>IS_MULTI_PAID_BIZ</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT&gt;1). HAS_BILLING=FALSE면 NULL</td>
+          <td>IS_MULTI_PAID_BIZ.</td>
         </tr>
         <tr>
           <td><code>HAS_BILLING</code></td>

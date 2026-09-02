@@ -7,7 +7,7 @@
   <title>FACT_GA_BEHAVIOR - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_GA_BEHAVIOR",
     "table": "FACT_GA_BEHAVIOR",
     "domain": "GA4 / 디지털 행동",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -586,32 +571,32 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DATE {
     string DATE_SK PK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DEVICE {
     string DEVICE_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_GA_EVENT {
     string GA_EVENT_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_GA_SOURCE {
     string GA_SOURCE_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER_IDENTITY {
     string IDENTITY_SK PK
     string MEMBER_DK FK
-    string MEMBER_NO KEY
-    string GA_MEMBER_ID KEY
-    string HOMEPAGE_ID KEY
-    string DW_BATCH_ID KEY
+    string MEMBER_NO
+    string GA_MEMBER_ID
+    string HOMEPAGE_ID
+    string DW_BATCH_ID
   }
   FACT_GA_BEHAVIOR {
     string DATE_SK FK
@@ -620,14 +605,14 @@ erDiagram
     string GA_SOURCE_SK FK
     string DEVICE_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_DATE ||--o{ FACT_GA_BEHAVIOR : "DATE_SK → DATE_SK"
-  DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK → IDENTITY_SK"
-  DIM_GA_EVENT ||--o{ FACT_GA_BEHAVIOR : "GA_EVENT_SK → GA_EVENT_SK"
-  DIM_GA_SOURCE ||--o{ FACT_GA_BEHAVIOR : "GA_SOURCE_SK → GA_SOURCE_SK"
-  DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK → DEVICE_SK"
-  DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK → CAMPAIGN_SK"
+  DIM_DATE ||--o{ FACT_GA_BEHAVIOR : "DATE_SK"
+  DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK"
+  DIM_GA_EVENT ||--o{ FACT_GA_BEHAVIOR : "GA_EVENT_SK"
+  DIM_GA_SOURCE ||--o{ FACT_GA_BEHAVIOR : "GA_SOURCE_SK"
+  DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK"
+  DIM_CAMPAIGN ||--o{ FACT_GA_BEHAVIOR : "CAMPAIGN_SK"
           </pre>
         </div>
 
@@ -730,7 +715,7 @@ erDiagram
           <td><code>IDENTITY_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>방문자 회원식별 (FK→DIM_MEMBER_IDENTITY)</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>GA_EVENT_SK</code></td>
@@ -754,7 +739,7 @@ erDiagram
           <td><code>CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>세션캠페인(#102) — 🔴 상수 0 하드코딩(센티넬). GA UTM 캠페인이 여러 종인데 하나로 뭉개져 있다(P51 위반 · 종수는 문서10 §26). SILVER.GA4_EVENT.UTM_CAMPAIGN(채움 규모는 문서10 §26) 미배선 → 캠페인축 분석 불가. WIDE 의 CAMPAIGN_BK/NAME/BRAND 도 전건 (미매핑)</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>PAGE_PATH</code></td>
@@ -772,31 +757,31 @@ erDiagram
           <td><code>VISITS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>방문수(명) (#92) — 가산(실측 배수 1.0000). SESSION_CNT 의 가산 대체축</td>
+          <td>방문수(명) (#92).</td>
         </tr>
         <tr>
           <td><code>EVENT_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>이벤트수(명) (#95) — 가산(실측 배수 1.0000)</td>
+          <td>이벤트수(명) (#95).</td>
         </tr>
         <tr>
           <td><code>VIEW_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>조회수(명) (#96) — 가산(실측 배수 1.0000)</td>
+          <td>조회수(명) (#96).</td>
         </tr>
         <tr>
           <td><code>SESSION_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>세션수(명) (#97) — 🔴**비가산**. COUNT(DISTINCT user||session) 인데 집계 grain 이라 같은 세션이 여러 행에 반복된다. SUM 과 실제 distinct 의 격차(과대 배수)는 문서10 §26 → SUM 금지. 가산 대체 = VISITS</td>
+          <td>세션수(명) (#97).</td>
         </tr>
         <tr>
           <td><code>ENGAGED_SESSIONS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>참여세션수 — 🔴**비가산**. COUNT(DISTINCT) + 집계 grain. SUM 과 실제 distinct 의 격차(과대 배수)는 문서10 §26 → SUM 금지</td>
+          <td>참여세션수.</td>
         </tr>
         <tr>
           <td><code>SCROLL_DEPTH</code></td>

@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_EVENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_EVENT",
     "table": "FACT_MEMBER_EVENT",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -506,7 +491,7 @@ flowchart LR
   end
   subgraph GOLD [3. GOLD 마트]
     G_FACT_MEMBER_EVENT["★ FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK × MEMB"]:::target
-    G_DIM_ORG["DIM_ORG"]:::gold
+    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
@@ -580,29 +565,31 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DATE {
     string DATE_SK PK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_ORG {
     string ORG_SK PK
-    string ORG_DK KEY
+    string ORG_DK
+    string ACMSLT_UPPER_DEPT_ID
+    string DW_BATCH_ID
   }
   DIM_REASON {
     string REASON_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_EVENT {
     string DATE_SK FK
@@ -611,14 +598,14 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_DATE ||--o{ FACT_MEMBER_EVENT : "DATE_SK → DATE_SK"
-  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK → MEMBER_DK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK → ORG_SK"
-  DIM_REASON ||--o{ FACT_MEMBER_EVENT : "REASON_SK → REASON_SK"
+  DIM_DATE ||--o{ FACT_MEMBER_EVENT : "DATE_SK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK"
+  DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
+  DIM_REASON ||--o{ FACT_MEMBER_EVENT : "REASON_SK"
           </pre>
         </div>
 
@@ -739,7 +726,7 @@ erDiagram
           <td><code>ORG_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td></td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>REASON_SK</code></td>
@@ -751,13 +738,13 @@ erDiagram
           <td><code>DVLP_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>개발구분코드. 코드id:MM015.</td>
         </tr>
         <tr>
           <td><code>DVLP_DIV_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>개발구분명. 코드id:MM015.</td>
         </tr>
         <tr>
           <td><code>STOP_REASON</code></td>
@@ -829,25 +816,25 @@ erDiagram
           <td><code>EVENT_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>원천 계통 구분: DEV=개발원천(TM_MM_FDRM_MBER_DVLP_AMT) / STOP=중단원천(TM_MM_FDRM_MBER_SPNSR_DSCNTC). ⚠️ 상태(신규·증액·감액·재후원·후원중단)는 DVLP_DIV_CD/DVLP_DIV_NM 참조 — O24</td>
+          <td>EVENT_TYPE.</td>
         </tr>
         <tr>
           <td><code>SPNSR_AMT</code></td>
           <td><code>NUMBER(18,0)</code></td>
           <td></td>
-          <td>후원금액(원) — 원천 raw. 감액·후원중단은 음수. 정본 공#38 감액(건)·#151 증액(건) = 금액÷10,000 이므로 원금액 보존(설계 §1·CONF-2). 중단원천 행은 NULL</td>
+          <td>후원금액(원) (#38).</td>
         </tr>
         <tr>
           <td><code>DEV_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발(건) (#149) — 정본 공#121 개발구분 = 신규(1)·증액(2)·재후원(4) 한정. ⚠️ 2026-08-03 O24 교정: 종전은 감액·후원중단까지 포함해 과대계상이었다(교정 전후 값·과대율은 문서10 §26)</td>
+          <td>개발(건) (#149).</td>
         </tr>
         <tr>
           <td><code>DEV_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>🔴「명」이 아니다 — 개발 사건 플래그(0/1). SUM 은 개발(건)이며 실제 고유회원 대비 과대다(규모·과대율은 문서10 §26 · O39). 개발(명)(#148)은 COUNT(DISTINCT MEMBER_DK). 월 단위는 FACT_MEMBER_MONTHLY.DEV_MEMBERS 사용.</td>
+          <td>「명」이 아니다 (#148).</td>
         </tr>
         <tr>
           <td><code>STOP_CNT</code></td>
@@ -859,7 +846,7 @@ erDiagram
           <td><code>STOP_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>🔴「명」이 아니다 — 중단 사건 플래그(0/1). SUM 은 중단(건)이며 실제 고유회원 대비 과대다(규모·과대율은 문서10 §26 · O39). 중단(명)은 COUNT(DISTINCT MEMBER_DK).</td>
+          <td>「명」이 아니다.</td>
         </tr>
         <tr>
           <td><code>UNPAID_STOP_CNT</code></td>
@@ -871,7 +858,7 @@ erDiagram
           <td><code>UNPAID_STOP_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>미납중단(명) — 05 2-2 원천 확인(정본 §3 건·명)</td>
+          <td>미납중단(명).</td>
         </tr>
         <tr>
           <td><code>JOIN_DATE</code></td>
@@ -919,19 +906,19 @@ erDiagram
           <td><code>MBER_INFLOW_PATH_CD_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>개발인입경로코드(MM293) — 사건 시점 동결값. 라벨=MBER_INFLOW_PATH_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>개발인입경로코드(MM293). 코드id:MM293.</td>
         </tr>
         <tr>
           <td><code>MBER_INFLOW_PATH_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>개발인입경로명(MM293 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>개발인입경로명(MM293 라벨). 코드id:MM293.</td>
         </tr>
         <tr>
           <td><code>CMPGN_CTGR_CD_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>캠페인 카테고리코드(MM294) — 사건 시점 동결값. 라벨=CMPGN_CTGR_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>캠페인 카테고리코드(MM294). 코드id:MM294.</td>
         </tr>
         <tr>
           <td><code>CMPGN_CTGR_NM_AT_EVENT</code></td>
@@ -943,85 +930,85 @@ erDiagram
           <td><code>CMPGN_TYPE1_BSN_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>캠페인 유형1 코드(MM295, 국내/통합/해외) — 사건 시점 동결값. 라벨=CMPGN_TYPE1_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>캠페인 유형1 코드(MM295, 국내/통합/해외). 코드id:MM295.</td>
         </tr>
         <tr>
           <td><code>CMPGN_TYPE1_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>캠페인 유형1명(MM295 라벨: 국내/통합/해외) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>캠페인 유형1명(MM295 라벨: 국내/통합/해외). 코드id:MM295.</td>
         </tr>
         <tr>
           <td><code>CMPGN_TYPE2_BSN_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업) — 사건 시점 동결값. 라벨=CMPGN_TYPE2_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업). 코드id:MM296.</td>
         </tr>
         <tr>
           <td><code>CMPGN_TYPE2_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업). 코드id:MM296.</td>
         </tr>
         <tr>
           <td><code>MKTG_CMPGN_CD_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>마케팅캠페인 코드(FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD) — 사건 시점 동결값. 라벨=MKTG_CMPGN_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>MKTG_CMPGN_CD_AT_EVENT.</td>
         </tr>
         <tr>
           <td><code>MKTG_CMPGN_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>마케팅 캠페인명(Q16 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>마케팅 캠페인명(Q16 라벨).</td>
         </tr>
         <tr>
           <td><code>CMMN_BRND_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>MM297 공통브랜드 코드 — 사건 시점 동결값. 라벨=CMMN_BRND_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>MM297 공통브랜드 코드. 코드id:MM297.</td>
         </tr>
         <tr>
           <td><code>CMMN_BRND_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>MM297 공통브랜드명 — 사건 시점 동결값. ⚠️라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지. 중단원천 행은 NULL</td>
+          <td>MM297 공통브랜드명. 코드id:MM297.</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>UTM 코드(TM_CM_MKTNG_UTM.MK_UTM) — 사건 시점 동결값. 라벨=MKTG_UTM_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>UTM 코드(TM_CM_MKTNG_UTM.MK_UTM).</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM).</td>
         </tr>
         <tr>
           <td><code>SPNSR_DIV_CD_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>후원구분 코드(CM035: 1=정기후원·2=일시후원) — 사건 시점 동결값. 라벨=SPNSR_DIV_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>후원구분 코드(CM035: 1=정기후원·2=일시후원). 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>SPNSR_DIV_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>후원구분명(CM035 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>후원구분명(CM035 라벨). 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>CPR_DIV_CD_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>법인구분 코드(CM019: A=통합·I=사단·S=사복) — 사건 시점 동결값. 라벨=CPR_DIV_NM_AT_EVENT. 중단원천 행은 NULL</td>
+          <td>법인구분 코드(CM019: A=통합·I=사단·S=사복). 코드id:CM019.</td>
         </tr>
         <tr>
           <td><code>CPR_DIV_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>법인구분명(CM019 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>법인구분명(CM019 라벨). 코드id:CM019.</td>
         </tr>
         <tr>
           <td><code>BRAND_AT_EVENT</code></td>
@@ -1033,13 +1020,13 @@ erDiagram
           <td><code>PARENT_CAMPAIGN_NAME_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨).</td>
         </tr>
         <tr>
           <td><code>PROMO_METHOD_NAME_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>홍보방법명(CM008 라벨) — 사건 시점 동결값. 중단원천 행은 NULL</td>
+          <td>홍보방법명(CM008 라벨). 코드id:CM008.</td>
         </tr>
             </tbody>
           </table>

@@ -298,15 +298,39 @@ read 미반환: <건수> · 재호출 <건수>   ← 0 이면 「0」이라고 �
   🔴🔴 **`R1-7-9` 는 O106·O109·O112 가 **다시 어겼다** — `python3 -c`·quoted heredoc **둘 다 셸 경유**다.
   ⇒ 🔴 **본문에 백틱·`$`·`!` 가 있으면 `edit`/`write` 툴로 쓴다**(경위 = `91` §C16·§C24 계열).
 - 원장 표를 건드렸으면 `python3 scripts/index_row_gate.py` 로 **행 유실·중복 0** 을 확인한다.
-- 🆕 **문서 유형·용량 불변식**(지침 `R1-6-14`~`R1-6-18` · 정본 = `00_guides/01_문서분할_규약.md`):
+- 🆕 **문서 유형·용량 불변식 및 제너레이터 체계**(지침 `R1-6-14`~`R1-6-18` · 정본 = `00_guides/01_문서분할_규약.md`):
   · `python3 scripts/doc_type_gate.py` — **유형 미선언 0 · 상한 초과 0 · 여유 부족 0** 을 확인한다.
     유형 정본은 **원장 §0 「문서 유형 등재표」**다(문서 수는 `doc_census.py` 로 재라).
   · 🔴🔴 **허브(`00_INDEX_이슈원장.md` 등 분할된 문서의 원 파일)에 내용을 쓰지 마라.**
     허브는 **자동 생성물**이고 `--republish`·`--rebalance`·`--rollover` 가 **통째로 다시 쓴다**
     ⇒ 허브에 손으로 적은 문장은 **경고 없이 사라진다**(조용한 소실 · 이 워크스페이스가 4번 당한 유형).
     **내용은 조각(`-001`…)에 쓴다.**
-  · **갱신형 내용 수정** = 해당 **조각**을 `edit` → `python3 scripts/split_doc.py <허브> --republish`.
-  · **append형 항목 추가**(이력·`90`) = `--rollover --entry-file <추가할.md>` — 조각을 직접 열지 않는다.
+
+  ▣ **[문서 제너레이터 도구 일람표]**
+  1. **허브 재구성 제너레이터 (`scripts/split_doc.py --republish`)**:
+     - 조각 파일(`_조각/`) 편집 후 허브 파일을 재생성한다.
+     - 🔴 **`--expect TOKEN` 필수**(`R1-6-23`): 방금 넣은 핵심 변경 토큰이 조각과 허브에 실제로 존재하는지 기계 검증(누락 시 실패).
+     - 예시: `python3 scripts/split_doc.py 20_issue/30_설계_의사결정.md --republish --expect "DEC-49"`
+  2. **Append형 문서 롤오버 제너레이터 (`scripts/split_doc.py --rollover`)**:
+     - `01_세션이력.md`, `90_해소완료_로그.md` 등 추가형 문서에 조각 상한(300줄/40KB)을 준수하며 새 항목을 자동 배분 및 허브 갱신.
+     - 예시: `python3 scripts/split_doc.py 20_issue/01_세션이력.md --rollover --entry-file tmp/_o135_entry.md`
+  3. **조각 재균형 제너레이터 (`scripts/split_doc.py --rebalance`)**:
+     - 조각이 300줄/40KB 상한에 근접했을 때 섹션 단위로 균등 재분할 (`--fill 0.7` 등).
+  4. **조각 폴더화 제너레이터 (`scripts/split_doc.py --to-outdir`)**:
+     - 형제 방식 조각들을 `_조각/` 전용 폴더로 안전 이전 (`--to-outdir <이름>_조각 --apply`).
+  5. **착수 브리핑 생성기 (`scripts/session_brief.py --write`)**:
+     - `99_NEXT_SESSION` 착수표, 직전 세션 인수인계, 문서50 미결, 게이트 6종 상태를 자동 추출하여 `20_issue/00_BRIEF.md` 생성.
+  6. **실측 백로그 생성기 (`scripts/gen_measure_backlog.py --write`)**:
+     - 라이브 미실측 및 보류 항목을 추출하여 `20_issue/92_실측필요_후속작업.md` 생성.
+  7. **장문 셀 은퇴 제너레이터 (`scripts/retire_rows.py --apply`)**:
+     - 원장 표의 닫힌 행 장문 셀을 포인터화하고 `90_해소완료_로그`로 이관.
+  8. **절 본문 은퇴 제너레이터 (`scripts/retire_sections.py --apply`)**:
+     - 닫힌 절의 본문을 은퇴 문서로 이관(제목줄 보존).
+  9. **사례집 이관 제너레이터 (`scripts/split_narrative.py`)**:
+     - 지침 조문의 경위 서사를 `91_사고사례집.md`로 자동 분리.
+
+  · **갱신형 내용 수정** = 해당 **조각**을 `edit` → `python3 scripts/split_doc.py <허브> --republish --expect "<토큰>"`.
+  · **append형 항목 추가**(이력·`90`) = `python3 scripts/split_doc.py <허브> --rollover --entry-file <추가할.md>` — 조각을 직접 열지 않는다.
   · 조각이 상한에 가까우면 `split_doc.py <허브> --rebalance` (부분 충전 `--fill 0.7`).
     🆕 ⚠️ **[O106] 미분할 문서를 처음 쪼갤 때는 `--rebalance` 가 따로 필요하다** — `build` 는 `fill` 을
     받지 않아 **상한 이내면 1조각으로 끝난다**(`fits()` 판정). 2단계로 한다:

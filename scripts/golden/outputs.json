@@ -26,11 +26,29 @@
    "diff_count": 13,
    "label": "O129",
    "reason": "O129/O129-B 편집분 13건 전량 규명 후 갱신 — 실유실 0. ① desc_cell +2 = DIM_AD_CREATIVE.PLATFORM_TYPE·TARGET_GROUP 에 NULL 사유를 병기(R2-7-2 이행) ② entry_keys -2 = DURATION_SEC(O129 stale 정정)·RT_TYPE(O129-B 드랍 완료)을 05_필드인벤토리 D7 에서 취소선 처리 ③ index_key 소멸 4/신설 2 = 위 취소선 2건 + 설명 셀 병기로 색인 키가 타겟그룹->타겟그룹O129전건null 형태로 변형된 2쌍. 골든 측정일 2026-08-30 -> 2026-09-01. 스키마 지문은 dump_schema.py 선행 실행으로 보전했다."
+  },
+  {
+   "date": "2026-09-02 05:19:54",
+   "diff_count": 21,
+   "label": "UNLABELED",
+   "reason": "O134-B: DEC-44/DEC-46/SV_AD/BIGQUERY 스키마 변경 및 산출물 전수 재생성 최신화 반영"
+  },
+  {
+   "date": "2026-09-02 05:41:36",
+   "diff_count": 11,
+   "label": "UNLABELED",
+   "reason": "O134-B: 라이브 census.json 및 현행 스키마(DEC-46/DEC-44/SV_AD) 기반 30_output_share 전수 재생성 및 골든 갱신"
+  },
+  {
+   "date": "2026-09-02 06:53:19",
+   "diff_count": 7,
+   "label": "UNLABELED",
+   "reason": "O136 착수표 ⑰ 마케팅 섹션 4(FME) 및 섹션 5(FMC) 앵커 오버라이드 반영"
   }
  ],
- "measured": "2026-09-01",
+ "measured": "2026-09-02",
  "metrics": {
-  "04.rows": 565,
+  "04.rows": 563,
   "05.field_sections": {
    "## 마케팅 보고서필드 → 지표#/GOLD": 73,
    "## 회원 보고서필드 → 지표#/GOLD": 434
@@ -52,11 +70,11 @@
    "판정보류(동명이의)": 13
   },
   "07.exists": true,
-  "08.rows": 752,
+  "08.rows": 754,
   "08.status": {
-   "DROPPED": 141,
+   "DROPPED": 140,
    "NO_CONSUMER": 28,
-   "REFERENCED": 291,
+   "REFERENCED": 294,
    "SILVER_ONLY_CHAIN": 292
   },
   "09.anchors": {
@@ -65,9 +83,10 @@
    "FACT_DEV_ACHIEVEMENT": 32,
    "FACT_EVENT_PARTICIPATION": 60,
    "FACT_GA_BEHAVIOR": 98,
-   "FACT_MEMBER_EVENT": 33,
+   "FACT_MEMBER_COHORT": 12,
+   "FACT_MEMBER_EVENT": 45,
    "FACT_MEMBER_FEE": 20,
-   "FACT_MEMBER_MONTHLY": 138,
+   "FACT_MEMBER_MONTHLY": 114,
    "FACT_SERVICE_EVENT": 90
   },
   "09.evidence_violations": [],
@@ -76,8 +95,8 @@
    "마케팅 | 1. 개발현황 (목표, 실적)": "FACT_DEV_ACHIEVEMENT | ",
    "마케팅 | 2. 집행예산 및 개발효율": "FACT_BUDGET | ",
    "마케팅 | 3. 매체별 개발효율 상세": "FACT_AD_PERFORMANCE | ",
-   "마케팅 | 4. 전환회원 특성": "FACT_MEMBER_MONTHLY | ",
-   "마케팅 | 5. 캠페인별 LTV (신규)": "FACT_MEMBER_MONTHLY | ",
+   "마케팅 | 4. 전환회원 특성": "FACT_MEMBER_EVENT | ",
+   "마케팅 | 5. 캠페인별 LTV (신규)": "FACT_MEMBER_COHORT | ",
    "회원 | 1-1. [회원] 개발실적보고 (일일) · CRM 필드": "FACT_MEMBER_MONTHLY | ",
    "회원 | 1-1. [회원] 개발실적보고 (일일) · GA 필드": "FACT_GA_BEHAVIOR | ",
    "회원 | 1-2. [회원] 개발실적보고 (주간) · CRM 필드": "FACT_DEV_ACHIEVEMENT | FACT_DEV_ACHIEVEMENT / FACT_MEMBER_FEE / FACT_MEMBER_MONTHLY",
@@ -112,15 +131,15 @@
   "09.verdict_kinds": 12,
   "09.verdicts": {
    "grain부정합": 5,
-   "값없음": 66,
+   "값없음": 62,
    "도달불가": 19,
-   "배분규칙필요": 8,
+   "배분규칙필요": 11,
    "요구grain부정합": 1,
    "원천부재": 10,
-   "조립가능": 294,
+   "조립가능": 293,
    "집계필요": 1,
    "타원천": 3,
-   "판정불가": 4,
+   "판정불가": 6,
    "판정불가(SV파생)": 92,
    "형제팩트중복": 4
   },
@@ -147,12 +166,12 @@
   "art.measured": {
    "01_DW_현업활용가이드.md": "2026-08-11",
    "03_GN_DW_개념도.html": "2026-08-30",
-   "04_컬럼계보매핑.md": "2026-08-30",
-   "05_지표GOLD매핑.md": "2026-08-30",
-   "06_BRONZE노출감사.md": "2026-08-30",
+   "04_컬럼계보매핑.md": "2026-09-02",
+   "05_지표GOLD매핑.md": "2026-09-02",
+   "06_BRONZE노출감사.md": "2026-09-02",
    "07_코드체계_관문측정.md": "2026-08-30",
-   "08_SILVER→GOLD_보존율.md": "2026-08-30",
-   "09_보고서필드_조립가능성.md": "2026-08-30"
+   "08_SILVER→GOLD_보존율.md": "2026-09-02",
+   "09_보고서필드_조립가능성.md": "2026-09-02"
   },
   "inv.desc_cell_list": [
    "DIM_AD_CREATIVE.AD_TYPE",
@@ -865,5 +884,5 @@
   "inv.label_collisions": 14,
   "inv.unreachable": []
  },
- "schema_fingerprint": "937a2dd3cd46ab80"
+ "schema_fingerprint": "06d10374589df3aa"
 }

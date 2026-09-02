@@ -186,7 +186,7 @@ def resolve_full_lineage_for_gold(gold_name, sql_models, upstream):
             bronze_sources.add(s)
 
         for parent in upstream[curr]["models"]:
-            if parent.startswith(("DIM_", "FACT_", "WIDE_")):
+            if parent.startswith(("DIM_", "FACT_")):
                 if parent != gold_name:
                     gold_parents.add(parent)
             else:
@@ -201,21 +201,21 @@ def resolve_full_lineage_for_gold(gold_name, sql_models, upstream):
         for s in upstream[sm]["sources"]:
             edges.append(("BRONZE", f"{s[0]}.{s[1]}", "SILVER", sm))
         for parent_sm in upstream[sm]["models"]:
-            if not parent_sm.startswith(("DIM_", "FACT_", "WIDE_")):
+            if not parent_sm.startswith(("DIM_", "FACT_")):
                 edges.append(("SILVER", parent_sm, "SILVER", sm))
 
     for s in upstream[gold_name]["sources"]:
         edges.append(("BRONZE", f"{s[0]}.{s[1]}", "GOLD", gold_name))
 
     for sm in upstream[gold_name]["models"]:
-        if not sm.startswith(("DIM_", "FACT_", "WIDE_")):
+        if not sm.startswith(("DIM_", "FACT_")):
             edges.append(("SILVER", sm, "GOLD", gold_name))
         else:
             edges.append(("GOLD", sm, "GOLD", gold_name))
 
     for gp in gold_parents:
         for sm in upstream[gp]["models"]:
-            if not sm.startswith(("DIM_", "FACT_", "WIDE_")):
+            if not sm.startswith(("DIM_", "FACT_")):
                 edges.append(("SILVER", sm, "GOLD", gp))
 
     return {
@@ -242,7 +242,7 @@ def extract_gold_relationships(models_meta):
     relationships = []
 
     for mname, mdata in models_meta.items():
-        if not mname.startswith(("DIM_", "FACT_", "WIDE_")):
+        if not mname.startswith(("DIM_", "FACT_")):
             continue
         for cname, cdata in mdata.get("columns", {}).items():
             tests = cdata.get("tests", [])
@@ -421,8 +421,7 @@ COMMON_STYLE = """
     }
     .main-content {
       flex: 1;
-      padding: 24px 36px;
-      max-width: 1200px;
+      padding: 24px 36px;\n      max-width: 1200px;
       overflow-x: hidden;
     }
     .header-card {
@@ -778,17 +777,26 @@ def generate_table_html(mname, models_meta, sources_meta, sql_models, upstream, 
             is_pk = "unique" in tests and "not_null" in tests
             is_fk = any(isinstance(t, dict) and "relationships" in t for t in tests)
             is_conform = any(pat_col == cname for _, pat_col, _, _, _ in LOGICAL_CONFORM_FKS)
-            if is_pk or is_fk or is_conform or cname.endswith(("_SK", "_KEY", "_DK", "_ID", "_NO")):
-                ktype = "PK" if is_pk else ("FK" if (is_fk or is_conform) else "KEY")
-                erd_lines.append(f"    string {cname} {ktype}")
+            if is_pk:
+                erd_lines.append(f"    string {cname} PK")
+            elif is_fk or is_conform:
+                erd_lines.append(f"    string {cname} FK")
+            elif cname.endswith(("_SK", "_KEY", "_DK", "_ID", "_NO")):
+                erd_lines.append(f"    string {cname}")
         erd_lines.append("  }")
 
+    seen_rel_keys = set()
     for r in related_rels:
-        erd_lines.append(f"  {r['to_table']} ||--o{{ {r['from_table']} : \"{r['from_col']} → {r['to_col']}\"")
+        rel_key = (r["to_table"], r["from_table"], r["from_col"])
+        if rel_key in seen_rel_keys:
+            continue
+        seen_rel_keys.add(rel_key)
+        op = "||..o{" if "Logical" in r.get("source", "") else "||--o{"
+        erd_lines.append(f'  {r["to_table"]} {op} {r["from_table"]} : "{r["from_col"]}"')
 
     if not related_rels:
         erd_lines.append(f"  {mname} {{")
-        erd_lines.append("    string KEY PK")
+        erd_lines.append("    string ID PK")
         erd_lines.append("  }")
 
     mermaid_erd_code = "\n".join(erd_lines)
@@ -796,7 +804,6 @@ def generate_table_html(mname, models_meta, sources_meta, sql_models, upstream, 
     # 4. Build Sidebar Items (with per-item line breaks)
     sidebar_items_dim = []
     sidebar_items_fact = []
-    sidebar_items_wide = []
 
     for gn in sorted(all_gold_names):
         active_cls = " active" if gn == mname else ""
@@ -805,12 +812,9 @@ def generate_table_html(mname, models_meta, sources_meta, sql_models, upstream, 
             sidebar_items_dim.append(item_html)
         elif gn.startswith("FACT_"):
             sidebar_items_fact.append(item_html)
-        else:
-            sidebar_items_wide.append(item_html)
 
     sidebar_dim_str = "\n".join(sidebar_items_dim)
     sidebar_fact_str = "\n".join(sidebar_items_fact)
-    sidebar_wide_str = "\n".join(sidebar_items_wide)
 
     # 5. Columns Table
     columns_html = []
@@ -910,8 +914,6 @@ def generate_table_html(mname, models_meta, sources_meta, sql_models, upstream, 
 {sidebar_dim_str}
         <div class="nav-group-title">FACT ({len(sidebar_items_fact)})</div>
 {sidebar_fact_str}
-        <div class="nav-group-title">WIDE MART ({len(sidebar_items_wide)})</div>
-{sidebar_wide_str}
       </nav>
     </aside>
 
@@ -1055,9 +1057,7 @@ def generate_table_html(mname, models_meta, sources_meta, sql_models, upstream, 
           }} else {{
             el.style.display = 'none';
           }}
-        }});
-      }});
-    }}
+        }});\n      }});\n    }}
   </script>
 </body>
 </html>
@@ -1073,7 +1073,6 @@ def generate_index_html(models_meta, sources_meta, sql_models, upstream, all_gol
     num_silver = len([m for m in sql_models if not m.startswith(("DIM_", "FACT_", "WIDE_"))])
     num_dim = len([m for m in all_gold_names if m.startswith("DIM_")])
     num_fact = len([m for m in all_gold_names if m.startswith("FACT_")])
-    num_wide = len([m for m in all_gold_names if m.startswith("WIDE_")])
     num_gold = len(all_gold_names)
 
     table_cards = []
@@ -1142,8 +1141,7 @@ def generate_index_html(models_meta, sources_meta, sql_models, upstream, all_gol
       "silver_models": {num_silver},
       "gold_tables": {num_gold},
       "dim_count": {num_dim},
-      "fact_count": {num_fact},
-      "wide_count": {num_wide}
+      "fact_count": {num_fact}
     }}
   }}
   </script>
@@ -1159,7 +1157,7 @@ def generate_index_html(models_meta, sources_meta, sql_models, upstream, all_gol
         <div>
           <h1 style="margin: 0 0 8px 0;">🌐 Good Neighbors Data Warehouse - 파이프라인 ERD & Lineage</h1>
           <div style="font-size: 1.05rem; color: var(--text-muted);">
-            BRONZE (원천 데이터) ➔ SILVER (정제/표준화 모델) ➔ GOLD (차원/팩트/와이드마트) 엔드투엔드 계보 및 ERD 카탈로그
+            BRONZE (원천 데이터) ➔ SILVER (정제/표준화 모델) ➔ GOLD (차원/팩트) 엔드투엔드 계보 및 ERD 카탈로그
           </div>
         </div>
       </div>
@@ -1180,7 +1178,7 @@ def generate_index_html(models_meta, sources_meta, sql_models, upstream, all_gol
       <div class="stat-card stat-gold">
         <div class="stat-label">GOLD 마트 테이블</div>
         <div class="stat-num">{num_gold}</div>
-        <div style="font-size:0.75rem; color:var(--text-muted);">DIM {num_dim} + FACT {num_fact} + WIDE {num_wide}</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">DIM {num_dim} + FACT {num_fact}</div>
       </div>
     </div>
 
@@ -1191,7 +1189,6 @@ def generate_index_html(models_meta, sources_meta, sql_models, upstream, all_gol
         <button class="filter-btn active" data-filter="all">전체 ({num_gold})</button>
         <button class="filter-btn" data-filter="DIM">DIM 차원 ({num_dim})</button>
         <button class="filter-btn" data-filter="FACT">FACT 팩트 ({num_fact})</button>
-        <button class="filter-btn" data-filter="WIDE">WIDE 마트 ({num_wide})</button>
         <button class="filter-btn" data-filter="CRM">회원·후원 (CRM)</button>
         <button class="filter-btn" data-filter="ERP">예산·목표 (ERP)</button>
         <button class="filter-btn" data-filter="AGENCY">마케팅·광고 (AGENCY)</button>
@@ -1324,8 +1321,8 @@ def main():
 
     print("[2/5] 리니지 및 의존성 그래프 구축 중...")
     upstream, downstream = build_lineage_graph(sql_models)
-    all_gold_names = sorted([m for m in sql_models if m.startswith(("DIM_", "FACT_", "WIDE_"))])
-    print(f"      · GOLD 대상 테이블: {len(all_gold_names)}개")
+    all_gold_names = sorted([m for m in sql_models if m.startswith(("DIM_", "FACT_"))])
+    print(f"      · GOLD 대상 테이블: {len(all_gold_names)}개 (DIM & FACT)")
 
     print("[3/5] 외래키 및 ERD 관계 추출 중...")
     all_relationships = extract_gold_relationships(models_meta)

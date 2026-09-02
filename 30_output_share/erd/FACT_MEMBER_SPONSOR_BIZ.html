@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_SPONSOR_BIZ - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_SPONSOR_BIZ",
     "table": "FACT_MEMBER_SPONSOR_BIZ",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -584,36 +569,36 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MONTH {
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_SPONSOR_BIZ {
     string MEMBER_DK FK
-    string SPNSR_BSNS_NO KEY
+    string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string SPNSR_NO KEY
+    string SPNSR_NO
     string START_MONTH_KEY FK
     string DSCNTC_MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK → MEMBER_DK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_MONTH ||--o{ FACT_MEMBER_SPONSOR_BIZ : "START_MONTH_KEY → MONTH_KEY"
-  DIM_MONTH ||--o{ FACT_MEMBER_SPONSOR_BIZ : "DSCNTC_MONTH_KEY → MONTH_KEY"
+  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
+  DIM_MONTH ||..o{ FACT_MEMBER_SPONSOR_BIZ : "START_MONTH_KEY"
+  DIM_MONTH ||..o{ FACT_MEMBER_SPONSOR_BIZ : "DSCNTC_MONTH_KEY"
           </pre>
         </div>
 
@@ -707,49 +692,49 @@ erDiagram
           <td><code>SPNSR_BSNS_NO</code></td>
           <td><code>NUMBER(19,0)</code></td>
           <td></td>
-          <td>후원사업번호(회원별 약정 일련번호, Q15) — 🔴 분류축이 아니다(DIM_SPONSORSHIP 참조). 🔴 단독 유일키 아님 — 실측 28건이 공동후원 쌍(부부 등) 2개 회원에 공유된다</td>
+          <td>후원사업번호(회원별 약정 일련번호, Q15).</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>후원사업 (FK→DIM_SPONSORSHIP, SPNSR_BSNS_ID 경유). 0=미매핑</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>대표캠페인 (FK→DIM_CAMPAIGN). 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규(DVLP_DIV_CD=1) ②그 외, 그 안에서 최초일자·최소일련번호 1건. 실측: 신규사건 보유 1,687,546건 · 신규사건 부재 483,028건(22.3%)은 전체사건 최초사건으로 대체(동률 0, 100% 클린) · 사건 자체가 없는 6건은 0(미매핑)</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>IS_MULTI_CAMPAIGN</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 distinct CMPGN_CD&gt;1 인지(실측 137건=0.01%·최대2). 대표캠페인 채택 규칙과 별개로 다중이었다는 사실을 감추지 않는다</td>
+          <td>참고용 투명성 플래그.</td>
         </tr>
         <tr>
           <td><code>SPNSR_NO</code></td>
           <td><code>VARCHAR(9)</code></td>
           <td></td>
-          <td>후원번호(Q15) — 한 회원이 여러 SPNSR_NO 를 가질 수 있고, 한 SPNSR_NO 가 여러 SPNSR_BSNS_NO 를 가질 수 있다(다대다, distinct 2,103,041 vs 총행 2,170,572, 실측)</td>
+          <td>후원번호(Q15).</td>
         </tr>
         <tr>
           <td><code>START_MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td>활동 개시 월키 YYYYMM(CRM_MEMBER_SPONSOR_SPAN 원값 그대로) — 후원(SPNSR_NO) 등록월의 근사</td>
+          <td>START_MONTH_KEY.</td>
         </tr>
         <tr>
           <td><code>DSCNTC_MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td>중단 월키 YYYYMM. 🔴 NULL=미중단(현재까지 활동)이며 결측이 아니다</td>
+          <td>중단 월키 YYYYMM.</td>
         </tr>
         <tr>
           <td><code>SPNSR_AMT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>후원사업 약정금액 원단위(CRM_MEMBER_SPONSOR_SPAN 원값)</td>
+          <td>SPNSR_AMT.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -779,7 +764,7 @@ erDiagram
           <td><code>ACQ_MBER_INFLOW_PATH_CD</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인의 모집채널 코드(MM293) — 동결값. 라벨=ACQ_MBER_INFLOW_PATH_NM</td>
+          <td>대표캠페인의 모집채널 코드(MM293). 코드id:MM293.</td>
         </tr>
         <tr>
           <td><code>ACQ_MBER_INFLOW_PATH_NM</code></td>
@@ -791,19 +776,19 @@ erDiagram
           <td><code>ACQ_CMPGN_CTGR_CD</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인의 카테고리 코드(MM294) — 동결값. 라벨=ACQ_CMPGN_CTGR_NM</td>
+          <td>대표캠페인의 카테고리 코드(MM294). 코드id:MM294.</td>
         </tr>
         <tr>
           <td><code>ACQ_CMPGN_CTGR_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>ACQ_CMPGN_CTGR_NM. 코드id:MM294.</td>
         </tr>
         <tr>
           <td><code>ACQ_CMPGN_TYPE1_BSN</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인 유형1 코드(MM295, 국내/통합/해외) — 동결값. 라벨=ACQ_CMPGN_TYPE1_NM</td>
+          <td>대표캠페인 유형1 코드(MM295, 국내/통합/해외). 코드id:MM295.</td>
         </tr>
         <tr>
           <td><code>ACQ_CMPGN_TYPE1_NM</code></td>
@@ -815,7 +800,7 @@ erDiagram
           <td><code>ACQ_CMPGN_TYPE2_BSN</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업) — 동결값. 라벨=ACQ_CMPGN_TYPE2_NM</td>
+          <td>대표캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업). 코드id:MM296.</td>
         </tr>
         <tr>
           <td><code>ACQ_CMPGN_TYPE2_NM</code></td>
@@ -827,7 +812,7 @@ erDiagram
           <td><code>ACQ_MKTG_CMPGN_CD</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인의 마케팅캠페인 코드(FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD) — 동결값. 라벨=ACQ_MKTG_CMPGN_NM</td>
+          <td>ACQ_MKTG_CMPGN_CD.</td>
         </tr>
         <tr>
           <td><code>ACQ_MKTG_CMPGN_NM</code></td>
@@ -839,7 +824,7 @@ erDiagram
           <td><code>ACQ_CMMN_BRND</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인의 MM297 공통브랜드 코드 — 동결값. 라벨=ACQ_CMMN_BRND_NM</td>
+          <td>대표캠페인의 MM297 공통브랜드 코드. 코드id:MM297.</td>
         </tr>
         <tr>
           <td><code>ACQ_CMMN_BRND_NM</code></td>
@@ -851,19 +836,19 @@ erDiagram
           <td><code>ACQ_MKTG_UTM</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>대표캠페인의 UTM 코드(TM_CM_MKTNG_UTM.MK_UTM) — 동결값. 라벨=ACQ_MKTG_UTM_NM</td>
+          <td>ACQ_MKTG_UTM.</td>
         </tr>
         <tr>
           <td><code>ACQ_MKTG_UTM_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>대표캠페인의 UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM) — 동결값</td>
+          <td>ACQ_MKTG_UTM_NM.</td>
         </tr>
         <tr>
           <td><code>ACQ_SPNSR_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>대표캠페인의 후원구분 코드(CM035) — 동결값. 라벨=ACQ_SPNSR_DIV_NM</td>
+          <td>대표캠페인의 후원구분 코드(CM035). 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>ACQ_SPNSR_DIV_NM</code></td>
@@ -875,7 +860,7 @@ erDiagram
           <td><code>ACQ_CPR_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>대표캠페인의 법인구분 코드(CM019) — 동결값. 라벨=ACQ_CPR_DIV_NM</td>
+          <td>대표캠페인의 법인구분 코드(CM019). 코드id:CM019.</td>
         </tr>
         <tr>
           <td><code>ACQ_CPR_DIV_NM</code></td>
@@ -893,7 +878,7 @@ erDiagram
           <td><code>ACQ_PARENT_CAMPAIGN_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>대표캠페인의 상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 동결값</td>
+          <td>ACQ_PARENT_CAMPAIGN_NAME.</td>
         </tr>
         <tr>
           <td><code>ACQ_PROMO_METHOD_NAME</code></td>

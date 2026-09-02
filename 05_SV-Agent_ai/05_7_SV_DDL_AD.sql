@@ -43,6 +43,7 @@ USE SCHEMA GN_DW.SERVING;
 --   ⬜ 물리 `SERVING.FACT_AD_COMBINED` 는 잔존한다 → 의존 참조 0 확인 후 로드맵 **7단계**에서 DROP.
 
 -- 6-1. SV_AD 본체
+use role gn_dw_admin;
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
   TABLES (
     ad AS GN_DW.GOLD.WIDE_AD_COMBINED

@@ -7,7 +7,7 @@
   <title>DIM_EVENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_EVENT",
     "table": "DIM_EVENT",
     "domain": "COMMON / 공통 기준",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -539,7 +524,7 @@ flowchart LR
 erDiagram
   DIM_EVENT {
     string EVENT_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_EVENT_PARTICIPATION {
     string DATE_SK FK
@@ -547,9 +532,9 @@ erDiagram
     string EVENT_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK → EVENT_SK"
+  DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK"
           </pre>
         </div>
 
@@ -613,13 +598,13 @@ erDiagram
           <td><code>EVENT_KIND</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>행사종류 코드 raw(EVENT/CRMN). 라벨=EVENT_KIND_NAME</td>
+          <td>EVENT_KIND.</td>
         </tr>
         <tr>
           <td><code>EVENT_KIND_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>행사종류명(라벨). EVENT→일반행사·CRMN→캠페인행사</td>
+          <td>행사종류명(라벨). EVENT→일반행사·CRMN→캠페인행사.</td>
         </tr>
         <tr>
           <td><code>EVENT_CATEGORY</code></td>
@@ -655,7 +640,7 @@ erDiagram
           <td><code>RECRUIT_HEADCOUNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>[DEC-30] 모집인원 ← CRM_EVENT.RCRIT_PSNNL_CO. 채움 규모·종수는 문서10 §26. 🔴행사 속성이므로 참여 팩트가 아니라 행사 차원이 정본 — 참여행 반복 시 SUM 이 대규모 과대계상된다(배수·행사 참값은 문서10 §26). 행사 단위로만 합산</td>
+          <td>[DEC.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -685,13 +670,13 @@ erDiagram
           <td><code>EVENT_CATEGORY_GROUP</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td></td>
-          <td>행사구분 코드군 ID (조인키 · EVENT_KIND=일반행사→MS286 · 캠페인행사→MS002). 🔴원천별로 코드체계가 완전히 다르다(겹침 없음) — EVENT_CATEGORY 를 단독 필터·GROUP BY 하면 두 체계가 섞인다. 이 컬럼 또는 EVENT_KIND 를 동반할 것</td>
+          <td>EVENT_CATEGORY_GROUP. 코드id:MS286.</td>
         </tr>
         <tr>
           <td><code>EVENT_CATEGORY_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>행사구분 라벨 (코드사전 CRM_CODE 조인 산물 · 등급 B 배타 확정). 사전 미등재 코드는 NULL 유지(라벨 창작 금지 · DEC-17-B)</td>
+          <td>EVENT_CATEGORY_NAME.</td>
         </tr>
             </tbody>
           </table>

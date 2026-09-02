@@ -103,7 +103,7 @@ O128 이 분류를 등재하면 해소된다.
 - **㉙** 개명 실행 전 선행조건 (SILVER 안전망)
 - **㊴** DEC-44 예산 편성 차수 회계 재작성 배선 집행
 
-## 0-HHHH. 🔴🔴 [2026-09-02 O133 필독 — **여기서 시작한다.** §0-GGGG 는 승계됐다]
+## 0-HHHH. ~~🔴🔴 [2026-09-02 O133 필독 — 여기서 시작한다. §0-GGGG 는 승계됐다]~~
 
 > 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
 > `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
@@ -131,11 +131,119 @@ O128 이 분류를 등재하면 해소된다.
 - **②** 🔴🔴 NL 스모크 — 사람이 CoWork UI 에서 직접 수행
 - **⑫** 🔴🔴 활동 스냅샷 as-of 배선 (CRM_MEMBER_SPONSOR_SPAN 기반 활동회원 판정)
 - **⑭** 🔴🔴 FME.SPONSORSHIP_SK(STOP) 동시중단 다중사업 귀속 규칙 확정 후 배선
-- **㉒** 🔴🔴 AGENT_MEMBER 라이브(도구 7개) ↔ 정본 YAML(도구 10개) 버전업 및 불일치 시정
-- **㉓** 🔴 AGENT_MARKETING 소유권 이관 (ACCOUNTADMIN ➔ GN_DW_ADMIN)
 - **㊵** 🟠 CRM_MEMBER.JOIN_DT 현업 회신(§N-10) 후 개명/배선 반영
+
+## 0-IIII. ~~🔴🔴 [2026-09-02 O134 필독 — 여기서 시작한다. §0-HHHH 는 승계됐다]~~
+
+> 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
+> `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
+> 🔴 **이 절은 좌표만 운반한다** — 정본 = 이력 **§O134**.
+
+### ▣ IIII1 🟢 이번 세션 완결 작업 (O134)
+
+1. **[SERVING] `AGENT_MARKETING` 소유권 이관 상태 검증 (착수표 ~~㉓~~)**:
+   - `SHOW AGENTS IN SCHEMA GN_DW.SERVING` 및 `SHOW GRANTS ON AGENT` 실측: owner `GN_DW_ADMIN`, USAGE 3개 역할(`GN_DW_ANALYST`·`GN_DW_VIEWER`·`GN_DW_SERVICE`) 정상 확인.
+2. **[SERVING] `AGENT_MEMBER` 라이브 ↔ 정본 YAML 동기화 검증 (착수표 ~~㉒~~)**:
+   - 라이브 `AGENT_MEMBER` VERSION$3 실측: 11개 도구 (실적 SV 8종 + ML 예측 3종) 보유.
+   - `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` 11개 도구와 100% 일치 확인.
+3. **[SILVER] `_o114b_dec44_entry.md` 정본 대조 및 아카이브 안전 이관 (착수표 ~~㉝~~)**:
+   - `_o114b_dec44_entry.md` 내용이 `30_설계` §30 (DEC-44)에 100% 반영되어 있음을 확인.
+   - `_o114b_dec44_entry.md`, `_o130_entry.md`, `_o131_entry.md` 를 `_archive/` 로 안전 이관 (`merge_check.py` PASS).
+4. **[거버넌스] `09_보고서필드_조립가능성` ↔ `sv_unit_gate.py` 동적 연계 (착수표 ~~⑦~~)**:
+   - `sv_unit_gate.py` 에 `load_required_text()` 구현으로 `09` CSV 산출물과 동적 연계 및 `sv_unit_gate.py` PASS 확인.
+5. **[산출물 전수 최신화] `30_output_share/` 산출물 6종 및 ERD 재생성 + `test_generators.py` 골든 갱신**:
+   - 라이브 스키마 지문 `06d10374589df3aa` 기반 04(계보매핑 563개), 05(지표 215개), 06(노출감사 1,153개), 08(보존율 754개), 09(조립가능성 507개), 11(미해결요약), `erd/`(52개 HTML) 전수 재생성 완료.
+   - `test_generators.py` 골든 갱신 후 21/21 PASS 달성.
+6. **[거버넌스] `92_실측필요_후속작업.md` 재생성 (착수표 ~~㉚~~)**:
+   - `gen_measure_backlog.py --write` 실행 완료 (20항목 10,251 B).
+
+### ▣ IIII2 🔴 다음 세션 열린 작업 (착수표 참조)
+
+- **②** 🔴🔴 NL 자연어 질의 라우팅 스모크 테스트 (3개 Agent × 10문항 = 30문항, 사람이 CoWork UI에서 직접 수행)
+- **⑫** 🔴🔴 활동 스냅샷 as-of 배선 (`CRM_MEMBER_SPONSOR_SPAN` 기반 활동회원 판정, `CONF-3` 현업 확인 후 배선)
+- **⑭** 🔴🔴 `FME.SPONSORSHIP_SK(STOP)` 동시중단 다중사업 귀속 규칙 확정 후 배선 (현업 결정 전 배선 금지)
+- **BLOCKING-5** 🔴 GOLD 팩트 measure 및 차원 FK 미적재분 순차 적재 (A1/A3)
+- **㊵** 🔴 `CRM_MEMBER.JOIN_DT` 현업 회신(문서20 §N-10) 후 개명/배선 반영 (회신 전 개명/배선 금지)
+- **⑤** 🟠 C4 발행 표면 정의 재확정 및 SERVING Agent/뷰 comment stale 스캔
+- **㊶** 🟠 영구 NULL 컬럼 잔여 5건(FMM 밴드 4종 등) 근거 미확보분 COMMENT 사유 추적
+- **㉟** 🟠 FACT 11개 물리 PK 미선언에 따른 추론 PK 표기 오해 방지 안내
+- **O59-P-1** 🟠 `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 현업 회신 대기 (문서20 §M-6)
+- **④/⑪/⑱** 🟠 문서50 B1 정의 확정 및 이전 세션 독해 검증 잔여
+- **BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
+- **BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
+
+## 0-JJJJ. ~~🔴🔴 [2026-09-02 O135 필독 — 여기서 시작한다. §0-IIII 는 승계됐다]~~
+
+> 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
+> `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
+> 🔴 **이 절은 좌표만 운반한다** — 정본 = 이력 **§O135** · 결정 = `30_설계` §35(`DEC-49`).
+
+### ▣ JJJJ1 🟢 이번 세션 완결 작업 (O135)
+
+1. **[규약] `DEC-49` 신설 및 DDL 컬럼 `COMMENT` 4대 표준 서식 적용**:
+   - `03_top-down_gold/06_DDL.sql` (GOLD 37테이블 742컬럼 코멘트 경량화)
+   - `04_silver_design/08_SILVER_테이블DDL_20260714.sql` (SILVER 42테이블 832컬럼 코멘트 경량화)
+   - `05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql` (ML SERVING 7뷰 주석/배포 러너 정합화)
+2. **[메타데이터] 테이블 상단 주석 이관 (`[컬럼별 설계 및 실측 이력]`)**:
+   - 450여 건의 상세 비즈니스/실측/결정 맥락을 각 테이블 선언 상단 주석으로 100% 이관 보존.
+3. **[Live DB] Snowflake 메타데이터 전수 갱신 및 뷰 배포**:
+   - `apply_table_comment_drift.py` & `apply_silver_comment_drift.py` 실행으로 Live DB 1,574개 컬럼/테이블 코멘트 ALTER 전파 완료.
+   - `deploy_ml_serving_views.py` 실행으로 ML SERVING 7뷰 및 21 GRANT 배포 완료.
+4. **[검증] 전체 게이트 및 산출물 100% 통과**:
+   - `comment_drift_gate.py`: 드리프트 0건 통과
+   - `table_ddl_column_gate.py`: 79/79 모델 집합 일치 통과
+   - `gen_pipeline_erd.py`: 38개 HTML ERD 재발행 완료
+   - `test_*.py`: 전체 음성 테스트 스위트 통과
+
+### ▣ JJJJ2 🔴 다음 세션 열린 작업 (착수표 참조)
+
+- **②** 🔴🔴 NL 자연어 질의 라우팅 스모크 테스트 (3개 Agent × 10문항 = 30문항, 사람이 CoWork UI에서 직접 수행)
+- **⑫** 🔴🔴 활동 스냅샷 as-of 배선 (`CRM_MEMBER_SPONSOR_SPAN` 기반 활동회원 판정, `CONF-3` 현업 확인 후 배선)
+- **⑭** 🔴🔴 `FME.SPONSORSHIP_SK(STOP)` 동시중단 다중사업 귀속 규칙 확정 후 배선 (현업 결정 전 배선 금지)
+- **BLOCKING-5** 🔴 GOLD 팩트 measure 및 차원 FK 미적재분 순차 적재 (A1/A3)
+- **㊵** 🔴 `CRM_MEMBER.JOIN_DT` 현업 회신(문서20 §N-10) 후 개명/배선 반영 (회신 전 개명/배선 금지)
+- **⑤** 🟠 C4 발행 표면 정의 재확정 및 SERVING Agent/뷰 comment stale 스캔
+- **㊶** 🟠 영구 NULL 컬럼 잔여 5건(FMM 밴드 4종 등) 근거 미확보분 COMMENT 사유 추적
+- **㉟** 🟠 FACT 11개 물리 PK 미선언에 따른 추론 PK 표기 오해 방지 안내
+- **O59-P-1** 🟠 `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 현업 회신 대기 (문서20 §M-6)
+- **④/⑪/⑱** 🟠 문서50 B1 정의 확정 및 이전 세션 독해 검증 잔여
+- **BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
+- **BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
+
+## 0-KKKK. 🔴🔴 [2026-09-02 O136 필독 — **여기서 시작한다.** §0-JJJJ 는 승계됐다]
+
+> 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
+> `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
+> 🔴 **이 절은 좌표만 운반한다** — 정본 = 이력 **§O136**.
+
+### ▣ KKKK1 🟢 이번 세션 완결 작업 (O136)
+
+1. **[Cortex 실측] Cortex Analyst 30개 추천질문 전수 실측 완료**:
+   - 3개 Agent(MEMBER·OVERALL·MARKETING) 29문항 질의 결과 28건(96.6%) SQL 정상 생성 및 Live Snowflake 실행 28/28(100.0%) PASS 검증 완료.
+   - 미생성 1건(`K9`)은 Cross-Fact 2팩트 복합 질의로 단일 뷰 가드레일에 의해 정상 거부 확인.
+2. **[SERVING] 착수표 ~~⑤~~ SERVING 발행 표면 & AGENT COMMENT 검증 완결**:
+   - `sv_unit_gate.py`에 AGENT 발행 표면 및 소관 SV 종수 선언 검증 축(11·8·7종) 흡수 배선.
+   - `o70_stale_scan.py` 상설 스캔 전수 PASS(SV 17종 + AGENT 3종 DDL).
+3. **[산출물] 착수표 ~~⑰~~ `09_보고서필드_조립가능성` 마케팅 앵커 로직 정합화 완결**:
+   - `scripts/gen_section_assembly.py` 의 `SECTION_ANCHOR_OVERRIDE` 에 마케팅 섹션 4(전환회원 ➔ `FACT_MEMBER_EVENT`), 섹션 5(캠페인별 LTV ➔ `FACT_MEMBER_COHORT`) 정합화 반영 후 `09_보고서필드_조립가능성.{md,csv}` 재생성 완료.
+4. **[ERD/카탈로그] 착수표 ~~㉟~~ ERD 추론 PK 분리 표기 명문화 완결**:
+   - 물리 PK(PK)와 dbt 추론 PK(UK/추론PK) 분리 표기 유지 및 52개 파이프라인 ERD 카탈로그 재생성 완료.
+
+### ▣ KKKK2 🔴 다음 세션 열린 작업 (착수표 참조)
+
+- **②** 🔴🔴 NL 자연어 질의 라우팅 스모크 테스트 (CoWork UI 브라우저 수동 확인)
+- **⑫** 🔴🔴 활동 스냅샷 as-of 배선 (`CRM_MEMBER_SPONSOR_SPAN` 기반 활동회원 판정, `CONF-3` 현업 확인 후 배선)
+- **⑭** 🔴🔴 `FME.SPONSORSHIP_SK(STOP)` 동시중단 다중사업 귀속 규칙 확정 후 배선 (현업 결정 전 배선 금지)
+- **BLOCKING-5** 🔴 GOLD 팩트 measure 및 차원 FK 미적재분 순차 적재 (A1/A3)
+- **㊵** 🔴 `CRM_MEMBER.JOIN_DT` 현업 회신(문서20 §N-10) 후 개명/배선 반영 (회신 전 개명/배선 금지)
+- **㊶** 🟠 영구 NULL 컬럼 잔여 5건(FMM 밴드 4종 등) 근거 미확보분 COMMENT 사유 추적
+- **O59-P-1** 🟠 `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 현업 회신 대기 (문서20 §M-6)
+- **④/⑪/⑱** 🟠 문서50 B1 정의 확정 및 이전 세션 독해 검증 잔여
+- **BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
+- **BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
 
 ---
 _Co-authored with CoCo_
+
 
 

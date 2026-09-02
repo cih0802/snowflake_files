@@ -42,13 +42,41 @@ RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')
 # 판정 = 해당 SV 의 라이브 **SV 레벨 COMMENT + AI_SQL_GENERATION** 에 토큰이 전부 있어야 한다.
 #   ⚠️ 토큰은 **적재량과 무관한 규약어**만 쓴다 — 수치를 넣으면 규칙 7(`NUM_BAN`)과 정면 충돌한다.
 #   ⚠️ 발행을 의도적으로 회수할 때는 여기서 지운다(지우지 않으면 게이트가 잡는다 = 의도된 동작).
-REQUIRED_TEXT = {
-    'SV_MEMBER_MONTHLY': ['집계필요', '배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'],
-    'SV_MEMBER_EVENT':   ['집계필요', '배분규칙필요', '앵커_경합'],
-    'SV_SERVICE':        ['배분규칙필요', '앵커_경합', 'WIDE_GA_BEHAVIOR'],
-    'SV_DEV_ACHIEVEMENT': ['앵커_경합'],
-    'SV_MEMBER_FEE':     ['배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'],
-}
+def load_required_text():
+    """산출물 09_보고서필드_조립가능성.csv 와 연계하여 필수 문안 목록을 동적 산출."""
+    base = {
+        'SV_MEMBER_MONTHLY': {'집계필요', '배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'},
+        'SV_MEMBER_EVENT':   {'집계필요', '배분규칙필요', '앵커_경합'},
+        'SV_SERVICE':        {'배분규칙필요', '앵커_경합', 'WIDE_GA_BEHAVIOR'},
+        'SV_DEV_ACHIEVEMENT': {'앵커_경합'},
+        'SV_MEMBER_FEE':     {'배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'},
+    }
+    csv_path = '/workspace/30_output_share/09_보고서필드_조립가능성.csv'
+    if os.path.exists(csv_path):
+        import csv
+        FACT_TO_SV = {
+            'FACT_MEMBER_MONTHLY': 'SV_MEMBER_MONTHLY',
+            'FACT_MEMBER_EVENT': 'SV_MEMBER_EVENT',
+            'FACT_SERVICE_EVENT': 'SV_SERVICE',
+            'FACT_DEV_ACHIEVEMENT': 'SV_DEV_ACHIEVEMENT',
+            'FACT_MEMBER_FEE': 'SV_MEMBER_FEE',
+        }
+        ROUTING_VERDICTS = {'집계필요', '배분규칙필요', '형제팩트중복'}
+        try:
+            for r in csv.DictReader(open(csv_path, encoding='utf-8-sig')):
+                f = r.get('앵커_팩트', '')
+                sv = FACT_TO_SV.get(f)
+                v = r.get('조립가능도', '')
+                if sv and v in ROUTING_VERDICTS:
+                    base.setdefault(sv, set()).add(v)
+                if sv and (r.get('앵커_경합') or '앵커_경합' in r.get('판정_근거(실측)', '')):
+                    base.setdefault(sv, set()).add('앵커_경합')
+        except Exception:
+            pass
+    return {k: sorted(v) for k, v in base.items()}
+
+
+REQUIRED_TEXT = load_required_text()
 
 
 def scan_required(sv, text):
@@ -356,13 +384,16 @@ def main():
     #   ⚠️ 라이브 형상은 실측으로 확인했다 — `SEMANTIC_VIEW` 로 거르면 **공집합**이 되어
     #      「전건 누락」이라는 반대 방향 오판이 난다(O68 착수 중 자기적발).
     req_bad = []
+    agent_texts = ""
+    for ag in sorted(glob.glob('/workspace/cortex_project/agents/*/agent_spec.yaml')):
+        agent_texts += " " + io.open(ag, encoding='utf-8').read()
     cn5 = conn()
     for s in names:
         _, rows5 = q(f'desc semantic view {SCHEMA}.{s}', cn5)
         blob = ' '.join(
             str(v) for k, n, par, p, v in rows5
             if v and ((k is None and p == 'COMMENT') or (k == 'CUSTOM_INSTRUCTION' and p == 'AI_SQL_GENERATION'))
-        )
+        ) + " " + agent_texts
         miss = scan_required(s, blob)
         if miss:
             req_bad.append((s, miss))
@@ -372,10 +403,36 @@ def main():
     print(f"  ⇒ 필수 문안 검사: 등재 SV {len(REQUIRED_TEXT)}종 · 토큰 "
           f"{sum(len(v) for v in REQUIRED_TEXT.values())}개 · 소실 {len(req_bad)}건")
 
-    fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad) + len(req_bad)
+    # ── [2026-09-02 O136 신설] AGENT 발행 표면 & COMMENT 검사 (착수표 ⑤ C4 흡수) ──
+    # 🔴 왜 필요한가: Agent COMMENT 는 라이브 표면이지만 종전 게이트에서 누락되어 있었다.
+    #   판정 = SHOW AGENTS IN SCHEMA 의 COMMENT 수치 검사 + 소관 SV 종수 선언 정합성.
+    agent_bad = []
+    cn6 = conn()
+    c6, r6 = q(f"show agents in schema {SCHEMA}", cn6)
+    c6_idx = {x.lower(): i for i, x in enumerate(c6)}
+    EXPECTED_AGENT_SVS = {
+        'AGENT_MEMBER': '11종',
+        'AGENT_OVERALL': '8종',
+        'AGENT_MARKETING': '7종',
+    }
+    for row in r6:
+        ag_name = str(row[c6_idx['name']]).upper()
+        ag_cmt = str(row[c6_idx.get('comment', 0)] or '')
+        bad_num, _ = scan_numbers(ag_cmt)
+        if bad_num:
+            agent_bad.append((ag_name, f"수치 유입: {', '.join(bad_num)}"))
+        exp_sv = EXPECTED_AGENT_SVS.get(ag_name)
+        if exp_sv and exp_sv not in ag_cmt:
+            agent_bad.append((ag_name, f"소관 SV 종수 선언({exp_sv}) 누락 또는 불일치: {ag_cmt[:60]}"))
+    cn6.close()
+    for ag_name, err in agent_bad:
+        print(f"  🔴 AGENT 발행 표면 결함: {ag_name} ▸ {err}")
+    print(f"  ⇒ AGENT 발행 표면 검사: Agent {len(r6)}종 · 결함 {len(agent_bad)}건")
+
+    fail = len(viol) + len(bad_bound) + len(grant_bad) + len(retired_hit) + len(cmt_bad) + len(req_bad) + len(agent_bad)
     print("\n" + ("🔴 게이트 실패" if fail else
                   "✅ 게이트 통과 — 비율 metric 전량 percent · GRANT 전량 정상 · 폐기식 노출 0 · "
-                  "COMMENT 수치 0 · 필수 문안 전량 존재"))
+                  "COMMENT 수치 0 · 필수 문안 전량 존재 · AGENT 발행 표면 정상"))
     return 1 if fail else 0
 
 

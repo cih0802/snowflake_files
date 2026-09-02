@@ -7,7 +7,7 @@
   <title>FACT_EVENT_PARTICIPATION - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_EVENT_PARTICIPATION",
     "table": "FACT_EVENT_PARTICIPATION",
     "domain": "COMMON / 공통 기준",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -553,25 +538,25 @@ erDiagram
     string CAMPAIGN_SK PK
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_DATE {
     string DATE_SK PK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_EVENT {
     string EVENT_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_EVENT_PARTICIPATION {
     string DATE_SK FK
@@ -579,13 +564,13 @@ erDiagram
     string EVENT_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK → DATE_SK"
-  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK → MEMBER_DK"
-  DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK → EVENT_SK"
-  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK → CAMPAIGN_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK → SPONSORSHIP_SK"
+  DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK"
+  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK"
+  DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK"
+  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK"
           </pre>
         </div>
 
@@ -691,13 +676,13 @@ erDiagram
           <td><code>EVENT_KIND</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td></td>
-          <td>원천 계열 판별 **코드** — 팩트 자체 보유(SILVER.CRM_EVENT_PARTICIPATION.DW_SOURCE_TABLE 분기). 값 2종: EVENT=일반행사 원천 · CRMN=캠페인행사 원천. 🔴DIM_EVENT.EVENT_KIND 와 어휘가 같지만 **조인과 무관하게 전건 값을 갖는다** — 행사 미매칭(EVENT_SK=0) 구간에서도 계열을 가른다(차원축은 그 구간이 (미매핑) 이라 무력하다). ⇒ O28 다체계 축(PART_STATUS·PART_PATH·PART_CHANNEL)의 판별자는 **이 컬럼**을 쓴다. ⚠️등재 매핑에 없는 원천이 인입되면 NULL 로 드러난다(ELSE 절 금지 · P31)</td>
+          <td>원천 계열 판별 **코드**.</td>
         </tr>
         <tr>
           <td><code>EVENT_KIND_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>원천 계열 판별 **라벨** — 현업 응답·분해용 정본 축. 값 2종: 일반행사 · 캠페인행사. DIM_EVENT.EVENT_KIND_NAME 과 어휘 conform. 🔴차원축과 달리 **(미매핑) 사각지대가 없다**(전건 채움). 🔴이 라벨은 업무 분류가 아니라 **참여 행이 어느 원천에서 왔는지**를 뜻한다 — 온·오프라인 구분이 아니다. ⚠️코드사전에 대응 그룹이 없는 **파생 라벨**이므로 CRM_CODE 조인 대상이 아니다</td>
+          <td>원천 계열 판별 **라벨**.</td>
         </tr>
         <tr>
           <td><code>DATE_SK</code></td>
@@ -721,79 +706,79 @@ erDiagram
           <td><code>CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>분석축(캠페인) — 🔴 전건 0 하드코딩(미배선). 차단=O8 다중캠페인 귀속규칙 현업 미회신. 0 은 (미매핑) 센티넬이며 &quot;캠페인 없음&quot; 아님</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>분석축(후원사업) — 🔴 전건 0 하드코딩(미배선). 차단=O8 동일 게이트. 0 은 (미매핑) 센티넬</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>TOTAL_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>총인원 — 🟢 [O93] 배선 완료. 참여행 1건 = 1 이며 상태 무관이라 코드체계와 독립적이다(전건 유효).</td>
+          <td>총인원.</td>
         </tr>
         <tr>
           <td><code>WAIT_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>대기인원 — 🟢 [O93] **캠페인행사(EVENT_KIND=CRMN) 구간만** 배선. MS006 라벨 「대기」·「대기(결제)」 합. 🔴 일반행사 구간의 0 은 「대기 0명」이 아니라 **「해당 없음」**이다 — 일반행사 코드체계(MS304)는 퍼널 단계 축이라 대기 상태가 없다. 판별자 = EVENT_KIND.</td>
+          <td>대기인원. 코드id:MS006.</td>
         </tr>
         <tr>
           <td><code>CANCEL_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>취소인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「취소」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.</td>
+          <td>취소인원. 코드id:MS006.</td>
         </tr>
         <tr>
           <td><code>CONFIRM_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>신청확정인원 — 🔴 전건 0(미배선). 원인 = 코드사전에 「신청확정」 라벨이 없다. 있는 것은 「신청」·「참여」뿐이고 어느 쪽이 신청확정인지는 업무 정의라 임의 선택 불가(라벨 창작 금지). 현업 회신 대기(문서20 §I). 0 을 실측값으로 읽지 말 것.</td>
+          <td>신청확정인원.</td>
         </tr>
         <tr>
           <td><code>PARTICIPATE_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td></td>
+          <td>참여인원.</td>
         </tr>
         <tr>
           <td><code>ABSENT_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>불참인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「불참」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.</td>
+          <td>불참인원. 코드id:MS006.</td>
         </tr>
         <tr>
           <td><code>PARTICIPANT_CNT</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>참여자수 — ⚠️행당 상수 1(=행수). 회원 중복 미제거 → 명수는 COUNT(DISTINCT MEMBER_DK)</td>
+          <td>참여자수.</td>
         </tr>
         <tr>
           <td><code>PARTICIPATION_TIMES</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>참여횟수 — 🔴 전건 0(미배선). 🟢 PARTCPT_SEQ 로 O28 무관하게 산출 가능</td>
+          <td>참여횟수.</td>
         </tr>
         <tr>
           <td><code>WAIT_TIMES</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>대기횟수 — 🔴 전건 0(미배선). O28 확정 후 산출</td>
+          <td>대기횟수.</td>
         </tr>
         <tr>
           <td><code>ABSENT_TIMES</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>불참횟수 — 🔴 전건 0(미배선). O28 확정 후 산출</td>
+          <td>불참횟수.</td>
         </tr>
         <tr>
           <td><code>CUM_APPLY_TIMES</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>누적신청 횟수 — 🔴 전건 0(미배선). PARTCPT_SEQ 기반 산출 가능(O28 무관)</td>
+          <td>누적신청 횟수.</td>
         </tr>
         <tr>
           <td><code>REGULAR_DONATION</code></td>
@@ -853,37 +838,37 @@ erDiagram
           <td><code>PART_STATUS_GROUP</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td></td>
-          <td>참여상태 코드군 ID (조인키 · 일반행사→MS304 · 캠페인행사→MS006). 🔴O28 다체계의 **구조적 해소축**이다 — PART_STATUS 단독 필터·GROUP BY 는 두 체계를 섞는다(판별자 = 이 컬럼 또는 EVENT_BK 접두). 🔴두 원천의 「참여」 정의 자체가 다르므로 합산 금지</td>
+          <td>PART_STATUS_GROUP. 코드id:MS304.</td>
         </tr>
         <tr>
           <td><code>PART_STATUS_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>참여상태 라벨 (CRM_CODE 조인). ⚠️일반행사(MS304) 라벨은 코드사전에 **영문**으로 등록돼 있다(Success·N_step_right 계열) — 현업 한글 표기 회신 대기(문서20 §M-1)이며 우리가 창작하지 않았다. 미등재·오염 코드는 NULL</td>
+          <td>참여상태 라벨 (CRM_CODE 조인). 코드id:MS304.</td>
         </tr>
         <tr>
           <td><code>PART_PATH_GROUP</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td></td>
-          <td>참여경로 코드군 ID (조인키 · 일반행사→MS303 · 캠페인행사→MS004=신청경로). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B) — 조건부 적용은 해소됐고 롤백은 발동하지 않았다</td>
+          <td>PART_PATH_GROUP. 코드id:MS303.</td>
         </tr>
         <tr>
           <td><code>PART_PATH_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>참여경로 라벨 (CRM_CODE 조인 · 코드군 확정). 미등재·오염 코드는 NULL 유지</td>
+          <td>PART_PATH_NAME.</td>
         </tr>
         <tr>
           <td><code>PART_CHANNEL_GROUP</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td></td>
-          <td>참여채널 코드군 ID (조인키 · 일반행사→MS302 · 등급 B 배타 확정). 캠페인행사는 원천에 채널 축이 없어 NULL(구조적 부재 · P21)</td>
+          <td>PART_CHANNEL_GROUP. 코드id:MS302. [사유:원천 부재]</td>
         </tr>
         <tr>
           <td><code>PART_CHANNEL_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>참여채널 라벨 (CRM_CODE 조인). 미등재·오염 코드는 NULL 유지</td>
+          <td>PART_CHANNEL_NAME.</td>
         </tr>
             </tbody>
           </table>

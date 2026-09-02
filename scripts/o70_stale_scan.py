@@ -16,13 +16,13 @@
    python3 scripts/o70_stale_scan.py <파일...>       # 분모 지정
    python3 scripts/o70_stale_scan.py --self-check    # 자기검사 (O70-B A5 시정)
 """
-import re, sys, io
+import re, sys, io, glob
 
-DEFAULT_FILES = [
-    '05_SV-Agent_ai/05_3_SV_DDL_MEMBER_COHORT.sql',
-    '05_SV-Agent_ai/05_5_SV_DDL_EVENT_PARTICIPATION.sql',
-    '05_SV-Agent_ai/05_7_SV_DDL_AD.sql',
-]
+DEFAULT_FILES = sorted(
+    glob.glob('05_SV-Agent_ai/05_*.sql') +
+    glob.glob('05_SV-Agent_ai/22_ML_SV_DDL.sql') +
+    glob.glob('05_SV-Agent_ai/09_*.sql')
+)
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 FILES = args if args else DEFAULT_FILES
 
@@ -51,6 +51,12 @@ def published_spans(text):
 EXEMPT = {
     '1,000': '처방 파라미터(소표본 배제 하한 예시) — 적재량이 바뀌어도 거짓이 되지 않는다',
     '100배': '산식 관계 설명(percent 승격 후 ×100 이중곱 경고) — 적재 무관',
+    '100%': '불변식 및 상한 기준 — 납부율·집행율 등 규약 상한',
+    '95%': '통계 신뢰구간 지표 규약(CONF_INT_95) — 적재 무관',
+    '10,000': '약정금액 환산 규약 상수(CONF-2: 금액÷10,000) — 적재 무관',
+    'SV 11종': 'AGENT_MEMBER 정본 소관 SV 종수 선언 — sv_unit_gate 대조',
+    'SV 8종': 'AGENT_OVERALL 정본 소관 SV 종수 선언 — sv_unit_gate 대조',
+    'SV 7종': 'AGENT_MARKETING 정본 소관 SV 종수 선언 — sv_unit_gate 대조',
 }
 
 def self_check():

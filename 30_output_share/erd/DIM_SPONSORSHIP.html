@@ -7,7 +7,7 @@
   <title>DIM_SPONSORSHIP - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_SPONSORSHIP",
     "table": "DIM_SPONSORSHIP",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -536,7 +521,7 @@ flowchart LR
 erDiagram
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_BUDGET {
     string MONTH_KEY FK
@@ -544,14 +529,14 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_BUDGET_YEARLY {
     string BUDGET_ITEM_SK FK
     string ORG_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_EVENT_PARTICIPATION {
     string DATE_SK FK
@@ -559,7 +544,7 @@ erDiagram
     string EVENT_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
     string MEMBER_DK PK
@@ -568,7 +553,7 @@ erDiagram
     string FIRST_STOP_DATE_SK FK
     string ACQ_ORG_SK FK
     string ACQ_SPONSORSHIP_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_EVENT {
     string DATE_SK FK
@@ -577,7 +562,7 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_FEE {
     string MONTH_KEY FK
@@ -586,7 +571,7 @@ erDiagram
     string PAYMENT_SK FK
     string LAST_BILL_DATE_SK FK
     string LAST_PAY_DATE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_MONTHLY {
     string MEMBER_DK FK
@@ -595,34 +580,34 @@ erDiagram
     string PAYMENT_SK FK
     string REASON_SK FK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_SPONSOR_BIZ {
     string MEMBER_DK FK
-    string SPNSR_BSNS_NO KEY
+    string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string SPNSR_NO KEY
+    string SPNSR_NO
     string START_MONTH_KEY FK
     string DSCNTC_MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_TARGET_BIZ {
     string MONTH_KEY FK
     string ORG_SK FK
     string SPONSORSHIP_SK FK
     string CAMPAIGN_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_COHORT : "ACQ_SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_BUDGET : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_BUDGET_YEARLY : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_SPONSORSHIP ||--o{ FACT_TARGET_BIZ : "SPONSORSHIP_SK → SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_COHORT : "ACQ_SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_BUDGET : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_BUDGET_YEARLY : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_TARGET_BIZ : "SPONSORSHIP_SK"
           </pre>
         </div>
 
@@ -764,7 +749,7 @@ erDiagram
           <td><code>SPONSORSHIP_ABBR</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>약칭(#124) — 코드 raw ← 원천 SPNSR_BSNS_ABRV_CD. 🔴**코드다(1~6)**, 라벨은 SPONSORSHIP_GROUP_NAME(코드사전 CM003 · O89). 종전 SPB-G 의 &quot;약칭인지 분류코드인지 불명&quot;은 O89 로 해소 — CM003 그룹명이 「후원약칭」이므로 컬럼명은 오명이 아니었다</td>
+          <td>약칭 (#124). 코드id:CM003.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -794,19 +779,19 @@ erDiagram
           <td><code>SPONSORSHIP_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>[O89] 정기일시후원구분 코드 raw ← 원천 TM_CM_SPNSR_BSNS_INFO.SPNSR_DIV_CD (SILVER CRM_SPONSORSHIP.SPNSR_DIV_CD). 코드사전 CM035. 실측 2종(1·2) · 50개 사업 전건 채움. 🔴**최상위 분류축**이다 — 라벨은 SPONSORSHIP_DIV_NAME. ⚠️회비/기부금 지류 구분(FEE_DIV)과 다른 축이다</td>
+          <td>SPONSORSHIP_DIV_CD. 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_DIV_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>정기일시후원구분명. 코드id:CM035.</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_GROUP_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>[O89] 후원약칭명 — 기존 코드컬럼 SPONSORSHIP_ABBR(원천 SPNSR_BSNS_ABRV_CD)을 코드사전 CM003(후원약칭)으로 해소한 라벨. 값 = 1→국내 · 2→결연 · 3→해외구호 · 4→북한 · 5→기타 · 6→해외 · 7→선물금(7은 미사용). 사업수 17/1/6/3/21/2 = 50. 🔴**3계층의 중위**다 — 상위는 SPONSORSHIP_DIV_NAME, 하위는 SPONSORSHIP_NAME. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 3(해외구호)과 6(해외)이 둘 다 해외이고 6은 SPONSORSHIP_DIV_CD=2(일시후원)에서만 나타난다(실측) ⇒ 정확한 분류축은 **(DIV, ABBR) 쌍**이다. ⚠️원천 코드 부재 시 NULL(P21)</td>
+          <td>후원약칭명. 코드id:CM003.</td>
         </tr>
             </tbody>
           </table>

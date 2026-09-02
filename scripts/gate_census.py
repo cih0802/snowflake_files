@@ -82,6 +82,8 @@ OBSERVE = {
     'alias_census':        '모델 SELECT 별칭 P/L/X 관측 — 🔴 판정 분모 정본은 `scripts/o122_name_drift.sql`(라이브) 이다',
     'classify_doc_type':   '문서 유형 추천(등재 정본은 원장 §0)',
     'comment_len_probe':   'COMMENT 길이 분포 관측',
+    'cortex_analyst_30_exec': 'Cortex Analyst 생성 SQL 라이브 실행 검증 러너',
+    'cortex_analyst_30_runner': 'Cortex Analyst 30개 추천 질문 자연어 질의 러너',
     'o123_member_dk_footprint': '컬럼명 소비처 footprint 관측(축 분리 = archive/현행/코드/문서) — 🔴 판정이 아니다 · 개명 전 grep 범위 산정용',
     'sv_dim_cardinality':  '차원 카디널리티 관측 — 🔴 판정 정본은 `sv_code_label_gate` 다',
     'wrap_for_read':       '긴 줄 접기 보조',
@@ -121,6 +123,7 @@ GEN = {
 
 MUTATES = {
     'apply_table_comment_drift': '라이브 COMMENT 반영',
+    'apply_silver_comment_drift': 'SILVER 라이브 COMMENT 반영',
     'deploy_ml_semantic_views': 'SV 배포', 'deploy_ml_serving_views': 'SERVING 뷰 배포',
     'deploy_sv': 'SV 배포', 'extract_sv_deploy': '배포 SQL 추출·실행',
     'fix_stale_counts': '문서 다중 치환',

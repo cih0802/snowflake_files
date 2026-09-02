@@ -7,6 +7,10 @@ SCHEMAS = ['GOLD', 'SILVER', 'SERVING']
 OUT = '/tmp/census.json'
 
 cn = conn()
+try:
+    q("USE WAREHOUSE GN_DW_ANALYTICS_WH", cn)
+except Exception:
+    pass
 
 cols, rows = q("""
 select table_schema, table_name, column_name, data_type, ordinal_position
@@ -27,8 +31,18 @@ ttype = {(s, t): ty for s, t, ty in trows}
 NUMT = {'NUMBER', 'FLOAT', 'DECIMAL', 'INT', 'INTEGER', 'BIGINT', 'DOUBLE', 'REAL'}
 
 result = {}
+if os.path.exists(OUT):
+    try:
+        result = json.load(open(OUT, 'r', encoding='utf-8'))
+    except Exception:
+        result = {}
+
 for (s, t), cl in sorted(inv.items()):
     if ttype.get((s, t)) != 'BASE TABLE':
+        continue
+    key = f'{s}.{t}'
+    if key in result:
+        print(f'{key}: CACHED (rows={result[key]["rows"]})', flush=True)
         continue
     sel = ['COUNT(*) as "__ROWS"']
     meta = []
@@ -61,8 +75,9 @@ for (s, t), cl in sorted(inv.items()):
             'nonzero': vals.get(f'NZ__{c}'),
             'ndv': vals.get(f'DC__{c}'),
         }
-    result[f'{s}.{t}'] = entry
-    print(f'{s}.{t}: rows={tot} cols={len(meta)}', flush=True)
+    result[key] = entry
+    print(f'{key}: rows={tot} cols={len(meta)}', flush=True)
+    json.dump(result, open(OUT, 'w'), ensure_ascii=False, indent=1, default=str)
 
 json.dump(result, open(OUT, 'w'), ensure_ascii=False, indent=1, default=str)
 print('WROTE', OUT)

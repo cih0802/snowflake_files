@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_FEE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_FEE",
     "table": "FACT_MEMBER_FEE",
     "domain": "CRM / 회원·후원",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -558,24 +543,24 @@ erDiagram
   DIM_DATE {
     string DATE_SK PK
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MEMBER {
     string MEMBER_SK PK
     string MEMBER_DK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_MONTH {
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_PAYMENT {
     string PAYMENT_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   DIM_SPONSORSHIP {
     string SPONSORSHIP_SK PK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_MEMBER_FEE {
     string MONTH_KEY FK
@@ -584,14 +569,14 @@ erDiagram
     string PAYMENT_SK FK
     string LAST_BILL_DATE_SK FK
     string LAST_PAY_DATE_SK FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
-  DIM_MONTH ||--o{ FACT_MEMBER_FEE : "MONTH_KEY → MONTH_KEY"
-  DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK → MEMBER_DK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK → SPONSORSHIP_SK"
-  DIM_PAYMENT ||--o{ FACT_MEMBER_FEE : "PAYMENT_SK → PAYMENT_SK"
-  DIM_DATE ||--o{ FACT_MEMBER_FEE : "LAST_BILL_DATE_SK → DATE_SK"
-  DIM_DATE ||--o{ FACT_MEMBER_FEE : "LAST_PAY_DATE_SK → DATE_SK"
+  DIM_MONTH ||..o{ FACT_MEMBER_FEE : "MONTH_KEY"
+  DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+  DIM_PAYMENT ||--o{ FACT_MEMBER_FEE : "PAYMENT_SK"
+  DIM_DATE ||--o{ FACT_MEMBER_FEE : "LAST_BILL_DATE_SK"
+  DIM_DATE ||--o{ FACT_MEMBER_FEE : "LAST_PAY_DATE_SK"
           </pre>
         </div>
 
@@ -688,25 +673,25 @@ erDiagram
           <td><code>MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td>회비월 YYYYMM (FK→DIM_DATE.MONTH_KEY 개념축). 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 — FMM 과 동일 규칙</td>
+          <td>월 conform 키 YYYYMM.</td>
         </tr>
         <tr>
           <td><code>MEMBER_DK</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>회원 자연키 (FK→DIM_MEMBER.MEMBER_DK). 🔴VARCHAR(10) 규약(O12/AC-1) — 원천 MBER_NO 최대길이 9 실측</td>
+          <td>불변 비즈니스 식별자</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>🔴**납입 대상** 후원사업 대리키 (FK→DIM_SPONSORSHIP). 원천 채움 커버리지는 문서10 §26. 획득 후원사업(FMC.ACQ_SPONSORSHIP_SK)과 **의미가 다르다**</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>PAYMENT_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>결제수단 대리키 (FK→DIM_PAYMENT). ⚠️라벨 커버리지는 문서10 §26 — 원천 종 중 일부는 코드그룹 미특정으로 0(미매핑). 원본은 SETLE_CD 참조(O45-B)</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>LAST_BILL_DATE_SK</code></td>
@@ -718,67 +703,67 @@ erDiagram
           <td><code>LAST_PAY_DATE_SK</code></td>
           <td><code>NUMBER(8,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td>해당 조합의 **최종 납입일** (FK→DIM_DATE). 🔴시점 축이며 합계가 아니다. FMM 은 월 팩트라 「기준일(납입일)」은 이 팩트에서만 답한다</td>
+          <td>대리키</td>
         </tr>
         <tr>
           <td><code>FEE_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회비구분 코드(PM010). 🔴기부금 행은 원천이 NULL — **결측이 아니라 해당없음**</td>
+          <td>회비구분 코드(PM010). 코드id:PM010.</td>
         </tr>
         <tr>
           <td><code>FEE_DIV_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회비구분명: 정기·선물금·일시·긴급구호 (PM010 라벨)</td>
+          <td>회비구분명: 정기·선물금·일시·긴급구호 (PM010 라벨). 코드id:PM010.</td>
         </tr>
         <tr>
           <td><code>PAYMENT_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>납입유형 = 회비/기부금. 🔴납부율·미납 분석은 회비만으로 스코프 — 기부금은 청구(RQEST_AMT)가 전건 NULL 이라 분모에 못 들어간다(O40)</td>
+          <td>납입유형 = 회비/기부금.</td>
         </tr>
         <tr>
           <td><code>SETLE_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>degen: 결제수단 원본 코드. 라벨 없는 코드(3·10·6·13·7)를 잃지 않기 위해 보존 — 규모는 문서10 §26 · 현업 코드그룹 확인 대상(O45-B)</td>
+          <td>SETLE_CD.</td>
         </tr>
         <tr>
           <td><code>BILLED_AMT</code></td>
           <td><code>NUMBER(38,2)</code></td>
           <td></td>
-          <td>청구액(원) = SUM(RQEST_AMT). FMM·SILVER 와 총계 일치 실측(GATE-D · 값은 문서10 §26)</td>
+          <td>BILLED_AMT.</td>
         </tr>
         <tr>
           <td><code>PAID_FEE</code></td>
           <td><code>NUMBER(38,2)</code></td>
           <td></td>
-          <td>납입 총액(원) = 회비 + 기부금. 🔴납부율 분자로 쓰지 말 것(O40). ⚠️O45-C: FMM 대비 차이가 있고 원인은 회원번호 부재 행이 FMM 규약으로 제외되는 것이다(금액·행 규모는 문서10 §26 · O57-B 규명완료 · 결함 아님)</td>
+          <td>납입 총액(원) = 회비 + 기부금.</td>
         </tr>
         <tr>
           <td><code>PAID_FEE_BILLABLE</code></td>
           <td><code>NUMBER(38,2)</code></td>
           <td></td>
-          <td>회비 납입액(원) — 납부율 분자 **정본**(O40). FMM 과 완전일치 실측(값은 문서10 §26)</td>
+          <td>회비 납입액(원).</td>
         </tr>
         <tr>
           <td><code>UNPAID_BILLED_AMT</code></td>
           <td><code>NUMBER(38,2)</code></td>
           <td></td>
-          <td>미납 청구액(원) — DEC-3 정본 = PAY_STAT_CD IN (F, NULL) 인 청구액. 🔴차감식 아님. ⚠️조회 시점 스냅샷. FMM 과 완전일치(값은 문서10 §26)</td>
+          <td>미납 청구액(원).</td>
         </tr>
         <tr>
           <td><code>BILLING_ROWS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>집계된 원천 회비행 수. 🔴금액도 「건수」도 아니다(정본 (건) 정의는 CONF-2 미결)</td>
+          <td>집계된 원천 회비행 수.</td>
         </tr>
         <tr>
           <td><code>UNPAID_FLAG</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>해당 조합에 미납 청구행이 하나라도 있는가(BOOLOR_AGG)</td>
+          <td>해당 조합에 미납 청구행이 하나라도 있는가(BOOLOR_AGG).</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>

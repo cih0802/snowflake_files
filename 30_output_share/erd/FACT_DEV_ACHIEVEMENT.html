@@ -7,7 +7,7 @@
   <title>FACT_DEV_ACHIEVEMENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-02 04:12",
+    "generated": "2026-09-02 06:44",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_DEV_ACHIEVEMENT",
     "table": "FACT_DEV_ACHIEVEMENT",
     "domain": "ERP / 예산·목표",
@@ -429,21 +429,6 @@
 <a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
 <a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
 <a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
-        <div class="nav-group-title">WIDE MART (14)</div>
-<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
-<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
-<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
-<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
-<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
-<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
-<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
-<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
-<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
-<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
-<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
-<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
-<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
-<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
       </nav>
     </aside>
 
@@ -508,7 +493,7 @@ flowchart LR
   end
   subgraph GOLD [3. GOLD 마트]
     G_FACT_DEV_ACHIEVEMENT["★ FACT_DEV_ACHIEVEMENT<br/>회원개발 목표 대비 실적 월 conform 팩"]:::target
-    G_DIM_ORG["DIM_ORG"]:::gold
+    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
     G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
     G_FACT_TARGET_DEV["FACT_TARGET_DEV<br/>회원개발 목표 팩트 (MONTH_KE"]:::gold
@@ -588,14 +573,14 @@ flowchart LR
 erDiagram
   DIM_MONTH {
     string MONTH_KEY FK
-    string DW_BATCH_ID KEY
+    string DW_BATCH_ID
   }
   FACT_DEV_ACHIEVEMENT {
     string MONTH_KEY FK
-    string ORG_SK KEY
-    string DW_BATCH_ID KEY
+    string ORG_SK
+    string DW_BATCH_ID
   }
-  DIM_MONTH ||--o{ FACT_DEV_ACHIEVEMENT : "MONTH_KEY → MONTH_KEY"
+  DIM_MONTH ||..o{ FACT_DEV_ACHIEVEMENT : "MONTH_KEY"
           </pre>
         </div>
 
@@ -647,7 +632,7 @@ erDiagram
           <td><code>MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td>목표·실적 공통 월키 YYYYMM (월 conform 축)</td>
+          <td>월 conform 키 YYYYMM.</td>
         </tr>
         <tr>
           <td><code>CAL_YEAR</code></td>
@@ -665,37 +650,37 @@ erDiagram
           <td><code>ORG_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>조직 대리키 (FK→DIM_ORG). 실적측은 실적부서(ACMSLT_DEPT_CD) 기준</td>
+          <td>대리키 (PK)</td>
         </tr>
         <tr>
           <td><code>ORG_DEPARTMENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>부서명 (정본 #116) — 장표 첫 축. DIM_ORG.DEPARTMENT</td>
+          <td>부서명 (정본 #116) (#116).</td>
         </tr>
         <tr>
           <td><code>ORG_DIVISION</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>DIM_ORG.DIVISION — 실적지부. ⚠️산출규칙 미확정으로 전건 NULL (CONF-4)</td>
+          <td>DIM_ORG.DIVISION. [사유:규칙 미확정]</td>
         </tr>
         <tr>
           <td><code>ORG_TEAM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>DIM_ORG.TEAM — 팀. ⚠️보류로 전건 NULL (CONF-4)</td>
+          <td>DIM_ORG.TEAM. [사유:산출보류]</td>
         </tr>
         <tr>
           <td><code>ORG_CORP</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>DIM_ORG.CORP — 법인. ⚠️부서 차원에서 산출 불가로 전건 NULL (CONF-4)</td>
+          <td>DIM_ORG.CORP. [사유:부서차원 산출불가]</td>
         </tr>
         <tr>
           <td><code>DEV_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>개발구분 코드 (MM015 중 1신규·2증액·4재후원). 정본 공#121 개발 정의와 일치하는 축 — 목표·실적 공통</td>
+          <td>DEV_TYPE (#121). 코드id:MM015.</td>
         </tr>
         <tr>
           <td><code>DEV_TYPE_NAME</code></td>
@@ -707,55 +692,55 @@ erDiagram
           <td><code>GOAL_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>월 회원개발목표(건) — 장표 「월 목표」. 원천 CRM TM_CM_MBER_DVLP_GOAL</td>
+          <td>월 회원개발목표(건).</td>
         </tr>
         <tr>
           <td><code>ACTUAL_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>월 개발실적(건) — 장표 「월 실적」. FME.DEV_CNT 월 롤업(코드 1·2·4 한정)</td>
+          <td>월 개발실적(건).</td>
         </tr>
         <tr>
           <td><code>GOAL_CNT_YTD</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>(누계)월 목표(건) — 당해년 1월~당월 누적. 🔴월 비가산 — 월을 가로질러 합산 금지</td>
+          <td>(누계)월 목표(건).</td>
         </tr>
         <tr>
           <td><code>ACTUAL_CNT_YTD</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>(누계)월 실적(건) — 당해년 1월~당월 누적. 🔴월 비가산</td>
+          <td>(누계)월 실적(건).</td>
         </tr>
         <tr>
           <td><code>GOAL_CNT_YEAR</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>연 목표(건) — 당해년 12개월 합. 별도 저장 지표가 아니라 월 목표의 연 합계다(정본 공#3). 🔴월 비가산</td>
+          <td>연 목표(건) (#3).</td>
         </tr>
         <tr>
           <td><code>ACTUAL_CNT_YEAR</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>연 실적(건) — 당해년 12개월 합. 🔴월 비가산</td>
+          <td>연 실적(건).</td>
         </tr>
         <tr>
           <td><code>HAS_GOAL_ROW</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>목표 **행**의 존재 여부 — 값이 0 이거나 NULL 이어도 TRUE 다. 🔴**달성율 스코프로 쓰지 말 것**: 원천이 2020년부터 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채우므로 목표 행의 과반이 0 이다. 이 플래그로 분자를 스코프하면 목표 0 행의 실적이 분모 없이 분자에 들어가 달성율이 폭증한다(실측 확인 후 교정). 달성율은 HAS_POSITIVE_GOAL 을 쓴다. 이 컬럼의 용도는 「목표 행 자체가 없는 조합」(=FALSE)을 찾는 것이다</td>
+          <td>목표 **행**의 존재 여부.</td>
         </tr>
         <tr>
           <td><code>HAS_POSITIVE_GOAL</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>🟢**목표가 실제로 편성됐는지**(GOAL_CNT&gt;0) — 달성율 분모·분자 스코프의 **정본**이다. 목표 미편성 부서·월의 실적이 분자에 섞이면 달성율이 조용히 과대해진다(P18·P63). SV_DEV_ACHIEVEMENT.ACHIEVEMENT_RATE 는 이 조건을 식에 못박아 두었으므로 소비 시 별도 필터가 불필요하다. ⚠️FALSE 는 「목표 0 건으로 명시」와 「목표 미입력(원천 NULL)」을 함께 담는다 — 구분이 필요하면 FACT_TARGET_DEV.GOAL_CNT IS NULL 로 팩트에서 본다</td>
+          <td>**목표가 실제로 편성됐는지**(GOAL_CNT&gt;0).</td>
         </tr>
         <tr>
           <td><code>HAS_ACTUAL</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
-          <td>실적 발생 여부. FALSE 는 목표만 편성된 월(미래월 포함)이다 — 실적 0 으로 읽되 「미달」로 단정하지 말 것</td>
+          <td>HAS_ACTUAL.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
