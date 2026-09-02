@@ -2,11 +2,11 @@
 -- Co-authored with CoCo
 --
 -- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
---    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
+--    신설 `BIGQUERY_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('BIGQUERY_BASIC')).
 -- 🔴🔴 왜 필요한가 — 이 축을 검사하는 게이트가 **하나도 없었다.**
 --   `08_SILVER_테이블DDL` 이 두 테이블에 `PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP,
 --   EVENT_NAME, EVENT_SEQ)` 를 선언하지만 **Snowflake 는 PK 를 강제하지 않는다**(informational).
---   그리고 `_ga4_schema.yml` 은 4키 각각의 `not_null` 만 검사했다 — `not_null` 4개는
+--   그리고 `_bigquery_schema.yml` 은 4키 각각의 `not_null` 만 검사했다 — `not_null` 4개는
 --   **조합 유일성을 전혀 증명하지 않는다.** ⇒ PK 가 깨져도 build 가 초록으로 끝난다.
 --
 -- 🔴 그 공백이 실제로 미결 이슈를 만들었다 (`90_해소완료_로그.md` §1-B `GA4-SEQ-1`)
@@ -28,7 +28,7 @@
 --      혼동을 막기 위해 여기 명시한다 — 이 테스트 통과를 `GA4-SEQ-1` 해소로 읽지 말 것.
 --
 -- 왜 ERROR 인가 (severity 미지정 = 기본 error)
---   PK 중복은 **하류 GOLD 의 팬아웃**으로 직결된다(`FACT_GA_BEHAVIOR` 가 `GA4_EVENT` 를 읽는다)
+--   PK 중복은 **하류 GOLD 의 팬아웃**으로 직결된다(`FACT_GA_BEHAVIOR` 가 `BIGQUERY_EVENT` 를 읽는다)
 --   ⇒ 값이 조용히 배수로 부풀는 유형이라 warn 으로 두면 그대로 발행된다.
 --   선례 = 순서9-D `DIM_MEMBER` 중복 현재행 1,264,753 사고(`90` §1 `D2`)에서 같은 처방을 썼다:
 --   *"MEMBER_DK IS_CURRENT 한정 unique 가드레일"*.
@@ -37,7 +37,7 @@
 --   ⚠️ 규모 수치는 여기 하드코딩하지 않는다(`R2-6`) — 정본은 `90` §1-B 다.
 
 select
-      'GA4_BASIC'               as MODEL_NAME
+      'BIGQUERY_BASIC'               as MODEL_NAME
     , USER_PSEUDO_ID            as USER_PSEUDO_ID
     , EVENT_TIMESTAMP           as EVENT_TIMESTAMP
     , EVENT_NAME                as EVENT_NAME
@@ -45,14 +45,14 @@ select
     , count(*)                  as DUP_ROWS
     , min(EVENT_DT)             as FIRST_DT
     , max(EVENT_DT)             as LAST_DT
-from {{ ref('GA4_BASIC') }}
+from {{ ref('BIGQUERY_BASIC') }}
 group by all
 having count(*) > 1
 
 union all
 
 select
-      'GA4_EVENT'               as MODEL_NAME
+      'BIGQUERY_EVENT'               as MODEL_NAME
     , USER_PSEUDO_ID            as USER_PSEUDO_ID
     , EVENT_TIMESTAMP           as EVENT_TIMESTAMP
     , EVENT_NAME                as EVENT_NAME
@@ -60,6 +60,6 @@ select
     , count(*)                  as DUP_ROWS
     , min(EVENT_DT)             as FIRST_DT
     , max(EVENT_DT)             as LAST_DT
-from {{ ref('GA4_EVENT') }}
+from {{ ref('BIGQUERY_EVENT') }}
 group by all
 having count(*) > 1

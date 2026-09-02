@@ -14,20 +14,40 @@
 ) }}
 
 with b as (
-    select * from {{ ref('ERP_BUDGET') }}
+    select
+        *,
+        case BUDGET_PROCEDURE
+            when '추가경정' then 2
+            when '연사업' then 1
+            else 0
+        end as PRCD_SEQ
+    from {{ ref('ERP_BUDGET') }}
+),
+ranked as (
+    select
+        *,
+        dense_rank() over (partition by BUDGET_YEAR order by PRCD_SEQ desc) as rnk
+    from b
 )
 
 select
     COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MONTH_KEY)') }}, 0)  as MONTH_KEY,
     0                                     as ORG_SK,            -- 원천 조직귀속 없음 → Unknown
     {{ gold_sk(['BUDGET_ITEM_DK']) }}     as BUDGET_ITEM_SK,
+    BUDGET_PROCEDURE                      as BUDGET_PROCEDURE,  -- 예산 편성 차수(DEC-44)
     0                                     as CAMPAIGN_SK,       -- 원천 연결 없음
     CAST(NULL AS NUMBER(38,0))            as SPONSORSHIP_SK,
-    YEAR_BUDGET_AMT                       as PLAN_BUDGET_MONTH, -- 월 편성예산
-    CAST(NULL AS NUMBER(18,2))            as PLAN_BUDGET_YEAR,  -- TODO: 추경(CHN)/조정(ADJ) 슬롯 매핑 확인
-    EXEC_AMT                              as EXEC_BUDGET_ERP,   -- ERP 집행
+    SUM(YEAR_BUDGET_AMT)                  as PLAN_BUDGET_MONTH, -- 월 편성예산
+    -- 🔴 [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍 — O96 판정(§7-B A군) 집행.
+    --    연값은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` 로 이미 분리돼 있어 이 컬럼은 항상 NULL이었다.
+    SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
     CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- E-4 원천부재
     {{ gold_meta('ERP') }}
-from b
+from ranked
+where rnk = 1
+group by
+    COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MONTH_KEY)') }}, 0),
+    {{ gold_sk(['BUDGET_ITEM_DK']) }},
+    BUDGET_PROCEDURE

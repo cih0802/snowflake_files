@@ -7,7 +7,7 @@
      O87 이 범위 술어를 아래 **세 곳에 각각 하드코딩**했다:
        · `macros/ga4_range_purge.sql`                (pre-hook DELETE 범위)
        · `models/silver/ga4/BIGQUERY_REFINED_DATA.sql` (src CTE WHERE)
-       · `models/silver/ga4/GA4_EVENT.sql`             (최종 SELECT WHERE)
+       · `models/silver/ga4/BIGQUERY_EVENT.sql`             (최종 SELECT WHERE)
      세 술어는 **반드시 동일해야 멱등**이다 — DELETE 범위와 append 범위가 어긋나면
      행이 남거나(중복) 사라진다(누락). 그런데 어긋남을 잡는 게이트가 **없었다**.
      두 모델 파일이 스스로 *"pre-hook DELETE 범위와 동일해야 멱등이다"* 라고 적어 두었지만,

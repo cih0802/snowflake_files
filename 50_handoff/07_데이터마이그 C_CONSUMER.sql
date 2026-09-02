@@ -117,7 +117,7 @@ LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE;
 SELECT COUNT(*) AS stray_files
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 WHERE SPLIT_PART("name", '/', 2)
-      NOT IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'SILVER', 'ML');
+      NOT IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC', 'SILVER', 'ML');
 -- → 0 이 아니면 이전 배치 잔존이다. C 에 대상 테이블이 없어 적재가 실패하거나 무시된다. REMOVE 할 것.
 
 -- (2) 진단용 포맷: 줄 전체를 $1 로 읽는다(FIELD_DELIMITER=NONE, 헤더 포함).
@@ -180,7 +180,7 @@ t AS (
          COUNT(*)                                                                       AS tbl_cols,
          UPPER(LISTAGG(column_name, ',') WITHIN GROUP (ORDER BY ordinal_position))       AS tbl_col_list
   FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
-  WHERE table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  WHERE table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
      OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
      OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%')
   GROUP BY 1, 2
@@ -290,6 +290,8 @@ $$;
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_ERP');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_CRM');
+CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GA4');
+CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GSC');
 -- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('SILVER');   -- 사용 금지 (ITEMS 가 문자열로 적재된다)
 -- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('ML');       -- 사용 금지 (PREDICTION 4종이 문자열로 적재된다)
 
@@ -510,7 +512,7 @@ SELECT DISTINCT STDR_MT FROM GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M ORDER BY 1;
 SELECT table_schema, COUNT(*) AS tables, SUM(row_count) AS total_rows
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 GROUP BY 1 ORDER BY 1;
@@ -527,7 +529,7 @@ GROUP BY 1 ORDER BY 1;
 SELECT table_schema, table_name
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE' AND row_count = 0
-  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') );
 
@@ -550,7 +552,7 @@ GROUP BY 5;
 SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 ORDER BY table_schema, table_name;
@@ -565,7 +567,7 @@ ORDER BY table_schema, table_name;
 SELECT table_schema_name, table_name, file_name, status,
        row_count, row_parsed, error_count, first_error_message, last_load_time
 FROM SNOWFLAKE.ACCOUNT_USAGE.COPY_HISTORY
-WHERE table_schema_name IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'SILVER', 'ML')
+WHERE table_schema_name IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC', 'SILVER', 'ML')
   AND last_load_time >= DATEADD('day', -2, CURRENT_TIMESTAMP())
   AND (status <> 'Loaded' OR error_count > 0)
 ORDER BY last_load_time DESC;

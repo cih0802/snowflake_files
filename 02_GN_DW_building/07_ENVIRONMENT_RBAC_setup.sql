@@ -176,6 +176,9 @@ ALTER SCHEMA GN_DW.OPS    SET COMMENT = 'ETL 운영 인프라 — dbt 프로젝�
    D. 스키마 권한 (03_GOLD_SERVING.md §3.8 schema_grants)
       스키마 소유자 = GN_DW_ADMIN(ADMIN 이 처음부터 생성) → ADMIN 이 발급.
    ===================================================================== */
+USE ROLE SECURITYADMIN;
+GRANT MANAGE GRANTS ON ACCOUNT TO ROLE GN_DW_ADMIN;
+
 USE ROLE GN_DW_ADMIN;
 
 -- D.1 DATABASE USAGE (6개 역할 전부)
@@ -328,8 +331,8 @@ GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO 
 --      반증 = O87 이 신설한 `silver_purge` 매크로가 range 모델에 **범위 DELETE 문**을 낸다
 --      (`macros/ga4_range_purge.sql` · pre-hook 경유) ⇒ `DELETE` 없이는 GA4 SILVER 모델이 실패한다.
 --      🟢 2026-08-20 라이브 부여·실측 확인(FUTURE 4종 = SELECT·INSERT·TRUNCATE·DELETE).
-GRANT INSERT, TRUNCATE, DELETE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
-GRANT INSERT, TRUNCATE, DELETE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
+GRANT INSERT, TRUNCATE, DELETE, UPDATE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
+GRANT INSERT, TRUNCATE, DELETE, UPDATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 
 --   🔴🔴 [2026-08-30 O121 재정정 — UPDATE] 위 O91 이 남긴 「🟢 `UPDATE` 는 여전히 불요다(SILVER 에
 --      merge 전략 모델이 없다)」는 **더는 사실이 아니다.** 그 문장은 2026-08-20 자이고, 닷새 뒤
@@ -345,7 +348,7 @@ GRANT INSERT, TRUNCATE, DELETE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE G
 --         빠뜨려도 조용한 오작동이 아니다 — `003001 … must have MODIFY granted on TABLE …` 로 시끄럽게 실패한다.
 --      교차검증 = `grep -rn "incremental_strategy='merge'" 10_dbt_pipeline/models/silver/` ↔ 아래 GRANT 목록.
 --         (2026-08-30 기준 1:1 = CRM_MEMBER_DEV 뿐)
-GRANT UPDATE ON TABLE GN_DW.SILVER.CRM_MEMBER_DEV TO ROLE GN_DW_ENGINEER;
+-- GRANT UPDATE ON TABLE GN_DW.SILVER.CRM_MEMBER_DEV TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
    D.6 dbt test store_failures 적재 권한 — GN_DW_ENGINEER (OPS 한정 CREATE TABLE)

@@ -132,17 +132,17 @@ DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;   -- default_version / default_versi
 --        (종전 이 줄은 `USER%24` 로 적혀 있었고 그대로 실행하면 막힌다.)
 --     ⚠️ 세션에 웨어하우스가 없으면 `No active warehouse selected` 로 막힌다 ⇒ `USE WAREHOUSE` 를 먼저.
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION typealter_20260830
+  ADD VERSION SILVER_TBLNM_20260901
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 -- ✅ [2026-08-30 실행완료] VERSION$2(alias=TYPEALTER_20260830) 생성 · is_default=true 승격 확인.
 --    내용 = ① BRONZE_CRM/ERP/AGENCY grant 복구 ② SILVER.CRM_MEMBER_DEV UPDATE(merge) 부여
---           ③ `macros/gn_no_structural_alter.sql` 신설(dbt 자동 타입 ALTER 차단) ④ GA4_BASIC 12컬럼 CAST.
+--           ③ `macros/gn_no_structural_alter.sql` 신설(dbt 자동 타입 ALTER 차단) ④ BIGQUERY_BASIC 12컬럼 CAST.
 --    검증 = `EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build'` → **PASS=425 WARN=36 ERROR=0 SKIP=0 / 461** (375초).
 --    직전 상태(VERSION$1) = PASS=11 WARN=0 ERROR=17 SKIP=433.
 
 -- (3) 변경 요약을 프로젝트 COMMENT 에 남긴다(버전별이 아니라 객체 단위 — 최신 상태 설명).
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260830] BRONZE grant 복구 + SILVER merge UPDATE + dbt 자동 타입 ALTER 차단(gn_no_structural_alter). 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
+  COMMENT = 'BRONZE→SILVER + SILVER→GOLD + WIDE VIEW. [20260901] SILVER스키마의 GA4_*에 현업이 혼동이 와 BIGQUERY로 교체함. 정본 09_SILVER_적재쿼리_20260714 / 03_top-down_gold/06_DDL.';
 
 -- (4) 승격 확인 — 새 VERSION$N+1 이 is_default=true 인지, alias 가 붙었는지.
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;

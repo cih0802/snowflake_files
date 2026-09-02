@@ -14,14 +14,14 @@
 
 select
     AD_PERF_DK                  as AD_PERF_DK,
-    PAGE_TYPE                   as PAGE_TYPE,                   -- 페이지유형
-    AD_GROUP_NM                 as AD_GROUP_NM,                 -- 광고그룹명
-    GROUP_DIV                   as GROUP_DIV,                   -- 그룹구분
-    CREATIVE_TYPE               as CREATIVE_TYPE,               -- 소재유형
-    AD_TYPE_NM                  as AD_TYPE_NM,                  -- 광고유형명(원천 표기) ≠ 코어 AD_SOURCE_TYPE
+    PAGE_TYPE_NM                as PAGE_TYPE,                   -- 페이지유형
+    AD_GRP_NM                   as AD_GROUP_NM,                 -- 광고그룹명
+    GRP_DIV_NM                  as GROUP_DIV,                   -- 그룹구분
+    MATR_TY_NM                  as CREATIVE_TYPE,               -- 소재유형
+    AD_TY_NM                    as AD_TYPE_NM,                  -- 광고유형명(원천 표기) ≠ 코어 AD_SOURCE_TYPE
     READ_CNT                    as READ_CNT,                    -- 읽음수
-    MEDIA_POTENTIAL_CUST_CNT    as MEDIA_POTENTIAL_CUST_CNT,    -- 매체 잠재고객수
-    CRM_DEV_CNT                 as CRM_DEV_CNT,                 -- CRM 개발건수
+    MEDIA_PTNT_CUST_CNT         as MEDIA_POTENTIAL_CUST_CNT,    -- 매체 잠재고객수
+    CRM_DVLP_CNT                as CRM_DEV_CNT,                 -- CRM 개발건수
     CTR_SRC                     as CTR_SRC,                     -- N 대행사, DW=CLICKS/IMPRESSIONS
     CVR_SRC                     as CVR_SRC,                     -- N 대행사, DW=GA_CONV_MEMBERS/CLICKS (O5)
     CPC_SRC                     as CPC_SRC,                     -- N 대행사, DW=AD_COST/CLICKS

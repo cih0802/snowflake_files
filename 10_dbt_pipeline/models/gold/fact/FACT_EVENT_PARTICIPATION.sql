@@ -69,7 +69,7 @@ select
     p.PARTCPT_STAT_CD                             as PART_STATUS,
     p.PARTCPT_PATH_CD                             as PART_PATH,
     p.PARTCPT_CHNNL_CD                            as PART_CHANNEL,
-    CAST(NULL AS BOOLEAN)                          as INCREASE_FLAG,
+    -- 🔴 [2026-09-01 O130] `INCREASE_FLAG` 드랍 — O96 판정(§7-B A군) 집행. 소비 0(WIDE 뷰 재생성 동반).
     -- 🟢 [DEC-30 2026-08-04] degenerate key 2종 — A군 잔여 해소 + 고아 식별자 보존.
     -- 🔴 `EVENT_BK` 가 반드시 필요한 이유(2026-08-04 빌드 후 실측으로 발견):
     --    행사 마스터에 없는 **53개 행사 · 263,611행(23.2%)** 은 `EVENT_SK` 가 전부 0 이 되어

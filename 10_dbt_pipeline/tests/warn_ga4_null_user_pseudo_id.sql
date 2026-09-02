@@ -2,20 +2,20 @@
 -- Co-authored with CoCo
 --
 -- 🔴🔴 왜 필요한가 (2026-08-20 O91-D · 사용자 결정 「필터 제외」의 짝)
---   `GA4_BASIC` 은 `USER_PSEUDO_ID NOT NULL`(grain 1번 컬럼)이라 원천에 NULL 이
+--   `BIGQUERY_BASIC` 은 `USER_PSEUDO_ID NOT NULL`(grain 1번 컬럼)이라 원천에 NULL 이
 --   1행만 있어도 `100072` 로 **모델 전체가 실패**한다. 실측(2026-08-20)에서 **111행**이
 --   `build` 를 죽여 모델·테스트가 대량 SKIP 됐다.
---   ⇒ `GA4_BASIC` 에 `WHERE USER_PSEUDO_ID IS NOT NULL` 필터를 넣어 실패를 막았다. 이 테스트는
+--   ⇒ `BIGQUERY_BASIC` 에 `WHERE USER_PSEUDO_ID IS NOT NULL` 필터를 넣어 실패를 막았다. 이 테스트는
 --      **그 필터가 조용히 삼키는 양이 커지는지**를 감시한다. 필터만 있으면 소실이 보이지 않는다.
 --
 -- 🔄 [2026-08-21] 원천을 `source('bronze_bigquery','EVENTS')` → `source('silver_external',
 --    'BIGQUERY_REFINED_DATA')` 로 교체했다 — 계정 이관 후 `BRONZE_BIGQUERY.EVENTS` **통합
 --    테이블이 라이브에 없다**(실측: 일별 샤드 `events_YYYYMMDD` 911개 + 월별 `BQ_YYYYMM` 30개만
 --    존재 · 통합 `EVENTS` 는 구 계정 `UA93987` 기록이고 현 계정에 재현되지 않음).
---    `BIGQUERY_REFINED_DATA`(외부 Python 적재)가 `GA4_BASIC` 의 필터 **이전** 원본이므로
+--    `BIGQUERY_REFINED_DATA`(외부 Python 적재)가 `BIGQUERY_BASIC` 의 필터 **이전** 원본이므로
 --    개념적으로 동일한 관측을 계속할 수 있는 유일한 SILVER 객체다.
 --    ⚠️ `SRC_TABLE`·`SRC_FILE_NAME` 계보 컬럼은 외부 적재에 없다 — 그룹핑을 `EVENT_DATE` 로
---    대체했다. `EVENT_DATE` 는 TEXT(YYYYMMDD) 라 리터럴 문자열 비교로 필터한다(GA4_BASIC 과 동일
+--    대체했다. `EVENT_DATE` 는 TEXT(YYYYMMDD) 라 리터럴 문자열 비교로 필터한다(BIGQUERY_BASIC 과 동일
 --    이유 — 함수를 적용하면 프루닝이 깨진다).
 --
 -- 🔴 왜 「기지 창 밖에서만」인가 (사용자 결정 · P103-⑤)

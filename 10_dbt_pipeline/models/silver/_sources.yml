@@ -37,10 +37,10 @@ sources:
 
   # 🆕 [2026-08-21] BIGQUERY_REFINED_DATA 는 더 이상 dbt 모델이 아니다 — 외부 Python 파이프라인이
   #    GN_DW.SILVER.BIGQUERY_REFINED_DATA 를 직접 적재한다(118컬럼 평탄화만 · 파생 0).
-  #    🔴 이 source 의 유일한 소비자는 신설 dbt 모델 `GA4_BASIC` 이다 — GA4_* 5종은 더 이상
-  #    이 source 를 직접 읽지 않는다(ref('GA4_BASIC') 로 읽는다). EVENT_SEQ·EVENT_DT·ID_SCHEME·
+  #    🔴 이 source 의 유일한 소비자는 신설 dbt 모델 `BIGQUERY_BASIC` 이다 — GA4_* 5종은 더 이상
+  #    이 source 를 직접 읽지 않는다(ref('BIGQUERY_BASIC') 로 읽는다). EVENT_SEQ·EVENT_DT·ID_SCHEME·
   #    SRC_FILE_NAME 은 원천에 없는 파생/계보 컬럼이라 여기서 테스트하지 않는다
-  #    (그 컬럼들의 not_null/accepted_values 테스트는 `_ga4_schema.yml` GA4_BASIC 항목으로 이전).
+  #    (그 컬럼들의 not_null/accepted_values 테스트는 `_bigquery_schema.yml` BIGQUERY_BASIC 항목으로 이전).
   - name: silver_external
     database: GN_DW
     schema: SILVER
@@ -49,14 +49,17 @@ sources:
     tables:
       - name: BIGQUERY_REFINED_DATA
         description: >
-          BRONZE_BIGQUERY.EVENTS 평탄화 통합 테이블(파생 없음 · 118컬럼). `GA4_BASIC`(dbt) 의
-          유일한 입력. grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME) — 3키 중복
-          8.66%(2025-06 실측) 잔존, GA4_BASIC 이 ROW_NUMBER 로 EVENT_SEQ 를 부여해 흡수한다.
-          🔄 [2026-08-21] dbt 모델에서 외부 Python 적재로 전환(원천 접두 명명 근거 = DEC-38).
+          BigQuery 평탄화 테이블을 정제하였다 — BRONZE_BIGQUERY.EVENTS 평탄화 통합 테이블
+          (파생 없음 · 118컬럼). `BIGQUERY_BASIC`(dbt) 의 유일한 입력. grain = 1행 /
+          (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME) — 3키 중복 8.66%(2025-06 실측) 잔존,
+          BIGQUERY_BASIC 이 ROW_NUMBER 로 EVENT_SEQ 를 부여해 흡수한다.
+          🔄 [2026-08-21] dbt 모델에서 외부 Python 적재로 전환. 원천 접두 명명 근거 = DEC-38
+          (기반 테이블 예외) — 🆕 [2026-09-01 DEC-48] SILVER 파생 모델(GA4_*)은 전부
+          `BIGQUERY_*` 로 전환됐고, 이 기반 테이블은 이름은 불변·COMMENT 만 갱신됐다.
         columns:
           - name: USER_PSEUDO_ID
             tests:
-              # DEC-40(2026-08-20): USER_PSEUDO_ID NULL 은 grain 구성 컬럼이라 GA4_BASIC 에서
+              # DEC-40(2026-08-20): USER_PSEUDO_ID NULL 은 grain 구성 컬럼이라 BIGQUERY_BASIC 에서
               # 필터 제외(센티넬 아님). 기지 창 = EVENT_DATE 20240605~20240610(6일·111행·구
               # 계정 UA93987 원본, user_id 도 전건 NULL). 이 필터는 build ERROR 방지용 —
               # 창 밖 신규 사고는 여전히 error 로 감지된다. 창 안 규모 변화 감시는

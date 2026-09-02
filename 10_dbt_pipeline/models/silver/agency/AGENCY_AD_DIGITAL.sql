@@ -9,16 +9,16 @@
 SELECT
     AD_PERF_DK                          AS AD_PERF_DK,
     -- ── 디지털 고유 degenerate ──
-    {{ clean_str('PAGE_TYPE_NM') }}     AS PAGE_TYPE,                   -- 페이지유형 ← DGT.PAGE_TYPE_NM
-    {{ clean_str('AD_GRP_NM') }}        AS AD_GROUP_NM,                 -- 광고그룹명 ← DGT.AD_GRP_NM
-    {{ clean_str('GRP_DIV_NM') }}       AS GROUP_DIV,                   -- 그룹구분 ← DGT.GRP_DIV_NM
-    {{ clean_str('MATR_TY_NM') }}       AS CREATIVE_TYPE,               -- 소재유형 ← DGT.MATR_TY_NM
-    {{ clean_str('AD_TY_NM') }}         AS AD_TYPE_NM,                  -- 광고유형명(원천 표기) ← DGT.AD_TY_NM
+    {{ clean_str('PAGE_TYPE_NM') }}     AS PAGE_TYPE_NM,                -- 페이지유형 ← DGT.PAGE_TYPE_NM
+    {{ clean_str('AD_GRP_NM') }}        AS AD_GRP_NM,                   -- 광고그룹명 ← DGT.AD_GRP_NM
+    {{ clean_str('GRP_DIV_NM') }}       AS GRP_DIV_NM,                  -- 그룹구분 ← DGT.GRP_DIV_NM
+    {{ clean_str('MATR_TY_NM') }}       AS MATR_TY_NM,                  -- 소재유형 ← DGT.MATR_TY_NM
+    {{ clean_str('AD_TY_NM') }}         AS AD_TY_NM,                    -- 광고유형명(원천 표기) ← DGT.AD_TY_NM
                                                                         --   ⚠️ 코어 FAD.AD_SOURCE_TYPE(DIGITAL/VIDEO/REBROADCAST)과 다른 개념
     -- ── 디지털 고유 measure (가산) ──
     READ_CNT                            AS READ_CNT,                    -- 읽음수
-    MEDIA_PTNT_CUST_CNT                 AS MEDIA_POTENTIAL_CUST_CNT,    -- 매체 잠재고객수
-    CRM_DVLP_CNT                        AS CRM_DEV_CNT,                 -- CRM 개발건수
+    MEDIA_PTNT_CUST_CNT                 AS MEDIA_PTNT_CUST_CNT,         -- 매체 잠재고객수
+    CRM_DVLP_CNT                        AS CRM_DVLP_CNT,                -- CRM 개발건수
     -- ── 대행사 산정 파생값 (_SRC, 전량 비가산 N) ──
     CTR                                 AS CTR_SRC,                     -- DW 재계산 = CLICKS/IMPRESSIONS
     CVR                                 AS CVR_SRC,                     -- DW 재계산 = GA_CONV_MEMBERS/CLICKS (O5 확정)

@@ -16,9 +16,10 @@ SELECT
       COALESCE(MOK_NM,'')||'|'||COALESCE(DTL_ITEM_NM,'')||'|'||COALESCE(SUBDTL_ITEM_NM,'')||'|'||
       COALESCE(FUND_SOURCE_NM,''))          AS BUDGET_ITEM_DK,
   TRY_TO_NUMBER(YEAR)                       AS BUDGET_YEAR,
-  YEAR_BDGT_TOT_AMT                         AS YEAR_BUDGET_TOT_AMT,
-  CHN_BDGT_TOT_AMT                          AS CHN_BUDGET_TOT_AMT,
-  ADJ_BDGT_TOT_AMT                          AS ADJ_BUDGET_TOT_AMT,
+  NULLIF(TRIM(BDGT_PRCD_NM),'')             AS BUDGET_PROCEDURE,
+  YEAR_BDGT_TOT_AMT                         AS YEAR_BDGT_TOT_AMT,
+  CHN_BDGT_TOT_AMT                          AS CHN_BDGT_TOT_AMT,
+  ADJ_BDGT_TOT_AMT                          AS ADJ_BDGT_TOT_AMT,
   EXEC_TOT_AMT                              AS EXEC_TOT_AMT,
   'ERP'                                     AS DW_SOURCE_SYSTEM,
   'BRONZE_ERP.BDGT_ACMSLT_LEDGER'           AS DW_SOURCE_TABLE,

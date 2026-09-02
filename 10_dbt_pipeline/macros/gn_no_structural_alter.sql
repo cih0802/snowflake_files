@@ -47,15 +47,15 @@
       SILVER.CRM_EVENT               EVENT_DIV_GROUP     → varchar(16777216)
       SILVER.CRM_EVENT_PARTICIPATION PARTCPT_STAT_GROUP  → varchar(16777216)
       SILVER.ERP_BUDGET              MONTH_KEY           → varchar(16777216)
-      SILVER.GA4_EVENT               USER_ID_FILLED      → varchar(16777216)
-      SILVER.GA4_IDENTITY            GA_MEMBER_ID        → varchar(16777216)
+      SILVER.BIGQUERY_EVENT               USER_ID_FILLED      → varchar(16777216)
+      SILVER.BIGQUERY_IDENTITY            GA_MEMBER_ID        → varchar(16777216)
       GOLD.DIM_MEMBER                PREV_MBER_STAT_CD   → varchar(16777216)
       GOLD.FACT_MEMBER_EVENT         AREA_CD_AT_EVENT    → varchar(16777216)
       GOLD.FACT_MEMBER_SPONSOR_BIZ   SPNSR_NO            → varchar(16777216)
     ⚠️ 위 목록은 **모델당 첫 번째** 컬럼만이다 — 종전 run 은 각 모델의 첫 ALTER 에서 죽어 그 뒤를 못 봤다.
        모델별 전체 목록을 보려면 `build --select <모델>` 을 돌려 STDOUT 의 SKIPPED 줄을 전부 읽어라.
        🔴 `--empty` 로 싸게 떠보려 하지 말 것 — SILVER pre-hook 이 TRUNCATE 라서 **적재 데이터가 날아간다.**
-    🟢 해소 완료 사례 = `GA4_BASIC`(12컬럼 CAST 로 차이 0 달성 · 그 파일 헤더 참조). 나머지 11개도 같은 방식으로 처리한다.
+    🟢 해소 완료 사례 = `BIGQUERY_BASIC`(12컬럼 CAST 로 차이 0 달성 · 그 파일 헤더 참조). 나머지 11개도 같은 방식으로 처리한다.
     🟢 참고로 `CRM_BIZ_TARGET` 은 처음부터 `CAST(NULL AS …)` 로 DDL 타입을 맞춰 둔 모델이다 — 이 프로젝트의 기존 관례다.
 
   ⚠️ 이 파일을 지우면 11개 모델이 즉시 다시 죽는다. 지우려면 먼저 DDL 폭을 원천에 맞추거나

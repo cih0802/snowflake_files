@@ -543,15 +543,15 @@ FROM (
 --   규칙 : 명시컬럼(SELECT * 금지) · session_traffic_source_last_click(UI 일치) · float=double, 세션/카운트=int_value ·
 --          event_date→TO_DATE(TRY_TO_NUMBER 금지) · 비가산 raw · 멱등 INSERT OVERWRITE · 메타 4+1컬럼.
 --   ⚠️ 병렬 금지(credential cache 락) — 아래 6개 INSERT 는 순차 실행.
---   ⚠️ 단방향 : 5개 모두 BRONZE_BIGQUERY 만 참조(GA4_IDENTITY 도 GA4_EVENT 참조 금지 → session-fill CTE 재계산).
+--   ⚠️ 단방향 : 5개 모두 BRONZE_BIGQUERY 만 참조(BIGQUERY_IDENTITY 도 BIGQUERY_EVENT 참조 금지 → session-fill CTE 재계산).
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- GA4 B-1 : GA4_TRAFFIC_SOURCE  (session/last-click DISTINCT — last-click 한정 그레인)
+-- GA4 B-1 : BIGQUERY_TRAFFIC_SOURCE  (session/last-click DISTINCT — last-click 한정 그레인)
 --   ⚠️ GA4-검토(2026-07-14): first-touch(traffic_source)·collected(collected_traffic_source)는
 --      어트리뷰션 grain 상이 → 제외(혼재 시 1,175→6,736 팽창·DIM_GA_SOURCE fan-out).
 -- ----------------------------------------------------------------------------
-INSERT OVERWRITE INTO GN_DW.SILVER.GA4_TRAFFIC_SOURCE
+INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE
 (UTM_SOURCE, UTM_MEDIUM, UTM_CAMPAIGN, UTM_CONTENT, UTM_TERM, SOURCE_MEDIUM,
  XCHAN_SOURCE, XCHAN_MEDIUM, XCHAN_CAMPAIGN, DEFAULT_CHANNEL_GROUP,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
@@ -575,9 +575,9 @@ FROM (
 );
 
 -- ----------------------------------------------------------------------------
--- GA4 B-2 : GA4_EVENT_DIM  (이벤트 정의 DISTINCT — event_params 승격)
+-- GA4 B-2 : BIGQUERY_EVENT_DIM  (이벤트 정의 DISTINCT — event_params 승격)
 -- ----------------------------------------------------------------------------
-INSERT OVERWRITE INTO GN_DW.SILVER.GA4_EVENT_DIM
+INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_EVENT_DIM
 (EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 SELECT DISTINCT EVENT_NAME, EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION,
@@ -593,9 +593,9 @@ FROM (
 );
 
 -- ----------------------------------------------------------------------------
--- GA4 B-3 : GA4_DEVICE  (기기 DISTINCT — platform/device 파생)
+-- GA4 B-3 : BIGQUERY_DEVICE  (기기 DISTINCT — platform/device 파생)
 -- ----------------------------------------------------------------------------
-INSERT OVERWRITE INTO GN_DW.SILVER.GA4_DEVICE
+INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_DEVICE
 (DEVICE_TYPE, PLATFORM, DEVICE_CATEGORY, OS, BROWSER, LANGUAGE,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 SELECT DISTINCT
@@ -611,13 +611,13 @@ SELECT DISTINCT
 FROM GN_DW.BRONZE_BIGQUERY."events_20260501";
 
 -- ----------------------------------------------------------------------------
--- GA4 B-4 : GA4_EVENT  (팩트 소스 — FLATTEN + param 승격 + 07 §5-A 세션 채움)
+-- GA4 B-4 : BIGQUERY_EVENT  (팩트 소스 — FLATTEN + param 승격 + 07 §5-A 세션 채움)
 --   2단계 세션 채움(설계결정서 §5-A): ① ev(PK GROUP BY, ga_session_id 승격)
 --   → ② sess(GA_SESSION_KEY 별 COUNT(DISTINCT user_id)=n_id·MAX(user_id)=sess_uid) → LEFT JOIN.
 --   ⚠️ COUNT(DISTINCT) OVER 미지원 → 반드시 집계 CTE 방식. n_id>=2 = CONFLICT(미채움).
---   ⚠️ 원천 복합PK 중복군(16,187) 은 ev 의 PK GROUP BY 로 dedup → GA4_EVENT PK 유일.
+--   ⚠️ 원천 복합PK 중복군(16,187) 은 ev 의 PK GROUP BY 로 dedup → BIGQUERY_EVENT PK 유일.
 -- ----------------------------------------------------------------------------
-INSERT OVERWRITE INTO GN_DW.SILVER.GA4_EVENT
+INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_EVENT
 (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, BATCH_ORDERING_ID, EVENT_DATE, EVENT_DT, EVENT_TS,
  USER_ID, GA_SESSION_ID, GA_SESSION_NUMBER, GA_SESSION_KEY, USER_ID_FILLED, ID_RESOLUTION,
  SESSION_ENGAGED, ENGAGEMENT_TIME_MSEC, PAGE_LOCATION, PAGE_TITLE, PAGE_REFERRER,
@@ -718,11 +718,11 @@ LEFT JOIN sess s
    AND s.ga_session_key = ev.user_pseudo_id || '-' || ev.ga_session_id;
 
 -- ----------------------------------------------------------------------------
--- GA4 B-5 : GA4_IDENTITY  (신원 1행/pseudo — Q1 접두사 분기 + 세션 채움)
---   ⚠️ 단방향 유지 : GA4_EVENT 참조 금지 → BRONZE 에서 세션 채움 CTE 재계산.
+-- GA4 B-5 : BIGQUERY_IDENTITY  (신원 1행/pseudo — Q1 접두사 분기 + 세션 채움)
+--   ⚠️ 단방향 유지 : BIGQUERY_EVENT 참조 금지 → BRONZE 에서 세션 채움 CTE 재계산.
 --   PK=USER_PSEUDO_ID → pseudo 당 1행. 채움 회원번호는 MAX 로 결정적 선택(다중 로그인 pseudo 방어).
 -- ----------------------------------------------------------------------------
-INSERT OVERWRITE INTO GN_DW.SILVER.GA4_IDENTITY
+INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_IDENTITY
 (USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MBER_NO, ONCE_MBER_NO, ID_RESOLUTION,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 WITH ev AS (
@@ -768,19 +768,19 @@ GROUP BY user_pseudo_id;
 -- ============================================================================
 -- STEP 6 완료 — GA4 5객체 적재(멱등 INSERT OVERWRITE). DQ 게이트 = STEP 6-DQ 참조.
 --   PoC(1일 샤드 events_20260501). 전기간 입고 후 FROM 절 ga4_union_shards 교체·재실행.
---   세션 채움(07 §5-A): user_id 원본 채움률 4.22% → USER_ID_FILLED/GA4_IDENTITY 로 커버리지 개선(SESSION_FILL 은 추론값).
+--   세션 채움(07 §5-A): user_id 원본 채움률 4.22% → USER_ID_FILLED/BIGQUERY_IDENTITY 로 커버리지 개선(SESSION_FILL 은 추론값).
 -- ============================================================================
 
 
 -- ============================================================================
 -- STEP 7 : S-7 신원 브리지 IDENTITY_MEMBER_XREF (교차소스 유일 예외)
 -- ----------------------------------------------------------------------------
---   목적 : GA 신원(GA4_IDENTITY) ↔ CRM 회원(CRM_MEMBER) 해소.
+--   목적 : GA 신원(BIGQUERY_IDENTITY) ↔ CRM 회원(CRM_MEMBER) 해소.
 --   조인 : GA_MEMBER_ID = MEMBER_DK 결정적 exact 매칭(실측 1,348/1,348=100%, fan-out 0, type불일치 0).
 --   grain: 1행/USER_PSEUDO_ID. 멱등 INSERT OVERWRITE.
 --   미매칭 보존(LEFT JOIN) → MATCH_METHOD='UNMATCHED'/CONFIDENCE='NONE'.
 --   CHILD_CODE 제외(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피 — 결연아동은 GOLD URL파싱/결연팩트에서).
---   ⚠️ 단방향 : SILVER GA4_IDENTITY·CRM_MEMBER 만 참조.
+--   ⚠️ 단방향 : SILVER BIGQUERY_IDENTITY·CRM_MEMBER 만 참조.
 -- ----------------------------------------------------------------------------
 INSERT OVERWRITE INTO GN_DW.SILVER.IDENTITY_MEMBER_XREF
 (USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MEMBER_DK, HOMEPAGE_ID, ID_RESOLUTION,
@@ -797,15 +797,15 @@ SELECT
     CASE WHEN m.MEMBER_DK IS NULL          THEN 'NONE'
          WHEN g.ID_RESOLUTION = 'DIRECT'   THEN 'HIGH'
          ELSE 'MEDIUM' END                                                 AS match_confidence,
-    'GA4+CRM', 'SILVER.GA4_IDENTITY+CRM_MEMBER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
-FROM GN_DW.SILVER.GA4_IDENTITY g
+    'GA4+CRM', 'SILVER.BIGQUERY_IDENTITY+CRM_MEMBER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
+FROM GN_DW.SILVER.BIGQUERY_IDENTITY g
 LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
     ON g.GA_MEMBER_ID = m.MEMBER_DK;
 
 -- STEP 7 완료 — 신원 브리지 적재(멱등). DQ = 아래 STEP 7-DQ.
 -- ----------------------------------------------------------------------------
 -- ★ GOLD 소비 계약 (consumption contract) — 후속 오류방지 필수준수 (2026-07-14 실측근거)
---   [C1] 익명 다수 : GA4_EVENT distinct pseudo 27,840 중 신원해소 1,348(4.84%). 95.16% 익명.
+--   [C1] 익명 다수 : BIGQUERY_EVENT distinct pseudo 27,840 중 신원해소 1,348(4.84%). 95.16% 익명.
 --        → FACT_GA_BEHAVIOR 는 XREF 에 반드시 LEFT JOIN. INNER JOIN 금지(이벤트 95% silent 소실).
 --        미매칭/익명 pseudo → DIM_MEMBER_IDENTITY '-1 UNKNOWN' IDENTITY_SK 로 귀속.
 --   [C2] grain 구분 : XREF=pseudo grain(1,348행) ≠ DIM_MEMBER_IDENTITY=member grain(distinct MEMBER_DK 1,274).
@@ -823,7 +823,7 @@ LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
 -- (A) 사전 진단 — 적재 前 매칭률·fan-out·type정합 측정 (실측: 1,348/1,348=100%, fan-out 0, type불일치 0)
 WITH ga AS (
   SELECT USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, ID_RESOLUTION
-  FROM GN_DW.SILVER.GA4_IDENTITY
+  FROM GN_DW.SILVER.BIGQUERY_IDENTITY
   WHERE GA_MEMBER_ID IS NOT NULL
 )
 SELECT
@@ -844,7 +844,7 @@ LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
 --               / bad_matched_null_dk=0 / distinct_members=1274
 SELECT
   (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF)                                     AS xref_rows,
-  (SELECT COUNT(*) FROM GN_DW.SILVER.GA4_IDENTITY)                                             AS ga4_identity_rows,
+  (SELECT COUNT(*) FROM GN_DW.SILVER.BIGQUERY_IDENTITY)                                             AS ga4_identity_rows,
   (SELECT COUNT(DISTINCT USER_PSEUDO_ID) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF)               AS distinct_pk,
   (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE USER_PSEUDO_ID IS NULL)        AS pk_null,
   (SELECT COUNT(*) FROM GN_DW.SILVER.IDENTITY_MEMBER_XREF WHERE MATCH_METHOD='MEMBER_ID_EXACT') AS matched,
@@ -864,10 +864,10 @@ SELECT
 -- STEP 8 : 전체 SILVER 통합 검증 (cross-reference 정합 · 순서 6, §5 게이트 전수) — 2026-07-14 실행
 -- ----------------------------------------------------------------------------
 -- DQ-1 (PK/grain 유일성) : SILVER 30객체 전수 dup=0 통과. CRM_BIZ_TARGET=0행(스키마-only) 제외.
---   · 신규(S-6/S-7) 9종 + CRM 21종 = 30. conform dim 3종(GA4_DEVICE·EVENT_DIM·TRAFFIC_SOURCE)은
+--   · 신규(S-6/S-7) 9종 + CRM 21종 = 30. conform dim 3종(BIGQUERY_DEVICE·EVENT_DIM·TRAFFIC_SOURCE)은
 --     전체 속성조합 NULL-safe 키로 유일(NULL-concat 아티팩트 배제).
 -- DQ-3 (조인 fan-out) : DQ-1에서 부모키 전수 유일 입증 → 자식→부모 참조조인 fan-out 원천 불가(논리 충족).
---   · S-7 브리지 실측 재확인 : GA4_IDENTITY 1,348 → XREF 1,348 (행 불변).
+--   · S-7 브리지 실측 재확인 : BIGQUERY_IDENTITY 1,348 → XREF 1,348 (행 불변).
 -- ----------------------------------------------------------------------------
 -- DQ-2 (cross-reference orphan) : 자식 참조값 중 부모 부재 건수(0=정합).
 --   실측 결과(2026-07-14):

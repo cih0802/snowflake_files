@@ -10,15 +10,15 @@
           (이 판본은 라이브에 미적용 · 적재 전 정지). 실측 갱신은 DDL 실행 후에 한다.
     🔄 [2026-08-21] `BIGQUERY_REFINED_DATA` 가 외부 Python 적재로 전환되며 평탄화만 남기고
        파생(EVENT_DT·EVENT_SEQ·ID_SCHEME·DEVICE_TYPE·UTM/XCHAN 등)을 잃었다 ⇒ 그 파생을
-       되살리는 dbt 모델 `GA4_BASIC` 을 신설한다(GA4 5 → 6, 총계 39 → **40**).
+       되살리는 dbt 모델 `BIGQUERY_BASIC` 을 신설한다(GA4 5 → 6, 총계 39 → **40**).
        구조는 종전 커밋아웃된 `BIGQUERY_REFINED_DATA` DDL 을 계승하되 `SRC_TABLE`·
        `SRC_FILE_NAME`·`BRONZE_LOAD_TS`(외부 적재에 계보 없음)는 제거하고
        `GAC_*`(google_ads_campaign) 3컬럼을 추가한다. `EVENT_SEQ` 결정성은 미해결(`GA4-SEQ-1`).
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
-  🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 GA4_EVENT 에 행이 있다.**
-     실측 = 계정 `UA93987` · 2026-08-19 · `SILVER.GA4_EVENT` **8,161,106행**(정본 = 원장 §O87).
+  🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 BIGQUERY_EVENT 에 행이 있다.**
+     실측 = 계정 `UA93987` · 2026-08-19 · `SILVER.BIGQUERY_EVENT` **8,161,106행**(정본 = 원장 §O87).
      🔴 이 수치는 **계정·시점에 종속**이다(`R2-8-4`) — 계정이 바뀌면 재실측할 것(`P169` 3회 발생).
      `CREATE OR REPLACE` 는 그것을 지운다. GA4 구간을 재실행할 때는 그 사실을 먼저 확인할 것
      (그 행은 dbt 를 우회해 09번 SQL 로 적재된 것이고 구 DEVICE_TYPE 로직(else 'PC')
@@ -569,8 +569,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT 'MD5 해시 대체키 (PK) = MD5(연도|수입지출|예산단위|장|관|항|목|세목|세세목|재원)',
     BUDGET_YEAR         NUMBER(4,0)     COMMENT '예산연도 YYYY',
-    INCOME_EXPENSE_DIV  VARCHAR         COMMENT '수입/지출 구분',
-    BUDGET_UNIT_NM      VARCHAR         COMMENT '예산단위 (=조직명, 코드 없음)',
+    INCOME_EXPS_DIV_NM  VARCHAR         COMMENT '수입/지출 구분',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위 (=조직명, 코드 없음)',
     JANG_NM             VARCHAR         COMMENT '예산과목 1단계 장',
     KWAN_NM             VARCHAR         COMMENT '예산과목 2단계 관',
     HANG_NM             VARCHAR         COMMENT '예산과목 3단계 항',
@@ -590,6 +590,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '예산과목 대체키 (PK, →ERP_BUDGET_ITEM)',
     BUDGET_YEAR         NUMBER(4,0)     COMMENT '예산연도 YYYY',
+    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
     MONTH_NO            NUMBER(2,0)     NOT NULL COMMENT '월 1~12 (PK)',
     MONTH_KEY           VARCHAR(6)      COMMENT '월키 YYYYMM',
     YEAR_BUDGET_AMT     NUMBER(38,0)    COMMENT '편성(연예산) 금액 원단위',
@@ -610,9 +611,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '예산과목 대체키 (PK, →ERP_BUDGET_ITEM). 🟢 ERP_BUDGET·ERP_BUDGET_ITEM 과 **동일 MD5 산식** — 식을 바꿀 때 세 곳을 함께 바꿔야 한다.',
     BUDGET_YEAR         NUMBER(4,0)     NOT NULL COMMENT '예산연도 YYYY (PK). 본 테이블의 grain 은 **연**이다.',
-    YEAR_BUDGET_TOT_AMT NUMBER(38,0)    COMMENT '연 편성예산 총액 원단위 = 원천 YEAR_BDGT_TOT_AMT',
-    CHN_BUDGET_TOT_AMT  NUMBER(38,0)    COMMENT '연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT',
-    ADJ_BUDGET_TOT_AMT  NUMBER(38,0)    COMMENT '연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT. ⚠️편성보다 클 수 있다(추경·전용 반영).',
+    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
+    YEAR_BDGT_TOT_AMT   NUMBER(38,0)    COMMENT '연 편성예산 총액 원단위 = 원천 YEAR_BDGT_TOT_AMT',
+    CHN_BDGT_TOT_AMT    NUMBER(38,0)    COMMENT '연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT',
+    ADJ_BDGT_TOT_AMT    NUMBER(38,0)    COMMENT '연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT. ⚠️편성보다 클 수 있다(추경·전용 반영).',
     EXEC_TOT_AMT        NUMBER(38,0)    COMMENT '연 집행 총액 원단위 = 원천 EXEC_TOT_AMT. ⚠️ERP_BUDGET 의 월 집행 12개월 합과 반드시 일치하지 않는다 — 원천이 두 값을 따로 관리한다. 불일치는 원천 상태이므로 맞추지 말 것.',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
@@ -867,14 +869,14 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
 -- AGENCY 6: AGENCY_AD_DIGITAL (디지털 고유속성 위성)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '코어 1:1 조인키(staging 발급값 승계)',
-    PAGE_TYPE           VARCHAR         COMMENT '페이지유형',
-    AD_GROUP_NM         VARCHAR         COMMENT '광고그룹명',
-    GROUP_DIV           VARCHAR         COMMENT '그룹구분',
-    CREATIVE_TYPE       VARCHAR         COMMENT '소재유형',
-    AD_TYPE_NM          VARCHAR         COMMENT '광고유형명(대행사 표기)',
+    PAGE_TYPE_NM        VARCHAR         COMMENT '페이지유형',
+    AD_GRP_NM           VARCHAR         COMMENT '광고그룹명',
+    GRP_DIV_NM          VARCHAR         COMMENT '그룹구분',
+    MATR_TY_NM          VARCHAR         COMMENT '소재유형',
+    AD_TY_NM            VARCHAR         COMMENT '광고유형명(대행사 표기)',
     READ_CNT            FLOAT           COMMENT '읽음수 (가산)',
-    MEDIA_POTENTIAL_CUST_CNT FLOAT      COMMENT '매체 잠재고객수 (가산)',
-    CRM_DEV_CNT         FLOAT           COMMENT 'CRM 개발건수 (가산). ⚠️실측 189,252행 중 13.0%가 비정수(기여도 배분 추정·어의 미확정 AD-2) · ⚠️2026-05 이후 원천 제공 중단(AD-3) → DEV_UNIT_PRICE_SRC 와 상호배타',
+    MEDIA_PTNT_CUST_CNT FLOAT           COMMENT '매체 잠재고객수 (가산)',
+    CRM_DVLP_CNT        FLOAT           COMMENT 'CRM 개발건수 (가산). ⚠️실측 189,252행 중 13.0%가 비정수(기여도 배분 추정·어의 미확정 AD-2) · ⚠️2026-05 이후 원천 제공 중단(AD-3) → DEV_UNIT_PRICE_SRC 와 상호배타',
     CTR_SRC             FLOAT           COMMENT '[비가산] 대행사 산정 CTR',
     CVR_SRC             FLOAT           COMMENT '[비가산] 대행사 산정 CVR',
     CPC_SRC             FLOAT           COMMENT '[비가산] 대행사 산정 CPC',
@@ -952,13 +954,13 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 --   🟢 [2026-08-19 O87] 신설 1 + 구조 개정 3.
 --      · 신설 `BIGQUERY_REFINED_DATA` = 평탄화 통합 **기반 테이블**(GA4_* 5종의 유일 입력).
 --        계층 내 파생 허용 근거 = DEC-37 · 원천 접두 명명 근거 = DEC-38.
---      · `GA4_EVENT` PK 4번째 키 `BATCH_ORDERING_ID` → **`EVENT_SEQ`**(GA4-PK-1 해소 · 손실 0).
+--      · `BIGQUERY_EVENT` PK 4번째 키 `BATCH_ORDERING_ID` → **`EVENT_SEQ`**(GA4-PK-1 해소 · 손실 0).
 --      · `USER_ID`·`USER_ID_FILLED`·`GA_MEMBER_ID` **VARCHAR(10) → VARCHAR(64)**
 --        + `ID_SCHEME` 분류축 신설(GA4-LEN-1 해소). 길이 확장만 하면 매칭 분모가 왜곡된다.
 --   🟢 [2026-08-21] 구조 개정 3.
 --   🔴 GA4 5테이블로 원복했다.
 --   🔄 [2026-08-21] `BIGQUERY_REFINED_DATA` 외부 Python 전환으로 파생 컬럼 소실 ⇒
---      `GA4_BASIC` 신설로 GA4 5 → 6 재복원(아래 실제 CREATE — 커밋아웃 블록 계승).
+--      `BIGQUERY_BASIC` 신설로 GA4 5 → 6 재복원(아래 실제 CREATE — 커밋아웃 블록 계승).
 -- ============================================================================
 
 -- -- GA4 0: BIGQUERY_REFINED_DATA (평탄화 통합 기반 테이블) — 🆕 [2026-08-19 O87]
@@ -1020,14 +1022,14 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 --     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 -- ) COMMENT = 'BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블(GA4 계열의 유일 입력). event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합 — 종전 5모델이 각자 2.86억행을 읽던 것을 1회로 줄인다. 계층 내 파생 허용 = DEC-37 · 원천 접두 명명 = DEC-38. 🔴 조회 시 EVENT_DT 범위 제한 필수';
 
--- GA4 0: GA4_BASIC (평탄화 재파생 기반 테이블) — 🆕 [2026-08-21]
+-- GA4 0: BIGQUERY_BASIC (평탄화 재파생 기반 테이블) — 🆕 [2026-08-21]
 --   grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 --   입력 = source('silver_external','BIGQUERY_REFINED_DATA')(외부 Python 적재 · 118컬럼 평탄화 · 파생 0).
 --   위 커밋아웃 블록(구 `BIGQUERY_REFINED_DATA` dbt 모델 DDL)을 계승 — SRC_TABLE·SRC_FILE_NAME·
 --   BRONZE_LOAD_TS 는 외부 적재에 계보가 없어 제거. GAC_*(google_ads_campaign) 3컬럼 신설.
 --   🔴 EVENT_SEQ 결정성 미해결(GA4-SEQ-1) — ROW_NUMBER 는 PK 유일성만 보장하고 재실행 간
 --      순번 안정성은 보장하지 않는다(정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1).
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_BASIC (
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
@@ -1082,8 +1084,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_BASIC (
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 ) COMMENT = 'source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블(GA4_* 5종의 유일 입력). 외부 Python 적재가 평탄화만 남기고 파생을 잃어 이 dbt 모델이 되살린다. SRC_TABLE/SRC_FILE_NAME 계보 없음(외부 적재 · NULL). 🔴 조회 시 EVENT_DT 범위 제한 필수. EVENT_SEQ 결정성 미해결(GA4-SEQ-1)';
 
--- GA4 1: GA4_TRAFFIC_SOURCE (트래픽소스 차원)
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_TRAFFIC_SOURCE (
+-- GA4 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
     UTM_SOURCE              VARCHAR         COMMENT 'UTM source',
     UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium',
     UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
@@ -1101,8 +1103,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_TRAFFIC_SOURCE (
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = 'GA 트래픽소스(session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_GA_SOURCE';
 
--- GA4 2: GA4_EVENT_DIM (이벤트분류 차원)
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT_DIM (
+-- GA4 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
     EVENT_NAME          VARCHAR(200)    NOT NULL COMMENT '이벤트명 (그레인 핵심키)',
     EVENT_CATEGORY      VARCHAR         COMMENT '이벤트 카테고리',
     EVENT_LABEL         VARCHAR         COMMENT '이벤트 라벨 (혼합타입)',
@@ -1114,8 +1116,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT_DIM (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = 'GA 이벤트분류. DISTINCT 그레인(PK 없음) → DIM_GA_EVENT';
 
--- GA4 3: GA4_DEVICE (디바이스 차원)
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_DEVICE (
+-- GA4 3: BIGQUERY_DEVICE (디바이스 차원)
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
     DEVICE_TYPE         VARCHAR(10)     NOT NULL COMMENT '디바이스 유형 파생. 실측값 PC/M 2종만(APP 휴면·O2)',
     PLATFORM            VARCHAR(50)     COMMENT '플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고)',
     DEVICE_CATEGORY     VARCHAR         COMMENT '디바이스 카테고리 (원본)',
@@ -1129,9 +1131,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_DEVICE (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = 'GA 디바이스. DISTINCT 그레인(PK 없음) → DIM_DEVICE(GA분)';
 
--- GA4 4: GA4_EVENT (이벤트 팩트 소스)
+-- GA4 4: BIGQUERY_EVENT (이벤트 팩트 소스)
 --   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
@@ -1179,9 +1181,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_EVENT (
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 ) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
 
--- GA4 5: GA4_IDENTITY (신원)
+-- GA4 5: BIGQUERY_IDENTITY (신원)
 --   🟢 [2026-08-19 O87] GA_MEMBER_ID VARCHAR(10) → VARCHAR(64) + ID_SCHEME 신설(GA4-LEN-1).
-CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_IDENTITY (
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
     USER_PSEUDO_ID      VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     GA_MEMBER_ID        VARCHAR(64)     COMMENT '= user_id_filled(세션 채움 후 GA 식별자). 🟢 GA4-LEN-1 해소로 확장 — 🔴 CRM 회원번호가 아닌 값(app-·이메일·"null")도 여기 들어온다. 회원번호로 쓰기 전에 ID_SCHEME 을 볼 것',
     ID_SCHEME           VARCHAR(20)     COMMENT '🔴 매칭 분모의 정본(GA4-LEN-1 조치②). MBER_NO(7자리)/ONCE_MBER_NO(S+8자리) 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호가 아니다. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED) 이고 비회원 체계는 분모 밖이다',
@@ -1201,7 +1203,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_IDENTITY (
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)
 -- ============================================================================
 
--- IDENTITY_MEMBER_XREF: GA4_IDENTITY ↔ CRM_MEMBER 해소 브리지
+-- IDENTITY_MEMBER_XREF: BIGQUERY_IDENTITY ↔ CRM_MEMBER 해소 브리지
 --   ★GOLD 소비계약: grain = 1행/USER_PSEUDO_ID(GA 스파인) ≠ 회원 grain.
 --     DIM_MEMBER_IDENTITY 구축 시 MEMBER_DK DISTINCT + UNMATCHED 제외(MEMBER_DK NOT NULL) 필수.
 --     FACT 결합은 LEFT JOIN — 익명 세션이 95%다(실측 커버리지 4.84%).
@@ -1221,7 +1223,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
-) COMMENT = 'S-7 신원 브리지(교차소스 유일예외). GA4_IDENTITY ↔ CRM_MEMBER 자연키 해소. SK없음(GOLD 소관). 미매칭 보존';
+) COMMENT = 'S-7 신원 브리지(교차소스 유일예외). BIGQUERY_IDENTITY ↔ CRM_MEMBER 자연키 해소. SK없음(GOLD 소관). 미매칭 보존';
 
 
 -- ############################################################################

@@ -24,11 +24,11 @@
      외부 Python 파이프라인이 GN_DW.SILVER.BIGQUERY_REFINED_DATA 를 직접 적재·삭제 관리한다
      (이 매크로는 `this` = dbt 가 소유한 모델의 relation 에만 호출되므로 애초에 이 목록에
      남겨 둬도 호출되지 않지만, 죽은 항목을 지워 목록을 정본으로 유지한다).
-  🔄 [2026-08-21] `GA4_BASIC` 을 추가했다 — 그 외부 적재 테이블을 재파생하는 새 range 모델
-     (EVENT_DT 보유). GA4_EVENT 와 동일하게 범위만 DELETE(멱등).
+  🔄 [2026-08-21] `BIGQUERY_BASIC` 을 추가했다 — 그 외부 적재 테이블을 재파생하는 새 range 모델
+     (EVENT_DT 보유). BIGQUERY_EVENT 와 동일하게 범위만 DELETE(멱등).
 #}
 {% macro silver_purge(relation) %}
-  {%- set RANGED_MODELS = ['GA4_EVENT', 'GA4_BASIC'] -%}
+  {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC'] -%}
   {%- if relation.identifier | upper in RANGED_MODELS -%}
     {{ ga4_range_purge(relation) }}
   {%- else -%}

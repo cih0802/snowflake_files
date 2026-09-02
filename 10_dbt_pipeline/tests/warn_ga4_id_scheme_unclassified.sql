@@ -2,7 +2,7 @@
 -- Co-authored with CoCo
 --
 -- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
---    신설 `GA4_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('GA4_BASIC')).
+--    신설 `BIGQUERY_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('BIGQUERY_BASIC')).
 -- 🔴🔴 왜 필요한가 (실측 경위 — 이 게이트가 없어서 O87 이 틀린 수치를 승계했다)
 --   O87 은 종전 문서(`40_입고대기_원천의존.md` · `90` §1-A)의 *"`user_id` 실측 **6종**"* 을
 --   **검증 없이 그대로 승계**했다. O87-B 에서 전기간을 직접 실측하니 **7종**이었다.
@@ -41,6 +41,6 @@ select
     , count(*)                                          as ROWS_CNT
     , min(EVENT_DT)                                     as FIRST_DT
     , max(EVENT_DT)                                     as LAST_DT
-from {{ ref('GA4_BASIC') }}
+from {{ ref('BIGQUERY_BASIC') }}
 where ID_SCHEME = 'UNCLASSIFIED'
 group by all

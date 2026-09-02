@@ -21,8 +21,8 @@
        ⇒ 불연속 구간(3개월 샘플링)도 그 매크로가 OR 로 전개한다.
 
   🔴 적용 대상 = EVENT_DT 를 보유한 range 모델만이다.
-     · BIGQUERY_REFINED_DATA · GA4_EVENT     → 이 매크로 사용
-     · GA4_EVENT_DIM · GA4_DEVICE · GA4_TRAFFIC_SOURCE · GA4_IDENTITY
+     · BIGQUERY_REFINED_DATA · BIGQUERY_EVENT     → 이 매크로 사용
+     · BIGQUERY_EVENT_DIM · BIGQUERY_DEVICE · BIGQUERY_TRAFFIC_SOURCE · BIGQUERY_IDENTITY
        → EVENT_DT 가 없는 **DISTINCT/집약 차원**이다. 범위 삭제가 불가능하고,
          범위 제한해서 만들면 **전기간 값 집합이 소실**된다(예: 특정 월에만 등장한 UTM).
          ⇒ 그 4종은 기본 TRUNCATE + 전량 재적재를 유지하고 기반 테이블 **전량**을 읽는다.

@@ -20,8 +20,9 @@
 --      (그 사실은 `_gold_ready_schema.yml` `FACT_BUDGET_YEARLY` 컬럼 설명에 적혀 있다).
 --
 -- 판정: 반환 행이 있으면 WARN. 각 행 = 중복된 (예산과목, 연) 조합 1건.
---   🟢 정상 상태 = 0행 ⇒ 그때 비로소 위 불변식 주석이 참이다.
---   🔴 DEC-44 결정 후 `severity` 를 error 로 올려라(종결 조건).
+-- ⚠️ [DEC-44 관측 유지] 키 산식(10컬럼)을 유지하고 팩트(GOLD)에서 최신 차수만 필터링(안 ㉡)했으므로,
+--    SILVER ERP_BUDGET_YEARLY 에는 원천 차수/구분축 중복(44건)이 보존된다.
+--    따라서 이 테스트는 warn 으로 원천 상태를 관측하며, 최종 단일 grain 보장은 `warn_fact_budget_yearly_grain`(error)이 담당한다.
 {{ config(severity = 'warn') }}
 
 SELECT

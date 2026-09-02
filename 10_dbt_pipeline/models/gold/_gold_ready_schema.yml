@@ -670,6 +670,12 @@ models:
         tests:
           - not_null
           - relationships: { to: ref('DIM_ORG'), field: ORG_SK }
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']
 
   # 🆕 [2026-08-29 O114-B] `FACT_BUDGET_YEARLY` 는 O93 에 신설됐으나 **이 파일에 등재되지 않아
   #   테스트 0건 · 컬럼 COMMENT 0건**으로 방치돼 있었다(`R3-9 ㉢` — 분모 미등재는 조용히 0을 낸다).
@@ -715,6 +721,12 @@ models:
       - name: SPONSORSHIP_SK
         tests:
           - relationships: { to: ref('DIM_SPONSORSHIP'), field: SPONSORSHIP_SK }
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']
       - name: PLAN_BUDGET_YEAR
         description: >
           연 편성예산. ⚠️ **FACT_BUDGET.PLAN_BUDGET_MONTH 를 12개월 합산한 값과 일치하지 않는다** —

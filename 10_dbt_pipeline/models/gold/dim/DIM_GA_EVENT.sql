@@ -1,4 +1,4 @@
--- DIM_GA_EVENT: 이벤트분류 차원 (GA4_EVENT_DIM → category/label/action DISTINCT)
+-- DIM_GA_EVENT: 이벤트분류 차원 (BIGQUERY_EVENT_DIM → category/label/action DISTINCT)
 -- Co-authored with CoCo
 {{ config(
     materialized='incremental',
@@ -8,7 +8,7 @@
 
 with src as (
     select distinct EVENT_CATEGORY, EVENT_LABEL, EVENT_ACTION
-    from {{ ref('GA4_EVENT_DIM') }}
+    from {{ ref('BIGQUERY_EVENT_DIM') }}
 )
 
 select

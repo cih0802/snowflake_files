@@ -19,7 +19,8 @@ select
     f.WAIT_TIMES, f.ABSENT_TIMES, f.CUM_APPLY_TIMES,
     f.REGULAR_DONATION,
     f.WIN_FLAG, f.SELF_PART_FLAG, f.PART_STATUS,
-    f.PART_PATH, f.PART_CHANNEL, f.INCREASE_FLAG,
+    f.PART_PATH, f.PART_CHANNEL,
+    -- 🔴 [2026-09-01 O130] f.INCREASE_FLAG 드랍(O96 §7-B A군 집행) — 컬럼 제거.
     -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
     --   🔴 O59-N 이 GOLD 에 라벨을 붙였는데 WIDE 는 코드축만 노출하고 있었다 — 소비계층이 라벨을 못 본다.
     --   🔴 PART_STATUS 는 원천 2체계가 한 컬럼에 있다(O28): EVENT=MS304(단계 통과) · CRMN=MS006(신청/참여).

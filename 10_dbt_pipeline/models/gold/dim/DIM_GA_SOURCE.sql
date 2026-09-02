@@ -1,6 +1,6 @@
--- DIM_GA_SOURCE: 트래픽소스 차원 (GA4_TRAFFIC_SOURCE → source/medium grain)
+-- DIM_GA_SOURCE: 트래픽소스 차원 (BIGQUERY_TRAFFIC_SOURCE → source/medium grain)
 -- Co-authored with CoCo
--- ⚠️ grain=(UTM_SOURCE,UTM_MEDIUM): GA4_EVENT 팩트가 조인 가능한 유일 grain(content/term은 이벤트에 부재).
+-- ⚠️ grain=(UTM_SOURCE,UTM_MEDIUM): BIGQUERY_EVENT 팩트가 조인 가능한 유일 grain(content/term은 이벤트에 부재).
 --    content/term/source_medium 은 대표값(MAX) 보조표시 — 팩트 팬아웃 방지 위해 grain에서 제외.
 {{ config(
     materialized='incremental',
@@ -22,7 +22,7 @@ with src as (
         --   ⚠️ `SOURCE_MEDIUM` 은 source/medium 을 이어붙인 파생 문자열이고, 이 컬럼은
         --      GA4 가 산정한 **표준 채널 분류**다 — 다른 개념이므로 대체하지 않는다.
         MAX(DEFAULT_CHANNEL_GROUP) as DEFAULT_CHANNEL_GROUP
-    from {{ ref('GA4_TRAFFIC_SOURCE') }}
+    from {{ ref('BIGQUERY_TRAFFIC_SOURCE') }}
     group by UTM_SOURCE, UTM_MEDIUM
 )
 

@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select ACTIVITY_TYPE
+from GN_DW.SILVER.CRM_RELATION_ACTIVITY
+where ACTIVITY_TYPE is null
+
+

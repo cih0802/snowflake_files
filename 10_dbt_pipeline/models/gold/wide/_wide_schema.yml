@@ -914,8 +914,6 @@ models:
         description: "참여경로"
       - name: PART_CHANNEL
         description: "참여채널"
-      - name: INCREASE_FLAG
-        description: "증액여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_EVENT_PARTICIPATION.INCREASE_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C."
       - name: PART_STATUS_GROUP
         description: "참여상태 코드군 ID (조인키 · 일반행사→MS304 · 캠페인행사→MS006). 🔴O28 다체계의 **구조적 해소축**이다 — `PART_STATUS` 단독 필터·GROUP BY 는 두 체계를 섞는다(판별자 = 이 컬럼 또는 `EVENT_KIND`). 🔴두 원천의 「참여」 정의 자체가 다르므로 합산 금지"
       - name: PART_STATUS_NAME
@@ -1070,17 +1068,6 @@ models:
           🔴🔴 **또한 이 값은 예산 편성 차수(본예산 `연사업` / `추가경정`)가 합산된 값이다** —
           원천이 신설한 `BDGT_PRCD_NM` 이 `BUDGET_ITEM_DK` 산식에 없어 두 차수가 같은 과목 키로
           붕괴한다 ⇒ **차수별 분해는 현재 불가능**하다(처방 = `99_NEXT §0-UUU ▣UUU6` · `DEC-44`).
-      - name: PLAN_BUDGET_YEAR
-        description: >-
-          편성예산(연, 원) 🔴🔴**[2026-08-20 O96 · DEC42] 폐기 슬롯 — 의도적 영구 NULL 이다.**
-          🔴 종전의 「원천 부재 · 대행사 미보고 · 외부 원천 미입고(E-1/E-4 하드블로커)」
-          주장은 **철회한다 — 거짓이었다**(원문 인용은 이슈원장 문서30 §7-A 에 보존).
-          원천 `BDGT_ACMSLT_LEDGER.YEAR_BDGT_TOT_AMT` 는 실재하며 O93 에서 적재됐다
-          (적재 규모 실측은 이슈원장 문서30 §7-A · `R2-6` 수치 분리).
-          🟢 **연 편성예산은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`(연 grain)를 쓴다.**
-          🔴 이 컬럼(월 grain)에 연값을 채우지 않는 이유 = **grain 혼입**이다 —
-          연값을 12개월에 복제하면 `SUM` 이 12배로 부풀고 그 오류는 에러 없이 조용히 나온다.
-          ⚠️ 여전히 필터 조건으로 쓰면 전건이 탈락한다(값이 없는 것은 정상이다).
       - name: EXEC_BUDGET_ERP
         description: "집행예산(ERP 월, 원)"
       - name: EXEC_BUDGET_EST

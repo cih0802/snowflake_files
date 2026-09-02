@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>DIM_MEMBER - Pipeline ERD & Lineage</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-09-02 04:12",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER",
+    "table": "DIM_MEMBER",
+    "domain": "CRM / 회원·후원",
+    "type": "DIM"
+  }
+  </script>
+  <style>
+
+    :root {
+      color-scheme: light dark;
+      --bg-primary: light-dark(#f8fafc, #0f172a);
+      --bg-surface: light-dark(#ffffff, #1e293b);
+      --bg-subtle: light-dark(#f1f5f9, #334155);
+      --text-main: light-dark(#0f172a, #f8fafc);
+      --text-muted: light-dark(#64748b, #94a3b8);
+      --border-color: light-dark(#e2e8f0, #334155);
+      --accent-blue: light-dark(#2563eb, #3b82f6);
+      --accent-amber: light-dark(#d97706, #f59e0b);
+      --accent-purple: light-dark(#7c3aed, #a855f7);
+      --accent-emerald: light-dark(#059669, #10b981);
+      --accent-rose: light-dark(#e11d48, #f43f5e);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0; padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    .layout-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: var(--accent-blue);
+    }
+    .sidebar-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .sidebar-search {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .sidebar-nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+    .nav-group-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 8px 16px 4px 16px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 16px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.85rem;
+      gap: 8px;
+    }
+    .nav-item:hover {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+    }
+    .nav-item.active {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+      font-weight: 600;
+      border-left: 3px solid var(--accent-blue);
+    }
+    .main-content {
+      flex: 1;
+      padding: 24px 36px;
+      max-width: 1200px;
+      overflow-x: hidden;
+    }
+    .header-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .title-area h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .korean-title {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .meta-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-dim { background: rgba(37, 99, 235, 0.15); color: var(--accent-blue); }
+    .badge-fact { background: rgba(217, 119, 6, 0.15); color: var(--accent-amber); }
+    .badge-wide { background: rgba(124, 58, 237, 0.15); color: var(--accent-purple); }
+    .badge-silver { background: rgba(5, 150, 105, 0.15); color: var(--accent-emerald); }
+    .badge-bronze { background: rgba(225, 29, 72, 0.15); color: var(--accent-rose); }
+    .badge-domain { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .section-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .lineage-diag-wrap {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: var(--bg-subtle);
+      font-weight: 600;
+    }
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .flow-step-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .flow-step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .flow-step-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.8rem;
+    }
+    .flow-step-list li {
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .flow-step-list li:last-child {
+      border-bottom: none;
+    }
+    .sql-code-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 8px 0;
+    }
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Index styles */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-bronze .stat-num { color: var(--accent-rose); }
+    .stat-silver .stat-num { color: var(--accent-emerald); }
+    .stat-gold .stat-num { color: var(--accent-blue); }
+    .stat-wide .stat-num { color: var(--accent-purple); }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+      font-weight: 600;
+    }
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .table-grid-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .table-grid-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      height: 2.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      background: var(--bg-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .card-btn {
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+    .card-btn:hover {
+      background: var(--accent-blue);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">GN DW ERD & Lineage</div>
+        <div class="sidebar-subtitle">Bronze ➔ Silver ➔ Gold 파이프라인</div>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="nav-filter" placeholder="테이블 검색..." />
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
+        <div class="nav-group-title">DIMENSION (20)</div>
+<a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
+<a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
+<a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
+<a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
+<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
+<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
+<a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
+<a href="DIM_MEMBER.html" class="nav-item active"><span>DIM_MEMBER</span></a>
+<a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
+<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
+<a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
+<a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
+<a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
+        <div class="nav-group-title">FACT (17)</div>
+<a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
+<a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
+<a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
+<a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
+<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
+<a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
+<a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
+<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
+<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
+<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
+<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+        <div class="nav-group-title">WIDE MART (14)</div>
+<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
+<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
+<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
+<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
+<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
+<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
+<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
+<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
+<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
+<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
+<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
+<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
+<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
+<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header Card -->
+      <div class="header-card">
+        <div class="header-top">
+          <div class="title-area">
+            <h1>
+              <span>DIM_MEMBER</span>
+              <span class="badge badge-dim">차원 (Dimension)</span>
+            </h1>
+            <div class="korean-title">회원 차원 (SCD2 · 회원 상태버전)</div>
+          </div>
+          <div>
+            <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
+          </div>
+        </div>
+        <div class="meta-badges">
+          <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
+          <span class="badge badge-domain">BRONZE 원천: 10개</span>
+          <span class="badge badge-domain">SILVER 모델: 6개</span>
+          <span class="badge badge-domain">컬럼 수: 30개</span>
+        </div>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 차원 (SCD2 · 회원 상태버전)</p>
+      </div>
+
+      <!-- 1. Pipeline Lineage Diagram -->
+      <div class="section-card">
+        <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(DIM_MEMBER)로 데이터가 유입되는 전체 경로입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+flowchart LR
+  classDef bronze fill:#ffe4e6,stroke:#e11d48,stroke-width:1px,color:#9f1239;
+  classDef silver fill:#d1fae5,stroke:#059669,stroke-width:1px,color:#065f46;
+  classDef gold fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
+  classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
+  subgraph BRONZE [1. BRONZE 원천]
+    B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TH_MM_FDRM_MBER_STNG_DTLS["TH_MM_FDRM_MBER_STNG_DTLS"]:::bronze
+    B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
+    B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
+    B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
+  end
+  subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
+    S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MEMBER["CRM_MEMBER"]:::silver
+    S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
+    S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_STATUS_HIST["CRM_MEMBER_STATUS_HIST"]:::silver
+  end
+  subgraph GOLD [3. GOLD 마트]
+    G_DIM_MEMBER["★ DIM_MEMBER<br/>회원 차원 (SCD2 · 회원 상태버전)"]:::target
+  end
+  B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TH_MM_FDRM_MBER_STNG_DTLS --> S_CRM_MEMBER_STATUS_HIST
+  B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
+  S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> G_DIM_MEMBER
+  S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER
+  S_CRM_CODE --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
+  S_CRM_CODE --> S_CRM_MEMBER_STATUS_HIST
+  S_CRM_MEMBER --> G_DIM_MEMBER
+  S_CRM_MEMBER_DEV --> G_DIM_MEMBER
+  S_CRM_MEMBER_DISCONTINUE --> G_DIM_MEMBER
+  S_CRM_MEMBER_STATUS_HIST --> G_DIM_MEMBER
+          </pre>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (10개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TH_MM_FDRM_MBER_STNG_DTLS</b>: </li>
+<li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
+<li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
+            </ul>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (6개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>CRM_CAMPAIGN</b>: </li>
+<li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MEMBER</b>: </li>
+<li><b>CRM_MEMBER_DEV</b>: </li>
+<li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_STATUS_HIST</b>: </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Gold ERD & Relationships -->
+      <div class="section-card">
+        <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          DIM_MEMBER 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+erDiagram
+  DIM_MEMBER {
+    string MEMBER_SK PK
+    string MEMBER_DK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MEMBER_CURRENT {
+    string MEMBER_SK KEY
+    string MEMBER_DK FK
+    string DW_BATCH_ID KEY
+    string ACQ_CAMPAIGN_SK KEY
+    string ACQ_ORG_SK KEY
+    string ACQ_SPONSORSHIP_SK KEY
+    string ACQ_DATE_SK KEY
+    string FIRST_STOP_DATE_SK KEY
+  }
+  DIM_MEMBER_IDENTITY {
+    string IDENTITY_SK PK
+    string MEMBER_DK FK
+    string MEMBER_NO KEY
+    string GA_MEMBER_ID KEY
+    string HOMEPAGE_ID KEY
+    string DW_BATCH_ID KEY
+  }
+  FACT_EVENT_PARTICIPATION {
+    string DATE_SK FK
+    string MEMBER_DK FK
+    string EVENT_SK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_COHORT {
+    string MEMBER_DK PK
+    string ACQ_CAMPAIGN_SK FK
+    string ACQ_DATE_SK FK
+    string FIRST_STOP_DATE_SK FK
+    string ACQ_ORG_SK FK
+    string ACQ_SPONSORSHIP_SK FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_EVENT {
+    string DATE_SK FK
+    string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string ORG_SK FK
+    string REASON_SK FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_FEE {
+    string MONTH_KEY FK
+    string MEMBER_DK FK
+    string SPONSORSHIP_SK FK
+    string PAYMENT_SK FK
+    string LAST_BILL_DATE_SK FK
+    string LAST_PAY_DATE_SK FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_MONTHLY {
+    string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string PAYMENT_SK FK
+    string REASON_SK FK
+    string MONTH_KEY FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_SPONSOR_BIZ {
+    string MEMBER_DK FK
+    string SPNSR_BSNS_NO KEY
+    string SPONSORSHIP_SK FK
+    string CAMPAIGN_SK FK
+    string SPNSR_NO KEY
+    string START_MONTH_KEY FK
+    string DSCNTC_MONTH_KEY FK
+    string DW_BATCH_ID KEY
+  }
+  FACT_SERVICE_EVENT {
+    string SEND_TYPE_SK FK
+    string DATE_SK FK
+    string MEMBER_DK FK
+    string SERVICE_SK FK
+    string CAMPAIGN_SK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MEMBER ||--o{ DIM_MEMBER_IDENTITY : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_COHORT : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_SERVICE_EVENT : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ DIM_MEMBER_CURRENT : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK → MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK → MEMBER_DK"
+          </pre>
+        </div>
+
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>출발 테이블</th>
+                <th>출발 컬럼</th>
+                <th></th>
+                <th>대상 테이블</th>
+                <th>대상 컬럼</th>
+                <th>관계 출처</th>
+                <th>관계 유형</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>DIM_MEMBER_IDENTITY</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>회원 식별 자연키 참조</td>
+        </tr>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_COHORT</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_SERVICE_EVENT</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>DIM_MEMBER_CURRENT</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>현재 회원 스냅샷 자연키 참조</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_FEE</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+
+      <!-- 3. Column Catalog -->
+      <div class="section-card">
+        <h2 class="section-title">📋 3. 컬럼 명세서 (Column Specifications)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>컬럼명</th>
+                <th>데이터 타입</th>
+                <th>속성</th>
+                <th>한글 설명 (Description / Comment)</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>MEMBER_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-dim">PK</span></td>
+          <td>버전 대리키</td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_DK</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td><span class="badge badge-wide">CONFORM</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>AREA_CD</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>지역 코드 raw. CM018 18종 + sentinel '0'(라벨 없음). 시점귀속 as-of</td>
+        </tr>
+        <tr>
+          <td><code>REGION</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>지역 (#131) CM018 약칭 라벨. 코드=AREA_CD</td>
+        </tr>
+        <tr>
+          <td><code>AGE</code></td>
+          <td><code>NUMBER(2,0)</code></td>
+          <td></td>
+          <td>연령대 코드 raw CM014(1~12). 🔴연속형 나이 아님</td>
+        </tr>
+        <tr>
+          <td><code>AGE_BAND</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>연령대 CM014 라벨. 코드=AGE. 원천이 이미 구간화(창작 아님)</td>
+        </tr>
+        <tr>
+          <td><code>PREV_MBER_STAT_CD</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>상태전이 이전상태 코드 MM010. 원천 BF_STAT_CD 12/12 일치</td>
+        </tr>
+        <tr>
+          <td><code>PREV_MEMBER_STATUS_NAME</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>이전상태 라벨 MM010. 코드=PREV_MBER_STAT_CD</td>
+        </tr>
+        <tr>
+          <td><code>SEX</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>SEX_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>CM013 원천 라벨 그대로(국내(남자)/국내(여자)/외국인(남자)/외국인(여자)/외국인(기타)/단체/기업/기타). 국내·외국인 축 보존용 — 이 축은 CM013 만 보유한다</td>
+        </tr>
+        <tr>
+          <td><code>GENDER_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>MBER_STAT_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>MBER_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>회원구분 원천코드 raw — BRONZE MBER_DIV_CD(MM018 1개인·2기업·3단체). 라벨=MEMBER_TYPE_NAME</td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_TYPE_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_STATUS_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_STATUS_GROUP</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>FIRST_JOIN_DATE</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td>최초가입일=회원번호 생성일(#28)</td>
+        </tr>
+        <tr>
+          <td><code>FIRST_CAMPAIGN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>최초캠페인(#29)</td>
+        </tr>
+        <tr>
+          <td><code>JOIN_PATH_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>가입경로 원천코드 raw — BRONZE JOIN_PATH_CD(MM014). 라벨=ENROLL_PATH_NAME</td>
+        </tr>
+        <tr>
+          <td><code>ENROLL_PATH_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>FIRST_SPONSORSHIP</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>LAST_STOP_DATE</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td>최종 중단일 — 원천 CRM_MEMBER_DISCONTINUE.SPNSR_DSCNTC_DE. 🔴**그 버전 시점까지의 as-of max** 다(단순 max 아님). 단순 max 는 미래 정보를 과거 버전에 누설해 예측 피처(LTV·유지기간 신4·6~8)를 오염시킨다. 적중 규모는 문서10 §26 — 중단 이력이 없는 회원·중단 이전 버전은 NULL</td>
+        </tr>
+        <tr>
+          <td><code>EFFECTIVE_FROM</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td>SCD2 유효시작</td>
+        </tr>
+        <tr>
+          <td><code>EFFECTIVE_TO</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td>SCD2 유효종료</td>
+        </tr>
+        <tr>
+          <td><code>IS_CURRENT</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>현재행 여부</td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_TYPE</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>회원 등록계통 구분 — SILVER CRM_MEMBER.MEMBER_TYPE 전파: FDRM=정기회원(TM_MM_FDRM_MBER_INFO) / ONCE=일시회원(TM_MM_ONCE_MBER_INFO) — 모집단 규모는 문서10 §26. 🔴 일시회원은 회원상태(MM010)·가입경로(MM014) 개념이 원천에 없다 — 상태 기반 분포·이탈률·예측 모집단은 FDRM 으로 한정할 것. ⚠️ MEMBER_TYPE_NAME(개인/기업/단체, MM018)은 이 컬럼의 라벨이 아니다 — 완전히 다른 축이며 코드는 MBER_DIV_CD 다</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. dbt SQL Source -->
+      <div class="section-card">
+        <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
+        <details>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql)</summary>
+          <div class="sql-code-box">
+            <pre><code>-- DIM_MEMBER: 회원 차원 SCD2 (CRM_MEMBER 현재값 + STATUS_HIST 이력, 부분적재)
+-- Co-authored with CoCo
+-- 【회원번호 체계】 CRM은 정식(FDRM)·일시(ONCE)를 별도 테이블로 분리 관리:
+--   FDRM → TM_MM_FDRM_MBER_INFO: 번호 0000000~9999999 (7자리, leading-zero 보존)
+--   ONCE → TM_MM_ONCE_MBER_INFO: 번호 S00000000~S09999999 (S접두+8자리=9자)
+--   GA4 user_id는 이 둘을 단일 필드로 통합 표현 → 'S' 접두 유무로 FDRM/ONCE 판별.
+--   MEMBER_DK=VARCHAR(10) 필수·NUMBER 캐스팅 절대 금지.
+--
+-- ============================================================================
+-- [2026-08-03 O26] 명명 규칙 전환 — 코드 컬럼 = BRONZE 원천명 / 라벨 컬럼 = 분석 용어
+--   근거: 현업이 아직 BRONZE 를 직접 조회한다(O24 확립). 원천이 이미 수식어 접두 관례를 쓴다
+--         (`ACT_/ACMSLT_/REGIST_DEPT_CD` · `EMAIL_/MOBLPHON_/ETC_CTTPC_STAT_CD`) → 신개념 도입 아님.
+--   개명: GENDER→SEX · MEMBER_STATUS→MBER_STAT_CD · MEMBER_TYPE→MBER_DIV_CD · ENROLL_PATH→JOIN_PATH_CD
+--   유지: 라벨은 분석 용어 그대로 — GENDER_NAME · MEMBER_STATUS_NAME · MEMBER_TYPE_NAME · ENROLL_PATH_NAME
+--   신설: SEX_NM(CM013 원천 라벨) — 국내/외국인 축 복구
+--   🔴 하드코딩 라벨 폐기: 종전 `CASE ... '여성'/'남성'/'미상'` → CRM_CODE CM017 조인으로 대체.
+-- ============================================================================
+-- [2026-08-03 O27 / DEC-28] 미주입 컬럼 배선 — 결정 정본 = 문서30 §18 · 진단 정본 = 문서10 §14
+--   ▶ 채움 4 : REGION·AGE_BAND(+코드 AREA_CD·AGE) · LAST_STOP_DATE · FIRST_SPONSORSHIP
+--   ▶ 신설 2 : PREV_MBER_STAT_CD·PREV_MEMBER_STATUS_NAME (상태전이 축)
+--   ▶ DROP 3: NEW_EXISTING_FLAG · LAST_CAMPAIGN · CURRENT_SPONSORSHIP
+--
+--   🔷 시점귀속(as-of) 채택 — 사용자 확정 + 설계 정본 일치
+--     `08_silver의존.md §5-A` 가 REGION/AGE_BAND 를 *&quot;개발·증감 **시점 AREA_CD/AGE 스냅샷**&quot;* 으로
+--     이미 규정하고 있었다(2026-07). 즉 시점귀속은 신규 발상이 아니라 **설계 정본의 복원**이다.
+--     구현 = `ASOF JOIN` — 좌측 1행당 우측 최대 1행이 **구조적으로 보장**되어 fan-out 이 원리적으로 0.
+--     실측(2026-08-03): 7,925,716 → 7,925,716 불변 · REGION/AGE_BAND 적중 97.63% · LAST_STOP_DATE 19.73%
+--
+--   🔷 AGE 는 연속형 나이가 아니라 **CM014 12종 코드**다 (DEC-28 §18-B 로 §17-C 판정 정정)
+--     1=10대 미만·2=10대·3=20대·4=30대·5=40대·6=50대·7=60대·8=70대·9=70대 이상·10=단체·11=기업·12=기타
+--     3원 대조: CRM_CODE CM014 12종 × 실적재 distinct 12종(채움 100%) = **12/12 일치**
+--              × 지표용어사전 *&quot;연령대 / 문자&quot;* 와 모순 없음
+--     🟢 독립 교차검증(P21): `AGE='10'`(단체) 21,920행 **전건 `SEX='6'`(단체)** ·
+--        `AGE='11'`(기업) 64,581행 **전건 `SEX='7'`(기업)** → 우연 아님, 코드 해석 확정
+--     ⚠️ BRONZE `TM_MM_FDRM_MBER_DVLP_AMT.AGE` COMMENT *&quot;연령&quot;*(NUMBER)은 **오류**다(실제 연령대 코드).
+--        `SND_MEMBER_LIST.AGE` 는 *&quot;연령대&quot;* 로 정확. DEC-26(코드 관련 기술 = 참고본) 사례.
+--     ⚠️ 생년월일(`MBER_BIRTHDAY`) 입고는 **AGE_BAND 의 선행조건이 아니다** — 시점정확 연령(과거 버전의
+--        당시 나이·LTV 연령 코호트)에만 필요하다(문서40 사유 축소).
+--
+--   🔷 REGION = CM018 약칭축 (정본 공#131 *&quot;서울/인천/경기/강원&quot;* 이 약칭 → CM011 아님)
+--     3원 대조: CM018 18종 × 실적재 18종 = **18/18 일치** + sentinel `'0'` 20,624행(라벨 NULL) + NULL 6
+--     ⚠️ sentinel `'0'` 은 `USE_YN` 필터가 아니라 라벨 NULL 로 관측한다(DEC-26 §16-C).
+--
+--   🔷 원천 = `CRM_MEMBER_DEV` **단독**. `CRM_MEMBER_AMT_CHANGE` 는 실측 후 제외했다:
+--     as-of 커버리지 **증가 0** · 값 차이 **7,925,716행 중 1행** → 복잡도만 늘고 이득이 없다.
+--     ⇒ 종전 주석 *&quot;개발·증감 AREA_CD/AGE 대기&quot;* 의 '증감' 은 회수한다(P33 ③ 거짓 경고문 회수).
+--
+--   🔷 ONCE(일시회원) 175,722행은 REGION/AGE_BAND/FIRST_SPONSORSHIP 이 **NULL** 이다.
+--     ⚠️ `(해당없음)` 이 아니다 — 회원상태·가입경로와 성질이 다르다.
+--        상태·경로는 원천에 **컬럼 자체가 없다**(개념 부재) → `(해당없음)`
+--        지역·연령대는 개념은 있으나 ONCE 가 개발약정(`CRM_MEMBER_DEV`)에 **행이 없다**(원천 미보유) → NULL
+--        실측: `CRM_MEMBER_DEV`·`CRM_MEMBER_AMT_CHANGE` 양쪽 모두 **FDRM 전용**(ONCE 0행)
+--     FDRM 결손은 0.15%(11,749/7,749,994) = 개발약정 이전 시점의 상태버전.
+--
+--   🔷 DROP 3건 사유 (문서30 §18-D 판정순서 ②grain 함수종속 에서 탈락)
+--     NEW_EXISTING_FLAG  — 시점귀속(#113) 개념이라 차원 grain 부적합. 정소재지 = FACT_MEMBER_MONTHLY
+--     LAST_CAMPAIGN      — 다중 캠페인 19.0%·최대 690 → 대표규칙이 **O8 현업 미결**(게이트 우회 금지)·소비처 0
+--     CURRENT_SPONSORSHIP— 동시 다중 후원이 **정상**(14.2%·최대 14) → 단일값 불성립(O13 계열)
+-- ============================================================================
+-- 🔷 D2 SCD2 활성화(2026-07-16): 전용 소스 CRM_MEMBER_STATUS_HIST(7.5M행) 입고완료 → 시점조인 재배선.
+--    • 회원상태(MBER_STAT_CD)만 SCD2. 성별·가입일·구분 등 마스터 속성은 SCD1(버전 간 동일값 반복).
+--      ⚠️ [O27] REGION·AGE_BAND·LAST_STOP_DATE 는 **SCD2 축**이다(버전별로 값이 다를 수 있다).
+--         실측: 다버전 회원 996,492명 중 AGE 변동 57,081(5.73%)·AREA 변동 23,031(2.31%).
+--    • grain=회원상태 버전. MEMBER_SK=해시(MEMBER_DK, EFFECTIVE_FROM). 동일 시점(일자) 다중변경(3,151건)은
+--      최종상태(max SER_NO)로 축약 후 LEAD 로 EFFECTIVE_TO 재계산 → MEMBER_SK 유일·구간 무중첩 보장.
+--    • 이력 미보유(FDRM 무이력 + ONCE 전체)는 가입일 기준 단일버전(IS_CURRENT=TRUE)로 fallback.
+--    • 이력 고아 37명(STATUS_HIST엔 있으나 마스터 부재)은 inner join 으로 제외.
+--    • MEMBER_DK 는 더 이상 unique 아님(버전 반복) → 다운스트림은 IS_CURRENT 필터 또는 GOLD.DIM_MEMBER_CURRENT.
+-- 순서9-D: fact 패턴 채택 — incremental + append + pre-hook TRUNCATE + full_refresh:false.
+--    ※ 선행: 06_DDL 의 DIM_MEMBER 구조 존재 필요. O27 신규 4컬럼은 `ALTER TABLE ADD COLUMN` 선행 필수.
+{{ config(
+    materialized='incremental',
+    incremental_strategy='append',
+    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
+    tags=['gold_ready']
+) }}
+
+with m as (
+    select * from {{ ref('CRM_MEMBER') }}
+),
+
+-- 상태이력(FDRM 전용): 동일 시점(일자) 중복은 최종상태(max SER_NO)로 축약
+-- [O27] BF_STAT_CD 동반 전파 — 축약행(최종 전이)의 '이전상태'다. 동일자 내 전이 사슬의
+--       중간 단계는 축약으로 소실되므로 &quot;그 날의 최종 전이&quot;로 해석한다(CHN_STAT_CD 와 동일 규약).
+hist_collapsed as (
+    select
+        MBER_NO                                       as MBER_NO,
+        EFFECTIVE_FROM::DATE                          as EFF_FROM,
+        CHN_STAT_CD                                   as STATUS_CD,
+        BF_STAT_CD                                    as PREV_STATUS_CD
+    from {{ ref('CRM_MEMBER_STATUS_HIST') }}
+    qualify row_number() over (partition by MBER_NO, EFFECTIVE_FROM::DATE order by SER_NO desc) = 1
+),
+
+-- 축약본에서 SCD2 구간(EFFECTIVE_TO)·현재플래그 재계산
+hist_scd2 as (
+    select
+        MBER_NO,
+        STATUS_CD,
+        PREV_STATUS_CD,
+        EFF_FROM,
+        lead(EFF_FROM) over (partition by MBER_NO order by EFF_FROM)             as EFF_TO,
+        (lead(EFF_FROM) over (partition by MBER_NO order by EFF_FROM) is null)   as IS_CUR
+    from hist_collapsed
+),
+
+-- (A) 이력 보유 회원(FDRM) = 상태버전별 다중행
+versioned as (
+    select
+        {{ gold_sk(['m.MEMBER_DK', 'h.EFF_FROM']) }}  as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        h.STATUS_CD                                   as MBER_STAT_CD,
+        h.PREV_STATUS_CD                              as PREV_MBER_STAT_CD,
+        h.EFF_FROM                                    as EFFECTIVE_FROM,
+        h.EFF_TO                                      as EFFECTIVE_TO,
+        h.IS_CUR                                      as IS_CURRENT
+    from m
+    join hist_scd2 h on m.MEMBER_DK = h.MBER_NO
+),
+
+-- (B) 이력 미보유(FDRM 무이력 + ONCE 전체) = 가입일 기준 단일버전
+--     [O27] 이력이 없으므로 이전상태도 없다 → PREV_MBER_STAT_CD = NULL (결측이며 개념부재 아님)
+single as (
+    select
+        {{ gold_sk(['m.MEMBER_DK', 'm.JOIN_DT']) }}   as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        m.MBER_STAT_CD                                as MBER_STAT_CD,
+        CAST(NULL AS VARCHAR)                          as PREV_MBER_STAT_CD,
+        m.JOIN_DT::DATE                               as EFFECTIVE_FROM,
+        CAST(NULL AS DATE)                            as EFFECTIVE_TO,
+        TRUE                                          as IS_CURRENT
+    from m
+    where m.MEMBER_DK not in (select MBER_NO from hist_scd2)
+),
+
+unioned as (
+    select * from versioned
+    union all
+    select * from single
+),
+
+-- ── [O27] 개발약정 시점 스냅샷 (설계 정본 08_silver의존 §5-A) ──────────────────
+-- 일자당 1행으로 축약(최종 SER_NO) 후 as-of 조인 대상으로 쓴다.
+-- ⚠️ 센티넬 발생일 제외: '19000101' 88행 · '99991231' 2행 (실측, 전체 3,594,843 중 90행 = 0.0025%)
+--    전자는 모든 버전에 오매칭되고 후자는 어떤 버전에도 매칭되지 않아 둘 다 왜곡원이다.
+dev_snap as (
+    select
+        MBER_NO                                           as MBER_NO,
+        try_to_date(OCCRRNC_DE, 'YYYYMMDD')               as DEV_DT,
+        AREA_CD                                           as AREA_CD,
+        AGE                                                as AGE
+    from {{ ref('CRM_MEMBER_DEV') }}
+    where OCCRRNC_DE not in ('19000101', '99991231')
+      and try_to_date(OCCRRNC_DE, 'YYYYMMDD') is not null
+    qualify row_number() over (
+        partition by MBER_NO, try_to_date(OCCRRNC_DE, 'YYYYMMDD')
+        order by SER_NO desc nulls last) = 1
+),
+
+-- 버전 시점(EFFECTIVE_FROM) 이하의 최근 개발약정 1건 → 지역·연령대 시점귀속.
+-- 🟢 ASOF JOIN 은 좌측 1행당 우측 최대 1행이므로 fan-out 이 구조적으로 불가능하다.
+--    미매칭 좌측 행은 보존되고 우측 컬럼만 NULL 이 된다(실측 확인: 7,925,716 → 7,925,716).
+member_snap as (
+    select
+        u.MEMBER_SK                                       as MEMBER_SK,
+        d.AREA_CD                                          as AREA_CD,
+        d.AGE                                              as AGE
+    from unioned u
+    asof join dev_snap d
+        match_condition (u.EFFECTIVE_FROM &gt;= d.DEV_DT)
+        on u.MEMBER_DK = d.MBER_NO
+),
+
+-- ── [O27] 최초 후원사업 (SCD1 — &quot;최초&quot;는 시점 불변이라 as-of 불요) ─────────────
+first_biz as (
+    select
+        MBER_NO                                            as MBER_NO,
+        SPNSR_BSNS_ID                                      as FIRST_SPONSORSHIP
+    from {{ ref('CRM_MEMBER_DEV') }}
+    where OCCRRNC_DE not in ('19000101', '99991231')
+      and SPNSR_BSNS_ID is not null
+    qualify row_number() over (partition by MBER_NO order by OCCRRNC_DE asc, SER_NO asc) = 1
+),
+
+-- ── [O27] 중단일 시점귀속 — &quot;그 버전 시점까지의 최종 중단일&quot; ───────────────────
+-- ⚠️ 단순 max() 가 아니라 as-of max 다. 단순 max 는 **미래 정보를 과거 버전에 누설**해
+--    예측 피처(LTV·유지기간 신4·6~8)를 오염시킨다. 실측 적중 19.73%(1,563,872/7,925,716).
+stop_snap as (
+    select
+        MBER_NO                                            as MBER_NO,
+        try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD')           as STOP_DT
+    from {{ ref('CRM_MEMBER_DISCONTINUE') }}
+    where try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD') is not null
+    qualify row_number() over (
+        partition by MBER_NO, try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD')
+        order by SER_NO desc nulls last) = 1
+),
+
+member_stop as (
+    select
+        u.MEMBER_SK                                        as MEMBER_SK,
+        s.STOP_DT                                          as LAST_STOP_DATE
+    from unioned u
+    asof join stop_snap s
+        match_condition (u.EFFECTIVE_FROM &gt;= s.STOP_DT)
+        on u.MEMBER_DK = s.MBER_NO
+),
+
+-- 코드→라벨 사전(빌드시점 lookup). SILVER.CRM_CODE 단일원천 — gold 복제 없이 차원에 비정규화.
+-- (CD_ID,DTL_CD_ID) 복합PK → 1:1, fan-out 없음.
+code_type as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM018'
+),
+code_status as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM010'
+),
+code_path as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM014'
+),
+-- [2026-08-03 O26] 성별 단일축 = CM017. CM013(원천 지정)과 **같은 코드값의 다른 라벨체계**다.
+--   CM017: 1,3→남자 · 2,4→여자 · 5,8→기타 · 6→단체 · 7→기업 (5종) = 정본 공#130 과 정확히 일치.
+--   ⚠️ CM017 은 정본 컬럼정의서가 **어떤 컬럼에도 지정하지 않은** 코드그룹이다(0건). 사용 근거는
+--      &quot;정본 지정&quot;이 아니라 &quot;정본 공#130 값 정의와 라벨 일치&quot; — 현업 확인 대상(문서20 §H).
+code_gender as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM017'
+),
+-- [2026-08-03 O27] 지역 = CM018 약칭축(정본 공#131 이 약칭이라 CM011 아님) · 실적재 18/18 일치
+code_area as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM018'
+),
+-- [2026-08-03 O27] 연령대 = CM014 12종. 실적재 12/12 일치 · 교차검증 AGE=10↔SEX=6·AGE=11↔SEX=7 각 100%
+code_ageband as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM014'
+)
+
+select
+    u.MEMBER_SK                                   as MEMBER_SK,
+    u.MEMBER_DK                                   as MEMBER_DK,
+    u.SEX                                         as SEX,           -- [O26] CM013 코드 raw(0~8) — BRONZE 원천명·원천값
+    u.SEX_NM                                      as SEX_NM,        -- [O26] CM013 원천 라벨 — 국내·외국인 축 보존
+    cg.DTL_CD_NM                                  as GENDER_NAME,   -- [O26] CM017 분석 라벨 = 정본 공#130. 미매칭은 NULL(DEC-17-B 창작금지)
+    -- [O27] 지역 — 코드+라벨 병기(DEC-25). 시점귀속(as-of) · sentinel '0' 은 라벨 NULL 로 관측
+    ms.AREA_CD                                    as AREA_CD,       -- CM018 코드 raw. 개발약정 시점 스냅샷
+    ca.DTL_CD_NM                                  as REGION,        -- CM018 라벨(#131 약칭축)
+    -- [O27] 연령대 — AGE 는 나이가 아니라 CM014 코드다(헤더 참조)
+    ms.AGE                                        as AGE,           -- CM014 코드 raw(1~12). ⚠️연속형 나이 아님
+    cab.DTL_CD_NM                                 as AGE_BAND,      -- CM014 라벨(10대 미만~70대 이상·단체·기업·기타)
+    u.MBER_STAT_CD                                as MBER_STAT_CD,  -- MM010 코드 raw
+    u.MBER_DIV_CD                                 as MBER_DIV_CD,   -- MM018 개인/기업/단체(코드 raw)
+    ct.DTL_CD_NM                                  as MEMBER_TYPE_NAME,   -- MM018 라벨 ⚠️MEMBER_TYPE 의 라벨이 아니다(다른 축)
+    -- [2026-08-03] '미상' 폐기 — 개념 부재와 결측을 분리한다(P21).
+    --   일시회원(MEMBER_TYPE='ONCE')은 원천에 회원상태가 아예 없다 → '(해당없음)'
+    --   정기회원('FDRM')인데 상태가 없으면 진짜 결측 → NULL (라벨 창작 금지, DEC-17-B)
+    case when u.MBER_STAT_CD is not null then cs.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as MEMBER_STATUS_NAME, -- MM010 라벨
+    CASE
+        WHEN u.MBER_STAT_CD = '1'                                            THEN '정상'
+        WHEN u.MBER_STAT_CD IN ('2','3','4','5','6','7','8','9','10','11')   THEN '미납'
+        WHEN u.MBER_STAT_CD = '12'                                          THEN '중단'
+        WHEN u.MEMBER_TYPE = 'ONCE'                                         THEN '(해당없음)'
+        ELSE NULL
+    END                                           as MEMBER_STATUS_GROUP, -- 대분류(파생)
+    -- [O27] 상태전이 축 신설 — 이 SCD2 버전행이 곧 '전이 사건'이다(fan-out 0, 같은 행에서 파생).
+    --   원천 `CRM_MEMBER_STATUS_HIST.BF_STAT_CD` 100% 채움(7,501,761)·12종 = **MM010 12/12 일치**.
+    --   원천 라벨 `BF_STAT_NM` 도 MM010 과 100% 일치하나 라벨은 사전 조인으로 만든다(P31).
+    --   ⚠️ 이력 미보유행(FDRM 무이력·ONCE)은 NULL — 이전상태가 '없다'가 아니라 '이력이 없다'.
+    u.PREV_MBER_STAT_CD                           as PREV_MBER_STAT_CD,
+    cps.DTL_CD_NM                                 as PREV_MEMBER_STATUS_NAME,
+    u.JOIN_DT::DATE                               as FIRST_JOIN_DATE,
+    u.CMPGN_CD                                    as FIRST_CAMPAIGN,
+    u.JOIN_PATH_CD                                as JOIN_PATH_CD,
+    case when u.JOIN_PATH_CD is not null then cp.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as ENROLL_PATH_NAME, -- MM014 가입경로 라벨. ONCE 는 개념 부재
+    -- [O27] 최초 후원사업 — 최소 발생일의 SPNSR_BSNS_ID(규칙 불요). ONCE 는 개발약정 부재로 NULL
+    fb.FIRST_SPONSORSHIP                          as FIRST_SPONSORSHIP,
+    -- [O27] 최종 중단일 — **as-of max**(그 시점까지). 단순 max 는 미래정보 누설이라 금지
+    st.LAST_STOP_DATE                             as LAST_STOP_DATE,
+    u.EFFECTIVE_FROM                              as EFFECTIVE_FROM,
+    u.EFFECTIVE_TO                                as EFFECTIVE_TO,
+    u.IS_CURRENT                                  as IS_CURRENT,
+    {{ gold_meta('CRM') }},
+    -- [2026-08-03] SILVER 에 존재했으나 CTE 컬럼열거에서 탈락해 있던 컬럼 복원(G3 결손 유형).
+    --   FDRM=정기(1,587,343) / ONCE=일시(175,722). ONCE 는 회원상태·가입경로 개념이 원천에 없다.
+    --   ⚠️ MEMBER_TYPE_NAME(MM018 개인/기업/단체)은 이 컬럼의 라벨이 아니다 — 다른 축(코드=MBER_DIV_CD).
+    u.MEMBER_TYPE                                 as MEMBER_TYPE
+from unioned u
+left join member_snap  ms  on u.MEMBER_SK       = ms.MEMBER_SK
+left join member_stop  st  on u.MEMBER_SK       = st.MEMBER_SK
+left join first_biz    fb  on u.MEMBER_DK       = fb.MBER_NO
+left join code_type    ct  on u.MBER_DIV_CD     = ct.DTL_CD_ID
+left join code_status  cs  on u.MBER_STAT_CD    = cs.DTL_CD_ID
+left join code_status  cps on u.PREV_MBER_STAT_CD = cps.DTL_CD_ID
+left join code_path    cp  on u.JOIN_PATH_CD    = cp.DTL_CD_ID
+left join code_gender  cg  on u.SEX             = cg.DTL_CD_ID
+left join code_area    ca  on ms.AREA_CD        = ca.DTL_CD_ID
+left join code_ageband cab on to_varchar(ms.AGE) = cab.DTL_CD_ID
+</code></pre>
+          </div>
+        </details>
+      </div>
+    </main>
+  </div>
+
+  <script src="/libs/mermaid@10.9.6/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict' });
+    
+    // Search filter for sidebar
+    const searchInput = document.getElementById('nav-filter');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.nav-item').forEach(el => {
+          const text = el.textContent.toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = 'flex';
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

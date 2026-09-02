@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>FACT_MEMBER_MONTHLY - Pipeline ERD & Lineage</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-09-02 04:12",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_MONTHLY",
+    "table": "FACT_MEMBER_MONTHLY",
+    "domain": "CRM / 회원·후원",
+    "type": "FACT"
+  }
+  </script>
+  <style>
+
+    :root {
+      color-scheme: light dark;
+      --bg-primary: light-dark(#f8fafc, #0f172a);
+      --bg-surface: light-dark(#ffffff, #1e293b);
+      --bg-subtle: light-dark(#f1f5f9, #334155);
+      --text-main: light-dark(#0f172a, #f8fafc);
+      --text-muted: light-dark(#64748b, #94a3b8);
+      --border-color: light-dark(#e2e8f0, #334155);
+      --accent-blue: light-dark(#2563eb, #3b82f6);
+      --accent-amber: light-dark(#d97706, #f59e0b);
+      --accent-purple: light-dark(#7c3aed, #a855f7);
+      --accent-emerald: light-dark(#059669, #10b981);
+      --accent-rose: light-dark(#e11d48, #f43f5e);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0; padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    .layout-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: var(--accent-blue);
+    }
+    .sidebar-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .sidebar-search {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .sidebar-nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+    .nav-group-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 8px 16px 4px 16px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 16px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.85rem;
+      gap: 8px;
+    }
+    .nav-item:hover {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+    }
+    .nav-item.active {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+      font-weight: 600;
+      border-left: 3px solid var(--accent-blue);
+    }
+    .main-content {
+      flex: 1;
+      padding: 24px 36px;
+      max-width: 1200px;
+      overflow-x: hidden;
+    }
+    .header-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .title-area h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .korean-title {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .meta-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-dim { background: rgba(37, 99, 235, 0.15); color: var(--accent-blue); }
+    .badge-fact { background: rgba(217, 119, 6, 0.15); color: var(--accent-amber); }
+    .badge-wide { background: rgba(124, 58, 237, 0.15); color: var(--accent-purple); }
+    .badge-silver { background: rgba(5, 150, 105, 0.15); color: var(--accent-emerald); }
+    .badge-bronze { background: rgba(225, 29, 72, 0.15); color: var(--accent-rose); }
+    .badge-domain { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .section-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .lineage-diag-wrap {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: var(--bg-subtle);
+      font-weight: 600;
+    }
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .flow-step-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .flow-step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .flow-step-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.8rem;
+    }
+    .flow-step-list li {
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .flow-step-list li:last-child {
+      border-bottom: none;
+    }
+    .sql-code-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 8px 0;
+    }
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Index styles */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-bronze .stat-num { color: var(--accent-rose); }
+    .stat-silver .stat-num { color: var(--accent-emerald); }
+    .stat-gold .stat-num { color: var(--accent-blue); }
+    .stat-wide .stat-num { color: var(--accent-purple); }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+      font-weight: 600;
+    }
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .table-grid-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .table-grid-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      height: 2.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      background: var(--bg-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .card-btn {
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+    .card-btn:hover {
+      background: var(--accent-blue);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">GN DW ERD & Lineage</div>
+        <div class="sidebar-subtitle">Bronze ➔ Silver ➔ Gold 파이프라인</div>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="nav-filter" placeholder="테이블 검색..." />
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
+        <div class="nav-group-title">DIMENSION (20)</div>
+<a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
+<a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
+<a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
+<a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
+<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
+<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
+<a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
+<a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
+<a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
+<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
+<a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
+<a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
+<a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
+        <div class="nav-group-title">FACT (17)</div>
+<a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
+<a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
+<a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
+<a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
+<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
+<a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
+<a href="FACT_MEMBER_MONTHLY.html" class="nav-item active"><span>FACT_MEMBER_MONTHLY</span></a>
+<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
+<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
+<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
+<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+        <div class="nav-group-title">WIDE MART (14)</div>
+<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
+<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
+<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
+<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
+<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
+<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
+<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
+<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
+<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
+<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
+<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
+<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
+<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
+<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header Card -->
+      <div class="header-card">
+        <div class="header-top">
+          <div class="title-area">
+            <h1>
+              <span>FACT_MEMBER_MONTHLY</span>
+              <span class="badge badge-fact">팩트 (Fact)</span>
+            </h1>
+            <div class="korean-title">회원 월 팩트 (MONTH_KEY × MEMBER_DK)</div>
+          </div>
+          <div>
+            <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
+          </div>
+        </div>
+        <div class="meta-badges">
+          <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
+          <span class="badge badge-domain">BRONZE 원천: 16개</span>
+          <span class="badge badge-domain">SILVER 모델: 11개</span>
+          <span class="badge badge-domain">컬럼 수: 59개</span>
+        </div>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 월 팩트 (MONTH_KEY × MEMBER_DK)</p>
+      </div>
+
+      <!-- 1. Pipeline Lineage Diagram -->
+      <div class="section-card">
+        <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_MEMBER_MONTHLY)로 데이터가 유입되는 전체 경로입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+flowchart LR
+  classDef bronze fill:#ffe4e6,stroke:#e11d48,stroke-width:1px,color:#9f1239;
+  classDef silver fill:#d1fae5,stroke:#059669,stroke-width:1px,color:#065f46;
+  classDef gold fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
+  classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
+  subgraph BRONZE [1. BRONZE 원천]
+    B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
+    B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
+    B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_IRSD["TM_MM_FDRM_MBER_IRSD"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS["TM_MM_FDRM_MBER_SPNSR_BSNS"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
+    B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_PM_DNTN_DTLS["TM_PM_DNTN_DTLS"]:::bronze
+    B_bronze_crm_TM_PM_MBRFEE_ACMSLT["TM_PM_MBRFEE_ACMSLT"]:::bronze
+  end
+  subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
+    S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MEMBER["CRM_MEMBER"]:::silver
+    S_CRM_MEMBER_AMT_CHANGE["CRM_MEMBER_AMT_CHANGE"]:::silver
+    S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
+    S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
+    S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
+    S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_PAYMENT_BILLING["CRM_PAYMENT_BILLING"]:::silver
+    S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+  end
+  subgraph GOLD [3. GOLD 마트]
+    G_FACT_MEMBER_MONTHLY["★ FACT_MEMBER_MONTHLY<br/>회원 월 팩트 (MONTH_KEY × MEMB"]:::target
+    G_DIM_ORG["DIM_ORG"]:::gold
+    G_DIM_REASON["DIM_REASON<br/>사유코드 차원 (중단/미납)"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
+    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
+  end
+  B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
+  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
+  B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_IRSD --> S_CRM_MEMBER_AMT_CHANGE
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_PM_DNTN_DTLS --> S_CRM_PAYMENT_BILLING
+  B_bronze_crm_TM_PM_MBRFEE_ACMSLT --> S_CRM_PAYMENT_BILLING
+  G_DIM_REASON --> G_FACT_MEMBER_MONTHLY
+  G_DIM_SPONSORSHIP --> G_FACT_MEMBER_MONTHLY
+  G_FACT_MEMBER_EVENT --> G_FACT_MEMBER_MONTHLY
+  S_CRM_CAMPAIGN --> G_FACT_MEMBER_EVENT
+  S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> G_DIM_REASON
+  S_CRM_CODE --> G_DIM_SPONSORSHIP
+  S_CRM_CODE --> G_FACT_MEMBER_EVENT
+  S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER
+  S_CRM_CODE --> S_CRM_MEMBER_AMT_CHANGE
+  S_CRM_CODE --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
+  S_CRM_MEMBER --> G_FACT_MEMBER_MONTHLY
+  S_CRM_MEMBER_AMT_CHANGE --> G_FACT_MEMBER_MONTHLY
+  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_MONTHLY
+  S_CRM_ORG --> G_DIM_ORG
+  S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_MONTHLY
+  S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+          </pre>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (16개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
+<li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_IRSD</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
+<li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_PM_DNTN_DTLS</b>: </li>
+<li><b>bronze_crm.TM_PM_MBRFEE_ACMSLT</b>: </li>
+            </ul>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (11개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>CRM_CAMPAIGN</b>: </li>
+<li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MEMBER</b>: </li>
+<li><b>CRM_MEMBER_AMT_CHANGE</b>: </li>
+<li><b>CRM_MEMBER_DEV</b>: </li>
+<li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSOR_BIZ` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
+<li><b>CRM_ORG</b>: </li>
+<li><b>CRM_PAYMENT_BILLING</b>: </li>
+<li><b>CRM_SPONSORSHIP</b>: </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Gold ERD & Relationships -->
+      <div class="section-card">
+        <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          FACT_MEMBER_MONTHLY 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+erDiagram
+  DIM_CAMPAIGN {
+    string CAMPAIGN_SK PK
+    string MKTG_CAMPAIGN_SK FK
+    string ORG_SK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MEMBER {
+    string MEMBER_SK PK
+    string MEMBER_DK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MONTH {
+    string MONTH_KEY FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_PAYMENT {
+    string PAYMENT_SK PK
+    string DW_BATCH_ID KEY
+  }
+  DIM_REASON {
+    string REASON_SK PK
+    string DW_BATCH_ID KEY
+  }
+  DIM_SPONSORSHIP {
+    string SPONSORSHIP_SK PK
+    string DW_BATCH_ID KEY
+  }
+  FACT_MEMBER_MONTHLY {
+    string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string PAYMENT_SK FK
+    string REASON_SK FK
+    string MONTH_KEY FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MEMBER ||--o{ FACT_MEMBER_MONTHLY : "MEMBER_DK → MEMBER_DK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK → CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_MONTHLY : "SPONSORSHIP_SK → SPONSORSHIP_SK"
+  DIM_PAYMENT ||--o{ FACT_MEMBER_MONTHLY : "PAYMENT_SK → PAYMENT_SK"
+  DIM_REASON ||--o{ FACT_MEMBER_MONTHLY : "REASON_SK → REASON_SK"
+  DIM_MONTH ||--o{ FACT_MEMBER_MONTHLY : "MONTH_KEY → MONTH_KEY"
+          </pre>
+        </div>
+
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>출발 테이블</th>
+                <th>출발 컬럼</th>
+                <th></th>
+                <th>대상 테이블</th>
+                <th>대상 컬럼</th>
+                <th>관계 출처</th>
+                <th>관계 유형</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>PAYMENT_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_PAYMENT.html"><code>DIM_PAYMENT</code></a></td>
+          <td><code>PAYMENT_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>REASON_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_REASON.html"><code>DIM_REASON</code></a></td>
+          <td><code>REASON_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_MONTHLY</code></td>
+          <td><code>MONTH_KEY</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
+          <td><code>MONTH_KEY</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>월 conform 축 (fan-out 방지)</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+
+      <!-- 3. Column Catalog -->
+      <div class="section-card">
+        <h2 class="section-title">📋 3. 컬럼 명세서 (Column Specifications)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>컬럼명</th>
+                <th>데이터 타입</th>
+                <th>속성</th>
+                <th>한글 설명 (Description / Comment)</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>MEMBER_DK</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>캠페인 (FK→DIM_CAMPAIGN)</td>
+        </tr>
+        <tr>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>후원사업 (FK→DIM_SPONSORSHIP)</td>
+        </tr>
+        <tr>
+          <td><code>IS_MULTI_SPONSORSHIP</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>[DEC-41] 그 달 회비 행이 귀속된 후원사업이 2개 이상인지 = SPONSORSHIP_SK 가 0 인 사유의 구분자. 🔴 SPONSORSHIP_SK=0 에는 두 사유가 섞인다: TRUE=다중 사업이라 대표를 고르지 않았다(정책) / FALSE=회비 행에 후원사업이 없거나 회비 행 자체가 없다. 이 플래그가 없으면 두 사유를 가를 수 없다. 🔴 IS_MULTI_PAID_BIZ 와 **모집단이 다르다**: 그쪽은 회비·PAY_AMT&gt;0 한정 「납입 발생」 사업수이고 이 컬럼은 청구·기부금 포함 전 행의 「귀속」 사업이다 ⇒ 두 값이 어긋나는 것은 결함이 아니다. 규칙·실측 근거 = 20_issue/30_설계_의사결정.md §28(DEC-41)</td>
+        </tr>
+        <tr>
+          <td><code>PAYMENT_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>납입/결제 유형 (FK→DIM_PAYMENT)</td>
+        </tr>
+        <tr>
+          <td><code>REASON_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>MONTH_KEY</code></td>
+          <td><code>NUMBER(6,0)</code></td>
+          <td><span class="badge badge-wide">CONFORM</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>DEV_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>개발(건) — A1: FME(CRM_MEMBER_DEV) 사건수 롤업. ⚠️금액/10000 의미는 원천 금액컬럼+FME 변경 필요(별도트랙, #4·5·149)</td>
+        </tr>
+        <tr>
+          <td><code>DEV_MEMBERS</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>개발(명)(#148) — A1: 월×회원 개발발생=1. 🟢이 컬럼은 **옳다**: grain 이 월×회원이라 SUM 이 곧 개발(명)이며 466개월 전부 COUNT(DISTINCT MEMBER_DK) 와 일치 실측(O39). ⚠️동명의 FACT_MEMBER_EVENT.DEV_MEMBERS 는 사건 플래그로 SUM 이 건수다 — 혼용 금지.</td>
+        </tr>
+        <tr>
+          <td><code>STOP_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>중단(건) — A1: FME(CRM_MEMBER_DISCONTINUE) 사건수 롤업 (#35)</td>
+        </tr>
+        <tr>
+          <td><code>UNPAID_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>미납(건) (#36)</td>
+        </tr>
+        <tr>
+          <td><code>ACTIVE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>활동(건) (#37·157) — 🟢 [O93] 배선 완료. 정본 #52 = 활동회원의 전체후원사업금액/10,000. 판정축 = **as-of 월말 미중단 후원사업 보유**(상태코드가 아니다 — 상태는 현재값이라 과거 월을 평가할 수 없다). 🔴 NULL = 판정 불가(Unknown 월 또는 후원사업 이력 없음)이고 0 = 활동 아님이다 — 둘을 같게 읽지 말 것. ⚠️ ACTIVE_MEMBERS 와 단위가 달라 서로 더하면 안 된다.</td>
+        </tr>
+        <tr>
+          <td><code>ACTIVE_MEMBERS</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>활동(명) (#156) — 🟢 [O93] 배선 완료. 정본 #51 월말활동회원. 행당 1/0 이므로 회원수는 SUM 으로 구한다. 🔴 NULL = 판정 불가 · 0 = 활동 아님. ⚠️ 정본 #42 미납회원은 활동회원의 **부분집합**이라 활동+미납 합산은 이중계상이다(CONF-1).</td>
+        </tr>
+        <tr>
+          <td><code>ACTIVE_CUM_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>활동누계(건) (#159) — 🔴 전건 NULL(미배선). 원인 = 정본에 「활동 누계」의 정의가 없다(누적 개월수·누적 금액·기수 누계 중 무엇인지 미확정). 임의 선택은 정의 창작이므로 보류한다. NULL 을 0 으로 읽지 말 것.</td>
+        </tr>
+        <tr>
+          <td><code>ACTIVE_CUM_MEMBERS</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>활동누계(명) (#158) — 🔴 전건 NULL(미배선). 사유는 ACTIVE_CUM_CNT 와 동일(정본 정의 부재).</td>
+        </tr>
+        <tr>
+          <td><code>INCREASE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>증액(건) (#151)</td>
+        </tr>
+        <tr>
+          <td><code>INCREASE_MEMBERS</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>증액(명) (#150)</td>
+        </tr>
+        <tr>
+          <td><code>DECREASE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>감액(건) SUM(감액금액)/10000 (#38)</td>
+        </tr>
+        <tr>
+          <td><code>CHURN_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>이탈(건) SUM(취소+감액)/10000 (신규#20)</td>
+        </tr>
+        <tr>
+          <td><code>YEAR_START_ACTIVE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>연도초 활동회원(건) (#49) — 🟢 [O93] 배선 완료. 해당 연도 YYYY01 시점 as-of 재평가값이다(당월값의 복제가 아니다).</td>
+        </tr>
+        <tr>
+          <td><code>YEAR_END_ACTIVE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>연도말 활동회원(건) (#50) — 🟢 [O93] 배선 완료. 해당 연도 YYYY12 시점 as-of. ⚠️ 미래 연도 행에서는 아직 오지 않은 시점이라 당월값과 같아질 수 있다.</td>
+        </tr>
+        <tr>
+          <td><code>MONTH_END_ACTIVE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>월말활동회원(건) (#52) — 🟢 [O93] 배선 완료. 🟢 ACTIVE_CNT 와 **같은 값이다** — 판정 자체가 as-of 월말이라 축이 하나다. 두 컬럼 병존은 소비 호환 목적이며 불일치가 아니다.</td>
+        </tr>
+        <tr>
+          <td><code>PREV_MONTH_END_ACTIVE_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>전월말 활동회원(건) (#53) — 🟢 [O93] 배선 완료(DEC-19 (d) 해소). 🔴 LAG 가 아니라 **달력상 전월을 직접 as-of 재평가**한 값이다 — 팩트 스파인이 sparse 해서 LAG 는 직전 「존재하는」 행을 집어 전월이 아닐 수 있다.</td>
+        </tr>
+        <tr>
+          <td><code>CAMPAIGN_UNPAID_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>캠페인별 미납(건) (#83)</td>
+        </tr>
+        <tr>
+          <td><code>STATUS_UNPAID_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>회원상태별 미납(건) (#84)</td>
+        </tr>
+        <tr>
+          <td><code>REGULAR_FEE</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>정기회비(원) (#66)</td>
+        </tr>
+        <tr>
+          <td><code>REGULAR_ONETIME_FEE</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>정기회원 일시회비(원) (#67)</td>
+        </tr>
+        <tr>
+          <td><code>ONETIME_ONETIME_FEE</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>일시회원 일시회비(원) (#68)</td>
+        </tr>
+        <tr>
+          <td><code>PAID_FEE</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>납입 **총액**(원) = 회비+기부금 (#69·70 단일화). 🔴「납입회비」가 아니다(O40) — 회비만은 PAID_FEE_BILLABLE. 납부율 분자로 쓰지 말 것(분모 BILLED_AMT 는 회비 청구만이라 모집단 불일치).</td>
+        </tr>
+        <tr>
+          <td><code>BILLED_AMT</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>회비 청구액(원) (#71). 기부금은 원천에 청구 컬럼이 없어 포함되지 않는다(O40).</td>
+        </tr>
+        <tr>
+          <td><code>PAID_FEE_BILLABLE</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>UNPAID_BILLED_AMT</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>INBOUND_CALL_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>인바운드콜수 (overview) — 비-CRM 별도 입력</td>
+        </tr>
+        <tr>
+          <td><code>TS_CALL_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>TS콜수 (overview) — 비-CRM 별도 입력</td>
+        </tr>
+        <tr>
+          <td><code>DEV_TYPE</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>NEW_FLAG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>INCREASE_FLAG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>REDONATE_FLAG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>JOIN_DATE</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>STOP_DATE</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>AMOUNT_BAND1</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>AMOUNT_BAND2</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PERIOD_BAND1</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PERIOD_BAND2</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>SPONSOR_MONTHS</code></td>
+          <td><code>NUMBER(9,2)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>SPONSOR_YEARS</code></td>
+          <td><code>NUMBER(9,2)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PAID_MONTHS</code></td>
+          <td><code>NUMBER(9,0)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>NEW_EXISTING_FLAG</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>UNPAID_FLAG_BOM</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>UNPAID_FLAG_EOM</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>AMT_INCREASE_CUM_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>AMT_DECREASE_CUM_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PAID_SPONSOR_BIZ_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>W4/ML: 그 달 실제 납입(PAY_AMT&gt;0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL</td>
+        </tr>
+        <tr>
+          <td><code>IS_MULTI_PAID_BIZ</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT&gt;1). HAS_BILLING=FALSE면 NULL</td>
+        </tr>
+        <tr>
+          <td><code>HAS_BILLING</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. dbt SQL Source -->
+      <div class="section-card">
+        <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
+        <details>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql)</summary>
+          <div class="sql-code-box">
+            <pre><code>-- FACT_MEMBER_MONTHLY: 회원 월 팩트 (billing ∪ FME 스파인) — A1: 개발/중단 FME 롤업 + HAS_BILLING 출처플래그
+-- Co-authored with CoCo
+-- [2026-08-03 O27/DEC-28] 회비 3분해(#66·#67·#68) 실배선 — 종전 `0` 하드코딩 폐기.
+--   원천 `CRM_PAYMENT_BILLING.MBRFEE_DIV_CD`(PM010) 97.6% 채움 · 정본 정의는 billing CTE 주석 참조.
+--   🔴 3컬럼 합 ≠ PAID_FEE (선물금 G·긴급구호 U 는 정본 정의상 미귀속) — 검산식은 CTE 주석에 실측치로 병기.
+-- ✅ A1(2026-07-21): 스파인 = 회비(CRM_PAYMENT_BILLING) ∪ 개발/중단(FACT_MEMBER_EVENT 월 롤업).
+--    · 개발/중단이 난 달(납입無 ~2.26M 월×회원)도 포함 → DEV/STOP 온전 집계(과소집계 해소).
+--    · HAS_BILLING=TRUE  → 구 billing 스파인(≈37.79M)과 동일. 회비/청구/미납 지표 불변. (보수적 소비: WHERE HAS_BILLING)
+--    · HAS_BILLING=FALSE → 개발/중단만 있는 월(회비 measure NULL). (정확 소비: 필터 없이 전체)
+-- ⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그
+--    → 상태이력(CRM_MEMBER_STATUS_HIST)·금액변경(CRM_MEMBER_AMT_CHANGE) 원천 + O8 grain 규칙(B2) 후속.
+-- ✅ DEC-41(2026-08-20 O92): SPONSORSHIP_SK 배선 — **그 달 후원사업이 하나로 확정된 월만** 채운다.
+--    · 다중 사업 월은 `SPONSORSHIP_SK=0`(센티넬) 유지 + `IS_MULTI_SPONSORSHIP=TRUE` 로 표시한다.
+--    · 🔴 대표 규칙(최대 납입액·최빈 등)을 쓰지 않는다 — 금액 기준은 다중 월의 상당 비율에서 **동점**이라
+--      결정되지 않고, 2차 tiebreak 는 업무 의미 없는 임의 규칙이 된다(P21 창작 금지).
+--      판정 근거·실측 수치는 **`20_issue/30_설계_의사결정.md` §28**(DEC-41)에만 둔다(R2-6 = 코드에 수치 금지).
+--    · 🔴 이 결정은 후원사업 축 한정이다 — `PAYMENT_SK`(별건·O51-D-P1 연동)·`CAMPAIGN_SK`(B3 원천 부재)는 그대로 0.
+--    · 🔴 `FME.SPONSORSHIP_SK`(STOP 한정)와 **규칙을 합치지 말 것** — 그쪽은 사건 grain 이고 동시중단 팬아웃이 있다.
+-- ✅ W3(DEC-24, 2026-07-31): REASON_SK 배선 — 미납(F) 대표사유 = 최종차수(MBRFEE_SQNC 최대)의 결과코드.
+--    코드그룹 매핑(SETLE_CD→PM002/PM032/PM018/PM033/PM019) + DIM_REASON 해시 조인.
+--    🔴 F 행에 한정. S 행 매핑 시 라벨 의미 역전 — 절대 금지.
+--    ⚠️ 대표 1개로 축약하므로 복수사유 1.45% 소실. 사유분포분석은 SILVER 직접 조회.
+-- ✅ W4(DEC-22, 2026-07-31): ML 파생 4종 배선.
+--    요건1 = AMT_INCREASE/DECREASE_CUM_CNT (월말까지 누적 증/감액 이력 횟수, CRM_MEMBER_AMT_CHANGE)
+--    요건3 = PAID_SPONSOR_BIZ_CNT·IS_MULTI_PAID_BIZ (그 달 납입 발생 사업수, 회비·PAY_AMT&gt;0 한정)
+--    🔴 정본 (건)=약정금액÷10,000 과 다른 실제 개수·횟수 — INCREASE_CNT(#151)·DECREASE_CNT(#38)와 혼용 금지(CONF-2).
+--    ⚠️ 요건2(연속미납횟수)는 스파인 sparse(gap&gt;1 3.94%·최대370개월)로 run-length 오판 → W4 제외, dense 스파인 선행 필요.
+-- ⚠️ DEV_CNT = FME 사건수(금액/10000 아님 — 06_DDL 주석/별도트랙).
+-- 순서9(G-1/G-2 해소): incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
+-- 순서9-C(#80/DEC-4): UNPAID_FLAG_EOM/BOM — 미납 = PAY_STAT_CD IN ('F', NULL).
+{{ config(
+    tags=['gold_pending']
+) }}
+
+with b as (
+    select * from {{ ref('CRM_PAYMENT_BILLING') }}
+),
+
+-- [2026-08-03 O27/DEC-28] 회비 3분해용 회원유형 lookup.
+--   `CRM_PAYMENT_BILLING` 에는 회원유형 컬럼이 없어 마스터에서 가져온다.
+--   🟢 fan-out 0: `CRM_MEMBER` 는 MEMBER_DK 유일(1,763,065행 = 1,763,065 distinct, 실측).
+--   ⚠️ MEMBER_DK 의 'S' 접두로 유도하지 않는다 — 실제 컬럼이 있으면 컬럼을 쓴다(DEC-27 §17-D #1 교훈).
+--   ⚠️ 키 컬럼을 `MT_MEMBER_DK` 로 개명한다 — `MEMBER_DK` 로 두면 billing 의 `group by MEMBER_DK` 가
+--      별칭(`MBER_NO as MEMBER_DK`) 대신 조인된 컬럼으로 해석돼 컴파일이 깨진다(실측 확인).
+mtype as (
+    select MEMBER_DK as MT_MEMBER_DK, MEMBER_TYPE as MT_MEMBER_TYPE from {{ ref('CRM_MEMBER') }}
+),
+
+-- 회비/청구 집계 (월×회원) — 구 로직 유지(멱등)
+billing as (
+    select
+        COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0) as MONTH_KEY,  -- 회비월 우선, 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월
+        b.MBER_NO                                     as MEMBER_DK,
+        SUM(PAY_AMT)                                  as PAID_FEE,
+        SUM(RQEST_AMT)                                as BILLED_AMT,
+        -- ── [2026-08-03 O27/DEC-28] 회비 3분해 (정본 지표 #66·#67·#68) ──────────────
+        -- 정본 정의(02_지표사전 공통:91~93):
+        --   #66 정기회비          = 정기회원이 **정기후원사업으로** 납입하는 회비
+        --   #67 정기회원 일시회비 = 정기회원이 **정기후원사업 외 비지정(기타·국내사업·해외사업)** 으로 납부하는 일시회비
+        --   #68 일시회원 일시회비 = **일시회원이 납부하는 회비**(구분 없이 전부)
+        -- 원천 = `MBRFEE_DIV_CD` = **PM010** 4종: E=정기 · G=선물금 · I=일시 · U=긴급구호
+        --   3원 대조(2026-08-03 실측): PM010 사전 4종 × 실적재 distinct 4종 = **4/4 일치**
+        -- 🟢 회원유형×회비구분 교차 실측이 매핑을 확정한다 — 경계가 완전히 깨끗하다:
+        --   FDRM 은 **항상 값이 있고**(E 46,267,706 · G 82,607 · I 38,617 · U 2,690)
+        --   ONCE 는 **항상 NULL**(1,129,938) · 마스터부재 314행도 NULL
+        --   ⇒ NULL = 일시회원 이라는 판정이 실측으로 성립한다(추론 아님).
+        -- 🔴 G(선물금)·U(긴급구호)는 3컬럼 어디에도 넣지 않는다 — 정본 #67 이 열거한
+        --    &quot;기타·국내사업·해외사업&quot; 에 선물금·긴급구호가 없고, 선물금은 **별도 지표**가 있다
+        --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_SERVICE_EVENT.GIFT_PART_*`).
+        --    긴급구호는 대응 지표가 없다. 억지로 귀속시키면 정의 창작이다(DEC-17-B).
+        -- ⚠️ 따라서 **3컬럼 합 ≠ PAID_FEE** 다. 검산(2026-08-03 · 본 모델 실행 결과로 확인):
+        --    #66 759,530,956,167 + #67 5,365,351,828 + #68 126,337,814,788 = 891,234,122,783
+        --    본 모델 PAID_FEE 합 895,178,309,108 − 891,234,122,783 = **3,944,186,325**
+        --      = G(선물금) 3,408,190,000 + U(긴급구호) 495,788,354 + 마스터부재 74,880,671
+        --        **− 불량 5행 34,672,700**(아래 `MBER_NO is not null` 로 제외되는 행) → 정확히 일치.
+        --    ⚠️ SILVER 원표 전체 합(895,212,981,808)과 다르다 — 그 차이가 곧 불량 5행이다.
+        --       전표 기준으로 검산하면 34,672,700 만큼 어긋나므로 **모델 출력 기준으로 검산**할 것.
+        SUM(CASE WHEN m.MT_MEMBER_TYPE = 'FDRM' AND b.MBRFEE_DIV_CD = 'E'
+                 THEN b.PAY_AMT END)                   as REGULAR_FEE,
+        SUM(CASE WHEN m.MT_MEMBER_TYPE = 'FDRM' AND b.MBRFEE_DIV_CD = 'I'
+                 THEN b.PAY_AMT END)                   as REGULAR_ONETIME_FEE,
+        SUM(CASE WHEN m.MT_MEMBER_TYPE = 'ONCE'
+                 THEN b.PAY_AMT END)                   as ONETIME_ONETIME_FEE,
+        -- ── [2026-08-05 O40] 납부율·미납금액 모집단 일치 컬럼 2종 신설 ──────────────
+        -- 🔴 결함: `PAID_FEE`(=SUM(PAY_AMT))는 **회비 ∪ 기부금** 이고 `BILLED_AMT`(=SUM(RQEST_AMT))는
+        --    **회비뿐**이다. 기부금 원천 `TM_PM_DNTN_DTLS` 에는 청구 컬럼이 아예 없다
+        --    (SILVER 실측: PAYMENT_TYPE='기부금' 1,130,252행 전건 `RQEST_AMT` NULL · `MBRFEE_MT` 도 NULL).
+        --    → 두 값을 나누면 분자에만 기부금이 더해져 납부율이 구조적으로 과대해진다(P63 모집단 불일치).
+        --    무증상이 아니라 **이미 사고가 났다**: 전 기간 `PAYMENT_RATE` **100.36%** · `TOTAL_UNPAID_AMT`
+        --    **−3,218,518,220(음수)** 이 실측된다. 2025 는 93.98%(실제 85.65%)로 그럴싸해 더 위험했다.
+        -- 🟢 판별자는 `PAYMENT_TYPE` 이다 — 실측으로 정확하다:
+        --    PAYMENT_TYPE='회비' 46,391,620행 = `MBRFEE_DIV_CD` 비NULL 46,391,620행 (**정확 일치**)
+        --    PAYMENT_TYPE='기부금' 1,130,252행 = `MBRFEE_DIV_CD` 비NULL 0행
+        --    ⚠️ `ONETIME_ONETIME_FEE`(회원유형 ONCE 기준)로 빼는 방식은 **쓰지 않는다** — 축이 다르고
+        --       마스터부재 314행이 어느 쪽에도 안 들어가 정의가 새어 나간다(근사 40,000원 어긋남 실측).
+        SUM(CASE WHEN b.PAYMENT_TYPE = '회비' THEN b.PAY_AMT END)  as PAID_FEE_BILLABLE,
+        -- 정본 DEC-3 미납 정의 = `PAY_STAT_CD IN ('F', NULL)` 인 **청구액**. 차감식(청구−납입)을 폐기한다.
+        --   ⚠️ 분자는 `RQEST_AMT`(청구액)다 — 미납은 &quot;청구했으나 안 들어온 금액&quot;이므로 PAY_AMT 가 아니다.
+        --   시뮬레이션(2026-08-05 · 본 모델 MONTH_KEY 로직 재현): 2025 = **29,251,314,636** 으로
+        --   BRONZE 직접 집계값과 **정확히 일치**(차감식은 12,335,580,090 = 2.37배 과소였다).
+        SUM(CASE WHEN b.PAY_STAT_CD = 'F' OR b.PAY_STAT_CD IS NULL
+                 THEN b.RQEST_AMT END)                            as UNPAID_BILLED_AMT,
+        -- #80(DEC-4): 월×회원에 미납 청구행(PAY_STAT_CD='F' OR NULL)이 하나라도 있으면 월말 미납.
+        BOOLOR_AGG(PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL)  as UNPAID_FLAG_EOM
+    from b
+    left join mtype m on m.MT_MEMBER_DK = b.MBER_NO   -- 1:1 lookup (fan-out 0, 실측 확인)
+    where b.MBER_NO is not null                       -- 순수 불량 5행 제외(NOT NULL MEMBER_DK)
+    group by MONTH_KEY, b.MBER_NO
+),
+
+-- W3(DEC-24): 월×회원 대표 미납사유. F행 한정, 최종차수(MBRFEE_SQNC 최대)의 결과코드로 REASON_SK 산출.
+-- DIM_REASON 직접 조인으로 FK 무결성 보장(해시 독립계산 시 33건 orphan 발생 → 방지).
+reason_rep as (
+    select
+        ranked.MONTH_KEY, ranked.MEMBER_DK,
+        COALESCE(dr.REASON_SK, 0) as REASON_SK
+    from (
+        select
+            COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0) as MONTH_KEY,
+            MBER_NO as MEMBER_DK,
+            CASE
+                WHEN SETLE_CD = '1' AND LENGTH(RQEST_RST_CD) &lt;= 2 THEN 'PM002'
+                WHEN SETLE_CD = '1' AND LENGTH(RQEST_RST_CD) &gt; 2  THEN 'PM032'
+                WHEN SETLE_CD = '2'  THEN 'PM018'
+                WHEN SETLE_CD = '12' THEN 'PM033'
+                WHEN SETLE_CD = '5'  THEN 'PM019'
+            END as CODE_GROUP,
+            RQEST_RST_CD,
+            ROW_NUMBER() OVER (
+                PARTITION BY
+                    COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0),
+                    MBER_NO
+                ORDER BY MBRFEE_SQNC DESC NULLS LAST, RQEST_DE DESC, RQEST_RST_CD
+            ) as rn
+        from b
+        where PAY_STAT_CD = 'F'
+          and MBER_NO is not null
+          and RQEST_RST_CD is not null
+    ) ranked
+    left join {{ ref('DIM_REASON') }} dr
+        on dr.REASON_TYPE = ranked.CODE_GROUP
+       and dr.REASON_CODE = ranked.RQEST_RST_CD
+    where ranked.rn = 1
+),
+
+-- W4 요건3(DEC-22): 그 달 실제 납입한 후원사업 수 (회비 한정, PAY_AMT&gt;0).
+-- 🔴 약정 보유 사업수 아님 — 납입 발생 사업수. 정본 (건)=금액/10,000 과 무관한 실제 개수.
+paid_biz as (
+    select
+        COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0) as MONTH_KEY,
+        MBER_NO                                       as MEMBER_DK,
+        COUNT(DISTINCT SPNSR_BSNS_ID)                 as PAID_SPONSOR_BIZ_CNT
+    from b
+    where PAYMENT_TYPE = '회비'
+      and MBER_NO is not null
+      and PAY_AMT &gt; 0
+      and SPNSR_BSNS_ID is not null
+    group by MONTH_KEY, MEMBER_DK
+),
+
+-- [2026-08-20 O92 / DEC-41] 월×회원 대표 후원사업 — 단일 확정 월만 SK 배선, 다중은 센티넬 0 + 플래그.
+-- 🔴 축 주의 — 위 `paid_biz`(W4 요건3)와 **모집단이 다르다.** 두 플래그가 어긋나는 것은 결함이 아니다:
+--    · `IS_MULTI_PAID_BIZ`     = 회비 한정 + `PAY_AMT&gt;0` ⇒ 「그 달 실제 **납입이 발생한** 사업이 여럿인가」
+--    · `IS_MULTI_SPONSORSHIP`  = 청구·기부금 포함 전 행     ⇒ 「그 달 회비 행이 **귀속된** 사업이 여럿인가」
+--    ⇒ 미납만 있는 월은 앞이 0/FALSE 인데 뒤는 TRUE 일 수 있다. 같은 것을 다르게 재는 것이 아니라 다른 질문이다.
+-- 🟢 `MIN(SPNSR_BSNS_ID)` 는 대표 선정이 아니다 — `SPONSOR_BIZ_CNT = 1` 일 때만 쓰므로 그 값이 유일값이다.
+--    다중 월에서는 이 값을 **쓰지 않는다**(대표를 고르지 않는 것이 DEC-41 의 내용이다).
+-- 🟢 DIM_SPONSORSHIP 직접 조인으로 FK 무결성 보장(해시 독립계산 시 orphan 위험 — reason_rep 와 동일 패턴).
+--    fan-out 0 근거 = `SPONSORSHIP_BK` 유일성 **실측 확인**(중복 초과 0 · NULL 0 · 2026-08-20 O92-B).
+--    🔴 R2-6: 카디널리티 수치는 여기 적지 않는다 — 정본은 `20_issue/30_설계_의사결정.md` §28-D 다.
+--    (O92 가 이 자리에 미실측 수치 「50」을 적었고 실측은 51행이었다 ⇒ 수치를 코드에 두면 이렇게 틀린다.)
+sponsor_rep as (
+    select
+        agg.MONTH_KEY,
+        agg.MEMBER_DK,
+        agg.SPONSOR_BIZ_CNT,
+        CASE WHEN agg.SPONSOR_BIZ_CNT = 1 THEN COALESCE(ds.SPONSORSHIP_SK, 0) ELSE 0 END as SPONSORSHIP_SK
+    from (
+        select
+            COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0) as MONTH_KEY,
+            MBER_NO                                       as MEMBER_DK,
+            COUNT(DISTINCT SPNSR_BSNS_ID)                 as SPONSOR_BIZ_CNT,
+            MIN(SPNSR_BSNS_ID)                            as SOLE_SPNSR_BSNS_ID
+        from b
+        where MBER_NO is not null
+          and SPNSR_BSNS_ID is not null
+        group by MONTH_KEY, MEMBER_DK
+    ) agg
+    left join {{ ref('DIM_SPONSORSHIP') }} ds
+        on ds.SPONSORSHIP_BK = agg.SOLE_SPNSR_BSNS_ID
+),
+
+-- W4 요건1(DEC-22) step1: 금액변경 이력을 월×회원 증액/감액 횟수로 집계.
+-- 범위 밖 발생일 88행(19000101 등)은 month_key_clamp → 0(Unknown월) 라우팅.
+amt_month as (
+    select
+        COALESCE({{ month_key_clamp('TRY_TO_NUMBER(SUBSTR(OCCRRNC_DE,1,6))') }}, 0) as MONTH_KEY,
+        MBER_NO                                            as MEMBER_DK,
+        SUM(CASE WHEN RDCAMT_YN = 'N' THEN 1 ELSE 0 END)   as INC_CNT,
+        SUM(CASE WHEN RDCAMT_YN = 'Y' THEN 1 ELSE 0 END)   as DEC_CNT
+    from {{ ref('CRM_MEMBER_AMT_CHANGE') }}
+    where MBER_NO is not null
+    group by MONTH_KEY, MEMBER_DK
+),
+
+-- 개발/중단 월 롤업 (월×회원) — FME(일 grain) → 월 집계. A1 핵심.
+fme_rollup as (
+    select
+        FLOOR(DATE_SK / 100)                          as MONTH_KEY,   -- YYYYMMDD→YYYYMM (FME DATE_SK 는 이미 범위클램프; 0 → 0=Unknown월)
+        MEMBER_DK,
+        SUM(DEV_CNT)                                  as DEV_CNT,      -- 개발 사건수 합
+        IFF(SUM(DEV_CNT) &gt; 0, 1, 0)                    as DEV_MEMBERS,  -- 월×회원 grain: 개발발생 1/0 (다월 SUM 시 distinct 회원수)
+        SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
+        IFF(SUM(STOP_CNT) &gt; 0, 1, 0)                   as STOP_MEMBERS
+    from {{ ref('FACT_MEMBER_EVENT') }}
+    group by MONTH_KEY, MEMBER_DK
+),
+
+-- 통합 스파인 = billing ∪ fme (월×회원 유일)
+spine as (
+    select MONTH_KEY, MEMBER_DK from billing
+    union
+    select MONTH_KEY, MEMBER_DK from fme_rollup
+),
+
+-- ═══ [2026-08-20 O93 · CONF-3 해소] 활동회원 as-of 판정 ═══════════════════════
+-- 정본 = `02_지표사전 공통.md` #51 월말활동회원 · #52 월말활동회원(건).
+--   #51 = 조회년월 기준 해당월 활동회원 (활동 + 미납1~미납5 포함 = 상태코드 1~11)
+--   #52 = 월 활동회원의 **전체후원사업금액 / 10,000**
+--
+-- 🟢 판정축을 상태코드가 아니라 **후원사업 미중단 보유**로 잡았다. 이유 3가지:
+--   ① 상태코드는 **현재값**이라 과거 월을 as-of 로 평가할 수 없다(소급 적용은 과거 활동회원 창작이다).
+--   ② 상태이력(`CRM_MEMBER_STATUS_HIST`)은 회원 커버리지가 부분이다 — 이력 없는 회원이
+--      「무변경」인지 「미기록」인지 원천이 구분해 주지 않는다.
+--   ③ 후원사업 중단일은 **사업 단위로 완비**돼 있고, 중단 기록의 부재는 결측이 아니라
+--      「중단하지 않았다」는 정보다 ⇒ 커버리지 공백이 원리적으로 없다.
+--   🔴 그리고 이 축이 #52(건)의 분자(`SPNSR_AMT`)를 **같은 판정 안에서** 제공한다 —
+--      상태코드 축으로는 (건)을 만들 수 없다(금액이 상태에 붙어 있지 않다).
+--   🟢 현업 앵커(코드 1~11 현재값)와의 대조 결과는 `20_issue/30_설계_의사결정.md` §29 에 둔다(R2-6).
+--
+-- ⚠️ MONTH_KEY=0(Unknown 월)은 as-of 를 정의할 수 없다 ⇒ 활동 measure 를 **NULL** 로 둔다.
+--    🔴 0 으로 두지 않는다 — 0 은 「활동 없음」이고 NULL 은 「판정 불가」다. 이 구분이 이 작업의 출발점이었다
+--       (전건 0 이 *&quot;활동회원 0명&quot;* 으로 에러 없이 조회되던 문제).
+-- ⚠️ (건)은 **비가산 축이 아니다** — 회원 grain 금액/10,000 이므로 회원 간 합산은 정당하다.
+--    다만 `ACTIVE_CNT` 와 `ACTIVE_MEMBERS` 를 **더하지 말 것**(단위가 다르다).
+active_asof as (
+    select
+        sp.MONTH_KEY,
+        sp.MEMBER_DK,
+        -- 당월말(=#51·#52 정본 축)
+        COUNT(DISTINCT case when sv.DSCNTC_MONTH_KEY is null or sv.DSCNTC_MONTH_KEY &gt; sp.MONTH_KEY
+                            then sv.SPNSR_BSNS_NO end)                       as ACTIVE_BIZ_CNT,
+        SUM(case when sv.DSCNTC_MONTH_KEY is null or sv.DSCNTC_MONTH_KEY &gt; sp.MONTH_KEY
+                 then sv.SPNSR_AMT else 0 end)                               as ACTIVE_BIZ_AMT,
+        -- 전월말 (DEC-19 「동일 함수에 ADD_MONTHS(-1) 적용」)
+        SUM(case when sv.START_MONTH_KEY &lt;= {{ month_key_offset('sp.MONTH_KEY', -1) }}
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY &gt; {{ month_key_offset('sp.MONTH_KEY', -1) }})
+                 then sv.SPNSR_AMT else 0 end)                               as PREV_BIZ_AMT,
+        -- 연초(YYYY01)·연말(YYYY12) as-of. 월키 산술로 구한다(FLOOR/100 → *100+01·+12).
+        SUM(case when sv.START_MONTH_KEY &lt;= FLOOR(sp.MONTH_KEY/100)*100 + 1
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY &gt; FLOOR(sp.MONTH_KEY/100)*100 + 1)
+                 then sv.SPNSR_AMT else 0 end)                               as YEAR_START_BIZ_AMT,
+        SUM(case when sv.START_MONTH_KEY &lt;= FLOOR(sp.MONTH_KEY/100)*100 + 12
+                  and (sv.DSCNTC_MONTH_KEY is null
+                       or sv.DSCNTC_MONTH_KEY &gt; FLOOR(sp.MONTH_KEY/100)*100 + 12)
+                 then sv.SPNSR_AMT else 0 end)                               as YEAR_END_BIZ_AMT
+    from spine sp
+    join {{ ref('CRM_MEMBER_SPONSOR_SPAN') }} sv
+      on sv.MBER_NO = sp.MEMBER_DK
+     and sv.START_MONTH_KEY &lt;= sp.MONTH_KEY   -- 당월 기준 개시 필터(다른 as-of 축은 위 case 안에서 재평가)
+    where sp.MONTH_KEY &gt; 0                    -- Unknown 월 제외 ⇒ 아래 left join 에서 NULL 로 남는다
+    group by sp.MONTH_KEY, sp.MEMBER_DK
+),
+
+-- W4 요건1 step2: 월말까지 누적 증액/감액 횟수 (running total).
+-- 🟢 sparse 스파인에서도 정확 — 직전 행을 참조하지 않고 &quot;그 월 이하 전체 합&quot;이라 결측월 영향 없음.
+--    (요건2 연속미납은 반대로 직전 행 의존이라 gap 3.94%에서 오판 → W4 범위 제외, dense 스파인 선행 필요)
+-- 축 = spine ∪ amt_month: 스파인에 없는 월의 변경 이력도 누적에 반영되도록 union 후 running sum.
+amt_cum as (
+    select
+        ax.MEMBER_DK, ax.MONTH_KEY,
+        SUM(COALESCE(am.INC_CNT, 0)) OVER (PARTITION BY ax.MEMBER_DK ORDER BY ax.MONTH_KEY
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)  as AMT_INCREASE_CUM_CNT,
+        SUM(COALESCE(am.DEC_CNT, 0)) OVER (PARTITION BY ax.MEMBER_DK ORDER BY ax.MONTH_KEY
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)  as AMT_DECREASE_CUM_CNT
+    from (
+        select MEMBER_DK, MONTH_KEY from spine
+        union
+        select MEMBER_DK, MONTH_KEY from amt_month
+    ) ax
+    left join amt_month am on am.MEMBER_DK = ax.MEMBER_DK and am.MONTH_KEY = ax.MONTH_KEY
+),
+
+joined as (
+    select
+        sp.MONTH_KEY,
+        sp.MEMBER_DK,
+        0 as CAMPAIGN_SK,
+        -- [2026-08-20 O92 / DEC-41] 단일 확정 월만 배선. 다중 월·후원사업 부재 월은 0(센티넬) 유지.
+        COALESCE(sr.SPONSORSHIP_SK, 0) as SPONSORSHIP_SK,
+        0 as PAYMENT_SK,
+        COALESCE(rr.REASON_SK, 0) as REASON_SK,   -- W3(DEC-24): 미납 대표사유. 비미납/미매핑=0
+        COALESCE(fr.DEV_CNT, 0)      as DEV_CNT,
+        COALESCE(fr.DEV_MEMBERS, 0)  as DEV_MEMBERS,
+        COALESCE(fr.STOP_CNT, 0)     as STOP_CNT,
+        0 as UNPAID_CNT,
+        -- ═══ [2026-08-20 O93] 활동 계열 실배선 — 종전 `0 as …` 하드코딩 폐기 ═══════════
+        -- 🔴 NULL vs 0 의 의미를 분리한다: `active_asof` 미매칭(= Unknown 월이거나 후원사업 이력 없음)은
+        --    **NULL**(판정 불가/해당 없음)이고, 매칭됐지만 미중단 사업이 없으면 **0**(활동 아님)이다.
+        --    종전에는 둘 다 0 이라 *&quot;활동회원 0명&quot;* 이 정상값처럼 반환됐다.
+        aa.ACTIVE_BIZ_AMT / 10000            as ACTIVE_CNT,        -- #52 (건) = 활동 후원사업금액/10,000
+        IFF(aa.ACTIVE_BIZ_CNT &gt; 0, 1, 0)     as ACTIVE_MEMBERS,    -- #51 (명) = 월말 활동 1/0 (SUM 시 회원수)
+        -- 🔴 누계 2종은 채우지 않는다 — 정본에 **`활동 누계`의 정의가 없다.**
+        --    「누적 활동 개월수」인지 「누적 활동 금액」인지 「기수 누계」인지 결정되지 않았고,
+        --    아무 것이나 고르면 정의 창작이다(DEC-17-B). 정의가 오면 이 두 줄만 교체하면 된다.
+        CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT,
+        CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS,
+        0 as INCREASE_CNT, 0 as INCREASE_MEMBERS, 0 as DECREASE_CNT, 0 as CHURN_CNT,
+        aa.YEAR_START_BIZ_AMT / 10000        as YEAR_START_ACTIVE_CNT,   -- 연초(YYYY01) as-of
+        aa.YEAR_END_BIZ_AMT   / 10000        as YEAR_END_ACTIVE_CNT,     -- 연말(YYYY12) as-of
+        -- 🟢 당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.
+        --    두 컬럼을 남겨 두는 이유는 DDL 구조 보존(소비 쿼리 호환)이다. 값 불일치가 아니다.
+        aa.ACTIVE_BIZ_AMT / 10000            as MONTH_END_ACTIVE_CNT,
+        aa.PREV_BIZ_AMT   / 10000            as PREV_MONTH_END_ACTIVE_CNT,  -- DEC-19 (d) ADD_MONTHS(-1)
+        0 as CAMPAIGN_UNPAID_CNT, 0 as STATUS_UNPAID_CNT,
+        -- [O27/DEC-28] 회비 3분해 실배선. NULL(해당 구분 납입 없음)은 0 으로 보정하지 않는다
+        --   — 0 은 &quot;납입액 0원&quot;, NULL 은 &quot;그 구분의 납입이 없음&quot;이라 의미가 다르다(P21).
+        bl.REGULAR_FEE                as REGULAR_FEE,           -- #66 정기회원×정기(PM010 E)
+        bl.REGULAR_ONETIME_FEE        as REGULAR_ONETIME_FEE,   -- #67 정기회원×일시(PM010 I)
+        bl.ONETIME_ONETIME_FEE        as ONETIME_ONETIME_FEE,   -- #68 일시회원 전체
+        bl.PAID_FEE,
+        bl.BILLED_AMT,
+        bl.PAID_FEE_BILLABLE          as PAID_FEE_BILLABLE,   -- [O40] 회비만 납입액(납부율 분자 정본)
+        bl.UNPAID_BILLED_AMT          as UNPAID_BILLED_AMT,   -- [O40] DEC-3 정본 미납 청구액
+        0 as INBOUND_CALL_CNT, 0 as TS_CALL_CNT,       -- ⚠️ 비-CRM 수기 미수령(C-8)
+        CAST(NULL AS VARCHAR)  as DEV_TYPE,
+        CAST(NULL AS BOOLEAN)  as NEW_FLAG, CAST(NULL AS BOOLEAN) as INCREASE_FLAG, CAST(NULL AS BOOLEAN) as REDONATE_FLAG,
+        CAST(NULL AS DATE)     as JOIN_DATE, CAST(NULL AS DATE) as STOP_DATE,
+        CAST(NULL AS VARCHAR)  as AMOUNT_BAND1, CAST(NULL AS VARCHAR) as AMOUNT_BAND2,
+        CAST(NULL AS VARCHAR)  as PERIOD_BAND1, CAST(NULL AS VARCHAR) as PERIOD_BAND2,
+        0 as SPONSOR_MONTHS, 0 as SPONSOR_YEARS, 0 as PAID_MONTHS,
+        CAST(NULL AS VARCHAR)  as NEW_EXISTING_FLAG,
+        bl.UNPAID_FLAG_EOM,
+        -- W4(DEC-22): ML 전용 파생 4종. 🔴 정본 (건)=금액/10,000 과 다른 실제 개수·횟수 (CONF-2 주의).
+        COALESCE(ac.AMT_INCREASE_CUM_CNT, 0)           as AMT_INCREASE_CUM_CNT,
+        COALESCE(ac.AMT_DECREASE_CUM_CNT, 0)           as AMT_DECREASE_CUM_CNT,
+        -- HAS_BILLING=FALSE(개발/중단 전용 월)는 NULL — 0으로 채우면 &quot;납입 사업 0개&quot;로 오독되어 완납률 왜곡.
+        CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) END  as PAID_SPONSOR_BIZ_CNT,
+        CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) &gt; 1 END as IS_MULTI_PAID_BIZ,
+        -- [2026-08-20 O92 / DEC-41] 그 달 귀속 후원사업이 여럿인가 = SPONSORSHIP_SK 가 0 인 이유의 구분자.
+        --   🔴 0 에는 두 사유가 섞인다: ㉠ 다중(여기 TRUE) ㉡ 회비 행에 후원사업 자체가 없음(FALSE).
+        --      플래그 없이 0 만 보면 두 사유를 가를 수 없다 — 그것이 이 컬럼의 존재 이유다(감사 가능성).
+        --   ⚠️ HAS_BILLING=FALSE(개발/중단 전용 월)는 FALSE 다 — 회비 행이 없으니 다중일 수 없다.
+        COALESCE(sr.SPONSOR_BIZ_CNT &gt; 1, FALSE)        as IS_MULTI_SPONSORSHIP,
+        -- A1: 출처 플래그. billing 매칭 행 존재 여부(billing MEMBER_DK 는 group 키라 매칭 시 non-null).
+        IFF(bl.MEMBER_DK IS NOT NULL, TRUE, FALSE)     as HAS_BILLING,
+        {{ gold_meta('CRM') }}
+    from spine sp
+    left join billing    bl on sp.MONTH_KEY = bl.MONTH_KEY and sp.MEMBER_DK = bl.MEMBER_DK
+    left join fme_rollup fr on sp.MONTH_KEY = fr.MONTH_KEY and sp.MEMBER_DK = fr.MEMBER_DK
+    left join reason_rep rr on sp.MONTH_KEY = rr.MONTH_KEY and sp.MEMBER_DK = rr.MEMBER_DK
+    left join paid_biz   pb on sp.MONTH_KEY = pb.MONTH_KEY and sp.MEMBER_DK = pb.MEMBER_DK
+    left join amt_cum    ac on sp.MONTH_KEY = ac.MONTH_KEY and sp.MEMBER_DK = ac.MEMBER_DK
+    left join sponsor_rep sr on sp.MONTH_KEY = sr.MONTH_KEY and sp.MEMBER_DK = sr.MEMBER_DK  -- DEC-41
+    -- [2026-08-20 O93] 활동 as-of. left join 이라 미매칭 월은 활동 measure 가 NULL 로 남는다(의도).
+    left join active_asof aa on sp.MONTH_KEY = aa.MONTH_KEY and sp.MEMBER_DK = aa.MEMBER_DK
+)
+
+select
+    j.*,
+    -- #80 월초(BOM) = 전월말(EOM) 상태. 회원별 월순 LAG(union 스파인 전체 월 기준; 결측월은 직전 존재월 근사).
+    LAG(j.UNPAID_FLAG_EOM) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY)  as UNPAID_FLAG_BOM
+from joined j
+</code></pre>
+          </div>
+        </details>
+      </div>
+    </main>
+  </div>
+
+  <script src="/libs/mermaid@10.9.6/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict' });
+    
+    // Search filter for sidebar
+    const searchInput = document.getElementById('nav-filter');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.nav-item').forEach(el => {
+          const text = el.textContent.toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = 'flex';
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

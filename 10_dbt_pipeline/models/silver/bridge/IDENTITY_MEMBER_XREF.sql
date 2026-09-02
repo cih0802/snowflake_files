@@ -1,6 +1,6 @@
 -- IDENTITY_MEMBER_XREF: GA 신원↔CRM 회원 브리지 (교차소스 유일 예외), 정본 09 STEP7.
 -- Co-authored with CoCo
--- 의존성(7-C): ref 로 GA4_IDENTITY·CRM_MEMBER 후행 강제. LEFT JOIN(UNMATCHED 보존, C1). CHILD_CODE 제외.
+-- 의존성(7-C): ref 로 BIGQUERY_IDENTITY·CRM_MEMBER 후행 강제. LEFT JOIN(UNMATCHED 보존, C1). CHILD_CODE 제외.
 --
 -- 🟢 [2026-08-19 O87] GA4-LEN-1 대응 — 매칭 분모에서 비회원 ID 를 분리한다.
 --    무엇이 문제였나: GA4 `user_id` 는 전 기간 실측 **6종**이고 CRM 조인 가능한 것은
@@ -30,11 +30,11 @@ SELECT
          WHEN g.ID_RESOLUTION = 'DIRECT' THEN 'HIGH'
          ELSE 'MEDIUM' END                                         AS MATCH_CONFIDENCE,
     'GA4+CRM'                       AS DW_SOURCE_SYSTEM,
-    'SILVER.GA4_IDENTITY+CRM_MEMBER' AS DW_SOURCE_TABLE,
+    'SILVER.BIGQUERY_IDENTITY+CRM_MEMBER' AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()             AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()             AS DW_UPDATE_TS,
     NULL                            AS DW_BATCH_ID
-FROM {{ ref('GA4_IDENTITY') }} g
+FROM {{ ref('BIGQUERY_IDENTITY') }} g
 LEFT JOIN {{ ref('CRM_MEMBER') }} m
     ON g.GA_MEMBER_ID = m.MEMBER_DK
    -- 🔴 회원번호 체계인 행만 조인 대상이다. 이 조건이 없으면 64자 값이 조인을 타고

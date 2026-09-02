@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 2026-08-29
+-- 2026-09-01
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -17,22 +17,30 @@
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
 --              → GN_DW.ML.ML_RST_DATA_* (예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 69 테이블이 완성된다. 선후 관계는 없다.
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 73 테이블이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 본 파일의 범위 / SCOPE
---   GN_DW.BRONZE_CRM (46) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2) = 52 테이블
+--   GN_DW.BRONZE_CRM (46) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2)
+--   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (2) = 56 테이블
 --   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
 --      해당 원천의 정제 결과는 06번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
+--   🟢 BRONZE_GA4 는 2026-08-20 자로 삭제된 옛 스키마(events_* · BigQuery Export 원본, VARIANT 다수)와는
+--      **다른 스키마**다. 2026-09-01 자로 GA Data API 집계 리포트 기반으로 재편되어 복귀했다.
+--      옛 스키마가 필요하면 _archive/20260812_3판/ 의 동명 파일을 참조.
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH  (본 파일은 아래 문서를 병합해 생성)
 --   99_provided_definition/11_bronze_crm_ddl.sql            (CRM DDL, 컬럼 코멘트 없음)
 --   99_provided_definition/12_bronze_agency_ddl.sql         (AGENCY DDL, 컬럼 코멘트 대부분 있음)
 --   99_provided_definition/13_bronze_erp_ddl.sql            (ERP DDL, 컬럼 코멘트 있음)
+--   99_provided_definition/15_bronze_ga4_ddl.sql            (GA4 DDL · 2026-09-01 개편판, 컬럼 코멘트 있음)
+--   99_provided_definition/16_bronze_gsc_ddl.sql            (GSC DDL · 신규, 컬럼 코멘트 있음)
 --   99_provided_definition/컬럼정의서 20260714.csv           (CRM 한글 컬럼 코멘트 출처)
 --   50_handoff/02_1_A DB정보.sql                            (A 계정 GET_DDL 실측 — 🔴 낡았다. 아래 참조)
+--   ⚠️ 99_provided_definition/14_bronze_ga4_events_schema.md 는 옛 events_* 스키마 명세이며
+--      본 파일의 BRONZE_GA4(재편판)와는 무관하다 — 참조하지 말 것.
 --
 -- 병합 규칙 / MERGE RULE
 --   🔴 **[2026-08-29 개정] 구조 정본이 02_1_A DB정보.sql → 99_provided_definition/11~13 으로 바뀌었다.**
@@ -56,24 +64,46 @@
 --     음성 테스트 = scripts/test_handoff_ddl_gate.py (오염 기반 · 축10 · 단정 14).
 --   - 적재 프로시저(SP_LOAD_*)·TASK 는 **제외**한다: 적재 전 구조 생성에 불필요하고
 --     외부 스테이지/API 통합에 의존해 C 계정에서 생성이 실패할 수 있다.
---     → 필요 시 원천 정의 문서(12/13)에서 직접 가져올 것.
+--     → 필요 시 원천 정의 문서(12/13/15/16)에서 직접 가져올 것.
 --       BRONZE_AGENCY: SP_LOAD_DGT_AD_FROM_GSHEET, SP_LOAD_REBRDC_FROM_SHAREPOINT, SP_LOAD_VIDEO_AD_FROM_GDRIVE
 --                      TASK_REBRDC (12번 984행 · 재송출 적재 스케줄)
 --       BRONZE_ERP   : SP_LOAD_BUDGET_BY_YEAR, SP_LOAD_EXPENSE_RESOLUTION_BY_YEAR
+--       BRONZE_GA4   : SP_LOAD_GA_USER_DEMOGRAPHIC, TASK_GA_USER_DEMOGRAPHIC (15번 참조)
+--       BRONZE_GSC   : SP_LOAD_GOOGLE_SEARCH, TASK_GOOGLE_SEARCH (16번 참조)
 --     ⚠️ 위 프로시저는 GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE / CSV_UPLOAD_STAGE2 에 의존한다.
 --        본 파일은 그 스테이지도 생성하지 않는다(원천 운영 객체이며 이관 대상이 아니다).
+--     ⚠️ BRONZE_GA4 / BRONZE_GSC 의 SP_LOAD_* 는 각각 @…CREDENTIALS_STAGE (서비스계정 JSON IMPORTS)와
+--        EXTERNAL_ACCESS_INTEGRATIONS(GOOGLE_GA4_ACCESS / GOOGLE_GSC_ACCESS)에 의존한다.
+--        본 파일은 그 스테이지·통합도 생성하지 않는다(원천 운영 객체이며 이관 대상이 아니다).
+--   - GA4 / GSC 는 CRM/AGENCY/ERP 와 달리 CSV 위치 기반 적재 대상이 **아니다** — SP_LOAD_* 가 Google
+--     REST API(GA4 Data API / Search Console API)를 직접 호출해 DELETE 후 적재하는 구조다.
+--     본 파일은 그 적재분과 무관하게 "테이블 구조만" 재현한다.
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-08-29
---   - 스키마 수   : 3   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP)
---   - 테이블 수   : 52  (CRM 46, AGENCY 4, ERP 2)
---   - 시퀀스 수   : 1   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO)
+--   - 갱신일자    : 2026-09-01
+--   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
+--   - 테이블 수   : 56  (CRM 46, AGENCY 4, ERP 2, GA4 2, GSC 2)
+--   - 시퀀스 수   : 3   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO,
+--                        BRONZE_GSC.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 4   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
 --                        BRONZE_ERP.GN_CSV_FORMAT_EUCKR, BRONZE_ERP.GN_CSV_FORMAT_EUCKR2)
+--                        ※ GA4/GSC 는 API 기반 적재이므로 CSV 파일 포맷이 없다.
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-09-01  (원천 정의 문서 15/16 신규 반영)
+--     + [SCHEMA] GN_DW.BRONZE_GA4 블록 복귀 — 단, 2026-08-20 삭제분(events_* · BigQuery Export)과
+--       무관한 **새 구조**다. GA4 Data API 집계 리포트(사용자 인구통계) 기반으로 재편되었다.
+--       + [TABLE]  GA4_USER_DEMOGRAPHIC (7컬럼) · SYNC_ERR_INFO (3컬럼)
+--       + [SEQUENCE] BRONZE_GA4.SEQ_SYNC_ERR_INFO
+--     + [SCHEMA] GN_DW.BRONZE_GSC 신규 — 구글 서치 콘솔 검색 성과 데이터.
+--       + [TABLE]  SEARCH_CONSOLE_DATA (10컬럼) · SYNC_ERR_INFO (3컬럼)
+--       + [SEQUENCE] BRONZE_GSC.SEQ_SYNC_ERR_INFO
+--     * 스키마 3 → 5 · 테이블 52 → 56 · 시퀀스 1 → 3 · 파일 포맷 4 유지(GA4/GSC 는 CSV 미사용)
+--     * CRM / AGENCY / ERP 의 구조·컬럼·코멘트는 변경 없다.
+--     * GA4/GSC 의 SYNC_ERR_INFO 는 원천 DDL 에 컬럼 코멘트가 없어 AGENCY.SYNC_ERR_INFO 와 동일한
+--       관례로 보강했다(단, 원천 컬럼 구성 그대로 3컬럼 · DATA_TYPE 컬럼 없음 — 구조는 변형하지 않았다).
 --   2026-08-29  (원천 정의 문서 11/12/13 재대조 — 기계 대조로 확정)
 --     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_MKTNG_UTM        (12컬럼, 신규 · 마케팅 UTM 매핑)
 --     + [TABLE]  GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION     (16컬럼, 신규 · 지출 결의)
@@ -112,24 +142,27 @@
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
 --   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 46 / ERP 2 / ML 16 / SILVER 1 = 69):
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 46 / ERP 2 / GA4 2 / GSC 2 / ML 16 / SILVER 1 = 73):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
---          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY')
+--          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
 --               OR (table_schema='SILVER' AND table_name='BIGQUERY_REFINED_DATA')
 --               OR (table_schema='ML' AND table_name LIKE 'ML_RST_DATA_%'))
 --        GROUP BY 1 ORDER BY 1;
---   6) 07번 A.1 (4) 로 CSV 헤더 ↔ 테이블 구조를 대조한 뒤 적재한다.
+--   6) 07번 A.1 (4) 로 CSV 헤더 ↔ 테이블 구조를 대조한 뒤 적재한다(GA4/GSC 는 CSV 대조 대상이 아니다).
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 52개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
---     → 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
+--   - 본 파일의 56개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
+--     → CRM/AGENCY/ERP(52개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
 --     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
 --     각각 07번 A.5 · A.5-B.2 가 담당한다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
 --   - 🔴 BDGT_ACMSLT_LEDGER 는 2026-08-29 자로 컬럼 순서가 바뀌었다(변경 이력 참조).
 --     기존 CSV 로 적재하면 한 칸씩 밀려 조용히 오적재된다 — 07번 A.1 (4) 대조가 0건인지 먼저 확인한다.
+--   - 🟢 GA4/GSC(4개)는 CSV 이관 대상이 아니다 — Google API 를 직접 호출하는 SP_LOAD_* (본 파일 제외)가
+--     주기적으로 DELETE 후 재적재하는 구조다. 본 파일은 C 계정에 "빈 테이블 구조"만 만든다.
+--     원본(A) 데이터를 그대로 옮기려면 07번 문서에서 별도 CSV 언로드/적재 절차를 확인할 것.
 --
 -- 객체 인덱스 / OBJECT INDEX
 --   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 46개
@@ -161,13 +194,24 @@
 --     ⚠️ 스키마 COMMENT 는 원천(13번)이 'SMS/알림톡/마케팅 발송'으로 되어 있어 실제 내용과 어긋난다.
 --        원천 무변경 원칙에 따라 COMMENT 문안은 그대로 두고 이 인덱스에만 실제 성격을 적는다.
 --
+--   [SCHEMA] GN_DW.BRONZE_GA4 — 원천 적재: GA4 사용자 인구통계 (GA4 Data API 집계), 테이블 2개
+--     GA4_USER_DEMOGRAPHIC, SYNC_ERR_INFO
+--     [SEQUENCE] SEQ_SYNC_ERR_INFO
+--     🟢 2026-08-20 삭제된 옛 BRONZE_GA4(events_* · BigQuery Export)와는 무관한 신규 구조.
+--     ⚠️ CSV 미사용 — SP_LOAD_GA_USER_DEMOGRAPHIC(제외 대상)가 GA4 Data API 로 직접 적재한다.
+--
+--   [SCHEMA] GN_DW.BRONZE_GSC — 원천 적재: 구글 서치 콘솔 검색 성과, 테이블 2개
+--     SEARCH_CONSOLE_DATA, SYNC_ERR_INFO
+--     [SEQUENCE] SEQ_SYNC_ERR_INFO
+--     ⚠️ CSV 미사용 — SP_LOAD_GOOGLE_SEARCH(제외 대상)가 Search Console API 로 직접 적재한다.
+--
 --   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
 --   [별도 파일] GN_DW.ML.ML_RST_DATA_* 16종        — 05번 참조 (PREDICTION=VARIANT 4종 포함)
 -- =====================================================================
 
 
 -- #####################################################################
--- # SCHEMA 1/3 : GN_DW.BRONZE_CRM  (CRM 원천 - 회원/납입/캠페인)
+-- # SCHEMA 1/5 : GN_DW.BRONZE_CRM  (CRM 원천 - 회원/납입/캠페인)
 -- #####################################################################
 USE ROLE SYSADMIN;
 CREATE DATABASE IF NOT EXISTS GN_DW
@@ -182,8 +226,10 @@ USE ROLE GN_DW_ADMIN;
 -- drop schema GN_DW.BRONZE_CRM; 
 -- drop schema GN_DW.BRONZE_AGENCY;
 -- drop schema GN_DW.BRONZE_ERP;
+-- drop schema GN_DW.BRONZE_GA4;
+-- drop schema GN_DW.BRONZE_GSC;
 -- (BRONZE_BIGQUERY 는 이관 대상이 아니다 — 본 파일에서 생성하지 않는다)
-create or replace schema GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
+create schema if not exists GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';
 
 create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (
   REQ_SEQ_NO NUMBER(19,0) COMMENT 'REQ_SEQ_NO',
@@ -1246,9 +1292,9 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
 
 
 -- #####################################################################
--- # SCHEMA 2/3 : GN_DW.BRONZE_AGENCY  (대행사 원천 - 디지털/DRTV/재송출 광고)
+-- # SCHEMA 2/5 : GN_DW.BRONZE_AGENCY  (대행사 원천 - 디지털/DRTV/재송출 광고)
 -- #####################################################################
-create or replace schema GN_DW.BRONZE_AGENCY with managed access COMMENT='원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)';
+create schema if not exists GN_DW.BRONZE_AGENCY with managed access COMMENT='원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)';
 
 create or replace sequence GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 
@@ -1378,11 +1424,11 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 
 
 -- #####################################################################
--- # SCHEMA 3/3 : GN_DW.BRONZE_ERP  (ERP 원천 - 예산/지출 원장)
+-- # SCHEMA 3/5 : GN_DW.BRONZE_ERP  (ERP 원천 - 예산/지출 원장)
 -- #####################################################################
 -- ⚠️ 스키마 COMMENT 는 원천(13번 1행)의 문안을 그대로 옮긴 것이며 실제 내용과 어긋난다.
 --    실제 성격은 예산·지출 원장이다. 원천 무변경 원칙에 따라 문안은 고치지 않는다.
-create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
+create schema if not exists GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
 
 -- 🔴 2026-08-29 컬럼 순서 변경 — 65 → 67 컬럼.
 --    + BDGT_PRCD_NM(3번째 삽입) · − MNYRS_COST_DIV_YN · + DIRECT_MNYRS_YN_1/2
@@ -1495,4 +1541,68 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR2
   SKIP_HEADER = 1
   FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
   ENCODING = 'EUC-KR'
+;
+
+
+-- #####################################################################
+-- # SCHEMA 4/5 : GN_DW.BRONZE_GA4  (GA4 원천 - 사용자 인구통계, GA4 Data API 집계)
+-- #####################################################################
+-- 2026-09-01 복귀 — 원천 15번(99_provided_definition/15_bronze_ga4_ddl.sql) 무변경 발췌.
+--   🟢 2026-08-20 삭제된 옛 BRONZE_GA4(events_* · BigQuery Export, VARIANT 다수)와는 무관한 신규 구조다.
+--   SP_LOAD_GA_USER_DEMOGRAPHIC · TASK_GA_USER_DEMOGRAPHIC 은 병합 규칙에 따라 제외(원천 15번 참조).
+-- drop schema GN_DW.BRONZE_GA4;
+create schema if not exists GN_DW.BRONZE_GA4 with managed access COMMENT='원천 데이터 적재 - GA4 (사용자 인구통계)';
+
+create or replace sequence GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+
+create or replace TABLE GN_DW.BRONZE_GA4.GA4_USER_DEMOGRAPHIC (
+  DATE VARCHAR(16777216) COMMENT '일자',
+  DEVICE_CATEGORY VARCHAR(16777216) COMMENT '기기 카테고리',
+  USER_GENDER VARCHAR(16777216) COMMENT '성별',
+  USER_AGE_BRACKET VARCHAR(16777216) COMMENT '연령',
+  NEW_USERS VARCHAR(16777216) COMMENT '새 사용자 수',
+  SESSIONS VARCHAR(16777216) COMMENT '세션수',
+  TOTAL_USERS VARCHAR(16777216) COMMENT '총 사용자'
+)COMMENT='GA4 사용자 인구통계별 일자 집계 데이터'
+;
+-- ⚠️ 원천 15번 DDL 은 SYNC_ERR_INFO 컬럼 코멘트가 비어 있다. AGENCY.SYNC_ERR_INFO 관례로 보강했다
+--    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다. 구조는 변형하지 않았다).
+create or replace TABLE GN_DW.BRONZE_GA4.SYNC_ERR_INFO (
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
+)COMMENT='적재 프로시저 오류 로그'
+;
+
+
+-- #####################################################################
+-- # SCHEMA 5/5 : GN_DW.BRONZE_GSC  (GSC 원천 - 구글 서치 콘솔 검색 성과)
+-- #####################################################################
+-- 2026-09-01 신규 — 원천 16번(99_provided_definition/16_bronze_gsc_ddl.sql) 무변경 발췌.
+--   SP_LOAD_GOOGLE_SEARCH · TASK_GOOGLE_SEARCH 은 병합 규칙에 따라 제외(원천 16번 참조).
+-- drop schema GN_DW.BRONZE_GSC;
+create schema if not exists GN_DW.BRONZE_GSC with managed access COMMENT='원천 데이터 적재 - GSC (구글 서치 콘솔 검색 성과)';
+
+create or replace sequence GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+
+create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
+  DATE DATE COMMENT '검색 발생 날짜',
+  QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
+  PAGE VARCHAR(16777216) COMMENT '검색 결과에 노출된 페이지 URL',
+  COUNTRY VARCHAR(16777216) COMMENT '검색이 발생한 국가 코드',
+  DEVICE VARCHAR(16777216) COMMENT '검색에 사용된 디바이스 유형',
+  CLICKS NUMBER(38,0) COMMENT '검색 결과 클릭 수',
+  IMPRESSIONS NUMBER(38,0) COMMENT '검색 결과 노출 수',
+  CTR FLOAT COMMENT '클릭률',
+  POSITION FLOAT COMMENT '평균 검색결과 위치',
+  RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
+)COMMENT='구글 서치 콘솔 검색 데이터'
+;
+-- ⚠️ 원천 16번 DDL 은 SYNC_ERR_INFO 컬럼 코멘트가 비어 있다. AGENCY.SYNC_ERR_INFO 관례로 보강했다
+--    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다. 구조는 변형하지 않았다).
+create or replace TABLE GN_DW.BRONZE_GSC.SYNC_ERR_INFO (
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
+)COMMENT='적재 프로시저 오류 로그'
 ;

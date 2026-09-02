@@ -1,4 +1,4 @@
--- FACT_GA_BEHAVIOR: GA 행동 팩트 (GA4_EVENT + GA DIM 조인, 일 grain)
+-- FACT_GA_BEHAVIOR: GA 행동 팩트 (BIGQUERY_EVENT + GA DIM 조인, 일 grain)
 -- Co-authored with CoCo
 -- grain: DATE_SK×IDENTITY_SK×GA_EVENT_SK×GA_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH
 -- IDENTITY_SK = IDENTITY_MEMBER_XREF(pseudo→회원) → DIM_MEMBER_IDENTITY 매칭분, 미매칭=0(센티넬). CAMPAIGN_SK=NULL(DIM_CAMPAIGN GA UTM↔CRM cross-source).
@@ -10,7 +10,7 @@
 ) }}
 
 with e as (
-    select * from {{ ref('GA4_EVENT') }}
+    select * from {{ ref('BIGQUERY_EVENT') }}
 ),
 -- pseudo→회원 매칭(1 pseudo 1행 = XREF grain). IDENTITY_SK 해소용, fan-out 없음.
 xref as (

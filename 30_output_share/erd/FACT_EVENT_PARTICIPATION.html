@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>FACT_EVENT_PARTICIPATION - Pipeline ERD & Lineage</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-09-02 04:12",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_EVENT_PARTICIPATION",
+    "table": "FACT_EVENT_PARTICIPATION",
+    "domain": "COMMON / 공통 기준",
+    "type": "FACT"
+  }
+  </script>
+  <style>
+
+    :root {
+      color-scheme: light dark;
+      --bg-primary: light-dark(#f8fafc, #0f172a);
+      --bg-surface: light-dark(#ffffff, #1e293b);
+      --bg-subtle: light-dark(#f1f5f9, #334155);
+      --text-main: light-dark(#0f172a, #f8fafc);
+      --text-muted: light-dark(#64748b, #94a3b8);
+      --border-color: light-dark(#e2e8f0, #334155);
+      --accent-blue: light-dark(#2563eb, #3b82f6);
+      --accent-amber: light-dark(#d97706, #f59e0b);
+      --accent-purple: light-dark(#7c3aed, #a855f7);
+      --accent-emerald: light-dark(#059669, #10b981);
+      --accent-rose: light-dark(#e11d48, #f43f5e);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0; padding: 0;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+    .layout-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: var(--accent-blue);
+    }
+    .sidebar-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .sidebar-search {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 0.85rem;
+    }
+    .sidebar-nav {
+      padding: 12px 0;
+      flex: 1;
+    }
+    .nav-group-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 8px 16px 4px 16px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 16px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.85rem;
+      gap: 8px;
+    }
+    .nav-item:hover {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+    }
+    .nav-item.active {
+      background-color: var(--bg-subtle);
+      color: var(--accent-blue);
+      font-weight: 600;
+      border-left: 3px solid var(--accent-blue);
+    }
+    .main-content {
+      flex: 1;
+      padding: 24px 36px;
+      max-width: 1200px;
+      overflow-x: hidden;
+    }
+    .header-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .title-area h1 {
+      margin: 0 0 6px 0;
+      font-size: 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .korean-title {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .meta-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-dim { background: rgba(37, 99, 235, 0.15); color: var(--accent-blue); }
+    .badge-fact { background: rgba(217, 119, 6, 0.15); color: var(--accent-amber); }
+    .badge-wide { background: rgba(124, 58, 237, 0.15); color: var(--accent-purple); }
+    .badge-silver { background: rgba(5, 150, 105, 0.15); color: var(--accent-emerald); }
+    .badge-bronze { background: rgba(225, 29, 72, 0.15); color: var(--accent-rose); }
+    .badge-domain { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .section-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    .lineage-diag-wrap {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: var(--bg-subtle);
+      font-weight: 600;
+    }
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .flow-step-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .flow-step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .flow-step-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.8rem;
+    }
+    .flow-step-list li {
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .flow-step-list li:last-child {
+      border-bottom: none;
+    }
+    .sql-code-box {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 8px 0;
+    }
+    a { color: var(--accent-blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Index styles */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .stat-bronze .stat-num { color: var(--accent-rose); }
+    .stat-silver .stat-num { color: var(--accent-emerald); }
+    .stat-gold .stat-num { color: var(--accent-blue); }
+    .stat-wide .stat-num { color: var(--accent-purple); }
+
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--accent-blue);
+      color: #ffffff;
+      border-color: var(--accent-blue);
+      font-weight: 600;
+    }
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .table-grid-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .table-grid-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      height: 2.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .card-meta {
+      font-size: 0.75rem;
+      background: var(--bg-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+    .card-btn {
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+    .card-btn:hover {
+      background: var(--accent-blue);
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">GN DW ERD & Lineage</div>
+        <div class="sidebar-subtitle">Bronze ➔ Silver ➔ Gold 파이프라인</div>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" id="nav-filter" placeholder="테이블 검색..." />
+      </div>
+      <nav class="sidebar-nav">
+        <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
+        <div class="nav-group-title">DIMENSION (20)</div>
+<a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
+<a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
+<a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
+<a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
+<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
+<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
+<a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
+<a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
+<a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
+<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
+<a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
+<a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
+<a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
+        <div class="nav-group-title">FACT (17)</div>
+<a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
+<a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
+<a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
+<a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
+<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item active"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
+<a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
+<a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
+<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
+<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
+<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
+<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+        <div class="nav-group-title">WIDE MART (14)</div>
+<a href="WIDE_AD_BROADCAST.html" class="nav-item"><span>WIDE_AD_BROADCAST</span></a>
+<a href="WIDE_AD_BROADCAST_CASE.html" class="nav-item"><span>WIDE_AD_BROADCAST_CASE</span></a>
+<a href="WIDE_AD_COMBINED.html" class="nav-item"><span>WIDE_AD_COMBINED</span></a>
+<a href="WIDE_AD_DIGITAL.html" class="nav-item"><span>WIDE_AD_DIGITAL</span></a>
+<a href="WIDE_AD_PERFORMANCE.html" class="nav-item"><span>WIDE_AD_PERFORMANCE</span></a>
+<a href="WIDE_BUDGET.html" class="nav-item"><span>WIDE_BUDGET</span></a>
+<a href="WIDE_EVENT_PARTICIPATION.html" class="nav-item"><span>WIDE_EVENT_PARTICIPATION</span></a>
+<a href="WIDE_GA_BEHAVIOR.html" class="nav-item"><span>WIDE_GA_BEHAVIOR</span></a>
+<a href="WIDE_MEMBER_EVENT.html" class="nav-item"><span>WIDE_MEMBER_EVENT</span></a>
+<a href="WIDE_MEMBER_FEE.html" class="nav-item"><span>WIDE_MEMBER_FEE</span></a>
+<a href="WIDE_MEMBER_MONTHLY.html" class="nav-item"><span>WIDE_MEMBER_MONTHLY</span></a>
+<a href="WIDE_SERVICE_EVENT.html" class="nav-item"><span>WIDE_SERVICE_EVENT</span></a>
+<a href="WIDE_TARGET_BIZ.html" class="nav-item"><span>WIDE_TARGET_BIZ</span></a>
+<a href="WIDE_TARGET_DEV.html" class="nav-item"><span>WIDE_TARGET_DEV</span></a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header Card -->
+      <div class="header-card">
+        <div class="header-top">
+          <div class="title-area">
+            <h1>
+              <span>FACT_EVENT_PARTICIPATION</span>
+              <span class="badge badge-fact">팩트 (Fact)</span>
+            </h1>
+            <div class="korean-title">PART_STATUS 에 코드체계 2개 혼입 — 행사종류 미분리 집계는 조용히 틀린다. 🔴미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2) 전건 0/NULL — 0 을 실측값으로 읽지 말 것. 🟡행 식별자 부재(유일조합=EVENT_KEY,MEMBER_DK,PARTCPT_SEQ). ⚠️마스터 부재로 고아 EVENT_SK=0 이 존재한다 — 총행수·고아 규모는 문서10 §26·§26-B 참조</div>
+          </div>
+          <div>
+            <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
+          </div>
+        </div>
+        <div class="meta-badges">
+          <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
+          <span class="badge badge-domain">BRONZE 원천: 5개</span>
+          <span class="badge badge-domain">SILVER 모델: 3개</span>
+          <span class="badge badge-domain">컬럼 수: 36개</span>
+        </div>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>행사 참여 팩트 (DATE_SK × MEMBER_DK × EVENT_SK). 🔴O28: PART_STATUS 에 코드체계 2개 혼입 — 행사종류 미분리 집계는 조용히 틀린다. 🔴미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2) 전건 0/NULL — 0 을 실측값으로 읽지 말 것. 🟡행 식별자 부재(유일조합=EVENT_KEY,MEMBER_DK,PARTCPT_SEQ). ⚠️마스터 부재로 고아 EVENT_SK=0 이 존재한다 — 총행수·고아 규모는 문서10 §26·§26-B 참조</p>
+      </div>
+
+      <!-- 1. Pipeline Lineage Diagram -->
+      <div class="section-card">
+        <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_EVENT_PARTICIPATION)로 데이터가 유입되는 전체 경로입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+flowchart LR
+  classDef bronze fill:#ffe4e6,stroke:#e11d48,stroke-width:1px,color:#9f1239;
+  classDef silver fill:#d1fae5,stroke:#059669,stroke-width:1px,color:#065f46;
+  classDef gold fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
+  classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
+  subgraph BRONZE [1. BRONZE 원천]
+    B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TD_MS_CRMN_PRTCPNT["TD_MS_CRMN_PRTCPNT"]:::bronze
+    B_bronze_crm_TD_MS_EVENT_PRTCPNT_DTL["TD_MS_EVENT_PRTCPNT_DTL"]:::bronze
+    B_bronze_crm_TM_MS_CRMN["TM_MS_CRMN"]:::bronze
+    B_bronze_crm_TM_MS_EVENT["TM_MS_EVENT"]:::bronze
+  end
+  subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_EVENT["CRM_EVENT"]:::silver
+    S_CRM_EVENT_PARTICIPATION["CRM_EVENT_PARTICIPATION"]:::silver
+  end
+  subgraph GOLD [3. GOLD 마트]
+    G_FACT_EVENT_PARTICIPATION["★ FACT_EVENT_PARTICIPATION<br/>PART_STATUS 에 코드체계 2개 혼입 "]:::target
+    G_DIM_EVENT["DIM_EVENT<br/>행사/이벤트 차원 (1행사)"]:::gold
+  end
+  B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TD_MS_CRMN_PRTCPNT --> S_CRM_EVENT_PARTICIPATION
+  B_bronze_crm_TD_MS_EVENT_PRTCPNT_DTL --> S_CRM_EVENT_PARTICIPATION
+  B_bronze_crm_TM_MS_CRMN --> S_CRM_EVENT
+  B_bronze_crm_TM_MS_EVENT --> S_CRM_EVENT
+  G_DIM_EVENT --> G_FACT_EVENT_PARTICIPATION
+  S_CRM_CODE --> S_CRM_EVENT
+  S_CRM_CODE --> S_CRM_EVENT_PARTICIPATION
+  S_CRM_EVENT --> G_DIM_EVENT
+  S_CRM_EVENT_PARTICIPATION --> G_FACT_EVENT_PARTICIPATION
+          </pre>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (5개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TD_MS_CRMN_PRTCPNT</b>: </li>
+<li><b>bronze_crm.TD_MS_EVENT_PRTCPNT_DTL</b>: </li>
+<li><b>bronze_crm.TM_MS_CRMN</b>: </li>
+<li><b>bronze_crm.TM_MS_EVENT</b>: </li>
+            </ul>
+          </div>
+          <div class="flow-step-box">
+            <div class="flow-step-title">
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (3개)
+            </div>
+            <ul class="flow-step-list">
+<li><b>CRM_CODE</b>: </li>
+<li><b>CRM_EVENT</b>: </li>
+<li><b>CRM_EVENT_PARTICIPATION</b>: </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Gold ERD & Relationships -->
+      <div class="section-card">
+        <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
+          FACT_EVENT_PARTICIPATION 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+        </p>
+        <div class="lineage-diag-wrap">
+          <pre class="mermaid">
+erDiagram
+  DIM_CAMPAIGN {
+    string CAMPAIGN_SK PK
+    string MKTG_CAMPAIGN_SK FK
+    string ORG_SK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_DATE {
+    string DATE_SK PK
+    string MONTH_KEY FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_EVENT {
+    string EVENT_SK PK
+    string DW_BATCH_ID KEY
+  }
+  DIM_MEMBER {
+    string MEMBER_SK PK
+    string MEMBER_DK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_SPONSORSHIP {
+    string SPONSORSHIP_SK PK
+    string DW_BATCH_ID KEY
+  }
+  FACT_EVENT_PARTICIPATION {
+    string DATE_SK FK
+    string MEMBER_DK FK
+    string EVENT_SK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string DW_BATCH_ID KEY
+  }
+  DIM_DATE ||--o{ FACT_EVENT_PARTICIPATION : "DATE_SK → DATE_SK"
+  DIM_MEMBER ||--o{ FACT_EVENT_PARTICIPATION : "MEMBER_DK → MEMBER_DK"
+  DIM_EVENT ||--o{ FACT_EVENT_PARTICIPATION : "EVENT_SK → EVENT_SK"
+  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK → CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_EVENT_PARTICIPATION : "SPONSORSHIP_SK → SPONSORSHIP_SK"
+          </pre>
+        </div>
+
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>출발 테이블</th>
+                <th>출발 컬럼</th>
+                <th></th>
+                <th>대상 테이블</th>
+                <th>대상 컬럼</th>
+                <th>관계 출처</th>
+                <th>관계 유형</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>DATE_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_DATE.html"><code>DIM_DATE</code></a></td>
+          <td><code>DATE_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>EVENT_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_EVENT.html"><code>DIM_EVENT</code></a></td>
+          <td><code>EVENT_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+
+      <!-- 3. Column Catalog -->
+      <div class="section-card">
+        <h2 class="section-title">📋 3. 컬럼 명세서 (Column Specifications)</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>컬럼명</th>
+                <th>데이터 타입</th>
+                <th>속성</th>
+                <th>한글 설명 (Description / Comment)</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>EVENT_BK</code></td>
+          <td><code>VARCHAR</code></td>
+          <td><span class="badge badge-silver">DK</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PARTCPT_SEQ</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PART_STATUS</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>EVENT_KIND</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>원천 계열 판별 **코드** — 팩트 자체 보유(SILVER.CRM_EVENT_PARTICIPATION.DW_SOURCE_TABLE 분기). 값 2종: EVENT=일반행사 원천 · CRMN=캠페인행사 원천. 🔴DIM_EVENT.EVENT_KIND 와 어휘가 같지만 **조인과 무관하게 전건 값을 갖는다** — 행사 미매칭(EVENT_SK=0) 구간에서도 계열을 가른다(차원축은 그 구간이 (미매핑) 이라 무력하다). ⇒ O28 다체계 축(PART_STATUS·PART_PATH·PART_CHANNEL)의 판별자는 **이 컬럼**을 쓴다. ⚠️등재 매핑에 없는 원천이 인입되면 NULL 로 드러난다(ELSE 절 금지 · P31)</td>
+        </tr>
+        <tr>
+          <td><code>EVENT_KIND_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 계열 판별 **라벨** — 현업 응답·분해용 정본 축. 값 2종: 일반행사 · 캠페인행사. DIM_EVENT.EVENT_KIND_NAME 과 어휘 conform. 🔴차원축과 달리 **(미매핑) 사각지대가 없다**(전건 채움). 🔴이 라벨은 업무 분류가 아니라 **참여 행이 어느 원천에서 왔는지**를 뜻한다 — 온·오프라인 구분이 아니다. ⚠️코드사전에 대응 그룹이 없는 **파생 라벨**이므로 CRM_CODE 조인 대상이 아니다</td>
+        </tr>
+        <tr>
+          <td><code>DATE_SK</code></td>
+          <td><code>NUMBER(8,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>참여일 YYYYMMDD (FK→DIM_DATE)</td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_DK</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>EVENT_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>행사 (FK→DIM_EVENT)</td>
+        </tr>
+        <tr>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>분석축(캠페인) — 🔴 전건 0 하드코딩(미배선). 차단=O8 다중캠페인 귀속규칙 현업 미회신. 0 은 (미매핑) 센티넬이며 &quot;캠페인 없음&quot; 아님</td>
+        </tr>
+        <tr>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>분석축(후원사업) — 🔴 전건 0 하드코딩(미배선). 차단=O8 동일 게이트. 0 은 (미매핑) 센티넬</td>
+        </tr>
+        <tr>
+          <td><code>TOTAL_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>총인원 — 🟢 [O93] 배선 완료. 참여행 1건 = 1 이며 상태 무관이라 코드체계와 독립적이다(전건 유효).</td>
+        </tr>
+        <tr>
+          <td><code>WAIT_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대기인원 — 🟢 [O93] **캠페인행사(EVENT_KIND=CRMN) 구간만** 배선. MS006 라벨 「대기」·「대기(결제)」 합. 🔴 일반행사 구간의 0 은 「대기 0명」이 아니라 **「해당 없음」**이다 — 일반행사 코드체계(MS304)는 퍼널 단계 축이라 대기 상태가 없다. 판별자 = EVENT_KIND.</td>
+        </tr>
+        <tr>
+          <td><code>CANCEL_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>취소인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「취소」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.</td>
+        </tr>
+        <tr>
+          <td><code>CONFIRM_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>신청확정인원 — 🔴 전건 0(미배선). 원인 = 코드사전에 「신청확정」 라벨이 없다. 있는 것은 「신청」·「참여」뿐이고 어느 쪽이 신청확정인지는 업무 정의라 임의 선택 불가(라벨 창작 금지). 현업 회신 대기(문서20 §I). 0 을 실측값으로 읽지 말 것.</td>
+        </tr>
+        <tr>
+          <td><code>PARTICIPATE_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>ABSENT_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>불참인원 — 🟢 [O93] **캠페인행사 구간만** 배선(MS006 라벨 「불참」). 🔴 일반행사 구간의 0 = 해당 없음. 판별자 = EVENT_KIND.</td>
+        </tr>
+        <tr>
+          <td><code>PARTICIPANT_CNT</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>참여자수 — ⚠️행당 상수 1(=행수). 회원 중복 미제거 → 명수는 COUNT(DISTINCT MEMBER_DK)</td>
+        </tr>
+        <tr>
+          <td><code>PARTICIPATION_TIMES</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>참여횟수 — 🔴 전건 0(미배선). 🟢 PARTCPT_SEQ 로 O28 무관하게 산출 가능</td>
+        </tr>
+        <tr>
+          <td><code>WAIT_TIMES</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대기횟수 — 🔴 전건 0(미배선). O28 확정 후 산출</td>
+        </tr>
+        <tr>
+          <td><code>ABSENT_TIMES</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>불참횟수 — 🔴 전건 0(미배선). O28 확정 후 산출</td>
+        </tr>
+        <tr>
+          <td><code>CUM_APPLY_TIMES</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>누적신청 횟수 — 🔴 전건 0(미배선). PARTCPT_SEQ 기반 산출 가능(O28 무관)</td>
+        </tr>
+        <tr>
+          <td><code>REGULAR_DONATION</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>정기후원금(원)</td>
+        </tr>
+        <tr>
+          <td><code>WIN_FLAG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>SELF_PART_FLAG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PART_PATH</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>PART_CHANNEL</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>PART_STATUS_GROUP</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>참여상태 코드군 ID (조인키 · 일반행사→MS304 · 캠페인행사→MS006). 🔴O28 다체계의 **구조적 해소축**이다 — PART_STATUS 단독 필터·GROUP BY 는 두 체계를 섞는다(판별자 = 이 컬럼 또는 EVENT_BK 접두). 🔴두 원천의 「참여」 정의 자체가 다르므로 합산 금지</td>
+        </tr>
+        <tr>
+          <td><code>PART_STATUS_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>참여상태 라벨 (CRM_CODE 조인). ⚠️일반행사(MS304) 라벨은 코드사전에 **영문**으로 등록돼 있다(Success·N_step_right 계열) — 현업 한글 표기 회신 대기(문서20 §M-1)이며 우리가 창작하지 않았다. 미등재·오염 코드는 NULL</td>
+        </tr>
+        <tr>
+          <td><code>PART_PATH_GROUP</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>참여경로 코드군 ID (조인키 · 일반행사→MS303 · 캠페인행사→MS004=신청경로). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B) — 조건부 적용은 해소됐고 롤백은 발동하지 않았다</td>
+        </tr>
+        <tr>
+          <td><code>PART_PATH_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>참여경로 라벨 (CRM_CODE 조인 · 코드군 확정). 미등재·오염 코드는 NULL 유지</td>
+        </tr>
+        <tr>
+          <td><code>PART_CHANNEL_GROUP</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>참여채널 코드군 ID (조인키 · 일반행사→MS302 · 등급 B 배타 확정). 캠페인행사는 원천에 채널 축이 없어 NULL(구조적 부재 · P21)</td>
+        </tr>
+        <tr>
+          <td><code>PART_CHANNEL_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>참여채널 라벨 (CRM_CODE 조인). 미등재·오염 코드는 NULL 유지</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. dbt SQL Source -->
+      <div class="section-card">
+        <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
+        <details>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_EVENT_PARTICIPATION.sql)</summary>
+          <div class="sql-code-box">
+            <pre><code>-- FACT_EVENT_PARTICIPATION: 행사 참여 팩트 (SILVER.CRM_EVENT_PARTICIPATION 1,134,126행 적재 완료)
+-- Co-authored with CoCo
+-- 🔴 [O28 2026-08-04 주석 회수] 종전 주석은 *&quot;Bronze 입고 후 실행&quot;* · *&quot;상태별 집계는 입고 후&quot;* 였다.
+--    **원인 오진이다** — BRONZE·SILVER 모두 적재 완료됐고 막고 있는 것은 입고가 아니라
+--    `PARTCPT_STAT_CD` 코드체계였다. 한 컬럼에 두 체계가 혼입돼 있다(일반행사 ↔ 캠페인행사).
+-- 🟢🟢 [2026-08-20 O93 재정정] **그 차단은 절반 해소됐다.** 종전 O28 서술 2가지가 지금은 틀리다:
+--    ① *&quot;캠페인행사 소정수 1~6 = 의미 미확정 → 현업 회신 필수&quot;* → **회신 없이 확정됐다.**
+--       O59-N/DEC-35 2단계의 `MS006` 사전 조인으로 6종에 한글 라벨이 달렸다
+--       (신청·참여·대기·대기(결제)·취소·불참).
+--    ② 두 체계의 **성격이 반대로 적혀 있었다** — 참여 상태 축은 일반행사가 아니라 **캠페인행사**다.
+--       일반행사(`MS304`)는 `Success`·`N_step_right`·`N_step_fail` 로 **퍼널 단계** 축이라
+--       신청확정/대기/취소/불참에 매핑되지 않는다.
+--    ⇒ 대기·취소·불참 3종을 **캠페인행사 구간에 한해** 배선했다(상세는 아래 SELECT 주석).
+--    ⚠️ 잔여 미해소 = `CONFIRM_CNT`(신청확정) 1종 — 사전에 그 라벨이 없다(문서20 §I 회신 대기).
+-- ⚠️ 미주입 14컬럼(카운트 6·횟수 4·degen NULL 2·FK 센티넬 2)의 사유는 컬럼 COMMENT 에 개별 명시했다
+--    (정본 = `03_top-down_gold/06_DDL.sql` FEP 블록 · 가드 스크립트 = `_archive/O28_O29_COMMENT_GUARD.sql`).
+-- 🟢 단 `PARTICIPATION_TIMES`·`CUM_APPLY_TIMES` 는 `PARTCPT_SEQ`(채움 100%) 기반이라 O28 과 무관하게
+--    산출 가능하다 — 회신 대기 대상이 아니다(별건 배선 후보).
+-- ⚠️ CAMPAIGN/SPONSORSHIP_SK=0 센티넬은 O8(다중 캠페인 귀속규칙) 현업 미회신 차단분이다.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
+{{ config(
+    tags=['gold_pending']
+) }}
+
+with p as (
+    select * from {{ ref('CRM_EVENT_PARTICIPATION') }}
+)
+
+select
+    COALESCE({{ date_sk('p.PARTCPT_DT::DATE') }}, {{ date_sk('e.EVENT_START_DATE') }}, 0) as DATE_SK,  -- 참여일 없으면 행사시작일, 둘 다 없으면 센티넬0 (순서9)
+    p.MBER_NO                                     as MEMBER_DK,
+    COALESCE(e.EVENT_SK, 0)                        as EVENT_SK,
+    0                                             as CAMPAIGN_SK,
+    0                                             as SPONSORSHIP_SK,
+    -- ═══ [2026-08-20 O93] 상태별 카운트 부분 배선 — O28 차단이 **절반 해소됐다** ══════════════
+    -- 🔴 위 O28 주석(3~9행)은 이제 **stale** 이다. 종전 판정은
+    --    *&quot;캠페인행사 소정수 1~6 은 의미 미확정 → 현업 회신 필수&quot;* 였으나,
+    --    O59-N/DEC-35 2단계가 `MS006` 사전을 붙인 뒤 그 6종에 **한글 라벨이 실제로 달렸다**:
+    --      신청 · 참여 · 대기 · 대기(결제) · 취소 · 불참  ⇒ 회신 없이 판정 가능하다.
+    -- 🔴 그리고 두 체계의 성격이 종전 서술과 **반대**다:
+    --      · 캠페인행사(CRMN · MS006) = **참여 상태** 축 ⇒ 대기·취소·불참이 여기 있다.
+    --      · 일반행사(EVENT · MS304)   = 라벨이 `Success`·`N_step_right`·`N_step_fail` 로
+    --        **퍼널 단계** 축이다 ⇒ 신청확정/대기/취소/불참에 **매핑되지 않는다**(억지 매핑은 창작).
+    --    ⇒ 그래서 아래 3종은 **CRMN 구간만** 채워지고 EVENT 구간은 0 이다. 판별자 = `EVENT_KIND`.
+    --    🔴 이 0 을 「해당 없음」으로 읽어야 한다 — 「대기 0명」이 아니다.
+    -- 🟢 라벨 문자열로 매칭하는 이유: 사전 문안이 바뀌면 매칭이 풀려 **0 으로 떨어진다**(안전한 방향).
+    --    코드값(1~6)으로 매칭하면 사전이 재코딩될 때 **조용히 다른 상태로 배정**된다(위험한 방향).
+    --    `PART_STATUS_GROUP` 가드로 사전 조인이 성립한 행만 판정한다.
+    -- 🔴 R2-6: 구간별 실측 행수는 여기 적지 않는다 — 정본은 `20_issue/03_이슈상세.md` O28 항목이다.
+    1 as TOTAL_CNT,   -- 총인원 = 참여행 1건 = 1. 상태 무관이라 코드체계와 독립적이다(전건 안전).
+    -- 대기: '대기' 와 '대기(결제)' 를 함께 센다 — 둘 다 대기 상태의 하위 구분이다.
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)  as WAIT_CNT,
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '취소', 1, 0)      as CANCEL_CNT,
+    -- 🔴 신청확정 = 0 유지. 사전에 **'신청확정' 라벨이 없다** — 있는 것은 '신청' 과 '참여' 뿐이고
+    --    「신청 → 신청확정」 또는 「참여 → 신청확정」 중 어느 쪽인지는 업무 정의라 우리가 고를 수 없다
+    --    (고르면 라벨 창작 · DEC-17-B). ⇒ 현업 확인 항목으로 남긴다(문서20 §I 에 병기).
+    0 as CONFIRM_CNT,
+    -- 🔴 [DEC-30 2026-08-04] `RECRUIT_CNT` 제거 — `DIM_EVENT.RECRUIT_HEADCOUNT` 로 이관했다.
+    --   모집인원은 행사 속성이므로 참여행 grain 에 두면 SUM 이 101.0배 과대계상된다(§18-D ② 실패).
+    -- ⚠️ `PARTICIPATE_CNT`·`PARTICIPANT_CNT` 는 **이번에 건드리지 않았다** — 빈 컬럼이 아니라
+    --    이미 상수 1 이 들어 있고(취소·불참 행도 1 = 기지 결함) 값을 바꾸면 기존 소비 쿼리의
+    --    의미가 조용히 달라진다. 🟢 정확한 참여수가 필요하면 `PART_STATUS_NAME = '참여'` 로 필터할 것.
+    1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
+    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '불참', 1, 0)      as ABSENT_CNT,
+    0 as PARTICIPATION_TIMES, 0 as WAIT_TIMES, 0 as ABSENT_TIMES, 0 as CUM_APPLY_TIMES,
+    p.RCPMNY_AMT                                  as REGULAR_DONATION,
+    (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
+    CAST(NULL AS BOOLEAN)                          as SELF_PART_FLAG,
+    p.PARTCPT_STAT_CD                             as PART_STATUS,
+    p.PARTCPT_PATH_CD                             as PART_PATH,
+    p.PARTCPT_CHNNL_CD                            as PART_CHANNEL,
+    -- 🔴 [2026-09-01 O130] `INCREASE_FLAG` 드랍 — O96 판정(§7-B A군) 집행. 소비 0(WIDE 뷰 재생성 동반).
+    -- 🟢 [DEC-30 2026-08-04] degenerate key 2종 — A군 잔여 해소 + 고아 식별자 보존.
+    -- 🔴 `EVENT_BK` 가 반드시 필요한 이유(2026-08-04 빌드 후 실측으로 발견):
+    --    행사 마스터에 없는 **53개 행사 · 263,611행(23.2%)** 은 `EVENT_SK` 가 전부 0 이 되어
+    --    GOLD 에서 **서로 구별되지 않았다**(SILVER distinct 3,715 → GOLD distinct EVENT_SK 3,663).
+    --    즉 &quot;어느 고아 행사였는지&quot;가 소실됐다. 이 컬럼이 그 정보를 보존한다.
+    -- 🔷 행 유일 식별 = (EVENT_BK, MEMBER_DK, PARTCPT_SEQ). `EVENT_SK` 로 대체하면
+    --    고아가 0 으로 뭉개져 **31,831키·63,783행이 충돌**한다(실측).
+    -- ⚠️ `PARTCPT_SEQ` 는 식별자 전용 — 전역 순번이 아니고((행사,SEQ) 201,817),
+    --    원천에 음수 20,844행·INT_MIN 1행이 있어 정렬·범위 조건에 쓰면 안 된다.
+    p.EVENT_KEY                                   as EVENT_BK,
+    p.PARTCPT_SEQ                                 as PARTCPT_SEQ,
+    {{ gold_meta('CRM') }},
+    -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 참여 3축 코드→라벨 전파. 코드사전 조인은 SILVER 소관.
+    --    🔴 PART_STATUS_GROUP 이 O28 다체계의 **구조적 판별축**이다(종전에는 COMMENT 경고뿐이었다).
+    --    신설 위치 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝).
+    p.PARTCPT_STAT_GROUP                          as PART_STATUS_GROUP,
+    p.PARTCPT_STAT_NM                             as PART_STATUS_NAME,
+    p.PARTCPT_PATH_GROUP                          as PART_PATH_GROUP,
+    p.PARTCPT_PATH_NM                             as PART_PATH_NAME,
+    p.PARTCPT_CHNNL_GROUP                         as PART_CHANNEL_GROUP,
+    p.PARTCPT_CHNNL_NM                            as PART_CHANNEL_NAME,
+    -- 🟢 [2026-08-12 O61 · D2 구조 처방] 원천 계열 판별 2컬럼 (명세 = 99 §0-Y-1 · 근거 = 원장 §O59-S ③④).
+    --   🔴 종전 판별자는 `DIM_EVENT.EVENT_KIND(_NAME)` 뿐이었고 그것은 **아래 left join 에서 온다** ⇒
+    --      행사 마스터 미매칭 구간은 `'(미매핑)'` 이라 **계열을 알려주지 못했다**(가장 큰 단일 버킷).
+    --      이 2컬럼은 SILVER 의 **원천 분기**(`DW_SOURCE_TABLE`)에서 오므로 조인 성패와 무관하다.
+    --   🔴 어휘는 `DIM_EVENT` 와 conform 한다 — 새 어휘를 만들면 두 축의 교차 검증이 깨진다.
+    --   🔴 `ELSE` 를 쓰지 않는다(P31) — 매핑에 없는 원천이 인입되면 NULL 로 드러나고,
+    --      yml `accepted_values`(2종)와 게이트 종수 검사가 즉시 실패해 갱신을 강제한다.
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then 'EVENT'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then 'CRMN' end as EVENT_KIND,
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then '일반행사'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then '캠페인행사' end as EVENT_KIND_NAME
+from p
+left join {{ ref('DIM_EVENT') }} e
+    on e.EVENT_BK = p.EVENT_KEY
+</code></pre>
+          </div>
+        </details>
+      </div>
+    </main>
+  </div>
+
+  <script src="/libs/mermaid@10.9.6/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict' });
+    
+    // Search filter for sidebar
+    const searchInput = document.getElementById('nav-filter');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.nav-item').forEach(el => {
+          const text = el.textContent.toLowerCase();
+          if (text.includes(q)) {
+            el.style.display = 'flex';
+          } else {
+            el.style.display = 'none';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

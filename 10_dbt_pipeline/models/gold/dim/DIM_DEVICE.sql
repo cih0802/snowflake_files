@@ -16,7 +16,7 @@
 
 with src as (
     select distinct DEVICE_TYPE
-    from {{ ref('GA4_DEVICE') }}
+    from {{ ref('BIGQUERY_DEVICE') }}
     where DEVICE_TYPE is not null
       -- SILVER 미분류값은 아래 Unknown 멤버(SK=0)로 라우팅 — 중복 행 방지(2026-07-27)
       and DEVICE_TYPE <> '(unknown)'

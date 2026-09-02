@@ -28,19 +28,38 @@
 ) }}
 
 with y as (
-    select * from {{ ref('ERP_BUDGET_YEARLY') }}
+    select
+        *,
+        case BUDGET_PROCEDURE
+            when '추가경정' then 2
+            when '연사업' then 1
+            else 0
+        end as PRCD_SEQ
+    from {{ ref('ERP_BUDGET_YEARLY') }}
+),
+ranked as (
+    select
+        *,
+        dense_rank() over (partition by BUDGET_YEAR order by PRCD_SEQ desc) as rnk
+    from y
 )
 
 select
     BUDGET_YEAR                           as BUDGET_YEAR,
     0                                     as ORG_SK,            -- 원천 조직귀속 없음 → Unknown
     {{ gold_sk(['BUDGET_ITEM_DK']) }}     as BUDGET_ITEM_SK,    -- 월 팩트와 동일 산식
+    BUDGET_PROCEDURE                      as BUDGET_PROCEDURE,  -- 예산 편성 차수(DEC-44)
     0                                     as CAMPAIGN_SK,       -- 원천 연결 없음
     CAST(NULL AS NUMBER(38,0))            as SPONSORSHIP_SK,
-    YEAR_BUDGET_TOT_AMT                   as PLAN_BUDGET_YEAR,  -- 연 편성
-    CHN_BUDGET_TOT_AMT                    as CHN_BUDGET_YEAR,   -- 연 추경
-    ADJ_BUDGET_TOT_AMT                    as ADJ_BUDGET_YEAR,   -- 연 조정
-    EXEC_TOT_AMT                          as EXEC_BUDGET_YEAR,  -- 연 집행
+    SUM(YEAR_BDGT_TOT_AMT)                as PLAN_BUDGET_YEAR,  -- 연 편성
+    SUM(CHN_BDGT_TOT_AMT)                 as CHN_BUDGET_YEAR,   -- 연 추경
+    SUM(ADJ_BDGT_TOT_AMT)                 as ADJ_BUDGET_YEAR,   -- 연 조정
+    SUM(EXEC_TOT_AMT)                     as EXEC_BUDGET_YEAR,  -- 연 집행
     {{ gold_meta('ERP') }}
-from y
+from ranked
 where BUDGET_YEAR is not null   -- 연도 파싱 실패행 제외(NOT NULL grain 보호)
+  and rnk = 1
+group by
+    BUDGET_YEAR,
+    {{ gold_sk(['BUDGET_ITEM_DK']) }},
+    BUDGET_PROCEDURE

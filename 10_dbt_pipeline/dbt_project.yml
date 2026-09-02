@@ -26,13 +26,13 @@ clean-targets:
 #        연속 구간 1개로 그것을 표현하면 `2024-06-01`~`2026-06-30` = **2년치 전량**이 되어
 #        아래 비용 방어선이 무력화된다(샘플링 실패).
 #      🔴 술어의 **정의 지점은 `macros/ga4_range_predicate.sql` 하나**다.
-#        종전에는 같은 술어가 **3곳**(`ga4_range_purge`·`BIGQUERY_REFINED_DATA`·`GA4_EVENT`)에
+#        종전에는 같은 술어가 **3곳**(`ga4_range_purge`·`BIGQUERY_REFINED_DATA`·`BIGQUERY_EVENT`)에
 #        하드코딩돼 있었고, DELETE 범위와 append 범위가 어긋나면 행이 남거나 사라지는데
 #        그 어긋남을 잡는 게이트가 없었다(`R1-6-17` 「같은 것을 다르게 재는 지점」).
 #   🔴 이 값이 GA4 계열의 **유일한 비용 방어선**이다 — 빼거나 전범위로 두면 2.86억행 ×
 #      VARIANT 11개를 전량 스캔한다(프루닝 실측 3,006 파티션 중 19개 = 0.632%).
 #      ⇒ 빈 목록은 「전 범위」가 아니라 **컴파일 실패**로 처리한다(매크로 fail-fast).
-#   🔴 range 모델(`BIGQUERY_REFINED_DATA`·`GA4_EVENT`)은 pre-hook 이 **이 범위만 DELETE** 한다
+#   🔴 range 모델(`BIGQUERY_REFINED_DATA`·`BIGQUERY_EVENT`)은 pre-hook 이 **이 범위만 DELETE** 한다
 #      (`macros/ga4_range_purge.sql`) ⇒ 월 단위 분할 적재에서 앞 달이 지워지지 않는다.
 #      DISTINCT 차원 4종은 범위 제한 없이 기반 테이블 전량을 읽고 TRUNCATE 재적재한다(값 집합 보존).
 #   ⚠️ 전 기간으로 되돌릴 때는 목록을 한 구간으로 바꾼다(값을 지우지 말고 교체):
@@ -77,9 +77,9 @@ models:
       #   왜: dbt 는 hook 을 **누적(append)** 한다. 여기 TRUNCATE 를 두고 모델에 범위 DELETE 를
       #   추가하면 **둘 다 실행되어** 전체가 비워진 뒤 범위만 append 된다(행수만 줄고 에러는 없다).
       #   ⇒ pre-hook 정의 지점은 **이 한 줄뿐**이고 분기는 `silver_purge` 안에서만 한다.
-      #     · GA4 range 모델(`GA4_BASIC`·`GA4_EVENT`) = var 범위만 DELETE(멱등)
-      #       🔄 [2026-08-30 O121 정정] 종전 이 줄은 `BIGQUERY_REFINED_DATA`·`GA4_EVENT` 로 **stale 이었다** —
-      #       2026-08-21 에 전자는 dbt 모델이 아니게 되고(외부 Python 적재) `GA4_BASIC` 이 그 자리를 대신했다.
+      #     · GA4 range 모델(`BIGQUERY_BASIC`·`BIGQUERY_EVENT`) = var 범위만 DELETE(멱등)
+      #       🔄 [2026-08-30 O121 정정] 종전 이 줄은 `BIGQUERY_REFINED_DATA`·`BIGQUERY_EVENT` 로 **stale 이었다** —
+      #       2026-08-21 에 전자는 dbt 모델이 아니게 되고(외부 Python 적재) `BIGQUERY_BASIC` 이 그 자리를 대신했다.
       #       정본 목록은 `macros/silver_purge.sql` 의 `RANGED_MODELS` 하나다 ⇒ 그쪽을 믿어라.
       #     · 그 밖 SILVER 전 모델                                 = 종전과 동일 TRUNCATE
       #   🔴 **모델 파일에 `pre_hook` 을 쓰지 말 것.** 쓰면 위 누적 사고가 재발한다.
@@ -97,10 +97,10 @@ models:
       #   ⚠️ 이 설정은 컬럼 **추가**만 자동화한다. 삭제는 여전히 수동 ALTER 대상이다.
       #   🔴🔴 [2026-08-30 O121 정정] 종전 이 줄은 「**타입 변경**·삭제는 수동 ALTER 대상」이라고 적혀 있었고
       #      그 부분이 **틀렸다.** dbt 는 임시뷰와 대상 테이블의 컬럼 타입이 다르면 `on_schema_change` 설정과
-      #      무관하게 `ALTER TABLE … ALTER <col> SET DATA TYPE …` 을 **스스로 발행한다**(실측: GA4_BASIC).
+      #      무관하게 `ALTER TABLE … ALTER <col> SET DATA TYPE …` 을 **스스로 발행한다**(실측: BIGQUERY_BASIC).
       #      그 ALTER 는 OWNERSHIP 을 요구하므로 dbt 롤에는 실패한다 ⇒ `003001 … must have MODIFY granted on TABLE`.
       #      ⇒ 그래서 **모델이 DDL 과 같은 타입을 산출하도록 CAST 를 명시**하는 것이 유일한 구조적 방어다
-      #        (`models/silver/ga4/GA4_BASIC.sql` 헤더의 12컬럼 CAST 규약 참조).
+      #        (`models/silver/ga4/BIGQUERY_BASIC.sql` 헤더의 12컬럼 CAST 규약 참조).
       #      ⚠️ 원천이 `VARCHAR(16777216)` 로 평탄화된 외부 적재 테이블을 참조하는 모델은 전부 이 위험을 갖는다.
       #   ⚠️ 그리고 이것이 DDL 선행 절차를 대체하지 않는다(구조 정본은 `04_silver_design/08_…sql`) —
       #      절차는 GOLD 와 동일하다: ① DDL 수정 ② ALTER 실행 ③ INFORMATION_SCHEMA 확인

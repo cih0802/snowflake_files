@@ -9,6 +9,11 @@
 > 2. **BRONZE에서 구성 가능한 SILVER** — 물리 실측(2026-07-14): `GN_DW.BRONZE_CRM` 43테이블 · `BRONZE_BIGQUERY` 1(287,025행) · `BRONZE_ERP` 1(2,041행) · `BRONZE_AGENCY` 3(235,572행) 모두 입고.
 > 위치: `GN_DW.SILVER` 단일 스키마. 테이블명 소스 접두사(`CRM_*`·`GA4_*`·`ERP_*`·`AGENCY_*`)로 구분.
 
+> 🔄 **[2026-09-01 DEC-48] SILVER GA4 계열 명명 반전** — `DEC-38`(GA4_* 유지)을 수퍼시드.
+> 현재 라이브 명칭 = `BIGQUERY_EVENT`·`BIGQUERY_EVENT_DIM`·`BIGQUERY_IDENTITY`·`BIGQUERY_BASIC`·
+> `BIGQUERY_DEVICE`·`BIGQUERY_TRAFFIC_SOURCE`(구 `GA4_*`). 이 폴더의 본문에 남아 있는 `GA4_*`
+> 표기는 **그 시점 기록(역사)**이며 되쓰지 않는다 — 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
+
 ---
 
 ## 폴더 간 위상

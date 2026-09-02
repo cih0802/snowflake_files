@@ -85,6 +85,10 @@ OBSERVE = {
     'o123_member_dk_footprint': '컬럼명 소비처 footprint 관측(축 분리 = archive/현행/코드/문서) — 🔴 판정이 아니다 · 개명 전 grep 범위 산정용',
     'sv_dim_cardinality':  '차원 카디널리티 관측 — 🔴 판정 정본은 `sv_code_label_gate` 다',
     'wrap_for_read':       '긴 줄 접기 보조',
+    '_o128_dim_probe':     'DIM 키 컬럼 고립 관측',
+    '_o128_probe':         '관계선 관측',
+    '_o128_rel_violations':'relationships 위반 관측',
+    '_o130_ga4_rename':    'GA4 명칭 변경 관측',
 }
 
 NEEDS_ARGS = {
@@ -97,7 +101,9 @@ GEN = {
     'gen_arch_map': '아키텍처 지도', 'gen_bronze_exposure_audit': 'BRONZE 노출 감사',
     'gen_code_system_gates': '코드체계 게이트', 'gen_column_inventory_20260811': '컬럼 인벤토리',
         'gen_concept_diagram':  '개념도',
-    'gen_gold_erd':         'GOLD 테이블별 ERD(HTML · Mermaid) — dbt yml + INFORMATION_SCHEMA · `--yaml-only` 로 라이브 없이도 돈다', 'gen_measure_backlog': '실측필요 후속작업',
+    'gen_gold_erd':         'GOLD 테이블별 ERD(HTML · Mermaid) — dbt yml + INFORMATION_SCHEMA · `--yaml-only` 로 라이브 없이도 돈다',
+    'gen_pipeline_erd':     'Bronze > Silver > Gold 전체 파이프라인 ERD & 계보 카탈로그(HTML · Mermaid)',
+    'gen_measure_backlog': '실측필요 후속작업',
     'gen_metric_gold_mapping': '지표↔GOLD 매핑', 'gen_section_assembly': '절 조립',
     'gen_silver_gold_retention': 'SILVER·GOLD 보존', 'session_brief': '착수 브리핑(`00_BRIEF.md`)',
     # 🆕 [2026-08-30 O123-C] MUTATES 오분류 2건을 GEN 으로 이동했다 — O121-B 가 고친 것과 **같은 유형**이다

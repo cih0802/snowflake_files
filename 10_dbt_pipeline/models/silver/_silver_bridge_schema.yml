@@ -132,6 +132,12 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']
 
   - name: ERP_BUDGET_ITEM
     columns:
@@ -160,6 +166,12 @@ models:
       - name: BUDGET_YEAR
         description: "예산 연도(TRY_TO_NUMBER(YEAR))."
         tests: [not_null]
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']
 
   - name: CRM_BIZ_TARGET
     columns:

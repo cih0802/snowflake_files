@@ -644,12 +644,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     UNPAID_BILLED_AMT           NUMBER(18,2)    COMMENT '미납 청구액(원) — 정본 **DEC-3** 정의(O40): `PAY_STAT_CD IN (''F'', NULL)` 인 행의 **RQEST_AMT** 합. 🔴차감식(BILLED−PAID)을 쓰지 말 것 — 기부금이 미납을 상쇄해 과소해진다(과소 배수·연도 실측치는 문서10 §26).',
     INBOUND_CALL_CNT            NUMBER(38,0)    COMMENT '인바운드콜수 (overview) — 비-CRM 별도 입력',
     TS_CALL_CNT                 NUMBER(38,0)    COMMENT 'TS콜수 (overview) — 비-CRM 별도 입력',
-    DEV_TYPE                    VARCHAR         COMMENT '개발구분(#121)',                                  -- degen
-    NEW_FLAG                    BOOLEAN         COMMENT '신규(#32)',                                       -- degen
-    INCREASE_FLAG               BOOLEAN         COMMENT '증액(#33)',                                       -- degen
-    REDONATE_FLAG               BOOLEAN         COMMENT '재후원(#34)',                                     -- degen
-    JOIN_DATE                   DATE            COMMENT '캠페인 가입일(#27)',                               -- degen
-    STOP_DATE                   DATE            COMMENT '가입캠페인 중단일(#26)',                           -- degen
+    DEV_TYPE                    VARCHAR         COMMENT '개발구분(#121) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 정본은 사건 팩트 FACT_MEMBER_EVENT.DEV_CNT(MM015)이며, 월 스냅샷에 사건 grain 직접 채움 시 12배 과대 위험 방지를 위해 분리 유지',  -- degen
+    NEW_FLAG                    BOOLEAN         COMMENT '신규(#32) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 사건 정본은 FACT_MEMBER_EVENT(DEV_TYPE=1)',                       -- degen
+    INCREASE_FLAG               BOOLEAN         COMMENT '증액(#33) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 사건 정본은 FACT_MEMBER_EVENT(DEV_TYPE=2)',                       -- degen
+    REDONATE_FLAG               BOOLEAN         COMMENT '재후원(#34) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 사건 정본은 FACT_MEMBER_EVENT(DEV_TYPE=4)',                     -- degen
+    JOIN_DATE                   DATE            COMMENT '캠페인 가입일(#27) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 정본은 FACT_MEMBER_EVENT.JOIN_DATE 또는 DIM_MEMBER_CURRENT.FIRST_JOIN_DATE', -- degen
+    STOP_DATE                   DATE            COMMENT '가입캠페인 중단일(#26) 🔴[G군 grain 상이] 전건 NULL 슬롯 유지 — 정본은 FACT_MEMBER_EVENT.STOP_DATE 또는 DIM_MEMBER_CURRENT.LAST_STOP_DATE', -- degen
     AMOUNT_BAND1                VARCHAR         COMMENT '후원금액대1 5만(#72)',                             -- snapshot
     AMOUNT_BAND2                VARCHAR         COMMENT '후원금액대2 1만(#73)',                             -- snapshot
     PERIOD_BAND1                VARCHAR         COMMENT '후원기간대1 5년(#74)',                             -- snapshot
@@ -1034,7 +1034,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
     PART_STATUS         VARCHAR         COMMENT '🔴 참여상태 — 코드체계 2개 혼입(O28). 일반행사=MS304(110 Success·120 Fail·130~220 N_step_right/fail) / 캠페인행사=소정수 1~6(의미 미확정·문서20 §I) — 체계별 규모는 문서10 §26. 판별자=EVENT_KEY 접두(고아가 있어도 안전). 두 체계 합산·GROUP BY 금지 · 한글 비교는 0행',   -- degen
     PART_PATH           VARCHAR         COMMENT '참여경로(05 3-5)',   -- degen
     PART_CHANNEL        VARCHAR         COMMENT '참여채널(05 3-5)',   -- degen
-    INCREASE_FLAG       BOOLEAN         COMMENT '증액여부 — 🔴 전건 NULL(미배선). 정소재지는 FACT_MEMBER_EVENT.DVLP_DIV_CD(MM015 코드2)',   -- degen
+    -- 🔴 [2026-09-01 O130] INCREASE_FLAG 드랍(O96 §7-B A군 집행) — 컬럼 제거.
     EVENT_BK            VARCHAR         COMMENT '[DEC-30] degenerate key — 원천 행사키 ← CRM_EVENT_PARTICIPATION.EVENT_KEY(전건 채움). 🔴고아 행사 식별자 보존용: 마스터 부재 행사의 행이 EVENT_SK=0 으로 뭉개져 서로 구별되지 않았다(고아 규모·SILVER 대비 종수는 문서10 §26). 🔷(EVENT_BK,MEMBER_DK,PARTCPT_SEQ) 가 행 유일 식별 — EVENT_SK 로는 키 충돌이 발생한다(규모는 문서10 §26). ⚠️접두(EVENT_/CRMN_)가 O28 코드체계 판별자',   -- degen
     PARTCPT_SEQ         NUMBER(38,0)    COMMENT '[DEC-30] degenerate key — 참여 일련번호 ← CRM_EVENT_PARTICIPATION.PARTCPT_SEQ(전건 채움). 🔷(EVENT_SK,MEMBER_DK,PARTCPT_SEQ) 가 행을 유일 식별 — (행사,회원)만으로는 중복이 남는다(규모는 문서10 §26). ⚠️전역 순번 아님 · 음수와 INT_MIN 값이 실존한다(규모는 문서10 §26) → 식별자 전용, 정렬·범위조건 금지',   -- degen
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
@@ -1069,6 +1069,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '예산월 YYYYMM (FK→DIM_DATE, 월 conform)', -- GRAIN / ※비강제 FK→DIM_DATE
     ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG)',
     BUDGET_ITEM_SK      NUMBER(38,0)    NOT NULL COMMENT '예산 세세목 (FK→DIM_BUDGET_ITEM)',
+    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (선택 FK→DIM_SPONSORSHIP)',
     PLAN_BUDGET_MONTH   NUMBER(18,2)    COMMENT '편성예산(월)',
@@ -1076,7 +1077,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     --    생성 근거는 실재했다(필드인벤토리 「편성예산(연)」 · 지표 「연 편성예산」 매핑 교정 2026-07-27)
     --    그러나 O93 에서 연 grain 을 `FACT_BUDGET_YEARLY` 로 분리해 **근거가 대체**됐다.
     --    ⚠️ 이 컬럼에 값을 넣지 마라 — 월 grain 에 연값을 넣으면 SUM 이 12배로 부풀고 조용히 틀린다.
-    PLAN_BUDGET_YEAR    NUMBER(18,2)    COMMENT '🔴폐기 슬롯 — **의도적 영구 NULL**(값 없음이 정상). 연 편성예산은 **`FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR`(연 grain)** 를 쓴다. 🔴원천 부재가 아니다 — 원천 `YEAR_BDGT_TOT_AMT` 는 실재하며 연 팩트에 적재돼 있다(종전의 「원천 부재」 주장은 O96 에서 철회). 이 컬럼을 월 팩트에 채우면 grain 혼입으로 SUM 이 12배 부푼다. 처분 결정 = DEC42.',
+    -- 🔴 [2026-09-01 O130] PLAN_BUDGET_YEAR 드랍(O96 §7-B A군 · DEC42 집행) — 컬럼 제거.
     EXEC_BUDGET_ERP     NUMBER(18,2)    COMMENT '집행예산(ERP)',
     EXEC_BUDGET_EST     NUMBER(18,2)    COMMENT '집행예산(추정)',
     FUNDRAISING_COST    NUMBER(18,2)    COMMENT '모금성비용',
@@ -1107,6 +1108,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY (
     BUDGET_YEAR         NUMBER(4,0)     NOT NULL COMMENT '예산연도 YYYY. 🔴본 팩트의 시간 grain 은 **연**이다 — 월 팩트(FACT_BUDGET)와 조인해 합산하지 말 것(연값이 월수만큼 증폭된다).', -- GRAIN
     ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG). ⚠️ERP 원장에 조직 귀속이 없어 전건 0(Unknown) 이다.',
     BUDGET_ITEM_SK      NUMBER(38,0)    NOT NULL COMMENT '예산 세세목 (FK→DIM_BUDGET_ITEM). 월 팩트와 **동일 MD5 산식**이라 두 팩트가 같은 과목축으로 대조된다.',
+    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN). ⚠️원천 연결 없음 → 0.',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (선택 FK→DIM_SPONSORSHIP). ⚠️원천 연결 없음 → NULL.',
     PLAN_BUDGET_YEAR    NUMBER(18,2)    COMMENT '연 편성예산 = 원천 YEAR_BDGT_TOT_AMT. 🟢SUM 안전(연 grain).',

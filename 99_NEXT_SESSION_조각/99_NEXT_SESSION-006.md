@@ -1,188 +1,192 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 006/024 | 허브 = 99_NEXT_SESSION.md | 원문 820~1005행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 006/028 | 허브 = 99_NEXT_SESSION.md | 원문 833~1022행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
-### ▣ UUU8 🔴 O114-B 자기결함 — 다음 세션이 반복하지 않도록
+### ▣ VVV3 🔴 WARN 36건 — **전수 목록을 확보했다. 이것이 다음 세션의 주 작업이다**
 
-㉠ 🔴🔴 **검토 범위를 스스로 좁혔고 그 사실을 먼저 말하지 않았다.** 사용자는 「추가되고 변경된
-   데이터」 전체를 물었는데 나는 **O113 델타(ERP·CRM)만** 검토했다. 같은 적재에 들어온
-   **`SILVER.BIGQUERY_REFINED_DATA` 285,387,172행 · `ML` 1,045,732행 · `AGENCY` 255,434행**
-   축을 다루지 않았고, **그 중 GA4 축이 `severity` 기본값(error) 테스트를 3개 가지고 있다**
-   ⇒ **build 차단 위험을 첫 보고에서 놓쳤다.** 🟢 뒤늦게 착수했으나 **컴퓨트 정지로 측정 불가**
-   ⇒ `▣UUU3` 재측정 대기 ㉠~㉢ 으로 남겼다. 🔴 **범위를 좁힐 때는 좁힌 사실과 근거를 먼저 적어라.**
-㉡ 🔴 **오류 메시지를 재조회 1회로 뒤집었다.** 컴퓨트 정지 오류 뒤 `COUNT(*)`·`CURRENT_TIMESTAMP()`
-   가 성공하자 「일시적 오류」로 **판정하고 사용자에게 그렇게 말했다** — 두 쿼리는 **메타데이터만**
-   읽으므로 컴퓨트를 증명하지 않는다. `SUM()` 으로 재확인해 **정지가 사실임을 확인하고 정정**했다.
-   🔴 이것은 `▣TTT3`(「0건을 받으면 판정식을 먼저 의심하라」)의 **역방향 사례**다 —
-   **성공 신호도 판정식을 의심해야 한다.** 🟢 처방 = 라이브 생사 판정은 **스캔 강제 쿼리**로 한다.
-㉢ 🟠 **`R1-3-7-c` 를 어겼다** — 근거를 파일에 쓰기 **전에** 판정을 응답으로 냈다(순서 역전).
-   근거 파일은 사후에 작성했다. 🟢 다행히 컴퓨트 정지 **전에** 기록해 두어 수치는 보전됐다 ⇒
-   🔴 **그 조문의 값이 실증됐다**(정지 후에는 어떤 수치도 다시 얻을 수 없었다).
+🟢 `logs/dbt.log` 에서 추출한 **36건 전수**(보고된 WARN=36 과 일치 ⇒ 분모 확정).
+🔴 **분류가 필요하다** — 「데이터 실상」인지 「테스트가 낡았는지」를 건별로 가려야 한다.
 
-### ▣ UUU9 🔴🔴 [2026-08-29 O115 신설 · dbt 실행 전 필수] RBAC 누락 8건 — 이 계정에서 재실측했다
+**A. 예산 그레인 3종 — `DEC-44` 소관 (정상 발화 · 진단이다)**
 
-> 🔴 **문서50 §O90 은 「O91 에서 전건 해소」라고 병기돼 있으나 그것은 2026-08-20 · 다른 계정 판정이다.**
-> `R3-9 ㉤`(라이브 실재 주장은 닫기 직전 재조회) 에 따라 **이 계정에서 다시 쟀고 누락이 나왔다.**
-> 실측 = `SHOW GRANTS TO ROLE GN_DW_ENGINEER` **422행**(부여 시각 2026-08-29 00:20~00:22).
-> 🟢 **O90 의 종전 블로커 3건(㉠ audit 스키마 · ㉡ SILVER grant · ㉢ OPS USAGE)은 이 계정에서 해소돼 있다.**
-> 🔴 **그러나 그 부여 루프가 8건을 건너뛰었다.**
-
-**🔴 A. `SELECT` 누락 5건 — 전부 `dbt build` 를 실패시킨다**
-
-| 대상 | 왜 실패하는가 |
-|---|---|
-| `GOLD.DIM_GA_EVENT` | 🔴 dbt 가 **`merge into GN_DW.GOLD.DIM_GA_EVENT`** 를 낸다(`logs/dbt.log:8479` 실물) — Snowflake `MERGE` 는 대상에 **`SELECT` + DML 둘 다** 필요하다. 현재 `INSERT`·`UPDATE`·`DELETE`·`TRUNCATE` 만 있고 **`SELECT` 가 없다** |
-| `GOLD.DIM_GA_SOURCE` | 🔴 같은 축(`logs/dbt.log:7136` `merge into … DIM_GA_SOURCE`) |
-| `SILVER.AGENCY_AD_DIGITAL` | 🔴 하류 `FACT_AD_DIGITAL` 이 `ref()` 로 읽는다 + `_silver_bridge_schema.yml` `unique`·`relationships` 테스트가 읽는다 |
-| `SILVER.AGENCY_AD_BROADCAST` | 🔴 같은 축(`FACT_AD_BROADCAST` + `unique`) |
-| `SILVER.AGENCY_AD_BROADCAST_CASE` | 🔴 같은 축(`FACT_AD_BROADCAST_CASE` + `relationships` + 복합키 `unique`) |
-
-🟢 **판정 근거 = 이 5건만 빠져 있다.** GOLD 다른 **35**(37−2) · SILVER 다른 **40**(43−3) 은
-`SELECT` 를 전부 보유한다 ⇒ **설계 의도가 아니라 부여 루프의 누락**이다
-(의도된 제외라면 다른 것도 빠져 있어야 한다).
-🔴 **[O115 자기시정] 초판은 SILVER 를 「38」로 적었다 — 43−3=40 이므로 산술 오류였다.**
-⇒ 🟢 **수를 적을 때는 뺄셈을 문서에 함께 적어라**(`37−2` · `43−3`) — 그러면 다음 독자가 검산한다.
-
-**🟢 A-1. 🔴🔴 이 판정을 실측으로 확증했다 — 그리고 그 과정에서 판정식이 두 번 틀렸다**
-
-🔴 **최종 결론은 초판과 같다**(5건 누락 = 차단). 🔴 **그러나 중간 검증 2회가 무효였다** ⇒
-같은 함정을 다음 세션이 반복하지 않도록 **판정식 자체를 기록한다.**
-
-| 시도 | 무엇을 했나 | 왜 무효였나 |
+| 테스트 | WARN 행수 | O115 예측 대조 |
 |---|---|---|
-| 1차 ✗ | `USE ROLE GN_DW_ENGINEER` → `SELECT COUNT(*) FROM DIM_GA_EVENT` → **성공** | 🔴 **`COUNT(*)` 는 `SELECT` 권한 없이도 통과한다**(메타데이터 경로) ⇒ 「성공」이 권한을 증명하지 않는다. **`▣UUU8 ㉡` 이 경고한 바로 그 함정을 반복했다** |
-| 2차 ✗ | 실컬럼 `MAX(GA_EVENT_SK)` 로 재시도 → **성공** | 🔴 **`CURRENT_SECONDARY_ROLES()` 에 `ACCOUNTADMIN` 이 `ALL` 로 활성**이었다 ⇒ 주 롤을 바꿔도 **이차 롤이 권한을 공급**한다. 「롤을 바꿨다」가 「그 롤로만 접근했다」를 뜻하지 않는다 |
-| 3차 ✓ | **한 호출에** `USE ROLE …; USE SECONDARY ROLES NONE; SELECT MAX(<실컬럼>) …` | 🟢 `Insufficient privileges … must have SELECT granted on TABLE GN_DW.GOLD.DIM_GA_EVENT` ⇒ **차단 확증** |
+| `warn_erp_budget_yearly_grain` | **44** | 🟢 「44키 중복」과 일치 |
+| `warn_erp_budget_procedure_merge` | **42** | 🟢 「42키가 차수 혼합」과 일치 |
+| `warn_erp_budget_month_grain` | **528** | 🟠 O115 는 이 값을 예측하지 않았다 |
 
-🟢 **양성 대조도 함께 했다**(판정식의 변별력 증명) — `SELECT` 를 **보유한** `AGENCY_AD_ROW_DGT` 는
-같은 조건에서 **권한 오류가 나지 않고** 「웨어하우스 미선택」에서 멈췄다
-⇒ 🔴 **음성만 보면 「무엇이든 실패한다」와 구별되지 않는다.** 양성 대조가 그것을 가른다.
+🔴 **지우거나 조건을 좁히지 마라**(`▣UUU6 ④`). `DEC-44` 종결 시 `error` 로 승격한다.
 
-🔴🔴 **다음 세션을 위한 권한 검증 판정식**(이 3가지를 모두 지켜야 유효하다):
-· ㉠ **`COUNT(*)` 금지** — 실컬럼 집계를 쓴다(`MAX(<컬럼>)`).
-· ㉡ **`USE SECONDARY ROLES NONE` 필수** — 안 끄면 `ACCOUNTADMIN` 이 몰래 통과시킨다.
-· ㉢ **`USE ROLE` 과 검증 쿼리를 한 호출에** 둔다 — 이 환경은 호출 간 롤 상태가 **불안정**하다
-  (실측: `USE ROLE` 뒤 다음 호출에서 `CURRENT_ROLE()` 이 `ACCOUNTADMIN` 으로 되돌아간 사례 1회).
-· 🔴 **끝나면 `USE ROLE ACCOUNTADMIN; USE SECONDARY ROLES ALL; USE WAREHOUSE …` 로 복구**한다.
+**B. 🔴🔴 `MEMBER_DK` 고아 계열 — `BLOCKING-1` 의 전제가 바뀌었다**
 
-**🟢 A-2. [2026-08-29 O115 집행 완료] 승인받아 부여했다 — 차단 해소**
+`_silver_bridge_schema.yml` 은 이 관계 테스트들을 *"회원 마스터 미완전 고아 정책 일관(warn) ·
+**전량입고 후 제거→error 복귀**"* 로 두었다. 🔴 **그 전량입고가 이제 확인됐다**:
 
-🟢 부여 = 위 5건 `SELECT`(`GN_DW_ADMIN` 이 grantor · 다른 grant 와 일관) +
-**재발 방지** `SELECT ON FUTURE TABLES IN SCHEMA GN_DW.SILVER`·`GN_DW.GOLD` +
-`SELECT ON ALL TABLES` 2건(현존분 일괄).
-🟢 **검증 2축** = ㉠ 기계 대조(`SHOW GRANTS` → `RESULT_SCAN` ↔ `INFORMATION_SCHEMA.TABLES`
-`NOT EXISTS`) **누락 0건** ㉡ 위 3차 판정식으로 `GN_DW_ENGINEER` 단독 읽기 **성공**.
-🔴 **그래도 이 절을 지우지 않는다** — 계정이 바뀌면 같은 누락이 재발하고(`R2-8-4-d`)
-위 판정식이 그때 필요하다.
-
-**🟠 B. 스키마 `USAGE` 누락 3건 — 그중 dbt 에 걸리는 것은 0건**
-
-| 스키마 | dbt 영향 |
+| 축 | 실측 |
 |---|---|
-| `ML` | 🟢 **무영향** — dbt 프로젝트 전체 grep 에서 `ML_RST_DATA`·`GN_DW.ML` **0건**(`_sources.yml` sources 4종에도 없다) ⇒ dbt 는 `ML` 을 읽지 않는다 |
-| `SERVING` | 🟢 dbt 무영향 · 🔴 **SV·Agent 배포 때 필요할 수 있다**(별개 축으로 남긴다) |
-| `SECURITY` | 🟢 dbt 무영향 |
+| 브론즈 회원 합 | 정기 1,587,343 + 일시 175,722 = **1,763,065** |
+| `SILVER.CRM_MEMBER` | **1,763,065** (= 브론즈 합 · `MEMBER_DK` **전건 유일**) |
 
-🔴 **`ML` 은 「dbt 무영향」이지 「불필요」가 아니다** — SV·Agent 가 ML 예측을 노출하면 그때 필요해진다.
+⇒ 🔴🔴 **따라서 아래 고아는 「미입고」가 아니라 「실제 고아」다** — `BLOCKING-1` 의 warn 유지 근거가
+**소멸했다.** 🔴 **error 로 승격할지, 아니면 고아의 정체를 먼저 규명할지 판단이 필요하다.**
 
-**🟢 처방 — `GN_DW_ADMIN`(또는 `ACCOUNTADMIN`)으로 실행한다**
-🟢 **[O115 집행 완료 — 이 계정에서는 다시 실행하지 않아도 된다**(멱등이므로 재실행해도 무해하다).
-아래는 **다른 계정·재구축 시 재사용**할 정본이다. 위 `A-2` 가 집행·검증 기록이다.**
+| 테스트 | WARN 행수 |
+|---|---|
+| `relationships_CRM_SEND_MEMBER_MBER_NO → CRM_MEMBER` | **31,486** |
+| `relationships_FACT_SERVICE_EVENT_MEMBER_DK → DIM_MEMBER` | **31,486** ← 같은 수 = 위 고아가 **하류로 전파** |
+| `relationships_CRM_EVENT_PARTICIPATION_MBER_NO → CRM_MEMBER` | **9,480** |
+| `relationships_FACT_EVENT_PARTICIPATION_MEMBER_DK → DIM_MEMBER` | **9,480** ← 같은 수 = 전파 |
+| `relationships_CRM_PAYMENT_BILLING_MBER_NO → CRM_MEMBER` | **309** |
+| `relationships_CRM_MEMBER_DEV_MBER_NO → CRM_MEMBER` | **270** |
+| `relationships_FACT_MEMBER_EVENT_MEMBER_DK → DIM_MEMBER` | **271** |
+| `relationships_FACT_MEMBER_MONTHLY_MEMBER_DK → DIM_MEMBER` | **199** |
+| `relationships_GA4_IDENTITY_MBER_NO → CRM_MEMBER` | **153** |
+| `relationships_CRM_MEMBER_STATUS_HIST_MBER_NO → CRM_MEMBER` | **85** |
+| `relationships_CRM_PAYMENT_METHOD_MBER_NO → CRM_MEMBER` | **37** |
+| `relationships_FACT_MEMBER_COHORT_MEMBER_DK → DIM_MEMBER` | **16** |
+| `relationships_CRM_MEMBER_DISCONTINUE`·`_RESPONSOR` | 각 **1** |
 
-```sql
-GRANT SELECT ON TABLE GN_DW.GOLD.DIM_GA_EVENT              TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON TABLE GN_DW.GOLD.DIM_GA_SOURCE             TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL       TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST     TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE TO ROLE GN_DW_ENGINEER;
-```
+🟢 **같은 수가 상·하류에 쌍으로 나타나는 것이 진단 단서다**(31,486 · 9,480) —
+**SILVER 고아가 GOLD 로 그대로 전파**되며 **증폭되지 않는다** ⇒ 배선은 정상이고 **원천 문제**다.
+🔴 **먼저 물을 것** = 그 회원번호가 ㉠ 탈퇴·삭제분인가 ㉡ 다른 원천 테이블 소속인가
+㉢ 형식 오류인가. 🔴 **답 없이 error 로 올리면 build 가 멈춘다** — 순서를 지켜라.
 
-🔴 **재발 방지가 본체다** — `07_ENVIRONMENT_RBAC_setup.sql` 이 `ON ALL TABLES` 를 쓰는데
-그것은 **시점 grant** 라 이후 생성·재생성된 테이블을 덮지 않는다(§O90 `C` 가 이미 지적했다).
-⇒ 🟢 **`FUTURE TABLES` 를 함께 부여**하고 **부여 후 검증 쿼리로 0건을 확인**하라:
+🟢 **[2026-08-29 O116 부분 규명 — 형태 축]** 위 3지선다 중 **㉢ 이 먼저 배제된다.**
+대상 = `CRM_SEND_MEMBER.MBER_NO` 고아 31,486(정본 = `_o116_warn_census.md §7`):
+**7자리 정상 형태가 31,089행(98.7%) · 고유 7,431** ⇒ **형식 오류는 1.3% 미만**이고
+본체는 **형식이 멀쩡한 회원번호**다 ⇒ 🟠 **㉠(탈퇴·삭제분) 가설이 유력**하다.
+🔴 **확정에는 「탈퇴·삭제 회원 원천」과의 대조가 필요**하고 그 원천의 이 계정 실재가 미확인이다
+⇒ **`error` 승격은 여전히 보류**한다(순서 유지).
+🔴🔴 **신규 발견 = 원천 오염** — `MBER_NO` 자리에 **한글 인명**(`김근영`·`최혜원` 등)이 든 행이 있다.
+종전 문서에 없던 축이고 **원천 정정 사안**이다(문서20 질의 후보).
+🟢 **[O116-B 정정] 규모를 실측했다 = 139행 · 고유 93종**(첫 회 기재 「수십 행」은 추정이었다).
+🟠 잔여 형태(합 31,486 정확) = 숫자만 **31,262**(그 중 7자리 31,089) · 한글 오염 **139** · 기타 영문·기호 **85**.
+🔴 **정본은 문서50 §O116-3 ㉢ 이다**(근거철은 게이트 분모 밖이므로 수치 인용은 정본에서 하라).
 
-```sql
-GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.GOLD   TO ROLE GN_DW_ENGINEER;
-```
+**C. 🟠 채움률·라벨 계열 — 대부분 「미등재」이고 결손이 아니다**
 
-🟢 **검증법**(O115 가 쓴 것) = `SHOW GRANTS TO ROLE GN_DW_ENGINEER` 후
-`RESULT_SCAN` 을 `INFORMATION_SCHEMA.TABLES` 와 `NOT EXISTS` 로 대조해 **누락 0건**을 단정한다.
-🔴 **`SHOW GRANTS` 를 눈으로 읽어 판정하지 마라** — 422행이고 O115 도 처음엔 눈으로 보고
-「전건 부여됐다」로 읽었다(정밀 대조 쿼리를 돌려야 5건이 나왔다).
+| 테스트 | WARN 행수 | 메모 |
+|---|---|---|
+| `not_null_CRM_SEND_MEMBER_SEND_RESULT_NAME` | **1,401,419** | 🟢 **[O116 규명 완료]** 코드사전 미등재(분모 26,252,471 의 5.34%) · 정본 = **문서50 §O116-3 ㉠** |
+| `relationships_CRM_EVENT_PARTICIPATION_EVENT_KEY → CRM_EVENT` | **263,611** | 🟢 **[O116 규명 완료]** 원천 마스터 결번(`EVENT_105`·`106` 이 99.5%) · 정본 = **문서50 §O116-3 ㉡** |
+| `not_null_CRM_CAMPAIGN_MKTG_UTM_NM` | **21,682** | 🟢 **규명 완료** = 고아 UTM 코드 `192`(§N-8) ⇒ **미등재이고 결손 아님** |
+| `relationships_CRM_CAMPAIGN_SPNSR_BSNS_ID → CRM_SPONSORSHIP` | **18,091** | 🔴🔴 **[O116-B 규명 완료 — 오진 정정]** 컬럼이 **쉼표 다중값**이라 관계 테스트가 성립하지 않는다(단일값 고아 0% / 다중값 고아 100%) · 정본 = **문서50 §O116-3 ㉣** |
+| `relationships_CRM_SEND_MEMBER_SNDNG_KEY → CRM_SEND_REQUEST` | **11,313** | 🟢 **[O116-B 규명 완료]** `PSTMTR` 집중 8,232 + `MSG_AT` 3,081 · `SND`·`EMAIL` 0 · 정본 = **문서50 §O116-3 ㉥** |
+| `not_null_CRM_CAMPAIGN_MK_CMPGN_NM` | **7,052** | 🔴 **[O116-B 규명 완료]** 「고아 0 · 회귀 감지용」 테스트의 **회귀 실측** · 고아 코드 **1종(`395`)** · 정본 = **문서50 §O116-3 ㉤** |
+| `not_null_CRM_PAYMENT_BILLING_RQEST_RST_CD` | **1,096** | |
+| `not_null_CRM_PAYMENT_BILLING_MBER_NO` | **5** | 🔴 **[O116 누락 보완]** 이 표에서 빠져 있었다(전수표가 35/36 이었다) · 같은 표의 관계 고아 309 와 **다른 축**이다 |
+| `not_null_CRM_SEND_MEMBER_MBER_NO` | **745** | 🔴 `B` 의 31,486 과 **별개 축**(이쪽은 NULL) |
+| `warn_fep_nonnumeric_member_dk` | **62** | |
+| `relationships_CRM_MEMBER_DEV_CMPGN_CD`·`CRM_MEMBER_CMPGN_CD` | **18** · **4** | |
+| `relationships_CRM_SEND_RESULT_SNDNG_KEY` | **9** | |
+| `not_null_CRM_EVENT_PARTICIPATION_*` 3종 | 각 **2** | |
+| `accepted_values_CRM_CAMPAIGN_CMPGN_TYPE1_NM` | **1** | 🟢 기지(`CMPGN_TYPE1_BSN=4` 고아코드) |
+| `accepted_values_FACT_EVENT_PARTICIPATION_PART_STATUS` | **1** | |
+| `relationships_CRM_PAYMENT_BILLING_SPNSR_BSNS_ID` | **1** | |
+
+🔴 **분모를 먼저 적어라** — 「1,401,419건 NULL」은 `CRM_SEND_MEMBER` 총 행수를 함께 밝히지 않으면
+과장으로도 축소로도 읽힌다(`R2-6` 축).
+🔴🔴 **[O116 정정] 위 재현법은 그대로는 `0건` 을 낸다** — 이 로그에 ANSI 제어문자가 있어
+BusyBox `grep` 이 **binary 로 판정**하고 `-o` 출력을 버린다. ⇒ **`-a` 가 필수다.**
+🟢 **교정된 재현법**(회차 분리 포함 · 정본 = `_o116_warn_census.md §1`):
+`grep -anE "Running with dbt=" 10_dbt_pipeline/logs/dbt.log` (회차 경계) →
+`grep -aoE "[0-9]+ of [0-9]+ WARN [0-9]+ [A-Za-z0-9_]+" 10_dbt_pipeline/logs/dbt.log`
+🔴 **`logs/dbt.log` 는 회전된다**(`.1`~`.5` 실재) ⇒ 🟢 **[O116] 정본화 완료 =
+`_o116_warn_census.md §2` 에 36건 전수를 회차 귀속(`줄 28,999~57,198` ·
+`Done. PASS=425 WARN=36 ERROR=0 SKIP=0 TOTAL=461`)과 함께 옮겼다.**
+🔴 **한 파일에 여러 회차가 섞여 있다** — `dbt.log` 안에 `WARN=33 TOTAL=447` 등 다른 회차가 있으므로
+회차를 분리하지 않고 세면 분모가 뒤섞인다.
+🔴 **분류 수를 인용할 때 주의** — 위 A/B/C 표의 「3 / 13 / 20」은 **표 행 수**이고
+**테스트 수는 A 3 / B 14 / C 19**(합 36)이다 — 한 행에 2~3종을 묶은 행이 3개 있고
+C 는 O116 이 누락 1건을 보완했다(정본 = `_o116_warn_census.md §3`·`§4`).
+
+### ▣ VVV4 🟢 이제 실행 가능해진 것 — `A.7 REMOVE`(스테이지 정리)
+
+🟢 **전제 2건이 모두 충족됐다** = `▣UUU3 ⑦` 검증 통과(O115) + **`dbt build` 성공**(O115-C).
+🔴 O115-B 가 보류한 이유가 *"build 미실행 · 유일한 복구 경로"* 였고 **그 전제가 해소됐다.**
+
+| 축 | 실측 |
+|---|---|
+| 대상 | `SANDBOX.TOOLS.MIG_LOAD_STAGE` **2,643 파일 / 39.01 GB** |
+| 내역 | `SILVER` 35.95 · `BRONZE_CRM` 3.03 · `ML` 0.03 · `AGENCY`·`ERP` ≈0 |
+| 되돌림 | 🔴 **불가** — 비우면 로컬 업로드부터 다시 해야 한다 |
+
+🔴 **여전히 `R4-4-3` 승인 대상이다.** 🟢 판단 재료 = ㉠ 브론즈·ML·SILVER 원본은 **테이블에 있다**
+㉡ 스테이지는 **`04_..BRONZE_DDL` 재실행 사고**(2026-08-18 실현)의 복구 경로다
+㉢ 그 DDL 을 **재실행하지 않는다는 규율**(`DDL-ORDER-1`)이 지켜지면 스테이지는 불요하다.
+⇒ 🟠 **권고 = GOLD 소비 검증(SV·Agent 스모크)까지 마친 뒤 비운다.** 절차 = `07번 A.7`.
+
+### ▣ VVV5 🟠 승계 미결 — 성격별로 갈라 둔다
+
+**사람·현업 소관(에이전트가 못 끝낸다)**
+| # | 항목 | 정본 |
+|---|---|---|
+| ㉠ | 🔴🔴 **`DEC-44` 회신**(추가경정 = 증분 / 재작성) | `30_설계-012 §30-B`·`§30-F` |
+| ㉡ | `DIRECT_MNYRS_YN_1/2` 가 삭제된 `MNYRS_COST_DIV_YN` 의 대체인가 | `§30-B` |
+| ㉢ | `EXPENSE_RESOLUTION` ↔ 예산 원장 관계(조인 근거 0.02%) | `▣UUU7` |
+| ㉣ | SILVER 컬럼 COMMENT 공백 **9건**(`STSLC_` 계열) — 🔴 문안 창작 금지 | `▣UUU4 ㉠` |
+| ㉤ | 신규 CRM 컬럼 3종 한글 COMMENT | `▣UUU4 ㉣` |
+| ㉥ | UTM 고아 코드 `192`(21,682행) — 센티넬인가 등재 누락인가 | `20_현업확인 §N-8` |
+| ㉦ | NL 스모크(CoWork UI) | 착수표 ② |
+
+**계정·접근 소관**
+| # | 항목 |
+|---|---|
+| ㉧ | `02_1_A DB정보.sql` 재추출 — 🔴 **A 원천 DB 가 이 계정에 없다**(`▣UUU4 ㉡`) · 그때 04번 병합 규칙 우선순위를 **함께** 되돌린다 |
+| ㉨ | `SERVING`·`ML` 스키마 `USAGE` 미부여 — 🟢 dbt 무영향(실측) · 🔴 **SV·Agent 배포 시 필요** |
+
+**에이전트가 진행 가능**
+| # | 항목 |
+|---|---|
+| ㉩ | 🔴 **WARN 36건 분류**(위 `▣VVV3`) — 최대 작업 |
+| ㉪ | 🟠 착수표 열린 10건 중 ⑫(활동 스냅샷 as-of)·⑭(`SPONSORSHIP_SK` 동시중단) = **🔴 정의 확정 전 배선 금지** |
+| ㉫ | 🟠 문서50 열린 17절 · 미봉합 인용처 **19건**(`decision_closure_gate`) |
+| ㉬ | 🟠 `_o114b_silver_gold_impact.md` 전량 대조 미실시(`merge_check` 포함율 5.9%) ⇒ 이관 후 삭제 |
+| ㉭ | 🟠 착수표 ④⑤⑦⑨⑪⑰⑱ (B1 소관 정의 · C4 발행 표면 · C3 신선도 링크 · B3 표 열수 20건 등) |
+
+### ▣ VVV6 🔴 O115 계열이 남긴 판정식 3조 — **읽고 시작하라**
+
+㉠ **권한 검증**(`▣UUU9 A-1`) = `COUNT(*)` 금지 · `USE SECONDARY ROLES NONE` 필수 ·
+   `USE ROLE` 과 쿼리를 **한 호출에** · **양성 대조** 포함 · 끝나면 복구.
+   🔴 O115-B 가 이것을 몰라 **옳은 결론을 두 번 스스로 뒤집었다.**
+㉡ **컴퓨트 생존**(`▣UUU8 ㉡`·O115 ①) = `SUM(<실컬럼>)` 으로 스캔을 강제한다.
+   🔴 `COUNT(*)`·`CURRENT_TIMESTAMP()`·**`SUM(1)`** 은 메타데이터로 답한다.
+㉢ **차원 행수 판정**(위 `▣VVV1`) = 원천 행수와 비교하기 전에 **SCD2 인지 모델 헤더를 읽어라.**
+🟢 공통 교훈 = **「성공 신호」와 「실패 신호」 둘 다 판정식을 의심해야 한다.**
+🔴 **검증 실패는 판정 실패보다 위험하다** — 판정은 「미확인」으로 남지만 무효한 검증은 **거짓 신뢰**를 만든다.
 
 ---
 
-## ~~0-TTT~~. 🔴🔴 [2026-08-29 O113 — ~~**여기서 시작한다.**~~ **§0-UUU 로 승계됐다**]
+## ~~0-UUU~~. 🔴🔴 [2026-08-29 O114 필독 — ~~**여기서 시작한다.**~~ **§0-VVV 로 승계됐다**]
 
 > 🟢 **세션 시작 절차는 O106 그대로다** = `python3 scripts/session_brief.py --write` → `20_issue/00_BRIEF.md` 1회 `read`.
-> 🔴 O113 은 `20_issue/` 가 아니라 **`50_handoff/` 인수인계 문서군**을 다뤘다. 착수표 15건은 **그대로 열려 있다**.
+> 🔴 **라벨은 착수 전에 원장 §1 에 선점 등재하라**(`R1-4-3`). O114 는 이행했고 O113 은 어겼다.
+> 🟢 **[O115-C 병기] 이 절의 「dbt 를 돌리기 전에」 전제는 소진됐다** — build 가 성공했다(`▣VVV1`).
+> 🔴 다만 `▣UUU6`(`DEC-44`)·`▣UUU7`(`EXPENSE_RESOLUTION`)·`▣UUU9`(RBAC 판정식)는 **여전히 정본**이다.
 
-### ▣ TTT1 🔴🔴 먼저 알아라 — 이관 대상이 67 → 69 로 바뀌었고 한 테이블은 컬럼 순서가 밀렸다
+### ▣ UUU1 🔴🔴 먼저 알아라 — 이 세션은 **라이브가 있는 계정**이었고 DDL 은 이미 만들어져 있다
 
-> 정본 = `50_handoff/04_..BRONZE_DDL` 「변경 이력 2026-08-29」 · 재현 = `python3 scripts/handoff_ddl_gate.py`
+> 🔴 **계정명은 맥락이고 판정 근거가 아니다**(`R3-9 ㉤`). 아래는 **그때 조회한 결과**다.
+> 위 메타의 `account: NX55103` 기재는 **낡았다** — 고치지 않고 남긴다(계정은 계속 바뀐다).
 
-| 무엇 | 값 | 왜 중요한가 |
+| 무엇 | 2026-08-29 O114 실측 | 뜻 |
 |---|---|---|
-| 브론즈 | 50 → **52** | `TM_CM_MKTNG_UTM`(CRM) · `EXPENSE_RESOLUTION`(ERP) 신설 |
-| 이관 총계 | 67 → **69** | `50_handoff/01`~`07` **8문서 전수 봉합 완료** |
-| 🔴🔴 `BDGT_ACMSLT_LEDGER` | 65 → **67** · **컬럼 순서 변경** | `BDGT_PRCD_NM` 이 **3번째로 삽입**됐다 ⇒ CSV 위치 기반 적재라 **08-29 이전 적재분은 값이 한 칸씩 밀려 있다 = 전량 재적재 대상** · 🟢 **[2026-08-29 O114 병기] 그 「08-29 이전 적재분」은 실재하지 않았다** — C 측 `COUNT(*)` = 0행이고 라이브 컬럼 순서는 CSV 헤더와 `MATCH` ⇒ **이 계정에서는 재적재 대상이 아니다**(`▣TTT4 ㉤`). 🔴 위 조문은 **다른 계정·다른 시점에는 여전히 유효**하므로 지우지 않는다 |
-| 파일 포맷 | 3 → **4** | `BRONZE_ERP.GN_CSV_FORMAT_EUCKR2`(지출결의 CSV 는 헤더 1줄) |
-| 🔴 구조 정본 | `02_1_A DB정보.sql` → **`99_provided_definition/11~13`** | `02_1` 은 08-12 측정본이라 낡았다(CRM 45 · 삭제 컬럼 잔존 1341행) |
+| `GN_DW` 스키마 | `BRONZE_CRM` **46** · `BRONZE_ERP` **2** · `BRONZE_AGENCY` **4** · `ML` **16** · `SILVER` 43 · `GOLD` 37 | 🟢 **04·05·06번 DDL 이 이미 집행됐다**(O113 갱신본 = 브론즈 52) |
+| 전 스키마 행수 | **0행**(O114 시점) → 🟢 **적재 완료**(O114-B) | 🔴 **`▣UUU3` 표를 보라** — 이 줄의 「0행」은 **O114 시점 기록**이다 |
+| A 원천 DB | **없음**(`SHOW DATABASES` 7건) | 🔴 A 소관 작업(`02번` 5·6단계)은 **이 계정에서 불가** |
+| 스테이지 | `SANDBOX.TOOLS.MIG_LOAD_STAGE` 실재 | 🟢 적재에 소진됐다 — 🔴 `A.7` 정리(`REMOVE`)는 **⑦ 검증 통과 전에는 하지 마라** |
+| 🔴 웨어하우스 컴퓨트 | **정지**(O114-B 실측) | 🔴 스캔 쿼리 거부 ⇒ **라이브 판정 보류**(`▣UUU3` 하단) |
 
-🔴 **`02_1` 을 다시 최우선 정본으로 올리려면 02번 5·6단계를 A 에서 재실행해 갱신한 뒤에 하라.**
-   갱신 없이 우선순위만 되돌리면 O113 갱신분이 **되돌려진다** — 04번 병합 규칙에 그 경고를 적어 두었다.
+### ▣ UUU2 🟢 O114 가 닫은 것 — 승계 미결 6건 중 1.5건
 
-### ▣ TTT2 🟢 신설 도구 — DDL 을 C 에 만들기 전에 이걸 먼저 돌려라
-
-```
-python3 scripts/handoff_ddl_gate.py          # 7축 · FAIL 이면 C 에 DDL 만들지 마라
-python3 scripts/test_handoff_ddl_gate.py     # 오염 기반 음성 테스트 12축
-```
-
-> 축1~6 = `50_handoff/04·05·06` ↔ `99_provided_definition/11·12·13·18·20` 대조
->   (테이블집합 · 컬럼순서 · 타입 · **DEFAULT** · **컬럼COMMENT** · **테이블COMMENT**)
-> 축7 = `50_handoff/` 13문서에 **옛 수치·옛 파일번호가 현행값 없이 단독으로** 남아 있는가
-> 관측 축 2종 = COMMENT 보강 969건(정상) · COMMENT 양쪽 부재 9건(🟠 경고)
-> 🟢 현재 판정 = **판정 축 0건 · 경고 9건** ⇒ `🟠 PASS(경고)`
-
-### ▣ TTT3 🔴 O113 이 배운 것 — 「0건」을 받을 때마다 판정식을 먼저 의심하라
-
-이 세션에 같은 뿌리의 사고가 **네 번** 났고 네 번 다 「검사했는데 못 봤다」였다.
-
-| # | 무엇을 놓쳤나 | 뿌리 |
+| # | 결론 | 근거(재현 가능) |
 |---|---|---|
-| ① | 임시 도구가 **COMMENT·DEFAULT 를 아예 비교하지 않고** 「구조차이 0」 | 판정 축이 좁았다 |
-| ② | `grep '67 테이블'` 이 「**67개** 테이블」을 놓쳤다 | 사람 grep 의 분모가 불안정하다 |
-| ③ | `grep 'CRM 45'` 가 「**`BRONZE_CRM`(45)**」·「CRM **43**」을 놓쳤다 | 표기 변형을 세지 않았다 |
-| ④ | bash `grep -in "procedure"` 가 **0건**을 냈다(실제 14건) | 🔴 **환경 지뢰** — 아래 참조 |
+| `▣TTT4 ㉤` | 🟢 **`BDGT_ACMSLT_LEDGER` 재적재 불필요 — 오염 없음** | 3축 = 라이브 67컬럼·`BDGT_PRCD_NM` 3번째·`MNYRS_COST_DIV_YN` 부재 / `COUNT(*)`=0 / 07번 A.1 (4) **67/67 MATCH**. 🔴 **`TRUNCATE` 금지**(대상 0행 ⇒ 무효과) |
+| `▣TTT4 ㉥` | 🟢 **`BRONZE_CRM` 업로드 완료** · ~~🔴 `SILVER` 진행 중~~ → 🟢 **[O114-B] `SILVER` 도 완료** | CRM = 46디렉터리/280파일/3,101.4MB · 04:44:23 UTC 이후 무변화 + 스테이지 46 = DDL 46 집합 일치 / SILVER = 105초에 **1,623 → 1,687 파일**(O114 시점) → **적재 완료 285,387,172행**(O114-B) ⇒ **㉥ 전건 종결** |
+| `▣TTT4 ㉢` | 🟢 **[O114-B] 신규 2테이블 행수 실측 완료** | `TM_CM_MKTNG_UTM` **191** · `EXPENSE_RESOLUTION` **24,933**(컴퓨트 정지 **전** 측정) ⇒ 01번 §6.2 에 등재 · 🟠 **테이블 단위 전수는 재측정 대기** |
 
-🔴🔴 **환경 지뢰(신규) — 이 워크스페이스의 bash `grep` 은 대용량 파일에서 조용히 0건을 낸다.**
-   실측 = `99_provided_definition/20_ML_ddl.sql`(139 KB)에 `grep -in "procedure"` → **0건**,
-   같은 파일에 `grep` **툴**로 같은 패턴 → **14건**. 종료코드도 0 이었다(오류가 아니다).
-   ⇒ 🟢 **내용 검색은 `grep` 툴을 쓴다.** bash `grep` 은 줄 수·크기 확인 용도로만 쓴다
-   (기존 `R1-3-4` 「bash 로 문서 읽기 금지」와 같은 축이고, **검색까지** 확장된다).
-
-### ▣ TTT4 🟠 승계 미결 — O113 이 닫지 못한 것
-
-| # | 무엇 | 막힌 이유 |
-|---|---|---|
-| ㉠ | `SILVER` 컬럼 COMMENT 공백 **9건**(전부 `STSLC_` 계열) | 🔴 문안 창작 금지 — 원천 소관자 확인 후 **`99_provided_definition/18`번을 먼저 고치고** 06번에 옮긴다(06번만 채우면 축5 가 「변형」으로 잡는다) · 🟠 **[2026-08-29 O114 병기] 라이브 3번째 축도 부재였다** — `GN_DW.SILVER.BIGQUERY_REFINED_DATA` 9컬럼 `COMMENT` 전부 `None` ⇒ 부재는 **원천·인수인계·라이브 3곳 전부**다. 🔴 **그래도 열려 있다** — 3곳 부재는 「빠진 것」과 「의미 미확정」을 구별해 주지 않으므로 소관자 확인이 여전히 선행이다 |
-| ㉡ | `02_1_A DB정보.sql` 재추출 | A 계정 접근 필요 · 그때 04번 병합 규칙 우선순위를 **함께** 되돌린다 · 🟠 **[2026-08-29 O114 병기] 이 계정에서는 불가하다** — `SHOW DATABASES` 실측 7건에 **A 원천 DB 가 없다**(`GN_DW`·`SANDBOX`·`ADMIN`·`SNOWFLAKE*`·`USER$`). 🔴 「없다」가 아니라 **「이 계정에서 접근 불가」**다 ⇒ 재측정 대기(`R2-8-4-c`) |
-| ㉢ | 신규 2테이블 **행수 실측 없음** | `01`번 6.2 표가 공백 · 02번 5단계 재실행 필요 · 🟠 **[2026-08-29 O114 병기] C 측에서도 아직 못 잰다** — `GN_DW` 전 스키마 **총 0행**(`BRONZE_CRM` 0/46 · `BRONZE_ERP` 0/2 · `BRONZE_AGENCY` 0/4 · `ML` 0/16 · `SILVER` 0/43) ⇒ **적재 후에만 판정 가능**하다. 🔴 이 「0」은 「대상 아님」이 아니라 **「적재 전」**이다 |
-| ㉣ | 신규 CRM 컬럼 3종(`CMMN_BRND`·`MKTG_UTM`·`TM_CM_MKTNG_UTM` 전체) 한글 COMMENT | 컬럼정의서 CSV 미수록 ⇒ **명명 규칙으로 부여**했다 · 현업 확인 대상 · 🟠 **[2026-08-29 O114 병기] 사람 소관이라 이 세션이 닫을 수 없다** — 확정 문안을 받기 전에는 04번을 고치지 않는다(고치면 창작이 정본이 된다) |
-| ~~㉤~~ | ~~`BDGT_ACMSLT_LEDGER` 재적재~~ → 🟢 **[2026-08-29 O114 실측 판정 · 재적재 불필요]** | 🟢 **오염 없음이 확정됐다.** 근거 3축 = ㉠ 라이브 컬럼 **67개** · `BDGT_PRCD_NM` **3번째 실재** · `MNYRS_COST_DIV_YN` **부재** ㉡ 직접 `COUNT(*)` = **0행**(메타 `ROW_COUNT` 도 0 · `BYTES` 0) ㉢ 07번 A.1 (4) CSV 헤더 대조 = **67/67 `MATCH`**(이름·순서 동일). 🔴 **`TRUNCATE` 를 실행하지 마라 — 대상 행이 0이라 효과가 없고 오해만 남는다.** 🟢 남은 일은 「재적재」가 아니라 **최초 적재**(07번 A.4)다 |
-| ㉥ | 스테이지 `BRONZE_CRM`·`SILVER` 완료 판정 | 측정 시점에 **업로드 진행 중**이라 보류(`R2-8-4-c`) ⇒ 적재 착수 직전 다시 `LIST` · 🟢 **[2026-08-29 O114 재실측 · `BRONZE_CRM` 만 닫혔다]** `BRONZE_CRM/` = 46 디렉터리 / 280 파일 / 3,101.4 MB · 최종 수정 04:44:23 UTC 로 **약 47분 무변화** + 스테이지 46 = DDL 46 **집합 일치** ⇒ 🟢 **업로드 완료**. 🔴 **`SILVER/` 은 아직 진행 중이다** — 05:30:02 UTC 1,623파일/25,973.4MB → 05:31:28 UTC **1,687파일/26,984.9MB**(105초에 +64파일 · +1,011.5MB). ⚠️ O113 의 「SILVER 0건」은 **「대상 아님」이 아니라 「아직 오지 않았다」**였음이 실물로 확인됐다(`▣TTT3` 의 실증 사례가 하나 늘었다) ⇒ **A.5 는 업로드 종료 후에 실행한다** |
-
-### ▣ TTT5 🔴 O113 자기결함 5 — 다음 세션이 같은 걸 반복하지 않도록
-
-㉠ 축 2개를 못 보는 도구로 판정하고 **완료 보고했다**.
-㉡ 문서가 선언한 **최우선 정본을 열지 않고** 다른 파일을 따랐다(결과는 옳았지만 근거가 없었다).
-㉢ **`R3-9 ㉥` 전수 검색 미이행** — 3문서만 고치고 끝냈고, 사용자가 「비판적으로 검토」를
-   지시한 뒤에야 나머지 5문서의 stale 을 찾았다. 🔴 **내가 스스로 닫지 못했다.**
-㉣ 게이트 초판이 COMMENT 정책을 **스키마 단위 제외**로 구현해 오탐 5건(근거는 컬럼 단위였다).
-㉤ **라벨 선점을 착수 전에 하지 않았다**(`R1-4-3` · O110~O112 3세션 연속 이행을 끊었다).
-
-🟢 **다음 세션이 먼저 할 것** = ㉠ 브리핑 → ㉡ **라벨 선점 등재** → ㉢ 착수표 15건 중 🔴🔴 2건
-(`㉒ AGENT_MEMBER 버전업` · `⑫ 활동 스냅샷 as-of 배선`) 확인 → ㉣ 그 다음에 위 TTT4 승계분.
-
----
+🟢 **부수 성과 = 07번 A.1 (4) 를 접두별로 돌려 68/68 `MATCH` 를 확인했다**
+(`BRONZE_ERP` 2 · `BRONZE_AGENCY` 4 · `ML` 16 · `BRONZE_CRM` 46).
+⇒ `COUNT_MISMATCH` 0 · `ORDER_OR_NAME_MISMATCH` 0 · `TABLE_MISSING` 0 · `FILE_MISSING` 0.
+⚠️ **`SILVER` 1테이블은 미실행**이다 — 업로드 중이라 헤더가 확정되지 않았다.
+🟢 재현법 = 07번 A.1 (4) 쿼리의 스테이지 경로에 `/BRONZE_ERP/` 처럼 **접두를 붙여** 범위를 좁힌다
+(전량 스캔은 `SILVER/` 26,984.9 MB 때문에 비싸다 · `FF_CSV_PEEK` 는 `IF NOT EXISTS` 로 만든다).

@@ -83,7 +83,7 @@ END-METADATA -->
 | 대상 | 값 | 왜 그대로인가 |
 |---|---|---|
 | 매크로 | `ga4_union_shards` | GA4 = 데이터 도메인 명칭(스키마 위치와 무관) |
-| SILVER 모델 | `GA4_EVENT`·`GA4_EVENT_DIM`·`GA4_IDENTITY`·`GA4_DEVICE`·`GA4_TRAFFIC_SOURCE` | 하류 GOLD·SV·Agent 전량이 이 이름에 결합 |
+| SILVER 모델 | `BIGQUERY_EVENT`·`BIGQUERY_EVENT_DIM`·`BIGQUERY_IDENTITY`·`BIGQUERY_DEVICE`·`BIGQUERY_TRAFFIC_SOURCE` | 하류 GOLD·SV·Agent 전량이 이 이름에 결합 |
 | 샤드 테이블 | `events_YYYYMMDD` (소문자 인용식별자) | BigQuery export 산출물 원형 |
 | dbt source 이름 | (GA4는 source 선언 없음) | `INFORMATION_SCHEMA` 동적조회 설계 — 설계결정서 §2 |
 
@@ -94,7 +94,7 @@ GA4 스키마명은 dbt 안에서 **`macros/ga4_union_shards.sql` 의 리터럴 
 2. `FROM {{ target.database }}.BRONZE_BIGQUERY."{{ t }}"` — 샤드 UNION 본문
 
 ⚠️ 매크로는 `ref()`/`source()` 를 쓰지 않으므로 **dbt 가 개명 누락을 컴파일 단계에서 잡아주지 못한다.**
-개명 후 검증은 `dbt build --select +GA4_EVENT` 로 **실행**해야 드러난다(compile 만으로는 통과한다).
+개명 후 검증은 `dbt build --select +BIGQUERY_EVENT` 로 **실행**해야 드러난다(compile 만으로는 통과한다).
 
 ### 데이터 값에 남는 영향
 SILVER GA4 5모델의 `DW_SOURCE_TABLE` 리터럴이 `'BRONZE_GA4.events'` → `'BRONZE_BIGQUERY.events'` 로

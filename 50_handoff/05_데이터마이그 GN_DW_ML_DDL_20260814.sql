@@ -84,7 +84,7 @@
 --       · ML_RST_DATA_LOYAL_MBER                         22컬럼 → $22
 --     평탄화 결과(`PREDICTION:probability:"1"`·`PREDICTION:class`)를 SERVING 뷰가 쓰므로,
 --     문자열로 적재되면 SV 층에서 조용히 NULL 이 된다.
---   - 스키마 옵션: A 계정 실측 DDL 은 `create or replace schema GN_DW.ML;`(옵션 없음)이다.
+--   - 스키마 옵션: A 계정 실측 DDL 은 `create schema if not exists GN_DW.ML;`(옵션 없음)이다.
 --     본 파일은 C 계정 관례(BRONZE 3스키마 = MANAGED ACCESS · 소유 GN_DW_ADMIN)에 맞췄다.
 --     원천과 다른 유일한 지점이며, 테이블 구조는 무변경이다.
 --
@@ -115,9 +115,9 @@
 -- 전제: 04번 DDL 또는 기존 환경에서 DB GN_DW 와 역할 GN_DW_ADMIN 이 이미 존재한다.
 --       없으면 04번 DDL 상단(USE ROLE SYSADMIN → CREATE DATABASE → GRANT OWNERSHIP)을 먼저 실행한다.
 USE ROLE GN_DW_ADMIN;
-
+USE WAREHOUSE GN_DW_DEV_WH;
 -- drop schema GN_DW.ML;
-create or replace schema GN_DW.ML with managed access
+create schema if not exists GN_DW.ML with managed access
   COMMENT='머신러닝 예측 결과 — 원천 계정 산출물 이관 대상. 학습·중간 테이블은 이관하지 않는다.';
 
 -- ---------------------------------------------------------------------

@@ -4,6 +4,8 @@ doc_role: silver_work_plan MASTER INDEX (원천별 실행문서 매핑)
 project: GN_DW (굿네이버스)
 created: 2026-06-29
 updated: 2026-07-14 (원천별 4개 실행문서로 분할 · 본 문서는 매핑 인덱스로 축소 · §7 실행 방법론 재정비: 착수순서 GA4→S7→ERP→AGENCY, 블로커 事前 triage, 파이프라인 2계층 분리)
+naming_note: 🔄 [2026-09-01 DEC-48] 본 문서의 `GA4_*` 표기는 그 시점 기록(역사)이다 — 라이브 명칭은
+  `BIGQUERY_*` 로 전환됐다(DEC-38 수퍼시드). 정본 = 20_issue/30_설계_의사결정.md DEC-48.
 fragments:
   - 03_SILVER_작업계획_CRM전용 20260714.md      # CRM 21객체 · 트랙 A · S-1~S-5
   - 04_SILVER_작업계획_GA4전용 20260714.md       # GA4 5객체 · 트랙 B
