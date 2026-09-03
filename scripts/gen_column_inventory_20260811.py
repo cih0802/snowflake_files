@@ -1,6 +1,6 @@
 """GN_DW SILVER/GOLD 컬럼 인벤토리 CSV 생성 (라이브 메타데이터 기준).
 
-07_reference/{SILVER,gold} 스키마 컬럼 인벤토리_<날짜>.csv 를 재생성한다.
+30_output_share/02_{SILVER,gold} 스키마 컬럼 인벤토리_<날짜>.csv 를 생성한다.
 스키마 구조·COMMENT 의 소유자는 DDL 이며, 본 스크립트는 라이브 카탈로그를 그대로 사영한다.
 """
 import csv
@@ -10,10 +10,11 @@ import sys
 
 import snowflake.connector
 
+WS = os.environ.get("GN_DW_WS", "/workspace")
 AS_OF = sys.argv[1] if len(sys.argv) > 1 else "20260811"
-OUT_DIR = "/workspace/07_reference"
-PREV_DIR = "/workspace/07_reference"
-PREV_TAG = "20260716"
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+PREV_DIR = os.path.join(WS, "30_output_share", "_archive", "20260806")
+PREV_TAG = "20260811"
 
 HEADER = ["테이블명", "GRAIN", "테이블유형", "컬럼명", "타입", "NULLABLE",
           "키", "FK_타깃", "설명", "주의_제약(DDL)"]
@@ -154,8 +155,13 @@ def note(col, prev_note):
 def load_prev(path):
     """이전 판본에서 사람이 정제한 GRAIN·테이블유형·FK_타깃·주의를 승계한다."""
     grain, ttype, fk, notes = {}, {}, {}, {}
+    # 02_ 접두사 여부 모두 검사
     if not os.path.exists(path):
-        return grain, ttype, fk, notes
+        alt_path = path.replace("/02_", "/")
+        if os.path.exists(alt_path):
+            path = alt_path
+        else:
+            return grain, ttype, fk, notes
     for r in csv.DictReader(open(path, encoding="utf-8-sig")):
         t, c = r["테이블명"].strip(), r["컬럼명"].strip()
         if r.get("GRAIN", "").strip():
@@ -225,10 +231,10 @@ def main():
     cur = conn.cursor()
     build(cur, "SILVER",
           f"{PREV_DIR}/SILVER 스키마 컬럼 인벤토리_{PREV_TAG}.csv",
-          f"{OUT_DIR}/SILVER 스키마 컬럼 인벤토리_{AS_OF}.csv")
+          f"{OUT_DIR}/02_SILVER 스키마 컬럼 인벤토리_{AS_OF}.csv")
     build(cur, "GOLD",
           f"{PREV_DIR}/gold 스키마 컬럼 인벤토리_{PREV_TAG}.csv",
-          f"{OUT_DIR}/gold 스키마 컬럼 인벤토리_{AS_OF}.csv")
+          f"{OUT_DIR}/02_gold 스키마 컬럼 인벤토리_{AS_OF}.csv")
     cur.close()
     conn.close()
 
