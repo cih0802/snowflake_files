@@ -18,7 +18,13 @@
 --     실측 범위가 **19000101 ~ 99991231**(센티넬 추정)이다.
 --   · 목표 원천이 BRONZE 에 **실재**한다 — `TM_CM_MBER_DVLP_GOAL` 25,344행
 --     (부서×연월 목표건수). 반면 `SILVER.CRM_BIZ_TARGET` 은 **0행**이다.
---   ⇒ 위 3건은 값 그대로의 사실이며, 원인·해석은 현업 회신 전까지 단정하지 않는다.
+--   · [O127 실측] 회원 최초등록일 `TM_MM_FDRM_MBER_INFO.FRST_REGIST_DT` 는
+--     1,587,342/1,587,343행(99.9999%) 존재하며 가입일(`JOIN_DT`)과의 업무 일치성 확인 필요(N-10).
+--   · [O127 실측] 중단 원천(`TM_MM_FDRM_MBER_SPNSR_DSCNTC`)과 약정(`TM_MM_FDRM_MBER_SPNSR_BSNS`)
+--     동시 발생 회원의 월말활동 판정 방향(`CONF-3`, N-11) 현업 확인 필요.
+--   · [O131 실측] AGENCY 원천 3테이블에 「매체유형」 전용 컬럼 부재(전건 NULL),
+--     요건 #13 산출 규칙 현업 확인 필요(N-12).
+--   ⇒ 위 사항들은 값 그대로의 사실이며, 원인·해석은 현업 회신 전까지 단정하지 않는다.
 
 -- =====================================================================
 -- A. 회비월 비정상 — 20-001:56~61
@@ -671,4 +677,68 @@ JOIN GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG c
     ON c.cmpgn_cd = s.cmpgn_cd
 GROUP BY 1, 2, 3
 ORDER BY 4 DESC
+LIMIT 50;
+
+-- =====================================================================
+-- N-10. CRM_MEMBER.JOIN_DT — 최초등록일 vs 가입일 — 20-007:219~238
+-- BRONZE 원천: TM_MM_FDRM_MBER_INFO.FRST_REGIST_DT (정기회원)
+--              TM_MM_ONCE_MBER_INFO.FRST_REGIST_DT (일시회원)
+-- 질문: 최초등록일(FRST_REGIST_DT)이 가입 시점과 동일한 사건인가?
+--       두 개념이 같다면 컬럼명을 원천명으로 복원해도 되는가?
+-- =====================================================================
+SELECT '정기 TM_MM_FDRM_MBER_INFO.FRST_REGIST_DT' AS "회원유형",
+       COUNT(*) AS "전체행수",
+       COUNT(frst_regist_dt) AS "최초등록일_값있는행",
+       MIN(frst_regist_dt) AS "최소등록일",
+       MAX(frst_regist_dt) AS "최대등록일"
+FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO
+UNION ALL
+SELECT '일시 TM_MM_ONCE_MBER_INFO.FRST_REGIST_DT',
+       COUNT(*),
+       COUNT(frst_regist_dt),
+       MIN(frst_regist_dt),
+       MAX(frst_regist_dt)
+FROM GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO;
+
+-- =====================================================================
+-- N-11. CONF-3 월말활동회원 판정 — 중단 vs 재후원 — 20-007:240~260
+-- BRONZE 원천: TM_MM_FDRM_MBER_SPNSR_DSCNTC (중단이력)
+--              TM_MM_FDRM_MBER_SPNSR (약정헤더) × TM_MM_FDRM_MBER_SPNSR_BSNS (약정사업)
+-- 질문: 같은 달에 중단과 재후원이 모두 있는 회원은 월말에 활동인가, 비활동인가?
+--       판정 기준은 날짜인가, 넘버링/순번인가?
+-- =====================================================================
+WITH stop_ev AS (
+    SELECT mber_no, TO_DATE(spnsr_dscntc_de, 'YYYYMMDD') AS stop_dt, ser_no AS stop_ser_no
+    FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC
+    WHERE spnsr_dscntc_de BETWEEN '20250101' AND '20251231'
+), spnsr_act AS (
+    SELECT s.mber_no, b.spnsr_bsns_id, b.spnsr_dscntc_yn, b.spnsr_amt
+    FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR s
+    JOIN GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS b
+      ON b.spnsr_no = s.spnsr_no
+)
+SELECT 
+    COUNT(DISTINCT st.mber_no) AS "2025년_중단기록_회원수",
+    COUNT(DISTINCT CASE WHEN sa.spnsr_dscntc_yn = 'N' THEN st.mber_no END) AS "중단후_타사업_또는_재후원_유지회원수",
+    COUNT(DISTINCT CASE WHEN sa.spnsr_dscntc_yn = 'Y' THEN st.mber_no END) AS "전건중단_회원수"
+FROM stop_ev st
+LEFT JOIN spnsr_act sa ON sa.mber_no = st.mber_no;
+
+-- =====================================================================
+-- N-12. 요건 #13 매체유형 — 대행사 리포트 원천의 매체유형 정의 — 20-007:262~275
+-- BRONZE 원천: BRONZE_AGENCY 3테이블 (DGT_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS)
+-- 질문: 요건 #13 매체유형의 구체적 업무 분류 기준 및 원천 산출 규칙은?
+-- =====================================================================
+SELECT 'DGT MEDIA_NM' AS "축", media_nm AS "매체명", COUNT(*) AS "건수"
+FROM GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS
+GROUP BY 1, 2
+UNION ALL
+SELECT 'VIDEO CHNNL_NM', chnnl_nm, COUNT(*)
+FROM GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS
+GROUP BY 1, 2
+UNION ALL
+SELECT 'REBRDC CHNNL_CMPNY', chnnl_cmpny, COUNT(*)
+FROM GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS
+GROUP BY 1, 2
+ORDER BY 1, 3 DESC
 LIMIT 50;

@@ -210,7 +210,7 @@ O128 이 분류를 등재하면 해소된다.
 - **BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
 - **BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
 
-## 0-KKKK. 🔴🔴 [2026-09-02 O136 필독 — **여기서 시작한다.** §0-JJJJ 는 승계됐다]
+## 0-KKKK. ~~🔴🔴 [2026-09-02 O136 필독 — 여기서 시작한다. §0-JJJJ 는 승계됐다]~~
 
 > 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
 > `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
@@ -241,6 +241,44 @@ O128 이 분류를 등재하면 해소된다.
 - **④/⑪/⑱** 🟠 문서50 B1 정의 확정 및 이전 세션 독해 검증 잔여
 - **BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
 - **BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
+
+## 0-LLLL. ~~🔴🔴 [2026-09-02 O137 — **여기서 시작한다.** §0-KKKK 는 승계됐다]~~
+
+> 🟢 **이 절은 승계됐다** — 정본 = 이력 **§O137**.
+
+### ▣ LLLL1 🟢 이번 세션 완결 작업 (O137)
+- ㊶ 영구 NULL 잔여 컬럼 5건 COMMENT 및 Live DB 동기화 완결.
+- ⑫·⑭ 활동 스냅샷 as-of 배선 및 FME STOP 후원사업 Live 실측 검증.
+- 산출물 3종 최신화 및 29개 음성 단위 테스트 100% PASS.
+
+## 0-MMMM. 🔴🔴 [2026-09-03 O138 필독 — **여기서 시작한다.** §0-LLLL 은 승계됐다]
+
+> 🟢 **절차 불변** = `export SESSION_LABEL=O1NN` → 원장 §1 선점(`R1-4-3`) →
+> `gate_census.py --run-tests`(🔴 rc 는 리다이렉트로) → `session_brief.py --write` → `00_BRIEF.md` 1회 `read`.
+> 🔴 **이 절은 좌표만 운반한다** — 정본 = 이력 **§O138**.
+
+### ▣ MMMM1 🟢 이번 세션 완결 작업 (O138)
+
+1. **[산출물 재생성 및 동기화] `11_미해결이슈_요약.md` & `13_미해결이슈_현업확인_쿼리_BRONZE` 갱신**:
+   - `scripts/gen_unresolved_issue_summary.py --write` 실행으로 정본 3종(현업 45건·dbt 18건·착수표 8건) 완전 동기화.
+   - `13_...BRONZE_O102.sql`에 N-10(최초등록일), N-11(CONF-3 4,339명), N-12(대행사 매체유형) 실증 쿼리 증설 및 Live DB 실행 검증.
+2. **[6대 현업의사결정 실측 근거 및 실증쿼리 신설] `14번` 산출물 2종 작성**:
+   - `30_output_share/14_현업의사결정_DB실측근거.md`: `db검토_20260903.md` 6개 영역별 BRONZE 실측 수치 및 의사결정 도출 근거 1:1 정리.
+   - `30_output_share/14_현업의사결정_BRONZE_실증쿼리.sql`: 6개 영역 전건에 대한 100% BRONZE 기반 실증 SQL 쿼리 세트 신설 및 Snowflake Live DB 전수 검증.
+3. **[품질 및 게이트 검증]**:
+   - 6대 게이트 전건 통과, `scripts/test_*.py` 29종 음성 단위 테스트 100% PASS (29/29).
+
+### ▣ MMMM2 🔴 다음 세션 열린 작업 (파이프라인 프로세스 / 중요도 순)
+
+- **[P1/Gold] ⑫** 🔴🔴 활동 스냅샷 as-of 배선 (`CONF-3` 현업 회신 §N-11 후 배선 진행)
+- **[P1/Gold] ⑭** 🔴🔴 `FME.SPONSORSHIP_SK(STOP)` 동시중단 다중사업 귀속 규칙 (현업 결정 후 배선)
+- **[P1/Silver] ㊵** 🔴 `CRM_MEMBER.JOIN_DT` 현업 회신(문서20 §N-10) 후 개명/배선 반영
+- **[P1/Gold] BLOCKING-5** 🔴 GOLD 팩트 measure 및 차원 FK 미적재분 순차 적재 (A1/A3)
+- **[P1/Serving] ②** 🔴🔴 NL 자연어 질의 라우팅 스모크 테스트 (CoWork UI 브라우저 수동 확인)
+- **[P2/Silver] O59-P-1** 🟠 `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 현업 회신 대기 (문서20 §M-6)
+- **[P2/Docs] ④/⑪/⑱** 🟠 문서50 B1 정의 확정 및 이전 세션 독해 검증 잔여
+- **[P3/Silver] BLOCKING-1** 🟡 회원 마스터 원천 전량 입고 후 `severity: warn ➔ error` 승격
+- **[P3/Silver] BLOCKING-2** 🟡 CRM/ERP 원천 결손(`CRM_BIZ_TARGET` E-6, 모금비용 E-1) 입고 대기
 
 ---
 _Co-authored with CoCo_
