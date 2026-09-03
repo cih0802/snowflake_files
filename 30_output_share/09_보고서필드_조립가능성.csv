@@ -19,16 +19,16 @@
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,(누계)편성예산,(YTD),SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장),SV파생,,,FACT_BUDGET,,,판정불가(SV파생),SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,월 집행예산(ERP 마감값),(215밖),FACT_BUDGET.EXEC_BUDGET_ERP,필드인벤토리·별칭등록부,,,FACT_BUDGET,,,조립가능,앵커 팩트 `FACT_BUDGET` 자체의 컬럼
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,(누계)집행예산(ERP 마감값),(YTD),SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장),SV파생,,,FACT_BUDGET,,,판정불가(SV파생),SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다
-마케팅,마케팅 보고서,2. 집행예산 및 개발효율,연 편성예산,(215밖),FACT_BUDGET.PLAN_BUDGET_YEAR,필드인벤토리(어순),,,FACT_BUDGET,,,조립가능,앵커 팩트 `FACT_BUDGET` 자체의 컬럼
+마케팅,마케팅 보고서,2. 집행예산 및 개발효율,연 편성예산,(215밖),FACT_BUDGET.PLAN_BUDGET_YEAR,필드인벤토리(어순),,,FACT_BUDGET,,,값없음,"`FACT_BUDGET.PLAN_BUDGET_YEAR` 전건 NULL (2,964행)"
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,연 편성 집행율,(overview),"SV metric — 집행율(%) = 집행예산/편성예산 (FBD, P7)",SV파생,,,FACT_BUDGET,,,판정불가(SV파생),SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,월 편성 집행율,(overview),"SV metric — 집행율(%) = 집행예산/편성예산 (FBD, P7)",SV파생,,,FACT_BUDGET,,,판정불가(SV파생),SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다
-마케팅,마케팅 보고서,2. 집행예산 및 개발효율,월 집행예산(추정치),(215밖),FACT_BUDGET.EXEC_BUDGET_EST,필드인벤토리·별칭등록부,,,FACT_BUDGET,,,값없음,"`FACT_BUDGET.EXEC_BUDGET_EST` 전건 NULL (1,332행)"
+마케팅,마케팅 보고서,2. 집행예산 및 개발효율,월 집행예산(추정치),(215밖),FACT_BUDGET.EXEC_BUDGET_EST,필드인벤토리·별칭등록부,,,FACT_BUDGET,,,값없음,"`FACT_BUDGET.EXEC_BUDGET_EST` 전건 NULL (2,964행)"
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,(누계)집행예산(추정치),(YTD),SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장),SV파생,,,FACT_BUDGET,,,판정불가(SV파생),SV metric — 물리 컬럼이 아니라 base 로 계산된다. base 의 조립가능도를 따른다
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,예산구분,(215밖),DIM_BUDGET_ITEM.BUDGET_CATEGORY,필드인벤토리,,,FACT_BUDGET,,,조립가능,`FACT_BUDGET` → `DIM_BUDGET_ITEM` FK 생존(비영 존재)
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,매체명(브랜드2),,"⛔ 불가 — `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 243,545/243,545 전건 센티넬 + 목표측 매체 축 부재",⛔불가(등록부),,,FACT_AD_PERFORMANCE,,,원천부재,"불가 — `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 243,545/243,545 전건 센티넬 + 목표측 매체 축 부재"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,기준일시,,⛔ 불가 — 목표 원천 `TM_CM_MBER_DVLP_GOAL` 11컬럼 시간축이 `STDYY`+`STDR_MT` 뿐 — 일자 컬럼 부재,⛔불가(등록부),,,FACT_AD_PERFORMANCE,,,원천부재,불가 — 목표 원천 `TM_CM_MBER_DVLP_GOAL` 11컬럼 시간축이 `STDYY`+`STDR_MT` 뿐 — 일자 컬럼 부재
-마케팅,마케팅 보고서,3. 매체별 개발효율 상세,요일,(215밖),DIM_DATE.DAY_OF_WEEK,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `DAY_OF_WEEK` 을 직접 보유**한다 (실측 채움 255,452/255,452) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
-마케팅,마케팅 보고서,3. 매체별 개발효율 상세,주차,(215밖),DIM_DATE.WEEK_OF_YEAR,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `WEEK_OF_YEAR` 을 직접 보유**한다 (실측 채움 255,452/255,452) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
+마케팅,마케팅 보고서,3. 매체별 개발효율 상세,요일,(215밖),DIM_DATE.DAY_OF_WEEK,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `DAY_OF_WEEK` 을 직접 보유**한다 (실측 채움 255,417/255,417) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
+마케팅,마케팅 보고서,3. 매체별 개발효율 상세,주차,(215밖),DIM_DATE.WEEK_OF_YEAR,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `WEEK_OF_YEAR` 을 직접 보유**한다 (실측 채움 255,417/255,417) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고시작시간,(215밖),FACT_AD_BROADCAST.AD_START_TIME,필드인벤토리~,,,FACT_AD_PERFORMANCE,,,조립가능,"위성 `FACT_AD_BROADCAST` 는 `AD_PERF_DK` **PK = 코어와 1:1**(실측 38,486 전건 유일 · 조인 후 38,486행 = 폭발 0) → 코어와 같은 표에 둘 수 있다(DEC-13). 위성에 `*_DATE_SK` 가 없는 것은 시간축 부재가 아니라 **코어가 시간축을 소유**하기 때문이다"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,법인명,공114,DIM_ORG.CORP,필드인벤토리·별칭등록부,,,FACT_AD_PERFORMANCE,,,값없음,"`DIM_ORG.CORP` 전건 NULL (1,315행)"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고유형,(215밖),DIM_AD_CREATIVE.AD_TYPE,필드인벤토리~,,,FACT_AD_PERFORMANCE,,,도달불가,"`FACT_AD_PERFORMANCE` → `DIM_AD_CREATIVE` FK **전건 센티넬** — 조인해도 `(미매핑)` 한 덩어리가 된다 ▸ BRONZE 근거: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` **243,545/243,545 전건 센티넬**. `DIM_AD_CREATIVE` 는 8,716행·`MEDIA_NAME` 106종이 실재하지만 **팩트에서 도달할 수 없다** — 소재 연결키가 대행사 원천에 없다(Q10)."
@@ -40,7 +40,7 @@
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,소재,공20,DIM_AD_CREATIVE.CREATIVE,필드인벤토리,,,FACT_AD_PERFORMANCE,,,도달불가,"`FACT_AD_PERFORMANCE` → `DIM_AD_CREATIVE` FK **전건 센티넬** — 조인해도 `(미매핑)` 한 덩어리가 된다 ▸ BRONZE 근거: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` **243,545/243,545 전건 센티넬**. `DIM_AD_CREATIVE` 는 8,716행·`MEDIA_NAME` 106종이 실재하지만 **팩트에서 도달할 수 없다** — 소재 연결키가 대행사 원천에 없다(Q10)."
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,CM위치,공21,DIM_AD_CREATIVE.CM_POSITION,필드인벤토리,,,FACT_AD_PERFORMANCE,,,도달불가,"`FACT_AD_PERFORMANCE` → `DIM_AD_CREATIVE` FK **전건 센티넬** — 조인해도 `(미매핑)` 한 덩어리가 된다 ▸ BRONZE 근거: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` **243,545/243,545 전건 센티넬**. `DIM_AD_CREATIVE` 는 8,716행·`MEDIA_NAME` 106종이 실재하지만 **팩트에서 도달할 수 없다** — 소재 연결키가 대행사 원천에 없다(Q10)."
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,초수,공22,DIM_AD_CREATIVE,지표사전,,,FACT_AD_PERFORMANCE,,,도달불가,"`FACT_AD_PERFORMANCE` → `DIM_AD_CREATIVE` FK **전건 센티넬** — 조인해도 `(미매핑)` 한 덩어리가 된다 ▸ BRONZE 근거: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` **243,545/243,545 전건 센티넬**. `DIM_AD_CREATIVE` 는 8,716행·`MEDIA_NAME` 106종이 실재하지만 **팩트에서 도달할 수 없다** — 소재 연결키가 대행사 원천에 없다(Q10)."
-마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고비,(215밖),FACT_BUDGET.AD_COST,필드인벤토리,,,FACT_AD_PERFORMANCE,,,값없음,"`FACT_BUDGET.AD_COST` 전건 NULL (1,332행)"
+마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고비,(215밖),FACT_BUDGET.AD_COST,필드인벤토리,,,FACT_AD_PERFORMANCE,,,값없음,"`FACT_BUDGET.AD_COST` 전건 NULL (2,964행)"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,노출수(횟수),공23,FACT_AD_PERFORMANCE.IMPRESSIONS,필드인벤토리~,,,FACT_AD_PERFORMANCE,,,조립가능,앵커 팩트 `FACT_AD_PERFORMANCE` 자체의 컬럼
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,클릭수,공24 공9,FACT_AD_PERFORMANCE.CLICKS,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,앵커 팩트 `FACT_AD_PERFORMANCE` 자체의 컬럼
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,GA 전환수(명),(215밖),FACT_AD_PERFORMANCE.GA_CONV_MEMBERS,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,앵커 팩트 `FACT_AD_PERFORMANCE` 자체의 컬럼
@@ -468,7 +468,7 @@
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,불참횟수,(215밖),FACT_EVENT_PARTICIPATION.ABSENT_TIMES,필드인벤토리,,,FACT_EVENT_PARTICIPATION,,,값없음,"`FACT_EVENT_PARTICIPATION.ABSENT_TIMES` 전건 0 (1,134,126행)"
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,참여횟수,(215밖),FACT_EVENT_PARTICIPATION.PARTICIPATION_TIMES,필드인벤토리,,,FACT_EVENT_PARTICIPATION,,,값없음,"`FACT_EVENT_PARTICIPATION.PARTICIPATION_TIMES` 전건 0 (1,134,126행)"
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,누적 신청 횟수,(215밖),FACT_EVENT_PARTICIPATION.CUM_APPLY_TIMES,필드인벤토리,,,FACT_EVENT_PARTICIPATION,,,값없음,"`FACT_EVENT_PARTICIPATION.CUM_APPLY_TIMES` 전건 0 (1,134,126행)"
-회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,증액여부(Y/N),(215밖),FACT_EVENT_PARTICIPATION.INCREASE_FLAG,필드인벤토리~,,,FACT_EVENT_PARTICIPATION,,,조립가능,앵커 팩트 `FACT_EVENT_PARTICIPATION` 자체의 컬럼
+회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,증액여부(Y/N),(215밖),FACT_EVENT_PARTICIPATION.INCREASE_FLAG,필드인벤토리~,,,FACT_EVENT_PARTICIPATION,,,값없음,"`FACT_EVENT_PARTICIPATION.INCREASE_FLAG` 전건 NULL (1,134,126행)"
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,조회수,공96,FACT_GA_BEHAVIOR.VIEW_CNT,필드인벤토리~,,,FACT_EVENT_PARTICIPATION,,,타원천,원천 상이 — `FACT_EVENT_PARTICIPATION`=CRM vs `FACT_GA_BEHAVIOR`=GA4. 연결키 확보 전 교차 금지
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션수,공97,FACT_GA_BEHAVIOR.SESSION_CNT,필드인벤토리~,,,FACT_GA_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_GA_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,참여 세션수,(215밖),FACT_GA_BEHAVIOR.ENGAGED_SESSIONS,필드인벤토리,,,FACT_GA_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_GA_BEHAVIOR` 자체의 컬럼

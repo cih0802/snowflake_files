@@ -1,0 +1,957 @@
+﻿테이블명,GRAIN,테이블유형,컬럼명,타입,NULLABLE,키,FK_타깃,설명,주의_제약(DDL)
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,AD_PERF_DK,VARCHAR,N,PK,,코어 1:1 조인키(staging 발급값 승계),
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,TIME_BAND,VARCHAR,Y,,,시간대,
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CM_POSITION,VARCHAR,Y,,,CM위치 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,RT_TYPE,VARCHAR,Y,,,RT(재방송)유형 [REBRDC 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,AD_START_TIME,VARCHAR,Y,,,광고시작시간 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,AD_END_TIME,VARCHAR,Y,,,광고종료시간 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,BROADCAST_DATE,DATE,Y,,,송출일,
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,PROGRAM_NM,VARCHAR,Y,,,프로그램/편성명,
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CHANNEL_COMPANY,VARCHAR,Y,,,채널사,
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CHANNEL_COMPANY_TYPE,VARCHAR,Y,,,채널사유형 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,SPOT_TYPE,VARCHAR,Y,,,SPOT유형 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DURATION_SEC,"NUMBER(9,0)",Y,,,"광고 초수 [VIDEO 전용] — HH:MM:SS 파싱값(초). 값 집합 {30,60,90,120}. 숫자표기 1,151행은 단위 미확정으로 NULL 유지. REBRDC 는 원천 부재",
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DAY_DIV,VARCHAR,Y,,,요일구분 평일/주말 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,PRG_START_TIME,VARCHAR,Y,,,프로그램 시작시간 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CTV_DIV,VARCHAR,Y,,,CTV구분 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,BRDC_DIV,VARCHAR,Y,,,방송구분 [REBRDC 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,AD_CNT,FLOAT,Y,,,광고횟수 (가산),
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CONV_CALL_CNT,FLOAT,Y,,,전환콜 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DVLP_MEMBER_CNT,FLOAT,Y,,,"개발회원수 [REBRDC 전용 — VIDEO 원천에 항목 부재]. 유효 모집단 = REBRDC 2,064행",
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DVLP_CNT,FLOAT,Y,,,"개발건수 [REBRDC 전용 — VIDEO 원천에 항목 부재]. 실측 1,982/2,064(96.0%). 개발단가 분모는 REBRDC 단독으로 한정(AD-5)",
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,AD_VIEW_RT_SRC,FLOAT,Y,,,[비가산] 광고시청률 [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,CPC_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CPC [VIDEO 전용],
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_BROADCAST,방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1),광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,AD_PERF_DK,VARCHAR,N,PK,,코어 조인키(1:N),
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,CASE_SEQ,"NUMBER(2,0)",N,PK,,사례 순번 1~3,
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,BIZ_DIV,VARCHAR,Y,,,사업구분,
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,FAMILY_TYPE,VARCHAR,Y,,,가족유형,
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,APPEAL_POINT,VARCHAR,Y,,,어필포인트,
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,CASE_DIV,VARCHAR,Y,,,사례구분,
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_BROADCAST_CASE,재방송 사례 언피벗 위성(코어에 1:N),광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,CREATIVE_DK,VARCHAR,N,PK,,MD5(소스+매체+소재+유형+CM위치+초수) 대체키 (PK),
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,SOURCE_SYSTEM,VARCHAR,N,,,소스 시스템 (DIGITAL/REBROADCAST/VIDEO),
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,MEDIA_CHANNEL_NM,VARCHAR,Y,,,매체/채널명,
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,CREATIVE_NM,VARCHAR,Y,,,소재명,
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,CREATIVE_TYPE_NM,VARCHAR,Y,,,소재유형/RT유형/캠페인유형,
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,CM_AREA_NM,VARCHAR,Y,,,CM위치 (VIDEO),
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,AD_SEC_NM,VARCHAR,Y,,,초수 (VIDEO),
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_CREATIVE,1소재(CREATIVE_DK),광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,AD_PERF_DK,VARCHAR,N,PK,,코어 1:1 조인키(staging 발급값 승계),
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,PAGE_TYPE,VARCHAR,Y,,,페이지유형,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,AD_GROUP_NM,VARCHAR,Y,,,광고그룹명,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,GROUP_DIV,VARCHAR,Y,,,그룹구분,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CREATIVE_TYPE,VARCHAR,Y,,,소재유형,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,AD_TYPE_NM,VARCHAR,Y,,,광고유형명(대행사 표기),
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,READ_CNT,FLOAT,Y,,,읽음수 (가산),
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,MEDIA_POTENTIAL_CUST_CNT,FLOAT,Y,,,매체 잠재고객수 (가산),
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CRM_DEV_CNT,FLOAT,Y,,,"CRM 개발건수 (가산). ⚠️실측 189,252행 중 13.0%가 비정수(기여도 배분 추정·어의 미확정 AD-2) · ⚠️2026-05 이후 원천 제공 중단(AD-3) → DEV_UNIT_PRICE_SRC 와 상호배타",
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CTR_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CTR,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CVR_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CVR,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CPC_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CPC,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CPM_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CPM,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,CPA_SRC,FLOAT,Y,,,[비가산] 대행사 산정 CPA,
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DEV_UNIT_PRICE_SRC,FLOAT,Y,,,"[비가산] 대행사 산정 개발단가. ⚠️2026-06부터 전건 제공(8,401행) — CRM_DEV_CNT 와 겹치는 행 0건, 검증관계 아닌 기간보완 관계(AD-3)",
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,VTR_SRC,FLOAT,Y,,,[비가산] 대행사 산정 VTR (재계산 불가),
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_DIGITAL,디지털광고 고유속성 위성(코어 1:1),광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_PERF_DK,VARCHAR,N,DK,,행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). 위성 조인키,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_SOURCE_TYPE,VARCHAR,N,,,광고유형 출처축. 실측값 DIGITAL/VIDEO/REBROADCAST. GOLD FAD degenerate 로 승격,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,SOURCE_SYSTEM,VARCHAR,N,,,"소스 시스템. ⚠️실측 AD_SOURCE_TYPE 와 전건 동일값(불일치 0) — 중복 컬럼, 신규 소비는 AD_SOURCE_TYPE 사용",
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_DATE,DATE,Y,,,광고 집행일자,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_YEAR,"NUMBER(4,0)",Y,,,광고 집행연도 YYYY,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_MONTH,"NUMBER(2,0)",Y,,,광고 집행월 1~12,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CAMPAIGN_NM,VARCHAR,Y,,,캠페인명,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,UPPER_CAMPAIGN_NM,VARCHAR,Y,,,상위 캠페인명,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,MEDIA_CHANNEL_NM,VARCHAR,Y,,,매체/채널명,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DEVICE_NM,VARCHAR,Y,,,디바이스 (DGT만),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CREATIVE_NM,VARCHAR,Y,,,소재명,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,PROGRAM_NM,VARCHAR,Y,,,프로그램명 (REBRDC/VIDEO),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,IMPRESSION_CNT,"NUMBER(38,4)",Y,,,노출수 (DGT만),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CLICK_CNT,"NUMBER(38,4)",Y,,,클릭수 (DGT만),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CONV_MEMBER_CNT,"NUMBER(38,4)",Y,,,GA 전환 명수 (DIGITAL 전용),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CONV_UNIT_CNT,"NUMBER(38,4)",Y,,,GA 전환 VU/건수 (DIGITAL 전용),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,INBOUND_CALL_CNT,"NUMBER(38,4)",Y,,,인입콜 수 (REBRDC+VIDEO),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,CONV_CALL_CNT,"NUMBER(38,4)",Y,,,VIDEO 전환콜,
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_CNT,"NUMBER(38,4)",Y,,,광고횟수 (REBRDC/VIDEO),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,AD_COST,"NUMBER(38,4)",Y,,,광고비 (소스별 컬럼 상이),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,COST_TYPE,VARCHAR,Y,,,비용유형 (GA/편성/집행),
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_PERFORMANCE,소스x일자x소재x캠페인,광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,AD_PERF_DK,VARCHAR,N,PK,,행 식별자 — 본 테이블이 발급 단일지점,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,AD_SOURCE_TYPE,VARCHAR,N,,,광고유형 상수 DIGITAL,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,ROW_HASH,VARCHAR,Y,,,원천 전컬럼 해시,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DUP_SEQ,"NUMBER(9,0)",Y,,,전컬럼 중복 그룹 내 순번,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,TIME,VARCHAR,Y,,,[원천보존] 시각 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,YEAR,VARCHAR,Y,,,[원천보존] 연도 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CPR_NM,VARCHAR,Y,,,[원천보존] 협력사명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DMST_OVSEA_DIV_NM,VARCHAR,Y,,,[원천보존] 국내/해외 구분,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,BSNS_CASE_DIV_NM,VARCHAR,Y,,,[원천보존] 사업/사례 구분,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CMPGN_TY_NM,VARCHAR,Y,,,[원천보존] 캠페인유형명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,AD_TY_NM,VARCHAR,Y,,,[원천보존] 광고유형명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,MONTH,VARCHAR,Y,,,[원천보존] 월 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DEVICE,VARCHAR,Y,,,[원천보존] 기기 M/PC,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,MEDIA_NM,VARCHAR,Y,,,[원천보존] 매체명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,WEEK,VARCHAR,Y,,,[원천보존] 주차 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DAY,VARCHAR,Y,,,[원천보존] 일 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DOW,VARCHAR,Y,,,[원천보존] 요일 텍스트,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CMPGN_NM,VARCHAR,Y,,,[원천보존] 캠페인명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,MATR,VARCHAR,Y,,,[원천보존] 소재명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,MATR_TY_NM,VARCHAR,Y,,,[원천보존] 소재유형명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,EXPS_CNT,FLOAT,Y,,,[원천보존] 노출수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CLICK_CNT,FLOAT,Y,,,[원천보존] 클릭수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,GA_AD_COST,FLOAT,Y,,,[원천보존] GA 광고비,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,GA_CONV_MBER_CNT,FLOAT,Y,,,[원천보존] GA 전환 회원수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CONV_VU_CNT,FLOAT,Y,,,[원천보존] GA 전환 VU수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CPA,FLOAT,Y,,,[원천보존] 대행사 산정 CPA (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DEV_UNIT_PRICE,FLOAT,Y,,,[원천보존] 대행사 산정 개발단가 (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CTR,FLOAT,Y,,,[원천보존] 대행사 산정 CTR (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CVR,FLOAT,Y,,,[원천보존] 대행사 산정 CVR (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CPC,FLOAT,Y,,,[원천보존] 대행사 산정 CPC (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CPM,FLOAT,Y,,,[원천보존] 대행사 산정 CPM (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,UPPER_CMPGN_NM,VARCHAR,Y,,,[원천보존] 상위 캠페인명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,READ_CNT,FLOAT,Y,,,[원천보존] 읽음수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,MEDIA_PTNT_CUST_CNT,FLOAT,Y,,,[원천보존] 매체 잠재고객수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DATE,DATE,Y,,,[원천보존] 실적일,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,VTR,FLOAT,Y,,,[원천보존] 대행사 산정 VTR (비가산),
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,PAGE_TYPE_NM,VARCHAR,Y,,,[원천보존] 페이지유형,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,CRM_DVLP_CNT,FLOAT,Y,,,[원천보존] CRM 개발건수,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,AD_GRP_NM,VARCHAR,Y,,,[원천보존] 광고그룹명,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,GRP_DIV_NM,VARCHAR,Y,,,[원천보존] 그룹구분,
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_ROW_DGT,DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급,광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,AD_PERF_DK,VARCHAR,N,PK,,행 식별자 — 본 테이블이 발급 단일지점,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,AD_SOURCE_TYPE,VARCHAR,N,,,광고유형 상수 REBROADCAST,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,ROW_HASH,VARCHAR,Y,,,원천 전컬럼 해시,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DUP_SEQ,"NUMBER(9,0)",Y,,,전컬럼 중복 그룹 내 순번(실측 중복 0),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,RE_BRDC_TY_NM,VARCHAR,Y,,,[원천보존] 재방송유형명,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DIV_NM,VARCHAR,Y,,,[원천보존] 구분명,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,YEAR,VARCHAR,Y,,,[원천보존] 연도 텍스트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,BRDC_MT,VARCHAR,Y,,,[원천보존] 방송월 텍스트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CHNNL_CMPNY,VARCHAR,Y,,,[원천보존] 채널사,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,BRDC_NM,VARCHAR,Y,,,[원천보존] 방송명,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,BRDC_DIV_NM,VARCHAR,Y,,,[원천보존] 방송구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DATE,DATE,Y,,,[원천보존] 실적일/송출일,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DOW,VARCHAR,Y,,,[원천보존] 요일 텍스트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,BRDC_TIME,VARCHAR,Y,,,[원천보존] 방송시각,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,INBOUND_CALL_CNT,VARCHAR,Y,,,[원천보존] 인입콜수(TEXT),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DVLP_MBER_CNT,FLOAT,Y,,,[원천보존] 개발회원수,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DVLP_CNT,FLOAT,Y,,,[원천보존] 개발건수,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,BRDC_SCHDL_COST,FLOAT,Y,,,[원천보존] 편성비용,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,WEEK,VARCHAR,Y,,,[원천보존] 주차 텍스트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,AD_CNT,FLOAT,Y,,,[원천보존] 광고횟수,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,TIME_RNG_DIV_NM,VARCHAR,Y,,,[원천보존] 시간대구분명,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CELEB_NM,VARCHAR,Y,,,[원천보존] 출연자명 (PII 판정 대기 O14),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DMST_OVSEA_DIV_NM,VARCHAR,Y,,,[원천보존] 국내/해외 구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE1_BSNS_DIV_NM,VARCHAR,Y,,,[원천보존] 사례1 사업구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE1_FAM_TY_NM,VARCHAR,Y,,,[원천보존] 사례1 가족유형,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE1_APPEAL_POINT_NM,VARCHAR,Y,,,[원천보존] 사례1 어필포인트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE1_CHILD_NM,VARCHAR,Y,,,[원천보존] 사례1 아동명 (PII 미적재),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE1_CASE_DIV_NM,VARCHAR,Y,,,[원천보존] 사례1 사례구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE2_BSNS_DIV_NM,VARCHAR,Y,,,[원천보존] 사례2 사업구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE2_FAM_TY_NM,VARCHAR,Y,,,[원천보존] 사례2 가족유형,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE2_APPEAL_POINT_NM,VARCHAR,Y,,,[원천보존] 사례2 어필포인트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE2_CHILD_NM,VARCHAR,Y,,,[원천보존] 사례2 아동명 (PII 미적재),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE2_CASE_DIV_NM,VARCHAR,Y,,,[원천보존] 사례2 사례구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE3_BSNS_DIV_NM,VARCHAR,Y,,,[원천보존] 사례3 사업구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE3_FAM_TY_NM,VARCHAR,Y,,,[원천보존] 사례3 가족유형,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE3_APPEAL_POINT_NM,VARCHAR,Y,,,[원천보존] 사례3 어필포인트,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE3_CHILD_NM,VARCHAR,Y,,,[원천보존] 사례3 아동명 (PII 미적재),
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,CASE3_CASE_DIV_NM,VARCHAR,Y,,,[원천보존] 사례3 사례구분,
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_ROW_REBRDC,"REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함)",광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_PERF_DK,VARCHAR,N,PK,,행 식별자 — 본 테이블이 발급 단일지점,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_SOURCE_TYPE,VARCHAR,N,,,광고유형 상수 VIDEO,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,ROW_HASH,VARCHAR,Y,,,원천 전컬럼 해시,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DUP_SEQ,"NUMBER(9,0)",Y,,,전컬럼 중복 그룹 내 순번(최대 3중복),
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CHNNL_NM,VARCHAR,Y,,,[원천보존] 채널명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DOW,VARCHAR,Y,,,[원천보존] 요일 텍스트,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,BRDC_DATE,DATE,Y,,,[원천보존] 송출일,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,TIME_RNG,VARCHAR,Y,,,[원천보존] 시간대,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DAY_DIV_NM,VARCHAR,Y,,,[원천보존] 요일구분(평일/주말),
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,PRG_STRT_TIME,VARCHAR,Y,,,[원천보존] 프로그램 시작시간,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,SCHDL_NM,VARCHAR,Y,,,[원천보존] 편성명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CM,VARCHAR,Y,,,[원천보존] CM 구분,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CM_AREA,VARCHAR,Y,,,[원천보존] CM위치,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_STRT_TIME,VARCHAR,Y,,,[원천보존] 광고시작시간,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_END_TIME,VARCHAR,Y,,,[원천보존] 광고종료시간,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,SPOT_TY,VARCHAR,Y,,,[원천보존] SPOT유형,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_VIEW_RT,FLOAT,Y,,,[원천보존] 광고시청률 (비가산),
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_CNT,"NUMBER(38,0)",Y,,,[원천보존] 광고횟수,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,AD_SEC,VARCHAR,Y,,,[원천보존] 광고 초수(TEXT),
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,ACTL_PUR_AD_COST_KRW,"NUMBER(38,0)",Y,,,[원천보존] 실집행 광고비(원),
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,INBOUND_CALL_CNT,"NUMBER(38,0)",Y,,,[원천보존] 인입콜수,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CPC,VARCHAR,Y,,,"[원천보존] 대행사 산정 CPC(TEXT, 비가산)",
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,UPPER_CMPGN_NM,VARCHAR,Y,,,[원천보존] 상위 캠페인명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,MATR_NM,VARCHAR,Y,,,[원천보존] 소재명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CMPGN_TY_NM,VARCHAR,Y,,,[원천보존] 캠페인유형명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DUR_PD_MATR_CHN,VARCHAR,Y,,,[원천보존] 기간/소재 채널,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CHNNL_CMPNY_TY_NM,VARCHAR,Y,,,[원천보존] 채널사유형,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,WEEK,VARCHAR,Y,,,[원천보존] 주차 텍스트,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CONV_CALL_CNT,FLOAT,Y,,,[원천보존] 전환콜,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,BRDC_MT,VARCHAR,Y,,,[원천보존] 방송월 텍스트,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,YEAR,VARCHAR,Y,,,[원천보존] 연도 텍스트,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,CTV_DIV_NM,VARCHAR,Y,,,[원천보존] CTV구분,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,MKT_CMPGN_NM,VARCHAR,Y,,,[원천보존] 마케팅 캠페인명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,SPNSR_BSNS_NM,VARCHAR,Y,,,[원천보존] 후원사업명,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DMST_OVSEA_DIV_NM,VARCHAR,Y,,,[원천보존] 국내/해외 구분,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,BSNS_CASE_DIV_NM,VARCHAR,Y,,,[원천보존] 사업/사례 구분,
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+AGENCY_AD_ROW_VIDEO,VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급,광고,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+BIGQUERY_REFINED_DATA,,,BATCH_EVENT_INDEX,"NUMBER(38,0)",Y,,,동일 배치 안에서 이벤트가 기록된 순번,
+BIGQUERY_REFINED_DATA,,,EVENT_DATE,VARCHAR,Y,,,이벤트가 발생하거나 기록된 날짜,
+BIGQUERY_REFINED_DATA,,,EVENT_TIMESTAMP,"NUMBER(38,0)",Y,,,이벤트가 발생한 시각을 나타내는 타임스탬프,
+BIGQUERY_REFINED_DATA,,,EVENT_NAME,VARCHAR,Y,,,사용자 행동 또는 전환을 구분하는 이벤트명,
+BIGQUERY_REFINED_DATA,,,EVENT_VALUE_IN_USD,VARCHAR,Y,,,이벤트 값이 미국 달러 기준으로 환산된 금액,
+BIGQUERY_REFINED_DATA,,,EVENT_BUNDLE_SEQUENCE_ID,"NUMBER(38,0)",Y,,,이벤트 번들의 순차 식별값,
+BIGQUERY_REFINED_DATA,,,IS_ACTIVE_USER,BOOLEAN,Y,,,활성 사용자 여부를 나타내는 값,
+BIGQUERY_REFINED_DATA,,,USER_ID,VARCHAR,Y,,,서비스에서 설정한 사용자 식별자,
+BIGQUERY_REFINED_DATA,,,USER_PSEUDO_ID,VARCHAR,Y,,,GA4가 부여한 익명 사용자 또는 기기 기반 식별자,
+BIGQUERY_REFINED_DATA,,,USER_FIRST_TOUCH_TIMESTAMP,"NUMBER(38,0)",Y,,,사용자가 처음 유입되거나 처음 접속한 시점,
+BIGQUERY_REFINED_DATA,,,EP_CAMPAIGN,VARCHAR,Y,,,캠페인명,
+BIGQUERY_REFINED_DATA,,,EP_CAMPAIGN_ID,VARCHAR,Y,,,캠페인 식별값,
+BIGQUERY_REFINED_DATA,,,EP_CHANGE_DONATION_UP,VARCHAR,Y,,,후원 증액 또는 변경 이벤트 여부로 해석 가능한 값,
+BIGQUERY_REFINED_DATA,,,EP_CHANGE_DONATION_UP_AMOUNT,VARCHAR,Y,,,후원 증액 또는 변경 금액으로 해석 가능한 값,
+BIGQUERY_REFINED_DATA,,,EP_CONTENT,VARCHAR,Y,,,광고 소재 또는 콘텐츠 구분값,
+BIGQUERY_REFINED_DATA,,,EP_CURRENCY,VARCHAR,Y,,,금액 데이터의 통화 단위,
+BIGQUERY_REFINED_DATA,,,EP_DONATION_ONCE,VARCHAR,Y,,,일시후원 여부를 나타내는 값,
+BIGQUERY_REFINED_DATA,,,EP_DONATION_ONCE_AMOUNT,VARCHAR,Y,,,일시후원 금액,
+BIGQUERY_REFINED_DATA,,,EP_DONATION_REGULAR,VARCHAR,Y,,,정기후원 여부를 나타내는 값,
+BIGQUERY_REFINED_DATA,,,EP_DONATION_REGULAR_AMOUNT,VARCHAR,Y,,,정기후원 금액,
+BIGQUERY_REFINED_DATA,,,EP_ENGAGED_SESSION_EVENT,VARCHAR,Y,,,참여 세션으로 판단되는 이벤트 여부,
+BIGQUERY_REFINED_DATA,,,EP_ENGAGEMENT_TIME_MSEC,VARCHAR,Y,,,사용자의 참여 시간 또는 체류 시간을 밀리초 단위로 기록한 값,
+BIGQUERY_REFINED_DATA,,,EP_ENTRANCES,VARCHAR,Y,,,해당 페이지 또는 이벤트가 세션 진입에 해당하는지 나타내는 값,
+BIGQUERY_REFINED_DATA,,,EP_EVENT_ACTION,VARCHAR,Y,,,이벤트의 구체적인 사용자 행동명,
+BIGQUERY_REFINED_DATA,,,EP_EVENT_CATEGORY,VARCHAR,Y,,,이벤트를 분류하는 상위 카테고리,
+BIGQUERY_REFINED_DATA,,,EP_EVENT_LABEL,VARCHAR,Y,,,이벤트의 세부 라벨 또는 보조 설명값,
+BIGQUERY_REFINED_DATA,,,EP_GA_SESSION_ID,VARCHAR,Y,,,GA4 세션 식별자,
+BIGQUERY_REFINED_DATA,,,EP_GA_SESSION_NUMBER,VARCHAR,Y,,,사용자 기준 세션 순번,
+BIGQUERY_REFINED_DATA,,,EP_GAD_CAMPAIGNID,VARCHAR,Y,,,Google Ads 캠페인 ID로 활용 가능한 값,
+BIGQUERY_REFINED_DATA,,,EP_GAD_SOURCE,VARCHAR,Y,,,Google Ads 유입 소스 관련 식별값,
+BIGQUERY_REFINED_DATA,,,EP_GCLID,VARCHAR,Y,,,Google 광고 클릭을 식별하는 클릭 ID,
+BIGQUERY_REFINED_DATA,,,EP_LINK_CLASSES,VARCHAR,Y,,,클릭된 링크 또는 버튼의 CSS 클래스 정보,
+BIGQUERY_REFINED_DATA,,,EP_LINK_DOMAIN,VARCHAR,Y,,,클릭된 링크의 도메인,
+BIGQUERY_REFINED_DATA,,,EP_LINK_ID,VARCHAR,Y,,,클릭된 링크 또는 버튼의 ID,
+BIGQUERY_REFINED_DATA,,,EP_LINK_IMAGE,VARCHAR,Y,,,클릭된 이미지 링크 또는 이미지 URL,
+BIGQUERY_REFINED_DATA,,,EP_LINK_TEXT,VARCHAR,Y,,,클릭된 링크 또는 버튼의 표시 문구,
+BIGQUERY_REFINED_DATA,,,EP_LINK_TITLE,VARCHAR,Y,,,클릭된 링크의 title 속성 또는 보조 설명,
+BIGQUERY_REFINED_DATA,,,EP_LINK_URL,VARCHAR,Y,,,클릭된 링크의 목적지 URL,
+BIGQUERY_REFINED_DATA,,,EP_MEDIUM,VARCHAR,Y,,,유입 매체 또는 채널 유형,
+BIGQUERY_REFINED_DATA,,,EP_OUTBOUND,VARCHAR,Y,,,외부 링크 이동 여부를 나타내는 값,
+BIGQUERY_REFINED_DATA,,,EP_PAGE_LOCATION,VARCHAR,Y,,,이벤트가 발생한 페이지 URL,
+BIGQUERY_REFINED_DATA,,,EP_PAGE_REFERRER,VARCHAR,Y,,,해당 페이지로 오기 전 참조 URL,
+BIGQUERY_REFINED_DATA,,,EP_PAGE_TITLE,VARCHAR,Y,,,이벤트가 발생한 페이지 제목,
+BIGQUERY_REFINED_DATA,,,EP_PAYMENT_TYPE,VARCHAR,Y,,,결제수단,
+BIGQUERY_REFINED_DATA,,,EP_PERCENT_SCROLLED,VARCHAR,Y,,,페이지 스크롤 도달 비율,
+BIGQUERY_REFINED_DATA,,,EP_PROMOTION_ID,VARCHAR,Y,,,프로모션 또는 배너 식별값,
+BIGQUERY_REFINED_DATA,,,EP_PROMOTION_NAME,VARCHAR,Y,,,프로모션 또는 배너 이름,
+BIGQUERY_REFINED_DATA,,,EP_SEARCH_TERM,VARCHAR,Y,,,사이트 내 검색어 또는 사용자가 입력한 검색어,
+BIGQUERY_REFINED_DATA,,,EP_SESSION_ENGAGED,VARCHAR,Y,,,세션 참여 여부,
+BIGQUERY_REFINED_DATA,,,EP_SOURCE,VARCHAR,Y,,,유입 소스,
+BIGQUERY_REFINED_DATA,,,EP_TERM,VARCHAR,Y,,,"검색어, 타겟, 키워드 또는 세부 캠페인 구분값",
+BIGQUERY_REFINED_DATA,,,EP_TRANSACTION_ID,VARCHAR,Y,,,거래 또는 후원 완료를 식별하는 ID (오늘의 리포트 : 약정id),
+BIGQUERY_REFINED_DATA,,,EP_VALUE,VARCHAR,Y,,,이벤트에 연결된 금액 또는 수치값,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_CURRENT_TIME,VARCHAR,Y,,,동영상 이벤트 발생 시점의 현재 재생 위치,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_DURATION,VARCHAR,Y,,,동영상 전체 재생 길이,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_PERCENT,VARCHAR,Y,,,동영상 시청 완료 또는 진행 비율,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_PROVIDER,VARCHAR,Y,,,동영상 제공 플랫폼,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_TITLE,VARCHAR,Y,,,동영상 제목,
+BIGQUERY_REFINED_DATA,,,EP_VIDEO_URL,VARCHAR,Y,,,동영상 URL,
+BIGQUERY_REFINED_DATA,,,UP_BIZ_TYPE,VARCHAR,Y,,,후원 또는 관심 사업 유형,
+BIGQUERY_REFINED_DATA,,,UP_DONATION_TYPE,VARCHAR,Y,,,후원 구분 유형,
+BIGQUERY_REFINED_DATA,,,UP_DONOR_TYPE,VARCHAR,Y,,,후원자 유형,
+BIGQUERY_REFINED_DATA,,,UP_LOGIN_STATUS,VARCHAR,Y,,,로그인 여부,
+BIGQUERY_REFINED_DATA,,,UP_MEMBER_ID,VARCHAR,Y,,,회원 식별자,
+BIGQUERY_REFINED_DATA,,,UP_MEMBER_TYPE,VARCHAR,Y,,,회원 상태 또는 회원 구분,
+BIGQUERY_REFINED_DATA,,,UP_USER_ID,VARCHAR,Y,,,서비스에서 설정한 사용자 식별자,
+BIGQUERY_REFINED_DATA,,,USER_LTV_CURRENCY,VARCHAR,Y,,,금액 데이터의 통화 단위,
+BIGQUERY_REFINED_DATA,,,USER_LTV_REVENUE,VARCHAR,Y,,,사용자 기준 누적 수익 또는 가치,
+BIGQUERY_REFINED_DATA,,,DEVICE_CATEGORY,VARCHAR,Y,,,기기 유형,
+BIGQUERY_REFINED_DATA,,,DEVICE_IS_LIMITED_AD_TRACKING,VARCHAR,Y,,,광고 추적 제한 여부,
+BIGQUERY_REFINED_DATA,,,DEVICE_LANGUAGE,VARCHAR,Y,,,기기 또는 브라우저 언어 설정,
+BIGQUERY_REFINED_DATA,,,DEVICE_MOBILE_BRAND_NAME,VARCHAR,Y,,,모바일 기기 브랜드명,
+BIGQUERY_REFINED_DATA,,,DEVICE_MOBILE_MARKETING_NAME,VARCHAR,Y,,,모바일 기기의 마케팅용 모델명,
+BIGQUERY_REFINED_DATA,,,DEVICE_MOBILE_MODEL_NAME,VARCHAR,Y,,,모바일 기기 모델명,
+BIGQUERY_REFINED_DATA,,,DEVICE_MOBILE_OS_HARDWARE_MODEL,VARCHAR,Y,,,모바일 OS 또는 하드웨어 모델 정보,
+BIGQUERY_REFINED_DATA,,,DEVICE_OPERATING_SYSTEM,VARCHAR,Y,,,운영체제,
+BIGQUERY_REFINED_DATA,,,DEVICE_OPERATING_SYSTEM_VERSION,VARCHAR,Y,,,운영체제 버전,
+BIGQUERY_REFINED_DATA,,,DEVICE_WEB_INFO_BROWSER,VARCHAR,Y,,,웹 브라우저명,
+BIGQUERY_REFINED_DATA,,,DEVICE_WEB_INFO_BROWSER_VERSION,VARCHAR,Y,,,웹 브라우저 버전,
+BIGQUERY_REFINED_DATA,,,DEVICE_WEB_INFO_HOSTNAME,VARCHAR,Y,,,이벤트가 발생한 호스트명,
+BIGQUERY_REFINED_DATA,,,GEO_CITY,VARCHAR,Y,,,도시 정보,
+BIGQUERY_REFINED_DATA,,,GEO_CONTINENT,VARCHAR,Y,,,대륙 정보,
+BIGQUERY_REFINED_DATA,,,GEO_COUNTRY,VARCHAR,Y,,,국가 정보,
+BIGQUERY_REFINED_DATA,,,GEO_METRO,VARCHAR,Y,,,대도시권 또는 광역권 정보,
+BIGQUERY_REFINED_DATA,,,GEO_REGION,VARCHAR,Y,,,지역 또는 시도 정보,
+BIGQUERY_REFINED_DATA,,,GEO_SUB_CONTINENT,VARCHAR,Y,,,하위 대륙 정보,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_CAMPAIGN_ID,VARCHAR,Y,,,수동 캠페인 ID 또는 UTM 캠페인 ID,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_CAMPAIGN_NAME,VARCHAR,Y,,,수동 캠페인명 또는 UTM 캠페인명,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_CONTENT,VARCHAR,Y,,,수동 콘텐츠값 또는 UTM content,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_MEDIUM,VARCHAR,Y,,,수동 매체값 또는 UTM medium,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_SOURCE,VARCHAR,Y,,,수동 소스값 또는 UTM source,
+BIGQUERY_REFINED_DATA,,,CTS_MANUAL_TERM,VARCHAR,Y,,,수동 검색어값 또는 UTM term,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_CAMPAIGN_ID,VARCHAR,Y,,,캠페인 식별값,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_CAMPAIGN_NAME,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_DEFAULT_CHANNEL_GROUP,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_MEDIUM,VARCHAR,Y,,,유입 매체 또는 채널 유형,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_PRIMARY_CHANNEL_GROUP,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_SOURCE,VARCHAR,Y,,,유입 소스,
+BIGQUERY_REFINED_DATA,,,STSLC_CRC_SOURCE_PLATFORM,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_GAC_AD_GROUP_ID,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_GAC_AD_GROUP_NAME,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_GAC_CAMPAIGN_NAME,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_CAMPAIGN_NAME,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_CONTENT,VARCHAR,Y,,,광고 소재 또는 콘텐츠 구분값,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_MEDIUM,VARCHAR,Y,,,유입 매체 또는 채널 유형,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_SOURCE,VARCHAR,Y,,,유입 소스,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_SOURCE_PLATFORM,VARCHAR,Y,,,,
+BIGQUERY_REFINED_DATA,,,STSLC_MC_TERM,VARCHAR,Y,,,"검색어, 타겟, 키워드 또는 세부 캠페인 구분값",
+BIGQUERY_REFINED_DATA,,,TS_MEDIUM,VARCHAR,Y,,,사용자가 유입된 마케팅 채널 또는 매체 유형,
+BIGQUERY_REFINED_DATA,,,TS_NAME,VARCHAR,Y,,,"객체(캠페인, 프로모션, 폼, 사용자 입력 항목 등)의 이름 또는 명칭",
+BIGQUERY_REFINED_DATA,,,TS_SOURCE,VARCHAR,Y,,,"사용자가 유입된 웹사이트, 광고 플랫폼 또는 채널의 출처",
+BIGQUERY_REFINED_DATA,,,STREAM_ID,VARCHAR,Y,,,GA4 데이터 스트림 식별자,
+BIGQUERY_REFINED_DATA,,,PLATFORM,VARCHAR,Y,,,이벤트가 발생한 플랫폼 구분값,
+BIGQUERY_REFINED_DATA,,,ECOMMERCE_PURCHASE_REVENUE,VARCHAR,Y,,,구매 또는 후원 전환 금액,
+BIGQUERY_REFINED_DATA,,,ECOMMERCE_TOTAL_ITEM_QUANTITY,VARCHAR,Y,,,전체 항목 수량,
+BIGQUERY_REFINED_DATA,,,ECOMMERCE_TRANSACTION_ID,VARCHAR,Y,,,거래 또는 후원 완료를 식별하는 ID,
+BIGQUERY_REFINED_DATA,,,ECOMMERCE_UNIQUE_ITEMS,VARCHAR,Y,,,고유 항목 수,
+BIGQUERY_REFINED_DATA,,,ITEMS,ARRAY,Y,,,배열값. item_category: 항목 카테고리 / item_id: 항목 식별값 / item_name: 항목명 또는 후원 사업명 / item_revenue: 항목별 수익 또는 후원 금액 / price: 항목 가격 또는 후원 금액 / promotion_id: 프로모션 또는 배너 식별값 / promotion_name: 프로모션 또는 배너 이름 / quantity: 항목 수량,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,BIZ_TARGET_DK,VARCHAR,N,PK,,사업목표 대체키 (PK),
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,TARGET_YEAR,"NUMBER(4,0)",Y,,,목표연도 YYYY,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,MONTH_NO,"NUMBER(2,0)",Y,,,월 1~12,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,MONTH_KEY,VARCHAR,Y,,,월키 YYYYMM,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,ORG_CD,VARCHAR,Y,,,조직코드 (FK→DIM_ORG),
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,ORG_NM,VARCHAR,Y,,,조직 (이름조인 보완),
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,SPONSOR_BIZ_NM,VARCHAR,Y,,,후원사업,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,CAMPAIGN_NM,VARCHAR,Y,,,캠페인 (연결키 부재 Q10),
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,TARGET_TYPE,VARCHAR,Y,,,목표유형: 당초/추경1차/추경2차,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,TARGET_CNT,"NUMBER(18,4)",Y,,,목표 건수(건) — 지표사전 #152~155,
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_BIZ_TARGET,FTG-B 사업목표,마스터,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_CD,VARCHAR,N,PK,,캠페인코드 (PK),
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_NM,VARCHAR,Y,,,캠페인명,
+CRM_CAMPAIGN,1캠페인,마스터,UPPER_CMPGN_CD,VARCHAR,Y,FK,CRM_CAMPAIGN.CMPGN_CD※비강제,상위캠페인코드 (자기참조),
+CRM_CAMPAIGN,1캠페인,마스터,UPPER_CMPGN_YN,VARCHAR,Y,,,상위캠페인 여부 (Y/N),
+CRM_CAMPAIGN,1캠페인,마스터,BRND_ID,VARCHAR,Y,,,브랜드ID,
+CRM_CAMPAIGN,1캠페인,마스터,BRND_NM,VARCHAR,Y,,,브랜드명,동일소스 JOIN
+CRM_CAMPAIGN,1캠페인,마스터,PR_MTH_CD,VARCHAR,Y,FK,CRM_CODE※비강제,홍보방법코드,
+CRM_CAMPAIGN,1캠페인,마스터,SPNSR_BSNS_ID,VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (Q16 조인키),
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_CTGR_CD,"NUMBER(10,0)",Y,FK,CRM_CODE※비강제,캠페인 카테고리코드 (MM294). 라벨=CMPGN_CTGR_NM,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_CTGR_NM,VARCHAR,Y,,,캠페인 카테고리명 (MM294 라벨). 예: 국내사례캠페인·굿즈캠페인·해외캠페인,
+CRM_CAMPAIGN,1캠페인,마스터,MBER_INFLOW_PATH_CD,"NUMBER(10,0)",Y,,,개발인입경로코드 (MM293). 라벨=MBER_INFLOW_PATH_NM,
+CRM_CAMPAIGN,1캠페인,마스터,MBER_INFLOW_PATH_NM,VARCHAR,Y,,,개발인입경로명 (MM293 라벨). 예: 디지털·방송·영상광고·지역개발·마케팅콜개발,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_TYPE1_BSN,"NUMBER(10,0)",Y,FK,CRM_CODE※비강제,캠페인 유형1 코드 (MM295) = 국내/통합/해외 축. 라벨=CMPGN_TYPE1_NM,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_TYPE1_NM,VARCHAR,Y,,,캠페인 유형1명 (MM295 라벨): 국내 / 통합 / 해외,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_TYPE2_BSN,"NUMBER(10,0)",Y,FK,CRM_CODE※비강제,캠페인 유형2 코드 (MM296) = 굿즈/기타/사례/사업 축. 라벨=CMPGN_TYPE2_NM,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_TYPE2_NM,VARCHAR,Y,,,캠페인 유형2명 (MM296 라벨): 굿즈 / 기타 / 사례 / 사업,
+CRM_CAMPAIGN,1캠페인,마스터,MKTG_CMPGN_NM,"NUMBER(10,0)",Y,,,"마케팅캠페인 코드 (※_NM 접미이나 실제는 FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD, 323종·고아 0)",
+CRM_CAMPAIGN,1캠페인,마스터,MK_CMPGN_NM,VARCHAR,Y,,,"마케팅 캠페인명 (라벨, Q16 해소)",
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_STRT_DE,VARCHAR,Y,,,캠페인 시작일 YYYYMMDD,
+CRM_CAMPAIGN,1캠페인,마스터,CMPGN_TRGET_CD,VARCHAR,Y,,,캠페인대상 코드 raw — TM_CM_CMPGN_MNG.CMPGN_TRGET_CD (정본 CM002). 라벨 미배선,
+CRM_CAMPAIGN,1캠페인,마스터,CPR_DIV_CD,VARCHAR,Y,,,법인구분 코드 raw — TM_CM_CMPGN_MNG.CPR_DIV_CD (정본 CM019: I=사단/S=사복/A=통합). 라벨=CPR_DIV_NM,
+CRM_CAMPAIGN,1캠페인,마스터,SPNSR_DIV_CD,VARCHAR,Y,,,후원구분 코드 raw — TM_CM_CMPGN_MNG.SPNSR_DIV_CD (정본 CM035). 라벨=SPNSR_DIV_NM,
+CRM_CAMPAIGN,1캠페인,마스터,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_CAMPAIGN,1캠페인,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_CAMPAIGN,1캠페인,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_CAMPAIGN,1캠페인,마스터,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_CAMPAIGN,1캠페인,마스터,CPR_DIV_NM,VARCHAR,Y,,,법인구분명 — CPR_DIV_CD 라벨,
+CRM_CAMPAIGN,1캠페인,마스터,SPNSR_DIV_NM,VARCHAR,Y,,,후원구분명 — SPNSR_DIV_CD 라벨,
+CRM_CAMPAIGN,1캠페인,마스터,CMMN_BRND,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM,
+CRM_CAMPAIGN,1캠페인,마스터,CMMN_BRND_NM,VARCHAR,Y,,,MM297 공통브랜드명,
+CRM_CAMPAIGN,1캠페인,마스터,MKTG_UTM,"NUMBER(10,0)",Y,,,TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM,
+CRM_CAMPAIGN,1캠페인,마스터,MKTG_UTM_NM,VARCHAR,Y,,,TM_CM_MKTNG_UTM 라벨,
+CRM_CAMPAIGN,1캠페인,마스터,PROMO_METHOD_NAME,VARCHAR,Y,,,"홍보방법명 — PR_MTH_CD 라벨(CM008, 구 GOLD DIM_CAMPAIGN §O37 로직 이관)",
+CRM_CAMPAIGN,1캠페인,마스터,PARENT_CAMPAIGN_NAME,VARCHAR,Y,,,상위캠페인명 — UPPER_CMPGN_CD 자기조인 라벨(구 GOLD DIM_CAMPAIGN §O37 로직 이관),
+CRM_CODE,코드그룹x코드,코드,CD_ID,VARCHAR,N,PK,,코드그룹 ID (PK),
+CRM_CODE,코드그룹x코드,코드,DTL_CD_ID,VARCHAR,N,PK,,상세코드 ID (PK),
+CRM_CODE,코드그룹x코드,코드,DTL_CD_NM,VARCHAR,Y,,,상세코드명 (라벨),
+CRM_CODE,코드그룹x코드,코드,UPPER_CD_ID,VARCHAR,Y,,,상위코드 ID (코드 계층),
+CRM_CODE,코드그룹x코드,코드,SORT_ORDR,"NUMBER(10,0)",Y,,,정렬순서,
+CRM_CODE,코드그룹x코드,코드,USE_YN,VARCHAR,Y,,,사용여부 (Y/N),
+CRM_CODE,코드그룹x코드,코드,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_CODE,코드그룹x코드,코드,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_CODE,코드그룹x코드,코드,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_CODE,코드그룹x코드,코드,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_DEV_TARGET,월x조직x개발구분,마스터,STDYY,VARCHAR,N,PK,,기준연도 YYYY (PK),
+CRM_DEV_TARGET,월x조직x개발구분,마스터,STDR_MT,VARCHAR,N,PK,,기준월 YYYYMM (PK),
+CRM_DEV_TARGET,월x조직x개발구분,마스터,MBER_DVLP_DIV_CD,VARCHAR,N,"PK,FK",CRM_CODE※비강제,회원개발 구분코드 (PK),FTG-D conform
+CRM_DEV_TARGET,월x조직x개발구분,마스터,DEPT_ID,VARCHAR,N,"PK,FK",CRM_ORG.DEPT_ID※비강제,"부서ID (PK, →CRM_ORG)",
+CRM_DEV_TARGET,월x조직x개발구분,마스터,GOAL_CNT,"NUMBER(10,0)",Y,,,목표 건수,FTG-D measure
+CRM_DEV_TARGET,월x조직x개발구분,마스터,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_DEV_TARGET,월x조직x개발구분,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_DEV_TARGET,월x조직x개발구분,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_DEV_TARGET,월x조직x개발구분,마스터,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_EVENT,1행사,행사,EVENT_KEY,VARCHAR,N,PK,,행사키 (PK),파생 통합키
+CRM_EVENT,1행사,행사,EVENT_SOURCE,VARCHAR,Y,,,행사출처 (이벤트/캠페인행사),파생
+CRM_EVENT,1행사,행사,EVENT_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,행사구분코드 (raw · 🔴원천별 다체계 — EVENT_SOURCE 동반 필수),
+CRM_EVENT,1행사,행사,EVENT_NM,VARCHAR,Y,,,행사명,
+CRM_EVENT,1행사,행사,STRT_DE,VARCHAR,Y,,,시작일자 YYYYMMDD,
+CRM_EVENT,1행사,행사,END_DE,VARCHAR,Y,,,종료일자 YYYYMMDD,
+CRM_EVENT,1행사,행사,RCRIT_PSNNL_CO,"NUMBER(10,0)",Y,,,모집인원 수,
+CRM_EVENT,1행사,행사,BRNCH_DEPT_ID,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,주관부서ID (→CRM_ORG),
+CRM_EVENT,1행사,행사,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_EVENT,1행사,행사,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_EVENT,1행사,행사,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_EVENT,1행사,행사,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_EVENT,1행사,행사,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_EVENT,1행사,행사,EVENT_DIV_GROUP,VARCHAR,Y,,,행사구분 코드군 ID (EVENT=MS286 · CRMN=MS002 · 등급 B 배타 확정),
+CRM_EVENT,1행사,행사,EVENT_DIV_NM,VARCHAR,Y,,,행사구분 라벨 (CRM_CODE 조인 · 두 체계 겹침 0),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,EVENT_KEY,VARCHAR,N,"PK,FK",CRM_EVENT.EVENT_KEY※비강제,"행사키 (PK, →CRM_EVENT)",
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,MBER_NO,VARCHAR,N,"PK,FK",CRM_MEMBER.MEMBER_DK※비강제,회원번호 (PK),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_SEQ,"NUMBER(10,0)",N,PK,,참여 일련번호 (PK),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,참여상태코드 (raw · 🔴원천별 2체계 O28 — EVENT_KEY 접두 또는 PARTCPT_STAT_GROUP 동반 필수),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_CHNNL_CD,VARCHAR,Y,FK,CRM_CODE※비강제,참여채널코드 (raw · EVENT 전용 — CRMN 은 원천 컬럼 부재),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_PATH_CD,VARCHAR,Y,FK,CRM_CODE※비강제,참여경로코드 (raw · CRMN 원천 컬럼명은 RQST_PATH_CD 신청경로),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PRZWIN_CD,"NUMBER(10,0)",Y,,,당첨코드,
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,RCPMNY_AMT,"NUMBER(19,0)",Y,,,입금금액 (원단위),원금액
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_DT,TIMESTAMP_NTZ,Y,,,참여일시,
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_STAT_GROUP,VARCHAR,Y,,,참여상태 코드군 ID (EVENT=MS304 · CRMN=MS006). 🔴두 원천의 「참여」 정의가 다르다 — 합산 금지,
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_STAT_NM,VARCHAR,Y,,,참여상태 라벨 (CRM_CODE 조인). ⚠️EVENT 계열은 사전 라벨이 **영문**(Success·1_step_right…)이며 현업 한글 표기 회신 대기(문서20 §M-1) — 창작하지 않았다,
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_CHNNL_GROUP,VARCHAR,Y,,,참여채널 코드군 ID (EVENT=MS302 · 등급 B 배타 확정 — 근거·규모는 문서31 §3). CRMN 은 원천 컬럼 부재로 NULL,
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_CHNNL_NM,VARCHAR,Y,,,참여채널 라벨 (CRM_CODE 조인),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_PATH_GROUP,VARCHAR,Y,,,참여경로 코드군 ID (EVENT=MS303 · CRMN=MS004). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B),
+CRM_EVENT_PARTICIPATION,행사x참여자,행사,PARTCPT_PATH_NM,VARCHAR,Y,,,참여경로 라벨 (CRM_CODE 조인),
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,MK_CMPGN_CD,VARCHAR,Y,,,PK. 마케팅캠페인 코드. TM_CM_CMPGN_MNG.MKTG_CMPGN_NM(NUMBER)의 문자 표현과 조인된다,
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,MK_CMPGN_NM,VARCHAR,Y,,,마케팅캠페인명. AGENCY 광고 CAMPAIGN_NM 과 이름 매칭되는 축,
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,USE_YN,VARCHAR,Y,,,사용여부(원천 그대로 — 폐지분도 과거 실적에 붙으므로 제외하지 않는다),
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,RM,VARCHAR,Y,,,비고,
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,DW_SOURCE_SYSTEM,VARCHAR,Y,,,원천 시스템,공통감사
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,Y,,,적재 시각,공통감사
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,갱신 시각,공통감사
+CRM_MARKETING_CAMPAIGN,[O45] 마케팅캠페인 마스터,마스터,DW_BATCH_ID,VARCHAR,Y,,,배치 식별,공통감사
+CRM_MEMBER,1회원(MEMBER_DK),회원,MEMBER_DK,VARCHAR,N,PK,,"불변 회원키 (PK, 조인용)",
+CRM_MEMBER,1회원(MEMBER_DK),회원,MEMBER_TYPE,VARCHAR,Y,,,회원구분 파생 (정기=FDRM / 일시=ONCE),파생
+CRM_MEMBER,1회원(MEMBER_DK),회원,MBER_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,회원구분코드 (MM018: 개인/기업/단체),
+CRM_MEMBER,1회원(MEMBER_DK),회원,MBER_DIV_NM,VARCHAR,Y,,,회원구분명 (코드 라벨),파생
+CRM_MEMBER,1회원(MEMBER_DK),회원,CPR_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,법인구분코드,
+CRM_MEMBER,1회원(MEMBER_DK),회원,SEX,VARCHAR,Y,,,성별 원천코드 raw(정본 CM013) — BRONZE TM_MM_FDRM_MBER_INFO/ONCE_MBER_INFO.SEX 무변환. 1국내남·2국내여·3외국남·4외국여·5외국기타·6단체·7기업·8기타. ⚠️[O26] 종전 M/F/U 축약을 폐기했다 — 정본 비고가 '성별만으로는 사용하지는 않음'을 경고했고 축약이 원천 8종을 3종으로 파괴했다. 라벨=SEX_NM,
+CRM_MEMBER,1회원(MEMBER_DK),회원,SEX_NM,VARCHAR,Y,,,CM013 라벨 그대로(국내(남자)/외국인(여자)/단체/기업 등 8종). USE_YN 무필터 조인. [O26 신설],
+CRM_MEMBER,1회원(MEMBER_DK),회원,MBER_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,회원상태코드 원천 raw (정본 MM010): 1활동회원·2~6신규미납1~5·7~11장기미납1~5·12후원중단. 라벨 미배선(GOLD DIM_MEMBER.MEMBER_STATUS_NAME 이 보유). ⚠️미납 판정은 PAY_STAT_CD(DEC-3) 소관 — 이 컬럼과 혼용 금지,정기만 보유
+CRM_MEMBER,1회원(MEMBER_DK),회원,MBER_STAT_NM,VARCHAR,Y,,,회원상태명 (코드 라벨),파생
+CRM_MEMBER,1회원(MEMBER_DK),회원,CMPGN_CD,VARCHAR,Y,FK,CRM_CAMPAIGN.CMPGN_CD※비강제,가입 캠페인코드 (→CRM_CAMPAIGN),
+CRM_MEMBER,1회원(MEMBER_DK),회원,ACT_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,활동부서코드 (→CRM_ORG),
+CRM_MEMBER,1회원(MEMBER_DK),회원,REGIST_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,등록부서코드 (→CRM_ORG),
+CRM_MEMBER,1회원(MEMBER_DK),회원,JOIN_PATH_CD,VARCHAR,Y,FK,CRM_CODE※비강제,가입경로코드 (MM014),
+CRM_MEMBER,1회원(MEMBER_DK),회원,HMPG_ID,VARCHAR,Y,,,홈페이지/앱 ID,
+CRM_MEMBER,1회원(MEMBER_DK),회원,ENTRPS_NM,VARCHAR,Y,,,기업/단체명 (법인회원),
+CRM_MEMBER,1회원(MEMBER_DK),회원,EMAIL_RECPTN,VARCHAR,Y,,,이메일 수신동의 여부,
+CRM_MEMBER,1회원(MEMBER_DK),회원,PSTMTR_RECPTN,VARCHAR,Y,,,우편물 수신동의 여부,
+CRM_MEMBER,1회원(MEMBER_DK),회원,JOIN_DT,TIMESTAMP_NTZ,Y,,,가입일시,
+CRM_MEMBER,1회원(MEMBER_DK),회원,EMAIL_STAT_CD,VARCHAR,Y,,,이메일상태 코드 raw (정본 MM009). ONCE 원천 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,ETC_CTTPC_REL_CD,VARCHAR,Y,,,기타연락처 관계 코드 raw (정본 MM008). ⚠️사전 심각 불완전(활성 3 vs 원천 distinct 14) → 라벨 불가·현업 사전보완 대기. ONCE 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,ETC_CTTPC_STAT_CD,VARCHAR,Y,,,기타연락처 상태 코드 raw (정본 MM008). ONCE 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,ETC_TSTM_DIV_CD,VARCHAR,Y,,,기타 증서구분 코드 raw (정본 MS026). 원천 타입 NUMBER → TO_VARCHAR 정규화. FDRM∪ONCE 양쪽 존재,
+CRM_MEMBER,1회원(MEMBER_DK),회원,MOBLPHON_STAT_CD,VARCHAR,Y,,,휴대폰상태 코드 raw (정본 MM008). ONCE 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,REL_CD,VARCHAR,Y,,,관계 코드 raw (정본 CM009). ONCE 전용 — FDRM 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,RELATNSP_DIV_CD,VARCHAR,Y,,,결연구분 코드 raw (정본 MM019). ONCE 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,SLRCLD_LRR_CD,VARCHAR,Y,,,급여공제 코드 raw (정본 CM029). ⚠️폐지코드 사용중(활성2·폐지1) → 라벨 조인시 USE_YN 무필터 필수. ONCE 부재 → NULL,
+CRM_MEMBER,1회원(MEMBER_DK),회원,TSTM_DIV_CD,VARCHAR,Y,,,증서구분 코드 raw (정본 MS026). 원천 타입 NUMBER → TO_VARCHAR 정규화. FDRM∪ONCE 양쪽 존재,
+CRM_MEMBER,1회원(MEMBER_DK),회원,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER,1회원(MEMBER_DK),회원,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_MEMBER,1회원(MEMBER_DK),회원,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER,1회원(MEMBER_DK),회원,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER,1회원(MEMBER_DK),회원,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,OCCRRNC_DE,VARCHAR,N,PK,,발생일자 YYYYMMDD (PK),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,SER_NO,"NUMBER(10,0)",N,PK,,일련번호 (PK),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,SPNSR_AMT,"NUMBER(19,0)",Y,,,변경 후 약정금액 (원단위),원금액 보존
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,RDCAMT_YN,VARCHAR,Y,,,감액여부 (Y=감액/N=증액),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,ACMSLT_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,실적부서코드 (→CRM_ORG),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,CMPGN_CD,VARCHAR,Y,FK,CRM_CAMPAIGN.CMPGN_CD※비강제,캠페인코드 (→CRM_CAMPAIGN),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,AREA_CD,VARCHAR,Y,,,지역코드 (CM018),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,AREA_NM,VARCHAR,Y,,,지역명 (코드 라벨),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,AGE,"NUMBER(10,0)",Y,,,연령,
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,MBER_DIV_CD,VARCHAR,Y,,,회원구분 코드 raw (정본 MM018: 1개인/2기업/3단체). 라벨 미배선,
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,SETLE_CD,VARCHAR,Y,,,결제수단 코드 raw (정본 PM040). 라벨 미배선,
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,SEX,VARCHAR,Y,,,성별 코드 raw (정본 CM013). ✅[O26] CRM_MEMBER.SEX 도 CM013 raw 로 복원되어 동명이의 해소 — 비교·UNION 가능(종전 'M/F/U 정규화값이라 금지' 경고 폐기),
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,SPNSR_AMT_CD,VARCHAR,Y,,,후원금액구분 코드 raw (정본 CM012). 금액 원값은 SPNSR_AMT,
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_AMT_CHANGE,증감 1건,약정,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_NO,VARCHAR,N,PK,,후원번호 (PK),
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_BSNS_NO,"NUMBER(19,0)",N,PK,,후원사업번호 (PK),Q15 약정키(차원키 아님)
+CRM_MEMBER_DEV,개발약정 1건,약정,OCCRRNC_DE,VARCHAR,N,PK,,발생일자 YYYYMMDD (PK),
+CRM_MEMBER_DEV,개발약정 1건,약정,SER_NO,"NUMBER(10,0)",N,PK,,일련번호 (PK),
+CRM_MEMBER_DEV,개발약정 1건,약정,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_BSNS_ID,VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (→CRM_SPONSORSHIP),
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_AMT,"NUMBER(19,0)",Y,,,약정 후원금액 (원단위),원금액 보존
+CRM_MEMBER_DEV,개발약정 1건,약정,DVLP_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,개발구분코드 (정본 MM015: 1신규 2증액 3감액 4재후원 5후원중단). 라벨=DVLP_DIV_NM. 🔴 MM015(개발구분) ≠ MM010(회원상태) — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다. 회원상태는 CRM_MEMBER.MBER_STAT_CD(MM010),FTG-D conform
+CRM_MEMBER_DEV,개발약정 1건,약정,DVLP_DIV_NM,VARCHAR,Y,,,개발구분명 — 정본 MM015 라벨(1신규/2증액/3감액/4재후원/5후원중단). CRM_CODE 빌드시점 조인. 컬럼명은 정본 컬럼정의서 504행 현업 용어쌍 (O24),
+CRM_MEMBER_DEV,개발약정 1건,약정,ACT_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,활동부서코드 (→CRM_ORG),O10
+CRM_MEMBER_DEV,개발약정 1건,약정,ACMSLT_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,실적부서코드 (→CRM_ORG),O10
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_CD,VARCHAR,Y,FK,CRM_CAMPAIGN.CMPGN_CD※비강제,캠페인코드 (→CRM_CAMPAIGN),
+CRM_MEMBER_DEV,개발약정 1건,약정,SETLE_CD,VARCHAR,Y,FK,CRM_CODE※비강제,결제수단코드,
+CRM_MEMBER_DEV,개발약정 1건,약정,AREA_CD,VARCHAR,Y,,,지역코드 (CM018),
+CRM_MEMBER_DEV,개발약정 1건,약정,AREA_NM,VARCHAR,Y,,,지역명 (코드 라벨),
+CRM_MEMBER_DEV,개발약정 1건,약정,AGE,"NUMBER(10,0)",Y,,,연령,
+CRM_MEMBER_DEV,개발약정 1건,약정,CANCL_RDCAMT_RSN_CD,VARCHAR,Y,,,취소·감액사유 코드 raw (정본 MM002). ⚠️31종 중 18종이 폐지코드 → 라벨 조인시 USE_YN 무필터 필수,
+CRM_MEMBER_DEV,개발약정 1건,약정,MBER_DIV_CD,VARCHAR,Y,,,회원구분 코드 raw (정본 MM018). 라벨 미배선,
+CRM_MEMBER_DEV,개발약정 1건,약정,SEX,VARCHAR,Y,,,성별 코드 raw (정본 CM013). ✅[O26] CRM_MEMBER.SEX 도 CM013 raw 로 복원되어 동명이의 해소 — 비교·UNION 가능(종전 'M/F/U 정규화값이라 금지' 경고 폐기),
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_AMT_CD,VARCHAR,Y,,,후원금액구분 코드 raw (정본 CM012). 금액 원값은 SPNSR_AMT,
+CRM_MEMBER_DEV,개발약정 1건,약정,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정 1건,약정,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정 1건,약정,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정 1건,약정,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정 1건,약정,MBER_INFLOW_PATH_CD,"NUMBER(10,0)",Y,,,개발인입경로코드 (MM293). 라벨=MBER_INFLOW_PATH_NM. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,MBER_INFLOW_PATH_NM,VARCHAR,Y,,,개발인입경로명 (MM293 라벨). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_CTGR_CD,"NUMBER(10,0)",Y,,,캠페인 카테고리코드 (MM294). 라벨=CMPGN_CTGR_NM. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_CTGR_NM,VARCHAR,Y,,,캠페인 카테고리명 (MM294 라벨). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_TYPE1_BSN,"NUMBER(10,0)",Y,,,캠페인 유형1 코드 (MM295) = 국내/통합/해외 축. 라벨=CMPGN_TYPE1_NM. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_TYPE1_NM,VARCHAR,Y,,,캠페인 유형1명 (MM295 라벨): 국내 / 통합 / 해외. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_TYPE2_BSN,"NUMBER(10,0)",Y,,,캠페인 유형2 코드 (MM296) = 굿즈/기타/사례/사업 축. 라벨=CMPGN_TYPE2_NM. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMPGN_TYPE2_NM,VARCHAR,Y,,,캠페인 유형2명 (MM296 라벨): 굿즈 / 기타 / 사례 / 사업. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,MKTG_CMPGN_NM,"NUMBER(10,0)",Y,,,마케팅캠페인 코드 (※_NM 접미이나 실제는 FK→TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,MK_CMPGN_NM,VARCHAR,Y,,,"마케팅 캠페인명 (라벨, Q16 해소). CRM_CAMPAIGN 비정규화",
+CRM_MEMBER_DEV,개발약정 1건,약정,CMMN_BRND,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CMMN_BRND_NM,VARCHAR,Y,,,MM297 공통브랜드명. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,MKTG_UTM,"NUMBER(10,0)",Y,,,TM_CM_MKTNG_UTM 코드. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,MKTG_UTM_NM,VARCHAR,Y,,,TM_CM_MKTNG_UTM 라벨. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_DIV_CD,VARCHAR,Y,,,후원구분 코드 raw (정본 CM035). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,SPNSR_DIV_NM,VARCHAR,Y,,,후원구분명. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CPR_DIV_CD,VARCHAR,Y,,,법인구분 코드 raw (정본 CM019: I=사단/S=사복/A=통합). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,CPR_DIV_NM,VARCHAR,Y,,,법인구분명. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,BRND_NM,VARCHAR,Y,,,브랜드명. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,PARENT_CAMPAIGN_NAME,VARCHAR,Y,,,상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,PROMO_METHOD_NAME,VARCHAR,Y,,,홍보방법명 (CM008 라벨). CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정 1건,약정,SRC_LOAD_DT,TIMESTAMP_NTZ,Y,,,원천(BRONZE) 적재시각 워터마크 — incremental merge 필터 기준값 (2026-08-25 증분 전략),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,MBER_NO,VARCHAR,N,"PK,FK",CRM_MEMBER.MEMBER_DK※비강제,회원번호 (PK),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,SPNSR_DSCNTC_DE,VARCHAR,N,PK,,후원중단일자 YYYYMMDD (PK),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,SER_NO,"NUMBER(10,0)",N,PK,,일련번호 (PK),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DSCNTC_RSN_CD,VARCHAR,Y,FK,CRM_CODE※비강제,중단사유코드,DIM_REASON
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DSCNTC_RSN_NM,VARCHAR,Y,,,중단사유명 (코드 라벨),파생
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DSCNTC_PATH,VARCHAR,Y,,,중단경로,
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,REGIST_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,등록부서코드 (→CRM_ORG),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DSCNTC_PATH_NM,VARCHAR,Y,,,중단경로명 — MM287 라벨(1=SYSTEM/2=CRM/3=홈페이지). 코드는 DSCNTC_PATH. USE_YN 무필터 조인 (O25),
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_DISCONTINUE,중단 1건,약정,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,MBER_NO,VARCHAR,N,"PK,FK",CRM_MEMBER.MEMBER_DK※비강제,회원번호 (PK),
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,SER_NO,"NUMBER(10,0)",N,PK,,일련번호 (PK),
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,RE_SPNSR_DE,VARCHAR,N,PK,,재후원일자 YYYYMMDD (PK),
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,REGIST_DEPT_CD,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,등록부서코드 (→CRM_ORG),
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_RESPONSOR,재후원 1건,약정,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_NO,VARCHAR,N,PK,,후원번호 (PK),
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_BSNS_NO,"NUMBER(19,0)",N,PK,,후원사업번호 (PK),
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_BSNS_ID,VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (→CRM_SPONSORSHIP),Q15 NO->ID 크로스워크 소스
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_AMT,"NUMBER(19,0)",Y,,,약정금액 (원단위),
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_DSCNTC_YN,VARCHAR,Y,,,후원중단여부 (Y/N),
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_DSCNTC_DE,VARCHAR,Y,,,후원중단일자 YYYYMMDD,
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,SPNSR_DSCNTC_RSN_CD,VARCHAR,Y,FK,CRM_CODE※비강제,후원중단사유코드,
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_BIZ,회원x후원사업,약정,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,MBER_NO,VARCHAR,Y,,,회원번호 — 후원 마스터에서 얻는다(후원사업 테이블에는 없다).,
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_NO,VARCHAR,N,PK,,후원번호 (PK),
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_BSNS_NO,"NUMBER(38,0)",N,PK,,후원사업번호 (PK). 🟢재후원 시 **새 번호가 발급**되므로 「재후원 넘버링 > 중단 넘버링」 조건이 이 축에 이미 반영돼 있다(정본 #51 비고의 tie-break 가 불필요해지는 이유). ⚠️채번의 시간 단조성은 초기 구간에서 성립하지 않는다 — tie-break 를 쓰는 설계라면 그 구간에서 작동하지 않는다. 구간 경계와 규모는 20_issue/30_설계_의사결정 §13-D 2 를 보라(R2-6: 수치는 문서에만).,
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_BSNS_ID,VARCHAR,Y,,,후원사업 ID (→CRM_SPONSORSHIP),
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_AMT,"NUMBER(38,0)",Y,,,"후원사업 약정금액 원단위. 🟢정본 #52 활동회원(건) = 활동 사업의 이 금액 합 / 10,000.",
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,START_MONTH_KEY,"NUMBER(6,0)",Y,,,활동 개시 월키 YYYYMM. ⚠️**후원(SPNSR_NO) 등록월의 근사**다 — 원천에 후원사업 단위 시작일이 없다. 같은 후원 아래 사업이 나중에 추가되면 시작을 실제보다 이르게 본다(활동 과대 방향). 사업 단위 시작일이 입고되면 교체할 자리.,
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DSCNTC_MONTH_KEY,"NUMBER(6,0)",Y,,,중단 월키 YYYYMM. 🔴 NULL = **미중단**(현재까지 활동)이며 결측이 아니다 — 중단 기록의 부재가 곧 「중단하지 않았다」는 정보다. 이 성질 덕분에 활동 판정에 커버리지 공백이 없다.,
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_DSCNTC_DE,VARCHAR,Y,,,중단일 raw YYYYMMDD (원천 TEXT),
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,SPNSR_DSCNTC_YN,VARCHAR,Y,,,중단여부 raw,
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_SPONSOR_SPAN,회원×후원사업 활동구간(시작월~중단월) — GOLD,CRM,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,MBER_NO,VARCHAR,N,"PK,FK",CRM_MEMBER.MEMBER_DK※비강제,회원번호 (PK),
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,SER_NO,"NUMBER(10,0)",N,PK,,상태전이 일련번호 (PK),
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,BF_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,변경 전 상태코드,
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,BF_STAT_NM,VARCHAR,Y,,,변경 전 상태명 (코드 라벨),파생
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,CHN_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,변경 후 상태코드,
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,CHN_STAT_NM,VARCHAR,Y,,,변경 후 상태명 (코드 라벨),파생
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,EFFECTIVE_FROM,TIMESTAMP_NTZ,Y,,,SCD2 유효시작 시각,SCD2 시작
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,EFFECTIVE_TO,TIMESTAMP_NTZ,Y,,,SCD2 유효종료 시각,SCD2 종료(파생)
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,IS_CURRENT,BOOLEAN,Y,,,현재행 여부,SCD2(파생)
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_STATUS_HIST,회원상태전이 1건,회원,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_ORG,1조직노드,마스터,DEPT_ID,VARCHAR,N,PK,,부서ID (PK),
+CRM_ORG,1조직노드,마스터,DEPT_NM,VARCHAR,Y,,,부서명,
+CRM_ORG,1조직노드,마스터,UPPER_DEPT_ID,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,상위부서ID (조직 계층),
+CRM_ORG,1조직노드,마스터,ACMSLT_UPPER_DEPT_ID,VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,실적상위부서ID (실적팀 재귀 LVL5),
+CRM_ORG,1조직노드,마스터,ACMSLT_DEPT_YN,VARCHAR,Y,,,실적부서 여부 (Y/N),
+CRM_ORG,1조직노드,마스터,STATS_DEPT_LVL,"NUMBER(3,0)",Y,,,통계부서 레벨,
+CRM_ORG,1조직노드,마스터,USE_YN,VARCHAR,Y,,,사용여부 (Y/N),
+CRM_ORG,1조직노드,마스터,SORT_ORDR,"NUMBER(10,0)",Y,,,정렬순서,
+CRM_ORG,1조직노드,마스터,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_ORG,1조직노드,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_ORG,1조직노드,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_ORG,1조직노드,마스터,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PAY_KEY,VARCHAR,N,PK,,납입/청구 대체키 (PK),파생 통합키
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PAYMENT_TYPE,VARCHAR,Y,,,납입유형 파생 (회비/기부금),Q14 UNION 구분
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,SPNSR_BSNS_ID,VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (→CRM_SPONSORSHIP),
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RELATNSP_KEY,"NUMBER(10,0)",Y,FK,CRM_SPONSOR_RELATION※비강제,결연키 (→CRM_SPONSOR_RELATION),
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBRFEE_MT,VARCHAR,Y,,,회비 대상월 YYYYMM,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBRFEE_SQNC,"NUMBER(3,0)",Y,,,회비 회차,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RQEST_AMT,"NUMBER(19,0)",Y,,,청구금액 (원단위),
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RQEST_DE,DATE,Y,,,청구일자,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PAY_AMT,"NUMBER(10,0)",Y,,,납입금액 (원단위),
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PAY_DE,DATE,Y,,,납입일자,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PAY_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,납입상태코드. ★미납 판정축(DEC-3): 미납 = F OR NULL. 판정은 이 컬럼 단독,미납 정의[C-3]: PAY_STAT_CD='F' OR NULL (NULL=수기처리·원래 F)
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,SETLE_CD,VARCHAR,Y,FK,CRM_CODE※비강제,결제수단코드. ★RQEST_RST_CD 코드그룹 결정자(W1/DEC-17) — 단독 조인 금지,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,GFT_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,기부구분코드,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RQEST_RST_CD,VARCHAR,Y,,,"청구결과코드(PG 결과). ★사유축. 실측 101종·채움 99.67%·최대길이 28. ⚠️PG사별 이종 네임스페이스 → 코드 단독 조인 금지('01'=41개·'02'=43개·'03'=36개 코드그룹에 동시 존재, SETLE_CD=1 실패/=8 성공으로 의미 상반). 조인키 = (코드그룹, 코드) 복합. 코드그룹 = SETLE_CD+자릿수: 1&2자리→PM002 / 1&4자리→PM032 / 2→PM018 / 12→PM033 / 5→PM019. ★★REASON_SK 배선은 미납(PAY_STAT_CD='F') 행에 한정 — 성공행에 매핑하면 라벨이 반대로 붙는다(SETLE_CD=8, 1,374행). F 한정 시 의미 모순 0 검증. 기부금 branch 는 원천 컬럼 부재로 NULL",
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,PRCS_RST_CD,VARCHAR,Y,,,"처리결과코드. ⚠️PAY_STAT_CD 의 거울 컬럼 — 실측 F↔F 6,262,245 / S↔S 39,805,846, 불일치 179,052행(0.386%), 사유 분해력 없음(7종). ★미납 판정·사유 분해에 사용 금지. 원천 보존·감사 목적. 기부금 branch 는 원천 컬럼 부재로 NULL",
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,CPR_DIV_CD,VARCHAR,Y,,,법인구분 코드 raw (정본 CM019). 회비∪기부금 양쪽 존재,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBER_DIV_CD,VARCHAR,Y,,,회원구분 코드 raw (정본 MM018). 회비 전용 — 기부금 부재 → NULL,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBRFEE_DIV_CD,VARCHAR,Y,,,회비구분 코드 raw (정본 PM010). 회비 전용 → 기부금 NULL,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,OPERT_DIV_CD,VARCHAR,Y,,,작업구분 코드 raw (정본 MM014). 회비 전용 → 기부금 NULL,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,MBRFEE_PRCS_STAT_CD,VARCHAR,Y,,,"처리상태 코드 raw (정본 PM013). 🔴회비 전용 — 기부금 원천에도 동명 컬럼이 있으나 정본이 코드그룹 미지정이라 O16형 의미혼입 방지를 위해 NULL 유지. 미납 판정은 PAY_STAT_CD(DEC-3) 불변. [O26] MBRFEE_ 접두 = 원천 테이블 TM_PM_MBRFEE_ACMSLT 변별토큰 — CRM_SEND_REQUEST.PSTMTR_PRCS_STAT_CD(MS061)와 동명이의였다. BRONZE 실측 도메인 완전 분리: 여기 R 144,028·S 46,247,143·F 449 vs PSTMTR 0/1 (2026-08-04 재확인)",
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RETUN_RSN_CD,VARCHAR,Y,,,반환사유 코드 raw (정본 PM042). 회비∪기부금 양쪽 존재,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,RQEST_DIV_CD,VARCHAR,Y,,,청구구분 코드 raw (정본 PM024). 회비 전용 → 기부금 NULL,
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_PAYMENT_BILLING,적상 1건(회비)/납입 1건(기부금),납입,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_PAYMENT_METHOD,결제수단 1건,납입,SETLE_KEY,"NUMBER(10,0)",N,PK,,결제수단키 (PK),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,SETLE_CD,VARCHAR,Y,FK,CRM_CODE※비강제,결제수단코드,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,SETLE_NM,VARCHAR,Y,,,결제수단명 (코드 라벨),파생
+CRM_PAYMENT_METHOD,결제수단 1건,납입,CARD_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,카드구분코드,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,FNLT_CD,VARCHAR,Y,,,금융기관코드,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,WTDRW_STRT_DE,DATE,Y,,,출금 시작일,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,SETLE_STAT_CD,VARCHAR,Y,FK,CRM_CODE※비강제,결제상태코드,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,APPLCNT_MBER_REL_CD,VARCHAR,Y,,,신청자-회원 관계 코드 raw (정본 CM009),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,CPR_DIV_CD,VARCHAR,Y,,,법인구분 코드 raw (정본 CM019),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,CRTFC_MTH_CD,VARCHAR,Y,,,인증방법 코드 raw (정본 MM014),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,FNLT_DIV_CD,VARCHAR,Y,,,금융기관구분 코드 raw (정본 PM050). 기관코드 원값은 FNLT_CD,
+CRM_PAYMENT_METHOD,결제수단 1건,납입,RCEPT_DIV_CD,VARCHAR,Y,,,접수구분 코드 raw (정본 PM003),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,RQST_DIV_CD,VARCHAR,Y,,,요청구분 코드 raw (정본 PM004),
+CRM_PAYMENT_METHOD,결제수단 1건,납입,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_PAYMENT_METHOD,결제수단 1건,납입,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_PAYMENT_METHOD,결제수단 1건,납입,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_PAYMENT_METHOD,결제수단 1건,납입,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,ACTIVITY_KEY,VARCHAR,N,PK,,결연활동 대체키 (PK),파생 통합키
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,ACTIVITY_TYPE,VARCHAR,Y,,,활동유형 파생 (서신/선물금),파생
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,RELATNSP_KEY,"NUMBER(10,0)",Y,FK,CRM_SPONSOR_RELATION.RELATNSP_KEY※비강제,결연키 (→CRM_SPONSOR_RELATION),
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,MNG_NO,VARCHAR,Y,,,관리번호,
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,GFTMNEY,"NUMBER(10,0)",Y,,,선물금 (원단위),원금액
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,LETTER_DIV_CD,"NUMBER(10,0)",Y,,,서신구분코드,
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,RCEPT_DE,DATE,Y,,,접수일자,
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,SNDNG_DE,DATE,Y,,,발송일자,
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_RELATION_ACTIVITY,결연활동 1건,결연,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,SNDNG_KEY,"NUMBER(10,0)",N,"PK,FK",CRM_SEND_REQUEST.SNDNG_KEY※비강제,"발송키 (PK, →CRM_SEND_REQUEST)",
+CRM_SEND_MEMBER,발송x회원,발송,SNDNG_DTL_KEY,"NUMBER(10,0)",N,PK,,발송상세키 (PK),
+CRM_SEND_MEMBER,발송x회원,발송,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_SEND_MEMBER,발송x회원,발송,SNDNG_DE,TIMESTAMP_NTZ,Y,,,발송일시,
+CRM_SEND_MEMBER,발송x회원,발송,SNDNG_RST_CD,VARCHAR,Y,,,발송결과코드 (축A raw · 🔴채널별 다체계 — SEND_CHANNEL 또는 SEND_STATUS_GROUP 동반 필수),CASE 매핑
+CRM_SEND_MEMBER,발송x회원,발송,SEND_CHANNEL,VARCHAR,Y,,,발송채널 (축A 판별자),파생
+CRM_SEND_MEMBER,발송x회원,발송,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SEND_MEMBER,발송x회원,발송,SEND_STATUS_GROUP,VARCHAR,Y,,,축A 코드군 ID (조인키 · MSG_AT=MS282). 🟢운영서버 코드사전 대조로 확정(2026-08-11 · 등급 C→B) — 종전 「정황 등급」 표기는 해소됐다. EMAIL·SND·PSTMTR 은 NULL,
+CRM_SEND_MEMBER,발송x회원,발송,SEND_STATUS_NAME,VARCHAR,Y,,,축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 사전에 라벨 문자열이 없어 **의도적 NULL**(문서30 §23-J 결정 3 · 현업 §M-4) · PSTMTR 은 원천 부재,
+CRM_SEND_MEMBER,발송x회원,발송,SEND_RESULT_CD,VARCHAR,Y,,,축B(신설) 통신사 결과코드 raw — MSG_AT=TRNSMS_FAILR_CD_ID · SND=CALL_STATUS. 🟢두 채널이 같은 코드공간을 공유(conformed),
+CRM_SEND_MEMBER,발송x회원,발송,SEND_RESULT_GROUP,VARCHAR,Y,,,축B 코드군 ID = MS283 이 정의한 4종(MS056 공통·MS057 알림톡·MS058 SMS·MS059 MMS). 🟢리터럴이 아니라 조인 결과에서 얻는다 — 4그룹 코드값 중복 0(실측),
+CRM_SEND_MEMBER,발송x회원,발송,SEND_RESULT_NAME,VARCHAR,Y,,,축B 라벨 (CRM_CODE 조인). 사전 초과값은 NULL 유지 + warn 관측(DEC-17-B),
+CRM_SEND_MEMBER,발송x회원,발송,OPEN_DT,TIMESTAMP_NTZ,Y,,,"오픈시각 — 🔴 **SND 채널만 존재**한다(원천 SND_MEMBER_LIST.OPEN_DT · 원천에서도 ALTER 로 나중에 붙은 컬럼). EMAIL·MSG_AT·PSTMTR 은 원천에 오픈 컬럼이 없어 NULL 이다. ⚠️ NULL 의 뜻이 두 가지다: ㉠ 채널이 SND 가 아니다 ㉡ SND 이지만 측정 개시 이전 발송이다(= 미측정, 「열지 않았다」가 아니다). 오픈율 분모는 관측 구간의 SND 발송으로 한정할 것.",
+CRM_SEND_REQUEST,발송요청 1건,발송,SNDNG_KEY,"NUMBER(10,0)",N,PK,,발송키 (PK),
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_CHANNEL,VARCHAR,Y,,,발송채널 (SND/SMS/EMAIL 등),파생
+CRM_SEND_REQUEST,발송요청 1건,발송,SNDNG_TY_CD,VARCHAR,Y,FK,CRM_CODE※비강제,발송유형코드,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_TOP,VARCHAR,Y,,,발송구분 대분류코드,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_TOP_NM,VARCHAR,Y,,,발송구분 대분류명,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_MID,VARCHAR,Y,,,발송구분 중분류코드,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_MID_NM,VARCHAR,Y,,,발송구분 중분류명,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_BOT,VARCHAR,Y,,,발송구분 소분류코드,
+CRM_SEND_REQUEST,발송요청 1건,발송,SEND_GBN_BOT_NM,VARCHAR,Y,,,발송구분 소분류명,
+CRM_SEND_REQUEST,발송요청 1건,발송,TIT,VARCHAR,Y,,,발송 제목,
+CRM_SEND_REQUEST,발송요청 1건,발송,SNDNG_STDR_DE,TIMESTAMP_NTZ,Y,,,발송 기준일시,
+CRM_SEND_REQUEST,발송요청 1건,발송,REQ_SEQ_NO,"NUMBER(19,0)",Y,,,요청 일련번호,
+CRM_SEND_REQUEST,발송요청 1건,발송,MSG_DIV_CD,VARCHAR,Y,,,메시지구분 코드 raw (정본 MS010). MSG_AT 채널 전용 — 그 외 채널은 개념 부재로 NULL,
+CRM_SEND_REQUEST,발송요청 1건,발송,PSTMTR_PRCS_STAT_CD,VARCHAR,Y,,,"처리상태 코드 raw (정본 MS061). PSTMTR 채널 전용 — 그 외 NULL. [O26] PSTMTR_ 접두 = 원천 테이블 TM_MS_PSTMTR_SNDNG 변별토큰 — CRM_PAYMENT_BILLING.MBRFEE_PRCS_STAT_CD(PM013)와 동명이의였다. BRONZE 실측 도메인 완전 분리: 여기 0=170·1=3,631 vs MBRFEE R/S/F (2026-08-04 재확인)",
+CRM_SEND_REQUEST,발송요청 1건,발송,SNDNG_TIME_DIV_CD,VARCHAR,Y,,,발송시간구분 코드 raw (정본 MS267). MSG_AT 채널 전용 — 그 외 NULL,
+CRM_SEND_REQUEST,발송요청 1건,발송,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SEND_REQUEST,발송요청 1건,발송,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_SEND_REQUEST,발송요청 1건,발송,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SEND_REQUEST,발송요청 1건,발송,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SEND_REQUEST,발송요청 1건,발송,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SEND_RESULT,발송x채널 집계,발송,SNDNG_KEY,"NUMBER(10,0)",N,"PK,FK",CRM_SEND_REQUEST.SNDNG_KEY※비강제,"발송키 (PK, →CRM_SEND_REQUEST)",
+CRM_SEND_RESULT,발송x채널 집계,발송,SEND_CHANNEL,VARCHAR,N,PK,,발송채널 (PK),파생
+CRM_SEND_RESULT,발송x채널 집계,발송,SNDNG_CNT,"NUMBER(10,0)",Y,,,발송 건수,measure
+CRM_SEND_RESULT,발송x채널 집계,발송,SUCCES_CNT,"NUMBER(10,0)",Y,,,성공 건수,measure
+CRM_SEND_RESULT,발송x채널 집계,발송,FAILR_CNT,"NUMBER(10,0)",Y,,,실패 건수,measure
+CRM_SEND_RESULT,발송x채널 집계,발송,TOT_CLICK_CNT,"NUMBER(38,0)",Y,,,총 클릭수,
+CRM_SEND_RESULT,발송x채널 집계,발송,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SEND_RESULT,발송x채널 집계,발송,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_SEND_RESULT,발송x채널 집계,발송,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SEND_RESULT,발송x채널 집계,발송,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SEND_RESULT,발송x채널 집계,발송,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SPONSORSHIP,1후원사업,마스터,SPNSR_BSNS_ID,VARCHAR,N,PK,,후원사업ID (PK),
+CRM_SPONSORSHIP,1후원사업,마스터,SPNSR_BSNS_NM,VARCHAR,Y,,,후원사업명,
+CRM_SPONSORSHIP,1후원사업,마스터,SPNSR_BSNS_ABRV_CD,VARCHAR,Y,,,후원사업 약칭코드,
+CRM_SPONSORSHIP,1후원사업,마스터,SPNSR_DIV_CD,VARCHAR,Y,FK,CRM_CODE※비강제,후원구분코드,
+CRM_SPONSORSHIP,1후원사업,마스터,DNTN_TY_CD,VARCHAR,Y,FK,CRM_CODE※비강제,기부유형코드,
+CRM_SPONSORSHIP,1후원사업,마스터,CPR_DIV_CD,VARCHAR,Y,,,법인구분코드,
+CRM_SPONSORSHIP,1후원사업,마스터,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SPONSORSHIP,1후원사업,마스터,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SPONSORSHIP,1후원사업,마스터,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SPONSORSHIP,1후원사업,마스터,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SPONSOR_RELATION,결연 1건,결연,RELATNSP_KEY,"NUMBER(10,0)",N,PK,,결연키 (PK),
+CRM_SPONSOR_RELATION,결연 1건,결연,SPNSR_NO,VARCHAR,Y,,,후원번호,
+CRM_SPONSOR_RELATION,결연 1건,결연,SPNSR_BSNS_NO,"NUMBER(19,0)",Y,,,후원사업번호,
+CRM_SPONSOR_RELATION,결연 1건,결연,SPNSR_BSNS_ID,VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (Q15 크로스워크 파생),
+CRM_SPONSOR_RELATION,결연 1건,결연,CHILD_CD,"NUMBER(10,0)",Y,,,결연아동코드,DIM_MEMBER_IDENTITY 아동
+CRM_SPONSOR_RELATION,결연 1건,결연,MBER_NO,VARCHAR,Y,FK,CRM_MEMBER.MEMBER_DK※비강제,회원번호,
+CRM_SPONSOR_RELATION,결연 1건,결연,RELATNSP_STRT_DE,DATE,Y,,,결연 시작일,
+CRM_SPONSOR_RELATION,결연 1건,결연,RELATNSP_DSCNTC_DE,DATE,Y,,,결연 중단일,
+CRM_SPONSOR_RELATION,결연 1건,결연,RELATNSP_DSCNTC_YN,VARCHAR,Y,,,"결연 중단여부. ⚠️값은 Y/N 이 아니라 0/1 — 현업 정의서 명시 ""0=후원중;1=후원중단"". 실측 1=667,278(전건 중단일 보유)/0=195,332(전건 미보유). ★'Y' 로 필터하면 전건 0 반환(O20 교정 2026-07-31)",
+CRM_SPONSOR_RELATION,결연 1건,결연,RELATNSP_DSCNTC_RSN_CD,VARCHAR,Y,,,결연중단사유 코드 raw (정본 MM002). 원천 타입 NUMBER → TO_VARCHAR 정규화. ⚠️30종 중 16종 폐지코드 → 라벨 조인시 USE_YN 무필터 필수,
+CRM_SPONSOR_RELATION,결연 1건,결연,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SPONSOR_RELATION,결연 1건,결연,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SPONSOR_RELATION,결연 1건,결연,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SPONSOR_RELATION,결연 1건,결연,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+ERP_BUDGET,예산과목x월,ERP,BUDGET_ITEM_DK,VARCHAR,N,"PK,FK",ERP_BUDGET_ITEM※비강제,"예산과목 대체키 (PK, →ERP_BUDGET_ITEM)",
+ERP_BUDGET,예산과목x월,ERP,BUDGET_YEAR,"NUMBER(4,0)",Y,,,예산연도 YYYY,
+ERP_BUDGET,예산과목x월,ERP,MONTH_NO,"NUMBER(2,0)",N,PK,,월 1~12 (PK),
+ERP_BUDGET,예산과목x월,ERP,MONTH_KEY,VARCHAR,Y,,,월키 YYYYMM,
+ERP_BUDGET,예산과목x월,ERP,YEAR_BUDGET_AMT,"NUMBER(38,0)",Y,,,편성(연예산) 금액 원단위,
+ERP_BUDGET,예산과목x월,ERP,CHN_BUDGET_AMT,"NUMBER(38,0)",Y,,,추경 금액 원단위,
+ERP_BUDGET,예산과목x월,ERP,ADJ_BUDGET_AMT,"NUMBER(38,0)",Y,,,조정 금액 원단위,
+ERP_BUDGET,예산과목x월,ERP,EXEC_AMT,"NUMBER(38,0)",Y,,,집행 금액 원단위,
+ERP_BUDGET,예산과목x월,ERP,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+ERP_BUDGET,예산과목x월,ERP,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+ERP_BUDGET,예산과목x월,ERP,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+ERP_BUDGET,예산과목x월,ERP,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+ERP_BUDGET,예산과목x월,ERP,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,BUDGET_ITEM_DK,VARCHAR,N,PK,,MD5 해시 대체키 (PK) = MD5(연도|수입지출|예산단위|장|관|항|목|세목|세세목|재원),
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,BUDGET_YEAR,"NUMBER(4,0)",Y,,,예산연도 YYYY,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,INCOME_EXPENSE_DIV,VARCHAR,Y,,,수입/지출 구분,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,BUDGET_UNIT_NM,VARCHAR,Y,,,"예산단위 (=조직명, 코드 없음)",
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,JANG_NM,VARCHAR,Y,,,예산과목 1단계 장,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,KWAN_NM,VARCHAR,Y,,,예산과목 2단계 관,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,HANG_NM,VARCHAR,Y,,,예산과목 3단계 항,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,MOK_NM,VARCHAR,Y,,,예산과목 4단계 목,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DTL_ITEM_NM,VARCHAR,Y,,,예산과목 5단계 세목,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,SUBDTL_ITEM_NM,VARCHAR,Y,,,예산과목 6단계 세세목,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,FUND_SOURCE_NM,VARCHAR,Y,,,재원,
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+ERP_BUDGET_ITEM,예산과목 1건(BUDGET_ITEM_DK),ERP,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,BUDGET_ITEM_DK,VARCHAR,N,PK,,"예산과목 대체키 (PK, →ERP_BUDGET_ITEM). 🟢 ERP_BUDGET·ERP_BUDGET_ITEM 과 **동일 MD5 산식** — 식을 바꿀 때 세 곳을 함께 바꿔야 한다.",
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,BUDGET_YEAR,"NUMBER(4,0)",N,PK,,예산연도 YYYY (PK). 본 테이블의 grain 은 **연**이다.,
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,YEAR_BUDGET_TOT_AMT,"NUMBER(38,0)",Y,,,연 편성예산 총액 원단위 = 원천 YEAR_BDGT_TOT_AMT,
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,CHN_BUDGET_TOT_AMT,"NUMBER(38,0)",Y,,,연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT,
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,ADJ_BUDGET_TOT_AMT,"NUMBER(38,0)",Y,,,연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT. ⚠️편성보다 클 수 있다(추경·전용 반영).,
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,EXEC_TOT_AMT,"NUMBER(38,0)",Y,,,연 집행 총액 원단위 = 원천 EXEC_TOT_AMT. ⚠️ERP_BUDGET 의 월 집행 12개월 합과 반드시 일치하지 않는다 — 원천이 두 값을 따로 관리한다. 불일치는 원천 상태이므로 맞추지 말 것.,
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+ERP_BUDGET_YEARLY,예산 연 총액 grain (편성·추경·조정·집행 4종),ERP,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,USER_PSEUDO_ID,VARCHAR,N,PK,,세션 스파인 (PK),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_TIMESTAMP,"NUMBER(38,0)",N,PK,,UTC microsec (PK),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_NAME,VARCHAR,N,PK,,이벤트명 (PK),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_SEQ,"NUMBER(38,0)",N,PK,,"동일 3키 내 순번 (PK). ROW_NUMBER OVER(PARTITION BY 3키 ORDER BY BATCH_EVENT_INDEX,EVENT_BUNDLE_SEQUENCE_ID). 🔴 두 컬럼 모두 100% 비NULL인데도 3키 중복의 8.66%(2025-06 실측)가 그대로 남는다 — 값 자체가 원천에서 중복. PK 유일성은 ROW_NUMBER 구조상 보장되지만 재실행 간 순번 안정성은 미실증(GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_DATE,VARCHAR,Y,,,원본 YYYYMMDD,
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_DT,DATE,N,,,업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한,
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_TS,TIMESTAMP_NTZ,Y,,,파생 TIMESTAMP,
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,USER_ID,VARCHAR,Y,,,"GA4 user_id 원본(불변 보존). USER_ID 사용 — UP_MEMBER_ID 는 선행 0 소실 확인(예: ""0470071""→""470071"")로 ID_SCHEME 정규식과 불일치",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,ID_SCHEME,VARCHAR,Y,,,"ID 체계 분류축. 값 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)/APP(app- 접두)/EMAIL(@ 포함)/INVALID(""null""·""undefined"")/UNCLASSIFIED. USER_ID NULL 이면 이 컬럼도 NULL",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GA_SESSION_ID,"NUMBER(38,0)",Y,,,GA 세션ID(EP_GA_SESSION_ID TRY_CAST),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GA_SESSION_NUMBER,"NUMBER(38,0)",Y,,,GA 세션 번호(EP_GA_SESSION_NUMBER TRY_CAST),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GA_SESSION_KEY,VARCHAR,Y,,,"파생 세션 자연키 = user_pseudo_id ∥ ""-"" ∥ ga_session_id",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,SESSION_ENGAGED,VARCHAR,Y,,,세션 engaged 여부(EP_SESSION_ENGAGED),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,ENGAGEMENT_TIME_MSEC,"NUMBER(38,0)",Y,,,참여시간 msec(EP_ENGAGEMENT_TIME_MSEC TRY_CAST),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,PAGE_LOCATION,VARCHAR,Y,,,페이지 URL(EP_PAGE_LOCATION),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,PAGE_TITLE,VARCHAR,Y,,,페이지 제목(EP_PAGE_TITLE),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,PAGE_REFERRER,VARCHAR,Y,,,리퍼러 URL(EP_PAGE_REFERRER),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_CATEGORY,VARCHAR,Y,,,"이벤트 카테고리(EP_EVENT_CATEGORY, 센티넬 NULLIF)",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_ACTION,VARCHAR,Y,,,"이벤트 액션(EP_EVENT_ACTION, 센티넬 NULLIF)",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,EVENT_LABEL,VARCHAR,Y,,,"이벤트 라벨(EP_EVENT_LABEL, 센티넬 NULLIF)",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,PERCENT_SCROLLED,"NUMBER(38,0)",Y,,,스크롤 비율(EP_PERCENT_SCROLLED TRY_CAST),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,LINK_URL,VARCHAR,Y,,,클릭 링크 URL(EP_LINK_URL),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,LINK_TEXT,VARCHAR,Y,,,클릭 링크 텍스트(EP_LINK_TEXT),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DEVICE_TYPE,VARCHAR,Y,,,디바이스 유형 파생. PC=platform WEB×device_category desktop / M=device_category mobile·tablet / APP=platform ANDROID·IOS. smart tv 등 미분류는 (unknown)(GA4-TV-1),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DEVICE_CATEGORY,VARCHAR,Y,,,디바이스 카테고리(원본),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,OS,VARCHAR,Y,,,운영체제(DEVICE_OPERATING_SYSTEM),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,BROWSER,VARCHAR,Y,,,브라우저(DEVICE_WEB_INFO_BROWSER),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,LANGUAGE,VARCHAR,Y,,,언어(DEVICE_LANGUAGE),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,PLATFORM,VARCHAR,Y,,,플랫폼(원본),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,IS_ACTIVE_USER,BOOLEAN,Y,,,활성 사용자 여부(원본),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GEO_COUNTRY,VARCHAR,Y,,,국가(원본),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GEO_CITY,VARCHAR,Y,,,도시(원본),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,UTM_SOURCE,VARCHAR,Y,,,"UTM source(STSLC_MC_SOURCE, 센티넬 NULLIF)",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,UTM_MEDIUM,VARCHAR,Y,,,"UTM medium(STSLC_MC_MEDIUM, 센티넬 NULLIF)",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,UTM_CAMPAIGN,VARCHAR,Y,,,UTM campaign(STSLC_MC_CAMPAIGN_NAME),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,UTM_CONTENT,VARCHAR,Y,,,UTM content(STSLC_MC_CONTENT),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,UTM_TERM,VARCHAR,Y,,,UTM term(STSLC_MC_TERM),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,SOURCE_MEDIUM,VARCHAR,Y,,,"파생 source / medium = XCHAN_SOURCE || "" / "" || XCHAN_MEDIUM",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,XCHAN_SOURCE,VARCHAR,Y,,,cross_channel source(STSLC_CRC_SOURCE),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,XCHAN_MEDIUM,VARCHAR,Y,,,cross_channel medium(STSLC_CRC_MEDIUM),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,XCHAN_CAMPAIGN,VARCHAR,Y,,,cross_channel campaign(STSLC_CRC_CAMPAIGN_NAME),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DEFAULT_CHANNEL_GROUP,VARCHAR,Y,,,기본 채널그룹(STSLC_CRC_DEFAULT_CHANNEL_GROUP). 정규화 금지(정상 라벨),
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GAC_AD_GROUP_ID,VARCHAR,Y,,,"google_ads_campaign 광고그룹 ID(STSLC_GAC_AD_GROUP_ID) — 🆕 [2026-08-21] 신설, 현재 하류 미소비",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GAC_AD_GROUP_NAME,VARCHAR,Y,,,"google_ads_campaign 광고그룹명(STSLC_GAC_AD_GROUP_NAME) — 🆕 [2026-08-21] 신설, 현재 하류 미소비",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,GAC_CAMPAIGN_NAME,VARCHAR,Y,,,"google_ads_campaign 캠페인명(STSLC_GAC_CAMPAIGN_NAME) — 🆕 [2026-08-21] 신설, 현재 하류 미소비",
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,BATCH_ORDERING_ID,"NUMBER(38,0)",Y,,,배치 내 정렬 ID(BATCH_EVENT_INDEX 승계). EVENT_SEQ 정렬 1순위 근거로만 사용,
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_BASIC,"source(silver_external,BIGQUERY_REFINED_DATA)",GA4,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DEVICE_TYPE,VARCHAR,N,,,디바이스 유형 파생. 실측값 PC/M 2종만(APP 휴면·O2),파생; Gold DIM_DEVICE 핵심 컬럼
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,PLATFORM,VARCHAR,Y,,,플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고),
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DEVICE_CATEGORY,VARCHAR,Y,,,디바이스 카테고리 (원본),
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,OS,VARCHAR,Y,,,운영체제,
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,BROWSER,VARCHAR,Y,,,브라우저,
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,LANGUAGE,VARCHAR,Y,,,언어,
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_DEVICE,device_type × device_category × platform DISTINCT,GA4-디바이스,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,USER_PSEUDO_ID,VARCHAR,N,PK,,세션 스파인 (PK),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_TIMESTAMP,"NUMBER(38,0)",N,PK,,UTC microsec (PK),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_NAME,VARCHAR,N,PK,,이벤트명 (PK),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_SEQ,"NUMBER(38,0)",N,PK,,동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 2024 상반기에 없어 그 구간을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순으로 부여한 surrogate 로 대체한다. 🔴 [O87-B] 성립하는 것은 「NOT NULL 위반 해소」까지다 — 「손실 0」은 미실증이고 정렬 튜플 동일 행이 실재한다(미결 GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,BATCH_ORDERING_ID,"NUMBER(38,0)",Y,,,배치 내 정렬 ID. 🔴 PK 아님 · NOT NULL 아님(2024 상반기 NULL) — 계보·정렬 근거로만 보존,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_DATE,VARCHAR,Y,,,원본 YYYYMMDD,date-shard 파티션 기준
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_DT,DATE,N,,,파생 DATE. 🔴 프루닝 키 — 이 모델은 range 모델이고 pre-hook 이 이 컬럼으로 범위 DELETE 한다(silver_purge),파생 — TO_DATE(EVENT_DATE)
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_TS,TIMESTAMP_NTZ,Y,,,파생 TIMESTAMP,파생 — TO_TIMESTAMP(EVENT_TIMESTAMP/1000000)
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,USER_ID,VARCHAR,Y,,,GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 이메일·app- 접두 포맷이 길이 초과로 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측,⚠️ VARCHAR 필수(선행0·S접두 보존 — NUMBER 캐스팅 금지)
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,ID_SCHEME,VARCHAR,Y,,,ID 체계 분류축(기반 테이블 승계). MBER_NO/ONCE_MBER_NO 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호 아님. 🔴 채움률 분모 판정의 정본,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,GA_SESSION_ID,"NUMBER(38,0)",Y,,,GA 세션ID,세션키 = USER_PSEUDO_ID + GA_SESSION_ID
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,GA_SESSION_NUMBER,"NUMBER(38,0)",Y,,,GA 세션 번호,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,GA_SESSION_KEY,VARCHAR,Y,,,"파생 세션 자연키 (복합 = pseudo ∥ ""-"" ∥ session_id)",
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,USER_ID_FILLED,VARCHAR,Y,,,파생 세션 전파 회원번호. 🟢 GA4-LEN-1 해소로 VARCHAR(10) → VARCHAR(64). 신뢰도는 ID_RESOLUTION 참조(SESSION_FILL 은 추론값),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,ID_RESOLUTION,VARCHAR,Y,,,신원해소 DIRECT/SESSION_FILL/UNRESOLVED/CONFLICT. CONFLICT(세션 내 상이 user_id ≥2)는 미채움,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,SESSION_ENGAGED,VARCHAR,Y,,,세션 engaged 여부,⚠️ 혼합타입 실증(string 988 + int 12) → COALESCE 후 VARCHAR 저장
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,ENGAGEMENT_TIME_MSEC,"NUMBER(38,0)",Y,,,참여시간 msec (비가산 raw),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,PAGE_LOCATION,VARCHAR,Y,,,페이지 URL,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,PAGE_TITLE,VARCHAR,Y,,,페이지 제목,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,PAGE_REFERRER,VARCHAR,Y,,,리퍼러 URL,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_CATEGORY,VARCHAR,Y,,,이벤트 카테고리,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_ACTION,VARCHAR,Y,,,이벤트 액션,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,EVENT_LABEL,VARCHAR,Y,,,이벤트 라벨 (혼합타입),⚠️ 혼합타입 string+int → COALESCE
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,PERCENT_SCROLLED,"NUMBER(38,0)",Y,,,스크롤 비율,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,LINK_URL,VARCHAR,Y,,,클릭 링크 URL,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,LINK_TEXT,VARCHAR,Y,,,클릭 링크 텍스트,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DEVICE_TYPE,VARCHAR,Y,,,디바이스 유형 파생. 실측값 M/PC/(unknown) — APP 0건(platform=WEB 단독). smart tv 499행은 (unknown) 격리(GA4-TV-1),파생
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DEVICE_CATEGORY,VARCHAR,Y,,,디바이스 카테고리 (원본). 전 기간 4종(mobile/desktop/tablet/smart tv),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,OS,VARCHAR,Y,,,운영체제,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,GEO_COUNTRY,VARCHAR,Y,,,국가,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,GEO_CITY,VARCHAR,Y,,,도시,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,UTM_SOURCE,VARCHAR,Y,,,UTM source,센티넬 NULLIF
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,UTM_MEDIUM,VARCHAR,Y,,,UTM medium,센티넬 NULLIF
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,UTM_CAMPAIGN,VARCHAR,Y,,,UTM campaign,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DEFAULT_CHANNEL_GROUP,VARCHAR,Y,,,기본 채널그룹,정규화 금지(정상 라벨)
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,PLATFORM,VARCHAR,Y,,,플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,IS_ACTIVE_USER,BOOLEAN,Y,,,활성 사용자 여부,
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,SRC_TABLE,VARCHAR,Y,,,원본 일별 테이블명 계보 (기반 테이블 승계),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,SRC_FILE_NAME,VARCHAR,Y,,,파일 단위 계보 (기반 테이블 승계),
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_EVENT,1이벤트(USER_PSEUDO_ID × EVENT_TIMESTAMP × EVENT_NAME × BATCH_ORDERING_ID),GA4-이벤트,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,EVENT_NAME,VARCHAR,N,,,이벤트명 (그레인 핵심키),
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,EVENT_CATEGORY,VARCHAR,Y,,,이벤트 카테고리,
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,EVENT_LABEL,VARCHAR,Y,,,이벤트 라벨 (혼합타입),⚠️ 혼합타입 실증(string 332 + int 205) → COALESCE(string_value::STRING · int_value::STRING)
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,EVENT_ACTION,VARCHAR,Y,,,이벤트 액션,
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_EVENT_DIM,event_name × category × label × action DISTINCT,GA4-이벤트분류,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,USER_PSEUDO_ID,VARCHAR,N,PK,,세션 스파인 (PK),
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,GA_MEMBER_ID,VARCHAR,Y,,,"= user_id_filled(세션 채움 후 GA 식별자). 🟢 GA4-LEN-1 해소로 확장 — 🔴 CRM 회원번호가 아닌 값(app-·이메일·""null"")도 여기 들어온다. 회원번호로 쓰기 전에 ID_SCHEME 을 볼 것",⚠️ VARCHAR 필수 — NUMBER 캐스팅 금지(선행0·S접두 소실)
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,ID_SCHEME,VARCHAR,Y,,,🔴 매칭 분모의 정본(GA4-LEN-1 조치②). MBER_NO(7자리)/ONCE_MBER_NO(S+8자리) 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호가 아니다. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED) 이고 비회원 체계는 분모 밖이다,
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,MEMBER_TYPE,VARCHAR,Y,FK,ONCE※비강제,회원구분 ONCE(S+8자리) / FDRM(7자리). 🔴 그 밖의 ID 체계는 NULL — 종전 「S%→ONCE else FDRM」은 app-·이메일까지 FDRM 으로 밀어넣어 분모를 오염시켰다(라벨 창작 금지 · R2-7),파생 — CASE WHEN GA_MEMBER_ID ILIKE 'S%' THEN 'ONCE' ELSE 'FDRM'
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,MBER_NO,VARCHAR,Y,FK,TM_MM_FDRM_MBER_INFO.MBER_NO※비강제,정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움,파생 — IFF(MEMBER_TYPE='FDRM' · GA_MEMBER_ID · NULL)
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,ONCE_MBER_NO,VARCHAR,Y,FK,TM_MM_ONCE_MBER_INFO.ONCE_MBER_NO※비강제,일시 회원번호. ID_SCHEME=ONCE_MBER_NO 일 때만 채움,파생 — IFF(MEMBER_TYPE='ONCE' · GA_MEMBER_ID · NULL)
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,ID_RESOLUTION,VARCHAR,Y,,,신원해소 DIRECT/SESSION_FILL. SESSION_FILL 은 추론값(공유기기 오귀속 가능) — DIRECT 보다 낮은 신뢰,
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_IDENTITY,USER_PSEUDO_ID(× USER_ID),GA4-신원,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,UTM_SOURCE,VARCHAR,Y,,,UTM source,센티넬 NULLIF 적용 — (not set)·(direct) → NULL
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,UTM_MEDIUM,VARCHAR,Y,,,UTM medium,(not set)·(none)·(direct) → NULL
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,UTM_CAMPAIGN,VARCHAR,Y,,,UTM campaign,센티넬 NULLIF
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,UTM_CONTENT,VARCHAR,Y,,,UTM content,
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,UTM_TERM,VARCHAR,Y,,,UTM term,
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,SOURCE_MEDIUM,VARCHAR,Y,,,파생 source / medium,파생
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,XCHAN_SOURCE,VARCHAR,Y,,,cross_channel source,✅ 표본 1000/1000
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,XCHAN_MEDIUM,VARCHAR,Y,,,cross_channel medium,✅ 표본 1000/1000
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,XCHAN_CAMPAIGN,VARCHAR,Y,,,cross_channel campaign,
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DEFAULT_CHANNEL_GROUP,VARCHAR,Y,,,기본 채널그룹,⚠️ 정규화 금지 — Direct·Unassigned·Organic Social 등 정상 라벨
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+GA4_TRAFFIC_SOURCE,source/medium/campaign/content/term DISTINCT,GA4-소스,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,USER_PSEUDO_ID,VARCHAR,N,PK,,GA 세션 스파인 (PK),
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,GA_MEMBER_ID,VARCHAR,Y,,,GA측 식별자(=user_id_filled). 🟢 [O87] VARCHAR(10) → VARCHAR(64)(GA4-LEN-1) — 회원번호가 아닌 값도 포함되므로 ID_SCHEME 과 함께 읽을 것,
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,ID_SCHEME,VARCHAR,Y,,,🔴 [O87 신설] GA측 ID 체계. 매칭 분모 판정의 정본 — MBER_NO/ONCE_MBER_NO 만 조인 대상이다,
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,MEMBER_TYPE,VARCHAR,Y,,,회원구분 ONCE/FDRM. 비회원 ID 체계는 NULL,
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,MEMBER_DK,VARCHAR,Y,"DK,FK",CRM_MEMBER.MEMBER_DK※비강제,매칭된 CRM 불변회원키(미매칭 NULL),
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,HOMEPAGE_ID,VARCHAR,Y,,,매칭 CRM 회원의 HMPG_ID(미매칭 NULL),
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,ID_RESOLUTION,VARCHAR,Y,,,GA측 신뢰도: DIRECT/SESSION_FILL,
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,MATCH_METHOD,VARCHAR,Y,,,매칭방법 MEMBER_ID_EXACT / UNMATCHED / 🆕 NOT_A_MEMBER_ID. 🔴 [O87] 종전 2분기는 「회원번호인데 CRM 에서 못 찾음」과 「애초에 회원번호가 아님」을 UNMATCHED 로 뭉개 채움률 분모를 왜곡했다 ⇒ 세 번째 값을 신설해 분리 표기. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED),
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,MATCH_CONFIDENCE,VARCHAR,Y,,,매칭신뢰도 HIGH/MEDIUM/NONE,
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,DW_SOURCE_SYSTEM,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,DW_SOURCE_TABLE,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,DW_LOAD_TS,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,DW_UPDATE_TS,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+IDENTITY_MEMBER_XREF,USER_PSEUDO_ID 1건,신원,DW_BATCH_ID,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,STDR_MT,VARCHAR,Y,,,기준월,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,AGGR_TY_NM,VARCHAR,Y,,,집계 유형명,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,CPR_NM,VARCHAR,Y,,,법인명,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,SPNSR_BSNS_GRP_NM,VARCHAR,Y,,,후원 사업 그룹 명,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,NEW_EXST_DIV_NM,VARCHAR,Y,,,신규기존구분명,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,HDQ_BRNCH_GRP_NM,VARCHAR,Y,,,본부 지부 그룹 명,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,VALUE1,"NUMBER(38,10)",Y,,,값1,
+MM_SPNSR_CLS_AGGR_DATA,월간 후원 분류별 집계,,VALUE2,"NUMBER(38,10)",Y,,,값2,
