@@ -244,7 +244,7 @@ def status_of(census, gold_table, gold_col):
 
 def main():
     global SCHEMA
-    census = json.load(open(CENSUS, encoding="utf-8"))
+    census = json.load(open(CENSUS, encoding="utf-8")) if os.path.exists(CENSUS) else {}
     schema = json.load(open(SCHEMA_JSON, encoding="utf-8"))
     SCHEMA = schema
     models = load_models()
@@ -388,7 +388,7 @@ def main():
         ("예산 편성 대비 집행 현황", "`WIDE_BUDGET`", "◐ 편성(월)·집행 O · 연편성·모금성비용·광고비 ⛔(E-1/E-4)"),
         ("디지털 광고 매체비·노출·클릭", "`WIDE_AD_DIGITAL` / `WIDE_AD_PERFORMANCE`", "◐ 매체 measure O · 캠페인·소재 연결 ⛔(Q10)"),
         ("방송·재방송 광고 성과", "`WIDE_AD_BROADCAST` / `WIDE_AD_BROADCAST_CASE`", "◐ 재방송 개발단가 O · VIDEO 개발실적 ⛔(AD-5)"),
-        ("웹/앱 방문·세션·스크롤 등 GA 행동", "`WIDE_GA_BEHAVIOR`", "◐ 2일 샤드만(G-5) · 회원귀속 극소"),
+        ("웹/앱 방문·세션·스크롤 등 BigQuery 행동", "`WIDE_BIGQUERY_BEHAVIOR`", "◐ 2일 샤드만(G-5) · 회원귀속 극소"),
         ("연/추경 **사업목표** 달성률", "`WIDE_TARGET_BIZ`", "⛔ 구조준비·0행(E-6)"),
     ]:
         A(f"| {qq} | {mm} | {ss} |")

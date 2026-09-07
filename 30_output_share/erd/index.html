@@ -7,7 +7,7 @@
   <title>Good Neighbors DW - Pipeline ERD & Lineage Hub</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-03 02:55",
+    "generated": "2026-09-07 02:26",
     "intent": "Bronze > Silver > Gold Full Data Pipeline ERD & Lineage Hub",
     "stats": {
       "bronze_sources": 44,
@@ -444,6 +444,34 @@
           </div>
           <a href="DIM_AD_CREATIVE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
+        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="DIM">
+          <div class="card-header">
+            <span class="badge badge-dim">DIM</span>
+            <span class="badge badge-domain">GA4</span>
+          </div>
+          <h3 class="card-title"><a href="DIM_BIGQUERY_EVENT.html">DIM_BIGQUERY_EVENT</a></h3>
+          <div class="card-desc">BigQuery 이벤트분류 차원 (grain = 1이벤트명/파라미터 · BIGQUERY_EVENT_SK)</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 1개 (BIGQUERY_REFINED_DATA)</div>
+            <div><b>Silver:</b> 2개 (BIGQUERY_BASIC, BIGQUERY_EVENT_DIM)</div>
+            <div><b>컬럼:</b> 8개</div>
+          </div>
+          <a href="DIM_BIGQUERY_EVENT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
+        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="DIM">
+          <div class="card-header">
+            <span class="badge badge-dim">DIM</span>
+            <span class="badge badge-domain">GA4</span>
+          </div>
+          <h3 class="card-title"><a href="DIM_BIGQUERY_SOURCE.html">DIM_BIGQUERY_SOURCE</a></h3>
+          <div class="card-desc">BigQuery 트래픽소스 차원 (grain = 1트래픽소스 · BIGQUERY_SOURCE_SK)</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 1개 (BIGQUERY_REFINED_DATA)</div>
+            <div><b>Silver:</b> 3개 (BIGQUERY_BASIC, BIGQUERY_REFINED_DATA, BIGQUERY_TRAFFIC_SOURCE)</div>
+            <div><b>컬럼:</b> 11개</div>
+          </div>
+          <a href="DIM_BIGQUERY_SOURCE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
         <div class="table-grid-card" data-domain="ERP / 예산·목표" data-type="DIM">
           <div class="card-header">
             <span class="badge badge-dim">DIM</span>
@@ -514,34 +542,6 @@
           </div>
           <a href="DIM_EVENT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
-        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="DIM">
-          <div class="card-header">
-            <span class="badge badge-dim">DIM</span>
-            <span class="badge badge-domain">GA4</span>
-          </div>
-          <h3 class="card-title"><a href="DIM_GA_EVENT.html">DIM_GA_EVENT</a></h3>
-          <div class="card-desc">GA 이벤트분류 차원</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 1개 (BIGQUERY_REFINED_DATA)</div>
-            <div><b>Silver:</b> 3개 (BIGQUERY_BASIC, BIGQUERY_EVENT_DIM, BIGQUERY_REFINED_DATA)</div>
-            <div><b>컬럼:</b> 8개</div>
-          </div>
-          <a href="DIM_GA_EVENT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="DIM">
-          <div class="card-header">
-            <span class="badge badge-dim">DIM</span>
-            <span class="badge badge-domain">GA4</span>
-          </div>
-          <h3 class="card-title"><a href="DIM_GA_SOURCE.html">DIM_GA_SOURCE</a></h3>
-          <div class="card-desc">GA 트래픽소스 차원</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 1개 (BIGQUERY_REFINED_DATA)</div>
-            <div><b>Silver:</b> 3개 (BIGQUERY_BASIC, BIGQUERY_REFINED_DATA, BIGQUERY_TRAFFIC_SOURCE)</div>
-            <div><b>컬럼:</b> 11개</div>
-          </div>
-          <a href="DIM_GA_SOURCE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
         <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="DIM">
           <div class="card-header">
             <span class="badge badge-dim">DIM</span>
@@ -604,7 +604,7 @@
             <span class="badge badge-domain">CRM</span>
           </div>
           <h3 class="card-title"><a href="DIM_MEMBER_IDENTITY.html">DIM_MEMBER_IDENTITY</a></h3>
-          <div class="card-desc">회원 신원 브리지 (MEMBER_DK × GA member_id · P5 durable key)</div>
+          <div class="card-desc">회원 신원 브리지 (MEMBER_DK × BigQuery member_id · P5 durable key)</div>
           <div class="card-meta">
             <div><b>Bronze:</b> 4개 (TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA)</div>
             <div><b>Silver:</b> 6개 (BIGQUERY_BASIC, BIGQUERY_IDENTITY, BIGQUERY_REFINED_DATA, CRM_CODE 외 2개)</div>
@@ -646,7 +646,7 @@
             <span class="badge badge-domain">CRM</span>
           </div>
           <h3 class="card-title"><a href="DIM_PAYMENT.html">DIM_PAYMENT</a></h3>
-          <div class="card-desc">납입×결제×회비유형 차원</div>
+          <div class="card-desc">납입×결제×회비유형 차원 (grain = 1납입×결제×회비유형 · PAYMENT_SK)</div>
           <div class="card-meta">
             <div><b>Bronze:</b> 2개 (TC_CMMN_DTL_CD, TM_PM_SETLE_INFO)</div>
             <div><b>Silver:</b> 2개 (CRM_CODE, CRM_PAYMENT_METHOD)</div>
@@ -660,7 +660,7 @@
             <span class="badge badge-domain">COMMON</span>
           </div>
           <h3 class="card-title"><a href="DIM_REASON.html">DIM_REASON</a></h3>
-          <div class="card-desc">사유코드 차원 (중단/미납)</div>
+          <div class="card-desc">사유코드 차원 (grain = 1사유코드 · REASON_SK)</div>
           <div class="card-meta">
             <div><b>Bronze:</b> 1개 (TC_CMMN_DTL_CD)</div>
             <div><b>Silver:</b> 1개 (CRM_CODE)</div>
@@ -766,6 +766,20 @@
           </div>
           <a href="FACT_AD_PERFORMANCE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
+        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <div class="card-header">
+            <span class="badge badge-fact">FACT</span>
+            <span class="badge badge-domain">GA4</span>
+          </div>
+          <h3 class="card-title"><a href="FACT_BIGQUERY_BEHAVIOR.html">FACT_BIGQUERY_BEHAVIOR</a></h3>
+          <div class="card-desc">BigQuery 행동 팩트 (DATE_SK × IDENTITY_SK × BIGQUERY_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 4개 (TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA)</div>
+            <div><b>Silver:</b> 10개 (BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 6개)</div>
+            <div><b>컬럼:</b> 24개</div>
+          </div>
+          <a href="FACT_BIGQUERY_BEHAVIOR.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
         <div class="table-grid-card" data-domain="ERP / 예산·목표" data-type="FACT">
           <div class="card-header">
             <span class="badge badge-fact">FACT</span>
@@ -821,20 +835,6 @@
             <div><b>컬럼:</b> 36개</div>
           </div>
           <a href="FACT_EVENT_PARTICIPATION.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
-        </div>
-        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="FACT">
-          <div class="card-header">
-            <span class="badge badge-fact">FACT</span>
-            <span class="badge badge-domain">GA4</span>
-          </div>
-          <h3 class="card-title"><a href="FACT_GA_BEHAVIOR.html">FACT_GA_BEHAVIOR</a></h3>
-          <div class="card-desc">GA 행동 팩트 (DATE_SK × IDENTITY_SK × GA_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지</div>
-          <div class="card-meta">
-            <div><b>Bronze:</b> 4개 (TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA)</div>
-            <div><b>Silver:</b> 10개 (BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 6개)</div>
-            <div><b>컬럼:</b> 24개</div>
-          </div>
-          <a href="FACT_GA_BEHAVIOR.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
         <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="FACT">
           <div class="card-header">
@@ -977,6 +977,24 @@
           <td><code>AGENCY_AD_CREATIVE</code></td>
           <td><a href="DIM_AD_CREATIVE.html" class="badge badge-dim">상세보기</a></td>
         </tr>
+        <tr data-domain="GA4 / 디지털 행동" data-type="DIM">
+          <td><span class="badge badge-dim">DIM</span></td>
+          <td><a href="DIM_BIGQUERY_EVENT.html"><b>DIM_BIGQUERY_EVENT</b></a></td>
+          <td>BigQuery 이벤트분류 차원 (grain = 1이벤트명/파라미터 · BIGQUERY_EVENT_SK)</td>
+          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
+          <td><code>BIGQUERY_REFINED_DATA</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT_DIM</code></td>
+          <td><a href="DIM_BIGQUERY_EVENT.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
+        <tr data-domain="GA4 / 디지털 행동" data-type="DIM">
+          <td><span class="badge badge-dim">DIM</span></td>
+          <td><a href="DIM_BIGQUERY_SOURCE.html"><b>DIM_BIGQUERY_SOURCE</b></a></td>
+          <td>BigQuery 트래픽소스 차원 (grain = 1트래픽소스 · BIGQUERY_SOURCE_SK)</td>
+          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
+          <td><code>BIGQUERY_REFINED_DATA</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_REFINED_DATA, BIGQUERY_TRAFFIC_SOURCE</code></td>
+          <td><a href="DIM_BIGQUERY_SOURCE.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
         <tr data-domain="ERP / 예산·목표" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_BUDGET_ITEM.html"><b>DIM_BUDGET_ITEM</b></a></td>
@@ -1022,24 +1040,6 @@
           <td><code>CRM_CODE, CRM_EVENT</code></td>
           <td><a href="DIM_EVENT.html" class="badge badge-dim">상세보기</a></td>
         </tr>
-        <tr data-domain="GA4 / 디지털 행동" data-type="DIM">
-          <td><span class="badge badge-dim">DIM</span></td>
-          <td><a href="DIM_GA_EVENT.html"><b>DIM_GA_EVENT</b></a></td>
-          <td>GA 이벤트분류 차원</td>
-          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
-          <td><code>BIGQUERY_REFINED_DATA</code></td>
-          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT_DIM, BIGQUERY_REFINED_DATA</code></td>
-          <td><a href="DIM_GA_EVENT.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="GA4 / 디지털 행동" data-type="DIM">
-          <td><span class="badge badge-dim">DIM</span></td>
-          <td><a href="DIM_GA_SOURCE.html"><b>DIM_GA_SOURCE</b></a></td>
-          <td>GA 트래픽소스 차원</td>
-          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
-          <td><code>BIGQUERY_REFINED_DATA</code></td>
-          <td><code>BIGQUERY_BASIC, BIGQUERY_REFINED_DATA, BIGQUERY_TRAFFIC_SOURCE</code></td>
-          <td><a href="DIM_GA_SOURCE.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
         <tr data-domain="AGENCY / 마케팅·광고" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_MARKETING_CAMPAIGN.html"><b>DIM_MARKETING_CAMPAIGN</b></a></td>
@@ -1079,7 +1079,7 @@
         <tr data-domain="CRM / 회원·후원" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_MEMBER_IDENTITY.html"><b>DIM_MEMBER_IDENTITY</b></a></td>
-          <td>회원 신원 브리지 (MEMBER_DK × GA member_id · P5 durable key)</td>
+          <td>회원 신원 브리지 (MEMBER_DK × BigQuery member_id · P5 durable key)</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
           <td><code>TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA</code></td>
           <td><code>BIGQUERY_BASIC, BIGQUERY_IDENTITY, BIGQUERY_REFINED_DATA, CRM_CODE 외 2개</code></td>
@@ -1106,7 +1106,7 @@
         <tr data-domain="CRM / 회원·후원" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_PAYMENT.html"><b>DIM_PAYMENT</b></a></td>
-          <td>납입×결제×회비유형 차원</td>
+          <td>납입×결제×회비유형 차원 (grain = 1납입×결제×회비유형 · PAYMENT_SK)</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
           <td><code>TC_CMMN_DTL_CD, TM_PM_SETLE_INFO</code></td>
           <td><code>CRM_CODE, CRM_PAYMENT_METHOD</code></td>
@@ -1115,7 +1115,7 @@
         <tr data-domain="COMMON / 공통 기준" data-type="DIM">
           <td><span class="badge badge-dim">DIM</span></td>
           <td><a href="DIM_REASON.html"><b>DIM_REASON</b></a></td>
-          <td>사유코드 차원 (중단/미납)</td>
+          <td>사유코드 차원 (grain = 1사유코드 · REASON_SK)</td>
           <td><span class="badge badge-domain">COMMON / 공통 기준</span></td>
           <td><code>TC_CMMN_DTL_CD</code></td>
           <td><code>CRM_CODE</code></td>
@@ -1184,6 +1184,15 @@
           <td><code>AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC, AGENCY_AD_ROW_VIDEO 외 6개</code></td>
           <td><a href="FACT_AD_PERFORMANCE.html" class="badge badge-dim">상세보기</a></td>
         </tr>
+        <tr data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <td><span class="badge badge-fact">FACT</span></td>
+          <td><a href="FACT_BIGQUERY_BEHAVIOR.html"><b>FACT_BIGQUERY_BEHAVIOR</b></a></td>
+          <td>BigQuery 행동 팩트 (DATE_SK × IDENTITY_SK × BIGQUERY_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지</td>
+          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
+          <td><code>TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 6개</code></td>
+          <td><a href="FACT_BIGQUERY_BEHAVIOR.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
         <tr data-domain="ERP / 예산·목표" data-type="FACT">
           <td><span class="badge badge-fact">FACT</span></td>
           <td><a href="FACT_BUDGET.html"><b>FACT_BUDGET</b></a></td>
@@ -1219,15 +1228,6 @@
           <td><code>TC_CMMN_DTL_CD, TD_MS_CRMN_PRTCPNT, TD_MS_EVENT_PRTCPNT_DTL, TM_MS_CRMN 외 1개</code></td>
           <td><code>CRM_CODE, CRM_EVENT, CRM_EVENT_PARTICIPATION</code></td>
           <td><a href="FACT_EVENT_PARTICIPATION.html" class="badge badge-dim">상세보기</a></td>
-        </tr>
-        <tr data-domain="GA4 / 디지털 행동" data-type="FACT">
-          <td><span class="badge badge-fact">FACT</span></td>
-          <td><a href="FACT_GA_BEHAVIOR.html"><b>FACT_GA_BEHAVIOR</b></a></td>
-          <td>GA 행동 팩트 (DATE_SK × IDENTITY_SK × GA_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지</td>
-          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
-          <td><code>TC_CMMN_DTL_CD, TM_MM_FDRM_MBER_INFO, TM_MM_ONCE_MBER_INFO, BIGQUERY_REFINED_DATA</code></td>
-          <td><code>BIGQUERY_BASIC, BIGQUERY_DEVICE, BIGQUERY_EVENT, BIGQUERY_EVENT_DIM 외 6개</code></td>
-          <td><a href="FACT_GA_BEHAVIOR.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="FACT">
           <td><span class="badge badge-fact">FACT</span></td>

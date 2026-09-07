@@ -432,14 +432,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_IDENTITY (
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키',  -- ※비강제 FK→DIM_MEMBER(SCD2/비유일)
     MEMBER_NO           VARCHAR         NOT NULL COMMENT '회원번호(#110)',
     MEMNUM              VARCHAR         COMMENT 'memnum (#111).',
-    GA_MEMBER_ID        VARCHAR         COMMENT 'member id(#112)',
+    BIGQUERY_MEMBER_ID  VARCHAR         COMMENT 'BigQuery member id(#112)',
     HOMEPAGE_ID         VARCHAR         COMMENT 'HOMEPAGE_ID.',
     CHILD_CODE          VARCHAR         COMMENT '결연아동코드(#122, URL 파싱) (#122).',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '회원 신원 브리지 (MEMBER_DK × GA member_id · P5 durable key)';
+) COMMENT = '회원 신원 브리지 (MEMBER_DK × BigQuery member_id · P5 durable key)';
 
 
 -- ============================================================================
@@ -633,13 +633,13 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_AD_CREATIVE (
 
 
 -- ============================================================================
--- DIM 8: DIM_GA_SOURCE — GA 트래픽소스 차원
+-- DIM 8: DIM_BIGQUERY_SOURCE — BigQuery 트래픽소스 차원
 --   [컬럼별 설계 및 실측 이력]
---   · DEFAULT_CHANNEL_GROUP: [DEC-30] GA4 표준 채널그룹 ← GA4_TRAFFIC_SOURCE.DEFAULT_CHANNEL_GROUP. 전건 채움 · grain 에 대한 함수종속률과 다중 사례는 문서10 §26 이라 MAX() 대표값. ⚠️SOURCE_MEDIUM(파생 문자열)과 다른 개념 — GA4 가 산정한 표준 분류다
+--   · DEFAULT_CHANNEL_GROUP: [DEC-30] BigQuery 표준 채널그룹 ← BIGQUERY_TRAFFIC_SOURCE.DEFAULT_CHANNEL_GROUP. 전건 채움 · grain 에 대한 함수종속률과 다중 사례는 문서10 §26 이라 MAX() 대표값. ⚠️SOURCE_MEDIUM(파생 문자열)과 다른 개념 — BigQuery 가 산정한 표준 분류다
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_SOURCE (
-    GA_SOURCE_SK        NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT 'GA 트래픽소스 대리키 (ETL 일련번호, PK)',
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BIGQUERY_SOURCE (
+    BIGQUERY_SOURCE_SK  NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT 'BigQuery 트래픽소스 대리키 (ETL 일련번호, PK)',
     UTM_SOURCE          VARCHAR         COMMENT 'source',
     UTM_MEDIUM          VARCHAR         COMMENT 'medium',
     UTM_CONTENT         VARCHAR         COMMENT '세션 수동 광고 콘텐츠(#103)',
@@ -650,16 +650,16 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_SOURCE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 트래픽소스 차원';
+) COMMENT = 'BigQuery 트래픽소스 차원 (grain = 1트래픽소스 · BIGQUERY_SOURCE_SK)';
 
 
 -- ============================================================================
--- DIM 9: DIM_GA_EVENT — GA 이벤트분류 차원
+-- DIM 9: DIM_BIGQUERY_EVENT — BigQuery 이벤트분류 차원
 --   [컬럼별 설계 및 실측 이력]
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_EVENT (
-    GA_EVENT_SK         NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT 'GA 이벤트 대리키 (ETL 일련번호, PK)',
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BIGQUERY_EVENT (
+    BIGQUERY_EVENT_SK   NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT 'BigQuery 이벤트 대리키 (ETL 일련번호, PK)',
     EVENT_CATEGORY      VARCHAR         COMMENT '이벤트 카테고리(#99)',
     EVENT_LABEL         VARCHAR         COMMENT '이벤트 라벨(#100)',
     EVENT_ACTION        VARCHAR         COMMENT '이벤트 액션(#101)',
@@ -667,7 +667,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_GA_EVENT (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 이벤트분류 차원';
+) COMMENT = 'BigQuery 이벤트분류 차원 (grain = 1이벤트명/파라미터 · BIGQUERY_EVENT_SK)';
 
 
 -- ============================================================================
@@ -731,7 +731,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_PAYMENT (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '납입×결제×회비유형 차원';
+) COMMENT = '납입×결제×회비유형 차원 (grain = 1납입×결제×회비유형 · PAYMENT_SK)';
 
 
 -- ============================================================================
@@ -749,7 +749,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_REASON (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '사유코드 차원 (중단/미납)';
+) COMMENT = '사유코드 차원 (grain = 1사유코드 · REASON_SK)';
 
 
 -- ============================================================================
@@ -1176,10 +1176,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
 
 
 -- ============================================================================
--- FACT 6: FACT_GA_BEHAVIOR (FGA) — GA 행동 팩트
+-- FACT 6: FACT_BIGQUERY_BEHAVIOR (FGA) — BigQuery 행동 팩트
 --   [컬럼별 설계 및 실측 이력]
 --   · IDENTITY_SK: 방문자 회원식별 (FK→DIM_MEMBER_IDENTITY)
---   · CAMPAIGN_SK: 세션캠페인(#102) — 🔴 상수 0 하드코딩(센티넬). GA UTM 캠페인이 여러 종인데 하나로 뭉개져 있다(P51 위반 · 종수는 문서10 §26). SILVER.GA4_EVENT.UTM_CAMPAIGN(채움 규모는 문서10 §26) 미배선 → 캠페인축 분석 불가. WIDE 의 CAMPAIGN_BK/NAME/BRAND 도 전건 (미매핑)
+--   · CAMPAIGN_SK: 세션캠페인(#102) — 🔴 상수 0 하드코딩(센티넬). UTM 캠페인이 여러 종인데 하나로 뭉개져 있다(P51 위반 · 종수는 문서10 §26). SILVER.BIGQUERY_EVENT.UTM_CAMPAIGN(채움 규모는 문서10 §26) 미배선 → 캠페인축 분석 불가. WIDE 의 CAMPAIGN_BK/NAME/BRAND 도 전건 (미매핑)
 --   · PAGE_PATH: 페이지경로 — 🔴 쿼리문자열 제외됨(산식 = SPLIT_PART(PAGE_LOCATION,'?',1) · 실측 '?' 포함 0행). 정본 #105「페이지경로+쿼리문자열」 미충족이며 정본 #122 결연아동코드(childnum=) 파생 불가
 --   · PAGE_LOCATION: 페이지위치(#106) — 🔴 grain 내 MAX() 대표값(URL 전체 아님). 원천 distinct 대비 GOLD 생존 종수가 크게 줄어든다(소실 규모·childnum·memnum 종수는 문서10 §26). 특정 URL 유무 판정 금지
 --   · VISITS: 방문수(명) (#92) — 가산(실측 배수 1.0000). SESSION_CNT 의 가산 대체축
@@ -1189,11 +1189,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
 --   · ENGAGED_SESSIONS: 참여세션수 — 🔴**비가산**. COUNT(DISTINCT) + 집계 grain. SUM 과 실제 distinct 의 격차(과대 배수)는 문서10 §26 → SUM 금지
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR (
     DATE_SK                         NUMBER(8,0)     NOT NULL COMMENT '행동 발생일 YYYYMMDD (FK→DIM_DATE)',
     IDENTITY_SK                     NUMBER(38,0)    NOT NULL COMMENT '대리키',
-    GA_EVENT_SK                     NUMBER(38,0)    NOT NULL COMMENT 'GA 이벤트 분류 (FK→DIM_GA_EVENT)',
-    GA_SOURCE_SK                    NUMBER(38,0)    NOT NULL COMMENT '유입 트래픽소스 (FK→DIM_GA_SOURCE)',
+    BIGQUERY_EVENT_SK               NUMBER(38,0)    NOT NULL COMMENT 'BigQuery 이벤트 분류 (FK→DIM_BIGQUERY_EVENT)',
+    BIGQUERY_SOURCE_SK              NUMBER(38,0)    NOT NULL COMMENT '유입 트래픽소스 (FK→DIM_BIGQUERY_SOURCE)',
     DEVICE_SK                       NUMBER(38,0)    NOT NULL COMMENT '접속 디바이스 (FK→DIM_DEVICE)',
     CAMPAIGN_SK                     NUMBER(38,0)    NOT NULL COMMENT '대리키',
     PAGE_PATH                       VARCHAR         NOT NULL COMMENT '페이지경로 (#105).',  -- degen(grain)
@@ -1214,7 +1214,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_BEHAVIOR (
     DW_LOAD_TS                      TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                    TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 행동 팩트 (DATE_SK × IDENTITY_SK × GA_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지';
+) COMMENT = 'BigQuery 행동 팩트 (DATE_SK × IDENTITY_SK × BIGQUERY_EVENT/SOURCE/DEVICE × CAMPAIGN × PAGE) — 비가산 지표 재합산 금지';
 
 
 -- ============================================================================
@@ -2217,4 +2217,4 @@ WHERE constraint_schema = 'GOLD'
 --
 --  🔴 FMF 는 PK 를 선언하지 않는다: grain 7종 중 FEE_DIV_CD 가 기부금 행에서 원천 NULL 이므로
 --      PK(=NOT NULL 의미) 선언은 사실과 어긋난다. 유일성은 dbt GROUP BY + GATE-D2 로 보증한다.
--- ############################################################################
+-- ###############

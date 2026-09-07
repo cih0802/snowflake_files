@@ -7,7 +7,7 @@
   <title>DIM_DEVICE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-03 02:55",
+    "generated": "2026-09-07 02:26",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_DEVICE",
     "table": "DIM_DEVICE",
     "domain": "GA4 / 디지털 행동",
@@ -392,13 +392,13 @@
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
         <div class="nav-group-title">DIMENSION (20)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
+<a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item active"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
-<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
-<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
@@ -416,11 +416,11 @@
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
 <a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
-<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
@@ -532,16 +532,16 @@ erDiagram
     string DEVICE_SK FK
     string DW_BATCH_ID
   }
-  FACT_GA_BEHAVIOR {
+  FACT_BIGQUERY_BEHAVIOR {
     string DATE_SK FK
     string IDENTITY_SK FK
-    string GA_EVENT_SK FK
-    string GA_SOURCE_SK FK
+    string BIGQUERY_EVENT_SK FK
+    string BIGQUERY_SOURCE_SK FK
     string DEVICE_SK FK
     string CAMPAIGN_SK FK
     string DW_BATCH_ID
   }
-  DIM_DEVICE ||--o{ FACT_GA_BEHAVIOR : "DEVICE_SK"
+  DIM_DEVICE ||--o{ FACT_BIGQUERY_BEHAVIOR : "DEVICE_SK"
   DIM_DEVICE ||--o{ FACT_AD_PERFORMANCE : "DEVICE_SK"
           </pre>
         </div>
@@ -562,7 +562,7 @@ erDiagram
             </thead>
             <tbody>
         <tr>
-          <td><code>FACT_GA_BEHAVIOR</code></td>
+          <td><code>FACT_BIGQUERY_BEHAVIOR</code></td>
           <td><code>DEVICE_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_DEVICE.html"><code>DIM_DEVICE</code></a></td>
@@ -680,11 +680,11 @@ select
     {{ gold_sk(['DEVICE_TYPE']) }}  as DEVICE_SK,
     DEVICE_TYPE                     as DEVICE_TYPE,
     case DEVICE_TYPE
-         when 'PC'  then '데스크톱(GA4 platform=WEB × device.category=desktop)'
-         when 'M'   then '모바일(GA4 device.category=mobile/tablet)'
-         when 'APP' then '앱(GA4 platform=ANDROID/IOS) — 현 데이터 미생성(G-5)'
+         when 'PC'  then '데스크톱(BigQuery platform=WEB × device.category=desktop)'
+         when 'M'   then '모바일(BigQuery device.category=mobile/tablet)'
+         when 'APP' then '앱(BigQuery platform=ANDROID/IOS) — 현 데이터 미생성(G-5)'
     end                             as DEVICE_SCOPE_DESC,
-    {{ gold_meta('GA4') }}
+    {{ gold_meta('BIGQUERY') }}
 from src
 union all
 -- DEC-10 `(해당없음)` 멤버: 방송광고 전용. 해시 SK(정상 멤버) — FAD.AD_TYPE IN ('VIDEO','REBROADCAST') 과 동반.
@@ -692,7 +692,7 @@ select {{ gold_sk([&quot;'(해당없음)'&quot;]) }}, '(해당없음)',
        '방송광고(TV·재방송) — 기기 개념 없음', {{ gold_meta('AGENCY') }}
 union all
 -- 순서9 Unknown 멤버(DEVICE_SK=0): fact 의 미매핑 DEVICE_SK 센티넬 라우팅 대상.
-select 0, '(unknown)', '기기 정보 미상 또는 매핑 실패(센티넬)', {{ gold_meta('GA4') }}
+select 0, '(unknown)', '기기 정보 미상 또는 매핑 실패(센티넬)', {{ gold_meta('BIGQUERY') }}
 </code></pre>
           </div>
         </details>

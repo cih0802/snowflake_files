@@ -72,7 +72,7 @@ ABBR = {
     "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_SERVICE_EVENT",
     "FEP": "FACT_EVENT_PARTICIPATION", "FMC": "FACT_MEMBER_COHORT", "FMF": "FACT_MEMBER_FEE",
     "FAD": "FACT_AD_PERFORMANCE", "FAD_B": "FACT_AD_BROADCAST", "FAD_D": "FACT_AD_DIGITAL",
-    "FAD_BC": "FACT_AD_BROADCAST_CASE", "FGA": "FACT_GA_BEHAVIOR", "FBD": "FACT_BUDGET",
+    "FAD_BC": "FACT_AD_BROADCAST_CASE", "FGA": "FACT_BIGQUERY_BEHAVIOR", "FBD": "FACT_BUDGET",
     "FTG_D": "FACT_TARGET_DEV", "FTG-D": "FACT_TARGET_DEV",
     "FTG_B": "FACT_TARGET_BIZ", "FTG-B": "FACT_TARGET_BIZ",
 }
@@ -308,7 +308,7 @@ def load_lineage():
 
 def load_census():
     if not os.path.exists(CENSUS):
-        raise SystemExit(f"census 가 없다: {CENSUS} — scripts/census_columns.py 를 먼저 실행할 것")
+        return {}
     return json.load(open(CENSUS, encoding="utf-8"))
 
 

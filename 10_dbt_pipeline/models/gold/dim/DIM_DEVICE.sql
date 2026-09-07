@@ -26,11 +26,11 @@ select
     {{ gold_sk(['DEVICE_TYPE']) }}  as DEVICE_SK,
     DEVICE_TYPE                     as DEVICE_TYPE,
     case DEVICE_TYPE
-         when 'PC'  then '데스크톱(GA4 platform=WEB × device.category=desktop)'
-         when 'M'   then '모바일(GA4 device.category=mobile/tablet)'
-         when 'APP' then '앱(GA4 platform=ANDROID/IOS) — 현 데이터 미생성(G-5)'
+         when 'PC'  then '데스크톱(BigQuery platform=WEB × device.category=desktop)'
+         when 'M'   then '모바일(BigQuery device.category=mobile/tablet)'
+         when 'APP' then '앱(BigQuery platform=ANDROID/IOS) — 현 데이터 미생성(G-5)'
     end                             as DEVICE_SCOPE_DESC,
-    {{ gold_meta('GA4') }}
+    {{ gold_meta('BIGQUERY') }}
 from src
 union all
 -- DEC-10 `(해당없음)` 멤버: 방송광고 전용. 해시 SK(정상 멤버) — FAD.AD_TYPE IN ('VIDEO','REBROADCAST') 과 동반.
@@ -38,4 +38,4 @@ select {{ gold_sk(["'(해당없음)'"]) }}, '(해당없음)',
        '방송광고(TV·재방송) — 기기 개념 없음', {{ gold_meta('AGENCY') }}
 union all
 -- 순서9 Unknown 멤버(DEVICE_SK=0): fact 의 미매핑 DEVICE_SK 센티넬 라우팅 대상.
-select 0, '(unknown)', '기기 정보 미상 또는 매핑 실패(센티넬)', {{ gold_meta('GA4') }}
+select 0, '(unknown)', '기기 정보 미상 또는 매핑 실패(센티넬)', {{ gold_meta('BIGQUERY') }}

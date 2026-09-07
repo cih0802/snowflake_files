@@ -108,7 +108,7 @@ hist_scd2 as (
 versioned as (
     select
         {{ gold_sk(['m.MEMBER_DK', 'h.EFF_FROM']) }}  as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
         h.STATUS_CD                                   as MBER_STAT_CD,
         h.PREV_STATUS_CD                              as PREV_MBER_STAT_CD,
         h.EFF_FROM                                    as EFFECTIVE_FROM,
@@ -122,11 +122,11 @@ versioned as (
 --     [O27] 이력이 없으므로 이전상태도 없다 → PREV_MBER_STAT_CD = NULL (결측이며 개념부재 아님)
 single as (
     select
-        {{ gold_sk(['m.MEMBER_DK', 'm.JOIN_DT']) }}   as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        {{ gold_sk(['m.MEMBER_DK', 'm.FRST_REGIST_DT']) }}   as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
         m.MBER_STAT_CD                                as MBER_STAT_CD,
         CAST(NULL AS VARCHAR)                          as PREV_MBER_STAT_CD,
-        m.JOIN_DT::DATE                               as EFFECTIVE_FROM,
+        m.FRST_REGIST_DT::DATE                               as EFFECTIVE_FROM,
         CAST(NULL AS DATE)                            as EFFECTIVE_TO,
         TRUE                                          as IS_CURRENT
     from m
@@ -267,7 +267,7 @@ select
     --   ⚠️ 이력 미보유행(FDRM 무이력·ONCE)은 NULL — 이전상태가 '없다'가 아니라 '이력이 없다'.
     u.PREV_MBER_STAT_CD                           as PREV_MBER_STAT_CD,
     cps.DTL_CD_NM                                 as PREV_MEMBER_STATUS_NAME,
-    u.JOIN_DT::DATE                               as FIRST_JOIN_DATE,
+    u.FRST_REGIST_DT::DATE                               as FIRST_JOIN_DATE,
     u.CMPGN_CD                                    as FIRST_CAMPAIGN,
     u.JOIN_PATH_CD                                as JOIN_PATH_CD,
     case when u.JOIN_PATH_CD is not null then cp.DTL_CD_NM

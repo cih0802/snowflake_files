@@ -237,12 +237,11 @@ def main():
             "status": "PASS" if ok else "FAIL",
             "detail": detail,
         })
-        time.sleep(0.5)
+        with open("/tmp/cortex_30_result.json", "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
 
     print(f"\n=== 결과 요약 ===")
     print(f"총 {len(QUESTIONS)}문항 중 성공(SQL 생성): {pass_cnt}건, 실패: {fail_cnt}건")
-    with open("/tmp/cortex_30_result.json", "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

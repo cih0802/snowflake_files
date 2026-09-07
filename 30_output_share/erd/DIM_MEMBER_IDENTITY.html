@@ -7,7 +7,7 @@
   <title>DIM_MEMBER_IDENTITY - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-03 02:55",
+    "generated": "2026-09-07 02:26",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_IDENTITY",
     "table": "DIM_MEMBER_IDENTITY",
     "domain": "CRM / 회원·후원",
@@ -392,13 +392,13 @@
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
         <div class="nav-group-title">DIMENSION (20)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
+<a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
-<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
-<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
@@ -416,11 +416,11 @@
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
 <a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
-<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
@@ -442,7 +442,7 @@
               <span>DIM_MEMBER_IDENTITY</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">회원 신원 브리지 (MEMBER_DK × GA member_id · P5 durable key)</div>
+            <div class="korean-title">회원 신원 브리지 (MEMBER_DK × BigQuery member_id · P5 durable key)</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 6개</span>
           <span class="badge badge-domain">컬럼 수: 11개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 신원 브리지 (MEMBER_DK × GA member_id · P5 durable key)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 신원 브리지 (MEMBER_DK × BigQuery member_id · P5 durable key)</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -485,7 +485,7 @@ flowchart LR
     S_IDENTITY_MEMBER_XREF["IDENTITY_MEMBER_XREF"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_DIM_MEMBER_IDENTITY["★ DIM_MEMBER_IDENTITY<br/>회원 신원 브리지 (MEMBER_DK × GA"]:::target
+    G_DIM_MEMBER_IDENTITY["★ DIM_MEMBER_IDENTITY<br/>회원 신원 브리지 (MEMBER_DK × Bi"]:::target
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
@@ -547,21 +547,21 @@ erDiagram
     string IDENTITY_SK PK
     string MEMBER_DK FK
     string MEMBER_NO
-    string GA_MEMBER_ID
+    string BIGQUERY_MEMBER_ID
     string HOMEPAGE_ID
     string DW_BATCH_ID
   }
-  FACT_GA_BEHAVIOR {
+  FACT_BIGQUERY_BEHAVIOR {
     string DATE_SK FK
     string IDENTITY_SK FK
-    string GA_EVENT_SK FK
-    string GA_SOURCE_SK FK
+    string BIGQUERY_EVENT_SK FK
+    string BIGQUERY_SOURCE_SK FK
     string DEVICE_SK FK
     string CAMPAIGN_SK FK
     string DW_BATCH_ID
   }
   DIM_MEMBER ||..o{ DIM_MEMBER_IDENTITY : "MEMBER_DK"
-  DIM_MEMBER_IDENTITY ||--o{ FACT_GA_BEHAVIOR : "IDENTITY_SK"
+  DIM_MEMBER_IDENTITY ||--o{ FACT_BIGQUERY_BEHAVIOR : "IDENTITY_SK"
           </pre>
         </div>
 
@@ -590,7 +590,7 @@ erDiagram
           <td>회원 식별 자연키 참조</td>
         </tr>
         <tr>
-          <td><code>FACT_GA_BEHAVIOR</code></td>
+          <td><code>FACT_BIGQUERY_BEHAVIOR</code></td>
           <td><code>IDENTITY_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_MEMBER_IDENTITY.html"><code>DIM_MEMBER_IDENTITY</code></a></td>
@@ -643,10 +643,10 @@ erDiagram
           <td>memnum (#111).</td>
         </tr>
         <tr>
-          <td><code>GA_MEMBER_ID</code></td>
+          <td><code>BIGQUERY_MEMBER_ID</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>member id(#112)</td>
+          <td>BigQuery member id(#112)</td>
         </tr>
         <tr>
           <td><code>HOMEPAGE_ID</code></td>
@@ -695,11 +695,11 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MEMBER_IDENTITY: 회원 신원 브리지 (CRM_MEMBER × GA4_IDENTITY 매칭, IDENTITY_MEMBER_XREF 경유)
+            <pre><code>-- DIM_MEMBER_IDENTITY: 회원 신원 브리지 (CRM_MEMBER × BIGQUERY_IDENTITY 매칭, IDENTITY_MEMBER_XREF 경유)
 -- Co-authored with CoCo
--- ⚠️ 활성화(2026-07-15): SILVER GA4_IDENTITY 적재 확인 → enabled 해제. GA_MEMBER_ID=exact member_id 매칭분만.
+-- ⚠️ 활성화(2026-07-15): SILVER BIGQUERY_IDENTITY 적재 확인 → enabled 해제. BIGQUERY_MEMBER_ID=exact member_id 매칭분만.
 --    grain 보호: XREF는 user_pseudo_id 단위(1회원 최대 3 pseudo) → MEMBER_DK로 집계 후 조인(IDENTITY_SK 유일성 보장).
---    데이터 범위: 현재 GA4 1일 샤드 기반(채움률 ~4.2%)·Q1 현업검증 대기. 행수는 GA4 입고 범위에 비례(전기간 입고 시 truncate+append로 자동 갱신).
+--    데이터 범위: 현재 BigQuery 샤드 기반(채움률 ~4.2%)·Q1 현업검증 대기. 행수는 BigQuery 입고 범위에 비례(전기간 입고 시 truncate+append로 자동 갱신).
 {{ config(
     materialized='incremental',
     unique_key='IDENTITY_SK',
@@ -711,7 +711,7 @@ with m as (
 ),
 -- XREF는 user_pseudo_id 단위 → MEMBER_DK로 집계(1회원 1행)해 fan-out(IDENTITY_SK 중복) 방지
 xref as (
-    select MEMBER_DK as X_MEMBER_DK, MAX(GA_MEMBER_ID) as GA_MEMBER_ID
+    select MEMBER_DK as X_MEMBER_DK, MAX(GA_MEMBER_ID) as BIGQUERY_MEMBER_ID
     from {{ ref('IDENTITY_MEMBER_XREF') }}
     where MEMBER_DK is not null
     group by MEMBER_DK
@@ -721,10 +721,10 @@ select
     {{ gold_sk(['MEMBER_DK']) }}                  as IDENTITY_SK,
     MEMBER_DK                                     as MEMBER_DK,
     MEMBER_DK                                     as MEMBER_NO,
-    CAST(NULL AS VARCHAR)                          as MEMNUM,         -- 🔴 전건 NULL. 정본 #111. 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 memnum= (17,795행·1,589종) — 미배선(phase-2). ⚠️ 단 GOLD.FACT_GA_BEHAVIOR.PAGE_LOCATION 은 MAX() 대표값이라 680종만 남으므로 배선 원천은 SILVER 여야 한다
-    x.GA_MEMBER_ID                                as GA_MEMBER_ID,   -- exact member_id 매칭분(미매칭=NULL)
+    CAST(NULL AS VARCHAR)                          as MEMNUM,         -- 🔴 전건 NULL. 정본 #111. 원천 실재 = SILVER.BIGQUERY_EVENT.PAGE_LOCATION 의 memnum= (17,795행·1,589종) — 미배선(phase-2). ⚠️ 단 GOLD.FACT_BIGQUERY_BEHAVIOR.PAGE_LOCATION 은 MAX() 대표값이라 680종만 남으므로 배선 원천은 SILVER 여야 한다
+    x.BIGQUERY_MEMBER_ID                          as BIGQUERY_MEMBER_ID, -- exact member_id 매칭분(미매칭=NULL)
     HMPG_ID                                       as HOMEPAGE_ID,
-    CAST(NULL AS VARCHAR)                          as CHILD_CODE,     -- 🔴 전건 NULL. 종전 주석 '결연(SPONSOR_RELATION) 대기' 는 회수한다 — 정본 #122 는 결연아동코드를 &quot;페이지 경로+쿼리 문자열에서 childnum= 뒤 13자리&quot; 로 규정하며 정본 DDL(06_DDL.sql:164)도 'URL 파싱' 이라 적었다. 원천 실재 = SILVER.GA4_EVENT.PAGE_LOCATION 의 childnum= (6,827행·594종) — 미배선(phase-2)
+    CAST(NULL AS VARCHAR)                          as CHILD_CODE,     -- 🔴 전건 NULL. 종전 주석 '결연(SPONSOR_RELATION) 대기' 는 회수한다 — 정본 #122 는 결연아동코드를 &quot;페이지 경로+쿼리 문자열에서 childnum= 뒤 13자리&quot; 로 규정하며 정본 DDL(06_DDL.sql)도 'URL 파싱' 이라 적었다. 원천 실재 = SILVER.BIGQUERY_EVENT.PAGE_LOCATION 의 childnum= (6,827행·594종) — 미배선(phase-2)
     {{ gold_meta('CRM') }}
 from m
 left join xref x on x.X_MEMBER_DK = m.MEMBER_DK

@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select IS_MULTI_SPONSORSHIP
+from GN_DW.GOLD.FACT_MEMBER_MONTHLY
+where IS_MULTI_SPONSORSHIP is null
+
+

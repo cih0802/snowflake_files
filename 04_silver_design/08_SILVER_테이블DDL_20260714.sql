@@ -83,7 +83,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     ENTRPS_NM           VARCHAR(200)    COMMENT '기업/단체명 (법인회원)',
     EMAIL_RECPTN        VARCHAR         COMMENT '이메일 수신동의 여부',
     PSTMTR_RECPTN       VARCHAR         COMMENT '우편물 수신동의 여부',
-    JOIN_DT             TIMESTAMP_NTZ   COMMENT '가입일시',
+    FRST_REGIST_DT      TIMESTAMP_NTZ   COMMENT '최초등록일시(가입일시)',
     -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
     EMAIL_STAT_CD           VARCHAR         COMMENT 'EMAIL_STAT_CD. 코드id:MM009. [사유:원천 부재]',
     ETC_CTTPC_REL_CD        VARCHAR         COMMENT '기타연락처 관계 코드 raw (정본 MM008). 코드id:MM008.',
@@ -784,7 +784,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BUDGET_ITEM_DK, BUDGET_YEAR)
-) COMMENT = '예산 연 총액 grain (편성·추경·조정·집행 4종). → FACT_BUDGET_YEARLY. 🔴 월 값은 ERP_BUDGET 을 쓴다.';
+) COMMENT = '예산 연 총액 (grain = 예산과목 × 연도). → FACT_BUDGET_YEARLY. 🔴 월 값은 ERP_BUDGET 을 쓴다.';
 
 -- CRM 24: CRM_MEMBER_SPONSOR_SPAN (회원×후원사업 활동구간)  [2026-08-20 O93 신설]
 --   🔴 존재 이유 = 정본 #51「월말활동회원」의 **as-of 판정**에 구간이 필요한데 기존 모델에는 없었다:
@@ -814,7 +814,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
-) COMMENT = '회원×후원사업 활동구간(시작월~중단월) — GOLD.FACT_MEMBER_MONTHLY 활동 8컬럼의 as-of 판정 기반. 🟢 CONF-3(정본 #51 판정조건 내부 모순)이 이 구조에서 해소된다: 중단일 vs 재후원일 비교와 동일자 tie-break 가 「미중단 사업 보유」 하나로 대체된다.';
+) COMMENT = '회원×후원사업 활동구간 (grain = 회원 × 후원사업). GOLD.FACT_MEMBER_MONTHLY 활동 8컬럼의 as-of 판정 기반. 🟢 CONF-3(정본 #51 판정조건 내부 모순)이 이 구조에서 해소된다: 중단일 vs 재후원일 비교와 동일자 tie-break 가 「미중단 사업 보유」 하나로 대체된다.';
 
 -- CRM 22: CRM_BIZ_TARGET (사업목표 — ⛔ 입고 대기)
 --   [컬럼별 설계 및 실측 이력]
@@ -836,7 +836,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BIZ_TARGET_DK)
-) COMMENT = 'FTG-B 사업목표. 원천=CRM 확정(2026-07-20). ⛔CRM 신규 목표 테이블 입고 대기(E-6) → 스키마-only, 적재 보류';
+) COMMENT = '사업목표 마스터 (grain = 연/월 × 조직 × 사업 · 1목표). 원천=CRM 확정(2026-07-20). ⛔CRM 신규 목표 테이블 입고 대기(E-6) → 스키마-only, 적재 보류';
 
 -- ============================================================================
 -- STEP 4 — AGENCY 8테이블 (코어 2 + staging 3 + 위성 3)
@@ -1171,7 +1171,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 --     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
 --     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
 --     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
---     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
+--     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4GN_DW.INFORMATION_SCHEMA-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
 --     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
 --     EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
 --     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
@@ -1311,7 +1311,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블(GA4_* 5종의 유일 입력). 외부 Python 적재가 평탄화만 남기고 파생을 잃어 이 dbt 모델이 되살린다. SRC_TABLE/SRC_FILE_NAME 계보 없음(외부 적재 · NULL). 🔴 조회 시 EVENT_DT 범위 제한 필수. EVENT_SEQ 결정성 미해결(GA4-SEQ-1)';
+) COMMENT = 'GA4 기반 테이블 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) — source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블(GA4_* 5종의 유일 입력). 외부 Python 적재가 평탄화만 남기고 파생을 잃어 이 dbt 모델이 되살린다. SRC_TABLE/SRC_FILE_NAME 계보 없음(외부 적재 · NULL). 🔴 조회 시 EVENT_DT 범위 제한 필수. EVENT_SEQ 결정성 미해결(GA4-SEQ-1)';
 
 -- GA4 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1332,7 +1332,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 트래픽소스(session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_GA_SOURCE';
+) COMMENT = 'GA 트래픽소스 차원 (grain = 1트래픽소스 · session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_GA_SOURCE';
 
 -- GA4 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1347,7 +1347,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 이벤트분류. DISTINCT 그레인(PK 없음) → DIM_GA_EVENT';
+) COMMENT = 'GA 이벤트분류 차원 (grain = 1이벤트명/파라미터). DISTINCT 그레인(PK 없음) → DIM_GA_EVENT';
 
 -- GA4 3: BIGQUERY_DEVICE (디바이스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1366,7 +1366,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 디바이스. DISTINCT 그레인(PK 없음) → DIM_DEVICE(GA분)';
+) COMMENT = 'GA 디바이스 차원 (grain = 1디바이스). DISTINCT 그레인(PK 없음) → DIM_DEVICE(GA분)';
 
 -- GA4 4: BIGQUERY_EVENT (이벤트 팩트 소스)
 --   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
@@ -1389,7 +1389,6 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 .  GA4.',
-    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID.',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
     EVENT_DT                DATE            NOT NULL COMMENT '파생 DATE.',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
@@ -1422,6 +1421,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹',
     PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건).',
     IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
+    BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID.',
     SRC_TABLE               VARCHAR(64)     COMMENT '원본 일별 테이블명 계보 (기반 테이블 승계)',
     SRC_FILE_NAME           VARCHAR(512)    COMMENT '파일 단위 계보 (기반 테이블 승계)',
     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
@@ -1430,33 +1430,26 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA 이벤트 팩트 소스 → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
+) COMMENT = 'GA 이벤트 팩트 소스 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
 
--- GA4 5: BIGQUERY_IDENTITY (신원)
---   🟢 [2026-08-19 O87] GA_MEMBER_ID VARCHAR(10) → VARCHAR(64) + ID_SCHEME 신설(GA4-LEN-1).
+-- GA4 5: BIGQUERY_IDENTITY (신원 브리지 소스)
 --   [컬럼별 설계 및 실측 이력]
---   · GA_MEMBER_ID: = user_id_filled(세션 채움 후 GA 식별자). 🟢 GA4-LEN-1 해소로 확장 — 🔴 CRM 회원번호가 아닌 값(app-·이메일·"null")도 여기 들어온다. 회원번호로 쓰기 전에 ID_SCHEME 을 볼 것
---   · ID_SCHEME: 🔴 매칭 분모의 정본(GA4-LEN-1 조치②). MBER_NO(7자리)/ONCE_MBER_NO(S+8자리) 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호가 아니다. 채움률 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED) 이고 비회원 체계는 분모 밖이다
---   · MEMBER_TYPE: 회원구분 ONCE(S+8자리) / FDRM(7자리). 🔴 그 밖의 ID 체계는 NULL — 종전 「S%→ONCE else FDRM」은 app-·이메일까지 FDRM 으로 밀어넣어 분모를 오염시켰다(라벨 창작 금지 · R2-7)
---   · MBER_NO: 정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움
---   · ONCE_MBER_NO: 일시 회원번호. ID_SCHEME=ONCE_MBER_NO 일 때만 채움
---   · ID_RESOLUTION: 신원해소 DIRECT/SESSION_FILL. SESSION_FILL 은 추론값(공유기기 오귀속 가능) — DIRECT 보다 낮은 신뢰
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
     USER_PSEUDO_ID      VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     GA_MEMBER_ID        VARCHAR(64)     COMMENT 'GA_MEMBER_ID.',
-    ID_SCHEME           VARCHAR(20)     COMMENT '매칭 분모의 정본(GA4.',
+    ID_SCHEME           VARCHAR(20)     NOT NULL COMMENT 'ID 체계 (PK) — MBER_NO/ONCE_MBER_NO/APP/EMAIL/INVALID/UNCLASSIFIED',
     MEMBER_TYPE         VARCHAR(10)     COMMENT '회원구분 ONCE(S+8자리) / FDRM(7자리).',
     MBER_NO             VARCHAR(10)     COMMENT '정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움.',
-    ONCE_MBER_NO        VARCHAR(10)     COMMENT 'ONCE_MBER_NO.',
+    ONCE_MBER_NO        VARCHAR(10)     COMMENT '일시 회원번호 (S+8자리)',
     ID_RESOLUTION       VARCHAR(20)     COMMENT 'ID_RESOLUTION.',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    PRIMARY KEY (USER_PSEUDO_ID)
-) COMMENT = 'GA 신원(Q1 확정) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
+    PRIMARY KEY (USER_PSEUDO_ID, ID_SCHEME)
+) COMMENT = 'GA 신원 차원 (grain = USER_PSEUDO_ID × ID_SCHEME · 1신원) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
 
 -- ============================================================================
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)

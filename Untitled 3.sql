@@ -32,3 +32,103 @@ agent 테스트 결과 요약
 Cortex Analyst SQL 생성 성공: 28건 / 29건 (96.6%)
 생성된 SQL Live 실행 성공: 28건 / 28건 (100.0% 성공)
 미생성 1건(K9): SV_MEMBER_COHORT(유지기간·이탈률)와 SV_MEMBER_FEE(납입회비) 2개 팩트가 필요한 복합 질의로, Cross-Fact 가드레일에 의해 정상 거부됨 (단일 뷰 분리 질의 시 정상 응답).
+
+;;
+-- [2-1. I-2] 행사 참여상태 및 특수문자 ')' 침투 행 확인
+SELECT
+    *
+FROM GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL
+WHERE mber_no = ')' OR partcpt_chnnl_cd = ')' OR partcpt_path_cd = ')'
+   OR partcpt_stat_cd = ')' OR rm = ')' OR rm2 = ')'
+ORDER BY 1;
+
+-- SELECT count(*)
+select *
+FROM GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL
+WHERE MBER_NO NOT REGEXP '^[0-9]{7}$'         -- 7자리 숫자가 아님
+  AND MBER_NO NOT REGEXP '^S0[0-9]{7}$';     -- S0으로 시작하는 9자리가 아님 (S0 + 7자리)
+
+select *
+-- from GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO
+from GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO
+WHERE 1=1
+  -- and MBER_NO NOT REGEXP '^[0-9]{7}$'         -- 7자리 숫자가 아님
+  AND ONCE_MBER_NO NOT REGEXP '^S0[0-9]{7}$';     -- S0으로 시작하는 9자리가 아님 (S0 + 7자리)
+
+-- [2-6. N-8] MKTG_UTM 고아코드 192번 캠페인 점유율
+SELECT
+    c.mktg_utm AS "캠페인_UTM코드",
+    u.mk_utm_nm AS "사전_라벨",
+    CASE WHEN u.mk_utm IS NULL THEN '🔴 사전 미등재(고아)' ELSE '정상 매칭' END AS "사전등재여부",
+    COUNT(*) AS "캠페인수",
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS "비율_PCT"
+FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG c
+LEFT JOIN GN_DW.BRONZE_CRM.TM_CM_MKTNG_UTM u
+    ON u.mk_utm = c.mktg_utm
+GROUP BY 1, 2, 3
+ORDER BY 4 DESC;
+
+
+
+-- [3-1. A] 회비월(MBRFEE_MT) 자리수 및 5자리 비정상 값 실측
+SELECT
+    LENGTH(mbrfee_mt) AS "자리수",
+    COUNT(*) AS "행수",
+    COUNT(DISTINCT mbrfee_mt) AS "값종류수",
+    MIN(mbrfee_mt) AS "최소값",
+    MAX(mbrfee_mt) AS "최대값"
+FROM GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT
+GROUP BY 1
+ORDER BY 1;
+
+-- [3-3. E] 행사 참여 외래키 고아행(행사 마스터 부재) 비율
+SELECT '일반행사 TD_MS_EVENT_PRTCPNT_DTL' AS "참여원천",
+    COUNT(*) AS "참여행_전체",
+    COUNT(CASE WHEN e.event_cd IS NULL THEN 1 END) AS "고아행_마스터부재",
+    ROUND(COUNT(CASE WHEN e.event_cd IS NULL THEN 1 END) * 100.0 / COUNT(*), 2) AS "고아비율_PCT"
+FROM GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL p
+LEFT JOIN GN_DW.BRONZE_CRM.TM_MS_EVENT e
+    ON p.event_cd = e.event_cd
+UNION ALL
+SELECT '캠페인행사 TD_MS_CRMN_PRTCPNT',
+    COUNT(*),
+    COUNT(CASE WHEN c.crmn_cd IS NULL THEN 1 END),
+    ROUND(COUNT(CASE WHEN c.crmn_cd IS NULL THEN 1 END) * 100.0 / COUNT(*), 2)
+FROM GN_DW.BRONZE_CRM.TD_MS_CRMN_PRTCPNT p
+LEFT JOIN GN_DW.BRONZE_CRM.TM_MS_CRMN c
+    ON p.crmn_cd = c.crmn_cd;
+
+-- [3-4. B] 행사 참여 회원번호의 회원 마스터 부재 회원수
+SELECT
+    CASE
+        WHEN REGEXP_LIKE(p.mber_no, '^[0-9]{7}$') THEN '정상 7자리 FDRM'
+        WHEN REGEXP_LIKE(p.mber_no, '^S[0-9]{8}$') THEN 'ONCE S+8자리'
+        WHEN LENGTH(p.mber_no) <= 2 THEN '짧은/비정상 ID'
+        ELSE '기타'
+    END AS "유형",
+    COUNT(DISTINCT p.mber_no) AS "마스터부재_회원번호수",
+    COUNT(*) AS "참여행수"
+FROM GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL p
+WHERE NOT EXISTS (
+        SELECT 1 FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO m
+        WHERE m.mber_no = p.mber_no)
+  AND NOT EXISTS (
+        SELECT 1 FROM GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO o
+        WHERE o.once_mber_no = p.mber_no)
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+
+-- [2-6. N-8] MKTG_UTM 고아코드 192번 캠페인 점유율
+SELECT
+    c.mktg_utm AS "캠페인_UTM코드",
+    u.mk_utm_nm AS "사전_라벨",
+    CASE WHEN u.mk_utm IS NULL THEN '🔴 사전 미등재(고아)' ELSE '정상 매칭' END AS "사전등재여부",
+    COUNT(*) AS "캠페인수",
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS "비율_PCT"
+FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG c
+LEFT JOIN GN_DW.BRONZE_CRM.TM_CM_MKTNG_UTM u
+    ON u.mk_utm = c.mktg_utm
+GROUP BY 1, 2, 3
+ORDER BY 4 DESC;

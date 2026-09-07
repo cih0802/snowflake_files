@@ -1,0 +1,30 @@
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with all_values as (
+
+    select
+        AD_SOURCE_TYPE as value_field,
+        count(*) as n_records
+
+    from GN_DW.GOLD.FACT_AD_PERFORMANCE
+    group by AD_SOURCE_TYPE
+
+)
+
+select *
+from all_values
+where value_field not in (
+    'DIGITAL','VIDEO','REBROADCAST'
+)
+
+
+
+      
+    ) dbt_internal_test

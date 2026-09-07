@@ -7,7 +7,7 @@
   <title>DIM_MEMBER - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-03 02:55",
+    "generated": "2026-09-07 02:26",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER",
     "table": "DIM_MEMBER",
     "domain": "CRM / 회원·후원",
@@ -392,13 +392,13 @@
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
         <div class="nav-group-title">DIMENSION (20)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
+<a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
+<a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
-<a href="DIM_GA_EVENT.html" class="nav-item"><span>DIM_GA_EVENT</span></a>
-<a href="DIM_GA_SOURCE.html" class="nav-item"><span>DIM_GA_SOURCE</span></a>
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item active"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
@@ -416,11 +416,11 @@
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
 <a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
-<a href="FACT_GA_BEHAVIOR.html" class="nav-item"><span>FACT_GA_BEHAVIOR</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
@@ -579,7 +579,7 @@ erDiagram
     string IDENTITY_SK PK
     string MEMBER_DK FK
     string MEMBER_NO
-    string GA_MEMBER_ID
+    string BIGQUERY_MEMBER_ID
     string HOMEPAGE_ID
     string DW_BATCH_ID
   }
@@ -1074,7 +1074,7 @@ hist_scd2 as (
 versioned as (
     select
         {{ gold_sk(['m.MEMBER_DK', 'h.EFF_FROM']) }}  as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
         h.STATUS_CD                                   as MBER_STAT_CD,
         h.PREV_STATUS_CD                              as PREV_MBER_STAT_CD,
         h.EFF_FROM                                    as EFFECTIVE_FROM,
@@ -1088,11 +1088,11 @@ versioned as (
 --     [O27] 이력이 없으므로 이전상태도 없다 → PREV_MBER_STAT_CD = NULL (결측이며 개념부재 아님)
 single as (
     select
-        {{ gold_sk(['m.MEMBER_DK', 'm.JOIN_DT']) }}   as MEMBER_SK,
-        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.JOIN_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        {{ gold_sk(['m.MEMBER_DK', 'm.FRST_REGIST_DT']) }}   as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
         m.MBER_STAT_CD                                as MBER_STAT_CD,
         CAST(NULL AS VARCHAR)                          as PREV_MBER_STAT_CD,
-        m.JOIN_DT::DATE                               as EFFECTIVE_FROM,
+        m.FRST_REGIST_DT::DATE                               as EFFECTIVE_FROM,
         CAST(NULL AS DATE)                            as EFFECTIVE_TO,
         TRUE                                          as IS_CURRENT
     from m
@@ -1233,7 +1233,7 @@ select
     --   ⚠️ 이력 미보유행(FDRM 무이력·ONCE)은 NULL — 이전상태가 '없다'가 아니라 '이력이 없다'.
     u.PREV_MBER_STAT_CD                           as PREV_MBER_STAT_CD,
     cps.DTL_CD_NM                                 as PREV_MEMBER_STATUS_NAME,
-    u.JOIN_DT::DATE                               as FIRST_JOIN_DATE,
+    u.FRST_REGIST_DT::DATE                               as FIRST_JOIN_DATE,
     u.CMPGN_CD                                    as FIRST_CAMPAIGN,
     u.JOIN_PATH_CD                                as JOIN_PATH_CD,
     case when u.JOIN_PATH_CD is not null then cp.DTL_CD_NM

@@ -1,0 +1,9 @@
+begin;
+    insert into GN_DW.SILVER.CRM_DEV_TARGET ("STDYY", "STDR_MT", "MBER_DVLP_DIV_CD", "DEPT_ID", "GOAL_CNT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "STDYY", "STDR_MT", "MBER_DVLP_DIV_CD", "DEPT_ID", "GOAL_CNT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.SILVER.CRM_DEV_TARGET__dbt_tmp
+    )
+
+;
+    commit;
