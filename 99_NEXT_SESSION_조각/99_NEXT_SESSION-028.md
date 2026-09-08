@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 028/029 | 허브 = 99_NEXT_SESSION.md | 원문 4102~4246행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 028/030 | 허브 = 99_NEXT_SESSION.md | 원문 4102~4246행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 ## 0-NNNN. ~~🔴🔴 [2026-09-07 O140 필독 — **여기서 시작한다.** §0-MMMM 은 승계됐다]~~ ➔ 🟢 [2026-09-07 O141 승계됨]

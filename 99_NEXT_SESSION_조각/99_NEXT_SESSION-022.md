@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 022/029 | 허브 = 99_NEXT_SESSION.md | 원문 3283~3376행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 022/030 | 허브 = 99_NEXT_SESSION.md | 원문 3283~3376행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 > · 🔴🔴 **[O73 규명] O72-C 의 「727,973」과 O73 의 「727,958」은 모순이 아니라 분모 정의가 다르다 — ⑫ 착수 전 필독.**

@@ -1,0 +1,36 @@
+## 🟢 [2026-09-08 O147] O145-1 SILVER.ERP_BUDGET 축 복원(dbt 준비) + O145-4 버전안 제시 + O145-2/3 문서 시정 + R0-8-4 조문 신설
+
+**요청** = ① [P1/SILVER] O145-1 — 원천 `BRONZE_ERP.BDGT_ACMSLT_LEDGER`의 `DVLP_INBOUND_PATH`(유입채널) 및 `BDGT_UNIT_NM`(팀) 승계 확인, 6종 중 5종 부서 매핑 규칙 정립, 모델 및 `_erp_schema.yml` 반영, dbt 실행 명령문 제시 준비(R4-1 정지점 준수). ② [P2/GOLD] O145-4 — `FACT_TARGET_BIZ` 버전 표현 방식 안(㉠ 행 누적+GOLD 피벗 vs ㉡ 컬럼 분리+추경2차 추가) 장단점 분석 및 설계안 제시. ③ [P2/Docs] O145-2 & O145-3 문서 시정 — 문서50 `BLOCKING-5` 표에 `FACT_DEV_ACHIEVEMENT` 행(37.5K) 부분 적재 한정 표기 추가, 문서40 stale 2건(BRONZE_BIGQUERY 라이브 부재, 계정 UA93987 기재) '재는 방법'으로 교체. ④ [P2/거버넌스] Grep 거짓 음성 방지 3조건(분모 축소+rc 리다이렉트+2차 도구 대조) 지침 `R0-8-4` 조문 등재, `gate_census --run-tests` 순회 간헐 실패(`S7`) 재현 여부 확인. ⑤ 종료 처리(정본 3곳 동기화).
+**적용** = `R4-4-2 ㉡`(지시 동봉 ⇒ 브리핑 후 즉시 수행) · `R4-4-3` 예외 전건 사전승인.
+
+### ▣ 1. [P1/SILVER] O145-1 — SILVER.ERP_BUDGET 축 복원 및 dbt 스키마 분리
+- **원천 컬럼 승계 확인**: `models/silver/erp/ERP_BUDGET.sql` 모델에서 원천 `BRONZE_ERP.BDGT_ACMSLT_LEDGER`의 `DVLP_INBOUND_PATH`(유입채널) 및 `BDGT_UNIT_NM`(팀)이 누락 없이 언피벗 CTE 및 최종 SELECT에 승계되어 있음을 전량 확인.
+- **5종 부서 매핑 규칙 정립**:
+  - `데이터분석센터` ➔ `E001159`
+  - `마케팅기획1팀` ➔ `F001050`
+  - `마케팅기획2팀` ➔ `D000023`
+  - `매체운영팀` ➔ `D000111`
+  - `콘텐츠기획팀` ➔ `E001190`
+  - `사회복지법인예산` ➔ 부서 매핑 제외 (법인 단위 예산)
+- **dbt YML 스키마 분리 및 신설**:
+  - `models/silver/erp/_erp_schema.yml` 을 신설하여 `ERP_BUDGET`, `ERP_BUDGET_ITEM`, `ERP_BUDGET_YEARLY` 3개 모델 정의, `accepted_values`, `relationships`, 컬럼 상세 설명(`BDGT_UNIT_NM` 5종 매핑 규칙 명시) 완결.
+  - `models/silver/_silver_bridge_schema.yml` 에서 ERP 모델 정의를 제거하여 dbt 모델 중복 선언 방지.
+- **dbt 실행 정지점(`R4-1`) 준수**: 에이전트는 직접 dbt를 실행하지 않고, 사용자 실행 명령문(`dbt run --select ERP_BUDGET ERP_BUDGET_ITEM ERP_BUDGET_YEARLY`)을 제시하고 대기.
+
+### ▣ 2. [P2/GOLD] O145-4 — FACT_TARGET_BIZ 버전 표현 방식 안 비교
+- **배경**: `GOLD.FACT_TARGET_BIZ` 가 당초/추경을 컬럼 분리(`ANNUAL_GOAL_CNT`/`SUPP_GOAL_CNT`) 방식으로 구현하여 추경2차 이상의 다차수 표현이 불가능한 한계 존재.
+- **방안 비교**:
+  - **㉠ 행 누적 (Row accumulation) + GOLD / SV 피벗**:
+    - 장점: 추경 n차 확장 시 DDL/모델 스키마 변경 불요, 차수별 이력 및 차수 간 변동 비교 용이, `ERP_BUDGET`(`BUDGET_PROCEDURE`)과 일관된 패턴.
+    - 단점: 기존 GOLD 컬럼 구조 및 상류/SV 쿼리 수정 필요, 단일 행 횡단 비교 시 `CASE WHEN` 집계 필요.
+  - **㉡ 컬럼 분리 + 추경2차 컬럼 추가 (`SUPP2_GOAL_CNT`)**:
+    - 장점: 기존 WIDE/SV 소비 패턴 유지, 단일 행에서 당초/1차/2차 즉시 비교 가능.
+    - 단점: 추경 차수가 추가될 때마다 DDL, dbt 모델, WIDE 뷰, SV 수정 발생, 비추경 부서/과거 연도의 NULL 컬럼 증가.
+
+### ▣ 3. [P2/Docs] O145-2 & O145-3 문서 시정
+- **O145-2**: `20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md` 의 `BLOCKING-5` 표에 `FDA 37.5K (FACT_DEV_ACHIEVEMENT)` 행을 추가하고, `ORG_CORP`~`ORG_DEPARTMENT` 전건 0/NULL 상태 및 부분 적재 한정 표기 교훈을 명시. 허브 재발행(`--expect "FACT_DEV_ACHIEVEMENT"`) 완료.
+- **O145-3**: `20_issue/40_입고대기_원천의존.md` 에서 `BRONZE_BIGQUERY` 정적 행수 및 과거 계정명 `UA93987` 정적 기재를 라이브 조회 「재는 방법」(`SELECT ... FROM INFORMATION_SCHEMA.TABLES`, `CURRENT_ACCOUNT()`, `SHOW STAGES`)으로 교체.
+
+### ▣ 4. [P2/거버넌스] 지침 R0-8-4 신설 및 게이트 검증
+- **지침 신설**: `00_guides/00_작업지침_세션운영규칙.md` 에 `R0-8-4 Grep 거짓 음성 방지 3조건` 조문 신설 (㉠ 분모 축소 ㉡ rc 리다이렉트 ㉢ 2차 도구 대조). `clause_order_gate.py` 통과 (조문 101개 · 역전 0 · 중복 0).
+- **테스트 스위트 순회**: `gate_census.py --run-tests` 실행 결과 31개 테스트 전건 `rc=0` 통과 (S7 순회 간헐 실패 미재현).

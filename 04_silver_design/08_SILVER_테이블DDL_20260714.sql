@@ -743,7 +743,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '불변 비즈니스 식별자',
     BUDGET_YEAR         NUMBER(4,0)     COMMENT '예산연도 YYYY',
-    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC.',
+    BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
+    DVLP_INBOUND_PATH   VARCHAR         COMMENT '개발 유입경로 (원천 DVLP_INBOUND_PATH 승계 · 8종)',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명 (원천 BDGT_UNIT_NM 승계 · 6종)',
     MONTH_NO            NUMBER(2,0)     NOT NULL COMMENT '월 1~12 (PK)',
     MONTH_KEY           VARCHAR(6)      COMMENT '월키 YYYYMM',
     YEAR_BUDGET_AMT     NUMBER(38,0)    COMMENT '편성(연예산) 금액 원단위',

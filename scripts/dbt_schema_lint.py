@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# dbt 스키마 yml 구문·구조 검증기
+# Co-authored with CoCo
 # -*- coding: utf-8 -*-
 """[2026-08-29 O114-B] dbt 스키마 yml 구문·구조 검증기 (dbt 명령 없이).
 
@@ -31,6 +33,8 @@ TARGETS = [
     '10_dbt_pipeline/models/silver/_sources.yml',
     '10_dbt_pipeline/models/silver/_silver_bridge_schema.yml',
     '10_dbt_pipeline/models/silver/crm/_crm_schema.yml',
+    '10_dbt_pipeline/models/silver/erp/_erp_schema.yml',
+    '10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml',
     '10_dbt_pipeline/models/gold/_gold_ready_schema.yml',
     '10_dbt_pipeline/models/gold/wide/_wide_schema.yml',
 ]

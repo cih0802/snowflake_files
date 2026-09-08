@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 014/029 | 허브 = 99_NEXT_SESSION.md | 원문 2036~2239행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 014/030 | 허브 = 99_NEXT_SESSION.md | 원문 2036~2239행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 ## 0-KKK. 🔴🔴 [2026-08-28 O105 필독 — ~~여기서 시작한다.~~ **⇒ [O106] 시작점은 위 §0-LLL 다.**]

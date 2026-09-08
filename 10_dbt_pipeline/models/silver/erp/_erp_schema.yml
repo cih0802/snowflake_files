@@ -1,0 +1,86 @@
+version: 2
+
+# SILVER ERP 모델 — ERP_BUDGET, ERP_BUDGET_ITEM, ERP_BUDGET_YEARLY
+models:
+  - name: ERP_BUDGET
+    description: >
+      ERP 예산 편성/추경/조정/집행 월 grain (wide→long 언피벗).
+      원천 BRONZE_ERP.BDGT_ACMSLT_LEDGER 1행(12개월) → 12행.
+    columns:
+      - name: BUDGET_ITEM_DK
+        description: >
+          예산과목 대체키(MD5 10컬럼 복합키).
+          ERP_BUDGET_ITEM·ERP_BUDGET_YEARLY 와 동일 MD5 산식이어야 한다.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('ERP_BUDGET_ITEM')
+              field: BUDGET_ITEM_DK
+      - name: BUDGET_YEAR
+        description: "예산 연도(TRY_TO_NUMBER(YEAR))."
+        tests:
+          - not_null
+      - name: MONTH_NO
+        description: "월 번호 1~12 (wide→long 언피벗 결과). grain = (BUDGET_ITEM_DK × MONTH_NO)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']
+      - name: DVLP_INBOUND_PATH
+        description: >
+          개발 유입경로 (원천 DVLP_INBOUND_PATH 승계 · 8종 · 유입채널별 광고비 대비 ROI 분석용).
+      - name: BDGT_UNIT_NM
+        description: >
+          예산단위명 (원천 BDGT_UNIT_NM 승계 · 6종).
+          5종은 TM_CM_DEPT_INFO 부서명 매칭 (데이터분석센터: E001159, 마케팅기획1팀: F001050,
+          마케팅기획2팀: D000023, 매체운영팀: D000111, 콘텐츠기획팀: E001190),
+          1종(사회복지법인예산)은 법인 단위(부서 매칭 제외).
+        tests:
+          - accepted_values:
+              values: ['데이터분석센터', '마케팅기획1팀', '마케팅기획2팀', '매체운영팀', '콘텐츠기획팀', '사회복지법인예산']
+
+  - name: ERP_BUDGET_ITEM
+    description: >
+      예산과목 마스터 (MD5 복합키, TOTAL 요약행 제외).
+    columns:
+      - name: BUDGET_ITEM_DK
+        description: >
+          예산과목 마스터 PK. SELECT DISTINCT 로 생성되므로 유일해야 한다.
+        tests:
+          - not_null
+          - unique
+      - name: BDGT_UNIT_NM
+        description: >
+          예산단위명 (원천 BDGT_UNIT_NM 승계 · 6종).
+        tests:
+          - accepted_values:
+              values: ['데이터분석센터', '마케팅기획1팀', '마케팅기획2팀', '매체운영팀', '콘텐츠기획팀', '사회복지법인예산']
+
+  - name: ERP_BUDGET_YEARLY
+    description: >
+      ERP 예산 연 총액 4종 (편성·추경·조정·집행) — 연 grain (O93 신설).
+    columns:
+      - name: BUDGET_ITEM_DK
+        description: >
+          ERP_BUDGET·ERP_BUDGET_ITEM 과 동일 MD5 산식.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('ERP_BUDGET_ITEM')
+              field: BUDGET_ITEM_DK
+      - name: BUDGET_YEAR
+        description: "예산 연도(TRY_TO_NUMBER(YEAR))."
+        tests:
+          - not_null
+      - name: BUDGET_PROCEDURE
+        description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['연사업', '추가경정']

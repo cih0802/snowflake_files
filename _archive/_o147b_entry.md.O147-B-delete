@@ -1,0 +1,26 @@
+## 🟢 [2026-09-08 O147-B] O147 자기검토 — 트랜스크립트 전수 감사 · DDL/dbt 79테이블 컬럼 집합 일치(79/79) · dbt_schema_lint 분모 보강
+
+**요청** = ① `20_issue` 로 배경·요구사항 파악 ② `cortex conversations transcript` 로 현 세션 트랜스크립트 추출(`87365164`) 및 `scripts/` 제너레이터 조건 부합·stale 검토 ③ 이번 세션 작업(SQL, 코드, 판정) 비판적 자기검토(논리 모순, 규칙 위반, 누락 점검) ④ 전건 사전승인 하에 작업물·문서 최종 개선.
+**적용** = `R4-4-2 ㉡`(지시 동봉 ⇒ 브리핑 후 즉시 수행) · `R4-4-3` 예외 전건 사전승인.
+
+### ▣ 1. 트랜스크립트 감사 기반 자기검토 (`o145_transcript_audit.py`)
+- **트랜스크립트 감사 실측**: 노드 1,333개 / 파일 쓰기·수정 53건 / bash 29건.
+- **위험 신호 6종 검증 결과**:
+  - `rm -rf` 사용: **0건 (🟢 정상)**
+  - `dbt` 에이전트 직접 실행 (`R4-1` 위반): **0건 (🟢 정상 - 명령문 제시 및 대기 준수)**
+  - 파이프 뒤 rc 판독 (`R0-8-2` 위반): **0건 (🟢 정상)**
+  - `awk length` 사용 (`R1-5-4` 금지): **0건 (🟢 정상 - line_len.py 활용)**
+  - `python3 -c` 본문 작성 (`R1-7-9` 위험): **0건 (🟢 정상)**
+  - `quoted heredoc` 사용 (`R1-7-9` 위험): **0건 (🟢 정상)**
+
+### ▣ 2. DDL ↔ dbt 모델 컬럼 집합 정합성 자진 적발 및 시정
+- **적발 결함**: Turn 1 직후 `table_ddl_column_gate.py` 실행 시 `ERP_BUDGET.sql` CTE `B`의 `*`로 인한 `ambiguous column name 'DVLP_INBOUND_PATH'` 컴파일 오류 및 `08_SILVER_테이블DDL`의 `DVLP_INBOUND_PATH`/`BDGT_UNIT_NM` 누락 확인.
+- **시정 조치**:
+  - `10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql`: CTE `B`에서 명시적 컬럼 목록 선택으로 변경하여 모호성 완전 해소.
+  - `04_silver_design/08_SILVER_테이블DDL_20260714.sql`: `SILVER.ERP_BUDGET` 테이블 DDL에 승계 컬럼 2종 추가.
+  - **검증 완료**: `table_ddl_column_gate.py` 실행 결과 GOLD 37개 + SILVER 42개 = 총 79개 테이블 100% 집합 일치 (`79/79 PASS`).
+
+### ▣ 3. dbt 스키마 린트 도구 분모 보강 (`scripts/dbt_schema_lint.py`)
+- `scripts/dbt_schema_lint.py` 의 `TARGETS` 분모에 신설 `models/silver/erp/_erp_schema.yml` 및 `models/silver/bigquery/_bigquery_schema.yml` 추가.
+- 파일 헤더 attribution (`# Co-authored with CoCo`) 추가 및 `dbt_schema_lint.py` 실행 결과 7개 YML 전체 3,157개 단정 통과 (`🟢 PASS`).
+- `gate_census.py --run-tests` 31개 단위/음성 테스트 전건 `rc=0` 통과 재확인.

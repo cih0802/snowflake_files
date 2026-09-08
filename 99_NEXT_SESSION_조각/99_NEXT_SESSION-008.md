@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 008/029 | 허브 = 99_NEXT_SESSION.md | 원문 1219~1404행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 008/030 | 허브 = 99_NEXT_SESSION.md | 원문 1219~1404행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 ### ▣ UUU8 🔴 O114-B 자기결함 — 다음 세션이 반복하지 않도록
