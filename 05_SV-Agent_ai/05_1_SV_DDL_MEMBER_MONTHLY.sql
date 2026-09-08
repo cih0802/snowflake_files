@@ -157,7 +157,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
 (1) 지표 매핑: 납부율=PAYMENT_RATE_FEE (유일 정본), 납입회비(회비만)=TOTAL_PAID_FEE_BILLABLE, 총수납액(회비+기부금)=TOTAL_PAID_ALL, 총미납금액=TOTAL_UNPAID_AMT (DEC-3 정본), 미납비중(%)=UNPAID_RATIO.
 (2) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환.
 (3) 뷰 라우팅 및 이중계상 방지: 후원사업·납입방식·납입일별 회비 분해는 SV_MEMBER_FEE 로 라우팅. 두 뷰의 회비 measure 를 동일 표에 합산하지 말 것. 캠페인별/후원사업별 활동회원수는 SV_MEMBER_SPONSOR_BIZ 로 라우팅.
-(4) 사건 연계: 중단(명) 등 사건 기준 지표는 SV_MEMBER_EVENT 를 회원·월로 사전집계하여 병기하며 주차 합계를 월로 더하지 않는다.';
+(4) 사건 연계: 중단(명) 등 사건 기준 지표는 SV_MEMBER_EVENT 를 회원·월로 사전집계하여 병기하며 주차 합계를 월로 더하지 않는다.
+(5) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 이 뷰의 플래그 합이 아니라 SV_MEMBER_EVENT 의 중단 고유회원수로 답한다. 회원-월 요약과 사건 집계는 표를 분리하고 각 표의 grain 을 밝힌다.
+(6) 판정 라벨 [형제팩트중복]: 납입방식·「납입(원)」은 이 뷰가 앵커가 아니다 — SV_MEMBER_FEE 를 앵커로 답하고 두 뷰를 한 표에 합치지 않는다.
+(7) 판정 라벨 [배분규칙필요]: 발송·사건 grain 으로 이 뷰의 회원월 measure(개발/중단 건·명)를 요구받으면 SQL 을 만들지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다. 자기 grain(월×회원) 질의는 정상 답변한다.';
 
 -- 비활성(Phase-2/적재 후) — 구조 불변, 적재 완결 시 metric만 추가:
 --   공45~47 활동율·공54~57 중단율·공76~78 미납율(ACTIVE/MONTH_END/YEAR_START_ACTIVE_CNT 미적재)
@@ -184,7 +187,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY TO ROL
       🔴 판정은 **절대값이 아니라 불변식**으로 한다. 적재량은 계정·시점마다 다르므로
          "sv_val == fact_val" 같은 관계식이 참인지만 본다. 기대 절대값을 문서에 박으면
          재현 시 전항 오탐이 된다(04 §6.9-(8)).
-      ▶ SV 9종 전체를 아우르는 배포 검증(소유권·GRANT·구조 대조·base 스키마) = `05_0_SV_DDL.sql`
+      ▶ SV 전종을 아우르는 배포 검증(종수는 `SHOW SEMANTIC VIEWS` 로 재라)(소유권·GRANT·구조 대조·base 스키마) = `05_0_SV_DDL.sql`
    ===================================================================================== */
 USE WAREHOUSE GN_DW_ANALYTICS_WH;
 

@@ -176,7 +176,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     --   있어 행별 DATEDIFF가 전건 NULL이고 LAST_STOP_DATE도 미적재 → 산출 불가. 근거·경위 = 04 §6.9-(2) 계열.
   )
   COMMENT = 'Phase-1 회원 상태전이 SV (base: GOLD.FACT_MEMBER_EVENT, grain: 회원×일 사건 1행). CRM 원천 기반 회원 개발 및 중단 사건, 신규/증액/감액/재후원/중단 5종 개발구분(DVLP_DIV_NM), 증감 금액, 캠페인별/부서별 실적 뷰. ⚠️ 캠페인별 중단은 TOTAL_CAMPAIGN_STOP_CNT 를 사용하며 TOTAL_STOP_CNT(중단원천)와 합산 금지. 캠페인별 중단률은 SV_MEMBER_COHORT(12개월 고정 이탈률) 사용. 부서별 목표대비 달성율은 SV_DEV_ACHIEVEMENT 사용.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 개발구분 필터: 증액·감액·신규·재후원·후원중단 질의는 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터. (2) 중단 지표: 전체 중단 규모는 TOTAL_STOP_CNT, 캠페인별 중단 분해는 TOTAL_CAMPAIGN_STOP_CNT 사용 (두 지표 절대 합산 금지). 캠페인별 중단률은 SV_MEMBER_COHORT 로 라우팅. (3) 개발 지표: 개발 실적 건수는 TOTAL_DEV_CNT (신규·증액·재후원 합산) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 속성 시점: 연령대(AGE_BAND_AT_EVENT) 및 지역(REGION_AT_EVENT)은 개발 사건 시점 값이며 개발(DEV) 사건 전용. (6) 주간 실적: 주간 개발실적은 WEEK_OF_YEAR 와 CAL_YEAR 를 동반하여 조회하며 주간 목표 대비는 SV_DEV_ACHIEVEMENT 와 표를 분리하여 제시. (7) 홍보방법 필터: PROMO_METHOD_NAME 라벨 필터 사용.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 개발구분 필터: 증액·감액·신규·재후원·후원중단 질의는 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터. (2) 중단 지표: 전체 중단 규모는 TOTAL_STOP_CNT, 캠페인별 중단 분해는 TOTAL_CAMPAIGN_STOP_CNT 사용 (두 지표 절대 합산 금지). 캠페인별 중단률은 SV_MEMBER_COHORT 로 라우팅. (3) 개발 지표: 개발 실적 건수는 TOTAL_DEV_CNT (신규·증액·재후원 합산) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 속성 시점: 연령대(AGE_BAND_AT_EVENT) 및 지역(REGION_AT_EVENT)은 개발 사건 시점 값이며 개발(DEV) 사건 전용. (6) 주간 실적: 주간 개발실적은 WEEK_OF_YEAR 와 CAL_YEAR 를 동반하여 조회하며 주간 목표 대비는 SV_DEV_ACHIEVEMENT 와 표를 분리하여 제시. (7) 홍보방법 필터: PROMO_METHOD_NAME 라벨 필터 사용. (8) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 STOP_MEMBERS 합이 아니라 중단 고유회원수(COUNT DISTINCT MEMBER_DK)로 답하고 「명 ≠ 플래그 합」임을 밝힌다. 주차별 「명」을 월로 더하지 않는다(주차 distinct 합 > 월 distinct). (9) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 이 뷰 단독으로 답하지 않는다 — 월 목표·달성율은 SV_DEV_ACHIEVEMENT, 회비는 SV_MEMBER_FEE 를 각각 호출해 표를 분리하고 표마다 grain 을 밝힌다. 주간 목표는 원천 부재이므로 만들지 않는다.';
 
 
 /* =====================================================================================
@@ -198,7 +198,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT TO ROLE 
       🔴 판정은 **절대값이 아니라 불변식**으로 한다. 적재량은 계정·시점마다 다르므로
          "sv_val == fact_val" 같은 관계식이 참인지만 본다. 기대 절대값을 문서에 박으면
          재현 시 전항 오탐이 된다(04 §6.9-(8)).
-      ▶ SV 9종 전체를 아우르는 배포 검증(소유권·GRANT·구조 대조·base 스키마) = `05_0_SV_DDL.sql`
+      ▶ SV 전종을 아우르는 배포 검증(종수는 `SHOW SEMANTIC VIEWS` 로 재라)(소유권·GRANT·구조 대조·base 스키마) = `05_0_SV_DDL.sql`
    ===================================================================================== */
 USE WAREHOUSE GN_DW_ANALYTICS_WH;
 

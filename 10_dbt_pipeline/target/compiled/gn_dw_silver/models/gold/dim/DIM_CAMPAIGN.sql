@@ -66,7 +66,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ee5e1fec-7267-40a8-b1e1-d4c9d56c2a9b'                    AS DW_BATCH_ID
+    '1cc57a1d-4ecd-4300-b7be-1d37f0dc09e2'                    AS DW_BATCH_ID
 from c
 -- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
 --   부수 효과 = `CRM_CAMPAIGN` 재스캔 1회 + `CRM_CODE` 스캔 1회 감소.
@@ -82,4 +82,4 @@ select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ee5e1fec-7267-40a8-b1e1-d4c9d56c2a9b'                    AS DW_BATCH_ID
+    '1cc57a1d-4ecd-4300-b7be-1d37f0dc09e2'                    AS DW_BATCH_ID

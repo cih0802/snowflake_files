@@ -619,10 +619,10 @@ models:
         description: "클릭수(디지털 전용)"
       - name: INBOUND_CALL
         description: "인입콜수"
-      - name: GA_CONV_MEMBERS
-        description: "GA전환수(명) — 디지털 전용(O16 교정: 재방송 개발실적 제외)"
-      - name: GA_CONV_CNT
-        description: "GA전환수(건/VU) — 디지털 전용(O16 교정: 재방송 개발실적 제외)"
+      - name: AGENCY_CONV_MEMBERS
+        description: "대행사 전환수(명) — 디지털 전용(O16 교정: 재방송 개발실적 제외)"
+      - name: AGENCY_CONV_CNT
+        description: "대행사 전환수(건/VU) — 디지털 전용(O16 교정: 재방송 개발실적 제외)"
       - name: DAY_OF_WEEK
         description: "요일(팩트 degen)"
       - name: WEEK_OF_YEAR
@@ -766,15 +766,15 @@ models:
       - name: PERF_DATE_SK
         description: "광고 실적일 YYYYMMDD"
       - name: AD_COST
-        description: "[코어] GA 광고비(원)"
+        description: "[코어] 광고비(원)"
       - name: IMPRESSIONS
         description: "[코어] 노출수 — CTR 분모"
       - name: CLICKS
         description: "[코어] 클릭수 — CTR 분자"
-      - name: GA_CONV_MEMBERS
-        description: "[코어] GA전환수(명) — CVR 분자(O16 교정 후 디지털 전용)"
-      - name: GA_CONV_CNT
-        description: "[코어] GA전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용) 🔴[O51-F 실측] 채움이 **부분**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🔴비율 metric 의 분모로 쓸 때는 분자 커버리지를 먼저 맞출 것 — 분모만 부분이면 조용히 과대계상된다(P18). 실측 규모는 이슈원장 §O51-F."
+      - name: AGENCY_CONV_MEMBERS
+        description: "[코어] 대행사 전환수(명) — CVR 분자(O16 교정 후 디지털 전용)"
+      - name: AGENCY_CONV_CNT
+        description: "[코어] 대행사 전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용) 🔴[O51-F 실측] 채움이 **부분**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🔴비율 metric 의 분모로 쓸 때는 분자 커버리지를 먼저 맞출 것 — 분모만 부분이면 조용히 과대계상된다(P18). 실측 규모는 이슈원장 §O51-F."
       - name: PAGE_TYPE
         description: "페이지유형 🔴[O51-F 실측] 채움이 **극히 일부**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 실측 규모는 이슈원장 §O51-F."
       - name: AD_GROUP_NM
@@ -794,13 +794,13 @@ models:
       - name: CTR_SRC
         description: "CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
       - name: CVR_SRC
-        description: "CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(GA_CONV_MEMBERS)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
+        description: "CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(AGENCY_CONV_MEMBERS)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
       - name: CPC_SRC
         description: "CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
       - name: CPM_SRC
         description: "CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
       - name: CPA_SRC
-        description: "CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(GA_CONV_CNT) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
+        description: "CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(AGENCY_CONV_CNT) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F."
       - name: DEV_UNIT_PRICE_SRC
         description: "개발단가(대행사 산정) — 비가산 N 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. ⚠️원천 포맷 변경으로 개발건수와 **상호배타**다(AD-3) — 개발단가는 두 컬럼이 기간을 보완하는 관계이며 교차검증 관계가 아니다. 실측 규모는 이슈원장 §O51-F."
       - name: VTR_SRC
@@ -1217,10 +1217,10 @@ models:
         description: "클릭수(행동 횟수, ≠회원명) (#24). DIGITAL 전용. CTR 분자 공#9"
       - name: INBOUND_CALL
         description: "인입콜 (#25). REBRDC(TEXT→TRY_TO_NUMBER)·VIDEO 보유, DGT 부재"
-      - name: GA_CONV_MEMBERS
-        description: "GA전환수(명) — **DIGITAL 전용**. ⚠️O16 교정(2026-07-28): 종전에 REBRDC 개발회원수가 혼입돼 있었다 — 재방송 개발실적은 FACT_AD_BROADCAST.DVLP_MEMBER_CNT 로 이관했다. 혼입 규모 = 이슈원장 §O16."
-      - name: GA_CONV_CNT
-        description: "GA전환수(건/VU) — **DIGITAL 전용**. ⚠️O16 교정(2026-07-28): 종전에 REBRDC 개발건수가 혼입돼 있었고 그 비중이 과반이었다 → FACT_AD_BROADCAST.DVLP_CNT 로 이관. 혼입 규모 = 이슈원장 §O16. ⚠️합계가 소수로 나오므로 건수가 아니다 — 어의 현업확인 잔여(O5)."
+      - name: AGENCY_CONV_MEMBERS
+        description: "대행사 전환수(명) — **DIGITAL 전용**. ⚠️O16 교정(2026-07-28): 종전에 REBRDC 개발회원수가 혼입돼 있었다 — 재방송 개발실적은 FACT_AD_BROADCAST.DVLP_MEMBER_CNT 로 이관했다. 혼입 규모 = 이슈원장 §O16."
+      - name: AGENCY_CONV_CNT
+        description: "대행사 전환수(건/VU) — **DIGITAL 전용**. ⚠️O16 교정(2026-07-28): 종전에 REBRDC 개발건수가 혼입돼 있었고 그 비중이 과반이었다 → FACT_AD_BROADCAST.DVLP_CNT 로 이관. 혼입 규모 = 이슈원장 §O16. ⚠️합계가 소수로 나오므로 건수가 아니다 — 어의 현업확인 잔여(O5)."
       - name: DAY_OF_WEEK
         description: "요일 (degen, AD_DATE 파생)"
       - name: WEEK_OF_YEAR
@@ -1246,13 +1246,13 @@ models:
       - name: CTR_SRC
         description: "[비가산 N] 대행사 산정 CTR ← DGT.CTR. DW 재계산=CLICKS/IMPRESSIONS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CVR_SRC
-        description: "[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=GA_CONV_MEMBERS/CLICKS (O5 확정) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS (O5 확정) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CPC_SRC
         description: "[비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CPM_SRC
         description: "[비가산 N] 대행사 산정 CPM ← DGT.CPM. DW 재계산=AD_COST/IMPRESSIONS×1000 ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CPA_SRC
-        description: "[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/GA_CONV_CNT ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/AGENCY_CONV_CNT ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: DEV_UNIT_PRICE_SRC
         description: "[비가산 N] 대행사 산정 개발단가 ← DGT.DEV_UNIT_PRICE. DW 재계산=AD_COST/개발건수 ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: VTR_SRC
@@ -1292,9 +1292,9 @@ models:
       - name: CONV_CALL_CNT
         description: "전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용]. 코어 INBOUND_CALL(인입콜)과 별개 measure ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. 🆕🔴🔴[2026-09-01 O129 보강] **VIDEO 행도 전건 NULL 이다** — 원천 `BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT` 는 컬럼은 실재하고 **값이 전건 공백**(대행사 미보고)이다(REBROADCAST 원천에는 컬럼 자체가 없다). ⇒ 🔴 스코프를 VIDEO 로 좁혀도 값은 나오지 않는다 — **어떤 스코프에서도 집계 불가**다. ⚠️ 인입콜(`REBRDC.INBOUND_CALL_CNT`)은 채워져 있으니 **두 축을 혼동하지 말 것**. 정본 = 문서30 §7-C."
       - name: DVLP_MEMBER_CNT
-        description: "개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전에 코어 GA_CONV_MEMBERS 로 혼입돼 있었다(GA 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전에 코어 AGENCY_CONV_MEMBERS 로 혼입돼 있었다(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: DVLP_CNT
-        description: "개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 GA_CONV_CNT 로 혼입(GA 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: BRDC_AD_VIEW_RT_SRC
         description: "[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
       - name: BRDC_CPC_SRC

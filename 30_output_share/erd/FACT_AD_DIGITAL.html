@@ -7,7 +7,7 @@
   <title>FACT_AD_DIGITAL - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 02:26",
+    "generated": "2026-09-07 08:52",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_DIGITAL",
     "table": "FACT_AD_DIGITAL",
     "domain": "AGENCY / 마케팅·광고",
@@ -641,7 +641,7 @@ erDiagram
           <td><code>CVR_SRC</code></td>
           <td><code>NUMBER(18,6)</code></td>
           <td></td>
-          <td>[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=GA_CONV_MEMBERS/CLICKS (O5 확정)</td>
+          <td>[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS (O5 확정)</td>
         </tr>
         <tr>
           <td><code>CPC_SRC</code></td>
@@ -659,7 +659,7 @@ erDiagram
           <td><code>CPA_SRC</code></td>
           <td><code>NUMBER(18,6)</code></td>
           <td></td>
-          <td>[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/GA_CONV_CNT</td>
+          <td>[비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/AGENCY_CONV_CNT</td>
         </tr>
         <tr>
           <td><code>DEV_UNIT_PRICE_SRC</code></td>

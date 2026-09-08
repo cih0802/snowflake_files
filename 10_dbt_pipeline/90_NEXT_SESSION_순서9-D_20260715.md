@@ -45,11 +45,11 @@ END-METADATA -->
 
 ## 4. 핵심 규칙·매크로·교훈 (재발방지)
 - **매크로**: `gold_sk([cols])`=ABS(HASH), `gold_meta('SRC')`=감사4컬럼, `date_sk`/`month_key_clamp`(범위 클램프→무효는 0/NULL). Unknown 멤버 SK=0 union all 패턴.
-- **R1 (필수)**: 상류 grain/로직 변경 시 **merge 차원(GOLD dim)은 pre-hook TRUNCATE 없어 stale 잔존** → 반드시 대상 `TRUNCATE` 후 재적재. (순서9-C DIM_GA_EVENT 2,842→2,846 사고)
+- **R1 (필수)**: 상류 grain/로직 변경 시 **merge 차원(GOLD dim)은 pre-hook TRUNCATE 없어 stale 잔존** → 반드시 대상 `TRUNCATE` 후 재적재. (순서9-C DIM_BIGQUERY_EVENT 2,842→2,846 사고)
 - **R2**: `run` 금지 `build` 사용(0행 회귀를 test 로 게이트). 테스트는 **실행해야 검증됨**(저작만으로 아님).
 - **severity 정책(메달리온 BP)**: Silver 참조무결성=알려진 원천 미완전이면 `severity:warn` 관측, error 는 구조 불변식만. warn→error 복귀 추적표: 문서50.
 - **GOLD dim = incremental merge / GOLD fact = incremental append + pre-hook TRUNCATE**(dbt_project.yml). `+full_refresh:false`(DDL 구조 보호).
-- **GA4_EVENT_DIM**: grain=(event_name×cat×label×action) 브리지 — `unique(EVENT_NAME)` 금지(다중행 정상). GOLD DIM_GA_EVENT 가 (cat,label,action) distinct 추출.
+- **BIGQUERY_EVENT_DIM**: grain=(event_name×cat×label×action) 브리지 — `unique(EVENT_NAME)` 금지(다중행 정상). GOLD DIM_BIGQUERY_EVENT 가 (cat,label,action) distinct 추출.
 
 ## 5. 외부 입력 대기 (착수 불가 — §7 정본)
 - 원천 입고: FUNDRAISING_COST(E-1)·AD_COST(E-4)·FACT_TARGET_BIZ(E-6)·GA4 전기간(G-5)·회원 마스터 전량입고(BLOCKING-1→severity error 복귀).

@@ -13,7 +13,7 @@
 --   2. **학습 테이블 차폐** — 소비 역할에 `GN_DW.ML` 권한을 **한 건도 주지 않는다.**
 --      뷰는 소유자(GN_DW_ADMIN) 권한으로 ML 을 읽으므로 소비 역할은 뷰만 볼 수 있다.
 --      🟢 실측 근거: `SHOW GRANTS ON TABLE GN_DW.GOLD.FACT_BUDGET` = OWNERSHIP 1행뿐인데
---         기존 SV 9종이 정상 동작한다 ⇒ 소비 역할은 base 에 SELECT 없이 SV 를 쓴다.
+--         기존 SV 전종이 정상 동작한다 ⇒ 소비 역할은 base 에 SELECT 없이 SV 를 쓴다.
 --   3. **VARIANT 평탄화** — `PREDICTION` JSON 을 Analyst 가 조립하게 두지 않는다(§4).
 --   4. **dedup** — 회원 예측 2종의 중복을 여기서 단일화한다(§1-1).
 --

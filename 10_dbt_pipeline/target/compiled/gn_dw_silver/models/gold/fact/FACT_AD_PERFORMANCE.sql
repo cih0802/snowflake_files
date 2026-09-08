@@ -40,8 +40,8 @@ select
     p.IMPRESSION_CNT             as IMPRESSIONS,
     p.CLICK_CNT                  as CLICKS,
     p.INBOUND_CALL_CNT           as INBOUND_CALL,
-    p.CONV_MEMBER_CNT            as GA_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
-    p.CONV_UNIT_CNT              as GA_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_MEMBER_CNT            as AGENCY_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_UNIT_CNT              as AGENCY_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
     DAYNAME(p.AD_DATE)           as DAY_OF_WEEK,      -- degen(AD_DATE 파생)
     WEEKOFYEAR(p.AD_DATE)        as WEEK_OF_YEAR,     -- degen(AD_DATE 파생)
     p.AD_SOURCE_TYPE                    as AD_SOURCE_TYPE,          -- degen 출처 명시축(DEC-8·§3-A-4): DIGITAL/VIDEO/REBROADCAST
@@ -65,7 +65,7 @@ select
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ee5e1fec-7267-40a8-b1e1-d4c9d56c2a9b'                    AS DW_BATCH_ID
+    '1cc57a1d-4ecd-4300-b7be-1d37f0dc09e2'                    AS DW_BATCH_ID
 from p
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real

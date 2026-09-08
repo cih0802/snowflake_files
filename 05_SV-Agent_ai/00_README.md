@@ -91,7 +91,7 @@ END-METADATA -->
 
 | 항목 | 트리거 |
 |---|---|
-| 마케팅 Agent(SV_AD·SV_GA) | FAD 차원FK 보강(Q10)·FGA 전기간(G-5) |
+| 마케팅 Agent(SV_AD·SV_BIGQUERY) | FAD 차원FK 보강(Q10)·FBQ 전기간(G-5) |
 | Cortex Search 백킹(EVENT_NAME·BUDGET_ITEM_NAME) | 리터럴 오매칭 관측 시 |
 | 조직/후원사업/납입방식별 분해 | ORG/SPONSORSHIP/PAYMENT_SK 적재 |
 | ~~캠페인별 분해~~ → **활성**(O33) | `SV_MEMBER_EVENT` 에서 가능(개발 DEV 사건 전용) |

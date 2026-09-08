@@ -7,7 +7,7 @@
 --      배경: 종전 `CREATE OR REPLACE` 는 owner 를 실행 역할로 리셋했고(GRANT 절은 소유권을 복구하지 않는다)
 --      그 결과 이 SV 의 owner 가 `ACCOUNTADMIN` 으로 드리프트해 있었다.
 --      조치 순서 = ① `GRANT OWNERSHIP … TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS` → ② `CREATE OR ALTER` 전환.
---      실측 판정: SV 9종 전건 owner=`GN_DW_ADMIN` 단일 · 소비 3역할 × REFERENCES/SELECT 보존 ·
+--      실측 판정: SV 전종 owner=`GN_DW_ADMIN` 단일 · 소비 3역할 × REFERENCES/SELECT 보존 ·
 --      소비 역할 세션 조회 6/6 성공 · `TOTAL_ACQ_MEMBERS` 1,585,949 불변.
 --
 --   🔴 **파일 규약·선행 조건·정본 근거의 정본 = `05_0_SV_DDL.sql` §공통 규약** (2026-08-10 O55 DUP-1).
@@ -194,7 +194,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT TO ROLE
 /* =====================================================================================
    스모크 검증 (배포 직후 실행)
       🔴 판정은 **절대값이 아니라 불변식**으로 한다(04 §6.9-(8)).
-      ▶ SV 9종 전체를 아우르는 배포 검증 = `05_0_SV_DDL.sql`
+      ▶ SV 전종을 아우르는 배포 검증(종수는 `SHOW SEMANTIC VIEWS` 로 재라) = `05_0_SV_DDL.sql`
    ===================================================================================== */
 USE WAREHOUSE GN_DW_ANALYTICS_WH;
 

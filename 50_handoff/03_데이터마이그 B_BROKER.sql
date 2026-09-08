@@ -95,21 +95,20 @@ SELECT
 SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR  table_schema = 'ML' )
 ORDER BY table_schema, table_name;
 
 -- 스키마별 요약
 --   기대: BRONZE_AGENCY 4 · BRONZE_CRM 46 · BRONZE_ERP 2 · ML 16 · SILVER 1 = 69 테이블
---   🔴 [2026-08-29] 종전 기대값 45/1/67 은 stale 이다(SCOPE 절 참조).
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
        SUM(CASE WHEN row_count = 0 THEN 1 ELSE 0 END) AS zero_row_tables  -- 폴더가 생기지 않는 테이블 수
 FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
-  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+  AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
         OR  table_schema = 'ML' )
 GROUP BY 1 ORDER BY 1;
@@ -128,7 +127,7 @@ ORDER BY 1;
 
 -- 3.1-C SILVER 구조 확인 (기대: 118 컬럼 · ITEMS 가 118번째 · ARRAY)
 --   이 값이 06번 DDL 과 어긋나면 C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
---   ⚠️ 07번 A.5 의 TRY_PARSE_JSON($118) 위치와 반드시 일치해야 한다.
+--   ⚠️ 06번 A.5 의 TRY_PARSE_JSON($118) 위치와 반드시 일치해야 한다.
 SELECT MAX(ordinal_position)                                              AS n_cols,
        MAX(CASE WHEN data_type = 'ARRAY' THEN column_name END)            AS array_col,
        MAX(CASE WHEN data_type = 'ARRAY' THEN ordinal_position END)       AS array_pos
@@ -161,8 +160,8 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 --    ℹ️ WHERE 절의 `table_schema = 'ML'`:
 --       ML 은 A 가 16종만 부여했으므로 이 조건만으로 정확히 16종이 대상이 된다(3.1-B 확인 완료).
 --    ℹ️ 반정형 컬럼은 **언로드 쪽에서 할 일이 없다.** CSV 로 나가면 JSON 문자열이 되고,
---       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 07번 A.5,
---       ML PREDICTION(VARIANT) 4종 → 07번 A.5-B.2.
+--       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 06번 A.5,
+--       ML PREDICTION(VARIANT) 4종 → 06번 A.5-B.2.
 --    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 69개 테이블' 이 나와야 정상.
 --       (0행 테이블도 COPY INTO 는 성공하므로 cnt 에 포함된다. 폴더만 생기지 않는다.)
 EXECUTE IMMEDIATE $$
@@ -171,20 +170,43 @@ DECLARE
     SELECT table_schema, table_name
     FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
     WHERE table_type = 'BASE TABLE'
-      AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY')
+      AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
             OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
             OR  table_schema = 'ML' );
   cnt INTEGER DEFAULT 0;
 BEGIN
   FOR rec IN c1 DO
-    EXECUTE IMMEDIATE
-      'COPY INTO @SANDBOX.TOOLS.my_export_stage/' || rec.table_schema || '/' || rec.table_name || '/ '
-      || 'FROM (SELECT * FROM GN_DW_SHARED."' || rec.table_schema || '"."' || rec.table_name || '" '
-      -- || 'SAMPLE (10000 ROWS)'
-      || ') '
-      || 'FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY = ''"'' COMPRESSION = GZIP) '
-      || 'HEADER = TRUE '
-      || 'OVERWRITE = TRUE';
+    IF (rec.table_schema = 'SILVER' AND rec.table_name = 'BIGQUERY_REFINED_DATA') THEN
+      -- SILVER.BIGQUERY_REFINED_DATA: 월별(YYYYMM)로 랜덤 하루(1일)씩 샘플링하여 언로드
+      EXECUTE IMMEDIATE
+        'COPY INTO @SANDBOX.TOOLS.my_export_stage/' || rec.table_schema || '/' || rec.table_name || '/ '
+        || 'FROM ('
+        || '  WITH distinct_dates AS ('
+        || '    SELECT DISTINCT EVENT_DATE, SUBSTR(EVENT_DATE, 1, 6) AS ym '
+        || '    FROM GN_DW_SHARED."SILVER"."BIGQUERY_REFINED_DATA"'
+        || '  ), '
+        || '  sampled_dates AS ('
+        || '    SELECT EVENT_DATE '
+        || '    FROM ('
+        || '      SELECT EVENT_DATE, ROW_NUMBER() OVER (PARTITION BY ym ORDER BY RANDOM()) AS rn '
+        || '      FROM distinct_dates'
+        || '    ) WHERE rn = 1'
+        || '  ) '
+        || '  SELECT * FROM GN_DW_SHARED."SILVER"."BIGQUERY_REFINED_DATA" '
+        || '  WHERE EVENT_DATE IN (SELECT EVENT_DATE FROM sampled_dates)'
+        || ') '
+        || 'FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY = ''"'' COMPRESSION = GZIP) '
+        || 'HEADER = TRUE '
+        || 'OVERWRITE = TRUE';
+    ELSE
+      -- 그 외 테이블: 전체 데이터 언로드
+      EXECUTE IMMEDIATE
+        'COPY INTO @SANDBOX.TOOLS.my_export_stage/' || rec.table_schema || '/' || rec.table_name || '/ '
+        || 'FROM (SELECT * FROM GN_DW_SHARED."' || rec.table_schema || '"."' || rec.table_name || '") '
+        || 'FILE_FORMAT = (TYPE = CSV FIELD_OPTIONALLY_ENCLOSED_BY = ''"'' COMPRESSION = GZIP) '
+        || 'HEADER = TRUE '
+        || 'OVERWRITE = TRUE';
+    END IF;
     cnt := cnt + 1;
   END FOR;
   RETURN 'UNLOAD 완료: ' || cnt || '개 테이블';
@@ -194,7 +216,7 @@ $$;
 --   69 가 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
 
 -- 6. Export 결과 확인
---    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(07번 A.1 (1)).
+--    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(06번 A.1 (1)).
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 스키마별 파일/폴더 수 집계 (위 LIST 직후에 실행해야 RESULT_SCAN 이 유효)
@@ -204,7 +226,7 @@ SELECT SPLIT_PART("name", '/', 2) AS table_schema,
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 GROUP BY 1 ORDER BY 1;
 --   판정: 스키마별 table_folders = 3.1 의 tables − zero_row_tables 여야 한다.
---   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 07번 A.1 (1) 에서 대조한다.
+--   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 06번 A.1 (1) 에서 대조한다.
 
 -- 6.1 대상 외 폴더 잔존 점검 (0건이어야 함)
 --     이전 배치 잔존 또는 대상 필터 오설정을 잡는다.
@@ -212,11 +234,11 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 SELECT COUNT(*) AS stray_files
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 WHERE SPLIT_PART("name", '/', 2)
-      NOT IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'SILVER', 'ML');
+      NOT IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC', 'SILVER', 'ML');
 -- → 0 이 아니면 4번 REMOVE 를 건너뛴 것이다. 스테이지를 비우고 5번부터 다시 실행한다.
 
 -- 7. 정리(Teardown) — 01번 문서 7장
---    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(07번 A.6)이 끝난 뒤에 실행한다.
+--    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(06번 A.6)이 끝난 뒤에 실행한다.
 --       스테이지를 먼저 비우면 재다운로드가 불가능해 B 언로드부터 다시 해야 한다.
 
 -- 7.1 공유 DB 정리 (export가 정상 완료된 것을 6번에서 확인한 뒤 실행)

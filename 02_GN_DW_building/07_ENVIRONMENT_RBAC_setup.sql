@@ -144,9 +144,18 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_BIGQUERY    WITH MANAGED ACCESS COMMENT
 
 -- 정제·분석·소비·운영·거버넌스
 -- [2026-07-28 순서9-I] AGENCY 광고 팩트군 재설계(DEC-8) 반영: SILVER 32→38 · GOLD star 24→27 · WIDE 9→12
-CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 38테이블(CRM 22+GA4 5+ERP 2+AGENCY 8+bridge 1)';
-CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema 27(15 DIM+12 FACT) + 평탄화 WIDE VIEW 12. 지표 215개 귀속';
-CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치(P7). GOLD DIM/FACT cross-schema 참조';
+-- 🆕 🔴🔴 [2026-09-08 O144-C · 후속과제 후-6 + 문서50 §순서9-C·§결정대기 GOLD 6개 미반영분]
+--   **스키마 COMMENT 에서 객체 개수를 뺐다.** 종전 문안은 SILVER 38 · GOLD star 27(15 DIM+12 FACT) ·
+--   WIDE 12 였고 라이브 실측(2026-09-08 · 계정 `hy04212` / `ACCOUNTADMIN`)은
+--   **SILVER 43 · GOLD DIM 20 + FACT 17 = 37 · WIDE 뷰 14** 였다 ⇒ 세 수치가 **전부 stale** 이었다.
+--   🔴 이 COMMENT 는 **발행 문안**이다 — Cortex Analyst 가 스키마 설명을 근거로 답할 수 있으므로
+--     stale 한 개수는 「조용한 오답」의 자리가 된다(문서50 §BLOCKING-4 가 「9개 → 13개 갱신 필요(미반영)」로
+--     남겨 둔 그 항목이고, 그 사이 실제는 14 가 됐다 = 개수를 적으면 또 낡는다).
+--   🟢 처방 = **수를 지우고 「재는 방법」으로 대체**한다(`R3-9 ㉦` · O126 ⑥ 이 확립한 선례).
+--     개수가 필요하면 `GN_DW.INFORMATION_SCHEMA.TABLES` 를 `TABLE_TYPE` 으로 집계해 그 시점 값을 쓴다.
+CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';
+CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다';
+CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치. GOLD DIM/FACT cross-schema 참조';
 CREATE SCHEMA IF NOT EXISTS GN_DW.OPS      COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)';
 
 /* ---------------------------------------------------------------------
@@ -166,8 +175,8 @@ CREATE STAGE IF NOT EXISTS GN_DW.OPS.AGENT_SPEC_STAGE
   COMMENT = 'Cortex Agent 정본 yaml 배포 스냅샷. 원본 = 워크스페이스 cortex_project/agents/<AGENT>/agent_spec.yaml. 09_2_AGENT_버전업.sql 의 ADD VERSION FROM 소스. 개인 워크스페이스(USER$) 의존 제거 목적 — O85-C.';
 CREATE SCHEMA IF NOT EXISTS GN_DW.SECURITY WITH MANAGED ACCESS COMMENT = '거버넌스 정책 격리 — 마스킹/네트워크 정책';
 -- 기존 배포본 재실행 시 COMMENT 갱신 (IF NOT EXISTS 는 기존 스키마의 COMMENT 를 덮지 않음)
-ALTER SCHEMA GN_DW.SILVER SET COMMENT = '정제/통합 레이어 — dbt 38테이블(CRM 22+GA4 5+ERP 2+AGENCY 8+bridge 1)';
-ALTER SCHEMA GN_DW.GOLD   SET COMMENT = '분석 계층 — star schema 27(15 DIM+12 FACT) + 평탄화 WIDE VIEW 12. 지표 215개 귀속';
+ALTER SCHEMA GN_DW.SILVER SET COMMENT = '정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';
+ALTER SCHEMA GN_DW.GOLD   SET COMMENT = '분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다';
 -- 🆕 [2026-08-18 O85-C] OPS 도 같은 이유로 갱신문이 필요하다(스테이지 추가로 COMMENT 가 바뀌었다).
 --   🔴 이것이 `09_1` ㉔ ② 와 **같은 결함 유형**이다 — `IF NOT EXISTS` 는 멱등이지만 **속성을 갱신하지 않는다.**
 ALTER SCHEMA GN_DW.OPS    SET COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)';
@@ -196,12 +205,11 @@ GRANT ALL PRIVILEGES ON ALL TABLES  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL VIEWS   IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON FUTURE VIEWS  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ADMIN;
---   ENGINEER: USAGE + SELECT + CREATE VIEW
-GRANT USAGE, CREATE VIEW ON SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
+--   ENGINEER: SELECT TABLES + OWNERSHIP VIEW
 GRANT SELECT ON ALL TABLES  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON ALL VIEWS   IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
+GRANT OWNERSHIP ON ALL VIEWS IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
-GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
+GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
 --   소비 3역할(ANALYST/VIEWER/SERVICE): USAGE + SELECT (+ FUTURE)
 GRANT USAGE ON SCHEMA GN_DW.GOLD TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON SCHEMA GN_DW.GOLD TO ROLE GN_DW_VIEWER;
@@ -485,21 +493,4 @@ GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
       🟡 미검증 1건 — 실행 전 반드시 확인할 것
          Workspace 의 **Run(미리보기)** 이 내부적으로 어느 스키마에 STREAMLIT 객체를 실제로
          생성하는지는 **확인하지 못했다**(라이브 `SHOW STREAMLITS IN ACCOUNT` = 0건이나 계정에
-         Workspace Streamlit 을 만든 적이 없어 반증이 되지 못하고, 문서 검색 API 는 401 로 실패).
-         만약 객체가 생성된다면 해당 스키마의 `CREATE STREAMLIT` 이 ANALYST 에 추가로 필요해지고,
-         이는 「커스텀 롤은 소유 없음」 원칙의 예외가 되므로 **별도 승인 사항**이다.
-         ⇒ 검증 절차: 컴퓨트 풀 USAGE 는 위와 같이 이미 상속되므로 **추가 부여 없이 그대로**
-            ANALYST 롤로 최소 앱을 Run 해 본다 → 성공 시 추가 권한 불요 확정 /
-            실패 시 에러가 요구하는 권한을 기록한 뒤 승인 절차를 밟는다.
-            🔴 검증 완료 전에는 `CREATE STREAMLIT` 을 부여하지 않는다.
-   ===================================================================== */
--- 실행할 부여문 없음(PUBLIC 상속). 아래는 PUBLIC USAGE 회수 시 또는 전용 풀 신설 시에만 사용.
--- USE ROLE ACCOUNTADMIN;
--- GRANT USAGE ON COMPUTE POOL SYSTEM_COMPUTE_POOL_CPU TO ROLE GN_DW_ANALYST;
-
--- 🔴 검증 완료 후에만, 그리고 승인된 경우에만 주석 해제할 것 (§D.8 미검증 1건 참조)
--- USE ROLE GN_DW_ADMIN;
--- GRANT CREATE STREAMLIT ON SCHEMA GN_DW.SERVING TO ROLE GN_DW_ANALYST;
-
-
-
+         Workspace Streamlit 을 만든 적이 없어 반증�

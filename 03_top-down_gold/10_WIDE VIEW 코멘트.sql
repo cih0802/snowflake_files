@@ -61,7 +61,7 @@
   GN_DW.GOLD — WIDE VIEW 컬럼 COMMENT
   적용 대상  : WIDE_MEMBER_MONTHLY / WIDE_MEMBER_EVENT / WIDE_TARGET_DEV /
                FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화)(신설 2026-08-05 O38) /
-               WIDE_TARGET_BIZ / WIDE_SERVICE_EVENT / WIDE_GA_BEHAVIOR /
+               WIDE_TARGET_BIZ / WIDE_SERVICE_EVENT / WIDE_BIGQUERY_BEHAVIOR /
                WIDE_AD_PERFORMANCE / WIDE_AD_BROADCAST / WIDE_AD_DIGITAL /
                WIDE_AD_BROADCAST_CASE / WIDE_EVENT_PARTICIPATION / WIDE_BUDGET
 --------------------------------------------------------------------------------
@@ -381,8 +381,8 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_PERFORMANCE
           COLUMN IMPRESSIONS         COMMENT '노출수(디지털 전용)',
           COLUMN CLICKS              COMMENT '클릭수(디지털 전용)',
           COLUMN INBOUND_CALL        COMMENT '인입콜수',
-          COLUMN GA_CONV_MEMBERS     COMMENT 'GA전환수(명) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
-          COLUMN GA_CONV_CNT         COMMENT 'GA전환수(건/VU) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
+          COLUMN AGENCY_CONV_MEMBERS COMMENT '대행사 전환수(명) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
+          COLUMN AGENCY_CONV_CNT     COMMENT '대행사 전환수(건/VU) — 디지털 전용(O16 교정: 재방송 개발실적 제외)',
           COLUMN DAY_OF_WEEK         COMMENT '요일(팩트 degen)',
           COLUMN WEEK_OF_YEAR        COMMENT '주차(팩트 degen)',
           COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 DIGITAL/VIDEO/REBROADCAST — 출처 명시축(팩트 degen, DEC-8)',
@@ -435,8 +435,8 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_BROADCAST
           COLUMN BRDC_DIV            COMMENT '방송구분 (REBRDC 전용)',
           COLUMN AD_CNT              COMMENT '광고횟수',
           COLUMN CONV_CALL_CNT       COMMENT '전환콜 (VIDEO 전용) — 인입콜과 별개',
-          COLUMN DVLP_MEMBER_CNT     COMMENT '개발회원수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)',
-          COLUMN DVLP_CNT            COMMENT '개발건수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리)',
+          COLUMN DVLP_MEMBER_CNT     COMMENT '개발회원수 (REBRDC 전용) — ⚠️대행사 전환이 아님(O16 분리)',
+          COLUMN DVLP_CNT            COMMENT '개발건수 (REBRDC 전용) — ⚠️대행사 전환이 아님(O16 분리)',
           COLUMN AD_VIEW_RT_SRC      COMMENT '광고시청률(대행사 산정) — 비가산 N, 재합산 금지',
           COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N, 재합산 금지',
           COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',
@@ -457,11 +457,11 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_DIGITAL
     ALTER COLUMN AD_PERF_DK          COMMENT '광고성과 행 식별자(grain) — 코어 WIDE_AD_PERFORMANCE 조인키',
           COLUMN AD_SOURCE_TYPE      COMMENT '광고 원천유형 — 본 뷰는 DIGITAL 만',
           COLUMN PERF_DATE_SK        COMMENT '광고 실적일 YYYYMMDD',
-          COLUMN AD_COST             COMMENT '[코어] GA 광고비(원)',
+          COLUMN AD_COST             COMMENT '[코어] 광고비(원)',
           COLUMN IMPRESSIONS         COMMENT '[코어] 노출수 — CTR 분모',
           COLUMN CLICKS              COMMENT '[코어] 클릭수 — CTR 분자',
-          COLUMN GA_CONV_MEMBERS     COMMENT '[코어] GA전환수(명) — CVR 분자(O16 교정 후 디지털 전용)',
-          COLUMN GA_CONV_CNT         COMMENT '[코어] GA전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용)',
+          COLUMN AGENCY_CONV_MEMBERS COMMENT '[코어] 대행사 전환수(명) — CVR 분자(O16 교정 후 디지털 전용)',
+          COLUMN AGENCY_CONV_CNT     COMMENT '[코어] 대행사 전환수(건/VU) — CPA 분모(O16 교정 후 디지털 전용)',
           COLUMN PAGE_TYPE           COMMENT '페이지유형',
           COLUMN AD_GROUP_NM         COMMENT '광고그룹명',
           COLUMN GROUP_DIV           COMMENT '그룹구분',
@@ -471,10 +471,10 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_DIGITAL
           COLUMN MEDIA_POTENTIAL_CUST_CNT COMMENT '매체 잠재고객수',
           COLUMN CRM_DEV_CNT         COMMENT 'CRM 개발건수',
           COLUMN CTR_SRC             COMMENT 'CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS)',
-          COLUMN CVR_SRC             COMMENT 'CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(GA_CONV_MEMBERS)/SUM(CLICKS)',
+          COLUMN CVR_SRC             COMMENT 'CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(AGENCY_CONV_MEMBERS)/SUM(CLICKS)',
           COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS)',
           COLUMN CPM_SRC             COMMENT 'CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000',
-          COLUMN CPA_SRC             COMMENT 'CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(GA_CONV_CNT)',
+          COLUMN CPA_SRC             COMMENT 'CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(AGENCY_CONV_CNT)',
           COLUMN DEV_UNIT_PRICE_SRC  COMMENT '개발단가(대행사 산정) — 비가산 N',
           COLUMN VTR_SRC             COMMENT 'VTR(대행사 산정) — 비가산 N, base 부재로 재계산 불가',
           COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',

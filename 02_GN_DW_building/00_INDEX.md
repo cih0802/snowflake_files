@@ -57,7 +57,7 @@ deliverables:
   bronze_tables: 48       # CRM 43 + AGENCY 3 + ERP 1 + GA4 1 (원천별 4스키마 분리)
   bronze_crm_tables: 43   # ★실측 GN_DW.BRONZE_CRM (원천정의 41 + 템플릿 2)
   silver_tables: 32       # CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1 (dbt)
-  gold_star_schema: 24    # ★ 정본: 15 DIM + 9 FACT (03_top-down_gold/) — FACT: FMM·FME·FTG_D·FTG_B·FSE·FGA·FAD·FEP·FBD
+  gold_star_schema: 24    # ★ 정본: 15 DIM + 9 FACT (03_top-down_gold/) — FACT: FMM·FME·FTG_D·FTG_B·FSE·FBQ·FAD·FEP·FBD
   gold_wide_views: 9      # FACT 1:1 평탄화 VIEW (레거시 PoC View 없음)
   forecast_tables: 0      # ⛔ forecast 제외 결정(2026-07-10)
   semantic_views: 9       # [2026-08-10 O55 실측] SV_MEMBER_MONTHLY·MEMBER_EVENT·MEMBER_COHORT·MEMBER_FEE·SERVICE·EVENT_PARTICIPATION·BUDGET·AD·DEV_ACHIEVEMENT

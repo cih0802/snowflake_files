@@ -47,8 +47,8 @@ END-METADATA -->
 ### 0.1 🔴 `01_작업계획` 의 「마케팅 Agent = Phase-2 유예」 사유는 절반이 stale 이다
 
 `01_SV-Agent 작업계획.md` §1.2·§2 는 마케팅 Agent 를 유예한 사유를 이렇게 적었다:
-*"마케팅 Agent 는 base FACT(FAD·FGA)의 원천 bronze 데이터 자체가 불완전(FAD 스캐폴드·차원FK=0,
-FGA GA4 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(트리거 G-5·Q10)."*
+*"마케팅 Agent 는 base FACT(FAD·FBQ)의 원천 bronze 데이터 자체가 불완전(FAD 스캐폴드·차원FK=0,
+FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(트리거 G-5·Q10)."*
 
 2026-08-14 실측 기준 그 전제는 이렇게 바뀌었다.
 
@@ -56,7 +56,7 @@ FGA GA4 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(�
 |---|---|
 | `SV_AD` 미배포 · FAD 스캐폴드 | 🟢 **해소** — 2026-07-28 배포 · O45 로 마케팅캠페인 축까지 활성 |
 | `SV_AD` 차원 FK 전건 0 | 🟡 **부분 해소** — 소재(`AD_CREATIVE_SK`)·개발캠페인은 여전히 0 · 그 밖 축은 **degen(위성 pre-join)로 도달**(§2 실측) |
-| `SV_GA` 미배포(GA4 1일 샤드) | 🔴 **미해소** — G-5 · 요건 §3 의 GA 계열 3필드가 여기 걸린다 |
+| `SV_BIGQUERY` 미배포(BigQuery 1일 샤드) | 🔴 **미해소** — G-5 · 요건 §3 의 BigQuery 계열 3필드가 여기 걸린다 |
 | 마케팅 Agent 자체 | 🔴 **미배포** — 이 문서가 그 설계다 |
 
 ⇒ **유예를 계속할 근거는 「SV 부재」가 아니라 「GA 계열 3필드 + Q10 소재축」으로 좁혀졌다.**
@@ -74,7 +74,7 @@ FGA GA4 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(�
 | Semantic View | **9종**(`SV_AD`·`SV_BUDGET`·`SV_DEV_ACHIEVEMENT`·`SV_EVENT_PARTICIPATION`·`SV_MEMBER_COHORT`·`SV_MEMBER_EVENT`·`SV_MEMBER_FEE`·`SV_MEMBER_MONTHLY`·`SV_SERVICE`) · owner 전건 `GN_DW_ADMIN` |
 | Agent | **2종** `AGENT_MEMBER`·`AGENT_OVERALL` · owner `GN_DW_ADMIN` · **마케팅 전용 Agent 0종** |
 | `AGENT_OVERALL` 라이브 | **`VERSION$3` `is_default=true`** · 도구 **4종**(`analyst_budget`·`analyst_ad`·`analyst_member_monthly`·`analyst_service`) |
-| `SV_GA`·`SV_ML_*` | **부재**(위 9종에 없다) |
+| `SV_BIGQUERY`·`SV_ML_*` | **부재**(위 9종에 없다) |
 | 요건 필드 수 | 마케팅 보고서 **73필드**(`09` 산출물 · 측정일 2026-08-13) |
 
 ### 1.1 `09` 산출물의 마케팅 판정 분포 (측정일 2026-08-13)
@@ -192,7 +192,7 @@ FGA GA4 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한다(�
 | 캠페인명 · 캠페인 유형명 · 국내/해외명 · 사업/사례명 | — | 🔴(광고 축) | 🟡 **회원 축에는 있다** — 개발 사건은 `analyst_member_event`, 획득 코호트는 `analyst_member_cohort` 가 이 4축을 갖는다. 🔴 단 **광고비를 그 축으로 내리는 것은 불가**(cross-fact + 배분 규칙 부재) |
 | 법인명 | — | 🔴 | `DIM_ORG.CORP` 전건 NULL · `CONF-4` 산출규칙 미확정 |
 | 매체유형명 | — | 🔴 | `PLATFORM_TYPE` 미적재. 🆕 **[O129 사유 확정]** BRONZE AGENCY 3테이블에 「매체유형」 축이 **없다**(인접 유형축 `AD_TY_NM`·`MATR_TY_NM`·`PAGE_TYPE_NM` 은 전부 다른 목적지에 배선돼 대체물이 아니다) ⇒ 요건 `#13` 은 **현업 확인 대상**. 정본 = 문서30 §7-C-1 |
-| GA 전환수(명)·(건) | `analyst_ad` | 🟡 | `TOTAL_GA_CONV_MEMBERS` 실재. 🔴 **(명)과 (건)을 같은 지표로 답하지 않는다** — `09` 가 두 필드를 같은 컬럼에 매핑해 두었고 (건) 어의는 `AD-2`·`O5` 로 **미확정**이다 |
+| 대행사 전환수(명)·(건) | `analyst_ad` | 🟡 | `TOTAL_AGENCY_CONV_MEMBERS` 실재. 🔴 **(명)과 (건)을 같은 지표로 답하지 않는다** — `09` 가 두 필드를 같은 컬럼에 매핑해 두었고 (건) 어의는 `AD-2`·`O5` 로 **미확정**이다 |
 | 잠재고객 이름(=타겟그룹) | — | 🔴 | `TARGET_GROUP` 미적재. 🆕 **[O129 사유 확정]** AGENCY 원천 부재가 아니라 **원천 트랙이 GA4** 다(잠재고객은 원천표기 GA → `GA4_USER` 정제 예정 · phase-2 미착수) ⇒ 대행사 축으로는 영구히 채워지지 않는다. 정본 = 문서30 §7-C-1 |
 | member_id(=회원번호) | — | 🔴 | 광고 팩트에서 회원으로 가는 FK 가 없다. GA↔CRM 브리지는 커버리지 4.22%(`G-5`) ⇒ **광고 성과를 회원 단위로 내리지 않는다** |
 

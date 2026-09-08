@@ -29,7 +29,7 @@ select
     f.PERF_DATE_SK,
     -- [코어 measure] 위성과 1:1 이므로 동반 노출 안전. 비율 재계산의 base 이기도 하다.
     f.AD_COST, f.IMPRESSIONS, f.CLICKS,
-    f.GA_CONV_MEMBERS, f.GA_CONV_CNT,
+    f.AGENCY_CONV_MEMBERS, f.AGENCY_CONV_CNT,
     -- [위성 고유속성]
     g.PAGE_TYPE, g.AD_GROUP_NM, g.GROUP_DIV, g.CREATIVE_TYPE, g.AD_TYPE_NM,
     g.READ_CNT, g.MEDIA_POTENTIAL_CUST_CNT, g.CRM_DEV_CNT,

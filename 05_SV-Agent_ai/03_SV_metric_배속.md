@@ -23,11 +23,11 @@ END-METADATA -->
 > - **비율(율·구성비·단가·ROI·CTR/CVR)** = 분자·분모를 각각 집계 후 division → SV metric. (base measure 아님, 가산성 N)
 > - **누계(YTD/누적)** = base measure의 **YTD 윈도우**로 SV에서 계산(새 컬럼 아님). ※단 `ACTIVE_CUM_CNT`(누계활동건, 공159)는 derived가 아닌 **물리 base measure** — 예외.
 > - **증감/증감율(공59·60)** = SV time-intelligence(당기−전기), 물리 저장 금지.
-> - **유일 예외(적재)**: GA4 사전집계 비가산(공98·108)은 재계산 불가 → FGA 물리컬럼 직접 노출, SV에서 SUM/AVG 금지.
+> - **유일 예외(적재)**: BigQuery 사전집계 비가산(공98·108)은 재계산 불가 → FBQ 물리컬럼 직접 노출, SV에서 SUM/AVG 금지.
 > - base 갭 재검토(2단계 실측): 공80은 FMM `UNPAID_FLAG_BOM/EOM` 실재로 **해소(활성)**. 잔여 갭은 공81 전환명(GA identity, §6-D)뿐 → cross-source 브리지·P2.
 
 - **활성여부**: `활성`(즉시 산출) · `활성(브리지)`(conformed/코호트 브리지 뷰 선행 필요 — 2단계) · `부분`(시간한정) · `placeholder`(base raw 부재, 정의만) · `보류`(base+grain 미확정, 입고 후).
-- **Phase**(배포 게이트, 계획 §2): `P1`(즉시 배포) · `P2`(데이터 입고 후). cross-source GA 의존(공81·신32·신33)은 capability 활성이라도 **P2**(FGA 1일 샤드 4.22%).
+- **Phase**(배포 게이트, 계획 §2): `P1`(즉시 배포) · `P2`(데이터 입고 후). cross-source BigQuery 의존(공81·신32·신33)은 capability 활성이라도 **P2**(FBQ 1일 샤드 4.22%).
 - **가산성**: derived 비율은 전부 **N**(metric SUM 금지 — 분자·분모 각각 집계 후 division). `base S`=분자/분모 base가 준가산(시점값→기간 SUM 금지). `차분`=시계열. `part/total`=구성비. `코호트`=시점 유지회원.
 - **시간가용성**(07_메타 enum): `전체가능`·`24년~`·`24.2~`·`25년~`·`2개년`·`적용불가`.
 - **base FACT 표기**: 단일 `FMM`; 비율 grain 상이 `A·B`(04 표기 계승); 코호트 조인 `A×B`; cross-source(IDENTITY 브리지) `A×B`.
@@ -41,7 +41,7 @@ END-METADATA -->
 
 ## 1. SV_MEMBER_MONTHLY (base FACT = FMM, 월×회원) — 40 metric
 
-> 회원 Agent. §1 목표대비(공1~3) + §2 활동/중단/미납/납입(공45~80, 공58 제외) + §9 시계열(공59·60) + §5 cross(공81) + §6 캠페인성과(신12~29). 소비 SV에 FTG_D(목표)·FGA(공81) conformed 폴딩.
+> 회원 Agent. §1 목표대비(공1~3) + §2 활동/중단/미납/납입(공45~80, 공58 제외) + §9 시계열(공59·60) + §5 cross(공81) + §6 캠페인성과(신12~29). 소비 SV에 FTG_D(목표)·FBQ(공81) conformed 폴딩.
 
 ### 1.1 목표대비 (FMM/FME × FTG_D conformed) — 3
 | # | derived | 분자 ÷ 분모 (SSOT 직역) | base FACT | 활성여부 | 가산성 | 시간 | Phase | 비고 |
@@ -80,7 +80,7 @@ END-METADATA -->
 ### 1.4 cross-source (IDENTITY 브리지) — 1
 | # | derived | 분자 ÷ 분모 (SSOT 직역) | base FACT | 활성여부 | 가산성 | 시간 | Phase | 비고 |
 |---|---|---|---|---|---|---|---|---|
-| 공81 | 미납서비스 전환율(%) | 납입전환 회원(명) ÷ GA 미납서비스 클릭회원(명) ×100 | FMM×FGA | 활성(브리지) | N | 전체가능 | **P2** | DIM_MEMBER_IDENTITY 브리지. ⚠분모=FGA 의존(GA4 1일 샤드) + 분자 identity 정의 부재(§6-D) → Phase 2 |
+| 공81 | 미납서비스 전환율(%) | 납입전환 회원(명) ÷ BigQuery 미납서비스 클릭회원(명) ×100 | FMM×FBQ | 활성(브리지) | N | 전체가능 | **P2** | DIM_MEMBER_IDENTITY 브리지. ⚠분모=FBQ 의존(BigQuery 1일 샤드) + 분자 identity 정의 부재(§6-D) → Phase 2 |
 
 ### 1.5 캠페인 성과 (FMM, CAMPAIGN/PAYMENT/YEAR 필터) — 17
 | # | derived | 분자 ÷ 분모 (SSOT 직역) | base FACT | 활성여부 | 가산성 | 시간 | Phase | 비고 |
@@ -134,8 +134,8 @@ END-METADATA -->
 |---|---|---|---|---|---|---|---|---|
 | 신30 | 서비스별 발송율(%) | SEND_MEMBERS ÷ 전체회원수(명) ×100 | FSE·DIM_MEMBER | 활성 | N | 전체가능 | P1 | ⚠분모 "전체회원"=활동/전체 미정(§6-F) |
 | 신31 | 발송대비 수신율(%) | SUCCESS_MEMBERS ÷ SEND_MEMBERS ×100 | FSE | 활성 | N | 25년~ | P1 | 단일 FACT |
-| 신32 | 발송대비 클릭율(%) | GA 클릭회원(명, distinct) ÷ SEND_MEMBERS ×100 | FGA×FSE | 활성(브리지) | N | 25년~ | **P2** | ⚠클릭=명(≠FAD CLICKS 횟수)·GA 의존·identity(§6-D) |
-| 신33 | 클릭대비 전환율(%) | DEV_MEMBERS(명) ÷ GA 클릭회원(명) ×100 | FME×FGA | 활성(브리지) | N | 25년~ | **P2** | ⚠cross-source identity·GA 의존 |
+| 신32 | 발송대비 클릭율(%) | BigQuery 클릭회원(명, distinct) ÷ SEND_MEMBERS ×100 | FBQ×FSE | 활성(브리지) | N | 25년~ | **P2** | ⚠클릭=명(≠FAD CLICKS 횟수)·BigQuery 의존·identity(§6-D) |
+| 신33 | 클릭대비 전환율(%) | DEV_MEMBERS(명) ÷ BigQuery 클릭회원(명) ×100 | FME×FBQ | 활성(브리지) | N | 25년~ | **P2** | ⚠cross-source identity·BigQuery 의존 |
 | 신34 | 서비스별 증액율(%) | D5_INCREASE_PART_(MEMBERS/CNT) ÷ SUCCESS_MEMBERS | FSE | 활성 | N | 전체가능 | P1 | 단일 FACT |
 | 신35 | 증액회원 N개월 유지율(%) | 증액코호트 유지 회원수 ÷ D5_INCREASE_PART_MEMBERS | FSE×FME | 활성(브리지) | N(코호트) | 전체가능 | P1 | 코호트 브리지 |
 | 신36 | 참여회원 N개월 유지율(%) | 참여코호트 유지 회원수 ÷ 참여회원수 | FSE×FME | 활성(브리지) | N(코호트) | 전체가능 | P1 | ⚠참여 정의 서비스별 상이(O4) |
@@ -176,7 +176,7 @@ END-METADATA -->
 > **2026-07-28 정정**: FAD "스캐폴드" 전제 **부분 해제**. BRONZE→GOLD 확장으로 measure·degenerate 축 실적재 → **공7·9·10 P1 승격**.
 > 핵심 반전 2건:
 > 1. **개발단가 분모가 FMM이 아니다** — `FACT_AD_DIGITAL.CRM_DEV_CNT`(249,390)·`FACT_AD_BROADCAST.DVLP_CNT`(96,321)가 **광고 팩트 내부에 동반 적재** → FAD×FMM 크로스팩트 conform **불필요**. (Snowflake SV는 metric 식의 cross-table 참조를 금지하므로 크로스팩트 개발단가는 애초에 SV로 구현 불가였음 → `SERVING.FACT_AD_COMBINED` helper로 해소. 04 §6.0)
-> 2. **공10 CVR 분자 실재** — `GA_CONV_MEMBERS` 122,551 적재 → placeholder 해제.
+> 2. **공10 CVR 분자 실재** — `AGENCY_CONV_MEMBERS` 122,551 적재 → placeholder 해제.
 > 잔류 차단: **캠페인/소재별 분해**(CAMPAIGN_SK·AD_CREATIVE_SK 전건 0, Q10). ~~공8 방송 개발단가~~ → **2026-07-29 복원**(커버리지 5.2%·41% 왜곡은 VIDEO를 분모에 넣은 범주 오류. 재방송 단독 96.03%·왜곡 0.61%).
 > ⚠ **추가 실측 정정(같은 날)**: 아래 2건은 초기 검토의 오판이었다.
 >   (a) "2026-06 CRM_DEV_CNT NULL = 적재 지연" → **오진**. 2026-06부터 원천이 개발건수 대신 단가(`DEV_UNIT_PRICE_SRC` 8,401건)를 제공하는 **포맷 변경**이며, 두 컬럼은 **완전 상호배타**다(04 §6.4.2).
@@ -187,7 +187,7 @@ END-METADATA -->
 | 공7 | CRM 개발단가(원) | **SUM(CASE WHEN CRM_DEV_CNT IS NOT NULL THEN AD_COST END)** ÷ CRM_DEV_CNT | **FACT_AD_COMBINED 단일** | **활성** | N | 디지털 **2024-01~2026-05** | **P1** ✅ | 배포명 `DEV_UNIT_PRICE`. 실측 2024 131,367원/2025 110,335원/2026(1~5월) 103,066원. ⚠**분자 정합 필수** — 미정합 시 2026 125,482원으로 과대계상(04 §6.4.1). ⚠2026-06~ 산출 불가(원천 포맷 변경, 04 §6.4.2). ⚠`CRM_DEV_CNT` 소수값 24,614/189,252행(13.0%) → 어의 확정 전 "건수" 단정 금지 |
 | 공8 | 재방송 개발단가(원) | AD_COST ÷ DVLP_CNT(재방송) | FACT_AD_COMBINED | **활성** | N | 방송(재방송) | **P1** ✅ | **복원(2026-07-29)** — 2026-07-28 "커버리지 5.2%→41% 왜곡" 배포취소는 **오진**. `DVLP_CNT`는 `REBRDC_AD_CMPGN_DTLS` 전용이고 `VIDEO_AD_CMPGN_DTLS`에는 개발 컬럼이 **구조적으로 부재**(비디오 리포트=전환콜 보고) → VIDEO를 분모 모집단에 넣은 범주 오류였다. **REBROADCAST 단독 커버리지 96.03%**(1,982/2,064) · 정합 왜곡 **0.61%**(158,933→157,969원). metric명 `REBRDC_DEV_UNIT_PRICE`(방송 전체가 아닌 재방송 한정임을 명시). 원 정의의 "SRC=GA4"와 실현체(재방송 DVLP_CNT) 불일치는 잔여(§6-I) |
 | 공9 | GA CTR(%) | CLICKS ÷ IMPRESSIONS ×100 | FACT_AD_COMBINED | **활성** | N | 디지털 전용 | **P1** ✅ | 실측 2024 0.199%/2025 0.286%/2026 0.345%. ⚠**디지털 전용** — AD_SOURCE_TYPE='DIGITAL' 필터 필수(방송행 노출·클릭 NULL이라 분모 왜곡) |
-| 공10 | GA CVR(%) | GA_CONV_MEMBERS(명) ÷ CLICKS ×100 | FACT_AD_COMBINED | **활성** | N | 디지털 전용 | **P1** ✅ | placeholder→활성. ✅O5 분자=전환'명' 확정 + `GA_CONV_MEMBERS` 122,551 실적재 |
+| 공10 | GA CVR(%) | AGENCY_CONV_MEMBERS(명) ÷ CLICKS ×100 | FACT_AD_COMBINED | **활성** | N | 디지털 전용 | **P1** ✅ | placeholder→활성. ✅O5 분자=전환'명' 확정 + `AGENCY_CONV_MEMBERS` 122,551 실적재 |
 
 **SV_AD 소계 = 4** (공7·9·10 = **P1 승격**, 2026-07-28 / **공8 = P1 복원**, 2026-07-29 — 종전 커버리지 결함 판정은 오진) → **SV_AD 4건 전부 P1**
 
@@ -205,16 +205,16 @@ END-METADATA -->
 
 ---
 
-## 6. SV_GA (base FACT = FGA, 일×identity×이벤트×소스) — 2 metric [Phase 2]
+## 6. SV_BIGQUERY (base FACT = FBQ, 일×identity×이벤트×소스) — 2 metric [Phase 2]
 
-> 마케팅 Agent. §4 GA 행동(공98·108). GA4 사전집계 **비가산 → 재계산 불가·적재컬럼 직접 노출**(분자/분모 없음). FGA는 GA4 1일 샤드만(G-5 전기간 입고 대기).
+> 마케팅 Agent. §4 BigQuery 행동(공98·108). BigQuery 사전집계 **비가산 → 재계산 불가·적재컬럼 직접 노출**(분자/분모 없음). FBQ는 BigQuery 1일 샤드만(G-5 전기간 입고 대기).
 
 | # | derived | 노출 컬럼 (SSOT 직역) | base FACT | 활성여부 | 가산성 | 시간 | Phase | 비고 |
 |---|---|---|---|---|---|---|---|---|
-| 공98 | 평균세션시간 | 적재컬럼 AVG_SESSION_DURATION | FGA | placeholder | **N 비가산** | 전체가능 | **P2** | SV에서 SUM/AVG 재집계 금지. GA4 raw 입고 후 활성 |
-| 공108 | 이탈율(GA)(%) | 적재컬럼 BOUNCE_RATE | FGA | placeholder | **N 비가산** | 전체가능 | **P2** | 〃 |
+| 공98 | 평균세션시간 | 적재컬럼 AVG_SESSION_DURATION | FBQ | placeholder | **N 비가산** | 전체가능 | **P2** | SV에서 SUM/AVG 재집계 금지. BigQuery raw 입고 후 활성 |
+| 공108 | 이탈율(BigQuery)(%) | 적재컬럼 BOUNCE_RATE | FBQ | placeholder | **N 비가산** | 전체가능 | **P2** | 〃 |
 
-**SV_GA 소계 = 2** (전건 P2 placeholder)
+**SV_BIGQUERY 소계 = 2** (전건 P2 placeholder)
 
 ---
 
@@ -238,7 +238,7 @@ END-METADATA -->
 | 검증 | 결과 |
 |---|---|
 | derived 전수 = 공통 30 + 신규 51 | **81** ✓ |
-| SV별 합 = MONTHLY 40 + EVENT 8 + SERVICE 24 + PARTICIPATION 0 + AD 4 + GA 2 + BUDGET 3 | **81** ✓ (중복 0 · 누락 0) |
+| SV별 합 = MONTHLY 40 + EVENT 8 + SERVICE 24 + PARTICIPATION 0 + AD 4 + BIGQUERY 2 + BUDGET 3 | **81** ✓ (중복 0 · 누락 0) |
 | 공통 30 전수 배속 | 1,2,3,7,8,9,10,45,46,47,54,55,56,57,58,59,60,61,62,63,64,65,76,77,78,79,80,81,98,108 = 30 ✓ |
 | 신규 51 전수 배속 | 2~8(7)·9~11(3)·12~19(8)·21~29(9)·30~33(4)·34~53(20) = 51 ✓ |
 | 각 행 SV·base FACT·활성여부·가산성·시간·Phase 명기 | 81행 전수 ✓ |
@@ -248,8 +248,8 @@ END-METADATA -->
 |---|---|---|
 | SV_MEMBER → **SV_MEMBER_EVENT** | 공58·신2·신3·신4·신5·신6·신7·신8 (8건) | 일 grain·JOIN_DATE degen·cohort → FME(04 §3-1·04-75). 레거시는 FMM 단일이라 미분리 |
 | SV_MEMBER → **SV_MEMBER_MONTHLY** | 나머지 40건 | FMM 월 스냅샷 grain |
-| SV_GA(보류) → **SV_BUDGET** | 신9·신10·신11 | 소속 FACT=FBD/FAD·FMM(비용)로 GA행동(FGA)과 grain 불일치 → 예산 SV로 재배속(계획 §1.1) |
-| 유지 | SV_SERVICE 24 · SV_AD 4 · SV_GA 2 | grain 동일 |
+| SV_BIGQUERY(보류) → **SV_BUDGET** | 신9·신10·신11 | 소속 FACT=FBD/FAD·FMM(비용)로 BigQuery행동(FBQ)과 grain 불일치 → 예산 SV로 재배속(계획 §1.1) |
+| 유지 | SV_SERVICE 24 · SV_AD 4 · SV_BIGQUERY 2 | grain 동일 |
 
 ### 8.3 Phase 분포 (배포 게이트)
 | Phase | 수 | 구성 |

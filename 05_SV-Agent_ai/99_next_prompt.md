@@ -20,7 +20,7 @@ END-METADATA -->
 > | 배포 SV | 5종 | **6종** — `SV_AD` 배포 완료(순서9-J/K, `REBRDC_DEV_UNIT_PRICE` 포함) |
 > | `AGENT_OVERALL` 도구 | 3종(BUDGET·MEMBER_MONTHLY·SERVICE) | **4종** — `analyst_ad` 추가 |
 > | Agent 버전 | VERSION$1 | **VERSION$2 = default**(기간 기본창 규칙), VERSION$1 롤백용 보존 |
-> | 마케팅 Agent 트리거 | SV_AD·SV_GA 둘 다 미배포 | **SV_AD 는 이미 배포** → 잔여는 `SV_GA`(G-5 GA4 전기간 입고) 뿐 |
+> | 마케팅 Agent 트리거 | SV_AD·SV_BIGQUERY 둘 다 미배포 | **SV_AD 는 이미 배포** → 잔여는 `SV_BIGQUERY`(G-5 BigQuery 전기간 입고) 뿐 |
 > | 계정 | cs94293 | **kd03246** |
 > | 산출물 | ~12번 | **13_SV_AD_배포_추가작업.sql** 추가 |
 >
@@ -44,7 +44,7 @@ END-METADATA -->
 | 문서 | 용도 | 핵심 앵커 |
 |---|---|---|
 | `01_SV-Agent 작업계획.md` (v4.2) | **정본**. 원칙12·리스크 R1~R8·Agent↔SV 라우팅·결정 로그·진행표 | §1.1 매핑·**§1.2 Agent(최종3/Phase-1 배포2)**·§2 데이터 게이트·§1.1 하단 **결정 로그(2026-07-22)** |
-| `04_SV_설계.md` (정정본) | 7 SV 구조·relationship·가산성·**§0.4 시간/NULL instruction**·§0.6 적재 완결성 | 마케팅 SV(SV_AD·SV_GA) 설계·브리지 원칙(R1) |
+| `04_SV_설계.md` (정정본) | 7 SV 구조·relationship·가산성·**§0.4 시간/NULL instruction**·§0.6 적재 완결성 | 마케팅 SV(SV_AD·SV_BIGQUERY) 설계·브리지 원칙(R1) |
 | `03_SV_metric_배속.md` (정정본) | derived 81→SV 배속·**활성/Phase 태깅** | 비활성 지표(캠페인·성공률·유지율·목표대비) → 승격 대상 |
 | `05_1~05_9_SV_DDL_*.sql` | 배포된 5 SV 정의(=Agent 도구). **⚠ 헤더의 COUNT_IF(행수) vs metric SUM 구분 주석** | 각 CREATE 블록·§6 GRANT(재배포 시 grant 재실행) |
 | `08_AGENT_spec.md` | **배포 2 Agent 스펙 정본** + 마케팅 Agent Phase-2 유예 근거 | §1 구성·§5 평가매핑 |
@@ -94,7 +94,7 @@ END-METADATA -->
 - **SV 6종** 배포·`GRANT REFERENCES, SELECT` → GN_DW_ANALYST·GN_DW_VIEWER·GN_DW_SERVICE:
   `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·**`SV_AD`**
 - CoWork: `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT` 에 ADD AGENT(2) — `09` [4] 멱등 블록으로 재실행 안전.
-- **미배포(Phase-2)**: **`SV_GA`(FGA 1일 샤드)만 잔여** → 마케팅 Agent 트리거는 G-5(GA4 전기간 입고).
+- **미배포(Phase-2)**: **`SV_BIGQUERY`(FBQ 1일 샤드)만 잔여** → 마케팅 Agent 트리거는 G-5(BigQuery 전기간 입고).
   ⚠ 종전 "SV_AD 미배포" 기술은 폐기 — 순서9-J/K 에서 배포·검증 완료(`REBRDC_DEV_UNIT_PRICE` 157,969원 포함).
 
 
@@ -105,10 +105,10 @@ END-METADATA -->
 > **전제**: Phase-2는 **원천 bronze 데이터 입고가 트리거**다. 아래 항목은 해당 데이터가 GOLD까지 적재된 뒤 착수한다. 데이터 미입고 상태에서는 **스펙·DDL 초안만** 준비하고 배포는 유예(추정값 산출 금지 — R8).
 
 ### 3.1 마케팅 Agent 신설 (최종 3 Agent 완성)
-- **트리거**: `SV_GA` = FGA 전기간 적재(G-5). ⚠ `SV_AD` 는 **이미 배포됨**(순서9-J/K) → 신규 배포 대상은 `SV_GA` 뿐.
-- 절차: `SV_GA` `CREATE SEMANTIC VIEW` 배포(04 설계) → GRANT 3역할 → `AGENT_MARKETING` 스펙 작성(08 패턴 재사용)
+- **트리거**: `SV_BIGQUERY` = FBQ 전기간 적재(G-5). ⚠ `SV_AD` 는 **이미 배포됨**(순서9-J/K) → 신규 배포 대상은 `SV_BIGQUERY` 뿐.
+- 절차: `SV_BIGQUERY` `CREATE SEMANTIC VIEW` 배포(04 설계) → GRANT 3역할 → `AGENT_MARKETING` 스펙 작성(08 패턴 재사용)
   → `cortex_agent_deploy`(또는 `09` [1-ALT] 패턴) → 소유권 확인 → USAGE → `09` [4] 멱등 블록으로 ADD AGENT.
-- ⚠ grain 상이(FAD 일×캠페인×소재 vs FGA 일×identity×이벤트) → **질의당 단일 SV 분해**(cross-fact 금지, R1). GA 의존 cross(공81·신32)는 conformed 브리지 뷰로만.
+- ⚠ grain 상이(FAD 일×캠페인×소재 vs FBQ 일×identity×이벤트) → **질의당 단일 SV 분해**(cross-fact 금지, R1). BigQuery 의존 cross(공81·신32)는 conformed 브리지 뷰로만.
 - ⚠ 신규 Agent instruction 작성 시 **기간 기본창 규칙(순서9-L)을 처음부터 포함**할 것 — SV 그레인이 일(day)이므로 기본 창 = **최근 7일 일별**. 도구명을 직접 명시해 그레인 추론 오류를 차단한다(AGENT_MEMBER 패턴).
 
 ### 3.2 기존 SV 비활성 지표 승격 (구조 불변·in-place)

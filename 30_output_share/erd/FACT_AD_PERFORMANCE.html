@@ -7,7 +7,7 @@
   <title>FACT_AD_PERFORMANCE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 02:26",
+    "generated": "2026-09-07 08:52",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_PERFORMANCE",
     "table": "FACT_AD_PERFORMANCE",
     "domain": "AGENCY / 마케팅·광고",
@@ -801,16 +801,16 @@ erDiagram
           <td>INBOUND_CALL (#25).</td>
         </tr>
         <tr>
-          <td><code>GA_CONV_MEMBERS</code></td>
+          <td><code>AGENCY_CONV_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>GA전환수(명).</td>
+          <td>대행사 전환수(명).</td>
         </tr>
         <tr>
-          <td><code>GA_CONV_CNT</code></td>
+          <td><code>AGENCY_CONV_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>GA전환수(건/VU).</td>
+          <td>대행사 전환수(건/VU).</td>
         </tr>
         <tr>
           <td><code>DAY_OF_WEEK</code></td>
@@ -902,8 +902,8 @@ select
     p.IMPRESSION_CNT             as IMPRESSIONS,
     p.CLICK_CNT                  as CLICKS,
     p.INBOUND_CALL_CNT           as INBOUND_CALL,
-    p.CONV_MEMBER_CNT            as GA_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
-    p.CONV_UNIT_CNT              as GA_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_MEMBER_CNT            as AGENCY_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_UNIT_CNT              as AGENCY_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
     DAYNAME(p.AD_DATE)           as DAY_OF_WEEK,      -- degen(AD_DATE 파생)
     WEEKOFYEAR(p.AD_DATE)        as WEEK_OF_YEAR,     -- degen(AD_DATE 파생)
     p.AD_SOURCE_TYPE                    as AD_SOURCE_TYPE,          -- degen 출처 명시축(DEC-8·§3-A-4): DIGITAL/VIDEO/REBROADCAST

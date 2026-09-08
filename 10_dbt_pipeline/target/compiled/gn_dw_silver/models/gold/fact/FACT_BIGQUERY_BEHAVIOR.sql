@@ -84,7 +84,7 @@ select
     'BIGQUERY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'ee5e1fec-7267-40a8-b1e1-d4c9d56c2a9b'                    AS DW_BATCH_ID
+    '1cc57a1d-4ecd-4300-b7be-1d37f0dc09e2'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
 )

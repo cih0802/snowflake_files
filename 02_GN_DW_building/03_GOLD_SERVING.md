@@ -31,7 +31,7 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 - **15 DIM + 9 FACT** = star schema 24 물리 테이블 (라이브 실측)
 - measure 60 + dimension 74 + derived 81 = 215개 지표 커버
 - 물리 base measure = measure 60 + GOAL_CNT 1(비지표번호) = **61**
-- measure 배속: FMM 28 · FSE 17 · FGA 7 · FTG-B 4 · FAD 4 = 60 (+ FTG-D GOAL_CNT 1)
+- measure 배속: FMM 28 · FSE 17 · FBQ 7 · FTG-B 4 · FAD 4 = 60 (+ FTG-D GOAL_CNT 1)
 
 ### DIM 목록 (15)
 
@@ -46,10 +46,10 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 | DIM_SPONSORSHIP | 후원사업(캠페인과 분리) | SCD1 | 51 |
 | DIM_ORG | 조직·부서(전 노드 적재, ORG_BK=DEPT_ID 조인) | SCD1 | 1,315 |
 | DIM_AD_CREATIVE | AGENCY 광고 소재/매체 | SCD1 | 8,474 |
-| DIM_GA_SOURCE | GA 세션 트래픽 소스(utm) | SCD1 | 111 |
+| DIM_BIGQUERY_SOURCE | BigQuery 세션 트래픽 소스(utm) | SCD1 | 111 |
 | DIM_SERVICE | 발송/참여 서비스(SERVICE_TYPE subtype) | SCD1 | 11 |
 | DIM_PAYMENT | 납입방식(×회비유형 보류) | SCD1 | 7 |
-| DIM_GA_EVENT | GA 이벤트 분류(category/label/action) | SCD1 | 2,842 |
+| DIM_BIGQUERY_EVENT | BigQuery 이벤트 분류(category/label/action) | SCD1 | 2,842 |
 | DIM_REASON | 사유(중단/미납) | SCD1 | 5,835 |
 | DIM_DEVICE | 디바이스(PC/M/APP) | 정적 | 3 |
 | DIM_EVENT | 행사/이벤트(온·오프라인, 행사기간·신청경로) | SCD1 | 3,787 |
@@ -57,7 +57,7 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 
 ### FACT 목록 (9)
 
-> 회원 식별은 모두 **MEMBER_DK**(불변). 월 grain 팩트(FMM·FTG-D·FTG-B·FBD)는 **MONTH_KEY(YYYYMM)**, 일 grain 팩트(FME·FSE·FGA·FAD·FEP)는 **DATE_SK** 사용(시간 grain 혼재 차단).
+> 회원 식별은 모두 **MEMBER_DK**(불변). 월 grain 팩트(FMM·FTG-D·FTG-B·FBD)는 **MONTH_KEY(YYYYMM)**, 일 grain 팩트(FME·FSE·FBQ·FAD·FEP)는 **DATE_SK** 사용(시간 grain 혼재 차단).
 
 | FACT | grain | 주요 measure | 라이브 행수 |
 |---|---|---|---|
@@ -66,7 +66,7 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 | FTG-D `FACT_TARGET_DEV` | 조회년월(YYYYMM)×조직(ORG)×개발구분 | GOAL_CNT 회원개발목표수 ✅CRM 확정 | 25,344 (⚠️2026-08-05 O38 연도 복원 후 · 종전 7,272 는 연도 소실로 3.49배 병합된 값) |
 | FTG-B `FACT_TARGET_BIZ` | 조회년월×조직×후원사업[×캠페인] | 연사업/추경목표(건) #152~155 | 0 (⛔E-6 CRM 입고 대기) |
 | FSE `FACT_SERVICE_EVENT` | 발송일×회원×서비스×캠페인 | 발송/성공/실패·서신/선물금 참여 등 17 | 38,470,780 |
-| FGA `FACT_GA_BEHAVIOR` | 일×IDENTITY×이벤트×세션소스×페이지 | 방문·활성/총사용자·세션·이벤트 등 7 | 44,905 |
+| FBQ `FACT_BIGQUERY_BEHAVIOR` | 일×IDENTITY×이벤트×세션소스×페이지 | 방문·활성/총사용자·세션·이벤트 등 7 | 44,905 |
 | FAD `FACT_AD_PERFORMANCE` | 일×캠페인×광고소재/매체 | 광고비·노출·클릭·인입콜 4 | 235,572 |
 | FEP `FACT_EVENT_PARTICIPATION` | 일×회원×행사(EVENT) | 참여/불참/대기 인원·횟수 | 1,134,126 |
 | FBD `FACT_BUDGET` | 조회년월×조직×예산세세목[×캠페인] | 편성/집행예산·모금성비용·광고비 | 24,480 |
@@ -88,7 +88,7 @@ gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
   - { id: WIDE_MEMBER_MONTHLY, base: FMM, note: "×MEMBER[현재]·CAMPAIGN·SPONSORSHIP·PAYMENT·REASON. 월 grain=MONTH_KEY" }
   - { id: WIDE_MEMBER_EVENT, base: FME, note: "×DATE·MEMBER[현재]·CAMPAIGN·SPONSORSHIP·ORG[as-was]·REASON" }
   - { id: WIDE_SERVICE_EVENT, base: FSE, note: "×DATE·MEMBER[현재]·SERVICE·CAMPAIGN" }
-  - { id: WIDE_GA_BEHAVIOR, base: FGA, note: "×DATE·IDENTITY·GA_EVENT·GA_SOURCE·DEVICE·CAMPAIGN. 비가산 지표 상위 재합산 금지" }
+  - { id: WIDE_BIGQUERY_BEHAVIOR, base: FBQ, note: "×DATE·IDENTITY·BIGQUERY_EVENT·BIGQUERY_SOURCE·DEVICE·CAMPAIGN. 비가산 지표 상위 재합산 금지" }
   - { id: WIDE_AD_PERFORMANCE, base: FAD, note: "×DATE·CAMPAIGN·AD_CREATIVE·DEVICE. DIM_DATE 파생=PERF_ 접두" }
   - { id: WIDE_EVENT_PARTICIPATION, base: FEP, note: "×DATE·MEMBER[현재]·EVENT·CAMPAIGN·SPONSORSHIP" }
   - { id: WIDE_BUDGET, base: FBD, note: "×ORG[as-was]·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain" }
@@ -101,7 +101,7 @@ gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
 
 ## 3.6 Semantic View (semantic_views)
 
-> `GN_DW.SERVING`에 배포(P7). base 객체는 **GOLD FACT/WIDE**(star schema). 라이브 실측 **5개 배포**(최종 목표 7 — FGA·FAD·FTG 계열은 Phase-2 확장).
+> `GN_DW.SERVING`에 배포(P7). base 객체는 **GOLD FACT/WIDE**(star schema). 라이브 실측 **5개 배포**(최종 목표 7 — FBQ·FAD·FTG 계열은 Phase-2 확장).
 > **정본**: `05_SV-Agent_ai/`. fan-out 0·SV=FACT 일치 검증 완료(순서9-E).
 
 ```yaml
@@ -115,7 +115,7 @@ semantic_views:   # 5 배포 (owner=GN_DW_ADMIN)
 deployment_notes:
   - "5 SV 모두 GOLD FACT를 base로 하는 star schema 기반(구설계 레거시 GOLD View 참조 아님)."
   - "BLOCKING-5 경계: 미적재 measure/FK(카운트·FK 전건 0 등)는 SV에서 비활성으로 표기, 입고 후 활성."
-  - "최종 7 목표 대비 미배포 2 = GA(FGA)·광고(FAD)/목표(FTG) 계열 → Phase-2."
+  - "최종 7 목표 대비 미배포 2 = BigQuery(FBQ)·광고(FAD)/목표(FTG) 계열 → Phase-2."
   - "synonyms(한글)·VQR·custom instruction(기간스코프 강제 P10)·평가셋으로 정확도 확보."
 
 serving_helper_views: []  # ⛔ [2026-08-10 O55] 폐지 — 물리 DROP 완료. SERVING 에 helper VIEW 가 없다.

@@ -7,7 +7,7 @@
   <title>FACT_AD_BROADCAST - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 02:26",
+    "generated": "2026-09-07 08:52",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_BROADCAST",
     "table": "FACT_AD_BROADCAST",
     "domain": "AGENCY / 마케팅·광고",
@@ -695,13 +695,13 @@ erDiagram
           <td><code>DVLP_MEMBER_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 GA_CONV_MEMBERS 로 혼입(GA 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다(해당 행·왜곡 규모는 문서10 §26). 원천값 보존 우선</td>
+          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_MEMBERS 로 혼입(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다(해당 행·왜곡 규모는 문서10 §26). 원천값 보존 우선</td>
         </tr>
         <tr>
           <td><code>DVLP_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 GA_CONV_CNT 로 혼입(GA 전환 아님)</td>
+          <td>개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님)</td>
         </tr>
         <tr>
           <td><code>AD_VIEW_RT_SRC</code></td>

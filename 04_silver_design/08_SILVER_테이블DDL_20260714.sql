@@ -1332,7 +1332,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 트래픽소스 차원 (grain = 1트래픽소스 · session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_GA_SOURCE';
+) COMMENT = 'GA 트래픽소스 차원 (grain = 1트래픽소스 · session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_BIGQUERY_SOURCE';
 
 -- GA4 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1347,7 +1347,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 이벤트분류 차원 (grain = 1이벤트명/파라미터). DISTINCT 그레인(PK 없음) → DIM_GA_EVENT';
+) COMMENT = 'GA 이벤트분류 차원 (grain = 1이벤트명/파라미터). DISTINCT 그레인(PK 없음) → DIM_BIGQUERY_EVENT';
 
 -- GA4 3: BIGQUERY_DEVICE (디바이스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1430,7 +1430,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA 이벤트 팩트 소스 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) → FACT_GA_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
+) COMMENT = 'BigQuery 이벤트 팩트 소스 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) → FACT_BIGQUERY_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
 
 -- GA4 5: BIGQUERY_IDENTITY (신원 브리지 소스)
 --   [컬럼별 설계 및 실측 이력]
@@ -1449,7 +1449,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, ID_SCHEME)
-) COMMENT = 'GA 신원 차원 (grain = USER_PSEUDO_ID × ID_SCHEME · 1신원) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
+) COMMENT = 'BigQuery 신원 차원 (grain = USER_PSEUDO_ID × ID_SCHEME · 1신원) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
 
 -- ============================================================================
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)

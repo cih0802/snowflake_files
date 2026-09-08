@@ -22,7 +22,7 @@ END-METADATA -->
 > 🟢 정본 = `04_SV_설계.md` **§0.9**(라이브 실측) · 개수는 그 절의 쿼리로 재라(`R3-9 ㉦`).
 
 > 🔴 [2026-08-12 O61 교정] 종전 「5 SV」는 stale 이었다 — `depends_on` 은 이미 그 사실을 적어 두었는데 본문이 갱신되지 않았다(같은 파일 내 모순).
-> 결정(2026-07-22): **2 Agent 우선(회원·overall)**, 마케팅 Agent는 SV_AD·SV_GA 미배포로 **Phase-2 유예**.
+> 결정(2026-07-22): **2 Agent 우선(회원·overall)**, 마케팅 Agent는 SV_AD·SV_BIGQUERY 미배포로 **Phase-2 유예**.
 > **스코프(사용자 확정)**: 이 세션은 **스펙 작성까지**(workspace YAML + 본 문서). `CREATE AGENT`/save/publish/CoWork 연결은 **사용자(GN_DW_ADMIN)** 실행(§4). Cortex Search 백킹(R2)은 **Phase-2 유예**.
 
 > 🆕 🔴🔴 **[2026-08-28 O105 · 사용자 지시] `sample_questions` 는 Agent 당 최대 15개 · 목표 10개 내외로 제한한다.**
@@ -50,8 +50,8 @@ END-METADATA -->
 | orchestration model | `auto` |
 | Cortex Search | Phase-2 유예(EVENT_NAME 3,786·BUDGET_ITEM_NAME 2,041 후보만 식별) |
 
-- **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅 전용 Agent는 SV_GA 1일 샤드로 유예(01 §2 게이트).
-  > ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_OVERALL에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_GA만 Phase-2 잔류.
+- **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅 전용 Agent는 SV_BIGQUERY 1일 샤드로 유예(01 §2 게이트).
+> ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_OVERALL에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_BIGQUERY만 Phase-2 잔류.
 - **왜 다중 SV 라우팅**: 한 Agent가 여러 SV를 `cortex_analyst_text_to_sql` 도구로 라우팅(공식 지원). grain이 다른 SV는 **질의마다 단일 SV로 분해**(cross-fact 계산 금지, R1).
 
 ---
@@ -422,7 +422,7 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 
 | 항목 | 트리거(문서40) |
 |---|---|
-| **마케팅 Agent**(SV_AD·SV_GA 도구) | FAD 차원FK 보강(Q10)·FGA 전기간(G-5) |
+| **마케팅 Agent**(SV_AD·SV_BIGQUERY 도구) | FAD 차원FK 보강(Q10)·FBQ 전기간(G-5) |
 | Cortex Search 백킹(EVENT_NAME·BUDGET_ITEM_NAME) | 리터럴 오매칭 관측 시 활성(현 저빈도 → 유예) |
 | 캠페인/조직/후원사업/납입방식별 분해 | CAMPAIGN/ORG/SPONSORSHIP/PAYMENT_SK 적재(B2·B3·Q10) |
 | 발송 성공/실패/오픈·D5(신31~53) | B1 코드매핑·D5 적재 |

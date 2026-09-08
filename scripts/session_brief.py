@@ -226,6 +226,40 @@ DATE_RX = re.compile(r'(20\d\d-\d\d-\d\d)')
 #     🟢 마크다운은 제목 앞 공백을 허용하므로 **구조 판정 시 선행 공백은 의미가 없다.**
 QUOTE_RX = re.compile(r'^(?:\s*>)*\s*')
 
+#   🆕 🔴🔴 [2026-09-08 O143 신설] **취소선은 리터럴 인접이 아니라 「구간 포함」으로 판정한다.**
+#     실사고: 종전 배제 조건은 `'~~여기서 시작한다' in t` 였다 — 취소선 기호가 그 문구에
+#     **바로 붙어 있을 때만** 승계로 봤다. 그런데 O129 이후 정본 관례가 바뀌었다:
+#       구관례 = `## 0-ZZZ. 🔴 [… ~~여기서 시작한다~~ …]`        ← 문구만 감싼다
+#       신관례 = `## 0-NNNN. ~~🔴🔴 [… **여기서 시작한다.** …]~~` ← **대괄호 전체**를 감싼다
+#     신관례 문안에는 `~~여기서 시작한다` 라는 **연속 부분문자열이 존재하지 않는다**
+#     ⇒ 승계된 절이 후보로 남아 **O140 의 절이 현행으로 뽑혔고**, 그 절의 열린 작업 목록에는
+#       O141 이 이미 닫은 `㊵`·`⑫` 가 열림으로 실려 있었다 ⇒ **닫힌 작업을 다시 하게 된다.**
+#     🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 실물이고,
+#       `R1-6-25`(분모가 조용히 깨진다)의 **서식 버전**이다 — 게이트 6종·음성 테스트 29종이
+#       전부 🟢 인 상태에서 났다(`R3-9`).
+#     ⇒ 🟢 판정식 = **문구의 각 등장 위치가 `~~ … ~~` 구간 안에 있는가**를 본다.
+#       서식이 「무엇을 감쌌는가」에 의존하지 않으므로 관례가 또 바뀌어도 견딘다.
+#     🔴 역방향 오탐도 막는다 — 제목 **어딘가에** 무관한 취소선이 있다는 이유로
+#       현행 절을 버리면 브리핑의 인수인계가 비어버린다 ⇒ **전 등장이 구간 안**일 때만 승계다.
+STRIKE_SPAN = re.compile(r'~~(.+?)~~', re.S)
+START_PHRASE = '여기서 시작한다'
+
+
+def struck_out(text, needle=START_PHRASE):
+    """`needle` 의 **모든 등장**이 취소선 구간(`~~ … ~~`) 안에 있으면 True(= 승계됨).
+
+    🔴 하나라도 구간 밖에 있으면 **살아 있는 문구**이므로 False 다.
+    """
+    spans = [(m.start(1), m.end(1)) for m in STRIKE_SPAN.finditer(text)]
+    found = False
+    i = text.find(needle)
+    while i >= 0:
+        found = True
+        if not any(s <= i < e for s, e in spans):
+            return False
+        i = text.find(needle, i + 1)
+    return found
+
 
 def dequote(line):
     """줄 앞의 blockquote 접두(`> ` · `>> ` · ` > `)와 **선행 공백**을 걷어낸다.
@@ -239,19 +273,26 @@ def current_handoff(lines=None):
     if lines is None:
         lines = family_lines('99_NEXT_SESSION.md')
     cands = []
-    for rel, ln, line in lines:
+    for idx, (rel, ln, line) in enumerate(lines):
         t = dequote(line)
         if not t.startswith('## '):
             continue
-        if '여기서 시작한다' not in t or '~~여기서 시작한다' in t:
+        if START_PHRASE not in t or struck_out(t):
             continue
         m = DATE_RX.search(t)
         cands.append({'date': m.group(1) if m else '0000-00-00',
+                      'idx': idx,
                       'title': clip(strip_md(t[3:]), 120),
                       'where': '%s:%d' % (rel, ln)})
     if not cands:
         return None, []
-    cur = max(cands, key=lambda c: c['date'])
+    #   🆕 🔴🔴 [2026-09-08 O143] **동점은 문서 순서상 「마지막」이 현행이다.**
+    #     실사고: 종전은 `max(cands, key=date)` 였고, O140·O141·O142 세 절의 날짜가
+    #     **모두 `2026-09-07`** 이라 파이썬 `max` 의 동점 규칙(**최초 등장**)이
+    #     **가장 오래된 절**을 골랐다. ⇒ 취소선 판정을 고쳐도 이 축만으로 같은 오선택이 재발한다.
+    #     🟢 근거 = `99_NEXT` 는 인수인계 절이 **아래로 적층**된다(문서 순서 = 시간 순서).
+    #     🔴 그래서 정렬 키에 `idx` 를 넣는다 — 날짜는 하루 안에 여러 절을 구분하지 못한다.
+    cur = max(cands, key=lambda c: (c['date'], c['idx']))
     # 그 절의 ▣ 하위 항목을 좌표와 함께 모은다
     subs, hit = [], False
     for rel, ln, line in lines:
@@ -265,6 +306,56 @@ def current_handoff(lines=None):
         if hit and t.startswith('### '):
             subs.append({'title': clip(strip_md(t[4:]), 120), 'where': loc})
     return cur, subs
+
+
+# ── ③-B 인수인계 절의 「열린 작업」 누락 대조 ────────────────────────────
+#   🆕 🔴🔴 [2026-09-08 O143 신설] **두 정본이 같은 것을 다르게 말한다.**
+#     실측(착수 시점):
+#       · 착수표 열린 집합            = ② ④ ⑪ ⑭ ⑱ ㊳   (6건)
+#       · `§0-PPPP` 인수인계 열린 목록 = ② ④ ⑪ ⑱        (⑭·㊳ **누락**)
+#     `⑭` 는 **P1 🔴🔴**(FME STOP 팬아웃 귀속 · 현업 결정 대기)이고,
+#     `§0-NNNN`(O140)에는 실려 있었는데 `§0-OOOO`(O141)에서 사라졌다.
+#     O141 은 `⑭` 를 **「점검」만** 했고 종결하지 않았다(착수표 행은 그대로 열림이다)
+#     ⇒ **닫지 않은 항목이 인수인계에서 조용히 사라졌다.**
+#   🔴 선례가 있다 — 착수표 `㊲` 행이 스스로 적고 있다:
+#     *"이 항목은 착수표 등재 후 O128 이 먼저 해소했으나 **취소선 처리가 누락**됐다"*
+#     ⇒ 두 등록부의 **결합이 사람 손에만 맡겨져 있고**, 어느 게이트도 이 축을 보지 않았다.
+#   🔴 이것이 `R3-9 ㉠`(이력 등재는 원장 갱신의 대체물이 아니다)의 **인수인계 판본**이다.
+#   ⇒ 🟢 판정식 = **착수표에서 열린 순번이 현행 인수인계 절 본문에 등장하는가.**
+#     🔴 방향을 한쪽으로만 본다 — 역방향(인수인계에만 있는 항목)은 **정상**이다
+#       (문서50 계열 `BLOCKING-1`·`O59-P-1` 등은 착수표 순번이 아니다) ⇒ 오탐이 된다.
+#   ⚠️ 이것은 **경고**다(blocking 아님) — 인수인계 절을 의도적으로 압축하는 것은
+#     서식 재량이고, 판정은 사람이 한다. 🟢 그러나 **보이지 않으면 판단할 수 없다.**
+def handoff_body_text(lines, cur):
+    """현행 인수인계 절의 본문(다음 `## ` 전까지)을 한 덩어리 문자열로 돌려준다."""
+    if not cur:
+        return ''
+    buf, hit = [], False
+    for rel, ln, line in lines:
+        t = dequote(line)
+        if '%s:%d' % (rel, ln) == cur['where']:
+            hit = True
+            continue
+        if hit and t.startswith('## '):
+            break
+        if hit:
+            buf.append(t)
+    return '\n'.join(buf)
+
+
+def handoff_gap(tasks, lines=None, cur=None):
+    """열린 착수표 순번 중 **현행 인수인계 절 본문에 등장하지 않는** 것들.
+
+    반환 = `[{'order':…, 'title':…, 'where':…}, …]` (착수표 좌표를 그대로 운반한다).
+    """
+    if lines is None:
+        lines = family_lines('99_NEXT_SESSION.md')
+    if cur is None:
+        cur, _subs = current_handoff(lines)
+    body = handoff_body_text(lines, cur)
+    if not body:
+        return []
+    return [t for t in tasks if t.get('order') and t['order'] not in body]
 
 
 # ── ④ 원장 §1 최신 세션 행 ──────────────────────────────────────────────
@@ -350,7 +441,10 @@ def build(with_gates=True):
     stale = stale_check(inv)
     tasks = open_tasks()
     d50 = open_sections('20_issue/50_dbt_파이프라인_미결조치.md')
-    cur, subs = current_handoff()
+    #   🆕 [2026-09-08 O143] `99_NEXT` 스트림을 **한 번만** 읽어 인수인계·누락대조가 함께 쓴다
+    #   (같은 것을 두 번 읽으면 두 판정이 어긋날 수 있다 · `R3-9 ㉡`).
+    nxt = family_lines('99_NEXT_SESSION.md')
+    cur, subs = current_handoff(nxt)
     recent = recent_sessions()
     gates = run_gates() if with_gates else []
 
@@ -416,6 +510,21 @@ def build(with_gates=True):
             a('> ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**')
             a('>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`%s`).' % cur['where'])
             a('> 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).')
+        # 🆕 🔴🔴 [2026-09-08 O143 신설] 착수표 ↔ 인수인계 열린 목록 **누락 대조**.
+        #   경위·판정식 = 위 `handoff_gap` 주석(실측 = `⑭`·`㊳` 가 `§0-PPPP` 에서 빠져 있었고
+        #   `⑭` 는 P1 🔴🔴 였다). 🔴 **색인이므로 좌표만 싣는다** — 판정은 사람이 한다.
+        gap = handoff_gap(tasks, lines=nxt, cur=cur)
+        if gap:
+            a('')
+            a('> 🟠 **착수표에는 열려 있는데 이 인수인계 절에 안 보이는 항목 %d건**' % len(gap))
+            a('> ⇒ ㉠ 인수인계 절이 의도적으로 압축된 것인가,')
+            a('>   아니면 ㉡ **닫지 않은 항목이 조용히 사라진 것**인가를 좌표를 열어 판단하라.')
+            a('> 🔴 선례 = 착수표 `㊲` 행이 「해소됐는데 취소선 처리가 누락됐다」고 스스로 적고 있다.')
+            a('')
+            a('| 순 | 착수표 좌표 |')
+            a('|---|---|')
+            for g in gap:
+                a('| %s | `%s` |' % (g['order'], g['where']))
     else:
         a('⚪ 현행 인수인계 절을 찾지 못했다.')
     a('')

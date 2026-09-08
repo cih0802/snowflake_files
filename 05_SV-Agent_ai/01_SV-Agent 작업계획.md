@@ -35,7 +35,7 @@ END-METADATA -->
 |---|---|
 | SV / Agent | Semantic View / Cortex Agent |
 | SI / CoWork | Snowflake Intelligence / Snowflake CoWork (Agent 소비 UI) |
-| FMM·FME·FTG_D·FTG_B·FSE·FGA·FAD·FEP·FBD | 9 GOLD FACT (아래 1절 표) |
+| FMM·FME·FTG_D·FTG_B·FSE·FBQ·FAD·FEP·FBD | 9 GOLD FACT (아래 1절 표) |
 | 공N / 신N | 공통지표 N / 신규지표 N |
 | A / S / N | 가산 / 준가산 / 비가산 measure |
 | conformed / cross | 공유차원 정합 조인 / cross-source(IDENTITY 브리지) 조인 |
@@ -138,19 +138,19 @@ END-METADATA -->
 
 | SV | base FACT (grain) | conformed/cross | 소속 Agent | 데이터 상태 | derived 범위(04매핑) |
 |---|---|---|---|---|---|
-| `SV_MEMBER_MONTHLY` | **FMM** 월×회원 | +FTG_D(목표대비 conformed)·+FGA(공81 cross) | 회원 | ✅ 40.05M | §2 활동/중단/미납/납입(공45~80)·§1 목표대비(공1~3)·§6 캠페인성과(신12~29)·§9 시계열(공59·60)·공81 |
+| `SV_MEMBER_MONTHLY` | **FMM** 월×회원 | +FTG_D(목표대비 conformed)·+FBQ(공81 cross) | 회원 | ✅ 40.05M | §2 활동/중단/미납/납입(공45~80)·§1 목표대비(공1~3)·§6 캠페인성과(신12~29)·§9 시계열(공59·60)·공81 |
 | `SV_MEMBER_EVENT` | **FME** 일×회원×상태전이 | — | 회원 | ✅ 4.6M | §3-1 유지기간·LTV(신2~8)·주간/일 중단(공58)·cohort base |
-| `SV_SERVICE` | **FSE** 일×회원×서비스×캠페인 | +FMM(코호트 조인)·+FGA(신32 cross 조건부) | 회원 | ✅ 38.5M | §7 서비스효과(신30~53) |
+| `SV_SERVICE` | **FSE** 일×회원×서비스×캠페인 | +FMM(코호트 조인)·+FBQ(신32 cross 조건부) | 회원 | ✅ 38.5M | §7 서비스효과(신30~53) |
 | `SV_EVENT_PARTICIPATION` | **FEP** 일×회원×행사 | — | 회원 | ✅ 1.1M | 행사 참여(O11 총참여수 등 base 집계) |
 | `SV_AD` | **FAD** 일×캠페인×소재 | +FMM(개발단가 연계) | 마케팅 | ✅ **235K Phase-1 배포**(2026-07-28) — measure/축 실적재, 캠페인·소재 FK만 0 | §3 광고 CTR/개발단가(공7~10) |
-| `SV_GA` | **FGA** 일×identity×이벤트×소스 | +DIM_MEMBER_IDENTITY | 마케팅 | ⚠️ 44.9K **GA4 1일 샤드만** | §4 GA행동(공98·108) |
+| `SV_BIGQUERY` | **FBQ** 일×identity×이벤트×소스 | +DIM_MEMBER_IDENTITY | 마케팅 | ⚠️ 44.9K **BigQuery 1일 샤드만** | §4 BigQuery행동(공98·108) |
 | `SV_BUDGET` | **FBD** 월×ORG×세세목 | +FTG_B(사업목표)·+FMM(ROI 연계) | overall | ✅ 24.5K(편성/집행) · FTG_B **0행** | 예산/집행/개발단가·ROI(신9~11 보류) |
 
-> **7 SV 근거**: FMM(월 스냅샷)·FME(일 전이)·FSE(발송)·FEP(참여)·FAD(광고)·FGA(GA)·FBD(예산)는 grain이 전부 달라 한 SQL에 안 섞임 → 분리가 정확도에 유리. 목표 FACT FTG_D(개발목표)·FTG_B(사업목표)는 독립 질의 대상이 아니라 "실적 대비 목표" 형태로만 쓰이므로 각각 SV_MEMBER_MONTHLY·SV_BUDGET에 conformed 폴딩.
-> ⚠️ **위 `+conformed/+cross` 표기는 "raw 다중 FACT 조인"이 아니다(원칙 10·R1).** 목표대비(FMM×FTG_D)·cross-source(공81·신32·신33)는 반드시 **conformed grain 브리지 뷰**(GOLD에 사전집계)를 단일 논리테이블로 노출하거나, 정합 미확정 시 **Phase 2 보류**. 2단계에서 브리지 설계 없이 두 FACT를 직접 relationship으로 잇지 말 것. cross-source(FGA 의존)는 기본 Phase 2.
+> **7 SV 근거**: FMM(월 스냅샷)·FME(일 전이)·FSE(발송)·FEP(참여)·FAD(광고)·FBQ(BigQuery)·FBD(예산)는 grain이 전부 달라 한 SQL에 안 섞임 → 분리가 정확도에 유리. 목표 FACT FTG_D(개발목표)·FTG_B(사업목표)는 독립 질의 대상이 아니라 "실적 대비 목표" 형태로만 쓰이므로 각각 SV_MEMBER_MONTHLY·SV_BUDGET에 conformed 폴딩.
+> ⚠️ **위 `+conformed/+cross` 표기는 "raw 다중 FACT 조인"이 아니다(원칙 10·R1).** 목표대비(FMM×FTG_D)·cross-source(공81·신32·신33)는 반드시 **conformed grain 브리지 뷰**(GOLD에 사전집계)를 단일 논리테이블로 노출하거나, 정합 미확정 시 **Phase 2 보류**. 2단계에서 브리지 설계 없이 두 FACT를 직접 relationship으로 잇지 말 것. cross-source(FBQ 의존)는 기본 Phase 2.
 
 > **▶ 결정 로그 (2026-07-22) — Phase-1 스코프 & 검토 결과**
-> - **배포 = 5 SV**(SV_MEMBER_MONTHLY·SV_MEMBER_EVENT·SV_SERVICE·SV_EVENT_PARTICIPATION·SV_BUDGET). SV_AD·SV_GA는 base FACT(FAD 스캐폴드·FGA 1일 샤드) 미완 → **Phase-2 신규 추가**(트리거 G-5).
+> - **배포 = 5 SV**(SV_MEMBER_MONTHLY·SV_MEMBER_EVENT·SV_SERVICE·SV_EVENT_PARTICIPATION·SV_BUDGET). SV_AD·SV_BIGQUERY는 base FACT(FAD 스캐폴드·FBQ 1일 샤드) 미완 → **Phase-2 신규 추가**(트리거 G-5).
 > - **얇은 SV도 현행 유지**: 데이터 입고 시 동일 SV의 같은 테이블·관계 위에 **METRIC/DIMENSION만 추가(in-place)**로 두꺼워짐 → 재설계 불요. grain 상이 SV(FMM 월×회원 vs FME 일×전이) **병합 금지**(fan-out·가산성 붕괴).
 > - **문서 정정(2026-07-22)**: 03·04·01의 A1/A3 이전 stale 스냅샷 정정(FMM 40.05M·DEV/STOP·SERVICE_SK 활성), FME grain 비유일 반영, `default_aggregation`→DDL METRIC 용어 정합.
 > - **DDL 검증 결과**: 5 SV fan-out/가산성 DoD PASS(06 §1). **PK 정정**(유일 FMM·FBD만 선언). **결함 수정**: `SV_MEMBER_EVENT.AVG_RETENTION_MONTHS` 전건 NULL(가입↔중단 페어링 불가) → 제거·재배포 완료(SV=FACT 재검증 일치).
@@ -165,15 +165,15 @@ END-METADATA -->
 > ⇒ **설계 정본 = `30_마케팅_AGENT_설계.md`** · 스펙 정본 = `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`.
 > ⛔ **여전히 미배포**다(사용자 결정 = 설계까지 · 배포는 승인 후).
 >
-> **▶ Agent 배포 스코프 (2026-07-22)**: **최종 설계 = 3 Agent**(회원·마케팅·overall). 단 **Phase-1 실배포 = 2 Agent**(회원·overall)뿐이다. **마케팅 Agent는 base FACT(FAD·FGA)의 원천 bronze 데이터 자체가 불완전**(FAD 스캐폴드·차원FK=0, FGA GA4 1일 샤드만)하여 오답 방지를 위해 **Phase-2로 유예**한다(트리거 G-5·Q10). 아래 표의 마케팅 Agent 행은 **최종 설계 기준**이며 Phase-1에서는 미배포다. 이하 문서 전반의 "3 Agent" 표기는 모두 **최종안**을 뜻하며, 실제 배포본은 항상 **2 Agent**임에 유의.
+> **▶ Agent 배포 스코프 (2026-07-22)**: **최종 설계 = 3 Agent**(회원·마케팅·overall). 단 **Phase-1 실배포 = 2 Agent**(회원·overall)뿐이다. **마케팅 Agent는 base FACT(FAD·FBQ)의 원천 bronze 데이터 자체가 불완전**(FAD 스캐폴드·차원FK=0, FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 **Phase-2로 유예**한다(트리거 G-5·Q10). 아래 표의 마케팅 Agent 행은 **최종 설계 기준**이며 Phase-1에서는 미배포다. 이하 문서 전반의 "3 Agent" 표기는 모두 **최종안**을 뜻하며, 실제 배포본은 항상 **2 Agent**임에 유의.
 
 | Agent | 라우팅 SV | 다중SV | 질문 도메인 |
 |---|---|---|---|
 | **1. 회원 Agent** | `SV_MEMBER_MONTHLY` · `SV_MEMBER_EVENT` · `SV_SERVICE` · `SV_EVENT_PARTICIPATION` | ✅ (4) | 목표대비·활동/중단/미납/납입율·캠페인성과·유지율·LTV·서비스 발송/참여/증액·행사참여·미납서비스전환(cross) |
-| **2. 마케팅 Agent** ⚠️미배포 | **[2026-08-14 O76 재설계]** `SV_AD` · `SV_DEV_ACHIEVEMENT` · `SV_BUDGET` · `SV_MEMBER_EVENT` · `SV_MEMBER_COHORT` · `SV_MEMBER_FEE` (**6종 전부 라이브 실재**) · ⛔ `SV_GA` 는 미배포(G-5) | ✅ (6) | 마케팅 정본 인벤토리 5섹션 = ①개발현황(목표·실적) ②집행예산·개발효율 ③매체별 개발효율 상세 ④전환회원 특성 ⑤캠페인별 LTV. 🔴 종전 이 행의 「`SV_AD`·`SV_GA` 2종 · bronze 원천 미완으로 미배포」는 **stale** — SV 부재가 아니라 **Agent 미개설**이 잔여다. 설계 정본 = `30_마케팅_AGENT_설계.md` |
+| **2. 마케팅 Agent** ⚠️미배포 | **[2026-08-14 O76 재설계]** `SV_AD` · `SV_DEV_ACHIEVEMENT` · `SV_BUDGET` · `SV_MEMBER_EVENT` · `SV_MEMBER_COHORT` · `SV_MEMBER_FEE` (**6종 전부 라이브 실재**) · ⛔ `SV_BIGQUERY` 는 미배포(G-5) | ✅ (6) | 마케팅 정본 인벤토리 5섹션 = ①개발현황(목표·실적) ②집행예산·개발효율 ③매체별 개발효율 상세 ④전환회원 특성 ⑤캠페인별 LTV. 🔴 종전 이 행의 「`SV_AD`·`SV_BIGQUERY` 2종 · bronze 원천 미완으로 미배포」는 **stale** — SV 부재가 아니라 **Agent 미개설**이 잔여다. 설계 정본 = `30_마케팅_AGENT_설계.md` |
 | **3. overall Agent** | `SV_BUDGET` (Phase 1) · 전사요약 시 `SV_MEMBER_MONTHLY`·`SV_SERVICE` 추가 라우팅(선택) | ✅ (1~3) | 예산 편성/집행·개발단가·ROI·사업목표 대비·재무 요약. **전사 cross-domain 요약은 다중 SV 라우팅으로, 질의마다 단일 SV로 분해**(cross-fact 계산 금지) |
 
-> **cross-source/cross-fact 3건은 raw relationship 금지(원칙10·R1)** — 공81(FMM×FGA)·신33(FMM×FSE)·신32(FSE×FGA)는 **conformed grain 브리지 뷰**로만 구현하고 해당 SV에 단일 논리테이블로 노출. GA 의존분(공81·신32)은 기본 **Phase 2**에서 커버리지 재검증(FGA 1일 샤드 4.22%).
+> **cross-source/cross-fact 3건은 raw relationship 금지(원칙10·R1)** — 공81(FMM×FBQ)·신33(FMM×FSE)·신32(FSE×FBQ)는 **conformed grain 브리지 뷰**로만 구현하고 해당 SV에 단일 논리테이블로 노출. BigQuery 의존분(공81·신32)은 기본 **Phase 2**에서 커버리지 재검증(FBQ 1일 샤드 4.22%).
 > **회원 Agent 4-SV 라우팅**: orchestration instruction이 질문 키워드로 SV 선택(월실적→MONTHLY / 주간·일·유지→EVENT / 발송·참여·증액→SERVICE / 행사→PARTICIPATION). 각 SV는 focused(정확도↑), Agent가 라우팅(공식 지원).
 
 ---
@@ -186,14 +186,14 @@ END-METADATA -->
 |---|---:|---|---|
 | SV_MEMBER_MONTHLY | 40,054,883 | **1 (즉시)** | 실적재(2026-07-22 정정: 구 37,792,336은 HAS_BILLING 부분집합). 목표대비(공1~3)의 FTG_D=7,272 ✅ / FTG_B(사업목표대비)는 **0행 → Phase 2**(문서40 E-6) |
 | SV_MEMBER_EVENT | 4,633,105 | **1 (즉시)** | 실적재. 유지율/LTV cohort는 FME 기반 산출가능(신8 LTV는 22년~ 부분, 회비데이터 binding) |
-| SV_SERVICE | 38,470,780 | **1 (즉시)** | 실적재. 단 신32/33 GA 클릭명은 FGA 의존 → 해당 metric만 Phase 2 |
+| SV_SERVICE | 38,470,780 | **1 (즉시)** | 실적재. 단 신32/33 BigQuery 클릭명은 FBQ 의존 → 해당 metric만 Phase 2 |
 | SV_EVENT_PARTICIPATION | 1,134,126 | **1 (즉시)** | 실적재. ⚠️ EVENT_KEY→DIM_EVENT 고아 23%(이슈 E, Unknown(0) 라우팅) → instruction에 커버리지 고지 |
 | SV_BUDGET | 24,480 | **1 (부분)** | FBD 편성/집행 ✅ / 모금성비용·광고비(E-1·E-4)·FTG_B(E-6)·캠페인 ROI(O3) = **Phase 2** |
 | SV_AD | 235,572 | **1 (부분)** ✅ | **2026-07-28 승격 배포**. BRONZE→GOLD 확장으로 measure·degen축 실적재 → 광고비·CTR(공9)·CVR(공10)·개발단가(공7·8) 활성. base=`SERVING.FACT_AD_COMBINED`(FAP+FAD+FAB 1:1 pre-join). 잔여 Phase-2: **캠페인/소재별 분해만**(CAMPAIGN/CREATIVE_SK=0, Q10) |
-| SV_GA | 44,905 | **2 (보류)** | FGA **GA4 1일 샤드만**(G-5 전기간 입고 대기). #98·108 placeholder. identity 4.22% → 커버리지 확정치 오인 금지 |
+| SV_BIGQUERY | 44,905 | **2 (보류)** | FBQ **BigQuery 1일 샤드만**(G-5 전기간 입고 대기). #98·108 placeholder. identity 4.22% → 커버리지 확정치 오인 금지 |
 
 **Phase 1 (즉시 배포 가능)**: 회원 Agent(4 SV) + overall Agent(SV_BUDGET 부분 + **SV_AD**) → 현업 회원/서비스/예산/광고 질의 대부분 커버.
-**Phase 2 (데이터 입고 후)**: SV_GA(+마케팅 Agent), 목표대비 사업(FTG_B), 예산기반 ROI(신9~11), GA cross metric(공81 분모·신32·33), 광고 캠페인/소재별 분해. 트리거: G-5(GA4 전기간)·E-6(CRM 사업목표)·E-1/E-4(ERP/AGENCY 비용)·Q10(캠페인 연결키).
+**Phase 2 (데이터 입고 후)**: SV_BIGQUERY(+마케팅 Agent), 목표대비 사업(FTG_B), 예산기반 ROI(신9~11), BigQuery cross metric(공81 분모·신32·33), 광고 캠페인/소재별 분해. 트리거: G-5(BigQuery 전기간)·E-6(CRM 사업목표)·E-1/E-4(ERP/AGENCY 비용)·Q10(캠페인 연결키).
 
 ---
 

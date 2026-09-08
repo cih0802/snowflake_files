@@ -7,7 +7,7 @@
 --      배경: 종전 `CREATE OR REPLACE` 는 owner 를 실행 역할로 리셋했고(GRANT 절은 소유권을 복구하지 않는다)
 --      그 결과 이 SV 의 owner 가 `ACCOUNTADMIN` 으로 드리프트해 있었다.
 --      조치 순서 = ① `GRANT OWNERSHIP … TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS` → ② `CREATE OR ALTER` 전환.
---      실측 판정: SV 9종 전건 owner=`GN_DW_ADMIN` 단일 · 소비 3역할 × REFERENCES/SELECT 보존 ·
+--      실측 판정: SV 전종 owner=`GN_DW_ADMIN` 단일 · 소비 3역할 × REFERENCES/SELECT 보존 ·
 --      소비 역할 세션 조회 6/6 성공 · `TOTAL_BILLED_AMT` 891,959,790,888 = GATE-D 불변.
 --
 -- ▶ 무엇을 답하는 SV 인가
@@ -133,7 +133,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       COMMENT = '집계된 원천 회비행 수. F(가산). 🔴**금액도 「건수」도 아니다** — 정본 `(건)` 은 금액÷10,000 규약(CONF-2)이므로 이 값을 「건」이라 부르면 정의가 깨진다. 재청구 시도 강도를 볼 때만 쓴다.'
   )
   COMMENT = 'Phase-1 회비 분해 SV (base: GOLD.WIDE_MEMBER_FEE, grain: 회원×회비월×후원사업×회비구분×납입유형×결제수단). 후원사업, 납입방식(결제수단), 회비구분, 납입일별 회비 청구/납입/미납 정본 뷰. ⚠️ 회원-월 요약(SV_MEMBER_MONTHLY)과 동일 표 합산 금지(이중계상). 후원사업은 납입 대상 후원사업 기준임.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 이중계상 방지: SV_MEMBER_MONTHLY 와 본 뷰의 measure 를 한 표에 합산하지 말 것(표 분리). (2) 납부율: 납부율=PAYMENT_RATE_FEE (회비만 기준, %), 총수납액(회비+기부금)=TOTAL_PAID_ALL. (3) 회원수: 납입 회원수는 DISTINCT_PAYING_MEMBERS (distinct) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 후원사업 분기: 본 뷰의 SPONSORSHIP 은 납입 대상 후원사업이며, 개발 사건 시점은 SV_MEMBER_EVENT, 획득 시점은 SV_MEMBER_COHORT 로 라우팅. (6) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 이중계상 방지: SV_MEMBER_MONTHLY 와 본 뷰의 measure 를 한 표에 합산하지 말 것(표 분리). (2) 납부율: 납부율=PAYMENT_RATE_FEE (회비만 기준, %), 총수납액(회비+기부금)=TOTAL_PAID_ALL. (3) 회원수: 납입 회원수는 DISTINCT_PAYING_MEMBERS (distinct) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 후원사업 분기: 본 뷰의 SPONSORSHIP 은 납입 대상 후원사업이며, 개발 사건 시점은 SV_MEMBER_EVENT, 획득 시점은 SV_MEMBER_COHORT 로 라우팅. (6) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (7) 판정 라벨 [형제팩트중복]: 「납입(원)」·납입방식별 금액은 이 뷰를 앵커로 답한다. SV_MEMBER_MONTHLY 와 한 표에 합치지 않고 표를 분리하며 각 표의 grain 을 밝힌다. (8) 판정 라벨 [배분규칙필요]: 발송·사건 grain 으로 이 뷰의 회비 measure 를 요구받으면 SQL 을 만들지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다. 회비 measure 를 자기 grain(회원×회비월×후원사업)에서 묻는 질의는 정상 답변한다.';
 
 -- ── GRANT — 🟢 [2026-08-12 O61 · R1-3 전량독해에서 적발·교정] 이 파일 본문은 `CREATE OR ALTER` 다
 --    (헤더 line 6 OWN-1 해소) ⇒ **GRANT 도 소유권도 파괴되지 않으므로 아래는 멱등 재확인**이다.

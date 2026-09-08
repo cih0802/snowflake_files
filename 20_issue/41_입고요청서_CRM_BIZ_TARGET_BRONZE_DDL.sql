@@ -5,30 +5,49 @@
 -- 원천: CRM (현업 수동입력 — 매출 실적 확인 후 사후 조정 프로세스)
 -- 블로커: E-6 (40_입고대기_원천의존.md)
 -- SILVER 후속: GN_DW.SILVER.CRM_BIZ_TARGET → GOLD FTG-B
+-- 스펙 정본: 30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md (r3) §3-1 ②
+-- ============================================================================
+-- 🔴🔴 [2026-09-08 O145-B r2 개정] 라이브 실측으로 초판 스펙을 3건 보강했다.
+--   근거 = 20_issue/_o145_실측근거.md · 20_issue/_o145_evidence.md
+--
+--   ➕ TARGET_AMT          — ERP 예산원장에 `수입` 행 0건(지출 247행뿐) ⇒ 금액 목표 원천 없음 [필수]
+--   ➕ MBER_INFLOW_PATH_CD — 목표 측에만 부재. 실적 측은 3,594,823행 채움(MM293 13종) [선택]
+--   ➕ CPR_DIV_CD          — 🟡 [D9] SPNSR_BSNS_ID 로 파생 가능(마스터 50=50=50 함수종속)이므로
+--                             이 테이블에서는 **권장(필수 아님)**. 단 A(통합)가 마스터에 0건이고
+--                             마스터에 SCD 가 없어 확정 시점 법인 보존이 안 되므로 받으면 좋다.
+--                             🔴 개발목표 테이블(TM_CM_MBER_DVLP_GOAL)에서는 **필수**다 —
+--                                그쪽 grain 에 후원사업 축이 없어 파생 경로가 아예 없다.
+--   🔄 SPONSOR_BIZ_NM → SPNSR_BSNS_ID — 마스터 TM_CM_SPNSR_BSNS_INFO 50행 실재 (ID 길이 1~2)
+--   ➖ ORG_NM · CAMPAIGN_NM 필수 요구 철회 — 명칭은 코드로 마스터 조인
+--
+--   🔴 ORG_CD 는 비-Z 체계(D0…/E0…/F0…)로 받는다. 조직 마스터에 코드 체계가 2종
+--      병존하고(Z 802노드 / 비-Z 512노드) 목표·실적이 갈라지면 조인이 깨진다.
 -- ============================================================================
 -- 업무 특성:
 --   - 목표는 ERP가 아닌 CRM에서 관리 (사후 조정 방식)
 --   - 추경 발생 시 기존 행 수정 X → 새 행 추가 (버전 누적)
 --   - 목표유형: '당초' / '추경1차' / '추경2차'
+--   - 🟡 [r2] 법인은 grain 의 선택 축이다 — 통합(A) 목표를 세우면 필요하다
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS GN_DW.BRONZE_CRM.CRM_BIZ_TARGET (
     -- === 업무 키 ===
     TARGET_YEAR         NUMBER(4,0)     COMMENT '목표연도 (YYYY)',
     MONTH_NO            NUMBER(2,0)     COMMENT '월 (1~12, 연간이면 NULL)',
-    ORG_CD              VARCHAR(50)     COMMENT '조직코드 (FK→DIM_ORG)',
-    ORG_NM              VARCHAR(200)    COMMENT '조직명 (부서/팀)',
-    SPONSOR_BIZ_NM      VARCHAR(200)    COMMENT '후원사업명',
-    CAMPAIGN_NM         VARCHAR(200)    COMMENT '캠페인명 (없으면 NULL)',
+    ORG_CD              VARCHAR(50)     COMMENT '조직코드 (FK→DIM_ORG). 비-Z 체계(D0/E0/F0)로 받는다 — Z 체계(ZD…)는 실적 롤업 축이라 목표와 조인이 갈라진다',
+    SPNSR_BSNS_ID       VARCHAR(50)     COMMENT '[r2 교체] 후원사업 ID (FK→TM_CM_SPNSR_BSNS_INFO 50행 · ID 길이 1~2). 종전 SPONSOR_BIZ_NM(명칭) 대체 — 명칭은 마스터 조인으로 채운다',
+    CPR_DIV_CD          VARCHAR(10)     COMMENT '[r2 신설 · 권장] 법인구분 코드 — CM019: I=사단 / S=사복 / A=통합. 🟡 SPNSR_BSNS_ID 로 파생 가능(마스터 함수종속 50=50=50)이라 이 테이블에서는 필수가 아니다. 다만 마스터에 A(통합)가 0건(I 42·S 8)이고 SCD 가 없어 확정 시점 법인이 보존되지 않으므로 받는 편이 낫다. 🔴 개발목표 테이블에서는 필수(후원사업 축이 없어 파생 불가)',
+    MBER_INFLOW_PATH_CD NUMBER(4,0)     COMMENT '[r2 신설] 개발인입경로 코드 — MM293 13종(교육기관/기타 기업개발/뉴미디어/대면모금/디지털/모금시스템/방송/영상광고/오프라인/일시/재송출/지역개발/콜개발). 채널별 목표를 관리하지 않으면 NULL',
 
-    -- === 목표 건수 ===
-    TARGET_TYPE         VARCHAR(20)     COMMENT '목표유형: 당초 / 추경1차 / 추경2차',
-    TARGET_CNT          NUMBER(18,4)    COMMENT '목표 건수(건) — 지표사전 #152~155 기준, GOLD FACT_TARGET_BIZ(ANNUAL/SUPP_GOAL_CNT)와 정합. ※현업이 금액(원)으로만 관리 시 SILVER에서 /10000 파생',
+    -- === 목표 측정값 (건수 + 금액) ===
+    TARGET_TYPE         VARCHAR(20)     COMMENT '목표유형: 당초 / 추경1차 / 추경2차. 🔴 추경 시 기존 행 UPDATE 금지 — 새 행 INSERT(버전 누적)',
+    TARGET_CNT          NUMBER(18,0)    COMMENT '목표 건수(건) — 지표사전 #152~155. GOLD FACT_TARGET_BIZ(ANNUAL/SUPP_GOAL_CNT)와 정합',
+    TARGET_AMT          NUMBER(18,0)    COMMENT '[r2 신설] 목표 금액(원 · 수입) — 지표사전 #171~172. 🔴 ERP 예산원장은 지출만 보유(수입 0건)하므로 이 값의 원천이 달리 없다. 원 단위 정수(만원/억원은 마트에서 파생)',
 
     -- === 확정 이력 ===
     CONFIRMED_DATE      DATE            COMMENT '등록일 (이 목표를 확정한 일자)',
     CONFIRMED_BY        VARCHAR(100)    COMMENT '확정자 (입력 담당자)',
-    REMARK              VARCHAR(500)    COMMENT '비고 (사유 등 자유기술)',
+    REMARK              VARCHAR(500)    COMMENT '비고 (추경 사유 등 자유기술)',
 
     -- === 메타/감사 (BRONZE 공통) ===
     _SRC_FILE           VARCHAR         COMMENT '원천 파일명 또는 CRM 화면명',
@@ -36,8 +55,23 @@ CREATE TABLE IF NOT EXISTS GN_DW.BRONZE_CRM.CRM_BIZ_TARGET (
     _LOADED_AT          TIMESTAMP_NTZ   DEFAULT CURRENT_TIMESTAMP() COMMENT '적재 시각',
     _BATCH_ID           VARCHAR         COMMENT '적재 배치 식별자'
 )
-COMMENT = 'BRONZE — CRM 사업목표 원천 (현업 CRM 입력). 버전누적(당초/추경 공존). → SILVER.CRM_BIZ_TARGET으로 정제.'
+COMMENT = 'BRONZE — CRM 사업목표 원천 (현업 CRM 입력). grain = 월×조직×법인×후원사업×목표유형[×유입채널]. 버전누적(당초/추경 공존). → SILVER.CRM_BIZ_TARGET 으로 정제. [r2 2026-09-08 O145-B] 금액·법인·유입채널 3컬럼 보강'
 ;
+
+-- ============================================================================
+-- 🔴 [r2] 종전 스펙에서 빠진 컬럼 (참고 — 이제 위에 반영됨)
+-- ============================================================================
+/*
+초판(r1)에 없던 것:
+  TARGET_AMT           금액 목표          → 지표 #171~172 산출 불가 상태였다
+  CPR_DIV_CD           법인구분           → 목표를 어느 법인에 귀속할지 결정 불가였다
+  MBER_INFLOW_PATH_CD  개발인입경로       → 채널별 목표 대비 실적 대조 불가였다
+
+초판에서 명칭으로 받으려던 것 (r2 에서 코드로 교체 또는 철회):
+  ORG_NM               조직명            → DIM_ORG 조인
+  SPONSOR_BIZ_NM       후원사업명        → SPNSR_BSNS_ID + 마스터 조인
+  CAMPAIGN_NM          캠페인명          → 연결키 부재로 요구 철회(Q10·O3)
+*/
 
 -- ============================================================================
 -- 적재 예시 (CSV/Excel 파일 입고 시)
@@ -55,12 +89,25 @@ ON_ERROR = 'CONTINUE'
 -- ============================================================================
 /*
 1. 목표유형은 '당초', '추경1차', '추경2차' 중 택1
-2. 조직코드는 기존 DIM_ORG 코드와 동일하게 입력
-3. 추경 시 기존 행 수정 X → 새 행 추가 (동일 월×조직×후원사업에 여러 유형 공존)
-4. 등록일(CONFIRMED_DATE)은 이 목표를 확정한 날짜 (필수)
+2. 조직코드는 기존 DIM_ORG 코드와 동일하게 입력 — 비-Z 체계(D0/E0/F0)
+3. 후원사업은 ID 로 입력 (명칭 아님) — 마스터 50건 중 택1 (예: 1 = 해외아동결연)
+4. 법인구분(CPR_DIV_CD)은 선택이지만 권장 — CM019 중 택1: I(사단) / S(사복) / A(통합)
+   🟡 안 주시면 후원사업 마스터로 파생합니다.
+   🔴 단 A(통합) 목표는 마스터에 없어 파생할 수 없습니다(마스터 I 42 · S 8 · A 0).
+5. 유입채널은 MM293 코드 중 택1 (채널별 목표를 관리하지 않으면 공란)
+6. 추경 시 기존 행 수정 X → 새 행 추가 (동일 월×조직×후원사업에 여러 유형 공존)
+7. 등록일(CONFIRMED_DATE)은 이 목표를 확정한 날짜
+8. 금액은 원 단위 정수 (만원/억원 단위로 주지 말 것)
 
 예시:
-| TARGET_YEAR | MONTH_NO | ORG_CD | ORG_NM   | SPONSOR_BIZ_NM | TARGET_TYPE | TARGET_CNT | CONFIRMED_DATE | REMARK       |
-| 2026        | 1        | ORG001 | 서울지부 | 아동후원       | 당초        | 30000      | 2026-01-05     |              |
-| 2026        | 1        | ORG001 | 서울지부 | 아동후원       | 추경1차     | 35000      | 2026-04-10     | 1Q 실적 반영 |
+| TARGET_YEAR | MONTH_NO | ORG_CD  | SPNSR_BSNS_ID | CPR_DIV_CD | MBER_INFLOW_PATH_CD | TARGET_TYPE | TARGET_CNT | TARGET_AMT    | CONFIRMED_DATE | REMARK       |
+| 2026        | 1        | D000023 | 1             | I          | 5                   | 당초        | 30000      | 1200000000    | 2026-01-05     |              |
+| 2026        | 1        | D000023 | 1             | I          | 5                   | 추경1차     | 35000      | 1450000000    | 2026-04-10     | 1Q 실적 반영 |
+| 2026        | 1        | D000023 | 1             | A          | 5                   | 당초        | 5000       | 180000000     | 2026-01-05     | 통합 분      |
+
+코드 실재 확인(2026-09-08 라이브):
+  D000023 = 마케팅기획2팀 · 1 = 해외아동결연(마스터 CPR_DIV_CD='I') ·
+  MBER_INFLOW_PATH_CD 5 = 디지털 · CM019 = I(사단)/S(사복)/A(통합)
+🟡 3행이 CPR_DIV_CD 를 권장으로 둔 이유다 — 1·2행은 후원사업으로 파생되지만
+   3행의 A(통합)는 마스터에 없어 파생 불가다.
 */

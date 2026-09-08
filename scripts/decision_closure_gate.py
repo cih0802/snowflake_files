@@ -131,10 +131,109 @@ CATCH_TABLE_WHY = re.compile(r"stale\s*정본이\s*아니|오탐")
 # 세션 근거철 (축E) — 접두 `_` **그리고** `_evidence` 를 함께 요구한다(관례 의존을 좁게 고정).
 EVIDENCE_FILE = re.compile(r"^_.*_evidence\.md$")
 
+
+def static_docs():
+    """🆕 [2026-09-08 O144 · 후속과제 Phase 2-4] 축E 의 **정본 기반 판정**.
+
+    🔴🔴 **왜 고쳤나**: 종전 축E 는 `EVIDENCE_FILE` **파일명 관례**만 봤다. 그 결과
+       `_o118_sv_live_census.md`(원장 §0 유형 = **정적**)가 축E 에 걸리지 않고
+       「미봉합 인용처 3건」으로 남았다 — 파일명이 `_census` 라서 정규식을 빗나갔을 뿐,
+       **성격은 `_o124_evidence.md` 와 동일한 정적 근거철**이다.
+    🔴 종전 주석이 스스로 *"관례 의존을 명시한다"* 로 약점을 적어 뒀고, 그 약점이 실제로 실현됐다.
+    🟢 처방 = **원장 §0 「문서 유형 등재표」의 `정적` 선언을 정본으로 읽는다**(파일명 추측을 버린다).
+       그 표는 `doc_type_gate.parse_registry` 가 이미 파싱하는 정본이므로 **분모를 공유**한다
+       (`R3-9 ㉡` 같은 것을 다르게 재는 지점 제거).
+    ⚠️ 등재표를 읽을 수 없으면 **빈 집합**을 돌려 종전 동작으로 안전하게 되돌아간다
+       (게이트가 도구 실패로 침묵하지 않게 한다 · 판정은 `EVIDENCE_FILE` 이 계속 담당).
+
+    🆕 🔴🔴 **[2026-09-08 O144 2차 시정 — 1차 시정은 코드만 있고 효과가 0 이었다]**
+       실측: `STATIC_DOCS` 4건 = `41_입고요청서_….md` · `41_…_BRONZE_DDL.sql` ·
+       `_o124_evidence.md` · **`_o1….md`** ⇒ `_o118_sv_live_census.md` 는 **여전히 미포함**이고
+       미봉합 6건도 그대로였다.
+    🔴 **원인 = 등재표가 「약칭·계열」 표기를 쓴다**(`_o1….md` = *"세션 **근거철 계열** · 관례 1행 선언"* ·
+       원장 §0 등재표 행). 1차 시정은 `path.name in STATIC_DOCS` 로 **완전일치**만 봤으므로
+       계열 선언이 **원리적으로 매칭될 수 없었다.**
+    🔴 이것이 `R3-2` 의 실물이다 — **「파일에 코드가 있다」와 「그 코드가 효과가 있다」는 다르다.**
+       1차 시정은 자기검증 없이 주석에 「고쳤다」를 적었고 게이트 출력은 6건에서 변하지 않았다.
+    🟢 처방 = `…` 를 **와일드카드로 전개**해 계열 선언을 실제로 집행한다.
+       반환 = (완전일치 이름 집합, 계열 정규식 목록) · 판정은 `is_static_doc()` 이 담당한다.
+    🆕 🔴🔴 **[2026-09-08 O144 3차 시정 — 2차 시정도 「직접 실행」에서는 듣지 않았다]**
+       실측 = 같은 파일이 **실행 방식에 따라 다른 결과**를 냈다:
+       · `python3 -c "import decision_closure_gate; …main()"` ⇒ 미봉합 **3건** · 축E **2건**
+       · `python3 scripts/decision_closure_gate.py`            ⇒ 미봉합 **6건** · 축E **1건**
+    🔴 원인 = 직접 실행이면 `sys.path[0]` 이 **스크립트 디렉터리**가 되는데, 이 스테이지 마운트에서는
+       그 경로로 `import doc_type_gate` 가 **`ModuleNotFoundError`** 를 낸다(CWD 를 `scripts/` 로 두고
+       재현했다). 그러면 아래 `except` 가 **빈 집합을 조용히 돌려** 축E 가 파일명 관례로 축소된다.
+    🔴 **이 침묵이 진짜 결함이다** — 이 docstring 이 *"게이트가 도구 실패로 침묵하지 않게 한다"* 고
+       적어 두고 **정확히 그 침묵을 구현**하고 있었다(`R3-9 ㉡`·`R0-8` 「0건을 rc 로 검증」의 문서판).
+    🟢 처방 2개: ㉠ **절대 경로를 `sys.path` 에 주입**해 실행 방식 의존을 끊는다 ·
+       ㉡ 실패하면 **경고를 출력**한다(조용히 되돌아가지 않는다 · 판정 축소를 사람이 볼 수 있게).
+    """
+    try:
+        here = str(Path(__file__).resolve().parent)
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import doc_type_gate as DT
+        reg = DT.parse_registry(DT.index_logical())
+    except Exception as exc:
+        print("  🟠 축E 정본 판정 불가 — 원장 §0 유형 등재표를 읽지 못했다"
+              " (%s: %s)" % (type(exc).__name__, exc))
+        print("     ⇒ 파일명 관례(`EVIDENCE_FILE`)로만 판정한다."
+              " 🔴 이 줄이 보이면 축E 가 좁아진 상태이므로 미봉합 건수를 그대로 믿지 마라.")
+        return set(), []
+    names, patterns = set(), []
+    for name, (kind, _proc) in reg.items():
+        if kind != '정적':
+            continue
+        if '…' in name:
+            # 등재표의 약칭 표기 = 계열 선언. `…` 를 `.*` 로 전개한다(리터럴 부분은 이스케이프).
+            body = '.*'.join(re.escape(part) for part in name.split('…'))
+            patterns.append(re.compile('^' + body + '$'))
+        else:
+            names.add(name)
+    return names, patterns
+
+
+STATIC_DOCS, STATIC_PATTERNS = static_docs()
+
+
+def is_static_doc(filename):
+    """원장 §0 유형 등재표가 `정적`으로 선언한 문서인가 — 완전일치 **또는** 계열 패턴.
+
+    🔴 계열 패턴을 빼면 `_o1….md` 같은 「관례 1행 선언」이 죽는다(O144 2차 시정의 요지).
+    """
+    if filename in STATIC_DOCS:
+        return True
+    return any(p.match(filename) for p in STATIC_PATTERNS)
+
 # 이슈 라벨 = 이 워크스페이스의 실제 표기 체계.
 #   O8 / O91  · Q10 · B2 · G-5 · E-6 · DEC-40
 #   🔴 `O8` 이 `O85` 에 걸리지 않도록 뒤 숫자를 배제한다.
 ISSUE_LABEL = re.compile(r"\b(?:O\d{1,3}|Q\d{1,3}|B[1-9]|[A-Z]-\d{1,2})(?!\d)")
+
+# 🆕 🔴🔴 [2026-09-08 O144-C · 후속과제 후-5] 축F — **세션 귀속 대괄호**
+#   이 워크스페이스의 관례 = `[YYYY-MM-DD O###]` · `[O###-B]` · `[2026-08-31 O127-B]` …
+#   그 대괄호가 담는 라벨은 **그 문장을 쓴 세션**(행위 주체)이고 **닫힌 대상이 아니다.**
+#
+#   🔴 **왜 필요한가(실측 오탐)**: `DEC-44` 의 종결 선언으로 뽑힌 줄이
+#     *"🔴🔴 **[2026-08-31 O127-B] 이 절은 승계됐다 — 현행 종결 조건 정본은 §30-I 다.**"* 였다.
+#     여기서 `종결` 은 **「종결 조건」이라는 명사구**이고 `O127` 은 **글쓴 세션**인데,
+#     게이트는 이것을 「DEC-44 가 O127 을 닫았다」로 읽어 **미봉합 3건**을 만들었다.
+#   🔴 그 3건은 `32_컬럼개명표.md:36`·`:37`·`00_INDEX-002.md:18` 이고 **`DEC-44` 와 무관한 행**이다
+#     ⇒ 병기해 닫으면 문안이 **거짓**이 된다(O144 가 그래서 닫지 않고 남겼다).
+#   🟢 처방 = 라벨을 뽑기 전에 **세션 귀속 대괄호를 지운다.**
+#     ⚠️ 지우는 것은 대괄호 **안**뿐이다 — 진짜 종결문
+#     *"[2026-08-31 O127] 이 결정으로 `O8` 이 종결된다"* 에서는 `O127`(주체)만 빠지고
+#     `O8`(대상)은 **그대로 남는다**. 즉 재현율을 깎지 않는다.
+#   🔴 날짜는 **선택**이다(`[O127-B]` 형태도 실재한다) — 다만 대괄호가 **라벨로 시작**해야 한다.
+#     그러지 않으면 `[표 1]`·`[사유:원천 부재]` 같은 일반 대괄호까지 삼킨다.
+SESSION_ATTR = re.compile(
+    r"\[\s*(?:20\d\d-\d\d-\d\d\s+)?[OQ]\d{1,3}(?:-[A-Za-z0-9]+)?(?:\s[^\]]*)?\]")
+
+
+def strip_session_attr(text):
+    """세션 귀속 대괄호를 공백으로 지운다(축F) — 좌표·길이 영향을 주지 않게 같은 길이로 치환."""
+    return SESSION_ATTR.sub(lambda m: " " * len(m.group(0)), text)
 
 # 🆕 🔴 [2026-08-28 O111 · 인수 `§0-NNN ▣WWW ⑥` 의 남은 판단] 허브 「조각 선택표」의
 #   `- ID: …` 줄은 **인용처가 아니다** — `split_doc.py --republish` 가 매번 통째로
@@ -217,7 +316,9 @@ def closed_targets(body, head=None, observed=None):
                 observed.append(("B2", "종결어가 **표 행**에서 매칭됐다(선택지 비교표)", line.strip()[:100]))
             continue
         # ── 축A: 종결어와 라벨이 같은 괄호 스코프에 있어야 한다.
-        for seg in paren_scopes(line):
+        #   🆕 [O144-C 후-5] 축F 를 **먼저** 적용한다 — 세션 귀속 대괄호 안의 라벨은 주체이고 대상이 아니다.
+        scoped = strip_session_attr(line)
+        for seg in paren_scopes(scoped):
             if not CLOSE_WORDS.search(seg) or NEGATIVE.search(seg):
                 continue
             for label in ISSUE_LABEL.findall(seg):
@@ -225,8 +326,14 @@ def closed_targets(body, head=None, observed=None):
                     continue
                 found.setdefault(label, line.strip())
         if observed is not None:
+            # 🆕 [O144-C] 축F 로 걸러진 라벨은 「종결 대상이 아니다」로 관측한다(버리지 않는다).
             for label in ISSUE_LABEL.findall(line):
-                if not label.startswith("DEC") and label not in found:
+                if label.startswith("DEC") or label in found:
+                    continue
+                if label not in ISSUE_LABEL.findall(scoped):
+                    observed.append(("F", "**세션 귀속 대괄호** 안의 라벨 = 글쓴 주체이고 종결 대상이 아니다",
+                                     "%s ◂ %s" % (label, line.strip()[:80])))
+                else:
                     observed.append(("A", "종결어와 **다른 괄호 스코프**에 있다(세션 라벨·다른 대상)",
                                      "%s ◂ %s" % (label, line.strip()[:80])))
     return found
@@ -283,13 +390,18 @@ def citations(label, observed=None):
             lines = path.read_text(encoding="utf-8").split("\n")
         except Exception:
             continue
-        # ── 축E: 세션 근거철은 정적 발행물이다 — 병기할 자리가 없다(자기참조 루프 차단).
-        if EVIDENCE_FILE.match(path.name):
+        # ── 축E: 세션 근거철·정적 발행물은 인용처가 아니다 — 병기할 자리가 없다(자기참조 루프 차단).
+        #   🆕 [O144] 판정 = 파일명 관례(`EVIDENCE_FILE`) **또는** 원장 §0 유형 등재 `정적`.
+        #   🔴 후자는 `is_static_doc()` 이 담당한다 — 등재표의 **계열 표기(`…`)까지 전개**해야
+        #      `_o1….md` 선언이 실제로 집행된다(1차 시정이 완전일치만 봐서 효과가 0 이었다).
+        if EVIDENCE_FILE.match(path.name) or is_static_doc(path.name):
             if observed is not None:
                 n_hit = sum(1 for line in lines if pat.search(line))
                 if n_hit:
-                    observed.append(("E", "세션 근거철(정적 발행물 · 발행 후 갱신하지 않는다)",
-                                     "%s (%d줄)" % (path.name, n_hit)))
+                    why = ("세션 근거철(정적 발행물 · 발행 후 갱신하지 않는다)"
+                           if EVIDENCE_FILE.match(path.name)
+                           else "원장 §0 유형 = 정적(발행 후 갱신하지 않는다 · O144 정본 기반 판정)")
+                    observed.append(("E", why, "%s (%d줄)" % (path.name, n_hit)))
             continue
         # ── 축D: 허브 본문은 자동 생성물이다 — 병기할 자리가 없다.
         if path.stem in hubs:
@@ -322,7 +434,7 @@ def main():
 
     print(f"[결정 봉합 게이트] 결정 절 {len(secs)}개 스캔 · 인용처 분모 = 20_issue/*.md")
     print(f"  제외 = {', '.join(EXCLUDE_PREFIX)} (append-only 이력 · 결정 정본 자신)")
-    print("  🆕 [O124] 판정 제외 축 = A 괄호스코프 · B 미확정절/표행 · C 적발표 · D 허브 · E 근거철")
+    print("  🆕 [O124] 판정 제외 축 = A 괄호스코프 · B 미확정절/표행 · C 적발표 · D 허브 · E 근거철 · F 세션귀속대괄호")
 
     total_open = 0
     reported = 0
@@ -374,7 +486,7 @@ def main():
                 print(f"       · {s[:100]}")
             if len(samples) > 2:
                 print(f"       · … 외 {len(samples) - 2}건")
-        print("  🔴 이 축들의 근거 = `scripts/decision_closure_gate.py` 축A~축E 주석 +")
+        print("  🔴 이 축들의 근거 = `scripts/decision_closure_gate.py` 축A~축F 주석 +")
         print("     `20_issue/_o124_evidence.md` §E1 (원문 인용 + 좌표).")
         print()
 

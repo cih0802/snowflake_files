@@ -41,8 +41,8 @@ select
     p.IMPRESSION_CNT             as IMPRESSIONS,
     p.CLICK_CNT                  as CLICKS,
     p.INBOUND_CALL_CNT           as INBOUND_CALL,
-    p.CONV_MEMBER_CNT            as GA_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
-    p.CONV_UNIT_CNT              as GA_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_MEMBER_CNT            as AGENCY_CONV_MEMBERS,  -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
+    p.CONV_UNIT_CNT              as AGENCY_CONV_CNT,      -- O16 해소: DIGITAL 전용(재방송 개발실적 제외)
     DAYNAME(p.AD_DATE)           as DAY_OF_WEEK,      -- degen(AD_DATE 파생)
     WEEKOFYEAR(p.AD_DATE)        as WEEK_OF_YEAR,     -- degen(AD_DATE 파생)
     p.AD_SOURCE_TYPE                    as AD_SOURCE_TYPE,          -- degen 출처 명시축(DEC-8·§3-A-4): DIGITAL/VIDEO/REBROADCAST

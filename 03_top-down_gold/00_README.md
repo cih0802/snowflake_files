@@ -97,7 +97,7 @@ END-METADATA -->
 
 ## 핵심 수치
 - 지표 215 = 공통 162 + 신규 53 / measure 60 + dimension 74 + derived 81
-- 코어: **20 DIM + 15 FACT = 35 테이블** (FMM·FMF·FMC·FME·FTG_D·FTG_B·FSE·FGA·FAD·FEP·FBD + 광고 위성 FAD_B·FAD_D·FAD_BC + **`FACT_DEV_ACHIEVEMENT`**) + 정보성 FK 38
+- 코어: **20 DIM + 15 FACT = 35 테이블** (FMM·FMF·FMC·FME·FTG_D·FTG_B·FSE·FBQ·FAD·FEP·FBD + 광고 위성 FAD_B·FAD_D·FAD_BC + **`FACT_DEV_ACHIEVEMENT`**) + 정보성 FK 38
   🔴 [2026-08-12 O64] 종전 「17 DIM + 14 FACT = 31」은 stale 이었다 — 같은 절 다음 줄이 이미 O53 에서 **35(DIM 20 + FACT 15)** 로 갱신돼 있었다(문서 내 자기모순).
 - 소비 계층: **GOLD 뷰 14** = WIDE 14 (`WIDE_AD_COMBINED` 신설 포함). 🔴 [2026-08-10 O53] 종전 「16 = WIDE 14 + dim 뷰 2」에서 갱신 — dim 뷰 2종(`DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION`)과 `WIDE_DEV_ACHIEVEMENT` 는 **테이블로 전환**됐고 `WIDE_AD_COMBINED` 가 신설됐다. 기반 계층 = **GOLD 테이블 35**(DIM 20 + FACT 15).
 - derived는 GOLD 미적재 → Semantic View metric

@@ -24,6 +24,7 @@ O111 이 이 게이트에 **제외 규칙 `GENERATED_ID_LINE`** 을 넣었는데
 """
 
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -229,6 +230,78 @@ def main():
             ['### 7-A. **`DEC42` 결정 (2026-08-20 O96) — 연 grain 은 종결**'], observed=obs)
         check(any(a == 'A' for a, _, _ in obs),
               '축11-b', '축A 제외가 관측 버킷에 남는다(버려지지 않는다)')
+
+        # ── 축12: 🆕🔴🔴 [O144] 축E 계열 표기(`…`) 전개 — 3회 시정의 검증 장치 ──
+        #   실사고 3연쇄: ㉠ 파일명 관례만 봐서 `_o118_sv_live_census.md` 를 놓쳤다 ·
+        #   ㉡ 등재표 약칭(`_o1….md`)을 **완전일치**로 봐서 시정이 무효였다 ·
+        #   ㉢ 직접 실행 시 `import doc_type_gate` 실패를 **조용히 삼켜** 축E 가 축소됐다.
+        #   🔴 세 번 다 「코드는 있는데 효과가 0」이었다(`R3-2`) ⇒ 효과를 단정한다.
+        print('\n축12 — 축E: 등재표 계열 표기(`…`)가 실제로 전개되는가 (O144 3회 시정)')
+        check(len(G.STATIC_PATTERNS) > 0,
+              '축12-a', '🔴 계열 패턴이 **1개 이상** 이어야 한다 — 0 이면 등재표 읽기가 실패한 것이다'
+                        ' · 실제 %d개' % len(G.STATIC_PATTERNS))
+        check(G.is_static_doc('_o118_sv_live_census.md'),
+              '축12-b', '🔴 재현율 축 = `_o118_sv_live_census.md` 가 정적으로 판정된다'
+                        '(파일명이 `_evidence` 가 아니어도)')
+        check(G.is_static_doc('_o124_evidence.md'),
+              '축12-c', '완전일치 등재분도 계속 정적이다(회귀 없음)')
+        check(not G.is_static_doc('00_INDEX_이슈원장.md'),
+              '축12-d', '🟢 오탐 축 = 갱신형 정본은 정적으로 새지 않는다')
+        check(not G.is_static_doc('32_컬럼개명표.md'),
+              '축12-e', '🟢 오탐 축 = 갱신형 미분할 문서도 정적이 아니다')
+        # 🔴 음성: 계열 패턴을 비우면 축12-b 가 깨져야 한다(이 테스트가 그 축을 본다는 증거).
+        old_pat = G.STATIC_PATTERNS
+        try:
+            G.STATIC_PATTERNS = []
+            check(not G.is_static_doc('_o118_sv_live_census.md'),
+                  '축12-f', '🔴 계열 패턴을 비우면 판정이 죽는다 ⇒ **축12-b 가 이 실패를 잡는다**')
+        finally:
+            G.STATIC_PATTERNS = old_pat
+        check(G.is_static_doc('_o118_sv_live_census.md'),
+              '축12-g', '원복 후 다시 정적(테스트가 전역 상태를 오염시키지 않는다)')
+
+        # ── 축13: 🆕🔴🔴 [O144-C 후-5] 축F — 세션 귀속 대괄호는 주체이고 대상이 아니다 ──
+        #   실측 오탐: `DEC-44` 의 종결 선언으로 뽑힌 줄이
+        #     "🔴🔴 **[2026-08-31 O127-B] 이 절은 승계됐다 — 현행 종결 조건 정본은 §30-I 다.**"
+        #   였다. `종결` 은 「종결 **조건**」 명사구이고 `O127` 은 **글쓴 세션**인데
+        #   게이트가 「DEC-44 가 O127 을 닫았다」로 읽어 무관한 행 3건을 미봉합으로 냈다.
+        #   🔴 오탐 축만 넣으면 재현율이 죽는다 ⇒ **양방향**을 단정한다.
+        print('\n축13 — 축F: 세션 귀속 대괄호 안의 라벨은 종결 대상이 아니다 (O144-C 후-5)')
+        real = '🔴🔴 **[2026-08-31 O127-B] 이 절은 승계됐다 — 현행 종결 조건 정본은 §30-I 다.**'
+        got = G.closed_targets([real])
+        check('O127' not in got,
+              '축13-a', '🟢 오탐 축 = 세션 귀속 `[2026-08-31 O127-B]` 의 `O127` 을 종결 대상으로 뽑지 않는다'
+                        ' · 실제 %r' % sorted(got))
+        check(got == {},
+              '축13-b', '그 줄은 아무것도 닫지 않는다(대상 0) · 실제 %d개' % len(got))
+        # 🔴 재현율 축 = 같은 대괄호가 있어도 **대괄호 밖 대상**은 그대로 잡아야 한다.
+        both = '**[2026-08-31 O127]** 이 결정으로 `O8` 이 종결된다'
+        got2 = G.closed_targets([both])
+        check('O8' in got2,
+              '축13-c', '🔴 재현율 축 = 대괄호 **밖**의 `O8` 은 그대로 종결 대상이다 · 실제 %r' % sorted(got2))
+        check('O127' not in got2,
+              '축13-d', '같은 줄에서 주체 `O127` 만 빠진다(주체와 대상을 함께 구별한다)')
+        # 🟢 일반 대괄호는 삼키지 않는다(과잉 제거 방지).
+        plain = '이 결정으로 `O8` 이 종결된다 [사유:원천 부재]'
+        check('O8' in G.closed_targets([plain]),
+              '축13-e', '🟢 오탐 축 = `[사유:…]` 같은 일반 대괄호는 축F 대상이 아니다')
+        check('O8' in G.closed_targets(['이 결정으로 `O8` 이 종결된다 [표 1]']),
+              '축13-f', '🟢 오탐 축 = `[표 1]` 도 축F 대상이 아니다')
+        # 🔴 음성: `SESSION_ATTR` 를 무력화하면 축13-a 가 깨져야 한다.
+        old_attr = G.SESSION_ATTR
+        try:
+            G.SESSION_ATTR = re.compile(r"(?!x)x")   # 아무것도 매칭하지 않는다
+            check('O127' in G.closed_targets([real]),
+                  '축13-g', '🔴 축F 를 무력화하면 오탐이 되살아난다 ⇒ **축13-a 가 이 실패를 잡는다**')
+        finally:
+            G.SESSION_ATTR = old_attr
+        check('O127' not in G.closed_targets([real]),
+              '축13-h', '원복 후 다시 제외(테스트가 전역 상태를 오염시키지 않는다)')
+        # 🔴 관측 축 = 제외분을 버리지 않는다.
+        obs = []
+        G.closed_targets([real], observed=obs)
+        check(any(a == 'F' for a, _, _ in obs),
+              '축13-i', '축F 제외가 관측 버킷에 남는다(`O111 ㉢`) · %d건' % len(obs))
     finally:
         G._md_files, G.EXCLUDE_PREFIX = old_files, old_excl
         import shutil

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 장문 정본 문서를 연번 조각 + 허브로 무변경 분할하고 유실·표 결손을 게이트로 검사한다.
+# Co-authored with CoCo
 """[2026-08-14 O82] 장문 정본 문서 → 연번 조각 + 허브 무변경 분할.
 
 문제: 정본 문서가 `read` 1회 한도를 넘겨 여러 세션 연속 미독이 된다.
@@ -698,6 +700,55 @@ def family_text(src, chunk_paths):
     return '\n'.join(buf)
 
 
+def truncated_table_violations(text):
+    """절단 표(파이프 결손) 검출 — 게이트5b 의 판정 함수.
+
+    🔴🔴 **왜 필요한가(실사고)**: O143 이 `99_NEXT_SESSION-028.md` 에서 헤더 1행 +
+       `|` 한 글자로 끝난 표를 발견했는데(D3), 게이트5 가 **원문 0 · 조각 0** 으로 통과시켰다.
+       원인 = `col_violations` 가 「`|`·`-`·`:` 를 지우면 빈 줄」을 **구분행으로 보고 continue** 한다.
+       `|` 한 글자도 그 조건을 만족하므로 **결손이 구분행으로 위장**된다.
+    🔴 판정식 = 구분행의 정의를 좁힌다. 정당한 구분행은 ㉠ `-` 를 포함하고 ㉡ `|` 가 2개 이상이다.
+       둘 중 하나라도 어기면 **퇴화행**(degenerate)이다.
+    🔴 두 번째 축 = **헤더만 있고 구분행·본문행이 둘 다 없는 표**(절단 표).
+       D3 은 이 두 축에 동시에 걸린다.
+    🟢 무변경 계약 준수 — 호출부의 판정은 절대건수가 아니라 **원문 대비 증가분**이다(게이트5 와 같은 규약).
+    """
+    bad = []
+    state = {'hdr_line': 0, 'hdr_cols': None, 'sep': False, 'body': False}
+
+    def flush():
+        # 헤더가 있는데 구분행·본문행이 둘 다 없으면 절단 표다
+        if state['hdr_cols'] is not None and not state['sep'] and not state['body']:
+            bad.append('%d행 헤더(%d열)만 있고 구분행·본문행이 없다 — 절단 표'
+                       % (state['hdr_line'], state['hdr_cols']))
+
+    def reset():
+        state.update(hdr_line=0, hdr_cols=None, sep=False, body=False)
+
+    for n, l in enumerate(text.split('\n'), 1):
+        s = l.strip()
+        if not s.startswith('|'):
+            flush()
+            reset()
+            continue
+        stripped = s.replace('|', '').replace('-', '').replace(':', '').strip()
+        if stripped == '':
+            # 내용이 없는 줄 — 정당한 구분행인가?
+            if '-' in s and s.count('|') >= 2:
+                state['sep'] = True
+            else:
+                bad.append('%d행 퇴화행 %r — 구분행이 아니다(파이프 %d개 · 하이픈 %s)'
+                           % (n, s[:20], s.count('|'), '있음' if '-' in s else '없음'))
+            continue
+        if state['hdr_cols'] is None:
+            state['hdr_line'] = n
+            state['hdr_cols'] = s.count('|') - 1 if s.endswith('|') else s.count('|')
+        else:
+            state['body'] = True
+    flush()
+    return bad
+
+
 def verify(src):
     fails = []
     hub = read_text(src)
@@ -823,6 +874,30 @@ def verify(src):
         print('게이트5 표 열수 결손: 조각 %d (원문 대조 불가 — 스냅샷 부재)' % len(chunk_bad))
         if chunk_bad:
             fails.append('열수 결손: ' + ' / '.join(chunk_bad[:10]))
+
+    # 게이트 5b — 절단 표(파이프 결손) · 🆕 [2026-09-08 O144 신설 · 후속과제 후-3]
+    #   🔴 판정 함수는 **모듈 레벨 `truncated_table_violations`** 다(음성 테스트가 직접 호출한다).
+    chunk_trunc = []
+    for p in paths:
+        for b in truncated_table_violations(read_text(p)):
+            chunk_trunc.append('%s:%s' % (os.path.basename(p), b))
+    if os.path.exists(snap):
+        orig_trunc = truncated_table_violations(read_text(snap))
+        print('게이트5b 절단 표(파이프 결손): 원문 %d · 조각 %d (증가 %d)'
+              % (len(orig_trunc), len(chunk_trunc), len(chunk_trunc) - len(orig_trunc)))
+        if len(chunk_trunc) > len(orig_trunc):
+            fails.append('분할이 표를 절단했다(증가 %d): %s'
+                         % (len(chunk_trunc) - len(orig_trunc), ' / '.join(chunk_trunc[:10])))
+        elif chunk_trunc:
+            print('  ⚠️ 원문에 이미 있던 절단 %d건이 조각에 그대로 있다(무변경 계약상 정상):'
+                  % len(chunk_trunc))
+            for b in chunk_trunc[:10]:
+                print('     ', b)
+    else:
+        print('게이트5b 절단 표(파이프 결손): 조각 %d (원문 대조 불가 — 스냅샷 부재)'
+              % len(chunk_trunc))
+        if chunk_trunc:
+            fails.append('절단 표: ' + ' / '.join(chunk_trunc[:10]))
 
     # 게이트 6 — 조각 상한(300줄 AND 40KB)
     big = []

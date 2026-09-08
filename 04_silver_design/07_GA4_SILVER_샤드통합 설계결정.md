@@ -228,11 +228,11 @@ dbt 샤드 통합은 **BRONZE→SILVER** 구간의 일이다. GOLD는 SILVER의 
 
 | GOLD 객체 | 의존 SILVER | 영향 |
 |---|---|---|
-| `FACT_GA_BEHAVIOR` | `GA4_EVENT` | 없음 — 샤드 UNION은 일별 행 stacking일 뿐, grain 유지 ✓ |
-| `DIM_GA_SOURCE` | `GA4_TRAFFIC_SOURCE` | 없음 ✓ |
-| `DIM_GA_EVENT` | `GA4_EVENT_DIM` | 없음 ✓ |
-| `DIM_DEVICE` | `GA4_DEVICE` | 없음 ✓ |
-| `DIM_MEMBER_IDENTITY` (IDENTITY_SK) | `GA4_IDENTITY` | 없음 ✓ |
+| `FACT_BIGQUERY_BEHAVIOR` | `BIGQUERY_EVENT` | 없음 — 샤드 UNION은 일별 행 stacking일 뿐, grain 유지 ✓ |
+| `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE` | 없음 ✓ |
+| `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM` | 없음 ✓ |
+| `DIM_DEVICE` | `BIGQUERY_DEVICE` | 없음 ✓ |
+| `DIM_MEMBER_IDENTITY` (IDENTITY_SK) | `BIGQUERY_IDENTITY` | 없음 ✓ |
 
 ### 단, 아래 전제가 지켜져야 함
 
@@ -262,7 +262,7 @@ BRONZE_BIGQUERY.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
   └────────────────────────────────────────────────────┘
         │
         ▼ (08_silver의존.md §2 기준)
-  GOLD: FACT_GA_BEHAVIOR, DIM_GA_SOURCE, DIM_GA_EVENT,
+  GOLD: FACT_BIGQUERY_BEHAVIOR, DIM_BIGQUERY_SOURCE, DIM_BIGQUERY_EVENT,
         DIM_DEVICE, DIM_MEMBER_IDENTITY
 ```
 
@@ -272,7 +272,7 @@ BRONZE_BIGQUERY.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
 
 - [ ] `ga4_union_shards` 매크로에서 `SELECT *` 제거 → 컬럼명 명시 버전으로 교체
 - [ ] 매크로 출력 컬럼 목록이 `SILVER_DDL_20260702.sql`의 GA4 테이블 정의와 일치하는지 대조
-- [ ] VARIANT 평탄화(`event_params` FLATTEN) 결과가 GOLD `FACT_GA_BEHAVIOR`의 grain(DATE_SK×IDENTITY_SK×GA_EVENT_SK×GA_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH)에 필요한 컬럼을 모두 생성하는지 확인
+- [ ] VARIANT 평탄화(`event_params` FLATTEN) 결과가 GOLD `FACT_BIGQUERY_BEHAVIOR`의 grain(DATE_SK×IDENTITY_SK×BIGQUERY_EVENT_SK×BIGQUERY_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH)에 필요한 컬럼을 모두 생성하는지 확인
 - [ ] `GA4_IDENTITY` 모델은 행매칭(CRM MEMBER_DK↔GA user_id) 실증 완료 전까지 비활성(08_silver의존.md §3 cross-source 조인 전제) — **[2026-07-10] G-1 조인키 유효 확인. 단 `user_id` 채움률 4.2% 실측 → 활성화 시 커버리지(식별/전체) 지표를 DQ로 노출하고, 회원단위 GA 지표에 "로그인 세션 한정" 주석 필수. 전체 샤드 입고 후 채움률 재측정.**
 - [ ] 컬럼 추가 시 매크로 + SILVER DDL + 필요 시 GOLD DDL 동시 변경 (GOLD 의존 고려)
 
@@ -306,7 +306,7 @@ BRONZE_BIGQUERY.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
 ### ⚠️ 추가로 갖춰야 깔끔한 아키텍처 (보수적)
 1. **materialization = `table`(전체 재계산)**: 세션-채움은 **세션 전체 이벤트**를 봐야 정확. `incremental`(72h 창)이면 세션이 창 경계로 잘려 CONFLICT/부분채움 오류 발생. → **세션→신원 매핑을 별도 `table` 모델**(`GA4_SESSION_IDENTITY`, 소량)로 분리해 full rebuild하고, `GA4_EVENT`(incremental 본체)가 `GA_SESSION_KEY`로 조인. (본체를 incremental로 두되 신원매핑만 table)
 2. **DQ 지표**: 채움 전/후 채움률(4.22%→X%)·`CONFLICT`율·`UNRESOLVED`율을 DMF/테스트로 노출. **커버리지 개선일 뿐 완전 해결 아님**(미로그인 pseudo_id 세션은 여전히 UNRESOLVED) → 회원단위 GA 지표에 커버리지 경고 유지.
-3. **하류 전파**: `FACT_GA_BEHAVIOR.IDENTITY_SK`는 `USER_ID_FILLED` 기반 `DIM_MEMBER_IDENTITY` 조인 + **`ID_RESOLUTION` 보존** → #81·신#32·33 파생지표가 신뢰도/커버리지로 필터 가능.
+3. **하류 전파**: `FACT_BIGQUERY_BEHAVIOR.IDENTITY_SK`는 `USER_ID_FILLED` 기반 `DIM_MEMBER_IDENTITY` 조인 + **`ID_RESOLUTION` 보존** → #81·신#32·33 파생지표가 신뢰도/커버리지로 필터 가능.
 4. **CONFLICT tie-break(옵션)**: 필요 시 CONFLICT 세션만 마지막 로그인 우선(`event_timestamp DESC, batch_ordering_id DESC`로 결정적 정렬) 채움 가능. 채택 시 `ID_RESOLUTION='SESSION_FILL_TIEBREAK'`로 구분(기본은 미채움).
 5. **PII/거버넌스**: `USER_ID_FILLED`도 회원번호(PII) → SILVER 마스킹 정책(`MASK_MEMBER_ID`) 적용 대상. 원본 `USER_ID`와 동일 등급.
 6. **세션 스코프 한정**(교차세션·device 전파 금지) — stale identity 위험 회피(보수적 기본).

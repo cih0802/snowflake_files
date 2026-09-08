@@ -176,11 +176,36 @@ def main():
     LL.CANON_GLOB[:] = saved
     check('복구 후 0건(오탐 방지)', C.split_denominator_check(), [])
 
+    print(' 축7 바이트 측정축 — stat 이 아니라 실제 읽은 바이트로 재는가 (O143 신설)')
+    # 🔴 왜 음성 테스트인가: 착수 1차 브리핑이 `31_코드군_매핑등재부` 를 stale 로 오탐했다
+    #   (「기재 14,891 ↔ 실측 14,896」 · 14,896 은 14,891 의 **16바이트 블록 반올림값**).
+    #   ⇒ 기재가 맞고 「실측」이 틀렸다. 원인 = `nbytes_of` 가 `os.path.getsize`(stat) 였고,
+    #     스테이지 마운트의 cold stat 이 반올림값을 냈다(읽으면 자기치유되어 사후 재현 불가).
+    #   🔴 오탐 자체보다 **오탐이 유도하는 조치**가 위험하다 — 세션이 기재를 14,896 으로
+    #     「교정」하면 정본이 거짓이 된다. ⇒ 측정축을 stat 비의존으로 **고정**한다.
+    #   🟢 판정식 = 16의 배수가 **아닌** 크기의 파일에서 반올림 없이 정확히 세는가.
+    import tempfile
+    import doc_type_gate as DT
+
+    with tempfile.NamedTemporaryFile(suffix='.md', delete=False) as fh:
+        # 4,000 B (16의 배수) + 5 B ⇒ 4,005 B. 블록 반올림되면 4,016 으로 잡힌다.
+        fh.write(b'x' * 4005)
+        probe = fh.name
+    try:
+        check('doc_census 정확 바이트', C.nbytes_of(probe), 4005)
+        check('doc_type_gate 정확 바이트', DT.nbytes_of(probe), 4005)
+        # 🔴 역방향 = 두 도구가 **같은 값**을 내야 한다(`R3-9 ㉡` 같은 것을 다르게 재지 마라).
+        check('두 도구 측정축 일치', C.nbytes_of(probe) == DT.nbytes_of(probe), True)
+        # 🔴 16의 배수가 아님을 단정 — 이 픽스처가 반올림을 실제로 구별한다는 증거.
+        check('픽스처가 반올림을 구별한다', 4005 % 16 != 0, True)
+    finally:
+        os.unlink(probe)
+
     print('')
     if FAILS:
         print('🔴 실패 %d건: %s' % (len(FAILS), ', '.join(FAILS)))
         return 1
-    print('✅ 전건 통과 — %d개 단정(축 = 재현율·정밀도·경계·바이트·미분할·분할분모)'
+    print('✅ 전건 통과 — %d개 단정(축 = 재현율·정밀도·경계·바이트·미분할·분할분모·측정축)'
           % COUNTS['checks'])
     return 0
 

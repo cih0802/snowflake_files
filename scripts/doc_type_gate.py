@@ -87,6 +87,17 @@ def read_text(p):
         return fh.read()
 
 
+def nbytes_of(p):
+    """파일의 **실제 바이트 수**(stat 비의존 · `R3-9 ㉡`).
+
+    🆕 [2026-09-08 O143] 정본 근거·경위 = `doc_census.nbytes_of` docstring.
+      🔴 `os.path.getsize` 를 쓰면 스테이지 마운트의 cold stat 이 **블록 반올림값**을 낼 수 있고,
+        이 게이트에서는 그것이 **여유 과소 → 불필요한 재균형 유도**로 이어진다.
+    """
+    with io.open(p, 'rb') as fh:
+        return len(fh.read())
+
+
 def index_logical():
     """인덱스는 분할돼 있으므로 허브+조각을 이어붙여 읽는다(등재표가 조각에 있다)."""
     from split_doc import collect_bodies, hub_outdir
@@ -217,7 +228,12 @@ def main():
         kind = d[0]
         paths = fam[name]
         # 허브는 자동 생성물이라 상한 판정에서 제외하지 않는다(read 대상이므로 함께 본다)
-        sizes = [(p, os.path.getsize(p)) for p in paths]
+        # 🆕 🔴🔴 [2026-09-08 O143] `os.path.getsize`(stat) 금지 — **읽은 바이트 수**로 잰다.
+        #   근거·경위 = `doc_census.nbytes_of` docstring(스테이지 마운트의 cold stat 이
+        #   16바이트 블록 반올림값을 낸 실관측 1건 · 지침 `R2-5` 가 이미 경고한 함정).
+        #   🔴 여기서 stat 을 쓰면 크기가 **과대**로 잡혀 여유가 과소가 되고,
+        #     상한 근처 문서에서 **불필요한 재균형**(파괴 가능 유지 연산)을 유도한다.
+        sizes = [(p, nbytes_of(p)) for p in paths]
         mx_p, mx = max(sizes, key=lambda x: x[1])
         for p, b in sizes:
             t = read_text(p)

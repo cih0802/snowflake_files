@@ -246,7 +246,7 @@ bronze_load_policy:
 > | 계층 | 명명 축 | 예 | 왜 |
 > |---|---|---|---|
 > | **BRONZE 스키마** | **원천 시스템**(어디서 왔나) | `BRONZE_BIGQUERY` · `BRONZE_CRM` | 한 스키마가 그 시스템에서 온 것을 **전부** 받는다. `BRONZE_BIGQUERY` 는 GA4 외 BigQuery 유입도 수용하려고 2026-08-14 에 개명됐다 |
-> | **SILVER·GOLD 객체** | **데이터 도메인**(무엇인가) | `GA4_EVENT` · `DIM_GA_EVENT` | 도메인은 전달 경로보다 **덜 자주 변한다**. GA4 export 경로가 Openflow·GA4 Data API·GCS 로 바뀌면 `BIGQUERY_EVENT` 는 거짓이 되지만 `GA4_EVENT` 는 계속 참이다 |
+> | **SILVER·GOLD 객체** | **데이터 도메인**(무엇인가) | `BIGQUERY_EVENT` · `DIM_BIGQUERY_EVENT` | 도메인은 전달 경로보다 **덜 자주 변한다**. BigQuery export 경로가 Openflow·BigQuery Data API·GCS 로 바뀌어도 일관성을 유지한다 |
 >
 > 🔴 **`BRONZE_CRM` ↔ `CRM_*` 가 같아 보이는 것은 우연이다** — CRM 은 시스템명과 도메인명이 같은 단어다.
 > GA4/BigQuery 가 그 둘이 갈라지는 유일한 사례이고, 그래서 이 규약이 여기서만 눈에 띈다.
@@ -294,13 +294,13 @@ silver_tables:
     - { id: CRM_SEND_RESULT, desc: "발송×채널 집계" }
     - { id: CRM_RELATION_ACTIVITY, desc: "결연활동(서신∪선물금)" }
     - { id: CRM_SPONSOR_RELATION, desc: "결연(아동). Q15 크로스워크" }
-  ga4:   # 6 — 🆕 [2026-08-19 O87] 기반 1 + 파생 5 (종전 5 → 6)
-    - { id: BIGQUERY_REFINED_DATA, desc: "🆕 BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 — GA4_* 5종의 유일 입력. event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합(종전 5모델이 각자 2.86억행 스캔 → 1회). grain = 이벤트 1행(USER_PSEUDO_ID×EVENT_TIMESTAMP×EVENT_NAME×EVENT_SEQ). 계보 승계 = SRC_TABLE·SRC_FILE_NAME·BRONZE_LOAD_TS. 🔴 원천 접두 예외(DEC-38) · 계층 내 파생 허용(DEC-37) · EVENT_DT 범위 제한 필수" }
-    - { id: GA4_EVENT, desc: "GA 이벤트 팩트 소스 → FGA. 고유 로직 = 세션 채움(session-fill)만. 🟢 [O87] PK 4번째 키 BATCH_ORDERING_ID → EVENT_SEQ(GA4-PK-1 해소 · 2024 상반기 17.10% 복구 · 손실 0). USER_ID VARCHAR(64) + ID_SCHEME(GA4-LEN-1 해소)" }
-    - { id: GA4_EVENT_DIM, desc: "GA 이벤트분류 → DIM_GA_EVENT. 전기간 DISTINCT(범위 제한 금지 — 값 집합이 정본)" }
-    - { id: GA4_TRAFFIC_SOURCE, desc: "GA 트래픽소스(session/last-click) → DIM_GA_SOURCE. 전기간 DISTINCT" }
-    - { id: GA4_DEVICE, desc: "GA 디바이스 → DIM_DEVICE(GA분). 전기간 DISTINCT. 실측 DEVICE_TYPE = M/PC/(unknown) · PLATFORM = WEB 단독(APP 0건)" }
-    - { id: GA4_IDENTITY, desc: "GA 신원(Q1) → 브리지 입력. 🟢 [O87] 종전 「S%→ONCE else FDRM」 2분기는 app-·이메일·'null' 을 FDRM 으로 밀어넣어 매칭 분모를 오염시켰다 ⇒ ID_SCHEME 6분류로 교체하고 비회원 체계는 MEMBER_TYPE·MBER_NO 를 NULL 로 둔다(R2-7)" }
+  bigquery:   # 6 — 기반 1 + 파생 5
+    - { id: BIGQUERY_REFINED_DATA, desc: "BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 — BIGQUERY_* 5종의 유일 입력. event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합(종전 5모델이 각자 2.86억행 스캔 → 1회). grain = 이벤트 1행(USER_PSEUDO_ID×EVENT_TIMESTAMP×EVENT_NAME×EVENT_SEQ). 계보 승계 = SRC_TABLE·SRC_FILE_NAME·BRONZE_LOAD_TS. 🔴 원천 접두 예외(DEC-38) · 계층 내 파생 허용(DEC-37) · EVENT_DT 범위 제한 필수" }
+    - { id: BIGQUERY_EVENT, desc: "BigQuery 이벤트 팩트 소스 → FBQ. 고유 로직 = 세션 채움(session-fill)만. 🟢 [O87] PK 4번째 키 BATCH_ORDERING_ID → EVENT_SEQ(GA4-PK-1 해소 · 2024 상반기 17.10% 복구 · 손실 0). USER_ID VARCHAR(64) + ID_SCHEME(GA4-LEN-1 해소)" }
+    - { id: BIGQUERY_EVENT_DIM, desc: "BigQuery 이벤트분류 → DIM_BIGQUERY_EVENT. 전기간 DISTINCT(범위 제한 금지 — 값 집합이 정본)" }
+    - { id: BIGQUERY_TRAFFIC_SOURCE, desc: "BigQuery 트래픽소스(session/last-click) → DIM_BIGQUERY_SOURCE. 전기간 DISTINCT" }
+    - { id: BIGQUERY_DEVICE, desc: "BigQuery 디바이스 → DIM_DEVICE(BigQuery분). 전기간 DISTINCT. 실측 DEVICE_TYPE = M/PC/(unknown) · PLATFORM = WEB 단독(APP 0건)" }
+    - { id: BIGQUERY_IDENTITY, desc: "BigQuery 신원(Q1) → 브리지 입력. 🟢 [O87] 종전 「S%→ONCE else FDRM」 2분기는 app-·이메일·'null' 을 FDRM 으로 밀어넣어 매칭 분모를 오염시켰다 ⇒ ID_SCHEME 6분류로 교체하고 비회원 체계는 MEMBER_TYPE·MBER_NO 를 NULL 로 둔다(R2-7)" }
   erp:   # 2
     - { id: ERP_BUDGET, desc: "예산 편성/추경/조정/집행 월 grain(wide→long) → FBD" }
     - { id: ERP_BUDGET_ITEM, desc: "예산과목 마스터(장/관/항/목/세목/세세목×재원) → DIM_BUDGET_ITEM" }
@@ -308,7 +308,7 @@ silver_tables:
     - { id: AGENCY_AD_CREATIVE, desc: "광고 소재/매체 차원(3소스 UNION distinct) → DIM_AD_CREATIVE" }
     - { id: AGENCY_AD_PERFORMANCE, desc: "광고성과 3소스 UNION(원천 1행 grain) → FAD" }
   bridge:   # 1 (교차소스 유일 예외)
-    - { id: IDENTITY_MEMBER_XREF, desc: "S-7 신원 브리지: GA4_IDENTITY ↔ CRM_MEMBER 자연키 해소 + MATCH_METHOD/CONFIDENCE. 미매칭 보존" }
+    - { id: IDENTITY_MEMBER_XREF, desc: "S-7 신원 브리지: BIGQUERY_IDENTITY ↔ CRM_MEMBER 자연키 해소 + MATCH_METHOD/CONFIDENCE. 미매칭 보존" }
 
 silver_notes:
   - "[결론4] 인입콜 타입 불일치(재송출 TEXT vs 영상 NUMBER) → TRY_TO_NUMBER 캐스팅 후 AGENCY_AD_PERFORMANCE UNION."

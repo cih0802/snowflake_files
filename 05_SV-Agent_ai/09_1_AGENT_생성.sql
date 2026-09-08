@@ -19,7 +19,7 @@
 --
 -- ▶ 실행 순서
 --   02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql → dbt(BRONZE→GOLD)
---   → 05_1~05_9_SV_DDL_*.sql(실적 SV 9종) → 21_ML_SERVING_뷰_DDL.sql → 22_ML_SV_DDL.sql(ML SV)
+--   → 05_1~05_9_SV_DDL_*.sql(실적 SV 전종) → 21_ML_SERVING_뷰_DDL.sql → 22_ML_SV_DDL.sql(ML SV)
 --   → **본 파일** → 09_2_AGENT_버전업.sql
 --   ⚠ SV 가 없으면 Agent 는 만들어지지만 질의 시 도구가 깨진다(tool_resources 가 SV 를 참조).
 --     ⇒ 09_2 [0] 이 **참조 SV 실재를 사전검증**하므로 SV 배포를 건너뛰면 그 단계에서 막힌다.
