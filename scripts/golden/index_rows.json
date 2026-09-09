@@ -55,6 +55,13 @@
    "reason": "O151 원장 대시보드 행 추가",
    "rows_after": 1069,
    "rows_before": 1043
+  },
+  {
+   "date": "2026-09-09 04:59:12",
+   "label": "UNLABELED",
+   "reason": "현업 1차 회신 반영 및 이슈 문서 최신화",
+   "rows_after": 1069,
+   "rows_before": 1069
   }
  ],
  "note": "원장 표 행 키 기준선 — C6 처방(착수표 ㉑) · O82-B 신설",
