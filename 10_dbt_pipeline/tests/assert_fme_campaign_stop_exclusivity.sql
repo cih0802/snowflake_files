@@ -14,21 +14,21 @@
 {{ config(severity='error') }}
 
 select 'code5_missing_flag' as violation, COUNT(*) as cnt
-from {{ ref('FACT_MEMBER_EVENT') }}
+from {{ ref('FACT_MEMBER_LIFECYCLE') }}
 where DVLP_DIV_CD = '5' and COALESCE(CAMPAIGN_STOP_CNT, -1) <> 1
 group by 1 having COUNT(*) > 0
 
 union all
 
 select 'non_code5_has_flag', COUNT(*)
-from {{ ref('FACT_MEMBER_EVENT') }}
+from {{ ref('FACT_MEMBER_LIFECYCLE') }}
 where COALESCE(DVLP_DIV_CD, '') <> '5' and COALESCE(CAMPAIGN_STOP_CNT, -1) <> 0
 group by 1 having COUNT(*) > 0
 
 union all
 
 select 'double_counted_stop', COUNT(*)
-from {{ ref('FACT_MEMBER_EVENT') }}
+from {{ ref('FACT_MEMBER_LIFECYCLE') }}
 where CAMPAIGN_STOP_CNT = 1 and COALESCE(STOP_CNT, 0) <> 0
 group by 1 having COUNT(*) > 0
 
@@ -37,7 +37,7 @@ union all
 select 'campaign_axis_regressed', COUNT(*)
 from (
     select 1 as x
-    from {{ ref('FACT_MEMBER_EVENT') }}
+    from {{ ref('FACT_MEMBER_LIFECYCLE') }}
     where DVLP_DIV_CD = '5'
     group by 1
     having COUNT_IF(COALESCE(CAMPAIGN_SK, 0) = 0) * 2 > COUNT(*)

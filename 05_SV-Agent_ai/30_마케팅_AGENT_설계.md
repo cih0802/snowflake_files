@@ -25,7 +25,7 @@ END-METADATA -->
 > **사용자 결정 4건**
 > 1. 라우팅 범위 = **요건 5섹션 전량 = 6 SV**(회원 도메인 SV 3종을 `AGENT_MEMBER` 와 공유)
 > 2. 이번 세션 범위 = **설계 문서까지** — `CREATE AGENT` 는 승인 후 별도(배포 전 정지)
-> 3. `analyst_ad` 는 **양쪽 보유**(중복 허용) ⇒ **`AGENT_OVERALL` 은 무변경**
+> 3. `analyst_ad` 는 **양쪽 보유**(중복 허용) ⇒ **`AGENT_EXECUTIVE` 은 무변경**
 > 4. ML 도구 드리프트는 **이 세션에서 손대지 않고 등재하지 않는다**(사용자가 직접 배포 예정 · 정본이 맞다는 전제)
 
 ---
@@ -72,8 +72,8 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 | 축 | 실측 |
 |---|---|
 | Semantic View | **9종**(`SV_AD`·`SV_BUDGET`·`SV_DEV_ACHIEVEMENT`·`SV_EVENT_PARTICIPATION`·`SV_MEMBER_COHORT`·`SV_MEMBER_EVENT`·`SV_MEMBER_FEE`·`SV_MEMBER_MONTHLY`·`SV_SERVICE`) · owner 전건 `GN_DW_ADMIN` |
-| Agent | **2종** `AGENT_MEMBER`·`AGENT_OVERALL` · owner `GN_DW_ADMIN` · **마케팅 전용 Agent 0종** |
-| `AGENT_OVERALL` 라이브 | **`VERSION$3` `is_default=true`** · 도구 **4종**(`analyst_budget`·`analyst_ad`·`analyst_member_monthly`·`analyst_service`) |
+| Agent | **2종** `AGENT_MEMBER`·`AGENT_EXECUTIVE` · owner `GN_DW_ADMIN` · **마케팅 전용 Agent 0종** |
+| `AGENT_EXECUTIVE` 라이브 | **`VERSION$3` `is_default=true`** · 도구 **4종**(`analyst_budget`·`analyst_ad`·`analyst_member_monthly`·`analyst_service`) |
 | `SV_BIGQUERY`·`SV_ML_*` | **부재**(위 9종에 없다) |
 | 요건 필드 수 | 마케팅 보고서 **73필드**(`09` 산출물 · 측정일 2026-08-13) |
 
@@ -263,11 +263,11 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 
 ## 4. Agent 도구 구성 (6종)
 
-| 도구명 | Semantic View | 담당 섹션 | `AGENT_MEMBER`·`AGENT_OVERALL` 와 중복 |
+| 도구명 | Semantic View | 담당 섹션 | `AGENT_MEMBER`·`AGENT_EXECUTIVE` 와 중복 |
 |---|---|---|---|
-| `analyst_ad` | `GN_DW.SERVING.SV_AD` | 3 | `AGENT_OVERALL` 와 **중복 보유**(사용자 결정) |
+| `analyst_ad` | `GN_DW.SERVING.SV_AD` | 3 | `AGENT_EXECUTIVE` 와 **중복 보유**(사용자 결정) |
 | `analyst_dev_achievement` | `GN_DW.SERVING.SV_DEV_ACHIEVEMENT` | 1 | `AGENT_MEMBER` 와 중복 |
-| `analyst_budget` | `GN_DW.SERVING.SV_BUDGET` | 2 | `AGENT_OVERALL` 와 중복 |
+| `analyst_budget` | `GN_DW.SERVING.SV_BUDGET` | 2 | `AGENT_EXECUTIVE` 와 중복 |
 | `analyst_member_event` | `GN_DW.SERVING.SV_MEMBER_EVENT` | 4 · 1(일별 실적) | `AGENT_MEMBER` 와 중복 |
 | `analyst_member_cohort` | `GN_DW.SERVING.SV_MEMBER_COHORT` | 5-1 | `AGENT_MEMBER` 와 중복 |
 | `analyst_member_fee` | `GN_DW.SERVING.SV_MEMBER_FEE` | 5-2 | `AGENT_MEMBER` 와 중복 |

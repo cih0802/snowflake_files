@@ -24,11 +24,11 @@
 
 with fact_side as (
     select count(*) as N, SUM(GOAL_CNT) as G
-    from {{ ref('FACT_TARGET_DEV') }}
+    from {{ ref('FACT_TARGET_MEMBER_DEV') }}
 ),
 view_side as (
     select count(*) as N, SUM(GOAL_CNT) as G
-    from {{ ref('FACT_DEV_ACHIEVEMENT') }}
+    from {{ ref('FACT_MEMBER_DEV_ACHIEVEMENT') }}
     where HAS_GOAL_ROW
 )
 select

@@ -133,7 +133,7 @@
 
 ---
 
-## 0-XXXX. 🔴🔴 [2026-09-09 O151 필독 — **여기서 시작한다.** §0-WWWW 는 승계됐다]
+## 0-XXXX. ~~🔴🔴 [2026-09-09 O151 필독 — **여기서 시작한다.** §0-WWWW 는 승계됐다]~~ → §0-YYYY 로 승계
 
 ### ▣ XXXX1 🟢 O151 이 한 일
 1. **[P1/정제] 현업 1차 회신 확정 정제 룰 dbt 모델 반영**
@@ -156,5 +156,32 @@
 - 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
 - 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
 - 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+_Co-authored with CoCo_
+
+---
+
+## 0-YYYY. 🔴🔴 [2026-09-09 O152 필독 — **여기서 시작한다.** §0-XXXX 는 승계됐다]
+
+### ▣ YYYY1 🟢 O152 가 한 일
+1. **Cortex Agent 3종 스펙 OPS 스테이지 배포 및 버전업**
+   - [0] SV 26건 전건 라이브 실재 확인(부재 0).
+   - [0-B] `COPY FILES` 3종 → OPS 스테이지 동기화, `AGENT_OVERALL` ORPHAN 정리.
+   - [2] live 소진(EXECUTIVE committed) → [3] `ADD VERSION FROM` 3종 성공.
+   - 검증: MEMBER=V$5(T11) · EXECUTIVE=V$3(T8) · MARKETING=V$5(T7), 전건 is_default=true.
+   - GRANT(OWNERSHIP+USAGE×3) 보존 확인.
+2. **비판적 자기검토 및 2대 결함 자진 시정**
+   - ㉠ `agent_object_ref_gate` FAIL 적발 ➔ 스펙 2종 내 레거시 `FACT_MEMBER_SPONSOR_BIZ`를 `FACT_MEMBER_SPONSORSHIP_SPAN`으로 정합화 후 **MEMBER=V$6, MARKETING=V$6 재발행**(MEMBER 11·EXECUTIVE 8·MARKETING 7 도구수 100% 일치).
+   - ㉡ `test_o125_layer_census` stale 적발 ➔ DDL 개명(`FACT_MESSAGE_DISPATCH` 38) 및 컬럼 증분(`DIM_MEMBER_ACQUISITION` 39) 반영으로 **단위/음성 테스트 31종 전건 PASS(rc=0) 달성**.
+   - ㉢ 트랜스크립트 전수 감사(위험신호 6종 0건 통과).
+
+### ▣ YYYY2 🔴 다음 세션 열린 작업
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 귀속 규칙 (현업 결정 전 배선 금지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 도출 규칙 (기획실 협의 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행·조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1/2/5**: 회원마스터 전량 입고, CRM_BIZ_TARGET(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링 (`rm` 금지).
+- 🟠 **[P3/Docs] 착수표 ④/⑪/⑱**: 기존 미결 항목(문서50 §O68 B1, 이관 원문 영구불가, O76 잔여).
 
 _Co-authored with CoCo_

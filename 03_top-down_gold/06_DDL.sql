@@ -205,7 +205,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
 --   · MEMBER_TYPE: 회원 등록계통 구분 — SILVER CRM_MEMBER.MEMBER_TYPE 전파: FDRM=정기회원(TM_MM_FDRM_MBER_INFO) / ONCE=일시회원(TM_MM_ONCE_MBER_INFO) — 모집단 규모는 문서10 §26. 🔴 일시회원은 회원상태(MM010)·가입경로(MM014) 개념이 원천에 없다 — 상태 기반 분포·이탈률·예측 모집단은 F
 --     DRM 으로 한정할 것. ⚠️ MEMBER_TYPE_NAME(개인/기업/단체, MM018)은 이 컬럼의 라벨이 아니다 — 완전히 다른 축이며 코드는 MBER_DIV_CD 다
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_STATUS_HISTORY (
     MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '불변 회원키(조인용)',  -- SCD2 DK; [실측06-30]VARCHAR(10)
     -- 🔴 [O27 2026-08-04 정본 동기화] 본 블록 = _archive/O27_DIM_MEMBER_ALTER.sql §2·§3·§4 와 일치.
@@ -297,7 +297,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
 --   · DW_UPDATE_TS: 최종 갱신 시각(공통감사). ⚠️원천 변경 시각이 아니라 DW 적재 시각이다.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id(공통감사). 재현·감사 추적용.
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_CURRENT (
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     MEMBER_SK           NUMBER(38,0)    NOT NULL COMMENT '대리키 (PK)',
     MEMBER_DK           VARCHAR(10)     NOT NULL PRIMARY KEY COMMENT '불변 비즈니스 식별자',
     MEMBER_TYPE         VARCHAR         COMMENT '회원 **등록계통** 구분. 코드id:MM010.',
@@ -993,7 +993,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
 --   · PARENT_CAMPAIGN_NAME_AT_EVENT: 상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 사건 시점 동결값. 중단원천 행은 NULL
 --   · PROMO_METHOD_NAME_AT_EVENT: 홍보방법명(CM008 라벨) — 사건 시점 동결값. 중단원천 행은 NULL
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_LIFECYCLE (
     DATE_SK             NUMBER(8,0)     NOT NULL COMMENT '사건일',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '상태전이 대상 회원 (불변키)',     -- ※비강제 FK→DIM_MEMBER
     EVENT_TYPE          VARCHAR         NOT NULL COMMENT 'EVENT_TYPE.',
@@ -1085,7 +1085,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
 --   · GOAL_CNT: 회원개발목표 (CRM TM_CM_MBER_DVLP_GOAL). 월 목표(건). 연 목표는 별도 저장 지표가 아니라 이 값의 연 합계다(정본 공#3)
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_DEV (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_MEMBER_DEV (
     MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '월 conform 키 YYYYMM.', -- GRAIN / ※비강제 FK→DIM_DATE
     ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '대리키',
     DEV_TYPE            VARCHAR         NOT NULL COMMENT '개발구분(#121 conform) (#121).',
@@ -1103,7 +1103,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_DEV (
 --   · MONTH_KEY: 목표월 YYYYMM (FK→DIM_DATE, 월 conform)
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_BIZ (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_PROJECT (
     MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '월 conform 키 YYYYMM.', -- GRAIN / ※비강제 FK→DIM_DATE
     ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG)',
     SPONSORSHIP_SK      NUMBER(38,0)    NOT NULL COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
@@ -1137,7 +1137,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_BIZ (
 --   · SEND_RESULT_GROUP: 축B 코드군 ID — 코드사전 MS283 이 정의한 4종(공통·알림톡·SMS·MMS). 🟢**리터럴 지정이 아니라 조인 결과에서 얻는다**: 4그룹에 걸쳐 코드값 중복이 없어 값 자체가 그룹을 결정한다(실측). 사전에 값이 추가되면 게이트가 잡는다
 --   · SEND_RESULT_NAME: 축B 라벨 (CRM_CODE 조인). 사전 초과값은 NULL 유지 + dbt warn 관측(DEC-17-B · 센티넬 창작 금지)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SERVICE_EVENT (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     DATE_SK                     NUMBER(8,0)     NOT NULL COMMENT '발송일',
     MEMBER_DK                   VARCHAR(10)     NOT NULL COMMENT '발송 대상 회원 (불변키)',        -- ※비강제 FK→DIM_MEMBER
     SERVICE_SK                  NUMBER(38,0)    NOT NULL COMMENT '발송 서비스 유형 (FK→DIM_SERVICE)',
@@ -1404,7 +1404,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE (
 --   · EVENT_KIND_NAME: 원천 계열 판별 **라벨** — 현업 응답·분해용 정본 축. 값 2종: 일반행사 · 캠페인행사. DIM_EVENT.EVENT_KIND_NAME 과 어휘 conform. 🔴차원축과 달리 **(미매핑) 사각지대가 없다**(전건 채움). 🔴이 라벨은 업무 분류가 아니라 **참여 행이 어느 원천에서 왔는지**를 뜻한다 — 온·오프라인 구분이 아니다. ⚠️코드사전에
 --      대응 그룹이 없는 **파생 라벨**이므로 CRM_CODE 조인 대상이 아니다
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_PARTICIPATION (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EVENT_ATTENDANCE (
     DATE_SK             NUMBER(8,0)     NOT NULL COMMENT '참여일 YYYYMMDD (FK→DIM_DATE)',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '참여 회원 (불변키)',              -- ※비강제 FK→DIM_MEMBER
     EVENT_SK            NUMBER(38,0)    NOT NULL COMMENT '행사 (FK→DIM_EVENT)',
@@ -1750,7 +1750,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
 --   · HAS_ACTUAL: 실적 발생 여부. FALSE 는 목표만 편성된 월(미래월 포함)이다 — 실적 0 으로 읽되 「미달」로 단정하지 말 것
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_DEV_ACHIEVEMENT (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT (
     MONTH_KEY         NUMBER(6,0)     NOT NULL COMMENT '월 conform 키 YYYYMM.',
     CAL_YEAR          NUMBER(4,0)     COMMENT 'FLOOR(MONTH_KEY/100) — 연도',
     CAL_MONTH         NUMBER(2,0)     COMMENT 'MOD(MONTH_KEY,100) — 월',
@@ -1811,7 +1811,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_DEV_ACHIEVEMENT (
 --   · ACQ_CPR_DIV_CD: 대표캠페인의 법인구분 코드(CM019) — 동결값. 라벨=ACQ_CPR_DIV_NM
 --   · ACQ_PARENT_CAMPAIGN_NAME: 대표캠페인의 상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨) — 동결값
 -- ============================================================================
-CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ (
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN (
     MEMBER_DK         VARCHAR(10)     NOT NULL COMMENT '회원 (불변키). ※비강제 FK→DIM_MEMBER',
     SPNSR_NO          VARCHAR(9)      NOT NULL COMMENT '후원번호(Q15).',
     SPNSR_BSNS_NO     NUMBER(19,0)    NOT NULL COMMENT '후원사업번호(회원별 약정 일련번호, Q15).',

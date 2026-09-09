@@ -41,14 +41,14 @@ USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
 
 /* =====================================================================================
-   10. SV_MEMBER_SPONSOR_BIZ (member/marketing Agent) — base FACT_MEMBER_SPONSOR_BIZ
+   10. SV_MEMBER_SPONSOR_BIZ (member/marketing Agent) — base FACT_MEMBER_SPONSORSHIP_SPAN
        grain = 회원 × 후원약정(SPNSR_BSNS_NO)
    ===================================================================================== */
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
   TABLES (
-    fmsb AS GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ
+    fmsb AS GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN
       WITH SYNONYMS ('회원 후원약정', '캠페인별 활동회원', '후원사업별 활동회원')
-      COMMENT = '회원×후원약정 팩트. grain = MEMBER_DK × SPNSR_BSNS_NO. "캠페인별/후원사업별 활동회원" 질의 전용 — 전체 활동회원수 정본은 SV_MEMBER_MONTHLY다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN(활동구간)+CRM_MEMBER_DEV(캠페인귀속) · GOLD=FACT_MEMBER_SPONSOR_BIZ.',
+      COMMENT = '회원×후원약정 팩트. grain = MEMBER_DK × SPNSR_BSNS_NO. "캠페인별/후원사업별 활동회원" 질의 전용 — 전체 활동회원수 정본은 SV_MEMBER_MONTHLY다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN(활동구간)+CRM_MEMBER_DEV(캠페인귀속) · GOLD=FACT_MEMBER_SPONSORSHIP_SPAN.',
     sponsorship AS GN_DW.GOLD.DIM_SPONSORSHIP
       PRIMARY KEY (SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업 차원')
@@ -77,7 +77,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규사건이 있으면 그 신규사건 ②없으면 최초사건(동률 0 확인). 사건 자체가 없는 약정은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
     -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSOR_BIZ.ACQ_*`
     --   동결값으로 전환. 대표사건의 캠페인 마스터가 이후 정정돼도 이 약정의 카테고리는 바뀌지 않는다.
-    fmsb.CAMPAIGN_TYPE AS fmsb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '대표캠페인 카테고리 라벨(MM294). 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체)',
+    fmsb.ACQ_CMPGN_CTGR_NM AS fmsb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '대표캠페인 카테고리 라벨(MM294). 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체)',
     fmsb.IS_MULTI_CAMPAIGN AS fmsb.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중캠페인 여부') COMMENT = '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 캠페인이 2개 이상이었는지. 대표캠페인 채택 규칙과는 별개. 🟢실측상 극소수이며 최대 2개다(규모는 이슈원장·04 §0.9 참조)',
     -- ── 활동 구간(원시 as-of 축) ─────────────────────────────────────────────
     fmsb.START_MONTH_KEY  AS fmsb.START_MONTH_KEY WITH SYNONYMS ('활동개시월') COMMENT = '활동 개시 월키 YYYYMM. 특정월 as-of 활동 판정 시 이 축과 DSCNTC_MONTH_KEY 를 함께 WHERE 절로 비교한다(AI_SQL_GENERATION 참조)',

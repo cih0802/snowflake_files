@@ -105,7 +105,7 @@ instructions:
     \  1:1 매핑 · `30_output_share/05_지표GOLD매핑.md` 지표별 추적)를 안내한다. 컬럼 단위 상세 매핑은 SV 메타데이터에 없다.\n- **적재 기간·커버리지·규모를\
     \ 단정하지 않는다** — 데이터는 계속 적재되므로 「언제부터 언제까지」·「몇 %」·\n  「총 몇 건」은 반드시 도구로 조회해 확인한 뒤 조회 시점 기준임을 명시한다.\n-\
     \ \U0001F534\U0001F534 **[2026-08-21 신설] `analyst_member_sponsor_biz`는 「캠페인별/후원사업별 활동회원 수」 전용 도구다.**\n\
-    \  원천 경로 = CRM(eCRM) → GN_DW.BRONZE_CRM → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV) →\n  GOLD.FACT_MEMBER_SPONSOR_BIZ.\
+    \  원천 경로 = CRM(eCRM) → GN_DW.BRONZE_CRM → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV) →\n  GOLD.FACT_MEMBER_SPONSORSHIP_SPAN.\
     \ 이 도구는 「전환회원」(개발/중단 사건, analyst_member_event)과는 다른\n  질문이다 — 「지금 후원을 유지 중인 회원」을 캠페인·후원사업으로 쪼갠다. 캠페인·후원사업별\
     \ 합계는\n  다중후원 정상현상으로 서로 겹칠 수 있다(합계가 「전체」보다 클 수 있음 — SUM 하지 않는다).\n"
   sample_questions:
@@ -210,7 +210,7 @@ tools:
     type: cortex_analyst_text_to_sql
     name: analyst_member_sponsor_biz
     description: '회원×후원약정 팩트(FMSB, grain=회원×후원사업번호 SPNSR_BSNS_NO). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV)
-      → GOLD.FACT_MEMBER_SPONSOR_BIZ. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제
+      → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제
       없이 약정(SPNSR_BSNS_NO) grain 에서 캠페인이 거의 1:1(다중은 극소수·최대 2, 실측)이라 대표캠페인 규칙으로 분해 가능하다. 활성 지표: 지금 시점 활동회원수(CURRENTLY_ACTIVE_MEMBERS)·지금
       시점 활동 약정금액·약정건수·고유회원수. 차원: 후원사업(명·정기일시구분·약칭카테고리)·대표캠페인(명·카테고리)·다중캠페인여부·활동개시월·중단월. "캠페인별/후원사업별 활동회원"
       류 질문에 사용. 🔴🔴 **이 도구는 analyst_member_event(전환·개발/중단 사건)와 다른 질문이다** — 「지금 후원을 유지 중인 회원 수」이며 개발·전환

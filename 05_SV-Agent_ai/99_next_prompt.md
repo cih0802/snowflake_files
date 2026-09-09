@@ -18,7 +18,7 @@ END-METADATA -->
 > | 항목 | 종전(07-22) | **현행(07-29 실측)** |
 > |---|---|---|
 > | 배포 SV | 5종 | **6종** — `SV_AD` 배포 완료(순서9-J/K, `REBRDC_DEV_UNIT_PRICE` 포함) |
-> | `AGENT_OVERALL` 도구 | 3종(BUDGET·MEMBER_MONTHLY·SERVICE) | **4종** — `analyst_ad` 추가 |
+> | `AGENT_EXECUTIVE` 도구 | 3종(BUDGET·MEMBER_MONTHLY·SERVICE) | **4종** — `analyst_ad` 추가 |
 > | Agent 버전 | VERSION$1 | **VERSION$2 = default**(기간 기본창 규칙), VERSION$1 롤백용 보존 |
 > | 마케팅 Agent 트리거 | SV_AD·SV_BIGQUERY 둘 다 미배포 | **SV_AD 는 이미 배포** → 잔여는 `SV_BIGQUERY`(G-5 BigQuery 전기간 입고) 뿐 |
 > | 계정 | cs94293 | **kd03246** |
@@ -88,7 +88,7 @@ END-METADATA -->
 | Agent (FQN) | 도구(SV) | 도메인 |
 |---|---|---|
 | `GN_DW.SERVING.AGENT_MEMBER` | MEMBER_MONTHLY·MEMBER_EVENT·SERVICE·EVENT_PARTICIPATION | 월 회비/납부율/미납·개발중단·발송·행사 |
-| `GN_DW.SERVING.AGENT_OVERALL` | BUDGET(기본)·**AD**·MEMBER_MONTHLY·SERVICE | 예산 편성/집행/집행율·**광고 실적**·전사 요약 |
+| `GN_DW.SERVING.AGENT_EXECUTIVE` | BUDGET(기본)·**AD**·MEMBER_MONTHLY·SERVICE | 예산 편성/집행/집행율·**광고 실적**·전사 요약 |
 
 - 두 Agent **VERSION$2 = default**(기간 기본창 규칙 포함), VERSION$1 은 `is_default=false` 로 보존(롤백 가능).
 - **SV 6종** 배포·`GRANT REFERENCES, SELECT` → GN_DW_ANALYST·GN_DW_VIEWER·GN_DW_SERVICE:

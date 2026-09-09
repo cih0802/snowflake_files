@@ -172,7 +172,7 @@ END-METADATA -->
 
 ## 5. SV_AD (base = **GOLD.WIDE_AD_COMBINED** [2026-08-10 O54] 재배선 · 종전 SERVING.FACT_AD_COMBINED, 일×광고실적) — 4 metric [**Phase 1** ✅ 2026-07-28 배포]
 
-> overall Agent(2026-07-28 배정 변경: 마케팅 Agent → **AGENT_OVERALL** analyst_ad). §3 광고 CTR·개발단가(공7~10).
+> overall Agent(2026-07-28 배정 변경: 마케팅 Agent → **AGENT_EXECUTIVE** analyst_ad). §3 광고 CTR·개발단가(공7~10).
 > **2026-07-28 정정**: FAD "스캐폴드" 전제 **부분 해제**. BRONZE→GOLD 확장으로 measure·degenerate 축 실적재 → **공7·9·10 P1 승격**.
 > 핵심 반전 2건:
 > 1. **개발단가 분모가 FMM이 아니다** — `FACT_AD_DIGITAL.CRM_DEV_CNT`(249,390)·`FACT_AD_BROADCAST.DVLP_CNT`(96,321)가 **광고 팩트 내부에 동반 적재** → FAD×FMM 크로스팩트 conform **불필요**. (Snowflake SV는 metric 식의 cross-table 참조를 금지하므로 크로스팩트 개발단가는 애초에 SV로 구현 불가였음 → `SERVING.FACT_AD_COMBINED` helper로 해소. 04 §6.0)

@@ -7,7 +7,7 @@
 --   → SQL 파일에 스펙 사본이 0개 = **drift 구조적 불가**(교훈 P23 재발 차단).
 --
 --   스펙 정본 = `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml`
---              `cortex_project/agents/AGENT_OVERALL/agent_spec.yaml`
+--              `cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml`
 --              `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`   🆕 2026-08-18 O84
 --
 -- ▶ 🔴 파일 레이아웃 규약 (실측으로 확정 — 문서 예시가 틀렸다)
@@ -79,14 +79,14 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_SPONSOR_RISK'),
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST'),
     ('AGENT_MEMBER',    'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
-    ('AGENT_OVERALL',   'SV_BUDGET'),
-    ('AGENT_OVERALL',   'SV_AD'),
-    ('AGENT_OVERALL',   'SV_MEMBER_MONTHLY'),
-    ('AGENT_OVERALL',   'SV_SERVICE'),
-    ('AGENT_OVERALL',   'SV_ML_DVLP_FORECAST'),
-    ('AGENT_OVERALL',   'SV_ML_LTV_FORECAST'),
-    ('AGENT_OVERALL',   'SV_ML_LTV_SCORE'),
-    ('AGENT_OVERALL',   'SV_ML_FEATURE_IMPORTANCE'),
+    ('AGENT_EXECUTIVE',   'SV_BUDGET'),
+    ('AGENT_EXECUTIVE',   'SV_AD'),
+    ('AGENT_EXECUTIVE',   'SV_MEMBER_MONTHLY'),
+    ('AGENT_EXECUTIVE',   'SV_SERVICE'),
+    ('AGENT_EXECUTIVE',   'SV_ML_DVLP_FORECAST'),
+    ('AGENT_EXECUTIVE',   'SV_ML_LTV_FORECAST'),
+    ('AGENT_EXECUTIVE',   'SV_ML_LTV_SCORE'),
+    ('AGENT_EXECUTIVE',   'SV_ML_FEATURE_IMPORTANCE'),
     ('AGENT_MARKETING', 'SV_AD'),
     ('AGENT_MARKETING', 'SV_DEV_ACHIEVEMENT'),
     ('AGENT_MARKETING', 'SV_BUDGET'),
@@ -138,8 +138,8 @@ USE ROLE GN_DW_ADMIN;
 COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER/
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MEMBER/'
   PATTERN = '.*agent_spec[.]yaml';
-COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_OVERALL/
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_OVERALL/'
+COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_EXECUTIVE/'
   PATTERN = '.*agent_spec[.]yaml';
 COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING/
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MARKETING/'
@@ -215,7 +215,7 @@ $$;
 --     live 존재 판별 = spec_file_path 가 `…/versions/live/` 인 행("name" IS NULL)
 -- ============================================================================
 SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
 SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 --   2026-08-18 실측: MEMBER=VERSION$3(도구 7) · OVERALL=VERSION$3(도구 4) · MARKETING=VERSION$1(빈 스펙)
 --   🔴 라이브 도구 수가 정본 yaml(10·8·6)보다 적다 = **O74 의 버전업이 이 계정에 미이행**이다.
@@ -229,7 +229,7 @@ SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 --   🟠 [2026-08-18 O85-C2] 이 LIST 는 이제 **`[0-C]` 대조와 중복**이다(참고용으로 남긴다).
 --      배포 판정은 `[0-C]` 의 `verdict` 로 한다 — 이 LIST 결과를 근거로 쓰지 말 것.
 LIST 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/';
---   기대: AGENT_MEMBER/agent_spec.yaml · AGENT_OVERALL/agent_spec.yaml · AGENT_MARKETING/agent_spec.yaml
+--   기대: AGENT_MEMBER/agent_spec.yaml · AGENT_EXECUTIVE/agent_spec.yaml · AGENT_MARKETING/agent_spec.yaml
 --   ※ 워크스페이스에 방금 추가·수정한 파일도 versions/live 에 즉시 반영된다(실측).
 --   🟢 **[2026-08-18 O85-C2 실측] `versions/head` 와 `versions/live` 는 구별되지 않는다.**
 --      같은 파일을 두 경로로 `LIST` 하면 **size·md5·시각이 완전히 동일**하고, `head` 로 조회해도
@@ -259,13 +259,13 @@ BEGIN
     res := res || 'AGENT_MEMBER=no_live ';
   END IF;
 
-  SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
+  SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
   LET o INT := (SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID())) WHERE "name" IS NULL);
   IF (o > 0) THEN
-    ALTER AGENT GN_DW.SERVING.AGENT_OVERALL COMMIT COMMENT = 'live 소진(버전업 직전 스냅샷)';
-    res := res || 'AGENT_OVERALL=committed ';
+    ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE COMMIT COMMENT = 'live 소진(버전업 직전 스냅샷)';
+    res := res || 'AGENT_EXECUTIVE=committed ';
   ELSE
-    res := res || 'AGENT_OVERALL=no_live ';
+    res := res || 'AGENT_EXECUTIVE=no_live ';
   END IF;
 
   SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
@@ -305,9 +305,9 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
   COMMENT = '굿네이버스 회원 분석 Agent. SV 11종:ML 3 포함. 마케팅 보고서 5분석구분의 정본 Agent.';
 
--- ---- [3-B] AGENT_OVERALL ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
-ALTER AGENT GN_DW.SERVING.AGENT_OVERALL
-  ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_OVERALL'
+-- ---- [3-B] AGENT_EXECUTIVE ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
+  ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
   COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).';
 
 -- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
@@ -331,7 +331,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
 --     다음 버전업 때 [2] 가 한 번 더 COMMIT 하며 불필요한 버전이 늘어난다.
 -- ============================================================================
 -- ALTER AGENT GN_DW.SERVING.AGENT_MEMBER    ADD LIVE VERSION FROM LAST;
--- ALTER AGENT GN_DW.SERVING.AGENT_OVERALL   ADD LIVE VERSION FROM LAST;
+-- ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE   ADD LIVE VERSION FROM LAST;
 -- ALTER AGENT GN_DW.SERVING.AGENT_MARKETING ADD LIVE VERSION FROM LAST;
 
 
@@ -339,7 +339,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
 -- [5] 검증
 -- ============================================================================
 SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
 SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 --   기대: 최신 VERSION$N 이 is_default=true · agent_spec 에 tools/instructions 반영 ·
 --         이전 버전은 is_default=false 로 보존(롤백 가능)
@@ -347,20 +347,20 @@ SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 -- 🟢 [2026-08-18 O84 신설] **도구·문항 수를 눈으로 세지 말고 기계로 센다.**
 --    종전 검증은 `DESCRIBE AGENT` 출력을 사람이 훑는 방식이었고, 그래서 라이브 7종 ↔ 정본 10종
 --    격차가 오래 발견되지 않았다. 아래는 SHOW 직후 RESULT_SCAN 으로 세는 방식이다.
-SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
 SELECT "name" AS VER, "is_default" AS IS_DEF,
        REGEXP_COUNT("agent_spec", 'tool_spec')  AS TOOLS,
        REGEXP_COUNT("agent_spec", '"question"') AS QUESTIONS,
        REGEXP_COUNT("agent_spec", 'SV_ML_')     AS ML_REFS
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 ORDER BY VER;
---   기대(AGENT_OVERALL 버전업 후): 최신 버전 TOOLS=8 · QUESTIONS=10 · ML_REFS≥4
+--   기대(AGENT_EXECUTIVE 버전업 후): 최신 버전 TOOLS=8 · QUESTIONS=10 · ML_REFS≥4
 --   같은 패턴으로 MEMBER(11·31) · MARKETING(7·11 · ML_REFS=0) 를 확인한다.
 --   🔴 [2026-08-21] MEMBER·MARKETING 값은 SV_MEMBER_SPONSOR_BIZ 신설분 반영(종전 10·10 · 6·10 은 stale).
 
 -- grant·SI 가 보존됐는지 (이 경로는 파괴하지 않아야 정상)
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;    -- OWNERSHIP + USAGE×3 = 4행
-SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL;   -- 동일 4행
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE;   -- 동일 4행
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MARKETING; -- 동일 4행
 --   판정: created_on 이 09_1 실행 시각 그대로면 보존된 것이다(재부여되지 않았다는 증거).
 USE ROLE ACCOUNTADMIN;
@@ -382,10 +382,10 @@ SHOW AGENTS IN SCHEMA GN_DW.SERVING;
 --     🔴 `ADD VERSION FROM` 이 자동으로 default 를 옮기므로, 문제가 생기면 즉시 되돌릴
 --        직전 버전 번호를 **버전업 전에 적어 둘 것**(2026-08-18 기준 3종 모두 VERSION$3·$3·$1).
 -- ============================================================================
--- SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_OVERALL;   -- 되돌릴 VERSION$N 확인
--- ALTER AGENT GN_DW.SERVING.AGENT_OVERALL   SET DEFAULT_VERSION = 'VERSION$3';
+-- SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;   -- 되돌릴 VERSION$N 확인
+-- ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE   SET DEFAULT_VERSION = 'VERSION$3';
 -- ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET DEFAULT_VERSION = 'VERSION$1';
--- ALTER AGENT GN_DW.SERVING.AGENT_OVERALL   SET DEFAULT_VERSION = LAST;   -- 최신으로 복귀
+-- ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE   SET DEFAULT_VERSION = LAST;   -- 최신으로 복귀
 
 
 -- ============================================================================

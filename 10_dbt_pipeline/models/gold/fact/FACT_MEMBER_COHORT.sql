@@ -44,7 +44,7 @@
 ) }}
 
 with fme as (
-    select * from {{ ref('FACT_MEMBER_EVENT') }}
+    select * from {{ ref('FACT_MEMBER_LIFECYCLE') }}
 ),
 
 -- 관측 기준일 = 데이터가 실제로 담고 있는 최종 사건일. 🔴 CURRENT_DATE 를 쓰지 않는다 —

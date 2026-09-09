@@ -250,12 +250,12 @@ ML 이 테스트 단계라 **테이블이 `CREATE OR REPLACE` 로 갈릴 수 있
 |---|---|--:|---|
 | SERVING 뷰 | `ML_MEMBER_RISK_V`·`ML_SPONSOR_RISK_V`·`ML_DVLP_FORECAST_V`·`ML_FEE_FORECAST_V`·`ML_LTV_FORECAST_V`·`ML_LTV_SCORE_V`·`ML_FEATURE_IMPORTANCE_V` | **7** | `21_ML_SERVING_뷰_DDL.sql` |
 | Semantic View | `SV_ML_MEMBER_RISK`·`SV_ML_SPONSOR_RISK`·`SV_ML_DVLP_FORECAST`·`SV_ML_FEE_FORECAST`·`SV_ML_LTV_FORECAST`·`SV_ML_LTV_SCORE`·`SV_ML_FEATURE_IMPORTANCE` | **7** | `22_ML_SV_DDL.sql` |
-| Agent 도구 | `AGENT_MEMBER` +3(회원·후원건 risk · 회비 예측) · `AGENT_OVERALL` +4(개발·LTV 예측 2 · 요인) | **7** | `cortex_project/agents/*/agent_spec.yaml` |
+| Agent 도구 | `AGENT_MEMBER` +3(회원·후원건 risk · 회비 예측) · `AGENT_EXECUTIVE` +4(개발·LTV 예측 2 · 요인) | **7** | `cortex_project/agents/*/agent_spec.yaml` |
 
 **검증(전부 실측)**
 * 뷰 7종 **전건 grain 유일** — 특히 `ML_MEMBER_RISK_V` 74,949행 = 74,949명(1:1).
 * SV 7종 **소비 역할(`GN_DW_ANALYST`) 세션으로 `SEMANTIC_VIEW()` 조회 성공**(`P126` — 소유자 세션으로 판정하지 않았다).
-* Agent 라이브 대조 = `AGENT_MEMBER` `VERSION$6`(default) 도구 **10** · `AGENT_OVERALL` 도구 **8** · `SV_ML_*` 참조 3+4.
+* Agent 라이브 대조 = `AGENT_MEMBER` `VERSION$6`(default) 도구 **10** · `AGENT_EXECUTIVE` 도구 **8** · `SV_ML_*` 참조 3+4.
 * Agent GRANT **전건 보존**(`created_on` 2026-08-04 불변) ⇒ `ADD VERSION FROM` 경로가 권한을 파괴하지 않음을 재확인.
 
 **🟢 권한 설계가 §6-4 보다 단순해졌다 — `GN_DW.ML` 에 그랜트가 한 건도 필요 없다.**

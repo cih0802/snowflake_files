@@ -53,7 +53,7 @@
 with orphan as (
 
     select distinct f.MEMBER_DK
-    from {{ ref('FACT_EVENT_PARTICIPATION') }} f
+    from {{ ref('FACT_EVENT_ATTENDANCE') }} f
     left join {{ ref('DIM_MEMBER') }} d
            on d.MEMBER_DK = f.MEMBER_DK
     where f.MEMBER_DK is not null

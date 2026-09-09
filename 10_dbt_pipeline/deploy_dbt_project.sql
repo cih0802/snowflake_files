@@ -14,11 +14,14 @@
 -- ============================================================================
 -- [GN_DW] Snowflake Native dbt Project 배포 및 운영 런북 (정본)
 --
--- 📌 핵심 운영 원칙:
+-- 📌 핵심 운영 원칙 & RBAC 권한 분리:
 --   1. 프로젝트 위치: GN_DW.OPS.DW_PIPELINE (운영/툴링 스키마)
---   2. 실행 역할 / 웨어하우스: GN_DW_ADMIN / GN_DW_DEV_WH(개발·검증) · GN_DW_ETL_WH(배치)
---   3. 구조 소유권: SILVER/GOLD 테이블 DDL은 SQL DDL이 소유하며, dbt는 데이터 정제만 담당(DDL 보존).
---   4. 실행 순서: parse ➔ compile ➔ snapshot (SCD2 누적) ➔ build (SILVER/GOLD 정제+테스트)
+--   2. 역할 분리 (최소 권한 원칙):
+--      - 배포/관리/스케줄링: GN_DW_ADMIN (DBT PROJECT 소유자, DDL/Task 관리)
+--      - 일상 실행/정제/검증: GN_DW_ENGINEER (파이프라인 실행자, DML/Test 수행)
+--   3. 웨어하우스: GN_DW_DEV_WH(개발·검증) · GN_DW_ETL_WH(배치)
+--   4. 구조 소유권: SILVER/GOLD 테이블 DDL은 SQL DDL이 소유하며, dbt는 데이터 정제만 담당(DDL 보존).
+--   5. 실행 순서: parse ➔ compile ➔ snapshot (SCD2 누적) ➔ build (SILVER/GOLD 정제+테스트)
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -32,7 +35,7 @@ SHOW DBT PROJECTS IN SCHEMA GN_DW.OPS;
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 1 — DBT PROJECT 배포 (최초 배포 또는 새 버전 추가)
+-- Step 1 — DBT PROJECT 배포 및 버전 관리 (관리자 역할: GN_DW_ADMIN)
 -- ─────────────────────────────────────────────────────────────────────────────
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -47,11 +50,11 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION V_20260909_SNAPSHOT
+  ADD VERSION V_20260909_RENAME
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SNAPSHOT(SCD2)→SILVER→GOLD. [20260909] dbt snapshot 파이프라인(11종) 및 Point-in-Time 조인 배선.';
+  COMMENT = 'BRONZE→SNAPSHOT(SCD2)→SILVER→GOLD. [20260909] Gold 9개 모델 직관적 비즈니스 용어 리네임 및 전수 동기화.';
 
 -- (3) 배포된 버전 상태 확인
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
@@ -59,8 +62,11 @@ DESCRIBE DBT PROJECT GN_DW.OPS.DW_PIPELINE;
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 2 — 문법 및 컴파일 검증 (데이터 변경 없음, 안전)
+-- Step 2 — 문법 및 컴파일 검증 (엔지니어 역할: GN_DW_ENGINEER)
 -- ─────────────────────────────────────────────────────────────────────────────
+USE ROLE GN_DW_ENGINEER;
+USE WAREHOUSE GN_DW_DEV_WH;
+
 -- 모델, 매크로, 스냅샷, yml 문법 검증
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
 
@@ -69,9 +75,11 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 3 — 파이프라인 실행 (Snapshot ➔ Build)
+-- Step 3 — 파이프라인 실행 (엔지니어 역할: GN_DW_ENGINEER)
 -- ─────────────────────────────────────────────────────────────────────────────
 -- ⚠️ 실행 순서: 스냅샷을 먼저 실행하여 원천 마스터의 최신 변경분을 보존한 후, build를 수행합니다.
+USE ROLE GN_DW_ENGINEER;
+USE WAREHOUSE GN_DW_DEV_WH;
 
 -- [3-1] 마스터 스냅샷 실행 (BRONZE 마스터 SCD Type 2 이력 누적)
 -- 전체 스냅샷 실행:
@@ -92,11 +100,13 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 4 — 일일 스케줄 자동화 DAG (Snowflake TASK)
+-- Step 4 — 일일 스케줄 자동화 DAG (관리자 역할: GN_DW_ADMIN)
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 📌 일일 배치 순서:
 --   1. [선행 루트 Task (05:30 KST)]: dbt snapshot 실행 (원천 마스터 이력 누적)
 --   2. [후속 자식 Task (완료 즉시)]: dbt build 실행 (SILVER/GOLD 전체 정제 및 테스트)
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
 
 -- (A) 선행 루트 태스크 (스냅샷):
 -- CREATE OR ALTER TASK GN_DW.OPS.TASK_DW_SNAPSHOT_DAILY
@@ -125,9 +135,15 @@ ALTER TASK IF EXISTS GN_DW.OPS.TASK_DW_BUILD_DAILY SUSPEND;
 
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- Step 5 — 하류 SERVING 계층 및 Cortex Agent 연계 (참고)
+-- Step 5 — 하류 SERVING 계층 및 Cortex Agent 연계 (관리자 역할: GN_DW_ADMIN)
 -- ─────────────────────────────────────────────────────────────────────────────
--- dbt build 완료 후 Semantic View 및 Agent를 갱신할 때 아래 파일을 순서대로 실행합니다:
---   1. 05_SV-Agent_ai/05_1~05_9_SV_DDL_*.sql  ➔ SEMANTIC VIEW 배포
---   2. 05_SV-Agent_ai/09_1_AGENT_생성.sql     ➔ Cortex Agent 객체 생성
---   3. 05_SV-Agent_ai/09_2_AGENT_버전업.sql   ➔ Cortex Agent 스펙(Instruction/도구) 배포
+-- 📌 01_환경 Role.md 원칙: GN_DW DB·전 스키마·테이블/뷰·SV/Agent 소유 = GN_DW_ADMIN 소유
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+
+-- [5-1] Semantic View 배포 및 비즈니스 모델링
+-- 05_SV-Agent_ai/05_1~05_10_SV_DDL_*.sql  ➔ SEMANTIC VIEW 10종 배포 및 검증
+
+-- [5-2] Cortex Agent 객체 생성 및 서비스 스펙 등록
+-- 05_SV-Agent_ai/09_1_AGENT_생성.sql     ➔ Cortex Agent 객체 생성
+-- 05_SV-Agent_ai/09_2_AGENT_버전업.sql   ➔ Cortex Agent 스펙(Instruction/도구) 배포

@@ -20,5 +20,5 @@ select
     f.DEV_TYPE, f.GOAL_CNT, f.DW_SOURCE_SYSTEM,
     o.CORP as ORG_CORP, o.DIVISION as ORG_DIVISION,
     o.DEPARTMENT as ORG_DEPARTMENT, o.TEAM as ORG_TEAM
-from {{ ref('FACT_TARGET_DEV') }} f
+from {{ ref('FACT_TARGET_MEMBER_DEV') }} f
 left join {{ ref('DIM_ORG') }} o on f.ORG_SK = o.ORG_SK

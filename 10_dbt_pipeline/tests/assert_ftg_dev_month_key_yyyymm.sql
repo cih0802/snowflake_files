@@ -27,7 +27,7 @@
 select
     MONTH_KEY,
     count(*) as VIOLATING_ROWS
-from {{ ref('FACT_TARGET_DEV') }}
+from {{ ref('FACT_TARGET_MEMBER_DEV') }}
 where MONTH_KEY <> 0
   and (
         MONTH_KEY not between {{ lo }} and {{ hi }}

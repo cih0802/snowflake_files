@@ -24,7 +24,7 @@ select
     c.CAMPAIGN_BK,
     c.BRAND      as CAMPAIGN_BRAND,
     c.CAMPAIGN_NAME
-from {{ ref('FACT_TARGET_BIZ') }} f
+from {{ ref('FACT_TARGET_PROJECT') }} f
 left join {{ ref('DIM_ORG') }}         o on f.ORG_SK = o.ORG_SK
 left join {{ ref('DIM_SPONSORSHIP') }} s on f.SPONSORSHIP_SK = s.SPONSORSHIP_SK
 left join {{ ref('DIM_CAMPAIGN') }}    c on f.CAMPAIGN_SK = c.CAMPAIGN_SK

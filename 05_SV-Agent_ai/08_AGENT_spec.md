@@ -4,8 +4,8 @@ doc_role: 5단계 — Cortex Agent 스펙(회원·overall) 정본 + 배포/CoWor
 project: GN_DW (굿네이버스)
 created: 2026-07-22
 depends_on: 05_1~05_9_SV_DDL_*.sql(SV 9종 배포 · [2026-08-10 O55] 종전 「5 SV」는 stale), 06_검증쿼리_VQR.md(VQR·custom instruction 6), 07_평가셋_eval.md(회귀 평가셋)
-scope: Phase-1 배포 2 Agent (AGENT_MEMBER·AGENT_OVERALL) / 마케팅 Agent = Phase-2
-workspace_specs: cortex_project/agents/AGENT_MEMBER/agent_spec.yaml · cortex_project/agents/AGENT_OVERALL/agent_spec.yaml   # 2026-08-05 O38 경로 정정
+scope: Phase-1 배포 2 Agent (AGENT_MEMBER·AGENT_EXECUTIVE) / 마케팅 Agent = Phase-2
+workspace_specs: cortex_project/agents/AGENT_MEMBER/agent_spec.yaml · cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml   # 2026-08-05 O38 경로 정정
 deploy_by: 사용자(GN_DW_ADMIN) — 에이전트는 스펙 작성·읽기전용 테스트만
 END-METADATA -->
 
@@ -32,7 +32,7 @@ END-METADATA -->
 > (예: 「10대 미만이 왜 많은가」는 system 에 답이 있어 문항을 뺐다).
 > ⚠️ **왜 상한이 필요한가**: 문항은 세션마다 축이 늘 때 함께 늘어나 **한 방향으로만 증가**한다 —
 > 실측(2026-08-28) = `AGENT_MEMBER` **34**(O84 가 30→10 으로 줄인 뒤 다시 34 로 복귀) ·
-> `AGENT_MARKETING` **11** · `AGENT_OVERALL` **10** ⇒ MEMBER 만 상한 초과였고 **34 → 12** 로 축약했다.
+> `AGENT_MARKETING` **11** · `AGENT_EXECUTIVE` **10** ⇒ MEMBER 만 상한 초과였고 **34 → 12** 로 축약했다.
 > 🟢 축약은 **정보를 버리는 것이 아니다** — 빠진 축은 도구 description·instruction 에 그대로 있고
 > 추천질문은 **탐색 진입점**일 뿐이다(현업이 15개 넘는 목록을 훑지 않는다는 것이 상한의 근거다).
 > ⬜ **게이트 미비** — 이 상한을 검사하는 게이트는 아직 없다(`R3-9` 축 = 게이트가 보지 않는 축).
@@ -51,7 +51,7 @@ END-METADATA -->
 | Cortex Search | Phase-2 유예(EVENT_NAME 3,786·BUDGET_ITEM_NAME 2,041 후보만 식별) |
 
 - **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅 전용 Agent는 SV_BIGQUERY 1일 샤드로 유예(01 §2 게이트).
-> ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_OVERALL에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_BIGQUERY만 Phase-2 잔류.
+> ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_EXECUTIVE에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_BIGQUERY만 Phase-2 잔류.
 - **왜 다중 SV 라우팅**: 한 Agent가 여러 SV를 `cortex_analyst_text_to_sql` 도구로 라우팅(공식 지원). grain이 다른 SV는 **질의마다 단일 SV로 분해**(cross-fact 계산 금지, R1).
 
 ---
@@ -61,7 +61,7 @@ END-METADATA -->
 | Agent (FQN) | 도구(SV) | 질문 도메인 |
 |---|---|---|
 | **`GN_DW.SERVING.AGENT_MEMBER`** (회원) | `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_member_event`→SV_MEMBER_EVENT · `analyst_service`→SV_SERVICE · `analyst_event_participation`→SV_EVENT_PARTICIPATION | 월 회비/납부율/미납, 개발·중단(월/일/주), 발송, 행사 참여 |
-| **`GN_DW.SERVING.AGENT_OVERALL`** (overall) | `analyst_budget`→SV_BUDGET(기본) · **`analyst_ad`→SV_AD** · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), **광고비·CTR·CVR·개발단가·매체/기기별**, 전사 회비·발송 요약(선택 라우팅) |
+| **`GN_DW.SERVING.AGENT_EXECUTIVE`** (overall) | `analyst_budget`→SV_BUDGET(기본) · **`analyst_ad`→SV_AD** · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), **광고비·CTR·CVR·개발단가·매체/기기별**, 전사 회비·발송 요약(선택 라우팅) |
 
 > 도구 이름은 두 Agent에서 동일 SV라도 각 Agent 스펙 내 `tool_resources` 키와 1:1 매칭. overall의 MONTHLY/SERVICE는 **전사 요약용 보조 도구**(질의당 단일 SV 분해).
 
@@ -73,7 +73,7 @@ END-METADATA -->
 - 문자/메일 발송수, 발송 고유회원수, 채널·서비스유형·발송상태별 → `analyst_service`
 - 행사/이벤트 참여자수·참여건수·고유 참여회원수, 행사명/종류/구분별 → `analyst_event_participation`
 
-**AGENT_OVERALL**
+**AGENT_EXECUTIVE**
 - 예산 편성/집행/집행율, 세세목·예산구분·월별 예산 → `analyst_budget` (기본)
 - 전사 회비/납입/개발·중단 월 실적 요약 → `analyst_member_monthly`
 - 전사 발송 규모 요약 → `analyst_service`
@@ -98,7 +98,7 @@ END-METADATA -->
 
 ## 3. Agent 스펙 (정본 — workspace YAML)
 
-> 🔴 **정본 파일(2026-08-05 O38 정정)**: `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` · `cortex_project/agents/AGENT_OVERALL/agent_spec.yaml`.
+> 🔴 **정본 파일(2026-08-05 O38 정정)**: `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` · `cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml`.
 > 종전 이 자리에 적혀 있던 `cortex_project/AGENT_*.agent.yaml`(루트)은 **정본이 아니며 `_archive/` 로 이관됐다** — MEMBER 쪽은 도구 4개·샘플 8개의 **O33 이전 판본**이었다(정본은 도구 6개·샘플 19개).
 > 정본이 두 경로로 선언돼 서로 모순이던 상태였고, 실제 배포가 `09_2` 의 `ADD VERSION FROM <디렉터리>` 로 `agents/<AGENT>/agent_spec.yaml` 을 읽으므로 **그쪽이 정본**이다. 아래는 동기화된 사본.
 
@@ -112,7 +112,7 @@ END-METADATA -->
 
 > 🔴 **[2026-07-29 발견] 본 절 YAML 사본은 구버전이다 — 정본 대조 필수.**
 > 아래 사본은 **순서9-F/9-G 개정 이전** 판본이다(장문 서술형 `response`·`orchestration`, `analyst_*` 4종 라우팅 문장형). 실제 정본 `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` 및 배포본(**VERSION$5**, 2026-08-05 O38)은 **컴팩트 판본 + `*_NAME` 라벨 차원 + 원천(provenance) 규칙 + 기본 창 규칙 + 도구 6개**(`analyst_member_cohort`·`analyst_dev_achievement` 포함)를 포함한다.
-> 즉 §3.2(AGENT_OVERALL)는 동기화 상태이나 **§3.1만 뒤처져 있다**. 이는 이번 세션 변경분이 아니라 **누적 부채**이며, 전면 재작성은 범위가 커 별도 작업으로 분리했다(리스크: 사본을 근거로 재배포하면 라벨화·원천 규칙이 **소실**된다).
+> 즉 §3.2(AGENT_EXECUTIVE)는 동기화 상태이나 **§3.1만 뒤처져 있다**. 이는 이번 세션 변경분이 아니라 **누적 부채**이며, 전면 재작성은 범위가 커 별도 작업으로 분리했다(리스크: 사본을 근거로 재배포하면 라벨화·원천 규칙이 **소실**된다).
 > **당분간 AGENT_MEMBER 스펙의 근거는 반드시 `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` 을 직접 읽을 것.** 후속 착수 시 `semantic_studio cortex_agent_read`(source=workspace) 결과로 본 절을 통째로 교체한다.
 
 ```yaml
@@ -192,7 +192,7 @@ tool_resources:
     semantic_view: GN_DW.SERVING.SV_EVENT_PARTICIPATION
 ```
 
-### 3.2 AGENT_OVERALL
+### 3.2 AGENT_EXECUTIVE
 
 ```yaml
 models:
@@ -204,7 +204,7 @@ instructions:
     - 배포된 활성 지표만 산출. 미적재분(연 편성예산, 집행추정/모금성비용, 조직별 예산, 캠페인별/소재별 광고 분해, 예산 기반 ROI(신9~11), 사업목표 대비 등)은 창작 금지 → "데이터 적재 후(Phase-2) 제공 예정" 안내.
   <!-- 🔴 [2026-08-05 O38] 이 사본은 구버전이다. 배포본(VERSION$4)에는 **"목표는 두 가지"** 절이 추가돼
        사업목표(FTG_B 미입고 → 산출 불가)와 **회원개발 목표(산출 가능 · AGENT_MEMBER 소관)** 를 분리한다.
-       이 사본만 보고 "목표는 전부 미적재"로 읽지 말 것 — 정본은 cortex_project/agents/AGENT_OVERALL/agent_spec.yaml -->
+       이 사본만 보고 "목표는 전부 미적재"로 읽지 말 것 — 정본은 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml -->
     - SV 간 교차계산(cross-fact) 금지 — 전사 요약도 질의마다 단일 SV로 분해.
     - 광고 지표 주의: 노출·클릭·CTR·CVR·CRM개발건·개발단가는 **디지털(AD_SOURCE_TYPE=DIGITAL) 전용**, 인바운드콜·방송횟수·전환콜·방송개발건은 **방송(VIDEO/REBROADCAST) 전용**. 혼합집계 금지. 광고비만 전체 합산 허용.
     - 개발단가(공7)는 **2026-05까지만** 산출 가능. 2026-06부터 원천이 개발건수 대신 단가를 직접 제공하는 포맷으로 바뀌어 산출 불가 → 최신월 기준 질문은 2026-05까지로 한정하고 사유를 명시.
@@ -278,7 +278,7 @@ tool_resources:
 > **원인**: 순서9-G에서 기간 스코프를 SV `AI_SQL_GENERATION`으로 이전할 때 발동 조건을 **"기간·그룹이 모두 없을 때"** 로 좁혔다. 이번 질문은 **그룹(예산구분)이 지정**되어 조건에서 벗어나 ROLLUP이 발동하지 않았고, 기간 기본값을 줄 규칙이 어디에도 없었다.
 > **변경(두 Agent 공통, instruction 2줄 *제자리 교체*)**
 > - `orchestration`: "…SQL 스코프는 SV의 AI_SQL_GENERATION 담당이므로 여기서 반복하지 않**음**" → "…반복하지 않**되, 기간 미지정 시 기본 창을 질의에 명시해 전달**한다". `"전체·전기간"` 명시 시 미적용.
->   - **AGENT_OVERALL**: SV 그레인 기준(월=최근 12개월 월별, 일=최근 7일 일별)
+>   - **AGENT_EXECUTIVE**: SV 그레인 기준(월=최근 12개월 월별, 일=최근 7일 일별)
 >   - **AGENT_MEMBER**: **도구명 직접 명시**(`analyst_member_monthly`=최근 12개월 월별, 그 외 3종=최근 7일 일별) — MEMBER는 월 그레인 1종+일 그레인 3종이 섞여 그레인 추론 오류 위험이 커 결정론적으로 고정
 > - `response`: "총계 요약 먼저 + **월별** 추이" → "**기본 창** 총계 먼저 + **기간별** 추이", 되묻기 선택지에 **'전체 기간'** 추가(암묵적 필터링 혼란 방지)
 >
@@ -349,9 +349,9 @@ USE ROLE GN_DW_ADMIN;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_VIEWER;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_SERVICE;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_ANALYST;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_VIEWER;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_SERVICE;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_ANALYST;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_VIEWER;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_SERVICE;
 ```
 > 소비 역할은 이미 GOLD SELECT + SV REFERENCES,SELECT + ANALYTICS_WH USAGE 보유(02·05 §6). Cortex 사용권(SNOWFLAKE.CORTEX_USER)은 PUBLIC 상속.
 
@@ -359,7 +359,7 @@ GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_SERVICE;
 > 계정에 명시적 SI object(`SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT`) 존재(02 §F) → **advanced 경로**.
 ```sql
 ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_DW.SERVING.AGENT_MEMBER;
-ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_DW.SERVING.AGENT_OVERALL;
+ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
 -- object USAGE는 02 §F에서 소비 3역할에 이미 부여. CoWork URL: https://ai.snowflake.com
 ```
 
@@ -367,7 +367,7 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 > 위 `ADD AGENT` 는 **이미 등록된 agent에 재실행하면 에러**다. 재실행 가능한 배포 스크립트로 만들려면:
 > - `ADD AGENT IF NOT EXISTS` → **syntax error**(미지원). 실측 확인.
 > - 제거 구문은 `REMOVE AGENT` 가 **아니라 `DROP AGENT`** 다 — `ALTER SNOWFLAKE INTELLIGENCE <si> DROP AGENT <fqn>` (정본: docs *Configure the visibility of agents in Snowflake CoWork*).
-> - → **해법**: `SHOW AGENTS IN SNOWFLAKE INTELLIGENCE <si>` 로 사전 확인 후 조건 분기. 구현체 = `09` [4] `EXECUTE IMMEDIATE` 블록(실행 검증: 기등록 상태 재실행 → `AGENT_MEMBER=skipped AGENT_OVERALL=skipped`).
+> - → **해법**: `SHOW AGENTS IN SNOWFLAKE INTELLIGENCE <si>` 로 사전 확인 후 조건 분기. 구현체 = `09` [4] `EXECUTE IMMEDIATE` 블록(실행 검증: 기등록 상태 재실행 → `AGENT_MEMBER=skipped AGENT_EXECUTIVE=skipped`).
 >
 > ⚠ **가드의 전제를 반드시 실측할 것**: `SHOW AGENTS IN SNOWFLAKE INTELLIGENCE` 결과가 `SHOW AGENTS IN ACCOUNT` 와 **우연히 동일**할 수 있다(본 계정은 2건이 정확히 일치했다). 그 경우 "계정 전체 목록"인지 "SI 멤버십"인지 구분되지 않아 **가드가 항상 skip 하는 무력 상태**일 수 있다. → `DROP AGENT` 직후 행이 사라지고(0) 재-`ADD` 시 복귀(1)함을 확인해 **멤버십 반영임을 검증 완료**. 유사 가드를 만들 때 동일 검증을 거칠 것. → 신규 교훈 **P26**.
 >
@@ -398,7 +398,7 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 | **S5ⓖ** | 발송 성공률 | (비활성) | "SUCCESS/FAIL 미적재→Phase-2" 안내 | — |
 | 🆕 **G-개발건수** | 전체 개발 건수는? | member_event 또는 member_monthly / TOTAL_DEV_CNT | **2,291,878** — 3,594,843(개발원천 행수)으로 답하면 **FAIL**(감액·후원중단 계상 · O24 56.86% 과대) | — |
 
-### 5.2 AGENT_OVERALL (07 §5)
+### 5.2 AGENT_EXECUTIVE (07 §5)
 | # | 질문 | 기대 라우팅 | 기대값 | 정정 근거 |
 |---|---|---|---|---|
 | B1 | 전체 편성예산 | budget / TOTAL_PLAN_BUDGET | **547,614,848,306** | 🔴[2026-08-10 O57] 종전 503,070,876,000 은 **2026년 단독 적재 시점** 값(2024·2025 추가 적재로 변동 · 결함 아님) |

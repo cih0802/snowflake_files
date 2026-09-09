@@ -212,7 +212,7 @@ fme_rollup as (
         IFF(SUM(DEV_CNT) > 0, 1, 0)                    as DEV_MEMBERS,  -- 월×회원 grain: 개발발생 1/0 (다월 SUM 시 distinct 회원수)
         SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
         IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS
-    from {{ ref('FACT_MEMBER_EVENT') }}
+    from {{ ref('FACT_MEMBER_LIFECYCLE') }}
     group by MONTH_KEY, MEMBER_DK
 ),
 

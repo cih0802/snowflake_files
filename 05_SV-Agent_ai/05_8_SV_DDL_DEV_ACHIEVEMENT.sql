@@ -85,16 +85,16 @@ USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
 
 /* =====================================================================================
-   8. SV_DEV_ACHIEVEMENT (member Agent) — base FACT_DEV_ACHIEVEMENT(월×조직×개발구분)
+   8. SV_DEV_ACHIEVEMENT (member Agent) — base FACT_MEMBER_DEV_ACHIEVEMENT(월×조직×개발구분)
       활성: 월 목표·월 실적·달성율(공#1) · 누계/연은 동일 metric + 기간 필터(공#2·#3)
             차원 = 연/월/연월 · 부서명 · 개발구분(코드·라벨) · 목표편성여부(GOAL_CNT>0) · 실적발생여부
    ===================================================================================== */
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
   TABLES (
-    achv AS GN_DW.GOLD.FACT_DEV_ACHIEVEMENT
+    achv AS GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT
       PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
       WITH SYNONYMS ('개발목표', '개발실적', '목표대비실적', '개발현황')
-      COMMENT = '회원개발 목표 대비 실적(grain=월×조직×개발구분, 실측 유일 → PK). 목표와 실적을 FULL OUTER 로 결합해 한쪽만 있는 조합도 보존한다 — 목표는 미래월까지 편성돼 있고 실적은 목표 편성 이전 기간에도 존재한다. 🔴CRM 은 목표를 **0 으로 등록한 행**도 다수 보유한다(목표 행 존재 ≠ 목표 편성) — 달성율 분모·분자는 반드시 GOAL_CNT>0 으로 스코프해야 한다. [원천] 목표: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL(STDYY 기준연·STDR_MT 기준월·MBER_DVLP_DIV_CD 개발구분·DEPT_ID 부서·GOAL_CNT 목표수) → SILVER=CRM_DEV_TARGET → GOLD=FACT_TARGET_DEV. 실적: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT → SILVER=CRM_MEMBER_DEV → GOLD=FACT_MEMBER_EVENT(DEV_CNT 월 롤업). 조직 라벨=GOLD.DIM_ORG · 개발구분 라벨=CRM 코드사전 MM015.'
+      COMMENT = '회원개발 목표 대비 실적(grain=월×조직×개발구분, 실측 유일 → PK). 목표와 실적을 FULL OUTER 로 결합해 한쪽만 있는 조합도 보존한다 — 목표는 미래월까지 편성돼 있고 실적은 목표 편성 이전 기간에도 존재한다. 🔴CRM 은 목표를 **0 으로 등록한 행**도 다수 보유한다(목표 행 존재 ≠ 목표 편성) — 달성율 분모·분자는 반드시 GOAL_CNT>0 으로 스코프해야 한다. [원천] 목표: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL(STDYY 기준연·STDR_MT 기준월·MBER_DVLP_DIV_CD 개발구분·DEPT_ID 부서·GOAL_CNT 목표수) → SILVER=CRM_DEV_TARGET → GOLD=FACT_TARGET_MEMBER_DEV. 실적: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT → SILVER=CRM_MEMBER_DEV → GOLD=FACT_MEMBER_LIFECYCLE(DEV_CNT 월 롤업). 조직 라벨=GOLD.DIM_ORG · 개발구분 라벨=CRM 코드사전 MM015.'
   )
   DIMENSIONS (
     achv.MONTH_KEY AS achv.MONTH_KEY

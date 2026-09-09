@@ -24,7 +24,7 @@ models:
     columns:
       - name: BIGQUERY_EVENT_SK
         tests: [not_null, unique]
-  - name: DIM_MEMBER
+  - name: DIM_MEMBER_STATUS_HISTORY
     columns:
       - name: MEMBER_SK
         tests: [not_null, unique]
@@ -174,7 +174,7 @@ models:
       - name: PAGE_PATH
         tests: [not_null]
 
-  - name: FACT_EVENT_PARTICIPATION
+  - name: FACT_EVENT_ATTENDANCE
     columns:
       # 🔷 [DEC-30 2026-08-04] 행 유일성 가드 — degen key 2종 조합.
       #   🔴 EVENT_SK 를 쓰면 안 된다: 고아 행사 53개가 전부 0 으로 뭉개져
@@ -247,7 +247,7 @@ models:
               field: SPONSORSHIP_SK
               config: { where: "SPONSORSHIP_SK != 0" }
 
-  - name: FACT_MEMBER_EVENT
+  - name: FACT_MEMBER_LIFECYCLE
     columns:
       - name: DATE_SK
         tests:
@@ -580,7 +580,7 @@ models:
               field: REASON_SK
               config: { where: "REASON_SK != 0" }
 
-  - name: FACT_SERVICE_EVENT
+  - name: FACT_MESSAGE_DISPATCH
     columns:
       # [DEC-30 2026-08-04] 발송구분 FK — 센티넬 0 은 차원에 실재하므로 고아 0 이어야 한다.
       - name: SEND_TYPE_SK
@@ -616,7 +616,7 @@ models:
               field: CAMPAIGN_SK
               config: { where: "CAMPAIGN_SK != 0" }
 
-  - name: FACT_TARGET_DEV
+  - name: FACT_TARGET_MEMBER_DEV
     columns:
       # [2026-08-05 O38] 종전 MONTH_KEY 에 테스트가 한 건도 없어 「연도 소실 → 1~12 적재」가
       #   행수·SUM·참조무결성을 모두 통과하며 무증상으로 유지됐다. 규약 가드를 신설한다.
@@ -856,14 +856,14 @@ models:
   #      생성기 = `scripts/gen_o53_gold_ddl.py`(손 편집 금지 · 게이트 자기검사 9/9).
   #   ⚠️ 머티리얼라이제이션 = incremental + append + pre_hook TRUNCATE. **merge 금지**
   #      (완전 재산출 차원에서 grain 이동 시 구 행 잔존 · 문서50 §300 R1 · P131).
-  - name: DIM_MEMBER_CURRENT
-    description: "회원 현재행 차원(1행 = 1회원) — SCD2 DIM_MEMBER 의 IS_CURRENT 투영. 분석가 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  - name: DIM_MEMBER
+    description: "정규 회원 마스터 차원(1행 = 1회원) — SCD2 DIM_MEMBER_STATUS_HISTORY 의 IS_CURRENT 투영. 분석가 및 Cortex Analyst 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql."
   - name: DIM_MEMBER_ACQUISITION
     description: "회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql."
   - name: DIM_MONTH
     description: "월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
-  - name: FACT_DEV_ACHIEVEMENT
-    description: "회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  - name: FACT_MEMBER_DEV_ACHIEVEMENT
+    description: "회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_MEMBER_DEV × FACT_MEMBER_LIFECYCLE FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
 
   # 🆕🆕 [2026-08-31 O125 등재] 아래 4모델은 **이 파일에 등재되지 않아 테스트 0건**이었다.
   #   🔴 `FACT_BUDGET_YEARLY`(O114-B)와 **같은 유형의 재발**이다 — 분모 미등재는 조용히 0을 낸다(`R3-9 ㉢`).
@@ -947,9 +947,9 @@ models:
       - name: "MONTH_KEY || '|' || MEMBER_DK || '|' || SPONSORSHIP_SK || '|' || PAYMENT_SK || '|' || COALESCE(FEE_DIV_CD,'~') || '|' || COALESCE(PAYMENT_TYPE,'~') || '|' || COALESCE(SETLE_CD,'~')"
         tests: [unique]
 
-  - name: FACT_MEMBER_SPONSOR_BIZ
+  - name: FACT_MEMBER_SPONSORSHIP_SPAN
     description: >
-      회원×후원약정 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며
+      회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며
       **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬).
       🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다.
       🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고
@@ -988,9 +988,9 @@ models:
       - name: "MEMBER_DK || '|' || SPNSR_BSNS_NO"
         tests: [unique]
 
-  - name: FACT_TARGET_BIZ
+  - name: FACT_TARGET_PROJECT
     description: >
-      사업목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20).
+      사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20).
       🔴🔴 **현재 0행**이다 — CRM 신규 목표 테이블 **입고 대기**(문서40 `E-6`)이며 상류 `CRM_BIZ_TARGET` 은
       `source()` 를 참조하지 않는 빈 스캐폴드(`WHERE 1=0`)다. ⇒ 🔴 **아래 테스트는 지금 공허하게 통과한다.**
       🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒

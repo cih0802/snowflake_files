@@ -14,7 +14,7 @@
 --
 -- ▶ 대상 Agent = **3종** (2026-08-18 O84 에서 AGENT_MARKETING 추가)
 --   · AGENT_MEMBER    회원 도메인      정본 = cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
---   · AGENT_OVERALL   전사·재무 요약    정본 = cortex_project/agents/AGENT_OVERALL/agent_spec.yaml
+--   · AGENT_EXECUTIVE   전사·재무 요약    정본 = cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml
 --   · AGENT_MARKETING 마케팅            정본 = cortex_project/agents/AGENT_MARKETING/agent_spec.yaml
 --
 -- ▶ 실행 순서
@@ -90,7 +90,7 @@ SHOW SEMANTIC VIEWS IN SCHEMA GN_DW.SERVING;
 
 -- [0-C] 정본 yaml 스테이지 가독 — ㉔ ⑦ 선결조건의 기계 확인
 LIST 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/';
---   기대 = AGENT_MEMBER · AGENT_OVERALL · AGENT_MARKETING 3폴더의 `agent_spec.yaml`.
+--   기대 = AGENT_MEMBER · AGENT_EXECUTIVE · AGENT_MARKETING 3폴더의 `agent_spec.yaml`.
 --   🔴 실패하면 **여기서 중단**한다 — 위 「선결조건 ㉔ ⑦」의 ㉮/㉯/㉰ 중 하나를 먼저 정해야 한다.
 
 -- [0-D] CoWork(Snowflake Intelligence) 객체 실재 — ㉔ ③ 의 판정 근거
@@ -129,7 +129,7 @@ SHOW AGENTS IN SCHEMA GN_DW.SERVING;
 -- 🔴 [2026-08-21 신설] 정본 yaml 이 **11종**(실적 8 + ML 예측 3)으로 늘었다 —
 --   `analyst_member_sponsor_biz`(SV_MEMBER_SPONSOR_BIZ, 회원×후원약정) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 11종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정(활동회원) + ML 예측 3종(회원중단·후원중단·회비예측).'
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적 SV 8종(월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측 3종(회원단위 이탈위험·후원건 중단위험·회비납입예측) 종합 분석.'
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}'
   FROM SPECIFICATION
   $$
@@ -137,12 +137,12 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
     orchestration: auto
   $$;
 
--- ---- [1-B] AGENT_OVERALL ---- 🔴 실행 여부는 **[0-E] 결과로 판단**한다(0행이면 실행).
+-- ---- [1-B] AGENT_EXECUTIVE ---- 🔴 실행 여부는 **[0-E] 결과로 판단**한다(0행이면 실행).
 --   ⚠ [2026-08-18 O85] 「운영 중(VERSION$3)」은 계정 `DV07626` 시점 사실이다(`P169`).
 -- 🔴 [2026-08-18 O84] 정본 yaml 이 **8종**(예산·광고·회원월실적·발송 + ML 예측 4)이다.
-CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_OVERALL
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).'
-  PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}'
+CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_EXECUTIVE
+  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적 SV 4종(예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 미래예측 4종(개발금액전망·LTV월별예측·LTV스코어순위·기여요인분석) 종합 지원.'
+  PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}'
   FROM SPECIFICATION
   $$
   models:
@@ -158,7 +158,7 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_OVERALL
 -- 🔴 [2026-08-21 신설] 정본 yaml 이 **7종**으로 늘었다 — `analyst_member_sponsor_biz`
 --   (SV_MEMBER_SPONSOR_BIZ, 캠페인별/후원사업별 활동회원) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MARKETING
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비·후원약정(활동회원). 마케팅 보고서 5분석구분의 정본 Agent.'
+  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. SV 7종: 광고효율(디지털/방송)·개발목표달성·예산집행·사건시점전환회원·캠페인획득코호트·캠페인회비·후원약정활동회원 종합 분석.'
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}'
   FROM SPECIFICATION
   $$
@@ -204,7 +204,7 @@ $$;
 --   ⚠ 아래는 주석으로 둔다 — **[2-A] 결과를 보고 필요한 줄만** 해제해 돌린다.
 -- USE ROLE ACCOUNTADMIN;
 -- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_MEMBER    TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
--- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_OVERALL   TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+-- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE   TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 -- GRANT OWNERSHIP ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 -- USE ROLE GN_DW_ADMIN;
 
@@ -223,9 +223,9 @@ USE ROLE GN_DW_ADMIN;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_VIEWER;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MEMBER  TO ROLE GN_DW_SERVICE;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_ANALYST;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_VIEWER;
-GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_OVERALL TO ROLE GN_DW_SERVICE;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_ANALYST;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_VIEWER;
+GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE TO ROLE GN_DW_SERVICE;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_VIEWER;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_SERVICE;
@@ -278,13 +278,13 @@ BEGIN
   SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;
   LET c2 INT := (SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
                   WHERE "database_name" = 'GN_DW' AND "schema_name" = 'SERVING'
-                    AND "name" = 'AGENT_OVERALL');
+                    AND "name" = 'AGENT_EXECUTIVE');
   IF (c2 = 0) THEN
     ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT
-      ADD AGENT GN_DW.SERVING.AGENT_OVERALL;
-    res := res || 'AGENT_OVERALL=added ';
+      ADD AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
+    res := res || 'AGENT_EXECUTIVE=added ';
   ELSE
-    res := res || 'AGENT_OVERALL=skipped ';
+    res := res || 'AGENT_EXECUTIVE=skipped ';
   END IF;
 
   SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;
@@ -318,13 +318,13 @@ $$;
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. SV 11종: 월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정(활동회원) + ML 예측 3종(회원중단·후원중단·회비예측).',
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적 SV 8종(월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측 3종(회원단위 이탈위험·후원건 중단위험·회비납입예측) 종합 분석.',
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
-ALTER AGENT GN_DW.SERVING.AGENT_OVERALL SET
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).',
-  PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}';
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET
+  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적 SV 4종(예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 미래예측 4종(개발금액전망·LTV월별예측·LTV스코어순위·기여요인분석) 종합 지원.',
+  PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}';
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비·후원약정(활동회원). 마케팅 보고서 5분석구분의 정본 Agent.',
+  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. SV 7종: 광고효율(디지털/방송)·개발목표달성·예산집행·사건시점전환회원·캠페인획득코호트·캠페인회비·후원약정활동회원 종합 분석.',
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}';
 
 
@@ -350,7 +350,7 @@ SELECT CURRENT_ACCOUNT()                                              AS account
 --      하나라도 어긋나면 [2-A] · [5] 로 돌아간다.
 
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;    -- OWNERSHIP + USAGE×3 = 4행
-SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL;   -- 동일 4행
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE;   -- 동일 4행
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MARKETING; -- 동일 4행
 SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
 --   기대: VERSION$1(최소 스펙) + live. 스펙 본문은 아직 비어 있다 → 09_2 로 채운다.

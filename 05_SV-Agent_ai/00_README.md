@@ -17,7 +17,7 @@ END-METADATA -->
 | 트랙 | 상태 |
 |---|---|
 | SV **9종** 배포·검증 | ✅ `SV_MEMBER_MONTHLY`·`SV_MEMBER_EVENT`·`SV_MEMBER_COHORT`·`SV_MEMBER_FEE`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET`·`SV_AD`·`SV_DEV_ACHIEVEMENT` (fan-out 0·SV=FACT 일치). 🔴 [2026-08-10 O55] 종전 「SV 5개」는 2026-07-22 스냅샷이라 stale 이었다 — 실측 9종 · base 전건 GOLD · owner 전건 GN_DW_ADMIN |
-| Agent 2개 배포 | ✅ `AGENT_MEMBER`(4 SV)·`AGENT_OVERALL`(예산+월실적/발송) — owner=GN_DW_ADMIN |
+| Agent 2개 배포 | ✅ `AGENT_MEMBER`(4 SV)·`AGENT_EXECUTIVE`(예산+월실적/발송) — owner=GN_DW_ADMIN |
 | CoWork 연결 | ✅ `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT`에 ADD AGENT(2) · 소비 3역할 USAGE |
 | 거버넌스 문서 | ✅ 사용량·비용쿼터·알림·품질 폐루프(11번) |
 | **NL 스모크 검증** | 🔄 **트라이얼 `DATA_AGENT_RUN` 차단 → paid 이관 후 필수**(10 §3) |
@@ -62,7 +62,7 @@ END-METADATA -->
 | Agent (FQN) | 도구(SV) | 도메인 |
 |---|---|---|
 | `GN_DW.SERVING.AGENT_MEMBER` | MEMBER_MONTHLY·MEMBER_EVENT·SERVICE·EVENT_PARTICIPATION | 월 회비/납부율/미납·개발중단·발송·행사 |
-| `GN_DW.SERVING.AGENT_OVERALL` | BUDGET(기본)+MEMBER_MONTHLY·SERVICE | 예산 편성/집행/집행율·전사 요약 |
+| `GN_DW.SERVING.AGENT_EXECUTIVE` | BUDGET(기본)+MEMBER_MONTHLY·SERVICE | 예산 편성/집행/집행율·전사 요약 |
 
 - **정확도 메커니즘**: orchestration 라우팅(질의당 단일 SV)·synonyms(한글)·custom instruction 6(가드레일)·(권장)VQR·평가셋 폐루프.
 - **가드레일 이중구조**: 비활성 지표는 SV에 dim 자체가 없어 **구조적 차단**(강함) + 기간스코프·Unknown 고지는 instruction(모델 의존, 스모크 검증 필요).

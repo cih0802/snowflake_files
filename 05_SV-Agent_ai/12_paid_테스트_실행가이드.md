@@ -20,14 +20,14 @@ END-METADATA -->
 
 ```sql
 -- Agent 존재 확인
-SHOW AGENTS IN SCHEMA GN_DW.SERVING;  -- 2행(AGENT_MEMBER, AGENT_OVERALL)
+SHOW AGENTS IN SCHEMA GN_DW.SERVING;  -- 2행(AGENT_MEMBER, AGENT_EXECUTIVE)
 
 -- CoWork 연결 확인
 SHOW AGENTS IN SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT;  -- 2행
 
 -- Agent 소유권 확인
 SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_MEMBER;   -- OWNERSHIP=GN_DW_ADMIN + USAGE×3
-SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_OVERALL;
+SHOW GRANTS ON AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
 ```
 
 **문제 시 복구**: Agent가 없거나 owner가 다르면 `09_AGENT_spec_구현.sql`의 [1]~[4]를 재실행.
@@ -69,7 +69,7 @@ SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
 | S3 | 채널별 발송수 | SV_SERVICE | MSG_AT 20,557,626 · SND 8,300,272 · EMAIL 7,811,121 · PSTMTR 1,790,448 · (미매핑) 11,313 | ✅값 · ⬜NL |
 | P3 | 행사종류별 참여자수 | SV_EVENT_PARTICIPATION | EVENT 718,438 · **(NULL)** 263,611 · CRMN 152,077 ⚠️ `(Unknown)` 문자열이 아니다 | ✅값 · ⬜NL |
 
-## 3. 정확도 테스트 — AGENT_OVERALL (5문항)
+## 3. 정확도 테스트 — AGENT_EXECUTIVE (5문항)
 
 | # | 질문 (그대로 입력) | 기대 SV | 기대값 (2026-08-10 O57 실측) | 판정 |
 |---|---|---|---|---|
@@ -107,7 +107,7 @@ SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
 - (선택) Agent 표시명 설정:
 ```sql
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER  SET PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
-ALTER AGENT GN_DW.SERVING.AGENT_OVERALL SET PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}';
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET PROFILE = '{"display_name":"전사·예산 분석","color":"#11567F"}';
 ```
 
 ### FAIL 시 대응표

@@ -78,6 +78,6 @@ left join {{ ref('DIM_DATE') }} dp              on dp.DATE_SK        = f.LAST_PA
 --   ✅ 치환 근거 = 코멘트가 아니라 실측이다(R2-3): 소비 7컬럼 기준 자체 dedup 결과와 `DIM_MEMBER_CURRENT` 가
 --      **1,763,065행 = 1,763,065행 · 양방향 MINUS 각 0 = 완전 동일**(2026-08-11).
 --   ⚠️ SELECT 컬럼명·순서는 불변이므로 `_wide_schema.yml` 의 `columns[]` 재생성은 불요다.
-left join {{ ref('DIM_MEMBER_CURRENT') }} mem on mem.MEMBER_DK = f.MEMBER_DK
+left join {{ ref('DIM_MEMBER') }} mem on mem.MEMBER_DK = f.MEMBER_DK
 -- [O45] 회원 귀속 차원. 1행/회원이므로 fan-out 0(실측 확인).
 left join {{ ref('DIM_MEMBER_ACQUISITION') }} acq on acq.MEMBER_DK = f.MEMBER_DK
