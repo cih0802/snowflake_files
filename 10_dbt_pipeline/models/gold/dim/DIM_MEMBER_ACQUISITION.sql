@@ -51,6 +51,15 @@
     tags=['gold_ready']
 ) }}
 
+with ranked_snp_campaign as (
+    select
+        CMPGN_CD,
+        CMPGN_NM,
+        dbt_valid_from,
+        coalesce(dbt_valid_to, '9999-12-31'::timestamp_ntz) as dbt_valid_to,
+        row_number() over (partition by CMPGN_CD order by dbt_valid_from asc) as rn_first
+    from {{ ref('snp_crm_tm_cm_cmpgn_mng') }}
+)
 select
     c.MEMBER_DK                                     as MEMBER_DK,          -- 자연키(= 팩트 조인키)
     -- ── 획득 귀속 축 ─────────────────────────────────────────────────────────
@@ -72,7 +81,8 @@ select
     -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(cmp.*) → `FACT_MEMBER_COHORT.ACQ_*` 동결값으로 전환.
     --   캠페인 마스터가 이후 정정돼도 과거 획득 회원의 값은 바뀌지 않는다(O99 설계부채 해소).
     c.ACQ_BRAND                                     as ACQ_BRAND,
-    cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,
+    cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,          -- 현재 최신 캠페인명 (MSTR 대조용)
+    coalesce(snp_cmp.CMPGN_NM, cmp.CAMPAIGN_NAME)   as ACQ_CAMPAIGN_NAME_AT_ACQ,   -- 획득 당시 캠페인명 (Snapshot 기반 동결)
     c.ACQ_PARENT_CAMPAIGN_NAME                      as ACQ_PARENT_CAMPAIGN_NAME,
     c.ACQ_PROMO_METHOD_NAME                         as ACQ_PROMO_METHOD_NAME,
     c.ACQ_MKTG_CMPGN_NM                             as ACQ_MARKETING_CAMPAIGN,
@@ -96,5 +106,12 @@ select
     {{ gold_meta('CRM') }}
 from {{ ref('FACT_MEMBER_COHORT') }} c
 left join {{ ref('DIM_CAMPAIGN') }}     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
+left join ranked_snp_campaign           snp_cmp
+       on snp_cmp.CMPGN_CD = cmp.CAMPAIGN_BK
+      and (
+          (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') between snp_cmp.dbt_valid_from and snp_cmp.dbt_valid_to)
+          or (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') < snp_cmp.dbt_valid_from and snp_cmp.rn_first = 1)
+          or (c.ACQ_DATE_SK = 0 and snp_cmp.rn_first = 1)
+      )
 left join {{ ref('DIM_ORG') }}          org on org.ORG_SK          = c.ACQ_ORG_SK
 left join {{ ref('DIM_SPONSORSHIP') }}  spb on spb.SPONSORSHIP_SK  = c.ACQ_SPONSORSHIP_SK

@@ -89,8 +89,8 @@ check('SILVER 테이블 중 컬럼 빈 집합 0',
       all(len(v) > 0 for v in silver.values()))
 check('주석 처리된 CREATE TABLE 은 분모에 없다(BIGQUERY_REFINED_DATA)',
       'BIGQUERY_REFINED_DATA' not in silver)
-check('표본 컬럼수가 다른 게이트 실측과 일치한다(37·38)',
-      len(gold.get('DIM_MEMBER_ACQUISITION', ())) == 37
+check('표본 컬럼수가 다른 게이트 실측과 일치한다(38·38)',
+      len(gold.get('DIM_MEMBER_ACQUISITION', ())) == 38
       and len(gold.get('FACT_SERVICE_EVENT', ())) == 38)
 
 print('=' * 72)

@@ -352,7 +352,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_CURRENT (
 --   · ACQ_GENDER: 획득 시점 성별명(CM013 라벨): 국내(남자)·국내(여자)·외국인(남자)·외국인(여자)·외국인(기타)·단체·기업·기타. 코드 = ACQ_SEX_CD. 🔴DIM_MEMBER_CURRENT.GENDER_NAME(CM017 · 5종)과 값 집합이 다르다 — 두 축을 같은 표에서 비교하지 말 것. ⚠️센티넬 '0' 은 사전 라벨이 없어 NULL.
 --   · ACQ_SPNSR_AMT: 획득 사건의 후원금액(원, raw) ← TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT. 🔴**건수로 환산하지 말 것** — 정본 공#38·#151 이 **금액을 만원 단위로 나눈 값**이라는 규약이라 혼용하면 정의가 깨진다(CONF-2). ⚠️획득 시점 약정액이며 이후 증액·감액은 반영되지 않는다(현재 약정액이 아니다).
 --   · ACQ_BRAND: 획득 캠페인의 브랜드. 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_BRAND(구 DIM_CAMPAIGN.BRAND 실시간 조인 대체). 차원 단독 조회로도 뜻이 통하게 라벨을 비정규화했다(DEC-10). ⚠️ACQ_BASIS='FALLBACK' 인 회원은 귀속 신뢰도가 낮다.
---   · ACQ_CAMPAIGN_NAME: 획득 캠페인명 ← DIM_CAMPAIGN.CAMPAIGN_NAME(실시간 조인 — 12속성 범위 밖, 캠페인 자신의 이름이라 동결 대상이 아니다). ⚠️광고비와 결합할 때는 이 축이 아니라 ACQ_MARKETING_CAMPAIGN 을 쓴다 — 개발캠페인 단위로 내리면 광고비가 복제된다(팬아웃).
+--   · ACQ_CAMPAIGN_NAME: 현재 최신 캠페인명 ← DIM_CAMPAIGN.CAMPAIGN_NAME(실시간 조인 — MSTR 및 CRM 운영계 대조용).
+--   · ACQ_CAMPAIGN_NAME_AT_ACQ: 획득(가입) 당시 캠페인명 (Snapshot 기반 시점 동결 — 과거 코호트 및 시점 불변 분석용).
 --   · ACQ_PARENT_CAMPAIGN_NAME: 획득 캠페인의 **상위캠페인**명(원천 UPPER_CMPGN_CD 계층). 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_PARENT_CAMPAIGN_NAME(구 DIM_CAMPAIGN.PARENT_CAMPAIGN_NAME 실시간 조인 대체). 캠페인 카테고리(MM294)와 다른 축이다 — 카테고리는 코드 기반 분류, 상위
 --     캠페인은 캠페인 자체의 부모다.
 --   · ACQ_PROMO_METHOD_NAME: 획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 🔴[DEC-43] 적재 시점 동결값 ← FACT_MEMBER_COHORT.ACQ_PROMO_METHOD_NAME(구 DIM_CAMPAIGN.PROMO_METHOD_NAME 실시간 조인 대체). [O51-D BRONZE 실측] CM008 사전은 100종을 넘는 대형 그룹이며 채널·랜딩·매체가 
@@ -392,7 +393,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_ACQUISITION (
     ACQ_GENDER               VARCHAR         COMMENT 'ACQ_GENDER. 코드id:CM013.',
     ACQ_SPNSR_AMT            NUMBER(18,0)    COMMENT 'ACQ_SPNSR_AMT (#38).',
     ACQ_BRAND                VARCHAR         COMMENT '획득 캠페인의 브랜드.',
-    ACQ_CAMPAIGN_NAME        VARCHAR         COMMENT 'ACQ_CAMPAIGN_NAME.',
+    ACQ_CAMPAIGN_NAME        VARCHAR         COMMENT '현재 최신 캠페인명 (Master 실시간 조인 · MSTR 대조용).',
+    ACQ_CAMPAIGN_NAME_AT_ACQ VARCHAR(300)    COMMENT '회원 획득 당시 캠페인명 (Snapshot 기반 시점 동결).',
     ACQ_PARENT_CAMPAIGN_NAME VARCHAR         COMMENT '획득 캠페인의 **상위캠페인**명. 코드id:MM294.',
     ACQ_PROMO_METHOD_NAME    VARCHAR         COMMENT '획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 코드id:CM008.',
     ACQ_MARKETING_CAMPAIGN   VARCHAR         COMMENT '획득 캠페인의 마케팅캠페인.',

@@ -72,7 +72,7 @@
 
 ---
 
-## 0-VVVV. 🔴🔴 [2026-09-08 O149 필독 — **여기서 시작한다.** §0-UUUU 는 승계됐다]
+## 0-VVVV. 🔴🔴 [2026-09-08 O149 필독 — ~~여기서 시작한다.~~ §0-VVVV 는 승계됐다]
 
 ### ▣ VVVV1 🟢 O149 가 한 일
 1. **[P2/설계] 자체 가능 과제 완결**
@@ -94,6 +94,65 @@
 - 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
 - 🔴 **[P1/차단] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 질문 4건 미답 회신 대기.
 - 🔴 **[P1/차단] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+---
+
+## ~~0-WWWW. 🔴🔴 [2026-09-09 O150 필독 — **여기서 시작한다.** §0-VVVV 는 승계됐다]~~
+
+### ▣ WWWW1 🟢 O150 이 한 일
+1. **[P1/스냅샷] 현업 1차 회신 반영 및 dbt Snapshot 11종 전체 구축**
+   - 5-3 N-9 현업 승인(스냅샷 방식 B)에 따라 `GN_DW.SNAPSHOT` 스키마 구축 및 `GN_DW_ADMIN` 소유권 확립, `GN_DW_ENGINEER` dbt 파이프라인 권한 구성.
+   - Tier 1 스냅샷 5종 구축 및 적재 실측 완료 (63,202행 전건 active 적재):
+     - `SNP_CRM_TM_CM_BRND_MNG`(103), `SNP_CRM_TM_RM_BPLC_MNG`(377), `SNP_CRM_TM_CM_MBER_DVLP_GOAL`(25,344), `SNP_CRM_TM_CM_CMPGN_MNG`(36,163), `SNP_CRM_TM_CM_DEPT_INFO`(1,314).
+   - Tier 2 스냅샷 6종 구축 및 적재 실측 완료 (10,573행 전건 active 적재):
+     - `SNP_CRM_TM_MS_EVENT`(376), `SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG`(446), `SNP_CRM_TM_MS_CRMN`(3,410), `SNP_CRM_TC_CMMN_CD`(339), `SNP_CRM_TM_CM_SPNSR_BSNS_INFO`(50), `SNP_CRM_TC_CMMN_DTL_CD`(5,853).
+   - 11종 총 73,775행 전건 초기 적재 및 SCD Type 2 무결성 100% 확인.
+2. **[P1/GOLD] `DIM_MEMBER_ACQUISITION` Two-tier 배선 및 Cold Start 결손 방어**
+   - `03_top-down_gold/06_DDL.sql` 및 물리 테이블에 `ACQ_CAMPAIGN_NAME_AT_ACQ VARCHAR(300)` 추가.
+   - `DIM_MEMBER_ACQUISITION.sql`에 Point-in-Time 스냅샷 조인 + 과거 가입자 Cold Start Fallback 배선.
+   - `dbt build` (PASS=1) 후 1,585,949 회원 결손율 0%(매칭률 100.00%) 실측 검증 완료.
+3. **[P1/RBAC] Snowflake DB 소유 모델 및 최소 권한 확립**
+   - `GN_DW.SNAPSHOT` 스키마 소유자를 `ACCOUNTADMIN`에서 `GN_DW_ADMIN`으로 정상화.
+   - 불필요한 소비 역할(`ANALYST`/`VIEWER`/`SERVICE`) 권한 전건 회수(소비자는 GOLD/SERVING 마트 경유 원칙).
+   - `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` 정본 DDL 동기화.
+4. **[P2/문서·런북] 스냅샷 런북 및 작업계획서 전건 검증 갱신**
+   - `06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql` 신설 (11종 검증 및 일배치 모니터링 쿼리).
+   - `06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md` DoD 전건 실측 완료 갱신.
+   - `10_dbt_pipeline/deploy_dbt_project.sql` 배포 런북에 스냅샷 버전 및 Task 체인 정본 반영.
+
+### ▣ WWWW2 🔴 다음 세션 열린 작업
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 (기획실 협의 기준 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+---
+
+## 0-XXXX. 🔴🔴 [2026-09-09 O151 필독 — **여기서 시작한다.** §0-WWWW 는 승계됐다]
+
+### ▣ XXXX1 🟢 O151 이 한 일
+1. **[P1/정제] 현업 1차 회신 확정 정제 룰 dbt 모델 반영**
+   - [2-4 A] `CRM_PAYMENT_BILLING.sql`: `MBRFEE_MT = '20251'` 5자리 비정상값을 `'202501'`로 보정하는 로직 반영.
+   - [2-1 I-2] `CRM_EVENT_PARTICIPATION.sql`: EVENT/CRMN 원천에서 공란 5건 및 홈페이지 테스트/보안 스캐너 이상치(2,058건)를 `REGEXP_LIKE(TRIM(MBER_NO), '^[0-9]{7}$|^[0-9]{9}$|^S[0-9]{8}$')` 필터로 정제.
+   - [3-1 N-1~4] `FACT_TARGET_DEV.sql` 및 `FACT_TARGET_BIZ.sql`: `COALESCE(GOAL_CNT, 0) > 0` / `COALESCE(TARGET_CNT, 0) > 0` 필터로 증액/재후원 미편성 0/NULL 껍데기 데이터를 달성률 산출 모수에서 제외.
+   - [O145-8] `CRM_DEV_TARGET.sql`: `TARGET_TYPE = 'ORIGINAL'`(당초) 부여 완료.
+2. **[P2/모델링] DEC-45 캠페인 ↔ 후원사업 1:N 브릿지 모델링 완결**
+   - `CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql` 신설: `TM_CM_CMPGN_MNG.SPNSR_BSNS_ID` 쉼표 다중값 정규화 (93,373행).
+   - `_silver_bridge_schema.yml`에 relationships 및 unique 테스트 등재 완료 (FK 100% 매칭).
+3. **[P1/배포·자동화] Snowflake Native DBT PROJECT 배포 및 Task DAG 등록**
+   - `GN_DW.OPS.DW_PIPELINE`에 `V_20260909_SNAPSHOT` 버전 추가 배포 완료.
+   - `dbt build` 49노드 전체 검증 완료 (PASS=40, WARN=9, ERROR=0).
+   - 일일 배치 DAG 생성 및 등록: `TASK_DW_SNAPSHOT_DAILY`(05:30 KST) ➔ `TASK_DW_BUILD_DAILY` (완료 후 즉시).
+
+### ▣ XXXX2 🔴 다음 세션 열린 작업
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 (기획실 협의 기준 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
 - 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
 - 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
 - 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).

@@ -39,6 +39,8 @@
 
 with t as (
     select * from {{ ref('CRM_DEV_TARGET') }}
+    -- [3-1 N-1~4] 목표 부재(0/NULL) 껍데기 데이터 제외 정제 (실제 목표 편성분만 달성률 모수로 적재)
+    where COALESCE(GOAL_CNT, 0) > 0
 )
 
 select

@@ -6,7 +6,9 @@ SELECT
   NULLIF(TRIM(MBER_NO),'')         AS MBER_NO,
   NULLIF(TRIM(SPNSR_BSNS_ID),'')   AS SPNSR_BSNS_ID,
   RELATNSP_KEY                     AS RELATNSP_KEY,
-  NULLIF(TRIM(MBRFEE_MT),'')       AS MBRFEE_MT,
+  -- [2-4 A] 회비월 5자리 오류값(20251) 202501 보정
+  CASE WHEN TRIM(MBRFEE_MT) = '20251' THEN '202501'
+       ELSE NULLIF(TRIM(MBRFEE_MT),'') END AS MBRFEE_MT,
   MBRFEE_SQNC                      AS MBRFEE_SQNC,
   RQEST_AMT                        AS RQEST_AMT,
   RQEST_DE                         AS RQEST_DE,

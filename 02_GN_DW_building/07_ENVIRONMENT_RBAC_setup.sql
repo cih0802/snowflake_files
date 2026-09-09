@@ -157,6 +157,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 �
 CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다';
 CREATE SCHEMA IF NOT EXISTS GN_DW.SERVING  COMMENT = 'Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치. GOLD DIM/FACT cross-schema 참조';
 CREATE SCHEMA IF NOT EXISTS GN_DW.OPS      COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.SNAPSHOT COMMENT = 'dbt Snapshot 전용 이력 보존 스키마 (SCD Type 2 영구 보존 영역)';
 
 /* ---------------------------------------------------------------------
    🆕 [2026-08-18 O85-C · 착수표 ㉔ ⑦ 처방] Agent 정본 yaml 배포 스테이지
@@ -407,6 +408,18 @@ GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit TO ROLE GN_DW_ENGINEER
 --      🟠 미측정 = 「`USAGE` 없으면 store_failures 테스트가 실제로 실패하는가」는 재현하지 않았다
 --         (O90 ⑩ 승계). 부여는 필요조건 충족이고 실패 재현은 별건이다 — 인용 전 실측할 것.
 GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
+
+-- D.6-3 SNAPSHOT 스키마 — dbt Snapshot 이력 보존 영역 권한 (2026-09-09 신설)
+--   - 소유자: GN_DW_ADMIN (스키마 전체 관리)
+--   - ENGINEER: dbt snapshot 모델 테이블 생성/적재/갱신 (USAGE, CREATE TABLE, ALL PRIVILEGES ON TABLES)
+--   - 소비 역할(ANALYST/VIEWER/SERVICE): 미부여 (최소 권한 원칙 — 소비자는 GOLD/SERVING 마트를 통해 소비)
+GRANT ALL PRIVILEGES ON SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
+GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
+
+GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENGINEER;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENGINEER;
+GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================
    D.7 ANALYST 의 Agent · Streamlit "소비" 권한 — 🟢 [2026-08-18] 신설

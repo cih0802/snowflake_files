@@ -7,6 +7,7 @@ config-version: 2
 profile: 'default'
 
 model-paths: ["models"]
+snapshot-paths: ["snapshots"]
 macro-paths: ["macros"]
 seed-paths: ["seeds"]
 test-paths: ["tests"]
@@ -232,3 +233,11 @@ models:
       wide:
         +materialized: view
         +tags: ['gold_wide']
+
+# ---------------------------------------------------------------------------
+# SNAPSHOT: dbt Snapshot 이력 보존 스키마 (SCD Type 2 영구 보존 영역)
+# ---------------------------------------------------------------------------
+snapshots:
+  gn_dw_silver:
+    +target_database: GN_DW
+    +target_schema: SNAPSHOT

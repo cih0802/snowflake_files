@@ -80,6 +80,7 @@ sources:
     schema: "{{ 'BRONZE_CRM_2' if target.name == 'dev2' else 'BRONZE_CRM' }}"
     description: "CRM 원천 적재 레이어 — SILVER CRM 21객체의 원천(정본 09 STEP 3)."
     tables:
+      - name: TC_CMMN_CD                    # 공통 코드그룹 → SNAPSHOT.SNP_CRM_TC_CMMN_CD
       - name: TC_CMMN_DTL_CD                # 공통 코드상세 → CRM_CODE
       - name: TM_CM_DEPT_INFO               # 부서(조직) 마스터 → CRM_ORG
       - name: TM_CM_SPNSR_BSNS_INFO         # 후원사업 마스터 → CRM_SPONSORSHIP
@@ -97,10 +98,12 @@ sources:
       #   활동회원 as-of 판정에 필요한 **후원 등록일**(FRST_REGIST_DT)과 SPNSR_NO→MBER_NO 연결을 가진
       #   유일한 원천이다. TM_MM_FDRM_MBER_SPNSR_BSNS 에는 MBER_NO 도 시작일도 없다.
       - name: TM_MM_FDRM_MBER_SPNSR         # 후원 마스터(SPNSR_NO→MBER_NO·등록일) → CRM_MEMBER_SPONSOR_SPAN
+      - name: TM_RM_BPLC_MNG                # 결연 사업장 마스터 → SNAPSHOT.SNP_CRM_TM_RM_BPLC_MNG
       - name: TM_RM_RELATNSP_MSTR_INFO      # 결연(아동) → CRM_SPONSOR_RELATION
       - name: TM_PM_SETLE_INFO              # 결제수단(현재) → CRM_PAYMENT_METHOD
       - name: TM_MS_EVENT                   # 행사 마스터 → CRM_EVENT
       - name: TM_MS_CRMN                    # 캠페인행사 마스터 → CRM_EVENT
+      - name: TM_MS_EMAIL_TMPLAT_MNG        # 이메일 템플릿 마스터 → SNAPSHOT.SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG
       - name: TD_MS_EVENT_PRTCPNT_DTL       # 행사 참여자 상세 → CRM_EVENT_PARTICIPATION
       - name: TD_MS_CRMN_PRTCPNT            # 캠페인행사 참여자 → CRM_EVENT_PARTICIPATION
       - name: TM_RM_RELATNSP_LETTER_INFO    # 결연 서신 → CRM_RELATION_ACTIVITY

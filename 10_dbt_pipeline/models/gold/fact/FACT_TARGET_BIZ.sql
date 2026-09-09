@@ -10,6 +10,8 @@
 
 with t as (
     select * from {{ ref('CRM_BIZ_TARGET') }}
+    -- [3-1 N-1~4] 목표 부재(0/NULL) 껍데기 데이터 제외 정제
+    where COALESCE(TARGET_CNT, 0) > 0
 )
 
 select

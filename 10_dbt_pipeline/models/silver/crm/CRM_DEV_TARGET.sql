@@ -1,11 +1,13 @@
 -- CRM_DEV_TARGET: 회원개발 목표 정제 (BRONZE TM_CM_MBER_DVLP_GOAL → SILVER), 정본 09 STEP3.
 -- Co-authored with CoCo
+-- [O145-8] 소급 마이그레이션 규칙: 기존 TM_CM_MBER_DVLP_GOAL 2.5만행에 TARGET_TYPE='ORIGINAL'(당초) 부여
 SELECT
   NULLIF(TRIM(STDYY),'')            AS STDYY,
   NULLIF(TRIM(STDR_MT),'')          AS STDR_MT,
   NULLIF(TRIM(MBER_DVLP_DIV_CD),'') AS MBER_DVLP_DIV_CD,
   NULLIF(TRIM(DEPT_ID),'')          AS DEPT_ID,
   GOAL_CNT                          AS GOAL_CNT,
+  'ORIGINAL'                        AS TARGET_TYPE,
   'CRM'                             AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,

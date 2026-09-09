@@ -73,17 +73,20 @@ def load_known_tables(cn):
     global _KNOWN_TABLES
     if _KNOWN_TABLES is None:
         cur = cn.cursor()
-        cur.execute("select table_schema, table_name from GN_DW.INFORMATION_SCHEMA.TABLES where table_schema in ('GOLD', 'SILVER')")
+        cur.execute("select table_schema, table_name from GN_DW.INFORMATION_SCHEMA.TABLES where table_schema in ('GOLD', 'SILVER', 'SNAPSHOT')")
         _KNOWN_TABLES = {(r[0], r[1]) for r in cur.fetchall()}
 
 
 def resolve_ref(cn, name):
     load_known_tables(cn)
-    if ('GOLD', name) in _KNOWN_TABLES:
-        return f'GN_DW.GOLD.{name}'
-    if ('SILVER', name) in _KNOWN_TABLES:
-        return f'GN_DW.SILVER.{name}'
-    sys.exit(f'🔴 ref 해석 실패: {name} (GOLD·SILVER 어디에도 없다)')
+    uname = name.upper()
+    if ('GOLD', uname) in _KNOWN_TABLES:
+        return f'GN_DW.GOLD.{uname}'
+    if ('SILVER', uname) in _KNOWN_TABLES:
+        return f'GN_DW.SILVER.{uname}'
+    if ('SNAPSHOT', uname) in _KNOWN_TABLES or uname.startswith('SNP_'):
+        return f'GN_DW.SNAPSHOT.{uname}'
+    sys.exit(f'🔴 ref 해석 실패: {name} (GOLD·SILVER·SNAPSHOT 어디에도 없다)')
 
 
 def resolve_source(source_name, table_name):
@@ -104,7 +107,7 @@ def render_model(cn, path, layer='GOLD'):
     s = re.sub(r"\{\{\s*var\(['\"]cal_start['\"]\)\s*\}\}", "2020-01-01", s)
     s = re.sub(r"\{\{\s*var\(['\"]cal_end['\"]\)\s*\}\}", "2030-12-31", s)
     s = re.sub(r"\{\{\s*gold_meta\('([A-Z0-9_]+)'\)\s*\}\}", lambda m: AUDIT_SQL.format(src=m.group(1)), s)
-    s = re.sub(r"\{\{\s*ref\('([A-Z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
+    s = re.sub(r"\{\{\s*ref\('([A-Za-z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
     s = re.sub(r"\{\{\s*source\('([^']+)',\s*'([^']+)'\)\s*\}\}", lambda m: resolve_source(m.group(1), m.group(2)), s)
     s = re.sub(r"\{\{\s*clean_str\('([^']+)'\)\s*\}\}", lambda m: f"NULLIF(TRIM({m.group(1)}), '')", s)
     s = re.sub(r"\{\{\s*ga4_range_predicate\([^)]*\)\s*\}\}", '1=1', s)

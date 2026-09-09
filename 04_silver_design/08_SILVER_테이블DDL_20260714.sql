@@ -508,6 +508,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_DEV_TARGET (
     MBER_DVLP_DIV_CD    VARCHAR(1)      NOT NULL COMMENT '회원개발 구분코드 (PK)',
     DEPT_ID             VARCHAR(20)     NOT NULL COMMENT '부서ID (PK, →CRM_ORG)',
     GOAL_CNT            NUMBER(10,0)    COMMENT '목표 건수',
+    TARGET_TYPE         VARCHAR(50)     COMMENT '목표 유형 (ORIGINAL/당초 등) [O145-8]',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
@@ -1507,5 +1508,20 @@ CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
     DW_LOAD_TS         TIMESTAMP_NTZ COMMENT '적재 시각',
     DW_UPDATE_TS       TIMESTAMP_NTZ COMMENT '갱신 시각',
     DW_BATCH_ID        VARCHAR       COMMENT '배치 식별'
-)
-COMMENT = '[O45] 마케팅캠페인 마스터. AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천. 행수는 문서10 §26-B 참조';
+) COMMENT = '[O45] 마케팅캠페인 마스터. AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천. 행수는 문서10 §26-B 참조';
+
+-- ############################################################################
+-- [2026-09-09 O151] 신규 SILVER 브릿지 테이블 — DEC-45 캠페인 ↔ 후원사업 브릿지
+-- ----------------------------------------------------------------------------
+-- CRM_CAMPAIGN.SPNSR_BSNS_ID 쉼표 다중값 1:N 정규화 브릿지.
+-- ############################################################################
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE (
+    CMPGN_CD            VARCHAR(50)     NOT NULL COMMENT '캠페인코드 (PK, →CRM_CAMPAIGN)',
+    SPNSR_BSNS_ID       VARCHAR(50)     NOT NULL COMMENT '후원사업ID (PK, →CRM_SPONSORSHIP)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 (공통감사)',
+    PRIMARY KEY (CMPGN_CD, SPNSR_BSNS_ID)
+) COMMENT = '[DEC-45] 캠페인 ↔ 후원사업 다대다(1:N) 브릿지 정규화 테이블';

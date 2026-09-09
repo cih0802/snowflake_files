@@ -26447,3 +26447,1761 @@ left join GN_DW.GOLD.DIM_REASON       r on f.REASON_SK      = r.REASON_SK
 [0m01:30:47.257611 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 343.32257, "process_in_blocks": "0", "process_kernel_time": 3.62, "process_mem_max_rss": "603372", "process_out_blocks": "0", "process_user_time": 50.28}
 [0m01:30:47.258217 [debug] [Dummy-1   ]: Command `cli build` succeeded at 01:30:47.257974 after 343.32 seconds
 [0m01:30:47.258709 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 19:22:28.735793 | 8b655e3f-6bda-4d70-837d-e95c955c1f17 ==============================
+[0m19:22:28.735793 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m19:22:28.736637 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'debug': 'False', 'fail_fast': 'False', 'log_path': '/tmp/dbt/logs', 'version_check': 'True', 'profiles_dir': '/tmp/dbt_effective_profiles_gn1srpws', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'invocation_command': 'dbt ', 'introspect': 'True', 'target_path': 'None', 'log_format': 'default', 'send_anonymous_usage_stats': 'False'}
+[0m19:22:29.011728 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m19:22:29.541110 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m19:22:29.542823 [info ] [Dummy-1   ]: Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m19:22:33.690782 [warn ] [Dummy-1   ]: [[33mWARNING[0m]: Test 'test.gn_dw_silver.warn_gold_view_comment_coverage' (tests/warn_gold_view_comment_coverage.sql) depends on a node named 'WIDE_GA_BEHAVIOR' in package '' which was not found
+[0m19:22:34.274465 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:22:34.277817 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:22:34.367189 [info ] [Dummy-1   ]: Found 93 models, 5 snapshots, 444 data tests, 45 sources, 490 macros
+[0m19:22:34.373691 [info ] [Dummy-1   ]: 
+[0m19:22:34.374225 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m19:22:34.374689 [info ] [Dummy-1   ]: 
+[0m19:22:34.375487 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m19:22:34.382253 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW'
+[0m19:22:34.462070 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW"
+[0m19:22:34.462616 [debug] [ThreadPool]: On list_GN_DW: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW"} */
+show terse schemas in database GN_DW
+    limit 10000
+[0m19:22:34.463132 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:22:35.028414 [debug] [ThreadPool]: SQL status: SUCCESS 11 in 0.565 seconds
+[0m19:22:35.038600 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_GN_DW, now list_GN_DW_GOLD)
+[0m19:22:35.040493 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m19:22:35.042265 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SNAPSHOT'
+[0m19:22:35.050022 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m19:22:35.056651 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:22:35.060100 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:22:35.063530 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:22:35.067970 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:22:35.068497 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:22:35.069027 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:22:35.069490 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:22:35.069982 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:22:35.070597 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:22:35.071123 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:22:35.071583 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:22:35.072078 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:22:35.564182 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.493 seconds
+[0m19:22:35.568677 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:22:35.569201 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m19:22:35.589560 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.518 seconds
+[0m19:22:35.590243 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.518 seconds
+[0m19:22:35.590956 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.520 seconds
+[0m19:22:35.592712 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:22:35.594302 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:22:35.595921 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:22:35.596510 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+show objects in GN_DW.SNAPSHOT
+    limit 10000
+    
+;
+[0m19:22:35.596999 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m19:22:35.597470 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m19:22:35.722249 [debug] [ThreadPool]: SQL status: SUCCESS 0 in 0.124 seconds
+[0m19:22:35.724175 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:22:35.724679 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:22:35.758570 [debug] [ThreadPool]: SQL status: SUCCESS 4 in 0.160 seconds
+[0m19:22:35.760880 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:22:35.761365 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:22:35.797935 [debug] [ThreadPool]: SQL status: SUCCESS 51 in 0.228 seconds
+[0m19:22:35.801103 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:22:35.801596 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:22:35.816578 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.091 seconds
+[0m19:22:35.817790 [debug] [ThreadPool]: SQL status: SUCCESS 43 in 0.220 seconds
+[0m19:22:35.822019 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:22:35.822505 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:22:35.839187 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.077 seconds
+[0m19:22:35.885342 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.083 seconds
+[0m19:22:35.897150 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.074 seconds
+[0m19:22:35.925598 [debug] [Thread-2 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng
+[0m19:22:35.926176 [debug] [Thread-3 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng
+[0m19:22:35.926786 [debug] [Thread-4 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info
+[0m19:22:35.927475 [debug] [Thread-5 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal
+[0m19:22:35.928170 [info ] [Thread-2 (]: 1 of 5 START snapshot SNAPSHOT.snp_crm_tm_cm_brnd_mng .......................... [RUN]
+[0m19:22:35.928868 [info ] [Thread-3 (]: 2 of 5 START snapshot SNAPSHOT.snp_crm_tm_cm_cmpgn_mng ......................... [RUN]
+[0m19:22:35.929781 [info ] [Thread-4 (]: 3 of 5 START snapshot SNAPSHOT.snp_crm_tm_cm_dept_info ......................... [RUN]
+[0m19:22:35.930467 [info ] [Thread-5 (]: 4 of 5 START snapshot SNAPSHOT.snp_crm_tm_cm_mber_dvlp_goal .................... [RUN]
+[0m19:22:35.931233 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng)
+[0m19:22:35.931825 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly list_GN_DW_SILVER, now snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng)
+[0m19:22:35.932419 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly list_GN_DW_OPS, now snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info)
+[0m19:22:35.933011 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly list_GN_DW_SNAPSHOT, now snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal)
+[0m19:22:35.933540 [debug] [Thread-2 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng
+[0m19:22:35.934042 [debug] [Thread-3 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng
+[0m19:22:35.934539 [debug] [Thread-4 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info
+[0m19:22:35.935130 [debug] [Thread-5 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal
+[0m19:22:35.944513 [debug] [Thread-2 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng
+[0m19:22:35.950902 [debug] [Thread-3 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng
+[0m19:22:36.032217 [debug] [Thread-4 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info
+[0m19:22:36.037316 [debug] [Thread-5 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal
+[0m19:22:36.166094 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"
+[0m19:22:36.167645 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"
+[0m19:22:36.169624 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"
+[0m19:22:36.175126 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"
+[0m19:22:36.175825 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(DEPT_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    DEPT_ID,
+    DEPT_NM,
+    UPPER_DEPT_ID,
+    SORT_ORDR,
+    USE_YN,
+    ACMSLT_DEPT_YN,
+    STATS_DEPT_LVL,
+    ACMSLT_UPPER_DEPT_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.176467 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(BRND_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    BRND_ID,
+    BRND_NM,
+    USE_DEPT_CD,
+    USE_YN,
+    PR_MTH_LIST,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_BRND_MNG
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.177132 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(CMPGN_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CMPGN_CD,
+    CMPGN_NM,
+    UPPER_CMPGN_CD,
+    UPPER_CMPGN_YN,
+    SPNSR_DIV_CD,
+    CPR_DIV_CD,
+    CMPGN_TRGET_CD,
+    USE_DEPT_CD,
+    USE_SCOPE,
+    SPNSR_ENTRPRS_ID,
+    BRND_ID,
+    PR_MTH_CD,
+    CMPGN_STRT_DE,
+    MBRFEE_BNKB_LIST,
+    INICIS_ACNT_NO,
+    USE_YN,
+    REFER_URL,
+    SPNSR_BSNS_ID,
+    CMPGN_DC,
+    EMRGNCY_AID_BPLC_CD,
+    CMPGN_PRPT_YN,
+    ATCHFL_ID,
+    RM,
+    MBER_INFLOW_PATH_CD,
+    CMPGN_CTGR_CD,
+    CMPGN_TYPE1_BSN,
+    CMPGN_TYPE2_BSN,
+    MKTG_CMPGN_NM,
+    CMMN_BRND,
+    MKTG_UTM,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.177774 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(GOAL_SK as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    MD5(COALESCE(DEPT_ID,'') || '|' || COALESCE(STDYY,'') || '|' || COALESCE(STDR_MT,'') || '|' || COALESCE(MBER_DVLP_DIV_CD,'')) as GOAL_SK,
+    STDYY,
+    STDR_MT,
+    MBER_DVLP_DIV_CD,
+    DEPT_ID,
+    GOAL_CNT,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.178328 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m19:22:36.178939 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m19:22:36.179477 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m19:22:36.180008 [debug] [Thread-5 (]: Opening a new connection, currently in state init
+[0m19:22:36.821563 [debug] [Thread-3 (]: SQL status: SUCCESS 0 in 0.642 seconds
+[0m19:22:36.825717 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"
+[0m19:22:36.826641 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.898349 [debug] [Thread-3 (]: SQL status: SUCCESS 0 in 0.071 seconds
+[0m19:22:36.899261 [debug] [Thread-3 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"
+[0m19:22:36.901309 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"
+[0m19:22:36.901887 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_cm_cmpgn_mng
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(CMPGN_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CMPGN_CD,
+    CMPGN_NM,
+    UPPER_CMPGN_CD,
+    UPPER_CMPGN_YN,
+    SPNSR_DIV_CD,
+    CPR_DIV_CD,
+    CMPGN_TRGET_CD,
+    USE_DEPT_CD,
+    USE_SCOPE,
+    SPNSR_ENTRPRS_ID,
+    BRND_ID,
+    PR_MTH_CD,
+    CMPGN_STRT_DE,
+    MBRFEE_BNKB_LIST,
+    INICIS_ACNT_NO,
+    USE_YN,
+    REFER_URL,
+    SPNSR_BSNS_ID,
+    CMPGN_DC,
+    EMRGNCY_AID_BPLC_CD,
+    CMPGN_PRPT_YN,
+    ATCHFL_ID,
+    RM,
+    MBER_INFLOW_PATH_CD,
+    CMPGN_CTGR_CD,
+    CMPGN_TYPE1_BSN,
+    CMPGN_TYPE2_BSN,
+    MKTG_CMPGN_NM,
+    CMMN_BRND,
+    MKTG_UTM,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
+
+    ) sbq
+
+
+
+        );
+[0m19:22:36.967214 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.788 seconds
+[0m19:22:36.967981 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.790 seconds
+[0m19:22:36.968794 [debug] [Thread-5 (]: SQL status: SUCCESS 0 in 0.789 seconds
+[0m19:22:36.970143 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"
+[0m19:22:36.971419 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"
+[0m19:22:36.972585 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"
+[0m19:22:36.973127 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.973666 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:36.974221 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:37.050102 [debug] [Thread-5 (]: SQL status: SUCCESS 0 in 0.075 seconds
+[0m19:22:37.050864 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.076 seconds
+[0m19:22:37.051573 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.076 seconds
+[0m19:22:37.052347 [debug] [Thread-5 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"
+[0m19:22:37.053010 [debug] [Thread-2 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"
+[0m19:22:37.053689 [debug] [Thread-4 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"
+[0m19:22:37.055843 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"
+[0m19:22:37.057609 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"
+[0m19:22:37.058395 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_cm_mber_dvlp_goal
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(GOAL_SK as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    MD5(COALESCE(DEPT_ID,'') || '|' || COALESCE(STDYY,'') || '|' || COALESCE(STDR_MT,'') || '|' || COALESCE(MBER_DVLP_DIV_CD,'')) as GOAL_SK,
+    STDYY,
+    STDR_MT,
+    MBER_DVLP_DIV_CD,
+    DEPT_ID,
+    GOAL_CNT,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL
+
+    ) sbq
+
+
+
+        );
+[0m19:22:37.060120 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"
+[0m19:22:37.060755 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_cm_brnd_mng
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(BRND_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    BRND_ID,
+    BRND_NM,
+    USE_DEPT_CD,
+    USE_YN,
+    PR_MTH_LIST,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_BRND_MNG
+
+    ) sbq
+
+
+
+        );
+[0m19:22:37.061694 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_cm_dept_info
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(DEPT_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    DEPT_ID,
+    DEPT_NM,
+    UPPER_DEPT_ID,
+    SORT_ORDR,
+    USE_YN,
+    ACMSLT_DEPT_YN,
+    STATS_DEPT_LVL,
+    ACMSLT_UPPER_DEPT_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO
+
+    ) sbq
+
+
+
+        );
+[0m19:22:37.915181 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.853 seconds
+[0m19:22:37.943356 [info ] [Thread-2 (]: 1 of 5 OK snapshotted SNAPSHOT.snp_crm_tm_cm_brnd_mng .......................... [[32mSUCCESS 1[0m in 2.01s]
+[0m19:22:37.944184 [debug] [Thread-2 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng
+[0m19:22:37.944812 [debug] [Thread-2 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng
+[0m19:22:37.945574 [info ] [Thread-2 (]: 5 of 5 START snapshot SNAPSHOT.snp_crm_tm_rm_bplc_mng .......................... [RUN]
+[0m19:22:37.946202 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly snapshot.gn_dw_silver.snp_crm_tm_cm_brnd_mng, now snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng)
+[0m19:22:37.946763 [debug] [Thread-2 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng
+[0m19:22:37.952072 [debug] [Thread-2 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng
+[0m19:22:37.957899 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"
+[0m19:22:37.958662 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.896 seconds
+[0m19:22:37.959366 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(BPLC_CD as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    BPLC_CD,
+    NATION_CD,
+    BPLC_KORNM,
+    BPLC_ENGNM,
+    BSNS_STRT_DE,
+    BSNS_END_DE,
+    RELATNSP_BSNS_YN,
+    RELATNSP_BSNS_DSCNTC_DE,
+    GFTMNEY_PSBL_YN,
+    LETTER_PSBL_YN,
+    BPLC_DC,
+    WTWK_FROM_DSTNC,
+    CNCSN_RSN,
+    BPLC_MTCHG_MNG_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_RM_BPLC_MNG
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:37.961953 [info ] [Thread-4 (]: 3 of 5 OK snapshotted SNAPSHOT.snp_crm_tm_cm_dept_info ......................... [[32mSUCCESS 1[0m in 2.03s]
+[0m19:22:37.962548 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m19:22:37.963327 [debug] [Thread-4 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info
+[0m19:22:38.044898 [debug] [Thread-5 (]: SQL status: SUCCESS 1 in 0.983 seconds
+[0m19:22:38.047788 [info ] [Thread-5 (]: 4 of 5 OK snapshotted SNAPSHOT.snp_crm_tm_cm_mber_dvlp_goal .................... [[32mSUCCESS 1[0m in 2.11s]
+[0m19:22:38.048543 [debug] [Thread-5 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal
+[0m19:22:38.160410 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 1.257 seconds
+[0m19:22:38.163316 [info ] [Thread-3 (]: 2 of 5 OK snapshotted SNAPSHOT.snp_crm_tm_cm_cmpgn_mng ......................... [[32mSUCCESS 1[0m in 2.23s]
+[0m19:22:38.164719 [debug] [Thread-3 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng
+[0m19:22:38.590058 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.627 seconds
+[0m19:22:38.591601 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"
+[0m19:22:38.592174 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m19:22:38.662777 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.070 seconds
+[0m19:22:38.663577 [debug] [Thread-2 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"
+[0m19:22:38.665509 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"
+[0m19:22:38.666102 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_rm_bplc_mng
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(BPLC_CD as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    BPLC_CD,
+    NATION_CD,
+    BPLC_KORNM,
+    BPLC_ENGNM,
+    BSNS_STRT_DE,
+    BSNS_END_DE,
+    RELATNSP_BSNS_YN,
+    RELATNSP_BSNS_DSCNTC_DE,
+    GFTMNEY_PSBL_YN,
+    LETTER_PSBL_YN,
+    BPLC_DC,
+    WTWK_FROM_DSTNC,
+    CNCSN_RSN,
+    BPLC_MTCHG_MNG_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_RM_BPLC_MNG
+
+    ) sbq
+
+
+
+        );
+[0m19:22:39.550642 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.884 seconds
+[0m19:22:39.553612 [info ] [Thread-2 (]: 5 of 5 OK snapshotted SNAPSHOT.snp_crm_tm_rm_bplc_mng .......................... [[32mSUCCESS 1[0m in 1.61s]
+[0m19:22:39.554366 [debug] [Thread-2 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng
+[0m19:22:39.557892 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m19:22:39.558637 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_rm_bplc_mng' was properly closed.
+[0m19:22:39.559143 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_cm_dept_info' was properly closed.
+[0m19:22:39.559565 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_cm_mber_dvlp_goal' was properly closed.
+[0m19:22:39.560007 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_cm_cmpgn_mng' was properly closed.
+[0m19:22:39.560517 [info ] [Dummy-1   ]: 
+[0m19:22:39.561008 [info ] [Dummy-1   ]: Finished running 5 snapshots in 0 hours 0 minutes and 5.19 seconds (5.19s).
+[0m19:22:39.562247 [debug] [Dummy-1   ]: Command end result
+[0m19:22:39.705998 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:22:39.709089 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:22:39.714839 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m19:22:39.715321 [info ] [Dummy-1   ]: 
+[0m19:22:39.715953 [info ] [Dummy-1   ]: [32mCompleted successfully[0m
+[0m19:22:39.716441 [info ] [Dummy-1   ]: 
+[0m19:22:39.716950 [info ] [Dummy-1   ]: Done. PASS=5 WARN=0 ERROR=0 SKIP=0 TOTAL=5
+[0m19:22:39.718636 [debug] [Dummy-1   ]: Resource report: {"command_name": "snapshot", "command_success": true, "command_wall_clock_time": 11.057552, "process_in_blocks": "0", "process_kernel_time": 1.18, "process_mem_max_rss": "520440", "process_out_blocks": "0", "process_user_time": 8.76}
+[0m19:22:39.719324 [debug] [Dummy-1   ]: Command `cli snapshot` succeeded at 19:22:39.719072 after 11.06 seconds
+[0m19:22:39.719850 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 19:23:10.227855 | fc262552-d6b5-4ecb-8a85-e9a066cafa25 ==============================
+[0m19:23:10.227855 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m19:23:10.228678 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'profiles_dir': '/tmp/dbt_effective_profiles_2e8luy53', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'target_path': 'None', 'invocation_command': 'dbt ', 'send_anonymous_usage_stats': 'False'}
+[0m19:23:10.502959 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m19:23:11.027812 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m19:23:11.559050 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m19:23:11.559625 [debug] [Dummy-1   ]: Partial parsing enabled, no changes found, skipping parsing
+[0m19:23:11.935688 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:23:11.938913 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:23:12.078699 [info ] [Dummy-1   ]: Found 93 models, 5 snapshots, 444 data tests, 45 sources, 490 macros
+[0m19:23:12.097554 [info ] [Dummy-1   ]: 
+[0m19:23:12.098117 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m19:23:12.098552 [info ] [Dummy-1   ]: 
+[0m19:23:12.099328 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m19:23:12.101560 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW'
+[0m19:23:12.182309 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW"
+[0m19:23:12.182911 [debug] [ThreadPool]: On list_GN_DW: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW"} */
+show terse schemas in database GN_DW
+    limit 10000
+[0m19:23:12.183368 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:23:12.736187 [debug] [ThreadPool]: SQL status: SUCCESS 11 in 0.553 seconds
+[0m19:23:12.750090 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_GN_DW, now list_GN_DW_SNAPSHOT)
+[0m19:23:12.752184 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m19:23:12.753936 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m19:23:12.768205 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m19:23:12.769064 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:23:12.772821 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:23:12.776218 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:23:12.779752 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:23:12.780262 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:23:12.780772 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:23:12.781265 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:23:12.781745 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m19:23:12.782208 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:23:12.782637 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:23:12.783179 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:23:12.783650 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m19:23:13.324800 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.541 seconds
+[0m19:23:13.329390 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:23:13.329919 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m19:23:13.336907 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.553 seconds
+[0m19:23:13.338593 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:23:13.339111 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m19:23:13.362939 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.581 seconds
+[0m19:23:13.364675 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:23:13.365160 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+show objects in GN_DW.SNAPSHOT
+    limit 10000
+    
+;
+[0m19:23:13.369352 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.587 seconds
+[0m19:23:13.371066 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:23:13.371574 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m19:23:13.488539 [debug] [ThreadPool]: SQL status: SUCCESS 43 in 0.158 seconds
+[0m19:23:13.491513 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m19:23:13.492001 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:23:13.529062 [debug] [ThreadPool]: SQL status: SUCCESS 4 in 0.157 seconds
+[0m19:23:13.530963 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m19:23:13.531763 [debug] [ThreadPool]: SQL status: SUCCESS 5 in 0.166 seconds
+[0m19:23:13.532263 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:23:13.534028 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m19:23:13.534888 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:23:13.553876 [debug] [ThreadPool]: SQL status: SUCCESS 51 in 0.214 seconds
+[0m19:23:13.557968 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m19:23:13.558428 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m19:23:13.575329 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.083 seconds
+[0m19:23:13.614282 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.079 seconds
+[0m19:23:13.618831 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.084 seconds
+[0m19:23:13.640325 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.081 seconds
+[0m19:23:13.666340 [debug] [Thread-2 (]: Began running node model.gn_dw_silver.DIM_MEMBER_ACQUISITION
+[0m19:23:13.667211 [info ] [Thread-2 (]: 1 of 1 START sql incremental model GOLD.DIM_MEMBER_ACQUISITION ................. [RUN]
+[0m19:23:13.735334 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_SNAPSHOT, now model.gn_dw_silver.DIM_MEMBER_ACQUISITION)
+[0m19:23:13.735965 [debug] [Thread-2 (]: Began compiling node model.gn_dw_silver.DIM_MEMBER_ACQUISITION
+[0m19:23:13.747944 [debug] [Thread-2 (]: Writing injected SQL for node "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:13.748818 [debug] [Thread-2 (]: Began executing node model.gn_dw_silver.DIM_MEMBER_ACQUISITION
+[0m19:23:13.796189 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:13.796761 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+TRUNCATE TABLE IF EXISTS GN_DW.GOLD.DIM_MEMBER_ACQUISITION
+[0m19:23:13.797248 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m19:23:14.607106 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.810 seconds
+[0m19:23:14.617189 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:14.618254 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+create or replace  temporary view GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp
+  
+   as (
+    -- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
+-- Co-authored with CoCo
+--
+-- ============================================================================
+-- [2026-08-06 O45] 신설 — O8(다중후원 귀속 규칙 미확정)의 우회로
+-- ----------------------------------------------------------------------------
+-- 🔴 문제: `FACT_MEMBER_MONTHLY` 의 `CAMPAIGN_SK`·`SPONSORSHIP_SK` 는 **전건 센티넬**이다.
+--    원천에 캠페인이 없어서가 아니다 — 회원-월 grain 에서 다중캠페인 후원(7.98% · 단일
+--    회원-월 최대 60개)을 어디에 귀속시킬지 규칙이 없어서 0 으로 둔 것이다.
+--    그 결과 보고서필드 **41필드 · 11섹션**이 「브랜드·상위캠페인·캠페인명·홍보방법·후원사업·부서」를
+--    분해할 수 없었다(O44 실측).
+--
+-- 🟢 해법: **임의 귀속을 하지 말고 「획득 시점」이라는 명시된 규칙**을 쓴다.
+--    `FACT_MEMBER_COHORT` 는 이미 회원 1행이고 획득 사건의 캠페인·연령·지역·성별을 갖고 있다.
+--    거기에 **획득 부서·획득 후원사업 2축만** 더하면 회원 귀속 차원이 완성된다.
+--
+-- 🔴 왜 테이블이 아니라 뷰인가: 같은 사실을 두 곳에 저장하면 반드시 어긋난다(O43 P85 교훈).
+--    FMC 가 단일 정의 지점이고 이 뷰는 **차원으로서의 의미만 부여**한다(저장 중복 0).
+--    SV 에서는 이 뷰를 dimension 으로 선언해 팩트-팩트 조인처럼 보이지 않게 한다.
+--
+-- ── 조인 안전성 실측(2026-08-06) — 팬아웃 0 ────────────────────────────────────
+--   `FACT_MEMBER_COHORT` 1,585,949행 = 1,585,949 고유회원 → **1행/회원 확인**
+--   ⋈ `FACT_MEMBER_MONTHLY`      40,054,883 → 39,409,747  (미매칭 1.61%)
+--   ⋈ `FACT_SERVICE_EVENT`       38,470,780 → 38,339,810  (99.66%)
+--   ⋈ `FACT_EVENT_PARTICIPATION`  1,134,126 →  1,119,559  (98.70%)
+--   ⇒ 반드시 **LEFT JOIN** 할 것. INNER 로 걸면 개발 사건이 없는 회원(일시회원 등)이 사라진다.
+--
+-- 🔴 네이밍 규약 — O34 교훈(`_AT_PLEDGE` vs `_AT_EVENT`)의 재적용:
+--    「부서」라는 같은 라벨이 보고서마다 다른 축을 뜻한다.
+--      · **개발실적보고**의 부서 = **사건 부서** → `FACT_MEMBER_EVENT.ORG_SK` 를 쓴다
+--      · **연간분석(회비)**의 부서 = **획득 부서** → 이 차원의 `ACQ_ORG_*` 를 쓴다
+--    두 값은 다르다. 이름으로 구분되지 않으면 소비 측이 조용히 틀린다.
+-- ============================================================================
+-- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
+--   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
+--   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
+--     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+-- 🔴🔴 [2026-08-10 O53] **뷰 → 테이블 전환.**
+--   ① 컬럼 COMMENT 정본이 `03_top-down_gold/06_DDL.sql` 인라인 COMMENT 로 이동했다(사용자 결정).
+--      schema.yml `columns[]` 는 제거 — 같은 사실을 두 곳에 두면 갈라진다(P85).
+--   ② `incremental` + `append` + `pre_hook TRUNCATE` — merge 금지(완전 재산출 차원에서 grain 이동 시
+--      구 행 잔존 · 문서50 §300 R1 · P131). base 인 FACT_MEMBER_COHORT 가 회원 집합을 매 build 재산출한다.
+--   ③ 감사컬럼 4종을 신설했다(GOLD 35테이블 전수 관례 · 뷰 시절에는 없었다).
+--   🔴 SELECT 컬럼 변경 시 06_DDL 블록을 동시에 재생성할 것(`scripts/gen_o53_gold_ddl.py`).
+
+
+with ranked_snp_campaign as (
+    select
+        CMPGN_CD,
+        CMPGN_NM,
+        dbt_valid_from,
+        coalesce(dbt_valid_to, '9999-12-31'::timestamp_ntz) as dbt_valid_to,
+        row_number() over (partition by CMPGN_CD order by dbt_valid_from asc) as rn_first
+    from GN_DW.SNAPSHOT.snp_crm_tm_cm_cmpgn_mng
+)
+select
+    c.MEMBER_DK                                     as MEMBER_DK,          -- 자연키(= 팩트 조인키)
+    -- ── 획득 귀속 축 ─────────────────────────────────────────────────────────
+    c.ACQ_CAMPAIGN_SK                               as ACQ_CAMPAIGN_SK,
+    c.ACQ_ORG_SK                                    as ACQ_ORG_SK,
+    c.ACQ_SPONSORSHIP_SK                            as ACQ_SPONSORSHIP_SK,
+    c.ACQ_DATE_SK                                   as ACQ_DATE_SK,
+    c.ACQ_BASIS                                     as ACQ_BASIS,          -- NEW=신규사건 / FALLBACK=최초개발사건
+    c.ACQ_DVLP_DIV_CD                               as ACQ_DVLP_DIV_CD,
+    -- ── 획득 시점 회원 속성 (현재 값이 아니다 — O34) ──────────────────────────
+    c.ACQ_AGE_CD                                    as ACQ_AGE_CD,
+    c.ACQ_AGE_BAND                                  as ACQ_AGE_BAND,
+    c.ACQ_AREA_CD                                   as ACQ_AREA_CD,
+    c.ACQ_REGION                                    as ACQ_REGION,
+    c.ACQ_SEX_CD                                    as ACQ_SEX_CD,
+    c.ACQ_GENDER                                    as ACQ_GENDER,
+    c.ACQ_SPNSR_AMT                                 as ACQ_SPNSR_AMT,
+    -- ── 라벨(차원 단독 조회로도 뜻이 통하게 — DEC-10 전제) ────────────────────
+    -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(cmp.*) → `FACT_MEMBER_COHORT.ACQ_*` 동결값으로 전환.
+    --   캠페인 마스터가 이후 정정돼도 과거 획득 회원의 값은 바뀌지 않는다(O99 설계부채 해소).
+    c.ACQ_BRAND                                     as ACQ_BRAND,
+    cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,          -- 현재 최신 캠페인명 (MSTR 대조용)
+    coalesce(snp_cmp.CMPGN_NM, cmp.CAMPAIGN_NAME)   as ACQ_CAMPAIGN_NAME_AT_ACQ,   -- 획득 당시 캠페인명 (Snapshot 기반 동결)
+    c.ACQ_PARENT_CAMPAIGN_NAME                      as ACQ_PARENT_CAMPAIGN_NAME,
+    c.ACQ_PROMO_METHOD_NAME                         as ACQ_PROMO_METHOD_NAME,
+    c.ACQ_MKTG_CMPGN_NM                             as ACQ_MARKETING_CAMPAIGN,
+    org.DEPARTMENT                                  as ACQ_DEPARTMENT,
+    spb.SPONSORSHIP_NAME                            as ACQ_SPONSORSHIP_NAME,
+    -- [DEC-43] 잔여 8속성(9속성 중 나머지 5 + 후원/법인구분 2 + UTM 1) 신규 노출.
+    c.ACQ_MBER_INFLOW_PATH_NM                       as ACQ_INFLOW_PATH,
+    c.ACQ_CMPGN_CTGR_NM                             as ACQ_CAMPAIGN_TYPE,
+    c.ACQ_CMPGN_TYPE1_NM                            as ACQ_DOMESTIC_OVERSEAS,
+    c.ACQ_CMPGN_TYPE2_NM                            as ACQ_BIZ_CASE_TYPE,
+    c.ACQ_CMMN_BRND_NM                              as ACQ_CMMN_BRND_NM,
+    c.ACQ_MKTG_UTM_NM                               as ACQ_MKTG_UTM_NM,
+    c.ACQ_SPNSR_DIV_NM                              as ACQ_SPNSR_DIV_NM,
+    c.ACQ_CPR_DIV_NM                                as ACQ_CPR_DIV_NM,
+    -- ── 코호트 결과 measure (중단률·유지기간은 이 차원이 아니라 FMC 에서 집계) ──
+    c.FIRST_STOP_DATE_SK                            as FIRST_STOP_DATE_SK,
+    c.FIRST_STOP_REASON_NM                          as FIRST_STOP_REASON_NM,
+    c.TENURE_DAYS                                   as TENURE_DAYS,
+    c.IS_12M_OBSERVABLE                             as IS_12M_OBSERVABLE,
+    -- [O53] 감사컬럼 — GOLD 테이블 전수 관례. 원천계통은 base(FMC)와 동일한 CRM.
+    'CRM'                       AS DW_SOURCE_SYSTEM,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
+    'fc262552-d6b5-4ecb-8a85-e9a066cafa25'                    AS DW_BATCH_ID
+from GN_DW.GOLD.FACT_MEMBER_COHORT c
+left join GN_DW.GOLD.DIM_CAMPAIGN     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
+left join ranked_snp_campaign           snp_cmp
+       on snp_cmp.CMPGN_CD = cmp.CAMPAIGN_BK
+      and (
+          (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') between snp_cmp.dbt_valid_from and snp_cmp.dbt_valid_to)
+          or (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') < snp_cmp.dbt_valid_from and snp_cmp.rn_first = 1)
+          or (c.ACQ_DATE_SK = 0 and snp_cmp.rn_first = 1)
+      )
+left join GN_DW.GOLD.DIM_ORG          org on org.ORG_SK          = c.ACQ_ORG_SK
+left join GN_DW.GOLD.DIM_SPONSORSHIP  spb on spb.SPONSORSHIP_SK  = c.ACQ_SPONSORSHIP_SK
+  );
+[0m19:23:15.158402 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.539 seconds
+[0m19:23:15.170193 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.170845 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+describe table GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp
+[0m19:23:15.270615 [debug] [Thread-2 (]: SQL status: SUCCESS 38 in 0.099 seconds
+[0m19:23:15.277354 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.277933 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+describe table GN_DW.GOLD.DIM_MEMBER_ACQUISITION
+[0m19:23:15.361540 [debug] [Thread-2 (]: SQL status: SUCCESS 38 in 0.083 seconds
+[0m19:23:15.364955 [debug] [Thread-2 (]: Changing col type from character varying(300) to character varying(16777216) in table database: "GN_DW"
+schema: "GOLD"
+identifier: "DIM_MEMBER_ACQUISITION"
+
+[0m19:23:15.371142 [info ] [Thread-2 (]: [gn_no_structural_alter] SKIPPED: alter table GN_DW.GOLD.DIM_MEMBER_ACQUISITION alter "ACQ_CAMPAIGN_NAME_AT_ACQ" set data type character varying(16777216)  — 구조 정본은 DDL(GN_DW_ADMIN). 필요하면 DDL 을 고치고 사람이 ALTER 하라.
+[0m19:23:15.384457 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.385169 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+describe table GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp
+[0m19:23:15.461232 [debug] [Thread-2 (]: SQL status: SUCCESS 38 in 0.075 seconds
+[0m19:23:15.469534 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.470253 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+describe table "GN_DW"."GOLD"."DIM_MEMBER_ACQUISITION"
+[0m19:23:15.534135 [debug] [Thread-2 (]: SQL status: SUCCESS 38 in 0.063 seconds
+[0m19:23:15.551030 [debug] [Thread-2 (]: 
+    In "GN_DW"."GOLD"."DIM_MEMBER_ACQUISITION":
+        Schema changed: True
+        Source columns not in target: []
+        Target columns not in source: []
+        New column types: [{'column_name': 'ACQ_CAMPAIGN_NAME_AT_ACQ', 'new_type': 'character varying(16777216)'}]
+  
+[0m19:23:15.557392 [debug] [Thread-2 (]: 
+    In "GN_DW"."GOLD"."DIM_MEMBER_ACQUISITION":
+        Schema change approach: append_new_columns
+        Columns added: []
+        Columns removed: 
+        Data types changed: 
+  
+[0m19:23:15.569021 [debug] [Thread-2 (]: Writing runtime sql for node "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.570445 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.570998 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+BEGIN
+[0m19:23:15.690182 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.119 seconds
+[0m19:23:15.690841 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:15.691443 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+insert into GN_DW.GOLD.DIM_MEMBER_ACQUISITION ("MEMBER_DK", "ACQ_CAMPAIGN_SK", "ACQ_ORG_SK", "ACQ_SPONSORSHIP_SK", "ACQ_DATE_SK", "ACQ_BASIS", "ACQ_DVLP_DIV_CD", "ACQ_AGE_CD", "ACQ_AGE_BAND", "ACQ_AREA_CD", "ACQ_REGION", "ACQ_SEX_CD", "ACQ_GENDER", "ACQ_SPNSR_AMT", "ACQ_BRAND", "ACQ_CAMPAIGN_NAME", "ACQ_CAMPAIGN_NAME_AT_ACQ", "ACQ_PARENT_CAMPAIGN_NAME", "ACQ_PROMO_METHOD_NAME", "ACQ_MARKETING_CAMPAIGN", "ACQ_DEPARTMENT", "ACQ_SPONSORSHIP_NAME", "ACQ_INFLOW_PATH", "ACQ_CAMPAIGN_TYPE", "ACQ_DOMESTIC_OVERSEAS", "ACQ_BIZ_CASE_TYPE", "ACQ_CMMN_BRND_NM", "ACQ_MKTG_UTM_NM", "ACQ_SPNSR_DIV_NM", "ACQ_CPR_DIV_NM", "FIRST_STOP_DATE_SK", "FIRST_STOP_REASON_NM", "TENURE_DAYS", "IS_12M_OBSERVABLE", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "MEMBER_DK", "ACQ_CAMPAIGN_SK", "ACQ_ORG_SK", "ACQ_SPONSORSHIP_SK", "ACQ_DATE_SK", "ACQ_BASIS", "ACQ_DVLP_DIV_CD", "ACQ_AGE_CD", "ACQ_AGE_BAND", "ACQ_AREA_CD", "ACQ_REGION", "ACQ_SEX_CD", "ACQ_GENDER", "ACQ_SPNSR_AMT", "ACQ_BRAND", "ACQ_CAMPAIGN_NAME", "ACQ_CAMPAIGN_NAME_AT_ACQ", "ACQ_PARENT_CAMPAIGN_NAME", "ACQ_PROMO_METHOD_NAME", "ACQ_MARKETING_CAMPAIGN", "ACQ_DEPARTMENT", "ACQ_SPONSORSHIP_NAME", "ACQ_INFLOW_PATH", "ACQ_CAMPAIGN_TYPE", "ACQ_DOMESTIC_OVERSEAS", "ACQ_BIZ_CASE_TYPE", "ACQ_CMMN_BRND_NM", "ACQ_MKTG_UTM_NM", "ACQ_SPNSR_DIV_NM", "ACQ_CPR_DIV_NM", "FIRST_STOP_DATE_SK", "FIRST_STOP_REASON_NM", "TENURE_DAYS", "IS_12M_OBSERVABLE", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp
+    )
+
+;
+[0m19:23:21.038958 [debug] [Thread-2 (]: SQL status: SUCCESS 1585949 in 5.347 seconds
+[0m19:23:21.039704 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:21.040249 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+COMMIT
+[0m19:23:21.358201 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.317 seconds
+[0m19:23:21.369314 [debug] [Thread-2 (]: Applying DROP to: GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp
+[0m19:23:21.384016 [debug] [Thread-2 (]: Using snowflake connection "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"
+[0m19:23:21.384578 [debug] [Thread-2 (]: On model.gn_dw_silver.DIM_MEMBER_ACQUISITION: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "model.gn_dw_silver.DIM_MEMBER_ACQUISITION"} */
+drop view if exists GN_DW.GOLD.DIM_MEMBER_ACQUISITION__dbt_tmp cascade
+[0m19:23:21.510508 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.125 seconds
+[0m19:23:21.532680 [info ] [Thread-2 (]: 1 of 1 OK created sql incremental model GOLD.DIM_MEMBER_ACQUISITION ............ [[32mSUCCESS 1585949[0m in 7.86s]
+[0m19:23:21.533461 [debug] [Thread-2 (]: Finished running node model.gn_dw_silver.DIM_MEMBER_ACQUISITION
+[0m19:23:21.536710 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m19:23:21.537214 [debug] [Dummy-1   ]: Connection 'model.gn_dw_silver.DIM_MEMBER_ACQUISITION' was properly closed.
+[0m19:23:21.537658 [debug] [Dummy-1   ]: Connection 'list_GN_DW_OPS' was properly closed.
+[0m19:23:21.538087 [debug] [Dummy-1   ]: Connection 'list_GN_DW_SILVER' was properly closed.
+[0m19:23:21.538515 [debug] [Dummy-1   ]: Connection 'list_GN_DW_GOLD' was properly closed.
+[0m19:23:21.539047 [info ] [Dummy-1   ]: 
+[0m19:23:21.539510 [info ] [Dummy-1   ]: Finished running 1 incremental model in 0 hours 0 minutes and 9.44 seconds (9.44s).
+[0m19:23:21.540316 [debug] [Dummy-1   ]: Command end result
+[0m19:23:21.683709 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:23:21.686631 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:23:21.692631 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m19:23:21.693101 [info ] [Dummy-1   ]: 
+[0m19:23:21.693758 [info ] [Dummy-1   ]: [32mCompleted successfully[0m
+[0m19:23:21.694239 [info ] [Dummy-1   ]: 
+[0m19:23:21.694820 [info ] [Dummy-1   ]: Done. PASS=1 WARN=0 ERROR=0 SKIP=0 TOTAL=1
+[0m19:23:21.696515 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 11.542525, "process_in_blocks": "0", "process_kernel_time": 0.87, "process_mem_max_rss": "477220", "process_out_blocks": "0", "process_user_time": 5.25}
+[0m19:23:21.697147 [debug] [Dummy-1   ]: Command `cli build` succeeded at 19:23:21.696885 after 11.54 seconds
+[0m19:23:21.697671 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 20:32:15.613919 | 3a8b3019-3f2c-4303-86bb-7fcc753f04ac ==============================
+[0m20:32:15.613919 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m20:32:15.614911 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt_effective_profiles_zukccmzf', 'debug': 'False', 'version_check': 'True', 'log_path': '/tmp/dbt/logs', 'fail_fast': 'False', 'warn_error': 'None', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'introspect': 'True', 'log_format': 'default', 'static_parser': 'True', 'target_path': 'None', 'invocation_command': 'dbt ', 'send_anonymous_usage_stats': 'False'}
+[0m20:32:15.899364 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m20:32:16.443530 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m20:32:16.994593 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 6 files added, 1 files changed.
+[0m20:32:16.996930 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql
+[0m20:32:16.997514 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tc_cmmn_dtl_cd.sql
+[0m20:32:16.998025 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tm_ms_crmn.sql
+[0m20:32:16.998571 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tm_ms_event.sql
+[0m20:32:16.999120 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tc_cmmn_cd.sql
+[0m20:32:16.999591 [debug] [Dummy-1   ]: Partial parsing: added file: gn_dw_silver://snapshots/snp_crm_tm_ms_email_tmplat_mng.sql
+[0m20:32:17.006541 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/silver/_sources.yml
+[0m20:32:19.963189 [warn ] [Dummy-1   ]: [[33mWARNING[0m]: Test 'test.gn_dw_silver.warn_gold_view_comment_coverage' (tests/warn_gold_view_comment_coverage.sql) depends on a node named 'WIDE_GA_BEHAVIOR' in package '' which was not found
+[0m20:32:20.548728 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:32:20.552927 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:32:20.668147 [info ] [Dummy-1   ]: Found 93 models, 444 data tests, 11 snapshots, 47 sources, 490 macros
+[0m20:32:20.682378 [info ] [Dummy-1   ]: 
+[0m20:32:20.683756 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m20:32:20.687138 [info ] [Dummy-1   ]: 
+[0m20:32:20.688050 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m20:32:20.700266 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW'
+[0m20:32:20.806220 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW"
+[0m20:32:20.806944 [debug] [ThreadPool]: On list_GN_DW: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW"} */
+show terse schemas in database GN_DW
+    limit 10000
+[0m20:32:20.807491 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:32:21.363794 [debug] [ThreadPool]: SQL status: SUCCESS 11 in 0.556 seconds
+[0m20:32:21.374592 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_GN_DW, now list_GN_DW_SNAPSHOT)
+[0m20:32:21.378777 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m20:32:21.376711 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m20:32:21.392884 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m20:32:21.393911 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m20:32:21.397915 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:32:21.401813 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:32:21.406766 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:32:21.407361 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:32:21.407904 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:32:21.408383 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:32:21.408833 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m20:32:21.409426 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:32:21.409936 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:32:21.410415 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:32:21.410910 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m20:32:21.933782 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.523 seconds
+[0m20:32:21.938419 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:32:21.939266 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.529 seconds
+[0m20:32:21.940064 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.531 seconds
+[0m20:32:21.940599 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m20:32:21.942409 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:32:21.943170 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.533 seconds
+[0m20:32:21.944961 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m20:32:21.945878 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m20:32:21.947855 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:32:21.948395 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+show objects in GN_DW.SNAPSHOT
+    limit 10000
+    
+;
+[0m20:32:21.949176 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m20:32:22.103364 [debug] [ThreadPool]: SQL status: SUCCESS 5 in 0.154 seconds
+[0m20:32:22.105701 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SNAPSHOT"
+[0m20:32:22.106944 [debug] [ThreadPool]: SQL status: SUCCESS 4 in 0.157 seconds
+[0m20:32:22.107453 [debug] [ThreadPool]: On list_GN_DW_SNAPSHOT: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SNAPSHOT"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:32:22.109283 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m20:32:22.110106 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:32:22.157052 [debug] [ThreadPool]: SQL status: SUCCESS 43 in 0.208 seconds
+[0m20:32:22.160212 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m20:32:22.160739 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:32:22.184153 [debug] [ThreadPool]: SQL status: SUCCESS 51 in 0.239 seconds
+[0m20:32:22.187775 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m20:32:22.188316 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m20:32:22.195365 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.085 seconds
+[0m20:32:22.199320 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.089 seconds
+[0m20:32:22.241158 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.080 seconds
+[0m20:32:22.267695 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.079 seconds
+[0m20:32:22.295596 [debug] [Thread-2 (]: Began running node snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd
+[0m20:32:22.296252 [debug] [Thread-3 (]: Began running node snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd
+[0m20:32:22.296855 [debug] [Thread-4 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info
+[0m20:32:22.297422 [debug] [Thread-5 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_ms_crmn
+[0m20:32:22.298131 [info ] [Thread-2 (]: 1 of 6 START snapshot SNAPSHOT.snp_crm_tc_cmmn_cd .............................. [RUN]
+[0m20:32:22.298899 [info ] [Thread-3 (]: 2 of 6 START snapshot SNAPSHOT.snp_crm_tc_cmmn_dtl_cd .......................... [RUN]
+[0m20:32:22.299581 [info ] [Thread-4 (]: 3 of 6 START snapshot SNAPSHOT.snp_crm_tm_cm_spnsr_bsns_info ................... [RUN]
+[0m20:32:22.300236 [info ] [Thread-5 (]: 4 of 6 START snapshot SNAPSHOT.snp_crm_tm_ms_crmn .............................. [RUN]
+[0m20:32:22.300927 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd)
+[0m20:32:22.301483 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly list_GN_DW_SNAPSHOT, now snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd)
+[0m20:32:22.302011 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly list_GN_DW_SILVER, now snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info)
+[0m20:32:22.302588 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly list_GN_DW_OPS, now snapshot.gn_dw_silver.snp_crm_tm_ms_crmn)
+[0m20:32:22.303181 [debug] [Thread-2 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd
+[0m20:32:22.303666 [debug] [Thread-3 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd
+[0m20:32:22.304159 [debug] [Thread-4 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info
+[0m20:32:22.304644 [debug] [Thread-5 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_ms_crmn
+[0m20:32:22.314441 [debug] [Thread-2 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd
+[0m20:32:22.320067 [debug] [Thread-3 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd
+[0m20:32:22.327048 [debug] [Thread-4 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info
+[0m20:32:22.332060 [debug] [Thread-5 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_ms_crmn
+[0m20:32:22.483570 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"
+[0m20:32:22.486375 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"
+[0m20:32:22.488481 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"
+[0m20:32:22.500150 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"
+[0m20:32:22.500849 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(CMMN_DTL_CD_SK as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    MD5(COALESCE(CD_ID,'') || '|' || COALESCE(DTL_CD_ID,'')) as CMMN_DTL_CD_SK,
+    CD_ID,
+    DTL_CD_ID,
+    DTL_CD_NM,
+    DTL_CD_DC,
+    SORT_ORDR,
+    RM,
+    USE_YN,
+    CD_ATRB1,
+    CD_ATRB2,
+    CD_ATRB3,
+    UPPER_CD_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:22.501534 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(SPNSR_BSNS_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    SPNSR_BSNS_ID,
+    SPNSR_DIV_CD,
+    SPNSR_BSNS_NM,
+    SPNSR_BSNS_ABRV_CD,
+    DNTN_TY_CD,
+    SORT_ORDR,
+    CPR_DIV_CD,
+    RM,
+    USE_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:22.502217 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(CD_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CD_ID,
+    CD_NM,
+    CD_DC,
+    SORT_ORDR,
+    RM,
+    USE_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TC_CMMN_CD
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:22.502880 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_crmn: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(CRMN_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CRMN_CD,
+    CRMN_DIV_CD,
+    CRMN_TIT,
+    CRMN_PLACE_NM,
+    BRNCH_DEPT_ID,
+    ATCHFL_ID,
+    SITE_URL,
+    CRMN_STRT_DE,
+    CRMN_END_DE,
+    CRMN_PART_STRT_DE,
+    CRMN_PART_END_DE,
+    TAT,
+    RCRIT_PSNNL_CO,
+    RESRCE_SRVC_FG,
+    CPR_DIV_CD,
+    ENTRPS_CD,
+    RM,
+    CRMN_CTNT,
+    USE_YN,
+    PART_USE_YN,
+    TMPLAT_ID,
+    TMPLAT_TIT,
+    TMPLAT_PART_ID,
+    TMPLAT_PART_TIT,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_CRMN
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:22.503424 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m20:32:22.503932 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:32:22.504459 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:32:22.504933 [debug] [Thread-5 (]: Opening a new connection, currently in state init
+[0m20:32:23.190132 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.685 seconds
+[0m20:32:23.194229 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"
+[0m20:32:23.194944 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:23.263896 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.068 seconds
+[0m20:32:23.264774 [debug] [Thread-2 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"
+[0m20:32:23.266922 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"
+[0m20:32:23.267519 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tc_cmmn_cd
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(CD_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CD_ID,
+    CD_NM,
+    CD_DC,
+    SORT_ORDR,
+    RM,
+    USE_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TC_CMMN_CD
+
+    ) sbq
+
+
+
+        );
+[0m20:32:23.339256 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.835 seconds
+[0m20:32:23.340163 [debug] [Thread-3 (]: SQL status: SUCCESS 0 in 0.837 seconds
+[0m20:32:23.340995 [debug] [Thread-5 (]: SQL status: SUCCESS 0 in 0.836 seconds
+[0m20:32:23.342411 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"
+[0m20:32:23.343837 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"
+[0m20:32:23.345158 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"
+[0m20:32:23.345720 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:23.346282 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:23.346944 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_crmn: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:23.412831 [debug] [Thread-5 (]: SQL status: SUCCESS 0 in 0.065 seconds
+[0m20:32:23.413744 [debug] [Thread-3 (]: SQL status: SUCCESS 0 in 0.066 seconds
+[0m20:32:23.414476 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.067 seconds
+[0m20:32:23.415348 [debug] [Thread-5 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"
+[0m20:32:23.416086 [debug] [Thread-3 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"
+[0m20:32:23.416779 [debug] [Thread-4 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"
+[0m20:32:23.419140 [debug] [Thread-5 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"
+[0m20:32:23.421156 [debug] [Thread-3 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"
+[0m20:32:23.421915 [debug] [Thread-5 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_crmn: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_crmn"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_ms_crmn
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(CRMN_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    CRMN_CD,
+    CRMN_DIV_CD,
+    CRMN_TIT,
+    CRMN_PLACE_NM,
+    BRNCH_DEPT_ID,
+    ATCHFL_ID,
+    SITE_URL,
+    CRMN_STRT_DE,
+    CRMN_END_DE,
+    CRMN_PART_STRT_DE,
+    CRMN_PART_END_DE,
+    TAT,
+    RCRIT_PSNNL_CO,
+    RESRCE_SRVC_FG,
+    CPR_DIV_CD,
+    ENTRPS_CD,
+    RM,
+    CRMN_CTNT,
+    USE_YN,
+    PART_USE_YN,
+    TMPLAT_ID,
+    TMPLAT_TIT,
+    TMPLAT_PART_ID,
+    TMPLAT_PART_TIT,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_CRMN
+
+    ) sbq
+
+
+
+        );
+[0m20:32:23.423753 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"
+[0m20:32:23.424390 [debug] [Thread-3 (]: On snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tc_cmmn_dtl_cd
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(CMMN_DTL_CD_SK as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    MD5(COALESCE(CD_ID,'') || '|' || COALESCE(DTL_CD_ID,'')) as CMMN_DTL_CD_SK,
+    CD_ID,
+    DTL_CD_ID,
+    DTL_CD_NM,
+    DTL_CD_DC,
+    SORT_ORDR,
+    RM,
+    USE_YN,
+    CD_ATRB1,
+    CD_ATRB2,
+    CD_ATRB3,
+    UPPER_CD_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD
+
+    ) sbq
+
+
+
+        );
+[0m20:32:23.425399 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_cm_spnsr_bsns_info
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(SPNSR_BSNS_ID as varchar ), '')
+         || '|' || coalesce(cast(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as varchar ), '')
+        ) as dbt_scd_id,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_updated_at,
+        to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_valid_from,
+        
+  
+  coalesce(nullif(to_timestamp_ntz(convert_timezone('UTC', current_timestamp())), to_timestamp_ntz(convert_timezone('UTC', current_timestamp()))), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    SPNSR_BSNS_ID,
+    SPNSR_DIV_CD,
+    SPNSR_BSNS_NM,
+    SPNSR_BSNS_ABRV_CD,
+    DNTN_TY_CD,
+    SORT_ORDR,
+    CPR_DIV_CD,
+    RM,
+    USE_YN,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO
+
+    ) sbq
+
+
+
+        );
+[0m20:32:24.156058 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.888 seconds
+[0m20:32:24.185667 [info ] [Thread-2 (]: 1 of 6 OK snapshotted SNAPSHOT.snp_crm_tc_cmmn_cd .............................. [[32mSUCCESS 1[0m in 1.88s]
+[0m20:32:24.186521 [debug] [Thread-2 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd
+[0m20:32:24.187257 [debug] [Thread-2 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng
+[0m20:32:24.188075 [info ] [Thread-2 (]: 5 of 6 START snapshot SNAPSHOT.snp_crm_tm_ms_email_tmplat_mng .................. [RUN]
+[0m20:32:24.188713 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly snapshot.gn_dw_silver.snp_crm_tc_cmmn_cd, now snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng)
+[0m20:32:24.189183 [debug] [Thread-2 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng
+[0m20:32:24.194382 [debug] [Thread-2 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng
+[0m20:32:24.200020 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"
+[0m20:32:24.200611 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(TMPLAT_KEY as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    TMPLAT_KEY,
+    CPR_DIV_CD,
+    SNDNG_CD_ID,
+    SNDNG_DTL_CD_ID,
+    ATMC_YN,
+    TIT,
+    EMAIL_CTNT,
+    WRITNG_DEPT_ID,
+    WRITNG_DEPT_NM,
+    CHRG_DEPT_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_EMAIL_TMPLAT_MNG
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:24.201133 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m20:32:24.202531 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.776 seconds
+[0m20:32:24.205364 [info ] [Thread-4 (]: 3 of 6 OK snapshotted SNAPSHOT.snp_crm_tm_cm_spnsr_bsns_info ................... [[32mSUCCESS 1[0m in 1.90s]
+[0m20:32:24.206071 [debug] [Thread-4 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info
+[0m20:32:24.206628 [debug] [Thread-4 (]: Began running node snapshot.gn_dw_silver.snp_crm_tm_ms_event
+[0m20:32:24.207432 [info ] [Thread-4 (]: 6 of 6 START snapshot SNAPSHOT.snp_crm_tm_ms_event ............................. [RUN]
+[0m20:32:24.208031 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly snapshot.gn_dw_silver.snp_crm_tm_cm_spnsr_bsns_info, now snapshot.gn_dw_silver.snp_crm_tm_ms_event)
+[0m20:32:24.208508 [debug] [Thread-4 (]: Began compiling node snapshot.gn_dw_silver.snp_crm_tm_ms_event
+[0m20:32:24.213419 [debug] [Thread-4 (]: Began executing node snapshot.gn_dw_silver.snp_crm_tm_ms_event
+[0m20:32:24.219086 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_event"
+[0m20:32:24.219708 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_event: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_event"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_event"} */
+select * from (
+        
+    
+
+    select *,
+        md5(coalesce(cast(EVENT_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    EVENT_CD,
+    EVENT_DIV_CD,
+    EVENT_NM,
+    STRT_DATE,
+    END_DATE,
+    PRZWIN_PSNNL_CO,
+    PRZWIN_GFT_SNDNG_DE,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_EVENT
+
+    ) sbq
+
+
+
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:24.220198 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m20:32:24.302473 [debug] [Thread-5 (]: SQL status: SUCCESS 1 in 0.877 seconds
+[0m20:32:24.305682 [info ] [Thread-5 (]: 4 of 6 OK snapshotted SNAPSHOT.snp_crm_tm_ms_crmn .............................. [[32mSUCCESS 1[0m in 2.00s]
+[0m20:32:24.306423 [debug] [Thread-5 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_ms_crmn
+[0m20:32:24.318871 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 0.893 seconds
+[0m20:32:24.321819 [info ] [Thread-3 (]: 2 of 6 OK snapshotted SNAPSHOT.snp_crm_tc_cmmn_dtl_cd .......................... [[32mSUCCESS 1[0m in 2.02s]
+[0m20:32:24.322655 [debug] [Thread-3 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd
+[0m20:32:24.825557 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.605 seconds
+[0m20:32:24.827104 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_event"
+[0m20:32:24.827681 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_event: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_event"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_event"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:24.831671 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.630 seconds
+[0m20:32:24.832976 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"
+[0m20:32:24.920815 [debug] [Thread-4 (]: SQL status: SUCCESS 0 in 0.092 seconds
+[0m20:32:24.833503 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"} */
+/* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"} */
+select * from (
+        select to_timestamp_ntz(convert_timezone('UTC', current_timestamp())) as dbt_snapshot_time
+    ) as __dbt_sbq
+    where false
+    limit 0
+[0m20:32:24.926184 [debug] [Thread-4 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_ms_event"
+[0m20:32:24.928190 [debug] [Thread-4 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_event"
+[0m20:32:24.928737 [debug] [Thread-4 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_event: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_event"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_ms_event
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(EVENT_CD as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    EVENT_CD,
+    EVENT_DIV_CD,
+    EVENT_NM,
+    STRT_DATE,
+    END_DATE,
+    PRZWIN_PSNNL_CO,
+    PRZWIN_GFT_SNDNG_DE,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_EVENT
+
+    ) sbq
+
+
+
+        );
+[0m20:32:25.003555 [debug] [Thread-2 (]: SQL status: SUCCESS 0 in 0.077 seconds
+[0m20:32:25.004443 [debug] [Thread-2 (]: Writing runtime sql for node "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"
+[0m20:32:25.006055 [debug] [Thread-2 (]: Using snowflake connection "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"
+[0m20:32:25.006637 [debug] [Thread-2 (]: On snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng"} */
+create or replace transient table GN_DW.SNAPSHOT.snp_crm_tm_ms_email_tmplat_mng
+         as
+        (
+    
+
+    select *,
+        md5(coalesce(cast(TMPLAT_KEY as varchar ), '')
+         || '|' || coalesce(cast(LAST_UPDT_DT as varchar ), '')
+        ) as dbt_scd_id,
+        LAST_UPDT_DT as dbt_updated_at,
+        LAST_UPDT_DT as dbt_valid_from,
+        
+  
+  coalesce(nullif(LAST_UPDT_DT, LAST_UPDT_DT), null)
+  as dbt_valid_to
+from (
+        
+
+
+select
+    TMPLAT_KEY,
+    CPR_DIV_CD,
+    SNDNG_CD_ID,
+    SNDNG_DTL_CD_ID,
+    ATMC_YN,
+    TIT,
+    EMAIL_CTNT,
+    WRITNG_DEPT_ID,
+    WRITNG_DEPT_NM,
+    CHRG_DEPT_ID,
+    FRST_RGSTR_ID,
+    FRST_REGIST_DT,
+    LAST_UPDUSR_ID,
+    LAST_UPDT_DT
+from GN_DW.BRONZE_CRM.TM_MS_EMAIL_TMPLAT_MNG
+
+    ) sbq
+
+
+
+        );
+[0m20:32:25.862995 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.933 seconds
+[0m20:32:25.866011 [info ] [Thread-4 (]: 6 of 6 OK snapshotted SNAPSHOT.snp_crm_tm_ms_event ............................. [[32mSUCCESS 1[0m in 1.66s]
+[0m20:32:25.866834 [debug] [Thread-4 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_ms_event
+[0m20:32:25.915875 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.908 seconds
+[0m20:32:25.919165 [info ] [Thread-2 (]: 5 of 6 OK snapshotted SNAPSHOT.snp_crm_tm_ms_email_tmplat_mng .................. [[32mSUCCESS 1[0m in 1.73s]
+[0m20:32:25.919935 [debug] [Thread-2 (]: Finished running node snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng
+[0m20:32:25.923894 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m20:32:25.924684 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tc_cmmn_dtl_cd' was properly closed.
+[0m20:32:25.925339 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_ms_event' was properly closed.
+[0m20:32:25.925804 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_ms_crmn' was properly closed.
+[0m20:32:25.926202 [debug] [Dummy-1   ]: Connection 'snapshot.gn_dw_silver.snp_crm_tm_ms_email_tmplat_mng' was properly closed.
+[0m20:32:25.926741 [info ] [Dummy-1   ]: 
+[0m20:32:25.927245 [info ] [Dummy-1   ]: Finished running 6 snapshots in 0 hours 0 minutes and 5.24 seconds (5.24s).
+[0m20:32:25.928612 [debug] [Dummy-1   ]: Command end result
+[0m20:32:26.075095 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m20:32:26.078776 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m20:32:26.085011 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m20:32:26.085502 [info ] [Dummy-1   ]: 
+[0m20:32:26.086082 [info ] [Dummy-1   ]: [32mCompleted successfully[0m
+[0m20:32:26.086567 [info ] [Dummy-1   ]: 
+[0m20:32:26.087116 [info ] [Dummy-1   ]: Done. PASS=6 WARN=0 ERROR=0 SKIP=0 TOTAL=6
+[0m20:32:26.088878 [debug] [Dummy-1   ]: Resource report: {"command_name": "snapshot", "command_success": true, "command_wall_clock_time": 10.551882, "process_in_blocks": "0", "process_kernel_time": 0.92, "process_mem_max_rss": "528752", "process_out_blocks": "0", "process_user_time": 8.85}
+[0m20:32:26.089486 [debug] [Dummy-1   ]: Command `cli snapshot` succeeded at 20:32:26.089235 after 10.55 seconds
+[0m20:32:26.090001 [debug] [Dummy-1   ]: Flushing usage events
