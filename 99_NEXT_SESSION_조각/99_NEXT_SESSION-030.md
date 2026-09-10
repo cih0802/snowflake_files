@@ -174,8 +174,14 @@ _Co-authored with CoCo_
    - ㉠ `agent_object_ref_gate` FAIL 적발 ➔ 스펙 2종 내 레거시 `FACT_MEMBER_SPONSOR_BIZ`를 `FACT_MEMBER_SPONSORSHIP_SPAN`으로 정합화 후 **MEMBER=V$6, MARKETING=V$6 재발행**(MEMBER 11·EXECUTIVE 8·MARKETING 7 도구수 100% 일치).
    - ㉡ `test_o125_layer_census` stale 적발 ➔ DDL 개명(`FACT_MESSAGE_DISPATCH` 38) 및 컬럼 증분(`DIM_MEMBER_ACQUISITION` 39) 반영으로 **단위/음성 테스트 31종 전건 PASS(rc=0) 달성**.
    - ㉢ 트랜스크립트 전수 감사(위험신호 6종 0건 통과).
+3. **전사 코멘트 표준화 및 4블록 규약 수립 (DEC-52)**
+   - `05_SV-Agent_ai/14_코멘트_표준화_작업계획.md` 작성 및 `30_설계_의사결정.md`에 `DEC-52` 등재.
+   - 4블록 템플릿(정의/Grain/주의/원천) 확립 및 Agent [원천]/[주의] 태그 100% 보존 원칙 수립.
 
 ### ▣ YYYY2 🔴 다음 세션 열린 작업
+- 🟢 **[P2/품질·표준화] 코멘트 4블록 표준화 및 Live 반영 (`DEC-52`)**:
+  - `05_SV-Agent_ai/14_코멘트_표준화_작업계획.md`에 따라 DDL(Silver/Gold/SV) 내 서사형 코멘트 ➔ 4블록 템플릿 정제.
+  - Live 객체 `COMMENT ON` 반영 및 `comment_drift_gate.py` / 카탈로그 재생성(`gen_column_inventory` 등) 실행.
 - 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 귀속 규칙 (현업 결정 전 배선 금지).
 - 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 도출 규칙 (기획실 협의 대기).
 - 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행·조직 코드 정본 확정 대기.
