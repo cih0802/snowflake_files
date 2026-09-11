@@ -291,7 +291,6 @@ BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_TIMESTAMP,UTC microsec,"NUMBER(38,0)",N,PK,,UTC microsec (PK),
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_NAME,행사명/이벤트명,VARCHAR,N,PK,,이벤트명 (PK),
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_SEQ,이벤트 순번,"NUMBER(38,0)",N,PK,,동일 3키 내 순번 .  GA4.,
-BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BATCH_ORDERING_ID,배치 내 정렬 ID,"NUMBER(38,0)",Y,,,배치 내 정렬 ID.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_DATE,원본 YYYYMMDD,VARCHAR,Y,,,원본 YYYYMMDD,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_DT,파생 DATE,DATE,N,,,파생 DATE.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_TS,파생 TIMESTAMP,TIMESTAMP_NTZ,Y,,,파생 TIMESTAMP,
@@ -324,6 +323,7 @@ BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,DEFAULT_CHANNEL_GROUP,기본 채널그룹,VARCHAR,Y,,,기본 채널그룹,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,PLATFORM,플랫폼,VARCHAR,Y,,,플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건).,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,IS_ACTIVE_USER,활성 사용자 여부,BOOLEAN,Y,,,활성 사용자 여부,
+BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BATCH_ORDERING_ID,배치 내 정렬 ID,"NUMBER(38,0)",Y,,,배치 내 정렬 ID.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,SRC_TABLE,원본 일별 테이블명 계보 (기반 테이블 승계),VARCHAR,Y,,,원본 일별 테이블명 계보 (기반 테이블 승계),
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,SRC_FILE_NAME,파일 단위 계보 (기반 테이블 승계),VARCHAR,Y,,,파일 단위 계보 (기반 테이블 승계),
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
@@ -342,10 +342,10 @@ BIGQUERY_EVENT_DIM,GA 이벤트분류,1이벤트명/파라미터,GA4,DW_UPDATE_T
 BIGQUERY_EVENT_DIM,GA 이벤트분류,1이벤트명/파라미터,GA4,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,USER_PSEUDO_ID,세션 스파인,VARCHAR,N,PK,,세션 스파인 (PK),
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,GA_MEMBER_ID,GA_MEMBER_ID,VARCHAR,Y,,,GA_MEMBER_ID.,
-BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ID_SCHEME,식별자 체계,VARCHAR,Y,,,매칭 분모의 정본(GA4.,
+BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ID_SCHEME,식별자 체계,VARCHAR,N,PK,,ID 체계 (PK) — MBER_NO/ONCE_MBER_NO/APP/EMAIL/INVALID/UNCLASSIFIED,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,MEMBER_TYPE,회원구분 ONCE(S+8자리) / FDRM(7자리),VARCHAR,Y,,,회원구분 ONCE(S+8자리) / FDRM(7자리).,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,MBER_NO,정기 회원번호,VARCHAR,Y,,,정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움.,
-BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ONCE_MBER_NO,ONCE_MBER_NO,VARCHAR,Y,,,ONCE_MBER_NO.,
+BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ONCE_MBER_NO,일시 회원번호 (S+8자리),VARCHAR,Y,,,일시 회원번호 (S+8자리),
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ID_RESOLUTION,ID_RESOLUTION,VARCHAR,Y,,,ID_RESOLUTION.,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,DW_SOURCE_TABLE,원천 테이블 식별,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
@@ -534,6 +534,13 @@ CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM,마케
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM_NM,TM_CM_MKTNG_UTM 라벨,VARCHAR,Y,,,TM_CM_MKTNG_UTM 라벨,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PROMO_METHOD_NAME,홍보방법명,VARCHAR,Y,,,홍보방법명. 코드id:CM008.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PARENT_CAMPAIGN_NAME,상위캠페인명,VARCHAR,Y,,,상위캠페인명.,
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,CMPGN_CD,캠페인코드,VARCHAR,N,PK,,"캠페인코드 (PK, →CRM_CAMPAIGN)",
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,SPNSR_BSNS_ID,후원사업ID,VARCHAR,N,PK,,"후원사업ID (PK, →CRM_SPONSORSHIP)",
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_SOURCE_TABLE,원천 테이블 식별,VARCHAR,Y,,,원천 테이블 식별 (공통감사),공통감사
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 (공통감사),공통감사
 CRM_CODE,코드사전,"코드그룹 × 코드 (CD_ID, DTL_CD_ID)",코드,CD_ID,코드그룹 ID,VARCHAR,N,PK,,코드그룹 ID (PK),
 CRM_CODE,코드사전,"코드그룹 × 코드 (CD_ID, DTL_CD_ID)",코드,DTL_CD_ID,상세코드 ID,VARCHAR,N,PK,,상세코드 ID (PK),
 CRM_CODE,코드사전,"코드그룹 × 코드 (CD_ID, DTL_CD_ID)",코드,DTL_CD_NM,상세코드명 (라벨),VARCHAR,Y,,,상세코드명 (라벨),
@@ -549,6 +556,7 @@ CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마�
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,MBER_DVLP_DIV_CD,회원개발 구분코드,VARCHAR,N,"PK,FK",CRM_CODE※비강제,회원개발 구분코드 (PK),FTG-D conform
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,DEPT_ID,부서ID,VARCHAR,N,"PK,FK",CRM_ORG.DEPT_ID※비강제,"부서ID (PK, →CRM_ORG)",
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,GOAL_CNT,목표 건수,"NUMBER(10,0)",Y,,,목표 건수,FTG-D measure
+CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,TARGET_TYPE,목표 유형 (ORIGINAL/당초 등),VARCHAR,Y,,,목표 유형 (ORIGINAL/당초 등) [O145-8],
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 CRM_DEV_TARGET,회원개발 목표,월 × 조직 × 개발구분 (1목표),마스터,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
@@ -895,6 +903,9 @@ CRM_SPONSOR_RELATION,결연(아동),"1결연아동 (MBER_NO, CHILD_NO)",결연,D
 CRM_SPONSOR_RELATION,결연(아동),"1결연아동 (MBER_NO, CHILD_NO)",결연,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,BUDGET_ITEM_DK,불변 비즈니스 식별자,VARCHAR,N,"PK,FK",ERP_BUDGET_ITEM※비강제,불변 비즈니스 식별자,
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,BUDGET_YEAR,예산연도 YYYY,"NUMBER(4,0)",Y,,,예산연도 YYYY,
+ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,BUDGET_PROCEDURE,예산 편성 차수 (연사업 / 추가경정 · DEC-44),VARCHAR,Y,,,예산 편성 차수 (연사업 / 추가경정 · DEC-44),
+ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,DVLP_INBOUND_PATH,개발 유입경로,VARCHAR,Y,,,개발 유입경로 (원천 DVLP_INBOUND_PATH 승계 · 8종),
+ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,BDGT_UNIT_NM,예산단위명,VARCHAR,Y,,,예산단위명 (원천 BDGT_UNIT_NM 승계 · 6종),
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,MONTH_NO,월 1~12,"NUMBER(2,0)",N,PK,,월 1~12 (PK),
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,MONTH_KEY,월키 YYYYMM,VARCHAR,Y,,,월키 YYYYMM,
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,YEAR_BUDGET_AMT,편성(연예산) 금액 원단위,"NUMBER(38,0)",Y,,,편성(연예산) 금액 원단위,
@@ -906,7 +917,6 @@ ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-ERP_BUDGET,예산 편성/추경/조정/집행,"예산과목 × 월 (BUDGET_ITEM_DK, YYYYMM)",ERP,BUDGET_PROCEDURE,예산 편성 차수,VARCHAR,Y,,,예산 편성 차수 (연사업 / 추가경정 · DEC.,
 ERP_BUDGET_ITEM,예산과목 마스터,1예산과목 (BUDGET_ITEM_DK),ERP,BUDGET_ITEM_DK,불변 비즈니스 식별자,VARCHAR,N,PK,,불변 비즈니스 식별자,
 ERP_BUDGET_ITEM,예산과목 마스터,1예산과목 (BUDGET_ITEM_DK),ERP,BUDGET_YEAR,예산연도 YYYY,"NUMBER(4,0)",Y,,,예산연도 YYYY,
 ERP_BUDGET_ITEM,예산과목 마스터,1예산과목 (BUDGET_ITEM_DK),ERP,INCOME_EXPS_DIV_NM,수입/지출 구분,VARCHAR,Y,,,수입/지출 구분,
@@ -925,6 +935,7 @@ ERP_BUDGET_ITEM,예산과목 마스터,1예산과목 (BUDGET_ITEM_DK),ERP,DW_UPD
 ERP_BUDGET_ITEM,예산과목 마스터,1예산과목 (BUDGET_ITEM_DK),ERP,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,BUDGET_ITEM_DK,불변 비즈니스 식별자,VARCHAR,N,PK,,불변 비즈니스 식별자,
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,BUDGET_YEAR,예산연도 YYYY,"NUMBER(4,0)",N,PK,,예산연도 YYYY . 본 테이블의 grain 은 **연**이다.,
+ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,BUDGET_PROCEDURE,예산 편성 차수,VARCHAR,Y,,,예산 편성 차수 (연사업 / 추가경정 · DEC.,
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,YEAR_BDGT_TOT_AMT,YEAR_BDGT_TOT_AMT,"NUMBER(38,0)",Y,,,YEAR_BDGT_TOT_AMT.,
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,CHN_BDGT_TOT_AMT,연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT,"NUMBER(38,0)",Y,,,연 추경예산 총액 원단위 = 원천 CHN_BDGT_TOT_AMT.,
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,ADJ_BDGT_TOT_AMT,연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT,"NUMBER(38,0)",Y,,,연 조정예산 총액 원단위 = 원천 ADJ_BDGT_TOT_AMT.,
@@ -934,7 +945,6 @@ ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYY
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,BUDGET_PROCEDURE,예산 편성 차수,VARCHAR,Y,,,예산 편성 차수 (연사업 / 추가경정 · DEC.,
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,USER_PSEUDO_ID,GA 세션 스파인,VARCHAR,N,PK,,GA 세션 스파인 (PK),
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,GA_MEMBER_ID,GA_MEMBER_ID,VARCHAR,Y,,,GA_MEMBER_ID.,
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,ID_SCHEME,식별자 체계,VARCHAR,Y,,,GA측 ID 체계. 매칭 분모 판정의 정본.,

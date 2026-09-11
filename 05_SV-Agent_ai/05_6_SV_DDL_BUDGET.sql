@@ -57,7 +57,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd AS GN_DW.GOLD.FACT_BUDGET
       PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
       WITH SYNONYMS ('예산', '예산 집행')
-      COMMENT = '예산 팩트(grain=월×세세목, 실측 유일 → PK). 편성/집행. ⚠편성·집행 금액에 음수(조정/환입)가 존재한다. [원천] 시스템=ERP(예산관리, Snowflake 파일 업로드 적재) · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(예산·실적 원장): 편성 YEAR_BDGT_AMT_n · 집행 EXEC_AMT_n — 12개월 wide 컬럼을 월 long으로 언피벗 · SILVER=ERP_BUDGET.',
+      COMMENT = '예산 편성 및 집행 실적 분석 (base: GOLD.FACT_BUDGET). [Grain: 월 × 부서 × 예산과목]. [활성 지표: 편성예산/집행예산/집행률(%)]. [주의: 연 총액은 SV_BUDGET_YEARLY 사용(월 집행액과 합산 금지)]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET → GOLD.FACT_BUDGET].',
     month AS GN_DW.GOLD.DIM_MONTH
       PRIMARY KEY (MONTH_KEY)
       WITH SYNONYMS ('월', '예산월')

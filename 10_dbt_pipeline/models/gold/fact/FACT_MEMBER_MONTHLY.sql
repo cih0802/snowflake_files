@@ -66,7 +66,7 @@ billing as (
         --   ⇒ NULL = 일시회원 이라는 판정이 실측으로 성립한다(추론 아님).
         -- 🔴 G(선물금)·U(긴급구호)는 3컬럼 어디에도 넣지 않는다 — 정본 #67 이 열거한
         --    "기타·국내사업·해외사업" 에 선물금·긴급구호가 없고, 선물금은 **별도 지표**가 있다
-        --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_SERVICE_EVENT.GIFT_PART_*`).
+        --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_MESSAGE_DISPATCH.GIFT_PART_*`).
         --    긴급구호는 대응 지표가 없다. 억지로 귀속시키면 정의 창작이다(DEC-17-B).
         -- ⚠️ 따라서 **3컬럼 합 ≠ PAID_FEE** 다. 검산(2026-08-03 · 본 모델 실행 결과로 확인):
         --    #66 759,530,956,167 + #67 5,365,351,828 + #68 126,337,814,788 = 891,234,122,783
@@ -212,7 +212,7 @@ fme_rollup as (
         IFF(SUM(DEV_CNT) > 0, 1, 0)                    as DEV_MEMBERS,  -- 월×회원 grain: 개발발생 1/0 (다월 SUM 시 distinct 회원수)
         SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
         IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS
-    from {{ ref('FACT_MEMBER_LIFECYCLE') }}
+    from {{ ref('FACT_MEMBER_EVENT') }}
     group by MONTH_KEY, MEMBER_DK
 ),
 

@@ -35,7 +35,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 회원 마스터 미완전 고아 정책 일관(warn). 전량입고 후 제거→error 복귀
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
 
   - name: AGENCY_AD_CREATIVE
     columns:
@@ -126,5 +126,6 @@ models:
           - relationships:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
+              config: { severity: warn }
       - name: "CMPGN_CD || '|' || SPNSR_BSNS_ID"
         tests: [unique]

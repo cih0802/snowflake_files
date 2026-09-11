@@ -81,12 +81,17 @@ KNOWN_ORPHANS = {
     #   🔴 이름만 보고 분류하지 마라 — `MEMBER_DK` 는 같은 이름으로 두 성격이 다 있다
     #     (DIM_MEMBER 에서는 자연키 · DIM_MEMBER_IDENTITY 에서는 참조) ⇒ **테이블 한정 키로 적는다.**
     # ══════════════════════════════════════════════════════════════════════════
-    ("DIM_MEMBER", "MEMBER_DK"): (
+    ("DIM_MEMBER_STATUS_HISTORY", "MEMBER_DK"): (
         "DEGEN",
         "SCD2 차원의 자연키(업무키). 실측 = 7,925,716행 · distinct 1,763,065 ⇒ 버전 반복이라 "
         "비유일이지만 **자기 테이블의 업무키이고 다른 차원을 참조하지 않는다**. "
         "🔴 이름이 같은 DIM_MEMBER_IDENTITY.MEMBER_DK 와 성격이 다르다(그쪽은 이 컬럼을 참조한다) "
         "⇒ 컬럼 전역 규칙으로 적으면 두 성격이 뭉개진다.",
+    ),
+    ("DIM_MEMBER", "MEMBER_DK"): (
+        "DEGEN",
+        "정규 회원 마스터 차원의 자연키(1회원=1행, PK). "
+        "자기 테이블의 키이고 다른 차원을 참조하지 않는다.",
     ),
     ("DIM_ORG", "ORG_DK"): (
         "DEGEN",
@@ -100,13 +105,13 @@ KNOWN_ORPHANS = {
         "결손은 회원 마스터 미완전 축(문서50 §O116 ㉠)의 1행이다. "
         "🔴 물리 FK 도 dbt relationships 도 없다 ⇒ ERD 에 논리 관계로 표기한다.",
     ),
-    ("DIM_MEMBER_CURRENT", "MEMBER_SK"): (
+    ("DIM_MEMBER", "MEMBER_SK"): (
         "CONFORM",
-        "현재행 투영 차원 → DIM_MEMBER.MEMBER_SK 참조(1:1 투영). 실측 = 1,763,065행 · "
+        "현재행 투영 차원 → DIM_MEMBER_STATUS_HISTORY.MEMBER_SK 참조(1:1 투영). 실측 = 1,763,065행 · "
         "distinct 1,763,065(유일) · 미해소 0. ⚠️ 이 컬럼은 **자기 차원의 grain 키이면서 동시에 "
         "참조**다 — 물리 PK 가 선언돼 있지 않아 고립으로 잡힌다. "
         "🔴 CONFORM 으로 적는 이유 = ERD 에 투영 관계선이 보여야 독자가 "
-        "**DIM_MEMBER 와 DIM_MEMBER_CURRENT 를 둘 다 조인해 팬아웃시키는 것**을 피할 수 있다.",
+        "**DIM_MEMBER_STATUS_HISTORY 와 DIM_MEMBER 를 둘 다 조인해 팬아웃시키는 것**을 피할 수 있다.",
     ),
     ("DIM_MEMBER_ACQUISITION", "ACQ_CAMPAIGN_SK"): (
         "CONFORM",
@@ -153,7 +158,7 @@ LOGICAL_FK = {
 
     # 🆕 [O128] DIM 측 논리 관계 7건 — 근거·실측은 위 KNOWN_ORPHANS 의 같은 키에 있다.
     ("DIM_MEMBER_IDENTITY", "MEMBER_DK"):        ("DIM_MEMBER", "MEMBER_DK"),
-    ("DIM_MEMBER_CURRENT", "MEMBER_SK"):         ("DIM_MEMBER", "MEMBER_SK"),
+    ("DIM_MEMBER", "MEMBER_SK"):                 ("DIM_MEMBER_STATUS_HISTORY", "MEMBER_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_CAMPAIGN_SK"):    ("DIM_CAMPAIGN", "CAMPAIGN_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_DATE_SK"):        ("DIM_DATE", "DATE_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_ORG_SK"):         ("DIM_ORG", "ORG_SK"),

@@ -141,12 +141,12 @@ def enumerated_values(comment, dim_col):
 ENUM_CARD_MAX = 20
 # 임계를 넘지만 코드 성격이라 반드시 열거해야 하는 축(수동 등재).
 ENUM_FORCE = set()
-# 임계 아래지만 열거가 무의미한 축(수동 등재 — 자기설명적이거나 자유 텍스트).
-#   · `DEVICE_SCOPE_DESC` = **코드 차원이 아니라 설명문 차원**이다. 값 자체가
-#     *"방송광고(TV·재방송) — 기기 개념 없음"* 같은 문장이고, 필터 대상 코드축은 짝인
-#     `DEVICE_TYPE`(4종)이며 그쪽은 이미 열거를 갖고 있다. 서술문을 열거하면 context 만 먹는다.
-#     (부수 근거: 값에 `·` 가 들어 있어 열거 구분자와 충돌한다.)
-ENUM_SKIP = {'DEVICE_SCOPE_DESC'}
+# 임계 아래지만 열거가 무의미한 축(수동 등재 — 자기설명적이거나 자유 텍스트 / 증가하는 시간축 / 마스터·모델 종속 동적 목록).
+#   · `DEVICE_SCOPE_DESC` = **코드 차원이 아니라 설명문 차원**이다.
+#   · `STDR_MT` = **모델 실행 기준월(YYYYMM)** — 모델 재실행마다 증가(22_ML_SV_DDL 정본 원칙).
+#   · `FEATURE` = **ML 피처명** — 모델 교체 시 변동(22_ML_SV_DDL 정본 원칙).
+#   · `SPNSR_BSNS_ID` / `SPNSR_BSNS_NAME` = **후원사업 마스터** — 사업 추가마다 변동(22_ML_SV_DDL 정본 원칙).
+ENUM_SKIP = {'DEVICE_SCOPE_DESC', 'STDR_MT', 'FEATURE', 'SPNSR_BSNS_ID', 'SPNSR_BSNS_NAME'}
 
 
 def is_enum_target(data_type, cardinality, base_col):

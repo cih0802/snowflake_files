@@ -11,10 +11,10 @@ source_poc_database: GN_DW_POC
 schemas: [BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_BIGQUERY, SILVER, GOLD, SERVING, OPS, SECURITY]
 layer_flow: BRONZE -> SILVER -> GOLD -> SERVING
 chapter_files:
-  - { file: "01_환경_Role.md",        sections: [1, 2],            topic: warehouse/timezone + rbac }
+  - { file: "01_환경 Role.md",        sections: [1, 2],            topic: warehouse/timezone + rbac }
   - { file: "02_DB_BRONZE_SILVER.md", sections: [3.1, 3.2, 3.3, 3.4, 4], topic: db/schema + bronze(48) + silver(32) + dbt pipeline }
   - { file: "03_GOLD_SERVING.md",     sections: [3.5, 3.6, 3.7, 3.8, 3.9], topic: "gold star schema(정본→03_top-down_gold/) + WIDE view 9 + semantic view 5 + agent 2 + grants" }
-  - { file: "04_운영.md",             sections: [5, 6, 7, 8],      topic: dbt pipeline + tests + security + monitoring }
+  - { file: "04_운영 확인.md",             sections: [5, 6, 7, 8],      topic: dbt pipeline + tests + security + monitoring }
   - { file: "05_ARCHITECTURE.md",    sections: [overview],          topic: 전체 아키텍처 다이어그램 + 계층/RBAC/dbt/SERVING 조감도 }
   - { file: "06_RUNBOOK.md",         sections: [operations],        topic: 운영 매뉴얼 — 일상점검/dbt 장애대응/수동실행/보안사고 }
 ---
@@ -90,8 +90,8 @@ prerequisites:
 
 ```yaml
 execution_order:
-  - { step: 1,  section: 1,   chapter: "01_환경_Role.md",        topic: timezone + warehouses }
-  - { step: 2,  section: 2,   chapter: "01_환경_Role.md",        topic: roles + users }
+  - { step: 1,  section: 1,   chapter: "01_환경 Role.md",        topic: timezone + warehouses }
+  - { step: 2,  section: 2,   chapter: "01_환경 Role.md",        topic: roles + users }
   - { step: 3,  section: 3.1, chapter: "02_DB_BRONZE_SILVER.md", topic: database + 9 schemas (BRONZE 4분할 포함) }
   - { step: 4,  section: 3.3, chapter: "02_DB_BRONZE_SILVER.md", topic: 48 bronze tables (CRM 43 + AGENCY 3 + ERP 1 + GA4 1, 원천별 스키마) }
   - { step: 5,  section: 4,   chapter: "02_DB_BRONZE_SILVER.md", topic: dbt SILVER 32 (BRONZE→SILVER 정제·통합) }
@@ -99,10 +99,10 @@ execution_order:
   - { step: 7,  section: 3.6, chapter: "03_GOLD_SERVING.md",     topic: 5 semantic views (SERVING, 최종 7) + 보조뷰 2 }
   - { step: 8,  section: 3.7, chapter: "03_GOLD_SERVING.md",     topic: 2 cortex agents (SERVING, 최종 3) }
   - { step: 9,  section: 3.8, chapter: "03_GOLD_SERVING.md",     topic: grants + future grants }
-  - { step: 10, section: 5,   chapter: "04_운영.md",             topic: dbt pipeline 오케스트레이션 }
-  - { step: 11, section: 6,   chapter: "04_운영.md",             topic: 권한/E2E/정합성 테스트 (dbt test) }
-  - { step: 12, section: 7,   chapter: "04_운영.md",             topic: network + masking + mfa (설계안) }
-  - { step: 13, section: 8,   chapter: "04_운영.md",             topic: resource monitor + alert + cost (설계안) }
+  - { step: 10, section: 5,   chapter: "04_운영 확인.md",             topic: dbt pipeline 오케스트레이션 }
+  - { step: 11, section: 6,   chapter: "04_운영 확인.md",             topic: 권한/E2E/정합성 테스트 (dbt test) }
+  - { step: 12, section: 7,   chapter: "04_운영 확인.md",             topic: network + masking + mfa (설계안) }
+  - { step: 13, section: 8,   chapter: "04_운영 확인.md",             topic: resource monitor + alert + cost (설계안) }
 ```
 
 ### 0.5 책임 범위 (raci)
@@ -120,12 +120,12 @@ raci:
 
 ```yaml
 risks:
-  - { id: R1, item: "네트워크 정책 적용 시 본인 IP 미포함 → 즉시 잠김", mitigation: "ALLOWED에 본인 IP 포함 후 테스트하고 적용 (04_운영.md 7.1)" }
+  - { id: R1, item: "네트워크 정책 적용 시 본인 IP 미포함 → 즉시 잠김", mitigation: "ALLOWED에 본인 IP 포함 후 테스트하고 적용 (02_GN_DW_building/04_운영 확인.md 7.1)" }
   - { id: R2, item: "VQR/SV 내 GN_DW_POC.RAW/ANALYTICS 경로 잔존 → ANALYST/VIEWER 권한 오류", mitigation: "SV base·VQR 경로 전부 GN_DW.GOLD.*로 치환 (03_GOLD_SERVING.md 3.6)" }
   - { id: R3, item: "BRONZE 적재 반복 중복", mitigation: "적재 멱등성(MERGE/재생성) + dbt 재빌드 (P6)" }
   - { id: R4, item: "dbt 모델 의존 순서 오류", mitigation: "dbt ref() 의존 그래프 자동 해소, dbt run --select <model>+ 로 하위 포함 재실행 (03_GOLD_SERVING.md 3.5)" }
   - { id: R5, item: "SECURITY 스키마 마스킹 역할 정의 누락", mitigation: "마스킹 정책은 GN_DW_ADMIN 관리로 정리 (03_GOLD_SERVING.md 3.8)" }
-  - { id: R6, item: "예상치 못한 크레딧 폭주", mitigation: "Resource Monitor 임계 SUSPEND (04_운영.md 8.1, 운영 승격 시 배포)" }
+  - { id: R6, item: "예상치 못한 크레딧 폭주", mitigation: "Resource Monitor 임계 SUSPEND (02_GN_DW_building/04_운영 확인.md 8.1, 운영 승격 시 배포)" }
   - { id: R7, item: "구설계 문서의 레거시 View/프로시저/Task 서술이 라이브(dbt·WIDE·SV5/Agent2)와 불일치", mitigation: "본 문서군은 라이브 실측(2026-07-22) 기준. 레거시 서술은 폐기됨" }
 ```
 
@@ -164,10 +164,10 @@ principles:
 
 | 파일 | 섹션 | 내용 |
 |---|---|---|
-| `01_환경_Role.md` | 1, 2 | Timezone, Warehouse 3종, Role 계층 6종, 유저 프로비저닝 |
+| `01_환경 Role.md` | 1, 2 | Timezone, Warehouse 3종, Role 계층 6종, 유저 프로비저닝 |
 | `02_DB_BRONZE_SILVER.md` | 3.1~3.4, 4 | DB/스키마 9종(BRONZE 4분할), CRM 원천 43테이블 인벤토리, BRONZE 48테이블(1:1), SILVER 32테이블(consolidation), dbt 파이프라인 |
 | `03_GOLD_SERVING.md` | 3.5~3.9 | GOLD star schema 24(정본→03_top-down_gold/) + WIDE VIEW 9, SV 5(최종 7), Agent 2(최종 3), 권한, Streamlit 0(미배포) |
-| `04_운영.md` | 5~8 | dbt 파이프라인, 테스트, 보안(네트워크/마스킹/MFA), 모니터링 |
+| `04_운영 확인.md` | 5~8 | dbt 파이프라인, 테스트, 보안(네트워크/마스킹/MFA), 모니터링 |
 | `05_ARCHITECTURE.md` | overview | 전체 아키텍처 다이어그램, 데이터 흐름, RBAC, WH, DAG, SERVING 조감도 |
 | `06_RUNBOOK.md` | operations | 운영 매뉴얼 — 일상점검, 장애대응, 수동실행, 보안사고 대응 |
 | `07_ENVIRONMENT_RBAC_setup.sql` | setup(실행) | 0단계 부트스트랩 SQL — WH 3·역할 6+계층·WH/스키마 grant·SERVING **스키마**·CoWork object. 01·03 §3.8 설계의 **실행 정본**(05_SV-Agent_ai/02_SERVING_setup.sql에서 이관). 🔴 [2026-08-04 O36] 종전 '**helper 뷰 2**' 표기는 **거짓**이었다 — `DIM_MONTH`·`DIM_MEMBER_CURRENT` 는 이 파일에 없고 **`08_After_Deploy_DBT.sql` §G** 가 정본이다 |

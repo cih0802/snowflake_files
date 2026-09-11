@@ -15,7 +15,7 @@
 --   적재 시점 값으로 고정(SCD 없음, 현업 확정) — 캠페인 마스터가 이후 바뀌어도 과거 개발이력 행은 재계산하지 않는다.
 -- [DEC-43] 캠페인 SV 3종(COHORT·FEE·SPONSOR_BIZ) 스냅샷 동결 결정으로 위 9속성에
 --   BRND_NM·PARENT_CAMPAIGN_NAME·PROMO_METHOD_NAME 3속성을 더해 12속성 전체를 동결한다.
---   하류(FACT_MEMBER_EVENT·FACT_MEMBER_COHORT·FACT_MEMBER_SPONSOR_BIZ·DIM_MEMBER_ACQUISITION)는
+--   하류(FACT_MEMBER_EVENT·FACT_MEMBER_COHORT·FACT_MEMBER_SPONSORSHIP_SPAN·DIM_MEMBER_ACQUISITION)는
 --   이 12컬럼을 그대로 승계하며 DIM_CAMPAIGN 실시간 조인을 대체한다.
 --
 -- [2026-08-25 증분 전략 오버라이드] 🔴 이 모델은 폴더 기본값(dbt_project.yml `models.gn_dw_silver.silver`:

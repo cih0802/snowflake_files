@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 027/030 | 허브 = 99_NEXT_SESSION.md | 원문 3923~4101행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 027/031 | 허브 = 99_NEXT_SESSION.md | 원문 3923~4101행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 ## 7. 운영 환경 지뢰

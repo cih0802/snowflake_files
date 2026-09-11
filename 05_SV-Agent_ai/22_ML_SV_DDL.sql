@@ -42,7 +42,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
     mr AS GN_DW.SERVING.ML_MEMBER_RISK_V
       PRIMARY KEY (STDR_MT, MBER_NO)
       WITH SYNONYMS ('회원 예측', '회원 위험', '중단 예측', '증액 예측', '충성회원 예측')
-      COMMENT = '회원단위 ML 예측 통합(중단·증액·충성). grain=기준월×회원. 🔴예측치이며 실적이 아니다. 🔴원천은 회원당 여러 행을 담고 있어(상태 spell 다중) 월말 상태 기준으로 단일화한 뷰다 — 원천 미해소 상태의 완화이며 원천 교정 시 값이 변한다. 🔴모집단은 전체 회원이 아니다: 그 달 상태이력이 있는 회원만 대상이고, 충성회원 예측은 그보다 더 좁은 부분집합이다 ⇒ 「전 회원 대비 비율」은 이 SV 로 산출할 수 없다. [원천] GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M(중단) · ML_RST_DATA_MBER_INC_12M(증액) · ML_RST_DATA_LOYAL_MBER(충성) → SERVING.ML_MEMBER_RISK_V. 상태·결제수단 라벨=SILVER.CRM_CODE(MM010·PM040).'
+      COMMENT = '회원 단위 ML 예측 분석 (중단·증액·충성) (base: SERVING.ML_MEMBER_RISK_V). [Grain: 기준월 × 회원]. [활성 지표: 중단확률/증액확률/충성도스코어]. [주의: 예측치이며 실적 아님, 기준월별 독립 산출(합산 금지)]. [원천: ML 예측 결과 3종 → SERVING.ML_MEMBER_RISK_V].'
   )
   DIMENSIONS (
     mr.STDR_MT AS mr.STDR_MT
@@ -142,7 +142,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
     sr AS GN_DW.SERVING.ML_SPONSOR_RISK_V
       PRIMARY KEY (STDR_MT, MBER_NO, SPNSR_BSNS_ID, SPNSR_BSNS_NO)
       WITH SYNONYMS ('후원건 이탈 예측', '캠페인별 이탈 예측', '후원 이탈')
-      COMMENT = '후원건단위 이탈 예측. grain=기준월×회원×후원사업ID×후원사업번호(실측 유일). 🔴예측치이며 실적이 아니다. 🔴회원 grain 이 아니다 — 한 회원이 여러 후원건을 가지므로 회원수는 반드시 중복제거로 센다. [원천] GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M → SERVING.ML_SPONSOR_RISK_V. 후원사업·캠페인 라벨=SILVER.CRM_SPONSORSHIP·CRM_CAMPAIGN.'
+      COMMENT = '후원계좌 단위 이탈 예측 분석 (base: SERVING.ML_SPONSOR_RISK_V). [Grain: 기준월 × 회원 × 후원사업 × 약정번호]. [활성 지표: 후원계좌 이탈확률]. [주의: 1회원 다수 약정 보유(회원수는 COUNT DISTINCT 집계)]. [원천: ML 이탈모델 → SERVING.ML_SPONSOR_RISK_V].'
   )
   DIMENSIONS (
     sr.STDR_MT AS sr.STDR_MT
@@ -227,7 +227,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
     df AS GN_DW.SERVING.ML_DVLP_FORECAST_V
       PRIMARY KEY (STDR_MT, SERIES_TYPE, SERIES_CD, TS)
       WITH SYNONYMS ('개발 예측', '개발금액 예측', '개발액 예측', '연도말 개발 예측')
-      COMMENT = '개발금액 예측 5종 통합(전사·부서·후원사업·신규기존·캠페인). grain=기준월×계열유형×계열×예측월. 🔴단위=만원. 🔴예측치이며 실적이 아니다. 🔴계열유형 간 합산은 중복계상이며, 유형별 합계는 서로 일치하지도 않는다(계열별 독립 예측). [원천] GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT·_MONTHLY_DEPT_DVLP_AMT·_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT·_MONTHLY_NEW_OLD_DVLP_AMT·_MONTHLY_CMPGN_DVLP_AMT → SERVING.ML_DVLP_FORECAST_V. 라벨=SILVER.CRM_ORG·CRM_SPONSORSHIP·CRM_CAMPAIGN.'
+      COMMENT = '개발금액 시계열 예측 5계열 분석 (base: SERVING.ML_DVLP_FORECAST_V). [Grain: 기준월 × 계열유형 × 계열 × 예측월]. [활성 지표: 예측 개발금액(만원)]. [주의: 단위=만원, 계열유형 간 단순 합산 금지(독립 예측)]. [원천: ML 시계열모델 5종 → SERVING.ML_DVLP_FORECAST_V].'
   )
   DIMENSIONS (
     df.STDR_MT AS df.STDR_MT
@@ -282,7 +282,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST
     ff AS GN_DW.SERVING.ML_FEE_FORECAST_V
       PRIMARY KEY (STDR_MT, CMPGN_CTGR_CD, FORECAST_TS)
       WITH SYNONYMS ('회비 예측', '카테고리별 회비 예측', '후원금액 예측')
-      COMMENT = '캠페인카테고리별 회비(후원금액) 예측. grain=기준월×캠페인카테고리×예측월. 🔴단위=원. 🔴예측치이며 실적이 아니다. 개발금액 예측(만원)과 단위가 달라 합산할 수 없다. [원천] GN_DW.ML.ML_RST_DATA_CMPGN_CTGR_AMT → SERVING.ML_FEE_FORECAST_V. 라벨=SILVER.CRM_CAMPAIGN(CMPGN_CTGR_CD·CMPGN_CTGR_NM).'
+      COMMENT = '캠페인 카테고리별 회비 예측 분석 (base: SERVING.ML_FEE_FORECAST_V). [Grain: 기준월 × 캠페인카테고리 × 예측월]. [활성 지표: 예측 회비금액(원)]. [주의: 단위=원, 개발금액(만원)과 단위 상이(합산 금지)]. [원천: ML 회비예측모델 → SERVING.ML_FEE_FORECAST_V].'
   )
   DIMENSIONS (
     ff.STDR_MT AS ff.STDR_MT
@@ -339,7 +339,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_FORECAST
     lf AS GN_DW.SERVING.ML_LTV_FORECAST_V
       PRIMARY KEY (STDR_MT, LTV_TYPE, SERIES_CD, TS)
       WITH SYNONYMS ('LTV 예측', '생애가치 예측', '후원 LTV 예측')
-      COMMENT = 'LTV 월별 예측 2종. grain=기준월×LTV유형×계열×예측월. 🔴두 유형은 계열축과 의미가 모두 다르다 — 하나는 상위캠페인의 회원평균 LTV, 다른 하나는 캠페인의 후원총액 LTV다. 🔴예측치이며 실적이 아니다. [원천] GN_DW.ML.ML_RST_DATA_UCMPGN_LTV·ML_RST_DATA_CMPGN_LTV → SERVING.ML_LTV_FORECAST_V. 라벨=SILVER.CRM_CAMPAIGN.'
+      COMMENT = '캠페인 LTV 월별 시계열 예측 분석 (base: SERVING.ML_LTV_FORECAST_V). [Grain: 기준월 × LTV유형 × 계열 × 예측월]. [활성 지표: 예측 LTV 금액]. [주의: 상위캠페인 회원평균 LTV와 캠페인 후원총액 LTV 분리]. [원천: ML LTV모델 2종 → SERVING.ML_LTV_FORECAST_V].'
   )
   DIMENSIONS (
     lf.STDR_MT AS lf.STDR_MT
@@ -397,7 +397,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_SCORE
     ls AS GN_DW.SERVING.ML_LTV_SCORE_V
       PRIMARY KEY (STDR_MT, LTV_TYPE, SERIES_CD)
       WITH SYNONYMS ('LTV 스코어', 'LTV 점수', '채널 LTV')
-      COMMENT = 'LTV 스코어 2종. grain=기준월×LTV유형×계열(계열당 단일 행). 🔴월별 예측(SV_ML_LTV_FORECAST)과 grain 이 달라 합산할 수 없다. 🔴예측 기반 산출이며 실적이 아니다. [원천] GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE·ML_RST_DATA_CMPGN_LTV_SCORE → SERVING.ML_LTV_SCORE_V.'
+      COMMENT = '캠페인 단위 LTV 총 스코어 분석 (base: SERVING.ML_LTV_SCORE_V). [Grain: 기준월 × LTV유형 × 계열]. [활성 지표: LTV 종합 점수]. [주의: 월별 예측(SV_ML_LTV_FORECAST)과 Grain 상이]. [원천: ML LTV스코어모델 → SERVING.ML_LTV_SCORE_V].'
   )
   DIMENSIONS (
     ls.STDR_MT AS ls.STDR_MT
@@ -458,7 +458,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE
     fi AS GN_DW.SERVING.ML_FEATURE_IMPORTANCE_V
       PRIMARY KEY (STDR_MT, ANALYSIS_TYPE, FEATURE)
       WITH SYNONYMS ('요인분석', '피처 중요도', '기여도', '결정 요인')
-      COMMENT = '요인분석(피처 중요도) 2종. grain=기준월×분석유형×피처. 🔴🔴 측정 대상이 데이터가 아니라 **모델**이다 — 값은 0~1 기여도이며 금액·건수·회원수가 아니다(분석유형 내 합계=1). [원천] GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION·ML_RST_DATA_DVLP_INC_CONTRIBUTION → SERVING.ML_FEATURE_IMPORTANCE_V.'
+      COMMENT = '머신러닝 피처 중요도 분석 (base: SERVING.ML_FEATURE_IMPORTANCE_V). [Grain: 기준월 × 분석유형 × 피처]. [활성 지표: 피처별 기여도(0~1)]. [주의: 모델 해석용 지표(분석유형 내 합계=1), 업무 실적치 아님]. [원천: ML 피처중요도모델 → SERVING.ML_FEATURE_IMPORTANCE_V].'
   )
   DIMENSIONS (
     fi.STDR_MT AS fi.STDR_MT

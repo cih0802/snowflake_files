@@ -2,7 +2,7 @@
 -- Co-authored with CoCo
 --
 -- 🔴 왜 필요한가 (fan-out 차단)
---   월 팩트(FACT_MEMBER_MONTHLY·FACT_BUDGET·FACT_TARGET_DEV·FACT_TARGET_BIZ)의 시간축은 `MONTH_KEY` 다.
+--   월 팩트(FACT_MEMBER_MONTHLY·FACT_BUDGET·FACT_TARGET_MEMBER_DEV·FACT_TARGET_PROJECT)의 시간축은 `MONTH_KEY` 다.
 --   그런데 `DIM_DATE` 는 **일 grain**(캘린더 전량)이라 월팩트를 거기에 직접 조인하면 한 달이 그 달의
 --   일수만큼 복제된다 — 금액·건수가 조용히 28~31배로 부푼다. 에러도 경고도 없다.
 --   ⇒ 월 축 전용 차원을 두고 월팩트는 **반드시 이쪽**으로 조인한다(SV 설계 원칙10·R1).

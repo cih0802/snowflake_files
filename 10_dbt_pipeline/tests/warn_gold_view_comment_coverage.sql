@@ -47,8 +47,8 @@
 --   뷰 생성 이후에 실행되도록 GOLD view 모델 **14종 전량**을 depends_on 으로 묶는다.
 --   ⚠️ 새 GOLD 뷰 모델을 추가하면 아래 목록에도 넣을 것(누락 시 그 뷰가 만들어지기 전에 검사할 수 있다).
 --   🔴 [2026-08-10 O53] 3건 제거 + 1건 추가 = 16 → 14.
---      · 제거: `WIDE_DEV_ACHIEVEMENT`(→ FACT_DEV_ACHIEVEMENT 테이블 개명) ·
---              `DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION`(뷰→테이블 전환)
+--      · 제거: `WIDE_DEV_ACHIEVEMENT`(→ FACT_MEMBER_DEV_ACHIEVEMENT 테이블 개명) ·
+--              `DIM_MEMBER`(구 DIM_MEMBER_CURRENT)·`DIM_MEMBER_ACQUISITION`(뷰→테이블 전환)
 --        ⇒ 세 객체는 이제 **테이블**이라 본 게이트의 대상(INFORMATION_SCHEMA.VIEWS)에서 빠진다.
 --          그 COMMENT 는 `06_DDL.sql` 이 소유하며 커버리지는 O53 2단계 스캔으로 판정했다.
 --      · 추가: `WIDE_AD_COMBINED`(신설 · SV_AD 새 base)

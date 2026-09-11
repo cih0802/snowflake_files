@@ -33,7 +33,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
   TABLES (
     fep AS GN_DW.GOLD.FACT_EVENT_ATTENDANCE
       WITH SYNONYMS ('행사 참여', '이벤트 참여', '행사 출석')
-      COMMENT = '행사 참여/출석 팩트. ⚠(DATE_SK,MEMBER_DK,EVENT_SK) 실측 비유일 → PK 미선언(기저 FACT·집계 무해). [원천] 시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM: 참여상세 TD_MS_EVENT_PRTCPNT_DTL(MBER_NO·PARTCPT_STAT_CD·RCPMNY_AMT) ∪ TD_MS_CRMN_PRTCPNT(캠페인행사) · SILVER=CRM_EVENT_PARTICIPATION · GOLD=FACT_EVENT_ATTENDANCE.',
+      COMMENT = '행사/이벤트 신청 및 참석 성과 분석 (base: GOLD.FACT_EVENT_ATTENDANCE). [Grain: 행사일 × 회원 × 행사]. [활성 지표: 모집/신청/대기/취소/참석 인원수]. [주의: 일반/캠페인 행사별 상태코드 구분 집계]. [원천: CRM → BRONZE_CRM → SILVER.CRM_EVENT_PARTICIPATION → GOLD.FACT_EVENT_ATTENDANCE].',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '참여일')

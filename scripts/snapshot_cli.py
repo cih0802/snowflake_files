@@ -56,6 +56,18 @@ def build_parser():
     ap.add_argument(
         '--keep-ext', action='store_true',
         help='충돌 접미를 확장자 앞에 넣는다(산출물 회전용 · 기본은 뒤)')
+    # 🆕 [2026-09-10 O154-B 신설 · `R1-7-10` 의 집행 보강]
+    #   🔴 왜 필요한가 = 종전에는 CLI 가 **실 `_archive/` 로만** 쓸 수 있었고,
+    #     그래서 `test_o145_tools.py` 가 실 보관소에 쓰고 지웠다. 스테이지 마운트는
+    #     삭제된 이름을 **음성 캐시(유령 엔트리)로 남겨** 같은 이름 재생성을 거부한다
+    #     ⇒ 그 테스트가 이 워크스페이스에서 **영구 rc=1** 이 됐다(O154 실측·규명).
+    #   🟢 `snapshot_util.snapshot()` 은 처음부터 `archive=` 를 받았는데 **CLI 만 그것을
+    #     노출하지 않았다** ⇒ 「금지된 경로가 유일한 경로였다」는 이 파일 머리말의 결함이
+    #     다른 축에서 반복된 것이다. 이제 테스트·도구가 격리 보관소를 지정할 수 있다.
+    ap.add_argument(
+        '--archive', default=None,
+        help='스냅샷 보관 디렉터리(기본 = `_archive/`). '
+             '🔴 테스트는 반드시 임시 경로를 지정해 실 보관소를 오염시키지 않는다.')
     ap.add_argument(
         '--quiet', action='store_true', help='성공 메시지를 억제한다')
     add_label_arg(ap)
@@ -72,6 +84,7 @@ def main(argv=None):
         try:
             snap, status = snapshot(
                 path, args.op, label=args.label,
+                archive=args.archive,
                 quiet=args.quiet, keep_ext=args.keep_ext)
         except SnapshotError as exc:
             failed.append((path, str(exc)))

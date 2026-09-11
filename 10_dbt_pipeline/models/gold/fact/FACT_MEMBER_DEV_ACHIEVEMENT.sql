@@ -21,7 +21,7 @@ actual as (
         f.ORG_SK                        as ORG_SK,
         f.DVLP_DIV_CD                   as DEV_TYPE,
         SUM(f.DEV_CNT)                  as ACTUAL_CNT
-    from {{ ref('FACT_MEMBER_LIFECYCLE') }} f
+    from {{ ref('FACT_MEMBER_EVENT') }} f
     where f.EVENT_TYPE = 'DEV'
       and f.JOIN_DATE is not null
       and f.DVLP_DIV_CD in ('1', '2', '4')

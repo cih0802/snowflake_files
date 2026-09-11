@@ -1,0 +1,792 @@
+version: 2
+
+# SILVER CRM 모델 — PK 정의 + inter-model relationships (DBTERD ERD 생성용 포함)
+# 실행: dbt test --select tag:silver_crm
+# MBER_NO 기반 FK는 CRM_MEMBER.MEMBER_DK 와 relationships 정의.
+# NULL 허용 FK는 where 필터로 테스트 실패 방지.
+# ⚠️ 순서9-C severity 정책 (메달리온 베스트 프랙티스):
+#    Silver 참조무결성 실패가 "알려진 원천/마스터 미완전"에서 기인하면 severity:warn 으로 관측·추적(CI 미차단).
+#    error 는 구조적 불변식(차원 PK not_null/unique 등)에만 예약. 아래 relationships/not_null(FK성) 은 전부 warn.
+#    ▶▶ 마스터 전량입고·키체계 확정 후 warn 제거 → error 복귀 (후속조치, 누락 금지. 문서50 BLOCKING-1/2).
+#    대상: MBER_NO/MEMBER_DK→CRM_MEMBER, EVENT_KEY→CRM_EVENT(이슈 E 263,611), SNDNG_KEY→CRM_SEND_REQUEST,
+#          SPNSR_BSNS_ID→CRM_SPONSORSHIP, CMPGN_CD→CRM_CAMPAIGN, not_null(MBER_NO) 고아분.
+#
+# 🔴🔴 [2026-08-29 O116·O116-B 정정] **위 「전량입고·키체계 확정 후 error 복귀」 조건은 축별로 무효화됐다.**
+#    정본 = 문서50 §O116(전수 36건 + 규명 6건) · 상세 근거 = `_o116_warn_census.md`.
+#    ⇒ 🔴 **「입고를 기다린다」는 처방을 그대로 두면 영원히 열려 있다.** 축별로 다음과 같이 갈린다:
+#    ㉠ MEMBER_DK 계열 — **전량입고는 이미 확인됐다**(O115-C: 브론즈 1,763,065 ↔ SILVER.CRM_MEMBER 1,763,065).
+#       ⇒ 고아 31,486·9,480 등은 「미입고」가 아니라 **실제 고아**다. 형태 실측(O116-B) = 숫자 31,262 ·
+#         한글 인명 오염 139 · 기타 85 ⇒ **형식 오류가 원인이 아니다**(7자리 정상이 98.7%).
+#       🔴 남은 선행조건 = **탈퇴·삭제 회원 원천과의 대조**(그 원천의 계정 실재 미확인) ⇒ error 승격 보류.
+#    ㉡ EVENT_KEY — **키체계 미확정이 아니다.** 원천 마스터 결번(`EVENT_105`·`106`)이고 배선은 정상.
+#       🔴 남은 선행조건 = **현업 회신**(그 2개 행사의 정체·삭제 사유).
+#    ㉢ SPNSR_BSNS_ID — **입고와 무관하다.** 컬럼이 쉼표 다중값이어서 관계 테스트가 성립하지 않는다
+#       (단일값 고아 0.00% / 다중값 고아 100.00% · 성분 분해 시 미매칭 0) ⇒ **설계 결정 대기**(문서30).
+#       🆕 [O117] 그 결정이 **DEC-45**(문서30 §31)로 등재됐다 · 범위 실측 = 다중값이 있는 곳은 **2테이블뿐**
+#       (`CRM_CAMPAIGN` 18,091행/445종 · `CRM_PAYMENT_BILLING` 1행/1종) ⇒ 결정 대상은 `CRM_CAMPAIGN` 이고
+#       `CRM_PAYMENT_BILLING` 의 1행(`4,43`)은 **0.000002% 원천 오염 1건**이라 현업 정정으로 분리해 닫는다.
+#    ㉣ SNDNG_KEY — 고아 11,313 은 **`PSTMTR` 채널에 집중**(8,232 · 그 채널 고유 키의 67%) + `MSG_AT` 3,081 ·
+#       `SND`·`EMAIL` 은 고아 0. 🔴 고아·매칭이 같은 기간에 산발하므로 **기간 부분적재가 아니다**
+#       ⇒ 「전량입고로 해소된다」는 보장이 없다(원천 소관 확인 필요).
+#    🆕 ㉤ [2026-08-29 O117] CMPGN_CD — **입고·확정과 무관하다.** 캠페인 마스터는 전량입고됐고(BRONZE 36,163 ↔
+#       SILVER 36,163 · 손실 0) 고아 코드 5종{188·3358·3484·4178·11954}은 **원천 마스터에도 0건**이며
+#       코드 범위 1~13,568 **안쪽의 결번**이다(EVENT_KEY 와 같은 성격) ⇒ 🔴 남은 선행조건 = **현업 회신**.
+#       ⚠️ `CRM_MEMBER`(고아 4/3종)와 `CRM_MEMBER_DEV`(18/4종)는 **같은 축**이다 — 두 건으로 세지 마라.
+#    🆕 ㉥ [2026-08-29 O117] **not_null 계열은 위 관계 축과 선행조건이 다르다** — 마스터 입고가 아니라
+#       **원천 값 부재**이므로 마스터 재추출로 해소되지 않는다. `CRM_SEND_MEMBER.MBER_NO` 745 = 원천 NULL 전파
+#       (BRONZE 동수 · 공백 유래 인공 NULL 0) · `CRM_PAYMENT_BILLING.RQEST_RST_CD` 1,096 = **결제수단 8(OCR)
+#       구조적 부재**(그 수단 NULL 100% · 나머지 4수단 NULL 0.000%) ⇒ 둘 다 **원천·현업 소관**이고 warn 유지.
+#    🟢 공통 = **severity: warn 유지가 정당하다.** 🔴 다만 「무엇을 기다리는가」를 축별로 위와 같이 적어라 —
+#       종전처럼 한 문장으로 뭉개면 **충족 불가능한 조건을 무기한 대기**하게 된다.
+#    🔴 [O117] 축을 하나 고칠 때 **같은 축의 다른 테이블 주석도 같이 고쳐라** — O116-B 가 `SPNSR_BSNS_ID` 5곳을
+#       고치면서 `CRM_PAYMENT_BILLING` 1곳을 빠뜨려 기각된 처방이 코드에 살아 있었다(`P154` 축).
+#
+# ═══ 🆕🔴🔴 [2026-09-10 O154 · 회원 마스터 축 종결 · 현업 지침] `MASTER-ORPHAN-POLICY` ═══
+#    🔴 **「회원 마스터 전량입고 후 warn→error 승격」 처방을 폐기한다.** 아래 3줄이 근거다.
+#    ① **입고는 끝났다** — `TM_MM_FDRM_MBER_INFO` 1,587,343 + `TM_MM_ONCE_MBER_INFO` 175,722
+#       = **1,763,065** ↔ `SILVER.CRM_MEMBER` 1,763,065 ↔ `GOLD.DIM_MEMBER` 1,763,065 (3축 일치·손실 0).
+#    ② **그런데 고아가 남았다** — `CRM_EVENT_PARTICIPATION` 기준 **7,658종 / 9,376행 (0.83%)**.
+#       형식별 분해 = 7자리 7,629종 + `S`+8자리 29종 · **형식이상 0종** ⇒ 깨진 값이 아니라 **정상 번호**다.
+#    ③ **현업 지침(2026-09-10)** = *"테스트값이나 업무절차상 테이블을 삭제했지만 cascade 삭제가 아니어서
+#       번호만 남은 경우로, 무시하고 파이프라인을 구성하라."*
+#    ⇒ 🟢 **판정 = 이 축의 `severity: warn` 은 「임시 완화」가 아니라 「영구 관측」이다.**
+#       운영계가 cascade 삭제를 쓰지 않으므로 고아는 **구조적으로 상시 발생**한다.
+#       `error` 로 올리면 매일 밤 파이프라인이 실패하고 **진짜 회귀를 구별할 수 없게 된다**(알람 피로).
+#    🔴 **다음 세션에게** — 이 주석들에서 「전량입고 후 제거」·「전량입고 후 error 복귀」를 보면
+#       **그것은 이미 폐기된 문안이다. 실행하지 마라.** 남은 용도는 **건수 급증 감시**뿐이다.
+#    🔴 **교훈(일반화)** = 「조건이 충족되면 X 하라」를 코드 주석에 심으면, 조건이 충족된 날
+#       **아무도 전제를 재검증하지 않고 X 를 실행한다.** ⇒ 예약 조치에는 **재측정 의무**를 함께 적어라.
+#    📌 정본 = `20_issue/_o154_evidence.md` §3-1 · 현업 공유본 = `30_output_share/19_원천입고_및_항목신설_대기.md` §0-2
+#       · 해설 = `30_output_share/20_현업의사결정_요청_주니어_해설서.md` §2-5.
+#    ⚠️ **적용 범위 = 회원 마스터 고아 축에 한한다.** 코드사전 라벨 축(㉠)·원천 NULL 축(㉥)·
+#       캠페인 결번 축(㉤)은 각자의 선행조건이 따로 있다 ⇒ 이 정책으로 뭉개지 마라(`R3-9 ㉡`).
+models:
+  # ─── PK 모델 (relationship 대상) ───
+  - name: CRM_MEMBER
+    columns:
+      - name: MEMBER_DK
+        tests: [not_null, unique]
+      - name: MEMBER_TYPE
+        tests:
+          - not_null
+          - accepted_values: { values: ['FDRM', 'ONCE'] }
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL", severity: warn }   # 🟢[2026-08-29 O117 규명] 고아 4행/1,585,949(0.00025%) · 고유 3종(188·4178·11954). 🔴 종전 「확정 후 error 복귀」는 무엇이 확정되면 되는지 불명이었다 ⇒ 실측으로 대체: 이 3종은 **BRONZE_CRM.TM_CM_CMPGN_MNG 원천 마스터에도 0건**이고 그 마스터는 전량입고됐다(36,163 = SILVER 36,163 · 손실 0) · 코드 범위 1~13,568 **안쪽의 결번**이다 ⇒ 입고로 채워지지 않는다(EVENT_105·106 과 같은 성격). 현업 질의 = 「그 캠페인이 왜 마스터에서 사라졌나」. 정본 = 문서50 §O116-6 ㉣.
+      - name: ACT_DEPT_CD
+        tests:
+          - relationships:
+              to: ref('CRM_ORG')
+              field: DEPT_ID
+              config: { where: "ACT_DEPT_CD IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }   # [O26] CM013 raw. 종전 M/F/U 축약 폐기
+      - name: EMAIL_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "EMAIL_STAT_CD is not null" }
+      - name: ETC_CTTPC_REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+              quote: true
+              config: { where: "ETC_CTTPC_REL_CD is not null" }
+      - name: ETC_CTTPC_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "ETC_CTTPC_STAT_CD is not null" }
+      - name: ETC_TSTM_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "ETC_TSTM_DIV_CD is not null" }
+      - name: MOBLPHON_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MOBLPHON_STAT_CD is not null" }
+      - name: REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '7', '8', '9', '11', '12', '13']
+              quote: true
+              config: { where: "REL_CD is not null" }
+      - name: RELATNSP_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['2', '3', '4', '5']
+              quote: true
+              config: { where: "RELATNSP_DIV_CD is not null" }
+      - name: SLRCLD_LRR_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "SLRCLD_LRR_CD is not null" }
+      - name: TSTM_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3']
+              quote: true
+              config: { where: "TSTM_DIV_CD is not null" }
+
+  - name: CRM_EVENT
+    columns:
+      - name: EVENT_KEY
+        tests: [not_null, unique]
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 행사구분 코드군·라벨 (매핑 = 문서31 §4 · 결정 = 문서30 §23-J) ──
+      #   코드군은 원천(EVENT_SOURCE)이 판별한다 — 두 체계 겹침 0(실측). 값이 늘면 이 테스트가 잡는다.
+      - name: EVENT_DIV_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS286', 'MS002']
+              quote: true
+              config: { where: "EVENT_DIV_GROUP is not null" }
+      - name: EVENT_DIV_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "EVENT_DIV_CD is not null" }   # 코드가 있는데 라벨 NULL = 코드사전 미등재(DEC-17-B 관측). 라벨은 항상 warn(§헤더 정책)
+
+  - name: CRM_CAMPAIGN
+    columns:
+      - name: CMPGN_CD
+        tests: [not_null, unique]
+      - name: SPNSR_BSNS_ID
+        tests:
+          # 🔴🔴 [2026-08-29 O116-B 오진 정정] 종전 문안은 「후원사업 마스터 미완전(50행, 고아 18,091).
+          #   warn. 전량입고 후 error 복귀」였다. 실측으로 **기각**된다 — 정본 = 문서50 §O116-3 ㉣.
+          #   · 이 컬럼은 **쉼표 다중값 문자열**이다(예: `4,43,50`).
+          #   · 단일값 행 = 고아 **0.00%**(전건 매칭) · 다중값 행 = 고아 **100.00%**(전건 불일치).
+          #   · 쉼표 분해 시 성분 전건이 마스터에 실재(미매칭 0) ⇒ **원천 결손이 아니다.**
+          #   ⇒ 🔴 「전량입고 후 error 복귀」는 **영구히 충족되지 않는 처방**이므로 폐기한다.
+          #      실제 사안 = 다중값 컬럼을 단일 FK 로 취급한 **설계 결함**이고, 처방은 설계 결정이다
+          #      (① 단일값 부분집합으로 한정 ② 캠페인×후원사업 브릿지 정규화) ⇒ 문서30 결정 대기.
+          #   🔴 결정 전까지 `where` 를 좁히지 마라 — 좁히면 18,091 이 관측에서 사라진다.
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 고아 18,091 = 다중값 전건(O116-B 실측 · 마스터 결손 아님)
+      # ─── 캠페인 분류 4축 라벨 (2026-07-16 BRONZE 재입고, Q2·Q3 해소) ───
+      #   코드가 있으면 라벨도 있어야 한다(코드사전 MM293~MM296 조인). 라벨 NULL = 코드사전 미등재 = 고아.
+      #   ⚠️ severity 정책(위 §헤더) 준수: 라벨은 코드사전 조인 산물(FK성)이므로 **전부 warn**.
+      #      error 는 구조적 불변식(PK not_null/unique)에만 예약 — 원천 코드사전 보강은 우리 통제 밖이다.
+      #      accepted_values 도 warn: 현업이 원천 라벨 문구를 바꾸면 값이 변하는 것이 정상이며, CI 차단 사유가 아니다.
+      #      ▶▶ 기지 고아(카테고리 23행·유형1 740행) 해소 + 라벨 문구 확정 후 error 승격 검토.
+      - name: CMPGN_CTGR_NM        # MM294 캠페인 카테고리(56)
+        tests:
+          - not_null:
+              config: { where: "CMPGN_CTGR_CD IS NOT NULL", severity: warn }   # 기지 고아: CMPGN_CTGR_CD=58, 23행
+      - name: CMPGN_TYPE1_NM       # MM295 국내/통합/해외 (⚠️사업/사례 아님)
+        tests:
+          - not_null:
+              config: { where: "CMPGN_TYPE1_BSN IS NOT NULL", severity: warn } # 기지 고아: CMPGN_TYPE1_BSN=4, 740행
+          - accepted_values:
+              values: ['국내', '통합', '해외']
+              config: { where: "CMPGN_TYPE1_NM IS NOT NULL", severity: warn }
+      - name: CMPGN_TYPE2_NM       # MM296 굿즈/기타/사례/사업
+        tests:
+          - not_null:
+              config: { where: "CMPGN_TYPE2_BSN IS NOT NULL", severity: warn }  # 실측 고아 0 — 회귀 감지용
+          - accepted_values:
+              values: ['굿즈', '기타', '사례', '사업']
+              config: { where: "CMPGN_TYPE2_NM IS NOT NULL", severity: warn }
+      - name: MBER_INFLOW_PATH_NM  # MM293 개발인입경로(16)
+        tests:
+          - not_null:
+              config: { where: "MBER_INFLOW_PATH_CD IS NOT NULL", severity: warn } # 실측 고아 0 — 회귀 감지용
+      - name: MK_CMPGN_NM          # Q16 마케팅캠페인 라벨 — 🔴 [O116-B] 종전 「323종, 고아 0」은 stale 이다
+        tests:
+          # 🔴🔴 [2026-08-29 O116-B] **회귀가 실제로 발생했다** — 이 테스트는 「고아 0 · 회귀 감지용」으로
+          #   두었는데 라이브 WARN **7,052**(분모 = 코드 보유 33,956 ⇒ **20.77%**)다. 정본 = 문서50 §O116-3 ㉤.
+          #   🟢 고아 코드는 **단 1종 = `395`** ⇒ 코드사전 미등재 1건이 7,052행에 파급된 것이고
+          #      라벨 체계 붕괴가 아니다(`MKTG_UTM` 고아 코드 `192` 와 같은 패턴).
+          #   🔴 라벨을 창작하지 마라(`DEC-17-B`) · 사전 등재는 현업 소관이다 ⇒ warn 유지.
+          - not_null:
+              config: { where: "MKTG_CMPGN_NM IS NOT NULL", severity: warn }       # 실측 고아 7,052(코드 395) — O116-B 정정
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CMPGN_TRGET_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '9', '10', '11', '13']
+              quote: true
+              config: { where: "CMPGN_TRGET_CD is not null" }
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['A', 'I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: SPNSR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2']
+              quote: true
+              config: { where: "SPNSR_DIV_CD is not null" }
+      # [2026-08-25 안내1·안내2] CM019/CM035 라벨 + MM297(공통브랜드)·UTM 신설(현업 요건).
+      - name: CPR_DIV_NM
+        tests:
+          - not_null:
+              config: { where: "CPR_DIV_CD IS NOT NULL", severity: warn }
+      - name: SPNSR_DIV_NM
+        tests:
+          - not_null:
+              config: { where: "SPNSR_DIV_CD IS NOT NULL", severity: warn }
+      - name: CMMN_BRND        # MM297 공통브랜드(14종)
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+              config: { where: "CMMN_BRND is not null" }
+      - name: CMMN_BRND_NM
+        tests:
+          - not_null:
+              config: { where: "CMMN_BRND IS NOT NULL", severity: warn }
+      - name: MKTG_UTM_NM      # TM_CM_MKTNG_UTM 라벨(191종 — accepted_values 미열거, not_null 로 고아만 감시)
+        tests:
+          - not_null:
+              config: { where: "MKTG_UTM IS NOT NULL", severity: warn }
+
+  - name: CRM_SPONSORSHIP
+    columns:
+      - name: SPNSR_BSNS_ID
+        tests: [not_null, unique]
+
+  - name: CRM_ORG
+    columns:
+      - name: DEPT_ID
+        tests: [not_null, unique]
+
+  - name: CRM_CODE
+    columns:
+      - name: CD_ID
+        tests: [not_null]
+      - name: DTL_CD_ID
+        tests: [not_null]
+
+  - name: CRM_SEND_REQUEST
+    columns:
+      - name: SNDNG_KEY
+        tests: [not_null, unique]
+
+  # ─── FK 모델 (relationships 정의) ───
+  # 회원→CRM_MEMBER relationships = severity:warn (마스터 미완전 고아, 순서9-B). 마스터 전량입고 후 제거→error 복귀.
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: MSG_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4']
+              quote: true
+              config: { where: "MSG_DIV_CD is not null" }
+      - name: PSTMTR_PRCS_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1']
+              quote: true
+              config: { where: "PSTMTR_PRCS_STAT_CD is not null" }
+      - name: SNDNG_TIME_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "SNDNG_TIME_DIV_CD is not null" }
+  - name: CRM_EVENT_PARTICIPATION
+    columns:
+      - name: EVENT_KEY
+        tests:
+          - not_null
+          # 🔴 [2026-08-29 O116] 「키체계 미확정」 가설은 **기각**됐다 — 정본 = 문서50 §O116-3 ㉡.
+          #   실측: 고아 263,611 = 참여 1,134,126 의 **23.24%** · 그 중 **99.5%가 키 2개**
+          #   (`EVENT_105` 195,544 · `EVENT_106` 66,642) · 고유 고아 키 53.
+          #   원천 `TM_MS_EVENT` 376행 · `EVENT_CD` 전건 수치·유일(1~431 · 결번 55) · **105·106 은 0건**이고
+          #   인접 100~104·107~110 은 이름·기간까지 정상 ⇒ **키 생성식·배선은 정상이고 원천 마스터 결번**이다.
+          #   ⇒ 남은 것은 현업 회신 1건(그 2개 행사의 정체·삭제 사유) · 🔴 회신 전 error 승격 금지.
+          #   🟢 마스터 2행이 들어오면 이 23% 가 일괄 해소된다.
+          - relationships:
+              to: ref('CRM_EVENT')
+              field: EVENT_KEY
+              config: { severity: warn }   # 이슈 E 고아 263,611(23.24%) — 원천 마스터 결번(O116 실측). warn 관측(문서50 BLOCKING-2 · §O116-3 ㉡).
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 참여 3축 코드군·라벨 (매핑 = 문서31 §3 · 결정 = 문서30 §23-J) ──
+      #   🔴 원천별로 코드체계가 다르다(겹침 0) ⇒ 코드군은 EVENT_KEY 접두가 판별한다.
+      #   ⚠️ 라벨 NULL 은 사전 미등재 + **O28 오염값 `)`** 두 원인이 섞인다 — warn 으로 관측만 한다(문서31 §6).
+      #   🔴 PATH 2건(MS303·MS004)은 **등급 C 조건부 적용**이다 — 문서20 §M-3 회신이 다르면 되돌린다.
+      - name: PARTCPT_STAT_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS304', 'MS006']
+              quote: true
+              config: { where: "PARTCPT_STAT_GROUP is not null" }
+      - name: PARTCPT_PATH_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS303', 'MS004']
+              quote: true
+              config: { where: "PARTCPT_PATH_GROUP is not null" }
+      - name: PARTCPT_CHNNL_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS302']
+              quote: true
+              config: { where: "PARTCPT_CHNNL_GROUP is not null" }
+      # [2026-08-12 O61 · ②] 🔴 store_failures 확장 — 이 3건은 WARN 이라 종전에는 「Got N results」만 남고
+      #   **어느 행이 라벨 NULL 인지** 사라졌다(사전 미등재 / O28 오염값 두 원인이 섞여 있다고만 적혀 있었다).
+      #   🟢 **확장 즉시 규명됐다(실측)**: 3축의 라벨 NULL 은 **서로 다른 6행**이고 각 행에서 `)` 가 들어간
+      #      축은 정확히 하나다(나머지는 정상값). 회원 2명 × 3행 = 문서20 §I-2 점검도구 유입과 일치
+      #      ⇒ **원인은 오염값 단일**이고 **사전 미등재분은 0** 이다
+      #      (캠페인행사 계열 MS006·MS004 는 라벨 커버리지 100%). 종전 「두 원인이 섞인다」 서술은 미실측이었다.
+      #   ⚠️ 판정은 감사 테이블 **행수 = WARN 건수** 대조다(P33). 원천 충실 원칙상 삭제·치환하지 않는다(DEC-17-B).
+      - name: PARTCPT_STAT_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_STAT_CD is not null", store_failures: true, schema: OPS }
+      - name: PARTCPT_PATH_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_PATH_CD is not null", store_failures: true, schema: OPS }
+      - name: PARTCPT_CHNNL_NM
+        tests:
+          - not_null:
+              config: { severity: warn, where: "PARTCPT_CHNNL_CD is not null", store_failures: true, schema: OPS }
+
+  - name: CRM_MEMBER_DEV
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL", severity: warn }   # 🟢[2026-08-29 O117 규명] 고아 18행/3,594,843(0.0005%) · 고유 4종(3358·3484·4178·11954). 🔴 CRM_MEMBER 의 같은 테스트와 **동일 축**이다(두 테스트 고아 코드 합집합 = 5종 {188·3358·3484·4178·11954} · 4178·11954 는 양쪽 공통) ⇒ 별건으로 세지 마라. 5종 전부 **원천 마스터에도 0건**이고 마스터는 전량입고(36,163=36,163)이며 코드 범위 1~13,568 안쪽 결번이다. 🔴 종전 「확정 후 error 복귀」 폐기 — 입고·확정으로 채워지지 않는다. 정본 = 문서50 §O116-6 ㉣.
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CANCL_RDCAMT_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33']
+              quote: true
+              config: { where: "CANCL_RDCAMT_RSN_CD is not null" }
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }
+      - name: SPNSR_AMT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5']
+              quote: true
+              config: { where: "SPNSR_AMT_CD is not null" }
+
+  - name: CRM_MEMBER_DISCONTINUE
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: DSCNTC_PATH_NM
+        tests:
+          - accepted_values:
+              values: ['CRM', '홈페이지', 'SYSTEM']
+              quote: true
+              config: { where: "DSCNTC_PATH_NM is not null", severity: warn }
+
+  - name: CRM_MEMBER_AMT_CHANGE
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
+      - name: CMPGN_CD
+        tests:
+          - relationships:
+              to: ref('CRM_CAMPAIGN')
+              field: CMPGN_CD
+              config: { where: "CMPGN_CD IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: SETLE_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '4', '5', '8', '11', '12']
+              quote: true
+              config: { where: "SETLE_CD is not null" }
+      - name: SEX
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8']
+              quote: true
+              config: { where: "SEX is not null" }
+      - name: SPNSR_AMT_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5']
+              quote: true
+              config: { where: "SPNSR_AMT_CD is not null" }
+
+  - name: CRM_MEMBER_RESPONSOR
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+
+  - name: CRM_MEMBER_SPONSOR_BIZ
+    columns:
+      - name: SPNSR_BSNS_ID
+        tests:
+          - not_null
+          - relationships: { to: ref('CRM_SPONSORSHIP'), field: SPNSR_BSNS_ID }
+
+  - name: CRM_MEMBER_STATUS_HIST
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+
+  - name: CRM_PAYMENT_BILLING
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null:
+              config: { severity: warn }   # 순서9-C: NULL 회원번호 고아 5(이슈 B/D). warn. 마스터 재추출/판정 후 error 복귀.
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }   # 🔴[2026-08-29 O117 시정] 종전 문안 「후원사업 마스터 미완전(고아 1). 전량입고 후 error 복귀」는 **오진 + 영구 미충족 처방**이었다(O116-B 가 5곳을 고치며 이 1곳을 빠뜨렸다). 실측 = 그 고아 1행의 값이 `4,43` 인 **쉼표 다중값**이고 성분 2건은 마스터에 전건 실재한다 · 같은 테이블 단일값 47,439,263행은 고아 0.00%(35종) ⇒ 마스터 결손 0. 🔴 1/47,439,264 = 0.000002% 이므로 이것은 설계 축이 아니라 **원천 오염 1건**이다 ⇒ 입고와 무관하고 **현업 정정으로 닫는다**(정본 문서30 §31-A ㉡ = DEC-45 · 문서50 §O116-6).
+      # W1(DEC-17, 2026-07-31): 결제결과코드 = 사유축 전용. 판정축은 PAY_STAT_CD(DEC-3) 불변.
+      - name: RQEST_RST_CD
+        tests:
+          # 사유 커버리지 회귀 감지: 미납(F) 행에 사유코드가 있어야 함. 실측 부재 1,096/6,262,245(0.018%) → warn.
+          # ⚠️조인은 (코드그룹, 코드) 복합키 — 코드그룹 = SETLE_CD+자릿수. 코드 단독 relationships 테스트 금지('01'이 41개 코드그룹에 존재).
+          # 🟢[2026-08-29 O117 규명] 이 1,096 은 커버리지 결손이 아니라 **결제수단별 구조적 부재**다. 실측(F행 6,262,245 · 부재율 0.0175%):
+          #   SETLE_CD 1(자동이체) 4,834,247행 NULL 0.000%·사유코드 25종 / 2(신용카드) 1,148,911 NULL 0.000%·47종 /
+          #   12(네이버페이) 277,397 NULL 0.000%·12종 / 5(휴대폰) 594 NULL 0.000%·13종 /
+          #   🔴 8(OCR) 1,096행 NULL **100.000%** · 고유 사유코드 **0종** ⇒ 부재 1,096 이 이 한 수단에 전량 집중한다.
+          #   기간은 2022~2026 산발(282/274/230/209/101)이라 부분적재가 아니다. 수단 라벨 근거 = CRM_CODE PM030·PM040(8=OCR).
+          # ⇒ 🟢 warn 유지가 정당하고 🔴 사유코드 창작 금지(R2-7-1) · 「OCR 수납이 사유코드를 발행하지 않는 것이 정상인가」는 현업 질의다.
+          #   🔴 where 에 SETLE_CD 제외를 넣지 마라 — 넣으면 이 1,096 이 관측에서 사라진다. 정본 = 문서50 §O116-6 ㉠.
+          - not_null:
+              config: { where: "PAY_STAT_CD = 'F'", severity: warn }
+      - name: PRCS_RST_CD
+        # ⚠️PAY_STAT_CD 거울 컬럼(불일치 0.386%·7종). 판정·사유 분해에 사용 금지 → 테스트 미부여(원천 보존 목적).
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['A', 'I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: MBER_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "MBER_DIV_CD is not null" }
+      - name: MBRFEE_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['E', 'G', 'I', 'U']
+              quote: true
+              config: { where: "MBRFEE_DIV_CD is not null" }
+      - name: OPERT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '5', '6', '7']
+              quote: true
+              config: { where: "OPERT_DIV_CD is not null" }
+      - name: MBRFEE_PRCS_STAT_CD
+        tests:
+          - accepted_values:
+              values: ['F', 'R', 'S']
+              quote: true
+              config: { where: "MBRFEE_PRCS_STAT_CD is not null" }
+      - name: RETUN_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+              quote: true
+              config: { where: "RETUN_RSN_CD is not null" }
+      - name: RQEST_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '9', 'Y']
+              quote: true
+              config: { where: "RQEST_DIV_CD is not null" }
+
+  - name: CRM_PAYMENT_METHOD
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 37). 전량입고 후 제거
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: APPLCNT_MBER_REL_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+              quote: true
+              config: { where: "APPLCNT_MBER_REL_CD is not null" }
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['I', 'S']
+              quote: true
+              config: { where: "CPR_DIV_CD is not null" }
+      - name: CRTFC_MTH_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '4', '5', '7']
+              quote: true
+              config: { where: "CRTFC_MTH_CD is not null" }
+      - name: FNLT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['1', '2', '3']
+              quote: true
+              config: { where: "FNLT_DIV_CD is not null" }
+      - name: RCEPT_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['0', '2', '4', '5', '6', '7']
+              quote: true
+              config: { where: "RCEPT_DIV_CD is not null" }
+      - name: RQST_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['01', '02', '03', '04', '08', '11']
+              quote: true
+              config: { where: "RQST_DIV_CD is not null" }
+
+  - name: CRM_SEND_MEMBER
+    columns:
+      - name: SNDNG_KEY
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_SEND_REQUEST')
+              field: SNDNG_KEY
+              config: { severity: warn }   # 고아 11,313 = PSTMTR 8,232(그 채널 고유키의 67%) + MSG_AT 3,081 · SND·EMAIL 0 (O116-B 실측 · 기간 산발 ⇒ 부분적재 아님 · 정본 문서50 §O116-3 ㉥)
+      - name: MBER_NO
+        tests:
+          - not_null:
+              config: { severity: warn }   # 🟢[2026-08-29 O117 규명] 745/38,467,887 = 0.00194% · 채널 분해 = MSG_AT 741(20,561,448행의 0.0036%) + EMAIL 4(7,811,125의 0.00005%) + SND 0 + PSTMTR 0. 🟢 **원천 직접 대조 완료** = BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS 20,561,448행 중 NULL 741 · TD_MS_EMAIL_SNDNG_DTLS 7,811,125 중 NULL 4 ⇒ 상·하류 동수이고 모델의 NULLIF(TRIM(),'') 가 만든 인공 NULL 은 **0건**이다(공백 유래 0) ⇒ **원천 NULL 전파**이지 채움률 결손이 아니다. 🔴 종전 「마스터 재추출/판정 후 error 복귀」는 축이 틀렸다 — 이 축은 마스터 고아(아래 relationships)가 아니라 **원천 값 부재**이므로 마스터 재추출로 해소되지 않는다 ⇒ 원천 소관. 정본 = 문서50 §O116-6 ㉡.
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 고아 31,486 = 실제 고아(전량입고 확인됨 · O115-C) · 형식오류 아님(숫자 31,262 / 한글오염 139 / 기타 85 · O116-B) ⇒ 탈퇴·삭제 원천 대조 전까지 승격 보류
+      # ── [2026-08-11 O59-N · DEC-35 1단계] 발송 결과 2축 코드군·라벨 (매핑 = 문서31 §1·§2 · 결정 = 문서30 §23-J) ──
+      #   축A = 채널 상태(원천별 다체계) · 축B = 통신사 결과(신설 · 🟠 「conformed」는 O116-B 가 부분 부정 — 모델 헤더 참조).
+      #   🔴 EMAIL·SND·PSTMTR 의 축A 라벨은 **의도적으로 NULL** 이다(§23-J 결정 3 — 사전에 라벨 문자열이 없다)
+      #      ⇒ 축A 라벨 관측은 **MSG_AT 로 한정**한다. 전 채널에 걸면 의도된 NULL 이 매번 warn 을 내 게이트가 무시된다.
+      #   🔴 축A MSG_AT 코드군(MS282)은 **등급 C 조건부 적용** — 문서20 §M-3 회신이 다르면 되돌린다.
+      - name: SEND_STATUS_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS282']
+              quote: true
+              config: { where: "SEND_STATUS_GROUP is not null" }
+      - name: SEND_STATUS_NAME
+        tests:
+          - not_null:
+              config: { severity: warn, where: "SEND_CHANNEL = 'MSG_AT' and SNDNG_RST_CD is not null" }
+      - name: SEND_RESULT_GROUP
+        tests:
+          - accepted_values:
+              values: ['MS056', 'MS057', 'MS058', 'MS059']
+              quote: true
+              config: { where: "SEND_RESULT_GROUP is not null" }   # 🔴 코드군을 조인 결과에서 얻으므로, 사전에 새 그룹이 생기면 여기서 잡힌다
+      - name: SEND_RESULT_NAME
+        tests:
+          - not_null:
+              config: { severity: warn, where: "SEND_RESULT_CD is not null" }   # 사전 초과값 실재(DEC-17-B 관측 · 라벨 NULL 유지)
+
+  - name: CRM_SEND_RESULT
+    columns:
+      - name: SNDNG_KEY
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_SEND_REQUEST')
+              field: SNDNG_KEY
+              config: { severity: warn }   # 순서9-C: 발송요청 마스터 미완전(고아 9). warn. 전량입고 후 error 복귀.
+
+  - name: CRM_SPONSOR_RELATION
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
+      - name: SPNSR_BSNS_ID
+        tests:
+          - relationships:
+              to: ref('CRM_SPONSORSHIP')
+              field: SPNSR_BSNS_ID
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+      # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
+      #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
+      #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
+      #   ⚠️ 라벨(_NM)은 현업이 CRM_CODE 를 수정할 수 있어 severity:warn — 코드는 error(구조 불변식).
+      - name: RELATNSP_DSCNTC_RSN_CD
+        tests:
+          - accepted_values:
+              values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '16', '17', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33']
+              quote: true
+              config: { where: "RELATNSP_DSCNTC_RSN_CD is not null" }
+
+  - name: CRM_DEV_TARGET
+    columns:
+      - name: DEPT_ID
+        tests:
+          - relationships:
+              to: ref('CRM_ORG')
+              field: DEPT_ID
+              config: { where: "DEPT_ID IS NOT NULL" }
+
+  # 🆕🆕 [2026-08-31 O125 등재] 아래 3모델은 **이 파일에 등재되지 않아 테스트 0건**이었다.
+  #   🔴 `FACT_BUDGET_YEARLY`(O114-B)·GOLD 4모델(O125)과 **같은 유형**이다 — 분모 미등재는 조용히 0을 낸다.
+  #   🔴🔴 특히 `CRM_MEMBER_SPONSOR_SPAN` 은 **모델 주석이 존재하지 않는 안전망을 근거로 dedup 을 생략**했다:
+  #      그 모델 48~49행 *"dedup 을 걸지 않는 이유 = 유일성이 성립하므로 … 유일성은 `_crm_schema.yml` 의
+  #      unique 테스트가 지킨다"* — 🔴 그 테스트가 **여기 없었다**. 이제 만든다(주석이 참이 된다).
+  #   🟢 아래 테스트는 **선언 전에 라이브로 실측**했다(2026-08-31 조회 시점 · 전건 위반 0):
+  #      · `CRM_MARKETING_CAMPAIGN` 394행 = distinct MK_CMPGN_CD 394 · NULL 0
+  #      · `CRM_RELATION_ACTIVITY` 388,153행 = distinct ACTIVITY_KEY 388,153 · NULL 0
+  #      · `CRM_MEMBER_SPONSOR_SPAN` (MBER_NO, SPNSR_BSNS_NO) 2,170,572 = distinct 2,170,572 · NULL 0
+  - name: CRM_MARKETING_CAMPAIGN
+    description: >
+      마케팅캠페인 마스터(1행 = 1마케팅캠페인) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 conformed 축.
+      🔴 `USE_YN` 으로 폐지분을 **제외하지 않는다** — 폐지된 캠페인도 과거 실적에 붙는다.
+      🔴 광고↔개발 결합은 **마케팅캠페인 grain 에서만** 성립한다(개발캠페인 grain 으로 내리면 광고비가 복제된다).
+    columns:
+      - name: MK_CMPGN_CD
+        tests: [not_null, unique]
+
+  - name: CRM_MEMBER_SPONSOR_SPAN
+    description: >
+      회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설).
+      `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며
+      `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다.
+      ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다.
+      🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.
+    columns:
+      - name: MBER_NO
+        tests:
+          - not_null
+          - relationships:
+              to: ref('CRM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }   # 🔴 회원 마스터 고아 축(문서50 §O116 ㉠) — 다른 CRM 모델과 같은 축이다
+      - name: SPNSR_BSNS_NO
+        tests: [not_null]
+      - name: SPNSR_NO
+        tests: [not_null]
+      # 🔴 모델 주석이 근거로 든 유일성 가드 — 이것이 없어서 dedup 생략의 안전망이 비어 있었다.
+      - name: "MBER_NO || '|' || SPNSR_BSNS_NO"
+        tests: [unique]
+
+  - name: CRM_RELATION_ACTIVITY
+    description: >
+      결연활동 = 서신 ∪ 선물금(EHGT 제외 · 원천별 PK dedup) — 정본 09 STEP3.
+      🔴 두 원천을 `UNION ALL` 한 팩트성 SILVER 이므로 **`ACTIVITY_TYPE` 을 고정하지 않고 합산하면
+      서신 건수와 선물금 건수가 한 수로 뭉개진다.** `ACTIVITY_KEY` 는 계열 접두(`LETTER_`/`GFT_`)를 포함한다.
+      ⚠️ `GFTMNEY`(선물금액)는 서신 계열에서 NULL 이다 — 개념 부재이며 0 이 아니다(`R2-7`).
+    columns:
+      - name: ACTIVITY_KEY
+        tests: [not_null, unique]
+      - name: ACTIVITY_TYPE
+        tests:
+          - not_null
+          - accepted_values: { values: ['서신', '선물금'] }
+      - name: RELATNSP_KEY
+        tests: [not_null]

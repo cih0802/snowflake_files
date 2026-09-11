@@ -27,7 +27,7 @@ select
     CAST(NULL AS VARCHAR)                          as APPLY_CHANNEL,   -- ⚠️ A-10 대기
     -- 🟢 [DEC-30 2026-08-04] 모집인원 이관 — 참여 팩트가 아니라 **행사 차원**이 정본이다.
     --   원천 `CRM_EVENT.RCRIT_PSNNL_CO` 채움 3,361/3,786=88.8%·74종.
-    --   🔴 종전엔 `FACT_EVENT_PARTICIPATION.RECRUIT_CNT`(전건 0) 자리에 넣으려 했으나
+    --   🔴 종전엔 `FACT_EVENT_ATTENDANCE.RECRUIT_CNT`(구 FACT_EVENT_PARTICIPATION · 전건 0) 자리에 넣으려 했으나
     --      모집인원은 행사 속성이라 참여행마다 반복되면 SUM 이 **101.0배 과대계상**된다
     --      (행사 grain 참값 4,513,184 vs 참여 grain 456,007,553 · 최대 3,718참여/행사).
     --      §18-D ②(grain 함수종속) 실패 사례 → FEP 컬럼은 DROP 하고 여기로 옮겼다.

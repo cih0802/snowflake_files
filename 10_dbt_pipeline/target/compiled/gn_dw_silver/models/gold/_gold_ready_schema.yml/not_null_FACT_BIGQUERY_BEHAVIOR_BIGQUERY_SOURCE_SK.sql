@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select BIGQUERY_SOURCE_SK
+from GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR
+where BIGQUERY_SOURCE_SK is null
+
+

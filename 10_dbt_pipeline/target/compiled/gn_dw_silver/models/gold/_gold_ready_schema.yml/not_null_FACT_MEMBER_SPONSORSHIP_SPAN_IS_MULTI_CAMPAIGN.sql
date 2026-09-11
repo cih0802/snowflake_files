@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select IS_MULTI_CAMPAIGN
+from GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN
+where IS_MULTI_CAMPAIGN is null
+
+

@@ -51,7 +51,7 @@
       SILVER.BIGQUERY_IDENTITY            GA_MEMBER_ID        → varchar(16777216)
       GOLD.DIM_MEMBER                PREV_MBER_STAT_CD   → varchar(16777216)
       GOLD.FACT_MEMBER_EVENT         AREA_CD_AT_EVENT    → varchar(16777216)
-      GOLD.FACT_MEMBER_SPONSOR_BIZ   SPNSR_NO            → varchar(16777216)
+      GOLD.FACT_MEMBER_SPONSORSHIP_SPAN SPNSR_NO         → varchar(16777216)
     ⚠️ 위 목록은 **모델당 첫 번째** 컬럼만이다 — 종전 run 은 각 모델의 첫 ALTER 에서 죽어 그 뒤를 못 봤다.
        모델별 전체 목록을 보려면 `build --select <모델>` 을 돌려 STDOUT 의 SKIPPED 줄을 전부 읽어라.
        🔴 `--empty` 로 싸게 떠보려 하지 말 것 — SILVER pre-hook 이 TRUNCATE 라서 **적재 데이터가 날아간다.**

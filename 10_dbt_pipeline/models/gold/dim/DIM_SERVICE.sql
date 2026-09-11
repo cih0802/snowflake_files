@@ -4,7 +4,7 @@
 --   종전 주석 *"코드체계 검수 대기(설계 §8)"* 는 **원인 오진이었다** — 코드체계는 확정 가능했고
 --   (TOP=`CRM_CODE.CD_ID` 12종·MID 16·BOT 42·경로 65) 실제 문제는 **grain 불일치**였다:
 --   본 차원 grain 은 10행인데 대/중/소를 넣으면 74행이 되어 함수종속이 깨지고 `SERVICE_SK` 산식이
---   바뀌어 이미 99.97% 적재된 `FACT_SERVICE_EVENT.SERVICE_SK` 를 파괴한다.
+--   바뀌어 이미 99.97% 적재된 `FACT_MESSAGE_DISPATCH.SERVICE_SK` 를 파괴한다.
 --   → 정본 소재지 = `DIM_SEND_TYPE`(경로 grain) · FSE 는 `SEND_TYPE_SK` 로 별도 참조한다.
 --   ⚠️ 정본 지표 #133·#134·#135 는 **소멸하지 않는다** — 소재지만 옮겼다(DEC-28 §18-C "DROP 금지"의 취지 = 대체 소재지 없이 지우지 말라).
 {{ config(

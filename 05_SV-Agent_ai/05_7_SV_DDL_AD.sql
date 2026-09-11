@@ -49,7 +49,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad AS GN_DW.GOLD.WIDE_AD_COMBINED
       PRIMARY KEY (AD_PERF_DK)
       WITH SYNONYMS ('광고 실적', '광고 성과', '매체 실적')
-      COMMENT = '광고 실적 통합 팩트(FAP+FAD+FAB pre-join). AD_SOURCE_TYPE으로 디지털/방송 구분. [원천] 시스템=대행사(Agency) 일별 리포트(Google Sheet · Google Drive Excel · MS SharePoint Excel) + GA4(BigQuery 경유) · BRONZE=GN_DW.BRONZE_AGENCY: 디지털 DGT_AD_CMPGN_DTLS(광고비·노출·클릭·CRM개발건·MEDIA_NM) · 방송(비디오) VIDEO_AD_CMPGN_DTLS · 방송(재방) REBRDC_AD_CMPGN_DTLS(광고비·인입콜·방송횟수·개발건수) / GN_DW.BRONZE_BIGQUERY.EVENTS(GA 전환·기기) · SILVER=AGENCY_AD_PERFORMANCE·AGENCY_AD_CREATIVE·GA4_EVENT. ⚠_SRC 접미 컬럼은 대행사가 원천에서 이미 계산해 제공한 비율 원값(재집계 금지).',
+      COMMENT = '온-오프라인 광고 성과 통합 분석 (base: GOLD.WIDE_AD_COMBINED). [Grain: 집행일 × 캠페인 × 소재 × 디바이스]. [활성 지표: 광고비/노출/클릭/전환/CTR/CVR/CPC/CPM/ROAS]. [주의: _SRC 접미 비율 지표 단순 재합산 금지]. [원천: AGENCY 3소스 + GA4 → SILVER.AGENCY_AD_* → GOLD.WIDE_AD_COMBINED].',
     device AS GN_DW.GOLD.DIM_DEVICE
       PRIMARY KEY (DEVICE_SK)
       WITH SYNONYMS ('기기', '디바이스', '매체기기')

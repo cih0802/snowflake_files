@@ -1,4 +1,4 @@
--- [2026-08-11 O59-H] `FACT_EVENT_PARTICIPATION.MEMBER_DK` 의 **비수치 회원키**를 관측한다.
+-- [2026-08-11 O59-H] `FACT_EVENT_ATTENDANCE.MEMBER_DK`(구 FACT_EVENT_PARTICIPATION) 의 **비수치 회원키**를 관측한다.
 -- Co-authored with CoCo
 --
 -- 🔴🔴🔴 왜 필요한가 (실측 경위 — 이 테스트의 1판이 훨씬 큰 것을 잡았다)

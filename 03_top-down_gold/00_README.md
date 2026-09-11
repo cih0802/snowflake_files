@@ -7,7 +7,7 @@ method: 01_작업 계획.md
 authoritative_source: ../99_provided_definition/   # 현업 제공 원본(정본). 편집 금지(read-only).
 structure: 20 DIM + 15 FACT (테이블 35) + GOLD 뷰 14 (전부 WIDE_*)   # [2026-08-12 O64 실측 정정] 종전 「31 + 뷰 16(WIDE 14 + dim 뷰 2)」은 stale
 naming: NN_이름 (작업/읽기 순서)
-status: CURRENT — Top-down 1~10단계 완료. 🟢 **실측(2026-08-12 O64 · 계정 os09358)**: GOLD **35테이블(34 적재 · 139,962,567행) + 뷰 14** · SILVER **39테이블(38 적재 · 112,108,648행)** ⇒ `dbt build` 실행 완료 상태다. 빈 2개는 `GOLD.FACT_TARGET_BIZ`·`SILVER.CRM_BIZ_TARGET` = 기지 **E-6**(사업목표 원천 미입고)뿐이다. ⚠️ 종전 기재 「3차 재구축 직후 · GOLD 31T · 전 테이블 0행 · 뷰 0개」는 **2026-08-07 시점 스냅샷**이며 현재 상태가 아니다(`P169`). 진행상태 정본=01_작업 계획.md
+status: CURRENT — Top-down 1~10단계 완료. 🟢 **실측(2026-08-12 O64 · 계정 os09358)**: GOLD **35테이블(34 적재 · 139,962,567행) + 뷰 14** · SILVER **39테이블(38 적재 · 112,108,648행)** ⇒ `dbt build` 실행 완료 상태다. 빈 2개는 `GOLD.FACT_TARGET_PROJECT`(구 FACT_TARGET_BIZ)·`SILVER.CRM_BIZ_TARGET` = 기지 **E-6**(사업목표 원천 미입고)뿐이다. ⚠️ 종전 기재 「3차 재구축 직후 · GOLD 31T · 전 테이블 0행 · 뷰 0개」는 **2026-08-07 시점 스냅샷**이며 현재 상태가 아니다(`P169`). 진행상태 정본=01_작업 계획.md
 END-METADATA -->
 
 # GN_DW GOLD Top-down 설계 — 폴더 색인
@@ -25,11 +25,11 @@ END-METADATA -->
 | GOLD 테이블 **35** (20 DIM + 15 FACT) | `06_DDL.sql` | CTAS 가 타입·COMMENT·FK 를 파괴(순서9 G-1/G-2 = fact FK 23개 드롭) → `+full_refresh:false` 로 물리 보호 |
 | **GOLD 뷰 14** (전부 `WIDE_*`) | **dbt** (`10_dbt_pipeline/models/gold/wide/`) | 뷰는 보호할 물리 상태가 없다(멱등·저장 0). 대신 **의존성**이 있어 `ref()` 위상정렬·리니지·build 게이트가 필요(BLOCKING-4) |
 | SILVER 테이블 39 | `../04_silver_design/08_SILVER_테이블DDL_*.sql` | 위 테이블과 동일 근거 |
-| SERVING 일반 뷰 **0** | 🔴 **[2026-08-12 O64 실측] helper 3종은 전부 GOLD 로 이관돼 SERVING 에는 일반 뷰가 없다** — `SERVING` 의 `INFORMATION_SCHEMA.TABLES` **0행**(semantic view 9종만 존재하고 SV 는 TABLES 에 안 나온다) | `DIM_MONTH`·`DIM_MEMBER_CURRENT` → **GOLD BASE TABLE**(dbt `models/gold/dim/`) · `FACT_AD_COMBINED` → **`GOLD.WIDE_AD_COMBINED` VIEW**(dbt `models/gold/wide/` · `SV_AD` 의 base). ⚠️ 종전 「SERVING 뷰 3 · 소유주 2분할(`08_After_Deploy_DBT.sql` §G.1/§G.2 · `05_7_SV_DDL_AD.sql:57`)」은 **역사 기록**이다 |
+| SERVING 일반 뷰 **0** | 🔴 **[2026-08-12 O64 실측] helper 3종은 전부 GOLD 로 이관돼 SERVING 에는 일반 뷰가 없다** — `SERVING` 의 `INFORMATION_SCHEMA.TABLES` **0행**(semantic view 9종만 존재하고 SV 는 TABLES 에 안 나온다) | `DIM_MONTH`·`DIM_MEMBER`(구 DIM_MEMBER_CURRENT) → **GOLD BASE TABLE**(dbt `models/gold/dim/`) · `FACT_AD_COMBINED` → **`GOLD.WIDE_AD_COMBINED` VIEW**(dbt `models/gold/wide/` · `SV_AD` 의 base). ⚠️ 종전 「SERVING 뷰 3 · 소유주 2분할(`08_After_Deploy_DBT.sql` §G.1/§G.2 · `05_7_SV_DDL_AD.sql:57`)」은 **역사 기록**이다 |
 
 🔴 **[2026-08-12 O64] 위 표는 종전에 「테이블 31(17 DIM+14 FACT)」·「뷰 16(WIDE 14 + dim 뷰 2)」로 적혀 있었다** —
 같은 문서 §핵심 수치(아래)는 이미 O53 에서 **35 / 14** 로 갱신돼 있었으므로 **한 문서 안에서 두 기재가 서로 어긋난 상태**였다.
-「dim 뷰 2」의 유래 = `DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION` 이 뷰였다가 테이블로 전환된 것이고, 표가 따라오지 않았다.
+「dim 뷰 2」의 유래 = `DIM_MEMBER`(구 DIM_MEMBER_CURRENT)·`DIM_MEMBER_ACQUISITION` 이 뷰였다가 테이블로 전환된 것이고, 표가 따라오지 않았다.
 
 - 🔴 **[2026-08-07 O51 재정정] 뷰 COMMENT 정본 = `10_dbt_pipeline/models/gold/wide/_wide_schema.yml`**
   (`description` = 뷰 COMMENT · `columns[].description` = 컬럼 COMMENT) · 적용 = `materialized='gn_view_commented'`.
@@ -97,9 +97,9 @@ END-METADATA -->
 
 ## 핵심 수치
 - 지표 215 = 공통 162 + 신규 53 / measure 60 + dimension 74 + derived 81
-- 코어: **20 DIM + 15 FACT = 35 테이블** (FMM·FMF·FMC·FME·FTG_D·FTG_B·FSE·FBQ·FAD·FEP·FBD + 광고 위성 FAD_B·FAD_D·FAD_BC + **`FACT_DEV_ACHIEVEMENT`**) + 정보성 FK 38
+- 코어: **20 DIM + 15 FACT = 35 테이블** (FMM·FMF·FMC·FME·FTG_D·FTG_B·FSE·FBQ·FAD·FEP·FBD + 광고 위성 FAD_B·FAD_D·FAD_BC + **`FACT_MEMBER_DEV_ACHIEVEMENT`(구 FACT_DEV_ACHIEVEMENT)**) + 정보성 FK 38
   🔴 [2026-08-12 O64] 종전 「17 DIM + 14 FACT = 31」은 stale 이었다 — 같은 절 다음 줄이 이미 O53 에서 **35(DIM 20 + FACT 15)** 로 갱신돼 있었다(문서 내 자기모순).
-- 소비 계층: **GOLD 뷰 14** = WIDE 14 (`WIDE_AD_COMBINED` 신설 포함). 🔴 [2026-08-10 O53] 종전 「16 = WIDE 14 + dim 뷰 2」에서 갱신 — dim 뷰 2종(`DIM_MEMBER_CURRENT`·`DIM_MEMBER_ACQUISITION`)과 `WIDE_DEV_ACHIEVEMENT` 는 **테이블로 전환**됐고 `WIDE_AD_COMBINED` 가 신설됐다. 기반 계층 = **GOLD 테이블 35**(DIM 20 + FACT 15).
+- 소비 계층: **GOLD 뷰 14** = WIDE 14 (`WIDE_AD_COMBINED` 신설 포함). 🔴 [2026-08-10 O53] 종전 「16 = WIDE 14 + dim 뷰 2」에서 갱신 — dim 뷰 2종(`DIM_MEMBER`(구 DIM_MEMBER_CURRENT)·`DIM_MEMBER_ACQUISITION`)과 `FACT_MEMBER_DEV_ACHIEVEMENT`(구 WIDE_DEV_ACHIEVEMENT) 는 **테이블로 전환**됐고 `WIDE_AD_COMBINED` 가 신설됐다. 기반 계층 = **GOLD 테이블 35**(DIM 20 + FACT 15).
 - derived는 GOLD 미적재 → Semantic View metric
 
 ## 산출물 흐름
@@ -110,13 +110,13 @@ END-METADATA -->
 - 🟢 물리 배포: **[2026-08-12 O64 실측 · 계정 `os09358`] 적재까지 완료 상태다.**
   `GN_DW.INFORMATION_SCHEMA` 실측: `GOLD` **35테이블(34 적재 · 139,962,567행) + 뷰 14** ·
   `SILVER` **39테이블(38 적재 · 112,108,648행)** · `SERVING` 일반 뷰 **0** + semantic view **9**.
-  빈 테이블은 `GOLD.FACT_TARGET_BIZ`·`SILVER.CRM_BIZ_TARGET` **2개뿐**이며 기지 **E-6**(사업목표 원천 미입고)이다.
+  빈 테이블은 `GOLD.FACT_TARGET_PROJECT`(구 FACT_TARGET_BIZ)·`SILVER.CRM_BIZ_TARGET` **2개뿐**이며 기지 **E-6**(사업목표 원천 미입고)이다.
   ⚠️ **[O50 시점 기재 무효]** 「3차 재구축 직후 DDL-only · GOLD 31테이블 / 뷰 0개 / 전 테이블 0행 · `dbt build` 미실행」은
   **2026-08-07 스냅샷**이다. 그 뒤 O51~O63 에서 build·적재가 이뤄졌고 O63 이 뷰 COMMENT까지 반영했다.
   ⚠️ 그보다 앞선 「✅ 완료 — 실측(2026-07-29) 27테이블 + WIDE VIEW 12개 · SILVER 38테이블」도 그 시점 스냅샷이다(`P169`).
   아래 수치는 **직전 빌드 기대값(회귀 대조 기준)** 으로만 쓴다 — 현재값은 위 실측을 보라:
   FMM 40,054,883 · FMF 40,262,076 · FSE 38,470,780 · FME 4.63M · FEP 1.13M ·
-  FAD 235,572 + 위성 FAD_D 197,686 · FAD_B 37,886 · FAD_BC 5,327 · `FACT_TARGET_BIZ` 0행=E-6.
+  FAD 235,572 + 위성 FAD_D 197,686 · FAD_B 37,886 · FAD_BC 5,327 · `FACT_TARGET_PROJECT`(구 FACT_TARGET_BIZ) 0행=E-6.
 - 잔여: 타입 정밀화(정본 `06_지표용어사전` 확정 대기) / 사업목표(`CRM_BIZ_TARGET`) 데이터 입고 / open 항목은 `03_테이블 설계.md §5`.
 - GA4: `events_20260501` 1일 샤드(추가 입고 예정 없음)를 **전체로 간주**하고 적재·검증 완료. 추후 추가 입고 시 GA4 SILVER/GOLD 재적재·재검증 재작업 예정.
 - 다음 트랙: Semantic View 매핑(derived 81 → metric).

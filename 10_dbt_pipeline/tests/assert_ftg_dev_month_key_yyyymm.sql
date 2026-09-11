@@ -1,4 +1,4 @@
--- [2026-08-05 O38] FACT_TARGET_DEV.MONTH_KEY 는 YYYYMM 6자리여야 한다.
+-- [2026-08-05 O38] FACT_TARGET_MEMBER_DEV.MONTH_KEY 는 YYYYMM 6자리여야 한다.
 -- Co-authored with CoCo
 --
 -- 왜 이 테스트가 필요한가: 종전 모델이 `TRY_TO_NUMBER(STDR_MT)` 로 월 번호(1~12)만 적재했고

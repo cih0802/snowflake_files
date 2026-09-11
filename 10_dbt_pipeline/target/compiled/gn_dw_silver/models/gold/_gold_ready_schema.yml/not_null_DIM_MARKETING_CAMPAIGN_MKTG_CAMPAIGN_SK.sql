@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select MKTG_CAMPAIGN_SK
+from GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
+where MKTG_CAMPAIGN_SK is null
+
+

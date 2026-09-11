@@ -21,8 +21,8 @@
 -- ── 조인 안전성 실측(2026-08-06) — 팬아웃 0 ────────────────────────────────────
 --   `FACT_MEMBER_COHORT` 1,585,949행 = 1,585,949 고유회원 → **1행/회원 확인**
 --   ⋈ `FACT_MEMBER_MONTHLY`      40,054,883 → 39,409,747  (미매칭 1.61%)
---   ⋈ `FACT_SERVICE_EVENT`       38,470,780 → 38,339,810  (99.66%)
---   ⋈ `FACT_EVENT_PARTICIPATION`  1,134,126 →  1,119,559  (98.70%)
+--   ⋈ `FACT_MESSAGE_DISPATCH`    38,470,780 → 38,339,810  (99.66%)
+--   ⋈ `FACT_EVENT_ATTENDANCE`     1,134,126 →  1,119,559  (98.70%)
 --   ⇒ 반드시 **LEFT JOIN** 할 것. INNER 로 걸면 개발 사건이 없는 회원(일시회원 등)이 사라진다.
 --
 -- 🔴 네이밍 규약 — O34 교훈(`_AT_PLEDGE` vs `_AT_EVENT`)의 재적용:
@@ -51,24 +51,6 @@
     tags=['gold_ready']
 ) }}
 
-with ranked_snp_campaign as (
-    select
-        CMPGN_CD,
-        CMPGN_NM,
-        dbt_valid_from,
-        coalesce(dbt_valid_to, '9999-12-31'::timestamp_ntz) as dbt_valid_to,
-        row_number() over (partition by CMPGN_CD order by dbt_valid_from asc) as rn_first
-    from {{ ref('snp_crm_tm_cm_cmpgn_mng') }}
-),
-ranked_snp_dept as (
-    select
-        ABS(HASH(DEPT_ID)) as DEPT_HASH_KEY,
-        DEPT_NM,
-        dbt_valid_from,
-        coalesce(dbt_valid_to, '9999-12-31'::timestamp_ntz) as dbt_valid_to,
-        row_number() over (partition by DEPT_ID order by dbt_valid_from asc) as rn_first
-    from {{ ref('snp_crm_tm_cm_dept_info') }}
-)
 select
     c.MEMBER_DK                                     as MEMBER_DK,          -- 자연키(= 팩트 조인키)
     -- ── 획득 귀속 축 ─────────────────────────────────────────────────────────
@@ -91,12 +73,10 @@ select
     --   캠페인 마스터가 이후 정정돼도 과거 획득 회원의 값은 바뀌지 않는다(O99 설계부채 해소).
     c.ACQ_BRAND                                     as ACQ_BRAND,
     cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,          -- 현재 최신 캠페인명 (MSTR 대조용)
-    coalesce(snp_cmp.CMPGN_NM, cmp.CAMPAIGN_NAME)   as ACQ_CAMPAIGN_NAME_AT_ACQ,   -- 획득 당시 캠페인명 (Snapshot 기반 동결)
     c.ACQ_PARENT_CAMPAIGN_NAME                      as ACQ_PARENT_CAMPAIGN_NAME,
     c.ACQ_PROMO_METHOD_NAME                         as ACQ_PROMO_METHOD_NAME,
     c.ACQ_MKTG_CMPGN_NM                             as ACQ_MARKETING_CAMPAIGN,
     org.DEPARTMENT                                  as ACQ_DEPARTMENT,              -- 현재 최신 부서명 (MSTR 대조용)
-    coalesce(snp_org.DEPT_NM, org.DEPARTMENT)       as ACQ_DEPARTMENT_AT_ACQ,      -- 획득 당시 부서명 (Snapshot 기반 동결)
     spb.SPONSORSHIP_NAME                            as ACQ_SPONSORSHIP_NAME,
     -- [DEC-43] 잔여 8속성(9속성 중 나머지 5 + 후원/법인구분 2 + UTM 1) 신규 노출.
     c.ACQ_MBER_INFLOW_PATH_NM                       as ACQ_INFLOW_PATH,
@@ -116,19 +96,5 @@ select
     {{ gold_meta('CRM') }}
 from {{ ref('FACT_MEMBER_COHORT') }} c
 left join {{ ref('DIM_CAMPAIGN') }}     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
-left join ranked_snp_campaign           snp_cmp
-       on snp_cmp.CMPGN_CD = cmp.CAMPAIGN_BK
-      and (
-          (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') between snp_cmp.dbt_valid_from and snp_cmp.dbt_valid_to)
-          or (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') < snp_cmp.dbt_valid_from and snp_cmp.rn_first = 1)
-          or (c.ACQ_DATE_SK = 0 and snp_cmp.rn_first = 1)
-      )
 left join {{ ref('DIM_ORG') }}          org on org.ORG_SK          = c.ACQ_ORG_SK
-left join ranked_snp_dept               snp_org
-       on snp_org.DEPT_HASH_KEY = org.ORG_DK
-      and (
-          (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') between snp_org.dbt_valid_from and snp_org.dbt_valid_to)
-          or (try_to_timestamp_ntz(to_varchar(c.ACQ_DATE_SK), 'YYYYMMDD') < snp_org.dbt_valid_from and snp_org.rn_first = 1)
-          or (c.ACQ_DATE_SK = 0 and snp_org.rn_first = 1)
-      )
 left join {{ ref('DIM_SPONSORSHIP') }}  spb on spb.SPONSORSHIP_SK  = c.ACQ_SPONSORSHIP_SK

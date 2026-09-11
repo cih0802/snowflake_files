@@ -33,7 +33,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
   TABLES (
     fse AS GN_DW.GOLD.FACT_MESSAGE_DISPATCH
       WITH SYNONYMS ('발송', '서비스 발송', '문자메일 발송', '메시지 발송')
-      COMMENT = '서비스/메시지 발송 팩트. ⚠(DATE_SK,MEMBER_DK,SERVICE_SK) 실측 비유일 → PK 미선언(기저 FACT·집계 무해). [원천] 시스템=CRM(UMS 발송) · BRONZE=GN_DW.BRONZE_CRM: 발송마스터 TM_MS_EMAIL_SNDNG·TM_MS_MSG_AT_SNDNG·TM_MS_PSTMTR_SNDNG · 발송상세 TD_MS_EMAIL_SNDNG_DTLS·TD_MS_MSG_AT_SNDNG_DTLS·TD_MS_PSTMTR_SNDNG_DTL(MBER_NO·SNDNG_RST_CD) · 성과 TD_MS_*_LQY_SNDNG(성공/실패, 현재 미적재) · SILVER=CRM_SEND_REQUEST·CRM_SEND_MEMBER·CRM_SEND_RESULT · GOLD=FACT_MESSAGE_DISPATCH.',
+      COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_GA_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '발송일')
@@ -83,7 +83,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       WITH SYNONYMS ('발송 회원수', '발송 고유회원수', '발송(명)', '발송명', '수신 대상 회원수', '수신자수', '몇 명에게 발송')
       COMMENT = '발송 대상 **고유 회원수(명)**. D(distinct) — 🔴가산 금지: 월별로 뽑아 합산하면 여러 달 수신한 회원이 중복된다. 기간을 바꾸면 반드시 재집계할 것. 정본 「발송(명)」이 이 metric 이다(발송 건수는 TOTAL_SEND_MEMBERS).'
   )
-  COMMENT = 'Phase-1 서비스 발송 SV (base: GOLD.FACT_SERVICE_EVENT, grain: 발송 1행). CRM UMS 발송 건수(TOTAL_SEND_MEMBERS), 수신 고유 회원수(DISTINCT_SEND_MEMBERS), 발송상태(축A: SEND_STATUS_NAME) 및 통신사 도달결과(축B: SEND_RESULT_NAME) 뷰. ⚠️ 발송 건수(TOTAL_SEND_MEMBERS)와 고유 회원수(DISTINCT_SEND_MEMBERS)를 혼동하지 말 것. 발송 앵커 개발/중단 결합 질의는 배분규칙 부재로 생성 불가.'
+  COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_GA_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
   AI_SQL_GENERATION '핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다.';
 
 
@@ -112,5 +112,5 @@ USE WAREHOUSE GN_DW_ANALYTICS_WH;
 
 -- (8-2) SV_SERVICE 발송수 총합 == FSE 직접 SUM (서비스 조인 fan-out 0)
 SELECT (SELECT TOTAL_SEND_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS TOTAL_SEND_MEMBERS)) AS sv_val,
-       (SELECT SUM(SEND_MEMBERS) FROM GN_DW.GOLD.FACT_SERVICE_EVENT)                                       AS fact_val;
+       (SELECT SUM(SEND_MEMBERS) FROM GN_DW.GOLD.FACT_MESSAGE_DISPATCH)                                     AS fact_val;
 --   판정: sv_val == fact_val

@@ -48,7 +48,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
   TABLES (
     fmsb AS GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN
       WITH SYNONYMS ('회원 후원약정', '캠페인별 활동회원', '후원사업별 활동회원')
-      COMMENT = '회원×후원약정 팩트. grain = MEMBER_DK × SPNSR_BSNS_NO. "캠페인별/후원사업별 활동회원" 질의 전용 — 전체 활동회원수 정본은 SV_MEMBER_MONTHLY다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER_SPONSOR_SPAN(활동구간)+CRM_MEMBER_DEV(캠페인귀속) · GOLD=FACT_MEMBER_SPONSORSHIP_SPAN.',
+      COMMENT = '회원×후원약정 기간 및 캠페인/사업별 활동회원 분석 (base: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN). [Grain: 회원 × 후원약정번호]. [활성 지표: 약정 활동회원수]. [주의: 전체 활동회원수 정본은 SV_MEMBER_MONTHLY 사용]. [원천: CRM → SILVER.CRM_MEMBER_SPONSOR_SPAN → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].',
     sponsorship AS GN_DW.GOLD.DIM_SPONSORSHIP
       PRIMARY KEY (SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업 차원')
@@ -71,8 +71,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     fmsb.SPNSR_BSNS_NO    AS fmsb.SPNSR_BSNS_NO WITH SYNONYMS ('후원사업번호', '약정번호') COMMENT = '회원별 후원약정 일련번호. 🔴단독 유일키 아니다 — 공동후원 쌍(부부 등)이 2개 회원에 공유되는 사례가 실재한다. 분류축이 아니다(분류는 SPONSORSHIP 축)',
     -- ── 후원사업(분류) ────────────────────────────────────────────────────────
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '사업') COMMENT = '후원사업명(마스터). 미매핑 없음(전건 매칭 실측 확인)',
-    sponsorship.SPONSORSHIP_DIV AS sponsorship.SPONSORSHIP_DIV_NAME WITH SYNONYMS ('정기일시구분') COMMENT = '정기후원/일시후원 구분(CM035)',
-    sponsorship.SPONSORSHIP_ABBR_CATEGORY AS sponsorship.SPONSORSHIP_GROUP_NAME WITH SYNONYMS ('후원사업 약칭', '후원사업 카테고리') COMMENT = '후원사업 약칭 그룹(CM003, 6종: 국내/결연/해외구호/북한/기타/해외)',
+    sponsorship.SPONSORSHIP_DIV AS sponsorship.SPONSORSHIP_DIV_NAME WITH SYNONYMS ('정기일시구분') COMMENT = '정기후원/일시후원 구분(CM035). 실제값 2종: ''정기후원''·''일시후원''.',
+    sponsorship.SPONSORSHIP_ABBR_CATEGORY AS sponsorship.SPONSORSHIP_GROUP_NAME WITH SYNONYMS ('후원사업 약칭', '후원사업 카테고리') COMMENT = '후원사업 약칭 그룹(CM003). 실제값 6종: ''결연''·''국내''·''기타''·''북한''·''해외''·''해외구호''.',
     -- ── 캠페인(대표) ──────────────────────────────────────────────────────────
     campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규사건이 있으면 그 신규사건 ②없으면 최초사건(동률 0 확인). 사건 자체가 없는 약정은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
     -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSOR_BIZ.ACQ_*`
@@ -102,7 +102,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
       WITH SYNONYMS ('약정금액 총계')
       COMMENT = '활동여부 무관 SPNSR_AMT 합(원). F(가산)'
   )
-  COMMENT = 'Phase-1 회원×후원약정 SV (base: GOLD.FACT_MEMBER_SPONSOR_BIZ, grain: MEMBER_DK × SPNSR_BSNS_NO). 캠페인별/후원사업별 활동회원(CURRENTLY_ACTIVE_MEMBERS), 약정금액(CURRENTLY_ACTIVE_SPNSR_AMT), 등록건수 뷰. ⚠️ 전체 활동회원수 총계는 SV_MEMBER_MONTHLY 가 정본. 다중 후원으로 인해 캠페인/후원사업별 합계는 전체 활동회원수보다 클 수 있음.'
+  COMMENT = '회원×후원약정 기간 및 캠페인/사업별 활동회원 분석 (base: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN). [Grain: 회원 × 후원약정번호]. [활성 지표: 약정 활동회원수]. [주의: 전체 활동회원수 정본은 SV_MEMBER_MONTHLY 사용]. [원천: CRM → SILVER.CRM_MEMBER_SPONSOR_SPAN → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
   AI_SQL_GENERATION '핵심 규칙: (1) 활동회원 총계 vs 분해: 전체 활동회원수 총계는 SV_MEMBER_MONTHLY 로 라우팅. 캠페인별/후원사업별 분해 시에만 본 뷰의 CURRENTLY_ACTIVE_MEMBERS 사용. (2) 다중후원 안내: 캠페인/후원사업별 합계 > 전체 활동회원수(다중 후원 정상 현상)임을 명시. (3) 특정 과거월 as-of: 과거 특정월 활동 판정은 START_MONTH_KEY <= 월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 월) 조건으로 직접 구성. (4) 회원 식별: 회원 식별은 항상 MEMBER_DK 기준.';
 
 -- ── GRANT ──────────────────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ TO
 
 -- (F-1) fan-out 0 : SV 행수 == 팩트 행수
 SELECT (SELECT TOTAL_REGISTRATIONS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ METRICS TOTAL_REGISTRATIONS)) AS sv_val,
-       (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ)                                                        AS fact_val;
+       (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN)                                                   AS fact_val;
 --   판정: sv_val == fact_val == 2,170,572
 
 -- (F-2) "명" 이 행수와 다른가 — DISTINCT 가 실제로 작동하는지 확인(O39 유형)
@@ -149,3 +149,4 @@ SHOW SEMANTIC VIEWS LIKE 'SV_MEMBER_SPONSOR_BIZ' IN SCHEMA GN_DW.SERVING;
 -- ============================================================================
 -- _Co-authored with CoCo_
 -- ============================================================================
+

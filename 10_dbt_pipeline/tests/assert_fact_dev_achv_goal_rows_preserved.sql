@@ -1,11 +1,11 @@
--- [2026-08-05 O38] FACT_DEV_ACHIEVEMENT 는 목표 행을 하나도 잃지 않아야 한다.
+-- [2026-08-05 O38] FACT_MEMBER_DEV_ACHIEVEMENT 는 목표 행을 하나도 잃지 않아야 한다.
 -- 🔴 [2026-08-10 O53] 대상 개명·테이블화에 따라 파일명·ref 를 갱신했다
---   (구: WIDE_DEV_ACHIEVEMENT 뷰 → 현: FACT_DEV_ACHIEVEMENT 테이블).
+--   (구: WIDE_DEV_ACHIEVEMENT 뷰 → 구: FACT_DEV_ACHIEVEMENT → 현: FACT_MEMBER_DEV_ACHIEVEMENT 테이블).
 --   ⚠️ 개명 시 이 파일을 놓치면 dbt parse 가 「존재하지 않는 노드 참조」 경고만 내고 통과한다 —
 --      경고는 게이트가 아니다(P105). 실제로 O53 parse 에서 이 경고가 발화해 잡았다.
 -- Co-authored with CoCo
 --
--- 무엇을 지키는가: `FACT_TARGET_DEV` 의 모든 행이 이 팩트에 `HAS_GOAL_ROW=TRUE` 로 살아 있어야 한다.
+-- 무엇을 지키는가: `FACT_TARGET_MEMBER_DEV` 의 모든 행이 이 팩트에 `HAS_GOAL_ROW=TRUE` 로 살아 있어야 한다.
 --   이 팩트는 목표 × 실적을 **FULL OUTER** 로 묶는데, 조인 키의 타입·널 처리·grain 이 어긋나면
 --   목표 행이 조용히 유실된다. 유실되면 **달성율의 분모가 작아져 달성율이 과대**해지는데,
 --   행수는 오히려 줄어들어 "정상"처럼 보인다 — 총계 대조만으로는 잡히지 않는다.

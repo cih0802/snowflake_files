@@ -40,6 +40,26 @@ version: 2
 #       종전처럼 한 문장으로 뭉개면 **충족 불가능한 조건을 무기한 대기**하게 된다.
 #    🔴 [O117] 축을 하나 고칠 때 **같은 축의 다른 테이블 주석도 같이 고쳐라** — O116-B 가 `SPNSR_BSNS_ID` 5곳을
 #       고치면서 `CRM_PAYMENT_BILLING` 1곳을 빠뜨려 기각된 처방이 코드에 살아 있었다(`P154` 축).
+#
+# ═══ 🆕🔴🔴 [2026-09-10 O154 · 회원 마스터 축 종결 · 현업 지침] `MASTER-ORPHAN-POLICY` ═══
+#    🔴 **「회원 마스터 전량입고 후 warn→error 승격」 처방을 폐기한다.** 아래 3줄이 근거다.
+#    ① **입고는 끝났다** — `TM_MM_FDRM_MBER_INFO` 1,587,343 + `TM_MM_ONCE_MBER_INFO` 175,722
+#       = **1,763,065** ↔ `SILVER.CRM_MEMBER` 1,763,065 ↔ `GOLD.DIM_MEMBER` 1,763,065 (3축 일치·손실 0).
+#    ② **그런데 고아가 남았다** — `CRM_EVENT_PARTICIPATION` 기준 **7,658종 / 9,376행 (0.83%)**.
+#       형식별 분해 = 7자리 7,629종 + `S`+8자리 29종 · **형식이상 0종** ⇒ 깨진 값이 아니라 **정상 번호**다.
+#    ③ **현업 지침(2026-09-10)** = *"테스트값이나 업무절차상 테이블을 삭제했지만 cascade 삭제가 아니어서
+#       번호만 남은 경우로, 무시하고 파이프라인을 구성하라."*
+#    ⇒ 🟢 **판정 = 이 축의 `severity: warn` 은 「임시 완화」가 아니라 「영구 관측」이다.**
+#       운영계가 cascade 삭제를 쓰지 않으므로 고아는 **구조적으로 상시 발생**한다.
+#       `error` 로 올리면 매일 밤 파이프라인이 실패하고 **진짜 회귀를 구별할 수 없게 된다**(알람 피로).
+#    🔴 **다음 세션에게** — 아래 주석들에 「전량입고 후 제거」·「전량입고 후 error 복귀」가 인용돼 있으면
+#       **그것은 폐기된 문안이다. 실행하지 마라.** 남은 용도는 **건수 급증 감시**뿐이다.
+#    🔴 **교훈(일반화)** = 「조건이 충족되면 X 하라」를 코드 주석에 심으면, 조건이 충족된 날
+#       **아무도 전제를 재검증하지 않고 X 를 실행한다.** ⇒ 예약 조치에는 **재측정 의무**를 함께 적어라.
+#    📌 정본 = `20_issue/_o154_evidence.md` §3-1 · 현업 공유본 = `30_output_share/19_원천입고_및_항목신설_대기.md` §0-2
+#       · 해설 = `30_output_share/20_현업의사결정_요청_주니어_해설서.md` §2-5.
+#    ⚠️ **적용 범위 = 회원 마스터 고아 축에 한한다.** 코드사전 라벨 축(㉠)·원천 NULL 축(㉥)·
+#       캠페인 결번 축(㉤)은 각자의 선행조건이 따로 있다 ⇒ 이 정책으로 뭉개지 마라(`R3-9 ㉡`).
 models:
   # ─── PK 모델 (relationship 대상) ───
   - name: CRM_MEMBER
@@ -61,7 +81,7 @@ models:
           - relationships:
               to: ref('CRM_ORG')
               field: DEPT_ID
-              config: { where: "ACT_DEPT_CD IS NOT NULL" }
+              config: { where: "ACT_DEPT_CD IS NOT NULL", severity: warn }
       # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
       #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
       #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
@@ -268,7 +288,7 @@ models:
         tests: [not_null, unique]
 
   # ─── FK 모델 (relationships 정의) ───
-  # 회원→CRM_MEMBER relationships = severity:warn (마스터 미완전 고아, 순서9-B). 마스터 전량입고 후 제거→error 복귀.
+  # 회원→CRM_MEMBER relationships = severity:warn. 🔴[2026-09-10 O154] 「마스터 전량입고 후 제거→error 복귀」 **폐기** — 입고 완료 후에도 고아 잔존(정상 형식 · 비-cascade 삭제 잔번) · 현업 무시 지침. 정본 = 헤더 `MASTER-ORPHAN-POLICY`.
       # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
       #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
       #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
@@ -313,7 +333,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
       # ── [2026-08-11 O59-N · DEC-35 1단계] 참여 3축 코드군·라벨 (매핑 = 문서31 §3 · 결정 = 문서30 §23-J) ──
       #   🔴 원천별로 코드체계가 다르다(겹침 0) ⇒ 코드군은 EVENT_KEY 접두가 판별한다.
       #   ⚠️ 라벨 NULL 은 사전 미등재 + **O28 오염값 `)`** 두 원인이 섞인다 — warn 으로 관측만 한다(문서31 §6).
@@ -364,13 +384,13 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:
               to: ref('CRM_SPONSORSHIP')
               field: SPNSR_BSNS_ID
-              config: { where: "SPNSR_BSNS_ID IS NOT NULL" }
+              config: { where: "SPNSR_BSNS_ID IS NOT NULL", severity: warn }
       - name: CMPGN_CD
         tests:
           - relationships:
@@ -414,7 +434,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
       # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
       #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
       #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
@@ -434,7 +454,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`. ⚠️ 현재 고아 0 — 예방적 관측.
       - name: CMPGN_CD
         tests:
           - relationships:
@@ -478,7 +498,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
 
   - name: CRM_MEMBER_SPONSOR_BIZ
     columns:
@@ -495,7 +515,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
 
   - name: CRM_PAYMENT_BILLING
     columns:
@@ -506,7 +526,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`.
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:
@@ -584,7 +604,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아(warn, 고아 37). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`. ⚠️ 이 축 실측 고아 37.
       # ── [2026-08-03 O25/G3] 신설 코드컬럼 도메인 가드 ──
       #   근거 P27: 도메인 부분적재·조용한 코드 증가는 행수·not_null·참조무결성에 걸리지 않는다.
       #   값 목록 = 2026-08-03 실측 distinct 전량. 원천에 새 코드가 생기면 이 테스트가 잡는다.
@@ -677,7 +697,7 @@ models:
           - relationships:
               to: ref('CRM_SEND_REQUEST')
               field: SNDNG_KEY
-              config: { severity: warn }   # 순서9-C: 발송요청 마스터 미완전(고아 9). warn. 전량입고 후 error 복귀.
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 발송요청 마스터 고아 9 — **warn 유지**. 종전 「전량입고 후 error 복귀」는 회원 마스터 축 판정(헤더 `MASTER-ORPHAN-POLICY`)과 같은 이유로 **보류**한다: 회원 마스터가 전량입고돼도 고아가 남았다 ⇒ 이 축도 입고만으로 0 이 된다고 단정할 수 없다. 🔴 승격 전 **재측정 필수**.
 
   - name: CRM_SPONSOR_RELATION
     columns:
@@ -687,7 +707,7 @@ models:
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK
-              config: { severity: warn }   # 순서9-B: 마스터 미완전 고아 정책 일관(현재 고아 0, 예방적 warn). 전량입고 후 제거
+              config: { severity: warn }   # 🔴[2026-09-10 O154] 회원 마스터 고아 축 — **warn 영구 유지**(관측). 종전 「전량입고 후 제거」는 폐기됐다: 입고 완료(1,763,065 3축 일치) 후에도 고아 7,658종/9,376행 잔존 · 전부 정상 형식 · 현업 「무시하고 파이프라인 구성」 지침. 정본 = `_crm_schema.yml` 헤더 `MASTER-ORPHAN-POLICY`. ⚠️ 현재 고아 0 — 예방적 관측.
       - name: SPNSR_BSNS_ID
         tests:
           - relationships:
@@ -735,7 +755,7 @@ models:
   - name: CRM_MEMBER_SPONSOR_SPAN
     description: >
       회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설).
-      `GOLD.FACT_MEMBER_SPONSOR_BIZ` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며
+      `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며
       `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다.
       ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다.
       🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.

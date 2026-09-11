@@ -67,7 +67,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc AS GN_DW.GOLD.FACT_MEMBER_COHORT
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원 코호트', '획득 코호트', '회원 이탈', '중단률')
-      COMMENT = '회원 획득 코호트 팩트(1행=1회원). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 개발(약정) 이력이 있는 회원만 존재한다 — 개발 이력이 없는 중단회원은 획득 캠페인을 알 수 없어 미포함(그런 회원의 중단 총계는 SV_MEMBER_EVENT). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_DVLP_AMT(개발·CMPGN_CD·AGE·AREA_CD·SEX) + TM_MM_FDRM_MBER_SPNSR_DSCNTC(중단·DSCNTC_RSN_CD) · SILVER=CRM_MEMBER_DEV + CRM_MEMBER_DISCONTINUE · GOLD=FACT_MEMBER_EVENT → FACT_MEMBER_COHORT.',
+      COMMENT = '회원 획득 코호트 및 캠페인별 12개월 고정 이탈률 분석 (base: GOLD.FACT_MEMBER_COHORT). [Grain: MEMBER_DK (1행=1회원)]. [활성 지표: 12개월 이탈률/유지기간/코호트]. [주의: 개발이력 보유 회원 한정(미보유 중단회원은 SV_MEMBER_EVENT 사용)]. [원천: GOLD.FACT_MEMBER_EVENT → FACT_MEMBER_COHORT].',
     acq_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('획득캠페인', '모집캠페인', '캠페인')

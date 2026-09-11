@@ -1,0 +1,9 @@
+begin;
+    insert into GN_DW.SILVER.CRM_MEMBER_RESPONSOR ("MBER_NO", "SER_NO", "RE_SPNSR_DE", "REGIST_DEPT_CD", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    (
+        select "MBER_NO", "SER_NO", "RE_SPNSR_DE", "REGIST_DEPT_CD", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
+        from GN_DW.SILVER.CRM_MEMBER_RESPONSOR__dbt_tmp
+    )
+
+;
+    commit;

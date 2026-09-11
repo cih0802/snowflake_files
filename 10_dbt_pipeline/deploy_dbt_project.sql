@@ -50,11 +50,11 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION V_20260909_RENAME
+  ADD VERSION GOLD_RENAME_V_20260910_103000
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SNAPSHOT(SCD2)→SILVER→GOLD. [20260909] Gold 9개 모델 직관적 비즈니스 용어 리네임 및 전수 동기화.';
+  COMMENT = 'BRONZE→SNAPSHOT(SCD2)→SILVER→GOLD. [20260910] Gold 9개 모델 직관적 비즈니스 용어 리네임 및 전수 동기화.';
 
 -- (3) 배포된 버전 상태 확인
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;

@@ -65,6 +65,18 @@ def test_snapshot_cli():
         with io.open(src, 'w', encoding='utf-8') as fh:
             fh.write('내용 A\n')
 
+        # 🆕 🔴🔴 [2026-09-10 O154-B 격리] 스냅샷 목적지를 **임시 보관소**로 돌린다.
+        #   🔴 왜 = 종전 판본은 실 `_archive/` 에 쓰고 `os.remove` 로 지웠다. 스테이지 마운트는
+        #     지운 이름을 **음성 캐시(유령 엔트리)로 남겨** 같은 이름 재생성을 거부하므로
+        #     (`os.path.exists`·`os.listdir` 둘 다 부재인데 쓰기가 `ENOENT`), 이 테스트가
+        #     한 번 돌고 나면 **그 뒤로 영구히 rc=1** 이 됐다(O154 실측·규명 · 착수표 `㊳` 동일 유형).
+        #   🟢 지침 `R1-7-10` 이 이미 *"`archive=` 를 넘겨라 — 안 넘기면 테스트가 실 `_archive/` 를
+        #     더럽힌다"* 라고 경고했고 `test_snapshot_util.py` 는 지켰는데 **이 테스트만 위반**이었다.
+        #   ⇒ `snapshot_cli.py --archive` 를 O154-B 가 신설해 그 규약을 CLI 축에서도 지킬 수 있게 했다.
+        arch = os.path.join(tmp, '_archive')
+        os.makedirs(arch)
+        ARCH = ['--archive', arch]
+
         # 축1 — --op 없이 호출하면 argparse 가 거부(exit 2)해야 한다.
         rc, out = run([SNAP_CLI, src])
         check('축1 --op 누락 거부', rc == 2, 'rc=%d' % rc)
@@ -84,21 +96,21 @@ def test_snapshot_cli():
         # 축5 — 라벨 미지정이면 UNLABELED 경고가 나와야 한다(중단은 하지 않는다).
         env = dict(os.environ)
         env.pop('SESSION_LABEL', None)
-        rc, out = run([SNAP_CLI, src, '--op', 'nolabel'], env={'SESSION_LABEL': ''})
+        rc, out = run([SNAP_CLI, src, '--op', 'nolabel'] + ARCH,
+                      env={'SESSION_LABEL': ''})
         check('축5 라벨 미지정 경고 + 성공',
               rc == 0 and 'UNLABELED' in out, 'rc=%d' % rc)
 
         # 축6 — 같은 내용 재실행은 reused(덮어쓰기 0). 🔴 이것이 R1-7-10 의 핵심이다.
-        rc1, o1 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'])
-        rc2, o2 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'])
+        rc1, o1 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'] + ARCH)
+        rc2, o2 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'] + ARCH)
         check('축6 동일내용 재실행 = reused',
               rc1 == 0 and rc2 == 0 and '재사용' in o2, 'rc=%d,%d' % (rc1, rc2))
 
         # 축7 — 내용이 바뀌면 기존 스냅샷을 덮지 않고 접미를 붙여야 한다.
         with io.open(src, 'w', encoding='utf-8') as fh:
             fh.write('내용 B (바뀜)\n')
-        rc3, o3 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'])
-        arch = os.path.join(ROOT, '_archive')
+        rc3, o3 = run([SNAP_CLI, src, '--op', 'dup', '--label', 'TESTX'] + ARCH)
         base = 'doc.md.TESTX-dup'
         kept = os.path.exists(os.path.join(arch, base))
         suffixed = os.path.exists(os.path.join(arch, base + '.2'))
@@ -108,14 +120,22 @@ def test_snapshot_cli():
 
         # 축8 — 부분 실패가 있으면 전체 rc 가 1 이어야 한다(성공 건이 섞여도).
         rc4, o4 = run([SNAP_CLI, src, os.path.join(tmp, 'ghost.md'),
-                       '--op', 'mixed', '--label', 'TESTX'])
+                       '--op', 'mixed', '--label', 'TESTX'] + ARCH)
         check('축8 부분실패 시 rc=1',
               rc4 == 1 and '실패 1' in o4, 'rc=%d' % rc4)
 
-        # 정리 — 이 테스트가 만든 _archive 산출물만 개별 삭제한다(R1-7-7: 통삭제 금지).
-        for name in os.listdir(arch):
-            if name.startswith('doc.md.TESTX-') or name.startswith('doc.md.UNLABELED-'):
-                os.remove(os.path.join(arch, name))
+        # 🆕 축8-B [O154-B] 격리 단정 — 실 `_archive/` 를 건드리지 않았는가.
+        #   🔴 이 축이 없으면 「격리했다」가 자기신고로 남는다(O111 ㉠ 축).
+        real = os.path.join(ROOT, '_archive')
+        leaked = []
+        if os.path.isdir(real):
+            leaked = [n for n in os.listdir(real)
+                      if n.startswith('doc.md.TESTX-')
+                      or n.startswith('doc.md.UNLABELED-nolabel')]
+        check('축8-B 실 _archive 오염 0', not leaked, '유출 %d건' % len(leaked))
+
+        # 🔴 정리 = tmp 통째로 지운다(finally). 실 `_archive/` 에서 지울 것이 없다
+        #   ⇒ 종전의 `os.remove(실_archive/...)` 루프를 **삭제**했다(그것이 유령을 만들었다).
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

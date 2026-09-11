@@ -93,7 +93,7 @@ models:
       #   기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러·워닝 없이 버린다**(`P82`).
       #   🔴 실제로 걸렸다: O93-B 가 `CRM_SEND_MEMBER` 에 `OPEN_DT` 를 추가했는데 SILVER 는
       #   ERROR 0 으로 끝났고 컬럼이 생기지 않았다 ⇒ 다음 build 에서 이를 참조하는
-      #   `GOLD.FACT_SERVICE_EVENT` 가 `invalid identifier 'S.OPEN_DT'` 로 죽었다.
+      #   `GOLD.FACT_MESSAGE_DISPATCH`(구 FACT_SERVICE_EVENT)가 `invalid identifier 'S.OPEN_DT'` 로 죽었다.
       #   즉 **결함은 SILVER 에서 조용히 발생하고 GOLD 에서 시끄럽게 터진다** — 진단이 한 단계 밀린다.
       #   ⚠️ 이 설정은 컬럼 **추가**만 자동화한다. 삭제는 여전히 수동 ALTER 대상이다.
       #   🔴🔴 [2026-08-30 O121 정정] 종전 이 줄은 「**타입 변경**·삭제는 수동 ALTER 대상」이라고 적혀 있었고
@@ -180,14 +180,14 @@ models:
       #       🔴 [2026-08-12 O64 실측 정정] 종전 기재 「테이블 31(17 DIM+14 FACT)」·「뷰 16(wide 14 + dim 2)」은 **둘 다 stale** 이었다.
       #         실측(계정 os09358 · INFORMATION_SCHEMA.TABLES) = BASE TABLE **35**(DIM 20 · FACT 15) · VIEW **14**(전부 `WIDE_*`).
       #         `models/gold/dim/` 은 **20 모델 전부 incremental 테이블**이라 「dim 뷰 2」는 실체가 없다.
-      #         유래 = `DIM_MONTH`·`DIM_MEMBER_CURRENT` 가 원래 SERVING helper **뷰**였고 O53~O55 에서 GOLD BASE TABLE 로
+      #         유래 = `DIM_MONTH`·`DIM_MEMBER`(구 DIM_MEMBER_CURRENT)가 원래 SERVING helper **뷰**였고 O53~O55 에서 GOLD BASE TABLE 로
       #         승격됐는데 이 표가 따라오지 않은 것이다(같은 승격이 COMMENT 문안에도 「뷰」를 남겼다 = O63-J ③).
       #         ⚠️ 같은 파일 51행은 이미 「35테이블」로 갱신돼 있었다 ⇒ **한 파일 안에서 두 기재가 서로 어긋난 상태**였다.
       #     · SILVER 테이블                   = `04_silver_design/08_SILVER_테이블DDL_*.sql`
       #     · SERVING 일반 뷰 **0** (helper 3종은 전부 GOLD 로 이관됨)
       #       🔴 [2026-08-12 O64 실측 정정] 종전 기재 「SERVING 일반 뷰 3(helper) · 소유주 2분할」은 **라이브에 실체가 없다**.
       #         실측 = `SERVING` 스키마의 `INFORMATION_SCHEMA.TABLES` **0행** (semantic view 9종만 있고 SV 는 TABLES 에 안 나온다).
-      #         3종의 현재 위치 = `DIM_MONTH`·`DIM_MEMBER_CURRENT` → **`GOLD` BASE TABLE**(dbt `models/gold/dim/` 소유) ·
+      #         3종의 현재 위치 = `DIM_MONTH`·`DIM_MEMBER`(구 DIM_MEMBER_CURRENT) → **`GOLD` BASE TABLE**(dbt `models/gold/dim/` 소유) ·
       #         `FACT_AD_COMBINED` → **`GOLD.WIDE_AD_COMBINED` VIEW**(dbt `models/gold/wide/` 소유 · `SV_AD` 의 base 도 이 뷰다).
       #         ⇒ 아래 「§G 가 소유」·「SV DDL 파일 내부에서 만든다」 서술은 **역사 기록**으로만 읽을 것.
       #         과거 기재(참고용): §G.1/§G.2 = `02_GN_DW_building/08_After_Deploy_DBT.sql` · `05_SV-Agent_ai/05_7_SV_DDL_AD.sql:57`.

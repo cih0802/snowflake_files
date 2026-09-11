@@ -86,6 +86,9 @@ def resolve_ref(cn, name):
         return f'GN_DW.SILVER.{uname}'
     if ('SNAPSHOT', uname) in _KNOWN_TABLES or uname.startswith('SNP_'):
         return f'GN_DW.SNAPSHOT.{uname}'
+    # 라이브 미반영 모델 파일 지원 (운영계 대기 상태)
+    if (uname == 'FACT_MEMBER_EVENT' and ('GOLD', 'FACT_MEMBER_LIFECYCLE') in _KNOWN_TABLES) or uname == 'FACT_MEMBER_EVENT':
+        return 'GN_DW.GOLD.FACT_MEMBER_LIFECYCLE'
     sys.exit(f'🔴 ref 해석 실패: {name} (GOLD·SILVER·SNAPSHOT 어디에도 없다)')
 
 

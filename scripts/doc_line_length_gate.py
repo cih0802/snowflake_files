@@ -98,7 +98,12 @@ CANON_CODE = [
     '05_SV-Agent_ai/05_8_SV_DDL_DEV_ACHIEVEMENT.sql',
     '05_SV-Agent_ai/05_9_SV_DDL_MEMBER_FEE.sql',
     'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
-    'cortex_project/agents/AGENT_OVERALL/agent_spec.yaml',
+    # 🔴 [2026-09-10 O154 시정] 종전 `AGENT_OVERALL` 은 **개명으로 소멸한 경로**였다
+    #   (O152·O153 이 `AGENT_EXECUTIVE` 로 개명했으나 이 분모를 함께 고치지 않았다).
+    #   ⇒ 게이트가 「대상 파일 부재 1건」으로 **blocking FAIL** 을 내고 있었고, 그 결과
+    #     `위반 0건` 인데도 rc=1 이라 **진짜 위반과 분모 stale 을 구별할 수 없었다**(`R1-6-25` 축).
+    'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
+    'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
     '03_top-down_gold/06_DDL.sql',
     '04_silver_design/08_SILVER_테이블DDL_20260714.sql',
     '10_dbt_pipeline/models/gold/wide/_wide_schema.yml',

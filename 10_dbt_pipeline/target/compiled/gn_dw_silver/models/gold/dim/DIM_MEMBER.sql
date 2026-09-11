@@ -1,0 +1,31 @@
+-- DIM_MEMBER: 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
+-- Co-authored with CoCo
+
+
+select
+    MEMBER_SK,
+    MEMBER_DK,
+    MEMBER_TYPE,
+    SEX,
+    SEX_NM,
+    GENDER_NAME,
+    MBER_STAT_CD,
+    MEMBER_STATUS_NAME,
+    MEMBER_STATUS_GROUP,
+    MBER_DIV_CD,
+    MEMBER_TYPE_NAME,
+    JOIN_PATH_CD,
+    ENROLL_PATH_NAME,
+    FIRST_JOIN_DATE,
+    FIRST_CAMPAIGN,
+    REGION,
+    AGE_BAND,
+    FIRST_SPONSORSHIP,
+    LAST_STOP_DATE,
+    EFFECTIVE_FROM,
+    DW_SOURCE_SYSTEM,
+    DW_LOAD_TS,
+    DW_UPDATE_TS,
+    DW_BATCH_ID
+from GN_DW.GOLD.DIM_MEMBER_STATUS_HISTORY
+where IS_CURRENT

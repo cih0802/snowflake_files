@@ -1,4 +1,4 @@
-<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 001/030 | 허브 = 99_NEXT_SESSION.md | 원문 1~205행 -->
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 001/031 | 허브 = 99_NEXT_SESSION.md | 원문 1~205행 -->
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 <!-- LLM-METADATA

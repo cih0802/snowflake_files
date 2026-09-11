@@ -100,7 +100,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (MEMBER_DK)
-) COMMENT = '회원 통합(정기∪일시). Q6 UNION 스키마 정렬 잠정';
+) COMMENT = '회원 통합 마스터 (정기∪일시). [Grain: MBER_NO (1행=1회원)]. [주의: 정기회원과 일시회원 통합]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_MNG].';
 
 -- CRM 2: CRM_MEMBER_STATUS_HIST (회원 상태전이 · SCD2)
 --   [컬럼별 설계 및 실측 이력]
@@ -122,7 +122,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_STATUS_HIST (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (MBER_NO, SER_NO)
-) COMMENT = '회원 상태전이 이력 (SCD2 range)';
+) COMMENT = '회원 상태전이 이력 (SCD2). [Grain: MBER_NO × HIST_SN (1행=1상태버전)]. [주의: 상태변경 시작~종료일 구간 이력 관리]. [원천: CRM → BRONZE_CRM.TH_MM_MBER_STAT_HIST].';
 
 -- CRM 3: CRM_MEMBER_DEV (개발약정)
 --   [컬럼별 설계 및 실측 이력]
@@ -169,17 +169,11 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DEV (
     AREA_CD             VARCHAR(3)      COMMENT '지역코드 (CM018)',
     AREA_NM             VARCHAR         COMMENT '지역명 (코드 라벨)',
     AGE                 NUMBER(10,0)    COMMENT '연령',
-    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
+    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
     CANCL_RDCAMT_RSN_CD     VARCHAR         COMMENT '취소·감액사유 코드 raw (정본 MM002). 코드id:MM002.',
     MBER_DIV_CD             VARCHAR         COMMENT '회원구분 원천코드 raw. 코드id:MM018',
     SEX                     VARCHAR         COMMENT '성별 원천코드 raw. 코드id:CM013',
     SPNSR_AMT_CD            VARCHAR         COMMENT 'SPNSR_AMT_CD. 코드id:CM012.',
-    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
-    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
-    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- [2026-08-25 안내1/안내2] 캠페인 비정규화 18컬럼 + 증분 워터마크(ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
-    --   CRM_CAMPAIGN 조인 결과를 그대로 승계한다(컬럼명 1:1 동일 — 아래 CRM_CAMPAIGN 정의 참조).
     MBER_INFLOW_PATH_CD NUMBER(10,0)    COMMENT 'MBER_INFLOW_PATH_CD. 코드id:MM293.',
     MBER_INFLOW_PATH_NM VARCHAR(200)    COMMENT 'MBER_INFLOW_PATH_NM. 코드id:MM293.',
     CMPGN_CTGR_CD       NUMBER(10,0)    COMMENT 'CMPGN_CTGR_CD. 코드id:MM294.',
@@ -198,13 +192,19 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DEV (
     SPNSR_DIV_NM        VARCHAR(100)    COMMENT '후원구분명. CRM_CAMPAIGN 비정규화',
     CPR_DIV_CD          VARCHAR         COMMENT 'CPR_DIV_CD. 코드id:CM019.',
     CPR_DIV_NM          VARCHAR(100)    COMMENT '법인구분명. CRM_CAMPAIGN 비정규화',
-    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 3속성(BRND_NM 은 종전 "미사용" 결정을 뒤집는다).
+    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 3속성(BRND_NM 은 종전 "미사용" 결정을 뒤집는다).,
     BRND_NM             VARCHAR         COMMENT '브랜드명. CRM_CAMPAIGN 비정규화',
     PARENT_CAMPAIGN_NAME VARCHAR        COMMENT 'PARENT_CAMPAIGN_NAME.',
     PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명 (CM008 라벨). CRM_CAMPAIGN 비정규화. 코드id:CM008.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [2026-08-25 안내1/안내2] 캠페인 비정규화 18컬럼 + 증분 워터마크(ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
+    --   CRM_CAMPAIGN 조인 결과를 그대로 승계한다(컬럼명 1:1 동일 — 아래 CRM_CAMPAIGN 정의 참조).,
     SRC_LOAD_DT         TIMESTAMP_NTZ   COMMENT '원천(BRONZE) 적재시각 워터마크.',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO)
-) COMMENT = '개발약정 (Q13 스파인). AREA_CD·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스';
+) COMMENT = '개발약정 이력 (신규/증액/재후원/중단). [Grain: SPNSR_NO × SPNSR_BSNS_NO × OCCRRNC_DE × SER_NO (1행=1개발약정)]. [주의: DVLP_DIV_CD(1 신규, 2 증액, 3 감액, 4 재후원, 5 중단)]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT].';
 
 -- CRM 4: CRM_MEMBER_AMT_CHANGE (증감)
 --   [컬럼별 설계 및 실측 이력]
@@ -234,7 +234,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_AMT_CHANGE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (OCCRRNC_DE, SER_NO)
-) COMMENT = '약정 증감(증액/감액). AREA_CD·AGE = DIM_MEMBER REGION/AGE_BAND 스냅샷 소스';
+) COMMENT = '약정 금액 변경 이력 (증액/감액). [Grain: MBER_NO × CHG_DE × SER_NO (1행=1금액변경)]. [주의: 약정금액 증감 이력 추적]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_IRSD].';
 
 -- CRM 5: CRM_MEMBER_DISCONTINUE (중단)
 --   [컬럼별 설계 및 실측 이력]
@@ -247,15 +247,15 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DISCONTINUE (
     DSCNTC_RSN_CD       VARCHAR(3)      COMMENT '중단사유코드',
     DSCNTC_RSN_NM       VARCHAR         COMMENT '중단사유명 (코드 라벨)',
     DSCNTC_PATH         VARCHAR(1)      COMMENT '중단경로',
-    REGIST_DEPT_CD      VARCHAR(10)     COMMENT '등록부서코드 (→CRM_ORG)',
-    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
     DSCNTC_PATH_NM          VARCHAR         COMMENT '중단경로명. 코드id:MM287.',
+    REGIST_DEPT_CD      VARCHAR(10)     COMMENT '등록부서코드 (→CRM_ORG)',
+    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (MBER_NO, SPNSR_DSCNTC_DE, SER_NO)
-) COMMENT = '후원중단';
+) COMMENT = '후원 중단 사건 이력. [Grain: MBER_NO × SPNSR_DSCNTC_DE × SPNSR_NO (1행=1중단사건)]. [주의: 중단사유 및 중단채널 관리]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC].';
 
 -- CRM 6: CRM_MEMBER_RESPONSOR (재후원)
 --   [컬럼별 설계 및 실측 이력]
@@ -270,7 +270,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_RESPONSOR (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (MBER_NO, SER_NO, RE_SPNSR_DE)
-) COMMENT = '재후원';
+) COMMENT = '재후원 사건 이력. [Grain: MBER_NO × RSPNSR_DE (1행=1재후원)]. [주의: 중단 후 재후원 전이 관리]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_RSPNSR].';
 
 -- CRM 7: CRM_MEMBER_SPONSOR_BIZ (회원×후원사업)
 --   [컬럼별 설계 및 실측 이력]
@@ -288,7 +288,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_BIZ (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
-) COMMENT = '회원×후원사업 약정';
+) COMMENT = '회원×후원사업 약정 관계. [Grain: MBER_NO × SPNSR_BSNS_ID (1행=1약정관계)]. [주의: 회원과 후원사업 간 결합]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_SPNSR_BSNS].';
 
 -- CRM 8: CRM_SPONSOR_RELATION (결연)
 --   [컬럼별 설계 및 실측 이력]
@@ -312,7 +312,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SPONSOR_RELATION (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (RELATNSP_KEY)
-) COMMENT = '결연(아동). Q15 SPNSR_BSNS_ID 크로스워크 파생';
+) COMMENT = '결연 아동 관계 마스터. [Grain: MBER_NO × CHLDRN_NO (1행=1결연)]. [주의: 결연 후원자와 아동 매핑]. [원천: CRM → BRONZE_CRM.TM_MM_CHLDRN_STLM_INFO].';
 
 -- CRM 9: CRM_PAYMENT_BILLING (납입·청구)
 --   [컬럼별 설계 및 실측 이력]
@@ -364,7 +364,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_BILLING (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (PAY_KEY)
-) COMMENT = '납입/청구(회비∪기부금). Q14 납입 dedup·청구 행기준. W1(DEC-17): 결제결과코드 2종 = 사유축 전용, 판정축은 PAY_STAT_CD(DEC-3) 불변';
+) COMMENT = '납입 및 청구 통합 원장 (회비∪기부금). [Grain: MBER_NO × MBRFEE_MT × SPNSR_BSNS_ID × SETLE_CD (1행=1납입청구)]. [주의: 회비 납입결과(PAY_STAT_CD) 및 청구/납입액 관리]. [원천: CRM → BRONZE_CRM.TM_PM_MBRFEE_ACMSLT ∪ TM_PM_DNTN_DTLS].';
 
 -- CRM 10: CRM_PAYMENT_METHOD (결제수단)
 --   [컬럼별 설계 및 실측 이력]
@@ -396,7 +396,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_METHOD (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SETLE_KEY)
-) COMMENT = '결제수단 (현재상태)';
+) COMMENT = '회원별 결제수단 마스터. [Grain: MBER_NO × SETLE_CD (1행=1결제수단)]. [주의: CMS/카드 자동이체 등 수납방식 관리]. [원천: CRM → BRONZE_CRM.TM_PM_SETLE_MNG].';
 
 -- CRM 11: CRM_CAMPAIGN (캠페인 마스터)
 --   [2026-07-16 BRONZE 재입고] 캠페인 분류 5컬럼이 원천에서 채워짐(33,915/36,143 = 93.8%) →
@@ -430,7 +430,14 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     BRND_ID             VARCHAR(30)     COMMENT '브랜드ID',
     BRND_NM             VARCHAR(200)    COMMENT '브랜드명',
     PR_MTH_CD           VARCHAR(3)      COMMENT '홍보방법코드',
+    PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명. 코드id:CM008.',
+    PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '상위캠페인명.',
     SPNSR_BSNS_ID       VARCHAR(100)    COMMENT '후원사업ID (Q16 조인키)',
+    CMPGN_TRGET_CD          VARCHAR         COMMENT '캠페인대상 코드 raw. 코드id:CM002.',
+    CPR_DIV_CD              VARCHAR         COMMENT '법인구분 코드 raw. 코드id:CM019.',
+    CPR_DIV_NM          VARCHAR(100)    COMMENT '법인구분명 — CPR_DIV_CD 라벨',
+    SPNSR_DIV_CD            VARCHAR         COMMENT '후원구분 코드 raw. 코드id:CM035.',
+    SPNSR_DIV_NM        VARCHAR(100)    COMMENT '후원구분명 — SPNSR_DIV_CD 라벨',
     CMPGN_CTGR_CD       NUMBER(10,0)    COMMENT 'CMPGN_CTGR_CD. 코드id:MM294.',
     CMPGN_CTGR_NM       VARCHAR(200)    COMMENT 'CMPGN_CTGR_NM. 코드id:MM294.',
     MBER_INFLOW_PATH_CD NUMBER(10,0)    COMMENT 'MBER_INFLOW_PATH_CD. 코드id:MM293.',
@@ -441,27 +448,20 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     CMPGN_TYPE2_NM      VARCHAR(200)    COMMENT 'CMPGN_TYPE2_NM. 코드id:MM296.',
     MKTG_CMPGN_NM       NUMBER(10,0)    COMMENT 'MKTG_CMPGN_NM.',
     MK_CMPGN_NM         VARCHAR(200)    COMMENT '마케팅 캠페인명 (라벨, Q16 해소)',
-    CMPGN_STRT_DE       VARCHAR(8)      COMMENT '캠페인 시작일 YYYYMMDD',
-    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
-    CMPGN_TRGET_CD          VARCHAR         COMMENT '캠페인대상 코드 raw. 코드id:CM002.',
-    CPR_DIV_CD              VARCHAR         COMMENT '법인구분 코드 raw. 코드id:CM019.',
-    SPNSR_DIV_CD            VARCHAR         COMMENT '후원구분 코드 raw. 코드id:CM035.',
-    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
-    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
-    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- [라벨 배선 완료분] CPR_DIV_CD·SPNSR_DIV_CD 라벨 + MM297 공통브랜드 + UTM (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
-    CPR_DIV_NM          VARCHAR(100)    COMMENT '법인구분명 — CPR_DIV_CD 라벨',
-    SPNSR_DIV_NM        VARCHAR(100)    COMMENT '후원구분명 — SPNSR_DIV_CD 라벨',
     CMMN_BRND           NUMBER(10,0)    COMMENT 'MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM. 코드id:MM297.',
     CMMN_BRND_NM        VARCHAR(100)    COMMENT 'MM297 공통브랜드명',
     MKTG_UTM            NUMBER(10,0)    COMMENT 'TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM. 고유값:MKTG_UTM_NM.',
     MKTG_UTM_NM         VARCHAR(200)    COMMENT 'TM_CM_MKTNG_UTM 라벨',
-    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 2속성(BRND_NM 은 위 327행에 이미 존재).
-    PROMO_METHOD_NAME   VARCHAR         COMMENT '홍보방법명. 코드id:CM008.',
-    PARENT_CAMPAIGN_NAME VARCHAR        COMMENT '상위캠페인명.',
+    -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 2속성(BRND_NM 은 위 327행에 이미 존재).,
+    CMPGN_STRT_DE       VARCHAR(8)      COMMENT '캠페인 시작일 YYYYMMDD',
+    -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [라벨 배선 완료분] CPR_DIV_CD·SPNSR_DIV_CD 라벨 + MM297 공통브랜드 + UTM (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
     PRIMARY KEY (CMPGN_CD)
-) COMMENT = '캠페인 마스터. 분류 4축(카테고리 MM294·인입경로 MM293·유형1 국내해외 MM295·유형2 사업사례 MM296) 코드+라벨 병행보존 + 마케팅캠페인 라벨 + 법인구분·후원구분·공통브랜드·UTM 라벨 + 상위캠페인명·홍보방법명 라벨(DEC-43)';
+) COMMENT = '캠페인 마스터 (비정규화 통합). [Grain: CMPGN_CD (1행=1캠페인)]. [주의: 카테고리/인입경로/국내해외/마케팅캠페인 속성 통합]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG].';
 
 -- CRM 12: CRM_SPONSORSHIP (후원사업 마스터)
 --   [컬럼별 설계 및 실측 이력]
@@ -478,7 +478,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SPONSORSHIP (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SPNSR_BSNS_ID)
-) COMMENT = '후원사업 마스터 (실측 50개)';
+) COMMENT = '후원사업 마스터. [Grain: SPNSR_BSNS_ID (1행=1후원사업)]. [주의: 정기/일시 사업구분 및 상위 사업분류]. [원천: CRM → BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO].';
 
 -- CRM 13: CRM_ORG (조직 마스터)
 --   [컬럼별 설계 및 실측 이력]
@@ -497,7 +497,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_ORG (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (DEPT_ID)
-) COMMENT = '조직 마스터. 실적팀=ACMSLT_UPPER_DEPT_ID 재귀 LVL5';
+) COMMENT = '조직/부서 마스터. [Grain: DEPT_ID (1행=1부서)]. [주의: 본부/지부 계층 및 실적부서 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_MNG].';
 
 -- CRM 14: CRM_DEV_TARGET (개발목표)
 --   [컬럼별 설계 및 실측 이력]
@@ -514,7 +514,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_DEV_TARGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (STDYY, STDR_MT, MBER_DVLP_DIV_CD, DEPT_ID)
-) COMMENT = '회원개발 목표 (월×조직×개발구분)';
+) COMMENT = '회원개발 부문 목표 마스터. [Grain: STDYY × STDR_MT × DEPT_ID × MBER_DVLP_DIV_CD (1행=1개발목표)]. [주의: 부서별 월별 신규/증액/재후원 목표치]. [원천: CRM → BRONZE_CRM.TM_CM_MBER_DVLP_GOAL].';
 
 -- CRM 15: CRM_SEND_REQUEST (발송요청)
 --   [컬럼별 설계 및 실측 이력]
@@ -546,7 +546,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SNDNG_KEY)
-) COMMENT = '발송요청 마스터. SEND_GBN_TOP/MID/BOT = DIM_SERVICE 대/중/소(SND 채널만)';
+) COMMENT = '메시지 발송 요청 마스터. [Grain: SNDNG_REQ_NO (1행=1발송요청)]. [주의: 발송채널 및 대/중/소 발송구분 보유]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR_SNDNG].';
 
 -- CRM 16: CRM_SEND_MEMBER (발송×회원)
 --   [컬럼별 설계 및 실측 이력]
@@ -584,7 +584,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     --   선언 위치가 맨 끝인 것도 위와 같은 규약 근거다(라이브 ALTER ADD COLUMN).
     OPEN_DT             TIMESTAMP_NTZ   COMMENT '오픈시각.',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
-) COMMENT = '발송×회원 상세';
+) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 
 -- CRM 17: CRM_SEND_RESULT (발송×채널 집계)
 --   [컬럼별 설계 및 실측 이력]
@@ -602,7 +602,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_RESULT (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SNDNG_KEY, SEND_CHANNEL)
-) COMMENT = '발송×채널 집계';
+) COMMENT = '메시지 발송 채널별 성과 집계. [Grain: SNDNG_REQ_NO × SNDNG_RST_CD (1행=1발송성과)]. [주의: 발송 성공/실패 건수 집계]. [원천: CRM → BRONZE_CRM.TD_MS_*_LQY_SNDNG].';
 
 -- CRM 18: CRM_EVENT (행사 마스터)
 --   [컬럼별 설계 및 실측 이력]
@@ -631,7 +631,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
     EVENT_DIV_GROUP     VARCHAR(10)     COMMENT 'EVENT_DIV_GROUP. 코드id:MS286.',
     EVENT_DIV_NM        VARCHAR         COMMENT '행사구분 라벨 (CRM_CODE 조인 · 두 체계 겹침 0).',
     PRIMARY KEY (EVENT_KEY)
-) COMMENT = '행사 마스터(이벤트∪캠페인행사)';
+) COMMENT = '행사/이벤트 마스터. [Grain: EVENT_KEY (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT ∪ TM_MS_CRMN].';
 
 -- CRM 19: CRM_EVENT_PARTICIPATION (행사×참여자)
 --   [컬럼별 설계 및 실측 이력]
@@ -669,7 +669,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT_PARTICIPATION (
     PARTCPT_PATH_GROUP  VARCHAR(10)     COMMENT 'PARTCPT_PATH_GROUP. 코드id:MS303.',
     PARTCPT_PATH_NM     VARCHAR         COMMENT '참여경로 라벨 (CRM_CODE 조인)',
     PRIMARY KEY (EVENT_KEY, MBER_NO, PARTCPT_SEQ)
-) COMMENT = '행사×참여자';
+) COMMENT = '행사 참여자 상세. [Grain: EVENT_KEY × MBER_NO (1행=1참여)]. [주의: 신청/취소/참석 상태 및 납입금액 관리]. [원천: CRM → BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL ∪ TD_MS_CRMN_PRTCPNT].';
 
 -- CRM 20: CRM_RELATION_ACTIVITY (결연활동 · EHGT 제외)
 --   [컬럼별 설계 및 실측 이력]
@@ -689,7 +689,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_RELATION_ACTIVITY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (ACTIVITY_KEY)
-) COMMENT = '결연활동(서신∪선물금). EHGT 제외';
+) COMMENT = '결연 활동 내역 (서신∪선물금). [Grain: ACTV_NO (1행=1활동)]. [주의: 서신교환 및 선물금 전달 이력]. [원천: CRM → BRONZE_CRM.TM_MM_LTR_EXCHG ∪ TM_MM_GIFT_DLVRY].';
 
 -- CRM 21: CRM_CODE (코드 사전)
 --   [컬럼별 설계 및 실측 이력]
@@ -706,7 +706,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (CD_ID, DTL_CD_ID)
-) COMMENT = '코드→라벨 사전. (CD_ID,DTL_CD_ID) 복합키';
+) COMMENT = '공통 코드 사전 마스터. [Grain: CD_ID × DTL_CD_ID (1행=1코드값)]. [주의: 코드그룹별 상세코드 및 한글 라벨 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CODE_DTL].';
 
 -- ============================================================================
 -- STEP 3 — ERP 2테이블 + CRM_BIZ_TARGET (원천=CRM, E-6 입고대기)
@@ -734,7 +734,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BUDGET_ITEM_DK)
-) COMMENT = '예산과목 마스터(예산단위×6단계×재원). TOTAL 요약행 제외. → DIM_BUDGET_ITEM';
+) COMMENT = '예산 계정과목 마스터. [Grain: BDGT_ITEM_CD (1행=1예산과목)]. [주의: 장/관/항/목/세목/세세목 계층 매핑]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER].';
 
 -- ERP 2: ERP_BUDGET (월별 편성/추경/조정/집행)
 --   [컬럼별 설계 및 실측 이력]
@@ -759,7 +759,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BUDGET_ITEM_DK, MONTH_NO)
-) COMMENT = '예산 편성/추경/조정/집행 월 grain(wide→long). → FACT_BUDGET';
+) COMMENT = '월별 예산 편성 및 집행 원장. [Grain: BDGT_ITEM_CD × DEPT_ID × MONTH_KEY (1행=1월예산)]. [주의: 12개월 wide 컬럼을 월 long으로 언피벗]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER].';
 
 -- ERP 3: ERP_BUDGET_YEARLY (예산 연 총액)  [2026-08-20 O93 신설]
 --   🔴 왜 ERP_BUDGET 에 합치지 않았나 = grain 이 다르다. 그쪽은 월 grain(원장 1행 → 12행)이라
@@ -787,7 +787,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BUDGET_ITEM_DK, BUDGET_YEAR)
-) COMMENT = '예산 연 총액 (grain = 예산과목 × 연도). → FACT_BUDGET_YEARLY. 🔴 월 값은 ERP_BUDGET 을 쓴다.';
+) COMMENT = '연도별 예산 총액 원장. [Grain: BDGT_ITEM_CD × DEPT_ID × YEAR (1행=1연예산)]. [주의: 연 총액 편성/집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER].';
 
 -- CRM 24: CRM_MEMBER_SPONSOR_SPAN (회원×후원사업 활동구간)  [2026-08-20 O93 신설]
 --   🔴 존재 이유 = 정본 #51「월말활동회원」의 **as-of 판정**에 구간이 필요한데 기존 모델에는 없었다:
@@ -817,7 +817,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
-) COMMENT = '회원×후원사업 활동구간 (grain = 회원 × 후원사업). GOLD.FACT_MEMBER_MONTHLY 활동 8컬럼의 as-of 판정 기반. 🟢 CONF-3(정본 #51 판정조건 내부 모순)이 이 구조에서 해소된다: 중단일 vs 재후원일 비교와 동일자 tie-break 가 「미중단 사업 보유」 하나로 대체된다.';
+) COMMENT = '회원×후원사업 활동구간 마스터. [Grain: MBER_NO × SPNSR_BSNS_NO (1행=1활동구간)]. [주의: 시작월~중단월 기반 활동회원 as-of 판정]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT/SPNSR_DSCNTC].';
 
 -- CRM 22: CRM_BIZ_TARGET (사업목표 — ⛔ 입고 대기)
 --   [컬럼별 설계 및 실측 이력]
@@ -839,7 +839,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (BIZ_TARGET_DK)
-) COMMENT = '사업목표 마스터 (grain = 연/월 × 조직 × 사업 · 1목표). 원천=CRM 확정(2026-07-20). ⛔CRM 신규 목표 테이블 입고 대기(E-6) → 스키마-only, 적재 보류';
+) COMMENT = '사업/프로젝트 목표 마스터. [Grain: STDYY × STDR_MT × DEPT_ID × SPNSR_BSNS_ID (1행=1사업목표)]. [주의: 원천 미입고 시 스키마 전용 0행 유지(E-6)]. [원천: CRM → 신규 목표 테이블 입고 대기].';
 
 -- ============================================================================
 -- STEP 4 — AGENCY 8테이블 (코어 2 + staging 3 + 위성 3)
@@ -869,7 +869,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (CREATIVE_DK)
-) COMMENT = '광고 소재/매체 차원(3소스 UNION distinct). → DIM_AD_CREATIVE';
+) COMMENT = '광고 소재/매체 통합 차원. [Grain: MEDIA_NM × PLATFORM_NM × CREATIVE_NM (1행=1소재)]. [주의: 디지털/비디오/재방송 3소스 소재 결합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY 2: AGENCY_AD_PERFORMANCE (3소스 UNION 광고성과)
 --   [컬럼별 설계 및 실측 이력]
@@ -904,7 +904,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '광고성과 3소스 UNION. 파생 미적재. → FACT_AD_PERFORMANCE. 행수는 문서10 §26-B 참조';
+) COMMENT = '광고 성과 통합 원장. [Grain: AD_PERF_DK (1행=1광고성과)]. [주의: 디지털/방송 3원천 성과 지표 통합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY 3: AGENCY_AD_ROW_DGT (DGT 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
@@ -956,7 +956,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'DGT 디지털광고 원천 무손실 staging(36컬럼) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
+) COMMENT = '디지털 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1디지털광고)]. [주의: 디지털 광고 원천 36컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS].';
 
 -- AGENCY 4: AGENCY_AD_ROW_VIDEO (VIDEO 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
@@ -1004,7 +1004,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'VIDEO 방송광고 원천 무손실 staging(32컬럼) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
+) COMMENT = '비디오 방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1비디오광고)]. [주의: 방송 광고 원천 32컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS].';
 
 -- AGENCY 5: AGENCY_AD_ROW_REBRDC (REBRDC 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
@@ -1056,7 +1056,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = 'REBRDC 재방송광고 원천 무손실 staging(34컬럼, CASE 반복군 포함) + AD_PERF_DK 발급. 행수는 문서10 §26-B 참조';
+) COMMENT = '재방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1재방송광고)]. [주의: 재방송 광고 원천 34컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS].';
 
 -- AGENCY 6: AGENCY_AD_DIGITAL (디지털 고유속성 위성)
 --   [컬럼별 설계 및 실측 이력]
@@ -1086,7 +1086,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '디지털광고 고유속성 위성(코어 1:1). → FACT_AD_DIGITAL. 행수는 문서10 §26-B 참조';
+) COMMENT = '디지털 광고 고유속성 위성. [Grain: AD_PERF_DK (코어 1:1)]. [주의: 매체사 산정 CTR/CVR/CPC 비율 지표]. [원천: AGENCY → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS].';
 
 -- AGENCY 7: AGENCY_AD_BROADCAST (방송 고유속성 위성)
 --   ⚠️ [VIDEO 전용]/[REBRDC 전용] 표기 컬럼의 NULL 은 결측이 아니라 **해당 원천에 항목이 없음**이다.
@@ -1128,7 +1128,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '방송광고 고유속성 위성(VIDEO ∪ REBRDC · 코어 1:1). → FACT_AD_BROADCAST. 행수는 문서10 §26-B 참조';
+) COMMENT = '방송 광고 고유속성 위성. [Grain: AD_PERF_DK (코어 1:1)]. [주의: 시청률/송출시간/SPOT구분 방송 속성]. [원천: AGENCY → BRONZE_AGENCY.VIDEO/REBRDC_AD_CMPGN_DTLS].';
 
 -- AGENCY 8: AGENCY_AD_BROADCAST_CASE (REBRDC 사례 언피벗)
 --   [컬럼별 설계 및 실측 이력]
@@ -1146,7 +1146,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK, CASE_SEQ)
-) COMMENT = '재방송 사례 언피벗 위성(코어에 1:N). → FACT_AD_BROADCAST_CASE. CHILD_NM 미적재(PII). 행수는 문서10 §26-B 참조';
+) COMMENT = '재방송 사례 정규화 언피벗 위성. [Grain: AD_PERF_DK × CASE_SEQ (1행=1사례)]. [주의: 반복군 15컬럼을 언피벗 정규화]. [원천: AGENCY → BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS].';
 
 -- ============================================================================
 -- STEP 5 — GA4 6테이블 (트랙 B)
@@ -1314,7 +1314,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA4 기반 테이블 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) — source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블(GA4_* 5종의 유일 입력). 외부 Python 적재가 평탄화만 남기고 파생을 잃어 이 dbt 모델이 되살린다. SRC_TABLE/SRC_FILE_NAME 계보 없음(외부 적재 · NULL). 🔴 조회 시 EVENT_DT 범위 제한 필수. EVENT_SEQ 결정성 미해결(GA4-SEQ-1)';
+) COMMENT = 'GA4 웹/앱 이벤트 기본 Staging. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 12컬럼 DDL 타입 캐스팅 정제]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- GA4 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1335,7 +1335,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 트래픽소스 차원 (grain = 1트래픽소스 · session/last-click 한정). DISTINCT 그레인(PK 없음) → DIM_BIGQUERY_SOURCE';
+) COMMENT = 'GA4 트래픽 소스 차원. [Grain: SOURCE × MEDIUM × CAMPAIGN (1행=1소스)]. [주의: 세션 획득 채널 분류]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- GA4 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1350,7 +1350,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 이벤트분류 차원 (grain = 1이벤트명/파라미터). DISTINCT 그레인(PK 없음) → DIM_BIGQUERY_EVENT';
+) COMMENT = 'GA4 이벤트 분류 차원. [Grain: EVENT_NAME × PARAM_NAME (1행=1이벤트분류)]. [주의: 주요 웹/앱 이벤트 정의]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- GA4 3: BIGQUERY_DEVICE (디바이스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1369,7 +1369,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA 디바이스 차원 (grain = 1디바이스). DISTINCT 그레인(PK 없음) → DIM_DEVICE(GA분)';
+) COMMENT = 'GA4 디바이스 차원. [Grain: DEVICE_CATEGORY × OPERATING_SYSTEM (1행=1디바이스)]. [주의: 접속 기기 및 OS 분류]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- GA4 4: BIGQUERY_EVENT (이벤트 팩트 소스)
 --   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
@@ -1433,7 +1433,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'BigQuery 이벤트 팩트 소스 (grain = EVENT_DT × EVENT_SEQ · 1이벤트) → FACT_BIGQUERY_BEHAVIOR. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). 이 모델의 고유 로직은 세션 채움(session-fill) 뿐이고 FLATTEN·param 승격은 기반 테이블 소관. 원천 PK 중복은 기반 테이블 GROUP BY 에서 접힌다 — 중복률은 재적재로 변하므로 조회로 확인한다(이관 실측치 = 문서10 §26-B #17 · 설계 근거 = 04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md)';
+) COMMENT = 'GA4 사용자 행동 팩트 소스. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 체류시간/스크롤/이탈률 행동 지표]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- GA4 5: BIGQUERY_IDENTITY (신원 브리지 소스)
 --   [컬럼별 설계 및 실측 이력]
@@ -1452,7 +1452,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, ID_SCHEME)
-) COMMENT = 'BigQuery 신원 차원 (grain = USER_PSEUDO_ID × ID_SCHEME · 1신원) → S-7 IDENTITY_MEMBER_XREF. 입력 = SILVER.BIGQUERY_REFINED_DATA(계층 내 파생 · DEC-37). ID 체계 분기 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)만 회원 · 나머지는 ID_SCHEME 으로 격리(GA4-LEN-1)';
+) COMMENT = 'GA4 사용자 신원 차원. [Grain: USER_PSEUDO_ID × ID_SCHEME (1행=1사용자)]. [주의: GA 쿠키 식별자와 CRM 회원 매핑]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
 
 -- ============================================================================
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)
@@ -1485,7 +1485,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
-) COMMENT = 'S-7 신원 브리지(교차소스 유일예외). BIGQUERY_IDENTITY ↔ CRM_MEMBER 자연키 해소. SK없음(GOLD 소관). 미매칭 보존';
+) COMMENT = '온-오프라인 신원 연계 브릿지. [Grain: USER_PSEUDO_ID × MEMBER_DK (1행=1연계)]. [주의: GA4 사용자 식별자와 CRM 회원번호 연결]. [원천: GA4/CRM → SILVER.BIGQUERY_IDENTITY].';
 
 
 -- ############################################################################
@@ -1508,7 +1508,7 @@ CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
     DW_LOAD_TS         TIMESTAMP_NTZ COMMENT '적재 시각',
     DW_UPDATE_TS       TIMESTAMP_NTZ COMMENT '갱신 시각',
     DW_BATCH_ID        VARCHAR       COMMENT '배치 식별'
-) COMMENT = '[O45] 마케팅캠페인 마스터. AGENCY(광고) ↔ CRM(개발실적) conformed 축의 원천. 행수는 문서10 §26-B 참조';
+) COMMENT = '마케팅 캠페인 마스터. [Grain: MKTG_CAMPAIGN_BK (1행=1마케팅캠페인)]. [주의: AGENCY(광고)와 CRM(개발)을 잇는 Conformed 축]. [원천: CRM → BRONZE_CRM.TM_CM_MKTNG_CMPGN_INFO].';
 
 -- ############################################################################
 -- [2026-09-09 O151] 신규 SILVER 브릿지 테이블 — DEC-45 캠페인 ↔ 후원사업 브릿지
@@ -1524,4 +1524,4 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 (공통감사)',
     PRIMARY KEY (CMPGN_CD, SPNSR_BSNS_ID)
-) COMMENT = '[DEC-45] 캠페인 ↔ 후원사업 다대다(1:N) 브릿지 정규화 테이블';
+) COMMENT = '캠페인 ↔ 후원사업 다대다(1:N) 브릿지. [Grain: CMPGN_CD × SPNSR_BSNS_ID (1행=1매핑)]. [주의: 캠페인별 복수 후원사업 귀속 해소]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_SPNSR_BSNS].';

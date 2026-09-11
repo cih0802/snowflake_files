@@ -64,7 +64,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
   TABLES (
     fee AS GN_DW.GOLD.WIDE_MEMBER_FEE
       WITH SYNONYMS ('회비', '회비 분해', '납입 상세', '후원사업별 회비')
-      COMMENT = '회비 분해 소비뷰(base FACT_MEMBER_FEE). grain = 회원 × 회비월 × 후원사업 × 회비구분 × 납입유형 × 결제수단. 🔴`SV_MEMBER_MONTHLY`(회원×월)와 **같은 원천을 다른 grain 으로 담은 형제 팩트**다 — 두 SV 의 회비 금액을 한 표에서 합산하면 과대계상된다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_PM_MBRFEE_ACMSLT(회비 · SPNSR_BSNS_ID·SETLE_CD·MBRFEE_DIV_CD·RQEST_AMT·PAY_AMT·PAY_STAT_CD) + TM_PM_DNTN_DTLS(기부금) + TM_CM_SPNSR_BSNS_INFO(후원사업 마스터) · SILVER=CRM_PAYMENT_BILLING + CRM_SPONSOR_BIZ + CRM_CODE · GOLD=FACT_MEMBER_FEE → WIDE_MEMBER_FEE.'
+      COMMENT = '회비 세부 분해 및 납입/미납 정밀 분석 (base: GOLD.WIDE_MEMBER_FEE). [Grain: 회원 × 회비월 × 사업 × 납입방식 × 결제수단]. [활성 지표: 청구액/납입액/미납액/수납률(%)]. [주의: 배분규칙필요 형제팩트중복 앵커_경합 이중계상 방지(SV_MEMBER_MONTHLY와 합산 금지)]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING → GOLD.FACT_MEMBER_FEE].'
   )
   DIMENSIONS (
     -- ── 시간 (월 grain · degen) ────────────────────────────────────────────────

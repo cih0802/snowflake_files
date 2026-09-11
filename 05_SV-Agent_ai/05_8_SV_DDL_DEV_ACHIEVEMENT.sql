@@ -94,7 +94,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
     achv AS GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT
       PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
       WITH SYNONYMS ('개발목표', '개발실적', '목표대비실적', '개발현황')
-      COMMENT = '회원개발 목표 대비 실적(grain=월×조직×개발구분, 실측 유일 → PK). 목표와 실적을 FULL OUTER 로 결합해 한쪽만 있는 조합도 보존한다 — 목표는 미래월까지 편성돼 있고 실적은 목표 편성 이전 기간에도 존재한다. 🔴CRM 은 목표를 **0 으로 등록한 행**도 다수 보유한다(목표 행 존재 ≠ 목표 편성) — 달성율 분모·분자는 반드시 GOAL_CNT>0 으로 스코프해야 한다. [원천] 목표: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL(STDYY 기준연·STDR_MT 기준월·MBER_DVLP_DIV_CD 개발구분·DEPT_ID 부서·GOAL_CNT 목표수) → SILVER=CRM_DEV_TARGET → GOLD=FACT_TARGET_MEMBER_DEV. 실적: 시스템=CRM · BRONZE=GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT → SILVER=CRM_MEMBER_DEV → GOLD=FACT_MEMBER_LIFECYCLE(DEV_CNT 월 롤업). 조직 라벨=GOLD.DIM_ORG · 개발구분 라벨=CRM 코드사전 MM015.'
+      COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].'
   )
   DIMENSIONS (
     achv.MONTH_KEY AS achv.MONTH_KEY
@@ -136,7 +136,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
       WITH SYNONYMS ('목표 달성율', '달성율', '목표대비 개발', '월 목표 달성율', '누계 목표 달성율', '연 목표 달성율', '목표달성률')
       COMMENT = '목표 달성율(%) = 개발실적 ÷ 회원개발목표 ×100. 비율(N) — 상위 집계 시 분자·분모를 각각 합산해 재계산한다. 정본 공#1(월)·#2(누계)·#3(연)을 **동일 식**으로 답한다: 기간 필터만 바꾼다. 🔴**분자가 목표 편성분(GOAL_CNT>0)으로 스코프돼 있다** — 목표가 0 인 행의 실적이 분자에 들어가면 분모 없이 비율이 폭증하기 때문에 식에 못박았다. ⚠️따라서 TOTAL_ACTUAL_CNT ÷ TOTAL_GOAL_CNT 와 값이 다르다(그쪽이 과대). 손으로 검산하려면 TOTAL_ACTUAL_CNT_ON_GOAL ÷ TOTAL_GOAL_CNT 를 쓸 것.'
   )
-  COMMENT = 'Phase-1 회원개발 목표 대비 실적 SV (base: GOLD.FACT_DEV_ACHIEVEMENT, grain: 월×부서×개발구분 1행). CRM 목표(FACT_TARGET_DEV) 및 실적(FACT_MEMBER_EVENT) 월 conform 기반 월/누계/연 목표(TOTAL_GOAL_CNT), 실적(TOTAL_ACTUAL_CNT), 정본 달성율(ACHIEVEMENT_RATE, %) 뷰. ⚠️ 주간 실적은 SV_MEMBER_EVENT(일/주차 grain) 소관이며, 본 뷰는 월 단위 목표 대비 실적의 정본.'
+  COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].'
   AI_SQL_GENERATION '핵심 규칙: (1) 시간 스코프: 월 목표/실적/달성율은 단일 연월 필터, 누계는 당해 연도 1월~기준월 필터, 연간은 연도 필터 적용 (별도 누계 metric 불필요). (2) 달성율 정본: 달성율은 항상 ACHIEVEMENT_RATE (%) 사용 (TOTAL_ACTUAL_CNT ÷ TOTAL_GOAL_CNT 직접 계산 금지). (3) 목표 0 처리: 목표 편성 부서 한정 시 HAS_POSITIVE_GOAL=TRUE 사용. (4) 주간 분기: 주간 개발실적은 SV_MEMBER_EVENT 로 라우팅하며, 주간 목표는 원천 부재로 산출 불가. (5) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 경합 팩트가 동수이므로 하나를 골라 섹션 전체를 답하지 않는다 — 이 뷰(월 목표·달성율)와 SV_MEMBER_EVENT(주간 실적)·SV_MEMBER_FEE(회비)를 각각 호출해 연·월 축에서 병기하고 표마다 grain 을 밝힌다. 주간 목표 수치를 창작하지 않는다.';
 
 
@@ -158,14 +158,14 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT TO RO
 
 -- (D-1) fan-out 0 검증: SV 총계 == base 뷰 총계
 --   판정: 두 행의 GOAL·ACTUAL 이 각각 일치해야 한다(단일 논리테이블이라 어긋나면 정의 오류다)
-SELECT 'SV' AS SRC, TOTAL_GOAL_CNT, TOTAL_ACTUAL_CNT
+SELECT 'SV' AS src, TOTAL_GOAL_CNT, TOTAL_ACTUAL_CNT
 FROM SEMANTIC_VIEW(
   GN_DW.SERVING.SV_DEV_ACHIEVEMENT
   METRICS TOTAL_GOAL_CNT, TOTAL_ACTUAL_CNT
 )
 UNION ALL
 SELECT 'BASE', SUM(GOAL_CNT), SUM(ACTUAL_CNT)
-FROM GN_DW.GOLD.FACT_DEV_ACHIEVEMENT;
+FROM GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT;
 
 -- (D-2) 정본 공#3 — 연 목표 달성율 (별도 metric 없이 연 그룹만으로 나오는가)
 --   판정: 완결연도가 상식적 범위(수십 %)에 들어오고 **100% 를 넘지 않는다**. 진행 중 연도는 낮게
@@ -213,7 +213,7 @@ SELECT COUNT_IF(HAS_GOAL_ROW AND NOT HAS_POSITIVE_GOAL) AS ZERO_GOAL_ROWS,
        SUM(CASE WHEN HAS_GOAL_ROW AND NOT HAS_POSITIVE_GOAL THEN ACTUAL_CNT END) AS ACTUAL_ON_ZERO_GOAL,
        -- 불변식: 목표가 편성됐으면 목표 행은 반드시 존재한다 → 0 이어야 한다
        COUNT_IF(HAS_POSITIVE_GOAL AND NOT HAS_GOAL_ROW) AS IMPOSSIBLE_MUST_BE_ZERO
-FROM GN_DW.GOLD.FACT_DEV_ACHIEVEMENT;
+FROM GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT;
 
 -- (D-4) 장표 첫 축 — 부서별 달성율 (O38 로 배선된 축이 실제로 분해되는가)
 --   판정: 부서가 다수 종으로 나오고 (미매핑) 이 지배적이지 않아야 한다.

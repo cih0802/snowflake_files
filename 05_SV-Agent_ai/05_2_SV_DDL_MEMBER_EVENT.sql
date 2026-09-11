@@ -32,9 +32,9 @@ USE SCHEMA GN_DW.SERVING;
    ===================================================================================== */
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
   TABLES (
-    fme AS GN_DW.GOLD.FACT_MEMBER_LIFECYCLE
+    fme AS GN_DW.GOLD.FACT_MEMBER_EVENT
       WITH SYNONYMS ('회원 상태전이', '개발중단 사건', '생애주기 사건')
-      COMMENT = '회원 상태전이 사건 팩트. 1행=1개발/중단 사건. ⚠(DATE_SK,MEMBER_DK,EVENT_TYPE) 실측 비유일 → PK 미선언(기저 FACT·참조 안 됨·집계 무해). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: 개발 TM_MM_FDRM_MBER_DVLP_AMT(OCCRRNC_DE·SPNSR_AMT·MBER_NO) · 중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC(SPNSR_DSCNTC_DE·DSCNTC_RSN_CD·DSCNTC_PATH) · SILVER=CRM_MEMBER_DEV+CRM_MEMBER_DISCONTINUE.',
+      COMMENT = '회원 생애주기 상태전이 사건 분석 (base: GOLD.FACT_MEMBER_EVENT). [Grain: 사건일 × 회원 × 전이유형]. [활성 지표: 개발(신규/증액/재후원)/중단 건수·금액]. [주의: 집계필요 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_MEMBER_DEV ∪ CRM_MEMBER_DISCONTINUE → GOLD.FACT_MEMBER_EVENT].',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '일자', '사건일')
@@ -124,20 +124,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     --   캠페인 마스터(CRM_CAMPAIGN/DIM_CAMPAIGN)가 이후 정정돼도 과거 개발이력 사건의 값은
     --   더 이상 바뀌지 않는다. 친화명(컬럼명·synonyms)은 기존과 동일하게 유지해 소비측 영향 없음.
     fme.CAMPAIGN_TYPE      AS fme.CMPGN_CTGR_NM_AT_EVENT      WITH SYNONYMS ('캠페인카테고리', '캠페인유형', '주요캠페인', '캠페인 종류') COMMENT = '캠페인 카테고리(MM294 라벨) — 현업이 말하는 **''주요캠페인''** 축이다. 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체). 실제값 예: ''초등캠페인''·''국내사례캠페인''·''굿즈캠페인''·''해외캠페인''·''기타 영상광고''·''홈페이지(PC/모바일)''·''희망TV''·''인바운드''·''가두캠페인''·''대학생캠페인''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.CAMPAIGN_INFLOW_PATH AS fme.MBER_INFLOW_PATH_NM_AT_EVENT WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '캠페인의 **모집 채널**(MM293 라벨). 🔴적재 시점 동결값(구 campaign.INFLOW_PATH 대체). ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다. ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    fme.CAMPAIGN_INFLOW_PATH AS fme.MBER_INFLOW_PATH_NM_AT_EVENT WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '캠페인의 **모집 채널**(MM293 라벨). 🔴적재 시점 동결값(구 campaign.INFLOW_PATH 대체). 실제값 12종: ''교육기관''·''기타 기업개발''·''뉴미디어''·''대면모금''·''디지털''·''방송''·''영상광고''·''오프라인''·''일시''·''재송출''·''지역개발''·''콜개발'' + NULL. ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다. ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     -- 🔴 [2026-08-29 O119] `DOMESTIC_OVERSEAS` 종수·열거를 라이브 실측으로 교체했다
     --   (`sv_code_label_gate` 축2 「종수 선언 불일치」). 종전 「3종」에 **`전체사업` 이 빠져 있었다.**
     --   형제 축 `SV_MEMBER_COHORT.DOMESTIC_OVERSEAS`(`ACQ_CMPGN_TYPE1_NM`)도 같은 결함이어서 함께 시정했다.
-    --   🟠 **미시정 잔여(같은 파일)** = 바로 위 `CAMPAIGN_INFLOW_PATH` 는 열거가 아예 없다(게이트 🟠
-    --      「열거 누락」). 그 축의 라이브 라벨 집합은 `SV_MEMBER_COHORT` 쪽과 동일하며 O119 가
-    --      그쪽 열거를 실측으로 교체했다 ⇒ **여기에도 같은 열거를 넣는 것이 다음 후보**다.
     fme.DOMESTIC_OVERSEAS  AS fme.CMPGN_TYPE1_NM_AT_EVENT     WITH SYNONYMS ('국내해외', '국내외') COMMENT = '캠페인 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 campaign.DOMESTIC_OVERSEAS 대체). 실제값 4종: ''국내''·''해외''·''통합''·''전체사업'' + NULL. ⚠️ ''통합''과 ''전체사업''은 서로 다른 값이다 — 하나로 묶지 말고 원천 라벨 그대로 노출한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.BIZ_CASE_TYPE      AS fme.CMPGN_TYPE2_NM_AT_EVENT     WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '캠페인 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MARKETING_CAMPAIGN AS fme.MKTG_CMPGN_NM_AT_EVENT      WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '마케팅캠페인명. 🔴적재 시점 동결값(구 campaign.MARKETING_CAMPAIGN 대체). 카디널리티가 높다 — 부분 일치로 추측하지 말고 실제값을 조회해 확인한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297, 14종). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). 실제값 14종: ''교육기관''·''기업''·''뉴미디어''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''일시''·''재송출''·''지역개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발'' + NULL. ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MKTG_UTM_NM        AS fme.MKTG_UTM_NM_AT_EVENT        WITH SYNONYMS ('UTM', 'UTM 라벨', '마케팅 UTM') COMMENT = 'UTM 라벨 — 코드사전이 아니라 원천 TM_CM_MKTNG_UTM(MK_UTM/MK_UTM_NM)과 연동된 값. 🔴적재 시점 동결값(구 campaign.MKTG_UTM_NM 대체). ⚠️원천 코드사전 매핑률이 낮아 다수 행이 NULL이다 — 결측이 아니라 미등재 코드다(채움 비율은 규칙7 상 여기 적지 않는다 · 조회로 확인하고 UTM별 분해가 부분집합임을 밝힐 것 · 규모는 이슈원장 §O105 참조). 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.SPNSR_DIV_NM       AS fme.SPNSR_DIV_NM_AT_EVENT       WITH SYNONYMS ('세부캠페인 후원구분', '캠페인 후원구분') COMMENT = '세부캠페인 후원구분 라벨(CM035): 정기후원/일시후원. 🔴적재 시점 동결값(구 campaign.SPNSR_DIV_NM 대체). ⚠️ SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 적용 대상이 다르다 — 이 축은 세부캠페인 단위 구분이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분') COMMENT = '세부캠페인 법인구분 라벨(CM019): 통합/사단/사복. 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    fme.SPNSR_DIV_NM       AS fme.SPNSR_DIV_NM_AT_EVENT       WITH SYNONYMS ('세부캠페인 후원구분', '캠페인 후원구분') COMMENT = '세부캠페인 후원구분 라벨(CM035). 🔴적재 시점 동결값(구 campaign.SPNSR_DIV_NM 대체). 실제값 2종: ''정기후원''·''일시후원'' + NULL. ⚠️ SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 적용 대상이 다르다 — 이 축은 세부캠페인 단위 구분이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분') COMMENT = '세부캠페인 법인구분 라벨(CM019). 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 실제값 3종: ''통합''·''사단''·''사복'' + NULL. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     -- [2026-08-05 O37] 사건시점 성별 — `_AT_EVENT` 계열. 개발원천이 사건행별 성별을 보유한다.
     fme.GENDER_AT_EVENT         AS fme.GENDER_AT_EVENT         WITH SYNONYMS ('사건시점 성별', '약정시점 성별') COMMENT = '**사건(개발약정) 시점** 성별 라벨(코드사전 CM013). 실제값 8종: ''국내(남자)''·''국내(여자)''·''외국인(남자)''·''외국인(여자)''·''외국인(기타)''·''단체''·''기업''·''기타''. 🔴 위 `member.GENDER_NAME`(회원 마스터 **현재 스냅샷** · CM017 계열)과 **코드체계가 다르다** — 두 축을 합산하지 말 것. 이 축이 사건 당시 정확값이다. 🔴 개발(DEV) 사건 전용(중단원천에 성별 컬럼 부재 → NULL). ⚠️ 사전 미등재 센티넬 ''0''은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다',
     fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL'
@@ -174,7 +171,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     -- ⚠ AVG_RETENTION_MONTHS(신4 유지기간) 미노출: 개발행에 JOIN_DATE·중단행에 STOP_DATE가 서로 다른 행에
     --   있어 행별 DATEDIFF가 전건 NULL이고 LAST_STOP_DATE도 미적재 → 산출 불가. 근거·경위 = 04 §6.9-(2) 계열.
   )
-  COMMENT = 'Phase-1 회원 상태전이 SV (base: GOLD.FACT_MEMBER_EVENT, grain: 회원×일 사건 1행). CRM 원천 기반 회원 개발 및 중단 사건, 신규/증액/감액/재후원/중단 5종 개발구분(DVLP_DIV_NM), 증감 금액, 캠페인별/부서별 실적 뷰. ⚠️ 캠페인별 중단은 TOTAL_CAMPAIGN_STOP_CNT 를 사용하며 TOTAL_STOP_CNT(중단원천)와 합산 금지. 캠페인별 중단률은 SV_MEMBER_COHORT(12개월 고정 이탈률) 사용. 부서별 목표대비 달성율은 SV_DEV_ACHIEVEMENT 사용.'
+  COMMENT = 'Phase-1 회원 상태전이 사건 분석 (base: GOLD.FACT_MEMBER_EVENT). [Grain: 회원 × 일 × 사건 1행]. [활성 지표: 개발건수/개발회원수/중단건수/증감금액, 개발구분 5종(신규/증액/감액/재후원/중단)]. [주의: 캠페인별 중단은 TOTAL_CAMPAIGN_STOP_CNT 사용(TOTAL_STOP_CNT 와 합산 금지), 캠페인별 중단률은 SV_MEMBER_COHORT(12개월 고정 이탈률), 부서별 목표대비 달성률은 SV_DEV_ACHIEVEMENT 사용]. [원천: CRM → BRONZE_CRM → SILVER.CRM_MEMBER_DEV/CRM_MEMBER_DISCONTINUE → GOLD.FACT_MEMBER_EVENT].'
   AI_SQL_GENERATION '핵심 규칙: (1) 개발구분 필터: 증액·감액·신규·재후원·후원중단 질의는 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터. (2) 중단 지표: 전체 중단 규모는 TOTAL_STOP_CNT, 캠페인별 중단 분해는 TOTAL_CAMPAIGN_STOP_CNT 사용 (두 지표 절대 합산 금지). 캠페인별 중단률은 SV_MEMBER_COHORT 로 라우팅. (3) 개발 지표: 개발 실적 건수는 TOTAL_DEV_CNT (신규·증액·재후원 합산) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 속성 시점: 연령대(AGE_BAND_AT_EVENT) 및 지역(REGION_AT_EVENT)은 개발 사건 시점 값이며 개발(DEV) 사건 전용. (6) 주간 실적: 주간 개발실적은 WEEK_OF_YEAR 와 CAL_YEAR 를 동반하여 조회하며 주간 목표 대비는 SV_DEV_ACHIEVEMENT 와 표를 분리하여 제시. (7) 홍보방법 필터: PROMO_METHOD_NAME 라벨 필터 사용. (8) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 STOP_MEMBERS 합이 아니라 중단 고유회원수(COUNT DISTINCT MEMBER_DK)로 답하고 「명 ≠ 플래그 합」임을 밝힌다. 주차별 「명」을 월로 더하지 않는다(주차 distinct 합 > 월 distinct). (9) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 이 뷰 단독으로 답하지 않는다 — 월 목표·달성율은 SV_DEV_ACHIEVEMENT, 회비는 SV_MEMBER_FEE 를 각각 호출해 표를 분리하고 표마다 grain 을 밝힌다. 주간 목표는 원천 부재이므로 만들지 않는다.';
 
 

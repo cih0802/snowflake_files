@@ -72,10 +72,10 @@ left join {{ ref('DIM_SPONSORSHIP') }} s        on s.SPONSORSHIP_SK  = f.SPONSOR
 left join {{ ref('DIM_PAYMENT') }} p            on p.PAYMENT_SK      = f.PAYMENT_SK
 left join {{ ref('DIM_DATE') }} dp              on dp.DATE_SK        = f.LAST_PAY_DATE_SK
 -- 회원 차원은 SCD2 → 현재행 1건만
--- 🔴 [2026-08-11 O58] 종전 이 자리는 `DIM_MEMBER` + `IS_CURRENT` + `QUALIFY ROW_NUMBER()` 자체 dedup 이었다.
---   O53 이 `DIM_MEMBER_CURRENT` 를 테이블로 신설하고 O54 가 SV 층을 그리로 재배선했는데 **이 모델만 남아**
+-- 🔴 [2026-08-11 O58] 종전 이 자리는 `DIM_MEMBER_STATUS_HISTORY` + `IS_CURRENT` + `QUALIFY ROW_NUMBER()` 자체 dedup 이었다.
+--   O53 이 `DIM_MEMBER`(구 DIM_MEMBER_CURRENT)를 테이블로 신설하고 O54 가 SV 층을 그리로 재배선했는데 **이 모델만 남아**
 --   같은 dedup 로직이 2곳에 중복 존재했다(§0.8-C:232 는 「이미 해결한다」고 적고 있었다 = 문서·코드 불일치).
---   ✅ 치환 근거 = 코멘트가 아니라 실측이다(R2-3): 소비 7컬럼 기준 자체 dedup 결과와 `DIM_MEMBER_CURRENT` 가
+--   ✅ 치환 근거 = 코멘트가 아니라 실측이다(R2-3): 소비 7컬럼 기준 자체 dedup 결과와 `DIM_MEMBER` 가
 --      **1,763,065행 = 1,763,065행 · 양방향 MINUS 각 0 = 완전 동일**(2026-08-11).
 --   ⚠️ SELECT 컬럼명·순서는 불변이므로 `_wide_schema.yml` 의 `columns[]` 재생성은 불요다.
 left join {{ ref('DIM_MEMBER') }} mem on mem.MEMBER_DK = f.MEMBER_DK
