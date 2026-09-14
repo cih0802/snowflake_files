@@ -76,7 +76,26 @@
      LEFT JOIN + COALESCE(...,0). 설계 초안의 `-1 UNKNOWN` 표기는 폐기됨(2026-07-16).
 ================================================================================
 */
-
+/*
+-- gn_dw.gold 스키마 껍데기만 두고 전부 드랍하기
+EXECUTE IMMEDIATE $$
+DECLARE
+    c1 CURSOR FOR 
+        SELECT table_name, table_type 
+        FROM GN_DW.INFORMATION_SCHEMA.TABLES 
+        WHERE table_schema = 'GOLD';
+BEGIN
+    FOR record IN c1 DO
+        IF (record.table_type = 'BASE TABLE') THEN
+            EXECUTE IMMEDIATE 'DROP TABLE GN_DW.GOLD.' || record.table_name;
+        ELSEIF (record.table_type = 'VIEW') THEN
+            EXECUTE IMMEDIATE 'DROP VIEW GN_DW.GOLD.' || record.table_name;
+        END IF;
+    END FOR;
+    RETURN 'GN_DW.GOLD cleaned successfully.';
+END;
+$$;
+*/
 -- 실행 컨텍스트(role 설계 정합, 01_환경 Role.md §2.2): 스키마·테이블 DDL = GN_DW_ADMIN · 기본 WH = DEV_WH
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

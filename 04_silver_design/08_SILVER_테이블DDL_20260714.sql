@@ -36,6 +36,26 @@
 -- STEP 1 — 스키마 생성
 -- ============================================================================
 ;
+/*
+EXECUTE IMMEDIATE $$
+DECLARE
+    c1 CURSOR FOR 
+        SELECT table_name, table_type 
+        FROM GN_DW.INFORMATION_SCHEMA.TABLES 
+        WHERE table_schema = 'SILVER';
+BEGIN
+    FOR record IN c1 DO
+        IF (record.table_type = 'BASE TABLE') THEN
+            EXECUTE IMMEDIATE 'DROP TABLE GN_DW.SILVER.' || record.table_name;
+        ELSEIF (record.table_type = 'VIEW') THEN
+            EXECUTE IMMEDIATE 'DROP VIEW GN_DW.SILVER.' || record.table_name;
+        END IF;
+    END FOR;
+    RETURN 'GN_DW.SILVER cleaned successfully.';
+END;
+$$;
+UNDROP TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA;
+*/
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
 USE DATABASE GN_DW;

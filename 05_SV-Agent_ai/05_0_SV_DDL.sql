@@ -221,3 +221,23 @@ SHOW GRANTS ON VIEW GN_DW.GOLD.WIDE_AD_COMBINED;
 --      · DEPRECATED 스텁(`13_SV_AD_배포_추가작업.sql`·`09_AGENT_spec_구현.sql`)은 실행 대상이 아니라
 --        회수하지 않았다(문서10 §20-G — 실행 금지 파일이다).
 -- ============================================================================
+
+/*
+EXECUTE IMMEDIATE $$
+DECLARE
+    c1 CURSOR FOR 
+        SELECT "name" AS view_name 
+        FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+BEGIN
+    -- GN_DW.SERVING 스키마의 Semantic View 목록 조회
+    SHOW TERSE SEMANTIC VIEWS IN SCHEMA GN_DW.SERVING;
+    
+    -- 각 Semantic View 삭제
+    FOR record IN c1 DO
+        EXECUTE IMMEDIATE 'DROP SEMANTIC VIEW IF EXISTS GN_DW.SERVING."' || record.view_name || '"';
+    END FOR;
+    
+    RETURN 'GN_DW.SERVING semantic views cleaned successfully.';
+END;
+$$;
+*/

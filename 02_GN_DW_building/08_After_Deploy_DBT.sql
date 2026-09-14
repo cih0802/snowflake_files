@@ -82,3 +82,4 @@ GRANT USAGE ON SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT TO R
 --    [DEPRECATED 2026-07-31] 스텁이다. `09_2` 를 빼면 Agent 가 도구 0개로 남는다.
 --    전체 순서 정본 = 06_RUNBOOK.md §11.2-C(신규 계정) · §11.2-B(기존 계정 복구)
 -- =====================================================================
+-- drop schema gn_dw.snapshot;

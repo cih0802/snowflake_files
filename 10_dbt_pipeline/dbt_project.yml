@@ -241,3 +241,4 @@ snapshots:
   gn_dw_silver:
     +target_database: GN_DW
     +target_schema: SNAPSHOT
+    +enabled: false
