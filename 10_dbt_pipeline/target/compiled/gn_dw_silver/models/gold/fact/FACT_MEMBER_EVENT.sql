@@ -1,26 +1,21 @@
 -- FACT_MEMBER_EVENT: 회원 생애주기 사건 팩트 (개발/약정 ∪ 후원중단 이벤트) — 가입, 증액, 감액, 재후원, 중단 등 생애 이벤트 추적
 -- Co-authored with CoCo
-{{ config(
-    materialized='incremental',
-    incremental_strategy='append',
-    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
-    tags=['gold_ready']
-) }}
+
 
 with org_lookup as (
-    select ORG_DK, ORG_SK from {{ ref('DIM_ORG') }}
+    select ORG_DK, ORG_SK from GN_DW.GOLD.DIM_ORG
 ),
 campaign_valid as (
-    select CMPGN_CD from {{ ref('CRM_CAMPAIGN') }}
+    select CMPGN_CD from GN_DW.SILVER.CRM_CAMPAIGN
 ),
 code_ageband as (
-    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM014'
+    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM014'
 ),
 code_sex as (
-    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM013'
+    select DTL_CD_ID, DTL_CD_NM from GN_DW.SILVER.CRM_CODE where CD_ID = 'CM013'
 ),
 spb_lookup as (
-    select SPONSORSHIP_BK, SPONSORSHIP_SK from {{ ref('DIM_SPONSORSHIP') }}
+    select SPONSORSHIP_BK, SPONSORSHIP_SK from GN_DW.GOLD.DIM_SPONSORSHIP
 ),
 stop_single_biz as (
     -- [2026-09-14 O160] 착수표 ⑭ 분해 배선: 단일 후원사업 중단 건(92.45%) 1:1 배선 (팬아웃 0)
@@ -29,7 +24,7 @@ stop_single_biz as (
         MBER_NO,
         SPNSR_DSCNTC_DE,
         max(SPNSR_BSNS_ID) as SPNSR_BSNS_ID
-    from {{ ref('CRM_MEMBER_SPONSOR_SPAN') }}
+    from GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN
     where SPNSR_DSCNTC_YN = 'Y' and SPNSR_DSCNTC_DE is not null
     group by MBER_NO, SPNSR_DSCNTC_DE
     having count(distinct SPNSR_BSNS_ID) = 1
@@ -37,11 +32,12 @@ stop_single_biz as (
 
 dev as (
     select
-        COALESCE({{ date_sk("TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')") }}, 0)  as DATE_SK,
+        COALESCE(CASE WHEN TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD'), 'YYYYMMDD')) END, 0)  as DATE_SK,
         MBER_NO                                             as MEMBER_DK,
         'DEV'                                               as EVENT_TYPE,
         case when c.CMPGN_CD is not null
-             then {{ gold_sk(['d.CMPGN_CD']) }}
+             then ABS(HASH(COALESCE(CAST(d.CMPGN_CD AS VARCHAR), '∅')))
              else 0
         end                                                 as CAMPAIGN_SK,
         COALESCE(sp.SPONSORSHIP_SK, 0)                       as SPONSORSHIP_SK,
@@ -88,7 +84,7 @@ dev as (
         d.BRND_NM                                            as BRAND_AT_EVENT,
         d.PARENT_CAMPAIGN_NAME                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
         d.PROMO_METHOD_NAME                                  as PROMO_METHOD_NAME_AT_EVENT
-    from {{ ref('CRM_MEMBER_DEV') }} d
+    from GN_DW.SILVER.CRM_MEMBER_DEV d
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
     left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
     left join code_sex       csx on d.SEX = csx.DTL_CD_ID
@@ -98,14 +94,15 @@ dev as (
 
 stop as (
     select
-        COALESCE({{ date_sk("TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')") }}, 0) as DATE_SK,
+        COALESCE(CASE WHEN TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD') BETWEEN '1991-01-01' AND '2035-12-31'
+         THEN TRY_TO_NUMBER(TO_CHAR(TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD'), 'YYYYMMDD')) END, 0) as DATE_SK,
         s.MBER_NO                                           as MEMBER_DK,
         'STOP'                                              as EVENT_TYPE,
         0 as CAMPAIGN_SK,
         COALESCE(sp.SPONSORSHIP_SK, 0)                      as SPONSORSHIP_SK,
         0 as ORG_SK,
         case when NULLIF(TRIM(s.DSCNTC_RSN_CD),'') is not null
-             then {{ gold_sk(["'MM005'", "NULLIF(TRIM(s.DSCNTC_RSN_CD),'')"]) }}
+             then ABS(HASH(COALESCE(CAST('MM005' AS VARCHAR), '∅') || '‖' || COALESCE(CAST(NULLIF(TRIM(s.DSCNTC_RSN_CD),'') AS VARCHAR), '∅')))
              else 0
         end                                                 as REASON_SK,
         CAST(NULL AS VARCHAR)                               as DVLP_DIV_CD,
@@ -148,7 +145,7 @@ stop as (
         CAST(NULL AS VARCHAR)                               as BRAND_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as PROMO_METHOD_NAME_AT_EVENT
-    from {{ ref('CRM_MEMBER_DISCONTINUE') }} s
+    from GN_DW.SILVER.CRM_MEMBER_DISCONTINUE s
     left join stop_single_biz sb
         on s.MBER_NO = sb.MBER_NO and s.SPNSR_DSCNTC_DE = sb.SPNSR_DSCNTC_DE
     left join spb_lookup sp
@@ -178,5 +175,8 @@ select
     SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
     CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
     BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
-    {{ gold_meta('CRM') }}
+    'CRM'                       AS DW_SOURCE_SYSTEM,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
+    CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
+    'd4053ae3-5fd1-467d-8960-6da19c4ffeec'                    AS DW_BATCH_ID
 from unioned
