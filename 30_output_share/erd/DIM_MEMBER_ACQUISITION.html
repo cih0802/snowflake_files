@@ -7,7 +7,7 @@
   <title>DIM_MEMBER_ACQUISITION - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_ACQUISITION",
     "table": "DIM_MEMBER_ACQUISITION",
     "domain": "CRM / 회원·후원",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item active"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -452,7 +452,7 @@
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
           <span class="badge badge-domain">BRONZE 원천: 9개</span>
           <span class="badge badge-domain">SILVER 모델: 7개</span>
-          <span class="badge badge-domain">컬럼 수: 0개</span>
+          <span class="badge badge-domain">컬럼 수: 37개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
       </div>
@@ -492,12 +492,12 @@ flowchart LR
   end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_MEMBER_ACQUISITION["★ DIM_MEMBER_ACQUISITION<br/>회원 획득(가입) 귀속 차원(1행 = 1회원)"]:::target
-    G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원 (1캠페인). 분류축 ="]:::gold
+    G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원. [Grain: CAMP"]:::gold
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
-    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
-    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
+    G_DIM_ORG["DIM_ORG<br/>조직/부서 차원. [Grain: OR"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
     G_FACT_MEMBER_COHORT["FACT_MEMBER_COHORT<br/>회원 획득 코호트 팩트(1행=1회원)"]:::gold
-    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
+    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 생애주기 전이 팩트. [Grai"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
@@ -573,15 +573,52 @@ flowchart LR
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
 erDiagram
-  DIM_MEMBER_ACQUISITION {
+  DIM_MEMBER {
+    string MEMBER_SK
+    string MEMBER_DK FK
+    string DW_BATCH_ID
   }
   DIM_MEMBER_ACQUISITION {
-    string ID PK
+    string MEMBER_DK FK
+    string ACQ_CAMPAIGN_SK
+    string ACQ_ORG_SK
+    string ACQ_SPONSORSHIP_SK
+    string ACQ_DATE_SK
+    string FIRST_STOP_DATE_SK
+    string DW_BATCH_ID
   }
+  DIM_MEMBER ||..o{ DIM_MEMBER_ACQUISITION : "MEMBER_DK"
           </pre>
         </div>
 
-        <p style='font-size:0.85rem; color:var(--text-muted);'>연결된 외부 참조 관계가 없는 독립 테이블입니다.</p>
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>출발 테이블</th>
+                <th>출발 컬럼</th>
+                <th></th>
+                <th>대상 테이블</th>
+                <th>대상 컬럼</th>
+                <th>관계 출처</th>
+                <th>관계 유형</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>DIM_MEMBER_ACQUISITION</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>회원 획득 자연키 참조</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+        
       </div>
 
       <!-- 3. Column Catalog -->
@@ -598,7 +635,228 @@ erDiagram
               </tr>
             </thead>
             <tbody>
-
+        <tr>
+          <td><code>MEMBER_DK</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td><span class="badge badge-wide">CONFORM</span></td>
+          <td>불변 비즈니스 식별자</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_CAMPAIGN_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_ORG_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_SPONSORSHIP_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_DATE_SK</code></td>
+          <td><code>NUMBER(8,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_BASIS</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_BASIS. 코드id:MM015.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_DVLP_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_DVLP_DIV_CD. 코드id:MM015.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_AGE_CD</code></td>
+          <td><code>NUMBER(2,0)</code></td>
+          <td></td>
+          <td>ACQ_AGE_CD. 코드id:CM014.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_AGE_BAND</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 시점 연령대명(CM014 라벨, 사전 조인. 코드id:CM014. [사유:부서차원 산출불가]</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_AREA_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_AREA_CD. 코드id:CM018.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_REGION</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_REGION (#131). 코드id:CM018.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_SEX_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_SEX_CD. 코드id:CM013.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_GENDER</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_GENDER. 코드id:CM013.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_SPNSR_AMT</code></td>
+          <td><code>NUMBER(18,0)</code></td>
+          <td></td>
+          <td>ACQ_SPNSR_AMT (#38).</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_BRAND</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 브랜드.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_CAMPAIGN_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>현재 최신 캠페인명 (Master 실시간 조인 · MSTR 대조용).</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_PARENT_CAMPAIGN_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 **상위캠페인**명. 코드id:MM294.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_PROMO_METHOD_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 코드id:CM008.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_MARKETING_CAMPAIGN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 마케팅캠페인.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_DEPARTMENT</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>현재 최신 부서명 (Master 실시간 조인 · MSTR 대조용).</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_SPONSORSHIP_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_SPONSORSHIP_NAME (#123).</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_INFLOW_PATH</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 모집 채널명(MM293 라벨). 코드id:MM293.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_CAMPAIGN_TYPE</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 카테고리 라벨(MM294). 코드id:MM294.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_DOMESTIC_OVERSEAS</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_DOMESTIC_OVERSEAS. 코드id:MM295.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_BIZ_CASE_TYPE</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_BIZ_CASE_TYPE. 코드id:MM296.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_CMMN_BRND_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 공통브랜드명(MM297 라벨). 코드id:MM297.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_MKTG_UTM_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>ACQ_MKTG_UTM_NM.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_SPNSR_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 후원구분명(CM035 라벨: 정기후원/일시후원). 코드id:CM035.</td>
+        </tr>
+        <tr>
+          <td><code>ACQ_CPR_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>획득 캠페인의 법인구분명(CM019 라벨: 통합/사단/사복). 코드id:CM019.</td>
+        </tr>
+        <tr>
+          <td><code>FIRST_STOP_DATE_SK</code></td>
+          <td><code>NUMBER(8,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>FIRST_STOP_REASON_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>FIRST_STOP_REASON_NM. 코드id:MM005.</td>
+        </tr>
+        <tr>
+          <td><code>TENURE_DAYS</code></td>
+          <td><code>NUMBER(9,0)</code></td>
+          <td></td>
+          <td>유지기간(일) = 최초 중단일 − 획득일.</td>
+        </tr>
+        <tr>
+          <td><code>IS_12M_OBSERVABLE</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>IS_12M_OBSERVABLE.</td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -633,8 +891,8 @@ erDiagram
 -- ── 조인 안전성 실측(2026-08-06) — 팬아웃 0 ────────────────────────────────────
 --   `FACT_MEMBER_COHORT` 1,585,949행 = 1,585,949 고유회원 → **1행/회원 확인**
 --   ⋈ `FACT_MEMBER_MONTHLY`      40,054,883 → 39,409,747  (미매칭 1.61%)
---   ⋈ `FACT_SERVICE_EVENT`       38,470,780 → 38,339,810  (99.66%)
---   ⋈ `FACT_EVENT_PARTICIPATION`  1,134,126 →  1,119,559  (98.70%)
+--   ⋈ `FACT_MESSAGE_DISPATCH`    38,470,780 → 38,339,810  (99.66%)
+--   ⋈ `FACT_EVENT_ATTENDANCE`     1,134,126 →  1,119,559  (98.70%)
 --   ⇒ 반드시 **LEFT JOIN** 할 것. INNER 로 걸면 개발 사건이 없는 회원(일시회원 등)이 사라진다.
 --
 -- 🔴 네이밍 규약 — O34 교훈(`_AT_PLEDGE` vs `_AT_EVENT`)의 재적용:
@@ -684,11 +942,11 @@ select
     -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(cmp.*) → `FACT_MEMBER_COHORT.ACQ_*` 동결값으로 전환.
     --   캠페인 마스터가 이후 정정돼도 과거 획득 회원의 값은 바뀌지 않는다(O99 설계부채 해소).
     c.ACQ_BRAND                                     as ACQ_BRAND,
-    cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,
+    cmp.CAMPAIGN_NAME                               as ACQ_CAMPAIGN_NAME,          -- 현재 최신 캠페인명 (MSTR 대조용)
     c.ACQ_PARENT_CAMPAIGN_NAME                      as ACQ_PARENT_CAMPAIGN_NAME,
     c.ACQ_PROMO_METHOD_NAME                         as ACQ_PROMO_METHOD_NAME,
     c.ACQ_MKTG_CMPGN_NM                             as ACQ_MARKETING_CAMPAIGN,
-    org.DEPARTMENT                                  as ACQ_DEPARTMENT,
+    org.DEPARTMENT                                  as ACQ_DEPARTMENT,              -- 현재 최신 부서명 (MSTR 대조용)
     spb.SPONSORSHIP_NAME                            as ACQ_SPONSORSHIP_NAME,
     -- [DEC-43] 잔여 8속성(9속성 중 나머지 5 + 후원/법인구분 2 + UTM 1) 신규 노출.
     c.ACQ_MBER_INFLOW_PATH_NM                       as ACQ_INFLOW_PATH,

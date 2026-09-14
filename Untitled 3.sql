@@ -20,3 +20,4 @@ select * from gn_dw.bronze_crm.TM_CM_MKTNG_UTM limit 10;
 
 show grants to role gn_dw_engineer;
 
+select * from gn_dw.gold.WIDE_MEMBER_EVENT where event_type='STOP' limit 10;

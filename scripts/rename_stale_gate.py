@@ -119,7 +119,10 @@ def scan():
                     continue
                 path = os.path.join(dirpath, fn)
                 scanned += 1
-                text = io.open(path, encoding='utf-8', errors='replace').read()
+                try:
+                    text = io.open(path, encoding='utf-8', errors='replace').read()
+                except Exception:
+                    continue
                 if not RX.search(text):
                     continue
                 rel = os.path.relpath(path, ROOT)

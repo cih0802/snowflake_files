@@ -4,13 +4,13 @@ doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장�
 project: GN_DW (굿네이버스)
 grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md · 30_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · field_mapping_override.py(교정 등록부) · 04·05 보고서필드 인벤토리
 generator: scripts/gen_metric_gold_mapping.py
-measured: 2026-09-10
+measured: 2026-09-14
 generated: auto (do-not-edit)
 END-METADATA -->
 
 # 지표 → GOLD 매핑 장표 (현업용)
 
-> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-09-10** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
+> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-09-14** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
 > **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에
 > 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이
 > 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.
@@ -86,9 +86,9 @@ END-METADATA -->
 
 | 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `공1` | 월 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT / 분모: GOAL_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 월 개발건 / 월 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
-| `공2` | 누계 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT(YTD) / 분모: GOAL_CNT(YTD)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 누계 개발건 / 누계 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
-| `공3` | 연 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT(YR) / 분모: GOAL_CNT(YR)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 연 개발건 / 연 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `공1` | 월 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT / 분모: GOAL_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 월 개발건 / 월 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `공2` | 누계 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT(YTD) / 분모: GOAL_CNT(YTD)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 누계 개발건 / 누계 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `공3` | 연 목표대비 개발(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_CNT(YR) / 분모: GOAL_CNT(YR)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 연 개발건 / 연 회원개발목표 | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
 | `공4` | CRM 개발(건) | measure | CRM | 건 | `FMM` | `FMM.DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 회원번호 기준, 회원의 CRM 개발 건 ( = 전체 후원금액 / 10,000 ) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.DEV_CNT` 비영 1,996,977/40,054,884 (5.0%) · 채움률 95% 미만 |
 | `공5` | GA 개발(건) | measure | GA4 | 건 | `FMM` | `FMM.DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | GA 개발 건 ( = 전체 후원금액 / 10,000 ) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.DEV_CNT` 비영 1,996,977/40,054,884 (5.0%) · ⚠️ 채움률은 **적재된 샤드 내부** 기준이다 — GA4 전기간 미입고(G-5) |
 | `공6` | GA 광고비 | measure | GA4 | 원 | `FAD` | `FAD.AD_COST` | `AGENCY_AD_PERFORMANCE.AD_COST` | `DGT_AD_CMPGN_DTLS;REBRDC_AD_CMPGN_DTLS;VIDEO_AD_CMPGN_DTLS` | GA 광고비 ( = 전체 후원금액 / 10,000 ) | PARTIAL | 실측: `FACT_AD_PERFORMANCE.AD_COST` 비영 240,488/255,452 (94.1%) · ⚠️ 채움률은 **적재된 샤드 내부** 기준이다 — GA4 전기간 미입고(G-5) |
@@ -120,7 +120,7 @@ END-METADATA -->
 | `공32` | 신규 | dimension | CRM | 코드 | `FMM(degen)` | `FMM(degen)` | `` | `` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공33` | 증액 | dimension | CRM | 코드 | `FMM(degen)` | `FMM(degen)` | `` | `` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공34` | 재후원 | dimension | CRM | 코드 | `FMM(degen)` | `FMM(degen)` | `` | `` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
-| `공35` | 중단(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.STOP_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 회원번호 기준, 후원중단한 회원의 총 개발 건 ( = 전체 후원금액 / 10,000 ) | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
+| `공35` | 중단(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.STOP_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 회원번호 기준, 후원중단한 회원의 총 개발 건 ( = 전체 후원금액 / 10,000 ) | PARTIAL | 실측: `FACT_MEMBER_EVENT.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
 | `공36` | 미납(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.UNPAID_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` | 회원번호 기준, 회원상태가 미납인 회원의 총 개발 건 ( = 전체 후원금액 / 10,000 ) | WAIT | 실측: `FACT_MEMBER_MONTHLY.UNPAID_CNT` 전건 0 — 설계O·값 미주입 |
 | `공37` | 활동(건) | measure | CRM | 건 | `FMM` | `FMM.ACTIVE_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` | 회원번호 기준, 회원상태가 활동인 회원의 총 개발 건 ( = 전체 후원금액 / 10,000 ) | OK | 실측: `FACT_MEMBER_MONTHLY.ACTIVE_CNT` 비영 38,423,117/40,054,884 (95.9%) |
 | `공38` | 감액(건) | measure | CRM | 건 | `FMM` | `FMM.DECREASE_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` | 회원번호 기준, 후원사업(세부캠페인)별 총 감액 건 ( = 전체 감액금액 / 10,000 ) | WAIT | 실측: `FACT_MEMBER_MONTHLY.DECREASE_CNT` 전건 0 — 설계O·값 미주입 |
@@ -141,9 +141,9 @@ END-METADATA -->
 | `공53` | 전월말 활동회원(건) | measure | CRM | 건 | `FMM` | `FMM.PREV_MONTH_END_ACTIVE_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` |  | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.PREV_MONTH_END_ACTIVE_CNT` 비영 37,695,312/40,054,884 (94.1%) · 채움률 95% 미만 |
 | `공54` | 중단율1(%) | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT / 분모: DEV_CNT + YEAR_START_ACTIVE_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 중단(건) / (개발(건) + 연도초활동회원(건)) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.STOP_CNT` 비영 972,376/40,054,884 (2.4%) · 채움률 95% 미만 |
 | `공55` | 중단율2(%) | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT / 분모: DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 중단(건) / 개발(건) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.STOP_CNT` 비영 972,376/40,054,884 (2.4%) · 채움률 95% 미만 |
-| `공56` | 신규 중단율 | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT[신규] / 분모: DEV_CNT[신규] + PREV_MONTH_END_ACTIVE_CNT[신규]` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 신규중단(건) / (당월 신규개발(건) + 전월말 신규활동회원건) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.STOP_CNT` 비영 972,376/40,054,884 (2.4%) · 채움률 95% 미만 |
-| `공57` | 기존 중단율 | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT[기존] / 분모: DEV_CNT[기존] + PREV_MONTH_END_ACTIVE_CNT[기존]` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 기존중단(건) / (당월 기존개발(건) + 전월말 기존활동회원건) | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.STOP_CNT` 비영 972,376/40,054,884 (2.4%) · 채움률 95% 미만 |
-| `공58` | 주간 평균 1일 중단(건) | derived | CRM | 건 | `SV` | `SV metric — 분자: STOP_CNT(주합) / 분모: 주간 일수(DIM_DATE)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 해당주간 총 중단건수 / 해당 주간 일수 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
+| `공56` | 신규 중단율 | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT[신규] / 분모: DEV_CNT[신규] + PREV_MONTH_END_ACTIVE_CNT[신규]` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 신규중단(건) / (당월 신규개발(건) + 전월말 신규활동회원건) | PARTIAL | 실측: `FACT_MEMBER_EVENT.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
+| `공57` | 기존 중단율 | derived | CRM | % | `SV` | `SV metric — 분자: STOP_CNT[기존] / 분모: DEV_CNT[기존] + PREV_MONTH_END_ACTIVE_CNT[기존]` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 기존중단(건) / (당월 기존개발(건) + 전월말 기존활동회원건) | PARTIAL | 실측: `FACT_MEMBER_EVENT.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
+| `공58` | 주간 평균 1일 중단(건) | derived | CRM | 건 | `SV` | `SV metric — 분자: STOP_CNT(주합) / 분모: 주간 일수(DIM_DATE)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 해당주간 총 중단건수 / 해당 주간 일수 | PARTIAL | 실측: `FACT_MEMBER_EVENT.STOP_CNT` 비영 1,038,262/4,633,105 (22.4%) · 채움률 95% 미만 |
 | `공59` | 증감(건) | derived | 복합 | 건 | `SV` | `SV metric — 분자: 해당 measure / 분모: (시계열)` | `` | `` | (당해년도 전주/전월/전년 수치 − 전주/전월/전년 수치) | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공60` | 증감율(%) | derived | 복합 | % | `SV` | `SV metric — 분자: 해당 measure / 분모: 전기값` | `` | `` | (당해년도 전주/전월/전년 수치 − 전주/전월/전년 수치) / (전주/전월/전년 수치) * 100 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공61` | 1명당 건수 | derived | CRM | 비율 | `SV` | `SV metric — 분자: ACTIVE_CNT / 분모: ACTIVE_MEMBERS` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` | 활동회원 건 / 활동회원 명 | OK | 실측: `FACT_MEMBER_MONTHLY.ACTIVE_CNT` 비영 38,423,117/40,054,884 (95.9%) |
@@ -233,8 +233,8 @@ END-METADATA -->
 | `공145` | 발송(+5일차) 중단(명) | measure | CRM | 명 | `FSE` | `FSE.D5_STOP_(MEMBERS` | `` | `` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공146` | 발송(+5일차) 중단(건) | measure | CRM | 건 | `FSE` | `FSE.CNT)` | `` | `` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `공147` | 공통캠페인 | dimension | CRM | 코드 | `DIM_CAMPAIGN` | `DIM_CAMPAIGN` | `CRM_CAMPAIGN.CMPGN_NM` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM` |  | OK | 추정: 배속 차원 `DIM_CAMPAIGN` 36,164행 실재 — 대응 물리 컬럼 미특정 |
-| `공148` | 개발(명) | measure | CRM | 명 | `FME→FMM` | `FME→FMM.DEV_MEMBERS` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` |  | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
-| `공149` | 개발(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` |  | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `공148` | 개발(명) | measure | CRM | 명 | `FME→FMM` | `FME→FMM.DEV_MEMBERS` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` |  | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `공149` | 개발(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` |  | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_CNT` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
 | `공150` | 증액(명) | measure | CRM | 명 | `FME→FMM` | `FME→FMM.INCREASE_MEMBERS` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` |  | WAIT | 실측: `FACT_MEMBER_MONTHLY.INCREASE_MEMBERS` 전건 0 — 설계O·값 미주입 |
 | `공151` | 증액(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.INCREASE_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` |  | WAIT | 실측: `FACT_MEMBER_MONTHLY.INCREASE_CNT` 전건 0 — 설계O·값 미주입 |
 | `공152` | 연사업목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `` | `` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_BIZ` 0행 |
@@ -256,7 +256,7 @@ END-METADATA -->
 | `신1` | 개발캠페인별 납입회비(원) | measure | CRM | 원 | `FMM` | `FMM (measure — 컬럼 06_DDL.sql 확인)` | `CRM_PAYMENT_BILLING.PAY_DE` | `TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` | 캠페인 가입 이후 납입하는 회비 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신2` | 개발캠페인별 유지기간(개월) | derived | CRM | 기간 | `SV` | `SV metric — 분자: DATEDIFF(조회일, JOIN_DATE)` | `` | `` | 고유ID(회원번호×캠페인가입일×후원사업×캠페인명) 기준 매칭되는 캠페인가입일로부터 조회기준일까지의 총 개월수 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신3` | 개발캠페인별 유지기간(년) | derived | CRM | 기간 | `SV` | `SV metric — 분자: DATEDIFF(년)` | `` | `` | 고유ID(회원번호×캠페인가입일×후원사업×캠페인명) 기준 매칭되는 캠페인가입일로부터 조회기준일까지의 총 년수 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
-| `신4` | 평균 유지기간(개월) | derived | CRM | 기간 | `SV` | `SV metric — 분자: Σ(유지기간×DEV_MEMBERS) / 분모: DEV_MEMBERS(총)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | {(개발캠페인별 유지기간×해당 유지기간 총 회원수)의 합} / 캠페인 가입한 총 회원수 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
+| `신4` | 평균 유지기간(개월) | derived | CRM | 기간 | `SV` | `SV metric — 분자: Σ(유지기간×DEV_MEMBERS) / 분모: DEV_MEMBERS(총)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | {(개발캠페인별 유지기간×해당 유지기간 총 회원수)의 합} / 캠페인 가입한 총 회원수 | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · 채움률 95% 미만 |
 | `신5` | 평균 유지기간(년) | derived | CRM | 기간 | `SV` | `SV metric — 분자: 〃 / 분모: 〃` | `` | `` | {(개발캠페인별 유지기간×해당 유지기간 총 회원수)의 합} / 캠페인 가입한 총 회원수 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신6` | 개발캠페인별 이탈율(%) | derived | CRM | % | `SV` | `SV metric — 분자: 유지 cohort 회원수 / 분모: DEV_MEMBERS(누적가입)` | `` | `` | N개월 시점에 캠페인 가입유지중인 회원수 / N개월까지 가입한 회원수 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신7` | n개월 유지율(%) | derived | CRM | % | `SV` | `SV metric — 분자: 유지 cohort 회원수 / 분모: DEV_MEMBERS` | `` | `` | (N개월 시점에 캠페인 가입유지중인 회원수 / N개월까지 가입한 회원수) × 100 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
@@ -285,7 +285,7 @@ END-METADATA -->
 | `신30` | 서비스별 발송율(%) | derived | CRM | % | `SV` | `SV metric — 분자: SEND_MEMBERS / 분모: 전체회원수(명)` | `CRM_SEND_REQUEST.SNDNG_TY_CD` | `SND_REQ_MST;TM_MS_EMAIL_SNDNG;TM_MS_MSG_AT_SNDNG;TM_MS_PSTMTR_SNDNG` | 서비스별 발송수(명) / 전체회원수(명) × 100 | OK | 실측: `FACT_MESSAGE_DISPATCH.SEND_MEMBERS` 비영 38,467,142/38,467,142 (100.0%) |
 | `신31` | 발송대비 수신율(%) | derived | CRM | % | `SV` | `SV metric — 분자: SUCCESS_MEMBERS / 분모: SEND_MEMBERS` | `CRM_SEND_MEMBER.SNDNG_RST_CD` | `SND_MEMBER_LIST;TC_CMMN_DTL_CD;TD_MS_EMAIL_SNDNG_DTLS;TD_MS_MSG_AT_SNDNG_DTLS;TD_MS_PSTMTR_SNDNG_DTL` | 발송성공수(명) / 발송수(명) × 100 | PARTIAL | 실측: `FACT_MESSAGE_DISPATCH.SUCCESS_MEMBERS` 비영 24,263,968/38,467,142 (63.1%) · 채움률 95% 미만 |
 | `신32` | 발송대비 클릭율(%) | derived | 복합 | % | `SV` | `SV metric — 분자: BigQuery 클릭회원(명, distinct) / 분모: SEND_MEMBERS` | `` | `` | 클릭수(명) / 발송수(명) × 100 | PARTIAL | 추정: GA↔CRM identity 브리지 의존 — 물리 컬럼 미특정 |
-| `신33` | 클릭대비 전환율(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_MEMBERS / 분모: BigQuery 클릭회원(명)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 개발회원(명) / 서비스 클릭수(명) × 100 | PARTIAL | 실측: `FACT_MEMBER_LIFECYCLE.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · GA↔CRM identity 커버리지 종속 |
+| `신33` | 클릭대비 전환율(%) | derived | 복합 | % | `SV` | `SV metric — 분자: DEV_MEMBERS / 분모: BigQuery 클릭회원(명)` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_CM_MKTNG_CMPGN_MNG;TM_CM_MKTNG_UTM;TM_MM_FDRM_MBER_DVLP_AMT` | 개발회원(명) / 서비스 클릭수(명) × 100 | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_MEMBERS` 비영 2,291,878/4,633,105 (49.5%) · GA↔CRM identity 커버리지 종속 |
 | `신34` | 서비스별 증액율(%) | derived | CRM | % | `SV` | `SV metric — 분자: D5_INCREASE_PART_(MEMBERS/CNT) / 분모: SUCCESS_MEMBERS` | `` | `` | (증액 회원수(명,건) / 서비스별 발송 성공회원(명,건)) × 100 | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신35` | 서비스별 증액회원 N개월 유지율(%) | derived | CRM | % | `SV` | `SV metric — 분자: 증액코호트 유지 회원수 / 분모: D5_INCREASE_PART_MEMBERS` | `` | `` | (서비스별 증액 후 N개월 시점 유지 회원(명,건) / 서비스별 증액 회원(명,건)) × 100. 유지기간 = AVG(중단일자−가입일자) or AVG(기준일자−가입일자) | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
 | `신36` | 서비스별 참여회원 N개월 유지율(%) | derived | CRM | % | `SV` | `SV metric — 분자: 참여코호트 유지 회원수 / 분모: 참여회원수(서비스별 상이)` | `` | `` | (서비스별 발송 후 N개월 시점 유지 회원(명,건) / 서비스별 참여 회원(명,건)) × 100. 유지기간 = AVG(중단일자−가입일자) or AVG(기준일자−가입일자) | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |
@@ -485,11 +485,11 @@ END-METADATA -->
 | 1. 개발현황 | 1-3. [회원] 개발실적보고 (월간) · GA 필드 | 이벤트수 | GA | 숫자(회계) | 공95 | `FACT_BIGQUERY_BEHAVIOR.EVENT_CNT` |  | 필드인벤토리~ |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 기준일자 | CRM | 날짜 | (215밖) | `DIM_DATE.FULL_DATE` |  | 필드인벤토리·별칭등록부 |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 신규기존구분 | CRM | 문자 | 공113 | `DIM_MEMBER.NEW_EXISTING_FLAG` | FMM.NEW_EXISTING_FLAG='신규' | 필드인벤토리 |
-| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *당월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` | 기간윈도우: 당월 | 필드인벤토리~ |
+| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *당월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` | 기간윈도우: 당월 | 필드인벤토리~ |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(건) *당월 주차 | CRM | 숫자(회계) |  | `FACT_MEMBER_EVENT.STOP_CNT` | 기간윈도우: 당월 | 교정등록부(WRONG_GRAIN) |
-| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *전년 동월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` | 기간윈도우: 전년 동기 | 필드인벤토리~ |
+| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *전년 동월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` | 기간윈도우: 전년 동기 | 필드인벤토리~ |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(건) *전년 동월 주차 | CRM | 숫자(회계) |  | `FACT_MEMBER_EVENT.STOP_CNT` | 기간윈도우: 전년 동기 | 교정등록부(WRONG_GRAIN) |
-| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *전전년 동월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` | 기간윈도우: 전전년 동기 | 필드인벤토리~ |
+| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(명) *전전년 동월 주차 | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` | 기간윈도우: 전전년 동기 | 필드인벤토리~ |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단(건) *전전년 동월 주차 | CRM | 숫자(회계) |  | `FACT_MEMBER_EVENT.STOP_CNT` | 기간윈도우: 전전년 동기 | 교정등록부(WRONG_GRAIN) |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단 구성비(%) | CRM | 백분율 | (ratio-of-total) | `SV metric — 구성비/비중(%) = 부분/전체×100` |  | SV파생 |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 전년 대비 증감(명) | CRM | 숫자(회계) | 공59 | `SV metric — 증감 = 당기−전기 (P7 시계열)` | 기간윈도우: 전년 동기 | SV파생 |
@@ -509,8 +509,8 @@ END-METADATA -->
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 회원구분 | CRM | 문자 | (215밖) | `DIM_MEMBER.MBER_DIV_CD` |  | 필드인벤토리~ |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 납입방식 | CRM | 문자 |  | `FACT_MEMBER_FEE.PAYMENT_SK` |  | 교정등록부(OPENED_O45) |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 후원금액 | CRM | 숫자(회계) | (215밖) | `DIM_MEMBER_ACQUISITION.ACQ_SPNSR_AMT` |  | 필드인벤토리~ |
-| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 가입일 | CRM | 날짜 | (215밖) | `FACT_MEMBER_LIFECYCLE.JOIN_DATE` |  | 필드인벤토리 |
-| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단일 | CRM | 날짜 | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_DATE` |  | 필드인벤토리 |
+| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 가입일 | CRM | 날짜 | (215밖) | `FACT_MEMBER_EVENT.JOIN_DATE` |  | 필드인벤토리 |
+| 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단일 | CRM | 날짜 | (215밖) | `FACT_MEMBER_EVENT.STOP_DATE` |  | 필드인벤토리 |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 중단사유 | CRM | 문자 | 공162 | `DIM_REASON` |  | 지표사전 |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 브랜드 | CRM | 문자 |  | `DIM_MEMBER_ACQUISITION.ACQ_BRAND` |  | 교정등록부(OPENED_O45) |
 | 2. 회원특성 | 2-1. [회원] 주간 중단보고 | 상위캠페인 | CRM | 문자 |  | `DIM_MEMBER_ACQUISITION.ACQ_PARENT_CAMPAIGN_NAME` |  | 교정등록부(OPENED_O45) |
@@ -520,14 +520,14 @@ END-METADATA -->
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 신규기존구분 | CRM | 문자 | 공113 | `DIM_MEMBER.NEW_EXISTING_FLAG` | FMM.NEW_EXISTING_FLAG='신규' | 필드인벤토리 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계개발(명) | CRM | 숫자(회계) | (YTD) | `SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장) · base: FACT_MEMBER_MONTHLY.DEV_MEMBERS` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계개발(건) | CRM | 숫자(회계) | (YTD) | `SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장) · base: FACT_MEMBER_MONTHLY.DEV_CNT` | 기간윈도우: YTD 누계 | SV파생 |
-| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단(명) | CRM | 숫자(회계) | (YTD) | `SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장) · base: FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` | 기간윈도우: YTD 누계 | SV파생 |
+| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단(명) | CRM | 숫자(회계) | (YTD) | `SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장) · base: FACT_MEMBER_EVENT.STOP_MEMBERS` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단(건) | CRM | 숫자(회계) | (YTD) | `SV metric — 누계 = base 의 YTD running sum (P7·물리 미저장) · base: FACT_MEMBER_MONTHLY.STOP_CNT` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단율1(%) | CRM | 백분율 | (SV ratio) | `SV metric — 비율(%) — SV time-intelligence/ratio` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 전년도 증감(%) | CRM | 숫자(회계) | 공60 | `SV metric — 증감율(%) = (당기−전기)/전기×100 (P7 시계열)` | 기간윈도우: 전년 동기 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 전전년도 증감(%) | CRM | 숫자(회계) | 공60 | `SV metric — 증감율(%) = (당기−전기)/전기×100 (P7 시계열)` | 기간윈도우: 전전년 동기 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 개발(건) | CRM | 숫자(회계) | 공4·5·149 | `FACT_MEMBER_MONTHLY.DEV_CNT` |  | 필드인벤토리 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 전월말 활동(건) | CRM | 숫자(회계) | 공37·157 | `FACT_MEMBER_MONTHLY.ACTIVE_CNT` | 기간윈도우: 전월 | 필드인벤토리~ |
-| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` |  | 필드인벤토리 |
+| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` |  | 필드인벤토리 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 중단(건) | CRM | 숫자(회계) | 공35 | `FACT_MEMBER_MONTHLY.STOP_CNT` |  | 필드인벤토리 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 월 중단율(%) | CRM | 백분율 | (SV ratio) | `SV metric — 비율(%) — SV time-intelligence/ratio` |  | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 중단 증감(명) | CRM | 숫자(회계) | 공59 | `SV metric — 증감 = 당기−전기 (P7 시계열)` |  | SV파생 |
@@ -537,8 +537,8 @@ END-METADATA -->
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단 증감(명) | CRM | 숫자(회계) | 공59 | `SV metric — 증감 = 당기−전기 (P7 시계열)` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단 증감(건) | CRM | 숫자(회계) | 공59 | `SV metric — 증감 = 당기−전기 (P7 시계열)` | 기간윈도우: YTD 누계 | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 누계중단율 증감(%p) | CRM | 백분율 | 공60 | `SV metric — 증감율(%) = (당기−전기)/전기×100 (P7 시계열)` | 기간윈도우: YTD 누계 | SV파생 |
-| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 미납중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.UNPAID_STOP_MEMBERS` |  | 필드인벤토리 |
-| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 미납중단(건) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.UNPAID_STOP_CNT` |  | 필드인벤토리 |
+| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 미납중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.UNPAID_STOP_MEMBERS` |  | 필드인벤토리 |
+| 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 미납중단(건) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.UNPAID_STOP_CNT` |  | 필드인벤토리 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 전체 중 미납중단구성비(%) | CRM | 백분율 | (ratio-of-total) | `SV metric — 구성비/비중(%) = 부분/전체×100` |  | SV파생 |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 전체회원 활동(건) | CRM | 숫자(회계) | 공37·157 | `FACT_MEMBER_MONTHLY.ACTIVE_CNT` |  | 필드인벤토리~ |
 | 2. 회원특성 | 2-2. [회원] 월간 중단보고 | 부서 | CRM | 문자 |  | `DIM_MEMBER_ACQUISITION.ACQ_DEPARTMENT (회원분석) / WIDE_MEMBER_EVENT.ORG_DEPARTMENT (개발실적)` |  | 교정등록부(OPENED_O45) |
@@ -616,7 +616,7 @@ END-METADATA -->
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 회원상태 | CRM | 문자 | 공132 | `DIM_MEMBER` |  | 지표사전 |
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 발송상태1 | CRM | 문자 | 공138 | `FACT_MESSAGE_DISPATCH.SEND_STATUS` |  | 필드인벤토리~ |
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 발송상태2 | CRM | 문자 | (215밖) | `FACT_MESSAGE_DISPATCH.SEND_STATUS2` |  | 필드인벤토리 |
-| 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` |  | 필드인벤토리 |
+| 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` |  | 필드인벤토리 |
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 중단(건) | CRM | 숫자(회계) | 공35 | `FACT_MEMBER_MONTHLY.STOP_CNT` |  | 필드인벤토리 |
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 최초캠페인 | CRM | 문자 | 공29 | `DIM_MEMBER.FIRST_CAMPAIGN` |  | 필드인벤토리 |
 | 3. 서비스 | 3-1. [회원] 서비스효과성분석보고 (알림톡/이메일) *일일기준 · CRM 필드 | 최초브랜드 | CRM | 문자 |  | `DIM_MEMBER_ACQUISITION.ACQ_BRAND` |  | 교정등록부(OPENED_O45) |
@@ -647,7 +647,7 @@ END-METADATA -->
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 발송대비 성공율(%) | CRM | 백분율 | (FSE 파생) | `SV metric — 성공율(%) = SUCCESS_MEMBERS/SEND_MEMBERS` |  | SV파생 |
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 개발(명) | CRM | 숫자(회계) | 공148 | `FACT_MEMBER_MONTHLY.DEV_MEMBERS` |  | 필드인벤토리 |
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 개발(건) | CRM | 숫자(회계) | 공4·5·149 | `FACT_MEMBER_MONTHLY.DEV_CNT` |  | 필드인벤토리 |
-| 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_LIFECYCLE.STOP_MEMBERS` |  | 필드인벤토리 |
+| 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 중단(명) | CRM | 숫자(회계) | (215밖) | `FACT_MEMBER_EVENT.STOP_MEMBERS` |  | 필드인벤토리 |
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 중단(건) | CRM | 숫자(회계) | 공35 | `FACT_MEMBER_MONTHLY.STOP_CNT` |  | 필드인벤토리 |
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 발송 대비 개발명(%) | CRM | 백분율 | (SV ratio) | `SV metric — 비율(%) — SV time-intelligence/ratio` |  | SV파생 |
 | 3. 서비스 | 3-2. [회원] 증액마케팅보고 *월간기준 · CRM 필드 | 발송 대비 중단명(%) | CRM | 백분율 | (SV ratio) | `SV metric — 비율(%) — SV time-intelligence/ratio` |  | SV파생 |

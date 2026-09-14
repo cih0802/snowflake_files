@@ -53,10 +53,6 @@ DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,CAMPAIGN_OPEN_D
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,ORG_SK,캠페인 귀속조직,"NUMBER(38,0)",Y,FK,DIM_ORG.ORG_SK,캠페인 귀속조직,
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,PARENT_CAMPAIGN_NAME,상위캠페인명,VARCHAR,Y,,,상위캠페인명. 코드id:MM294.,
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,PROMO_METHOD_NAME,홍보방법명,VARCHAR,Y,,,홍보방법명. 코드id:CM008.,
-DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,MKTG_CAMPAIGN_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK,대리키 (PK),
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,SPNSR_DIV_CD,후원구분코드,VARCHAR,Y,,,후원구분 원천코드(CM035): 1=정기후원 · 2=일시후원. 코드id:CM035.,
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,SPNSR_DIV_NM,후원구분명,VARCHAR,Y,,,후원구분명. 코드id:CM035.,
@@ -66,6 +62,10 @@ DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,CMMN_BRND,공�
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,CMMN_BRND_NM,공통브랜드명,VARCHAR,Y,,,공통브랜드명. 코드id:MM297.,
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,MKTG_UTM,마케팅 UTM,"NUMBER(38,0)",Y,,,UTM 원천코드.,
 DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,MKTG_UTM_NM,UTM 라벨,VARCHAR,Y,,,UTM 라벨.,
+DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+DIM_CAMPAIGN,캠페인 차원,1캠페인 (CAMPAIGN_SK),DIMENSION,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 DIM_DATE,날짜 차원,1일 (DATE_SK),DIMENSION,DATE_SK,YYYYMMDD,"NUMBER(8,0)",N,PK,,YYYYMMDD,
 DIM_DATE,날짜 차원,1일 (DATE_SK),DIMENSION,FULL_DATE,실제 일자,DATE,Y,,,실제 일자,
 DIM_DATE,날짜 차원,1일 (DATE_SK),DIMENSION,YEAR,년,"NUMBER(4,0)",Y,,,년,
@@ -152,21 +152,11 @@ DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_SPNSR_AMT,ACQ_SPNSR_AMT,"NUMBER(18,0)",Y,,,ACQ_SPNSR_AMT (#38).,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_BRAND,획득 캠페인의 브랜드,VARCHAR,Y,,,획득 캠페인의 브랜드.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_CAMPAIGN_NAME,현재 최신 캠페인명 (Master 실시간 조인 · MSTR 대조용),VARCHAR,Y,,,현재 최신 캠페인명 (Master 실시간 조인 · MSTR 대조용).,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_CAMPAIGN_NAME_AT_ACQ,회원 획득 당시 캠페인명 (Snapshot 기반 시점 동결),VARCHAR,Y,,,회원 획득 당시 캠페인명 (Snapshot 기반 시점 동결).,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_PARENT_CAMPAIGN_NAME,획득 캠페인의 **상위캠페인**명,VARCHAR,Y,,,획득 캠페인의 **상위캠페인**명. 코드id:MM294.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_PROMO_METHOD_NAME,획득 캠페인의 홍보방법명,VARCHAR,Y,,,획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 코드id:CM008.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_MARKETING_CAMPAIGN,획득 캠페인의 마케팅캠페인,VARCHAR,Y,,,획득 캠페인의 마케팅캠페인.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_DEPARTMENT,현재 최신 부서명 (Master 실시간 조인 · MSTR 대조용),VARCHAR,Y,,,현재 최신 부서명 (Master 실시간 조인 · MSTR 대조용).,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_DEPARTMENT_AT_ACQ,회원 획득 당시 부서명 (Snapshot 기반 시점 동결),VARCHAR,Y,,,회원 획득 당시 부서명 (Snapshot 기반 시점 동결).,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_SPONSORSHIP_NAME,ACQ_SPONSORSHIP_NAME,VARCHAR,Y,,,ACQ_SPONSORSHIP_NAME (#123).,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,FIRST_STOP_DATE_SK,대리키,"NUMBER(8,0)",Y,,,대리키 (PK),
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,FIRST_STOP_REASON_NM,FIRST_STOP_REASON_NM,VARCHAR,Y,,,FIRST_STOP_REASON_NM. 코드id:MM005.,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,TENURE_DAYS,유지기간(일) = 최초 중단일 − 획득일,"NUMBER(9,0)",Y,,,유지기간(일) = 최초 중단일 − 획득일.,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,IS_12M_OBSERVABLE,IS_12M_OBSERVABLE,BOOLEAN,Y,,,IS_12M_OBSERVABLE.,
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_INFLOW_PATH,획득 캠페인의 모집 채널명(MM293 라벨),VARCHAR,Y,,,획득 캠페인의 모집 채널명(MM293 라벨). 코드id:MM293.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_CAMPAIGN_TYPE,획득 캠페인의 카테고리 라벨(MM294),VARCHAR,Y,,,획득 캠페인의 카테고리 라벨(MM294). 코드id:MM294.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_DOMESTIC_OVERSEAS,ACQ_DOMESTIC_OVERSEAS,VARCHAR,Y,,,ACQ_DOMESTIC_OVERSEAS. 코드id:MM295.,
@@ -175,6 +165,14 @@ DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_MKTG_UTM_NM,ACQ_MKTG_UTM_NM,VARCHAR,Y,,,ACQ_MKTG_UTM_NM.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_SPNSR_DIV_NM,획득 캠페인의 후원구분명(CM035 라벨: 정기후원/일시후원),VARCHAR,Y,,,획득 캠페인의 후원구분명(CM035 라벨: 정기후원/일시후원). 코드id:CM035.,
 DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,ACQ_CPR_DIV_NM,획득 캠페인의 법인구분명(CM019 라벨: 통합/사단/사복),VARCHAR,Y,,,획득 캠페인의 법인구분명(CM019 라벨: 통합/사단/사복). 코드id:CM019.,
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,FIRST_STOP_DATE_SK,대리키,"NUMBER(8,0)",Y,,,대리키 (PK),
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,FIRST_STOP_REASON_NM,FIRST_STOP_REASON_NM,VARCHAR,Y,,,FIRST_STOP_REASON_NM. 코드id:MM005.,
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,TENURE_DAYS,유지기간(일) = 최초 중단일 − 획득일,"NUMBER(9,0)",Y,,,유지기간(일) = 최초 중단일 − 획득일.,
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,IS_12M_OBSERVABLE,IS_12M_OBSERVABLE,BOOLEAN,Y,,,IS_12M_OBSERVABLE.,
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+DIM_MEMBER_ACQUISITION,회원 획득 귀속 차원,1회원 획득시점 (MEMBER_DK),DIMENSION,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 DIM_MEMBER_IDENTITY,회원 신원 브리지 차원,MEMBER_DK × BigQuery member_id (1신원브리지),DIMENSION,IDENTITY_SK,회원 식별 대리키,"NUMBER(38,0)",N,PK,,"회원 식별 대리키 (ETL 일련번호, PK)",
 DIM_MEMBER_IDENTITY,회원 신원 브리지 차원,MEMBER_DK × BigQuery member_id (1신원브리지),DIMENSION,MEMBER_DK,불변 회원키,VARCHAR,N,"DK,FK",DIM_MEMBER(MEMBER_DK) ※비강제(SCD2/비유일),불변 회원키,SCD2 다중버전 — 현재행(IS_CURRENT) 경유 조인(중복 주의); [실측06-30]VARCHAR(10)
 DIM_MEMBER_IDENTITY,회원 신원 브리지 차원,MEMBER_DK × BigQuery member_id (1신원브리지),DIMENSION,MEMBER_NO,회원번호,VARCHAR,N,,,회원번호(#110),
@@ -353,11 +351,11 @@ FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅�
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,DAY_OF_WEEK,"요일 (degen, AD_DATE 파생)",VARCHAR,Y,,,"요일 (degen, AD_DATE 파생)",
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,WEEK_OF_YEAR,"주차 (degen, AD_DATE 파생)","NUMBER(2,0)",Y,,,"주차 (degen, AD_DATE 파생)",
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,AD_SOURCE_TYPE,광고 원천유형,VARCHAR,Y,,,AD_SOURCE_TYPE.,
+FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,MKTG_CAMPAIGN_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK,대리키 (PK),
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-FACT_AD_PERFORMANCE,광고성과 코어 팩트,AD_PERF_DK (일자 × 마케팅캠페인 × 소재 × 기기),FACT,MKTG_CAMPAIGN_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK,대리키 (PK),
 FACT_BIGQUERY_BEHAVIOR,BigQuery 행동 팩트,DATE_SK × IDENTITY_SK × BIGQUERY_EVENT_SK × BIGQUERY_SOURCE_SK × DEVICE_SK × CAMPAIGN_SK × PAGE,FACT,DATE_SK,행동 발생일 YYYYMMDD (FK→DIM_DATE),"NUMBER(8,0)",N,FK,DIM_DATE.DATE_SK,행동 발생일 YYYYMMDD (FK→DIM_DATE),
 FACT_BIGQUERY_BEHAVIOR,BigQuery 행동 팩트,DATE_SK × IDENTITY_SK × BIGQUERY_EVENT_SK × BIGQUERY_SOURCE_SK × DEVICE_SK × CAMPAIGN_SK × PAGE,FACT,IDENTITY_SK,대리키,"NUMBER(38,0)",N,FK,DIM_MEMBER_IDENTITY.IDENTITY_SK,대리키,
 FACT_BIGQUERY_BEHAVIOR,BigQuery 행동 팩트,DATE_SK × IDENTITY_SK × BIGQUERY_EVENT_SK × BIGQUERY_SOURCE_SK × DEVICE_SK × CAMPAIGN_SK × PAGE,FACT,BIGQUERY_EVENT_SK,BigQuery 이벤트 대리키,"NUMBER(38,0)",N,FK,DIM_BIGQUERY_EVENT.BIGQUERY_EVENT_SK,BigQuery 이벤트 분류 (FK→DIM_BIGQUERY_EVENT),
@@ -421,8 +419,8 @@ FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,WAIT_CNT,대기�
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,CANCEL_CNT,취소인원,"NUMBER(38,0)",Y,,,취소인원. 코드id:MS006.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,CONFIRM_CNT,신청확정인원,"NUMBER(38,0)",Y,,,신청확정인원.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,PARTICIPATE_CNT,참여인원,"NUMBER(38,0)",Y,,,참여인원.,
-FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,ABSENT_CNT,불참인원,"NUMBER(38,0)",Y,,,불참인원. 코드id:MS006.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,PARTICIPANT_CNT,참여자수,"NUMBER(38,0)",Y,,,참여자수.,
+FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,ABSENT_CNT,불참인원,"NUMBER(38,0)",Y,,,불참인원. 코드id:MS006.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,PARTICIPATION_TIMES,참여횟수,"NUMBER(38,0)",Y,,,참여횟수.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,WAIT_TIMES,대기횟수,"NUMBER(38,0)",Y,,,대기횟수.,
 FACT_EVENT_ATTENDANCE,행사 출석/참여 팩트,1참여,FACT,ABSENT_TIMES,불참횟수,"NUMBER(38,0)",Y,,,불참횟수.,
@@ -467,10 +465,6 @@ FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBE
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,STOPPED_MEMBERS,누적 이탈 회원수,"NUMBER(38,0)",Y,,,누적 이탈 회원수.,
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,STOPPED_12M_MEMBERS,12개월 내 이탈 회원수,"NUMBER(38,0)",Y,,,12개월 내 이탈 회원수.,
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,OBSERVABLE_12M_MEMBERS,12개월 이탈률의 분모 회원수,"NUMBER(38,0)",Y,,,12개월 이탈률의 분모 회원수.,
-FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_ORG_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_ORG.ORG_SK,대리키 (PK),
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_SPONSORSHIP_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_SPONSORSHIP.SPONSORSHIP_SK,대리키 (PK),
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_MBER_INFLOW_PATH_CD,획득 캠페인의 모집채널 코드(MM293),"NUMBER(10,0)",Y,,,획득 캠페인의 모집채널 코드(MM293). 코드id:MM293.,
@@ -494,6 +488,10 @@ FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBE
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_BRAND,획득 캠페인의 브랜드명,VARCHAR,Y,,,획득 캠페인의 브랜드명 — 적재 시점 동결값,
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_PARENT_CAMPAIGN_NAME,ACQ_PARENT_CAMPAIGN_NAME,VARCHAR,Y,,,ACQ_PARENT_CAMPAIGN_NAME.,
 FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,ACQ_PROMO_METHOD_NAME,획득 캠페인의 홍보방법명(CM008 라벨),VARCHAR,Y,,,획득 캠페인의 홍보방법명(CM008 라벨). 코드id:CM008.,
+FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+FACT_MEMBER_COHORT,회원 획득 코호트 팩트,1회원 획득코호트 (MEMBER_DK),FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,MONTH_KEY,월 conform 키 YYYYMM,"NUMBER(6,0)",N,PK,,월 conform 키 YYYYMM.,
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,CAL_YEAR,FLOOR(MONTH_KEY/100),"NUMBER(4,0)",Y,,,FLOOR(MONTH_KEY/100) — 연도,
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,CAL_MONTH,"MOD(MONTH_KEY,100)","NUMBER(2,0)",Y,,,"MOD(MONTH_KEY,100) — 월",
@@ -517,6 +515,61 @@ FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 FACT_MEMBER_DEV_ACHIEVEMENT,회원개발 목표 대비 실적 월 Conform 팩트,1달성,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DATE_SK,사건일,"NUMBER(8,0)",N,FK,DIM_DATE.DATE_SK,사건일,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MEMBER_DK,상태전이 대상 회원 (불변키),VARCHAR,N,"DK,FK",DIM_MEMBER(MEMBER_DK) ※비강제(SCD2/비유일),상태전이 대상 회원 (불변키),SCD2 다중버전 — 현재행(IS_CURRENT) 경유 조인(중복 주의); [실측06-30]VARCHAR(10)
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,EVENT_TYPE,EVENT_TYPE,VARCHAR,N,,,EVENT_TYPE.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),"NUMBER(38,0)",Y,FK,DIM_CAMPAIGN.CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,SPONSORSHIP_SK,후원사업 (FK→DIM_SPONSORSHIP),"NUMBER(38,0)",Y,FK,DIM_SPONSORSHIP.SPONSORSHIP_SK,후원사업 (FK→DIM_SPONSORSHIP),
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,ORG_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_ORG.ORG_SK,대리키,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,REASON_SK,중단/미납 사유 (FK→DIM_REASON),"NUMBER(38,0)",Y,FK,DIM_REASON.REASON_SK,중단/미납 사유 (FK→DIM_REASON),
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DVLP_DIV_CD,개발구분코드,VARCHAR,Y,,,개발구분코드. 코드id:MM015.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DVLP_DIV_NM,개발구분명,VARCHAR,Y,,,개발구분명. 코드id:MM015.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,SPNSR_AMT,후원금액(원),"NUMBER(18,0)",Y,,,후원금액(원) (#38).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DEV_CNT,개발(건),"NUMBER(18,4)",Y,,,개발(건) (#149).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DEV_MEMBERS,「명」이 아니다,"NUMBER(38,0)",Y,,,「명」이 아니다 (#148).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_CNT,중단(건),"NUMBER(18,4)",Y,,,중단(건) (#35),
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_MEMBERS,「명」이 아니다,"NUMBER(38,0)",Y,,,「명」이 아니다.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,UNPAID_STOP_CNT,미납중단(건),"NUMBER(18,4)",Y,,,미납중단(건),
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,UNPAID_STOP_MEMBERS,미납중단(명),"NUMBER(38,0)",Y,,,미납중단(명).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,JOIN_DATE,가입일,DATE,Y,,,가입일,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_DATE,중단일,DATE,Y,,,중단일,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_REASON,중단사유,VARCHAR,Y,,,중단사유,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_CHANNEL,중단채널,VARCHAR,Y,,,중단채널,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_REASON_NM,중단사유명,VARCHAR,Y,,,중단사유명 (#162). 코드id:MM005.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,STOP_CHANNEL_NM,중단경로명,VARCHAR,Y,,,중단경로명. 코드id:MM287.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,NEW_EXISTING_FLAG,신규기존,VARCHAR,Y,,,신규기존 (#113). [사유:원천 부재],
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,AGE_AT_EVENT,연령대 코드 raw,"NUMBER(2,0)",Y,,,연령대 코드 raw. 코드id:CM014.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,AGE_BAND_AT_EVENT,연령대명,VARCHAR,Y,,,연령대명. 코드id:CM014.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,AREA_CD_AT_EVENT,지역 코드 raw,VARCHAR,Y,,,지역 코드 raw (#131). 코드id:CM018. [사유:부서차원 산출불가],
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,REGION_AT_EVENT,지역명,VARCHAR,Y,,,지역명 (#131). 코드id:CM018.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,SEX_AT_EVENT,성별 코드 raw,VARCHAR,Y,,,성별 코드 raw. 코드id:CM013.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,GENDER_AT_EVENT,성별명,VARCHAR,Y,,,성별명. 코드id:CM013.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CAMPAIGN_STOP_CNT,캠페인 귀속 중단(건),"NUMBER(18,4)",Y,,,캠페인 귀속 중단(건). 코드id:MM015.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MBER_INFLOW_PATH_CD_AT_EVENT,개발인입경로코드(MM293),"NUMBER(10,0)",Y,,,개발인입경로코드(MM293). 코드id:MM293.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MBER_INFLOW_PATH_NM_AT_EVENT,개발인입경로명(MM293 라벨),VARCHAR,Y,,,개발인입경로명(MM293 라벨). 코드id:MM293.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_CTGR_CD_AT_EVENT,캠페인 카테고리코드(MM294),"NUMBER(10,0)",Y,,,캠페인 카테고리코드(MM294). 코드id:MM294.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_CTGR_NM_AT_EVENT,"캠페인 카테고리명(MM294 라벨, 현업 '주요캠페인' 축)",VARCHAR,Y,,,"캠페인 카테고리명(MM294 라벨, 현업 '주요캠페인' 축). 코드id:MM294.",
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_TYPE1_BSN_AT_EVENT,"캠페인 유형1 코드(MM295, 국내/통합/해외)","NUMBER(10,0)",Y,,,"캠페인 유형1 코드(MM295, 국내/통합/해외). 코드id:MM295.",
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_TYPE1_NM_AT_EVENT,캠페인 유형1명(MM295 라벨: 국내/통합/해외),VARCHAR,Y,,,캠페인 유형1명(MM295 라벨: 국내/통합/해외). 코드id:MM295.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_TYPE2_BSN_AT_EVENT,"캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업)","NUMBER(10,0)",Y,,,"캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업). 코드id:MM296.",
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMPGN_TYPE2_NM_AT_EVENT,캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업),VARCHAR,Y,,,캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업). 코드id:MM296.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MKTG_CMPGN_CD_AT_EVENT,MKTG_CMPGN_CD_AT_EVENT,"NUMBER(10,0)",Y,,,MKTG_CMPGN_CD_AT_EVENT.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MKTG_CMPGN_NM_AT_EVENT,마케팅 캠페인명(Q16 라벨),VARCHAR,Y,,,마케팅 캠페인명(Q16 라벨).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMMN_BRND_AT_EVENT,MM297 공통브랜드 코드,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. 코드id:MM297.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CMMN_BRND_NM_AT_EVENT,MM297 공통브랜드명,VARCHAR,Y,,,MM297 공통브랜드명. 코드id:MM297.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MKTG_UTM_AT_EVENT,UTM 코드,"NUMBER(10,0)",Y,,,UTM 코드(TM_CM_MKTNG_UTM.MK_UTM).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,MKTG_UTM_NM_AT_EVENT,UTM 라벨,VARCHAR,Y,,,UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,SPNSR_DIV_CD_AT_EVENT,후원구분 코드(CM035: 1=정기후원·2=일시후원),VARCHAR,Y,,,후원구분 코드(CM035: 1=정기후원·2=일시후원). 코드id:CM035.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,SPNSR_DIV_NM_AT_EVENT,후원구분명(CM035 라벨),VARCHAR,Y,,,후원구분명(CM035 라벨). 코드id:CM035.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CPR_DIV_CD_AT_EVENT,법인구분 코드(CM019: A=통합·I=사단·S=사복),VARCHAR,Y,,,법인구분 코드(CM019: A=통합·I=사단·S=사복). 코드id:CM019.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,CPR_DIV_NM_AT_EVENT,법인구분명(CM019 라벨),VARCHAR,Y,,,법인구분명(CM019 라벨). 코드id:CM019.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,BRAND_AT_EVENT,브랜드명,VARCHAR,Y,,,브랜드명 — 사건 시점 동결값. 중단원천 행은 NULL,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,PARENT_CAMPAIGN_NAME_AT_EVENT,상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨),VARCHAR,Y,,,상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨).,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,PROMO_METHOD_NAME_AT_EVENT,홍보방법명(CM008 라벨),VARCHAR,Y,,,홍보방법명(CM008 라벨). 코드id:CM008.,
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+FACT_MEMBER_EVENT,회원 이벤트 팩트,DATE_SK × MEMBER_DK × EVENT_TYPE,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,MONTH_KEY,월 conform 키 YYYYMM,"NUMBER(6,0)",Y,,,월 conform 키 YYYYMM.,
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,MEMBER_DK,불변 비즈니스 식별자,VARCHAR,Y,DK,,불변 비즈니스 식별자,
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,SPONSORSHIP_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_SPONSORSHIP.SPONSORSHIP_SK,대리키 (PK),
@@ -537,61 +590,6 @@ FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK ×
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 FACT_MEMBER_FEE,회비 분해 팩트,MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × PAYMENT_SK,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DATE_SK,사건일,"NUMBER(8,0)",N,FK,DIM_DATE.DATE_SK,사건일,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MEMBER_DK,상태전이 대상 회원 (불변키),VARCHAR,N,DK,,상태전이 대상 회원 (불변키),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,EVENT_TYPE,EVENT_TYPE,VARCHAR,N,,,EVENT_TYPE.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),"NUMBER(38,0)",Y,FK,DIM_CAMPAIGN.CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,SPONSORSHIP_SK,후원사업 (FK→DIM_SPONSORSHIP),"NUMBER(38,0)",Y,FK,DIM_SPONSORSHIP.SPONSORSHIP_SK,후원사업 (FK→DIM_SPONSORSHIP),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,ORG_SK,대리키,"NUMBER(38,0)",Y,FK,DIM_ORG.ORG_SK,대리키,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,REASON_SK,중단/미납 사유 (FK→DIM_REASON),"NUMBER(38,0)",Y,FK,DIM_REASON.REASON_SK,중단/미납 사유 (FK→DIM_REASON),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DVLP_DIV_CD,개발구분코드,VARCHAR,Y,,,개발구분코드. 코드id:MM015.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DVLP_DIV_NM,개발구분명,VARCHAR,Y,,,개발구분명. 코드id:MM015.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,SPNSR_AMT,후원금액(원),"NUMBER(18,0)",Y,,,후원금액(원) (#38).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DEV_CNT,개발(건),"NUMBER(18,4)",Y,,,개발(건) (#149).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DEV_MEMBERS,「명」이 아니다,"NUMBER(38,0)",Y,,,「명」이 아니다 (#148).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_CNT,중단(건),"NUMBER(18,4)",Y,,,중단(건) (#35),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_MEMBERS,「명」이 아니다,"NUMBER(38,0)",Y,,,「명」이 아니다.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,UNPAID_STOP_CNT,미납중단(건),"NUMBER(18,4)",Y,,,미납중단(건),
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,UNPAID_STOP_MEMBERS,미납중단(명),"NUMBER(38,0)",Y,,,미납중단(명).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,JOIN_DATE,가입일,DATE,Y,,,가입일,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_DATE,중단일,DATE,Y,,,중단일,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_REASON,중단사유,VARCHAR,Y,,,중단사유,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_CHANNEL,중단채널,VARCHAR,Y,,,중단채널,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_REASON_NM,중단사유명,VARCHAR,Y,,,중단사유명 (#162). 코드id:MM005.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,STOP_CHANNEL_NM,중단경로명,VARCHAR,Y,,,중단경로명. 코드id:MM287.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,NEW_EXISTING_FLAG,신규기존,VARCHAR,Y,,,신규기존 (#113). [사유:원천 부재],
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,AGE_AT_EVENT,연령대 코드 raw,"NUMBER(2,0)",Y,,,연령대 코드 raw. 코드id:CM014.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,AGE_BAND_AT_EVENT,연령대명,VARCHAR,Y,,,연령대명. 코드id:CM014.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,AREA_CD_AT_EVENT,지역 코드 raw,VARCHAR,Y,,,지역 코드 raw (#131). 코드id:CM018. [사유:부서차원 산출불가],
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,REGION_AT_EVENT,지역명,VARCHAR,Y,,,지역명 (#131). 코드id:CM018.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,SEX_AT_EVENT,성별 코드 raw,VARCHAR,Y,,,성별 코드 raw. 코드id:CM013.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,GENDER_AT_EVENT,성별명,VARCHAR,Y,,,성별명. 코드id:CM013.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CAMPAIGN_STOP_CNT,캠페인 귀속 중단(건),"NUMBER(18,4)",Y,,,캠페인 귀속 중단(건). 코드id:MM015.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MBER_INFLOW_PATH_CD_AT_EVENT,개발인입경로코드(MM293),"NUMBER(10,0)",Y,,,개발인입경로코드(MM293). 코드id:MM293.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MBER_INFLOW_PATH_NM_AT_EVENT,개발인입경로명(MM293 라벨),VARCHAR,Y,,,개발인입경로명(MM293 라벨). 코드id:MM293.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_CTGR_CD_AT_EVENT,캠페인 카테고리코드(MM294),"NUMBER(10,0)",Y,,,캠페인 카테고리코드(MM294). 코드id:MM294.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_CTGR_NM_AT_EVENT,"캠페인 카테고리명(MM294 라벨, 현업 '주요캠페인' 축)",VARCHAR,Y,,,"캠페인 카테고리명(MM294 라벨, 현업 '주요캠페인' 축). 코드id:MM294.",
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_TYPE1_BSN_AT_EVENT,"캠페인 유형1 코드(MM295, 국내/통합/해외)","NUMBER(10,0)",Y,,,"캠페인 유형1 코드(MM295, 국내/통합/해외). 코드id:MM295.",
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_TYPE1_NM_AT_EVENT,캠페인 유형1명(MM295 라벨: 국내/통합/해외),VARCHAR,Y,,,캠페인 유형1명(MM295 라벨: 국내/통합/해외). 코드id:MM295.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_TYPE2_BSN_AT_EVENT,"캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업)","NUMBER(10,0)",Y,,,"캠페인 유형2 코드(MM296, 굿즈/기타/사례/사업). 코드id:MM296.",
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMPGN_TYPE2_NM_AT_EVENT,캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업),VARCHAR,Y,,,캠페인 유형2명(MM296 라벨: 굿즈/기타/사례/사업). 코드id:MM296.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MKTG_CMPGN_CD_AT_EVENT,MKTG_CMPGN_CD_AT_EVENT,"NUMBER(10,0)",Y,,,MKTG_CMPGN_CD_AT_EVENT.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MKTG_CMPGN_NM_AT_EVENT,마케팅 캠페인명(Q16 라벨),VARCHAR,Y,,,마케팅 캠페인명(Q16 라벨).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMMN_BRND_AT_EVENT,MM297 공통브랜드 코드,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. 코드id:MM297.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CMMN_BRND_NM_AT_EVENT,MM297 공통브랜드명,VARCHAR,Y,,,MM297 공통브랜드명. 코드id:MM297.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MKTG_UTM_AT_EVENT,UTM 코드,"NUMBER(10,0)",Y,,,UTM 코드(TM_CM_MKTNG_UTM.MK_UTM).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,MKTG_UTM_NM_AT_EVENT,UTM 라벨,VARCHAR,Y,,,UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,SPNSR_DIV_CD_AT_EVENT,후원구분 코드(CM035: 1=정기후원·2=일시후원),VARCHAR,Y,,,후원구분 코드(CM035: 1=정기후원·2=일시후원). 코드id:CM035.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,SPNSR_DIV_NM_AT_EVENT,후원구분명(CM035 라벨),VARCHAR,Y,,,후원구분명(CM035 라벨). 코드id:CM035.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CPR_DIV_CD_AT_EVENT,법인구분 코드(CM019: A=통합·I=사단·S=사복),VARCHAR,Y,,,법인구분 코드(CM019: A=통합·I=사단·S=사복). 코드id:CM019.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,CPR_DIV_NM_AT_EVENT,법인구분명(CM019 라벨),VARCHAR,Y,,,법인구분명(CM019 라벨). 코드id:CM019.,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,BRAND_AT_EVENT,브랜드명,VARCHAR,Y,,,브랜드명 — 사건 시점 동결값. 중단원천 행은 NULL,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,PARENT_CAMPAIGN_NAME_AT_EVENT,상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨),VARCHAR,Y,,,상위캠페인명(UPPER_CMPGN_CD 자기조인 라벨).,
-FACT_MEMBER_LIFECYCLE,회원 생애주기 전이 팩트,1상태전이,FACT,PROMO_METHOD_NAME_AT_EVENT,홍보방법명(CM008 라벨),VARCHAR,Y,,,홍보방법명(CM008 라벨). 코드id:CM008.,
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,MONTH_KEY,YYYYMM,"NUMBER(6,0)",N,FK,DIM_DATE(MONTH_KEY) ※비강제(월conform/비유일),YYYYMM,"타입(6,0)≠DATE_SK(8,0) — DIM_DATE 월초행/월 conform 뷰 경유 조인; FMM PK/UNIQUE 미설정 — grain 미확정·ETL 멱등성 의존(O8)"
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,MEMBER_DK,월 스냅샷 대상 회원 (불변키),VARCHAR,N,"DK,FK",DIM_MEMBER(MEMBER_DK) ※비강제(SCD2/비유일),월 스냅샷 대상 회원 (불변키),SCD2 다중버전 — 현재행(IS_CURRENT) 경유 조인(중복 주의); FMM PK/UNIQUE 미설정 — grain 미확정·ETL 멱등성 의존(O8); [실측06-30]VARCHAR(10)
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),"NUMBER(38,0)",Y,FK,DIM_CAMPAIGN.CAMPAIGN_SK,캠페인 (FK→DIM_CAMPAIGN),
@@ -639,7 +637,6 @@ FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,SPONSOR_MONTHS
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,SPONSOR_YEARS,후원기간(년),"NUMBER(9,2)",Y,,,후원기간(년) (#128),
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,PAID_MONTHS,납입개월수,"NUMBER(9,0)",Y,,,납입개월수 (#129),
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,NEW_EXISTING_FLAG,신규/기존 구분,VARCHAR,Y,,,신규/기존 구분. [사유:원천 부재],
-FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,UNPAID_FLAG_BOM,월초 미납회원 여부(=전월말 상태),BOOLEAN,Y,,,월초 미납회원 여부(=전월말 상태) (#80).,미납회원 판정원천 미확정: PAY_STAT_CD(C-3 납입기준) vs MM010 회원상태(신규/장기미납) — 확인필요
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,UNPAID_FLAG_EOM,월말 미납회원 여부,BOOLEAN,Y,,,월말 미납회원 여부 (#80).,
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,AMT_INCREASE_CUM_CNT,AMT_INCREASE_CUM_CNT,"NUMBER(38,0)",Y,,,AMT_INCREASE_CUM_CNT (#151).,
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,AMT_DECREASE_CUM_CNT,AMT_DECREASE_CUM_CNT,"NUMBER(38,0)",Y,,,AMT_DECREASE_CUM_CNT (#38).,
@@ -651,6 +648,7 @@ FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,DW_SOURCE_SYST
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+FACT_MEMBER_MONTHLY,회원 월 팩트,MONTH_KEY × MEMBER_DK,FACT,UNPAID_FLAG_BOM,월초 미납회원 여부(=전월말 상태),BOOLEAN,Y,,,월초 미납회원 여부(=전월말 상태) (#80).,미납회원 판정원천 미확정: PAY_STAT_CD(C-3 납입기준) vs MM010 회원상태(신규/장기미납) — 확인필요
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,MEMBER_DK,회원 (불변키),VARCHAR,N,DK,,회원 (불변키). ※비강제 FK→DIM_MEMBER,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,SPNSR_NO,후원번호(Q15),VARCHAR,N,,,후원번호(Q15).,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,SPNSR_BSNS_NO,"후원사업번호(회원별 약정 일련번호, Q15)","NUMBER(19,0)",N,,,"후원사업번호(회원별 약정 일련번호, Q15).",
@@ -660,10 +658,6 @@ FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,IS_
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,START_MONTH_KEY,START_MONTH_KEY,"NUMBER(6,0)",Y,,,START_MONTH_KEY.,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DSCNTC_MONTH_KEY,중단 월키 YYYYMM,"NUMBER(6,0)",Y,,,중단 월키 YYYYMM.,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,SPNSR_AMT,SPNSR_AMT,"NUMBER(38,0)",Y,,,SPNSR_AMT.,
-FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_MBER_INFLOW_PATH_CD,대표캠페인의 모집채널 코드(MM293),"NUMBER(10,0)",Y,,,대표캠페인의 모집채널 코드(MM293). 코드id:MM293.,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_MBER_INFLOW_PATH_NM,대표캠페인의 모집채널명(MM293 라벨),VARCHAR,Y,,,대표캠페인의 모집채널명(MM293 라벨) — 동결값,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_CMPGN_CTGR_CD,대표캠페인의 카테고리 코드(MM294),"NUMBER(10,0)",Y,,,대표캠페인의 카테고리 코드(MM294). 코드id:MM294.,
@@ -685,6 +679,10 @@ FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_BRAND,대표캠페인의 브랜드명,VARCHAR,Y,,,대표캠페인의 브랜드명 — 동결값,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_PARENT_CAMPAIGN_NAME,ACQ_PARENT_CAMPAIGN_NAME,VARCHAR,Y,,,ACQ_PARENT_CAMPAIGN_NAME.,
 FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,ACQ_PROMO_METHOD_NAME,대표캠페인의 홍보방법명(CM008 라벨),VARCHAR,Y,,,대표캠페인의 홍보방법명(CM008 라벨) — 동결값,
+FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+FACT_MEMBER_SPONSORSHIP_SPAN,회원×후원약정 기간 팩트,1약정,FACT,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 FACT_MESSAGE_DISPATCH,메시지 발송 및 결과 팩트,1발송,FACT,DATE_SK,발송일,"NUMBER(8,0)",N,FK,DIM_DATE.DATE_SK,발송일,
 FACT_MESSAGE_DISPATCH,메시지 발송 및 결과 팩트,1발송,FACT,MEMBER_DK,발송 대상 회원 (불변키),VARCHAR,N,DK,,발송 대상 회원 (불변키),
 FACT_MESSAGE_DISPATCH,메시지 발송 및 결과 팩트,1발송,FACT,SERVICE_SK,발송 서비스 유형 (FK→DIM_SERVICE),"NUMBER(38,0)",N,FK,DIM_SERVICE.SERVICE_SK,발송 서비스 유형 (FK→DIM_SERVICE),
@@ -1036,9 +1034,9 @@ WIDE_EVENT_PARTICIPATION,행사 참여 팩트 평탄화,DATE_SK × MEMBER_DK × 
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DATE_SK,사건일 YYYYMMDD,"NUMBER(8,0)",N,,,사건일 YYYYMMDD,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,MEMBER_DK,상태전이 대상 회원 (불변키),VARCHAR,N,DK,,상태전이 대상 회원 (불변키),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,EVENT_TYPE,상태전이 유형(개발/중단/증액/미납중단),VARCHAR,N,,,상태전이 유형(개발/중단/증액/미납중단),
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DVLP_DIV_CD,개발구분 코드 raw,VARCHAR,Y,,,FACT_MEMBER_LIFECYCLE.DVLP_DIV_CD — 개발구분 코드 raw. 코드그룹 **MM015(개발구분)**. 코드사전 = 1신규·2증액·3감액·4재후원·5후원중단. 실적재(TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD)에 **사전 전종이 등장**한다. 🔴MM015 는 회원상태 MM010 이 **아니다** — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다(회원상태는 MBER_STAT_CD). ⚠️중단원천(EVENT_TYPE='STOP') 행은 원천에 이 컬럼이 부재해 NULL 이다. 라벨 = DVLP_DIV_NM.,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DVLP_DIV_NM,개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단,VARCHAR,Y,,,FACT_MEMBER_LIFECYCLE.DVLP_DIV_NM — 개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단. 코드 = DVLP_DIV_CD. MM015 는 폐지코드가 없고 실적재가 사전과 일치한다. 🔴🔴값 '후원중단' 은 EVENT_TYPE='STOP' 과 **동일 사건이 거의 전부 중복 존재**한다(동일 회원·일자) — 두 축을 합산하면 이중계상이다(O24 · 현업확인 대기).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,SPNSR_AMT,후원금액(원) raw,"NUMBER(18,0)",Y,,,FACT_MEMBER_LIFECYCLE.SPNSR_AMT — 후원금액(원) raw. 원천 TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT 무변환 전파. 🔴감액·후원중단 사건은 **음수**다 — 무조건 SUM 하면 개발금액이 상계된다. 🔴정본 공#38 감액(건)·#151 증액(건)이 **금액을 만원 단위로 나눈 값**이라는 규약이므로 원금액을 보존한다(설계 §1·CONF-2) — 이 컬럼을 그대로 '건수'로 쓰지 말 것. ⚠️중단원천 행은 NULL.,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DVLP_DIV_CD,개발구분 코드 raw,VARCHAR,Y,,,FACT_MEMBER_EVENT.DVLP_DIV_CD — 개발구분 코드 raw. 코드그룹 **MM015(개발구분)**. 코드사전 = 1신규·2증액·3감액·4재후원·5후원중단. 실적재(TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD)에 **사전 전종이 등장**한다. 🔴MM015 는 회원상태 MM010 이 **아니다** — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다(회원상태는 MBER_STAT_CD). ⚠️중단원천(EVENT_TYPE='STOP') 행은 원천에 이 컬럼이 부재해 NULL 이다. 라벨 = DVLP_DIV_NM.,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DVLP_DIV_NM,개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단,VARCHAR,Y,,,FACT_MEMBER_EVENT.DVLP_DIV_NM — 개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단. 코드 = DVLP_DIV_CD. MM015 는 폐지코드가 없고 실적재가 사전과 일치한다. 🔴🔴값 '후원중단' 은 EVENT_TYPE='STOP' 과 **동일 사건이 거의 전부 중복 존재**한다(동일 회원·일자) — 두 축을 합산하면 이중계상이다(O24 · 현업확인 대기).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,SPNSR_AMT,후원금액(원) raw,"NUMBER(18,0)",Y,,,FACT_MEMBER_EVENT.SPNSR_AMT — 후원금액(원) raw. 원천 TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT 무변환 전파. 🔴감액·후원중단 사건은 **음수**다 — 무조건 SUM 하면 개발금액이 상계된다. 🔴정본 공#38 감액(건)·#151 증액(건)이 **금액을 만원 단위로 나눈 값**이라는 규약이므로 원금액을 보존한다(설계 §1·CONF-2) — 이 컬럼을 그대로 '건수'로 쓰지 말 것. ⚠️중단원천 행은 NULL.,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DEV_CNT,개발(건),"NUMBER(18,4)",Y,,,개발(건) (#149),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DEV_MEMBERS,개발(명),"NUMBER(38,0)",Y,,,개발(명) (#148),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_CNT,중단(건),"NUMBER(18,4)",Y,,,중단(건) (#35),
@@ -1049,13 +1047,13 @@ WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVEN
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_DATE,중단일,DATE,Y,,,중단일,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_REASON,중단사유,VARCHAR,Y,,,중단사유,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_CHANNEL,중단채널,VARCHAR,Y,,,중단채널,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_REASON_NM,중단사유명(정본 공),VARCHAR,Y,,,FACT_MEMBER_LIFECYCLE.STOP_REASON_NM — 중단사유명(정본 공#162). 코드그룹 **MM005(후원중단사유)**. 코드 = STOP_REASON. 코드사전에는 **폐지코드(USE_YN='N')가 다수 섞여** 있고 실적재는 사전의 일부만 쓴다. 최빈 코드 = 1개인(경제적)사유 · 14장기미납 · 16신규미납 · 8다른곳지원. 🔴🔴**USE_YN 필터 금지** — 실적재에 **폐지코드가 실재**한다(26은행자동납부해지 · 13반송미납 · 21~25 지라니 계열) ⇒ USE_YN='Y' 로 걸면 그 행들의 라벨이 사라진다. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️사전에만 있고 실적재에 없는 코드도 다수다.,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_CHANNEL_NM,중단경로명,VARCHAR,Y,,,FACT_MEMBER_LIFECYCLE.STOP_CHANNEL_NM — 중단경로명. 코드그룹 **MM287(중단경로)**. 코드 = STOP_CHANNEL. 코드사전 = 1 SYSTEM · 2 CRM · 3 홈페이지 · 실적재에 **사전 전종이 등장**한다. ⚠️'SYSTEM' 은 배치가 자동 처리한 중단(장기미납 등)이며 회원의 능동적 해지 채널이 아니다 — 채널 분석 시 분리할 것. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️215지표 밖 — 현업 수요 확인 대상(O25).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,NEW_EXISTING_FLAG,신규기존  **전건 NULL**,VARCHAR,Y,,,신규기존 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MEMBER_LIFECYCLE.NEW_EXISTING_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AGE_AT_EVENT,"연령대 코드 raw, **사건(개발약정) 시점 값**","NUMBER(2,0)",Y,,,"FACT_MEMBER_LIFECYCLE.AGE_AT_EVENT — 연령대 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM014**. 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 의 사건행별 값을 무변환 전파한다. 🔴**연속형 나이가 아니다** — 평균·구간 재계산 금지(1'10대 미만'~9'70대 이상'·10단체·11기업·12기타). 🔴MEMBER_AGE_CD(=현재버전 경유 '최근 약정' 스냅샷)와 **다른 축**이며 같은 회원도 사건마다 값이 다를 수 있다 — 이 컬럼이 그 사건 당시의 정확값이다. ⚠️중단원천 행은 원천 컬럼 부재로 NULL(0 아님, P21). 라벨 = AGE_BAND_AT_EVENT.",
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AGE_BAND_AT_EVENT,"**사건 시점** 연령대명(CM014 사전 조인, 하드코딩 아님 P31)",VARCHAR,Y,,,"FACT_MEMBER_LIFECYCLE.AGE_BAND_AT_EVENT — **사건 시점** 연령대명(CM014 사전 조인, 하드코딩 아님 P31). 코드 = AGE_AT_EVENT. ✅'10대 미만'이 상위인 것은 **오류가 아니다** — 편지쓰기대회 계열 캠페인(희망편지·가족그림편지·세계시민교육편지)이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B). ⚠️사전에 8'70대'·9'70대 이상'이 의미 중복으로 공존한다. 🔴MEMBER_AGE_BAND(현재버전 스냅샷)와 값이 다를 수 있다. 중단원천 행은 NULL.",
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AREA_CD_AT_EVENT,"지역 코드 raw, **사건(개발약정) 시점 값**",VARCHAR,Y,,,"FACT_MEMBER_LIFECYCLE.AREA_CD_AT_EVENT — 지역 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM018**(지표 공#131). 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD` 무변환 전파 · 실적재에 **사전 전종 + 라벨 없는 센티넬 '0'** 이 나타난다. 🔴MEMBER_AREA_CD(현재버전 경유 최근 약정 스냅샷)와 **다른 축** — 이사 등으로 사건마다 값이 다를 수 있다. ⚠️**현재 거주지가 아니다** — BRONZE 전체에 현주소 축이 없어 현재 지역은 산출 불가(O34). ⚠️중단원천 행은 원천 컬럼 부재로 NULL. 라벨 = REGION_AT_EVENT.",
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,REGION_AT_EVENT,"**사건 시점** 지역명(CM018 약칭 라벨, 지표 공)",VARCHAR,Y,,,"FACT_MEMBER_LIFECYCLE.REGION_AT_EVENT — **사건 시점** 지역명(CM018 약칭 라벨, 지표 공#131). 코드 = AREA_CD_AT_EVENT. ⚠️센티넬 코드 '0' 은 사전에 라벨이 없어 NULL 이다 — '미상'으로 창작하지 않는다. ⚠️**현재 거주지가 아니다**(O34). 🔴MEMBER_REGION(현재버전 스냅샷)과 값이 다를 수 있다. 중단원천 행은 NULL. 🟢이 뷰 안에 캠페인 축이 함께 있어 지역 × 캠페인 교차가 성립한다.",
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_REASON_NM,중단사유명(정본 공),VARCHAR,Y,,,FACT_MEMBER_EVENT.STOP_REASON_NM — 중단사유명(정본 공#162). 코드그룹 **MM005(후원중단사유)**. 코드 = STOP_REASON. 코드사전에는 **폐지코드(USE_YN='N')가 다수 섞여** 있고 실적재는 사전의 일부만 쓴다. 최빈 코드 = 1개인(경제적)사유 · 14장기미납 · 16신규미납 · 8다른곳지원. 🔴🔴**USE_YN 필터 금지** — 실적재에 **폐지코드가 실재**한다(26은행자동납부해지 · 13반송미납 · 21~25 지라니 계열) ⇒ USE_YN='Y' 로 걸면 그 행들의 라벨이 사라진다. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️사전에만 있고 실적재에 없는 코드도 다수다.,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,STOP_CHANNEL_NM,중단경로명,VARCHAR,Y,,,FACT_MEMBER_EVENT.STOP_CHANNEL_NM — 중단경로명. 코드그룹 **MM287(중단경로)**. 코드 = STOP_CHANNEL. 코드사전 = 1 SYSTEM · 2 CRM · 3 홈페이지 · 실적재에 **사전 전종이 등장**한다. ⚠️'SYSTEM' 은 배치가 자동 처리한 중단(장기미납 등)이며 회원의 능동적 해지 채널이 아니다 — 채널 분석 시 분리할 것. ⚠️개발원천 행은 개념 부재로 NULL. ⚠️215지표 밖 — 현업 수요 확인 대상(O25).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,NEW_EXISTING_FLAG,신규기존  **전건 NULL**,VARCHAR,Y,,,신규기존 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MEMBER_EVENT.NEW_EXISTING_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C.,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AGE_AT_EVENT,"연령대 코드 raw, **사건(개발약정) 시점 값**","NUMBER(2,0)",Y,,,"FACT_MEMBER_EVENT.AGE_AT_EVENT — 연령대 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM014**. 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AGE` 의 사건행별 값을 무변환 전파한다. 🔴**연속형 나이가 아니다** — 평균·구간 재계산 금지(1'10대 미만'~9'70대 이상'·10단체·11기업·12기타). 🔴MEMBER_AGE_CD(=현재버전 경유 '최근 약정' 스냅샷)와 **다른 축**이며 같은 회원도 사건마다 값이 다를 수 있다 — 이 컬럼이 그 사건 당시의 정확값이다. ⚠️중단원천 행은 원천 컬럼 부재로 NULL(0 아님, P21). 라벨 = AGE_BAND_AT_EVENT.",
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AGE_BAND_AT_EVENT,"**사건 시점** 연령대명(CM014 사전 조인, 하드코딩 아님 P31)",VARCHAR,Y,,,"FACT_MEMBER_EVENT.AGE_BAND_AT_EVENT — **사건 시점** 연령대명(CM014 사전 조인, 하드코딩 아님 P31). 코드 = AGE_AT_EVENT. ✅'10대 미만'이 상위인 것은 **오류가 아니다** — 편지쓰기대회 계열 캠페인(희망편지·가족그림편지·세계시민교육편지)이 학교·부모 DB 를 통해 아동 본인 명의로 약정을 맺기 때문이다. 결측·기본값 오염으로 설명하지 말 것(O34-B). ⚠️사전에 8'70대'·9'70대 이상'이 의미 중복으로 공존한다. 🔴MEMBER_AGE_BAND(현재버전 스냅샷)와 값이 다를 수 있다. 중단원천 행은 NULL.",
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,AREA_CD_AT_EVENT,"지역 코드 raw, **사건(개발약정) 시점 값**",VARCHAR,Y,,,"FACT_MEMBER_EVENT.AREA_CD_AT_EVENT — 지역 코드 raw, **사건(개발약정) 시점 값**. 코드그룹 **CM018**(지표 공#131). 원천 `TM_MM_FDRM_MBER_DVLP_AMT.AREA_CD` 무변환 전파 · 실적재에 **사전 전종 + 라벨 없는 센티넬 '0'** 이 나타난다. 🔴MEMBER_AREA_CD(현재버전 경유 최근 약정 스냅샷)와 **다른 축** — 이사 등으로 사건마다 값이 다를 수 있다. ⚠️**현재 거주지가 아니다** — BRONZE 전체에 현주소 축이 없어 현재 지역은 산출 불가(O34). ⚠️중단원천 행은 원천 컬럼 부재로 NULL. 라벨 = REGION_AT_EVENT.",
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,REGION_AT_EVENT,"**사건 시점** 지역명(CM018 약칭 라벨, 지표 공)",VARCHAR,Y,,,"FACT_MEMBER_EVENT.REGION_AT_EVENT — **사건 시점** 지역명(CM018 약칭 라벨, 지표 공#131). 코드 = AREA_CD_AT_EVENT. ⚠️센티넬 코드 '0' 은 사전에 라벨이 없어 NULL 이다 — '미상'으로 창작하지 않는다. ⚠️**현재 거주지가 아니다**(O34). 🔴MEMBER_REGION(현재버전 스냅샷)과 값이 다를 수 있다. 중단원천 행은 NULL. 🟢이 뷰 안에 캠페인 축이 함께 있어 지역 × 캠페인 교차가 성립한다.",
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별,공통감사
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,FULL_DATE,실제 일자,DATE,Y,,,DIM_DATE.FULL_DATE — 실제 일자,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,YEAR,년,"NUMBER(4,0)",Y,,,DIM_DATE.YEAR — 년,
@@ -1084,17 +1082,17 @@ WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVEN
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_PARENT,공통상위캠페인,VARCHAR,Y,,,DIM_CAMPAIGN.PARENT_CAMPAIGN — 공통상위캠페인 (#119),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_NAME,캠페인명,VARCHAR,Y,,,DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_PROMO_METHOD,홍보방법,VARCHAR,Y,,,DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118),
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CATEGORY,캠페인 **카테고리** 라벨(정본 공),VARCHAR,Y,,,"캠페인 **카테고리** 라벨(정본 공#17). 코드그룹 **MM294(캠페인 카테고리)**. ⚠️ 원천 `TM_CM_CMPGN_MNG.CMPGN_CTGR_CD` 에 코드사전 미등재 코드가 실재해 그 행은 라벨이 비고, 미채움 행도 있다(규모는 이슈원장 참조). ⚠️ **사전 자체에 동일 라벨 중복**이 있어 라벨로 GROUP BY 하면 두 코드가 합쳐진다. ⚠️ 업무용어는 '카테고리'이고 상위캠페인은 CAMPAIGN_PARENT 다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CMPGN_CTGR_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).",
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_INFLOW_PATH,개발인입경로 라벨 = **모집 채널**,VARCHAR,Y,,,개발인입경로 라벨 = **모집 채널**. 코드그룹 **MM293(개발인입경로)**. 🔴 이 축을 「현업 주요캠페인 분류축」이라고 적었던 기술은 **거짓이므로 회수됐다**(O37) — 모집 채널이다. 캠페인 카테고리 = CAMPAIGN_CATEGORY(MM294) · 상위캠페인 = CAMPAIGN_PARENT. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.MBER_INFLOW_PATH_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_DOMESTIC_OVERSEAS,캠페인 국내/통합/해외 라벨,VARCHAR,Y,,,캠페인 국내/통합/해외 라벨. 코드그룹 **MM295**. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CMPGN_TYPE1_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_BIZ_CASE_TYPE,캠페인 굿즈/기타/사례/사업 구분 라벨,VARCHAR,Y,,,캠페인 굿즈/기타/사례/사업 구분 라벨. 코드그룹 **MM296**. ⚠️ CAMPAIGN_DOMESTIC_OVERSEAS(유형1=국내/해외 축)와 다른 축이다 — 혼동 금지. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CMPGN_TYPE2_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_MARKETING_CAMPAIGN,마케팅캠페인명 라벨(Q16 해소),VARCHAR,Y,,,마케팅캠페인명 라벨(Q16 해소). 🔴 광고비 결합은 이 라벨이 아니라 MKTG_CAMPAIGN_SK(FK)를 쓴다 — 라벨로 결합하면 안 된다(O44/O45). 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.MKTG_CMPGN_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CMMN_BRND,공통브랜드 라벨,VARCHAR,Y,,,공통브랜드 라벨. 코드그룹 **MM297**. ⚠️ 라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지한다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CMMN_BRND_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_MKTG_UTM,UTM 라벨,VARCHAR,Y,,,UTM 라벨. 코드사전이 아니라 원천 TM_CM_MKTNG_UTM(MK_UTM/MK_UTM_NM)과 연동된 값. ⚠️ 원천 미등재 코드가 많아 라벨 채움이 낮다 — **결측이 아니라 미등재**다. 🔴 채움 비율은 규칙7 상 여기 적지 않는다(재적재마다 stale 이 된다) ⇒ 조회로 확인하고 UTM별 분해가 부분집합임을 밝힐 것. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.MKTG_UTM_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_SPNSR_DIV_CD,세부캠페인 후원구분 원천코드,VARCHAR,Y,,,세부캠페인 후원구분 원천코드. 코드그룹 **CM035**: 1=정기후원 · 2=일시후원. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_SPNSR_DIV_NM. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.SPNSR_DIV_CD_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_SPNSR_DIV_NM,CAMPAIGN_SPNSR_DIV_CD 를 CM035 로 해소한 라벨(정기후원/일시후원),VARCHAR,Y,,,CAMPAIGN_SPNSR_DIV_CD 를 CM035 로 해소한 라벨(정기후원/일시후원). ⚠️ DIM_SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 **적용 대상이 다르다** — 이 컬럼은 세부캠페인 단위 구분이다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.SPNSR_DIV_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CPR_DIV_CD,세부캠페인 법인구분 원천코드,VARCHAR,Y,,,세부캠페인 법인구분 원천코드. 코드그룹 **CM019**: A=통합 · I=사단 · S=사복. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_CPR_DIV_NM. 🔴 조직 계층의 법인(ORG_CORP)과 **다른 축**이다 — ORG_CORP 는 전건 비어 있고 이 축은 채워진다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CPR_DIV_CD_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
-WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CPR_DIV_NM,CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복),VARCHAR,Y,,,CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복). 🔴 조직 계층의 법인(ORG_CORP)과 **다른 축**이다 — 「법인별」 질문은 어느 축인지 먼저 가린다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_LIFECYCLE.CPR_DIV_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CATEGORY,캠페인 **카테고리** 라벨(정본 공),VARCHAR,Y,,,"캠페인 **카테고리** 라벨(정본 공#17). 코드그룹 **MM294(캠페인 카테고리)**. ⚠️ 원천 `TM_CM_CMPGN_MNG.CMPGN_CTGR_CD` 에 코드사전 미등재 코드가 실재해 그 행은 라벨이 비고, 미채움 행도 있다(규모는 이슈원장 참조). ⚠️ **사전 자체에 동일 라벨 중복**이 있어 라벨로 GROUP BY 하면 두 코드가 합쳐진다. ⚠️ 업무용어는 '카테고리'이고 상위캠페인은 CAMPAIGN_PARENT 다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CMPGN_CTGR_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).",
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_INFLOW_PATH,개발인입경로 라벨 = **모집 채널**,VARCHAR,Y,,,개발인입경로 라벨 = **모집 채널**. 코드그룹 **MM293(개발인입경로)**. 🔴 이 축을 「현업 주요캠페인 분류축」이라고 적었던 기술은 **거짓이므로 회수됐다**(O37) — 모집 채널이다. 캠페인 카테고리 = CAMPAIGN_CATEGORY(MM294) · 상위캠페인 = CAMPAIGN_PARENT. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.MBER_INFLOW_PATH_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_DOMESTIC_OVERSEAS,캠페인 국내/통합/해외 라벨,VARCHAR,Y,,,캠페인 국내/통합/해외 라벨. 코드그룹 **MM295**. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CMPGN_TYPE1_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_BIZ_CASE_TYPE,캠페인 굿즈/기타/사례/사업 구분 라벨,VARCHAR,Y,,,캠페인 굿즈/기타/사례/사업 구분 라벨. 코드그룹 **MM296**. ⚠️ CAMPAIGN_DOMESTIC_OVERSEAS(유형1=국내/해외 축)와 다른 축이다 — 혼동 금지. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CMPGN_TYPE2_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_MARKETING_CAMPAIGN,마케팅캠페인명 라벨(Q16 해소),VARCHAR,Y,,,마케팅캠페인명 라벨(Q16 해소). 🔴 광고비 결합은 이 라벨이 아니라 MKTG_CAMPAIGN_SK(FK)를 쓴다 — 라벨로 결합하면 안 된다(O44/O45). 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.MKTG_CMPGN_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CMMN_BRND,공통브랜드 라벨,VARCHAR,Y,,,공통브랜드 라벨. 코드그룹 **MM297**. ⚠️ 라벨이 MM293(개발인입경로)과 상당 중복되나 현업 확인상 별도 축으로 유지한다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CMMN_BRND_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_MKTG_UTM,UTM 라벨,VARCHAR,Y,,,UTM 라벨. 코드사전이 아니라 원천 TM_CM_MKTNG_UTM(MK_UTM/MK_UTM_NM)과 연동된 값. ⚠️ 원천 미등재 코드가 많아 라벨 채움이 낮다 — **결측이 아니라 미등재**다. 🔴 채움 비율은 규칙7 상 여기 적지 않는다(재적재마다 stale 이 된다) ⇒ 조회로 확인하고 UTM별 분해가 부분집합임을 밝힐 것. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.MKTG_UTM_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_SPNSR_DIV_CD,세부캠페인 후원구분 원천코드,VARCHAR,Y,,,세부캠페인 후원구분 원천코드. 코드그룹 **CM035**: 1=정기후원 · 2=일시후원. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_SPNSR_DIV_NM. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.SPNSR_DIV_CD_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_SPNSR_DIV_NM,CAMPAIGN_SPNSR_DIV_CD 를 CM035 로 해소한 라벨(정기후원/일시후원),VARCHAR,Y,,,CAMPAIGN_SPNSR_DIV_CD 를 CM035 로 해소한 라벨(정기후원/일시후원). ⚠️ DIM_SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 **적용 대상이 다르다** — 이 컬럼은 세부캠페인 단위 구분이다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.SPNSR_DIV_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CPR_DIV_CD,세부캠페인 법인구분 원천코드,VARCHAR,Y,,,세부캠페인 법인구분 원천코드. 코드그룹 **CM019**: A=통합 · I=사단 · S=사복. 🔴 라벨이 아니다 — 사람이 읽는 이름은 CAMPAIGN_CPR_DIV_NM. 🔴 조직 계층의 법인(ORG_CORP)과 **다른 축**이다 — ORG_CORP 는 전건 비어 있고 이 축은 채워진다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CPR_DIV_CD_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
+WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,CAMPAIGN_CPR_DIV_NM,CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복),VARCHAR,Y,,,CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복). 🔴 조직 계층의 법인(ORG_CORP)과 **다른 축**이다 — 「법인별」 질문은 어느 축인지 먼저 가린다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CPR_DIV_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`).,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,SPONSORSHIP_BK,후원사업 업무키,VARCHAR,Y,BK,,DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키,
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,SPONSORSHIP_NAME,후원사업 전체,VARCHAR,Y,,,DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123),
 WIDE_MEMBER_EVENT,회원 이벤트 팩트 평탄화,DATE_SK × MEMBER_DK × EVENT_TYPE,WIDE,SPONSORSHIP_DIV_NAME,후원사업 분류 **최상위**,VARCHAR,Y,,,"[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선(3,594,843)이라 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24).",

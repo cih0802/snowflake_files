@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="snowflake-source" content="cortex-agent-authored" />
-  <title>FACT_MEMBER_SPONSOR_BIZ - Pipeline ERD & Lineage</title>
+  <title>FACT_MEMBER_SPONSORSHIP_SPAN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
-    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_SPONSOR_BIZ",
-    "table": "FACT_MEMBER_SPONSOR_BIZ",
+    "generated": "2026-09-14 02:29",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_SPONSORSHIP_SPAN",
+    "table": "FACT_MEMBER_SPONSORSHIP_SPAN",
     "domain": "CRM / 회원·후원",
     "type": "FACT"
   }
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item active"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item active"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -439,10 +439,10 @@
         <div class="header-top">
           <div class="title-area">
             <h1>
-              <span>FACT_MEMBER_SPONSOR_BIZ</span>
+              <span>FACT_MEMBER_SPONSORSHIP_SPAN</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">회원×후원약정 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`</div>
+            <div class="korean-title">회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,14 +454,14 @@
           <span class="badge badge-domain">SILVER 모델: 7개</span>
           <span class="badge badge-domain">컬럼 수: 34개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원×후원약정 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
       <div class="section-card">
         <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_MEMBER_SPONSOR_BIZ)로 데이터가 유입되는 전체 경로입니다.
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_MEMBER_SPONSORSHIP_SPAN)로 데이터가 유입되는 전체 경로입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
@@ -491,10 +491,10 @@ flowchart LR
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_MEMBER_SPONSOR_BIZ["★ FACT_MEMBER_SPONSOR_BIZ<br/>회원×후원약정 팩트 — grain = MEMB"]:::target
-    G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원 (1캠페인). 분류축 ="]:::gold
+    G_FACT_MEMBER_SPONSORSHIP_SPAN["★ FACT_MEMBER_SPONSORSHIP_SPAN<br/>회원×후원약정 기간 팩트 — grain = M"]:::target
+    G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원. [Grain: CAMP"]:::gold
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
-    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
@@ -506,8 +506,8 @@ flowchart LR
   B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
-  G_DIM_CAMPAIGN --> G_FACT_MEMBER_SPONSOR_BIZ
-  G_DIM_SPONSORSHIP --> G_FACT_MEMBER_SPONSOR_BIZ
+  G_DIM_CAMPAIGN --> G_FACT_MEMBER_SPONSORSHIP_SPAN
+  G_DIM_SPONSORSHIP --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_CAMPAIGN --> G_DIM_CAMPAIGN
   S_CRM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
   S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
@@ -515,9 +515,9 @@ flowchart LR
   S_CRM_CODE --> S_CRM_CAMPAIGN
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_MARKETING_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
-  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_SPONSOR_BIZ
+  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
-  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_SPONSOR_BIZ
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
           </pre>
         </div>
@@ -549,7 +549,7 @@ flowchart LR
 <li><b>CRM_MARKETING_CAMPAIGN</b>: 마케팅캠페인 마스터(1행 = 1마케팅캠페인) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 conformed 축. 🔴 `USE_YN` 으로 폐지분을 **제외하지 않는다** — 폐지된 캠페인도 과거 실적에 붙는다. 🔴 광고↔개발 결합은 **마케팅캠페인 grain 에서만** 성립한다(개발캠페인 grain 으로 내리면 광고비가 복제된다).</li>
 <li><b>CRM_MEMBER_DEV</b>: </li>
 <li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
-<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSOR_BIZ` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
             </ul>
           </div>
@@ -560,7 +560,7 @@ flowchart LR
       <div class="section-card">
         <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          FACT_MEMBER_SPONSOR_BIZ 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+          FACT_MEMBER_SPONSORSHIP_SPAN 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
@@ -572,7 +572,7 @@ erDiagram
     string DW_BATCH_ID
   }
   DIM_MEMBER {
-    string MEMBER_SK PK
+    string MEMBER_SK
     string MEMBER_DK FK
     string DW_BATCH_ID
   }
@@ -584,7 +584,7 @@ erDiagram
     string SPONSORSHIP_SK PK
     string DW_BATCH_ID
   }
-  FACT_MEMBER_SPONSOR_BIZ {
+  FACT_MEMBER_SPONSORSHIP_SPAN {
     string MEMBER_DK FK
     string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
@@ -594,11 +594,11 @@ erDiagram
     string DSCNTC_MONTH_KEY FK
     string DW_BATCH_ID
   }
-  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSOR_BIZ : "MEMBER_DK"
-  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSOR_BIZ : "SPONSORSHIP_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
-  DIM_MONTH ||..o{ FACT_MEMBER_SPONSOR_BIZ : "START_MONTH_KEY"
-  DIM_MONTH ||..o{ FACT_MEMBER_SPONSOR_BIZ : "DSCNTC_MONTH_KEY"
+  DIM_MEMBER ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "MEMBER_DK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "SPONSORSHIP_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "CAMPAIGN_SK"
+  DIM_MONTH ||..o{ FACT_MEMBER_SPONSORSHIP_SPAN : "START_MONTH_KEY"
+  DIM_MONTH ||..o{ FACT_MEMBER_SPONSORSHIP_SPAN : "DSCNTC_MONTH_KEY"
           </pre>
         </div>
 
@@ -618,7 +618,7 @@ erDiagram
             </thead>
             <tbody>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>MEMBER_DK</code></td>
           <td>➔</td>
           <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
@@ -627,7 +627,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>SPONSORSHIP_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
@@ -636,7 +636,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
@@ -645,7 +645,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>START_MONTH_KEY</code></td>
           <td>➔</td>
           <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
@@ -654,7 +654,7 @@ erDiagram
           <td>역할기반 월 축 (개시월)</td>
         </tr>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>DSCNTC_MONTH_KEY</code></td>
           <td>➔</td>
           <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
@@ -735,30 +735,6 @@ erDiagram
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
           <td>SPNSR_AMT.</td>
-        </tr>
-        <tr>
-          <td><code>DW_SOURCE_SYSTEM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>원천 시스템 식별 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_LOAD_TS</code></td>
-          <td><code>TIMESTAMP_NTZ</code></td>
-          <td></td>
-          <td>최초 적재 시각 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_UPDATE_TS</code></td>
-          <td><code>TIMESTAMP_NTZ</code></td>
-          <td></td>
-          <td>최종 갱신 시각 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_BATCH_ID</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
         <tr>
           <td><code>ACQ_MBER_INFLOW_PATH_CD</code></td>
@@ -886,6 +862,30 @@ erDiagram
           <td></td>
           <td>대표캠페인의 홍보방법명(CM008 라벨) — 동결값</td>
         </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -895,44 +895,10 @@ erDiagram
       <div class="section-card">
         <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
         <details>
-          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSOR_BIZ.sql)</summary>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_MEMBER_SPONSOR_BIZ: 회원×후원약정(SPNSR_BSNS_NO) 팩트
+            <pre><code>-- FACT_MEMBER_SPONSORSHIP_SPAN: 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
 -- Co-authored with CoCo
--- [2026-08-21 신설] &quot;캠페인별/후원사업별 활동회원&quot; 질문에 답하기 위해 신설.
---   배경: FACT_MEMBER_MONTHLY.CAMPAIGN_SK 는 회원 grain(다중캠페인 19.0%·최대690)이라 O8 미결로 전건 센티넬(0)이다.
---   그런데 약정(SPNSR_BSNS_NO) grain 에서는 캠페인이 거의 1:1(다중 137건=0.01%·최대 2, 실측)이라
---   O8 문제가 이 grain 에서는 사실상 발생하지 않는다.
---
--- grain = MEMBER_DK × SPNSR_BSNS_NO. 🔴 SPNSR_BSNS_NO 단독은 PK 가 아니다 — 실측 28건이
---   서로 다른 두 회원(공동후원 쌍, 예: 부부)에 공유된다(CRM_MEMBER_SPONSOR_SPAN 실측).
---   (MBER_NO, SPNSR_BSNS_NO) 쌍은 2,170,572행 = 전건 유일(실측 확인, 중복 0).
---   SPNSR_NO 도 PK 후보가 아니다 — 한 SPNSR_NO 가 여러 SPNSR_BSNS_NO 를 가질 수 있다(Q15, distinct 2,103,041 vs 총행 2,170,572).
---
--- grain 선택 근거(A안 vs B안, 2026-08-21 실측):
---   A안(약정 grain, 비확장) = 2,170,572행 ← 채택
---   B안(월 확장 grain, MEMBER×SPNSR_BSNS_NO×MONTH_KEY) = 실측 105,428,370행
---     (FACT_MEMBER_MONTHLY 40,054,883행의 2.6배) → 비용 대비 이점 없어 폐기.
---   활동 판정(as-of)은 SV/소비 계층에서 START_MONTH_KEY~DSCNTC_MONTH_KEY 구간으로 계산한다
---   (CRM_MEMBER_SPONSOR_SPAN·FACT_MEMBER_MONTHLY#51 과 동일 as-of 철학 — 월별로 물리 확장하지 않는다).
---
--- 캠페인 귀속 규칙(대표캠페인, 결정적 단일 규칙):
---   CRM_MEMBER_DEV 사건 중 우선순위 ①DVLP_DIV_CD='1'(신규) ②그 외, 그 안에서 최초일자(OCCRRNC_DE)·
---   최소일련번호(SER_NO) 오름차순 1건 채택.
---   실측(2026-08-21): 신규사건 보유 1,687,546건(신규사건 내 다중캠페인 32건도 이 규칙으로 결정적 해소) ·
---   신규사건 부재 483,028건(전체 2,170,574건의 22.3%)은 전체 사건 중 최초사건 캠페인으로 대체
---   — 이 그룹은 최초사건 시점 캠페인이 100% 단일(동률 0건, 실측 확인) ·
---   두 경로 모두 사건이 아예 없는 6건은 CAMPAIGN_SK=0(미매핑, P21 — '(미매핑)' 라벨 창작 없음).
--- IS_MULTI_CAMPAIGN: 그 SPNSR_BSNS_NO 의 전체 사건에서 distinct CMPGN_CD &gt; 1 인지(참고용 투명성 플래그).
---   실측 137건(0.01%)·최대 2. 대표캠페인 채택 규칙과는 별개로, 다중이었다는 사실 자체를 감추지 않는다.
---
--- 활동 판정은 이 팩트가 직접 하지 않는다 — START_MONTH_KEY·DSCNTC_MONTH_KEY 원본을 그대로 노출하고
--- &quot;특정 월 as-of 활동 여부&quot;는 소비 계층(SV) 에서 계산한다(FMM#51 과 동일 판정식 재사용 — CONF-3 tie-break 불요,
--- 재후원 시 새 SPNSR_BSNS_NO 발급으로 이미 반영됨, CRM_MEMBER_SPONSOR_SPAN 코멘트 참조).
---
--- [DEC-43] 대표캠페인(campaign_rep)의 캠페인 12속성을 함께 동결 승계한다(ACQ_* 접두).
---   CRM_MEMBER_DEV 자신의 컬럼이라 `DIM_CAMPAIGN` 실시간 조인 없이 대표 사건과 결정적으로
---   함께 딸려온다 — 캠페인 마스터가 이후 정정돼도 이 약정의 대표캠페인 속성은 바뀌지 않는다.
 {{ config(
     materialized='incremental',
     unique_key=['MEMBER_DK', 'SPNSR_BSNS_NO'],
@@ -948,8 +914,6 @@ campaign_pick as (
     select
         SPNSR_BSNS_NO,
         CMPGN_CD,
-        -- [DEC-43] 대표사건의 캠페인 12속성 동결값. CRM_MEMBER_DEV 자신의 컬럼이라
-        --   `DIM_CAMPAIGN` 실시간 조인 없이 대표 사건과 함께 결정적으로 딸려온다.
         MBER_INFLOW_PATH_CD, MBER_INFLOW_PATH_NM,
         CMPGN_CTGR_CD, CMPGN_CTGR_NM,
         CMPGN_TYPE1_BSN, CMPGN_TYPE1_NM,
@@ -983,7 +947,6 @@ campaign_rep as (
     where rn = 1
 ),
 
--- 다중캠페인 참고 플래그(실측 137건·0.01%·최대 2)
 campaign_multi as (
     select SPNSR_BSNS_NO, count(distinct CMPGN_CD) as DISTINCT_CAMPAIGNS
     from {{ ref('CRM_MEMBER_DEV') }}
@@ -1000,7 +963,6 @@ select
     span.START_MONTH_KEY,
     span.DSCNTC_MONTH_KEY,
     span.SPNSR_AMT,
-    -- [DEC-43] 대표캠페인 12속성 동결값 — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약).
     cr.MBER_INFLOW_PATH_CD                           as ACQ_MBER_INFLOW_PATH_CD,
     cr.MBER_INFLOW_PATH_NM                           as ACQ_MBER_INFLOW_PATH_NM,
     cr.CMPGN_CTGR_CD                                 as ACQ_CMPGN_CTGR_CD,

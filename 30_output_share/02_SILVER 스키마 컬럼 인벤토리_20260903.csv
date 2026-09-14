@@ -507,7 +507,14 @@ CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,UPPER_CMPGN_YN,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,BRND_ID,브랜드ID,VARCHAR,Y,,,브랜드ID,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,BRND_NM,브랜드명,VARCHAR,Y,,,브랜드명,동일소스 JOIN
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PR_MTH_CD,홍보방법코드,VARCHAR,Y,FK,CRM_CODE※비강제,홍보방법코드,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PROMO_METHOD_NAME,홍보방법명,VARCHAR,Y,,,홍보방법명. 코드id:CM008.,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PARENT_CAMPAIGN_NAME,상위캠페인명,VARCHAR,Y,,,상위캠페인명.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,SPNSR_BSNS_ID,후원사업ID (Q16 조인키),VARCHAR,Y,FK,CRM_SPONSORSHIP.SPNSR_BSNS_ID※비강제,후원사업ID (Q16 조인키),
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TRGET_CD,캠페인대상 코드 raw,VARCHAR,Y,,,캠페인대상 코드 raw. 코드id:CM002.,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CPR_DIV_CD,법인구분코드,VARCHAR,Y,,,법인구분 코드 raw. 코드id:CM019.,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CPR_DIV_NM,법인구분명,VARCHAR,Y,,,법인구분명 — CPR_DIV_CD 라벨,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,SPNSR_DIV_CD,후원구분코드,VARCHAR,Y,,,후원구분 코드 raw. 코드id:CM035.,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,SPNSR_DIV_NM,후원구분명,VARCHAR,Y,,,후원구분명 — SPNSR_DIV_CD 라벨,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_CTGR_CD,CMPGN_CTGR_CD,"NUMBER(10,0)",Y,FK,CRM_CODE※비강제,CMPGN_CTGR_CD. 코드id:MM294.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_CTGR_NM,CMPGN_CTGR_NM,VARCHAR,Y,,,CMPGN_CTGR_NM. 코드id:MM294.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MBER_INFLOW_PATH_CD,MBER_INFLOW_PATH_CD,"NUMBER(10,0)",Y,,,MBER_INFLOW_PATH_CD. 코드id:MM293.,
@@ -518,22 +525,15 @@ CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE2_BSN
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE2_NM,CMPGN_TYPE2_NM,VARCHAR,Y,,,CMPGN_TYPE2_NM. 코드id:MM296.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_CMPGN_NM,MKTG_CMPGN_NM,"NUMBER(10,0)",Y,,,MKTG_CMPGN_NM.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MK_CMPGN_NM,"마케팅 캠페인명 (라벨, Q16 해소)",VARCHAR,Y,,,"마케팅 캠페인명 (라벨, Q16 해소)",
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_STRT_DE,캠페인 시작일 YYYYMMDD,VARCHAR,Y,,,캠페인 시작일 YYYYMMDD,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TRGET_CD,캠페인대상 코드 raw,VARCHAR,Y,,,캠페인대상 코드 raw. 코드id:CM002.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CPR_DIV_CD,법인구분코드,VARCHAR,Y,,,법인구분 코드 raw. 코드id:CM019.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,SPNSR_DIV_CD,후원구분코드,VARCHAR,Y,,,후원구분 코드 raw. 코드id:CM035.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CPR_DIV_NM,법인구분명,VARCHAR,Y,,,법인구분명 — CPR_DIV_CD 라벨,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,SPNSR_DIV_NM,후원구분명,VARCHAR,Y,,,후원구분명 — SPNSR_DIV_CD 라벨,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMMN_BRND,공통브랜드,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM. 코드id:MM297.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMMN_BRND_NM,MM297 공통브랜드명,VARCHAR,Y,,,MM297 공통브랜드명,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM,마케팅 UTM,"NUMBER(10,0)",Y,,,TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM. 고유값:MKTG_UTM_NM.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM_NM,TM_CM_MKTNG_UTM 라벨,VARCHAR,Y,,,TM_CM_MKTNG_UTM 라벨,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PROMO_METHOD_NAME,홍보방법명,VARCHAR,Y,,,홍보방법명. 코드id:CM008.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,PARENT_CAMPAIGN_NAME,상위캠페인명,VARCHAR,Y,,,상위캠페인명.,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_STRT_DE,캠페인 시작일 YYYYMMDD,VARCHAR,Y,,,캠페인 시작일 YYYYMMDD,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,CMPGN_CD,캠페인코드,VARCHAR,N,PK,,"캠페인코드 (PK, →CRM_CAMPAIGN)",
 CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,SPNSR_BSNS_ID,후원사업ID,VARCHAR,N,PK,,"후원사업ID (PK, →CRM_SPONSORSHIP)",
 CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE,캠페인 ↔ 후원사업 다대다,1매핑,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
@@ -674,10 +674,6 @@ CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CANCL_RDC
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MBER_DIV_CD,회원구분 원천코드 raw,VARCHAR,Y,,,회원구분 원천코드 raw. 코드id:MM018,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SEX,성별 원천코드 raw,VARCHAR,Y,,,성별 원천코드 raw. 코드id:CM013,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SPNSR_AMT_CD,SPNSR_AMT_CD,VARCHAR,Y,,,SPNSR_AMT_CD. 코드id:CM012.,
-CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
-CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
-CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
-CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MBER_INFLOW_PATH_CD,MBER_INFLOW_PATH_CD,"NUMBER(10,0)",Y,,,MBER_INFLOW_PATH_CD. 코드id:MM293.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MBER_INFLOW_PATH_NM,회원 유입경로명,VARCHAR,Y,,,MBER_INFLOW_PATH_NM. 코드id:MM293.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CMPGN_CTGR_CD,CMPGN_CTGR_CD,"NUMBER(10,0)",Y,,,CMPGN_CTGR_CD. 코드id:MM294.,
@@ -699,6 +695,10 @@ CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CPR_DIV_N
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,BRND_NM,브랜드명,VARCHAR,Y,,,브랜드명. CRM_CAMPAIGN 비정규화,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,PARENT_CAMPAIGN_NAME,PARENT_CAMPAIGN_NAME,VARCHAR,Y,,,PARENT_CAMPAIGN_NAME.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,PROMO_METHOD_NAME,홍보방법명 (CM008 라벨),VARCHAR,Y,,,홍보방법명 (CM008 라벨). CRM_CAMPAIGN 비정규화. 코드id:CM008.,
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SRC_LOAD_DT,원천(BRONZE) 적재시각 워터마크,TIMESTAMP_NTZ,Y,,,원천(BRONZE) 적재시각 워터마크.,
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,MBER_NO,회원번호,VARCHAR,N,"PK,FK",CRM_MEMBER.MEMBER_DK※비강제,회원번호 (PK),
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,SPNSR_DSCNTC_DE,후원중단일자 YYYYMMDD,VARCHAR,N,PK,,후원중단일자 YYYYMMDD (PK),
@@ -706,8 +706,8 @@ CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DSCNTC_RSN_CD,중단사유코드,VARCHAR,Y,FK,CRM_CODE※비강제,중단사유코드,DIM_REASON
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DSCNTC_RSN_NM,중단사유명,VARCHAR,Y,,,중단사유명 (코드 라벨),파생
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DSCNTC_PATH,중단경로,VARCHAR,Y,,,중단경로,
-CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,REGIST_DEPT_CD,등록부서코드 (→CRM_ORG),VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,등록부서코드 (→CRM_ORG),
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DSCNTC_PATH_NM,중단경로명,VARCHAR,Y,,,중단경로명. 코드id:MM287.,
+CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,REGIST_DEPT_CD,등록부서코드 (→CRM_ORG),VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,등록부서코드 (→CRM_ORG),
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 CRM_MEMBER_DISCONTINUE,후원중단,"1후원중단 (MBER_NO, DSCNTC_SEQ)",약정,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사

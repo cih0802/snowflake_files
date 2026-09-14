@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="snowflake-source" content="cortex-agent-authored" />
-  <title>FACT_TARGET_DEV - Pipeline ERD & Lineage</title>
+  <title>FACT_MEMBER_DEV_ACHIEVEMENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
-    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_TARGET_DEV",
-    "table": "FACT_TARGET_DEV",
-    "domain": "ERP / 예산·목표",
+    "generated": "2026-09-14 02:29",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_DEV_ACHIEVEMENT",
+    "table": "FACT_MEMBER_DEV_ACHIEVEMENT",
+    "domain": "CRM / 회원·후원",
     "type": "FACT"
   }
   </script>
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item active"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item active"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -439,29 +439,29 @@
         <div class="header-top">
           <div class="title-area">
             <h1>
-              <span>FACT_TARGET_DEV</span>
+              <span>FACT_MEMBER_DEV_ACHIEVEMENT</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">회원개발 목표 팩트 (MONTH_KEY × ORG × DEV_TYPE · CRM 소스 확정)</div>
+            <div class="korean-title">회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
           </div>
         </div>
         <div class="meta-badges">
-          <span class="badge badge-domain">도메인: ERP / 예산·목표</span>
-          <span class="badge badge-domain">BRONZE 원천: 2개</span>
-          <span class="badge badge-domain">SILVER 모델: 2개</span>
-          <span class="badge badge-domain">컬럼 수: 8개</span>
+          <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
+          <span class="badge badge-domain">BRONZE 원천: 10개</span>
+          <span class="badge badge-domain">SILVER 모델: 7개</span>
+          <span class="badge badge-domain">컬럼 수: 23개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원개발 목표 팩트 (MONTH_KEY × ORG × DEV_TYPE · CRM 소스 확정)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
       <div class="section-card">
         <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_TARGET_DEV)로 데이터가 유입되는 전체 경로입니다.
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(FACT_MEMBER_DEV_ACHIEVEMENT)로 데이터가 유입되는 전체 경로입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
@@ -471,42 +471,92 @@ flowchart LR
   classDef gold fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
+    B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
+    B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
     B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
     B_bronze_crm_TM_CM_MBER_DVLP_GOAL["TM_CM_MBER_DVLP_GOAL"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
+    B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
+    S_CRM_CODE["CRM_CODE"]:::silver
     S_CRM_DEV_TARGET["CRM_DEV_TARGET"]:::silver
+    S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
+    S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_TARGET_DEV["★ FACT_TARGET_DEV<br/>회원개발 목표 팩트 (MONTH_KEY × O"]:::target
-    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
+    G_FACT_MEMBER_DEV_ACHIEVEMENT["★ FACT_MEMBER_DEV_ACHIEVEMENT<br/>회원개발 목표 대비 실적 월 conform 팩"]:::target
+    G_DIM_ORG["DIM_ORG<br/>조직/부서 차원. [Grain: OR"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
+    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 생애주기 전이 팩트. [Grai"]:::gold
+    G_FACT_TARGET_MEMBER_DEV["FACT_TARGET_MEMBER_DEV<br/>회원개발 부문 목표 팩트. [Grai"]:::gold
   end
+  B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
   B_bronze_crm_TM_CM_MBER_DVLP_GOAL --> S_CRM_DEV_TARGET
-  G_DIM_ORG --> G_FACT_TARGET_DEV
-  S_CRM_DEV_TARGET --> G_FACT_TARGET_DEV
+  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
+  B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  G_DIM_ORG --> G_FACT_MEMBER_DEV_ACHIEVEMENT
+  G_FACT_MEMBER_EVENT --> G_FACT_MEMBER_DEV_ACHIEVEMENT
+  G_FACT_TARGET_MEMBER_DEV --> G_FACT_MEMBER_DEV_ACHIEVEMENT
+  S_CRM_CAMPAIGN --> G_FACT_MEMBER_EVENT
+  S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> G_DIM_SPONSORSHIP
+  S_CRM_CODE --> G_FACT_MEMBER_DEV_ACHIEVEMENT
+  S_CRM_CODE --> G_FACT_MEMBER_EVENT
+  S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
+  S_CRM_DEV_TARGET --> G_FACT_TARGET_MEMBER_DEV
+  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
   S_CRM_ORG --> G_DIM_ORG
+  S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (2개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (10개)
             </div>
             <ul class="flow-step-list">
+<li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
 <li><b>bronze_crm.TM_CM_MBER_DVLP_GOAL</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
+<li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (2개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (7개)
             </div>
             <ul class="flow-step-list">
+<li><b>CRM_CAMPAIGN</b>: </li>
+<li><b>CRM_CODE</b>: </li>
 <li><b>CRM_DEV_TARGET</b>: </li>
+<li><b>CRM_MEMBER_DEV</b>: </li>
+<li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_SPONSORSHIP</b>: </li>
             </ul>
           </div>
         </div>
@@ -516,7 +566,7 @@ flowchart LR
       <div class="section-card">
         <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          FACT_TARGET_DEV 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+          FACT_MEMBER_DEV_ACHIEVEMENT 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
@@ -525,19 +575,12 @@ erDiagram
     string MONTH_KEY FK
     string DW_BATCH_ID
   }
-  DIM_ORG {
-    string ORG_SK PK
-    string ORG_DK
-    string ACMSLT_UPPER_DEPT_ID
-    string DW_BATCH_ID
-  }
-  FACT_TARGET_DEV {
+  FACT_MEMBER_DEV_ACHIEVEMENT {
     string MONTH_KEY FK
-    string ORG_SK FK
+    string ORG_SK
     string DW_BATCH_ID
   }
-  DIM_MONTH ||..o{ FACT_TARGET_DEV : "MONTH_KEY"
-  DIM_ORG ||--o{ FACT_TARGET_DEV : "ORG_SK"
+  DIM_MONTH ||..o{ FACT_MEMBER_DEV_ACHIEVEMENT : "MONTH_KEY"
           </pre>
         </div>
 
@@ -557,22 +600,13 @@ erDiagram
             </thead>
             <tbody>
         <tr>
-          <td><code>FACT_TARGET_DEV</code></td>
+          <td><code>FACT_MEMBER_DEV_ACHIEVEMENT</code></td>
           <td><code>MONTH_KEY</code></td>
           <td>➔</td>
           <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
           <td><code>MONTH_KEY</code></td>
           <td><span class="badge badge-domain">Logical Conform</span></td>
           <td>월 conform 축 (fan-out 방지)</td>
-        </tr>
-        <tr>
-          <td><code>FACT_TARGET_DEV</code></td>
-          <td><code>ORG_SK</code></td>
-          <td>➔</td>
-          <td><a href="DIM_ORG.html"><code>DIM_ORG</code></a></td>
-          <td><code>ORG_SK</code></td>
-          <td><span class="badge badge-domain">dbt YAML</span></td>
-          <td>Physical / Declared FK</td>
         </tr>
             </tbody>
           </table>
@@ -598,25 +632,115 @@ erDiagram
           <td><code>MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
+          <td>월 conform 키 YYYYMM.</td>
+        </tr>
+        <tr>
+          <td><code>CAL_YEAR</code></td>
+          <td><code>NUMBER(4,0)</code></td>
           <td></td>
+          <td>FLOOR(MONTH_KEY/100) — 연도</td>
+        </tr>
+        <tr>
+          <td><code>CAL_MONTH</code></td>
+          <td><code>NUMBER(2,0)</code></td>
+          <td></td>
+          <td>MOD(MONTH_KEY,100) — 월</td>
+        </tr>
+        <tr>
+          <td><code>ORG_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대리키 (PK)</td>
+        </tr>
+        <tr>
+          <td><code>ORG_DEPARTMENT</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>부서명 (정본 #116) (#116).</td>
+        </tr>
+        <tr>
+          <td><code>ORG_DIVISION</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>DIM_ORG.DIVISION. [사유:규칙 미확정]</td>
+        </tr>
+        <tr>
+          <td><code>ORG_TEAM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>DIM_ORG.TEAM. [사유:산출보류]</td>
+        </tr>
+        <tr>
+          <td><code>ORG_CORP</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>DIM_ORG.CORP. [사유:부서차원 산출불가]</td>
         </tr>
         <tr>
           <td><code>DEV_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>개발구분(#121 conform) (#121).</td>
+          <td>DEV_TYPE (#121). 코드id:MM015.</td>
         </tr>
         <tr>
-          <td><code>ORG_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td><span class="badge badge-fact">FK</span></td>
-          <td>대리키</td>
+          <td><code>DEV_TYPE_NAME</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>개발구분명 (MM015 라벨). 코드는 DEV_TYPE</td>
         </tr>
         <tr>
           <td><code>GOAL_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>GOAL_CNT (#3).</td>
+          <td>월 회원개발목표(건).</td>
+        </tr>
+        <tr>
+          <td><code>ACTUAL_CNT</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>월 개발실적(건).</td>
+        </tr>
+        <tr>
+          <td><code>GOAL_CNT_YTD</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>(누계)월 목표(건).</td>
+        </tr>
+        <tr>
+          <td><code>ACTUAL_CNT_YTD</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>(누계)월 실적(건).</td>
+        </tr>
+        <tr>
+          <td><code>GOAL_CNT_YEAR</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>연 목표(건) (#3).</td>
+        </tr>
+        <tr>
+          <td><code>ACTUAL_CNT_YEAR</code></td>
+          <td><code>NUMBER(18,4)</code></td>
+          <td></td>
+          <td>연 실적(건).</td>
+        </tr>
+        <tr>
+          <td><code>HAS_GOAL_ROW</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>목표 **행**의 존재 여부.</td>
+        </tr>
+        <tr>
+          <td><code>HAS_POSITIVE_GOAL</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>**목표가 실제로 편성됐는지**(GOAL_CNT&gt;0).</td>
+        </tr>
+        <tr>
+          <td><code>HAS_ACTUAL</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>HAS_ACTUAL.</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -651,65 +775,90 @@ erDiagram
       <div class="section-card">
         <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
         <details>
-          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_TARGET_DEV.sql)</summary>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_TARGET_DEV: 회원개발 목표 팩트 (CRM_DEV_TARGET, 월×조직×개발구분)
+            <pre><code>-- FACT_MEMBER_DEV_ACHIEVEMENT: 회원개발 목표 대비 실적 (월 conform)
 -- Co-authored with CoCo
--- ORG_SK 는 DIM_ORG.ORG_DK(=ABS(HASH(DEPT_ID)))로 해소. Bronze 입고 후 실행.
--- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
---
--- ============================================================================
--- [2026-08-05 O38] MONTH_KEY 연도 소실 교정 — 규약 위반 + 무증상 목표 팽창
--- ----------------------------------------------------------------------------
--- 결함: 종전 산식이 `TRY_TO_NUMBER(t.STDR_MT)`(기준월)만 써서 `STDYY`(기준연)를 버렸다.
---   정본 DDL 은 `MONTH_KEY NUMBER(6,0) '목표월 YYYYMM (FK→DIM_DATE, 월 conform)'` 로
---   YYYYMM 을 명시하는데 실적재는 **1~12 월 번호**였다 → 정본 규약 위반.
---
--- 무증상이었던 이유(P60/P63 계열 의미 결함):
---   · 행수·SUM·참조무결성이 전부 정상이다. GOAL 합계는 원천과 정확히 일치한다.
---   · `MONTH_KEY` 에는 dbt 테스트가 **한 건도 없다**(yml 에 ORG_SK 만 있었다).
---   · 그래서 어떤 품질 게이트도 잡지 못했고, &quot;2026년 1월 목표&quot;를 물으면
---     **2012~2026년 1월 목표의 합**이 조용히 반환됐다.
---
--- grain 파괴 규모(실측 2026-08-05):
---   · BRONZE `TM_CM_MBER_DVLP_GOAL` 25,344행 · `STDYY` 15개 연도(2012~2026) · grain 유일
---   · 연도를 버린 결과 GOLD 7,272행 = **3.49배 병합**(부서·구분별 관측 연도 수만큼 목표가 누적)
---   · 팽창 배수는 균일하지 않다 — 15배는 상한이지 전건 배수가 아니다
---
--- 교정 후 실측 기대치(사전 시뮬레이션 완료):
---   · grain `(YYYYMM, ORG_SK, DEV_TYPE)` = **25,344 유일** · 변환 실패 0
---   · 범위 201201~202612 · `SUM(GOAL_CNT)` 4,622,103 **불변**(연도 복원은 재분배이지 값 변경이 아니다)
---
--- 이 한 건이 정본 지표 **#1(월 목표 달성율)·#2(누계)·#3(연)** 세 개를 동시에 막고 있었다.
---   연 목표는 별도 저장 지표가 아니라 월 목표의 연 합계이므로 컬럼 신설은 불요하다.
---
--- `month_key_clamp` 적용: 다른 월 팩트(FMM·FBD)와 동일 규약. 캘린더 범위(199101~203512)·
---   월 01~12 를 모두 만족할 때만 통과하고 무효는 Unknown(0)으로 라우팅한다.
---   ⚠️ `STDR_MT` 는 원천이 '01'~'12' TEXT 라 LPAD 로 2자리를 보장한 뒤 결합한다
---      (한 자리로 결합하면 20121 처럼 5자리 유령 월키가 만들어진다).
--- ============================================================================
 {{ config(
-    tags=['gold_pending']
+    materialized='incremental',
+    incremental_strategy='append',
+    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
+    tags=['gold_ready']
 ) }}
 
-with t as (
-    select * from {{ ref('CRM_DEV_TARGET') }}
+-- 목표: 이미 MONTH_KEY × ORG_SK × DEV_TYPE grain
+with goal as (
+    select MONTH_KEY, ORG_SK, DEV_TYPE, SUM(GOAL_CNT) as GOAL_CNT
+    from {{ ref('FACT_TARGET_MEMBER_DEV') }}
+    group by MONTH_KEY, ORG_SK, DEV_TYPE
+),
+
+-- 실적: 일 grain 을 월로 롤업. 개발(DEV) 사건만 대상
+actual as (
+    select
+        {{ month_key(&quot;f.JOIN_DATE&quot;) }}  as MONTH_KEY,
+        f.ORG_SK                        as ORG_SK,
+        f.DVLP_DIV_CD                   as DEV_TYPE,
+        SUM(f.DEV_CNT)                  as ACTUAL_CNT
+    from {{ ref('FACT_MEMBER_EVENT') }} f
+    where f.EVENT_TYPE = 'DEV'
+      and f.JOIN_DATE is not null
+      and f.DVLP_DIV_CD in ('1', '2', '4')
+    group by 1, 2, 3
+),
+
+joined as (
+    select
+        COALESCE(g.MONTH_KEY, a.MONTH_KEY) as MONTH_KEY,
+        COALESCE(g.ORG_SK,    a.ORG_SK)    as ORG_SK,
+        COALESCE(g.DEV_TYPE,  a.DEV_TYPE)  as DEV_TYPE,
+        COALESCE(g.GOAL_CNT,   0)          as GOAL_CNT,
+        COALESCE(a.ACTUAL_CNT, 0)          as ACTUAL_CNT,
+        g.MONTH_KEY is not null            as HAS_GOAL_ROW,
+        COALESCE(g.GOAL_CNT, 0) &gt; 0        as HAS_POSITIVE_GOAL,
+        a.MONTH_KEY is not null            as HAS_ACTUAL
+    from goal g
+    full outer join actual a
+        on  g.MONTH_KEY = a.MONTH_KEY
+        and g.ORG_SK    = a.ORG_SK
+        and g.DEV_TYPE  = a.DEV_TYPE
+),
+
+cumulated as (
+    select
+        j.*,
+        FLOOR(j.MONTH_KEY / 100) as CAL_YEAR,
+        MOD(j.MONTH_KEY, 100)    as CAL_MONTH,
+        SUM(j.GOAL_CNT)   over (partition by FLOOR(j.MONTH_KEY/100), j.ORG_SK, j.DEV_TYPE
+                                order by j.MONTH_KEY
+                                rows between unbounded preceding and current row) as GOAL_CNT_YTD,
+        SUM(j.ACTUAL_CNT) over (partition by FLOOR(j.MONTH_KEY/100), j.ORG_SK, j.DEV_TYPE
+                                order by j.MONTH_KEY
+                                rows between unbounded preceding and current row) as ACTUAL_CNT_YTD,
+        SUM(j.GOAL_CNT)   over (partition by FLOOR(j.MONTH_KEY/100), j.ORG_SK, j.DEV_TYPE) as GOAL_CNT_YEAR,
+        SUM(j.ACTUAL_CNT) over (partition by FLOOR(j.MONTH_KEY/100), j.ORG_SK, j.DEV_TYPE) as ACTUAL_CNT_YEAR
+    from joined j
 )
 
 select
-    -- [O38] 연 + 월 결합 YYYYMM. 종전 `TRY_TO_NUMBER(t.STDR_MT)` 는 연도를 버렸다.
-    COALESCE({{ month_key_clamp(&quot;TRY_TO_NUMBER(t.STDYY || LPAD(t.STDR_MT, 2, '0'))&quot;) }}, 0) as MONTH_KEY,
-    COALESCE(o.ORG_SK, 0)                          as ORG_SK,
-    t.MBER_DVLP_DIV_CD                            as DEV_TYPE,
-    SUM(t.GOAL_CNT)                               as GOAL_CNT,
+    c.MONTH_KEY, c.CAL_YEAR, c.CAL_MONTH,
+    c.ORG_SK,
+    o.DEPARTMENT as ORG_DEPARTMENT,
+    o.DIVISION   as ORG_DIVISION,
+    o.TEAM       as ORG_TEAM,
+    o.CORP       as ORG_CORP,
+    c.DEV_TYPE,
+    cd.DTL_CD_NM as DEV_TYPE_NAME,
+    c.GOAL_CNT, c.ACTUAL_CNT,
+    c.GOAL_CNT_YTD, c.ACTUAL_CNT_YTD,
+    c.GOAL_CNT_YEAR, c.ACTUAL_CNT_YEAR,
+    c.HAS_GOAL_ROW, c.HAS_POSITIVE_GOAL, c.HAS_ACTUAL,
     {{ gold_meta('CRM') }}
-from t
-left join {{ ref('DIM_ORG') }} o
-    on o.ORG_DK = ABS(HASH(t.DEPT_ID))
-group by
-    COALESCE({{ month_key_clamp(&quot;TRY_TO_NUMBER(t.STDYY || LPAD(t.STDR_MT, 2, '0'))&quot;) }}, 0),
-    COALESCE(o.ORG_SK, 0),
-    t.MBER_DVLP_DIV_CD
+from cumulated c
+left join {{ ref('DIM_ORG') }} o on c.ORG_SK = o.ORG_SK
+left join (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM015'
+) cd on c.DEV_TYPE = cd.DTL_CD_ID
 </code></pre>
           </div>
         </details>

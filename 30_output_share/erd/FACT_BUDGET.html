@@ -7,7 +7,7 @@
   <title>FACT_BUDGET - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_BUDGET",
     "table": "FACT_BUDGET",
     "domain": "ERP / 예산·목표",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item active"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -442,7 +442,7 @@
               <span>FACT_BUDGET</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">예산 팩트 (MONTH × ORG × BUDGET_ITEM · ERP 편성/집행 적재 · 모금성비용 원천 부재·광고비 AGENCY 보강)</div>
+            <div class="korean-title">MONTH_KEY × ORG_SK × BUDGET_ITEM_SK (1행=1예산)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 1개</span>
           <span class="badge badge-domain">컬럼 수: 15개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>예산 팩트 (MONTH × ORG × BUDGET_ITEM · ERP 편성/집행 적재 · 모금성비용 원천 부재·광고비 AGENCY 보강)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>월 예산 팩트. [Grain: MONTH_KEY × ORG_SK × BUDGET_ITEM_SK (1행=1예산)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -474,10 +474,10 @@ flowchart LR
     B_bronze_erp_BDGT_ACMSLT_LEDGER["BDGT_ACMSLT_LEDGER"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
-    S_ERP_BUDGET["ERP_BUDGET"]:::silver
+    S_ERP_BUDGET["ERP_BUDGET<br/>ERP 예산 편성/추경/조정/집행 월"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_BUDGET["★ FACT_BUDGET<br/>예산 팩트 (MONTH × ORG × BUDG"]:::target
+    G_FACT_BUDGET["★ FACT_BUDGET<br/>MONTH_KEY × ORG_SK × BUDG"]:::target
   end
   B_bronze_erp_BDGT_ACMSLT_LEDGER --> S_ERP_BUDGET
   S_ERP_BUDGET --> G_FACT_BUDGET
@@ -498,7 +498,7 @@ flowchart LR
               <span class="badge badge-silver">SILVER</span> 중간 모델 (1개)
             </div>
             <ul class="flow-step-list">
-<li><b>ERP_BUDGET</b>: </li>
+<li><b>ERP_BUDGET</b>: ERP 예산 편성/추경/조정/집행 월 grain (wide→long 언피벗). 원천 BRONZE_ERP.BDGT_ACMSLT_LEDGER 1행(12개월) → 12행.</li>
             </ul>
           </div>
         </div>

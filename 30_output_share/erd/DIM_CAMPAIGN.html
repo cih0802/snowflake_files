@@ -7,7 +7,7 @@
   <title>DIM_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_CAMPAIGN",
     "table": "DIM_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -442,7 +442,7 @@
               <span>DIM_CAMPAIGN</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN·SPNSR_DIV_NM(후원구분)·CPR_DIV_NM(법인구분)·CMMN_BRND_NM(공통브랜드)·MKTG_UTM_NM(UTM). PARENT_CAMPAIGN·PROMO_METHOD·SPNSR_DIV_CD·CPR_DIV_CD·CMMN_BRND·MKTG_UTM 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)</div>
+            <div class="korean-title">CAMPAIGN_SK (1행=1캠페인)]. [주의: 분류체계 카테고리/상위/홍보방법 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG → SILVER.CRM_CAMPAIGN]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 3개</span>
           <span class="badge badge-domain">컬럼 수: 28개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>캠페인 차원 (1캠페인). 분류축 = CAMPAIGN_TYPE(카테고리 = 현업 「주요캠페인」)·PARENT_CAMPAIGN_NAME(상위캠페인)·PROMO_METHOD_NAME(홍보방법)·INFLOW_PATH(모집채널)·DOMESTIC_OVERSEAS(국내해외)·BIZ_CASE_TYPE(사업사례)·MARKETING_CAMPAIGN·SPNSR_DIV_NM(후원구분)·CPR_DIV_NM(법인구분)·CMMN_BRND_NM(공통브랜드)·MKTG_UTM_NM(UTM). PARENT_CAMPAIGN·PROMO_METHOD·SPNSR_DIV_CD·CPR_DIV_CD·CMMN_BRND·MKTG_UTM 는 코드이고 나머지는 라벨(각 라벨 컬럼 병설)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>캠페인 차원. [Grain: CAMPAIGN_SK (1행=1캠페인)]. [주의: 분류체계 카테고리/상위/홍보방법 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG → SILVER.CRM_CAMPAIGN].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -483,7 +483,7 @@ flowchart LR
     S_CRM_MARKETING_CAMPAIGN["CRM_MARKETING_CAMPAIGN<br/>마케팅캠페인 마스터(1행 = 1마케팅"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_DIM_CAMPAIGN["★ DIM_CAMPAIGN<br/>캠페인 차원 (1캠페인). 분류축 = CAMP"]:::target
+    G_DIM_CAMPAIGN["★ DIM_CAMPAIGN<br/>CAMPAIGN_SK (1행=1캠페인)]. ["]:::target
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
@@ -585,7 +585,7 @@ erDiagram
     string SPONSORSHIP_SK FK
     string DW_BATCH_ID
   }
-  FACT_EVENT_PARTICIPATION {
+  FACT_EVENT_ATTENDANCE {
     string DATE_SK FK
     string MEMBER_DK FK
     string EVENT_SK FK
@@ -620,7 +620,7 @@ erDiagram
     string MONTH_KEY FK
     string DW_BATCH_ID
   }
-  FACT_MEMBER_SPONSOR_BIZ {
+  FACT_MEMBER_SPONSORSHIP_SPAN {
     string MEMBER_DK FK
     string SPNSR_BSNS_NO
     string SPONSORSHIP_SK FK
@@ -630,7 +630,7 @@ erDiagram
     string DSCNTC_MONTH_KEY FK
     string DW_BATCH_ID
   }
-  FACT_SERVICE_EVENT {
+  FACT_MESSAGE_DISPATCH {
     string SEND_TYPE_SK FK
     string DATE_SK FK
     string MEMBER_DK FK
@@ -638,7 +638,7 @@ erDiagram
     string CAMPAIGN_SK FK
     string DW_BATCH_ID
   }
-  FACT_TARGET_BIZ {
+  FACT_TARGET_PROJECT {
     string MONTH_KEY FK
     string ORG_SK FK
     string SPONSORSHIP_SK FK
@@ -648,16 +648,16 @@ erDiagram
   DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK"
   DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK"
   DIM_CAMPAIGN ||--o{ FACT_BIGQUERY_BEHAVIOR : "CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_EVENT_PARTICIPATION : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_EVENT_ATTENDANCE : "CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT : "CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_MEMBER_COHORT : "ACQ_CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_MEMBER_MONTHLY : "CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_SERVICE_EVENT : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MESSAGE_DISPATCH : "CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_BUDGET : "CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_BUDGET_YEARLY : "CAMPAIGN_SK"
   DIM_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSOR_BIZ : "CAMPAIGN_SK"
-  DIM_CAMPAIGN ||--o{ FACT_TARGET_BIZ : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "CAMPAIGN_SK"
+  DIM_CAMPAIGN ||--o{ FACT_TARGET_PROJECT : "CAMPAIGN_SK"
           </pre>
         </div>
 
@@ -704,7 +704,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_EVENT_PARTICIPATION</code></td>
+          <td><code>FACT_EVENT_ATTENDANCE</code></td>
           <td><code>CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
@@ -740,7 +740,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_SERVICE_EVENT</code></td>
+          <td><code>FACT_MESSAGE_DISPATCH</code></td>
           <td><code>CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
@@ -776,7 +776,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_MEMBER_SPONSOR_BIZ</code></td>
+          <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
@@ -785,7 +785,7 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
-          <td><code>FACT_TARGET_BIZ</code></td>
+          <td><code>FACT_TARGET_PROJECT</code></td>
           <td><code>CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
@@ -910,30 +910,6 @@ erDiagram
           <td>홍보방법명. 코드id:CM008.</td>
         </tr>
         <tr>
-          <td><code>DW_SOURCE_SYSTEM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>원천 시스템 식별 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_LOAD_TS</code></td>
-          <td><code>TIMESTAMP_NTZ</code></td>
-          <td></td>
-          <td>최초 적재 시각 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_UPDATE_TS</code></td>
-          <td><code>TIMESTAMP_NTZ</code></td>
-          <td></td>
-          <td>최종 갱신 시각 (공통감사)</td>
-        </tr>
-        <tr>
-          <td><code>DW_BATCH_ID</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
-        </tr>
-        <tr>
           <td><code>SPNSR_DIV_CD</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
@@ -980,6 +956,30 @@ erDiagram
           <td><code>VARCHAR</code></td>
           <td></td>
           <td>UTM 라벨.</td>
+        </tr>
+        <tr>
+          <td><code>DW_SOURCE_SYSTEM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 시스템 식별 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_LOAD_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최초 적재 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_UPDATE_TS</code></td>
+          <td><code>TIMESTAMP_NTZ</code></td>
+          <td></td>
+          <td>최종 갱신 시각 (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>DW_BATCH_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
             </tbody>
           </table>

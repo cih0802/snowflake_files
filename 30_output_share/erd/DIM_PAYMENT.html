@@ -7,7 +7,7 @@
   <title>DIM_PAYMENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_PAYMENT",
     "table": "DIM_PAYMENT",
     "domain": "CRM / 회원·후원",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item active"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -442,7 +442,7 @@
               <span>DIM_PAYMENT</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">납입×결제×회비유형 차원 (grain = 1납입×결제×회비유형 · PAYMENT_SK)</div>
+            <div class="korean-title">PAYMENT_SK (1행=1결제유형)]. [주의: 금융결제원/카드사 수납방식 분류]. [원천: CRM → SILVER.CRM_PAYMENT_METHOD]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 2개</span>
           <span class="badge badge-domain">컬럼 수: 8개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>납입×결제×회비유형 차원 (grain = 1납입×결제×회비유형 · PAYMENT_SK)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>납입 결제수단 차원. [Grain: PAYMENT_SK (1행=1결제유형)]. [주의: 금융결제원/카드사 수납방식 분류]. [원천: CRM → SILVER.CRM_PAYMENT_METHOD].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -479,7 +479,7 @@ flowchart LR
     S_CRM_PAYMENT_METHOD["CRM_PAYMENT_METHOD"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_DIM_PAYMENT["★ DIM_PAYMENT<br/>납입×결제×회비유형 차원 (grain = 1납"]:::target
+    G_DIM_PAYMENT["★ DIM_PAYMENT<br/>PAYMENT_SK (1행=1결제유형)]. ["]:::target
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TM_PM_SETLE_INFO --> S_CRM_PAYMENT_METHOD

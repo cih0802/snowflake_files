@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_MONTHLY - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_MONTHLY",
     "table": "FACT_MEMBER_MONTHLY",
     "domain": "CRM / 회원·후원",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item active"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -442,7 +442,7 @@
               <span>FACT_MEMBER_MONTHLY</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">회원 월 팩트 (MONTH_KEY × MEMBER_DK)</div>
+            <div class="korean-title">MONTH_KEY × MEMBER_DK (1행=1회원월)]. [주의: FACT_MEMBER_FEE와 합산 시 회비 과대계상 위험(형제팩트중복)]. [원천: SILVER.CRM_PAYMENT_BILLING ∪ CRM_MEMBER_DEV/DISCONTINUE]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 11개</span>
           <span class="badge badge-domain">컬럼 수: 59개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 월 팩트 (MONTH_KEY × MEMBER_DK)</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 월별 스냅샷 팩트. [Grain: MONTH_KEY × MEMBER_DK (1행=1회원월)]. [주의: FACT_MEMBER_FEE와 합산 시 회비 과대계상 위험(형제팩트중복)]. [원천: SILVER.CRM_PAYMENT_BILLING ∪ CRM_MEMBER_DEV/DISCONTINUE].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -502,11 +502,11 @@ flowchart LR
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_MEMBER_MONTHLY["★ FACT_MEMBER_MONTHLY<br/>회원 월 팩트 (MONTH_KEY × MEMB"]:::target
-    G_DIM_ORG["DIM_ORG<br/>조직 차원 (SCD1 · 1조직노드)"]:::gold
-    G_DIM_REASON["DIM_REASON<br/>사유코드 차원 (grain = 1사유"]:::gold
-    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원 (1후원사업 · 실측 "]:::gold
-    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 이벤트 팩트 (DATE_SK ×"]:::gold
+    G_FACT_MEMBER_MONTHLY["★ FACT_MEMBER_MONTHLY<br/>MONTH_KEY × MEMBER_DK (1행"]:::target
+    G_DIM_ORG["DIM_ORG<br/>조직/부서 차원. [Grain: OR"]:::gold
+    G_DIM_REASON["DIM_REASON<br/>중단/미납 사유코드 차원. [Grai"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
+    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 생애주기 전이 팩트. [Grai"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
@@ -585,7 +585,7 @@ flowchart LR
 <li><b>CRM_MEMBER_DEV</b>: </li>
 <li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
 <li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
-<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSOR_BIZ` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_ORG</b>: </li>
 <li><b>CRM_PAYMENT_BILLING</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
@@ -610,7 +610,7 @@ erDiagram
     string DW_BATCH_ID
   }
   DIM_MEMBER {
-    string MEMBER_SK PK
+    string MEMBER_SK
     string MEMBER_DK FK
     string DW_BATCH_ID
   }
@@ -1026,12 +1026,6 @@ erDiagram
           <td></td>
         </tr>
         <tr>
-          <td><code>UNPAID_FLAG_BOM</code></td>
-          <td><code>BOOLEAN</code></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
           <td><code>UNPAID_FLAG_EOM</code></td>
           <td><code>BOOLEAN</code></td>
           <td></td>
@@ -1090,6 +1084,12 @@ erDiagram
           <td><code>VARCHAR</code></td>
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
+        </tr>
+        <tr>
+          <td><code>UNPAID_FLAG_BOM</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td></td>
         </tr>
             </tbody>
           </table>
@@ -1170,7 +1170,7 @@ billing as (
         --   ⇒ NULL = 일시회원 이라는 판정이 실측으로 성립한다(추론 아님).
         -- 🔴 G(선물금)·U(긴급구호)는 3컬럼 어디에도 넣지 않는다 — 정본 #67 이 열거한
         --    &quot;기타·국내사업·해외사업&quot; 에 선물금·긴급구호가 없고, 선물금은 **별도 지표**가 있다
-        --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_SERVICE_EVENT.GIFT_PART_*`).
+        --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_MESSAGE_DISPATCH.GIFT_PART_*`).
         --    긴급구호는 대응 지표가 없다. 억지로 귀속시키면 정의 창작이다(DEC-17-B).
         -- ⚠️ 따라서 **3컬럼 합 ≠ PAID_FEE** 다. 검산(2026-08-03 · 본 모델 실행 결과로 확인):
         --    #66 759,530,956,167 + #67 5,365,351,828 + #68 126,337,814,788 = 891,234,122,783

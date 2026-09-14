@@ -103,7 +103,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
       WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N). ⚠편성은 12개월 전량이지만 집행은 적재된 월까지만 존재하므로, 집행 미적재 월을 분모에 넣으면 집행율이 구조적으로 낮게 나온다 — 스코프 정합 규칙은 AI_SQL_GENERATION 참조.'
   )
   COMMENT = 'Phase-1 예산 SV (base: GOLD.FACT_BUDGET, grain: 월×세세목 1행). ERP 예산 원장 기반 월별 편성예산(TOTAL_PLAN_BUDGET), 집행예산(TOTAL_EXEC_BUDGET), 집행율(EXEC_RATE, %) 및 세세목별 집계 뷰. ⚠️ 광고비는 본 뷰에 없으며 SV_AD 소관. 수입 예산은 적재 원천에 부재하며 지출 예산만 포함됨.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 지표 매핑: 편성예산=TOTAL_PLAN_BUDGET, 집행예산=TOTAL_EXEC_BUDGET, 집행율=EXEC_RATE (%). (2) 집행율 산정: 집행예산이 적재된 월까지만 편성을 분모에 포함하여 산정(집행 미적재 월 분모 제외). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 예산구분: BUDGET_CATEGORY 는 ''지출'' 단일 계정이므로 ''수입'' 필터 사용 금지.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 지표 매핑: 편성예산=TOTAL_PLAN_BUDGET, 집행예산=TOTAL_EXEC_BUDGET, 집행율=EXEC_RATE (%). (2) 집행율 산정: 집행예산이 적재된 월까지만 편성을 분모에 포함하여 산정(집행 미적재 월 분모 제외). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 예산구분: BUDGET_CATEGORY 는 ''지출'' 단일 계정이므로 ''수입'' 필터 사용 금지. (5) 2024년 편성 결손 가드: 2024년은 원천 편성액이 부재하므로 다년 집행율 산정 시 YEAR >= 2025 를 적용하거나 연도별로 표를 분리하여 제시.';
 
 
 /* =====================================================================================

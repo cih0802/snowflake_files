@@ -66,6 +66,7 @@ JUDGE = {
     #   `GOLD.FACT_MEMBER_EVENT` 를 가리켰다). 그래서 O154-B 가 5파일 분모로 「0건」을 보고한
     #   사이 전 워크스페이스에는 536건이 남아 있었다(O155 실측 · `R3-9 ㉡` + `O111 ㉠` 결합).
     'rename_stale_gate':      '개명 전 객체명이 살아있는 정본에 병기 없이 남았는가(기준선 대비 증가 = FAIL)',
+    'verify_wide_doc':        '09_빅테이블 VIEW 정의서 ↔ Live Snowflake ↔ dbt 모델 100% 정합 검증',
     # 🆕 [2026-08-31 O126] GOLD ERD 의 FK 커버리지 — 라이브를 **읽을 뿐** 바꾸지 않는다 ⇒ JUDGE.
     #   🔴 판정식이 「고립 0」이 아니라 **「미분류 고립 0」**이다(degen key 는 고립이 정상).
     #   🔴 `gen_gold_erd` 가 이 게이트를 import 해 `LOGICAL_FK` 를 읽는다 ⇒ 규칙 정본은 여기 1곳뿐이다.
@@ -148,6 +149,7 @@ GEN = {
     'gen_measure_backlog': '실측필요 후속작업',
     'gen_metric_gold_mapping': '지표↔GOLD 매핑', 'gen_section_assembly': '절 조립',
     'gen_silver_gold_retention': 'SILVER·GOLD 보존', 'session_brief': '착수 브리핑(`00_BRIEF.md`)',
+    'build_wide_doc': '09_빅테이블 VIEW 정의서 생성기',
     # 🆕 [2026-08-30 O123-C] MUTATES 오분류 2건을 GEN 으로 이동했다 — O121-B 가 고친 것과 **같은 유형**이다
     #   (「DDL 문자열을 **입력으로 읽는**」 도구를 「DDL 을 **발행하는**」 도구로 오분류).
     #   · gen_column_mapping  = 라이브 접속 참조 **0** · `.execute` **0** — `ALTER VIEW` 는

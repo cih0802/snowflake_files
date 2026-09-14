@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="snowflake-source" content="cortex-agent-authored" />
-  <title>DIM_MEMBER_CURRENT - Pipeline ERD & Lineage</title>
+  <title>DIM_MEMBER_STATUS_HISTORY - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
-    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_CURRENT",
-    "table": "DIM_MEMBER_CURRENT",
+    "generated": "2026-09-14 02:29",
+    "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_STATUS_HISTORY",
+    "table": "DIM_MEMBER_STATUS_HISTORY",
     "domain": "CRM / 회원·후원",
     "type": "DIM"
   }
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item active"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item active"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -439,10 +439,10 @@
         <div class="header-top">
           <div class="title-area">
             <h1>
-              <span>DIM_MEMBER_CURRENT</span>
+              <span>DIM_MEMBER_STATUS_HISTORY</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">회원 현재행 차원(1행 = 1회원) — SCD2 DIM_MEMBER 의 IS_CURRENT 투영. 분석가 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql</div>
+            <div class="korean-title">MEMBER_SK (1행=1회원상태버전, SCD2)]. [주의: 팩트와 MEMBER_DK 직접 조인 시 팬아웃 발생, 시점조인 필수]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_MNG → SILVER.CRM_MEMBER_STATUS_HIST]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -452,16 +452,16 @@
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
           <span class="badge badge-domain">BRONZE 원천: 10개</span>
           <span class="badge badge-domain">SILVER 모델: 6개</span>
-          <span class="badge badge-domain">컬럼 수: 57개</span>
+          <span class="badge badge-domain">컬럼 수: 30개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 현재행 차원(1행 = 1회원) — SCD2 DIM_MEMBER 의 IS_CURRENT 투영. 분석가 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 상태전이 이력 차원. [Grain: MEMBER_SK (1행=1회원상태버전, SCD2)]. [주의: 팩트와 MEMBER_DK 직접 조인 시 팬아웃 발생, 시점조인 필수]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_MNG → SILVER.CRM_MEMBER_STATUS_HIST].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
       <div class="section-card">
         <h2 class="section-title">📊 1. Bronze ➔ Silver ➔ Gold 3단계 파이프라인 계보 (Lineage)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(DIM_MEMBER_CURRENT)로 데이터가 유입되는 전체 경로입니다.
+          원천 데이터(Bronze)에서 중간 정제/변환(Silver)을 거쳐 최종 마트(DIM_MEMBER_STATUS_HISTORY)로 데이터가 유입되는 전체 경로입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
@@ -491,8 +491,7 @@ flowchart LR
     S_CRM_MEMBER_STATUS_HIST["CRM_MEMBER_STATUS_HIST"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_DIM_MEMBER_CURRENT["★ DIM_MEMBER_CURRENT<br/>회원 현재행 차원(1행 = 1회원) — SCD"]:::target
-    G_DIM_MEMBER["DIM_MEMBER<br/>회원 차원 (SCD2 · 회원 상태버"]:::gold
+    G_DIM_MEMBER_STATUS_HISTORY["★ DIM_MEMBER_STATUS_HISTORY<br/>MEMBER_SK (1행=1회원상태버전, SC"]:::target
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TH_MM_FDRM_MBER_STNG_DTLS --> S_CRM_MEMBER_STATUS_HIST
@@ -504,18 +503,17 @@ flowchart LR
   B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
   B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
-  G_DIM_MEMBER --> G_DIM_MEMBER_CURRENT
   S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
-  S_CRM_CODE --> G_DIM_MEMBER
+  S_CRM_CODE --> G_DIM_MEMBER_STATUS_HISTORY
   S_CRM_CODE --> S_CRM_CAMPAIGN
   S_CRM_CODE --> S_CRM_MEMBER
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
   S_CRM_CODE --> S_CRM_MEMBER_STATUS_HIST
-  S_CRM_MEMBER --> G_DIM_MEMBER
-  S_CRM_MEMBER_DEV --> G_DIM_MEMBER
-  S_CRM_MEMBER_DISCONTINUE --> G_DIM_MEMBER
-  S_CRM_MEMBER_STATUS_HIST --> G_DIM_MEMBER
+  S_CRM_MEMBER --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_MEMBER_DEV --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_MEMBER_DISCONTINUE --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_MEMBER_STATUS_HIST --> G_DIM_MEMBER_STATUS_HISTORY
           </pre>
         </div>
 
@@ -557,58 +555,23 @@ flowchart LR
       <div class="section-card">
         <h2 class="section-title">🔗 2. GOLD 레벨 ERD 및 관계 (Relationships)</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0;">
-          DIM_MEMBER_CURRENT 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
+          DIM_MEMBER_STATUS_HISTORY 테이블과 조인/참조 관계를 맺고 있는 GOLD 계층의 연관 테이블 및 외래키(FK/Conform) 명세입니다.
         </p>
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
 erDiagram
-  DIM_MEMBER {
+  DIM_MEMBER_STATUS_HISTORY {
     string MEMBER_SK PK
     string MEMBER_DK FK
     string DW_BATCH_ID
   }
-  DIM_MEMBER_CURRENT {
-    string MEMBER_SK
-    string MEMBER_DK FK
-    string DW_BATCH_ID
-    string ACQ_CAMPAIGN_SK
-    string ACQ_ORG_SK
-    string ACQ_SPONSORSHIP_SK
-    string ACQ_DATE_SK
-    string FIRST_STOP_DATE_SK
+  DIM_MEMBER_STATUS_HISTORY {
+    string ID PK
   }
-  DIM_MEMBER ||..o{ DIM_MEMBER_CURRENT : "MEMBER_DK"
           </pre>
         </div>
 
-        
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>출발 테이블</th>
-                <th>출발 컬럼</th>
-                <th></th>
-                <th>대상 테이블</th>
-                <th>대상 컬럼</th>
-                <th>관계 출처</th>
-                <th>관계 유형</th>
-              </tr>
-            </thead>
-            <tbody>
-        <tr>
-          <td><code>DIM_MEMBER_CURRENT</code></td>
-          <td><code>MEMBER_DK</code></td>
-          <td>➔</td>
-          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
-          <td><code>MEMBER_DK</code></td>
-          <td><span class="badge badge-domain">Logical Conform</span></td>
-          <td>현재 회원 스냅샷 자연키 참조</td>
-        </tr>
-            </tbody>
-          </table>
-        </div>
-        
+        <p style='font-size:0.85rem; color:var(--text-muted);'>연결된 외부 참조 관계가 없는 독립 테이블입니다.</p>
       </div>
 
       <!-- 3. Column Catalog -->
@@ -628,20 +591,50 @@ erDiagram
         <tr>
           <td><code>MEMBER_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
+          <td><span class="badge badge-dim">PK</span></td>
+          <td>버전 대리키</td>
         </tr>
         <tr>
           <td><code>MEMBER_DK</code></td>
           <td><code>VARCHAR(10)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td>불변 비즈니스 식별자</td>
+          <td></td>
         </tr>
         <tr>
-          <td><code>MEMBER_TYPE</code></td>
+          <td><code>AREA_CD</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>지역 코드 raw. CM018 18종 + sentinel '0'(라벨 없음). 시점귀속 as-of</td>
+        </tr>
+        <tr>
+          <td><code>REGION</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회원 **등록계통** 구분. 코드id:MM010.</td>
+          <td>지역 (#131) CM018 약칭 라벨. 코드=AREA_CD</td>
+        </tr>
+        <tr>
+          <td><code>AGE</code></td>
+          <td><code>NUMBER(2,0)</code></td>
+          <td></td>
+          <td>연령대 코드 raw CM014(1~12). 🔴연속형 나이 아님</td>
+        </tr>
+        <tr>
+          <td><code>AGE_BAND</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>연령대 CM014 라벨. 코드=AGE. 원천이 이미 구간화(창작 아님)</td>
+        </tr>
+        <tr>
+          <td><code>PREV_MBER_STAT_CD</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>상태전이 이전상태 코드 MM010. 원천 BF_STAT_CD 12/12 일치</td>
+        </tr>
+        <tr>
+          <td><code>PREV_MEMBER_STATUS_NAME</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>이전상태 라벨 MM010. 코드=PREV_MBER_STAT_CD</td>
         </tr>
         <tr>
           <td><code>SEX</code></td>
@@ -668,6 +661,18 @@ erDiagram
           <td>회원상태 원천코드 raw (#132). 코드id:MM010</td>
         </tr>
         <tr>
+          <td><code>MBER_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>회원구분 원천코드 raw. 코드id:MM018</td>
+        </tr>
+        <tr>
+          <td><code>MEMBER_TYPE_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>회원구분명 (라벨). 고유값:개인,기업,단체</td>
+        </tr>
+        <tr>
           <td><code>MEMBER_STATUS_NAME</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
@@ -680,16 +685,16 @@ erDiagram
           <td>MEMBER_STATUS_GROUP. 코드id:MM010.</td>
         </tr>
         <tr>
-          <td><code>MBER_DIV_CD</code></td>
-          <td><code>VARCHAR</code></td>
+          <td><code>FIRST_JOIN_DATE</code></td>
+          <td><code>DATE</code></td>
           <td></td>
-          <td>회원구분 원천코드 raw. 코드id:MM018</td>
+          <td>최초가입일=회원번호 생성일(#28)</td>
         </tr>
         <tr>
-          <td><code>MEMBER_TYPE_NAME</code></td>
+          <td><code>FIRST_CAMPAIGN</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>회원구분명 (라벨). 고유값:개인,기업,단체</td>
+          <td>최초캠페인(#29)</td>
         </tr>
         <tr>
           <td><code>JOIN_PATH_CD</code></td>
@@ -704,46 +709,34 @@ erDiagram
           <td>ENROLL_PATH_NAME. 코드id:MM014. [사유:원천 부재]</td>
         </tr>
         <tr>
-          <td><code>FIRST_JOIN_DATE</code></td>
-          <td><code>DATE</code></td>
-          <td></td>
-          <td>최초가입일 = 회원번호 생성일(정본 공#28) (#28).</td>
-        </tr>
-        <tr>
-          <td><code>FIRST_CAMPAIGN</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>최초캠페인(정본 공#29) (#29).</td>
-        </tr>
-        <tr>
-          <td><code>REGION</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>지역 (#131). 코드id:CM018</td>
-        </tr>
-        <tr>
-          <td><code>AGE_BAND</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>연령대. 코드id:CM014</td>
-        </tr>
-        <tr>
           <td><code>FIRST_SPONSORSHIP</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>FIRST_SPONSORSHIP.</td>
+          <td>최초 후원사업.</td>
         </tr>
         <tr>
           <td><code>LAST_STOP_DATE</code></td>
           <td><code>DATE</code></td>
           <td></td>
-          <td>LAST_STOP_DATE.</td>
+          <td>최종 중단일.</td>
         </tr>
         <tr>
           <td><code>EFFECTIVE_FROM</code></td>
           <td><code>DATE</code></td>
           <td></td>
-          <td>SCD2 유효 시작 시각.</td>
+          <td>SCD2 유효시작.</td>
+        </tr>
+        <tr>
+          <td><code>EFFECTIVE_TO</code></td>
+          <td><code>DATE</code></td>
+          <td></td>
+          <td>SCD2 유효종료.</td>
+        </tr>
+        <tr>
+          <td><code>IS_CURRENT</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>현재행 여부</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -770,202 +763,10 @@ erDiagram
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
         <tr>
-          <td><code>CREATE</code></td>
-          <td><code>OR</code></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td><code>ACQ_CAMPAIGN_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_ORG_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_SPONSORSHIP_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_DATE_SK</code></td>
-          <td><code>NUMBER(8,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_BASIS</code></td>
+          <td><code>MEMBER_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>ACQ_BASIS. 코드id:MM015.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_DVLP_DIV_CD</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_DVLP_DIV_CD. 코드id:MM015.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_AGE_CD</code></td>
-          <td><code>NUMBER(2,0)</code></td>
-          <td></td>
-          <td>ACQ_AGE_CD. 코드id:CM014.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_AGE_BAND</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 시점 연령대명(CM014 라벨, 사전 조인. 코드id:CM014. [사유:부서차원 산출불가]</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_AREA_CD</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_AREA_CD. 코드id:CM018.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_REGION</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_REGION (#131). 코드id:CM018.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_SEX_CD</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_SEX_CD. 코드id:CM013.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_GENDER</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_GENDER. 코드id:CM013.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_SPNSR_AMT</code></td>
-          <td><code>NUMBER(18,0)</code></td>
-          <td></td>
-          <td>ACQ_SPNSR_AMT (#38).</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_BRAND</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 브랜드.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_CAMPAIGN_NAME</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_CAMPAIGN_NAME.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_PARENT_CAMPAIGN_NAME</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 **상위캠페인**명. 코드id:MM294.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_PROMO_METHOD_NAME</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 홍보방법명. 코드그룹 **CM008(홍보방법)**. 코드id:CM008.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_MARKETING_CAMPAIGN</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 마케팅캠페인.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_DEPARTMENT</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_DEPARTMENT.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_SPONSORSHIP_NAME</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_SPONSORSHIP_NAME (#123).</td>
-        </tr>
-        <tr>
-          <td><code>FIRST_STOP_DATE_SK</code></td>
-          <td><code>NUMBER(8,0)</code></td>
-          <td></td>
-          <td>대리키 (PK)</td>
-        </tr>
-        <tr>
-          <td><code>FIRST_STOP_REASON_NM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>FIRST_STOP_REASON_NM. 코드id:MM005.</td>
-        </tr>
-        <tr>
-          <td><code>TENURE_DAYS</code></td>
-          <td><code>NUMBER(9,0)</code></td>
-          <td></td>
-          <td>유지기간(일) = 최초 중단일 − 획득일.</td>
-        </tr>
-        <tr>
-          <td><code>IS_12M_OBSERVABLE</code></td>
-          <td><code>BOOLEAN</code></td>
-          <td></td>
-          <td>IS_12M_OBSERVABLE.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_INFLOW_PATH</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 모집 채널명(MM293 라벨). 코드id:MM293.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_CAMPAIGN_TYPE</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 카테고리 라벨(MM294). 코드id:MM294.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_DOMESTIC_OVERSEAS</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_DOMESTIC_OVERSEAS. 코드id:MM295.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_BIZ_CASE_TYPE</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_BIZ_CASE_TYPE. 코드id:MM296.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_CMMN_BRND_NM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 공통브랜드명(MM297 라벨). 코드id:MM297.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_MKTG_UTM_NM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>ACQ_MKTG_UTM_NM.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_SPNSR_DIV_NM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 후원구분명(CM035 라벨: 정기후원/일시후원). 코드id:CM035.</td>
-        </tr>
-        <tr>
-          <td><code>ACQ_CPR_DIV_NM</code></td>
-          <td><code>VARCHAR</code></td>
-          <td></td>
-          <td>획득 캠페인의 법인구분명(CM019 라벨: 통합/사단/사복). 코드id:CM019.</td>
+          <td>회원 등록계통 구분. 코드id:MM010.</td>
         </tr>
             </tbody>
           </table>
@@ -976,50 +777,16 @@ erDiagram
       <div class="section-card">
         <h2 class="section-title">💻 4. dbt SQL 변환 로직 (Source Code)</h2>
         <details>
-          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER_CURRENT.sql)</summary>
+          <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MEMBER_CURRENT: 회원 차원 현재행(SCD2 IS_CURRENT) 소비뷰 — 분석가 기본 진입점 (DEC-27 §17-A)
+            <pre><code>-- DIM_MEMBER_STATUS_HISTORY: 회원 차원 SCD2 다중 버전 이력 (CRM_MEMBER 현재값 + STATUS_HIST 이력)
 -- Co-authored with CoCo
---
--- 🔴 왜 필요한가 (실측 근거)
---   회원 FACT 4개(FMM·FME·FSE·FEP)가 전부 MEMBER_DK 로 조인하는데 DIM_MEMBER 는 SCD2다
---   — 회원 1명 = 평균 4.50행(최대 218 · 56.5%가 다버전). 순진한 조인은 **조용히** 팬아웃한다.
---   실측(202606 단월): FACT 734,521행 → join 후 2,645,714행(3.60배) · 납입회비 171.3억 → 507.5억(2.96배 과대).
---   에러도 경고도 없다. 그런데 GOLD 에는 비-WIDE 뷰가 0개여서 **안전한 기본값이 아예 없었다**.
---
--- ⚠️ 본 뷰는 DIM_MEMBER 의 **순수 투영**이다 — 파생·라벨 로직을 두지 않는다.
---   라벨 정의 단일 소유 = models/gold/dim/DIM_MEMBER.sql. 초판이 라벨 CASE 를 뷰에 중복
---   정의했다가 P33(정의 중복 → drift) 위반으로 제거했다.
---
--- ⚠️ 전건 NULL 7컬럼(REGION·AGE_BAND·NEW_EXISTING_FLAG·LAST_STOP_DATE·LAST_CAMPAIGN·
---   FIRST_SPONSORSHIP·CURRENT_SPONSORSHIP)은 **의도적으로 미노출** — 컬럼이 보이는데 항상 NULL 이면
---   분석가가 &quot;값이 없다&quot;로 오해하고 GROUP BY 한다(P15). 판정·근거 = 문서30 DEC-27 §17-C.
---
--- ⚠️ SERVING.DIM_MEMBER_CURRENT(SV 소비용, 02_SERVING_setup/08_After_Deploy 소관)와 동명이다.
---   양쪽 다 DIM_MEMBER 순수 투영이라 **값은 항상 일치**하나 컬럼 집합이 다르다
---   (SERVING 은 7여 포함·MEMBER_TYPE 미포함). SV 영향 점검 없이 통합하지 말 것.
---
--- ⚠️ GRANT 불요 — GOLD 스키마에 VIEW future grant(SELECT → ANALYST/VIEWER/SERVICE)가 이미 있어
---   매 build 시 자동 부여된다(실측 확인 2026-08-03).
--- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
---   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
---   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
---     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
---     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
---
--- 🔴🔴 [2026-08-10 O53] **뷰 → 테이블 전환.** 위 O51-D 기술은 뷰 시절 것이며 아래로 갱신된다.
---   ① COMMENT 정본이 **`03_top-down_gold/06_DDL.sql` 인라인 COMMENT** 로 이동했다(사용자 결정).
---      schema.yml 의 `columns[]` 는 제거했다 — 같은 사실을 두 곳에 두면 갈라진다(P85).
---      재구축 시 06_DDL 이 replay 스크립트이므로 그 파일이 COMMENT 의 유일 복원 경로다.
---   ② 머티리얼라이제이션 = `incremental` + `append` + `pre_hook TRUNCATE`(구조·COMMENT 보존).
---      🔴 **merge 를 쓰면 안 된다**: 본 모델은 `IS_CURRENT` 필터라 회원의 현재행이 이동하면
---      merge 는 **구 현재행을 삭제하지 않는다** → 회원 1명이 2행이 되어 이 객체의 존재 이유인
---      팬아웃 차단이 무너진다. 근거 = `20_issue/50_dbt_파이프라인_미결조치.md` §300 R1(선례:
---      DIM_GA_EVENT 잔재) · `DIM_MEMBER` 가 같은 이유로 이미 이 패턴이다. 🆕 P131.
---   ③ 신규 4컬럼(REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE) 노출 — 종전 미노출 근거
---      「전건 NULL 7컬럼」은 stale 이다(3컬럼은 DIM_MEMBER 에 부재 · 4컬럼은 채움 · DEC-28 §18-B 가 이미 정정).
---   🔴 SELECT 컬럼 추가·삭제·순서 변경 시 **06_DDL.sql 블록을 동시에 재생성**할 것
---      (생성기 `scripts/gen_o53_gold_ddl.py` · 손 편집 금지). 불일치는 append 단계에서 발화한다.
+-- 【회원번호 체계】 CRM은 정식(FDRM)·일시(ONCE)를 별도 테이블로 분리 관리:
+--   FDRM → TM_MM_FDRM_MBER_INFO: 번호 0000000~9999999 (7자리, leading-zero 보존)
+--   ONCE → TM_MM_ONCE_MBER_INFO: 번호 S00000000~S09999999 (S접두+8자리=9자)
+--   GA4 user_id는 이 둘을 단일 필드로 통합 표현 → 'S' 접두 유무로 FDRM/ONCE 판별.
+--   MEMBER_DK=VARCHAR(10) 필수·NUMBER 캐스팅 절대 금지.
+-- 🔴 이 테이블은 SCD2 다중 버전(792만 행)이므로, 팩트와 직접 조인하지 말고 정규 1회원 1행인 DIM_MEMBER를 사용하십시오.
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
@@ -1027,35 +794,192 @@ erDiagram
     tags=['gold_ready']
 ) }}
 
+with m as (
+    select * from {{ ref('CRM_MEMBER') }}
+),
+
+-- 상태이력(FDRM 전용): 동일 시점(일자) 중복은 최종상태(max SER_NO)로 축약
+hist_collapsed as (
+    select
+        MBER_NO                                       as MBER_NO,
+        EFFECTIVE_FROM::DATE                          as EFF_FROM,
+        CHN_STAT_CD                                   as STATUS_CD,
+        BF_STAT_CD                                    as PREV_STATUS_CD
+    from {{ ref('CRM_MEMBER_STATUS_HIST') }}
+    qualify row_number() over (partition by MBER_NO, EFFECTIVE_FROM::DATE order by SER_NO desc) = 1
+),
+
+-- 축약본에서 SCD2 구간(EFFECTIVE_TO)·현재플래그 재계산
+hist_scd2 as (
+    select
+        MBER_NO,
+        STATUS_CD,
+        PREV_STATUS_CD,
+        EFF_FROM,
+        lead(EFF_FROM) over (partition by MBER_NO order by EFF_FROM)             as EFF_TO,
+        (lead(EFF_FROM) over (partition by MBER_NO order by EFF_FROM) is null)   as IS_CUR
+    from hist_collapsed
+),
+
+-- (A) 이력 보유 회원(FDRM) = 상태버전별 다중행
+versioned as (
+    select
+        {{ gold_sk(['m.MEMBER_DK', 'h.EFF_FROM']) }}  as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        h.STATUS_CD                                   as MBER_STAT_CD,
+        h.PREV_STATUS_CD                              as PREV_MBER_STAT_CD,
+        h.EFF_FROM                                    as EFFECTIVE_FROM,
+        h.EFF_TO                                      as EFFECTIVE_TO,
+        h.IS_CUR                                      as IS_CURRENT
+    from m
+    join hist_scd2 h on m.MEMBER_DK = h.MBER_NO
+),
+
+-- (B) 이력 미보유(FDRM 무이력 + ONCE 전체) = 가입일 기준 단일버전
+single as (
+    select
+        {{ gold_sk(['m.MEMBER_DK', 'm.FRST_REGIST_DT']) }}   as MEMBER_SK,
+        m.MEMBER_DK, m.SEX, m.SEX_NM, m.MBER_DIV_CD, m.MEMBER_TYPE, m.FRST_REGIST_DT, m.CMPGN_CD, m.JOIN_PATH_CD,
+        m.MBER_STAT_CD                                as MBER_STAT_CD,
+        CAST(NULL AS VARCHAR)                          as PREV_MBER_STAT_CD,
+        m.FRST_REGIST_DT::DATE                               as EFFECTIVE_FROM,
+        CAST(NULL AS DATE)                            as EFFECTIVE_TO,
+        TRUE                                          as IS_CURRENT
+    from m
+    where m.MEMBER_DK not in (select MBER_NO from hist_scd2)
+),
+
+unioned as (
+    select * from versioned
+    union all
+    select * from single
+),
+
+-- 개발약정 시점 스냅샷
+dev_snap as (
+    select
+        MBER_NO                                           as MBER_NO,
+        try_to_date(OCCRRNC_DE, 'YYYYMMDD')               as DEV_DT,
+        AREA_CD                                           as AREA_CD,
+        AGE                                                as AGE
+    from {{ ref('CRM_MEMBER_DEV') }}
+    where OCCRRNC_DE not in ('19000101', '99991231')
+      and try_to_date(OCCRRNC_DE, 'YYYYMMDD') is not null
+    qualify row_number() over (
+        partition by MBER_NO, try_to_date(OCCRRNC_DE, 'YYYYMMDD')
+        order by SER_NO desc nulls last) = 1
+),
+
+member_snap as (
+    select
+        u.MEMBER_SK                                       as MEMBER_SK,
+        d.AREA_CD                                          as AREA_CD,
+        d.AGE                                              as AGE
+    from unioned u
+    asof join dev_snap d
+        match_condition (u.EFFECTIVE_FROM &gt;= d.DEV_DT)
+        on u.MEMBER_DK = d.MBER_NO
+),
+
+first_biz as (
+    select
+        MBER_NO                                            as MBER_NO,
+        SPNSR_BSNS_ID                                      as FIRST_SPONSORSHIP
+    from {{ ref('CRM_MEMBER_DEV') }}
+    where OCCRRNC_DE not in ('19000101', '99991231')
+      and SPNSR_BSNS_ID is not null
+    qualify row_number() over (partition by MBER_NO order by OCCRRNC_DE asc, SER_NO asc) = 1
+),
+
+stop_snap as (
+    select
+        MBER_NO                                            as MBER_NO,
+        try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD')           as STOP_DT
+    from {{ ref('CRM_MEMBER_DISCONTINUE') }}
+    where try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD') is not null
+    qualify row_number() over (
+        partition by MBER_NO, try_to_date(SPNSR_DSCNTC_DE, 'YYYYMMDD')
+        order by SER_NO desc nulls last) = 1
+),
+
+member_stop as (
+    select
+        u.MEMBER_SK                                        as MEMBER_SK,
+        s.STOP_DT                                          as LAST_STOP_DATE
+    from unioned u
+    asof join stop_snap s
+        match_condition (u.EFFECTIVE_FROM &gt;= s.STOP_DT)
+        on u.MEMBER_DK = s.MBER_NO
+),
+
+code_type as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM018'
+),
+code_status as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM010'
+),
+code_path as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'MM014'
+),
+code_gender as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM017'
+),
+code_area as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM018'
+),
+code_ageband as (
+    select DTL_CD_ID, DTL_CD_NM from {{ ref('CRM_CODE') }} where CD_ID = 'CM014'
+)
+
 select
-    MEMBER_SK,
-    MEMBER_DK,
-    MEMBER_TYPE,
-    SEX,
-    SEX_NM,
-    GENDER_NAME,
-    MBER_STAT_CD,
-    MEMBER_STATUS_NAME,
-    MEMBER_STATUS_GROUP,
-    MBER_DIV_CD,
-    MEMBER_TYPE_NAME,
-    JOIN_PATH_CD,
-    ENROLL_PATH_NAME,
-    FIRST_JOIN_DATE,
-    FIRST_CAMPAIGN,
-    -- [2026-08-10 O53] 신규 4컬럼. 종전 미노출 근거였던 「전건 NULL」은 stale 이다(DEC-28 §18-B 가 이미 정정).
-    --   ⚠️ 네 컬럼 전부 개발약정 시점 스냅샷이고 SCD2 축이며 일시회원(ONCE)에는 원천이 없다 — 상세는 06_DDL COMMENT.
-    REGION,
-    AGE_BAND,
-    FIRST_SPONSORSHIP,
-    LAST_STOP_DATE,
-    EFFECTIVE_FROM,
-    DW_SOURCE_SYSTEM,
-    DW_LOAD_TS,
-    DW_UPDATE_TS,
-    DW_BATCH_ID
-from {{ ref('DIM_MEMBER') }}
-where IS_CURRENT
+    u.MEMBER_SK                                   as MEMBER_SK,
+    u.MEMBER_DK                                   as MEMBER_DK,
+    u.SEX                                         as SEX,
+    u.SEX_NM                                      as SEX_NM,
+    cg.DTL_CD_NM                                  as GENDER_NAME,
+    ms.AREA_CD                                    as AREA_CD,
+    ca.DTL_CD_NM                                  as REGION,
+    ms.AGE                                        as AGE,
+    cab.DTL_CD_NM                                 as AGE_BAND,
+    u.MBER_STAT_CD                                as MBER_STAT_CD,
+    u.MBER_DIV_CD                                 as MBER_DIV_CD,
+    ct.DTL_CD_NM                                  as MEMBER_TYPE_NAME,
+    case when u.MBER_STAT_CD is not null then cs.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as MEMBER_STATUS_NAME,
+    CASE
+        WHEN u.MBER_STAT_CD = '1'                                            THEN '정상'
+        WHEN u.MBER_STAT_CD IN ('2','3','4','5','6','7','8','9','10','11')   THEN '미납'
+        WHEN u.MBER_STAT_CD = '12'                                          THEN '중단'
+        WHEN u.MEMBER_TYPE = 'ONCE'                                         THEN '(해당없음)'
+        ELSE NULL
+    END                                           as MEMBER_STATUS_GROUP,
+    u.PREV_MBER_STAT_CD                           as PREV_MBER_STAT_CD,
+    cps.DTL_CD_NM                                 as PREV_MEMBER_STATUS_NAME,
+    u.FRST_REGIST_DT::DATE                        as FIRST_JOIN_DATE,
+    u.CMPGN_CD                                    as FIRST_CAMPAIGN,
+    u.JOIN_PATH_CD                                as JOIN_PATH_CD,
+    case when u.JOIN_PATH_CD is not null then cp.DTL_CD_NM
+         when u.MEMBER_TYPE = 'ONCE'     then '(해당없음)'
+         else null end                            as ENROLL_PATH_NAME,
+    fb.FIRST_SPONSORSHIP                          as FIRST_SPONSORSHIP,
+    st.LAST_STOP_DATE                             as LAST_STOP_DATE,
+    u.EFFECTIVE_FROM                              as EFFECTIVE_FROM,
+    u.EFFECTIVE_TO                                as EFFECTIVE_TO,
+    u.IS_CURRENT                                  as IS_CURRENT,
+    {{ gold_meta('CRM') }},
+    u.MEMBER_TYPE                                 as MEMBER_TYPE
+from unioned u
+left join member_snap  ms  on u.MEMBER_SK       = ms.MEMBER_SK
+left join member_stop  st  on u.MEMBER_SK       = st.MEMBER_SK
+left join first_biz    fb  on u.MEMBER_DK       = fb.MBER_NO
+left join code_type    ct  on u.MBER_DIV_CD     = ct.DTL_CD_ID
+left join code_status  cs  on u.MBER_STAT_CD    = cs.DTL_CD_ID
+left join code_status  cps on u.PREV_MBER_STAT_CD = cps.DTL_CD_ID
+left join code_path    cp  on u.JOIN_PATH_CD    = cp.DTL_CD_ID
+left join code_gender  cg  on u.SEX             = cg.DTL_CD_ID
+left join code_area    ca  on ms.AREA_CD        = ca.DTL_CD_ID
+left join code_ageband cab on to_varchar(ms.AGE) = cab.DTL_CD_ID
 </code></pre>
           </div>
         </details>

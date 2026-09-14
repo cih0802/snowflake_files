@@ -1,6 +1,6 @@
 {
- "axis1_files": 110,
- "axis1_total": 441,
+ "axis1_files": 108,
+ "axis1_total": 409,
  "per_file": {
   "00_guides/04_YAGNI_원천중심_과잉모델링_방지_원칙.md": 2,
   "02_GN_DW_building/00_INDEX.md": 1,
@@ -16,7 +16,6 @@
   "03_top-down_gold/05_필드 인벤토리.md": 7,
   "03_top-down_gold/07_메타.md": 6,
   "03_top-down_gold/08_silver의존.md": 11,
-  "03_top-down_gold/09_빅테이블 VIEW.md": 12,
   "03_top-down_gold/10_WIDE VIEW 코멘트.sql": 5,
   "03_top-down_gold/11_BRONZE적재 컬럼대조.md": 1,
   "03_top-down_gold/99_next_prompt.md": 2,
@@ -107,11 +106,10 @@
   "20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md": 6,
   "20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md": 5,
   "20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md": 7,
-  "30_output_share/01_DW_현업활용가이드.md": 20,
   "30_output_share/10_원천입고_결손요약.md": 9,
   "30_output_share/15_문서 통합.md": 9,
   "30_output_share/16_파이프라인 배선 수정.md": 8,
   "30_output_share/20_현업의사결정_요청_주니어_해설서.md": 7
  },
- "reason": "O156 FACT_MEMBER_EVENT 개명 철회 반영 · 감시 방향 반전(LIFECYCLE을 옛 이름으로) · 나머지 7종 개명 유지"
+ "reason": "O158: 03_top-down_gold/09_빅테이블 VIEW.md 14종 WIDE 확장 정의서 최신화 (-12건)"
 }

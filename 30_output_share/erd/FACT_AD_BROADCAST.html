@@ -7,7 +7,7 @@
   <title>FACT_AD_BROADCAST - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-07 08:52",
+    "generated": "2026-09-14 02:29",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_BROADCAST",
     "table": "FACT_AD_BROADCAST",
     "domain": "AGENCY / 마케팅·광고",
@@ -402,8 +402,8 @@
 <a href="DIM_MARKETING_CAMPAIGN.html" class="nav-item"><span>DIM_MARKETING_CAMPAIGN</span></a>
 <a href="DIM_MEMBER.html" class="nav-item"><span>DIM_MEMBER</span></a>
 <a href="DIM_MEMBER_ACQUISITION.html" class="nav-item"><span>DIM_MEMBER_ACQUISITION</span></a>
-<a href="DIM_MEMBER_CURRENT.html" class="nav-item"><span>DIM_MEMBER_CURRENT</span></a>
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
+<a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
@@ -419,16 +419,16 @@
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
-<a href="FACT_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_DEV_ACHIEVEMENT</span></a>
-<a href="FACT_EVENT_PARTICIPATION.html" class="nav-item"><span>FACT_EVENT_PARTICIPATION</span></a>
+<a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
-<a href="FACT_MEMBER_SPONSOR_BIZ.html" class="nav-item"><span>FACT_MEMBER_SPONSOR_BIZ</span></a>
-<a href="FACT_SERVICE_EVENT.html" class="nav-item"><span>FACT_SERVICE_EVENT</span></a>
-<a href="FACT_TARGET_BIZ.html" class="nav-item"><span>FACT_TARGET_BIZ</span></a>
-<a href="FACT_TARGET_DEV.html" class="nav-item"><span>FACT_TARGET_DEV</span></a>
+<a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
+<a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
+<a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
       </nav>
     </aside>
 
@@ -442,7 +442,7 @@
               <span>FACT_AD_BROADCAST</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">1. DEC-8 이관 + O16 해소(개발실적 분리). 원천별·합계 행수는 문서10 §26-B 참조</div>
+            <div class="korean-title">AD_PERF_DK (코어 1:1)]. [주의: TV/케이블 방송 송출 고유 속성]. [원천: AGENCY → SILVER.AGENCY_AD_BROADCAST]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 3개</span>
           <span class="badge badge-domain">컬럼 수: 26개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>광고성과 위성 — 방송(VIDEO ∪ REBRDC) 고유속성. 코어와 AD_PERF_DK 1:1. DEC-8 이관 + O16 해소(개발실적 분리). 원천별·합계 행수는 문서10 §26-B 참조</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>방송광고 성과 위성 팩트. [Grain: AD_PERF_DK (코어 1:1)]. [주의: TV/케이블 방송 송출 고유 속성]. [원천: AGENCY → SILVER.AGENCY_AD_BROADCAST].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -480,7 +480,7 @@ flowchart LR
     S_AGENCY_AD_ROW_VIDEO["AGENCY_AD_ROW_VIDEO"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_AD_BROADCAST["★ FACT_AD_BROADCAST<br/>1. DEC-8 이관 + O16 해소(개발실적"]:::target
+    G_FACT_AD_BROADCAST["★ FACT_AD_BROADCAST<br/>AD_PERF_DK (코어 1:1)]. [주의"]:::target
   end
   B_bronze_agency_REBRDC_AD_CMPGN_DTLS --> S_AGENCY_AD_ROW_REBRDC
   B_bronze_agency_VIDEO_AD_CMPGN_DTLS --> S_AGENCY_AD_ROW_VIDEO
