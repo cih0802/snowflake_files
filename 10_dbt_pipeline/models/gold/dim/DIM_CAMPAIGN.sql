@@ -65,8 +65,11 @@ select
     -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건의 잔여 2컬럼(공통브랜드·UTM) — SILVER CRM_CAMPAIGN 라벨 그대로 승계.
     c.CMMN_BRND                                    as CMMN_BRND,      -- MM297 공통브랜드 코드
     c.CMMN_BRND_NM                                 as CMMN_BRND_NM,
-    c.MKTG_UTM                                     as MKTG_UTM,       -- TM_CM_MKTNG_UTM.MK_UTM 코드
+    c.MKTG_UTM                                     as MKTG_UTM,       -- TC_MKTNG_DTL_CD (U001) 코드
     c.MKTG_UTM_NM                                  as MKTG_UTM_NM,
+    -- [2026-09-16 O162] 마케팅채널(C002) — SILVER CRM_CAMPAIGN 승계
+    c.MKTG_CHANNEL                                 as MKTG_CHANNEL,
+    c.MKTG_CHANNEL_NM                              as MKTG_CHANNEL_NM,
     {{ gold_meta('CRM') }}
 from c
 -- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
@@ -80,4 +83,5 @@ union all
 select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0,
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
+    NULL, NULL,
     {{ gold_meta('CRM') }}

@@ -1,9 +1,9 @@
 -- GN_DW SILVER 테이블 정의 DDL (STEP 1 스키마 + 39테이블 CREATE). 적재쿼리는 09 참조.
 -- Co-authored with CoCo
 /*
-  GN_DW.SILVER — 39테이블 정의 DDL (테이블 구조 정본)
-    구성: CRM 22 + ERP 2 + AGENCY 8 + GA4 6 + bridge 1 = 39.
-    dbt SILVER 모델 39개와 1:1 대응(구조 소유주 = 이 파일, dbt 는 데이터만 갱신).
+  GN_DW.SILVER — 47테이블 정의 DDL (테이블 구조 정본)
+    구성: CRM 29 + ERP 3 + AGENCY 8 + GA4 6 + bridge 1 = 47.
+    dbt SILVER 모델 47개와 1:1 대응(구조 소유주 = 이 파일, dbt 는 데이터만 갱신).
     ※ 2026-07-29 실측 대조 완료 — INFORMATION_SCHEMA 38테이블·전 컬럼 일치.
     🟢 [2026-08-19 O87] GA4 5 → 6 (`BIGQUERY_REFINED_DATA` 신설) ⇒ 총계 38 → **39**.
        ⚠️ 위 「2026-07-29 실측 38」은 그 시점 기록이고 **아직 39 로 재실측되지 않았다**
@@ -14,6 +14,12 @@
        구조는 종전 커밋아웃된 `BIGQUERY_REFINED_DATA` DDL 을 계승하되 `SRC_TABLE`·
        `SRC_FILE_NAME`·`BRONZE_LOAD_TS`(외부 적재에 계보 없음)는 제거하고
        `GAC_*`(google_ads_campaign) 3컬럼을 추가한다. `EVENT_SEQ` 결정성은 미해결(`GA4-SEQ-1`).
+    🟢 [2026-09-16 O162] CRM 원천 개편(BRONZE 46 → 50) 반영:
+       CRM 22 → **26** (+`CRM_MKTNG_CODE`, +`CRM_SEND_MEMBER_OPEN_LOG`, +`CRM_SEND_MEMBER_LINK_LOG`, +`CRM_MEMBER_CONVERT_HIST`).
+       총계 40 → **44** 테이블.
+       · `CRM_CAMPAIGN` 에 `MKTG_CHANNEL` / `MKTG_CHANNEL_NM` 컬럼 추가.
+       · `CRM_SEND_MEMBER` 의 `OPEN_DT` 는 `SND_MEMBER_OPEN_LOG` 에서 회원×발송별 MIN(OPEN_DT)로 축약 적재.
+       · `CRM_MARKETING_CAMPAIGN` 은 `TC_MKTNG_DTL_CD` 의 C001 기반 호환 정제 유지.
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
@@ -466,12 +472,14 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     CMPGN_TYPE1_NM      VARCHAR(200)    COMMENT '캠페인 유형1명 (MM295 라벨): 국내 / 통합 / 해외. 코드id:MM295.',
     CMPGN_TYPE2_BSN     NUMBER(10,0)    COMMENT 'CMPGN_TYPE2_BSN. 코드id:MM296.',
     CMPGN_TYPE2_NM      VARCHAR(200)    COMMENT 'CMPGN_TYPE2_NM. 코드id:MM296.',
-    MKTG_CMPGN_NM       NUMBER(10,0)    COMMENT 'MKTG_CMPGN_NM.',
-    MK_CMPGN_NM         VARCHAR(200)    COMMENT '마케팅 캠페인명 (라벨, Q16 해소)',
+    MKTG_CMPGN_NM       NUMBER(10,0)    COMMENT '마케팅 캠페인코드 (TC_MKTNG_DTL_CD C001 대응 · _NM이나 실제 FK)',
+    MK_CMPGN_NM         VARCHAR(200)    COMMENT '마케팅 캠페인명 (TC_MKTNG_DTL_CD C001 라벨)',
     CMMN_BRND           NUMBER(10,0)    COMMENT 'MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM. 코드id:MM297.',
     CMMN_BRND_NM        VARCHAR(100)    COMMENT 'MM297 공통브랜드명',
-    MKTG_UTM            NUMBER(10,0)    COMMENT 'TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM. 고유값:MKTG_UTM_NM.',
-    MKTG_UTM_NM         VARCHAR(200)    COMMENT 'TM_CM_MKTNG_UTM 라벨',
+    MKTG_UTM            NUMBER(10,0)    COMMENT '마케팅 UTM 코드 (TC_MKTNG_DTL_CD U001 대응)',
+    MKTG_UTM_NM         VARCHAR(200)    COMMENT '마케팅 UTM 라벨 (TC_MKTNG_DTL_CD U001 라벨)',
+    MKTG_CHANNEL        NUMBER(10,0)    COMMENT '마케팅 채널 코드 (2026-09-16 신규 · TM_CM_CMPGN_MNG.MKTG_CHANNEL · TC_MKTNG_DTL_CD C002 대응)',
+    MKTG_CHANNEL_NM     VARCHAR(200)    COMMENT '마케팅 채널명 (TC_MKTNG_DTL_CD C002 라벨)',
     -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 2속성(BRND_NM 은 위 327행에 이미 존재).,
     CMPGN_STRT_DE       VARCHAR(8)      COMMENT '캠페인 시작일 YYYYMMDD',
     -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
@@ -600,9 +608,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SEND_RESULT_CD      VARCHAR(10)     COMMENT '축B(신설) 통신사 결과코드 raw.',
     SEND_RESULT_GROUP   VARCHAR(10)     COMMENT 'SEND_RESULT_GROUP. 코드id:MS283.',
     SEND_RESULT_NAME    VARCHAR         COMMENT 'SEND_RESULT_NAME.',
-    -- [2026-08-20 O93] 오픈시각 — GOLD.FACT_SERVICE_EVENT.OPEN_MEMBERS 의 유일 원천.
-    --   선언 위치가 맨 끝인 것도 위와 같은 규약 근거다(라이브 ALTER ADD COLUMN).
-    OPEN_DT             TIMESTAMP_NTZ   COMMENT '오픈시각.',
+    -- [2026-08-20 O93 · 2026-09-16 O162 개정] 오픈시각 — GOLD.FACT_SERVICE_EVENT.OPEN_MEMBERS 의 유일 원천.
+    --   🔴 2026-09-15 원천 SND_MEMBER_LIST.OPEN_DT 삭제로 인해 신규 BRONZE SND_MEMBER_OPEN_LOG 에서
+    --      회원×발송별 MIN(OPEN_DT) 로 축약 적재되어 상위 인터페이스를 보존한다.
+    OPEN_DT             TIMESTAMP_NTZ   COMMENT '오픈시각 (SND_MEMBER_OPEN_LOG 축약).',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 
@@ -727,6 +736,84 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CODE (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (CD_ID, DTL_CD_ID)
 ) COMMENT = '공통 코드 사전 마스터. [Grain: CD_ID × DTL_CD_ID (1행=1코드값)]. [주의: 코드그룹별 상세코드 및 한글 라벨 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CODE_DTL].';
+
+-- CRM 22: CRM_MKTNG_CODE (마케팅 통합 코드 사전 — 2026-09-16 O162 신설)
+--   [설계 및 실측 이력]
+--   · 원천: BRONZE_CRM.TC_MKTNG_DTL_CD (16컬럼). TM_CM_MKTNG_CMPGN_MNG · TM_CM_MKTNG_UTM 통합분.
+--   · 🔴 기존 코드 테이블(TC_CMMN_CD/TC_CMMN_DTL_CD)과 연관성 없는 별개 네임스페이스.
+--   · CD_ID 현재 3종 = C001(마케팅캠페인명) · C002(채널) · U001(UTM). 향후 마케팅 코드도 여기에 증분.
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MKTNG_CODE (
+    CD_ID               VARCHAR(50)     NOT NULL COMMENT '코드그룹 ID (PK · C001 마케팅캠페인 / C002 채널 / U001 UTM)',
+    DTL_CD_ID           VARCHAR(50)     NOT NULL COMMENT '상세코드 ID (PK)',
+    CD_NM               VARCHAR(200)    COMMENT '코드그룹명',
+    DTL_CD_NM           VARCHAR(200)    COMMENT '상세코드명 (라벨)',
+    SORT_ORDR           NUMBER(10,0)    COMMENT '정렬순서',
+    USE_YN              VARCHAR(1)      COMMENT '사용여부 (Y/N)',
+    RM                  VARCHAR(1000)   COMMENT '비고',
+    CD_ATRB1            VARCHAR(100)    COMMENT '코드속성1',
+    CD_ATRB2            VARCHAR(100)    COMMENT '코드속성2',
+    CD_ATRB3            VARCHAR(100)    COMMENT '코드속성3',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (CD_ID, DTL_CD_ID)
+) COMMENT = '마케팅 통합 코드 사전. [Grain: CD_ID × DTL_CD_ID (1행=1코드값)]. [주의: 마케팅캠페인/채널/UTM 코드 통합]. [원천: CRM → BRONZE_CRM.TC_MKTNG_DTL_CD].';
+
+-- CRM 23: CRM_SEND_MEMBER_OPEN_LOG (메일 오픈 로그 — 2026-09-16 O162 신설)
+--   [설계 및 실측 이력]
+--   · 원천: BRONZE_CRM.SND_MEMBER_OPEN_LOG (8컬럼).
+--   · 구 SND_MEMBER_LIST.OPEN_DT 가 확장된 오픈 세부 로그.
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER_OPEN_LOG (
+    LOG_SEQ             NUMBER(19,0)    NOT NULL COMMENT '로그순번 (PK)',
+    REQ_SEQ_NO          NUMBER(19,0)    COMMENT '발송요청순번 (→CRM_SEND_REQUEST)',
+    R_NUM               NUMBER(19,0)    COMMENT '순번 (→CRM_SEND_MEMBER)',
+    MBER_NO             VARCHAR(50)     COMMENT '회원번호',
+    OPEN_DT             TIMESTAMP_NTZ   COMMENT '오픈일시',
+    FRST_REGIST_DT      TIMESTAMP_NTZ   COMMENT '최초등록일시',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (LOG_SEQ)
+) COMMENT = '메시지 발송 메일 오픈 로그. [Grain: LOG_SEQ (1행=1오픈사건)]. [원천: CRM → BRONZE_CRM.SND_MEMBER_OPEN_LOG].';
+
+-- CRM 24: CRM_SEND_MEMBER_LINK_LOG (메일 링크 클릭 로그 — 2026-09-16 O162 신설)
+--   [설계 및 실측 이력]
+--   · 원천: BRONZE_CRM.SND_MEMBER_MAIL_LINK_LOG (13컬럼).
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER_LINK_LOG (
+    LOG_SEQ             NUMBER(19,0)    NOT NULL COMMENT '로그순번 (PK)',
+    REQ_SEQ_NO          NUMBER(19,0)    COMMENT '발송요청순번 (→CRM_SEND_REQUEST)',
+    R_NUM               NUMBER(19,0)    COMMENT '순번 (→CRM_SEND_MEMBER)',
+    MBER_NO             VARCHAR(50)     COMMENT '회원번호',
+    LINK_ID             VARCHAR(30)     COMMENT '링크ID',
+    LINK_NM             VARCHAR(30)     COMMENT '링크명',
+    LINK_PAGE           VARCHAR(255)    COMMENT '링크페이지',
+    LINK_IMG_URL        VARCHAR(1024)   COMMENT '링크이미지URL',
+    AGENT               VARCHAR(5)      COMMENT '접속에이전트',
+    CLICK_DT            TIMESTAMP_NTZ   COMMENT '클릭일시',
+    FRST_REGIST_DT      TIMESTAMP_NTZ   COMMENT '최초등록일시',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (LOG_SEQ)
+) COMMENT = '메시지 발송 메일 링크 클릭 로그. [Grain: LOG_SEQ (1행=1클릭사건)]. [원천: CRM → BRONZE_CRM.SND_MEMBER_MAIL_LINK_LOG].';
+
+-- CRM 25: CRM_MEMBER_CONVERT_HIST (일시→정기 회원 전환 매핑 — 2026-09-16 O162 신설)
+--   [설계 및 실측 이력]
+--   · 원천: BRONZE_CRM.TM_MM_FDRM_MBER_DT_DTLS (5컬럼).
+--   · ⚠️ 회비이관 시에만 기록되는 부분집합 매핑.
+CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_CONVERT_HIST (
+    MBER_NO             VARCHAR(10)     NOT NULL COMMENT '정기회원번호 (전환 후 · PK · →CRM_MEMBER)',
+    ONCE_MBER_NO        VARCHAR(10)     NOT NULL COMMENT '일시후원회원번호 (전환 전 · PK)',
+    FRST_REGIST_DT      TIMESTAMP_NTZ   COMMENT '전환/최초등록일시',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (MBER_NO, ONCE_MBER_NO)
+) COMMENT = '일시→정기 회원 전환 매핑 이력. [Grain: MBER_NO × ONCE_MBER_NO (1행=1전환매핑)]. [주의: 회비이관 발생 건 한정]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DT_DTLS].';
 
 -- ============================================================================
 -- STEP 3 — ERP 2테이블 + CRM_BIZ_TARGET (원천=CRM, E-6 입고대기)
@@ -1509,26 +1596,28 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
 
 
 -- ############################################################################
--- [2026-08-06 O45] 신규 SILVER 테이블 1종 — 마케팅캠페인 마스터
+-- [2026-08-06 O45 · 2026-09-16 O162 개정] SILVER 마케팅캠페인 마스터
 -- ----------------------------------------------------------------------------
 -- Q16 「MKTG_CMPGN_NM 전건 NULL」 오진 철회의 산물. 실측: 브리지 조인 100% 해소 ·
 -- AGENCY 광고 캠페인명과 이름 일치 76/105(72.4%) → 광고행 89.7% 도달.
+-- 🔴 2026-09-15 원천 TM_CM_MKTNG_CMPGN_MNG 가 삭제되고 TC_MKTNG_DTL_CD 로 통합됨.
+--    dbt 모델에서는 TC_MKTNG_DTL_CD (CD_ID='C001') 필터링으로 재정의되어 상위 호환성 유지.
 -- 실행 스크립트 정본 = 03_top-down_gold/O45_ASSEMBLY_AXES.sql §1
 -- ############################################################################
 --   [컬럼별 설계 및 실측 이력]
---   · MK_CMPGN_CD: PK. 마케팅캠페인 코드. TM_CM_CMPGN_MNG.MKTG_CMPGN_NM(NUMBER)의 문자 표현과 조인된다
---   · MK_CMPGN_NM: 마케팅캠페인명. AGENCY 광고 CAMPAIGN_NM 과 이름 매칭되는 축
+--   · MK_CMPGN_CD: PK. 마케팅캠페인 코드 (TC_MKTNG_DTL_CD DTL_CD_ID 대응)
+--   · MK_CMPGN_NM: 마케팅캠페인명 (TC_MKTNG_DTL_CD DTL_CD_NM 대응)
 --   · USE_YN: 사용여부(원천 그대로 — 폐지분도 과거 실적에 붙으므로 제외하지 않는다)
 CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
-    MK_CMPGN_CD        VARCHAR       COMMENT 'MK_CMPGN_CD.',
-    MK_CMPGN_NM        VARCHAR       COMMENT 'MK_CMPGN_NM.',
+    MK_CMPGN_CD        VARCHAR       COMMENT 'MK_CMPGN_CD (TC_MKTNG_DTL_CD DTL_CD_ID).',
+    MK_CMPGN_NM        VARCHAR       COMMENT 'MK_CMPGN_NM (TC_MKTNG_DTL_CD DTL_CD_NM).',
     USE_YN             VARCHAR       COMMENT '사용여부 Y/N. 고유값:Y,N',
     RM                 VARCHAR       COMMENT '비고',
     DW_SOURCE_SYSTEM   VARCHAR       COMMENT '원천 시스템',
     DW_LOAD_TS         TIMESTAMP_NTZ COMMENT '적재 시각',
     DW_UPDATE_TS       TIMESTAMP_NTZ COMMENT '갱신 시각',
     DW_BATCH_ID        VARCHAR       COMMENT '배치 식별'
-) COMMENT = '마케팅 캠페인 마스터. [Grain: MKTG_CAMPAIGN_BK (1행=1마케팅캠페인)]. [주의: AGENCY(광고)와 CRM(개발)을 잇는 Conformed 축]. [원천: CRM → BRONZE_CRM.TM_CM_MKTNG_CMPGN_INFO].';
+) COMMENT = '마케팅 캠페인 마스터. [Grain: MKTG_CAMPAIGN_BK (1행=1마케팅캠페인)]. [주의: TC_MKTNG_DTL_CD C001 호환 정제]. [원천: CRM → BRONZE_CRM.TC_MKTNG_DTL_CD].';
 
 -- ############################################################################
 -- [2026-09-09 O151] 신규 SILVER 브릿지 테이블 — DEC-45 캠페인 ↔ 후원사업 브릿지

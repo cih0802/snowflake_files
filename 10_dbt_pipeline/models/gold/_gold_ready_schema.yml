@@ -113,6 +113,11 @@ models:
         tests:
           - not_null
           - relationships: { to: ref('DIM_ORG'), field: ORG_SK }
+      # [2026-09-16 O162] 마케팅채널 라벨 테스트
+      - name: MKTG_CHANNEL_NM
+        tests:
+          - not_null:
+              config: { where: "MKTG_CHANNEL IS NOT NULL", severity: warn }
   - name: DIM_SPONSORSHIP
     columns:
       - name: SPONSORSHIP_SK

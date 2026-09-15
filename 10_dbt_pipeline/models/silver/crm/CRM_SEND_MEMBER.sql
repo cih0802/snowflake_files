@@ -26,7 +26,36 @@
 --       🟢 **[O116-B] 그 예고가 실현됐다** — 위 ㉠㉡ 가 「사전이 원천 코드 증가를 못 따라간」 실물이다.
 --   ⚠️ fan-out 안전: (CD_ID, DTL_CD_ID) 가 대상 그룹 전건 유일 + 축B 4그룹 교차중복 0 (실측 2026-08-11).
 --   ⚠️ 사전 초과값은 라벨 NULL 로 남긴다(DEC-17-B · 센티넬 창작 금지) — `_crm_schema.yml` 이 warn 으로 관측한다.
-WITH base AS (
+WITH open_log AS (
+  -- [2026-09-16 O162] 원천 SND_MEMBER_LIST.OPEN_DT 삭제 대응:
+  --   SND_MEMBER_OPEN_LOG 에서 (REQ_SEQ_NO, R_NUM) 기준 MIN(OPEN_DT) 로 축약 집계
+  SELECT
+    REQ_SEQ_NO,
+    R_NUM,
+    MIN(OPEN_DT) AS OPEN_DT
+  FROM {{ source('bronze_crm','SND_MEMBER_OPEN_LOG') }}
+  WHERE REQ_SEQ_NO IS NOT NULL AND R_NUM IS NOT NULL
+  GROUP BY REQ_SEQ_NO, R_NUM
+),
+snd_base AS (
+  SELECT
+    s.REQ_SEQ_NO,
+    s.R_NUM,
+    NULLIF(TRIM(s.MBER_NO),'') AS MBER_NO,
+    s.SND_DT,
+    NULLIF(TRIM(s.SND_YN),'') AS SND_YN,
+    'SND' AS SEND_CHANNEL,
+    NULLIF(TRIM(s.CALL_STATUS),'') AS CALL_STATUS,
+    ol.OPEN_DT AS OPEN_DT,
+    'CRM' AS DW_SOURCE_SYSTEM,
+    'BRONZE_CRM.SND_MEMBER_LIST' AS DW_SOURCE_TABLE
+  FROM {{ source('bronze_crm','SND_MEMBER_LIST') }} s
+  LEFT JOIN open_log ol
+    ON s.REQ_SEQ_NO = ol.REQ_SEQ_NO AND s.R_NUM = ol.R_NUM
+  WHERE s.REQ_SEQ_NO IS NOT NULL AND s.R_NUM IS NOT NULL
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY s.REQ_SEQ_NO, s.R_NUM ORDER BY s.SND_DT DESC NULLS LAST)=1
+),
+base AS (
   SELECT SNDNG_KEY AS SNDNG_KEY, SNDNG_DTL_KEY AS SNDNG_DTL_KEY, NULLIF(TRIM(MBER_NO),'') AS MBER_NO,
     SNDNG_DE AS SNDNG_DE, NULLIF(TRIM(SNDNG_RST_CD),'') AS SNDNG_RST_CD, 'EMAIL' AS SEND_CHANNEL,
     CAST(NULL AS VARCHAR) AS SEND_RESULT_CD,
@@ -49,16 +78,9 @@ WITH base AS (
   FROM {{ source('bronze_crm','TD_MS_PSTMTR_SNDNG_DTL') }} WHERE SNDNG_KEY IS NOT NULL AND SNDNG_DTL_KEY IS NOT NULL
   QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DE DESC NULLS LAST)=1
   UNION ALL
-  SELECT REQ_SEQ_NO, R_NUM, NULLIF(TRIM(MBER_NO),''), SND_DT, NULLIF(TRIM(SND_YN),''), 'SND',
-    NULLIF(TRIM(CALL_STATUS),''),
-    -- 🆕 [2026-08-20 O93] 오픈시각 — **SND 채널에만 존재**하는 신규 원천 컬럼이다.
-    --    원천에서 물리 ordinal 이 맨 끝이다(ALTER ADD COLUMN 으로 나중에 붙었다는 뜻).
-    --    ⚠️ 채움이 부분이고 관측 개시 시점 이후만 값이 있다 — 그 이전 구간의 NULL 은
-    --       「열지 않았다」가 아니라 **「측정하지 않았다」**다. 소비 판정은 GOLD 쪽 주석 참조.
-    OPEN_DT,
-    'CRM','BRONZE_CRM.SND_MEMBER_LIST'
-  FROM {{ source('bronze_crm','SND_MEMBER_LIST') }} WHERE REQ_SEQ_NO IS NOT NULL AND R_NUM IS NOT NULL
-  QUALIFY ROW_NUMBER() OVER (PARTITION BY REQ_SEQ_NO, R_NUM ORDER BY SND_DT DESC NULLS LAST)=1
+  SELECT REQ_SEQ_NO, R_NUM, MBER_NO, SND_DT, SND_YN, SEND_CHANNEL,
+    CALL_STATUS, OPEN_DT, DW_SOURCE_SYSTEM, DW_SOURCE_TABLE
+  FROM snd_base
 )
 SELECT
   b.SNDNG_KEY                     AS SNDNG_KEY,

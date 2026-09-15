@@ -260,10 +260,15 @@ models:
         tests:
           - not_null:
               config: { where: "CMMN_BRND IS NOT NULL", severity: warn }
-      - name: MKTG_UTM_NM      # TM_CM_MKTNG_UTM 라벨(191종 — accepted_values 미열거, not_null 로 고아만 감시)
+      - name: MKTG_UTM_NM      # TC_MKTNG_DTL_CD (U001) 라벨
         tests:
           - not_null:
               config: { where: "MKTG_UTM IS NOT NULL", severity: warn }
+      # [2026-09-16 O162] 마케팅채널(C002) 라벨
+      - name: MKTG_CHANNEL_NM
+        tests:
+          - not_null:
+              config: { where: "MKTG_CHANNEL IS NOT NULL", severity: warn }
 
   - name: CRM_SPONSORSHIP
     columns:
@@ -425,6 +430,10 @@ models:
               values: ['1', '2', '3', '4', '5']
               quote: true
               config: { where: "SPNSR_AMT_CD is not null" }
+      - name: MKTG_CHANNEL_NM
+        tests:
+          - not_null:
+              config: { where: "MKTG_CHANNEL IS NOT NULL", severity: warn }
 
   - name: CRM_MEMBER_DISCONTINUE
     columns:
@@ -790,3 +799,42 @@ models:
           - accepted_values: { values: ['서신', '선물금'] }
       - name: RELATNSP_KEY
         tests: [not_null]
+
+  # [2026-09-16 O162 신규 모델 4종]
+  - name: CRM_MKTNG_CODE
+    description: >
+      마케팅 통합 코드 사전 — TC_MKTNG_DTL_CD (C001 마케팅캠페인 / C002 채널 / U001 UTM 등).
+      기존 CRM_CODE(공통코드)와 분리된 독자 네임스페이스.
+    columns:
+      - name: CD_ID
+        tests: [not_null]
+      - name: DTL_CD_ID
+        tests: [not_null]
+      - name: "CD_ID || '|' || DTL_CD_ID"
+        tests: [unique]
+
+  - name: CRM_SEND_MEMBER_OPEN_LOG
+    description: >
+      메시지 발송 메일 오픈 로그 — SND_MEMBER_OPEN_LOG. 구 SND_MEMBER_LIST.OPEN_DT 가 확장된 세부 로그.
+    columns:
+      - name: LOG_SEQ
+        tests: [not_null, unique]
+
+  - name: CRM_SEND_MEMBER_LINK_LOG
+    description: >
+      메시지 발송 메일 링크 클릭 로그 — SND_MEMBER_MAIL_LINK_LOG.
+    columns:
+      - name: LOG_SEQ
+        tests: [not_null, unique]
+
+  - name: CRM_MEMBER_CONVERT_HIST
+    description: >
+      일시→정기 회원 전환 매핑 이력 — TM_MM_FDRM_MBER_DT_DTLS. 회비이관 발생 건 한정.
+    columns:
+      - name: MBER_NO
+        tests: [not_null]
+      - name: ONCE_MBER_NO
+        tests: [not_null]
+      - name: "MBER_NO || '|' || ONCE_MBER_NO"
+        tests: [unique]
+

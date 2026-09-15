@@ -87,8 +87,8 @@ sources:
       - name: TM_CM_MBER_DVLP_GOAL          # 회원개발 목표 → CRM_DEV_TARGET
       - name: TM_CM_CMPGN_MNG               # 캠페인 관리 → CRM_CAMPAIGN
       - name: TM_CM_BRND_MNG                # 브랜드 관리 (CRM_CAMPAIGN join)
-      - name: TM_CM_MKTNG_CMPGN_MNG         # 마케팅 캠페인 (CRM_CAMPAIGN join)
-      - name: TM_CM_MKTNG_UTM               # [2026-08-25 신설] UTM 코드사전(MK_UTM/MK_UTM_NM) → CRM_CAMPAIGN join
+      # 🔴 [2026-09-15 CRM 개편] TM_CM_MKTNG_CMPGN_MNG · TM_CM_MKTNG_UTM 삭제 → TC_MKTNG_DTL_CD 통합
+      - name: TC_MKTNG_DTL_CD               # 마케팅 통합 코드(C001/C002/U001) → CRM_MKTNG_CODE, CRM_CAMPAIGN
       - name: TM_MM_FDRM_MBER_DVLP_AMT      # 개발약정 실적 → CRM_MEMBER_DEV
       - name: TM_MM_FDRM_MBER_IRSD          # 증액/감액 → CRM_MEMBER_AMT_CHANGE
       - name: TM_MM_FDRM_MBER_SPNSR_DSCNTC  # 후원중단 → CRM_MEMBER_DISCONTINUE
@@ -124,6 +124,9 @@ sources:
       - name: TD_MS_MSG_AT_SNDNG_DTLS       # 문자 발송 상세 → CRM_SEND_MEMBER
       - name: TD_MS_PSTMTR_SNDNG_DTL        # 우편 발송 상세 → CRM_SEND_MEMBER
       - name: SND_MEMBER_LIST               # 발송 회원 리스트(SND) → CRM_SEND_MEMBER
+      - name: SND_MEMBER_OPEN_LOG           # [2026-09-15 신규] 메일 오픈 로그 → CRM_SEND_MEMBER_OPEN_LOG, CRM_SEND_MEMBER
+      - name: SND_MEMBER_MAIL_LINK_LOG      # [2026-09-15 신규] 메일 링크 클릭 로그 → CRM_SEND_MEMBER_LINK_LOG
+      - name: TM_MM_FDRM_MBER_DT_DTLS       # [2026-09-15 신규] 일시→정기 회원 전환 매핑 → CRM_MEMBER_CONVERT_HIST
 
   - name: bronze_erp
     database: GN_DW

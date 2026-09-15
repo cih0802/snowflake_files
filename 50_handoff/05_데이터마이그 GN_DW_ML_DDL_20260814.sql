@@ -4,7 +4,7 @@
 -- 문서 목적 / PURPOSE
 --   원본(A) 계정 GN_DW.ML 스키마 중 **Agent 노출 대상 예측결과 16종**의 구조 스냅샷이다.
 --   최종 대상(C) 계정에 동일 구조를 재현하기 위한 "적재 전 테이블 생성" 스크립트로 사용한다.
---   04번(브론즈 52 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
+--   04번(브론즈 60 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
 --
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
@@ -12,9 +12,11 @@
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/ML 16종 SELECT 부여)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
---   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL_20260730.sql  (BRONZE 3스키마 52테이블)
---   [실버]     50_handoff/06_데이터마이그 GN_DW_SILVER_DDL_20260820.sql  (SILVER 1테이블 118컬럼)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 69 테이블이 완성된다. 선후 관계는 없다.
+--   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql  (BRONZE 5스키마 60테이블)
+--   [실버]     50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql  (SILVER 1테이블 118컬럼)
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 77 테이블이 완성된다. 선후 관계는 없다.
+--              🟢 [2026-09-15] 04·06번 파일명에서 날짜를 뗐다(구 = *_20260730 / *_20260820).
+--                 갱신마다 개명하면 참조 문서를 매번 고쳐야 하므로 날짜는 파일 안에만 적는다.
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH
 --   99_provided_definition/20_ML_ddl.sql  (A 계정 GET_DDL('SCHEMA','GN_DW.ML',TRUE) 출력)

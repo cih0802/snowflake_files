@@ -178,5 +178,5 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'd4053ae3-5fd1-467d-8960-6da19c4ffeec'                    AS DW_BATCH_ID
+    '4aacdbd8-2a1f-4c01-ad59-3fc613e5100f'                    AS DW_BATCH_ID
 from unioned

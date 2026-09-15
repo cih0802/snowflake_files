@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select STOPPED_12M_MEMBERS
+from GN_DW.GOLD.FACT_MEMBER_COHORT
+where STOPPED_12M_MEMBERS is null
+
+

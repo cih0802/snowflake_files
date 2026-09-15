@@ -128,14 +128,19 @@ def main():
         d = Path(td)
         docs = d / G.DOC_DIR
         docs.mkdir(parents=True)
-        # 단독 표기 3건 = 위반 / 현행값 동반 3건 = 면제 / 과거 실측 1건 = 면제
+        # 단독 표기 4건 = 위반 / 현행값 동반 4건 = 면제 / 과거 실측 1건 = 면제
+        #   🔴 [2026-09-15] 기준값이 2세대 올라갔다(총계 69→77 · 브론즈 52→60) ⇒
+        #      「정정」 줄의 현행값도 함께 올려야 면제가 성립한다. 옛 값(69/52)을 쓰면
+        #      그 줄이 다시 위반으로 잡힌다 — 이 픽스처가 그 사실을 고정한다.
         (docs / "x.md").write_text(
             "총 67 테이블 이다\n"
             "브론즈 50 개\n"
             "04_2번 을 실행한다\n"
-            "총계 67 테이블 → 69 로 정정\n"
-            "브론즈 50 → 52 로 정정\n"
+            "BRONZE_DDL_20260730 을 실행한다\n"
+            "총계 67 테이블 → 77 로 정정\n"
+            "브론즈 50 → 60 로 정정\n"
             "04_2번 은 실제로 06번 이다\n"
+            "BRONZE_DDL_20260730 은 이제 BRONZE_DDL.sql 이다\n"
             "2026-08-12 측정 기준 브론즈 50\n",
             encoding="utf-8",
         )
@@ -147,9 +152,9 @@ def main():
         finally:
             G.ROOT = old_root
     toks = sorted(h[2] for h in hits)
-    check("축11 단독 표기 3건 검출", len(hits) == 3, "hits=%s" % toks)
+    check("축11 단독 표기 4건 검출", len(hits) == 4, "hits=%s" % toks)
     check("축12 현행값 동반·과거 실측은 면제",
-          toks == ["04_2번", "67 테이블", "브론즈 50"], "toks=%s" % toks)
+          toks == ["04_2번", "67 테이블", "BRONZE_DDL_20260730", "브론즈 50"], "toks=%s" % toks)
     check("검사 파일 수 1", n_docs == 1, "n_docs=%d" % n_docs)
 
     print("")

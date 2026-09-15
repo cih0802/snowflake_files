@@ -2,68 +2,17 @@
 <!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
 <!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
 ## 0-ZZZZ. 🔴🔴 [2026-09-10 O153 ~~여기서 시작한다~~ — **§0-AAAA(O154) 로 승계됨**]
-
-### ▣ ZZZZ1 🟢 O153(+O153-B) 이 한 일
-1. **DEC-52 전사 코멘트 4블록 표준화 및 Live 배포 완결**
-   - GOLD 테이블 37종, SILVER 테이블 43종, Semantic View 17종의 DDL 및 Live 코멘트에 4블록 표준 템플릿(정의/Grain/주의/원천) 반영 완결.
-   - `comment_drift_gate.py` 검증: GOLD/SILVER 테이블 레벨 및 컬럼 레벨 전수 🟢 드리프트 0 · 금지문안 0 달성.
-2. **Cortex Agent 3종 신규 배포 및 버전업 (`VERSION$3`)**
-   - `OPS.AGENT_SPEC_STAGE` 경유 워크스페이스 정본 YAML 동기화 후 `ADD VERSION FROM`으로 Agent 3종 배포 및 소관 SV 종수 선언 정합화.
-   - 에이전트 게이트 3종(`sv_unit_gate`, `agent_object_ref_gate`, `agent_tool_claim_gate`) 전건 🟢 PASS.
-3. **자체 가능 과제 7건 완결**
-   - `99_NEXT_SESSION` 조각 재균형(30→31조각, 최소여유 12.6KB 회복) 및 원장/설계 조각 재균형 완결.
-   - SV 코드값 열거 누락 16건 전량 해소 (`sv_code_label_gate.py` 위반 0건 달성).
-   - DDL 선언 순서 드리프트 11건 전량 일치화 (`table_ddl_column_gate.py` 80/80 일치).
-   - `00_INDEX.md` 인용 좌표 약칭 정비 및 착수표 ④/⑪/⑱ 종결.
-4. **워크스페이스 정리 및 게이트 전수 검증**
-   - 평탄화 복사된 232개 중복 파일 및 찌꺼기 스크립트 격리 원복.
-   - 카탈로그 산출물 최신화 및 `test_generators.py` 골든 재발행 (21개 단정 PASS).
-   - 단위/음성 테스트 `scripts/test_*.py` 31종 전건 🟢 PASS (rc=0) 및 JUDGE 게이트 26종 전건 🟢 PASS.
-
-### ▣ ZZZZ2 🔴 다음 세션 열린 작업 (현업·원천 대기)
-- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 귀속 규칙 (현업 결정 전 배선 금지).
-- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 도출 규칙 (기획실 협의 대기).
-- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행·조직 코드 정본 확정 대기.
-- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
-- 🔴 **[P3/원천입고] BLOCKING-1/2/5**: 회원마스터 전량 입고, CRM_BIZ_TARGET(E-6), 모금비용(E-1).
-- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링 (`rm` 금지).
+- 🟢 **DEC-52 코멘트 4블록 표준화 및 Live 배포 완결** (GOLD 37종·SILVER 43종·SV 17종).
+- 🟢 **Cortex Agent 3종 신규 배포 (`VERSION$3`)** 및 워크스페이스 정본 YAML 동기화.
+- 🟢 자체 가능 과제 7건 완결 (`99_NEXT` 재균형, SV 코드열거 누락 해소, DDL 순서 일치화).
+- 🔴 잔여: 착수표 ⑭, ORG-H, O145-5, O59-P-1, BLOCKING-1/2/5, 착수표 ㊳.
 
 ---
 
 ## 0-AAAA. 🔴🔴 [2026-09-10 O154 ~~여기서 시작한다~~ — **§0-BBBB(O154-B) 로 승계됨**]
-
-### ▣ AAAA1 🟢 O154 가 한 일
-
-1. **회원 마스터 전량입고 실측 및 `BLOCKING-1` 처방 전환 (가장 중요)**
-   - 3축 대조 = BRONZE 1,587,343 + 175,722 = **1,763,065** ↔ `SILVER.CRM_MEMBER` ↔ `GOLD.DIM_MEMBER` **전건 일치 · 손실 0**.
-   - 🔴 **그런데 고아 7,658종 / 9,376행(0.83%) 잔존** ⇒ 종전 *"전량입고 → warn→error 자동 해소"* 문안이 **실측 반증**됨.
-   - 🟢 형식별 분해 = 7자리 7,629종 + `S`+8자리 29종 · **형식이상 0종** ⇒ 마스터에서 지워진 정상 번호.
-   - 📋 현업 지침 = **무시하고 파이프라인 구성** ⇒ **`severity: warn` 영구 유지 · `error` 승격 철회**.
-2. **문서 19번·21번 신설 및 20번 현행화**
-   - `19_원천입고_및_항목신설_대기.md` = 비-의사결정 12건(A3/B2/C4/D1/E1/F1) + 검증쿼리 12종(전건 검증).
-   - `21_원천입고_대기_주니어_해설서.md` = 19번 해설서. 문서 쌍 구조 확립 = **17↔20 · 19↔21**.
-   - `20번` 드리프트 3종 시정 = GOLD 개명 8종 · `MBRFEE_MT` 5자리 일반규칙 · §2-5 전면 재작성.
-3. **자기검토 자진 적발 2건** = ㉠ `%RST%`→`FRST_RGSTR_ID` 오탐(`O111 ㉢`) ㉡ `doc_line_length_gate` 분모 stale(`AGENT_OVERALL` 개명 소멸) 시정 ⇒ 🟢 PASS 복구.
-4. **게이트 7종 · 음성 테스트 전건 rc=0** · read 미반환 1건 → 재호출 8건.
-
-### ▣ AAAA2 🔴 다음 세션 열린 작업
-
-- 🔴 **[P1/승인 필요] 17번·18번 문서의 GOLD 개명 stale 일괄 정정**: 17번 §1-3·§2-2·§3-1 과 18번 §2-2·§3 도식이 `FACT_MEMBER_EVENT`·`FACT_SERVICE_EVENT`·`FACT_TARGET_DEV`/`_BIZ` 를 쓴다. O154 는 **지시 범위(20번)를 지켜 손대지 않았다** ⇒ 승인 후 일괄 정정.
-- 🔴 **[P1/dbt 정지점] `_crm_schema.yml` 주석에 「무시 지침」 사유 기재**: 신 처방(`warn` 영구 유지)의 사유를 회원 마스터 고아 축 테스트 주석에 박아야 한다. **모델 수정이므로 사용자 실행 필요**(`R4-1`).
-- 🔴 **[P1/차단] 착수표 ⑭**: `FME.SPONSORSHIP_SK`(STOP) 귀속 규칙 (현업 결정 전 배선 금지 · 라이브 가드 위반 0 유지 중).
-- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 (기획실 협의 대기 · `STATS_DEPT_LVL` NULL 1,306).
-- 🔴 **[P1/현업회신 잔여] O145-5**: 권역본부 목표 행 의미 확정 (자체목표 vs 산하합산 · 3.27배 차이).
-- 🔴 **[P2/Silver] O59-P-1**: `FACT_MESSAGE_DISPATCH.SEND_STATUS2` 처분 (라이브 비NULL 0 유지 중).
-- 🔴 **[P3/원천입고] 19번 문서 12건**: `E-6`(`CRM_BIZ_TARGET` 0행) · `HOL-1` · `AD-5` · `PST-1` · `C-9-R` 등.
-- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링 (`rm` 금지).
-- 🟠 **[P4/Docs] `10_원천입고_결손요약.md` 성격 명시**: `measured: 2026-08-18` 구 계정(`DV07626`) 측정본 ⇒ 「Agent 요건 관점 아카이브」로 표기 권고(19번이 현행 담당).
-- 🔴🔴 **[P1/승인 필요 · 신규] `test_o145_tools.py` 축5·축6·축7 실패 — 스테이지 유령 엔트리 + 테스트 비격리**
-  · 🔴 **세션 종료 절차의 「음성 테스트 전건 rc=0」이 이 1종 때문에 깨진다.** 원인 규명 완료(정본 = `_o154_evidence.md` §7).
-  · 원인 = `_archive/doc.md.TESTX-dup` **한 이름만** 쓰기가 `ENOENT`. `os.path.exists`·`os.listdir` **두 축 모두 부재**인데 재생성 불가 ⇒ **착수표 `㊳` 와 동일한 낡은 마운트 엔트리**(테스트가 만들고 `os.remove` 한 뒤 스테이지가 음성 캐시로 남김).
-  · 🔴 **설계 결함 축** = `test_o145_tools.py` 가 실 `_archive/` 에 직접 쓰고 지운다 ⇒ 이름이 한 번 오염되면 **영구 빨간불**. 지침 `R1-7-10` 이 이미 경고한 사항(*"`archive=` 를 넘겨라"*)이고 `test_snapshot_util.py` 는 지키는데 이 테스트만 위반.
-  · 🟢 처방 = 축6·축7 목적지를 **임시 archive 로 격리**(`snapshot_cli.py --archive` 신설 또는 테스트가 `ROOT` 를 tmp 로 패치). **테스트 코드 수정이므로 승인 필요.**
-  · ⚠️ O154 가 진단용으로 남긴 파일 3개(`_archive/doc.md.TESTPROBE-probe`·`-probe2`·`ascii.md.TESTX-dup`)는 **일부러 지우지 않았다**(삭제가 사고 원인 · `㊳` *"지우려 하지 마라"*).
-- 🔴 **[P2/용량 경고] `99_NEXT_SESSION` 허브 여유 178 B** (40,782 / 40,960): 다음 인수인계 절을 쓰면 **상한 초과**한다. ⇒ 착수 시 **`--rebalance` 승인**을 먼저 받아라(`R4-4-3` 파괴 가능 연산).
+- 🟢 **회원 마스터 전량입고 실측 및 `BLOCKING-1` 처방 전환** (1,763,065건 손실 0 · 고아 7,658종 `warn` 영구 유지).
+- 🟢 **문서 19번·21번 신설 및 20번 현행화** (19번 비-의사결정 12건 + 검증쿼리 12종).
+- 🔴 잔여: 17·18번 개명 stale 정정, 착수표 ⑭, ORG-H, O145-5, O59-P-1, 19번 12건.
 
 ---
 
@@ -232,66 +181,85 @@
 
 ---
 
-## 0-GGGG. 🔴🔴 [2026-09-14 O159 필독 — **여기서 시작한다.** §0-FFFF 는 승계됐다]
+## ~~0-GGGG. 🔴🔴 [2026-09-14 O159 필독 — 여기서 시작한다. §0-FFFF 는 승계됐다]~~
 
 ### ▣ GGGG1 🟢 O159 이 한 일 — MSTR_DW 참조문서 최초 검토 + 직전 답변 자기검토 정정
-
-1. 🔴 **MSTR 참조문서 2종이 신규 입고됐고 정본에 미등재였다**:
-   - `99_provided_definition/COCO_mstr_dw_reference.md`(729줄) ·
-     `COCO_mstr_virtual_structure_reference.md`(945줄) · 스테이지 타임스탬프 **2026-09-14 05:45**.
-   - `grep -rn "COCO_mstr" 20_issue/ 99_NEXT_SESSION_조각/ 00_guides/` = **rc=1 · 0건**
-     ⇒ 선행 검토 이력 없음. O159 가 최초 검토다.
-   - 🟢 정본 근거철 = **`20_issue/_o159_mstr_impact_measure.md`**(실측 원문 · 인용 좌표 포함).
-2. 🟢 **「이미 배선되어 변경 없음」 2건 실측 확정**:
-   - `GOLD.FACT_MEMBER_EVENT` `SUM(DEV_CNT)` = **2,291,878** = 개발구분 `1·2·4` 정확 일치
-     ⇒ MSTR 공#121 은 이미 구현됨(O24 소관).
-   - 활동 축 1만원 환산 적용 = `FACT_MEMBER_MONTHLY.sql:313·321·322·325·326`.
-3. 🔴 **직전 답변의 확정위반 4계열을 자체 적발·정정**: 컬럼명 창작 **9건** ·
-   브리핑 미출력(`A5`) · MSTR 문서 부분 독해 인용(`virtual_structure` **본문 0줄**) · 단답형 위반.
-   - 🟢 9건 전건은 라이브 `INFORMATION_SCHEMA` 대조로 실물명 확정(근거철 §H-1).
-4. 🟢 **원장 조각 재균형(승인 처리 · `R4-4-3`)**: O159 행 추가로 조각-001 이 41,864 B 가 되어
-   `--rebalance --fill 0.7` 실행 ⇒ max **28,299 B** · 최소 여유 **12,661 B** · 유실 0.
+> MSTR 참조문서 2종 검토 및 갭 4건 도출, 30_output 문서 갱신 완결. 정본 = `20_issue/_o159_mstr_impact_measure.md` · 이력 §O159.
 
 ### ▣ GGGG2 🔴 MSTR 문서가 만든 신규 열린 항목 4건 — 착수 가능은 0건이다
-
-🔴 **네 건 모두 현업 결정 또는 설계 결정에 걸린다. 임의 배선 금지.**
-
-- 🔴 **[신규 · P1/현업확인] MSTR-1 `CPR_DIV_CD` 에 문서 밖 `A` 코드 21,167행**:
-  `SILVER.CRM_MEMBER` 실측 = `I` 1,502,598 · `S` 239,299 · **`A` 21,167** · `NULL` 1.
-  🟢 `virtual_structure` §17 질문 4 **해소**(이 계정은 `I/S` ⇒ `1→I`·`2→S` 변환 불요).
-  🔴 그러나 문서 §3.1 `CM019` 는 `I`·`S` 2종만 정의 ⇒ `A` 의 의미를 **창작하지 말고 현업 확인**.
-  ⚠️ 규칙을 문자 그대로 적용하면 21,167행이 **조용히 탈락**한다.
-- 🔴 **[신규 · P1/현업확인] MSTR-2 증액·감액 (건) 금액÷10,000 환산 축 확정**:
-  SV `05_2_SV_DDL_MEMBER_EVENT.sql:151·155` 가 `O24 미확정` 을 스스로 적는다.
-  🟢 MSTR §1 원칙 5(`SPNSR_AMT_CNT = SPNSR_AMT / 10000.0`)가 확정 근거를 준다.
-  🔴 **적용 축이 미정**이다 — 개발 축(`DEV_CNT`)에 걸면 위 2,291,878 이 정의부터 달라진다.
-- 🟠 **[신규 · P2/설계] MSTR-3 법인 축이 GOLD 차원에 없다**:
-  `GOLD.DIM_MEMBER`(24컬럼)·`DIM_SPONSORSHIP`(11컬럼) 에 `CPR_DIV_CD` **부재**
-  ⇒ MSTR `D_CPR_DIV_CD`·`D_SPNSR_BSNS_INFO.CPR_DIV_CD` **현행 GOLD 로 재현 불가**.
-  ⚠️ 설계문서 `03_테이블 설계.md` D6 의 *"법인은 회원속성 `CPR_DIV_CD`"* 서술과 라이브가 어긋난다.
-- 🔴 **[신규 · P1/차단] MSTR-4 부서 5단 요구 ↔ 라이브 4단**:
-  라이브 `DIM_ORG` = `CORP·DIVISION·DEPARTMENT·TEAM` ↔ MSTR `D_DEPT_CD` 는 `DEPT_ID`~`DEPT5_ID`.
-  🔴 이 축은 **`CONF-4` · `ORG-H`/`F-1`(기획실 협의 중)과 동일 대상**이다
-  ⇒ **MSTR 5단을 먼저 배선하면 열린 현업 결정을 선점한다. 금지.**
-  ⚠️ MSTR 상수 `ZV000000`(최상위)·`ZC000029`(제외 부서)는 **이 계정 데이터로 미검증**이다.
+> CPR_DIV_CD `A` 코드, 증감 1만원 환산, 법인 차원 부재, 부서 5단 요구 4건 등재.
 
 ### ▣ GGGG3 🟠 O159 가 적발했으나 고치지 않은 것 (판단 필요)
-
-- 🟠 **설계문서 stale 1건**: `03_top-down_gold/03_테이블 설계.md` FMM 절의
-  `UNPAID_MEMBERS` 가 라이브에 없다(실물 = `UNPAID_CNT`·`STATUS_UNPAID_CNT`·`UNPAID_FLAG_EOM`).
-  🔴 컬럼 정의 소관 결정이 필요해 **문안을 바꾸지 않고 적발만 등재**했다(`R1-2`).
-- 🟠 **MSTR 문서 전량 독해 미완**: O159 는 판정에 필요한 구간(`dw_reference` §1~§6.1 · §17·§18)만
-  확보했다. 🔴 **실제 배선에 착수하는 세션은 두 문서를 전량 독해해야 한다**(729줄 · 945줄).
+> 설계문서 FMM UNPAID_MEMBERS stale 적발, MSTR 문서 전량독해 후속 과제.
 
 ### ▣ GGGG4 🔴 기존 열린 작업 (승계 · §0-FFFF 에서 변동 없음)
+> 착수표 ⑭, ORG-H/F-1, O145-5, O59-P-1, 19번 문서 12건 등 승계.
 
-- 🔴 **[P1/차단] 착수표 ⑭**: `FME.SPONSORSHIP_SK`(STOP) 동시중단 다중사업 귀속 규칙.
-- 🔴 **[P1/현업회신] ORG-H / F-1**: `DIM_ORG` 4단 계층(`STATS_DEPT_LVL` NULL 1,306)
-  — 🔴 **위 MSTR-4 와 같은 축이다. 함께 결정해야 한다.**
+---
+
+## 0-HHHH. 🔴🔴 [2026-09-14 O160 ~~필독 — **여기서 시작한다.**~~ → §0-IIII 로 승계됨 · §0-GGGG 는 승계됐다]
+
+### ▣ HHHH1 🟢 O160 이 한 일 — 착수표 ⑭(MSTR-4) STOP 후원사업 분해 실측 및 단일사업(92.45%) 1차 배선 완결
+
+1. 🟢 **수치 교정 및 분해 실측**:
+   - 착수표 ⑭ 기재(팬아웃 1.56배)는 날짜 일치 없는 회원단위 조인(1.6743배)의 과대표기였으며, 중단일 일치 정상 조인은 **1.1020배**임을 실측 규명.
+   - FME STOP(1,038,262행) 중 **단일사업 중단(92.45%, 959,872행)**은 룰 없이 고유 확정되어 즉시 배선 가능함을 발견.
+   - 잔여 다중사업 건: 행수 일치(6.04%, 62,725행) · 사업 초과(1.25%, 12,935행) · 원천 미매칭(0.26%, 2,730행).
+2. 🟢 **FACT_MEMBER_EVENT 1차 배선 (`FACT_MEMBER_EVENT.sql`)**:
+   - `stop_single_biz` CTE를 신설하여 단일사업 중단 959,872행(92.45%)에 `SPONSORSHIP_SK` 1:1 배선 완결.
+3. 🟢 **라이브 dbt build 및 실측 검증**:
+   - `dbt build --select FACT_MEMBER_EVENT` (PASS=27 WARN=1) 완결.
+   - 라이브 DB 실측 결과: `TOTAL_ROWS=4,633,105`, `SPONSORSHIP_SK 채움률=98.31%`(4,554,715행), `DEV_CNT=2,291,878`, `STOP_CNT=1,038,262`로 팬아웃 0 및 기준선 100% 보존.
+4. 🟠 **현업 질의(문서20 §N-13) 상정**: 잔여 다중사업 7.29%에 대해 순번 대응 가설 및 귀속 룰 현업 질의 상정.
+5. 🟢 **정본 갱신 및 게이트 전건 통과**: 원장 §1 O160 행 등재, 이력 §O160 롤오버, 문서50 §BLOCKING-5 표 정정, 착수표 ⑭ 갱신.
+
+### ▣ HHHH2 🔴 현행 열린 작업
+
+- 🔴 **[P1/차단] 착수표 ⑭ (잔여)**: 다중사업 동시중단(7.29%) 현업 회신 대기 (문서20 §N-13).
+- 🔴 **[P1/현업회신] ORG-H / F-1**: `DIM_ORG` 4단 계층 및 MSTR-4 부서 5단 요구 검토 (기획실 협의).
 - 🔴 **[P1/현업회신] O145-5**: 권역본부 목표 행 의미(자체목표 vs 산하합산 · 3.27배).
 - 🔴 **[P2/Silver] O59-P-1**: `FACT_MESSAGE_DISPATCH.SEND_STATUS2` 처분.
 - 🔴 **[P3/원천입고] 19번 문서 12건**: `E-6`(`CRM_BIZ_TARGET` 0행) · `HOL-1` · `AD-5` · `PST-1` 등.
 - 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링(`rm` 금지).
 - 🟠 **[P3/개명잔여] 축1 정비**: 잔여 421건 감시.
 
+---
+
+## ~~0-IIII. 🔴🔴 [2026-09-15 O161 필독 — 여기서 시작한다. §0-HHHH 는 승계됐다]~~
+
+### ▣ IIII1 🟢 O161 이 한 일 (색인 · 상세 = 이력 §O161 · 원장 §1 O161 행)
+
+- 🟢 **BRONZE_CRM 개편 반영**(원천 11번 정본) ⇒ **CRM 46 → 50 · 브론즈 60 · 총계 77** · 게이트 축1~축6 **0건**. 신규 4(`SND_MEMBER_MAIL_LINK_LOG`·`SND_MEMBER_OPEN_LOG`·`TC_MKTNG_DTL_CD`·`TM_MM_FDRM_MBER_DT_DTLS`) · 삭제 2(`TM_CM_MKTNG_CMPGN_MNG`·`TM_CM_MKTNG_UTM` → `TC_MKTNG_DTL_CD` **통합**) · `TM_CM_CMPGN_MNG`+`MKTG_CHANNEL` · `SND_MEMBER_LIST`−`OPEN_DT` · 🟠 누락 보완 2(`TM_PM_INSTT_ACNUT`·`TM_PM_SETLE_CMPNY_ACNT` — 개편 신규가 아니다).
+- 🟢 **수치 2세대 stale 정정** `01`·`02`·`02_1`·`03`·`05`·`07`번 ⇒ 브론즈 **60** · 총계 **77** · 축7 **65건 → 0건**(게이트 `STALE_TOKENS` + 음성 픽스처 동반 갱신). 🟢 **04·06번 파일명 날짜 제거**(사용자 결정) — 🔴 **앞으로 개명하지 마라**(참조 6곳 + 게이트 경로가 깨진다 · 날짜는 파일 안 「최근 갱신일」에만).
+
+### ▣ IIII2 🟢 O161 신설 과제 해소 (O162 완결)
+
+- 🟢 **`TM_CM_MKTNG_*` 참조 모델 재작성 완결**: `_sources.yml`, `CRM_CAMPAIGN.sql`, `CRM_MARKETING_CAMPAIGN.sql`, `CRM_MEMBER_DEV.sql`, `DIM_CAMPAIGN.sql` 전건 `TC_MKTNG_DTL_CD` 로 이관.
+- 🟢 **`SND_MEMBER_LIST.OPEN_DT` 삭제 대응 완결**: `CRM_SEND_MEMBER.sql` 에서 `SND_MEMBER_OPEN_LOG` 집계 조인으로 상위 인터페이스 보존.
+
+---
+
+## 0-JJJJ. 🔴🔴 [2026-09-16 O162 필독 — **여기서 시작한다.** §0-IIII 는 승계됐다]
+
+### ▣ JJJJ1 🟢 O162 가 한 일 (색인 · 상세 = 이력 §O162 · 원장 §1 O162 행)
+
+- 🟢 **SILVER·GOLD 설계 개정**: `04_silver_design/03` 및 `03_top-down_gold/03` 에 §7 신설 (CRM 50 개편 반영, 코드 계통 분리·오픈로그 집계·전환매핑 설계 확정).
+- 🟢 **SILVER DDL 갱신 (`08_SILVER_테이블DDL_20260714.sql`)**: CRM 22 → **26테이블** (전체 SILVER **44테이블**) 확장. `CRM_CAMPAIGN`+MKTG_CHANNEL, 신규 4종(`CRM_MKTNG_CODE`·`CRM_SEND_MEMBER_OPEN_LOG`·`CRM_SEND_MEMBER_LINK_LOG`·`CRM_MEMBER_CONVERT_HIST`) 추가.
+- 🟢 **GOLD DDL 갱신 (`06_DDL.sql`)**: `DIM_CAMPAIGN` 에 `MKTG_CHANNEL NUMBER(38,0)` 및 `MKTG_CHANNEL_NM VARCHAR` 추가, FSE `OPEN_MEMBERS` 주석 갱신.
+- 🟢 **dbt 모델 7종 갱신 및 신규 4종 작성**: `models/silver/_sources.yml`, `CRM_CAMPAIGN.sql`, `CRM_MARKETING_CAMPAIGN.sql`, `CRM_SEND_MEMBER.sql`, `CRM_MEMBER_DEV.sql`, `DIM_CAMPAIGN.sql`, `_crm_schema.yml`, `_gold_ready_schema.yml` 동기화.
+- 🟢 **사용자 dbt compile 통과 검증**: `dbt compile --select models/silver/crm`, `dbt compile --select models/gold` (98 models, 359 data tests) 정상 완료.
+- 🟢 **게이트 및 검증 전건 통과**: `line_len.py` PASS, 게이트 4종 및 음성 테스트 rc=0 (기존 선행결함 1건 제외).
+
+### ▣ JJJJ2 🔴 잔여 열린 작업
+
+- 🔴🔴 **[P1/현업요청] 원천 18번(SILVER 정의) 소실** — `BIGQUERY_REFINED_DATA` 정의 재공유 요청 대기.
+- 🔴 **[P1/이관] CSV 재언로드** — `SND_MEMBER_LIST` 77 → **76컬럼** · 오픈 이력 2종 동반 적재 준비.
+- 🟠 **[P2/현업확인] M-1~M-6** — `TC_MKTNG_DTL_CD` 컬럼 의미 및 C001/C002/U001 연속성, MM293~MM297 변경 코드 대응표 회신 대기.
+- 🟠 **[P3/선행결함] `test_verify_wide_doc.py` `rc=1`** — 라이브 뷰 부재로 인한 선행 결함.
+
+### ▣ JJJJ3 🔴 현행 열린 작업 — §0-IIII ▣IIII3 **그대로 승계**(압축 · 누락 아님)
+
+- 착수표 열린 집합 = 🔴 **⑭**(다중사업 7.29% 현업 회신) · 🟠 **㊳**(`_o125e_entry.md` · `rm` 금지) — `R3-9 ㉨` 대조 완료. 그 외 = ORG-H/F-1 · O145-5 · O59-P-1 · 19번 12건 · 개명 잔여 421건.
+
 _Co-authored with CoCo_
+

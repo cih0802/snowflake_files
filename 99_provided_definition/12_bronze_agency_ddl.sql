@@ -981,8 +981,49 @@ def main(session, input_yyyymm=None):
         return f"''{date_match_string}'' 결과가 없음"
     return "\\n".join(log_messages)
 ';
+create or replace task GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
+	warehouse=GN_DW_ETL_WH
+	schedule='USING CRON 10 1 * * * Asia/Seoul'
+	as SELECT 1;
+create or replace task GN_DW.BRONZE_AGENCY.TASK_DGT
+	warehouse=GN_DW_ETL_WH
+	after GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
+	as BEGIN
+    IF (DAY(CURRENT_DATE()) = 10) THEN
+        -- 전월 데이터 처리
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET(
+            TO_CHAR(
+                DATEADD(MONTH, -1, CURRENT_DATE()),
+                'YYYYMM'
+            )
+        );
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET(TO_CHAR(CURRENT_DATE(), 'YYYYMM'));
+
+    ELSE
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET(TO_CHAR(CURRENT_DATE(), 'YYYYMM'));
+    END IF;
+END;
 create or replace task GN_DW.BRONZE_AGENCY.TASK_REBRDC
 	warehouse=GN_DW_ETL_WH
+	after GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
 	as BEGIN
     CALL GN_DW.BRONZE_AGENCY.SP_LOAD_REBRDC_FROM_SHAREPOINT();
+END;
+create or replace task GN_DW.BRONZE_AGENCY.TASK_VIDEO
+	warehouse=GN_DW_ETL_WH
+	after GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
+	as BEGIN
+    IF (DAY(CURRENT_DATE()) = 10) THEN
+        -- 전월 데이터 처리
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_VIDEO_AD_FROM_GDRIVE(
+            TO_CHAR(
+                DATEADD(MONTH, -1, CURRENT_DATE()),
+                'YYYYMM'
+            )
+        );
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_VIDEO_AD_FROM_GDRIVE(TO_CHAR(CURRENT_DATE(), 'YYYYMM'));
+
+    ELSE
+        CALL GN_DW.BRONZE_AGENCY.SP_LOAD_VIDEO_AD_FROM_GDRIVE(TO_CHAR(CURRENT_DATE(), 'YYYYMM'));
+    END IF;
 END;

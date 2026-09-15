@@ -55,8 +55,11 @@ SELECT
   -- [2026-08-25] 신규 2컬럼(공통브랜드·UTM) — 안내1 회원 개발이력 비정규화 요건의 원천.
   c.CMMN_BRND                       AS CMMN_BRND,        -- MM297 공통브랜드 코드
   NULLIF(TRIM(brnd.DTL_CD_NM),'')   AS CMMN_BRND_NM,      -- MM297 라벨
-  c.MKTG_UTM                        AS MKTG_UTM,          -- TM_CM_MKTNG_UTM.MK_UTM 코드
-  NULLIF(TRIM(u.MK_UTM_NM),'')      AS MKTG_UTM_NM,       -- TM_CM_MKTNG_UTM 라벨
+  c.MKTG_UTM                        AS MKTG_UTM,          -- TC_MKTNG_DTL_CD (U001) 코드
+  NULLIF(TRIM(u.DTL_CD_NM),'')      AS MKTG_UTM_NM,       -- TC_MKTNG_DTL_CD (U001) 라벨
+  -- [2026-09-16 O162] 신규 2컬럼(마케팅채널) — TC_MKTNG_DTL_CD (C002) 대응
+  c.MKTG_CHANNEL                    AS MKTG_CHANNEL,      -- TM_CM_CMPGN_MNG.MKTG_CHANNEL (NUMBER)
+  NULLIF(TRIM(ch.DTL_CD_NM),'')     AS MKTG_CHANNEL_NM,   -- TC_MKTNG_DTL_CD (C002) 라벨
   NULLIF(TRIM(c.CMPGN_STRT_DE),'')  AS CMPGN_STRT_DE,
   'CRM'                             AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
@@ -64,7 +67,8 @@ SELECT
   NULL                              AS DW_BATCH_ID
 FROM base c
 LEFT JOIN {{ source('bronze_crm','TM_CM_BRND_MNG') }} b ON c.BRND_ID = b.BRND_ID
-LEFT JOIN {{ source('bronze_crm','TM_CM_MKTNG_CMPGN_MNG') }} m ON TO_VARCHAR(c.MKTG_CMPGN_NM) = m.MK_CMPGN_CD
+-- [2026-09-16 O162] 마케팅캠페인 라벨. TM_CM_MKTNG_CMPGN_MNG 삭제 → TC_MKTNG_DTL_CD (C001) 통합분 조인.
+LEFT JOIN {{ source('bronze_crm','TC_MKTNG_DTL_CD') }} m ON m.CD_ID = 'C001' AND TO_VARCHAR(c.MKTG_CMPGN_NM) = m.DTL_CD_ID
 -- [DEC-43] CM008 홍보방법 라벨. DTL_CD_ID 유일이라 fan-out 없음(구 GOLD DIM_CAMPAIGN §O37 이관).
 LEFT JOIN {{ ref('CRM_CODE') }} promo ON promo.CD_ID='CM008' AND promo.DTL_CD_ID = NULLIF(TRIM(c.PR_MTH_CD),'')
 -- [DEC-43] 상위캠페인명 자기조인. CMPGN_CD 유일이라 fan-out 없음. [O101] BRONZE 재스캔 대신 base CTE 재사용.
@@ -75,12 +79,10 @@ LEFT JOIN {{ ref('CRM_CODE') }} ty1   ON ty1.CD_ID ='MM295' AND TRY_TO_NUMBER(ty
 LEFT JOIN {{ ref('CRM_CODE') }} ty2   ON ty2.CD_ID ='MM296' AND TRY_TO_NUMBER(ty2.DTL_CD_ID)   = c.CMPGN_TYPE2_BSN
 -- [2026-08-25] MM297 공통브랜드. CRM_CODE PK=(CD_ID,DTL_CD_ID) 이므로 fan-out 없음(기존 4축과 동일 패턴).
 LEFT JOIN {{ ref('CRM_CODE') }} brnd  ON brnd.CD_ID='MM297' AND TRY_TO_NUMBER(brnd.DTL_CD_ID) = c.CMMN_BRND
--- [2026-08-25] UTM. 코드사전이 아니라 신설 원천 TM_CM_MKTNG_UTM 과 연동. MK_UTM 191종 유일(실측) → fan-out 없음.
---   🔴 [O101] fan-out 만 검증됐고 **커버리지는 미검증이었다** — 캠페인 쪽 코드 1종이 사전에 없어
---   `MKTG_UTM_NM` 이 대량 NULL 이다(NULL = **사전 미등재 고아코드**이며 「UTM 미보유」가 아니다).
---   현업 확인 = `20_현업확인_요청.md` §N-8(센티넬인지 등재 누락인지 미확정) · 실측 수치는 그 문서 소관(`R2-6`).
---   ⚠️ 회신 전까지 `192` 를 NULL 로 정규화하거나 라벨을 창작하지 않는다(`R2-7-1`).
-LEFT JOIN {{ source('bronze_crm','TM_CM_MKTNG_UTM') }} u ON c.MKTG_UTM = TRY_TO_NUMBER(u.MK_UTM)
+-- [2026-08-25 · 2026-09-16 O162] UTM. TM_CM_MKTNG_UTM 삭제 → TC_MKTNG_DTL_CD (U001) 조인.
+LEFT JOIN {{ source('bronze_crm','TC_MKTNG_DTL_CD') }} u ON u.CD_ID = 'U001' AND c.MKTG_UTM = TRY_TO_NUMBER(u.DTL_CD_ID)
+-- [2026-09-16 O162] 마케팅채널. TC_MKTNG_DTL_CD (C002) 조인.
+LEFT JOIN {{ source('bronze_crm','TC_MKTNG_DTL_CD') }} ch ON ch.CD_ID = 'C002' AND c.MKTG_CHANNEL = TRY_TO_NUMBER(ch.DTL_CD_ID)
 -- [2026-08-25] CM019/CM035 라벨. CRM_CODE 코드컬럼이 VARCHAR 라 TEXT 직접 비교(TRY_TO_NUMBER 불필요).
 LEFT JOIN {{ ref('CRM_CODE') }} cpr   ON cpr.CD_ID='CM019' AND cpr.DTL_CD_ID = NULLIF(TRIM(c.CPR_DIV_CD),'')
 LEFT JOIN {{ ref('CRM_CODE') }} spnsr ON spnsr.CD_ID='CM035' AND spnsr.DTL_CD_ID = NULLIF(TRIM(c.SPNSR_DIV_CD),'')

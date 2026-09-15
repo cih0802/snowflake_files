@@ -75,8 +75,11 @@ SELECT
   cp.MK_CMPGN_NM                   AS MK_CMPGN_NM,
   cp.CMMN_BRND                     AS CMMN_BRND,             -- MM297 공통브랜드
   cp.CMMN_BRND_NM                  AS CMMN_BRND_NM,
-  cp.MKTG_UTM                      AS MKTG_UTM,              -- TM_CM_MKTNG_UTM 코드
+  cp.MKTG_UTM                      AS MKTG_UTM,              -- TC_MKTNG_DTL_CD (U001) 코드
   cp.MKTG_UTM_NM                   AS MKTG_UTM_NM,
+  -- [2026-09-16 O162] 마케팅채널(C002)
+  cp.MKTG_CHANNEL                  AS MKTG_CHANNEL,          -- TC_MKTNG_DTL_CD (C002) 코드
+  cp.MKTG_CHANNEL_NM               AS MKTG_CHANNEL_NM,       -- TC_MKTNG_DTL_CD (C002) 라벨
   -- [2026-08-25 안내2] 세부캠페인 후원구분·법인구분(Gold 까지 적재 요건, 홍보방법은 미사용 — 제외).
   cp.SPNSR_DIV_CD                  AS SPNSR_DIV_CD,          -- CM035 정기후원/일시후원
   cp.SPNSR_DIV_NM                  AS SPNSR_DIV_NM,

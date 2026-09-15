@@ -21,7 +21,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD_2 WITH MANAGED ACCESS
   COMMENT = '분석 레이어 — dbt 일적재 테스트용';
 
 /* =====================================================================
-   2) SILVER → SILVER_2 : 라이브 BASE TABLE 전량 CLONE 후 TRUNCATE (구조만 복제)
+   2) SILVER → SILVER_2 : 라이브 BASE TABLE 전량(bigquery_refined_data 제외) CLONE 후 TRUNCATE (구조만 복제)
    ===================================================================== */
 EXECUTE IMMEDIATE $$
 DECLARE
@@ -32,14 +32,20 @@ DECLARE
   done_count INTEGER DEFAULT 0;
 BEGIN
   FOR rec IN c DO
+    -- 1. 구조 및 데이터 복제
     EXECUTE IMMEDIATE
       'CREATE TABLE IF NOT EXISTS GN_DW.SILVER_2.' || rec.TABLE_NAME ||
       ' CLONE GN_DW.SILVER.' || rec.TABLE_NAME;
-    EXECUTE IMMEDIATE
-      'TRUNCATE TABLE IF EXISTS GN_DW.SILVER_2.' || rec.TABLE_NAME;
+    
+    -- 2. bigquery_refined_data가 아닐 경우에만 TRUNCATE 수행 (괄호 필수)
+    IF (rec.TABLE_NAME <> 'BIGQUERY_REFINED_DATA') THEN
+      EXECUTE IMMEDIATE
+        'TRUNCATE TABLE IF EXISTS GN_DW.SILVER_2.' || rec.TABLE_NAME;
+    END IF;
+    
     done_count := done_count + 1;
   END FOR;
-  RETURN 'SILVER -> SILVER_2 구조 복제 완료: ' || done_count || '개 테이블';
+  RETURN 'SILVER -> SILVER_2 복제 완료: ' || done_count || '개 테이블';
 END;
 $$;
 

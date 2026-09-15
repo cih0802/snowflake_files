@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select SPONSORSHIP_SK
+from GN_DW.GOLD.FACT_EVENT_ATTENDANCE
+where SPONSORSHIP_SK is null
+
+
