@@ -83,6 +83,8 @@ SHOW SCHEMAS IN DATABASE GN_DW_SHARED;
 
 SELECT
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
+    WHERE table_schema = 'BRONZE_CRM' AND table_type = 'BASE TABLE')         AS crm_visible,      -- 기대 50
+  (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
     WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')  AS silver_visible,   -- 기대 1
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
     WHERE table_schema = 'ML' AND table_type = 'BASE TABLE')                 AS ml_visible,       -- 기대 16

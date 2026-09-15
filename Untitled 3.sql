@@ -5,7 +5,7 @@ SELECT * FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG LIMIT 100;
 
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE accountadmin;
 
-select * from gn_dw.bronze_crm.TM_CM_MKTNG_UTM limit 10;
+select * from gn_dw.bronze_crm.TC_MKTNG_DTL_CD limit 10;
 
 
 /*

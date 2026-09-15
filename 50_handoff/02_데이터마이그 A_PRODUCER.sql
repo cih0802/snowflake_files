@@ -92,6 +92,7 @@ SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 �
 -- 4.1 부여 집계 점검 (한 번에 판정)
 SHOW GRANTS TO SHARE mig_share;
 SELECT
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 50
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 16
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 1
   COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 7
