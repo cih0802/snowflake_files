@@ -8,8 +8,8 @@
 --    평탄화돼 소실되던 원천 테이블 출처를 팩트 degenerate 로 복원하기 위해 별도 컬럼으로 승격한다(§3-A-4).
 -- ⚠️ [2026-07-28 O16 해소] REBROADCAST 분기의 CONV_MEMBER_CNT·CONV_UNIT_CNT 를 **NULL 로 환원**했다.
 --    종전에는 REBRDC.DVLP_MBER_CNT(개발회원수)·DVLP_CNT(개발건수)를 이 자리에 위치매핑했고,
---    GOLD 가 GA_CONV_MEMBERS·GA_CONV_CNT 로 개명 노출해 **재방송 개발실적이 'GA 전환'으로 혼입**됐다
---    (실측 2026-07-28: GA_CONV_MEMBERS 의 28.60% · GA_CONV_CNT 의 60.32%가 REBRDC). 문서10 §8-I(8).
+--    GOLD 가 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT 로 개명 노출해 **재방송 개발실적이 'GA 전환'으로 혼입**됐다
+--    (실측 2026-07-28: AGENCY_CONV_MEMBERS 의 28.60% · AGENCY_CONV_CNT 의 60.32%가 REBRDC). 문서10 §8-I(8).
 --    개발실적은 AGENCY_AD_BROADCAST.DVLP_MEMBER_CNT·DVLP_CNT 로 이관됐다.
 --    ⚠️ 결과: GOLD GA_CONV_* 합계가 감소한다(설계상 의도된 교정 — 종전 값은 의미혼입 상태였다).
 SELECT

@@ -239,27 +239,61 @@
 
 ---
 
-## 0-JJJJ. 🔴🔴 [2026-09-16 O162 필독 — **여기서 시작한다.** §0-IIII 는 승계됐다]
+## 0-JJJJ. 🟢 [2026-09-16 O162 — ~~여기서 시작한다~~ · **§0-KKKK 로 승계됨** · 본문 압축]
 
-### ▣ JJJJ1 🟢 O162 가 한 일 (색인 · 상세 = 이력 §O162 · 원장 §1 O162 행)
+> 🟢 **O162 상세 = 이력 §O162 · 원장 §1 O162 행**(포인터 · O163 이 압축 · 내용 소실 0).
+> 요지 = CRM 50 개편 반영 SILVER·GOLD 설계 §7 신설 · SILVER DDL CRM 22→26(총 44) ·
+> GOLD `DIM_CAMPAIGN`+`MKTG_CHANNEL` · dbt 모델 7종 갱신 + 신규 4종 · 사용자 `dbt compile` 통과.
+> 🔴 **O162 의 잔여 열린 작업은 §0-KKKK ▣KKKK5 로 전량 승계됐다**(누락 0 · `R3-9 ㉨` 대조 완료).
 
-- 🟢 **SILVER·GOLD 설계 개정**: `04_silver_design/03` 및 `03_top-down_gold/03` 에 §7 신설 (CRM 50 개편 반영, 코드 계통 분리·오픈로그 집계·전환매핑 설계 확정).
-- 🟢 **SILVER DDL 갱신 (`08_SILVER_테이블DDL_20260714.sql`)**: CRM 22 → **26테이블** (전체 SILVER **44테이블**) 확장. `CRM_CAMPAIGN`+MKTG_CHANNEL, 신규 4종(`CRM_MKTNG_CODE`·`CRM_SEND_MEMBER_OPEN_LOG`·`CRM_SEND_MEMBER_LINK_LOG`·`CRM_MEMBER_CONVERT_HIST`) 추가.
-- 🟢 **GOLD DDL 갱신 (`06_DDL.sql`)**: `DIM_CAMPAIGN` 에 `MKTG_CHANNEL NUMBER(38,0)` 및 `MKTG_CHANNEL_NM VARCHAR` 추가, FSE `OPEN_MEMBERS` 주석 갱신.
-- 🟢 **dbt 모델 7종 갱신 및 신규 4종 작성**: `models/silver/_sources.yml`, `CRM_CAMPAIGN.sql`, `CRM_MARKETING_CAMPAIGN.sql`, `CRM_SEND_MEMBER.sql`, `CRM_MEMBER_DEV.sql`, `DIM_CAMPAIGN.sql`, `_crm_schema.yml`, `_gold_ready_schema.yml` 동기화.
-- 🟢 **사용자 dbt compile 통과 검증**: `dbt compile --select models/silver/crm`, `dbt compile --select models/gold` (98 models, 359 data tests) 정상 완료.
-- 🟢 **게이트 및 검증 전건 통과**: `line_len.py` PASS, 게이트 4종 및 음성 테스트 rc=0 (기존 선행결함 1건 제외).
+---
 
-### ▣ JJJJ2 🔴 잔여 열린 작업
+## 0-KKKK. 🔴🔴 [2026-09-17 O163 필독 — **여기서 시작한다.** §0-JJJJ 는 승계됐다]
 
-- 🔴🔴 **[P1/현업요청] 원천 18번(SILVER 정의) 소실** — `BIGQUERY_REFINED_DATA` 정의 재공유 요청 대기.
-- 🔴 **[P1/이관] CSV 재언로드** — `SND_MEMBER_LIST` 77 → **76컬럼** · 오픈 이력 2종 동반 적재 준비.
-- 🟠 **[P2/현업확인] M-1~M-6** — `TC_MKTNG_DTL_CD` 컬럼 의미 및 C001/C002/U001 연속성, MM293~MM297 변경 코드 대응표 회신 대기.
-- 🟠 **[P3/선행결함] `test_verify_wide_doc.py` `rc=1`** — 라이브 뷰 부재로 인한 선행 결함.
+### ▣ KKKK1 🔴🔴 최우선 2건 — 이 순서를 바꾸지 마라
 
-### ▣ JJJJ3 🔴 현행 열린 작업 — §0-IIII ▣IIII3 **그대로 승계**(압축 · 누락 아님)
+1. 🔴 **`dbt build --target dev` 를 사용자가 실행한다**(`R4-1`). O163 이 라이브를 정본 DDL 로
+   복원했으므로 **모든 SILVER/GOLD 테이블이 0행**이다 — 구조는 정합(드리프트 0 · FK 56 ·
+   `table_ddl_column_gate` 84/84)이고 **데이터만 비어 있다.**
+2. 🔴 **build 성공 후에** 산출물을 재생성한다 — `dump_schema` → `census_columns` →
+   `gen_column_inventory_20260811`·`gen_column_mapping`·`gen_metric_gold_mapping`·`gen_section_assembly`
+   → `test_generators.py --update-golden --reason "O163 라이브 복원 후 재측정"`.
+   🔴 **O163 이 이 순서를 어겨 04·05·09 를 빈 데이터로 덮었다**(`09.조립가능` 267→**12** ·
+   `09.값없음` 52→**341**). `_archive` 사본이 없어 **재생성이 유일한 복구**다(골든은 미갱신 = 정상).
 
-- 착수표 열린 집합 = 🔴 **⑭**(다중사업 7.29% 현업 회신) · 🟠 **㊳**(`_o125e_entry.md` · `rm` 금지) — `R3-9 ㉨` 대조 완료. 그 외 = ORG-H/F-1 · O145-5 · O59-P-1 · 19번 12건 · 개명 잔여 421건.
+### ▣ KKKK2 🟢 O163 이 한 일 (상세 = 이력 §O163 · 원장 §1 O163 행)
+
+- 🟢 15모델 실패 원인 = 권한 아니라 **`ALTER … ADD COLUMN`**(`GRANT MODIFY ON TABLE` 은 **없는 권한**).
+- 🟢 어긋난 축 = **「DDL 파일↔라이브」** · 도구 `scripts/o163_ddl_live_drift.py` 37→36→**0건**.
+- 🟢 **요건 반영분은 이미 라이브에 있었다**(깨진 15개는 전부 요건 무관 · 사용자 가설 확증) · 🟢 `DEC-50` SILVER 미집행 **8건 개명** · 🔴 **자기판정 3건 철회** · 🔴 **도구 자기결함 2건 적발**.
+
+### ▣ KKKK3 🔴 다음 세션이 반드시 알아야 할 함정 3개
+
+- 🔴 **`EP_GA_SESSION_ID`·`EP_GA_SESSION_NUMBER` 를 개명하지 마라** — `BIGQUERY_REFINED_DATA` 의
+  **외부 Python 적재 원천 컬럼**이고 개명 대상을 부분문자열로 포함한다(`(?<!EP_)` 로 보호했다).
+- 🔴 **`SILVER.BIGQUERY_REFINED_DATA` 를 `CREATE OR REPLACE` 하지 마라** — 08 DDL 1283행은
+  **커밋아웃**돼 있고 dbt 가 재적재하지 않는다(11,600,680행 영구 소실). 🟢 도구가 이제 주석
+  CREATE 를 선언으로 세지 않는다(그 결함이 실제로 이 테이블을 복원 대상에 넣었다).
+- 🔴 **DDL 파일을 `EXECUTE IMMEDIATE FROM` 으로 실행할 수 없다**(스크립트 안 `USE ROLE` 거부) ·
+  `snow sql -f` 는 **선행 블록주석**에서 깨진다 ⇒ 주석 제외 실행본을 만들어라
+  (`tmp/_o163_exec_silver.sql`·`_gold.sql`). 🟢 반드시 `USE ROLE GN_DW_ADMIN` 으로 실행해
+  OWNERSHIP 을 ADMIN 에 남겨라(O142 는 `ACCOUNTADMIN` 으로 만들어 소비 3역할이 못 읽었다).
+  🔴 dbt 로그 grep 은 **`alter  table`(공백 2칸)** — `"alter table"` 로는 ADD COLUMN 을 놓친다.
+
+### ▣ KKKK4 🟠 판정 대기 2건 (둘 다 `GA` 접두 유지 판정 · 재검 대상)
+
+- 🟠 **`GAC_*` 3건**(`BIGQUERY_BASIC`) = Google Ads 축이라 `DEC-50` 과 별개로 유지했으나 원천
+  `STSLC_GAC_*` 의 **축약**이라 P규약 판정 필요. 🟠 **`AGENCY_AD_ROW_DGT.GA_AD_COST`·
+  `GA_CONV_MBER_CNT`** = 원천 실재라 P규약 유지했으나 사용자 규칙(「`ga` 는 GA4 유래만」) 엄격
+  적용 시 부적격. 🟢 `DEC-51` 이 GOLD 노출은 이미 `AGENCY_CONV_*` 로 분리했다.
+
+### ▣ KKKK5 🔴 현행 열린 작업 — §0-JJJJ ▣JJJJ2·▣JJJJ3 승계(압축 · 누락 아님)
+
+- 착수표 = 🔴 **⑭**(다중사업 7.29% 현업 회신) · 🟠 **㊳**(`_o125e_entry.md` · `rm` 금지).
+  🔴🔴 **[P1/현업요청] 원천 18번(SILVER 정의) 소실** — `BIGQUERY_REFINED_DATA` 정의 재공유 대기.
+- 🔴 **[P1/이관] CSV 재언로드** — `SND_MEMBER_LIST` 77→76컬럼 · 오픈 이력 2종 동반. 🟠 **[P2/현업확인]
+  M-1~M-6** — `TC_MKTNG_DTL_CD` 컬럼 의미 · C001/C002/U001 연속성 · MM293~297 대응표.
+- 🟠 **[P3/선행결함] `test_verify_wide_doc.py` rc=1** — 라이브 뷰 부재(O163 무관 · 승계). 그 외 =
+  ORG-H/F-1 · O145-5 · O59-P-1 · 19번 12건 · 개명 잔여 421건.
 
 _Co-authored with CoCo_
-

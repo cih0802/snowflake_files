@@ -51,7 +51,7 @@ SELECT
   c.CMPGN_TYPE2_BSN                 AS CMPGN_TYPE2_BSN,
   NULLIF(TRIM(ty2.DTL_CD_NM),'')    AS CMPGN_TYPE2_NM,
   c.MKTG_CMPGN_NM                   AS MKTG_CMPGN_NM,
-  NULLIF(TRIM(m.MK_CMPGN_NM),'')    AS MK_CMPGN_NM,
+  NULLIF(TRIM(m.DTL_CD_NM),'')      AS MK_CMPGN_NM,
   -- [2026-08-25] 신규 2컬럼(공통브랜드·UTM) — 안내1 회원 개발이력 비정규화 요건의 원천.
   c.CMMN_BRND                       AS CMMN_BRND,        -- MM297 공통브랜드 코드
   NULLIF(TRIM(brnd.DTL_CD_NM),'')   AS CMMN_BRND_NM,      -- MM297 라벨

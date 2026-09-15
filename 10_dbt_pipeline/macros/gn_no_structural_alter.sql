@@ -40,6 +40,14 @@
     교차검증(차이 0 이 정상) = 모델 SELECT 를 임시뷰로 만들어 대상 테이블과 INFORMATION_SCHEMA 비교.
 
   ── 미해소 드리프트 재고(2026-08-30 실측 · 이 매크로가 억제하고 있는 것) ─────────────────
+    🔴🔴 [2026-09-17 O163] **이 목록은 「타입 드리프트」다 — 「컬럼 집합 드리프트」와 합쳐 읽지 마라.**
+      O163 이 실측한 `DDL 파일 ↔ 라이브` **컬럼 집합** 드리프트 37건은 **이 목록과 별개 집합**이고
+      원인·처방도 다르다: 그쪽은 라이브가 계정 재구축 후 낡은 세대로 남은 것이라
+      **DDL 재실행으로 복원**된다(도구 = `scripts/o163_ddl_live_drift.py`).
+      🔴 그리고 이 매크로가 **막지 못하는** 경로가 하나 더 있다 — `on_schema_change:
+      append_new_columns` 가 발행하는 **`ALTER TABLE … ADD COLUMN`** 이다(아래 「왜 no-op 이
+      안전한가」 첫 항목이 그 경로를 의도적으로 열어 뒀다). O163 의 dbt build 15모델 실패는
+      전부 그 ADD COLUMN 이었고 **타입 경로가 아니었다** ⇒ 이 목록을 원인으로 인용하지 마라.
     아래 11개 모델이 각각 **최소 1개** 컬럼에서 DDL 보다 넓은 타입을 산출한다.
       SILVER.CRM_PAYMENT_BILLING     RQEST_RST_CD        → varchar(50)
       SILVER.CRM_SEND_REQUEST        TIT                 → varchar(255)
@@ -48,7 +56,7 @@
       SILVER.CRM_EVENT_PARTICIPATION PARTCPT_STAT_GROUP  → varchar(16777216)
       SILVER.ERP_BUDGET              MONTH_KEY           → varchar(16777216)
       SILVER.BIGQUERY_EVENT               USER_ID_FILLED      → varchar(16777216)
-      SILVER.BIGQUERY_IDENTITY            GA_MEMBER_ID        → varchar(16777216)
+      SILVER.BIGQUERY_IDENTITY            BIGQUERY_MEMBER_ID  → varchar(16777216)
       GOLD.DIM_MEMBER                PREV_MBER_STAT_CD   → varchar(16777216)
       GOLD.FACT_MEMBER_EVENT         AREA_CD_AT_EVENT    → varchar(16777216)
       GOLD.FACT_MEMBER_SPONSORSHIP_SPAN SPNSR_NO         → varchar(16777216)

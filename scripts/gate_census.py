@@ -161,9 +161,16 @@ GEN = {
     # 🆕 [2026-08-30 O124] 손으로 쓴 산출물 `미해결이슈_요약_O102.md` 를 생성기로 대체했다.
     #   근거 = 그 판본이 2행 stale 이었고 파일명에 세션 라벨이 박혀 판본이 늘어났다.
     'gen_unresolved_issue_summary': '미해결이슈 요약 11 — 정본 추출 전용(라이브 접속 0)',
+    # 🆕 [2026-09-17 O163] DDL 파일 ↔ 라이브 컬럼 집합 대조. `--live <TSV>` 필수라 무인자 판정 불가.
+    #   🔴 라이브를 **읽지도 않는다** — 호출자가 INFORMATION_SCHEMA 결과를 파일로 넘긴다
+    #   (커넥션 의존을 두지 않기 위한 설계 · MUTATES 가 아니다).
+    'o163_ddl_live_drift': 'DDL↔라이브 컬럼집합 대조 — `--live` 필수(라이브 접속 0)',
 }
 
 MUTATES = {
+    # 🆕 [2026-09-17 O163] DEC-50 개명 일괄 치환 — `--apply` 로 **다중 파일을 재작성**한다(`R4-4-3`).
+    #   기본은 dry-run 이고, 원천 `EP_GA_SESSION_*` 개수 불변·줄 수 불변을 단정한 뒤에만 쓴다.
+    'o163_dec50_rename': 'DEC-50 개명 다중 파일 치환(--apply)',
     'apply_table_comment_drift': '라이브 COMMENT 반영',
     'apply_silver_comment_drift': 'SILVER 라이브 COMMENT 반영',
     'deploy_ml_semantic_views': 'SV 배포', 'deploy_ml_serving_views': 'SERVING 뷰 배포',

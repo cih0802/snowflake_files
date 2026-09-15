@@ -234,9 +234,9 @@ BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_TS,파생 TIMESTAMP,TIMESTAMP_NTZ,Y,,,파생 TIMESTAMP,
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,USER_ID,GA4 user_id 원본(불변 보존),VARCHAR,Y,,,GA4 user_id 원본(불변 보존). USER_ID 사용.,
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,ID_SCHEME,식별자 체계,VARCHAR,Y,,,ID_SCHEME.,
-BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_ID,GA 세션ID(EP_GA_SESSION_ID TRY_CAST),"NUMBER(38,0)",Y,,,GA 세션ID(EP_GA_SESSION_ID TRY_CAST).,
-BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_NUMBER,GA 세션 번호,"NUMBER(38,0)",Y,,,GA_SESSION_NUMBER.,
-BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_KEY,"파생 세션 자연키 = user_pseudo_id ∥ """,VARCHAR,Y,,,"파생 세션 자연키 = user_pseudo_id ∥ "".",
+BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_ID,BigQuery 세션ID(EP_GA_SESSION_ID TRY_CAST),"NUMBER(38,0)",Y,,,BigQuery 세션ID(EP_GA_SESSION_ID TRY_CAST).,
+BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_NUMBER,BigQuery 세션 번호,"NUMBER(38,0)",Y,,,BigQuery 세션 번호(EP_GA_SESSION_NUMBER TRY_CAST).,
+BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_KEY,"파생 세션 자연키 = user_pseudo_id ∥ """,VARCHAR,Y,,,"파생 세션 자연키 = user_pseudo_id ∥ "".",
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,SESSION_ENGAGED,세션 engaged 여부(EP_SESSION_ENGAGED),VARCHAR,Y,,,세션 engaged 여부(EP_SESSION_ENGAGED).,
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,ENGAGEMENT_TIME_MSEC,참여 시간(밀리초),"NUMBER(38,0)",Y,,,ENGAGEMENT_TIME_MSEC.,
 BIGQUERY_BASIC,GA4 기반 테이블,EVENT_DT × EVENT_SEQ (1이벤트),GA4,PAGE_LOCATION,페이지 URL(EP_PAGE_LOCATION),VARCHAR,Y,,,페이지 URL(EP_PAGE_LOCATION),
@@ -296,9 +296,9 @@ BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,EVENT_TS,파생 TIMESTAMP,TIMESTAMP_NTZ,Y,,,파생 TIMESTAMP,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,USER_ID,GA4 user_id 원본(불변 보존),VARCHAR,Y,,,GA4 user_id 원본(불변 보존).  GA4.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,ID_SCHEME,식별자 체계,VARCHAR,Y,,,ID_SCHEME.,
-BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_ID,GA 세션ID,"NUMBER(38,0)",Y,,,GA 세션ID,
-BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_NUMBER,GA 세션 번호,"NUMBER(38,0)",Y,,,GA 세션 번호,
-BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,GA_SESSION_KEY,파생 세션 자연키,VARCHAR,Y,,,"파생 세션 자연키 (복합 = pseudo ∥ "".",
+BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_ID,BigQuery 세션ID,"NUMBER(38,0)",Y,,,BigQuery 세션ID,
+BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_NUMBER,BigQuery 세션 번호,"NUMBER(38,0)",Y,,,BigQuery 세션 번호,
+BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,BIGQUERY_SESSION_KEY,파생 세션 자연키,VARCHAR,Y,,,"파생 세션 자연키 (복합 = pseudo ∥ "".",
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,USER_ID_FILLED,파생 세션 전파 회원번호,VARCHAR,Y,,,파생 세션 전파 회원번호.  GA4.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,ID_RESOLUTION,ID_RESOLUTION,VARCHAR,Y,,,ID_RESOLUTION.,
 BIGQUERY_EVENT,GA 이벤트 팩트 소스,EVENT_DT × EVENT_SEQ (1이벤트),GA4,SESSION_ENGAGED,세션 engaged 여부,VARCHAR,Y,,,세션 engaged 여부,
@@ -341,7 +341,7 @@ BIGQUERY_EVENT_DIM,GA 이벤트분류,1이벤트명/파라미터,GA4,DW_LOAD_TS,
 BIGQUERY_EVENT_DIM,GA 이벤트분류,1이벤트명/파라미터,GA4,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 BIGQUERY_EVENT_DIM,GA 이벤트분류,1이벤트명/파라미터,GA4,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,USER_PSEUDO_ID,세션 스파인,VARCHAR,N,PK,,세션 스파인 (PK),
-BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,GA_MEMBER_ID,GA_MEMBER_ID,VARCHAR,Y,,,GA_MEMBER_ID.,
+BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,BIGQUERY_MEMBER_ID,BigQuery 회원 ID,VARCHAR,Y,,,BigQuery측 회원 식별자(=USER_ID_FILLED).,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,ID_SCHEME,식별자 체계,VARCHAR,N,PK,,ID 체계 (PK) — MBER_NO/ONCE_MBER_NO/APP/EMAIL/INVALID/UNCLASSIFIED,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,MEMBER_TYPE,회원구분 ONCE(S+8자리) / FDRM(7자리),VARCHAR,Y,,,회원구분 ONCE(S+8자리) / FDRM(7자리).,
 BIGQUERY_IDENTITY,GA 신원,USER_PSEUDO_ID × ID_SCHEME (1신원),GA4,MBER_NO,정기 회원번호,VARCHAR,Y,,,정기 회원번호. ID_SCHEME=MBER_NO 일 때만 채움.,
@@ -523,12 +523,14 @@ CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE1_BSN
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE1_NM,캠페인 유형1명 (MM295 라벨): 국내 / 통합 / 해외,VARCHAR,Y,,,캠페인 유형1명 (MM295 라벨): 국내 / 통합 / 해외. 코드id:MM295.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE2_BSN,CMPGN_TYPE2_BSN,"NUMBER(10,0)",Y,FK,CRM_CODE※비강제,CMPGN_TYPE2_BSN. 코드id:MM296.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_TYPE2_NM,CMPGN_TYPE2_NM,VARCHAR,Y,,,CMPGN_TYPE2_NM. 코드id:MM296.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_CMPGN_NM,MKTG_CMPGN_NM,"NUMBER(10,0)",Y,,,MKTG_CMPGN_NM.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MK_CMPGN_NM,"마케팅 캠페인명 (라벨, Q16 해소)",VARCHAR,Y,,,"마케팅 캠페인명 (라벨, Q16 해소)",
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_CMPGN_NM,마케팅 캠페인코드 (TC_MKTNG_DTL_CD C001 대응 · _NM이나 실제 FK),"NUMBER(10,0)",Y,,,마케팅 캠페인코드 (TC_MKTNG_DTL_CD C001 대응 · _NM이나 실제 FK),
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MK_CMPGN_NM,마케팅 캠페인명 (TC_MKTNG_DTL_CD C001 라벨),VARCHAR,Y,,,마케팅 캠페인명 (TC_MKTNG_DTL_CD C001 라벨),
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMMN_BRND,공통브랜드,"NUMBER(10,0)",Y,,,MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM. 코드id:MM297.,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMMN_BRND_NM,MM297 공통브랜드명,VARCHAR,Y,,,MM297 공통브랜드명,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM,마케팅 UTM,"NUMBER(10,0)",Y,,,TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM. 고유값:MKTG_UTM_NM.,
-CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM_NM,TM_CM_MKTNG_UTM 라벨,VARCHAR,Y,,,TM_CM_MKTNG_UTM 라벨,
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM,마케팅 UTM,"NUMBER(10,0)",Y,,,마케팅 UTM 코드 (TC_MKTNG_DTL_CD U001 대응),
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_UTM_NM,마케팅 UTM 라벨 (TC_MKTNG_DTL_CD U001 라벨),VARCHAR,Y,,,마케팅 UTM 라벨 (TC_MKTNG_DTL_CD U001 라벨),
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_CHANNEL,마케팅 채널 코드,"NUMBER(10,0)",Y,,,마케팅 채널 코드 (2026-09-16 신규 · TM_CM_CMPGN_MNG.MKTG_CHANNEL · TC_MKTNG_DTL_CD C002 대응),
+CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,MKTG_CHANNEL_NM,마케팅 채널명 (TC_MKTNG_DTL_CD C002 라벨),VARCHAR,Y,,,마케팅 채널명 (TC_MKTNG_DTL_CD C002 라벨),
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,CMPGN_STRT_DE,캠페인 시작일 YYYYMMDD,VARCHAR,Y,,,캠페인 시작일 YYYYMMDD,
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
 CRM_CAMPAIGN,캠페인 마스터,1캠페인 (CMPGN_CD),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
@@ -596,14 +598,14 @@ CRM_EVENT_PARTICIPATION,행사 참여자,"행사 × 참여자 (EVENT_KEY, MEMBER
 CRM_EVENT_PARTICIPATION,행사 참여자,"행사 × 참여자 (EVENT_KEY, MEMBER_DK, PARTCPT_SEQ)",행사,PARTCPT_CHNNL_NM,참여채널 라벨 (CRM_CODE 조인),VARCHAR,Y,,,참여채널 라벨 (CRM_CODE 조인),
 CRM_EVENT_PARTICIPATION,행사 참여자,"행사 × 참여자 (EVENT_KEY, MEMBER_DK, PARTCPT_SEQ)",행사,PARTCPT_PATH_GROUP,PARTCPT_PATH_GROUP,VARCHAR,Y,,,PARTCPT_PATH_GROUP. 코드id:MS303.,
 CRM_EVENT_PARTICIPATION,행사 참여자,"행사 × 참여자 (EVENT_KEY, MEMBER_DK, PARTCPT_SEQ)",행사,PARTCPT_PATH_NM,참여경로 라벨 (CRM_CODE 조인),VARCHAR,Y,,,참여경로 라벨 (CRM_CODE 조인),
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,MK_CMPGN_CD,MK_CMPGN_CD,VARCHAR,Y,,,MK_CMPGN_CD.,
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,MK_CMPGN_NM,MK_CMPGN_NM,VARCHAR,Y,,,MK_CMPGN_NM.,
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,MK_CMPGN_CD,MK_CMPGN_CD,VARCHAR,N,PK,,MK_CMPGN_CD (PK · TC_MKTNG_DTL_CD DTL_CD_ID).,
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,MK_CMPGN_NM,MK_CMPGN_NM (TC_MKTNG_DTL_CD DTL_CD_NM),VARCHAR,Y,,,MK_CMPGN_NM (TC_MKTNG_DTL_CD DTL_CD_NM).,
 CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,USE_YN,사용여부 Y/N,VARCHAR,Y,,,"사용여부 Y/N. 고유값:Y,N",
 CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,RM,비고,VARCHAR,Y,,,비고,
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,Y,,,원천 시스템,공통감사
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,Y,,,적재 시각,공통감사
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,갱신 시각,공통감사
-CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,배치 식별,공통감사
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 (공통감사),공통감사
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,적재 시각 (공통감사),공통감사
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,갱신 시각 (공통감사),공통감사
+CRM_MARKETING_CAMPAIGN,마케팅캠페인 마스터,1마케팅캠페인 (MKTG_CMPGN_KEY),마스터,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,배치 식별 (공통감사),공통감사
 CRM_MEMBER,회원 통합,1회원 (MEMBER_DK),회원,MEMBER_DK,불변 회원키,VARCHAR,N,PK,,"불변 회원키 (PK, 조인용)",
 CRM_MEMBER,회원 통합,1회원 (MEMBER_DK),회원,MEMBER_TYPE,회원구분 파생 (정기=FDRM / 일시=ONCE),VARCHAR,Y,,,회원구분 파생 (정기=FDRM / 일시=ONCE),파생
 CRM_MEMBER,회원 통합,1회원 (MEMBER_DK),회원,MBER_DIV_CD,회원구분코드 (MM018: 개인/기업/단체),VARCHAR,Y,FK,CRM_CODE※비강제,회원구분코드 (MM018: 개인/기업/단체),
@@ -654,6 +656,13 @@ CRM_MEMBER_AMT_CHANGE,약정 증감,"1약정증감 (MBER_NO, CHG_SEQ)",약정,DW
 CRM_MEMBER_AMT_CHANGE,약정 증감,"1약정증감 (MBER_NO, CHG_SEQ)",약정,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 CRM_MEMBER_AMT_CHANGE,약정 증감,"1약정증감 (MBER_NO, CHG_SEQ)",약정,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 CRM_MEMBER_AMT_CHANGE,약정 증감,"1약정증감 (MBER_NO, CHG_SEQ)",약정,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,MBER_NO,정기회원번호 (전환 후 · PK · →CRM_MEMBER),VARCHAR,N,PK,,정기회원번호 (전환 후 · PK · →CRM_MEMBER),
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,ONCE_MBER_NO,일시후원회원번호 (전환 전 · PK),VARCHAR,N,PK,,일시후원회원번호 (전환 전 · PK),
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,FRST_REGIST_DT,전환/최초등록일시,TIMESTAMP_NTZ,Y,,,전환/최초등록일시,
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MEMBER_CONVERT_HIST,일시→정기 회원 전환 매핑 이력,1전환매핑,CRM,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SPNSR_NO,후원번호,VARCHAR,N,PK,,후원번호 (PK),
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SPNSR_BSNS_NO,후원사업번호,"NUMBER(19,0)",N,PK,,후원사업번호 (PK),Q15 약정키(차원키 아님)
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,OCCRRNC_DE,발생일자 YYYYMMDD,VARCHAR,N,PK,,발생일자 YYYYMMDD (PK),
@@ -688,6 +697,8 @@ CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CMMN_BRND
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CMMN_BRND_NM,MM297 공통브랜드명,VARCHAR,Y,,,MM297 공통브랜드명. CRM_CAMPAIGN 비정규화. 코드id:MM297.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MKTG_UTM,마케팅 UTM,"NUMBER(10,0)",Y,,,MKTG_UTM.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MKTG_UTM_NM,MKTG_UTM_NM,VARCHAR,Y,,,MKTG_UTM_NM.,
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MKTG_CHANNEL,마케팅 채널 코드,"NUMBER(10,0)",Y,,,마케팅 채널 코드. CRM_CAMPAIGN 비정규화,
+CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,MKTG_CHANNEL_NM,마케팅 채널명,VARCHAR,Y,,,마케팅 채널명. CRM_CAMPAIGN 비정규화,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SPNSR_DIV_CD,후원구분코드,VARCHAR,Y,,,SPNSR_DIV_CD. 코드id:CM035.,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,SPNSR_DIV_NM,후원구분명,VARCHAR,Y,,,후원구분명. CRM_CAMPAIGN 비정규화,
 CRM_MEMBER_DEV,개발약정,"1개발약정 (MBER_NO, DVLP_SEQ)",약정,CPR_DIV_CD,법인구분코드,VARCHAR,Y,,,CPR_DIV_CD. 코드id:CM019.,
@@ -758,6 +769,20 @@ CRM_MEMBER_STATUS_HIST,회원 상태전이 이력,"회원 × 상태전이 (MBER_
 CRM_MEMBER_STATUS_HIST,회원 상태전이 이력,"회원 × 상태전이 (MBER_NO, STAT_CHG_SEQ)",회원,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 CRM_MEMBER_STATUS_HIST,회원 상태전이 이력,"회원 × 상태전이 (MBER_NO, STAT_CHG_SEQ)",회원,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 CRM_MEMBER_STATUS_HIST,회원 상태전이 이력,"회원 × 상태전이 (MBER_NO, STAT_CHG_SEQ)",회원,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,CD_ID,코드그룹 ID,VARCHAR,N,PK,,코드그룹 ID (PK · C001 마케팅캠페인 / C002 채널 / U001 UTM),
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DTL_CD_ID,상세코드 ID,VARCHAR,N,PK,,상세코드 ID (PK),
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,CD_NM,코드그룹명,VARCHAR,Y,,,코드그룹명,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DTL_CD_NM,상세코드명 (라벨),VARCHAR,Y,,,상세코드명 (라벨),
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,SORT_ORDR,정렬순서,"NUMBER(10,0)",Y,,,정렬순서,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,USE_YN,사용여부 (Y/N),VARCHAR,Y,,,사용여부 (Y/N),
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,RM,비고,VARCHAR,Y,,,비고,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,CD_ATRB1,코드속성1,VARCHAR,Y,,,코드속성1,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,CD_ATRB2,코드속성2,VARCHAR,Y,,,코드속성2,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,CD_ATRB3,코드속성3,VARCHAR,Y,,,코드속성3,
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_MKTNG_CODE,마케팅 통합 코드 사전,1코드값,CRM,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_ORG,조직 마스터,1조직노드 (DEPT_ID),마스터,DEPT_ID,부서ID,VARCHAR,N,PK,,부서ID (PK),
 CRM_ORG,조직 마스터,1조직노드 (DEPT_ID),마스터,DEPT_NM,부서명,VARCHAR,Y,,,부서명,
 CRM_ORG,조직 마스터,1조직노드 (DEPT_ID),마스터,UPPER_DEPT_ID,상위부서ID (조직 계층),VARCHAR,Y,FK,CRM_ORG.DEPT_ID※비강제,상위부서ID (조직 계층),
@@ -845,7 +870,32 @@ CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",�
 CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",발송,SEND_RESULT_CD,축B(신설) 통신사 결과코드 raw,VARCHAR,Y,,,축B(신설) 통신사 결과코드 raw.,
 CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",발송,SEND_RESULT_GROUP,SEND_RESULT_GROUP,VARCHAR,Y,,,SEND_RESULT_GROUP. 코드id:MS283.,
 CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",발송,SEND_RESULT_NAME,SEND_RESULT_NAME,VARCHAR,Y,,,SEND_RESULT_NAME.,
-CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",발송,OPEN_DT,오픈시각,TIMESTAMP_NTZ,Y,,,오픈시각.,
+CRM_SEND_MEMBER,발송×회원 상세,"발송 × 회원 (SNDNG_KEY, MBER_NO)",발송,OPEN_DT,오픈시각 (SND_MEMBER_OPEN_LOG 축약),TIMESTAMP_NTZ,Y,,,오픈시각 (SND_MEMBER_OPEN_LOG 축약).,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,LOG_SEQ,로그순번,"NUMBER(19,0)",N,PK,,로그순번 (PK),
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,REQ_SEQ_NO,발송요청순번 (→CRM_SEND_REQUEST),"NUMBER(19,0)",Y,,,발송요청순번 (→CRM_SEND_REQUEST),
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,R_NUM,순번 (→CRM_SEND_MEMBER),"NUMBER(19,0)",Y,,,순번 (→CRM_SEND_MEMBER),
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,MBER_NO,회원번호,VARCHAR,Y,,,회원번호,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,LINK_ID,링크ID,VARCHAR,Y,,,링크ID,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,LINK_NM,링크명,VARCHAR,Y,,,링크명,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,LINK_PAGE,링크페이지,VARCHAR,Y,,,링크페이지,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,LINK_IMG_URL,링크이미지URL,VARCHAR,Y,,,링크이미지URL,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,AGENT,접속에이전트,VARCHAR,Y,,,접속에이전트,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,CLICK_DT,클릭일시,TIMESTAMP_NTZ,Y,,,클릭일시,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,FRST_REGIST_DT,최초등록일시,TIMESTAMP_NTZ,Y,,,최초등록일시,
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SEND_MEMBER_LINK_LOG,메시지 발송 메일 링크 클릭 로그,1클릭사건,CRM,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,LOG_SEQ,로그순번,"NUMBER(19,0)",N,PK,,로그순번 (PK),
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,REQ_SEQ_NO,발송요청순번 (→CRM_SEND_REQUEST),"NUMBER(19,0)",Y,,,발송요청순번 (→CRM_SEND_REQUEST),
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,R_NUM,순번 (→CRM_SEND_MEMBER),"NUMBER(19,0)",Y,,,순번 (→CRM_SEND_MEMBER),
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,MBER_NO,회원번호,VARCHAR,Y,,,회원번호,
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,OPEN_DT,오픈일시,TIMESTAMP_NTZ,Y,,,오픈일시,
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,FRST_REGIST_DT,최초등록일시,TIMESTAMP_NTZ,Y,,,최초등록일시,
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,DW_SOURCE_SYSTEM,원천 시스템 식별,VARCHAR,N,,,원천 시스템 식별 (공통감사),공통감사
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
+CRM_SEND_MEMBER_OPEN_LOG,메시지 발송 메일 오픈 로그,1오픈사건,CRM,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
 CRM_SEND_REQUEST,발송요청 마스터,1발송요청 (SNDNG_KEY),발송,SNDNG_KEY,발송키,"NUMBER(10,0)",N,PK,,발송키 (PK),
 CRM_SEND_REQUEST,발송요청 마스터,1발송요청 (SNDNG_KEY),발송,SEND_CHANNEL,발송채널 (SND/SMS/EMAIL 등),VARCHAR,Y,,,발송채널 (SND/SMS/EMAIL 등),파생
 CRM_SEND_REQUEST,발송요청 마스터,1발송요청 (SNDNG_KEY),발송,SNDNG_TY_CD,발송유형코드,VARCHAR,Y,FK,CRM_CODE※비강제,발송유형코드,
@@ -945,9 +995,9 @@ ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYY
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_LOAD_TS,최초 적재 시각,TIMESTAMP_NTZ,N,,,최초 적재 시각 (공통감사),공통감사
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_UPDATE_TS,최종 갱신 시각,TIMESTAMP_NTZ,Y,,,최종 갱신 시각 (공통감사),공통감사
 ERP_BUDGET_YEARLY,예산 연 총액,"예산과목 × 연도 (BUDGET_ITEM_DK, YYYY)",ERP,DW_BATCH_ID,적재 배치 식별자,VARCHAR,Y,,,적재 배치 식별자 = dbt invocation_id (공통감사),공통감사
-IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,USER_PSEUDO_ID,GA 세션 스파인,VARCHAR,N,PK,,GA 세션 스파인 (PK),
-IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,GA_MEMBER_ID,GA_MEMBER_ID,VARCHAR,Y,,,GA_MEMBER_ID.,
-IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,ID_SCHEME,식별자 체계,VARCHAR,Y,,,GA측 ID 체계. 매칭 분모 판정의 정본.,
+IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,USER_PSEUDO_ID,BigQuery 세션 스파인,VARCHAR,N,PK,,BigQuery 세션 스파인 (PK),
+IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,BIGQUERY_MEMBER_ID,BigQuery 회원 ID,VARCHAR,Y,,,BigQuery측 회원 식별자(원문 보존).,
+IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,ID_SCHEME,식별자 체계,VARCHAR,Y,,,BigQuery측 ID 체계. 매칭 분모 판정의 정본.,
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,MEMBER_TYPE,회원구분 ONCE/FDRM,VARCHAR,Y,,,회원구분 ONCE/FDRM. 비회원 ID 체계는 NULL.,
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,MEMBER_DK,매칭된 CRM 불변회원키(미매칭 NULL),VARCHAR,Y,"DK,FK",CRM_MEMBER.MEMBER_DK※비강제,매칭된 CRM 불변회원키(미매칭 NULL),
 IDENTITY_MEMBER_XREF,신원 브리지,USER_PSEUDO_ID × MEMBER_DK (1신원매칭),신원,HOMEPAGE_ID,매칭 CRM 회원의 HMPG_ID(미매칭 NULL),VARCHAR,Y,,,매칭 CRM 회원의 HMPG_ID(미매칭 NULL),

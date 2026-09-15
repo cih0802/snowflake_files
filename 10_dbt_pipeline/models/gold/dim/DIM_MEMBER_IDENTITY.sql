@@ -14,7 +14,7 @@ with m as (
 ),
 -- XREF는 user_pseudo_id 단위 → MEMBER_DK로 집계(1회원 1행)해 fan-out(IDENTITY_SK 중복) 방지
 xref as (
-    select MEMBER_DK as X_MEMBER_DK, MAX(GA_MEMBER_ID) as BIGQUERY_MEMBER_ID
+    select MEMBER_DK as X_MEMBER_DK, MAX(BIGQUERY_MEMBER_ID) as BIGQUERY_MEMBER_ID
     from {{ ref('IDENTITY_MEMBER_XREF') }}
     where MEMBER_DK is not null
     group by MEMBER_DK

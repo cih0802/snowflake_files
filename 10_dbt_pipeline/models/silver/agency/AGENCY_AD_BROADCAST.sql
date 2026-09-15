@@ -6,8 +6,8 @@
 --    이 NULL 은 '원천에 개념이 없음'이며 결측이 아니다(예: RT_TYPE 은 재방송 전용, SPOT_TYPE 은 영상 전용).
 -- ⚠️ O16 해소 — REBRDC 개발실적(DVLP_MEMBER_CNT·DVLP_CNT)을 **여기 별도 컬럼으로 분리**한다.
 --    종전에는 SILVER UNION 이 이 두 값을 DIGITAL 의 GA 지표 자리에 위치매핑하고 GOLD 가
---    GA_CONV_MEMBERS·GA_CONV_CNT 로 개명 노출해, 재방송 개발실적이 'GA 전환'으로 혼입됐다
---    (실측 2026-07-28: GA_CONV_MEMBERS 의 28.60% · GA_CONV_CNT 의 60.32%). 문서10 §8-I(8).
+--    AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT 로 개명 노출해, 재방송 개발실적이 'GA 전환'으로 혼입됐다
+--    (실측 2026-07-28: AGENCY_CONV_MEMBERS 의 28.60% · AGENCY_CONV_CNT 의 60.32%). 문서10 §8-I(8).
 --    → 코어 GA_CONV_* 는 DIGITAL 전용으로 환원, 개발실적은 본 위성이 고유 이름으로 보유한다.
 --    VIDEO 분기에서는 개발실적 개념이 없어 NULL 이다.
 SELECT

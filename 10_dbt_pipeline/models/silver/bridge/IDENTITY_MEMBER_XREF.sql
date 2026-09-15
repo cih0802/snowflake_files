@@ -10,14 +10,14 @@
 --    「회원번호가 아님」이 한 값으로 뭉개져 **채움률 분모가 조용히 왜곡**된다(R2-7-1 과 같은 축).
 --    ⇒ MATCH_METHOD 에 **'NOT_A_MEMBER_ID'** 를 신설해 두 사건을 분리 표기한다.
 --       채움률 계산 = MEMBER_ID_EXACT / (MEMBER_ID_EXACT + UNMATCHED) — NOT_A_MEMBER_ID 는 분모 밖.
---    🔴 라벨 창작이 아니다 — GA_MEMBER_ID 원문은 그대로 보존하고 분류만 부여한다(DEC-17-B).
+--    🔴 라벨 창작이 아니다 — BIGQUERY_MEMBER_ID 원문은 그대로 보존하고 분류만 부여한다(DEC-17-B).
 --
--- ⚠️ GA_MEMBER_ID 는 VARCHAR(64) 다(GA4-LEN-1 조치①). MEMBER_DK 는 VARCHAR(10) 이므로
+-- ⚠️ BIGQUERY_MEMBER_ID 는 VARCHAR(64) 다(GA4-LEN-1 조치①). MEMBER_DK 는 VARCHAR(10) 이므로
 --    64자 값은 조인에서 자연히 불일치한다 — 그것을 UNMATCHED 로 세지 않기 위해 위 분기가 필요하다.
 {{ config(materialized='incremental') }}
 SELECT
-    g.USER_PSEUDO_ID    AS USER_PSEUDO_ID,
-    g.GA_MEMBER_ID      AS GA_MEMBER_ID,
+    g.USER_PSEUDO_ID        AS USER_PSEUDO_ID,
+    g.BIGQUERY_MEMBER_ID    AS BIGQUERY_MEMBER_ID,
     g.ID_SCHEME         AS ID_SCHEME,
     g.MEMBER_TYPE       AS MEMBER_TYPE,
     m.MEMBER_DK         AS MEMBER_DK,
@@ -36,7 +36,7 @@ SELECT
     NULL                            AS DW_BATCH_ID
 FROM {{ ref('BIGQUERY_IDENTITY') }} g
 LEFT JOIN {{ ref('CRM_MEMBER') }} m
-    ON g.GA_MEMBER_ID = m.MEMBER_DK
+    ON g.BIGQUERY_MEMBER_ID = m.MEMBER_DK
    -- 🔴 회원번호 체계인 행만 조인 대상이다. 이 조건이 없으면 64자 값이 조인을 타고
    --    (매칭은 어차피 안 되지만) 분모 판정이 MATCH_METHOD 한 곳에만 의존하게 된다.
    AND g.ID_SCHEME IN ('MBER_NO','ONCE_MBER_NO')

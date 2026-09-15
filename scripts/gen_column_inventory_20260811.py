@@ -143,7 +143,7 @@ COL_KOR_EXPLICIT = {
     "BIGQUERY_UTM_CONTENT": "BigQuery UTM 콘텐츠",
     "BIGQUERY_UTM_TERM": "BigQuery UTM 검색어",
     "BIGQUERY_SOURCE_MEDIUM": "BigQuery 소스/매체",
-    "GA_SESSION_NUMBER": "GA 세션 번호",
+    "BIGQUERY_SESSION_NUMBER": "BigQuery 세션 번호",
     "ENGAGEMENT_TIME_MSEC": "참여 시간(밀리초)",
     "EVENT_CATEGORY": "이벤트 카테고리",
     "PERCENT_SCROLLED": "스크롤 비율",

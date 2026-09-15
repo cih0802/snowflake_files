@@ -2,7 +2,7 @@
 -- Co-authored with CoCo
 --
 -- 🆕 [2026-08-21] 신설 배경 — `BIGQUERY_REFINED_DATA` 가 외부 Python 적재로 전환되며
---    118컬럼 평탄화만 남고 파생(EVENT_DT·EVENT_SEQ·ID_SCHEME·GA_SESSION_KEY·DEVICE_TYPE·
+--    118컬럼 평탄화만 남고 파생(EVENT_DT·EVENT_SEQ·ID_SCHEME·BIGQUERY_SESSION_KEY·DEVICE_TYPE·
 --    UTM/XCHAN 등)을 전부 잃었다. GA4_* 5종은 그 파생 컬럼을 전제하므로 dbt build 가
 --    ERROR 9건으로 막혔다. 이 모델이 그 파생을 되살린다(종전 커밋아웃된 `BIGQUERY_REFINED_DATA`
 --    dbt 모델 DDL 을 계승 — `04_silver_design/08_SILVER_테이블DDL_20260714.sql` GA4 0).
@@ -86,11 +86,11 @@ select
         when lower(USER_ID) in ('null','undefined') then 'INVALID'
         when USER_ID is not null                 then 'UNCLASSIFIED'
         else null end AS VARCHAR(20))                             as ID_SCHEME,
-    try_cast(EP_GA_SESSION_ID as number)                         as GA_SESSION_ID,
-    try_cast(EP_GA_SESSION_NUMBER as number)                     as GA_SESSION_NUMBER,
+    try_cast(EP_GA_SESSION_ID as number)                         as BIGQUERY_SESSION_ID,
+    try_cast(EP_GA_SESSION_NUMBER as number)                     as BIGQUERY_SESSION_NUMBER,
     case when EP_GA_SESSION_ID is not null
          then USER_PSEUDO_ID || '-' || EP_GA_SESSION_ID
-         else null end                                            as GA_SESSION_KEY,
+         else null end                                            as BIGQUERY_SESSION_KEY,
     CAST(EP_SESSION_ENGAGED AS VARCHAR(5))                       as SESSION_ENGAGED,
     try_cast(EP_ENGAGEMENT_TIME_MSEC as number)                  as ENGAGEMENT_TIME_MSEC,
     EP_PAGE_LOCATION                                             as PAGE_LOCATION,

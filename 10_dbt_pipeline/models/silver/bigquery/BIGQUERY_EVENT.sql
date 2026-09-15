@@ -33,15 +33,15 @@ WITH base AS (
 -- 세션 단위 신원 집계 — 🔴 Snowflake 는 COUNT(DISTINCT x) OVER(...) 를 지원하지 않는다.
 --    MAX(user_id) OVER(파티션) 단독으로 채우면 CONFLICT 세션이 조용히 오귀속된다
 --    ⇒ 반드시 2단계(집계 CTE → LEFT JOIN). 설계문서 07 §5-A 「구현 주의」.
---    세션 키는 복합(GA_SESSION_KEY = user_pseudo_id ∥ '-' ∥ ga_session_id).
+--    세션 키는 복합(BIGQUERY_SESSION_KEY = user_pseudo_id ∥ '-' ∥ ga_session_id).
 sess AS (
     SELECT
-        GA_SESSION_KEY,
+        BIGQUERY_SESSION_KEY,
         COUNT(DISTINCT USER_ID) AS n_id,
         MAX(USER_ID)            AS sess_uid
     FROM base
-    WHERE GA_SESSION_KEY IS NOT NULL
-    GROUP BY GA_SESSION_KEY
+    WHERE BIGQUERY_SESSION_KEY IS NOT NULL
+    GROUP BY BIGQUERY_SESSION_KEY
 )
 SELECT
     b.USER_PSEUDO_ID                                             AS USER_PSEUDO_ID,
@@ -53,15 +53,15 @@ SELECT
     b.EVENT_TS                                                   AS EVENT_TS,
     b.USER_ID                                                    AS USER_ID,
     b.ID_SCHEME                                                  AS ID_SCHEME,
-    b.GA_SESSION_ID                                              AS GA_SESSION_ID,
-    b.GA_SESSION_NUMBER                                          AS GA_SESSION_NUMBER,
-    b.GA_SESSION_KEY                                             AS GA_SESSION_KEY,
+    b.BIGQUERY_SESSION_ID                                        AS BIGQUERY_SESSION_ID,
+    b.BIGQUERY_SESSION_NUMBER                                    AS BIGQUERY_SESSION_NUMBER,
+    b.BIGQUERY_SESSION_KEY                                       AS BIGQUERY_SESSION_KEY,
     CASE WHEN b.USER_ID IS NOT NULL      THEN b.USER_ID
-         WHEN b.GA_SESSION_KEY IS NULL   THEN NULL
+         WHEN b.BIGQUERY_SESSION_KEY IS NULL   THEN NULL
          WHEN s.n_id = 1                 THEN s.sess_uid
          ELSE NULL END                                           AS USER_ID_FILLED,
     CASE WHEN b.USER_ID IS NOT NULL      THEN 'DIRECT'
-         WHEN b.GA_SESSION_KEY IS NULL   THEN 'UNRESOLVED'
+         WHEN b.BIGQUERY_SESSION_KEY IS NULL   THEN 'UNRESOLVED'
          WHEN s.n_id = 1                 THEN 'SESSION_FILL'
          WHEN s.n_id >= 2                THEN 'CONFLICT'
          ELSE 'UNRESOLVED' END                                   AS ID_RESOLUTION,
@@ -97,8 +97,8 @@ SELECT
     NULL                              AS DW_BATCH_ID
 FROM base b
 LEFT JOIN sess s
-    ON b.GA_SESSION_KEY IS NOT NULL
-   AND s.GA_SESSION_KEY = b.GA_SESSION_KEY
+    ON b.BIGQUERY_SESSION_KEY IS NOT NULL
+   AND s.BIGQUERY_SESSION_KEY = b.BIGQUERY_SESSION_KEY
 -- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
 -- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
 --    정의 지점은 `macros/ga4_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.

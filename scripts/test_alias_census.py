@@ -32,7 +32,7 @@ CASES = [
     ("라벨 조인 수식", "c.DTL_CD_NM", "EVENT_DIV_NM", "E_label_join", "DTL_CD_NM"),
     # 표현식 = 로직 유입 지점.
     ("함수", "TRY_TO_NUMBER(YEAR)", "BUDGET_YEAR", "C_expr", None),
-    ("문자열 결합", "A || '-' || B", "GA_SESSION_KEY", "C_expr", None),
+    ("문자열 결합", "A || '-' || B", "BIGQUERY_SESSION_KEY", "C_expr", None),
     ("MD5 파생키", "MD5(COALESCE(X,''))", "BUDGET_ITEM_DK", "C_expr", None),
     ("산술", "AMT / 1000", "AMT_K", "C_expr", None),
 ]

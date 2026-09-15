@@ -21,10 +21,10 @@ SELECT
     CRM_DVLP_CNT                        AS CRM_DVLP_CNT,                -- CRM 개발건수
     -- ── 대행사 산정 파생값 (_SRC, 전량 비가산 N) ──
     CTR                                 AS CTR_SRC,                     -- DW 재계산 = CLICKS/IMPRESSIONS
-    CVR                                 AS CVR_SRC,                     -- DW 재계산 = GA_CONV_MEMBERS/CLICKS (O5 확정)
+    CVR                                 AS CVR_SRC,                     -- DW 재계산 = AGENCY_CONV_MEMBERS/CLICKS (O5 확정)
     CPC                                 AS CPC_SRC,                     -- DW 재계산 = AD_COST/CLICKS
     CPM                                 AS CPM_SRC,                     -- DW 재계산 = AD_COST/IMPRESSIONS×1000
-    CPA                                 AS CPA_SRC,                     -- DW 재계산 = AD_COST/GA_CONV_CNT
+    CPA                                 AS CPA_SRC,                     -- DW 재계산 = AD_COST/AGENCY_CONV_CNT
     DEV_UNIT_PRICE                      AS DEV_UNIT_PRICE_SRC,          -- DW 재계산 = AD_COST/개발건수
     VTR                                 AS VTR_SRC,                     -- 재계산 불가(원천 전용)
     'AGENCY'                                AS DW_SOURCE_SYSTEM,

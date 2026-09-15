@@ -613,13 +613,13 @@ FROM GN_DW.BRONZE_BIGQUERY."events_20260501";
 -- ----------------------------------------------------------------------------
 -- GA4 B-4 : BIGQUERY_EVENT  (팩트 소스 — FLATTEN + param 승격 + 07 §5-A 세션 채움)
 --   2단계 세션 채움(설계결정서 §5-A): ① ev(PK GROUP BY, ga_session_id 승격)
---   → ② sess(GA_SESSION_KEY 별 COUNT(DISTINCT user_id)=n_id·MAX(user_id)=sess_uid) → LEFT JOIN.
+--   → ② sess(BIGQUERY_SESSION_KEY 별 COUNT(DISTINCT user_id)=n_id·MAX(user_id)=sess_uid) → LEFT JOIN.
 --   ⚠️ COUNT(DISTINCT) OVER 미지원 → 반드시 집계 CTE 방식. n_id>=2 = CONFLICT(미채움).
 --   ⚠️ 원천 복합PK 중복군(16,187) 은 ev 의 PK GROUP BY 로 dedup → BIGQUERY_EVENT PK 유일.
 -- ----------------------------------------------------------------------------
 INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_EVENT
 (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, BATCH_ORDERING_ID, EVENT_DATE, EVENT_DT, EVENT_TS,
- USER_ID, GA_SESSION_ID, GA_SESSION_NUMBER, GA_SESSION_KEY, USER_ID_FILLED, ID_RESOLUTION,
+ USER_ID, BIGQUERY_SESSION_ID, BIGQUERY_SESSION_NUMBER, BIGQUERY_SESSION_KEY, USER_ID_FILLED, ID_RESOLUTION,
  SESSION_ENGAGED, ENGAGEMENT_TIME_MSEC, PAGE_LOCATION, PAGE_TITLE, PAGE_REFERRER,
  EVENT_CATEGORY, EVENT_ACTION, EVENT_LABEL, PERCENT_SCROLLED, LINK_URL, LINK_TEXT,
  DEVICE_TYPE, DEVICE_CATEGORY, OS, GEO_COUNTRY, GEO_CITY,
@@ -723,7 +723,7 @@ LEFT JOIN sess s
 --   PK=USER_PSEUDO_ID → pseudo 당 1행. 채움 회원번호는 MAX 로 결정적 선택(다중 로그인 pseudo 방어).
 -- ----------------------------------------------------------------------------
 INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_IDENTITY
-(USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MBER_NO, ONCE_MBER_NO, ID_RESOLUTION,
+(USER_PSEUDO_ID, BIGQUERY_MEMBER_ID, MEMBER_TYPE, MBER_NO, ONCE_MBER_NO, ID_RESOLUTION,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 WITH ev AS (
     SELECT
@@ -776,19 +776,19 @@ GROUP BY user_pseudo_id;
 -- STEP 7 : S-7 신원 브리지 IDENTITY_MEMBER_XREF (교차소스 유일 예외)
 -- ----------------------------------------------------------------------------
 --   목적 : GA 신원(BIGQUERY_IDENTITY) ↔ CRM 회원(CRM_MEMBER) 해소.
---   조인 : GA_MEMBER_ID = MEMBER_DK 결정적 exact 매칭(실측 1,348/1,348=100%, fan-out 0, type불일치 0).
+--   조인 : BIGQUERY_MEMBER_ID = MEMBER_DK 결정적 exact 매칭(실측 1,348/1,348=100%, fan-out 0, type불일치 0).
 --   grain: 1행/USER_PSEUDO_ID. 멱등 INSERT OVERWRITE.
 --   미매칭 보존(LEFT JOIN) → MATCH_METHOD='UNMATCHED'/CONFIDENCE='NONE'.
 --   CHILD_CODE 제외(CRM_SPONSOR_RELATION 회원×아동 fan-out 회피 — 결연아동은 GOLD URL파싱/결연팩트에서).
 --   ⚠️ 단방향 : SILVER BIGQUERY_IDENTITY·CRM_MEMBER 만 참조.
 -- ----------------------------------------------------------------------------
 INSERT OVERWRITE INTO GN_DW.SILVER.IDENTITY_MEMBER_XREF
-(USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, MEMBER_DK, HOMEPAGE_ID, ID_RESOLUTION,
+(USER_PSEUDO_ID, BIGQUERY_MEMBER_ID, MEMBER_TYPE, MEMBER_DK, HOMEPAGE_ID, ID_RESOLUTION,
  MATCH_METHOD, MATCH_CONFIDENCE,
  DW_SOURCE_SYSTEM, DW_SOURCE_TABLE, DW_LOAD_TS, DW_UPDATE_TS, DW_BATCH_ID)
 SELECT
     g.USER_PSEUDO_ID,
-    g.GA_MEMBER_ID,
+    g.BIGQUERY_MEMBER_ID,
     g.MEMBER_TYPE,
     m.MEMBER_DK,
     m.HMPG_ID                                                              AS homepage_id,
@@ -800,7 +800,7 @@ SELECT
     'GA4+CRM', 'SILVER.BIGQUERY_IDENTITY+CRM_MEMBER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), NULL
 FROM GN_DW.SILVER.BIGQUERY_IDENTITY g
 LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
-    ON g.GA_MEMBER_ID = m.MEMBER_DK;
+    ON g.BIGQUERY_MEMBER_ID = m.MEMBER_DK;
 
 -- STEP 7 완료 — 신원 브리지 적재(멱등). DQ = 아래 STEP 7-DQ.
 -- ----------------------------------------------------------------------------
@@ -822,21 +822,21 @@ LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
 -- ----------------------------------------------------------------------------
 -- (A) 사전 진단 — 적재 前 매칭률·fan-out·type정합 측정 (실측: 1,348/1,348=100%, fan-out 0, type불일치 0)
 WITH ga AS (
-  SELECT USER_PSEUDO_ID, GA_MEMBER_ID, MEMBER_TYPE, ID_RESOLUTION
+  SELECT USER_PSEUDO_ID, BIGQUERY_MEMBER_ID, MEMBER_TYPE, ID_RESOLUTION
   FROM GN_DW.SILVER.BIGQUERY_IDENTITY
-  WHERE GA_MEMBER_ID IS NOT NULL
+  WHERE BIGQUERY_MEMBER_ID IS NOT NULL
 )
 SELECT
   COUNT(*)                                                                 AS ga_ids_total,
-  COUNT(DISTINCT ga.GA_MEMBER_ID)                                          AS ga_distinct_member_ids,
+  COUNT(DISTINCT ga.BIGQUERY_MEMBER_ID)                                          AS ga_distinct_member_ids,
   SUM(IFF(m.MEMBER_DK IS NOT NULL,1,0))                                    AS matched_rows,
-  COUNT(DISTINCT IFF(m.MEMBER_DK IS NOT NULL, ga.GA_MEMBER_ID, NULL))      AS matched_distinct_ids,
+  COUNT(DISTINCT IFF(m.MEMBER_DK IS NOT NULL, ga.BIGQUERY_MEMBER_ID, NULL))      AS matched_distinct_ids,
   SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.ID_RESOLUTION='DIRECT',1,0))      AS matched_direct,
   SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.ID_RESOLUTION='SESSION_FILL',1,0)) AS matched_sessionfill,
   SUM(IFF(m.MEMBER_DK IS NOT NULL AND ga.MEMBER_TYPE <> m.MEMBER_TYPE,1,0)) AS type_mismatch
 FROM ga
 LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
-  ON ga.GA_MEMBER_ID = m.MEMBER_DK;
+  ON ga.BIGQUERY_MEMBER_ID = m.MEMBER_DK;
 
 -- (B) 적재 후 DQ 게이트 — 행수대사·PK유일·fan-out·매칭/신뢰도 분포·로직 무결성
 --     실측 통과: xref_rows=ga4_identity_rows=1348 / distinct_pk=1348·pk_null=0

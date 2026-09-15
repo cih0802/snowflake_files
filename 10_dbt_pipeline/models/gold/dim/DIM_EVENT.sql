@@ -22,8 +22,8 @@ select
     CASE EVENT_SOURCE WHEN 'EVENT' THEN '일반행사' WHEN 'CRMN' THEN '캠페인행사' END as EVENT_KIND_NAME,
     EVENT_DIV_CD                                  as EVENT_CATEGORY,
     EVENT_NM                                      as EVENT_NAME,
-    TRY_TO_DATE(STRT_DE, 'YYYYMMDD')              as EVENT_START_DATE,
-    TRY_TO_DATE(END_DE, 'YYYYMMDD')               as EVENT_END_DATE,
+    STRT_DE                                       as EVENT_START_DATE,
+    END_DE                                        as EVENT_END_DATE,
     CAST(NULL AS VARCHAR)                          as APPLY_CHANNEL,   -- ⚠️ A-10 대기
     -- 🟢 [DEC-30 2026-08-04] 모집인원 이관 — 참여 팩트가 아니라 **행사 차원**이 정본이다.
     --   원천 `CRM_EVENT.RCRIT_PSNNL_CO` 채움 3,361/3,786=88.8%·74종.

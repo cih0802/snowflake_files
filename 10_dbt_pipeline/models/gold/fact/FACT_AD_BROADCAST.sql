@@ -6,7 +6,7 @@
 --    `CAST(NULL AS ..)` 하드코딩으로 자리만 있던 컬럼이다(값미주입 결함군). 본 위성에서 **실배선**된다.
 -- ⚠️ 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
 --    (예: SPOT_TYPE·DURATION_SEC 는 VIDEO 전용 / RT_TYPE·BRDC_DIV 는 REBRDC 전용).
--- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 GA_CONV_MEMBERS·GA_CONV_CNT
+-- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
 --    자리에 위치매핑돼 'GA 전환'으로 혼입돼 있던 값을 고유 이름으로 분리했다(문서10 §8-I(8)).
 -- ⚠️ `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
 {{ config(

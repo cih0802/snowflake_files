@@ -30,39 +30,39 @@ WITH base AS (
     SELECT
         USER_PSEUDO_ID,
         USER_ID,
-        GA_SESSION_KEY
+        BIGQUERY_SESSION_KEY
     FROM {{ ref('BIGQUERY_BASIC') }}
 ),
 -- 세션 단위 집계 → 2단계 채움(설계문서 07 §5-A). COUNT(DISTINCT) OVER 미지원 대응.
 sess AS (
     SELECT
-        GA_SESSION_KEY,
+        BIGQUERY_SESSION_KEY,
         COUNT(DISTINCT USER_ID) AS n_id,
         MAX(USER_ID)            AS sess_uid
     FROM base
-    WHERE GA_SESSION_KEY IS NOT NULL
-    GROUP BY GA_SESSION_KEY
+    WHERE BIGQUERY_SESSION_KEY IS NOT NULL
+    GROUP BY BIGQUERY_SESSION_KEY
 ),
 filled AS (
     SELECT
         b.USER_PSEUDO_ID,
         CASE WHEN b.USER_ID IS NOT NULL                     THEN b.USER_ID
-             WHEN b.GA_SESSION_KEY IS NOT NULL AND s.n_id = 1 THEN s.sess_uid
+             WHEN b.BIGQUERY_SESSION_KEY IS NOT NULL AND s.n_id = 1 THEN s.sess_uid
              ELSE NULL END AS member_id,
         CASE WHEN b.USER_ID IS NOT NULL                     THEN 'DIRECT'
-             WHEN b.GA_SESSION_KEY IS NOT NULL AND s.n_id = 1 THEN 'SESSION_FILL'
+             WHEN b.BIGQUERY_SESSION_KEY IS NOT NULL AND s.n_id = 1 THEN 'SESSION_FILL'
              ELSE NULL END AS id_resolution
     FROM base b
     LEFT JOIN sess s
-        ON b.GA_SESSION_KEY IS NOT NULL
-       AND s.GA_SESSION_KEY = b.GA_SESSION_KEY
+        ON b.BIGQUERY_SESSION_KEY IS NOT NULL
+       AND s.BIGQUERY_SESSION_KEY = b.BIGQUERY_SESSION_KEY
 ),
 -- 채움 결과(member_id)에 ID 체계를 재부여한다. 세션 채움으로 들어온 값도 분류가 필요하므로
 -- 기반 테이블의 ID_SCHEME 을 그대로 끌어오지 않고 **채움 후 값**을 기준으로 다시 판정한다.
 agg AS (
     SELECT
         USER_PSEUDO_ID,
-        MAX(member_id)                                          AS ga_member_id,
+        MAX(member_id)                                          AS bigquery_member_id,
         IFF(MIN(IFF(id_resolution = 'DIRECT', 0, 1)) = 0,
             'DIRECT', 'SESSION_FILL')                           AS id_resolution
     FROM filled
@@ -71,22 +71,22 @@ agg AS (
 )
 SELECT
     a.USER_PSEUDO_ID                                            AS USER_PSEUDO_ID,
-    a.ga_member_id                                              AS GA_MEMBER_ID,
-    CASE WHEN a.ga_member_id RLIKE '^[0-9]{7}$'  THEN 'MBER_NO'
-         WHEN a.ga_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE_MBER_NO'
-         WHEN STARTSWITH(a.ga_member_id, 'app-') THEN 'APP'
-         WHEN POSITION('@', a.ga_member_id) > 0  THEN 'EMAIL'
+    a.bigquery_member_id                                        AS BIGQUERY_MEMBER_ID,
+    CASE WHEN a.bigquery_member_id RLIKE '^[0-9]{7}$'  THEN 'MBER_NO'
+         WHEN a.bigquery_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE_MBER_NO'
+         WHEN STARTSWITH(a.bigquery_member_id, 'app-') THEN 'APP'
+         WHEN POSITION('@', a.bigquery_member_id) > 0  THEN 'EMAIL'
          -- 원천 오류값 2종(프런트엔드 미정의/널이 문자열로 흘러든 것). 회원번호가 아니다.
          -- 🔴 `undefined` 는 O87-B 실측으로 발견됐다(293행 · 1id · 2024-03-25~2026-06-08) —
          --    종전 문서의 「6종」에 없었고 `ONCE_MBER_NO` 에 흡수 계상돼 그 버킷이 과대였다.
-         WHEN LOWER(a.ga_member_id) IN ('null', 'undefined') THEN 'INVALID'
+         WHEN LOWER(a.bigquery_member_id) IN ('null', 'undefined') THEN 'INVALID'
          ELSE 'UNCLASSIFIED' END                                AS ID_SCHEME,
     -- 🔴 회원구분은 CRM 회원번호 체계일 때만 부여한다. 그 밖은 NULL(창작 금지 · R2-7).
-    CASE WHEN a.ga_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE'
-         WHEN a.ga_member_id RLIKE '^[0-9]{7}$'  THEN 'FDRM'
+    CASE WHEN a.bigquery_member_id RLIKE '^S[0-9]{8}$' THEN 'ONCE'
+         WHEN a.bigquery_member_id RLIKE '^[0-9]{7}$'  THEN 'FDRM'
          ELSE NULL END                                          AS MEMBER_TYPE,
-    IFF(a.ga_member_id RLIKE '^[0-9]{7}$',  a.ga_member_id, NULL) AS MBER_NO,
-    IFF(a.ga_member_id RLIKE '^S[0-9]{8}$', a.ga_member_id, NULL) AS ONCE_MBER_NO,
+    IFF(a.bigquery_member_id RLIKE '^[0-9]{7}$',  a.bigquery_member_id, NULL) AS MBER_NO,
+    IFF(a.bigquery_member_id RLIKE '^S[0-9]{8}$', a.bigquery_member_id, NULL) AS ONCE_MBER_NO,
     a.id_resolution                                             AS ID_RESOLUTION,
     'GA4'                             AS DW_SOURCE_SYSTEM,
     'SILVER.BIGQUERY_BASIC'    AS DW_SOURCE_TABLE,

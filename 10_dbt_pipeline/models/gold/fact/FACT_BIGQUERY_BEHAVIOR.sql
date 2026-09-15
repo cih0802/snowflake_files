@@ -31,7 +31,7 @@ joined as (
         COALESCE(SPLIT_PART(e.PAGE_LOCATION, '?', 1), '(none)')              as PAGE_PATH,
         e.PAGE_LOCATION                                                      as PAGE_LOCATION,
         e.USER_PSEUDO_ID,
-        e.GA_SESSION_ID,
+        e.BIGQUERY_SESSION_ID,
         e.EVENT_NAME,
         e.IS_ACTIVE_USER,
         e.SESSION_ENGAGED,
@@ -68,20 +68,20 @@ select
     COUNT_IF(EVENT_NAME = 'session_start')                                  as VISITS,
     COUNT(*)                                                                 as EVENT_CNT,
     COUNT_IF(EVENT_NAME = 'page_view')                                      as VIEW_CNT,
-    COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID)                  as SESSION_CNT,
+    COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID)             as SESSION_CNT,
     COUNT(DISTINCT IFF(SESSION_ENGAGED = '1',
-        USER_PSEUDO_ID || '|' || GA_SESSION_ID, NULL))                      as ENGAGED_SESSIONS,
+        USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID, NULL))                 as ENGAGED_SESSIONS,
     MAX(PERCENT_SCROLLED)                                                    as SCROLL_DEPTH,
     COUNT(DISTINCT IFF(IS_ACTIVE_USER, USER_PSEUDO_ID, NULL))               as ACTIVE_USERS,
     COUNT(DISTINCT USER_PSEUDO_ID)                                          as TOTAL_USERS,
     CAST(NULL AS NUMBER)                                                     as AVG_SESSION_DURATION,  -- ⚠️ 세션지속 산식 미정
     CAST(NULL AS NUMBER)                                                     as BOUNCE_RATE,           -- ⚠️ 비가산·정의 대기
     DIV0(
-        COUNT(DISTINCT IFF(SESSION_ENGAGED='1', USER_PSEUDO_ID||'|'||GA_SESSION_ID, NULL)),
-        COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID)
+        COUNT(DISTINCT IFF(SESSION_ENGAGED='1', USER_PSEUDO_ID||'|'||BIGQUERY_SESSION_ID, NULL)),
+        COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID)
     )                                                                        as ENGAGEMENT_RATE,
     DIV0(SUM(ENGAGEMENT_TIME_MSEC) / 1000.0,
-        COUNT(DISTINCT USER_PSEUDO_ID || '|' || GA_SESSION_ID))              as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4)) — 상한 가드는 아래 outer select
+        COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID))         as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4)) — 상한 가드는 아래 outer select
     {{ gold_meta('BIGQUERY') }}
 from joined
 group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH

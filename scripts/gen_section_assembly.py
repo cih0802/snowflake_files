@@ -143,19 +143,20 @@ FACT_PAIR_EVIDENCE = {
         "이미 포함한 **상위 집계**다. 둘을 같은 표에서 합하면 **이중계상**이다.",
 }
 DIM_IDENTITY_NOTE = (
-    "`DIM_MEMBER_IDENTITY` 는 GA↔CRM 신원 브리지 전용 차원이고 CRM 팩트에서 가는 FK 가 없다. "
+    "`DIM_MEMBER_IDENTITY` 는 BigQuery↔CRM 신원 브리지 전용 차원이고 CRM 팩트에서 가는 FK 가 없다. "
     "회원번호·회원키는 `DIM_MEMBER`(자연키 `MEMBER_DK` 조인)에서 얻는다 — 이 행은 **매핑 대상 차원이 잘못 지정**된 경우다."
 )
 
 # 팩트의 시간축·엔티티축 (물리 컬럼에서 확인된 것만 적는다)
 TIME_AXIS = {"DATE_SK": "일", "PERF_DATE_SK": "일", "MONTH_KEY": "월", "ACQ_DATE_SK": "일(획득)"}
 ENTITY_HINT = ["MEMBER_DK", "ORG_SK", "BUDGET_ITEM_SK", "AD_PERF_DK", "EVENT_SK",
-               "SEND_KEY", "PARTCPT_SEQ", "GA_SESSION_KEY"]
+               "SEND_KEY", "PARTCPT_SEQ", "BIGQUERY_SESSION_KEY"]
 
 # 원천 시스템 (dbt source 스키마에서 파생하지 않고 팩트명으로 구분 — 소수라 명시가 더 안전)
 ABBREV = {
     "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_SERVICE_EVENT",
-    "FAD": "FACT_AD_PERFORMANCE", "FGA": "FACT_GA_BEHAVIOR", "FBD": "FACT_BUDGET",
+    "FAD": "FACT_AD_PERFORMANCE", "FGA": "FACT_BIGQUERY_BEHAVIOR",
+    "FBQ": "FACT_BIGQUERY_BEHAVIOR", "FBD": "FACT_BUDGET",
     "FEP": "FACT_EVENT_PARTICIPATION", "FMC": "FACT_MEMBER_COHORT",
     "FTG-D": "FACT_TARGET_DEV", "FTG_D": "FACT_TARGET_DEV",
     "FTG-B": "FACT_TARGET_BIZ", "FTG_B": "FACT_TARGET_BIZ",
