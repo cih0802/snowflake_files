@@ -13,6 +13,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 	SUBDTL_ITEM_NM VARCHAR(16777216) COMMENT '세세목',
 	FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
 	BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
+	VENDOR VARCHAR(16777216) COMMENT '거래처',
 	DVLP_INBOUND_PATH VARCHAR(16777216) COMMENT '개발인입경로',
 	DIRECT_MNYRS_YN_1 VARCHAR(16777216) COMMENT '직접모금비1',
 	DIRECT_MNYRS_YN_2 VARCHAR(16777216) COMMENT '직접모금비2',
@@ -72,7 +73,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 ;
 create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
 	YEAR VARCHAR(16777216) COMMENT '연도',
-	WRITE_DATE VARCHAR(16777216) COMMENT '작성일자',
+	WRITE_DATE DATE COMMENT '작성일자',
 	RESOLUTION_NO VARCHAR(16777216) COMMENT '결의번호',
 	RESOLUTION_DEPT_NM VARCHAR(16777216) COMMENT '결의부서',
 	EXPS_RESOLUTION_NM VARCHAR(16777216) COMMENT '지출결의명',
@@ -141,10 +142,10 @@ BEGIN
         COPY INTO GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
         FROM (
             SELECT
-                '''''' || :P_YEAR || '''''',$1,$2,$3,$4,
-                $5,$6,$7,$8,$9,
-                $10,$11, $12, $13, $14,
-                NVL(TRY_TO_NUMBER(REPLACE($15, '''','''', '''''''')), 0),
+                '''''' || :P_YEAR || '''''',
+                $1,$2,$3,$4,$5,
+                $6,$7,$8,$9,$10,
+                $11, $12, $13, $14, $15,
                 NVL(TRY_TO_NUMBER(REPLACE($16, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($17, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($18, '''','''', '''''''')), 0),
@@ -195,7 +196,8 @@ BEGIN
                 NVL(TRY_TO_NUMBER(REPLACE($63, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($64, '''','''', '''''''')), 0),
                 NVL(TRY_TO_NUMBER(REPLACE($65, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($66, '''','''', '''''''')), 0)
+                NVL(TRY_TO_NUMBER(REPLACE($66, '''','''', '''''''')), 0),
+                NVL(TRY_TO_NUMBER(REPLACE($67, '''','''', '''''''')), 0)
             FROM @GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE
             (FILE_FORMAT => ''''GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR'''', PATTERN => ''''.*'' || v_file_name || '''''')
         ) FORCE = TRUE'';

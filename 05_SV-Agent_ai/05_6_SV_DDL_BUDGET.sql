@@ -33,7 +33,7 @@
 --      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER` ·
 --                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
 --                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
@@ -57,7 +57,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd AS GN_DW.GOLD.FACT_BUDGET
       PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
       WITH SYNONYMS ('예산', '예산 집행')
-      COMMENT = '예산 편성 및 집행 실적 분석 (base: GOLD.FACT_BUDGET). [Grain: 월 × 부서 × 예산과목]. [활성 지표: 편성예산/집행예산/집행률(%)]. [주의: 연 총액은 SV_BUDGET_YEARLY 사용(월 집행액과 합산 금지)]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET → GOLD.FACT_BUDGET].',
+      COMMENT = '예산 편성 및 집행 실적 분석 (base: GOLD.FACT_BUDGET). [Grain: 월 × 부서 × 예산과목]. [활성 지표: 편성예산/집행예산/집행률(%)]. [주의: 월 집행액을 더해 연 총액으로 쓰지 말 것 — 연 예산 정본은 GOLD.FACT_BUDGET_YEARLY 이나 어떤 Semantic View 에도 미배선이므로 이 SV 로 연 총액 질의에 답하지 않는다]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET → GOLD.FACT_BUDGET].',
     month AS GN_DW.GOLD.DIM_MONTH
       PRIMARY KEY (MONTH_KEY)
       WITH SYNONYMS ('월', '예산월')

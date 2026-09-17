@@ -244,6 +244,26 @@ QUOTE_RX = re.compile(r'^(?:\s*>)*\s*')
 STRIKE_SPAN = re.compile(r'~~(.+?)~~', re.S)
 START_PHRASE = '여기서 시작한다'
 
+#   🆕 🔴🔴 [2026-09-16 O165 신설] **취소선 축만으로는 승계를 못 본다 — 「중첩 물결」이 있다.**
+#     실사고(O165 착수 시점) = 브리핑이 현행 시작점으로 **§0-DDDD(2026-08-31 O126)** 를 뽑았다.
+#       실제 문안 = `## ~~0-DDDD. 🔴🔴 [… O126 — ~~여기서 시작한다~~ · §0-EEEE 로 승계됐다]~~`
+#     `STRIKE_SPAN` 은 **비탐욕 쌍 맞추기**라 `~~`(선두)↔`~~`(문구 앞) 을 한 쌍으로 먹고,
+#     그 다음 쌍은 `~~`(문구 뒤)↔`~~`(말미) 가 된다 ⇒ **문구 자체가 두 구간 사이(밖)에 놓인다.**
+#     ⇒ `struck_out` 이 **False**(= 살아 있음)를 돌려주고, 그 절이 유일 후보가 되어
+#       **2026-08-31 절이 「현행」으로 발행됐다**(O143 이 고친 것과 **다른 형태의 같은 사고**).
+#   🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 3차 실물이고,
+#     교훈은 O143 이 이미 적어 둔 그대로다 — **판정을 서식에 의존시키면 서식이 바뀔 때마다 깨진다.**
+#   ⇒ 🟢 판정식 = **서식 축(취소선) OR 의미 축(승계 문구)**. 둘 중 하나면 승계로 본다.
+#     🔴 방향을 구별한다 — `… 로 승계`(이 절 → 다른 절 · **자기 승계**)와 `시작점은 …`(이관 안내)만
+#       승계 신호로 쓴다. `… 는 승계됐다`(다른 절 → 이 절)는 **현행 절이 스스로 적는 문구**이므로
+#       신호로 쓰면 **살아 있는 절을 죽인다**(O143 이 경고한 역방향 오탐).
+SUPERSEDE_RX = re.compile(r'(로 승계|시작점은)')
+
+
+def superseded(title):
+    """이 절이 **이미 승계됐는가**(= 현행이 아닌가). 서식 축 OR 의미 축."""
+    return struck_out(title) or bool(SUPERSEDE_RX.search(title))
+
 
 def struck_out(text, needle=START_PHRASE):
     """`needle` 의 **모든 등장**이 취소선 구간(`~~ … ~~`) 안에 있으면 True(= 승계됨).
@@ -261,6 +281,22 @@ def struck_out(text, needle=START_PHRASE):
     return found
 
 
+def tail_handoff(lines=None):
+    """`99_NEXT` 의 **문서 최말단** 인수인계 절(승계 여부 무관). 없으면 `None`.
+
+    🔴 용도는 **오직 진단**이다 — 현행 후보가 0 일 때 「무엇을 열어야 하는가」를 준다.
+    이것을 현행으로 승격하지 않는다(승계 표기가 붙은 절을 현행으로 쓰면 닫힌 작업을 다시 한다).
+    """
+    if lines is None:
+        lines = family_lines('99_NEXT_SESSION.md')
+    tail = None
+    for rel, ln, line in lines:
+        t = dequote(line)
+        if t.startswith('## ') and START_PHRASE in t:
+            tail = {'title': clip(strip_md(t[3:]), 120), 'where': '%s:%d' % (rel, ln)}
+    return tail
+
+
 def dequote(line):
     """줄 앞의 blockquote 접두(`> ` · `>> ` · ` > `)와 **선행 공백**을 걷어낸다.
 
@@ -273,18 +309,29 @@ def current_handoff(lines=None):
     if lines is None:
         lines = family_lines('99_NEXT_SESSION.md')
     cands = []
+    allsecs = []
     for idx, (rel, ln, line) in enumerate(lines):
         t = dequote(line)
         if not t.startswith('## '):
             continue
-        if START_PHRASE not in t or struck_out(t):
+        if START_PHRASE not in t:
             continue
         m = DATE_RX.search(t)
-        cands.append({'date': m.group(1) if m else '0000-00-00',
-                      'idx': idx,
-                      'title': clip(strip_md(t[3:]), 120),
-                      'where': '%s:%d' % (rel, ln)})
+        rec = {'date': m.group(1) if m else '0000-00-00',
+               'idx': idx,
+               'title': clip(strip_md(t[3:]), 120),
+               'where': '%s:%d' % (rel, ln)}
+        allsecs.append(rec)
+        if superseded(t):
+            continue
+        cands.append(rec)
     if not cands:
+        #   🆕 🔴🔴 [2026-09-16 O165] **후보 0 을 침묵으로 흘리지 않는다.**
+        #     이 상태는 정상이 아니다 = 마지막 절이 「§0-XXXX 로 승계됨」이라 적었는데
+        #     **그 §0-XXXX 를 쓰지 않은 것**이다(O163 이 실제로 `§0-LLLL` 을 쓰지 않았다).
+        #     🔴 `subs` 자리에 말단 절을 끼워 넣지 않는다 — 그것은 **하위 항목 표**이고
+        #       거기 절을 넣으면 「항목이 있다」는 **거짓 신호**가 된다(축 혼용 · `O111 ㉡`).
+        #     ⇒ 말단 절은 `tail_handoff` 로 따로 조회한다.
         return None, []
     #   🆕 🔴🔴 [2026-09-08 O143] **동점은 문서 순서상 「마지막」이 현행이다.**
     #     실사고: 종전은 `max(cands, key=date)` 였고, O140·O141·O142 세 절의 날짜가
@@ -293,6 +340,13 @@ def current_handoff(lines=None):
     #     🟢 근거 = `99_NEXT` 는 인수인계 절이 **아래로 적층**된다(문서 순서 = 시간 순서).
     #     🔴 그래서 정렬 키에 `idx` 를 넣는다 — 날짜는 하루 안에 여러 절을 구분하지 못한다.
     cur = max(cands, key=lambda c: (c['date'], c['idx']))
+    #   🆕 🔴🔴 [2026-09-16 O165 신설] **현행 절이 문서 최말단 절이 아니면 경고한다.**
+    #     `99_NEXT` 는 절이 **아래로 적층**되므로 현행은 **마지막 절**이어야 한다.
+    #     어긋나면 ㉠ 뒤 절에 승계 표기가 빠졌거나 ㉡ 판정식이 뒤 절을 못 보는 것이다
+    #     — 둘 다 **틀린 시작점을 발행하는 경로**다(`O111 ㉠`). 🔴 판정은 사람이 한다.
+    cur['is_last'] = bool(allsecs) and cur['idx'] == allsecs[-1]['idx']
+    cur['tail_where'] = allsecs[-1]['where'] if allsecs else ''
+    cur['tail_title'] = allsecs[-1]['title'] if allsecs else ''
     # 그 절의 ▣ 하위 항목을 좌표와 함께 모은다
     subs, hit = [], False
     for rel, ln, line in lines:
@@ -492,9 +546,18 @@ def build(with_gates=True):
     if cur:
         a('> 🔴 **현행 시작점** = `%s`' % cur['title'])
         a('> · 좌표 = `%s`' % cur['where'])
-        a('> · 판정법 = 「여기서 시작한다」가 **취소선이 아니고** 날짜가 최신인 절.')
+        a('> · 판정법 = 「여기서 시작한다」가 **취소선이 아니고**(또는 「로 승계」·「시작점은」')
+        a('>   승계 문구가 없고) 날짜가 최신인 절.')
         a('>   ⚠️ `99_NEXT` 는 이 절이 **적층**된다 — 과거 절은 취소선으로 승계 표시된다.')
         a('')
+        #   🆕 🔴🔴 [2026-09-16 O165 신설] 현행이 **문서 최말단 절이 아니면** 크게 알린다.
+        if not cur.get('is_last', True):
+            a('> 🔴🔴 **현행 판정이 문서 최말단 절이 아니다 — 시작점을 의심하라.**')
+            a('> 말단 절 = `%s`' % cur.get('tail_title', ''))
+            a('> · 좌표 = `%s`' % cur.get('tail_where', ''))
+            a('> ⇒ ㉠ 말단 절에 **승계 표기가 빠졌는가** ㉡ 아니면 판정식이 **말단을 못 보는가**.')
+            a('> 🔴 둘 다 **틀린 시작점을 발행하는 경로**다(`O111 ㉠`) — 좌표를 열어 판단하라.')
+            a('')
         if subs:
             a('| 항목 | 좌표 |')
             a('|---|---|')
@@ -526,7 +589,19 @@ def build(with_gates=True):
             for g in gap:
                 a('| %s | `%s` |' % (g['order'], g['where']))
     else:
-        a('⚪ 현행 인수인계 절을 찾지 못했다.')
+        #   🆕 🔴🔴 [2026-09-16 O165] 종전 문안은 `⚪ 현행 인수인계 절을 찾지 못했다.` 였다 —
+        #     ⚪ 는 「관측」 등급이라 **이 세션이 실제로 그것을 흘려 읽었다**. 🔴🔴 로 올린다.
+        tail = tail_handoff(nxt)
+        a('> 🔴🔴 **현행 인수인계 절이 0건이다 — 이것은 정상 상태가 아니다.**')
+        a('> 원인은 둘 중 하나다: ㉠ 마지막 세션이 **후속 절을 예고하고 쓰지 않았다**')
+        a('>   (실사고 = O163 이 「§0-LLLL 로 승계됨」이라 적고 `§0-LLLL` 을 만들지 않았다)')
+        a('>   ㉡ 판정식이 **살아 있는 절을 승계로 오판**한다(역방향 오탐 · O143 경고).')
+        if tail:
+            a('> 🔴 **먼저 이 좌표를 열어라**(문서 최말단 절 · 승계 여부 무관):')
+            a('> · 말단 절 = `%s`' % tail['title'])
+            a('> · 좌표 = `%s`' % tail['where'])
+        a('> 🔴 **말단 절을 현행으로 승격하지 마라** — 승계 표기가 붙은 절을 그대로 시작점으로')
+        a('>   쓰면 **이미 닫힌 작업을 다시 한다**(O143 실사고). 새 절을 쓰는 것이 정답이다.')
     a('')
 
     a('## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)')

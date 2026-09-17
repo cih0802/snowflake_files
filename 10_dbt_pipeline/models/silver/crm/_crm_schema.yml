@@ -7,7 +7,10 @@ version: 2
 # ⚠️ 순서9-C severity 정책 (메달리온 베스트 프랙티스):
 #    Silver 참조무결성 실패가 "알려진 원천/마스터 미완전"에서 기인하면 severity:warn 으로 관측·추적(CI 미차단).
 #    error 는 구조적 불변식(차원 PK not_null/unique 등)에만 예약. 아래 relationships/not_null(FK성) 은 전부 warn.
-#    ▶▶ 마스터 전량입고·키체계 확정 후 warn 제거 → error 복귀 (후속조치, 누락 금지. 문서50 BLOCKING-1/2).
+#    ▶▶ ~~마스터 전량입고·키체계 확정 후 warn 제거 → error 복귀 (후속조치, 누락 금지. 문서50 BLOCKING-1/2).~~
+#    🔴🔴 [2026-09-16 O167] **위 한 줄은 폐기된 문안이다 — 실행하지 마라.** 아래 §MASTER-ORPHAN-POLICY 가 폐기했다.
+#       🔴 이 줄이 살아 있던 것 자체가 결함이었다: :55 가 *"「전량입고 후 error 복귀」가 인용돼 있으면 폐기된 문안이다"*
+#       라고 경고하면서 **자기 헤더 안의 인용을 못 잡았다** ⇒ 판정식 = 「예약 조치를 폐기했으면 그 조치를 적은 곳을 전수 세라」.
 #    대상: MBER_NO/MEMBER_DK→CRM_MEMBER, EVENT_KEY→CRM_EVENT(이슈 E 263,611), SNDNG_KEY→CRM_SEND_REQUEST,
 #          SPNSR_BSNS_ID→CRM_SPONSORSHIP, CMPGN_CD→CRM_CAMPAIGN, not_null(MBER_NO) 고아분.
 #
@@ -251,10 +254,10 @@ models:
         tests:
           - not_null:
               config: { where: "SPNSR_DIV_CD IS NOT NULL", severity: warn }
-      - name: CMMN_BRND        # MM297 공통브랜드(14종)
+      - name: CMMN_BRND        # MM297 공통브랜드(17종)
         tests:
           - accepted_values:
-              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
               config: { where: "CMMN_BRND is not null" }
       - name: CMMN_BRND_NM
         tests:

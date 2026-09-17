@@ -63,16 +63,24 @@ MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
 # ── BRONZE 근거 등록부 ──────────────────────────────────────────────
 # 「왜 조립이 안 되는가」를 GOLD FK 상태로만 말하면 소비자는 배선 실수인지 원천 부재인지 구별할 수 없다.
 # 각 차단 축의 **BRONZE 원천 실측**을 함께 적는다. 전 항목 2026-08-06 직접 조회로 확인했다.
+# 🆕 🔴🔴 [2026-09-16 O166] **이 등록부의 키는 라이브 GOLD 팩트명이어야 한다.**
+#   O163 의 GOLD 개명 8종 + `DEC-50` 4종이 이 파일에 반영되지 않아 `SRC_SYS.get()` 이 `?` 를 돌렸고
+#   `09_보고서필드_조립가능성` 의 **타원천 18건이 전건 오판**이었다(실측 = 타원천 18/18 이 `=?` 경유).
+#   🔴 O45·O56 주석이 *"GOLD 에 팩트가 추가되면 이 등록부를 함께 갱신한다"* 고 두 번 경고했는데
+#   개명에서 **3회차로 재발**했다. 원인 = `rename_stale_gate.SCAN_DIRS` 에 `scripts/` 가 없어
+#   **코드의 개명 잔여가 검사 밖**이었다(O166 이 분모에 편입).
+#   개명 대응 정본 = `scripts/rename_stale_gate.py` `RENAMES`.
 BRONZE_EVIDENCE = {
-    ("FACT_TARGET_DEV", "DIM_DATE"):
+    # 구 이름 `FACT_TARGET_DEV` (O163 개명)
+    ("FACT_TARGET_MEMBER_DEV", "DIM_DATE"):
         "목표 원천 `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL`(25,344행 · 11컬럼) 전수 확인 — 시간축이 "
         "`STDYY`(기준연도)+`STDR_MT`(기준월) **둘뿐이고 일자 컬럼이 존재하지 않는다**. "
         "월 목표를 일자에 반복하면 이중계상이므로 일별 목표는 원천적으로 불가.",
-    ("FACT_TARGET_DEV", "DIM_AD_CREATIVE"):
+    ("FACT_TARGET_MEMBER_DEV", "DIM_AD_CREATIVE"):
         "① 목표 원천 `TM_CM_MBER_DVLP_GOAL` 11컬럼에 매체·브랜드 컬럼 **없음**(축 = `DEPT_ID`·`MBER_DVLP_DIV_CD` 뿐). "
         "② 광고 원천 `BRONZE_AGENCY.{DGT,VIDEO,REBRDC}_AD_CMPGN_DTLS` 3종에 **부서 컬럼 0개**. "
         "→ 목표측·광고측 **양쪽 모두 상대 축이 없다**.",
-    ("FACT_TARGET_DEV", "DIM_BUDGET_ITEM"):
+    ("FACT_TARGET_MEMBER_DEV", "DIM_BUDGET_ITEM"):
         "예산 원천 `BRONZE_ERP.BDGT_ACMSLT_LEDGER` **64컬럼 전수 검사 결과 부서 코드 컬럼 0개** — "
         "조직은 `BDGT_UNIT_NM`(예산단위 **이름**) 149종만 있다. CRM 부서명과 이름이 일치하는 것은 "
         "**86/149(57.7%)** 이고, 목표 원천에는 예산과목 축이 없다.",
@@ -101,43 +109,43 @@ BRONZE_EVIDENCE = {
     ("FACT_MEMBER_MONTHLY", "DIM_ORG"):
         "`FACT_MEMBER_MONTHLY` 에 **`ORG_SK` 컬럼 자체가 없다**(물리 확인). 회원-월 grain 에 부서를 붙이려면 "
         "회원의 소속부서 개념이 필요한데 원천은 **사건(개발)에만 부서를 준다**. "
-        "→ 부서별 실적은 `FACT_MEMBER_EVENT.ORG_SK`(개발행 실키) 또는 `FACT_DEV_ACHIEVEMENT` 에서 낸다.",
+        "→ 부서별 실적은 `FACT_MEMBER_EVENT.ORG_SK`(개발행 실키) 또는 `FACT_MEMBER_DEV_ACHIEVEMENT` 에서 낸다.",
     ("FACT_MEMBER_MONTHLY", "DIM_DATE"):
         "`FACT_MEMBER_MONTHLY` 는 **월 grain**(`MONTH_KEY`)이고 `DATE_SK` 가 없다. "
         "일자 분해는 `FACT_MEMBER_EVENT.DATE_SK`(사건 grain)에서만 가능하다.",
-    ("FACT_SERVICE_EVENT", "DIM_CAMPAIGN"):
+    ("FACT_MESSAGE_DISPATCH", "DIM_CAMPAIGN"):
         "`FSE.CAMPAIGN_SK` 전건 센티넬 — 발송 원천(`TM_MS_*_SNDNG` 계열)에 캠페인 코드가 없다. "
         "발송은 캠페인이 아니라 **발송요청 단위**로 관리된다.",
-    ("FACT_GA_BEHAVIOR", "DIM_MEMBER"):
+    ("FACT_BIGQUERY_BEHAVIOR", "DIM_MEMBER"):
         "GA4 는 `user_pseudo_id` 기반이고 회원번호는 `user_id` 가 있을 때만 잡힌다. "
         "현재 BRONZE_BIGQUERY 는 **2일 샤드**(`events_20260501`·`events_20260719`)뿐이고 "
         "`SILVER.IDENTITY_MEMBER_XREF` 2,009행에 불과하다(G-5).",
-    ("FACT_GA_BEHAVIOR", "DIM_CAMPAIGN"):
+    ("FACT_BIGQUERY_BEHAVIOR", "DIM_CAMPAIGN"):
         "`FGA.CAMPAIGN_SK` 전건 센티넬 — GA4 `utm_campaign` 문자열과 CRM 캠페인 코드를 잇는 키가 없다(Q10).",
-    ("FACT_EVENT_PARTICIPATION", "DIM_SPONSORSHIP"):
+    ("FACT_EVENT_ATTENDANCE", "DIM_SPONSORSHIP"):
         "`FEP.SPONSORSHIP_SK` 전건 센티넬 — 행사 참여 원천(`TD_MS_EVENT_PRTCPNT_DTL`)에 후원사업 축이 없다.",
 }
 # 팩트 ↔ 팩트 grain 부정합의 BRONZE 근거 + **올바른 대안**
 FACT_PAIR_EVIDENCE = {
-    ("FACT_TARGET_DEV", "FACT_MEMBER_MONTHLY"):
+    ("FACT_TARGET_MEMBER_DEV", "FACT_MEMBER_MONTHLY"):
         "목표는 **부서 grain**(원천 `TM_CM_MBER_DVLP_GOAL.DEPT_ID`)이고 `FACT_MEMBER_MONTHLY` 는 "
         "**회원-월 grain** 이며 **`ORG_SK` 컬럼이 아예 없다**(물리 확인). 원천이 부서를 주는 곳은 "
         "**개발 사건**(`TM_MM_FDRM_MBER_DVLP_AMT.ACMSLT_DEPT_CD`)뿐이다. "
-        "🟢 **올바른 대안 = `FACT_DEV_ACHIEVEMENT`**(grain `MONTH_KEY × ORG_SK × DEV_TYPE` · "
+        "🟢 **올바른 대안 = `FACT_MEMBER_DEV_ACHIEVEMENT`**(grain `MONTH_KEY × ORG_SK × DEV_TYPE` · "
         "`GOAL_CNT`·`ACTUAL_CNT`·`*_YTD`·`*_YEAR` 완비) 또는 `FACT_MEMBER_EVENT.ORG_SK`. "
         "⚠️ 일자까지 필요하면 `FACT_MEMBER_EVENT.DATE_SK` 를 쓰되 **목표와는 대응시킬 수 없다**.",
-    ("FACT_MEMBER_MONTHLY", "FACT_TARGET_DEV"):
-        "위 항목의 역방향 — 회원-월 팩트에 부서 목표를 붙일 수 없다. `FACT_DEV_ACHIEVEMENT` 를 쓴다.",
+    ("FACT_MEMBER_MONTHLY", "FACT_TARGET_MEMBER_DEV"):
+        "위 항목의 역방향 — 회원-월 팩트에 부서 목표를 붙일 수 없다. `FACT_MEMBER_DEV_ACHIEVEMENT` 를 쓴다.",
     ("FACT_MEMBER_MONTHLY", "FACT_MEMBER_EVENT"):
         "`FACT_MEMBER_EVENT` 는 **사건(일) grain**, `FACT_MEMBER_MONTHLY` 는 **월 grain** 이다. "
         "FMM 은 FME 의 월 롤업이므로(`SUM(DEV_CNT)` 양쪽 **2,291,878 동일**) 같은 표에서 더하면 **이중계상**이다. "
         "필요한 축을 가진 쪽 **하나만** 고른다 — 일자·부서·사유·캠페인은 FME, 회비·미납은 FMM.",
-    ("FACT_SERVICE_EVENT", "FACT_MEMBER_MONTHLY"):
+    ("FACT_MESSAGE_DISPATCH", "FACT_MEMBER_MONTHLY"):
         "발송은 **발송 건 grain**(`SEND_KEY`), 회원월은 **회원-월 grain** 이다. 발송 대상 회원의 회비를 "
         "같은 표에 놓으면 발송 건수만큼 회비가 복제된다(실측 38,470,780행 vs 고유회원 1,031,971 = **37.3배**).",
-    ("FACT_SERVICE_EVENT", "FACT_MEMBER_EVENT"):
+    ("FACT_MESSAGE_DISPATCH", "FACT_MEMBER_EVENT"):
         "발송 건 grain ↔ 개발·중단 사건 grain. 두 사건은 **1:1 대응이 아니다** — "
-        "발송 후 반응을 보려면 `FACT_SERVICE_EVENT.D5_*` 코호트 컬럼을 써야 하나 그것은 **전건 0**(미구현)이다.",
+        "발송 후 반응을 보려면 `FACT_MESSAGE_DISPATCH.D5_*` 코호트 컬럼을 써야 하나 그것은 **전건 0**(미구현)이다.",
     ("FACT_AD_PERFORMANCE", "FACT_AD_BROADCAST"):
         "`FACT_AD_PERFORMANCE`(243,545 = 코어)는 `FACT_AD_DIGITAL`(205,059) + `FACT_AD_BROADCAST`(38,486) 를 "
         "이미 포함한 **상위 집계**다. 둘을 같은 표에서 합하면 **이중계상**이다.",
@@ -154,12 +162,12 @@ ENTITY_HINT = ["MEMBER_DK", "ORG_SK", "BUDGET_ITEM_SK", "AD_PERF_DK", "EVENT_SK"
 
 # 원천 시스템 (dbt source 스키마에서 파생하지 않고 팩트명으로 구분 — 소수라 명시가 더 안전)
 ABBREV = {
-    "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_SERVICE_EVENT",
+    "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_MESSAGE_DISPATCH",
     "FAD": "FACT_AD_PERFORMANCE", "FGA": "FACT_BIGQUERY_BEHAVIOR",
     "FBQ": "FACT_BIGQUERY_BEHAVIOR", "FBD": "FACT_BUDGET",
-    "FEP": "FACT_EVENT_PARTICIPATION", "FMC": "FACT_MEMBER_COHORT",
-    "FTG-D": "FACT_TARGET_DEV", "FTG_D": "FACT_TARGET_DEV",
-    "FTG-B": "FACT_TARGET_BIZ", "FTG_B": "FACT_TARGET_BIZ",
+    "FEP": "FACT_EVENT_ATTENDANCE", "FMC": "FACT_MEMBER_COHORT",
+    "FTG-D": "FACT_TARGET_MEMBER_DEV", "FTG_D": "FACT_TARGET_MEMBER_DEV",
+    "FTG-B": "FACT_TARGET_PROJECT", "FTG_B": "FACT_TARGET_PROJECT",
 }
 
 # 차원 조인이 대리키(_SK)가 아니라 자연키(_DK)로 걸리는 경우 — 실측 확인된 것만 적는다
@@ -170,11 +178,11 @@ DK_JOIN = {"MEMBER_DK": ["DIM_MEMBER", "DIM_MEMBER_ACQUISITION"]}
 
 SRC_SYS = {
     "FACT_MEMBER_MONTHLY": "CRM", "FACT_MEMBER_EVENT": "CRM", "FACT_MEMBER_COHORT": "CRM",
-    "FACT_SERVICE_EVENT": "CRM", "FACT_EVENT_PARTICIPATION": "CRM", "FACT_TARGET_DEV": "CRM",
-    "FACT_TARGET_BIZ": "CRM", "FACT_BUDGET": "ERP",
+    "FACT_MESSAGE_DISPATCH": "CRM", "FACT_EVENT_ATTENDANCE": "CRM", "FACT_TARGET_MEMBER_DEV": "CRM",
+    "FACT_TARGET_PROJECT": "CRM", "FACT_BUDGET": "ERP",
     "FACT_AD_PERFORMANCE": "AGENCY", "FACT_AD_DIGITAL": "AGENCY",
     "FACT_AD_BROADCAST": "AGENCY", "FACT_AD_BROADCAST_CASE": "AGENCY",
-    "FACT_GA_BEHAVIOR": "GA4",
+    "FACT_BIGQUERY_BEHAVIOR": "GA4",
     # [2026-08-06 O45] 미등재 시 `SRC_SYS.get()` 이 "?" 를 돌려 **원천 상이 = 타원천**으로 오판한다
     #   (실측 10행 오판 발생). 원천은 SILVER.CRM_PAYMENT_BILLING = CRM 이다.
     "FACT_MEMBER_FEE": "CRM",
@@ -183,7 +191,7 @@ SRC_SYS = {
     #   등록부에 넣지 않아 원천이 `?` 가 되어 **타원천 오판 3건**이 났다(1-1 「월목표」 · 1-2 「개발(건)」 ·
     #   1-3 「월 목표」). 원천은 개발실적 `TM_MM_FDRM_MBER_DVLP_AMT` + 목표 `TM_CM_MBER_DVLP_GOAL` = **CRM** 이다.
     #   ⇒ **GOLD 에 팩트가 추가되면 이 등록부를 함께 갱신한다**(O45 주석이 이미 경고하고 있었다 · P140 계열).
-    "FACT_DEV_ACHIEVEMENT": "CRM",
+    "FACT_MEMBER_DEV_ACHIEVEMENT": "CRM",
 }
 
 # [2026-08-06 O45] **동일 원천 형제 팩트** — 시간·엔티티축이 같아 보여도 함께 조립하면 이중계상.
@@ -254,10 +262,10 @@ REQUIRED_TIME_GRAIN = [
 # ③ 브리지 차원 경유 — 직접 FK 가 없어도 1:1 브리지가 있으면 도달한다
 #    🔴 이것이 17건 중 7건의 원인이다(3-7 좌측 성별·연령대·지역·후원사업·상위캠페인·가입캠페인·후원금액).
 IDENTITY_BRIDGE = {
-    "FACT_GA_BEHAVIOR": {
+    "FACT_BIGQUERY_BEHAVIOR": {
         "bridge": "DIM_MEMBER_IDENTITY",
         "key": "MEMBER_DK",
-        "reaches": ["DIM_MEMBER", "DIM_MEMBER_CURRENT", "DIM_MEMBER_ACQUISITION"],
+        "reaches": ["DIM_MEMBER", "DIM_MEMBER_ACQUISITION"],
         "why": (
             "`FGA` 에 `MEMBER_DK` 가 없다는 사실은 **회원 축 도달불가를 뜻하지 않는다** — "
             "`DIM_MEMBER_IDENTITY` 가 **전건 1:1 브리지**다(실측 O56: 1,763,066행 · `IDENTITY_SK` 유일 "
@@ -266,10 +274,15 @@ IDENTITY_BRIDGE = {
             "3홉(+`DIM_MEMBER_ACQUISITION`) 45,792. "
             "채움(분모 = 실회원 행 47,112 · P128): 성별 **47,112 = 100%** · 연령대·지역 **45,601 = 96.79%** · "
             "획득축 **45,792 = 97.20%**. "
-            "🔴 단서 두 가지: ㉮ `IDENTITY_SK = 0`(unknown) **21,724행 = 31.6%** 이므로 **분모로 쓰면 과소**다 — "
-            "실회원 모집단을 명시할 것 ㉯ 🔴 **`DIM_MEMBER` 를 직접 조인하지 말 것** — SCD2 라서 "
-            "**7,925,716행**(회원 1,763,065)이고 필터 없이 조인하면 **161,729행 = 2.35배 팬아웃**한다. "
-            "`DIM_MEMBER_CURRENT` 또는 `IS_CURRENT = TRUE` 를 쓰면 47,112 로 정확하다"),
+            "🔴 단서 ㉮ `IDENTITY_SK = 0`(unknown) **21,724행 = 31.6%** 이므로 **분모로 쓰면 과소**다 — "
+            "실회원 모집단을 명시할 것. "
+            "🆕 🟢 **[2026-09-16 O166 재측정] ㉯ 의 SCD2 팬아웃 경고는 더 이상 `DIM_MEMBER` 에 해당하지 않는다** — "
+            "`DIM_MEMBER` 는 **1행/회원**이다(실측 1,785,299행 · `MEMBER_DK` 유일 1,785,299 · `MEMBER_SK` 유일 "
+            "1,785,299 ⇒ 필터 없이 조인해도 팬아웃 0). 상태버전 이력은 **`DIM_MEMBER_STATUS_HISTORY`** 로 "
+            "분리됐다(실측 8,069,279행 / 회원 1,785,299 = **회원당 4.52행**). "
+            "🔴 O56 판본의 *\"`DIM_MEMBER` 는 SCD2 라 7,925,716행\"* 과 구 이름 처방 *\"`DIM_MEMBER_CURRENT` 또는 "
+            "`IS_CURRENT = TRUE` 를 쓰라\"* 는 **개편 전 기술이고 지금은 틀렸다** — 그 이름의 객체도 "
+            "`IS_CURRENT` 컬럼도 라이브에 없다(`DIM_MEMBER` 24컬럼 전수 확인)"),
     },
 }
 
@@ -305,11 +318,31 @@ SEMANTIC_FK_MISMATCH = {
 }
 
 # SCD2 차원 — 조인 시 현재행 필터가 필수인 차원(팬아웃 방지 · P131 계열)
+# 🆕 🔴🔴 [2026-09-16 O166 재측정] **대상 차원이 바뀌었다.** O56 판본은 `DIM_MEMBER` 를 SCD2 로 등재했는데
+#   O162·O163 개편으로 상태버전 이력이 `DIM_MEMBER_STATUS_HISTORY` 로 **분리**됐다.
+#   실측(2026-09-16 · 라이브) = `DIM_MEMBER` 1,785,299행 / 회원 1,785,299 = **1행/회원(팬아웃 0)** ·
+#   `DIM_MEMBER_STATUS_HISTORY` 8,069,279행 / 회원 1,785,299 = **회원당 4.52행**.
+#   ⇒ 🟢 **`DIM_MEMBER` 등재를 뗀 것은 오탐 제거로서 유효하다**(위험이 없는 차원의 경고를 없앴다).
+#
+# 🆕 🔴🔴 [O166-B 자기정정] **아래 등재는 「잠재 가드」이고 지금은 발동하지 않는다.**
+#   🔎 실측 = `DIM_MEMBER_STATUS_HISTORY` 로 가는 **FK 0건**(`schema["fks"]` 전수) · `DK_JOIN` **미등재** ·
+#      `05_지표GOLD매핑` 에 그 차원 등장 **0회** ⇒ **판정기가 그 차원에 도달하지 않는다.**
+#   🔴 그러므로 O166 초판이 원장·근거철에 쓴 *"실제로 위험한 차원은 무경고(미탐)였다 ⇒ 시정했다"* 는
+#      **과대 주장**이었다. 정확히는 **「키를 라이브 실물로 맞췄고, 발동 조건이 생기면 경고한다」**다.
+#   🟢 **발동 조건**(둘 중 하나가 생기면 이 등재가 살아난다):
+#      ㉠ 어떤 팩트가 이 차원으로 **FK** 를 갖게 된다 ㉡ `DK_JOIN["MEMBER_DK"]` 에 이 차원을 **추가**한다.
+#   🔴 **㉡ 를 지금 하지 않았다** — 05 에 매핑된 필드가 0건이라 **판정을 바꿀 근거가 없고**,
+#      근거 없이 도달 경로를 늘리면 `조립가능` 이 실측 없이 증가한다(`R2-3` 위반). 필요해질 때 실측과 함께 넣어라.
 SCD2_DIM = {
-    "DIM_MEMBER": (
-        "🔴 `DIM_MEMBER` 는 **SCD2** 다 — 실측(O56) **7,925,716행 / 회원 1,763,065**(현재행 1,763,065). "
-        "`IS_CURRENT = TRUE` 없이 조인하면 **4.49배 팬아웃**한다(FGA 실측 68,836 → 161,729 = 2.35배). "
-        "⇒ `DIM_MEMBER_CURRENT` 를 쓰거나 `IS_CURRENT = TRUE` 를 명시할 것"),
+    "DIM_MEMBER_STATUS_HISTORY": (
+        "🔴 `DIM_MEMBER_STATUS_HISTORY` 는 **회원 상태버전 이력**이다 — 실측(2026-09-16 O166) "
+        "**8,069,279행 / 회원 1,785,299 = 회원당 4.52행**. 회원 단위 질문에 이 차원을 그대로 조인하면 "
+        "**4.52배 팬아웃**한다. ⇒ ㉠ 회원 현재 속성은 **`DIM_MEMBER`**(1행/회원)에서 얻고 "
+        "㉡ 이 차원은 **상태 변경 이력 질문**에만 쓰며, 회원 단위로 내릴 때는 "
+        "**기간 필터 또는 최신행 1건 선택**(`QUALIFY ROW_NUMBER() OVER (PARTITION BY MEMBER_DK ORDER BY … DESC) = 1`)을 "
+        "명시한다. "
+        "🔴 종전 등재(`DIM_MEMBER` = SCD2 7,925,716행 · `IS_CURRENT = TRUE` 처방)는 **개편 전 기술**이고 "
+        "지금은 `DIM_MEMBER` 에 `IS_CURRENT` 컬럼이 없다(24컬럼 전수 확인)"),
 }
 
 # ── [2026-08-07 O47] 시간축 조밀도 순위 ──────────────────────────────
@@ -750,7 +783,7 @@ def write_md(rows, grain, fk_alive):
         A(f"| `{f}` | {'/'.join(g['time']) or '**없음**'} | {', '.join(g['entity']) or '—'} | {SRC_SYS.get(f,'?')} |")
     A("")
     A("> 🔴 **`FACT_MEMBER_MONTHLY` 에는 `ORG_SK` 도 `DATE_SK` 도 없다** — 부서별·일별 실적은 이 팩트에서 낼 수 없다.")
-    A("> `FACT_TARGET_DEV` 에는 `DATE_SK` 가 없다 — 일별 목표는 원천적으로 불가하다.")
+    A("> `FACT_TARGET_MEMBER_DEV` 에는 `DATE_SK` 가 없다 — 일별 목표는 원천적으로 불가하다.")
     A("> ⚠️ **[O47] 「시간축 없음」이 곧 grain 부정합은 아니다** — 광고 위성(`FACT_AD_BROADCAST`·`FACT_AD_DIGITAL`)은")
     A("> `AD_PERF_DK` PK 로 코어와 **1:1** 이라 코어가 시간축을 소유한다. 판정 기준은 **조인키 유일성**이다(DEC-13·P96-③).")
     A("")
@@ -859,15 +892,19 @@ def write_md(rows, grain, fk_alive):
     A("from GN_DW.GOLD.DIM_MEMBER_IDENTITY;")
     A("-- 실행 결과: 1,763,066 / 1,763,066 / 1,763,066 / 0  = 전건 1:1")
     A("")
-    A("-- ② 🔴 처방을 틀리게 쓰면 팬아웃한다 — DIM_MEMBER 는 SCD2 다")
-    A("select count(*) from GN_DW.GOLD.FACT_GA_BEHAVIOR f")
+    A("-- ② ⚠️ 아래 두 쿼리는 O56(개편 전) 판본의 대조다 — 당시 DIM_MEMBER 는 SCD2 였다")
+    A("select count(*) from GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR f")
     A("  join GN_DW.GOLD.DIM_MEMBER_IDENTITY i on f.IDENTITY_SK = i.IDENTITY_SK")
     A("  join GN_DW.GOLD.DIM_MEMBER m on i.MEMBER_DK = m.MEMBER_DK;          -- ⛔ 161,729 (2.35배)")
-    A("select count(*) from GN_DW.GOLD.FACT_GA_BEHAVIOR f")
+    A("select count(*) from GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR f")
     A("  join GN_DW.GOLD.DIM_MEMBER_IDENTITY i on f.IDENTITY_SK = i.IDENTITY_SK")
-    A("  join GN_DW.GOLD.DIM_MEMBER_CURRENT m on i.MEMBER_DK = m.MEMBER_DK;  -- ✅ 47,112")
+    A("  join GN_DW.GOLD.DIM_MEMBER m on i.MEMBER_DK = m.MEMBER_DK;  -- ✅ 47,112")
+    A("-- 🆕 [2026-09-16 O166] 위 두 쿼리는 이제 **같은 쿼리**다 — `DIM_MEMBER` 가 1행/회원이 되었고")
+    A("--   `DIM_MEMBER_CURRENT`·`IS_CURRENT` 는 라이브에 없다. 상태버전 이력은 DIM_MEMBER_STATUS_HISTORY 다.")
     A("-- base 68,836 − unknown(IDENTITY_SK=0) 21,724 = 47,112 → 실회원 행 전건 매칭 · 팬아웃 0")
-    A("-- DIM_MEMBER 실측: 7,925,716행 / 회원 1,763,065 → 필터 없이 조인하면 4.49배로 늘어난다")
+    A("-- DIM_MEMBER 실측(O56 · 개편 전): 7,925,716행 / 회원 1,763,065 → 당시엔 4.49배로 늘어났다")
+    A("-- DIM_MEMBER 실측(O166 · 현행): 1,785,299행 / 회원 1,785,299 = 1행/회원 ⇒ 팬아웃 0")
+    A("-- 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY (8,069,279 / 회원당 4.52행 · 최신행 1건 선택 필수)")
     A("")
     A("-- ③ 채움률은 **분모를 실회원 행으로** 잡아야 한다(P128)")
     A("-- 실행 결과(분모 47,112): 성별 47,112 = 100% · 연령대·지역 45,601 = 96.79% · 획득축 45,792 = 97.20%")
@@ -905,7 +942,7 @@ def write_md(rows, grain, fk_alive):
     A("-- 중단일: DIM 과 팩트가 같은 원천이라 값이 완전히 같다")
     A("with f as (select MEMBER_DK, max(STOP_DATE) MX from GN_DW.GOLD.FACT_MEMBER_EVENT")
     A("           where STOP_DATE is not null group by 1),")
-    A("     d as (select MEMBER_DK, LAST_STOP_DATE from GN_DW.GOLD.DIM_MEMBER_CURRENT")
+    A("     d as (select MEMBER_DK, LAST_STOP_DATE from GN_DW.GOLD.DIM_MEMBER")
     A("           where LAST_STOP_DATE is not null)")
     A("select count(*) COMPARED, count_if(f.MX <> d.LAST_STOP_DATE) MISMATCH_")
     A("from f join d on f.MEMBER_DK = d.MEMBER_DK;")
@@ -1060,7 +1097,7 @@ def judge(anchor, obj, col, gmap, grain, fk_alive, census, gold, dims, field="")
         if sat:
             return "조립가능", sat
         # 🔴 [O47 자기교정] **원천 검사를 방향성 검사보다 먼저** 한다.
-        #   최초 수정에서 시간축 검사를 앞에 뒀더니 `FMM`(CRM) ← `FACT_GA_BEHAVIOR`(GA4) 3건이
+        #   최초 수정에서 시간축 검사를 앞에 뒀더니 `FMM`(CRM) ← `FACT_BIGQUERY_BEHAVIOR`(GA4) 3건이
         #   「집계필요 = 열린다」로 나왔다. **GA4 를 회원-월로 집계하려면 identity 브리지가 필요하고
         #   그 커버리지가 G-5 대기 상태**이므로 이는 낙관 편향(P94)이다. 판정은 보수적 방향으로 정렬한다.
         if sa != sb:

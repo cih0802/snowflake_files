@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS GN_DW.BRONZE_CRM.CRM_BIZ_TARGET (
 
     -- === 목표 측정값 (건수 + 금액) ===
     TARGET_TYPE         VARCHAR(20)     COMMENT '목표유형: 당초 / 추경1차 / 추경2차. 🔴 추경 시 기존 행 UPDATE 금지 — 새 행 INSERT(버전 누적)',
-    TARGET_CNT          NUMBER(18,0)    COMMENT '목표 건수(건) — 지표사전 #152~155. GOLD FACT_TARGET_BIZ(ANNUAL/SUPP_GOAL_CNT)와 정합',
+    TARGET_CNT          NUMBER(18,0)    COMMENT '목표 건수(건) — 지표사전 #152~155. GOLD FACT_TARGET_PROJECT(ANNUAL/SUPP_GOAL_CNT)와 정합',
     TARGET_AMT          NUMBER(18,0)    COMMENT '[r2 신설] 목표 금액(원 · 수입) — 지표사전 #171~172. 🔴 ERP 예산원장은 지출만 보유(수입 0건)하므로 이 값의 원천이 달리 없다. 원 단위 정수(만원/억원은 마트에서 파생)',
 
     -- === 확정 이력 ===

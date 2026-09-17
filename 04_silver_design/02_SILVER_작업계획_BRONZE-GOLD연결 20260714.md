@@ -59,7 +59,7 @@ END-METADATA -->
 > - **CRM(21)**: 결함 0. 집계 1건(`CRM_SEND_RESULT`)은 원천내 엔티티-grain 통합으로 검토 후 유지(대사 정확). → 문서 03 §6.
 > - **ERP(2)**: 결함 0. wide→long은 reshape(집계 아님)·총액 대사 0. → 문서 05 §5.
 > - **AGENCY**: 결함 **2건 발견·수정** — ① 연·월 텍스트 파싱 96% NULL → **DATE 파생**(NULL 0) · ② `AGENCY_COST` 월 롤업 §3 위반 → **제거→GOLD**(3객체→2). → 문서 06 §5.
-> - **GA4(5, PoC 1일 샤드)**: DQ 4종 전부 통과 — 행수 대사(GA4_EVENT 265,312 = 원천 distinct PK, 원천 287,025 중 PK중복 21,713행 GROUP BY dedup·GA-1)·PK유일 0·EVENT_DT 파생 NULL 0·fan-out 0. session-fill(07 §5-A)로 회원귀속 **4.44%(SILVER dedup 265,312 기준; BRONZE raw 287,025 기준 4.22%)→30.23%**(SESSION_FILL 68,428·CONFLICT 1,648·UNRESOLVED 183,458, 추론값 경고 유지). **사후검토 수정 1건**: `GA4_TRAFFIC_SOURCE` first-touch/collected 혼재 그레인 오염(6,736)→last-click 한정(1,175). 리스크 2건(GA-2 event_label 카디널리티·GA-3 팩트↔DIM_GA_SOURCE 키정합) 문서화. → 문서 04 §5·§7.
+> - **GA4(5, PoC 1일 샤드)**: DQ 4종 전부 통과 — 행수 대사(GA4_EVENT 265,312 = 원천 distinct PK, 원천 287,025 중 PK중복 21,713행 GROUP BY dedup·GA-1)·PK유일 0·EVENT_DT 파생 NULL 0·fan-out 0. session-fill(07 §5-A)로 회원귀속 **4.44%(SILVER dedup 265,312 기준; BRONZE raw 287,025 기준 4.22%)→30.23%**(SESSION_FILL 68,428·CONFLICT 1,648·UNRESOLVED 183,458, 추론값 경고 유지). **사후검토 수정 1건**: `GA4_TRAFFIC_SOURCE` first-touch/collected 혼재 그레인 오염(6,736)→last-click 한정(1,175). 리스크 2건(GA-2 event_label 카디널리티·GA-3 팩트↔DIM_BIGQUERY_SOURCE 키정합) 문서화. → 문서 04 §5·§7.
 > - 공통 교훈: 텍스트 연·월 컬럼 신뢰 금지(DATE 파생) · SILVER 월 롤업은 GOLD로 · 행수/총액 대사를 DQ 게이트 필수화.
 
 ---
@@ -155,7 +155,7 @@ END-METADATA -->
 | 5 | ✅ **트랙 D(AGENCY) 3차** — 설계결정 6종 확정 → 08 DDL → 09 적재 → DQ 검증 완료 | AD_PERFORMANCE 235,572 · AD_CREATIVE 8,473 · (COST 823행은 §3 위반으로 GOLD 이관 — SILVER 미생성) | 외부 의존 0(설계결정 내부 해소) |
 | 6 | ✅ **전체 SILVER 통합 검증** (2026-07-14 실행, 09 STEP 8) | DQ-1 PK 유일성 30객체 dup=0 ✅ · DQ-3 fan-out 논리충족 ✅ · DQ-2 통합앵커(identity·ERP·결연) orphan 0 ✅ / ⚠️ EVENT_PARTICIPATION 2건(EVENT_KEY 263,611=ADMIN행사 미입고 53건·MBER_NO 9,480=탈퇴/비CRM) → **결정: GOLD DIM Unknown 멤버(`SK=0`) + LEFT JOIN 으로 행 100% 보존, ADMIN 입고 시 소급 치환. SILVER 무변경** *(2026-07-16 정정: 구현 확정값 `0`, 초안 `-1` 폐기)* | SILVER 정합 확정 ✅ |
 | 7 | ✅ **파이프라인 일괄 구성** (Bronze→Silver 오케스트레이션·스케줄) | dbt job / Task | 원칙 C |
-| 8 | ✅ **GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용 | GOLD 24T+9V (FACT_TARGET_BIZ만 0행) · 다음=Semantic View | `03_top-down_gold/08_silver의존.md` lineage |
+| 8 | ✅ **GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용 | GOLD 24T+9V (FACT_TARGET_PROJECT만 0행) · 다음=Semantic View | `03_top-down_gold/08_silver의존.md` lineage |
 
 ---
 

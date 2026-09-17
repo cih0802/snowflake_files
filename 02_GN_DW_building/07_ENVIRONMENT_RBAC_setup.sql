@@ -17,7 +17,7 @@
 --                  → dbt build → 08_After_Deploy_DBT.sql(GRANT·CoWork) → 05_1~05_9_SV_DDL_*.sql (SV 9종)
 --                  → 09_1_AGENT_생성.sql → 09_2_AGENT_버전업.sql
 --   🔴 [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
---      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·DIM_MEMBER_CURRENT 가 없다.**
+--      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·구 DIM_MEMBER_CURRENT 가 없다.**
 --      당시 실행 정본은 `08_After_Deploy_DBT.sql` §G 였다. 🟢 [2026-08-10 O55] **그 §G 절도 삭제됐다** —
 --      helper 3종 물리 DROP 완료 ⇒ 어느 파일도 helper 를 만들지 않는다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
 --   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
@@ -137,10 +137,10 @@ GRANT OWNERSHIP ON DATABASE GN_DW TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
 -- (3) 스키마 9종 — GN_DW_ADMIN 이 처음부터 생성 (개별 OWNERSHIP 이관 불필요)
 USE ROLE GN_DW_ADMIN;
 -- BRONZE: 원천별 물리 분리 (MANAGED ACCESS — LOADER 쓰기)
-CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_CRM    WITH MANAGED ACCESS COMMENT = '원천 적재 — CRM(회원/납입/캠페인). 43테이블';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_CRM    WITH MANAGED ACCESS COMMENT = '원천 적재 — CRM(회원/납입/캠페인)';
 CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_AGENCY WITH MANAGED ACCESS COMMENT = '원천 적재 — 대행사 광고 성과. 3테이블';
-CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_ERP    WITH MANAGED ACCESS COMMENT = '원천 적재 — ERP 예산 실적 원장. 1테이블';
-CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_BIGQUERY    WITH MANAGED ACCESS COMMENT = '원천 적재 — GA4 웹/앱 방문. 1테이블(일 샤드)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_ERP    WITH MANAGED ACCESS COMMENT = '원천 적재 — ERP(예산/목표)';
+CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_BIGQUERY    WITH MANAGED ACCESS COMMENT = '원천 적재 — BIGQUERY전체. 일일 증량 테이블(일 샤드)';
 
 -- 정제·분석·소비·운영·거버넌스
 -- [2026-07-28 순서9-I] AGENCY 광고 팩트군 재설계(DEC-8) 반영: SILVER 32→38 · GOLD star 24→27 · WIDE 9→12

@@ -63,12 +63,12 @@ serving_canonical_ref: "../05_SV-Agent_ai/"     # ← SV/Agent 정본 설계 폴
 |---|---|---|---|
 | FMM `FACT_MEMBER_MONTHLY` | 조회년월(MONTH_KEY)×회원(MEMBER_DK) | 납입회비·개발/중단/미납·증감액 등 28 (HAS_BILLING 필터) | 40,054,883 |
 | FME `FACT_MEMBER_EVENT` | 사건일(DATE_SK)×회원×상태전이(EVENT_TYPE) | 개발·중단·증액·미납중단(건·명) | 4,633,105 |
-| FTG-D `FACT_TARGET_DEV` | 조회년월(YYYYMM)×조직(ORG)×개발구분 | GOAL_CNT 회원개발목표수 ✅CRM 확정 | 25,344 (⚠️2026-08-05 O38 연도 복원 후 · 종전 7,272 는 연도 소실로 3.49배 병합된 값) |
-| FTG-B `FACT_TARGET_BIZ` | 조회년월×조직×후원사업[×캠페인] | 연사업/추경목표(건) #152~155 | 0 (⛔E-6 CRM 입고 대기) |
-| FSE `FACT_SERVICE_EVENT` | 발송일×회원×서비스×캠페인 | 발송/성공/실패·서신/선물금 참여 등 17 | 38,470,780 |
+| FTG-D `FACT_TARGET_MEMBER_DEV` | 조회년월(YYYYMM)×조직(ORG)×개발구분 | GOAL_CNT 회원개발목표수 ✅CRM 확정 | 25,344 (⚠️2026-08-05 O38 연도 복원 후 · 종전 7,272 는 연도 소실로 3.49배 병합된 값) |
+| FTG-B `FACT_TARGET_PROJECT` | 조회년월×조직×후원사업[×캠페인] | 연사업/추경목표(건) #152~155 | 0 (⛔E-6 CRM 입고 대기) |
+| FSE `FACT_MESSAGE_DISPATCH` | 발송일×회원×서비스×캠페인 | 발송/성공/실패·서신/선물금 참여 등 17 | 38,470,780 |
 | FBQ `FACT_BIGQUERY_BEHAVIOR` | 일×IDENTITY×이벤트×세션소스×페이지 | 방문·활성/총사용자·세션·이벤트 등 7 | 44,905 |
 | FAD `FACT_AD_PERFORMANCE` | 일×캠페인×광고소재/매체 | 광고비·노출·클릭·인입콜 4 | 235,572 |
-| FEP `FACT_EVENT_PARTICIPATION` | 일×회원×행사(EVENT) | 참여/불참/대기 인원·횟수 | 1,134,126 |
+| FEP `FACT_EVENT_ATTENDANCE` | 일×회원×행사(EVENT) | 참여/불참/대기 인원·횟수 | 1,134,126 |
 | FBD `FACT_BUDGET` | 조회년월×조직×예산세세목[×캠페인] | 편성/집행예산·모금성비용·광고비 | 24,480 |
 
 > **목표 팩트 2분할(결정 9)**: FTG-D=CRM 회원개발목표(`CRM_DEV_TARGET`, 확정), FTG-B=CRM 사업목표(`CRM_BIZ_TARGET`, E-6 입고 대기·0행). 둘 다 ORG·MONTH_KEY conformed, 회원 grain 아님 → FMM과 직접 합산 금지.
@@ -93,7 +93,7 @@ gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
   - { id: WIDE_EVENT_PARTICIPATION, base: FEP, note: "×DATE·MEMBER[현재]·EVENT·CAMPAIGN·SPONSORSHIP" }
   - { id: WIDE_BUDGET, base: FBD, note: "×ORG[as-was]·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain" }
   - { id: WIDE_TARGET_DEV, base: FTG-D, note: "×ORG[as-was]. 월 grain" }
-  - { id: FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화), base: "FTG-D × FME", note: "목표 대비 실적 월 conform(FULL OUTER). 마케팅 장표 「개발현황(목표,실적)」 정본 · 공#1~3 산출 base. 달성율은 SUM/SUM 재계산 + **HAS_POSITIVE_GOAL**(=GOAL_CNT>0) 스코프 필수 — 목표 행의 과반이 0 이라 HAS_GOAL_ROW(행 존재)로 스코프하면 비율이 폭증한다. 신설 2026-08-05 O38" }
+  - { id: FACT_MEMBER_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` → 구 `FACT_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화), base: "FTG-D × FME", note: "목표 대비 실적 월 conform(FULL OUTER). 마케팅 장표 「개발현황(목표,실적)」 정본 · 공#1~3 산출 base. 달성율은 SUM/SUM 재계산 + **HAS_POSITIVE_GOAL**(=GOAL_CNT>0) 스코프 필수 — 목표 행의 과반이 0 이라 HAS_GOAL_ROW(행 존재)로 스코프하면 비율이 폭증한다. 신설 2026-08-05 O38" }
   - { id: WIDE_TARGET_BIZ, base: FTG-B, note: "×ORG·SPONSORSHIP·CAMPAIGN. 월 grain. E-6 입고 대기·0행" }
 ```
 
@@ -108,8 +108,8 @@ gold_wide_views:   # 10 (FACT 1:1 9종 + 목표×실적 conform 1종)
 semantic_views:   # 5 배포 (owner=GN_DW_ADMIN)
   - { id: SV_MEMBER_MONTHLY, base: FACT_MEMBER_MONTHLY, desc: "회원 월별 실적 — 납입/청구·납부율·개발/중단. 회비지표는 HAS_BILLING=TRUE 전제" }
   - { id: SV_MEMBER_EVENT, base: FACT_MEMBER_EVENT, desc: "회원 상태전이(일 grain) — 개발/중단 건·고유회원수. 유지율/LTV는 Phase-2" }
-  - { id: SV_SERVICE, base: FACT_SERVICE_EVENT, desc: "서비스 발송 — 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별" }
-  - { id: SV_EVENT_PARTICIPATION, base: FACT_EVENT_PARTICIPATION, desc: "행사 참여 — 참여자수·참여건수·고유 참여회원수. 행사 미매칭 23%(EVENT_SK=0)" }
+  - { id: SV_SERVICE, base: FACT_MESSAGE_DISPATCH, desc: "서비스 발송 — 발송수·고유 발송회원수, 서비스구분/발송상태/발송일별" }
+  - { id: SV_EVENT_PARTICIPATION, base: FACT_EVENT_ATTENDANCE, desc: "행사 참여 — 참여자수·참여건수·고유 참여회원수. 행사 미매칭 23%(EVENT_SK=0)" }
   - { id: SV_BUDGET, base: FACT_BUDGET, desc: "예산 — 편성/집행예산·집행율, 세세목/예산구분/월별. 조직/캠페인별은 적재 대기" }
 
 deployment_notes:

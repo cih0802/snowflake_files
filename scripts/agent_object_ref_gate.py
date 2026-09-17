@@ -105,7 +105,7 @@ NOT_TABLE = {
 #    🔴 등재는 「잡음 끄기」가 아니라 **잡음을 0 으로 내려 신규 신호가 보이게** 하는 것이다
 #       — 등재하지 않은 미수식 토큰은 계속 advisory 로 나온다(무력화 아님은 음성 테스트 축⑬이 단정).
 NOT_TABLE_REASON = {
-    'SPNSR_BSNS_NO':     '컬럼명 — `FACT_MEMBER_SPONSOR_BIZ` 의 grain 키(후원사업번호)',
+    'SPNSR_BSNS_NO':     '컬럼명 — `FACT_MEMBER_SPONSORSHIP_SPAN` 의 grain 키(후원사업번호)',
     'EXEC_BUDGET_ERP':   '컬럼명 — 집행예산(ERP 마감값) measure',
     'AD_SOURCE_TYPE':    '컬럼명 — 광고 계열 필터 축(DIGITAL/VIDEO/REBROADCAST)',
     'UCMPGN_AVG_MEMBER': '코드값 — ML LTV유형(상위캠페인 회원평균)',

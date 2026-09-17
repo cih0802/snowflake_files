@@ -23,7 +23,7 @@
 -- 🟢🟢 [2026-08-07 O51-D **정본 이관 완료** — 이 파일은 이제 이력 전용이다]
 --    이 파일의 문안은 전부 `10_dbt_pipeline/models/gold/**/_*_schema.yml` 의 `columns[].description` 으로 이관됐다.
 --    정본은 그쪽이고 **여기를 고쳐도 물리에 반영되지 않는다.** 생성기 = `scripts/o51d_view_comments/`.
---    ⇒ 물리 커버리지 목표 = **10객체 423컬럼**(WIDE 8 + DIM_MEMBER_CURRENT·DIM_MEMBER_ACQUISITION).
+--    ⇒ 물리 커버리지 목표 = **10객체 423컬럼**(WIDE 8 + DIM_MEMBER·DIM_MEMBER_ACQUISITION).
 --    🔄 **[2026-08-10 O51-F 정정]** 종전 기재 *"`WIDE_AD_BROADCAST`·`WIDE_AD_DIGITAL` 은 DROP 예정이라 제외"* 는
 --       **철회됐다.** 두 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리고, DEC-8/DEC-10 이 위성 단독 완결을
 --       설계 의도로 명시한다 ⇒ **보존 + §7-A·§7-B 문안 68컬럼 이관 완료**(생성기 `build_ad_yml.py`).
@@ -60,7 +60,7 @@
 ================================================================================
   GN_DW.GOLD — WIDE VIEW 컬럼 COMMENT
   적용 대상  : WIDE_MEMBER_MONTHLY / WIDE_MEMBER_EVENT / WIDE_TARGET_DEV /
-               FACT_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화)(신설 2026-08-05 O38) /
+               FACT_MEMBER_DEV_ACHIEVEMENT (구 `WIDE_DEV_ACHIEVEMENT` → 구 `FACT_DEV_ACHIEVEMENT` · 2026-08-10 O53 개명·테이블화)(신설 2026-08-05 O38) /
                WIDE_TARGET_BIZ / WIDE_SERVICE_EVENT / WIDE_BIGQUERY_BEHAVIOR /
                WIDE_AD_PERFORMANCE / WIDE_AD_BROADCAST / WIDE_AD_DIGITAL /
                WIDE_AD_BROADCAST_CASE / WIDE_EVENT_PARTICIPATION / WIDE_BUDGET
@@ -223,14 +223,14 @@ ALTER VIEW GN_DW.GOLD.WIDE_TARGET_DEV
           COLUMN ORG_TEAM         COMMENT 'DIM_ORG.TEAM — 팀 (as-was)';
 
 -- ============================================================================
--- 3-A. FACT_DEV_ACHIEVEMENT  [신설 2026-08-05 O38 — 목표 대비 실적]
+-- 3-A. FACT_MEMBER_DEV_ACHIEVEMENT  [신설 2026-08-05 O38 — 목표 대비 실적]
 --   설계 근거·실측치 = dbt 모델 헤더 + 09_빅테이블 VIEW.md §3-A. 정본 SQL 은 dbt 모델이다.
 --   🔴 [2026-08-05 후속] 플래그를 **HAS_GOAL_ROW(행 존재) / HAS_POSITIVE_GOAL(값 편성)** 로 분리했다.
 --      종전 단일 `HAS_GOAL` 은 이름이 「목표 편성」으로 읽혀 달성율 분자 스코프에 오용됐고
 --      목표 0 행의 실적이 분모 없이 분자에 들어가 비율이 폭증했다. COMMENT 교정만으로는
 --      이름이 계속 오해를 부르므로 **개명**으로 구조에서 막았다.
 -- ============================================================================
-ALTER VIEW GN_DW.GOLD.FACT_DEV_ACHIEVEMENT
+ALTER VIEW GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT
     ALTER COLUMN MONTH_KEY        COMMENT '목표·실적 공통 월키 YYYYMM (월 conform 축)',
           COLUMN CAL_YEAR         COMMENT 'FLOOR(MONTH_KEY/100) — 연도',
           COLUMN CAL_MONTH        COMMENT 'MOD(MONTH_KEY,100) — 월',
@@ -248,7 +248,7 @@ ALTER VIEW GN_DW.GOLD.FACT_DEV_ACHIEVEMENT
           COLUMN GOAL_CNT_YEAR    COMMENT '연 목표(건) — 당해년 12개월 합. 별도 저장 지표가 아니라 월 목표의 연 합계다(정본 공#3). 🔴월 비가산',
           COLUMN ACTUAL_CNT_YEAR  COMMENT '연 실적(건) — 당해년 12개월 합. 🔴월 비가산',
           COLUMN HAS_GOAL_ROW     COMMENT '목표 **행**의 존재 여부 — 값이 0 이거나 NULL 이어도 TRUE 다. 🔴**달성율 스코프로 쓰지 말 것**: 원천이 2020년부터 부서×월×개발구분 조합을 전량 행 생성하고 미편성분을 0 으로 채우므로 목표 행의 과반이 0 이다. 이 플래그로 분자를 스코프하면 목표 0 행의 실적이 분모 없이 분자에 들어가 달성율이 폭증한다(실측 확인 후 교정). 달성율은 HAS_POSITIVE_GOAL 을 쓴다. 이 컬럼의 용도는 「목표 행 자체가 없는 조합」(=FALSE)을 찾는 것이다',
-          COLUMN HAS_POSITIVE_GOAL COMMENT '🟢**목표가 실제로 편성됐는지**(GOAL_CNT>0) — 달성율 분모·분자 스코프의 **정본**이다. 목표 미편성 부서·월의 실적이 분자에 섞이면 달성율이 조용히 과대해진다(P18·P63). SV_DEV_ACHIEVEMENT.ACHIEVEMENT_RATE 는 이 조건을 식에 못박아 두었으므로 소비 시 별도 필터가 불필요하다. ⚠️FALSE 는 「목표 0 건으로 명시」와 「목표 미입력(원천 NULL)」을 함께 담는다 — 구분이 필요하면 FACT_TARGET_DEV.GOAL_CNT IS NULL 로 팩트에서 본다',
+          COLUMN HAS_POSITIVE_GOAL COMMENT '🟢**목표가 실제로 편성됐는지**(GOAL_CNT>0) — 달성율 분모·분자 스코프의 **정본**이다. 목표 미편성 부서·월의 실적이 분자에 섞이면 달성율이 조용히 과대해진다(P18·P63). SV_DEV_ACHIEVEMENT.ACHIEVEMENT_RATE 는 이 조건을 식에 못박아 두었으므로 소비 시 별도 필터가 불필요하다. ⚠️FALSE 는 「목표 0 건으로 명시」와 「목표 미입력(원천 NULL)」을 함께 담는다 — 구분이 필요하면 FACT_TARGET_MEMBER_DEV.GOAL_CNT IS NULL 로 팩트에서 본다',
           COLUMN HAS_ACTUAL       COMMENT '실적 발생 여부. FALSE 는 목표만 편성된 월(미래월 포함)이다 — 실적 0 으로 읽되 「미달」로 단정하지 말 것';
 -- ============================================================================
 -- 4. WIDE_TARGET_BIZ

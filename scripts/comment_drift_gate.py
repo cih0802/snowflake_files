@@ -57,7 +57,7 @@ RE_SILVER = re.compile(r'CREATE (?:OR REPLACE )?TABLE (?:IF NOT EXISTS )?GN_DW\.
 RE_COL = re.compile(r"^\s+([A-Z][A-Z0-9_]*)\s+\S+.*?COMMENT\s+'(.*)'\s*,?\s*(?:--.*)?$")
 # 🆕 [O121-B] 테이블레벨 COMMENT. `)` 와 `COMMENT =` 가 줄바꿈으로 분리된 형태도 받는다.
 # 🔴🔴 초판은 `'(.*)'\s*;` + `re.S` 였다 ⇒ **탐욕 매칭이 파일 끝까지 삼켰다.**
-#    실측 = 파일 마지막 테이블(`FACT_MEMBER_SPONSOR_BIZ`)에서 파일 길이 **21,453자**를 값으로 뽑아
+#    실측 = 파일 마지막 테이블(`FACT_MEMBER_SPONSORSHIP_SPAN`)에서 파일 길이 **21,453자**를 값으로 뽑아
 #    라이브 354자와 「불일치」로 발행했다(**내가 만든 거짓 드리프트 1건**).
 #    ⇒ 🟢 SQL 문자열 본문 패턴 `(?:[^']|'')*` 을 쓴다 — `''` 이스케이프는 삼키고 홀 `'` 에서 멈춘다.
 #    🔴 이 회귀는 `test_comment_drift_table_level.py` 축②(파일 마지막 테이블)가 단정한다.

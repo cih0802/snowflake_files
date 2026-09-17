@@ -102,7 +102,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 > 이 과대 표기는 원장·이력·인수인계·이 문서 **4표면에 전파**됐고 전부 정정했다.
 
 > **왜 어긋나는가**: `09` 는 **섹션마다 앵커 팩트 1개를 골라** 그 팩트에서 도달 가능한지로 판정한다.
-> 마케팅 섹션 1~3 의 앵커는 `FACT_DEV_ACHIEVEMENT`·`FACT_BUDGET`·`FACT_AD_PERFORMANCE` 이고
+> 마케팅 섹션 1~3 의 앵커는 `FACT_MEMBER_DEV_ACHIEVEMENT`·`FACT_BUDGET`·`FACT_AD_PERFORMANCE` 이고
 > 섹션 4·5 의 앵커는 **`FACT_MEMBER_MONTHLY`** 다. 그런데 요건이 요구하는 개념 다수가
 > **다른 팩트(FME·FMC·FMF)** 나 **위성 pre-join(FACT_AD_COMBINED)** 에 있다.
 > ⇒ 판정이 「데이터 부재」를 뜻하지 않고 **「그 앵커에서 도달 못 함」**을 뜻한다.

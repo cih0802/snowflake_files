@@ -23,8 +23,8 @@ END-METADATA -->
 - ✅ **fan-out/가산성 DoD 통과**: 5 SV 전부 SEMANTIC_VIEW 집계 = FACT 직접집계 **완전 일치**(§1 불변식).
 - 🔧 **결함 1건 수정·재배포 완료(2026-07-22)**: `SV_MEMBER_EVENT.AVG_RETENTION_MONTHS` 가 전건 **NULL** → 제거.
   🔴 **[2026-08-10 O57] 제거 근거의 절반이 무효화됐다** — 당시 근거는 ㉮ FME 행별 `DATEDIFF` 가 NULL(개발행에 `JOIN_DATE`·중단행에 `STOP_DATE` 가 **서로 다른 행**에 있다)
-  ＋ ㉯ *"`DIM_MEMBER_CURRENT.LAST_STOP_DATE` 도 미적재(실측 0)"* 였다. **㉮는 지금도 참이고 ㉯는 거짓이 됐다**(실측 = 채움 **898,425**).
-  실제로 `DIM_MEMBER_CURRENT` 경로로 **유지기간이 산출된다**: 페어링 898,425 · 유효 898,424(역순 1행) · 평균 **42.39개월**.
+  ＋ ㉯ *"`DIM_MEMBER_CURRENT.LAST_STOP_DATE` 도 미적재(실측 0)"* 였다. **㉮는 지금도 참이고 ㉯는 거짓이 됐다**(실측 = 채움 **898,425**). 🔴 **[2026-09-16 O169 병기]** 위 인용 안의 `DIM_MEMBER_CURRENT` 는 **구 이름이고 객체 소멸**이다(라이브 부재 실측) — 현행 = `GOLD.DIM_MEMBER`(1,785,299행 · 회원 1행 grain · 팬아웃 0) · 상태 이력은 `GOLD.DIM_MEMBER_STATUS_HISTORY`(8,069,279행). 🔴 인용문은 원문 보존이므로 안을 고치지 않는다(`R2-8-2`).
+  실제로 구 `DIM_MEMBER_CURRENT` 경로로 **유지기간이 산출된다**: 페어링 898,425 · 유효 898,424(역순 1행) · 평균 **42.39개월**.
   ⚠️ 단 **「산출 가능」과 「노출해야 한다」는 다르다**(P97). 분모가 **중단 이력 보유 회원 898,425 / 1,763,065(50.96%)** 이므로
   진행 중 회원이 빠진 **생존 편향(right-censoring)** 값이다 ⇒ 노출 여부·정의(중단자 한정인지 전체인지)는 **결정 사안**으로 남긴다(§4-7).
 - ⚠ **custom instruction 후보**(§4): 납부율 기간 스코프 · 미납회원 감소율 월 그룹 전제 · 행사/서비스 미매핑 고지 · **개발 건수 정의(O24)**.
@@ -67,7 +67,7 @@ END-METADATA -->
 > ⇒ ① 합계가 **O24 이전 폐기값**이고 ② 차원명 `GENDER` 와 라벨 `F/M/U` 는 **현 SV·현 GOLD 어디에도 없다**.
 > **교체된 fan-out 무증폭 확인(2026-08-10 실측)**: `member.GENDER_NAME` 별 `TOTAL_DEV_CNT` 합
 > (여자 1,273,549 + 남자 878,124 + 기타 72,982 + 기업 53,431 + 단체 13,522 + (NULL) 270) = **2,291,878**
-> = `SUM(FMM.DEV_CNT)` ⇒ `DIM_MEMBER_CURRENT` 조인 증폭 **0**. **V7 실행 = PASS**(2026-08-10).
+> = `SUM(FMM.DEV_CNT)` ⇒ 구 `DIM_MEMBER_CURRENT` 조인 증폭 **0**. **V7 실행 = PASS**(2026-08-10).
 > ⚠️ **판정은 「합 = 무차원 총계」 불변식으로 한다** — 구간별 절대값은 참고치다.
 
 ---
@@ -101,15 +101,15 @@ FROM GN_DW.GOLD.FACT_MEMBER_EVENT;   -- 기대: 두 행 동일
 
 -- V3. SV_SERVICE: 발송수·고유회원수 = FSE 직접
 SELECT (SELECT TOTAL_SEND_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS TOTAL_SEND_MEMBERS)) sv_send,
-       (SELECT SUM(SEND_MEMBERS) FROM GN_DW.GOLD.FACT_SERVICE_EVENT) f_send,
+       (SELECT SUM(SEND_MEMBERS) FROM GN_DW.GOLD.FACT_MESSAGE_DISPATCH) f_send,
        (SELECT DISTINCT_SEND_MEMBERS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS DISTINCT_SEND_MEMBERS)) sv_dist,
-       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_SERVICE_EVENT) f_dist;
+       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_MESSAGE_DISPATCH) f_dist;
 
 -- V4. SV_EVENT_PARTICIPATION: 참여자수·고유회원수 = FEP 직접
 SELECT (SELECT TOTAL_PARTICIPANTS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_EVENT_PARTICIPATION METRICS TOTAL_PARTICIPANTS)) sv_part,
-       (SELECT SUM(PARTICIPANT_CNT) FROM GN_DW.GOLD.FACT_EVENT_PARTICIPATION) f_part,
+       (SELECT SUM(PARTICIPANT_CNT) FROM GN_DW.GOLD.FACT_EVENT_ATTENDANCE) f_part,
        (SELECT DISTINCT_PARTICIPANTS FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_EVENT_PARTICIPATION METRICS DISTINCT_PARTICIPANTS)) sv_dist,
-       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_EVENT_PARTICIPATION) f_dist;
+       (SELECT COUNT(DISTINCT MEMBER_DK) FROM GN_DW.GOLD.FACT_EVENT_ATTENDANCE) f_dist;
 
 -- V5. SV_BUDGET: 편성/집행 = FBD 직접
 SELECT (SELECT TOTAL_PLAN_BUDGET FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_BUDGET METRICS TOTAL_PLAN_BUDGET)) sv_plan,
@@ -253,7 +253,7 @@ ORDER BY MONTH_KEY;
 2. **미납회원 감소율(공80)·미납회원수는 월 그룹/필터 전제.** `COUNT(DISTINCT MEMBER_DK)` 기반이라 다월 무그룹 집계는 회원 중복 제거로 월별 합과 다르다(전기간 단일값은 의미 약함). 반드시 `month` 차원과 함께 사용.
 3. **행사·서비스 미매핑 고지.** 행사 `EVENT_KIND` 의 미매핑(EVENT_SK=0)과 서비스 채널 `(미매핑)` 은 부분 커버 → 확정치로 단정 금지, 커버리지 안내. ⚠️ 행사 미매핑의 반환값은 **NULL** 이다(라벨 문자열이 아니다).
 4. **회원 속성 스코프.** 성별·회원상태·회원구분은 **현재 스냅샷 기준**(과거월 조회 시에도 현재값).
-   🔴 **[O57 정정 · P61] 종전 *"지역·연령대·후원사업은 dim 공란으로 비활성"* 은 부분적으로 거짓이 됐다** — 실측(2026-08-10 `DIM_MEMBER_CURRENT` 1,763,065행):
+   🔴 **[O57 정정 · P61] 종전 *"지역·연령대·후원사업은 dim 공란으로 비활성"* 은 부분적으로 거짓이 됐다** — 실측(2026-08-10 구 `DIM_MEMBER_CURRENT` 1,763,065행):
    · **지역 `REGION` 채움 1,566,416 · 연령대 `AGE_BAND` 채움 1,575,863 · `FIRST_SPONSORSHIP` 1,585,913 = 활성**(O35/O45 배선분)
    · ⚠️ 분모 주의(P128): 이 값들은 **정기후원 회원(FDRM) 모집단** 기준이고 일시회원(ONCE)은 **구조적 부재**다 — 전체 1,763,065 를 분모로 쓰면 결손으로 오진한다
    · **후원사업 축(FMM 경유)은 여전히 비활성** — `FMM.SPONSORSHIP_SK`·`CAMPAIGN_SK`·`PAYMENT_SK` 는 **전건 0**(실측)

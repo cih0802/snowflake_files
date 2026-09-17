@@ -59,7 +59,7 @@ ORDER BY table_schema, table_type;
 ```
 
 **정상:** BRONZE_CRM 43 · BRONZE_AGENCY 3 · BRONZE_ERP 1 · BRONZE_BIGQUERY 1 · SILVER 32 · GOLD 24 BASE + 9 VIEW · SERVING 2 VIEW(+SV 5·Agent 2)
-**참고:** `FACT_TARGET_BIZ`=0행은 정상(E-6 CRM 사업목표 입고 대기).
+**참고:** `FACT_TARGET_PROJECT`=0행은 정상(E-6 CRM 사업목표 입고 대기).
 
 ### 1.3 BRONZE 적재 신선도
 
@@ -486,7 +486,7 @@ Done. PASS=211 WARN=21 ERROR=0 SKIP=0 TOTAL=232   (87.5s)
 56 incremental models + 9 view models + 167 data tests
 ```
 - **CREATE TABLE 없이** dim(merge)·fact(append+pre-hook TRUNCATE) 완주 → 최소권한 설계 검증 ✅.
-- 대표 적재 행수: SILVER `CRM_PAYMENT_BILLING` 47,521,872 · `CRM_SEND_MEMBER` 38,471,525 / GOLD `FACT_MEMBER_MONTHLY` 40,054,883 · `FACT_SERVICE_EVENT` 38,470,780 · `FACT_TARGET_BIZ` **0행(E-6 사업목표 입고 대기, 정상)**.
+- 대표 적재 행수: SILVER `CRM_PAYMENT_BILLING` 47,521,872 · `CRM_SEND_MEMBER` 38,471,525 / GOLD `FACT_MEMBER_MONTHLY` 40,054,883 · `FACT_MESSAGE_DISPATCH` 38,470,780 · `FACT_TARGET_PROJECT` **0행(E-6 사업목표 입고 대기, 정상)**.
 
 ### 10.4 comment 보존 — 100% 유지
 | 테이블 | 컬럼 | comment |
@@ -500,7 +500,7 @@ Done. PASS=211 WARN=21 ERROR=0 SKIP=0 TOTAL=232   (87.5s)
 - `WIDE_MEMBER_MONTHLY` OWNERSHIP = GN_DW_ENGINEER, 소비 3역할(ANALYST·VIEWER·SERVICE) `SELECT` **자동 재부여** 확인(ADMIN이 스키마에 건 FUTURE VIEW grant 상속) ✅.
 
 ### 10.6 dbt test — WARN 21 / ERROR 0 (의도된 경고)
-- 21 WARN = `severity:warn` 관계/not_null (미매칭 FK가 센티넬 SK=0 Unknown 라우팅). 대표: `FACT_SERVICE_EVENT`↔DIM_MEMBER 31,486 · `EVENT_PARTICIPATION` 9,480 · `CRM_SEND_MEMBER` not_null 745. 메달리온 BP(relationships=warn)에 따른 관측용이며 **핵심 PK not_null/unique는 전건 PASS, ERROR 0**.
+- 21 WARN = `severity:warn` 관계/not_null (미매칭 FK가 센티넬 SK=0 Unknown 라우팅). 대표: `FACT_MESSAGE_DISPATCH`↔DIM_MEMBER 31,486 · `EVENT_PARTICIPATION` 9,480 · `CRM_SEND_MEMBER` not_null 745. 메달리온 BP(relationships=warn)에 따른 관측용이며 **핵심 PK not_null/unique는 전건 PASS, ERROR 0**.
 
 ### 10.7 Phase-1 한계 (Phase-2 재검증 대상)
 - SV **5 배포(최종 7)** / Agent **2 배포(최종 3)** — 활성 measure만 노출. 비활성 measure(연 편성예산·집행추정·모금성비용·성공/실패/오픈·+5일 코호트·조직/캠페인/후원사업별 분해 등)는 **원천 입고 대기**로 SV comment에 비활성 명시.
@@ -623,7 +623,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 3) 08_After_Deploy_DBT.sql          ← DBT PROJECT GRANT + SERVING GRANT + CoWork  (helper 뷰 없음)
      02_GN_DW_building/08_After_Deploy_DBT.sql
      · ⛔ [2026-08-10 O55] **§G 절은 삭제됐다** — helper 뷰 3종을 물리 DROP 했고 절 78행을 제거했다.
-       SV base = GOLD.DIM_MONTH · GOLD.DIM_MEMBER_CURRENT · GOLD.WIDE_AD_COMBINED(전건 GOLD 실측).
+       SV base = GOLD.DIM_MONTH · GOLD.DIM_MEMBER · GOLD.WIDE_AD_COMBINED(전건 GOLD 실측).
      ⚠️ 역할이 ACCOUNTADMIN ↔ GN_DW_ADMIN 으로 바뀐다. 스크립트의 USE ROLE 을 지킬 것.
 
 4) 05_1 ~ 05_9_SV_DDL_*.sql         ← SV 9종 (helper 동봉 폐지 · [2026-08-10 O54] base 전건 GOLD)
@@ -707,7 +707,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 ### 11.3-B ✅ [해소 · 2026-08-10 O55 종결] SERVING helper 뷰 — 종전 정본은 `08_After_Deploy_DBT.sql` §G 였고, 지금은 **helper 자체가 없다**
 
 > 🟢 **[2026-08-10 O55]** 이 항목은 **역사 기록**이다. SV 9종 base 가 전건 `GOLD` 로 재배선된 뒤
-> helper 3종(`DIM_MONTH`·`DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED`)을 **물리 DROP** 하고 `§G` 절을 삭제했다.
+> helper 3종(`DIM_MONTH`·구 `DIM_MEMBER_CURRENT`·`FACT_AD_COMBINED`)을 **물리 DROP** 하고 `§G` 절을 삭제했다.
 > ⇒ 아래 「정본이 §G 다」·「helper 뷰 부재 시 SV 실패」 서술은 **현재 상태가 아니다**(당시 판정으로만 읽을 것).
 
 > 🔴 **2026-08-04 최초 판정 정정.** 나는 이 항목을 *"실행 정본 유실(BLOCKER)"* 로 등재했으나 **틀렸다.**
@@ -719,7 +719,7 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 
 | 항목 | 내용 |
 |---|---|
-| 증상 | `SERVING.DIM_MEMBER_CURRENT` 생성문이 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP` 을 SELECT — O27 이 `GOLD.DIM_MEMBER` 에서 DROP 한 컬럼 |
+| 증상 | 구 `SERVING.DIM_MEMBER_CURRENT` 생성문이 `NEW_EXISTING_FLAG`·`LAST_CAMPAIGN`·`CURRENT_SPONSORSHIP` 을 SELECT — O27 이 `GOLD.DIM_MEMBER` 에서 DROP 한 컬럼 |
 | 확인 | 동일 SELECT 를 컴파일 → `invalid identifier 'NEW_EXISTING_FLAG'` (실측) |
 | 영향 | 위 순서 3) 이 **실패**하고, 그 결과 4) `05_*_SV_DDL_*.sql` 도 helper 뷰 부재로 실패 |
 | 조치 | ✅ 3컬럼 제거(2026-08-04). SV 는 이 3컬럼을 참조하지 않는다(`05_1~05_7_SV_DDL_*.sql` 실측 0건) → 소비 영향 0. 수정 후 컴파일 검증 통과 |
@@ -728,15 +728,27 @@ WHERE TABLE_SCHEMA LIKE 'BRONZE%' AND TABLE_TYPE='BASE TABLE' GROUP BY 1;
 `10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql`(모델) · **`08_After_Deploy_DBT.sql`(SERVING 뷰)**.
 구조 변경 시 **소비 뷰까지 역방향으로 추적**해야 한다 — 모델·DDL 만 보면 4번째를 놓친다.
 
-**남은 항목(BLOCKER 아님) — `DIM_MEMBER_CURRENT` 2판 공존**
+**남은 항목(BLOCKER 아님) — 구 `DIM_MEMBER_CURRENT` 2판 공존**
 
 | 객체 | 소유 | 용도 | 컬럼 |
 |---|---|---|---|
-| ~~`SERVING.DIM_MEMBER_CURRENT`~~ | `08` §G.2 | ⛔ **[2026-08-10 O54] SV 미참조** — base = `GOLD.DIM_MEMBER_CURRENT`(24컬럼 테이블). 7단계 DROP 대상 | 19 (구) |
-| `GOLD.DIM_MEMBER_CURRENT` | dbt 모델 (DEC-27 §17-A) | **분석가 진입점** | 20 (위 4컬럼 미노출 · `MEMBER_TYPE`·감사컬럼 포함) |
+| ~~구 `SERVING.DIM_MEMBER_CURRENT`~~ | `08` §G.2 | ⛔ **[2026-08-10 O54] SV 미참조** — base = 구 `GOLD.DIM_MEMBER_CURRENT`(24컬럼 테이블). 7단계 DROP 대상 | 19 (구) |
+| ~~구 `GOLD.DIM_MEMBER_CURRENT`~~ ➔ 🟢 **현행 = `GOLD.DIM_MEMBER`** | dbt 모델 (DEC-27 §17-A) | **분석가 진입점** | 20 (위 4컬럼 미노출 · `MEMBER_TYPE`·감사컬럼 포함) |
+
+🔴🔴 **[2026-09-16 O169 지시 정정] 이 표의 「진입점」 지시를 실측으로 갈랐다** — 근거철 = `_o169_evidence.md` §E2.
+· 🔴 **구 `DIM_MEMBER_CURRENT` 는 개명이 아니라 객체 소멸이다** — 라이브 `GN_DW.GOLD` 조회 결과
+  구 `DIM_MEMBER_CURRENT` 는 **라이브 부재**(`DIM_MEMBER` · `DIM_MEMBER_ACQUISITION` · `DIM_MEMBER_IDENTITY` ·
+  `DIM_MEMBER_STATUS_HISTORY` 4종만 실재) ⇒ 이 표는 **두 판 모두 없는 객체**를 가리키고 있었다.
+· 🟢 **현재 스냅샷 진입점 = `GOLD.DIM_MEMBER`** — 실측 **1,785,299행** · `COUNT(DISTINCT MEMBER_DK)`
+  **1,785,299** ⇒ **회원 1행 grain · 팬아웃 0**. 🔴 따라서 *"`DIM_MEMBER` 는 SCD2라 팬아웃한다"* 는
+  종전 전제는 **라이브에서 거짓**이다(그 전제로 이 표가 별도 뷰를 진입점으로 세웠다).
+· 🟢 **상태 버전 이력이 필요하면 `GOLD.DIM_MEMBER_STATUS_HISTORY`** — 실측 **8,069,279행**(회원당 4.52행).
+  ⇒ 「현재행」과 「이력」은 **객체로 분리**됐다.
+· 🔴 **기계 치환 금지** — 위 줄을 그대로 치환하면 *"SCD2라 팬아웃하니 `DIM_MEMBER` 를 쓰라"* 는
+  자기모순이 된다. 그래서 **「지시」만 현행 객체로 고치고 「기록」은 원문 + 「구 」 병기**로 남겼다.
 
 소비자가 달라 **의도적 분리로 설명 가능**하나 문서에 명시돼 있지 않았다 → 양쪽 COMMENT·헤더에
-역할 분리를 명기했다(2026-08-04). ⬜ 잔여: `DIM_MEMBER_CURRENT.sql` 헤더가 *"전건 NULL 7컬럼 미노출"*
+역할 분리를 명기했다(2026-08-04). ⬜ 잔여: 구 `DIM_MEMBER_CURRENT.sql` 헤더가 *"전건 NULL 7컬럼 미노출"*
 로 **이제 존재하지 않는 3컬럼을 열거**한다 — 거짓 주석 회수 대상(P33 ③). build 실패 요인은 아니다.
 
 ### 11.4 재구축 후 검증
@@ -749,7 +761,7 @@ WHERE TABLE_SCHEMA IN ('BRONZE_CRM','BRONZE_AGENCY','BRONZE_ERP','BRONZE_BIGQUER
 GROUP BY 1,2 ORDER BY 1,2;
 --   기대: GOLD 테이블 28 · GOLD 뷰 13 · SILVER 테이블 38 · SERVING 객체 > 0
 
--- ② 빈 테이블 (원래 0행인 FACT_TARGET_BIZ·CRM_BIZ_TARGET 외에 있으면 적재 실패)
+-- ② 빈 테이블 (원래 0행인 FACT_TARGET_PROJECT·CRM_BIZ_TARGET 외에 있으면 적재 실패)
 SELECT TABLE_SCHEMA, TABLE_NAME FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA IN ('SILVER','GOLD') AND ROW_COUNT=0
 ORDER BY 1,2;

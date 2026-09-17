@@ -28,7 +28,7 @@
 --      혼동을 막기 위해 여기 명시한다 — 이 테스트 통과를 `GA4-SEQ-1` 해소로 읽지 말 것.
 --
 -- 왜 ERROR 인가 (severity 미지정 = 기본 error)
---   PK 중복은 **하류 GOLD 의 팬아웃**으로 직결된다(`FACT_GA_BEHAVIOR` 가 `BIGQUERY_EVENT` 를 읽는다)
+--   PK 중복은 **하류 GOLD 의 팬아웃**으로 직결된다(`FACT_BIGQUERY_BEHAVIOR` 가 `BIGQUERY_EVENT` 를 읽는다)
 --   ⇒ 값이 조용히 배수로 부풀는 유형이라 warn 으로 두면 그대로 발행된다.
 --   선례 = 순서9-D `DIM_MEMBER` 중복 현재행 1,264,753 사고(`90` §1 `D2`)에서 같은 처방을 썼다:
 --   *"MEMBER_DK IS_CURRENT 한정 unique 가드레일"*.

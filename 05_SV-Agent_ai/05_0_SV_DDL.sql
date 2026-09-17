@@ -45,7 +45,7 @@
 --      **SV 6종 정의 전부 byte-identical** · owner 통일 · GRANT 3역할 보존 실측.
 --   🆕 **SV 7종**(2026-08-05 O37): `SV_MEMBER_COHORT` 신설 — **캠페인별 중단률(이탈률)의 정본**.
 --   🆕 **SV 8종**(2026-08-05 O38): `SV_DEV_ACHIEVEMENT` 신설 — **회원개발 목표 대비 실적·달성율의 정본**
---      (마케팅 장표 「1. 개발현황(목표,실적)」 · 정본 지표 공#1·#2·#3). base = `GOLD.FACT_DEV_ACHIEVEMENT`.
+--      (마케팅 장표 「1. 개발현황(목표,실적)」 · 정본 지표 공#1·#2·#3). base = `GOLD.FACT_MEMBER_DEV_ACHIEVEMENT`.
 --      🔴 이 SV 는 **단일 논리테이블**이다(O54 이후로는 SERVING helper 비의존이 9종 전건 공통이다).
 --      종전 Agent 가 "중단 사건에 캠페인이 없어 산출 불가"라고 답했던 것을 해소했다.
 --      🔴 중단 **건수**는 `SV_MEMBER_EVENT`, 중단 **률**은 `SV_MEMBER_COHORT` 다(grain 이 다르다 —
@@ -78,7 +78,7 @@
    ===================================================================================== */
 --
 -- ▶ 가드레일 (위반 시 fan-out·가산성 오류)
---   R1 fan-out : 월팩트→GOLD.DIM_MONTH · 회원속성→GOLD.DIM_MEMBER_CURRENT ·
+--   R1 fan-out : 월팩트→GOLD.DIM_MONTH · 회원속성→GOLD.DIM_MEMBER ·
 --                광고팩트→GOLD.WIDE_AD_COMBINED(AD_PERF_DK 1:1 pre-join).
 --                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --                raw DIM_DATE/DIM_MEMBER 직접조인, 위성 3종 다중조인 금지.
@@ -126,8 +126,8 @@
 --   ⚠ 반드시 `GN_DW_ADMIN` 역할로 실행한다. `ACCOUNTADMIN` 으로 실행하면 소유권이 어긋난다
 --     (`CREATE OR ALTER` 는 기존 owner 를 보존하므로 신규 생성 때만 문제가 된다 · 복구 = §8-11).
 --   ⛔ [2026-08-10 O54·O55] **종전 ②「`08_After_Deploy_DBT.sql` §G 의 SERVING helper 뷰
---     (`DIM_MONTH`·`DIM_MEMBER_CURRENT`) 선행 필수」는 폐지됐다.** SV 전종 base 가 전건 `GOLD` 로
---     재배선됐고(월 차원 = `GOLD.DIM_MONTH` · 회원 스냅샷 = `GOLD.DIM_MEMBER_CURRENT`),
+--     (`DIM_MONTH`·구 `DIM_MEMBER_CURRENT`) 선행 필수」는 폐지됐다.** SV 전종 base 가 전건 `GOLD` 로
+--     재배선됐고(월 차원 = `GOLD.DIM_MONTH` · 회원 스냅샷 = `GOLD.DIM_MEMBER`),
 --     O55 에서 **SERVING helper 3종을 물리 DROP** 했다. `08 §G` 절 자체도 삭제됐다.
 --
 -- ▶ 정본 근거 (수치·이력·판정 경위는 05_N 파일에 두지 않는다)

@@ -3,7 +3,7 @@
 > 🔄 **[2026-09-01 DEC-48] 명명 반전** — 본 문서의 `GA4_*` 표기는 그 시점 기록(역사)이다.
 > 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
 
-**대상 독자**: SILVER GA4 모델 개발·운영자, GOLD FACT_GA_BEHAVIOR 담당자
+**대상 독자**: SILVER GA4 모델 개발·운영자, GOLD FACT_BIGQUERY_BEHAVIOR 담당자
 **작성일**: 2026-07-03
 **짝 문서**:
 - 구현 가이드 → `07_GA4_파이프라인_dbt로 작업전_주의사항.md` (dbt 매크로·증분·ERD)
@@ -77,7 +77,7 @@
 > | 모델 | 범위 제한 | 근거 |
 > |---|---|---|
 > | `BIGQUERY_REFINED_DATA` · `GA4_EVENT` | ✅ `EVENT_DT` var 범위 | `EVENT_DT` 보유 ⇒ 범위 멱등 가능 |
-> | `GA4_EVENT_DIM` · `GA4_DEVICE` · `GA4_TRAFFIC_SOURCE` · `GA4_IDENTITY` | ❌ 전기간 | `EVENT_DT` 없는 DISTINCT/집약. **범위 제한하면 그 창 밖에만 등장한 값이 사라진다**(특정 월에만 집행된 UTM ⇒ `DIM_GA_SOURCE` 에 구멍) |
+> | `GA4_EVENT_DIM` · `GA4_DEVICE` · `GA4_TRAFFIC_SOURCE` · `GA4_IDENTITY` | ❌ 전기간 | `EVENT_DT` 없는 DISTINCT/집약. **범위 제한하면 그 창 밖에만 등장한 값이 사라진다**(특정 월에만 집행된 UTM ⇒ `DIM_BIGQUERY_SOURCE` 에 구멍) |
 > | `GA4_EVENT` 의 `sess` CTE | ❌ 전기간(최종 SELECT 만 범위) | 세션은 자정을 넘고 GA4 는 D+3 소급 수정된다 ⇒ 범위로 자르면 세션이 경계에서 끊겨 `CONFLICT`·부분채움 오류가 난다(§5-A) |
 >
 > #### 🔴 남는 대가 — 저장 중복을 명시한다
@@ -85,7 +85,7 @@
 > 실측 환산 = `GA4_EVENT` 8,161,106행 / 806MB ⇒ 전기간 약 **25GB 씩 · 합계 약 50GB**
 > (BRONZE `EVENTS` 49GB 와 별도). 「중복 소유권 금지」의 경계에 가장 가까운 지점이므로 등재한다.
 > 🟠 **대안 = `GA4_EVENT` 를 기반 테이블 위의 뷰로 내리는 것**(저장 중복 0). 채택하지 않은 이유는
-> ① `08` DDL 이 `GA4_EVENT` 를 물리 테이블로 소유하고 ② `GOLD.FACT_GA_BEHAVIOR` 가 그것을
+> ① `08` DDL 이 `GA4_EVENT` 를 물리 테이블로 소유하고 ② `GOLD.FACT_BIGQUERY_BEHAVIOR` 가 그것을
 > `ref()` 하며 ③ 「SILVER = 물리 테이블」 규약을 건드린다 — 셋 다 이번 요건 범위 밖이다.
 > ⇒ 미결 **`GA4-DUP-1`** 로 등재한다. **저장비가 문제가 되면 이 안을 먼저 검토할 것.**
 >
@@ -354,8 +354,8 @@ BRONZE_BIGQUERY.EVENTS_YYYYMMDD (N개, 날짜별 샤드)
 
 | 테이블 | grain | 근거·리스크 |
 |---|---|---|
-| `GA4_TRAFFIC_SOURCE` | `session_traffic_source_last_click` **한정** DISTINCT (PK 없음) | first-touch(`traffic_source`)·collected(`collected_traffic_source`)는 어트리뷰션 모델·grain 이 달라 **본 차원에서 제외**. 혼재 시 그레인 팽창 + `DIM_GA_SOURCE` fan-out. 필요 시 별도 유저/이벤트 grain 차원으로 GOLD 에서 신설.(GA4-검토 2026-07-14) |
-| `GA4_EVENT_DIM` | `event_name × category × label × action` DISTINCT (키 NULL 가능 → PK 없음) | **GA-2 카디널리티 리스크**: `event_label` 이 혼합타입(문자+숫자) 고카디널리티라 전기간 확장 시 차원이 사실상 팩트화된다(1일 실측 `event_name` 49개 대비 **3,633행**). → GOLD `DIM_GA_EVENT` 는 `event_name`(+안정 category/action)으로 conform 하고, 변동성 높은 `label` 은 팩트측(`GA4_EVENT.EVENT_LABEL`)에 유지 권고. |
+| `GA4_TRAFFIC_SOURCE` | `session_traffic_source_last_click` **한정** DISTINCT (PK 없음) | first-touch(`traffic_source`)·collected(`collected_traffic_source`)는 어트리뷰션 모델·grain 이 달라 **본 차원에서 제외**. 혼재 시 그레인 팽창 + `DIM_BIGQUERY_SOURCE` fan-out. 필요 시 별도 유저/이벤트 grain 차원으로 GOLD 에서 신설.(GA4-검토 2026-07-14) |
+| `GA4_EVENT_DIM` | `event_name × category × label × action` DISTINCT (키 NULL 가능 → PK 없음) | **GA-2 카디널리티 리스크**: `event_label` 이 혼합타입(문자+숫자) 고카디널리티라 전기간 확장 시 차원이 사실상 팩트화된다(1일 실측 `event_name` 49개 대비 **3,633행**). → GOLD `DIM_BIGQUERY_EVENT` 는 `event_name`(+안정 category/action)으로 conform 하고, 변동성 높은 `label` 은 팩트측(`GA4_EVENT.EVENT_LABEL`)에 유지 권고. |
 | `GA4_DEVICE` | `device_type × platform × category` DISTINCT (PK 없음) | 실측 76행. **코드값 실측 = `DEVICE_TYPE` PC/M 2종 · `PLATFORM` WEB 단일** — APP/ANDROID/IOS 는 미입고(O2 APP 휴면). 08 COMMENT 에 실측값으로 명시(**P19**).<br>🟢 **[2026-08-18 O86 전 기간 285,676,588행 재실측] `PLATFORM = WEB 단독` 유지 확인** — ANDROID/IOS **0건**. O2 APP 휴면 판정이 전 기간에서도 유효하다.<br>⚠️ 단 `device:category` 는 **4종**이다 — `mobile` 202,329,180 · `desktop` 79,892,714 · `tablet` 3,454,195 · **`smart tv` 499**(2024-01-10~2026-06-01). 종전 실측에는 `smart tv` 가 없었다.<br>🔴 09 적재쿼리의 `DEVICE_TYPE` CASE 는 `mobile`/`tablet` → `M`, **else → `PC`** 이므로 **`smart tv` 가 `PC` 로 분류**된다. 499행이라 영향은 미미하나 **라벨이 사실과 다르다** — `DEVICE_TYPE` 에 `TV` 를 신설하거나 08 COMMENT 에 "smart tv 는 PC 로 집계됨" 을 명시할 것(라벨 창작 금지 DEC-17-B 와 별개로, **오분류는 표기 대상**). |
 | `GA4_EVENT` | 복합 PK(`USER_PSEUDO_ID`,`EVENT_TIMESTAMP`,`EVENT_NAME`,`BATCH_ORDERING_ID`) | **GA-1**: 원천 샤드에 복합키 중복군 존재(1일 실측 16,187군) → 적재에서 PK `GROUP BY` dedup. 287,025행 → SILVER **265,312행**. 비가산(`ENGAGEMENT_TIME_MSEC` 등)은 raw 보존(**O1**).<br>🔴 **[2026-08-18 O86] 이 PK 는 전 기간에 쓸 수 없다 — `GA4-PK-1`.** 4번째 키 `BATCH_ORDERING_ID` 는 원천 `events_20240719` 부터 생긴 컬럼이므로 **2024-01-01~07-18 · 199일 · 48,862,926행(17.10%)** 이 `NOT NULL` 위반으로 적재 불가다.<br>🟢 dedup 율은 전 기간에서도 유사 확인 — 2025-06 bronze 9,028,480 → SILVER **8,161,106**(**9.6%** dedup · 1일 실측 7.6% 와 같은 자리수).<br>조치 후보 ① `ROW_NUMBER()` surrogate tiebreaker(손실 0 · 권장 · 위 §예정 의 `SRC_FILE_NAME` 계보로 결정성 확보 가능) ② 3키 `GROUP BY` dedup(2024-06 기준 **3.679% 추가 손실**) ③ 2024-07-18 이전 제외(17.1% 포기). |
 | `GA4_IDENTITY` | 1행/`USER_PSEUDO_ID` | **Q1** 접두사 분기 `S%`→`ONCE_MBER_NO` / else→`MBER_NO`. §5-A session-fill 반영(원본 `USER_ID` 불변 보존 + 파생 `USER_ID_FILLED`/`ID_RESOLUTION` 신설). 실측 1,348행.<br>🔴 **[2026-08-18 O86] Q1 의 2분기(`S%` / else)로는 부족하다 — `GA4-LEN-1`.** 전 기간 `user_id` 실측 **6종**:<br>· 7자리 숫자 = CRM `MBER_NO` — 9,104,851행 / **399,773 id** (정상)<br>· `S`+8자리 = `ONCE_MBER_NO` — 194,763행 / **16,907 id** (Q1 이 이미 상정)<br>· `app-`+32hex(36자) — 11,836행 / **233 id** 🔴 신규<br>· `app-`+uuid(40자) — 844행 / **8 id** 🔴 신규<br>· 이메일(`GN03440@gni.kr` 14자) — 10행 / 1 id 🔴 신규<br>· 문자열 `'null'`(4자) — 20행 / 1 id 🔴 **원천 오류값**(NULL 이 아니라 문자 "null")<br>⚠️ `USER_ID VARCHAR(10)` 이라 뒤 3종(14/36/40자) **12,690행이 적재 실패**한다.<br>🔴 **길이 확장만으로 닫지 마라** — `app-`·이메일·`'null'` 은 **CRM 회원번호가 아니다.** 확장만 하면 `IDENTITY_MEMBER_XREF` 매칭 분모에 비회원 ID 가 섞여 **채움률이 조용히 왜곡**된다. `ID_SCHEME` 분류축(`MBER_NO`/`ONCE_MBER_NO`/`APP`/`EMAIL`/`INVALID`)을 신설해 함께 노출할 것. `'null'` 은 `INVALID` 로 격리(라벨 창작 금지 DEC-17-B — 원천 문자열을 그대로 보존하고 분류만 부여). |

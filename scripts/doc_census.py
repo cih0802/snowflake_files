@@ -89,12 +89,19 @@ FAMILIES = [
 SINGLES = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/02_파일쓰기_안전규약.md',
+    '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 미분할 · 스킬 정본
+    '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
+    '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)
     '20_issue/31_코드군_매핑등재부.md',
     '20_issue/32_컬럼개명표.md',
     '20_issue/40_입고대기_원천의존.md',
     '20_issue/91_사고사례집.md',
     '20_issue/92_실측필요_후속작업.md',
     '20_issue/00_BRIEF.md',
+    #   🆕 [2026-09-16 O165-B 편입] Inspection 절차 정본 — `R1-6-18 ④` 분모 4곳 중 네 번째.
+    #     🔴 O165 는 `doc_heading_gate.DOCS` 한 곳만 넣었다 ⇒ 이 문서의 크기·줄수가
+    #       **stale 검사 밖**이었다(이 도구가 막으려던 바로 그 상태 · 위 `FAMILIES` 주석 참조).
+    '60_repeat_어카운트시작/11_O누적작업_점검_재현_절차.md',
 ]
 
 # ── 「조각 수」를 손으로 적은 자리 = 대조 분모 ────────────────────────────
@@ -504,7 +511,20 @@ def split_denominator_check():
       ㉠ 모든 조각이 `doc_line_length_gate` 의 glob 분모에 들어오는가(줄길이·표 검사 밖이면 손실이 보이지 않는다).
       ㉡ 분할 허브가 `fix_stale_counts.FLAT_SOURCES` 에 남아 있지 않은가(남으면 본문 미스캔).
       ㉢ 조문 문서(`clause_order_gate.DOCS`)라면 논리 문서에서 조문이 **1개 이상** 잡히는가.
+      🆕 ㉣ **미분할 문서가 분모 4곳에 전건 편입돼 있는가**(2026-09-16 O166-C 신설 · O165 `D11` 후속 처방).
     🔴 축이 늘면 여기 추가하라 — 이 함수가 「분할 후 점검」의 정본이다.
+
+    🆕 🔴🔴 [2026-09-16 O166-C] **축㉣ 를 왜 신설했나 — 이 함수는 「분할 문서」만 보고 있었다.**
+      🔎 실사고(O165 `D11`) = Inspection 절차서(**미분할** 정본)를 `doc_heading_gate.DOCS` **한 곳만**
+        편입하고 나머지 3곳(원장 §0 유형 등재표 · `doc_type_gate.EXTRA_DOCS` ·
+        `doc_line_length_gate.CANON`)을 빠뜨렸다 ⇒ 그 문서의 **한 줄 2000자 · 바이트 상한 · 크기 stale**
+        3축이 **전부 검사 밖**이었고, 제목 축 하나만 지켜졌다.
+      🔴 그때 이 함수는 **아무것도 말하지 않았다** — `FAMILIES`(분할)만 순회하므로
+        **미분할 문서는 원리적으로 볼 수 없었다.** ⇒ O165 가 *"사람이 `grep` 으로 잡았다"* 고 적은 그 상태다.
+      🟢 판정식 = **`doc_heading_gate.DOCS` 에 있는 미분할 문서가 다른 3곳에도 있는가**(부재 0 이어야 한다).
+        🔴 기준 분모를 `DOCS` 로 잡는 이유 = 제목 축은 **거의 항상 먼저 편입**되므로(O165 가 그랬다)
+        「제목만 있고 나머지가 없다」가 **실제 결함 형태**다. 역방향(다른 곳에만 있는 문서)은
+        `doc_type_gate` 축1(유형 미선언)과 `doc_census` SINGLES stale 이 이미 본다.
     """
     fails = []
     try:
@@ -544,7 +564,58 @@ def split_denominator_check():
                                  '(논리 문서를 안 읽는다)' % hub)
             except Exception as e:                           # pragma: no cover
                 fails.append('%s — clause_order_gate.collect 실패: %s' % (hub, e))
+
+    # ── 🆕 축㉣ [2026-09-16 O166-C] 미분할 문서의 분모 4곳 대조 (O165 `D11` 후속 처방) ──
+    #   🔴 기준 분모 = `doc_heading_gate.DOCS` 중 **분할되지 않은 것**(허브는 `FAMILIES` 가 이미 본다).
+    #   🟢 원장 §0 유형 등재표는 `doc_type_gate` 축1(유형 미선언)이 이미 blocking 으로 본다 ⇒ 여기서 중복하지 않는다
+    #      (`R3-9 ㉡` — 같은 것을 두 곳에서 다르게 재지 않는다).
+    #
+    #   🔴🔴 **[O166-C 자기시정 1] 초판이 오탐 6건을 냈다 — 「등재 목록」과 「분모」를 혼동했다.**
+    #     🔎 실측 = 초판은 `doc_type_gate.EXTRA_DOCS` 멤버십만 봤고 `20_issue/` 문서 **6건**
+    #       (`00_BRIEF`·`31_코드군`·`32_컬럼개명표`·`40_입고대기`·`91_사고사례집`·`92_실측필요`)을 위반으로 냈다.
+    #     🔴 그런데 `doc_type_gate` 는 `DOC_DIR = 20_issue/` 를 **순회**하므로 그 폴더 문서는 **이미 분모 안**이고,
+    #       `EXTRA_DOCS` 는 주석이 스스로 적듯 *"분모를 `20_issue/` 밖으로 넓힌다"* = **폴더 밖 전용 보충 목록**이다.
+    #     ⇒ 🟢 **정정 판정식 = 「그 도구의 유효 분모」로 대조한다**(등재 목록 ≠ 분모).
+    #       `doc_type_gate` 유효 분모 = `20_issue/` 순회 **∪** `EXTRA_DOCS`.
+    #     🔴 이것이 O165 `D5`(*"처방을 문면대로 구현하면 오탐 100%"*)와 **같은 형태의 재발**이다 —
+    #       `R1-6-18 ④` 가 「4곳」이라고 **목록으로** 적었기 때문에 목록 멤버십으로 구현하게 된다.
+    hubs = {h for h, _ in FAMILIES}
+    try:
+        import doc_heading_gate as HG
+        import doc_type_gate as TG
+        base = [d for d in HG.DOCS if d not in hubs]
+        canon = set(covered_canon())
+        singles = set(SINGLES)
+        extra = set(TG.EXTRA_DOCS)
+        for doc in base:
+            missing = []
+            # ㉠ doc_type_gate = `20_issue/` 순회 ∪ EXTRA_DOCS
+            if not doc.startswith('20_issue/') and doc not in extra:
+                missing.append('doc_type_gate.EXTRA_DOCS')
+            # ㉡ doc_line_length_gate.CANON = 미분할 정본 명시 목록(순회 없음)
+            if doc not in canon:
+                missing.append('doc_line_length_gate.CANON')
+            # ㉢ doc_census.SINGLES = 미분할 상시 독해 문서 명시 목록(순회 없음)
+            if doc not in singles:
+                missing.append('doc_census.SINGLES')
+            if missing:
+                fails.append(
+                    '%s — 미분할 정본이 `doc_heading_gate.DOCS` 에만 있고 %d곳의 분모 밖이다: %s '
+                    '⇒ `R1-6-18 ④` 대로 전건 편입하라(제목 축만 지켜지면 줄길이·상한·stale 이 침묵한다)'
+                    % (doc, len(missing), ' · '.join(missing)))
+    except Exception as e:                                   # pragma: no cover
+        fails.append('축㉣ 미분할 분모 대조 실패: %s' % e)
     return fails
+
+
+def covered_canon():
+    """`doc_line_length_gate.CANON`(미분할 정본 목록)만 반환한다.
+
+    🔴 `expand_globs()` 를 쓰지 않는다 — 그것은 `CANON_GLOB` 까지 펼쳐 **조각 경로**를 섞으므로
+      「미분할 문서가 CANON 에 등재됐는가」와 **다른 것을 재게 된다**(`R3-9 ㉡`).
+    """
+    import doc_line_length_gate as LL
+    return list(LL.CANON)
 
 
 def main():

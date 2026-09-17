@@ -7,7 +7,7 @@
 | 영역 | 상태 |
 |---|---|
 | GOLD 설계 1~10단계 | **완료** (DDL·FK·메타·SILVER lineage·WIDE VIEW 전부 확정) |
-| GOLD 스키마 실배포·적재 | ✅ **배포·적재 완료** — [2026-07-20 실측] `GN_DW.GOLD` **24테이블 + WIDE VIEW 9개** 생성·데이터 적재. FACT 행수: FMM 37.79M·FSE 38.47M·FME 4.63M·FEP 1.13M·FAD 235K·FGA 44.9K·FBD 24.5K·FTG_D 7.3K. **`FACT_TARGET_BIZ`만 0행**(=`CRM_BIZ_TARGET` 입고 대기) |
+| GOLD 스키마 실배포·적재 | ✅ **배포·적재 완료** — [2026-07-20 실측] `GN_DW.GOLD` **24테이블 + WIDE VIEW 9개** 생성·데이터 적재. FACT 행수: FMM 37.79M·FSE 38.47M·FME 4.63M·FEP 1.13M·FAD 235K·FGA 44.9K·FBD 24.5K·FTG_D 7.3K. **`FACT_TARGET_PROJECT`만 0행**(=`CRM_BIZ_TARGET` 입고 대기) |
 | BRONZE CRM | ✅ **전량 적재** — `GN_DW.BRONZE_CRM` **43테이블 / 927컬럼**(원천정의 41/876 + 템플릿 2테이블 `TD_MS_AT_TMPLAT_BTN_LIST`·`TM_MS_EMAIL_TMPLAT_MNG`). 수백만 행(예 TM_PM_MBRFEE_ACMSLT 46.4M·SND_MEMBER_LIST 8.3M) |
 | BRONZE GA4 | ✅ 적재 — `GN_DW.BRONZE_BIGQUERY."events_20260501"` **287,025행**(1일 샤드, 소문자 샤드명). **추가 입고 예정 없음 → 이 1일 데이터를 전체로 간주하고 작업**. user_id 채움 12,120=**4.22%**. ※추후 GA4 데이터가 추가 입고되면 GA4 SILVER/GOLD(FGA·DIM_GA_*·IDENTITY) 재적재·재검증 재작업 예정 |
 | BRONZE AGENCY | ✅ 3테이블 적재 — DGT 197,686 / REBRDC 2,064 / VIDEO 35,822행 |
@@ -54,7 +54,7 @@
 - VARCHAR 길이, NUMBER precision → ALTER TABLE 적용
 
 ### 3. 사업목표(FTG_B) 데이터 입고
-- 현업 `CRM_BIZ_TARGET` 수동입력분 입고 시 SILVER→`FACT_TARGET_BIZ` 적재(현재 0행). 로직은 완비.
+- 현업 `CRM_BIZ_TARGET` 수동입력분 입고 시 SILVER→`FACT_TARGET_PROJECT` 적재(현재 0행). 로직은 완비.
 
 ### 4. §5-A 잔여 4건 현업 확인 후 DIM 정밀 적재
 - `08_silver의존.md §5-A` (DIM_CAMPAIGN.ORG_SK·DIM_SERVICE·DIM_EVENT·DIM_PAYMENT)

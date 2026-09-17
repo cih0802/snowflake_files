@@ -69,7 +69,7 @@ models:
   - name: BIGQUERY_EVENT_DIM
     columns:
       - name: EVENT_NAME
-        tests: [not_null]   # unique 제거(순서9-C): grain=(event_name×cat×label×action) 브리지 → event_name 다중행 정상. GOLD DIM_GA_EVENT 가 (cat,label,action) distinct 추출. BIGQUERY_EVENT relationships 는 존재성만 요구.
+        tests: [not_null]   # unique 제거(순서9-C): grain=(event_name×cat×label×action) 브리지 → event_name 다중행 정상. GOLD DIM_BIGQUERY_EVENT 가 (cat,label,action) distinct 추출. BIGQUERY_EVENT relationships 는 존재성만 요구.
 
   - name: BIGQUERY_DEVICE
     columns:

@@ -5,7 +5,7 @@
 **짝 문서**: `06_DDL.sql`(GOLD), `04_silver_design/08_SILVER_테이블DDL_20260714.sql`(SILVER), `07_메타.md`(제약).
 **작성일**: 2026-07-02 (개정 2026-07-03 4레이어 원천 재정의 §0 / 2026-07-20 SILVER 32테이블·GOLD 배포·적재 완료 반영)
 
-> ✅ **[2026-07-20 배포·적재 완료]** `GN_DW.SILVER` **32테이블**(CRM 22 + GA4 5 + AGENCY 2 + ERP 2 + `IDENTITY_MEMBER_XREF` 1) 적재, `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 적재. **`FACT_TARGET_BIZ`(사업목표)만 0행**(=`CRM_BIZ_TARGET` 데이터 입고 대기). 아래 §4 "미수령/부재" 서술은 배포 전 이력이며, FTG_B 외에는 모두 해소됨.
+> ✅ **[2026-07-20 배포·적재 완료]** `GN_DW.SILVER` **32테이블**(CRM 22 + GA4 5 + AGENCY 2 + ERP 2 + `IDENTITY_MEMBER_XREF` 1) 적재, `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 적재. **`FACT_TARGET_PROJECT`(사업목표)만 0행**(=`CRM_BIZ_TARGET` 데이터 입고 대기). 아래 §4 "미수령/부재" 서술은 배포 전 이력이며, FTG_B 외에는 모두 해소됨.
 
 ---
 
@@ -39,7 +39,7 @@ BRONZE(원천 1:1) → **SILVER(정제·통합)** → GOLD(star schema). GOLD FA
 | 사업목표(FTG_B) | ⛔ `CRM_BIZ_TARGET` 0행 | 원천=CRM 신규 목표 테이블(현업 수동입력). 데이터 입고 대기 |
 | 어드민(ADMIN) | ❌ 제외 확정(2026-07-09) | 앱푸시 발송/성공·이벤트 조회수 → **원천 미채택**. 의존 GOLD 컬럼 미채움 고정 |
 
-> **[2026-07-20]** SILVER·GOLD 적재 완료. 유일 잔여는 **사업목표(`CRM_BIZ_TARGET`→`FACT_TARGET_BIZ`) 데이터 입고**와 **모금성비용(ERP 원천 부재)**. 어드민(ADMIN)은 ❌제외 확정 → 의존 컬럼 미채움 고정.
+> **[2026-07-20]** SILVER·GOLD 적재 완료. 유일 잔여는 **사업목표(`CRM_BIZ_TARGET`→`FACT_TARGET_PROJECT`) 데이터 입고**와 **모금성비용(ERP 원천 부재)**. 어드민(ADMIN)은 ❌제외 확정 → 의존 컬럼 미채움 고정.
 
 SILVER 테이블 32개 목록:
 - **CRM(22)**: CRM_MEMBER, CRM_MEMBER_STATUS_HIST, CRM_MEMBER_DEV, CRM_MEMBER_AMT_CHANGE, CRM_MEMBER_DISCONTINUE, CRM_MEMBER_RESPONSOR, CRM_MEMBER_SPONSOR_BIZ, CRM_SPONSOR_RELATION, CRM_PAYMENT_BILLING, CRM_PAYMENT_METHOD, CRM_CAMPAIGN, CRM_SPONSORSHIP, CRM_ORG, CRM_DEV_TARGET, CRM_BIZ_TARGET, CRM_SEND_REQUEST, CRM_SEND_MEMBER, CRM_SEND_RESULT, CRM_EVENT, CRM_EVENT_PARTICIPATION, CRM_RELATION_ACTIVITY, CRM_CODE
@@ -111,8 +111,8 @@ SILVER 테이블 32개 목록:
 | ⚠️ FMM | INBOUND_CALL_CNT·TS_CALL_CNT | ❌ **CRM 부재 — 현업 별도입력(비-CRM)** | doc 13 C-8 회신 확정 → §4 성격 |
 | **FACT_MEMBER_EVENT** (FME) | 개발/중단 건·명 | `CRM_MEMBER_DEV` + `CRM_MEMBER_DISCONTINUE` | |
 | FME | STOP_REASON/STOP_CHANNEL | `CRM_MEMBER_DISCONTINUE.DSCNTC_RSN_CD`·`DSCNTC_PATH` | |
-| **FACT_TARGET_DEV** (FTG_D) | GOAL_CNT | ✅ `CRM_DEV_TARGET`(STDYY+STDR_MT→MONTH_KEY, DEPT_ID→ORG, MBER_DVLP_DIV_CD→DEV_TYPE, GOAL_CNT) | 소스 확정 |
-| **FACT_SERVICE_EVENT** (FSE) | 발송/성공/실패(SEND_*·SUCCESS_*·FAIL_*) | `CRM_SEND_REQUEST`+`CRM_SEND_MEMBER`+`CRM_SEND_RESULT` | 명=MBER_NO distinct |
+| **FACT_TARGET_MEMBER_DEV** (FTG_D) | GOAL_CNT | ✅ `CRM_DEV_TARGET`(STDYY+STDR_MT→MONTH_KEY, DEPT_ID→ORG, MBER_DVLP_DIV_CD→DEV_TYPE, GOAL_CNT) | 소스 확정 |
+| **FACT_MESSAGE_DISPATCH** (FSE) | 발송/성공/실패(SEND_*·SUCCESS_*·FAIL_*) | `CRM_SEND_REQUEST`+`CRM_SEND_MEMBER`+`CRM_SEND_RESULT` | 명=MBER_NO distinct |
 | FSE | 서신/선물금 참여(LETTER_*·GIFT_*·D5_*) | `CRM_RELATION_ACTIVITY`(GFTMNEY, LETTER_DIV_CD) × `CRM_SEND_*` | 발송+5일 윈도우 매칭 |
 | FSE | degenerate(SEND_TITLE·SEND_STATUS) | `CRM_SEND_REQUEST.TIT` / `CRM_SEND_MEMBER.SNDNG_RST_CD` | |
 | ❌ FSE | APP_PUSH_SEND_CNT·APP_PUSH_SUCCESS_CNT | ❌ **ADMIN ❌제외 확정(2026-07-09) → 컬럼 유지·미채움 고정** | §4 |
@@ -121,8 +121,8 @@ SILVER 테이블 32개 목록:
 | FBQ | degenerate(PAGE_PATH·PAGE_LOCATION) | `BIGQUERY_EVENT.PAGE_LOCATION` | |
 | **FACT_AD_PERFORMANCE** (FAD) | GA_CONV_* | `GA4_EVENT`(전환 이벤트) | ⚠️전환 정의(O5) |
 | FAD | AD_COST·IMPRESSIONS·CLICKS·INBOUND_CALL | 🟢 **AGENCY 3테이블 적재** — 유형별 정제→UNION(실측 검토 §4·02 §3). 노출·클릭=DGT만·인입콜 REBRDC TEXT/VIDEO NUMBER·`_SOURCE_SYSTEM` SILVER 부여 | §4 |
-| **FACT_EVENT_PARTICIPATION** (FEP) | 모집/참여/취소/당첨 등 | `CRM_EVENT` + `CRM_EVENT_PARTICIPATION`(PARTCPT_STAT_CD·PRZWIN_CD·RCPMNY_AMT) | |
-| **FACT_TARGET_BIZ** (FTG_B) | 사업목표(ANNUAL_*·SUPP_*) | ⛔ **CRM 신규 목표 테이블 입고 대기** — 원천=CRM 확정(2026-07-20 정정); ERP 예산원장은 사업목표 아님, 별도 입고 | §4 |
+| **FACT_EVENT_ATTENDANCE** (FEP) | 모집/참여/취소/당첨 등 | `CRM_EVENT` + `CRM_EVENT_PARTICIPATION`(PARTCPT_STAT_CD·PRZWIN_CD·RCPMNY_AMT) | |
+| **FACT_TARGET_PROJECT** (FTG_B) | 사업목표(ANNUAL_*·SUPP_*) | ⛔ **CRM 신규 목표 테이블 입고 대기** — 원천=CRM 확정(2026-07-20 정정); ERP 예산원장은 사업목표 아님, 별도 입고 | §4 |
 | **FACT_BUDGET** (FBD) | 편성/집행예산·모금성비용·광고비 | ◐ **ERP 원장 적재** — 편성/집행 O · 모금성비용 원천 부재 · 광고비 AGENCY 보강(§4·02 §3) | §4 |
 
 ---
@@ -143,16 +143,16 @@ SILVER 테이블 32개 목록:
 
 아래는 배포 전 "컬럼은 있으나 SILVER 소스가 아직 없던" 항목의 이력입니다. **2026-07-20 기준 대부분 해소**(ERP·AGENCY·GA4 SILVER→GOLD 적재 완료). 잔여는 사업목표(`CRM_BIZ_TARGET`) 데이터 입고와 모금성비용(ERP 원천 부재)뿐입니다.
 
-> ✅ **[2026-07-20 적재 완료]** ERP·AGENCY·GA4 모두 SILVER 정제·GOLD 적재 완료(`SILVER.ERP_BUDGET*`·`AGENCY_AD_*`·`GA4_*`). 어드민(ADMIN)·비-CRM 콜은 원천 미채택/부재로 미채움 유지. **유일 데이터 잔여 = 사업목표(`CRM_BIZ_TARGET`→`FACT_TARGET_BIZ`, 현재 0행)**.
+> ✅ **[2026-07-20 적재 완료]** ERP·AGENCY·GA4 모두 SILVER 정제·GOLD 적재 완료(`SILVER.ERP_BUDGET*`·`AGENCY_AD_*`·`GA4_*`). 어드민(ADMIN)·비-CRM 콜은 원천 미채택/부재로 미채움 유지. **유일 데이터 잔여 = 사업목표(`CRM_BIZ_TARGET`→`FACT_TARGET_PROJECT`, 현재 0행)**.
 
 | GOLD 구조 | 원천 상태(실측 2026-07-13) | 입고/검토 후 필요한 SILVER 신설 |
 |---|---|---|
 | `DIM_AD_CREATIVE` (전체) | 🟢 AGENCY 3테이블 적재(스키마 상이) | `SILVER.AGENCY_AD_CREATIVE`(가칭) — 매체·소재·CM위치·초수는 **원천별 산재/부분**(DGT `MEDIA_NM`·VIDEO `CM_AREA/AD_SEC` 등). 유형별 정제→UNION(02 §3 게이트) |
 | `DIM_BUDGET_ITEM` (전체) | 🟢 ERP 원장 적재 | `SILVER.ERP_BUDGET_ITEM` — 예산과목(장/관/항/목/세목/세세목) 매핑 가능 |
-| `FACT_TARGET_BIZ` (전체) | ⛔ **CRM 신규 목표 테이블 입고 대기** | 사업목표(조직×후원사업). 원천=**CRM** 확정(2026-07-20 정정)·예산원장≠사업목표 → 별도 입고 필요 |
+| `FACT_TARGET_PROJECT` (전체) | ⛔ **CRM 신규 목표 테이블 입고 대기** | 사업목표(조직×후원사업). 원천=**CRM** 확정(2026-07-20 정정)·예산원장≠사업목표 → 별도 입고 필요 |
 | `FACT_BUDGET` (전체) | ◐ ERP 원장 적재(편성/집행 O) | 편성/집행 O · **모금성비용 원천 부재** · 광고비는 AGENCY 보강 |
 | `FACT_AD_PERFORMANCE.AD_COST·IMPRESSIONS·CLICKS·INBOUND_CALL` | 🟢 AGENCY 적재(불균일) | measure 원천별 상이(노출·클릭=DGT만/인입콜=REBRDC TEXT·VIDEO NUMBER/광고비 컬럼 3종). `_SOURCE_SYSTEM` SILVER 부여·인입콜 `TRY_TO_NUMBER`(02 §3). `GA_CONV_*`=GA4 |
-| `FACT_SERVICE_EVENT.APP_PUSH_*` | ⛔ 어드민(ADMIN) ❌제외 확정 | 앱푸시 발송/성공 — 원천 미채택 → 미채움 고정 |
+| `FACT_MESSAGE_DISPATCH.APP_PUSH_*` | ⛔ 어드민(ADMIN) ❌제외 확정 | 앱푸시 발송/성공 — 원천 미채택 → 미채움 고정 |
 | `FMM.INBOUND_CALL_CNT`·`TS_CALL_CNT` | ⛔ 비-CRM(현업 수기입력) | 회원 개발실적 콜 — CRM 부재 확정(doc 13 C-8). ※광고 인입콜(FAD)과 별개 |
 
 ---
@@ -195,7 +195,7 @@ SILVER 테이블 32개 목록:
 - **구설계 흔적 미유입** — 15 DIM/9 FACT 정본(`03_테이블 설계.md`) 기준 유지, 12/6 흔적 없음.
 - 신규 확인 단서 — 개발 테이블에 `CMPGN_CD`+`ACT_DEPT_CD`/`ACMSLT_DEPT_CD` 병존(ORG_SK 파생 근거, §5-A).
 
-> 🔄 **[2026-07-20 갱신]** (a) `99_next_prompt.md`는 현재 24설계(15 DIM+9 FACT)로 갱신됨 — 위 "구설계 12/6/40 레거시" 표기는 2026-07-02 시점 기준. (b) CRM 원천정의는 41테이블/876컬럼이나, 물리 `GN_DW.BRONZE_CRM` 실측 = 43테이블/927컬럼(템플릿 2 추가). SILVER lineage(32테이블)엔 영향 없음. (c) **GOLD/SILVER 스키마 배포·적재 완료**(GOLD 24T+9V, SILVER 32T; FACT_TARGET_BIZ만 0행).
+> 🔄 **[2026-07-20 갱신]** (a) `99_next_prompt.md`는 현재 24설계(15 DIM+9 FACT)로 갱신됨 — 위 "구설계 12/6/40 레거시" 표기는 2026-07-02 시점 기준. (b) CRM 원천정의는 41테이블/876컬럼이나, 물리 `GN_DW.BRONZE_CRM` 실측 = 43테이블/927컬럼(템플릿 2 추가). SILVER lineage(32테이블)엔 영향 없음. (c) **GOLD/SILVER 스키마 배포·적재 완료**(GOLD 24T+9V, SILVER 32T; FACT_TARGET_PROJECT만 0행).
 
 ---
 
@@ -206,7 +206,7 @@ SILVER 테이블 32개 목록:
 | 캠페인↔조직 연결원천 확정 | §5-A `DIM_CAMPAIGN.ORG_SK` — 🟡우리끼리 잠정(02 §3 게이트) |
 | 발송·이벤트·회비유형 코드체계·SILVER 컬럼 매핑 확인 | §5-A `DIM_SERVICE`·`DIM_EVENT`·`DIM_PAYMENT` — 🟡우리끼리 잠정(02 §3 게이트) |
 | REGION·AGE_BAND SILVER projection 편입 확인 | §5-A(해소분, projection만 잔여) |
-| ✅ERP 적재됨(2,041행) → 실측 검토(02 §3) | `DIM_BUDGET_ITEM`·`FACT_BUDGET`(편성/집행) 착수 가능 / `FACT_TARGET_BIZ`(사업목표)·모금성비용은 **원천 부재** |
+| ✅ERP 적재됨(2,041행) → 실측 검토(02 §3) | `DIM_BUDGET_ITEM`·`FACT_BUDGET`(편성/집행) 착수 가능 / `FACT_TARGET_PROJECT`(사업목표)·모금성비용은 **원천 부재** |
 | ✅AGENCY 3테이블 적재됨 → 실측 검토(02 §3) | `DIM_AD_CREATIVE`·`FACT_AD_PERFORMANCE` — 유형별 정제→UNION·`_SOURCE_SYSTEM`·인입콜 캐스팅·캠페인 이름매칭 게이트 |
 | ~~ADMIN 입고~~ ❌제외 확정 | `FSE.APP_PUSH_*`·`FEP.VIEW_CNT` **컬럼 삭제**(2026-07-09, 내년 재추가). 행사기간/참여경로/채널은 CRM-backed 유지(§4) |
 | GOLD 타입 정밀화(정본 06_지표용어사전) | `07_메타.md` PENDING과 동일 |

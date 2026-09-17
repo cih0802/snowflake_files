@@ -88,7 +88,7 @@ live_state_20260722: |
   - BRONZE 4스키마 48테이블 적재(CRM 43 전량 수백만 행, AGENCY 3·ERP 1·GA4 1 부분 입고).
   - SILVER 32테이블·GOLD 24테이블+WIDE 9뷰·SERVING SV5/Agent2 모두 생성됨(구설계 "GOLD·SILVER 미생성" 상충 → 정정).
   - ETL = dbt `GN_DW.OPS.DW_PIPELINE` (65 models). 사용자 프로시저·Task·ETL_LOG 없음(SHOW PROCEDURES/TASKS 실측 0).
-  - FACT_TARGET_BIZ / SILVER.CRM_BIZ_TARGET = 0행(E-6 CRM 사업목표 입고 대기).
+  - FACT_TARGET_PROJECT / SILVER.CRM_BIZ_TARGET = 0행(E-6 CRM 사업목표 입고 대기).
 ```
 
 ---
@@ -348,7 +348,7 @@ dbt_principles:
   - "멱등성: dbt run이 CREATE OR REPLACE(table) / view 재생성 → 재실행 안전"
   - "SILVER = BRONZE 정제·통합(행 grain 유지) / GOLD = 집계·star schema"
   - "센티넬 규약: 13개 GOLD DIM 전량 SK=0 Unknown 시드 + gold_helpers COALESCE(...,0)"
-  - "스캐폴드 팩트(FACT_TARGET_BIZ)는 원천 미입고 시 0행 통과(스켈레톤)"
+  - "스캐폴드 팩트(FACT_TARGET_PROJECT)는 원천 미입고 시 0행 통과(스켈레톤)"
 
 deploy_ref: "배포·운영 총괄 = 10_dbt_pipeline/00_배포운영_통합_*.md · deploy_dbt_project.sql"
 ```

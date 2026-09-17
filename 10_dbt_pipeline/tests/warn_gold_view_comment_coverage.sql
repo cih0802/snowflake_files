@@ -60,7 +60,7 @@
 -- depends_on: {{ ref('WIDE_TARGET_DEV') }}
 -- depends_on: {{ ref('WIDE_TARGET_BIZ') }}
 -- depends_on: {{ ref('WIDE_SERVICE_EVENT') }}
--- depends_on: {{ ref('WIDE_GA_BEHAVIOR') }}
+-- depends_on: {{ ref('WIDE_BIGQUERY_BEHAVIOR') }}
 -- depends_on: {{ ref('WIDE_AD_PERFORMANCE') }}
 -- depends_on: {{ ref('WIDE_AD_BROADCAST') }}
 -- depends_on: {{ ref('WIDE_AD_DIGITAL') }}

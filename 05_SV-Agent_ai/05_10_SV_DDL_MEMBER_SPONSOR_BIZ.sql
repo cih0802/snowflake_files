@@ -7,7 +7,7 @@
 --   실행 역할 GN_DW_ADMIN·선행 조건 dbt build 하나) — 이 파일에 다시 복제하지 않는다.
 --
 -- ▶ 무엇을 답하는 SV 인가
---   **"캠페인별/후원사업별 활동회원"** 질문. base = `GN_DW.GOLD.FACT_MEMBER_SPONSOR_BIZ`
+--   **"캠페인별/후원사업별 활동회원"** 질문. base = `GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN`
 --   (grain = MEMBER_DK × SPNSR_BSNS_NO, 2,170,572행 실측 2026-08-21).
 --
 --   🔴 **`SV_MEMBER_MONTHLY` 가 이 질문에 답할 수 없는 이유**: `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는
@@ -75,7 +75,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     sponsorship.SPONSORSHIP_ABBR_CATEGORY AS sponsorship.SPONSORSHIP_GROUP_NAME WITH SYNONYMS ('후원사업 약칭', '후원사업 카테고리') COMMENT = '후원사업 약칭 그룹(CM003). 실제값 6종: ''결연''·''국내''·''기타''·''북한''·''해외''·''해외구호''.',
     -- ── 캠페인(대표) ──────────────────────────────────────────────────────────
     campaign.CAMPAIGN     AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명') COMMENT = '대표캠페인명. 판정 규칙 = CRM_MEMBER_DEV 사건 중 ①신규사건이 있으면 그 신규사건 ②없으면 최초사건(동률 0 확인). 사건 자체가 없는 약정은 "(미매핑)"(0). ⚠️단일 회원-grain 캠페인 분해(FACT_MEMBER_MONTHLY 기준)와는 다른 축이다 — 이 SV 는 약정grain 이라 값이 다르게 나올 수 있다',
-    -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSOR_BIZ.ACQ_*`
+    -- [DEC-43] `DIM_CAMPAIGN` 실시간 조인(campaign.CAMPAIGN_TYPE) → `FACT_MEMBER_SPONSORSHIP_SPAN.ACQ_*`
     --   동결값으로 전환. 대표사건의 캠페인 마스터가 이후 정정돼도 이 약정의 카테고리는 바뀌지 않는다.
     fmsb.ACQ_CMPGN_CTGR_NM AS fmsb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인 카테고리', '주요캠페인') COMMENT = '대표캠페인 카테고리 라벨(MM294). 🔴적재 시점 동결값(구 campaign.CAMPAIGN_TYPE 대체)',
     fmsb.IS_MULTI_CAMPAIGN AS fmsb.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중캠페인 여부') COMMENT = '참고용 투명성 플래그 — 이 SPNSR_BSNS_NO 의 전체 사건에서 캠페인이 2개 이상이었는지. 대표캠페인 채택 규칙과는 별개. 🟢실측상 극소수이며 최대 2개다(규모는 이슈원장·04 §0.9 참조)',

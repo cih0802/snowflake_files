@@ -10,7 +10,7 @@
 --      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER` ·
 --                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
 --                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
@@ -42,7 +42,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     member AS GN_DW.GOLD.DIM_MEMBER
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원', '회원속성')
-      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영). 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.',
+      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.',
     -- [2026-08-04 O33] 캠페인 축 활성화. FME.CAMPAIGN_SK 는 이미 배선돼 있었고 종전 SV COMMENT 의
     --   "비활성(적재 대기): 캠페인별 분해" 가 거짓이었다. PK 유일(fan-out 0)·고아 0% 확인 후 노출.
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
@@ -79,7 +79,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
   DIMENSIONS (
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME
       WITH SYNONYMS ('후원사업', '후원사업명', '사업', '사업명')
-      COMMENT = '사건의 후원사업명(정본 #123). 🔴**개발(DEV) 사건 전용** — 중단(STOP) 행은 중단원천에 후원사업 컬럼이 구조적으로 없어 전건 ''(미매핑)''이다. 「후원사업별 중단건」으로 읽으면 틀린다. ⚠️ **같은 라벨이 세 축이다**: ① 이 축 = **사건(개발) 시점** 후원사업 ② `SV_MEMBER_FEE` = **회비 납입 대상** 후원사업 ③ `SV_MEMBER_COHORT` = **획득 시점** 후원사업. 세 축의 값은 서로 다르며 합산·비교하면 조용히 틀린다 — 어느 축으로 답했는지 반드시 밝힌다. ⚠️ 목표(FACT_TARGET_DEV)에는 후원사업 축이 없어 **후원사업별 목표 대비 달성률은 불가**하다',
+      COMMENT = '사건의 후원사업명(정본 #123). 🔴**개발(DEV) 사건 전용** — 중단(STOP) 행은 중단원천에 후원사업 컬럼이 구조적으로 없어 전건 ''(미매핑)''이다. 「후원사업별 중단건」으로 읽으면 틀린다. ⚠️ **같은 라벨이 세 축이다**: ① 이 축 = **사건(개발) 시점** 후원사업 ② `SV_MEMBER_FEE` = **회비 납입 대상** 후원사업 ③ `SV_MEMBER_COHORT` = **획득 시점** 후원사업. 세 축의 값은 서로 다르며 합산·비교하면 조용히 틀린다 — 어느 축으로 답했는지 반드시 밝힌다. ⚠️ 목표(FACT_TARGET_MEMBER_DEV)에는 후원사업 축이 없어 **후원사업별 목표 대비 달성률은 불가**하다',
     -- [2026-08-05 O38] 부서 축. 장표·기획실 요건의 첫 축이다.
     --   🔴 상위 조직(본부/지부·팀·법인)은 CONF-4 로 전건 NULL 이라 노출하지 않는다 —
     --      노출하면 Analyst 가 "지부별로 보여줘"에 0행 무증상 오답을 낸다(§6.9-(5)·AD-4 유형).
@@ -90,7 +90,19 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     date.CAL_YEAR     AS date.YEAR          WITH SYNONYMS ('연도', '년')   COMMENT = '연도',
     date.CAL_MONTH    AS date.MONTH         WITH SYNONYMS ('월')          COMMENT = '월(1~12)',
     date.WEEK_OF_YEAR AS date.WEEK_OF_YEAR  WITH SYNONYMS ('주차', '주')   COMMENT = '연중 주차',
-    date.DAY_OF_WEEK  AS date.DAY_OF_WEEK   WITH SYNONYMS ('요일')        COMMENT = '요일. 실제값 7종: ''Fri''·''Mon''·''Sat''·''Sun''·''Thu''·''Tue''·''Wed'' + NULL',
+    -- 🔴🔴 [2026-09-16 O169 실측 정정] `DAY_OF_WEEK` COMMENT 의 열거가 **거짓이었다.**
+    --   종전 문안은 요일 **영문 약칭 7개**를 열거하고 「+ NULL」이라 적었으나, 라이브
+    --   `GOLD.DIM_DATE` 실측(16,437행) = 값은 **코드 0~6** 이고 **NULL 은 0건**이다.
+    --   ⇒ 요일 약칭으로 필터를 만들면 **0행 무증상 오답**이 났다(AD-4 유형).
+    --   대응은 창작하지 않고 코드별 `DAYNAME` 교차로 확정했다(0=일 … 6=토).
+    --   🔴🔴 **경위를 COMMENT 본문에 적지 마라** — 초판은 정정 서술 안에 **옛 값 목록을 인용**했고
+    --   게이트의 열거 추출기가 **그 옛 목록을 현재 열거로 집어** 위반이 그대로 남았다
+    --   (O167 이 적어 둔 *「부정문을 심으면 그 부정문이 탐지기에 걸린다」* 의 재발이다).
+    --   🟢 규약 = **COMMENT 에는 현재 코드값만** 두고 경위·수치는 이 `--` 주석과 근거철에 둔다(`R2-6`).
+    --   🔴🔴 **COMMENT 에 수치를 넣지 마라**(`R2-6`) — 초판은 시드 혼입 규모를 「1행」으로 적었고
+    --      `sv_unit_gate` 의 「COMMENT 수치 금지」 축이 그것을 잡았다. 규모는 이 주석과 근거철에 둔다:
+    --      코드 ''0'' = 2,349행 · 나머지 각 2,348행 ⇒ 혼입은 시드 행 1건이다.
+    date.DAY_OF_WEEK  AS date.DAY_OF_WEEK   WITH SYNONYMS ('요일')        COMMENT = '요일 코드. 실제값 7종: ''0''(일요일)·''1''(월요일)·''2''(화요일)·''3''(수요일)·''4''(목요일)·''5''(금요일)·''6''(토요일). NULL 없음. 🔴요일 이름(영문 약칭·한글)으로 필터하지 말 것 — 저장값은 숫자 코드다. ⚠️코드 ''0''(일요일)에는 달력 시드 행이 섞여 있어 일요일 집계가 그만큼 과대다 — 규모는 정본 문서를 참조하고 이 값으로 일요일 지표를 단정하지 말 것',
     fme.EVENT_TYPE    AS fme.EVENT_TYPE     WITH SYNONYMS ('원천계통', '사건원천') COMMENT = '원천 계통 구분. 실제값 2종뿐: ''DEV''(개발원천) / ''STOP''(중단원천). ⚠ 상태(신규·증액·감액·재후원·후원중단)는 이 컬럼이 아니라 DVLP_DIV_NM 을 쓴다 — O24. 종전 COMMENT 가 "개발/중단/증액/미납중단"이라 적혀 있어 ''증액'' 필터 생성 시 0행 무증상 오답이 가능했다(AD-4 유형)',
     fme.DVLP_DIV_NM   AS fme.DVLP_DIV_NM    WITH SYNONYMS ('개발구분', '상태구분', '증액감액구분', '개발구분명') COMMENT = '개발구분(정본 MM015). 실제값 5종: ''신규''·''증액''·''감액''·''재후원''·''후원중단''. 중단원천 행은 NULL. ⚠ ''후원중단''은 EVENT_TYPE=''STOP'' 과 동일 사건이 두 원천에 중복 존재 → 두 축 합산 금지(중복 규모는 이슈원장 §O24 참조 · 현업확인 대기)',
     fme.DVLP_DIV_CD   AS fme.DVLP_DIV_CD    WITH SYNONYMS ('개발구분코드') COMMENT = '개발구분 원천코드(1=신규 2=증액 3=감액 4=재후원 5=후원중단). 라벨은 DVLP_DIV_NM. 실제값 5종: ''1''·''2''·''3''·''4''·''5'' + NULL',
@@ -131,7 +143,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.DOMESTIC_OVERSEAS  AS fme.CMPGN_TYPE1_NM_AT_EVENT     WITH SYNONYMS ('국내해외', '국내외') COMMENT = '캠페인 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 campaign.DOMESTIC_OVERSEAS 대체). 실제값 4종: ''국내''·''해외''·''통합''·''전체사업'' + NULL. ⚠️ ''통합''과 ''전체사업''은 서로 다른 값이다 — 하나로 묶지 말고 원천 라벨 그대로 노출한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.BIZ_CASE_TYPE      AS fme.CMPGN_TYPE2_NM_AT_EVENT     WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '캠페인 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MARKETING_CAMPAIGN AS fme.MKTG_CMPGN_NM_AT_EVENT      WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '마케팅캠페인명. 🔴적재 시점 동결값(구 campaign.MARKETING_CAMPAIGN 대체). 카디널리티가 높다 — 부분 일치로 추측하지 말고 실제값을 조회해 확인한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). 실제값 14종: ''교육기관''·''기업''·''뉴미디어''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''일시''·''재송출''·''지역개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발'' + NULL. ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    -- 🔴🔴 [2026-09-16 O169 실측 정정] `CMMN_BRND_NM` 열거가 **세 축에서 틀렸다.**
+    --   라이브 `GOLD.FACT_MEMBER_EVENT.CMMN_BRND_NM_AT_EVENT` 실측 = distinct **16** · NULL **1,061,449**.
+    --   ㉠ 종수 선언이 「14종」으로 실제(16종)와 어긋났다.
+    --   ㉡ **라이브에 없는 값 1개를 열거했다**(유령 열거 ⇒ 그 값으로 필터를 만들면 0행 무증상 오답).
+    --   ㉢ **실재하는 3종을 빠뜨렸다**(대면모금·직원개발·콜개발).
+    --   🔴 유령 값의 이름은 **여기 적지 않는다** — 적으면 게이트의 열거 추출기가 그것을 다시 집는다
+    --      (같은 세션의 `DAY_OF_WEEK` 에서 실제로 그렇게 됐다). 값은 근거철 `_o169_evidence.md` 에 있다.
+    fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). 실제값 16종: ''교육기관''·''기업''·''뉴미디어''·''대면모금''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''재송출''·''지역개발''·''직원개발''·''콜개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발'' + NULL. ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 🔴두 축의 열거가 겹쳐 보이더라도 값 집합은 다르다 — 한쪽 목록으로 다른 쪽을 필터하지 말 것. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MKTG_UTM_NM        AS fme.MKTG_UTM_NM_AT_EVENT        WITH SYNONYMS ('UTM', 'UTM 라벨', '마케팅 UTM') COMMENT = 'UTM 라벨 — 코드사전이 아니라 원천 TM_CM_MKTNG_UTM(MK_UTM/MK_UTM_NM)과 연동된 값. 🔴적재 시점 동결값(구 campaign.MKTG_UTM_NM 대체). ⚠️원천 코드사전 매핑률이 낮아 다수 행이 NULL이다 — 결측이 아니라 미등재 코드다(채움 비율은 규칙7 상 여기 적지 않는다 · 조회로 확인하고 UTM별 분해가 부분집합임을 밝힐 것 · 규모는 이슈원장 §O105 참조). 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.SPNSR_DIV_NM       AS fme.SPNSR_DIV_NM_AT_EVENT       WITH SYNONYMS ('세부캠페인 후원구분', '캠페인 후원구분') COMMENT = '세부캠페인 후원구분 라벨(CM035). 🔴적재 시점 동결값(구 campaign.SPNSR_DIV_NM 대체). 실제값 2종: ''정기후원''·''일시후원'' + NULL. ⚠️ SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 적용 대상이 다르다 — 이 축은 세부캠페인 단위 구분이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분') COMMENT = '세부캠페인 법인구분 라벨(CM019). 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 실제값 3종: ''통합''·''사단''·''사복'' + NULL. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',

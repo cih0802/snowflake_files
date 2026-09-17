@@ -46,7 +46,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 
 -- (2-A) [최초 1회만] DBT PROJECT 신규 생성 (VERSION$1)
 -- CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
---   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+  -- FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
@@ -83,7 +83,7 @@ USE WAREHOUSE GN_DW_DEV_WH;
 
 -- [3-1] 마스터 스냅샷 실행 (BRONZE 마스터 SCD Type 2 이력 누적)
 -- 전체 스냅샷 실행:
-EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot';
+-- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot';
 
 -- 특정 티어 또는 개별 스냅샷만 실행 시:
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot --select snp_crm_tm_cm_cmpgn_mng snp_crm_tm_cm_dept_info snp_crm_tm_cm_spnsr_bsns_info';
@@ -91,6 +91,9 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot';
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+
+-- build 실패시 수정 후 실패지점부터 이어서 진행
+-- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='retry';
 
 -- 도메인/레이어별 부분 빌드:
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select silver.crm';

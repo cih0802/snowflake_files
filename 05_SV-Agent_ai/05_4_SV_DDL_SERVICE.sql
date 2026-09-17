@@ -10,7 +10,7 @@
 --      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER` ·
 --                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
 --                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
@@ -33,7 +33,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
   TABLES (
     fse AS GN_DW.GOLD.FACT_MESSAGE_DISPATCH
       WITH SYNONYMS ('발송', '서비스 발송', '문자메일 발송', '메시지 발송')
-      COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_GA_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].',
+      COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '발송일')
@@ -45,7 +45,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member AS GN_DW.GOLD.DIM_MEMBER
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
-      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영). 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
+      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
   )
   RELATIONSHIPS (
     fse_to_date    AS fse (DATE_SK)    REFERENCES date,
@@ -83,7 +83,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       WITH SYNONYMS ('발송 회원수', '발송 고유회원수', '발송(명)', '발송명', '수신 대상 회원수', '수신자수', '몇 명에게 발송')
       COMMENT = '발송 대상 **고유 회원수(명)**. D(distinct) — 🔴가산 금지: 월별로 뽑아 합산하면 여러 달 수신한 회원이 중복된다. 기간을 바꾸면 반드시 재집계할 것. 정본 「발송(명)」이 이 metric 이다(발송 건수는 TOTAL_SEND_MEMBERS).'
   )
-  COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_GA_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
+  COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스 × 캠페인]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
   AI_SQL_GENERATION '핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다.';
 
 

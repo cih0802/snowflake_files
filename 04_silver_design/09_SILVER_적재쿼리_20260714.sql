@@ -549,7 +549,7 @@ FROM (
 -- ----------------------------------------------------------------------------
 -- GA4 B-1 : BIGQUERY_TRAFFIC_SOURCE  (session/last-click DISTINCT — last-click 한정 그레인)
 --   ⚠️ GA4-검토(2026-07-14): first-touch(traffic_source)·collected(collected_traffic_source)는
---      어트리뷰션 grain 상이 → 제외(혼재 시 1,175→6,736 팽창·DIM_GA_SOURCE fan-out).
+--      어트리뷰션 grain 상이 → 제외(혼재 시 1,175→6,736 팽창·DIM_BIGQUERY_SOURCE fan-out).
 -- ----------------------------------------------------------------------------
 INSERT OVERWRITE INTO GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE
 (UTM_SOURCE, UTM_MEDIUM, UTM_CAMPAIGN, UTM_CONTENT, UTM_TERM, SOURCE_MEDIUM,
@@ -806,7 +806,7 @@ LEFT JOIN GN_DW.SILVER.CRM_MEMBER m
 -- ----------------------------------------------------------------------------
 -- ★ GOLD 소비 계약 (consumption contract) — 후속 오류방지 필수준수 (2026-07-14 실측근거)
 --   [C1] 익명 다수 : BIGQUERY_EVENT distinct pseudo 27,840 중 신원해소 1,348(4.84%). 95.16% 익명.
---        → FACT_GA_BEHAVIOR 는 XREF 에 반드시 LEFT JOIN. INNER JOIN 금지(이벤트 95% silent 소실).
+--        → FACT_BIGQUERY_BEHAVIOR 는 XREF 에 반드시 LEFT JOIN. INNER JOIN 금지(이벤트 95% silent 소실).
 --        미매칭/익명 pseudo → DIM_MEMBER_IDENTITY '-1 UNKNOWN' IDENTITY_SK 로 귀속.
 --   [C2] grain 구분 : XREF=pseudo grain(1,348행) ≠ DIM_MEMBER_IDENTITY=member grain(distinct MEMBER_DK 1,274).
 --        → DIM_MEMBER_IDENTITY 구축 시 MEMBER_DK 로 DISTINCT/GROUP BY 필수(안 하면 회원지표 중복계상).

@@ -8,7 +8,11 @@ GN_DW BRONZE 노출 감사 스크립트.
   - P13 (커버리지≠정확도): 이름 기준 매칭이므로 '미노출'은 확정 아님(개명 미탐) → 신뢰도 열 병기.
   - P14 (부재판정은 실측 필수): 판정일 + 쿼리 근거 명시.
 
-감사 범위: BRONZE 1,121 컬럼 (CRM 927 · AGENCY 102 · ERP 62 · GA4 30).
+감사 범위: **BRONZE_CRM · BRONZE_AGENCY · BRONZE_ERP 3스키마**(러너 `fetch_columns_snowflake()` 의 분모).
+  🆕 🔴 [2026-09-16 O166-B 정정] 종전 기재 「BRONZE 1,121 컬럼 (CRM 927 · AGENCY 102 · ERP 62 · **GA4 30**)」은
+  **두 축에서 틀렸다**: ㉠ 수치가 stale 이고(실측 2026-09-16 = **1,204** = CRM 1,014 + AGENCY 106 + ERP 84)
+  ㉡ **`GA4` 는 이 감사의 분모가 아니다**(러너가 조회하지 않는다 · 라이브 GA4 는 10컬럼이고 GSC 13컬럼도 제외).
+  🔴 **여기에 수를 다시 적지 마라**(`R3-9 ㉦`) — 분모는 러너 실행 로그의 「BRONZE N컬럼」 줄이 정본이다.
 
 ⚠️ 실행 경로 (중요)
   본 파일은 **커널(노트북 서비스) 실행용** 이며, 커널에서는 workspace 파일시스템이
@@ -87,10 +91,10 @@ HARDCODED = {
     "PLAN_BUDGET_YEAR": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql", "line": 23, "pattern": "CAST(NULL AS NUMBER(18,2)) as PLAN_BUDGET_YEAR"},
     "EXEC_BUDGET_EST": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql", "line": 25, "pattern": "CAST(NULL AS NUMBER(18,2)) as EXEC_BUDGET_EST"},
     "FUNDRAISING_COST": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql", "line": 26, "pattern": "CAST(NULL AS NUMBER(18,2)) as FUNDRAISING_COST"},
-    "SELF_PART_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_EVENT_PARTICIPATION.sql", "line": 24, "pattern": "CAST(NULL AS BOOLEAN) as SELF_PART_FLAG"},
-    "INCREASE_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_EVENT_PARTICIPATION.sql", "line": 28, "pattern": "CAST(NULL AS BOOLEAN) as INCREASE_FLAG"},
-    "AVG_SESSION_DURATION": {"file": "10_dbt_pipeline/models/gold/fact/FACT_GA_BEHAVIOR.sql", "line": 74, "pattern": "CAST(NULL AS NUMBER) as AVG_SESSION_DURATION"},
-    "BOUNCE_RATE": {"file": "10_dbt_pipeline/models/gold/fact/FACT_GA_BEHAVIOR.sql", "line": 75, "pattern": "CAST(NULL AS NUMBER) as BOUNCE_RATE"},
+    "SELF_PART_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql", "line": 24, "pattern": "CAST(NULL AS BOOLEAN) as SELF_PART_FLAG"},
+    "INCREASE_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql", "line": 28, "pattern": "CAST(NULL AS BOOLEAN) as INCREASE_FLAG"},
+    "AVG_SESSION_DURATION": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql", "line": 74, "pattern": "CAST(NULL AS NUMBER) as AVG_SESSION_DURATION"},
+    "BOUNCE_RATE": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql", "line": 75, "pattern": "CAST(NULL AS NUMBER) as BOUNCE_RATE"},
     "STOP_DATE": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql", "line": 18, "pattern": "CAST(NULL AS DATE) as STOP_DATE"},
     "STOP_REASON": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql", "line": 19, "pattern": "CAST(NULL AS VARCHAR) as STOP_REASON"},
     "STOP_CHANNEL": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql", "line": 20, "pattern": "CAST(NULL AS VARCHAR) as STOP_CHANNEL"},
@@ -102,11 +106,11 @@ HARDCODED = {
     "AMOUNT_BAND2": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql", "line": 75, "pattern": "CAST(NULL AS VARCHAR) as AMOUNT_BAND2"},
     "PERIOD_BAND1": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql", "line": 76, "pattern": "CAST(NULL AS VARCHAR) as PERIOD_BAND1"},
     "PERIOD_BAND2": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql", "line": 76, "pattern": "CAST(NULL AS VARCHAR) as PERIOD_BAND2"},
-    "SEND_STATUS2": {"file": "10_dbt_pipeline/models/gold/fact/FACT_SERVICE_EVENT.sql", "line": 35, "pattern": "CAST(NULL AS VARCHAR) as SEND_STATUS2"},
-    "MAIL_RECEIVE_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_SERVICE_EVENT.sql", "line": 37, "pattern": "CAST(NULL AS BOOLEAN) as MAIL_RECEIVE_FLAG"},
-    "MEMBER_STOP_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_SERVICE_EVENT.sql", "line": 38, "pattern": "CAST(NULL AS BOOLEAN) as MEMBER_STOP_FLAG"},
-    "ANNUAL_CUM_GOAL_CNT": {"file": "10_dbt_pipeline/models/gold/fact/FACT_TARGET_BIZ.sql", "line": 22, "pattern": "CAST(NULL AS NUMBER(18,4)) as ANNUAL_CUM_GOAL_CNT"},
-    "SUPP_CUM_GOAL_CNT": {"file": "10_dbt_pipeline/models/gold/fact/FACT_TARGET_BIZ.sql", "line": 23, "pattern": "CAST(NULL AS NUMBER(18,4)) as SUPP_CUM_GOAL_CNT"},
+    "SEND_STATUS2": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql", "line": 35, "pattern": "CAST(NULL AS VARCHAR) as SEND_STATUS2"},
+    "MAIL_RECEIVE_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql", "line": 37, "pattern": "CAST(NULL AS BOOLEAN) as MAIL_RECEIVE_FLAG"},
+    "MEMBER_STOP_FLAG": {"file": "10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql", "line": 38, "pattern": "CAST(NULL AS BOOLEAN) as MEMBER_STOP_FLAG"},
+    "ANNUAL_CUM_GOAL_CNT": {"file": "10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql", "line": 22, "pattern": "CAST(NULL AS NUMBER(18,4)) as ANNUAL_CUM_GOAL_CNT"},
+    "SUPP_CUM_GOAL_CNT": {"file": "10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql", "line": 23, "pattern": "CAST(NULL AS NUMBER(18,4)) as SUPP_CUM_GOAL_CNT"},
     # FACT_AD_PERFORMANCE 추가 AD_COST (FACT_BUDGET)
     "AD_COST": {"file": "10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql", "line": 27, "pattern": "CAST(NULL AS NUMBER(18,2)) as AD_COST"},
 }

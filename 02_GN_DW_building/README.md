@@ -36,4 +36,4 @@
 - BRONZE→SILVER→GOLD→**SERVING** 4계층 **라이브 배포 완료**. BRONZE 48(CRM 43 전수 + GA4·ERP·AGENCY 부분 입고) · SILVER 32 · GOLD 24(15 DIM+9 FACT) + WIDE VIEW 9 · SERVING SV 5(최종 7)/Agent 2(최종 3) + 보조뷰 2.
 - ETL = dbt 프로젝트 `GN_DW.OPS.DW_PIPELINE`(65 models). 구설계의 정제 프로시저·Task DAG·`ETL_LOG`는 폐기(dbt 전환).
 - GOLD 상세 설계(star schema)는 `03_top-down_gold/`가 **정본**이며, 본 폴더 `03_GOLD_SERVING.md`는 라이브 구조 요약.
-- 잔여: GA4 전기간·ERP 모금성비용·CRM 사업목표(FACT_TARGET_BIZ 0행, E-6) 등 입고 대기분은 입고 후 SILVER/GOLD/SV 자동 확장. 보안(네트워크/마스킹/MFA)·모니터링(RM/Alert/Cost)은 설계안(운영 승격 시 배포). Streamlit·NL 스모크(트라이얼 DATA_AGENT_RUN 차단)는 미배포/대기.
+- 잔여: GA4 전기간·ERP 모금성비용·CRM 사업목표(FACT_TARGET_PROJECT 0행, E-6) 등 입고 대기분은 입고 후 SILVER/GOLD/SV 자동 확장. 보안(네트워크/마스킹/MFA)·모니터링(RM/Alert/Cost)은 설계안(운영 승격 시 배포). Streamlit·NL 스모크(트라이얼 DATA_AGENT_RUN 차단)는 미배포/대기.

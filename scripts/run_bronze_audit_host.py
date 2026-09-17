@@ -39,7 +39,7 @@ DW_META_COLS = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_
 # P13 대응: 개명 적재는 이름매칭으로 탐지 불가하므로 명시 등록한다.
 # ⚠️ 키에 BRONZE 테이블을 포함하는 이유: 컬럼명만으로는 원천 간 충돌이 발생한다
 #    (예: AGENCY.DEVICE 는 FACT_AD_PERFORMANCE 계보로 하드코딩 상태이나,
-#     GA4.device 는 FACT_GA_BEHAVIOR 계보로 정상 적재 — 동일시하면 오판).
+#     GA4.device 는 FACT_BIGQUERY_BEHAVIOR 계보로 정상 적재 — 동일시하면 오판).
 # ⚠️ 값에 GOLD 모델을 포함하는 이유: 동명 GOLD 컬럼이 여러 모델에 있고 한쪽만 하드코딩인 경우가 있다
 #    (예: AD_COST — FACT_AD_PERFORMANCE 실적재 / FACT_BUDGET 하드코딩).
 # 테이블명은 접두 매칭 (GA4 events_YYYYMMDD 샤드 대응).
@@ -107,11 +107,11 @@ LINEAGE_MAP = {
     ("DGT_AD_CMPGN_DTLS", "CPA"):                  ("CPA_SRC",             "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "DEV_UNIT_PRICE"):        ("DEV_UNIT_PRICE_SRC",  "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "VTR"):                  ("VTR_SRC",             "FACT_AD_DIGITAL.sql"),
-    # ── GA4 — VARIANT 원천이 GA4_DEVICE→DIM_DEVICE→FACT_GA_BEHAVIOR 로 정상 적재 ──
-    ("events_", "device"):    ("DEVICE_SK",    "FACT_GA_BEHAVIOR.sql"),
-    ("events_", "platform"):  ("DEVICE_SK",    "FACT_GA_BEHAVIOR.sql"),
-    ("events_", "traffic_source"): ("GA_SOURCE_SK", "FACT_GA_BEHAVIOR.sql"),
-    ("events_", "event_name"):     ("GA_EVENT_SK",  "FACT_GA_BEHAVIOR.sql"),
+    # ── GA4 — VARIANT 원천이 GA4_DEVICE→DIM_DEVICE→FACT_BIGQUERY_BEHAVIOR 로 정상 적재 ──
+    ("events_", "device"):    ("DEVICE_SK",    "FACT_BIGQUERY_BEHAVIOR.sql"),
+    ("events_", "platform"):  ("DEVICE_SK",    "FACT_BIGQUERY_BEHAVIOR.sql"),
+    ("events_", "traffic_source"): ("GA_SOURCE_SK", "FACT_BIGQUERY_BEHAVIOR.sql"),
+    ("events_", "event_name"):     ("GA_EVENT_SK",  "FACT_BIGQUERY_BEHAVIOR.sql"),
     # ── CRM 개명 계보 (2026-08-06 등재 · O38·O45 배선분) ──
     # 🔴 P90 ②: 신규 객체를 만들면 이 등록부가 그 사실을 모른다. 아래 8건은 등재 전까지
     #    전부 「SILVER까지만 · GOLD 미승격」으로 오판됐다(2026-08-06 실행에서 실측 확인).
@@ -135,14 +135,14 @@ LINEAGE_MAP = {
     #    토큰) 경로로 떨어져 「SILVER까지만 · 중간(SQL참조)」이 됐다. 그러나 **GOLD 도달이 실측 확증**된다:
     #      · SILVER 에 동명 컬럼 없음 — INFORMATION_SCHEMA 조회 0행(이름으로는 찾을 수 없다)
     #      · `CRM_SEND_MEMBER.sql` 28·41행이 두 컬럼을 **축B `SEND_RESULT_CD` 로 개명 적재**
-    #      · `FACT_SERVICE_EVENT.sql:55` 가 그것을 투영 · 라이브 채움을 채널로 분해하면 귀속이 갈린다:
+    #      · `FACT_MESSAGE_DISPATCH.sql:55` 가 그것을 투영 · 라이브 채움을 채널로 분해하면 귀속이 갈린다:
     #        MSG_AT(`TRNSMS_FAILR_CD_ID`) **18,439,718** · SND(`CALL_STATUS`) **7,815,657**
     #        · EMAIL·PSTMTR 은 모델이 NULL 고정이라 0 (합 26,255,375 / 전체 38,470,780)
     #    ⇒ P90 ② 의 재현이다(신규 배선을 만들면 이 등록부가 그 사실을 모른다). 2026-08-06 8건과 같은 유형.
     # ⚠️ 이 2건은 「실측으로 확정된 것」만이다. 같은 버킷(SILVER까지만 · 신뢰도 「높음」 아님)에
     #    95건이 남아 있고 그것은 **후보**이지 오류 확정이 아니다 — 전수 판정은 별건(원장 O65 잔여).
-    ("TD_MS_MSG_AT_SNDNG_DTLS", "TRNSMS_FAILR_CD_ID"): ("SEND_RESULT_CD", "FACT_SERVICE_EVENT.sql"),
-    ("SND_MEMBER_LIST",         "CALL_STATUS"):        ("SEND_RESULT_CD", "FACT_SERVICE_EVENT.sql"),
+    ("TD_MS_MSG_AT_SNDNG_DTLS", "TRNSMS_FAILR_CD_ID"): ("SEND_RESULT_CD", "FACT_MESSAGE_DISPATCH.sql"),
+    ("SND_MEMBER_LIST",         "CALL_STATUS"):        ("SEND_RESULT_CD", "FACT_MESSAGE_DISPATCH.sql"),
 }
 
 
@@ -444,6 +444,21 @@ def main():
 
     # 4) 출력
     os.makedirs(OUT_DIR, exist_ok=True)
+    # 🆕 🔴🔴 [2026-09-16 O166-B] **덮어쓰기 전에 스냅샷을 남긴다**(`R1-7-10` · `snapshot_util` 경유).
+    #   🔎 왜 = O166 이 이 러너를 재실행해 06 을 2026-09-02 → 09-16 판본으로 갱신했을 때
+    #      `test_generators` 골든 대비 **6건 차이**가 났는데, **이전 판본 사본이 어디에도 없어서**
+    #      `노출됨(GOLD) 138 → 137` 의 **−1 을 행 단위로 귀속할 수 없었다**(`_archive/` 조회 0건).
+    #   🔴 이 러너는 산출물 3종을 **조용히 덮어썼다** — 골든 대조 도구가 있는데 비교 대상이 사라지는 구조였다.
+    #   🟢 이제 덮기 전 스냅샷이 남으므로 **다음 갱신부터는 차이를 행 단위로 규명할 수 있다.**
+    try:
+        sys.path.insert(0, os.path.join(WS, "scripts"))
+        from snapshot_util import snapshot, ARCHIVE
+        for ext in ("md", "csv", "xlsx"):
+            prev = os.path.join(OUT_DIR, BASENAME + "." + ext)
+            if os.path.exists(prev):
+                snapshot(prev, "regen", archive=ARCHIVE)
+    except Exception as e:  # 스냅샷 실패가 감사 산출을 막지 않는다 — 다만 조용히 넘기지 않는다.
+        print(f"  🟠 스냅샷 생략(사유: {str(e)[:80]}) — 이전 판본 대조가 불가해진다")
     write_csv(audit_rows)
     write_md(audit_rows, stats, hardcoded, real)
     write_xlsx(audit_rows, stats, hardcoded, real)

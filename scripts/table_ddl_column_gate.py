@@ -86,9 +86,14 @@ def resolve_ref(cn, name):
         return f'GN_DW.SILVER.{uname}'
     if ('SNAPSHOT', uname) in _KNOWN_TABLES or uname.startswith('SNP_'):
         return f'GN_DW.SNAPSHOT.{uname}'
-    # 라이브 미반영 모델 파일 지원 (운영계 대기 상태)
-    if (uname == 'FACT_MEMBER_EVENT' and ('GOLD', 'FACT_MEMBER_LIFECYCLE') in _KNOWN_TABLES) or uname == 'FACT_MEMBER_EVENT':
-        return 'GN_DW.GOLD.FACT_MEMBER_LIFECYCLE'
+    # 🆕 [2026-09-16 O166] 종전 폴백(`FACT_MEMBER_EVENT` → 개명 전 이름 `GOLD.FACT_MEMBER_LIFECYCLE`)을 지웠다.
+    #   ㉠ 그 이름은 **라이브에 없다**(개명 후 실물이 `FACT_MEMBER_EVENT` 다 · 위 `_KNOWN_TABLES` 분기가 먼저 잡는다)
+    #   ㉡ 조건이 `(A and B) or A` 형태여서 **`A`(=이름이 `FACT_MEMBER_EVENT`)만 성립하면 `B` 와 무관하게 참**이었다
+    #      — 즉 개명 전 이름 `('GOLD','FACT_MEMBER_LIFECYCLE') in _KNOWN_TABLES` 검사가 **무력**했다.
+    #      🔴 [O166-B 문안 정정] 초판은 이것을 「항상 참」이라 적었는데 그것은 부정확하다 —
+    #      **무조건 참이 아니라 `A` 조건부로 참**이고, 무력화된 것은 **`B` 검사**다.
+    #   ⇒ 그 팩트가 라이브에 없는 계정에서 이 분기에 닿으면 **존재하지 않는 객체를 조회하러 간다.**
+    #   🟢 해석 실패는 아래 `sys.exit` 로 **드러내는 것**이 맞다(폴백으로 감추지 않는다).
     sys.exit(f'🔴 ref 해석 실패: {name} (GOLD·SILVER·SNAPSHOT 어디에도 없다)')
 
 

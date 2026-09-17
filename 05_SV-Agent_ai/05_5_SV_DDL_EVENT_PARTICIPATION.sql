@@ -10,7 +10,7 @@
 --      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
 --
 -- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
---   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER_CURRENT` ·
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER` ·
 --                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
 --                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
 --   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
@@ -45,7 +45,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     member AS GN_DW.GOLD.DIM_MEMBER
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
-      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영). 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
+      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
   )
   RELATIONSHIPS (
     fep_to_date   AS fep (DATE_SK)   REFERENCES date,
@@ -85,7 +85,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep.DISTINCT_PARTICIPANTS AS COUNT(DISTINCT fep.MEMBER_DK)
       WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).'
   )
-  COMMENT = 'Phase-1 행사 참여 SV (base: GOLD.FACT_EVENT_PARTICIPATION, grain: 행사참여 1행). CRM 일반행사/캠페인행사 참여 건수, 고유 참여회원수(DISTINCT_PARTICIPANTS), 행사구분/참여상태/경로/채널 라벨 뷰. ⚠️ 일반행사(EVENT)와 캠페인행사(CRMN)의 코드군이 상이하므로 계열 판별자 PART_EVENT_KIND_NAME 동반 필수. 행사 미매칭분은 Unknown(0)으로 처리되어 행사명 집계는 부분집합임.'
+  COMMENT = 'Phase-1 행사 참여 SV (base: GOLD.FACT_EVENT_ATTENDANCE, grain: 행사참여 1행). CRM 일반행사/캠페인행사 참여 건수, 고유 참여회원수(DISTINCT_PARTICIPANTS), 행사구분/참여상태/경로/채널 라벨 뷰. ⚠️ 일반행사(EVENT)와 캠페인행사(CRMN)의 코드군이 상이하므로 계열 판별자 PART_EVENT_KIND_NAME 동반 필수. 행사 미매칭분은 Unknown(0)으로 처리되어 행사명 집계는 부분집합임.'
   AI_SQL_GENERATION '핵심 규칙: (1) 라벨축 사용: 행사구분(EVENT_CATEGORY_NAME), 참여상태(PART_STATUS_NAME), 참여경로(PART_PATH_NAME), 참여채널(PART_CHANNEL_NAME) 사용. (2) 계열 동반: 원천별 코드체계 분리를 위해 항상 팩트 보유 축인 PART_EVENT_KIND_NAME 을 동반하여 그루핑 (차원축 EVENT_KIND_NAME 사용 금지). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 원천 차이: 일반행사(다단계 통과)와 캠페인행사(신청/참여/불참)는 참여 정의가 다르므로 합산 참여율 생성 금지. (5) 채널 NULL: 캠페인행사는 원천 채널 컬럼 부재로 전량 NULL임을 명시.';
 
 

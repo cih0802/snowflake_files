@@ -234,7 +234,10 @@ LOGICAL_CONFORM_FKS = [
     ("*", "START_MONTH_KEY", "DIM_MONTH", "MONTH_KEY", "역할기반 월 축 (개시월)"),
     ("*", "DSCNTC_MONTH_KEY", "DIM_MONTH", "MONTH_KEY", "역할기반 월 축 (중단월)"),
     ("DIM_MEMBER_IDENTITY", "MEMBER_DK", "DIM_MEMBER", "MEMBER_DK", "회원 식별 자연키 참조"),
-    ("DIM_MEMBER_CURRENT", "MEMBER_DK", "DIM_MEMBER", "MEMBER_DK", "현재 회원 스냅샷 자연키 참조"),
+    # 🆕 [2026-09-16 O166] 종전 `DIM_MEMBER_CURRENT → DIM_MEMBER` 관계를 지웠다 —
+    #   그 이름의 객체가 **라이브에 없다**(개명이 아니라 소멸 · `DIM_MEMBER` 가 1행/회원을 흡수).
+    #   ⇒ 대체 관계 = 상태버전 이력 차원이 회원 자연키를 참조한다(실측 8,069,279 / 회원당 4.52행).
+    ("DIM_MEMBER_STATUS_HISTORY", "MEMBER_DK", "DIM_MEMBER", "MEMBER_DK", "회원 상태버전 이력 자연키 참조"),
     ("DIM_MEMBER_ACQUISITION", "MEMBER_DK", "DIM_MEMBER", "MEMBER_DK", "회원 획득 자연키 참조"),
 ]
 

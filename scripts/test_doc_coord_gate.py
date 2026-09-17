@@ -210,6 +210,40 @@ def main():
         G.ROOT, G._INDEX, G._ARCH = old_root, old_idx, old_arch
         shutil.rmtree(tmp, ignore_errors=True)
 
+    # ── 🆕 축13 [2026-09-16 O166-C] 인수인계 절 라벨 재사용 검출 ────────────
+    #   🔴 왜 음성 테스트인가: 이 축은 **정상 상태에서도 4건**을 내므로(라벨 순환은 이미 일어났다)
+    #     「0건이면 통과」로 증명할 수 없다. ⇒ 합성 조각으로 **㉠ 중복 검출 ㉡ 유일 라벨 무검출**
+    #     ㉢ **취소선·승계 절도 세는가**(승계됐어도 라벨은 여전히 인용 대상이다)를 양방향 단정한다.
+    print('[축13] 🆕 인수인계 절 라벨 재사용을 잡는다 (O165 D1 계열 · 라벨 좌표 모호성)')
+    tmp2 = tempfile.mkdtemp(prefix='o166c_')
+    old_root2 = G.ROOT
+    try:
+        G.ROOT = tmp2
+        d = os.path.join(tmp2, '99_NEXT_SESSION_조각')
+        os.makedirs(d)
+        io.open(os.path.join(d, '99_NEXT_SESSION-001.md'), 'w', encoding='utf-8').write(
+            '## 0-AAAA. [2026-08-30 O100 필독]\n본문\n## 0-BBBB. [2026-08-31 O101]\n')
+        io.open(os.path.join(d, '99_NEXT_SESSION-002.md'), 'w', encoding='utf-8').write(
+            '## 0-AAAA. ~~[2026-09-10 O150 — 여기서 시작한다]~~ ➔ 승계됨\n본문\n'
+            '## 0-CCCC. [2026-09-16 O166]\n')
+        dups = {it['label']: it['count'] for it in G.handoff_label_dups()}
+        check(dups == {'0-AAAA': 2},
+              '중복 라벨만 잡는다(유일 라벨 무검출): %r' % dups)
+        places = G.handoff_label_dups()[0]['places']
+        check(len(places) == 2 and places[0][2] == '2026-08-30' and places[1][2] == '2026-09-10',
+              '좌표·날짜를 함께 낸다(사람이 어느 쪽인지 가릴 수 있다): %r' % (places,))
+        check(any('99_NEXT_SESSION-002.md' in p[0] for p in places),
+              '🔴 취소선·승계 절도 센다 — 승계됐어도 라벨은 인용 대상이다')
+        # 🔴 오탐 축 = 절 제목이 아닌 줄은 세지 않는다.
+        io.open(os.path.join(d, '99_NEXT_SESSION-003.md'), 'w', encoding='utf-8').write(
+            '본문에서 `0-AAAA` 를 언급한다\n### 0-AAAA. 하위 제목은 절이 아니다\n')
+        dups2 = {it['label']: it['count'] for it in G.handoff_label_dups()}
+        check(dups2 == {'0-AAAA': 2},
+              '본문 언급·`###` 하위 제목은 세지 않는다(오탐 0): %r' % dups2)
+    finally:
+        G.ROOT = old_root2
+        shutil.rmtree(tmp2, ignore_errors=True)
+
     print('')
     if FAIL:
         print('🔴 FAIL %d건 / 단정 %d개' % (len(FAIL), len(OK) + len(FAIL)))

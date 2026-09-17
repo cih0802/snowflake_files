@@ -187,7 +187,7 @@ flowchart TB
 
 > 배포 SV 5(FMM·FME·FSE·FEP·FBD). 미배포 2(FBQ·FAD/FTG 계열) = 최종 7 목표의 Phase-2 확장.
 > Agent 2(AGENT_MEMBER·AGENT_OVERALL), owner=GN_DW_ADMIN, Snowflake Intelligence(CoWork) 연결·소비 3역할 USAGE.
-> 정확도 메커니즘: synonyms(한글)·VQR·custom instruction(기간스코프 강제 P10)·평가셋. 모든 참조: `GN_DW.GOLD.FACT_*/DIM_*`(cross-schema) + SERVING 보조뷰(DIM_MEMBER_CURRENT·DIM_MONTH)로 fan-out 차단.
+> 정확도 메커니즘: synonyms(한글)·VQR·custom instruction(기간스코프 강제 P10)·평가셋. 모든 참조: `GN_DW.GOLD.FACT_*/DIM_*`(cross-schema) + 회원·월 축 사전결합(`GOLD.DIM_MEMBER`·`GOLD.DIM_MONTH`)으로 fan-out 차단. 🔴 [2026-09-16 O168] 종전 문안의 `SERVING` 보조뷰와 구 `DIM_MEMBER_CURRENT` 는 객체 소멸이다.
 > ⚠️ [6-C] 트라이얼 계정 DATA_AGENT_RUN 차단 → NL 스모크는 paid 이관 대기. Streamlit은 현재 미배포.
 > SV/Agent 정본 = `05_SV-Agent_ai/`.
 
@@ -197,9 +197,9 @@ flowchart TB
 DIM (15)  DIM_DATE  DIM_MEMBER  DIM_MEMBER_IDENTITY  DIM_CAMPAIGN  DIM_SPONSORSHIP
           DIM_ORG  DIM_AD_CREATIVE  DIM_BIGQUERY_SOURCE  DIM_BIGQUERY_EVENT  DIM_SERVICE
           DIM_PAYMENT  DIM_REASON  DIM_DEVICE  DIM_EVENT  DIM_BUDGET_ITEM
-FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)    FACT_TARGET_DEV(FTG-D)
-          FACT_TARGET_BIZ(FTG-B·0행)  FACT_SERVICE_EVENT(FSE)   FACT_BIGQUERY_BEHAVIOR(FBQ)
-          FACT_AD_PERFORMANCE(FAD)   FACT_EVENT_PARTICIPATION(FEP)   FACT_BUDGET(FBD)
+FACT (9)  FACT_MEMBER_MONTHLY(FMM)   FACT_MEMBER_EVENT(FME)    FACT_TARGET_MEMBER_DEV(FTG-D)
+          FACT_TARGET_PROJECT(FTG-B·0행)  FACT_MESSAGE_DISPATCH(FSE)   FACT_BIGQUERY_BEHAVIOR(FBQ)
+          FACT_AD_PERFORMANCE(FAD)   FACT_EVENT_ATTENDANCE(FEP)   FACT_BUDGET(FBD)
 WIDE (9)  각 FACT 1:1 평탄화 VIEW (WIDE_MEMBER_MONTHLY … WIDE_TARGET_BIZ)
           → base measure 61  (지표 215 → measure 60 + dimension 74 + derived 81)
 ```

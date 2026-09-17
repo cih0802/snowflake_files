@@ -41,9 +41,13 @@ O53_FILES = [
     '10_dbt_pipeline/models/gold/wide/_wide_schema.yml',
     '10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql',
     '10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql',
-    '10_dbt_pipeline/models/gold/dim/DIM_MEMBER_CURRENT.sql',
+    # 🆕 [2026-09-16 O166] 종전 `DIM_MEMBER_CURRENT.sql` 을 검증 대상에 두고 있었으나
+    #   그 모델 파일은 **존재하지 않는다**(dim 20종 전수 확인) — 개명이 아니라 객체 소멸이다.
+    #   ⇒ 현행 2종으로 교체한다(1행/회원 = `DIM_MEMBER` · 상태버전 이력 = `DIM_MEMBER_STATUS_HISTORY`).
+    '10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql',
+    '10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql',
     '10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql',
-    '10_dbt_pipeline/models/gold/fact/FACT_DEV_ACHIEVEMENT.sql',
+    '10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql',
     '10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql',
     '10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql',
     'scripts/gen_o53_gold_ddl.py', 'scripts/gen_o53_ad_combined.py',

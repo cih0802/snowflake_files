@@ -69,12 +69,12 @@ FIELD_HEADER = ("영역", "섹션", "필드값", "데이터원천", "데이터TY
 
 # 지표번호 → 배속 약어 확장
 ABBR = {
-    "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_SERVICE_EVENT",
-    "FEP": "FACT_EVENT_PARTICIPATION", "FMC": "FACT_MEMBER_COHORT", "FMF": "FACT_MEMBER_FEE",
+    "FMM": "FACT_MEMBER_MONTHLY", "FME": "FACT_MEMBER_EVENT", "FSE": "FACT_MESSAGE_DISPATCH",
+    "FEP": "FACT_EVENT_ATTENDANCE", "FMC": "FACT_MEMBER_COHORT", "FMF": "FACT_MEMBER_FEE",
     "FAD": "FACT_AD_PERFORMANCE", "FAD_B": "FACT_AD_BROADCAST", "FAD_D": "FACT_AD_DIGITAL",
     "FAD_BC": "FACT_AD_BROADCAST_CASE", "FGA": "FACT_BIGQUERY_BEHAVIOR", "FBD": "FACT_BUDGET",
-    "FTG_D": "FACT_TARGET_DEV", "FTG-D": "FACT_TARGET_DEV",
-    "FTG_B": "FACT_TARGET_BIZ", "FTG-B": "FACT_TARGET_BIZ",
+    "FTG_D": "FACT_TARGET_MEMBER_DEV", "FTG-D": "FACT_TARGET_MEMBER_DEV",
+    "FTG_B": "FACT_TARGET_PROJECT", "FTG-B": "FACT_TARGET_PROJECT",
 }
 
 # 원천 입고 대기(외부 하드블로커)로 물리 측정이 성립하지 않는 지표 — WAIT 고정
@@ -368,7 +368,7 @@ def load_gold_inventory():
     idx, entries = {}, []
     for t in parse_md(DOC_INV):
         head = t["h3"] or t["h2"]
-        # 🔴 제목 형식이 두 가지다: 'FTG_D. FACT_TARGET_DEV — …' 와 'WIDE_DEV_ACHIEVEMENT — …'
+        # 🔴 제목 형식이 두 가지다: 'FTG_D. FACT_TARGET_MEMBER_DEV — …' 와 'WIDE_DEV_ACHIEVEMENT — …'
         #   후자를 못 잡으면 테이블명이 비어 매핑이 `.COLUMN` 이 되고 소비 생성기가 판정불가로 흘린다(실측).
         m = re.match(r"[A-Z0-9_]+\.\s*([A-Z_][A-Z0-9_]+)", head)
         if not m:
@@ -423,7 +423,7 @@ def find_column(census, col, prefer=None):
 def derive_status(key, cls, num2base, derived, census):
     """(상태, 근거). 🔴 물리 컬럼을 특정할 수 있으면 census 로 **측정**한다."""
     if key in WAIT_SET:
-        return "WAIT", "추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_BIZ` 0행"
+        return "WAIT", "추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행"
 
     # 측정 대상 컬럼 결정: MEASURE_OVERRIDE → base 카탈로그 → derived 분자 base
     col = MEASURE_OVERRIDE.get(key) or num2base.get(key)

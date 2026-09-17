@@ -1,7 +1,7 @@
 -- GN_DW 3단계: Semantic View DDL 정본 — SV_DEV_ACHIEVEMENT (회원개발 목표 대비 실적)
 -- Co-authored with CoCo
 -- 🔴🔴 [2026-08-10 O53] **base 객체가 개명·테이블화됐다** — `GOLD.WIDE_DEV_ACHIEVEMENT`(뷰) →
---   `GOLD.FACT_DEV_ACHIEVEMENT`(테이블). 팩트 2종을 FULL OUTER 로 재구성하는 객체라 이름과 실질을 맞췄다.
+--   `GOLD.FACT_MEMBER_DEV_ACHIEVEMENT`(테이블). 팩트 2종을 FULL OUTER 로 재구성하는 객체라 이름과 실질을 맞췄다.
 --   ⚠️ 이 SV 는 **`CREATE OR ALTER SEMANTIC VIEW` 로 재배포**할 것 — `CREATE OR REPLACE` 는 GRANT 를
 --      파괴한다(O52-B 에서 실제로 SV 2종의 GRANT 를 파괴했다 · P125). 재배포 후 GRANT 는 소유자 세션이
 --      아니라 **소비 역할 세션으로 판정**한다(P126) — 검사는 `scripts/sv_unit_gate.py` 가 한다.
@@ -15,10 +15,10 @@
 -- ▶ 무엇을 답하는 SV 인가
 --   마케팅 장표 **「1. 개발현황(목표, 실적)」** 의 정본이고, 정본 지표
 --   **공#1 월 목표 달성율 · #2 누계 목표 달성율 · #3 연 목표 달성율** 을 산출한다.
---   base = `GN_DW.GOLD.FACT_DEV_ACHIEVEMENT`(FTG_D 목표 × FME 실적 FULL OUTER 월 conform).
+--   base = `GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT`(FTG_D 목표 × FME 실적 FULL OUTER 월 conform).
 --
 --   🔴 **O38 이전에는 이 SV 를 만들 수 없었다** — 선행 결함 2건이 이번에 해소됐다:
---     ① `FACT_TARGET_DEV.MONTH_KEY` 가 1~12(월 번호)라 연도 conform 자체가 불가능했다
+--     ① `FACT_TARGET_MEMBER_DEV.MONTH_KEY` 가 1~12(월 번호)라 연도 conform 자체가 불가능했다
 --     ② `FACT_MEMBER_EVENT.ORG_SK` 가 전건 센티넬이라 부서 축이 없었다(장표의 첫 축이 부서명이다)
 --
 --   🔴 **파일 규약·선행 조건·정본 근거의 정본 = `05_0_SV_DDL.sql` §공통 규약** (2026-08-10 O55 DUP-1).

@@ -55,8 +55,19 @@ INDEX = os.path.join(DOC_DIR, '00_INDEX_이슈원장.md')
 EXTRA_DOCS = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',
-    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
+    '00_guides/02_파일쓰기_안전규약.md',
+    # 🆕 [2026-09-16 O167] `init_ihcho` 스킬 정본 — 스킬은 이 문서의 산출물이다(빌더·검증기 경유).
+    '00_guides/03_init_ihcho_스킬_정본.md',
+    '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
+    '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)   # [O85] R1-7 무변경 이관 신설
     '99_NEXT_SESSION.md',
+    #   🆕 🔴🔴 [2026-09-16 O165-B 편입] Inspection 절차 정본 — **분모 밖이어서 실사고를 놓쳤다.**
+    #     O165 가 `edit` 앵커로 그 문서 `## ▣ 5` 제목을 삼키고 **꼬리 36줄(§6·§7)까지 소실**시켰는데
+    #     게이트 6종이 전부 🟢 를 유지했다. 🔴 `R1-6-18 ④` 는 **분모 4곳**을 요구하는데
+    #     O165 는 `doc_heading_gate.DOCS` **한 곳만** 넣었다(같은 결함의 자기 재발).
+    #     ⇒ 이 편입은 그 나머지 3곳(여기 · `doc_line_length_gate.CANON` · `doc_census.SINGLES`)의 하나다.
+    #     🔴 원장 §0 유형 등재표에도 행을 넣어야 축1 이 통과한다(선언 분모 ↔ 실재 분모는 짝이다).
+    '60_repeat_어카운트시작/11_O누적작업_점검_재현_절차.md',
 ]
 
 MAX_LINES = 300

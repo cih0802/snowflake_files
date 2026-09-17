@@ -114,7 +114,19 @@ stop as (
         CAST(NULL AS VARCHAR)                               as DVLP_DIV_NM,
         CAST(NULL AS NUMBER(18,0))                          as SPNSR_AMT,
         0 as DEV_CNT, 0 as DEV_MEMBERS,
-        1 as STOP_CNT, 1 as STOP_MEMBERS, 0 as UNPAID_STOP_CNT, 0 as UNPAID_STOP_MEMBERS,
+        -- 🆕 🟢 [2026-09-16 O168] `UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 배선.
+        --   종전 = 스캐폴드 상수 `0` (BLOCKING-5 버킷 B · 라이브 전건 0 실측).
+        --   판정 = **중단사유명에 「미납」이 포함된 중단**을 미납중단으로 센다.
+        --   🟢 원천 실측(`SILVER.CRM_MEMBER_DISCONTINUE` 중단사유 20종): 미납 계열 **3종**
+        --      `14` 장기미납 342,586 · `16` 신규미납 46,338 · `13` 반송미납 86 = **389,010행**.
+        --   🔴 코드 목록을 하드코딩하지 않고 **사유명 술어**로 판정한다 — 원천에 미납 계열 코드가
+        --      추가되면 코드 목록은 조용히 낡지만 술어는 따라간다(코드 3종은 현 실현일 뿐이다).
+        --   🔴 이 판정은 **업무 정의 선택**이다(예: 「반송미납」을 미납으로 볼 것인가).
+        --      근거·대안은 문서30 `DEC-54` 에 등재했다 — 현업이 달리 정하면 술어만 바꾼다.
+        --   ⚠️ `STOP_CNT` 의 부분집합이다(미납중단 ⊂ 중단) ⇒ 두 measure 를 합산하지 마라.
+        1 as STOP_CNT, 1 as STOP_MEMBERS,
+        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_CNT,
+        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_MEMBERS,
         CAST(NULL AS DATE)                                  as JOIN_DATE,
         TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')           as STOP_DATE,
         s.DSCNTC_RSN_CD                                     as STOP_REASON,

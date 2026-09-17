@@ -289,8 +289,8 @@ def load_live():
 
 def fixtures():
     """탐지력 자기검사용 합성 입력 — 양성 4 · 음성 3(오탐 대조군)."""
-    bt = 'GOLD.FACT_SERVICE_EVENT'
-    bt2 = 'GOLD.DIM_MEMBER_CURRENT'
+    bt = 'GOLD.FACT_MESSAGE_DISPATCH'
+    bt2 = 'GOLD.DIM_MEMBER'  # [2026-09-16 O166] 종전 `DIM_MEMBER_CURRENT` — 객체 소멸(1행/회원은 DIM_MEMBER)
     bt3 = 'GOLD.DIM_DEVICE'
     bt4 = 'GOLD.DIM_DATE'
     base_cols = {bt: {'SEND_STATUS', 'SEND_TYPE', 'HAS_BILLING'},

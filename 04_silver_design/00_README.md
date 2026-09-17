@@ -59,7 +59,7 @@
 ---
 
 ## 현재 상태 (2026-07-20 갱신)
-- **✅ GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용. **`FACT_TARGET_BIZ`만 0행**(=`CRM_BIZ_TARGET` 입고 대기). 다음 트랙 = Semantic View 매핑.
+- **✅ GOLD 배포·적재 완료(2026-07-20)** — `GN_DW.GOLD` 24테이블 + WIDE VIEW 9개 생성·적재·COMMENT 적용. **`FACT_TARGET_PROJECT`만 0행**(=`CRM_BIZ_TARGET` 입고 대기). 다음 트랙 = Semantic View 매핑.
 - **✅ CRM SILVER 트랙 A 완료** — `GN_DW.SILVER` 스키마 생성 + **CRM 21/21 테이블 정제 적재**(멱등 `INSERT OVERWRITE`, 각 행수 = BRONZE 일치). SQL 정본 = `08_SILVER_테이블DDL_20260714.sql` + `09_SILVER_적재쿼리_20260714.sql`. Q4·Q5·Q6·Q13·Q14·Q15·Q16 + 코드그룹(SEX/MBER_DIV/SETLE) 전건 해소 + **S-5 GOLD 역산 검증(G1·G2 해소)** 반영.
 - **✅ GA4/ERP/AGENCY SILVER 적재완료** — GA4 5객체 PoC(1일샤드 271,544행·DQ 통과) · ERP 2객체(BUDGET 24,480·BUDGET_ITEM 2,040) · AGENCY 2객체(AD_PERFORMANCE 235,572·AD_CREATIVE 8,473). ※사업목표 `CRM_BIZ_TARGET`(원천=CRM 확정 2026-07-20)는 CRM 트랙 스키마-only(E-6 입고 대기). 전기간 GA4 샤드 입고(커넥터 소관) 시 멱등 재적재만 잔여.
 - **✅ S-7 신원브리지 완료** — `IDENTITY_MEMBER_XREF` 1,348행(GA_MEMBER_ID=MEMBER_DK exact 100%·PK유일·CONFIDENCE HIGH). 09 STEP 7. **★GOLD 소비계약(C1~C4)**: FACT는 LEFT JOIN(익명 95%)·회원차원은 MEMBER_DK DISTINCT + UNMATCHED 제외 → master §6.

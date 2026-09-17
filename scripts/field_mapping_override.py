@@ -34,13 +34,13 @@ FIELD_MAPPING_OVERRIDE = {
     "일별 실적": (
         "FACT_MEMBER_EVENT.DEV_CNT", "WRONG_GRAIN",
         "`FACT_MEMBER_MONTHLY` 에 `DATE_SK` 가 **없다**(물리 확인) — 일자 분해가 원천적으로 불가하다. "
-        "일 grain 은 `FME.DATE_SK` 뿐이다. ⚠️단 목표(`FACT_TARGET_DEV`)에는 일자 축이 없으므로 "
+        "일 grain 은 `FME.DATE_SK` 뿐이다. ⚠️단 목표(`FACT_TARGET_MEMBER_DEV`)에는 일자 축이 없으므로 "
         "**목표 대비 일별 달성률은 여전히 불가**하다(목표 원천 `TM_CM_MBER_DVLP_GOAL` 시간축 = `STDYY`+`STDR_MT`)."),
     "월 실적": (
-        "FACT_DEV_ACHIEVEMENT.ACTUAL_CNT", "WRONG_GRAIN",
+        "FACT_MEMBER_DEV_ACHIEVEMENT.ACTUAL_CNT", "WRONG_GRAIN",
         "부서별 실적을 `FMM` 에서 낼 수 없다 — **`FMM` 에 `ORG_SK` 가 없다**(물리 확인). "
         "원천이 부서를 주는 곳은 개발 사건(`ACMSLT_DEPT_CD`)뿐이다. "
-        "목표·실적 대응 정본은 `FACT_DEV_ACHIEVEMENT`(grain `MONTH_KEY × ORG_SK × DEV_TYPE`)."),
+        "목표·실적 대응 정본은 `FACT_MEMBER_DEV_ACHIEVEMENT`(grain `MONTH_KEY × ORG_SK × DEV_TYPE`)."),
     "기준년월": (
         "FACT_MEMBER_MONTHLY.MONTH_KEY", "WRONG_GRAIN",
         "월 팩트에 `DIM_DATE`(일 차원)를 걸 수 없다. 월 축은 `MONTH_KEY` 이고 라벨은 `SERVING.DIM_MONTH` 다."),
@@ -61,7 +61,7 @@ FIELD_MAPPING_OVERRIDE = {
         "`SPNSR_BSNS_ID` 채움 99.83%) → `FACT_MEMBER_FEE`. 개발·중단·회원특성 분석의 후원사업 = "
         "**획득 시점**(그 회원을 데려온 사업) → `DIM_MEMBER_ACQUISITION`. 한 회원이 여러 후원사업에 내므로 "
         "회원-월 grain 에 하나로 붙일 수 없다(회원-월 37,148,615 → 회원-월-후원사업 39,563,730). "
-        "⚠️ 목표(`FACT_TARGET_DEV`)에는 후원사업 축이 없어 **목표 대비 후원사업별 달성률은 불가**하다."),
+        "⚠️ 목표(`FACT_TARGET_MEMBER_DEV`)에는 후원사업 축이 없어 **목표 대비 후원사업별 달성률은 불가**하다."),
     "브랜드": (
         "DIM_MEMBER_ACQUISITION.ACQ_BRAND", "OPENED_O45",
         "[O45] `FMM.CAMPAIGN_SK` 는 O8(다중귀속 규칙 미확정)로 전건 센티넬이다. "
@@ -98,22 +98,22 @@ FIELD_MAPPING_OVERRIDE = {
     # ── 단위 함정(건/명) — 인벤토리 라벨이 「명」이라 적었으나 물리 컬럼은 플래그 SUM = 건수다(O39) ──
     "발송(명)": (
         "SV metric — SV_SERVICE.DISTINCT_SEND_MEMBERS = COUNT(DISTINCT MEMBER_DK)", "WRONG_UNIT",
-        "🔴 `FACT_SERVICE_EVENT.SEND_MEMBERS` 는 0/1 플래그의 SUM 이라 **건수**다 — 「명」으로 쓰면 "
+        "🔴 `FACT_MESSAGE_DISPATCH.SEND_MEMBERS` 는 0/1 플래그의 SUM 이라 **건수**다 — 「명」으로 쓰면 "
         "과대값이 나온다(O39 실측: SUM 38,470,780 vs 고유회원 1,031,971 = 37.3배). "
         "「명」은 SV 의 `COUNT(DISTINCT)` metric 으로 답해야 한다."),
     "발송건수": (
-        "FACT_SERVICE_EVENT.SEND_MEMBERS", "WRONG_UNIT",
+        "FACT_MESSAGE_DISPATCH.SEND_MEMBERS", "WRONG_UNIT",
         "이쪽이 물리 컬럼의 실제 의미(건수)다. 컬럼명이 `_MEMBERS` 라 「명」으로 오해된다(O39·P78)."),
     "성공(명)": (
-        "FACT_SERVICE_EVENT.SUCCESS_MEMBERS", "WRONG_UNIT",
+        "FACT_MESSAGE_DISPATCH.SUCCESS_MEMBERS", "WRONG_UNIT",
         "`_MEMBERS` 는 건수 플래그 계열이다(O39). ⚠️ 이 컬럼은 O39-B 로 **전건 0**(값 미주입) — "
         "조회하면 `0` 이 돌아온다."),
     "성공건수": (
-        "FACT_SERVICE_EVENT.SUCCESS_MEMBERS", "WRONG_UNIT", "위와 동일 컬럼 · 전건 0."),
+        "FACT_MESSAGE_DISPATCH.SUCCESS_MEMBERS", "WRONG_UNIT", "위와 동일 컬럼 · 전건 0."),
     "실패(명)": (
-        "FACT_SERVICE_EVENT.FAIL_MEMBERS", "WRONG_UNIT", "위와 동일 계열 · O39-B 전건 0."),
+        "FACT_MESSAGE_DISPATCH.FAIL_MEMBERS", "WRONG_UNIT", "위와 동일 계열 · O39-B 전건 0."),
     "오픈(명)": (
-        "FACT_SERVICE_EVENT.OPEN_MEMBERS", "WRONG_UNIT",
+        "FACT_MESSAGE_DISPATCH.OPEN_MEMBERS", "WRONG_UNIT",
         "🔴 원천 `URL_OTHBC_*` 가 **전건 NULL** 이라 값이 없다(C-9-R). 컬럼 존재를 가용성으로 읽지 말 것."),
     "납입(명)": (
         "SV metric — 납입회원수(명) = COUNT(DISTINCT MEMBER_DK WHERE 납입성공)", "WRONG_UNIT",

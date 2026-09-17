@@ -47,7 +47,7 @@ def load_required_text():
     base = {
         'SV_MEMBER_MONTHLY': {'집계필요', '배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'},
         'SV_MEMBER_EVENT':   {'집계필요', '배분규칙필요', '앵커_경합'},
-        'SV_SERVICE':        {'배분규칙필요', '앵커_경합', 'WIDE_GA_BEHAVIOR'},
+        'SV_SERVICE':        {'배분규칙필요', '앵커_경합', 'WIDE_BIGQUERY_BEHAVIOR'},
         'SV_DEV_ACHIEVEMENT': {'앵커_경합'},
         'SV_MEMBER_FEE':     {'배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'},
     }
@@ -57,8 +57,8 @@ def load_required_text():
         FACT_TO_SV = {
             'FACT_MEMBER_MONTHLY': 'SV_MEMBER_MONTHLY',
             'FACT_MEMBER_EVENT': 'SV_MEMBER_EVENT',
-            'FACT_SERVICE_EVENT': 'SV_SERVICE',
-            'FACT_DEV_ACHIEVEMENT': 'SV_DEV_ACHIEVEMENT',
+            'FACT_MESSAGE_DISPATCH': 'SV_SERVICE',
+            'FACT_MEMBER_DEV_ACHIEVEMENT': 'SV_DEV_ACHIEVEMENT',
             'FACT_MEMBER_FEE': 'SV_MEMBER_FEE',
         }
         ROUTING_VERDICTS = {'집계필요', '배분규칙필요', '형제팩트중복'}
@@ -216,6 +216,50 @@ def scan_numbers(text):
         why = next((w for a, b, w in spans if a <= m.start() and m.end() <= b), None)
         (exempt if why else bad).add(m.group(0))
     return bad, exempt
+
+
+#: 기대 소관 SV **총수**(정수). 🔴 리터럴 문자열이 아니라 **수**다 — 분해 표기를 허용하려면
+#: 판정이 문자열 포함이 아니라 **합계**여야 한다(O164 §D7 ㉠).
+#: 🔴 키는 **라이브 Agent 이름**이어야 한다 — 오기는 「조용한 미검사」가 된다(O164 §D7 ㉡).
+EXPECTED_AGENT_SVS = {
+    'AGENT_MEMBER': 11,
+    'AGENT_EXECUTIVE': 8,
+    'AGENT_MARKETING': 7,
+}
+JONG_RE = re.compile(r'(\d{1,3})\s*종')
+
+
+def judge_agent_surface(agents, num_scanner):
+    """Agent 발행 표면(라이브 COMMENT) 판정 — 순수 함수(라이브 접속 없음).
+
+    agents = [(AGENT_NAME, COMMENT), …]  ·  num_scanner = `scan_numbers` 호환
+    반환 = [(AGENT_NAME, 결함문구), …]
+
+    🔴 이 함수를 분리한 이유 = **음성 테스트가 가능해야 한다**(`R3-2`).
+       종전 판정은 `main()` 안에 인라인이어서 라이브 없이 단정할 수 없었고,
+       그래서 **두 결함이 여러 세션 동안 검사되지 않았다.**
+    """
+    bad, seen = [], set()
+    for name, cmt in agents:
+        seen.add(name)
+        bad_num, _ = num_scanner(cmt)
+        if bad_num:
+            bad.append((name, f"수치 유입: {', '.join(sorted(bad_num))}"))
+        exp = EXPECTED_AGENT_SVS.get(name)
+        if exp is None:
+            continue
+        # 🟢 `N종` 전건을 더한다 — 총수 단일 표기도, 분해 표기(8종 + 3종)도 통과한다.
+        # 🔴 경계 = 총수와 분해가 **함께** 적히면 합이 부풀므로 「선언 중 총수 일치」도 허용한다.
+        decl = [int(x) for x in JONG_RE.findall(cmt)]
+        if not decl:
+            bad.append((name, f"소관 SV 종수 선언 부재(기대 총수 {exp}): {cmt[:60]}"))
+        elif sum(decl) != exp and exp not in decl:
+            bad.append((name,
+                        f"소관 SV 종수 불일치 — 선언 {decl}(합 {sum(decl)}) ≠ 기대 총수 {exp}"))
+    # 🔴 유령 등재 = 기대 표에 있으나 라이브에 없는 Agent ⇒ 조용한 미검사를 FAIL 로 바꾼다.
+    for ghost in sorted(set(EXPECTED_AGENT_SVS) - seen):
+        bad.append((ghost, '기대 표에 등재됐으나 **라이브에 없다** — 이름 오기 또는 미배포'))
+    return bad
 
 
 def main():
@@ -414,25 +458,24 @@ def main():
     # ── [2026-09-02 O136 신설] AGENT 발행 표면 & COMMENT 검사 (착수표 ⑤ C4 흡수) ──
     # 🔴 왜 필요한가: Agent COMMENT 는 라이브 표면이지만 종전 게이트에서 누락되어 있었다.
     #   판정 = SHOW AGENTS IN SCHEMA 의 COMMENT 수치 검사 + 소관 SV 종수 선언 정합성.
+    # 🆕 🔴🔴 [2026-09-15 O164 판정식 시정 — 실측 결함 2건] 종전 판정식은 **총수 리터럴 부분문자열**
+    #   (`'11종' in comment`)이었고 기대 키가 **`AGENT_OVERALL`** 이었다. 라이브 실측 결과:
+    #   ㉠ `AGENT_MEMBER` COMMENT 는 총수를 쓰지 않고 **분해 표기**를 쓴다 —
+    #      *"실적 SV 8종(…) + 머신러닝(ML) 예측 3종(…)"* ⇒ 8+3=11 로 **내용은 옳은데 FAIL** 했다.
+    #      🟢 §4-5 규칙 ㉠ = **표준이 옳으면 게이트를 표준에 맞춘다** ⇒ 판정식을 **합계**로 바꾼다
+    #      (분해 표기가 더 낫다 — 실적축과 ML축을 섞지 말라는 경고를 COMMENT 가 스스로 담는다).
+    #   ㉡ 🔴 **`AGENT_OVERALL` 은 라이브에 없다** — 실물은 **`AGENT_EXECUTIVE`** 다.
+    #      ⇒ 그 Agent 는 종수 검사에서 **조용히 빠져 있었다**(`.get()` 이 None 을 내고 `if exp_sv` 가
+    #      건너뛴다). 이것이 `R3-9 ㉢`(분모 등재와 검사 발행은 별개) 의 Agent 판본이다.
+    #      🟢 이제 **기대 표에 있으나 라이브에 없는 이름**도 결함으로 낸다(유령 등재 = FAIL).
     agent_bad = []
     cn6 = conn()
     c6, r6 = q(f"show agents in schema {SCHEMA}", cn6)
     c6_idx = {x.lower(): i for i, x in enumerate(c6)}
-    EXPECTED_AGENT_SVS = {
-        'AGENT_MEMBER': '11종',
-        'AGENT_OVERALL': '8종',
-        'AGENT_MARKETING': '7종',
-    }
-    for row in r6:
-        ag_name = str(row[c6_idx['name']]).upper()
-        ag_cmt = str(row[c6_idx.get('comment', 0)] or '')
-        bad_num, _ = scan_numbers(ag_cmt)
-        if bad_num:
-            agent_bad.append((ag_name, f"수치 유입: {', '.join(bad_num)}"))
-        exp_sv = EXPECTED_AGENT_SVS.get(ag_name)
-        if exp_sv and exp_sv not in ag_cmt:
-            agent_bad.append((ag_name, f"소관 SV 종수 선언({exp_sv}) 누락 또는 불일치: {ag_cmt[:60]}"))
+    agents = [(str(row[c6_idx['name']]).upper(),
+               str(row[c6_idx.get('comment', 0)] or '')) for row in r6]
     cn6.close()
+    agent_bad = judge_agent_surface(agents, scan_numbers)
     for ag_name, err in agent_bad:
         print(f"  🔴 AGENT 발행 표면 결함: {ag_name} ▸ {err}")
     print(f"  ⇒ AGENT 발행 표면 검사: Agent {len(r6)}종 · 결함 {len(agent_bad)}건")

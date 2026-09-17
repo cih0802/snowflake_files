@@ -89,7 +89,7 @@ END-METADATA -->
 | ① 납부율 기간 스코프 필수 — 🔴 **[2026-08-10 O57 정정]** 종전 근거 「전기간 100.36% vs 연도별 ~94%」는 **제거된 `PAYMENT_RATE`**(분자 기부금 혼입)의 폐기값이다. 정본 `PAYMENT_RATE_FEE` 기준 = 전기간 **86.19%** vs 연도별 **~85.7%** | 무필터 시 최근 연/명시 기간 한정, 전기간 총율은 참고치 | 두 Agent `orchestration` |
 | ② 미납회원(수)·감소율 = 월 그룹 전제(COUNT DISTINCT) | 반드시 month(연/월) 차원과 함께 | MEMBER `orchestration` |
 | ③ 행사·서비스 Unknown 고지(행사 ~23%) | 부분 커버 고지·확정치 단정 금지 | MEMBER `orchestration`+`response` |
-| ④ 회원 속성 = 현재 스냅샷(성별·상태·구분) — 🔴 **[2026-08-10 O57 정정 · P61]** 종전 「지역/연령대/후원사업 비활성」 중 **지역·연령대는 활성화됐다**(`DIM_MEMBER_CURRENT.REGION` 1,566,416 · `AGE_BAND` 1,575,863 채움 · O35/O45 배선). ⚠️ 분모는 **정기후원(FDRM) 모집단**이고 일시회원(ONCE)은 구조적 부재다(P128). **FMM 경유 후원사업·캠페인·납입방식 축은 여전히 비활성**(`SPONSORSHIP_SK`·`CAMPAIGN_SK`·`PAYMENT_SK` 전건 0 실측) · 🆕 **미납사유 축은 활성**(`REASON_SK` 비-0 3,164,724) | 과거월도 현재값, **비활성로 남은 축만** 사용 금지 | 두 Agent `system` |
+| ④ 회원 속성 = 현재 스냅샷(성별·상태·구분) — 🔴 **[2026-08-10 O57 정정 · P61]** 종전 「지역/연령대/후원사업 비활성」 중 **지역·연령대는 활성화됐다**(구 `DIM_MEMBER_CURRENT.REGION` 1,566,416 · `AGE_BAND` 1,575,863 채움 · O35/O45 배선). ⚠️ 분모는 **정기후원(FDRM) 모집단**이고 일시회원(ONCE)은 구조적 부재다(P128). **FMM 경유 후원사업·캠페인·납입방식 축은 여전히 비활성**(`SPONSORSHIP_SK`·`CAMPAIGN_SK`·`PAYMENT_SK` 전건 0 실측) · 🆕 **미납사유 축은 활성**(`REASON_SK` 비-0 3,164,724) | 과거월도 현재값, **비활성로 남은 축만** 사용 금지 | 두 Agent `system` |
 | ⑤ 회비 지표 = HAS_BILLING=TRUE 전제 권장 | 회비 관련 질의 전제 | 두 Agent `orchestration` |
 | ⑥ 비활성 지표 = Phase-2 안내(추정 금지, R8) | 캠페인/납입방식/조직/후원사업별·성공/실패/오픈·D5·활동/누계·유지율/LTV·목표대비·개발단가/ROI | 두 Agent `system` |
 | 시간(04 §0.4·07_메타) | 절대 연/월 표기, 상대 표현 지양, 미래연도(2026~) 미유입 가능 | 두 Agent `orchestration` |
@@ -394,7 +394,7 @@ ALTER SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT ADD AGENT GN_
 | S3 | 채널별 발송수 | service / TOTAL_SEND_MEMBERS·CHANNEL | MSG_AT 20.56M·SND 8.30M·EMAIL 7.81M·PSTMTR 1.79M·(미매핑)11,313 | ✅[O57] 재실측 일치 |
 | P3 | 행사종류별 참여자수 | event_participation / EVENT_KIND | EVENT 718,438·**(NULL)**263,611·CRMN 152,077 | ✅[O57] 값 일치 · ⚠️ 미매핑 반환값은 `(Unknown)` 문자열이 아니라 **NULL** 이다 |
 | **M10ⓖ** | 캠페인별 납부율 | (비활성) | "캠페인 FK 미적재→Phase-2" 안내(산출 금지) — 🟢 `FMM.CAMPAIGN_SK` **전건 0** 재확인(O57) | — |
-| **E5ⓖ** | 평균 유지기간 | (비활성) | "페어링 불가→Agent/Phase-2" 안내 — 🔴 **[O57] 근거 절반 무효**: `DIM_MEMBER_CURRENT.LAST_STOP_DATE` 는 채움 **898,425**(종전 「실측 0」)이고 유지기간이 **산출된다**(평균 42.39개월). FME 행별 페어링 불가는 여전히 참. ⚠️ 분모가 중단 이력 보유 회원 **50.96%** 로 생존 편향 ⇒ **노출 여부는 결정 사안**(06 §4-7) · 결정 전까지 현행 안내 유지 | — |
+| **E5ⓖ** | 평균 유지기간 | (비활성) | "페어링 불가→Agent/Phase-2" 안내 — 🔴 **[O57] 근거 절반 무효**: 구 `DIM_MEMBER_CURRENT.LAST_STOP_DATE` 는 채움 **898,425**(종전 「실측 0」)이고 유지기간이 **산출된다**(평균 42.39개월). FME 행별 페어링 불가는 여전히 참. ⚠️ 분모가 중단 이력 보유 회원 **50.96%** 로 생존 편향 ⇒ **노출 여부는 결정 사안**(06 §4-7) · 결정 전까지 현행 안내 유지 | — |
 | **S5ⓖ** | 발송 성공률 | (비활성) | "SUCCESS/FAIL 미적재→Phase-2" 안내 | — |
 | 🆕 **G-개발건수** | 전체 개발 건수는? | member_event 또는 member_monthly / TOTAL_DEV_CNT | **2,291,878** — 3,594,843(개발원천 행수)으로 답하면 **FAIL**(감액·후원중단 계상 · O24 56.86% 과대) | — |
 

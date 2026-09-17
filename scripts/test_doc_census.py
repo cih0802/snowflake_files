@@ -176,6 +176,51 @@ def main():
     LL.CANON_GLOB[:] = saved
     check('복구 후 0건(오탐 방지)', C.split_denominator_check(), [])
 
+    print(' 축6-B 미분할 분모 4곳 대조 — 「제목 축만 편입」을 잡는가 (O166-C 신설 · O165 D11 후속)')
+    # 🔴 번호를 `축6-B` 로 둔 이유 = 이것은 **축6 과 같은 함수**(`split_denominator_check`)의 확장이고,
+    #   뒤에 이미 축7·축8 이 있어 「축9」로 두면 **번호와 문서 순서가 역전**된다(`R1-7-8` 의 테스트 판본).
+    # 🔴 왜 음성 테스트인가: O165 `D11` 은 Inspection 절차서를 `doc_heading_gate.DOCS` **한 곳만**
+    #   편입했고 나머지 3곳이 비어 그 문서의 줄길이·상한·stale 3축이 **전부 침묵**했다.
+    #   그때 `split_denominator_check()` 는 `FAMILIES`(분할)만 순회해 **아무것도 말하지 않았다.**
+    #   ⇒ 정상 입력으로는 「잡는다」를 증명할 수 없으므로 분모를 **일부러 비워** 검출을 단정한다.
+    import doc_heading_gate as HG
+    import doc_type_gate as TG
+
+    check('현행 위반 0건(축6-B 포함)', C.split_denominator_check(), [])
+
+    # ㉠ 오염 = 미분할 정본을 `CANON`·`SINGLES` 에서 빼고 `DOCS` 에만 남긴다(= D11 이 만든 상태).
+    victim = next(d for d in HG.DOCS
+                  if d not in {h for h, _ in C.FAMILIES} and d in LL.CANON and d in C.SINGLES)
+    LL.CANON.remove(victim)
+    C.SINGLES.remove(victim)
+    got = C.split_denominator_check()
+    hit = [g for g in got if g.startswith(victim)]
+    check('제목 축만 편입된 문서 검출', len(hit), 1)
+    check('누락 분모를 2곳으로 열거', ('CANON' in hit[0] and 'SINGLES' in hit[0]), True)
+    LL.CANON.append(victim)
+    C.SINGLES.append(victim)
+    check('오염 복구 후 0건', C.split_denominator_check(), [])
+
+    # ㉡ 역방향 오탐 = `20_issue/` 문서는 `EXTRA_DOCS` 에 없어도 정상이다(순회 분모 안).
+    #   🔴 초판이 이 축을 놓쳐 **오탐 6건**을 냈다(자기시정 1) ⇒ 회귀 축으로 고정한다.
+    inside = [d for d in HG.DOCS
+              if d.startswith('20_issue/') and d not in {h for h, _ in C.FAMILIES}]
+    check('20_issue 문서는 EXTRA_DOCS 불요(오탐 0)',
+          [d for d in inside if d in TG.EXTRA_DOCS], [])
+    check('그 문서들이 위반에 없다',
+          [g for g in C.split_denominator_check() if any(g.startswith(d) for d in inside)], [])
+
+    # ㉢ 폴더 밖 문서는 `EXTRA_DOCS` 가 필수다 — 빼면 잡혀야 한다.
+    outside = next(d for d in HG.DOCS
+                   if not d.startswith('20_issue/') and d in TG.EXTRA_DOCS
+                   and d not in {h for h, _ in C.FAMILIES})
+    TG.EXTRA_DOCS.remove(outside)
+    got2 = C.split_denominator_check()
+    check('폴더 밖 문서 EXTRA_DOCS 누락 검출',
+          any(g.startswith(outside) and 'EXTRA_DOCS' in g for g in got2), True)
+    TG.EXTRA_DOCS.append(outside)
+    check('복구 후 0건(오탐 방지)', C.split_denominator_check(), [])
+
     print(' 축7 바이트 측정축 — stat 이 아니라 실제 읽은 바이트로 재는가 (O143 신설)')
     # 🔴 왜 음성 테스트인가: 착수 1차 브리핑이 `31_코드군_매핑등재부` 를 stale 로 오탐했다
     #   (「기재 14,891 ↔ 실측 14,896」 · 14,896 은 14,891 의 **16바이트 블록 반올림값**).

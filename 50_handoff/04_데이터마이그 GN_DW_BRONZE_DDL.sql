@@ -1554,8 +1554,7 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 -- #####################################################################
 -- ⚠️ 스키마 COMMENT 는 원천(13번 1행)의 문안을 그대로 옮긴 것이며 실제 내용과 어긋난다.
 --    실제 성격은 예산·지출 원장이다. 원천 무변경 원칙에 따라 문안은 고치지 않는다.
-create schema if not exists GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
-
+create schema if not exists GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (예산/목표)';
 -- 🔴 2026-08-29 컬럼 순서 변경 — 65 → 67 컬럼.
 --    + BDGT_PRCD_NM(3번째 삽입) · − MNYRS_COST_DIV_YN · + DIRECT_MNYRS_YN_1/2
 --    ⇒ 이전 판 CSV 로 적재하면 3번째 이후가 한 칸씩 밀린다. 07번 A.1 (4) 를 먼저 통과시킬 것.
@@ -1572,6 +1571,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
   SUBDTL_ITEM_NM VARCHAR(16777216) COMMENT '세세목',
   FUND_SOURCE_NM VARCHAR(16777216) COMMENT '재원',
   BDGT_ITEM_NM VARCHAR(16777216) COMMENT '예산과목',
+  VENDOR VARCHAR(16777216) COMMENT '거래처',
   DVLP_INBOUND_PATH VARCHAR(16777216) COMMENT '개발인입경로',
   DIRECT_MNYRS_YN_1 VARCHAR(16777216) COMMENT '직접모금비1',
   DIRECT_MNYRS_YN_2 VARCHAR(16777216) COMMENT '직접모금비2',

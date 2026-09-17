@@ -78,6 +78,7 @@ JUDGE = {
     'merge_check':            '임시파일 내용이 정본에 반영됐는가(삭제 안전 판정)',
     'o125_layer_census':      'SILVER·GOLD·SERVING 설계 정본 ↔ 라이브 객체·컬럼 집합 — 라이브를 **읽는다**',
     'sv_code_label_gate':     'SV 코드값·라벨 열거',
+    'sv_comment_object_gate': 'SV COMMENT 가 가리키는 객체가 라이브에 실재하는가 — 라이브를 **읽는다** · 🔴 정합(`comment_drift_gate`)이 아니라 **정확성** 축(파일·라이브가 같이 틀리면 그쪽은 🟢 다)',
     'sv_identifier_gate':     'SV 식별자 실재(`DESCRIBE SEMANTIC VIEW` 대조)',
     'sv_rule7_scan':          'SV DDL 규칙7',
     'sv_unit_gate':           'SV COMMENT 단위·수치 — 라이브를 **읽는다**',
@@ -102,6 +103,12 @@ OBSERVE = {
     #   이 파일은 게이트를 만들기 전에 규모(버킷별 분포)를 재려고 쓴 탐침이고, 판정식이 4회 바뀐
     #   과정을 주석으로 남긴다(줄 전체 키워드 → 매치 이웃 판정 · `O111 ㉢` 실물 3회차).
     '_o155_rename_scan':   '개명 전 이름 잔여 규모 관측(버킷별) — 🔴 판정 정본은 `rename_stale_gate`',
+    # 🆕 [2026-09-16 O169 신설] 축1 좌표의 **원문 덤프** — 「지시」/「기록」을 사람이 가르기 위한 관측이다.
+    #   🔴 쓰기 없음(읽기 전용) · 판정 정본은 `rename_stale_gate` 다.
+    #   축 = 분모를 `rename_stale_gate.scan()` 에서 **import 해서** 받는다.
+    #   🔎 왜 그렇게 했나 = 초판은 `--list` 출력을 파싱하고 파일을 직접 재스캔했는데 게이트의
+    #      `qualified()` 면제를 몰라 **71 vs 68** 로 어긋났다(`J8` 「분모를 하나로 두라」 실물).
+    '_o169_dump_axis1':    '개명 축1 좌표 원문 덤프(지시/기록 분류용) — 🔴 판정 정본은 `rename_stale_gate`',
     # 🆕 [2026-09-10 O154-B 신설 1종] 세션 한정 자기검토 보조 — 판정이 아니다.
     '_o154b_pyc_probe':    '트랜스크립트의 `python3 -c` 원문 전건 열거 관측 — '
                            '🔴 `o145_transcript_audit` 는 「발견/없음」만 내고 원문을 §4-B 에 싣지 않아 '
@@ -165,12 +172,55 @@ GEN = {
     #   🔴 라이브를 **읽지도 않는다** — 호출자가 INFORMATION_SCHEMA 결과를 파일로 넘긴다
     #   (커넥션 의존을 두지 않기 위한 설계 · MUTATES 가 아니다).
     'o163_ddl_live_drift': 'DDL↔라이브 컬럼집합 대조 — `--live` 필수(라이브 접속 0)',
+    # 🆕 [2026-09-16 O167] 마운트 ↔ 스테이지 대조. 착수표 ⑩ 「스테이지 내용 해시 축」의 **대체 축**.
+    #   🔴 해시가 아니라 **크기 패딩식**이다 — 스테이지 md5 는 암호화 blob 해시여서 평문과 다르다
+    #   (실측 = `.md` 423건 전건 불일치). 🟢 `stage == 16*(local//16)+16` 은 2,741/2,741 성립.
+    'stage_mount_size_gate': '마운트↔스테이지 크기 패딩식 대조(내용 드리프트) — 해시 대조는 원리적 불가',
+    # 🆕 [2026-09-16 O167] NL 스모크 응답(`tmp/nlsmoke/*.txt`)을 읽어 라우팅·SQL·오류를 판정한다.
+    #   🔴 라이브 접속 0 · 과금 0(파일만 읽는다) ⇒ 러너(`nl_routing_smoke`)와 달리 MUTATES 가 아니다.
+    #   🔴 판정 한계 = 「도구를 썼다」는 관측이고 「올바른 도구를 썼다」는 사람이 정한다(축 ㉢ 은 기계 판정 불가).
+    'nl_routing_judge': 'NL 스모크 응답 판정 — 라우팅 관측 · SQL 생성 · 오류표면(파일 전용)',
+    # 🆕 [2026-09-16 O167] `init_ihcho` 스킬이 정본(`00_guides/03_init_ihcho_스킬_정본.md` §6)과
+    #   **바이트 동일**한지 + 형식 불변식 7종(I1~I7)을 지키는지 본다. 🔴 라이브 접속 0 · 파일만 읽는다.
+    #   🔴 I7 은 「하드코딩 수치 금지」다 — 실제로 초판에서 「게이트 6종」 기재를 잡아냈다.
+    'verify_init_ihcho_skill': '스킬 ↔ 정본 바이트 동일 + 형식 불변식 7종(줄수·조문집합·수치금지)',
 }
 
 MUTATES = {
+    # 🆕 [2026-09-16 O167] `init_ihcho` 스킬 빌더 — 정본 §6 → `SKILL.md` 를 **통째로 다시 쓴다**.
+    #   🔴 대상이 생성물이라 `R1-7-1`(부분 치환 기본)의 예외이지만, **파일 하나를 전량 재작성**하므로
+    #   여기 둔다. 기본 dry-run · `--apply` 로만 쓰고 스냅샷은 `snapshot_util` 경유(`R1-7-10`).
+    'build_init_ihcho_skill': '스킬 정본 → SKILL.md 재작성(--apply · 스냅샷 선행)',
+    # 🆕 [2026-09-16 O167] 착수표 ㉗ NL 라우팅 스모크 러너 — DDL·DML 을 하지 않는다.
+    #   🔴 그래도 여기 등재하는 이유는 **과금**이다: `DATA_AGENT_RUN` 33회는 LLM 호출이고
+    #   되돌릴 수는 있어도 **크레딧은 되돌아오지 않는다** ⇒ `R4-4-3` 「승인 대상」과 같이 다룬다.
+    #   🟢 응답 원문은 `tmp/nlsmoke/` 로 흘린다(세션 컨텍스트에 적재하지 않는다).
+    'nl_routing_smoke': 'Agent 3종 NL 라우팅 스모크 — 🔴 과금 호출(승인 후 실행)',
     # 🆕 [2026-09-17 O163] DEC-50 개명 일괄 치환 — `--apply` 로 **다중 파일을 재작성**한다(`R4-4-3`).
     #   기본은 dry-run 이고, 원천 `EP_GA_SESSION_*` 개수 불변·줄 수 불변을 단정한 뒤에만 쓴다.
     'o163_dec50_rename': 'DEC-50 개명 다중 파일 치환(--apply)',
+    # 🆕 [2026-09-16 O166] 개명 잔여 일괄 정정 — `--apply` 로 **다중 파일을 재작성**한다(`R4-4-3`).
+    #   기본 dry-run 이고 치환 줄을 전건 출력해 사람이 검토한 뒤에만 적용한다.
+    #   개명 대응은 하드코딩하지 않고 `rename_stale_gate.RENAMES` 를 재사용한다(같은 것을 다르게 재지 않는다).
+    '_o166_rename_fix': '개명 잔여 다중 파일 치환(--apply)',
+    # 🆕 🔴 [2026-09-16 O169] 구 `DIM_MEMBER_CURRENT` 축1 68건의 **병기** 집행기 — `--apply` 로
+    #   **다중 파일을 재작성**한다(`R4-4-3`) ⇒ 여기 등재한다. 기본 dry-run.
+    #   🔴 `_o166_rename_fix` 와 **성격이 다르다**: 치환기가 아니라 **병기기**다 —
+    #   구 `DIM_MEMBER_CURRENT` 는 개명이 아니라 **객체 소멸**이므로 우변 치환이 자기모순을 만든다
+    #   (`rename_stale_gate.RENAMES` 주석 O166-B 가 같은 경고를 한다).
+    #   축 = ㉠ 분모를 `rename_stale_gate.scan()` 에서 받는다(같은 것을 다르게 재지 않는다)
+    #        ㉡ 원문 문자를 **삭제하지 않는다**(축A 「구 」 삽입 · 축B 줄말미 병기)
+    #        ㉢ 「지시」 줄은 `EXCLUDE` 로 빼고 **사람이** 가른다
+    #        ㉣ 사후단정 4축(`verify()`)을 통과하지 않은 줄은 쓰지 않는다
+    #   음성 테스트 = `test_o169_axis1_biwi`(8축 · 고치기 전 구현의 실패를 실증)
+    '_o169_axis1_biwi': '개명 축1 병기 집행(--apply · 원문 무삭제 · 스냅샷 선행)',
+    # 🆕 🔴 [2026-09-16 O169] SV 재배포 러너 — **라이브 객체를 고친다**(`R4-4-3`) ⇒ 여기 등재한다.
+    #   🟢 본문이 `CREATE OR ALTER SEMANTIC VIEW` 라 **GRANT·소유권이 보존**된다(실측 확인 = 재배포 후
+    #      GRANT 7건 전건 잔존 · `created_on` 불변 · OWNERSHIP = `GN_DW_ADMIN`).
+    #   🔴 가드 = 실행 전 `CREATE OR REPLACE` 혼입 검사(있으면 중단 · `P125` 파괴 경로) +
+    #      `^CREATE OR ALTER` 행 시작 확인. 실행 후 **라이브 COMMENT 를 되읽어 도달을 단정**한다.
+    #   🔴 배포문은 `extract_sv_deploy.py` 가 뽑은 것만 쓴다(스모크 SELECT 를 섞지 않는다).
+    '_o169_sv_redeploy': 'SV_MEMBER_EVENT 재배포(CREATE OR ALTER · GRANT 보존 · 도달 확인)',
     'apply_table_comment_drift': '라이브 COMMENT 반영',
     'apply_silver_comment_drift': 'SILVER 라이브 COMMENT 반영',
     'deploy_ml_semantic_views': 'SV 배포', 'deploy_ml_serving_views': 'SERVING 뷰 배포',

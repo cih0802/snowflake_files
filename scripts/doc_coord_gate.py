@@ -303,6 +303,49 @@ def scan():
     return dead_canon, dead_hist, overflow, abbrev, ambiguous, archived
 
 
+def handoff_label_dups():
+    """🆕 축7 [2026-09-16 O166-C 신설] **인수인계 절 라벨이 재사용되고 있는가.**
+
+    🔴🔴 왜 필요한가 — `99_NEXT_SESSION` 의 인수인계 절은 `## 0-XXXX.` 라벨로 인용된다
+      (「§0-KKKK ▣KKKK1 승계」처럼 **문서 전체에서 좌표로 쓰인다**). 그런데 라벨이 `A`→`Z` 를
+      돌고 **다시 `AAAA` 로 순환**하고 있어 같은 라벨이 두 절을 가리킨다.
+      🔎 실측(O166-B) = 절 라벨 **43개 · 고유 39** ⇒ `0-AAAA`·`0-BBBB`·`0-EEEE`·`0-FFFF` 가 **각 2회**
+        (2026-08-30·31·09-01 판 ↔ 09-10·11·14 판).
+      🔴 **실해** = 「§0-EEEE 를 보라」가 **두 곳을 가리킨다.** 승계 판정식(`session_brief`)은
+        **날짜**에 의존하므로 현행 절 선택 자체는 맞지만, **사람·도구가 라벨만으로 인용하면 어긋난다.**
+      ⇒ 이 축은 `doc_coord_gate` 의 기존 관심사(**인용을 따라갈 수 있는가**)의 직계다.
+
+    🔴 **경고 축이다(blocking 아니다).** 기존 라벨을 바꾸면 **이미 발행된 인용 좌표가 전부 깨진다**
+      (`R1-7-4` 「행 키를 지우지 말고 보존」과 같은 취지) ⇒ 처방은 **앞으로 병기**(`0-MMMM/O166`)이고
+      소급 개명이 아니다. 판정은 사람이 한다.
+
+    반환 = [{'label','count','places':[(rel,line,date)…]}] · 중복만.
+    """
+    import collections
+    pat = re.compile(r'^##\s+(0-[A-Z]+)\.')
+    date = re.compile(r'(20\d\d-\d\d-\d\d)')
+    seen = collections.defaultdict(list)
+    base = os.path.join(ROOT, '99_NEXT_SESSION_조각')
+    if not os.path.isdir(base):
+        return []
+    for fn in sorted(os.listdir(base)):
+        if not fn.endswith('.md'):
+            continue
+        rel = os.path.join('99_NEXT_SESSION_조각', fn)
+        try:
+            text = io.open(os.path.join(base, fn), encoding='utf-8', errors='replace').read()
+        except Exception:                                    # pragma: no cover
+            continue
+        for i, line in enumerate(text.split('\n'), 1):
+            m = pat.match(line)
+            if not m:
+                continue
+            d = date.search(line)
+            seen[m.group(1)].append((rel, i, d.group(1) if d else '?'))
+    out = [{'label': k, 'count': len(v), 'places': v} for k, v in seen.items() if len(v) > 1]
+    return sorted(out, key=lambda x: x['label'])
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--list', action='store_true', help='죽은 좌표 전건을 보인다')
@@ -344,6 +387,15 @@ def main(argv=None):
     for it in (archived if a.list else archived[:10]):
         print('    ⚪ %s:%d  %s → 은퇴본 %s' % (
             it['src'], it['line'], it['coord'], it['target']))
+    # 🆕 [2026-09-16 O166-C] 축7 = 인수인계 절 라벨 재사용(경고 · 소급 개명 금지).
+    dups = handoff_label_dups()
+    print('  축7 인수인계 절 라벨 재사용: %d건 (경고 · 라벨만으로 인용하면 어긋난다)' % len(dups))
+    for it in (dups if a.list else dups[:10]):
+        where = ' / '.join('%s:%d(%s)' % p for p in it['places'])
+        print('    🟠 %s × %d → %s' % (it['label'], it['count'], where))
+    if dups:
+        print('       🟢 처방 = 앞으로 **세션 라벨 병기**(`0-MMMM/O166`) · '
+              '🔴 기존 라벨을 바꾸지 마라(발행된 인용 좌표가 깨진다)')
 
     print('')
     if fixable:

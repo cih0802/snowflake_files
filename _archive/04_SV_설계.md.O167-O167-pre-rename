@@ -1,0 +1,1252 @@
+<!-- LLM-METADATA
+doc_id: SV_STRUCTURE_DESIGN_V4
+doc_role: 2단계 산출물 — 7 SV 구조(logical table·relationship·dimension·measure) + 브리지 뷰 + Cortex Search 식별 + BRONZE 원천 노출 규약(§0.7) (3단계 CREATE SEMANTIC VIEW 입력)
+project: GN_DW (굿네이버스)
+created: 2026-07-21
+inputs(SSOT):
+  - 배포 GOLD 실물 스키마 (INFORMATION_SCHEMA, 2026-07-21 조회 — 컬럼/타입 권위)
+  - 03_top-down_gold/03_테이블 설계.md (grain·FK·조인키·미결 O3/O8/O12)
+  - 05_SV-Agent_ai/03_SV_metric_배속.md (metric→SV·활성·Phase)
+  - 05_SV-Agent_ai/01_SV-Agent 작업계획.md (원칙10·R1 fan-out·R2 Search·R5 가산성·**원칙13 원천노출**)
+  - 30_output_share/04_컬럼계보매핑.md (GOLD→SILVER→BRONZE 컬럼 계보 — §0.7 `[원천]` 절의 근거·정본)
+END-METADATA -->
+
+# 2단계 — ~~7 SV~~ 구조 설계
+
+> 🔴🔴 **[2026-08-29 O118] 제목의 「7 SV」는 stale 이다 — 라이브 배포는 10종이다.**
+> 🔴 **개수는 이 문서에서 읽지 말고 `§0.9-B` 의 쿼리로 재라**(`R3-9 ㉦`).
+> 🟢 **배포 상태의 정본 = `§0.9`**. §1~§10 은 **설계 청사진**이고 라이브 상태가 아니다.
+
+> 각 SV = **1 base FACT(grain) + conformed DIM(star)**. relationship 조인키는 **배포 실물 컬럼**만 사용(추정 금지). measure는 가산성 분류(F/S/N)와 `default_aggregation` 명시(R5). derived 비율/누계/증감은 물리 비적재 → 3단계 metric expression(본 문서는 base measure·차원까지만).
+
+---
+
+## ⚠ 정정 로그 (2026-07-22 — A1/A3 적재 + 실측 재검증; 후속 3단계 오류 방지)
+
+> **§0.3·§0.6·§1~§5의 적재/행수 진술은 2026-07-21 A1/A3 적재 *이전* 스냅샷이다. 충돌 시 아래 정정이 우선하며, 실배포 활성 스코프의 정본은 `05_SV_DDL.sql`(재실측 COUNT_IF 기준)이다.** 설계 구조(조인키·fan-out·가산성)는 유효.
+>
+> 1. **FMM 행수**: 37.8M/37,792,336 → **40,054,883**(실측). 37,792,336은 `HAS_BILLING=TRUE` 부분집합(구 스파인)일 뿐 전체 행수 아님. grain (MONTH_KEY, MEMBER_DK)는 **여전히 유일**(40,054,883 = distinct) → PK·fan-out 안전.
+> 2. **A1 적재 → §0.6 "FMM DEV/STOP 전건 0" 무효**: 실측 `DEV_CNT`=2,970,417 · `STOP_CNT`=972,376 적재됨 → 개발/중단 총건 **활성**(SV_MEMBER_MONTHLY). 단 UNPAID_CNT·ACTIVE_CNT·INCREASE 등 잔여 카운트·NEW_EXISTING_FLAG·FK(CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK)는 **여전히 0**(비활성 유지).
+> 3. **A3 적재 → §0.6 "FSE SERVICE_SK=0" 무효**: `SERVICE_SK`=99.97%·`SEND_TITLE`=36.6M 적재됨 → **서비스구분(DIM_SERVICE: SUBTYPE·CHANNEL) 분해 활성**(SV_SERVICE). SUCCESS/FAIL/OPEN/D5·CAMPAIGN_SK는 여전히 0(비활성 유지).
+> 4. **FME grain 정정(중요)**: §2의 "grain=DATE_SK×MEMBER_DK×EVENT_TYPE"는 **유일하지 않음** — 실측 4,633,105행 vs 해당 3키 distinct 4,052,797(약 12.5% 중복). 진짜 grain은 더 세밀(추가 FK / 동일일·동일유형 복수사건). SV 집계는 무해(FME는 조인 다(多)측·dim 일(一)측 → fan-out 없음)하나 **PRIMARY KEY 선언 근거는 아님** → 3단계 DDL의 FME PK는 제거/실grain 반영 예정(SQL 정정은 별도 세션).
+> 5. **용어 정합(`default_aggregation`)**: 이는 **Cortex Analyst YAML 모델** 개념이며 **DDL `CREATE SEMANTIC VIEW`에는 없는 절**이다. DDL에서는 **METRIC=집계식(SUM/COUNT)·FACT=행수준식**으로 가산성을 표현한다. 본문의 "F → default_aggregation: sum"은 DDL에서 **"F → SUM METRIC 정의"** 로 읽는다(실배포 `05_SV_DDL.sql`=DDL 방식).
+> 6. **S-class(준가산) 강건화**: 시점재고(ACTIVE_CNT 등) 다월 합산 방지는 instruction보다 **DDL `NON ADDITIVE BY <시간 dim>`**(semi-additive metric) 구문이 구조적으로 강건 → Phase-2 활성 시 채택 권장. (현재 S measure 전건 미적재라 유예.)
+> 7. **전체설계 §1~§5 표 주의**: FK·measure 미적재분까지 **전량 열거**(설계 완전성 목적)한다 → 실제 노출 대상이 아니다. **실배포 스코프 = §0.6(정정본) ∩ `05_SV_DDL.sql`**. §1~§5의 dimension/measure는 적재 완결 시 활성화하는 청사진으로만 사용.
+
+---
+
+## 0. 공통 설계 규칙 & 필수 conformed helper 뷰
+
+### 0.1 fan-out 차단 (원칙10·R1) — **선행 필수 뷰 2종**
+배포 실물 확인 결과 raw 조인 시 두 곳에서 fan-out 발생 → SERVING에 conformed helper 뷰를 만들어 SV가 이를 참조한다.
+
+| 위험 | 원인(실측) | 차단 helper 뷰 (GN_DW.SERVING) | PK |
+|---|---|---|---|
+| **월×일 fan-out** | 월팩트 `MONTH_KEY` → `DIM_DATE`(일 grain 16,437행) 조인 시 월당 ~28~31× 증폭 | `DIM_MONTH` = `SELECT DISTINCT MONTH_KEY, YEAR, MONTH, QUARTER FROM GOLD.DIM_DATE` | MONTH_KEY (unique) |
+| **SCD2 회원 fan-out** | `DIM_MEMBER` SCD2 7,925,716행(회원당 평균 4.5·최대 218버전) → `MEMBER_DK` 조인 시 버전수만큼 증폭 | `DIM_MEMBER_CURRENT` = `SELECT … FROM GOLD.DIM_MEMBER WHERE IS_CURRENT = TRUE` | MEMBER_DK (현재행 유일=1,763,065) |
+
+- 월팩트(FMM·FBD·FTG_D·FTG_B)는 **DIM_DATE 직접 조인 금지 → DIM_MONTH 사용**.
+- 회원 차원 속성(성별·지역·연령대·회원상태 등)은 **DIM_MEMBER_CURRENT** 참조(현재 스냅샷). as-was 이력 분석 요구 없음(DEC-2 유사).
+- 검증(3단계 DoD): `SELECT FROM SEMANTIC_VIEW(...)` measure 합 = 단일 FACT `SELECT SUM(...)` 합 일치(fan-out 스모크).
+
+### 0.2 조인키 타입 주의 (O12)
+- `MEMBER_DK` = **VARCHAR(10)** (정규 7자리 leading-zero / 일시 `S`+8자리). **NUMBER 캐스팅 절대 금지**. 조인은 문자열 그대로.
+- SK(surrogate) 계열은 NUMBER. `MONTH_KEY`=NUMBER(YYYYMM), `DATE_SK`=NUMBER(YYYYMMDD).
+
+### 0.3 가산성 분류(R5) — measure `default_aggregation` 규칙
+| 클래스 | 의미 | 예 | default_aggregation | 시간 합산 |
+|---|---|---|---|---|
+| **F**(flow, 완전가산) | 기간 내 발생량 | DEV_CNT·STOP_CNT·PAID_FEE·발송수 | `sum` | 월 합산 OK |
+| **S**(stock, 준가산) | 특정 시점 재고 | ACTIVE_CNT·MONTH_END_ACTIVE_CNT·ACTIVE_CUM_CNT | `sum`(차원 간) + **instruction: 여러 월 합산 금지·최신월/시점값 사용** | 시간 합산 ✗ |
+| **N**(비가산) | 사전집계 비율/평균 | AVG_SESSION_DURATION·BOUNCE_RATE | 직접 노출, `sum`/`avg` 재집계 금지 | ✗ |
+| **D**(distinct 회원수) | 기간 내 고유 회원 | ACTIVE_MEMBERS·DEV_MEMBERS·SEND_MEMBERS | 단일 기간=`sum` OK / **다기간=`COUNT(DISTINCT MEMBER_DK)` metric**(사전집계 컬럼 SUM 시 월간 중복) | 시간 합산 ✗(중복) |
+
+> **D 클래스 근거(실측)**: FMM grain = (MONTH_KEY, MEMBER_DK) 유일(40,054,883=distinct, 회원당 월 1행 — 2026-07-22 정정; 구 37,792,336은 HAS_BILLING 부분집합). ∴ `*_MEMBERS`는 한 달 내 차원 합산은 중복 없으나, 여러 달 합산 시 동일 회원 중복 → 기간 distinct 회원수는 `COUNT(DISTINCT MEMBER_DK)`(+필터) metric으로 정의. 사전집계 `*_MEMBERS` 컬럼의 다월 SUM 금지.
+
+### 0.4 공통 dimension·instruction
+- **시간(원칙8·R7)**: 07_메타 enum을 SV custom instruction에 명문화("조회 구간이 해당 지표 가용시점 이전이면 제외/NULL"). SV별 §에 표기.
+- **NULL/Unknown**: SK=0(Unknown) 라우팅 행 존재 → dimension `sample_values`에 'Unknown' 포함, 커버리지 고지.
+- **synonyms 한글 필수**(원칙6): 아래 각 dimension에 대표 한글 동의어 명시(3단계 DDL에서 확장).
+
+### 0.5 아키텍처 비판적 검토 & 개선 (실측 반영, 2026-07-21)
+> FMM 실측(grain=(MONTH_KEY,MEMBER_DK) 유일·시점 스냅샷 컬럼 자체 보유) 후 초안의 3개 결함을 교정.
+
+| # | 결함 | 개선 | 영향 |
+|---|---|---|---|
+| A | **시점 정합성 붕괴** — 회원 차원을 전부 `DIM_MEMBER_CURRENT`(현재행) 조인 → 과거 사실을 현재 속성으로 왜곡(예: 2023년 지역별 집계에 2026 지역) | **시점-가변 속성은 FACT 자체 스냅샷 컬럼** 사용(적재 시), `DIM_MEMBER_CURRENT`는 **불변 속성 전용** | §1.3. ⚠단 NEW_EXISTING_FLAG·FK 현재 공란(§0.6) → 적재 후 유효 |
+| B | **distinct 회원수 가산성** — `*_MEMBERS`를 F로 분류(다월 SUM 시 회원 중복) | **D 클래스**: 다기간 distinct는 `COUNT(DISTINCT MEMBER_DK)` metric | §0.3·각 measure표 |
+| C | **목표대비 grain 충돌** — FMM엔 ORG_SK 없음(실측)·목표 FTG_D는 ORG grain → 회원 SV에 raw 얹으면 fan-out | 브리지를 FMM과 **관계 없는 독립 논리테이블(grain island)** 로 노출(§8.1). 대안: 별도 SV 분리 | §8.1 |
+| D | **누계(YTD) 표현** — semantic view metric은 window 미지원 | 누계 = **연초~조회월 필터 SUM(query-time)** — 3단계 window 함수 시도 금지. 단 `ACTIVE_CUM_*`는 GOLD 기적재(S, 시점값) | §1.4·3단계 |
+| E | **공유차원 drift** — 7 SV가 DIM_CAMPAIGN 등 재선언 → synonyms/CS 불일치 위험 | 고카디널리티 dim당 **Cortex Search service 1개**를 여러 SV가 **재사용**·synonyms 정본 1벌 | §9 |
+| F | **성능** — `DIM_MEMBER_CURRENT`=매 쿼리 7.9M→1.76M 필터 뷰 | 지연 시 **dynamic table/materialized** 전환 검토(freshness↔latency) | 3단계 |
+
+**시점-가변(FACT 스냅샷 사용) vs 불변(DIM_MEMBER_CURRENT) 속성 구분:**
+- FACT 스냅샷(as-of 정합): 신규기존(`FMM.NEW_EXISTING_FLAG`)·개발구분·캠페인·후원사업·납입방식·사유·금액대·기간대·미납플래그(BOM/EOM).
+- DIM_MEMBER_CURRENT(불변만): 성별·최초가입일·최초캠페인·가입경로·회원구분.
+- ⚠ **한계 명시**: 지역·연령대는 DIM_MEMBER에만 존재(FACT 미보유) → 현재값 슬라이스만 가능. instruction에 "지역/연령대는 현재 기준" 고지.
+
+### 0.6 데이터 적재 완결성 감사 (실측 2026-07-21) — ⛔ 3단계 스코프 게이트
+> ⚠️ **SV 구조(위 설계)는 유효하나, 배포된 GOLD의 measure·FK 적재가 미완이다.** 행수는 있어도 대부분의 차원 FK·카운트 measure가 공란 → 실제 "활성"은 계획 §2 가정보다 훨씬 작다. **SV 설계 결함이 아니라 GOLD 적재 미완**(스캐폴드 잔존). 아래는 **컬럼별 실측 적재율(2026-07-21, 결정=좁은 Phase-1 배포)**.
+
+**컬럼별 정밀 적재 매트릭스 (실측 COUNT)**
+| FACT (행) | ✅ 적재된 컬럼 (활성 가능) | ❌ 공란(0/NULL) — 이슈원장 |
+|---|---|---|
+| **FMM** 40.05M | PAID_FEE(36.09M)·BILLED_AMT(37.15M)·UNPAID_FLAG_BOM(3.19M)·EOM(3.30M)·HAS_BILLING(37.79M)·**DEV_CNT(2.97M)·STOP_CNT(0.97M)[A1 적재]** | UNPAID_CNT/ACTIVE/CUM/MONTH_END/INCREASE 건·명·CAMPAIGN_UNPAID·STATUS_UNPAID·INBOUND/TS_CALL·REGULAR_FEE·SPONSOR_MONTHS·PAID_MONTHS·DEV_TYPE·밴드·JOIN_DATE·NEW_FLAG·NEW_EXISTING_FLAG·**CAMPAIGN/PAYMENT/SPONSORSHIP/REASON_SK** = **여전히 0**(2026-07-22 정정: DEV/STOP는 A1 적재로 활성) → Item D·D1 |
+| **FME** 4.6M | DEV_CNT/DEV_MEMBERS(3.59M)·JOIN_DATE(3.59M)·STOP_CNT/STOP_MEMBERS/STOP_DATE(1.04M) | UNPAID_STOP·**ORG_SK·CAMPAIGN_SK·SPONSORSHIP_SK·REASON_SK·NEW_EXISTING_FLAG** = 0 → O8·O10·Item D |
+| **FSE** 38.5M | SEND_MEMBERS(전행)·SEND_STATUS(35.75M)·**SERVICE_SK(99.97%)·SEND_TITLE(36.6M)[A3 적재]** | SUCCESS/FAIL/OPEN/LETTER/GIFT·**D5_\*(증액·서신·선물·중단)**·**CAMPAIGN_SK** = 0(2026-07-22 정정: SERVICE_SK는 A3 적재로 활성) → Item D·O8 |
+| **FEP** 1.1M | MEMBER_DK(100%)·PARTICIPANT_CNT(전행)·EVENT_SK(76.8%) | TOTAL/RECRUIT_CNT·**CAMPAIGN_SK·SPONSORSHIP_SK** = 0 · EVENT_SK 23.2% 고아 → **이슈 E**(263,611행) |
+| **FBD** 24.5K | **BUDGET_ITEM_SK(전행)**·PLAN_BUDGET_MONTH(7,290)·EXEC_BUDGET_ERP(3,244) | PLAN_BUDGET_YEAR·FUNDRAISING_COST·AD_COST·**CAMPAIGN_SK·ORG_SK** = 0 → E-1/E-4·Q10·O3 |
+| **FTG_DEV** 7,272 | MONTH_KEY·ORG_SK·DEV_TYPE(1/2/4)·GOAL_CNT (완비) | — (목표는 완비, 실적축이 부재) |
+| **FTG_BIZ** 0 | — | 전체(0행) → **E-6**(CRM 사업목표 입고대기) |
+| FAD 235K·FBQ 44.9K | **FAD=Phase-1 승격**(2026-07-28) / FBQ 1일샤드 | FAD 캠페인·소재 FK 0 → **Q10 잔류**(나머지 축·measure 실적재 → §6) · BigQuery 전기간 → **G-5** |
+
+> **이슈원장 교차확인**: FEP 고아=**이슈 E** ✓, FTG_BIZ 0행=**E-6** ✓, FBD 비용/연결키=**E-1/E-4·Q10·O3** ✓, FSE/FME FK=**O8·O10** ✓, GA=**G-5** ✓. **단 FMM 카운트·FK 전건 0 + FSE SUCCESS/D5 전건 0 은 원장 Item D("원천 값 전무 5종")·D1(스캐폴드) 범위를 초과** — 원장에 개별 집계 안 됨 → **GOLD/ETL 담당 확인 필요(신규 이슈 후보: "FMM 카운트·차원FK / FSE 성공·D5 미적재")**.
+
+**▶ 좁은 Phase-1 배포 스코프 (실측 활성분만 — 3단계 CREATE 대상)**
+| SV | 활성 measure/metric | 활성 dimension(조인 살아있음) |
+|---|---|---|
+| SV_MEMBER_MONTHLY | PAID_FEE·BILLED_AMT 총액·**공64 납부율**·**공80 미납회원 감소율**(BOM/EOM)·**개발/중단 총건(DEV_CNT·STOP_CNT, A1)** | 월(DIM_MONTH)·회원속성(성별·회원상태·회원구분; 지역·연령대는 dim 공란)·HAS_BILLING — 캠페인/납입/후원사업 조인은 FK=0라 Unknown만 |
+| SV_MEMBER_EVENT | 개발·중단 총건·고유회원수·**평균 유지기간(신4, 가입↔중단)** | 사건일(DIM_DATE)·EVENT_TYPE·회원속성 — 조직/캠페인 조인 불가. ⚠유지율/이탈율(신6·7)·LTV(신8)는 코호트 분모·22년~ 한정(회비 binding) → 3단계 미노출, Agent 단계 확장 |
+| SV_SERVICE | **발송수(SEND_MEMBERS) 총량**·발송상태(SEND_STATUS) | 발송일·**서비스구분(DIM_SERVICE: SUBTYPE·CHANNEL, A3)**·회원 — ⚠신31~53(수신/참여/증액/코호트)=SUCCESS·D5 공란으로 **전건 차단** |
+| SV_EVENT_PARTICIPATION | 참여자수(PARTICIPANT_CNT) | 참여일·행사(DIM_EVENT 76.8%)·회원 |
+| SV_BUDGET | 편성(월)·집행(ERP) 예산 | **세세목(DIM_BUDGET_ITEM ✅)**·월 — 조직/캠페인 조인 불가 |
+| **SV_AD** (2026-07-28 신설) | 광고비(514.4억)·노출·클릭·**공9 CTR**·**공10 CVR**·CRM개발건·**공7 개발단가**(디지털) / 인바운드콜·방송횟수·전환콜·방송개발건·방송개발단가(방송) | 실적일(DIM_DATE ✅ 고아0)·**기기(DIM_DEVICE ✅ 100%)**·출처유형·광고유형·채널사·시간대·프로그램 — 캠페인/소재 조인 불가(FK=0) |
+
+**차단(적재 후 활성)**: 캠페인별(신12~29)·조직별·서비스 수신/참여/증액/코호트(신31~53)·활동/개발/중단 카운트 비율(공45~78 다수)·목표대비(공1~3)·SV_BIGQUERY·예산기반 ROI(신9~11). **구조 DDL은 불변 재사용** — 적재 완결 시 metric만 활성화.
+> ▶ **2026-07-28 정정**: `SV_AD`는 차단 목록에서 **해제**(Phase-1 배포 완료 → §6). 광고 **개발단가(공7·8)는 활성** — 분모가 광고 팩트 내부에 동반 적재되어 FMM 크로스팩트 conform이 불필요해짐. 다만 **캠페인/소재별 분해**와 **예산기반 ROI(신9~11)**는 계속 차단.
+
+### 0.7 BRONZE 원천(provenance) 노출 규약 — **입도 결정: 테이블 수준만** (2026-07-29)
+
+> 작업계획 **원칙 13**의 SV측 설계 규약. 모든 SV의 **테이블 COMMENT** + **SV 최상위 COMMENT**에 `[원천]`/`[원천 요약]` 절을 기입한다.
+> 형식: `[원천] 시스템=<원천시스템> · BRONZE=<DB.스키마.테이블(핵심컬럼)> · SILVER=<정제테이블>`
+
+**왜 SV에 넣는가 (기술 근거 — 실측 확인)**
+`semantic_view_read`로 배포본(`SV_BUDGET`)을 역직렬화한 결과, SV DDL의 COMMENT는 semantic model YAML의 `description` 필드로 1:1 매핑된다(테이블 COMMENT→`tables[].description`, SV COMMENT→최상위 `description`). **`description`은 Cortex Analyst가 프롬프트 context로 소비하는 필드**이므로, 원천을 COMMENT에 적으면 별도 tool 없이 Agent가 provenance 질문에 **창작 없이** 답한다. 반대로 dimension/metric 단위 `description`은 *질의 대상 선택*에 쓰이는 필드라 원천 문구를 섞으면 지표 선택 정확도를 해칠 수 있다 → **원천은 테이블/최상위에만**.
+
+**입도 선택지 비교 (왜 컬럼 단위를 넣지 않았나)**
+
+| 방식 | 답변 가능 범위 | 비용 | 유지보수 | 채택 |
+|---|---|---|---|---|
+| **(A) SV COMMENT · 테이블 수준** | "이 지표는 CRM(eCRM) `TM_PM_MBRFEE_ACMSLT`에서 왔다" | COMMENT 1~3줄 | 원천 변경 시 SV 재배포 1회 | ✅ **채택** |
+| (B) SV COMMENT · 컬럼 수준 전량 | "`PAID_FEE` = `TM_PM_MBRFEE_ACMSLT.PAY_AMT` + `TM_PM_DNTN_DTLS.PAY_AMT`" | **매 질의 context 토큰 상시 소모**(전 컬럼×원천 문구) | **정본 이중화(drift)** — `04_컬럼계보매핑.md`(자동생성)와 SV COMMENT(수기)가 갈라짐 | ❌ |
+| (C) `04_컬럼계보매핑.md`를 Cortex Search 색인 → Agent tool | 컬럼 단위 + 변환규칙 + 지표# 전량 | 검색 호출분만(필요 시 과금) | **정본 1벌**(문서 갱신 → 색인 재생성) | 🔜 **에스컬레이션 대기** |
+
+- **(B)를 버린 이유**: ① 원천 문구는 **모든 질의에 상시 실려** 나가는데 실제로 필요한 질의는 소수다 — 정확도에 기여하지 않는 토큰이 지표 설명을 밀어낸다. ② `04_컬럼계보매핑.md`는 `scripts/gen_column_mapping.py` **자동생성물**이다. 이를 SV COMMENT에 수기 복제하면 생성기 재실행 시 두 벌이 어긋나고 **어느 쪽이 정본인지 알 수 없게 된다**(P13 "커버리지≠정확도"의 재발).
+- **(C) 에스컬레이션 트리거**: 현업이 **컬럼 단위 출처를 반복 질문**하면(CoWork 피드백·오답 로그로 확인) `04_컬럼계보매핑.md`(+`05_지표GOLD매핑.md`)를 Cortex Search service로 색인해 **Agent에 `cortex_search` tool로 추가**한다. SV COMMENT를 늘리는 것보다 이 편이 낫다 — 정본이 1벌로 유지되고 비용이 사용량에 비례한다.
+  - ⚠ **원칙 11과 구분**: 원칙 11(고카디널리티 텍스트 차원 = Cortex Search 백킹)은 **SV dimension에 붙여 리터럴 필터를 해소**하는 용도다. 여기 (C)는 **Agent에 붙는 문서 검색 tool**이며 SV dimension과 무관하다. 같은 Cortex Search라도 **부착 지점·목적이 다르므로 혼동 금지**.
+
+**기입 규칙 (지킬 것)**
+- 테이블 수준만. **컬럼 단위 매핑을 COMMENT에 복제하지 않는다** — 세부는 정본 문서로 안내하도록 Agent instructions에 규칙을 둔다(`08_AGENT_spec.md` §3 · `cortex_project/*.agent.yaml`).
+- ⚠ **PII 컬럼명 기입 금지**: SV COMMENT는 `REFERENCES,SELECT` 보유 role(ANALYST/VIEWER/SERVICE) 전원이 읽는다. 원천 **테이블명·집계 대상 컬럼명**까지만 적고, `RRN_*_ENC`·`CARD_PWDNO_ENC`·연락처·주소·아동정보 등 **미적재 PII 컬럼명은 언급하지 않는다** (`03_top-down_gold/11_BRONZE적재 컬럼대조.md` §2 목록 = 기입 금지 목록).
+- 원천 **시스템명(CRM/ERP/AGENCY/GA4)을 항상 앞세운다**. VIEWER role은 BRONZE SELECT 권한이 없을 수 있어 테이블명만으로는 조회 불가 → 시스템명이 현업에게 실질 정보다.
+- **원천이 다른 SV 간 교차 집계 금지 근거로도 쓴다** — 예산(ERP)↔광고비(AGENCY)는 시스템이 달라 합산·차감이 성립하지 않는다(E-4: 예산 원장에 광고비 컬럼 부재). 종전에는 "tool 결과가 따로라서" 표를 분리했을 뿐 **이유를 설명하지 못했다**.
+
+**동기화 의무** (자동 전파 없음): ① `gen_column_mapping.py` 재실행 → ② `05_1~05_9_SV_DDL_*.sql` `[원천]` 절 수정 → ③ SV 재배포(**`CREATE OR REPLACE` → GRANT 재실행 필수**) → ④ Agent 원천 지도 갱신(**정본=`cortex_project/*.agent.yaml`**, 08 사본 동기화) → ⑤ Agent 재배포.
+
+> ~~⚠ **미배포 상태**(2026-07-29): `[원천]` 절은 `05_1~05_9_SV_DDL_*.sql`에 기입만 됨. 위 실측(`SV_BUDGET.description`)에 `[원천 요약]`이 **없음**이 곧 배포 전임을 확증한다 — 재배포 전까지 Agent는 원천을 답하지 못한다.~~
+> 🟢 **[2026-08-29 O118 실측 — 해소]** 위 문구는 **거짓이 됐다.** 라이브 10 SV **전건**의 COMMENT 에
+> `[원천 요약]` 절이 **실재**한다(`SV_BUDGET` 포함 · `SHOW SEMANTIC VIEWS IN ACCOUNT` 로 확인).
+> ⇒ 이 규약은 **기입 + 배포까지 완료**된 상태다. 🔴 다만 **Agent 는 여전히 0** 이므로
+> 「Agent 가 원천을 답한다」는 아직 성립하지 않는다 — **SV 축과 Agent 축을 분리해 읽어라**(§0.9-A).
+> 🔴 **판정법을 남긴다**: 배포 여부는 `description` 에 `[원천 요약]` 이 있는지로 판정한다(그 논리는 유효했다).
+
+
+---
+
+### 0.8 SV base 객체 선택 규칙 — **DEC-34** (2026-08-07 O50-C 신설)
+
+> 트리거 = *"dbt 소유 GOLD WIDE 뷰는 GOLD base FACT에 gold dim을 연결한 view니까, GOLD base FACT를 안 보는 SV들 전부 GOLD base FACT를 보도록 만드는 건 어떤가?"*
+> **부분 채택.** 전제가 `WIDE_MEMBER_FEE` 에는 성립하지만 `FACT_DEV_ACHIEVEMENT`(구 `WIDE_DEV_ACHIEVEMENT`) 에는 **성립하지 않는다**(아래 §0.8-B).
+
+**왜 규칙이 필요한가**: 종전까지 SV 9종이 같은 요구("SV 에 평탄화된 base 를 준다")에 **3가지 패턴**을 쓰면서 근거가 문서에 없었다.
+그 결과 **배포 가능성이 base 소유주에 따라 갈렸다** — ~~실측(2026-08-07) `SHOW SEMANTIC VIEWS IN GN_DW.SERVING` = **7개**이고,
+없는 2개가 정확히 **dbt 소유 뷰를 base 로 삼는 그 2개**(`SV_DEV_ACHIEVEMENT`·`SV_MEMBER_FEE`)다.~~
+🔴 **[2026-08-29 O118] 이 실측은 stale 이다** — 라이브는 **10종**이고 그 2개도 **모두 배포됐다**
+(`dbt build` 성공 = O115-C 이후이므로 ③ 계열 base 뷰가 실재한다) ⇒ **관측의 전제가 소멸했다.**
+🟢 **그러나 규칙(①/③ 성격 기반 선택)의 결론은 그대로 유효하다** — 근거가 「배포 가능성 관측」에서
+**「팩트를 재구성하는가」**로 이미 옮겨져 있다(§0.8-A · O58 의 `P167` = 근거 소멸이 결론 철회는 아니다).
+🔴 이 문단을 「7개」로 다시 인용하지 마라 — 배포 상태는 **§0.9-B** 가 정본이다.
+
+`dbt build` 미실행 → base 뷰 부재 → SV 생성 불가. DDL 계열 7 은 GOLD 가 0행이어도 생성됐다.
+
+#### 0.8-A 선택 규칙 (성격 기반 — 객체 타입 기반 아님)
+
+| 등급 | base | 적용 조건 | 소유주 | 현재 해당 |
+|---|---|---|---|---|
+| **①** | **GOLD base FACT 직접** | 단일 팩트 star 로 답이 완결 · 같은 dim 을 두 role 로 쓰지 않음 | DDL(`06_DDL.sql`) | 6 SV — `SV_MEMBER_MONTHLY`·`_EVENT`·`_COHORT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`·`SV_BUDGET` |
+| **②** | ~~**SERVING helper 뷰**~~ → 🔴 **[2026-08-10 O53 폐지]** | SV **엔진 제약** 우회가 필요하지만 **팩트를 재구성하지 않음** | ~~DDL~~ | **해당 0** — 아래 §0.8-D 참조 |
+| **③** | **dbt 소유 GOLD 뷰** | **팩트를 재구성**해야 함 — 팩트↔팩트 조인 / 사전집계 / 행 단위 상호 스코프 플래그 | **dbt**(`ref()` 위상정렬 필수) | `SV_DEV_ACHIEVEMENT`(base `FACT_DEV_ACHIEVEMENT`) · **`SV_AD`(base `GOLD.WIDE_AD_COMBINED`, O53 신설)** · 🟠 **`SV_MEMBER_FEE`(base `GOLD.WIDE_MEMBER_FEE`) = 현물 상태이며 규칙 위반이다** — 아래 §0.8-C·§0.8-E 참조 |
+| **①-D** | **GOLD 파생 차원 테이블** | 월 grain 축소·SCD2 현재행 투영처럼 **팩트를 재구성하지 않는** 우회 | DDL(`06_DDL.sql`) + dbt 적재 | **`GOLD.DIM_MONTH`·`GOLD.DIM_MEMBER_CURRENT`**(O53 신설 — 종전 ② helper 뷰를 대체) |
+
+- **①이 기본값이다.** ②·③으로 내려갈 때는 **어느 SV 제약 때문인지 근거를 이 문서에 남긴다.**
+- **②와 ③의 경계 = 「팩트를 재구성하는가」.** ③은 GOLD 팩트에 대한 **의존성**이 있어 `ref()` 의 위상정렬·리니지·build 게이트가 필수라 dbt 가 맞다(BLOCKING-4). ②는 노출 경계라 DDL 이 맞다.
+- ⚠️ **③을 고를 때의 대가를 명시할 것**: 해당 SV 는 `dbt build` 완료 없이 **배포 자체가 불가능**하다. 배포 순서 문서(`06_RUNBOOK.md` §11.2-C)에 선행 의존을 반드시 반영한다.
+
+#### 0.8-B `SV_DEV_ACHIEVEMENT` 는 ①로 내릴 수 없다 (재배선 불가 — 확정)
+
+`FACT_DEV_ACHIEVEMENT`(구 `WIDE_DEV_ACHIEVEMENT` · O53 개명·테이블화) 는 **평탄화가 아니다.** 실제 구조:
+
+```
+goal      = FACT_TARGET_DEV    GROUP BY (MONTH_KEY, ORG_SK, DEV_TYPE)
+actual    = FACT_MEMBER_EVENT  GROUP BY (month_key(JOIN_DATE), ORG_SK, DVLP_DIV_CD)   ← 일→월 롤업
+joined    = goal FULL OUTER JOIN actual ON 3키                                        ← 🔴 팩트↔팩트
+cumulated = SUM() OVER (PARTITION BY 연 ...)  YTD
+          → LEFT JOIN DIM_ORG · CRM_CODE
+```
+
+| # | 장애물 | SV 지원 | 실측 근거(2026-08-07) |
+|---|---|---|---|
+| 1 | 일→월 롤업 · YTD 누계 | ✅ **가능** | window metric 패턴(`SUM() OVER PARTITION BY YEAR ...`) 지원 — 이것만으로는 ③ 근거가 못 된다 |
+| 2 | 두 팩트의 **conform 축 부재** | ❌ | `DIM_DEV_TYPE` **없음**(`DIM_%DEV%` → `DIM_DEVICE` 뿐). DEV_TYPE 은 degenerate 이고 이름도 다르다(`FACT_TARGET_DEV.DEV_TYPE` vs `FACT_MEMBER_EVENT.DVLP_DIV_CD`). `GOLD.DIM_MONTH` **없음**(🟢 O53 에서 신설했다 — 이 근거는 해소됐으나 아래 #3·#4 가 그대로 결정적이라 ③ 유지 판정은 불변) + `FACT_MEMBER_EVENT` 에 `MONTH_KEY` 컬럼이 **아예 없다**(`DATE_SK`·`JOIN_DATE` 만) → 월 conform 키가 물리로 존재하지 않는다. `ORG_SK` 만 양쪽에 있다 |
+| 3 | `HAS_POSITIVE_GOAL` 스코프 | ❌ **표현 불가** | multi-fact 파생 metric 은 공통 grain 에서 `metricA op metricB` 만 된다. **「팩트B의 대응 행이 GOAL_CNT>0 인 팩트A 행만」** 같은 **행 단위 상호 스코프**는 불가 |
+| 4 | FULL OUTER | ❌ | SV relationship 은 fact→dim(many-to-one) 방향뿐이다. 목표만/실적만 조합이 **양방향으로 실재**하는 이 요구를 담을 수 없다 |
+
+🔴 **#3 이 결정적이다.** 이 프로젝트는 이미 그 사고를 겪었다 — 분자·분모 스코프 불일치로 달성율이 **증액 537% · 재후원 1700%** 로 폭증했고,
+교정이 `HAS_POSITIVE_GOAL`(=`GOAL_CNT>0`) 스코프였다. 그 플래그는 **FULL OUTER 가 조합을 물리화한 뒤에만 존재한다.**
+⇒ multi-fact SV 로 내리면 **그 사고가 구조적으로 재발한다.** `SV_DEV_ACHIEVEMENT` = ③ 유지 **확정**.
+
+#### 0.8-D 🔴🔴 [2026-08-10 O53] **DEC-34 개정 — 「SV base 전량 테이블화」 철회 · ② 등급 폐지**
+
+**트리거 = 사용자 결정(2026-08-10).** 광고 base 를 어떻게 둘지 물었을 때 제약 3개가 동시에 제시됐다:
+*"추후 bronze 원천 데이터 증량으로 인한 확장성을 고려한 설계로 가자 … 그런데 데이터 중복 저장은 원하지 않고 …
+하지만 SV는 골드스키마만 본다는 설계는 지키고 싶어."*
+
+| 제약 | 테이블화(종전 §0.8-C 결정) | SERVING helper 뷰(종전 ②) | **GOLD dbt 뷰(채택)** |
+|---|---|---|---|
+| 중복 저장 없음 | ❌ 물리 복제 | ✅ | ✅ 저장 0 |
+| SV 는 GOLD 만 본다 | ✅ | ❌ SERVING 참조 | ✅ |
+| 원천 증량 즉시 반영 | ❌ 구조 변경 + 재적재 | 🟡 SQL 스크립트 수동 | ✅ 모델 1곳 + `ref()` 위상정렬 |
+
+⇒ **개정 내용**
+1. 「SV base 전량 테이블화」(2026-08-07 결정)를 **철회**한다. 규칙은 **성격 기반**으로 되돌린다 —
+   **팩트를 재구성하면 ③(dbt 소유 GOLD 뷰)**, 재구성하지 않으면 ① 또는 **①-D(GOLD 파생 차원 테이블)**.
+2. **② 등급(SERVING helper 뷰)을 폐지**한다. 해당이던 3종은 전부 GOLD 로 올라갔다:
+   `DIM_MONTH`·`DIM_MEMBER_CURRENT` → **①-D 테이블**(06_DDL 소유) · `FACT_AD_COMBINED` → **③ `GOLD.WIDE_AD_COMBINED`**(dbt 뷰).
+   SERVING helper 3종의 물리 DROP 은 로드맵 7단계 소관이다(의존 참조 0 확인 후).
+   🟢 **[2026-08-10 O54 실행 완료 — 물리 실측]** SV **9종 전건**의 `BASE_TABLE_SCHEMA_NAME` = `GOLD`
+      (`DESC SEMANTIC VIEW` 전수 스캔). 재배선 7종 = `SV_MEMBER_MONTHLY`(월·회원) · `SV_BUDGET`(월) ·
+      `SV_MEMBER_EVENT`·`SV_SERVICE`·`SV_EVENT_PARTICIPATION`(회원) · `SV_AD`(광고) · `SV_DEV_ACHIEVEMENT`(개명분).
+      🔴 **값 불변 실증**: 재배선 전후 metric 총계 **52개 전건 동일**(`scripts/o54_sv_value_gate.py`) ·
+      GATE-D 청구액 891,959,790,888 일치 · 소비 3역할 세션 metric 쿼리 7/7 성공(P126).
+      🟢 **GRANT 보존 실증**: `CREATE OR ALTER` 로 배포해 `created_on` timestamp 가 전건 불변이었다(P125 역).
+3. ⚠️ **대가 명시**: `SV_AD` 가 ③ 계열로 편입되므로 **`dbt build` 없이는 배포 불가**하다.
+   종전 「DDL 계열 7 SV 는 GOLD 0행에서도 생성된다」는 성질을 SV_AD 는 잃는다. 배포 순서 문서에 반영할 것.
+4. 🟢 **부수 소득**: helper 뷰에 없던 **방송 시간축 4컬럼**(`AD_START_TIME`·`AD_END_TIME`·`BROADCAST_DATE`·`PRG_START_TIME`)이
+   `WIDE_AD_COMBINED` 에 포함돼 SV_AD 에서 도달 가능해졌다.
+   🔴 **[2026-08-10 O54 정정 · P134]** 종전 이 자리의 *"그 4컬럼은 VIDEO 전용이며 재방송에는 원천이 없다"* 는
+   **4컬럼 중 1건이 거짓**이었다. 실측: **`BROADCAST_DATE` 는 양 원천 모두에 있다**
+   (`VIDEO_AD_CMPGN_DTLS.BRDC_DATE` ∪ `REBRDC_AD_CMPGN_DTLS.DATE` — 재방송 2,070행 전건 채움).
+   VIDEO 전용은 **시각 3컬럼**(`AD_START_TIME`·`AD_END_TIME`·`PRG_START_TIME`)뿐이다.
+   ⇒ 재방송을 포함한 **일자 단위** 방송 분석은 `BROADCAST_DATE` 로 가능하다. 물리 COMMENT 는 교정 반영됨.
+
+⚠️ **③ 을 고를 때의 대가는 §0.8-A 와 동일**하게 적용된다 — 배포 순서 의존을 `06_RUNBOOK.md` §11.2-C 에 반영한다.
+
+#### 0.8-C `SV_MEMBER_FEE` 는 ②로 내릴 수 있다 — 🟠 **판단 보류(build 후 실측)**
+
+`WIDE_MEMBER_FEE` 는 진짜 star 평탄화다(`FACT_MEMBER_FEE` + `DIM_SPONSORSHIP`·`DIM_PAYMENT`·`DIM_DATE`). 비-star 요소는 둘뿐:
+- `DIM_MEMBER` SCD2 dedup(`QUALIFY ROW_NUMBER()`) → **`GOLD.DIM_MEMBER_CURRENT` 가 이미 해결**한다(🔴 [2026-08-10 O54] 종전 `SERVING` helper → GOLD 테이블로 재배선)
+- `DIM_MEMBER_ACQUISITION` → ⚠️ **이것도 dbt 소유 뷰**이고 실체는 `FACT_MEMBER_COHORT`(**팩트**) + `DIM_CAMPAIGN`·`DIM_ORG`·`DIM_SPONSORSHIP` 이다
+
+⚠️ **①(순수 star)로 내리면 새 위험이 생긴다.** WIDE 뷰가 하는 진짜 일은 평탄화가 아니라 **role-playing 축의 물리 컬럼명 분리**다:
+
+| 축 | 납입 대상 | 획득 시점 |
+|---|---|---|
+| 후원사업 | `SPONSORSHIP_NAME` | `ACQ_SPONSORSHIP_NAME` |
+| 부서 | — | `ACQ_DEPARTMENT` |
+
+①로 내리면 `FACT_MEMBER_FEE → DIM_SPONSORSHIP`(납입)와 `FACT_MEMBER_FEE → FACT_MEMBER_COHORT → DIM_SPONSORSHIP`(획득)이
+**같은 dim 을 가리키는 multi-path** 가 된다. role-playing alias + `using_relationships` 로 풀 수는 있으나,
+그러면 **축 선택이 Cortex Analyst 의 판단으로 넘어간다.** 이 SV 의 COMMENT 가 이미
+*"🔴「후원사업」은 세 축이 있다 — 어느 축으로 답했는지 반드시 밝힌다"* · *"🔴「부서」는 두 축이 있다"* 로 경고하고 있고,
+**P61·O34 가 Analyst 의 축 오선택을 기록해 뒀다.** ⇒ **물리 컬럼명 분리가 relationship 메타데이터보다 강한 방어다.**
+
+🟢 **[2026-08-07 검증 완료 — 보류 해제]** GOLD 적재(136.5M행) 후 결정 트리거 2건을 실측했고 **둘 다 통과**했다:
+1. `FACT_MEMBER_COHORT`: **1,585,949행 = 1,585,949 distinct MEMBER_DK** → 1행/회원, 차원 자격 ✅
+2. `FACT_MEMBER_FEE ⋈ FACT_MEMBER_COHORT`(MEMBER_DK): 39,615,361 vs FMF 원본 40,262,076 → **팬아웃 0** ·
+   결손 646,715행(**1.606%** = 모델 코멘트가 주장한 1.61% 와 일치) ⇒ **LEFT JOIN 필수** 확인 ✅
+
+⇒ `SV_MEMBER_FEE` 는 ② 또는 ① 로 내릴 수 있다. **채택안 = ①(GOLD base FACT star)**.
+
+🔴 **[2026-08-11 O58 근거 교체 — 결론 유지·근거 교체]** 종전 이 자리의 채택 근거는 *"사용자 결정(2026-08-07, 「SV base 전량 테이블화」)"* 였다.
+그 결정은 **§0.8-D(2026-08-10 O53)가 철회했다** — 즉 근거가 이미 소멸한 상태로 방치돼 있었다.
+그러나 **결론(①)은 그대로 성립한다**: 근거를 성격 기반 규칙으로 바꾸면 된다.
+`WIDE_MEMBER_FEE` 는 `FACT_MEMBER_FEE` + dim 5종의 **순수 star 평탄화**이고 팩트↔팩트 조인·사전집계·상호 스코프 플래그가 **전건 0** 이므로 §0.8-A ③ 의 적용 조건을 **충족하지 않는다**.
+⚠️ **근거 소멸을 이유로 결론까지 철회하면 틀린다** — 두 판단은 별개다(🆕 P167).
+
+위에 적은 multi-path 우려는 **해소된다**: `DIM_MEMBER_ACQUISITION` 을
+**라벨 내장 테이블**로 물리화하면 획득 축이 자기 라벨(`ACQ_SPONSORSHIP_NAME`·`ACQ_DEPARTMENT` …)을 들고 있어
+`DIM_SPONSORSHIP` 을 **다시 조인할 필요가 없다** ⇒ 같은 dim 을 향한 두 경로가 생기지 않는다
+(outrigger 를 차원에 흡수하는 표준 패턴). `using_relationships` 도 불요.
+
+⚠️ 종전 보류 사유였던 *"GOLD 0행이라 검증 불가"* 는 해소됐다. 아래 문단은 **이력으로 보존**한다.
+> ⛔ (구) 보류 사유 = 검증 불가. 현재 GOLD 전 테이블 **0행**이라 `FACT_MEMBER_COHORT` 의 `MEMBER_DK` 유일성이
+> 모델 코멘트의 주장만 있고 실측이 없었다. 코멘트를 근거로 재배선하면 P14/P62 재발이다.
+
+##### 🟢 [2026-08-11 O58] 재배선 전제 실측 — **전건 통과**(신규 계정 build 직후)
+
+⚠️ 이 검증은 **두 번 필요했다.** 계정 마이그레이션 재구축으로 GOLD 가 다시 0행이 되면서 위 「(구) 보류 사유」가
+**그대로 되살아났고**, 2026-08-07 실측은 이 계정에서 재현 불가였다. ⇒ **실측은 환경에 종속된다**(🆕 P168).
+
+| 전제 | 실측 (2026-08-11) | 판정 |
+|---|---|---|
+| 팬아웃 0 (5중 조인) | `FACT_MEMBER_FEE` **40,262,076** = `WIDE_MEMBER_FEE` **40,262,076** | ✅ 증폭 0 |
+| `DIM_MEMBER_ACQUISITION.MEMBER_DK` 유일 | 1,585,949행 = distinct 1,585,949 | ✅ |
+| `DIM_MEMBER_CURRENT.MEMBER_DK` 유일 | 1,763,065행 = distinct 1,763,065 | ✅ |
+| dim SK 유일 | `DIM_SPONSORSHIP` 51 · `DIM_PAYMENT` 7 · `DIM_DATE` 16,437 전건 유일 | ✅ |
+| 획득축 결손(LEFT 필요성) | 고아 **646,715행 = 1.606%** · 해당 청구액 2,041,000원 | ✅ 문서 기재와 일치 |
+| GATE-D (형제 팩트 총계) | 청구 891,959,790,888 · 납입 895,178,309,108 — **FMF−FMM 차이 0** | ✅ |
+
+🟢 **내가 제기한 신규 위험은 오진이었다 — 실증으로 철회한다.** 「SV relationship 은 LEFT/INNER 를 못 고르므로
+inner 면 결손 646,715행이 탈락해 GATE-D 가 깨진다」고 우려했으나, 배포된 `SV_MEMBER_MONTHLY` 로 실증한 결과
+**SV relationship 은 LEFT 시맨틱**이다: 차원 미포함 총량 `TOTAL_DEV_CNT` **2,291,878** = 차원 분해 합 **2,291,878**(차이 0)이고,
+고아 199행의 `DEV_CNT` **270** 이 **`MEMBER_STATUS_NAME IS NULL` 그룹에 정확히 보존**된다.
+⇒ ① 재배선은 결손 행을 잃지 않는다. ⚠️ 단 **차원값이 NULL 로 모인다**는 사실은 소비 시 밝혀야 한다.
+
+##### 0.8-E 🟠 그럼에도 재배선을 **즉시 집행하지 않는다** (2026-08-11 O58 · 사용자 결정 대기)
+
+전제는 전건 통과했으나 **실익이 소멸했다**. 재배선의 유일한 실익은 「`dbt build` 배포 의존 제거」였는데
+`SV_AD` 가 §0.8-B/D 로 ③ 확정·재배선 불가이므로 `SV_MEMBER_FEE` 만 ①로 내려도 **배포 순서 의존은 그대로 남는다.**
+반면 비용은 실재한다 — 현행 SV 는 **논리테이블 1개·relationship 0개**(그래서 fan-out 이 구조적으로 0)이고,
+①로 내리면 **relationship 5개 + dim 논리테이블 5개**가 생겨 그 보장을 런타임 검증으로 대체해야 한다.
+
+⇒ **현물(③) 을 유지하되 규칙 위반 상태임을 §0.8-A 표에 명시**하고, 집행은 사용자 지시로 한다.
+🔴 이 상태를 「해결됨」으로 적지 않는다 — 문서 결정(①)과 물리(③)의 불일치는 **미집행**이며 원장에 등재했다(§O58).
+
+---
+
+### 0.9 🔴🔴 [2026-08-29 O118] 라이브 실측 최신화 — **이 절이 배포 상태의 정본이다**
+
+> 🔴 **이 문서의 §1~§10 은 「설계 청사진」이고 라이브 상태가 아니다.** 두 축을 섞어 읽으면 틀린다.
+> 🟢 **배포 상태를 인용할 때는 이 절만 인용하라.** 개수·행수는 **문서에서 읽지 말고 아래 쿼리로 재라.**
+> 🔎 원시 관측·쿼리 전문 = 부속 근거철 `_o118_sv_live_census.md`(정본 아님).
+
+#### 0.9-A 🔴 선행 인수인계 전제 2건이 실측으로 반박됐다
+
+| 종전 기재(O117) | O118 실측 | 판정 |
+|---|---|---|
+| ~~`show semantic views in account` = **0행**~~ | **10행** · 전건 `GN_DW.SERVING` · `created_on` **2026-08-29 05:59:12~05:59:46** | 🔴 **stale** |
+| ~~`GN_DW.SERVING` = 객체 0 ⇒ SV 부재~~ | `SERVING` 의 **테이블·뷰는 지금도 0** 이고 **SV 는 10** 이다 | 🔴 **판정식 오류** |
+| ~~`SERVING` `USAGE` 미부여 = SV 배포 선행조건~~ | ANALYST·ENGINEER·SERVICE·VIEWER **부여 완료**(06:06:33~35) | 🔴 **stale** |
+| `show agents in account` = **0행** | **0행** | 🟢 **유효** |
+| `ML` 16 테이블 · `ML` `USAGE` 미부여 | 16 테이블 · `USAGE` **미부여**(3회 재조회 일관) | 🟢 **유효** |
+
+🔴🔴 **왜 「0건」이 나왔는가 — 두 원인이 겹쳤다.**
+㉠ **시점**: SV 배포가 O117 측정 **이후**에 일어났다 ⇒ 측정은 틀리지 않았고 **stale 이 됐다**(`P168`).
+㉡ **판정식**: **semantic view 는 `INFORMATION_SCHEMA.TABLES` 에 나타나지 않는다**
+   ⇒ 「스키마가 비었다」는 애초에 SV 부재의 근거가 될 수 없었다.
+
+⇒ 🔴 **판정식 신설(SV 판)** = **SV 의 분모는 `SHOW SEMANTIC VIEWS` 또는
+  `INFORMATION_SCHEMA.SEMANTIC_VIEWS` 뿐이다.** 스키마 객체 목록으로 SV 유무를 판정하지 마라.
+⇒ 🔴 **`R2-8-4-d` 재확인** = **문서의 「미배포」도 라이브 근거가 아니다.** O118 은 반대 방향으로 당했다 —
+  종전 규약은 「완료 기재를 믿지 마라」였고, 이번엔 **「부재 기재를 믿지 마라」**가 필요했다. **양방향이다.**
+
+#### 0.9-B 라이브 SV 10종 (배포 상태 정본 · 🔴 개수를 이 표에 박지 말고 쿼리로 재라)
+
+```sql
+-- 배포 전수 + 구성 (05_0_SV_DDL.sql §8-10·8-10b 와 같은 축)
+SELECT t.SEMANTIC_VIEW_NAME, COUNT(*) AS ltables,
+       LISTAGG(DISTINCT t.BASE_TABLE_SCHEMA, ',') AS base_schemas
+FROM GN_DW.INFORMATION_SCHEMA.SEMANTIC_TABLES t GROUP BY 1 ORDER BY 1;
+```
+
+| SV | 논리테이블 | rel | dim | metric | base 객체 | 설계 절 |
+|---|---:|---:|---:|---:|---|---|
+| `SV_MEMBER_MONTHLY` | 4 | 3 | 16 | 12 | `GOLD.FACT_MEMBER_MONTHLY` | §1 |
+| `SV_MEMBER_EVENT` | 6 | 5 | 40 | 10 | `GOLD.FACT_MEMBER_EVENT` | §2 |
+| `SV_SERVICE` | 4 | 3 | 17 | 2 | `GOLD.FACT_SERVICE_EVENT` | §3 |
+| `SV_EVENT_PARTICIPATION` | 4 | 3 | 23 | 3 | `GOLD.FACT_EVENT_PARTICIPATION` | §4 |
+| `SV_BUDGET` | 3 | 2 | 5 | 3 | `GOLD.FACT_BUDGET` | §5 · 🔴 **§0.9-D 보류** |
+| `SV_AD` | 4 | 3 | 21 | 15 | `GOLD.WIDE_AD_COMBINED` | §6 |
+| `SV_MEMBER_COHORT` | 5 | 4 | 24 | 6 | `GOLD.FACT_MEMBER_COHORT` | 🔴 **없음** |
+| `SV_MEMBER_FEE` | 1 | 0 | 23 | 8 | `GOLD.WIDE_MEMBER_FEE` | 🔴 **없음**(§0.8-C·E 만) |
+| `SV_DEV_ACHIEVEMENT` | 1 | 0 | 8 | 4 | `GOLD.FACT_DEV_ACHIEVEMENT` | 🔴 **없음**(§0.8-B 만) |
+| `SV_MEMBER_SPONSOR_BIZ` | 3 | 2 | 10 | 5 | `GOLD.FACT_MEMBER_SPONSOR_BIZ` | 🔴 **없음** |
+
+🟢 **base 스키마 전건 `GOLD`** ⇒ §0.8-D 의 「SERVING helper 폐지」가 라이브에서 유지되고 있다
+  (`SERVING` 테이블·뷰 0 = 물리 DROP 완료도 확증).
+🟢 **`SEMANTIC_FACTS` 전건 0** ⇒ 가산성은 `METRIC`(집계식)으로만 표현 — 정정로그 5항과 정합.
+🟢 **fan-out 스모크 통과** = `SV_AD.TOTAL_AD_COST` == `SUM(WIDE_AD_COMBINED.AD_COST)`(차이 0).
+🔴 **스모크 PASS 는 「값이 옳다」가 아니다** — 「SV 가 base 를 왜곡하지 않았다」일 뿐이다(§0.9-D 가 반례).
+🔴 **`SV_BIGQUERY` 는 부재**다(§7 초안 그대로 미배포) ⇒ ~~§7 기재는 **유효**하다.~~
+   (라이브는 `SHOW SEMANTIC VIEWS IN ACCOUNT` 로 확인 완료 — 17종 중 `SV_BIGQUERY` 0행).
+   🔴 **[2026-08-29 O120 정정] 다만 §7 머리말의 「GA4 1일 샤드만이라 미배포」는 실측 반박됐다**(라이브 90일).
+   ⇒ §7 을 취소선+실측으로 갱신했고 **SV_BIGQUERY 신설 여부는 사람 결정**으로 올렸다. 🔴 이 줄을 「유효」로 되돌리지 마라.
+🔴 **하위 4종은 이 문서에 구조 절이 없다** — 신설은 다음 세션 과제로 등재했다(설계 결손 ≠ 문서 오기).
+🟢 **[2026-08-29 O120 추가] ML SV 7종 스모크 = 7/7 PASS · fan-out 0** — O118-B 가 배포하고 O119-B 스모크
+  (6/6)는 **실적 SV 재배포분**이었으므로 ML 축은 그때까지 **한 번도 스모크되지 않았다**(DoD 공백).
+  판정 = SV metric ↔ base 뷰 교차검증 전건 일치(회원·후원건 distinct · 계열수×예측월 = base 행수 ·
+  피처 기여도 합 = 1). 🔴 **수치를 여기 적지 않는다** — 재현은 `06_검증쿼리_VQR.md` 절차로 한다.
+
+#### 0.9-C 차이 3축 분해 — 🔴 **한 축으로 뭉개지 마라**
+
+설계 기재 ↔ 라이브 차이를 **성격별로** 갈랐다. 축이 다르면 처방이 다르다.
+
+**축① 설계 변경**(라이브가 옳고 설계 문서가 낡음 — 의도된 변경이 문서에 반영되지 않았다)
+
+| 대상 | 설계 기재 | 라이브 | 근거 |
+|---|---|---|---|
+| `SV_MEMBER_MONTHLY` — `DIM_CAMPAIGN`·`DIM_PAYMENT` 제외 | §1.1 「(7)」에 포함 | **미포함** | 🟢 **실측 = 전건 0**(`FMM.CAMPAIGN_SK` 비-0 **0** · `FMM.PAYMENT_SK` 비-0 **0** / 분모 40,054,883) ⇒ 「빈 축 노출 금지」 규약(§공통) 적용 · **적재 대기가 맞다** |
+| `SV_MEMBER_MONTHLY` — `DIM_SPONSORSHIP` 제외 | §1.1 「(7)」에 포함 | **미포함** | 🔴 **여기는 전건 0 이 아니다** — `FMM.SPONSORSHIP_SK` 비-0 **35,785,665 / 40,054,883 = 89.34%**. 제외 이유는 **다중 후원 접힘**이다: 회원 **20.83%(330,308 / 1,585,945)**가 후원사업을 복수 보유하므로(최대 3,201) 회원×월 1행의 단일 SK 로 「후원사업별 회비」를 답하면 **귀속 오류**다 ⇒ `SV_MEMBER_FEE`(회비 grain)·`SV_MEMBER_SPONSOR_BIZ`(약정 grain) 소관 |
+| `SV_MEMBER_MONTHLY` 논리테이블 수 | §1.1 「(7)」 | **4** | 🟢 `05_1` DDL 의 `TABLES` 절도 **4**(fmm·month·member·reason) · `RELATIONSHIPS` **3** ⇒ **DDL ↔ 라이브 일치** · §1.1 만 stale |
+| `SV_SERVICE` 논리테이블 | §3.1 「(5)」 DIM_CAMPAIGN 포함 | **4** | 🟢 **실측 = `FSE.CAMPAIGN_SK` 비-0 0 / 38,467,142**(전건 0) ⇒ 동일 규약 |
+| `SV_BUDGET` 논리테이블 | §5.1 「(5)」 DIM_ORG·DIM_CAMPAIGN 포함 | **3** | 🟢 **실측 = `FBD.ORG_SK`·`CAMPAIGN_SK` 비-0 각 0 / 2,964**(전건 0 · `O3`) ⇒ 동일 규약 |
+| `SV_EVENT_PARTICIPATION` 논리테이블 | §4.1 「(5)」·§4.2 는 6 | **4** | 🟢 **실측 = `FEP.CAMPAIGN_SK` 비-0 0 / 1,134,126** · `SPONSORSHIP_SK` 비-0 **0**(`O8` 센티넬) |
+| `SV_AD` 논리테이블 | §6.1 「(3)」 | **4** — `DIM_MARKETING_CAMPAIGN` 추가 | O45 마케팅캠페인 축 활성화(라이브 COMMENT 에 기록됨) ⇒ **§6.1 이 그 변경을 못 받았다** |
+| SV 종수 | 제목·§10 DoD 「7 SV」 · §0.8 「9종」 · §6.6 「6행」 | **10** | 한 문서에 7·9·6 이 공존 ⇒ **개수를 박은 것이 원인**(`R3-9 ㉦`) |
+
+🔴🔴 **[O118-B 자기정정] 위 표의 첫 두 행은 O118 초판에서 한 줄로 뭉개져 있었다.**
+초판은 *"CAMPAIGN·SPONSORSHIP·PAYMENT 3종 미포함 — FMM 은 회원×월 1행이라 붙이면 grain 이 깨진다"* 로
+**세 컬럼에 하나의 이유**를 붙였다. 실측하니 **두 이유가 달랐다**(전건 0 **2종** ↔ 89.34% 채움 **1종**).
+🔴 **그 「grain 이 깨진다」는 근거를 라이브 SV COMMENT 에서 그대로 베낀 것이고 실측하지 않았다**
+(`R2-3` 위반 · `R1-3-7` 「대체 근거 금지」). ⇒ 🟢 **판정식** = **「제외 이유」를 문서·COMMENT 에서 베끼지 말고
+그 컬럼의 채움률을 재라.** 채움률이 0 이면 **적재 대기**이고, 0 이 아니면 **의미(귀속) 문제**다 — 처방이 다르다.
+🔴 **더 나아가 라이브 COMMENT 자체가 부정확하다** — `SV_MEMBER_MONTHLY` COMMENT 는
+*"「적재 대기」가 아니라 grain 문제였다"* 고 단정하는데 `PAYMENT_SK` 는 **전건 0 = 적재 대기가 맞다**
+⇒ 두 축을 한 문장으로 묶어 한쪽을 틀리게 만들었다(§0.9-H ㉣ 에 시정 대상으로 등재).
+
+
+**축② 문서 오기**(라이브·설계 둘 다 옳고 문서 서술만 틀림)
+
+| 대상 | 오기 | 실측 |
+|---|---|---|
+| `SV_MEMBER_EVENT` 논리테이블 수 | §2.1 제목 「(6)」인데 본문이 **7종 열거**(DIM_REASON 포함) | 라이브 **6** — `DIM_REASON` 미포함 ⇒ **제목이 맞고 본문 열거가 틀렸다** |
+| §0.7 배포 상태 | 「⚠ **미배포 상태**(2026-07-29): `[원천]` 절은 기입만 됨 · `SV_BUDGET.description` 에 `[원천 요약]` 없음이 배포 전임을 확증」 | 🔴 **거짓** — 라이브 `SV_BUDGET` COMMENT 에 `[원천 요약]` 절이 **실재**한다(10 SV 전건) ⇒ **동기화 완료** |
+| §9 세세목 카디널리티 | 「`DIM_BUDGET_ITEM.BUDGET_ITEM_NAME` **2,041**」 → Cortex Search 후보 | `DIM_BUDGET_ITEM` **180행** ⇒ 저카디널리티 · **Cortex Search 불요**(`sample_values` 로 충분) |
+| §6.6 배포 검증 | 「`SHOW SEMANTIC VIEWS` → **6행**」 | **10행** |
+| §0.8 배포 실측 | 「실측(2026-08-07) = **7개**이고 없는 2개가 `SV_DEV_ACHIEVEMENT`·`SV_MEMBER_FEE` 다」 | 두 SV **모두 배포됨** ⇒ 그 판정의 **전제가 소멸**(결론 = ③ 등급 유지는 별개로 유효) |
+
+**축③ 라이브 결손**(설계가 옳고 라이브가 못 따라감 — 조치 대상)
+
+| 대상 | 결손 | 조치 |
+|---|---|---|
+| `SV_BUDGET.TOTAL_EXEC_BUDGET` | **+79.7% 과대값 발행 중** | 🔴 **§0.9-D — 보류** |
+| Agent 2종(`AGENT_MEMBER`·`AGENT_EXECUTIVE`) | 계정에 **0** | 🔴 배포는 별도 승인 대상 · `08_AGENT_spec.md` 는 「설계 확정 / 이 계정 미배포」 |
+| `ML` 스키마 `USAGE` | 소비 3역할 **미부여** | 🟠 SV 축과 **무관**(SV base 전건 `GOLD`) ⇒ ML 소비 시점의 선행조건 |
+| `SV_BIGQUERY` | 미배포 | 🟠 **[2026-08-29 O120 정정] ~~🟢 결손 아님 — §7 이 Phase-2 로 선언(G-5 입고 대기)~~ ⇒ 판정은 유지되지만 근거가 바뀌었다**: §7 의 「BigQuery 1일 샤드만」이 **실측 반박**됐다(라이브 90일). 🔴 BigQuery 팩트는 **적재돼 있고** SV 층에만 없다 ⇒ 「입고 대기」로 설명하지 마라. 🔴 **사람 결정 대기**(SV_BIGQUERY 신설 여부) · 근거·재측정 쿼리 = §7 머리말 |
+| 하위 4 SV 구조 절 | 이 문서에 **없음** | 🟠 문서 신설 과제(라이브는 정상) |
+
+🔴 **축①·②·③ 을 섞지 마라** — ①은 **문서를 고친다** · ②는 **문장을 고친다** · ③은 **라이브·결정을 고친다.**
+🟢 이 세션은 ①②만 집행했다. ③은 전건 **승인·회신 대기**이므로 표기만 갱신했다.
+
+#### 0.9-D 🔴🔴 `SV_BUDGET` 보류 — `DEC-44` 차단조항이 **지목한 객체가 틀렸다**
+
+인수인계 차단조항 = *"`05_6_SV_DDL_BUDGET.sql` 을 `FACT_BUDGET_YEARLY` 에 붙이지 마라"*.
+
+| 항목 | 실측 |
+|---|---|
+| 라이브 `SV_BUDGET` base | `GOLD.FACT_BUDGET`(월) — 🟢 연 팩트 **아님** |
+| `FACT_BUDGET.EXEC_BUDGET_ERP` 합 | **99,006,005,048** |
+| `FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR` 합 | **99,006,005,048** |
+| 차이 | **0** |
+
+🔴🔴 **판정 = 조항은 문자적으로 준수됐고 실질적으로 위반됐다.**
+두 팩트의 집행액이 **완전히 동일**하므로 「연 팩트를 피했다」가 방어가 되지 않는다
+⇒ **라이브 `SV_BUDGET.TOTAL_EXEC_BUDGET` 은 지금 과대값을 발행하고 있다.**
+
+⇒ 🟢 **판정식 신설(일반)** = **차단조항이 객체명으로 쓰여 있으면 그 결함값이 다른 객체에도
+  있는지 대조하라.** 「그 테이블을 안 썼다」는 「그 결함을 피했다」와 **다르다.**
+
+🔴 **따라서 `SV_BUDGET` 은 「보류」다** — `TOTAL_EXEC_BUDGET`·`EXEC_RATE` 를 **확정 metric 으로 쓰지 않는다.**
+🔴 **그러나 `DROP`·metric 삭제·`where` 축소를 하지 않는다** — 그것은 `DEC-44` 결정을 선점한다.
+🟢 표기 조치만 했다 = `05_6_SV_DDL_BUDGET.sql` 헤더에 보류 사유 + 이 절 포인터.
+
+#### 0.9-E 🟢 `DEC-44` — 「재작성」 판정은 **이미 확정돼 있었다**(O115) · O118 은 재현 + 축 1개 보강
+
+🔴🔴 **정직 표기**: 「추가경정이 재작성인가」는 **O115 가 문서30 §30-F 에서 이미 확정**했다.
+🔴 **「O118 이 답을 냈다」로 인용하지 마라.** O118 이 더한 것은 아래 2건뿐이다.
+🟢 **정본 = 문서30 §30-F(판정) + §30-G(O118 보강)**.
+
+- 🟢 **재현(다른 축)** — §30-F 는 **금액 다중집합**으로 봤고, O118 은 **세세목 8키 × 연도**로 피벗했다:
+  항목×연도 24키 중 **집행 상이 0 / 동일 23** ⇒ **독립 축에서 같은 결론**.
+- 🆕 **신규 정량 1건** — **편성(PLAN) 상이 17 / 24**. 종전에는 「편성은 합산돼 들어간다」까지였고
+  **차수 간 값이 실제로 다른 비율**은 재지 않았다.
+  ⇒ 🟢 **처방이 이것으로 갈린다** = **차수를 키에 보존하고 합산에서만 배제한다.**
+    🔴 「키에서 빼라」와 「합산하지 마라」는 **다른 처방**이다 — 빼면 편성 정보가 사라진다.
+- 🆕 **신규 사실 1건**(이 절의 존재 이유) — **`SV_BUDGET` 이 라이브에 있고 그 과대값을 발행 중이다**
+  (§0.9-D). O117 시점 전제(「SV 0」)가 무너졌으므로 **결정의 긴급도가 올라갔다.**
+  🟢 다만 **Agent 는 0** 이므로 오답이 사용자에게 나가는 경로는 **아직 막혀 있다**
+  ⇒ 🔴 **Agent 배포 전에 이 결정을 닫는 것이 정답 순서다.**
+
+⇒ 🔴 **남은 것은 정책 판단 2건**이므로 배선하지 않는다(§30-G ㉢ = 무엇을 안 했는지 명시).
+
+
+#### 0.9-F 🔴 ML 축은 **전건 미배포**다 — SV 축과 분리해 읽어라
+
+🔴🔴 **[2026-08-29 O118-B 최신화 — 이 절 제목과 표는 stale 이 됐다]** 사용자가 ML 축을 **배포했다.**
+🟢 **현행 실측(같은 날 08:19~08:21)**:
+
+| 축 | 선언 파일 | 라이브 | 판정 |
+|---|---|---|---|
+| 실적 SV 10종 | `05_1`~`05_10` | **10** | 🟢 배포 |
+| **ML 예측결과 SV 7종** | `22_ML_SV_DDL.sql` | **7**(`SV_ML_*`) | 🟢🟢 **배포 완료**(08:20~08:21) |
+| **ML SERVING 뷰 7종** | `21_ML_SERVING_뷰_DDL.sql` | **7**(`ML_*_V`) | 🟢🟢 **배포 완료**(08:19) |
+| Semantic View 합계 | — | **17** | 🟢 10 + 7 |
+| SV 객체 GRANT | — | **17종 누락 0**(`sv_unit_gate`) | 🟢 |
+| `ML` 스키마 `USAGE` | RBAC | **미부여** | 🟢 **불요**(아래) |
+| **Agent 2종** | `09_1`·`09_2` | **0** | 🔴 **유일한 미배포 층** |
+
+🟢🟢 **`ML` `USAGE` 미부여는 더 이상 차단이 아니다** — `SERVING` 의 ML 뷰가 `ML` 테이블을 **캡슐화**하고
+소비 역할은 **그 뷰의 `SELECT`** 를 갖는다(실측: `GN_DW_ANALYST` 에 `ML_*_V` 7종 `SELECT` 부여).
+⇒ 🟢 **`20_ML_SV_설계.md` §262·§265 의 판정(「소비 역할은 base 에 SELECT 없이 SV 를 쓴다」)이 다시 확증됐다.**
+🔴 **따라서 이슈 6 의 「`ML` `USAGE`」 절반은 「소비 차단」이 아니라 「관리자 편의」 항목으로 강등된다** —
+   ML 원본을 직접 조회할 필요가 생길 때만 부여하면 된다.
+
+🔴🔴 **`21_ML_SERVING_뷰_DDL.sql` 은 `head` 판본이 정본이다**(사용자 확정 2026-08-29).
+   `ML_MEMBER_RISK_V` 의 `spell` CTE 원천이 **`ML.MBER_MONTHLY_INFO` → `SILVER.CRM_MEMBER_STATUS_HIST`** 로
+   교체돼 있다(그 테이블이 이 계정에 인도되지 않았다 · 등가·커버리지 실증은 그 파일의 CTE 주석).
+   🔴 **되돌리지 마라** — 되돌리면 `does not exist` 로 다시 실패한다.
+
+~~🟢 **네 줄이 서로 정합한다** — ML 축은 뷰·SV·권한이 **함께** 없다.~~
+🔴 위 취소선은 **O118 시점 관측이고 지금은 거짓**이다(뷰·SV 는 배포됐다).
+🔴 **종전 인수인계가 `ML` `USAGE` 를 「SV 배포 선행조건」으로 적은 것이 오분류였다**는 판정은 **여전히 유효**하다 —
+SV 는 base 가 전건 `GOLD`(실적) 또는 `SERVING` 뷰(ML)이므로 `ML` 권한과 무관하게 동작한다.
+
+
+#### 0.9-G 🟠 「SV 종수」 축의 stale 기재는 문서군 전체에 퍼져 있다 (부분 수정 금지)
+
+🔴 O118 이 `grep` 으로 **약 50곳**을 확인했다 — `7 SV`·`SV 9종`·`SV 7종`·`05_1~05_9` 가
+`05_SV-Agent_ai/` 의 **15개 파일**에 흩어져 있다(전수 좌표 = 부속 근거철 `_o118_sv_live_census.md` §12).
+
+🔴🔴 **그래서 전수 치환을 하지 않았다** — 이유를 남긴다:
+㉠ 그 중 다수는 **이력 서술**이다(「종전 7 SV 는 stale 이었다」처럼 이미 교정된 문장) ⇒ 고치면 이력이 깨진다.
+㉡ 일부는 **다른 축의 7**이다 — `22_ML_SV_DDL.sql` 「SV 7종」은 **ML SV** 이고 실적 SV 와 다른 집합이다.
+   🔴 **한 정규식으로 치환하면 두 축이 섞인다**(`O111 ㉡` = 제외 규칙을 다른 축에 쓰지 마라).
+   🟢 **[O118-B 확증]** `sv_identifier_gate` 실측이 그 7종을 이름까지 확인했다(§0.9-H ㉠) ⇒ **다른 축임이 증명됐다.**
+㉢ `09_1`·`09_2` 의 Agent COMMENT 「SV 7종」은 **O84 가 이미 stale 로 적발**해 둔 것이고,
+   Agent 가 **미배포**이므로 지금 고쳐도 라이브에 반영되지 않는다(배포 시점 과제).
+
+⇒ 🟢 **채택한 처방 = 「개수를 세는 지점」을 한 곳으로 모은다.**
+  **배포 종수의 정본 = §0.9-B 의 쿼리**이고, 다른 문서는 그 좌표를 가리킨다.
+  O118 이 고친 곳 = **단정형 기재 6곳**(이 문서 5 + `05_0` 인덱스·범위 2) · 나머지는 **이력·타축**으로 분류.
+🔴 **다음 세션에 남긴 판정식** = 「`7 SV`·`9종` 을 만나면 ㉠ 이력인가 ㉡ ML 축인가 ㉢ 실적 SV 단정인가를
+  먼저 가르고, ㉢ 만 고쳐라.」 **일괄 치환은 금지**한다.
+
+#### 0.9-H 🔴🔴 [2026-08-29 O118-B] SV 전용 게이트 4종 실행 결과 — **실질 결함 3건**
+
+🔴🔴 **O118 초판의 최대 절차 결함 = 세션 주제가 SV 인데 SV 전용 게이트를 하나도 돌리지 않았다.**
+대상 = `scripts/sv_unit_gate.py` · `sv_identifier_gate.py` · `agent_tool_claim_gate.py` · `sv_code_label_gate.py`.
+🟢 **문서·조각 게이트 6종은 전부 🟢 였다** ⇒ 이것이 `R3-9`(게이트가 보지 않는 축)의 실물이다 —
+**게이트가 없어서가 아니라 있는 게이트를 안 돌려서** 놓쳤다(`P105` 「마커만 남기기」의 게이트 판).
+⇒ 🟢 **판정식 신설** = **주제 영역 전용 게이트 목록을 착수 시점에 `ls scripts/` 로 확인하라.**
+  문서 게이트 통과는 **도메인 게이트의 대체물이 아니다.**
+
+**㉠ 🔴 `sv_identifier_gate` FAIL — Agent 스펙이 미배포 SV 7종을 도구로 참조한다**
+
+| Agent | 도구 | 참조 대상(부재) |
+|---|---|---|
+| `AGENT_MEMBER` | `analyst_ml_member_risk` | `SV_ML_MEMBER_RISK` |
+| `AGENT_MEMBER` | `analyst_ml_sponsor_risk` | `SV_ML_SPONSOR_RISK` |
+| `AGENT_MEMBER` | `analyst_ml_fee_forecast` | `SV_ML_FEE_FORECAST` |
+| `AGENT_EXECUTIVE` | `analyst_ml_dvlp_forecast` | `SV_ML_DVLP_FORECAST` |
+| `AGENT_EXECUTIVE` | `analyst_ml_ltv_forecast` | `SV_ML_LTV_FORECAST` |
+| `AGENT_EXECUTIVE` | `analyst_ml_ltv_score` | `SV_ML_LTV_SCORE` |
+| `AGENT_EXECUTIVE` | `analyst_ml_feature_importance` | `SV_ML_FEATURE_IMPORTANCE` |
+
+검사 **26건 중 7건** 부재 · 게이트 판정 = *"미배포 드리프트(오기가 아니라 재배포 미이행)"*.
+🟢 이 7종이 정확히 `22_ML_SV_DDL.sql` 의 「SV 7종」이다 ⇒ **§0.9-F 의 축C 분류가 실측으로 확증**됐다.
+
+🟢🟢 **[2026-08-29 O118-B 종결] 사용자가 ML 축을 배포해 이 결함은 해소됐다.**
+`sv_identifier_gate` 재실행 = **검사 26건 · 라이브 SV 17종 · 미배포 드리프트 0 · 게이트 PASS**.
+⇒ 🟢 **「Agent 배포 시 죽은 도구 7개」 차단은 닫혔다.** 🔴 아래 「선행조건 2개」 서술도 **1개로 줄었다** —
+   남은 것은 **`DEC-44` 종결뿐**이다(§0.9-D·§0.9-E).
+🔴 **이 항목을 「미배포 드리프트」로 다시 승계하지 마라** — 재발 판정은 게이트 재실행으로 한다.
+
+~~🔴🔴 **함의 = Agent 배포 선행조건이 2개다.**~~ §0.9-D·§0.9-E 는 `DEC-44` 하나만 들었으나 **당시엔 부족했다**:
+  ㉠ `DEC-44` 종결(예산 metric 정합) ㉡ ~~**ML 축 배포**~~ 🟢 **해소됨**(위).
+  ~~⇒ 🔴 **지금 Agent 를 배포하면 도구 26개 중 7개가 죽은 채로 산다.**~~
+
+
+**㉡ 🔴 `sv_unit_gate` FAIL — 라이브 SV COMMENT 에 수치가 박혀 있다 (규약 직접 위반 7건)**
+
+`05_0` §공통규약 **COMMENT 작성 규약 (1)** = *"수치를 넣지 않는다 — 행수·합계·커버리지%·건수·금액·적재기간"*.
+근거는 §6.9-(8)(계정 재현 시 전 항목 오탐) 이고 **2026-07-31 에 제정**됐다. 그런데:
+
+| SV | 위치 | 박힌 수치 |
+|---|---|---|
+| `SV_MEMBER_SPONSOR_BIZ` | `TABLE.FMSB` | `2,170,572` |
+| `SV_MEMBER_SPONSOR_BIZ` | `DIMENSION.CAMPAIGN` | `1,687,546` · `483,028` |
+| `SV_MEMBER_SPONSOR_BIZ` | `DIMENSION.IS_MULTI_CAMPAIGN` | `0.01%` · `137건` |
+| `SV_MEMBER_SPONSOR_BIZ` | `TABLE.SPONSORSHIP` | `50행` |
+| `SV_MEMBER_SPONSOR_BIZ` | `METRIC.CURRENTLY_ACTIVE_SPNSR_AMT` | `10,000` |
+| `SV_MEMBER_SPONSOR_BIZ` | SV 최상위 COMMENT | `0.01%` · `28건` |
+| `SV_MEMBER_MONTHLY` | SV 최상위 COMMENT | `0.01%` |
+
+🔴 **`05_10` 은 2026-08-21 작성이므로 규약 제정 이후에 규약을 위반한 채 만들어졌다.**
+🔴 **그런데 아무도 적발하지 못했다 — 게이트가 있었고 돌리지 않았기 때문이다**(위 판정식의 근거).
+🟢 이 수치가 실제로 왜 위험한가 = **`2,170,572` 는 `FACT_MEMBER_SPONSOR_BIZ` 행수**이고 적재가 늘면
+   즉시 거짓이 되는데 **Analyst 가 COMMENT 를 근거로 인용**한다(§6.9-(8) 이 예고한 그 경로).
+🟠 **`sv_unit_gate` 의 다른 축은 전부 통과**했다 = 나눗셈 단위 위반 **0**(예외 2) · GRANT 누락 **0** ·
+   폐기식 노출 **0** · 필수 문안 소실 **0**.
+
+**㉢ 🔴 `agent_tool_claim_gate` FAIL — Agent 스펙 간 「가능/불가」 모순 1건**
+
+`SV_MEMBER_SPONSOR_BIZ` 의 **「후원사업별」** 주장이 **`AGENT_MARKETING`(불가) ↔ `AGENT_MEMBER`(가능)** 로 갈린다.
+🔴 두 Agent 가 같은 SV 의 같은 축에 **반대 태도**를 선언하고 있어 어느 쪽이 답하든 다른 쪽 문안이 거짓이 된다.
+🟠 부수(advisory) = 문안 이격 2건(`SV_MEMBER_MONTHLY` 0.420 · `SV_SERVICE` 0.328) — 두 Agent 의 같은 도구 설명이 갈렸다.
+🔴 **O118-B 는 이 모순을 고치지 않았다** — 어느 쪽이 옳은지는 **업무 판정**이고(§0.9-C 실측상
+  **약정 grain 에서는 가능**하다) Agent 스펙 문안 확정은 `08_AGENT_spec.md` 소관이다 ⇒ **다음 세션 과제로 등재**.
+
+**㉣ 🟠 시정 대상으로 등재한 것 (O118-B 미집행 · 근거 명시)**
+
+| # | 대상 | 조치 | 왜 지금 안 했나 |
+|---|---|---|---|
+| 1 | `05_10` COMMENT 수치 6곳 | 🟢 **DDL 원본 시정 완료** | 🔴 **재배포는 미실행** — 아래 참조 |
+| 2 | `05_1` COMMENT 수치 1곳 + **부정확한 제외 이유** | 🟢 **DDL 원본 시정 완료** | 동일 |
+| 3 | Agent 스펙 「후원사업별」 모순 | 🔴 미집행 | 업무 판정 필요(위 ㉢) |
+| 4 | ML 축 배포 | 🔴 미집행 | `R4-4-3` 승인 + `DEC-44` 순서(§0.9-E) |
+
+🔴🔴 **재배포를 하지 않은 이유(기록 의무)** = **측정 시점에 `dbt build` 가 라이브에서 실행 중이었다**(§0.9-I).
+GOLD 팩트·뷰가 재작성되는 중에 `CREATE OR ALTER SEMANTIC VIEW` 를 돌리는 것은 불필요한 위험이고,
+**Agent 가 0 이라 이 COMMENT 를 소비하는 주체가 아직 없다** ⇒ 긴급도가 낮다.
+⇒ 🟢 **빌드 종료 후 아래를 실행하면 DDL ↔ 라이브 드리프트가 닫힌다**(`GN_DW_ADMIN` 으로):
+```
+-- 05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql · 05_1_SV_DDL_MEMBER_MONTHLY.sql 각각 실행
+-- (CREATE OR ALTER 이므로 GRANT·소유권 보존 · 05_0 §파일규약 4)
+python3 scripts/sv_unit_gate.py     -- COMMENT 수치 검출 0 이 되어야 통과
+```
+🔴 **그때까지 「DDL 원본 = 규약 준수 / 라이브 = 위반」 상태다** — 이 드리프트를 문서에 명시해 둔다.
+
+#### 0.9-I 🔴🔴 [O118-B] 측정 환경 경고 — **이 절의 수치는 `dbt build` 진행 중에 측정됐다**
+
+`INFORMATION_SCHEMA.QUERY_HISTORY` 실측 = `insert into GN_DW.GOLD.FACT_MEMBER_MONTHLY` **RUNNING**
+(2026-08-29 07:21:59 시작) · `FACT_BIGQUERY_BEHAVIOR` **RUNNING** · GOLD WIDE 뷰 다수가 **07:22 에 재생성**.
+
+🔴 **그래서 같은 객체가 두 조회 사이에 값이 바뀌었다**(직접 `COUNT(*)` 실측):
+
+| 객체 | 1차 조회 | 2차 조회 | 해석 |
+|---|---:|---:|---|
+| `WIDE_MEMBER_FEE` | **0** | **40,262,076** | 재구축 완료 |
+| `FACT_MEMBER_MONTHLY` | **40,054,883** | **0** | 재구축 **진행 중** |
+
+🔴🔴 **교훈 2건**:
+㉠ **「0행」을 결함으로 단정하지 마라** — O118-B 는 `WIDE_MEMBER_FEE` 0행을 보고
+  「`SV_MEMBER_FEE` 는 아무것도 답하지 못한다」는 **거짓 결함을 발행할 직전까지 갔다.**
+  🟢 살린 것은 **재조회 + `QUERY_HISTORY` 로 원인 축을 확인**한 것이다(`O111 ㉠` = 분모·판정식을 먼저 의심하라).
+㉡ 🔴 **`INFORMATION_SCHEMA.TABLES.ROW_COUNT` 를 행수 근거로 쓰지 마라** — **양방향으로 stale** 이었다
+  (`FACT_MEMBER_MONTHLY` 를 0 으로, `FACT_MEMBER_FEE` 를 40,262,076 으로 보고 · 둘 다 직접 `COUNT(*)` 와 불일치).
+  ⇒ **행수는 `COUNT(*)`, 금액은 `SUM(<실컬럼>)`** 으로만 판정한다.
+
+🟢 **빌드와 무관하게 안정적이었던 축**(2회 이상 동일 · 판정에 사용 가능) =
+`BRONZE_ERP.BDGT_ACMSLT_LEDGER`(예산 원장) · `FACT_BUDGET` **2,964** · `FACT_SERVICE_EVENT` **38,467,142** ·
+`FACT_EVENT_PARTICIPATION` **1,134,126** · `FACT_MEMBER_SPONSOR_BIZ` **2,170,572** · SV 메타데이터 전건.
+🟢 **핵심 발견(§0.9-D `DEC-44`)은 빌드 후 재검증에서 전건 재현됐다** —
+`SV_BUDGET.TOTAL_EXEC_BUDGET` = `FACT_BUDGET SUM` = `FACT_BUDGET_YEARLY SUM` = **99,006,005,048** ↔
+BRONZE 최신차수만 **55,094,546,653**. ⇒ 🔴 **이 판정은 환경 변동에 영향받지 않는다.**
+
+🔴 **재측정 대기로 표기하는 것**(`R2-8-4-c` — 수치를 창작하지 않는다) =
+~~`FMM.*_SK` 채움률(§0.9-C 첫 두 행) · `WIDE_AD_COMBINED` 행수 · `SV_AD` 광고비 절대값.~~
+🟢 **판정(전건 0 인가 / 채움이 있는가)은 바뀌지 않을 성질**이지만 **분모 숫자는 빌드 후 재측정**하라.
+
+🟢🟢 **[2026-08-29 O118-B 재측정 완료 — 대기 해제]** 빌드 종료(`07:24:34` · `TOTAL=461` 유지) 후 재측정하니
+**전건 빌드 전과 동일**했다 ⇒ 위 「재측정 대기」는 **해제**한다.
+
+| 축 | 빌드 전 | 빌드 후 | 판정 |
+|---|---:|---:|---|
+| `FACT_MEMBER_MONTHLY` 행수 | 40,054,883 | **40,054,883** | 🟢 동일 |
+| `FMM.CAMPAIGN_SK` 비-0 | 0 | **0** | 🟢 전건 0 확정 |
+| `FMM.PAYMENT_SK` 비-0 | 0 | **0** | 🟢 전건 0 확정 |
+| `FMM.SPONSORSHIP_SK` 비-0 | 35,785,665 | **35,785,665** | 🟢 89.34% 확정 |
+| `WIDE_MEMBER_FEE` 행수 | (재구축 중 0) | **40,262,076** | 🟢 확정 |
+| `WIDE_AD_COMBINED` 행수 | 255,417 | **255,417** | 🟢 확정 |
+| `SV_AD` 불변식(sv==fact) | PASS | **PASS**(54,153,211,078.75) | 🟢 |
+| `SV_BUDGET` 불변식(sv==fact) | PASS | **PASS**(99,006,005,048) | 🔴 구조 PASS / **값은 과대**(§0.9-D) |
+| SV 종수 · Agent 종수 | 10 · 0 | **10 · 0** | 🟢 |
+
+🔴 **`SV_BUDGET` 의 +79.7% 과대는 빌드로 해소되지 않는다** — 원인이 적재가 아니라
+**원천의 편성 차수 이중계상**이기 때문이다(§0.9-D·§0.9-E) ⇒ `DEC-44` 결정이 유일한 해소 경로다.
+🟢 **부수 확증** = 전체 재구축을 거쳐도 채움률이 **비트 단위로 같다** ⇒ §0.9-C 의 판정은
+**일회성 관측이 아니라 재현된 성질**이다(O118 초판보다 근거가 강해졌다).
+
+
+---
+
+## 1. SV_MEMBER_MONTHLY (회원 Agent) — Phase 1 ✅
+
+**base FACT**: `GOLD.FACT_MEMBER_MONTHLY` (FMM, grain=MONTH_KEY×MEMBER_DK, 40.05M) · derived 40 (배속표 §1)
+
+### 1.1 Logical tables (7)
+> 🔴 **[2026-08-29 O118] 라이브는 4다**(FMM·MEMBER·MONTH·REASON) · `05_1` DDL 도 4 ⇒ **§1.1 만 stale**.
+> 🔴🔴 **[O118-B 정정] 제외 이유가 3종에 서로 다르다 — 한 문장으로 묶지 마라**(실측 = §0.9-C):
+> · `DIM_CAMPAIGN`·`DIM_PAYMENT` = **`CAMPAIGN_SK`·`PAYMENT_SK` 가 전건 0** ⇒ **적재 대기**(빈 축 노출 금지).
+> · `DIM_SPONSORSHIP` = **`SPONSORSHIP_SK` 는 89.34% 채워져 있다** ⇒ 적재 문제가 아니라
+>   **다중 후원 접힘**(회원 20.83% 가 후원사업 복수 보유)이라 단일 SK 로 후원사업별 분해를 하면 **귀속 오류**다
+>   ⇒ `SV_MEMBER_FEE`(회비 grain) 또는 `SV_MEMBER_SPONSOR_BIZ`(약정 grain) 소관.
+> ~~🟢 의도된 제외다: FMM 은 회원×월 1행이라 그 3축을 붙이면 grain 이 깨진다~~
+> 🔴 위 취소선 문안은 **O118 이 라이브 COMMENT 를 실측 없이 베낀 것**이고 3종 중 2종에 틀렸다 —
+> `DIM_SPONSORSHIP` 은 m:1 이라 붙여도 **fan-out 이 나지 않는다**(문제는 fan-out 이 아니라 의미다).
+> ⇒ 아래 표는 **청사진**으로만 읽어라.
+FMM(base) + DIM_MONTH + DIM_MEMBER_CURRENT + DIM_CAMPAIGN + DIM_SPONSORSHIP + DIM_PAYMENT + DIM_REASON
+
+### 1.2 Relationships (실측 조인키, 전부 many-to-one)
+| from (FMM) | → to | join key | fan-out |
+|---|---|---|---|
+| MONTH_KEY | DIM_MONTH | MONTH_KEY = MONTH_KEY | ✅ 차단(월 grain) |
+| MEMBER_DK | DIM_MEMBER_CURRENT | MEMBER_DK = MEMBER_DK | ✅ 차단(현재행) |
+| CAMPAIGN_SK | DIM_CAMPAIGN | CAMPAIGN_SK = CAMPAIGN_SK | m:1 |
+| SPONSORSHIP_SK | DIM_SPONSORSHIP | SPONSORSHIP_SK = SPONSORSHIP_SK | m:1 |
+| PAYMENT_SK | DIM_PAYMENT | PAYMENT_SK = PAYMENT_SK | m:1 |
+| REASON_SK | DIM_REASON | REASON_SK = REASON_SK | m:1 |
+| (FTG_D 목표) | *브리지 §8.1* | conformed(MONTH×ORG×DEV_TYPE) | raw 조인 금지 |
+
+### 1.3 Dimensions (노출·한글 synonyms·CS) — ⚠개선 A: 시점-가변은 FMM 스냅샷
+| dimension | source | 한글 synonyms | 처리 |
+|---|---|---|---|
+| 조회년월/년/월/분기 | DIM_MONTH.MONTH_KEY·YEAR·MONTH·QUARTER | 월, 년월, 연도, 분기 | sample_values |
+| **신규기존(as-of)** | **FMM.NEW_EXISTING_FLAG**(시점귀속) | 신규/기존 | degenerate, sample_values. §6-B 해소 |
+| 성별·최초가입·가입경로·회원구분(불변) | DIM_MEMBER_CURRENT.GENDER·FIRST_JOIN_DATE·ENROLL_PATH·MEMBER_TYPE | 성별, 최초가입일, 가입경로, 회원구분 | sample_values |
+| 지역·연령대·회원상태(현재값 한계) | DIM_MEMBER_CURRENT.REGION·AGE_BAND·MEMBER_STATUS | 지역, 연령대, 회원상태 | ⚠**현재 기준**(FACT 미보유) — instruction 고지 |
+| 캠페인명·유형·브랜드·상위캠페인(as-of) | **FMM.CAMPAIGN_SK**→DIM_CAMPAIGN.CAMPAIGN_NAME·CAMPAIGN_TYPE·BRAND·PARENT_CAMPAIGN | 캠페인, 캠페인명 | **Cortex Search**(36,144) |
+| 후원사업명·약칭(as-of) | FMM.SPONSORSHIP_SK→DIM_SPONSORSHIP.SPONSORSHIP_NAME·SPONSORSHIP_ABBR | 후원사업, 사업명 | sample_values(51) |
+| 납입방식·회비유형(as-of) | FMM.PAYMENT_SK→DIM_PAYMENT.PAYMENT_METHOD·FEE_TYPE | 납입방식, 결제방식, 회비유형 | sample_values(7) |
+| 중단/미납 사유(as-of) | FMM.REASON_SK→DIM_REASON.REASON_NAME·REASON_TYPE | 중단사유, 미납사유 | **Cortex Search**(5,835) |
+| 금액대·기간대·개발구분·플래그·미납플래그 | FMM.AMOUNT_BAND1/2·PERIOD_BAND1/2·DEV_TYPE·NEW_FLAG·INCREASE_FLAG·REDONATE_FLAG·UNPAID_FLAG_BOM·UNPAID_FLAG_EOM | 후원금액대, 후원기간대, 개발구분, 월초/월말미납 | degenerate dim, sample_values |
+
+### 1.4 Base measures (가산성 F/S/D)
+| measure(FMM) | 클래스 | default_agg | 지표 |
+|---|---|---|---|
+| DEV_CNT·STOP_CNT·UNPAID_CNT·INCREASE_CNT·DECREASE_CNT·CHURN_CNT | F | sum | #149·35·36·151·38·신20 |
+| PAID_FEE·BILLED_AMT·REGULAR_FEE·REGULAR_ONETIME_FEE·ONETIME_ONETIME_FEE | F | sum | #69·71·66·67·68 |
+| CAMPAIGN_UNPAID_CNT·STATUS_UNPAID_CNT·INBOUND_CALL_CNT·TS_CALL_CNT | F | sum | #83·84 |
+| **DEV_MEMBERS·INCREASE_MEMBERS** | **D** | 단일월 sum / 다월 `COUNT(DISTINCT MEMBER_DK)` | #148·150 |
+| **ACTIVE_MEMBERS·ACTIVE_CUM_MEMBERS** | **S+D** | 시점값·월합산금지 / 다월 distinct | #156·158 |
+| ACTIVE_CNT·ACTIVE_CUM_CNT | **S** | sum(차원 간)·월합산금지 | #37·159 |
+| MONTH_END_ACTIVE_CNT·PREV_MONTH_END_ACTIVE_CNT·YEAR_START_ACTIVE_CNT·YEAR_END_ACTIVE_CNT | **S** | 시점값·월합산금지 | #52·53·49·50 |
+
+### 1.5 Instruction
+- 시간: 캠페인성과(신12~29) 24~25년~ 한정, 나머지 전체가능(배속표 시간열). **누계(YTD)=연초~조회월 필터 SUM**(window 금지).
+- ✅ 신규기존/중단/미납 신규기존 분해(§6-B) = `FMM.NEW_EXISTING_FLAG`(시점귀속 실재) → **as-of 정합**, 별도 합의 불요.
+- ✅ 공80 미납회원 감소율 = `UNPAID_FLAG_BOM`/`UNPAID_FLAG_EOM` 실재 → **활성**(월초·월말 미납회원 COUNT DISTINCT 차분).
+- ⚠ 지역·연령대·회원상태는 **현재 기준**(과거월 조회 시 현재 속성) 고지.
+- S measure: "활동회원수 등 시점 재고값은 월 합산 금지, 조회월 값 사용". D measure: 기간 distinct는 COUNT(DISTINCT 회원).
+
+---
+
+## 2. SV_MEMBER_EVENT (회원 Agent) — Phase 1 ✅
+
+**base FACT**: `GOLD.FACT_MEMBER_EVENT` (FME, 4.63M · ⚠grain 정정 2026-07-22: DATE_SK×MEMBER_DK×EVENT_TYPE는 **유일하지 않음** [distinct 4,052,797 = 약 12.5% 중복] → 진짜 grain 더 세밀, PRIMARY KEY 선언 근거 아님) · derived 8 (유지기간·LTV 신2~8·주간중단 공58)
+
+### 2.1 Logical tables (6)
+> 🟢 **[2026-08-29 O118] 라이브 6 = 제목과 일치**(FME·DATE·MEMBER·CAMPAIGN·ORG·SPONSORSHIP).
+> 🔴 **아래 열거는 7종이라 제목과 어긋난다**(`DIM_REASON` 이 여분) — **제목이 맞다**(§0.9-C 축② 문서 오기).
+> ⚠️ 중단사유·중단경로는 라이브에서 **`FME` 자신의 컬럼**으로 노출된다(O33) ⇒ `DIM_REASON` 조인이 불요하다.
+FME(base) + DIM_DATE(일) + DIM_MEMBER_CURRENT + DIM_CAMPAIGN + DIM_SPONSORSHIP + DIM_ORG + DIM_REASON
+> ⚠ 7 논리테이블 초과 방지: LTV/유지 질의에 ORG 불필요 시 DIM_ORG 생략 가능(3단계에서 focus 판단). 기본 포함(중단 조직분석).
+
+### 2.2 Relationships
+| from (FME) | → to | join key | 비고 |
+|---|---|---|---|
+| DATE_SK | DIM_DATE | DATE_SK = DATE_SK | 일 grain(주간=WEEK_OF_YEAR) |
+| MEMBER_DK | DIM_MEMBER_CURRENT | MEMBER_DK = MEMBER_DK | ✅ 현재행 |
+| CAMPAIGN_SK | DIM_CAMPAIGN | CAMPAIGN_SK = CAMPAIGN_SK | m:1 |
+| SPONSORSHIP_SK | DIM_SPONSORSHIP | SPONSORSHIP_SK = SPONSORSHIP_SK | m:1 |
+| ORG_SK | DIM_ORG | ORG_SK = ORG_SK | m:1 (SCD1 유일) |
+| REASON_SK | DIM_REASON | REASON_SK = REASON_SK | m:1 |
+
+### 2.3 Dimensions
+| dimension | source | 한글 synonyms | 처리 |
+|---|---|---|---|
+| 사건일·주차·요일 | DIM_DATE.FULL_DATE·WEEK_OF_YEAR·DAY_OF_WEEK | 사건일, 주차, 일자 | sample_values |
+| 상태전이유형 | FME.EVENT_TYPE | 개발/중단/증액/미납중단 | degenerate, sample_values |
+| 신규기존·중단채널 | FME.NEW_EXISTING_FLAG·STOP_CHANNEL | 신규/기존, 중단채널 | sample_values |
+| 가입일·중단일 | FME.JOIN_DATE·STOP_DATE | 가입일, 중단일 | degenerate(유지기간 산출 base) |
+| 조직(법인/본부/부서/팀) | DIM_ORG.CORP·DIVISION·DEPARTMENT·TEAM | 조직, 부서, 본부, 팀 | **Cortex Search**(1,315, DEPARTMENT/TEAM) |
+| 캠페인명·브랜드·상위캠페인·홍보방법 | DIM_CAMPAIGN.CAMPAIGN_NAME·BRAND·PARENT_CAMPAIGN_NAME·PROMO_METHOD_NAME | (§1과 동일) | CAMPAIGN=**CS**. 이 4개만 캠페인 자체 속성이라 DIM_CAMPAIGN 유지 |
+| 🔴[2026-08-25 설계부채 해소] 회원 개발이력 비정규화 9속성(CAMPAIGN_TYPE·DOMESTIC_OVERSEAS·BIZ_CASE_TYPE·CAMPAIGN_INFLOW_PATH·MARKETING_CAMPAIGN·CMMN_BRND_NM·MKTG_UTM_NM·SPNSR_DIV_NM·CPR_DIV_NM) | FME.*_AT_EVENT(=SILVER CRM_MEMBER_DEV 적재 시점 동결값) | (§1과 동일 친화명) | 종전엔 DIM_CAMPAIGN 실시간 조인(campaign.*)이었으나 캠페인 마스터 정정 시 과거 사건값이 조용히 바뀌는 결함이 있어 FME 자신의 스냅샷 컬럼으로 전환. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL |
+| 후원사업·사유 | DIM_SPONSORSHIP·DIM_REASON | (§1과 동일) | REASON=**CS** |
+
+### 2.4 Base measures
+| measure(FME) | 클래스 | default_agg | 지표 |
+|---|---|---|---|
+| DEV_CNT·DEV_MEMBERS·STOP_CNT·STOP_MEMBERS·UNPAID_STOP_CNT·UNPAID_STOP_MEMBERS | F | sum | #149·148·35·미납중단 |
+| (유지기간 신2~5) | 파생 | — | JOIN_DATE↔조회일 DATEDIFF (3단계 metric, 저장 안 함) |
+
+### 2.5 Instruction
+- 신8 LTV = **22년~ 부분**(회비데이터 실측: 2022-01~ 전량·46.4M, 2021↓ 이관잔재 <650행/월. 개발·중단은 2019~ 확보 → 회비가 binding) → "22년 이전 LTV는 회비 희소로 부정확". ⚠합의·Phase-2 활성화 결정.
+- ⚠ 신6 명칭('이탈율') vs 식(유지율) 상충(§6-E) → 정본 식 우선.
+- cohort(가입↔중단 간격) = FME degenerate(JOIN_DATE·STOP_DATE)로 산출.
+- 🔴[2026-08-25] `FACT_MEMBER_EVENT.sql`(dbt)에 CRM_MEMBER_DEV 9속성(코드+라벨 18컬럼, `_AT_EVENT` 접미사)을 개발(DEV) 브랜치에 직배선, 중단(STOP) 브랜치는 원천 부재로 NULL. `SV_MEMBER_EVENT` DDL도 동시 반영 완료(§2.3 참조) — 배포·검증(`SEMANTIC_VIEW()` 스모크 + `SYSTEM$WRITE_SEMANTIC_MODEL_YAML` 검증) 완료.
+
+---
+
+## 3. SV_SERVICE (회원 Agent) — Phase 1 ✅ (신32·33만 P2)
+
+**base FACT**: `GOLD.FACT_SERVICE_EVENT` (FSE, grain=DATE_SK×MEMBER_DK×SERVICE_SK×CAMPAIGN_SK, 38.5M) · derived 24 (신30~53)
+
+### 3.1 Logical tables (5)
+> 🔴 **[2026-08-29 O118] 라이브는 4다** — `DIM_CAMPAIGN` **미포함**(`FSE.CAMPAIGN_SK` 전건 0 ⇒
+> 「빈 축·전건 Unknown 노출 금지」 규약 적용 · §0.9-C 축①). 캠페인 축 활성 트리거 = `O8`·Q10.
+FSE(base) + DIM_DATE(일) + DIM_MEMBER_CURRENT + DIM_SERVICE + DIM_CAMPAIGN
+> 코호트(유지·납입)는 FME/FMM 직접 조인이 아니라 **§8.2 코호트 브리지 뷰** 경유.
+
+### 3.2 Relationships
+| from (FSE) | → to | join key | 비고 |
+|---|---|---|---|
+| DATE_SK | DIM_DATE | DATE_SK = DATE_SK | 발송일 |
+| MEMBER_DK | DIM_MEMBER_CURRENT | MEMBER_DK = MEMBER_DK | ✅ 현재행 |
+| SERVICE_SK | DIM_SERVICE | SERVICE_SK = SERVICE_SK | m:1 |
+| CAMPAIGN_SK | DIM_CAMPAIGN | CAMPAIGN_SK = CAMPAIGN_SK | m:1 |
+| (FME/FMM 코호트) | *브리지 §8.2* | MEMBER_DK+발송일+5일 | raw 조인 금지 |
+| (FBQ 클릭 신32) | *브리지 §8.3* | IDENTITY | P2 |
+
+### 3.3 Dimensions
+| dimension | source | 한글 synonyms | 처리 |
+|---|---|---|---|
+| 발송일 | DIM_DATE.FULL_DATE | 발송일, 일자 | sample_values |
+| 발송구분(대/중/소)·subtype | DIM_SERVICE.SEND_TYPE_L/M/S·SUBTYPE | 발송구분, 서비스유형, 채널 | sample_values(11) |
+| 발송상태·발송유형·제목 | FSE.SEND_STATUS·SEND_TYPE·SEND_TITLE | 발송상태, 발송유형 | SEND_TITLE=고카디널리티→CS(선택) |
+| 캠페인 | DIM_CAMPAIGN.CAMPAIGN_NAME | 캠페인 | **Cortex Search** |
+| 회원속성 | DIM_MEMBER_CURRENT.* | (§1) | sample_values |
+
+### 3.4 Base measures (모두 F, sum)
+SEND_MEMBERS·SUCCESS_MEMBERS·FAIL_MEMBERS·OPEN_MEMBERS·LETTER_PART_MEMBERS·LETTER_PART_CNT·GIFT_PART_MEMBERS·GIFT_PART_AMT·D5_LETTER_PART_*·D5_GIFT_PART_*·D5_INCREASE_PART_*·D5_STOP_*·SERVICE_MEMBERS·SERVICE_CNT (#85~91·139~146·160·161)
+
+### 3.5 Instruction
+- ⚠ 신30 분모 "전체회원수" 정의 미정(§6-F) → DIM_MEMBER_CURRENT universe(활동/전체) 3단계 확정 전 주의.
+- ⚠ 참여 정의 서비스별 상이(O4): 신36·38·40·42 "참여회원" = subtype별 정의 → instruction 명시.
+- 신32·33 = GA 클릭(명) 의존 → **P2**(§8.3 브리지·identity 4.2% 커버리지 경고).
+- ⚠ O8: FSE 캠페인 귀속(직접 FK vs MEMBER 스냅샷) 미확정 → 직접 CAMPAIGN_SK 사용(실물), 회원 다중사업 시 주의.
+
+---
+
+## 4. SV_EVENT_PARTICIPATION (회원 Agent) — Phase 1 ✅ (derived 0)
+
+**base FACT**: `GOLD.FACT_EVENT_PARTICIPATION` (FEP, grain=DATE_SK×MEMBER_DK×EVENT_SK, 1.1M) · derived 0 (base 집계 전용)
+
+### 4.1 Logical tables (5)
+> 🔴🔴 **[2026-08-29 O118] 라이브는 4다** — `DIM_CAMPAIGN`·`DIM_SPONSORSHIP` **미포함**.
+> 🟢 **이것이 `O8` 차단조항의 이행 상태다**(실측 확인): `FEP.SPONSORSHIP_SK` 는 **비-0 행 0**(전건 하드코딩 `0` 센티넬)
+> 이고 라이브 SV 에 후원사업 dim·metric 이 **0** 이다 ⇒ **다중 캠페인 귀속 규칙이 정해질 때까지 노출 금지**가
+> 코드에서 지켜지고 있다. 🔴 **§4.2 의 CAMPAIGN·SPONSORSHIP relationship 행을 배선하지 마라**(§0.9-C 축①).
+FEP(base) + DIM_DATE(일) + DIM_MEMBER_CURRENT + DIM_EVENT + DIM_CAMPAIGN
+
+### 4.2 Relationships
+| from (FEP) | → to | join key | 비고 |
+|---|---|---|---|
+| DATE_SK | DIM_DATE | DATE_SK = DATE_SK | 참여일 |
+| MEMBER_DK | DIM_MEMBER_CURRENT | MEMBER_DK = MEMBER_DK | ✅ 현재행 |
+| EVENT_SK | DIM_EVENT | EVENT_SK = EVENT_SK | m:1 ⚠**고아 23%**(R4) |
+| CAMPAIGN_SK | DIM_CAMPAIGN | CAMPAIGN_SK = CAMPAIGN_SK | m:1 (분석축) |
+| SPONSORSHIP_SK | DIM_SPONSORSHIP | SPONSORSHIP_SK = SPONSORSHIP_SK | m:1 (분석축) |
+
+### 4.3 Dimensions
+| dimension | source | 한글 synonyms | 처리 |
+|---|---|---|---|
+| 참여일 | DIM_DATE.FULL_DATE | 참여일, 행사일 | sample_values |
+| 행사명·구분·종류·신청경로 | DIM_EVENT.EVENT_NAME·EVENT_CATEGORY·EVENT_KIND·APPLY_CHANNEL | 행사, 행사명, 온/오프라인 | **Cortex Search**(3,787) |
+| 참여상태·경로·채널·당첨·본인참여·증액 | FEP.PART_STATUS·PART_PATH·PART_CHANNEL·WIN_FLAG·SELF_PART_FLAG·INCREASE_FLAG | 참여상태, 참여경로 | sample_values |
+
+### 4.4 Base measures (F, sum)
+RECRUIT_CNT·TOTAL_CNT·WAIT_CNT·CANCEL_CNT·CONFIRM_CNT·PARTICIPATE_CNT·ABSENT_CNT·PARTICIPANT_CNT·PARTICIPATION_TIMES·WAIT_TIMES·ABSENT_TIMES·CUM_APPLY_TIMES·REGULAR_DONATION (O11 총참여수 등)
+
+### 4.5 Instruction
+- ⚠ **EVENT_KEY→DIM_EVENT 고아 23%**(이슈 E·R4): "행사 미매칭 23% 존재, Unknown(0) 라우팅 — 행사명별 집계는 부분". 확정치로 쓰지 말 것.
+
+---
+
+## 5. SV_BUDGET (overall Agent) — Phase 1 부분 (편성/집행) · 나머지 P2
+
+**base FACT**: `GOLD.FACT_BUDGET` (FBD, grain=MONTH_KEY×ORG×BUDGET_ITEM_SK[×CAMPAIGN], 24.5K) · derived 3 (신9~11, 전건 P2)
+
+### 5.1 Logical tables (5)
+> 🔴 **[2026-08-29 O118] 라이브는 3다**(FBD·MONTH·ITEM) — `DIM_ORG`·`DIM_CAMPAIGN` **미포함**
+> (`FBD.ORG_SK`·`CAMPAIGN_SK` 전건 0 · `O3` ⇒ 빈 축 노출 금지 규약 · §0.9-C 축①).
+> 🔴🔴 **이 SV 는 「보류」다 — `§0.9-D` 를 먼저 읽어라.** 라이브 `TOTAL_EXEC_BUDGET` 이
+> **예산 편성 차수 이중계상으로 +79.7% 과대**하다. `DEC-44` 정책 회신 전까지 metric 을 확정하지 마라.
+FBD(base) + DIM_MONTH + DIM_ORG + DIM_BUDGET_ITEM + DIM_CAMPAIGN
+> FTG_B(사업목표)·FMM(ROI 연계)는 브리지 경유(§8.1·§8.4), 현재 FTG_B=0행 → P2.
+
+### 5.2 Relationships
+| from (FBD) | → to | join key | 비고 |
+|---|---|---|---|
+| MONTH_KEY | DIM_MONTH | MONTH_KEY = MONTH_KEY | ✅ 월 grain |
+| ORG_SK | DIM_ORG | ORG_SK = ORG_SK | m:1 |
+| BUDGET_ITEM_SK | DIM_BUDGET_ITEM | BUDGET_ITEM_SK = BUDGET_ITEM_SK | m:1 |
+| CAMPAIGN_SK | DIM_CAMPAIGN | CAMPAIGN_SK = CAMPAIGN_SK | m:1 (선택) |
+
+### 5.3 Dimensions
+| dimension | source | 한글 synonyms | 처리 |
+|---|---|---|---|
+| 예산월/년 | DIM_MONTH.MONTH_KEY·YEAR | 예산월, 연도 | sample_values |
+| 조직(법인/본부/부서/팀) | DIM_ORG.* | 조직, 부서, 본부 | **Cortex Search**(1,315) |
+| 세세목명·예산구분 | DIM_BUDGET_ITEM.BUDGET_ITEM_NAME·BUDGET_CATEGORY | 세세목, 예산항목, 예산구분 | **Cortex Search**(2,041) |
+| 캠페인 | DIM_CAMPAIGN.CAMPAIGN_NAME | 캠페인 | **Cortex Search** |
+
+### 5.4 Base measures (F, sum) — Phase 1 노출
+PLAN_BUDGET_MONTH·PLAN_BUDGET_YEAR·EXEC_BUDGET_ERP·EXEC_BUDGET_EST·FUNDRAISING_COST·AD_COST (편성/집행)
+
+### 5.5 Instruction
+- Phase 1: 편성/집행 예산 조회만 활성. **개발단가·ROI(신9~11)=P2**(모금성비용 원천·캠페인 배분 O3 미해결·FTG_B 0행).
+- ⚠ O3: FBD 세세목↔캠페인 매핑 없음 → **부서 grain까지만**, 캠페인별 ROI(신11) 적용불가.
+
+---
+
+## 6. SV_AD (overall Agent) — **Phase 1 배포 완료** (2026-07-28)
+
+> **전제 변경 이력**: 본 절은 2026-07-27까지 "FAD 전건 FK=0 스캐폴드 → 전건 Phase-2"였다.
+> 2026-07-28 BRONZE→GOLD 파이프라인 확장(AGENCY 광고 무손실 staging → 위성 팩트 3종 + DIM_DEVICE)으로
+> **measure·degenerate 축이 실적재**되어 CTR·CVR·개발단가가 산출 가능해짐 → **Phase-1으로 승격**.
+> 캠페인·소재 축만 여전히 FK=0으로 Phase-2 잔류(부분 승격).
+
+**base**: 🔴 **[2026-08-10 O53 변경]** `GOLD.WIDE_AD_COMBINED` (dbt 소유 GOLD 뷰 — FAP+FAD+FAB **1:1 pre-join** · 51컬럼 · 방송 시간축 4컬럼 추가 · `AD_PERF_DK` 전건 유일 = fan-out 0). 종전 `SERVING.FACT_AD_COMBINED`(47컬럼) 는 §0.8-D 로 폐지 — 7단계에서 DROP. ⚠️ 종전 문서 기재 「235,572행」은 **stale** 이었다(실측 243,545 = DGT 205,059 + REBRDC 2,070 + VIDEO 36,416).
+· 실배포 SV = `GN_DW.SERVING.SV_AD` (dim 20 · metric **15**)
+
+### 6.0 왜 helper 뷰인가 (star 직접조인 대신 pre-join)
+GOLD 광고 팩트는 **수직 분할** 구조다 — 코어 `FACT_AD_PERFORMANCE`(FAP, 235,572) 아래
+`FACT_AD_DIGITAL`(FAD, 197,686) + `FACT_AD_BROADCAST`(FAB, 37,886)가 `AD_PERF_DK`로 1:1 결합하며
+**197,686 + 37,886 = 235,572 = FAP 전건**(완전분할, 실측 검증). 즉 fan-out 위험이 없는 논리적 단일 팩트다.
+
+그런데 **Snowflake semantic view의 metric 식은 자기 logical table의 컬럼만 참조 가능**하다(실측 확인):
+```
+-- ❌ 컴파일 실패: invalid identifier 'DIG.CRM_DEV_CNT'
+fap.DEV_UNIT_PRICE AS SUM(fap.AD_COST) / NULLIF(SUM(dig.CRM_DEV_CNT), 0)
+```
+개발단가(공7)는 분자 `AD_COST`(FAP) ÷ 분모 `CRM_DEV_CNT`(FAD)로 **팩트 경계를 넘는 비율**이라
+star 직접조인 구조로는 DDL 자체가 생성되지 않는다. → `WIDE_AD_COMBINED` 사전 조인으로 해소(O53 이전 = `SERVING.FACT_AD_COMBINED`).
+**§0.1 helper뷰 원칙(DIM_MONTH·DIM_MEMBER_CURRENT)과 동일 계열**이며, 여기서는 fan-out 차단이 아니라
+**cross-satellite 비율 metric 성립**이 목적이다.
+> ⚠ 이 제약은 문서 §2/03 문서가 상정한 "FAD×FMM 크로스팩트 개발단가"가 **애초에 SV로 구현 불가**였음을 뜻한다.
+> 실제로는 개발단가 분모가 FMM이 아니라 **광고 팩트 내부(FAD.CRM_DEV_CNT / FAB.DVLP_CNT)에 동반 적재**되어
+> 크로스팩트 conform이 **불필요**해졌다 → 03/§2 매핑 정정 대상.
+
+### 6.1 Logical tables (3)
+> 🔴 **[2026-08-29 O118] 라이브는 4다** — `GOLD.DIM_MARKETING_CAMPAIGN`(`MKTG_CAMPAIGN_SK`)이 **추가**됐다.
+> 🟢 O45 의 마케팅캠페인 축 활성화가 **라이브 SV COMMENT 에는 기록됐고 이 절에는 반영되지 않았다**
+> (§0.9-C 축① — 설계 변경 미반영). 🔴 「소재별·개발캠페인별」은 **여전히 불가**(Q10 · 배분규칙 부재).
+`ad` = GOLD.WIDE_AD_COMBINED (base · O53) + `date` = GOLD.DIM_DATE + `device` = GOLD.DIM_DEVICE
+> DIM_CAMPAIGN·DIM_AD_CREATIVE는 **의도적 미포함** — FK 전건 0이라 노출 시 전건 Unknown으로 오해를 유발.
+
+### 6.2 Relationships (2)
+`ad(PERF_DATE_SK) → date(DATE_SK)` (고아 0, 실측) · `ad(DEVICE_SK) → device(DEVICE_SK)` (커버리지 100%, 235,572행 전건)
+
+### 6.3 Dimensions (19)
+> ⚠ **2026-07-31 교정**: 이 절과 구 13 §5-7 이 "20"으로 적고 있었으나 **19가 맞다**. 아래 표 실제 구성 = 시간 4 + 코어 3 + 기기 2 + 디지털 4 + 방송 6 = 19. `INFORMATION_SCHEMA.SEMANTIC_DIMENSIONS` 실측 19(metric 15는 맞음). 검증 쿼리는 05_SV_DDL.sql §8-10. ※ 이후 05 DDL이 metric을 확장했으므로 개수는 문서에 박지 말고 §8-10 쿼리로 확인할 것.
+| 그룹 | dim | 비고 |
+|---|---|---|
+| 시간 | PERF_DATE·CAL_YEAR·CAL_MONTH·CAL_QUARTER | 디지털 2024-01–2026-06 / 방송 2023-01–2026-07 |
+| 코어 | **AD_SOURCE_TYPE**(DIGITAL 197,686 / VIDEO 35,822 / REBROADCAST 2,064)·DAY_OF_WEEK·WEEK_OF_YEAR | AD_SOURCE_TYPE이 디지털/방송 measure 분기 축 |
+| 기기 | DEVICE_TYPE·DEVICE_SCOPE_DESC | DEC-10 실배선, 100%. **실제 코드값 4종: `M`(모바일, GA4 mobile/tablet 통합)·`PC`·`(해당없음)`(방송)·`(unknown)`(센티넬)** |
+| 디지털 전용 | AD_TYPE_NM(6, 100%)·CREATIVE_TYPE(4, 39%)·PAGE_TYPE·AD_GROUP_NM | 방송행은 NULL |
+| 방송 전용 | CHANNEL_COMPANY(61)·TIME_BAND(24)·PROGRAM_NM(1,837, 94%)·SPOT_TYPE(4)·CM_POSITION(16)·RT_TYPE | 디지털행은 NULL |
+> PROGRAM_NM(1,837)은 향후 **Cortex Search** 후보(§9). 나머지 저카디널리티는 sample_values로 충분.
+
+### 6.4 Metrics (**15** — 방송 개발단가 제외)
+| 분류 | metric | 정의 | 스코프 |
+|---|---|---|---|
+| 공통 | TOTAL_AD_COST | SUM(AD_COST) | **전체 합산 허용**(총 514.4억원 실측) |
+| 디지털 | TOTAL_IMPRESSIONS·TOTAL_CLICKS·TOTAL_AGENCY_CONV_MEMBERS | SUM | 방송행 NULL |
+| 디지털 | **CTR**(공9) | CLICKS ÷ IMPRESSIONS ×100 | 2024 0.199% / 2025 0.286% / 2026 0.345% |
+| 디지털 | **CVR**(공10) | AGENCY_CONV_MEMBERS ÷ CLICKS ×100 | AGENCY_CONV_MEMBERS 122,551 |
+| 디지털 | TOTAL_CRM_DEV_CNT | SUM(CRM_DEV_CNT) | 총 249,390. ⚠소수값·2024-01~2026-05만 |
+| 디지털 | **DEV_UNIT_PRICE**(공7) | **SUM(CASE WHEN CRM_DEV_CNT IS NOT NULL THEN AD_COST END)** ÷ CRM_DEV_CNT | 2024 131,367원 / 2025 110,335원 / 2026(1~5월) 103,066원 |
+| 디지털 | TOTAL_READ_CNT(8.17M)·TOTAL_MEDIA_POTENTIAL | SUM | 신규 measure(문서 §1 base 카탈로그 미등재) |
+| 방송 | TOTAL_AD_CNT(36,712)·TOTAL_CONV_CALL_CNT(49,093)·TOTAL_INBOUND_CALL(165,462) | SUM | 디지털행 NULL |
+| **재방송** | TOTAL_DVLP_CNT(96,321)·TOTAL_DVLP_MEMBER_CNT | SUM | **REBROADCAST 전용** — VIDEO 원천에 개발 컬럼 부재. 재방송 내 커버리지 96.03% |
+
+**가산성(§0.3)**: 위 SUM은 전부 F(flow, 가산). CTR·CVR·개발단가는 **N(비가산)** — 분자·분모 각각 집계 후 division(R5 준수).
+
+#### 6.4.1 ⚠ 비율 metric의 분자·분모 커버리지 정합 (2026-07-28 실측 → **2026-07-29 오진 교정**)
+SUM/SUM 비율에서 **분모가 부분 적재이고 분자가 전건**이면 비율이 조용히 과대계상된다. 단, "부분 적재"를 판정할 때 **분모의 유효 모집단(scope)을 먼저 확정해야 한다** — 아래 방송 사례가 그 반례다.
+
+| metric | 분모 커버리지 | 미정합 값 | 정합 값 | 왜곡 | 조치 |
+|---|---:|---:|---:|---:|---|
+| DEV_UNIT_PRICE (디지털) | 95.7% (189,252/197,686) | 119,951원 | **114,870원** | +4.4% | 분자 `CASE WHEN` 정합 후 **노출** ✅ |
+| ~~BRDC_DEV_UNIT_PRICE (방송)~~ | ~~5.2% (1,982/37,886)~~ | ~~223,466원~~ | ~~157,969원~~ | ~~+41.5%~~ | ~~미노출~~ → **오진, 폐기** |
+| **REBRDC_DEV_UNIT_PRICE (재방송)** | **96.03%** (1,982/**2,064**) | 158,933원 | **157,969원** | **+0.61%** | 분자 `CASE WHEN` 정합 후 **노출** ✅ (2026-07-29 복원) |
+
+- **디지털**: 분자를 `SUM(CASE WHEN CRM_DEV_CNT IS NOT NULL THEN AD_COST END)`로 제한해 정합 → 노출 유지.
+- **재방송(공8) — 2026-07-29 복원**: 종전 "커버리지 5.2% · 41% 왜곡" 판정은 **분모 모집단을 잘못 잡은 범주 오류**였다.
+  - 실측: `DVLP_CNT`는 `BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS`에만 존재하고 **`VIDEO_AD_CMPGN_DTLS`에는 개발 컬럼이 아예 없다**(비디오 리포트는 개발 대신 `CONV_CALL_CNT` 보고). 즉 VIDEO의 공백은 **미적재 결손이 아니라 구조적 부재** → 분모 모집단에서 제외해야 한다.
+  - 올바른 모집단(REBROADCAST 2,064행)으로 재산정하면 커버리지 **96.03%**, 정합 왜곡 **0.61%** — 노출에 지장 없는 수준이다. 5.2%·41.5%는 VIDEO를 섞었을 때만 나온다.
+  - 종전 주석의 "정합해도 방송 광고비의 **29%만** 반영"도 **수치가 뒤집힌 오기**다. 정합 분자 ₩15,215,758,016 / 방송합계 ₩21,524,449,226 = **70.7% 포함**이며, 29%는 오히려 *제외되는* VIDEO의 몫이다.
+  - **명명 교정**: `BRDC_`(방송) → **`REBRDC_`(재방송)**. VIDEO(방송 광고비의 29%)에 개발 개념이 없으므로 "방송 개발단가"는 여전히 스코프를 오인시킨다. 종전의 *문제의식*("이름이 커버리지를 오인시킨다")은 타당했고, **해법이 "제거"가 아니라 "정확한 스코프 명명"이었다.**
+  > **교훈(신설)**: "결함 metric은 노출하지 않는다"는 원칙은 유지한다. 다만 **결함 판정 자체를 먼저 검증**해야 한다 — 커버리지 분모에 *애초에 해당 개념이 없는 세그먼트*를 포함시키면 정상 지표가 결함으로 오판된다. 선례 `SV_MEMBER_EVENT.AVG_RETENTION_MONTHS`는 **전건 NULL**(진짜 산출 불가)이었던 반면, 공8은 자기 스코프에서 96% 적재된 정상 지표였다. 두 사례를 같은 근거로 묶은 것이 오진의 출발점이다.
+
+#### 6.4.2 ⚠ 2026-06 원천 포맷 변경 — "적재 지연"이 아니다
+`CRM_DEV_CNT`와 대행사 산정 `DEV_UNIT_PRICE_SRC`는 **완전 상호배타**다(실측):
+| 기간 | CRM_DEV_CNT 적재행 | DEV_UNIT_PRICE_SRC 적재행 |
+|---|---:|---:|
+| 2026-01 ~ 2026-05 | 31,740 (전건) | 0 |
+| **2026-06** | **0** | **8,401 (전건)** |
+
+즉 2026-06부터 **원천이 개발건수 대신 단가를 직접 제공하는 포맷으로 변경**되었다.
+- ❌ 초기 판단 "2026-06 NULL = 적재 지연"은 **오진**.
+- ❌ "자체계산값 vs 대행사값 교차검증 가능"도 **불가** — 두 값이 같은 행에 공존하지 않는다(§6-G 정정).
+- 결과: 개발단가는 **2026-05까지만 산출 가능**. AI_SQL_GENERATION 규칙(5)로 최신월 질문 시 기간 한정 + 산출 불가 사유 명시.
+- ▶ **파이프라인 확인 필요**: 2026-06 이후 개발단가를 계속 추적하려면 `DEV_UNIT_PRICE_SRC`를 채택할지(정의가 다름 — 대행사 기준) 또는 원천에 개발건수를 요청할지 결정해야 한다.
+
+### 6.5 Instruction (AI_SQL_GENERATION 6규칙)
+1. **출처유형 자동필터** — AD_SOURCE_TYPE 미지정 시 디지털 measure(노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객)는 `='DIGITAL'`, 방송 measure(인바운드콜·방송횟수·전환콜)는 `IN ('VIDEO','REBROADCAST')`, **개발건수·개발회원수·개발단가(공8)는 `='REBROADCAST'`** 강제. **광고비만 예외(전체 합산)**.
+   → 미적용 시 "전체 CTR" 질문의 분모가 디지털뿐인데 분자만 전체가 되어 해석이 왜곡됨.
+2. **기간·그룹 미지정 시** — 데이터 실존 최신월(MAX) 기준 직전 12개월 + `ROLLUP((연,월))` 월별행+총계행 (타 SV와 동일 패턴).
+3. **캠페인별·소재별 요청은 SQL 생성 금지** → "연결키 미적재(Phase-2)" 안내.
+4. **기기 코드값 가드** — 모바일=`DEVICE_TYPE='M'`(`'MOBILE'`/`'TABLET'` 아님)·데스크톱=`'PC'`. 방송은 `'(해당없음)'`이라 기기별 분석은 디지털 전용.
+   > ⚠ 초기 배포본은 comment를 "PC/MOBILE/TABLET 등"으로 잘못 기재했다(2026-07-28 재배포로 정정). Cortex Analyst가 comment를 근거로 `='MOBILE'` 필터를 생성하면 **0행 반환**되므로, 저카디널리티 코드 차원은 **실제 코드값을 comment에 열거**하는 것이 원칙.
+5. **개발단가 기간 가드** — 2026-06 이후 NULL(§6.4.2)이므로 최신월 기준 질문은 산출 가능 최신월(2026-05)로 한정하고 사유를 답변에 명시.
+6. **개발건수·개발단가 스코프 고지** — 재방송(REBROADCAST) 전용 지표임을 명시. VIDEO 원천에 개발 컬럼이 부재하므로 방송 전체 개발 규모로 단정 금지(재방송 내 커버리지 96.03%).
+
+### 6.6 검증 결과 (2026-07-28 실측)
+- **fan-out 0**: `SEMANTIC_VIEW(SV_AD METRICS TOTAL_AD_COST)` = `SUM(FAP.AD_COST)` = ~~**51,439,193,917.80**~~ 완전일치 ✅
+  🟢 **[2026-08-29 O118 재현]** 불변식(`sv_val == fact_val`)은 **여전히 통과**하고 값은 **54,153,211,078.75** 다
+  (base = `WIDE_AD_COMBINED`). 🔴 절대값 차이는 결함이 아니라 **적재 증가**다 — §6.9-(8) 대로 판정은 불변식으로 한다.
+- 연도별 CTR·개발단가 산출 정상 ✅ (§6.4 표 수치)
+- ~~`SHOW SEMANTIC VIEWS IN GN_DW.SERVING` → **6행**(기존 5 + SV_AD) ✅~~
+  🔴 **[2026-08-29 O118] stale — 라이브 10행이다**(§0.9-B). 🔴 **개수를 여기 다시 적지 마라** — 쿼리로 재라.
+
+
+### 6.7 Phase-2 잔류 (활성 트리거)
+| 항목 | 차단 원인 | 트리거 |
+|---|---|---|
+| 캠페인별/소재별 광고지표, 신#9 | CAMPAIGN_SK·AD_CREATIVE_SK **전건 0** | Q10 캠페인 연결키 |
+| DIM_AD_CREATIVE(8,474) Cortex Search | 동일 | Q10 |
+| 예산 기반 ROI(신9~11) | FBD AD_COST·FUNDRAISING_COST=0 | O3·E-6 |
+| BOUNCE_RATE·AVG_SESSION_DURATION(공98·108) | **컬럼 존재하나 전건 NULL** | G-5 (§2 "물리 적재" 서술 정정 대상) |
+| ~~방송 개발단가(공8)~~ | ~~DVLP_CNT 커버리지 5.2% → 41% 왜곡~~ | **해소(2026-07-29)** — 오진이었음. `REBRDC_DEV_UNIT_PRICE`로 **복원·노출**(§6.4.1) |
+| VIDEO 개발단가 | VIDEO 원천(`VIDEO_AD_CMPGN_DTLS`)에 개발 컬럼 **구조적 부재** — 미적재가 아님 | 대행사에 비디오 리포트 개발건수 항목 **신설 요청**(현업 협의). 요청 전까지는 산출 불가가 정상 |
+| **디지털 개발단가 2026-06~** | 원천 포맷 변경(개발건수 미제공, §6.4.2) | 원천 협의 또는 `DEV_UNIT_PRICE_SRC` 채택 결정 |
+| CRM_DEV_CNT 어의 확정 | 소수값 24,614행/189,252행(13.0%) — 기여도 배분 추정 | 현업 합의 (§6-H) |
+
+### 6.8 신규 미등재 축 (문서 §9 CS 후보에도 없던 영역)
+`FACT_AD_BROADCAST_CASE`(5,327행)에 **APPEAL_POINT(24)·FAMILY_TYPE(13)·BIZ_DIV·CASE_DIV 전건 적재** — 사례 소구점 분석은 기존 설계에 부재한 신규 분석 영역.
+> ⚠ **SV_AD 제외** — 코어 FAP과 1:N(5,327행)이라 pre-join 시 광고비가 중복 팽창. `WIDE_AD_BROADCAST_CASE`의 "코어 measure 미노출" 정책과 동일하게 **별도 SV로 분리(후순위)**.
+
+### 6.9 SV_AD 배포로 확인된 구조적 제약 (구 13_SV_AD_배포_추가작업.sql §7 이관, 2026-07-31)
+
+재현·확장 시 반복 위반되기 쉬운 제약이다. 검증 쿼리는 05_0_SV_DDL.sql §8(스모크·배포 검증)에 있다.
+
+**(1) METRIC 식은 자기 logical table 컬럼만 참조 가능** — cross-table 비율(예: `SUM(fap.AD_COST) / SUM(dig.CRM_DEV_CNT)`)은 RELATIONSHIPS가 선언돼 있어도 컴파일 실패한다(`invalid identifier 'DIG.CRM_DEV_CNT'`).
+→ 1:1로 안전하게 결합되는 팩트는 **SERVING helper 뷰로 pre-join** 후 단일 base로 쓴다(§6.0 · DIM_MONTH·DIM_MEMBER_CURRENT helper 패턴과 동일 계열).
+
+**(2) `CREATE OR REPLACE`는 SEMANTIC VIEW·AGENT 공통으로 GRANT를 전부 삭제한다**(OWNERSHIP만 잔존). AGENT는 추가로 **CoWork SI 등록도 소실**.
+→ 단일 객체 재배포 시 해당 GRANT 재실행을 절차에 포함한다(05 §7의 GRANT 3줄). Agent는 `ALTER AGENT ... MODIFY LIVE VERSION SET SPECIFICATION`(비파괴, 09 [4-B])를 우선한다.
+
+**(3) FUTURE grant 유무가 스키마마다 다르다** — GOLD에는 FUTURE TABLES/VIEWS grant가 걸려 있어(02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql §D) 파이프라인이 새로 만든 `FACT_AD_*`·`DIM_DEVICE`는 소비 3역할에 **자동 SELECT 부여**된다. 반면 **SERVING에는 FUTURE grant가 없어** helper 뷰는 **명시 GRANT 필요**(05 §6-0 포함).
+
+**(4) 1:N 팩트를 helper 뷰에 넣으면 금액이 팽창한다** — `FACT_AD_BROADCAST_CASE` 는 코어 FAP과 1:N이라 `WIDE_AD_COMBINED`·SV_AD에서 **의도적으로 제외**했다(행수 실측은 이슈원장)(§6.8). 사례 소구점 분석이 필요하면 별도 SV로 분리한다.
+
+**(5) 저카디널리티 코드 차원은 comment에 실제 코드값을 열거해야 한다** — 2026-07-28 초기 배포본이 DEVICE_TYPE comment를 "PC/MOBILE/TABLET 등"으로 적었으나 실제 코드값은 `M`·`PC`·`(해당없음)`·`(unknown)` 4종이었다. Cortex Analyst가 comment를 근거로 `DEVICE_TYPE='MOBILE'`을 생성하면 **0행 반환 = 무증상 오답**이 된다.
+→ 같은 세션에서 comment 정정 + AI_SQL_GENERATION 규칙(4) 추가 후 재배포·재GRANT 완료. 05 파일 현재 버전에는 정정본이 반영되어 있다.
+▶ **다른 SV의 코드 차원(회원상태·회원구분·발송상태·예산구분 등)도 동일 점검 대상**이다. 아래로 실제 코드값을 확인해 comment와 대조한다.
+```sql
+SELECT 'MEMBER_STATUS' AS dim, MEMBER_STATUS AS code_value, COUNT(*) AS cnt
+FROM GN_DW.GOLD.DIM_MEMBER_CURRENT GROUP BY 2
+UNION ALL SELECT 'MEMBER_TYPE', MEMBER_TYPE, COUNT(*) FROM GN_DW.GOLD.DIM_MEMBER_CURRENT GROUP BY 2
+ORDER BY 1, 3 DESC;
+```
+
+##### 🟢 [2026-08-11 O59-B] **(5) 이행 완료 — 9/9 · 상시 게이트로 전환**
+
+🔴 **위 「아래 쿼리로 대조한다」는 수동 절차였고, 그래서 4/9 에서 멈춰 있었다.** 손 점검은 재현되지 않는다.
+⇒ **`scripts/sv_code_label_gate.py` 로 기계화**했다. 정본 = 이슈원장 **§O59-A · §O59-B**.
+
+| 검사 | 무엇을 보는가 |
+|---|---|
+| ① 코드값 실존 | COMMENT 가 **열거한 값이 실재**하는가 (+ 「실제값 N종」 선언 ↔ 실제 종수 정합) |
+| ④ **열거 누락** | 저카디널리티 코드 차원인데 **열거가 아예 없는가** ← **(5) 조항의 직접 검사** |
+| ② 라벨축 노출 | 라벨 컬럼이 있는데 코드축만 노출했는가(DEC-35 R1) |
+| ③ 폐기 리터럴 | 교정 문안에 폐기값을 다시 인용했는가(DEC-35 R5) |
+
+**「저카디널리티」의 임계 = distinct ≤ 20 · VARCHAR 한정**(BOOLEAN·NUMBER 시간축·DATE 제외).
+🔴 이 조항이 임계를 정의하지 않아 **차원 160개 전수 카디널리티를 실측해 정했다**(`scripts/sv_dim_cardinality.py`).
+임계를 찍으면 대상이 틀리고, 그 게이트는 통과해도 아무것도 보장하지 않는다.
+
+**이행 결과**: 열거 누락 **41건 → 0건**. 교정은 `scripts/patch_sv_enum_comments.py` **기계 생성**이다
+(값 정본 = 라이브 실측 · 손 이관 0 · 판정 로직을 게이트와 1벌로 공유). 9 SV `CREATE OR ALTER` 재배포 후
+게이트 3종 통과 · GRANT 누락 0 · 값 불변.
+
+⚠️ **이 게이트의 한계**(숨기지 않는다): 문안 규약(`실제값 N종: 'a'·'b'…`) 형식을 쓰지 않은 문안은 **검사 대상 밖**이다.
+   ⇒ 새 차원을 노출할 때 이 형식을 쓴다. `실제 코드값:`·`실제값 계열:`·`실제값 예:` 변형은 흡수한다.
+🟢 **부수 소득**: 저카디널리티 축을 전수 열거하자 **오염값이 드러났다** — `CM_POSITION` 에 백틱 1문자 1행(O28 계열).
+
+**(6) SEMANTIC_VIEW(...) 내부 `FILTER` 절에 별칭 컬럼을 쓸 수 없다** *(2026-07-31 신규)* — `FILTER fap.AD_SOURCE_TYPE = 'DIGITAL'`은 `syntax error ... unexpected 'fap'`로 컴파일 실패한다(구 05 §7-5가 이 형태였다).
+→ 차원을 `DIMENSIONS`에 넣고 **바깥 WHERE에서 별칭 없는 컬럼명**으로 거른다(05 §8-6 교정본).
+
+**(7) metric 정렬은 `NULLS LAST`를 명시한다** *(2026-07-31 신규)* — Snowflake는 `ORDER BY <metric> DESC`에서 NULLS FIRST가 기본이라, 스코프가 다른 measure(방송 광고비 등)가 NULL인 차원값이 "top N" 상위를 점유한다(실측: 광고비 NULL인 `RADIO`·`라디오`가 1·2위). 상호배타 measure를 쓰는 SV_AD에서 특히 잘 발생한다.
+
+**(8) 문서에 박은 절대값은 계정 간 재현 시 즉시 오탐이 된다** *(2026-07-31 신규)* — 스모크 "기대값"을 cs94293 실측 리터럴로 적어 두었더니 mq60369 재현에서 전 항목이 불일치했다(적재량 증가). 실제로는 구조 불변식(`sv_val == fact_val`, `dig + brc == fap == combined`)은 전부 통과한 정상 상태였다.
+→ 검증 문서는 **불변식으로 판정**하고 절대값은 참고치로 격하한다(05 §8 헤더). **05 COMMENT 규약도 같은 원칙으로 개정됐다** — 05 헤더 "COMMENT 작성 규약" (1)항이 행수·합계·커버리지%·금액·적재기간을 COMMENT에 쓰지 못하게 금지하고, `[원천]` 절은 테이블·컬럼 이름만 적도록 형식을 고정한다. 아래 §6.1~§6.8 표에 남은 절대값은 **설계 시점 근거 기록**이며 SV COMMENT로 옮기지 않는다.
+▶ ✅ **해소(2026-07-31)**: SV COMMENT에 박혀 있던 절대값(행수·합계·커버리지%·건수·적재기간)을 05 DDL에서 전부 제거하고, 05 헤더에 **COMMENT 작성 규약 4개항**을 신설했다 — (1) 수치 금지, (2) `[원천]`은 `시스템=… · BRONZE=DB.스키마.테이블(핵심컬럼) · SILVER=…` 형식으로 **이름만**, (3) 저카디널리티 코드 차원은 실제 코드값 열거, (4) 원천 변경 시 04_컬럼계보매핑.md 재생성 후 동기화. 수치가 필요한 판정은 03 §8.5.1 근거 쿼리로 그때그때 실행한다. Agent는 원천 질문에 BRONZE 테이블·컬럼명만 답하고 수치는 SV를 조회해 답한다.
+
+---
+
+## 7. SV_BIGQUERY (마케팅 Agent) — Phase 2 (~~BigQuery 1일 샤드~~ → 🔴 **전제 정정 필요** · O120)
+
+**base FACT**: `GOLD.FACT_BIGQUERY_BEHAVIOR` (FBQ, grain=DATE×IDENTITY×BIGQUERY_EVENT×BIGQUERY_SOURCE×DEVICE×CAMPAIGN×페이지, ~~44.9K~~) · derived 2 (공98·108)
+> ⚠ ~~**BigQuery 1일 샤드만**(G-5 전기간 입고 대기)·identity 커버리지 **4.2%** → 전건 P2, 커버리지 경고 필수.~~
+>
+> 🔴🔴 **[2026-08-29 O120 실측] 이 유예 근거의 절반이 stale 이다 — 그대로 인용하면 틀린다.**
+> · ~~「1일 샤드만」~~ ⇒ 🔴 **거짓이다.** 라이브 `SILVER.BIGQUERY_EVENT` 는 **90일**을 담고 있다
+>   (범위·행수는 아래 재측정 쿼리로 재라 · O120 실측 시점엔 2024-06-01~2026-06-30).
+>   ⇒ 「샤드가 하루뿐이라 SV 를 못 만든다」는 논거는 **더 이상 성립하지 않는다.**
+> · 🟢 **「identity 커버리지가 낮다」는 유효하다** — 다만 수치도 stale 이다(O120 실측 = 약 3.7%).
+>   ⇒ **경고 문안의 근거는 살아 있고 숫자만 낡았다.** 🔴 여기에 숫자를 다시 박지 말고 쿼리로 재라.
+> · 🔴 **여전히 「전기간」은 아니다**(90일은 표본이다) ⇒ Phase-2 유예 자체는 **성립할 수 있다.**
+>   🔴 **그러나 근거를 「1일 샤드」로 적어 두면 다음 세션이 잘못된 이유로 유예를 승계한다.**
+>
+> 🔴🔴 **[결정 필요 · 사람]** BigQuery 축은 **적재돼 있는데 SV 층에만 없다**(라이브 SV 17종에 BigQuery base **0**)
+> ⇒ Agent 는 BigQuery 를 의미계층으로 답할 수 없고 현 처방은 `WIDE_BIGQUERY_BEHAVIOR` **직접 조회 안내**다
+> (그 처방은 `SV_SERVICE` COMMENT 에 이미 발행돼 있다). **「SV_BIGQUERY 를 지금 지을지」는 업무 결정**이며
+> 에이전트가 확정하지 않는다. 🔴 §0.9 의 「`SV_BIGQUERY` 미배포 = 결손 아님」 판정은 **이 절의 근거에 의존**하므로
+> 근거가 바뀐 사실을 그 행에 병기했다.
+>
+> 🟢 **재측정 쿼리**(수치를 문서에서 읽지 마라 · `R2-8-4`):
+> ```sql
+> -- 샤드 폭 = 「1일뿐인가」 판정
+> select min(EVENT_DT), max(EVENT_DT), count(distinct EVENT_DT) as n_days, count(*) as n_rows
+> from GN_DW.SILVER.BIGQUERY_EVENT;
+> -- identity 커버리지 = 회원 식별 가능 비율
+> select (select count(*) from GN_DW.SILVER.BIGQUERY_IDENTITY) as identified,
+>        (select count(distinct USER_PSEUDO_ID) from GN_DW.SILVER.BIGQUERY_EVENT) as pseudo_total;
+> -- BigQuery base 를 쓰는 SV 가 실제로 0인가
+> show semantic views in account;
+> ```
+
+### 7.1 Logical tables (초안, 6)
+FBQ(base) + DIM_DATE + DIM_MEMBER_IDENTITY + DIM_BIGQUERY_EVENT + DIM_BIGQUERY_SOURCE + DIM_DEVICE
+### 7.2 Relationships
+DATE_SK→DIM_DATE · IDENTITY_SK→DIM_MEMBER_IDENTITY.IDENTITY_SK · BIGQUERY_EVENT_SK→DIM_BIGQUERY_EVENT · BIGQUERY_SOURCE_SK→DIM_BIGQUERY_SOURCE · DEVICE_SK→DIM_DEVICE · CAMPAIGN_SK→DIM_CAMPAIGN
+### 7.3 Dimensions
+이벤트(카테고리/라벨/액션)·소스(source/medium/SOURCE_MEDIUM, 111)·페이지경로(PAGE_PATH 고카디널리티→CS 선택)·디바이스 → 대부분 sample_values, PAGE_PATH만 CS
+### 7.4 Base measures
+VISITS·EVENT_CNT·VIEW_CNT·SESSION_CNT·ENGAGED_SESSIONS = **F**(sum) / SCROLL_DEPTH·ACTIVE_USERS·TOTAL_USERS·AVG_SESSION_DURATION·BOUNCE_RATE·ENGAGEMENT_RATE·AVG_ENGAGEMENT_TIME = **N 비가산**(직접 노출, SUM/AVG 금지)
+### 7.5 Instruction
+~~"GA4 데이터는 1일 샤드만·회원식별 4.2%(익명 95.8%) → 전수 단정 금지". 비가산 measure 재집계 금지.~~
+🔴🔴 **[2026-08-29 O120 재작성] 위 초안 문안을 그대로 배포하지 마라 — 두 가지가 틀린다.**
+① **「1일 샤드만」은 사실이 아니다**(§7 머리말 실측) ② **수치를 SV COMMENT 에 박는 것은 규칙7 위반**이다
+(`05_0` §공통규약 (1) · 라이브 발행 시 `sv_unit_gate` 가 즉시 잡는다).
+🟢 **대체 문안(수치 없음 · 규칙7 준수)**:
+> "GA4 는 **전기간이 아니라 표본 구간**만 적재돼 있다 — 기간을 밝히지 않고 「전체」로 단정하지 않는다.
+> 회원 식별은 **소수 비율만 가능**하고 대부분 익명이므로, 회원 축으로 분해한 값은 **부분집합**이다
+> (분모를 반드시 밝힌다). 적재 구간·식별 비율은 **조회해서 확인**하고 답변에 명시한다.
+> 비가산 measure(체류시간·이탈률·참여율·사용자수)는 **재집계하지 않는다**.
+> CRM 원천 SV 와 **교차 집계하지 않는다**(원천 시스템이 다르다)."
+
+---
+
+## 8. 브리지 뷰 초안 (R1 — conformed grain 사전집계, raw 다중 FACT 조인 대체)
+
+> 전부 GN_DW.SERVING 뷰(GOLD cross-schema 참조). SV는 이 뷰를 **단일 논리테이블**로 노출(원칙10). 3단계에서 DDL 확정·fan-out 스모크.
+
+### 8.1 목표대비 브리지 `BRG_DEV_VS_TARGET` — MONTHLY용 (공1~3) Phase 1
+- grain: MONTH_KEY × ORG_SK × DEV_TYPE
+- 실적: `FME`에서 개발건 집계(개발건 ORG축은 FME, 04-61) → SUM(DEV_CNT) GROUP BY MONTH(사건일→MONTH_KEY), ORG_SK, DEV_TYPE
+- 목표: `FTG_DEV`(GOAL_CNT) 동일 grain (이미 MONTH_KEY×ORG×DEV_TYPE, 7,272행 ✅)
+- 조인: 실적 ⟗ 목표 ON (MONTH_KEY, ORG_SK, DEV_TYPE) → 컬럼 DEV_CNT, GOAL_CNT
+- ⚠ FME 사건일 DATE_SK(YYYYMMDD)→MONTH_KEY 변환(=FLOOR(DATE_SK/100)) 후 집계.
+- **⚠개선 C — grain island**: FMM엔 ORG_SK 없음(실측) → 본 브리지(ORG grain)를 SV_MEMBER_MONTHLY에 **FMM과 관계 없는 독립 논리테이블**로 노출(relationship 선언 금지). 목표대비 질의는 이 테이블 단독 라우팅. DIM_MONTH·DIM_ORG만 conform. **대안(더 순수)**: 별도 `SV_DEV_TARGET`(ORG×MONTH×DEV_TYPE)로 분리 — 계획의 "폴딩" 결정 재고 대상(사용자 판단).
+
+### 8.2 서비스 코호트 브리지 `BRG_SERVICE_COHORT` — SERVICE용 (신35~53 유지/납입) Phase 1
+- grain: 발송코호트 키 = MEMBER_DK × 발송일(DATE_SK) × SERVICE_SK × CAMPAIGN_SK
+- 모집단: FSE의 발송/참여/증액/서신/선물금 회원(D5_* 포함)
+- 결과상태: FME(유지/중단) · FMM(납입) 를 **회원×기준일+Nmonth** 로 사전 조인집계 → 유지회원수·납입회원수 컬럼
+- 출력: 모집단수 + 코호트 결과수(유지/납입/중단) → SV에서 비율 metric
+- ⚠ +5일차(D5_*)는 FSE 기적재 measure 사용, N개월 유지는 FME cohort 계산.
+
+### 8.3 cross-source IDENTITY 브리지 `BRG_BIGQUERY_MEMBER` — 공81·신32·신33 Phase 2
+- grain: MEMBER_DK × 기간(MONTH_KEY 또는 DATE_SK)
+- FBQ(IDENTITY_SK)→DIM_MEMBER_IDENTITY(MEMBER_DK) 로 BigQuery 클릭/방문을 회원 귀속 → 클릭회원수(명, distinct)
+- FMM/FME/FSE 실적과 MEMBER_DK conform
+- ⚠ **identity 4.2% 커버리지**·클릭=명(≠FAD CLICKS 횟수) → P2, 커버리지 경고. §6-D identity 정의 확정 선행.
+
+### 8.4 예산-실적 ROI 브리지 `BRG_BUDGET_ROI` — BUDGET용 (신9~11) Phase 2
+- grain: 부서(ORG) × MONTH_KEY (O3: 캠페인 배분 불가 → 부서까지만)
+- FBD 비용 + FMM 개발건/납입회비 conform → 개발단가·ROI
+- ⚠ 모금성비용 원천 부재·FTG_B 0행 → P2.
+
+---
+
+## 9. Cortex Search 백킹 후보 (R2 — 고카디널리티 텍스트 차원)
+
+| dimension | 컬럼 | 카디널리티 | 사용 SV | 처리 |
+|---|---|---:|---|---|
+| 캠페인명 | DIM_CAMPAIGN.CAMPAIGN_NAME (+PARENT_CAMPAIGN·BRAND) | 36,144 | MONTHLY·EVENT·SERVICE·BUDGET·AD·BIGQUERY | **Cortex Search** |
+| 세세목명 | DIM_BUDGET_ITEM.BUDGET_ITEM_NAME | ~~2,041~~ **180** | BUDGET | ~~**Cortex Search**~~ → 🔴 **[2026-08-29 O118] 불요** |
+| 조직(부서/팀) | DIM_ORG.DEPARTMENT·TEAM | 1,315 | EVENT·BUDGET | **Cortex Search** |
+| 행사명 | DIM_EVENT.EVENT_NAME | 3,787 | PARTICIPATION | **Cortex Search** |
+| 중단/미납 사유 | DIM_REASON.REASON_NAME | 5,835 | MONTHLY·EVENT | **Cortex Search** |
+| 광고 소재/매체 | DIM_AD_CREATIVE.CREATIVE·MEDIA_NAME | 8,474 | AD | **Cortex Search**(P2) |
+| 페이지경로 | FBQ.PAGE_PATH | 고 | BIGQUERY | Cortex Search(선택, P2) |
+| 후원사업명 | DIM_SPONSORSHIP.SPONSORSHIP_NAME | 51 | 다수 | sample_values(저카디널리티) |
+| 납입방식·서비스구분·소스·디바이스·성별·지역·상태 | 각 DIM | ≤111 | 다수 | sample_values |
+
+> 회원명(PII)은 DIM_MEMBER에 컬럼 없음(MEMBER_DK 키·속성만) → 회원명 Search 불필요·PII 노출 없음.
+
+---
+
+> 🔴 **[2026-08-29 O118] 이 표의 카디널리티는 2026-07-21 스냅샷이며 재검증되지 않았다.**
+> 실측 1건(`DIM_BUDGET_ITEM` 2,041 → **180**)이 어긋났으므로 **나머지 행도 신뢰하지 마라.**
+> 🟢 판정법 = `SELECT COUNT(DISTINCT <컬럼>) FROM <DIM>` 를 그때그때 실행한다.
+> 🔴 **Cortex Search service 는 계정에 실재하는지 별도 확인이 필요하다** — O118 은 SV 축만 실측했다(미측정).
+
+## 10. DoD (2단계 완료기준)
+
+> 🔴 **[2026-08-29 O118] 아래 표의 「7 SV」는 stale 이다** — 라이브 **10종** 배포(§0.9-B).
+> 🟢 **DoD 항목 자체는 여전히 유효**하고, 판정 대상 집합만 7 → 10 으로 넓어졌다.
+> 🔴 **하위 4종**(`SV_MEMBER_COHORT`·`SV_MEMBER_FEE`·`SV_DEV_ACHIEVEMENT`·`SV_MEMBER_SPONSOR_BIZ`)은
+> **이 문서에 구조 절이 없다** ⇒ 그 4종에 대해 이 DoD 는 **미충족**이다(문서 결손 · 라이브는 정상).
+
+| 검증 | 결과 |
+|---|---|
+| 7 SV 전부 base_table·relationship(실측 조인키)·dimension·measure 정의 | ✅ (Phase1 5개 상세·Phase2 2개 초안) |
+| relationship 조인키 = 배포 실물 컬럼(추정 0) | ✅ INFORMATION_SCHEMA 대조 |
+| fan-out 차단 설계(원칙10·R1) | ✅ DIM_MONTH·DIM_MEMBER_CURRENT helper 뷰 |
+| 가산성 분류·default_aggregation(R5) | ✅ F/S/N + S measure 월합산금지 instruction |
+| 브리지 뷰 초안(목표대비·코호트·cross-source·ROI) | ✅ §8 4종 |
+| Cortex Search 후보 식별(R2) | ✅ §9 6+2 |
+| 시간·NULL·커버리지 instruction(R3·R4·R7) | ✅ SV별 §.5 |
+| synonyms 한글 | ✅ dimension별 표기(3단계 DDL 확장) |
+
+### 다음(3단계) 입력
+- Phase 1 SV 5개(MONTHLY·EVENT·SERVICE·PARTICIPATION·BUDGET) `CREATE SEMANTIC VIEW` + helper/브리지 뷰(DIM_MONTH·DIM_MEMBER_CURRENT·BRG_DEV_VS_TARGET·BRG_SERVICE_COHORT) DDL.
+- derived 40+8+22(P1) metric expression 직역(배속표 §1~3 분자/분모).
+- fan-out 스모크·가산성 검증. Cortex Search service 생성(캠페인·세세목·조직·행사·사유).
+
+---
+_Co-authored with CoCo_
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+
+### `SV_MEMBER_MONTHLY` — 회비 지표 정본/결함 metric 분리 (O40)
+
+| 구분 | metric | 정의 | 자연어(synonym) |
+|---|---|---|---|
+| 🟢 정본 | `TOTAL_PAID_FEE_BILLABLE` | `SUM(PAID_FEE_BILLABLE)` | 납입회비 |
+| 🟢 정본 | `PAYMENT_RATE_FEE` | 회비 납입 ÷ 회비 청구 ×100 | **납부율**·수납율 |
+| 🟢 정본 | `TOTAL_UNPAID_AMT` | `SUM(UNPAID_BILLED_AMT)` (DEC-3) | **총미납금액**·미납액 |
+| 🟢 정본 | `UNPAID_RATIO` | 미납청구 ÷ 회비청구 ×100 | **미납비중**·미납율 |
+| 🟢 **[2026-08-10 O56-C EXPO-2 개명]** | `TOTAL_PAID_FEE` → **`TOTAL_PAID_ALL`** | `SUM(PAID_FEE)` = 회비+기부금 | 총수납액. 🟢 **결함이 아니다** — 기부금은 BRONZE 에 실재하고(`TM_PM_DNTN_DTLS` 1,130,252행 · 126,412,695,459원 = 총수납의 14.12%) 「총수납액」 질문의 정답이다. 문제는 이름이었다(`_FEE` 인데 회비가 아니다) ⇒ 형제 SV `SV_MEMBER_FEE.TOTAL_PAID_ALL` 과 **이름 통일**(정의·값 불변). 🔴 납부율 분자로는 쓰지 않는다 |
+| 🟢 **[2026-08-10 O56-C EXPO-2 제거]** | ~~`PAYMENT_RATE`~~ | 분자에 기부금 혼입 → **과대**(전 기간 100.36%) | **SV 에서 제거**했다. BRONZE 실측 근거: 기부 원천 `TM_PM_DNTN_DTLS` 에 청구 컬럼(`RQEST_AMT`)이 **아예 없어** 분모에 들어갈 수 없다 ⇒ 비율이 구조적으로 100% 를 넘는다. **유효 용도가 문서 어디에도 없다.** 정본 = `PAYMENT_RATE_FEE`(공64) — 형제 SV 와 동명이고 지표번호에 묶여 있어 **승격하지 않았다**. 재발 방지 = `scripts/sv_unit_gate.py` `RETIRED_EXPR` |
+| ~~🔴 결함(보존)~~ → 🟢 **[2026-08-10 O56 EXPO-1 제거]** | ~~`TOTAL_UNPAID_AMT`·`UNPAID_RATIO`(차감식)~~ | 차감식 → **과소**(전 기간 −3,218,518,220 / −0.360837%) | **SV 에서 제거**했고 위 정본이 이 두 이름을 **승격**했다. 근거: 경고문은 게이트가 아니다(P105) · 짧은 이름이 폐기식이라 Agent 가 −0.36% 를 답할 경로였다 · 형제 SV `SV_MEMBER_FEE` 는 정본 식에 이미 짧은 이름을 써 **동명이의** 상태였다. 재발 방지 = `scripts/sv_unit_gate.py` 폐기식 노출 게이트 |
+
+결함 metric 은 저장쿼리·문서 참조 보호를 위해 **삭제하지 않고** 「단독 인용 금지」 경고와 함께 남겼다.
+**자연어 표현은 전부 정본으로 이전**했다(라이브 DDL 로 라우팅 확인). 2025 정본값 = 납부율 **85.65%** ·
+미납 **29,251,314,636** · 미납비중 **14.29%**.
+`AI_SQL_GENERATION` 에 **「마감·확정」 단정 금지 + 조회 시점 적재 기준 명시** 추가(2025년분이 2026-07-01
+까지 납입된 실측 근거).
+
+### `SV_SERVICE` — synonym 교차오염 교정 (O39)
+`TOTAL_SEND_MEMBERS = SUM(SEND_MEMBERS)` 는 **건수**인데 synonym 에 `'발송 회원수'` 가 붙어 있었고,
+정작 옳은 `DISTINCT_SEND_MEMBERS = COUNT(DISTINCT MEMBER_DK)` 에는 없었다 → 「발송 회원수」 질문에
+**37.3배**(38,470,780 vs 1,031,971)를 답할 수 있었다. synonym 을 정본으로 이전했다.
+🆕 **P79**: 정의가 옳아도 **라우팅이 틀리면 오답**이다 — 건/명·총계/고유처럼 **쌍을 이루는 metric** 이 있으면
+synonym 교차오염을 반드시 점검한다(값이 그럴싸해 무증상).
+
+### `SV_DEV_ACHIEVEMENT` — 규모 하한 가드 (O38-E)
+`HAS_POSITIVE_GOAL` 차원을 **물리 컬럼 참조**로 전환(판정 규칙 정본을 뷰 하나로 집중 · 값 불변 확인).
+`ORG_DEPARTMENT` COMMENT + `AI_SQL_GENERATION` 에 **달성율 순위 시 `TOTAL_GOAL_CNT` 동반 제시 필수 ·
+극소 규모 부서 단독 1위 금지 · 하한 되묻기** 추가 — 목표가 월 5건인 센터가 **171.7% 로 1위**가 된 실측
+때문이다(스코프 결함 아님 = **실제 초과 달성** · 목표 보유 203부서 중 1건 · 그 부서 목표는 전체의 0.0013%).
+🆕 **P77**: `>100%` 불변식은 **grain 종속**이다 — 집계 grain 에서만 결함 신호이고 세부 grain 의 초과는 정상.
+초과를 보면 base 행을 열어 스코프 결함인지 먼저 가른다.
+
+### 전 SV 공통 점검 규약 (신설)
+1. 비율·차액 metric → **①상한(>100%) ②부호(음수)** 스모크. 상한 검사에는 **적용 grain 을 명시**(P77·P80).
+2. 순위 질문이 가능한 비율 → **분모 규모 동반 제시**를 서술로 심는다(소표본 1위 방지 · P76).
+3. 쌍을 이루는 metric → **synonym 교차오염 점검**(P79).
+4. 서로 다른 원천을 합산한 measure → 소비 계층에서 정화 불가 → **판별 축을 같은 grain 에 요구**(P81).
+5. 「적재 대기」류 상태 문구는 적재 후 **반드시 제거**(사문화 주석이 정상 지표를 "대기 중"으로 답하게 만든다).
+
+_Co-authored with CoCo_

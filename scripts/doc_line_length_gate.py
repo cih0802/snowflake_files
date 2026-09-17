@@ -57,7 +57,10 @@ READ_RETRY_DELAY = 0.4   # 초 · 스테이지 동기화가 끝날 여유
 CANON = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
-    '00_guides/02_파일쓰기_안전규약.md',   # [O85] R1-7 무변경 이관 신설
+    '00_guides/02_파일쓰기_안전규약.md',
+    '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 스킬 정본
+    '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
+    '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)   # [O85] R1-7 무변경 이관 신설
     '20_issue/00_INDEX_이슈원장.md',
     '20_issue/00_BRIEF.md',   # [O106] 자동 생성(session_brief.py)
     '20_issue/01_세션이력.md',
@@ -74,6 +77,9 @@ CANON = [
     '20_issue/91_사고사례집.md',   # [O106] 조문 경위 무변경 이관부
     '20_issue/92_실측필요_후속작업.md',   # [O106] 자동 생성(gen_measure_backlog.py)
     '99_NEXT_SESSION.md',
+    #   🆕 [2026-09-16 O165-B 편입] Inspection 절차 정본 — `R1-6-18 ④` 분모 4곳 중 세 번째.
+    #     🔴 O165 는 `doc_heading_gate.DOCS` 한 곳만 넣어 나머지 3곳이 비어 있었다.
+    '60_repeat_어카운트시작/11_O누적작업_점검_재현_절차.md',
 ]
 
 # ── [2026-08-13 O68 신설] 🔴🔴 **분모 공백 메움 — 이 게이트는 `.md` 만 보고 있었다.**

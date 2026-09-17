@@ -7,7 +7,7 @@
 #   - --yaml-only 플래그로 컴퓨트 비용 없이 실행 가능 (단 아래 🔴 경고 참조)
 #
 # 🔴 [실측 2026-08-31] **두 소스 중 어느 하나도 FK 전량을 담지 못한다** → 반드시 합집합을 써야 한다.
-#    - dbt YAML 단독  = 45관계. 물리 FK 18개 누락(FACT_BUDGET·FACT_BUDGET_YEARLY·FACT_TARGET_BIZ 의
+#    - dbt YAML 단독  = 45관계. 물리 FK 18개 누락(FACT_BUDGET·FACT_BUDGET_YEARLY·FACT_TARGET_PROJECT 의
 #      ORG_SK·SPONSORSHIP_SK·CAMPAIGN_SK / FACT_AD_PERFORMANCE 3 / DIM_CAMPAIGN 2 / 역할기반 날짜키 등)
 #      — relationships 테스트를 안 붙인 컬럼은 YAML 에 흔적이 없다.
 #    - 물리 FK 단독  = 56관계. YAML 관계 7개 누락 — `MEMBER_DK → DIM_MEMBER` 7건은
