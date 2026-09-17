@@ -12,7 +12,20 @@ create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
 	CTR FLOAT COMMENT '클릭률',
 	POSITION FLOAT COMMENT '평균 검색결과 위치',
 	RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
-)COMMENT='구글 서치 콘솔 검색 데이터'
+)COMMENT='재송출 광고 성과 내역'
+;
+create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA2 (
+	DATE DATE COMMENT '검색 발생 날짜',
+	QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
+	PAGE VARCHAR(16777216) COMMENT '검색 결과에 노출된 페이지 URL',
+	COUNTRY VARCHAR(16777216) COMMENT '검색이 발생한 국가 코드',
+	DEVICE VARCHAR(16777216) COMMENT '검색에 사용된 디바이스 유형',
+	CLICKS NUMBER(38,0) COMMENT '검색 결과 클릭 수',
+	IMPRESSIONS NUMBER(38,0) COMMENT '검색 결과 노출 수',
+	CTR FLOAT COMMENT '클릭률',
+	POSITION FLOAT COMMENT '평균 검색결과 위치',
+	RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
+)COMMENT='재송출 광고 성과 내역'
 ;
 create or replace TABLE GN_DW.BRONZE_GSC.SYNC_ERR_INFO (
 	ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO.NEXTVAL,
@@ -73,8 +86,6 @@ def main(session):
         # 1. 둘 다 입력되지 않은 경우 → 기본값 사용
         start_date = (datetime.now() - timedelta(days=7)).strftime(''%Y-%m-%d'')
         end_date = (datetime.now() - timedelta(days=1)).strftime(''%Y-%m-%d'')
-  
-
         logs.append(f"[작업 기준일자] {start_date} ~ {end_date} 데이터 수집 프로세스를 시작합니다.")
         
         current_dir = os.path.dirname(os.path.abspath(__file__)) if ''__file__'' in globals() else os.getcwd()
@@ -117,7 +128,7 @@ def main(session):
             json=payload,
             timeout=60
         )
-
+        
         if response.status_code != 200:
             print("API ERROR")
             raise Exception(f"{response.status_code} / {response.text} / Search Console API 호출 실패")

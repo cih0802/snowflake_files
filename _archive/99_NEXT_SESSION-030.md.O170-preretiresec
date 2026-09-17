@@ -1,0 +1,196 @@
+<!-- SPLIT-CHUNK 99_NEXT_SESSION.md | 030/035 | 허브 = 99_NEXT_SESSION.md | 원문 4509~4702행 -->
+<!-- 🔴 이 파일은 원문 무변경 조각이다. 편집은 허브 계약을 따른다 (scripts/split_doc.py --verify 로 바이트 동일성이 검사된다). -->
+<!-- BODY-BEGIN (아래는 원문 무변경 · 편집 금지) -->
+## ~~0-UUUU. 🔴🔴 [2026-09-08 O148 필독 — 여기서 시작한다. §0-TTTT 는 승계됐다]~~
+
+> 🔴🔴 **[2026-09-10 O155 점검 · 라벨 오기 정정]** 이 절 제목의 **`O148` 은 세션 라벨이 아니다.**
+> · 실측 = `O148` 은 워크스페이스 **전체에서 이 제목 1곳에만** 나온다. 원장 §1 대시보드 행도,
+>   `01_세션이력` 항목도 **없다**(다른 모든 세션은 둘 다 있다).
+> · 이 절의 본문은 아래 `▣ UUUU1` 이 스스로 **「O147(+O147-B) 이 한 일」**이라고 적는다.
+> · ⇒ 🟢 **판정 = O147 계열이 이 절을 쓰면서 「다음 세션 번호」를 제목에 적은 오기다.**
+>   **O148 세션은 실재하지 않는다.** 관례는 「제목 라벨 = 그 절을 **쓴** 세션」이고
+>   §0-VVVV(O149)·§0-AAAA(O154)·§0-BBBB(O154-B) 는 전부 그 관례를 지킨다.
+> · 🔴 **왜 이것이 위험한가** = `id_collision_gate` 는 **최댓값**만 보므로 결번을 감지하지 못하고,
+>   라벨↔내용 일치를 보는 게이트도 없다 ⇒ 다음 세션이 「O148 이 무엇을 했나」를 찾다가
+>   **없는 세션의 이력을 찾아 헤매게 된다**. 실제로 O155 가 그 경로로 시간을 썼다.
+> · 🟢 처방 = 인수인계 절을 쓸 때 **제목 라벨과 `▣` 항목의 「누가 한 일」을 일치**시켜라.
+
+### ▣ UUUU1 🟢 O147(+O147-B) 이 한 일
+1. **[P1/SILVER] O145-1** 🟢 `SILVER.ERP_BUDGET` 원천 축(`DVLP_INBOUND_PATH`, `BDGT_UNIT_NM`) 승계 확인 · 5종 부서 매핑(데이터분석센터:E001159, 마케팅기획1팀:F001050, 마케팅기획2팀:D000023, 매체운영팀:D000111, 콘텐츠기획팀:E001190, 사회복지법인예산:법인) 규칙 정립 · `models/silver/erp/_erp_schema.yml` 신설 및 `_silver_bridge_schema.yml` 분리 완료. (🔴 dbt 실행은 `R4-1` 에 따라 사용자가 실행)
+2. **[P2/GOLD] O145-4** 🟢 `FACT_TARGET_BIZ` 버전 표현 방식 안(㉠ 행 누적+GOLD 피벗 vs ㉡ 컬럼 분리+추경2차 추가) 장단점 분석 및 설계안 제시 완료.
+3. **[P2/Docs] O145-2 & O145-3** 🟢 문서50 `BLOCKING-5` 표에 `FACT_DEV_ACHIEVEMENT`(37.5K) 부분 적재 한정 표기 추가 및 허브 재발행 완료 · 문서40 stale 2건(BRONZE_BIGQUERY 라이브 부재, 계정 `UA93987` 기재) 「재는 방법」으로 교체 완료.
+4. **[P2/거버넌스]** 🟢 지침 `R0-8-4` 조문 신설(Grep 거짓 음성 방지 3조건) · `gate_census --run-tests` 순회 31종 전건 rc=0 통과(S7 간헐 실패 미재현).
+5. **[P2/자기검토 O147-B]** 🟢 `table_ddl_column_gate` 컴파일 오류(ERP_BUDGET.sql CTE B 모호성) 및 `08_SILVER_테이블DDL` 승계 컬럼 누락 적발·시정 ➔ **GOLD 37+SILVER 42 = 79/79 테이블 100% 집합 일치 달성** · `scripts/dbt_schema_lint.py` 에 `_erp_schema.yml`·`_bigquery_schema.yml` 등재(3,157개 단정 PASS) · 트랜스크립트 전수 감사(위험신호 6종 0건).
+
+### ▣ UUUU2 🔴 세션 승계 사항
+- 🟢 **[dbt build 완결 확인]** 사용자가 `dbt build --target dev` 실행 완료 (PASS=498, WARN=39, ERROR=0, SKIP=0, TOTAL=537 노드 100% 성공).
+
+---
+
+## 0-VVVV. 🔴🔴 [2026-09-08 O149 필독 — ~~여기서 시작한다.~~ §0-VVVV 는 승계됐다]
+
+### ▣ VVVV1 🟢 O149 가 한 일
+1. **[P2/설계] 자체 가능 과제 완결**
+   - `DEC-45`: `CRM_CAMPAIGN.SPNSR_BSNS_ID` 18,091행 쉼표 다중값 `SILVER.CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE` 정규화 브릿지 모델 설계안 수립 및 현업 1:N 확인 질의 정합화.
+   - `O145-8`: 기존 `TM_CM_MBER_DVLP_GOAL` 25,344행 소급 마이그레이션 규칙(`TARGET_TYPE = 'ORIGINAL'`, 채널 전체, 부서 마스터 조인을 통한 법인 파생) 확정.
+   - 착수표 정리: ④(B1 소관 정의 명문화 및 09 보고서 앵커 정합), ⑪(이관 절 원문 대조 불가 사유 명시 및 종결), ⑱(O76 잔여 독해 점검 완료).
+   - `decision_closure_gate`: §절 인용 감지 검증 및 음성 테스트 전건 통과.
+   - 결정대기 GOLD 4개: 소스 준비 4개 모델(결제수단, 우편, XREF, 설문)의 과잉 방지 보류 방침 확정.
+2. **[P2/공유문서] 문서 15/17 신설 6건 및 보강 4건 완전 파생**
+   - `15_문서 통합.md`: 🔴 6건 신설(모금비용 E-1, O145-5, O145-6, O145-8, DEC-45, GOLD 4개) 및 🟠 4건 보강(O59-P-1, BLOCKING-1, ORG-H/F-1, BLOCKING-5).
+   - `17_현업의사결정 요청.md`: 신설 6건 및 보강 4건을 현업 의사결정 요청 포맷(요청사항, DB 실측근거, 검증SQL)으로 완전 파생 반영.
+   - 문서 간 인용 경로 및 파일명(`17_현업의사결정 요청.md`) 전수 동기화 및 구 파일 정리.
+3. **[P2/품질검증] 비판적 자기검토 및 전수 게이트 통과**
+   - 파생 무결성 검증: 15번 26개 절, 16번 9개 닫힌 절, 17번 22개 열린 절 (중복 0건, 누락 0건).
+   - `line_len.py`: 15, 16, 17 문서 전수 한 줄 2000자 가드 🟢 PASS (초과 0줄).
+   - `scripts/test_*.py`: 전체 음성 테스트 스크립트 실행 🟢 PASS (실패 0건).
+
+### ▣ VVVV2 🔴 다음 세션 열린 작업 (현업 회신 및 원천 입고 대기)
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
+- 🔴 **[P1/차단] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 질문 4건 미답 회신 대기.
+- 🔴 **[P1/차단] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+---
+
+## ~~0-WWWW. 🔴🔴 [2026-09-09 O150 필독 — **여기서 시작한다.** §0-VVVV 는 승계됐다]~~
+
+### ▣ WWWW1 🟢 O150 이 한 일
+1. **[P1/스냅샷] 현업 1차 회신 반영 및 dbt Snapshot 11종 전체 구축**
+   - 5-3 N-9 현업 승인(스냅샷 방식 B)에 따라 `GN_DW.SNAPSHOT` 스키마 구축 및 `GN_DW_ADMIN` 소유권 확립, `GN_DW_ENGINEER` dbt 파이프라인 권한 구성.
+   - Tier 1 스냅샷 5종 구축 및 적재 실측 완료 (63,202행 전건 active 적재):
+     - `SNP_CRM_TM_CM_BRND_MNG`(103), `SNP_CRM_TM_RM_BPLC_MNG`(377), `SNP_CRM_TM_CM_MBER_DVLP_GOAL`(25,344), `SNP_CRM_TM_CM_CMPGN_MNG`(36,163), `SNP_CRM_TM_CM_DEPT_INFO`(1,314).
+   - Tier 2 스냅샷 6종 구축 및 적재 실측 완료 (10,573행 전건 active 적재):
+     - `SNP_CRM_TM_MS_EVENT`(376), `SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG`(446), `SNP_CRM_TM_MS_CRMN`(3,410), `SNP_CRM_TC_CMMN_CD`(339), `SNP_CRM_TM_CM_SPNSR_BSNS_INFO`(50), `SNP_CRM_TC_CMMN_DTL_CD`(5,853).
+   - 11종 총 73,775행 전건 초기 적재 및 SCD Type 2 무결성 100% 확인.
+2. **[P1/GOLD] `DIM_MEMBER_ACQUISITION` Two-tier 배선 및 Cold Start 결손 방어**
+   - `03_top-down_gold/06_DDL.sql` 및 물리 테이블에 `ACQ_CAMPAIGN_NAME_AT_ACQ VARCHAR(300)` 추가.
+   - `DIM_MEMBER_ACQUISITION.sql`에 Point-in-Time 스냅샷 조인 + 과거 가입자 Cold Start Fallback 배선.
+   - `dbt build` (PASS=1) 후 1,585,949 회원 결손율 0%(매칭률 100.00%) 실측 검증 완료.
+3. **[P1/RBAC] Snowflake DB 소유 모델 및 최소 권한 확립**
+   - `GN_DW.SNAPSHOT` 스키마 소유자를 `ACCOUNTADMIN`에서 `GN_DW_ADMIN`으로 정상화.
+   - 불필요한 소비 역할(`ANALYST`/`VIEWER`/`SERVICE`) 권한 전건 회수(소비자는 GOLD/SERVING 마트 경유 원칙).
+   - `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` 정본 DDL 동기화.
+4. **[P2/문서·런북] 스냅샷 런북 및 작업계획서 전건 검증 갱신**
+   - `06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql` 신설 (11종 검증 및 일배치 모니터링 쿼리).
+   - `06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md` DoD 전건 실측 완료 갱신.
+   - `10_dbt_pipeline/deploy_dbt_project.sql` 배포 런북에 스냅샷 버전 및 Task 체인 정본 반영.
+
+### ▣ WWWW2 🔴 다음 세션 열린 작업
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 (기획실 협의 기준 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+---
+
+## 0-XXXX. ~~🔴🔴 [2026-09-09 O151 필독 — **여기서 시작한다.** §0-WWWW 는 승계됐다]~~ → §0-YYYY 로 승계
+
+### ▣ XXXX1 🟢 O151 이 한 일
+1. **[P1/정제] 현업 1차 회신 확정 정제 룰 dbt 모델 반영**
+   - [2-4 A] `CRM_PAYMENT_BILLING.sql`: `MBRFEE_MT = '20251'` 5자리 비정상값을 `'202501'`로 보정하는 로직 반영.
+   - [2-1 I-2] `CRM_EVENT_PARTICIPATION.sql`: EVENT/CRMN 원천에서 공란 5건 및 홈페이지 테스트/보안 스캐너 이상치(2,058건)를 `REGEXP_LIKE(TRIM(MBER_NO), '^[0-9]{7}$|^[0-9]{9}$|^S[0-9]{8}$')` 필터로 정제.
+   - [3-1 N-1~4] `FACT_TARGET_DEV.sql` 및 `FACT_TARGET_BIZ.sql`: `COALESCE(GOAL_CNT, 0) > 0` / `COALESCE(TARGET_CNT, 0) > 0` 필터로 증액/재후원 미편성 0/NULL 껍데기 데이터를 달성률 산출 모수에서 제외.
+   - [O145-8] `CRM_DEV_TARGET.sql`: `TARGET_TYPE = 'ORIGINAL'`(당초) 부여 완료.
+2. **[P2/모델링] DEC-45 캠페인 ↔ 후원사업 1:N 브릿지 모델링 완결**
+   - `CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql` 신설: `TM_CM_CMPGN_MNG.SPNSR_BSNS_ID` 쉼표 다중값 정규화 (93,373행).
+   - `_silver_bridge_schema.yml`에 relationships 및 unique 테스트 등재 완료 (FK 100% 매칭).
+3. **[P1/배포·자동화] Snowflake Native DBT PROJECT 배포 및 Task DAG 등록**
+   - `GN_DW.OPS.DW_PIPELINE`에 `V_20260909_SNAPSHOT` 버전 추가 배포 완료.
+   - `dbt build` 49노드 전체 검증 완료 (PASS=40, WARN=9, ERROR=0).
+   - 일일 배치 DAG 생성 및 등록: `TASK_DW_SNAPSHOT_DAILY`(05:30 KST) ➔ `TASK_DW_BUILD_DAILY` (완료 후 즉시).
+
+### ▣ XXXX2 🔴 다음 세션 열린 작업
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 1.56배 팬아웃 방지 귀속 규칙 (현업 결정 전 0 센티넬 유지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층(본부/지부, 법인, 팀) 도출 규칙 (기획실 협의 기준 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행 의미 및 비-Z(512)/Z(802) 조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1 / 2 / 5**: 회원마스터 전량 입고(warn➔error 승격), `CRM_BIZ_TARGET`(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 상시 모니터링 (`rm` 금지).
+
+_Co-authored with CoCo_
+
+---
+
+## 0-YYYY. ~~🔴🔴 [2026-09-09 O152 필독 — **여기서 시작한다.** §0-XXXX 는 승계됐다]~~ ➔ 🟢 [2026-09-10 O153 승계됨]
+
+### ▣ YYYY1 🟢 O152 가 한 일
+1. **Cortex Agent 3종 스펙 OPS 스테이지 배포 및 버전업**
+   - [0] SV 26건 전건 라이브 실재 확인(부재 0).
+   - [0-B] `COPY FILES` 3종 → OPS 스테이지 동기화, `AGENT_OVERALL` ORPHAN 정리.
+   - [2] live 소진(EXECUTIVE committed) → [3] `ADD VERSION FROM` 3종 성공.
+   - 검증: MEMBER=V$5(T11) · EXECUTIVE=V$3(T8) · MARKETING=V$5(T7), 전건 is_default=true.
+   - GRANT(OWNERSHIP+USAGE×3) 보존 확인.
+2. **비판적 자기검토 및 2대 결함 자진 시정**
+   - ㉠ `agent_object_ref_gate` FAIL 적발 ➔ 스펙 2종 내 레거시 `FACT_MEMBER_SPONSOR_BIZ`를 `FACT_MEMBER_SPONSORSHIP_SPAN`으로 정합화 후 **MEMBER=V$6, MARKETING=V$6 재발행**(MEMBER 11·EXECUTIVE 8·MARKETING 7 도구수 100% 일치).
+   - ㉡ `test_o125_layer_census` stale 적발 ➔ DDL 개명(`FACT_MESSAGE_DISPATCH` 38) 및 컬럼 증분(`DIM_MEMBER_ACQUISITION` 39) 반영으로 **단위/음성 테스트 31종 전건 PASS(rc=0) 달성**.
+   - ㉢ 트랜스크립트 전수 감사(위험신호 6종 0건 통과).
+3. **전사 코멘트 표준화 및 4블록 규약 수립 (DEC-52)**
+   - `05_SV-Agent_ai/14_코멘트_표준화_작업계획.md` 작성 및 `30_설계_의사결정.md`에 `DEC-52` 등재.
+   - 4블록 템플릿(정의/Grain/주의/원천) 확립 및 Agent [원천]/[주의] 태그 100% 보존 원칙 수립.
+
+### ▣ YYYY2 🔴 다음 세션 열린 작업
+- 🟢 **[P2/품질·표준화] 코멘트 4블록 표준화 및 Live 반영 (`DEC-52`)**: 완료됨 (O153 승계).
+- 🔴 **[P1/차단] 착수표 ⑭**: FME.SPONSORSHIP_SK(STOP) 귀속 규칙 (현업 결정 전 배선 금지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 도출 규칙 (기획실 협의 대기).
+- 🔴 **[P1/현업회신 잔여] O145-5 / O145-6**: 권역본부 목표 행·조직 코드 정본 확정 대기.
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_SERVICE_EVENT.SEND_STATUS2` 처분 결정 대기.
+- 🔴 **[P3/원천입고] BLOCKING-1/2/5**: 회원마스터 전량 입고, CRM_BIZ_TARGET(E-6), 모금비용(E-1).
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링 (`rm` 금지).
+- 🟠 **[P3/Docs] 착수표 ④/⑪/⑱**: 기존 미결 항목(문서50 §O68 B1, 이관 원문 영구불가, O76 잔여).
+
+---
+
+## 0-ZZZZ. 🔴🔴 [2026-09-10 O153 ~~여기서 시작한다~~ — **§0-AAAA(O154) 로 승계됨**]
+- 🟢 **DEC-52 코멘트 4블록 표준화 및 Live 배포 완결** (GOLD 37종·SILVER 43종·SV 17종).
+- 🟢 **Cortex Agent 3종 신규 배포 (`VERSION$3`)** 및 워크스페이스 정본 YAML 동기화.
+- 🟢 자체 가능 과제 7건 완결 (`99_NEXT` 재균형, SV 코드열거 누락 해소, DDL 순서 일치화).
+- 🔴 잔여: 착수표 ⑭, ORG-H, O145-5, O59-P-1, BLOCKING-1/2/5, 착수표 ㊳.
+
+---
+
+## 0-AAAA. 🔴🔴 [2026-09-10 O154 ~~여기서 시작한다~~ — **§0-BBBB(O154-B) 로 승계됨**]
+- 🟢 **회원 마스터 전량입고 실측 및 `BLOCKING-1` 처방 전환** (1,763,065건 손실 0 · 고아 7,658종 `warn` 영구 유지).
+- 🟢 **문서 19번·21번 신설 및 20번 현행화** (19번 비-의사결정 12건 + 검증쿼리 12종).
+- 🔴 잔여: 17·18번 개명 stale 정정, 착수표 ⑭, ORG-H, O145-5, O59-P-1, 19번 12건.
+
+---
+
+## 0-BBBB. 🔴🔴 [2026-09-10 O154-B ~~여기서 시작한다~~ — **§0-CCCC(O155) 로 승계됨**]
+
+### ▣ BBBB1 🟢 O154-B 가 한 일 (승인 처리 5건 집행)
+
+1. **`test_o145_tools.py` 자기오염 구조 해소** — 🟢 근본 원인 제거
+   - 원인 = 테스트가 **실 `_archive/` 에 쓰고 `os.remove`** → 스테이지가 그 이름을 **유령 엔트리**로 남겨 재생성 거부 ⇒ 한 번 돌면 **영구 rc=1**.
+   - 처방 = **`snapshot_cli.py --archive` 신설**(`snapshot_util` 은 원래 `archive=` 를 받았고 CLI 만 미노출) + 테스트를 임시 보관소로 격리 + **축8-B(실 `_archive` 오염 0) 신설** ⇒ 19축 · **연속 3회 rc=0**.
+2. **문서 17·18번 GOLD 개명 stale 13곳 정정** (17번 5 + 18번 8) — ~~무자격 잔여 **0건**~~ · 양 문서 헤더에 대응표 포인터 + 문서 쌍 구조(17↔20 · 19↔21) 명시.
+   - 🔴🔴 **[2026-09-10 O155 정정]** 위 「무자격 잔여 0건」은 **분모가 그 5개 문서였다.** 전 워크스페이스 실측은 **축1 536건 / 115파일**이다(`D1`) ⇒ 🔴 **「개명 반영 완료」로 읽지 마라.** 감시 장치 = `scripts/rename_stale_gate.py`(기준선 대비 증가 = FAIL) · 근거철 = `20_issue/_o155_inspection_evidence.md` §1.
+3. **dbt yml 3파일에 「무시 지침」 사유 기재** — 🆕 `_crm_schema.yml` 헤더에 **`MASTER-ORPHAN-POLICY`** 신설 + 폐기 문안 **13곳** 정정. 🔴 **`R4-1` 준수 = dbt 명령 미실행**(검증은 `yaml.safe_load` + `line_len.py`).
+4. **`99_NEXT` 용량** — 재균형으로 **조각** 여유 178 → 12,651 B. 🔴 허브는 별 축(§BBBB2 ①).
+5. **`_archive` 진단 파일 3개** — 🔴 **일부러 지우지 않았다**(삭제가 사고 원인 · 원인은 ①로 제거됨).
+
+🔴 **자기시정 3건(전부 `O111 ㉢` 재발)** = `%RST%`→`FRST_RGSTR_ID` · `open(` 을 쓰기로 오탐 · 폐기문안 가드 4건 오탐
+⇒ 🟢 **일반화 = 패턴 매칭 건수를 근거로 쓰기 전에 매칭된 실물을 열어라.**
+🟢 **검증** = 게이트 **11종** 전건 rc=0 · 음성 테스트 **31종** 전건 rc=0 · read 미반환 **0건**.
+
+### ▣ BBBB2 🔴 다음 세션 열린 작업
+
+- 🟠 **[P2/설계 결정] `99_NEXT` 허브 여유 930 B — 근본 2안 중 택1**
+  · 🔴 **재균형으로는 해결되지 않는다**(재균형은 조각만 고친다). 허브 지배항 = **조각 선택표 77.3%**.
+  · O154-B 가 캡을 30/80 → **14/40** 으로 낮춰 40,782 → **40,030 B** 를 벌었으나 **캡이 병목이 아니었다**(절감 752 B). 진짜 지배항은 **조각 수 31 × 실제 절·ID 수**.
+  · ㉠ **`entry` 모드(append형) 재분류** — `split_doc` 은 그 모드에서 **절 목록을 아예 싣지 않는다**(코드 주석이 이 상황을 그대로 적고 있다). 🔴 원장 §0 등재표 + `doc_type_gate` 동반 수정 필요.
+  · ㉡ **승계된 인수인계 절을 조각째 은퇴** — 🔴 좌표 인용이 깨질 위험(현재 좌표 드리프트는 0 임을 확인했다).
+- 🟠 **[P3/도구] `o145_transcript_audit.py` 개선 2건** — ㉠ `rm -rf` 판정이 `/tmp` 와 스테이지를 구별하지 못한다 ㉡ `python3 -c` 신호가 **원문을 §4-B 에 싣지 않아** 사람이 판정할 수 없다(O154-B 가 `_o154b_pyc_probe.py` 로 임시 대응).
+- 🔴 **[P1/차단] 착수표 ⑭**: `FME.SPONSORSHIP_SK`(STOP) 귀속 규칙 (현업 결정 전 배선 금지 · 라이브 가드 위반 0 유지).
+- 🔴 **[P1/현업회신 잔여] ORG-H / F-1**: `DIM_ORG` 4단 계층 (기획실 협의 · `STATS_DEPT_LVL` NULL 1,306).
+- 🔴 **[P1/현업회신 잔여] O145-5**: 권역본부 목표 행 의미 (자체목표 vs 산하합산 · 3.27배 차이).
+- 🔴 **[P2/Silver] O59-P-1**: `FACT_MESSAGE_DISPATCH.SEND_STATUS2` 처분 (라이브 비NULL 0 유지).
+- 🔴 **[P3/원천입고] 19번 문서 12건**: `E-6`(`CRM_BIZ_TARGET` 0행) · `HOL-1` · `AD-5` · `PST-1` · `C-9-R` 등.
+- 🟠 **[P3/Docs] 착수표 ㊳**: `_o125e_entry.md` 낡은 마운트 엔트리 모니터링 (`rm` 금지).
+- 🟠 **[P4/Docs] `10_원천입고_결손요약.md` 성격 명시**: 2026-08-18 구 계정 측정본 ⇒ 「Agent 요건 관점 아카이브」 표기 권고(19번이 현행 담당).
+
+---

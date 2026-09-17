@@ -5,8 +5,8 @@
 --   본 파일은 2026-08-12 측정본이고, 그 뒤 A 원천이 여러 번 바뀌었다:
 --     · BRONZE_CRM 45 → 46 (+ TM_CM_MKTNG_UTM) · TM_CM_CMPGN_MNG 34 → 36 컬럼   (현행 CRM 50)
 --     · BRONZE_ERP 1 → 2 (+ EXPENSE_RESOLUTION) · BDGT_ACMSLT_LEDGER 65 → 67 컬럼(순서 변경)
---     · [2026-09-01] BRONZE_GA4(2) 복귀 · BRONZE_GSC(2) 신규 ⇒ 브론즈 52 → 56   (현행 브론즈 60)
---     · [2026-09-15] CRM 개편 ⇒ CRM 46 → 50 · 브론즈 56 → 60 · 이관 총계 77
+--     · [2026-09-01] BRONZE_GA4(2) 복귀 · BRONZE_GSC(2) 신규 ⇒ 브론즈 52 → 56   (현행 브론즈 61)
+--     · [2026-09-15] CRM 개편 ⇒ CRM 46 → 50 · 브론즈 56 → 60 · 이관 총계 77  (현행 = 브론즈 61 · 총계 78 · 2026-09-17 GSC 2 → 3)
 --        (신규 4 · 삭제 2 = TM_CM_MKTNG_CMPGN_MNG·TM_CM_MKTNG_UTM → TC_MKTNG_DTL_CD 통합 ·
 --         누락 보완 2 = TM_PM_INSTT_ACNUT·TM_PM_SETLE_CMPNY_ACNT)
 --   ⇒ 이 파일의 A3~A5 GET_DDL 과 A1/A2 집계는 **그 변경을 반영하지 않았다.**
@@ -51,7 +51,7 @@
 --   ④ A7 / A8 (ML)                               → 02번 5단계 · 4.1
 --
 --   현재 공유 대상: BRONZE_CRM(50) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(2)
---                   + SILVER.BIGQUERY_REFINED_DATA(1) + ML.ML_RST_DATA_*(16) = 77 테이블
+--                   + SILVER.BIGQUERY_REFINED_DATA(1) + ML.ML_RST_DATA_*(16) = 78 테이블
 --                   🔴 이 수치는 2026-09-15 기준이며 **아래 A1/A2 결과와 다르다**(A1/A2 는 08-12 측정).
 --   절차 문서: 50_handoff/01_데이터마이그레이션 20260730.md
 -- =====================================================================

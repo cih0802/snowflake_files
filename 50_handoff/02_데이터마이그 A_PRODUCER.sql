@@ -82,8 +82,8 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 77(브론즈 60 + SILVER 1 + ML 16)
---    🔴 [2026-09-15] 종전 기재 「스키마 5 · 테이블 67(브론즈 50)」은 stale 이었다 — 현행은 브론즈 60 · 총계 77.
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 78(브론즈 61 + SILVER 1 + ML 16)
+--    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.
 --       브론즈 5 = BRONZE_CRM(50) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(2)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
@@ -117,8 +117,8 @@ WHERE table_type = 'BASE TABLE'
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 50 · ERP 2 · GA4 2 · GSC 2 · ML 16 · SILVER 1 = 77)
---   🔴 [2026-09-15] 종전 기재 「CRM 45 · ERP 1 · = 67」은 stale 이었다 — 현행은 CRM 50 · 총계 77.
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 50 · ERP 2 · GA4 2 · GSC 3 · ML 16 · SILVER 1 = 78)
+--   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,

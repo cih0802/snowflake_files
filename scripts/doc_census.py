@@ -230,6 +230,15 @@ def chunk_paths(hub_rel, where):
       **폴더로 이전한 문서를 「조각 0개」로 보고**하고, 그 값을 쓰는 `session_brief` 는
       **허브만 읽어 착수표·인수인계를 조용히 비운다**(세션 시작이 깨진다).
       ⇒ 선언(`FAMILIES`)과 실제(마커)가 어긋나면 **실제를 따르고**, 불일치는 stale 대조가 잡는다.
+
+    🆕 🔴🔴 [2026-09-17 O172 · 사용자 결정 ⓐ] **폴더 분기를 패턴으로 좁힌다.**
+      🔴 종전 = `f.endswith(ext)` ⇒ 폴더의 **모든 `.md`** 를 조각으로 셌다.
+        ⇒ `split_doc` 은 `-%03d` 로 **구성해** 열거하므로 두 축이 **다르게 셌다**
+        (실측 = `99_NEXT_SESSION` split_doc **35** ↔ 이 함수 **36** — 차이는 사이드카
+        `00_선택표.md` 다). 🔴 이것이 `R3-9 ㉡`·`J8`「같은 것을 다르게 재지 마라」의 실물이고,
+        라벨 파일을 폴더에 두면 그 오차가 **세션마다 +1 로 누적**된다.
+      🟢 ⇒ 조각의 정의를 **파일명 패턴**으로 고정한다 = `<stem>-\\d{3}<ext>`.
+        사이드카(`00_선택표.md`)와 라벨 파일(`-O0172-A.md`)은 **조각이 아니다.**
     """
     hub = os.path.join(ROOT, hub_rel)
     stem, ext = os.path.splitext(hub)
@@ -249,9 +258,63 @@ def chunk_paths(hub_rel, where):
     else:
         d = os.path.join(os.path.dirname(hub), where)
         if os.path.isdir(d):
+            rx = chunk_rx(os.path.basename(stem), ext)
             out = [os.path.join(d, f) for f in sorted(os.listdir(d))
-                   if f.endswith(ext)]
+                   if rx.match(f)]
     return out
+
+
+# 🆕 🔴🔴 [2026-09-17 O172 신설 · 사용자 결정 ⓐⓑ] **파일명 규격 3종을 한 곳에서 정의한다.**
+#   🔴 왜 한 곳인가 = 열거 축이 갈라지면 「같은 것을 다르게 재는」 결함이 난다(`R3-9 ㉡`).
+#     실측 = 이 워크스페이스에 조각 열거 코드가 **4곳**(이 파일 · `split_doc` · `doc_heading_gate` ·
+#     `index_row_gate`)이고, 그중 둘은 `-%03d` 구성 · 둘은 `listdir` 였다.
+#   규격 =
+#     · **조각**      `<stem>-001.md`      — `split_doc` 이 만드는 순서 무변경 분할물
+#     · **라벨 파일** `<stem>-O0172-A.md`  — 세션 라벨 1단위 = 1파일(append 성격)
+#     · **사이드카**  `00_*.md`            — 자동 생성 색인(선택표 등)
+#   🔴 **ⓑ 접미는 항상 붙인다** — 최초 단위도 `-A` 다(무접미 금지).
+#     🔎 왜 = 무접미와 `-B` 가 섞이면 ㉠ 파일명 폭이 흔들려 정렬이 깨지고
+#       ㉡ 「무접미가 1번인가」를 매번 판정해야 한다. 규격화하면 **정렬 = 발생 순서**다.
+#     🔎 A~Z 로 충분한가 = 실측(이력·원장·`99_NEXT` 전량 스캔) 최대는 **21단위**
+#       (`O59` = 무접미 + A~T)이므로 26 자리로 담기지만 **여유가 5뿐**이다
+#       ⇒ 🟢 소진 시 **2자 확장**(`-AA`·`-AB`)을 허용하고 정렬은 **길이 우선**으로 둔다
+#       (`sorted` 가 `-Z` < `-AA` 를 그렇게 낸다 — 길이가 짧은 쪽이 먼저다).
+LABEL_SUFFIX = r'[A-Z]{1,2}'
+
+
+def chunk_rx(stem_base, ext='.md'):
+    """`<stem>-001.md` 형태 **조각만** 매치하는 정규식."""
+    return re.compile(r'^%s-\d{3}%s$' % (re.escape(stem_base), re.escape(ext)))
+
+
+def label_rx(stem_base, ext='.md'):
+    """`<stem>-O0172-A.md` 형태 **라벨 파일만** 매치하는 정규식(접미 필수)."""
+    return re.compile(r'^%s-O(\d{4})-(%s)%s$'
+                      % (re.escape(stem_base), LABEL_SUFFIX, re.escape(ext)))
+
+
+def label_paths(hub_rel, where):
+    """허브에 딸린 **라벨 파일** 경로 목록(O번호 → 접미 순 정렬).
+
+    🔴 조각과 **분모가 다르다** — 조각은 순서 무변경 분할물이고 라벨 파일은 append 단위다.
+    🟢 정렬 키 = (O번호, 접미 길이, 접미) ⇒ `O0059-Z` < `O0059-AA` < `O0060-A`.
+    """
+    hub = os.path.join(ROOT, hub_rel)
+    stem, ext = os.path.splitext(hub)
+    if where == 'sibling':
+        where = outdir_marker(hub) or 'sibling'
+    d = os.path.dirname(hub) if where == 'sibling' \
+        else os.path.join(os.path.dirname(hub), where)
+    if not os.path.isdir(d):
+        return []
+    rx = label_rx(os.path.basename(stem), ext)
+    hit = []
+    for f in os.listdir(d):
+        m = rx.match(f)
+        if m:
+            hit.append((int(m.group(1)), len(m.group(2)), m.group(2),
+                        os.path.join(d, f)))
+    return [h[3] for h in sorted(hit)]
 
 
 OUTDIR_RX = re.compile(r'<!--\s*SPLIT-OUTDIR:\s*(.+?)\s*-->')

@@ -116,8 +116,13 @@ HARDCODED = {
 }
 
 # ── SILVER dbt SQL 참조 토큰 (이름매칭 보완) ──
+#   🔴 [2026-09-17 O171] `CMPGN_UTM_NM` 추가 — 원천 12번 `DGT_AD_CMPGN_DTLS` 28번째 컬럼이
+#      `UPPER_CMPGN_NM` → `CMPGN_UTM_NM` 으로 **개명**되었고 `AGENCY_AD_ROW_DGT` 가 그 이름을 참조한다.
+#      🔴 **개명이 아니라 추가다** — `UPPER_CMPGN_NM` 은 `VIDEO_AD_CMPGN_DTLS` 에 **그대로 살아 있고**
+#         `AGENCY_AD_ROW_VIDEO`·`AGENCY_AD_PERFORMANCE`(VIDEO 분기)가 계속 참조한다.
+#      ⇒ 토큰을 교체하면 VIDEO 축이 「SILVER 미참조」로 오판된다(판정식 = 토큰은 컬럼이 아니라 **참조 사실**이다).
 SILVER_SQL_REFS = {
-    "DATE", "CMPGN_NM", "UPPER_CMPGN_NM", "MEDIA_NM", "DEVICE", "MATR",
+    "DATE", "CMPGN_NM", "UPPER_CMPGN_NM", "CMPGN_UTM_NM", "MEDIA_NM", "DEVICE", "MATR",
     "EXPS_CNT", "CLICK_CNT", "GA_CONV_MBER_CNT", "CONV_VU_CNT", "GA_AD_COST",
     "CHNNL_CMPNY", "BRDC_NM", "DVLP_MBER_CNT", "DVLP_CNT", "INBOUND_CALL_CNT",
     "AD_CNT", "BRDC_SCHDL_COST", "TIME_RNG_DIV_NM", "RE_BRDC_TY_NM",

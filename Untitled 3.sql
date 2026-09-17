@@ -7,7 +7,6 @@ GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE accountadmin;
 
 select * from gn_dw.bronze_crm.TC_MKTNG_DTL_CD limit 10;
 
-ㅅㄷㄴㅅ
 /*
 @(skill:init_ihcho) 
 1. `20_issue` 폴더의 문서들을 읽어 배경과 요구사항을 파악합니다.
@@ -24,4 +23,4 @@ select * from gn_dw.gold.WIDE_MEMBER_EVENT where event_type='STOP' limit 10;
 
 select * from gn_dw.silver.crm_member where cpr_div_cd='A' limit 10;
 
-
+select distinct cpr_div_cd from gn_dw.silver.crm_member;

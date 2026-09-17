@@ -51,6 +51,13 @@ from split_issue_index import split_row  # noqa: E402
 #   3회 republish 해 최초 상태가 이미 없다). 음성 테스트 = `test_snapshot_util.py`.
 from snapshot_util import add_label_arg, snapshot, snapshot_content  # noqa: E402
 
+# 🆕 🔴 [2026-09-17 O172] 파일명 규격(조각·라벨·사이드카)의 **정본은 `doc_census`** 다.
+#   🔴 여기서 정규식을 다시 쓰면 「같은 것을 다르게 재는」 결함이 난다(`R3-9 ㉡`·`J8`)
+#     — 실제로 이 워크스페이스는 그 결함으로 조각 수를 **35 ↔ 36** 으로 다르게 셌다.
+#   ⚠️ 순환 임포트 없음 = `doc_census` 는 `split_doc` 을 임포트하지 않는다(실측).
+from doc_census import label_paths as dc_label_paths      # noqa: E402
+from doc_census import label_rx as dc_label_rx            # noqa: E402
+
 MAX_LINES = 300
 MAX_BYTES = 40 * 1024
 
@@ -260,7 +267,16 @@ def head_of(lines, a, b):
 #   ⇒ 제목은 TITLE_MAX 자로 자르고, 항목 수는 캡을 두고 초과분은 「… 외 N건」으로 적는다.
 #   ⚠️ `entry` 모드(이력·로그)는 **절 목록을 싣지 않는다** — 항목 제목이 길고 수가 많아
 #   허브가 수십 KB로 커진다. 그 문서의 실제 선택자는 **세션 라벨(ID)** 이다(`R1-3-6`).
-TITLE_MAX = 50            # 제목 표시 상한(자)
+TITLE_MAX = 64            # 제목 표시 상한(자) · O124-B 70→50 · 🆕 O170 50→64 (아래 근거)
+# 🆕 🔴🔴 [2026-09-17 O170] **`TITLE_MAX` 를 50 → 64 로 되올린다.**
+#   🔴 왜 = `retire_sections` 가 만든 은퇴 절 제목이 **앞 50자가 동일**하다
+#     (`🟢 [O170 은퇴] 99_NEXT 승계 인수인계 절 — 99_NEXT_SESS…`) ⇒ 구별자가 **꼬리의 조각 번호**인데
+#     절단이 그것을 잘라 `test_split_doc_toc` 「변별 붕괴」가 **5건** FAIL 했다.
+#   🟢 왜 지금 올릴 수 있나 = 같은 세션에 **선택표를 사이드카로 분리**했으므로(`PICK_SIDECAR`)
+#     `TITLE_MAX` 가 **허브 여유와 더 이상 경쟁하지 않는다**. O124-B 가 70→50 으로 내린 이유가
+#     「허브 여유 회복」이었고 그 제약이 사라졌다.
+#   🟢 판정식 = **표시 상한을 정하는 것은 가독성이지 용량이 아니다** — 용량 제약을 다른 축(사이드카)으로
+#     옮기면 상한은 변별력 기준으로 되돌려야 한다. 🔴 되돌린 뒤 「변별 붕괴 0」을 재확인하라.
 # 🆕 🔴🔴 [2026-08-30 O124-B] **70 → 50 인하 · 근거는 실측이다.**
 #   문제 = 허브는 「목차」인데 **여유가 계속 줄어들어** `doc_type_gate` 축3 경고가 상주했다
 #     (`99_NEXT_SESSION.md` 실측 = 인수 시점 여유 **6,994 B** → O124 가 인수인계 절을 넣자 **6,468 B**
@@ -283,8 +299,18 @@ TITLE_MAX = 50            # 제목 표시 상한(자)
 #     조각을 고르는 데는 선두 몇 개로 충분하고, 인용은 **그 조각을 `read` 해서** 한다(표 머리말 규약).
 #   ⚠️ 이 값은 **전 허브에 공통**이다 — 각 허브는 다음 `--republish` 시점에 새 캡으로 줄어든다
 #     (즉시 일괄 축소가 아니다). 🔴 캡을 되올리려면 `99_NEXT` 허브 여유를 먼저 재라.
-TITLES_PER_CHUNK = 14     # 조각당 절 항목 캡 (O154-B: 30 → 14)
-IDS_PER_CHUNK = 40        # 조각당 ID 항목 캡 (O154-B: 80 → 40)
+# 🆕 🔴🔴 [2026-09-17 O170] **항목 캡을 14/40 → 8/20 으로 더 낮춘다.**
+#   🔴 왜 = `99_NEXT_SESSION` 재균형(24 → **35조각**)이 **허브를 상한 밖으로 밀어냈다**
+#     (실측 = 허브 **46,071 / 40,960 B** · 여유 **−5,111**). 선택표 크기가
+#     `조각수 × (절 캡 + ID 캡)` 이므로 **조각을 늘리면 허브가 커진다.**
+#   🟢🟢 **판정식(신설) = 재균형은 조각 여유를 사고 허브 여유를 판다.** 두 축은 반대로 움직인다
+#     ⇒ 조각 여유가 부족해 재균형을 돌린 직후에는 **허브 상한을 반드시 다시 재라**.
+#     🔴 O154-B 는 「캡을 낮춰 허브를 줄였다」까지만 적었고 **조각수가 늘면 되돌아온다**는 것을
+#     적지 않았다 — 그래서 같은 벽에 두 번째로 부딪혔다.
+#   🟢 왜 안전한가 = 이 표는 색인이고 `… 외 N건` 오버플로 표기를 이미 쓴다(전량이 아님을 선언).
+#     변별 붕괴 0 은 `test_split_doc_toc.py` 가 강제하고 그 축을 통과시킨 뒤 내렸다.
+TITLES_PER_CHUNK = 8      # 조각당 절 항목 캡 (O154-B: 30 → 14 · O170: 14 → 8)
+IDS_PER_CHUNK = 20        # 조각당 ID 항목 캡 (O154-B: 80 → 40 · O170: 40 → 20)
 PICK_LINE_SOFT = 600      # 한 줄 목표 길이(자) · R1-5 목표 1,000자의 절반 이하
 
 # 🔴 `R\d+` 은 **넣지 않는다** — 그것은 지침 조문 번호이고 이슈 ID 가 아니다.
@@ -401,6 +427,45 @@ def pick_table(lines, chunks, stem, disp, mode):
     return out
 
 
+# 🆕 🔴🔴 [2026-09-17 O170 신설 · 사용자 결정] **선택표 사이드카 분리.**
+#   🔴 왜 = 선택표 크기는 `조각수 × (절 캡 + ID 캡)` 이라 **조각이 늘면 허브가 커진다**.
+#     실측(`99_NEXT_SESSION`) = 허브 38,881 B 중 **선택표 28,768 B = 74.0%** ·
+#     조각 목차 5,457(14.0%) · 대응표 2,875(7.4%) · 머리말 1,781.
+#     ⇒ 재균형(24 → 35조각)이 허브를 **46,071 / 40,960 B** 로 밀어냈다(여유 −5,111).
+#   🔴 종전 처방 2개는 둘 다 한계였다 = ㉠ 캡 인하(O154-B 30/80→14/40 · O170 14/40→8/20)는
+#     **조각이 늘면 되돌아온다** ㉡ 승계 절 은퇴는 `retire_sections` 의 「열림 신호」 축이
+#     인수인계 절에서 **전건 오탐**해 63절 전부 `--force` 가 필요하다(안전장치 무력화).
+#   🟢 이 처방은 **내용을 한 바이트도 옮기지 않는다** — 자동 생성 색인의 저장 위치만 바꾼다.
+#   🟢 두는 곳 = **조각 폴더 안** `00_선택표.md`. 🔴 새 최상위 문서를 만들지 않는 이유 =
+#     `R1-6-18 ④` 가 요구하는 분모 편입 4곳이 늘어나고 원장 §0 유형 등재도 필요해진다.
+#     🔴 파일명이 `<stem>-\d{3}.md` 와 겹치지 않으므로 **조각 열거에 섞이지 않는다**(`:1243` 정규식).
+#   🔴 형제 조각 방식(폴더 없음) 문서는 **종전대로 허브에 싣는다** — 사이드카를 둘 곳이 없다.
+#   🟢 판정식 = **재균형은 조각 여유를 사고 허브 여유를 판다.** 두 축이 반대로 움직이므로
+#     조각을 늘린 직후에는 허브 상한을 다시 재라.
+PICK_SIDECAR = '00_선택표.md'
+
+
+def pick_sidecar_path(src, outdir):
+    """선택표 사이드카 경로(폴더 방식일 때만). 형제 조각 방식이면 `None`."""
+    if not outdir:
+        return None
+    return os.path.join(os.path.dirname(src), outdir, PICK_SIDECAR)
+
+
+def pick_pointer(rel):
+    """허브에 남길 포인터 블록 — 🔴 제목 `##` 1개를 유지해 골든이 흔들리지 않게 한다."""
+    return [
+        '## 조각 선택표 — **어느 조각을 읽어야 하는가**',
+        '',
+        '> 🔴🔴 **이 표는 허브에서 분리됐다**(2026-09-17 O170 · 사용자 결정) ⇒ **정본 = `%s`**' % rel,
+        '> · 🔎 왜 = 선택표 크기가 `조각수 × 항목 캡` 이라 **조각이 늘면 허브가 상한을 넘었다**',
+        '>   (실측 = 허브의 **74.0%**). 내용은 옮기지 않았고 **저장 위치만** 바꿨다.',
+        '> · 🔴 그 파일도 **자동 생성물이다** — 손으로 고치지 마라(재발행에서 사라진다).',
+        '> · 🟢 조각을 고를 때는 위 **조각 목차**로 좁히고, 절·ID 단위로 골라야 하면 그 파일을 `read` 한다.',
+        '',
+    ]
+
+
 def chunk_path(src, n, outdir=None):
     """조각 경로. `outdir` 이 주어지면 **하위 폴더**에 둔다(허브는 원 위치·원 파일명 유지 · R1-6-5).
 
@@ -416,6 +481,41 @@ def chunk_path(src, n, outdir=None):
         return os.path.join(os.path.dirname(src), outdir,
                             '%s-%03d%s' % (os.path.basename(stem), n, ext))
     return '%s-%03d%s' % (stem, n, ext)
+
+
+# 🆕 🔴🔴 [2026-09-17 O172 신설 · 사용자 결정 ⓐⓑ] **라벨 파일과 조각의 경계 계약.**
+#   이 도구는 조각을 **`%03d` 로 구성해** 열거한다(`collect_bodies` · `chunk_path`) ⇒
+#   조각 폴더에 놓인 **라벨 파일**(`<stem>-O0172-A.md`)과 **사이드카**(`00_*.md`)는
+#   원리적으로 조각 열거·`--verify` concat·허브 목차에 **섞이지 않는다.**
+#   🔴 그러나 「섞이지 않는다」는 「보인다」가 아니다 — 라벨 파일은 허브 색인에 실리지 않으므로
+#     다음 세션이 찾을 수 없다 ⇒ 아래 두 장치로 닫는다:
+#     ㉠ `build_hub` 가 라벨 파일이 있으면 **색인 포인터 1줄**을 머리말에 싣는다(용량 ≈ 100 B).
+#     ㉡ `verify` 가 **규격 위반 파일명**을 신고한다(무접미 `-O0172.md` · 3자리 `-O172-A.md`).
+#   🔴 규격 정본은 `doc_census.chunk_rx`·`label_rx` 다 — 여기서 재정의하지 않는다(`R3-9 ㉡`).
+LABEL_INDEX_NAME = '00_인수인계_색인.md'
+
+
+def label_files(src):
+    """허브에 딸린 라벨 파일 경로 목록(없으면 `[]`). 정본 = `doc_census.label_paths`."""
+    rel = os.path.relpath(os.path.abspath(src), ROOT)
+    return dc_label_paths(rel, hub_outdir(src) or 'sibling')
+
+
+def label_spec_violations(src):
+    """`-O…` 을 담고 있으나 **규격에 맞지 않는** 파일명 목록(경고용).
+
+    🔴 왜 필요한가 = 규격 위반 파일은 라벨 열거에서 **조용히 빠진다**(0건은 「없다」가 아니다 · `J1`).
+    ⇒ 「이름이 라벨처럼 보이는데 규격이 아닌 것」을 따로 세어 신고한다.
+    """
+    outdir = hub_outdir(src)
+    d = os.path.join(os.path.dirname(os.path.abspath(src)), outdir) if outdir \
+        else os.path.dirname(os.path.abspath(src))
+    if not os.path.isdir(d):
+        return []
+    stem = os.path.basename(os.path.splitext(src)[0])
+    ok = dc_label_rx(stem, os.path.splitext(src)[1])
+    loose = re.compile(r'^%s-O.*\.md$' % re.escape(stem))
+    return sorted(f for f in os.listdir(d) if loose.match(f) and not ok.match(f))
 
 
 def hub_outdir(src):
@@ -449,6 +549,29 @@ def build_hub(src, lines, chunks, digest, outdir=None, mode='section', label='�
     base = os.path.basename(src)
     stem = os.path.splitext(base)[0]
     disp = ('%s/' % outdir) if outdir else ''
+
+    # 🆕 [2026-09-17 O170] 선택표 사이드카 발행 — 🔴 허브를 쓰는 모든 경로가 여기를 지난다
+    #   (호출 6곳 = 분할·republish·rollover·rebalance·to-outdir) ⇒ **한 곳에서 쓴다**.
+    #   🔴 `build_hub` 은 항상 `write_text(src, …)` 와 짝이므로 dry-run 에서 호출되지 않는다.
+    side = pick_sidecar_path(src, outdir)
+    if side:
+        sh = []
+        sh.append('<!-- LLM-METADATA')
+        sh.append('doc_id: %s_PICK' % re.sub(r'[^0-9A-Za-z]+', '_', stem).upper().strip('_'))
+        sh.append('doc_role: %s 의 조각 선택표 — 허브에서 분리된 자동 생성 색인' % base)
+        sh.append('project: GN_DW (굿네이버스)')
+        sh.append('created: 2026-09-17')
+        sh.append('created_by: O170')
+        sh.append('parent: %s' % base)
+        sh.append('END-METADATA -->')
+        sh.append('')
+        sh.append('> 🔴🔴 **이 파일은 자동 생성물이다 — 손으로 고치지 마라**(재발행에서 사라진다).')
+        sh.append('> 생성 = `python3 scripts/split_doc.py %s --republish`' % src)
+        sh.append('> 🔴 이 표는 **색인이고 정본이 아니다** — 절·ID 를 근거로 인용하지 말고 그 조각을 `read` 한다.')
+        sh.append('')
+        sh.extend(pick_table(lines, chunks, stem, disp, mode))
+        write_text(side, '\n'.join(sh) + '\n')
+
     orig_meta = []
     for l in lines[:40]:
         orig_meta.append(l)
@@ -496,6 +619,18 @@ def build_hub(src, lines, chunks, digest, outdir=None, mode='section', label='�
     out.append('> 내용을 갱신할 때는 조각을 직접 편집하고 **이 허브의 SHA256 을 재발행**한다')
     out.append('> (`--verify` 는 「분할 시점 원문과 동일한가」를 묻는 게이트다).')
     out.append('')
+    # 🆕 🔴🔴 [2026-09-17 O172] **라벨 파일 색인 포인터.** 라벨 파일은 조각이 아니므로
+    #   위 목차·SHA256·concat 에 **원리적으로 들어가지 않는다** ⇒ 여기서 「어디를 보라」만 가리킨다.
+    #   🔴 목록 자체를 여기 싣지 않는다 — 세션마다 1행씩 자라 **허브가 다시 상한과 경쟁**한다
+    #     (O154-B·O170 이 캡 인하로 두 번 부딪힌 벽 · 정본 = 사이드카 색인).
+    labels = label_files(src)
+    if labels:
+        out.append('> 🔴🔴 **인수인계 라벨 파일 %d개는 이 목차에 없다**(조각이 아니다 · `O172`).'
+                   % len(labels))
+        out.append('> · 색인 = `%s%s` (자동 생성 · `scripts/handoff_write.py --index`)'
+                   % (disp, LABEL_INDEX_NAME))
+        out.append('> · 최신 = `%s%s`' % (disp, os.path.basename(labels[-1])))
+        out.append('')
     out.append('## 조각 목차')
     out.append('')
     out.append('| 조각 | 구 행범위 | 줄 | KB | 선두 절 |')
@@ -505,7 +640,12 @@ def build_hub(src, lines, chunks, digest, outdir=None, mode='section', label='�
         out.append('| `%s%s-%03d.md` | %d~%d | %d | %.1f | %s |' % (
             disp, stem, n, a + 1, b, b - a, nbytes(t) / 1024.0, head_label(lines, a, b)))
     out.append('')
-    out.extend(pick_table(lines, chunks, stem, disp, mode))
+    # 🆕 [2026-09-17 O170] 폴더 방식이면 선택표를 **사이드카로 분리**하고 허브엔 포인터만 둔다.
+    #   🔴 형제 조각 방식(`outdir` 없음)은 둘 곳이 없으므로 종전대로 허브에 싣는다.
+    if outdir:
+        out.extend(pick_pointer('%s/%s' % (outdir, PICK_SIDECAR)))
+    else:
+        out.extend(pick_table(lines, chunks, stem, disp, mode))
     out.append('## 구 행번호 → 신 좌표 대응표')
     out.append('')
     out.append('> 분할 전 이 문서를 **「N행」으로 인용한 기존 문장은 수정하지 않았다**')
@@ -687,6 +827,12 @@ def family_text(src, chunk_paths):
     은퇴 이관(`retire_rows.py`)은 토큰을 **같은 폴더의 append형 로그로** 옮기므로
     이 분모에서 찾히면 사고가 아니다. 찾히지 않으면 진짜 유실이다.
     ⚠️ 분모는 **1단계 하위 폴더까지** 본다(조각 폴더 = `01_세션이력_조각/`).
+    🆕 🔴🔴 [2026-09-17 O170] **2단계 예외 = `_조각` 폴더.** 은퇴 목적지가 **분할된 문서**면
+      그 본문은 `20_issue/90_해소완료_로그_조각/…`(2단계)에 들어가므로 1단계 분모에서
+      **보이지 않았다** ⇒ 실사고 = `retire_sections` 로 인수인계 절 22개를 이관한 뒤
+      `99_NEXT --verify` 가 **「행선지 없음 15종」으로 FAIL**(전 종이 목적지에 실재 · 오탐).
+      🟢 판정식 = **은퇴 목적지가 분할되면 분모도 한 단계 깊어져야 한다** —
+      분모를 고정 깊이로 잡으면 목적지가 쪼개지는 순간 조용히 오탐한다.
     """
     skip = set(os.path.abspath(p) for p in chunk_paths)
     skip.add(os.path.abspath(src))
@@ -694,8 +840,12 @@ def family_text(src, chunk_paths):
     buf = []
     for root, dirs, files in os.walk(d):
         dirs[:] = [x for x in dirs if x not in ('_archive', '__pycache__', 'logs')]
-        if os.path.relpath(root, d).count(os.sep) > 0:
-            continue                       # 1단계 하위까지만
+        rel = os.path.relpath(root, d)
+        depth = 0 if rel == '.' else rel.count(os.sep) + 1
+        if depth > 1 and not os.path.basename(root).endswith('_조각'):
+            continue                       # 1단계 하위까지 · 단 `_조각` 폴더는 2단계 허용
+        if depth > 2:
+            continue
         for f in sorted(files):
             if not f.endswith(('.md', '.sql', '.yml', '.csv')):
                 continue
@@ -776,6 +926,16 @@ def verify(src):
         print('🔴 조각이 없다.')
         return 1
     joined = '\n'.join(parts)
+
+    # 🆕 🔴 [2026-09-17 O172] 라벨 파일 **규격 위생**(경고 · blocking 아님).
+    #   🔴 판정식 = 「라벨처럼 보이는데 규격이 아닌 파일」은 열거에서 **조용히 빠진다** ⇒
+    #     0건을 「없다」로 읽지 않으려면 **위반을 따로 세어야 한다**(`J1`).
+    bad_labels = label_spec_violations(src)
+    if bad_labels:
+        print('🟠 라벨 파일 규격 위반 %d건 — 열거에서 조용히 빠진다 '
+              '(규격 = `<stem>-O0172-A.md` · 4자리 + 접미 필수)' % len(bad_labels))
+        for f in bad_labels:
+            print('     %s' % f)
 
     # 게이트 1 — 조각 본문 concat == 허브가 발행한 해시
     got = sha(joined)

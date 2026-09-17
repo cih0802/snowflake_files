@@ -20,7 +20,7 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 5.2(파일포맷/스테이지) / 5.3.1(적재 전 검증) / 5.4(일괄 적재) /
 --                5.5(SILVER) / 5.6(ML) / 6장(검증) / 7장(정리)
---   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql   → 브론즈 60 테이블 생성
+--   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql   → 브론즈 61 테이블 생성
 --              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql   → SILVER 1 테이블 생성
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       → ML 16 테이블 생성
 --              ⚠️ 셋 다 먼저 실행해야 한다. 미실행 시 loaded tables: 0. 상호 선후 관계는 없다.
@@ -28,16 +28,29 @@
 --              50_handoff/03_데이터마이그 B_BROKER.sql    (B: 공유 마운트/CSV 언로드)
 --
 -- 갱신 이력 / CHANGES
+--   2026-09-17  선행 DDL(04번) 갱신에 맞춰 **수치·구조 주의사항만** 정정했다(SQL 본문 무변경).
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).
+--        ⇒ **CRM CSV 는 전건 재언로드 대상이다**(열이 1개씩 늘었다). 이전 판 CSV 로 적재하면
+--           열 수 불일치로 실패한다. 🔴 A.1 (4) 대조를 반드시 다시 통과시킨 뒤 적재한다.
+--        · SND_MEMBER_LIST 는 76 → **77컬럼**(OPEN_DT 삭제분 + _STDR_YM 추가분이 상계되지 않는다).
+--     🔴 BRONZE_AGENCY.DGT_AD_CMPGN_DTLS 의 28번째 컬럼이 UPPER_CMPGN_NM → CMPGN_UTM_NM 으로
+--        **개명**되었다(컬럼 수·위치 불변) ⇒ 위치 기반 적재에는 영향이 없다.
+--     + BRONZE_GSC.SEARCH_CONSOLE_DATA2 신규 ⇒ 브론즈 61 · 총계 78. GSC 는 CSV 대조 대상이 아니다.
+--     🔴 BRONZE_ERP.EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 정정되었다(원천 13번 정본 ·
+--        2026-09-17 사용자 결정). 열 수·순서 불변이라 A.1 (4) 열 대조는 통과하지만
+--        **문자열 → DATE 형변환이 새로 생긴다** ⇒ 🔴 GN_CSV_FORMAT_EUCKR2 로 **소량 시적재해 거부행 0**
+--        을 먼저 확인하고 전량 적재한다. 날짜 표기가 'YYYY-MM-DD' 가 아니면 DATE_FORMAT 지정이 필요하다.
 --   2026-09-15  선행 DDL(04번) 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 52 → **60** · 총계 69 → **77**
---       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 60 / 77 은 ㉡ 이후)
---       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77
+--     · 브론즈 52 → **60** · 총계 69 → **77**  (⇒ 2026-09-17 현행 = 브론즈 61 · 총계 78)
+--       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 61 / 78 은 ㉡·㉢ 이후)
+--       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77 (현행 61 / 78)
+--       ㉢ 2026-09-17 GSC 2 → **3** (SEARCH_CONSOLE_DATA2 신규) ⇒ 브론즈 61 · 총계 78
 --     · 파일명 정정: 04·06번에서 날짜를 뗐다(구 = *_20260730 / *_20260820).
 --     🔴 SND_MEMBER_LIST 는 OPEN_DT 삭제로 **76컬럼**이다 — 이전 판 CSV(77열)로 적재하면 실패한다.
 --        오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 이동했다 ⇒ 재언로드가 필요하다.
 --     🔴 A.1 (4) 대조를 **반드시 다시 통과**시킨 뒤 적재한다(대상 테이블 집합이 바뀌었다).
 --   2026-08-29  선행 DDL 3종의 2026-08-29 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-15 항목 = 60/77)
+--     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-17 항목 = 61/78)
 --     · 파일명 정정: 「04_2번 SILVER」 → **06번** (실제 파일명이 06_ 이다)
 --     · 🔴 A.1 [원인 B] 사례(2026-08-13 BDGT_ACMSLT_LEDGER)의 **결론이 뒤집혔다** — 아래 A.1 참조.
 --     · A.1 (4) · A.6 (1) 의 SQL 은 스키마 조건으로 돌기 때문에 **쿼리 수정이 불필요**했다
@@ -47,7 +60,7 @@
 --   적재 스테이지 = @SANDBOX.TOOLS.MIG_LOAD_STAGE/<SCHEMA>/<TABLE>/
 --   파일 포맷 = SANDBOX.TOOLS.FF_CSV_LOAD (적재) · SANDBOX.TOOLS.FF_CSV_PEEK (진단)
 --
--- 적재 대상 / SCOPE (77 테이블)
+-- 적재 대상 / SCOPE (78 테이블)
 --   BRONZE_CRM 50 · BRONZE_AGENCY 4 · BRONZE_ERP 2                  → A.4 프로시저 일괄 적재
 --   BRONZE_GA4 2 · BRONZE_GSC 2                                     → 🟢 CSV 이관 대상이 아니다
 --     (Google API 를 호출하는 SP_LOAD_* 가 DELETE 후 재적재한다 · 04번은 빈 구조만 만든다)
@@ -60,7 +73,7 @@
 --   ML.ML_RST_DATA_MBER_CHURN_12M    18컬럼 · VARIANT $18  (PREDICTION)    → A.5-B.2
 --   ML.ML_RST_DATA_MBER_INC_12M      21컬럼 · VARIANT $21  (PREDICTION)    → A.5-B.2
 --   ML.ML_RST_DATA_LOYAL_MBER        22컬럼 · VARIANT $22  (PREDICTION)    → A.5-B.2
---   ⇒ 브론즈 60개 테이블에는 반정형 컬럼이 없다. A.4 프로시저로 그대로 처리 가능하다.
+--   ⇒ 브론즈 61개 테이블에는 반정형 컬럼이 없다. A.4 프로시저로 그대로 처리 가능하다.
 -- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
@@ -529,7 +542,7 @@ WHERE table_type = 'BASE TABLE'
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 GROUP BY 1 ORDER BY 1;
 -- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 50 · BRONZE_ERP 2 · BRONZE_GA4 2 · BRONZE_GSC 2
---       · ML 16 · SILVER 1 = 77 테이블
+--       · ML 16 · SILVER 1 = 78 테이블
 --       행수는 03번 3.1 / 02번 5단계 실측값과 일치해야 한다.
 --       🔴 이 수치는 04·05·06번 DDL 의 2026-09-15 판 기준이다. DDL 을 갱신하면 여기도 함께 고쳐라
 --          (수치가 문서 두 곳에 있으므로 한 곳만 고치면 조용히 어긋난다).

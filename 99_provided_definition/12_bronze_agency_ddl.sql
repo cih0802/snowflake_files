@@ -29,7 +29,7 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
 	CVR FLOAT COMMENT 'CVR',
 	CPC FLOAT COMMENT 'CPC',
 	CPM FLOAT COMMENT 'CPM',
-	UPPER_CMPGN_NM VARCHAR(16777216) COMMENT '상위캠페인',
+	CMPGN_UTM_NM VARCHAR(16777216) COMMENT 'utm_campaign',
 	READ_CNT FLOAT COMMENT '조회수',
 	MEDIA_PTNT_CUST_CNT FLOAT COMMENT '잠재고객수(매체)',
 	DATE DATE COMMENT '날짜',
@@ -122,7 +122,7 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 	SKIP_HEADER = 1
 	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 ;
-CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET("INPUT_YYYYMM" VARCHAR DEFAULT null)
+CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET("INPUT_YYYYMM" VARCHAR)
 RETURNS VARCHAR
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.12'
@@ -211,11 +211,17 @@ def sheets_get_values(access_token, spreadsheet_id, range_str):
     return resp.json().get("values", [])
 
 
-def main(session, input_yyyymm=None):
+def main(session, input_yyyymm):
     logs = []
 
-    if not input_yyyymm:
-        input_yyyymm = (datetime.now() - timedelta(days=1)).strftime(''%Y%m'')
+    # input_yyyymm 유효성 검증
+    try:
+        datetime.strptime(input_yyyymm, ''%Y%m'')
+    except (ValueError, TypeError):
+        raise Exception(
+            f"input_yyyymm 파라미터 오류: ''{input_yyyymm}'' "
+            f"(YYYYMM 형식의 유효한 연월을 입력해주세요.)"
+        )
     logs.append(f"[작업 기준월] {input_yyyymm} 데이터 수집 프로세스를 시작합니다.")
 
     try:
@@ -241,6 +247,7 @@ def main(session, input_yyyymm=None):
         FILTER_TARGET_COLUMN = "소재"
         HEADER_ROW_NUM = 3
 
+        target_file_found = False
         # 파일 목록 순회
         for file in files:
             file_id = file[''id'']
@@ -258,9 +265,9 @@ def main(session, input_yyyymm=None):
             if input_yyyymm != file_yyyymm:
                 logs.append(f"[-] 해당 월에 해당 안되는 파일 패스합니다. [파일명]: ''{file_name}''")
                 continue
-            if file_type != ''DIGITAL'' or input_yyyymm != file_yyyymm:
+            if file_type != ''DIGITAL'':
                 raise Exception(f"파라미터 오류 [파일명]: ''{file_name}'' / [대상년월 파라미터] : {input_yyyymm}")
-
+            target_file_found = True
             # 메타데이터(컬럼 정보) 가져오기 (캐시 활용)
             if table_name not in metadata_cache:
                 metadata_query = f"""
@@ -437,7 +444,11 @@ def main(session, input_yyyymm=None):
                 )
 
                 logs.append(f"  [성공] [{table_name}] 테이블에 적재 완료! {len(df_cleaned)} 행 인입!")
-
+        if not target_file_found:
+            raise Exception(
+                f"대상 파일이 존재하지 않습니다. "
+                f"[파일명: DIGITAL_{input_yyyymm}_*]"
+            )
     except Exception as global_err:
         error_msg = str(global_err).replace("''", "''''")
         logs.append(f"[ERROR] {global_err}")
@@ -989,7 +1000,8 @@ create or replace task GN_DW.BRONZE_AGENCY.TASK_DGT
 	warehouse=GN_DW_ETL_WH
 	after GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
 	as BEGIN
-    IF (DAY(CURRENT_DATE()) = 10) THEN
+    --매월 10일과 11일은 전월데이터까지 재인입
+    IF (DAY(CURRENT_DATE()) IN (10, 11)) THEN
         -- 전월 데이터 처리
         CALL GN_DW.BRONZE_AGENCY.SP_LOAD_DGT_AD_FROM_GSHEET(
             TO_CHAR(
@@ -1013,7 +1025,8 @@ create or replace task GN_DW.BRONZE_AGENCY.TASK_VIDEO
 	warehouse=GN_DW_ETL_WH
 	after GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER
 	as BEGIN
-    IF (DAY(CURRENT_DATE()) = 10) THEN
+    --매월 10일과 11일은 전월데이터까지 재인입
+    IF (DAY(CURRENT_DATE()) IN (10, 11)) THEN
         -- 전월 데이터 처리
         CALL GN_DW.BRONZE_AGENCY.SP_LOAD_VIDEO_AD_FROM_GDRIVE(
             TO_CHAR(

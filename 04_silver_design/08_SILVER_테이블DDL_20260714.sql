@@ -449,6 +449,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_METHOD (
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 --   · CMMN_BRND: MM297 공통브랜드 코드. 라벨=CMMN_BRND_NM
 --   · MKTG_UTM: TM_CM_MKTNG_UTM 코드. 라벨=MKTG_UTM_NM
+--   · MKTG_CHANNEL: 마케팅 채널 코드 — TM_CM_CMPGN_MNG.MKTG_CHANNEL · TC_MKTNG_DTL_CD C002 대응.
+--     2026-09-16(O162) CRM 원천 개편 시 신규. 라벨=MKTG_CHANNEL_NM
 --   · PROMO_METHOD_NAME: 홍보방법명 — PR_MTH_CD 라벨(CM008, 구 GOLD DIM_CAMPAIGN §O37 로직 이관)
 --   · PARENT_CAMPAIGN_NAME: 상위캠페인명 — UPPER_CMPGN_CD 자기조인 라벨(구 GOLD DIM_CAMPAIGN §O37 로직 이관)
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
@@ -481,7 +483,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     CMMN_BRND_NM        VARCHAR(100)    COMMENT 'MM297 공통브랜드명',
     MKTG_UTM            NUMBER(10,0)    COMMENT '마케팅 UTM 코드 (TC_MKTNG_DTL_CD U001 대응)',
     MKTG_UTM_NM         VARCHAR(200)    COMMENT '마케팅 UTM 라벨 (TC_MKTNG_DTL_CD U001 라벨)',
-    MKTG_CHANNEL        NUMBER(10,0)    COMMENT '마케팅 채널 코드 (2026-09-16 신규 · TM_CM_CMPGN_MNG.MKTG_CHANNEL · TC_MKTNG_DTL_CD C002 대응)',
+    MKTG_CHANNEL        NUMBER(10,0)    COMMENT '마케팅 채널 코드 (TM_CM_CMPGN_MNG.MKTG_CHANNEL · TC_MKTNG_DTL_CD C002 대응)',
     MKTG_CHANNEL_NM     VARCHAR(200)    COMMENT '마케팅 채널명 (TC_MKTNG_DTL_CD C002 라벨)',
     -- [DEC-43 2026-08-25] 캠페인 SV 3종 스냅샷 동결 잔여 2속성(BRND_NM 은 위 327행에 이미 존재).,
     CMPGN_STRT_DE       VARCHAR(8)      COMMENT '캠페인 시작일 YYYYMMDD',
@@ -850,13 +852,15 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_ITEM (
 --   [컬럼별 설계 및 실측 이력]
 --   · BUDGET_ITEM_DK: 예산과목 대체키 (PK, →ERP_BUDGET_ITEM)
 --   · BUDGET_PROCEDURE: 예산 편성 차수 (연사업 / 추가경정 · DEC-44)
+--   · DVLP_INBOUND_PATH: 개발 유입경로 (원천 DVLP_INBOUND_PATH 승계). 실측 8종
+--   · BDGT_UNIT_NM: 예산단위명 (원천 BDGT_UNIT_NM 승계). 실측 6종
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '불변 비즈니스 식별자',
     BUDGET_YEAR         NUMBER(4,0)     COMMENT '예산연도 YYYY',
     BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC-44)',
-    DVLP_INBOUND_PATH   VARCHAR         COMMENT '개발 유입경로 (원천 DVLP_INBOUND_PATH 승계 · 8종)',
-    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명 (원천 BDGT_UNIT_NM 승계 · 6종)',
+    DVLP_INBOUND_PATH   VARCHAR         COMMENT '개발 유입경로 (원천 DVLP_INBOUND_PATH 승계)',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명 (원천 BDGT_UNIT_NM 승계)',
     MONTH_NO            NUMBER(2,0)     NOT NULL COMMENT '월 1~12 (PK)',
     MONTH_KEY           VARCHAR(6)      COMMENT '월키 YYYYMM',
     YEAR_BUDGET_AMT     NUMBER(38,0)    COMMENT '편성(연예산) 금액 원단위',
@@ -958,6 +962,16 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
 --   ⚠️ staging 은 BRONZE 컬럼명·타입을 그대로 보존한다(개명·형변환 금지). 정제는 코어/위성 담당.
 --   ⚠️ staging 의 YEAR·MONTH·WEEK·DOW·BRDC_MT 는 '2025년'·'03월' 형태의 텍스트다 —
 --      숫자 파싱 금지, 시간축은 DATE 컬럼에서 파생할 것(과거 96% NULL 결함 원인).
+--   🔴🔴 [2026-09-17 O171 예외 신설 · 사용자 결정] **DGT 는 위 금지의 예외다.**
+--      원천 12번 DGT 가 2026-06 전후로 시간축 방식을 바꾸는 중이다(개발 진행 중) ⇒
+--        · 2026-06-01 이후 = `DATE` 채움(신방식) · 2026-05-31 이전 = `DATE` 공백 + 텍스트축만(구방식 고정분)
+--      실측 = 203,138행 중 `DATE` NULL **194,058(95.53%)** ⇒ 위 규약이 신뢰하라고 한 컬럼이 비었다.
+--      🟢 DGT 의 텍스트축 실측 값은 '2025년'이 아니라 **'2025'·'3'·'6'** 이고, `DATE` 가 있는 9,080행에서
+--         파생값이 **9,080/9,080 일치(불일치 0)** 이며 NULL 행의 파생 최대값은 **2026-05-31**(6월 이후 0건).
+--      ⇒ 코어 `AGENCY_AD_PERFORMANCE` 가 `COALESCE(DATE, TRY_TO_DATE(YEAR||MM||DD))` 로 폴백한다.
+--      🔴 **파싱은 코어에서만 한다** — staging 은 원천 무손실이므로 이 파생 컬럼을 갖지 않는다.
+--      🔴 **REBRDC·VIDEO 는 예외가 아니다**(둘 다 `DATE`/`BRDC_DATE` 널 0 실측) — 금지 유지.
+--      🔴 `DATE_FROM_PARTS` 는 쓰지 마라 — 불량 월/일을 조용히 롤오버한다. `TRY_TO_DATE` 를 쓴다.
 -- ============================================================================
 
 -- AGENCY 1: AGENCY_AD_CREATIVE (매체·소재 차원)
@@ -986,6 +1000,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
 --   · AD_PERF_DK: 행 식별자 MD5(AD_SOURCE_TYPE|ROW_HASH|DUP_SEQ). 위성 조인키
 --   · AD_SOURCE_TYPE: 광고유형 출처축. 실측값 DIGITAL/VIDEO/REBROADCAST. GOLD FAD degenerate 로 승격
 --   · SOURCE_SYSTEM: 소스 시스템. ⚠️실측 AD_SOURCE_TYPE 와 전건 동일값(불일치 0) — 중복 컬럼, 신규 소비는 AD_SOURCE_TYPE 사용
+--   · UPPER_CAMPAIGN_NM: VIDEO 분기만 값을 넣는다. DIGITAL 은 2026-09-17(O171) 자로 NULL —
+--     원천 12번 DGT 의 상위캠페인 컬럼이 utm_campaign(CMPGN_UTM_NM)으로 개명돼 **개념 자체가 사라졌다**.
+--     🔴 그 자리에 utm 을 끼우지 않는다(한 컬럼에 개념 2종 혼입 = O16 동형 결함).
+--     utm 값은 AGENCY_AD_ROW_DGT.CMPGN_UTM_NM(무손실 staging)에 보존된다. REBROADCAST 는 원천 부재로 NULL.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '불변 비즈니스 식별자',
@@ -995,7 +1013,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     AD_YEAR             NUMBER(4,0)     COMMENT '광고 집행연도 YYYY',
     AD_MONTH            NUMBER(2,0)     COMMENT '광고 집행월 1~12',
     CAMPAIGN_NM         VARCHAR         COMMENT '캠페인명',
-    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명',
+    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 (VIDEO 전용)',
     MEDIA_CHANNEL_NM    VARCHAR         COMMENT '매체/채널명',
     DEVICE_NM           VARCHAR         COMMENT '디바이스 (DGT만)',
     CREATIVE_NM         VARCHAR         COMMENT '소재명',
@@ -1018,6 +1036,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
 
 -- AGENCY 3: AGENCY_AD_ROW_DGT (DGT 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
+--   · CMPGN_UTM_NM: 원천 12번 `DGT_AD_CMPGN_DTLS` 28번째 컬럼. 2026-09-17(O171) 개명 반영 —
+--     구 이름 `UPPER_CMPGN_NM`('상위캠페인') → 현 `CMPGN_UTM_NM`('utm_campaign').
+--     🔴 `VIDEO_AD_CMPGN_DTLS` 의 동명 컬럼은 개명 대상이 아니다(AGENCY_AD_ROW_VIDEO 는 구 이름 유지)
+--     ⇒ 전역 치환 금지. staging 규약대로 원천 이름을 그대로 보존한다.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 — 본 테이블이 발급 단일지점',
@@ -1051,7 +1073,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     CVR                 FLOAT           COMMENT '[원천보존] 대행사 산정 CVR (비가산)',
     CPC                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPC (비가산)',
     CPM                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPM (비가산)',
-    UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명',
+    CMPGN_UTM_NM        VARCHAR         COMMENT '[원천보존] utm_campaign',
     READ_CNT            FLOAT           COMMENT '[원천보존] 읽음수',
     MEDIA_PTNT_CUST_CNT FLOAT           COMMENT '[원천보존] 매체 잠재고객수',
     DATE                DATE            COMMENT '[원천보존] 실적일',
@@ -1125,7 +1147,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 — 본 테이블이 발급 단일지점',
     AD_SOURCE_TYPE      VARCHAR         NOT NULL COMMENT '광고유형 상수 REBROADCAST',
     ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시',
-    DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번(실측 중복 0).',
+    DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번.',
     RE_BRDC_TY_NM       VARCHAR         COMMENT '[원천보존] 재방송유형명',
     DIV_NM              VARCHAR         COMMENT '[원천보존] 구분명',
     YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트',
@@ -1477,8 +1499,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
 --   · PLATFORM: 플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고)
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
-    DEVICE_TYPE         VARCHAR(10)     NOT NULL COMMENT '디바이스 유형 파생. 실측값 PC/M 2종만(APP 휴면·O2).',
-    PLATFORM            VARCHAR(50)     COMMENT '플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고). [사유:원천 미입고]',
+    DEVICE_TYPE         VARCHAR(10)     NOT NULL COMMENT '디바이스 유형 파생. 값 = PC / M (APP 휴면·O2).',
+    PLATFORM            VARCHAR(50)     COMMENT '플랫폼. 값 = WEB (ANDROID/IOS 미입고). [사유:원천 미입고]',
     DEVICE_CATEGORY     VARCHAR         COMMENT '디바이스 카테고리 (원본)',
     OS                  VARCHAR         COMMENT '운영체제',
     BROWSER             VARCHAR         COMMENT '브라우저',
@@ -1532,7 +1554,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
     LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
     LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
-    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생. 실측값 M/PC/(unknown).',
+    DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생. 값 = M / PC / (unknown).',
     DEVICE_CATEGORY         VARCHAR         COMMENT 'DEVICE_CATEGORY.',
     OS                      VARCHAR         COMMENT '운영체제',
     GEO_COUNTRY             VARCHAR         COMMENT '국가',
@@ -1541,7 +1563,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     UTM_MEDIUM              VARCHAR         COMMENT 'UTM medium',
     UTM_CAMPAIGN            VARCHAR         COMMENT 'UTM campaign',
     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹',
-    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 전 기간 실측 WEB 단독(ANDROID/IOS 0건).',
+    PLATFORM                VARCHAR(50)     COMMENT '플랫폼. 값 = WEB (ANDROID/IOS 미입고).',
     IS_ACTIVE_USER          BOOLEAN         COMMENT '활성 사용자 여부',
     BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID.',
     SRC_TABLE               VARCHAR(64)     COMMENT '원본 일별 테이블명 계보 (기반 테이블 승계)',

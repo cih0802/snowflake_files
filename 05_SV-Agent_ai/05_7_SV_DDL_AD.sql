@@ -92,7 +92,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     device.DEVICE_TYPE       AS device.DEVICE_TYPE       WITH SYNONYMS ('기기유형', '디바이스유형', '모바일', 'PC') COMMENT = '기기 유형. 실제 코드값: ''M''=모바일(GA4 mobile/tablet 통합) · ''PC''=데스크톱 · ''(해당없음)''=방송광고(기기 개념 없음) · ''(unknown)''=매핑 실패 센티넬. ⚠필터 시 ''MOBILE''/''TABLET'' 아님 — 모바일은 ''M''.',
     device.DEVICE_SCOPE_DESC AS device.DEVICE_SCOPE_DESC WITH SYNONYMS ('기기범위') COMMENT = '기기 범위 설명(예: 모바일(GA4 device.category=mobile/tablet)).',
     -- 디지털 전용 차원
-    ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용. 실제값 6종: ''DA''·''SA''·''BSA''·''CPM''·''CPT''·''하단DA'' + NULL',
+    ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용. 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다).',
     ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용. 원천에 일부 행만 채워져 있어 부분집합이다. 실제값 4종: ''기타''·''영상''·''이미지''·''키워드'' + NULL',
     -- 🔴 [2026-08-29 O119] 아래 두 축의 종수·열거를 **라이브 실측으로 교체**했다(`sv_code_label_gate` 축2 FAIL 2건).
     --   경위: 원천에 값이 추가됐는데 COMMENT 가 갱신되지 않아 **선언 종수 < 실제 종수** 상태였다.
@@ -105,8 +105,21 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     --      전체 광고비의 극히 일부다(규모는 이슈원장 §O119-B 참조 · 규칙7 상 여기 적지 않는다).
     --      ⇒ 추측을 지우고 **관측 사실만** 남겼다. 🔴 판정식 = **COMMENT 는 주장 발행이다**(`R2-7-4`) —
     --      「~로 보인다」를 라이브 문안에 쓰지 마라. 모르면 「원천 확인 전」이라고 쓴다.
-    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용. 실제값 2종: ''네이티브''·''전체'' + NULL. ⚠️ ''전체''는 저빈도 값이며 **그 의미(랜딩 유형인지 대행사 리포트의 묶음 표기인지)는 원천 확인 전**이다 — 유형별 분해에 쓰되 그 사실을 밝히고, 의미를 추측해 설명하지 말 것. 🟢 집계행(총계 중복)은 아니다 — 광고비 합계가 전체와 겹치지 않음을 실측 확인했다',
-    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 실제값 14종: ''nf2134''·''nf3554''·''nf1834a''·''na2059_PC''·''ra2059_PC''·''na1849_interest''·''na2059_abroad_PC''·''ra2059_abroad_PC''·''na2059_domestic_PC''·''ra2059_domestic_PC''·''na_veteran26''·''광고세트 20260612143116''·''auto targeting test_v2_control_260624''·''auto targeting test_v2_variant_260624'' + NULL',
+    -- 🔴🔴 **[2026-09-17 O170-E] 위 O119 처방(「값이 추가될 때마다 이 줄을 갱신한다」)을 폐기한다.**
+    --   🔎 왜 = AGENCY 원천 재적재(2026-09-17 · `DGT` 208,373 → 203,138)로 값 분포가 바뀌자
+    --      `sv_code_label_gate` 가 **blocking 5건**을 냈다 = `AD_GROUP_NM` 「14종」↔실제 13 ·
+    --      `AD_TYPE_NM` 「6종」↔실제 7 · `PAGE_TYPE` 「2종」↔실제 **81** ·
+    --      그리고 열거값 2종이 **실제값에 없어 「0행 오답 경로」**가 됐다(그 리터럴은 여기 다시 적지 않는다 —
+    --      부정문이라도 라이브 텍스트에 넣으면 새 부채다 · O167 판정식 ⇒ `sv_code_label_gate.RETIRED_LITERALS` 등재).
+    --   🔴 O119 처방은 **사람이 매번 따라가는 것**을 전제했고 그 전제가 3번째로 깨졌다
+    --      (O119 → O155 `D3` → O170). ⇒ **열거·종수를 COMMENT 에서 뺀다.**
+    --   🟢 대안 = 「재는 방법」을 적는다 — O167 이 GOLD 스키마 COMMENT 에서 같은 해법을 썼고
+    --      그 뒤 stale 이 재발하지 않았다(하드코딩 수치를 지우는 것이 「N→N' 로 고치는 것」보다 낫다).
+    --   🔴 `AD_TYPE_NM`·`AD_GROUP_NM`·`PAGE_TYPE` 3축에 적용했다. 🟢 `AD_SOURCE_TYPE`(3종)·
+    --      `DAY_OF_WEEK`(7종)·`DEVICE_TYPE` 은 **원천 개념상 고정**이라 열거를 유지한다
+    --      (판정식 = **열거는 「집합이 닫혀 있을 때만」 쓴다** — 원천이 늘리는 축에는 쓰지 않는다).
+    ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용. 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다). ⚠️ ''전체'' 값이 섞여 있고 **그 의미(랜딩 유형인지 대행사 리포트의 묶음 표기인지)는 원천 확인 전**이다 — 유형별 분해에 쓰되 그 사실을 밝히고, 의미를 추측해 설명하지 말 것. 🟢 집계행(총계 중복)은 아니다 — 광고비 합계가 전체와 겹치지 않음을 실측 확인했다',
+    ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 고카디널리티이며 원천 재적재로 값이 바뀐다 ⇒ 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다).',
     -- 방송 전용 차원
     ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사') COMMENT = '방송 채널사. VIDEO/REBROADCAST 전용. ⚠광고비 기준 정렬 시 광고비가 없는 채널사가 섞이므로 NULLS LAST 를 명시할 것.',
     ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용.',

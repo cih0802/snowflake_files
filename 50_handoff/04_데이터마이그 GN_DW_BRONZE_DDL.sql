@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 최근 갱신일 : 2026-09-15
+-- 최근 갱신일 : 2026-09-17
 -- 🟢 파일명에 날짜를 넣지 않는다(2026-09-15 사용자 결정 · 구 파일명 = *_20260730).
 --    이유 = 갱신마다 개명하면 이 파일을 참조하는 01·02·03·05·07번 문서와 게이트 경로를
 --    매번 함께 고쳐야 하고, 한 곳이라도 놓치면 참조가 깨진다. **날짜는 파일 안에만 적는다.**
@@ -21,14 +21,14 @@
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
 --              → GN_DW.ML.ML_RST_DATA_* (예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 77 테이블이 완성된다. 선후 관계는 없다.
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 78 테이블이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 본 파일의 범위 / SCOPE
 --   GN_DW.BRONZE_CRM (50) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2)
---   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (2) = 60 테이블
+--   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (3) = 61 테이블
 --   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
 --      해당 원천의 정제 결과는 06번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
 --   🟢 BRONZE_GA4 는 2026-08-20 자로 삭제된 옛 스키마(events_* · BigQuery Export 원본, VARIANT 다수)와는
@@ -85,9 +85,9 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-09-15
+--   - 갱신일자    : 2026-09-17
 --   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
---   - 테이블 수   : 60  (CRM 50, AGENCY 4, ERP 2, GA4 2, GSC 2)
+--   - 테이블 수   : 61  (CRM 50, AGENCY 4, ERP 2, GA4 2, GSC 3)
 --   - 시퀀스 수   : 3   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO,
 --                        BRONZE_GSC.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 4   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
@@ -96,6 +96,33 @@
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-09-17  (원천 정의 문서 11/12/16 갱신분 반영 — 기계 대조로 확정)
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).
+--        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 열이 1개씩 늘었으므로 이전 판 CSV 는 열 수가
+--           1개 부족하다 — 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것(재언로드가 정답이다).
+--        · 컬럼 코멘트는 원천 11번에 없어 명명 규칙으로 부여했다(현업 확인 대상).
+--     🔴 [COLUMN] GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS : 28번째 컬럼이 **개명**되었다
+--        · UPPER_CMPGN_NM('상위캠페인') → CMPGN_UTM_NM('utm_campaign')
+--        · 컬럼 수(36) · 위치 · 다른 컬럼은 변경 없다 ⇒ CSV 위치 적재에는 영향이 없고
+--          **컬럼명을 참조하는 SILVER/GOLD dbt 모델**만 고치면 된다.
+--        · 🟢 VIDEO_AD_CMPGN_DTLS 의 UPPER_CMPGN_NM 은 그대로다(개명 대상이 아니다).
+--     + [TABLE]  GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA2 (10컬럼, 신규)
+--        · 컬럼 구성·타입·코멘트가 SEARCH_CONSOLE_DATA 와 **동일**하다.
+--        · ⚠️ 원천 16번의 SP_LOAD_GOOGLE_SEARCH 는 이 테이블을 적재하지 않는다 — 용도 확인 대상.
+--        · ⚠️ 원천 16번이 GSC 두 테이블의 **테이블 COMMENT 를 '재송출 광고 성과 내역'** 으로 적고 있다
+--          (원천 오기 추정). 병합 규칙(원천 무변경)에 따라 신규분은 그대로 옮기고,
+--          SEARCH_CONSOLE_DATA 의 종전 문안('구글 서치 콘솔 검색 데이터')도 **원천 문안으로 되돌렸다**
+--          ⇒ 게이트 축6 = 0건. 🔴 원천 오기 여부는 현업 확인 대상이며, 원천이 고쳐지면 함께 되돌린다.
+--     * 스키마 5 유지 · 테이블 60 → 61(GSC 2 → 3) · 시퀀스 3 유지 · 파일 포맷 4 유지.
+--     🔴 [COLUMN] GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION : `WRITE_DATE` 타입 **VARCHAR(16777216) → DATE**
+--        (2026-09-17 사용자 결정 = *"'/99_provided_definition/' 폴더 내 sql 문서가 최신 정본이다"*)
+--        · 근거 = 원천 13번 `:76` 이 `WRITE_DATE DATE` 다. 본 파일이 언제·왜 VARCHAR 였는지는
+--          어느 문서에도 근거가 없다(변경 이력·이슈 원장 전건 0건) ⇒ **원천을 정본으로 맞췄다.**
+--        · ⚠️ **컬럼 수·순서·COMMENT 는 불변**(16컬럼 · 2번째) ⇒ 위치 기반 적재의 열 대조는 영향 없다.
+--        · 🔴 다만 **적재 시 형변환이 생긴다** — EUC-KR CSV 의 작성일자 문자열이 `DATE` 로 파싱된다
+--          ⇒ 07번 A.1 (4) 대조 후 **소량 시적재로 거부행 0 을 확인**하고 전량 적재할 것.
+--          날짜 형식이 `YYYY-MM-DD` 가 아니면 파일 포맷에 `DATE_FORMAT` 을 지정해야 한다.
+--     * GA4(15번)는 이번 갱신 대상이 아니며 본 파일에서 손대지 않았다(기계 대조 차이 0).
 --   2026-09-15  (원천 정의 문서 11/12/18 재대조 — 기계 대조로 확정 · CRM 7~8월 마감 반영)
 --     🔴 CRM 캠페인 코드 체계가 개편되었다. 근거 = 현업 공유 메시지(2026-09월 CRM 8월 마감 적재분).
 --     + [TABLE]  GN_DW.BRONZE_CRM.SND_MEMBER_MAIL_LINK_LOG   (13컬럼, 신규 · 메일 링크 클릭 로그)
@@ -179,7 +206,7 @@
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
 --   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 50 / ERP 2 / GA4 2 / GSC 2 / ML 16 / SILVER 1 = 77):
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 50 / ERP 2 / GA4 2 / GSC 3 / ML 16 / SILVER 1 = 78):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
 --          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
@@ -190,17 +217,25 @@
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 60개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
+--   - 본 파일의 61개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
 --     → CRM/AGENCY/ERP(56개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
 --     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
 --     각각 07번 A.5 · A.5-B.2 가 담당한다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
 --   - 🔴 BDGT_ACMSLT_LEDGER 는 2026-08-29 자로 컬럼 순서가 바뀌었다(변경 이력 참조).
 --     기존 CSV 로 적재하면 한 칸씩 밀려 조용히 오적재된다 — 07번 A.1 (4) 대조가 0건인지 먼저 확인한다.
---   - 🔴 SND_MEMBER_LIST 는 2026-09-15 자로 OPEN_DT(77번째)가 삭제되어 76컬럼이다.
---     이전 판 CSV 는 열이 1개 많다 — 그대로 적재하면 열 수 불일치로 실패한다. 재언로드가 정답이다.
+--   - 🔴 SND_MEMBER_LIST 는 2026-09-15 자로 OPEN_DT(77번째)가 삭제되어 76컬럼이 되었고,
+--     2026-09-17 자로 _STDR_YM 이 추가되어 현재 **77컬럼**이다(마지막 컬럼).
+--     이전 판 CSV 와는 열 구성이 두 번 어긋났다 — 그대로 적재하면 실패하거나 조용히 밀린다.
+--     재언로드가 정답이다. 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것.
 --     오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 옮겨졌으므로 그 2개도 함께 받는다.
---   - 🟢 GA4/GSC(4개)는 CSV 이관 대상이 아니다 — Google API 를 직접 호출하는 SP_LOAD_* (본 파일 제외)가
+--   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.
+--     ⇒ CRM CSV 는 **전건 재언로드** 대상이다(열이 1개씩 늘었다).
+--   - 🔴 2026-09-17 자로 EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 바뀌었다(원천 13번 정본).
+--     열 수·순서는 그대로이므로 A.1 (4) 열 대조는 통과하지만, **문자열 → DATE 형변환이 새로 생긴다.**
+--     ⇒ EUC-KR CSV(GN_CSV_FORMAT_EUCKR2)로 **소량 시적재해 거부행 0 을 먼저 확인**한다.
+--     날짜 표기가 'YYYY-MM-DD' 가 아니면 파일 포맷에 DATE_FORMAT 을 지정해야 한다.
+--   - 🟢 GA4/GSC(5개)는 CSV 이관 대상이 아니다 — Google API 를 직접 호출하는 SP_LOAD_* (본 파일 제외)가
 --     주기적으로 DELETE 후 재적재하는 구조다. 본 파일은 C 계정에 "빈 테이블 구조"만 만든다.
 --     원본(A) 데이터를 그대로 옮기려면 07번 문서에서 별도 CSV 언로드/적재 절차를 확인할 것.
 --
@@ -244,10 +279,12 @@
 --     🟢 2026-08-20 삭제된 옛 BRONZE_GA4(events_* · BigQuery Export)와는 무관한 신규 구조.
 --     ⚠️ CSV 미사용 — SP_LOAD_GA_USER_DEMOGRAPHIC(제외 대상)가 GA4 Data API 로 직접 적재한다.
 --
---   [SCHEMA] GN_DW.BRONZE_GSC — 원천 적재: 구글 서치 콘솔 검색 성과, 테이블 2개
---     SEARCH_CONSOLE_DATA, SYNC_ERR_INFO
+--   [SCHEMA] GN_DW.BRONZE_GSC — 원천 적재: 구글 서치 콘솔 검색 성과, 테이블 3개
+--     SEARCH_CONSOLE_DATA, SEARCH_CONSOLE_DATA2, SYNC_ERR_INFO
 --     [SEQUENCE] SEQ_SYNC_ERR_INFO
 --     ⚠️ CSV 미사용 — SP_LOAD_GOOGLE_SEARCH(제외 대상)가 Search Console API 로 직접 적재한다.
+--     🔴 2026-09-17 신규 = SEARCH_CONSOLE_DATA2 (구성은 SEARCH_CONSOLE_DATA 와 동일 10컬럼).
+--        원천 16번에 적재 경로(SP_LOAD_*)가 없다 — 용도·테이블 COMMENT 문안은 현업 확인 대상이다.
 --
 --   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
 --   [별도 파일] GN_DW.ML.ML_RST_DATA_* 16종        — 05번 참조 (PREDICTION=VARIANT 4종 포함)
@@ -351,7 +388,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_LIST (
   REAL_SEND_DT TIMESTAMP_NTZ(9) COMMENT '실제발신일시',
   LAST_UPPER_CMPGN VARCHAR(255) COMMENT '최종상위캠페인',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 2026-09-15 신규 — 원천 11번 81행. 메일 링크 클릭 로그.
 --   SND_MEMBER_LIST.OPEN_DT 삭제분이 이 테이블과 SND_MEMBER_OPEN_LOG 로 확장되었다.
@@ -369,7 +407,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_MAIL_LINK_LOG (
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
   LINK_NM VARCHAR(30) COMMENT '링크명',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 2026-09-15 신규 — 원천 11번 96행. 메일 오픈 로그.
 --   한글 코멘트는 컬럼정의서 CSV 미수록분이라 명명 규칙으로 부여했다(현업 확인 대상).
@@ -381,7 +420,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.SND_MEMBER_OPEN_LOG (
   OPEN_DT TIMESTAMP_NTZ(9) COMMENT '오픈일시 (구 SND_MEMBER_LIST.OPEN_DT)',
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.SND_REQ_MST (
   SEQ_NO NUMBER(19,0) COMMENT '순번',
@@ -437,7 +477,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.SND_REQ_MST (
   REG_NM VARCHAR(255) COMMENT '등록자명',
   SERVICE_MENU_CODE VARCHAR(100) COMMENT '서비스메뉴코드',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TC_CMMN_CD (
   CD_ID VARCHAR(20) COMMENT '코드ID',
@@ -451,7 +492,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TC_CMMN_CD (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD (
   CD_ID VARCHAR(20) COMMENT '코드ID',
@@ -470,7 +512,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD (
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   UPPER_CD_ID VARCHAR(20) COMMENT '상위코드ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 2026-09-15 신규 — 원천 11번 195행. 마케팅 코드 통합 테이블.
 --   🔴 TM_CM_MKTNG_CMPGN_MNG · TM_CM_MKTNG_UTM 2개가 이 테이블 하나로 통합되었다.
@@ -497,7 +540,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TC_MKTNG_DTL_CD (
   LAST_UPDT_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_AT_TMPLAT_BTN_LIST (
   TMPLAT_ID VARCHAR(30) COMMENT '템플릿ID',
@@ -513,7 +557,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_AT_TMPLAT_BTN_LIST (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_CRMN_PRTCPNT (
   CRMN_CD NUMBER(10,0) COMMENT '행사코드',
@@ -536,7 +581,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_CRMN_PRTCPNT (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -564,7 +610,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EMAIL_SNDNG_DTLS (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -578,7 +625,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EMAIL_SNDNG_DTLS (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL (
   EVENT_CD NUMBER(10,0) COMMENT '이벤트코드',
@@ -597,7 +645,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_MSG_AT_LQY_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -619,7 +668,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_MSG_AT_LQY_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -636,7 +686,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS (
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정자ID',
   ATTACHED_FILE VARCHAR(100) COMMENT '첨부파일',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_PSTMTR_LQY_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -649,7 +700,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_PSTMTR_LQY_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_PSTMTR_SNDNG_DTL (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -665,7 +717,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TD_MS_PSTMTR_SNDNG_DTL (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS (
   MBER_NO VARCHAR(10) COMMENT '회원번호',
@@ -675,7 +728,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS (
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TH_PM_SETLE_INFO_HIST (
   SETLE_KEY NUMBER(10,0) COMMENT '결제KEY',
@@ -726,7 +780,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TH_PM_SETLE_INFO_HIST (
   RGSTR_NM VARCHAR(30) COMMENT '등록자명',
   REGIST_DT TIMESTAMP_NTZ(9) COMMENT '등록일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_BRND_MNG (
   BRND_ID VARCHAR(30) COMMENT '브랜드ID',
@@ -739,7 +794,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_BRND_MNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG (
   CMPGN_CD VARCHAR(20) COMMENT '캠페인코드',
@@ -778,7 +834,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG (
   MKTG_UTM NUMBER(10,0) COMMENT '마케팅UTM (2026-08-29 신규 · 명명규칙 부여 · 현업 확인 대상)',
   MKTG_CHANNEL NUMBER(10,0) COMMENT '마케팅채널 (2026-09-15 신규 · 캠페인채널 정보 · TC_MKTNG_DTL_CD C002 대응)',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO (
   DEPT_ID VARCHAR(20) COMMENT '부서ID',
@@ -794,7 +851,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO (
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   ACMSLT_UPPER_DEPT_ID VARCHAR(20) COMMENT '실적상위부서ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL (
   STDYY VARCHAR(4) COMMENT '기준연',
@@ -807,7 +865,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종등록자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종등록일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 🔴 2026-09-15 삭제 — TM_CM_MKTNG_CMPGN_MNG(10컬럼) · TM_CM_MKTNG_UTM(12컬럼) 2개는
 --    TC_MKTNG_DTL_CD 로 통합되어 원천에서 사라졌다(현업 공유 메시지 · 원천 11번 전건 부재 실측).
@@ -828,7 +887,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 2026-09-15 신규 — 원천 11번 540행. 일시회원 → 정기회원 전환 매핑.
 --   ⚠️ 현업 공유 메시지 = 「일시,정기회원 전환 테이블(**회비이관시에만**)」 ⇒ 전 회원이 아니라
@@ -839,7 +899,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DT_DTLS (
   ONCE_MBER_NO VARCHAR(10) COMMENT '일시후원회원번호 (전환 전 · 참조: TM_MM_ONCE_MBER_INFO)',
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT (
   SPNSR_NO VARCHAR(9) COMMENT '후원번호',
@@ -864,7 +925,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT (
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   FRST_RGSTR_NM VARCHAR(100) COMMENT '최초등록자명',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO (
   MBER_NO VARCHAR(10) COMMENT '회원번호',
@@ -897,7 +959,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO (
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   SEX VARCHAR(2) COMMENT '성별',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_IRSD (
   OCCRRNC_DE VARCHAR(8) COMMENT '발생일',
@@ -916,7 +979,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_IRSD (
   RDCAMT_YN VARCHAR(1) COMMENT '감액여부',
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT (
   OCCRRNC_DE VARCHAR(8) COMMENT '발생일자',
@@ -931,7 +995,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT (
   ACCNUT_STATS_CD VARCHAR(3) COMMENT '회계상태코드',
   CHILD_STATS_CD VARCHAR(3) COMMENT '아동상태코드',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR (
   MBER_NO VARCHAR(10) COMMENT '회원번호',
@@ -940,7 +1005,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR (
   REGIST_DEPT_CD VARCHAR(10) COMMENT '등록부서코드',
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR (
   SPNSR_NO VARCHAR(9) COMMENT '후원번호',
@@ -951,7 +1017,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR (
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자',
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS (
   SPNSR_NO VARCHAR(9) COMMENT '후원번호',
@@ -962,7 +1029,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS (
   SPNSR_DSCNTC_YN VARCHAR(1) COMMENT '후원중단여부',
   SPNSR_DSCNTC_RSN_CD VARCHAR(3) COMMENT '후원중단사유코드',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC (
   MBER_NO VARCHAR(10) COMMENT '회원번호',
@@ -973,7 +1041,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC (
   REGIST_DEPT_CD VARCHAR(10) COMMENT '등록부서코드',
   FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO (
   ONCE_MBER_NO VARCHAR(10) COMMENT '일시후원회원번호',
@@ -997,7 +1066,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO (
   REGIST_DEPT_CD VARCHAR(10) COMMENT '등록부서코드',
   FRST_RGSTR_ID VARCHAR(100) COMMENT '최초등록자ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_CRMN (
   CRMN_CD NUMBER(10,0) COMMENT '행사코드',
@@ -1034,7 +1104,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_CRMN (
   TMPLAT_WIN_ID VARCHAR(30) COMMENT '템플릿윈도우ID',
   TMPLAT_WIN_TIT VARCHAR(100) COMMENT '템플릿윈도우제목',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EMAIL_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -1052,7 +1123,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EMAIL_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EMAIL_TMPLAT_MNG (
   TMPLAT_KEY NUMBER(10,0) COMMENT '템플릿KEY',
@@ -1070,7 +1142,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EMAIL_TMPLAT_MNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EVENT (
   EVENT_CD NUMBER(10,0) COMMENT '이벤트코드',
@@ -1085,7 +1158,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_EVENT (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_MSG_AT_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -1108,7 +1182,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_MSG_AT_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_PSTMTR_SNDNG (
   SNDNG_KEY NUMBER(10,0) COMMENT '발신KEY',
@@ -1126,7 +1201,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_PSTMTR_SNDNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_DNTN_DTLS (
   DNTN_KEY NUMBER(19,0) COMMENT '기부금KEY',
@@ -1158,7 +1234,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_DNTN_DTLS (
   RGSTR_NM VARCHAR(30) COMMENT '등록자명',
   SPNSR_BSNS_ID VARCHAR(20) COMMENT '후원사업ID',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 🟠 2026-09-15 누락분 보완 — 원천 11번 866행. 이번 개편으로 신설된 것이 아니라 종전 판이
 --    빠뜨리고 있던 테이블이다(handoff_ddl_gate 축1 적발). 한글 코멘트는 명명 규칙 부여.
@@ -1178,7 +1255,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_INSTT_ACNUT (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT (
   MBRFEE_KEY NUMBER(19,0) COMMENT '회비KEY',
@@ -1237,7 +1315,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT (
   OPER_KEY NUMBER(10,0) COMMENT '운영KEY',
   OPER_RST_KEY NUMBER(10,0) COMMENT '운영결과KEY',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 🟠 2026-09-15 누락분 보완 — 원천 11번 943행. 이번 개편으로 신설된 것이 아니라 종전 판이
 --    빠뜨리고 있던 테이블이다(handoff_ddl_gate 축1 적발). 한글 코멘트는 명명 규칙 부여.
@@ -1255,7 +1334,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_SETLE_CMPNY_ACNT (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO (
   SETLE_KEY NUMBER(10,0) COMMENT '결제KEY',
@@ -1308,7 +1388,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO (
   LAST_UPDUSR_NM VARCHAR(100) COMMENT '최종수정자명',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_BPLC_MNG (
   BPLC_CD VARCHAR(8) COMMENT '사업장코드',
@@ -1330,7 +1411,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_BPLC_MNG (
   LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
   LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_CHILD_MSTR_INFO (
   CHILD_CD NUMBER(10,0) COMMENT '아동코드',
@@ -1347,7 +1429,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_CHILD_MSTR_INFO (
   MNYRS_NATION_CD VARCHAR(3) COMMENT '모금국가코드',
   CMS_CHILD_NO VARCHAR(30) COMMENT 'CMS아동번호',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_CHG_INFO (
   RELATNSP_KEY NUMBER(10,0) COMMENT '결연KEY',
@@ -1358,7 +1441,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_CHG_INFO (
   CHG_DE DATE COMMENT '교체일',
   CHG_RELATNSP_KEY NUMBER(10,0) COMMENT '교체결연KEY',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO (
   RELATNSP_KEY NUMBER(10,0) COMMENT '결연KEY',
@@ -1380,7 +1464,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO (
   TRNSFER_YN VARCHAR(1) COMMENT '이관여부',
   TRNSFER_AFTER_RELATNSP_KEY NUMBER(10,0) COMMENT '이관후결연KEY',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO (
   RELATNSP_KEY NUMBER(10,0) COMMENT '결연KEY',
@@ -1398,7 +1483,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO (
   ONLINE_INFLOW_CD NUMBER(10,0) COMMENT '온라인유입코드',
   LETTER_STAT_CD NUMBER(3,0) COMMENT '편지상태코드',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
   RELATNSP_KEY NUMBER(10,0) COMMENT '결연KEY',
@@ -1413,7 +1499,8 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
   FRST_REGIST_DE DATE COMMENT '최초등록일',
   MBER_NO VARCHAR(10) COMMENT '회원번호',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
-  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)'
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 
 
@@ -1452,7 +1539,7 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
   CVR FLOAT COMMENT 'CVR',
   CPC FLOAT COMMENT 'CPC',
   CPM FLOAT COMMENT 'CPM',
-  UPPER_CMPGN_NM VARCHAR(16777216) COMMENT '상위캠페인',
+  CMPGN_UTM_NM VARCHAR(16777216) COMMENT 'utm_campaign',
   READ_CNT FLOAT COMMENT '조회수',
   MEDIA_PTNT_CUST_CNT FLOAT COMMENT '잠재고객수(매체)',
   DATE DATE COMMENT '날짜',
@@ -1635,7 +1722,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 --      이름을 바꾸면 원천 GET_DDL 과 어긋나 위치 기반 적재 대조가 깨진다.
 create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
   YEAR VARCHAR(16777216) COMMENT '연도',
-  WRITE_DATE VARCHAR(16777216) COMMENT '작성일자',
+  WRITE_DATE DATE COMMENT '작성일자',
   RESOLUTION_NO VARCHAR(16777216) COMMENT '결의번호',
   RESOLUTION_DEPT_NM VARCHAR(16777216) COMMENT '결의부서',
   EXPS_RESOLUTION_NM VARCHAR(16777216) COMMENT '지출결의명',
@@ -1711,6 +1798,11 @@ create schema if not exists GN_DW.BRONZE_GSC with managed access COMMENT='원천
 
 create or replace sequence GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 
+-- ⚠️ [2026-09-17] 원천 16번이 GSC 두 테이블의 **테이블 COMMENT 를 '재송출 광고 성과 내역'** 으로
+--    적고 있다(GSC 내용과 어긋나는 **원천 오기**로 보인다). 종전 판은 SEARCH_CONSOLE_DATA 에
+--    '구글 서치 콘솔 검색 데이터'를 쓰고 있었으나, 병합 규칙(원천 무변경 · BRONZE_ERP 스키마
+--    COMMENT 선례)에 맞춰 **원천 문안으로 되돌렸다**. 실제 성격은 이 주석과 객체 인덱스에 적는다.
+--    🔴 현업 확인 후 원천을 고치면 이 문안도 함께 되돌릴 대상이다.
 create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
   DATE DATE COMMENT '검색 발생 날짜',
   QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
@@ -1722,7 +1814,24 @@ create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
   CTR FLOAT COMMENT '클릭률',
   POSITION FLOAT COMMENT '평균 검색결과 위치',
   RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
-)COMMENT='구글 서치 콘솔 검색 데이터'
+)COMMENT='재송출 광고 성과 내역'
+;
+-- 2026-09-17 신규 — 원천 16번에 SEARCH_CONSOLE_DATA2 가 추가되었다(컬럼 구성은 원본과 동일 10컬럼).
+--   ⚠️ 테이블 COMMENT 는 위와 같은 원천 오기 상태다 — 원천 무변경 원칙대로 그대로 옮겼다.
+--   ⚠️ 원천 16번의 SP_LOAD_GOOGLE_SEARCH 는 SEARCH_CONSOLE_DATA 만 적재한다
+--      (DATA2 를 채우는 적재 경로가 원천 DDL 에 없다) — 용도 확인 대상이다.
+create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA2 (
+  DATE DATE COMMENT '검색 발생 날짜',
+  QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
+  PAGE VARCHAR(16777216) COMMENT '검색 결과에 노출된 페이지 URL',
+  COUNTRY VARCHAR(16777216) COMMENT '검색이 발생한 국가 코드',
+  DEVICE VARCHAR(16777216) COMMENT '검색에 사용된 디바이스 유형',
+  CLICKS NUMBER(38,0) COMMENT '검색 결과 클릭 수',
+  IMPRESSIONS NUMBER(38,0) COMMENT '검색 결과 노출 수',
+  CTR FLOAT COMMENT '클릭률',
+  POSITION FLOAT COMMENT '평균 검색결과 위치',
+  RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
+)COMMENT='재송출 광고 성과 내역'
 ;
 -- ⚠️ 원천 16번 DDL 은 SYNC_ERR_INFO 컬럼 코멘트가 비어 있다. AGENCY.SYNC_ERR_INFO 관례로 보강했다
 --    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다. 구조는 변형하지 않았다).
