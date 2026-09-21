@@ -83,7 +83,21 @@ LABEL_PAIRS = {
     #      사라지고 상태가 **확인됨**으로 바뀐다(침묵이 아니라 판정이다).
     #   🟠 라벨을 노출하려면 `ML_MEMBER_RISK_V` 에 `CPR_DIV_NM` 을 **추가**해야 한다 =
     #      SERVING 뷰 정의 변경 ⇒ 설계 결정 대기(`DEC-35` 라벨 차원 노출 축).
-    'CPR_DIV_CD':      None,
+    # 🆕 🟢🟢 [2026-09-21 O175 사용자 결정 C안] **그 뷰 변경을 집행했다** ⇒ `None` 을 실명으로 교체한다.
+    #   라벨 원천 = `SILVER.CRM_CAMPAIGN` 의 DISTINCT 짝(코드 3종 1:1) · 도달 = 이 뷰 코드 전건.
+    #   🔴 `A`(통합)는 이 SV 모집단에 여전히 부재하므로 **종수를 COMMENT 에 열거하지 않는다**.
+    'CPR_DIV_CD':      'CPR_DIV_NM',
+    # 🆕 🟢 [2026-09-21 O175] ML SV 코드축 라벨 짝 등재 — 🔴 **라벨은 종전에도 이미 SV 에 노출돼
+    #   있었다**(실측: SERIES_NAME·CMPGN_NAME·CMPGN_CTGR_NAME 전부 차원으로 실재).
+    #   ⇒ 종전 「정보: LABEL_PAIRS 미등재」는 **SV 결함이 아니라 이 등재부의 stale** 이었다
+    #      (`P149` 축 재발 · 검사 ②가 대상에서 빠져 침묵하고 있었다).
+    #   🟢 `SERIES_CD` 한 키가 3 SV(DVLP_FORECAST·LTV_FORECAST·LTV_SCORE)를 함께 덮는다.
+    'SERIES_CD':       'SERIES_NAME',
+    'CMPGN_CD':        'CMPGN_NAME',
+    'CMPGN_CTGR_CD':   'CMPGN_CTGR_NAME',
+    # 🆕 🟢 [2026-09-21 O175 C안] `UPPER_CMPGN_CD` 라벨 배선분 — 캠페인 마스터 자기조인.
+    #   🔴 열거는 하지 않는다(994종 열린 집합) ⇒ COMMENT 는 `SELECT DISTINCT` 지침을 담는다.
+    'UPPER_CMPGN_CD':  'UPPER_CMPGN_NAME',
 }
 
 # ── 폐기 리터럴 등재부 (R5 · P174) ───────────────────────────────────────────

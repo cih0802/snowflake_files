@@ -34,6 +34,11 @@ EXCLUDE_PATTERNS = [
 ]
 EXCLUDE_RE = re.compile("|".join(EXCLUDE_PATTERNS), re.IGNORECASE)
 DW_META_COLS = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"}
+# 🆕 🔴 [2026-09-21 O175 사용자 결정 A안] BRONZE 적재 제어 메타 — 상세 근거는 쌍둥이 구현
+#   `scripts/gen_bronze_exposure_audit.py` 의 같은 이름 상수 주석에 있다(집합을 함께 바꾼다).
+#   요지 = `_STDR_YM` 은 **월 파티션 재적재 키**이며 업무 축이 아니다 ⇒ SILVER 미승격 확정.
+#   🟠 `_BATCH_ID` 는 같은 class 이나 결정 대기라 넣지 않았다(50건).
+BRONZE_INGEST_META_COLS = {"_STDR_YM"}
 
 # ── 계보 매핑 ((BRONZE 테이블, BRONZE 컬럼) → (GOLD 컬럼, GOLD 모델파일)) ──
 # P13 대응: 개명 적재는 이름매칭으로 탐지 불가하므로 명시 등록한다.
@@ -60,7 +65,7 @@ LINEAGE_MAP = {
     ("VIDEO_AD_CMPGN_DTLS", "CTV_DIV_NM"):          ("CTV_DIV",             "FACT_AD_BROADCAST.sql"),
     ("VIDEO_AD_CMPGN_DTLS", "CONV_CALL_CNT"):      ("CONV_CALL_CNT",       "FACT_AD_BROADCAST.sql"),
     ("VIDEO_AD_CMPGN_DTLS", "AD_VIEW_RT"):         ("AD_VIEW_RT_SRC",      "FACT_AD_BROADCAST.sql"),
-    ("VIDEO_AD_CMPGN_DTLS", "CPC"):                ("CPC_SRC",             "FACT_AD_BROADCAST.sql"),
+    ("VIDEO_AD_CMPGN_DTLS", "CPC"):                ("CPC_CALL_SRC",       "FACT_AD_BROADCAST.sql"),
     ("VIDEO_AD_CMPGN_DTLS", "ACTL_PUR_AD_COST_KRW"): ("AD_COST",           "FACT_AD_PERFORMANCE.sql"),
     # ── AGENCY REBRDC — 재방송광고 속성 / 사례 / 개발실적 ──
     ("REBRDC_AD_CMPGN_DTLS", "TIME_RNG_DIV_NM"):   ("TIME_BAND",           "FACT_AD_BROADCAST.sql"),
@@ -102,7 +107,7 @@ LINEAGE_MAP = {
     ("DGT_AD_CMPGN_DTLS", "AD_TY_NM"):             ("AD_TYPE_NM",          "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "CTR"):                  ("CTR_SRC",             "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "CVR"):                  ("CVR_SRC",             "FACT_AD_DIGITAL.sql"),
-    ("DGT_AD_CMPGN_DTLS", "CPC"):                  ("CPC_SRC",             "FACT_AD_DIGITAL.sql"),
+    ("DGT_AD_CMPGN_DTLS", "CPC"):                  ("CPC_CLICK_SRC",       "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "CPM"):                  ("CPM_SRC",             "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "CPA"):                  ("CPA_SRC",             "FACT_AD_DIGITAL.sql"),
     ("DGT_AD_CMPGN_DTLS", "DEV_UNIT_PRICE"):        ("DEV_UNIT_PRICE_SRC",  "FACT_AD_DIGITAL.sql"),
@@ -323,6 +328,11 @@ def classify(table_name, col_upper, silver_cols, gold_cols, silver_refs, gold_re
         return "제외(PII·본문·메타)", "—", "패턴 매칭 제외(감사 범위 외)"
     if col_upper in DW_META_COLS:
         return "제외(DW메타)", "—", "DW 감사 메타컬럼"
+    # 🆕 🔴🔴 [2026-09-21 O175] BRONZE 적재 제어 메타 제외 — 🔴 **이 판정기는 `gen_bronze_exposure_audit`
+    #   와 같은 것을 다르게 재는 두 번째 지점이다**(O174 ㉡ 교훈: 파일을 다 고쳐도 판정기를 안 고치면
+    #   판정이 뒤집힌다). ⇒ 두 곳의 이 집합은 **항상 함께** 바꾼다.
+    if col_upper in BRONZE_INGEST_META_COLS:
+        return "제외(적재제어메타)", "—", "BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)"
 
     # (2) 명시 계보 — 모델 스코프로 하드코딩 여부 판정
     lin = lookup_lineage(table_name, col_upper)
@@ -385,7 +395,8 @@ def classify(table_name, col_upper, silver_cols, gold_cols, silver_refs, gold_re
 
 
 VERDICT_ORDER = ["노출됨(GOLD)", "대체노출(파생)", "⚠️설계O·값미주입", "SILVER까지만",
-                 "판정보류(동명이의)", "미노출(검토대상)", "제외(PII·본문·메타)", "제외(DW메타)"]
+                 "판정보류(동명이의)", "미노출(검토대상)", "제외(PII·본문·메타)", "제외(DW메타)",
+                 "제외(적재제어메타)"]
 
 
 def main():
@@ -487,6 +498,8 @@ def write_xlsx(audit_rows, stats, hardcoded, real):
         "미노출(검토대상)":    PatternFill("solid", fgColor="FCE4D6"),
         "제외(PII·본문·메타)": PatternFill("solid", fgColor="D9D9D9"),
         "제외(DW메타)":        PatternFill("solid", fgColor="D9D9D9"),
+        # 🆕 [O175] 같은 회색 계열 — 「판정 대상 아님」 군으로 함께 읽히게 둔다.
+        "제외(적재제어메타)":  PatternFill("solid", fgColor="D9D9D9"),
     }
 
     def style_hdr(ws, row, ncol):

@@ -65,7 +65,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
       COMMENT = '결제수단 라벨(PM040 · 프로젝트 정본 매핑 재사용). 실제값 6종: ''자동이체''·''신용카드''·''회비통장''·''휴대폰''·''OCR''·''네이버페이''. 🟢 이 SV 에서는 라벨 미도달이 없다.',
     mr.CPR_DIV_CD AS mr.CPR_DIV_CD
       WITH SYNONYMS ('법인구분코드')
-      COMMENT = 'degen: 법인구분 원본 코드. 실제값 2종: ''I''·''S''. 라벨 미배선(코드그룹 미특정) ⇒ 의미를 추정해 답하지 말 것.',
+      COMMENT = 'degen: 법인구분 원본 코드. 실제값 2종: ''I''·''S''. 라벨은 CPR_DIV_NM 을 쓴다.',
+    mr.CPR_DIV_NM AS mr.CPR_DIV_NM
+      WITH SYNONYMS ('법인구분', '법인')
+      COMMENT = '법인구분 라벨(캠페인 마스터 DISTINCT 짝 재사용). 실제값 2종: ''사단''·''사복''. 🟢 이 SV 에서는 라벨 미도달이 없다. ⚠️ 원천 코드체계에는 ''통합''도 있으나 이 SV 의 모집단에는 부재하다.',
     mr.CHURN_CLASS AS mr.CHURN_CLASS
       WITH SYNONYMS ('중단 예측 판정', '중단 클래스')
       COMMENT = '중단 예측의 모델 기본 판정. 실제값 2종: ''0''(유지 예측)·''1''(중단 예측). 🔴모델 기본 임계(0.5)의 판정이며 **업무 위험 판정선은 미확정**이다 ⇒ 「위험 회원」이라 단정하지 말고 「모델이 중단으로 분류한 회원」으로 답한다.',
@@ -167,8 +170,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
       WITH SYNONYMS ('캠페인', '캠페인명')
       COMMENT = '캠페인명.',
     sr.UPPER_CMPGN_CD AS sr.UPPER_CMPGN_CD
-      WITH SYNONYMS ('상위캠페인', '채널')
-      COMMENT = '상위캠페인 코드(채널). 캠페인 마스터에서 가져온 값이다.',
+      WITH SYNONYMS ('상위캠페인코드', '채널코드')
+      COMMENT = 'degen: 상위캠페인(채널) 코드. 캠페인 마스터에서 가져온 값이다. 🔴고카디널리티 열린 집합이라 값을 열거하지 않는다 — 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다. 라벨은 UPPER_CMPGN_NAME 을 쓴다.',
+    sr.UPPER_CMPGN_NAME AS sr.UPPER_CMPGN_NAME
+      WITH SYNONYMS ('상위캠페인', '채널', '상위캠페인명')
+      COMMENT = '상위캠페인(채널) 명 — 채널별 분해의 정본 축이다. 캠페인 마스터 자기조인으로 얻는다. 🟢 이 SV 에서는 라벨 미도달이 없다. 🔴🔴 **라벨은 코드와 1:1 이 아니다** — 서로 다른 상위캠페인 코드가 같은 이름을 쓰는 경우가 있어 이 축으로 그루핑하면 그 코드들이 **한 그룹으로 합쳐진다**. 코드 단위 분해가 필요하면 UPPER_CMPGN_CD 를 동반한다. 🔴고카디널리티 열린 집합이라 값을 열거하지 않는다 — 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다.',
     sr.CMPGN_CTGR_NAME AS sr.CMPGN_CTGR_NAME
       WITH SYNONYMS ('캠페인카테고리', '캠페인 구분')
       COMMENT = '캠페인 카테고리명. ⚠️일부 카테고리는 원천에 이름이 없어 NULL 이다 — 이름을 추정해 채우지 않는다.',

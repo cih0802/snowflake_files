@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select BUDGET_PROCEDURE
+from GN_DW.GOLD.FACT_BUDGET_YEARLY
+where BUDGET_PROCEDURE is null
+
+

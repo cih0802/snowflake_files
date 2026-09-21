@@ -3,7 +3,13 @@
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
---   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재)·AD_COST(E-4 원천부재).
+--   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재).
+-- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
+--    *"E-4 원천부재"* 는 **거짓이었다**. 대행사 원천 3종에 광고비가 전량 실재하고
+--    이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다(원천 합 일치).
+--    ⚠️ 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
+--    `BUDGET_ITEM_SK` 귀속 근거가 없고, 광고 팩트와 이중계상이 된다.
+--    소비 안내: 광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED`).
 -- 🔴 [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
 --    *"추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO"* 는 해소됐다.
 --    원장의 연 총액 4종(편성·추경·조정·집행)은 **`FACT_BUDGET_YEARLY`(연 grain)** 로 분리했다.
@@ -43,7 +49,7 @@ select
     SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
     CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
-    CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- E-4 원천부재
+    CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
     {{ gold_meta('ERP') }}
 from ranked
 where rnk = 1

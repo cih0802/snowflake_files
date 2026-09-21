@@ -2,7 +2,7 @@
 doc_id: BRONZE_EXPOSURE_AUDIT
 doc_role: BRONZE 전 원천 전면 노출감사 — GOLD 도달 여부 판정 정본
 project: GN_DW
-audit_date: 2026-09-16
+audit_date: 2026-09-21
 generator: scripts/gen_bronze_exposure_audit.py
 runner: scripts/run_bronze_audit_host.py
 principle: P13(커버리지≠정확도)·P14(부재판정은 실측필수)
@@ -11,7 +11,7 @@ END-METADATA -->
 # BRONZE 노출감사 (전 원천 전면)
 
 > ⚙️ **자동 생성물** — 생성기 `scripts/gen_bronze_exposure_audit.py` / 러너 `scripts/run_bronze_audit_host.py`. 직접 편집 금지.
-> **감사일** 2026-09-16 · **범위** BRONZE 전 원천 1204컬럼 (CRM·AGENCY·ERP·GA4)
+> **감사일** 2026-09-21 · **범위** BRONZE 전 원천 1254컬럼 (CRM·AGENCY·ERP·GA4)
 > **목적** "보여줄 수 있는 BRONZE 데이터는 다 보여준다" 충족 여부 실측
 
 ## 0. 판정 기준 및 한계 (필독)
@@ -41,23 +41,24 @@ END-METADATA -->
 
 | 판정 | 건수 | 비율 |
 |---|---|---|
-| 노출됨(GOLD) | 137 | 11.4% |
+| 노출됨(GOLD) | 137 | 10.9% |
 | 대체노출(파생) | 15 | 1.2% |
 | ⚠️설계O·값미주입 | 0 | 0.0% |
-| SILVER까지만 | 439 | 36.5% |
-| 판정보류(동명이의) | 13 | 1.1% |
-| 미노출(검토대상) | 542 | 45.0% |
-| 제외(PII·본문·메타) | 58 | 4.8% |
+| SILVER까지만 | 439 | 35.0% |
+| 판정보류(동명이의) | 13 | 1.0% |
+| 미노출(검토대상) | 542 | 43.2% |
+| 제외(PII·본문·메타) | 58 | 4.6% |
 | 제외(DW메타) | 0 | 0.0% |
-| **합계** | **1204** | 100% |
+| 제외(적재제어메타) | 50 | 4.0% |
+| **합계** | **1254** | 100% |
 
 ### 원천별 교차
 
-| 원천 | 노출됨(GOLD) | 대체노출(파생) | ⚠️설계O·값미주입 | SILVER까지만 | 판정보류(동명이의) | 미노출(검토대상) | 제외(PII·본문·메타) | 제외(DW메타) | 합계 |
-|---|---|---|---|---|---|---|---|---|---|
-| AGENCY | 62 | 13 | 0 | 18 | 7 | 6 | 0 | 0 | 106 |
-| CRM | 75 | 0 | 0 | 353 | 6 | 522 | 58 | 0 | 1014 |
-| ERP | 0 | 2 | 0 | 68 | 0 | 14 | 0 | 0 | 84 |
+| 원천 | 노출됨(GOLD) | 대체노출(파생) | ⚠️설계O·값미주입 | SILVER까지만 | 판정보류(동명이의) | 미노출(검토대상) | 제외(PII·본문·메타) | 제외(DW메타) | 제외(적재제어메타) | 합계 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| AGENCY | 62 | 13 | 0 | 18 | 7 | 6 | 0 | 0 | 0 | 106 |
+| CRM | 75 | 0 | 0 | 353 | 6 | 522 | 58 | 0 | 50 | 1064 |
+| ERP | 0 | 2 | 0 | 68 | 0 | 14 | 0 | 0 | 0 | 84 |
 
 ## 2. ⚠️ 최우선 조치군 — GOLD 설계O·값 미주입
 
@@ -68,86 +69,86 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 |---|---|---|---|
 | `ACTIVE_CUM_CNT` | `FACT_MEMBER_MONTHLY.sql:318` | `CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT` | — |
 | `ACTIVE_CUM_MEMBERS` | `FACT_MEMBER_MONTHLY.sql:319` | `CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS` | — |
-| `AD_COST` | `FACT_BUDGET.sql:46` | `CAST(NULL AS NUMBER(18,2)) as AD_COST` | FACT_AD_PERFORMANCE.sql |
+| `AD_COST` | `FACT_BUDGET.sql:52` | `CAST(NULL AS NUMBER(18,2)) as AD_COST` | FACT_AD_PERFORMANCE.sql |
 | `AD_CREATIVE_SK` | `FACT_AD_PERFORMANCE.sql:37` | `0 as AD_CREATIVE_SK` | DIM_AD_CREATIVE.sql |
-| `AGE_AT_EVENT` | `FACT_MEMBER_EVENT.sql:125` | `CAST(NULL AS NUMBER(2,0)) as AGE_AT_EVENT` | — |
-| `AGE_BAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:126` | `CAST(NULL AS VARCHAR) as AGE_BAND_AT_EVENT` | — |
+| `AGE_AT_EVENT` | `FACT_MEMBER_EVENT.sql:137` | `CAST(NULL AS NUMBER(2,0)) as AGE_AT_EVENT` | — |
+| `AGE_BAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:138` | `CAST(NULL AS VARCHAR) as AGE_BAND_AT_EVENT` | — |
 | `AMOUNT_BAND1` | `FACT_MEMBER_MONTHLY.sql:341` | `CAST(NULL AS VARCHAR) as AMOUNT_BAND1` | — |
 | `AMOUNT_BAND2` | `FACT_MEMBER_MONTHLY.sql:341` | `CAST(NULL AS VARCHAR) as AMOUNT_BAND2` | — |
 | `ANNUAL_CUM_GOAL_CNT` | `FACT_TARGET_PROJECT.sql:19` | `CAST(NULL AS NUMBER(18,4)) as ANNUAL_CUM_GOAL_CNT` | — |
 | `APPLY_CHANNEL` | `DIM_EVENT.sql:27` | `CAST(NULL AS VARCHAR) as APPLY_CHANNEL` | — |
-| `AREA_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:127` | `CAST(NULL AS VARCHAR) as AREA_CD_AT_EVENT` | — |
+| `AREA_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:139` | `CAST(NULL AS VARCHAR) as AREA_CD_AT_EVENT` | — |
 | `AVG_SESSION_DURATION` | `FACT_BIGQUERY_BEHAVIOR.sql:77` | `CAST(NULL AS NUMBER) as AVG_SESSION_DURATION` | — |
 | `BOUNCE_RATE` | `FACT_BIGQUERY_BEHAVIOR.sql:78` | `CAST(NULL AS NUMBER) as BOUNCE_RATE` | — |
-| `BRAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:152` | `CAST(NULL AS VARCHAR) as BRAND_AT_EVENT` | — |
+| `BRAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:164` | `CAST(NULL AS VARCHAR) as BRAND_AT_EVENT` | — |
 | `CAMPAIGN_SK` | `FACT_AD_PERFORMANCE.sql:36` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_BIGQUERY_BEHAVIOR.sql:30` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_BUDGET.sql:38` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_BUDGET.sql:44` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_BUDGET_YEARLY.sql:52` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_EVENT_ATTENDANCE.sql:18` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_MEMBER_EVENT.sql:106` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_MEMBER_MONTHLY.sql:300` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_MESSAGE_DISPATCH.sql:29` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CHILD_CODE` | `DIM_MEMBER_IDENTITY.sql:30` | `CAST(NULL AS VARCHAR) as CHILD_CODE` | — |
-| `CMMN_BRND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:142` | `CAST(NULL AS NUMBER(38,0)) as CMMN_BRND_AT_EVENT` | — |
-| `CMMN_BRND_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:143` | `CAST(NULL AS VARCHAR) as CMMN_BRND_NM_AT_EVENT` | — |
-| `CMPGN_CTGR_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:134` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_CTGR_CD_AT_EVENT` | — |
-| `CMPGN_CTGR_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:135` | `CAST(NULL AS VARCHAR) as CMPGN_CTGR_NM_AT_EVENT` | — |
-| `CMPGN_TYPE1_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:136` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE1_BSN_AT_EVENT` | — |
-| `CMPGN_TYPE1_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:137` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE1_NM_AT_EVENT` | — |
-| `CMPGN_TYPE2_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:138` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE2_BSN_AT_EVENT` | — |
-| `CMPGN_TYPE2_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:139` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE2_NM_AT_EVENT` | — |
+| `CMMN_BRND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:154` | `CAST(NULL AS NUMBER(38,0)) as CMMN_BRND_AT_EVENT` | — |
+| `CMMN_BRND_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:155` | `CAST(NULL AS VARCHAR) as CMMN_BRND_NM_AT_EVENT` | — |
+| `CMPGN_CTGR_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:146` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_CTGR_CD_AT_EVENT` | — |
+| `CMPGN_CTGR_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:147` | `CAST(NULL AS VARCHAR) as CMPGN_CTGR_NM_AT_EVENT` | — |
+| `CMPGN_TYPE1_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:148` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE1_BSN_AT_EVENT` | — |
+| `CMPGN_TYPE1_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:149` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE1_NM_AT_EVENT` | — |
+| `CMPGN_TYPE2_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:150` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE2_BSN_AT_EVENT` | — |
+| `CMPGN_TYPE2_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:151` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE2_NM_AT_EVENT` | — |
 | `CORP` | `DIM_ORG.sql:38` | `CAST(NULL AS VARCHAR) as CORP` | — |
-| `CPR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:150` | `CAST(NULL AS VARCHAR) as CPR_DIV_CD_AT_EVENT` | — |
-| `CPR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:151` | `CAST(NULL AS VARCHAR) as CPR_DIV_NM_AT_EVENT` | — |
+| `CPR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:162` | `CAST(NULL AS VARCHAR) as CPR_DIV_CD_AT_EVENT` | — |
+| `CPR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:163` | `CAST(NULL AS VARCHAR) as CPR_DIV_NM_AT_EVENT` | — |
 | `DEVICE_SK` | `FACT_AD_PERFORMANCE.sql:8` | `0 as DEVICE_SK` | DIM_DEVICE.sql, FACT_BIGQUERY_BEHAVIOR.sql |
 | `DEV_TYPE` | `FACT_MEMBER_MONTHLY.sql:338` | `CAST(NULL AS VARCHAR) as DEV_TYPE` | FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_TARGET_MEMBER_DEV.sql |
 | `DIVISION` | `DIM_ORG.sql:39` | `CAST(NULL AS VARCHAR) as DIVISION` | — |
 | `DVLP_DIV_CD` | `FACT_MEMBER_EVENT.sql:113` | `CAST(NULL AS VARCHAR) as DVLP_DIV_CD` | — |
 | `DVLP_DIV_NM` | `FACT_MEMBER_EVENT.sql:114` | `CAST(NULL AS VARCHAR) as DVLP_DIV_NM` | — |
 | `EFFECTIVE_TO` | `DIM_MEMBER_STATUS_HISTORY.sql:65` | `CAST(NULL AS DATE) as EFFECTIVE_TO` | — |
-| `EXEC_BUDGET_EST` | `FACT_BUDGET.sql:44` | `CAST(NULL AS NUMBER(18,2)) as EXEC_BUDGET_EST` | — |
+| `EXEC_BUDGET_EST` | `FACT_BUDGET.sql:50` | `CAST(NULL AS NUMBER(18,2)) as EXEC_BUDGET_EST` | — |
 | `FEE_TYPE` | `DIM_PAYMENT.sql:19` | `CAST(NULL AS VARCHAR) as FEE_TYPE` | — |
-| `FUNDRAISING_COST` | `FACT_BUDGET.sql:45` | `CAST(NULL AS NUMBER(18,2)) as FUNDRAISING_COST` | — |
-| `GENDER_AT_EVENT` | `FACT_MEMBER_EVENT.sql:130` | `CAST(NULL AS VARCHAR) as GENDER_AT_EVENT` | — |
+| `FUNDRAISING_COST` | `FACT_BUDGET.sql:51` | `CAST(NULL AS NUMBER(18,2)) as FUNDRAISING_COST` | — |
+| `GENDER_AT_EVENT` | `FACT_MEMBER_EVENT.sql:142` | `CAST(NULL AS VARCHAR) as GENDER_AT_EVENT` | — |
 | `INCREASE_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as INCREASE_FLAG` | — |
-| `JOIN_DATE` | `FACT_MEMBER_EVENT.sql:118` | `CAST(NULL AS DATE) as JOIN_DATE` | — |
+| `JOIN_DATE` | `FACT_MEMBER_EVENT.sql:130` | `CAST(NULL AS DATE) as JOIN_DATE` | — |
 | `JOIN_DATE` | `FACT_MEMBER_MONTHLY.sql:340` | `CAST(NULL AS DATE) as JOIN_DATE` | FACT_MEMBER_EVENT.sql |
 | `MAIL_RECEIVE_FLAG` | `FACT_MESSAGE_DISPATCH.sql:58` | `CAST(NULL AS BOOLEAN) as MAIL_RECEIVE_FLAG` | — |
-| `MBER_INFLOW_PATH_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:132` | `CAST(NULL AS NUMBER(38,0)) as MBER_INFLOW_PATH_CD_AT_EVENT` | — |
-| `MBER_INFLOW_PATH_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:133` | `CAST(NULL AS VARCHAR) as MBER_INFLOW_PATH_NM_AT_EVENT` | — |
+| `MBER_INFLOW_PATH_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:144` | `CAST(NULL AS NUMBER(38,0)) as MBER_INFLOW_PATH_CD_AT_EVENT` | — |
+| `MBER_INFLOW_PATH_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:145` | `CAST(NULL AS VARCHAR) as MBER_INFLOW_PATH_NM_AT_EVENT` | — |
 | `MEMBER_STOP_FLAG` | `FACT_MESSAGE_DISPATCH.sql:59` | `CAST(NULL AS BOOLEAN) as MEMBER_STOP_FLAG` | — |
 | `MEMNUM` | `DIM_MEMBER_IDENTITY.sql:27` | `CAST(NULL AS VARCHAR) as MEMNUM` | — |
-| `MKTG_CHANNEL_AT_EVENT` | `FACT_MEMBER_EVENT.sql:146` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CHANNEL_AT_EVENT` | — |
-| `MKTG_CHANNEL_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:147` | `CAST(NULL AS VARCHAR) as MKTG_CHANNEL_NM_AT_EVENT` | — |
-| `MKTG_CMPGN_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:140` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CMPGN_CD_AT_EVENT` | — |
-| `MKTG_CMPGN_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:141` | `CAST(NULL AS VARCHAR) as MKTG_CMPGN_NM_AT_EVENT` | — |
-| `MKTG_UTM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:144` | `CAST(NULL AS NUMBER(38,0)) as MKTG_UTM_AT_EVENT` | — |
-| `MKTG_UTM_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:145` | `CAST(NULL AS VARCHAR) as MKTG_UTM_NM_AT_EVENT` | — |
+| `MKTG_CHANNEL_AT_EVENT` | `FACT_MEMBER_EVENT.sql:158` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CHANNEL_AT_EVENT` | — |
+| `MKTG_CHANNEL_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:159` | `CAST(NULL AS VARCHAR) as MKTG_CHANNEL_NM_AT_EVENT` | — |
+| `MKTG_CMPGN_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:152` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CMPGN_CD_AT_EVENT` | — |
+| `MKTG_CMPGN_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:153` | `CAST(NULL AS VARCHAR) as MKTG_CMPGN_NM_AT_EVENT` | — |
+| `MKTG_UTM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:156` | `CAST(NULL AS NUMBER(38,0)) as MKTG_UTM_AT_EVENT` | — |
+| `MKTG_UTM_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:157` | `CAST(NULL AS VARCHAR) as MKTG_UTM_NM_AT_EVENT` | — |
 | `NEW_EXISTING_FLAG` | `FACT_MEMBER_EVENT.sql:62` | `CAST(NULL AS VARCHAR) as NEW_EXISTING_FLAG` | — |
 | `NEW_EXISTING_FLAG` | `FACT_MEMBER_MONTHLY.sql:344` | `CAST(NULL AS VARCHAR) as NEW_EXISTING_FLAG` | — |
 | `NEW_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as NEW_FLAG` | — |
 | `ORG_SK` | `DIM_CAMPAIGN.sql:50` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
-| `ORG_SK` | `FACT_BUDGET.sql:35` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
+| `ORG_SK` | `FACT_BUDGET.sql:41` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
 | `ORG_SK` | `FACT_BUDGET_YEARLY.sql:49` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
 | `ORG_SK` | `FACT_MEMBER_EVENT.sql:108` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
-| `PARENT_CAMPAIGN_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:153` | `CAST(NULL AS VARCHAR) as PARENT_CAMPAIGN_NAME_AT_EVENT` | — |
+| `PARENT_CAMPAIGN_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:165` | `CAST(NULL AS VARCHAR) as PARENT_CAMPAIGN_NAME_AT_EVENT` | — |
 | `PAYMENT_SK` | `FACT_MEMBER_MONTHLY.sql:303` | `0 as PAYMENT_SK` | DIM_PAYMENT.sql, FACT_MEMBER_FEE.sql |
 | `PERIOD_BAND1` | `FACT_MEMBER_MONTHLY.sql:342` | `CAST(NULL AS VARCHAR) as PERIOD_BAND1` | — |
 | `PERIOD_BAND2` | `FACT_MEMBER_MONTHLY.sql:342` | `CAST(NULL AS VARCHAR) as PERIOD_BAND2` | — |
 | `PLATFORM_TYPE` | `DIM_AD_CREATIVE.sql:39` | `CAST(NULL AS VARCHAR) as PLATFORM_TYPE` | — |
 | `PREV_MBER_STAT_CD` | `DIM_MEMBER_STATUS_HISTORY.sql:63` | `CAST(NULL AS VARCHAR) as PREV_MBER_STAT_CD` | WIDE_MEMBER_EVENT.sql, WIDE_MEMBER_MONTHLY.sql |
-| `PROMO_METHOD_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:154` | `CAST(NULL AS VARCHAR) as PROMO_METHOD_NAME_AT_EVENT` | — |
+| `PROMO_METHOD_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:166` | `CAST(NULL AS VARCHAR) as PROMO_METHOD_NAME_AT_EVENT` | — |
 | `REASON_SK` | `FACT_MEMBER_EVENT.sql:49` | `0 as REASON_SK` | DIM_REASON.sql, FACT_MEMBER_MONTHLY.sql |
 | `REDONATE_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as REDONATE_FLAG` | — |
-| `REGION_AT_EVENT` | `FACT_MEMBER_EVENT.sql:128` | `CAST(NULL AS VARCHAR) as REGION_AT_EVENT` | — |
+| `REGION_AT_EVENT` | `FACT_MEMBER_EVENT.sql:140` | `CAST(NULL AS VARCHAR) as REGION_AT_EVENT` | — |
 | `SELF_PART_FLAG` | `FACT_EVENT_ATTENDANCE.sql:29` | `CAST(NULL AS BOOLEAN) as SELF_PART_FLAG` | — |
 | `SEND_STATUS2` | `FACT_MESSAGE_DISPATCH.sql:56` | `CAST(NULL AS VARCHAR) as SEND_STATUS2` | — |
-| `SEX_AT_EVENT` | `FACT_MEMBER_EVENT.sql:129` | `CAST(NULL AS VARCHAR) as SEX_AT_EVENT` | — |
+| `SEX_AT_EVENT` | `FACT_MEMBER_EVENT.sql:141` | `CAST(NULL AS VARCHAR) as SEX_AT_EVENT` | — |
 | `SPNSR_AMT` | `FACT_MEMBER_EVENT.sql:115` | `CAST(NULL AS NUMBER(18,0)) as SPNSR_AMT` | — |
-| `SPNSR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:148` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_CD_AT_EVENT` | — |
-| `SPNSR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:149` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_NM_AT_EVENT` | — |
-| `SPONSORSHIP_SK` | `FACT_BUDGET.sql:39` | `CAST(NULL AS NUMBER(38,0)) as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `SPNSR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:160` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_CD_AT_EVENT` | — |
+| `SPNSR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:161` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_NM_AT_EVENT` | — |
+| `SPONSORSHIP_SK` | `FACT_BUDGET.sql:45` | `CAST(NULL AS NUMBER(38,0)) as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `SPONSORSHIP_SK` | `FACT_BUDGET_YEARLY.sql:53` | `CAST(NULL AS NUMBER(38,0)) as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `SPONSORSHIP_SK` | `FACT_EVENT_ATTENDANCE.sql:19` | `0 as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `STOP_CHANNEL` | `FACT_MEMBER_EVENT.sql:59` | `CAST(NULL AS VARCHAR) as STOP_CHANNEL` | — |
@@ -206,9 +207,9 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `DEV_UNIT_PRICE` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DEV_UNIT_PRICE_SRC` (FACT_AD_DIGITAL.sql) |
 | `CTR` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CTR_SRC` (FACT_AD_DIGITAL.sql) |
 | `CVR` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CVR_SRC` (FACT_AD_DIGITAL.sql) |
-| `CPC` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_SRC` (FACT_AD_DIGITAL.sql) |
+| `CPC` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_CLICK_SRC` (FACT_AD_DIGITAL.sql) |
 | `CPM` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPM_SRC` (FACT_AD_DIGITAL.sql) |
-| `UPPER_CMPGN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_UTM_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `READ_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `READ_CNT` (FACT_AD_DIGITAL.sql) |
 | `MEDIA_PTNT_CUST_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `MEDIA_POTENTIAL_CUST_CNT` (FACT_AD_DIGITAL.sql) |
 | `DATE` | DATE | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
@@ -293,7 +294,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `AD_SEC` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DURATION_SEC` (FACT_AD_BROADCAST.sql) |
 | `ACTL_PUR_AD_COST_KRW` | NUMBER | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql) |
 | `INBOUND_CALL_CNT` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
-| `CPC` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_SRC` (FACT_AD_BROADCAST.sql) |
+| `CPC` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_CALL_SRC` (FACT_AD_BROADCAST.sql) |
 | `UPPER_CMPGN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `MATR_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `CMPGN_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
@@ -311,9 +312,9 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 </details>
 
-### CRM (1014컬럼)
+### CRM (1064컬럼)
 
-<details><summary><b>SND_MEMBER_LIST</b> — 76컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>SND_MEMBER_LIST</b> — 77컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -393,10 +394,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPPER_CMPGN` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>SND_MEMBER_MAIL_LINK_LOG</b> — 13컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>SND_MEMBER_MAIL_LINK_LOG</b> — 14컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -413,10 +415,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LINK_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>SND_MEMBER_OPEN_LOG</b> — 8컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>SND_MEMBER_OPEN_LOG</b> — 9컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -428,10 +431,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>SND_REQ_MST</b> — 54컬럼 (GOLD 5 · 하드코딩 0)</summary>
+<details><summary><b>SND_REQ_MST</b> — 55컬럼 (GOLD 5 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -489,10 +493,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SERVICE_MENU_CODE` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TC_CMMN_CD</b> — 12컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TC_CMMN_CD</b> — 13컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -508,10 +513,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TC_CMMN_DTL_CD</b> — 17컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TC_CMMN_DTL_CD</b> — 18컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -532,10 +538,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `UPPER_CD_ID` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TC_MKTNG_DTL_CD</b> — 16컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TC_MKTNG_DTL_CD</b> — 17컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -555,10 +562,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_AT_TMPLAT_BTN_LIST</b> — 14컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_AT_TMPLAT_BTN_LIST</b> — 15컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -576,10 +584,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_CRMN_PRTCPNT</b> — 21컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_CRMN_PRTCPNT</b> — 22컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -604,10 +613,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_EMAIL_LQY_SNDNG</b> — 26컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_EMAIL_LQY_SNDNG</b> — 27컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -637,10 +647,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_EMAIL_SNDNG_DTLS</b> — 12컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_EMAIL_SNDNG_DTLS</b> — 13컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -656,10 +667,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_EVENT_PRTCPNT_DTL</b> — 17컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_EVENT_PRTCPNT_DTL</b> — 18컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -680,10 +692,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_MSG_AT_LQY_SNDNG</b> — 20컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_MSG_AT_LQY_SNDNG</b> — 21컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -707,10 +720,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_MSG_AT_SNDNG_DTLS</b> — 15컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_MSG_AT_SNDNG_DTLS</b> — 16컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -729,10 +743,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `ATTACHED_FILE` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_PSTMTR_LQY_SNDNG</b> — 11컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_PSTMTR_LQY_SNDNG</b> — 12컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -747,10 +762,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TD_MS_PSTMTR_SNDNG_DTL</b> — 14컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TD_MS_PSTMTR_SNDNG_DTL</b> — 15컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -768,10 +784,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TH_MM_FDRM_MBER_STNG_DTLS</b> — 8컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TH_MM_FDRM_MBER_STNG_DTLS</b> — 9컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -783,10 +800,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TH_PM_SETLE_INFO_HIST</b> — 49컬럼 (GOLD 2 · 하드코딩 0)</summary>
+<details><summary><b>TH_PM_SETLE_INFO_HIST</b> — 50컬럼 (GOLD 2 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -839,10 +857,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REGIST_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_CM_BRND_MNG</b> — 11컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_CM_BRND_MNG</b> — 12컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -857,10 +876,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_CM_CMPGN_MNG</b> — 37컬럼 (GOLD 6 · 하드코딩 0)</summary>
+<details><summary><b>TM_CM_CMPGN_MNG</b> — 38컬럼 (GOLD 6 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -901,10 +921,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `MKTG_CHANNEL` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_CM_DEPT_INFO</b> — 14컬럼 (GOLD 2 · 하드코딩 0)</summary>
+<details><summary><b>TM_CM_DEPT_INFO</b> — 15컬럼 (GOLD 2 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -922,10 +943,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `ACMSLT_UPPER_DEPT_ID` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_CM_MBER_DVLP_GOAL</b> — 11컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_CM_MBER_DVLP_GOAL</b> — 12컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -940,10 +962,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_CM_SPNSR_BSNS_INFO</b> — 15컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>TM_CM_SPNSR_BSNS_INFO</b> — 16컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -962,10 +985,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_DT_DTLS</b> — 5컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_DT_DTLS</b> — 6컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -974,10 +998,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_DVLP_AMT</b> — 23컬럼 (GOLD 10 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_DVLP_AMT</b> — 24컬럼 (GOLD 10 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1004,10 +1029,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_INFO</b> — 31컬럼 (GOLD 5 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_INFO</b> — 32컬럼 (GOLD 5 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1042,10 +1068,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SEX` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_IRSD</b> — 17컬럼 (GOLD 5 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_IRSD</b> — 18컬럼 (GOLD 5 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1066,10 +1093,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT</b> — 13컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT</b> — 14컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1086,10 +1114,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `CHILD_STATS_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_RE_SPNSR</b> — 7컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_RE_SPNSR</b> — 8컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1100,10 +1129,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_SPNSR</b> — 9컬럼 (GOLD 2 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_SPNSR</b> — 10컬럼 (GOLD 2 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1116,10 +1146,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_SPNSR_BSNS</b> — 9컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_SPNSR_BSNS</b> — 10컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1132,10 +1163,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SPNSR_DSCNTC_RSN_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_FDRM_MBER_SPNSR_DSCNTC</b> — 9컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_FDRM_MBER_SPNSR_DSCNTC</b> — 10컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1148,10 +1180,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MM_ONCE_MBER_INFO</b> — 22컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>TM_MM_ONCE_MBER_INFO</b> — 23컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1177,10 +1210,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_CRMN</b> — 35컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_CRMN</b> — 36컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1219,10 +1253,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `TMPLAT_WIN_TIT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_EMAIL_SNDNG</b> — 16컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_EMAIL_SNDNG</b> — 17컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1242,10 +1277,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_EMAIL_TMPLAT_MNG</b> — 16컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_EMAIL_TMPLAT_MNG</b> — 17컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1265,10 +1301,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_EVENT</b> — 13컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_EVENT</b> — 14컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1285,10 +1322,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_MSG_AT_SNDNG</b> — 21컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_MSG_AT_SNDNG</b> — 22컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1313,10 +1351,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_MS_PSTMTR_SNDNG</b> — 16컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_MS_PSTMTR_SNDNG</b> — 17컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1336,10 +1375,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_PM_DNTN_DTLS</b> — 30컬럼 (GOLD 3 · 하드코딩 0)</summary>
+<details><summary><b>TM_PM_DNTN_DTLS</b> — 31컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1373,10 +1413,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SPNSR_BSNS_ID` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `SPONSORSHIP_SK` (FACT_MEMBER_FEE.sql) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_PM_INSTT_ACNUT</b> — 16컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_PM_INSTT_ACNUT</b> — 17컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1396,10 +1437,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_PM_MBRFEE_ACMSLT</b> — 57컬럼 (GOLD 7 · 하드코딩 0)</summary>
+<details><summary><b>TM_PM_MBRFEE_ACMSLT</b> — 58컬럼 (GOLD 7 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1460,10 +1502,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `OPER_RST_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_PM_SETLE_CMPNY_ACNT</b> — 14컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_PM_SETLE_CMPNY_ACNT</b> — 15컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1481,10 +1524,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_PM_SETLE_INFO</b> — 51컬럼 (GOLD 2 · 하드코딩 0)</summary>
+<details><summary><b>TM_PM_SETLE_INFO</b> — 52컬럼 (GOLD 2 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1539,10 +1583,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_BPLC_MNG</b> — 20컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_BPLC_MNG</b> — 21컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1566,10 +1611,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_CHILD_MSTR_INFO</b> — 15컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_CHILD_MSTR_INFO</b> — 16컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1588,10 +1634,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `CMS_CHILD_NO` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_RELATNSP_CHG_INFO</b> — 9컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_RELATNSP_CHG_INFO</b> — 10컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1604,10 +1651,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `CHG_RELATNSP_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_RELATNSP_GFTMNEY_INFO</b> — 20컬럼 (GOLD 1 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_RELATNSP_GFTMNEY_INFO</b> — 21컬럼 (GOLD 1 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1631,10 +1679,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `TRNSFER_AFTER_RELATNSP_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_RELATNSP_LETTER_INFO</b> — 16컬럼 (GOLD 0 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_RELATNSP_LETTER_INFO</b> — 17컬럼 (GOLD 0 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1654,10 +1703,11 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LETTER_STAT_CD` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
-<details><summary><b>TM_RM_RELATNSP_MSTR_INFO</b> — 13컬럼 (GOLD 2 · 하드코딩 0)</summary>
+<details><summary><b>TM_RM_RELATNSP_MSTR_INFO</b> — 14컬럼 (GOLD 2 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -1674,6 +1724,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `MBER_NO` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
 
@@ -1759,7 +1810,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
 | `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
-| `WRITE_DATE` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `WRITE_DATE` | DATE | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `RESOLUTION_NO` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `RESOLUTION_DEPT_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `EXPS_RESOLUTION_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
@@ -1785,4 +1836,4 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 - `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). 본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.
 - `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
 
-_감사일 2026-09-16 · Co-authored with CoCo_
+_감사일 2026-09-21 · Co-authored with CoCo_

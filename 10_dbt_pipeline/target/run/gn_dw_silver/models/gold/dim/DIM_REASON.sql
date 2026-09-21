@@ -1,0 +1,30 @@
+-- back compat for old kwarg name
+  
+  begin;
+    
+        
+            
+	    
+	    
+            
+        
+    
+
+    
+
+    merge into GN_DW.GOLD.DIM_REASON as DBT_INTERNAL_DEST
+        using GN_DW.GOLD.DIM_REASON__dbt_tmp as DBT_INTERNAL_SOURCE
+        on ((DBT_INTERNAL_SOURCE.REASON_SK = DBT_INTERNAL_DEST.REASON_SK))
+
+    
+    when matched then update set
+        "REASON_SK" = DBT_INTERNAL_SOURCE."REASON_SK","REASON_CODE" = DBT_INTERNAL_SOURCE."REASON_CODE","REASON_NAME" = DBT_INTERNAL_SOURCE."REASON_NAME","REASON_TYPE" = DBT_INTERNAL_SOURCE."REASON_TYPE","DW_SOURCE_SYSTEM" = DBT_INTERNAL_SOURCE."DW_SOURCE_SYSTEM","DW_LOAD_TS" = DBT_INTERNAL_SOURCE."DW_LOAD_TS","DW_UPDATE_TS" = DBT_INTERNAL_SOURCE."DW_UPDATE_TS","DW_BATCH_ID" = DBT_INTERNAL_SOURCE."DW_BATCH_ID"
+    
+
+    when not matched then insert
+        ("REASON_SK", "REASON_CODE", "REASON_NAME", "REASON_TYPE", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+    values
+        ("REASON_SK", "REASON_CODE", "REASON_NAME", "REASON_TYPE", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
+
+;
+    commit;

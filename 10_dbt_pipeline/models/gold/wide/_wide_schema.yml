@@ -1044,7 +1044,7 @@ models:
       - name: CAMPAIGN_NAME
         description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴[O51-F 실측] **본 뷰는 현재 0행이다**(E-6 외부 원천 미입고) — 이 컬럼이 비어 있는 것은 컬럼 결함이 아니라 **뷰 전체에 행이 없어서**다. 입고되면 자동으로 채워진다. ⚠️0행 뷰는 집계가 NULL·0 을 반환하므로 「값이 0이다」로 오독하지 말 것. 실측 규모는 이슈원장 §O51-F."
   - name: WIDE_BUDGET
-    description: "예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 집행 추정 · FUNDRAISING_COST(**E-1**) · AD_COST(**E-4**). 🔴🔴[2026-08-20 O96] **연간 편성은 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 `WIDE_BUDGET` 이 아니라 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 항목이 없다 — 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)."
+    description: "예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 집행 추정 · FUNDRAISING_COST(**E-1**). 🔴🔴[2026-09-21 O175] **광고비는 이 목록에서 제외했다** — `AD_COST` 는 원천 미입고가 아니라 **폐기 슬롯**이다(의도적 영구 NULL · 종전 「**E-4** 원천부재」는 거짓이었다). 광고비를 물으면 `WIDE_BUDGET` 이 아니라 **`SERVING.SV_AD.TOTAL_AD_COST`**(base `GOLD.WIDE_AD_COMBINED` ← `FACT_AD_PERFORMANCE`)를 봐야 한다. 🔴🔴[2026-08-20 O96] **연간 편성도 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 예산항목이 없어 `BUDGET_ITEM_SK` 귀속 근거가 없다 — **예산과 같은 표에 합산하지 말 것**(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)."
   # [2026-08-07 O50 신설] 종전 이 파일에 유일하게 누락된 모델이었다(models 14 vs 등재 13). O45 신설분 미전파.
     # [O51-F] ✅ [2026-08-10] 빈 축·희소축 경고 **오버레이 적용**(기존 문안 보존).
     # [O51-F]   🔴 경위: O51-D-C 의 빈 축 감사는 O51-D 대상 8객체만 스캔했고, O51-C 가 이미 물리에 배포한
@@ -1071,11 +1071,11 @@ models:
       - name: EXEC_BUDGET_ERP
         description: "집행예산(ERP 월, 원)"
       - name: EXEC_BUDGET_EST
-        description: "집행예산(추정, 원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 집행 추정 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(E-1/E-4 하드블로커). 실측 규모는 이슈원장 §O51-F."
+        description: "집행예산(추정, 원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 집행 추정 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(E-1 소관 · ⚠️종전 문안의 `E-4` 병기는 O175 가 철회했다 — 광고비는 원천 부재가 아니다). 실측 규모는 이슈원장 §O51-F."
       - name: FUNDRAISING_COST
         description: "모금성비용(원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 모금성비용 원천`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴외부 원천 미입고(**E-1** 하드블로커) — 모금성비용은 원천 확정 대기다. 실측 규모는 이슈원장 §O51-F."
       - name: AD_COST
-        description: "광고비(원) 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`ERP 예산 원장의 광고비 컬럼`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴예산 원장에는 광고비 항목이 없다(**E-4**) — 광고비는 대행사 원천(`WIDE_AD_PERFORMANCE`)에서 가져오며 **예산과 같은 표에 합산하지 말 것**(원천이 다르다 · 순서9-K 표 분리 근거). 실측 규모는 이슈원장 §O51-F."
+        description: "광고비(원) 🔴🔴**폐기 슬롯이다 — 의도적 영구 NULL**(외부 입고 대기가 아니다 · 2026-09-21 O175 판정). 예산 원장에는 광고비 예산항목이 없고, 대행사 원천의 광고비는 이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다. 🔴**광고비를 이 컬럼으로 묻지 말 것** — 정본은 `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED`)다. 🔴예산과 같은 표에 합산하지 말 것(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). ⚠️종전 문안의 *「원천 자체가 비어 있다 · 대행사가 항목을 보고하지 않는다」*는 **거짓이었다**(경위·규모는 이슈원장 §O175)."
       - name: DW_SOURCE_SYSTEM
         description: "원천 시스템 식별"
       - name: ORG_CORP

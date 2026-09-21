@@ -1,6 +1,8 @@
 -- WIDE_BUDGET: 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
 -- Co-authored with CoCo
--- ⚠️ FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1)·AD_COST(E-4) 원천부재로 현재 NULL(외부 입고 대기).
+-- ⚠️ FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1) 원천부재로 현재 NULL(외부 입고 대기).
+-- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯**이다(입고 대기가 아니다) — 종전 「E-4 원천부재」는 거짓.
+--    광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED` ← `FACT_AD_PERFORMANCE`).
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
 --   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.

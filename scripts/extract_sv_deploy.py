@@ -7,10 +7,17 @@
   실패 원인을 가릴 수 있다 ⇒ 배포 단계에서는 **`CREATE OR ALTER SEMANTIC VIEW` + `GRANT` 만** 낸다.
   ⛔ `CREATE OR REPLACE` 로 바꾸지 않는다 — GRANT·소유권을 파괴한다(P125).
 
+🆕 🔴 **[2026-09-21 O175] 다중 SV 파일 대응 — `--name` 을 받는다.**
+  종전 구현은 **파일당 첫 SV 만** 뽑았다(행 시작 첫 적중 → 첫 `AI_SQL_GENERATION` 까지).
+  그런데 `05_SV-Agent_ai/22_ML_SV_DDL.sql` 은 **SV 7종**을 담고 있어 2번째 이후를 배포할 수 없었다
+  (O175 가 `SV_ML_SPONSOR_RISK` 를 배포해야 해서 이 한계에 걸렸다).
+  🟢 `--name` 없이 호출하면 **종전 동작(첫 SV)** 그대로다 — 기존 호출부가 깨지지 않는다.
+
 계약:
   · 원본은 읽기만 한다.
   · 추출은 **문자 단위 부분 문자열**이며 문안을 재작성하지 않는다(자동 생성물 손편집 금지 계열).
   · 추출 결과에 `CREATE OR REPLACE` 가 있으면 즉시 실패한다(가드).
+  · GRANT 는 **그 SV 것만** 딸려 나간다(`--name` 지정 시).
 """
 import re
 import sys
@@ -19,15 +26,24 @@ from pathlib import Path
 HEAD = "USE ROLE GN_DW_ADMIN;\nUSE WAREHOUSE GN_DW_DEV_WH;\nUSE SCHEMA GN_DW.SERVING;\n\n"
 
 
-def extract(path: Path) -> str:
+def extract(path: Path, sv_name: str | None = None) -> str:
     text = path.read_text(encoding='utf-8')
     # 🔴 [O67 자기적발] `text.index('CREATE OR ALTER SEMANTIC VIEW')` 로 찾으면 **헤더 주석**이 걸린다 —
     #   `05_8` 헤더가 *"`CREATE OR ALTER SEMANTIC VIEW` 로 재배포할 것"* 이라 적고 있어 시작점이 5행으로
     #   잡히고 문장이 잘렸다(가드가 `CREATE OR REPLACE` 를 검출해 배포 전에 멈췄다).
     #   ⇒ **행 시작(anchored)** 으로만 찾는다. 주석은 `--` 로 시작하므로 걸리지 않는다.
-    m0 = re.compile(r'^CREATE OR ALTER SEMANTIC VIEW', re.M).search(text)
+    pat = re.compile(r'^CREATE OR ALTER SEMANTIC VIEW\s+(\S+)', re.M)
+    m0 = None
+    if sv_name is None:
+        m0 = pat.search(text)                      # 종전 동작 = 첫 SV
+    else:
+        for m in pat.finditer(text):               # 🆕 [O175] 이름으로 고른다
+            if m.group(1).endswith(sv_name):
+                m0 = m
+                break
     if not m0:
-        raise SystemExit(f'{path.name}: 행 시작 CREATE OR ALTER SEMANTIC VIEW 를 찾지 못했다')
+        want = sv_name or '행 시작 CREATE OR ALTER SEMANTIC VIEW'
+        raise SystemExit(f'{path.name}: {want} 를 찾지 못했다')
     start = m0.start()
     # 배포문은 `AI_SQL_GENERATION '...';` 로 끝난다 — 그 종료 세미콜론까지 자른다.
     m = re.compile(r"AI_SQL_GENERATION\s+'", re.S).search(text, start)
@@ -44,6 +60,11 @@ def extract(path: Path) -> str:
     end = text.index(';', j) + 1
     ddl = text[start:end]
     grants = [ln for ln in text.splitlines() if ln.startswith('GRANT REFERENCES, SELECT ON SEMANTIC VIEW')]
+    if sv_name is not None:
+        # 🔴 GRANT 행 형태 = `GRANT REFERENCES, SELECT ON SEMANTIC VIEW <FQN> TO ROLE <R>;`
+        #   ⇒ `rstrip(';').split()` 에서 FQN 은 **[-4]** 다([-3] 은 `TO` · O175 초판이 여기서 틀려
+        #      GRANT 0건을 내고 조용히 통과할 뻔했다).
+        grants = [ln for ln in grants if ln.rstrip(';').split()[-4].endswith(sv_name)]
     if 'CREATE OR REPLACE' in ddl:
         raise SystemExit(f'{path.name}: CREATE OR REPLACE 검출 — 배포 중단(P125)')
     return HEAD + ddl + '\n\n' + '\n'.join(grants) + '\n'
@@ -52,12 +73,30 @@ def extract(path: Path) -> str:
 def main():
     outdir = Path.home() / 'deploy_o67'
     outdir.mkdir(exist_ok=True)
-    for arg in sys.argv[1:]:
+    args = sys.argv[1:]
+    names = []
+    if '--name' in args:                            # 🆕 [O175] `--name A --name B` 다중 허용
+        rest = []
+        k = 0
+        while k < len(args):
+            if args[k] == '--name':
+                if k + 1 >= len(args):
+                    raise SystemExit('--name 에 SV 이름이 없다')
+                names.append(args[k + 1])
+                k += 2
+                continue
+            rest.append(args[k])
+            k += 1
+        args = rest
+    for arg in args:
         src = Path(arg)
-        body = extract(src)
-        dst = outdir / (src.stem + '.deploy.sql')
-        dst.write_text(body, encoding='utf-8')
-        print(f'{src.name}: {len(body)}자 · GRANT {body.count("GRANT REFERENCES")}건 → {dst}')
+        for sv in (names or [None]):
+            body = extract(src, sv)
+            stem = (sv or src.stem)
+            dst = outdir / (stem + '.deploy.sql')
+            dst.write_text(body, encoding='utf-8')
+            print(f'{src.name}[{sv or "첫 SV"}]: {len(body)}자 · '
+                  f'GRANT {body.count("GRANT REFERENCES")}건 → {dst}')
     return 0
 
 

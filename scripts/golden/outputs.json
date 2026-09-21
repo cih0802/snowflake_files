@@ -110,9 +110,27 @@
    "diff_count": 6,
    "label": "O166",
    "reason": "O166-B: 06_BRONZE노출감사 재생성분 6건. 06 은 2026-09-02 판본이었고(다른 산출물은 09-16) O166 이 gen_bronze_exposure_audit·run_bronze_audit_host 의 개명 잔여를 정정한 뒤 정본 경로(라이브 직접조회)로 재생성했다. 규명 = (1) 분모 1153→1204(+51)은 실측으로 확정: CRM 1,014 + AGENCY 106 + ERP 84 = 1,204(러너 분모는 이 3스키마이고 GA4 10·GSC 13 은 제외). 구성 = O161·O162 CRM 개편의 신규 4종 42컬럼(SND_MEMBER_OPEN_LOG 8 · SND_MEMBER_MAIL_LINK_LOG 13 · TC_MKTNG_DTL_CD 16 · TM_MM_FDRM_MBER_DT_DTLS 5) + O161 이 적발한 누락 보완 2종 30컬럼(TM_PM_INSTT_ACNUT 16 · TM_PM_SETLE_CMPNY_ACNT 14) + MKTG_CHANNEL 1 − 삭제 2종(TM_CM_MKTNG_CMPGN_MNG·TM_CM_MKTNG_UTM · 라이브 부재 확인) − OPEN_DT 이설(SND_MEMBER_LIST 77→76 · 신규 SND_MEMBER_OPEN_LOG 로 이동 · 판정 SILVER까지만). (2) 판정 합계 정합 = 137+15+439+13+542+58 = 1,204 이고 골든은 138+15+410+13+523+54 = 1,153 ⇒ 행 유실·창작 0. (3) SILVER까지만 +29 · 미노출 +19 · 제외 +4 는 신규·보완 컬럼이 아직 GOLD 까지 배선되지 않은 것과 정합(방향 정상). (4) 🔴 노출됨 138→137 의 −1 은 행 단위 귀속 불가로 관측으로 남긴다 — 이전 판본 사본이 _archive/ 에 0건이다(러너가 스냅샷 없이 덮어썼다). 단 내 개명 정정이 원인이라는 가설은 반증했다: 분모에 드는 LINEAGE_MAP 수정 2건(SND_MEMBER_LIST.CALL_STATUS · TD_MS_MSG_AT_SNDNG_DTLS.TRNSMS_FAILR_CD_ID)은 재생성 후에도 둘 다 노출됨(GOLD) 이고, 나머지 수정 4건은 GA4 축이라 이 감사 분모 밖이다. 방향상 삭제 2종 컬럼의 이탈로 설명된다. (5) 처방 집행 = run_bronze_audit_host.main() 에 snapshot_util 경유 스냅샷을 추가했으므로 다음 갱신부터는 −1 류를 행 단위로 규명할 수 있다. 09 는 이번 재생성에서 차이 0(SCD2_DIM 키 교체가 판정에 영향 없음을 실증)."
+  },
+  {
+   "date": "2026-09-21 05:48:01",
+   "diff_count": 21,
+   "label": "UNLABELED",
+   "reason": "O174 CPC 개명(CPC_SRC→CPC_CLICK_SRC/CPC_CALL_SRC) 라이브 ALTER RENAME + dbt build 성공(PASS 524/ERROR 0) 후 산출물 04·06·08·09 재생성. 차이 21건 전량 규명 = ㉠ CPC 개명 짝 6건(구명 3 ↔ 신명 3) ㉡ 06 rows +50 = O171 이 CRM 50테이블에 추가한 _STDR_YM ㉢ 06 노출됨 137 복원 = 내 LINEAGE_MAP 미갱신(CPC 2건)을 시정한 결과 ㉣ 08 +34 = CPC 개명 2 + UPPER_CMPGN_NM→CMPGN_UTM_NM + GA_*→BIGQUERY_* 개명 연쇄 + 신규 SILVER 테이블 컬럼(LINK_LOG 11·MKTNG_CODE 10·OPEN_LOG 6 등) ㉤ NO_CONSUMER +30 = 아직 GOLD 미소비인 신규 컬럼 ㉥ 측정일 3건 = 2026-09-21 재생성. 실유실 0(소멸 12건 전부 개명 대응짝 실재)"
+  },
+  {
+   "date": "2026-09-21 07:32:08",
+   "diff_count": 2,
+   "label": "UNLABELED",
+   "reason": "O175 사용자 결정 A안 집행 — BRONZE 적재제어 메타 _STDR_YM 50건을 「미노출(검토대상)」에서 신설 판정군 「제외(적재제어메타)」로 재분류. 차이 전량 규명 = 2건이 같은 한 사건의 양면이고 이동 관계다: 미노출 592→542(-50) / 제외(적재제어메타) None→50(+50). 합 보존 검산 = 137+15+439+13+542+58+50 = 1254 = 총 BRONZE 컬럼수 불변. 나머지 6판정(노출됨GOLD 137 / 대체노출 15 / SILVER까지만 439 / 판정보류 13 / 제외PII 58) 전부 불변 ⇒ 실유실 0. 근거 = _STDR_YM 은 월 파티션 재적재 키이며 업무 축이 아니다(SILVER 미승격 확정) — 판정기 2곳(gen_bronze_exposure_audit · run_bronze_audit_host)을 함께 시정했다."
+  },
+  {
+   "date": "2026-09-21 07:32:23",
+   "diff_count": 0,
+   "label": "O175",
+   "reason": "[O175 라벨 보정 재발행] 직전 발행이 SESSION_LABEL 미설정으로 UNLABELED 로 기록됐다(기지 환경함정 재발) — 차이는 0 이고 사유·값은 직전 발행과 동일하다. 원 사유 = BRONZE 적재제어 메타 _STDR_YM 50건을 미노출(검토대상)에서 제외(적재제어메타)로 재분류 · 합 보존 1254 불변 · 실유실 0."
   }
  ],
- "measured": "2026-09-16",
+ "measured": "2026-09-21",
  "metrics": {
   "04.rows": 563,
   "05.field_sections": {
@@ -126,21 +144,22 @@
    "WAIT": 27
   },
   "05.sv_bound_rows": 79,
-  "06.rows": 1204,
+  "06.rows": 1254,
   "06.verdicts": {
    "SILVER까지만": 439,
    "노출됨(GOLD)": 137,
    "대체노출(파생)": 15,
    "미노출(검토대상)": 542,
    "제외(PII·본문·메타)": 58,
+   "제외(적재제어메타)": 50,
    "판정보류(동명이의)": 13
   },
   "07.exists": true,
-  "08.rows": 759,
+  "08.rows": 793,
   "08.status": {
-   "DROPPED": 143,
-   "NO_CONSUMER": 30,
-   "REFERENCED": 294,
+   "DROPPED": 141,
+   "NO_CONSUMER": 60,
+   "REFERENCED": 300,
    "SILVER_ONLY_CHAIN": 292
   },
   "09.anchors": {
@@ -232,11 +251,11 @@
   "art.measured": {
    "01_DW_현업활용가이드.md": "2026-08-11",
    "03_GN_DW_개념도.html": "2026-09-14",
-   "04_컬럼계보매핑.md": "2026-09-16",
+   "04_컬럼계보매핑.md": "2026-09-21",
    "05_지표GOLD매핑.md": "2026-09-16",
-   "06_BRONZE노출감사.md": "2026-09-16",
+   "06_BRONZE노출감사.md": "2026-09-21",
    "07_코드체계_관문측정.md": "2026-09-14",
-   "08_SILVER→GOLD_보존율.md": "2026-09-14",
+   "08_SILVER→GOLD_보존율.md": "2026-09-21",
    "09_보고서필드_조립가능성.md": "2026-09-16"
   },
   "inv.desc_cell_list": [
@@ -260,7 +279,7 @@
    "FACT_AD_BROADCAST.CHANNEL_COMPANY_TYPE",
    "FACT_AD_BROADCAST.CM_POSITION",
    "FACT_AD_BROADCAST.CONV_CALL_CNT",
-   "FACT_AD_BROADCAST.CPC_SRC",
+   "FACT_AD_BROADCAST.CPC_CALL_SRC",
    "FACT_AD_BROADCAST.CTV_DIV",
    "FACT_AD_BROADCAST.DAY_DIV",
    "FACT_AD_BROADCAST.DURATION_SEC",
@@ -277,7 +296,7 @@
    "FACT_AD_BROADCAST_CASE.FAMILY_TYPE",
    "FACT_AD_DIGITAL.AD_GROUP_NM",
    "FACT_AD_DIGITAL.CPA_SRC",
-   "FACT_AD_DIGITAL.CPC_SRC",
+   "FACT_AD_DIGITAL.CPC_CLICK_SRC",
    "FACT_AD_DIGITAL.CPM_SRC",
    "FACT_AD_DIGITAL.CREATIVE_TYPE",
    "FACT_AD_DIGITAL.CRM_DEV_CNT",
@@ -419,7 +438,7 @@
    "FACT_AD_BROADCAST.CHANNEL_COMPANY_TYPE",
    "FACT_AD_BROADCAST.CM_POSITION",
    "FACT_AD_BROADCAST.CONV_CALL_CNT",
-   "FACT_AD_BROADCAST.CPC_SRC",
+   "FACT_AD_BROADCAST.CPC_CALL_SRC",
    "FACT_AD_BROADCAST.CTV_DIV",
    "FACT_AD_BROADCAST.DAY_DIV",
    "FACT_AD_BROADCAST.DURATION_SEC",
@@ -440,7 +459,7 @@
    "FACT_AD_DIGITAL.AD_PERF_DK",
    "FACT_AD_DIGITAL.AD_TYPE_NM",
    "FACT_AD_DIGITAL.CPA_SRC",
-   "FACT_AD_DIGITAL.CPC_SRC",
+   "FACT_AD_DIGITAL.CPC_CLICK_SRC",
    "FACT_AD_DIGITAL.CPM_SRC",
    "FACT_AD_DIGITAL.CREATIVE_TYPE",
    "FACT_AD_DIGITAL.CRM_DEV_CNT",
@@ -649,8 +668,6 @@
    "cm위치",
    "cm위치←video.`cm_area`",
    "cpa대행사←dgt.`cpa`.dwad_costagency_conv_cnt",
-   "cpc대행사←dgt.`cpc`.dwad_costclicks",
-   "cpc대행사산정←video.`cpc`.dw재계산ad_costclicks",
    "cpm대행사←dgt.`cpm`.dwad_costimpressions×1000",
    "crm_umsadmin",
    "crm개발건수←dgt.`crm_dvlp_cnt`",
@@ -723,6 +740,7 @@
    "대기횟수",
    "대행사전환수",
    "대행사전환수명",
+   "디지털클릭당단가대행사←dgt.`cpc`.dwad_costclickso174개명",
    "마케팅캠페인명",
    "마케팅캠페인획득",
    "매체명공동브랜드",
@@ -750,6 +768,7 @@
    "발송참여subtype",
    "방문수명",
    "방송구분←rebrdc.`brdc_div_nm`",
+   "방송콜당단가대행사산정←video.`cpc`.🔴클릭분모가아니다o174개명",
    "버전대리키",
    "법인",
    "본부지부",
@@ -950,5 +969,5 @@
   "inv.label_collisions": 14,
   "inv.unreachable": []
  },
- "schema_fingerprint": "a8c5cd57ea7cada1"
+ "schema_fingerprint": "d077465752f52bbc"
 }

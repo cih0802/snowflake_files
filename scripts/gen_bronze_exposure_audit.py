@@ -51,6 +51,20 @@ EXCLUDE_PATTERNS = [
 ]
 EXCLUDE_RE = re.compile("|".join(EXCLUDE_PATTERNS), re.IGNORECASE)
 DW_META_COLS = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"}
+# 🆕 🔴 [2026-09-21 O175 사용자 결정 A안] BRONZE **적재 제어 메타**는 상류 전파 대상이 아니다.
+#   위 `DW_META_COLS` 는 **GOLD 가 발행하는** 감사 메타(`DW_*`)이고, 이 집합은 **원천 적재기가 붙이는**
+#   제어 컬럼이다 ⇒ 두 집합은 다른 것이므로 합치지 않는다.
+#   · `_STDR_YM` = **월 파티션 재적재 키**다. 일별 적재 중 데이터 마감일이 오면 그 달을 수동으로
+#     지우고 마감 확정본으로 밀어넣는 단위로 쓴다(사용자 정본 설명).
+#     🟢 값은 원천 행 생성월에서 유도된다(실측 = `TM_CM_CMPGN_MNG` 에서 `FRST_REGIST_DT` 연월과
+#        36,768/36,768 전건 일치 · `TM_PM_MBRFEE_ACMSLT` 는 `RQEST_MT` 와 99.84% 일치하고
+#        불일치 전량이 +1개월인 익월 생성분)이지만 **역할은 업무 축이 아니라 적재 제어**다.
+#     🔴 단독 증분 키로 쓰지 않는다 — 갱신 시 이 값이 안 변한다(실측 = 등록월=수정월이 51.2% 뿐).
+#     🔴 SILVER 로 승격하지 않는다(업무 축과 혼동 위험 + 50테이블 연쇄 노출 결정을 부른다).
+#     ⚠️ 그 대가 = 마감 재적재의 **DELETE 가 증분 SILVER 에 전파되지 않는다**(`merge` 는 삭제를
+#        옮기지 않는다) ⇒ 마감월에는 `CRM_MEMBER_DEV` 를 전량 재적재한다(런북 장치 · 그 모델 주석).
+#   🟠 `_BATCH_ID` 도 같은 class 이나 **이번 결정 범위 밖**이라 여기 넣지 않았다(판정 대기 50건).
+BRONZE_INGEST_META_COLS = {"_STDR_YM"}
 
 # ── GOLD 하드코딩 검출 결과 (2026-07-28 grep 실측 — dbt models/gold/) ──
 HARDCODED = {
@@ -213,6 +227,10 @@ def classify(col_upper, silver_cols_all, gold_cols_all):
         return "제외(PII·본문·메타)", "—", "패턴 매칭 제외"
     if col_upper in DW_META_COLS:
         return "제외(DW메타)", "—", "DW 감사 메타컬럼"
+    # 🆕 [O175] 적재 제어 메타는 **판정 대상이 아니다** — 상류로 올릴 컬럼이 아니므로
+    #   「미노출」이라 적으면 영구 경고가 상주한다(결정된 상태를 미결로 표시하는 오분류).
+    if col_upper in BRONZE_INGEST_META_COLS:
+        return "제외(적재제어메타)", "—", "BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)"
     if col_upper in HARDCODED:
         hc = HARDCODED[col_upper]
         return "⚠️설계O·값미주입", "높음", f"{hc['file']}:{hc['line']} `{hc['pattern']}`"
@@ -262,7 +280,15 @@ def write_md(audit_rows, stats):
     lines.append("| 판정 | 건수 | 비율 |")
     lines.append("|---|---|---|")
     total = len(audit_rows)
-    for verdict in ["노출됨(GOLD)", "⚠️설계O·값미주입", "SILVER까지만", "미노출(검토대상)", "제외(PII·본문·메타)", "제외(DW메타)"]:
+    # 🆕 🔴 [2026-09-21 O175] 종전 이 목록은 **판정 6종을 손으로 열거**하고 있었고 실제 산출은 8종이었다
+    #   (`대체노출(파생)` 15 · `판정보류(동명이의)` 13 이 표에서 빠져 **합계와 항목합이 어긋났다**).
+    #   ⇒ 집합을 하드코딩하지 않는다: 선호 순서만 두고 **나머지는 실측 키에서 자동 편입**한다
+    #      (`R3-9 ㉦` 「내가 만든 수를 문서·코드에 박지 마라」의 코드판).
+    PREFERRED = ["노출됨(GOLD)", "⚠️설계O·값미주입", "SILVER까지만", "대체노출(파생)",
+                 "판정보류(동명이의)", "미노출(검토대상)",
+                 "제외(PII·본문·메타)", "제외(DW메타)", "제외(적재제어메타)"]
+    ordered = [v for v in PREFERRED if v in stats] + [v for v in stats if v not in PREFERRED]
+    for verdict in ordered:
         cnt = stats.get(verdict, 0)
         pct = f"{cnt/total*100:.1f}%" if total else "0%"
         lines.append(f"| {verdict} | {cnt} | {pct} |")

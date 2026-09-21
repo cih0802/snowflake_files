@@ -172,6 +172,11 @@ SELECT
     c.SETLE_CD                                   AS SETLE_CD,
     cd_setle.DTL_CD_NM                           AS SETLE_NAME,
     c.CPR_DIV_CD                                 AS CPR_DIV_CD,
+    -- 🆕 [2026-09-21 O175] 법인구분 라벨 배선(DEC-35 라벨축) — 종전 이 뷰는 코드만 노출해
+    --    게이트가 `CPR_DIV_CD` 를 「라벨 컬럼 부재 확인됨」으로 등재하고 있었다.
+    --    라벨 원천 = `SILVER.CRM_CAMPAIGN`(DISTINCT 3쌍 1:1 · A=통합·I=사단·S=사복) ·
+    --    실측 도달 = 이 뷰의 코드 전건 매칭(미도달 0). 🔴 라벨을 창작하지 않는다.
+    cd_cpr.CPR_DIV_NM                            AS CPR_DIV_NM,
     c.MONTHS_SINCE_JOIN                          AS MONTHS_SINCE_JOIN,
     c.ACTIVE_SPNSR_CNT                           AS ACTIVE_SPNSR_CNT,
     c.TOTAL_SPNSR_AMT                            AS TOTAL_SPNSR_AMT,
@@ -205,7 +210,12 @@ LEFT JOIN loyal l ON l.STDR_MT = u.STDR_MT AND l.MBER_NO = u.MBER_NO
 LEFT JOIN (SELECT DISTINCT DTL_CD_ID, DTL_CD_NM FROM GN_DW.SILVER.CRM_CODE WHERE CD_ID = 'MM010') cd_stat
        ON cd_stat.DTL_CD_ID = c.MBER_STAT_CD
 LEFT JOIN (SELECT DISTINCT DTL_CD_ID, DTL_CD_NM FROM GN_DW.SILVER.CRM_CODE WHERE CD_ID = 'PM040') cd_setle
-       ON cd_setle.DTL_CD_ID = c.SETLE_CD;
+       ON cd_setle.DTL_CD_ID = c.SETLE_CD
+-- 🆕 [O175] 법인구분 라벨 — `CRM_CODE` 에 해당 그룹이 없어 캠페인 마스터의 DISTINCT 짝을 쓴다.
+--    🔴 DISTINCT 가 필수다(마스터는 캠페인 grain 이라 그냥 조인하면 팬아웃한다).
+LEFT JOIN (SELECT DISTINCT CPR_DIV_CD, CPR_DIV_NM FROM GN_DW.SILVER.CRM_CAMPAIGN
+            WHERE CPR_DIV_CD IS NOT NULL) cd_cpr
+       ON cd_cpr.CPR_DIV_CD = c.CPR_DIV_CD;
 
 
 /* =====================================================================================
@@ -229,6 +239,10 @@ SELECT
     r.CMPGN_CD                                    AS CMPGN_CD,
     cm.CMPGN_NM                                   AS CMPGN_NAME,
     cm.UPPER_CMPGN_CD                             AS UPPER_CMPGN_CD,
+    -- 🆕 [2026-09-21 O175] 상위캠페인 라벨 배선(DEC-35 라벨축) — 종전 이 뷰는 상위캠페인을
+    --    코드로만 노출했고(994종) 라벨 컬럼이 없었다. 🟢 캠페인 마스터 자기조인으로 얻는다
+    --    (`ML_LTV_SCORE_V` 가 이미 쓰는 패턴) · 실측 도달 = 994/994(미도달 0).
+    cm_u.CMPGN_NM                                 AS UPPER_CMPGN_NAME,
     cm.CMPGN_CTGR_NM                              AS CMPGN_CTGR_NAME,
     r.SETLE_CD                                    AS SETLE_CD,
     r.TENURE_MONTHS                               AS TENURE_MONTHS,
@@ -244,7 +258,10 @@ SELECT
     ARRAY_SIZE(r.PREDICTION:logs:Error) > 0        AS PREDICTION_HAS_ERROR
 FROM GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M r
 LEFT JOIN GN_DW.SILVER.CRM_SPONSORSHIP sp ON sp.SPNSR_BSNS_ID = r.SPNSR_BSNS_ID
-LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN    cm ON cm.CMPGN_CD      = r.CMPGN_CD;
+LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN    cm ON cm.CMPGN_CD      = r.CMPGN_CD
+-- 🆕 [O175] 상위캠페인 라벨용 자기조인. 🔴 `cm` 의 상위코드로 다시 마스터를 본다
+--    (마스터 PK 가 `CMPGN_CD` 라 팬아웃이 없다 · 실측 행수 불변).
+LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN  cm_u ON cm_u.CMPGN_CD    = cm.UPPER_CMPGN_CD;
 
 
 /* =====================================================================================
