@@ -179,6 +179,18 @@ def is_enum_target(data_type, cardinality, base_col):
     return cardinality <= ENUM_CARD_MAX
 
 
+# 🆕 🔴 [2026-09-21 O174] 열린 집합 면제의 **판정 문구**. 🟢 이것이 면제의 계약이다 —
+#   「열거를 뺐다」가 아니라 **「값을 얻는 방법을 적었다」**여야 면제된다.
+#   🔴 문구 후보를 넓게 두지 마라 — 넓히면 아무 문장이나 면제를 받는다(그게 원래 사고다).
+PROBE_INSTRUCTION = ('SELECT DISTINCT',)
+
+
+def has_probe_instruction(comment):
+    """COMMENT 가 「값 목록을 직접 조회하라」는 지침을 담고 있는가(열린 집합 면제 조건)."""
+    s = str(comment or '').upper()
+    return any(tok in s for tok in PROBE_INSTRUCTION)
+
+
 def judge(dims, distinct_map, base_cols, exposed, card=None, dtype=None):
     """순수 판정 함수 — 라이브·fixture 양쪽에서 같은 코드로 돈다(자기검사 가능성의 전제).
 
@@ -210,10 +222,23 @@ def judge(dims, distinct_map, base_cols, exposed, card=None, dtype=None):
         # ④ 열거 누락 (§6.9-(5)) — 저카디널리티 코드 차원인데 열거가 **아예 없다**
         #   🔴 ① 과 다른 결함이다. ① 은 「적힌 값이 틀렸다」, ④ 는 「안 적혀서 Analyst 가 값을 추측한다」.
         #      추측 결과도 결국 `WHERE dim='없는값'` = 0행 무증상 오답이다(§6.9-(5) 의 원래 사고 원인).
+        #   🆕 🟢🟢 [2026-09-21 O174 결정] **열린 집합 면제 — 단, 「재는 방법」이 COMMENT 에 있을 때만.**
+        #     🔎 경위 = `O170` 이 `SV_AD.AD_TYPE_NM`·`AD_GROUP_NM` 의 열거를 **의도적으로 제거**했다
+        #        (원천 재적재가 값 분포를 바꿔 열거가 stale 이 되고, 종수를 다시 박으면 또 stale 이 된다).
+        #        그 결과 이 게이트가 **자기 워크스페이스의 확정 처방을 advisory 로 계속 지목**했다.
+        #     🔴 그런데 면제를 **무조건** 주면 「그냥 안 적었다」와 구별되지 않는다 — 그게 원래 사고다.
+        #     🟢 그래서 면제 조건을 **기계가 볼 수 있는 것**으로 걸었다 = COMMENT 에 `SELECT DISTINCT`
+        #        조회 지침이 실재할 때만 면제하고, **정보 축으로 기록**한다(침묵이 아니다).
+        #     🟢 판정식 = **열린 집합에서는 「값 목록」이 아니라 「값을 얻는 방법」이 계약이다.**
+        #        ⇒ 면제는 「검사를 끄는 것」이 아니라 **검사 대상을 열거 ▸ 지침으로 바꾸는 것**이다.
         if (card or dtype) and not vals and declared is None:
             if is_enum_target(dtype.get((bt, bc), ''), card.get((bt, bc)), bc):
-                v_enum.append((sv, dim, bc, card.get((bt, bc)),
-                               sorted(actual_nn)[:6] if actual_nn else []))
+                if has_probe_instruction(cmt):
+                    info.append(f"{sv}.{dim}: 열린 집합 면제(§6.9-(5) · O174) — "
+                                f"COMMENT 에 `SELECT DISTINCT` 조회 지침 실재({bc})")
+                else:
+                    v_enum.append((sv, dim, bc, card.get((bt, bc)),
+                                   sorted(actual_nn)[:6] if actual_nn else []))
 
         # ② 라벨축 노출 (R1)
         if bc in LABEL_PAIRS:

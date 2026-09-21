@@ -50,7 +50,7 @@ SELECT
     CAST(NULL AS FLOAT)                         AS DVLP_MEMBER_CNT,         -- O16: 재방송 전용 개발회원수
     CAST(NULL AS FLOAT)                         AS DVLP_CNT,                -- O16: 재방송 전용 개발건수
     AD_VIEW_RT                                  AS AD_VIEW_RT_SRC,          -- N(비가산) 재계산 불가
-    TRY_TO_NUMBER({{ clean_str('CPC') }})       AS CPC_SRC,                 -- N(비가산) DW=AD_COST/CLICKS
+    TRY_TO_NUMBER({{ clean_str('CPC') }})       AS CPC_CALL_SRC,                -- N(비가산) **콜당** 단가(원천 VIDEO.CPC) — 🔴 클릭당이 아니다(O174 개명)
     'AGENCY'                                    AS DW_SOURCE_SYSTEM,
     'BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS'         AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ          AS DW_LOAD_TS,
@@ -83,7 +83,7 @@ SELECT
     DVLP_MBER_CNT,                                                          -- O16: 개발회원수(고유 이름으로 분리)
     DVLP_CNT,                                                               -- O16: 개발건수(고유 이름으로 분리)
     CAST(NULL AS FLOAT),                                                    -- AD_VIEW_RT_SRC: 영상 전용
-    CAST(NULL AS FLOAT),                                                    -- CPC_SRC: 영상 전용
+    CAST(NULL AS FLOAT),                                                    -- CPC_CALL_SRC: 영상 전용(REBRDC 는 콜 개념 부재)
     'AGENCY',
     'BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS',
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,

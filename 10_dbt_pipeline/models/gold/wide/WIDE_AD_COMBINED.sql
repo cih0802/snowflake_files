@@ -18,7 +18,7 @@
 --     → helper 뷰가 이 4컬럼을 빼고 있어 SV_AD 에서 방송 시각 축이 도달 불가였다.
 --
 -- 문안: 신규 작성 0 — `06_DDL.sql` 의 세 팩트 인라인 COMMENT 를 파싱해 이관한다.
---   · 이름이 바뀐 2컬럼(BRDC_AD_VIEW_RT_SRC·BRDC_CPC_SRC)은 접두 사유를 덧붙인다.
+--   · 이름이 바뀐 컬럼(BRDC_AD_VIEW_RT_SRC)은 접두 사유를 덧붙인다. 🆕 [O174] 방송 CPC 는 접두(BRDC_)가 아니라 **어의 개명**(CPC_CALL_SRC)으로 구분한다 — 접두는 「같은 지표의 다른 출처」로 읽히지만 분모가 다르다(클릭 ↔ 콜).
 --   · 방송 전용 컬럼에는 **디지털행 NULL = 원천 부재** 경고를 덧붙인다(P20 — 시간축 NULL 3분류).
 --   · 시간축 4컬럼에는 **VIDEO 전용 · REBRDC 구조적 부재** 를 덧붙인다(원장 §429 기지 사실).
 --
@@ -58,7 +58,7 @@ select
     dig.CRM_DEV_CNT,
     dig.CTR_SRC,
     dig.CVR_SRC,
-    dig.CPC_SRC,
+    dig.CPC_CLICK_SRC,
     dig.CPM_SRC,
     dig.CPA_SRC,
     dig.DEV_UNIT_PRICE_SRC,
@@ -84,7 +84,7 @@ select
     brc.DVLP_MEMBER_CNT,
     brc.DVLP_CNT,
     brc.AD_VIEW_RT_SRC as BRDC_AD_VIEW_RT_SRC,
-    brc.CPC_SRC as BRDC_CPC_SRC
+    brc.CPC_CALL_SRC as CPC_CALL_SRC
 from {{ ref('FACT_AD_PERFORMANCE') }} fap
 -- 위성은 AD_PERF_DK 로 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(fan-out 0).
 --   1:N 위성인 FACT_AD_BROADCAST_CASE 는 **의도적으로 제외**한다 — 사례 수만큼 광고비가 복제된다.

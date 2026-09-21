@@ -12,7 +12,7 @@
 -- ⚠️ 디지털 광고는 본 뷰에 없다(방송 전용 위성). 전 유형 집계는 `WIDE_AD_PERFORMANCE`.
 -- ⚠️ 컬럼 NULL 은 '두 방송 원천 중 한쪽 전용 속성'이며 결측이 아니다.
 --    VIDEO 전용: CM_POSITION·AD_START_TIME·AD_END_TIME·CHANNEL_COMPANY_TYPE·SPOT_TYPE·
---                DURATION_SEC·DAY_DIV·PRG_START_TIME·CTV_DIV·AD_VIEW_RT_SRC·CPC_SRC
+--                DURATION_SEC·DAY_DIV·PRG_START_TIME·CTV_DIV·AD_VIEW_RT_SRC·CPC_CALL_SRC
 --    🔴 [O51-F 실측] CONV_CALL_CNT 는 VIDEO 전용 컬럼이 맞지만 **원천에서 전건 비어 있다** —
 --      종전 「VIDEO 는 개발 대신 전환콜을 보고한다」는 기술은 컬럼 존재 기준으로만 참이다(AD-5 보강).
 --    REBRDC 전용: RT_TYPE·BRDC_DIV·DVLP_MEMBER_CNT·DVLP_CNT
@@ -45,7 +45,7 @@ select
     b.CTV_DIV, b.BRDC_DIV,
     b.AD_CNT, b.CONV_CALL_CNT,
     b.DVLP_MEMBER_CNT, b.DVLP_CNT,
-    b.AD_VIEW_RT_SRC, b.CPC_SRC,
+    b.AD_VIEW_RT_SRC, b.CPC_CALL_SRC,
     b.DW_SOURCE_SYSTEM,
     -- [차원 속성] 단독 사용 가능하도록 동반
     d.FULL_DATE           as PERF_FULL_DATE,

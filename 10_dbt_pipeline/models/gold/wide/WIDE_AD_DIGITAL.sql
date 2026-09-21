@@ -36,7 +36,7 @@ select
     g.PAGE_TYPE, g.AD_GROUP_NM, g.GROUP_DIV, g.CREATIVE_TYPE, g.AD_TYPE_NM,
     g.READ_CNT, g.MEDIA_POTENTIAL_CUST_CNT, g.CRM_DEV_CNT,
     -- [대행사 산정 _SRC] 전량 비가산 N — 집계 금지, 대조용
-    g.CTR_SRC, g.CVR_SRC, g.CPC_SRC, g.CPM_SRC, g.CPA_SRC,
+    g.CTR_SRC, g.CVR_SRC, g.CPC_CLICK_SRC, g.CPM_SRC, g.CPA_SRC,
     g.DEV_UNIT_PRICE_SRC, g.VTR_SRC,
     g.DW_SOURCE_SYSTEM,
     -- [차원 속성] 단독 사용 가능하도록 동반

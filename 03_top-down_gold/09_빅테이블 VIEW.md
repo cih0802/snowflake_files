@@ -685,7 +685,7 @@ END-METADATA -->
 | **CRM_DEV_CNT** | `CRM_DEV_CNT` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CRM 개발건수 |
 | **CTR** | `CTR_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
 | **CVR** | `CVR_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(AGENCY_CONV_MEMBERS)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
-| **CPC** | `CPC_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
+| **CPC(클릭당)** | `CPC_CLICK_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
 | **CPM** | `CPM_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
 | **CPA** | `CPA_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(AGENCY_CONV_CNT) 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. 🟢DW 재계산은 전건 가능하다 — 집계에는 base 를 쓸 것. 실측 규모는 이슈원장 §O51-F. |
 | **개발단가** | `DEV_UNIT_PRICE_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL (g) | 개발단가(대행사 산정) — 비가산 N 🔴[O51-F 실측] 채움이 **소수**다. 커버리지를 모르고 비중·순위를 내면 결론이 뒤집힌다. ⚠️원천 포맷 변경으로 개발건수와 **상호배타**다(AD-3) — 개발단가는 두 컬럼이 기간을 보완하는 관계이며 교차검증 관계가 아니다. 실측 규모는 이슈원장 §O51-F. |
@@ -748,7 +748,7 @@ END-METADATA -->
 | **개발회원수** | `DVLP_MEMBER_CNT` | NUMBER | YES | GOLD.FACT_AD_BROADCAST (b) | 개발회원수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리) ⚠️**REBROADCAST 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. ⚠️GA 전환이 아니다(O16 분리) — 재방송 개발실적이다. |
 | **개발건수** | `DVLP_CNT` | NUMBER | YES | GOLD.FACT_AD_BROADCAST (b) | 개발건수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리) ⚠️**REBROADCAST 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. ⚠️GA 전환이 아니다(O16 분리) — 재방송 개발실적이다. |
 | **광고시청률** | `AD_VIEW_RT_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST (b) | 광고시청률(대행사 산정) — 비가산 N, 재합산 금지. ⚠️**VIDEO 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. |
-| **CPC** | `CPC_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST (b) | CPC(대행사 산정) — 비가산 N, 재합산 금지. ⚠️**VIDEO 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. |
+| **CPC(콜당)** | `CPC_CALL_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST (b) | CPC(대행사 산정) — 비가산 N, 재합산 금지. ⚠️**VIDEO 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. |
 | **원천시스템** | `DW_SOURCE_SYSTEM` | TEXT | NO | GOLD.FACT_AD_BROADCAST (b) | 원천 시스템 식별 |
 | **PERF_FULL_DATE** | `PERF_FULL_DATE` | DATE | YES | GOLD.DIM_DATE (일자 차원) | DIM_DATE.FULL_DATE — 실적일 일자 |
 | **PERF_YEAR** | `PERF_YEAR` | NUMBER | YES | GOLD.DIM_DATE (일자 차원) | DIM_DATE.YEAR — 실적일 년 |
@@ -845,7 +845,7 @@ END-METADATA -->
 | **CRM_DEV_CNT** | `CRM_DEV_CNT` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | CRM 개발건수 ← DGT.CRM_DVLP_CNT (가산) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **CTR_SRC** | `CTR_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CTR ← DGT.CTR. DW 재계산=CLICKS/IMPRESSIONS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **CVR_SRC** | `CVR_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS (O5 확정) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
-| **CPC_SRC** | `CPC_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
+| **CPC_CLICK_SRC** | `CPC_CLICK_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **CPM_SRC** | `CPM_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CPM ← DGT.CPM. DW 재계산=AD_COST/IMPRESSIONS×1000 ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **CPA_SRC** | `CPA_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 CPA ← DGT.CPA. DW 재계산=AD_COST/AGENCY_CONV_CNT ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **DEV_UNIT_PRICE_SRC** | `DEV_UNIT_PRICE_SRC` | NUMBER | YES | GOLD.FACT_AD_DIGITAL | [비가산 N] 대행사 산정 개발단가 ← DGT.DEV_UNIT_PRICE. DW 재계산=AD_COST/개발건수 ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
@@ -870,7 +870,7 @@ END-METADATA -->
 | **DVLP_MEMBER_CNT** | `DVLP_MEMBER_CNT` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | 개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전에 코어 AGENCY_CONV_MEMBERS 로 혼입돼 있었다(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **DVLP_CNT** | `DVLP_CNT` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | 개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **BRDC_AD_VIEW_RT_SRC** | `BRDC_AD_VIEW_RT_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | [비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것. |
-| **BRDC_CPC_SRC** | `BRDC_CPC_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | [비가산 N] 대행사 산정 CPC ← VIDEO.CPC(TEXT) [VIDEO 전용]. DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것. |
+| **CPC_CALL_SRC** | `CPC_CALL_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | [비가산 N] 대행사 산정 CPC ← VIDEO.CPC(TEXT) [VIDEO 전용]. DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것. |
 
 ---
 

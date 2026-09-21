@@ -1,0 +1,590 @@
+<!-- LLM-METADATA
+doc_id: GOLD_DESIGN
+doc_role: gold_star_schema (canonical)
+project: GN_DW (굿네이버스)
+method: 01_작업계획.md
+input: 지표사전 215 (공통162 + 신규53) ∪ overview 필드 (마케팅·회원)
+structure: 15 DIM + 12 FACT (9 + AGENCY 위성 3)
+fact_ids: FMM, FME, FTG_D, FTG_B, FSE, FBQ, FAD, FAD_B, FAD_D, FAD_BC, FEP, FBD
+END-METADATA -->
+
+# GOLD 스키마 설계 (GN_DW)
+
+215 지표 + overview 필드를 담는 star schema. 원칙·용어는 `01_작업계획.md`.
+- measure 60 → FACT / dimension 74 → DIM·degenerate / derived 81 → SV metric
+- 물리 base measure ≳ 71 (logical 60 + GOAL_CNT + overview base: 콜·오픈·GA전환수·GA보조 + FEP 참여인원·FBD 예산 등). **logical measure 카운트는 60 불변.**
+
+---
+
+## 1. 설계 규칙 (요약)
+- derived(율·LTV·ROI·구성비·증감)는 적재 안 함 → SV metric. **예외**: BigQuery가 사전집계로 직접 주는 비율·평균(평균세션시간#98·이탈율#108)은 재계산 불가 → FBQ에 **비가산 measure** 적재(유형은 derived 유지).
+- 월 grain=`MONTH_KEY`, 일 grain=`DATE_SK`. 회원 조인키=`MEMBER_DK`(불변).
+- 미수령 원천도 컬럼 설계 + `_SOURCE_SYSTEM`. `(건)`=`SUM(금액)/10000` 다수 → 원금액 보존.
+
+## 2. 차원 (15 DIM)
+| ID | 이름 | grain | key | 주요 컬럼 |
+|---|---|---|---|---|
+| D1 | DIM_DATE | 1일 | DATE_SK | 일자·요일·주차·시간대·월·년·IS_HOLIDAY |
+| D2 | DIM_MEMBER (SCD2) | 회원 상태버전 | MEMBER_SK / MEMBER_DK | 성별·지역·연령대·회원상태·회원구분·신규기존·가입일·가입캠페인·가입경로·최초/현재후원사업 |
+| D3 | DIM_MEMBER_IDENTITY | MEMBER_DK×ga_id | IDENTITY_SK | 회원번호·member_id·memnum·홈페이지ID·아동번호 |
+| D4 | DIM_CAMPAIGN | 1캠페인 | CAMPAIGN_SK | 브랜드>상위캠페인>캠페인>홍보방법, ORG_SK, **분류 4축(카테고리·인입경로·국내해외·사업사례)+마케팅캠페인** — DEC-17 · 🔴 **[2026-09-16 O162] 마케팅캠페인·UTM 원천이 `TC_MKTNG_DTL_CD` 로 통합되고 `MKTG_CHANNEL`(채널) 축이 신설됐다 → §7 참조** |
+| D5 | DIM_SPONSORSHIP | 1후원사업 | SPONSORSHIP_SK | 후원사업명·약칭 |
+| D6 | DIM_ORG (SCD1) | 1조직노드 | ORG_SK | **법인 · 실적지부 · 부서 · 팀** — 🔴 **CONF-4(2026-07-31 정본대조)로 4단 표기 개정**: 정본 정합은 `DEPARTMENT` 1축뿐. `DIVISION`→**실적지부 재정의**(용어사전 430·431) · `TEAM`→**보류**(E-6 미입고) · `CORP`→**부서 차원 산출 불가**(부서→법인 1:1 아님, 법인은 회원속성 `CPR_DIV_CD`). 🟢 원천 계통 3컬럼(`ACMSLT_UPPER_DEPT_ID`·`ACMSLT_DEPT_YN`·`USE_YN`) 노출 완료. §5 O16 · 이슈 CONF-4 |
+| D7 | DIM_AD_CREATIVE | 광고소재/매체 | AD_CREATIVE_SK | 매체·플랫폼·소재·CM위치·초수·RT유형·광고유형·매체유형·타겟그룹 |
+| D8 | DIM_BIGQUERY_SOURCE | BigQuery 트래픽소스 | BIGQUERY_SOURCE_SK | utm source/medium/content/term |
+| D9 | DIM_BIGQUERY_EVENT | BigQuery 이벤트분류 | BIGQUERY_EVENT_SK | event_category/label/action |
+| D10 | DIM_SERVICE | 1서비스 | SERVICE_SK | 발송/참여 subtype·발송유형·채널(CRM_UMS/ADMIN) |
+| D11 | DIM_PAYMENT | 납입×결제×회비유형 | PAYMENT_SK | 납입방식·결제방식·회비유형 |
+| D12 | DIM_REASON | 사유코드 | REASON_SK | 중단사유·미납사유·REASON_TYPE — ⚠️ **미납사유는 설계에 있으나 SILVER 전파 누락(2026-07-30). §5 O17** |
+| D13 | DIM_DEVICE | 1디바이스 | DEVICE_SK | PC / M / **(해당없음)**=방송광고 / (unknown)=SK0 센티넬 + DEVICE_SCOPE_DESC (§3-A-5) |
+| D14 | DIM_EVENT | 1행사/이벤트 | EVENT_SK | EVENT_KIND(온라인/오프라인)·행사구분·행사명·행사기간(시작/종료)·신청경로 |
+| D15 | DIM_BUDGET_ITEM | 예산 세세목 | BUDGET_ITEM_SK | 세세목명·예산구분·_SOURCE_SYSTEM |
+
+## 3. 팩트 (12 FACT — 코어 9 + AGENCY 위성 3)
+
+### FMM — FACT_MEMBER_MONTHLY
+- grain: MONTH_KEY × MEMBER_DK
+- measure: 개발·중단·미납·활동·증액·감액 (건·명), 납입회비(원), 인바운드콜수·TS콜수, **UNPAID_MEMBERS(미납회원 명, 월말 스냅샷 — #80용)**
+- FK: MONTH_KEY, MEMBER_DK, CAMPAIGN_SK, SPONSORSHIP_SK, PAYMENT_SK, REASON_SK
+- snapshot/degen: 개발구분·금액대·기간대·납입개월수·후원기간
+- note: FME(일 grain)의 월 롤업 스냅샷. **미납 판정(현업 확정 C-3)**: `TM_PM_MBRFEE_ACMSLT.PAY_STAT_CD IN ('F', NULL)`(S=성공/F=실패, NULL=수기처리 건이나 원래 F). 회원상태 MM010 미납1~5는 **#84 회원상태별 미납(건)** 분해용 dimension. **인바운드콜·TS콜은 CRM 원천에 없음 → 현업 별도 입고(C-8)**.
+
+### FME — FACT_MEMBER_EVENT
+- grain: DATE_SK × MEMBER_DK × EVENT_TYPE (1행=1상태전이)
+- measure: 개발(건·명) · 중단(건·명) · 미납중단(건·명) · **후원금액(`SPNSR_AMT`, 원 — 원금액 보존)**
+  - ⚠️ **[2026-08-03 O24 정정]** 종전 표기 "개발·중단·**증액**·미납중단"은 **증액을 measure로 오기**한 것이었다.
+    증액·감액은 measure가 아니라 **개발구분 축의 값**이며, 정본 공#38 감액(건)·#151 증액(건)이 **금액÷10,000**
+    이므로(CONF-2) 물리 measure는 `SPNSR_AMT` 원금액이고 (건)은 SV 파생이다.
+- **개발구분 축 (`DVLP_DIV_CD` / `DVLP_DIV_NM`) — 2026-08-03 O24 신설**
+  - 원천 `TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD`, 정본 컬럼정의서 167행이 코드그룹 **MM015** 지정
+  - 실측 분포: `1` 신규 1,788,612 · `2` 증액 367,295 · `3` 감액 292,285 · `4` 재후원 135,971 · `5` 후원중단 1,010,680
+  - **컬럼명은 BRONZE 원천명 그대로**(정본 컬럼정의서 504행의 현업 용어쌍 `DVLP_DIV_CD`/`DVLP_DIV_NM`).
+    현업이 아직 BRONZE 를 직접 보고 있어 GOLD 전환 시 신개념 도입을 금지한다는 원칙에 따른다.
+  - `DEV_CNT`/`DEV_MEMBERS` = **코드 1·2·4 한정**(정본 공#121 "개발구분 = 신규, 증액, 재후원").
+    종전은 5종 전건을 개발로 세어 **56.86% 과대계상**(3,594,843 → 2,291,878)이었다.
+  - 🔴 **합산 금지**: `DVLP_DIV_NM='후원중단'`(1,010,680)과 `EVENT_TYPE='STOP'`(1,038,262)은 **동일 사건**이
+    두 원천에 중복 존재한다(동일 회원·동일 일자 99.99%). 두 축을 더하면 이중계상 — O24 현업확인 대기
+  - ❌ **미채택**: `TM_MM_FDRM_MBER_IRSD`(증감 324,947행). 정본 `테이블정의 20260629.csv:36`이 `RDCAMT_YN`을
+    "안 바뀌는 경우도 있음"으로 불신 명시 + 실측 확증(명백 오분류 752키 · 판정불가 50,295키=16.5%) +
+    IRSD 키의 **99.62%가 이미 `DVLP_AMT` 코드 2·3의 부분집합**
+- FK: DATE_SK(사건일), MEMBER_DK, CAMPAIGN_SK, SPONSORSHIP_SK, ORG_SK, REASON_SK
+- degen: 가입일·중단일·중단사유·중단채널·신규기존
+- use: 주간/일별/동월주차 리포트, LTV·유지율 cohort base (가입↔중단 간격=유지기간)
+- ⚠️ `EVENT_TYPE` 은 **상태축이 아니라 원천 계통축**이다(DEV=개발원천 / STOP=중단원천). 상태는 위 개발구분 축 소관.
+
+### FTG_D — FACT_TARGET_MEMBER_DEV (구 FACT_TARGET_DEV)
+- grain: MONTH_KEY × ORG × DEV_TYPE
+- measure: GOAL_CNT (CRM 회원개발목표)
+
+### FTG_B — FACT_TARGET_PROJECT (구 FACT_TARGET_BIZ)
+- grain: MONTH_KEY × ORG × SPONSORSHIP [×CAMPAIGN]
+- measure: 연사업·추경·누계목표(건) — `_SOURCE_SYSTEM=CRM` (원천=CRM 신규 목표 테이블 `CRM_BIZ_TARGET`, 현업 수동입력; ERP 예산원장·기존 CRM 개발목표 테이블 모두 아님; 데이터 입고 대기·현재 0행)
+
+### FSE — FACT_MESSAGE_DISPATCH (구 FACT_SERVICE_EVENT)
+- grain: DATE_SK(발송) × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK
+- measure: 발송·성공·실패·오픈(명)·서신참여·선물금참여 (명·건·원) — ※앱푸시 발송/성공건수(ADMIN)는 어드민 제외로 컬럼 삭제(2026-07-09), 내년 어드민 구현 시 재추가
+- degen: 제목·발송상태(1·2)·발송유형·메일수신여부·결연회원중단여부·중단채널
+- 🔴 **[2026-09-16 O162] 오픈 measure 의 원천이 바뀐다** — `SND_MEMBER_LIST.OPEN_DT`(컬럼 1개)가 삭제되고
+  `SND_MEMBER_OPEN_LOG`·`SND_MEMBER_MAIL_LINK_LOG` **2테이블로 확장**됐다.
+  ⇒ ㉠ 기존 `OPEN_*` measure 는 로그 축약 규칙 확정 후 재배선 ㉡ **링크 클릭(신규)** measure 신설 후보. → §7
+
+### FBQ — FACT_BIGQUERY_BEHAVIOR
+- grain: DATE_SK × IDENTITY_SK × BIGQUERY_EVENT_SK × BIGQUERY_SOURCE_SK × DEVICE_SK × CAMPAIGN_SK(세션캠페인) × 페이지
+- measure(12): 방문수·활성사용자·총사용자·이벤트수·조회수·세션수·스크롤깊이·평균세션시간·이탈율·참여율·참여세션수·세션당평균참여시간
+- degen: 페이지경로·페이지위치
+- additivity: 활성사용자·총사용자·율·평균·세션당참여시간 = **N(비가산)** 재합산 금지
+
+### FAD — FACT_AD_PERFORMANCE  *(코어 — 3원천 공통)*
+- grain: **AD_PERF_DK** (원천 1행 = 팩트 1행). 분석축 = PERF_DATE × CAMPAIGN_SK × AD_CREATIVE_SK × DEVICE_SK
+- PK: `AD_PERF_DK` — 위성 팩트 3종의 조인키 (§3-A)
+- measure: 광고비·노출·클릭·인입콜·GA전환수(명)·GA전환수(건)
+- degen: 요일·주차, **AD_SOURCE_TYPE(DIGITAL/VIDEO/REBROADCAST — 출처 명시축, §3-A-4)**
+- FK: PERF_DATE_SK, CAMPAIGN_SK, AD_CREATIVE_SK, **DEVICE_SK(실배선 — 방송은 '(해당없음)' 멤버)**
+- `_SOURCE_SYSTEM`: GA4 / AGENCY / GADS
+- ⚠️ **변경(2026-07-28)**: 방송 고유 degen 5종(TIME_BAND·CM_POSITION·AD_START_TIME·BROADCAST_DATE·RT_TYPE)은 코어에서 **위성 FACT_AD_BROADCAST로 이관**. 코어는 3원천 공통 속성만 보유 → NULL 희소성 제거
+
+### FAD_B — FACT_AD_BROADCAST  *(위성 — VIDEO·REBRDC)*
+- grain: AD_PERF_DK (코어와 1:1, 방송 2원천 행만 존재 = 37,886행)
+- FK: `AD_PERF_DK` → FAD
+- degen: 시간대·CM위치·광고시작/종료시간·송출일·RT유형·프로그램명·채널사·SPOT유형·초수·요일구분·프로그램시작시간·CTV구분·방송구분
+- measure: 광고시청률(비가산), `CPC_SRC`(대행사 산정, §3-A-3)
+
+### FAD_D — FACT_AD_DIGITAL  *(위성 — DGT)*
+- grain: AD_PERF_DK (코어와 1:1, 디지털 행만 존재 = 197,686행)
+- FK: `AD_PERF_DK` → FAD
+- degen: 페이지유형·광고그룹명·그룹구분·소재유형·광고유형명
+- measure: 읽음수·매체잠재고객수·CRM개발건수, `VTR_SRC`, 파생 `CTR_SRC`·`CVR_SRC`·`CPC_SRC`·`CPM_SRC`·`CPA_SRC`·`DEV_UNIT_PRICE_SRC` (§3-A-3)
+
+### FAD_BC — FACT_AD_BROADCAST_CASE  *(위성 — REBRDC 사례, 정규화)*
+- grain: AD_PERF_DK × **CASE_SEQ(1~3)** → 1행 = 1사례
+- FK: `AD_PERF_DK` → FAD
+- degen: 사업구분·가족유형·어필포인트·사례구분
+- note: 원천 REBRDC 의 `CASE1_*`~`CASE3_*` **반복군 15컬럼을 언피벗**(5컬럼 + CASE_SEQ). 사례 4개 확장 시 DDL 변경 불요. ⚠️ `CASE*_CHILD_NM`(아동명)은 **PII 판정 대기로 미적재**(O14)
+
+### FEP — FACT_EVENT_ATTENDANCE (구 FACT_EVENT_PARTICIPATION)
+- grain: DATE_SK × MEMBER_DK × EVENT_SK
+- FK: DATE_SK, MEMBER_DK, EVENT_SK, CAMPAIGN_SK, SPONSORSHIP_SK (행사 회원 귀속; 회원 §3-5 상위캠페인·후원사업 분석축)
+- measure: 모집·총·대기·취소·신청확정·참여·불참 인원; 참여자수·참여횟수·대기/불참/누적신청 횟수; 정기후원금; 조회수(`_SOURCE_SYSTEM=ADMIN`)
+- degen: 당첨여부·본인참여·참여상태·참여경로·참여채널·증액여부
+
+### FBD — FACT_BUDGET
+- grain: MONTH_KEY × ORG × BUDGET_ITEM_SK [×CAMPAIGN]
+- measure: 편성예산(월/연)·집행예산(ERP 월)·집행예산(추정)·모금성비용·광고비. **누계(편성·집행)는 SV 계산**(P7, running sum)
+- use: 개발단가·ROI(SV metric)의 비용 분모. FAD 개발건과 ORG/MONTH conform 조인
+
+## 3-A. AGENCY 광고 팩트군 설계 (2026-07-28 확정)
+
+> **설계 목표**: "보여줄 수 있는 BRONZE 데이터는 다 보여준다 + 현업이 분석결과의 데이터 출처를 확실히 알 수 있다"
+> **근거**: `30_output_share/06_BRONZE노출감사.md` (BRONZE 1,121컬럼 전면 감사, 2026-07-28)
+
+### 3-A-1. 문제 — 이질속성 평탄화로 인한 3중 손실
+
+AGENCY 원천은 **3종 이질 테이블**이다 (DGT 36 · REBRDC 34 · VIDEO 32 = 102컬럼).
+기존 SILVER `AGENCY_AD_PERFORMANCE` 는 이를 **공통 컬럼으로만 UNION** 하고 나머지는 버렸다. 결과:
+
+| 손실 유형 | 실측 근거 (2026-07-28) |
+|---|---|
+| ① 고유속성 소실 | BRONZE 102컬럼 중 GOLD 도달 13컬럼(12.7%). 방송 시간대·CM위치·사례정보 등 미노출 |
+| ② 출처 구분 소실 | SILVER `SOURCE_SYSTEM`(DIGITAL 197,686·VIDEO 35,822·REBROADCAST 2,064)이 GOLD에서 `DW_SOURCE_SYSTEM='AGENCY'` 상수로 평탄화 |
+| ③ 기기축 전건 무효 | `FACT_AD_PERFORMANCE.sql:20` `0 as DEVICE_SK` → **235,572행 전건 (unknown)**, 지표 공14(기기) 사용 불가 |
+
+③의 기존 사유 주석(`sql:6` "AGENCY device 도메인 ≠ GA4 기반 DIM_DEVICE")은 **실측과 불일치**:
+
+```
+AGENCY  DEVICE_NM  : M 138,274 · PC 59,412 · NULL 37,886
+GOLD    DIM_DEVICE : M · PC · (unknown)          ← 도메인 네이티브 동일
+NULL 37,886 = VIDEO 35,822 + REBROADCAST 2,064   ← 방송=기기개념 없음, 전량 설명됨
+```
+
+### 3-A-2. 결정1 — 유형별 위성 팩트 분리
+
+**코어 1 + 위성 3** 구조. 코어는 3원천 공통, 위성은 유형 고유속성.
+
+```
+FACT_AD_PERFORMANCE (코어)  PK: AD_PERF_DK   235,572행
+   │  3원천 공통 measure/FK + AD_SOURCE_TYPE
+   ├── FACT_AD_DIGITAL          1:1   197,686행  (DGT 고유)
+   ├── FACT_AD_BROADCAST        1:1    37,886행  (VIDEO∪REBRDC 고유)
+   └── FACT_AD_BROADCAST_CASE   1:N     REBRDC 사례 언피벗
+```
+
+**대안 비교 및 기각 사유**
+
+| 안 | 내용 | 판정 |
+|---|---|---|
+| 단일 wide 팩트 | 102컬럼을 한 팩트에 NULL 패딩 | ❌ VIDEO행에 디지털컬럼 전량 NULL → 희소 팩트·의미 없는 NULL과 진짜 결측 구분 불가 |
+| **유형별 위성 (채택)** | 공통 core + 유형 위성 | ✅ NULL 희소성 제거·유형별 스키마 진화 독립·코어 grain 불변 |
+| 원천별 팩트 3개 완전분리 | 공통 measure도 3중 복제 | ❌ 광고비·노출 등 공통지표를 3팩트 UNION 해야 집계 → conform 붕괴 |
+
+### 3-A-3. 결정2 — 대행사 산정 파생값 `_SRC` 보존 (전량)
+
+대행사가 계산해 넘긴 파생값(CTR·CVR·CPC·CPM·CPA·개발단가·VTR·광고시청률)은
+**DW가 재계산하지 않고 원천값 그대로 `_SRC` 접미로 적재**한다. SV는 base measure 로 **별도 재계산**.
+
+- **목적**: 대조 전용. 대행사 산식과 DW 산식의 차이를 현업이 직접 확인 가능
+- **선례**: GA4 사전집계 비율(#98 평균세션시간·#108 이탈율)의 비가산 measure 적재 (§1 예외조항)
+- **적재 범위**: **전량**(8종). 원천 데이터 최대 보존 원칙. Agent 에는 계산값·소스값 **양쪽 모두 노출**
+- **가산성**: `_SRC` 전량 **N(비가산)** — 비율·단가는 재합산 금지. SUM 집계 시 base 재계산값 사용
+
+| `_SRC` 컬럼 | 원천 | 위치 | DW 재계산 산식 (SV) |
+|---|---|---|---|
+| `CTR_SRC` | DGT.CTR | FAD_D | CLICKS / IMPRESSIONS |
+| `CVR_SRC` | DGT.CVR | FAD_D | GA_CONV_MEMBERS / CLICKS (O5 확정) |
+| `CPC_SRC` | DGT.CPC · VIDEO.CPC | FAD_D · FAD_B | AD_COST / CLICKS |
+| `CPM_SRC` | DGT.CPM | FAD_D | AD_COST / IMPRESSIONS × 1000 |
+| `CPA_SRC` | DGT.CPA | FAD_D | AD_COST / GA_CONV_CNT |
+| `DEV_UNIT_PRICE_SRC` | DGT.DEV_UNIT_PRICE | FAD_D | AD_COST / 개발건수 |
+| `VTR_SRC` | DGT.VTR | FAD_D | 재계산 불가(원천 전용) |
+| `AD_VIEW_RT_SRC` | VIDEO.AD_VIEW_RT | FAD_B | 재계산 불가(원천 전용) |
+
+> ⚠️ `VTR_SRC`·`AD_VIEW_RT_SRC` 는 base 가 원천에 없어 재계산 불가 → **대조 대상이 아닌 유일값**.
+> `_SRC` 접미를 유지하는 이유는 "대행사 산정값"이라는 **출처 표기 일관성** 때문이다.
+
+### 3-A-4. 결정4(출처 명시) — `AD_SOURCE_TYPE` degenerate 노출
+
+SILVER 에 이미 존재하나 GOLD 에서 소실된 광고유형을 **코어 팩트 degenerate 로 복원**한다.
+
+- 값: `DIGITAL` / `VIDEO` / `REBROADCAST` (SILVER `SOURCE_SYSTEM` 직결)
+- **차원(DIM_AD_TYPE) 대신 degenerate 채택 사유**: 3값·계층 없음·속성 없음 → 차원 신설시 조인 비용만 증가.
+  또한 결정3의 `(해당없음)` 판별 수단으로 쓰이려면 **조인 없이 팩트에서 즉시 보여야** 한다
+- 효과: `DW_SOURCE_SYSTEM='AGENCY'`(시스템 출처) + `AD_SOURCE_TYPE`(원천 테이블 출처) **2단 출처 추적** 성립
+- ⚠️ **컬럼명 확정(DEC-12, 2026-07-28)**: 본 degen 의 물리명은 **`AD_SOURCE_TYPE`** 이다(종전 `AD_TYPE`). `DIM_AD_CREATIVE.AD_TYPE`(소재 광고유형)과 명명 충돌해 WIDE 평탄화에서 한쪽이 가려지는 함정을 차단하기 위한 개명이며, WIDE 에서는 소재 속성을 `AD_CREATIVE_TYPE` 으로 노출한다.
+  실측 확인(2026-07-28): `SILVER.AGENCY_AD_ROW_{DGT,VIDEO,REBRDC}`·`SILVER.AGENCY_AD_PERFORMANCE`·`GOLD.FACT_AD_PERFORMANCE`·WIDE 4종 전부 `AD_SOURCE_TYPE`.
+
+### 3-A-5. 결정3 — `DIM_DEVICE` `(해당없음)` 멤버 신설
+
+방송광고(VIDEO·REBRDC)는 기기 개념이 없다(실측: NULL 37,886 = 방송 2원천 전량).
+이를 `(unknown)`(진짜 미상)과 **의미 분리**한다.
+
+| 멤버 | SK | 의미 | 대상 |
+|---|---|---|---|
+| `M` · `PC` | `gold_sk(...)` 해시 | 실제 기기 | DGT 197,686행 |
+| `(해당없음)` | `gold_sk(...)` 해시 | **기기 개념이 없는 광고유형** | 방송 37,886행 |
+| `(unknown)` | **0** | 기기 정보 미상·미매핑 센티넬 | 매핑 실패 건 |
+
+- **센티넬 원칙 유지**: `-1` 미사용 · `0`=Unknown 정본. `(해당없음)`은 **일반 멤버로 해시 SK 부여**(0 오염 방지)
+- **⚠️ 조건 충족(분석가 식별 가능성)**: 아래 2중 장치로 보장
+  1. **`AD_SOURCE_TYPE` 병기** — `DEVICE_TYPE='(해당없음)'` 행은 `AD_SOURCE_TYPE IN ('VIDEO','REBROADCAST')` 로 방송임이 자명
+  2. **`DEVICE_SCOPE_DESC` 컬럼 신설** — DIM_DEVICE 에 자기설명 텍스트 보유
+     (`'방송광고(TV·재방송) — 기기 개념 없음'`) → 차원만 조회해도 의미 파악 가능
+
+### 3-A-6. `AD_PERF_DK` — 행 식별자 설계
+
+위성 팩트를 코어에 1:1 로 붙이려면 행 식별자가 필요하나, **원천에 PK가 없다**(실측).
+
+| 실측 (2026-07-28) | DGT | VIDEO | REBRDC |
+|---|---|---|---|
+| 총 행수 | 197,686 | 35,822 | 2,064 |
+| 전컬럼 distinct | 197,651 | 35,791 | 2,064 |
+| **전컬럼 중복 그룹** | 35 | 30 | 0 |
+| 최대 중복 배수 | 2 | 3 | 1 |
+
+→ 전컬럼 해시만으로는 131행이 충돌. **해시 + 중복순번** 조합이 필수.
+
+```
+AD_PERF_DK = MD5( AD_SOURCE_TYPE ‖ '|' ‖ ROW_HASH ‖ '|' ‖ DUP_SEQ )
+  ROW_HASH = MD5(TO_JSON(OBJECT_CONSTRUCT(*)))            -- 원천 전컬럼
+  DUP_SEQ  = ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL)
+```
+
+- **결정성**: 중복 그룹 내 행은 **전컬럼이 동일**하므로 순번 부여 순서가 무관 → DK **집합**은 재실행 멱등
+- **AD_SOURCE_TYPE 를 해시에 포함**하는 이유: 원천 간 우연한 해시 충돌 방지 + DK 만으로 원천 판별 가능
+- **직관성**: 코어·위성 모두 `AD_PERF_DK` 단일 컬럼으로 조인 → 인수인계자가 ERD 없이도 관계 파악 가능
+
+### 3-A-7. SILVER 구조 변경 (신설 5 · 수정 1)
+
+위성 팩트의 원천이 되는 고유속성은 현재 SILVER 에 **존재하지 않는다**(공통 UNION 시 폐기).
+따라서 SILVER 에 **원천 무손실 staging 계층**을 신설한다.
+
+```
+BRONZE_AGENCY
+  DGT_AD_CMPGN_DTLS ──┐
+  VIDEO_AD_CMPGN_DTLS ┼─→ [신설] SILVER staging 3종 (전컬럼 보존 + AD_PERF_DK 부여)
+  REBRDC_AD_CMPGN_DTLS┘      AGENCY_AD_ROW_DGT / _VIDEO / _REBRDC
+                                    │
+        ┌───────────────────────────┼───────────────────────────┐
+        ▼                           ▼                           ▼
+  [수정] AGENCY_AD_PERFORMANCE  [신설] AGENCY_AD_DIGITAL   [신설] AGENCY_AD_BROADCAST
+        (공통 UNION + DK)              (DGT 고유)              (VIDEO∪REBRDC 고유)
+                                                          [신설] AGENCY_AD_BROADCAST_CASE
+                                                                (CASE1~3 언피벗)
+```
+
+| 모델 | 구분 | 역할 |
+|---|---|---|
+| `AGENCY_AD_ROW_DGT` | 신설 | BRONZE DGT 전컬럼 + `AD_PERF_DK`. **DK 발급 단일 지점** |
+| `AGENCY_AD_ROW_VIDEO` | 신설 | 동일 (VIDEO) |
+| `AGENCY_AD_ROW_REBRDC` | 신설 | 동일 (REBRDC) |
+| `AGENCY_AD_PERFORMANCE` | **수정** | staging 3종에서 공통컬럼 UNION. `AD_PERF_DK`·`AD_SOURCE_TYPE` 추가 |
+| `AGENCY_AD_DIGITAL` | 신설 | DGT 고유속성 + `_SRC` 파생 6종 |
+| `AGENCY_AD_BROADCAST` | 신설 | VIDEO∪REBRDC 고유속성 + `_SRC` 2종 |
+| `AGENCY_AD_BROADCAST_CASE` | 신설 | REBRDC `CASE1_*`~`CASE3_*` → `CASE_SEQ` 언피벗 |
+
+> **staging 계층을 두는 이유**: DK 를 한 곳에서만 발급해야 코어·위성의 DK 가 **반드시 일치**한다.
+> 각 모델이 독립적으로 해시를 계산하면 컬럼 순서·NULL 표현 차이로 불일치 위험이 생긴다.
+
+### 3-A-8. 감사 기반 조치군
+
+`06_BRONZE노출감사.md` 판정별 본 설계의 대응:
+
+| 판정 | 건수 | 본 설계 대응 |
+|---|---|---|
+| ⚠️설계O·값미주입 | 9 | **전량 해소** — DEVICE_SK 실배선 + 방송속성 위성 이관(TIME_BAND·CM_POSITION·AD_START_TIME·BROADCAST_DATE·RT_TYPE·DURATION_SEC) |
+| SILVER까지만 (AGENCY) | 15 | 위성 팩트로 승격 |
+| 미노출 (AGENCY) | 52 | staging 무손실 보존 → 위성에서 선별 노출. 잔여는 O15 |
+| 대체노출(파생) | 14 | 조치 불요(의도된 설계 — 텍스트 YEAR 대신 DATE 파생) |
+
+---
+
+## 4. 팩트 × 차원 참조
+| FACT | DATE | MEMBER | IDENT | CAMP | SPON | ORG | AD | GA_SRC | SVC | PAY | GA_EVT | REASON | DEV | EVENT | BUDGET |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| FMM | 월 | ✓ | | ✓ | ✓ | | | | | ✓ | | ✓ | | | |
+| FME | 일 | ✓ | | ✓ | ✓ | ✓ | | | | | | ✓ | | | |
+| FTG_D | 월 | | | | | ✓ | | | | | | | | | |
+| FTG_B | 월 | | | △ | ✓ | ✓ | | | | | | | | | |
+| FSE | 일 | ✓ | | ✓ | | | | | ✓ | | | | | | |
+| FBQ | 일 | (id) | ✓ | ✓ | | | | ✓ | | | ✓ | | ✓ | | |
+| FAD | 일 | | | ✓ | | | ✓ | | | | | | ✓ | | |
+| FAD_B | (FAD 경유) | | | | | | | | | | | | | | |
+| FAD_D | (FAD 경유) | | | | | | | | | | | | | | |
+| FAD_BC | (FAD 경유) | | | | | | | | | | | | | | |
+| FEP | 일 | ✓ | | ✓ | ✓ | | | | | | | | | ✓ | |
+| FBD | 월 | | | △ | ✓ | ✓ | | | | | | | | | ✓ |
+
+> **위성 팩트(FAD_B·FAD_D·FAD_BC)**: 차원 FK를 직접 보유하지 않고 `AD_PERF_DK` 로 코어 FAD 를 경유해 차원에 접근한다.
+> 차원 FK 중복 보유는 코어와의 불일치 위험을 만들므로 금지 (§3-A-6).
+
+## 5. 확인 필요 (open)
+| # | 항목 |
+|---|---|
+| O1 | BigQuery 율·평균·세션당참여 — **[데이터 확인 20260501] raw에 사전집계값 없음. `session_engaged`·`engaged_session_event`·`engagement_time_msec`로 산출 가능 → N(비가산) 유지. FBQ `BOUNCE_RATE`·`AVG_SESSION_DURATION`은 raw 파생으로 채움(현재 全NULL 해소 경로). ⚠️ BigQuery 공식정의와 차이 가능 → 산출규칙 합의(G-2)** |
+| O2 | DIM_DEVICE 'APP' = GA4 platform vs 앱 SDK |
+| O3 | FBD 세세목↔캠페인 매핑 합의 없음 → 부서 grain까지만 확정 (신#11 ROI 캠페인별 불가) |
+| O4 | FEP 참여 정의 서비스별 상이 → `PARTICIPATION_DEF` 메타로 흡수 |
+| O5 | 전환수 단위(명/건) 및 GA CVR — **✅부분해소(33/34, 2026-07-10 전수검증)**: `CVR=GA_CONV_MEMBERS(명)/CLICKS` 확정(오차1.7e-6), 분자=명·분모=클릭. FAD·04SV·05인벤토리 반영. **잔여**: `GA_CONV_CNT`(VU/건) 합계가 소수 → '건' 단정 금지, 어의 현업확인만 남음 |
+| O6 | FME EVENT_TYPE 코드 체계·'활동전환' CRM 캡처 가능 여부 — 🟢 **[2026-08-03] 코드체계 부분 해소(O24)**: 개발측 상태축은 정본 MM015(1신규·2증액·3감액·4재후원·5후원중단)로 확정·적재 완료. `EVENT_TYPE` 은 원천 계통축으로 재정의. **잔여 = '활동전환' 캡처 가능 여부**(활동은 사건이 아니라 상태이며 `DIM_MEMBER.MEMBER_STATUS_NAME`(MM010) 소관 — 사건화 필요 여부 현업 확인). 상세 = §5 **O24** |
+| **O24** | **[신규 2026-08-03] FME 개발구분 도메인 부분적재 → 상태축 소실 + `DEV_CNT` 56.86% 과대계상** · ✅ **적재 완료** / 🟠 **잔여 = 중단 중복 현업확인 1건** |
+| | **트리거(현업 항의)**: "회원 상태가 개발·중단·미납·활동·증액·감액 등 다양한데 GOLD 엔 `dev`·`stop` 둘만 있다." |
+| | **판정 — 항의는 옳으나 원인이 '미적재'가 아니라 '의미혼입'**(O16 계열). 열거된 6개는 서로 다른 3축이다: **사건축**(개발·증액·감액 → FME) · **상태축**(활동·미납 → `DIM_MEMBER.MEMBER_STATUS_NAME` MM010, **이미 한글 라벨 완비**: 활동회원 682,897 · 후원중단 859,387 · 미납 10종 45,058) · **중단**(양쪽 모두 존재). 현업이 `EVENT_TYPE` 한 컬럼만 보고 판단한 것. |
+| | 🔴 **실제 결함**: SILVER `CRM_MEMBER_DEV` 는 `DVLP_DIV_CD` 를 **정상 보존**(`CRM_MEMBER_DEV.sql:15`)하는데 `FACT_MEMBER_EVENT.sql:21·30` 이 이를 **무시하고 전건 `'DEV'`·`DEV_CNT=1` 하드코딩** → MM015 5종이 한 값으로 뭉개졌다. |
+| | 🔴 **부수 발견이 원래 항의보다 심각 — `DEV_CNT` 56.86% 과대계상**. GOLD 3,594,843 vs 정본 공#121(개발 = 신규·증액·재후원) 2,291,878. **감액 292,285(금액 −124.4억)·후원중단 1,010,680(금액 −215.2억)** 이 "개발실적"으로 계상됐다. 독립 확증 = `FACT_TARGET_MEMBER_DEV.DEV_TYPE` 실측값이 `1`·`2`·`4` 3종뿐. |
+| | ✅ **조치 완료(2026-08-03)**: `DVLP_DIV_CD`·`DVLP_DIV_NM`·`SPNSR_AMT` 3컬럼 신설(SILVER·GOLD·WIDE) + `DEV_CNT`/`DEV_MEMBERS` 코드 1·2·4 한정 교정 + MM015 도메인 `accepted_values` 가드 신설. **컬럼명 = BRONZE 원천명 그대로**(정본 컬럼정의서 504행 현업 용어쌍) — 현업이 BRONZE 를 직접 보고 있어 신개념 도입 금지. `dbt build ERROR=0 · PASS=31 · WARN=4`(전부 기존 고아관계). **행수 전부 불변**(SILVER 3,594,843 · FME 4,633,105 · FMM 40,054,883) = fan-out 0. FMM 롤업에 `DEV_CNT` 2,291,878 정확 전파. |
+| | 🟠 **잔여 미결 — 후원중단 원천 중복(현업 확인 필요)**: `DVLP_DIV_CD='5'` 924,044키 중 **923,931(99.99%)이 중단원천에 동일 회원·동일 일자로 존재**한다. measure 는 코드5 를 `DEV_CNT=0`·`STOP_CNT=0` 으로 두어 이중계상이 없으나, `DVLP_DIV_NM='후원중단'` 을 행수로 세면 `EVENT_TYPE='STOP'` 과 중복된다. → 두 원천이 동일 사건의 이중 기록인지, 아니면 서로 다른 중단 단위(후원사업별 vs 회원별)인지 확인 필요. **확인 전 두 축 합산 금지**(DDL·WIDE COMMENT 에 명시). |
+| | ❌ **미채택 — `TM_MM_FDRM_MBER_IRSD`(증감 324,947행)**: 정본 `테이블정의 20260629.csv:36` 이 `RDCAMT_YN` 을 *"UPDATE 내역은 RDCAMT_YN이 Y로 바뀌나, **안 바뀌는 경우도 있음**, 그 외에 날짜로 구분이 불가함"* 으로 **현업이 직접 불신 명시**. 실측 확증: 명백 오분류 **752키**(감액인데 N 201 · 증액인데 Y 551) + 증액·감액 동시존재로 **판정불가 50,295키(16.5%)**. 또 IRSD 키의 **99.62%가 이미 `DVLP_AMT` 코드 2·3에 존재하는 부분집합**. → 조언대로 `DVLP_AMT`·`SPNSR_DSCNTC` 두 테이블만으로 전부 해결됨. |
+| | 🔴 **파생 이슈 — `FMM.AMT_INCREASE_CUM_CNT`·`AMT_DECREASE_CUM_CNT` 가 불신 컬럼 기반**: `FACT_MEMBER_MONTHLY.sql:101` 이 `CRM_MEMBER_AMT_CHANGE`(=IRSD·`RDCAMT_YN`)로 증액·감액 누적을 산출한다(W4/DEC-22). 위 실측대로 이 축은 16.5% 판정불가이므로 **권위 원천 `DVLP_DIV_CD` 기반으로 재산출 검토 필요**. 본 세션 범위 외 — 별도 트랙. |
+| | 🟡 **미조치(설계 O·값 미주입 잔존)**: `FME.UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 합계 **0**(전건 미적재) · `REASON_SK` 전건 0 · `NEW_EXISTING_FLAG` 전건 NULL → **BLOCKING-5** 소관 유지. `FMM.DEV_TYPE` 도 40,054,883행 전건 NULL 로, 같은 원천(`DVLP_DIV_CD`)으로 채울 수 있으나 본 세션 범위 외. |
+| | 🔴 **[2026-08-03 서술 정정] "증액·감액이 GOLD 미적재"는 틀린 표현이다 — 정확히는 "정본 지표 슬롯이 비어 있음"(P15/BLOCKING-5)**. `FACT_MEMBER_MONTHLY` 에 정본 지표 슬롯이 **이미 존재하되 전건 0/NULL** 이다. 실측(2026-08-03, 40,054,883행): `INCREASE_CNT`(공#151 증액(건)) 합계 **0**·비영 행수 **0** · `INCREASE_MEMBERS`(공#150 증액(명)) 합계 **0**·비영 **0** · `DECREASE_CNT`(공#38 감액(건)=SUM(감액금액)/10,000) 합계 **0**·비영 **0** · `CHURN_CNT`(신#20 이탈(건)=SUM(취소+감액)/10,000) 합계 **0**·비영 **0** · `INCREASE_FLAG`(공#33) **전건 NULL**(non-null 0건). 반면 정본 지표가 **아닌** `AMT_INCREASE_CUM_CNT`·`AMT_DECREASE_CUM_CNT`(W4/ML용)는 **적재됨 6,128,968 / 2,518,575** 이며, 컬럼 COMMENT 자체가 *"정본 #151/#38과 다름 — 혼용 금지"* 를 명시한다. 즉 **슬롯은 있고 값이 없으며, 채워져 있는 유사명 컬럼은 정본이 아니다** — 지표 조회 시 대체 사용 금지. 채우는 방식(사건 기준 vs 월말 스냅샷)은 현업 확인 대기(§8 질문6). |
+| | **관련**: O16(의미혼입 선례) · CONF-2(`(건)`=금액÷10,000) · PROC-2(정본 대조 선행) · P15(설계O·값미주입) · **P27**(도메인 부분적재는 자동검증에 걸리지 않는다) |
+| O7 | overview 필드 ↔ 215 지표 필드-레벨 1:1 매핑 검증 (완전성 확인) — **[2026-07-07 검증] 구조 커버리지 완전(02·03·04·05 모든 필드/지표가 DIM/FACT/SV에 자리 존재). 잔여는 아래 §6 결함·오픈 레지스트리로 이관** |
+| O8 | FSE·FEP의 캠페인·후원사업 귀속 = 직접 FK vs MEMBER 스냅샷 경유 확정 (회원 다중 후원사업 시 grain 영향) |
+| O10 | 실적/가입 조직 — **원천 확인됨**: `ACT_DEPT_CD`(활동)·`ACMSLT_DEPT_CD`(실적)·`REGIST_DEPT_CD`(등록) 별도 존재 → FMM/FME에 조직 역할(활동/실적) 반영 필요 |
+| ~~O11~~ ✅ | **'이벤트 관리'(05 3-1 수치) = CRM '이벤트 관리' 탭 '총 참여수'(이벤트별)** — 현업 확정(2026-07-09). GOLD=FEP 이벤트별 `SUM(PARTICIPANT_CNT)` 도출(SV derived, 물리 컬럼 불요) → **물리화 보류 해제**. 누계는 SV(P7), 단 #154·155·158·159는 215 metric이라 물리 유지 |
+| O12 | **[실측 06-30] `MEMBER_DK` 타입** — BRONZE 실측상 일시회원 전건 비숫자·정기 38% leading-zero → DK는 **VARCHAR(10)**. GOLD `MEMBER_DK`(DIM_MEMBER·DIM_MEMBER_IDENTITY·FMM·FME·FSE·FEP) → **VARCHAR(10) ✅ CSV 반영 완료(AC-1)**; `05_필드인벤토리`도 동기화. `MEMBER_SK`(surrogate)는 NUMBER 유지. **[현업 형식 확정] 정규(FDRM)=7자리 숫자문자열(leading-zero 보존, 예 `0012345`), 일회성(ONCE)=`S`+8자리=9자(예 `S09999999`). GA `user_id`=동일 회원번호(`S`접두=ONCE). NUMBER 캐스팅 절대 금지** |
+| O14 | **[2026-07-28] REBRDC `CASE*_CHILD_NM`(사례 아동명) PII 판정** — 실명 가능성 → GOLD 미적재로 설계. 현업 확인 후 (a)제외 확정 / (b)마스킹 적재 / (c)평문 적재 결정. `CELEB_NM`(연예인명)도 동일 검토 대상(공개인물이나 개인정보) |
+| O15 | **[2026-07-28] AGENCY 미노출 52컬럼 노출 여부** — staging 에 무손실 보존됨. 지표 수요 확인 후 위성 승격 판단. 대상 예: `CPR_NM`·`DMST_OVSEA_DIV_NM`·`BSNS_CASE_DIV_NM`·`AD_TY_NM`·`DAY_DIV_NM`·`SPOT_TY`·`CTV_DIV_NM`·`DUR_PD_MATR_CHN` 등. 근거: `06_BRONZE노출감사.md` §3 AGENCY |
+| O13 | **[실측 06-30] DIM_SPONSORSHIP 카디널리티** — 마스터 `TM_CM_SPNSR_BSNS_INFO` distinct=**50** ≠ 기존 기록 **29**(문서엔 29도 마스터 기준 → subset 단정 불가). 원인 미확정(모집단/필터/시점). **설계: DIM=전체 마스터 적재(현 50)**. 50↔29·유효성 대조=프로파일링 S13 · **[2026-07-30 추가 실측] 배포 `DIM_SPONSORSHIP`=51행**(=마스터 50 + unknown 멤버 1) · `CRM_MEMBER_SPONSOR_BIZ.SPNSR_BSNS_ID` 실사용 distinct=**29** → "29=실사용 subset, 50=마스터"로 정합 가능하나 **여전히 원인 미확정 상태 유지**(단정 금지) |
+| **O16** | **[신규 2026-07-30] `DIM_ORG` 계층전개 미구현 — DEC-5 반영 대기** · 🔷 **구조전개=Phase-1 / 본부·지부 구별축=Phase-2** |
+| | **현황(실측)**: `DIM_ORG` 1,315행 중 `CORP`·`DIVISION`·`TEAM` **전건 NULL**, `DEPARTMENT`만 1,315/695종(=`DEPT_NM` 직접 대입). `DIM_ORG.sql` 주석에 *"계층전개=`UPPER_DEPT_ID` 재귀 필요 → 입고 후 확장"* 로 자기문서화됨. |
+| | **원천 확보**: `SILVER.CRM_ORG.UPPER_DEPT_ID` **1,314행/321종** → 재귀 전개 가능(외부 의존 없음·내부 구현 가능). DEC-5대로 `STATS_DEPT_LVL`은 미사용(실측 8행/0.6%로 사용 불가하기도 함). |
+| | **재귀 실측(2026-07-30)**: `UPPER_DEPT_ID` 트리 = **6단**. LVL별 부서수 **9 / 38 / 351 / 672 / 238 / 6** = 합계 **1,314 = 원천 행수 정확 일치**(고아·순환 0). 루트 판정 = `UPPER_DEPT_ID IS NULL` ∪ 자기참조 ∪ 부모 마스터 부재. |
+| | ✅ **[2026-07-31 CONF-4 조치 완료 — 미결1·2 성격 전환]** 정본대조(PROC-2) 결과 **미결1(6레벨→4컬럼 매핑)은 "매핑 문제"가 아니었다.** 정본이 요구하는 축은 `법인 · 부서 · 실적지부(본부/지부 구분)` 이고 4단 계층 자체가 D6의 과잉 설계였다. 조치: ① `DIVISION`→**실적지부 재정의**(산출규칙 미확정→값 NULL) ② `TEAM`→**보류**(E-6 미입고·소비처 부재) ③ `CORP`→**부서 차원 산출 불가**(부서→법인 1:1 아님: 200부서 복수법인 혼재·3종 131부서에 1,544,005명=98.6% / 법인 정본 원천은 회원속성 `CPR_DIV_CD` CM019 I=사단·S=사복·A=통합) → `DIM_MEMBER`/팩트 degen 배속 판단 필요. 🟢 **원천 계통 3컬럼 노출 완료**(`ACMSLT_UPPER_DEPT_ID` 1,014 · `ACMSLT_DEPT_YN` Y=455 · `USE_YN` N=764) — ALTER + 모델 + DDL 동기화. **잔여 미결 = "실적지부" 산출규칙 1건**(명칭기반 도달률 418/455=91.9%·미도달 37, 명칭 판정은 범주오류 위험 → 현업 확인). |
+| | 🔴 **미결 1 — 6레벨 → 4컬럼 매핑**: D6 설계는 `법인 > 본부/지부 > 부서 > 팀` **4단**이나 실측 트리는 **6단**이다. DEC-5가 정한 것은 `TEAM=5th` 하나뿐 → `CORP`·`DIVISION`·`DEPARTMENT`가 LVL 1~4·6 중 어디에 대응하는지, **LVL6을 어디로 접을지** 미정. **🔴 선결과제 = 아래 "트리 2개" 중 어느 것을 계층 축으로 쓸지 먼저 확정해야 한다.** → ✅ **상단 CONF-4 조치로 해소**(4단 매핑이 아니라 축 재정의로 결론). |
+| | 🟢 **[2026-07-31 신규 규명] 부서 트리가 2개다 — 목적이 다르다.** BRONZE `TM_CM_DEPT_INFO`에 `UPPER_DEPT_ID`(조직/보고계통) 외에 **`ACMSLT_UPPER_DEPT_ID`(실적상위부서ID·실적 집계계통)** 가 있다. 기존 검토가 이 컬럼을 누락했다. |
+| | 🆕 **[2026-08-30 O124] 아래 5행은 원래 「표 안의 표」였다** — 바깥 표가 **2열**인데 안쪽 표가 6칸이라 렌더러가 초과 열을 잘라 **값이 보이지 않았다**(착수표 ⑨ · `doc_line_length_gate` 표 열수 축이 5건으로 적발). 🟢 **수치는 한 자도 바꾸지 않고** 「구분 = 조직 트리 값 ↔ 실적 트리 값」 형태로 한 셀에 접었다. 🔴 표 셀 안에 표를 넣지 마라 — 마크다운은 중첩 표를 지원하지 않는다. |
+| | **채움** — 조직 트리 `UPPER_DEPT_ID` = **1,314 (100%)** ↔ 실적 트리 `ACMSLT_UPPER_DEPT_ID` = **1,014 (77.2%) · NULL 300** |
+| | **레벨 분포** — 조직 트리 = **9 / 38 / 351 / 672 / 238 / 6** ↔ 실적 트리 = **300 / 10 / 72 / 422 / 509 / 1** |
+| | **실적부서(455) LVL5 집중** — 조직 트리 = **118 = 26%** ↔ 실적 트리 = **446 = 98.0%** |
+| | **두 트리 상이** — 조직 트리 = **—** ↔ 실적 트리 = **441건 다름**(동일 573 · 나머지 NULL) |
+| | ✅ **미결 3 해소 — DEC-5 부기는 옳았다.** "5번째 레벨 = 실적부서(실적 팀)"는 **실적 트리에서 98.0% 성립**한다(455개 중 446개가 LVL5). 기존 검토가 "LVL5의 49.6%만 실적부서 / 실적부서 중 LVL5는 26%"라며 불일치로 판정한 것은 **조직 트리로 잘못 검증**한 결과다 → **해당 판정 철회**. 표현 정정 불요. |
+| | 🟢 **`ZD` 접두 424개 = 실적 집계용 미러 노드**(조직 트리 L4에 422개 집중). 실례 — `D000011` 회원관리팀: 조직 부모 `C000006` 회원실 / 실적 부모 `ZD000286` 회원만족팀. `D000027` 서울동부지부: 조직 부모 `C000012` 서울인천 / 실적 부모 `ZD000117` **서울동부지부(동명 미러)**. |
+| | 🔴 **[2026-07-31 신규] `USE_YN='N'` 764개(58.1%)를 제외하면 안 된다.** ① 필터 시 부모가 미사용인 자식이 루트로 승격돼 **트리가 파편화**된다(LVL1 **9 → 42**, 총 1,314 → 550). ② 실제 팩트가 미사용 부서를 대량 참조한다 — `CRM_MEMBER.ACT_DEPT_CD` 278개 참조 중 미사용 **156개(56%)에 회원 410,506명** · `CRM_MEMBER_AMT_CHANGE.ACMSLT_DEPT_CD` 302개 중 미사용 **189개(63%)에 100,931건**. `USE_YN`은 *현재 운영* 여부이고 팩트는 과거 데이터이므로 폐지 부서 참조가 정상. → **`DIM_ORG` 1,314행 전체 유지가 맞다**(현행 유지). 대신 `USE_YN`을 속성 컬럼으로 노출해 소비 측 필터를 허용할 것. |
+| | 🔴 **미결 2 — 본부와 지부가 동일 레벨(`DIVISION`)로 설계됨**: D6 표기가 `본부/지부`로 묶여 있어 **본부 vs 지부를 구별하는 축이 없다.** ML 요건 정본(`데이터플랫폼 ML 예측관련_취합_20260730.xlsx`)의 회비예측 전 계열이 *"**신규본부/신규지부**/기존"* 3분류를 요구 → `DIVISION` 단일 컬럼으로는 산출 불가. **⚠️ 명칭이 레벨과 대응하지 않는다**(실측: "본부" 포함 부서가 조직트리 L1~L5에 2/6/50/67/4로 분산 · "지부"는 L2~L5에 4/65/280/5로 분산) → 깊이로도 명칭으로도 단독 판정 불가. 별도 구분자(조직유형) 필요 여부 결정 필요. |
+| | 🔴 **[2026-07-31 신규] LVL1(조직트리 9개)은 순수 "법인" 레벨이 아니다** — 법인 4개(`A000001` 사단법인 굿네이버스 인터내셔날 · `B001002` 사회복지법인 굿네이버스 · `C000035` 재단법인 글로벌 임팩트 · `E001032` 재단법인 굿네이버스 미래재단) + **`ZA` 접두 구조노드 4개**("본부"·"국내사업장"·"국내사업장(사복)"·"본부(사복)") + **직위 1개**(`B000007` 이사장(사복)(사복), 자식 0·실적부서 Y)가 혼재. `CORP`에 LVL1을 그대로 대입하면 직위·구조노드가 법인으로 노출된다. |
+| | 🟡 **LVL6(조직트리 6개) 실명**: `E001137` 루마니아 · `F001030` 좋은마음센터광주서부(사복) · `F001031` 전남동부아동권리옹호센터(사복) · `F001035` 좋은마음센터대구동부(사복) · `F001060` 좋은마음센터전남동부(사복) · **`F001059` 삭제4(사복)**(폐기 레코드). 센터·해외지점 성격 → `TEAM`으로 접거나 `DEPARTMENT` 하위로 흡수 판단 필요. |
+| | ⚠️ **검증 기준 주의(2026-07-30 자체 오판 기록)**: 최초 검토는 `DEPT_NM LIKE '%본부%'` 명칭 패턴으로 "깊이 기반 매핑은 성립하지 않는다"고 판정했으나, **설계·DEC-5는 명칭 기반이 아니라 레벨 기반**이므로 이는 **검증 기준을 잘못 잡은 범주 오류**(AD-1 오진과 동일 유형)였다 → **해당 판정 철회.** 계층 판정은 명칭이 아니라 `UPPER_DEPT_ID`/`ACMSLT_UPPER_DEPT_ID` 재귀 깊이 + `ACMSLT_DEPT_YN` 로 해야 한다. |
+| | **영향**: `FMM`/`FME`/`FBD`/`FTG_D`의 `ORG_SK` 소비 · WIDE 뷰 조직 컬럼 · SV 조직 차원 · 기획실 "부서별 개발예측"(현재 `DEPARTMENT` 695종으로 산출 가능) |
+| | **관련**: DEC-5(§6-1) · O10(조직 역할) · `20_issue/50` §BLOCKING-5 확장 · `20_issue/20` §F-1 |
+| **O17** | **[신규 2026-07-30] `DIM_REASON` 미납사유 — 설계에 있으나 SILVER 전파 누락** · ✅ **Phase-1 완료(2026-07-31 W1+W3)** |
+| | D12 설계 주요 컬럼은 `중단사유·미납사유·REASON_TYPE`이고, `DIM_REASON` 실측에 결제실패 사유가 **이미 라벨화**되어 있다(`REASON_TYPE='PM019'` **950종**: "사용요금이 미납되어 결제를 이용하실 수 없습니다"·"거래시도 횟수 초과로 자동취소"·"재시도요청"·"통신사 통신오류" 등). |
+| | ✅ **W1(2026-07-31)**: SILVER `CRM_PAYMENT_BILLING`에 `RQEST_RST_CD`·`PRCS_RST_CD` 2컬럼 추가(47,521,872행 재적재·ERROR=0). |
+| | ✅ **W3(2026-07-31)**: `FMM.REASON_SK` 배선 완료. DEC-24 대표사유 규칙(최종차수) + 코드그룹 매핑(PM002/PM032/PM018/PM033/PM019) + DIM_REASON 직접조인(FK 무결성 보장). 결과: 미납 월×회원 3,302,535 중 **3,164,724(95.83%) 매핑·137,811(4.17%) SK=0**(수기처리 127,155 + F코드부재 10,623 + DIM 미존재 33 — 구조적 gap, 정상). |
+| | ⚠️ **잔여**: 중단사유(`FME.REASON_SK`) 배선은 별도 트랙(O21 잔여). |
+| | **관련**: DEC-3(미납 정의) · DEC-21(W1) · DEC-24(W3 규칙) · ML 정본이 중단예측 필수조건으로 *"납입이력(미납횟수, 미납사유)"* 요구 |
+| **O18** | **[신규 2026-07-30] `DIM_DATE.IS_HOLIDAY` 값 부재 — 원천 자체가 없음** · 🔷 **Phase-2** (외부 입고 의존) |
+| | D1 설계에 `IS_HOLIDAY`가 컬럼으로 있으나 `DIM_DATE.sql`이 `FALSE`를 **하드코딩**한다(주석: *"휴일 원천 없음(추후 보정)"*). 실측 16,437행 **전건 FALSE**(NULL도 아님). `%HOLIDAY%`·`%HDAY%`·`%RESTDE%`·`%WORKDAY%` 전 스키마 검색 결과 BRONZE/SILVER 매칭 **0**. |
+| | ML 정본 기획실 개발예측 **A안 3종**이 *"연도말까지 주말(휴일) 제외 개발가능일수"* 를 요구. 주말은 `DAY_OF_WEEK`(정상 채움)로 산출 가능, **공휴일은 불가** → 외부 입고 필요(`20_issue/40` **HOL-1**). |
+| | ⚠️ WIDE 6종이 이 컬럼을 상속 → 현재 전부 FALSE. 소비 측이 "휴일 아님"으로 오독할 위험. |
+| | 🟡 **부수 확인 필요**: D1 주요 컬럼 표기에 **"시간대"** 가 있으나 `06_DDL` `DIM_DATE`에는 해당 컬럼이 없다(`DATE_SK`·`FULL_DATE`·`YEAR`·`MONTH`·`MONTH_KEY`·`DAY`·`DAY_OF_WEEK`·`WEEK_OF_YEAR`·`QUARTER`·`IS_HOLIDAY`). 일 grain 차원에 시간대는 어색하므로 **설계 표기 잔존으로 추정되나 확정 아님** → 표기 정정 또는 컬럼 신설 판단 필요. |
+| **O19** | **[신규 2026-07-30] `DIM_SPONSORSHIP.SPONSORSHIP_ABBR` — "약칭"이 아니라 분류코드로 보인다** · 🔷 **Phase-2** (코드사전 미특정·현업 라벨 대기) |
+| | D5·`06_DDL` 주석은 `약칭(#124)`이나 실측값은 `1`~`6` **6종 코드**이고 사업 구성이 의미적으로 분리된다: `1`(17건, 국내 계열) · `2`(1건, 해외아동결연) · `3`(6건, 해외 프로젝트 계열) · `4`(3건, 대북/북한 계열) · `5`(21건, 일시·선물금·긴급구호·개별후원 계열) · `6`(2건, 해외사례·해외사업후원) · NULL(1, 미매핑 센티넬). |
+| | ⚠️ **위 그룹 의미는 사업명에서 읽어낸 추정이며 코드사전 근거가 아니다.** `SILVER.CRM_CODE`에서 해당 코드그룹(CD_ID)을 특정하지 못했다 → **라벨 확정 전 단정 금지.** |
+| | ML 정본은 *"후원사업(**국내/결연/해외프로젝트/기타**)별"* **4그룹**과 월 회비예측의 *"후원사업 총 **11개**"* 를 요구한다. 6종↔4그룹↔11개의 대응은 **전부 미확정** → 현업 매핑표 필요(`20_issue/20` §F-2). |
+| | → 조치 방향: 축 신설이 아니라 **① 코드그룹(CD_ID) 특정 후 라벨 컬럼 신설 ② `약칭(#124)` 주석 정정**. 2026-07-16 캠페인 유형1/유형2 의미혼입 교정과 동일 패턴(컬럼명이 실제 의미를 가림). |
+| **O47** | **[신규 2026-08-07 · ✅ 생성기·문서 해소] 「grain 부정합」 판정 규약 부재 — 조립가능성 검사기가 5개 문제를 한 라벨로 묶고 있었다** · 🔵 **내부 · 외부 의존 0** |
+| | 트리거 = 사용자 질의 *"grain 부정합은 gold/silver 에 grain 맞는 테이블을 만들면 해결되나?"* → **답은 절반만 그렇다.** 진단 정본 = `20_issue/00_INDEX_이슈원장.md` **§O47** · 결정 = `20_issue/30_설계_의사결정.md` **§22(DEC-31·33 · DEC-32 철회)·§22-A**. |
+| | ✅ **판정 4종 신설**(`집계필요`·`배분규칙필요`·`형제팩트중복`·`앵커_경합`) + FK 실선언 읽기 + degenerate 우선 + 1:1 위성 등록부 + 축 병기 후보 선택 → **조립가능 250 → 267(49.3% → 52.7%)** · `grain부정합` **35 → 2**. 전이 전량 규명(설명되지 않는 차이 0). 2026-08-07 `dbt build PASS=375 ERROR=0`(O45-C 종결) 후 재측정 확정. |
+| | 🔴 **O47-B — 앵커 선정이 동점에서 임의였다**: 종전 검사기가 `Counter.most_common(1)` 로 앵커를 골라 **동점을 삽입 순서로** 깼다. 3-7 좌측이 `FMM:2 / FGA:2 / FSE:2` **3파 동점**이었고 O45-C 재빌드로 매핑 2건이 바뀌자 앵커가 뒤집혀 **15건 판정이 한꺼번에 반전**했다. ✅ 결정적 정렬(hit desc, 팩트명 asc) + **`앵커_경합` 판정 노출**. 경합 섹션 **2건 34행**: **1-2 개발실적보고(주간)** = `FACT_MEMBER_FEE`/`FACT_MEMBER_MONTHLY` 동수(21행 · 🔴 **[2026-08-07 정정] 종전에 이를 「DEC-31 직접 증거」로 적은 것은 오판**이다 — 실측하니 `FMM` 을 부르는 필드는 「개발(건)」 하나, `FMF` 는 「후원사업」 하나로 **1:1** 이고 경합 원인은 회비가 아니라 **개발실적**이다. 게다가 `FMM.DEV_CNT` 는 `FME` 전체 롤업과 **완전 일치**(2,291,878)하므로 파생이다 · P100) · **3-7 좌측** = `FACT_BIGQUERY_BEHAVIOR`/`FACT_MESSAGE_DISPATCH`(15행 · 원천 인벤토리가 스스로 「혼합」이라 적은 섹션). ⇒ 경합 섹션은 **한 표가 아니라 경합 팩트 수만큼의 쿼리로 나눈 뒤 공통 축(회원·월)에서 합친다.** |
+| | 🔴 **P98 — `05_필드 인벤토리.md` 는 설계문서이면서 `05` 생성기의 라벨 사전이다.** O47 주석을 `FME` 의 `CAMPAIGN_SK`·`SPONSORSHIP_SK`·`ORG_SK` 설명 칸(종전 공란)에 넣자 **그 주석 전체가 「라벨」로 색인**됐고, `idx.setdefault` 의 **문서 순서 first-wins** 때문에 실제 라벨을 선점할 수 있는 상태가 됐다. ✅ 생성기 가드 추가(상태 마커로 시작하면 라벨 아님) · 쓰레기 라벨 **0건** · 판정 불변. ⚠️ **이 문서의 설명 칸을 편집하면 생성기를 재실행해 산출물 diff 를 확인할 것.** |
+| | 🔴 **`09_보고서필드_조립가능성` 의 `grain부정합` 35건 재분류(교정 후 실측)**: 검사기 오판 **1**(광고시작시간) · 형제팩트중복 **6** · fine→coarse **7**(사전집계로 열림) · coarse→fine **9**(배분규칙 필요) · 축 병기 오선택 **8**(후원사업 — 열림) · 엔티티축 상이 **2** · GA4 타원천 **2**. **해소 주체가 쿼리·설계·현업으로 전부 다르다.** |
+| | 🔴 **판정 규약 신설 필요(설계 소관)** — 「grain 이 다르다」는 판정이 아니라 질문이다. 판정 시 **① 앵커→대상의 방향** ② fine→coarse 면 「사전집계 후 조인」 해법 병기 ③ **팬아웃 실측을 사전집계 전/후 두 값으로** 기록해야 한다(**P95**). 실증: `FMM ⋈ (FSE→회원·월 사전집계)` = 행수 **40,054,883 불변** · 청구액 **891,959,790,888 불변**. 종전 기재 「37.3배 복제」는 **naive 조인의 결과**이고 grain 의 필연이 아니다. |
+| | 🔴 **1:1 위성 판정 규약** — `FAD_B`·`FAD_D` 는 `AD_PERF_DK` PK 로 코어와 1:1 이므로 **시간축 컬럼 유무가 아니라 조인키 유일성으로 판정**한다(DEC-13 기확정 · 실측 조인 후 38,486행 불변). 정본 반영 = `05_필드 인벤토리.md` §FAD 조립 규약 블록(**P96-③**). |
+| | 🔴 **degenerate·접두 FK 미탐 문제** — 「요일·주차」의 정본 소재지는 `FAP.DAY_OF_WEEK`·`WEEK_OF_YEAR`(**둘 다 243,545/243,545 채움**)인데 매핑이 `DIM_DATE` 를 가리켜 「도달불가」가 됐다. 또 `FK_FAD_DIM_DATE`(`PERF_DATE_SK→DATE_SK`)는 **실선언**돼 있다. 같은 미탐이 `FMF.LAST_BILL_DATE_SK`(98.4%)·`LAST_PAY_DATE_SK`(95.4%)·`FMC.ACQ_DATE_SK`·`FIRST_STOP_DATE_SK`·`FMC.ACQ_ORG_SK`/`ACQ_SPONSORSHIP_SK`/`ACQ_CAMPAIGN_SK` 에도 걸린다 → **FK 후보는 이름 규칙이 아니라 `show imported keys` 실선언에서 읽는다**(**P96-①②**). |
+| | 🔴 **`FME` STOP 3축 — [자체 철회 2026-08-07]** 「축 부재가 아니라 배선 미착수」로 올렸으나 **철회**했다. 개발원천 코드5 행이 이미 `SPONSORSHIP_SK`·`ORG_SK`·`CAMPAIGN_SK` 를 **100% 보유**하고(1,010,680행 · 27종/338종/12,568종 실측) `CAMPAIGN_STOP_CNT` measure 로 중단 분해가 성립한다 → STOP 브랜치를 배선하면 **같은 사건에 축이 두 개** 생겨 O24 이중계상을 재도입한다. **O38-B 도 같은 이유로 보류 유지.** → DEC-32 **철회** · 🆕 **P97**(「가능하다」와 「해야 한다」는 다르다) |
+| | 🔴 **`FSE.D5_*` 8컬럼 전건 0** — 발송 효과성 보고 14필드의 실제 사유는 grain 이 아니라 **귀속창 업무규칙 미확정 + 코호트 measure 미구현**이다(외부 입고 의존 0) → DEC-33. |
+| | 🟢 **진짜 축 부재는 소수**: `TM_CM_MBER_DVLP_GOAL` **11컬럼**(`STDYY`·`STDR_MT`·`MBER_DVLP_DIV_CD`·`DEPT_ID`·`GOAL_CNT`)에 후원사업·캠페인·일자·매체가 없고 `FACT_TARGET_MEMBER_DEV` 도 `MONTH_KEY`·`ORG_SK` 뿐이다 — **여기만 「테이블로 해결 불가」가 맞다**(O3·§5 O16 「매체별 목표 원천 부재」와 동일 계열). |
+| | 🔴 **「섹션별 테이블」을 만들지 않는다는 O45 판단 유지** — 팩트를 더 만들면 ① 형제팩트 가드가 팩트 수의 제곱으로 증가 ② 같은 사실의 저장 지점 증가로 O45-C 류 드리프트 재발 ③ 불가 판정 증가 자체가 오답 원천(P61·P94). |
+| | **관련**: O3(FBD 캠페인 grain) · O8(다중귀속) · O10/O38-B(조직 역할) · Q10(광고비 배분규칙) · DEC-13(위성 measure 노출) · O45(조립 축 신설) |
+
+## 6. 설계 결정·결함 레지스트리 (2026-07-07)
+
+### 6-1. 확정된 결정 (반영 완료)
+| # | 결정 | 반영 위치 |
+|---|---|---|
+| DEC-1 | **감사 컬럼 4종 표준화** — DW_SOURCE_SYSTEM · DW_LOAD_TS(최초적재) · DW_UPDATE_TS(최종적재) · DW_BATCH_ID(=dbt `invocation_id`). merge 시 `merge_exclude_columns=['DW_LOAD_TS']`로 최초적재 보존, UPDATE_TS·BATCH_ID는 run마다 갱신. GOLD·SILVER 공통(SILVER는 DW_SOURCE_TABLE 추가) | `gold_meta`/`dw_meta` 매크로, `dbt_project.yml`, `06_DDL.sql`, SILVER_DDL, 배포 테이블 |
+| DEC-2 | **DIM_ORG = SCD1** — SK=`gold_sk(['DEPT_ID'])` 안정키(재실행 멱등). **as-was org 지표 요구 없음·조직 변경이력 소스 없음 확인(2026-07-07) → SCD2 예약컬럼(EFFECTIVE_*/IS_CURRENT) 삭제** | `DIM_ORG.sql`·`06_DDL` |
+| DEC-3 | **미납 정의 확정(현업 C-3)** — 미납 판정 = `TM_PM_MBRFEE_ACMSLT.PAY_STAT_CD IN ('F', NULL)`(NULL=수기, 원래 F). MM010 미납1~5(회원상태)는 #84 회원상태별 분해용 dimension | `CRM_PAYMENT_BILLING`→FMM, `DIM_MEMBER` |
+| DEC-4 | **#80 base 신설 `UNPAID_MEMBERS`** (FMM 월말 = `PAY_STAT_CD IN ('F',NULL)`인 distinct 회원 명수) → 04_SV파생매핑 §5 미납명 갭 해소. #80=(전월말−당월말)/전월말은 SV 전월 LAG | FMM measure(설계 반영), *구현 대기* |
+| DEC-5 | **'팀' 정의 확정(현업 C-7)** — `STATS_DEPT_LVL` 미사용. `UPPER_DEPT_ID` 재귀 계층 **5번째 레벨 = 실적부서(실적 팀)** → DIM_ORG 계층전개(CORP>…>TEAM) 시 TEAM=5th | `DIM_ORG` 계층전개 |
+| DEC-6 | **EHGT 미연동 확정(현업 C-10)** — 그 시점 환율, 불필요 → 연동 안 함(이미 제외 Q11) | — |
+| DEC-8 | **AGENCY 유형별 위성 팩트 분리(2026-07-28)** — 3원천 이질속성을 코어(공통) + 위성 3(FAD_B·FAD_D·FAD_BC)으로 분리. 단일 wide 팩트는 NULL 희소성·의미모호로 기각 | §3-A-2, `03_테이블 설계` |
+| DEC-9 | **대행사 산정 파생값 `_SRC` 전량 보존(2026-07-28)** — 8종을 원천값 그대로 적재(비가산), SV가 base로 재계산. 선례=GA4 사전집계 #98·#108 | §3-A-3 |
+| DEC-10 | **`DIM_DEVICE` `(해당없음)` 멤버 신설(2026-07-28)** — 방송광고 기기NULL을 진짜미상과 분리. 해시 SK 부여(0 오염 방지)·`-1` 미사용·`0`=Unknown 정본 유지. 분석가 식별성은 `AD_SOURCE_TYPE` 병기 + `DEVICE_SCOPE_DESC` 로 보장 | §3-A-5, `DIM_DEVICE.sql` |
+| DEC-11 | **`AD_PERF_DK` 행 식별자 신설(2026-07-28)** — 원천 PK 부재·전컬럼 중복 131행 실측 → `MD5(AD_SOURCE_TYPE‖ROW_HASH‖DUP_SEQ)`. SILVER staging 3종이 발급 단일지점 | §3-A-6·3-A-7 |
+| DEC-12 | **`AD_TYPE` 명명 충돌 분리(2026-07-28)** — 코어 출처축 = `AD_SOURCE_TYPE`, WIDE 의 소재 속성 = `AD_CREATIVE_TYPE`(`DIM_AD_CREATIVE.AD_TYPE` 원본 보존). 둘 다 `AD_TYPE` 유지는 WIDE 평탄화 충돌로 기각 | §3-A-4, `09_빅테이블 VIEW` §3.7 |
+| DEC-13 | **WIDE 위성 3종 신설 + 카디널리티별 measure 노출 규칙(2026-07-28)** — 1:1 위성(FAD_B·FAD_D)은 코어 measure 동반 노출, **1:N 위성(FAD_BC)은 미노출**(fan-out 방지) | `09_빅테이블 VIEW` §7-A~7-C, `10_WIDE VIEW 코멘트.sql` |
+| DEC-7 | **인바운드콜·TS콜 = CRM 아님(현업 C-8)** — 현업 별도 관리 → 별도 입고 필요. FMM measure는 자리만 유지, 값은 입고 대기 | FMM |
+
+### 6-2. G-1·Q1 해소 → identity 지표 잠금해제
+- **회원번호가 GA·CRM 공통 조인키**로 확정(현업 확인 G-1 ✅). GA `user_id` = CRM 회원번호(정규 7자리 / 일회성 `S`+8자리, VARCHAR·leading-zero 보존).
+- **【회원번호 체계 명문화】 CRM 분리 관리 / GA 단일 통합**: CRM은 정식(FDRM)과 일시(ONCE) 회원을 **별도 테이블**로 분리 관리한다 — `TM_MM_FDRM_MBER_INFO`(번호 범위 `0000000`~`9999999`, 7자리, leading-zero 보존) · `TM_MM_ONCE_MBER_INFO`(번호 범위 `S00000000`~`S09999999`, `S`접두+8자리=9자). GA4 `user_id`는 이 두 유형을 **단일 필드에서 함께 표현** — `'S'` 접두 유무만으로 FDRM/ONCE 판별 가능. 두 원천이 동일 namespace의 회원번호를 공유하므로 직접 조인이 성립한다.
+- **Q1(행매칭 실증) 해소**: 이 형식 스펙이 `GA4_IDENTITY`/`DIM_MEMBER_IDENTITY`가 `enabled=false`였던 사유(Q1)를 해소. 기존 분기 로직(`user_id ILIKE 'S%' → ONCE / else → FDRM`, `MBER_NO`/`ONCE_MBER_NO` 분리)이 스펙과 **정확히 일치(검증 완료)** → 두 모델 `enabled=true` 전환 가능.
+- ⚠️ **활성화 시 동반 필수**: (a) D1-FBQ — `FBQ.IDENTITY_SK`가 실제값이 되므로 `unique_key`에 IDENTITY_SK 추가, (b) **DQ 확인** — BigQuery export가 leading-zero·`S`접두를 보존해야 조인 성립(숫자화 시 매칭 실패).
+- ⚠️ **[결론9] user_id 커버리지 4.2%**: identity 조인은 **구조적으로** 성립하나, BigQuery `user_id` 채움률은 약 **4.2%**(전수 12,120/287,025·식별 1,290명·익명 95.8%). 따라서 #81·신#32·33 등 **회원단위 BigQuery 지표는 부분 커버리지**이며 전수로 단정 금지. SV/BI에 커버리지 경고 노출, 익명(user_pseudo_id)은 세션 스티칭 없이는 회원 귀속 불가.
+- 잠금해제 지표: **#81 미납서비스 전환율**, **신#32·33**(클릭/전환 회원명). 경로: `FBQ.IDENTITY_SK → DIM_MEMBER_IDENTITY → 회원 미납 판정(C-3: PAY_STAT_CD F/NULL, 또는 회원상태 MM010 미납1~5 — ⑤에서 확정)`.
+- **미납서비스 클릭회원(명)** = distinct(미납회원 ∩ GA 클릭회원). 소결정 2건 필요: ①"미납서비스 클릭"의 GA 이벤트/페이지 범위, ②"납입 전환" 판정(상태전이 vs 회비납입, 판정 기간).
+
+### 6-3. 결함 레지스트리 (D1·D2·D3 해결완료 — D2 SCD2 실적재 2026-07-16)
+| ID | 결함 | 심각도 | 조치안/해결 |
+|---|---|---|---|
+| ~~D1~~ ✅ | 팩트 incremental merge `unique_key` < grain (FBQ·FSE·FMM·FME·FEP·FTD, 센티넬 해소 시 행 소실) | — | **해결(순서9 G-1/G-2 개정): 스캐폴드 팩트 6종 `incremental + append + pre-hook TRUNCATE + full_refresh:false`**(`dbt_project.yml` gold.fact 상속·모델 오버라이드 없음). 매 run TRUNCATE 후 전량 append → grain 비유일 행소실·잔존행 0(멱등)·06_DDL 구조/타입/FK 보존. **`table`(CTAS)은 매 run DDL 을 덮어써 fact FK 23개·타입 드롭 → 폐기.** ⚠️ 마감 전: 대량시 전량 재적재 비용 재평가 후 진성 `incremental merge`(unique_key=활성 SK) 재전환 여부 결정 필수(33 상단 영구주석) |
+| ~~D2~~ ✅완료 | DIM_MEMBER SCD2 버전 불가 — MEMBER_SK=hash(MEMBER_DK,JOIN_DT)→회원당 1행, `07_메타 §4-1`(EFFECTIVE_FROM~TO 조인)과 불일치 | — | **해결완료(2026-07-16 순서9-D)**: 전용 소스 `TH_MM_FDRM_MBER_STNG_DTLS`=`SILVER.CRM_MEMBER_STATUS_HIST` **7,501,761행 입고** → 시점조인 SCD2 재배선·실적재 **7,925,716행**(distinct 회원 1,763,065=CRM_MEMBER 손실0·현재행 회원당 1개·중복0·평균4.5/최대218버전). MEMBER_SK=hash(DK,EFFECTIVE_FROM)(동일시점 다중변경은 max SER_NO 축약→유일). **적재전략 = fact 패턴 `incremental+append+pre-hook TRUNCATE`**(구조보존; 임시 `table`은 06_DDL PK·COMMENT 파괴로 폐기). `MEMBER_DK` IS_CURRENT 한정 unique 가드레일 신설. 상태 라벨링(MM010)은 SILVER 충족 |
+| ~~D3~~ ✅ | DIM_ORG `EFFECTIVE_FROM=CURRENT_DATE()` 가짜 업데이트 | — | **해결(2026-07-07): 예약컬럼(EFFECTIVE_*/IS_CURRENT) 삭제로 근본 종결**(DEC-2). DDL·모델·09/10 WIDE VIEW(as-was→current-value)·05·08 반영 |
+
+### 6-4. 완전성 판정
+- **구조 커버리지: 완전** — 02(162)·03(53) 215지표는 measure→FACT / dim→DIM / derived81→SV 전수 매핑, 04·05 보고서 필드는 모두 DIM/FACT에 자리 존재.
+- **정본 고정 조건**: DEC-4(#80) 구현 + D1~D3 처리방침 확정 + 6-2 소결정. 그 전까지는 "구조 확정 + open 레지스트리 관리" 상태.
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+> 아래는 이 문서 소관 사실만 발췌한 것이며, 수치는 전부 2026-08-05 실측이다.
+
+### 1. `FACT_MEMBER_MONTHLY` 컬럼 2종 신설 (O40 · 적재 완료)
+
+| 컬럼 | 정의 | 2025 실측 |
+|---|---|---|
+| `PAID_FEE_BILLABLE` | `SUM(PAY_AMT) WHERE PAYMENT_TYPE='회비'` — **납부율 분자 정본** | 175,381,890,496 |
+| `UNPAID_BILLED_AMT` | `SUM(RQEST_AMT) WHERE PAY_STAT_CD IN ('F',NULL)` — **DEC-3 미납 정본** | 29,251,314,636 |
+
+🔴 **왜 필요했나**: 기존 `PAID_FEE = SUM(PAY_AMT)` 는 **회비 ∪ 기부금** 이고 `BILLED_AMT = SUM(RQEST_AMT)` 는
+**회비뿐**이다(기부금 원천 `TM_PM_DNTN_DTLS` 에 청구 컬럼이 아예 없다 — SILVER 1,130,252행 전건 NULL).
+두 값을 나눈 `PAYMENT_RATE` 가 **전 기간 100.36%**, 차감식 미납금액이 **−32억(음수)** 였다.
+→ 교정 후 전 기간 납부율 **86.19%** · 미납 **1,226억**.
+
+### 2. `HAS_BILLING` 의미 정정 (O40)
+
+`IFF(billing CTE 매칭, TRUE, FALSE)` 이고 그 CTE 가 **회비∪기부금**이다. 따라서 **「회비만」 스코프가 아니다.**
+2025 `HAS_BILLING=TRUE` 8,514,780행 중 **청구가 0/NULL 인 행 28,521건**(기부금 전용 월)이고 2025 기부금
+17,039,752,344 원이 **전액 TRUE 안에** 있다. 「HAS_BILLING 으로 걸었으니 회비 기준」이라는 서술은 **틀렸다.**
+
+### 3. `*_MEMBERS` 컬럼의 의미는 grain 에 종속된다 (O39)
+
+**같은 이름이 팩트마다 옳기도 하고 틀리기도 하다** — 이름으로 일괄 판단하지 말 것(**P78**).
+
+| 객체·컬럼 | grain | `SUM` | 실제 고유회원 | 판정 |
+|---|---|---|---|---|
+| `FACT_MEMBER_EVENT.DEV_MEMBERS` | 1행=1사건 | 2,291,878 | 1,585,923 | 🔴 플래그(44.5% 과대) |
+| `FACT_MEMBER_EVENT.STOP_MEMBERS` | 1행=1사건 | 1,038,262 | 903,064 | 🔴 플래그(15.0% 과대) |
+| `FACT_MESSAGE_DISPATCH.SEND_MEMBERS` | 1행=1발송 | 38,470,780 | 1,031,971 | 🔴 플래그(37.3배) |
+| `FACT_MEMBER_MONTHLY.DEV_MEMBERS` | 월×회원 | 1,996,977 | 1,996,977 | 🟢 **옳다**(466개월 전부 일치) |
+| `FACT_MEMBER_COHORT.ACQ_MEMBERS` | 1행=1회원 | 1,585,949 | 1,585,949 | 🟢 **옳다** |
+
+판정식은 하나다 — `SUM(컬럼) == COUNT(DISTINCT 개체키)` 가 **모든 구간에서** 성립하는가.
+🔴 위 3종은 COMMENT 경고를 실었다(`_archive/O39_COMMENT_GUARD.sql` · APPLIED·정본은 `06_DDL.sql` 491·493·578), 아래 2종은 **의도적으로 건드리지 않았다.**
+
+### 4. `FACT_TARGET_MEMBER_DEV` 의 축은 4개뿐이다 (개발현황 장표 판정 근거)
+
+원천 `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL` 의 컬럼은 `STDYY · STDR_MT · MBER_DVLP_DIV_CD · DEPT_ID ·
+GOAL_CNT` 뿐이다 — **매체·브랜드·캠페인·일자 축이 없다.** 따라서 매체별·일별 **목표**는 원천 부재이며
+설계로 만들 수 없다(현업도 마케팅 인벤토리 §1 고려사항에 "매체별 목표는 확인 불가"로 명시).
+
+_Co-authored with CoCo_
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+> 이 문서 소관 사실만 발췌했고, 수치는 전부 2026-08-05 실측이다.
+
+### 1. `FACT_MEMBER_MONTHLY` 컬럼 2종 신설 (O40 · 적재 완료)
+
+| 컬럼 | 정의 | 2025 실측 |
+|---|---|---|
+| `PAID_FEE_BILLABLE` | `SUM(PAY_AMT) WHERE PAYMENT_TYPE='회비'` — **납부율 분자 정본** | 175,381,890,496 |
+| `UNPAID_BILLED_AMT` | `SUM(RQEST_AMT) WHERE PAY_STAT_CD IN ('F',NULL)` — **DEC-3 미납 정본** | 29,251,314,636 |
+
+🔴 **왜 필요했나**: 기존 `PAID_FEE = SUM(PAY_AMT)` 는 **회비 ∪ 기부금**, `BILLED_AMT = SUM(RQEST_AMT)` 는
+**회비뿐**이다(기부금 원천 `TM_PM_DNTN_DTLS` 에 청구 컬럼이 아예 없다 — SILVER 1,130,252행 전건 NULL).
+두 값을 나눈 `PAYMENT_RATE` 가 **전 기간 100.36%**, 차감식 미납금액이 **−32억(음수)** 였다.
+→ 교정 후 전 기간 납부율 **86.19%** · 미납 **1,226억**.
+
+### 2. `HAS_BILLING` 의미 정정 (O40)
+`IFF(billing CTE 매칭, TRUE, FALSE)` 이고 그 CTE 가 **회비∪기부금**이다 → **「회비만」 스코프가 아니다.**
+2025 `HAS_BILLING=TRUE` 8,514,780행 중 **청구 0/NULL 행 28,521건**(기부금 전용 월)이고 2025 기부금
+17,039,752,344 원이 **전액 TRUE 안에** 있다. 「HAS_BILLING 으로 걸었으니 회비 기준」이라는 서술은 **틀렸다.**
+
+### 3. `*_MEMBERS` 의 의미는 grain 에 종속된다 (O39 · P78)
+| 객체·컬럼 | grain | `SUM` | 실제 고유회원 | 판정 |
+|---|---|---|---|---|
+| `FACT_MEMBER_EVENT.DEV_MEMBERS` | 1행=1사건 | 2,291,878 | 1,585,923 | 🔴 플래그(44.5% 과대) |
+| `FACT_MEMBER_EVENT.STOP_MEMBERS` | 1행=1사건 | 1,038,262 | 903,064 | 🔴 플래그(15.0% 과대) |
+| `FACT_MESSAGE_DISPATCH.SEND_MEMBERS` | 1행=1발송 | 38,470,780 | 1,031,971 | 🔴 플래그(37.3배) |
+| `FACT_MEMBER_MONTHLY.DEV_MEMBERS` | 월×회원 | 1,996,977 | 1,996,977 | 🟢 **옳다**(466개월 전부 일치) |
+| `FACT_MEMBER_COHORT.ACQ_MEMBERS` | 1행=1회원 | 1,585,949 | 1,585,949 | 🟢 **옳다** |
+
+판정식은 하나다 — `SUM(컬럼) == COUNT(DISTINCT 개체키)` 가 **모든 구간에서** 성립하는가.
+위 3종에 COMMENT 경고를 실었고(`_archive/O39_COMMENT_GUARD.sql` · APPLIED·정본은 `06_DDL.sql` 491·493·578) 아래 2종은 **의도적으로 건드리지 않았다.**
+
+### 4. `FACT_TARGET_MEMBER_DEV` 의 축은 4개뿐이다
+원천 `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL` = `STDYY · STDR_MT · MBER_DVLP_DIV_CD · DEPT_ID · GOAL_CNT`.
+**매체·브랜드·캠페인·일자 축이 없다** → 매체별·일별 **목표**는 원천 부재이며 설계로 만들 수 없다.
+
+---
+
+## 7. [2026-09-16 O162] CRM 원천 개편의 GOLD 영향 (BRONZE_CRM 46 → 50)
+
+> **원천 정본** = `50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql` · SILVER 측 정본 =
+> `04_silver_design/03_SILVER_작업계획_CRM전용 20260714.md` **§7**(개편 전량 · 현업 확인 M-1~M-6).
+> 🔴 **이 절은 GOLD 소관 영향만 담는다.** 개편 요약·grain 판단은 SILVER 문서가 정본이다.
+> 🔴 **아래는 설계 방향이고 적재·재작성은 착수 전이다** — 「완료」로 읽지 마라(`P15` 설계O·값미주입 축).
+
+### 7-1. `D4 DIM_CAMPAIGN` — 마케팅 코드 계통 교체 + 채널 축 신설
+
+| 축 | 종전(DEC-17) | 개편 후 |
+|---|---|---|
+| 마케팅캠페인 | `TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD`(323종) | 🔴 삭제 → `TC_MKTNG_DTL_CD` `CD_ID='C001'` |
+| UTM | `TM_CM_MKTNG_UTM.MK_UTM/MK_UTM_NM`(191종) | 🔴 삭제 → `TC_MKTNG_DTL_CD` `CD_ID='U001'` |
+| **채널(신설)** | — | 🆕 `TM_CM_CMPGN_MNG.MKTG_CHANNEL` + 라벨 `CD_ID='C002'` |
+| 분류 4축 | `TC_CMMN_DTL_CD` MM293~MM296 | 계통 유지 · 🟠 `DTL_CD_ID` **값이 변경**됨(재실측 필요) |
+
+- 🟢 **신설 컬럼 2종 권고** = `MKTG_CHANNEL`(코드) + `MKTG_CHANNEL_NM`(라벨).
+  **코드+라벨 병행보존** 원칙(DEC-17 · master §3)을 따르고 **컬럼명은 BRONZE 원천명 그대로** 둔다
+  (O24 에서 확정한 원칙 — 현업이 BRONZE 를 직접 본다).
+- 🔴 **`MKTG_CMPGN_NM` 의 함정이 그대로 남는다** — 이 컬럼은 `_NM` 접미이나 **실제로는 FK 코드**다.
+  종전 참조 대상이 사라졌으므로 `C001` 로 갈아끼우되 **접미 오해 경고 COMMENT 를 유지**한다.
+- 🔴 **DEC-17 실측치는 전부 재측정 대상이다** — 라벨 채움(카테고리 33,892 등)·고아 코드 2건
+  (`CMPGN_CTGR_CD=58`·`CMPGN_TYPE1_BSN=4`)·fan-out 0 판정은 **구 코드값 기준**이다.
+  ⇒ 재작성 후 `(CD_ID, DTL_CD_ID)` 유일성과 fan-out 을 다시 실측한다(`R2-3`).
+- ⚠️ `MKTG_UTM` 이 원천에서 **전건 NULL** 이므로, UTM 축은 **당분간 라벨만 존재하고 값이 없다**.
+  🔴 값 부재를 `'미상'` 으로 창작하지 않는다(`R2-7-1`) — NULL 로 두고 COMMENT 에 이유를 쓴다.
+
+### 7-2. `FSE FACT_MESSAGE_DISPATCH` — 오픈 축의 원천이 컬럼 → 테이블 2개로
+
+- 현행 `FACT_MESSAGE_DISPATCH.sql` 은 `MIN(OPEN_DT)` 로 **오픈 추적 시작시점**을 잡고
+  `OPEN_DT IS NOT NULL` 로 오픈을 판정한다(실측 6건/2파일 · SILVER §7-4).
+  ⇒ `OPEN_DT` 가 사라지므로 **이 두 지점이 함께 깨진다.**
+- 🟢 **설계 방향** = 오픈·클릭을 **SILVER 에서 발송×회원 grain 으로 축약**해 올린다.
+  🔴 **GOLD 에서 로그를 직접 조인하지 마라** — FSE grain(1발송×1회원)에 N행 로그를 붙이면
+  `SEND_MEMBERS` 계열이 다시 부풀고, 그것은 이미 **P78 플래그 대상**(37.3배)인 컬럼이다.
+- 🆕 **measure 신설 후보** = 링크 클릭(건·명) · 오픈 횟수(건). 🔴 **명(名) measure 는 grain 종속**이므로
+  `SUM == COUNT(DISTINCT 회원)` 판정식을 통과하지 못하면 **플래그 COMMENT 를 함께 싣는다**(O39·P78).
+- 🟠 **`D10 DIM_SERVICE` 영향 없음**(채널 축은 CRM_UMS/ADMIN 이고 오픈은 measure 축이다).
+
+### 7-3. `D2 DIM_MEMBER` / `FME` — 일시→정기 전환 테이블 신규
+
+- `TM_MM_FDRM_MBER_DT_DTLS`(5컬럼)는 **회비이관 시에만** 기록되는 부분집합이다.
+- 🟢 **1차 배선 후보 = `DIM_MEMBER` 속성**(전환일·전환여부). 회원의 **상태**에 가깝다.
+- 🔴 **`FME` 에 새 `EVENT_TYPE` 을 만드는 것은 보류**다 — `EVENT_TYPE` 은 **상태축이 아니라 원천 계통축**이고
+  (§3 FME 주석), 같은 사건에 축을 둘로 만들면 **O24 이중계상**을 재도입한다(`P97` — 「가능하다」와
+  「해야 한다」는 다르다). ⇒ 사건화 필요 여부는 **현업 확인 후** 결정한다.
+- 🔴 **커버리지 미실측** — 「회비이관 없는 전환」이 존재하면 이 테이블만으로는 **과소계상**이다.
+  ⇒ 배선 전에 `CRM_MEMBER` 회원번호 체계(`S` 접두)와 대조해 분모를 실측한다.
+
+### 7-4. 영향 없음으로 판정한 것 (근거 병기)
+
+| 대상 | 판정 | 근거 |
+|---|---|---|
+| `D12 DIM_REASON` · `D11 DIM_PAYMENT` | 🟢 무영향 | 개편 대상이 납입·사유 계통을 건드리지 않았다 |
+| `D5`·`D6`·`D14`·`D15` | 🟢 무영향 | 후원사업·조직·행사·예산 원천 불변 |
+| `FMM`·`FTG_D`·`FTG_B`·`FEP`·`FBD` | 🟢 무영향 | 참조 원천에 신규·삭제 대상이 없다 |
+| `FBQ`·`FAD` 계열 | 🟢 무영향 | BigQuery·AGENCY 원천이고 CRM 개편과 무관 |
+| `FME` measure | 🟠 조건부 | §7-3 결정 전까지 **불변**(새 축 추가 금지) |
+
+🔴 **위 「무영향」은 원천 대조 판정이고 라이브 실측이 아니다** — 재작성·재적재 후
+`R2-8-4` 대로 다시 조회해 닫는다. 이 계정은 문서작업 기준이므로 **라이브 판정은 보류**한다.
+
+_Co-authored with CoCo_

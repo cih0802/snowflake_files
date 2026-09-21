@@ -27,7 +27,7 @@
 --    🔄 **[2026-08-10 O51-F 정정]** 종전 기재 *"`WIDE_AD_BROADCAST`·`WIDE_AD_DIGITAL` 은 DROP 예정이라 제외"* 는
 --       **철회됐다.** 두 뷰는 dbt 모델이라 물리 DROP 은 다음 build 가 되살리고, DEC-8/DEC-10 이 위성 단독 완결을
 --       설계 의도로 명시한다 ⇒ **보존 + §7-A·§7-B 문안 68컬럼 이관 완료**(생성기 `build_ad_yml.py`).
---       ⚠️ 이관 시 §7-A 의 `AD_VIEW_RT_SRC`·`CPC_SRC` 에 **VIDEO 전용 표기가 누락**돼 있어 보강했고,
+--       ⚠️ 이관 시 §7-A 의 `AD_VIEW_RT_SRC`·`CPC_CALL_SRC` 에 **VIDEO 전용 표기가 누락**돼 있어 보강했고,
 --       `CONV_CALL_CNT` 는 **원천에서 전건 비어 있음**이 실측돼 경고를 덧붙였다(이슈원장 §O51-F).
 --
 --    🔴 **이관 시 이 파일에서 적발된 결함 2종 (다음에 이 파일을 인용할 사람은 반드시 볼 것)**
@@ -438,7 +438,7 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_BROADCAST
           COLUMN DVLP_MEMBER_CNT     COMMENT '개발회원수 (REBRDC 전용) — ⚠️대행사 전환이 아님(O16 분리)',
           COLUMN DVLP_CNT            COMMENT '개발건수 (REBRDC 전용) — ⚠️대행사 전환이 아님(O16 분리)',
           COLUMN AD_VIEW_RT_SRC      COMMENT '광고시청률(대행사 산정) — 비가산 N, 재합산 금지',
-          COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N, 재합산 금지',
+          COLUMN CPC_CALL_SRC       COMMENT '방송 콜당 단가(대행사 산정) — 비가산 N, 재합산 금지. 🔴 클릭 분모가 아니다(O174)',
           COLUMN DW_SOURCE_SYSTEM    COMMENT '원천 시스템 식별',
           COLUMN PERF_FULL_DATE      COMMENT 'DIM_DATE.FULL_DATE — 실적일 일자',
           COLUMN PERF_YEAR           COMMENT 'DIM_DATE.YEAR — 실적일 년',
@@ -472,7 +472,7 @@ ALTER VIEW GN_DW.GOLD.WIDE_AD_DIGITAL
           COLUMN CRM_DEV_CNT         COMMENT 'CRM 개발건수',
           COLUMN CTR_SRC             COMMENT 'CTR(대행사 산정) — 비가산 N. DW 재계산=SUM(CLICKS)/SUM(IMPRESSIONS)',
           COLUMN CVR_SRC             COMMENT 'CVR(대행사 산정) — 비가산 N. DW 재계산=SUM(AGENCY_CONV_MEMBERS)/SUM(CLICKS)',
-          COLUMN CPC_SRC             COMMENT 'CPC(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS)',
+          COLUMN CPC_CLICK_SRC      COMMENT '디지털 클릭당 단가(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(CLICKS) (O174)',
           COLUMN CPM_SRC             COMMENT 'CPM(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(IMPRESSIONS)*1000',
           COLUMN CPA_SRC             COMMENT 'CPA(대행사 산정) — 비가산 N. DW 재계산=SUM(AD_COST)/SUM(AGENCY_CONV_CNT)',
           COLUMN DEV_UNIT_PRICE_SRC  COMMENT '개발단가(대행사 산정) — 비가산 N',

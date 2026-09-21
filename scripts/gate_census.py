@@ -142,6 +142,9 @@ OBSERVE = {
 }
 
 NEEDS_ARGS = {
+    'new_tool':          '🆕 [O174] 도구 생성 + 이 파일 등재를 **한 동작**으로 — `--name`·`--bucket`·'
+                         '`--axis` 필수(무인자 exit 2). 🔴 등재 실패 시 파일을 만들지 않는다(원자성) '
+                         '⇒ 「생성 후 등재 지연」이 구조적으로 불가능해진다. 승격 = `--promote-scratch`',
     'line_len':          '검사할 경로(필수)',
     'o54_sv_value_gate': '비교 대상 2개(무인자는 사용법 + exit 2 · O120 시정)',
     'ws_stage_verify':   '파일목록 또는 `--o53`(무인자는 사용법 + exit 2 · **O121-B 시정**)',
@@ -310,6 +313,26 @@ LIB = {
 BUCKETS = [('JUDGE', JUDGE), ('OBSERVE', OBSERVE), ('NEEDS_ARGS', NEEDS_ARGS),
            ('GEN', GEN), ('MUTATES', MUTATES), ('LIB', LIB)]
 
+# 🆕 🔴🔴 [2026-09-21 O174 신설 · 구조 결정] **임시 계측기 접두 `_scratch_` 신설 — 미분류 재발을 구조로 막는다.**
+#   🔎 경위 = `O170` 이 미분류를 **4회** 방치했고 1차가 `O171` 라벨 오용을 유발했다.
+#      `O173` 도 임시 계측기 5개가 미분류 FAIL 을 냈고 **삭제로만** 해소했다(구조가 아니라 규율).
+#   🔴 **왜 경고로는 멈추지 않는가** = 미분류는 세션 **끝**에 발견된다. 그때는 이미 그 파일로
+#      판정을 냈고, 등재하면 「남의 파일을 등재해 유령을 만드는」 결함(위 O145-B 축)으로 바뀐다.
+#   🟢 **구조 = 선택지를 둘로 줄이고 둘 다 기계가 강제한다:**
+#      ㉠ **영구 도구** ⇒ `scripts/new_tool.py` 로만 만든다 — 파일 생성과 등재가 **한 동작**이고
+#         등재에 실패하면 **파일도 만들지 않는다**(원자성) ⇒ 「생성 후 등재 지연」이 존재할 수 없다.
+#      ㉡ **임시 계측기** ⇒ 파일명을 `_scratch_*.py` 로 짓는다 — 등재 **불요**(자동 면제)이고
+#         `--run`·TEST 분모에서 제외된다. 🔴 대신 **`--final` 에서 잔존하면 FAIL** 이다
+#         ⇒ 세션을 닫으려면 **지우거나 영구 도구로 승격**해야 한다(수명이 강제된다).
+#   🟢🟢 판정식 = **면제를 주지 않으면 규율로 버티게 되고, 수명을 안 걸면 면제가 구멍이 된다.**
+#      ⇒ 면제와 수명은 **한 쌍으로만** 도입한다.
+SCRATCH_PREFIX = '_scratch_'
+
+
+def is_scratch(name):
+    """임시 계측기인가 — 등재 면제 대상이고 `--final` 에서는 잔존이 FAIL 이다."""
+    return name.startswith(SCRATCH_PREFIX)
+
 
 def inventory():
     """분모는 `ls scripts/*.py` 실측이다 — 문서나 이 파일의 등재표가 아니다."""
@@ -331,15 +354,19 @@ def _rc(name, timeout):
 def audit():
     names = inventory()
     tests = [n for n in names if n.startswith('test_')]
+    scratch = [n for n in names if is_scratch(n)]
     known, dup = {}, []
     for label, d in BUCKETS:
         for n in d:
             if n in known:
                 dup.append((n, known[n], label))
             known[n] = label
-    unclassified = [n for n in names if n not in known and not n.startswith('test_')]
+    # 🆕 [O174] 미분류 분모에서 `test_*` 와 `_scratch_*` 를 함께 뺀다 —
+    #   🔴 `_scratch_` 는 **면제이고 승인이 아니다**(`--final` 이 잔존을 FAIL 로 잡는다).
+    unclassified = [n for n in names
+                   if n not in known and not n.startswith('test_') and not is_scratch(n)]
     ghost = [n for n in known if n not in names]
-    return names, tests, known, unclassified, ghost, dup
+    return names, tests, known, unclassified, ghost, dup, scratch
 
 
 def main():
@@ -348,12 +375,14 @@ def main():
     ap.add_argument('--run', action='store_true', help='JUDGE 만 개별 실행해 종료코드 표를 낸다.')
     ap.add_argument('--run-tests', action='store_true', help='TEST 도 함께 실행한다.')
     ap.add_argument('--timeout', type=int, default=300)
+    ap.add_argument('--final', action='store_true',
+                    help='세션 종료 판정 — `_scratch_*` 임시 계측기가 잔존하면 FAIL (O174 수명 강제).')
     try:
         a = ap.parse_args()
     except SystemExit:
         return 2
 
-    names, tests, known, unclassified, ghost, dup = audit()
+    names, tests, known, unclassified, ghost, dup, scratch = audit()
     print('=' * 72)
     print('게이트 분모 게이트 — 분모 = `ls scripts/*.py` 실측 **%d개**' % len(names))
     print('=' * 72)
@@ -390,6 +419,15 @@ def main():
         fail.append('중복 등재 %d건' % len(dup))
         for n, x, y in dup:
             print('    🔴 중복 등재: %s (%s ↔ %s)' % (n, x, y))
+
+    # 🆕 🔴🔴 [O174] 임시 계측기 수명 축 — 면제의 짝이다(면제만 주면 구멍이 된다).
+    print('  임시 계측기(`%s*`) %d건 — 등재 면제 · 🔴 `--final` 에서는 잔존이 FAIL'
+          % (SCRATCH_PREFIX, len(scratch)))
+    for n in scratch:
+        print('    ⚪ 임시: %s' % n)
+    if a.final and scratch:
+        fail.append('임시 계측기 잔존 %d건' % len(scratch))
+        print('    🔴 세션을 닫으려면 **지우거나** `new_tool.py` 로 **영구 도구로 승격**하라')
 
     if a.run or a.run_tests:
         targets = sorted(n for n in JUDGE if n in names) if a.run else []

@@ -201,7 +201,7 @@ END-METADATA -->
 | TOTAL_CONV_CALL_CNT | 49,093 | 방송 |
 | TOTAL_INBOUND_CALL | 165,462 | 방송 |
 | TOTAL_DVLP_MEMBER_CNT | — | 방송 |
-> ⚠ **N(비가산) 클래스 추가 필요** — §0.3에 GA4 2건(공98·108)만 열거돼 있으나, 대행사 산정 `_SRC` **8종**(CTR_SRC·CVR_SRC·CPC_SRC·CPM_SRC·CPA_SRC·DEV_UNIT_PRICE_SRC·VTR_SRC·AD_VIEW_RT_SRC)이 동반 적재됨. 행 단위 참고값이며 **SUM/AVG 재집계 금지** → SV metric 미노출, instruction으로 차단.
+> ⚠ **N(비가산) 클래스 추가 필요** — §0.3에 GA4 2건(공98·108)만 열거돼 있으나, 대행사 산정 `_SRC` **8종**(CTR_SRC·CVR_SRC·CPC_CLICK_SRC·CPC_CALL_SRC·CPM_SRC·CPA_SRC·DEV_UNIT_PRICE_SRC·VTR_SRC·AD_VIEW_RT_SRC)이 동반 적재됨. 행 단위 참고값이며 **SUM/AVG 재집계 금지** → SV metric 미노출, instruction으로 차단.
 
 ---
 

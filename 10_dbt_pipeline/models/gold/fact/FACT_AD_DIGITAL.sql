@@ -24,7 +24,7 @@ select
     CRM_DVLP_CNT                as CRM_DEV_CNT,                 -- CRM 개발건수
     CTR_SRC                     as CTR_SRC,                     -- N 대행사, DW=CLICKS/IMPRESSIONS
     CVR_SRC                     as CVR_SRC,                     -- N 대행사, DW=AGENCY_CONV_MEMBERS/CLICKS (O5)
-    CPC_SRC                     as CPC_SRC,                     -- N 대행사, DW=AD_COST/CLICKS
+    CPC_CLICK_SRC                   as CPC_CLICK_SRC,               -- N 대행사 **클릭당**, DW=AD_COST/CLICKS (O174 개명)
     CPM_SRC                     as CPM_SRC,                     -- N 대행사, DW=AD_COST/IMPRESSIONS×1000
     CPA_SRC                     as CPA_SRC,                     -- N 대행사, DW=AD_COST/AGENCY_CONV_CNT
     DEV_UNIT_PRICE_SRC          as DEV_UNIT_PRICE_SRC,          -- N 대행사, DW=AD_COST/개발건수

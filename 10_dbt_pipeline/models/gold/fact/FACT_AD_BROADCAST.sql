@@ -35,6 +35,6 @@ select
     DVLP_MEMBER_CNT         as DVLP_MEMBER_CNT,         -- O16: 개발회원수 (REBRDC 전용)
     DVLP_CNT                as DVLP_CNT,                -- O16: 개발건수 (REBRDC 전용)
     AD_VIEW_RT_SRC          as AD_VIEW_RT_SRC,          -- N(비가산) 대행사 산정, 재계산 불가
-    CPC_SRC                 as CPC_SRC,                 -- N(비가산) 대행사 산정, DW=AD_COST/CLICKS
+    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — 🔴 클릭 분모가 아니다(O174 개명)
     {{ gold_meta('AGENCY') }}
 from {{ ref('AGENCY_AD_BROADCAST') }}
