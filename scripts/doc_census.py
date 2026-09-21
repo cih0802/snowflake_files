@@ -49,6 +49,12 @@ import os
 import re
 import sys
 
+#   🆕 [2026-09-17 O173] cold prefetch 용(없으면 직렬로 되돌아간다 · 판정은 동일하다).
+try:
+    from concurrent.futures import ThreadPoolExecutor
+except ImportError:                                            # pragma: no cover
+    ThreadPoolExecutor = None
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOC_DIR = os.path.join(ROOT, '20_issue')
 
@@ -89,6 +95,8 @@ FAMILIES = [
 SINGLES = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/02_파일쓰기_안전규약.md',
+    #   🆕 [2026-09-21 O173] `R3` 무변경 이관 신설(처방 = O172-C-4 ㉠안 · 미분할).
+    '00_guides/04_단계종료_게이트.md',
     '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 미분할 · 스킬 정본
     '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
     '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)
@@ -191,9 +199,82 @@ def row_key_stem(line, keys):
     return hits[0] if hits else None
 
 
+#: 🆕 🟢🟢 [2026-09-17 O173] **프로세스 1회 바이트 캐시** — 성능 처방이자 일관성 처방이다.
+#:   실측(O173 착수) = 브리핑 게이트 6종 137.0초 중 `doc_census` 가 **115.5초(84%)**.
+#:   원인은 알고리즘이 아니라 **I/O 횟수**였다 — `census()` 가 같은 파일을
+#:   ㉠ `nbytes_of`(바이트) ㉡ `read_text`(텍스트)로 **두 번** 열고,
+#:   append형은 `watch_b` 에서 꼬리 조각을 **세 번째로** 또 열었다.
+#:   `/workspace` 는 POSIX 파일시스템이 아니라 **스테이지 마운트**라 open/read 지연이
+#:   로컬 대비 수십 배다 ⇒ **읽기 횟수가 곧 벽시계 시간**이다.
+#: 🔴 `O143` 불변식을 깨지 않는다 — 바이트 수는 여전히 **읽은 결과**이고
+#:   `os.path.getsize`(stat)에 의존하지 않는다(블록 반올림 오탐 경로를 밟지 않는다).
+#:   ⇒ 텍스트는 그 **같은 바이트열을 디코드**해 얻으므로 두 축이 어긋날 수 없다(`R3-9 ㉡`).
+_BLOB = {}
+
+
+def read_bytes(p):
+    """파일 바이트열(프로세스 내 1회만 읽는다)."""
+    b = _BLOB.get(p)
+    if b is None:
+        with io.open(p, 'rb') as fh:
+            b = fh.read()
+        _BLOB[p] = b
+    return b
+
+
+#: 🆕 🟢🟢 [2026-09-17 O173] **cold prefetch 병렬화** — 이 도구의 지배 비용을 직접 때린다.
+#:   🔴 실측이 가설을 두 번 뒤집었으므로 근거를 남긴다:
+#:     ㉠ 1차 = cold `doc_census` **115.52초** · warm **0.30초** · distinct **241파일 / 4.74MB**
+#:        ⇒ 파일당 고정 지연 **~0.48초** · 실효 41KB/s.
+#:     ㉡ 「이중 읽기가 원인」 가설은 **틀렸다** — warm 에서 구/신 패턴 비교가 1.7x·0.07초뿐이었다
+#:        (cold 에서 두 번째 읽기는 어차피 warm 이므로 cold 비용을 줄이지 못한다).
+#:     ㉢ 「대역폭 바운드」 가설도 **틀렸다** — 평균 530KB 대용량 파일에서는 그렇게 보였으나,
+#:        이 문서군은 평균 20KB 다 ⇒ **지연 바운드**다.
+#:     ㉣ 진짜 cold 소파일 실측 = 60파일 직렬 36.38초 ↔ 16워커 병렬 9.79초 = **3.7x**
+#:        (병렬군이 바이트를 **더 많이** 읽고도 빨랐다 ⇒ 교란이 결론을 돕지 않는다).
+#: 🔴 워커 수를 늘려 더 얻을 수 있는지는 **판정 보류**다 — 측정이 자기 분모를 소모한다
+#:   (한 번 읽은 파일은 warm 이 되어 재실험이 불가능하다). 실측된 16 을 쓴다.
+#: 🔴 판정 결과는 바뀌지 않는다 — prefetch 는 `_BLOB` 을 채울 뿐이고 **읽는 내용이 같다**.
+#:   실패한 파일은 캐시에 넣지 않으므로 기존 예외 경로(`read_bytes`)가 그대로 살아난다.
+PREFETCH_WORKERS = 16
+
+
+def prefetch(paths):
+    """`_BLOB` 을 **병렬로** 채운다(스테이지 cold 지연을 중첩시킨다).
+
+    🔴 실패를 삼키는 것이 안전하다 — 여기서 못 읽은 파일은 `read_bytes` 가 다시 열고,
+      그때 나는 예외가 **원래의 예외**다(여기서 던지면 호출부의 예외 처리가 어긋난다).
+    """
+    todo = [p for p in dict.fromkeys(paths) if p not in _BLOB]
+    if len(todo) < 2 or ThreadPoolExecutor is None:
+        return
+
+    def grab(p):
+        try:
+            with io.open(p, 'rb') as fh:
+                return p, fh.read()
+        except (IOError, OSError):
+            return p, None
+
+    with ThreadPoolExecutor(max_workers=PREFETCH_WORKERS) as ex:
+        for p, b in ex.map(grab, todo):
+            if b is not None:
+                _BLOB[p] = b
+
+
 def read_text(p):
-    with io.open(p, encoding='utf-8', errors='replace') as fh:
-        return fh.read()
+    """파일 텍스트. 🔴 **universal newlines 를 명시적으로 재현한다.**
+
+    🆕 🔴 [2026-09-17 O173] 종전은 `io.open(encoding='utf-8')` 텍스트 모드였고,
+      그것은 파이썬이 **`\\r\\n`·단독 `\\r` 를 `\\n` 으로 번역**한다(`newline=None` 기본값).
+      바이트열을 그냥 `decode` 하면 그 번역이 사라져 **CRLF 파일의 문자 수가 달라진다**
+      ⇒ 여유·독해예산 판정이 조용히 어긋난다.
+      🔎 실측(O173 시점) = `.md` 354개 전건에 `\\r` **0건**이라 지금은 값이 같다.
+      🔴 그러나 「지금 같다」는 근거가 아니다 — 외부에서 CRLF 파일 1개가 들어오면 갈라진다
+      ⇒ **값이 같은 동안에 형태를 맞춰 둔다**(`R3-9 ㉡` 같은 것을 다르게 재는 지점 제거).
+    """
+    return read_bytes(p).decode('utf-8', 'replace') \
+        .replace('\r\n', '\n').replace('\r', '\n')
 
 
 def nbytes_of(p):
@@ -216,9 +297,10 @@ def nbytes_of(p):
         읽은 바이트 수는 마운트 상태와 무관하게 정확하므로 이 판정은 기전과 무관하게 옳다.
       🔴 이것이 `R3-9 ㉡`(같은 것을 다르게 재는 지점)의 실물이다 —
         `wc -c`·`read_bytes` 는 14,891 을 내고 `getsize`·`ws ls` 는 14,896 을 냈다.
+      🆕 🟢 [2026-09-17 O173] 읽기는 `read_bytes()` 캐시를 경유한다 — **여전히 읽은 결과**이고
+        stat 에 의존하지 않으므로 위 판정은 그대로 성립한다(변한 것은 읽는 **횟수**뿐이다).
     """
-    with io.open(p, 'rb') as fh:
-        return len(fh.read())
+    return len(read_bytes(p))
 
 
 def chunk_paths(hub_rel, where):
@@ -325,8 +407,8 @@ def outdir_marker(hub_abs):
     if not os.path.exists(hub_abs):
         return None
     try:
-        with io.open(hub_abs, encoding='utf-8') as fh:
-            m = OUTDIR_RX.search(fh.read())
+        #   🆕 🟢 [O173] 캐시 경유 — 허브는 `census()` 에서도 읽으므로 중복 I/O 가 사라진다.
+        m = OUTDIR_RX.search(read_text(hub_abs))
     except (IOError, OSError, UnicodeDecodeError):
         return None
     return m.group(1) if m else None
@@ -364,6 +446,19 @@ def kinds_from_registry():
 def census():
     """실측 인벤토리. 반환 = {'families': [...], 'singles': [...]}"""
     kinds = kinds_from_registry()
+    #   🆕 🟢 [O173] 읽을 파일을 **먼저 전부 모아 병렬 prefetch** 한다 — cold 지연을 중첩시킨다.
+    #   🔴 이 블록은 판정에 관여하지 않는다(캐시만 채운다) ⇒ 값은 prefetch 유무와 무관하다.
+    warm = []
+    for hub_rel, where in FAMILIES:
+        hub = os.path.join(ROOT, hub_rel)
+        if os.path.exists(hub):
+            warm.append(hub)
+            warm.extend(chunk_paths(hub_rel, where))
+    for rel in SINGLES:
+        p = os.path.join(ROOT, rel)
+        if os.path.exists(p):
+            warm.append(p)
+    prefetch(warm)
     fams = []
     for hub_rel, where in FAMILIES:
         hub = os.path.join(ROOT, hub_rel)

@@ -247,6 +247,38 @@ def main():
         doc_census.ROOT = real_root
         shutil.rmtree(d, ignore_errors=True)
 
+    # ── 축9. 4단위 세션 → 새 세션 라벨 발행 시 **4개 전건**이 승계로 내려간다 ────
+    #   🆕 🔴🔴 [2026-09-21 O173 신설 · 사용자 요구로 실증한 축]
+    #     축8 은 **1→2단위**와 **낮은 O번호 1개 배제**만 단정한다. 그런데 실제 현장은
+    #     `O172` 가 **A~D 4단위**이고, 다음 세션이 `O173-A` 를 쓰는 순간 그 **4개 전부**가
+    #     현행에서 빠져야 한다. 🔴 「1개가 빠진다」와 「4개가 전건 빠진다」는 다른 단정이다 —
+    #     필터가 `n == top` 이 아니라 `n >= top-1` 류로 느슨해지면 축8 은 **통과하고 이 축만 깨진다.**
+    #   🟢 그리고 역방향도 본다 = 새 라벨을 쓰기 **전에는** 4개가 전건 현행이어야 한다
+    #     (미리 빠져 있으면 브리핑 §2 가 이미 누락 상태라는 뜻이다).
+    axis(9, '4단위 세션 — 새 세션 라벨이 앞 세션 4단위를 전건 승계시킨다')
+    four = tuple('%s-O0172-%s.md' % (S, s) for s in ('A', 'B', 'C', 'D'))
+    d, hub, outdir = fixture(labels=four, stem=S)
+    doc_census.ROOT = d
+    session_brief.ROOT = d
+    try:
+        before = [os.path.basename(p) for p in session_brief.label_units()]
+        ok(before == list(four),
+           '새 라벨 발행 전에 4단위가 전건 현행이 아니다 — %r' % before)
+
+        #   새 세션 라벨을 하나 더 얹는다(발행 시뮬레이션)
+        io.open(os.path.join(d, outdir, '%s-O0173-A.md' % S), 'w',
+                encoding='utf-8').write('<!-- HANDOFF-LABEL O173-A -->\n## 0-NEW. 신규\n')
+        after = [os.path.basename(p) for p in session_brief.label_units()]
+        ok(after == ['%s-O0173-A.md' % S],
+           '새 라벨만 현행이어야 한다 — %r' % after)
+        ok(not [x for x in four if x in after],
+           '앞 세션 4단위 중 현행에 남은 것이 있다(승계 누락)')
+        print('     🔎 발행 전 %d단위 ↔ 발행 후 %r' % (len(before), after))
+    finally:
+        session_brief.ROOT = real_sb_root
+        doc_census.ROOT = real_root
+        shutil.rmtree(d, ignore_errors=True)
+
     print('=' * 72)
     print('단정 %d건 · 실패 %d건' % (NASSERT[0], len(FAILS)))
     if FAILS:

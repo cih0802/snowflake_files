@@ -58,6 +58,8 @@ CANON = [
     '00_guides/00_작업지침_세션운영규칙.md',
     '00_guides/01_문서분할_규약.md',   # [O83-E] R1-6 무변경 이관 신설
     '00_guides/02_파일쓰기_안전규약.md',
+    #   🆕 [2026-09-21 O173] `R3` 무변경 이관 신설(처방 = O172-C-4 ㉠안).
+    '00_guides/04_단계종료_게이트.md',
     '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 스킬 정본
     '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
     '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)   # [O85] R1-7 무변경 이관 신설

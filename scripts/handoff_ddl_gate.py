@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""인수인계 DDL 게이트 — 원천 정의 문서(99_provided_definition) ↔ 인수인계 DDL(50_handoff) 대조.
+"""인수인계 DDL 게이트 — 원천 정의 문서(90_provided_definition) ↔ 인수인계 DDL(50_handoff) 대조.
 
 왜 필요한가 (O113 실사고):
   O113 이 04번 DDL 을 손으로 고치고 「구조차이 0」이라고 판정했는데,
@@ -192,11 +192,11 @@ TARGETS = [
     # (라벨, 원천 목록, 인수인계 파일, 접두, COMMENT 누락을 경고로 낮출지)
     #   soft=False = 그 문서가 「컬럼 코멘트 전 컬럼 부여 완료」를 **주장한다** ⇒ 누락은 blocking.
     #   soft=True  = 주장하지 않는다 ⇒ 누락은 🟠 경고(현업 확인 대상).
-    ("BRONZE_CRM", ["99_provided_definition/11_bronze_crm_ddl.sql"],
+    ("BRONZE_CRM", ["90_provided_definition/11_bronze_crm_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_CRM.", False),
-    ("BRONZE_AGENCY", ["99_provided_definition/12_bronze_agency_ddl.sql"],
+    ("BRONZE_AGENCY", ["90_provided_definition/12_bronze_agency_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_AGENCY.", False),
-    ("BRONZE_ERP", ["99_provided_definition/13_bronze_erp_ddl.sql"],
+    ("BRONZE_ERP", ["90_provided_definition/13_bronze_erp_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_ERP.", False),
     # 🆕 [2026-09-17 O171] GA4·GSC 를 분모에 편입했다.
     #   🔴 왜 = 종전 TARGETS 에 두 스키마가 **없었다** ⇒ 축1(테이블 집합)이 그 스키마를
@@ -204,13 +204,13 @@ TARGETS = [
     #      게이트가 **0건으로 침묵**했다(작업지침 판정식 J2 「내가 본 그릇」 축).
     #   ⚠️ soft=True 인 이유 = 원천 15/16번은 SYNC_ERR_INFO 컬럼 COMMENT 가 비어 있고
     #      본 파일이 관례로 보강했다 ⇒ 「전 컬럼 부여」 주장을 blocking 으로 걸지 않는다.
-    ("BRONZE_GA4", ["99_provided_definition/15_bronze_ga4_ddl.sql"],
+    ("BRONZE_GA4", ["90_provided_definition/15_bronze_ga4_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GA4.", True),
-    ("BRONZE_GSC", ["99_provided_definition/16_bronze_gsc_ddl.sql"],
+    ("BRONZE_GSC", ["90_provided_definition/16_bronze_gsc_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GSC.", True),
-    ("SILVER", ["99_provided_definition/18_silver_bigquery_refined.sql"],
+    ("SILVER", ["90_provided_definition/18_silver_bigquery_refined.sql"],
      "50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql", "SILVER.", True),
-    ("ML_RST_DATA", ["99_provided_definition/20_ML_ddl.sql"],
+    ("ML_RST_DATA", ["90_provided_definition/20_ML_ddl.sql"],
      "50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql", "ML.ML_RST_DATA_", True),
 ]
 
