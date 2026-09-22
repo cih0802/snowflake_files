@@ -1,9 +1,9 @@
--- warn_ga4_load_gap: 원천과 하류의 **일자 집합 불일치를 양방향으로** 감시한다(일일 증분의 안전망).
+-- warn_bigquery_load_gap: 원천과 하류의 **일자 집합 불일치를 양방향으로** 감시한다(일일 증분의 안전망).
 -- Co-authored with CoCo
 --
 -- 🔴🔴 왜 필요한가 (2026-09-22 · 롤링 윈도우 전환의 짝)
---   BASIC·EVENT·FACT 는 이제 매 run **[오늘 - ga4_lookback_days, ∞)** 구간만 다시 만든다
---   (`macros/ga4_range_predicate.sql`). 창 밖 과거는 손대지 않는다 — 그것이 일일 증분이
+--   BASIC·EVENT·FACT 는 이제 매 run **[오늘 - bigquery_lookback_days, ∞)** 구간만 다시 만든다
+--   (`macros/bigquery_range_predicate.sql`). 창 밖 과거는 손대지 않는다 — 그것이 일일 증분이
 --   성립하는 근거이면서 동시에 **이 설계가 새로 만든 실패 모드**다:
 --     🔴 run 을 lookback 일수보다 오래 건너뛰면 그 사이 일자는 **어떤 run 의 창에도 들어가지
 --        못하고 영구히 누락된다.** 다음 run 에서는 이미 창 아래로 밀려나 있기 때문이다.
@@ -13,10 +13,10 @@
 --
 -- 🔴 lookback 을 키우는 것은 해법이 아니다 — 비용만 늘고 「얼마나 키워야 충분한가」에
 --    답할 수 없다(중단이 얼마나 길지 모른다). 이 테스트가 울리면 **백필로 되메운다**:
---      `dbt_project.yml` `vars` 의 `ga4_dt_ranges` 주석을 **일시적으로 풀고** 누락 구간을 적어
+--      `dbt_project.yml` `vars` 의 `bigquery_dt_ranges` 주석을 **일시적으로 풀고** 누락 구간을 적어
 --      `dbt build --select BIGQUERY_BASIC+` → 끝나면 **다시 주석 처리**.
 --    🔴🔴 **`--vars` 로 주지 마라 — 이 환경에서 동작하지 않는다**(실측 2026-09-22 · 3형태 전부 실패).
---       특히 `--vars {ga4_dt_ranges:[...]}` 는 **에러 없이 조용히 무시된다**(콜론 뒤 공백이 없어
+--       특히 `--vars {bigquery_dt_ranges:[...]}` 는 **에러 없이 조용히 무시된다**(콜론 뒤 공백이 없어
 --       YAML 이 키 하나로 파싱한다) ⇒ 백필한 줄 알고 넘어가게 된다. 근거 = `dbt_project.yml` vars 주석.
 --
 -- ⚠️ 원천은 **지연 도착 이벤트 종료 후 동결된 데이터**가 들어온다(사용자 확인 2026-09-22)
@@ -41,10 +41,10 @@
 --
 -- ⚠️ 이 테스트가 보지 못하는 것
 --   ⓐ **일자 내 행수 차이는 보지 않는다** — 일자가 양쪽에 존재하면 침묵한다.
---      부분 적재(같은 날 일부만)는 여기서 안 잡힌다. 그것이 `ga4_lookback_days` 의 실제 역할이다
+--      부분 적재(같은 날 일부만)는 여기서 안 잡힌다. 그것이 `bigquery_lookback_days` 의 실제 역할이다
 --      (최근 창을 매번 다시 만드므로 부분 적재는 자동 복구된다).
 --   ⓑ BASIC 에서 **의도적으로 탈락**시킨 행(`USER_PSEUDO_ID IS NULL`)만으로 하루가 전멸한
---      경우와 구분하지 못한다 ⇒ 울리면 `warn_ga4_null_user_pseudo_id` 를 함께 볼 것.
+--      경우와 구분하지 못한다 ⇒ 울리면 `warn_bigquery_null_user_pseudo_id` 를 함께 볼 것.
 --   ⓒ FACT 는 보지 않는다 — SILVER 가 맞으면 FACT 는 같은 창을 공유하므로 따라온다.
 --      (FACT 고유 위험인 `DATE_SK = 0` 누적은 `warn_gold_fact_bigquery_date_sk_zero` 소관이다.)
 --

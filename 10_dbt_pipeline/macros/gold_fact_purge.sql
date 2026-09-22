@@ -11,7 +11,7 @@
        분기는 이 매크로 안에서만 한다. **모델 파일에 `pre_hook` 을 쓰지 말 것.**
 
   분기 규칙
-    · RANGED_FACTS (일자 SK 보유 · 범위 재적재) → `ga4_range_predicate_sk` 범위 DELETE
+    · RANGED_FACTS (일자 SK 보유 · 범위 재적재) → `bigquery_range_predicate_sk` 범위 DELETE
     · 그 밖의 GOLD 전 팩트                      → 종전과 동일 `TRUNCATE TABLE IF EXISTS`
 
   ⚠️ 아래 RANGED_FACTS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 축).
@@ -42,7 +42,7 @@
   {%- if relation.identifier | upper in RANGED_FACTS -%}
     {%- if is_incremental() -%}
       DELETE FROM {{ relation }}
-       WHERE {{ ga4_range_predicate_sk('DATE_SK') }}
+       WHERE {{ bigquery_range_predicate_sk('DATE_SK') }}
     {%- else -%}
       SELECT 1 /* gold_fact_purge no-op: 대상 테이블 미존재(최초 run) — DELETE 는 IF EXISTS 를 못 쓴다 */
     {%- endif -%}

@@ -11,7 +11,7 @@
        분기는 이 매크로 안에서만 한다. 모델 파일에는 pre_hook 을 쓰지 않는다.
 
   분기 규칙
-    · range 모델(EVENT_DT 보유) → `ga4_range_purge`: var 범위만 DELETE ⇒ 범위 단위 멱등.
+    · range 모델(EVENT_DT 보유) → `bigquery_range_purge`: var 범위만 DELETE ⇒ 범위 단위 멱등.
     · 그 밖의 SILVER 전 모델      → 종전과 동일한 `TRUNCATE TABLE IF EXISTS`(전량 재적재).
 
   ⚠️ 아래 RANGED_MODELS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 「같은 것을
@@ -27,14 +27,14 @@
   🔄 [2026-08-21] `BIGQUERY_BASIC` 을 추가했다 — 그 외부 적재 테이블을 재파생하는 새 range 모델
      (EVENT_DT 보유). BIGQUERY_EVENT 와 동일하게 범위만 DELETE(멱등).
   🔄 [2026-09-22] 창이 고정 리터럴 → **롤링 윈도우**로 바뀌었다(일일 증분). 이 파일의 분기
-     로직은 무변경이다 — 바뀐 것은 `ga4_range_predicate` 가 계산하는 창뿐이다.
+     로직은 무변경이다 — 바뀐 것은 `bigquery_range_predicate` 가 계산하는 창뿐이다.
      🟢 같은 처방을 GOLD 팩트에도 복제했다: `macros/gold_fact_purge.sql`(`RANGED_FACTS`).
         그쪽도 여기와 동일한 「모델명을 문자열로 아는 유일한 지점」 위험을 갖는다.
 #}
 {% macro silver_purge(relation) %}
   {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC'] -%}
   {%- if relation.identifier | upper in RANGED_MODELS -%}
-    {{ ga4_range_purge(relation) }}
+    {{ bigquery_range_purge(relation) }}
   {%- else -%}
     TRUNCATE TABLE IF EXISTS {{ relation }}
   {%- endif -%}

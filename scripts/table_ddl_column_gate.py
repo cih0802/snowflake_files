@@ -118,7 +118,7 @@ def render_model(cn, path, layer='GOLD'):
     s = re.sub(r"\{\{\s*ref\('([A-Za-z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
     s = re.sub(r"\{\{\s*source\('([^']+)',\s*'([^']+)'\)\s*\}\}", lambda m: resolve_source(m.group(1), m.group(2)), s)
     s = re.sub(r"\{\{\s*clean_str\('([^']+)'\)\s*\}\}", lambda m: f"NULLIF(TRIM({m.group(1)}), '')", s)
-    s = re.sub(r"\{\{\s*ga4_range_predicate\([^)]*\)\s*\}\}", '1=1', s)
+    s = re.sub(r"\{\{\s*bigquery_range_predicate\([^)]*\)\s*\}\}", '1=1', s)
     s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
 
     def _arg(x):

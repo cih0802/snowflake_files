@@ -110,7 +110,7 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- 🔴🔴 왜 이 단계가 필수인가 (2026-09-22 O178 · 실사고 규명)
 --   BIGQUERY 파생(BIGQUERY_BASIC·BIGQUERY_EVENT·FACT_BIGQUERY_BEHAVIOR)은 O177 부터
 --   **롤링 윈도우 증분**이다 — 매 run 이 다시 만드는 구간은 [오늘 - bigquery_lookback_days, ∞) 뿐이고
---   창 밖 과거는 손대지 않는다(macros/ga4_range_predicate.sql · 개명 예정).
+--   창 밖 과거는 손대지 않는다(macros/bigquery_range_predicate.sql · 개명 예정).
 --   ⇒ 🔴 **재배포로 SILVER/GOLD 가 빈 상태가 되면 그 빈 상태가 영구히 남는다.**
 --      창에 원천 데이터가 없으면 모델은 SUCCESS 로 끝나고 **행수만 조용히 0** 이다.
 --
@@ -150,21 +150,21 @@ SELECT 'GOLD  FACT_BIGQUERY_BEHAVIOR', COUNT(DISTINCT DATE_SK), COUNT(*)
 ORDER BY 1;
 
 -- [3-3-b] 감시 테이블 확인 (기대 = 전건 0행)
---   🔴 WARN_GA4_LOAD_GAP(개명 예정 = WARN_BIGQUERY_LOAD_GAP) 이 **양방향** 감시다:
+--   🔴 WARN_BIGQUERY_LOAD_GAP(개명 예정 = WARN_BIGQUERY_LOAD_GAP) 이 **양방향** 감시다:
 --      DIRECTION='SRC_ONLY'  = 원천에 있고 하류에 없다(누락 · 위 사고가 여기 걸렸다 · 30행)
 --      DIRECTION='DW_ONLY'   = 하류에 있고 원천에 없다(고아 · 창 밖이라 영구 잔존)
 --      DIRECTION='BAD_DATE_FORMAT' = 원천 EVENT_DATE 가 YYYYMMDD 로 파싱되지 않는다
-SELECT 'WARN_GA4_LOAD_GAP' AS MONITOR, COUNT(*) AS ROWS_ FROM GN_DW.OPS.WARN_GA4_LOAD_GAP
+SELECT 'WARN_BIGQUERY_LOAD_GAP' AS MONITOR, COUNT(*) AS ROWS_ FROM GN_DW.OPS.WARN_BIGQUERY_LOAD_GAP
 UNION ALL
 SELECT 'WARN_GOLD_FACT_BIGQUERY_DATE_SK_ZERO', COUNT(*) FROM GN_DW.OPS.WARN_GOLD_FACT_BIGQUERY_DATE_SK_ZERO
 UNION ALL
-SELECT 'WARN_GA4_NULL_USER_PSEUDO_ID', COUNT(*) FROM GN_DW.OPS.WARN_GA4_NULL_USER_PSEUDO_ID
+SELECT 'WARN_BIGQUERY_NULL_USER_PSEUDO_ID', COUNT(*) FROM GN_DW.OPS.WARN_BIGQUERY_NULL_USER_PSEUDO_ID
 ORDER BY 1;
 
 -- 🔴 [3-3-a] 일자 수가 원천보다 적거나 [3-3-b] 가 0행이 아니면 **여기서 멈춰라.**
 --    복구 경로는 **ⓐ 수동 백필 하나뿐**이다(롤링 윈도우는 창 밖을 건드리지 않고,
 --    SILVER·GOLD 는 full_refresh:false 라 --full-refresh 도 막혀 있다):
---      ㉠ dbt_project.yml vars 의 `ga4_dt_ranges` 주석을 **일시적으로 풀고** 구간을 적는다
+--      ㉠ dbt_project.yml vars 의 `bigquery_dt_ranges` 주석을 **일시적으로 풀고** 구간을 적는다
 --         (전량이면 ['2024-01-01', '9999-12-31'] · 🔴 하한은 원천 최소일과 대조할 것)
 --      ㉡ ALTER DBT PROJECT … ADD VERSION 으로 **재배포**한다(파일만 고쳐도 반영되지 않는다)
 --      ㉢ EXECUTE DBT PROJECT … ARGS='build --select BIGQUERY_BASIC+'

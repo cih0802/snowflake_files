@@ -21,7 +21,7 @@ sources:
   # 🔴🔴 [2026-08-21] `bronze_bigquery.EVENTS` 소스 선언을 폐기했다 — build ERROR 유발 확인됨.
   #    실측: 현 계정에는 `GN_DW.BRONZE_BIGQUERY.EVENTS` 통합 테이블이 **없다**(SHOW TABLES 0행).
   #    존재하는 것은 일별 샤드 `events_YYYYMMDD`뿐이다. 위 O87 주석의 "통합 1테이블 적재 완료"는
-  #    구 계정(UA93987) 기준 기록이며 현 계정에는 재현되지 않았다(`tests/warn_ga4_null_user_pseudo_id.sql`
+  #    구 계정(UA93987) 기준 기록이며 현 계정에는 재현되지 않았다(`tests/warn_bigquery_null_user_pseudo_id.sql`
   #    2026-08-21 주석과 동일 실측). `macros/ga4_union_shards.sql`도 이미 폐기 상태이므로 되살리지 말 것.
   #    GA4 계열은 이제 `silver_external.BIGQUERY_REFINED_DATA`(외부 Python 직접 적재)만 원천으로 쓴다.
   # - name: bronze_bigquery
@@ -63,7 +63,7 @@ sources:
               # 필터 제외(센티넬 아님). 기지 창 = EVENT_DATE 20240605~20240610(6일·111행·구
               # 계정 UA93987 원본, user_id 도 전건 NULL). 이 필터는 build ERROR 방지용 —
               # 창 밖 신규 사고는 여전히 error 로 감지된다. 창 안 규모 변화 감시는
-              # `tests/warn_ga4_null_user_pseudo_id.sql`(warn) 이 전담.
+              # `tests/warn_bigquery_null_user_pseudo_id.sql`(warn) 이 전담.
               - not_null:
                   config:
                     where: "NOT (EVENT_DATE BETWEEN '20240605' AND '20240610')"

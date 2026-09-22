@@ -29,7 +29,7 @@ SELECT
     CASE WHEN m.MEMBER_DK IS NULL        THEN 'NONE'
          WHEN g.ID_RESOLUTION = 'DIRECT' THEN 'HIGH'
          ELSE 'MEDIUM' END                                         AS MATCH_CONFIDENCE,
-    'GA4+CRM'                       AS DW_SOURCE_SYSTEM,
+    'BIGQUERY+CRM'                  AS DW_SOURCE_SYSTEM,
     'SILVER.BIGQUERY_IDENTITY+CRM_MEMBER' AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()             AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()             AS DW_UPDATE_TS,

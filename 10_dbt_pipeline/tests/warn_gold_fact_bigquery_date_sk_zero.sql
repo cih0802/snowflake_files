@@ -37,7 +37,7 @@
 -- ⚠️ 이 테스트가 울렸을 때 할 일 — 0 버킷을 **지우고 다시 만드는 것으로 끝내지 마라.**
 --    근본은 `date_sk()` 가 클램프한 이유(①인지 ②인지)이고, 그것을 고치기 전에는 재발한다.
 --    임시 조치로 팩트를 정상화하려면 전량 재적재가 필요하다 —
---      `dbt_project.yml` `vars` 의 `ga4_dt_ranges` 주석을 풀어 전 구간을 적고
+--      `dbt_project.yml` `vars` 의 `bigquery_dt_ranges` 주석을 풀어 전 구간을 적고
 --      `dbt build --select FACT_BIGQUERY_BEHAVIOR` → 끝나면 다시 주석 처리.
 --      🔴 `--vars` 로 주지 마라 — 이 환경에서 **조용히 무시된다**(실측 · `dbt_project.yml` vars 주석).
 --    ⚠️ 그것도 0 버킷을 지우지는 못한다(창 밖이므로) — `DELETE FROM … WHERE DATE_SK = 0` 을

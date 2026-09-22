@@ -9,7 +9,7 @@
 --   왜: 매 run 전량 재계산은 순수 낭비였다(실측 33일 14.9초 → 전일자 환산 ≈ 7분).
 --   pre-hook 이 `macros/gold_fact_purge.sql` 로 분기한다 — `RANGED_FACTS` 에 이 모델명 등재 필수.
 --     · 그 매크로가 `DELETE … WHERE DATE_SK <창>` 을 내고, 아래 `e` CTE 가 **같은 창**을 append 한다.
---     · 창 정의 지점은 `macros/ga4_range_predicate.sql` 의 `ga4_load_window()` 하나다.
+--     · 창 정의 지점은 `macros/bigquery_range_predicate.sql` 의 `bigquery_load_window()` 하나다.
 --       DELETE 는 `_sk`(NUMBER YYYYMMDD) 렌더러, 여기는 DATE 렌더러를 쓰지만 창은 동일하다.
 --   🔴 **이 파일에 `pre_hook` 을 쓰지 말 것** — dbt 는 hook 을 누적하므로 TRUNCATE 와 DELETE 가
 --      함께 돌아 팩트가 창 크기로 쪼그라든다(에러 없이 행수만 줄어든다 · gold_fact_purge.sql 주석).
@@ -22,7 +22,7 @@
 --      ⇒ 🟢 **그 배선은 이 범위 재적재와 양립한다** — `UTM_CAMPAIGN` 은 이벤트 행의 속성이므로
 --        group by 에 들어가도 집계가 **일자 안에서 닫힌다**(전제 ② 유지).
 --      🔴 단 배선 시 **전량 백필이 필요하다** — 창 밖 과거 행의 `CAMPAIGN_SK` 는 센티넬로 남는다
---        (롤링 윈도우는 창 밖을 건드리지 않는다) ⇒ `ga4_dt_ranges` 주석을 풀어 전 구간 재적재하라.
+--        (롤링 윈도우는 창 밖을 건드리지 않는다) ⇒ `bigquery_dt_ranges` 주석을 풀어 전 구간 재적재하라.
 --        ⚠️ 이 「배선 후 백필 의무」는 증분화가 **새로 만든** 절차다. 배선만 하고 끝내면
 --           과거 전체가 센티넬로 남아 **에러 없이** 지표가 틀린다.
 {{ config(
@@ -30,9 +30,9 @@
 ) }}
 
 with e as (
-    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: ga4_load_window).
+    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: bigquery_load_window).
     select * from {{ ref('BIGQUERY_EVENT') }}
-    where {{ ga4_range_predicate('EVENT_DT') }}
+    where {{ bigquery_range_predicate('EVENT_DT') }}
 ),
 -- pseudo→회원 매칭(1 pseudo 1행 = XREF grain). IDENTITY_SK 해소용, fan-out 없음.
 xref as (

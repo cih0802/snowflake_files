@@ -458,7 +458,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_IDENTITY (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '회원 신원 식별 브릿지 차원. [Grain: IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: GA4/CRM → SILVER.IDENTITY_MEMBER_XREF].';
+) COMMENT = '회원 신원 식별 브릿지 차원. [Grain: IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: BIGQUERY/CRM → SILVER.IDENTITY_MEMBER_XREF].';
 
 
 -- ============================================================================
@@ -672,7 +672,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BIGQUERY_SOURCE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'BigQuery 트래픽소스 차원. [Grain: BIGQUERY_SOURCE_SK (1행=1트래픽소스)]. [주의: 세션 소스/매체/캠페인 결합]. [원천: GA4 → SILVER.BIGQUERY_TRAFFIC_SOURCE].';
+) COMMENT = 'BigQuery 트래픽소스 차원. [Grain: BIGQUERY_SOURCE_SK (1행=1트래픽소스)]. [주의: 세션 소스/매체/캠페인 결합]. [원천: BIGQUERY → SILVER.BIGQUERY_TRAFFIC_SOURCE].';
 
 
 -- ============================================================================
@@ -689,7 +689,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BIGQUERY_EVENT (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'BigQuery 이벤트분류 차원. [Grain: BIGQUERY_EVENT_SK (1행=1이벤트)]. [주의: GA4 이벤트명 및 주요 파라미터 매핑]. [원천: GA4 → SILVER.BIGQUERY_EVENT_DIM].';
+) COMMENT = 'BigQuery 이벤트분류 차원. [Grain: BIGQUERY_EVENT_SK (1행=1이벤트)]. [주의: GA4 이벤트명 및 주요 파라미터 매핑]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT_DIM].';
 
 
 -- ============================================================================
@@ -793,7 +793,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DEVICE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '디바이스/기기 차원. [Grain: DEVICE_SK (1행=1디바이스)]. [주의: PC/모바일/방송(해당없음) 분류]. [원천: GA4/AGENCY → SILVER.BIGQUERY_DEVICE].';
+) COMMENT = '디바이스/기기 차원. [Grain: DEVICE_SK (1행=1디바이스)]. [주의: PC/모바일/방송(해당없음) 분류]. [원천: BIGQUERY/AGENCY → SILVER.BIGQUERY_DEVICE].';
 
 
 -- ============================================================================
@@ -1245,7 +1245,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR (
     DW_LOAD_TS                      TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                    TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'BigQuery 웹/앱 사용자 행동 팩트. [Grain: DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: GA4 → SILVER.BIGQUERY_EVENT].';
+) COMMENT = 'BigQuery 웹/앱 사용자 행동 팩트. [Grain: DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT].';
 
 
 -- ============================================================================

@@ -90,7 +90,7 @@ SELECT
     b.BATCH_ORDERING_ID                                          AS BATCH_ORDERING_ID,
     NULL                                                          AS SRC_TABLE,
     NULL                                                          AS SRC_FILE_NAME,
-    'GA4'                             AS DW_SOURCE_SYSTEM,
+    'BIGQUERY'                        AS DW_SOURCE_SYSTEM,
     'SILVER.BIGQUERY_BASIC'    AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
@@ -101,5 +101,5 @@ LEFT JOIN sess s
    AND s.BIGQUERY_SESSION_KEY = b.BIGQUERY_SESSION_KEY
 -- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
 -- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
---    정의 지점은 `macros/ga4_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
-WHERE {{ ga4_range_predicate('b.EVENT_DT') }}
+--    정의 지점은 `macros/bigquery_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
+WHERE {{ bigquery_range_predicate('b.EVENT_DT') }}

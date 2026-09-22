@@ -630,7 +630,7 @@ models:
       - name: AD_SOURCE_TYPE
         description: "광고 원천유형 DIGITAL/VIDEO/REBROADCAST — 출처 명시축(팩트 degen, DEC-8)"
       - name: DW_SOURCE_SYSTEM
-        description: "원천 시스템 식별 (GA4/AGENCY/GADS)"
+        description: "원천 시스템 식별 (BIGQUERY/AGENCY/GADS)"
       - name: PERF_FULL_DATE
         description: "DIM_DATE.FULL_DATE — 실적일 일자"
       - name: PERF_YEAR

@@ -88,7 +88,7 @@ SELECT
     IFF(a.bigquery_member_id RLIKE '^[0-9]{7}$',  a.bigquery_member_id, NULL) AS MBER_NO,
     IFF(a.bigquery_member_id RLIKE '^S[0-9]{8}$', a.bigquery_member_id, NULL) AS ONCE_MBER_NO,
     a.id_resolution                                             AS ID_RESOLUTION,
-    'GA4'                             AS DW_SOURCE_SYSTEM,
+    'BIGQUERY'                        AS DW_SOURCE_SYSTEM,
     'SILVER.BIGQUERY_BASIC'    AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,

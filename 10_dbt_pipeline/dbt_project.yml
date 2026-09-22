@@ -21,12 +21,12 @@ clean-targets:
 #     🔄 [2026-08-19 O87] `ga4_start`/`ga4_end`(YYYYMMDD 샤드 테이블명 접미)
 #        → `ga4_dt_start`/`ga4_dt_end`(DATE). BRONZE 가 일별 샤드에서 통합 1테이블(`EVENTS`)이
 #        되며 샤드명을 문자열 비교할 대상이 사라졌고, 필요한 것이 `EVENT_DT` 프루닝 범위가 됐다.
-#     🔄 [2026-08-19 O88] 연속 구간 1개 → **`ga4_dt_ranges`(구간 목록)**. 불연속 월 샘플링
+#     🔄 [2026-08-19 O88] 연속 구간 1개 → **`bigquery_dt_ranges`(구간 목록)**. 불연속 월 샘플링
 #        (2024-06·2025-06·2026-06 3개월)을 연속 구간으로는 표현할 수 없었기 때문이다.
-#     🔄🔄 [2026-09-22] **고정 리터럴 창 → 롤링 윈도우(일일 증분).** `ga4_dt_ranges` 의
-#        상주 값을 제거하고 `ga4_lookback_days` 로 대체했다. 상세 근거는 아래 vars 주석.
+#     🔄🔄 [2026-09-22] **고정 리터럴 창 → 롤링 윈도우(일일 증분).** `bigquery_dt_ranges` 의
+#        상주 값을 제거하고 `bigquery_lookback_days` 로 대체했다. 상세 근거는 아래 vars 주석.
 #
-#   🔴 술어의 **정의 지점은 `macros/ga4_range_predicate.sql` 하나**다(창 계산 = `ga4_load_window()`).
+#   🔴 술어의 **정의 지점은 `macros/bigquery_range_predicate.sql` 하나**다(창 계산 = `bigquery_load_window()`).
 #      종전에는 같은 술어가 3곳에 하드코딩돼 있었고, DELETE 범위와 append 범위가 어긋나면
 #      행이 남거나 사라지는데 그 어긋남을 잡는 게이트가 없었다
 #      (`R1-6-17` 「같은 것을 다르게 재는 지점」). 컬럼 타입이 3종(DATE·VARCHAR(8)·NUMBER(8))
@@ -48,7 +48,7 @@ clean-targets:
 #         ⇒ 이 창은 더 이상 BRONZE 전량 스캔을 막는 장치가 아니다.
 #      ② 창이 비었을 때의 의미가 **「전 범위」가 아니라 「롤링 윈도우」**(= 가장 싼 경로)가 됐다
 #         ⇒ fail-fast 가 막아 줄 위험이 사라졌다. 그래서 그 fail-fast 를 **제거했다**
-#           (형식 오류 검증은 남겼다 · `ga4_load_window` 참조).
+#           (형식 오류 검증은 남겼다 · `bigquery_load_window` 참조).
 #      🔴 그리고 ①의 비용 우려 자체는 **운영에서는 여전히 유효하다** — 단 방어 지점이
 #         dbt 창이 아니라 **원천 적재 단위 분할**이다. 여기에 창을 되살리지 마라(이중 샘플링).
 #
@@ -60,9 +60,9 @@ clean-targets:
 #       ⚠️ 이 두 줄은 **구 계정 실측**이다(계정이 4번 바뀌었다 · `P169`) — 재실측 전까지
 #          인용하지 말 것(`R2-8-4`).
 vars:
-  # 🔄🔴 [2026-09-22] **`ga4_dt_ranges` 를 여기서 제거했다 — 의도다.**
-  #   정의 지점은 `macros/ga4_range_predicate.sql` 의 `ga4_load_window()` 이고,
-  #   평시에는 아래 `ga4_lookback_days` 기반 **롤링 윈도우**가 자동으로 계산된다.
+  # 🔄🔴 [2026-09-22] **`bigquery_dt_ranges` 를 여기서 제거했다 — 의도다.**
+  #   정의 지점은 `macros/bigquery_range_predicate.sql` 의 `bigquery_load_window()` 이고,
+  #   평시에는 아래 `bigquery_lookback_days` 기반 **롤링 윈도우**가 자동으로 계산된다.
   #   ⇒ 유지해야 할 고정 일자 리터럴이 **0개**가 됐다(관리포인트 축소).
   #
   #   🔴 왜 지웠나 — 상주하는 리터럴 창이 **이중 샘플링**을 만들었다.
@@ -79,29 +79,29 @@ vars:
   #      ⇒ 그러므로 **범위 축소를 dbt 에 다시 두지 않는다.** dbt 는 원천에 있는 것을
   #        전량 하류로 흘리고, 정하는 것은 「이번 run 이 다시 만들 구간」뿐이다.
   #
-  #   전량 재적재·백필이 필요하면 **아래 `ga4_dt_ranges` 주석을 일시적으로 푼다**
+  #   전량 재적재·백필이 필요하면 **아래 `bigquery_dt_ranges` 주석을 일시적으로 푼다**
   #   (끝나면 반드시 다시 주석 처리 — 상주시키면 이중 샘플링이 재발한다).
   #   🔴 `--vars` 로 주는 방법은 이 환경에서 **동작하지 않는다** — 근거는 아래 블록에 실측으로 적었다.
   #   ⚠️ SILVER·GOLD 는 `full_refresh: false` 라 `--full-refresh` 로는 전량 재적재가 안 된다
   #      (CTAS 가 DDL·제약·주석·FK 를 파괴하므로 의도적으로 막아 둔 것) ⇒ 위 경로가 유일하다.
   #
-  # 롤링 윈도우 = [오늘 - ga4_lookback_days, 열린 상한]. 그 구간만 DELETE 후 재적재(멱등).
+  # 롤링 윈도우 = [오늘 - bigquery_lookback_days, 열린 상한]. 그 구간만 DELETE 후 재적재(멱등).
   #   ⚠️ 이 값은 「지연 도착 방어」가 아니다(원천이 이미 동결 데이터다) —
   #      실제 역할은 **부분 적재·중단된 run 의 재처리**다.
   #   🔴 run 을 이 일수보다 오래 건너뛰면 창 아래에 **구멍**이 남는다. 그 구멍을 막는 것은
-  #      이 값을 키우는 것이 아니라 `tests/warn_ga4_load_gap.sql` 이다(원천에 있고 하류에
+  #      이 값을 키우는 것이 아니라 `tests/warn_bigquery_load_gap.sql` 이다(원천에 있고 하류에
   #      없는 일자를 감시 ⇒ 무증상 누락을 시끄럽게 만든다). 값을 키우면 비용만 늘어난다.
-  ga4_lookback_days: 3
+  bigquery_lookback_days: 3
   # ⬇⬇ 백필 오버라이드 — 평시에는 **주석 상태를 유지한다**(상주시키면 이중 샘플링이 재발한다).
   #   쓰는 법 = 주석을 풀고 구간을 적어 `dbt build --select <모델>+` 실행 → 끝나면 **다시 주석 처리**.
   #   🔴 왜 `--vars` 가 아니라 이 방식인가 — Snowsight Workspaces 의 dbt 클라이언트에서
   #      `--vars` 는 **동작하지 않는다**(실측 2026-09-22 · 3가지 형태 전부 실패):
-  #        · `--vars '{ga4_lookback_days: 10}'`  → 클라이언트가 공백에서 잘라 dbt 에 전달
-  #                                                ⇒ `String '{ga4_lookback_days:' is not valid YAML`
-  #        · `--vars {ga4_lookback_days:10}`     → 🔴 **조용히 무시된다.** 콜론 뒤 공백이 없어
-  #             YAML 이 키를 `"ga4_lookback_days:10"` 하나로 파싱한다 ⇒ 에러도 없고 효과도 없다
+  #        · `--vars '{bigquery_lookback_days: 10}'`  → 클라이언트가 공백에서 잘라 dbt 에 전달
+  #                                                ⇒ `String '{bigquery_lookback_days:' is not valid YAML`
+  #        · `--vars {bigquery_lookback_days:10}`     → 🔴 **조용히 무시된다.** 콜론 뒤 공백이 없어
+  #             YAML 이 키를 `"bigquery_lookback_days:10"` 하나로 파싱한다 ⇒ 에러도 없고 효과도 없다
   #             (실측: 창이 lookback 3 기준 그대로 렌더됐다). **가장 위험한 형태다.**
-  #        · `--vars {\"ga4_lookback_days\":10}`  → 인용부호가 제거되어 위와 동일하게 무산
+  #        · `--vars {\"bigquery_lookback_days\":10}`  → 인용부호가 제거되어 위와 동일하게 무산
   #      ⇒ 오버라이드는 **파일에 적는 것만 신뢰할 수 있다.** `--vars` 로 지시하는 문서를 쓰지 마라.
   #   ✅ 이 경로는 실증됐다(2026-09-22) — `['2026-09-14','2026-09-14']` 로 하루만 재적재해
   #      BASIC·EVENT 각 383,645행 / FACT 41,725행을 다시 만들었고 **총 행수는 불변**이었다
@@ -114,12 +114,22 @@ vars:
   #   경위 = 재배포로 SILVER/GOLD 가 빈 상태로 재생성된 뒤 **구 버전(6월 고정창)** 빌드가 3일치만
   #   채웠고(쿼리이력 20:39 DELETE 창 = 2024/2025/2026 각 6월 · INSERT 1,299,412),
   #   신 버전 롤링 윈도우는 창 `[2026-09-19, ∞)` 에 원천이 없어 **정상 no-op**(DELETE 0 · INSERT 0) 했다.
-  #   ⇒ 창 밖 30일을 되메울 경로는 ⓐ 뿐이었다. `warn_ga4_load_gap` 이 30행(`SRC_ONLY`)으로 적발했다.
+  #   ⇒ 창 밖 30일을 되메울 경로는 ⓐ 뿐이었다. `warn_bigquery_load_gap` 이 30행(`SRC_ONLY`)으로 적발했다.
   #   ✅ 실측 결과(`['2024-01-01','9999-12-31']` · `build --select BIGQUERY_BASIC+` · 84노드) =
   #      BASIC·EVENT **10,332,737 / 33일**(2024-01-29~2026-09-14) · FACT **1,620,857 / 33일** ·
-  #      `OPS.WARN_GA4_LOAD_GAP` 30 → **0행**. 🟢 ⓐ 경로가 **전량 백필로도** 실증됐다(종전 실증은 1일).
-  # ga4_dt_ranges:
-  #   - ['2024-01-01', '9999-12-31']
+  #      `OPS.WARN_BIGQUERY_LOAD_GAP` 30 → **0행**. 🟢 ⓐ 경로가 **전량 백필로도** 실증됐다(종전 실증은 1일).
+  # 🔓🔴 [2026-09-22 O178-B] 슬롯을 **일시적으로 열었다** — `DW_SOURCE_SYSTEM` 값 개명 백필용.
+  #   사유 = `'GA4'` → `'BIGQUERY'`(사용자 결정 · 원천 시스템 = 파이프라인 이전 단계)를
+  #   모델 리터럴에서 고쳤는데 `BIGQUERY_BASIC`·`BIGQUERY_EVENT` 는 **롤링 윈도우**이고
+  #   창이 비어 있다(원천 최대 2026-09-14 < 오늘-3) ⇒ 평범한 build 는 **창 밖 전건을 옛 값으로 남긴다**.
+  #   🔴 `O177-A-2 #4`「배선 후 전량 백필 의무」와 같은 class 다 — **값을 바꾸는 변경은
+  #      창 밖 과거를 다시 쓰지 않으면 에러 없이 절반만 반영된다.**
+  #   🟢 TRUNCATE 전량인 나머지(BIGQUERY_DEVICE·EVENT_DIM·IDENTITY·TRAFFIC_SOURCE·
+  #      IDENTITY_MEMBER_XREF)는 자동 치유되므로 백필 대상이 아니다.
+  #   🔴🔴 **build 직후 아래 2줄을 다시 주석 처리하고 재배포하라** — 상주시키면 이중 샘플링이
+  #      재발하고 일일 배치가 매일 전 기간을 재적재한다.
+  bigquery_dt_ranges:
+    - ['2024-01-01', '9999-12-31']
   # 순서9: GOLD 날짜차원(DIM_DATE) 고정 연속범위. date_sk 매크로가 이 범위 밖/NULL 을 NULL 로 클램프
   #   → fact 에서 COALESCE(date_sk(...),0) 로 Unknown 멤버(DATE_SK=0) 라우팅. 범위 변경 시 DIM_DATE 도 자동 반영.
   #

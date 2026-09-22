@@ -11,7 +11,7 @@
 --    `BATCH_EVENT_INDEX`+`EVENT_BUNDLE_SEQUENCE_ID` 타이브레이커는 2025-06 실측에서
 --    3키 중복 8.66%(781,910/9,028,480)를 **전혀 줄이지 못했다**(두 컬럼 모두 100% 비NULL —
 --    값 자체가 원천에서 중복). `ROW_NUMBER()` 는 그래도 각 파티션 내 유일 정수를 부여하므로
---    PK 4키 유일성(`assert_ga4_pk_unique`)은 성립하지만, 동일 정렬 튜플 내에서 어느 행이
+--    PK 4키 유일성(`assert_bigquery_pk_unique`)은 성립하지만, 동일 정렬 튜플 내에서 어느 행이
 --    몇 번을 받는지는 **재실행마다 바뀔 수 있다**(`20_issue/30_설계_의사결정-008.md:155`).
 --    이 미결을 「손실 0」으로 되쓰지 말 것 — 접히는 중복은 의도된 dedup 으로 수용한다.
 --
@@ -22,19 +22,19 @@
 --    사전순=시간순이라 리터럴 문자열 비교라야 마이크로파티션 프루닝이 유지된다
 --    (함수를 적용하면 프루닝이 깨진다 · `20_issue/02_...-007.md:102`). 파생 `EVENT_DT`(DATE)는
 --    출력 컬럼일 뿐 필터에는 쓰지 않는다.
---    🔄 [2026-09-22] 종전에는 `ga4_dt_ranges` var 를 **이 파일에서 직접 문자열로 전개**했다
+--    🔄 [2026-09-22] 종전에는 `bigquery_dt_ranges` var 를 **이 파일에서 직접 문자열로 전개**했다
 --       (TEXT 컬럼이라 DATE 전제 매크로를 재사용할 수 없었다). 그 수제 루프가 곧
 --       「같은 것을 다르게 재는 지점」이었다 ⇒ TEXT 렌더러를 매크로로 흡수했다:
---       `ga4_range_predicate_text()`. 창 계산은 `ga4_load_window()` 하나이고
+--       `bigquery_range_predicate_text()`. 창 계산은 `bigquery_load_window()` 하나이고
 --       pre-hook DELETE·이 SELECT·GOLD 팩트가 **전부 그것을 공유**한다.
 --       🔴 여기에 범위 술어를 다시 쓰지 마라(DELETE 범위와 어긋나면 중복·누락이 된다).
 --
 -- 🔴 pre-hook 은 `macros/silver_purge.sql` 이 분기한다(`RANGED_MODELS` 에 이 모델명 등재 필수).
 --
 -- 🔴 [P103-⑤ 계승] USER_PSEUDO_ID(PK 1번째 키·NOT NULL)가 원천에서 NULL 인 행 111건이 실측됐다
---    (기지 창 = EVENT_DT 2024-06-05~06-10 · 정본 = tests/warn_ga4_null_user_pseudo_id.sql).
+--    (기지 창 = EVENT_DT 2024-06-05~06-10 · 정본 = tests/warn_bigquery_null_user_pseudo_id.sql).
 --    그대로 두면 100072 로 모델 전체가 실패한다 ⇒ 필터로 제외한다. 그 필터가 삼키는 양이
---    커지는지는 `warn_ga4_null_user_pseudo_id` 가 기지 창 밖에서 감시한다.
+--    커지는지는 `warn_bigquery_null_user_pseudo_id` 가 기지 창 밖에서 감시한다.
 -- 🔴🔴 [2026-08-30 O121 신설] **DDL 타입과 정확히 일치하는 CAST 12개를 유지한다.**
 --   왜: 원천 `BIGQUERY_REFINED_DATA` 가 외부 Python 적재로 전환되며 전 컬럼이 `VARCHAR(16777216)` 가 됐다.
 --   dbt 는 임시뷰와 대상 테이블의 타입이 다르면 `ALTER TABLE … SET DATA TYPE` 을 **자동 발행**한다.
@@ -59,7 +59,7 @@ with raw as (
     select *
     from {{ source('silver_external', 'BIGQUERY_REFINED_DATA') }}
     where USER_PSEUDO_ID is not null
-      and {{ ga4_range_predicate_text('EVENT_DATE') }}
+      and {{ bigquery_range_predicate_text('EVENT_DATE') }}
 ),
 seq as (
     select
@@ -132,7 +132,7 @@ select
     STSLC_GAC_AD_GROUP_NAME                                      as GAC_AD_GROUP_NAME,
     STSLC_GAC_CAMPAIGN_NAME                                      as GAC_CAMPAIGN_NAME,
     BATCH_EVENT_INDEX                                            as BATCH_ORDERING_ID,
-    CAST('GA4' AS VARCHAR(16777216))                             as DW_SOURCE_SYSTEM,
+    CAST('BIGQUERY' AS VARCHAR(16777216))                             as DW_SOURCE_SYSTEM,
     CAST('SILVER.BIGQUERY_REFINED_DATA' AS VARCHAR(16777216))    as DW_SOURCE_TABLE,
     CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ)                   as DW_LOAD_TS,
     CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ)                   as DW_UPDATE_TS,

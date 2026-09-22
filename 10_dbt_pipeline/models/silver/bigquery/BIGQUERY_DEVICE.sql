@@ -9,7 +9,7 @@
 --    · VARIANT(device) 파싱도 기반 테이블에서 끝난다 ⇒ 이 모델은 스칼라 DISTINCT 만 한다.
 -- 🔴 범위 제한을 걸지 않는다(의도) — DISTINCT 차원은 **전기간 값 집합**이 정본이다.
 --    범위 제한하면 특정 월에만 등장한 기기 조합이 사라진다. 그래서 이 모델의 pre-hook 은
---    기본 TRUNCATE(전량 재적재)를 유지한다(macros/ga4_range_purge.sql 주석 참조).
+--    기본 TRUNCATE(전량 재적재)를 유지한다(macros/bigquery_range_purge.sql 주석 참조).
 -- grain = DEVICE_TYPE × PLATFORM × DEVICE_CATEGORY × OS × BROWSER × LANGUAGE DISTINCT (PK 없음).
 {{ config(materialized='incremental') }}
 SELECT DISTINCT
@@ -19,7 +19,7 @@ SELECT DISTINCT
   OS                           AS OS,
   BROWSER                      AS BROWSER,
   LANGUAGE                     AS LANGUAGE,
-  'GA4'                        AS DW_SOURCE_SYSTEM,
+  'BIGQUERY'                   AS DW_SOURCE_SYSTEM,
   'SILVER.BIGQUERY_BASIC' AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP()          AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()          AS DW_UPDATE_TS,
