@@ -29,25 +29,35 @@
 -- ⚠️ 이 테스트가 보지 못하는 것 (해석 전에 읽을 것)
 --   ⓐ **기지 창 안의 변화는 보지 않는다.** 그 창의 111행이 200행으로 늘어도 침묵한다.
 --      그 창을 재적재했다면 이 테스트가 아니라 `-013` §O91-C 의 수치를 직접 재라.
---   ⓑ **`ga4_dt_ranges` 밖은 보지 않는다** — 모델이 읽지 않는 구간의 NULL 은
---      실패를 유발하지 않으므로 감시 대상이 아니다. 범위를 넓히면 이 테스트가 먼저 울린다(의도된 동작).
+--   ⓑ 🔄 [2026-09-22] 종전 이 항목은 *"`ga4_dt_ranges` 밖은 보지 않는다"* 였다 —
+--      그 범위 필터를 **제거했다**. 이제 원천 **전량**을 관측한다.
+--      왜: dbt 가 원천에 있는 것을 전량 하류로 흘리도록 바뀌었으므로(롤링 윈도우는 「이번 run 이
+--      다시 만들 구간」일 뿐 적재 범위가 아니다) 「모델이 읽지 않는 구간」이라는 개념이 사라졌다.
+--      그리고 창을 여기서 다시 전개하던 것이 **술어 중복 지점**이었다(`R1-6-17`) ⇒ 같이 없앴다.
 --   ⓒ 이것은 **원천 관측**이고 SILVER 결과 검증이 아니다. SILVER 쪽 행수 대조는 별건이다.
 --
 -- 판정: 반환 행이 있으면 WARN. 각 행 = 기지 창 밖에서 발견된 NULL 날짜 1건 + 규모.
 --   🟢 정상 상태 = 0행.
-{{ config(severity = 'warn') }}
+--
+-- 🆕 🟢 [2026-09-22 O176 · 사용자 결정 B안 · `O91-F A1` 처방] `store_failures` 를 켰다.
+--   🔴 **왜** = `A1` 이 *"`DEC-40` 은 행을 버리면서 격리 테이블을 만들지 않았다 — 감사 불가 설계다"* 로
+--   지적한 그 결함이다. 종전에는 WARN 이 `Got N results` 만 남겨 **다음 세션이 규모를 재현할 수 없었다**.
+--   🟢 전용 테이블(`OPS.GA4_REJECT_LOG`)을 새로 만들지 않은 이유 = 이 프로젝트에 **이미 확립된 패턴**이
+--   있고(`store_failures: true, schema: OPS` × 5곳 ⇒ `OPS` 5테이블 실재) 전용 테이블을 더하면
+--   **같은 것을 다르게 재는 지점**이 생긴다(`R3-9 ㉡`).
+--   ⚠️ 이 테스트가 보존하는 것은 **날짜별 집계**다 — 개별 탈락 행은 짝 테스트
+--   `warn_ga4_null_user_pseudo_id_rows.sql` 이 보존한다(그쪽이 `A1` 의 「어느 행이」에 답한다).
+--   📏 실측(2026-09-22 · 계정 LK96056) = `BIGQUERY_REFINED_DATA` 의 `USER_PSEUDO_ID IS NULL` **0행**
+--     (기지 창 111행도 현 계정에 재현되지 않는다) ⇒ 🔴 **0행을 「해소」로 읽지 마라** — 계정 이관·재적재의
+--     결과일 수 있고, 이 두 테스트는 **재발 시 규명 경로**로서 값을 갖는다(`P106` 분모 0 은 통과가 아니다).
+{{ config(severity = 'warn', store_failures = true, schema = 'OPS') }}
 
 SELECT
     EVENT_DATE                                   AS EVENT_DATE,
     COUNT(*)                                     AS NULL_UPI_ROWS,
     COUNT_IF(USER_ID IS NOT NULL)                AS HAS_USER_ID_ROWS
 FROM {{ source('silver_external', 'BIGQUERY_REFINED_DATA') }}
-WHERE (
-    {%- for r in var('ga4_dt_ranges') %}
-        {% if not loop.first %}OR {% endif %}(EVENT_DATE between '{{ r[0].replace('-','') }}' and '{{ r[1].replace('-','') }}')
-    {%- endfor %}
-    )
-  AND USER_PSEUDO_ID IS NULL
+WHERE USER_PSEUDO_ID IS NULL
   -- 기지 창 제외 (위 「왜 기지 창 밖에서만인가」 참조 · 정본 = 50_dbt_…-013 §O91-C)
   AND NOT (EVENT_DATE BETWEEN '20240605' AND '20240610')
 GROUP BY 1

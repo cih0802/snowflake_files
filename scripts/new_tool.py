@@ -111,6 +111,21 @@ def main():
         print('🔴 도구명 규약 위반(소문자·숫자·`_` · 3~60자) — %r' % a.name)
         return 1
 
+    # 🔴🔴 [O178 · O176-A-3 ㉦ 시정] `test_*` 는 이 도구로 만들지 않는다.
+    #   왜 = `gate_census` 의 TEST 분류는 **패턴 단일 관리**(`scripts/test_*.py` 글롭)다.
+    #   그런데 이 도구는 6종 dict 중 하나에 **이름을 한 줄 등재**한다 ⇒ `test_foo` 를 넣으면
+    #   같은 파일이 **패턴과 dict 양쪽**에 잡혀 `test_gate_census` 축⑨(중복 등재 0)가 FAIL 한다.
+    #   🔴 종전에는 이 가드가 없어서 「등재하면 FAIL, 안 하면 미분류」인 **출구 없는 상태**를
+    #      만들 수 있었다. O176 이 이것을 적발하고 「손으로 만들라」를 인수인계에 적었지만
+    #      **구현은 고치지 않았다** ⇒ 문서의 약속과 코드가 어긋난 채였다(`O176-A-0` 판정식 1).
+    #   🟢 처방 = 도구가 스스로 거절한다. 음성 축 = `scripts/test_tool_registration.py`.
+    if a.name.startswith('test_'):
+        print('🔴 `test_*` 는 이 도구로 만들지 않는다 — TEST 분류는 패턴 단일 관리다.')
+        print('   등재하면 `test_gate_census` 축⑨(중복 등재)가 FAIL 하고,')
+        print('   등재하지 않으면 미분류가 된다 ⇒ 출구가 없다.')
+        print('   🟢 음성 테스트는 `scripts/test_<대상>.py` 로 **손으로** 만들어라(등재 불필요).')
+        return 1
+
     dst = os.path.join(SCRIPTS, a.name + '.py')
     src_scratch = os.path.join(SCRIPTS, '_scratch_' + a.name + '.py')
     if os.path.exists(dst):

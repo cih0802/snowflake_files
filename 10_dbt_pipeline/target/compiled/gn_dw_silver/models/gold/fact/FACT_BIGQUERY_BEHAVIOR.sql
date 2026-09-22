@@ -4,11 +4,26 @@
 -- IDENTITY_SK = IDENTITY_MEMBER_XREF(pseudo→회원) → DIM_MEMBER_IDENTITY 매칭분, 미매칭=0(센티넬). CAMPAIGN_SK=NULL.
 -- ⚠️ [G-5 재확인] IDENTITY 결선은 BigQuery 1일 샤드 기반(회원 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
 -- ⚠️ 비/준가산 지표(AVG_SESSION_DURATION·BOUNCE_RATE)는 grain 값 — 상위 재합산 금지(06_DDL §6)
--- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
+-- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존. append 라 unique_key 불요.
+-- 🔄🔴 [2026-09-22] **전량 TRUNCATE 재적재 → 범위 재적재(일일 증분)로 전환.**
+--   왜: 매 run 전량 재계산은 순수 낭비였다(실측 33일 14.9초 → 전일자 환산 ≈ 7분).
+--   pre-hook 이 `macros/gold_fact_purge.sql` 로 분기한다 — `RANGED_FACTS` 에 이 모델명 등재 필수.
+--     · 그 매크로가 `DELETE … WHERE DATE_SK <창>` 을 내고, 아래 `e` CTE 가 **같은 창**을 append 한다.
+--     · 창 정의 지점은 `macros/ga4_range_predicate.sql` 의 `ga4_load_window()` 하나다.
+--       DELETE 는 `_sk`(NUMBER YYYYMMDD) 렌더러, 여기는 DATE 렌더러를 쓰지만 창은 동일하다.
+--   🔴 **이 파일에 `pre_hook` 을 쓰지 말 것** — dbt 는 hook 을 누적하므로 TRUNCATE 와 DELETE 가
+--      함께 돌아 팩트가 창 크기로 쪼그라든다(에러 없이 행수만 줄어든다 · gold_fact_purge.sql 주석).
+--   🔴 범위 DELETE 의 전제 3가지(grain 에 DATE_SK · 집계가 일자 내 폐쇄 · DATE_SK=0 공집합)는
+--      `macros/gold_fact_purge.sql` 헤더에 적혀 있다. 지표를 추가할 때 ②를 깨지 않는지 확인하라
+--      (월간 유니크처럼 일자를 넘나드는 집계를 넣으면 범위 재적재가 틀린 값을 낸다).
 
 
 with e as (
+    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: ga4_load_window).
     select * from GN_DW.SILVER.BIGQUERY_EVENT
+    where (
+    (EVENT_DT >= TO_DATE('2026-09-19') AND EVENT_DT <= TO_DATE('9999-12-31'))
+  )
 ),
 -- pseudo→회원 매칭(1 pseudo 1행 = XREF grain). IDENTITY_SK 해소용, fan-out 없음.
 xref as (
@@ -84,7 +99,7 @@ select
     'BIGQUERY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'c4948845-b3a9-46a6-a3e0-7ce1d37da1e2'                    AS DW_BATCH_ID
+    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
 )

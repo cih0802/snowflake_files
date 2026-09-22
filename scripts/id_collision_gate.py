@@ -39,6 +39,11 @@ DEF 로 인정하는 3형태 (실측으로 확정 · 2026-08-12):
 
 부가 검사 — **미정의 번호**(참조는 있는데 DEF 가 없다).
   `P214` 가 정확히 이 상태로 O59-T 에서 유입돼 다음 세션이 정의를 역추적해야 했다.
+  🆕 🔴 **[2026-09-22 O176] 이 절은 O176 까지 「약속만 있고 구현이 없었다」** — 실제 구현은
+  계열별 **최대값 비교** 뿐이어서 **최대값보다 작은 미정의는 원리적으로 탐지되지 않았다**
+  (실측 = `P33` 132회 · `P106` 78회 · `P102` 54회 참조에 정의 0 · 같은 class 102종).
+  ⇒ O176 이 **ID 단위 전수 열거 축**을 신설했다(advisory · `--undefined-all` 로 전량).
+  🟢 판정식 = 「내가 약속한 검사가 실제로 도는가」를 음성 테스트로 단정한다(`test_id_collision_undefined.py`).
 
 승격 이력(D3 근거): `AGENCY_AD_PERFORMANCE.AD_DATE` warn→error 승격이 선례이며 관례는
   **「위반 0 을 먼저 실측한 뒤 blocking 으로 올린다」**(문서50 §496·531 · 이력 §325).
@@ -188,10 +193,12 @@ def main():
     argv = sys.argv[1:]
     observe = '--observe' in argv
     cross_strict = '--cross-strict' in argv
+    undefined_all = '--undefined-all' in argv
     want = argv[argv.index('--next') + 1].upper() if '--next' in argv else None
 
     defs = defaultdict(list)   # (file, id) -> [lineno]   ← 중복 검사용(세션 형태 제외)
     all_ids = set()            # 최대값 산정용(세션 형태 포함)
+    xwalk_ids = set()          # 🆕 [O176] 크로스워크 문서에만 있는 정의 형태(미정의 3상태 구별용)
     refs = defaultdict(int)    # id -> count
     # 🔴 [2026-08-18 O83] 폴더 분할분을 분모에 포함한다.
     #   `01_세션이력.md` 는 `--outdir` 로 `20_issue/01_세션이력/` 폴더에 조각화됐다.
@@ -217,6 +224,13 @@ def main():
                     all_ids.add(_id)
                     if kind != 'session':
                         defs[(f.name, _id)].append(i)
+            else:
+                # 🆕 [O176] 크로스워크 문서의 정의 형태를 **따로** 모은다.
+                #   정의 스캔에서는 계속 제외하되(등장 = 참조 · O64 규약 불변),
+                #   「미정의」 보고에서 ㉠(원장 선점 행만 있는 진행 중 라벨)과
+                #   ㉡(어디에도 없다)을 **구별**하기 위해 필요하다.
+                for _id, _kind in classify(line):
+                    xwalk_ids.add(_id)
             for _id in ids_in(line):
                 refs[_id] += 1
 
@@ -289,6 +303,49 @@ def main():
         else:
             flag = ''
         print(f'    {s:<9} 정의 {dmx:>4} · 참조 {rmx:>4} · 다음 {s}{max(dmx, rmx) + 1}{flag}')
+
+    # 🆕 [2026-09-22 O176 신설] 미정의 번호 **전수 열거** 축.
+    #   🔴🔴 **이 파일 머리(부가 검사 절)가 「미정의 번호」 검사를 약속했는데 구현이 없었다.**
+    #   실제 구현은 위 계열별 **최대값 비교**(`정의<참조` 플래그)뿐이고, 그 축은
+    #   **최대값 한 칸만** 본다 ⇒ 번호가 최대값보다 작은 미정의는 **원리적으로 탐지되지 않는다**.
+    #   · 🔎 실사고 = `P102`(참조 54회) · `P106`(78회) · `P33`(132회)이 정의 형태 0 으로 장기 생존했고,
+    #     착수표 ⑩ ㉤ 가 「P102·P106 정의 복원」을 **2종만** 열어둔 사이 같은 class 가 102종까지 누적됐다.
+    #     머리말이 경고한 `P214` 재발 경로(다음 세션이 정의를 역추적)가 그대로 실현된 것이다.
+    #   🟢 판정식 = 「참조는 있는데 정의 형태가 없다」를 **ID 단위로** 센다(최대값이 아니다).
+    #   ⚠️ **advisory 다(exit code 에 영향 없음).** 이유 = 신설 시점 실측 잔여가 102종이라
+    #     blocking 으로 올리면 모든 세션이 즉시 막힌다. 선례 = 위 「문서 간 정의 중복」 관측 모드.
+    #     🔴 blocking 승격은 잔여를 0 으로 만든 뒤에 한다(그때 `--undefined-strict` 를 신설할 것).
+    #   ⚠️ 분모를 `CORE_SERIES` 로 좁히는 이유는 위 경보와 같다 — 1글자 계열은 본문 수치와 겹친다.
+    undefined = {i: refs[i] for i in refs
+                 if i not in defined_ids
+                 and series_of(i) in CORE_SERIES
+                 and num_of(i) is not None
+                 and num_of(i) <= PLAUSIBLE_MAX}
+    # 🔴🔴 **분모를 반드시 문면에 적는다.** 「정의 0」은 *어디에도 없다*가 아니라
+    #   **「정의 스캔 분모(크로스워크 3문서 제외)에 없다」**는 뜻이다 ⇒ 밝히지 않으면 오독된다.
+    #   · 🔎 이 축이 실제로 드러낸 3상태(O176 실측 · 전부 서로 다른 처방이다):
+    #     ㉠ **원장 선점 행만 있는 진행 중 라벨**(예: `O175`) = 정상 상태 · 조치 불요
+    #     ㉡ **이력 항목 자체가 없는 완료 세션**(예: `O167` — `####` 줄 0건) = 실제 문서화 공백
+    #     ㉢ **교훈 번호가 정의 없이 대량 참조**(예: `P106` 75회 · `P102` 47회) = ㉤ 의 본래 대상
+    #   🔴 세 상태를 한 숫자로 뭉개서 판정하지 마라 — 같은 「미정의」가 원인이 다르다.
+    xwalk_only = {i for i in undefined if i in xwalk_ids}
+    print(f'\n  [미정의 번호 · 관측] 참조는 있으나 **정의 스캔 분모에** 정의 형태가 없는 ID')
+    print(f'    분모 계열 {"·".join(sorted(CORE_SERIES))}'
+          f' · 정의 스캔 제외 = {", ".join(sorted(DEF_EXCLUDE_FILES))}')
+    if undefined:
+        order = sorted(undefined, key=lambda x: (-undefined[x], series_of(x), num_of(x) or 0))
+        shown = order if undefined_all else order[:10]
+        for _id in shown:
+            tag = ' (크로스워크에만 정의 형태 있음)' if _id in xwalk_only else ''
+            print(f'    🟠 **{_id}** 정의 0 · 참조 {undefined[_id]}회{tag}')
+        if not undefined_all and len(order) > len(shown):
+            print(f'    … 외 {len(order) - len(shown)}종 (전량 = `--undefined-all`)')
+        print(f'    ⇒ 미정의 {len(undefined)}종 · 총 참조 {sum(undefined.values())}회'
+              f' · 그중 크로스워크에만 정의 형태 보유 {len(xwalk_only)}종')
+        print('    ⚠️ advisory — 🔴 **정의를 창작하지 마라.** 원문 근거(발급 세션의 서술)를 확보한 것만'
+              ' 복원한다(`R2-8-4-c` 수치·의미 창작 금지). 근거 미확보분은 백로그로 남긴다.')
+    else:
+        print('    ⇒ 미정의 0종 — 🟢 `--undefined-strict` 로 blocking 승격 가능한 상태다')
 
     if dup and not observe:
         print('\n🔴 게이트 실패 — 한 문서가 같은 ID 를 두 번 정의했다.'

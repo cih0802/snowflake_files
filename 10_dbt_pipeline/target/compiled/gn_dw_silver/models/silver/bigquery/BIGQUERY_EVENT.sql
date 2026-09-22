@@ -103,7 +103,5 @@ LEFT JOIN sess s
 -- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
 --    정의 지점은 `macros/ga4_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
 WHERE (
-    (b.EVENT_DT >= TO_DATE('2024-06-01') AND b.EVENT_DT <= TO_DATE('2024-06-30'))
-    OR (b.EVENT_DT >= TO_DATE('2025-06-01') AND b.EVENT_DT <= TO_DATE('2025-06-30'))
-    OR (b.EVENT_DT >= TO_DATE('2026-06-01') AND b.EVENT_DT <= TO_DATE('2026-06-30'))
+    (b.EVENT_DT >= TO_DATE('2026-09-19') AND b.EVENT_DT <= TO_DATE('9999-12-31'))
   )

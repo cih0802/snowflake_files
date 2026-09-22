@@ -2,7 +2,7 @@
 doc_id: BRONZE_EXPOSURE_AUDIT
 doc_role: BRONZE 전 원천 전면 노출감사 — GOLD 도달 여부 판정 정본
 project: GN_DW
-audit_date: 2026-09-21
+audit_date: 2026-09-22
 generator: scripts/gen_bronze_exposure_audit.py
 runner: scripts/run_bronze_audit_host.py
 principle: P13(커버리지≠정확도)·P14(부재판정은 실측필수)
@@ -11,7 +11,7 @@ END-METADATA -->
 # BRONZE 노출감사 (전 원천 전면)
 
 > ⚙️ **자동 생성물** — 생성기 `scripts/gen_bronze_exposure_audit.py` / 러너 `scripts/run_bronze_audit_host.py`. 직접 편집 금지.
-> **감사일** 2026-09-21 · **범위** BRONZE 전 원천 1254컬럼 (CRM·AGENCY·ERP·GA4)
+> **감사일** 2026-09-22 · **범위** BRONZE 전 원천 1254컬럼 (CRM·AGENCY·ERP·GA4)
 > **목적** "보여줄 수 있는 BRONZE 데이터는 다 보여준다" 충족 여부 실측
 
 ## 0. 판정 기준 및 한계 (필독)
@@ -46,10 +46,10 @@ END-METADATA -->
 | ⚠️설계O·값미주입 | 0 | 0.0% |
 | SILVER까지만 | 439 | 35.0% |
 | 판정보류(동명이의) | 13 | 1.0% |
-| 미노출(검토대상) | 542 | 43.2% |
+| 미노출(검토대상) | 492 | 39.2% |
 | 제외(PII·본문·메타) | 58 | 4.6% |
 | 제외(DW메타) | 0 | 0.0% |
-| 제외(적재제어메타) | 50 | 4.0% |
+| 제외(적재제어메타) | 100 | 8.0% |
 | **합계** | **1254** | 100% |
 
 ### 원천별 교차
@@ -57,7 +57,7 @@ END-METADATA -->
 | 원천 | 노출됨(GOLD) | 대체노출(파생) | ⚠️설계O·값미주입 | SILVER까지만 | 판정보류(동명이의) | 미노출(검토대상) | 제외(PII·본문·메타) | 제외(DW메타) | 제외(적재제어메타) | 합계 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | AGENCY | 62 | 13 | 0 | 18 | 7 | 6 | 0 | 0 | 0 | 106 |
-| CRM | 75 | 0 | 0 | 353 | 6 | 522 | 58 | 0 | 50 | 1064 |
+| CRM | 75 | 0 | 0 | 353 | 6 | 472 | 58 | 0 | 100 | 1064 |
 | ERP | 0 | 2 | 0 | 68 | 0 | 14 | 0 | 0 | 0 | 84 |
 
 ## 2. ⚠️ 최우선 조치군 — GOLD 설계O·값 미주입
@@ -393,7 +393,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REAL_SEND_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPPER_CMPGN` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -414,7 +414,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `LINK_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -430,7 +430,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `OPEN_DT` | TIMESTAMP_NTZ | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -492,7 +492,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REG_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `SERVICE_MENU_CODE` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -512,7 +512,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -537,7 +537,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `UPPER_CD_ID` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -561,7 +561,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -583,7 +583,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -612,7 +612,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -646,7 +646,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -666,7 +666,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -691,7 +691,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -719,7 +719,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -742,7 +742,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `ATTACHED_FILE` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -761,7 +761,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -783,7 +783,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -799,7 +799,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -856,7 +856,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `RGSTR_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `REGIST_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -875,7 +875,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -920,7 +920,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `MKTG_UTM` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `MKTG_CHANNEL` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -942,7 +942,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `ACMSLT_UPPER_DEPT_ID` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -961,7 +961,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -984,7 +984,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -997,7 +997,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `ONCE_MBER_NO` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1028,7 +1028,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `FRST_RGSTR_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1067,7 +1067,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `SEX` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1092,7 +1092,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `RDCAMT_YN` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1113,7 +1113,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `ACCNUT_STATS_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `CHILD_STATS_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1128,7 +1128,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REGIST_DEPT_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1145,7 +1145,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1162,7 +1162,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SPNSR_DSCNTC_YN` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `SPNSR_DSCNTC_RSN_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1179,7 +1179,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REGIST_DEPT_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1209,7 +1209,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `REGIST_DEPT_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1252,7 +1252,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `TMPLAT_WIN_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `TMPLAT_WIN_TIT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1276,7 +1276,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1300,7 +1300,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1321,7 +1321,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1350,7 +1350,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1374,7 +1374,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1412,7 +1412,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `RGSTR_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `SPNSR_BSNS_ID` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `SPONSORSHIP_SK` (FACT_MEMBER_FEE.sql) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1436,7 +1436,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1501,7 +1501,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `OPER_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `OPER_RST_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1523,7 +1523,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1582,7 +1582,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1610,7 +1610,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1633,7 +1633,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `MNYRS_NATION_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `CMS_CHILD_NO` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1650,7 +1650,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `CHG_DE` | DATE | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `CHG_RELATNSP_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1678,7 +1678,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `TRNSFER_YN` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `TRNSFER_AFTER_RELATNSP_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1702,7 +1702,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `ONLINE_INFLOW_CD` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `LETTER_STAT_CD` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1723,7 +1723,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DE` | DATE | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `MBER_NO` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
-| `_BATCH_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 
 </details>
@@ -1836,4 +1836,4 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 - `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). 본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.
 - `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
 
-_감사일 2026-09-21 · Co-authored with CoCo_
+_감사일 2026-09-22 · Co-authored with CoCo_

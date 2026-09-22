@@ -27,11 +27,11 @@ select
     'BIGQUERY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'c4948845-b3a9-46a6-a3e0-7ce1d37da1e2'                    AS DW_BATCH_ID
+    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
 from src
 union all
 -- 순서9 Unknown 멤버(BIGQUERY_SOURCE_SK=0): fact 의 미매핑 BIGQUERY_SOURCE_SK 센티넬 라우팅 대상.
 select 0, '(unknown)', '(unknown)', NULL, NULL, NULL, NULL, 'BIGQUERY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    'c4948845-b3a9-46a6-a3e0-7ce1d37da1e2'                    AS DW_BATCH_ID
+    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID

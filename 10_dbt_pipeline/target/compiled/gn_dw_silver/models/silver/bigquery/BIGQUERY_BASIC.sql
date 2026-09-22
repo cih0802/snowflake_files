@@ -21,8 +21,13 @@
 -- 🔴 EVENT_DATE 범위 필터는 `TO_DATE()` 로 감싸지 않는다 — 원본이 TEXT(YYYYMMDD)이고
 --    사전순=시간순이라 리터럴 문자열 비교라야 마이크로파티션 프루닝이 유지된다
 --    (함수를 적용하면 프루닝이 깨진다 · `20_issue/02_...-007.md:102`). 파생 `EVENT_DT`(DATE)는
---    출력 컬럼일 뿐 필터에는 쓰지 않는다. `ga4_range_predicate` 매크로는 진짜 DATE 컬럼을
---    전제하므로 여기서는 재사용하지 않고 `ga4_dt_ranges` var 를 직접 문자열로 변환한다.
+--    출력 컬럼일 뿐 필터에는 쓰지 않는다.
+--    🔄 [2026-09-22] 종전에는 `ga4_dt_ranges` var 를 **이 파일에서 직접 문자열로 전개**했다
+--       (TEXT 컬럼이라 DATE 전제 매크로를 재사용할 수 없었다). 그 수제 루프가 곧
+--       「같은 것을 다르게 재는 지점」이었다 ⇒ TEXT 렌더러를 매크로로 흡수했다:
+--       `ga4_range_predicate_text()`. 창 계산은 `ga4_load_window()` 하나이고
+--       pre-hook DELETE·이 SELECT·GOLD 팩트가 **전부 그것을 공유**한다.
+--       🔴 여기에 범위 술어를 다시 쓰지 마라(DELETE 범위와 어긋나면 중복·누락이 된다).
 --
 -- 🔴 pre-hook 은 `macros/silver_purge.sql` 이 분기한다(`RANGED_MODELS` 에 이 모델명 등재 필수).
 --
@@ -55,10 +60,8 @@ with raw as (
     from GN_DW.SILVER.BIGQUERY_REFINED_DATA
     where USER_PSEUDO_ID is not null
       and (
-        (EVENT_DATE between '20240601' and '20240630')
-        OR (EVENT_DATE between '20250601' and '20250630')
-        OR (EVENT_DATE between '20260601' and '20260630')
-    )
+    (EVENT_DATE between '20260919' and '99991231')
+  )
 ),
 seq as (
     select

@@ -1494,16 +1494,16 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     BUDGET_PROCEDURE    VARCHAR         COMMENT '예산 편성 차수 (연사업 / 추가경정 · DEC.',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '후원사업 (선택 FK→DIM_SPONSORSHIP)',
-    PLAN_BUDGET_MONTH   NUMBER(18,2)    COMMENT '편성예산(월)',
+    PLAN_BUDGET_MONTH   NUMBER(18,2)    COMMENT '편성예산(월 · 원). 🔴🔴 [2026-08-29 O114-B] 12개월 합산해도 FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR 와 일치하지 않는다 — 원천 원장의 월 배분이 부분적이어서 연 총액의 상당 부분이 월 컬럼에 배분되지 않는다(원천 특성 · 모델 결함 아님 · 실측 규모는 이슈원장·이력 소관 R2-6). ⇒ 🔴 「편성예산」을 답할 때 월·연 중 어느 축인지 밝혀라 — 밝히지 않으면 두 답이 갈린다. 🟢 대비: 집행은 연=월 정합이다(EXEC_BUDGET_ERP 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR). 🔴 예산 편성 차수(「연사업」 / 「추가경정」)를 GROUP BY 에 넣지 않으면 본예산과 추경이 합산된다 — 다만 이 테이블은 BUDGET_PROCEDURE 컬럼을 보유하므로 차수별 분해가 가능하다(2026-09-22 O176 실측 · 규모는 이슈원장 소관 R2-6). ⚠️ WIDE_BUDGET 은 이 컬럼을 노출하지 않으므로 거기서는 분해가 불가능하다 — 「차수별 분해 불가」는 뷰 축의 사실이며 이 테이블에는 적용되지 않는다.',
     -- 🔴 [2026-08-20 O96 · DEC42] 아래 컬럼은 **의도적 영구 NULL** 이다 — 폐기(deprecated) 슬롯.
     --    생성 근거는 실재했다(필드인벤토리 「편성예산(연)」 · 지표 「연 편성예산」 매핑 교정 2026-07-27)
     --    그러나 O93 에서 연 grain 을 `FACT_BUDGET_YEARLY` 로 분리해 **근거가 대체**됐다.
     --    ⚠️ 이 컬럼에 값을 넣지 마라 — 월 grain 에 연값을 넣으면 SUM 이 12배로 부풀고 조용히 틀린다.
     -- 🔴 [2026-09-01 O130] PLAN_BUDGET_YEAR 드랍(O96 §7-B A군 · DEC42 집행) — 컬럼 제거.
-    EXEC_BUDGET_ERP     NUMBER(18,2)    COMMENT '집행예산(ERP)',
-    EXEC_BUDGET_EST     NUMBER(18,2)    COMMENT '집행예산(추정)',
-    FUNDRAISING_COST    NUMBER(18,2)    COMMENT '모금성비용',
-    AD_COST             NUMBER(18,2)    COMMENT '광고비',
+    EXEC_BUDGET_ERP     NUMBER(18,2)    COMMENT '집행예산(ERP · 월 · 원). 🟢 연=월 정합이다 — 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR(편성과 달리 월 배분 누락이 없다). 🔴 다만 예산 편성 차수(「연사업」/「추가경정」) 취급은 편성과 같다 — BUDGET_PROCEDURE 를 GROUP BY 에 넣지 않으면 본예산과 추경이 합쳐진다(합쳐질 뿐이며 분해는 가능하다).',
+    EXEC_BUDGET_EST     NUMBER(18,2)    COMMENT '집행예산(추정 · 원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 집행 추정 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 소관 · ⚠️ 종전 문안의 E-4 병기는 O175 가 철회했다 — 광고비는 원천 부재가 아니다). 실측 규모는 이슈원장 §O51-F.',
+    FUNDRAISING_COST    NUMBER(18,2)    COMMENT '모금성비용(원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 모금성비용 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 하드블로커) — 모금성비용은 원천 확정 대기다. 실측 규모는 이슈원장 §O51-F.',
+    AD_COST             NUMBER(18,2)    COMMENT '광고비(원) 🔴🔴 폐기 슬롯이다 — 의도적 영구 NULL(외부 입고 대기가 아니다 · 2026-09-21 O175 판정). 예산 원장에는 광고비 예산항목이 없고, 대행사 원천의 광고비는 이미 GOLD.FACT_AD_PERFORMANCE.AD_COST 로 일 grain 배선돼 있다. 🔴 광고비를 이 컬럼으로 묻지 말 것 — 정본은 SERVING.SV_AD.TOTAL_AD_COST(base GOLD.WIDE_AD_COMBINED)다. 🔴 예산과 같은 표에 합산하지 말 것(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). ⚠️ 종전 문안의 「원천 자체가 비어 있다 · 대행사가 항목을 보고하지 않는다」는 거짓이었다(경위·규모는 이슈원장 §O175).',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',

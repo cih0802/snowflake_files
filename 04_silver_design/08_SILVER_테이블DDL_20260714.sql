@@ -67,7 +67,7 @@ USE WAREHOUSE GN_DW_DEV_WH;
 USE DATABASE GN_DW;
 CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER
     WITH MANAGED ACCESS
-    COMMENT = 'Silver 레이어 — Bronze(CRM·GA4·ERP·AGENCY) 정제/변환 객체 (GOLD 입력용)';
+    COMMENT = 'Silver 레이어 — Bronze(CRM·BIGQUERY·ERP·AGENCY) 정제/변환 객체 (GOLD 입력용)';
 
 USE SCHEMA GN_DW.SILVER;
 
@@ -1357,7 +1357,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 --     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 -- ) COMMENT = 'BRONZE_BIGQUERY.EVENTS 평탄화 통합 기반 테이블(GA4 계열의 유일 입력). event_params FLATTEN·VARIANT 경로 추출·DEVICE_TYPE 파생을 1회로 통합 — 종전 5모델이 각자 2.86억행을 읽던 것을 1회로 줄인다. 계층 내 파생 허용 = DEC-37 · 원천 접두 명명 = DEC-38. 🔴 조회 시 EVENT_DT 범위 제한 필수';
 
--- GA4 0: BIGQUERY_BASIC (평탄화 재파생 기반 테이블) — 🆕 [2026-08-21]
+-- BIGQUERY 0: BIGQUERY_BASIC (평탄화 재파생 기반 테이블) — 🆕 [2026-08-21]
 --   grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
 --   입력 = source('silver_external','BIGQUERY_REFINED_DATA')(외부 Python 적재 · 118컬럼 평탄화 · 파생 0).
 --   위 커밋아웃 블록(구 `BIGQUERY_REFINED_DATA` dbt 모델 DDL)을 계승 — SRC_TABLE·SRC_FILE_NAME·
@@ -1410,7 +1410,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
     EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE.',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). USER_ID 사용.',
+    USER_ID                 VARCHAR(64)     COMMENT 'BIGQUERY user_id 원본(불변 보존). USER_ID 사용.',
     ID_SCHEME               VARCHAR(20)     COMMENT 'ID_SCHEME.',
     BIGQUERY_SESSION_ID     NUMBER          COMMENT 'BigQuery 세션ID(EP_GA_SESSION_ID TRY_CAST).',
     BIGQUERY_SESSION_NUMBER NUMBER          COMMENT 'BigQuery 세션 번호(EP_GA_SESSION_NUMBER TRY_CAST).',
@@ -1455,9 +1455,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA4 웹/앱 이벤트 기본 Staging. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 12컬럼 DDL 타입 캐스팅 정제]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 웹/앱 이벤트 기본 Staging. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 12컬럼 DDL 타입 캐스팅 정제]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
--- GA4 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
+-- BIGQUERY 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
 --   [컬럼별 설계 및 실측 이력]
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
@@ -1476,9 +1476,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_TRAFFIC_SOURCE (
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA4 트래픽 소스 차원. [Grain: SOURCE × MEDIUM × CAMPAIGN (1행=1소스)]. [주의: 세션 획득 채널 분류]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 트래픽 소스 차원. [Grain: SOURCE × MEDIUM × CAMPAIGN (1행=1소스)]. [주의: 세션 획득 채널 분류]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
--- GA4 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
+-- BIGQUERY 2: BIGQUERY_EVENT_DIM (이벤트분류 차원)
 --   [컬럼별 설계 및 실측 이력]
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
@@ -1491,9 +1491,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT_DIM (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA4 이벤트 분류 차원. [Grain: EVENT_NAME × PARAM_NAME (1행=1이벤트분류)]. [주의: 주요 웹/앱 이벤트 정의]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 이벤트 분류 차원. [Grain: EVENT_NAME × PARAM_NAME (1행=1이벤트분류)]. [주의: 주요 웹/앱 이벤트 정의]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
--- GA4 3: BIGQUERY_DEVICE (디바이스 차원)
+-- BIGQUERY 3: BIGQUERY_DEVICE (디바이스 차원)
 --   [컬럼별 설계 및 실측 이력]
 --   · DEVICE_TYPE: 디바이스 유형 파생. 실측값 PC/M 2종만(APP 휴면·O2)
 --   · PLATFORM: 플랫폼. 실측값 WEB 단일(ANDROID/IOS 미입고)
@@ -1510,9 +1510,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA4 디바이스 차원. [Grain: DEVICE_CATEGORY × OPERATING_SYSTEM (1행=1디바이스)]. [주의: 접속 기기 및 OS 분류]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 디바이스 차원. [Grain: DEVICE_CATEGORY × OPERATING_SYSTEM (1행=1디바이스)]. [주의: 접속 기기 및 OS 분류]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
--- GA4 4: BIGQUERY_EVENT (이벤트 팩트 소스)
+-- BIGQUERY 4: BIGQUERY_EVENT (이벤트 팩트 소스)
 --   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
 --   [컬럼별 설계 및 실측 이력]
 --   · EVENT_SEQ: 동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 2024 상반기에 없어 그 구간을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순으로 부여한 surrogate 로 대체한다. 🔴 [O87-B] 성립하는 것은 「NOT NULL 위반 해소
@@ -1532,16 +1532,16 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
-    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 .  GA4.',
+    EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 .  BIGQUERY.',
     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
     EVENT_DT                DATE            NOT NULL COMMENT '파생 DATE.',
     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
-    USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존).  GA4.',
+    USER_ID                 VARCHAR(64)     COMMENT 'BIGQUERY user_id 원본(불변 보존).  BIGQUERY.',
     ID_SCHEME               VARCHAR(20)     COMMENT 'ID_SCHEME.',
     BIGQUERY_SESSION_ID     NUMBER          COMMENT 'BigQuery 세션ID',
     BIGQUERY_SESSION_NUMBER NUMBER          COMMENT 'BigQuery 세션 번호',
     BIGQUERY_SESSION_KEY    VARCHAR         COMMENT '파생 세션 자연키 (복합 = pseudo ∥ ".',
-    USER_ID_FILLED          VARCHAR(64)     COMMENT '파생 세션 전파 회원번호.  GA4.',
+    USER_ID_FILLED          VARCHAR(64)     COMMENT '파생 세션 전파 회원번호.  BIGQUERY.',
     ID_RESOLUTION           VARCHAR(20)     COMMENT 'ID_RESOLUTION.',
     SESSION_ENGAGED         VARCHAR(5)      COMMENT '세션 engaged 여부',
     ENGAGEMENT_TIME_MSEC    NUMBER          COMMENT '참여시간 msec (비가산 raw)',
@@ -1574,9 +1574,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'GA4 사용자 행동 팩트 소스. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 체류시간/스크롤/이탈률 행동 지표]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 사용자 행동 팩트 소스. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 체류시간/스크롤/이탈률 행동 지표]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
--- GA4 5: BIGQUERY_IDENTITY (신원 브리지 소스)
+-- BIGQUERY 5: BIGQUERY_IDENTITY (신원 브리지 소스)
 --   [컬럼별 설계 및 실측 이력]
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
@@ -1593,7 +1593,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, ID_SCHEME)
-) COMMENT = 'GA4 사용자 신원 차원. [Grain: USER_PSEUDO_ID × ID_SCHEME (1행=1사용자)]. [주의: GA 쿠키 식별자와 CRM 회원 매핑]. [원천: GA4 → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 사용자 신원 차원. [Grain: USER_PSEUDO_ID × ID_SCHEME (1행=1사용자)]. [주의: BIGQUERY 쿠키 식별자와 CRM 회원 매핑]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
 -- ============================================================================
 -- STEP 6 — 신원 브리지 (교차소스 유일 예외)
@@ -1626,7 +1626,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
-) COMMENT = '온-오프라인 신원 연계 브릿지. [Grain: USER_PSEUDO_ID × MEMBER_DK (1행=1연계)]. [주의: GA4 사용자 식별자와 CRM 회원번호 연결]. [원천: GA4/CRM → SILVER.BIGQUERY_IDENTITY].';
+) COMMENT = '온-오프라인 신원 연계 브릿지. [Grain: USER_PSEUDO_ID × MEMBER_DK (1행=1연계)]. [주의: BIGQUERY 사용자 식별자와 CRM 회원번호 연결]. [원천: BIGQUERY/CRM → SILVER.BIGQUERY_IDENTITY].';
 
 
 -- ############################################################################

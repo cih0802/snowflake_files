@@ -63,8 +63,8 @@ DW_META_COLS = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_
 #     🔴 SILVER 로 승격하지 않는다(업무 축과 혼동 위험 + 50테이블 연쇄 노출 결정을 부른다).
 #     ⚠️ 그 대가 = 마감 재적재의 **DELETE 가 증분 SILVER 에 전파되지 않는다**(`merge` 는 삭제를
 #        옮기지 않는다) ⇒ 마감월에는 `CRM_MEMBER_DEV` 를 전량 재적재한다(런북 장치 · 그 모델 주석).
-#   🟠 `_BATCH_ID` 도 같은 class 이나 **이번 결정 범위 밖**이라 여기 넣지 않았다(판정 대기 50건).
-BRONZE_INGEST_META_COLS = {"_STDR_YM"}
+#   🟢 [2026-09-22 O176] `_BATCH_ID` 도 같은 class 다(사용자 결정 A2).
+BRONZE_INGEST_META_COLS = {"_STDR_YM", "_BATCH_ID"}
 
 # ── GOLD 하드코딩 검출 결과 (2026-07-28 grep 실측 — dbt models/gold/) ──
 HARDCODED = {

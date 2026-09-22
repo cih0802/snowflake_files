@@ -24,3 +24,20 @@ select * from gn_dw.gold.WIDE_MEMBER_EVENT where event_type='STOP' limit 10;
 select * from gn_dw.silver.crm_member where cpr_div_cd='A' limit 10;
 
 select distinct cpr_div_cd from gn_dw.silver.crm_member;
+
+select distinct * from gn_dw.silver.BIGQUERY_BASIC limit 10;
+
+SELECT 
+    t.table_name,
+    CASE WHEN c.column_name IS NOT NULL THEN 'O' ELSE 'X' END AS has_stdr_ym
+FROM gn_dw.information_schema.tables t
+LEFT JOIN gn_dw.information_schema.columns c
+  ON t.table_catalog = c.table_catalog
+ AND t.table_schema = c.table_schema
+ AND t.table_name = c.table_name
+ AND c.column_name = '_STDR_YM'
+WHERE t.table_schema = 'BRONZE_CRM'
+  AND t.table_type = 'BASE TABLE'
+ORDER BY t.table_name;
+
+drop schema gn_dw.silver;

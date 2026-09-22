@@ -45,16 +45,17 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
   COMMENT = 'dbt project 등 ETL 운영/툴링 객체 전용 스키마';
 
 -- (2-A) [최초 1회만] DBT PROJECT 신규 생성 (VERSION$1)
+-- 최초 배포 후 '08_After_Deploy_DBT.sql' 돌리고 ENGINEER권한으로 BUILD
 -- CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
   -- FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION SILVER_COMMENT_20260917122210
+  ADD VERSION SILVER_BIGQUERY_EXPAND_20260922121910
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER→GOLD. [20260917] SILVER스키마 테이블들의 컬럼 코멘트 규약으로 가독성 상향';
+  COMMENT = 'BRONZE→SILVER→GOLD. [20260922] SILVER스키마 데이터량 제한 해제';
 
 -- (3) 배포된 버전 상태 확인
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
@@ -78,6 +79,7 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
 -- Step 3 — 파이프라인 실행 (엔지니어 역할: GN_DW_ENGINEER)
 -- ─────────────────────────────────────────────────────────────────────────────
 -- ⚠️ 실행 순서: 스냅샷을 먼저 실행하여 원천 마스터의 최신 변경분을 보존한 후, build를 수행합니다.
+-- 최초 배포 후 '08_After_Deploy_DBT.sql' 돌리고 ENGINEER권한으로 BUILD
 USE ROLE GN_DW_ENGINEER;
 USE WAREHOUSE GN_DW_DEV_WH;
 
@@ -100,6 +102,78 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select gold.dim';
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select gold.fact';
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select tag:gold_wide';
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Step 3-3 — 🔴🔴 [필수] 재배포 후 BIGQUERY 체인 일자 수 확인 (엔지니어 역할)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 🔴🔴 왜 이 단계가 필수인가 (2026-09-22 O178 · 실사고 규명)
+--   BIGQUERY 파생(BIGQUERY_BASIC·BIGQUERY_EVENT·FACT_BIGQUERY_BEHAVIOR)은 O177 부터
+--   **롤링 윈도우 증분**이다 — 매 run 이 다시 만드는 구간은 [오늘 - bigquery_lookback_days, ∞) 뿐이고
+--   창 밖 과거는 손대지 않는다(macros/ga4_range_predicate.sql · 개명 예정).
+--   ⇒ 🔴 **재배포로 SILVER/GOLD 가 빈 상태가 되면 그 빈 상태가 영구히 남는다.**
+--      창에 원천 데이터가 없으면 모델은 SUCCESS 로 끝나고 **행수만 조용히 0** 이다.
+--
+--   실사고(2026-09-21 20:39~20:57 · 쿼리이력으로 규명):
+--     ㉠ 재배포로 테이블이 비었다(그 시점 DELETE 가 0행을 지웠다 = 이미 비어 있었다)
+--     ㉡ **구 버전**(6월 고정창) 빌드가 먼저 돌아 3일치 1,299,412행만 채웠다
+--     ㉢ **신 버전** 롤링 윈도우는 창 [2026-09-19, ∞) 에 원천이 없어 **정상 no-op** 했다
+--        (원천 최대 일자가 2026-09-14 였다)
+--     ⇒ 하류가 33일 → **3일치로 회귀**했고 **ERROR 는 0** 이었다. 완전 무증상이다.
+--   🟢 판정식 = **증분 파이프라인에서는 「배포 순서」가 데이터 범위를 결정한다.**
+--      전량 TRUNCATE 시절에는 배포 순서가 데이터에 영향을 주지 않았다 —
+--      증분화가 **배포 절차를 데이터 정합성의 일부로** 만들었다.
+--
+-- 🔴 아래 2개 쿼리는 **재배포 + build 직후 매번** 돌린다. Step 4 의 일일 배치 Task 를
+--    RESUME 하기 **전에** 반드시 통과시킬 것 — 자동화되면 이 사고가 무인으로 반복된다.
+USE ROLE GN_DW_ENGINEER;
+USE WAREHOUSE GN_DW_DEV_WH;
+
+-- [3-3-a] 원천 ↔ 하류 **일자 수 대조** (기대 = 세 값이 모두 같다)
+--   🔴 행수가 아니라 **일자 수**를 본다 — 일자 단위 창이 누락의 단위이기 때문이다.
+--   ⚠️ 이 개발 계정의 원천은 월 1일씩 샘플링돼 들어온다(운영 원천은 전일자다) ⇒
+--      「33」 같은 절대값을 기대값으로 박지 말고 **원천과 같은지**를 본다.
+SELECT 'SRC  BIGQUERY_REFINED_DATA' AS LAYER,
+       COUNT(DISTINCT TRY_TO_DATE(EVENT_DATE, 'YYYYMMDD')) AS DAYS_,
+       COUNT(*)                                           AS ROWS_
+  FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA
+ WHERE EVENT_DATE IS NOT NULL
+UNION ALL
+SELECT 'SILVER BIGQUERY_BASIC', COUNT(DISTINCT EVENT_DT), COUNT(*)
+  FROM GN_DW.SILVER.BIGQUERY_BASIC
+UNION ALL
+SELECT 'SILVER BIGQUERY_EVENT', COUNT(DISTINCT EVENT_DT), COUNT(*)
+  FROM GN_DW.SILVER.BIGQUERY_EVENT
+UNION ALL
+SELECT 'GOLD  FACT_BIGQUERY_BEHAVIOR', COUNT(DISTINCT DATE_SK), COUNT(*)
+  FROM GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR
+ORDER BY 1;
+
+-- [3-3-b] 감시 테이블 확인 (기대 = 전건 0행)
+--   🔴 WARN_GA4_LOAD_GAP(개명 예정 = WARN_BIGQUERY_LOAD_GAP) 이 **양방향** 감시다:
+--      DIRECTION='SRC_ONLY'  = 원천에 있고 하류에 없다(누락 · 위 사고가 여기 걸렸다 · 30행)
+--      DIRECTION='DW_ONLY'   = 하류에 있고 원천에 없다(고아 · 창 밖이라 영구 잔존)
+--      DIRECTION='BAD_DATE_FORMAT' = 원천 EVENT_DATE 가 YYYYMMDD 로 파싱되지 않는다
+SELECT 'WARN_GA4_LOAD_GAP' AS MONITOR, COUNT(*) AS ROWS_ FROM GN_DW.OPS.WARN_GA4_LOAD_GAP
+UNION ALL
+SELECT 'WARN_GOLD_FACT_BIGQUERY_DATE_SK_ZERO', COUNT(*) FROM GN_DW.OPS.WARN_GOLD_FACT_BIGQUERY_DATE_SK_ZERO
+UNION ALL
+SELECT 'WARN_GA4_NULL_USER_PSEUDO_ID', COUNT(*) FROM GN_DW.OPS.WARN_GA4_NULL_USER_PSEUDO_ID
+ORDER BY 1;
+
+-- 🔴 [3-3-a] 일자 수가 원천보다 적거나 [3-3-b] 가 0행이 아니면 **여기서 멈춰라.**
+--    복구 경로는 **ⓐ 수동 백필 하나뿐**이다(롤링 윈도우는 창 밖을 건드리지 않고,
+--    SILVER·GOLD 는 full_refresh:false 라 --full-refresh 도 막혀 있다):
+--      ㉠ dbt_project.yml vars 의 `ga4_dt_ranges` 주석을 **일시적으로 풀고** 구간을 적는다
+--         (전량이면 ['2024-01-01', '9999-12-31'] · 🔴 하한은 원천 최소일과 대조할 것)
+--      ㉡ ALTER DBT PROJECT … ADD VERSION 으로 **재배포**한다(파일만 고쳐도 반영되지 않는다)
+--      ㉢ EXECUTE DBT PROJECT … ARGS='build --select BIGQUERY_BASIC+'
+--      ㉣ 🔴 **주석을 다시 잠그고 재배포한다** — 상주시키면 이중 샘플링이 재발하고
+--         일일 배치가 매일 전 기간을 재적재한다(O178 이 이 재잠금 반영을 별도 검증했다)
+--      ㉤ 위 [3-3-a]·[3-3-b] 를 다시 돌려 대사한다
+--    🔴🔴 `--vars` 로 오버라이드하지 마라 — 이 환경에서 **조용히 무시된다**(실측 O177).
+--    🟢 실증(O178) = 전량 백필로 3일치 → 33일 10,332,737행 복구 · WARN 30행 → 0행.
+
 
 
 -- ─────────────────────────────────────────────────────────────────────────────

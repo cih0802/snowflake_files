@@ -37,8 +37,8 @@ DW_META_COLS = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_
 # 🆕 🔴 [2026-09-21 O175 사용자 결정 A안] BRONZE 적재 제어 메타 — 상세 근거는 쌍둥이 구현
 #   `scripts/gen_bronze_exposure_audit.py` 의 같은 이름 상수 주석에 있다(집합을 함께 바꾼다).
 #   요지 = `_STDR_YM` 은 **월 파티션 재적재 키**이며 업무 축이 아니다 ⇒ SILVER 미승격 확정.
-#   🟠 `_BATCH_ID` 는 같은 class 이나 결정 대기라 넣지 않았다(50건).
-BRONZE_INGEST_META_COLS = {"_STDR_YM"}
+#   🟢 [2026-09-22 O176] `_BATCH_ID` 도 같은 class 다(사용자 결정 A2).
+BRONZE_INGEST_META_COLS = {"_STDR_YM", "_BATCH_ID"}
 
 # ── 계보 매핑 ((BRONZE 테이블, BRONZE 컬럼) → (GOLD 컬럼, GOLD 모델파일)) ──
 # P13 대응: 개명 적재는 이름매칭으로 탐지 불가하므로 명시 등록한다.

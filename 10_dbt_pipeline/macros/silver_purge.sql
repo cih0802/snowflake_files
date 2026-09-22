@@ -26,6 +26,10 @@
      남겨 둬도 호출되지 않지만, 죽은 항목을 지워 목록을 정본으로 유지한다).
   🔄 [2026-08-21] `BIGQUERY_BASIC` 을 추가했다 — 그 외부 적재 테이블을 재파생하는 새 range 모델
      (EVENT_DT 보유). BIGQUERY_EVENT 와 동일하게 범위만 DELETE(멱등).
+  🔄 [2026-09-22] 창이 고정 리터럴 → **롤링 윈도우**로 바뀌었다(일일 증분). 이 파일의 분기
+     로직은 무변경이다 — 바뀐 것은 `ga4_range_predicate` 가 계산하는 창뿐이다.
+     🟢 같은 처방을 GOLD 팩트에도 복제했다: `macros/gold_fact_purge.sql`(`RANGED_FACTS`).
+        그쪽도 여기와 동일한 「모델명을 문자열로 아는 유일한 지점」 위험을 갖는다.
 #}
 {% macro silver_purge(relation) %}
   {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC'] -%}
