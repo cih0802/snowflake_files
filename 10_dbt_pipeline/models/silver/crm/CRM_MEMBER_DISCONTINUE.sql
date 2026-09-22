@@ -22,3 +22,6 @@ LEFT JOIN {{ ref('CRM_CODE') }} cd ON cd.CD_ID='MM005' AND cd.DTL_CD_ID = NULLIF
 -- MM287 = 정본 컬럼정의서가 DSCNTC_PATH 에 지정한 코드그룹. CRM_CODE PK=(CD_ID,DTL_CD_ID) 이므로 fan-out 없음.
 LEFT JOIN {{ ref('CRM_CODE') }} pt ON pt.CD_ID='MM287' AND pt.DTL_CD_ID = NULLIF(TRIM(s.DSCNTC_PATH),'')
 WHERE s.MBER_NO IS NOT NULL AND s.SPNSR_DSCNTC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 1행(회원 1명) / 1,061,431 ⇒ 적재 후 1,061,430행 예상.
+  AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}

@@ -8,7 +8,9 @@
 --   값 검사가 아니라 **규약 검사**만이 이 유형을 잡는다.
 --
 -- 위반 조건: 0(Unknown 센티넬 라우팅)이 아니면서
---   ① 캘린더 범위(199101~203512) 밖 — 5자리 유령키·월 번호가 여기 걸린다
+--   ① 캘린더 범위(194501~214512) 밖 — 5자리 유령키·월 번호가 여기 걸린다
+--      🔄 [2026-09-22 O178] 종전 `199101~203512`. `cal_start`·`cal_end` 확장에 따른 기재 갱신이고
+--         판정식은 불변이다(범위 정본 = `dbt_project.yml` vars · 이 주석은 인용이다).
 --   ② 월 부분이 01~12 가 아님
 --
 -- ⚠️ dbt_utils 미설치(trial EAI 불가)이므로 schema 테스트가 아니라 singular test 로 구현했다.
@@ -30,7 +32,7 @@ select
 from GN_DW.GOLD.FACT_TARGET_MEMBER_DEV
 where MONTH_KEY <> 0
   and (
-        MONTH_KEY not between 199101 and 203512
+        MONTH_KEY not between 194501 and 214512
      or MOD(MONTH_KEY, 100) not between 1 and 12
       )
 group by MONTH_KEY

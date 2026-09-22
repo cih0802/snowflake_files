@@ -194,7 +194,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_DEV (
     SETLE_CD            VARCHAR(3)      COMMENT '결제수단코드',
     AREA_CD             VARCHAR(3)      COMMENT '지역코드 (CM018)',
     AREA_NM             VARCHAR         COMMENT '지역명 (코드 라벨)',
-    AGE                 NUMBER(10,0)    COMMENT '연령',
+    AGE                 NUMBER(10,0)    COMMENT '연령대 코드(CM014) raw — 1=10대미만·2=10대·3=20대·4=30대·5=40대·6=50대·7=60대·8=70대·9=70대이상·10=단체·11=기업·12=기타. 🔴 연수(나이)가 아니다 ⇒ 평균·합계·구간비교 금지(라벨은 CRM_CODE CD_ID=CM014 조인).',
     -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).,
     CANCL_RDCAMT_RSN_CD     VARCHAR         COMMENT '취소·감액사유 코드 raw (정본 MM002). 코드id:MM002.',
     MBER_DIV_CD             VARCHAR         COMMENT '회원구분 원천코드 raw. 코드id:MM018',
@@ -252,7 +252,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_AMT_CHANGE (
     CMPGN_CD            VARCHAR(20)     COMMENT '캠페인코드 (→CRM_CAMPAIGN)',
     AREA_CD             VARCHAR(3)      COMMENT '지역코드 (CM018)',
     AREA_NM             VARCHAR         COMMENT '지역명 (코드 라벨)',
-    AGE                 NUMBER(10,0)    COMMENT '연령',
+    AGE                 NUMBER(10,0)    COMMENT '연령대 코드(CM014) raw — 1=10대미만·2=10대·3=20대·4=30대·5=40대·6=50대·7=60대·8=70대·9=70대이상·10=단체·11=기업·12=기타. 🔴 연수(나이)가 아니다 ⇒ 평균·합계·구간비교 금지(라벨은 CRM_CODE CD_ID=CM014 조인).',
     -- [2026-08-03 G3/O25] 정본 코드컬럼 raw 전파 (ALTER TABLE ADD COLUMN 으로 물리 반영 — 위치는 맨 끝).
     MBER_DIV_CD             VARCHAR         COMMENT '회원구분 원천코드 raw. 코드id:MM018',
     SETLE_CD                VARCHAR         COMMENT '결제수단 코드 raw (정본 PM040). 라벨 미배선. 코드id:PM040.',
@@ -1455,7 +1455,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'BIGQUERY 웹/앱 이벤트 기본 Staging. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 12컬럼 DDL 타입 캐스팅 정제]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 웹/앱 이벤트 기본 Staging. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 12컬럼 DDL 타입 캐스팅 정제]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다].';
 
 -- BIGQUERY 1: BIGQUERY_TRAFFIC_SOURCE (트래픽소스 차원)
 --   [컬럼별 설계 및 실측 이력]
@@ -1574,7 +1574,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME, EVENT_SEQ)
-) COMMENT = 'BIGQUERY 사용자 행동 팩트 소스. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 체류시간/스크롤/이탈률 행동 지표]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
+) COMMENT = 'BIGQUERY 사용자 행동 팩트 소스. [Grain: EVENT_DT × EVENT_SEQ (1행=1이벤트)]. [주의: 체류시간/스크롤/이탈률 행동 지표]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다].';
 
 -- BIGQUERY 5: BIGQUERY_IDENTITY (신원 브리지 소스)
 --   [컬럼별 설계 및 실측 이력]

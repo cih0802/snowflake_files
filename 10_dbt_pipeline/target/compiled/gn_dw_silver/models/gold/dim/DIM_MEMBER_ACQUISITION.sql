@@ -91,7 +91,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'a2ff7488-a6b3-42ff-a266-f22e06a49928'                    AS DW_BATCH_ID
 from GN_DW.GOLD.FACT_MEMBER_COHORT c
 left join GN_DW.GOLD.DIM_CAMPAIGN     cmp on cmp.CAMPAIGN_SK     = c.ACQ_CAMPAIGN_SK
 left join GN_DW.GOLD.DIM_ORG          org on org.ORG_SK          = c.ACQ_ORG_SK

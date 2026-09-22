@@ -30,7 +30,7 @@ dev as (
 
 select
     p.AD_PERF_DK                            as AD_PERF_DK,
-    COALESCE(CASE WHEN p.AD_DATE BETWEEN '1991-01-01' AND '2035-12-31'
+    COALESCE(CASE WHEN p.AD_DATE BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(p.AD_DATE, 'YYYYMMDD')) END, 0) as PERF_DATE_SK,
     0                            as CAMPAIGN_SK,      -- Q10 이름매칭 대기
     0                            as AD_CREATIVE_SK,   -- 소재 부분키 매칭 대기
@@ -65,7 +65,7 @@ select
     'AGENCY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'b6399ce8-b69a-4e04-8dfb-ec2beaa941f8'                    AS DW_BATCH_ID
 from p
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real

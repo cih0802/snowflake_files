@@ -84,7 +84,7 @@ END-METADATA -->
    🔴 **일일 배치 Task 를 RESUME 하기 전에 이것을 넣어라** — 자동화되면 사고가 무인으로 반복된다.
    ⚠️ 현재 Task RESUME 상태를 **재라**(이번 세션은 확인하지 않았다 · `SHOW TASKS`).
 
-2. 🔴 **`FACT_EVENT_ATTENDANCE.DATE_SK=0` 162,888행** — 범위밖이 아니라
+2. 🔴 **`FACT_EVENT_ATTENDANCE.DATE_SK=0`** — 🔴🔴 [2026-09-22 O178-C 정정] 종전 기재 **162,888** 은 **재현되지 않는다** — 사용자가 `06_DDL`+`08_SILVER_테이블DDL` 전체 재실행 후 전량 재적재한 뒤 실측 = **50** 이고 문서20 §C 원 기재(`FEP.DATE_SK 50→0`)와 일치한다. 총행 **1,258,775** = 원천 `CRM_EVENT_PARTICIPATION` 과 **1:1**. 🔴 원인 미규명 — 후보 = GOLD 팩트 **5종**에 모델 리터럴 `pre_hook=TRUNCATE` 가 남아 있고 `gold_fact_purge` else 분기도 TRUNCATE 라 **hook 이 이중 실행**된다(`dbt_project.yml:239-244` 가 경고한 누적 구조) ⇒ 조사 대상. 종전 문안: 범위밖이 아니라
    `COALESCE(date_sk(PARTCPT_DT), date_sk(EVENT_START_DATE), 0)` 의 **양쪽 NULL** 이다.
    🔴 캘린더 확장으로 줄지 않는다. 규모가 커서 `WIDE_EVENT_PARTICIPATION` 날짜 집계가 이미
    부분집합일 수 있다 ⇒ 원천 NULL 분해가 선행이다.
@@ -154,7 +154,7 @@ END-METADATA -->
 · `DIM_DATE` **73,414 + Unknown 1**(1945-01-01~2145-12-31) · `DIM_MONTH` **2,413**
 · `OPS` 9테이블 · 감시 4종 **전부 0행**(`WARN_GA4_LOAD_GAP` 30 → 0)
 · `FACT_MEMBER_EVENT.DATE_SK=0` **90**(1900-01-01 88 + 9999-12-31 2 · 확장 후에도 탐지 유지)
-· 🔴 `FACT_EVENT_ATTENDANCE.DATE_SK=0` **162,888**(양쪽 원천 NULL · 캘린더와 무관)
+· 🔴 `FACT_EVENT_ATTENDANCE.DATE_SK=0` **50**(재적재 후 실측) — 🔴🔴 [2026-09-22 O178-C 정정] 종전 기재 **162,888** 은 **재현되지 않는다** — 사용자가 `06_DDL`+`08_SILVER_테이블DDL` 전체 재실행 후 전량 재적재한 뒤 실측 = **50** 이고 문서20 §C 원 기재(`FEP.DATE_SK 50→0`)와 일치한다. 총행 **1,258,775** = 원천 `CRM_EVENT_PARTICIPATION` 과 **1:1**. 🔴 원인 미규명 — 후보 = GOLD 팩트 **5종**에 모델 리터럴 `pre_hook=TRUNCATE` 가 남아 있고 `gold_fact_purge` else 분기도 TRUNCATE 라 **hook 이 이중 실행**된다(`dbt_project.yml:239-244` 가 경고한 누적 구조) ⇒ 조사 대상.
 · `FACT_MESSAGE_DISPATCH` **41,969,590** · `CAMPAIGN_SK=0` **전건** · distinct **1**
 · `BIGQUERY_IDENTITY` 고아 **234행 / 206키**(= 기지 WARN 37 중 BIGQUERY 하위트리 유일 건)
 · `ML` 16테이블 — 🔴 `ML_RST_DATA_SPNSR_CHURN_12M` **0행**(형제 `MBER_CHURN_12M` 91,423)

@@ -17,7 +17,7 @@ open_window as (
 )
 
 select
-    COALESCE(CASE WHEN s.SNDNG_DE::DATE BETWEEN '1991-01-01' AND '2035-12-31'
+    COALESCE(CASE WHEN s.SNDNG_DE::DATE BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(s.SNDNG_DE::DATE, 'YYYYMMDD')) END, 0)  as DATE_SK,
     s.MBER_NO                                     as MEMBER_DK,
     CASE WHEN r.SNDNG_KEY IS NULL THEN 0
@@ -58,7 +58,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID,
+    'a2ff7488-a6b3-42ff-a266-f22e06a49928'                    AS DW_BATCH_ID,
     s.SEND_STATUS_GROUP                           as SEND_STATUS_GROUP,
     s.SEND_STATUS_NAME                            as SEND_STATUS_NAME,
     s.SEND_RESULT_CD                              as SEND_RESULT_CD,

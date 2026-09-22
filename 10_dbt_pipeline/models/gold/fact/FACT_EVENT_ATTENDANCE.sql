@@ -3,7 +3,15 @@
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
-    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
+    -- 🔴 [2026-09-22 O179 · I1] 리터럴 `pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}'` **제거**.
+    --    이유 = dbt 는 hook 을 누적하므로 `dbt_project.yml` `gold.fact:+pre-hook: gold_fact_purge(this)`
+    --    와 **이중 실행**됐다(dbt_project.yml:239-246 이 경고한 구조).
+    --    🟢 피해는 0 이었다 — 이 팩트는 `RANGED_FACTS` 에 없어 매크로도 `TRUNCATE` 를 내고
+    --       **TRUNCATE 는 멱등**이라 2회 실행이 1회와 같다 ⇒ 제거 후 기대값은 **행수 불변**이다.
+    --    🔴 그래도 제거하는 이유 = 이 팩트를 나중에 `RANGED_FACTS` 에 넣는 순간
+    --       TRUNCATE + 범위 DELETE 가 함께 돌아 **에러 없이 창 크기로 쪼그라든다.**
+    --       즉 지금은 무해하지만 **한 줄만 바뀌면 사고가 되는 배선**이었다.
+    --    🔴 pre-hook 정의 지점은 `macros/gold_fact_purge.sql` 하나다 — 여기에 다시 쓰지 마라.
     tags=['gold_ready']
 ) }}
 

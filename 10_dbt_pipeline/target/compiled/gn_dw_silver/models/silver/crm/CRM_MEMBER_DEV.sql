@@ -97,6 +97,23 @@ LEFT JOIN GN_DW.SILVER.CRM_CODE v ON v.CD_ID='MM015' AND v.DTL_CD_ID=NULLIF(TRIM
 -- [2026-08-25 안내1] CRM_CAMPAIGN.CMPGN_CD 유일(fan-out 없음) → 개발건 grain 그대로 보존.
 LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN cp ON cp.CMPGN_CD = NULLIF(TRIM(s.CMPGN_CD),'')
 WHERE s.SPNSR_NO IS NOT NULL AND s.SPNSR_BSNS_NO IS NOT NULL AND s.OCCRRNC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 회원 마스터 정본 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 271행(회원 16명) / 3,654,929.
+  --    🔴🔴 **이 모델에서는 이 필터가 「신규 유입 차단」만 한다 — 기존 271행은 지워지지 않는다.**
+  --       이유 = 이 모델만 `merge`(위 오버라이드 블록)이고 **merge 에는 DELETE 절이 없다**
+  --       (그 사실을 위 블록이 이미 *"원천 행이 삭제되면 잔존"* 으로 경고해 뒀다).
+  --       ⇒ `crm_member_dev_full_reload` 로 전량을 다시 흘려도 **기존 행은 UPDATE 될 뿐 사라지지 않는다.**
+  --       🔴 그리고 `--vars` 는 이 환경에서 동작하지 않는다(dbt_project.yml vars 주석의 실측 3형태 전부 실패).
+  --    🟢 처방 = **1회성 DELETE 가 필요하다**(파괴 작업 ⇒ `R4-4-3` 별도 승인 대상 · 미집행):
+  --       DELETE FROM GN_DW.SILVER.CRM_MEMBER_DEV t
+  --       WHERE NOT EXISTS (SELECT 1 FROM GN_DW.SILVER.CRM_MEMBER m WHERE m.MEMBER_DK = t.MBER_NO);
+  --       🔴 하류 `GOLD.FACT_MEMBER_EVENT`(DEV 3,654,929행)도 같은 폭으로 재적재해야 한다.
+  AND 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = NULLIF(TRIM(s.MBER_NO),'')
+  )
 
   -- [증분 분기] 두 조건 모두 참일 때만 활성화된다:
   --   ① is_incremental() = 대상 테이블이 이미 존재(첫 run·CTAS 아님) — dbt 가 자동 판정.

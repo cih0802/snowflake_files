@@ -54,5 +54,10 @@ JOIN (
       FRST_REGIST_DT
     FROM {{ source('bronze_crm', 'TM_MM_FDRM_MBER_SPNSR') }}
     WHERE SPNSR_NO IS NOT NULL AND MBER_NO IS NOT NULL
+      -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+      --    📏 실측 = 고아 106행(회원 11명) / 2,201,801 ⇒ 적재 후 2,201,695행 예상.
+      --    🟢 서브쿼리 안(후원 마스터 측)에 둔다 — 이 모델의 `MBER_NO` 공급 지점이 여기 하나이고,
+      --       `bz` 측(`CRM_MEMBER_SPONSOR_BIZ`)에는 `MBER_NO` 가 아예 없다(헤더 주석 참조).
+      AND {{ gn_member_master_filter("NULLIF(TRIM(MBER_NO), '')") }}
 ) s
   ON s.SPNSR_NO = bz.SPNSR_NO

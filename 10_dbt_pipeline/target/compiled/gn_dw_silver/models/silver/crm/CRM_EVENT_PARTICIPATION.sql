@@ -76,3 +76,13 @@ LEFT JOIN GN_DW.SILVER.CRM_CODE ch
 LEFT JOIN GN_DW.SILVER.CRM_CODE pt
   ON pt.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS303' ELSE 'MS004' END
  AND pt.DTL_CD_ID = b.PARTCPT_PATH_CD
+-- 🔴 [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
+--    정의 지점은 `macros/gn_member_master_filter.sql` 하나다 — 여기에 술어를 다시 쓰지 마라(R1-6-17).
+--    📏 실측 = 고아 10,048행 / 1,258,775 (고아 회원 8,299명) ⇒ 적재 후 1,248,727행 예상.
+--    🔴 위 REGEXP 필터는 「형식이 정상인가」를 보고, 이 술어는 「마스터에 실재하는가」를 본다. 다른 축이다.
+WHERE 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = b.MBER_NO
+  )

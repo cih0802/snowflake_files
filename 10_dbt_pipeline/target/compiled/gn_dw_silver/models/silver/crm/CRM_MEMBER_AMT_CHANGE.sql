@@ -23,3 +23,12 @@ SELECT
 FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_IRSD s
 LEFT JOIN GN_DW.SILVER.CRM_CODE a ON a.CD_ID='CM018' AND a.DTL_CD_ID=NULLIF(TRIM(s.AREA_CD),'')
 WHERE s.OCCRRNC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 **0행** / 331,440 ⇒ 행수 불변 예상.
+  --    🟢 지금 0 이라고 빼지 마라 — 이 술어는 **회귀 방어**다(마스터가 줄면 여기서 먼저 걸린다).
+  AND 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = NULLIF(TRIM(s.MBER_NO),'')
+  )

@@ -22,3 +22,6 @@ FROM {{ source('bronze_crm','TM_RM_RELATNSP_MSTR_INFO') }} r
 LEFT JOIN {{ ref('CRM_MEMBER_SPONSOR_BIZ') }} biz
   ON biz.SPNSR_NO = NULLIF(TRIM(r.SPNSR_NO),'') AND biz.SPNSR_BSNS_NO = r.SPNSR_BSNS_NO
 WHERE r.RELATNSP_KEY IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 **0행** / 869,027 ⇒ 행수 불변 예상. 🟢 회귀 방어로 붙인다(0 이라고 빼지 마라).
+  AND {{ gn_member_master_filter("NULLIF(TRIM(r.MBER_NO),'')") }}

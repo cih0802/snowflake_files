@@ -118,18 +118,19 @@ vars:
   #   ✅ 실측 결과(`['2024-01-01','9999-12-31']` · `build --select BIGQUERY_BASIC+` · 84노드) =
   #      BASIC·EVENT **10,332,737 / 33일**(2024-01-29~2026-09-14) · FACT **1,620,857 / 33일** ·
   #      `OPS.WARN_BIGQUERY_LOAD_GAP` 30 → **0행**. 🟢 ⓐ 경로가 **전량 백필로도** 실증됐다(종전 실증은 1일).
-  # 🔓🔴 [2026-09-22 O178-B] 슬롯을 **일시적으로 열었다** — `DW_SOURCE_SYSTEM` 값 개명 백필용.
-  #   사유 = `'GA4'` → `'BIGQUERY'`(사용자 결정 · 원천 시스템 = 파이프라인 이전 단계)를
-  #   모델 리터럴에서 고쳤는데 `BIGQUERY_BASIC`·`BIGQUERY_EVENT` 는 **롤링 윈도우**이고
-  #   창이 비어 있다(원천 최대 2026-09-14 < 오늘-3) ⇒ 평범한 build 는 **창 밖 전건을 옛 값으로 남긴다**.
-  #   🔴 `O177-A-2 #4`「배선 후 전량 백필 의무」와 같은 class 다 — **값을 바꾸는 변경은
-  #      창 밖 과거를 다시 쓰지 않으면 에러 없이 절반만 반영된다.**
-  #   🟢 TRUNCATE 전량인 나머지(BIGQUERY_DEVICE·EVENT_DIM·IDENTITY·TRAFFIC_SOURCE·
-  #      IDENTITY_MEMBER_XREF)는 자동 치유되므로 백필 대상이 아니다.
-  #   🔴🔴 **build 직후 아래 2줄을 다시 주석 처리하고 재배포하라** — 상주시키면 이중 샘플링이
-  #      재발하고 일일 배치가 매일 전 기간을 재적재한다.
-  bigquery_dt_ranges:
-    - ['2024-01-01', '9999-12-31']
+  # 🔒 [2026-09-22 O178-B] `DW_SOURCE_SYSTEM` 개명 백필 완료 — 슬롯을 다시 잠갔다.
+  #   집행 경로 = 사용자가 `06_DDL.sql` + `08_SILVER_테이블DDL` 을 **전체 재실행**해
+  #   SILVER/GOLD 를 틀만 남긴 뒤 전량 build 했다(슬롯이 열려 있어 창 밖 전건이 함께 재적재됐다).
+  #   ✅ 실측 = SILVER 7객체 `DW_SOURCE_SYSTEM` 전건 **BIGQUERY**(XREF 는 `BIGQUERY+CRM`) ·
+  #      `GA4` **0행** · BASIC·EVENT **10,332,737 / 33일** · FACT **1,620,857** · 564노드 불변.
+  #   🟢🟢 **DDL 전체 재실행이 GRANT 를 잃지 않았다** — 스키마에 **FUTURE GRANTS** 가 걸려 있어
+  #      재생성 테이블이 자동으로 권한을 받는다(실측 GOLD 35건 · OWNERSHIP GN_DW_ADMIN 보존).
+  #      🔴 단 **뷰·SV 는 다르다** — 그쪽은 CREATE OR REPLACE 시 별도 확인이 필요하다.
+  #   🔴🔴 **판정식 = 리터럴 값을 바꾸는 변경은 「전량 백필 의무」가 붙는다.** 롤링 윈도우는
+  #      창 밖을 건드리지 않으므로, 슬롯을 열지 않고 build 하면 **에러 없이 절반만 반영된다**
+  #      (`O177-A-2 #4` 의 「배선 후 백필 의무」와 같은 class · 이번에 착수 전에 잡았다).
+  # bigquery_dt_ranges:
+  #   - ['2024-01-01', '9999-12-31']
   # 순서9: GOLD 날짜차원(DIM_DATE) 고정 연속범위. date_sk 매크로가 이 범위 밖/NULL 을 NULL 로 클램프
   #   → fact 에서 COALESCE(date_sk(...),0) 로 Unknown 멤버(DATE_SK=0) 라우팅. 범위 변경 시 DIM_DATE 도 자동 반영.
   #

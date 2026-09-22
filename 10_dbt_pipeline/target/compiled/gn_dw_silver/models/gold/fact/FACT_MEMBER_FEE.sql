@@ -61,10 +61,10 @@ fee_div as (
 keyed as (
     select
         -- 회비월 우선, 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 (FMM 과 동일 규칙)
-        COALESCE(CASE WHEN TRY_TO_NUMBER(b.MBRFEE_MT) BETWEEN 199101 AND 203512
+        COALESCE(CASE WHEN TRY_TO_NUMBER(b.MBRFEE_MT) BETWEEN 194501 AND 214512
           AND MOD(TRY_TO_NUMBER(b.MBRFEE_MT), 100) BETWEEN 1 AND 12
          THEN TRY_TO_NUMBER(b.MBRFEE_MT) END,
-                 CASE WHEN TRY_TO_NUMBER(TO_CHAR(b.PAY_DE,'YYYYMM')) BETWEEN 199101 AND 203512
+                 CASE WHEN TRY_TO_NUMBER(TO_CHAR(b.PAY_DE,'YYYYMM')) BETWEEN 194501 AND 214512
           AND MOD(TRY_TO_NUMBER(TO_CHAR(b.PAY_DE,'YYYYMM')), 100) BETWEEN 1 AND 12
          THEN TRY_TO_NUMBER(TO_CHAR(b.PAY_DE,'YYYYMM')) END, 0) as MONTH_KEY,
         b.MBER_NO                                       as MEMBER_DK,
@@ -105,9 +105,9 @@ agg as (
         BOOLOR_AGG(PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL)        as UNPAID_FLAG,
         -- 🔴 일 grain 축: 「기준일(납입일)」 요구를 여기서만 답할 수 있다(FMM 은 월 팩트).
         --   같은 조합에 납입일이 여러 개면 **최종 납입일**을 쓴다 — 합계가 아니라 시점 축이다.
-        COALESCE(CASE WHEN MAX(PAY_DE) BETWEEN '1991-01-01' AND '2035-12-31'
+        COALESCE(CASE WHEN MAX(PAY_DE) BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(MAX(PAY_DE), 'YYYYMMDD')) END, 0)                   as LAST_PAY_DATE_SK,
-        COALESCE(CASE WHEN MAX(RQEST_DE) BETWEEN '1991-01-01' AND '2035-12-31'
+        COALESCE(CASE WHEN MAX(RQEST_DE) BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(MAX(RQEST_DE), 'YYYYMMDD')) END, 0)                 as LAST_BILL_DATE_SK
     from keyed
     group by 1,2,3,4,5,6,7
@@ -125,6 +125,6 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'a2ff7488-a6b3-42ff-a266-f22e06a49928'                    AS DW_BATCH_ID
 from agg a
 left join fee_div fd on fd.DTL_CD_ID = a.FEE_DIV_CD

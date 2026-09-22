@@ -5,13 +5,13 @@
 with spine as (
     -- 고정 연속 캘린더. rowcount 는 cal_start~cal_end 의 실제 일수를 jinja 로 산출(매직상수 제거).
     --   순서9-B: 기존 하드코딩 16500 은 cal_end 확장 시 캘린더가 조용히 잘리는 잠복 결함 → 범위에서 자동 계산으로 대체.
-    select DATEADD(day, SEQ4(), DATE '1991-01-01') as FULL_DATE
-    from TABLE(GENERATOR(rowcount => 16436))
+    select DATEADD(day, SEQ4(), DATE '1945-01-01') as FULL_DATE
+    from TABLE(GENERATOR(rowcount => 73414))
 ),
 
 calendar as (
     select
-        CASE WHEN FULL_DATE BETWEEN '1991-01-01' AND '2035-12-31'
+        CASE WHEN FULL_DATE BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(FULL_DATE, 'YYYYMMDD')) END                    as DATE_SK,
         FULL_DATE                                     as FULL_DATE,
         YEAR(FULL_DATE)                               as YEAR,
@@ -25,9 +25,9 @@ calendar as (
         'DW'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'b6399ce8-b69a-4e04-8dfb-ec2beaa941f8'                    AS DW_BATCH_ID
     from spine
-    where FULL_DATE <= DATE '2035-12-31'
+    where FULL_DATE <= DATE '2145-12-31'
 )
 
 select * from calendar
@@ -43,7 +43,10 @@ union all
 --     · 숫자 7컬럼 = **0**. 이 파일이 이미 MONTH_KEY 에 0 을 쓰던 관례를 나머지로 확장한 것이다.
 --       0 은 어떤 실제 연/월/일/분기값도 아니라서 실캘린더 행과 절대 충돌하지 않는다.
 --     · FULL_DATE = **1900-01-01**. DATE 타입에는 0 이 없어 숫자와 같은 방식을 쓸 수 없다.
---       cal_start(1991-01-01) **밖**이라 실캘린더 행과 겹치지 않고 식별 가능하다.
+--       cal_start(1945-01-01) **밖**이라 실캘린더 행과 겹치지 않고 식별 가능하다.
+--       🔴 [2026-09-22 O178] 이 근거가 `cal_start` 에 의존한다 — 종전 1991-01-01 → 1945-01-01 로
+--          내렸고 1900 은 여전히 밖이다. ⚠️ **하한을 1900-01-01 이하로 내리면 이 설계가 깨진다**
+--          (센티넬이 실캘린더 행과 충돌한다) ⇒ 내릴 때는 센티넬 날짜도 함께 바꿔야 한다.
 --   🔴 그래서 남는 부정합 하나를 명시해 둔다: 이 행은 FULL_DATE=1900-01-01 인데 YEAR=0 이다
 --      (YEAR(FULL_DATE) 와 불일치). 의도된 것이다 — 숫자축은 「0=미상」 규약을, 날짜축은 타입 제약을
 --      각각 따른 결과다. ⚠️ 따라서 이 행을 YEAR 로 집계하면 0 버킷에 모이고 FULL_DATE 로 집계하면
@@ -53,4 +56,4 @@ union all
 select 0, DATE '1900-01-01', 0, 0, 0, 0, 0, 0, 0, FALSE, 'DW'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'b6399ce8-b69a-4e04-8dfb-ec2beaa941f8'                    AS DW_BATCH_ID

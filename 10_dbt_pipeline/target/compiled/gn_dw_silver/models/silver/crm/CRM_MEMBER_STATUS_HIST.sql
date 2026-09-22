@@ -20,3 +20,13 @@ FROM (SELECT NULLIF(TRIM(MBER_NO),'') MBER_NO, SER_NO,
       WHERE MBER_NO IS NOT NULL AND SER_NO IS NOT NULL) s
 LEFT JOIN GN_DW.SILVER.CRM_CODE bf ON bf.CD_ID='MM010' AND bf.DTL_CD_ID=s.BF_STAT_CD
 LEFT JOIN GN_DW.SILVER.CRM_CODE ch ON ch.CD_ID='MM010' AND ch.DTL_CD_ID=s.CHN_STAT_CD
+-- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+--    📏 실측 = 고아 86행(회원 38명) / 7,644,228 ⇒ 적재 후 7,644,142행 예상.
+--    🟢 윈도우 함수(LEAD)와 안전하다 — WHERE 는 윈도우보다 먼저 적용되지만, 제거 대상은
+--       **그 회원의 전 행**이므로 잔존 회원의 PARTITION BY MBER_NO 구간은 바뀌지 않는다.
+WHERE 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = s.MBER_NO
+  )

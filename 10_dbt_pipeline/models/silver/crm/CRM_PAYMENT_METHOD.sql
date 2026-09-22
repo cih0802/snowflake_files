@@ -23,4 +23,7 @@ SELECT
 FROM {{ source('bronze_crm','TM_PM_SETLE_INFO') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} pm ON pm.CD_ID='PM040' AND pm.DTL_CD_ID = NULLIF(TRIM(s.SETLE_CD),'')
 WHERE s.SETLE_KEY IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 39행(회원 21명) / 2,589,005 ⇒ 적재 후 2,588,966행 예상.
+  AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}
 QUALIFY ROW_NUMBER() OVER (PARTITION BY s.SETLE_KEY ORDER BY s.WTDRW_STRT_DE DESC NULLS LAST)=1

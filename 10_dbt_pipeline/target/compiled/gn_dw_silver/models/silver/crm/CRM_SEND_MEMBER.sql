@@ -112,3 +112,14 @@ LEFT JOIN GN_DW.SILVER.CRM_CODE sa
   ON sa.CD_ID = 'MS282' AND b.SEND_CHANNEL = 'MSG_AT' AND sa.DTL_CD_ID = b.SNDNG_RST_CD
 LEFT JOIN GN_DW.SILVER.CRM_CODE sb
   ON sb.CD_ID IN ('MS056','MS057','MS058','MS059') AND sb.DTL_CD_ID = b.SEND_RESULT_CD
+-- 🔴 [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
+--    정의 지점은 `macros/gn_member_master_filter.sql` 하나다 — 여기에 술어를 다시 쓰지 마라(R1-6-17).
+--    📏 실측 = 고아 34,246행(회원 8,354명) + `MBER_NO IS NULL` 746행 / 41,970,336
+--       ⇒ 적재 후 41,935,344행 예상. 🔴 NULL 746 도 함께 탈락한다(EXISTS 의 성질 · 매크로 헤더 참조).
+--    🔴 이 모델이 `GOLD.FACT_MESSAGE_DISPATCH` 의 유일한 상류다 ⇒ 팩트 행수도 같은 폭으로 줄어든다.
+WHERE 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = b.MBER_NO
+  )

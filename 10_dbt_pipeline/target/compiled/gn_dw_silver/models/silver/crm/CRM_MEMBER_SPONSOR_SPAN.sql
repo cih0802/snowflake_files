@@ -31,12 +31,12 @@ SELECT
   bz.SPNSR_BSNS_ID                                AS SPNSR_BSNS_ID,
   bz.SPNSR_AMT                                    AS SPNSR_AMT,
   -- 시작 월키 = 후원 등록월(근사 · 위 주석 참조)
-  CASE WHEN TRY_TO_NUMBER(TO_CHAR(s.FRST_REGIST_DT, 'YYYYMM')) BETWEEN 199101 AND 203512
+  CASE WHEN TRY_TO_NUMBER(TO_CHAR(s.FRST_REGIST_DT, 'YYYYMM')) BETWEEN 194501 AND 214512
           AND MOD(TRY_TO_NUMBER(TO_CHAR(s.FRST_REGIST_DT, 'YYYYMM')), 100) BETWEEN 1 AND 12
          THEN TRY_TO_NUMBER(TO_CHAR(s.FRST_REGIST_DT, 'YYYYMM')) END
                                                   AS START_MONTH_KEY,
   -- 중단 월키 = 후원사업 중단일의 YYYYMM. NULL = 미중단(현재까지 활동).
-  CASE WHEN TRY_TO_NUMBER(SUBSTR(bz.SPNSR_DSCNTC_DE, 1, 6)) BETWEEN 199101 AND 203512
+  CASE WHEN TRY_TO_NUMBER(SUBSTR(bz.SPNSR_DSCNTC_DE, 1, 6)) BETWEEN 194501 AND 214512
           AND MOD(TRY_TO_NUMBER(SUBSTR(bz.SPNSR_DSCNTC_DE, 1, 6)), 100) BETWEEN 1 AND 12
          THEN TRY_TO_NUMBER(SUBSTR(bz.SPNSR_DSCNTC_DE, 1, 6)) END
                                                   AS DSCNTC_MONTH_KEY,
@@ -58,5 +58,15 @@ JOIN (
       FRST_REGIST_DT
     FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR
     WHERE SPNSR_NO IS NOT NULL AND MBER_NO IS NOT NULL
+      -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+      --    📏 실측 = 고아 106행(회원 11명) / 2,201,801 ⇒ 적재 후 2,201,695행 예상.
+      --    🟢 서브쿼리 안(후원 마스터 측)에 둔다 — 이 모델의 `MBER_NO` 공급 지점이 여기 하나이고,
+      --       `bz` 측(`CRM_MEMBER_SPONSOR_BIZ`)에는 `MBER_NO` 가 아예 없다(헤더 주석 참조).
+      AND 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = NULLIF(TRIM(MBER_NO), '')
+  )
 ) s
   ON s.SPNSR_NO = bz.SPNSR_NO

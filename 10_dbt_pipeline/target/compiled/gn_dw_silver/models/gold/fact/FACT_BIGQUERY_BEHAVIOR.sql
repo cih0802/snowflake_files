@@ -9,17 +9,26 @@
 --   왜: 매 run 전량 재계산은 순수 낭비였다(실측 33일 14.9초 → 전일자 환산 ≈ 7분).
 --   pre-hook 이 `macros/gold_fact_purge.sql` 로 분기한다 — `RANGED_FACTS` 에 이 모델명 등재 필수.
 --     · 그 매크로가 `DELETE … WHERE DATE_SK <창>` 을 내고, 아래 `e` CTE 가 **같은 창**을 append 한다.
---     · 창 정의 지점은 `macros/ga4_range_predicate.sql` 의 `ga4_load_window()` 하나다.
+--     · 창 정의 지점은 `macros/bigquery_range_predicate.sql` 의 `bigquery_load_window()` 하나다.
 --       DELETE 는 `_sk`(NUMBER YYYYMMDD) 렌더러, 여기는 DATE 렌더러를 쓰지만 창은 동일하다.
 --   🔴 **이 파일에 `pre_hook` 을 쓰지 말 것** — dbt 는 hook 을 누적하므로 TRUNCATE 와 DELETE 가
 --      함께 돌아 팩트가 창 크기로 쪼그라든다(에러 없이 행수만 줄어든다 · gold_fact_purge.sql 주석).
 --   🔴 범위 DELETE 의 전제 3가지(grain 에 DATE_SK · 집계가 일자 내 폐쇄 · DATE_SK=0 공집합)는
 --      `macros/gold_fact_purge.sql` 헤더에 적혀 있다. 지표를 추가할 때 ②를 깨지 않는지 확인하라
 --      (월간 유니크처럼 일자를 넘나드는 집계를 넣으면 범위 재적재가 틀린 값을 낸다).
+--   🔴🔴 **[2026-09-22 O177] 열린 백로그와 직접 맞닿는다 — `A4-W` 배선 6건의 1번이 이 모델이다**
+--      (`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0176-A.md:70`). 그 항목은 아래 `CAMPAIGN_SK`
+--      센티넬 0 을 `SILVER.BIGQUERY_EVENT.UTM_CAMPAIGN` 으로 배선하라고 지시한다(🟢 컬럼 실재).
+--      ⇒ 🟢 **그 배선은 이 범위 재적재와 양립한다** — `UTM_CAMPAIGN` 은 이벤트 행의 속성이므로
+--        group by 에 들어가도 집계가 **일자 안에서 닫힌다**(전제 ② 유지).
+--      🔴 단 배선 시 **전량 백필이 필요하다** — 창 밖 과거 행의 `CAMPAIGN_SK` 는 센티넬로 남는다
+--        (롤링 윈도우는 창 밖을 건드리지 않는다) ⇒ `bigquery_dt_ranges` 주석을 풀어 전 구간 재적재하라.
+--        ⚠️ 이 「배선 후 백필 의무」는 증분화가 **새로 만든** 절차다. 배선만 하고 끝내면
+--           과거 전체가 센티넬로 남아 **에러 없이** 지표가 틀린다.
 
 
 with e as (
-    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: ga4_load_window).
+    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: bigquery_load_window).
     select * from GN_DW.SILVER.BIGQUERY_EVENT
     where (
     (EVENT_DT >= TO_DATE('2026-09-19') AND EVENT_DT <= TO_DATE('9999-12-31'))
@@ -35,7 +44,7 @@ xref as (
 
 joined as (
     select
-        COALESCE(CASE WHEN e.EVENT_DT BETWEEN '1991-01-01' AND '2035-12-31'
+        COALESCE(CASE WHEN e.EVENT_DT BETWEEN '1945-01-01' AND '2145-12-31'
          THEN TRY_TO_NUMBER(TO_CHAR(e.EVENT_DT, 'YYYYMMDD')) END, 0)                            as DATE_SK,        -- 범위밖/NULL → 0 (순서9)
         COALESCE(dmi.IDENTITY_SK, 0)                                        as IDENTITY_SK,   -- 매칭 회원 SK / 미매칭=0(센티넬)
         COALESCE(gev.BIGQUERY_EVENT_SK, 0)                                  as BIGQUERY_EVENT_SK,
@@ -99,7 +108,7 @@ select
     'BIGQUERY'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'a2ff7488-a6b3-42ff-a266-f22e06a49928'                    AS DW_BATCH_ID
 from joined
 group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
 )

@@ -8,7 +8,7 @@ with t as (
 )
 
 select
-    COALESCE(CASE WHEN TRY_TO_NUMBER(t.MONTH_KEY) BETWEEN 199101 AND 203512
+    COALESCE(CASE WHEN TRY_TO_NUMBER(t.MONTH_KEY) BETWEEN 194501 AND 214512
           AND MOD(TRY_TO_NUMBER(t.MONTH_KEY), 100) BETWEEN 1 AND 12
          THEN TRY_TO_NUMBER(t.MONTH_KEY) END, 0)  as MONTH_KEY,
     COALESCE(o.ORG_SK, 0)                          as ORG_SK,
@@ -21,7 +21,7 @@ select
     'CRM'                       AS DW_SOURCE_SYSTEM,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ       AS DW_UPDATE_TS,
-    '85a1c8c7-f04c-4931-8520-b6a07d556074'                    AS DW_BATCH_ID
+    'b6399ce8-b69a-4e04-8dfb-ec2beaa941f8'                    AS DW_BATCH_ID
 from t
 left join GN_DW.GOLD.DIM_ORG o
     on o.DEPARTMENT = t.ORG_NM

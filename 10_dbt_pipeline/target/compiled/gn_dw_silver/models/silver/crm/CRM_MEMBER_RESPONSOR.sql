@@ -11,3 +11,11 @@ SELECT
   NULL                            AS DW_BATCH_ID
 FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR
 WHERE MBER_NO IS NOT NULL AND SER_NO IS NOT NULL AND RE_SPNSR_DE IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 1행(회원 1명) / 118,199 ⇒ 적재 후 118,198행 예상.
+  AND 
+EXISTS (
+    SELECT 1
+    FROM GN_DW.SILVER.CRM_MEMBER gn_mm
+    WHERE gn_mm.MEMBER_DK = NULLIF(TRIM(MBER_NO),'')
+  )

@@ -1,9 +1,0 @@
-begin;
-    insert into GN_DW.SILVER.CRM_MEMBER_CONVERT_HIST ("MBER_NO", "ONCE_MBER_NO", "FRST_REGIST_DT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
-    (
-        select "MBER_NO", "ONCE_MBER_NO", "FRST_REGIST_DT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
-        from GN_DW.SILVER.CRM_MEMBER_CONVERT_HIST__dbt_tmp
-    )
-
-;
-    commit;

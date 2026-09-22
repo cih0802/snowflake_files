@@ -31,6 +31,26 @@
 --   `--vars '{"crm_member_dev_full_reload": true}'` 로 처리한다 — merge 는 구조를 보존하며
 --   전량을 다시 흘려도 안전하다(신규는 INSERT, 기존은 UPDATE, 삭제는 없음 — 원천 행이 삭제되면 잔존 — 하단 한계 참조).
 {#- 폴더 기본 pre-hook(TRUNCATE)을 이 모델만 취소한다. merge 는 TRUNCATE 와 같이 쓰면 안 됨. -#}
+{#-
+  🔴🔴 [2026-09-22 O179 실측] **위 한 줄은 거짓이다 — `pre_hook=[]` 는 폴더 pre-hook 을 취소하지 못한다.**
+     근거 = `QUERY_HISTORY` 2026-09-22 00:41:12 `TRUNCATE TABLE IF EXISTS GN_DW.SILVER.CRM_MEMBER_DEV`
+            SUCCESS → 00:41:14 `MERGE` 3,654,658. 즉 **TRUNCATE 가 매 run 실제로 돌고 있다.**
+     이유 = dbt 는 hook 을 **누적(append)** 한다(`macros/silver_purge.sql:4-11` 가 경고한 성질).
+            `dbt_project.yml:198 +pre-hook: "{{ silver_purge(this) }}"` 는 이 모델이 `RANGED_MODELS` 에
+            없으므로 `TRUNCATE` 를 내고, 모델의 `pre_hook=[]` 는 **빈 목록을 덧붙일 뿐 앞의 것을 지우지 않는다.**
+  🔴 결과 = 이 모델의 「1개월 주기 변경분 증분」 현업 요건이 **집행되지 않고 있다.** 매 run 전량 재적재다.
+     🔴 그런데 **무증상이었다** — TRUNCATE 로 테이블이 비면 아래 증분 필터의
+        `MAX(SRC_LOAD_DT)` 가 NULL → `COALESCE('1900-01-01')` → **전량이 통과**한다.
+        ⇒ 결과는 항상 맞고 비용만 늘며 **아무 테스트도 깨지지 않는다.**
+        🟢 판정식 = **「증분이 도는가」는 행수로 검증할 수 없다 — pre-hook 이 무엇을 냈는지 보아야 한다.**
+  🟢 부수 효과 = 이 TRUNCATE 덕분에 **원천 삭제행이 반영된다.** 실측 = O179 의 이슈 B 고아 제거가
+     이 모델에서도 집행됐다(3,654,929 → **3,654,658** · 고아 잔존 **0**).
+     🔴 즉 증분을 「고치면」 삭제 반영이 사라진다 ⇒ 이슈 B 회신(마스터 정본·고아 제거)과 **충돌**한다.
+  🔴 처방은 **설계 결정 사안**이라 이 세션이 집행하지 않았다(문서50 등재). 선택지 =
+     ⓐ 현행 유지(전량 재적재 · 삭제 반영 O · 증분 요건 X) — 주석만 사실로 고친다(지금 한 것)
+     ⓑ `silver_purge` 에 no-op 축을 신설해 이 모델을 제외(증분 요건 O · 삭제 반영 X)
+     ⓒ 증분 + 주기적 전량 재적재 병행(둘 다 O · 운영 절차 추가)
+-#}
 {{
   config(
     materialized='incremental',
@@ -107,6 +127,15 @@ LEFT JOIN {{ ref('CRM_CODE') }} v ON v.CD_ID='MM015' AND v.DTL_CD_ID=NULLIF(TRIM
 -- [2026-08-25 안내1] CRM_CAMPAIGN.CMPGN_CD 유일(fan-out 없음) → 개발건 grain 그대로 보존.
 LEFT JOIN {{ ref('CRM_CAMPAIGN') }} cp ON cp.CMPGN_CD = NULLIF(TRIM(s.CMPGN_CD),'')
 WHERE s.SPNSR_NO IS NOT NULL AND s.SPNSR_BSNS_NO IS NOT NULL AND s.OCCRRNC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
+  -- 🔴 [2026-09-22 O179 · 이슈 B] 회원 마스터 정본 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --    📏 실측 = 고아 271행(회원 16명) 제거 완료 · 3,654,929 → **3,654,658** · 고아 잔존 **0**.
+  --    🟢 이 모델은 `merge` 인데도 제거가 집행됐다 — 이유는 위 `{#- … -#}` 블록에 있다
+  --       (폴더 pre-hook `TRUNCATE` 가 실제로 돌기 때문이고, `merge` 자체에는 DELETE 절이 없다).
+  --    🔴 **그 TRUNCATE 가 사라지면 이 제거도 사라진다** ⇒ 위 선택지 ⓑ 를 고르면
+  --       1회성 DELETE 가 별도로 필요해진다(파괴 작업 · `R4-4-3` 승인 대상):
+  --       DELETE FROM GN_DW.SILVER.CRM_MEMBER_DEV t
+  --       WHERE NOT EXISTS (SELECT 1 FROM GN_DW.SILVER.CRM_MEMBER m WHERE m.MEMBER_DK = t.MBER_NO);
+  AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}
 {% if is_incremental() and not var('crm_member_dev_full_reload', false) %}
   -- [증분 분기] 두 조건 모두 참일 때만 활성화된다:
   --   ① is_incremental() = 대상 테이블이 이미 존재(첫 run·CTAS 아님) — dbt 가 자동 판정.

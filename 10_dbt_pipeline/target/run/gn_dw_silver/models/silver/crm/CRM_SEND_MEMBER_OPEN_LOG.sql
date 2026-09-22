@@ -1,9 +1,0 @@
-begin;
-    insert into GN_DW.SILVER.CRM_SEND_MEMBER_OPEN_LOG ("LOG_SEQ", "REQ_SEQ_NO", "R_NUM", "MBER_NO", "OPEN_DT", "FRST_REGIST_DT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID")
-    (
-        select "LOG_SEQ", "REQ_SEQ_NO", "R_NUM", "MBER_NO", "OPEN_DT", "FRST_REGIST_DT", "DW_SOURCE_SYSTEM", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"
-        from GN_DW.SILVER.CRM_SEND_MEMBER_OPEN_LOG__dbt_tmp
-    )
-
-;
-    commit;
