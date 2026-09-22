@@ -18,48 +18,55 @@
 --   하류(FACT_MEMBER_EVENT·FACT_MEMBER_COHORT·FACT_MEMBER_SPONSORSHIP_SPAN·DIM_MEMBER_ACQUISITION)는
 --   이 12컬럼을 그대로 승계하며 DIM_CAMPAIGN 실시간 조인을 대체한다.
 --
--- [2026-08-25 증분 전략 오버라이드] 🔴 이 모델은 폴더 기본값(dbt_project.yml `models.gn_dw_silver.silver`:
---   +materialized:incremental·+incremental_strategy:append·+pre-hook:silver_purge(TRUNCATE)·+full_refresh:false)
---   을 이 파일에서 명시적으로 **오버라이드**한다. 그 기본값은 "매 run 전량 TRUNCATE 후 전량 재적재"이고
---   실질적으로 is_incremental() 필터를 걸 수 없다(TRUNCATE 가 걸리면 필터링된 신규분만 남고 과거행이 사라진다).
---   현업이 "1개월 주기 변경분 증분 적재"를 요청했으므로 이 모델만 **merge + is_incremental() 날짜필터**로 바꾼다.
---   ⚠️ 그 대신 unique_key 가 필요해졌다 — 이 모델의 자연키는 이미 WHERE 절이 강제하던
---   (SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO) 4컬럼 복합키다(개발건 1행 grain).
---   ⚠️ full_refresh 는 그대로 false 로 둔다 — true 로 풀면 --full-refresh 가 CTAS 로 이 테이블을 다시 만들어
---   `04_silver_design/08_SILVER_테이블DDL` 이 선언한 타입·주석·제약을 파괴한다(순서9 G-1/G-2 사고와 동일 위험).
---   "SILVER 전체를 덮어써야 하는 상황"(안내1 후반부)은 대신 --full-refresh 플래그가 아니라
---   `--vars '{"crm_member_dev_full_reload": true}'` 로 처리한다 — merge 는 구조를 보존하며
---   전량을 다시 흘려도 안전하다(신규는 INSERT, 기존은 UPDATE, 삭제는 없음 — 원천 행이 삭제되면 잔존 — 하단 한계 참조).
-{#- 폴더 기본 pre-hook(TRUNCATE)을 이 모델만 취소한다. merge 는 TRUNCATE 와 같이 쓰면 안 됨. -#}
-{#-
-  🔴🔴 [2026-09-22 O179 실측] **위 한 줄은 거짓이다 — `pre_hook=[]` 는 폴더 pre-hook 을 취소하지 못한다.**
-     근거 = `QUERY_HISTORY` 2026-09-22 00:41:12 `TRUNCATE TABLE IF EXISTS GN_DW.SILVER.CRM_MEMBER_DEV`
-            SUCCESS → 00:41:14 `MERGE` 3,654,658. 즉 **TRUNCATE 가 매 run 실제로 돌고 있다.**
-     이유 = dbt 는 hook 을 **누적(append)** 한다(`macros/silver_purge.sql:4-11` 가 경고한 성질).
-            `dbt_project.yml:198 +pre-hook: "{{ silver_purge(this) }}"` 는 이 모델이 `RANGED_MODELS` 에
-            없으므로 `TRUNCATE` 를 내고, 모델의 `pre_hook=[]` 는 **빈 목록을 덧붙일 뿐 앞의 것을 지우지 않는다.**
-  🔴 결과 = 이 모델의 「1개월 주기 변경분 증분」 현업 요건이 **집행되지 않고 있다.** 매 run 전량 재적재다.
-     🔴 그런데 **무증상이었다** — TRUNCATE 로 테이블이 비면 아래 증분 필터의
-        `MAX(SRC_LOAD_DT)` 가 NULL → `COALESCE('1900-01-01')` → **전량이 통과**한다.
-        ⇒ 결과는 항상 맞고 비용만 늘며 **아무 테스트도 깨지지 않는다.**
-        🟢 판정식 = **「증분이 도는가」는 행수로 검증할 수 없다 — pre-hook 이 무엇을 냈는지 보아야 한다.**
-  🟢 부수 효과 = 이 TRUNCATE 덕분에 **원천 삭제행이 반영된다.** 실측 = O179 의 이슈 B 고아 제거가
-     이 모델에서도 집행됐다(3,654,929 → **3,654,658** · 고아 잔존 **0**).
-     🔴 즉 증분을 「고치면」 삭제 반영이 사라진다 ⇒ 이슈 B 회신(마스터 정본·고아 제거)과 **충돌**한다.
-  🔴 처방은 **설계 결정 사안**이라 이 세션이 집행하지 않았다(문서50 등재). 선택지 =
-     ⓐ 현행 유지(전량 재적재 · 삭제 반영 O · 증분 요건 X) — 주석만 사실로 고친다(지금 한 것)
-     ⓑ `silver_purge` 에 no-op 축을 신설해 이 모델을 제외(증분 요건 O · 삭제 반영 X)
-     ⓒ 증분 + 주기적 전량 재적재 병행(둘 다 O · 운영 절차 추가)
--#}
-{{
-  config(
-    materialized='incremental',
-    incremental_strategy='merge',
-    unique_key=['SPNSR_NO','SPNSR_BSNS_NO','OCCRRNC_DE','SER_NO'],
-    full_refresh=false,
-    pre_hook=[]
-  )
-}}
+-- 🆕 🔴🔴 [2026-09-22 O180 · 사용자 결정 ⓐ′] **증분 오버라이드를 철회하고 SILVER 표준 패턴으로 정렬했다.**
+--   적재 전략 = 폴더 기본값 그대로 = `incremental` + `append` + `pre-hook: silver_purge(TRUNCATE)`
+--               + `full_refresh:false` (`dbt_project.yml:195-198`) = **매 run 전량 재적재 · 멱등**.
+--
+--   ▣ 종전 상태(2026-08-25 ~ 2026-09-22) — 이 자리에 「증분 전략 오버라이드」 절이 있었다.
+--     선언 = `merge` + `unique_key=(SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO)` + `pre_hook=[]`
+--            + `is_incremental()` 3일 lookback 워터마크 + `--vars` 전량 재적재 탈출구.
+--     근거 = *"현업이 「1개월 주기 변경분 증분 적재」를 요청했다"* **한 줄**.
+--
+--   ▣ 🔴🔴 그 근거를 O180 이 전수 검색했고 **워크스페이스 정본 어디에도 없다.**
+--     · `07_현업의사결정 회신/현업의사결정 회신.md` 전량 47줄 = **0건**
+--     · `20_issue/` 전체에서 「1개월」·「변경분」·「증분 적재」·「안내1」 4축 = 요건 원문 **0건**
+--     · 이력 `01_세션이력-033.md:81` 은 2026-08-25 「안내1/안내2」를 **캠페인 9속성 비정규화**
+--       요건으로만 기록한다 ⇒ 증분 요건은 **어느 안내에도 귀속되지 않는 출처 미기재 요건**이었고
+--       그것을 발행한 선행 세션은 이력 항목도 남기지 않았다.
+--     🟢 판정식 = **모델 주석이 인용한 현업 발언은 정본이 아니다** — 회신 문서에 없으면 검증 불가다.
+--
+--   ▣ 🔴 그 오버라이드는 세 가지를 동시에 망가뜨리고 있었다(O179 실측):
+--     ① `pre_hook=[]` 는 폴더 pre-hook 을 **취소하지 못한다** — dbt 는 hook 을 **누적**한다
+--        (`macros/silver_purge.sql:4-11` 가 경고한 성질) ⇒ `TRUNCATE` 가 매 run 실제로 돌았다.
+--     ② 그래서 증분 필터가 **빈 테이블**에서 `MAX(SRC_LOAD_DT)`=NULL → `COALESCE('1900-01-01')`
+--        → **전량 통과**했다 ⇒ 증분이 미집행인데 **결과는 맞고 아무 테스트도 깨지지 않았다**(무증상).
+--        🟢 판정식 = **「증분이 도는가」는 행수로 검증할 수 없다 — pre-hook 이 무엇을 냈는지 보아야 한다.**
+--     ③ 그 결과 매 run **빈 테이블에 전량 `merge`** 했다 — matched 가 항상 0 인데 `append` 보다
+--        비싼 경로를 냈다. SILVER 31모델 중 **이 모델만** 이 조합이었다.
+--
+--   ▣ 🟢🟢 표준 패턴 정렬이 동시에 닫은 것 = **O175 마감월 유령행 이월**(상세 = 파일 하단).
+--     `merge` 는 원천 물리 삭제를 전파하지 못하지만 `TRUNCATE`+`append` 는 원리적으로 유령행 0 이다.
+--     이슈 B 고아 제거(`:129`)도 계속 집행된다.
+--
+--   ▣ 🔴 대가 = **「1개월 주기 증분」 요건은 폐기한다.** 근거 부재 + 28일간 미집행 + 삭제 반영 상충이
+--     겹쳤다. 되살릴 근거(현업 회신)가 나오면 그때 다시 설계한다.
+--     🔴 그때 쓸 경로는 `pre_hook=[]` 가 **아니라** `macros/silver_purge.sql` 의 정본 등재부다
+--        (`dbt_project.yml:192`·`:194` · 모델 파일 `pre_hook` 은 명문 금지).
+--     🔴 그리고 `--vars` 탈출구를 다시 만들지 마라 — **이 환경에서 조용히 무시된다**(O179 실측).
+--        오버라이드는 **파일에 적는 것만 신뢰**한다.
+--
+--   ⚠️ `full_refresh:false` 승계 이유는 불변이다 — `--full-refresh` 가 CTAS 로 이 테이블을 다시 만들어
+--      `04_silver_design/08_SILVER_테이블DDL` 이 선언한 타입·주석·제약을 파괴한다(순서9 G-1/G-2 사고).
+--   🟢 `unique_key` 는 불필요해졌다 — `append` 전량 재적재는 grain 비유일이어도 행소실이 없다
+--      (`dbt_project.yml:181`).
+{#- 🆕 🟢 [2026-09-22 O180 · 사용자 결정 ⓐ′] **모델 레벨 `config()` 를 제거했다 — 폴더 기본값만 쓴다.**
+    정본 = `dbt_project.yml:195-198` = `incremental` + `append` + `full_refresh:false`
+           + `pre-hook: "{{ silver_purge(this) }}"`.
+    🔴 **이 파일에 `pre_hook` 을 다시 쓰지 마라** — `dbt_project.yml:194` 와
+       `macros/silver_purge.sql:11` 이 명문으로 금지한다(dbt 는 hook 을 누적하므로 무효이고,
+       O179 가 실측한 그 무증상 결함이 그대로 재발한다).
+    🔴 이 모델을 다시 예외로 빼야 하면 **`macros/silver_purge.sql` 의 `RANGED_MODELS`
+       (또는 신설 no-op 축)에 등재**하는 것이 유일한 정본 경로다(`dbt_project.yml:192`). -#}
 SELECT
   NULLIF(TRIM(s.SPNSR_NO),'')      AS SPNSR_NO,
   s.SPNSR_BSNS_NO                  AS SPNSR_BSNS_NO,
@@ -114,10 +121,14 @@ SELECT
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
   NULL                             AS DW_BATCH_ID,
-  -- [2026-08-25 증분 전략] 원천 적재시각 워터마크. is_incremental() 필터가 다음 run 에서 비교할 기준값을
-  -- **여기(SILVER)에 그대로 저장**한다 — DW_LOAD_TS 는 매 run CURRENT_TIMESTAMP() 로 덮이는 "빌드 시각"이라
-  -- 워터마크로 못 쓴다(재실행하면 항상 지금 시각이 됨). SRC_LOAD_DT 는 "원천이 이 행을 적재한 시각"을
-  -- 그대로 보존해야 다음 run 이 "그 이후에 새로 들어온/바뀐 행만" 가려낼 수 있다.
+  -- 🆕 [2026-09-22 O180 · ⓐ′] **`SRC_LOAD_DT` 는 유지한다 — 다만 워터마크가 아니라 계보 컬럼이다.**
+  --   종전 이 주석은 *"is_incremental() 필터가 다음 run 에서 비교할 기준값"* 이라 설명했으나
+  --   그 증분 필터는 제거됐다(파일 하단) ⇒ 이 컬럼은 이제 **원천 적재시각의 보존**만 담당한다.
+  --   🟢 컬럼을 지우지 않는 이유 = ㉠ `08_SILVER_테이블DDL` 이 선언한 구조를 바꾸지 않는다
+  --      ㉡ 「원천이 이 행을 적재한 시각」은 진단·정합 대조에 계속 쓰인다(하류 영향 0)
+  --      ㉢ 증분을 되살릴 근거가 나오면 워터마크 원천으로 다시 쓸 수 있다.
+  --   ⚠️ `DW_LOAD_TS` 와 혼동하지 마라 — 그쪽은 매 run `CURRENT_TIMESTAMP()` 로 덮이는 **빌드 시각**이고
+  --      재실행하면 항상 지금 시각이 된다(워터마크로 쓸 수 없다).
   s._LOAD_DT                       AS SRC_LOAD_DT
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_DVLP_AMT') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} a ON a.CD_ID='CM018' AND a.DTL_CD_ID=NULLIF(TRIM(s.AREA_CD),'')
@@ -129,44 +140,41 @@ LEFT JOIN {{ ref('CRM_CAMPAIGN') }} cp ON cp.CMPGN_CD = NULLIF(TRIM(s.CMPGN_CD),
 WHERE s.SPNSR_NO IS NOT NULL AND s.SPNSR_BSNS_NO IS NOT NULL AND s.OCCRRNC_DE IS NOT NULL AND s.SER_NO IS NOT NULL
   -- 🔴 [2026-09-22 O179 · 이슈 B] 회원 마스터 정본 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
   --    📏 실측 = 고아 271행(회원 16명) 제거 완료 · 3,654,929 → **3,654,658** · 고아 잔존 **0**.
-  --    🟢 이 모델은 `merge` 인데도 제거가 집행됐다 — 이유는 위 `{#- … -#}` 블록에 있다
-  --       (폴더 pre-hook `TRUNCATE` 가 실제로 돌기 때문이고, `merge` 자체에는 DELETE 절이 없다).
-  --    🔴 **그 TRUNCATE 가 사라지면 이 제거도 사라진다** ⇒ 위 선택지 ⓑ 를 고르면
-  --       1회성 DELETE 가 별도로 필요해진다(파괴 작업 · `R4-4-3` 승인 대상):
-  --       DELETE FROM GN_DW.SILVER.CRM_MEMBER_DEV t
-  --       WHERE NOT EXISTS (SELECT 1 FROM GN_DW.SILVER.CRM_MEMBER m WHERE m.MEMBER_DK = t.MBER_NO);
+  --    🟢 이 제거는 `TRUNCATE` + `append` 전량 재적재가 매 run 필터를 다시 적용하므로 집행된다
+  --       (마스터에서 빠진 회원은 다음 run 에 자동 이탈 · 별도 1회성 `DELETE` 불필요).
+  --    🔴 [2026-09-22 O180] 종전 이 자리에는 *"선택지 ⓑ 를 고르면 1회성 DELETE 가 필요해진다"* 는
+  --       조건부 처방이 적혀 있었다. **ⓑ 는 채택되지 않았다**(사용자 결정 = ⓐ′ 표준 패턴 정렬)
+  --       ⇒ 그 `DELETE` 는 **집행 대상이 아니다**. 🔴 이 문장을 조건 충족 시 실행할 지시로 읽지 마라
+  --          (`J5` — 폐기된 예약 조치를 남겨 두면 나중에 아무도 전제를 재검증하지 않고 실행한다).
   AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}
-{% if is_incremental() and not var('crm_member_dev_full_reload', false) %}
-  -- [증분 분기] 두 조건 모두 참일 때만 활성화된다:
-  --   ① is_incremental() = 대상 테이블이 이미 존재(첫 run·CTAS 아님) — dbt 가 자동 판정.
-  --   ② var('crm_member_dev_full_reload', false) = false(기본값) — 사용자가 전체 재적재를 명시하지 않음.
-  -- 필터 = 이미 적재된 최대 SRC_LOAD_DT 이후 원천 행만. 3일 lookback 을 두는 이유:
-  --   원천(BRONZE_CRM)이 과거 발생분을 늦게 정정·재적재하는 경우(늦은 도착 데이터)를
-  --   놓치지 않기 위함이다 — 정확히 "MAX 이후"만 보면 정정분이 원래 OCCRRNC_DE/적재일 언저리에서
-  --   과거로 재기입될 때 누락될 수 있다. merge 이므로 겹쳐서 재선택해도 중복 행이 생기지 않는다(unique_key).
-  AND s._LOAD_DT > (
-        SELECT DATEADD('day', -3, COALESCE(MAX(SRC_LOAD_DT), '1900-01-01'::timestamp_ntz))
-        FROM {{ this }}
-      )
-{% endif %}
--- [전량 재적재 분기] --vars '{"crm_member_dev_full_reload": true}' 로 실행하면 위 증분 필터가 꺼지고
--- WHERE 절 나머지(SPNSR_NO 등 NOT NULL) 만 적용돼 원천 전량이 다시 select 된다.
--- ⚠️ 이 모델은 full_refresh=false + incremental_strategy='merge' 라 --full-refresh 플래그는 CTAS 를 트리거하지
--- 않는다(DDL 보호) — "전체를 다시 흘린다"는 이 var 로만 표현한다. merge 는 신규 INSERT·기존 UPDATE 는 하지만
--- **원천에서 삭제된 행을 지우지는 않는다**(delete+insert 가 아님) — 원천이 물리 삭제를 하는 원천이면
--- 별도 정합성 점검(고아 행 잔존 여부)이 필요하다(이번 요건 범위 밖 — 별도 확인 필요).
--- 🆕 🔴🔴 [2026-09-21 O175] **위 「별도 확인 필요」를 닫는다 — 이 원천은 실제로 물리 삭제를 한다.**
---   운영 방식(사용자 정본) = 일별로 적재하다 **데이터 마감일**이 오면 그 달을 지우고 마감 확정본으로
---   다시 밀어넣는다. 그 삭제·재적재 단위가 BRONZE 의 `_STDR_YM`(월 파티션 재적재 키)이다.
---   🔴 그런데 `merge` 는 삭제를 전파하지 않으므로 **마감월에 이 테이블에 유령행이 남는다.**
---   🟢 재적재분 자체는 잡힌다 — 재적재 시 `_LOAD_DT` 가 갱신되고 위 워터마크 필터가 그 월을 다시
---      집어와 `unique_key` 로 덮는다. **문제는 갱신이 아니라 삭제다.**
---   🟢 현재 유령행 = **0**(실측 2026-09-21: BRONZE 적격 3,654,929 = 이 테이블 3,654,929).
---      🔴 그건 아직 마감 재적재가 이 모델을 거치지 않았다는 뜻이고 「안전하다」는 뜻이 아니다.
---   🔴🔴 **런북 장치(O175 사용자 결정 A안) — 마감월 재적재가 있었던 run 에서는 전량 재적재한다:**
---      `dbt run --select CRM_MEMBER_DEV --vars '{"crm_member_dev_full_reload": true}'`
---      ⚠️ 그래도 `merge` 라서 **과거에 이미 들어온 유령행은 지워지지 않는다** — 전량 재적재는
---         「이후 누락을 막는다」이고 「이미 남은 유령을 청소한다」가 아니다.
---         청소가 필요하면 그때 `delete+insert` 전환을 설계 결정으로 올린다(문서30).
---   🟢 `_STDR_YM` 은 **SILVER 로 올리지 않기로 확정**했다(적재 제어 메타 · BRONZE 한정) ⇒
---      감사 판정도 「제외(적재제어메타)」로 바뀌었다(50건).
+{#- 🆕 🟢 [2026-09-22 O180 · ⓐ′] **증분 분기를 제거했다.**
+    종전 이 자리에는 `{% if is_incremental() and not var('crm_member_dev_full_reload', false) %}`
+    블록이 있었고 `s._LOAD_DT > (SELECT DATEADD('day',-3, COALESCE(MAX(SRC_LOAD_DT),'1900-01-01')) FROM {{ this }})`
+    로 3일 lookback 워터마크를 걸었다.
+    🔴 그 필터는 **한 번도 실효가 없었다** — 폴더 `pre-hook` 의 `TRUNCATE` 가 매 run 먼저 돌아
+       테이블을 비우므로 `MAX(SRC_LOAD_DT)` 가 항상 NULL 이 되고 `COALESCE('1900-01-01')` 이
+       **전량을 통과**시켰다(O179 실측 · `QUERY_HISTORY` 2026-09-22 00:41:12 TRUNCATE → 00:41:14 MERGE).
+    🟢 이제 `append` 전량 재적재가 정본이므로 워터마크 자체가 불필요하다 —
+       멱등성은 `TRUNCATE` 가 보장한다(재실행 Δ0 · `dbt_project.yml:181`).
+    🔴 lookback 개념 자체는 폐기가 아니다 — 늦은 도착 데이터는 **전량 재적재가 더 강하게 포괄**한다
+       (창이 없으므로 놓칠 과거가 없다). W2 판정(O179)과 같은 축이다. -#}
+-- 🆕 🟢🟢 [2026-09-22 O180 · ⓐ′] **O175 유령행 결함이 이 전환으로 구조적으로 닫혔다.**
+--   종전 이 자리에는 `--vars '{"crm_member_dev_full_reload": true}'` 전량 재적재 분기 설명과,
+--   그 위에 O175 가 적은 「마감월 유령행」 경고가 있었다. 요지 =
+--     · 원천 운영 방식(사용자 정본) = 일별 적재 후 **데이터 마감일**이 오면 그 달을 지우고
+--       마감 확정본으로 다시 밀어넣는다(단위 = BRONZE `_STDR_YM` 월 파티션 재적재 키).
+--     · 🔴 `merge` 는 **삭제를 전파하지 않으므로** 마감월에 유령행이 남는다.
+--     · 🔴 O175 가 둔 대책(위 `--vars` 런북)은 「이후 누락을 막는다」였고
+--       「이미 남은 유령을 청소한다」가 아니었다 ⇒ 청소는 `delete+insert` 전환 설계 결정으로 이월됐다.
+--   🟢 **그 이월이 소멸했다** — `TRUNCATE` + `append` 는 매 run 원천 적격 전량을 다시 흘리므로
+--      원천에서 사라진 행은 **다음 run 에 자동으로 사라진다** ⇒ 유령행이 **원리적으로 0** 이다.
+--      마감 재적재·물리 삭제·늦은 도착 정정이 전부 같은 한 경로로 흡수되고 런북 장치가 불필요해진다.
+--   🔴 그 `--vars` 런북은 애초에 **이 환경에서 동작하지 않았다**(O179 실측 = `--vars` 는 조용히 무시된다)
+--      ⇒ O175 의 방어는 기재만 있고 집행이 없었다. 이 전환이 그 공백까지 함께 닫는다.
+--   🟢 이슈 B 고아 제거(위 `:129-137`)도 계속 집행된다 — 매 run `TRUNCATE` 후 필터를 통과한 행만
+--      다시 들어오므로, 마스터에서 빠진 회원은 별도 `DELETE` 없이 자동 이탈한다.
+--   ⚠️ 잔존 전제 = `04_silver_design/08_SILVER_테이블DDL` 선행 실행(테이블 미존재 시 첫 run 이
+--      CTAS 로 구조 없이 만든다) · `full_refresh:false` 가 `--full-refresh` CTAS 를 차단한다.
+--   📏 기대값 = 이 전환은 **행수를 바꾸지 않는다**. `WHERE` 절과 조인이 전부 무변경이고
+--      종전에도 실질적으로 전량 재적재였으므로 build 후 **3,654,658 행 Δ0** 이어야 한다.
+--      🔴 값이 다르면 그것은 이 전환의 결과가 아니라 **원천 변동**이므로 그쪽을 먼저 조사하라.

@@ -39,9 +39,17 @@ GRANT USAGE, CREATE TABLE, CREATE VIEW, CREATE PROCEDURE, CREATE FUNCTION
 GRANT SELECT, INSERT, TRUNCATE, DELETE ON ALL TABLES    IN SCHEMA GN_DW.SILVER_2 TO ROLE GN_DW_ENGINEER;
 GRANT SELECT, INSERT, TRUNCATE, DELETE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER_2 TO ROLE GN_DW_ENGINEER;
 
--- CRM_MEMBER_DEV 는 원본과 동일하게 incremental_strategy='merge' 모델이라 UPDATE 가 추가로 필요하다
--- (07_ENVIRONMENT_RBAC_setup.sql §D.5 의 테이블 단위 좁은 부여 원칙 계승).
--- 01_스키마생성_및_구조복제.sql 실행 후에만 테이블이 존재하므로, 먼저 그 스크립트를 실행할 것.
+-- 🆕 🟢 [2026-09-22 O180] **이 GRANT 의 근거가 소멸했다 — CRM_MEMBER_DEV 는 더 이상 merge 가 아니다.**
+--   종전 근거 = *"CRM_MEMBER_DEV 는 원본과 동일하게 incremental_strategy='merge' 모델이라 UPDATE 가
+--   추가로 필요하다"*. 사용자 결정 ⓐ′ 로 SILVER 표준 패턴(TRUNCATE + append)으로 정렬됐고
+--   실측 = 프로젝트 전 모델의 incremental_strategy 가 append 이며 merge 는 0건이다.
+--   ⇒ UPDATE 권한은 이제 **불필요**하다(위 39-40행의 SELECT/INSERT/TRUNCATE/DELETE 로 충분).
+--   🟠 그래도 **이 줄을 지우지 않는다** — SILVER_2 는 테스트 스키마이고 이 스크립트를 이미 실행한
+--      환경에서 권한을 회수하면 「최소권한 정렬」이 아니라 **되돌리기 어려운 변경**이 된다
+--      (REVOKE 는 파괴적 작업 · R4-4-3 승인 대상) ⇒ 처분은 사용자 결정으로 남긴다.
+--   🔴 **다만 이 주석의 근거는 더 이상 참이 아니므로 새 환경 구축 시 이 줄을 복사하지 마라.**
+--   (07_ENVIRONMENT_RBAC_setup.sql §D.5 의 테이블 단위 좁은 부여 원칙 계승.)
+--   01_스키마생성_및_구조복제.sql 실행 후에만 테이블이 존재하므로, 먼저 그 스크립트를 실행할 것.
 GRANT UPDATE ON TABLE GN_DW.SILVER_2.CRM_MEMBER_DEV TO ROLE GN_DW_ENGINEER;
 
 /* =====================================================================

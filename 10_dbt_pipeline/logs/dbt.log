@@ -93286,3 +93286,24 @@ select
 [0m00:44:42.209542 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 228.20119, "process_in_blocks": "0", "process_kernel_time": 2.33, "process_mem_max_rss": "581836", "process_out_blocks": "0", "process_user_time": 27.61}
 [0m00:44:42.210216 [debug] [Dummy-1   ]: Command `cli build` succeeded at 00:44:42.209949 after 228.20 seconds
 [0m00:44:42.210778 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 02:00:25.032957 | 56781d8f-addb-4f33-8a22-98fddd635143 ==============================
+[0m02:00:25.032957 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m02:00:25.033910 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_path': '/tmp/dbt/logs', 'profiles_dir': '/tmp/dbt_effective_profiles_pkae0a6c', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt ', 'log_format': 'default', 'introspect': 'True', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m02:00:25.321335 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m02:00:25.884224 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m02:00:26.444639 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 5 files changed.
+[0m02:00:26.448160 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/fact/FACT_EVENT_ATTENDANCE.sql
+[0m02:00:26.449059 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/silver/crm/CRM_MEMBER_DEV.sql
+[0m02:00:26.449812 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/fact/FACT_MEMBER_EVENT.sql
+[0m02:00:26.450554 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql
+[0m02:00:26.451318 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+[0m02:00:26.706891 [error] [Dummy-1   ]: Encountered an error:
+Compilation Error in model FACT_EVENT_ATTENDANCE (models/gold/fact/FACT_EVENT_ATTENDANCE.sql)
+  invalid syntax for function call expression
+    line 3
+      {{ config(
+[0m02:00:26.708702 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": false, "command_wall_clock_time": 1.7530966, "process_in_blocks": "0", "process_kernel_time": 1.07, "process_mem_max_rss": "431328", "process_out_blocks": "0", "process_user_time": 4.62}
+[0m02:00:26.709388 [debug] [Dummy-1   ]: Command `cli build` failed at 02:00:26.709120 after 1.75 seconds
+[0m02:00:26.709994 [debug] [Dummy-1   ]: Flushing usage events
