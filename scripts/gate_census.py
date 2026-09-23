@@ -84,6 +84,7 @@ JUDGE = {
     'sv_unit_gate':           'SV COMMENT 단위·수치 — 라이브를 **읽는다**',
     'table_ddl_column_gate':  'DDL 파일 ↔ 모델 컬럼 순서 — 라이브를 **읽는다**',
     'wide_select_yml_gate':   'WIDE 뷰 SELECT ↔ yml',
+    'jinja_config_gate': 'dbt Jinja 안전 6축 — config 안 SQL주석 · 따옴표밖 중첩닫기 · 주석안 Jinja태그 · 공백제거형 주석의 실행문 흡수 · 주석 구분자 개수 불균형',
 }
 
 OBSERVE = {

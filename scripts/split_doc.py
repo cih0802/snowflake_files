@@ -1153,7 +1153,41 @@ def republish(src, snap_label=None, expect=None):
     return verify(src)
 
 
-def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None):
+def declared_kind(src):
+    """원장 §0 **문서 유형 등재표**에서 이 문서의 선언 유형을 읽는다(없으면 None).
+
+    🆕 🔴🔴 [2026-09-22 O180-B 신설] **이 함수가 없어서 유형 선언이 아무것도 막지 못했다.**
+      실측 = O180-B 착수 전까지 `split_doc.py` 는 등재표를 **한 번도 읽지 않았다**
+      ⇒ `--rebalance` 가 증분형 문서의 인용 좌표를 깨는 것을 막을 장치가 **없었다**
+      (`doc_type_gate` 는 여유 축만 보고 **연산을 막지 못한다**).
+    🟢 판정 정본은 `doc_type_gate.parse_registry` 하나다 — **같은 것을 다르게 재지 않는다**
+      (`R1-6-17` 「같은 것을 다르게 재는 지점」 축).
+    🔴 미등재 문서는 **None** 이고 기존 동작을 유지한다(가드가 정상 연산을 막지 않는다).
+    🔴🔴 **[O180-B 자체 적발] 1차 구현이 이 함수를 조용히 무력화했다.**
+      함수명을 `read_registry` 로 잘못 호출했고(정답 = `parse_registry`)
+      **내가 넣은 `except Exception: return None` 이 그 `AttributeError` 를 삼켰다**
+      ⇒ 가드가 「없는 것처럼」 동작해 증분형 문서에 재균형이 **실제로 집행됐다**(조각 23→24).
+      🟢 판정식 = **「안전측 폴백」이 가드를 죽이는 가장 흔한 경로다** — 폴백은
+        「게이트가 고장났다」와 「이 문서는 미등재다」를 **구별해야 한다**.
+      ⇒ 지금은 ㉠ 예외를 **좁혀 잡고** ㉡ 고장이면 **경고를 출력**한다(조용히 넘기지 않는다).
+    """
+    try:
+        import doc_type_gate as DT
+        reg = DT.parse_registry(DT.index_logical())
+    except Exception as exc:  # noqa: BLE001
+        # 🔴 조용히 넘기지 않는다 — 가드 고장은 보이게 만든다(1차 구현의 실패 원인).
+        sys.stderr.write(
+            '🟠 declared_kind: 유형 등재표를 읽지 못했다(%r) ⇒ 유형 가드가 동작하지 않는다.\n'
+            % (exc,))
+        return None
+    base = os.path.basename(src)
+    val = reg.get(base)
+    if val is None:
+        return None
+    return val[0] if isinstance(val, (tuple, list)) else val
+
+
+def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None, force=False):
     """허브+조각을 **현재 내용**으로 재분할해 상한 여유를 회복한다(`R1-6-14`).
 
     🔴 왜 필요한가 (2026-08-18 O83-B 실측): 갱신형 원장은 신규 행이 표 머리(최신 우선)에
@@ -1168,7 +1202,30 @@ def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None):
     * 조각 수가 줄면 **남는 조각 파일을 개별 삭제**한다 —
       🔴 폴더를 `rm -rf` 하지 않는다(`R1-6-10`: 스테이지 접두 삭제로 허브까지 지워진다).
     * 허브는 `발행 SHA256` 라벨로 재발행한다(원문과 이미 다르기 때문이다).
+
+    🆕 🔴🔴 **[2026-09-22 O180-B] `증분형` 문서에는 거부한다.**
+      왜 = 재분할은 조각 경계를 이동시켜 **조각 번호를 밀고**, 타 문서가 인용한
+      `-0NN.md:행` **좌표를 전부 무효화**한다. 증분형(`20_현업확인_요청`·`50_dbt_…`)은
+      다른 문서가 절 단위로 **좌표 인용**하는 문서라 그 파괴가 실해다.
+      🔎 실사고 2건 = O179 가 문서20 `-010` 을, O180 이 문서50 `-023` 을 **수기 신설**해
+        이 연산을 피했다 ⇒ **관례가 도구를 앞질렀고 도구에는 가드가 없었다.**
+      🟢 대체 경로 = `--rollover`(꼬리 조각 신설 · 기존 조각 한 바이트도 안 건드린다).
+      🔴 **선언만으로는 아무것도 막지 못했다** — 이 함수 전까지 `split_doc.py` 는
+        원장 §0 유형 등재표를 **읽지 않았다**(O180-B 실측) ⇒ 여기서 처음 읽는다.
+      🟠 탈출구 = `--force-rebalance`. 🔴 좌표 파괴를 감수한다는 **명시적 선언**이고
+        파괴 작업이므로 사용자 승인 대상이다(`R4-4-3`).
     """
+    kind = declared_kind(src)
+    if kind == '증분형' and not force:
+        print('🔴🔴 거부 — `%s` 는 **증분형**이다(원장 §0 유형 등재표).'
+              % os.path.basename(src))
+        print('   `--rebalance` 는 조각 번호를 밀어 타 문서의 `-0NN.md:행` 인용 좌표를 깨뜨린다.')
+        print('   🟢 대체 경로 = `--rollover --entry-file <파일>` (꼬리 조각 신설 · 기존 조각 불변)')
+        print('   🟠 그래도 강행하려면 `--force-rebalance` (🔴 좌표 파괴 감수 · 사용자 승인 대상)')
+        return 1
+    if kind == '증분형' and force:
+        print('🟠🟠 증분형에 `--force-rebalance` 로 강행한다 — **인용 좌표가 깨진다.**')
+        print('   🔴 종료 후 `doc_coord_gate.py` 를 반드시 돌려 깨진 좌표를 전수 복구하라.')
     outdir = hub_outdir(src)
     mode = mode or hub_boundary(src)
     parts, paths = collect_bodies(src, outdir)
@@ -1468,8 +1525,13 @@ def main():
                     help='조각 편집 후 허브를 다시 만든다(목차·선택표·발행 SHA256 · R1-6-9)')
     ap.add_argument('--rebalance', action='store_true',
                     help='현재 조각 내용으로 재분할해 상한 여유를 회복한다(R1-6-14)')
+    # 🆕 🔴🔴 [2026-09-22 O180-B] 증분형 문서는 `--rebalance` 를 **거부**한다(인용 좌표 파괴).
+    #   이 플래그는 그 거부를 뚫는 **명시적 선언**이고 파괴 작업이므로 승인 대상이다(`R4-4-3`).
+    #   🔴 뚫으면 `doc_coord_gate.py` 로 깨진 좌표를 전수 복구해야 한다.
+    ap.add_argument('--force-rebalance', action='store_true',
+                    help='🔴 증분형에도 재균형을 강행한다(인용 좌표 파괴 감수 · 승인 대상)')
     ap.add_argument('--rollover', action='store_true',
-                    help='append형 꼬리 조각에 항목 추가 · 차면 새 조각 신설(R1-6-15)')
+                    help='append형·증분형 꼬리 조각에 항목 추가 · 차면 새 조각 신설(R1-6-15)')
     ap.add_argument('--entry-file', default=None,
                     help='--rollover 로 추가할 본문 파일 경로')
     # 🔴 default=None — 「미지정」과 「section 지정」을 구별해야 한다.
@@ -1500,7 +1562,8 @@ def main():
             p = os.path.join(ROOT, p)
         return rollover(src, p)
     if a.rebalance:
-        return rebalance(src, a.boundary, a.fill, snap_label=a.label, expect=a.expect)
+        return rebalance(src, a.boundary, a.fill, snap_label=a.label,
+                         expect=a.expect, force=a.force_rebalance)
     if a.republish:
         return republish(src, snap_label=a.label, expect=a.expect)
     if a.verify:

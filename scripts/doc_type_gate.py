@@ -90,7 +90,24 @@ MIN_FREE = 0.20          # 갱신형·append형 꼬리에 요구하는 최소 �
 #     은 차단으로 유지**하고, 근거 없는 축만 관측으로 내렸다.
 CHUNK_RX = re.compile(r'-\d{3}\.[A-Za-z]+$')
 
-KINDS = ('갱신형', 'append형', '정적', '자동생성')
+KINDS = ('갱신형', 'append형', '증분형', '정적', '자동생성')
+# 🆕 🔴🔴 [2026-09-22 O180-B 신설 · 사용자 결정] **`증분형`** — 항목 본문은 append 인데
+#   판정 줄만 제자리 갱신되는 문서. 대상 = `20_현업확인_요청.md` · `50_dbt_파이프라인_미결조치.md`.
+#   🔴 왜 별 유형인가 = **두 축이 서로 다른 조각에서 일어난다**:
+#     ㉠ 신규 문항·절은 **꼬리로만** 간다 ⇒ 여유 판정은 append형과 같아야 한다(꼬리 기준).
+#     ㉡ 회신·종결이 오면 **과거 조각의 판정 줄**(`**판정**:` · 제목 이모지)을 고친다
+#        ⇒ append형의 「비꼬리 조각 불변」 불변식이 거짓이다.
+#   🔴🔴 갱신형으로 두면 **처방이 틀린다** — 상한 초과에 `--rebalance` 를 권하는데 그것은
+#     조각 번호를 밀어 타 문서의 `-0NN.md:행` **인용 좌표를 전부 깨뜨린다**.
+#     🔎 실사고 2건 = O179 가 문서20 `-010` 을, O180 이 문서50 `-023` 을 **수기 신설**해
+#       `--rebalance` 를 피했다 ⇒ **관례가 도구를 앞질렀고 도구가 틀린 처방을 계속 냈다.**
+#   🟢 처리 = 신규 항목 `--rollover` · 판정 갱신은 그 조각 `edit` · 🔴 `--rebalance` 금지.
+#   🔴 **이 게이트는 여유 축만 담당한다** — 연산 차단은 `split_doc.py` 가 한다
+#     (실측 = `split_doc.py` 는 이 등재표를 **읽지 않았다** ⇒ 선언만으로는 아무것도 막지 못했다).
+#   정본 = 원장 §0 유형 등재표 · 음성 축 = `scripts/test_doc_type_increment.py`.
+INCREMENTAL = '증분형'
+#: 꼬리 기준으로 여유를 보는 유형 = 신규 항목이 꼬리에만 떨어지는 것들.
+TAIL_KINDS = ('append형', INCREMENTAL)
 # 🆕 🔴🔴 [2026-09-17 O170 신설] **`자동생성`** — 도구가 통째로 다시 쓰는 문서.
 #   대상 = 허브 전종 · `00_선택표.md`(조각 폴더 사이드카) · `00_BRIEF.md` · `92_실측필요_후속작업.md`.
 #   🔴 왜 별 유형인가 = 처리가 셋과 **다르다**:
@@ -281,8 +298,10 @@ def main():
             if bad:
                 over.append('%s: %s' % (os.path.relpath(p, ROOT), ' / '.join(bad)))
 
-        if kind == 'append형':
-            # 꼬리만 본다 — 비꼬리 조각은 불변이 정상이다
+        if kind in TAIL_KINDS:
+            # 🔴 꼬리만 본다 — append형은 비꼬리 조각이 **불변**이고,
+            #   증분형은 비꼬리 조각이 **판정 줄만**(수십~수백 B) 바뀌므로
+            #   「다음 편집에서 확정 초과」가 성립하지 않는다(신규 항목은 꼬리로만 간다).
             tail_p, tail_b = sorted(sizes)[-1] if len(sizes) == 1 else sorted(
                 sizes, key=lambda x: x[0])[-1]
             free = MAX_BYTES - tail_b
@@ -292,7 +311,7 @@ def main():
             label, watch = 'max', free
         print('  %-42s %-8s %5d %9s %9s%s' % (
             name, kind, len(paths), format(mx, ','), format(watch, ','),
-            '  ← %s' % label if kind == 'append형' else ''))
+            '  ← %s' % label if kind in TAIL_KINDS else ''))
         if kind != '정적' and watch < MAX_BYTES * MIN_FREE:
             tight.append('%s: %s 여유 %s B (< %d%%)'
                          % (name, label, format(watch, ','), MIN_FREE * 100))
@@ -301,7 +320,21 @@ def main():
     for x in over:
         print('    🔴', x)
     if over:
-        fails.append('상한 초과 %d건 — `--rebalance` 를 돌려라' % len(over))
+        # 🆕 🔴🔴 [2026-09-22 O180-B] **처방을 유형별로 가른다.**
+        #   종전에는 전 유형에 `--rebalance` 를 권했는데 그것이 **증분형에는 틀린 처방**이다
+        #   (조각 번호를 밀어 타 문서의 인용 좌표를 전부 깨뜨린다).
+        #   🔎 실사고 2건 = O179 문서20 `-010` · O180 문서50 `-023` 이 이 처방을 **무시하고**
+        #     수기 꼬리 조각을 만들었다 ⇒ 도구가 틀린 처방을 계속 내고 있었다.
+        inc_over = [x for x in over
+                    if any(x.startswith(os.path.relpath(
+                        os.path.join(ROOT, n), ROOT).rsplit('.', 1)[0])
+                        for n, (k, _h) in reg.items() if k == INCREMENTAL)]
+        if inc_over:
+            fails.append(
+                '상한 초과 %d건 — 🔴 **증분형은 `--rebalance` 를 쓰지 마라**(인용 좌표 파괴) '
+                '⇒ `--rollover` 로 꼬리 조각을 신설하라' % len(over))
+        else:
+            fails.append('상한 초과 %d건 — `--rebalance` 를 돌려라' % len(over))
 
     if long_lines:
         print('  ⚪ 300줄 초과(비분할 정본 · 관측만 · 근거 = 도구 한도 2,000줄): %d건' % len(long_lines))

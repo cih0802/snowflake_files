@@ -59,14 +59,27 @@
 --      `04_silver_design/08_SILVER_테이블DDL` 이 선언한 타입·주석·제약을 파괴한다(순서9 G-1/G-2 사고).
 --   🟢 `unique_key` 는 불필요해졌다 — `append` 전량 재적재는 grain 비유일이어도 행소실이 없다
 --      (`dbt_project.yml:181`).
-{#- 🆕 🟢 [2026-09-22 O180 · 사용자 결정 ⓐ′] **모델 레벨 `config()` 를 제거했다 — 폴더 기본값만 쓴다.**
+{# 🆕 🟢 [2026-09-22 O180 · 사용자 결정 ⓐ′] **모델 레벨 `config()` 를 제거했다 — 폴더 기본값만 쓴다.**
     정본 = `dbt_project.yml:195-198` = `incremental` + `append` + `full_refresh:false`
            + `pre-hook: "{{ silver_purge(this) }}"`.
     🔴 **이 파일에 `pre_hook` 을 다시 쓰지 마라** — `dbt_project.yml:194` 와
        `macros/silver_purge.sql:11` 이 명문으로 금지한다(dbt 는 hook 을 누적하므로 무효이고,
        O179 가 실측한 그 무증상 결함이 그대로 재발한다).
     🔴 이 모델을 다시 예외로 빼야 하면 **`macros/silver_purge.sql` 의 `RANGED_MODELS`
-       (또는 신설 no-op 축)에 등재**하는 것이 유일한 정본 경로다(`dbt_project.yml:192`). -#}
+       (또는 신설 no-op 축)에 등재**하는 것이 유일한 정본 경로다(`dbt_project.yml:192`).
+    🔴🔴 [O180 자체 적발] **이 블록은 원래 공백제거형 Jinja 주석이었고 그것이 빌드를 깨뜨렸다.**
+       여는 태그에 붙은 하이픈이 **직전 줄바꿈을 삭제**해서 바로 아래 SELECT 가
+       위의 SQL 주석 줄에 붙어 **주석 처리**됐다
+       ⇒ SQL compilation error: syntax error line 65 at position 2 unexpected NULLIF.
+       🟢 그래서 공백 제어(하이픈)를 뺀 보통 Jinja 주석으로 바꿨다.
+       🔴 판정식 3개 — 전부 이 한 사고에서 나왔다:
+          ㉠ SQL 주석 바로 뒤에 **공백제거형 Jinja 주석을 두지 마라** — 앞 공백 제거가
+             다음 실행문을 그 주석 안으로 끌어들인다.
+          ㉡ **Jinja 주석이 「안 보인다」는 것과 「줄바꿈을 보존한다」는 것은 다른 성질이다.**
+          ㉢ 🔴🔴 **이 파일 어디에도 Jinja 구분자를 글자로 적지 마라.** 닫는 구분자를 본문에
+             인용하면 **그 자리에서 주석이 끝나고** 뒤의 설명문이 live SQL 이 된다
+             (O180 이 이 줄을 쓰다가 실제로 그 사고를 냈다 · 자체 적발·정정).
+             ⇒ 구분자는 **말로 서술**한다("공백제거형 Jinja 주석" 처럼). #}
 SELECT
   NULLIF(TRIM(s.SPNSR_NO),'')      AS SPNSR_NO,
   s.SPNSR_BSNS_NO                  AS SPNSR_BSNS_NO,
@@ -147,7 +160,7 @@ WHERE s.SPNSR_NO IS NOT NULL AND s.SPNSR_BSNS_NO IS NOT NULL AND s.OCCRRNC_DE IS
   --       ⇒ 그 `DELETE` 는 **집행 대상이 아니다**. 🔴 이 문장을 조건 충족 시 실행할 지시로 읽지 마라
   --          (`J5` — 폐기된 예약 조치를 남겨 두면 나중에 아무도 전제를 재검증하지 않고 실행한다).
   AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}
-{#- 🆕 🟢 [2026-09-22 O180 · ⓐ′] **증분 분기를 제거했다.**
+{# 🆕 🟢 [2026-09-22 O180 · ⓐ′] **증분 분기를 제거했다.**
     종전 이 자리에는 `{% if is_incremental() and not var('crm_member_dev_full_reload', false) %}`
     블록이 있었고 `s._LOAD_DT > (SELECT DATEADD('day',-3, COALESCE(MAX(SRC_LOAD_DT),'1900-01-01')) FROM {{ this }})`
     로 3일 lookback 워터마크를 걸었다.
@@ -157,7 +170,10 @@ WHERE s.SPNSR_NO IS NOT NULL AND s.SPNSR_BSNS_NO IS NOT NULL AND s.OCCRRNC_DE IS
     🟢 이제 `append` 전량 재적재가 정본이므로 워터마크 자체가 불필요하다 —
        멱등성은 `TRUNCATE` 가 보장한다(재실행 Δ0 · `dbt_project.yml:181`).
     🔴 lookback 개념 자체는 폐기가 아니다 — 늦은 도착 데이터는 **전량 재적재가 더 강하게 포괄**한다
-       (창이 없으므로 놓칠 과거가 없다). W2 판정(O179)과 같은 축이다. -#}
+       (창이 없으므로 놓칠 과거가 없다). W2 판정(O179)과 같은 축이다.
+    🔴 [O180] 이 블록도 공백제거형 Jinja 주석이었다 — 바로 위 `:157` 이 SQL 주석이 아니라
+       실행문이어서 **우연히** 살았다. 같은 class 이므로 보통 Jinja 주석으로 통일했다
+       (운에 의존하지 않는다). 🔴 구분자를 글자로 인용하지 마라(위 블록 ㉢ 참조). #}
 -- 🆕 🟢🟢 [2026-09-22 O180 · ⓐ′] **O175 유령행 결함이 이 전환으로 구조적으로 닫혔다.**
 --   종전 이 자리에는 `--vars '{"crm_member_dev_full_reload": true}'` 전량 재적재 분기 설명과,
 --   그 위에 O175 가 적은 「마감월 유령행」 경고가 있었다. 요지 =

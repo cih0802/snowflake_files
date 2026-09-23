@@ -535,6 +535,13 @@ GATES = [
     ('doc_heading_gate', ['scripts/doc_heading_gate.py']),
     # 🆕 [2026-08-28 O109] 인용 좌표 실재 — 폴더화·재균형이 좌표를 죽인다(축1a blocking).
     ('doc_coord_gate', ['scripts/doc_coord_gate.py']),
+    # 🆕 [2026-09-22 O180] dbt Jinja 안전 6축 — 🔴 **문서 게이트가 아닌 유일한 항목**이고
+    #   그것이 편입 이유다: 이 결함은 ㉠ 에러 없이 SQL 을 조용히 잘라먹거나 컴파일을 깨고
+    #   ㉡ `dbt` 는 에이전트 정지점(`R4-1`)이라 편집자가 스스로 확인할 수 없으며
+    #   ㉢ `dbt build` PASS 기준선은 그 편집 **이전** 값이라 변경을 보증하지 않는다.
+    #   🔴 실측 근거 = 이 class 가 **한 세션에 4회** 재발했고 매번 눈으로는 통과했다
+    #      (O179 가 4파일에 심고, O180 이 수정 중 3회 재생산 · 1회는 사용자 빌드 실패).
+    ('jinja_config_gate', ['scripts/jinja_config_gate.py']),
 ]
 
 
