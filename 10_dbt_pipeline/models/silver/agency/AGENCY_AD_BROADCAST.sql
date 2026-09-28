@@ -10,6 +10,12 @@
 --    (실측 2026-07-28: AGENCY_CONV_MEMBERS 의 28.60% · AGENCY_CONV_CNT 의 60.32%). 문서10 §8-I(8).
 --    → 코어 GA_CONV_* 는 DIGITAL 전용으로 환원, 개발실적은 본 위성이 고유 이름으로 보유한다.
 --    VIDEO 분기에서는 개발실적 개념이 없어 NULL 이다.
+-- 🔴🔴 [2026-09-28 O182] 원천 12번 재편 반영 — **출력 계약(컬럼)은 불변**, 매핑만 바꿨다.
+--    · 위 「VIDEO 분기 개발실적 NULL」은 **더 이상 참이 아니다** — VIDEO 원천에 개발건수(DVLP_CNT)·후원자수(SPNSER_CNT)가
+--      신설됐다(실측 8,756/46,353행 채움) ⇒ DVLP_CNT·DVLP_MEMBER_CNT 에 배선(사용자 결정 「모두 배선」).
+--      🔴 SV_AD·Agent 문안의 「VIDEO 는 개발 컬럼이 구조적으로 부재」는 이 변경으로 거짓이 된다 ⇒ 동기화 대상.
+--    · VIDEO 전환콜 = 원천 소멸 ⇒ CONV_CALL_CNT 전건 NULL. CTV구분 = 원천 AD_TY_NM(TV/CTV/기타/미확인).
+--    · REBRDC 시간대 = 구간 라벨 소멸 ⇒ 방송시각 · RT_TYPE = DIV_NM(재송출/방송 · 종전 값 재송출/특집).
 SELECT
     AD_PERF_DK                                  AS AD_PERF_DK,
     {{ clean_str('TIME_RNG') }}                 AS TIME_BAND,               -- 시간대 ← VIDEO.TIME_RNG
@@ -43,14 +49,14 @@ SELECT
     END                                         AS DURATION_SEC,
     {{ clean_str('DAY_DIV_NM') }}               AS DAY_DIV,                 -- 요일구분(평일/주말)
     {{ clean_str('PRG_STRT_TIME') }}            AS PRG_START_TIME,          -- 프로그램 시작시간
-    {{ clean_str('CTV_DIV_NM') }}               AS CTV_DIV,                 -- CTV구분
+    {{ clean_str('AD_TY_NM') }}                 AS CTV_DIV,                 -- O182: 구 CTV_DIV_NM 소멸 → AD_TY_NM(TV/CTV/기타/미확인)
     CAST(NULL AS VARCHAR)                       AS BRDC_DIV,                -- 재방송 전용 → VIDEO 는 개념 없음
     AD_CNT                                      AS AD_CNT,                  -- 광고횟수
-    CONV_CALL_CNT                               AS CONV_CALL_CNT,           -- 전환콜(인입콜과 별개)
-    CAST(NULL AS FLOAT)                         AS DVLP_MEMBER_CNT,         -- O16: 재방송 전용 개발회원수
-    CAST(NULL AS FLOAT)                         AS DVLP_CNT,                -- O16: 재방송 전용 개발건수
+    CAST(NULL AS FLOAT)                         AS CONV_CALL_CNT,           -- O182: 원천 소멸(전환콜 컬럼 삭제)
+    SPNSER_CNT                                  AS DVLP_MEMBER_CNT,         -- O182: VIDEO '후원자수' 신규 — 🔴 종전 「VIDEO 개발 개념 없음」 해소
+    DVLP_CNT                                    AS DVLP_CNT,                -- O182: VIDEO '개발건수' 신규
     AD_VIEW_RT                                  AS AD_VIEW_RT_SRC,          -- N(비가산) 재계산 불가
-    TRY_TO_NUMBER({{ clean_str('CPC') }})       AS CPC_CALL_SRC,                -- N(비가산) **콜당** 단가(원천 VIDEO.CPC) — 🔴 클릭당이 아니다(O174 개명)
+    CPC_CALL_CNT                                AS CPC_CALL_SRC,            -- N(비가산) **콜당** 단가 — O182: 원천 CPC(TEXT) → CPC_CALL_CNT(FLOAT)
     'AGENCY'                                    AS DW_SOURCE_SYSTEM,
     'BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS'         AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ          AS DW_LOAD_TS,
@@ -62,15 +68,16 @@ UNION ALL
 
 SELECT
     AD_PERF_DK,
-    -- 재방송 시간대: 구분명 우선, 없으면 방송시각 사용(설계 §3-A: TIME_RNG_DIV_NM·BRDC_TIME)
-    COALESCE({{ clean_str('TIME_RNG_DIV_NM') }}, {{ clean_str('BRDC_TIME') }}),
+    -- 재방송 시간대: O182 — 원천의 시간대구분명(TIME_RNG_DIV_NM '9시이전' 등)이 소멸했다 ⇒ 방송시각(HH:MM:SS)만 남는다.
+    --   🔴 값의 형태가 바뀐다(구간 라벨 → 시각). 하류가 구간 라벨로 그루핑했다면 결과가 달라진다.
+    {{ clean_str('BRDC_TIME') }},
     CAST(NULL AS VARCHAR),                                                  -- CM_POSITION: 영상 전용
-    {{ clean_str('RE_BRDC_TY_NM') }},                                       -- RT_TYPE
+    {{ clean_str('DIV_NM') }},                                              -- RT_TYPE ← O182: 구 RE_BRDC_TY_NM 소멸 → DIV_NM(재송출/방송)
     CAST(NULL AS VARCHAR),                                                  -- AD_START_TIME: 영상 전용
     CAST(NULL AS VARCHAR),                                                  -- AD_END_TIME: 영상 전용
-    DATE,                                                                   -- BROADCAST_DATE ← REBRDC.DATE
+    BRDC_DATE,                                                              -- BROADCAST_DATE ← O182: 구 REBRDC.DATE
     {{ clean_str('BRDC_NM') }},                                             -- PROGRAM_NM
-    {{ clean_str('CHNNL_CMPNY') }},                                         -- CHANNEL_COMPANY
+    {{ clean_str('CHNNL_NM') }},                                            -- CHANNEL_COMPANY ← O182: 구 CHNNL_CMPNY
     CAST(NULL AS VARCHAR),                                                  -- CHANNEL_COMPANY_TYPE: 영상 전용
     CAST(NULL AS VARCHAR),                                                  -- SPOT_TYPE: 영상 전용
     CAST(NULL AS NUMBER(9,0)),                                              -- DURATION_SEC: 영상 전용

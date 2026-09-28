@@ -79,6 +79,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_SPONSOR_RISK'),
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST'),
     ('AGENT_MEMBER',    'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
+    ('AGENT_MEMBER',    'SV_ML_ONCE_CONVERSION'),   -- 🆕 2026-09-28 O182 신설 (일시→정기 전환 예측)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
     ('AGENT_EXECUTIVE',   'SV_AD'),
     ('AGENT_EXECUTIVE',   'SV_MEMBER_MONTHLY'),
@@ -304,7 +305,7 @@ $$;
 --   실행 전 반드시 이 세션에서 [0] 을 다시 돌려 0행을 직접 확인할 것(계정 상태는 재이관 시 달라진다).
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = '굿네이버스 회원 분석 Agent. SV 11종:ML 3 포함. 마케팅 보고서 5분석구분의 정본 Agent.';
+  COMMENT = '굿네이버스 회원 분석 Agent. SV 12종:ML 4 포함. 마케팅 보고서 5분석구분의 정본 Agent.';
 
 -- ---- [3-B] AGENT_EXECUTIVE ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE

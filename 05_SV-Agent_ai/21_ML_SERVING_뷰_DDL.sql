@@ -2,7 +2,8 @@
 -- Co-authored with CoCo · [2026-08-14 O74]
 -- ============================================================================
 -- ▶ 이 파일의 위상
---   `GN_DW.ML` 의 **예측결과 테이블 16종만** 소비 가능한 형태로 감싼다.
+--   `GN_DW.ML` 의 **예측결과 테이블 17종만** 소비 가능한 형태로 감싼다(뷰 8종).
+--   🆕 [2026-09-28 O182] 17번째 `ML_RST_DATA_ONCE_CONVERSION` → 뷰 [8] `ML_ONCE_CONVERSION_V` 추가.
 --   ⛔ `ML_TRAIN_DATA_*` 등 학습·중간 37종은 여기에 등장하지 않는다(사용자 지시).
 --   SV 는 **이 뷰들만** base 로 쓴다. ML 테이블을 SV 가 직접 참조하지 않는다.
 --
@@ -18,7 +19,7 @@
 --   4. **dedup** — 회원 예측 2종의 중복을 여기서 단일화한다(§1-1).
 --
 -- ▶ 실행
---   역할 `GN_DW_ADMIN` · 선행 조건 = `GN_DW.ML` 결과 16종 적재. dbt build 와 무관하다.
+--   역할 `GN_DW_ADMIN` · 선행 조건 = `GN_DW.ML` 결과 17종 적재. dbt build 와 무관하다.
 --   재실행 안전(`CREATE OR REPLACE VIEW`) — 뷰는 GRANT 를 잃으므로 §GRANT 절이 같은 파일에 있다.
 -- ============================================================================
 
@@ -420,6 +421,60 @@ FROM GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION b;
 
 
 /* =====================================================================================
+   [8] ML_ONCE_CONVERSION_V — 일시후원회원 → 정기후원 전환 예측  (🆕 2026-09-28 O182)
+       grain = 일시후원회원 × 관측월 (실측 유일)
+
+   🔴🔴 **`STDR_MT` 는 모델 실행월이 아니다** — 다른 ML 결과 16종과 의미가 다르다.
+      실측(2026-09-28 · 8,144명 전건): 회원마다 **정확히 6행 · 연속 6개월**이고,
+      첫 월이 `BRONZE_CRM.TM_MM_ONCE_MBER_INFO.FRST_REGIST_DT` 의 월과 **8,144/8,144 일치**(gap 0).
+      ⇒ 가입월(0)부터 5개월 뒤까지의 **관측월**이다. 그래서 이 뷰는 컬럼명을 `OBSERVE_MT` 로 바꿔 노출한다
+         (`STDR_MT` 로 두면 SV 공통 규칙 「기준월 = 모델 실행월 · 최신 1개로 한정」이 오답을 만든다).
+   🔴 **미래 관측월은 제외한다** — 202610 이후 행(11,666행)은 확률이 **전건 단일 상수**
+      (0.0026363748)라 피처가 비어 있는 기본값이다(실측). 판정 = `OBSERVE_MT <= 현재 연월`.
+      ⚠️ 이 조건은 `CURRENT_DATE()` 기준이라 달이 바뀌면 행이 늘어난다(원천 재적재 없이도).
+      ⚠️ 현재 월은 포함한다 — 그 달 피처가 월중 부분값일 수 있다(원천 산출 시점 미확인).
+   🔴 **`CONVERSION_YN` 은 노출하지 않는다** — 예측 대상(SCORE) 행은 전건 0 이며 정답 라벨이 아니라
+      학습 스키마에서 온 자리값이다(실측 48,864/48,864 = 0). 노출하면 「전환 0명」으로 오독된다.
+   🔴 `ONCE_MBER_NO` 는 정기회원 `MBER_NO` 와 **다른 번호체계**다(S 접두 · 실측 8,144/8,144 가
+      일시회원 마스터에 존재) ⇒ `ML_MEMBER_RISK_V` 와 조인하지 않는다.
+   🟢 `IS_LATEST_OBSERVED` = 회원별 관측된 마지막 월. 「지금 전환 가능성」은 이 행만 쓴다.
+      실측: 관측행 37,198 · 회원 8,144 · 최신행 8,144(1:1) · 가입경과 0~5.
+   ===================================================================================== */
+CREATE OR REPLACE VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V
+  COMMENT = 'ML 일시후원회원의 정기후원 전환 예측. grain=일시후원회원×관측월(가입월부터 6개월). 관측월은 모델 실행월이 아니다. 미래 관측월(피처 없음)은 제외했다. 예측치이며 실적이 아니다.'
+AS
+WITH r AS (
+  SELECT o.ONCE_MBER_NO,
+         o.STDR_MT,
+         -- 가입월 = 관측창 첫 월(실측 = 일시회원 마스터 최초등록월과 전건 일치).
+         MIN(o.STDR_MT) OVER (PARTITION BY o.ONCE_MBER_NO) AS ONCE_JOIN_MT,
+         o.PREDICT:probability:"1"::FLOAT   AS CONVERT_PROB,   -- 🔴 원천 컬럼명은 PREDICT(PREDICTION 아님)
+         o.PREDICT:class::VARCHAR            AS CONVERT_CLASS,
+         ARRAY_SIZE(o.PREDICT:logs:Error) > 0 AS PREDICTION_HAS_ERROR
+  FROM GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION o
+),
+obs AS (
+  SELECT r.*
+  FROM r
+  WHERE r.STDR_MT <= TO_CHAR(CURRENT_DATE(), 'YYYYMM')
+)
+SELECT
+    obs.ONCE_MBER_NO                                   AS ONCE_MBER_NO,
+    obs.STDR_MT                                        AS OBSERVE_MT,
+    TO_NUMBER(obs.STDR_MT)                             AS OBSERVE_MONTH_KEY,
+    obs.ONCE_JOIN_MT                                   AS ONCE_JOIN_MT,
+    DATEDIFF(month,
+             TO_DATE(obs.ONCE_JOIN_MT || '01', 'YYYYMMDD'),
+             TO_DATE(obs.STDR_MT      || '01', 'YYYYMMDD')) AS MONTHS_SINCE_JOIN,
+    obs.STDR_MT = MAX(obs.STDR_MT) OVER (PARTITION BY obs.ONCE_MBER_NO)
+                                                       AS IS_LATEST_OBSERVED,
+    obs.CONVERT_PROB                                   AS CONVERT_PROB,
+    obs.CONVERT_CLASS                                  AS CONVERT_CLASS,
+    obs.PREDICTION_HAS_ERROR                           AS PREDICTION_HAS_ERROR
+FROM obs;
+
+
+/* =====================================================================================
    GRANT — 소비 역할에 뷰 SELECT 부여
      🔴 `GN_DW.ML` 에는 **어떤 권한도 주지 않는다.** 뷰가 소유자 권한으로 ML 을 읽으므로
         소비 역할은 이 뷰들만 볼 수 있고 학습 37종은 닫힌 채로 남는다(사용자 지시의 집행).
@@ -447,3 +502,6 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_LTV_SCORE_V          TO ROLE GN_DW_SERVICE
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEATURE_IMPORTANCE_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEATURE_IMPORTANCE_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEATURE_IMPORTANCE_V TO ROLE GN_DW_SERVICE;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V    TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V    TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V    TO ROLE GN_DW_SERVICE;

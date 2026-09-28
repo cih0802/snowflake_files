@@ -40,14 +40,39 @@
 --       ⇒ 08 DDL 에 이 예외를 명시했다(규약 개정 · 근거 병기).
 --    🔴 **파싱은 코어(이 모델)에서만 한다** — staging(AGENCY_AD_ROW_DGT)은 원천 무손실이므로 손대지 않았다.
 --    🔴 `TRY_TO_DATE` 를 쓴다(`DATE_FROM_PARTS` 금지) — 후자는 `month=13` 같은 불량값을 **조용히 롤오버**한다.
+-- 🔴🔴 [2026-09-28 O182] 원천 12번 재편(DGT 36→41 · VIDEO 32→37 · REBRDC 34→21) 반영. **출력 계약(컬럼)은 불변**이다.
+--    · DIGITAL = `DATE` 는 전건 채워졌으나 **3,531행이 1970-01-01**(에포크 기본값) ⇒ 그 값만 NULL 로 보고 텍스트축 폴백.
+--      실측: 폴백 후 미해결 0 · 최소 2026-06-01 · 정상 `DATE` 행과 텍스트축 불일치 0.
+--      월 텍스트에 '월' 접미가 섞일 수 있어 숫자만 남긴다(`REGEXP_REPLACE`).
+--      비용 = `AD_COST`(구 GA_AD_COST · 사용자 결정 「연속성 유지」) — 마크업·VAT·최종정산은 staging 에만 보존.
+--      전환(명) = `SPNSER_MBER_CNT`('후원자수(명)' · 구 GA_CONV_MBER_CNT 자리).
+--    · VIDEO = `BRDC_DATE` 우선(송출일 기준 유지) · NULL 3,336행(CTV 시트)만 텍스트축 폴백.
+--      ⚠️ `BRDC_DATE` 가 있는 7,606행은 텍스트축과 날짜가 다르다 — 송출일 ≠ 텍스트 일자. 종전대로 송출일을 쓴다.
+--      캠페인명 = `CMPGN_NM`(구 MKT_CMPGN_NM 소멸 · 🔴 채움 3,336/46,353 = CTV 시트만) ⇒ 캠페인 축 도달률이 크게 준다.
+--      노출·클릭·기기 = 신규 원천값 배선(사용자 결정 「모두 배선」 · 종전 DEC-10 「방송=기기 없음」은 CTV 행에서 깨졌다).
+--      전환콜 = 원천 소멸 ⇒ NULL. 비용 = `LAST_AD_COST`(구 ACTL_PUR_AD_COST_KRW).
+--    · REBROADCAST = 날짜 `BRDC_DATE`(구 DATE) · 채널 `CHNNL_NM`(구 CHNNL_CMPNY). 비용 = `BRDC_SCHDL_COST` 유지.
 WITH dgt AS (
     SELECT
         *,
         COALESCE(
-            "DATE",
-            TRY_TO_DATE("YEAR" || LPAD("MONTH", 2, '0') || LPAD("DAY", 2, '0'), 'YYYYMMDD')
+            NULLIF("DATE", '1970-01-01'::DATE),     -- O182: 에포크 기본값은 날짜가 아니다
+            TRY_TO_DATE("YEAR"
+                        || LPAD(REGEXP_REPLACE("MONTH", '[^0-9]', ''), 2, '0')
+                        || LPAD(REGEXP_REPLACE("DAY",   '[^0-9]', ''), 2, '0'), 'YYYYMMDD')
         )                                   AS AD_DATE_RESOLVED
     FROM {{ ref('AGENCY_AD_ROW_DGT') }}
+),
+video AS (
+    SELECT
+        *,
+        COALESCE(
+            BRDC_DATE,                              -- 송출일 우선(종전 기준)
+            TRY_TO_DATE("YEAR"
+                        || LPAD(REGEXP_REPLACE("MONTH", '[^0-9]', ''), 2, '0')
+                        || LPAD(REGEXP_REPLACE("DAY",   '[^0-9]', ''), 2, '0'), 'YYYYMMDD')
+        )                                   AS AD_DATE_RESOLVED
+    FROM {{ ref('AGENCY_AD_ROW_VIDEO') }}
 )
 SELECT
     AD_PERF_DK                              AS AD_PERF_DK,
@@ -57,19 +82,19 @@ SELECT
     YEAR(AD_DATE_RESOLVED)                  AS AD_YEAR,
     MONTH(AD_DATE_RESOLVED)                 AS AD_MONTH,
     {{ clean_str('CMPGN_NM') }}             AS CAMPAIGN_NM,
-    CAST(NULL AS VARCHAR)                   AS UPPER_CAMPAIGN_NM,   -- O171: 원천 개념 소멸(개명) · utm 은 AGENCY_AD_ROW_DGT.CMPGN_UTM_NM
+    CAST(NULL AS VARCHAR)                   AS UPPER_CAMPAIGN_NM,   -- O171: 원천 개념 소멸(개명) · utm 은 AGENCY_AD_ROW_DGT.UTM_CMPGN_NM(O182 원천 개명)
     {{ clean_str('MEDIA_NM') }}             AS MEDIA_CHANNEL_NM,
     {{ clean_str('DEVICE') }}               AS DEVICE_NM,
     {{ clean_str('MATR') }}                 AS CREATIVE_NM,
     CAST(NULL AS VARCHAR)                   AS PROGRAM_NM,
     EXPS_CNT                                AS IMPRESSION_CNT,
     CLICK_CNT                               AS CLICK_CNT,
-    GA_CONV_MBER_CNT                        AS CONV_MEMBER_CNT,      -- 진짜 GA 전환(명)
+    SPNSER_MBER_CNT                         AS CONV_MEMBER_CNT,      -- O182: 원천 '후원자수(명)'(구 GA_CONV_MBER_CNT)
     CONV_VU_CNT                             AS CONV_UNIT_CNT,        -- 진짜 GA 전환(VU/건)
     CAST(NULL AS FLOAT)                     AS INBOUND_CALL_CNT,
     CAST(NULL AS FLOAT)                     AS CONV_CALL_CNT,
     CAST(NULL AS FLOAT)                     AS AD_CNT,
-    GA_AD_COST                              AS AD_COST,
+    AD_COST                                 AS AD_COST,              -- O182: 구 GA_AD_COST(연속성 유지 결정)
     'GA'                                    AS COST_TYPE,
     'AGENCY'                                AS DW_SOURCE_SYSTEM,
     'BRONZE_AGENCY.DGT_AD_CMPGN_DTLS'       AS DW_SOURCE_TABLE,
@@ -84,12 +109,12 @@ SELECT
     AD_PERF_DK,
     AD_SOURCE_TYPE,
     'REBROADCAST',
-    DATE,
-    YEAR(DATE),
-    MONTH(DATE),
-    CAST(NULL AS VARCHAR),                                  -- CAMPAIGN_NM: 원천 부재
+    BRDC_DATE,                                              -- O182: 구 DATE
+    YEAR(BRDC_DATE),
+    MONTH(BRDC_DATE),
+    CAST(NULL AS VARCHAR),                                  -- CAMPAIGN_NM: 원천 부재(CMPGN_CD 컬럼 신설됐으나 전건 NULL)
     CAST(NULL AS VARCHAR),                                  -- UPPER_CAMPAIGN_NM: 원천 부재
-    {{ clean_str('CHNNL_CMPNY') }},                         -- MEDIA_CHANNEL_NM
+    {{ clean_str('CHNNL_NM') }},                            -- MEDIA_CHANNEL_NM (O182: 구 CHNNL_CMPNY)
     CAST(NULL AS VARCHAR),                                  -- DEVICE_NM: 방송=기기 개념 없음(DEC-10)
     {{ clean_str('BRDC_NM') }},                             -- CREATIVE_NM
     {{ clean_str('BRDC_NM') }},                             -- PROGRAM_NM
@@ -115,27 +140,27 @@ SELECT
     AD_PERF_DK,
     AD_SOURCE_TYPE,
     'VIDEO',
-    BRDC_DATE,
-    YEAR(BRDC_DATE),
-    MONTH(BRDC_DATE),
-    {{ clean_str('MKT_CMPGN_NM') }},
+    AD_DATE_RESOLVED,
+    YEAR(AD_DATE_RESOLVED),
+    MONTH(AD_DATE_RESOLVED),
+    {{ clean_str('CMPGN_NM') }},                            -- O182: 구 MKT_CMPGN_NM 소멸 → CMPGN_NM(CTV 시트만 채움)
     {{ clean_str('UPPER_CMPGN_NM') }},
     {{ clean_str('CHNNL_NM') }},
-    CAST(NULL AS VARCHAR),                                  -- DEVICE_NM: 방송=기기 개념 없음(DEC-10)
+    {{ clean_str('DEVICE_NM') }},                           -- O182: 신규(종전 DEC-10 NULL)
     {{ clean_str('MATR_NM') }},
     {{ clean_str('SCHDL_NM') }},
-    CAST(NULL AS FLOAT),                                    -- IMPRESSION_CNT: 원천 부재
-    CAST(NULL AS FLOAT),                                    -- CLICK_CNT: 원천 부재
-    CAST(NULL AS FLOAT),                                    -- CONV_MEMBER_CNT: GA 개념 없음
+    EXPSR_CNT,                                              -- O182: 신규 노출수
+    CLICK_CNT,                                              -- O182: 신규 클릭수
+    CAST(NULL AS FLOAT),                                    -- CONV_MEMBER_CNT: GA 개념 없음(후원자수는 위성 DVLP_MEMBER_CNT)
     CAST(NULL AS FLOAT),                                    -- CONV_UNIT_CNT:   GA 개념 없음
     INBOUND_CALL_CNT,
-    CONV_CALL_CNT,
+    CAST(NULL AS FLOAT),                                    -- CONV_CALL_CNT: O182 원천 소멸
     AD_CNT,
-    ACTL_PUR_AD_COST_KRW,
+    LAST_AD_COST,                                           -- O182: 구 ACTL_PUR_AD_COST_KRW
     '집행',
     'AGENCY',
     'BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS',
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
     '{{ invocation_id }}'
-FROM {{ ref('AGENCY_AD_ROW_VIDEO') }}
+FROM video

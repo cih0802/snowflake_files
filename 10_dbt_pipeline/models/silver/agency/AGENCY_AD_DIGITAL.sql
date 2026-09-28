@@ -25,7 +25,7 @@ SELECT
     CPC                                 AS CPC_CLICK_SRC,                     -- DW 재계산 = AD_COST/CLICKS
     CPM                                 AS CPM_SRC,                     -- DW 재계산 = AD_COST/IMPRESSIONS×1000
     CPA                                 AS CPA_SRC,                     -- DW 재계산 = AD_COST/AGENCY_CONV_CNT
-    DEV_UNIT_PRICE                      AS DEV_UNIT_PRICE_SRC,          -- DW 재계산 = AD_COST/개발건수
+    DVLP_UNIT_PRICE                     AS DEV_UNIT_PRICE_SRC,          -- DW 재계산 = AD_COST/개발건수 (O182: 원천 개명 DEV_UNIT_PRICE→DVLP_UNIT_PRICE)
     VTR                                 AS VTR_SRC,                     -- 재계산 불가(원천 전용)
     'AGENCY'                                AS DW_SOURCE_SYSTEM,
     'BRONZE_AGENCY.DGT_AD_CMPGN_DTLS'       AS DW_SOURCE_TABLE,

@@ -2523,12 +2523,14 @@ ORDER BY table_name;
 --   UCMPGN_LTV 600 / UCMPGN_LTV_SCORE 50 / CMPGN_LTV 600 / CMPGN_LTV_SCORE 50
 --   CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 11 / DVLP_INC_CONTRIBUTION 11
 --   합계 1,045,732 행 (기준월 202606 단일 기준) · 용량 미측정
+--   ONCE_CONVERSION 48,864 — 🟠 A 실측 아님 · 2026-09-28 C측 스테이지 업로드분 행수(xf98254 실측)
+--     ⇒ A 에서 위 SELECT 를 돌려 이 값과 같은지 대조한다(위 합계 1,045,732 에는 포함하지 않았다).
 -- 🔴 기준월이 늘면 행수가 증가한다(프로시저가 월별 DELETE+INSERT 누적).
 --    ⇒ 참고값과 다르면 오류가 아니다. 이관 시점 실측값만 대조 기준으로 쓴다.
 */
 
 -- # A8  (🆕 2026-08-14 · ML 부여 상태 확인 — 미실측)
--- 기대: 16행 (전부 GN_DW.ML.ML_RST_DATA_ 접두)
+-- 기대: 17행 (전부 GN_DW.ML.ML_RST_DATA_ 접두 · 2026-09-28 ONCE_CONVERSION 추가로 16 → 17)
 SHOW GRANTS TO SHARE mig_share;
 SELECT "granted_on", "name"
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
@@ -2536,6 +2538,6 @@ WHERE "name" LIKE 'GN_DW.ML.%'
 ORDER BY 2;
 /*
 -- 결과를 이 블록에 붙인다.
--- 16 초과 = ALL TABLES 오사용(학습·스냅샷 노출) ⇒ 회수 후 02번 2-B 재실행
--- 16 미만 = 결과 테이블 재생성으로 GRANT 소실 ⇒ 02번 2-B 재실행
+-- 17 초과 = ALL TABLES 오사용(학습·스냅샷 노출) ⇒ 회수 후 02번 2-B 재실행
+-- 17 미만 = 결과 테이블 재생성으로 GRANT 소실 ⇒ 02번 2-B 재실행
 */

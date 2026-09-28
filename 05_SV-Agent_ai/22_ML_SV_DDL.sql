@@ -1,19 +1,21 @@
--- GN_DW ML 예측결과 Semantic View DDL 정본 — SV 7종
+-- GN_DW ML 예측결과 Semantic View DDL 정본 — SV 8종
 -- Co-authored with CoCo · [2026-08-14 O74]
 -- ============================================================================
 -- ▶ 이 파일의 위상
---   ML 예측결과 SV **7종**을 배포한다. base 는 전부 `21_ML_SERVING_뷰_DDL.sql` 의 SERVING 뷰다.
+--   ML 예측결과 SV **8종**을 배포한다. base 는 전부 `21_ML_SERVING_뷰_DDL.sql` 의 SERVING 뷰다.
+--   🆕 [2026-09-28 O182] [8] `SV_ML_ONCE_CONVERSION` 추가(일시→정기 전환 예측 · 🔴 `STDR_MT` 의미가 다르다 — [8] 머리말).
 --   🔴 SV 는 `GN_DW.ML` 테이블을 **직접 참조하지 않는다**(교체 내성 · 설계문서 §5).
 --   선행 조건 = `21_ML_SERVING_뷰_DDL.sql` 실행. dbt build 와 무관하다.
 --   실행 역할 = `GN_DW_ADMIN` · `CREATE OR ALTER` 이므로 재실행 시 GRANT·소유권 보존.
 --
--- ▶ 🔴 왜 7종으로 갈랐는가 (근거는 부서가 아니라 grain·단위 실측)
+-- ▶ 🔴 왜 8종으로 갈랐는가 (근거는 부서가 아니라 grain·단위 실측)
 --   1. 개발금액 예측 5종 = 같은 단위(만원)이고 교차검증됨 ⇒ 1개 SV 로 통합
 --      (부서 30계열 평균×30 ≈ 전사 · 신규기존 2계열 합 ≈ 전사)
 --   2. 회비 예측 = 단위가 **원** ⇒ 개발금액과 같은 SV 에 두면 만 배 오차
 --   3. LTV 예측 ↔ LTV 스코어 = grain 이 다르다(계열×12행 vs 계열×1행) ⇒ 분리
 --   4. 회원 risk ↔ 후원건 risk = 회원당 후원건 다건 ⇒ 합치면 팬아웃(`O8` 유형)
 --   5. 요인분석 = 측정 대상이 데이터가 아니라 **모델**이다 ⇒ 업무 수치와 섞지 않는다
+--   6. 🆕 [O182] 일시→정기 전환 = 회원번호 체계가 다르고(일시회원 S 접두) 월 축의 의미가 다르다 ⇒ 회원 risk 와 분리
 --
 -- ▶ 🔴 전 SV 공통 발행 문안 (없으면 조용한 오답이 난다)
 --   · 예측치이며 실적이 아니다 — 실적 SV 와 같은 표에 합산하지 않는다
@@ -506,3 +508,65 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE TO ROLE GN_DW_SERVICE;
+
+
+/* =====================================================================================
+   [8] SV_ML_ONCE_CONVERSION — 일시후원회원 → 정기후원 전환 예측  (🆕 2026-09-28 O182)
+   🔴 이 SV 만 「기준월」 축이 없다 — 원천 `STDR_MT` 는 모델 실행월이 아니라 **가입월부터 6개월 관측월**이다
+      (근거·실측 = 21번 [8] 머리말). ⇒ 파일 머리말의 공통 문안 「`STDR_MT` = 모델 실행 기준월」을 **적용하지 않는다**.
+   🔴 「지금 전환 가능성」 질문은 `IS_LATEST_OBSERVED = TRUE` 로 한정한다(회원당 1행). 한정하지 않으면
+      같은 회원이 관측월 수만큼 세어져 확률 평균이 관측월 가중이 된다.
+   ===================================================================================== */
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION
+  TABLES (
+    oc AS GN_DW.SERVING.ML_ONCE_CONVERSION_V
+      PRIMARY KEY (ONCE_MBER_NO, OBSERVE_MT)
+      WITH SYNONYMS ('정기전환 예측', '일시후원 전환 예측', '정기후원 전환 가능성', '일시회원 전환')
+      COMMENT = '일시후원회원의 정기후원 전환 ML 예측 분석 (base: SERVING.ML_ONCE_CONVERSION_V). [Grain: 일시후원회원 × 관측월(가입월부터 6개월)]. [활성 지표: 전환확률·모델 전환분류 회원수]. [주의: 예측치이며 실적 아님, 관측월은 모델 실행월이 아님, 회원당 여러 관측월]. [원천: ML 전환예측 결과 → SERVING.ML_ONCE_CONVERSION_V].'
+  )
+  DIMENSIONS (
+    oc.ONCE_MBER_NO AS oc.ONCE_MBER_NO
+      WITH SYNONYMS ('일시후원회원번호', '일시회원번호', '일시회원')
+      COMMENT = '일시후원회원번호. 🔴정기회원 회원번호(MBER_NO)와 다른 번호체계다 — 다른 회원 SV 와 조인·대조하지 않는다. 회원수는 이 축의 중복제거로 센다.',
+    oc.OBSERVE_MT AS oc.OBSERVE_MT
+      WITH SYNONYMS ('관측월', '예측 관측월')
+      COMMENT = '관측월(YYYYMM 문자열). 🔴🔴 **모델 실행 기준월이 아니다** — 회원별로 가입월부터 6개월 동안의 월이며 회원마다 구간이 다르다. 「최신 기준월 하나로 한정」 규칙을 이 축에 적용하지 않는다. 미래 관측월은 제외돼 있다. 🔴 실제값을 열거하지 않는다(달이 바뀌면 늘어난다).',
+    oc.OBSERVE_MONTH_KEY AS oc.OBSERVE_MONTH_KEY
+      WITH SYNONYMS ('관측연월')
+      COMMENT = '관측연월(YYYYMM 정수). 연·월 필터에 쓴다.',
+    oc.ONCE_JOIN_MT AS oc.ONCE_JOIN_MT
+      WITH SYNONYMS ('가입월', '일시후원 가입월', '코호트월')
+      COMMENT = '일시후원 가입월(YYYYMM). 관측창의 첫 월이다. 가입월별 코호트 분석의 축.',
+    oc.MONTHS_SINCE_JOIN AS oc.MONTHS_SINCE_JOIN
+      WITH SYNONYMS ('가입경과월', '가입 후 개월')
+      COMMENT = '가입 후 경과 개월. 실제값 범위: 0~5(0=가입월). 🔴 5를 넘는 값은 없다 — 관측창이 6개월이다.',
+    oc.IS_LATEST_OBSERVED AS oc.IS_LATEST_OBSERVED
+      WITH SYNONYMS ('최신 관측 여부', '현재 시점')
+      COMMENT = 'TRUE=그 회원의 관측된 마지막 월. 🔴「지금 전환 가능성이 높은 회원」·「현재 기준」 질문은 반드시 TRUE 로 한정한다(회원당 1행).',
+    oc.CONVERT_CLASS AS oc.CONVERT_CLASS
+      WITH SYNONYMS ('전환 예측 판정', '전환 클래스')
+      COMMENT = '정기후원 전환 예측의 모델 기본 판정. 실제값 2종: ''0''(비전환 예측)·''1''(전환 예측). 🔴모델 기본 임계(0.5)의 판정이며 업무 판정선은 미확정이다 ⇒ 「전환할 회원」이라 단정하지 말고 「모델이 전환으로 분류한 회원」으로 답한다.',
+    oc.PREDICTION_HAS_ERROR AS oc.PREDICTION_HAS_ERROR
+      WITH SYNONYMS ('예측 오류 여부')
+      COMMENT = 'TRUE=모델 산출 로그에 오류가 기록됐다. 품질 점검용.'
+  )
+  METRICS (
+    oc.PREDICTED_ONCE_MEMBERS AS COUNT(DISTINCT oc.ONCE_MBER_NO)
+      WITH SYNONYMS ('예측 대상 일시회원수', '일시회원수')
+      COMMENT = '예측 대상 일시후원회원수(중복제거). 🔴전체 일시후원회원수가 아니다 — 이 SV 의 모집단이다. 비율을 낼 때 분모로 쓰고 그 사실을 밝힌다.',
+    oc.MODEL_CONVERT_MEMBERS AS COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = '1' THEN oc.ONCE_MBER_NO END)
+      WITH SYNONYMS ('모델 전환분류 회원수', '전환 예측 회원수')
+      COMMENT = '모델이 정기후원 전환으로 분류한 일시회원수(중복제거). 🔴실제 전환 회원수가 아니다.',
+    oc.AVG_CONVERT_PROB AS AVG(oc.CONVERT_PROB)
+      WITH SYNONYMS ('평균 전환확률', '전환확률')
+      COMMENT = '정기후원 전환 예측확률 평균(0~1). 🔴합산하지 않는다. 🔴IS_LATEST_OBSERVED 로 한정하지 않으면 관측월 가중 평균이 된다.',
+    oc.MAX_CONVERT_PROB AS MAX(oc.CONVERT_PROB)
+      WITH SYNONYMS ('최대 전환확률')
+      COMMENT = '전환확률 최대값. 전환 가능성 상위 회원 정렬에 쓴다.'
+  )
+  COMMENT = 'ML 일시후원회원 정기후원 전환 예측 SV. base=SERVING.ML_ONCE_CONVERSION_V. 🔴🔴 예측치이며 실적이 아니다 — 실제 정기 전환 실적과 같은 표에 합산하지 않는다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **관측월(OBSERVE_MT)은 모델 실행 기준월이 아니다** — 회원마다 가입월부터 6개월의 월이며, 다른 ML SV 의 「최신 기준월 하나로 한정」 규칙을 적용하면 대부분의 회원이 사라진다. 「현재 기준」은 IS_LATEST_OBSERVED=TRUE(회원당 1행)로 한정한다. 🔴 예측 지평(몇 개월 안에 전환)을 숫자로 발행하지 않는다 — 학습 테이블명은 6개월을 뜻하나 원천 프로시저가 인도되지 않아 정의를 확인할 수 없다. 🔴 일시회원번호는 정기회원번호와 체계가 달라 다른 회원 SV 와 조인하지 않는다. 🔴 업무 판정선은 미확정이다. 활성: 예측 대상 일시회원수·모델 전환분류 회원수·전환확률 평균/최대 · 가입월/관측월/가입경과월/판정 축. 비활성: 실제 전환 실적 대비 정확도 · 일시회원 인적속성·가입경로 축(이 SV 에 미배선) · 전환 후 약정금액.'
+  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **예측과 실적을 한 표에 합산하지 않는다.** (2) 🔴🔴 **「지금」·「현재」·기간 미지정 질문은 IS_LATEST_OBSERVED = TRUE 로 한정한다** — 회원당 1행이 된다. 한정하지 않으면 같은 회원이 여러 관측월에 세어진다. (3) 🔴🔴 **OBSERVE_MT 에 MAX() 를 걸어 하나로 한정하지 않는다** — 모델 실행월이 아니라 회원별 관측월이어서, 최신 월 하나로 자르면 그 달에 관측된 일부 회원만 남는다. 월별 추이는 OBSERVE_MT 로, 가입 후 경과별 추이는 MONTHS_SINCE_JOIN 으로 그룹핑한다. (4) 🔴 **회원수는 PREDICTED_ONCE_MEMBERS·MODEL_CONVERT_MEMBERS(중복제거)를 쓴다** — COUNT(*) 를 만들지 않는다. (5) 🔴 **「전환할 회원」이라 단정하지 않는다** — 「모델이 전환으로 분류한 회원」으로 표현하고, 사용자가 확률 기준을 지정하면 그 기준을 밝힌다. (6) 🔴 **예측 지평(몇 개월 안에)을 숫자로 답하지 않는다.** (7) **확률은 평균·최대만 쓴다.** (8) **비율의 분모는 PREDICTED_ONCE_MEMBERS 이며 전체 일시후원회원이 아님을 밝힌다.** (9) **답변에 예측치임과 테스트 단계임을 밝힌다.** (10) 적용 조건(기간·그룹 미지정 시): IS_LATEST_OBSERVED = TRUE 로 한정해 예측 대상 일시회원수·모델 전환분류 회원수·평균 전환확률을 반환하고, 가입월(ONCE_JOIN_MT)별 분해가 가능함을 안내한다.';
+
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_SERVICE;

@@ -123,7 +123,7 @@ GROUP BY 1 ORDER BY 1;
 --   ⚠️ zero_row_tables 를 기록해 둔다. 0행 테이블은 COPY INTO 가 파일을 만들지 않아
 --      폴더가 생기지 않는다 ⇒ 6번의 '테이블 수 = 폴더 수' 판정에서 이 수만큼 차이가 나는 것이 정상이다.
 
--- 3.1-B ML 대상 테이블명 확인 (기대: 16행 · 전부 ML_RST_DATA_ 접두 — 2026-08-18 확인 완료)
+-- 3.1-B ML 대상 테이블명 확인 (기대: 17행 · 전부 ML_RST_DATA_ 접두 — 2026-08-18 16행 확인 · 2026-09-28 ONCE_CONVERSION 추가로 17)
 --   접두가 다른 테이블이 한 건이라도 나오면 학습·스냅샷이 섞인 것이므로 언로드하지 않는다.
 --   A 의 부여 오류이므로 A 에게 REVOKE 를 요청한 뒤 3번부터 다시 시작한다.
 SELECT table_name,
@@ -170,7 +170,7 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 --       ML 은 A 가 17종만 부여했으므로 이 조건만으로 정확히 17종이 대상이 된다(3.1-B 확인 완료).
 --    ℹ️ 반정형 컬럼은 **언로드 쪽에서 할 일이 없다.** CSV 로 나가면 JSON 문자열이 되고,
 --       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 06번 A.5,
---       ML PREDICTION(VARIANT) 4종 → 06번 A.5-B.2.
+--       ML PREDICTION/PREDICT(VARIANT) 5종 → 06번 A.5-B.2.
 --    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 82개 테이블' 이 나와야 정상.
 --       (0행 테이블도 COPY INTO 는 성공하므로 cnt 에 포함된다. 폴더만 생기지 않는다.)
 EXECUTE IMMEDIATE $$

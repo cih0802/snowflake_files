@@ -1040,18 +1040,23 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
 --     구 이름 `UPPER_CMPGN_NM`('상위캠페인') → 현 `CMPGN_UTM_NM`('utm_campaign').
 --     🔴 `VIDEO_AD_CMPGN_DTLS` 의 동명 컬럼은 개명 대상이 아니다(AGENCY_AD_ROW_VIDEO 는 구 이름 유지)
 --     ⇒ 전역 치환 금지. staging 규약대로 원천 이름을 그대로 보존한다.
+--   · 🔴🔴 [2026-09-28 O182] 원천 12번 재편(36→41) — 원천 이름 그대로 재정의했다(모델 `AGENCY_AD_ROW_DGT.sql` 머리말과 동일 목록).
+--     제거 CPR_NM·DMST_OVSEA_DIV_NM·BSNS_CASE_DIV_NM·CMPGN_TY_NM · 개명 GA_AD_COST→AD_COST ·
+--     GA_CONV_MBER_CNT→SPNSER_MBER_CNT · DEV_UNIT_PRICE→DVLP_UNIT_PRICE · CMPGN_UTM_NM→UTM_CMPGN_NM ·
+--     신규 BDGT_SOURCE_NM·CMPGN_TYPE_BSN_NM·CMPGN_TYPE1/2_BSN_NM·MARKUP_AMT·VAT_AMT·LAST_STMT_AMT·TOTAL_CPA·TOTAL_DVLP_UNIT_PRICE.
+--     ⚠️ 위 O171 줄의 `CMPGN_UTM_NM` 은 이제 원천에서 `UTM_CMPGN_NM` 이다(이 파일은 원천 이름을 따른다).
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 — 본 테이블이 발급 단일지점',
     AD_SOURCE_TYPE      VARCHAR         NOT NULL COMMENT '광고유형 상수 DIGITAL',
     ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시',
     DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번',
-    TIME                VARCHAR         COMMENT '[원천보존] 시각 텍스트',
+    TIME                VARCHAR         COMMENT '[원천보존] 시간',
     YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트',
-    CPR_NM              VARCHAR         COMMENT '[원천보존] 협력사명',
-    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분',
-    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 사업/사례 구분',
-    CMPGN_TY_NM         VARCHAR         COMMENT '[원천보존] 캠페인유형명',
+    BDGT_SOURCE_NM      VARCHAR         COMMENT '[원천보존] 예산출처',
+    CMPGN_TYPE1_BSN_NM  VARCHAR         COMMENT '[원천보존] 캠페인유형1',
+    CMPGN_TYPE2_BSN_NM  VARCHAR         COMMENT '[원천보존] 캠페인유형2',
+    CMPGN_TYPE_BSN_NM   VARCHAR         COMMENT '[원천보존] 캠페인유형',
     AD_TY_NM            VARCHAR         COMMENT '[원천보존] 광고유형명',
     MONTH               VARCHAR         COMMENT '[원천보존] 월 텍스트',
     DEVICE              VARCHAR         COMMENT '[원천보존] 기기 M/PC',
@@ -1064,34 +1069,43 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_DGT (
     MATR_TY_NM          VARCHAR         COMMENT '[원천보존] 소재유형명',
     EXPS_CNT            FLOAT           COMMENT '[원천보존] 노출수',
     CLICK_CNT           FLOAT           COMMENT '[원천보존] 클릭수',
-    GA_AD_COST          FLOAT           COMMENT '[원천보존] GA 광고비',
-    GA_CONV_MBER_CNT    FLOAT           COMMENT '[원천보존] GA 전환 회원수',
-    CONV_VU_CNT         FLOAT           COMMENT '[원천보존] GA 전환 VU수',
+    AD_COST             FLOAT           COMMENT '[원천보존] 광고비 (구 GA_AD_COST · 코어 AD_COST 원천)',
+    SPNSER_MBER_CNT     FLOAT           COMMENT '[원천보존] 후원자수(명) (구 GA_CONV_MBER_CNT · 코어 CONV_MEMBER_CNT 원천)',
+    CONV_VU_CNT         FLOAT           COMMENT '[원천보존] 전환가치(건)',
     CPA                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPA (비가산)',
-    DEV_UNIT_PRICE      FLOAT           COMMENT '[원천보존] 대행사 산정 개발단가 (비가산)',
+    DVLP_UNIT_PRICE     FLOAT           COMMENT '[원천보존] 대행사 산정 개발단가 (비가산 · 구 DEV_UNIT_PRICE)',
     CTR                 FLOAT           COMMENT '[원천보존] 대행사 산정 CTR (비가산)',
     CVR                 FLOAT           COMMENT '[원천보존] 대행사 산정 CVR (비가산)',
     CPC                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPC (비가산)',
     CPM                 FLOAT           COMMENT '[원천보존] 대행사 산정 CPM (비가산)',
-    CMPGN_UTM_NM        VARCHAR         COMMENT '[원천보존] utm_campaign',
-    READ_CNT            FLOAT           COMMENT '[원천보존] 읽음수',
-    MEDIA_PTNT_CUST_CNT FLOAT           COMMENT '[원천보존] 매체 잠재고객수',
-    DATE                DATE            COMMENT '[원천보존] 실적일',
+    UTM_CMPGN_NM        VARCHAR         COMMENT '[원천보존] utm_campaign (구 CMPGN_UTM_NM)',
+    READ_CNT            FLOAT           COMMENT '[원천보존] 조회수',
+    MEDIA_PTNT_CUST_CNT FLOAT           COMMENT '[원천보존] 잠재고객수(매체)',
+    DATE                DATE            COMMENT '[원천보존] 날짜. ⚠️ 1970-01-01(에포크 기본값) 행이 있다 — 코어가 텍스트축으로 보정',
     VTR                 FLOAT           COMMENT '[원천보존] 대행사 산정 VTR (비가산)',
-    PAGE_TYPE_NM        VARCHAR         COMMENT '[원천보존] 페이지유형',
-    CRM_DVLP_CNT        FLOAT           COMMENT '[원천보존] CRM 개발건수',
+    PAGE_TYPE_NM        VARCHAR         COMMENT '[원천보존] 지면구분',
+    CRM_DVLP_CNT        FLOAT           COMMENT '[원천보존] CRM개발건수',
     AD_GRP_NM           VARCHAR         COMMENT '[원천보존] 광고그룹명',
     GRP_DIV_NM          VARCHAR         COMMENT '[원천보존] 그룹구분',
+    MARKUP_AMT          FLOAT           COMMENT '[원천보존] 마크업 (O182 신규 · 코어 광고비 미포함)',
+    VAT_AMT             FLOAT           COMMENT '[원천보존] 부가세 (O182 신규 · 코어 광고비 미포함)',
+    LAST_STMT_AMT       FLOAT           COMMENT '[원천보존] 최종정산금액 (O182 신규 · 광고비+마크업+부가세)',
+    TOTAL_CPA           FLOAT           COMMENT '[원천보존] 통합CPA (O182 신규 · 비가산)',
+    TOTAL_DVLP_UNIT_PRICE FLOAT         COMMENT '[원천보존] 통합개발단가 (O182 신규 · 비가산)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '디지털 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1디지털광고)]. [주의: 디지털 광고 원천 36컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS].';
+) COMMENT = '디지털 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1디지털광고)]. [주의: 디지털 광고 원천 41컬럼 보존(2026-09-28 원천 재편)]. [원천: AGENCY → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS].';
 
 -- AGENCY 4: AGENCY_AD_ROW_VIDEO (VIDEO 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
+--   · 🔴🔴 [2026-09-28 O182] 원천 12번 재편(32→37) — 원천 이름 그대로 재정의(모델 `AGENCY_AD_ROW_VIDEO.sql` 머리말과 동일 목록).
+--     제거 DUR_PD_MATR_CHN·CONV_CALL_CNT·BRDC_MT·CTV_DIV_NM·MKT_CMPGN_NM·SPNSR_BSNS_NM ·
+--     개명 ACTL_PUR_AD_COST_KRW→LAST_AD_COST · CPC(TEXT)→CPC_CALL_CNT(FLOAT) ·
+--     신규 MONTH·AD_TY_NM·BDGT_SOURCE_NM·DEVICE_NM·DAY·SPNSER_CNT·DVLP_CNT·CMPGN_NM·MATR_TY_NM·EXPSR_CNT·CLICK_CNT.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 — 본 테이블이 발급 단일지점',
@@ -1100,9 +1114,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번(최대 3중복)',
     CHNNL_NM            VARCHAR         COMMENT '[원천보존] 채널명',
     DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트',
-    BRDC_DATE           DATE            COMMENT '[원천보존] 송출일',
+    BRDC_DATE           DATE            COMMENT '[원천보존] 송출일. ⚠️ CTV 시트 행은 NULL — 코어가 텍스트축으로 보정',
     TIME_RNG            VARCHAR         COMMENT '[원천보존] 시간대',
-    DAY_DIV_NM          VARCHAR         COMMENT '[원천보존] 요일구분(평일/주말)',
+    DAY_DIV_NM          VARCHAR         COMMENT '[원천보존] 요일구분(주중/토/일)',
     PRG_STRT_TIME       VARCHAR         COMMENT '[원천보존] 프로그램 시작시간',
     SCHDL_NM            VARCHAR         COMMENT '[원천보존] 편성명',
     CM                  VARCHAR         COMMENT '[원천보존] CM 구분',
@@ -1111,84 +1125,80 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     AD_END_TIME         VARCHAR         COMMENT '[원천보존] 광고종료시간',
     SPOT_TY             VARCHAR         COMMENT '[원천보존] SPOT유형',
     AD_VIEW_RT          FLOAT           COMMENT '[원천보존] 광고시청률 (비가산)',
-    AD_CNT              NUMBER          COMMENT '[원천보존] 광고횟수',
+    AD_CNT              FLOAT           COMMENT '[원천보존] 광고횟수',
     AD_SEC              VARCHAR         COMMENT '[원천보존] 광고 초수(TEXT)',
-    ACTL_PUR_AD_COST_KRW NUMBER         COMMENT '[원천보존] 실집행 광고비(원)',
-    INBOUND_CALL_CNT    NUMBER          COMMENT '[원천보존] 인입콜수',
-    CPC                 VARCHAR         COMMENT '[원천보존] 대행사 산정 CPC(TEXT, 비가산)',
+    LAST_AD_COST        FLOAT           COMMENT '[원천보존] 최종광고비(원) (구 ACTL_PUR_AD_COST_KRW · 코어 AD_COST 원천)',
+    INBOUND_CALL_CNT    FLOAT           COMMENT '[원천보존] 인입콜수',
+    CPC_CALL_CNT        FLOAT           COMMENT '[원천보존] 대행사 산정 콜당 단가(CPC_CALL · 비가산 · 구 CPC TEXT)',
     UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명',
     MATR_NM             VARCHAR         COMMENT '[원천보존] 소재명',
+    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 캠페인유형(국내/해외)',
+    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 캠페인유형(사업/사례)',
     CMPGN_TY_NM         VARCHAR         COMMENT '[원천보존] 캠페인유형명',
-    DUR_PD_MATR_CHN     VARCHAR         COMMENT '[원천보존] 기간/소재 채널',
     CHNNL_CMPNY_TY_NM   VARCHAR         COMMENT '[원천보존] 채널사유형',
     WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트',
-    CONV_CALL_CNT       FLOAT           COMMENT '[원천보존] 전환콜',
-    BRDC_MT             VARCHAR         COMMENT '[원천보존] 방송월 텍스트',
+    MONTH               VARCHAR         COMMENT '[원천보존] 월 텍스트 (O182 신규 · 「03월」 형태 혼재)',
+    AD_TY_NM            VARCHAR         COMMENT '[원천보존] 광고유형 TV/CTV/기타/미확인 (O182 신규 · 구 CTV_DIV_NM 자리)',
+    BDGT_SOURCE_NM      VARCHAR         COMMENT '[원천보존] 예산출처 (O182 신규)',
+    DEVICE_NM           VARCHAR         COMMENT '[원천보존] 기기 (O182 신규)',
     YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트',
-    CTV_DIV_NM          VARCHAR         COMMENT '[원천보존] CTV구분',
-    MKT_CMPGN_NM        VARCHAR         COMMENT '[원천보존] 마케팅 캠페인명',
-    SPNSR_BSNS_NM       VARCHAR         COMMENT '[원천보존] 후원사업명',
-    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분',
-    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 사업/사례 구분',
+    DAY                 VARCHAR         COMMENT '[원천보존] 일자 텍스트 (O182 신규)',
+    SPNSER_CNT          FLOAT           COMMENT '[원천보존] 후원자수 (O182 신규 · 위성 DVLP_MEMBER_CNT 원천)',
+    DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발건수 (O182 신규 · 위성 DVLP_CNT 원천)',
+    CMPGN_NM            VARCHAR         COMMENT '[원천보존] 캠페인명 (O182 신규 · 구 MKT_CMPGN_NM 자리 · CTV 시트만 채움)',
+    MATR_TY_NM          VARCHAR         COMMENT '[원천보존] 소재유형 (O182 신규)',
+    EXPSR_CNT           FLOAT           COMMENT '[원천보존] 노출수 (O182 신규)',
+    CLICK_CNT           FLOAT           COMMENT '[원천보존] 클릭수 (O182 신규)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '비디오 방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1비디오광고)]. [주의: 방송 광고 원천 32컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS].';
+) COMMENT = '비디오 방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1비디오광고)]. [주의: 방송 광고 원천 37컬럼 보존(2026-09-28 원천 재편)]. [원천: AGENCY → BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS].';
 
 -- AGENCY 5: AGENCY_AD_ROW_REBRDC (REBRDC 무손실 staging + AD_PERF_DK 발급)
 --   [컬럼별 설계 및 실측 이력]
 --   · DUP_SEQ: 전컬럼 중복 그룹 내 순번(실측 중복 0)
---   · CELEB_NM: [원천보존] 출연자명 (PII 판정 대기 O14)
+--   · 🔴🔴 [2026-09-28 O182] 원천 12번 재편(34→21) — 원천 이름 그대로 재정의(모델 `AGENCY_AD_ROW_REBRDC.sql` 머리말과 동일 목록).
+--     제거 RE_BRDC_TY_NM·BRDC_MT·TIME_RNG_DIV_NM·CELEB_NM·DMST_OVSEA_DIV_NM·CASE1_*~CASE3_* 15컬럼 ·
+--     개명 CHNNL_CMPNY→CHNNL_NM · DATE→BRDC_DATE ·
+--     신규 MONTH·DAY·UPPER_CMPGN_CD·CMPGN_CD·CONTENTS_PUR_COST·CALL_CTR_OPER_COST·TOT_COST.
+--     ⇒ 출연자명·아동명(PII O14) 컬럼이 원천에서 사라져 판정 대상이 소멸했다.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '행 식별자 — 본 테이블이 발급 단일지점',
     AD_SOURCE_TYPE      VARCHAR         NOT NULL COMMENT '광고유형 상수 REBROADCAST',
     ROW_HASH            VARCHAR(32)     COMMENT '원천 전컬럼 해시',
     DUP_SEQ             NUMBER(9,0)     COMMENT '전컬럼 중복 그룹 내 순번.',
-    RE_BRDC_TY_NM       VARCHAR         COMMENT '[원천보존] 재방송유형명',
-    DIV_NM              VARCHAR         COMMENT '[원천보존] 구분명',
+    DIV_NM              VARCHAR         COMMENT '[원천보존] 구분 (재송출/방송 · 하류 RT_TYPE 원천)',
     YEAR                VARCHAR         COMMENT '[원천보존] 연도 텍스트',
-    BRDC_MT             VARCHAR         COMMENT '[원천보존] 방송월 텍스트',
-    CHNNL_CMPNY         VARCHAR         COMMENT '[원천보존] 채널사',
+    MONTH               VARCHAR         COMMENT '[원천보존] 월 텍스트 (O182 신규)',
+    DAY                 VARCHAR         COMMENT '[원천보존] 일 텍스트 (O182 신규)',
+    CHNNL_NM            VARCHAR         COMMENT '[원천보존] 채널 (구 CHNNL_CMPNY)',
+    BRDC_DATE           DATE            COMMENT '[원천보존] 방송일자 (구 DATE)',
+    DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트',
+    WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트',
+    BRDC_TIME           VARCHAR         COMMENT '[원천보존] 방송시각',
     BRDC_NM             VARCHAR         COMMENT '[원천보존] 방송명',
     BRDC_DIV_NM         VARCHAR         COMMENT '[원천보존] 방송구분',
-    DATE                DATE            COMMENT '[원천보존] 실적일/송출일',
-    DOW                 VARCHAR         COMMENT '[원천보존] 요일 텍스트',
-    BRDC_TIME           VARCHAR         COMMENT '[원천보존] 방송시각',
+    AD_CNT              FLOAT           COMMENT '[원천보존] 횟수',
     INBOUND_CALL_CNT    VARCHAR         COMMENT '[원천보존] 인입콜수(TEXT)',
-    DVLP_MBER_CNT       FLOAT           COMMENT '[원천보존] 개발회원수',
-    DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발건수',
-    BRDC_SCHDL_COST     FLOAT           COMMENT '[원천보존] 편성비용',
-    WEEK                VARCHAR         COMMENT '[원천보존] 주차 텍스트',
-    AD_CNT              FLOAT           COMMENT '[원천보존] 광고횟수',
-    TIME_RNG_DIV_NM     VARCHAR         COMMENT '[원천보존] 시간대구분명',
-    CELEB_NM            VARCHAR         COMMENT '출연자명 (PII 판정 대기 O14).',
-    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 국내/해외 구분',
-    CASE1_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례1 사업구분',
-    CASE1_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례1 가족유형',
-    CASE1_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례1 어필포인트',
-    CASE1_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례1 아동명 (PII 미적재)',
-    CASE1_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례1 사례구분',
-    CASE2_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례2 사업구분',
-    CASE2_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례2 가족유형',
-    CASE2_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례2 어필포인트',
-    CASE2_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례2 아동명 (PII 미적재)',
-    CASE2_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례2 사례구분',
-    CASE3_BSNS_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례3 사업구분',
-    CASE3_FAM_TY_NM     VARCHAR         COMMENT '[원천보존] 사례3 가족유형',
-    CASE3_APPEAL_POINT_NM VARCHAR       COMMENT '[원천보존] 사례3 어필포인트',
-    CASE3_CHILD_NM      VARCHAR         COMMENT '[원천보존] 사례3 아동명 (PII 미적재)',
-    CASE3_CASE_DIV_NM   VARCHAR         COMMENT '[원천보존] 사례3 사례구분',
+    DVLP_MBER_CNT       FLOAT           COMMENT '[원천보존] 개발(명)',
+    DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발(건)',
+    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (O182 신규 · 실측 전건 NULL)',
+    CMPGN_CD            VARCHAR         COMMENT '[원천보존] 캠페인코드 (O182 신규 · 실측 전건 NULL)',
+    BRDC_SCHDL_COST     FLOAT           COMMENT '[원천보존] 편성비 (코어 AD_COST 원천 · 연속성 유지 결정)',
+    CONTENTS_PUR_COST   FLOAT           COMMENT '[원천보존] 콘텐츠구입비 (O182 신규)',
+    CALL_CTR_OPER_COST  FLOAT           COMMENT '[원천보존] 콜센터운영비 (O182 신규)',
+    TOT_COST            FLOAT           COMMENT '[원천보존] 총비용 = 편성비+콘텐츠구입비+콜센터운영비 (O182 신규 · 실측 전건 일치)',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AD_PERF_DK)
-) COMMENT = '재방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1재방송광고)]. [주의: 재방송 광고 원천 34컬럼 보존]. [원천: AGENCY → BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS].';
+) COMMENT = '재방송 광고 원천 무손실 Staging. [Grain: AD_PERF_DK (1행=1재방송광고)]. [주의: 재방송 광고 원천 21컬럼 보존(2026-09-28 원천 재편 · 사례 반복군 소멸)]. [원천: AGENCY → BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS].';
 
 -- AGENCY 6: AGENCY_AD_DIGITAL (디지털 고유속성 위성)
 --   [컬럼별 설계 및 실측 이력]

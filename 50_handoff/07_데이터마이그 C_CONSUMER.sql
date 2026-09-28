@@ -475,6 +475,9 @@ PURGE = FALSE;
 -- (5) ML_RST_DATA_ONCE_CONVERSION — 5컬럼 · VARIANT $5  (2026-09-28 신규)
 --     🔴 VARIANT 컬럼명이 **PREDICT** 다(위 4종은 PREDICTION). 위치 기반이라 COPY 는 동일하지만
 --        검증·SERVING 뷰에서 컬럼명을 PREDICTION 으로 쓰면 invalid identifier 가 난다.
+--     🟢 2026-09-28 실측(xf98254): 이 COPY 컴파일 OK · 스테이지 8파일 48,864행 · TRY_PARSE_JSON 성공 48,864
+--        · 적재 테이블 48,864행 · A.5-B.4 (3) PARSED 48,864 / UNPARSED 0 / PTYPE OBJECT
+--        · PREDICT:probability:"1" NULL 0 · 범위 0~0.9966. (행수는 스테이지 기준이며 A 계정 라이브 대조는 아니다)
 COPY INTO GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION
 FROM (
   SELECT $1,$2,$3,$4, TRY_PARSE_JSON($5)
