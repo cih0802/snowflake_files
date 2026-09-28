@@ -8,7 +8,7 @@
 # 사용: sh /tmp/mirror.sh [경로접두 ...]     (기본 = 아래 ROOTS)
 set -e
 WSREF='USER$.PUBLIC."snowflake_files"'
-ROOTS="${*:-scripts 30_output_share 03_top-down_gold 99_provided_definition 20_issue 05_SV-Agent_ai 02_GN_DW_building 10_dbt_pipeline cortex_project}"
+ROOTS="${*:-scripts 30_output_share 03_top-down_gold 90_provided_definition 20_issue 05_SV-Agent_ai 02_GN_DW_building 10_dbt_pipeline cortex_project}"
 mkdir -p /tmp/ws
 for r in $ROOTS; do
   cortex ws ls "$WSREF:/$r/" --no-header 2>/dev/null | awk '{print $1}' \

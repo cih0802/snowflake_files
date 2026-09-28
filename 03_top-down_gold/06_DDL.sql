@@ -900,7 +900,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     UNPAID_CNT                  NUMBER(18,4)    COMMENT '미납(건) (#36)',
     ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157) (#37).',
     ACTIVE_MEMBERS              NUMBER(38,0)    COMMENT '활동(명) (#156).',
-    ACTIVE_CUM_CNT              NUMBER(18,4)    COMMENT '활동누계(건) (#159). [사유:산출보류]',
+    ACTIVE_CUM_CNT              NUMBER(18,4)    COMMENT '활동누계(건) (#159). 당해년도 1월~조회월 활동(건) 누계.',
     ACTIVE_CUM_MEMBERS          NUMBER(38,0)    COMMENT '활동누계(명) (#158).',
     INCREASE_CNT                NUMBER(18,4)    COMMENT '증액(건) (#151)',
     INCREASE_MEMBERS            NUMBER(38,0)    COMMENT '증액(명) (#150)',
@@ -922,20 +922,20 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     UNPAID_BILLED_AMT           NUMBER(18,2)    COMMENT '미납 청구액(원).',
     INBOUND_CALL_CNT            NUMBER(38,0)    COMMENT '인바운드콜수 (overview).',
     TS_CALL_CNT                 NUMBER(38,0)    COMMENT 'TS콜수 (overview) — 비-CRM 별도 입력',
-    DEV_TYPE                    VARCHAR         COMMENT '개발구분  전건 NULL 슬롯 유지 (#121). 코드id:MM015.',  -- degen,
-    NEW_FLAG                    BOOLEAN         COMMENT '신규  전건 NULL 슬롯 유지 (#32).',                       -- degen,
-    INCREASE_FLAG               BOOLEAN         COMMENT '증액  전건 NULL 슬롯 유지 (#33).',                       -- degen,
-    REDONATE_FLAG               BOOLEAN         COMMENT '재후원  전건 NULL 슬롯 유지 (#34).',                     -- degen,
-    JOIN_DATE                   DATE            COMMENT '캠페인 가입일  전건 NULL 슬롯 유지 (#27).', -- degen,
-    STOP_DATE                   DATE            COMMENT '가입캠페인 중단일  전건 NULL 슬롯 유지 (#26).', -- degen,
-    AMOUNT_BAND1                VARCHAR         COMMENT '후원금액대1 5만 (#72). [사유:파생규칙 미확정]',                             -- snapshot,
-    AMOUNT_BAND2                VARCHAR         COMMENT '후원금액대2 1만 (#73). [사유:파생규칙 미확정]',                             -- snapshot,
-    PERIOD_BAND1                VARCHAR         COMMENT '후원기간대1 5년 (#74). [사유:파생규칙 미확정]',                             -- snapshot,
-    PERIOD_BAND2                VARCHAR         COMMENT '후원기간대2 1년 (#75). [사유:파생규칙 미확정]',                             -- snapshot,
+    DEV_TYPE                    VARCHAR         COMMENT '개발구분 (#121). 그 달 개발구분이 하나로 확정될 때만 값. 코드id:MM015.',  -- degen,
+    NEW_FLAG                    BOOLEAN         COMMENT '신규 (#32). 최초가입 연도 = 조회년도.',                       -- degen,
+    INCREASE_FLAG               BOOLEAN         COMMENT '증액 (#33). 그 달 증액 개발 사건 존재.',                       -- degen,
+    REDONATE_FLAG               BOOLEAN         COMMENT '재후원 (#34). 그 달 재후원 개발 사건 존재.',                     -- degen,
+    JOIN_DATE                   DATE            COMMENT '최초가입일 (#28) = LEAST(회원 등록일, 최초 개발일, 첫 청구월). 가입 전 월은 NULL.', -- degen,
+    STOP_DATE                   DATE            COMMENT '최종중단일 as-of (#30). 조회월까지의 최대 중단일.', -- degen,
+    AMOUNT_BAND1                VARCHAR         COMMENT '후원금액대1 5만 (#72). 약정 없음 NULL.',                             -- snapshot,
+    AMOUNT_BAND2                VARCHAR         COMMENT '후원금액대2 1만 (#73). 약정 없음 NULL.',                             -- snapshot,
+    PERIOD_BAND1                VARCHAR         COMMENT '후원기간대1 5년 (#74). 기준일 없음 NULL.',                             -- snapshot,
+    PERIOD_BAND2                VARCHAR         COMMENT '후원기간대2 1년 (#75). 기준일 없음 NULL.',                             -- snapshot,
     SPONSOR_MONTHS              NUMBER(9,2)     COMMENT '후원기간(개월) (#127)',                            -- snapshot,
     SPONSOR_YEARS               NUMBER(9,2)     COMMENT '후원기간(년) (#128)',                              -- snapshot,
     PAID_MONTHS                 NUMBER(9,0)     COMMENT '납입개월수 (#129)',                                -- snapshot,
-    NEW_EXISTING_FLAG           VARCHAR         COMMENT '신규/기존 구분. [사유:원천 부재]',       -- snapshot,
+    NEW_EXISTING_FLAG           VARCHAR         COMMENT '신규/기존 구분 (#113). 기준일 없음 NULL.',       -- snapshot,
     UNPAID_FLAG_EOM             BOOLEAN         COMMENT '월말 미납회원 여부 (#80).',         -- snapshot
     -- W4(DEC-22, 2026-07-31): ML 전용 파생. 🔴 정본 215지표에 없는 신규 — 정본 (건)과 혼동 금지.
     --   CONF-2 주의: 정본 `(건)`은 약정금액÷10,000이나 아래 4종은 실제 개수·횟수다.,
@@ -1038,7 +1038,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     --   실적재는 raw 코드여서 현업이 WIDE 에서 숫자만 보던 상태였다. SILVER 라벨(채움률 100%)을 전파해 해소.,
     STOP_REASON_NM      VARCHAR         COMMENT '중단사유명 (#162). 코드id:MM005.',  -- degen,
     STOP_CHANNEL_NM     VARCHAR         COMMENT '중단경로명. 코드id:MM287.',  -- degen,
-    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존 (#113). [사유:원천 부재]',            -- degen
+    NEW_EXISTING_FLAG   VARCHAR         COMMENT '신규기존 (#113). 사건연도 = 최초가입연도 신규. 기준일 없음 NULL.',            -- degen
     -- [2026-08-04 O35] 사건시점 연령대·지역 전파(ALTER TABLE ADD COLUMN 으로 물리 반영, 물리 위치=맨 끝).
     --   왜 팩트에 두는가: 이 두 속성은 **개발약정 이벤트에서 관측된 값**이라 측정된 grain 이 사건이다
     --   (Kimball 의 트랜잭션 시점 속성). DIM_MEMBER 경유 스냅샷은 「최근 약정」 값이어서 과거 사건에

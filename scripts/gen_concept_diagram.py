@@ -13,7 +13,7 @@
   /tmp/schema.json   (dump_schema.py — INFORMATION_SCHEMA 스냅샷)
   /tmp/census.json   (census.py — 컬럼 COUNT/COUNT_IF 실측)
   DB TABLES.COMMENT  (설명 1순위 — 배포 객체에 실제로 붙어 있는 문장)
-  99_provided_definition/테이블정의 20260629.csv (BRONZE_CRM 테이블 설명)
+  90_provided_definition/테이블정의 20260629.csv (BRONZE_CRM 테이블 설명)
   10_dbt_pipeline/models (ref()/source() 계보)
 
 출력: 30_output_share/03_GN_DW_개념도.html (단일 파일 · 외부 요청 0 · 데이터 전량 인라인)
@@ -31,7 +31,7 @@ OUT = os.path.join(OUT_DIR, "03_GN_DW_개념도.html")
 GEN_PATH = "scripts/gen_concept_diagram.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
 MODELS = os.path.join(WS, "10_dbt_pipeline", "models")
-TBLDEF = os.path.join(WS, "99_provided_definition", "테이블정의 20260629.csv")
+TBLDEF = os.path.join(WS, "90_provided_definition", "테이블정의 20260629.csv")
 AUDIT = {"DW_SOURCE_SYSTEM", "DW_SOURCE_TABLE", "DW_LOAD_TS", "DW_UPDATE_TS", "DW_BATCH_ID"}
 
 LAYERS = [

@@ -83,7 +83,20 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep.TOTAL_PARTICIPATE_CNT AS SUM(fep.PARTICIPATE_CNT)
       WITH SYNONYMS ('참여건수') COMMENT = '참여 건수 합계. F(가산).',
     fep.DISTINCT_PARTICIPANTS AS COUNT(DISTINCT fep.MEMBER_DK)
-      WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).'
+      WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).',
+    -- ── [O183] 배선분(DEC-55) ─────────────────────────────────────────────────
+    fep.TOTAL_CONFIRM_CNT AS SUM(fep.CONFIRM_CNT)
+      WITH SYNONYMS ('신청확정인원', '확정인원') COMMENT = '신청확정인원 합계 — 캠페인행사(MS006) 신청 중 대기·취소가 아닌 확정 상태(신청·참여·불참). 🔴 일반행사(MS304 다단계) 행은 0 이다(확정 개념 없음) — PART_EVENT_KIND_NAME 동반. F(가산).',
+    fep.AVG_PARTICIPATION_TIMES AS AVG(fep.PARTICIPATION_TIMES)
+      WITH SYNONYMS ('평균 참여횟수', '참여횟수') COMMENT = '그 신청 시점까지 회원의 누적 참여 횟수(참여·Success)의 평균. 🔴 행마다 누적값이라 SUM 하지 말 것 — 회원별 최종 누적은 MAX_PARTICIPATION_TIMES.',
+    fep.MAX_PARTICIPATION_TIMES AS MAX(fep.PARTICIPATION_TIMES)
+      WITH SYNONYMS ('최대 참여횟수') COMMENT = '누적 참여 횟수의 최댓값(회원으로 GROUP BY 하면 그 회원의 기간 내 최종 누적).',
+    fep.MAX_CUM_APPLY_TIMES AS MAX(fep.CUM_APPLY_TIMES)
+      WITH SYNONYMS ('누적신청 횟수', '최대 누적신청') COMMENT = '누적 신청 횟수(상태 무관)의 최댓값. 회원으로 GROUP BY 해 쓴다.',
+    fep.MAX_WAIT_TIMES AS MAX(fep.WAIT_TIMES)
+      WITH SYNONYMS ('대기횟수') COMMENT = '누적 대기 횟수의 최댓값. 회원으로 GROUP BY 해 쓴다.',
+    fep.MAX_ABSENT_TIMES AS MAX(fep.ABSENT_TIMES)
+      WITH SYNONYMS ('불참횟수') COMMENT = '누적 불참 횟수의 최댓값. 회원으로 GROUP BY 해 쓴다.'
   )
   COMMENT = 'Phase-1 행사 참여 SV (base: GOLD.FACT_EVENT_ATTENDANCE, grain: 행사참여 1행). CRM 일반행사/캠페인행사 참여 건수, 고유 참여회원수(DISTINCT_PARTICIPANTS), 행사구분/참여상태/경로/채널 라벨 뷰. ⚠️ 일반행사(EVENT)와 캠페인행사(CRMN)의 코드군이 상이하므로 계열 판별자 PART_EVENT_KIND_NAME 동반 필수. 행사 미매칭분은 Unknown(0)으로 처리되어 행사명 집계는 부분집합임.'
   AI_SQL_GENERATION '핵심 규칙: (1) 라벨축 사용: 행사구분(EVENT_CATEGORY_NAME), 참여상태(PART_STATUS_NAME), 참여경로(PART_PATH_NAME), 참여채널(PART_CHANNEL_NAME) 사용. (2) 계열 동반: 원천별 코드체계 분리를 위해 항상 팩트 보유 축인 PART_EVENT_KIND_NAME 을 동반하여 그루핑 (차원축 EVENT_KIND_NAME 사용 금지). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 원천 차이: 일반행사(다단계 통과)와 캠페인행사(신청/참여/불참)는 참여 정의가 다르므로 합산 참여율 생성 금지. (5) 채널 NULL: 캠페인행사는 원천 채널 컬럼 부재로 전량 NULL임을 명시.';

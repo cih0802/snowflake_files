@@ -42,10 +42,24 @@ select
     1 as TOTAL_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)  as WAIT_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '취소', 1, 0)      as CANCEL_CNT,
-    0 as CONFIRM_CNT,
+    -- [O183] 신청확정인원 = 캠페인행사(MS006) 신청이 대기·취소가 아닌 확정 상태(신청·참여·불참) 1/0.
+    IFF(p.PARTCPT_STAT_GROUP = 'MS006' AND p.PARTCPT_STAT_NM IN ('신청', '참여', '불참'), 1, 0) as CONFIRM_CNT,
     1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '불참', 1, 0)      as ABSENT_CNT,
-    0 as PARTICIPATION_TIMES, 0 as WAIT_TIMES, 0 as ABSENT_TIMES, 0 as CUM_APPLY_TIMES,
+    -- [O183] 회원별 누적 횟수(그 신청 시점까지 · 신청일시 → 행사키 → 순번 순). 캠페인행사(MS006)는 명칭 「참여」,
+    --   일반행사(MS304 다단계)는 「Success」를 참여로 본다. 누적신청 = 상태 무관 신청 행 수.
+    SUM(IFF(p.PARTCPT_STAT_NM IN ('참여', 'Success'), 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as PARTICIPATION_TIMES,
+    SUM(IFF(p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as WAIT_TIMES,
+    SUM(IFF(p.PARTCPT_STAT_NM = '불참', 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as ABSENT_TIMES,
+    COUNT(*) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as CUM_APPLY_TIMES,
     p.RCPMNY_AMT                                  as REGULAR_DONATION,
     (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
     CAST(NULL AS BOOLEAN)                          as SELF_PART_FLAG,

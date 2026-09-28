@@ -81,10 +81,32 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       COMMENT = '발송 **건수** 합계. F(가산). 🔴**회원수가 아니다** — 같은 회원에게 여러 번 발송되면 그만큼 중복 계수된다. 회원 「명」 수를 묻는 질문(발송 회원수·수신 대상 몇 명)에는 이 metric 을 쓰지 말고 DISTINCT_SEND_MEMBERS 를 쓴다. ⚠️metric 명에 MEMBERS 가 들어간 것은 기저 컬럼명(SEND_MEMBERS) 을 따른 역사적 잔재이며 의미는 건수다.',
     fse.DISTINCT_SEND_MEMBERS AS COUNT(DISTINCT fse.MEMBER_DK)
       WITH SYNONYMS ('발송 회원수', '발송 고유회원수', '발송(명)', '발송명', '수신 대상 회원수', '수신자수', '몇 명에게 발송')
-      COMMENT = '발송 대상 **고유 회원수(명)**. D(distinct) — 🔴가산 금지: 월별로 뽑아 합산하면 여러 달 수신한 회원이 중복된다. 기간을 바꾸면 반드시 재집계할 것. 정본 「발송(명)」이 이 metric 이다(발송 건수는 TOTAL_SEND_MEMBERS).'
+      COMMENT = '발송 대상 **고유 회원수(명)**. D(distinct) — 🔴가산 금지: 월별로 뽑아 합산하면 여러 달 수신한 회원이 중복된다. 기간을 바꾸면 반드시 재집계할 것. 정본 「발송(명)」이 이 metric 이다(발송 건수는 TOTAL_SEND_MEMBERS).',
+    -- ── [O183] 발송(+5일차) 매칭 · 서비스 지표(DEC-55 · 정본 공#139~#146 · #160·#161) ──────────
+    --   (명) = 발송 행 1/0 합(정본 문구 「중복 포함」) · (건) = 매칭된 회원의 발송월 활동(건).
+    fse.D5_LETTER_MEMBERS AS SUM(fse.D5_LETTER_PART_MEMBERS)
+      WITH SYNONYMS ('발송후 5일 서신참여(명)', 'D5 서신참여') COMMENT = '공#139 발송 다음날(D+1)~+5일 안에 서신 접수가 있는 발송 대상 수(중복 포함). F(가산).',
+    fse.D5_LETTER_CNT AS SUM(fse.D5_LETTER_PART_CNT)
+      WITH SYNONYMS ('발송후 5일 서신참여(건)') COMMENT = '공#140 위 매칭 회원의 활동(건) 합. F(가산).',
+    fse.D5_GIFT_MEMBERS AS SUM(fse.D5_GIFT_PART_MEMBERS)
+      WITH SYNONYMS ('발송후 5일 선물금참여(명)', 'D5 선물금참여') COMMENT = '공#141 발송 다음날(D+1)~+5일 안에 선물금 참여가 있는 발송 대상 수(중복 포함). ⚠️ 선물금 원천에 접수일이 없어 선물금 발송일로 매칭한다. F(가산).',
+    fse.D5_GIFT_CNT AS SUM(fse.D5_GIFT_PART_CNT)
+      WITH SYNONYMS ('발송후 5일 선물금참여(건)') COMMENT = '공#142 위 매칭 회원의 활동(건) 합. F(가산).',
+    fse.D5_INCREASE_MEMBERS AS SUM(fse.D5_INCREASE_PART_MEMBERS)
+      WITH SYNONYMS ('발송후 5일 증액참여(명)', 'D5 증액') COMMENT = '공#143 발송 다음날(D+1)~+5일 안에 증액 개발(MM015 ''2'')이 있는 발송 대상 수(중복 포함). F(가산).',
+    fse.D5_INCREASE_CNT AS SUM(fse.D5_INCREASE_PART_CNT)
+      WITH SYNONYMS ('발송후 5일 증액참여(건)') COMMENT = '공#144 위 매칭 회원의 활동(건) 합. F(가산).',
+    fse.D5_STOP_MEMBERS_SUM AS SUM(fse.D5_STOP_MEMBERS)
+      WITH SYNONYMS ('발송후 5일 중단(명)', 'D5 중단') COMMENT = '공#145 발송 다음날(D+1)~+5일 안에 후원중단이 있는 발송 대상 수(중복 포함). F(가산). 🔴 인과가 아니라 시간 창 매칭이다.',
+    fse.D5_STOP_CNT_SUM AS SUM(fse.D5_STOP_CNT)
+      WITH SYNONYMS ('발송후 5일 중단(건)') COMMENT = '공#146 위 매칭 회원의 활동(건) 합. F(가산).',
+    fse.SERVICE_MEMBERS_SUM AS SUM(fse.SERVICE_MEMBERS)
+      WITH SYNONYMS ('서비스(명)', '회원서비스 발송(명)') COMMENT = '공#160 발송구분(대) 「회원서비스」 발송 대상 수(발송 행 기준 · 중복 포함). 고유 회원수가 필요하면 DISTINCT_SEND_MEMBERS 에 같은 조건을 건다. ⚠️ 발송구분이 없는 발송은 포함되지 않는다.',
+    fse.SERVICE_CNT_SUM AS SUM(fse.SERVICE_CNT)
+      WITH SYNONYMS ('서비스(건)') COMMENT = '공#161 「회원서비스」 발송 대상 회원의 활동(건) 합(약정금액 ÷ 10,000). F(가산).'
   )
   COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 🔴🔴 **캠페인 축은 이 SV 에 없다** — 종전 문안이 grain 에 「캠페인」을 적었으나 캠페인 차원이 배선돼 있지 않고 base 의 캠페인 키도 전건 센티넬이다(원천 CRM_SEND* 에 캠페인 키가 부재 · 결측이 아니라 구조적 부재) ⇒ 「캠페인별 발송」 질문에는 **축 부재를 밝히고** 캠페인으로 분해하지 말 것]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
-  AI_SQL_GENERATION '핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. 단 정본 「발송(+5일차)」 지표(D5_* metric: 서신·선물금·증액·중단)는 정의된 시간창 매칭이므로 그 metric 으로 답한다(인과가 아니라 D+1~D+5 창 매칭이며 발송 당일은 처리 통보 역인과 때문에 제외됨을 밝힌다 · DEC-33). (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다.';
 
 
 /* =====================================================================================

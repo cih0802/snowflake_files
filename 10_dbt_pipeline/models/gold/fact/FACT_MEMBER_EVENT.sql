@@ -43,11 +43,39 @@ stop_single_biz as (
     group by MBER_NO, SPNSR_DSCNTC_DE
     having count(distinct SPNSR_BSNS_ID) = 1
 ),
+-- [O183] #113 신규기존구분 기준일 = 회원 최초가입일(#28) = LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일)
+--   — FMM member_first 와 **같은 규칙·같은 월키 식**(첫 청구월 = FMM billing 의 MONTH_KEY 산식).
+--   사건 연도 = 최초가입 연도 ⇒ 신규 · 그 이전에 가입 ⇒ 기존 · 기준일 없음 ⇒ NULL(창작 금지).
+--   🔴 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 기준일 후보에서 제외.
+member_first_dev as (
+    select MBER_NO, MIN(D) as FIRST_DEV_DATE
+    from (
+        select MBER_NO, TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') as D
+        from {{ ref('CRM_MEMBER_DEV') }}
+        where DVLP_DIV_CD in ('1','2','4')
+          and YEAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')) > 1900
+        union all
+        select MEMBER_DK, FRST_REGIST_DT::DATE
+        from {{ ref('CRM_MEMBER') }}
+        where FRST_REGIST_DT is not null and YEAR(FRST_REGIST_DT) > 1900
+        union all
+        select MBER_NO, TRY_TO_DATE(TO_VARCHAR(MIN(BILL_MK)) || '01', 'YYYYMMDD')
+        from (
+            select MBER_NO,
+                   COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp("TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))") }}, 0) as BILL_MK
+            from {{ ref('CRM_PAYMENT_BILLING') }}
+            where MBER_NO is not null
+        )
+        where BILL_MK > 0
+        group by MBER_NO
+    )
+    group by MBER_NO
+),
 
 dev as (
     select
         COALESCE({{ date_sk("TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')") }}, 0)  as DATE_SK,
-        MBER_NO                                             as MEMBER_DK,
+        d.MBER_NO                                           as MEMBER_DK,
         'DEV'                                               as EVENT_TYPE,
         case when c.CMPGN_CD is not null
              then {{ gold_sk(['d.CMPGN_CD']) }}
@@ -68,7 +96,9 @@ dev as (
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL,
         CAST(NULL AS VARCHAR)                               as STOP_REASON_NM,
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        CASE WHEN mfd.FIRST_DEV_DATE IS NULL OR TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') IS NULL THEN CAST(NULL AS VARCHAR)
+             WHEN YEAR(mfd.FIRST_DEV_DATE) = YEAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')) THEN '신규'
+             ELSE '기존' END                                as NEW_EXISTING_FLAG,
         d.AGE                                               as AGE_AT_EVENT,
         cab.DTL_CD_NM                                       as AGE_BAND_AT_EVENT,
         d.AREA_CD                                           as AREA_CD_AT_EVENT,
@@ -105,6 +135,7 @@ dev as (
     left join code_sex       csx on d.SEX = csx.DTL_CD_ID
     left join org_lookup     og on og.ORG_DK = ABS(HASH(d.ACMSLT_DEPT_CD))
     left join spb_lookup     sp on sp.SPONSORSHIP_BK = d.SPNSR_BSNS_ID
+    left join member_first_dev mfd on mfd.MBER_NO = d.MBER_NO
 ),
 
 stop as (
@@ -142,7 +173,9 @@ stop as (
         s.DSCNTC_PATH                                       as STOP_CHANNEL,
         s.DSCNTC_RSN_NM                                     as STOP_REASON_NM,
         s.DSCNTC_PATH_NM                                    as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        CASE WHEN mfd.FIRST_DEV_DATE IS NULL OR TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD') IS NULL THEN CAST(NULL AS VARCHAR)
+             WHEN YEAR(mfd.FIRST_DEV_DATE) = YEAR(TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')) THEN '신규'
+             ELSE '기존' END                                as NEW_EXISTING_FLAG,
         CAST(NULL AS NUMBER(2,0))                           as AGE_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as AGE_BAND_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as AREA_CD_AT_EVENT,
@@ -178,6 +211,7 @@ stop as (
         on s.MBER_NO = sb.MBER_NO and s.SPNSR_DSCNTC_DE = sb.SPNSR_DSCNTC_DE
     left join spb_lookup sp
         on sp.SPONSORSHIP_BK = sb.SPNSR_BSNS_ID
+    left join member_first_dev mfd on mfd.MBER_NO = s.MBER_NO
 ),
 
 unioned as (

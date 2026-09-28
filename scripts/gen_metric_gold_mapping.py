@@ -6,11 +6,11 @@ GN_DW '지표 → GOLD' 추적(traceability) 장표 생성기.
 
 정본(근거) — 전부 파싱해 지표번호로 조인한다. **사실을 리터럴로 보관하지 않는다**(P85-①):
   · 03_top-down_gold/02_지표 분류.md            (215 지표: 유형·소스·단위·배속)
-  · 99_provided_definition/02_지표사전 공통.md    (공통 162: 구분·정의·정본 계산식)
-  · 99_provided_definition/03_지표사전 신규.md    (신규 53: 〃)
+  · 90_provided_definition/02_지표사전 공통.md    (공통 162: 구분·정의·정본 계산식)
+  · 90_provided_definition/03_지표사전 신규.md    (신규 53: 〃)
   · 03_top-down_gold/04_SV파생 매핑.md          (derived → 분자/분모 base + FACT · base 카탈로그)
   · 03_top-down_gold/05_필드 인벤토리.md         (보고서필드 라벨 → GOLD 물리컬럼 정본)
-  · 99_provided_definition/04·05_보고서필드 인벤토리.md (보고서 × 필드)
+  · 90_provided_definition/04·05_보고서필드 인벤토리.md (보고서 × 필드)
   · 30_output_share/04_컬럼계보매핑.csv          (GOLD → SILVER → BRONZE 계보. 🔴 **산출물 파일**로 받는다)
   · /tmp/census.json                            (GOLD 전 컬럼 COUNT / COUNT_IF(<>0) 실측)
   · scripts/field_mapping_override.py           (보고서필드 매핑 교정 등록부 — 큐레이션 분리)
@@ -54,12 +54,12 @@ MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
 PROV = f"본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 {GEN_PATH} 수정 후 재실행하세요."
 
 DOC_CLS = os.path.join(WS, "03_top-down_gold", "02_지표 분류.md")
-DOC_COMM = os.path.join(WS, "99_provided_definition", "02_지표사전 공통.md")
-DOC_NEW = os.path.join(WS, "99_provided_definition", "03_지표사전 신규.md")
+DOC_COMM = os.path.join(WS, "90_provided_definition", "02_지표사전 공통.md")
+DOC_NEW = os.path.join(WS, "90_provided_definition", "03_지표사전 신규.md")
 DOC_SV = os.path.join(WS, "03_top-down_gold", "04_SV파생 매핑.md")
 DOC_INV = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
-DOC_MKT = os.path.join(WS, "99_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
-DOC_MEM = os.path.join(WS, "99_provided_definition", "05_회원_보고서필드 인벤토리.md")
+DOC_MKT = os.path.join(WS, "90_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
+DOC_MEM = os.path.join(WS, "90_provided_definition", "05_회원_보고서필드 인벤토리.md")
 
 HEADER = ("지표#", "구분", "지표명", "유형", "소스", "단위", "GOLD_배속",
           "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천", "정본_계산식",
@@ -855,11 +855,11 @@ def write_md(rows, mkt, mem):
         A("")
 
     emit_fields("## 2. 마케팅 보고서필드 → 지표#/GOLD 매핑",
-                "> `99_provided_definition/04_마케팅_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
+                "> `90_provided_definition/04_마케팅_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
                 "> ⚠️ 이 표는 **라벨→컬럼 매핑**이며 **섹션 단위 조립 가능성이 아니다**(P86). "
                 "섹션을 한 표로 조립할 수 있는지는 `09_보고서필드_조립가능성.md` 를 본다.", mkt)
     emit_fields("## 3. 회원 보고서필드 → 지표#/GOLD 매핑",
-                "> `99_provided_definition/05_회원_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
+                "> `90_provided_definition/05_회원_보고서필드 인벤토리.md` 의 필드를 지표번호·GOLD로 매핑.\n"
                 "> ⚠️ 조립 가능성은 `09_보고서필드_조립가능성.md` 소관이다(P86).", mem)
     A("_Co-authored with CoCo_")
     open(p, "w", encoding="utf-8").write("\n".join(L) + "\n")

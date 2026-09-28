@@ -1,0 +1,125 @@
+1	bash	cd /workspace && timeout 60 wc -l 00_guides/00_작업지침_세션운영규칙.md </dev/null; timeout 120 python3 scripts/session_brief.py --write </dev/null >/tmp/brief.out 2>&1; echo rc=$?; tail -5 /tmp/brief.out; ls 2
+3	bash	cd /workspace && timeout 300 python3 scripts/session_brief.py --write </dev/null >/tmp/brief.out 2>&1; echo rc=$?; tail -5 /tmp/brief.out
+5	bash	cd /workspace && timeout 60 ls -lt 20_issue/ </dev/null | head -30; timeout 60 ls -lt 20_issue/*/ </dev/null | head -20; ls
+7	snowflake_sql_execute	select table_name, table_type, row_count from GN_DW.INFORMATION_SCHEMA.TABLES where table_schema='GOLD' order by table_type, table_name
+7	bash	cd /workspace && env | grep -i -E 'snowflake|host|account' | sed 's/=.*token.*/=<redacted>/I' | cut -c1-120; ls scripts | grep -i -E 'conn|sf_|snow' 
+9	write	/workspace/scripts/_scratch_gold_empty_cols.py
+9	bash	cd /workspace && timeout 900 python3 scripts/_scratch_gold_empty_cols.py </dev/null >/tmp/gec.out 2>&1; echo rc=$?
+11	bash	cd /workspace && ls 05_SV-Agent_ai 10_dbt_pipeline 10_dbt_pipeline/models/gold/* 2>&1 | head -120
+11	bash	cd /workspace/10_dbt_pipeline/models/gold/fact && wc -l FACT_MEMBER_MONTHLY.sql FACT_MESSAGE_DISPATCH.sql FACT_EVENT_ATTENDANCE.sql FACT_BUDGET.sql FACT_BUDGET_YEARLY.sql FACT_MEMBER_DEV_ACHIEVEMENT.s
+13	bash	cd /workspace/90_provided_definition && ls; wc -l *지표사전* 2>/dev/null
+13	snowflake_sql_execute	select table_name, listagg(column_name||':'||data_type, ', ') within group (order by ordinal_position) cols from GN_DW.INFORMATION_SCHEMA.COLUMNS where table_schema='SILVER' and table_name in ('CRM_ME
+15	snowflake_sql_execute	select 'ERP_CHN' k, count_if(CHN_BDGT_TOT_AMT<>0) v from GN_DW.SILVER.ERP_BUDGET_YEARLY union all select 'ERP_ADJ', count_if(ADJ_BDGT_TOT_AMT<>0) from GN_DW.SILVER.ERP_BUDGET_YEARLY union all select '
+15	snowflake_sql_execute	select 'amt' k, RDCAMT_YN a, sign(SPNSR_AMT)::text b, count(*) n from GN_DW.SILVER.CRM_MEMBER_AMT_CHANGE group by 1,2,3 union all select 'dev', DVLP_DIV_CD, DVLP_DIV_NM, count(*) from GN_DW.SILVER.CRM
+15	snowflake_sql_execute	select table_name, column_name, data_type, numeric_precision, numeric_scale, character_maximum_length, left(comment,150) c from GN_DW.INFORMATION_SCHEMA.COLUMNS where table_schema='GOLD' and (  (table
+15	bash	cd /workspace && grep -n -i "persist_docs\|full_refresh\|on_schema_change" 10_dbt_pipeline/dbt_project.yml | head; grep -rn "ACTIVE_CUM_CNT" --include=*.yml --include=*.sql 10_dbt_pipeline/models 03_t
+15	bash	cd /workspace && timeout 60 grep -rln "ACTIVE_CUM_CNT" 10_dbt_pipeline/models/ 03_top-down_gold/ 05_SV-Agent_ai/ 02_GN_DW_building/ </dev/null >/tmp/g.out 2>&1; echo rc=$?; cat /tmp/g.out
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+17	snowflake_sql_execute	select 'cmt' k, column_name a, comment b, null n from GN_DW.INFORMATION_SCHEMA.COLUMNS where table_schema='GOLD' and table_name='FACT_EVENT_ATTENDANCE' and column_name in ('CONFIRM_CNT','PARTICIPATION
+17	snowflake_sql_execute	select ACTIVITY_TYPE, count(*) n, count_if(m.MEMBER_DK is not null) mem_match, count_if(GFTMNEY>0) gift_pos, min(RCEPT_DE) mn, max(RCEPT_DE) mx from GN_DW.SILVER.CRM_RELATION_ACTIVITY a left join GN_D
+17	snowflake_sql_execute	select table_schema, table_name, listagg(column_name, ',') within group (order by ordinal_position) cols from GN_DW.INFORMATION_SCHEMA.COLUMNS where table_schema in ('SILVER','BRONZE_CRM') and table_n
+19	snowflake_sql_execute	with r as (select RELATNSP_KEY, count(distinct MBER_NO) nm, min(MBER_NO) m from GN_DW.SILVER.CRM_SPONSOR_RELATION group by 1) select a.ACTIVITY_TYPE, count(*) n, count(r.RELATNSP_KEY) matched, count_i
+19	snowflake_sql_execute	select r.SEND_GBN_TOP, count(*) n, min(s.SNDNG_DE) mn, max(s.SNDNG_DE) mx from GN_DW.SILVER.CRM_SEND_MEMBER s left join GN_DW.SILVER.CRM_SEND_REQUEST r on r.SNDNG_KEY=s.SNDNG_KEY group by 1 order by 2
+19	snowflake_sql_execute	select * from GN_DW.GOLD.DIM_SEND_TYPE limit 15
+19	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+19	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+19	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+19	bash	cd /workspace/10_dbt_pipeline/models && ls silver/*/CRM_SPONSOR_RELATION.sql silver/*/CRM_RELATION_ACTIVITY.sql silver/CRM_SPONSOR_RELATION.sql silver/CRM_RELATION_ACTIVITY.sql 2>&1; timeout 60 find -
+19	snowflake_sql_execute	select table_name||'.'||column_name k, data_type||'('||coalesce(numeric_precision,0)||','||coalesce(numeric_scale,0)||')' v from GN_DW.INFORMATION_SCHEMA.COLUMNS where table_schema='GOLD' and ((table_
+21	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql
+21	bash	cd /workspace/05_SV-Agent_ai && wc -l 05_1_SV_DDL_MEMBER_MONTHLY.sql 05_2_SV_DDL_MEMBER_EVENT.sql 05_4_SV_DDL_SERVICE.sql 05_5_SV_DDL_EVENT_PARTICIPATION.sql 02_SERVING_setup.sql; grep -n "FROM GN_DW\
+21	edit	/workspace/05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql
+21	edit	/workspace/05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql
+21	edit	/workspace/05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql
+21	edit	/workspace/05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql
+21	edit	/workspace/05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql
+21	edit	/workspace/05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql
+21	edit	/workspace/05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql
+21	edit	/workspace/05_SV-Agent_ai/05_5_SV_DDL_EVENT_PARTICIPATION.sql
+21	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql
+21	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql
+21	edit	/workspace/05_SV-Agent_ai/05_2_SV_DDL_MEMBER_EVENT.sql
+21	write	/workspace/scripts/_scratch_sv_compile_o183.py
+21	bash	cd /workspace && timeout 300 python3 scripts/_scratch_sv_compile_o183.py </dev/null >/tmp/svc.out 2>&1; echo rc=$?; cat /tmp/svc.out | cut -c1-700
+23	write	/workspace/scripts/_scratch_o183_precheck.py
+23	bash	cd /workspace && timeout 600 python3 scripts/_scratch_o183_precheck.py </dev/null >/tmp/pre.out 2>&1; echo rc=$?; cut -c1-400 /tmp/pre.out
+25	snowflake_sql_execute	with mf as (select MEMBER_DK, min(JOIN_DATE) FD from GN_DW.GOLD.FACT_MEMBER_EVENT where EVENT_TYPE='DEV' and DEV_CNT>0 and JOIN_DATE is not null group by 1) select floor(year(FD)/10)*10 decade, count(
+25	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+25	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+25	bash	cd /workspace/03_top-down_gold && timeout 60 grep -n -E "^\s+(UNPAID_CNT|ACTIVE_CUM_CNT|ACTIVE_CUM_MEMBERS|INCREASE_CNT|INCREASE_MEMBERS|DECREASE_CNT|CHURN_CNT|STATUS_UNPAID_CNT|DEV_TYPE|NEW_FLAG|INCR
+27	edit	/workspace/03_top-down_gold/06_DDL.sql
+27	edit	/workspace/03_top-down_gold/06_DDL.sql
+27	edit	/workspace/03_top-down_gold/06_DDL.sql
+27	edit	/workspace/03_top-down_gold/06_DDL.sql
+27	bash	cd /workspace/05_SV-Agent_ai && timeout 60 grep -n -o -E ".{0,80}(\+5일|D5|활동누계|신규기존|신규/기존|금액대|기간대|증액\(건\)|감액\(건\)|이탈|미납\(건\)|서비스\(명\)|참여횟수|확정인원).{0,80}" 09_0_AGENT_spec_구현.sql 09_2_AGENT_버전업.sql </dev
+29	snowflake_sql_execute	show agents in account
+29	bash	cd /workspace && cat > /tmp/_desc.py <<'EOF' import sys, json sys.path.insert(0, '/workspace/scripts') from sfconn import conn cn = conn(); cur = cn.cursor() for a in ['AGENT_MEMBER','AGENT_EXECUTIVE'
+31	bash	cd /tmp && timeout 60 python3 -c " import re for a in ['AGENT_MEMBER','AGENT_EXECUTIVE']:     s=open('/tmp/spec_%s.json'%a,encoding='utf-8').read()     for m in re.finditer(r'.{0,120}(5일|누계|신규기존|신규/기존
+33	bash	cd /workspace/05_SV-Agent_ai && timeout 60 grep -n -E "ALTER AGENT|ADD VERSION|MODIFY LIVE|COMMIT|FROM SPECIFICATION|CREATE OR REPLACE AGENT|stage|@" 09_2_AGENT_버전업.sql </dev/null | cut -c1-200 | head
+35	bash	cd /workspace/cortex_project/agents && ls; timeout 60 grep -n -o -E ".{0,60}(D5, 유지율|\+5일 코호트|신규기존 분해).{0,60}" AGENT_MEMBER/agent_spec.yaml AGENT_EXECUTIVE/agent_spec.yaml </dev/null; wc -l AGENT_MEMB
+37	edit	/workspace/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+37	edit	/workspace/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+37	edit	/workspace/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+37	edit	/workspace/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+37	edit	/workspace/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+37	bash	cd /workspace && timeout 60 python3 -c " import yaml;d=yaml.safe_load(open('cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',encoding='utf-8')) s=d['instructions']['orchestration'] if 'orchestratio
+39	bash	cd /workspace && timeout 120 python3 scripts/id_collision_gate.py --next DEC </dev/null >/tmp/id1.out 2>&1; echo rc=$?; tail -3 /tmp/id1.out; timeout 120 python3 scripts/id_collision_gate.py --next O 
+41	bash	cd /workspace/20_issue && wc -lc 30_설계_의사결정_조각/30_설계_의사결정-016.md 50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md; tail -c 1500 30_설계_의사결정_조각/30_설계_의사결정-016.md | tail -15; grep -n "^## \|^### " 30_설계_의사결
+41	bash	cd /workspace/20_issue && timeout 60 grep -n "DEC-33" 30_설계_의사결정_조각/*.md </dev/null | cut -c1-260 | head -12
+43	write	/workspace/scripts/_scratch_o183_d5_rule.py
+43	bash	cd /workspace && timeout 600 python3 scripts/_scratch_o183_d5_rule.py </dev/null >/tmp/d5.out 2>&1; echo rc=$?; cut -c1-300 /tmp/d5.out
+45	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+45	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+45	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+45	bash	cd /workspace && cat > scripts/_scratch_o183_wording.py <<'EOF' """임시 — D5 문안 동기화(발송일~+5일 → 발송 다음날(D+1)~+5일). 세션 종료 전 삭제.""" import io P = {  '05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql': [    ("발송일~+5일 안
+47	bash	cd /workspace && wc -l 05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql cortex_project/agents/AGENT_MEMBER/agent_spec.yaml; tail -c 300 05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql; echo; tail -c 200 cortex_project/a
+49	edit	/workspace/20_issue/30_설계_의사결정_조각/30_설계_의사결정-016.md
+49	edit	/workspace/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md
+49	edit	/workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+49	edit	/workspace/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md
+49	write	/workspace/05_SV-Agent_ai/15_O183_GOLD공란채움_배포.sql
+49	snowflake_sql_execute	ALTER TABLE GN_DW.GOLD.FACT_MEMBER_EVENT ALTER COLUMN NEW_EXISTING_FLAG COMMENT '신규기존 (#113). 사건연도 = 최초개발연도 신규. 기준일 없음 NULL.'
+51	snowflake_sql_execute	ALTER TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY ALTER COLUMN ACTIVE_CUM_CNT COMMENT 'a', DEV_TYPE COMMENT 'b', NEW_EXISTING_FLAG COMMENT 'c'
+53	bash	cd /workspace && timeout 60 python3 scripts/handoff_write.py --help </dev/null 2>&1 | head -30
+55	write	/workspace/tmp/_o183_handoff_entry.md
+55	bash	cd /workspace && timeout 120 python3 scripts/handoff_write.py --label O183-A --entry-file tmp/_o183_handoff_entry.md </dev/null >/tmp/hw.out 2>&1; echo rc=$?; tail -8 /tmp/hw.out
+57	bash	cd /workspace && rm -f scripts/_scratch_gold_empty_cols.py scripts/_scratch_sv_compile_o183.py scripts/_scratch_o183_precheck.py scripts/_scratch_o183_d5_rule.py scripts/_scratch_o183_wording.py tmp/_
+59	bash	cd /workspace && timeout 300 python3 scripts/gate_census.py --final </dev/null >/tmp/gc.out 2>&1; echo gc_rc=$?; tail -4 /tmp/gc.out; timeout 120 python3 scripts/doc_census.py </dev/null >/tmp/dc.out 
+61	bash	cd /workspace && timeout 120 cortex ws ls 'USER$.PUBLIC."snowflake_files"' 05_SV-Agent_ai/ </dev/null 2>&1 | grep -E "15_O183|05_1_|05_4_" | head; timeout 120 cortex ws ls 'USER$.PUBLIC."snowflake_fil
+63	bash	cd /workspace && timeout 120 cortex ws ls --help </dev/null 2>&1 | head -15
+65	bash	cd /workspace && timeout 120 cortex ws ls 'USER$.PUBLIC."snowflake_files":/05_SV-Agent_ai/' </dev/null >/tmp/wl.out 2>&1; echo rc=$?; grep -E "15_O183|05_1_|05_4_" /tmp/wl.out; timeout 120 cortex ws l
+69	snowflake_sql_execute	SELECT COUNT(*) n, COUNT(DISTINCT MONTH_KEY, MEMBER_DK) n_key,  COUNT_IF(UNPAID_CNT<>0) unpaid, COUNT(ACTIVE_CUM_CNT) active_cum, COUNT_IF(INCREASE_CNT<>0) incr, COUNT_IF(DECREASE_CNT<>0) decr,  COUNT
+69	snowflake_sql_execute	SELECT 'FME_NE' k, COUNT(NEW_EXISTING_FLAG)::number v FROM GN_DW.GOLD.FACT_MEMBER_EVENT UNION ALL SELECT 'FME_rows', COUNT(*) FROM GN_DW.GOLD.FACT_MEMBER_EVENT UNION ALL SELECT 'D5_letter', SUM(D5_LET
+71	snowflake_sql_execute	ALTER TABLE GN_DW.GOLD.FACT_MEMBER_EVENT ALTER COLUMN NEW_EXISTING_FLAG COMMENT '신규기존 (#113). 사건연도 = 최초개발연도 신규. 기준일 없음 NULL.'
+71	snowflake_sql_execute	ALTER TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY ALTER COLUMN     ACTIVE_CUM_CNT    COMMENT '활동누계(건) (#159). 당해년도 1월~조회월 활동(건) 누계.',     DEV_TYPE          COMMENT '개발구분 (#121). 그 달 개발구분이 하나로 확정될 때만 값. 코드id:
+73	write	/workspace/scripts/_scratch_o183_sv_deploy.py
+73	bash	cd /workspace && timeout 300 python3 scripts/_scratch_o183_sv_deploy.py </dev/null >/tmp/svd.out 2>&1; echo rc=$?; cut -c1-500 /tmp/svd.out
+75	write	/workspace/scripts/_scratch_o183_agent.py
+75	bash	cd /workspace && timeout 300 python3 scripts/_scratch_o183_agent.py </dev/null >/tmp/ag.out 2>&1; echo rc=$?; cut -c1-300 /tmp/ag.out
+77	snowflake_sql_execute	SELECT MEMBER_DK, COUNT(*) n, MAX(PARTICIPATION_TIMES) mx, COUNT(DISTINCT EVENT_BK) events, MIN(PART_EVENT_KIND) k FROM GN_DW.GOLD.FACT_EVENT_ATTENDANCE GROUP BY 1 ORDER BY n DESC LIMIT 5
+77	snowflake_sql_execute	SELECT (SELECT UNPAID_CNT_SUM FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY METRICS UNPAID_CNT_SUM)) sv_fmm,  (SELECT SUM(UNPAID_CNT) FROM GN_DW.GOLD.FACT_MEMBER_MONTHLY) fact_fmm,  (SELECT D5_ST
+79	snowflake_sql_execute	SELECT MEMBER_DK, COUNT(*) n, MAX(PARTICIPATION_TIMES) mx, COUNT(DISTINCT EVENT_BK) events, MIN(EVENT_KIND) k, MIN(PART_STATUS_NAME) st FROM GN_DW.GOLD.FACT_EVENT_ATTENDANCE GROUP BY 1 ORDER BY n DESC
+79	snowflake_sql_execute	SELECT EVENT_KIND, PART_STATUS_GROUP, COUNT(*) n FROM GN_DW.GOLD.FACT_EVENT_ATTENDANCE GROUP BY 1,2 ORDER BY 1,2
+79	bash	cd /workspace/10_dbt_pipeline && ls -la target/run_results.json 2>&1; timeout 60 python3 -c " import json;d=json.load(open('target/run_results.json')) print(d['metadata'].get('generated_at'), len(d['r
+81	bash	cd /workspace/10_dbt_pipeline && timeout 60 grep -rn -B2 -A8 "CMPGN_TYPE1_NM" models/silver/crm/*.yml </dev/null | grep -n -E "accepted_values|values|severity|#" | head -12; timeout 60 grep -rln "warn
+83	snowflake_sql_execute	SELECT 'type1_values' k, LISTAGG(DISTINCT CMPGN_TYPE1_NM, ',') v FROM GN_DW.SILVER.CRM_CAMPAIGN UNION ALL SELECT 'rqest_null_by_stat', LISTAGG(s,',') FROM (SELECT COALESCE(PAY_STAT_CD,'NULL')||'='||CO
+83	bash	cd /workspace/10_dbt_pipeline && timeout 60 grep -rln "values: \['국내', '통합', '해외'\]" models/ </dev/null
+85	edit	/workspace/10_dbt_pipeline/models/silver/crm/_crm_schema.yml
+85	write	/workspace/tmp/_o183b_entry.md
+85	bash	cd /workspace && timeout 120 python3 scripts/handoff_write.py --label O183-B --entry-file tmp/_o183b_entry.md </dev/null >/tmp/hw2.out 2>&1; echo rc=$?; tail -3 /tmp/hw2.out; rm -f tmp/_o183b_entry.md
+89	bash	cd /workspace && timeout 600 python3 scripts/session_brief.py --write </dev/null >/tmp/b3.out 2>&1; echo rc=$?; tail -3 /tmp/b3.out; timeout 60 cortex conversations search --output=csv "GOLD 공란 O183" 
+91	bash	cd /workspace && timeout 120 cortex conversations transcript --output=json 283870752 </dev/null >/tmp/tr.json 2>/tmp/tr.err; echo rc=$?; wc -c /tmp/tr.json; timeout 60 python3 -c " import json;d=json.

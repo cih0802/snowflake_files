@@ -7,7 +7,10 @@
 --    · 개발/중단이 난 달(납입無 ~2.26M 월×회원)도 포함 → DEV/STOP 온전 집계(과소집계 해소).
 --    · HAS_BILLING=TRUE  → 구 billing 스파인(≈37.79M)과 동일. 회비/청구/미납 지표 불변. (보수적 소비: WHERE HAS_BILLING)
 --    · HAS_BILLING=FALSE → 개발/중단만 있는 월(회비 measure NULL). (정확 소비: 필터 없이 전체)
--- ⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그
+-- ~~⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그~~
+-- 🟢 [O183] 스캐폴드 잔여 중 정본 정의 + SILVER 원천이 있는 22컬럼 배선(미납·누계·증감·이탈·속성·밴드·기간).
+--    🔴 여전히 비워 둔 것 = CAMPAIGN_SK·PAYMENT_SK·CAMPAIGN_UNPAID_CNT(원천 축 부재) · INBOUND/TS_CALL(C-8 미입고).
+--    규칙 근거 = `20_issue/30_설계_의사결정` DEC-55(O183). 수치는 코드에 적지 않는다(R2-6).
 --    → 상태이력(CRM_MEMBER_STATUS_HIST)·금액변경(CRM_MEMBER_AMT_CHANGE) 원천 + O8 grain 규칙(B2) 후속.
 -- ✅ DEC-41(2026-08-20 O92): SPONSORSHIP_SK 배선 — **그 달 후원사업이 하나로 확정된 월만** 채운다.
 --    · 다중 사업 월은 `SPONSORSHIP_SK=0`(센티넬) 유지 + `IS_MULTI_SPONSORSHIP=TRUE` 로 표시한다.
@@ -197,7 +200,10 @@ amt_month as (
         COALESCE({{ month_key_clamp('TRY_TO_NUMBER(SUBSTR(OCCRRNC_DE,1,6))') }}, 0) as MONTH_KEY,
         MBER_NO                                            as MEMBER_DK,
         SUM(CASE WHEN RDCAMT_YN = 'N' THEN 1 ELSE 0 END)   as INC_CNT,
-        SUM(CASE WHEN RDCAMT_YN = 'Y' THEN 1 ELSE 0 END)   as DEC_CNT
+        SUM(CASE WHEN RDCAMT_YN = 'Y' THEN 1 ELSE 0 END)   as DEC_CNT,
+        -- [O183] #38 감액(건) 분자 = 감액금액. 원천은 감액 행의 SPNSR_AMT 를 음수(변동분)로 싣는다
+        --   ⇒ 부호를 뒤집어 양의 감액금액으로 만든다. 양수·0 인 감액 행은 변동분이 아니므로 제외.
+        -SUM(CASE WHEN RDCAMT_YN = 'Y' AND SPNSR_AMT < 0 THEN SPNSR_AMT ELSE 0 END) as DEC_AMT
     from {{ ref('CRM_MEMBER_AMT_CHANGE') }}
     where MBER_NO is not null
     group by MONTH_KEY, MEMBER_DK
@@ -211,9 +217,51 @@ fme_rollup as (
         SUM(DEV_CNT)                                  as DEV_CNT,      -- 개발 사건수 합
         IFF(SUM(DEV_CNT) > 0, 1, 0)                    as DEV_MEMBERS,  -- 월×회원 grain: 개발발생 1/0 (다월 SUM 시 distinct 회원수)
         SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
-        IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS
+        IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS,
+        -- [O183] 개발구분(#121)·증액(#33)·재후원(#34) 월 판정 재료. 개발 사건(DEV_CNT>0)만 본다.
+        COUNT(DISTINCT IFF(DEV_CNT > 0, DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
+        MAX(IFF(DEV_CNT > 0, DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
+        BOOLOR_AGG(DEV_CNT > 0 AND DVLP_DIV_CD = '2')       as HAS_INCREASE_DEV,
+        BOOLOR_AGG(DEV_CNT > 0 AND DVLP_DIV_CD = '4')       as HAS_REDONATE_DEV,
+        MAX(STOP_DATE)                                      as MONTH_STOP_DATE
     from {{ ref('FACT_MEMBER_EVENT') }}
     group by MONTH_KEY, MEMBER_DK
+),
+
+-- [O183] 회원 최초가입일(#28 「최초가입일(회원번호 생성일)」) — 후원기간(#127·128)·신규기존(#113)의 기준일.
+--   🔴 [O183 자기검토 정정] 1차 배선은 「최초 개발일」 단독이었다 ⇒ 정본 #28 문구(회원번호 생성일)와 어긋났고
+--      개발 이력이 없는 회원(청구행 보유)의 기준일이 NULL 로 빠졌다. ⇒ LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일).
+--      등록일 단독도 안 된다 — 등록일이 첫 청구보다 늦은 회원이 다수(레코드 이관 시각 혼입 · 수치 = DEC-55).
+--      가입은 첫 납입보다 늦을 수 없으므로 첫 청구월을 하한 후보로 넣는다(FME member_first_dev 와 같은 식).
+--   🔴 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 후보에서 제외(「채워짐」≠「유효함」 · O182 ㉡).
+member_first as (
+    select MEMBER_DK, MIN(D) as FIRST_DEV_DATE
+    from (
+        select MEMBER_DK, JOIN_DATE as D
+        from {{ ref('FACT_MEMBER_EVENT') }}
+        where EVENT_TYPE = 'DEV' and DEV_CNT > 0 and JOIN_DATE is not null and YEAR(JOIN_DATE) > 1900
+        union all
+        select MEMBER_DK, FRST_REGIST_DT::DATE
+        from {{ ref('CRM_MEMBER') }}
+        where FRST_REGIST_DT is not null and YEAR(FRST_REGIST_DT) > 1900
+        union all
+        select MEMBER_DK, TRY_TO_DATE(TO_VARCHAR(MIN(MONTH_KEY)) || '01', 'YYYYMMDD')
+        from billing
+        where MONTH_KEY > 0
+        group by MEMBER_DK
+    )
+    group by MEMBER_DK
+),
+
+-- [O183] #35 중단(건) 분자 = 그 달 중단된 후원사업의 약정금액 합(월×회원).
+stop_amt as (
+    select
+        DSCNTC_MONTH_KEY as MONTH_KEY,
+        MBER_NO          as MEMBER_DK,
+        SUM(SPNSR_AMT)   as STOP_BIZ_AMT
+    from {{ ref('CRM_MEMBER_SPONSOR_SPAN') }}
+    where DSCNTC_MONTH_KEY is not null and MBER_NO is not null
+    group by DSCNTC_MONTH_KEY, MBER_NO
 ),
 
 -- 통합 스파인 = billing ∪ fme (월×회원 유일)
@@ -221,6 +269,20 @@ spine as (
     select MONTH_KEY, MEMBER_DK from billing
     union
     select MONTH_KEY, MEMBER_DK from fme_rollup
+),
+
+-- [O183] 월×회원 가입 기준 — 최초가입일이 그 달 말일 이전인 행만(가입 전 월·Unknown 월은 NULL).
+join_basis as (
+    select
+        sp.MONTH_KEY,
+        sp.MEMBER_DK,
+        mf.FIRST_DEV_DATE as JOIN_DATE,
+        DATEDIFF(month, mf.FIRST_DEV_DATE,
+                 TRY_TO_DATE(TO_VARCHAR(sp.MONTH_KEY) || '01', 'YYYYMMDD')) as SPONSOR_MONTHS
+    from spine sp
+    join member_first mf on mf.MEMBER_DK = sp.MEMBER_DK
+    where sp.MONTH_KEY > 0
+      and mf.FIRST_DEV_DATE <= LAST_DAY(TRY_TO_DATE(TO_VARCHAR(sp.MONTH_KEY) || '01', 'YYYYMMDD'))
 ),
 
 -- ═══ [2026-08-20 O93 · CONF-3 해소] 활동회원 as-of 판정 ═══════════════════════
@@ -305,26 +367,42 @@ joined as (
         COALESCE(fr.DEV_CNT, 0)      as DEV_CNT,
         COALESCE(fr.DEV_MEMBERS, 0)  as DEV_MEMBERS,
         COALESCE(fr.STOP_CNT, 0)     as STOP_CNT,
-        0 as UNPAID_CNT,
+        -- [O183] #36 미납(건) = 월말 미납(DEC-4 = UNPAID_FLAG_EOM) 회원의 전체 후원금액/10,000.
+        --   회비 행이 없는 월(HAS_BILLING=FALSE)은 미납 판정 불가 ⇒ NULL.
+        CASE WHEN bl.MEMBER_DK IS NULL THEN CAST(NULL AS NUMBER(18,4))
+             WHEN bl.UNPAID_FLAG_EOM   THEN aa.ACTIVE_BIZ_AMT / 10000
+             ELSE 0 END                                          as UNPAID_CNT,
         -- ═══ [2026-08-20 O93] 활동 계열 실배선 — 종전 `0 as …` 하드코딩 폐기 ═══════════
         -- 🔴 NULL vs 0 의 의미를 분리한다: `active_asof` 미매칭(= Unknown 월이거나 후원사업 이력 없음)은
         --    **NULL**(판정 불가/해당 없음)이고, 매칭됐지만 미중단 사업이 없으면 **0**(활동 아님)이다.
         --    종전에는 둘 다 0 이라 *"활동회원 0명"* 이 정상값처럼 반환됐다.
         aa.ACTIVE_BIZ_AMT / 10000            as ACTIVE_CNT,        -- #52 (건) = 활동 후원사업금액/10,000
         IFF(aa.ACTIVE_BIZ_CNT > 0, 1, 0)     as ACTIVE_MEMBERS,    -- #51 (명) = 월말 활동 1/0 (SUM 시 회원수)
-        -- 🔴 누계 2종은 채우지 않는다 — 정본에 **`활동 누계`의 정의가 없다.**
-        --    「누적 활동 개월수」인지 「누적 활동 금액」인지 「기수 누계」인지 결정되지 않았고,
-        --    아무 것이나 고르면 정의 창작이다(DEC-17-B). 정의가 오면 이 두 줄만 교체하면 된다.
+        -- ~~🔴 누계 2종은 채우지 않는다 — 정본에 `활동 누계`의 정의가 없다.~~
+        -- 🔴 [O183 정정] 위 판정은 틀렸다 — 정본 `02_지표사전 공통.md` #158·#159 에 정의가 있다:
+        --    #158 = "월 마감 시 활동하고 있는 사람들의 당해년도 명수 누계" · #159 = "… 약정금액 ÷ 10,000원 누계".
+        --    ⇒ 값은 아래 최종 select 의 당해년도 running sum 으로 채운다(여기는 자리표시 · EXCLUDE 대상).
         CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT,
         CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS,
-        0 as INCREASE_CNT, 0 as INCREASE_MEMBERS, 0 as DECREASE_CNT, 0 as CHURN_CNT,
+        -- [O183] #151 증액(건) = 전월 대비 활동(건) 증가분 · #150 증액(명) = 증가한 회원 1/0.
+        CASE WHEN aa.MEMBER_DK IS NOT NULL
+             THEN GREATEST(aa.ACTIVE_BIZ_AMT - aa.PREV_BIZ_AMT, 0) / 10000 END   as INCREASE_CNT,
+        CASE WHEN aa.MEMBER_DK IS NOT NULL
+             THEN IFF(aa.ACTIVE_BIZ_AMT > aa.PREV_BIZ_AMT, 1, 0) END             as INCREASE_MEMBERS,
+        -- [O183] #38 감액(건) = 감액금액/10,000 · CHURN_CNT(신규#20 이탈) = (중단 약정금액 + 감액금액)/10,000.
+        COALESCE(am.DEC_AMT, 0) / 10000                                          as DECREASE_CNT,
+        (COALESCE(sa.STOP_BIZ_AMT, 0) + COALESCE(am.DEC_AMT, 0)) / 10000        as CHURN_CNT,
         aa.YEAR_START_BIZ_AMT / 10000        as YEAR_START_ACTIVE_CNT,   -- 연초(YYYY01) as-of
         aa.YEAR_END_BIZ_AMT   / 10000        as YEAR_END_ACTIVE_CNT,     -- 연말(YYYY12) as-of
         -- 🟢 당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.
         --    두 컬럼을 남겨 두는 이유는 DDL 구조 보존(소비 쿼리 호환)이다. 값 불일치가 아니다.
         aa.ACTIVE_BIZ_AMT / 10000            as MONTH_END_ACTIVE_CNT,
         aa.PREV_BIZ_AMT   / 10000            as PREV_MONTH_END_ACTIVE_CNT,  -- DEC-19 (d) ADD_MONTHS(-1)
-        0 as CAMPAIGN_UNPAID_CNT, 0 as STATUS_UNPAID_CNT,
+        -- [O183] #84 회원상태별 미납(건) = 미납회비금액(DEC-3 정본 UNPAID_BILLED_AMT)/10,000.
+        --   「회원상태별」은 조회 시 회원상태 차원으로 나누는 축이다(값은 월×회원 미납회비 환산).
+        --   🔴 #83 캠페인별은 CAMPAIGN_SK 축이 없어(B3 원천 부재) 0 유지 — 축 없이 채우면 오해를 낳는다.
+        0 as CAMPAIGN_UNPAID_CNT,
+        bl.UNPAID_BILLED_AMT / 10000   as STATUS_UNPAID_CNT,
         -- [O27/DEC-28] 회비 3분해 실배선. NULL(해당 구분 납입 없음)은 0 으로 보정하지 않는다
         --   — 0 은 "납입액 0원", NULL 은 "그 구분의 납입이 없음"이라 의미가 다르다(P21).
         bl.REGULAR_FEE                as REGULAR_FEE,           -- #66 정기회원×정기(PM010 E)
@@ -335,13 +413,37 @@ joined as (
         bl.PAID_FEE_BILLABLE          as PAID_FEE_BILLABLE,   -- [O40] 회비만 납입액(납부율 분자 정본)
         bl.UNPAID_BILLED_AMT          as UNPAID_BILLED_AMT,   -- [O40] DEC-3 정본 미납 청구액
         0 as INBOUND_CALL_CNT, 0 as TS_CALL_CNT,       -- ⚠️ 비-CRM 수기 미수령(C-8)
-        CAST(NULL AS VARCHAR)  as DEV_TYPE,
-        CAST(NULL AS BOOLEAN)  as NEW_FLAG, CAST(NULL AS BOOLEAN) as INCREASE_FLAG, CAST(NULL AS BOOLEAN) as REDONATE_FLAG,
-        CAST(NULL AS DATE)     as JOIN_DATE, CAST(NULL AS DATE) as STOP_DATE,
-        CAST(NULL AS VARCHAR)  as AMOUNT_BAND1, CAST(NULL AS VARCHAR) as AMOUNT_BAND2,
-        CAST(NULL AS VARCHAR)  as PERIOD_BAND1, CAST(NULL AS VARCHAR) as PERIOD_BAND2,
-        0 as SPONSOR_MONTHS, 0 as SPONSOR_YEARS, 0 as PAID_MONTHS,
-        CAST(NULL AS VARCHAR)  as NEW_EXISTING_FLAG,
+        -- ═══ [O183] 속성 슬롯 실배선 — 종전 전건 NULL/0 상수 폐기 ═══════════════════
+        -- #121 개발구분 = 그 달 개발 사건의 구분코드(MM015)가 **하나로 확정될 때만** 채운다(DEC-41 패턴).
+        CASE WHEN fr.DEV_TYPE_KINDS = 1 THEN fr.DEV_TYPE_SOLE END   as DEV_TYPE,
+        -- #113·#32 신규기존 = 최초가입일 연도 = 조회년도 ⇒ 신규, 그 이전 ⇒ 기존. 가입 전 월·기준일 없음 ⇒ NULL.
+        CASE WHEN jd.JOIN_DATE IS NULL THEN CAST(NULL AS BOOLEAN)
+             ELSE YEAR(jd.JOIN_DATE) = FLOOR(sp.MONTH_KEY / 100) END as NEW_FLAG,
+        COALESCE(fr.HAS_INCREASE_DEV, FALSE)                        as INCREASE_FLAG,   -- #33
+        COALESCE(fr.HAS_REDONATE_DEV, FALSE)                        as REDONATE_FLAG,   -- #34
+        jd.JOIN_DATE                                                as JOIN_DATE,       -- #28 최초가입일(최초 개발일)
+        CAST(NULL AS DATE)                                          as STOP_DATE,       -- 최종 select 에서 as-of 최종중단일(#30)
+        -- #72·#73 후원금액대 = 조회년월 약정금액(활동 후원사업금액) 구간. 약정 없음 ⇒ NULL.
+        CASE WHEN aa.ACTIVE_BIZ_AMT > 0
+             THEN FLOOR(aa.ACTIVE_BIZ_AMT / 50000) * 5 || '~' || (FLOOR(aa.ACTIVE_BIZ_AMT / 50000) * 5 + 5) || '만원 미만'
+        END                                                         as AMOUNT_BAND1,
+        CASE WHEN aa.ACTIVE_BIZ_AMT > 0
+             THEN FLOOR(aa.ACTIVE_BIZ_AMT / 10000) || '~' || (FLOOR(aa.ACTIVE_BIZ_AMT / 10000) + 1) || '만원 미만'
+        END                                                         as AMOUNT_BAND2,
+        -- #74·#75 후원기간대 = 가입일~조회년월 기간(년) 5년·1년 구간.
+        CASE WHEN jd.SPONSOR_MONTHS IS NOT NULL
+             THEN FLOOR(jd.SPONSOR_MONTHS / 60) * 5 || '~' || (FLOOR(jd.SPONSOR_MONTHS / 60) * 5 + 5) || '년 미만'
+        END                                                         as PERIOD_BAND1,
+        CASE WHEN jd.SPONSOR_MONTHS IS NOT NULL
+             THEN FLOOR(jd.SPONSOR_MONTHS / 12) || '~' || (FLOOR(jd.SPONSOR_MONTHS / 12) + 1) || '년 미만'
+        END                                                         as PERIOD_BAND2,
+        jd.SPONSOR_MONTHS                                           as SPONSOR_MONTHS,  -- #127
+        FLOOR(jd.SPONSOR_MONTHS / 12)                               as SPONSOR_YEARS,   -- #128 (만 년수)
+        CAST(NULL AS NUMBER(9,0))                                   as PAID_MONTHS,     -- 최종 select 에서 누적(#129)
+        CASE WHEN jd.JOIN_DATE IS NULL THEN CAST(NULL AS VARCHAR)
+             WHEN YEAR(jd.JOIN_DATE) = FLOOR(sp.MONTH_KEY / 100) THEN '신규'
+             ELSE '기존' END                                        as NEW_EXISTING_FLAG,
+        fr.MONTH_STOP_DATE                                          as H_MONTH_STOP_DATE,   -- 보조(EXCLUDE)
         bl.UNPAID_FLAG_EOM,
         -- W4(DEC-22): ML 전용 파생 4종. 🔴 정본 (건)=금액/10,000 과 다른 실제 개수·횟수 (CONF-2 주의).
         COALESCE(ac.AMT_INCREASE_CUM_CNT, 0)           as AMT_INCREASE_CUM_CNT,
@@ -366,10 +468,31 @@ joined as (
     left join sponsor_rep sr on sp.MONTH_KEY = sr.MONTH_KEY and sp.MEMBER_DK = sr.MEMBER_DK  -- DEC-41
     -- [2026-08-20 O93] 활동 as-of. left join 이라 미매칭 월은 활동 measure 가 NULL 로 남는다(의도).
     left join active_asof aa on sp.MONTH_KEY = aa.MONTH_KEY and sp.MEMBER_DK = aa.MEMBER_DK
+    -- [O183] 감액금액·중단 약정금액·가입 기준(모두 월×회원 유일 키 ⇒ fan-out 0).
+    left join amt_month  am on sp.MONTH_KEY = am.MONTH_KEY and sp.MEMBER_DK = am.MEMBER_DK
+    left join stop_amt   sa on sp.MONTH_KEY = sa.MONTH_KEY and sp.MEMBER_DK = sa.MEMBER_DK
+    left join join_basis jd on sp.MONTH_KEY = jd.MONTH_KEY and sp.MEMBER_DK = jd.MEMBER_DK
 )
 
 select
-    j.*,
+    j.* EXCLUDE (ACTIVE_CUM_CNT, ACTIVE_CUM_MEMBERS, STOP_DATE, PAID_MONTHS, H_MONTH_STOP_DATE),
     -- #80 월초(BOM) = 전월말(EOM) 상태. 회원별 월순 LAG(union 스파인 전체 월 기준; 결측월은 직전 존재월 근사).
-    LAG(j.UNPAID_FLAG_EOM) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY)  as UNPAID_FLAG_BOM
+    LAG(j.UNPAID_FLAG_EOM) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY)  as UNPAID_FLAG_BOM,
+    -- [O183] #159·#158 활동누계 = 당해년도 1월부터 그 달까지의 활동(건)·활동(명) 누계. 판정 불가 월은 NULL.
+    --   ⚠️ 스파인이 sparse 라 회비·사건이 없는 월은 누계에 들어오지 않는다(활동 회원은 대개 매월 청구행이 있다).
+    CASE WHEN j.ACTIVE_CNT IS NOT NULL THEN
+        SUM(j.ACTIVE_CNT) OVER (PARTITION BY j.MEMBER_DK, FLOOR(j.MONTH_KEY / 100) ORDER BY j.MONTH_KEY
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as ACTIVE_CUM_CNT,
+    CASE WHEN j.ACTIVE_CNT IS NOT NULL THEN
+        SUM(j.ACTIVE_MEMBERS) OVER (PARTITION BY j.MEMBER_DK, FLOOR(j.MONTH_KEY / 100) ORDER BY j.MONTH_KEY
+                                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END  as ACTIVE_CUM_MEMBERS,
+    -- [O183] #30 최종중단일 as-of = 그 달까지 발생한 중단 사건일의 최댓값(Unknown 월 제외).
+    CASE WHEN j.MONTH_KEY > 0 THEN
+        MAX(IFF(j.MONTH_KEY > 0, j.H_MONTH_STOP_DATE, NULL)) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as STOP_DATE,
+    -- [O183] #129 납입개월수 = **최초가입일 이후** 그 달까지 정기납입(REGULAR_FEE>0)이 있었던 달 수. 가입 기준 없는 월 NULL.
+    --   🔴 [O183 자기검토 정정] 1차는 가입 전 월까지 셌다 ⇒ 납입개월수 > 후원기간 인 행이 생겼다.
+    CASE WHEN j.JOIN_DATE IS NOT NULL THEN
+        SUM(IFF(j.JOIN_DATE IS NOT NULL AND j.REGULAR_FEE > 0, 1, 0)) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY
+                                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as PAID_MONTHS
 from joined j

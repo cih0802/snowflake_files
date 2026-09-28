@@ -108,6 +108,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.DVLP_DIV_CD   AS fme.DVLP_DIV_CD    WITH SYNONYMS ('개발구분코드') COMMENT = '개발구분 원천코드(1=신규 2=증액 3=감액 4=재후원 5=후원중단). 라벨은 DVLP_DIV_NM. 실제값 5종: ''1''·''2''·''3''·''4''·''5'' + NULL',
     fme.JOIN_DATE     AS fme.JOIN_DATE      WITH SYNONYMS ('가입일')      COMMENT = '회원 가입일(유지기간 산출 기준)',
     fme.STOP_DATE     AS fme.STOP_DATE      WITH SYNONYMS ('중단일', '해지일') COMMENT = '회원 중단일',
+    fme.NEW_EXISTING_FLAG AS fme.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존', '신규기존') COMMENT = '[O183] 공#113 신규기존구분 — 사건 연도가 회원 최초가입 연도(회원 등록일·최초 개발일·첫 청구월 중 가장 이른 날)와 같으면 ''신규'', 이후면 ''기존''. 실제값 2종: ''신규''·''기존'' + NULL(기준일이 없는 회원). 🔴 공56·57 신규/기존 중단율의 분해 축이다 — 중단(STOP)·개발(DEV) 양쪽에 채워진다',
     -- [2026-08-04 O33] 중단사유·중단경로 축. FME 는 라벨 컬럼을 직접 보유하고 단일 코드그룹(MM005)이라
     --   DIM_REASON 조인 없이 안전하다(FMM 쪽 사유와 달리 코드체계 혼입 없음).
     fme.STOP_REASON_NM  AS fme.STOP_REASON_NM  WITH SYNONYMS ('중단사유', '해지사유', '중단이유') COMMENT = '중단사유 라벨(정본 MM005 단일 코드체계 — 혼입 없음). 실제값 예: ''개인(경제적)사유''·''장기미납''·''신규미납''·''다른곳지원''·''명의변경''·''아동퇴소''·''회원항의''·''기타''. 🔴**중단(STOP) 사건 전용 축**이다 — 개발(DEV) 행은 원천에 사유가 없어 NULL 이다. 따라서 중단 지표(중단건·중단회원수)와 함께 쓸 것이며, 개발 지표와 교차하면 전건 NULL 로 뭉개진다',

@@ -201,7 +201,7 @@ models:
           - not_null:
               config: { where: "CMPGN_TYPE1_BSN IS NOT NULL", severity: warn } # 기지 고아: CMPGN_TYPE1_BSN=4, 740행
           - accepted_values:
-              values: ['국내', '통합', '해외']
+              values: ['국내', '통합', '해외', '전체사업']   # [O183] '전체사업' 원천 실재(SV_MEMBER_EVENT 4종 문안과 일치) — 종전 3종은 낡은 허용값
               config: { where: "CMPGN_TYPE1_NM IS NOT NULL", severity: warn }
       - name: CMPGN_TYPE2_NM       # MM296 굿즈/기타/사례/사업
         tests:

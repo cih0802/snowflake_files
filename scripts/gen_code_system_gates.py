@@ -28,7 +28,7 @@ OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
 BASENAME = "07_코드체계_관문측정"
 GEN_PATH = "scripts/gen_code_system_gates.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
-DEF_CSV = os.path.join(WS, "99_provided_definition", "컬럼정의서 20260714.csv")
+DEF_CSV = os.path.join(WS, "90_provided_definition", "컬럼정의서 20260714.csv")
 MODELS = os.path.join(WS, "10_dbt_pipeline", "models")
 STD_RE = re.compile(r"^(CM|MM|MS|PM|RM)\d{3}$")
 
@@ -227,7 +227,7 @@ def main():
     A("")
     A("## 1. 모집단 재현 (정식 CSV 파서)")
     A("")
-    A(f"정본 `99_provided_definition/컬럼정의서 20260714.csv` 를 `csv.DictReader`(utf-8-sig)로 파싱했다.")
+    A(f"정본 `90_provided_definition/컬럼정의서 20260714.csv` 를 `csv.DictReader`(utf-8-sig)로 파싱했다.")
     A("`awk -F','` 는 인용부호 내 콤마 때문에 쓰지 않았다.")
     A("")
     A("| 구분 | 건수 |")

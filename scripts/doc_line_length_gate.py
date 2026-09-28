@@ -135,7 +135,7 @@ CANON_GLOB = [
     'scripts/*.py',                              # 게이트·생성기 (우리 저작)
     'scripts/golden/*.json',                     # 회귀 기준선
     'scripts/o51d_view_comments/*.py',
-    '99_provided_definition/07_추가_지표사전_*.md',  # O71 신설 정본
+    '90_provided_definition/07_추가_지표사전_*.md',  # O71 신설 정본 · [O183] 폴더명 99_→90_ 정정(종전 경로는 부재 ⇒ 분모 0)
     '10_dbt_pipeline/models/**/*.sql',            # dbt 모델
     '10_dbt_pipeline/models/**/*.yml',            # dbt 스키마·테스트
     # ── 아래 3패턴은 [2026-08-18 O82-B] 재도출분이다 ────────────────────────
