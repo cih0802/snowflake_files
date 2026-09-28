@@ -295,7 +295,9 @@ tool_resources:
 > 스펙은 workspace에 작성됨(save 안 됨). 아래를 사용자가 순서대로 실행. **권장: semantic_studio save/publish**, DDL은 참고.
 
 ### 4.1 (권장) semantic_studio로 save → publish
-1. 🔴 **`cortex_agent_save`/`cortex_agent_deploy` 를 쓰지 않는다**(2026-08-05 O38 정정). 이 도구는 **live 버전**을 만드는데 이 프로젝트는 **명명 버전 방식**(VERSION$n)이고 `ADD VERSION FROM` 은 live 가 있으면 **거부**된다. 정본 경로 = `agents/<AGENT>/agent_spec.yaml` 갱신 → `ALTER WORKSPACE … COMMIT` → **`09_2_AGENT_버전업.sql`** → `SET DEFAULT_VERSION`(P66: 발행만으로 default 가 되지 않는다).
+1. 🔴 **`cortex_agent_save`/`cortex_agent_deploy` 를 쓰지 않는다**(2026-08-05 O38 정정). 이 도구는 **live 버전**을 만드는데 이 프로젝트는 **명명 버전 방식**(VERSION$n)이고 `ADD VERSION FROM` 은 live 가 있으면 **거부**된다. 정본 경로 = `agents/<AGENT>/agent_spec.yaml` 갱신 → `ALTER WORKSPACE … COMMIT` → **`09_2_AGENT_버전업.sql`** → `SHOW VERSIONS` 로 `is_default` 확인.
+   🆕 [2026-09-28 O184 정정] 종전 「`SET DEFAULT_VERSION`(P66: 발행만으로 default 가 되지 않는다)」는 **철회**한다 —
+   실측(xf98254 · `AGENT_MEMBER` VERSION$4 = `is_default=true` · O182·O183-B 발행 3종 전건 동일) = `ADD VERSION FROM` 은 **자동 default** 다.
 2. `SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;` 로 미게시 버전 확인 후 `cortex_agent_publish` (필요 시).
 
 > ⚠⚠ **배포 3경로의 버전 의미 차이 — 실측 검증 완료(2026-07-29, 순서9-L)**

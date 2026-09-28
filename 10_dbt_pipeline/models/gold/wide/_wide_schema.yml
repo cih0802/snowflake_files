@@ -725,9 +725,9 @@ models:
       - name: CONV_CALL_CNT
         description: "전환콜 (VIDEO 전용) — 인입콜과 별개 🔴🔴[O51-F 실측] **전건 NULL — 원천 자체가 비어 있다**(`BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT`). 결측이 아니라 **대행사가 항목을 보고하지 않는다**: 0 이나 '해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴🔴종전 문서가 *「VIDEO 는 개발실적 대신 전환콜을 보고한다」* 고 적었으나 **그 컬럼도 원천에서 전건 비어 있다** — 즉 VIDEO 구간은 개발도 전환콜도 측정할 수 없다(AD-5 보강). REBROADCAST 원천에는 컬럼 자체가 없다. 실측 규모는 이슈원장 §O51-F."
       - name: DVLP_MEMBER_CNT
-        description: "개발회원수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리) ⚠️**REBROADCAST 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. ⚠️GA 전환이 아니다(O16 분리) — 재방송 개발실적이다."
+        description: "개발회원수 (방송 · VIDEO·REBRDC) — ⚠️GA 전환이 아님(O16 분리). 🔴 [O184 정정] 종전 「REBROADCAST 전용」은 O182 원천 재편으로 거짓이 됐다 — VIDEO 도 일부 행에 보고한다. 디지털행은 원천 부재로 NULL. 출처(AD_SOURCE_TYPE)별로 나눠 집계할 것."
       - name: DVLP_CNT
-        description: "개발건수 (REBRDC 전용) — ⚠️GA 전환이 아님(O16 분리) ⚠️**REBROADCAST 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다. ⚠️GA 전환이 아니다(O16 분리) — 재방송 개발실적이다."
+        description: "개발건수 (방송 · VIDEO·REBRDC) — ⚠️GA 전환이 아님(O16 분리). 🔴 [O184 정정] 종전 「REBROADCAST 전용」은 O182 원천 재편으로 거짓이 됐다 — VIDEO 도 일부 행에 보고한다. 디지털행은 원천 부재로 NULL. 출처(AD_SOURCE_TYPE)별로 나눠 집계할 것."
       - name: AD_VIEW_RT_SRC
         description: "광고시청률(대행사 산정) — 비가산 N, 재합산 금지. ⚠️**VIDEO 전용** — 다른 원천 행은 개념 자체가 없어 NULL 이며 결측이 아니다."
       - name: CPC_CALL_SRC
@@ -1262,7 +1262,7 @@ models:
       - name: CM_POSITION
         description: "CM위치 ← VIDEO.CM_AREA [VIDEO 전용]. 코어에서 이관 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: RT_TYPE
-        description: "RT(재방송)유형 ← REBRDC.RE_BRDC_TY_NM [REBRDC 전용]. 코어에서 이관 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "RT(재방송)유형 ← REBRDC.DIV_NM(재송출/방송 · O182 재편 전 RE_BRDC_TY_NM) [REBRDC 전용]. 코어에서 이관 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: AD_START_TIME
         description: "광고시작시간 ← VIDEO.AD_STRT_TIME [VIDEO 전용]. 코어에서 이관 🔴🔴[WIDE_AD_COMBINED] **VIDEO(본방송) 전용이다** — 재방송(REBRDC) 원천에는 이 컬럼이 **아예 없다**(BRONZE `REBRDC_AD_CMPGN_DTLS` 에 시각 컬럼 부재 · 보유 항목은 방송시간·방송월뿐). 따라서 재방송행의 NULL 은 적재 지연이 아니라 **해당 없음**이다(P20 3분류). 시각 기반 분석은 VIDEO 로 스코프하고, 재방송을 포함한 시간대 분석은 TIME_BAND 를 쓸 것. 전용축 판정 근거 = 이슈원장 §429."
       - name: AD_END_TIME
@@ -1292,9 +1292,9 @@ models:
       - name: CONV_CALL_CNT
         description: "전환콜 ← VIDEO.CONV_CALL_CNT [VIDEO 전용]. 코어 INBOUND_CALL(인입콜)과 별개 measure ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. 🆕🔴🔴[2026-09-01 O129 보강] **VIDEO 행도 전건 NULL 이다** — 원천 `BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS.CONV_CALL_CNT` 는 컬럼은 실재하고 **값이 전건 공백**(대행사 미보고)이다(REBROADCAST 원천에는 컬럼 자체가 없다). ⇒ 🔴 스코프를 VIDEO 로 좁혀도 값은 나오지 않는다 — **어떤 스코프에서도 집계 불가**다. ⚠️ 인입콜(`REBRDC.INBOUND_CALL_CNT`)은 채워져 있으니 **두 축을 혼동하지 말 것**. 정본 = 문서30 §7-C."
       - name: DVLP_MEMBER_CNT
-        description: "개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전에 코어 AGENCY_CONV_MEMBERS 로 혼입돼 있었다(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "개발회원수 ← REBRDC.DVLP_MBER_CNT [VIDEO·REBRDC · O184 정정: VIDEO 도 O182 원천 재편 후 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전에 코어 AGENCY_CONV_MEMBERS 로 혼입돼 있었다(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도를 유지하는 이유 = 원천에 0.5 단위 값이 실존해 정수 타입으로 내리면 반올림이 총합을 왜곡한다 — 해당 행·왜곡 규모는 이슈원장 §O16. 원천값 보존 우선. ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: DVLP_CNT
-        description: "개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "개발건수 ← REBRDC.DVLP_CNT [VIDEO·REBRDC · O184 정정: VIDEO 도 O182 원천 재편 후 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: BRDC_AD_VIEW_RT_SRC
         description: "[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
       - name: CPC_CALL_SRC

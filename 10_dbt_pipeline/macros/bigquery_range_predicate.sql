@@ -32,7 +32,16 @@
        🔴 `dbt_project.yml` 에 이 값을 **상주시키지 말 것**(그것이 ①의 원인이었다).
           🟢 주는 법 = `dbt_project.yml` `vars` 의 **주석 슬롯을 일시적으로 풀고** 구간을 적어
              `dbt build --select <모델>+` → 끝나면 **다시 주석 처리**한다.
-          🔴🔴 **`--vars` 로 주지 마라 — 이 환경에서 동작하지 않는다**(실측 2026-09-22 · 3형태 전부 실패).
+          🟢🟢 **[2026-09-28 O187 정정] `--vars` 는 `EXECUTE DBT PROJECT` 경로에서 전달된다 — 종전 실패는 Workspaces 클라이언트 경로다.**
+             실측(xf98254 · `EXECUTE DBT PROJECT … ARGS='compile … --vars …'`) = `bigquery_lookback_days: 999` 를
+             JSON(`'{"bigquery_lookback_days": 999}'`)·YAML(`"{bigquery_lookback_days: 999}"`) **두 형태 모두** 창 하한
+             `20240103`(= 2026-09-28 − 999일)로 렌더했다(기본값이면 `20260925`).
+             🔴 남는 함정 = **콜론 뒤 공백 없는 YAML**(`{bigquery_dt_ranges:[...]}`) 은 키 하나로 파싱돼 **조용히 무시된다**
+             ⇒ Workspaces 클라이언트 경로의 실패 3형태는 `dbt_project.yml:97~105` 가 정본이다(공백 절단·인용부호 제거·이 표기).
+             🟢 [O187-C] 리스트 var 도 전달된다 — `--vars '{"bigquery_dt_ranges": [["2025-06-01", "2025-06-30"]]}'` 가
+                `EVENT_DATE between '20250601' and '20250630'` 로 렌더됐다 ⇒ **백필 정본 = EXECUTE DBT PROJECT ARGS**(런북 02 Step 3).
+                🔴 그래도 `compile` 로 렌더된 창을 먼저 확인하라(판정식은 아래 그대로다) · 주석 슬롯은 대체 경로다.
+          ~~🔴🔴 `--vars` 로 주지 마라 — 이 환경에서 동작하지 않는다(실측 2026-09-22 · 3형태 전부 실패).~~ (이력)
              특히 `--vars {bigquery_dt_ranges:[...]}` 는 **에러 없이 조용히 무시된다**(콜론 뒤 공백이 없어
              YAML 이 키 하나로 파싱한다) ⇒ **백필한 줄 알고 넘어간다.** 실측 근거 = `dbt_project.yml` vars 주석.
              🟢 판정식 = 오버라이드는 「전달됐다」가 아니라 **「렌더된 창이 바뀌었다」**로 확인한다.

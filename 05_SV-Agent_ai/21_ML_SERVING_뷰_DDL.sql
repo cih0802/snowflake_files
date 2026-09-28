@@ -470,8 +470,16 @@ SELECT
                                                        AS IS_LATEST_OBSERVED,
     obs.CONVERT_PROB                                   AS CONVERT_PROB,
     obs.CONVERT_CLASS                                  AS CONVERT_CLASS,
-    obs.PREDICTION_HAS_ERROR                           AS PREDICTION_HAS_ERROR
-FROM obs;
+    obs.PREDICTION_HAS_ERROR                           AS PREDICTION_HAS_ERROR,
+    -- 🆕 [2026-09-28 O186] 일시회원 인적속성 3축 — SILVER.CRM_MEMBER(정기∪일시 · 라벨 정본 CM013 등) ·
+    --    실측(xf98254) 매칭 8,144/8,144 · 성별 라벨 8,007 · 회원구분 8,144 · 등록부서 8,144 · 키 유일(팬아웃 0).
+    --    🔴 속성은 **현재 마스터 스냅샷**이다(가입 시점 값이 아니다) · 가입경로(TSTM)는 채움 4% 라 미노출.
+    m.SEX_NM                                           AS SEX_NAME,
+    m.MBER_DIV_NM                                      AS MEMBER_DIV_NAME,
+    o.DEPARTMENT                                       AS REGIST_DEPT_NAME
+FROM obs
+LEFT JOIN GN_DW.SILVER.CRM_MEMBER m ON m.MEMBER_DK = obs.ONCE_MBER_NO
+LEFT JOIN GN_DW.GOLD.DIM_ORG o      ON o.ORG_DK    = ABS(HASH(m.REGIST_DEPT_CD));
 
 
 /* =====================================================================================

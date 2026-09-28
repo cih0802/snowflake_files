@@ -29,7 +29,7 @@ USE SCHEMA GN_DW.SERVING;
 /* =====================================================================================
    6. SV_AD (overall Agent) — base GOLD.WIDE_AD_COMBINED(dbt 뷰, FAP+FAD+FAB 1:1 pre-join)
       활성: 광고비·노출·클릭·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7) [디지털]
-            인바운드콜·방송횟수 [방송] · 재방송개발건·재방송 개발단가(공8) [재방송 전용]
+            인바운드콜·방송횟수·방송개발건 [방송] · 재방송 개발단가(공8) [재방송 전용] (O184 정정)
       ⚠ 디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 없이 혼합집계 시 왜곡
       ⚠ 캠페인/소재 연결키 미적재 → 캠페인·소재별 분해 불가(Phase-2)
       ⚠ 전환콜(CONV_CALL_CNT)·방송 전체 개발단가는 의도적 미노출 — 근거 = 04 §6.9
@@ -122,11 +122,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 고카디널리티이며 원천 재적재로 값이 바뀐다 ⇒ 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다).',
     -- 방송 전용 차원
     ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사') COMMENT = '방송 채널사. VIDEO/REBROADCAST 전용. ⚠광고비 기준 정렬 시 광고비가 없는 채널사가 섞이므로 NULLS LAST 를 명시할 것.',
-    ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용.',
+    ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용. ⚠️ 표기 형식이 원천마다 다르다 — VIDEO 는 ''N시대'' 구간 라벨, REBROADCAST 는 ''HH:MM:SS'' 시각이다(O182 원천 재편) ⇒ 두 출처를 섞어 이 축으로 그루핑하지 말고 AD_SOURCE_TYPE 으로 먼저 나눈다.',
     ad.PROGRAM_NM      AS ad.PROGRAM_NM      WITH SYNONYMS ('프로그램', '프로그램명', '방송프로그램') COMMENT = '방송 프로그램명(고카디널리티 — Cortex Search 백킹 후보). 방송 전용.',
     ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용. 실제값 4종: ''CA''·''PR''·''SP''·''TJ'' + NULL',
     ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서') COMMENT = 'CM 내 위치. 방송 전용. 실제값 16종: ''`''(🔴 **오염값** — 백틱 1문자이며 정상 CM 위치가 아니다. 이 값으로 필터하지 말 것 · 규모·경위는 이슈원장 참조)·''E-1st''·''E-2nd''·''E-3rd''·''E-4th''·''E-5th''·''E-6th''·''E-7th''·''T-1st''·''T-2nd''·''T-3rd''·''T-4th''·''T-5th''·''T-6th''·''T-7th''·''middle'' + NULL',
-    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. 방송 전용. 실제값 2종: ''특집''·''재송출'' + NULL',
+    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 실제값 2종: ''재송출''·''방송'' + NULL',
     ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 방송(VIDEO/REBROADCAST) 전용. 실제값: 15·20·30·60 등 + NULL.'
   )
   METRICS (
@@ -162,16 +162,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.TOTAL_AD_CNT AS SUM(ad.AD_CNT)
       WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). VIDEO/REBROADCAST 전용.',
     ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
-      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '재방송 개발건수 합계. F(가산). **REBROADCAST 전용** — VIDEO는 원천(BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS)에 개발 컬럼이 **구조적으로 부재**하므로(대행사 비디오 리포트는 개발 대신 전환콜 보고) 결손이 아니다. ⚠VIDEO를 포함한 "방송 전체" 개발 규모로 확대 해석 금지.',
+      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '방송 개발건수 합계(대행사 보고). F(가산). VIDEO·REBROADCAST 전용(디지털은 NULL). 🔴 [O184 정정] 종전 「VIDEO 원천에 개발 컬럼이 구조적으로 부재」는 **원천 재편(O182)으로 거짓이 됐다** — VIDEO 도 개발건을 보고한다(일부 행만 채워짐 · 미보고 행은 NULL). ⚠️ 두 대행사 리포트의 개발 정의가 같은지는 원천 확인 전이다 ⇒ 합계를 물으면 AD_SOURCE_TYPE 별로 나눠 함께 보여준다.',
     ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
-      WITH SYNONYMS ('재방송개발회원', '방송개발회원', '방송 개발회원수') COMMENT = '재방송 개발회원수 합계. F(가산). **REBROADCAST 전용**(VIDEO 원천에 컬럼 부재).',
-    -- 공8 재방송 개발단가 — 명명이 `BRDC_`(방송)가 아니라 `REBRDC_`(재방송)인 이유: VIDEO 원천에 개발 개념이
-    --   없어 "방송 개발단가"라는 이름이 스코프를 오인시킨다. 판정 경위 = 03 §8.5 §6-I · 04 §6.4.1.
+      WITH SYNONYMS ('재방송개발회원', '방송개발회원', '방송 개발회원수') COMMENT = '방송 개발회원수 합계(대행사 보고). F(가산). VIDEO·REBROADCAST 전용 — VIDEO 는 일부 행만 채워짐(O184 정정: 종전 「VIDEO 컬럼 부재」 철회).',
+    -- 공8 재방송 개발단가 — 명명이 `BRDC_`(방송)가 아니라 `REBRDC_`(재방송)인 이유: 설계 당시 VIDEO 원천에 개발
+    --   컬럼이 없었다(03 §8.5 §6-I · 04 §6.4.1). 🔴 [O184] O182 원천 재편으로 VIDEO 개발건이 생겼으나 이 metric 은
+    --   **이름 계약을 유지해 REBROADCAST 스코프로 둔다**(Agent 참조 보존) · VIDEO 단가 metric 신설은 현업 정의 후.
     ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)
-      WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(VIDEO 원천에 개발 컬럼 부재 → 방송 전체 단가가 아님). 분자를 개발건수 적재행으로 정합. ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 과대계상된다.'
+      WITH SYNONYMS ('재방송 개발단가', '재방송 CPA', '재방송 건당 광고비') COMMENT = '공8 재방송 개발단가(원) = 재방송 광고비 ÷ 재방송 개발건. 비율(N). **REBROADCAST 전용**(방송 전체 단가가 아님 · VIDEO 단가는 이 metric 의 범위 밖). 분자를 개발건수 적재행으로 정합. ⚠`AD_SOURCE_TYPE=''REBROADCAST''` 필터 전제 — VIDEO 혼합 시 과대계상된다.'
   )
   COMMENT = 'Phase-1 광고 실적 SV (base: GOLD.WIDE_AD_COMBINED). 대행사(디지털/방송) 일별 리포트 및 GA4 기반 광고비, 노출, 클릭, 전환, 방송실적 통합 뷰. ⚠️ 디지털/방송 measure는 상호배타적이며, 광고비만 전체 합산 가능. 마케팅캠페인(MKTG_CAMPAIGN_NAME) 축으로 분해 가능(소재별/개별캠페인별 분해 불가). 예산(SV_BUDGET) 및 회원개발실적(SV_MEMBER_EVENT)과의 교차 집계는 불가.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 출처 필터: 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객 질의는 AD_SOURCE_TYPE=''DIGITAL'' 자동 추가. 인바운드콜·방송횟수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 추가. 재방송 개발건수·재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 추가. 광고비만 전체 합산 허용. (2) 기간 미지정 시: 최신 데이터 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (3) 캠페인 분해: MARKETING_CAMPAIGN 축으로 그루핑하며 ''(미매핑)'' 버킷 존재로 캠페인별 합계 < 전체 합계임을 명시. 소재별 및 개별 개발캠페인별 ROI/단가는 생성 거부 및 사유 안내. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M'', 데스크톱은 ''PC''. 방송은 ''(해당없음)''. (5) 정렬: 방송 차원 광고비 기준 정렬 시 ORDER BY ... DESC NULLS LAST 사용.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 출처 필터: 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객 질의는 AD_SOURCE_TYPE=''DIGITAL'' 자동 추가. 인바운드콜·방송횟수·방송 개발건수·방송 개발회원수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 추가하고 개발건수는 출처별로 나눠 반환. 재방송 개발단가(공8)는 AD_SOURCE_TYPE=''REBROADCAST'' 추가. 광고비만 전체 합산 허용. (2) 기간 미지정 시: 최신 데이터 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (3) 캠페인 분해: MARKETING_CAMPAIGN 축으로 그루핑하며 ''(미매핑)'' 버킷 존재로 캠페인별 합계 < 전체 합계임을 명시. 소재별 및 개별 개발캠페인별 ROI/단가는 생성 거부 및 사유 안내. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M'', 데스크톱은 ''PC''. 방송은 ''(해당없음)''. (5) 정렬: 방송 차원 광고비 기준 정렬 시 ORDER BY ... DESC NULLS LAST 사용.';
 
 
 /* =====================================================================================
@@ -250,7 +251,7 @@ FROM SEMANTIC_VIEW(
 WHERE CHANNEL_COMPANY IS NOT NULL
 ORDER BY TOTAL_AD_COST DESC NULLS LAST
 LIMIT 10;
---   ⚠ TOTAL_DVLP_CNT 는 REBROADCAST 전용 부분합 — 채널사별 개발 규모 비교에 쓰지 말 것.
+--   ⚠ [O184] TOTAL_DVLP_CNT 는 VIDEO·REBROADCAST 합(VIDEO 는 일부 행만) — 채널사별 개발 비교는 AD_SOURCE_TYPE 병기.
 
 -- (8-9) 미노출 metric 확인 — 아래는 **에러가 나야 정상**
 --   SELECT BRDC_DEV_UNIT_PRICE FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD METRICS BRDC_DEV_UNIT_PRICE);

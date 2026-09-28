@@ -1,7 +1,9 @@
 # Snowflake 세션 인증 사용 — password/authenticator/env_var 금지
 # 대상 스키마(GN_DW.SILVER)는 사전 존재해야 함(DDL 배포 완료)
-# 실행 role = GN_DW_ENGINEER (최소권한): dbt는 06/08 DDL 테이블에 적재만(dim merge / fact·silver append+TRUNCATE),
-#   WIDE view 생성. CREATE TABLE 불요·구조 OWNERSHIP은 GN_DW_ADMIN. 권한 근거: 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql D.5.
+# 실행 role = GN_DW_DBT (🆕 2026-09-28 O184 전환 · dbt 전용 최소권한): dbt는 06/08 DDL 테이블에 적재만(dim merge / fact·silver append+TRUNCATE),
+#   WIDE view 생성. CREATE TABLE 불요·구조 OWNERSHIP은 GN_DW_ADMIN. 권한 근거: 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql D.9.
+#   🔴 롤백 = 아래 3곳 role 을 GN_DW_ENGINEER 로 되돌리고 D.9 [2] 소유권 이관을 역방향 재실행(ENGINEER 는 아직 축소 전).
+#   ⚠️ dev2(SILVER_2·BRONZE_CRM_2)는 라이브에 스키마가 없다 — 생성 시 GN_DW_DBT 에 D.9 와 같은 GRANT 를 추가할 것.
 default:
   target: dev
   outputs:
@@ -9,7 +11,7 @@ default:
       type: snowflake
       account: ""
       user: ""
-      role: GN_DW_ENGINEER
+      role: GN_DW_DBT
       database: GN_DW
       warehouse: GN_DW_ETL_WH
       schema: SILVER
@@ -22,7 +24,7 @@ default:
       type: snowflake
       account: ""
       user: ""
-      role: GN_DW_ENGINEER
+      role: GN_DW_DBT
       database: GN_DW
       warehouse: GN_DW_ETL_WH
       schema: SILVER_2
@@ -31,7 +33,7 @@ default:
       type: snowflake
       account: ""
       user: ""
-      role: GN_DW_ENGINEER
+      role: GN_DW_DBT
       database: GN_DW
       warehouse: GN_DW_ETL_WH
       schema: GOLD

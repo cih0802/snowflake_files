@@ -1,0 +1,156 @@
+========================================================================
+게이트 분모 게이트 — 분모 = `ls scripts/*.py` 실측 **174개**
+========================================================================
+🔴 이 표가 정본이다 — 게이트 목록을 문서에서 읽거나 손으로 고르지 마라(5세션 연속 결함 축).
+------------------------------------------------------------------------
+[JUDGE] 30개
+    · agent_object_ref_gate        Agent 스펙 본문의 DB·스키마·객체명이 라이브에 실재하는가
+    · agent_tool_claim_gate        Agent 도구 주장 모순 + 스펙 description 규칙7 수치
+    · audit_ddl_rule7              DDL COMMENT 규칙7(실측 수치 금지) — DDL 파일을 **읽는다**
+    · clause_order_gate            조문 번호 역전·중복
+    · comment_drift_gate           파일 정본 ↔ 라이브 COMMENT 드리프트 + 금지 문안
+    · dbt_schema_lint              dbt schema yml 정합
+    · decision_closure_gate        내 결정을 인용한 정본이 stale 인가(경고 전용)
+    · doc_census                   문서 조각 수·바이트 stale + 분할 분모 대조
+    · doc_coord_gate               인용 좌표 실재(`R1-6-22`)
+    · doc_heading_gate             제목 유실
+    · doc_line_length_gate         정본 한 줄 2000자
+    · doc_type_gate                문서 유형 미선언·상한 초과·여유 부족
+    · eval_expectation_gate        평가셋 기대값
+    · gate_census                  이 파일 — 게이트 분모 미분류
+    · gold_erd_coverage_gate       GOLD ERD FK 3소스 커버리지 — FACT 키 컬럼 중 **미분류 고립** (dbt relationships·물리 FK 어디에도 없는 축)을 blocking 으로 강제
+    · handoff_ddl_gate             인수인계 DDL 주장
+    · id_collision_gate            ID 중복(`DEC`·`P`·`O`·`Q`)
+    · index_row_gate               원장 표 행 키 유실·중복
+    · jinja_config_gate            dbt Jinja 안전 6축 — config 안 SQL주석 · 따옴표밖 중첩닫기 · 주석안 Jinja태그 · 공백제거형 주석의 실행문 흡수 · 주석 구분자 개수 불균형
+    · merge_check                  임시파일 내용이 정본에 반영됐는가(삭제 안전 판정)
+    · o125_layer_census            SILVER·GOLD·SERVING 설계 정본 ↔ 라이브 객체·컬럼 집합 — 라이브를 **읽는다**
+    · rename_stale_gate            개명 전 객체명이 살아있는 정본에 병기 없이 남았는가(기준선 대비 증가 = FAIL)
+    · sv_code_label_gate           SV 코드값·라벨 열거
+    · sv_comment_object_gate       SV COMMENT 가 가리키는 객체가 라이브에 실재하는가 — 라이브를 **읽는다** · 🔴 정합(`comment_drift_gate`)이 아니라 **정확성** 축(파일·라이브가 같이 틀리면 그쪽은 🟢 다)
+    · sv_identifier_gate           SV 식별자 실재(`DESCRIBE SEMANTIC VIEW` 대조)
+    · sv_rule7_scan                SV DDL 규칙7
+    · sv_unit_gate                 SV COMMENT 단위·수치 — 라이브를 **읽는다**
+    · table_ddl_column_gate        DDL 파일 ↔ 모델 컬럼 순서 — 라이브를 **읽는다**
+    · verify_wide_doc              09_빅테이블 VIEW 정의서 ↔ Live Snowflake ↔ dbt 모델 100% 정합 검증
+    · wide_select_yml_gate         WIDE 뷰 SELECT ↔ yml
+------------------------------------------------------------------------
+[OBSERVE] 19개
+  🔴 판정이 아니다 — 이 출력의 수치를 위반 건수로 인용하지 마라.
+    · _o128_dim_probe              DIM 키 컬럼 고립 관측
+    · _o128_probe                  관계선 관측
+    · _o128_rel_violations         relationships 위반 관측
+    · _o130_ga4_rename             GA4 명칭 변경 관측
+    · _o154b_pyc_probe             트랜스크립트의 `python3 -c` 원문 전건 열거 관측 — 🔴 `o145_transcript_audit` 는 「발견/없음」만 내고 원문을 §4-B 에 싣지 않아 `R1-7-9` 위반 여부를 사람이 판정할 수 없었다(O111 ㉢ 축). 🔴 「쓰기 의심」 표시는 `open(` 만 보므로 **읽기도 걸린다** ⇒ 실제 판정은 `open(...,'w')`·`.write(` 로 재확인하라(O154-B 자기시정)
+    · _o155_rename_scan            개명 전 이름 잔여 규모 관측(버킷별) — 🔴 판정 정본은 `rename_stale_gate`
+    · _o169_dump_axis1             개명 축1 좌표 원문 덤프(지시/기록 분류용) — 🔴 판정 정본은 `rename_stale_gate`
+    · _o170_gold_unfilled          GOLD 미주입 컬럼 재집계(전건0/전건NULL/0행 분해) — 🔴 분모는 `census_columns` 산출물
+    · _o170_superseded_census      99_NEXT 승계 절 조각별 규모 관측 — 🔴 판정식은 `session_brief` 에서 import
+    · _o170_unassigned_probe       미배정 GOLD 컬럼 차단근거 판정(모델 구현 분류 + 원천 신호) — 🔴 버킷 미확정
+    · _o170_unfilled_diff          미주입 집합 차이 대조(해소/신규/누락) — 🔴 총계가 아니라 집합으로 진척을 증명한다
+    · alias_census                 모델 SELECT 별칭 P/L/X 관측 — 🔴 판정 분모 정본은 `scripts/o122_name_drift.sql`(라이브) 이다
+    · classify_doc_type            문서 유형 추천(등재 정본은 원장 §0)
+    · comment_len_probe            COMMENT 길이 분포 관측
+    · cortex_analyst_30_exec       Cortex Analyst 생성 SQL 라이브 실행 검증 러너
+    · cortex_analyst_30_runner     Cortex Analyst 30개 추천 질문 자연어 질의 러너
+    · o123_member_dk_footprint     컬럼명 소비처 footprint 관측(축 분리 = archive/현행/코드/문서) — 🔴 판정이 아니다 · 개명 전 grep 범위 산정용
+    · sv_dim_cardinality           차원 카디널리티 관측 — 🔴 판정 정본은 `sv_code_label_gate` 다
+    · wrap_for_read                긴 줄 접기 보조
+------------------------------------------------------------------------
+[NEEDS_ARGS] 6개
+  ⚠️ 무인자 크래시를 FAIL 로 세지 마라(O120 판정식 ㉢ · 규약 exit 2).
+    · line_len                     검사할 경로(필수)
+    · new_tool                     🆕 [O174] 도구 생성 + 이 파일 등재를 **한 동작**으로 — `--name`·`--bucket`·`--axis` 필수(무인자 exit 2). 🔴 등재 실패 시 파일을 만들지 않는다(원자성) ⇒ 「생성 후 등재 지연」이 구조적으로 불가능해진다. 승격 = `--promote-scratch`
+    · o145_transcript_audit        트랜스크립트 JSON/JSONL 경로(무인자 exit 2) — 세션의 실행 SQL·파일쓰기·bash 를 추출하고 위험 신호 6종(`rm -rf`·dbt 실행·파이프 뒤 rc·awk length·`python3 -c`·quoted heredoc)을 판정한다. 🔴 자기검토 **재료**이고 판정이 아니다
+    · o54_sv_value_gate            비교 대상 2개(무인자는 사용법 + exit 2 · O120 시정)
+    · snapshot_cli                 스냅샷할 경로 + `--op`(무인자 exit 2) — `snapshot_util` 의 CLI 진입점. 🟢 `_archive/` 에만 쓰고 **절대 덮지 않는다**(동일=재사용 · 상이=접미) ⇒ MUTATES 가 아니다. 신설 사유 = `R1-7-9` 가 금지한 `python3 -c` 인라인이 유일한 경로였다(`D7`)
+    · ws_stage_verify              파일목록 또는 `--o53`(무인자는 사용법 + exit 2 · **O121-B 시정**)
+------------------------------------------------------------------------
+[GEN] 21개
+    · build_wide_doc               09_빅테이블 VIEW 정의서 생성기
+    · gen_arch_map                 아키텍처 지도
+    · gen_bronze_exposure_audit    BRONZE 노출 감사
+    · gen_code_system_gates        코드체계 게이트
+    · gen_column_inventory_20260811 컬럼 인벤토리
+    · gen_column_mapping           컬럼계보매핑 04 — 🔴 라이브 접속 0(모델 파싱 전용)
+    · gen_concept_diagram          개념도
+    · gen_gold_erd                 GOLD 테이블별 ERD(HTML · Mermaid) — dbt yml + INFORMATION_SCHEMA · `--yaml-only` 로 라이브 없이도 돈다
+    · gen_measure_backlog          실측필요 후속작업
+    · gen_metric_gold_mapping      지표↔GOLD 매핑
+    · gen_pipeline_erd             Bronze > Silver > Gold 전체 파이프라인 ERD & 계보 카탈로그(HTML · Mermaid)
+    · gen_section_assembly         절 조립
+    · gen_silver_gold_retention    SILVER·GOLD 보존
+    · gen_unresolved_issue_summary 미해결이슈 요약 11 — 정본 추출 전용(라이브 접속 0)
+    · handoff_write                인수인계 라벨 파일 작성 + 색인 재생성(`--label`/`--index`/`--next`)
+    · nl_routing_judge             NL 스모크 응답 판정 — 라우팅 관측 · SQL 생성 · 오류표면(파일 전용)
+    · o163_ddl_live_drift          DDL↔라이브 컬럼집합 대조 — `--live` 필수(라이브 접속 0)
+    · run_bronze_audit_host        BRONZE 노출감사 06 **정본 러너** — 조회 전용(무인자 = 직접조회)
+    · session_brief                착수 브리핑(`00_BRIEF.md`)
+    · stage_mount_size_gate        마운트↔스테이지 크기 패딩식 대조(내용 드리프트) — 해시 대조는 원리적 불가
+    · verify_init_ihcho_skill      스킬 ↔ 정본 바이트 동일 + 형식 불변식 7종(줄수·조문집합·수치금지)
+------------------------------------------------------------------------
+[MUTATES] 35개
+  🔴🔴 **실행 금지** — 라이브 DDL/DML 또는 다중 파일 재작성(`R4-4-3`).
+    · _o154b_orphan_comment_fix    「전량입고 후 warn→error 승격」 폐기 문안 일괄 정정(dbt yml 3파일)
+    · _o166_rename_fix             개명 잔여 다중 파일 치환(--apply)
+    · _o169_axis1_biwi             개명 축1 병기 집행(--apply · 원문 무삭제 · 스냅샷 선행)
+    · _o169_sv_redeploy            SV_MEMBER_EVENT 재배포(CREATE OR ALTER · GRANT 보존 · 도달 확인)
+    · _o170_handoff_append         인수인계 절 삽입 + 직전 절 승계 표기(전량 쓰기 · 도달 6축 재검사)
+    · _o170_reserve                원장 §1 에 라벨 선점 1행 삽입(멱등 · 상한 초과 시 ABORT)
+    · _o170_retire_driver          승계 인수인계 절 은퇴 배치(--force · 실패 즉시 중단 · 조각별 rc 기록)
+    · apply_silver_comment_drift   SILVER 라이브 COMMENT 반영
+    · apply_table_comment_drift    라이브 COMMENT 반영
+    · build_init_ihcho_skill       스킬 정본 → SKILL.md 재작성(--apply · 스냅샷 선행)
+    · deploy_ml_semantic_views     SV 배포
+    · deploy_ml_serving_views      SERVING 뷰 배포
+    · deploy_sv                    SV 배포
+    · extract_sv_deploy            배포 SQL 추출·실행
+    · fix_stale_counts             문서 다중 치환
+    · gen_o53_ad_combined          CREATE OR REPLACE
+    · gen_o53_gold_ddl             CREATE OR REPLACE
+    · move_o63_history_entry       이력 이동
+    · nl_routing_smoke             Agent 3종 NL 라우팅 스모크 — 🔴 과금 호출(승인 후 실행)
+    · o163_dec50_rename            DEC-50 개명 다중 파일 치환(--apply)
+    · o54_sv_header_patch          SV 헤더 패치
+    · o54_sv_note_patch            SV 주석 패치
+    · o59d_snapshot                GRANT 포함 스냅샷
+    · patch_o63_wide_yml           yml 패치
+    · patch_o63f_label_null_reason COMMENT 패치
+    · patch_o63k_view_mislabel     뷰 라벨 패치
+    · patch_o64_wide_fee_lineage   계보 패치
+    · patch_sv_enum_comments       SV 열거 패치
+    · polish_sv_enum_comments      SV 열거 정리
+    · retire_rows                  원장 행 은퇴(다중 파일)
+    · retire_sections              절 본문 은퇴(다중 파일)
+    · run_o53_new_tables           테이블 생성
+    · split_doc                    허브·조각 재작성
+    · split_issue_index            원장 분할
+    · split_narrative              사례집 이관
+------------------------------------------------------------------------
+[LIB] 13개
+    · add_column_comments          
+    · add_gold_comments            
+    · census_columns               
+    · dump_schema                  
+    · field_mapping_override       
+    · mutating_guard               MUTATES 도구 공용 --apply 드라이런 가드(무플래그 집행 차단) — I2 처방
+    · o59g_paren_scan              
+    · o59l_rule7_context           
+    · o70_stale_scan               
+    · rebuild_inventory            
+    · run_gold_ddl                 
+    · sfconn                       접속 헬퍼
+    · snapshot_util                스냅샷 단일 경유점
+------------------------------------------------------------------------
+[TEST] 46개 — `--run-tests` 로 순회
+========================================================================
+불변식
+  미분류 0건 · 등재됐으나 파일 부재(유령) 0건 · 중복 등재 0건
+  임시 계측기(`_scratch_*`) 4건 — 등재 면제 · 🔴 `--final` 에서는 잔존이 FAIL
+    ⚪ 임시: _scratch_o184_dbt_role
+    ⚪ 임시: _scratch_o184_ledger
+    ⚪ 임시: _scratch_o184_sv_ad
+    ⚪ 임시: _scratch_o184_wide_yml
+    🔴 세션을 닫으려면 **지우거나** `new_tool.py` 로 **영구 도구로 승격**하라
+========================================================================
+🔴 FAIL — 임시 계측기 잔존 4건
