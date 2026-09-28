@@ -3,6 +3,10 @@
 # 🔴 -001 조각 여유가 153 B 뿐이므로 행을 짧게 유지한다(상한 40,960 B).
 import io
 import sys
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+require_apply(__file__, '원장 §1 대시보드에 라벨 선점 1행 삽입(파일 재작성)')
 
 PATH = "20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md"
 HEADER = "## 1. 상태 대시보드 (한눈에)"

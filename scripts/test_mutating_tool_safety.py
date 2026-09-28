@@ -84,19 +84,14 @@ def main():
     #   🔴 **기지목록은 면제가 아니라 백로그다** — 여기서 이름이 빠지는 것이 종결이고,
     #      이름을 **추가하는 것은 금지**다(추가하려면 그 도구를 고쳐라).
     #   ✅ O178 이 이 목록에서 뺀 것 = `apply_table_comment_drift` · `apply_silver_comment_drift`(쌍둥이 동시).
-    KNOWN_NO_FLAG = {
-        'nl_routing_smoke',            # 스모크 — 라이브 조회 위주 · 집행성 재판정 필요
-        '_o169_sv_redeploy',           # 일회성(O169) — 은퇴 후보
-        '_o170_reserve',               # 일회성(O170) — 은퇴 후보
-        '_o170_handoff_append',        # 일회성(O170) · 🔴 `cat >>` 유실 사고 계열
-        'deploy_ml_semantic_views',    # SV 배포 — `extract_sv_deploy` 경로로 통합 후보
-        'deploy_sv',                   # SV 배포 — 동상
-        'gen_o53_ad_combined',         # 일회성 생성 — 분류 재판정 필요(GEN?)
-        'move_o63_history_entry',      # 일회성(O63)
-        'o54_sv_note_patch',           # 일회성(O54)
-        'patch_o63_wide_yml',          # 일회성(O63)
-        'patch_o63k_view_mislabel',    # 일회성(O63)
-    }
+    #   ✅ 🆕 **[2026-09-23 O181] 잔여 11건 전건을 뺐다 — 목록이 비었다(I2 종결).**
+    #      처방 = 공용 `--apply` 드라이런 가드(`scripts/mutating_guard.py`) + 11곳 삽입.
+    #      🔴 **목록이 비었으므로 이제 축③ 은 「신규 무플래그 0건」을 그대로 강제한다**
+    #         ⇒ MUTATES 에 도구를 새로 등재하면서 집행 플래그를 안 두면 **즉시 FAIL** 이다.
+    #      🔴 **다시 채우지 마라** — 추가는 금지이고(위 규약) 고치는 것이 답이다.
+    #      🟢 가드가 실제로 거부하는지는 `test_mutating_guard.py` 축⑤⑥ 이 단정한다
+    #         (「심었다」와 「동작한다」는 다르다 · `O180-B-0 ㉢`).
+    KNOWN_NO_FLAG = set()
     m = re.search(r'^MUTATES = \{$(.*?)^\}$', census_before, re.M | re.S)
     check('③-MUTATES 분류 dict 를 찾을 수 있다', m is not None)
     if m:

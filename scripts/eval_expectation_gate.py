@@ -43,8 +43,15 @@ LIVE_DOCS = [
     '05_SV-Agent_ai/00_README.md',
 ]
 # Agent 정본 스펙(가장 위험 — Agent 가 직접 읽는다)
+# 🔴 [2026-09-23 O181] `AGENT_OVERALL` 제거 · 실재 3종으로 교체 — 등록부가 stale 이었다(`P132`).
+#   📏 실측 = `SHOW AGENTS IN ACCOUNT` **3건**(`AGENT_EXECUTIVE`·`AGENT_MARKETING`·`AGENT_MEMBER`
+#   · 전건 `GN_DW.SERVING` · owner `GN_DW_ADMIN`) · 파일도 `cortex_project/agents/` 에 **3폴더뿐**이고
+#   `AGENT_OVERALL` 은 라이브·파일 **양쪽에 부재**다(O121 당시에는 실재했다 ⇒ 그 뒤 개편됐다).
+#   🔴 종전 분모는 **`AGENT_MARKETING`·`AGENT_EXECUTIVE` 를 아예 보지 않았다** ⇒ 그 두 스펙의
+#   폐기값 잔존은 **검사된 적이 없다**(이 수정의 실질은 경로 고치기가 아니라 **분모 확대**다).
 LIVE_SPECS = ['cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
-              'cortex_project/agents/AGENT_OVERALL/agent_spec.yaml']
+              'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
+              'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml']
 
 # ── 폐기 절대값 등록부 ─────────────────────────────────────────────────────────
 # 형식: 폐기값 정규식 → (사유, 정본값 안내, 정본값 정규식)

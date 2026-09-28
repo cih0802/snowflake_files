@@ -84,6 +84,20 @@ def sql_files(scan=None):
     return sorted(out)
 
 
+def first_macro_line(lines):
+    """🆕 [2026-09-23 O181] 첫 `{% macro %}` 정의의 줄 번호(1-base) · 없으면 0.
+
+    🔴 왜 필요한가 = `macros/*.sql` 에서 **매크로 정의 앞** 구간은 dbt 가 렌더하지 않는다
+      ⇒ 그 구간의 주석 속 Jinja 태그는 **실해가 0** 이다(축3 오탐 2건의 정확한 원인).
+    🟢 반대로 **모델 파일에는 매크로 정의가 없다** ⇒ 이 함수가 0 을 주고 면제가 **적용되지 않는다**
+      (탐지력을 잃지 않는다). 🔴 그래서 면제 기준을 「폴더」가 아니라 이 함수로 두었다.
+    """
+    for i, line in enumerate(lines, 1):
+        if re.match(r'\s*\{%-?\s*macro\s', line):
+            return i
+    return 0
+
+
 def config_spans(lines):
     """{{ config( 로 시작해 ) }} 로 닫히는 줄 범위를 [(start, end)] 로 돌려준다(1-based).
 
@@ -133,6 +147,15 @@ def scan(scan_paths=None):
                 continue
             hit = JINJA_IN_COMMENT.search(line)
             if hit:
+                # 🆕 🔴 [2026-09-23 O181] **매크로 정의보다 앞이면 면제**(O180-A【2】 처분).
+                #   근거 = `macros/*.sql` 의 파일 머리 주석은 `{% macro %}` **밖**이므로 dbt 가
+                #   렌더하지 않는다 ⇒ 실해 0(O180 실증 = `ga4_union_shards.sql:15 < :36` ·
+                #   `gn_view_commented.sql:27 < :32`).
+                #   🟢 **폴더로 좁히지 않는다** — 판정식은 「macros 폴더인가」가 아니라
+                #      **「렌더되는 구간인가」**다. 모델 파일에는 `{% macro %}` 가 없으므로
+                #      전 줄이 렌더 대상이고 **면제가 적용되지 않는다**(탐지력 보존).
+                if first_macro_line(lines) and i < first_macro_line(lines):
+                    continue
                 findings['axis3'].append((path, i, hit.group(0)[:80]))
         # 축4 = '--' SQL 주석 직후의 '{#-' (앞 공백 제거가 다음 실행문을 주석에 먹인다)
         for i, line in enumerate(lines, 1):
@@ -148,6 +171,15 @@ def scan(scan_paths=None):
             if '-#}' not in line or i >= len(lines):
                 continue
             nxt = lines[i].lstrip() if i < len(lines) else ''
+            # 🆕 🔴 [2026-09-23 O181] **다음 줄이 Jinja 태그·표현식이면 면제**(O180-A【1】 처분).
+            #   🔎 실측 = 경고 8건 전부 `{% macro %}`·`{%- if -%}`·`{%- else -%}` 였다 ⇒
+            #      공백이 제거돼 붙어도 **Jinja 가 태그로 파싱**하므로 SQL 이 깨지지 않는다.
+            #   🟢🟢 **「macros 폴더 한정 제외」로 좁히지 않았다** — 그러면 macros 안의 진짜 사고
+            #      (`-#}` 직후 `select`·`and` 같은 실행문)를 **못 본다**. 축 이름이 이미
+            #      「직후가 **실행문**」이라고 말하고 있으므로 판정식을 이름에 맞춘 것이다.
+            #   🔴 판정식 = **폴더는 위치이고 렌더 결과가 아니다** — 분모를 위치로 자르지 마라.
+            if nxt.startswith('{%') or nxt.startswith('{{'):
+                continue
             if nxt and not nxt.startswith('--'):
                 findings['axis5'].append((path, i, ('다음줄: ' + nxt)[:120]))
 

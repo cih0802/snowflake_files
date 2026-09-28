@@ -25,6 +25,8 @@
 ⑦ 약칭 좌표는 **축4(경고)** 이고 추정 경로를 제시한다
 ⑧ 부산물(`_` 접두) 제외 — 이력에 편입된 사본이 경고를 두 번 만들지 않는다
 ⑨ exit code — 축1a 만 1 을 만든다
+🆕 ⑩ [O181] 인용 줄이 **빈 줄**이면 게이트 축8(경고) — 재균형이 행을 밀었다
+   🔴 오탐 축(내용 있는 줄) · 이중 계상 축(축3 과 겹치지 않는다)을 함께 단정한다
 """
 
 import io
@@ -65,6 +67,10 @@ def build_fixture(root):
     w(os.path.join(root, '04_silver_design', '00_README.md'), 'b\n')
     w(os.path.join(root, '20_issue', '30_설계_의사결정_조각', '30_설계_의사결정-001.md'),
       '\n'.join(['line%d' % i for i in range(1, 40)]) + '\n')
+    # 🆕 [2026-09-23 O181] 축14 대상 — **행이 밀려 빈 줄을 가리키는** 좌표를 만들 파일.
+    #   🔴 3행은 공백만 있는 줄이다(`strip()` 판정이어야 잡힌다 · 눈으로는 구별되지 않는다).
+    w(os.path.join(root, '20_issue', '97_빈줄_조각', '97_빈줄-001.md'),
+      '제목\n\n   \n본문4\n\n본문6\n')
     # 인용 문서(갱신형 정본)
     w(os.path.join(root, '20_issue', '99_인용_조각', '99_인용-001.md'), '\n'.join([
         '축1 실재 = `20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:5`',
@@ -74,6 +80,13 @@ def build_fixture(root):
         '축6 행초과 = `20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:999`',
         '축7 약칭 = `10_진단-002.md`',
         '축10 모호 = `00_README.md`',
+        '축14 빈줄 = `20_issue/97_빈줄_조각/97_빈줄-001.md:2`',
+        '축14 공백줄 = `20_issue/97_빈줄_조각/97_빈줄-001.md:3`',
+        '축14 대조군 = `20_issue/97_빈줄_조각/97_빈줄-001.md:4`',
+        # 🆕 [O181-B] 면제㉠ = 같은 줄에 `_조각/` 현행 좌표를 **병기**했다 ⇒ 무경고여야 한다.
+        '축14b 병기 = `97_빈줄-001.md:5` (현행 = `20_issue/97_빈줄_조각/97_빈줄-001.md:6`)',
+        # 🔴 대조군 = 병기가 **없는** 약식 인용은 여전히 잡혀야 한다(면제가 전부를 덮지 않는다).
+        '축14c 병기없음 = `97_빈줄-001.md:2` 를 보라',
     ]) + '\n')
     # 인용 문서(append형 이력)
     w(os.path.join(root, '20_issue', '01_세션이력_조각', '01_세션이력-001.md'),
@@ -100,7 +113,7 @@ def main():
     try:
         build_fixture(tmp)
         G.ROOT, G._INDEX, G._ARCH = tmp, None, None
-        dead, hist, over, abbrev, amb, arch = G.scan()
+        dead, hist, over, abbrev, amb, arch, blank = G.scan()
         fixable = [it for it in dead if it['fix']]
         unknown = [it for it in dead if not it['fix']]
         coords = lambda xs: sorted(it['coord'] for it in xs)  # noqa: E731
@@ -167,6 +180,42 @@ def main():
         # 🔴 대조군(재현율) — 진짜 부재는 여전히 축1b 여야 한다.
         check('02_원천결손_Gap분석.md' in coords(unknown),
               '진짜 부재 참조는 여전히 축1b 에 남는다(은폐 0)')
+
+        # ── 🆕 축14 [2026-09-23 O181] 인용 줄이 **빈 줄**인 좌표 = 축8(경고) ──────
+        #   🔴 실사고(O180-B) = `_o170_evidence.md` 인용 2건이 **이전 세션 재균형으로
+        #     이미 깨져** 있었는데 게이트는 계속 🟢 였다 — 경로만 보고 **줄 내용을 안 봤다**.
+        #     🔴 축3(행 초과)도 못 잡았다: 행 번호가 파일 **안**이어서 「끝을 넘지」 않았다.
+        #   ⇒ 이 축은 **㉠ 검출**(빈 줄·공백만 줄) + **㉡ 오탐 0**(내용 있는 줄)
+        #     + **㉢ 이중 계상 0**(축3 과 겹치지 않는다)을 단정한다.
+        print('[축14] 🆕 인용 줄이 빈 줄이면 축8 경고로 잡는다 (O180-B-0 ㉣ 처방)')
+        bl = {(it['coord'], it['want']) for it in blank}
+        target = '20_issue/97_빈줄_조각/97_빈줄-001.md'
+        check((target, 2) in bl, '진짜 빈 줄(:2)을 잡는다 · 실제 %r' % sorted(bl))
+        check((target, 3) in bl, '🔴 공백만 있는 줄(:3)도 잡는다 — `strip()` 판정이어야 한다')
+        check((target, 4) not in bl, '🔴 오탐 축 = 내용 있는 줄(:4)은 잡지 않는다')
+        check(all(it['want'] <= it['have'] for it in blank),
+              '축8 은 파일 **안**의 행만 센다(축3 과 판정 영역이 다르다)')
+        over_keys = {(it['coord'], it['want']) for it in over}
+        check(not (bl & over_keys), '🔴 이중 계상 0 — 같은 좌표가 축3·축8 에 동시에 들어가지 않는다')
+        check(G.is_blank_at(target, 999) is False,
+              '범위 밖 행 번호는 False (축3 소관이므로 여기서 세지 않음)')
+        # ── 🆕 축14b [O181-B] **면제 2종** — 넣지 않으면 영구 경고가 된다(`P130`) ────
+        #   🔴 실측 경위 = 축8 신설 직후 실물 3건이 나왔고, **이력 항목이 그 좌표를 인용**하자
+        #     경고가 3 → 8 로 **늘었다**(기록하는 행위가 경고를 만든다 · `J8` 자기참조).
+        #   ⇒ ㉠ 같은 줄에 `_조각/` **현행 좌표를 병기**하면 면제(따라갈 수 있으므로)
+        #     ㉡ append형 이력의 인용은 **관측(축8b)** 으로 분리(축2 와 같은 취지 · `R1-3-6`)
+        check(('97_빈줄-001.md', 5) not in bl,
+              '🔴 면제㉠ = 같은 줄에 `_조각/` 현행 좌표를 **병기**하면 축8 면제 (실제 %r)'
+              % sorted(bl))
+        check(('97_빈줄-001.md', 2) in bl,
+              '🔴 면제가 전부를 덮지 않는다 — 병기 없는 약식 인용은 여전히 검출 (실제 %r)'
+              % sorted(bl))
+        hist_blank = [it for it in blank if it['hist']]
+        canon_blank = [it for it in blank if not it['hist']]
+        check(all(it['src'].startswith('20_issue/01_세션이력') for it in hist_blank),
+              '🔴 `hist` 로 분리되는 것은 이력 문서뿐이다(분류 오염 0)')
+        check(all(not it['src'].startswith('20_issue/01_세션이력') for it in canon_blank),
+              '🔴 갱신형 목록에 이력이 섞이지 않는다')
 
         print('[축10] exit code — 축1a 만 FAIL 을 만든다')
         rc = G.main([])

@@ -4,6 +4,10 @@
 # 🔴 붙인 뒤 §0-WWWW/O171 의 「여기서 시작한다」를 취소선으로 승계 표기한다.
 import io
 import sys
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+require_apply(__file__, '인수인계 절 삽입 + 직전 절 승계 표기(조각 전량 쓰기)')
 
 CHUNK = "99_NEXT_SESSION_조각/99_NEXT_SESSION-035.md"
 ENTRY = "tmp/_o170_handoff.md"

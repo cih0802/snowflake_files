@@ -118,7 +118,21 @@ def render_model(cn, path, layer='GOLD'):
     s = re.sub(r"\{\{\s*ref\('([A-Za-z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
     s = re.sub(r"\{\{\s*source\('([^']+)',\s*'([^']+)'\)\s*\}\}", lambda m: resolve_source(m.group(1), m.group(2)), s)
     s = re.sub(r"\{\{\s*clean_str\('([^']+)'\)\s*\}\}", lambda m: f"NULLIF(TRIM({m.group(1)}), '')", s)
-    s = re.sub(r"\{\{\s*bigquery_range_predicate\([^)]*\)\s*\}\}", '1=1', s)
+    # 🔴 [2026-09-23 O181] `_text`·`_sk` **변종**까지 잡는다 — 종전 패턴은 `bigquery_range_predicate(`
+    #   만 봐서 `bigquery_range_predicate_text('EVENT_DATE')` 에서 **게이트가 예외로 죽었다**
+    #   (`BIGQUERY_BASIC.sql:62` · rc=1 이 「위반」으로 보였으나 실체는 **분모 결함**이었다).
+    #   🟢 macro 정본 = `macros/bigquery_range_predicate.sql` 에 `predicate`·`predicate_text`·
+    #      `predicate_sk` **3종**이 있다 ⇒ 셋 다 창 술어이므로 판정에는 `1=1` 로 충분하다.
+    #   🔴 판정식 = **개명·파생 macro 가 생기면 이 렌더러의 분모도 같이 넓혀야 한다**(O178-B 개명 잔여).
+    #   🟢 [O181] 그래서 **술어형 macro 를 한곳에 열거**한다 — 이들은 `WHERE`/`AND` 뒤에만 오므로
+    #      출력 컬럼 집합에 영향이 없고 판정에는 `1=1` 로 충분하다. 추가는 이 목록 한 줄이다.
+    #      · `bigquery_range_predicate{,_text,_sk}` = 적재 창 술어(O178-B 개명)
+    #      · `gn_member_master_filter`             = 고아 회원 제거 semi-join(O179 신설 · `EXISTS`)
+    #   🔴 인자 안에 **괄호가 들어온다** — `gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')")`
+    #      ⇒ `[^)]*` 는 첫 `)` 에서 끊겨 실패한다. 닫는 `}}` 까지 **비탐욕**으로 잡아야 한다
+    #      (`CRM_MEMBER_AMT_CHANGE.sql` 실물 · O181 2차 시정).
+    for _pred in (r'bigquery_range_predicate(?:_text|_sk)?', r'gn_member_master_filter'):
+        s = re.sub(r"\{\{\s*" + _pred + r"\(.*?\)\s*\}\}", '1=1', s, flags=re.DOTALL)
     s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
 
     def _arg(x):

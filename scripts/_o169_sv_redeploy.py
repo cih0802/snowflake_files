@@ -14,6 +14,10 @@ import sys
 
 import snowflake.connector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+require_apply(__file__, 'SV_MEMBER_EVENT 라이브 재배포(CREATE OR ALTER)')  # 🔴 [O181 · I2]
+
 DEPLOY = '/root/deploy_o67/05_2_SV_DDL_MEMBER_EVENT.deploy.sql'
 sql = io.open(DEPLOY, encoding='utf-8').read()
 

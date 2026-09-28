@@ -29,6 +29,10 @@ import io
 import re
 import sys
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 DDL = '/workspace/03_top-down_gold/06_DDL.sql'
 OUT_SQL = '/workspace/10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql'
 OUT_YML = '/tmp/o53_out/WIDE_AD_COMBINED.cols.yml'
@@ -115,6 +119,7 @@ def parse_ddl_comments(table):
 
 
 def main():
+    require_apply(__file__, 'WIDE_AD_COMBINED 모델·yml 파일 생성(파일 재작성)')  # 🔴 [O181 · I2]
     fap = parse_ddl_comments('FACT_AD_PERFORMANCE')
     dig = parse_ddl_comments('FACT_AD_DIGITAL')
     brc = parse_ddl_comments('FACT_AD_BROADCAST')

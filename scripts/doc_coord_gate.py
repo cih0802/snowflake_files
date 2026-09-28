@@ -22,6 +22,14 @@
   죽은 좌표. 과거 기록은 **그 시점 사실**이므로 소급 수정 대상이 아니다(`R1-3-6`).
 * **축3(경고 🟠)** = 행 번호가 **파일 끝을 넘는** 좌표. 재균형으로 흔히 어긋나므로
   blocking 으로 올리지 않는다(그러나 인용을 따라가면 엉뚱한 줄을 읽게 된다).
+* 🆕 **축8(경고 🟠)** = 행 번호가 파일 안에 있지만 **그 줄이 빈 줄**인 좌표.
+  🔴🔴 [2026-09-23 O181 신설 · 발견 = `O180-B-0 ㉣`] **이 게이트는 경로만 보고 줄 내용을
+  보지 않았다** ⇒ **재균형이 깬 좌표를 탐지하지 못했다.** 실물 = `_o170_evidence.md` 인용
+  2건이 이전 세션 재균형으로 **이미 깨져** 있었고 게이트는 계속 🟢 였다(축3 도 못 잡았다 —
+  행 번호가 파일 **안**이라 「끝을 넘지」 않았기 때문이다).
+  🟢 판정식 = **빈 줄을 근거로 인용하는 문장은 없다** ⇒ 빈 줄이면 좌표가 밀린 것이다.
+  🔴 blocking 이 아닌 이유 = ㉠ 이력·사례집의 과거 인용까지 걸리고(축2 와 같은 취지)
+  ㉡ 밀린 좌표의 **올바른 행**은 사람이 제목으로 찾아야 한다(도구가 추정하면 오도한다).
 * 🟢 **이전 제안** — 형제 경로가 죽었고 `<문서>_조각/` 에 같은 파일이 있으면
   **고칠 경로를 같이 출력**한다(사람이 손으로 찾지 않게 한다).
 
@@ -260,14 +268,47 @@ def nlines(rel):
         return fh.read().count('\n') + 1
 
 
+_TLINES = {}
+
+
+def target_lines(rel):
+    """대상 파일의 줄 목록(1회 읽고 캐시) — 🔴 `nlines` 와 **같은 분모**를 쓴다.
+
+    🟢 `nlines` 는 `count('\\n')+1` 이고 이 함수는 `split('\\n')` 이므로 길이가 같다
+      (`J8` 「같은 것을 다르게 재지 마라」 — 축3 과 축8 의 행 번호 기준이 어긋나면
+       한쪽이 「끝을 넘지 않았다」고 하고 다른 쪽이 IndexError 를 낸다).
+    🔴 캐시 키에 `ROOT` 를 넣는다 — 음성 테스트가 `ROOT` 를 갈아끼우므로
+      경로만 키로 쓰면 **가짜 워크스페이스 사이에 내용이 새어** 판정이 오염된다.
+    """
+    key = (ROOT, rel)
+    if key not in _TLINES:
+        with io.open(os.path.join(ROOT, rel), encoding='utf-8', errors='replace') as fh:
+            _TLINES[key] = fh.read().split('\n')
+    return _TLINES[key]
+
+
+def is_blank_at(rel, lineno):
+    """🆕 축8 [O181] 그 좌표가 가리키는 줄이 **빈 줄**인가.
+
+    🔴 판정은 `strip()` 기준이다 — 공백·탭만 있는 줄도 근거가 될 수 없다.
+    🟢 범위를 벗어나면 False 를 준다(그 축은 축3 이 이미 센다 · 이중 계상 금지).
+    """
+    lines = target_lines(rel)
+    if lineno < 1 or lineno > len(lines):
+        return False
+    return lines[lineno - 1].strip() == ''
+
+
 def is_history(path):
     return os.path.basename(path).startswith(HISTORY_PREFIX)
 
 
 def scan():
-    """(dead_canon, dead_history, overflow, abbrev, ambiguous, archived) — 각 항목 = dict."""
+    """(dead_canon, dead_history, overflow, abbrev, ambiguous, archived, blank)
+    — 각 항목 = dict. 🆕 [O181] 7번째 = 축8 **빈 인용줄**."""
     dead_canon, dead_hist, overflow, abbrev, ambiguous = [], [], [], [], []
     archived = []
+    blank = []
     for p in md_files():
         rel = os.path.relpath(p, ROOT)
         hist = is_history(p)
@@ -300,7 +341,23 @@ def scan():
                         overflow.append({'src': rel, 'line': n, 'coord': coord,
                                          'target': got, 'want': int(lineno),
                                          'have': tot, 'hist': hist})
-    return dead_canon, dead_hist, overflow, abbrev, ambiguous, archived
+                    elif is_blank_at(got, int(lineno)):
+                        # 🆕 축8 [O181] 좌표가 살아 있는데 **가리키는 줄이 비었다**
+                        #   ⇒ 재균형·은퇴가 행을 밀었다(경로 축으로는 보이지 않는다).
+                        # 🆕 🔴 [O181-B 좁힘] **면제 2종** — 넣지 않으면 영구 경고가 된다(`P130`).
+                        #   ㉠ **같은 줄에 현행 좌표를 병기**했으면 면제 — 「구 좌표를 지우지 않고
+                        #      병기한다」가 이 워크스페이스의 규약이고(`R2-8` 무변경 · O169 병기 축),
+                        #      그 줄은 **이미 따라갈 수 있다**. 판정식 = 같은 줄에 `_조각/` 경로
+                        #      좌표가 함께 있는가. 🟢 선례 = `eval_expectation_gate` 의
+                        #      「정본값이 같은 줄에 있으면 면제」(O57 에서 오탐 3건을 없앤 규칙).
+                        #   ㉡ **append형 이력의 인용은 관측**이다 — 축2 와 같은 취지다
+                        #      (과거 기록은 그 시점 사실 · `R1-3-6`) ⇒ `hist` 는 분리해 센다.
+                        if '_조각/' in line and '_조각/' not in coord:
+                            continue
+                        blank.append({'src': rel, 'line': n, 'coord': coord,
+                                      'target': got, 'want': int(lineno),
+                                      'have': tot, 'hist': hist})
+    return (dead_canon, dead_hist, overflow, abbrev, ambiguous, archived, blank)
 
 
 def handoff_label_dups():
@@ -351,7 +408,7 @@ def main(argv=None):
     ap.add_argument('--list', action='store_true', help='죽은 좌표 전건을 보인다')
     a = ap.parse_args(argv)
 
-    dead_canon, dead_hist, overflow, abbrev, ambiguous, archived = scan()
+    dead_canon, dead_hist, overflow, abbrev, ambiguous, archived, blank = scan()
     fixable = [it for it in dead_canon if it['fix']]
     unknown = [it for it in dead_canon if not it['fix']]
     print('[문서 좌표 실재 게이트] 스캔 %d파일' % len(md_files()))
@@ -396,6 +453,24 @@ def main(argv=None):
     if dups:
         print('       🟢 처방 = 앞으로 **세션 라벨 병기**(`0-MMMM/O166`) · '
               '🔴 기존 라벨을 바꾸지 마라(발행된 인용 좌표가 깨진다)')
+    # 🆕 [2026-09-23 O181] 축8 = 인용 줄이 **빈 줄**(재균형이 행을 밀었다 · 경고).
+    #   🔴 [O181-B] **이력(append형)은 분리해 관측으로 센다** — 축2 와 같은 취지다.
+    blank_canon = [it for it in blank if not it['hist']]
+    blank_hist = [it for it in blank if it['hist']]
+    print('  축8 인용 줄이 빈 줄인 좌표: %d건 (경고 · 재균형이 행을 밀었다)' % len(blank_canon))
+    for it in (blank_canon if a.list else blank_canon[:10]):
+        print('    🟠 %s:%d  %s → %s:%d 은 **빈 줄**(총 %d줄)'
+              % (it['src'], it['line'], it['coord'], it['target'],
+                 it['want'], it['have']))
+    if blank_canon:
+        print('       🟢 고치는 방법 = 그 문서에서 **절 제목으로 찾아** 행 번호를 갱신하거나 '
+              '**현행 좌표를 같은 줄에 병기**하라(병기하면 이 축이 면제한다) · '
+              '🔴 도구가 추정하지 않는다(오도 위험)')
+    print('  축8b 이력(append형)의 빈 줄 인용: %d건 (관측 · 소급 수정 대상 아님)' % len(blank_hist))
+    if a.list:
+        for it in blank_hist:
+            print('    ⚪ %s:%d  %s → %s:%d' % (it['src'], it['line'], it['coord'],
+                                                it['target'], it['want']))
 
     print('')
     if fixable:

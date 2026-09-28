@@ -32,6 +32,11 @@ OB = '{' + '#'          # 여는 Jinja 주석
 CB = '#' + '}'          # 닫는 Jinja 주석
 OE = '{' + '{'          # 여는 Jinja 표현식
 CE = '}' + '}'          # 닫는 Jinja 표현식
+# 🆕 [2026-09-23 O181] 여는·닫는 Jinja **태그** — 축3·축5 면제 축이 필요로 한다.
+#   🔴 문자열을 쪼개 쓰는 이유는 기존 상수와 같다: 이 파일 자신이 게이트 분모에 걸리지 않게 한다
+#      (`J8` 자기참조 — 음성 테스트의 오염 문안이 라이브 스캔에서 결함으로 잡히면 안 된다).
+OE2 = '{' + '%'
+CE2 = '%' + '}'
 
 RESULTS = []
 
@@ -106,6 +111,47 @@ def t_axis3_jinja_in_sql_comment():
     )
     f = run_on(body)
     check('축3 오염 검출', len(f['axis3']) >= 1, '검출 %d건' % len(f['axis3']))
+
+
+def t_o181_narrowing_preserves_detection():
+    """🆕 [2026-09-23 O181] 축3·축5 **면제를 넣었는데 탐지력이 남아 있는가**(양방향).
+
+    🔴🔴 왜 이 축인가 = O180-A 가 남긴 처분 질문은 *"축5 를 **models 한정**으로 좁힐지"* 였고
+      그 답은 **아니다**였다. 폴더로 자르면 `macros` 안의 진짜 사고를 못 본다.
+      ⇒ 좁힘 기준을 **의미**로 바꿨다(축5 = 다음 줄이 Jinja 태그인가 · 축3 = 매크로 정의 앞인가).
+    🔴 면제는 **탐지력을 깎는 방향**이므로 음성 축이 없으면 「조용히 눈감은 게이트」가 된다
+      (`P130` 의 반대 실패 = 항상 초록인 게이트).
+    ⇒ 이 함수는 ㉠ 면제가 동작한다 ㉡ **면제가 진짜 사고를 덮지 않는다** 를 함께 단정한다.
+    """
+    # ── 축5 ㉠ 면제 = 닫기 직후가 Jinja 태그면 경고가 아니다(실물 8건의 형태) ──────
+    body_ok = CONFIG_OK + OB + ' 설명 -' + CB + '\n' + OE2 + ' macro x() ' + CE2 + '\n'
+    f = run_on(body_ok)
+    check('O181 축5 면제 — 다음 줄이 Jinja 태그면 무경고',
+          len(f['axis5']) == 0, '검출 %d건' % len(f['axis5']))
+    # ── 축5 ㉡ 🔴 탐지 보존 = 다음 줄이 **SQL 실행문**이면 여전히 잡는다 ──────────
+    body_bad = CONFIG_OK + OB + ' 설명 -' + CB + '\nAND X = 1\n'
+    f = run_on(body_bad)
+    check('🔴 O181 축5 탐지 보존 — 다음 줄이 실행문이면 검출',
+          len(f['axis5']) >= 1, '검출 %d건' % len(f['axis5']))
+
+    # ── 축3 ㉠ 면제 = 매크로 정의 **앞** 머리 주석은 렌더되지 않는다 ───────────────
+    body_hdr = ('-- 문서: ' + OE + " source('a','B') " + CE + ' 를 쓴다\n'
+                + OE2 + ' macro m() ' + CE2 + '\nSELECT 1\n' + OE2 + ' endmacro ' + CE2 + '\n')
+    f = run_on(body_hdr)
+    check('O181 축3 면제 — 매크로 정의 앞 머리 주석은 무경고',
+          len(f['axis3']) == 0, '검출 %d건' % len(f['axis3']))
+    # ── 축3 ㉡ 🔴 탐지 보존 = 매크로 정의 **뒤**(렌더 구간)면 여전히 잡는다 ────────
+    body_in = (OE2 + ' macro m() ' + CE2 + '\n'
+               '-- 설명: ' + OE + " source('a','B') " + CE + '\nSELECT 1\n'
+               + OE2 + ' endmacro ' + CE2 + '\n')
+    f = run_on(body_in)
+    check('🔴 O181 축3 탐지 보존 — 매크로 정의 뒤 주석은 검출',
+          len(f['axis3']) >= 1, '검출 %d건' % len(f['axis3']))
+    # ── 축3 ㉢ 🔴 모델 파일(매크로 없음)은 면제가 적용되지 않는다 ─────────────────
+    body_model = '-- 참고: ' + OE + " ref('X') " + CE + '\n' + CONFIG_OK + 'SELECT 1\n'
+    f = run_on(body_model)
+    check('🔴 O181 축3 — 모델 파일은 면제 대상이 아니다(매크로 정의 0)',
+          len(f['axis3']) >= 1, '검출 %d건' % len(f['axis3']))
 
 
 def t_axis4_strip_open_after_sql_comment():
@@ -279,6 +325,7 @@ def main():
         t_axis4_strip_open_after_sql_comment,
         t_axis5_strip_close_before_statement,
         t_axis6_delimiter_imbalance,
+        t_o181_narrowing_preserves_detection,
         t_no_fp_quoted_jinja_in_config,
         t_no_fp_config_example_in_comment,
         t_no_fp_clean_model,

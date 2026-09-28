@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 최근 갱신일 : 2026-09-17
+-- 최근 갱신일 : 2026-09-28
 -- 🟢 파일명에 날짜를 넣지 않는다(2026-09-15 사용자 결정 · 구 파일명 = *_20260730).
 --    이유 = 갱신마다 개명하면 이 파일을 참조하는 01·02·03·05·07번 문서와 게이트 경로를
 --    매번 함께 고쳐야 하고, 한 곳이라도 놓치면 참조가 깨진다. **날짜는 파일 안에만 적는다.**
@@ -20,15 +20,15 @@
 --   [형제 DDL] 50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
---              → GN_DW.ML.ML_RST_DATA_* (예측결과 16종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 78 테이블이 완성된다. 선후 관계는 없다.
+--              → GN_DW.ML.ML_RST_DATA_* (예측결과 17종)
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 82 테이블이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 본 파일의 범위 / SCOPE
---   GN_DW.BRONZE_CRM (50) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2)
---   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (3) = 61 테이블
+--   GN_DW.BRONZE_CRM (53) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (2)
+--   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (3) = 64 테이블
 --   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
 --      해당 원천의 정제 결과는 06번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
 --   🟢 BRONZE_GA4 는 2026-08-20 자로 삭제된 옛 스키마(events_* · BigQuery Export 원본, VARIANT 다수)와는
@@ -50,7 +50,7 @@
 --   🔴 **[2026-08-29 개정] 구조 정본이 02_1_A DB정보.sql → 99_provided_definition/11~13 으로 바뀌었다.**
 --     종전 규칙은 「02_1_A DB정보.sql 을 최우선 정본으로 하고, 원천 정의 문서와 어긋나면 실측값을 따른다」
 --     였다. 그 규칙을 그대로 따르면 2026-08-29 갱신분이 **되돌려진다.**
---     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4
+--     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --       · BRONZE_BIGQUERY 3** 이고, 삭제된 컬럼 `MNYRS_COST_DIV_YN` 이 아직 살아 있다(1341행).
 --       ⇒ 그 파일은 **더 이른 시점의 스냅샷**이다. 「실측」이라는 이유만으로 최신이 되지는 않는다.
 --     ⇒ 규칙 = **날짜가 더 최신인 스냅샷을 정본으로 한다.** 현재는 11~13 이다.
@@ -85,9 +85,9 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-09-17
+--   - 갱신일자    : 2026-09-28
 --   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
---   - 테이블 수   : 61  (CRM 50, AGENCY 4, ERP 2, GA4 2, GSC 3)
+--   - 테이블 수   : 64  (CRM 53, AGENCY 4, ERP 2, GA4 2, GSC 3)
 --   - 시퀀스 수   : 3   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO,
 --                        BRONZE_GSC.SEQ_SYNC_ERR_INFO)
 --   - 파일 포맷   : 4   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
@@ -96,8 +96,23 @@
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-09-28  (원천 정의 문서 11/12 갱신분 반영 — 기계 대조로 확정 · 스테이지 CSV 헤더 실측 일치)
+--     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV  (20컬럼, 신규 · 목표구분별 회원개발목표)
+--        · ⚠️ CRM 중 유일하게 `_LOAD_DT/_BATCH_ID/_STDR_YM` 이 **없다**(원천 구조 그대로). 코멘트는 원천 문안.
+--     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_SCHDUL_MNG          (12컬럼, 신규 · 일정 관리)
+--     + [TABLE]  GN_DW.BRONZE_CRM.TM_MS_AT_TMPLAT_MNG       (26컬럼, 신규 · 알림톡 템플릿 관리)
+--        · 위 2개는 원천에 컬럼 코멘트가 없어 동명 컬럼 문안 + 명명 규칙으로 부여했다(현업 확인 대상).
+--     🔴 [TABLE]  GN_DW.BRONZE_AGENCY 3테이블 **컬럼 구성·순서 재편** (원천 12번 무변경 발췌)
+--        · DGT_AD_CMPGN_DTLS    36 → 41컬럼  (2026-09-17 의 CMPGN_UTM_NM 은 UTM_CMPGN_NM 으로 다시 바뀌었다)
+--        · REBRDC_AD_CMPGN_DTLS 34 → 21컬럼  (CASE1~3_* 15컬럼 제거 · 캠페인코드/비용 컬럼 추가)
+--        · VIDEO_AD_CMPGN_DTLS  32 → 37컬럼
+--        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 이전 판 CSV·테이블은 전부 무효 — 테이블 재생성 후 재적재.
+--           스테이지(SANDBOX.TOOLS.MIG_LOAD_STAGE, 2026-09-28 업로드분) CSV 헤더는 본 파일과 **순서까지 일치**(실측).
+--        ⇒ 🔴 컬럼명을 참조하는 SILVER/GOLD dbt 모델(AGENCY 3종)은 재작성 대상이다.
+--     * 스키마 5 유지 · 테이블 61 → 64(CRM 50 → 53) · 시퀀스 3 유지 · 파일 포맷 4 유지.
+--     * ERP / GA4 / GSC 는 변경 없다(기계 대조 차이 0).
 --   2026-09-17  (원천 정의 문서 11/12/16 갱신분 반영 — 기계 대조로 확정)
---     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 열이 1개씩 늘었으므로 이전 판 CSV 는 열 수가
 --           1개 부족하다 — 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것(재언로드가 정답이다).
 --        · 컬럼 코멘트는 원천 11번에 없어 명명 규칙으로 부여했다(현업 확인 대상).
@@ -146,7 +161,7 @@
 --     🟠 [TABLE]  GN_DW.BRONZE_CRM.TM_PM_SETLE_CMPNY_ACNT    (14컬럼) — 종전 판 **누락분 보완**
 --        ⇒ 이 2개는 이번 개편으로 신설된 것이 아니라 원천 11번에 계속 있었는데 본 파일에 빠져
 --           있었다(게이트 축1 이 적발). 신규분과 구분해 적는다.
---     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.
+--     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --     * AGENCY 4테이블 · ERP 2테이블 · GA4 2테이블 · GSC 2테이블은 구조·컬럼·코멘트 변경 없다
 --       (12번·18번 기계 대조 결과 차이 0).
 --     * 신규 CRM 테이블·컬럼의 한글 코멘트는 컬럼정의서 CSV 에 **없다**(전건 0건 실측) ⇒
@@ -206,7 +221,7 @@
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
 --   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 50 / ERP 2 / GA4 2 / GSC 3 / ML 16 / SILVER 1 = 78):
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 53 / ERP 2 / GA4 2 / GSC 3 / ML 17 / SILVER 1 = 82):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
 --          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
@@ -217,9 +232,9 @@
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 61개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
---     → CRM/AGENCY/ERP(56개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
---     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION(VARIANT 4종, 05번)이며
+--   - 본 파일의 64개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
+--     → CRM/AGENCY/ERP(59개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
+--     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION/PREDICT(VARIANT 5종, 05번)이며
 --     각각 07번 A.5 · A.5-B.2 가 담당한다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
 --   - 🔴 BDGT_ACMSLT_LEDGER 는 2026-08-29 자로 컬럼 순서가 바뀌었다(변경 이력 참조).
@@ -229,7 +244,7 @@
 --     이전 판 CSV 와는 열 구성이 두 번 어긋났다 — 그대로 적재하면 실패하거나 조용히 밀린다.
 --     재언로드가 정답이다. 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것.
 --     오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 옮겨졌으므로 그 2개도 함께 받는다.
---   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.
+--   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --     ⇒ CRM CSV 는 **전건 재언로드** 대상이다(열이 1개씩 늘었다).
 --   - 🔴 2026-09-17 자로 EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 바뀌었다(원천 13번 정본).
 --     열 수·순서는 그대로이므로 A.1 (4) 열 대조는 통과하지만, **문자열 → DATE 형변환이 새로 생긴다.**
@@ -240,28 +255,30 @@
 --     원본(A) 데이터를 그대로 옮기려면 07번 문서에서 별도 CSV 언로드/적재 절차를 확인할 것.
 --
 -- 객체 인덱스 / OBJECT INDEX
---   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 50개
+--   [SCHEMA] GN_DW.BRONZE_CRM — 원천 적재: CRM (회원/납입/캠페인), 테이블 53개
 --     SND_MEMBER_LIST, SND_MEMBER_MAIL_LINK_LOG, SND_MEMBER_OPEN_LOG, SND_REQ_MST,
 --     TC_CMMN_CD, TC_CMMN_DTL_CD, TC_MKTNG_DTL_CD,
 --     TD_MS_AT_TMPLAT_BTN_LIST, TD_MS_CRMN_PRTCPNT, TD_MS_EMAIL_LQY_SNDNG,
 --     TD_MS_EMAIL_SNDNG_DTLS, TD_MS_EVENT_PRTCPNT_DTL, TD_MS_MSG_AT_LQY_SNDNG,
 --     TD_MS_MSG_AT_SNDNG_DTLS, TD_MS_PSTMTR_LQY_SNDNG, TD_MS_PSTMTR_SNDNG_DTL,
 --     TH_MM_FDRM_MBER_STNG_DTLS, TH_PM_SETLE_INFO_HIST, TM_CM_BRND_MNG,
---     TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL,
---     TM_CM_SPNSR_BSNS_INFO, TM_MM_FDRM_MBER_DT_DTLS, TM_MM_FDRM_MBER_DVLP_AMT,
+--     TM_CM_CMPGN_MNG, TM_CM_DEPT_INFO, TM_CM_MBER_DVLP_GOAL, TM_CM_MBER_DVLP_GOAL_DIV,
+--     TM_CM_SCHDUL_MNG, TM_CM_SPNSR_BSNS_INFO, TM_MM_FDRM_MBER_DT_DTLS, TM_MM_FDRM_MBER_DVLP_AMT,
 --     TM_MM_FDRM_MBER_INFO,
 --     TM_MM_FDRM_MBER_IRSD, TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT, TM_MM_FDRM_MBER_RE_SPNSR,
 --     TM_MM_FDRM_MBER_SPNSR, TM_MM_FDRM_MBER_SPNSR_BSNS,
---     TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_ONCE_MBER_INFO, TM_MS_CRMN,
+--     TM_MM_FDRM_MBER_SPNSR_DSCNTC, TM_MM_ONCE_MBER_INFO, TM_MS_AT_TMPLAT_MNG, TM_MS_CRMN,
 --     TM_MS_EMAIL_SNDNG, TM_MS_EMAIL_TMPLAT_MNG, TM_MS_EVENT, TM_MS_MSG_AT_SNDNG,
 --     TM_MS_PSTMTR_SNDNG, TM_PM_DNTN_DTLS, TM_PM_INSTT_ACNUT, TM_PM_MBRFEE_ACMSLT,
 --     TM_PM_SETLE_CMPNY_ACNT, TM_PM_SETLE_INFO,
 --     TM_RM_BPLC_MNG, TM_RM_CHILD_MSTR_INFO, TM_RM_RELATNSP_CHG_INFO,
 --     TM_RM_RELATNSP_GFTMNEY_INFO, TM_RM_RELATNSP_LETTER_INFO, TM_RM_RELATNSP_MSTR_INFO
+--     🔴 2026-09-28 신규 = TM_CM_MBER_DVLP_GOAL_DIV · TM_CM_SCHDUL_MNG · TM_MS_AT_TMPLAT_MNG
 --     🔴 2026-09-15 삭제 = TM_CM_MKTNG_CMPGN_MNG · TM_CM_MKTNG_UTM (TC_MKTNG_DTL_CD 로 통합)
 --
 --   [SCHEMA] GN_DW.BRONZE_AGENCY — 원천 적재: 대행사 (디지털/DRTV/재송출 광고), 테이블 4개
---     DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, SYNC_ERR_INFO, VIDEO_AD_CMPGN_DTLS
+--     DGT_AD_CMPGN_DTLS (41), REBRDC_AD_CMPGN_DTLS (21), SYNC_ERR_INFO (4), VIDEO_AD_CMPGN_DTLS (37)
+--     🔴 2026-09-28 광고 3테이블 컬럼 구성·순서 재편(변경 이력 참조) — 이전 판 CSV 로 적재 금지.
 --     [SEQUENCE]    SEQ_SYNC_ERR_INFO
 --     [FILE FORMAT] GN_CSV_FORMAT (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --
@@ -287,7 +304,7 @@
 --        원천 16번에 적재 경로(SP_LOAD_*)가 없다 — 용도·테이블 COMMENT 문안은 현업 확인 대상이다.
 --
 --   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
---   [별도 파일] GN_DW.ML.ML_RST_DATA_* 16종        — 05번 참조 (PREDICTION=VARIANT 4종 포함)
+--   [별도 파일] GN_DW.ML.ML_RST_DATA_* 17종        — 05번 참조 (PREDICTION/PREDICT=VARIANT 5종 포함)
 -- =====================================================================
 
 
@@ -890,6 +907,47 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO (
   _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
   _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
+-- 2026-09-28 신규 — 원천 11번. 목표구분(팀/조직·신규기존·후원사업·상세)별 월간 회원개발 목표(M01~M12).
+--   ⚠️ 원천이 _LOAD_DT/_BATCH_ID/_STDR_YM 을 두지 않는다(CRM 중 유일) — 원천 구조 그대로 20컬럼. 코멘트는 원천 문안 그대로.
+create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV (
+  YEAR VARCHAR(16777216) COMMENT '연도',
+  GOAL_TYPE_NM VARCHAR(16777216) COMMENT '목표구분',
+  CPR_DIV_NM VARCHAR(16777216) COMMENT '법인구분',
+  NEW_OLD_DIV_NM VARCHAR(16777216) COMMENT '신규기존구분',
+  ORG_DIV_NM VARCHAR(16777216) COMMENT '조직구분',
+  TEAM_NM VARCHAR(16777216) COMMENT '팀명',
+  SPNSR_BSNS_DIV_NM VARCHAR(16777216) COMMENT '후원사업구분',
+  DTL_DIV_NM VARCHAR(16777216) COMMENT '상세목표구분',
+  M01_GOAL_CNT FLOAT COMMENT '1월 목표치',
+  M02_GOAL_CNT FLOAT COMMENT '2월 목표치',
+  M03_GOAL_CNT FLOAT COMMENT '3월 목표치',
+  M04_GOAL_CNT FLOAT COMMENT '4월 목표치',
+  M05_GOAL_CNT FLOAT COMMENT '5월 목표치',
+  M06_GOAL_CNT FLOAT COMMENT '6월 목표치',
+  M07_GOAL_CNT FLOAT COMMENT '7월 목표치',
+  M08_GOAL_CNT FLOAT COMMENT '8월 목표치',
+  M09_GOAL_CNT FLOAT COMMENT '9월 목표치',
+  M10_GOAL_CNT FLOAT COMMENT '10월 목표치',
+  M11_GOAL_CNT FLOAT COMMENT '11월 목표치',
+  M12_GOAL_CNT FLOAT COMMENT '12월 목표치'
+)COMMENT='목표구분별 회원개발목표'
+;
+-- 2026-09-28 신규 — 원천 11번. 일정 관리 마스터(12컬럼).
+--   한글 코멘트는 원천·컬럼정의서 CSV 미수록분이라 명명 규칙으로 부여했다(현업 확인 대상).
+create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_SCHDUL_MNG (
+  SCHDUL_KEY NUMBER(10,0) COMMENT '일정KEY',
+  SCHDUL_DE DATE COMMENT '일정일자',
+  SCHDUL_DIV_CD VARCHAR(3) COMMENT '일정구분코드',
+  SCHDUL_CD VARCHAR(5) COMMENT '일정코드',
+  SCHDUL_TIT VARCHAR(100) COMMENT '일정제목',
+  FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
+  FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
+  LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
+  LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
+  _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
+);
 -- 2026-09-15 신규 — 원천 11번 540행. 일시회원 → 정기회원 전환 매핑.
 --   ⚠️ 현업 공유 메시지 = 「일시,정기회원 전환 테이블(**회비이관시에만**)」 ⇒ 전 회원이 아니라
 --      회비 이관이 발생한 건만 들어온다. 커버리지를 전량으로 가정하면 조인 손실이 난다.
@@ -1065,6 +1123,36 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO (
   FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
   REGIST_DEPT_CD VARCHAR(10) COMMENT '등록부서코드',
   FRST_RGSTR_ID VARCHAR(100) COMMENT '최초등록자ID',
+  _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
+  _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
+  _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
+);
+-- 2026-09-28 신규 — 원천 11번. 알림톡 템플릿 관리(26컬럼 · TD_MS_AT_TMPLAT_BTN_LIST 의 상위 마스터로 추정).
+--   한글 코멘트는 원천 미수록 — TM_MS_EMAIL_TMPLAT_MNG 동명 컬럼 문안 + 명명 규칙으로 부여했다(현업 확인 대상).
+create or replace TABLE GN_DW.BRONZE_CRM.TM_MS_AT_TMPLAT_MNG (
+  TMPLAT_ID VARCHAR(30) COMMENT '템플릿ID',
+  CPR_DIV_CD VARCHAR(3) COMMENT '법인구분코드',
+  SNDNG_CD_ID VARCHAR(20) COMMENT '발신코드ID',
+  SNDNG_DTL_CD_ID VARCHAR(20) COMMENT '발신상세코드ID',
+  ATMC_YN VARCHAR(1) COMMENT '자동여부',
+  APRV_STAT_CD VARCHAR(3) COMMENT '승인상태코드',
+  APRV_FAILR_CTNT VARCHAR(4000) COMMENT '승인실패내용',
+  TIT VARCHAR(100) COMMENT '제목',
+  TMPLAT_CTNT VARCHAR(16777216) COMMENT '템플릿내용',
+  WRITNG_DEPT_ID VARCHAR(20) COMMENT '작성부서ID',
+  WRITNG_DEPT_NM VARCHAR(30) COMMENT '작성부서명',
+  CHRG_DEPT_ID VARCHAR(20) COMMENT '담당부서ID',
+  TMPLAT_RM VARCHAR(4000) COMMENT '템플릿비고',
+  ALTRTV_MSG_SNDNG_YN VARCHAR(1) COMMENT '대체메시지발신여부',
+  ALTRTV_MSG_TMPLAT_KEY NUMBER(10,0) COMMENT '대체메시지템플릿KEY',
+  ALTRTV_MSG_CTNT VARCHAR(16777216) COMMENT '대체메시지내용',
+  ALTRTV_MSG_ATCHFL_ID VARCHAR(20) COMMENT '대체메시지첨부파일ID',
+  WRITNG_GUIDE_ATCHFL_ID VARCHAR(20) COMMENT '작성가이드첨부파일ID',
+  FRST_RGSTR_ID VARCHAR(30) COMMENT '최초등록자ID',
+  FRST_REGIST_DT TIMESTAMP_NTZ(9) COMMENT '최초등록일시',
+  LAST_UPDUSR_ID VARCHAR(30) COMMENT '최종수정자ID',
+  LAST_UPDT_DT TIMESTAMP_NTZ(9) COMMENT '최종수정일시',
+  USE_YN VARCHAR(1) COMMENT '사용여부',
   _LOAD_DT TIMESTAMP_NTZ(9) COMMENT '적재일시 (ETL 적재 시각)',
   _BATCH_ID VARCHAR(50) COMMENT '배치ID (적재 배치 식별자)',
   _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
@@ -1511,13 +1599,17 @@ create schema if not exists GN_DW.BRONZE_AGENCY with managed access COMMENT='원
 
 create or replace sequence GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 
+-- 🔴 2026-09-28 원천 12번 재편 반영 — 36 → 41컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
+--    − CPR_NM, DMST_OVSEA_DIV_NM, BSNS_CASE_DIV_NM, CMPGN_TY_NM, GA_AD_COST, GA_CONV_MBER_CNT, DEV_UNIT_PRICE, CMPGN_UTM_NM
+--    + BDGT_SOURCE_NM, CMPGN_TYPE1/2_BSN_NM, CMPGN_TYPE_BSN_NM, AD_COST, SPNSER_MBER_CNT, DVLP_UNIT_PRICE, UTM_CMPGN_NM,
+--      MARKUP_AMT, VAT_AMT, LAST_STMT_AMT, TOTAL_CPA, TOTAL_DVLP_UNIT_PRICE
 create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
   TIME VARCHAR(16777216) COMMENT '시간',
   YEAR VARCHAR(16777216) COMMENT '연도',
-  CPR_NM VARCHAR(16777216) COMMENT '법인',
-  DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '국내해외구분',
-  BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '사업사례구분',
-  CMPGN_TY_NM VARCHAR(16777216) COMMENT '캠페인유형',
+  BDGT_SOURCE_NM VARCHAR(16777216) COMMENT '예산출처',
+  CMPGN_TYPE1_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형1',
+  CMPGN_TYPE2_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형2',
+  CMPGN_TYPE_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형',
   AD_TY_NM VARCHAR(16777216) COMMENT '광고유형',
   MONTH VARCHAR(16777216) COMMENT '월',
   DEVICE VARCHAR(16777216) COMMENT '기기',
@@ -1530,16 +1622,16 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
   MATR_TY_NM VARCHAR(16777216) COMMENT '소재유형',
   EXPS_CNT FLOAT COMMENT '노출수',
   CLICK_CNT FLOAT COMMENT '클릭수',
-  GA_AD_COST FLOAT COMMENT '광고비',
-  GA_CONV_MBER_CNT FLOAT COMMENT '후원자수(명)',
+  AD_COST FLOAT COMMENT '광고비',
+  SPNSER_MBER_CNT FLOAT COMMENT '후원자수(명)',
   CONV_VU_CNT FLOAT COMMENT '전환가치(건)',
   CPA FLOAT COMMENT 'CPA',
-  DEV_UNIT_PRICE FLOAT COMMENT '개발단가',
+  DVLP_UNIT_PRICE FLOAT COMMENT '개발단가',
   CTR FLOAT COMMENT 'CTR',
   CVR FLOAT COMMENT 'CVR',
   CPC FLOAT COMMENT 'CPC',
   CPM FLOAT COMMENT 'CPM',
-  CMPGN_UTM_NM VARCHAR(16777216) COMMENT 'utm_campaign',
+  UTM_CMPGN_NM VARCHAR(16777216) COMMENT 'utm_campaign',
   READ_CNT FLOAT COMMENT '조회수',
   MEDIA_PTNT_CUST_CNT FLOAT COMMENT '잠재고객수(매체)',
   DATE DATE COMMENT '날짜',
@@ -1547,44 +1639,39 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
   PAGE_TYPE_NM VARCHAR(16777216) COMMENT '지면구분',
   CRM_DVLP_CNT FLOAT COMMENT 'CRM개발건수',
   AD_GRP_NM VARCHAR(16777216) COMMENT '광고그룹',
-  GRP_DIV_NM VARCHAR(16777216) COMMENT '그룹구분'
+  GRP_DIV_NM VARCHAR(16777216) COMMENT '그룹구분',
+  MARKUP_AMT FLOAT COMMENT '마크업',
+  VAT_AMT FLOAT COMMENT '부가세',
+  LAST_STMT_AMT FLOAT COMMENT '최종정산금액',
+  TOTAL_CPA FLOAT COMMENT '통합CPA',
+  TOTAL_DVLP_UNIT_PRICE FLOAT COMMENT '통합개발단가'
 )COMMENT='디지털 광고 성과 내역'
 ;
+-- 🔴 2026-09-28 원천 12번 재편 반영 — 34 → 21컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
+--    − RE_BRDC_TY_NM, BRDC_MT, CHNNL_CMPNY, DATE, TIME_RNG_DIV_NM, CELEB_NM, DMST_OVSEA_DIV_NM, CASE1~3_* (15)
+--    + MONTH, DAY, CHNNL_NM, BRDC_DATE, UPPER_CMPGN_CD, CMPGN_CD, CONTENTS_PUR_COST, CALL_CTR_OPER_COST, TOT_COST
 create or replace TABLE GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS (
-  RE_BRDC_TY_NM VARCHAR(16777216) COMMENT '재송출유형',
   DIV_NM VARCHAR(16777216) COMMENT '구분',
-  YEAR VARCHAR(16777216) COMMENT '년도',
-  BRDC_MT VARCHAR(16777216) COMMENT '방송월',
-  CHNNL_CMPNY VARCHAR(16777216) COMMENT '채널사',
-  BRDC_NM VARCHAR(16777216) COMMENT '방송명',
-  BRDC_DIV_NM VARCHAR(16777216) COMMENT '본방송구분',
-  DATE DATE COMMENT '날짜',
+  YEAR VARCHAR(16777216) COMMENT '연도',
+  MONTH VARCHAR(16777216) COMMENT '월',
+  DAY VARCHAR(16777216) COMMENT '일',
+  CHNNL_NM VARCHAR(16777216) COMMENT '채널',
+  BRDC_DATE DATE COMMENT '방송일자',
   DOW VARCHAR(16777216) COMMENT '요일',
-  BRDC_TIME VARCHAR(16777216) COMMENT '방송시간',
-  INBOUND_CALL_CNT VARCHAR(16777216) COMMENT '인입콜',
-  DVLP_MBER_CNT FLOAT COMMENT '회원개발(명)',
-  DVLP_CNT FLOAT COMMENT '회원개발(건)',
-  BRDC_SCHDL_COST FLOAT COMMENT '방송편성비',
   WEEK VARCHAR(16777216) COMMENT '주차',
+  BRDC_TIME VARCHAR(16777216) COMMENT '방송시간',
+  BRDC_NM VARCHAR(16777216) COMMENT '방송명',
+  BRDC_DIV_NM VARCHAR(16777216) COMMENT '방송구분',
   AD_CNT FLOAT COMMENT '횟수',
-  TIME_RNG_DIV_NM VARCHAR(16777216) COMMENT '시간대구분',
-  CELEB_NM VARCHAR(16777216) COMMENT '셀럽',
-  DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '국내/해외구분',
-  CASE1_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분1',
-  CASE1_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형1',
-  CASE1_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트1',
-  CASE1_CHILD_NM VARCHAR(16777216) COMMENT '아동명1',
-  CASE1_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분1',
-  CASE2_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분2',
-  CASE2_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형2',
-  CASE2_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트2',
-  CASE2_CHILD_NM VARCHAR(16777216) COMMENT '아동명2',
-  CASE2_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분2',
-  CASE3_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분3',
-  CASE3_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형3',
-  CASE3_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트3',
-  CASE3_CHILD_NM VARCHAR(16777216) COMMENT '아동명3',
-  CASE3_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분3'
+  INBOUND_CALL_CNT VARCHAR(16777216) COMMENT '인입콜',
+  DVLP_MBER_CNT FLOAT COMMENT '개발(명)',
+  DVLP_CNT FLOAT COMMENT '개발(건)',
+  UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
+  CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
+  BRDC_SCHDL_COST FLOAT COMMENT '편성비',
+  CONTENTS_PUR_COST FLOAT COMMENT '콘텐츠구입비',
+  CALL_CTR_OPER_COST FLOAT COMMENT '콜센터운영비',
+  TOT_COST FLOAT COMMENT '총비용'
 )COMMENT='재송출 광고 성과 내역'
 ;
 create or replace TABLE GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO (
@@ -1594,6 +1681,10 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO (
   ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
 )COMMENT='적재 프로시저 오류 로그'
 ;
+-- 🔴 2026-09-28 원천 12번 재편 반영 — 32 → 37컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
+--    − ACTL_PUR_AD_COST_KRW, CPC, DUR_PD_MATR_CHN, CONV_CALL_CNT, BRDC_MT, CTV_DIV_NM, MKT_CMPGN_NM, SPNSR_BSNS_NM
+--    + LAST_AD_COST, CPC_CALL_CNT, MONTH, AD_TY_NM, BDGT_SOURCE_NM, DEVICE_NM, DAY, SPNSER_CNT, DVLP_CNT,
+--      CMPGN_NM, MATR_TY_NM, EXPSR_CNT, CLICK_CNT
 create or replace TABLE GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS (
   CHNNL_NM VARCHAR(16777216) COMMENT '채널',
   DOW VARCHAR(16777216) COMMENT '요일',
@@ -1608,31 +1699,36 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS (
   AD_END_TIME VARCHAR(16777216) COMMENT '광고종료시간',
   SPOT_TY VARCHAR(16777216) COMMENT 'SpotType',
   AD_VIEW_RT FLOAT COMMENT '광고시청률',
-  AD_CNT NUMBER(38,0) COMMENT '횟수',
+  AD_CNT FLOAT COMMENT '횟수',
   AD_SEC VARCHAR(16777216) COMMENT '초수',
-  ACTL_PUR_AD_COST_KRW NUMBER(38,0) COMMENT '실구매광고비(원)',
-  INBOUND_CALL_CNT NUMBER(38,0) COMMENT '인입콜',
-  CPC VARCHAR(16777216) COMMENT 'CPC',
+  LAST_AD_COST FLOAT COMMENT '최종광고비',
+  INBOUND_CALL_CNT FLOAT COMMENT '인입콜',
+  CPC_CALL_CNT FLOAT COMMENT 'CPC_CALL',
   UPPER_CMPGN_NM VARCHAR(16777216) COMMENT '상위캠페인',
-  MATR_NM VARCHAR(16777216) COMMENT '소재명',
+  MATR_NM VARCHAR(16777216) COMMENT '소재',
+  DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(국내/해외)',
+  BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(사업/사례)',
   CMPGN_TY_NM VARCHAR(16777216) COMMENT '캠페인유형',
-  DUR_PD_MATR_CHN VARCHAR(16777216) COMMENT '중도소재변경',
   CHNNL_CMPNY_TY_NM VARCHAR(16777216) COMMENT '채널사유형',
   WEEK VARCHAR(16777216) COMMENT '주차',
-  CONV_CALL_CNT FLOAT COMMENT '전환콜',
-  BRDC_MT VARCHAR(16777216) COMMENT '방송월',
-  YEAR VARCHAR(16777216) COMMENT '해당연도',
-  CTV_DIV_NM VARCHAR(16777216) COMMENT 'CTV 구분',
-  MKT_CMPGN_NM VARCHAR(16777216) COMMENT '마케팅 캠페인명',
-  SPNSR_BSNS_NM VARCHAR(16777216) COMMENT '후원사업구분',
-  DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(국내/해외)',
-  BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(사업/사례)'
+  MONTH VARCHAR(16777216) COMMENT '월',
+  AD_TY_NM VARCHAR(16777216) COMMENT '광고유형',
+  BDGT_SOURCE_NM VARCHAR(16777216) COMMENT '예산출처',
+  DEVICE_NM VARCHAR(16777216) COMMENT '기기',
+  YEAR VARCHAR(16777216) COMMENT '연도',
+  DAY VARCHAR(16777216) COMMENT '일자',
+  SPNSER_CNT FLOAT COMMENT '후원자수',
+  DVLP_CNT FLOAT COMMENT '개발건수',
+  CMPGN_NM VARCHAR(16777216) COMMENT '캠페인명',
+  MATR_TY_NM VARCHAR(16777216) COMMENT '소재유형',
+  EXPSR_CNT FLOAT COMMENT '노출수',
+  CLICK_CNT FLOAT COMMENT '클릭수'
 )COMMENT='영상 광고 성과 내역'
 ;
 
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
-	SKIP_HEADER = 1
-	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+  SKIP_HEADER = 1
+  FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
 ;
 
 

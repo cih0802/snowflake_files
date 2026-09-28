@@ -6,11 +6,24 @@
   평문 md5 와 **다르다**: O167 실측 = `.md` **423건 전건 불일치**(일치 0).
   ⇒ 🔴 **스테이지 md5 를 내용 동일성 근거로 쓰지 마라**(착수표 ㉔ 의 「md5 대조 불가」와 같은 결론).
 
-🟢 **대신 크기 패딩이 결정적이다** — O167 실측 = **2,741/2,741 성립 · 불성립 0**:
+🟢 **대신 크기 패딩이 결정적이다** — 단, **경계에서 크기만으로 결정되지 않는다.**
 
-      stage_size == 16 * (local_size // 16) + 16
+      stage_size == 16 * (local_size // 16) + 16        # local % 16 != 0 일 때만 유일해
+      stage_size in {local_size, local_size + 16}       # 🔴 local % 16 == 0 이면 **두 값 다 실재**
 
-  (AES 블록 패딩 · 로컬이 16의 배수여도 **한 블록을 더 붙인다** ⇒ 항상 1~16 B 크다.)
+  🆕 🔴🔴 **[2026-09-23 O181 실측 정정]** 종전 문안은 *"로컬이 16의 배수여도 한 블록을 더 붙인다"*
+  라고 단정하고 O167 실측 **2,741/2,741 성립**을 근거로 들었다. 🔴 **그 단정이 틀렸다.**
+  · 📏 재실측(`.md` **615건** · 2026-09-23) =
+      · `local % 16 != 0` **516건** ⇒ 차이가 전건 `16 - (local % 16)` (= **다음 16배수로 반올림**)
+      · `local % 16 == 0` **99건** ⇒ 차이가 **`+16` 40건 · `0` 59건 으로 갈린다**
+  · ⇒ 🟢 **판정식 = 배수 경계는 「반올림」과 「블록 추가」가 섞이므로 두 값을 모두 허용한다.**
+    🔴 한쪽으로 고정하면 반대쪽이 전건 오탐이다(실사고 = `+16` 고정이 **41건 오탐**을 냈고
+    그것이 게이트를 「항상 빨간」 상태로 만들었다 · `P130`).
+  · 🟠 **대가를 명시한다** — 배수 경계 파일이 **정확히 16 B 만큼** 바뀌면 이 게이트가 놓친다
+    (전 분모의 1/16 에서 16 B 단위 변화만 · 그 밖의 변화는 여전히 1 B 단위로 잡힌다).
+  · 🔴 **O167 의 「전건 성립」은 거짓이 아니라 분모가 달랐을 것이다** — 어느 쪽이든
+    **수치를 인용하지 말고 재라**(`R2-8-4`). 이 주석의 615/516/99 도 같은 대상이다.
+
   ⇒ 🟢 이 식은 **크기 드리프트를 1 바이트 단위로 잡는다.** 내용 변경 중 크기가 같은
   치환(같은 길이 오타)은 못 잡지만, 종전 「size+last_modified 눈대중」보다 강하다.
 
@@ -60,7 +73,20 @@ def stage_list():
 
 
 def expected(local_size):
+    """대표 기대값(표시·기존 테스트 호환) = 다음 16배수 + (경계면 한 블록 추가)."""
     return 16 * (local_size // 16) + 16
+
+
+def accepted(local_size):
+    """🆕 [O181] **허용 집합**이 판정 정본이다 — 경계는 크기만으로 결정되지 않는다.
+
+    · `local % 16 != 0` ⇒ 값 1개(다음 16배수) · 실측 516/516 성립.
+    · `local % 16 == 0` ⇒ 값 **2개**(`local` 과 `local+16`) · 실측이 40:59 로 갈렸다.
+    🔴 한쪽으로 고정하면 반대쪽이 전건 오탐이 된다(O181 실사고 41건 · `P130`).
+    """
+    if local_size % 16:
+        return {16 * (local_size // 16) + 16}
+    return {local_size, local_size + 16}
 
 
 def run(only_md=True):
@@ -79,10 +105,11 @@ def run(only_md=True):
             stage_only.append(rel)
             continue
         lsz = os.path.getsize(p)
-        if ssz == expected(lsz):
+        # 🔴 [O181] 판정 정본은 `accepted()` 집합이다(`expected()` 는 표시용 대표값).
+        if ssz in accepted(lsz):
             ok += 1
         else:
-            drift.append((rel, lsz, ssz, expected(lsz)))
+            drift.append((rel, lsz, ssz, sorted(accepted(lsz))))
     for cur, _d, fs in os.walk(ROOT):
         rel_dir = os.path.relpath(cur, ROOT)
         if rel_dir == '.':
@@ -99,7 +126,7 @@ def run(only_md=True):
     print(f'대조 대상 {ok + len(drift)}건 · 일치 {ok} · 드리프트 {len(drift)}')
     print(f'스테이지 전용 {len(stage_only)}건 · 마운트 전용(미발행) {len(mount_only)}건')
     for rel, lsz, ssz, exp in drift[:40]:
-        print(f'  🔴 드리프트 {rel} 마운트 {lsz} → 기대 {exp} · 스테이지 {ssz}')
+        print(f'  🔴 드리프트 {rel} 마운트 {lsz} → 허용 {exp} · 스테이지 {ssz}')
     for rel in stage_only[:20]:
         print(f'  🟠 스테이지 전용 {rel}')
     for rel in mount_only[:20]:

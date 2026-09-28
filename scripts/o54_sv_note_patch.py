@@ -10,6 +10,10 @@
 import io
 import sys
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 D = '/workspace/05_SV-Agent_ai/'
 FILES = ['05_1_SV_DDL_MEMBER_MONTHLY.sql', '05_2_SV_DDL_MEMBER_EVENT.sql',
          '05_4_SV_DDL_SERVICE.sql', '05_5_SV_DDL_EVENT_PARTICIPATION.sql',
@@ -42,6 +46,7 @@ AD_ONLY = [
 
 
 def main():
+    require_apply(__file__, 'SV DDL 6파일 주석 문안 일괄 치환(다중 파일 재작성)')  # 🔴 [O181 · I2]
     for f in FILES:
         p = D + f
         t = io.open(p, encoding='utf-8').read()

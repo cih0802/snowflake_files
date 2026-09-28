@@ -14,6 +14,10 @@ Co-authored with CoCo
 import io
 import sys
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 DDL = '/workspace/03_top-down_gold/06_DDL.sql'
 # 긴 것부터 교체해야 짧은 패턴이 앞에서 먹지 않는다
 PATCH = [('본 뷰는', '이 테이블은'), ('이 뷰에', '이 테이블에'), ('이 뷰', '이 테이블')]
@@ -21,6 +25,7 @@ EXPECT = {'본 뷰는': 5, '이 뷰에': 3, '이 뷰': 2}
 
 
 def main():
+    require_apply(__file__, '`06_DDL.sql` COMMENT 문안 일괄 치환(파일 재작성)')  # 🔴 [O181 · I2]
     src = io.open(DDL, encoding='utf-8').read()
     # 사전 검증: 기대 분포와 다르면 대상이 달라진 것이므로 중단한다
     seen = {'본 뷰는': src.count('본 뷰는'),

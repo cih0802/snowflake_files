@@ -12,12 +12,17 @@ Co-authored with CoCo
 import io
 import sys
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 HIST = '/workspace/20_issue/01_세션이력.md'
 HEAD = '> #### 🟡 [2026-08-12 O63] `06_DDL.sql` 전량 독해'
 ANCHOR = '> #### 🟡 [2026-08-11 O59-S] **자기감사'
 
 
 def main():
+    require_apply(__file__, '`01_세션이력.md` 항목 이동(파일 재작성)')  # 🔴 [O181 · I2]
     src = io.open(HIST, encoding='utf-8').read()
     if src.count(HEAD) != 1 or src.count(ANCHOR) != 1:
         print(f'🔴 앵커 개수 이상 — O63 {src.count(HEAD)} · O59-S {src.count(ANCHOR)}')

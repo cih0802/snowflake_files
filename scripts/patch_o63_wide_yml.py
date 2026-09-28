@@ -12,6 +12,10 @@ import io
 import re
 import sys
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 YML = '/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml'
 OLD = "미매핑은 '미상'."
 
@@ -32,6 +36,7 @@ AXIS = re.compile(r'DIM_MEMBER\.(MEMBER_STATUS_NAME|MEMBER_TYPE_NAME|ENROLL_PATH
 
 
 def main():
+    require_apply(__file__, '`_wide_schema.yml` 문안 일괄 치환(파일 재작성)')  # 🔴 [O181 · I2]
     src = io.open(YML, encoding='utf-8').read()
     lines = src.split('\n')
     hit = {k: 0 for k in NEW}

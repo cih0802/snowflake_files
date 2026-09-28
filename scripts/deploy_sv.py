@@ -17,6 +17,10 @@ import sys
 sys.path.insert(0, '/workspace/scripts')
 from sfconn import conn
 
+import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
+sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 
 def split_sql(text):
     out, buf, in_s = [], [], False
@@ -48,6 +52,7 @@ def strip_lead(s):
 
 
 def main(paths):
+    require_apply(__file__, 'SV DDL 파일 라이브 실행(인자로 받은 파일 전건)')  # 🔴 [O181 · I2]
     cn = conn(); cur = cn.cursor()
     cur.execute("USE ROLE GN_DW_ADMIN"); cur.execute("USE WAREHOUSE GN_DW_DEV_WH")
     for p in paths:
@@ -66,4 +71,5 @@ def main(paths):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    # 🔴 [O181 · I2] `--apply` 는 가드 플래그이므로 **파일 인자에서 제외**한다.
+    main([p for p in sys.argv[1:] if p != '--apply'])

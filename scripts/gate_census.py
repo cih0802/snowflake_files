@@ -309,6 +309,7 @@ LIB = {
     'dump_schema': '', 'field_mapping_override': '', 'o59g_paren_scan': '',
     'o59l_rule7_context': '', 'o70_stale_scan': '', 'rebuild_inventory': '',
     'run_gold_ddl': '', 'sfconn': '접속 헬퍼', 'snapshot_util': '스냅샷 단일 경유점',
+    'mutating_guard': 'MUTATES 도구 공용 --apply 드라이런 가드(무플래그 집행 차단) — I2 처방',
 }
 
 BUCKETS = [('JUDGE', JUDGE), ('OBSERVE', OBSERVE), ('NEEDS_ARGS', NEEDS_ARGS),

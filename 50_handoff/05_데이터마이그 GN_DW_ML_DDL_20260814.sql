@@ -2,38 +2,38 @@
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
---   원본(A) 계정 GN_DW.ML 스키마 중 **Agent 노출 대상 예측결과 16종**의 구조 스냅샷이다.
+--   원본(A) 계정 GN_DW.ML 스키마 중 **Agent 노출 대상 예측결과 17종**의 구조 스냅샷이다.
 --   최종 대상(C) 계정에 동일 구조를 재현하기 위한 "적재 전 테이블 생성" 스크립트로 사용한다.
---   04번(브론즈 61 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
+--   04번(브론즈 64 테이블)과 같은 역할이며, 대상 스키마만 ML 이다.
 --
 -- 연계 문서 / RELATED DOCUMENTS
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 3.1(ML 공유 부여) / 5.1-B(ML DDL 실행) / 5.6(ML 적재·VARIANT 복원) 단계에서 본 파일을 사용.
---   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/ML 16종 SELECT 부여)
+--   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/ML 17종 SELECT 부여)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
---   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql  (BRONZE 5스키마 60테이블)
+--   [브론즈]   50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql  (BRONZE 5스키마 64테이블)
 --   [실버]     50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql  (SILVER 1테이블 118컬럼)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 78 테이블이 완성된다. 선후 관계는 없다.
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 82 테이블이 완성된다. 선후 관계는 없다.
 --              🟢 [2026-09-15] 04·06번 파일명에서 날짜를 뗐다(구 = *_20260730 / *_20260820).
 --                 갱신마다 개명하면 참조 문서를 매번 고쳐야 하므로 날짜는 파일 안에만 적는다.
 --
 -- 원천 정의 문서 / SOURCE OF TRUTH
 --   99_provided_definition/20_ML_ddl.sql  (A 계정 GET_DDL('SCHEMA','GN_DW.ML',TRUE) 출력)
---     → 본 파일의 16개 CREATE TABLE 문은 위 파일에서 **무변경 발췌**했다(컬럼 순서·타입·COMMENT 포함).
+--     → 본 파일의 17개 CREATE TABLE 문은 위 파일에서 **무변경 발췌**했다(컬럼 순서·타입·COMMENT 포함).
 --     🔴 줄 수는 여기 적지 않는다 — 적으면 다음 판에서 stale 이 된다.
 --        재려면 `wc -l 99_provided_definition/20_ML_ddl.sql` 를 실행한다.
 --        (종전 기재 「3,217줄」은 2026-08-29 실측과 어긋났다.)
---   05_SV-Agent_ai/20_ML_SV_설계.md §0-A  (16종 행수·grain 실측 · O74)
+--   05_SV-Agent_ai/20_ML_SV_설계.md §0-A  (16종 행수·grain 실측 · O74 · ONCE_CONVERSION 미반영)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --
 -- 🔴 이관 범위 결정 / SCOPE (사용자 확정 2026-08-14)
---   GN_DW.ML 의 BASE TABLE 은 49개지만 **데이터 이관 대상은 예측결과 16종만**이다.
+--   GN_DW.ML 의 BASE TABLE 은 52개지만 **데이터 이관 대상은 예측결과 17종만**이다(2026-09-28 기준).
 --   제외 대상과 사유:
---     · ML_TRAIN_DATA_* 20종  — 학습용. 사용자 지시로 Agent 노출 금지 대상이며 이관하지 않는다.
+--     · ML_TRAIN_DATA_* 21종  — 학습용. 사용자 지시로 Agent 노출 금지 대상이며 이관하지 않는다.
 --     · 원천 스냅샷 12종      — CMPGN_MBER_SNAPSHOT · MBER_MONTHLY_INFO · MBRFEE_PAY_DTLS 등
 --                               학습·예측 입력. 이관 대상 아님.
 --     · ML_PROCEDURE_LOG 1종  — 원천 계정의 프로시저 실행 로그.
---     · VIEW 4종              — ML_TRAIN_DATA_*_V. 학습 입력 뷰.
+--     · VIEW 5종              — ML_TRAIN_DATA_*_V · V_TRAIN_ONCE_CONVERSION. 학습 입력 뷰.
 --     · PROCEDURE 14종        — SP_*_PREDICT / SP_*_FORECAST.
 --     · SNOWFLAKE.ML 모델 14종 — 프로시저 **본문 안에서** CREATE 되므로 독립 DDL 이 아니다.
 --                                학습 데이터 없이는 생성 자체가 불가하다.
@@ -42,12 +42,20 @@
 --
 -- 메타데이터 / METADATA
 --   - Database / Schema : GN_DW / ML
---   - 테이블 수         : 16 (예측 FORECAST 계열 8 · 분류 CLASSIFICATION 계열 4 · 스코어 2 · 요인분석 2)
---   - VARIANT 보유      : 4 (PREDICTION 컬럼 — 전부 **마지막 컬럼**)
+--   - 테이블 수         : 17 (예측 FORECAST 계열 8 · 분류 CLASSIFICATION 계열 5 · 스코어 2 · 요인분석 2)
+--   - VARIANT 보유      : 5 (PREDICTION 4 + PREDICT 1 — 전부 **마지막 컬럼**)
 --   - 작성일자          : 2026-08-14 (초판)
---   - 갱신일자          : 2026-08-29 (원천 재대조 + 스테이지 실측)
+--   - 갱신일자          : 2026-09-28 (원천 20번 갱신 · ONCE_CONVERSION 추가)
 --
 -- 변경 이력 / CHANGES
+--   2026-09-28  원천 정의 문서 20_ML_ddl.sql 갱신분 반영 — 예측결과 **16 → 17종**.
+--     + [TABLE] GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (5컬럼 · 나마본 7 · 일시후원 → 정기후원 전환 예측)
+--        · 🔴 VARIANT 컬럼명이 **PREDICT** 다(기존 4종은 PREDICTION). 위치 = 마지막($5).
+--          ⇒ 07번 A.5-B.2 의 VARIANT 대상 목록·SERVING 뷰 평탄화 식에 이 테이블을 **추가**해야 한다.
+--        · 원천에 컬럼·테이블 COMMENT 가 없어 보강했다(현업 확인 대상). 구조(순서·타입)는 무변경.
+--        · 스테이지 ML/ML_RST_DATA_ONCE_CONVERSION/ = 8 파일, CSV 헤더가 본 DDL 과 일치(2026-09-28 실측).
+--     · 원천 인벤토리 = BASE TABLE 52 (ML_RST_DATA 17 + ML_TRAIN_DATA 21 + 기타 14) · VIEW 5 · PROCEDURE 14.
+--     · 기존 16종은 구조 변경 0건(게이트 6축). 총 이관 대상 78 → **82**(브론즈 61 → 64 · 04번 참조).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --   2026-08-29  원천 정의 문서 20_ML_ddl.sql 과 기계 대조 — **구조 변경 0건**.
 --     · 판정 근거 = python3 scripts/handoff_ddl_gate.py (ML_RST_DATA 대상 · 6축 전건 0건)
 --       6축 = 테이블집합 · 컬럼이름·순서 · 타입 · DEFAULT · 컬럼COMMENT · 테이블COMMENT.
@@ -61,7 +69,7 @@
 --     · 자기참조 오류 정정: 적재 절차 「05번 A.5-B.x」는 실제로 **07번**(C_CONSUMER)의 절이다.
 --
 -- 스테이지 적재 실측 / STAGE STATE  (2026-08-29 · SANDBOX.TOOLS.MIG_LOAD_STAGE)
---   ML/ 하위 = **16 테이블 / 54 파일 / 약 28.9 MB(gz)** — 본 파일의 16종과 **전건 일치**한다.
+--   ML/ 하위 = **16 테이블 / 54 파일 / 약 28.9 MB(gz)** — 본 파일의 16종과 **전건 일치**한다(2026-08-29 시점 · 17번째 ONCE_CONVERSION 은 2026-09-28 업로드 8파일).
 --     LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/;
 --   ⇒ ML 축은 언로드가 끝났다. 남은 것은 C 계정에서 DDL 실행 + 07번 A.5-B 적재다.
 --   ⚠️ 같은 시점에 BRONZE_CRM · SILVER 는 **업로드 진행 중**이었다(파일이 계속 증가).
@@ -69,21 +77,22 @@
 --
 -- 사용법 / USAGE (C 계정에서)
 --   1) 04번 DDL(브론즈)과 독립적으로 실행할 수 있다. 선후 관계 없음.
---   2) 위에서 아래로 순서대로 실행 ([SCHEMA] → [TABLE] 16).
---   3) 생성 확인 (파일 하단 검증 쿼리 · 기대 16):
+--   2) 위에서 아래로 순서대로 실행 ([SCHEMA] → [TABLE] 17).
+--   3) 생성 확인 (파일 하단 검증 쿼리 · 기대 17):
 --        SELECT COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_schema='ML' AND table_type='BASE TABLE';
 --   4) 이후 01번 문서 5.6(ML 적재) 절차로 데이터 적재.
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 🔴 **PREDICTION VARIANT 4종은 일반 COPY 로 적재하면 JSON 이 문자열로 저장된다.**
+--   - 🔴 **PREDICTION/PREDICT VARIANT 5종은 일반 COPY 로 적재하면 JSON 이 문자열로 저장된다.**
 --     GA4 events_* 와 동일한 함정이며, TRY_PARSE_JSON 변환 COPY 가 필수다(07번 A.5-B.2).
 --     컬럼 위치(1-based · 전부 마지막 컬럼):
 --       · ML_RST_DATA_SPNSR_CHURN_12M                    18컬럼 → $18
 --       · ML_RST_DATA_MBER_CHURN_12M                     18컬럼 → $18
 --       · ML_RST_DATA_MBER_INC_12M                       21컬럼 → $21
 --       · ML_RST_DATA_LOYAL_MBER                         22컬럼 → $22
+--       · ML_RST_DATA_ONCE_CONVERSION                     5컬럼 → $5  (🔴 컬럼명 PREDICT)
 --     평탄화 결과(`PREDICTION:probability:"1"`·`PREDICTION:class`)를 SERVING 뷰가 쓰므로,
 --     문자열로 적재되면 SV 층에서 조용히 NULL 이 된다.
 --   - 스키마 옵션: A 계정 실측 DDL 은 `create schema if not exists GN_DW.ML;`(옵션 없음)이다.
@@ -91,7 +100,7 @@
 --     원천과 다른 유일한 지점이며, 테이블 구조는 무변경이다.
 --
 -- 객체 인덱스 / OBJECT INDEX  (요건 = 260814 기준 머신러닝 개발 내용)
---   [SCHEMA] GN_DW.ML — 머신러닝 예측 결과, 테이블 16개
+--   [SCHEMA] GN_DW.ML — 머신러닝 예측 결과, 테이블 17개
 --     회원실 1    ML_RST_DATA_SPNSR_CHURN_12M                    18컬럼  캠페인별 이탈 예측
 --     회원실 2    ML_RST_DATA_MBER_CHURN_12M                     18컬럼  회원별 중단 예측
 --     회원실 3    ML_RST_DATA_CMPGN_CTGR_AMT                      6컬럼  캠페인카테고리별 회비 예측
@@ -108,6 +117,7 @@
 --     나마본 4    ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION  5컬럼  신규 후원 유치 요인 분석
 --     나마본 5    ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT              6컬럼  캠페인별 월별 개발액 예측
 --     나마본 6    ML_RST_DATA_DVLP_INC_CONTRIBUTION               5컬럼  증액 개발 요인 분석
+--     나마본 7    ML_RST_DATA_ONCE_CONVERSION                     5컬럼  일시후원 정기전환 예측 (VARIANT PREDICT)
 -- =====================================================================
 
 
@@ -123,7 +133,7 @@ create schema if not exists GN_DW.ML with managed access
   COMMENT='머신러닝 예측 결과 — 원천 계정 산출물 이관 대상. 학습·중간 테이블은 이관하지 않는다.';
 
 -- ---------------------------------------------------------------------
--- [TABLE] 예측결과 16종  (20_ML_ddl.sql 무변경 발췌)
+-- [TABLE] 예측결과 17종  (20_ML_ddl.sql 무변경 발췌)
 -- ---------------------------------------------------------------------
 
 --  1/16 · 회원실 1 · 캠페인별 이탈 예측 (18컬럼 · VARIANT $18)
@@ -279,7 +289,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT (
 )COMMENT='월별 전체 신규 후원개발 금액(만원) 향후 12개월 예측 결과'
 ;
 
--- 10/16 · 나마본 2 · 채널 단위 월간 회원평균 후원 LTV 예측 (6컬럼)
+-- 10/17 · 나마본 2 · 채널 단위 월간 회원평균 후원 LTV 예측 (6컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
 	SERIES VARCHAR(16777216) COMMENT '상위캠페인코드 (UPPER_CMPGN_CD)',
@@ -290,7 +300,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV (
 )COMMENT='상위캠페인(UPPER_CMPGN_CD)별 회원평균 후원금액 향후 12개월 예측 결과'
 ;
 
--- 11/16 · 나마본 2 · 〃 스코어 (8컬럼)
+-- 11/17 · 나마본 2 · 〃 스코어 (8컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
 	UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
@@ -303,7 +313,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE (
 )COMMENT='상위캠페인(UPPER_CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'
 ;
 
--- 12/16 · 나마본 3 · 캠페인 단위 월간 후원 LTV 예측 (6컬럼)
+-- 12/17 · 나마본 3 · 캠페인 단위 월간 후원 LTV 예측 (6컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
 	SERIES VARCHAR(16777216) COMMENT '캠페인코드 (CMPGN_CD)',
@@ -314,7 +324,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV (
 )COMMENT='캠페인(CMPGN_CD)별 월간 후원금액 향후 12개월 예측 결과'
 ;
 
--- 13/16 · 나마본 3 · 〃 스코어 (8컬럼)
+-- 13/17 · 나마본 3 · 〃 스코어 (8컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
 	CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
@@ -327,7 +337,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE (
 )COMMENT='캠페인(CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'
 ;
 
--- 14/16 · 나마본 4 · 신규 후원 유치 요인 분석 (5컬럼)
+-- 14/17 · 나마본 4 · 신규 후원 유치 요인 분석 (5컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION (
 	STDR_MT VARCHAR(16777216) COMMENT '분석 실행 기준월 (YYYYMM)',
 	RANK NUMBER(38,0) COMMENT '피처 중요도 순위',
@@ -337,7 +347,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION
 )COMMENT='신규 후원 유치 상위 채널 결정 요인 (피처 중요도) 분석 결과'
 ;
 
--- 15/16 · 나마본 5 · 캠페인별 월별 개발액 예측 (6컬럼)
+-- 15/17 · 나마본 5 · 캠페인별 월별 개발액 예측 (6컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
 	SERIES VARCHAR(16777216) COMMENT '캠페인코드 (CMPGN_CD)',
@@ -348,7 +358,7 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT (
 )COMMENT='캠페인(CMPGN_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
 ;
 
--- 16/16 · 나마본 6 · 증액 개발 요인 분석 (5컬럼)
+-- 16/17 · 나마본 6 · 증액 개발 요인 분석 (5컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION (
 	STDR_MT VARCHAR(16777216) COMMENT '분석 실행 기준월 (YYYYMM)',
 	RANK NUMBER(38,0) COMMENT '피처 중요도 순위',
@@ -359,10 +369,23 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION (
 ;
 
 
+-- 17/17 · 나마본 7 · 일시후원 → 정기후원 전환 예측 (5컬럼 · VARIANT $5)
+--   🔴 2026-09-28 신규. VARIANT 컬럼명이 **PREDICT** 다(다른 4종은 PREDICTION) — 원천 무변경.
+--   컬럼·테이블 COMMENT 는 원천에 없어 보강했다(현업 확인 대상).
+create or replace TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
+  ONCE_MBER_NO VARCHAR(10) COMMENT '일시후원회원번호',
+  STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
+  CONVERSION_YN NUMBER(1,0) COMMENT '정기후원 전환여부 (1=전환, 0=미전환)',
+  DATA_TYPE VARCHAR(5) COMMENT '데이터 구분 (예: SCORE)',
+  PREDICT VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
+)COMMENT='일시후원회원의 정기후원 전환 가능성 예측 결과'
+;
+
+
 -- #####################################################################
 -- # 생성 확인 / VERIFY
 -- #####################################################################
--- (1) 테이블 수 — 기대 16
+-- (1) 테이블 수 — 기대 17
 SELECT COUNT(*) AS n_tables
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_schema = 'ML' AND table_type = 'BASE TABLE';
@@ -373,7 +396,7 @@ FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = 'ML'
 GROUP BY 1 ORDER BY 1;
 
--- (3) VARIANT 컬럼 위치 확인 — 기대 4행, 전부 ordinal_position = 해당 테이블 컬럼 수
+-- (3) VARIANT 컬럼 위치 확인 — 기대 5행, 전부 ordinal_position = 해당 테이블 컬럼 수
 SELECT table_name, column_name, ordinal_position, data_type
 FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
 WHERE table_schema = 'ML' AND data_type = 'VARIANT'

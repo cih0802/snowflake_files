@@ -4,10 +4,10 @@ create or replace sequence GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO start with 1 in
 create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
 	TIME VARCHAR(16777216) COMMENT '시간',
 	YEAR VARCHAR(16777216) COMMENT '연도',
-	CPR_NM VARCHAR(16777216) COMMENT '법인',
-	DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '국내해외구분',
-	BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '사업사례구분',
-	CMPGN_TY_NM VARCHAR(16777216) COMMENT '캠페인유형',
+	BDGT_SOURCE_NM VARCHAR(16777216) COMMENT '예산출처',
+	CMPGN_TYPE1_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형1',
+	CMPGN_TYPE2_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형2',
+	CMPGN_TYPE_BSN_NM VARCHAR(16777216) COMMENT '캠페인유형',
 	AD_TY_NM VARCHAR(16777216) COMMENT '광고유형',
 	MONTH VARCHAR(16777216) COMMENT '월',
 	DEVICE VARCHAR(16777216) COMMENT '기기',
@@ -20,16 +20,16 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
 	MATR_TY_NM VARCHAR(16777216) COMMENT '소재유형',
 	EXPS_CNT FLOAT COMMENT '노출수',
 	CLICK_CNT FLOAT COMMENT '클릭수',
-	GA_AD_COST FLOAT COMMENT '광고비',
-	GA_CONV_MBER_CNT FLOAT COMMENT '후원자수(명)',
+	AD_COST FLOAT COMMENT '광고비',
+	SPNSER_MBER_CNT FLOAT COMMENT '후원자수(명)',
 	CONV_VU_CNT FLOAT COMMENT '전환가치(건)',
 	CPA FLOAT COMMENT 'CPA',
-	DEV_UNIT_PRICE FLOAT COMMENT '개발단가',
+	DVLP_UNIT_PRICE FLOAT COMMENT '개발단가',
 	CTR FLOAT COMMENT 'CTR',
 	CVR FLOAT COMMENT 'CVR',
 	CPC FLOAT COMMENT 'CPC',
 	CPM FLOAT COMMENT 'CPM',
-	CMPGN_UTM_NM VARCHAR(16777216) COMMENT 'utm_campaign',
+	UTM_CMPGN_NM VARCHAR(16777216) COMMENT 'utm_campaign',
 	READ_CNT FLOAT COMMENT '조회수',
 	MEDIA_PTNT_CUST_CNT FLOAT COMMENT '잠재고객수(매체)',
 	DATE DATE COMMENT '날짜',
@@ -37,44 +37,36 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
 	PAGE_TYPE_NM VARCHAR(16777216) COMMENT '지면구분',
 	CRM_DVLP_CNT FLOAT COMMENT 'CRM개발건수',
 	AD_GRP_NM VARCHAR(16777216) COMMENT '광고그룹',
-	GRP_DIV_NM VARCHAR(16777216) COMMENT '그룹구분'
+	GRP_DIV_NM VARCHAR(16777216) COMMENT '그룹구분',
+	MARKUP_AMT FLOAT COMMENT '마크업',
+	VAT_AMT FLOAT COMMENT '부가세',
+	LAST_STMT_AMT FLOAT COMMENT '최종정산금액',
+	TOTAL_CPA FLOAT COMMENT '통합CPA',
+	TOTAL_DVLP_UNIT_PRICE FLOAT COMMENT '통합개발단가'
 )COMMENT='디지털 광고 성과 내역'
 ;
 create or replace TABLE GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS (
-	RE_BRDC_TY_NM VARCHAR(16777216) COMMENT '재송출유형',
 	DIV_NM VARCHAR(16777216) COMMENT '구분',
-	YEAR VARCHAR(16777216) COMMENT '년도',
-	BRDC_MT VARCHAR(16777216) COMMENT '방송월',
-	CHNNL_CMPNY VARCHAR(16777216) COMMENT '채널사',
-	BRDC_NM VARCHAR(16777216) COMMENT '방송명',
-	BRDC_DIV_NM VARCHAR(16777216) COMMENT '본방송구분',
-	DATE DATE COMMENT '날짜',
+	YEAR VARCHAR(16777216) COMMENT '연도',
+	MONTH VARCHAR(16777216) COMMENT '월',
+	DAY VARCHAR(16777216) COMMENT '일',
+	CHNNL_NM VARCHAR(16777216) COMMENT '채널',
+	BRDC_DATE DATE COMMENT '방송일자',
 	DOW VARCHAR(16777216) COMMENT '요일',
-	BRDC_TIME VARCHAR(16777216) COMMENT '방송시간',
-	INBOUND_CALL_CNT VARCHAR(16777216) COMMENT '인입콜',
-	DVLP_MBER_CNT FLOAT COMMENT '회원개발(명)',
-	DVLP_CNT FLOAT COMMENT '회원개발(건)',
-	BRDC_SCHDL_COST FLOAT COMMENT '방송편성비',
 	WEEK VARCHAR(16777216) COMMENT '주차',
+	BRDC_TIME VARCHAR(16777216) COMMENT '방송시간',
+	BRDC_NM VARCHAR(16777216) COMMENT '방송명',
+	BRDC_DIV_NM VARCHAR(16777216) COMMENT '방송구분',
 	AD_CNT FLOAT COMMENT '횟수',
-	TIME_RNG_DIV_NM VARCHAR(16777216) COMMENT '시간대구분',
-	CELEB_NM VARCHAR(16777216) COMMENT '셀럽',
-	DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '국내/해외구분',
-	CASE1_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분1',
-	CASE1_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형1',
-	CASE1_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트1',
-	CASE1_CHILD_NM VARCHAR(16777216) COMMENT '아동명1',
-	CASE1_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분1',
-	CASE2_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분2',
-	CASE2_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형2',
-	CASE2_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트2',
-	CASE2_CHILD_NM VARCHAR(16777216) COMMENT '아동명2',
-	CASE2_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분2',
-	CASE3_BSNS_DIV_NM VARCHAR(16777216) COMMENT '사업구분3',
-	CASE3_FAM_TY_NM VARCHAR(16777216) COMMENT '가정유형3',
-	CASE3_APPEAL_POINT_NM VARCHAR(16777216) COMMENT '소구포인트3',
-	CASE3_CHILD_NM VARCHAR(16777216) COMMENT '아동명3',
-	CASE3_CASE_DIV_NM VARCHAR(16777216) COMMENT '사례구분3'
+	INBOUND_CALL_CNT VARCHAR(16777216) COMMENT '인입콜',
+	DVLP_MBER_CNT FLOAT COMMENT '개발(명)',
+	DVLP_CNT FLOAT COMMENT '개발(건)',
+	UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
+	CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
+	BRDC_SCHDL_COST FLOAT COMMENT '편성비',
+	CONTENTS_PUR_COST FLOAT COMMENT '콘텐츠구입비',
+	CALL_CTR_OPER_COST FLOAT COMMENT '콜센터운영비',
+	TOT_COST FLOAT COMMENT '총비용'
 )COMMENT='재송출 광고 성과 내역'
 ;
 create or replace TABLE GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO (
@@ -97,25 +89,30 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS (
 	AD_END_TIME VARCHAR(16777216) COMMENT '광고종료시간',
 	SPOT_TY VARCHAR(16777216) COMMENT 'SpotType',
 	AD_VIEW_RT FLOAT COMMENT '광고시청률',
-	AD_CNT NUMBER(38,0) COMMENT '횟수',
+	AD_CNT FLOAT COMMENT '횟수',
 	AD_SEC VARCHAR(16777216) COMMENT '초수',
-	ACTL_PUR_AD_COST_KRW NUMBER(38,0) COMMENT '실구매광고비(원)',
-	INBOUND_CALL_CNT NUMBER(38,0) COMMENT '인입콜',
-	CPC VARCHAR(16777216) COMMENT 'CPC',
+	LAST_AD_COST FLOAT COMMENT '최종광고비',
+	INBOUND_CALL_CNT FLOAT COMMENT '인입콜',
+	CPC_CALL_CNT FLOAT COMMENT 'CPC_CALL',
 	UPPER_CMPGN_NM VARCHAR(16777216) COMMENT '상위캠페인',
-	MATR_NM VARCHAR(16777216) COMMENT '소재명',
+	MATR_NM VARCHAR(16777216) COMMENT '소재',
+	DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(국내/해외)',
+	BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(사업/사례)',
 	CMPGN_TY_NM VARCHAR(16777216) COMMENT '캠페인유형',
-	DUR_PD_MATR_CHN VARCHAR(16777216) COMMENT '중도소재변경',
 	CHNNL_CMPNY_TY_NM VARCHAR(16777216) COMMENT '채널사유형',
 	WEEK VARCHAR(16777216) COMMENT '주차',
-	CONV_CALL_CNT FLOAT COMMENT '전환콜',
-	BRDC_MT VARCHAR(16777216) COMMENT '방송월',
-	YEAR VARCHAR(16777216) COMMENT '해당연도',
-	CTV_DIV_NM VARCHAR(16777216) COMMENT 'CTV 구분',
-	MKT_CMPGN_NM VARCHAR(16777216) COMMENT '마케팅 캠페인명',
-	SPNSR_BSNS_NM VARCHAR(16777216) COMMENT '후원사업구분',
-	DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(국내/해외)',
-	BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(사업/사례)'
+	MONTH VARCHAR(16777216) COMMENT '월',
+	AD_TY_NM VARCHAR(16777216) COMMENT '광고유형',
+	BDGT_SOURCE_NM VARCHAR(16777216) COMMENT '예산출처',
+	DEVICE_NM VARCHAR(16777216) COMMENT '기기',
+	YEAR VARCHAR(16777216) COMMENT '연도',
+	DAY VARCHAR(16777216) COMMENT '일자',
+	SPNSER_CNT FLOAT COMMENT '후원자수',
+	DVLP_CNT FLOAT COMMENT '개발건수',
+	CMPGN_NM VARCHAR(16777216) COMMENT '캠페인명',
+	MATR_TY_NM VARCHAR(16777216) COMMENT '소재유형',
+	EXPSR_CNT FLOAT COMMENT '노출수',
+	CLICK_CNT FLOAT COMMENT '클릭수'
 )COMMENT='영상 광고 성과 내역'
 ;
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
@@ -419,8 +416,8 @@ def main(session, input_yyyymm):
                 # CMPGN_TY_NM 컬럼 분리
                 if ''캠페인유형'' in df.columns:
                     split_data = df[''캠페인유형''].str.split('' '', n=1, expand=True)
-                    df[''국내해외구분''] = split_data[0]
-                    df[''사업사례구분''] = split_data[1] if len(split_data.columns) > 1 else ""
+                    df[''캠페인유형1''] = split_data[0]
+                    df[''캠페인유형2''] = split_data[1] if len(split_data.columns) > 1 else ""
 
                 # YEAR, MONTH, DAY 날짜 조합
                 if all(col in df.columns for col in [''연도'', ''월'', ''일자'']):
@@ -556,7 +553,7 @@ def main(session):
         log_messages.append(f"[삭제] 기존 {deleted_cnt}건 삭제 완료")
 
         # 대상 시트 순회 및 데이터 정제/적재
-        TARGET_SHEET_NAMES = ["데이터관리 양식(특집)", "데이터관리 양식(재송출)"]
+        TARGET_SHEET_NAMES = ["1-1. 특집", "1-2. 재송출"]
 
         for sheet in worksheets:
             sheet_name = sheet.get("name")
@@ -564,10 +561,7 @@ def main(session):
             if sheet_name not in TARGET_SHEET_NAMES:
                 continue
 
-            if sheet_name == ''데이터관리 양식(특집)'':
-                TARGET_RANGE = "A2:CQ5000"
-            else:
-                TARGET_RANGE = "A2:AZ5000"
+            TARGET_RANGE = "B6:V10000"
 
             data_res = requests.get(
                 f"https://graph.microsoft.com/v1.0/sites/{SITE_ID}/drive/items/{ITEM_ID}/workbook/worksheets/{sheet_name}/range(address=''{TARGET_RANGE}'')",
@@ -589,20 +583,11 @@ def main(session):
             df = pd.DataFrame(data_rows, columns=header_cols)
             df = df.replace(r"^\\s*$", None, regex=True).infer_objects(copy=False)
             df = df[df["방송명"].astype(str).str.strip() != ""]
-            df = df[df["날짜"].notna()]
+            df = df[df["방송일자"].notna()]
 
             if df.empty:
                 log_messages.append(f"[-] ''{sheet_name}'' 유효 데이터 없음")
                 continue
-
-            # ''사례구분3'' 이후 컬럼 제거
-            col_list_clean = [str(c).replace("\\n", "").replace(" ", "").strip() for c in df.columns]
-            target_col = "사례구분3"
-            if target_col in col_list_clean:
-                target_index = col_list_clean.index(target_col)
-                columns_after_target = df.columns[target_index + 1:]
-                if len(columns_after_target) > 0:
-                    df.drop(columns=columns_after_target, errors="ignore", inplace=True)
 
             # 컬럼 정제
             columns_to_drop = []
@@ -642,7 +627,7 @@ def main(session):
                             cleaned_values.append(val_str)
                     df[col] = cleaned_values
 
-                elif col_str == "날짜":
+                elif col_str == "방송일자":
                     cleaned_dates = []
                     for val in df[col]:
                         if pd.isnull(val) or val is None:
@@ -678,15 +663,7 @@ def main(session):
                 raise Exception(f"[검증 실패] DB COMMENT에 없는 컬럼: {list(missing_cols)}")
 
             df.columns = current_columns
-            if ''본방송구분'' not in df.columns:
-                df[''본방송구분''] = None
             df.rename(columns=comment_to_eng_map, inplace=True)
-
-            if ''RE_BRDC_TY_NM'' not in df.columns:
-                if sheet_name.upper() == ''데이터관리 양식(특집)'':
-                    df.insert(loc=0, column=''RE_BRDC_TY_NM'', value=''특집'')
-                else:
-                    df.insert(loc=0, column=''RE_BRDC_TY_NM'', value=''재송출'')
 
             if ''INBOUND_CALL_CNT'' in df.columns:
                 df[''INBOUND_CALL_CNT''] = df[''INBOUND_CALL_CNT''].fillna('''').astype(str)
@@ -813,7 +790,8 @@ def main(session, input_yyyymm=None):
             print(f"[-] input_yyyymm({input_yyyymm}) 파싱 중 오류 발생: {date_err}")
             raise Exception(f"input_yyyymm({input_yyyymm}) 파싱 중 오류 발생: {date_err}")
         # Google Drive 파일 목록
-        folder_id = "1NO0ZAOWEoHjclENDrmzSzAgiWp7fNkLi"
+        # folder_id = "1NO0ZAOWEoHjclENDrmzSzAgiWp7fNkLi"
+        folder_id = "1WKPv87d1-nmo4SAFpHaLpzwRw8_oJ5Wv"
         files = drive_list_files(token, folder_id)
 
         if not files:
@@ -913,11 +891,13 @@ def main(session, input_yyyymm=None):
                             header_counts[clean_name] = 0
                             header_columns_clean.append(clean_name)
 
-                    header_set = {c.split(''_'')[0] for c in header_columns_clean if not c.startswith("EMPTY_COL_")}
+                    # header_set = {c.split(''_'')[0] for c in header_columns_clean if not c.startswith("EMPTY_COL_")}
+                    header_set = {c for c in header_columns_clean if not c.startswith("EMPTY_COL_")}
                     if not header_set.issubset(db_comments_set_clean):
                         missing_cols = header_set - db_comments_set_clean
                         log_messages.append(f"[-] ''{file_name}'' 미정의 컬럼: {list(missing_cols)}")
-                        continue
+                        # continue
+                        raise Exception(f"{file_name} 미정의 컬럼: {list(missing_cols)}")
 
                     # 데이터 클렌징
                     df = df_raw.iloc[1:].dropna(how=''all'')

@@ -39,7 +39,7 @@ GRANT SELECT ON TABLE  GN_DW.SILVER.BIGQUERY_REFINED_DATA  TO SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_BIGQUERY                FROM SHARE mig_share;
 
 ------------------------------------------------------------
--- 2-B. ML 스키마 부여 — 예측결과 16종만
+-- 2-B. ML 스키마 부여 — 예측결과 17종만
 --    ⚠️ ALL TABLES 금지. 학습용 20종 + 스냅샷 12종 + 로그 1종이 함께 열려
 --       Agent 노출 금지 지시를 위반한다(상단 '테이블 단위 부여 원칙' 참조).
 ------------------------------------------------------------
@@ -55,7 +55,7 @@ GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_LOYAL_MBER                          T
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT               TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT      TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT            TO SHARE mig_share;
--- 나눔마케팅본부 8종
+-- 나눔마케팅본부 9종
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT                    TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV                          TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE                    TO SHARE mig_share;
@@ -64,6 +64,7 @@ GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE                     T
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT              TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION               TO SHARE mig_share;
+GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION                     TO SHARE mig_share;
 
 -- ⛔ 부여하지 않는 것 (부여하면 사용자 지시 위반) — 참고용 목록, 실행하지 말 것
 --    ML_TRAIN_DATA_* 20종 / CMPGN_MBER_SNAPSHOT · CMPGN_MONTHLY_SNAPSHOT · DAILY_CMPGN_DVLP_AMT ·
@@ -82,9 +83,9 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 78(브론즈 61 + SILVER 1 + ML 16)
---    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.
---       브론즈 5 = BRONZE_CRM(50) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(2)
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 82(브론즈 64 + SILVER 1 + ML 17)
+--    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
 SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 함
@@ -93,7 +94,7 @@ SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 �
 SHOW GRANTS TO SHARE mig_share;
 SELECT
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 50
-  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 16
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 17
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 1
   COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 7
   COUNT_IF("name" ILIKE '%BRONZE_BIGQUERY%')                         AS bigquery_grants   -- 기대 0
@@ -117,8 +118,8 @@ WHERE table_type = 'BASE TABLE'
         OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 50 · ERP 2 · GA4 2 · GSC 3 · ML 16 · SILVER 1 = 78)
---   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 17 · SILVER 1 = 82)
+--   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
@@ -188,7 +189,7 @@ SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_GSC', TRUE);
 
 -- 🟢 ML 은 이미 추출되어 있다 — 재추출 불필요
 --    산출물 = 99_provided_definition/20_ML_ddl.sql (프로시저·모델 포함 전량)
---    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 16종만)
+--    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 17종만)
 --    ⚠️ 모델·프로시저가 교체되어 결과 테이블 컬럼이 바뀌면 아래를 재실행해 05번을 갱신한다.
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
 

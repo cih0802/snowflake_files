@@ -15,6 +15,9 @@ import sys, re, os
 sys.path.insert(0, '/workspace/scripts')
 from sfconn import conn
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
+
 DDL = '/workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql'
 SKIP_TOKEN = 'SV_ML_MEMBER_RISK'
 
@@ -82,6 +85,7 @@ def label(s):
 
 
 def main(dry):
+    require_apply(__file__, 'ML SV 라이브 배포(CREATE SEMANTIC VIEW 다건)')  # 🔴 [O181 · I2]
     stmts = split_sql(strip_comments(open(DDL, encoding='utf-8').read()))
 
     # 🔴 자기검사 — 분할이 문안을 쪼갰다면 인용부호 개수가 홀수로 남는다.

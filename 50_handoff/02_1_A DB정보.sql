@@ -3,10 +3,10 @@
 -- =====================================================================
 -- 🔴🔴 [2026-08-29] 이 스냅샷은 낡았다 — **구조 정본으로 쓰지 마라.**
 --   본 파일은 2026-08-12 측정본이고, 그 뒤 A 원천이 여러 번 바뀌었다:
---     · BRONZE_CRM 45 → 46 (+ TM_CM_MKTNG_UTM) · TM_CM_CMPGN_MNG 34 → 36 컬럼   (현행 CRM 50)
+--     · BRONZE_CRM 45 → 46 (+ TM_CM_MKTNG_UTM) · TM_CM_CMPGN_MNG 34 → 36 컬럼   (현행 CRM 50)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --     · BRONZE_ERP 1 → 2 (+ EXPENSE_RESOLUTION) · BDGT_ACMSLT_LEDGER 65 → 67 컬럼(순서 변경)
---     · [2026-09-01] BRONZE_GA4(2) 복귀 · BRONZE_GSC(2) 신규 ⇒ 브론즈 52 → 56   (현행 브론즈 61)
---     · [2026-09-15] CRM 개편 ⇒ CRM 46 → 50 · 브론즈 56 → 60 · 이관 총계 77  (현행 = 브론즈 61 · 총계 78 · 2026-09-17 GSC 2 → 3)
+--     · [2026-09-01] BRONZE_GA4(2) 복귀 · BRONZE_GSC(2) 신규 ⇒ 브론즈 52 → 56   (현행 브론즈 61)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     · [2026-09-15] CRM 개편 ⇒ CRM 46 → 50 · 브론즈 56 → 60 · 이관 총계 77  (현행 = 브론즈 61 · 총계 78 · 2026-09-17 GSC 2 → 3)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --        (신규 4 · 삭제 2 = TM_CM_MKTNG_CMPGN_MNG·TM_CM_MKTNG_UTM → TC_MKTNG_DTL_CD 통합 ·
 --         누락 보완 2 = TM_PM_INSTT_ACNUT·TM_PM_SETLE_CMPNY_ACNT)
 --   ⇒ 이 파일의 A3~A5 GET_DDL 과 A1/A2 집계는 **그 변경을 반영하지 않았다.**
@@ -31,7 +31,7 @@
 --   A4  GET_DDL — BRONZE_AGENCY
 --   A5  GET_DDL — BRONZE_ERP
 --   A6  GET_DDL — BRONZE_GA4   ⛔ **현재 이관 대상 아님** (아래 참조)
---   A7  ML 예측결과 16종 실측  — 미실측
+--   A7  ML 예측결과 17종 실측  — 미실측
 --   A8  ML 부여 상태 확인      — 미실측
 --
 -- ⛔ 현재 이관 범위와 다른 구간 — 읽을 때 주의
@@ -50,8 +50,8 @@
 --   ③ SILVER 컬럼 수/ARRAY 위치                  → 02번 5.2
 --   ④ A7 / A8 (ML)                               → 02번 5단계 · 4.1
 --
---   현재 공유 대상: BRONZE_CRM(50) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(2)
---                   + SILVER.BIGQUERY_REFINED_DATA(1) + ML.ML_RST_DATA_*(16) = 78 테이블
+--   현재 공유 대상: BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
+--                   + SILVER.BIGQUERY_REFINED_DATA(1) + ML.ML_RST_DATA_*(17) = 82 테이블
 --                   🔴 이 수치는 2026-09-15 기준이며 **아래 A1/A2 결과와 다르다**(A1/A2 는 08-12 측정).
 --   절차 문서: 50_handoff/01_데이터마이그레이션 20260730.md
 -- =====================================================================
@@ -2504,7 +2504,7 @@ def main(session, input_yyyymm=None):
 ';
 */
 
--- # A7  (🆕 2026-08-14 신설 · ML 예측결과 16종 실측 — **미실측 · 실행 후 결과를 아래에 붙일 것**)
+-- # A7  (🆕 2026-08-14 신설 · ML 예측결과 17종 실측 — **미실측 · 실행 후 결과를 아래에 붙일 것**)
 -- 실행 계정: A (Provider) · 관련 절차: 01번 문서 §3.1-B · §6.2
 -- ⚠️ ML 스키마 통짜로 세지 말 것. 학습 20 · 스냅샷 12 · 로그 1 이 섞여 기준값이 부풀어
 --    C 검증(05번 A.6 (1) · A.5-B.4)이 전부 어긋난다. 필터는 ML_RST_DATA_ 접두다.
@@ -2515,7 +2515,7 @@ WHERE table_type = 'BASE TABLE'
   AND table_name LIKE 'ML_RST_DATA_%'
 ORDER BY table_name;
 /*
--- 기대: 16행. 결과를 이 블록에 그대로 붙인다.
+-- 기대: 17행. 결과를 이 블록에 그대로 붙인다. (2026-09-28 ONCE_CONVERSION 추가 — 아래 참고값에는 없다)
 -- 참고값(A 실측 아님 · 원천 계정 라이브 2026-08-14 O74 · 정본 05_SV-Agent_ai/20_ML_SV_설계.md §0-A):
 --   SPNSR_CHURN_12M 829,609 / MBER_CHURN_12M 91,423 / MBER_INC_12M 91,423 / LOYAL_MBER 29,471
 --   CMPGN_CTGR_AMT 660 / MONTHLY_DEPT_DVLP_AMT 360 / MONTHLY_SPNSR_BSNS_ID_DVLP_AMT 228

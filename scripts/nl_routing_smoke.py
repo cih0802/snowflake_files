@@ -8,6 +8,8 @@
 import io, json, os, re, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sfconn import conn
+# 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드 (경로는 위 `sys.path.insert` 로 이미 확보)
+from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'tmp', 'nlsmoke')
@@ -43,6 +45,7 @@ def digest(raw):
     return dict(tools=tools, svs=svs, tables=tabs, sql=sql, errors=err[:3], bytes=len(txt))
 
 def main():
+    require_apply(__file__, 'Agent 3종 NL 스모크 — 🔴 LLM 대량 호출(크레딧 과금)')
     os.makedirs(OUT, exist_ok=True)
     cn = conn(); cur = cn.cursor()
     rows = []
