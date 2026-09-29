@@ -7,7 +7,7 @@
   <title>FACT_AD_PERFORMANCE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_PERFORMANCE",
     "table": "FACT_AD_PERFORMANCE",
     "domain": "AGENCY / 마케팅·광고",
@@ -450,7 +450,7 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: AGENCY / 마케팅·광고</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
+          <span class="badge badge-domain">BRONZE 원천: 8개</span>
           <span class="badge badge-domain">SILVER 모델: 10개</span>
           <span class="badge badge-domain">컬럼 수: 19개</span>
         </div>
@@ -475,10 +475,9 @@ flowchart LR
     B_bronze_agency_REBRDC_AD_CMPGN_DTLS["REBRDC_AD_CMPGN_DTLS"]:::bronze
     B_bronze_agency_VIDEO_AD_CMPGN_DTLS["VIDEO_AD_CMPGN_DTLS"]:::bronze
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
     B_silver_external_BIGQUERY_REFINED_DATA["BIGQUERY_REFINED_DATA<br/>BigQuery 평탄화 테이블을 정제"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
@@ -503,11 +502,10 @@ flowchart LR
   B_bronze_agency_REBRDC_AD_CMPGN_DTLS --> S_AGENCY_AD_ROW_REBRDC
   B_bronze_agency_VIDEO_AD_CMPGN_DTLS --> S_AGENCY_AD_ROW_VIDEO
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_MARKETING_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_MARKETING_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   B_silver_external_BIGQUERY_REFINED_DATA --> S_BIGQUERY_BASIC
   G_DIM_DEVICE --> G_FACT_AD_PERFORMANCE
   G_DIM_MARKETING_CAMPAIGN --> G_FACT_AD_PERFORMANCE
@@ -528,17 +526,16 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (8개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_agency.DGT_AD_CMPGN_DTLS</b>: </li>
 <li><b>bronze_agency.REBRDC_AD_CMPGN_DTLS</b>: </li>
 <li><b>bronze_agency.VIDEO_AD_CMPGN_DTLS</b>: </li>
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
 <li><b>silver_external.BIGQUERY_REFINED_DATA</b>: BigQuery 평탄화 테이블을 정제하였다 — BRONZE_BIGQUERY.EVENTS 평탄화 통합 테이블 (파생 없음 · 118컬럼). `BIGQUERY_BASIC`(dbt) 의 유일한 입력. grain = 1행 / (USER_PSEUDO_ID, EVENT_TIMESTAMP, EVENT_NAME) — 3키 중복 8.66%(2025-06 실측) 잔존, BIGQUERY_BASIC 이 ROW_NUMBER 로 EVENT_SEQ 를 부여해 흡수한다. 🔄 [2026-08-21] dbt 모델에서 외부 Python 적재로 전환. 원천 접두 명명 근거 = DEC-38 (기반 테이블 예외) — 🆕 [2026-09-01 DEC-48] SILVER 파생 모델(GA4_*)은 전부 `BIGQUERY_*` 로 전환됐고, 이 기반 테이블은 이름은 불변·COMMENT 만 갱신됐다.</li>
             </ul>
           </div>

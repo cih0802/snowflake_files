@@ -7,7 +7,7 @@
   <title>FACT_AD_DIGITAL - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_DIGITAL",
     "table": "FACT_AD_DIGITAL",
     "domain": "AGENCY / 마케팅·광고",
@@ -644,10 +644,10 @@ erDiagram
           <td>[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS (O5 확정)</td>
         </tr>
         <tr>
-          <td><code>CPC_SRC</code></td>
+          <td><code>CPC_CLICK_SRC</code></td>
           <td><code>NUMBER(18,6)</code></td>
           <td></td>
-          <td>[비가산 N] 대행사 산정 CPC ← DGT.CPC. DW 재계산=AD_COST/CLICKS</td>
+          <td>[비가산 N] 대행사 산정 **클릭당** 단가 ← DGT.CPC. DW 재계산=AD_COST/CLICKS. 🔴 방송 CPC_CALL_SRC 와 합산 금지 (O174 개명)</td>
         </tr>
         <tr>
           <td><code>CPM_SRC</code></td>
@@ -733,10 +733,10 @@ select
     MEDIA_PTNT_CUST_CNT         as MEDIA_POTENTIAL_CUST_CNT,    -- 매체 잠재고객수
     CRM_DVLP_CNT                as CRM_DEV_CNT,                 -- CRM 개발건수
     CTR_SRC                     as CTR_SRC,                     -- N 대행사, DW=CLICKS/IMPRESSIONS
-    CVR_SRC                     as CVR_SRC,                     -- N 대행사, DW=GA_CONV_MEMBERS/CLICKS (O5)
-    CPC_SRC                     as CPC_SRC,                     -- N 대행사, DW=AD_COST/CLICKS
+    CVR_SRC                     as CVR_SRC,                     -- N 대행사, DW=AGENCY_CONV_MEMBERS/CLICKS (O5)
+    CPC_CLICK_SRC                   as CPC_CLICK_SRC,               -- N 대행사 **클릭당**, DW=AD_COST/CLICKS (O174 개명)
     CPM_SRC                     as CPM_SRC,                     -- N 대행사, DW=AD_COST/IMPRESSIONS×1000
-    CPA_SRC                     as CPA_SRC,                     -- N 대행사, DW=AD_COST/GA_CONV_CNT
+    CPA_SRC                     as CPA_SRC,                     -- N 대행사, DW=AD_COST/AGENCY_CONV_CNT
     DEV_UNIT_PRICE_SRC          as DEV_UNIT_PRICE_SRC,          -- N 대행사, DW=AD_COST/개발건수
     VTR_SRC                     as VTR_SRC,                     -- N 대행사, 재계산 불가(원천 전용)
     {{ gold_meta('AGENCY') }}

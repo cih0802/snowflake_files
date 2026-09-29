@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_EVENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_EVENT",
     "table": "FACT_MEMBER_EVENT",
     "domain": "CRM / 회원·후원",
@@ -450,9 +450,9 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
-          <span class="badge badge-domain">SILVER 모델: 6개</span>
-          <span class="badge badge-domain">컬럼 수: 55개</span>
+          <span class="badge badge-domain">BRONZE 원천: 14개</span>
+          <span class="badge badge-domain">SILVER 모델: 10개</span>
+          <span class="badge badge-domain">컬럼 수: 57개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 생애주기 전이 팩트. [Grain: DATE_SK × MEMBER_DK × EVENT_TYPE (1행=1상태전이)]. [주의: 개발(신규/증액/재후원)과 중단 사건의 통합 이력]. [원천: SILVER.CRM_MEMBER_DEV ∪ CRM_MEMBER_DISCONTINUE].</p>
       </div>
@@ -472,21 +472,30 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
     B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
     B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS["TM_MM_FDRM_MBER_SPNSR_BSNS"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
+    B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_PM_DNTN_DTLS["TM_PM_DNTN_DTLS"]:::bronze
+    B_bronze_crm_TM_PM_MBRFEE_ACMSLT["TM_PM_MBRFEE_ACMSLT"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
     S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MEMBER["CRM_MEMBER"]:::silver
     S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
     S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
+    S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_PAYMENT_BILLING["CRM_PAYMENT_BILLING"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
@@ -495,14 +504,19 @@ flowchart LR
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
   B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_PM_DNTN_DTLS --> S_CRM_PAYMENT_BILLING
+  B_bronze_crm_TM_PM_MBRFEE_ACMSLT --> S_CRM_PAYMENT_BILLING
   G_DIM_ORG --> G_FACT_MEMBER_EVENT
   G_DIM_SPONSORSHIP --> G_FACT_MEMBER_EVENT
   S_CRM_CAMPAIGN --> G_FACT_MEMBER_EVENT
@@ -510,11 +524,16 @@ flowchart LR
   S_CRM_CODE --> G_DIM_SPONSORSHIP
   S_CRM_CODE --> G_FACT_MEMBER_EVENT
   S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
+  S_CRM_MEMBER --> G_FACT_MEMBER_EVENT
   S_CRM_MEMBER_DEV --> G_FACT_MEMBER_EVENT
   S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_EVENT
   S_CRM_ORG --> G_DIM_ORG
+  S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_EVENT
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
           </pre>
         </div>
@@ -522,30 +541,39 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (14개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
 <li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
+<li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_PM_DNTN_DTLS</b>: </li>
+<li><b>bronze_crm.TM_PM_MBRFEE_ACMSLT</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (6개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (10개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CAMPAIGN</b>: </li>
 <li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MEMBER</b>: </li>
 <li><b>CRM_MEMBER_DEV</b>: </li>
 <li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_PAYMENT_BILLING</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
             </ul>
           </div>
@@ -954,13 +982,25 @@ erDiagram
           <td><code>MKTG_UTM_AT_EVENT</code></td>
           <td><code>NUMBER(10,0)</code></td>
           <td></td>
-          <td>UTM 코드(TM_CM_MKTNG_UTM.MK_UTM).</td>
+          <td>UTM 코드(TC_MKTNG_DTL_CD U001).</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM_NM_AT_EVENT</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>UTM 라벨(TM_CM_MKTNG_UTM.MK_UTM_NM).</td>
+          <td>UTM 라벨(TC_MKTNG_DTL_CD U001).</td>
+        </tr>
+        <tr>
+          <td><code>MKTG_CHANNEL_AT_EVENT</code></td>
+          <td><code>NUMBER(10,0)</code></td>
+          <td></td>
+          <td>마케팅 채널 코드 — 사건 시점 동결값.</td>
+        </tr>
+        <tr>
+          <td><code>MKTG_CHANNEL_NM_AT_EVENT</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>마케팅 채널명 — 사건 시점 동결값.</td>
         </tr>
         <tr>
           <td><code>SPNSR_DIV_CD_AT_EVENT</code></td>
@@ -1041,10 +1081,19 @@ erDiagram
           <div class="sql-code-box">
             <pre><code>-- FACT_MEMBER_EVENT: 회원 생애주기 사건 팩트 (개발/약정 ∪ 후원중단 이벤트) — 가입, 증액, 감액, 재후원, 중단 등 생애 이벤트 추적
 -- Co-authored with CoCo
+-- 🔴 [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
+--    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 🟢 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라
+--    피해 0 이었고 제거 후 기대값도 **행수 불변**이다. 🔴 제거 이유 = `RANGED_FACTS` 등재 시
+--    TRUNCATE + 범위 DELETE 동시 실행으로 **에러 없이 창 크기로 쪼그라드는** 잠재 사고였다.
+--    🔴 정의 지점 = `macros/gold_fact_purge.sql` 하나 · 여기에 다시 쓰지 마라.
+-- 🆕 🔴 [2026-09-22 O180] **위 주석을 config 블록 밖으로 옮겼다** — config 호출은 Jinja 표현식이라
+--    `--` 가 주석이 아니라 연산자로 파싱돼 컴파일이 깨졌다(`FACT_EVENT_ATTENDANCE` 가 먼저 터졌고
+--    같은 결함이 O179 가 만진 GOLD 팩트 **4건 전건**에 있었다).
+--    🔴 판정식 = **config 안에 `--` 주석 금지 · 주석 안에서도 Jinja 태그 인용 금지**
+--       (dbt 는 파일 전체를 Jinja 로 렌더하므로 `--` 도 백틱도 Jinja 를 막지 못한다).
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
-    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
     tags=['gold_ready']
 ) }}
 
@@ -1063,11 +1112,51 @@ code_sex as (
 spb_lookup as (
     select SPONSORSHIP_BK, SPONSORSHIP_SK from {{ ref('DIM_SPONSORSHIP') }}
 ),
+stop_single_biz as (
+    -- [2026-09-14 O160] 착수표 ⑭ 분해 배선: 단일 후원사업 중단 건(92.45%) 1:1 배선 (팬아웃 0)
+    -- 다중사업 동시중단(7.29%) 및 미매칭(0.26%)은 0 센티넬 유지 (현업 질의 §N-12 대기)
+    select
+        MBER_NO,
+        SPNSR_DSCNTC_DE,
+        max(SPNSR_BSNS_ID) as SPNSR_BSNS_ID
+    from {{ ref('CRM_MEMBER_SPONSOR_SPAN') }}
+    where SPNSR_DSCNTC_YN = 'Y' and SPNSR_DSCNTC_DE is not null
+    group by MBER_NO, SPNSR_DSCNTC_DE
+    having count(distinct SPNSR_BSNS_ID) = 1
+),
+-- [O183] #113 신규기존구분 기준일 = 회원 최초가입일(#28) = LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일)
+--   — FMM member_first 와 **같은 규칙·같은 월키 식**(첫 청구월 = FMM billing 의 MONTH_KEY 산식).
+--   사건 연도 = 최초가입 연도 ⇒ 신규 · 그 이전에 가입 ⇒ 기존 · 기준일 없음 ⇒ NULL(창작 금지).
+--   🔴 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 기준일 후보에서 제외.
+member_first_dev as (
+    select MBER_NO, MIN(D) as FIRST_DEV_DATE
+    from (
+        select MBER_NO, TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') as D
+        from {{ ref('CRM_MEMBER_DEV') }}
+        where DVLP_DIV_CD in ('1','2','4')
+          and YEAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')) &gt; 1900
+        union all
+        select MEMBER_DK, FRST_REGIST_DT::DATE
+        from {{ ref('CRM_MEMBER') }}
+        where FRST_REGIST_DT is not null and YEAR(FRST_REGIST_DT) &gt; 1900
+        union all
+        select MBER_NO, TRY_TO_DATE(TO_VARCHAR(MIN(BILL_MK)) || '01', 'YYYYMMDD')
+        from (
+            select MBER_NO,
+                   COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp(&quot;TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))&quot;) }}, 0) as BILL_MK
+            from {{ ref('CRM_PAYMENT_BILLING') }}
+            where MBER_NO is not null
+        )
+        where BILL_MK &gt; 0
+        group by MBER_NO
+    )
+    group by MBER_NO
+),
 
 dev as (
     select
         COALESCE({{ date_sk(&quot;TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')&quot;) }}, 0)  as DATE_SK,
-        MBER_NO                                             as MEMBER_DK,
+        d.MBER_NO                                           as MEMBER_DK,
         'DEV'                                               as EVENT_TYPE,
         case when c.CMPGN_CD is not null
              then {{ gold_sk(['d.CMPGN_CD']) }}
@@ -1088,7 +1177,9 @@ dev as (
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL,
         CAST(NULL AS VARCHAR)                               as STOP_REASON_NM,
         CAST(NULL AS VARCHAR)                               as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        CASE WHEN mfd.FIRST_DEV_DATE IS NULL OR TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') IS NULL THEN CAST(NULL AS VARCHAR)
+             WHEN YEAR(mfd.FIRST_DEV_DATE) = YEAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')) THEN '신규'
+             ELSE '기존' END                                as NEW_EXISTING_FLAG,
         d.AGE                                               as AGE_AT_EVENT,
         cab.DTL_CD_NM                                       as AGE_BAND_AT_EVENT,
         d.AREA_CD                                           as AREA_CD_AT_EVENT,
@@ -1110,6 +1201,8 @@ dev as (
         d.CMMN_BRND_NM                                       as CMMN_BRND_NM_AT_EVENT,
         d.MKTG_UTM                                           as MKTG_UTM_AT_EVENT,
         d.MKTG_UTM_NM                                        as MKTG_UTM_NM_AT_EVENT,
+        d.MKTG_CHANNEL                                       as MKTG_CHANNEL_AT_EVENT,
+        d.MKTG_CHANNEL_NM                                    as MKTG_CHANNEL_NM_AT_EVENT,
         d.SPNSR_DIV_CD                                       as SPNSR_DIV_CD_AT_EVENT,
         d.SPNSR_DIV_NM                                       as SPNSR_DIV_NM_AT_EVENT,
         d.CPR_DIV_CD                                         as CPR_DIV_CD_AT_EVENT,
@@ -1123,31 +1216,47 @@ dev as (
     left join code_sex       csx on d.SEX = csx.DTL_CD_ID
     left join org_lookup     og on og.ORG_DK = ABS(HASH(d.ACMSLT_DEPT_CD))
     left join spb_lookup     sp on sp.SPONSORSHIP_BK = d.SPNSR_BSNS_ID
+    left join member_first_dev mfd on mfd.MBER_NO = d.MBER_NO
 ),
 
 stop as (
     select
-        COALESCE({{ date_sk(&quot;TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD')&quot;) }}, 0) as DATE_SK,
-        MBER_NO                                             as MEMBER_DK,
+        COALESCE({{ date_sk(&quot;TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')&quot;) }}, 0) as DATE_SK,
+        s.MBER_NO                                           as MEMBER_DK,
         'STOP'                                              as EVENT_TYPE,
-        0 as CAMPAIGN_SK, 0 as SPONSORSHIP_SK,
+        0 as CAMPAIGN_SK,
+        COALESCE(sp.SPONSORSHIP_SK, 0)                      as SPONSORSHIP_SK,
         0 as ORG_SK,
-        case when NULLIF(TRIM(DSCNTC_RSN_CD),'') is not null
-             then {{ gold_sk([&quot;'MM005'&quot;, &quot;NULLIF(TRIM(DSCNTC_RSN_CD),'')&quot;]) }}
+        case when NULLIF(TRIM(s.DSCNTC_RSN_CD),'') is not null
+             then {{ gold_sk([&quot;'MM005'&quot;, &quot;NULLIF(TRIM(s.DSCNTC_RSN_CD),'')&quot;]) }}
              else 0
         end                                                 as REASON_SK,
         CAST(NULL AS VARCHAR)                               as DVLP_DIV_CD,
         CAST(NULL AS VARCHAR)                               as DVLP_DIV_NM,
         CAST(NULL AS NUMBER(18,0))                          as SPNSR_AMT,
         0 as DEV_CNT, 0 as DEV_MEMBERS,
-        1 as STOP_CNT, 1 as STOP_MEMBERS, 0 as UNPAID_STOP_CNT, 0 as UNPAID_STOP_MEMBERS,
+        -- 🆕 🟢 [2026-09-16 O168] `UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 배선.
+        --   종전 = 스캐폴드 상수 `0` (BLOCKING-5 버킷 B · 라이브 전건 0 실측).
+        --   판정 = **중단사유명에 「미납」이 포함된 중단**을 미납중단으로 센다.
+        --   🟢 원천 실측(`SILVER.CRM_MEMBER_DISCONTINUE` 중단사유 20종): 미납 계열 **3종**
+        --      `14` 장기미납 342,586 · `16` 신규미납 46,338 · `13` 반송미납 86 = **389,010행**.
+        --   🔴 코드 목록을 하드코딩하지 않고 **사유명 술어**로 판정한다 — 원천에 미납 계열 코드가
+        --      추가되면 코드 목록은 조용히 낡지만 술어는 따라간다(코드 3종은 현 실현일 뿐이다).
+        --   🔴 이 판정은 **업무 정의 선택**이다(예: 「반송미납」을 미납으로 볼 것인가).
+        --      근거·대안은 문서30 `DEC-54` 에 등재했다 — 현업이 달리 정하면 술어만 바꾼다.
+        --   ⚠️ `STOP_CNT` 의 부분집합이다(미납중단 ⊂ 중단) ⇒ 두 measure 를 합산하지 마라.
+        1 as STOP_CNT, 1 as STOP_MEMBERS,
+        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_CNT,
+        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_MEMBERS,
         CAST(NULL AS DATE)                                  as JOIN_DATE,
-        TRY_TO_DATE(SPNSR_DSCNTC_DE,'YYYYMMDD')             as STOP_DATE,
-        DSCNTC_RSN_CD                                       as STOP_REASON,
-        DSCNTC_PATH                                         as STOP_CHANNEL,
-        DSCNTC_RSN_NM                                       as STOP_REASON_NM,
-        DSCNTC_PATH_NM                                      as STOP_CHANNEL_NM,
-        CAST(NULL AS VARCHAR)                               as NEW_EXISTING_FLAG,
+        TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')           as STOP_DATE,
+        s.DSCNTC_RSN_CD                                     as STOP_REASON,
+        s.DSCNTC_PATH                                       as STOP_CHANNEL,
+        s.DSCNTC_RSN_NM                                     as STOP_REASON_NM,
+        s.DSCNTC_PATH_NM                                    as STOP_CHANNEL_NM,
+        CASE WHEN mfd.FIRST_DEV_DATE IS NULL OR TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD') IS NULL THEN CAST(NULL AS VARCHAR)
+             WHEN YEAR(mfd.FIRST_DEV_DATE) = YEAR(TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')) THEN '신규'
+             ELSE '기존' END                                as NEW_EXISTING_FLAG,
         CAST(NULL AS NUMBER(2,0))                           as AGE_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as AGE_BAND_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as AREA_CD_AT_EVENT,
@@ -1169,6 +1278,8 @@ stop as (
         CAST(NULL AS VARCHAR)                               as CMMN_BRND_NM_AT_EVENT,
         CAST(NULL AS NUMBER(38,0))                          as MKTG_UTM_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as MKTG_UTM_NM_AT_EVENT,
+        CAST(NULL AS NUMBER(38,0))                          as MKTG_CHANNEL_AT_EVENT,
+        CAST(NULL AS VARCHAR)                               as MKTG_CHANNEL_NM_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as SPNSR_DIV_CD_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as SPNSR_DIV_NM_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as CPR_DIV_CD_AT_EVENT,
@@ -1176,7 +1287,12 @@ stop as (
         CAST(NULL AS VARCHAR)                               as BRAND_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as PROMO_METHOD_NAME_AT_EVENT
-    from {{ ref('CRM_MEMBER_DISCONTINUE') }}
+    from {{ ref('CRM_MEMBER_DISCONTINUE') }} s
+    left join stop_single_biz sb
+        on s.MBER_NO = sb.MBER_NO and s.SPNSR_DSCNTC_DE = sb.SPNSR_DSCNTC_DE
+    left join spb_lookup sp
+        on sp.SPONSORSHIP_BK = sb.SPNSR_BSNS_ID
+    left join member_first_dev mfd on mfd.MBER_NO = s.MBER_NO
 ),
 
 unioned as (
@@ -1199,6 +1315,7 @@ select
     MKTG_CMPGN_CD_AT_EVENT, MKTG_CMPGN_NM_AT_EVENT,
     CMMN_BRND_AT_EVENT, CMMN_BRND_NM_AT_EVENT,
     MKTG_UTM_AT_EVENT, MKTG_UTM_NM_AT_EVENT,
+    MKTG_CHANNEL_AT_EVENT, MKTG_CHANNEL_NM_AT_EVENT,
     SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
     CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
     BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,

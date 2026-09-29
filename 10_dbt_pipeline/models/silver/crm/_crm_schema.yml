@@ -534,7 +534,7 @@ models:
       - name: MBER_NO
         tests:
           - not_null:
-              config: { severity: warn }   # 순서9-C: NULL 회원번호 고아 5(이슈 B/D). warn. 마스터 재추출/판정 후 error 복귀.
+              config: { severity: warn }   # 순서9-C: NULL 회원번호 고아 5(이슈 B/D). warn. ~~마스터 재추출/판정 후 error 복귀.~~ 🔴[O188 J5] 폐기 — 추가 인입 없음(사용자 결정).
           - relationships:
               to: ref('CRM_MEMBER')
               field: MEMBER_DK

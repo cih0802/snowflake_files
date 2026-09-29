@@ -72,6 +72,17 @@ sources:
           - name: EVENT_NAME
             tests: [not_null]
 
+  # 🆕 [2026-09-29 O188] 공휴일 원천 — CRM 일정관리. SCHDUL_DIV_CD='0' = 공휴일(현업 회신 · 문서20 F-5).
+  #   🔴 bronze_crm 에 넣지 않는다 — dev2 타깃의 BRONZE_CRM_2 에 이 테이블이 없어 compile 이 깨진다
+  #      (2026-09-29 실측 · INFORMATION_SCHEMA.TABLES 에 BRONZE_CRM 1건뿐) ⇒ 스키마를 고정한다.
+  - name: bronze_crm_ref
+    database: GN_DW
+    schema: BRONZE_CRM
+    description: "CRM 원천 중 target 과 무관하게 BRONZE_CRM 을 읽는 참조 테이블."
+    tables:
+      - name: TM_CM_SCHDUL_MNG              # 일정관리(0=공휴일 · 1=업무일정) → DIM_DATE.IS_HOLIDAY
+      - name: TM_CM_MBER_DVLP_GOAL_DIV      # 🆕 O188 사업목표(연사업/팀 · 월 12컬럼) → CRM_BIZ_TARGET (BRONZE_CRM_2 에 없음)
+
   - name: bronze_crm
     database: GN_DW
     # 🆕 [11_일적재pipeline 구성] target=dev2 로 빌드하면 BRONZE_CRM_2(일적재 테스트 원천)를 읊는다.

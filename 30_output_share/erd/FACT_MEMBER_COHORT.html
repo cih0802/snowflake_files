@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_COHORT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_COHORT",
     "table": "FACT_MEMBER_COHORT",
     "domain": "CRM / 회원·후원",
@@ -450,8 +450,8 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
-          <span class="badge badge-domain">SILVER 모델: 6개</span>
+          <span class="badge badge-domain">BRONZE 원천: 14개</span>
+          <span class="badge badge-domain">SILVER 모델: 10개</span>
           <span class="badge badge-domain">컬럼 수: 47개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 획득 코호트 팩트(1행=1회원). 캠페인별 중단률·유지기간·획득시점 회원특성의 정본. 중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 — 누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다(P63).</p>
@@ -472,21 +472,30 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
     B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
     B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS["TM_MM_FDRM_MBER_SPNSR_BSNS"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
+    B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_PM_DNTN_DTLS["TM_PM_DNTN_DTLS"]:::bronze
+    B_bronze_crm_TM_PM_MBRFEE_ACMSLT["TM_PM_MBRFEE_ACMSLT"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
     S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MEMBER["CRM_MEMBER"]:::silver
     S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
     S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
+    S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_PAYMENT_BILLING["CRM_PAYMENT_BILLING"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
@@ -496,25 +505,35 @@ flowchart LR
     G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 생애주기 전이 팩트. [Grai"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
   B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_PM_DNTN_DTLS --> S_CRM_PAYMENT_BILLING
+  B_bronze_crm_TM_PM_MBRFEE_ACMSLT --> S_CRM_PAYMENT_BILLING
   G_FACT_MEMBER_EVENT --> G_FACT_MEMBER_COHORT
   S_CRM_CAMPAIGN --> G_FACT_MEMBER_EVENT
   S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> G_DIM_SPONSORSHIP
   S_CRM_CODE --> G_FACT_MEMBER_EVENT
   S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
+  S_CRM_MEMBER --> G_FACT_MEMBER_EVENT
   S_CRM_MEMBER_DEV --> G_FACT_MEMBER_EVENT
   S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_EVENT
   S_CRM_ORG --> G_DIM_ORG
+  S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_EVENT
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
           </pre>
         </div>
@@ -522,30 +541,39 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (14개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
 <li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
+<li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_PM_DNTN_DTLS</b>: </li>
+<li><b>bronze_crm.TM_PM_MBRFEE_ACMSLT</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (6개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (10개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CAMPAIGN</b>: </li>
 <li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MEMBER</b>: </li>
 <li><b>CRM_MEMBER_DEV</b>: </li>
 <li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_PAYMENT_BILLING</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
             </ul>
           </div>

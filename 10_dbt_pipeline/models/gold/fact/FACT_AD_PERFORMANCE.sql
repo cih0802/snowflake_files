@@ -63,7 +63,11 @@ select
     --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
     COALESCE(mk.MKTG_CAMPAIGN_SK, 0)    as MKTG_CAMPAIGN_SK,
-    {{ gold_meta('AGENCY') }}
+    {{ gold_meta('AGENCY') }},
+    -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
+    p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
+    p.CALL_CTR_OPER_COST         as CALL_CTR_OPER_COST,
+    p.TOT_COST                   as TOT_COST
 from p
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real

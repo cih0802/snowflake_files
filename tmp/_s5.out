@@ -1,0 +1,7 @@
+교정 적용 104행
+⚠️ 별칭 우변이 정본에 없음(무력 별칭): 매체유형명
+미매칭 고유 7: GA 전환수(건), GA 전환수(명), 매체유형명, 신청일자, 잠재고객 이름(=타겟그룹), 참여일, 최근참여일
+지표 행: 215 | 마케팅 필드: 69/73 (94.5%) | 회원 필드: 431/434 (99.3%)
+CSV : /workspace/30_output_share/05_지표GOLD매핑.csv
+MD  : /workspace/30_output_share/05_지표GOLD매핑.md
+XLSX: /workspace/30_output_share/05_지표GOLD매핑.xlsx

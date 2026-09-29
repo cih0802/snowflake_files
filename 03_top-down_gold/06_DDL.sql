@@ -1137,8 +1137,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_PROJECT (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = '사업/프로젝트 목표 팩트. [Grain: MONTH_KEY × ORG_SK × SPONSORSHIP_SK (1행=1목표)]. [주의: 원천 미입고 시 0행 유지(E-6)]. [원천: CRM → SILVER.CRM_BIZ_TARGET].';
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- 🆕 [2026-09-29 O188] 원천 입고 배선 · degen 2축(선언 위치 = 맨 끝). grain 에 포함된다.
+    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 분해유형: 연사업 / 팀. 🔴 두 유형을 섞어 합산하지 말 것(같은 목표의 다른 분해 추정 · 문서20 N-24)',
+    CPR_DIV_NM          VARCHAR         COMMENT '법인구분 (사단/사복)'
+) COMMENT = '사업/프로젝트 목표 팩트. [Grain: MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM]. [주의: GOAL_TYPE_NM 으로 반드시 필터(연사업·팀 합산 금지)]. [원천: CRM TM_CM_MBER_DVLP_GOAL_DIV → SILVER.CRM_BIZ_TARGET].';
 
 
 -- ============================================================================
@@ -1298,6 +1301,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     --   🟢 원천은 살아 있었다: `SILVER.AGENCY_AD_PERFORMANCE.CAMPAIGN_NM` 채움 240,291/243,545(98.7%)·110종.
     --      GOLD 로 전파되지 않은 **배선 누락**이었다(원천 부재가 아니다 — Q10 과 별개다).
     --   ⚠️ `CAMPAIGN_SK`(개발캠페인)는 여전히 전건 센티넬이다. 이 컬럼이 그 대체가 아니라 **다른 grain** 이다.
+    ,
+    -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 ⇒ REBRDC 비용 분해 승격(SILVER 동명 컬럼 전파 · 선언 위치 = 맨 끝).
+    CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
+    CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
+    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)'
 ) COMMENT = '광고 성과 코어 팩트. [Grain: AD_PERF_DK (1행=1광고집행)]. [주의: 디지털/방송 3원천 공통 지표(비용/노출/클릭)]. [원천: AGENCY 3소스 → SILVER.AGENCY_AD_PERFORMANCE].';
 
 

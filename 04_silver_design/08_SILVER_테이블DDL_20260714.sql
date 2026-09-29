@@ -21,6 +21,14 @@
        · `CRM_SEND_MEMBER` 의 `OPEN_DT` 는 `SND_MEMBER_OPEN_LOG` 에서 회원×발송별 MIN(OPEN_DT)로 축약 적재.
        · `CRM_MARKETING_CAMPAIGN` 은 `TC_MKTNG_DTL_CD` 의 C001 기반 호환 정제 유지.
   실행 순서: 08 먼저(테이블 생성) → 09(적재). CREATE OR REPLACE 로 안전 재실행.
+  🔴🔴 [2026-09-29 O188] 「안전 재실행」은 **구조만** 안전하다 — 데이터는 **비워진다.**
+     증분 모델(`materialized='incremental'`)은 테이블이 존재하면 `is_incremental()` 이 참이라
+     **전량 적재 분기를 타지 않고 최근 창만** 채운다 ⇒ 재생성 직후 build 는 ERROR 0 인 채 거의 빈 테이블을 남긴다.
+     실사고 = O182 가 이 파일을 전체 재실행 → GA4 체인 6테이블 + `FACT_BIGQUERY_BEHAVIOR` **0행**(O187-D 발견).
+     ⇒ 이 파일을 재실행했으면 **반드시 대상 증분 모델을 백필**한다:
+        · GA4 = `build --select BIGQUERY_BASIC+ --vars '{"bigquery_dt_ranges": [["2024-01-01", "9999-12-31"]]}'`
+        · 그 밖 = `build --select <모델>+ --full-refresh` (🔴 full-refresh 는 dbt 가 테이블을 다시 만든다 ⇒ 이 파일 COMMENT 재적용 확인)
+     판정 = 재실행 전후 `COUNT(*)`·`COUNT(DISTINCT 일자)` 대사(원천 대비).
   ⚠️ 발송 2테이블(CRM_SEND_REQUEST·CRM_SEND_MEMBER)의 복합 PK 전환은 09 상단 ALTER 로 수행 —
      본 파일 CREATE 는 단일 PK 상태다(멱등 로드 흐름 유지). 이 파일만 실행하면 PK 미완성.
   🔴 [2026-08-19 O87] **GA4 4테이블은 이미 라이브에 존재하고 그중 BIGQUERY_EVENT 에 행이 있다.**
@@ -952,6 +960,14 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- 🆕 [2026-09-29 O188] 원천 `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV` 입고 → 원천 축 보존(선언 위치 = 감사컬럼 뒤 · ALTER ADD 규약).
+    --   🔴 GOAL_TYPE_NM 은 이중계상 가드다 — 「연사업」·「팀」 두 유형의 12개월 합이 348,024 · 348,000 으로 거의 같다
+    --      (같은 목표의 다른 분해로 추정 · 문서20 N-24 ① 회신 대기) ⇒ **유형을 섞어 합산하지 말 것**.
+    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 분해유형: 연사업 / 팀 (🔴 두 유형 합산 금지 · N-24)',
+    CPR_DIV_NM          VARCHAR         COMMENT '법인구분 (사단/사복)',
+    NEW_OLD_DIV_NM      VARCHAR         COMMENT '신규/기존 구분 (연사업 유형만 · 팀 유형은 NULL)',
+    ORG_DIV_NM          VARCHAR         COMMENT '조직구분 (본부/지부/대면 등)',
+    DTL_DIV_NM          VARCHAR         COMMENT '세부구분 (팀 유형만 · 채널 등 · 연사업 유형은 NULL)',
     PRIMARY KEY (BIZ_TARGET_DK)
 ) COMMENT = '사업/프로젝트 목표 마스터. [Grain: STDYY × STDR_MT × DEPT_ID × SPNSR_BSNS_ID (1행=1사업목표)]. [주의: 원천 미입고 시 스키마 전용 0행 유지(E-6)]. [원천: CRM → 신규 목표 테이블 입고 대기].';
 
@@ -1031,7 +1047,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」(편성비+광고비+콜센터운영비) 요건 ⇒ REBRDC 비용 분해 승격.
+    --   선언 위치 = 감사컬럼 뒤(ALTER ADD COLUMN 규약). DIGITAL·VIDEO 행은 원천 개념 부재 ⇒ NULL.
+    CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
+    CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
+    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)'
 ) COMMENT = '광고 성과 통합 원장. [Grain: AD_PERF_DK (1행=1광고성과)]. [주의: 디지털/방송 3원천 성과 지표 통합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY 3: AGENCY_AD_ROW_DGT (DGT 무손실 staging + AD_PERF_DK 발급)

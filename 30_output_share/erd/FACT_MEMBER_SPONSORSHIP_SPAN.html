@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_SPONSORSHIP_SPAN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_SPONSORSHIP_SPAN",
     "table": "FACT_MEMBER_SPONSORSHIP_SPAN",
     "domain": "CRM / 회원·후원",
@@ -450,7 +450,7 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
+          <span class="badge badge-domain">BRONZE 원천: 8개</span>
           <span class="badge badge-domain">SILVER 모델: 7개</span>
           <span class="badge badge-domain">컬럼 수: 34개</span>
         </div>
@@ -472,10 +472,9 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
     B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
@@ -497,11 +496,10 @@ flowchart LR
     G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_MARKETING_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_MARKETING_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
   B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
@@ -525,14 +523,13 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (8개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
 <li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>

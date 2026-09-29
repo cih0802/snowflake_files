@@ -23,7 +23,10 @@ select
     s.SPONSORSHIP_NAME,
     c.CAMPAIGN_BK,
     c.BRAND      as CAMPAIGN_BRAND,
-    c.CAMPAIGN_NAME
+    c.CAMPAIGN_NAME,
+    -- 🆕 [2026-09-29 O188] 이중계상 가드 전파 — 🔴 GOAL_TYPE_NM 으로 필터하지 않으면 합계가 약 2배(N-24)
+    f.GOAL_TYPE_NM,
+    f.CPR_DIV_NM
 from {{ ref('FACT_TARGET_PROJECT') }} f
 left join {{ ref('DIM_ORG') }}         o on f.ORG_SK = o.ORG_SK
 left join {{ ref('DIM_SPONSORSHIP') }} s on f.SPONSORSHIP_SK = s.SPONSORSHIP_SK

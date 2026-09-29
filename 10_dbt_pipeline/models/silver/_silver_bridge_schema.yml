@@ -108,8 +108,8 @@ models:
   # ─── CRM_BIZ_TARGET 스캐폴드 ───
   - name: CRM_BIZ_TARGET
     columns:
-      - name: BIZ_TARGET_DK   # 원천 0행(WHERE 1=0 스캐폴드) → 통과. 원천=CRM 확정(구 ERP_BIZ_TARGET).
-        tests: [not_null]
+      - name: BIZ_TARGET_DK   # 🟢 O188 입고 배선(3,480행 · DK 유일 실측). 원천=CRM 확정(구 ERP_BIZ_TARGET).
+        tests: [not_null, unique]
 
   # ─── [DEC-45] CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE (캠페인 ↔ 후원사업 1:N 브릿지) ───
   - name: CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE

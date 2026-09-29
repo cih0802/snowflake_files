@@ -7,7 +7,7 @@
   <title>FACT_MESSAGE_DISPATCH - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MESSAGE_DISPATCH",
     "table": "FACT_MESSAGE_DISPATCH",
     "domain": "COMMON / 공통 기준",
@@ -450,8 +450,8 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
-          <span class="badge badge-domain">SILVER 모델: 3개</span>
+          <span class="badge badge-domain">BRONZE 원천: 27개</span>
+          <span class="badge badge-domain">SILVER 모델: 15개</span>
           <span class="badge badge-domain">컬럼 수: 38개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].</p>
@@ -472,63 +472,176 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_SND_MEMBER_LIST["SND_MEMBER_LIST"]:::bronze
+    B_bronze_crm_SND_MEMBER_OPEN_LOG["SND_MEMBER_OPEN_LOG"]:::bronze
     B_bronze_crm_SND_REQ_MST["SND_REQ_MST"]:::bronze
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TD_MS_EMAIL_SNDNG_DTLS["TD_MS_EMAIL_SNDNG_DTLS"]:::bronze
     B_bronze_crm_TD_MS_MSG_AT_SNDNG_DTLS["TD_MS_MSG_AT_SNDNG_DTLS"]:::bronze
     B_bronze_crm_TD_MS_PSTMTR_SNDNG_DTL["TD_MS_PSTMTR_SNDNG_DTL"]:::bronze
+    B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
+    B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
+    B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_IRSD["TM_MM_FDRM_MBER_IRSD"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS["TM_MM_FDRM_MBER_SPNSR_BSNS"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
+    B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
     B_bronze_crm_TM_MS_EMAIL_SNDNG["TM_MS_EMAIL_SNDNG"]:::bronze
     B_bronze_crm_TM_MS_MSG_AT_SNDNG["TM_MS_MSG_AT_SNDNG"]:::bronze
     B_bronze_crm_TM_MS_PSTMTR_SNDNG["TM_MS_PSTMTR_SNDNG"]:::bronze
+    B_bronze_crm_TM_PM_DNTN_DTLS["TM_PM_DNTN_DTLS"]:::bronze
+    B_bronze_crm_TM_PM_MBRFEE_ACMSLT["TM_PM_MBRFEE_ACMSLT"]:::bronze
+    B_bronze_crm_TM_RM_RELATNSP_GFTMNEY_INFO["TM_RM_RELATNSP_GFTMNEY_INFO"]:::bronze
+    B_bronze_crm_TM_RM_RELATNSP_LETTER_INFO["TM_RM_RELATNSP_LETTER_INFO"]:::bronze
+    B_bronze_crm_TM_RM_RELATNSP_MSTR_INFO["TM_RM_RELATNSP_MSTR_INFO"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
     S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MEMBER["CRM_MEMBER"]:::silver
+    S_CRM_MEMBER_AMT_CHANGE["CRM_MEMBER_AMT_CHANGE"]:::silver
+    S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
+    S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
+    S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
+    S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_PAYMENT_BILLING["CRM_PAYMENT_BILLING"]:::silver
+    S_CRM_RELATION_ACTIVITY["CRM_RELATION_ACTIVITY<br/>결연활동 = 서신 ∪ 선물금(EHGT"]:::silver
     S_CRM_SEND_MEMBER["CRM_SEND_MEMBER"]:::silver
     S_CRM_SEND_REQUEST["CRM_SEND_REQUEST"]:::silver
+    S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_CRM_SPONSOR_RELATION["CRM_SPONSOR_RELATION"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_FACT_MESSAGE_DISPATCH["★ FACT_MESSAGE_DISPATCH<br/>DATE_SK × MEMBER_DK × SER"]:::target
+    G_DIM_ORG["DIM_ORG<br/>조직/부서 차원. [Grain: OR"]:::gold
+    G_DIM_REASON["DIM_REASON<br/>중단/미납 사유코드 차원. [Grai"]:::gold
+    G_DIM_SEND_TYPE["DIM_SEND_TYPE<br/>발송구분 대/중/소 차원. [Grai"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
+    G_FACT_MEMBER_EVENT["FACT_MEMBER_EVENT<br/>회원 생애주기 전이 팩트. [Grai"]:::gold
+    G_FACT_MEMBER_MONTHLY["FACT_MEMBER_MONTHLY<br/>회원 월별 스냅샷 팩트. [Grain"]:::gold
   end
   B_bronze_crm_SND_MEMBER_LIST --> S_CRM_SEND_MEMBER
+  B_bronze_crm_SND_MEMBER_OPEN_LOG --> S_CRM_SEND_MEMBER
   B_bronze_crm_SND_REQ_MST --> S_CRM_SEND_REQUEST
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
   B_bronze_crm_TD_MS_EMAIL_SNDNG_DTLS --> S_CRM_SEND_MEMBER
   B_bronze_crm_TD_MS_MSG_AT_SNDNG_DTLS --> S_CRM_SEND_MEMBER
   B_bronze_crm_TD_MS_PSTMTR_SNDNG_DTL --> S_CRM_SEND_MEMBER
+  B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
+  B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
+  B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
+  B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_IRSD --> S_CRM_MEMBER_AMT_CHANGE
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
+  B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
   B_bronze_crm_TM_MS_EMAIL_SNDNG --> S_CRM_SEND_REQUEST
   B_bronze_crm_TM_MS_MSG_AT_SNDNG --> S_CRM_SEND_REQUEST
   B_bronze_crm_TM_MS_PSTMTR_SNDNG --> S_CRM_SEND_REQUEST
+  B_bronze_crm_TM_PM_DNTN_DTLS --> S_CRM_PAYMENT_BILLING
+  B_bronze_crm_TM_PM_MBRFEE_ACMSLT --> S_CRM_PAYMENT_BILLING
+  B_bronze_crm_TM_RM_RELATNSP_GFTMNEY_INFO --> S_CRM_RELATION_ACTIVITY
+  B_bronze_crm_TM_RM_RELATNSP_LETTER_INFO --> S_CRM_RELATION_ACTIVITY
+  B_bronze_crm_TM_RM_RELATNSP_MSTR_INFO --> S_CRM_SPONSOR_RELATION
+  G_DIM_SEND_TYPE --> G_FACT_MESSAGE_DISPATCH
+  G_FACT_MEMBER_EVENT --> G_FACT_MESSAGE_DISPATCH
+  G_FACT_MEMBER_MONTHLY --> G_FACT_MESSAGE_DISPATCH
+  S_CRM_CAMPAIGN --> G_FACT_MEMBER_EVENT
+  S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> G_DIM_REASON
+  S_CRM_CODE --> G_DIM_SPONSORSHIP
+  S_CRM_CODE --> G_FACT_MEMBER_EVENT
+  S_CRM_CODE --> S_CRM_CAMPAIGN
+  S_CRM_CODE --> S_CRM_MEMBER
+  S_CRM_CODE --> S_CRM_MEMBER_AMT_CHANGE
+  S_CRM_CODE --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
   S_CRM_CODE --> S_CRM_SEND_MEMBER
+  S_CRM_MEMBER --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER --> G_FACT_MEMBER_MONTHLY
+  S_CRM_MEMBER_AMT_CHANGE --> G_FACT_MEMBER_MONTHLY
+  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_SPONSOR_RELATION
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_EVENT
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_MONTHLY
+  S_CRM_ORG --> G_DIM_ORG
+  S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_EVENT
+  S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_MONTHLY
+  S_CRM_RELATION_ACTIVITY --> G_FACT_MESSAGE_DISPATCH
   S_CRM_SEND_MEMBER --> G_FACT_MESSAGE_DISPATCH
+  S_CRM_SEND_REQUEST --> G_DIM_SEND_TYPE
   S_CRM_SEND_REQUEST --> G_FACT_MESSAGE_DISPATCH
+  S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_CRM_SPONSOR_RELATION --> G_FACT_MESSAGE_DISPATCH
           </pre>
         </div>
 
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (27개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.SND_MEMBER_LIST</b>: </li>
+<li><b>bronze_crm.SND_MEMBER_OPEN_LOG</b>: </li>
 <li><b>bronze_crm.SND_REQ_MST</b>: </li>
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TD_MS_EMAIL_SNDNG_DTLS</b>: </li>
 <li><b>bronze_crm.TD_MS_MSG_AT_SNDNG_DTLS</b>: </li>
 <li><b>bronze_crm.TD_MS_PSTMTR_SNDNG_DTL</b>: </li>
+<li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
+<li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_IRSD</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
+<li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
 <li><b>bronze_crm.TM_MS_EMAIL_SNDNG</b>: </li>
 <li><b>bronze_crm.TM_MS_MSG_AT_SNDNG</b>: </li>
 <li><b>bronze_crm.TM_MS_PSTMTR_SNDNG</b>: </li>
+<li><b>bronze_crm.TM_PM_DNTN_DTLS</b>: </li>
+<li><b>bronze_crm.TM_PM_MBRFEE_ACMSLT</b>: </li>
+<li><b>bronze_crm.TM_RM_RELATNSP_GFTMNEY_INFO</b>: </li>
+<li><b>bronze_crm.TM_RM_RELATNSP_LETTER_INFO</b>: </li>
+<li><b>bronze_crm.TM_RM_RELATNSP_MSTR_INFO</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (3개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (15개)
             </div>
             <ul class="flow-step-list">
+<li><b>CRM_CAMPAIGN</b>: </li>
 <li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MEMBER</b>: </li>
+<li><b>CRM_MEMBER_AMT_CHANGE</b>: </li>
+<li><b>CRM_MEMBER_DEV</b>: </li>
+<li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
+<li><b>CRM_ORG</b>: </li>
+<li><b>CRM_PAYMENT_BILLING</b>: </li>
+<li><b>CRM_RELATION_ACTIVITY</b>: 결연활동 = 서신 ∪ 선물금(EHGT 제외 · 원천별 PK dedup) — 정본 09 STEP3. 🔴 두 원천을 `UNION ALL` 한 팩트성 SILVER 이므로 **`ACTIVITY_TYPE` 을 고정하지 않고 합산하면 서신 건수와 선물금 건수가 한 수로 뭉개진다.** `ACTIVITY_KEY` 는 계열 접두(`LETTER_`/`GFT_`)를 포함한다. ⚠️ `GFTMNEY`(선물금액)는 서신 계열에서 NULL 이다 — 개념 부재이며 0 이 아니다(`R2-7`).</li>
 <li><b>CRM_SEND_MEMBER</b>: </li>
 <li><b>CRM_SEND_REQUEST</b>: </li>
+<li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>CRM_SPONSOR_RELATION</b>: </li>
             </ul>
           </div>
         </div>
@@ -715,7 +828,7 @@ erDiagram
           <td><code>OPEN_MEMBERS</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>오픈(명) (overview).</td>
+          <td>오픈(명) (overview · SND_MEMBER_OPEN_LOG 축약).</td>
         </tr>
         <tr>
           <td><code>LETTER_PART_MEMBERS</code></td>
@@ -904,10 +1017,19 @@ erDiagram
           <div class="sql-code-box">
             <pre><code>-- FACT_MESSAGE_DISPATCH: 메시지/서비스 발송 팩트 (이메일·문자·알림톡·우편 발송 및 성공/실패/오픈 현황)
 -- Co-authored with CoCo
+-- 🔴 [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
+--    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 🟢 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라
+--    피해 0 이었고 제거 후 기대값도 **행수 불변**이다. 🔴 제거 이유 = `RANGED_FACTS` 등재 시
+--    TRUNCATE + 범위 DELETE 동시 실행으로 **에러 없이 창 크기로 쪼그라드는** 잠재 사고였다.
+--    🔴 정의 지점 = `macros/gold_fact_purge.sql` 하나 · 여기에 다시 쓰지 마라.
+-- 🆕 🔴 [2026-09-22 O180] **위 주석을 config 블록 밖으로 옮겼다** — config 호출은 Jinja 표현식이라
+--    `--` 가 주석이 아니라 연산자로 파싱돼 컴파일이 깨졌다(`FACT_EVENT_ATTENDANCE` 가 먼저 터졌고
+--    같은 결함이 O179 가 만진 GOLD 팩트 **4건 전건**에 있었다).
+--    🔴 판정식 = **config 안에 `--` 주석 금지 · 주석 안에서도 Jinja 태그 인용 금지**
+--       (dbt 는 파일 전체를 Jinja 로 렌더하므로 `--` 도 백틱도 Jinja 를 막지 못한다).
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
-    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
     tags=['gold_ready']
 ) }}
 
@@ -923,6 +1045,59 @@ open_window as (
     select MIN(OPEN_DT) as OPEN_TRACK_FROM
     from s
     where OPEN_DT is not null
+),
+
+-- ═══ [O183] 발송(+5일차) 매칭 · 서비스 배선 (정본 #139~#146 · #160·#161) ═══════════════
+-- 후속행동 사건(회원 × 사건일). 서신 = 접수일 · 선물금 = 원천에 접수일이 없어 발송일(SNDNG_DE)로 대체
+--   · 증액 = FME 개발구분 '2' 사건일 · 중단 = FME 중단일. 관계키 → 회원은 CRM_SPONSOR_RELATION(1:1).
+rel as (
+    select distinct RELATNSP_KEY, MBER_NO from {{ ref('CRM_SPONSOR_RELATION') }}
+),
+followup as (
+    select r.MBER_NO as MEMBER_DK, 'LETTER' as KIND, a.RCEPT_DE as EV_DATE
+    from {{ ref('CRM_RELATION_ACTIVITY') }} a join rel r on r.RELATNSP_KEY = a.RELATNSP_KEY
+    where a.ACTIVITY_TYPE = '서신' and a.RCEPT_DE is not null
+    union all
+    select r.MBER_NO, 'GIFT', a.SNDNG_DE
+    from {{ ref('CRM_RELATION_ACTIVITY') }} a join rel r on r.RELATNSP_KEY = a.RELATNSP_KEY
+    where a.ACTIVITY_TYPE = '선물금' and a.SNDNG_DE is not null
+    union all
+    select MEMBER_DK, 'INCREASE', JOIN_DATE
+    from {{ ref('FACT_MEMBER_EVENT') }}
+    where EVENT_TYPE = 'DEV' and DVLP_DIV_CD = '2' and JOIN_DATE is not null
+    union all
+    select MEMBER_DK, 'STOP', STOP_DATE
+    from {{ ref('FACT_MEMBER_EVENT') }}
+    where EVENT_TYPE = 'STOP' and STOP_DATE is not null
+),
+-- (회원, 발송일) 쌍 단위로 판정한 뒤 발송 행에 되붙인다(발송 행 키 없이 fan-out 0).
+-- 🔴🔴 DEC-33 반영 — 창은 **D+1~D+5** 다(발송 당일 D+0 제외). D+0 동일자 매칭은 대부분 **사건의 결과로 나간
+--    처리 통보**(중단 감사·증액 감사·접수 확인)라 포함하면 「통보가 사건을 유발했다」로 역집계된다(DEC-33 실측).
+--    발송 유형(캠페인성/처리통보성) 분리는 여전히 현업 확정 대상이며 D+1~5 에도 통보성 발송이 일부 남는다(DEC-55).
+send_pairs as (
+    select distinct MBER_NO as MEMBER_DK, SNDNG_DE::DATE as SEND_DATE
+    from s where MBER_NO is not null and SNDNG_DE is not null
+),
+d5 as (
+    select
+        p.MEMBER_DK, p.SEND_DATE,
+        BOOLOR_AGG(f.KIND = 'LETTER')   as D5_LETTER,
+        BOOLOR_AGG(f.KIND = 'GIFT')     as D5_GIFT,
+        BOOLOR_AGG(f.KIND = 'INCREASE') as D5_INCREASE,
+        BOOLOR_AGG(f.KIND = 'STOP')     as D5_STOP
+    from send_pairs p
+    join followup f
+      on f.MEMBER_DK = p.MEMBER_DK
+     and f.EV_DATE between DATEADD(day, 1, p.SEND_DATE) and DATEADD(day, 5, p.SEND_DATE)
+    group by p.MEMBER_DK, p.SEND_DATE
+),
+-- 「활동건」 = 그 회원의 발송월 활동(건)(#157 = 약정금액/10,000) — FMM 월×회원 유일.
+active_m as (
+    select MONTH_KEY, MEMBER_DK, ACTIVE_CNT from {{ ref('FACT_MEMBER_MONTHLY') }}
+),
+-- 발송구분(대) 명칭(#133). 「서비스」 = 원천 명칭 「회원서비스」.
+send_l as (
+    select distinct SEND_GBN_TOP, SEND_TYPE_L from {{ ref('DIM_SEND_TYPE') }}
 )
 
 select
@@ -951,10 +1126,21 @@ select
         WHEN s.SNDNG_DE &gt;= ow.OPEN_TRACK_FROM            THEN 0
         ELSE CAST(NULL AS NUMBER(38,0))
     END                                           as OPEN_MEMBERS,
+    -- 🔴 [O183] 비-D5 서신·선물금참여 4종은 **발송과 무관한 참여 실적**(정본 #88~#91)이라 발송 grain 에
+    --    귀속 규칙이 없다 ⇒ 0 유지. 참여 실적은 D5 매칭(아래) 또는 SILVER `CRM_RELATION_ACTIVITY` 직접 조회.
     0 as LETTER_PART_MEMBERS, 0 as LETTER_PART_CNT, 0 as GIFT_PART_MEMBERS, 0 as GIFT_PART_AMT,
-    0 as D5_LETTER_PART_MEMBERS, 0 as D5_LETTER_PART_CNT, 0 as D5_GIFT_PART_MEMBERS, 0 as D5_GIFT_PART_CNT,
-    0 as D5_INCREASE_PART_MEMBERS, 0 as D5_INCREASE_PART_CNT, 0 as D5_STOP_MEMBERS, 0 as D5_STOP_CNT,
-    0 as SERVICE_MEMBERS, 0 as SERVICE_CNT,
+    -- [O183] #139~#146 = 발송 다음날~+5일 안에 그 후속행동이 있는 발송 대상 1/0 · (건) = 그 회원의 발송월 활동(건).
+    IFF(d.D5_LETTER,   1, 0)                                         as D5_LETTER_PART_MEMBERS,
+    IFF(d.D5_LETTER,   COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_LETTER_PART_CNT,
+    IFF(d.D5_GIFT,     1, 0)                                         as D5_GIFT_PART_MEMBERS,
+    IFF(d.D5_GIFT,     COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_GIFT_PART_CNT,
+    IFF(d.D5_INCREASE, 1, 0)                                         as D5_INCREASE_PART_MEMBERS,
+    IFF(d.D5_INCREASE, COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_INCREASE_PART_CNT,
+    IFF(d.D5_STOP,     1, 0)                                         as D5_STOP_MEMBERS,
+    IFF(d.D5_STOP,     COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_STOP_CNT,
+    -- [O183] #160 서비스(명) = 발송구분(대) 「회원서비스」 발송 대상 1/0 · #161 서비스(건) = 그 회원의 활동(건).
+    IFF(sl.SEND_TYPE_L = '회원서비스', 1, 0)                           as SERVICE_MEMBERS,
+    IFF(sl.SEND_TYPE_L = '회원서비스', COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
     r.TIT                                          as SEND_TITLE,
     s.SNDNG_RST_CD                                as SEND_STATUS,
     CAST(NULL AS VARCHAR)                          as SEND_STATUS2,
@@ -972,6 +1158,10 @@ select
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 cross join open_window ow
+left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
+left join active_m am on am.MEMBER_DK = s.MBER_NO
+                     and am.MONTH_KEY = TO_NUMBER(TO_CHAR(s.SNDNG_DE, 'YYYYMM'))
+left join send_l sl   on sl.SEND_GBN_TOP = r.SEND_GBN_TOP
 where s.MBER_NO is not null
 </code></pre>
           </div>

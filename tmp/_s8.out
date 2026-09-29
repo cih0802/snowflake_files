@@ -1,0 +1,65 @@
+==============================================================================
+산출물 생성기 회귀 테스트 — 99_NEXT_SESSION §2-A·§2-B
+==============================================================================
+[G] 골든 대조 — 30_output_share/{04,05,06,08,09} + 산출물별 측정일·기대목록
+  PASS  G.artifacts-readable — 산출물 5종 전부 읽힘
+  FAIL  G.golden-match — 29건 차이 (골든 측정일 2026-09-22)
+          · 05.status.OK: 골든 109 ≠ 산출물 110
+          · 05.status.PARTIAL: 골든 79 ≠ 산출물 87
+          · 05.status.WAIT: 골든 27 ≠ 산출물 18
+          · 06.rows: 골든 1254 ≠ 산출물 1309
+          · 06.verdicts.SILVER까지만: 골든 439 ≠ 산출물 458
+          · 06.verdicts.노출됨(GOLD): 골든 137 ≠ 산출물 119
+          · 06.verdicts.대체노출(파생): 골든 15 ≠ 산출물 18
+          · 06.verdicts.미노출(검토대상): 골든 492 ≠ 산출물 536
+          · 06.verdicts.제외(PII·본문·메타): 골든 58 ≠ 산출물 61
+          · 06.verdicts.제외(적재제어메타): 골든 100 ≠ 산출물 104
+          · 08.rows: 골든 793 ≠ 산출물 790
+          · 08.status.DROPPED: 골든 141 ≠ 산출물 151
+          · 08.status.NO_CONSUMER: 골든 60 ≠ 산출물 42
+          · 08.status.REFERENCED: 골든 300 ≠ 산출물 308
+          · 08.status.SILVER_ONLY_CHAIN: 골든 292 ≠ 산출물 289
+          · 09.verdicts.grain부정합: 골든 5 ≠ 산출물 6
+          · 09.verdicts.값없음: 골든 52 ≠ 산출물 82
+          · 09.verdicts.도달불가: 골든 19 ≠ 산출물 45
+          · 09.verdicts.배분규칙필요: 골든 11 ≠ 산출물 18
+          · 09.verdicts.조립가능: 골든 301 ≠ 산출물 236
+          · 09.verdicts.집계필요: 골든 1 ≠ 산출물 3
+          · 09.verdicts.타원천: 골든 3 ≠ 산출물 2
+          · art.measured.03_GN_DW_개념도.html: 골든 '2026-09-14' ≠ 산출물 '2026-09-28'
+          · art.measured.04_컬럼계보매핑.md: 골든 '2026-09-21' ≠ 산출물 '2026-09-28'
+          · art.measured.05_지표GOLD매핑.md: 골든 '2026-09-16' ≠ 산출물 '2026-09-28'
+          · art.measured.06_BRONZE노출감사.md: 골든 '2026-09-22' ≠ 산출물 '2026-09-28'
+          · art.measured.07_코드체계_관문측정.md: 골든 '2026-09-14' ≠ 산출물 '2026-09-28'
+          · art.measured.08_SILVER→GOLD_보존율.md: 골든 '2026-09-21' ≠ 산출물 '2026-09-28'
+          · art.measured.09_보고서필드_조립가능성.md: 골든 '2026-09-16' ≠ 산출물 '2026-09-28'
+          ⇒ 🔴 차이를 **전량 규명**한 뒤 --update-golden. 규명 없이 갱신하면 골든이 무의미하다.
+[T5] 산출물 축 — 기대 목록 · 측정일 · 신선도 (O65)
+  PASS  T5.manifest — 기대 산출물 17종 전부 존재(`02` 는 수기·아카이브 전용으로 의도적 제외)
+  PASS  T5.measured-parsable — 8종 전부 측정일 보유 · 판본 2종(2026-08-11 · 2026-09-28) ⚠️ 혼재 — 인용 시 산출물별 측정일을 밝힐 것
+  FAIL  T5.freshness — 스키마가 바뀌었다(골든 d077465752f52bbc ≠ 현재 b4dbac30499ee31e) ⇒ 산출물 06~09 는 **stale** — 재생성 후 차이를 규명하고 --update-golden
+[T1] 앵커 동점 — 삽입 순서 독립 (O47-B)
+  PASS  T1.tie-deterministic — 200회 순서 셔플 동일 · 경합 노출 FACT_GA_BEHAVIOR / FACT_MEMBER_MONTHLY / FACT_SERVICE_EVENT
+  PASS  T1.clear-winner — 비동점 = 최다 hit · 경합 미노출
+  PASS  T1.section-uniform — 29섹션 전부 앵커 단일
+[T2] 라벨 사전 — 수기 문서 주석 오염 (P98)
+  PASS  T2.marker-guard — 상태 마커 주석 7종 전부 라벨 아님
+  PASS  T2.normal-label — 정상 라벨 파싱 유지
+  PASS  T2.no-unreachable-label — 엔트리 329 · 색인 312 · 도달불가 0건
+  PASS  T2.desc-cells-frozen — 설명 셀(라벨 아님) 58건 — 골든이 이 수를 고정한다
+  PASS  T2.first-wins-visible — 라벨 충돌 14건 (색인은 문서 순서 first-wins — 골든이 이 수를 고정한다)
+[T3] 문자열 계약 — 'SV metric' 접두 (P92)
+  PASS  T3.constant — SV_METRIC_PREFIX = 'SV metric'
+  PASS  T3.consumer-uses-constant — judge() 가 상수로 판정
+  PASS  T3.producer-emits — 05 생성기 emit 13곳
+  PASS  T3.artifact-05 — 지표 215행 · 배속 SV ⟺ 접두 완전 일치
+  PASS  T3.artifact-09 — 507행 접두 ⟺ SV파생 완전 일치
+[T4] 절차 강제 — 불가·경합 근거에 식별자 열거 (P97·P100)
+  PASS  T4.evidence-has-identifier — 불가·경합 102행 전부 식별자 열거
+  PASS  T4.tie-lists-all-facts — 경합 34행 전부 경합 팩트 전량 명시
+  PASS  T4.agg-has-prescription — 집계필요 3행 전부 처방 서술 있음
+------------------------------------------------------------------------------
+PASS 19 · FAIL 2
+  🔴 G.golden-match — 29건 차이 (골든 측정일 2026-09-22)
+  🔴 T5.freshness — 스키마가 바뀌었다(골든 d077465752f52bbc ≠ 현재 b4dbac30499ee31e) ⇒ 산출물 06~09 는 **stale** — 재생성 후 차이를 규명하고 --update-golden
+------------------------------------------------------------------------------

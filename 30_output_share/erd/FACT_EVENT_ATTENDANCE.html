@@ -7,7 +7,7 @@
   <title>FACT_EVENT_ATTENDANCE - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_EVENT_ATTENDANCE",
     "table": "FACT_EVENT_ATTENDANCE",
     "domain": "COMMON / 공통 기준",
@@ -883,10 +883,32 @@ erDiagram
           <div class="sql-code-box">
             <pre><code>-- FACT_EVENT_ATTENDANCE: 행사 참여/출석 팩트 (행사별 회원 참여, 출석, 신청, 대기, 취소 현황)
 -- Co-authored with CoCo
+-- 🔴 [2026-09-22 O179 · I1] 리터럴 pre_hook='TRUNCATE TABLE IF EXISTS &lt;this&gt;' **제거**.
+--    이유 = dbt 는 hook 을 누적하므로 `dbt_project.yml` `gold.fact:+pre-hook: gold_fact_purge(this)`
+--    와 **이중 실행**됐다(dbt_project.yml:239-246 이 경고한 구조).
+--    🟢 피해는 0 이었다 — 이 팩트는 `RANGED_FACTS` 에 없어 매크로도 `TRUNCATE` 를 내고
+--       **TRUNCATE 는 멱등**이라 2회 실행이 1회와 같다 ⇒ 제거 후 기대값은 **행수 불변**이다.
+--    🔴 그래도 제거하는 이유 = 이 팩트를 나중에 `RANGED_FACTS` 에 넣는 순간
+--       TRUNCATE + 범위 DELETE 가 함께 돌아 **에러 없이 창 크기로 쪼그라든다.**
+--       즉 지금은 무해하지만 **한 줄만 바뀌면 사고가 되는 배선**이었다.
+--    🔴 pre-hook 정의 지점은 `macros/gold_fact_purge.sql` 하나다 — 여기에 다시 쓰지 마라.
+-- 🆕 🔴🔴 [2026-09-22 O180] **위 주석은 원래 config 블록 안에 있었고 그것이 컴파일을 깨뜨렸다.**
+--    config 호출은 **Jinja 표현식**이므로 `--` 는 SQL 주석이 아니라 연산자로 파싱된다.
+--    게다가 주석 안에 인용해 둔 Jinja 태그(중괄호 2개로 감싼 this)가 닫는 중괄호로
+--    **config 를 조기 종료**시켰다
+--    ⇒ `Compilation Error ... invalid syntax for function call expression line 3`.
+--    🟢 그래서 이 주석을 **config 바깥으로 옮기고** 그 인용을 `&lt;this&gt;` 로 바꿨다.
+--    🔴🔴 판정식 3개 — 전부 이 한 사고에서 나왔다:
+--       ㉠ **config 안에 `--` 주석을 쓰지 마라.** 설명은 config 위·아래 SQL 주석에 둔다.
+--       ㉡ **주석 안에서도 Jinja 태그를 인용하지 마라** — dbt 는 파일 전체를 Jinja 로 렌더하므로
+--          `--` 는 Jinja 를 막지 못한다. 백틱도 막지 못한다. 태그 이름만 말로 적어라.
+--       ㉢ **Jinja 를 인용해야 하면 Jinja 주석 블록에 넣어라** — 그 안은 렌더되지 않는다.
+--          🔴 단 그 블록 안에서도 **닫는 구분자를 글자로 적지 마라** — 거기서 주석이 끝난다
+--             (O180 이 `CRM_MEMBER_DEV` 에서 실제로 그 사고를 냈다). 구분자는 말로 서술한다.
+--    🔴 O180 이 ㉡ 를 모른 채 1차 수정에서 같은 결함을 재생산했다(자체 적발·즉시 정정).
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
-    pre_hook='TRUNCATE TABLE IF EXISTS {{ this }}',
     tags=['gold_ready']
 ) }}
 
@@ -903,10 +925,24 @@ select
     1 as TOTAL_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)  as WAIT_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '취소', 1, 0)      as CANCEL_CNT,
-    0 as CONFIRM_CNT,
+    -- [O183] 신청확정인원 = 캠페인행사(MS006) 신청이 대기·취소가 아닌 확정 상태(신청·참여·불참) 1/0.
+    IFF(p.PARTCPT_STAT_GROUP = 'MS006' AND p.PARTCPT_STAT_NM IN ('신청', '참여', '불참'), 1, 0) as CONFIRM_CNT,
     1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
     IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '불참', 1, 0)      as ABSENT_CNT,
-    0 as PARTICIPATION_TIMES, 0 as WAIT_TIMES, 0 as ABSENT_TIMES, 0 as CUM_APPLY_TIMES,
+    -- [O183] 회원별 누적 횟수(그 신청 시점까지 · 신청일시 → 행사키 → 순번 순). 캠페인행사(MS006)는 명칭 「참여」,
+    --   일반행사(MS304 다단계)는 「Success」를 참여로 본다. 누적신청 = 상태 무관 신청 행 수.
+    SUM(IFF(p.PARTCPT_STAT_NM IN ('참여', 'Success'), 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as PARTICIPATION_TIMES,
+    SUM(IFF(p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as WAIT_TIMES,
+    SUM(IFF(p.PARTCPT_STAT_NM = '불참', 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as ABSENT_TIMES,
+    COUNT(*) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as CUM_APPLY_TIMES,
     p.RCPMNY_AMT                                  as REGULAR_DONATION,
     (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
     CAST(NULL AS BOOLEAN)                          as SELF_PART_FLAG,

@@ -7,23 +7,39 @@
 with t as (
     select * from {{ ref('CRM_BIZ_TARGET') }}
     where COALESCE(TARGET_CNT, 0) > 0
+),
+-- 🔴 [2026-09-29 O188] 이름 조인 팬아웃 차단 — `DIM_ORG.DEPARTMENT` 는 유일하지 않다
+--   (실측: 목표 팀명 중 「사회공헌협력팀」 6행 · 「회원참여팀」·「컬쳐콘텐츠팀」·「사회공헌협력팀(사복)」 각 2행).
+--   종전 스캐폴드는 0행이라 드러나지 않았고, 입고 즉시 목표가 최대 **6배** 복제될 뻔했다.
+--   ⇒ 이름이 유일한 부서만 매칭하고 모호한 이름은 SK=0 으로 보낸다(크로스워크 확보 전 · 문서20 N-24).
+org_u as (
+    select DEPARTMENT, ORG_SK
+    from {{ ref('DIM_ORG') }}
+    qualify COUNT(*) over (partition by DEPARTMENT) = 1
 )
 
 select
     COALESCE({{ month_key_clamp('TRY_TO_NUMBER(t.MONTH_KEY)') }}, 0)  as MONTH_KEY,
     COALESCE(o.ORG_SK, 0)                          as ORG_SK,
     COALESCE(s.SPONSORSHIP_SK, 0)                  as SPONSORSHIP_SK,
-    c.CAMPAIGN_SK                                  as CAMPAIGN_SK,
+    COALESCE(c.CAMPAIGN_SK, 0)                     as CAMPAIGN_SK,      -- O188: 원천에 캠페인 축 없음 ⇒ 0(not_null 테스트)
     SUM(CASE WHEN t.TARGET_TYPE = '당초'   THEN t.TARGET_CNT END)  as ANNUAL_GOAL_CNT,
     SUM(CASE WHEN t.TARGET_TYPE LIKE '추경%' THEN t.TARGET_CNT END) as SUPP_GOAL_CNT,
     CAST(NULL AS NUMBER(18,4))                     as ANNUAL_CUM_GOAL_CNT,
     CAST(NULL AS NUMBER(18,4))                     as SUPP_CUM_GOAL_CNT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [2026-09-29 O188] 원천 입고 배선 · degen 2축(물리 위치 = 맨 끝 · 06_DDL 동기) — grain 에 포함.
+    --   🔴 GOAL_TYPE_NM 을 group by 에서 빼면 연사업·팀이 합쳐져 **약 2배**가 된다(348,024 + 348,000 · N-24).
+    --   ⚠️ 매칭 실측(xf98254 · 목표>0 월행 · 유일 부서만): 조직 연사업 360/820 · 팀 205/440 ·
+    --      후원사업 연사업 594/820 · 팀 0/440 · 합계 348,024 · 348,000 보존(팬아웃 0)
+    --      (팀 유형의 후원사업은 「국내·결연·기타·해외프로젝트」 그룹명이라 사업 차원과 grain 이 다르다 ⇒ SK=0).
+    t.GOAL_TYPE_NM                                 as GOAL_TYPE_NM,
+    t.CPR_DIV_NM                                   as CPR_DIV_NM
 from t
-left join {{ ref('DIM_ORG') }} o
+left join org_u o
     on o.DEPARTMENT = t.ORG_NM
 left join {{ ref('DIM_SPONSORSHIP') }} s
     on s.SPONSORSHIP_NAME = t.SPONSOR_BIZ_NM
 left join {{ ref('DIM_CAMPAIGN') }} c
     on c.CAMPAIGN_NAME = t.CAMPAIGN_NM
-group by 1, 2, 3, 4
+group by 1, 2, 3, 4, t.GOAL_TYPE_NM, t.CPR_DIV_NM

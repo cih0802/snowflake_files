@@ -7,7 +7,7 @@
   <title>DIM_MEMBER_IDENTITY - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_IDENTITY",
     "table": "DIM_MEMBER_IDENTITY",
     "domain": "CRM / 회원·후원",
@@ -442,7 +442,7 @@
               <span>DIM_MEMBER_IDENTITY</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: GA4/CRM → SILVER.IDENTITY_MEMBER_XREF]</div>
+            <div class="korean-title">IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: BIGQUERY/CRM → SILVER.IDENTITY_MEMBER_XREF]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -454,7 +454,7 @@
           <span class="badge badge-domain">SILVER 모델: 6개</span>
           <span class="badge badge-domain">컬럼 수: 11개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 신원 식별 브릿지 차원. [Grain: IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: GA4/CRM → SILVER.IDENTITY_MEMBER_XREF].</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 신원 식별 브릿지 차원. [Grain: IDENTITY_SK (1행=1식별키)]. [주의: 웹/앱 행동과 CRM 회원 연계용]. [원천: BIGQUERY/CRM → SILVER.IDENTITY_MEMBER_XREF].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -711,7 +711,7 @@ with m as (
 ),
 -- XREF는 user_pseudo_id 단위 → MEMBER_DK로 집계(1회원 1행)해 fan-out(IDENTITY_SK 중복) 방지
 xref as (
-    select MEMBER_DK as X_MEMBER_DK, MAX(GA_MEMBER_ID) as BIGQUERY_MEMBER_ID
+    select MEMBER_DK as X_MEMBER_DK, MAX(BIGQUERY_MEMBER_ID) as BIGQUERY_MEMBER_ID
     from {{ ref('IDENTITY_MEMBER_XREF') }}
     where MEMBER_DK is not null
     group by MEMBER_DK

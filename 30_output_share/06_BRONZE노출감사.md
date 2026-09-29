@@ -2,7 +2,7 @@
 doc_id: BRONZE_EXPOSURE_AUDIT
 doc_role: BRONZE 전 원천 전면 노출감사 — GOLD 도달 여부 판정 정본
 project: GN_DW
-audit_date: 2026-09-22
+audit_date: 2026-09-28
 generator: scripts/gen_bronze_exposure_audit.py
 runner: scripts/run_bronze_audit_host.py
 principle: P13(커버리지≠정확도)·P14(부재판정은 실측필수)
@@ -11,7 +11,7 @@ END-METADATA -->
 # BRONZE 노출감사 (전 원천 전면)
 
 > ⚙️ **자동 생성물** — 생성기 `scripts/gen_bronze_exposure_audit.py` / 러너 `scripts/run_bronze_audit_host.py`. 직접 편집 금지.
-> **감사일** 2026-09-22 · **범위** BRONZE 전 원천 1254컬럼 (CRM·AGENCY·ERP·GA4)
+> **감사일** 2026-09-28 · **범위** BRONZE 전 원천 1309컬럼 (CRM·AGENCY·ERP·GA4)
 > **목적** "보여줄 수 있는 BRONZE 데이터는 다 보여준다" 충족 여부 실측
 
 ## 0. 판정 기준 및 한계 (필독)
@@ -41,23 +41,23 @@ END-METADATA -->
 
 | 판정 | 건수 | 비율 |
 |---|---|---|
-| 노출됨(GOLD) | 137 | 10.9% |
-| 대체노출(파생) | 15 | 1.2% |
+| 노출됨(GOLD) | 119 | 9.1% |
+| 대체노출(파생) | 18 | 1.4% |
 | ⚠️설계O·값미주입 | 0 | 0.0% |
-| SILVER까지만 | 439 | 35.0% |
+| SILVER까지만 | 458 | 35.0% |
 | 판정보류(동명이의) | 13 | 1.0% |
-| 미노출(검토대상) | 492 | 39.2% |
-| 제외(PII·본문·메타) | 58 | 4.6% |
+| 미노출(검토대상) | 536 | 40.9% |
+| 제외(PII·본문·메타) | 61 | 4.7% |
 | 제외(DW메타) | 0 | 0.0% |
-| 제외(적재제어메타) | 100 | 8.0% |
-| **합계** | **1254** | 100% |
+| 제외(적재제어메타) | 104 | 7.9% |
+| **합계** | **1309** | 100% |
 
 ### 원천별 교차
 
 | 원천 | 노출됨(GOLD) | 대체노출(파생) | ⚠️설계O·값미주입 | SILVER까지만 | 판정보류(동명이의) | 미노출(검토대상) | 제외(PII·본문·메타) | 제외(DW메타) | 제외(적재제어메타) | 합계 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| AGENCY | 62 | 13 | 0 | 18 | 7 | 6 | 0 | 0 | 0 | 106 |
-| CRM | 75 | 0 | 0 | 353 | 6 | 472 | 58 | 0 | 100 | 1064 |
+| AGENCY | 42 | 15 | 0 | 34 | 7 | 5 | 0 | 0 | 0 | 103 |
+| CRM | 77 | 1 | 0 | 356 | 6 | 517 | 61 | 0 | 104 | 1122 |
 | ERP | 0 | 2 | 0 | 68 | 0 | 14 | 0 | 0 | 0 | 84 |
 
 ## 2. ⚠️ 최우선 조치군 — GOLD 설계O·값 미주입
@@ -67,96 +67,86 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 | GOLD 컬럼 | 모델:행 | 하드코딩 패턴 | 타 모델 실적재 |
 |---|---|---|---|
-| `ACTIVE_CUM_CNT` | `FACT_MEMBER_MONTHLY.sql:318` | `CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT` | — |
-| `ACTIVE_CUM_MEMBERS` | `FACT_MEMBER_MONTHLY.sql:319` | `CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS` | — |
+| `ACTIVE_CUM_CNT` | `FACT_MEMBER_MONTHLY.sql:385` | `CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT` | — |
+| `ACTIVE_CUM_MEMBERS` | `FACT_MEMBER_MONTHLY.sql:386` | `CAST(NULL AS NUMBER(38,0)) as ACTIVE_CUM_MEMBERS` | — |
 | `AD_COST` | `FACT_BUDGET.sql:52` | `CAST(NULL AS NUMBER(18,2)) as AD_COST` | FACT_AD_PERFORMANCE.sql |
 | `AD_CREATIVE_SK` | `FACT_AD_PERFORMANCE.sql:37` | `0 as AD_CREATIVE_SK` | DIM_AD_CREATIVE.sql |
-| `AGE_AT_EVENT` | `FACT_MEMBER_EVENT.sql:137` | `CAST(NULL AS NUMBER(2,0)) as AGE_AT_EVENT` | — |
-| `AGE_BAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:138` | `CAST(NULL AS VARCHAR) as AGE_BAND_AT_EVENT` | — |
-| `AMOUNT_BAND1` | `FACT_MEMBER_MONTHLY.sql:341` | `CAST(NULL AS VARCHAR) as AMOUNT_BAND1` | — |
-| `AMOUNT_BAND2` | `FACT_MEMBER_MONTHLY.sql:341` | `CAST(NULL AS VARCHAR) as AMOUNT_BAND2` | — |
+| `AGE_AT_EVENT` | `FACT_MEMBER_EVENT.sql:179` | `CAST(NULL AS NUMBER(2,0)) as AGE_AT_EVENT` | — |
+| `AGE_BAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:180` | `CAST(NULL AS VARCHAR) as AGE_BAND_AT_EVENT` | — |
 | `ANNUAL_CUM_GOAL_CNT` | `FACT_TARGET_PROJECT.sql:19` | `CAST(NULL AS NUMBER(18,4)) as ANNUAL_CUM_GOAL_CNT` | — |
 | `APPLY_CHANNEL` | `DIM_EVENT.sql:27` | `CAST(NULL AS VARCHAR) as APPLY_CHANNEL` | — |
-| `AREA_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:139` | `CAST(NULL AS VARCHAR) as AREA_CD_AT_EVENT` | — |
-| `AVG_SESSION_DURATION` | `FACT_BIGQUERY_BEHAVIOR.sql:77` | `CAST(NULL AS NUMBER) as AVG_SESSION_DURATION` | — |
-| `BOUNCE_RATE` | `FACT_BIGQUERY_BEHAVIOR.sql:78` | `CAST(NULL AS NUMBER) as BOUNCE_RATE` | — |
-| `BRAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:164` | `CAST(NULL AS VARCHAR) as BRAND_AT_EVENT` | — |
+| `AREA_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:181` | `CAST(NULL AS VARCHAR) as AREA_CD_AT_EVENT` | — |
+| `AVG_SESSION_DURATION` | `FACT_BIGQUERY_BEHAVIOR.sql:99` | `CAST(NULL AS NUMBER) as AVG_SESSION_DURATION` | — |
+| `BOUNCE_RATE` | `FACT_BIGQUERY_BEHAVIOR.sql:100` | `CAST(NULL AS NUMBER) as BOUNCE_RATE` | — |
+| `BRAND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:206` | `CAST(NULL AS VARCHAR) as BRAND_AT_EVENT` | — |
 | `CAMPAIGN_SK` | `FACT_AD_PERFORMANCE.sql:36` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_BIGQUERY_BEHAVIOR.sql:30` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_BIGQUERY_BEHAVIOR.sql:52` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_BUDGET.sql:44` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CAMPAIGN_SK` | `FACT_BUDGET_YEARLY.sql:52` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_EVENT_ATTENDANCE.sql:18` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_MEMBER_EVENT.sql:106` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_MEMBER_MONTHLY.sql:300` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `CAMPAIGN_SK` | `FACT_MESSAGE_DISPATCH.sql:29` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_EVENT_ATTENDANCE.sql:40` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_MEMBER_EVENT.sql:146` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_MEMBER_MONTHLY.sql:362` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `CAMPAIGN_SK` | `FACT_MESSAGE_DISPATCH.sql:91` | `0 as CAMPAIGN_SK` | DIM_CAMPAIGN.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `CHILD_CODE` | `DIM_MEMBER_IDENTITY.sql:30` | `CAST(NULL AS VARCHAR) as CHILD_CODE` | — |
-| `CMMN_BRND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:154` | `CAST(NULL AS NUMBER(38,0)) as CMMN_BRND_AT_EVENT` | — |
-| `CMMN_BRND_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:155` | `CAST(NULL AS VARCHAR) as CMMN_BRND_NM_AT_EVENT` | — |
-| `CMPGN_CTGR_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:146` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_CTGR_CD_AT_EVENT` | — |
-| `CMPGN_CTGR_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:147` | `CAST(NULL AS VARCHAR) as CMPGN_CTGR_NM_AT_EVENT` | — |
-| `CMPGN_TYPE1_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:148` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE1_BSN_AT_EVENT` | — |
-| `CMPGN_TYPE1_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:149` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE1_NM_AT_EVENT` | — |
-| `CMPGN_TYPE2_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:150` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE2_BSN_AT_EVENT` | — |
-| `CMPGN_TYPE2_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:151` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE2_NM_AT_EVENT` | — |
+| `CMMN_BRND_AT_EVENT` | `FACT_MEMBER_EVENT.sql:196` | `CAST(NULL AS NUMBER(38,0)) as CMMN_BRND_AT_EVENT` | — |
+| `CMMN_BRND_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:197` | `CAST(NULL AS VARCHAR) as CMMN_BRND_NM_AT_EVENT` | — |
+| `CMPGN_CTGR_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:188` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_CTGR_CD_AT_EVENT` | — |
+| `CMPGN_CTGR_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:189` | `CAST(NULL AS VARCHAR) as CMPGN_CTGR_NM_AT_EVENT` | — |
+| `CMPGN_TYPE1_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:190` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE1_BSN_AT_EVENT` | — |
+| `CMPGN_TYPE1_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:191` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE1_NM_AT_EVENT` | — |
+| `CMPGN_TYPE2_BSN_AT_EVENT` | `FACT_MEMBER_EVENT.sql:192` | `CAST(NULL AS NUMBER(38,0)) as CMPGN_TYPE2_BSN_AT_EVENT` | — |
+| `CMPGN_TYPE2_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:193` | `CAST(NULL AS VARCHAR) as CMPGN_TYPE2_NM_AT_EVENT` | — |
 | `CORP` | `DIM_ORG.sql:38` | `CAST(NULL AS VARCHAR) as CORP` | — |
-| `CPR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:162` | `CAST(NULL AS VARCHAR) as CPR_DIV_CD_AT_EVENT` | — |
-| `CPR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:163` | `CAST(NULL AS VARCHAR) as CPR_DIV_NM_AT_EVENT` | — |
+| `CPR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:204` | `CAST(NULL AS VARCHAR) as CPR_DIV_CD_AT_EVENT` | — |
+| `CPR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:205` | `CAST(NULL AS VARCHAR) as CPR_DIV_NM_AT_EVENT` | — |
 | `DEVICE_SK` | `FACT_AD_PERFORMANCE.sql:8` | `0 as DEVICE_SK` | DIM_DEVICE.sql, FACT_BIGQUERY_BEHAVIOR.sql |
-| `DEV_TYPE` | `FACT_MEMBER_MONTHLY.sql:338` | `CAST(NULL AS VARCHAR) as DEV_TYPE` | FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_TARGET_MEMBER_DEV.sql |
 | `DIVISION` | `DIM_ORG.sql:39` | `CAST(NULL AS VARCHAR) as DIVISION` | — |
-| `DVLP_DIV_CD` | `FACT_MEMBER_EVENT.sql:113` | `CAST(NULL AS VARCHAR) as DVLP_DIV_CD` | — |
-| `DVLP_DIV_NM` | `FACT_MEMBER_EVENT.sql:114` | `CAST(NULL AS VARCHAR) as DVLP_DIV_NM` | — |
+| `DVLP_DIV_CD` | `FACT_MEMBER_EVENT.sql:153` | `CAST(NULL AS VARCHAR) as DVLP_DIV_CD` | — |
+| `DVLP_DIV_NM` | `FACT_MEMBER_EVENT.sql:154` | `CAST(NULL AS VARCHAR) as DVLP_DIV_NM` | — |
 | `EFFECTIVE_TO` | `DIM_MEMBER_STATUS_HISTORY.sql:65` | `CAST(NULL AS DATE) as EFFECTIVE_TO` | — |
 | `EXEC_BUDGET_EST` | `FACT_BUDGET.sql:50` | `CAST(NULL AS NUMBER(18,2)) as EXEC_BUDGET_EST` | — |
 | `FEE_TYPE` | `DIM_PAYMENT.sql:19` | `CAST(NULL AS VARCHAR) as FEE_TYPE` | — |
 | `FUNDRAISING_COST` | `FACT_BUDGET.sql:51` | `CAST(NULL AS NUMBER(18,2)) as FUNDRAISING_COST` | — |
-| `GENDER_AT_EVENT` | `FACT_MEMBER_EVENT.sql:142` | `CAST(NULL AS VARCHAR) as GENDER_AT_EVENT` | — |
-| `INCREASE_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as INCREASE_FLAG` | — |
-| `JOIN_DATE` | `FACT_MEMBER_EVENT.sql:130` | `CAST(NULL AS DATE) as JOIN_DATE` | — |
-| `JOIN_DATE` | `FACT_MEMBER_MONTHLY.sql:340` | `CAST(NULL AS DATE) as JOIN_DATE` | FACT_MEMBER_EVENT.sql |
-| `MAIL_RECEIVE_FLAG` | `FACT_MESSAGE_DISPATCH.sql:58` | `CAST(NULL AS BOOLEAN) as MAIL_RECEIVE_FLAG` | — |
-| `MBER_INFLOW_PATH_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:144` | `CAST(NULL AS NUMBER(38,0)) as MBER_INFLOW_PATH_CD_AT_EVENT` | — |
-| `MBER_INFLOW_PATH_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:145` | `CAST(NULL AS VARCHAR) as MBER_INFLOW_PATH_NM_AT_EVENT` | — |
-| `MEMBER_STOP_FLAG` | `FACT_MESSAGE_DISPATCH.sql:59` | `CAST(NULL AS BOOLEAN) as MEMBER_STOP_FLAG` | — |
+| `GENDER_AT_EVENT` | `FACT_MEMBER_EVENT.sql:184` | `CAST(NULL AS VARCHAR) as GENDER_AT_EVENT` | — |
+| `JOIN_DATE` | `FACT_MEMBER_EVENT.sql:170` | `CAST(NULL AS DATE) as JOIN_DATE` | FACT_MEMBER_MONTHLY.sql |
+| `MAIL_RECEIVE_FLAG` | `FACT_MESSAGE_DISPATCH.sql:131` | `CAST(NULL AS BOOLEAN) as MAIL_RECEIVE_FLAG` | — |
+| `MBER_INFLOW_PATH_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:186` | `CAST(NULL AS NUMBER(38,0)) as MBER_INFLOW_PATH_CD_AT_EVENT` | — |
+| `MBER_INFLOW_PATH_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:187` | `CAST(NULL AS VARCHAR) as MBER_INFLOW_PATH_NM_AT_EVENT` | — |
+| `MEMBER_STOP_FLAG` | `FACT_MESSAGE_DISPATCH.sql:132` | `CAST(NULL AS BOOLEAN) as MEMBER_STOP_FLAG` | — |
 | `MEMNUM` | `DIM_MEMBER_IDENTITY.sql:27` | `CAST(NULL AS VARCHAR) as MEMNUM` | — |
-| `MKTG_CHANNEL_AT_EVENT` | `FACT_MEMBER_EVENT.sql:158` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CHANNEL_AT_EVENT` | — |
-| `MKTG_CHANNEL_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:159` | `CAST(NULL AS VARCHAR) as MKTG_CHANNEL_NM_AT_EVENT` | — |
-| `MKTG_CMPGN_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:152` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CMPGN_CD_AT_EVENT` | — |
-| `MKTG_CMPGN_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:153` | `CAST(NULL AS VARCHAR) as MKTG_CMPGN_NM_AT_EVENT` | — |
-| `MKTG_UTM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:156` | `CAST(NULL AS NUMBER(38,0)) as MKTG_UTM_AT_EVENT` | — |
-| `MKTG_UTM_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:157` | `CAST(NULL AS VARCHAR) as MKTG_UTM_NM_AT_EVENT` | — |
-| `NEW_EXISTING_FLAG` | `FACT_MEMBER_EVENT.sql:62` | `CAST(NULL AS VARCHAR) as NEW_EXISTING_FLAG` | — |
-| `NEW_EXISTING_FLAG` | `FACT_MEMBER_MONTHLY.sql:344` | `CAST(NULL AS VARCHAR) as NEW_EXISTING_FLAG` | — |
-| `NEW_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as NEW_FLAG` | — |
+| `MKTG_CHANNEL_AT_EVENT` | `FACT_MEMBER_EVENT.sql:200` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CHANNEL_AT_EVENT` | — |
+| `MKTG_CHANNEL_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:201` | `CAST(NULL AS VARCHAR) as MKTG_CHANNEL_NM_AT_EVENT` | — |
+| `MKTG_CMPGN_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:194` | `CAST(NULL AS NUMBER(38,0)) as MKTG_CMPGN_CD_AT_EVENT` | — |
+| `MKTG_CMPGN_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:195` | `CAST(NULL AS VARCHAR) as MKTG_CMPGN_NM_AT_EVENT` | — |
+| `MKTG_UTM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:198` | `CAST(NULL AS NUMBER(38,0)) as MKTG_UTM_AT_EVENT` | — |
+| `MKTG_UTM_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:199` | `CAST(NULL AS VARCHAR) as MKTG_UTM_NM_AT_EVENT` | — |
 | `ORG_SK` | `DIM_CAMPAIGN.sql:50` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
 | `ORG_SK` | `FACT_BUDGET.sql:41` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
 | `ORG_SK` | `FACT_BUDGET_YEARLY.sql:49` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_MEMBER_EVENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
-| `ORG_SK` | `FACT_MEMBER_EVENT.sql:108` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
-| `PARENT_CAMPAIGN_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:165` | `CAST(NULL AS VARCHAR) as PARENT_CAMPAIGN_NAME_AT_EVENT` | — |
-| `PAYMENT_SK` | `FACT_MEMBER_MONTHLY.sql:303` | `0 as PAYMENT_SK` | DIM_PAYMENT.sql, FACT_MEMBER_FEE.sql |
-| `PERIOD_BAND1` | `FACT_MEMBER_MONTHLY.sql:342` | `CAST(NULL AS VARCHAR) as PERIOD_BAND1` | — |
-| `PERIOD_BAND2` | `FACT_MEMBER_MONTHLY.sql:342` | `CAST(NULL AS VARCHAR) as PERIOD_BAND2` | — |
+| `ORG_SK` | `FACT_MEMBER_EVENT.sql:148` | `0 as ORG_SK` | DIM_ORG.sql, FACT_MEMBER_DEV_ACHIEVEMENT.sql, FACT_TARGET_MEMBER_DEV.sql, FACT_TARGET_PROJECT.sql |
+| `PAID_MONTHS` | `FACT_MEMBER_MONTHLY.sql:442` | `CAST(NULL AS NUMBER(9,0)) as PAID_MONTHS` | — |
+| `PARENT_CAMPAIGN_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:207` | `CAST(NULL AS VARCHAR) as PARENT_CAMPAIGN_NAME_AT_EVENT` | — |
+| `PAYMENT_SK` | `FACT_MEMBER_MONTHLY.sql:365` | `0 as PAYMENT_SK` | DIM_PAYMENT.sql, FACT_MEMBER_FEE.sql |
 | `PLATFORM_TYPE` | `DIM_AD_CREATIVE.sql:39` | `CAST(NULL AS VARCHAR) as PLATFORM_TYPE` | — |
 | `PREV_MBER_STAT_CD` | `DIM_MEMBER_STATUS_HISTORY.sql:63` | `CAST(NULL AS VARCHAR) as PREV_MBER_STAT_CD` | WIDE_MEMBER_EVENT.sql, WIDE_MEMBER_MONTHLY.sql |
-| `PROMO_METHOD_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:166` | `CAST(NULL AS VARCHAR) as PROMO_METHOD_NAME_AT_EVENT` | — |
-| `REASON_SK` | `FACT_MEMBER_EVENT.sql:49` | `0 as REASON_SK` | DIM_REASON.sql, FACT_MEMBER_MONTHLY.sql |
-| `REDONATE_FLAG` | `FACT_MEMBER_MONTHLY.sql:339` | `CAST(NULL AS BOOLEAN) as REDONATE_FLAG` | — |
-| `REGION_AT_EVENT` | `FACT_MEMBER_EVENT.sql:140` | `CAST(NULL AS VARCHAR) as REGION_AT_EVENT` | — |
-| `SELF_PART_FLAG` | `FACT_EVENT_ATTENDANCE.sql:29` | `CAST(NULL AS BOOLEAN) as SELF_PART_FLAG` | — |
-| `SEND_STATUS2` | `FACT_MESSAGE_DISPATCH.sql:56` | `CAST(NULL AS VARCHAR) as SEND_STATUS2` | — |
-| `SEX_AT_EVENT` | `FACT_MEMBER_EVENT.sql:141` | `CAST(NULL AS VARCHAR) as SEX_AT_EVENT` | — |
-| `SPNSR_AMT` | `FACT_MEMBER_EVENT.sql:115` | `CAST(NULL AS NUMBER(18,0)) as SPNSR_AMT` | — |
-| `SPNSR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:160` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_CD_AT_EVENT` | — |
-| `SPNSR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:161` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_NM_AT_EVENT` | — |
+| `PROMO_METHOD_NAME_AT_EVENT` | `FACT_MEMBER_EVENT.sql:208` | `CAST(NULL AS VARCHAR) as PROMO_METHOD_NAME_AT_EVENT` | — |
+| `REASON_SK` | `FACT_MEMBER_EVENT.sql:86` | `0 as REASON_SK` | DIM_REASON.sql, FACT_MEMBER_MONTHLY.sql |
+| `REGION_AT_EVENT` | `FACT_MEMBER_EVENT.sql:182` | `CAST(NULL AS VARCHAR) as REGION_AT_EVENT` | — |
+| `SELF_PART_FLAG` | `FACT_EVENT_ATTENDANCE.sql:65` | `CAST(NULL AS BOOLEAN) as SELF_PART_FLAG` | — |
+| `SEND_STATUS2` | `FACT_MESSAGE_DISPATCH.sql:129` | `CAST(NULL AS VARCHAR) as SEND_STATUS2` | — |
+| `SEX_AT_EVENT` | `FACT_MEMBER_EVENT.sql:183` | `CAST(NULL AS VARCHAR) as SEX_AT_EVENT` | — |
+| `SPNSR_AMT` | `FACT_MEMBER_EVENT.sql:155` | `CAST(NULL AS NUMBER(18,0)) as SPNSR_AMT` | — |
+| `SPNSR_DIV_CD_AT_EVENT` | `FACT_MEMBER_EVENT.sql:202` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_CD_AT_EVENT` | — |
+| `SPNSR_DIV_NM_AT_EVENT` | `FACT_MEMBER_EVENT.sql:203` | `CAST(NULL AS VARCHAR) as SPNSR_DIV_NM_AT_EVENT` | — |
 | `SPONSORSHIP_SK` | `FACT_BUDGET.sql:45` | `CAST(NULL AS NUMBER(38,0)) as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
 | `SPONSORSHIP_SK` | `FACT_BUDGET_YEARLY.sql:53` | `CAST(NULL AS NUMBER(38,0)) as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `SPONSORSHIP_SK` | `FACT_EVENT_ATTENDANCE.sql:19` | `0 as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
-| `STOP_CHANNEL` | `FACT_MEMBER_EVENT.sql:59` | `CAST(NULL AS VARCHAR) as STOP_CHANNEL` | — |
-| `STOP_CHANNEL_NM` | `FACT_MEMBER_EVENT.sql:61` | `CAST(NULL AS VARCHAR) as STOP_CHANNEL_NM` | — |
-| `STOP_DATE` | `FACT_MEMBER_EVENT.sql:57` | `CAST(NULL AS DATE) as STOP_DATE` | — |
-| `STOP_DATE` | `FACT_MEMBER_MONTHLY.sql:340` | `CAST(NULL AS DATE) as STOP_DATE` | FACT_MEMBER_EVENT.sql |
-| `STOP_REASON` | `FACT_MEMBER_EVENT.sql:58` | `CAST(NULL AS VARCHAR) as STOP_REASON` | — |
-| `STOP_REASON_NM` | `FACT_MEMBER_EVENT.sql:60` | `CAST(NULL AS VARCHAR) as STOP_REASON_NM` | — |
+| `SPONSORSHIP_SK` | `FACT_EVENT_ATTENDANCE.sql:41` | `0 as SPONSORSHIP_SK` | DIM_SPONSORSHIP.sql, FACT_MEMBER_EVENT.sql, FACT_MEMBER_FEE.sql, FACT_MEMBER_MONTHLY.sql, FACT_MEMBER_SPONSORSHIP_SPAN.sql, FACT_TARGET_PROJECT.sql |
+| `STOP_CHANNEL` | `FACT_MEMBER_EVENT.sql:96` | `CAST(NULL AS VARCHAR) as STOP_CHANNEL` | — |
+| `STOP_CHANNEL_NM` | `FACT_MEMBER_EVENT.sql:98` | `CAST(NULL AS VARCHAR) as STOP_CHANNEL_NM` | — |
+| `STOP_DATE` | `FACT_MEMBER_EVENT.sql:94` | `CAST(NULL AS DATE) as STOP_DATE` | FACT_MEMBER_MONTHLY.sql |
+| `STOP_DATE` | `FACT_MEMBER_MONTHLY.sql:425` | `CAST(NULL AS DATE) as STOP_DATE` | FACT_MEMBER_EVENT.sql |
+| `STOP_REASON` | `FACT_MEMBER_EVENT.sql:95` | `CAST(NULL AS VARCHAR) as STOP_REASON` | — |
+| `STOP_REASON_NM` | `FACT_MEMBER_EVENT.sql:97` | `CAST(NULL AS VARCHAR) as STOP_REASON_NM` | — |
 | `SUPP_CUM_GOAL_CNT` | `FACT_TARGET_PROJECT.sql:20` | `CAST(NULL AS NUMBER(18,4)) as SUPP_CUM_GOAL_CNT` | — |
 | `TARGET_GROUP` | `DIM_AD_CREATIVE.sql:51` | `CAST(NULL AS VARCHAR) as TARGET_GROUP` | — |
 | `TEAM` | `DIM_ORG.sql:41` | `CAST(NULL AS VARCHAR) as TEAM` | — |
@@ -176,18 +166,18 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 ## 3. 원천별 컬럼 상세
 
-### AGENCY (106컬럼)
+### AGENCY (103컬럼)
 
-<details><summary><b>DGT_AD_CMPGN_DTLS</b> — 36컬럼 (GOLD 19 · 하드코딩 0)</summary>
+<details><summary><b>DGT_AD_CMPGN_DTLS</b> — 41컬럼 (GOLD 18 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
 | `TIME` | TEXT | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
 | `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
-| `CPR_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `DMST_OVSEA_DIV_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `BSNS_CASE_DIV_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CMPGN_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `BDGT_SOURCE_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_TYPE1_BSN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_TYPE2_BSN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_TYPE_BSN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `AD_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_TYPE_NM` (FACT_AD_DIGITAL.sql) |
 | `MONTH` | TEXT | 대체노출(파생) | 높음 | DATE 파생(MONTH(AD_DATE)) 로 대체 |
 | `DEVICE` | TEXT | 노출됨(GOLD) | 중간(브랜치별 상이) | 개명 적재 → GOLD `DEVICE_SK` (FACT_AD_PERFORMANCE.sql) · ⚠️ 일부 브랜치는 센티넬 — FACT_AD_PERFORMANCE.sql:8 `0 as DEVICE_SK` |
@@ -200,16 +190,16 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `MATR_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CREATIVE_TYPE` (FACT_AD_DIGITAL.sql) |
 | `EXPS_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `IMPRESSIONS` (FACT_AD_PERFORMANCE.sql) |
 | `CLICK_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CLICKS` (FACT_AD_PERFORMANCE.sql) |
-| `GA_AD_COST` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql) |
-| `GA_CONV_MBER_CNT` | FLOAT | 미노출(검토대상) | 중간(계보등록) | GOLD `GA_CONV_MEMBERS` 미확인 — 배선 필요 |
+| `AD_COST` | FLOAT | 노출됨(GOLD) | 중간(모델별 상이) | 실적재 FACT_AD_PERFORMANCE.sql / 하드코딩 FACT_BUDGET.sql |
+| `SPNSER_MBER_CNT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `CONV_VU_CNT` | FLOAT | 미노출(검토대상) | 중간(계보등록) | GOLD `GA_CONV_CNT` 미확인 — 배선 필요 |
 | `CPA` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPA_SRC` (FACT_AD_DIGITAL.sql) |
-| `DEV_UNIT_PRICE` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DEV_UNIT_PRICE_SRC` (FACT_AD_DIGITAL.sql) |
+| `DVLP_UNIT_PRICE` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `CTR` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CTR_SRC` (FACT_AD_DIGITAL.sql) |
 | `CVR` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CVR_SRC` (FACT_AD_DIGITAL.sql) |
 | `CPC` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_CLICK_SRC` (FACT_AD_DIGITAL.sql) |
 | `CPM` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPM_SRC` (FACT_AD_DIGITAL.sql) |
-| `CMPGN_UTM_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `UTM_CMPGN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `READ_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `READ_CNT` (FACT_AD_DIGITAL.sql) |
 | `MEDIA_PTNT_CUST_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `MEDIA_POTENTIAL_CUST_CNT` (FACT_AD_DIGITAL.sql) |
 | `DATE` | DATE | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
@@ -218,47 +208,39 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `CRM_DVLP_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CRM_DEV_CNT` (FACT_AD_DIGITAL.sql) |
 | `AD_GRP_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_GROUP_NM` (FACT_AD_DIGITAL.sql) |
 | `GRP_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `GROUP_DIV` (FACT_AD_DIGITAL.sql) |
+| `MARKUP_AMT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `VAT_AMT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `LAST_STMT_AMT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `TOTAL_CPA` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `TOTAL_DVLP_UNIT_PRICE` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 
 </details>
 
-<details><summary><b>REBRDC_AD_CMPGN_DTLS</b> — 34컬럼 (GOLD 24 · 하드코딩 0)</summary>
+<details><summary><b>REBRDC_AD_CMPGN_DTLS</b> — 21컬럼 (GOLD 8 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
-| `RE_BRDC_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `RT_TYPE` (FACT_AD_BROADCAST.sql) |
 | `DIV_NM` | TEXT | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
 | `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
-| `BRDC_MT` | TEXT | 대체노출(파생) | 높음 | DATE 파생(MONTH) 로 대체 |
-| `CHNNL_CMPNY` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CHANNEL_COMPANY` (FACT_AD_BROADCAST.sql) |
+| `MONTH` | TEXT | 대체노출(파생) | 높음 | DATE 파생(MONTH(AD_DATE)) 로 대체 |
+| `DAY` | TEXT | 대체노출(파생) | 높음 | DATE 파생(DAY) 로 대체 |
+| `CHNNL_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `BRDC_DATE` | DATE | SILVER까지만 | 높음 | GOLD 미승격 |
+| `DOW` | TEXT | 대체노출(파생) | 높음 | DATE 파생(DAYNAME) 로 대체 |
+| `WEEK` | TEXT | 대체노출(파생) | 높음 | DATE 파생(WEEKOFYEAR) 로 대체 |
+| `BRDC_TIME` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `TIME_BAND` (FACT_AD_BROADCAST.sql) |
 | `BRDC_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `PROGRAM_NM` (FACT_AD_BROADCAST.sql) |
 | `BRDC_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `BRDC_DIV` (FACT_AD_BROADCAST.sql) |
-| `DATE` | DATE | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `BROADCAST_DATE` (FACT_AD_BROADCAST.sql) |
-| `DOW` | TEXT | 대체노출(파생) | 높음 | DATE 파생(DAYNAME) 로 대체 |
-| `BRDC_TIME` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `TIME_BAND` (FACT_AD_BROADCAST.sql) |
+| `AD_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `INBOUND_CALL_CNT` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `DVLP_MBER_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DVLP_MEMBER_CNT` (FACT_AD_BROADCAST.sql) |
 | `DVLP_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DVLP_CNT` (FACT_AD_BROADCAST.sql) |
+| `UPPER_CMPGN_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `BRDC_SCHDL_COST` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql) |
-| `WEEK` | TEXT | 대체노출(파생) | 높음 | DATE 파생(WEEKOFYEAR) 로 대체 |
-| `AD_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
-| `TIME_RNG_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `TIME_BAND` (FACT_AD_BROADCAST.sql) |
-| `CELEB_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `DMST_OVSEA_DIV_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CASE1_BSNS_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `BIZ_DIV` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE1_FAM_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `FAMILY_TYPE` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE1_APPEAL_POINT_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `APPEAL_POINT` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE1_CHILD_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CASE1_CASE_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CASE_DIV` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE2_BSNS_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `BIZ_DIV` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE2_FAM_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `FAMILY_TYPE` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE2_APPEAL_POINT_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `APPEAL_POINT` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE2_CHILD_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CASE2_CASE_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CASE_DIV` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE3_BSNS_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `BIZ_DIV` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE3_FAM_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `FAMILY_TYPE` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE3_APPEAL_POINT_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `APPEAL_POINT` (FACT_AD_BROADCAST_CASE.sql) |
-| `CASE3_CHILD_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CASE3_CASE_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CASE_DIV` (FACT_AD_BROADCAST_CASE.sql) |
+| `CONTENTS_PUR_COST` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CALL_CTR_OPER_COST` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `TOT_COST` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 
 </details>
 
@@ -273,7 +255,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 </details>
 
-<details><summary><b>VIDEO_AD_CMPGN_DTLS</b> — 32컬럼 (GOLD 19 · 하드코딩 0)</summary>
+<details><summary><b>VIDEO_AD_CMPGN_DTLS</b> — 37컬럼 (GOLD 16 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
 |---|---|---|---|---|
@@ -290,29 +272,34 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `AD_END_TIME` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `SPOT_TY` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `SPOT_TYPE` (FACT_AD_BROADCAST.sql) |
 | `AD_VIEW_RT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_VIEW_RT_SRC` (FACT_AD_BROADCAST.sql) |
-| `AD_CNT` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
+| `AD_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `AD_SEC` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `DURATION_SEC` (FACT_AD_BROADCAST.sql) |
-| `ACTL_PUR_AD_COST_KRW` | NUMBER | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `AD_COST` (FACT_AD_PERFORMANCE.sql) |
-| `INBOUND_CALL_CNT` | NUMBER | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
-| `CPC` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CPC_CALL_SRC` (FACT_AD_BROADCAST.sql) |
+| `LAST_AD_COST` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `INBOUND_CALL_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
+| `CPC_CALL_CNT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `UPPER_CMPGN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `MATR_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CMPGN_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `DUR_PD_MATR_CHN` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `CHNNL_CMPNY_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CHANNEL_COMPANY_TYPE` (FACT_AD_BROADCAST.sql) |
-| `WEEK` | TEXT | 대체노출(파생) | 높음 | DATE 파생(WEEKOFYEAR) 로 대체 |
-| `CONV_CALL_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CONV_CALL_CNT` (FACT_AD_BROADCAST.sql) |
-| `BRDC_MT` | TEXT | 대체노출(파생) | 높음 | DATE 파생(MONTH) 로 대체 |
-| `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
-| `CTV_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CTV_DIV` (FACT_AD_BROADCAST.sql) |
-| `MKT_CMPGN_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `SPNSR_BSNS_NM` | TEXT | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
 | `DMST_OVSEA_DIV_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `BSNS_CASE_DIV_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CMPGN_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CHNNL_CMPNY_TY_NM` | TEXT | 노출됨(GOLD) | 높음 | 개명 적재 → GOLD `CHANNEL_COMPANY_TYPE` (FACT_AD_BROADCAST.sql) |
+| `WEEK` | TEXT | 대체노출(파생) | 높음 | DATE 파생(WEEKOFYEAR) 로 대체 |
+| `MONTH` | TEXT | 대체노출(파생) | 높음 | DATE 파생(MONTH(AD_DATE)) 로 대체 |
+| `AD_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `BDGT_SOURCE_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `DEVICE_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
+| `DAY` | TEXT | 대체노출(파생) | 높음 | DATE 파생(DAY) 로 대체 |
+| `SPNSER_CNT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `DVLP_CNT` | FLOAT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
+| `CMPGN_NM` | TEXT | 판정보류(동명이의) | 낮음(일반명 충돌) | 동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14) |
+| `MATR_TY_NM` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `EXPSR_CNT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `CLICK_CNT` | FLOAT | SILVER까지만 | 높음 | GOLD 미승격 |
 
 </details>
 
-### CRM (1064컬럼)
+### CRM (1122컬럼)
 
 <details><summary><b>SND_MEMBER_LIST</b> — 77컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
@@ -966,6 +953,52 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 </details>
 
+<details><summary><b>TM_CM_MBER_DVLP_GOAL_DIV</b> — 20컬럼 (GOLD 1 · 하드코딩 0)</summary>
+
+| 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
+|---|---|---|---|---|
+| `YEAR` | TEXT | 대체노출(파생) | 높음 | DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙 |
+| `GOAL_TYPE_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `CPR_DIV_NM` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
+| `NEW_OLD_DIV_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ORG_DIV_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `TEAM_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SPNSR_BSNS_DIV_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `DTL_DIV_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M01_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M02_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M03_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M04_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M05_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M06_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M07_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M08_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M09_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M10_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M11_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `M12_GOAL_CNT` | FLOAT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+
+</details>
+
+<details><summary><b>TM_CM_SCHDUL_MNG</b> — 12컬럼 (GOLD 0 · 하드코딩 0)</summary>
+
+| 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
+|---|---|---|---|---|
+| `SCHDUL_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SCHDUL_DE` | DATE | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SCHDUL_DIV_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SCHDUL_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SCHDUL_TIT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
+| `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
+
+</details>
+
 <details><summary><b>TM_CM_SPNSR_BSNS_INFO</b> — 16컬럼 (GOLD 3 · 하드코딩 0)</summary>
 
 | 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
@@ -1012,7 +1045,7 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `SER_NO` | NUMBER | SILVER까지만 | 높음 | GOLD 미승격 |
 | `MBER_NO` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `ACT_DEPT_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
-| `ACMSLT_DEPT_CD` | TEXT | 노출됨(GOLD) | 중간(브랜치별 상이) | 개명 적재 → GOLD `ORG_SK` (FACT_MEMBER_EVENT.sql) · ⚠️ 일부 브랜치는 센티넬 — FACT_MEMBER_EVENT.sql:108 `0 as ORG_SK` |
+| `ACMSLT_DEPT_CD` | TEXT | 노출됨(GOLD) | 중간(브랜치별 상이) | 개명 적재 → GOLD `ORG_SK` (FACT_MEMBER_EVENT.sql) · ⚠️ 일부 브랜치는 센티넬 — FACT_MEMBER_EVENT.sql:148 `0 as ORG_SK` |
 | `CMPGN_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `SETLE_CD` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
 | `MBER_DIV_CD` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
@@ -1208,6 +1241,39 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 | `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `REGIST_DEPT_CD` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
 | `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
+| `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
+| `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
+
+</details>
+
+<details><summary><b>TM_MS_AT_TMPLAT_MNG</b> — 26컬럼 (GOLD 1 · 하드코딩 0)</summary>
+
+| 컬럼 | 타입 | 판정 | 신뢰도 | 비고 |
+|---|---|---|---|---|
+| `TMPLAT_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `CPR_DIV_CD` | TEXT | 노출됨(GOLD) | 높음 | 동명 GOLD 컬럼 + 실적재 projection 확인 |
+| `SNDNG_CD_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `SNDNG_DTL_CD_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ATMC_YN` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `APRV_STAT_CD` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `APRV_FAILR_CTNT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `TIT` | TEXT | SILVER까지만 | 높음 | GOLD 미승격 |
+| `TMPLAT_CTNT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `WRITNG_DEPT_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `WRITNG_DEPT_NM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `CHRG_DEPT_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `TMPLAT_RM` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ALTRTV_MSG_SNDNG_YN` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ALTRTV_MSG_TMPLAT_KEY` | NUMBER | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ALTRTV_MSG_CTNT` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `ALTRTV_MSG_ATCHFL_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `WRITNG_GUIDE_ATCHFL_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `FRST_RGSTR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `FRST_REGIST_DT` | TIMESTAMP_NTZ | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
+| `LAST_UPDUSR_ID` | TEXT | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `LAST_UPDT_DT` | TIMESTAMP_NTZ | 미노출(검토대상) | 낮음(이름기반·P13) | 개명·VARIANT param 승격 가능성 — 확정 아님 |
+| `USE_YN` | TEXT | 제외(PII·본문·메타) | — | 패턴 매칭 제외(감사 범위 외) |
 | `_LOAD_DT` | TIMESTAMP_NTZ | SILVER까지만 | 중간(SQL참조) | SILVER SQL 토큰 참조 |
 | `_BATCH_ID` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
 | `_STDR_YM` | TEXT | 제외(적재제어메타) | — | BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175) |
@@ -1836,4 +1902,4 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 - `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). 본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.
 - `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
 
-_감사일 2026-09-22 · Co-authored with CoCo_
+_감사일 2026-09-28 · Co-authored with CoCo_

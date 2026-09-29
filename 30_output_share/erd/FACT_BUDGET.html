@@ -7,7 +7,7 @@
   <title>FACT_BUDGET - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_BUDGET",
     "table": "FACT_BUDGET",
     "domain": "ERP / 예산·목표",
@@ -673,31 +673,31 @@ erDiagram
           <td><code>PLAN_BUDGET_MONTH</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>편성예산(월)</td>
+          <td>편성예산(월 · 원). 🔴🔴 [2026-08-29 O114-B] 12개월 합산해도 FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR 와 일치하지 않는다 — 원천 원장의 월 배분이 부분적이어서 연 총액의 상당 부분이 월 컬럼에 배분되지 않는다(원천 특성 · 모델 결함 아님 · 실측 규모는 이슈원장·이력 소관 R2-6). ⇒ 🔴 「편성예산」을 답할 때 월·연 중 어느 축인지 밝혀라 — 밝히지 않으면 두 답이 갈린다. 🟢 대비: 집행은 연=월 정합이다(EXEC_BUDGET_ERP 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR). 🔴 예산 편성 차수(「연사업」 / 「추가경정」)를 GROUP BY 에 넣지 않으면 본예산과 추경이 합산된다 — 다만 이 테이블은 BUDGET_PROCEDURE 컬럼을 보유하므로 차수별 분해가 가능하다(2026-09-22 O176 실측 · 규모는 이슈원장 소관 R2-6). ⚠️ WIDE_BUDGET 은 이 컬럼을 노출하지 않으므로 거기서는 분해가 불가능하다 — 「차수별 분해 불가」는 뷰 축의 사실이며 이 테이블에는 적용되지 않는다.</td>
         </tr>
         <tr>
           <td><code>EXEC_BUDGET_ERP</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>집행예산(ERP)</td>
+          <td>집행예산(ERP · 월 · 원). 🟢 연=월 정합이다 — 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR(편성과 달리 월 배분 누락이 없다). 🔴 다만 예산 편성 차수(「연사업」/「추가경정」) 취급은 편성과 같다 — BUDGET_PROCEDURE 를 GROUP BY 에 넣지 않으면 본예산과 추경이 합쳐진다(합쳐질 뿐이며 분해는 가능하다).</td>
         </tr>
         <tr>
           <td><code>EXEC_BUDGET_EST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>집행예산(추정)</td>
+          <td>집행예산(추정 · 원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 집행 추정 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 소관 · ⚠️ 종전 문안의 E-4 병기는 O175 가 철회했다 — 광고비는 원천 부재가 아니다). 실측 규모는 이슈원장 §O51-F.</td>
         </tr>
         <tr>
           <td><code>FUNDRAISING_COST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>모금성비용</td>
+          <td>모금성비용(원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 모금성비용 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 하드블로커) — 모금성비용은 원천 확정 대기다. 실측 규모는 이슈원장 §O51-F.</td>
         </tr>
         <tr>
           <td><code>AD_COST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>광고비</td>
+          <td>광고비(원) 🔴🔴 폐기 슬롯이다 — 의도적 영구 NULL(외부 입고 대기가 아니다 · 2026-09-21 O175 판정). 예산 원장에는 광고비 예산항목이 없고, 대행사 원천의 광고비는 이미 GOLD.FACT_AD_PERFORMANCE.AD_COST 로 일 grain 배선돼 있다. 🔴 광고비를 이 컬럼으로 묻지 말 것 — 정본은 SERVING.SV_AD.TOTAL_AD_COST(base GOLD.WIDE_AD_COMBINED)다. 🔴 예산과 같은 표에 합산하지 말 것(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). ⚠️ 종전 문안의 「원천 자체가 비어 있다 · 대행사가 항목을 보고하지 않는다」는 거짓이었다(경위·규모는 이슈원장 §O175).</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -739,7 +739,13 @@ erDiagram
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
---   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재)·AD_COST(E-4 원천부재).
+--   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재).
+-- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
+--    *&quot;E-4 원천부재&quot;* 는 **거짓이었다**. 대행사 원천 3종에 광고비가 전량 실재하고
+--    이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다(원천 합 일치).
+--    ⚠️ 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
+--    `BUDGET_ITEM_SK` 귀속 근거가 없고, 광고 팩트와 이중계상이 된다.
+--    소비 안내: 광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED`).
 -- 🔴 [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
 --    *&quot;추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO&quot;* 는 해소됐다.
 --    원장의 연 총액 4종(편성·추경·조정·집행)은 **`FACT_BUDGET_YEARLY`(연 grain)** 로 분리했다.
@@ -779,7 +785,7 @@ select
     SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
     CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
-    CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- E-4 원천부재
+    CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
     {{ gold_meta('ERP') }}
 from ranked
 where rnk = 1

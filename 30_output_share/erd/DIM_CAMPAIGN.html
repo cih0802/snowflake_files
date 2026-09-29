@@ -7,7 +7,7 @@
   <title>DIM_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_CAMPAIGN",
     "table": "DIM_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -450,9 +450,9 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: AGENCY / 마케팅·광고</span>
-          <span class="badge badge-domain">BRONZE 원천: 5개</span>
+          <span class="badge badge-domain">BRONZE 원천: 4개</span>
           <span class="badge badge-domain">SILVER 모델: 3개</span>
-          <span class="badge badge-domain">컬럼 수: 28개</span>
+          <span class="badge badge-domain">컬럼 수: 30개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>캠페인 차원. [Grain: CAMPAIGN_SK (1행=1캠페인)]. [주의: 분류체계 카테고리/상위/홍보방법 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG → SILVER.CRM_CAMPAIGN].</p>
       </div>
@@ -472,10 +472,9 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
@@ -487,11 +486,10 @@ flowchart LR
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_MARKETING_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_MARKETING_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   G_DIM_MARKETING_CAMPAIGN --> G_DIM_CAMPAIGN
   S_CRM_CAMPAIGN --> G_DIM_CAMPAIGN
   S_CRM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
@@ -503,14 +501,13 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (5개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (4개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
@@ -832,6 +829,12 @@ erDiagram
           <td></td>
         </tr>
         <tr>
+          <td><code>MKTG_CHANNEL_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>마케팅 채널명 (TC_MKTNG_DTL_CD C002 라벨).</td>
+        </tr>
+        <tr>
           <td><code>CAMPAIGN_BK</code></td>
           <td><code>VARCHAR</code></td>
           <td><span class="badge badge-silver">DK</span></td>
@@ -949,13 +952,19 @@ erDiagram
           <td><code>MKTG_UTM</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td></td>
-          <td>UTM 원천코드.</td>
+          <td>마케팅 UTM 원천코드 (TC_MKTNG_DTL_CD U001 대응).</td>
         </tr>
         <tr>
           <td><code>MKTG_UTM_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>UTM 라벨.</td>
+          <td>마케팅 UTM 라벨 (TC_MKTNG_DTL_CD U001 라벨).</td>
+        </tr>
+        <tr>
+          <td><code>MKTG_CHANNEL</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>마케팅 채널 원천코드 (TC_MKTNG_DTL_CD C002 대응).</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -1059,8 +1068,11 @@ select
     -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건의 잔여 2컬럼(공통브랜드·UTM) — SILVER CRM_CAMPAIGN 라벨 그대로 승계.
     c.CMMN_BRND                                    as CMMN_BRND,      -- MM297 공통브랜드 코드
     c.CMMN_BRND_NM                                 as CMMN_BRND_NM,
-    c.MKTG_UTM                                     as MKTG_UTM,       -- TM_CM_MKTNG_UTM.MK_UTM 코드
+    c.MKTG_UTM                                     as MKTG_UTM,       -- TC_MKTNG_DTL_CD (U001) 코드
     c.MKTG_UTM_NM                                  as MKTG_UTM_NM,
+    -- [2026-09-16 O162] 마케팅채널(C002) — SILVER CRM_CAMPAIGN 승계
+    c.MKTG_CHANNEL                                 as MKTG_CHANNEL,
+    c.MKTG_CHANNEL_NM                              as MKTG_CHANNEL_NM,
     {{ gold_meta('CRM') }}
 from c
 -- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
@@ -1074,6 +1086,7 @@ union all
 select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 0,
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
+    NULL, NULL,
     {{ gold_meta('CRM') }}
 </code></pre>
           </div>

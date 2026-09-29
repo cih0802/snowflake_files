@@ -7,7 +7,7 @@
   <title>DIM_MARKETING_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MARKETING_CAMPAIGN",
     "table": "DIM_MARKETING_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -450,7 +450,7 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: AGENCY / 마케팅·광고</span>
-          <span class="badge badge-domain">BRONZE 원천: 5개</span>
+          <span class="badge badge-domain">BRONZE 원천: 4개</span>
           <span class="badge badge-domain">SILVER 모델: 3개</span>
           <span class="badge badge-domain">컬럼 수: 9개</span>
         </div>
@@ -472,10 +472,9 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
+    B_bronze_crm_TC_MKTNG_DTL_CD["TC_MKTNG_DTL_CD"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG["TM_CM_MKTNG_CMPGN_MNG"]:::bronze
-    B_bronze_crm_TM_CM_MKTNG_UTM["TM_CM_MKTNG_UTM"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
@@ -487,11 +486,10 @@ flowchart LR
     G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원. [Grain: CAMP"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_MARKETING_CAMPAIGN
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_CMPGN_MNG --> S_CRM_MARKETING_CAMPAIGN
-  B_bronze_crm_TM_CM_MKTNG_UTM --> S_CRM_CAMPAIGN
   G_DIM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
   S_CRM_CAMPAIGN --> G_DIM_CAMPAIGN
   S_CRM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
@@ -503,14 +501,13 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (5개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (4개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
+<li><b>bronze_crm.TC_MKTNG_DTL_CD</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_CMPGN_MNG</b>: </li>
-<li><b>bronze_crm.TM_CM_MKTNG_UTM</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">

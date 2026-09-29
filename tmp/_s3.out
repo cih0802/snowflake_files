@@ -1,0 +1,4 @@
+CSV : /workspace/30_output_share/04_컬럼계보매핑.csv
+MD  : /workspace/30_output_share/04_컬럼계보매핑.md
+XLSX: /workspace/30_output_share/04_컬럼계보매핑.xlsx
+마트 14 컬럼 563 | 상태 {'OK': 139, 'PARTIAL': 344, 'WAIT': 80} | 확정도 {'컬럼확정': 461, '원천무관(ETL 생성)': 57, '컬럼확정(2단)': 9, '테이블수준': 36} | 미해석 0

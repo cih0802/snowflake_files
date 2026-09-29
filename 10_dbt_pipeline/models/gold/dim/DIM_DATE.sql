@@ -13,6 +13,16 @@ with spine as (
     from TABLE(GENERATOR(rowcount => {{ (modules.datetime.datetime.strptime(var("cal_end"), "%Y-%m-%d") - modules.datetime.datetime.strptime(var("cal_start"), "%Y-%m-%d")).days + 1 }}))
 ),
 
+-- 🆕 [2026-09-29 O188] 공휴일 = CRM 일정관리 SCHDUL_DIV_CD='0'(현업 회신 · 문서20 F-5).
+--   한글이 없는 제목(2013-01-01 '123123' 등 2건)은 입력 테스트로 보고 제외한다(같은 날 '새해' 행이 따로 있다).
+--   ⚠️ 2021·2022 는 13일로 다른 해(16~22일)보다 적다 — 원천 기재 그대로이며 보정하지 않는다.
+holiday as (
+    select distinct SCHDUL_DE as HOLIDAY_DATE
+    from {{ source('bronze_crm_ref','TM_CM_SCHDUL_MNG') }}
+    where SCHDUL_DIV_CD = '0'
+      and REGEXP_LIKE(SCHDUL_TIT, '.*[가-힣].*')
+),
+
 calendar as (
     select
         {{ date_sk('FULL_DATE') }}                    as DATE_SK,
@@ -24,9 +34,10 @@ calendar as (
         DAYOFWEEK(FULL_DATE)                          as DAY_OF_WEEK,
         WEEKOFYEAR(FULL_DATE)                         as WEEK_OF_YEAR,
         QUARTER(FULL_DATE)                            as QUARTER,
-        FALSE                                         as IS_HOLIDAY,   -- ⚠️ 휴일 원천 없음(추후 보정)
+        (h.HOLIDAY_DATE is not null)                  as IS_HOLIDAY,   -- 법정·사내 공휴일(주말 미포함)
         {{ gold_meta('DW') }}
-    from spine
+    from spine s
+    left join holiday h on h.HOLIDAY_DATE = s.FULL_DATE
     where FULL_DATE <= DATE '{{ var("cal_end") }}'
 )
 

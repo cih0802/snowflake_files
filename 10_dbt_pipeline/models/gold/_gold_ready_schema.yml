@@ -227,7 +227,9 @@ models:
               to: ref('DIM_MEMBER')
               field: MEMBER_DK
               # 순서9-B: 소스 회원마스터(CRM_MEMBER) 미완전 → 고아 9,248명(대부분 정상 7자리 FDRM 활동회원, 소수 불량ID).
-              #   fact 버그 아님(소스 완전성 gap). 마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).
+              #   fact 버그 아님(소스 완전성 gap). ~~마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).~~
+              #   🔴 [2026-09-29 O188 · J5] 위 예약은 폐기된 문안이다 — 전량입고는 끝났고(O154) 고아는 원천 삭제 잔재다
+              #      (O179 회신 · macros/gn_member_master_filter.sql). 추가 인입이 없으므로(O188 사용자 결정) 조건은 영구히 오지 않는다.
               config:
                 severity: warn
       - name: EVENT_SK
@@ -265,7 +267,9 @@ models:
               to: ref('DIM_MEMBER')
               field: MEMBER_DK
               # 순서9-B: 소스 회원마스터(CRM_MEMBER) 미완전 → 고아 9,248명(대부분 정상 7자리 FDRM 활동회원, 소수 불량ID).
-              #   fact 버그 아님(소스 완전성 gap). 마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).
+              #   fact 버그 아님(소스 완전성 gap). ~~마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).~~
+              #   🔴 [2026-09-29 O188 · J5] 위 예약은 폐기된 문안이다 — 전량입고는 끝났고(O154) 고아는 원천 삭제 잔재다
+              #      (O179 회신 · macros/gn_member_master_filter.sql). 추가 인입이 없으므로(O188 사용자 결정) 조건은 영구히 오지 않는다.
               config:
                 severity: warn
       - name: CAMPAIGN_SK
@@ -544,7 +548,9 @@ models:
               to: ref('DIM_MEMBER')
               field: MEMBER_DK
               # 순서9-B: 소스 회원마스터(CRM_MEMBER) 미완전 → 고아 9,248명(대부분 정상 7자리 FDRM 활동회원, 소수 불량ID).
-              #   fact 버그 아님(소스 완전성 gap). 마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).
+              #   fact 버그 아님(소스 완전성 gap). ~~마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).~~
+              #   🔴 [2026-09-29 O188 · J5] 위 예약은 폐기된 문안이다 — 전량입고는 끝났고(O154) 고아는 원천 삭제 잔재다
+              #      (O179 회신 · macros/gn_member_master_filter.sql). 추가 인입이 없으므로(O188 사용자 결정) 조건은 영구히 오지 않는다.
               config:
                 severity: warn
       - name: CAMPAIGN_SK
@@ -603,7 +609,9 @@ models:
               to: ref('DIM_MEMBER')
               field: MEMBER_DK
               # 순서9-B: 소스 회원마스터(CRM_MEMBER) 미완전 → 고아 9,248명(대부분 정상 7자리 FDRM 활동회원, 소수 불량ID).
-              #   fact 버그 아님(소스 완전성 gap). 마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).
+              #   fact 버그 아님(소스 완전성 gap). ~~마스터 전량입고 시 자연축소 → 그때 severity 제거(error 복귀).~~
+              #   🔴 [2026-09-29 O188 · J5] 위 예약은 폐기된 문안이다 — 전량입고는 끝났고(O154) 고아는 원천 삭제 잔재다
+              #      (O179 회신 · macros/gn_member_master_filter.sql). 추가 인입이 없으므로(O188 사용자 결정) 조건은 영구히 오지 않는다.
               config:
                 severity: warn
       - name: SERVICE_SK
@@ -995,9 +1003,11 @@ models:
 
   - name: FACT_TARGET_PROJECT
     description: >
-      사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20).
-      🔴🔴 **현재 0행**이다 — CRM 신규 목표 테이블 **입고 대기**(문서40 `E-6`)이며 상류 `CRM_BIZ_TARGET` 은
-      `source()` 를 참조하지 않는 빈 스캐폴드(`WHERE 1=0`)다. ⇒ 🔴 **아래 테스트는 지금 공허하게 통과한다.**
+      사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM. 원천 = **CRM 확정**(2026-07-20).
+      🟢 [2026-09-29 O188] **입고 배선** — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(2026 · 290행 × 12월).
+      🔴🔴 `GOAL_TYPE_NM`(연사업/팀)으로 **반드시 필터**하라 — 두 유형 합이 348,024 · 348,000 으로 같은 목표의 다른 분해로 보인다(문서20 N-24).
+      🔴 조직 이름 조인은 **유일한 부서명만** 매칭한다(DIM_ORG.DEPARTMENT 중복 4명 → SK=0).
+      (종전 문안: ~~현재 0행 · 입고 대기 E-6 · 아래 테스트는 공허하게 통과~~ — 이제 실데이터로 검증된다.)
       🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒
       입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**.
       ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7).

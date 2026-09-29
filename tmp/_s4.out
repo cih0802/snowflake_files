@@ -1,0 +1,4 @@
+CSV: /workspace/30_output_share/08_SILVER→GOLD_보존율.csv
+MD : /workspace/30_output_share/08_SILVER→GOLD_보존율.md
+보존율 308/459 = 67.1% · 변동 20건
+{'REFERENCED': 308, 'DROPPED': 151, 'SILVER_ONLY_CHAIN': 289, 'NO_CONSUMER': 42}

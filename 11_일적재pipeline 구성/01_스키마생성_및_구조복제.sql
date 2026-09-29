@@ -9,7 +9,7 @@
 -- 멱등: CREATE SCHEMA IF NOT EXISTS / CREATE TABLE IF NOT EXISTS — 반복 실행 안전.
 
 USE ROLE GN_DW_ADMIN;
-
+USE WAREHOUSE GN_DW_DEV_WH;
 /* =====================================================================
    1) 스키마 생성 (07_ENVIRONMENT_RBAC_setup.sql B.5 에 이미 동일 문장이 반영돼 있다면 no-op)
    ===================================================================== */

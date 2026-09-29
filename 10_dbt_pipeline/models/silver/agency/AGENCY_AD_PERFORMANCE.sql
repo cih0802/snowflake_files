@@ -100,7 +100,11 @@ SELECT
     'BRONZE_AGENCY.DGT_AD_CMPGN_DTLS'       AS DW_SOURCE_TABLE,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ      AS DW_LOAD_TS,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ      AS DW_UPDATE_TS,
-    '{{ invocation_id }}'                   AS DW_BATCH_ID
+    '{{ invocation_id }}'                   AS DW_BATCH_ID,
+    -- 🆕 [2026-09-29 O188] 신규지표 #9 직접모금비 — REBRDC 비용 분해(DGT·VIDEO 는 원천 개념 부재 ⇒ NULL)
+    CAST(NULL AS FLOAT)                     AS CONTENTS_PUR_COST,
+    CAST(NULL AS FLOAT)                     AS CALL_CTR_OPER_COST,
+    CAST(NULL AS FLOAT)                     AS TOT_COST
 FROM dgt
 
 UNION ALL
@@ -131,7 +135,10 @@ SELECT
     'BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS',
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
-    '{{ invocation_id }}'
+    '{{ invocation_id }}',
+    CONTENTS_PUR_COST,                                      -- O188: 콘텐츠구입비
+    CALL_CTR_OPER_COST,                                     -- O188: 콜센터운영비
+    TOT_COST                                                -- O188: 편성비+콘텐츠구입비+콜센터운영비(staging 실측 2,104/2,104 일치)
 FROM {{ ref('AGENCY_AD_ROW_REBRDC') }}
 
 UNION ALL
@@ -162,5 +169,8 @@ SELECT
     'BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS',
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
-    '{{ invocation_id }}'
+    '{{ invocation_id }}',
+    CAST(NULL AS FLOAT),                                    -- CONTENTS_PUR_COST: VIDEO 원천 부재
+    CAST(NULL AS FLOAT),                                    -- CALL_CTR_OPER_COST: VIDEO 원천 부재
+    CAST(NULL AS FLOAT)                                     -- TOT_COST: VIDEO 원천 부재
 FROM video

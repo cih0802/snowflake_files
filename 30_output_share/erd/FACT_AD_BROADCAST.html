@@ -7,7 +7,7 @@
   <title>FACT_AD_BROADCAST - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-14 02:29",
+    "generated": "2026-09-28 09:02",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_BROADCAST",
     "table": "FACT_AD_BROADCAST",
     "domain": "AGENCY / 마케팅·광고",
@@ -605,7 +605,7 @@ erDiagram
           <td><code>RT_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>RT(재방송)유형 ← REBRDC.RE_BRDC_TY_NM [REBRDC 전용]. 코어에서 이관</td>
+          <td>RT(재방송)유형 ← REBRDC.DIV_NM(재송출/방송 · O182 재편 전 RE_BRDC_TY_NM) [REBRDC 전용]. 코어에서 이관</td>
         </tr>
         <tr>
           <td><code>AD_START_TIME</code></td>
@@ -695,13 +695,13 @@ erDiagram
           <td><code>DVLP_MEMBER_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_MEMBERS 로 혼입(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다(해당 행·왜곡 규모는 문서10 §26). 원천값 보존 우선</td>
+          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [VIDEO·REBRDC · O185 정정: O182 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_MEMBERS 로 혼입(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다(해당 행·왜곡 규모는 문서10 §26). 원천값 보존 우선</td>
         </tr>
         <tr>
           <td><code>DVLP_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발건수 ← REBRDC.DVLP_CNT [REBRDC 전용]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님)</td>
+          <td>개발건수 ← REBRDC.DVLP_CNT [VIDEO·REBRDC · O185 정정: O182 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님)</td>
         </tr>
         <tr>
           <td><code>AD_VIEW_RT_SRC</code></td>
@@ -710,10 +710,10 @@ erDiagram
           <td>[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가</td>
         </tr>
         <tr>
-          <td><code>CPC_SRC</code></td>
+          <td><code>CPC_CALL_SRC</code></td>
           <td><code>NUMBER(18,6)</code></td>
           <td></td>
-          <td>[비가산 N] 대행사 산정 CPC ← VIDEO.CPC(TEXT) [VIDEO 전용]. DW 재계산=AD_COST/CLICKS (DEC-9 대조용)</td>
+          <td>[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용]. 🔴 클릭 분모가 아니다 — 디지털 CPC_CLICK_SRC 와 합산 금지 (O174 개명)</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -758,7 +758,7 @@ erDiagram
 --    `CAST(NULL AS ..)` 하드코딩으로 자리만 있던 컬럼이다(값미주입 결함군). 본 위성에서 **실배선**된다.
 -- ⚠️ 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
 --    (예: SPOT_TYPE·DURATION_SEC 는 VIDEO 전용 / RT_TYPE·BRDC_DIV 는 REBRDC 전용).
--- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 GA_CONV_MEMBERS·GA_CONV_CNT
+-- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
 --    자리에 위치매핑돼 'GA 전환'으로 혼입돼 있던 값을 고유 이름으로 분리했다(문서10 §8-I(8)).
 -- ⚠️ `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
 {{ config(
@@ -787,7 +787,7 @@ select
     DVLP_MEMBER_CNT         as DVLP_MEMBER_CNT,         -- O16: 개발회원수 (REBRDC 전용)
     DVLP_CNT                as DVLP_CNT,                -- O16: 개발건수 (REBRDC 전용)
     AD_VIEW_RT_SRC          as AD_VIEW_RT_SRC,          -- N(비가산) 대행사 산정, 재계산 불가
-    CPC_SRC                 as CPC_SRC,                 -- N(비가산) 대행사 산정, DW=AD_COST/CLICKS
+    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — 🔴 클릭 분모가 아니다(O174 개명)
     {{ gold_meta('AGENCY') }}
 from {{ ref('AGENCY_AD_BROADCAST') }}
 </code></pre>
