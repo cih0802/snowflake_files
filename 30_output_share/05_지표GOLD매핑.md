@@ -4,13 +4,13 @@ doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장�
 project: GN_DW (굿네이버스)
 grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md · 30_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · field_mapping_override.py(교정 등록부) · 04·05 보고서필드 인벤토리
 generator: scripts/gen_metric_gold_mapping.py
-measured: 2026-09-28
+measured: 2026-09-29
 generated: auto (do-not-edit)
 END-METADATA -->
 
 # 지표 → GOLD 매핑 장표 (현업용)
 
-> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-09-28** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
+> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-09-29** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
 > **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에
 > 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이
 > 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.
@@ -24,7 +24,7 @@ END-METADATA -->
 ## 0. 요약
 
 - 총 **215개** 지표 (공통 162 + 신규 53).
-- 상태: ✅ OK **110** · ◐ PARTIAL **87** · ⛔ WAIT **18**
+- 상태: ✅ OK **110** · ◐ PARTIAL **89** · ⛔ WAIT **16**
 - 판정 근거: **실측 85** / 추정 130 (실측 = GOLD 물리 컬럼 census 직접 조회)
 
 > 🔴 **원천 계통 추정으로 상태를 매기면 「사용가능」이 거짓이 되는 방향으로만 틀립니다** — 컬럼이 전건 `0` 인
@@ -35,7 +35,7 @@ END-METADATA -->
 
 ### 0-2. 🔴 실측 `WAIT` — 「설계는 됐으나 값이 없는」 지표
 
-아래 **14개** 지표는 배속·계보가 모두 확정돼 있으나 대응 GOLD 물리 컬럼이 **전건 0 또는 NULL** 이다.
+아래 **12개** 지표는 배속·계보가 모두 확정돼 있으나 대응 GOLD 물리 컬럼이 **전건 0 또는 NULL** 이다.
 조회하면 에러 없이 `0` 이 반환되므로 **그 `0` 을 실적으로 읽으면 조용히 틀린다**(P15).
 
 | 지표# | 지표명 | GOLD 매핑 | 실측 근거 |
@@ -44,10 +44,8 @@ END-METADATA -->
 | `공88` | 서신참여(명) | `FSE.LETTER_PART_MEMBERS` | `FACT_MESSAGE_DISPATCH.LETTER_PART_MEMBERS` 전건 0 — 설계O·값 미주입 |
 | `공90` | 선물금참여(명) | `FSE.GIFT_PART_MEMBERS` | `FACT_MESSAGE_DISPATCH.GIFT_PART_MEMBERS` 전건 0 — 설계O·값 미주입 |
 | `공91` | 선물금참여(원) | `FSE.GIFT_PART_AMT` | `FACT_MESSAGE_DISPATCH.GIFT_PART_AMT` 전건 0 — 설계O·값 미주입 |
-| `공97` | 세션수(명) | `FBQ.SESSION_CNT` | `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공98` | 평균세션시간 | `FGA 물리적재(비가산) — ` | `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공107` | 스크롤깊이 | `FBQ.SCROLL_DEPTH` | `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공108` | 이탈율 | `FGA 물리적재(비가산) — ` | `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
+| `공98` | 평균세션시간 | `FGA 물리적재(비가산) — ` | `FACT_BIGQUERY_BEHAVIOR.AVG_SESSION_DURATION` 전건 0 — 설계O·값 미주입 |
+| `공108` | 이탈율 | `FGA 물리적재(비가산) — ` | `FACT_BIGQUERY_BEHAVIOR.BOUNCE_RATE` 전건 0 — 설계O·값 미주입 |
 | `신10` | 매체별 개발단가(원) | `SV metric — 분자: FUNDRAISING_COST / 분모: DEV_CNT[신규]` | `FACT_BUDGET.FUNDRAISING_COST` 전건 0 — 설계O·값 미주입 |
 | `신27` | 캠페인별 미납율(%) | `SV metric — 분자: CAMPAIGN_UNPAID_CNT ×10000 / 분모: MONTH_END_ACTIVE_CNT ×10000` | `FACT_MEMBER_MONTHLY.CAMPAIGN_UNPAID_CNT` 전건 0 — 설계O·값 미주입 |
 | `신28` | 연도별 캠페인 미납율(%) | `SV metric — 분자: CAMPAIGN_UNPAID_CNT ×10000 / 분모: MONTH_END_ACTIVE_CNT ×10000` | `FACT_MEMBER_MONTHLY.CAMPAIGN_UNPAID_CNT` 전건 0 — 설계O·값 미주입 |
@@ -173,19 +171,19 @@ END-METADATA -->
 | `공94` | 총사용자(명) | measure | GA4 | 명 | `FBQ` | `FBQ (measure — 컬럼 06_DDL.sql 확인)` | `` | `` |  | PARTIAL | 추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정 |
 | `공95` | 이벤트수(명) | measure | GA4 | 명 | `FBQ` | `FBQ (measure — 컬럼 06_DDL.sql 확인)` | `` | `` |  | PARTIAL | 추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정 |
 | `공96` | 조회수(명) | measure | GA4 | 명 | `FBQ` | `FBQ (measure — 컬럼 06_DDL.sql 확인)` | `` | `` |  | PARTIAL | 추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정 |
-| `공97` | 세션수(명) | measure | GA4 | 명 | `FBQ` | `FBQ.SESSION_CNT` | `BIGQUERY_EVENT.BIGQUERY_SESSION_ID` | `BIGQUERY_REFINED_DATA` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공98` | 평균세션시간 | derived | GA4 | 기간 | `FBQ` | `FGA 물리적재(비가산) — ` | `` | `` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공99` | event_category | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | member_id가 (not set)이 아닌 데이터 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 1행 실재 — 대응 물리 컬럼 미특정 |
-| `공100` | event_label | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | 후원b1, 후원b2, 1단_대문, 퀵버튼 등 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 1행 실재 — 대응 물리 컬럼 미특정 |
-| `공101` | event_action | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | member_id가 (not set)이 아닌 데이터 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 1행 실재 — 대응 물리 컬럼 미특정 |
+| `공97` | 세션수(명) | measure | GA4 | 명 | `FBQ` | `FBQ.SESSION_CNT` | `BIGQUERY_EVENT.BIGQUERY_SESSION_ID` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 실측: `FACT_BIGQUERY_BEHAVIOR.SESSION_CNT` 비영 1,663,437/1,663,437 (100.0%) · ⚠️ 채움률은 **적재된 샤드 내부** 기준이다 — GA4 전기간 미입고(G-5) |
+| `공98` | 평균세션시간 | derived | GA4 | 기간 | `FBQ` | `FGA 물리적재(비가산) — ` | `` | `` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR.AVG_SESSION_DURATION` 전건 0 — 설계O·값 미주입 |
+| `공99` | event_category | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | member_id가 (not set)이 아닌 데이터 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 47,859행 실재 — 대응 물리 컬럼 미특정 |
+| `공100` | event_label | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | 후원b1, 후원b2, 1단_대문, 퀵버튼 등 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 47,859행 실재 — 대응 물리 컬럼 미특정 |
+| `공101` | event_action | dimension | GA4 | 코드 | `DIM_BIGQUERY_EVENT` | `DIM_BIGQUERY_EVENT` | `BIGQUERY_EVENT_DIM.EVENT_CATEGORY` | `BIGQUERY_REFINED_DATA` | member_id가 (not set)이 아닌 데이터 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_EVENT` 47,859행 실재 — 대응 물리 컬럼 미특정 |
 | `공102` | 세션캠페인 | dimension | GA4 | 코드 | `DIM_CAMPAIGN` | `DIM_CAMPAIGN` | `CRM_CAMPAIGN.CMPGN_NM` | `TC_CMMN_DTL_CD;TC_MKTNG_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG` | 2024 기념일 캠페인 / 2024 ACL 등 | PARTIAL | 추정: 배속 차원 `DIM_CAMPAIGN` 36,769행 실재 — 대응 물리 컬럼 미특정 |
-| `공103` | 세션 수동 광고 콘텐츠 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` | 기부금영수증 인쇄 / 로그인하기 / 전체메뉴보기 등 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 1행 실재 — 대응 물리 컬럼 미특정 |
-| `공104` | 세션 수동 검색어 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 1행 실재 — 대응 물리 컬럼 미특정 |
+| `공103` | 세션 수동 광고 콘텐츠 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` | 기부금영수증 인쇄 / 로그인하기 / 전체메뉴보기 등 | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 480행 실재 — 대응 물리 컬럼 미특정 |
+| `공104` | 세션 수동 검색어 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 480행 실재 — 대응 물리 컬럼 미특정 |
 | `공105` | 페이지경로+쿼리문자열 | dimension | GA4 | 코드 | `FBQ(attr)` | `FBQ(attr)` | `` | `` |  | PARTIAL | 추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정 |
 | `공106` | 페이지위치 | dimension | GA4 | 코드 | `FBQ(attr)` | `FBQ(attr)` | `` | `` | 예) https://m.goodneighbors.kr/campaign/turn25b | PARTIAL | 추정: GA4 원천 계통(1일 샤드·identity 4%대) — 물리 컬럼 미특정 |
-| `공107` | 스크롤깊이 | measure | GA4 | 횟수 | `FBQ` | `FBQ.SCROLL_DEPTH` | `BIGQUERY_EVENT.PERCENT_SCROLLED` | `BIGQUERY_REFINED_DATA` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공108` | 이탈율 | derived | GA4 | % | `FBQ` | `FGA 물리적재(비가산) — ` | `` | `` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR` **0행** — 테이블 미적재 |
-| `공109` | 세션 소스/매체 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 1행 실재 — 대응 물리 컬럼 미특정 |
+| `공107` | 스크롤깊이 | measure | GA4 | 횟수 | `FBQ` | `FBQ.SCROLL_DEPTH` | `BIGQUERY_EVENT.PERCENT_SCROLLED` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 실측: `FACT_BIGQUERY_BEHAVIOR.SCROLL_DEPTH` 비영 330,438/1,663,437 (19.9%) · ⚠️ 채움률은 **적재된 샤드 내부** 기준이다 — GA4 전기간 미입고(G-5) |
+| `공108` | 이탈율 | derived | GA4 | % | `FBQ` | `FGA 물리적재(비가산) — ` | `` | `` |  | WAIT | 실측: `FACT_BIGQUERY_BEHAVIOR.BOUNCE_RATE` 전건 0 — 설계O·값 미주입 |
+| `공109` | 세션 소스/매체 | dimension | GA4 | 코드 | `DIM_BIGQUERY_SOURCE` | `DIM_BIGQUERY_SOURCE` | `BIGQUERY_TRAFFIC_SOURCE.UTM_SOURCE` | `BIGQUERY_REFINED_DATA` |  | PARTIAL | 추정: 배속 차원 `DIM_BIGQUERY_SOURCE` 480행 실재 — 대응 물리 컬럼 미특정 |
 | `공110` | 회원번호 | dimension | CRM | 코드 | `DIM_MEMBER_IDENTITY` | `DIM_MEMBER_IDENTITY` | `CRM_MEMBER.MEMBER_DK` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_ONCE_MBER_INFO` |  | OK | 추정: 배속 차원 `DIM_MEMBER_IDENTITY` 1,785,300행 실재 — 대응 물리 컬럼 미특정 |
 | `공111` | memnum | dimension | 복합 | 코드 | `DIM_MEMBER_IDENTITY` | `DIM_MEMBER_IDENTITY` | `CRM_MEMBER.MEMBER_DK` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_ONCE_MBER_INFO` |  | OK | 추정: 배속 차원 `DIM_MEMBER_IDENTITY` 1,785,300행 실재 — 대응 물리 컬럼 미특정 |
 | `공112` | member id | dimension | GA4 | 코드 | `DIM_MEMBER_IDENTITY` | `DIM_MEMBER_IDENTITY` | `CRM_MEMBER.MEMBER_DK` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_ONCE_MBER_INFO` |  | PARTIAL | 추정: 배속 차원 `DIM_MEMBER_IDENTITY` 1,785,300행 실재 — 대응 물리 컬럼 미특정 |
@@ -228,10 +226,10 @@ END-METADATA -->
 | `공149` | 개발(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.DEV_CNT` | `CRM_MEMBER_DEV.DVLP_DIV_CD` | `TC_CMMN_DTL_CD;TC_MKTNG_DTL_CD;TM_CM_BRND_MNG;TM_CM_CMPGN_MNG;TM_MM_FDRM_MBER_DVLP_AMT` |  | PARTIAL | 실측: `FACT_MEMBER_EVENT.DEV_CNT` 비영 2,325,458/4,716,088 (49.3%) · 채움률 95% 미만 |
 | `공150` | 증액(명) | measure | CRM | 명 | `FME→FMM` | `FME→FMM.INCREASE_MEMBERS` | `CRM_MEMBER.MEMBER_DK` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_ONCE_MBER_INFO` |  | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.INCREASE_MEMBERS` 비영 1,840,830/41,508,824 (4.4%) · 채움률 95% 미만 |
 | `공151` | 증액(건) | measure | CRM | 건 | `FME→FMM` | `FME→FMM.INCREASE_CNT` | `CRM_MEMBER.MEMBER_DK` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_ONCE_MBER_INFO` |  | PARTIAL | 실측: `FACT_MEMBER_MONTHLY.INCREASE_CNT` 비영 1,840,830/41,508,824 (4.4%) · 채움률 95% 미만 |
-| `공152` | 연사업목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
-| `공153` | 추경목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
-| `공154` | 연사업누계목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
-| `공155` | 추경누계목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
+| `공152` | 연사업목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `TM_CM_MBER_DVLP_GOAL_DIV` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
+| `공153` | 추경목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `TM_CM_MBER_DVLP_GOAL_DIV` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
+| `공154` | 연사업누계목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `TM_CM_MBER_DVLP_GOAL_DIV` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
+| `공155` | 추경누계목표(건) | measure | CRM | 건 | `FTG-B` | `FTG-B (measure — 컬럼 06_DDL.sql 확인)` | `CRM_BIZ_TARGET.MONTH_KEY` | `TM_CM_MBER_DVLP_GOAL_DIV` |  | WAIT | 추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행 |
 | `공156` | 활동(명) | measure | CRM | 명 | `FMM` | `FMM.ACTIVE_MEMBERS` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` |  | OK | 실측: `FACT_MEMBER_MONTHLY.ACTIVE_MEMBERS` 비영 39,854,330/41,508,824 (96.0%) |
 | `공157` | 활동(건) | measure | CRM | 건 | `FMM` | `FMM.ACTIVE_CNT` | `CRM_MEMBER;CRM_MEMBER_AMT_CHANGE;CRM_MEMBER_SPONSOR_SPAN;CRM_PAYMENT_BILLING` | `TC_CMMN_DTL_CD;TM_MM_FDRM_MBER_INFO;TM_MM_FDRM_MBER_IRSD;TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS;TM_MM_ONCE_MBER_INFO;TM_PM_DNTN_DTLS;TM_PM_MBRFEE_ACMSLT` |  | OK | 실측: `FACT_MEMBER_MONTHLY.ACTIVE_CNT` 비영 39,854,321/41,508,824 (96.0%) |
 | `공158` | 활동누계(명) | measure | CRM | 명 | `FMM` | `FMM (measure — 컬럼 06_DDL.sql 확인)` | `CRM_MEMBER_SPONSOR_SPAN.DSCNTC_MONTH_KEY` | `TM_MM_FDRM_MBER_SPNSR;TM_MM_FDRM_MBER_SPNSR_BSNS` |  | OK | 추정: 배속·원천 계통에 알려진 제약 없음 — 대응 물리 컬럼 미특정 |

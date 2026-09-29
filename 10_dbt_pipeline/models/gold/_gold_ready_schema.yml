@@ -96,6 +96,38 @@ models:
     columns:
       - name: ORG_SK
         tests: [not_null, unique]
+      - name: IS_ACTIVE_ORG
+        description: "O188-E 활성 조직 트리 소속 — 자기와 모든 상위가 USE_YN='Y' 이고 LAST_UPDT_DT 가 NULL·9999-12-31 아님(조직표 gni_실적부서.csv 규칙)"
+        tests: [not_null]
+      - name: ORG_PATH
+        description: "O188-E 조직표 부서 경로(UPPER_DEPT_ID 재귀 · 루트 법인 제외)"
+      - name: ORG_LEVEL
+        description: "O188-E 조직 트리 깊이(루트=0)"
+  # 🆕 [2026-09-29 O188-F 2차-A] 종전 미연결 BRONZE_CRM 원천의 신설 GOLD 차원 — 키 유일성은 BRONZE 실측으로 확인했다.
+  - name: DIM_BIZ_PLACE
+    columns:
+      - name: BIZ_PLACE_SK
+        tests: [not_null, unique]
+  - name: DIM_CHILD
+    columns:
+      - name: CHILD_SK
+        tests: [not_null, unique]
+  - name: DIM_MSG_TEMPLATE
+    columns:
+      - name: TEMPLATE_SK
+        tests: [not_null, unique]
+  - name: DIM_MSG_TEMPLATE_BUTTON
+    columns:
+      - name: TEMPLATE_BUTTON_SK
+        tests: [not_null, unique]
+  - name: DIM_CODE_GROUP
+    columns:
+      - name: CD_ID
+        tests: [not_null, unique]
+  - name: DIM_PAYMENT_ACCOUNT
+    columns:
+      - name: PAYMENT_ACCOUNT_SK
+        tests: [not_null, unique]
   - name: DIM_CAMPAIGN
     columns:
       - name: CAMPAIGN_SK

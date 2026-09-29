@@ -45,14 +45,20 @@
 --   - 테이블 수         : 17 (예측 FORECAST 계열 8 · 분류 CLASSIFICATION 계열 5 · 스코어 2 · 요인분석 2)
 --   - VARIANT 보유      : 5 (PREDICTION 4 + PREDICT 1 — 전부 **마지막 컬럼**)
 --   - 작성일자          : 2026-08-14 (초판)
---   - 갱신일자          : 2026-09-28 (원천 20번 갱신 · ONCE_CONVERSION 추가)
+--   - 갱신일자          : 2026-09-29 (원천 20번 재갱신 · ONCE_CONVERSION COMMENT·타입 원천 정렬)
 --
 -- 변경 이력 / CHANGES
+--   2026-09-29  원천 정의 문서 20_ML_ddl.sql 재갱신분 반영 — 기계 대조(`scripts/handoff_ddl_gate.py` 6축).
+--     ~ [TABLE] GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION — 컬럼 COMMENT 4 · 테이블 COMMENT 1 을 원천 문안으로 교체
+--        · 🔴 타입 3 도 원천을 따랐다(ONCE_MBER_NO·CONVERSION_YN·DATA_TYPE → VARCHAR) — 종전 판은 원천과 달랐다.
+--          ⚠️ 라이브(xf98254)는 아직 VARCHAR(10)·NUMBER(1,0)·VARCHAR(5) 다 ⇒ 재생성 시 하류(SERVING ML 뷰)의 CAST 확인 필요.
+--     · 원천에 COMMENT 가 새로 붙은 **이관 범위 밖** 테이블(ML_TRAIN_DATA 등 35종)은 본 파일 대상이 아니다.
+--     · ONCE_CONVERSION 외 테이블은 6축 차이 0건(원천 COMMENT 와 본 파일 문안 이미 일치).
 --   2026-09-28  원천 정의 문서 20_ML_ddl.sql 갱신분 반영 — 예측결과 **16 → 17종**.
 --     + [TABLE] GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (5컬럼 · 나마본 7 · 일시후원 → 정기후원 전환 예측)
 --        · 🔴 VARIANT 컬럼명이 **PREDICT** 다(기존 4종은 PREDICTION). 위치 = 마지막($5).
 --          ⇒ 07번 A.5-B.2 의 VARIANT 대상 목록·SERVING 뷰 평탄화 식에 이 테이블을 **추가**해야 한다.
---        · 원천에 컬럼·테이블 COMMENT 가 없어 보강했다(현업 확인 대상). 구조(순서·타입)는 무변경.
+--        · ~~원천에 컬럼·테이블 COMMENT 가 없어 보강했다(현업 확인 대상). 구조(순서·타입)는 무변경.~~ ➔ 2026-09-29 원천 문안으로 교체
 --        · 스테이지 ML/ML_RST_DATA_ONCE_CONVERSION/ = 8 파일, CSV 헤더가 본 DDL 과 일치(2026-09-28 실측).
 --     · 원천 인벤토리 = BASE TABLE 52 (ML_RST_DATA 17 + ML_TRAIN_DATA 21 + 기타 14) · VIEW 5 · PROCEDURE 14.
 --     · 기존 16종은 구조 변경 0건(게이트 6축). 총 이관 대상 78 → **82**(브론즈 61 → 64 · 04번 참조).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
@@ -371,14 +377,15 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION (
 
 -- 17/17 · 나마본 7 · 일시후원 → 정기후원 전환 예측 (5컬럼 · VARIANT $5)
 --   🔴 2026-09-28 신규. VARIANT 컬럼명이 **PREDICT** 다(다른 4종은 PREDICTION) — 원천 무변경.
---   컬럼·테이블 COMMENT 는 원천에 없어 보강했다(현업 확인 대상).
+--   🆕 2026-09-29 원천 20번 갱신 — 컬럼·테이블 COMMENT 가 원천에 생겼다 ⇒ 종전 보강 문안을 **원천 문안으로 교체**.
+--      🔴 타입도 원천을 따른다: ONCE_MBER_NO VARCHAR(10)→VARCHAR · CONVERSION_YN NUMBER(1,0)→VARCHAR · DATA_TYPE VARCHAR(5)→VARCHAR.
 create or replace TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
-  ONCE_MBER_NO VARCHAR(10) COMMENT '일시후원회원번호',
+  ONCE_MBER_NO VARCHAR(16777216) COMMENT '회원번호',
   STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
-  CONVERSION_YN NUMBER(1,0) COMMENT '정기후원 전환여부 (1=전환, 0=미전환)',
-  DATA_TYPE VARCHAR(5) COMMENT '데이터 구분 (예: SCORE)',
-  PREDICT VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
-)COMMENT='일시후원회원의 정기후원 전환 가능성 예측 결과'
+  CONVERSION_YN VARCHAR(16777216) COMMENT '회원 전환여부',
+  DATA_TYPE VARCHAR(16777216) COMMENT '데이터유형',
+  PREDICT VARIANT COMMENT '예측결과'
+)COMMENT='일시회원 향후 6개월 내 전환 가능성 예측 결과'
 ;
 
 

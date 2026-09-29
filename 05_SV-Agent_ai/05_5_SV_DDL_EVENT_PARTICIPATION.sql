@@ -53,7 +53,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep_to_member AS fep (MEMBER_DK) REFERENCES member
   )
   DIMENSIONS (
-    date.PART_DATE       AS date.FULL_DATE       WITH SYNONYMS ('참여일', '행사일', '일자') COMMENT = '참여일',
+    date.PART_DATE       AS date.FULL_DATE       WITH SYNONYMS ('참여일', '행사일', '일자', 'FULL_DATE', '날짜') COMMENT = '참여일',
     date.CAL_YEAR        AS date.YEAR            WITH SYNONYMS ('연도', '년')  COMMENT = '연도',
     date.CAL_MONTH       AS date.MONTH           WITH SYNONYMS ('월')         COMMENT = '월(1~12)',
     event.EVENT_NAME     AS event.EVENT_NAME     WITH SYNONYMS ('행사명', '이벤트명') COMMENT = '행사명',

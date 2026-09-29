@@ -30,6 +30,7 @@ SCHEMA = 'GN_DW.SERVING'
 NOT_RATIO = {
     'DEV_UNIT_PRICE':        '개발단가(원/건) — 금액÷건수이므로 percent 가 아니다',
     'REBRDC_DEV_UNIT_PRICE': '재방송 개발단가(원/건)',
+    'GA_DEV_UNIT_PRICE':     '공8 GA 개발단가(원/건) — O188-D 신설',
 }
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')

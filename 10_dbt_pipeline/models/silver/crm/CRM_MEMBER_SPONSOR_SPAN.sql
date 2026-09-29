@@ -42,7 +42,12 @@ SELECT
   'BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS+TM_MM_FDRM_MBER_SPNSR' AS DW_SOURCE_TABLE,
   CURRENT_TIMESTAMP()                             AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()                             AS DW_UPDATE_TS,
-  NULL                                            AS DW_BATCH_ID
+  NULL                                            AS DW_BATCH_ID,
+  -- 🆕 [2026-09-29 O188-F] 후원 단위 가입경로(MM014 raw) — 감사컬럼 뒤(DDL ordinal 규약)
+  s.JOIN_PATH_CD                                  AS JOIN_PATH_CD,
+  -- 🆕 [2026-09-29 O189-B · 2차-B 1단] 후원 단위 원천 캠페인·실적부서(DDL 선행 적용 완료 · 감사컬럼 뒤)
+  s.CMPGN_CD                                      AS CMPGN_CD,
+  s.ACMSLT_DEPT_CD                                AS ACMSLT_DEPT_CD
 FROM {{ ref('CRM_MEMBER_SPONSOR_BIZ') }} bz
 -- 🟢 fan-out 0: 후원 마스터는 SPNSR_NO 유일(실측 확인 · 근거는 문서30 §29).
 --    dedup 을 걸지 않는 이유 = 유일성이 성립하므로 QUALIFY 가 무의미하고, 걸면 유일성 붕괴를
@@ -51,7 +56,10 @@ JOIN (
     SELECT
       NULLIF(TRIM(SPNSR_NO), '') AS SPNSR_NO,
       NULLIF(TRIM(MBER_NO), '')  AS MBER_NO,
-      FRST_REGIST_DT
+      FRST_REGIST_DT,
+      NULLIF(TRIM(JOIN_PATH_CD), '') AS JOIN_PATH_CD,  -- 🆕 O188-F 후원(SPNSR_NO) 단위 가입경로 · MM014
+      NULLIF(TRIM(CMPGN_CD), '')       AS CMPGN_CD,        -- 🆕 O189-B 채움 100%(xf98254)
+      NULLIF(TRIM(ACMSLT_DEPT_CD), '') AS ACMSLT_DEPT_CD   -- 🆕 O189-B 채움 99.9999%
     FROM {{ source('bronze_crm', 'TM_MM_FDRM_MBER_SPNSR') }}
     WHERE SPNSR_NO IS NOT NULL AND MBER_NO IS NOT NULL
       -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql

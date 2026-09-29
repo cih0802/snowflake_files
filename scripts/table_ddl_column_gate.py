@@ -98,8 +98,13 @@ def resolve_ref(cn, name):
 
 
 def resolve_source(source_name, table_name):
+    # 🔴 [2026-09-29 O189] source 이름 ≠ 스키마 이름인 선언(`bronze_crm_ref` → `BRONZE_CRM`)을
+    #   종전 이 함수가 이름 대문자화로 처리해 **존재하지 않는 스키마**를 조회했고 게이트 전체가 죽었다
+    #   ⇒ O188 신규 모델·컬럼 누락을 못 잡았다. 🟢 매핑 정본 = `_sources.yml` 의 `schema:`.
     if source_name.lower() == 'silver_external':
         return f'GN_DW.SILVER.{table_name}'
+    if source_name.lower() == 'bronze_crm_ref':
+        return f'GN_DW.BRONZE_CRM.{table_name}'
     return f'GN_DW.{source_name.upper()}.{table_name}'
 
 
@@ -172,7 +177,13 @@ def render_model(cn, path, layer='GOLD'):
 def model_columns(cn, path, layer='GOLD'):
     sql = render_model(cn, path, layer)
     cur = cn.cursor()
-    cur.execute(f'select * from (\n{sql}\n) limit 0')
+    # 🔴 [2026-09-29 O189] 한 모델의 조회 실패(상류 라이브에 새 컬럼 미반영 등)가 **게이트 전체를 죽여**
+    #   나머지 전수가 판정되지 않았다 ⇒ 실패는 None 으로 돌려 호출부가 blocking 으로 센다(감추지 않는다).
+    try:
+        cur.execute(f'select * from (\n{sql}\n) limit 0')
+    except Exception as e:  # noqa: BLE001
+        print(f'     🔴 조회 실패 {Path(path).stem}: {str(e).splitlines()[-1][:160]}')
+        return None
     return [d[0] for d in cur.description]
 
 
@@ -245,6 +256,14 @@ def main():
     print('DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (적재 전 판정 · P120 · GOLD 37 + SILVER 42 전수)')
     print('  🔴 blocking = **집합** 불일치(누락·초과) · 🟠 advisory = **순서** 드리프트(문서 축)\n')
 
+    # 🔴 [2026-09-29 O189] 역방향 축 — 종전에는 분모를 **DDL 에서만** 뽑아서 DDL 에 없는 GOLD 모델
+    #   (O188-F 신규 9종)이 **원리적으로 안 보였다**. dbt 롤은 CREATE TABLE 권한이 없으므로 이런 모델은
+    #   build 에서 반드시 죽는다 ⇒ 뷰(wide)를 뺀 GOLD 모델 중 DDL 블록이 없는 것은 blocking 이다.
+    orphan = sorted(n for n, p in gold_model_files.items() if n not in gold_tables and '/wide/' not in str(p))
+    for n in orphan:
+        print(f'  {n:<28} 🔴 DDL block not found (모델만 있다 — dbt 롤은 CTAS 불가)')
+    fails += len(orphan)
+
     print(f'=== [GOLD 계층: {len(gold_tables)} 테이블] ===')
     for tbl in gold_tables:
         if tbl not in gold_model_files:
@@ -254,6 +273,9 @@ def main():
         p = gold_model_files[tbl]
         d = gold_ddl_columns(tbl)
         m = model_columns(cn, p, 'GOLD')
+        if m is None:
+            fails += 1
+            continue
         missing = [c for c in d if c not in m]
         extra = [c for c in m if c not in d]
         order_ok = (d == m)
@@ -279,6 +301,9 @@ def main():
             fails += 1
             continue
         m = model_columns(cn, p, 'SILVER')
+        if m is None:
+            fails += 1
+            continue
         missing = [c for c in d if c not in m]
         extra = [c for c in m if c not in d]
         order_ok = (d == m)

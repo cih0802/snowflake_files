@@ -79,6 +79,23 @@ def main():
               ensure_ascii=False, indent=1)
     n = len(rows); okn = sum(1 for r in rows if r['ok']); sq = sum(1 for r in rows if r['sql'])
     print(f'\n총 {n}문항 · 호출성공 {okn} · SQL생성 {sq} · 실패 {n-okn}')
+    sys.exit(judge(rows))
+
+
+def judge(rows):
+    """🔴 [2026-09-29 O189 · D안 ㉢] 「중간 오류 0」 판정 축.
+    종전에는 호출 성공(ok)만 셌다 — Agent 가 invalid identifier·syntax error 를 내고 **스스로 재시도해
+    최종 답을 낸 문항**도 PASS 였다(O188-E 실측 13문항). 자동 복구는 비용·지연·오답 위험이므로
+    **중간 SQL 오류가 1건이라도 있으면 FAIL** 로 본다. 판정 대상 = digest 의 `errors` 중 SQL 오류 문구."""
+    pat = re.compile(r'invalid identifier|syntax error|SQL compilation error', re.I)
+    bad = [r for r in rows if r['ok'] and any(pat.search(e) for e in r['errors'])]
+    for r in bad:
+        print(f"  🔴 중간 오류 {r['agent']}_{r['n']:02d}: {r['errors'][0][-110:]}")
+    fail = sum(1 for r in rows if not r['ok'])
+    print(f'중간 오류 문항 {len(bad)} · 호출 실패 {fail} ⇒ ' + ('🟢 PASS' if not bad and not fail else '🔴 FAIL'))
+    return 0 if not bad and not fail else 1
 
 if __name__ == '__main__':
+    if '--judge-only' in sys.argv:  # 과금 없이 직전 `_summary.json` 만 재판정
+        sys.exit(judge(json.load(io.open(os.path.join(OUT, '_summary.json'), encoding='utf-8'))))
     main()

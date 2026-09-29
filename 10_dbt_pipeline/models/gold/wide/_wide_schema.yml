@@ -1047,6 +1047,18 @@ models:
         description: "목표 분해유형: 연사업 / 팀 (O188). 🔴 두 유형을 섞어 합산하지 말 것 — 같은 목표의 다른 분해로 보인다(문서20 N-24)."
       - name: CPR_DIV_NM
         description: "법인구분 (사단/사복) (O188)."
+      - name: ORG_PATH
+        description: "O188-E 조직표 부서 경로(DIM_ORG.ORG_PATH · 활성 조직 트리 · 매칭 실패 행은 NULL)."
+      - name: SRC_TEAM_NM
+        description: "O188-E 원천 팀명(TEAM_NM) 그대로 — 조직 차원 매칭 실패(동명·비조직명) 행도 이 값으로 구분된다."
+      - name: SRC_SPONSOR_BIZ_NM
+        description: "O188-E 원천 후원사업 표기 그대로 — 연사업 = 사업명 · 팀 = 4그룹(국내/결연/해외프로젝트/기타)."
+      - name: NEW_OLD_DIV_NM
+        description: "O188-E 신규/기존 구분(연사업 유형만 · 팀 유형은 NULL)."
+      - name: ORG_DIV_NM
+        description: "O188-E 조직구분(본부/지부/대면) — 원천 표기."
+      - name: DTL_DIV_NM
+        description: "O188-E 세부구분(팀 유형) — 원천 표기."
   - name: WIDE_BUDGET
     description: "예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 집행 추정 · FUNDRAISING_COST(**E-1**). 🔴🔴[2026-09-21 O175] **광고비는 이 목록에서 제외했다** — `AD_COST` 는 원천 미입고가 아니라 **폐기 슬롯**이다(의도적 영구 NULL · 종전 「**E-4** 원천부재」는 거짓이었다). 광고비를 물으면 `WIDE_BUDGET` 이 아니라 **`SERVING.SV_AD.TOTAL_AD_COST`**(base `GOLD.WIDE_AD_COMBINED` ← `FACT_AD_PERFORMANCE`)를 봐야 한다. 🔴🔴[2026-08-20 O96] **연간 편성도 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 예산항목이 없어 `BUDGET_ITEM_SK` 귀속 근거가 없다 — **예산과 같은 표에 합산하지 말 것**(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)."
   # [2026-08-07 O50 신설] 종전 이 파일에 유일하게 누락된 모델이었다(models 14 vs 등재 13). O45 신설분 미전파.

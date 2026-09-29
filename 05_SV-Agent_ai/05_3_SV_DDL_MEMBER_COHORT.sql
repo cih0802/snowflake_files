@@ -97,7 +97,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
   )
   DIMENSIONS (
     -- ── 획득 시점(코호트 정의) 축 ──────────────────────────────────────────────
-    acq_date.ACQ_DATE       AS acq_date.FULL_DATE  WITH SYNONYMS ('획득일', '약정일', '모집일') COMMENT = '회원을 획득한 날(최초 신규 약정일). 🔴 이 SV 의 기간 필터는 **획득 시점** 기준이다 — "2024년"으로 물으면 「2024년에 획득한 회원의 이탈률」이 되며 「2024년에 이탈한 회원」이 아니다. 후자는 SV_MEMBER_EVENT 의 중단건을 쓴다',
+    acq_date.ACQ_DATE       AS acq_date.FULL_DATE  WITH SYNONYMS ('획득일', '약정일', '모집일', 'FULL_DATE', '날짜') COMMENT = '회원을 획득한 날(최초 신규 약정일). 🔴 이 SV 의 기간 필터는 **획득 시점** 기준이다 — "2024년"으로 물으면 「2024년에 획득한 회원의 이탈률」이 되며 「2024년에 이탈한 회원」이 아니다. 후자는 SV_MEMBER_EVENT 의 중단건을 쓴다',
     acq_date.ACQ_YEAR       AS acq_date.YEAR       WITH SYNONYMS ('획득연도', '가입연도', '모집연도') COMMENT = '획득 연도(코호트 연도)',
     acq_date.ACQ_MONTH      AS acq_date.MONTH      WITH SYNONYMS ('획득월') COMMENT = '획득 월(1~12)',
     fmc.ACQ_BASIS           AS fmc.ACQ_BASIS       WITH SYNONYMS ('획득근거', '코호트 판정근거') COMMENT = '획득 캠페인을 무엇으로 판정했는지. 실제값 2종: ''NEW''(개발구분 신규=MM015 코드1 사건으로 판정 — 대다수) / ''FALLBACK''(신규 사건이 없어 최초 개발 사건으로 대체 판정). 🔴 캠페인별 중단률을 비교할 때는 ''NEW'' 로 한정할 것을 권한다 — FALLBACK 은 획득 캠페인 신뢰도가 낮고, 극소수는 획득 근거가 ''후원중단''(코드5) 기록이라 「모집 캠페인」이라 부를 수 없다',

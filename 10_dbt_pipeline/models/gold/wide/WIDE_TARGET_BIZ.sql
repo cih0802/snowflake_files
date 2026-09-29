@@ -26,7 +26,14 @@ select
     c.CAMPAIGN_NAME,
     -- 🆕 [2026-09-29 O188] 이중계상 가드 전파 — 🔴 GOAL_TYPE_NM 으로 필터하지 않으면 합계가 약 2배(N-24)
     f.GOAL_TYPE_NM,
-    f.CPR_DIV_NM
+    f.CPR_DIV_NM,
+    -- 🆕 [2026-09-29 O188-E] 조직 경로 + 원천 이름 degen 5축(SV_TARGET_BIZ 노출용 · yml columns 순서 동기)
+    o.ORG_PATH,
+    f.SRC_TEAM_NM,
+    f.SRC_SPONSOR_BIZ_NM,
+    f.NEW_OLD_DIV_NM,
+    f.ORG_DIV_NM,
+    f.DTL_DIV_NM
 from {{ ref('FACT_TARGET_PROJECT') }} f
 left join {{ ref('DIM_ORG') }}         o on f.ORG_SK = o.ORG_SK
 left join {{ ref('DIM_SPONSORSHIP') }} s on f.SPONSORSHIP_SK = s.SPONSORSHIP_SK

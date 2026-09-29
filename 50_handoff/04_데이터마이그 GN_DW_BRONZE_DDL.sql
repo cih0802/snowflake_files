@@ -85,7 +85,7 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-09-28
+--   - 갱신일자    : 2026-09-29
 --   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
 --   - 테이블 수   : 64  (CRM 53, AGENCY 4, ERP 2, GA4 2, GSC 3)
 --   - 시퀀스 수   : 3   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO,
@@ -96,8 +96,12 @@
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-09-29  (원천 정의 문서 11/12 재갱신분 반영 — 기계 대조)
+--     ~ [COLUMN] GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV : + BDGT_PRCD_NM VARCHAR COMMENT '예산절차' (2번째 · YEAR 뒤) · 20 → 21컬럼
+--     ~ [PROC]   GN_DW.BRONZE_AGENCY.SP_LOAD_* 3종 본문 변경(원천 12번) — 🔴 이 파일은 프로시저를 싣지 않는다(아래 「제외」 절)
+--                ⇒ 테이블 영향 없음(AGENCY 테이블 4종 컬럼·순서·COMMENT = 원천 12번과 기계 대조 일치 · SYNC_ERR_INFO 의 COMMENT 는 이 파일의 보강분)
 --   2026-09-28  (원천 정의 문서 11/12 갱신분 반영 — 기계 대조로 확정 · 스테이지 CSV 헤더 실측 일치)
---     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV  (20컬럼, 신규 · 목표구분별 회원개발목표)
+--     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV  (20컬럼, 신규 · 목표구분별 회원개발목표 · 🆕 09-29 21컬럼)
 --        · ⚠️ CRM 중 유일하게 `_LOAD_DT/_BATCH_ID/_STDR_YM` 이 **없다**(원천 구조 그대로). 코멘트는 원천 문안.
 --     + [TABLE]  GN_DW.BRONZE_CRM.TM_CM_SCHDUL_MNG          (12컬럼, 신규 · 일정 관리)
 --     + [TABLE]  GN_DW.BRONZE_CRM.TM_MS_AT_TMPLAT_MNG       (26컬럼, 신규 · 알림톡 템플릿 관리)
@@ -908,9 +912,11 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO (
   _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 -- 2026-09-28 신규 — 원천 11번. 목표구분(팀/조직·신규기존·후원사업·상세)별 월간 회원개발 목표(M01~M12).
---   ⚠️ 원천이 _LOAD_DT/_BATCH_ID/_STDR_YM 을 두지 않는다(CRM 중 유일) — 원천 구조 그대로 20컬럼. 코멘트는 원천 문안 그대로.
+--   ⚠️ 원천이 _LOAD_DT/_BATCH_ID/_STDR_YM 을 두지 않는다(CRM 중 유일) — 원천 구조 그대로 21컬럼. 코멘트는 원천 문안 그대로.
+--   🆕 2026-09-29 원천 11번 갱신 — BDGT_PRCD_NM('예산절차') 2번째(YEAR 뒤) 삽입 · 20 → 21컬럼.
 create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV (
   YEAR VARCHAR(16777216) COMMENT '연도',
+  BDGT_PRCD_NM VARCHAR(16777216) COMMENT '예산절차',
   GOAL_TYPE_NM VARCHAR(16777216) COMMENT '목표구분',
   CPR_DIV_NM VARCHAR(16777216) COMMENT '법인구분',
   NEW_OLD_DIV_NM VARCHAR(16777216) COMMENT '신규기존구분',

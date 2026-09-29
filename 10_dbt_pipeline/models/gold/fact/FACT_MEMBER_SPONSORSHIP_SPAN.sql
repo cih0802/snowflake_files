@@ -85,7 +85,15 @@ select
     cr.BRND_NM                                       as ACQ_BRAND,
     cr.PARENT_CAMPAIGN_NAME                          as ACQ_PARENT_CAMPAIGN_NAME,
     cr.PROMO_METHOD_NAME                             as ACQ_PROMO_METHOD_NAME,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [2026-09-29 O188-F] 후원 단위 가입경로(원천 TM_MM_FDRM_MBER_SPNSR.JOIN_PATH_CD · 코드군 MM014)
+    --   회원 단위 가입경로(DIM_MEMBER.ENROLL_PATH_NAME · MBER_INFO)와 **다른 grain** 이다 — 한 회원의 후원건마다 다를 수 있다.
+    span.JOIN_PATH_CD                                as SPNSR_JOIN_PATH_CD,
+    jp.DTL_CD_NM                                     as SPNSR_JOIN_PATH_NM,
+    -- 🆕 [2026-09-29 O189-B · 2차-B 1단] 후원(SPNSR_NO) 등록 원천 캠페인·실적부서 raw(DDL 선행 적용 완료)
+    --   🔴 대표캠페인(CAMPAIGN_SK = 개발사건 규칙 · campaign_rep)과 **다른 축**이다 — 값이 갈릴 수 있고 합치지 않는다.
+    span.CMPGN_CD                                    as SPNSR_CMPGN_CD,
+    span.ACMSLT_DEPT_CD                              as SPNSR_ACMSLT_DEPT_CD
 from span
 left join campaign_rep cr
        on cr.SPNSR_BSNS_NO = span.SPNSR_BSNS_NO
@@ -95,3 +103,6 @@ left join {{ ref('DIM_SPONSORSHIP') }} dsp
        on dsp.SPONSORSHIP_BK = span.SPNSR_BSNS_ID
 left join {{ ref('DIM_CAMPAIGN') }} dcp
        on dcp.CAMPAIGN_BK = cr.CMPGN_CD
+-- 🆕 O188-F MM014 라벨 — (CD_ID, DTL_CD_ID) 유일이라 fan-out 0
+left join {{ ref('CRM_CODE') }} jp
+       on jp.CD_ID = 'MM014' and jp.DTL_CD_ID = span.JOIN_PATH_CD

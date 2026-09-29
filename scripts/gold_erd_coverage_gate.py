@@ -140,6 +140,30 @@ KNOWN_ORPHANS = {
     ),
     # 🟢 DIM_DATE.MONTH_KEY 는 위 ("*", "MONTH_KEY") 전역 규칙이 이미 덮는다
     #   (실측 = 16,437행 · distinct 541 · 미해소 0) ⇒ 여기 중복 등재하지 않는다.
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # 🆕 [2026-09-29 O189-B] O188-F 신규 GOLD 9종의 원천 거래키 9건 — 차원이 없는 degenerate key.
+    #   🔴 분류 전에 실측했다(xf98254 · (행, NOT NULL, distinct)). SK·DATE_SK·MEMBER_DK 13건은
+    #      06_DDL [O189-B 관계 제약] 에 **물리 PK/FK 로 선언**했으므로 여기 오지 않는다.
+    # ══════════════════════════════════════════════════════════════════════════
+    ("DIM_MSG_TEMPLATE", "TEMPLATE_KEY"): (
+        "DEGEN", "알림톡 템플릿 원천키(자연키). 실측 7,011 · 유일 ⇒ 자기 차원의 업무키 · FK 아님."),
+    ("DIM_MSG_TEMPLATE", "ALTRTV_MSG_TMPLAT_KEY"): (
+        "DEGEN", "대체메시지 템플릿 원천키. 실측 NOT NULL 952/7,011 · distinct 61 · 대상 차원 없음(원천 속성)."),
+    ("DIM_PAYMENT_ACCOUNT", "ACCOUNT_KEY"): (
+        "DEGEN", "기관·결제사 계좌 원천키. 실측 288행 · distinct 256(두 원천 union) · 차원 없음."),
+    ("FACT_PAYMENT_METHOD_CHANGE", "SETLE_KEY"): (
+        "DEGEN", "결제수단 변경 이력의 결제정보 원천키. 실측 1,086,969 · 유일 · 결제정보 차원 없음(SILVER 전용)."),
+    ("FACT_PAYMENT_METHOD_CHANGE", "BF_SETLE_KEY"): (
+        "DEGEN", "변경 전 결제정보 원천키. 실측 NOT NULL 370,067 · distinct 370,064 · 차원 없음."),
+    ("FACT_PAYMENT_METHOD_CHANGE", "APRV_REQUST_KEY"): (
+        "DEGEN", "승인요청 원천키. 실측 NOT NULL 329,941 · distinct 274,061 · 차원 없음."),
+    ("FACT_PAYMENT_METHOD_CHANGE", "APRV_RST_KEY"): (
+        "DEGEN", "승인결과 원천키. 실측 NOT NULL 464,206 · distinct 402,043 · 차원 없음."),
+    ("FACT_RELATION_CHANGE", "RELATNSP_KEY"): (
+        "DEGEN", "결연 변경 사건의 결연 원천키. 실측 197,547 · 유일 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION)."),
+    ("FACT_RELATION_CHANGE", "CHG_RELATNSP_KEY"): (
+        "DEGEN", "변경 후 결연 원천키. 실측 197,547 · 유일 · 차원 없음."),
 }
 
 # 🔴 논리 관계로 ERD 에 추가해야 하는 분류 — gen_gold_erd.py 가 이 규칙을 읽어 관계선을 만든다.

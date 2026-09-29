@@ -46,6 +46,13 @@ SELECT
          THEN TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',1)) * 3600
             + TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',2)) * 60
             + TRY_TO_NUMBER(SPLIT_PART({{ clean_str('AD_SEC') }},':',3))
+         -- 🟢 [2026-09-29 O189 · 사용자 결정 O188-G §4 #5 = J-2] 8자리 숫자 = µs ⇒ ÷ 1,000,000 = 초.
+         --   근거(xf98254 실측) = 8자리 1,008행 값 {60000000, 90000000} → {60, 90}초 · HH:MM:SS 분포(60·90 주류)와 정합.
+         --   🔴 8자리가 아닌 숫자는 여전히 NULL(단위 미확정 · 위 TRY_TO_TIME 경고와 같은 이유).
+         --   🔴 CAST 필수 — 나눗셈은 NUMBER(p,6) 을 만들고 DDL 은 NUMBER(9,0) 이다. 타입이 갈리면 dbt 가
+         --      `ALTER … SET DATA TYPE` 을 스스로 내고 GN_DW_DBT 에는 권한이 없어 실패한다(O121 · O189).
+         WHEN REGEXP_LIKE({{ clean_str('AD_SEC') }}, '^[0-9]{8}$')
+         THEN CAST(TRY_TO_NUMBER({{ clean_str('AD_SEC') }}) / 1000000 AS NUMBER(9,0))
     END                                         AS DURATION_SEC,
     {{ clean_str('DAY_DIV_NM') }}               AS DAY_DIV,                 -- 요일구분(평일/주말)
     {{ clean_str('PRG_STRT_TIME') }}            AS PRG_START_TIME,          -- 프로그램 시작시간

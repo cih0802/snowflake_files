@@ -138,6 +138,15 @@ sources:
       - name: SND_MEMBER_OPEN_LOG           # [2026-09-15 신규] 메일 오픈 로그 → CRM_SEND_MEMBER_OPEN_LOG, CRM_SEND_MEMBER
       - name: SND_MEMBER_MAIL_LINK_LOG      # [2026-09-15 신규] 메일 링크 클릭 로그 → CRM_SEND_MEMBER_LINK_LOG
       - name: TM_MM_FDRM_MBER_DT_DTLS       # [2026-09-15 신규] 일시→정기 회원 전환 매핑 → CRM_MEMBER_CONVERT_HIST
+      # 🆕 [2026-09-29 O188-F 2차-A] 종전 파이프라인 미연결 8종 — BRONZE_CRM 전량 GOLD 반영
+      - name: TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT  # 결연 개발금액 사건 → CRM_RELATION_DEV
+      - name: TM_RM_CHILD_MSTR_INFO         # 아동 마스터 → CRM_CHILD
+      - name: TM_RM_RELATNSP_CHG_INFO       # 결연 교체 → CRM_RELATION_CHANGE
+      - name: TM_MS_AT_TMPLAT_MNG           # 알림톡 템플릿 → CRM_MSG_TEMPLATE
+      - name: TD_MS_AT_TMPLAT_BTN_LIST      # 알림톡 템플릿 버튼 → CRM_MSG_TEMPLATE_BUTTON
+      - name: TH_PM_SETLE_INFO_HIST         # 결제수단 변경이력(민감 컬럼 제외) → CRM_PAYMENT_METHOD_HIST
+      - name: TM_PM_INSTT_ACNUT             # 기관 계좌(계좌번호 제외) → CRM_INSTT_ACCOUNT
+      - name: TM_PM_SETLE_CMPNY_ACNT        # 결제사 계정 → CRM_SETLE_CMPNY_ACCOUNT
 
   - name: bronze_erp
     database: GN_DW

@@ -22,30 +22,63 @@
 -- 🟢 원천 계통 3컬럼을 **원천 그대로**(추론 0) 노출 — 후속 규칙 확정 시 즉시 활용.
 -- 🔴 USE_YN='N' 764개(58.1%) 제외 금지(O16): 팩트가 대량 참조(ACT_DEPT_CD 미사용 156부서에 410,506명 ·
 --    AMT_CHANGE 미사용 189부서에 100,931건) + 필터 시 트리 파편화(LVL1 9→42, 총 1,314→550). 1,314행 전체 유지.
+--
+-- 🆕 [2026-09-29 O188-E] 활성 조직 트리 3컬럼 — 정본 = `90_provided_definition/gni_실적부서.csv`(현업 제공 조직표).
+--    규칙(하드코딩 0) = 자기와 **모든 상위**(UPPER_DEPT_ID)가 USE_YN='Y' 이고 LAST_UPDT_DT 가 NULL·9999-12-31 이 아님.
+--    📏 xf98254 = 223노드 ⊇ CSV 222 · 경로 222/222 일치 · 초과 = B000006 해외파견(사용자 결정 O188-E: 포함).
+--    🔴 행을 지우지 않는다(위 O16) — 판정은 IS_ACTIVE_ORG 플래그로만 한다.
 {{ config(
     materialized='incremental',
     unique_key='ORG_SK',
     tags=['gold_pending']
 ) }}
 
-with o as (
+with recursive o as (
     select * from {{ ref('CRM_ORG') }}
+),
+b as (
+    select x.DEPT_ID, x.DEPT_NM, x.UPPER_DEPT_ID,
+           COALESCE(x.USE_YN = 'Y'
+                    and x.LAST_UPDT_DT is not null
+                    and TO_DATE(x.LAST_UPDT_DT) <> '9999-12-31', FALSE) as SELF_LIVE,
+           -- 루트 = 상위가 마스터에 없는 노드(법인 루트 등). 🔴 재귀 CTE 안의 NOT IN 서브쿼리는 Snowflake 가
+           --   「Unsupported subquery type」으로 거부한다(O188-F 컴파일 검증 적발) ⇒ anti-join 플래그로 미리 계산한다.
+           (p.DEPT_ID is null)                                                 as IS_ROOT
+    from o x
+    left join o p on p.DEPT_ID = x.UPPER_DEPT_ID
+),
+tree as (
+    -- 경로는 루트를 뺀 형태(조직표 규격)
+    select DEPT_ID, SELF_LIVE as IS_LIVE, 0 as LVL, CAST(NULL AS VARCHAR) as PATH
+    from b
+    where IS_ROOT
+    union all
+    select c.DEPT_ID, t.IS_LIVE and c.SELF_LIVE, t.LVL + 1,
+           IFF(t.LVL = 0, c.DEPT_NM, t.PATH || ' > ' || c.DEPT_NM)
+    from b c
+    join tree t on c.UPPER_DEPT_ID = t.DEPT_ID and c.DEPT_ID <> c.UPPER_DEPT_ID
+    where t.LVL < 12
 )
 
 select
-    {{ gold_sk(['DEPT_ID']) }}                    as ORG_SK,
-    ABS(HASH(DEPT_ID))                            as ORG_DK,
+    {{ gold_sk(['o.DEPT_ID']) }}                  as ORG_SK,
+    ABS(HASH(o.DEPT_ID))                          as ORG_DK,
     CAST(NULL AS VARCHAR)                          as CORP,        -- ③ 부서 차원 산출 불가(CONF-4)
     CAST(NULL AS VARCHAR)                          as DIVISION,    -- ① 실적지부 재정의 · 산출규칙 확정 대기
-    DEPT_NM                                       as DEPARTMENT,   -- ✅ 정본 정합
+    o.DEPT_NM                                     as DEPARTMENT,   -- ✅ 정본 정합
     CAST(NULL AS VARCHAR)                          as TEAM,        -- ② 보류(E-6 입고 시 재개)
-    ACMSLT_UPPER_DEPT_ID                          as ACMSLT_UPPER_DEPT_ID,  -- 원천 그대로
-    ACMSLT_DEPT_YN                                as ACMSLT_DEPT_YN,        -- 원천 그대로
-    USE_YN                                        as USE_YN,                -- 원천 그대로(제외 금지)
-    {{ gold_meta('CRM') }}
+    o.ACMSLT_UPPER_DEPT_ID                        as ACMSLT_UPPER_DEPT_ID,  -- 원천 그대로
+    o.ACMSLT_DEPT_YN                              as ACMSLT_DEPT_YN,        -- 원천 그대로
+    o.USE_YN                                      as USE_YN,                -- 원천 그대로(제외 금지)
+    {{ gold_meta('CRM') }},
+    COALESCE(t.IS_LIVE, FALSE)                    as IS_ACTIVE_ORG,  -- 🆕 O188-E 활성 조직 트리 소속
+    t.PATH                                        as ORG_PATH,       -- 🆕 O188-E 조직표 「부서 경로」(루트 제외 · 순환 노드는 NULL)
+    t.LVL                                         as ORG_LEVEL       -- 🆕 O188-E 루트=0
 from o
+left join tree t on t.DEPT_ID = o.DEPT_ID
 
 union all
 -- unknown 멤버(SK=0): 팩트 ORG_SK=0(미매핑) 조인 유실 방지
 select 0, 0, NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    FALSE, NULL, NULL

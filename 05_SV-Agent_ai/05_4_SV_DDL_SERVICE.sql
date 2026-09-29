@@ -53,7 +53,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse_to_member  AS fse (MEMBER_DK)  REFERENCES member
   )
   DIMENSIONS (
-    date.SEND_DATE  AS date.FULL_DATE  WITH SYNONYMS ('발송일', '일자') COMMENT = '발송일',
+    date.SEND_DATE  AS date.FULL_DATE  WITH SYNONYMS ('발송일', '일자', 'FULL_DATE', '날짜') COMMENT = '발송일',
     date.CAL_YEAR   AS date.YEAR       WITH SYNONYMS ('연도', '년')     COMMENT = '연도',
     date.CAL_MONTH  AS date.MONTH      WITH SYNONYMS ('월')            COMMENT = '월(1~12)',
     service.SUBTYPE AS service.SUBTYPE WITH SYNONYMS ('서비스유형', '발송소분류') COMMENT = '서비스 subtype. ⚠️ **라벨이 아니라 원천 숫자 코드**다 — 실제값 5종: ''0''·''1''·''2''·''3''·''(미매핑)'' + NULL. 🔴🔴 **CHANNEL 과 함께 보지 않으면 서로 다른 체계를 섞는다** — 이 컬럼도 `SEND_STATUS` 와 **같은 구조적 결함**이다: 채널별로 도메인이 다르다(EMAIL ''0''·''1''·''2''+NULL / MSG_AT ''0''·''1'' / PSTMTR ''1''·''2''·''3'' / SND 는 NULL). 같은 ''1'' 이 채널에 따라 다른 것을 뜻하므로 이 축 단독 그루핑·필터는 오답이다. 🔴 **라벨은 만들지 않았다 — 코드군을 특정할 수 없어서다**(채널별 도메인이 2~3종뿐이라 사전 후보가 과다하고, 의미가 맞는 그룹이 없다 · 등급 D). 의미를 창작하지 말고 **코드값 그대로 + 채널 동반**으로 제시하고 라벨 부재를 밝힌다(DEC-17-B · 현업 확인 = 문서20 §M-2)',

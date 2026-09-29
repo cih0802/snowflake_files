@@ -137,7 +137,14 @@ select
     s.SEND_STATUS_NAME                            as SEND_STATUS_NAME,
     s.SEND_RESULT_CD                              as SEND_RESULT_CD,
     s.SEND_RESULT_GROUP                           as SEND_RESULT_GROUP,
-    s.SEND_RESULT_NAME                            as SEND_RESULT_NAME
+    s.SEND_RESULT_NAME                            as SEND_RESULT_NAME,
+    -- 🆕 [2026-09-29 O188-F] 발송대상 최초·최종 브랜드(SND 전용 degen · 타 채널 NULL) — 원천 SND_MEMBER_LIST.
+    --   🔴 공통브랜드(MM297)와 다른 체계(브랜드 마스터 TM_CM_BRND_MNG)다 — 같은 축으로 합치지 말 것.
+    s.FRST_BRND_CD                                as FRST_BRND_CD,
+    s.FRST_BRND_NM                                as FRST_BRND_NM,
+    s.LST_BRND_CD                                 as LST_BRND_CD,
+    s.LST_BRND_NM                                 as LST_BRND_NM,
+    s.CURRENT_BRND                                as CURRENT_BRND
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 cross join open_window ow

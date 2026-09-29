@@ -509,7 +509,7 @@ def main(session):
         ).json()
 
         if "access_token" not in token_res:
-            return f"ERROR: 토큰 획득 실패 - {token_res}"
+            raise Exception(f"토큰 획득 실패 - {token_res}")
 
         token = token_res["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
@@ -687,7 +687,11 @@ def main(session):
             error_query = f"INSERT INTO GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO (ERR_DATETIME, DATA_TYPE, ERR_INFO) VALUES (CURRENT_TIMESTAMP(), ''재송출'', ''{error_msg}'')"
             session.sql(error_query).collect()
         except:
-            pass
+            # pass
+            return (
+                f"ERROR: {error_msg} "
+                f"| 로그 기록 실패: {str(log_err)}"
+            )
         return f"ERROR: {str(global_err)}"
 
     if not log_messages:

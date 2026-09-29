@@ -339,12 +339,13 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
 )COMMENT='후원사업(SPNSR_BSNS_ID)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
-	ONCE_MBER_NO VARCHAR(10),
-	STDR_MT VARCHAR(16777216),
-	CONVERSION_YN NUMBER(1,0),
-	DATA_TYPE VARCHAR(5),
-	PREDICT VARIANT
-);
+	ONCE_MBER_NO VARCHAR(16777216) COMMENT '회원번호',
+	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
+	CONVERSION_YN VARCHAR(16777216) COMMENT '회원 전환여부',
+	DATA_TYPE VARCHAR(16777216) COMMENT '데이터유형',
+	PREDICT VARIANT COMMENT '예측결과'
+)COMMENT='일시회원 향후 6개월 내 전환 가능성 예측 결과'
+;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M (
 	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
 	MBER_NO VARCHAR(16777216) COMMENT '회원번호',
@@ -845,35 +846,35 @@ create or replace view GN_DW.ML.V_TRAIN_ONCE_CONVERSION(
 	DESKTOP_SESSION_CNT,
 	CONVERSION_YN
 ) as
-SELECT
-    -- 기부 피처
-    COALESCE(ONCE_DNTN_CNT, 0)       AS ONCE_DNTN_CNT,
-    COALESCE(ONCE_DNTN_AMT, 0)       AS ONCE_DNTN_AMT,
-    COALESCE(ONCE_DNTN_AVG_AMT, 0)   AS ONCE_DNTN_AVG_AMT,
-    COALESCE(ONCE_DNTN_MAX_AMT, 0)   AS ONCE_DNTN_MAX_AMT,
-    -- 서비스 피처
-    COALESCE(SERVICE_CNT, 0)          AS SERVICE_CNT,
-    COALESCE(CRMN_CNT, 0)            AS CRMN_CNT,
-    COALESCE(EMAIL_CNT, 0)           AS EMAIL_CNT,
-    COALESCE(MESSAGE_CNT, 0)         AS MESSAGE_CNT,
-    COALESCE(PSTMTR_CNT, 0)          AS PSTMTR_CNT,
-    COALESCE(EVENT_CNT, 0)           AS EVENT_CNT,
-    -- 웹 행동 피처
-    COALESCE(SESSION_CNT, 0)          AS SESSION_CNT,
-    COALESCE(BQ_EVENT_CNT, 0)        AS BQ_EVENT_CNT,
-    COALESCE(ACTIVE_DAY_CNT, 0)      AS ACTIVE_DAY_CNT,
-    COALESCE(PAGE_VIEW_CNT, 0)       AS PAGE_VIEW_CNT,
-    COALESCE(PURCHASE_CNT, 0)        AS PURCHASE_CNT,
-    COALESCE(BEGIN_CHECKOUT_CNT, 0)  AS BEGIN_CHECKOUT_CNT,
-    COALESCE(FORM_SUBMIT_CNT, 0)     AS FORM_SUBMIT_CNT,
-    COALESCE(SCROLL_CNT, 0)          AS SCROLL_CNT,
-    COALESCE(ENGAGEMENT_TIME_SEC, 0) AS ENGAGEMENT_TIME_SEC,
-    COALESCE(ENGAGED_SESSION_CNT, 0) AS ENGAGED_SESSION_CNT,
-    COALESCE(MOBILE_SESSION_CNT, 0)  AS MOBILE_SESSION_CNT,
-    COALESCE(DESKTOP_SESSION_CNT, 0) AS DESKTOP_SESSION_CNT,
-    -- 타겟
-    CONVERSION_YN
-FROM GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M;
+        SELECT
+            -- 기부 피처
+            COALESCE(ONCE_DNTN_CNT, 0)       AS ONCE_DNTN_CNT,
+            COALESCE(ONCE_DNTN_AMT, 0)       AS ONCE_DNTN_AMT,
+            COALESCE(ONCE_DNTN_AVG_AMT, 0)   AS ONCE_DNTN_AVG_AMT,
+            COALESCE(ONCE_DNTN_MAX_AMT, 0)   AS ONCE_DNTN_MAX_AMT,
+            -- 서비스 피처
+            COALESCE(SERVICE_CNT, 0)          AS SERVICE_CNT,
+            COALESCE(CRMN_CNT, 0)            AS CRMN_CNT,
+            COALESCE(EMAIL_CNT, 0)           AS EMAIL_CNT,
+            COALESCE(MESSAGE_CNT, 0)         AS MESSAGE_CNT,
+            COALESCE(PSTMTR_CNT, 0)          AS PSTMTR_CNT,
+            COALESCE(EVENT_CNT, 0)           AS EVENT_CNT,
+            -- 웹 행동 피처
+            COALESCE(SESSION_CNT, 0)          AS SESSION_CNT,
+            COALESCE(BQ_EVENT_CNT, 0)        AS BQ_EVENT_CNT,
+            COALESCE(ACTIVE_DAY_CNT, 0)      AS ACTIVE_DAY_CNT,
+            COALESCE(PAGE_VIEW_CNT, 0)       AS PAGE_VIEW_CNT,
+            COALESCE(PURCHASE_CNT, 0)        AS PURCHASE_CNT,
+            COALESCE(BEGIN_CHECKOUT_CNT, 0)  AS BEGIN_CHECKOUT_CNT,
+            COALESCE(FORM_SUBMIT_CNT, 0)     AS FORM_SUBMIT_CNT,
+            COALESCE(SCROLL_CNT, 0)          AS SCROLL_CNT,
+            COALESCE(ENGAGEMENT_TIME_SEC, 0) AS ENGAGEMENT_TIME_SEC,
+            COALESCE(ENGAGED_SESSION_CNT, 0) AS ENGAGED_SESSION_CNT,
+            COALESCE(MOBILE_SESSION_CNT, 0)  AS MOBILE_SESSION_CNT,
+            COALESCE(DESKTOP_SESSION_CNT, 0) AS DESKTOP_SESSION_CNT,
+            -- 타겟
+            CONVERSION_YN
+        FROM GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M;
 CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_CHANNEL_NEW_DVLP_CONTRIBUTION("P_STDR_MT" VARCHAR DEFAULT null)
 RETURNS VARCHAR
 LANGUAGE SQL
@@ -1368,6 +1369,1392 @@ AS 'BEGIN
 
         RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
 
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_CMPGN_MBER_SNAPSHOT("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_STDR_MT_EDATE VARCHAR := LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD''));
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_CMPGN_MBER_SNAPSHOT'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.CMPGN_MBER_SNAPSHOT (
+            STDR_DE            DATE     ,     
+            MBER_NO            VARCHAR  ,
+            SPNSR_NO           VARCHAR  ,
+            SPNSR_BSNS_NO      VARCHAR  ,
+            CMPGN_CD           VARCHAR  ,
+            FIRST_OCCRRNC_DE   VARCHAR  ,
+            LAST_OCCRRNC_DE    VARCHAR  ,
+            ACMSLT_DEPT_CD     VARCHAR  ,
+            FRST_SETLE_CD      VARCHAR  ,
+            LAST_SETLE_CD      VARCHAR  ,
+            IS_ACTIVE_YN       CHAR     ,
+            CUR_SPNSR_AMT      NUMBER   ,
+            MINUS_SPNSR_AMT    NUMBER   ,
+            PLUS_SPNSR_AMT     BIGINT   ,
+            REG_DT             DATE  
+        );
+        --해당일자 스냅샷 정보
+        INSERT INTO GN_DW.ML.CMPGN_MBER_SNAPSHOT (
+            STDR_DE
+            , MBER_NO
+            , SPNSR_NO
+            , SPNSR_BSNS_NO
+            , CMPGN_CD
+            , FIRST_OCCRRNC_DE
+            , LAST_OCCRRNC_DE
+            , ACMSLT_DEPT_CD
+            , FRST_SETLE_CD
+            , LAST_SETLE_CD
+            , IS_ACTIVE_YN
+            , CUR_SPNSR_AMT
+            , MINUS_SPNSR_AMT
+            , PLUS_SPNSR_AMT
+            , REG_DT
+        )
+        SELECT 
+            :V_STDR_MT_EDATE AS STDR_DE
+            , MBER_NO
+            , SPNSR_NO
+            , SPNSR_BSNS_NO
+            , CMPGN_CD
+            , MIN(OCCRRNC_DE) AS FIRST_OCCRRNC_DE
+            , MAX(OCCRRNC_DE) AS LAST_OCCRRNC_DE
+            , MAX(ACMSLT_DEPT_CD) AS ACMSLT_DEPT_CD
+            , MAX(FRST_SETLE_CD) AS FRST_SETLE_CD
+            , MAX(LAST_SETLE_CD) AS LAST_SETLE_CD
+            , CASE 
+                WHEN MAX(LAST_SPNSR_AMT) <= 0 AND MAX(LAST_CANCL_RSN) IS NOT NULL THEN ''N''
+                ELSE ''Y''
+              END AS IS_ACTIVE_YN
+            , SUM(SPNSR_AMT) AS CUR_SPNSR_AMT
+            , SUM(CASE WHEN SPNSR_AMT < 0 THEN SPNSR_AMT ELSE 0 END) AS MINUS_SPNSR_AMT
+            , SUM(CASE WHEN SPNSR_AMT > 0 THEN SPNSR_AMT ELSE 0 END) AS PLUS_SPNSR_AMT
+            , GETDATE() AS REG_DT
+        FROM (
+            SELECT 
+                MBER_NO
+                , SPNSR_NO
+                , SPNSR_BSNS_NO
+                , CMPGN_CD
+                , OCCRRNC_DE
+                , ACMSLT_DEPT_CD
+                , SPNSR_AMT
+                , CANCL_RDCAMT_RSN_CD
+                , SER_NO
+                , FIRST_VALUE(SETLE_CD) OVER (
+                    PARTITION BY MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, CMPGN_CD 
+                    ORDER BY SER_NO ASC
+                  ) AS FRST_SETLE_CD
+                , LAST_VALUE(SETLE_CD) OVER (
+                    PARTITION BY MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, CMPGN_CD 
+                    ORDER BY SER_NO ASC
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                  ) AS LAST_SETLE_CD
+                , LAST_VALUE(SPNSR_AMT) OVER (
+                    PARTITION BY MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, CMPGN_CD 
+                    ORDER BY SER_NO ASC
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                  ) AS LAST_SPNSR_AMT
+                , LAST_VALUE(CANCL_RDCAMT_RSN_CD) OVER (
+                    PARTITION BY MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, CMPGN_CD 
+                    ORDER BY SER_NO ASC
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                  ) AS LAST_CANCL_RSN
+            FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT a
+            WHERE OCCRRNC_DE <= :V_STDR_MT_EDAY
+        ) T
+        GROUP BY 
+            MBER_NO
+            , SPNSR_NO
+            , SPNSR_BSNS_NO
+            , CMPGN_CD;
+
+        -- 입입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_CMPGN_MONTHLY_SNAPSHOT("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_CMPGN_MONTHLY_SNAPSHOT'';
+    
+    BEGIN
+        CREATE OR REPLACE TABLE GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
+            CMPGN_CD            VARCHAR  ,     
+            UPPER_CMPGN_CD            VARCHAR  ,     
+            STDR_MT            VARCHAR  ,
+            STDR_DE             DATE,
+            TOT_CNT           NUMBER  ,
+            NEW_CNT           NUMBER  ,
+            INC_CNT           NUMBER  ,
+            DEC_CNT           NUMBER  ,
+            RE_CNT           NUMBER  ,
+            CANCL_CNT           NUMBER  ,
+            ACT_CNT             NUMBER, 
+            NEW_AMT_CNT             NUMBER(38,6), 
+            INC_AMT_CNT             NUMBER(38,6), 
+            DEC_AMT_CNT             NUMBER(38,6), 
+            RE_AMT_CNT             NUMBER(38,6), 
+            CANCL_AMT_CNT             NUMBER(38,6), 
+            ACT_AMT_CNT             NUMBER(38,6)
+        );
+        INSERT INTO GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
+            CMPGN_CD,  
+            UPPER_CMPGN_CD,
+            STDR_MT,
+            STDR_DE,
+            TOT_CNT,
+            NEW_CNT,
+            INC_CNT,
+            DEC_CNT,
+            RE_CNT,
+            CANCL_CNT,
+            ACT_CNT,
+            NEW_AMT_CNT,
+            INC_AMT_CNT,
+            DEC_AMT_CNT,
+            RE_AMT_CNT,
+            CANCL_AMT_CNT,
+            ACT_AMT_CNT
+        )
+        SELECT 
+            M.CMPGN_CD,
+            M.UPPER_CMPGN_CD,
+            M.YYYYMM AS STDR_MT,
+            TO_DATE(M.YYYYMM || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            COUNT(S.CMPGN_CD) AS TOT_CNT,
+            -- 1. 해당 월(YYYYMM)이 최초 발생월인 신규 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 1 THEN 1 
+                    ELSE 0 
+                END
+            ) AS NEW_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 2 THEN 1 
+                    ELSE 0 
+                END
+            ) AS INC_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 3 THEN 1 
+                    ELSE 0 
+                END
+            ) AS DEC_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 4 THEN 1 
+                    ELSE 0 
+                END
+            ) AS RE_CNT,
+            -- 2. 해당 월(YYYYMM)이 최종 발생월이면서 중단(DVLP_DIV_CD = 5)인 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN 1 
+                    ELSE 0 
+                END
+            ) AS CANCL_CNT,
+            -- 3. 이번 달 신규도 아니고 중단도 아닌 순수 유지/진행 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) != M.YYYYMM 
+                     AND NOT (SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND (S.STDR_MT_DVLP_DIV_CD = 5 or S.STDR_MT_SPNSR_AMT = 0)) THEN 1  --종료월이 해당월이면서 
+                    ELSE 0 
+                END
+            ) AS ACT_CNT,
+            -- 1. 해당 월(YYYYMM)이 최초 발생월인 신규 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 1 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS NEW_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 2 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS INC_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 3 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS DEC_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 4 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS RE_AMT_CNT,
+            -- 2. 해당 월(YYYYMM)이 최종 발생월이면서 중단(DVLP_DIV_CD = 5)인 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN S.CANCL_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS CANCL_AMT_CNT,
+            -- 3. 이번 달 신규도 아니고 중단도 아닌 순수 유지/진행 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) != M.YYYYMM 
+                     AND NOT (SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 5) THEN S.STDR_MT_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS ACT_AMT_CNT
+        FROM (
+            -- 3. 캠페인별로 시작월부터 종료월까지 월(YYYYMM) 단위 행 생성
+            SELECT 
+                P.CMPGN_CD, P.UPPER_CMPGN_CD,
+                TO_CHAR(DATEADD(month, G.SEQ, P.START_DATE), ''YYYYMM'') AS YYYYMM
+            FROM (
+                -- 2. 캠페인별 시작월, 종료월 및 총 개월 수 산출
+                SELECT 
+                    CMPGN_CD, 
+                    UPPER_CMPGN_CD,
+                    MIN_YM,
+                    MAX_YM,
+                    TO_DATE(MIN_YM, ''YYYYMM'') AS START_DATE,
+                    MONTHS_BETWEEN(TO_DATE(MAX_YM, ''YYYYMM''), TO_DATE(MIN_YM, ''YYYYMM''))::INT + 1 AS TOTAL_MONTHS
+                FROM (
+                    -- 1. 원본에서 캠페인별 최솟값/최댓값 추출
+                    SELECT 
+                        CMPGN_CD, 
+                        MAX(UPPER_CMPGN_CD) as UPPER_CMPGN_CD,
+                        SUBSTR(MIN(FIRST_OCCRRNC_DE), 1, 6) AS MIN_YM,
+                        SUBSTR(MAX(LAST_OCCRRNC_DE), 1, 6)  AS MAX_YM
+                    FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    -- WHERE STDR_MT = ''202606''
+                      -- AND FIRST_OCCRRNC_DE >= ''20100101''
+                    GROUP BY CMPGN_CD
+                ) BASE
+            ) P
+            JOIN (
+                -- 연속 숫자 생성 (최대 240개월까지 지원)
+                SELECT (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) AS SEQ
+                FROM TABLE(GENERATOR(ROWCOUNT => 240))
+            ) G 
+              ON G.SEQ < P.TOTAL_MONTHS
+        ) M
+        LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+                ON S.STDR_MT = M.YYYYMM
+              AND S.CMPGN_CD = M.CMPGN_CD
+              AND S.FIRST_OCCRRNC_DE >= ''20100101''
+              -- 해당 월에 걸쳐 있는(유지 중인) 전체 데이터 연결
+              --AND M.YYYYMM BETWEEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) AND SUBSTR(S.LAST_OCCRRNC_DE, 1, 6)
+              AND M.YYYYMM BETWEEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) 
+                               AND CASE 
+                                       WHEN S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6)
+                                       ELSE :V_STDR_MT -- 중단이 아닌 경우 스냅샷 기준월까지 유지
+                                   END
+        GROUP BY 
+            M.CMPGN_CD,
+            M.UPPER_CMPGN_CD,
+            M.YYYYMM;
+        
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MBER_MONTHLY_INFO("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MBER_MONTHLY_INFO'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.MBER_MONTHLY_INFO (
+            STDR_MT         VARCHAR  ,
+            STDR_DE         DATE,
+            MBER_NO            VARCHAR  ,
+            SLRCLD_LRR_CD       VARCHAR,
+            ACT_DEPT_CD     VARCHAR,
+            JOIN_PATH_CD        VARCHAR,
+            SEX     VARCHAR,
+            STDR_MT_MBER_STAT_CD           VARCHAR  ,
+            SER_NO      VARCHAR  ,
+            BF_STAT_CD      VARCHAR ,  
+            CHN_STAT_CD      VARCHAR ,  
+            STAT_START_DT  DATETIME,
+            STAT_END_DT           DATETIME,
+            FRST_REGIST_DT        DATETIME,
+            MONTHS_SINCE_JOIN NUMBER
+        );
+        
+        INSERT INTO GN_DW.ML.MBER_MONTHLY_INFO (
+            STDR_MT,
+            STDR_DE,
+            MBER_NO,
+            SLRCLD_LRR_CD,
+            ACT_DEPT_CD,
+            JOIN_PATH_CD,
+            SEX,
+            STDR_MT_MBER_STAT_CD,
+            SER_NO,
+            BF_STAT_CD,  
+            CHN_STAT_CD,  
+            STAT_START_DT,
+            STAT_END_DT,
+            FRST_REGIST_DT,
+            MONTHS_SINCE_JOIN
+        )
+        WITH STAT_HIST AS (
+            SELECT 
+                M.MBER_NO,
+                M.SLRCLD_LRR_CD,
+                M.ACT_DEPT_CD,
+                M.JOIN_PATH_CD,
+                M.SEX,
+                H.SER_NO,
+                H.BF_STAT_CD,
+                H.CHN_STAT_CD,
+                M.FRST_REGIST_DT AS FRST_REGIST_DT,
+                H.CNG_START_DT AS STAT_START_DT,
+                CASE 
+                    WHEN H.NEXT_REGIST_DT IS NOT NULL 
+                         THEN H.NEXT_REGIST_DT
+                    WHEN M.MBER_STAT_CD = ''12'' 
+                         THEN H.CNG_START_DT
+                END AS STAT_END_DT
+            FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO M
+            JOIN (
+                SELECT 
+                    MBER_NO, SER_NO, BF_STAT_CD, CHN_STAT_CD,
+                    FRST_REGIST_DT,
+                    FRST_REGIST_DT AS CNG_START_DT,
+                    LEAD(FRST_REGIST_DT) OVER (
+                        PARTITION BY MBER_NO ORDER BY FRST_REGIST_DT, SER_NO
+                    ) AS NEXT_REGIST_DT
+                FROM (
+                    SELECT MBER_NO, 0 AS SER_NO, CAST(NULL AS VARCHAR) AS BF_STAT_CD,
+                           ''1'' AS CHN_STAT_CD, FRST_REGIST_DT
+                    FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO
+                    UNION ALL
+                    SELECT MBER_NO, SER_NO, BF_STAT_CD, CHN_STAT_CD, FRST_REGIST_DT
+                    FROM GN_DW.BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS
+                ) COMBINED_HIST
+            ) H ON M.MBER_NO = H.MBER_NO
+        ),
+        MONTH_SERIES (MBER_NO, SLRCLD_LRR_CD, ACT_DEPT_CD, JOIN_PATH_CD, SEX, FRST_REGIST_DT, SER_NO, BF_STAT_CD, CHN_STAT_CD, STAT_START_DT, STAT_END_DT, STDR_MT) AS (
+            SELECT MBER_NO, SLRCLD_LRR_CD, ACT_DEPT_CD, JOIN_PATH_CD, SEX, FRST_REGIST_DT, SER_NO, BF_STAT_CD, CHN_STAT_CD, STAT_START_DT, STAT_END_DT,
+                   TO_CHAR(STAT_START_DT, ''YYYYMM'')
+            FROM STAT_HIST
+            UNION ALL
+            SELECT MBER_NO, SLRCLD_LRR_CD, ACT_DEPT_CD, JOIN_PATH_CD, SEX, FRST_REGIST_DT, SER_NO, BF_STAT_CD, CHN_STAT_CD, STAT_START_DT, STAT_END_DT,
+                   TO_CHAR(DATEADD(MONTH, 1, TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMM'')
+            FROM MONTH_SERIES
+            WHERE DATEADD(MONTH, 1, TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')) < DATE_TRUNC(''MONTH'', STAT_END_DT)
+              AND STDR_MT < TO_CHAR(CURRENT_DATE(), ''YYYYMM'')
+        )
+        SELECT 
+            STDR_MT AS STDR_MT,
+            TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            MBER_NO,
+            SLRCLD_LRR_CD,
+            ACT_DEPT_CD,
+            JOIN_PATH_CD,
+            SEX,
+            CHN_STAT_CD AS STDR_MT_MBER_STAT_CD,
+            SER_NO,
+            CASE WHEN TO_CHAR(STAT_START_DT, ''YYYYMM'') = STDR_MT THEN BF_STAT_CD END AS BF_STAT_CD,
+            CASE WHEN TO_CHAR(STAT_START_DT, ''YYYYMM'') = STDR_MT THEN CHN_STAT_CD END AS CHN_STAT_CD,
+            STAT_START_DT,
+            STAT_END_DT,
+            FRST_REGIST_DT,
+            DATEDIFF(''MONTH'', 
+                DATE_TRUNC(''MONTH'', FRST_REGIST_DT), 
+                TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')
+            ) AS MONTHS_SINCE_JOIN
+        FROM MONTH_SERIES
+        ORDER BY MBER_NO, STDR_MT;
+
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MBER_MONTHLY_SETLE_INFO("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MBER_MONTHLY_SETLE_INFO'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.MBER_MONTHLY_SETLE_INFO (
+            STDR_MT         VARCHAR  ,
+            STDR_DE         DATE,
+            MBER_NO            VARCHAR  ,
+            SETLE_KEY            VARCHAR  ,
+            CPR_DIV_CD           VARCHAR  ,
+            STDR_MT_SETLE_CD      VARCHAR  , 
+            FRST_REGIST_DT  DATETIME,
+            START_DT           DATETIME,
+            END_DT        DATETIME
+        );
+        
+        INSERT INTO GN_DW.ML.MBER_MONTHLY_SETLE_INFO (
+            STDR_MT,
+            STDR_DE,
+            MBER_NO,
+            SETLE_KEY,
+            CPR_DIV_CD,
+            STDR_MT_SETLE_CD, 
+            FRST_REGIST_DT,
+            START_DT,
+            END_DT
+        )
+        -- 1단계: 상태변경 이력 기반 월별 그리드 생성
+        WITH STAT_HIST AS (
+            SELECT 
+                M.MBER_NO,
+                M.FRST_REGIST_DT,
+                H.CNG_START_DT AS STAT_START_DT,
+                CASE 
+                    WHEN H.NEXT_REGIST_DT IS NOT NULL 
+                         THEN H.NEXT_REGIST_DT
+                    WHEN M.MBER_STAT_CD = ''12'' 
+                         THEN H.CNG_START_DT
+                END AS STAT_END_DT
+            FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO M
+            JOIN (
+                SELECT 
+                    MBER_NO,
+                    FRST_REGIST_DT,
+                    FRST_REGIST_DT AS CNG_START_DT,
+                    LEAD(FRST_REGIST_DT) OVER (
+                        PARTITION BY MBER_NO ORDER BY FRST_REGIST_DT, SER_NO
+                    ) AS NEXT_REGIST_DT
+                FROM (
+                    SELECT MBER_NO, 0 AS SER_NO, FRST_REGIST_DT
+                    FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO
+                    UNION ALL
+                    SELECT MBER_NO, SER_NO, FRST_REGIST_DT
+                    FROM GN_DW.BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS
+                ) COMBINED_HIST
+            ) H ON M.MBER_NO = H.MBER_NO
+        ),
+        MONTH_GRID (MBER_NO, FRST_REGIST_DT, STAT_END_DT, STDR_MT) AS (
+            SELECT MBER_NO, FRST_REGIST_DT, STAT_END_DT,
+                   TO_CHAR(STAT_START_DT, ''YYYYMM'')
+            FROM STAT_HIST
+            UNION ALL
+            SELECT MBER_NO, FRST_REGIST_DT, STAT_END_DT,
+                   TO_CHAR(DATEADD(MONTH, 1, TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMM'')
+            FROM MONTH_GRID
+            WHERE (STAT_END_DT IS NULL 
+                   OR DATEADD(MONTH, 1, TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')) < DATE_TRUNC(''MONTH'', STAT_END_DT))
+              AND STDR_MT < TO_CHAR(CURRENT_DATE(), ''YYYYMM'')
+        ),
+        -- 2단계: 결제수단 이력에서 유효기간 산출
+        SETLE_HIST AS (
+            SELECT 
+                MBER_NO, SETLE_KEY, CPR_DIV_CD, SETLE_CD,
+                FRST_REGIST_DT AS START_DT,
+                LEAD(FRST_REGIST_DT) OVER (
+                    PARTITION BY MBER_NO ORDER BY FRST_REGIST_DT, SETLE_KEY
+                ) AS END_DT
+            FROM (
+                SELECT MBER_NO, SETLE_KEY, CPR_DIV_CD, SETLE_CD, FRST_REGIST_DT
+                FROM GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO
+                UNION ALL
+                SELECT MBER_NO, SETLE_KEY, CPR_DIV_CD, SETLE_CD, REGIST_DT AS FRST_REGIST_DT
+                FROM GN_DW.BRONZE_CRM.TH_PM_SETLE_INFO_HIST
+            ) COMBINED_SETLE
+        )
+        -- 3단계: 월 그리드에 결제수단 매칭
+        SELECT 
+            G.STDR_MT AS STDR_MT,
+            TO_DATE(G.STDR_MT || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            G.MBER_NO,
+            S.SETLE_KEY,
+            S.CPR_DIV_CD,
+            S.SETLE_CD AS STDR_MT_SETLE_CD,
+            G.FRST_REGIST_DT,
+            S.START_DT,
+            S.END_DT
+        FROM (
+            SELECT DISTINCT MBER_NO, FRST_REGIST_DT, STDR_MT 
+            FROM MONTH_GRID
+        ) G
+        LEFT JOIN SETLE_HIST S 
+            ON G.MBER_NO = S.MBER_NO
+           AND TO_DATE(G.STDR_MT || ''01'', ''YYYYMMDD'') >= DATE_TRUNC(''MONTH'', S.START_DT)
+           AND (S.END_DT IS NULL 
+                OR TO_DATE(G.STDR_MT || ''01'', ''YYYYMMDD'') < DATE_TRUNC(''MONTH'', S.END_DT))
+        ORDER BY G.MBER_NO, G.STDR_MT;
+
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MBER_MONTHLY_SNAPSHOT("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MBER_MONTHLY_SNAPSHOT'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.MBER_MONTHLY_SNAPSHOT (
+            MBER_NO            VARCHAR  ,     
+            STDR_MT            VARCHAR  ,
+            STDR_DE             DATE,
+            TOT_CNT           NUMBER  ,
+            NEW_CNT           NUMBER  ,
+            INC_CNT           NUMBER  ,
+            DEC_CNT           NUMBER  ,
+            RE_CNT           NUMBER  ,
+            CANCL_CNT           NUMBER  ,
+            ACT_CNT             NUMBER, 
+            NEW_AMT_CNT             NUMBER(38,6), 
+            INC_AMT_CNT             NUMBER(38,6), 
+            DEC_AMT_CNT             NUMBER(38,6), 
+            RE_AMT_CNT             NUMBER(38,6), 
+            CANCL_AMT_CNT             NUMBER(38,6), 
+            ACT_AMT_CNT             NUMBER(38,6)
+        );
+        INSERT INTO GN_DW.ML.MBER_MONTHLY_SNAPSHOT (
+            MBER_NO,
+            STDR_MT,
+            STDR_DE,
+            TOT_CNT,
+            NEW_CNT,
+            INC_CNT,
+            DEC_CNT,
+            RE_CNT,
+            CANCL_CNT,
+            ACT_CNT,
+            NEW_AMT_CNT,
+            INC_AMT_CNT,
+            DEC_AMT_CNT,
+            RE_AMT_CNT,
+            CANCL_AMT_CNT,
+            ACT_AMT_CNT
+        )
+        SELECT 
+            M.MBER_NO,
+            M.YYYYMM AS STDR_MT,
+            TO_DATE(M.YYYYMM || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            COUNT(S.MBER_NO) AS TOT_CNT,
+            -- 1. 해당 월(YYYYMM)이 최초 발생월인 신규 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 1 THEN 1 
+                    ELSE 0 
+                END
+            ) AS NEW_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 2 THEN 1 
+                    ELSE 0 
+                END
+            ) AS INC_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 3 THEN 1 
+                    ELSE 0 
+                END
+            ) AS DEC_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 4 THEN 1 
+                    ELSE 0 
+                END
+            ) AS RE_CNT,
+            -- 2. 해당 월(YYYYMM)이 최종 발생월이면서 중단(DVLP_DIV_CD = 5)인 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN 1 
+                    ELSE 0 
+                END
+            ) AS CANCL_CNT,
+            -- 3. 이번 달 신규도 아니고 중단도 아닌 순수 유지/진행 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) != M.YYYYMM 
+                     AND NOT (SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND (S.STDR_MT_DVLP_DIV_CD = 5 or S.STDR_MT_SPNSR_AMT = 0)) THEN 1  --종료월이 해당월이면서 
+                    ELSE 0 
+                END
+            ) AS ACT_CNT,
+            -- 1. 해당 월(YYYYMM)이 최초 발생월인 신규 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 1 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS NEW_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 2 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS INC_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 3 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS DEC_AMT_CNT,
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 4 THEN S.NEW_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS RE_AMT_CNT,
+            -- 2. 해당 월(YYYYMM)이 최종 발생월이면서 중단(DVLP_DIV_CD = 5)인 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN S.CANCL_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS CANCL_AMT_CNT,
+            -- 3. 이번 달 신규도 아니고 중단도 아닌 순수 유지/진행 건수
+            SUM(
+                CASE 
+                    WHEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) != M.YYYYMM 
+                     AND NOT (SUBSTR(S.LAST_OCCRRNC_DE, 1, 6) = M.YYYYMM AND S.STDR_MT_DVLP_DIV_CD = 5) THEN S.STDR_MT_SPNSR_AMT
+                    ELSE 0 
+                END
+            ) / 10000 AS ACT_AMT_CNT
+        FROM (
+            -- 3. 캠페인별로 시작월부터 종료월까지 월(YYYYMM) 단위 행 생성
+            SELECT 
+                P.MBER_NO,
+                TO_CHAR(DATEADD(month, G.SEQ, P.START_DATE), ''YYYYMM'') AS YYYYMM
+            FROM (
+                -- 2. 캠페인별 시작월, 종료월 및 총 개월 수 산출
+                SELECT 
+                    MBER_NO, 
+                    MIN_YM,
+                    MAX_YM,
+                    TO_DATE(MIN_YM, ''YYYYMM'') AS START_DATE,
+                    MONTHS_BETWEEN(TO_DATE(MAX_YM, ''YYYYMM''), TO_DATE(MIN_YM, ''YYYYMM''))::INT + 1 AS TOTAL_MONTHS
+                FROM (
+                    -- 1. 원본에서 캠페인별 최솟값/최댓값 추출
+                    SELECT 
+                        MBER_NO, 
+                        SUBSTR(MIN(FIRST_OCCRRNC_DE), 1, 6) AS MIN_YM,
+                        SUBSTR(MAX(LAST_OCCRRNC_DE), 1, 6)  AS MAX_YM
+                    FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    -- WHERE STDR_MT = ''202606''
+                      -- AND FIRST_OCCRRNC_DE >= ''20100101''
+                    GROUP BY MBER_NO
+                ) BASE
+            ) P
+            JOIN (
+                -- 연속 숫자 생성 (최대 240개월까지 지원)
+                SELECT (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) AS SEQ
+                FROM TABLE(GENERATOR(ROWCOUNT => 240))
+            ) G 
+              ON G.SEQ < P.TOTAL_MONTHS
+        ) M
+        LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+                ON S.STDR_MT = M.YYYYMM
+              AND S.MBER_NO = M.MBER_NO
+              AND S.FIRST_OCCRRNC_DE >= ''20100101''
+              -- 해당 월에 걸쳐 있는(유지 중인) 전체 데이터 연결
+              --AND M.YYYYMM BETWEEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) AND SUBSTR(S.LAST_OCCRRNC_DE, 1, 6)
+              AND M.YYYYMM BETWEEN SUBSTR(S.FIRST_OCCRRNC_DE, 1, 6) 
+                               AND CASE 
+                                       WHEN S.CANCL_RDCAMT_RSN_CD IS NOT NULL THEN SUBSTR(S.LAST_OCCRRNC_DE, 1, 6)
+                                       ELSE :V_STDR_MT -- 중단이 아닌 경우 스냅샷 기준월까지 유지
+                                   END
+        GROUP BY 
+            M.MBER_NO,
+            M.YYYYMM;
+
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MBER_SERVICE_INFO("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_CMPGN_MONTHLY_SNAPSHOT'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE            VARCHAR  ,
+            TYPE1            VARCHAR  ,
+            TYPE2           VARCHAR  ,
+            TYPE3      VARCHAR  ,
+            MBER_NO      VARCHAR  ,
+            SVR_DT      VARCHAR
+        );
+        INSERT INTO GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE,
+            TYPE1,
+            TYPE2,
+            TYPE3,
+            MBER_NO,
+            SVR_DT
+        )
+        -- UMS 발송 내역(메세지, 이메일)
+        SELECT 
+            CASE 
+                WHEN a.MSG_TYPE = ''1'' THEN ''메세지''
+                WHEN a.MSG_TYPE = ''2'' THEN ''이메일''
+            END AS SVC_TYPE,
+            c.CD_NM AS TYPE1,
+            d.DTL_CD_NM AS TYPE2, 
+            e.DTL_CD_NM AS TYPE3, 
+            b.MBER_NO,
+            TO_VARCHAR(a.SEND_DATE, ''YYYYMMDD'') AS SVR_DT
+        FROM GN_DW.BRONZE_CRM.SND_REQ_MST a
+            INNER JOIN GN_DW.BRONZE_CRM.SND_MEMBER_LIST b ON a.SEQ_NO = b.REQ_SEQ_NO
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_CD c ON a.SEND_GBN_TOP = c.CD_ID
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD d ON c.CD_ID = d.CD_ID AND a.SEND_GBN_MID = d.DTL_CD_ID
+            LEFT OUTER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD e ON a.SEND_GBN_TOP = e.CD_ID AND e.DTL_CD_ID = a.SEND_GBN_BOT
+        WHERE a.USE_YN = ''Y'' 
+            AND b.CALL_STATUS IN (''7000'', ''6600'', ''1'');
+
+        --실제 행사 참여한 정보
+        INSERT INTO GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE,
+            TYPE1,
+            TYPE2,
+            TYPE3,
+            MBER_NO,
+            SVR_DT
+        )
+        SELECT 
+            ''행사'' as SVC_TYPE, 
+            c.DTL_CD_NM AS TYPE1, --행사구분
+            NULL AS TYPE2, 
+            NULL AS TYPE3,
+            b.MBER_NO, 
+            b.RCPMNY_DATE AS SVR_DE
+            --, b.PARTCPT_STAT_CD --
+        FROM GN_DW.BRONZE_CRM.TM_MS_CRMN a
+            INNER JOIN GN_DW.BRONZE_CRM.TD_MS_CRMN_PRTCPNT b ON a.CRMN_CD = b.CRMN_CD
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD c ON c.CD_ID = ''MS002'' AND a.CRMN_DIV_CD = c.DTL_CD_ID
+        WHERE a.USE_YN = ''Y'' AND b.PARTCPT_STAT_CD = ''2''; --MS006 참여상태  1신청 2참여 3불참 4대기 5취소 6대기(결제)            
+
+        --CRM 이메일 발송건
+        INSERT INTO GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE,
+            TYPE1,
+            TYPE2,
+            TYPE3,
+            MBER_NO,
+            SVR_DT
+        )
+        SELECT 
+            ''이메일'' as SVC_TYPE,
+            c.CD_NM as TYPE1, 
+            d.DTL_CD_NM as TYPE2, 
+            NULL as TYPE3,
+            b.MBER_NO, 
+            TO_VARCHAR(b.SNDNG_DE, ''YYYYMMDD'') AS SVR_DE
+        FROM GN_DW.BRONZE_CRM.TM_MS_EMAIL_SNDNG a 
+            INNER JOIN GN_DW.BRONZE_CRM.TD_MS_EMAIL_SNDNG_DTLS b ON a.SNDNG_KEY = b.SNDNG_KEY
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_CD c ON a.SNDNG_CD_ID = c.CD_ID
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD d ON c.CD_ID = d.CD_ID AND a.SNDNG_DTL_CD_ID = d.DTL_CD_ID
+        WHERE b.SNDNG_RST_CD = ''1''; 
+
+        -- 메시지 발송건
+        INSERT INTO GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE,
+            TYPE1,
+            TYPE2,
+            TYPE3,
+            MBER_NO,
+            SVR_DT
+        )
+        SELECT
+            ''메세지'' as SVC_TYPE,
+            c.CD_NM as TYPE1, 
+            d.DTL_CD_NM as TYPE2, 
+            e.DTL_CD_NM as TYPE3, 
+            b.MBER_NO, 
+            TO_VARCHAR(b.SNDNG_DT, ''YYYYMMDD'') AS SVC_DE
+        FROM GN_DW.BRONZE_CRM.TM_MS_MSG_AT_SNDNG a
+            INNER JOIN GN_DW.BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS b ON a.SNDNG_KEY = b.SNDNG_KEY    
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_CD c ON a.SNDNG_CD_ID = c.CD_ID
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD d ON a.SNDNG_CD_ID = d.CD_ID AND LEFT(a.SNDNG_DTL_CD_ID, 2) = d.DTL_CD_ID
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD e ON a.SNDNG_CD_ID = e.CD_ID AND a.SNDNG_DTL_CD_ID = e.DTL_CD_ID;
+
+        --이벤트 참여건
+        INSERT INTO GN_DW.ML.MBER_SERVICE_INFO (
+            SVC_TYPE,
+            TYPE1,
+            TYPE2,
+            TYPE3,
+            MBER_NO,
+            SVR_DT
+        )
+        SELECT 
+            ''이벤트'' as SVC_TYPE,
+            c.DTL_CD_NM as TYPE1, 
+            NULL as TYPE2, 
+            NULL as TYPE3, 
+            b.MBER_NO, 
+            TO_VARCHAR(b.PARTCPT_DT, ''YYYYMMDD'') AS SVR_DE,
+        FROM GN_DW.BRONZE_CRM.TM_MS_EVENT a
+            INNER JOIN GN_DW.BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL b ON a.EVENT_CD = b.EVENT_CD
+            INNER JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD c ON c.CD_ID = ''MS286'' AND a.EVENT_DIV_CD = c.DTL_CD_ID;
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MBRFEE_PAY_DTLS("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MBRFEE_PAY_DTLS'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.MBRFEE_PAY_DTLS (
+            MBRFEE_MT            VARCHAR  ,
+            MBER_NO            VARCHAR  ,
+            SPNSR_NO           VARCHAR  ,
+            SPNSR_BSNS_NO      VARCHAR  ,
+            SPNSR_BSNS_ID      VARCHAR  ,
+            CMPGN_CD      VARCHAR  ,
+            RGR_REQ_AMT      NUMBER   ,
+            RGR_PAY_AMT      NUMBER   ,
+            GFT_REQ_AMT      NUMBER   ,
+            GFT_PAY_AMT      NUMBER   ,
+            PAY_SUC_STATUS VARCHAR, 
+            SETLE_CD  VARCHAR,
+            PAY_DE  DATE,
+            RQEST_DE_LIST VARCHAR,
+            RQEST_RST_CD_LIST VARCHAR,
+            RQEST_SQNC_LIST VARCHAR
+        );
+        INSERT INTO GN_DW.ML.MBRFEE_PAY_DTLS (
+            MBRFEE_MT,
+            MBER_NO,
+            SPNSR_NO,
+            SPNSR_BSNS_NO,
+            SPNSR_BSNS_ID,
+            CMPGN_CD,
+            RGR_REQ_AMT,
+            RGR_PAY_AMT,
+            GFT_REQ_AMT,
+            GFT_PAY_AMT,
+            PAY_SUC_STATUS, 
+            SETLE_CD,
+            PAY_DE,
+            RQEST_DE_LIST,
+            RQEST_RST_CD_LIST,
+            RQEST_SQNC_LIST
+        )
+        SELECT 
+            a.MBRFEE_MT, a.MBER_NO, a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SPNSR_BSNS_ID, b.CMPGN_CD,
+            SUM(CASE WHEN a.MBRFEE_DIV_CD = ''E'' THEN a.RQEST_AMT ELSE 0 END) AS RGR_REQ_AMT,  
+            SUM(CASE WHEN a.MBRFEE_DIV_CD = ''E'' THEN a.PAY_AMT ELSE 0 END) AS RGR_PAY_AMT,  
+            SUM(CASE WHEN a.MBRFEE_DIV_CD = ''G'' THEN a.RQEST_AMT ELSE 0 END) AS GFT_REQ_AMT,  
+            SUM(CASE WHEN a.MBRFEE_DIV_CD = ''G'' THEN a.PAY_AMT ELSE 0 END) AS GFT_PAY_AMT,
+            CASE WHEN count(CASE WHEN a.PAY_STAT_CD = ''S'' THEN 1 END) >= 1 THEN ''Y'' ELSE ''N'' END AS PAY_SUC_STATUS,
+            LISTAGG(DISTINCT a.SETLE_CD, '', '') WITHIN GROUP (ORDER BY a.SETLE_CD) AS SETLE_CD_LIST,
+            MAX(CASE WHEN a.PAY_STAT_CD = ''S'' THEN a.PAY_DE END) AS PAY_DE,
+            LISTAGG(a.RQEST_DE::VARCHAR, '','') WITHIN GROUP (ORDER BY a.RQEST_SQNC) AS RQEST_DE_LIST,
+            LISTAGG(a.RQEST_RST_CD, '','') WITHIN GROUP (ORDER BY a.RQEST_SQNC) AS RQEST_RST_CD_LIST,
+            LISTAGG(a.RQEST_SQNC::VARCHAR, '','') WITHIN GROUP (ORDER BY a.RQEST_SQNC) AS RQEST_SQNC_LIST
+            --SUM(PAY_AMT)--, RETUN_RSN_CD
+        FROM GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT a
+            INNER JOIN GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR b ON a.MBER_NO = b.MBER_NO AND a.SPNSR_NO = b.SPNSR_NO
+        WHERE 
+            a.USE_YN = ''Y''
+            AND a.PRCS_STAT_CD = ''S''
+            GROUP BY a.MBRFEE_MT, a.MBER_NO, a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SPNSR_BSNS_ID, b.CMPGN_CD
+            ORDER BY a.MBRFEE_MT, a.MBER_NO, a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SPNSR_BSNS_ID, b.CMPGN_CD;
+
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_MONTHLY_DEV_AMT("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MONTHLY_DEV_AMT'';
+    
+    BEGIN
+        CREATE OR REPLACE TABLE GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT (
+            STDR_MT            VARCHAR  ,
+            STDR_DE            DATE ,     
+            MBER_NO            VARCHAR  ,
+            SPNSR_NO           VARCHAR  ,
+            SPNSR_BSNS_NO      VARCHAR  ,
+            SPNSR_BSNS_ID      VARCHAR  ,
+            CMPGN_CD           VARCHAR  ,
+            UPPER_CMPGN_CD           VARCHAR  ,
+            ACMSLT_DEPT_CD          VARCHAR,
+            -- CMPGN_CTGR_CD           VARCHAR  ,
+            STDR_MT_DVLP_DIV_CD           VARCHAR  ,
+            FIRST_OCCRRNC_DE   VARCHAR  ,
+            LAST_OCCRRNC_DE   VARCHAR  ,
+            CANCL_RDCAMT_RSN_CD   VARCHAR  ,
+            CHN_CNT NUMBER,
+            NEW_CNT NUMBER,
+            INC_CNT NUMBER,
+            DEC_CNT NUMBER,
+            RE_CNT  NUMBER,
+            CANCL_CNT NUMBER,
+            NEW_SPNSR_AMT      NUMBER   ,
+            INC_SPNSR_AMT      NUMBER   ,
+            DEC_SPNSR_AMT      NUMBER   ,
+            RE_SPNSR_AMT      NUMBER   ,
+            CANCL_SPNSR_AMT      NUMBER   ,
+            STDR_MT_SPNSR_AMT      NUMBER
+        );
+        --월별 후원별 상태
+        INSERT INTO GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT (
+            STDR_MT,     
+            STDR_DE,     
+            MBER_NO,
+            SPNSR_NO,
+            SPNSR_BSNS_NO,
+            SPNSR_BSNS_ID,
+            CMPGN_CD,
+            UPPER_CMPGN_CD,
+            ACMSLT_DEPT_CD,
+            -- CMPGN_CTGR_CD,
+            STDR_MT_DVLP_DIV_CD,
+            FIRST_OCCRRNC_DE,
+            LAST_OCCRRNC_DE,
+            CANCL_RDCAMT_RSN_CD,
+            CHN_CNT,
+            NEW_CNT,
+            INC_CNT,
+            DEC_CNT,
+            RE_CNT,
+            CANCL_CNT,
+            NEW_SPNSR_AMT,
+            INC_SPNSR_AMT,
+            DEC_SPNSR_AMT,
+            RE_SPNSR_AMT,
+            CANCL_SPNSR_AMT,
+            STDR_MT_SPNSR_AMT
+        )
+        WITH
+        /* 원본 상세 데이터 */
+        BASE AS (
+            SELECT
+                a.MBER_NO, a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SPNSR_BSNS_ID,
+                a.CMPGN_CD, b.UPPER_CMPGN_CD,--b.CMPGN_CTGR_CD,
+                a.ACMSLT_DEPT_CD,
+                a.DVLP_DIV_CD, a.OCCRRNC_DE, a.SPNSR_AMT,
+                a.CANCL_RDCAMT_RSN_CD
+            FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT a
+            LEFT OUTER JOIN GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG b
+                ON a.CMPGN_CD = b.CMPGN_CD
+            WHERE a.OCCRRNC_DE <= :V_STDR_MT_EDAY
+        ),
+        
+        /* 그룹별 요약: 시작/종료월 + 활동상태 판별 */
+        GRP_SUMMARY AS (
+            SELECT
+                MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, SPNSR_BSNS_ID, 
+                MIN(LEFT(OCCRRNC_DE, 6)) AS FIRST_MT,
+                MAX(LEFT(OCCRRNC_DE, 6)) AS LAST_MT,
+                SUM(SPNSR_AMT) AS TOTAL_SPNSR_AMT,
+                MAX(CANCL_RDCAMT_RSN_CD) AS CANCL_RSN_CD
+            FROM BASE
+            GROUP BY MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, SPNSR_BSNS_ID
+        ),
+        
+        /* 종료월 결정: 후원중이면 현재월까지 연장 */
+        GRP_RANGE AS (
+            SELECT *,
+                CASE
+                    WHEN CANCL_RSN_CD IS NOT NULL OR TOTAL_SPNSR_AMT = 0
+                    THEN LAST_MT                -- 종료: LAST_OCCRRNC_DE까지만
+                    ELSE :V_STDR_MT               -- 후원중: 현재월까지 연장
+                END AS END_MT
+            FROM GRP_SUMMARY
+        ),
+        /* 월 시리즈 생성 (FIRST_MT ~ END_MT) */
+        MONTH_SERIES (MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, SPNSR_BSNS_ID, FIRST_MT, END_MT, STDR_MT) AS (
+            SELECT MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, SPNSR_BSNS_ID, 
+                   FIRST_MT, END_MT, FIRST_MT
+            FROM GRP_RANGE
+            UNION ALL
+            SELECT MBER_NO, SPNSR_NO, SPNSR_BSNS_NO, SPNSR_BSNS_ID, 
+                   FIRST_MT, END_MT,
+                   TO_CHAR(DATEADD(MONTH, 1, TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMM'')
+            FROM MONTH_SERIES
+            WHERE STDR_MT < END_MT
+        )
+        /* 최종: 월별 누적 집계 */
+        SELECT
+            M.STDR_MT,
+            TO_DATE(M.STDR_MT || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            M.MBER_NO,
+            M.SPNSR_NO,
+            M.SPNSR_BSNS_NO,
+            M.SPNSR_BSNS_ID,
+            --기본 속성 항목
+            MAX(B.CMPGN_CD) AS CMPGN_CD,
+            MAX(B.UPPER_CMPGN_CD) AS UPPER_CMPGN_CD,
+            MAX(B.ACMSLT_DEPT_CD) AS ACMSLT_DEPT_CD,
+            -- MAX(B.CMPGN_CTGR_CD) AS CMPGN_CTGR_CD,
+            -- MAX(B.DVLP_DIV_CD) AS STDR_MT_DVLP_DIV_CD,
+            COALESCE(MAX(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT THEN B.DVLP_DIV_CD END)::INT, 6) AS STDR_MT_DVLP_DIV_CD,
+            -- MAX(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT THEN B.DVLP_DIV_CD ELSE 6 END) AS STDR_MT_DVLP_DIV_CD,
+            --MAX_BY(B.DVLP_DIV_CD, B.OCCRRNC_DE) AS STDR_MT_DVLP_DIV_CD,
+            MIN(B.OCCRRNC_DE) AS FIRST_OCCRRNC_DE,
+            MAX(B.OCCRRNC_DE) AS LAST_OCCRRNC_DE,
+            MAX(B.CANCL_RDCAMT_RSN_CD) AS CANCL_RDCAMT_RSN_CD,
+            -- DVLP_DIV_CD 구분별 건수/금액 집계
+            -- COUNT(*) - 1 AS CHN_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT THEN 1 END) AS CHN_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 1 THEN 1 END) AS NEW_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 2 THEN 1 END) AS INC_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 3 THEN 1 END) AS DEC_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 4 THEN 1 END) AS RE_CNT,
+            COUNT(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 5 THEN 1 END) AS CANCL_CNT,
+            SUM(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 1 THEN B.SPNSR_AMT ELSE 0 END) AS NEW_SPNSR_AMT,
+            SUM(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 2 THEN B.SPNSR_AMT ELSE 0 END) AS INC_SPNSR_AMT,
+            SUM(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 3 THEN B.SPNSR_AMT ELSE 0 END) AS DEC_SPNSR_AMT,
+            SUM(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 4 THEN B.SPNSR_AMT ELSE 0 END) AS RE_SPNSR_AMT,
+            SUM(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT AND B.DVLP_DIV_CD = 5 THEN B.SPNSR_AMT ELSE 0 END) AS CANCL_SPNSR_AMT,
+            -- COUNT(CASE WHEN B.DVLP_DIV_CD = 1 THEN 1 END) AS NEW_CNT,
+            -- COUNT(CASE WHEN B.DVLP_DIV_CD = 2 THEN 1 END) AS INC_CNT,
+            -- COUNT(CASE WHEN B.DVLP_DIV_CD = 3 THEN 1 END) AS DEC_CNT,
+            -- COUNT(CASE WHEN B.DVLP_DIV_CD = 4 THEN 1 END) AS RE_CNT,
+            -- COUNT(CASE WHEN B.DVLP_DIV_CD = 5 THEN 1 END) AS CANCL_CNT,
+            -- SUM(CASE WHEN B.DVLP_DIV_CD = 1 THEN B.SPNSR_AMT ELSE 0 END) AS NEW_SPNSR_AMT,
+            -- SUM(CASE WHEN B.DVLP_DIV_CD = 2 THEN B.SPNSR_AMT ELSE 0 END) AS INC_SPNSR_AMT,
+            -- SUM(CASE WHEN B.DVLP_DIV_CD = 3 THEN B.SPNSR_AMT ELSE 0 END) AS DEC_SPNSR_AMT,
+            -- SUM(CASE WHEN B.DVLP_DIV_CD = 4 THEN B.SPNSR_AMT ELSE 0 END) AS RE_SPNSR_AMT,
+            -- SUM(CASE WHEN B.DVLP_DIV_CD = 5 THEN B.SPNSR_AMT ELSE 0 END) AS CANCL_SPNSR_AMT,
+            SUM(B.SPNSR_AMT) AS STDR_MT_SPNSR_AMT
+        FROM MONTH_SERIES M
+        JOIN BASE B
+            ON  M.MBER_NO       = B.MBER_NO
+            AND M.SPNSR_NO      = B.SPNSR_NO
+            AND M.SPNSR_BSNS_NO = B.SPNSR_BSNS_NO
+            AND M.SPNSR_BSNS_ID = B.SPNSR_BSNS_ID
+            AND LEFT(B.OCCRRNC_DE, 6) <= M.STDR_MT
+        GROUP BY
+            M.STDR_MT, M.MBER_NO, M.SPNSR_NO, M.SPNSR_BSNS_NO, M.SPNSR_BSNS_ID
+        ORDER BY
+            M.MBER_NO, M.SPNSR_NO, M.SPNSR_BSNS_NO, M.SPNSR_BSNS_ID, M.STDR_MT;
+        -- 성공 로그 기록
+        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+        SELECT 
+            :V_PROC_NAME,
+            :V_STDR_MT,
+            :V_START_TIME,
+            CURRENT_TIMESTAMP(),
+            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+            ''SUCCESS'',
+            NULL;
+        
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_SNPSR_BSNS_NO_DSCNT_ML_DATA("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_SNPSR_BSNS_NO_DSCNT_ML_DATA'';
+    
+    BEGIN
+        -- 인입쿼리 시작
+        CREATE OR REPLACE TABLE GN_DW.ML.SNPSR_BSNS_NO_DSCNT_ML_DATA (
+            MBER_NO            VARCHAR  ,
+            FRST_REGIST_DT            DATETIME,
+            -- BRTHDY           VARCHAR  ,
+            SEX      VARCHAR  ,
+            -- ZIP      VARCHAR  ,
+            SPNSR_BSNS_NO VARCHAR,
+            CMPGN_CD VARCHAR,
+            ACT_YN VARCHAR,
+            SPNSR_AMT      NUMBER  ,
+            DVLP_DIV_CD      VARCHAR   ,
+            NEW_SPNSR_AMT      NUMBER   ,
+            INC_SPNSR_AMT      NUMBER   ,
+            DEC_SPNSR_AMT      NUMBER   ,
+            RE_SPNSR_AMT      NUMBER   ,
+            CANCL_SPNSR_AMT      NUMBER   ,
+            CHN_CNT      NUMBER   ,
+            SETLE_CD      VARCHAR   ,
+            PAY_CNT NUMBER, 
+            NONPAY_CNT  NUMBER
+        );
+        
+        INSERT INTO GN_DW.ML.SNPSR_BSNS_NO_DSCNT_ML_DATA (
+            MBER_NO,
+            FRST_REGIST_DT,
+            -- BRTHDY,
+            SEX,
+            -- ZIP,
+            SPNSR_BSNS_NO,
+            CMPGN_CD,
+            ACT_YN,
+            SPNSR_AMT,
+            DVLP_DIV_CD,
+            NEW_SPNSR_AMT,
+            INC_SPNSR_AMT,
+            DEC_SPNSR_AMT,
+            RE_SPNSR_AMT,
+            CANCL_SPNSR_AMT,
+            CHN_CNT,
+            SETLE_CD,
+            PAY_CNT, 
+            NONPAY_CNT
+        )
+        SELECT 
+            a.MBER_NO, 
+            a.FRST_REGIST_DT, 
+            -- a.BRTHDY, 
+            a.SEX, 
+            -- a.ZIP, 
+            c.SPNSR_BSNS_NO, 
+            c.CMPGN_CD, 
+            CASE 
+                WHEN 
+                    c.CANCL_RDCAMT_RSN_CD IS NULL AND
+                    c.SPNSR_AMT != 0
+                THEN ''Y'' 
+                ELSE ''N'' 
+            END as ACT_YN, 
+            c.SPNSR_AMT,
+            c.DVLP_DIV_CD, 
+            c.NEW_SPNSR_AMT,
+            c.INC_SPNSR_AMT, 
+            c.DEC_SPNSR_AMT, 
+            c.RE_SPNSR_AMT, 
+            c.CANCL_SPNSR_AMT,
+            c.CHN_CNT, 
+            b.SETLE_CD, 
+            d.PAY_CNT,
+            d.NONPAY_CNT
+            --'''' as alimt_snd_cnt, '''' as alimt_open_cnt, '''' as mail_open_cnt
+        FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO a
+            INNER JOIN GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO b 
+                ON a.MBER_NO = b.MBER_NO
+                AND 
+                    CASE 
+                        WHEN a.CPR_DIV_CD = ''A'' THEN ''I'' 
+                        ELSE a.CPR_DIV_CD 
+                    END = b.CPR_DIV_CD
+            INNER JOIN (
+                -- 조회시점 SPNSR_BSNS_NO 별 최종상태 필요. 
+                SELECT 
+                    MBER_NO, 
+                    SPNSR_BSNS_NO, 
+                    CMPGN_CD, 
+                    MAX_BY(STDR_MT_SPNSR_AMT, STDR_MT) AS SPNSR_AMT,
+                    MAX_BY(STDR_MT_DVLP_DIV_CD, STDR_MT) AS DVLP_DIV_CD,
+                    MAX_BY(CANCL_RDCAMT_RSN_CD, STDR_MT) AS CANCL_RDCAMT_RSN_CD,
+                    SUM(NEW_SPNSR_AMT) AS NEW_SPNSR_AMT,
+                    SUM(INC_SPNSR_AMT) AS INC_SPNSR_AMT,
+                    SUM(DEC_SPNSR_AMT) AS DEC_SPNSR_AMT,
+                    SUM(RE_SPNSR_AMT) AS RE_SPNSR_AMT,
+                    SUM(CANCL_SPNSR_AMT) AS CANCL_SPNSR_AMT,
+                    SUM(CHN_CNT) AS CHN_CNT
+                FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                GROUP BY MBER_NO, SPNSR_BSNS_NO, CMPGN_CD
+            ) c ON a.mber_no = c.mber_no
+            LEFT OUTER JOIN (
+                SELECT 
+                    MBER_NO, 
+                    COUNT(CASE WHEN PAY_SUC_STATUS = ''Y'' THEN 1 END) as PAY_CNT, 
+                    COUNT(CASE WHEN PAY_SUC_STATUS = ''N'' THEN 1 END) as NONPAY_CNT
+                FROM GN_DW.ML.MBRFEE_PAY_DTLS
+                GROUP BY MBER_NO
+            ) d ON a.MBER_NO = d.MBER_NO
+        WHERE d.MBER_NO IS NOT NULL -- 결제정보를 부분적으로 가져와서 결제정보 없는 건들이 있음. 
+        AND NOT (
+            ACT_YN = ''Y'' AND SPNSR_AMT <= 0 --2건 존재
+        );
+
+        -- 인입쿼리 끝
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
     EXCEPTION
         WHEN OTHER THEN
             LET V_ERR_MSG VARCHAR := SQLERRM;
@@ -2794,6 +4181,378 @@ AS 'BEGIN
 
         RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
 
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_ONCE_TO_FDRM_CONVERSION_6M("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_ONCE_TO_FDRM_CONVERSION_6M'';
+    
+    BEGIN
+        -- 웨어하우스 설정 (15분 타임아웃)
+        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
+        USE WAREHOUSE GN_DW_ML_WH;
+
+        -- =============================================================================
+        -- STEP 1: 학습 데이터셋 구성 (회원 단위, 증액 타겟)
+        -- =============================================================================
+        
+        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M AS
+        WITH TARGET AS (
+            /* ============================================================
+               1. 학습 대상 회원 및 전환 여부
+               ============================================================ */
+            SELECT
+                a.ONCE_MBER_NO,
+                a.FRST_REGIST_DT AS ONCE_JOIN_DT,
+                b.FRST_REGIST_DT AS CONVERSION_DT,
+                CASE
+                    WHEN b.FRST_REGIST_DT > a.FRST_REGIST_DT
+                     AND b.FRST_REGIST_DT <= DATEADD(DAY, 180, a.FRST_REGIST_DT)
+                    THEN 1
+                    ELSE 0
+                END AS CONVERSION_YN, 
+                CASE
+                    WHEN a.FRST_REGIST_DT <= DATEADD(DAY, -180, CURRENT_DATE()) OR CONVERSION_YN = 1 THEN ''TRAIN''
+                    ELSE ''SCORE''
+                END 
+                AS DATA_TYPE
+            FROM GN_DW.BRONZE_CRM.TM_MM_ONCE_MBER_INFO a
+            LEFT JOIN GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DT_DTLS b
+                ON a.ONCE_MBER_NO = b.ONCE_MBER_NO
+            /* 가입 후 6개월이 지나 라벨이 확정된 회원만 학습 대상 */
+            WHERE 
+                a.FRST_REGIST_DT >= ''2024-01-01''
+        ),
+        /* ============================================================
+           2. 월별 스냅샷 생성
+              - 가입월 = 1개월차
+              - 가입 후 6개월차까지
+              - 전환 회원은 전환월까지만
+           ============================================================ */
+        MONTHLY_TARGET AS (
+            SELECT
+                T.ONCE_MBER_NO,
+                T.ONCE_JOIN_DT,
+                T.CONVERSION_DT,
+                T.CONVERSION_YN,
+                T.DATA_TYPE,
+                DATEADD(
+                    MONTH,
+                    M.MONTH_SEQ,
+                    DATE_TRUNC(''MONTH'', T.ONCE_JOIN_DT)
+                ) AS STDR_MONTH
+            FROM TARGET T
+            CROSS JOIN (
+                SELECT 0 AS MONTH_SEQ
+                UNION ALL SELECT 1
+                UNION ALL SELECT 2
+                UNION ALL SELECT 3
+                UNION ALL SELECT 4
+                UNION ALL SELECT 5
+            ) M
+            WHERE
+                /* 가입월 ~ 가입 후 5개월 = 총 6개 월 */
+                DATEADD(
+                    MONTH,
+                    M.MONTH_SEQ,
+                    DATE_TRUNC(''MONTH'', T.ONCE_JOIN_DT)
+                ) <= TO_DATE(:V_STDR_MT || ''01'', ''YYYYMMDD'')
+                
+                /* 전환월까지만 생성 */
+                AND (
+                    T.CONVERSION_DT IS NULL
+                    OR
+                    DATEADD(
+                        MONTH,
+                        M.MONTH_SEQ,
+                        DATE_TRUNC(''MONTH'', T.ONCE_JOIN_DT)
+                    ) <= DATE_TRUNC(''MONTH'', T.CONVERSION_DT)
+                )
+        ),
+        ONCE_BQ AS (
+            SELECT DISTINCT
+                b.ONCE_MBER_NO,
+                a.USER_PSEUDO_ID,
+                a.EP_GA_SESSION_ID
+            FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA a
+            INNER JOIN TARGET b
+                ON COALESCE(a.USER_ID, a.UP_MEMBER_ID, a.UP_USER_ID) = b.ONCE_MBER_NO
+            ORDER BY
+                a.USER_PSEUDO_ID,
+                a.EP_GA_SESSION_ID
+        ),
+        BQ_MONTHLY AS (
+            SELECT
+                b.ONCE_MBER_NO,
+                LEFT(a.EVENT_DATE, 6) AS STDR_MT,
+                COUNT(
+                    DISTINCT a.USER_PSEUDO_ID || ''_'' || a.EP_GA_SESSION_ID
+                ) AS SESSION_CNT,
+                COUNT(*) AS BQ_EVENT_CNT,
+        
+                COUNT(
+                    DISTINCT a.EVENT_DATE
+                ) AS ACTIVE_DAY_CNT,
+                SUM(
+                    CASE
+                        WHEN a.EVENT_NAME = ''page_view''
+                        THEN 1 ELSE 0
+                    END
+                ) AS PAGE_VIEW_CNT,
+                SUM(
+                    CASE
+                        WHEN a.EVENT_NAME = ''purchase''
+                        THEN 1 ELSE 0
+                    END
+                ) AS PURCHASE_CNT,
+                SUM(
+                    CASE
+                        WHEN a.EVENT_NAME = ''begin_checkout''
+                        THEN 1 ELSE 0
+                    END
+                ) AS BEGIN_CHECKOUT_CNT,
+                SUM(
+                    CASE
+                        WHEN a.EVENT_NAME = ''form_submit''
+                        THEN 1 ELSE 0
+                    END
+                ) AS FORM_SUBMIT_CNT,
+                SUM(
+                    CASE
+                        WHEN a.EVENT_NAME = ''scroll''
+                        THEN 1 ELSE 0
+                    END
+                ) AS SCROLL_CNT,
+                SUM(
+                    COALESCE(a.EP_ENGAGEMENT_TIME_MSEC, 0)
+                ) / 1000.0 AS ENGAGEMENT_TIME_SEC,
+                COUNT(
+                    DISTINCT CASE
+                        WHEN a.EP_SESSION_ENGAGED = ''1''
+                        THEN a.USER_PSEUDO_ID || ''_'' || a.EP_GA_SESSION_ID
+                    END
+                ) AS ENGAGED_SESSION_CNT,
+                COUNT(
+                    DISTINCT CASE
+                        WHEN a.DEVICE_CATEGORY = ''mobile''
+                        THEN a.USER_PSEUDO_ID || ''_'' || a.EP_GA_SESSION_ID
+                    END
+                ) AS MOBILE_SESSION_CNT,
+        
+                COUNT(
+                    DISTINCT CASE
+                        WHEN a.DEVICE_CATEGORY = ''desktop''
+                        THEN a.USER_PSEUDO_ID || ''_'' || a.EP_GA_SESSION_ID
+                    END
+                ) AS DESKTOP_SESSION_CNT
+            FROM GN_DW.SILVER.BIGQUERY_REFINED_DATA a
+            INNER JOIN ONCE_BQ b
+                ON a.USER_PSEUDO_ID = b.USER_PSEUDO_ID
+               AND a.EP_GA_SESSION_ID = b.EP_GA_SESSION_ID
+            GROUP BY
+                b.ONCE_MBER_NO,
+                LEFT(a.EVENT_DATE, 6)
+        )
+        SELECT
+            a.ONCE_MBER_NO,
+            TO_VARCHAR(a.STDR_MONTH, ''YYYYMM'') AS STDR_MT,
+            a.ONCE_JOIN_DT,
+            a.CONVERSION_DT,
+            a.CONVERSION_YN,
+            a.DATA_TYPE,
+            b.ONCE_DNTN_CNT,
+            b.ONCE_DNTN_AMT,
+            b.ONCE_DNTN_AVG_AMT, 
+            b.ONCE_DNTN_MAX_AMT,
+            c.SERVICE_CNT,
+            c.CRMN_CNT,
+            c.EMAIL_CNT,
+            c.MESSAGE_CNT,
+            c.PSTMTR_CNT,
+            c.EVENT_CNT,
+            d.SESSION_CNT,
+            d.BQ_EVENT_CNT,
+            d.ACTIVE_DAY_CNT,
+            d.PAGE_VIEW_CNT,
+            d.PURCHASE_CNT,
+            d.BEGIN_CHECKOUT_CNT,
+            d.FORM_SUBMIT_CNT,
+            d.SCROLL_CNT,
+            d.ENGAGEMENT_TIME_SEC,
+            d.ENGAGED_SESSION_CNT,
+            d.MOBILE_SESSION_CNT,
+            d.DESKTOP_SESSION_CNT
+        FROM MONTHLY_TARGET a
+            LEFT OUTER JOIN (
+                SELECT
+                    ONCE_MBER_NO,
+                    TO_VARCHAR(PAY_DE, ''YYYYMM'') AS STDR_MT,
+                    -- 기부 횟수
+                    COUNT(*) AS ONCE_DNTN_CNT,
+                    -- 기부 금액
+                    SUM(PAY_AMT) AS ONCE_DNTN_AMT,
+                    -- 평균 기부 금액
+                    AVG(PAY_AMT) AS ONCE_DNTN_AVG_AMT,
+                    -- 최대 기부 금액
+                    MAX(PAY_AMT) AS ONCE_DNTN_MAX_AMT
+                FROM GN_DW.BRONZE_CRM.TM_PM_DNTN_DTLS
+                WHERE USE_YN = ''Y''
+                GROUP BY
+                    ONCE_MBER_NO,
+                    TO_VARCHAR(PAY_DE, ''YYYYMM'')
+            ) b ON a.ONCE_MBER_NO = b.ONCE_MBER_NO AND TO_VARCHAR(a.STDR_MONTH, ''YYYYMM'') = b.STDR_MT
+            LEFT OUTER JOIN (
+                -- 일시후원별 서비스 정보. 정보 있으면 서비스 제공한 것이다. 이메일, 메시지의 경우 
+                SELECT
+                    MBER_NO,
+                    LEFT(SVR_DT, 6) AS STDR_MT,
+                    /* 전체 서비스 제공 건수 */
+                    COUNT(*) AS SERVICE_CNT,
+                    /* SVC_TYPE별 제공 건수 */
+                    SUM(CASE WHEN SVC_TYPE = ''행사'' THEN 1 ELSE 0 END) AS CRMN_CNT,
+                    SUM(CASE WHEN SVC_TYPE = ''이메일'' THEN 1 ELSE 0 END) AS EMAIL_CNT,
+                    SUM(CASE WHEN SVC_TYPE = ''메세지'' THEN 1 ELSE 0 END) AS MESSAGE_CNT,
+                    SUM(CASE WHEN SVC_TYPE = ''우편물'' THEN 1 ELSE 0 END) AS PSTMTR_CNT,
+                    SUM(CASE WHEN SVC_TYPE = ''이벤트'' THEN 1 ELSE 0 END) AS EVENT_CNT
+                FROM GN_DW.ML.MBER_SERVICE_INFO
+                WHERE SVR_DT IS NOT NULL
+                GROUP BY
+                    MBER_NO,
+                    LEFT(SVR_DT, 6)
+            ) c ON a.ONCE_MBER_NO = c.MBER_NO AND TO_VARCHAR(a.STDR_MONTH, ''YYYYMM'') = c.STDR_MT
+            LEFT OUTER JOIN BQ_MONTHLY d ON a.ONCE_MBER_NO = d.ONCE_MBER_NO AND TO_VARCHAR(a.STDR_MONTH, ''YYYYMM'') = d.STDR_MT
+        ORDER BY
+            a.ONCE_MBER_NO,
+            TO_VARCHAR(a.STDR_MONTH, ''YYYYMM'');
+
+        -- =============================================================================
+        -- STEP 2: 학습용 뷰 + 모델 학습
+        -- =============================================================================
+        CREATE OR REPLACE VIEW GN_DW.ML.V_TRAIN_ONCE_CONVERSION AS
+        SELECT
+            -- 기부 피처
+            COALESCE(ONCE_DNTN_CNT, 0)       AS ONCE_DNTN_CNT,
+            COALESCE(ONCE_DNTN_AMT, 0)       AS ONCE_DNTN_AMT,
+            COALESCE(ONCE_DNTN_AVG_AMT, 0)   AS ONCE_DNTN_AVG_AMT,
+            COALESCE(ONCE_DNTN_MAX_AMT, 0)   AS ONCE_DNTN_MAX_AMT,
+            -- 서비스 피처
+            COALESCE(SERVICE_CNT, 0)          AS SERVICE_CNT,
+            COALESCE(CRMN_CNT, 0)            AS CRMN_CNT,
+            COALESCE(EMAIL_CNT, 0)           AS EMAIL_CNT,
+            COALESCE(MESSAGE_CNT, 0)         AS MESSAGE_CNT,
+            COALESCE(PSTMTR_CNT, 0)          AS PSTMTR_CNT,
+            COALESCE(EVENT_CNT, 0)           AS EVENT_CNT,
+            -- 웹 행동 피처
+            COALESCE(SESSION_CNT, 0)          AS SESSION_CNT,
+            COALESCE(BQ_EVENT_CNT, 0)        AS BQ_EVENT_CNT,
+            COALESCE(ACTIVE_DAY_CNT, 0)      AS ACTIVE_DAY_CNT,
+            COALESCE(PAGE_VIEW_CNT, 0)       AS PAGE_VIEW_CNT,
+            COALESCE(PURCHASE_CNT, 0)        AS PURCHASE_CNT,
+            COALESCE(BEGIN_CHECKOUT_CNT, 0)  AS BEGIN_CHECKOUT_CNT,
+            COALESCE(FORM_SUBMIT_CNT, 0)     AS FORM_SUBMIT_CNT,
+            COALESCE(SCROLL_CNT, 0)          AS SCROLL_CNT,
+            COALESCE(ENGAGEMENT_TIME_SEC, 0) AS ENGAGEMENT_TIME_SEC,
+            COALESCE(ENGAGED_SESSION_CNT, 0) AS ENGAGED_SESSION_CNT,
+            COALESCE(MOBILE_SESSION_CNT, 0)  AS MOBILE_SESSION_CNT,
+            COALESCE(DESKTOP_SESSION_CNT, 0) AS DESKTOP_SESSION_CNT,
+            -- 타겟
+            CONVERSION_YN
+        FROM GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M;
+      
+       -- =============================================================================
+        -- STEP 4: 예측 실행 (테이블 없으면 생성+COMMENT, 있으면 DELETE 후 INSERT)
+        -- =============================================================================
+        CREATE OR REPLACE SNOWFLAKE.ML.CLASSIFICATION GN_DW.ML.ONCE_TO_FDRM_CLASSIFIER(
+            INPUT_DATA => SYSTEM$REFERENCE(''VIEW'', ''GN_DW.ML.V_TRAIN_ONCE_CONVERSION''),
+            TARGET_COLNAME => ''CONVERSION_YN'',
+            CONFIG_OBJECT => {''evaluate'': TRUE}
+        );
+        
+        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
+            ONCE_MBER_NO VARCHAR COMMENT ''회원번호'',
+            STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
+            CONVERSION_YN VARCHAR COMMENT ''회원 전환여부'',
+            DATA_TYPE VARCHAR COMMENT ''데이터유형'',
+            PREDICT VARIANT COMMENT ''예측결과''
+        )
+        COMMENT = ''일시회원 향후 6개월 내 전환 가능성 예측 결과'';
+        
+        -- 기존 동일 STDR_MT 데이터 삭제
+        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
+
+        -- 예측 결과 INSERT
+        INSERT INTO GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION
+        SELECT
+            t.ONCE_MBER_NO,
+            :V_STDR_MT,
+            t.CONVERSION_YN,
+            t.DATA_TYPE,
+            pred.PREDICT
+        FROM GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M t,
+        LATERAL (
+            SELECT
+                GN_DW.ML.ONCE_TO_FDRM_CLASSIFIER!PREDICT(
+                    INPUT_DATA => OBJECT_CONSTRUCT(
+                        ''ONCE_DNTN_CNT'',       COALESCE(t.ONCE_DNTN_CNT, 0),
+                        ''ONCE_DNTN_AMT'',       COALESCE(t.ONCE_DNTN_AMT, 0),
+                        ''ONCE_DNTN_AVG_AMT'',   COALESCE(t.ONCE_DNTN_AVG_AMT, 0),
+                        ''ONCE_DNTN_MAX_AMT'',   COALESCE(t.ONCE_DNTN_MAX_AMT, 0),
+                        ''SERVICE_CNT'',         COALESCE(t.SERVICE_CNT, 0),
+                        ''CRMN_CNT'',            COALESCE(t.CRMN_CNT, 0),
+                        ''EMAIL_CNT'',           COALESCE(t.EMAIL_CNT, 0),
+                        ''MESSAGE_CNT'',         COALESCE(t.MESSAGE_CNT, 0),
+                        ''PSTMTR_CNT'',          COALESCE(t.PSTMTR_CNT, 0),
+                        ''EVENT_CNT'',           COALESCE(t.EVENT_CNT, 0),
+                        ''SESSION_CNT'',         COALESCE(t.SESSION_CNT, 0),
+                        ''BQ_EVENT_CNT'',        COALESCE(t.BQ_EVENT_CNT, 0),
+                        ''ACTIVE_DAY_CNT'',      COALESCE(t.ACTIVE_DAY_CNT, 0),
+                        ''PAGE_VIEW_CNT'',       COALESCE(t.PAGE_VIEW_CNT, 0),
+                        ''PURCHASE_CNT'',        COALESCE(t.PURCHASE_CNT, 0),
+                        ''BEGIN_CHECKOUT_CNT'',  COALESCE(t.BEGIN_CHECKOUT_CNT, 0),
+                        ''FORM_SUBMIT_CNT'',     COALESCE(t.FORM_SUBMIT_CNT, 0),
+                        ''SCROLL_CNT'',          COALESCE(t.SCROLL_CNT, 0),
+                        ''ENGAGEMENT_TIME_SEC'', COALESCE(t.ENGAGEMENT_TIME_SEC, 0),
+                        ''ENGAGED_SESSION_CNT'', COALESCE(t.ENGAGED_SESSION_CNT, 0),
+                        ''MOBILE_SESSION_CNT'',  COALESCE(t.MOBILE_SESSION_CNT, 0),
+                        ''DESKTOP_SESSION_CNT'', COALESCE(t.DESKTOP_SESSION_CNT, 0)
+                    )
+                ) AS PREDICT
+        ) pred
+        WHERE t.DATA_TYPE = ''SCORE'';
+
+        -- 성공 로그 기록
+        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+        SELECT 
+            :V_PROC_NAME,
+            :V_STDR_MT,
+            :V_START_TIME,
+            CURRENT_TIMESTAMP(),
+            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+            ''SUCCESS'',
+            NULL;
+        
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
     EXCEPTION
         WHEN OTHER THEN
             LET V_ERR_MSG VARCHAR := SQLERRM;

@@ -9,6 +9,7 @@ SELECT
   STATS_DEPT_LVL                        AS STATS_DEPT_LVL,
   NULLIF(TRIM(USE_YN),'')               AS USE_YN,
   SORT_ORDR                             AS SORT_ORDR,
+  LAST_UPDT_DT                          AS LAST_UPDT_DT,   -- 🆕 O188-E 활성 조직 판정축(9999-12-31·NULL = 비활성 버전)
   'CRM'                                 AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()                   AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()                   AS DW_UPDATE_TS,
