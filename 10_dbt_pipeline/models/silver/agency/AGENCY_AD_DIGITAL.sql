@@ -33,3 +33,7 @@ SELECT
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ      AS DW_UPDATE_TS,
     '{{ invocation_id }}'                   AS DW_BATCH_ID
 FROM {{ ref('AGENCY_AD_ROW_DGT') }}
+-- 🔴 [2026-09-30] 코어(AGENCY_AD_PERFORMANCE)가 제외한 행(날짜 불량 · 실적 0)은 위성에서도 뺀다.
+--   · 제외 판정은 코어 **1곳**에만 둔다 — 위성은 코어에 남은 DK 만 받는다(판정 복제 금지).
+--   · 이 조건이 없으면 relationships_FACT_AD_DIGITAL_AD_PERF_DK → FACT_AD_PERFORMANCE 가 고아 6건으로 FAIL.
+WHERE AD_PERF_DK IN (SELECT AD_PERF_DK FROM {{ ref('AGENCY_AD_PERFORMANCE') }} WHERE SOURCE_SYSTEM = 'DIGITAL')

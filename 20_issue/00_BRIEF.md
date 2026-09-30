@@ -31,51 +31,31 @@ END-METADATA -->
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0188-A.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0189-A.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 7개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-D.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-E.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-F.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-G.md`
+> 🔴🔴 **이 세션은 단위 3개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-C.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O188-A-0 🔴 먼저 알아라 — dbt 재배포가 안 되어 있다 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:17` |
-| ▣ O188-A-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:26` |
-| ▣ O188-A-2 🟠 미처리 작업 — 독립 먼저 · 의존 나중 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:37` |
-| ▣ O188-A-3 ⏸ dbt 정지점 (R4-1) — 사용자 실행 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:55` |
-| ▣ O188-A-4 📋 다음 세션 복붙 프롬프트 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-A.md:65` |
-| ▣ O188-B-0 🔴 먼저 알아라 — 사용자 지시로 O188 계열이 최우선이다 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-B.md:17` |
-| ▣ O188-B-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-B.md:22` |
-| ▣ O188-B-2 🟠 미처리 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-B.md:30` |
-| ▣ O188-B-3 📋 다음 세션 복붙 프롬프트 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-B.md:40` |
-| ▣ O188-C-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-C.md:17` |
-| ▣ O188-C-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-C.md:23` |
-| ▣ O188-C-2 🟠 미처리 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-C.md:31` |
-| ▣ O188-C-3 📋 다음 세션 복붙 프롬프트 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-C.md:40` |
-| ▣ O188-D-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-D.md:17` |
-| ▣ O188-D-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-D.md:28` |
-| ▣ O188-D-2 🟠 O188 계열 남은 작업 (A·B·C·D 통합 정본) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-D.md:36` |
-| ▣ O188-E-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-E.md:17` |
-| ▣ O188-E-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-E.md:24` |
-| ▣ O188-E-2 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-E.md:30` |
-| ▣ O188-E-3 ⏸ dbt 정지점 (R4-1) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-E.md:42` |
-| ▣ O188-F-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-F.md:17` |
-| ▣ O188-F-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-F.md:25` |
-| ▣ O188-F-2 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-F.md:31` |
-| ▣ O188-F-3 ⏸ dbt 정지점 (R4-1) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-F.md:41` |
-| ▣ O188-G-0 🔴 먼저 알아라 — 이 파일이 O188 계열의 현행 정본이다 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-G.md:17` |
-| ▣ O188-G-1 🟢 사용자 결정(2026-09-29 · 다음 세션이 집행) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-G.md:28` |
-| ▣ O188-G-2 🟠 남은 작업 — ㉠ O188 잔여 / ㉡ 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-G.md:36` |
-| ▣ O188-G-3 📋 다음 세션 복붙 프롬프트 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0188-G.md:49` |
+| ▣ O189-A-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md:17` |
+| ▣ O189-A-1 🟢 판정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md:34` |
+| ▣ O189-A-2 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md:39` |
+| ▣ O189-A-3 ⏸ dbt 정지점 (R4-1) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-A.md:54` |
+| ▣ O189-B-0 🔴 먼저 알아라 (2026-09-29 · xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-B.md:17` |
+| ▣ O189-B-1 🟢 이 단위가 끝낸 것 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-B.md:25` |
+| ▣ O189-B-2 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-B.md:37` |
+| ▣ O189-B-3 ⏸ dbt 정지점 (R4-1) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-B.md:54` |
+| ▣ O189-C-0 🔴 먼저 알아라 — O189 계열 현행 정본 (2026-09-29 · 종료 계정 xf98254) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-C.md:17` |
+| ▣ O189-C-1 🟢 사용자 결정(2026-09-29 · 정본 = 문서50 -024 O189-C 표) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-C.md:27` |
+| ▣ O189-C-2 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-C.md:35` |
+| ▣ O189-C-3 📋 다음 세션 복붙 프롬프트 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0189-C.md:51` |
 
 > 🟠 **착수표에는 열려 있는데 이 인수인계 절에 안 보이는 항목 2건**
 > ⇒ ㉠ 인수인계 절이 의도적으로 압축된 것인가,
@@ -104,25 +84,25 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O188` | 🟠 O188 — 문서20 회신 7건 처분 · 공8 = agency CONV_VU_CNT(97,906원 · SV_AD GA_DEV_UNIT_PRICE 배포 · Agent V6) ·… | 🟠 dbt 재배포·build 대기(A~F 일괄) · 질문 21 추천안 승인 · Agent D안 · W3/B 실측 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:103` |
-| `O187-D` | 🔴 O187-D — 30_output_share 전체 재생성 + 수기 10종 최신화 · 🔴🔴 GA4 체인 전체 0행 발견(09-27 DDL 재생성 후 3일 창 적재) | 🔴 백필 대기 · 골든 갱신 보류 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:104` |
-| `O187-C` | 🟢 O187-C — 리스트 var --vars 전달 확인 · 백필 런북 ARGS 1줄로 단순화(재배포 불요) | 🟢 문서20 신규 회신 0 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O187-B` | 🟢 O187-B — --vars 판정: EXECUTE DBT PROJECT 경로에서 전달됨(A·B 모두 999일) · 종전 실패는 Workspaces 클라이언트 경로 한정 · 주… | 🟢 문서20 신규 회신 0 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O187` | 🟢 O187 — build PASS 판정 + 런북 2곳 정정 + 열린 판정 36건 J3(N-25) + §30-I stale 정정 + 스모크 오류 진단 | 🟢 잔여 전부 외부 입력 대기 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O186` | 🟢 O186 — 문서 여유 회복(3행 은퇴·해소로그 -017) + DEC-44 집행 확인 + ONCE 속성 3축 + Agent 스모크 36/36 | 🟢 SV_BUDGET·SV_ML_ONCE·AGENT_MEMBER V5 · 🔴 확정위반 1(은퇴 키 접두) | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O189` | 🟠 O189 — O188 build 실패 14건 진단(권한 · DDL 정본 미갱신) → DDL 편입(신규 19 · 증설 24) · build PASS 576 판정 · SV_TAR… | 🟢 재build 118/1/0(보고) · 인수인계 04·05 원천 갱신 반영(7축 PASS) · 결정 4건 기록 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:103` |
+| `O188` | 🟠 O188 — 문서20 회신 7건 처분 · 공8 = agency CONV_VU_CNT(97,906원 · SV_AD GA_DEV_UNIT_PRICE 배포 · Agent V6) ·… | 🟠 dbt 재배포·build 대기(A~F 일괄) · 질문 21 추천안 승인 · Agent D안 · W3/B 실측 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:104` |
+| `O187-D` | 🔴 O187-D — 30_output_share 전체 재생성 + 수기 10종 최신화 · 🔴🔴 GA4 체인 전체 0행 발견(09-27 DDL 재생성 후 3일 창 적재) | 🔴 백필 대기 · 골든 갱신 보류 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O187-C` | 🟢 O187-C — 리스트 var --vars 전달 확인 · 백필 런북 ARGS 1줄로 단순화(재배포 불요) | 🟢 문서20 신규 회신 0 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O187-B` | 🟢 O187-B — --vars 판정: EXECUTE DBT PROJECT 경로에서 전달됨(A·B 모두 999일) · 종전 실패는 Workspaces 클라이언트 경로 한정 · 주… | 🟢 문서20 신규 회신 0 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O187` | 🟢 O187 — build PASS 판정 + 런북 2곳 정정 + 열린 판정 36건 J3(N-25) + §30-I stale 정정 + 스모크 오류 진단 | 🟢 잔여 전부 외부 입력 대기 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 18 | 426,711 | 37,416 | 3,544 🟠 |
-| `01_세션이력` | 83 | 2,088,856 | 38,225 | 14,536 |
+| `00_INDEX_이슈원장` | 18 | 427,472 | 38,177 | 2,783 🟠 |
+| `01_세션이력` | 83 | 2,091,513 | 38,225 | 11,879 |
 | `02_상태상세_대시보드_갱신형` | 8 | 161,656 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,478 | 27,121 | 13,839 |
-| `20_현업확인_요청` | 10 | 192,976 | 35,532 | 5,428 🟠 |
+| `20_현업확인_요청` | 10 | 197,618 | 35,532 | 5,428 🟠 |
 | `30_설계_의사결정` | 16 | 287,402 | 27,122 | 13,838 |
-| `50_dbt_파이프라인_미결조치` | 24 | 407,880 | 24,408 | 16,552 |
+| `50_dbt_파이프라인_미결조치` | 24 | 412,796 | 24,408 | 16,552 |
 | `90_해소완료_로그` | 17 | 376,996 | 33,826 | 33,105 |
 | `99_NEXT_SESSION` | 35 | 385,176 | 28,524 | 12,436 |
 | `01_문서분할_규약` | 3 | 54,175 | 29,125 | 11,835 |
@@ -137,10 +117,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 24,867 | 24,867 | 16,093 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 6,632 | 6,632 | 34,328 |
-| `00_BRIEF` | — | 10,062 | 10,062 | 30,898 |
+| `00_BRIEF` | — | 13,281 | 13,281 | 27,679 |
 | `11_O누적작업_점검_재현_절차` | — | 30,765 | 30,765 | 10,195 |
 
-> 전 문서군 = **3,074,186 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,084,749 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태

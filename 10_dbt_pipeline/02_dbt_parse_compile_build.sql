@@ -29,7 +29,6 @@ USE WAREHOUSE GN_DW_ETL_WH;
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
-
 -- build 실패시 수정 후 실패지점부터 이어서 진행
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='retry';
 

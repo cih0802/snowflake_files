@@ -8,12 +8,18 @@
 --   · 🔴 GOAL_TYPE_NM(연사업/팀)은 **이중계상 가드** — 두 유형이 같은 목표의 다른 분해로 보인다(N-24 ① 회신 대기).
 --   · 원천 `-` 는 값이 아니다 ⇒ NULL(`R2-7-1`).
 --   · 🔴 source 는 `bronze_crm_ref` — dev2 의 BRONZE_CRM_2 에 이 테이블이 없다.
-WITH u AS (
+-- 🔴 [2026-09-30] 원천 **완전중복 행**(전 컬럼 동일)을 `SELECT DISTINCT` 로 제거한다(BRONZE 통제 불가 · 사용자 결정).
+--   · 실측 = 438행 → DISTINCT 437행 · 키 중복 0 (중복 1행 = 사복/지역사회/기타/지역개발 · 12개월 전부 0).
+--   · 🔴 완전중복만 제거한다 — 키가 같고 값이 다른 충돌은 그대로 남아 unique 테스트(error)가 잡는다.
+WITH src AS (
+    SELECT DISTINCT * FROM {{ source('bronze_crm_ref', 'TM_CM_MBER_DVLP_GOAL_DIV') }}
+),
+u AS (
     SELECT
         YEAR, GOAL_TYPE_NM, CPR_DIV_NM, NEW_OLD_DIV_NM, ORG_DIV_NM, TEAM_NM, SPNSR_BSNS_DIV_NM, DTL_DIV_NM,
         TRY_TO_NUMBER(SUBSTR(MONTH_COL, 2, 2)) AS MONTH_NO,
         GOAL_CNT
-    FROM {{ source('bronze_crm_ref', 'TM_CM_MBER_DVLP_GOAL_DIV') }}
+    FROM src
     UNPIVOT INCLUDE NULLS (GOAL_CNT FOR MONTH_COL IN (
         M01_GOAL_CNT, M02_GOAL_CNT, M03_GOAL_CNT, M04_GOAL_CNT, M05_GOAL_CNT, M06_GOAL_CNT,
         M07_GOAL_CNT, M08_GOAL_CNT, M09_GOAL_CNT, M10_GOAL_CNT, M11_GOAL_CNT, M12_GOAL_CNT))

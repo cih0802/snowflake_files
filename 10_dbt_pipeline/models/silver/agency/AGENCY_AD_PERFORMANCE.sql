@@ -106,6 +106,11 @@ SELECT
     CAST(NULL AS FLOAT)                     AS CALL_CTR_OPER_COST,
     CAST(NULL AS FLOAT)                     AS TOT_COST
 FROM dgt
+-- 🔴 [2026-09-30] 날짜 불량(원천 텍스트 '2024-6-31' 등 실재하지 않는 일자) **이면서 실적 전부 0** 인 행만 제외(사용자 결정).
+--   · 실측 = 6행(NSA·GSA·DSA 키워드 · 비용·노출·클릭 0) ⇒ 합계 영향 0.
+--   · 실적이 있는 날짜 불량 행은 남겨 not_null(AD_DATE) error 가 계속 잡는다(severity 강등 아님).
+WHERE NOT (AD_DATE_RESOLVED IS NULL
+           AND COALESCE(AD_COST, 0) = 0 AND COALESCE(EXPS_CNT, 0) = 0 AND COALESCE(CLICK_CNT, 0) = 0)
 
 UNION ALL
 
