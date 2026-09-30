@@ -53,9 +53,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
     fep_to_member AS fep (MEMBER_DK) REFERENCES member
   )
   DIMENSIONS (
-    date.PART_DATE       AS date.FULL_DATE       WITH SYNONYMS ('참여일', '행사일', '일자', 'FULL_DATE', '날짜') COMMENT = '참여일',
+    date.PART_DATE       AS date.FULL_DATE       WITH SYNONYMS ('참여일', '행사일', '일자', '날짜') COMMENT = '참여일',
+    date.FULL_DATE AS date.FULL_DATE  COMMENT = '달력 날짜(DIM_DATE.FULL_DATE) — PART_DATE 와 같은 값이다(🆕 O190 · Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
     date.CAL_YEAR        AS date.YEAR            WITH SYNONYMS ('연도', '년')  COMMENT = '연도',
     date.CAL_MONTH       AS date.MONTH           WITH SYNONYMS ('월')         COMMENT = '월(1~12)',
+    date.YEAR AS date.YEAR    COMMENT = '연도(DIM_DATE.YEAR) — CAL_YEAR 와 같은 값(🆕 O190 · Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
+    date.MONTH AS date.MONTH  COMMENT = '월(DIM_DATE.MONTH) — CAL_MONTH 와 같은 값(🆕 O190 · 추측 식별자 실재화). 둘 중 하나만 쓴다.',
     event.EVENT_NAME     AS event.EVENT_NAME     WITH SYNONYMS ('행사명', '이벤트명') COMMENT = '행사명',
     event.EVENT_KIND     AS event.EVENT_KIND     WITH SYNONYMS ('행사종류코드', '행사계통코드') COMMENT = '행사 종류 **원천 판별자 코드**. 실제값 2종 + NULL: ''CRMN''·''EVENT'' · NULL(행사 마스터 미매핑). 🔴 이 값은 업무 분류가 아니라 **행사 마스터가 두 원천의 결합이라는 사실**을 나타낸다 — ''EVENT''=일반행사 원천 · ''CRMN''=캠페인행사 원천. ✅ **사람이 읽는 라벨은 EVENT_KIND_NAME 축을 쓴다**(''일반행사''·''캠페인행사''·''(미매핑)''). 🔴 이 코드축으로 답하지 말고 라벨축으로 답할 것 — 현업은 코드를 모른다. ⚠️ 위 2종 외의 값으로 필터하면 0행이다',
     event.EVENT_KIND_NAME AS event.EVENT_KIND_NAME WITH SYNONYMS ('행사종류', '행사구분계통') COMMENT = '행사 종류 라벨 — **현업 응답용 정본 축**이다. 실제값 3종: ''일반행사''·''캠페인행사''·''(미매핑)''. 🔴 이 라벨은 원천 계통을 뜻한다(일반행사 마스터 / 캠페인행사 마스터) — 온·오프라인 구분이 아니다. ⚠️ ''(미매핑)''은 참여 행이 행사 마스터에 붙지 않은 경우이며 비중이 작지 않다 — 이 축으로 분해하면 그 덩어리를 함께 밝힌다',
@@ -99,7 +102,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
       WITH SYNONYMS ('불참횟수') COMMENT = '누적 불참 횟수의 최댓값. 회원으로 GROUP BY 해 쓴다.'
   )
   COMMENT = 'Phase-1 행사 참여 SV (base: GOLD.FACT_EVENT_ATTENDANCE, grain: 행사참여 1행). CRM 일반행사/캠페인행사 참여 건수, 고유 참여회원수(DISTINCT_PARTICIPANTS), 행사구분/참여상태/경로/채널 라벨 뷰. ⚠️ 일반행사(EVENT)와 캠페인행사(CRMN)의 코드군이 상이하므로 계열 판별자 PART_EVENT_KIND_NAME 동반 필수. 행사 미매칭분은 Unknown(0)으로 처리되어 행사명 집계는 부분집합임.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 라벨축 사용: 행사구분(EVENT_CATEGORY_NAME), 참여상태(PART_STATUS_NAME), 참여경로(PART_PATH_NAME), 참여채널(PART_CHANNEL_NAME) 사용. (2) 계열 동반: 원천별 코드체계 분리를 위해 항상 팩트 보유 축인 PART_EVENT_KIND_NAME 을 동반하여 그루핑 (차원축 EVENT_KIND_NAME 사용 금지). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 원천 차이: 일반행사(다단계 통과)와 캠페인행사(신청/참여/불참)는 참여 정의가 다르므로 합산 참여율 생성 금지. (5) 채널 NULL: 캠페인행사는 원천 채널 컬럼 부재로 전량 NULL임을 명시.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 라벨축 사용: 행사구분(EVENT_CATEGORY_NAME), 참여상태(PART_STATUS_NAME), 참여경로(PART_PATH_NAME), 참여채널(PART_CHANNEL_NAME) 사용. (2) 계열 동반: 원천별 코드체계 분리를 위해 항상 팩트 보유 축인 PART_EVENT_KIND_NAME 을 동반하여 그루핑 (차원축 EVENT_KIND_NAME 사용 금지). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 원천 차이: 일반행사(다단계 통과)와 캠페인행사(신청/참여/불참)는 참여 정의가 다르므로 합산 참여율 생성 금지. (5) 채널 NULL: 캠페인행사는 원천 채널 컬럼 부재로 전량 NULL임을 명시. (R-O191) metric 이름(TOTAL_PARTICIPANTS 등)을 fep 컬럼처럼 참조하지 않는다 — 참여자수는 SUM(fep.PARTICIPANT_CNT), 고유 참여회원수는 COUNT(DISTINCT fep.MEMBER_DK) 로 집계한다. 「최근 N개월」 기준일은 비상관 CTE 1개(SELECT MAX(date.FULL_DATE) FROM fep JOIN date ON fep.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다.'
+  -- 🆕 [2026-09-30 O191] VQR — 스모크 중간 오류(metric 이름을 컬럼으로 참조) 정답 패턴
+  AI_VERIFIED_QUERIES (
+    vqr_o191_kind_status AS (
+      QUESTION '행사종류별 참여자수와 참여상태별 분포'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'SELECT fep.PART_EVENT_KIND_NAME, fep.PART_STATUS_NAME, SUM(fep.PARTICIPANT_CNT) AS TOTAL_PARTICIPANTS, COUNT(DISTINCT fep.MEMBER_DK) AS DISTINCT_PARTICIPANTS FROM fep GROUP BY fep.PART_EVENT_KIND_NAME, fep.PART_STATUS_NAME ORDER BY fep.PART_EVENT_KIND_NAME, TOTAL_PARTICIPANTS DESC NULLS LAST'
+    )
+  );
 
 
 /* =====================================================================================

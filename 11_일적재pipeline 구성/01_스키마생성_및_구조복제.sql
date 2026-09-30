@@ -13,12 +13,17 @@ USE WAREHOUSE GN_DW_DEV_WH;
 /* =====================================================================
    1) 스키마 생성 (07_ENVIRONMENT_RBAC_setup.sql B.5 에 이미 동일 문장이 반영돼 있다면 no-op)
    ===================================================================== */
-CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_CRM_2 WITH MANAGED ACCESS
-  COMMENT = '원천 적재 — CRM(회원/납입/캠페인). 일적재 테스트용';
-CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER_2 WITH MANAGED ACCESS
-  COMMENT = '정제/통합 레이어 — dbt 일적재 테스트용';
-CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD_2 WITH MANAGED ACCESS
-  COMMENT = '분석 레이어 — dbt 일적재 테스트용';
+-- CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_CRM_2 WITH MANAGED ACCESS
+--   COMMENT = '원천 적재 — CRM(회원/납입/캠페인). 일적재 테스트용';
+-- CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER_2 WITH MANAGED ACCESS
+--   COMMENT = '정제/통합 레이어 — dbt 일적재 테스트용';
+-- CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD_2 WITH MANAGED ACCESS
+--   COMMENT = '분석 레이어 — dbt 일적재 테스트용';
+
+CREATE IF NOT EXISTS SCHEMA GN_DW.BRONZE_CRM_2 CLONE GN_DW.BRONZE_CRM;
+CREATE OR REPLACE SCHEMA GN_DW.SILVER_2 CLONE GN_DW.SILVER;
+CREATE OR REPLACE SCHEMA GN_DW.GOLD_2 CLONE GN_DW.GOLD;
+CREATE OR REPLACE SCHEMA GN_DW.OPS_2 CLONE GN_DW.OPS;
 
 /* =====================================================================
    2) SILVER → SILVER_2 : 라이브 BASE TABLE 전량(bigquery_refined_data 제외) CLONE 후 TRUNCATE (구조만 복제)

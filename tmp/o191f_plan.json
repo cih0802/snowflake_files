@@ -1,0 +1,717 @@
+{
+ "CRM_EVENT": [
+  [
+   "TM_MS_EVENT",
+   "TM_MS_CRMN"
+  ],
+  [
+   {
+    "col": "PRZWIN_PSNNL_CO",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_MS_EVENT": "PRZWIN_PSNNL_CO"
+    },
+    "comment": "당첨인원수 [원천 COMMENT · BRONZE_CRM.TM_MS_EVENT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "PRZWIN_GFT_SNDNG_DE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TM_MS_EVENT": "NULLIF(TRIM(PRZWIN_GFT_SNDNG_DE),'')"
+    },
+    "comment": "당첨선물발송일 [원천 COMMENT · BRONZE_CRM.TM_MS_EVENT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CRMN_PLACE_NM",
+    "type": "VARCHAR(200)",
+    "exprs": {
+     "TM_MS_CRMN": "NULLIF(TRIM(CRMN_PLACE_NM),'')"
+    },
+    "comment": "행사장소명 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CRMN_PART_STRT_DE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TM_MS_CRMN": "NULLIF(TRIM(CRMN_PART_STRT_DE),'')"
+    },
+    "comment": "캠페인참여시작일자 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CRMN_PART_END_DE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TM_MS_CRMN": "NULLIF(TRIM(CRMN_PART_END_DE),'')"
+    },
+    "comment": "캠페인참여종료일자 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "TAT",
+    "type": "NUMBER(5,0)",
+    "exprs": {
+     "TM_MS_CRMN": "TAT"
+    },
+    "comment": "소요시간 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RESRCE_SRVC_FG",
+    "type": "BOOLEAN",
+    "exprs": {
+     "TM_MS_CRMN": "RESRCE_SRVC_FG"
+    },
+    "comment": "자원봉사유무 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CPR_DIV_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TM_MS_CRMN": "NULLIF(TRIM(CPR_DIV_CD),'')"
+    },
+    "comment": "법인구분코드 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ENTRPS_CD",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_MS_CRMN": "ENTRPS_CD"
+    },
+    "comment": "업체코드 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "USE_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_MS_CRMN": "NULLIF(TRIM(USE_YN),'')"
+    },
+    "comment": "사용여부 [원천 COMMENT · BRONZE_CRM.TM_MS_CRMN] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_EVENT_PARTICIPATION": [
+  [
+   "TD_MS_EVENT_PRTCPNT_DTL",
+   "TD_MS_CRMN_PRTCPNT"
+  ],
+  [
+   {
+    "col": "EVENT_PARTCPT_DIV_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TD_MS_EVENT_PRTCPNT_DTL": "NULLIF(TRIM(EVENT_PARTCPT_DIV_CD),'')"
+    },
+    "comment": "이벤트참여구분코드 [원천 COMMENT · BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RQST_DATE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "NULLIF(TRIM(RQST_DATE),'')"
+    },
+    "comment": "신청일자 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SELF_PARTCPT_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "NULLIF(TRIM(SELF_PARTCPT_CD),'')"
+    },
+    "comment": "자기참여코드 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ACMPNY_PARTCPT_CO",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "ACMPNY_PARTCPT_CO"
+    },
+    "comment": "동반참여수 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "PARTCPT_TIME_CO",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "PARTCPT_TIME_CO"
+    },
+    "comment": "참여시간수 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RCPMNY_STAT_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "NULLIF(TRIM(RCPMNY_STAT_CD),'')"
+    },
+    "comment": "입금상태코드 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RCPMNY_DATE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "NULLIF(TRIM(RCPMNY_DATE),'')"
+    },
+    "comment": "입금일자 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "REFND_DATE",
+    "type": "VARCHAR(8)",
+    "exprs": {
+     "TD_MS_CRMN_PRTCPNT": "NULLIF(TRIM(REFND_DATE),'')"
+    },
+    "comment": "환불일자 [원천 COMMENT · BRONZE_CRM.TD_MS_CRMN_PRTCPNT] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_MEMBER": [
+  [
+   "TM_MM_FDRM_MBER_INFO",
+   "TM_MM_ONCE_MBER_INFO"
+  ],
+  [
+   {
+    "col": "CHRCTR_RECPTN_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_MM_FDRM_MBER_INFO": "NULLIF(TRIM(f.CHRCTR_RECPTN_YN),'')",
+     "TM_MM_ONCE_MBER_INFO": "NULLIF(TRIM(o.CHRCTR_RECPTN_YN),'')"
+    },
+    "comment": "문자수신여부 [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SPECL_MNG_CD1",
+    "type": "VARCHAR(100)",
+    "exprs": {
+     "TM_MM_FDRM_MBER_INFO": "NULLIF(TRIM(f.SPECL_MNG_CD1),'')",
+     "TM_MM_ONCE_MBER_INFO": "NULLIF(TRIM(o.SPECL_MNG_CD1),'')"
+    },
+    "comment": "특별관리코드1 [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "FDRM_MBER_TRNSFER_FG",
+    "type": "BOOLEAN",
+    "exprs": {
+     "TM_MM_ONCE_MBER_INFO": "o.FDRM_MBER_TRNSFER_FG"
+    },
+    "comment": "정기회원이관유무 [원천 COMMENT · BRONZE_CRM.TM_MM_ONCE_MBER_INFO] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_PAYMENT_BILLING": [
+  [
+   "TM_PM_MBRFEE_ACMSLT",
+   "TM_PM_DNTN_DTLS"
+  ],
+  [
+   {
+    "col": "RQEST_MT",
+    "type": "VARCHAR(6)",
+    "exprs": {
+     "TM_PM_MBRFEE_ACMSLT": "NULLIF(TRIM(RQEST_MT),'')"
+    },
+    "comment": "청구월 [원천 COMMENT · BRONZE_CRM.TM_PM_MBRFEE_ACMSLT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RQEST_SQNC",
+    "type": "NUMBER(3,0)",
+    "exprs": {
+     "TM_PM_MBRFEE_ACMSLT": "RQEST_SQNC"
+    },
+    "comment": "청구차수 [원천 COMMENT · BRONZE_CRM.TM_PM_MBRFEE_ACMSLT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "TOGETH_WTDRW_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_PM_MBRFEE_ACMSLT": "NULLIF(TRIM(TOGETH_WTDRW_YN),'')"
+    },
+    "comment": "함께출금여부 [원천 COMMENT · BRONZE_CRM.TM_PM_MBRFEE_ACMSLT] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SETLE_ENTRPS_CD",
+    "type": "VARCHAR(10)",
+    "exprs": {
+     "TM_PM_MBRFEE_ACMSLT": "NULLIF(TRIM(SETLE_ENTRPS_CD),'')",
+     "TM_PM_DNTN_DTLS": "NULLIF(TRIM(SETLE_ENTRPS_CD),'')"
+    },
+    "comment": "결제업체코드 [원천 COMMENT · BRONZE_CRM.TM_PM_MBRFEE_ACMSLT · BRONZE_CRM.TM_PM_DNTN_DTLS] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ONCE_CMPGN_CD",
+    "type": "VARCHAR(20)",
+    "exprs": {
+     "TM_PM_DNTN_DTLS": "NULLIF(TRIM(ONCE_CMPGN_CD),'')"
+    },
+    "comment": "일시후원캠페인코드 [원천 COMMENT · BRONZE_CRM.TM_PM_DNTN_DTLS] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ACMSLT_DEPT_CD",
+    "type": "VARCHAR(10)",
+    "exprs": {
+     "TM_PM_DNTN_DTLS": "NULLIF(TRIM(ACMSLT_DEPT_CD),'')"
+    },
+    "comment": "실적부서코드 [원천 COMMENT · BRONZE_CRM.TM_PM_DNTN_DTLS] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "USE_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_PM_MBRFEE_ACMSLT": "NULLIF(TRIM(USE_YN),'')",
+     "TM_PM_DNTN_DTLS": "NULLIF(TRIM(USE_YN),'')"
+    },
+    "comment": "사용여부 [원천 COMMENT · BRONZE_CRM.TM_PM_MBRFEE_ACMSLT · BRONZE_CRM.TM_PM_DNTN_DTLS] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_RELATION_ACTIVITY": [
+  [
+   "TM_RM_RELATNSP_LETTER_INFO",
+   "TM_RM_RELATNSP_GFTMNEY_INFO"
+  ],
+  [
+   {
+    "col": "LETTER_STAT_CD",
+    "type": "NUMBER(3,0)",
+    "exprs": {
+     "TM_RM_RELATNSP_LETTER_INFO": "LETTER_STAT_CD"
+    },
+    "comment": "편지상태코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "LANG_CD",
+    "type": "VARCHAR(10)",
+    "exprs": {
+     "TM_RM_RELATNSP_LETTER_INFO": "NULLIF(TRIM(LANG_CD),'')"
+    },
+    "comment": "언어코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ONLINE_POST_WRITNG_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_RM_RELATNSP_LETTER_INFO": "NULLIF(TRIM(ONLINE_POST_WRITNG_YN),'')"
+    },
+    "comment": "온라인우편작성여부 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ONLINE_INFLOW_CD",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_RM_RELATNSP_LETTER_INFO": "ONLINE_INFLOW_CD"
+    },
+    "comment": "온라인유입코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "UNREPLY_RSN_CD",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_RM_RELATNSP_LETTER_INFO": "UNREPLY_RSN_CD",
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "UNREPLY_RSN_CD"
+    },
+    "comment": "미답신사유코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "MBRFEE_KEY",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "MBRFEE_KEY"
+    },
+    "comment": "회비KEY [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SETLE_DE",
+    "type": "DATE",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "SETLE_DE"
+    },
+    "comment": "결제일 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SETLE_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "NULLIF(TRIM(SETLE_CD),'')"
+    },
+    "comment": "결제코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "GFT_DIV_CD",
+    "type": "VARCHAR(3)",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "NULLIF(TRIM(GFT_DIV_CD),'')"
+    },
+    "comment": "선물구분코드 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "GFTMNEY_DOLLAR_AMT",
+    "type": "VARCHAR(30)",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "GFTMNEY_DOLLAR_AMT"
+    },
+    "comment": "선물금미화금액 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "APRV_DE",
+    "type": "DATE",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "APRV_DE"
+    },
+    "comment": "승인일 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "TRNSFER_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_RM_RELATNSP_GFTMNEY_INFO": "NULLIF(TRIM(TRNSFER_YN),'')"
+    },
+    "comment": "이관여부 [원천 COMMENT · BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_SEND_REQUEST": [
+  [
+   "TM_MS_EMAIL_SNDNG",
+   "TM_MS_MSG_AT_SNDNG",
+   "TM_MS_PSTMTR_SNDNG",
+   "SND_REQ_MST"
+  ],
+  [
+   {
+    "col": "SNDNG_CD_ID",
+    "type": "VARCHAR(20)",
+    "exprs": {
+     "TM_MS_EMAIL_SNDNG": "NULLIF(TRIM(SNDNG_CD_ID),'')",
+     "TM_MS_MSG_AT_SNDNG": "NULLIF(TRIM(SNDNG_CD_ID),'')",
+     "TM_MS_PSTMTR_SNDNG": "NULLIF(TRIM(SNDNG_CD_ID),'')"
+    },
+    "comment": "발신코드ID [원천 COMMENT · BRONZE_CRM.TM_MS_EMAIL_SNDNG · BRONZE_CRM.TM_MS_MSG_AT_SNDNG · BRONZE_CRM.TM_MS_PSTMTR_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SNDNG_DTL_CD_ID",
+    "type": "VARCHAR(20)",
+    "exprs": {
+     "TM_MS_EMAIL_SNDNG": "NULLIF(TRIM(SNDNG_DTL_CD_ID),'')",
+     "TM_MS_MSG_AT_SNDNG": "NULLIF(TRIM(SNDNG_DTL_CD_ID),'')",
+     "TM_MS_PSTMTR_SNDNG": "NULLIF(TRIM(SNDNG_DTL_CD_ID),'')"
+    },
+    "comment": "발신상세코드ID [원천 COMMENT · BRONZE_CRM.TM_MS_EMAIL_SNDNG · BRONZE_CRM.TM_MS_MSG_AT_SNDNG · BRONZE_CRM.TM_MS_PSTMTR_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "PRCS_DE",
+    "type": "TIMESTAMP_NTZ",
+    "exprs": {
+     "TM_MS_EMAIL_SNDNG": "PRCS_DE::TIMESTAMP_NTZ",
+     "TM_MS_MSG_AT_SNDNG": "PRCS_DE::TIMESTAMP_NTZ",
+     "TM_MS_PSTMTR_SNDNG": "PRCS_DE::TIMESTAMP_NTZ"
+    },
+    "comment": "처리일 [원천 COMMENT · BRONZE_CRM.TM_MS_EMAIL_SNDNG · BRONZE_CRM.TM_MS_MSG_AT_SNDNG · BRONZE_CRM.TM_MS_PSTMTR_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "PRCS_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_MS_EMAIL_SNDNG": "NULLIF(TRIM(PRCS_YN),'')"
+    },
+    "comment": "처리여부 [원천 COMMENT · BRONZE_CRM.TM_MS_EMAIL_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "TMPLAT_ID",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "TM_MS_MSG_AT_SNDNG": "NULLIF(TRIM(TMPLAT_ID),'')",
+     "SND_REQ_MST": "NULLIF(TRIM(TMPL_CODE),'')"
+    },
+    "comment": "템플릿ID [원천 COMMENT · BRONZE_CRM.TM_MS_MSG_AT_SNDNG · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ALTRTV_MSG_SNDNG_YN",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "TM_MS_MSG_AT_SNDNG": "NULLIF(TRIM(ALTRTV_MSG_SNDNG_YN),'')",
+     "SND_REQ_MST": "NULLIF(TRIM(ALT_SMS_YN),'')"
+    },
+    "comment": "대체메시지발신여부 [원천 COMMENT · BRONZE_CRM.TM_MS_MSG_AT_SNDNG · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "LQY_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_MS_PSTMTR_SNDNG": "NULLIF(TRIM(LQY_YN),'')"
+    },
+    "comment": "대량여부 [원천 COMMENT · BRONZE_CRM.TM_MS_PSTMTR_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RE_SNDNG_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_MS_PSTMTR_SNDNG": "NULLIF(TRIM(RE_SNDNG_YN),'')"
+    },
+    "comment": "재발신여부 [원천 COMMENT · BRONZE_CRM.TM_MS_PSTMTR_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "MSG_TYPE",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(MSG_TYPE),'')"
+    },
+    "comment": "메시지 유형 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "REGULARLY",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(REGULARLY),'')"
+    },
+    "comment": "발송 유형 (정기/비정기) [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SEND_STATUS",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(SEND_STATUS),'')"
+    },
+    "comment": "발송 상태 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SEND_ROUND",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "SND_REQ_MST": "SEND_ROUND"
+    },
+    "comment": "발송차수 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CONDITION_TITLE",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(CONDITION_TITLE),'')"
+    },
+    "comment": "발송 조건 제목 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "MENU_CODE",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(MENU_CODE),'')"
+    },
+    "comment": "메뉴코드 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SERVICE_MENU_CODE",
+    "type": "VARCHAR(100)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(SERVICE_MENU_CODE),'')"
+    },
+    "comment": "서비스메뉴코드 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "USE_YN",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_REQ_MST": "NULLIF(TRIM(USE_YN),'')"
+    },
+    "comment": "사용 여부 [원천 COMMENT · BRONZE_CRM.SND_REQ_MST] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_SEND_RESULT": [
+  [
+   "TD_MS_EMAIL_LQY_SNDNG",
+   "TD_MS_MSG_AT_LQY_SNDNG",
+   "TD_MS_PSTMTR_LQY_SNDNG",
+   "SND_REQ_MST"
+  ],
+  [
+   {
+    "col": "RECPTN_CNT",
+    "type": "NUMBER(18,0)",
+    "exprs": {
+     "TD_MS_EMAIL_LQY_SNDNG": "SUM(RECPTN_CNT)"
+    },
+    "comment": "수신건수 [원천 COMMENT · BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "ALTRTV_SNDNG_CNT",
+    "type": "NUMBER(18,0)",
+    "exprs": {
+     "TD_MS_MSG_AT_LQY_SNDNG": "SUM(AT_ALTRTV_SNDNG_CNT)"
+    },
+    "comment": "알림톡대체발송건수 [원천 COMMENT · BRONZE_CRM.TD_MS_MSG_AT_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SNDNG_STRT_DT",
+    "type": "TIMESTAMP_NTZ",
+    "exprs": {
+     "TD_MS_EMAIL_LQY_SNDNG": "MIN(SNDNG_STRT_DT)"
+    },
+    "comment": "발신시작일시 [원천 COMMENT · BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SNDNG_END_DT",
+    "type": "TIMESTAMP_NTZ",
+    "exprs": {
+     "TD_MS_EMAIL_LQY_SNDNG": "MAX(SNDNG_END_DT)"
+    },
+    "comment": "발신종료일시 [원천 COMMENT · BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RESVE_SNDNG_DE",
+    "type": "DATE",
+    "exprs": {
+     "TD_MS_MSG_AT_LQY_SNDNG": "MIN(RESVE_SNDNG_DE)"
+    },
+    "comment": "예약발신일 [원천 COMMENT · BRONZE_CRM.TD_MS_MSG_AT_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SNDNG_SQNC",
+    "type": "NUMBER(3,0)",
+    "exprs": {
+     "TD_MS_PSTMTR_LQY_SNDNG": "MAX(SNDNG_SQNC)"
+    },
+    "comment": "발신차수 [원천 COMMENT · BRONZE_CRM.TD_MS_PSTMTR_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SNDNG_TIT",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "TD_MS_PSTMTR_LQY_SNDNG": "MAX(NULLIF(TRIM(SNDNG_TIT),''))"
+    },
+    "comment": "발신제목 [원천 COMMENT · BRONZE_CRM.TD_MS_PSTMTR_LQY_SNDNG] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_SEND_MEMBER": [
+  [
+   "TD_MS_EMAIL_SNDNG_DTLS",
+   "TD_MS_MSG_AT_SNDNG_DTLS",
+   "TD_MS_PSTMTR_SNDNG_DTL",
+   "SND_MEMBER_LIST"
+  ],
+  [
+   {
+    "col": "ALTRTV_MSG_SNDNG_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TD_MS_MSG_AT_SNDNG_DTLS": "NULLIF(TRIM(ALTRTV_MSG_SNDNG_YN),'')"
+    },
+    "comment": "대체문자 발송 여부 [원천 COMMENT · BRONZE_CRM.TD_MS_MSG_AT_SNDNG_DTLS] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RELATNSP_KEY",
+    "type": "NUMBER(19,0)",
+    "exprs": {
+     "TD_MS_PSTMTR_SNDNG_DTL": "RELATNSP_KEY",
+     "SND_MEMBER_LIST": "RELATNSP_KEY"
+    },
+    "comment": "결연KEY [원천 COMMENT · BRONZE_CRM.TD_MS_PSTMTR_SNDNG_DTL · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "MNG_NO",
+    "type": "VARCHAR(7)",
+    "exprs": {
+     "TD_MS_PSTMTR_SNDNG_DTL": "NULLIF(TRIM(MNG_NO),'')"
+    },
+    "comment": "관리번호 [원천 COMMENT · BRONZE_CRM.TD_MS_PSTMTR_SNDNG_DTL] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "MSG_KEY",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_MEMBER_LIST": "NULLIF(TRIM(MSG_KEY),'')"
+    },
+    "comment": "메세지키 [원천 COMMENT · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CINFO",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_MEMBER_LIST": "NULLIF(TRIM(CINFO),'')"
+    },
+    "comment": "알림톡구분 [원천 COMMENT · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RESPONSED_YN",
+    "type": "VARCHAR(255)",
+    "exprs": {
+     "SND_MEMBER_LIST": "NULLIF(TRIM(RESPONSED_YN),'')"
+    },
+    "comment": "발송확인여부 [원천 COMMENT · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "RESPONSED_DT",
+    "type": "TIMESTAMP_NTZ",
+    "exprs": {
+     "SND_MEMBER_LIST": "RESPONSED_DT"
+    },
+    "comment": "확인일시 [원천 COMMENT · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "REAL_SEND_DT",
+    "type": "TIMESTAMP_NTZ",
+    "exprs": {
+     "SND_MEMBER_LIST": "REAL_SEND_DT"
+    },
+    "comment": "실제발신일시 [원천 COMMENT · BRONZE_CRM.SND_MEMBER_LIST] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ],
+ "CRM_CAMPAIGN": [
+  [
+   "TM_CM_CMPGN_MNG"
+  ],
+  [
+   {
+    "col": "USE_DEPT_CD",
+    "type": "VARCHAR(10)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "NULLIF(TRIM(c.USE_DEPT_CD),'')"
+    },
+    "comment": "사용부서코드 [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "USE_SCOPE",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "NULLIF(TRIM(c.USE_SCOPE),'')"
+    },
+    "comment": "사용범위 [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "USE_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "NULLIF(TRIM(c.USE_YN),'')"
+    },
+    "comment": "사용여부 [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "CMPGN_PRPT_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "NULLIF(TRIM(c.CMPGN_PRPT_YN),'')"
+    },
+    "comment": "캠페인특성여부 [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "SPNSR_ENTRPRS_ID",
+    "type": "VARCHAR(20)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "NULLIF(TRIM(c.SPNSR_ENTRPRS_ID),'')"
+    },
+    "comment": "후원기업ID [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "EMRGNCY_AID_BPLC_CD",
+    "type": "NUMBER(10,0)",
+    "exprs": {
+     "TM_CM_CMPGN_MNG": "c.EMRGNCY_AID_BPLC_CD"
+    },
+    "comment": "긴급구호사업장코드 [원천 COMMENT · BRONZE_CRM.TM_CM_CMPGN_MNG] · O191-F 2차-B 2단 2묶음"
+   },
+   {
+    "col": "BRND_USE_YN",
+    "type": "VARCHAR(1)",
+    "exprs": {
+     "TM_CM_BRND_MNG": "NULLIF(TRIM(b.USE_YN),'')"
+    },
+    "comment": "사용여부 [원천 COMMENT · BRONZE_CRM.TM_CM_BRND_MNG] · O191-F 2차-B 2단 2묶음"
+   }
+  ]
+ ]
+}

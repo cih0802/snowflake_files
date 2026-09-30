@@ -44,7 +44,19 @@ select
     {{ gold_meta('CRM') }},
     s.SPNSR_DIV_CD                                as SPONSORSHIP_DIV_CD,
     cd_div.DTL_CD_NM                              as SPONSORSHIP_DIV_NAME,
-    cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME
+    cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME,
+    -- 🆕 [2026-09-30 O190] F-2 4그룹 접기(사용자 결정 §4 #2) — 라벨 기준(코드 하드코딩 금지 P31) · 규칙 밖 라벨 NULL.
+    CASE cd_grp.DTL_CD_NM
+        WHEN '국내'     THEN '국내'
+        WHEN '결연'     THEN '결연'
+        WHEN '해외구호' THEN '해외프로젝트'
+        WHEN '해외'     THEN '해외프로젝트'
+        WHEN '북한'     THEN '기타'
+        WHEN '기타'     THEN '기타'
+    END                                           as SPONSORSHIP_GROUP4_NAME,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SPONSORSHIP 승계(후원사업 grain).
+    s.SORT_ORDR                                   as SORT_ORDR,
+    s.USE_YN                                      as USE_YN
 from s
 left join cd_div on cd_div.DTL_CD_ID = s.SPNSR_DIV_CD
 left join cd_grp on cd_grp.DTL_CD_ID = s.SPNSR_BSNS_ABRV_CD
@@ -53,4 +65,5 @@ union all
 -- unknown 멤버(SK=0): 팩트 SPONSORSHIP_SK=0(미매핑) 조인 유실 방지
 select 0, '(미매핑)', '(미매핑)', NULL,
     {{ gold_meta('CRM') }},
-    NULL, NULL, NULL
+    NULL, NULL, NULL, NULL,
+    NULL, NULL

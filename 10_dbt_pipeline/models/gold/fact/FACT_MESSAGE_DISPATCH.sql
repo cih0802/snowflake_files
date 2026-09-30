@@ -113,14 +113,17 @@ select
     --    귀속 규칙이 없다 ⇒ 0 유지. 참여 실적은 D5 매칭(아래) 또는 SILVER `CRM_RELATION_ACTIVITY` 직접 조회.
     0 as LETTER_PART_MEMBERS, 0 as LETTER_PART_CNT, 0 as GIFT_PART_MEMBERS, 0 as GIFT_PART_AMT,
     -- [O183] #139~#146 = 발송 다음날~+5일 안에 그 후속행동이 있는 발송 대상 1/0 · (건) = 그 회원의 발송월 활동(건).
-    IFF(d.D5_LETTER,   1, 0)                                         as D5_LETTER_PART_MEMBERS,
-    IFF(d.D5_LETTER,   COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_LETTER_PART_CNT,
-    IFF(d.D5_GIFT,     1, 0)                                         as D5_GIFT_PART_MEMBERS,
-    IFF(d.D5_GIFT,     COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_GIFT_PART_CNT,
-    IFF(d.D5_INCREASE, 1, 0)                                         as D5_INCREASE_PART_MEMBERS,
-    IFF(d.D5_INCREASE, COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_INCREASE_PART_CNT,
-    IFF(d.D5_STOP,     1, 0)                                         as D5_STOP_MEMBERS,
-    IFF(d.D5_STOP,     COALESCE(am.ACTIVE_CNT, 0), 0)                 as D5_STOP_CNT,
+    -- 🆕 [2026-09-30 O190] L-1① (사용자 결정 §4 #6) — 제목에 「미납·중단·감사」 포함 발송은 **처리통보성**이라 귀속 제외.
+    --   이유 = 사건의 결과로 나간 발송을 원인으로 세면 인과가 뒤집힌다(문서20 L-1 실측).
+    --   🔴 제목이 없는 발송(요청 미매칭)은 판정 근거가 없어 규칙 대상이 아니다(종전대로 귀속 · 창작 0).
+    IFF(d.D5_LETTER   AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_LETTER_PART_MEMBERS,
+    IFF(d.D5_LETTER   AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_LETTER_PART_CNT,
+    IFF(d.D5_GIFT     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_GIFT_PART_MEMBERS,
+    IFF(d.D5_GIFT     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_GIFT_PART_CNT,
+    IFF(d.D5_INCREASE AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_INCREASE_PART_MEMBERS,
+    IFF(d.D5_INCREASE AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_INCREASE_PART_CNT,
+    IFF(d.D5_STOP     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_STOP_MEMBERS,
+    IFF(d.D5_STOP     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_STOP_CNT,
     -- [O183] #160 서비스(명) = 발송구분(대) 「회원서비스」 발송 대상 1/0 · #161 서비스(건) = 그 회원의 활동(건).
     IFF(sl.SEND_TYPE_L = '회원서비스', 1, 0)                           as SERVICE_MEMBERS,
     IFF(sl.SEND_TYPE_L = '회원서비스', COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
@@ -144,7 +147,11 @@ select
     s.FRST_BRND_NM                                as FRST_BRND_NM,
     s.LST_BRND_CD                                 as LST_BRND_CD,
     s.LST_BRND_NM                                 as LST_BRND_NM,
-    s.CURRENT_BRND                                as CURRENT_BRND
+    s.CURRENT_BRND                                as CURRENT_BRND,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SEND_MEMBER 승계(발송×회원 grain degen · 채널별 비해당 NULL).
+    --   대체문자 = 알림톡 전용 · 결연KEY = 우편·SND · 관리번호 = 우편 · 나머지 5종 = SND 전용.
+    s.ALTRTV_MSG_SNDNG_YN, s.RELATNSP_KEY, s.MNG_NO, s.MSG_KEY, s.CINFO,
+    s.RESPONSED_YN, s.RESPONSED_DT, s.REAL_SEND_DT
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 cross join open_window ow

@@ -1,0 +1,6 @@
+DIM_EVENT: OK cols=26 live=26 순서일치=True 잔여jinja=0
+DIM_CAMPAIGN: OK cols=37 live=37 순서일치=True 잔여jinja=0
+DIM_MEMBER: OK cols=29 live=29 순서일치=True 잔여jinja=0
+DIM_SPONSORSHIP: OK cols=14 live=14 순서일치=True 잔여jinja=0
+FACT_EVENT_ATTENDANCE: OK cols=44 live=44 순서일치=True 잔여jinja=0
+FACT_MESSAGE_DISPATCH: OK cols=51 live=51 순서일치=True 잔여jinja=0

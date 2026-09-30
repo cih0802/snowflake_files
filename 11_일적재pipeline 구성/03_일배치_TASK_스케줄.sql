@@ -13,11 +13,11 @@
    ===================================================================== */
 -- 최초 1회만 필요(이미 부여돼 있다면 재실행 무해):
 USE ROLE ACCOUNTADMIN;
-GRANT EXECUTE TASK ON ACCOUNT TO ROLE GN_DW_ENGINEER;
+GRANT EXECUTE TASK ON ACCOUNT TO ROLE GN_DW_DBT;
 
 -- OPS 스키마에 TASK 생성 권한 (07 §D.6 은 USAGE·CREATE TABLE 만 부여했다 — CREATE TASK 추가)
 USE ROLE GN_DW_ADMIN;
-GRANT CREATE TASK ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
+GRANT CREATE TASK ON SCHEMA GN_DW.OPS_2 TO ROLE GN_DW_DBT;
 
 /* =====================================================================
    1) TASK 생성 — 매일 새벽 3시(Asia/Seoul, UTC+9 → cron 은 UTC 기준 18시) 실행

@@ -19,7 +19,9 @@ SELECT
   'CRM'                             AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()               AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()               AS DW_UPDATE_TS,
-  NULL                              AS DW_BATCH_ID
+  NULL                              AS DW_BATCH_ID,
+  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼(문서32 §3)
+  s.SPNSR_TIME_CO                   AS SPNSR_TIME_CO
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_IRSD') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} a ON a.CD_ID='CM018' AND a.DTL_CD_ID=NULLIF(TRIM(s.AREA_CD),'')
 WHERE s.OCCRRNC_DE IS NOT NULL AND s.SER_NO IS NOT NULL

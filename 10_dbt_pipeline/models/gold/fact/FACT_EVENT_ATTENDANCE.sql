@@ -62,7 +62,9 @@ select
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as CUM_APPLY_TIMES,
     p.RCPMNY_AMT                                  as REGULAR_DONATION,
     (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
-    CAST(NULL AS BOOLEAN)                          as SELF_PART_FLAG,
+    -- 🆕 [2026-09-30 O191-G] 종전 전건 NULL → MS060 본인참여(0=동반자만·1=본인만·2=함께) 로 채움.
+    --   본인이 참여 = 1·2 → TRUE · 동반자만 = 0 → FALSE · 코드 없음(일반행사 전건 등) → NULL(창작 0).
+    CASE p.SELF_PARTCPT_CD WHEN '1' THEN TRUE WHEN '2' THEN TRUE WHEN '0' THEN FALSE END as SELF_PART_FLAG,
     p.PARTCPT_STAT_CD                             as PART_STATUS,
     p.PARTCPT_PATH_CD                             as PART_PATH,
     p.PARTCPT_CHNNL_CD                            as PART_CHANNEL,
@@ -80,7 +82,11 @@ select
          when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then 'CRMN' end as EVENT_KIND,
     case p.DW_SOURCE_TABLE
          when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then '일반행사'
-         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then '캠페인행사' end as EVENT_KIND_NAME
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then '캠페인행사' end as EVENT_KIND_NAME,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_EVENT_PARTICIPATION 승계(참여 grain degen).
+    --   참여구분 = 일반행사 전용 · 나머지 7종 = 캠페인행사 전용(비해당 NULL).
+    p.EVENT_PARTCPT_DIV_CD, p.RQST_DATE, p.SELF_PARTCPT_CD, p.ACMPNY_PARTCPT_CO,
+    p.PARTCPT_TIME_CO, p.RCPMNY_STAT_CD, p.RCPMNY_DATE, p.REFND_DATE
 from p
 left join {{ ref('DIM_EVENT') }} e
     on e.EVENT_BK = p.EVENT_KEY

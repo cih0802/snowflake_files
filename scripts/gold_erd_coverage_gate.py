@@ -164,6 +164,11 @@ KNOWN_ORPHANS = {
         "DEGEN", "결연 변경 사건의 결연 원천키. 실측 197,547 · 유일 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION)."),
     ("FACT_RELATION_CHANGE", "CHG_RELATNSP_KEY"): (
         "DEGEN", "변경 후 결연 원천키. 실측 197,547 · 유일 · 차원 없음."),
+    # 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] 발송 팩트 degen 2종(SILVER CRM_SEND_MEMBER 실측 · bt97381).
+    ("FACT_MESSAGE_DISPATCH", "RELATNSP_KEY"): (
+        "DEGEN", "발송 대상의 결연 원천키(우편·SND 전용). 실측 NOT NULL 3,976,241 · distinct 504,835 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION)."),
+    ("FACT_MESSAGE_DISPATCH", "MSG_KEY"): (
+        "DEGEN", "SND 메시지 원천키(발송 행 식별). 실측 NOT NULL 3,965,865 · 유일 · 메시지 차원 없음."),
 }
 
 # 🔴 논리 관계로 ERD 에 추가해야 하는 분류 — gen_gold_erd.py 가 이 규칙을 읽어 관계선을 만든다.

@@ -103,6 +103,14 @@ models:
         description: "O188-E 조직표 부서 경로(UPPER_DEPT_ID 재귀 · 루트 법인 제외)"
       - name: ORG_LEVEL
         description: "O188-E 조직 트리 깊이(루트=0)"
+      - name: ACMSLT_DIV_GROUP_ID
+        description: "O191 실적트리(ACMSLT_UPPER_DEPT_ID) 상위 중 부서코드 접두 ZB 노드 = 본부/지부 구분(본부·지부·시도본부·지부외·협력시설 등) · 자기가 ZB 면 자기 · 도달 못 하면 NULL"
+      - name: ACMSLT_DIV_GROUP_NM
+        description: "O191 ACMSLT_DIV_GROUP_ID 의 부서명(원천 DEPT_NM)"
+      - name: ACMSLT_DIV_ID
+        description: "O191 실적트리 상위 중 부서코드 접두 ZC 노드 = 본부/지부 단위(서울·경기1·나눔마케팅본부 등) · 자기가 ZC 면 자기 · 도달 못 하면 NULL · 🔴 DIVISION 은 현업 확인 전까지 NULL 유지"
+      - name: ACMSLT_DIV_NM
+        description: "O191 ACMSLT_DIV_ID 의 부서명(원천 DEPT_NM) · 🔴 같은 이름이 여러 ZB 아래 있다(예: 서울) — 병합 여부 현업 확인 대기"
   # 🆕 [2026-09-29 O188-F 2차-A] 종전 미연결 BRONZE_CRM 원천의 신설 GOLD 차원 — 키 유일성은 BRONZE 실측으로 확인했다.
   - name: DIM_BIZ_PLACE
     columns:

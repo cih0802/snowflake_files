@@ -89,9 +89,13 @@ check('SILVER 테이블 중 컬럼 빈 집합 0',
       all(len(v) > 0 for v in silver.values()))
 check('주석 처리된 CREATE TABLE 은 분모에 없다(BIGQUERY_REFINED_DATA)',
       'BIGQUERY_REFINED_DATA' not in silver)
-check('표본 컬럼수가 다른 게이트 실측과 일치한다(37·38)',
-      len(gold.get('DIM_MEMBER_ACQUISITION', ())) == 37
-      and len(gold.get('FACT_MESSAGE_DISPATCH', ())) == 38)
+# 🔴 [2026-09-30 O191-E] 종전 이 축은 표본 컬럼수를 **숫자로 하드코딩**(37·38)했다 — 컬럼이 증설되자
+#    파서가 정상인데도 FAIL 했다(FMD 38 → 43 · `R3-9 ㉦`). ⇒ **독립 파서 2개의 교차 대조**로 바꾼다
+#    (`table_ddl_column_gate.gold_ddl_columns` 는 별도 구현이다 · 같은 것을 두 방법으로 잰다 = `R3-9 ㉡`).
+import table_ddl_column_gate as TG  # noqa: E402
+_samp = ('DIM_MEMBER_ACQUISITION', 'FACT_MESSAGE_DISPATCH', 'DIM_ORG')
+_mis = [t for t in _samp if len(gold.get(t, ())) != len(TG.gold_ddl_columns(t))]
+check('표본 컬럼수가 독립 파서(table_ddl_column_gate)와 일치한다', not _mis, ','.join(_mis) or 'OK')
 
 print('=' * 72)
 print('축5 — column_report 가 누락·부재를 양방향으로 잡는가')

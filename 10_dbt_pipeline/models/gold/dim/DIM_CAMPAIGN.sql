@@ -70,7 +70,9 @@ select
     -- [2026-09-16 O162] 마케팅채널(C002) — SILVER CRM_CAMPAIGN 승계
     c.MKTG_CHANNEL                                 as MKTG_CHANNEL,
     c.MKTG_CHANNEL_NM                              as MKTG_CHANNEL_NM,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_CAMPAIGN 승계(캠페인 grain · 브랜드 사용여부 = 브랜드 마스터).
+    c.USE_DEPT_CD, c.USE_SCOPE, c.USE_YN, c.CMPGN_PRPT_YN, c.SPNSR_ENTRPRS_ID, c.EMRGNCY_AID_BPLC_CD, c.BRND_USE_YN
 from c
 -- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
 --   부수 효과 = `CRM_CAMPAIGN` 재스캔 1회 + `CRM_CODE` 스캔 1회 감소.
@@ -84,4 +86,5 @@ select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL
     NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL,
     NULL, NULL,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL

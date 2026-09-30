@@ -133,7 +133,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       COMMENT = '집계된 원천 회비행 수. F(가산). 🔴**금액도 「건수」도 아니다** — 정본 `(건)` 은 금액÷10,000 규약(CONF-2)이므로 이 값을 「건」이라 부르면 정의가 깨진다. 재청구 시도 강도를 볼 때만 쓴다.'
   )
   COMMENT = 'Phase-1 회비 분해 SV (base: GOLD.WIDE_MEMBER_FEE, grain: 회원×회비월×후원사업×회비구분×납입유형×결제수단). 후원사업, 납입방식(결제수단), 회비구분, 납입일별 회비 청구/납입/미납 정본 뷰. ⚠️ 회원-월 요약(SV_MEMBER_MONTHLY)과 동일 표 합산 금지(이중계상). 후원사업은 납입 대상 후원사업 기준임.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 이중계상 방지: SV_MEMBER_MONTHLY 와 본 뷰의 measure 를 한 표에 합산하지 말 것(표 분리). (2) 납부율: 납부율=PAYMENT_RATE_FEE (회비만 기준, %), 총수납액(회비+기부금)=TOTAL_PAID_ALL. (3) 회원수: 납입 회원수는 DISTINCT_PAYING_MEMBERS (distinct) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 후원사업 분기: 본 뷰의 SPONSORSHIP 은 납입 대상 후원사업이며, 개발 사건 시점은 SV_MEMBER_EVENT, 획득 시점은 SV_MEMBER_COHORT 로 라우팅. (6) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (7) 판정 라벨 [형제팩트중복]: 「납입(원)」·납입방식별 금액은 이 뷰를 앵커로 답한다. SV_MEMBER_MONTHLY 와 한 표에 합치지 않고 표를 분리하며 각 표의 grain 을 밝힌다. (8) 판정 라벨 [배분규칙필요]: 발송·사건 grain 으로 이 뷰의 회비 measure 를 요구받으면 SQL 을 만들지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다. 회비 measure 를 자기 grain(회원×회비월×후원사업)에서 묻는 질의는 정상 답변한다.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 이중계상 방지: SV_MEMBER_MONTHLY 와 본 뷰의 measure 를 한 표에 합산하지 말 것(표 분리). (2) 납부율: 납부율=PAYMENT_RATE_FEE (회비만 기준, %), 총수납액(회비+기부금)=TOTAL_PAID_ALL. (3) 회원수: 납입 회원수는 DISTINCT_PAYING_MEMBERS (distinct) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 후원사업 분기: 본 뷰의 SPONSORSHIP 은 납입 대상 후원사업이며, 개발 사건 시점은 SV_MEMBER_EVENT, 획득 시점은 SV_MEMBER_COHORT 로 라우팅. (6) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (7) 판정 라벨 [형제팩트중복]: 「납입(원)」·납입방식별 금액은 이 뷰를 앵커로 답한다. SV_MEMBER_MONTHLY 와 한 표에 합치지 않고 표를 분리하며 각 표의 grain 을 밝힌다. (8) 판정 라벨 [배분규칙필요]: 발송·사건 grain 으로 이 뷰의 회비 measure 를 요구받으면 SQL 을 만들지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다. 회비 measure 를 자기 grain(회원×회비월×후원사업)에서 묻는 질의는 정상 답변한다. (R-O191 기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 월은 **비상관 CTE 1개**(SELECT MAX(fee.MONTH_KEY) AS mk FROM fee)로 구하고 본 쿼리를 FROM fee CROSS JOIN 그 CTE 로 쓴다 — 본 쿼리 FROM 에서 fee 를 빼지 않는다. 후원사업은 **논리 차원 fee.SPONSORSHIP**, 납입방식은 **fee.PAYMENT_METHOD** 이다(🔴 [O191-D 정정] 종전 이 자리의 「fee.SPONSORSHIP 은 없다」는 **거꾸로 쓴 오기**였다 — 물리 컬럼명 SPONSORSHIP_NAME·PAYMENT_METHOD_NAME 을 CTE 컬럼으로 쓰지 말고 논리 차원명을 쓴다). 월 경계는 TO_DATE(TO_VARCHAR(MONTH_KEY), ''YYYYMM'') 로 날짜화해 DATEADD 한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다.'
+  -- 🆕 [2026-09-30 O191] VQR — 스모크 중간 오류(CTE 에서 fee 누락 · 추측 식별자) 정답 패턴
+  AI_VERIFIED_QUERIES (
+    vqr_o191_last12m_by_sponsorship AS (
+      QUESTION '최근 12개월 후원사업별·납입방식별 회비 청구액과 납부율'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'WITH mx AS (SELECT MAX(fee.MONTH_KEY) AS mk FROM fee) SELECT fee.SPONSORSHIP, fee.PAYMENT_METHOD, SUM(fee.BILLED_AMT) AS TOTAL_BILLED_AMT, SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100 AS PAYMENT_RATE_FEE FROM fee CROSS JOIN mx WHERE fee.MONTH_KEY > TO_NUMBER(TO_CHAR(DATEADD(MONTH, -12, TO_DATE(TO_VARCHAR(mx.mk), ''YYYYMM'')), ''YYYYMM'')) AND fee.MONTH_KEY <= mx.mk GROUP BY fee.SPONSORSHIP, fee.PAYMENT_METHOD ORDER BY TOTAL_BILLED_AMT DESC NULLS LAST'
+    )
+  );
 
 -- ── GRANT — 🟢 [2026-08-12 O61 · R1-3 전량독해에서 적발·교정] 이 파일 본문은 `CREATE OR ALTER` 다
 --    (헤더 line 6 OWN-1 해소) ⇒ **GRANT 도 소유권도 파괴되지 않으므로 아래는 멱등 재확인**이다.

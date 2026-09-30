@@ -58,7 +58,10 @@ joined as (
         e.IS_ACTIVE_USER,
         e.SESSION_ENGAGED,
         e.ENGAGEMENT_TIME_MSEC,
-        e.PERCENT_SCROLLED
+        e.PERCENT_SCROLLED,
+        -- 🆕 [2026-09-30 O190] W-1 ⓑ — UTM 원값 degen(차원 없음 · CAMPAIGN_SK 배선 아님 · 팬아웃 방지).
+        --   이벤트 행 속성이라 일자 내 집계 폐쇄(전제 ②) 유지 · 🔴 창 밖 과거 행은 NULL ⇒ 전량 백필 필요(위 헤더).
+        e.UTM_CAMPAIGN
     from e
     left join {{ ref('DIM_BIGQUERY_EVENT') }}  gev
         on  EQUAL_NULL(gev.EVENT_CATEGORY, e.EVENT_CATEGORY)
@@ -104,9 +107,10 @@ select
     )                                                                        as ENGAGEMENT_RATE,
     DIV0(SUM(ENGAGEMENT_TIME_MSEC) / 1000.0,
         COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID))         as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4)) — 상한 가드는 아래 outer select
-    {{ gold_meta('BIGQUERY') }}
+    {{ gold_meta('BIGQUERY') }},
+    UTM_CAMPAIGN                                                             -- O190 · DDL 말미(ALTER ADD) 순서 = 감사컬럼 뒤
 from joined
-group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
+group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH, UTM_CAMPAIGN
 )
 
 -- ⚠️ [O94] 상한 가드 — 봇/크롤러성 장기 세션이 누적 참여시간으로 DDL 타입 NUMBER(9,4) 상한을 넘겨

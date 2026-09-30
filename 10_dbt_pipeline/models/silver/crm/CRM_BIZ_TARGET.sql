@@ -1,11 +1,11 @@
 -- CRM_BIZ_TARGET: FTG-B 사업목표 — 원천=CRM 확정(2026-07-20, 구 ERP_BIZ_TARGET).
 -- Co-authored with CoCo
--- 단위=건(TARGET_CNT, 지표사전 #152~155). TARGET_TYPE(당초/추경1차/추경2차)로 GOLD ANNUAL/SUPP 분기.
--- 🆕 [2026-09-29 O188] 입고 배선 — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(290행 · 2026 · 월 12컬럼) 를 월로 풀어 적재.
---   · grain = 원천 1행 × 월 ⇒ 3,480행(연사업 1,848 · 팀 1,632) · DK 유일 실측 · 12개월 합 348,024 · 348,000.
---   · TARGET_TYPE = '당초' 고정 — 원천에 당초/추경 축이 없다(추경 계열 부재 = 문서20 N-1 ③ 과 같은 사실).
+-- 단위=GOAL_TYPE_NM 에 따른다(건·명·원·비율 · O190). TARGET_TYPE(당초/추경)로 GOLD ANNUAL/SUPP 분기.
+-- 🆕 [2026-09-29 O188] 입고 배선 — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(월 12컬럼) 를 월로 풀어 적재.
+--   · grain = 원천 1행 × 월 · DK 유일 실측(규모는 이슈원장 · 이전 계정 수치 인용 금지).
+--   · ~~TARGET_TYPE = '당초' 고정~~ ➔ O190: BDGT_PRCD_NM 파생(아래).
 --   · ORG_NM = TEAM_NM · SPONSOR_BIZ_NM = SPNSR_BSNS_DIV_NM(이름 조인은 GOLD 소관).
---   · 🔴 GOAL_TYPE_NM(연사업/팀)은 **이중계상 가드** — 두 유형이 같은 목표의 다른 분해로 보인다(N-24 ① 회신 대기).
+--   · 🔴 GOAL_TYPE_NM 은 **이중계상·단위 혼합 가드** — O190 기준 9종(후원사업·회원개발 = 같은 개발 목표의 다른 분해).
 --   · 원천 `-` 는 값이 아니다 ⇒ NULL(`R2-7-1`).
 --   · 🔴 source 는 `bronze_crm_ref` — dev2 의 BRONZE_CRM_2 에 이 테이블이 없다.
 -- 🔴 [2026-09-30] 원천 **완전중복 행**(전 컬럼 동일)을 `SELECT DISTINCT` 로 제거한다(BRONZE 통제 불가 · 사용자 결정).

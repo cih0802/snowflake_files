@@ -106,10 +106,31 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd.TOTAL_EXEC_BUDGET AS SUM(fbd.EXEC_BUDGET_ERP)
       WITH SYNONYMS ('집행예산', 'ERP 집행액', '예산 집행액') COMMENT = 'ERP 집행예산 합계(원). F(가산).',
     fbd.EXEC_RATE AS SUM(fbd.EXEC_BUDGET_ERP) / NULLIF(SUM(fbd.PLAN_BUDGET_MONTH), 0) * 100
-      WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N). ⚠편성은 12개월 전량이지만 집행은 적재된 월까지만 존재하므로, 집행 미적재 월을 분모에 넣으면 집행율이 구조적으로 낮게 나온다 — 스코프 정합 규칙은 AI_SQL_GENERATION 참조.'
+      WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N). ⚠편성은 12개월 전량이지만 집행은 적재된 월까지만 존재하므로, 집행 미적재 월을 분모에 넣으면 집행율이 구조적으로 낮게 나온다 — 스코프 정합 규칙은 AI_SQL_GENERATION 참조.',
+    -- 🆕 [2026-09-30 O191-C · 현업 회신 42 · DEC-57] 모금성비용은 하나로 정하지 않고 원장 플래그 이름 그대로 두 지표로 둔다.
+    fbd.DIRECT_FUNDRAISING_COST_1 AS SUM(fbd.EXEC_DIRECT_MNYRS_1)
+      WITH SYNONYMS ('직접모금비1', '직접모금비 1', '모금성비용1')
+      COMMENT = '직접모금비1(원) — 원장 플래그 직접모금비1(DIRECT_MNYRS_YN_1)=Y 인 원장행의 집행액 합. F(가산). 🔴 **화면·답변에는 「직접모금비1」 이름 그대로 표시한다**(현업 회신 42) — 「모금성비용」 하나로 부르지 말고 직접모금비2 와 나란히 보여준다. ⚠️ 두 값은 포함관계가 아니다(행 단위로 1 이 2 보다 큰 행이 있다) ⇒ 차이를 「1 을 뺀 나머지」로 해석하지 말 것.',
+    fbd.DIRECT_FUNDRAISING_COST_2 AS SUM(fbd.EXEC_DIRECT_MNYRS_2)
+      WITH SYNONYMS ('직접모금비2', '직접모금비 2', '모금성비용2')
+      COMMENT = '직접모금비2(원) — 원장 플래그 직접모금비2(DIRECT_MNYRS_YN_2)=Y 인 원장행의 집행액 합. F(가산). 🔴 「직접모금비2」 이름 그대로 표시한다(현업 회신 42). ⚠️ 이 플래그는 사실상 전 원장행이 Y 라 합계가 집행예산(TOTAL_EXEC_BUDGET)과 거의 같다 — 「모금비가 전체 집행과 같다」로 해석하지 말고 플래그 정의가 넓다는 사실을 함께 밝힌다.'
   )
   COMMENT = 'Phase-1 예산 SV (base: GOLD.FACT_BUDGET, grain: 월×세세목 1행). ERP 예산 원장 기반 월별 편성예산(TOTAL_PLAN_BUDGET), 집행예산(TOTAL_EXEC_BUDGET), 집행율(EXEC_RATE, %) 및 세세목별 집계 뷰. ⚠️ 광고비는 본 뷰에 없으며 SV_AD 소관. 수입 예산은 적재 원천에 부재하며 지출 예산만 포함됨.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 지표 매핑: 편성예산=TOTAL_PLAN_BUDGET, 집행예산=TOTAL_EXEC_BUDGET, 집행율=EXEC_RATE (%). (2) 집행율 산정: 집행예산이 적재된 월까지만 편성을 분모에 포함하여 산정(집행 미적재 월 분모 제외). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 예산구분: BUDGET_CATEGORY 는 ''지출'' 단일 계정이므로 ''수입'' 필터 사용 금지. (5) 2024년 편성 결손 가드: 2024년은 원천 예산 원장에 월별 편성 배분이 없고 연 총액만 있어 월 편성예산이 0 으로 집계되므로, 다년 집행율 산정 시 YEAR >= 2025 를 적용하거나 연도별로 표를 분리하여 제시하고 2024년 집행율은 산출 불가로 답한다(연 총액은 이 SV 에 미배선).';
+  AI_SQL_GENERATION '핵심 규칙: (1) 지표 매핑: 편성예산=TOTAL_PLAN_BUDGET, 집행예산=TOTAL_EXEC_BUDGET, 집행율=EXEC_RATE (%). (2) 집행율 산정: 집행예산이 적재된 월까지만 편성을 분모에 포함하여 산정(집행 미적재 월 분모 제외). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 예산구분: BUDGET_CATEGORY 는 ''지출'' 단일 계정이므로 ''수입'' 필터 사용 금지. (5) 2024년 편성 결손 가드: 2024년은 원천 예산 원장에 월별 편성 배분이 없고 연 총액만 있어 월 편성예산이 0 으로 집계되므로, 다년 집행율 산정 시 YEAR >= 2025 를 적용하거나 연도별로 표를 분리하여 제시하고 2024년 집행율은 산출 불가로 답한다(연 총액은 이 SV 에 미배선). (R-O191 기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 월은 **비상관 CTE 1개**(SELECT MAX(fbd.MONTH_KEY) FROM fbd)로 구하고 CROSS JOIN 한다. ORDER BY … LIMIT/OFFSET 서브쿼리·스칼라 서브쿼리로 기준 월을 구하지 않는다(미지원 서브쿼리 오류). 월 경계는 TO_DATE(TO_VARCHAR(MONTH_KEY), ''YYYYMM'') 로 날짜화해 DATEADD 한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (R-O191-C 모금성비용) 「모금성비용·직접모금비」 질의는 DIRECT_FUNDRAISING_COST_1·_2 를 **둘 다** 「직접모금비1」「직접모금비2」 이름으로 나란히 보여주고 하나를 골라 단정하지 않는다.'
+  -- 🆕 [2026-09-30 O190] VQR — 스모크 중간 오류(metric 이름을 CTE 컬럼으로 참조) 정답 패턴 · SVA validate_verified_queries 검증 통과
+  AI_VERIFIED_QUERIES (
+    vqr_monthly_plan_exec AS (
+      QUESTION '월별 편성예산과 집행예산'
+      VERIFIED_BY '(DW = O190)'
+      SQL 'SELECT month.CAL_YEAR, month.CAL_MONTH, SUM(fbd.PLAN_BUDGET_MONTH) AS TOTAL_PLAN_BUDGET, SUM(fbd.EXEC_BUDGET_ERP) AS TOTAL_EXEC_BUDGET FROM fbd LEFT JOIN month ON fbd.MONTH_KEY = month.MONTH_KEY GROUP BY month.CAL_YEAR, month.CAL_MONTH ORDER BY month.CAL_YEAR, month.CAL_MONTH'
+    ),
+    -- 🆕 [2026-09-30 O191] VQR — 스모크 중간 오류(OFFSET 서브쿼리 기준 월) 정답 패턴
+    vqr_o191_last12m_by_item AS (
+      QUESTION '최근 12개월 예산구분별·세세목별 편성예산과 집행예산'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'WITH mx AS (SELECT MAX(fbd.MONTH_KEY) AS mk FROM fbd) SELECT item.BUDGET_CATEGORY, item.BUDGET_ITEM_NAME, SUM(fbd.PLAN_BUDGET_MONTH) AS TOTAL_PLAN_BUDGET, SUM(fbd.EXEC_BUDGET_ERP) AS TOTAL_EXEC_BUDGET FROM fbd JOIN item ON fbd.BUDGET_ITEM_SK = item.BUDGET_ITEM_SK CROSS JOIN mx WHERE fbd.MONTH_KEY > TO_NUMBER(TO_CHAR(DATEADD(MONTH, -12, TO_DATE(TO_VARCHAR(mx.mk), ''YYYYMM'')), ''YYYYMM'')) AND fbd.MONTH_KEY <= mx.mk GROUP BY item.BUDGET_CATEGORY, item.BUDGET_ITEM_NAME ORDER BY TOTAL_PLAN_BUDGET DESC NULLS LAST'
+    )
+  );
 
 
 /* =====================================================================================

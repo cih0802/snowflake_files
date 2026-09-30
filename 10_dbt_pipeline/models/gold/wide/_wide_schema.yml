@@ -438,7 +438,7 @@ models:
       - name: SEND_STATUS
         description: "발송상태 (#138)"
       - name: SEND_STATUS2
-        description: "발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢대체 경로 = `SEND_STATUS`(대부분 채워져 있다)."
+        description: "발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢 발송상태2 는 축B(통신사 도달결과) = `SEND_RESULT_CD`·`SEND_RESULT_NAME` 로 조회한다(사용자 결정 §4 #11 · 문서20 M-6 · O190)."
       - name: SEND_TYPE
         description: "발송유형"
       - name: SEND_STATUS_GROUP

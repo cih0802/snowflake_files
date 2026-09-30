@@ -74,12 +74,14 @@ def load_tools():
         agent = os.path.basename(os.path.dirname(p))
         txt = open(p, encoding='utf-8').read()
 
-        head = txt.split('tool_resources:', 1)[0]
-        # tools: 이후를 '- tool_spec:' 경계로 분할한다(마지막 블록도 동일하게 처리된다).
-        body = head.split('\ntools:', 1)
+        # 🔴 [2026-09-30 O190] 키 순서 무관 — 종전은 `tool_resources:` **앞**만 잘라 읽어, 그 키가 `tools:` 보다
+        #    먼저 오는 스펙(AGENT_EXECUTIVE)에서 설명 9건 전부를 놓쳤다(파서 경고 9 · 게이트는 PASS = 거짓 PASS 경로).
+        #    ⇒ `tools:` 뒤에서 시작해 다음 최상위 키(`tool_resources:` 등) 직전까지를 도구 영역으로 삼는다.
+        body = txt.split('\ntools:', 1)
         descs = {}
         if len(body) > 1:
-            for chunk in re.split(r'\n\s*-\s*tool_spec:', body[1])[1:]:
+            seg = re.split(r'\n(?=[A-Za-z_][A-Za-z0-9_]*:)', body[1], maxsplit=1)[0]
+            for chunk in re.split(r'\n\s*-\s*tool_spec:', seg)[1:]:
                 nm = re.search(r'\bname:\s*([A-Za-z0-9_]+)', chunk)
                 ds = re.search(r'\bdescription:\s*', chunk)
                 if nm and ds:

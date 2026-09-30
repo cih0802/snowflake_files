@@ -50,7 +50,11 @@ select
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
     CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
-    {{ gold_meta('ERP') }}
+    {{ gold_meta('ERP') }},
+    -- 🆕 [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).
+    --   🔴 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK) 유일을 강제한다.
+    SUM(IFF(DIRECT_MNYRS_YN_1 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_1,
+    SUM(IFF(DIRECT_MNYRS_YN_2 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_2
 from ranked
 where rnk = 1
 group by

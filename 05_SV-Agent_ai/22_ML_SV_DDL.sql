@@ -80,6 +80,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
     mr.LOYAL_CLASS AS mr.LOYAL_CLASS
       WITH SYNONYMS ('충성회원 예측 판정')
       COMMENT = '충성회원 가능성 예측의 모델 기본 판정. 실제값 2종: ''0''(비충성)·''1''(충성 예측). 🔴이 예측은 모집단이 더 좁다(원천이 가입기간 구간으로 한정) ⇒ NULL 은 「비충성」이 아니라 「예측 대상 아님」이다.',
+    mr.CHURN_GRADE AS mr.CHURN_GRADE
+      WITH SYNONYMS ('중단위험 등급', '위험 등급', '고위험군')
+      COMMENT = '🆕 O190 F-4 중단위험 등급 — 값 3종: ''고위험''·''주의''·''일반''(기준월 안의 확률 순위 구간 · 경계 정의 = SERVING.ML_MEMBER_RISK_V). 🔴 확률 임계가 아니라 **순위(백분위)** 다 — 「고위험군」 질문은 이 축을 쓴다 · 기준월 1개로 고정한다.',
+    mr.LOYAL_GRADE AS mr.LOYAL_GRADE
+      WITH SYNONYMS ('장기회원 등급', '충성 등급')
+      COMMENT = '🆕 O190 F-4 장기회원 등급 — 값 4종: ''최상위''·''상''·''중''·''하''(기준월 안의 확률 순위 구간 · 경계 정의 = SERVING.ML_MEMBER_RISK_V). 🔴 순위 기반 · 충성 예측 모집단만 값이 있다(그 외 NULL = 대상 아님).',
     mr.HAS_CHURN_PRED AS mr.HAS_CHURN_PRED
       WITH SYNONYMS ('중단 예측 보유')
       COMMENT = 'TRUE=이 회원에 중단 예측이 있다. 분모를 밝힐 때 쓴다.',
@@ -186,6 +192,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
     sr.CHURN_CLASS AS sr.CHURN_CLASS
       WITH SYNONYMS ('이탈 예측 판정')
       COMMENT = '모델 기본 판정. 실제값 2종: ''0''(유지)·''1''(이탈 예측). 🔴업무 위험 판정선은 미확정이다.',
+    sr.CHURN_GRADE AS sr.CHURN_GRADE
+      WITH SYNONYMS ('이탈위험 등급', '위험 등급', '고위험 후원건')
+      COMMENT = '🆕 O190 F-4 후원건 이탈위험 등급 — 값 3종: ''고위험''·''주의''·''일반''(기준월 안의 후원건 확률 순위 구간 · 경계 정의 = SERVING.ML_SPONSOR_RISK_V). 🔴 순위 기반 · 기준월 1개로 고정한다.',
     sr.PREDICTION_HAS_ERROR AS sr.PREDICTION_HAS_ERROR
       WITH SYNONYMS ('예측 오류 여부')
       COMMENT = 'TRUE=모델 산출 로그에 오류가 기록됐다.',
@@ -275,7 +284,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
       COMMENT = '계열 수. 🔴전 계열이 예측 대상은 아니다 — 원천이 일부 계열만 담을 수 있으므로 「전체」로 단정하지 않는다.'
   )
   COMMENT = 'ML 개발금액 예측 SV(5종 통합). base=SERVING.ML_DVLP_FORECAST_V. 🔴🔴 **단위는 만원이다** — 원 단위 실적(예산·회비 SV)과 같은 표에 넣으면 만 배 오차가 난다. 🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **계열유형(SERIES_TYPE)을 반드시 고정하거나 그룹에 넣는다** — 유형을 섞어 합하면 같은 개발 활동을 여러 축으로 겹쳐 세어 과대가 된다. 🔴🔴 **유형별 합계는 서로 일치하지 않는다** — 계열마다 독립적으로 예측했기 때문에 부서 합·신규기존 합·후원사업 합이 전사 예측과 다르다(후원사업 합이 전사보다 크게 나오는 구간도 있다) ⇒ 한 유형으로 다른 유형을 검산하지 말고, 「부서별 합이 전사와 다르다」는 지적에는 이 구조를 설명한다. 🔴 기준월(모델 실행월)과 예측월(TS)은 다른 축이다. ⚠️ 예측치에 음수가 존재한다(감액·해지 반영) — 음수를 오류로 보지 않는다. ⚠️ 캠페인 계열은 원천이 일부 캠페인만 담고 있다. 활성: 예측액·신뢰구간·월평균·예측개월수·계열수 · 계열유형/계열/예측월 축. 비활성: 본부·지부 분해(조직 계층 산출규칙 미확정) · 실적 대비 정확도(실적 조인 미배선) · 유형 간 정합 검산(원천이 보장하지 않는다).'
-  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **SERIES_TYPE 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 넣지 않으면 전사와 그 분해(부서·신규기존)를 겹쳐 세어 합계가 여러 배 과대가 된다. 질문이 「전사/전체 개발 예측」이면 SERIES_TYPE=''TOTAL'' 로 고정한다. 「부서별」이면 ''DEPT'', 「후원사업별」이면 ''SPNSR_BSNS'', 「신규/기존별」이면 ''NEW_OLD'', 「캠페인별」이면 ''CAMPAIGN'' 이다. (2) 🔴🔴 **단위는 만원이다.** 답변에 항상 단위를 밝히고, 원으로 환산하면 환산했다고 명시한다. 예산·회비 등 원 단위 지표와 같은 표에 합산하지 않는다. (3) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 그 기준월을 밝힌다. (4) 🔴 **기준월과 예측월(TS)을 혼동하지 않는다** — 「향후 12개월 예측」은 하나의 기준월에 속한 TS 12개다. 연도말 전망을 물으면 해당 연도에 속한 TS 만 합산하고 기준월을 밝힌다. (5) 🔴 **예측치임을 답변에 밝힌다** — 실적으로 읽히는 표현(「개발액은 …이다」)을 쓰지 않고 「예측치는 …」으로 쓴다. 테스트 단계임도 함께 밝힌다. (6) **음수 예측치를 오류로 처리하거나 0 으로 바꾸지 않는다** — 감액·해지가 반영된 값이다. (7) **신뢰구간을 별개 수치로 나열하지 않는다** — 예측치와 함께 구간으로 제시한다. (8) 🔴 **유형 간 검산을 시도하지 않는다** — 부서 합·후원사업 합·신규기존 합은 전사 예측과 일치하지 않는다(계열별 독립 예측). 사용자가 불일치를 지적하면 원천이 정합을 보장하지 않는 구조라고 설명하고, 임의로 비례배분해 맞추지 않는다. 캠페인 계열은 일부 캠페인만 예측 대상임도 밝힌다. (9) 적용 조건(기준월·계열유형 모두 미지정 시): 최신 기준월 + SERIES_TYPE=''TOTAL'' 로 한정해 예측월별 예측액과 신뢰구간을 반환하고, 다른 분해축이 있음을 안내한다.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **SERIES_TYPE 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 넣지 않으면 전사와 그 분해(부서·신규기존)를 겹쳐 세어 합계가 여러 배 과대가 된다. 질문이 「전사/전체 개발 예측」이면 SERIES_TYPE=''TOTAL'' 로 고정한다. 「부서별」이면 ''DEPT'', 「후원사업별」이면 ''SPNSR_BSNS'', 「신규/기존별」이면 ''NEW_OLD'', 「캠페인별」이면 ''CAMPAIGN'' 이다. (2) 🔴🔴 **단위는 만원이다.** 답변에 항상 단위를 밝히고, 원으로 환산하면 환산했다고 명시한다. 예산·회비 등 원 단위 지표와 같은 표에 합산하지 않는다. (3) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 그 기준월을 밝힌다. (4) 🔴 **기준월과 예측월(TS)을 혼동하지 않는다** — 「향후 12개월 예측」은 하나의 기준월에 속한 TS 12개다. 연도말 전망을 물으면 해당 연도에 속한 TS 만 합산하고 기준월을 밝힌다. (5) 🔴 **예측치임을 답변에 밝힌다** — 실적으로 읽히는 표현(「개발액은 …이다」)을 쓰지 않고 「예측치는 …」으로 쓴다. 테스트 단계임도 함께 밝힌다. (6) **음수 예측치를 오류로 처리하거나 0 으로 바꾸지 않는다** — 감액·해지가 반영된 값이다. (7) **신뢰구간을 별개 수치로 나열하지 않는다** — 예측치와 함께 구간으로 제시한다. (8) 🔴 **유형 간 검산을 시도하지 않는다** — 부서 합·후원사업 합·신규기존 합은 전사 예측과 일치하지 않는다(계열별 독립 예측). 사용자가 불일치를 지적하면 원천이 정합을 보장하지 않는 구조라고 설명하고, 임의로 비례배분해 맞추지 않는다. 캠페인 계열은 일부 캠페인만 예측 대상임도 밝힌다. (9) 적용 조건(기준월·계열유형 모두 미지정 시): 최신 기준월 + SERIES_TYPE=''TOTAL'' 로 한정해 예측월별 예측액과 신뢰구간을 반환하고, 다른 분해축이 있음을 안내한다.'
+  -- 🆕 [2026-09-30 O190] VQR — 스모크 중간 오류(metric 이름을 CTE 컬럼으로 참조) 정답 패턴 · SVA validate_verified_queries 검증 통과
+  AI_VERIFIED_QUERIES (
+    vqr_total_forecast_by_month AS (
+      QUESTION '최신 기준월 전사 개발금액 예측(예측월별)'
+      VERIFIED_BY '(DW = O190)'
+      SQL 'SELECT df.TS, SUM(df.FORECAST) AS FORECAST_AMT FROM df WHERE df.SERIES_TYPE = ''TOTAL'' AND df.STDR_MT = (SELECT MAX(df.STDR_MT) FROM df) GROUP BY df.TS ORDER BY df.TS'
+    )
+  );
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_VIEWER;
@@ -451,7 +468,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_SCORE
       COMMENT = '스코어 산출 대상 계열 수.'
   )
   COMMENT = 'ML LTV 스코어 SV(2종). base=SERVING.ML_LTV_SCORE_V. 🔴🔴 예측 기반 산출이며 회계 실적이 아니다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **LTV_TYPE 을 반드시 하나로 고정한다**(상위캠페인 회원평균 ↔ 캠페인 후원총액 · 계열 집합이 서로 겹치지 않는다). 🔴 **월별 예측 SV(SV_ML_LTV_FORECAST)와 한 표에 합치지 않는다** — 이 SV 는 계열당 단일 행이고 그쪽은 계열당 예측월 다수라, 섞으면 분모가 달라 조용히 틀린다. ⚠️ 과거금액·월평균 실적 컬럼이 함께 있으나 이 SV 의 산출 맥락 값이며 실적 정본이 아니다 — 실적은 회비·월실적 SV 소관이다. 활성: LTV 평균/최대·과거누적·미래예측·월평균 예측/실적·활동개월·계열수 · LTV유형/계열 축. 비활성: 월별 시계열(월별 예측 SV 소관) · 회원 단위 LTV.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **LTV_TYPE 을 하나 고정한다.** 두 유형을 한 표에 섞거나 순위를 함께 매기지 않는다. (2) 🔴🔴 **SV_ML_LTV_FORECAST 와 한 쿼리로 합치지 않는다** — grain 이 다르다(여기는 계열당 단일 행). 월별 추이가 필요하면 그 SV 로 라우팅한다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **AVG_MONTHLY_ACTUAL 을 실적 정본으로 인용하지 않는다** — 회비·월실적 SV 가 실적 정본이다. 예측과 나란히 보여줄 때 각각의 성격을 밝힌다. (5) 🔴 **예측 기반 산출임과 테스트 단계임을 밝힌다.** (6) **단위는 원이다.** (7) 적용 조건(기준월·유형 미지정 시): 최신 기준월 + LTV_TYPE=''UCMPGN_AVG_MEMBER'' 로 한정해 계열별 LTV 상위를 반환하고 다른 유형이 있음을 안내한다.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **LTV_TYPE 을 하나 고정한다.** 두 유형을 한 표에 섞거나 순위를 함께 매기지 않는다. (2) 🔴🔴 **SV_ML_LTV_FORECAST 와 한 쿼리로 합치지 않는다** — grain 이 다르다(여기는 계열당 단일 행). 월별 추이가 필요하면 그 SV 로 라우팅한다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **AVG_MONTHLY_ACTUAL 을 실적 정본으로 인용하지 않는다** — 회비·월실적 SV 가 실적 정본이다. 예측과 나란히 보여줄 때 각각의 성격을 밝힌다. (5) 🔴 **예측 기반 산출임과 테스트 단계임을 밝힌다.** (6) **단위는 원이다.** (7) 적용 조건(기준월·유형 미지정 시): 최신 기준월 + LTV_TYPE=''UCMPGN_AVG_MEMBER'' 로 한정해 계열별 LTV 상위를 반환하고 다른 유형이 있음을 안내한다.'
+  -- 🆕 [2026-09-30 O190] VQR — 스모크 중간 오류(metric 이름을 CTE 컬럼으로 참조) 정답 패턴 · SVA validate_verified_queries 검증 통과
+  AI_VERIFIED_QUERIES (
+    vqr_top_channel_ltv AS (
+      QUESTION '상위캠페인(채널) 회원평균 LTV 상위 10'
+      VERIFIED_BY '(DW = O190)'
+      SQL 'SELECT ls.SERIES_NAME, AVG(ls.LTV) AS AVG_LTV FROM ls WHERE ls.LTV_TYPE = ''UCMPGN_AVG_MEMBER'' AND ls.STDR_MT = (SELECT MAX(ls.STDR_MT) FROM ls) GROUP BY ls.SERIES_NAME ORDER BY AVG_LTV DESC NULLS LAST LIMIT 10'
+    )
+  );
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_SCORE TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_SCORE TO ROLE GN_DW_VIEWER;
@@ -574,8 +599,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION
       WITH SYNONYMS ('최대 전환확률')
       COMMENT = '전환확률 최대값. 전환 가능성 상위 회원 정렬에 쓴다.'
   )
-  COMMENT = 'ML 일시후원회원 정기후원 전환 예측 SV. base=SERVING.ML_ONCE_CONVERSION_V. 🔴🔴 예측치이며 실적이 아니다 — 실제 정기 전환 실적과 같은 표에 합산하지 않는다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **관측월(OBSERVE_MT)은 모델 실행 기준월이 아니다** — 회원마다 가입월부터 6개월의 월이며, 다른 ML SV 의 「최신 기준월 하나로 한정」 규칙을 적용하면 대부분의 회원이 사라진다. 「현재 기준」은 IS_LATEST_OBSERVED=TRUE(회원당 1행)로 한정한다. 🔴 예측 지평(몇 개월 안에 전환)을 숫자로 발행하지 않는다 — 학습 테이블명은 6개월을 뜻하나 원천 프로시저가 인도되지 않아 정의를 확인할 수 없다. 🔴 일시회원번호는 정기회원번호와 체계가 달라 다른 회원 SV 와 조인하지 않는다. 🔴 업무 판정선은 미확정이다. 활성: 예측 대상 일시회원수·모델 전환분류 회원수·전환확률 평균/최대 · 가입월/관측월/가입경과월/판정 축 · 🆕 성별·회원구분·등록부서(현재 마스터 스냅샷). 비활성: 실제 전환 실적 대비 정확도 · 가입경로 축(원천 채움 부족) · 전환 후 약정금액.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **예측과 실적을 한 표에 합산하지 않는다.** (2) 🔴🔴 **「지금」·「현재」·기간 미지정 질문은 IS_LATEST_OBSERVED = TRUE 로 한정한다** — 회원당 1행이 된다. 한정하지 않으면 같은 회원이 여러 관측월에 세어진다. (3) 🔴🔴 **OBSERVE_MT 에 MAX() 를 걸어 하나로 한정하지 않는다** — 모델 실행월이 아니라 회원별 관측월이어서, 최신 월 하나로 자르면 그 달에 관측된 일부 회원만 남는다. 월별 추이는 OBSERVE_MT 로, 가입 후 경과별 추이는 MONTHS_SINCE_JOIN 으로 그룹핑한다. (4) 🔴 **회원수는 PREDICTED_ONCE_MEMBERS·MODEL_CONVERT_MEMBERS(중복제거)를 쓴다** — COUNT(*) 를 만들지 않는다. (5) 🔴 **「전환할 회원」이라 단정하지 않는다** — 「모델이 전환으로 분류한 회원」으로 표현하고, 사용자가 확률 기준을 지정하면 그 기준을 밝힌다. (6) 🔴 **예측 지평(몇 개월 안에)을 숫자로 답하지 않는다.** (7) **확률은 평균·최대만 쓴다.** (8) **비율의 분모는 PREDICTED_ONCE_MEMBERS 이며 전체 일시후원회원이 아님을 밝힌다.** (9) **답변에 예측치임과 테스트 단계임을 밝힌다.** (10) 적용 조건(기간·그룹 미지정 시): IS_LATEST_OBSERVED = TRUE 로 한정해 예측 대상 일시회원수·모델 전환분류 회원수·평균 전환확률을 반환하고, 가입월(ONCE_JOIN_MT)별 분해가 가능함을 안내한다.';
+  COMMENT = 'ML 일시후원회원 정기후원 전환 예측 SV. base=SERVING.ML_ONCE_CONVERSION_V. 🔴🔴 [O190 → O191-C 재확인] 원천이 같은 관측월에 회원당 **2~6개의 서로 다른 예측행**을 담고 있다 — 재실행 누적으로 보이지만 원천에 **실행 시각·실행순번 컬럼이 없어 어느 행이 최신인지 판별할 수 없다**(현업 결정 45 = 「최신만 남기고 실행순번 추가」 ⇒ ML 담당에 실행순번 컬럼 추가 요청 중 · DEC-57). 그때까지 행 수·「관측행」 기반 수치와 **확률 평균은 여러 실행이 섞인 값**이다 — 회원 수는 반드시 중복제거 지표로 답하고 그 사실을 밝힌다. 🔴🔴 예측치이며 실적이 아니다 — 실제 정기 전환 실적과 같은 표에 합산하지 않는다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **관측월(OBSERVE_MT)은 모델 실행 기준월이 아니다** — 회원마다 가입월부터 6개월의 월이며, 다른 ML SV 의 「최신 기준월 하나로 한정」 규칙을 적용하면 대부분의 회원이 사라진다. 「현재 기준」은 IS_LATEST_OBSERVED=TRUE(회원당 1행)로 한정한다. 🔴 예측 지평(몇 개월 안에 전환)을 숫자로 발행하지 않는다 — 학습 테이블명은 6개월을 뜻하나 원천 프로시저가 인도되지 않아 정의를 확인할 수 없다. 🔴 일시회원번호는 정기회원번호와 체계가 달라 다른 회원 SV 와 조인하지 않는다. 🔴 업무 판정선은 미확정이다. 활성: 예측 대상 일시회원수·모델 전환분류 회원수·전환확률 평균/최대 · 가입월/관측월/가입경과월/판정 축 · 🆕 성별·회원구분·등록부서(현재 마스터 스냅샷). 비활성: 실제 전환 실적 대비 정확도 · 가입경로 축(원천 채움 부족) · 전환 후 약정금액.'
+  AI_SQL_GENERATION '핵심 규칙: (1) 🔴🔴 **예측과 실적을 한 표에 합산하지 않는다.** (2) 🔴🔴 **「지금」·「현재」·기간 미지정 질문은 IS_LATEST_OBSERVED = TRUE 로 한정한다** — 회원당 1행이 된다. 한정하지 않으면 같은 회원이 여러 관측월에 세어진다. (3) 🔴🔴 **OBSERVE_MT 에 MAX() 를 걸어 하나로 한정하지 않는다** — 모델 실행월이 아니라 회원별 관측월이어서, 최신 월 하나로 자르면 그 달에 관측된 일부 회원만 남는다. 월별 추이는 OBSERVE_MT 로, 가입 후 경과별 추이는 MONTHS_SINCE_JOIN 으로 그룹핑한다. (4) 🔴 **회원수는 PREDICTED_ONCE_MEMBERS·MODEL_CONVERT_MEMBERS(중복제거)를 쓴다** — COUNT(*) 를 만들지 않는다. (5) 🔴 **「전환할 회원」이라 단정하지 않는다** — 「모델이 전환으로 분류한 회원」으로 표현하고, 사용자가 확률 기준을 지정하면 그 기준을 밝힌다. (6) 🔴 **예측 지평(몇 개월 안에)을 숫자로 답하지 않는다.** (7) **확률은 평균·최대만 쓴다.** (8) **비율의 분모는 PREDICTED_ONCE_MEMBERS 이며 전체 일시후원회원이 아님을 밝힌다.** (9) **답변에 예측치임과 테스트 단계임을 밝힌다.** (10) 적용 조건(기간·그룹 미지정 시): IS_LATEST_OBSERVED = TRUE 로 한정해 예측 대상 일시회원수·모델 전환분류 회원수·평균 전환확률을 반환하고, 가입월(ONCE_JOIN_MT)별 분해가 가능함을 안내한다. (11) 🔴 [O191-D] metric 이름(MODEL_CONVERT_MEMBERS·PREDICTED_ONCE_MEMBERS·AVG_CONVERT_PROB)을 oc 컬럼처럼 참조하지 않는다 — 정의식(COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = ''1'' THEN oc.ONCE_MBER_NO END) 등)으로 집계한다.'
+  -- 🆕 [2026-09-30 O191-D] VQR — 스모크 3차 오류(metric 이름을 컬럼으로 참조) 정답 패턴
+  AI_VERIFIED_QUERIES (
+    vqr_o191_once_join_month AS (
+      QUESTION '가입월별 모델 전환분류 회원수와 예측 대상 일시회원수, 평균 전환확률(현재 기준)'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'SELECT oc.ONCE_JOIN_MT, COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = ''1'' THEN oc.ONCE_MBER_NO END) AS MODEL_CONVERT_MEMBERS, COUNT(DISTINCT oc.ONCE_MBER_NO) AS PREDICTED_ONCE_MEMBERS, AVG(oc.CONVERT_PROB) AS AVG_CONVERT_PROB FROM oc WHERE oc.IS_LATEST_OBSERVED = TRUE GROUP BY oc.ONCE_JOIN_MT ORDER BY oc.ONCE_JOIN_MT DESC NULLS LAST'
+    )
+  );
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_VIEWER;

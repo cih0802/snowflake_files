@@ -37,7 +37,11 @@ select
     --      순환 위험이 생긴다. 📏 xf98254 = 1,606,883명 채움 · 획득 차원 ACQ_CMMN_BRND_NM 과 99.73% 일치
     --      (불일치 = 가입캠페인 ≠ 최초개발캠페인 회원 · 둘은 다른 정의다).
     c.CMMN_BRND                                   as JOIN_CMMN_BRND,
-    c.CMMN_BRND_NM                                as JOIN_CMMN_BRND_NM
+    c.CMMN_BRND_NM                                as JOIN_CMMN_BRND_NM,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_MEMBER 승계(회원 grain · 이관유무 = ONCE 전용).
+    m.CHRCTR_RECPTN_YN                            as CHRCTR_RECPTN_YN,
+    m.SPECL_MNG_CD1                               as SPECL_MNG_CD1,
+    m.FDRM_MBER_TRNSFER_FG                        as FDRM_MBER_TRNSFER_FG
 from {{ ref('DIM_MEMBER_STATUS_HISTORY') }} h
 left join {{ ref('CRM_MEMBER') }}   m on m.MEMBER_DK = h.MEMBER_DK
 left join {{ ref('CRM_CAMPAIGN') }} c on c.CMPGN_CD  = m.CMPGN_CD

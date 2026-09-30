@@ -1,0 +1,49 @@
+## SND_MEMBER_LIST rows=10183916 후보=57 채움>0=43
+   SPNSR_CD(후원사업(코드)):0.42 · SPNSR_NM(후원사업(이름)):0.46 · CMPGN_CD(캠페인(코드)):0.46 · CMPGN_NM(캠페인(이름)):0.53 · GENDER(성별(회원)):0.47 · AGE(연령대):0.47 · SETLE_CD(납입방식(코드)):0.00 · SETLE_NM(납입방식(이름)):0.05 · DSCNTC_PATH(중단채널):0.01 · DSCNTC_RSN_CD(중단사유(코드)):0.00 · DSCNTC_RSN_NM(중단사유(이름)):0.01 · CHILD_NO(아동번호):0.12 · MNG_NO(관리번호):0.01 · LETTER_DIV_CD(서비스구분):0.01 · CHILD_DTL_CD(아동세부상태(코드)):0.06 · CHILD_DTL_NM(아동세부상태(이름)):0.07 · RELATNSP_DSCNTC_YN(결연중단유무):0.01 · RELATNSP_KEY(결연번호):0.29 · PRIV_SUSP_YN(개인 정보 이용 중단):0.00 · SND_MSG(발송 메시지):0.94 · REG_DATE(등록일시):1.00 · SND_HOUR(발송시):1.00 · SND_MIN(발송분):1.00 · EMAIL_RECPTN_CD(이메일 수신 상태(코드)):0.00 · EMAIL_RECPTN_NM(이메일 수신 상태(이름)):0.00 · NATION_CD(국가코드):0.00 · NATION_NM(국가명):0.07 · BPLC_CD(사업장코드):0.00 · BPLC_KOR_NM(사업장명):0.07 · DISCHARGE_REPORT_KOR(퇴소보고서(한글)):0.00 · PAST_NATION_NM(과거국가명):0.00 · PAST_BPLC_NM(과거사업장명):0.00 · PAST_CHILD_NO(과거아동번호):0.00 · FAMILY_DTL(가족사항):0.00 · FINAL_CHILD_SPNSR_START_DT(종결아동결연시작일):0.00 · NEW_CHILD_NO(신규아동번호):0.00 · NEW_CHILD_PROJECT_COUNTRY(신규아동사업국):0.00 · NEW_CHILD_WORKPLACE_NM(신규아동사업장명):0.00 · NEW_CHILD_PIC(신규아동사진):0.00 · NEW_CHILD_GENDER(신규아동성별):0.00 · SPNSR_AMOUNT(후원금액(월납부액)):0.42 · SPNSR_STRT_DT(후원시작일(최초가입일)):0.46 · SPNSR_DSCNTC_DT(후원중단일(가장최근중단일)):0.04 · RELATNSP_DT(결연매칭일(결연일)):0.07 · SPNSR_TYPE(후원구분):0.46 · CPR_DIV_CD(법인구분):0.46 · DEPT_CD(사용부서):0.46 · CURRENT_UPPER_CMPGN(최종상위캠페인(현재)):0.46 · CURRENT_CMPGN(최종캠페인(현재)):0.46 · FIRST_UPPER_CMPGN(최초상위캠페인):0.46 · FIRST_CMPGN(최초캠페인):0.46 · MSG_KEY(메세지키):0.39 · CINFO(알림톡구분):0.75 · RESPONSED_YN(발송확인여부):1.00 · RESPONSED_DT(확인일시):0.97 · SYNCED_AT(동기화 타임스탬프):1.00 · REAL_SEND_DT(실제발신일시):0.97
+## SND_MEMBER_OPEN_LOG: 후보 0
+## SND_REQ_MST rows=1960 후보=38 채움>0=29
+   MSG_TYPE(메시지 유형):1.00 · TMPL_CODE(템플릿 코드):1.00 · AUTHOR(작성자):0.00 · CREATE_DATE(작성일):1.00 · CONDITION_TITLE(발송 조건 제목):1.00 · CALL_NUMBER(발신 번호):0.69 · ALT_SMS_YN(대체 문자 발송 여부):0.69 · REGULARLY(발송 유형 (정기/비정기)):1.00 · PERIODIC(발송 주기):0.01 · PERIODIC_WEEK(요일별 발송 요일):0.00 · PERIODIC_DAY(매월 발송 일자):0.00 · SEND_TIME(발송 시작 시간):1.00 · SEND_MIN(발신분):1.00 · SEND_SPLIT_TYPE(발송 분할 방식):1.00 · DIVIDE(분할 건수):0.07 · DIVIDE_UNIT(분할 단위 (분)):0.07 · CORP_TYPE(법인 구분):0.00 · AUTO_TYPE(자동/수동 구분):0.00 · USE_YN(사용 여부):1.00 · REG_ID(등록자):1.00 · MOD_DATE(수정일):0.00 · INIT_REG_DATE(최초 등록일):1.00 · APPR_STATUS(승인 상태):0.00 · CREATE_DEPT(작성 부서):0.00 · SENDER_EMAIL(발신 메일주소):0.31 · RCPT_LIST(수신자 목록):0.00 · SEND_STATUS(발송 상태):1.00 · END_DATE(발송종료일):0.01 · PAPER_YEAR(ACPI 년도):0.23 · MENU_CODE(메뉴코드):1.00 · SEND_ROUND(발송차수):1.00 · EXTRA(EXTRA):0.61 · ASSIGN_TARGET_CNT(배정대상카운트):0.01 · FIRST_SEQ_NO(첫번째SEQ_NO):0.00 · JOB_ID(배치잡ID):0.30 · SYNCED_AT(동기화 타임스탬프):1.00 · REG_NM(등록자명):0.91 · SERVICE_MENU_CODE(서비스메뉴코드):1.00
+## TC_MKTNG_DTL_CD: 후보 0
+## TD_MS_CRMN_PRTCPNT rows=162893 후보=7 채움>0=7
+   PARTCPT_TIME_CO(참여시간수):0.16 · SELF_PARTCPT_CD(자기참여코드):1.00 · RCPMNY_STAT_CD(입금상태코드):0.13 · RCPMNY_DATE(입금일자):0.83 · REFND_DATE(환불일자):0.02 · RQST_DATE(신청일자):1.00 · ACMPNY_PARTCPT_CO(동반참여수):0.97
+## TD_MS_EMAIL_LQY_SNDNG rows=524033 후보=5 채움>0=4
+   MSG_ID(메시지ID):0.00 · RECPTN_CNT(수신건수):0.80 · SNDNG_STRT_DT(발신시작일시):1.00 · SNDNG_END_DT(발신종료일시):1.00 · CLOS_YN(마감여부):0.00
+## TD_MS_EMAIL_SNDNG_DTLS: 후보 0
+## TD_MS_EVENT_PRTCPNT_DTL rows=1097970 후보=1 채움>0=1
+   EVENT_PARTCPT_DIV_CD(이벤트참여구분코드):1.00
+## TD_MS_MSG_AT_LQY_SNDNG rows=1194376 후보=4 채움>0=4
+   DIVS_DTL_KEY(분할상세KEY):1.00 · AT_ALTRTV_SNDNG_CNT(알림톡대체발송건수):1.00 · RESVE_SNDNG_DE(예약발신일):1.00 · RESVE_HM(예약시분):0.02
+## TD_MS_MSG_AT_SNDNG_DTLS rows=21976994 후보=3 채움>0=3
+   SNDNG_NO(발신번호):1.00 · ALTRTV_MSG_SNDNG_YN(대체문자 발송 여부):0.04 · ATTACHED_FILE(첨부파일):0.61
+## TD_MS_PSTMTR_LQY_SNDNG rows=2190 후보=2 채움>0=2
+   SNDNG_SQNC(발신차수):1.00 · SNDNG_TIT(발신제목):1.00
+## TD_MS_PSTMTR_SNDNG_DTL rows=1969956 후보=4 채움>0=4
+   RELATNSP_KEY(결연KEY):0.50 · MNG_NO(관리번호):0.07 · DTL_KEY(상세KEY):0.07 · BIZN_REQUST_KEY(업무요청KEY):0.00
+## TM_CM_BRND_MNG rows=103 후보=3 채움>0=3
+   USE_DEPT_CD(사용부서코드):1.00 · USE_YN(사용여부):1.00 · PR_MTH_LIST(홍보방법리스트):0.90
+## TM_CM_CMPGN_MNG rows=36768 후보=8 채움>0=8
+   USE_DEPT_CD(사용부서코드):0.92 · USE_SCOPE(사용범위):0.96 · SPNSR_ENTRPRS_ID(후원기업ID):0.09 · MBRFEE_BNKB_LIST(회비통장리스트):0.01 · INICIS_ACNT_NO(이니시스계정번호):0.31 · USE_YN(사용여부):1.00 · EMRGNCY_AID_BPLC_CD(긴급구호사업장코드):0.14 · CMPGN_PRPT_YN(캠페인특성여부):0.60
+## TM_MM_FDRM_MBER_INFO rows=1608281 후보=7 채움>0=7
+   CHRCTR_RECPTN_YN(문자수신여부):1.00 · BL_ENTRPS_NO(소속업체번호):0.00 · SPECL_MNG_CD1(특별관리코드1):0.85 · SPECL_MNG_CD2(특별관리코드2):0.00 · TNI_CU_BL_NO(더네이버스클럽소속번호):0.00 · CTI_SYNCHRN_DIV_CD(CTI동기화구분코드):1.00 · STDR_DE(기준일):1.00
+## TM_MM_ONCE_MBER_INFO rows=177018 후보=6 채움>0=6
+   CHRCTR_RECPTN_YN(문자수신여부):0.65 · FDRM_MBER_TRNSFER_FG(정기회원이관유무):0.03 · SPECL_MNG_CD1(특별관리코드1):0.00 · SPECL_MNG_CD2(특별관리코드2):0.00 · TNI_CU_BL_NO(더네이버스클럽소속번호):0.04 · CTI_SYNCHRN_DIV_CD(CTI동기화구분코드):1.00
+## TM_MS_AT_TMPLAT_MNG: 후보 0
+## TM_MS_CRMN rows=3553 후보=17 채움>0=17
+   CRMN_PLACE_NM(행사장소명):0.12 · CRMN_PART_STRT_DE(캠페인참여시작일자):0.35 · CRMN_PART_END_DE(캠페인참여종료일자):0.35 · TAT(소요시간):0.48 · RESRCE_SRVC_FG(자원봉사유무):0.99 · CPR_DIV_CD(법인구분코드):0.86 · ENTRPS_CD(업체코드):0.48 · USE_YN(사용여부):1.00 · PART_USE_YN(참여사용여부):0.29 · TMPLAT_ID(템플릿ID):0.32 · TMPLAT_TIT(템플릿제목):0.32 · TMPLAT_PART_ID(템플릿파트ID):0.32 · TMPLAT_PART_TIT(템플릿파트제목):0.32 · SRVY(설문조사 링크):0.32 · PROMO_CODE(프로모션코드):0.00 · TMPLAT_WIN_ID(템플릿윈도우ID):0.02 · TMPLAT_WIN_TIT(템플릿윈도우제목):0.02
+## TM_MS_EMAIL_SNDNG rows=524895 후보=5 채움>0=5
+   SNDNG_CD_ID(발신코드ID):1.00 · SNDNG_DTL_CD_ID(발신상세코드ID):1.00 · PRCS_DE(처리일):1.00 · PCPSN_ID(처리자ID):0.98 · PRCS_YN(처리여부):1.00
+## TM_MS_EMAIL_TMPLAT_MNG: 후보 0
+## TM_MS_EVENT rows=383 후보=2 채움>0=2
+   PRZWIN_PSNNL_CO(당첨인원수):1.00 · PRZWIN_GFT_SNDNG_DE(당첨선물발송일):0.30
+## TM_MS_MSG_AT_SNDNG rows=1191219 후보=6 채움>0=6
+   SNDNG_CD_ID(발신코드ID):1.00 · SNDNG_DTL_CD_ID(발신상세코드ID):1.00 · PRCS_DE(처리일):1.00 · PCPSN_ID(처리자ID):0.57 · TMPLAT_ID(템플릿ID):0.96 · ALTRTV_MSG_SNDNG_YN(대체메시지발신여부):0.90
+## TM_MS_PSTMTR_SNDNG rows=4016 후보=6 채움>0=6
+   SNDNG_CD_ID(발신코드ID):1.00 · SNDNG_DTL_CD_ID(발신상세코드ID):1.00 · PRCS_DE(처리일):1.00 · PCPSN_ID(처리자ID):1.00 · LQY_YN(대량여부):1.00 · RE_SNDNG_YN(재발신여부):1.00
+## TM_PM_DNTN_DTLS rows=1132696 후보=14 채움>0=13
+   ONCE_CMPGN_CD(일시후원캠페인코드):1.00 · ELCTR_SETLE_KEY(전자결제KEY):0.08 · SETLE_ENTRPS_CD(결제업체코드):0.90 · SETLE_CMPNY_ACNT_NO(결제사계좌번호):0.17 · MBRFEE_BNKB_KEY(회비통장KEY):0.83 · ACNUT_SER_NO(계좌일련번호):0.92 · FNLT_CD(금융기관코드):0.02 · USE_YN(사용여부):1.00 · TRNSFER_MBRFEE_KEY(이관회비KEY):0.01 · TRNSFER_RSN_CD(이관사유코드):0.00 · RETUN_DNTN_KEY(환급기부금KEY):0.00 · RETUN_KEY(환급KEY):0.00 · ACMSLT_DEPT_CD(실적부서코드):0.99 · REGIST_DE(등록일):1.00
+## TM_PM_MBRFEE_ACMSLT rows=48214094 후보=30 채움>0=29
+   SPNSR_NO(후원번호):1.00 · SPNSR_BSNS_NO(후원사업번호):1.00 · OVSEA_AID_KEY(해외구호KEY):0.02 · RQEST_MT(청구월):1.00 · RQEST_SQNC(청구차수):1.00 · GFTMNEY_CHILD_CD(선물금아동코드):0.00 · ONCE_CMPGN_CD(일시후원캠페인코드):0.00 · TOGETH_WTDRW_REQUST_KEY(함께출금요청KEY):0.00 · TOGETH_WTDRW_YN(함께출금여부):1.00 · SETLE_KEY(결제KEY):0.99 · SETLE_ENTRPS_CD(결제업체코드):0.99 · RQST_KEY(신청KEY):0.99 · RST_KEY(결과KEY):0.28 · ELCTR_SETLE_KEY(전자결제KEY):0.00 · SETLE_CMPNY_ACNT_NO(결제사계좌번호):0.00 · MBRFEE_BNKB_KEY(회비통장KEY):0.00 · ACNUT_SER_NO(계좌일련번호):0.00 · FNLT_CD(금융기관코드):0.00 · TRNSFER_REQUST_KEY(이관요청KEY):0.00 · TRNSFER_MBRFEE_KEY(이관회비KEY):0.00 · TRNSFER_DNTN_KEY(이관기부금KEY):0.00 · TRNSFER_RSN_CD(이관사유코드):0.00 · RETUN_REQUST_KEY(환급요청KEY):0.00 · RETUN_MBRFEE_KEY(환급회비KEY):0.00 · USE_YN(사용여부):1.00 · OPERTOR_ID(작업자ID):1.00 · OPERTOR_NM(작업자명):1.00 · OPERT_DE(작업일):1.00 · OPER_KEY(운영KEY):0.99 · OPER_RST_KEY(운영결과KEY):0.99
+## TM_RM_RELATNSP_GFTMNEY_INFO rows=183495 후보=11 채움>0=11
+   MBRFEE_KEY(회비KEY):1.00 · SETLE_DE(결제일):1.00 · SETLE_CD(결제코드):1.00 · SETLE_BANK_CD(결제은행코드):0.78 · GFT_DIV_CD(선물구분코드):0.91 · GFTMNEY_DOLLAR_AMT(선물금미화금액):0.88 · APRV_DE(승인일):1.00 · UNREPLY_RSN_CD(미답신사유코드):0.09 · TRNSFER_KEY(이관KEY):0.01 · TRNSFER_YN(이관여부):0.80 · TRNSFER_AFTER_RELATNSP_KEY(이관후결연KEY):0.00
+## TM_RM_RELATNSP_LETTER_INFO rows=215256 후보=6 채움>0=6
+   ONLINE_POST_WRITNG_YN(온라인우편작성여부):1.00 · EXCEL_SER_NO(엑셀일련번호):1.00 · UNREPLY_RSN_CD(미답신사유코드):0.00 · LANG_CD(언어코드):0.95 · ONLINE_INFLOW_CD(온라인유입코드):0.80 · LETTER_STAT_CD(편지상태코드):1.00

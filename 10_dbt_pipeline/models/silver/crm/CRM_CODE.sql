@@ -10,6 +10,11 @@ SELECT
   'CRM'                        AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()          AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()          AS DW_UPDATE_TS,
-  NULL                         AS DW_BATCH_ID
+  NULL                         AS DW_BATCH_ID,
+  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼 4종(문서32 §3) — 감사컬럼 뒤 ordinal 말미
+  NULLIF(TRIM(DTL_CD_DC),'')   AS DTL_CD_DC,
+  NULLIF(TRIM(CD_ATRB1),'')    AS CD_ATRB1,
+  NULLIF(TRIM(CD_ATRB2),'')    AS CD_ATRB2,
+  NULLIF(TRIM(CD_ATRB3),'')    AS CD_ATRB3
 FROM {{ source('bronze_crm','TC_CMMN_DTL_CD') }}
 WHERE CD_ID IS NOT NULL AND DTL_CD_ID IS NOT NULL

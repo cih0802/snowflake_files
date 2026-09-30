@@ -1,0 +1,50 @@
+AGENT_MEMBER_01 ok=True  94.5s B=  51231 sql=True sv=SV_AD,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMB tab=FACT_MEMBER_FEE,SV_MEMBER_FEE,WIDE_MEMBER_FEE err=["SQL compilation error: error line 11 at position 2\\ninvalid identifier 'FEE.SPONSORSHIP'"]
+AGENT_MEMBER_02 ok=True  34.5s B=  40731 sql=True sv=SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMBER_MONTHLY,SV_MEMBER_SP tab=DIM_MONTH,FACT_MEMBER_MONTHLY,SV_MEMBER_MONTHLY err=[]
+AGENT_MEMBER_03 ok=True  70.3s B=  52660 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBE tab=DIM_DATE,DIM_MEMBER_ACQUISITION,FACT_MEMBER_EVENT,SV_MEMBER_EVENT err=["SQL compilation error: error line 8 at position 48\\ninvalid identifier 'FME.EVENT_DATE'"]
+AGENT_MEMBER_04 ok=True  50.6s B=  48502 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBE tab=DIM_DATE,DIM_MEMBER_ACQUISITION,FACT_MEMBER_EVENT,SV_MEMBER_EVENT err=["SQL compilation error: error line 9 at position 8\\ninvalid identifier 'FME.EVENT_DATE'"]
+AGENT_MEMBER_05 ok=True  55.9s B=  56568 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBE tab=DIM_DATE,DIM_MEMBER_ACQUISITION,FACT_MEMBER_EVENT,SV_MEMBER_EVENT err=["SQL compilation error: error line 15 at position 8\\ninvalid identifier 'DATE.FULL_DATE'"]
+AGENT_MEMBER_06 ok=True  54.5s B=  79697 sql=True sv=SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMBER_MON tab=FACT_MEMBER_COHORT,FACT_MEMBER_EVENT,SV_MEMBER_COHORT err=[]
+AGENT_MEMBER_07 ok=True  65.8s B= 145144 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_EVENT,SV_MEMBER_FEE tab=FACT_MEMBER_DEV_ACHIEVEMENT,FACT_TARGET_MEMBER_DEV,SV_DEV_ACHIEVEMENT err=[]
+AGENT_MEMBER_08 ok=True  30.6s B=  37017 sql=True sv=SV_MEMBER_MONTHLY,SV_MEMBER_SPONSOR_BIZ tab=DIM_CAMPAIGN,DIM_SPONSORSHIP,FACT_MEMBER_SPONSORSHIP_SPAN,SV_MEMBER_SP err=[]
+AGENT_MEMBER_09 ok=True  45.2s B=  44736 sql=True sv=SV_SERVICE tab=DIM_DATE,DIM_SERVICE,FACT_MESSAGE_DISPATCH,SV_SERVICE err=[]
+AGENT_MEMBER_10 ok=True  42.6s B=  69582 sql=True sv=SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMBER_MONTHLY,SV_MEMBER_SP tab=DIM_MONTH,FACT_MEMBER_MONTHLY,SV_MEMBER_MONTHLY err=[]
+AGENT_MEMBER_11 ok=True  47.8s B=  68247 sql=True sv=SV_SERVICE tab=DIM_DATE,FACT_MESSAGE_DISPATCH,SV_SERVICE err=['SQL compilation error:\\nSubquery containing correlated aggregate function [MAX(SYS_VW.FULL_DATE_2)] can only appear in having or select clause']
+AGENT_MEMBER_12 ok=True  65.2s B=  73673 sql=True sv=SV_EVENT_PARTICIPATION tab=FACT_EVENT_ATTENDANCE,SV_EVENT_PARTICIPATION err=["SQL compilation error: error line 12 at position 6\\ninvalid identifier 'FEP.TOTAL_PARTICIPANTS'"]
+AGENT_MEMBER_13 ok=True  50.8s B=  66123 sql=True sv=SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMBER_MONTHLY,SV_ML_MEMBER tab=ML_MEMBER_RISK_V,SV_ML_MEMBER_RISK err=[]
+AGENT_MEMBER_14 ok=True  36.4s B=  28672 sql=True sv=SV_ML_ONCE_CONVERSION tab=ML_ONCE_CONVERSION_V,SV_ML_ONCE_CONVERSION err=[]
+AGENT_MEMBER_15 ok=True  14.6s B=   1429 sql=False sv= tab= err=[]
+AGENT_MARKETING_01 ok=True  29.5s B= 105900 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_EVENT,SV_MEMBER_FEE tab=FACT_MEMBER_DEV_ACHIEVEMENT,FACT_TARGET_MEMBER_DEV,SV_DEV_ACHIEVEMENT err=[]
+AGENT_MARKETING_02 ok=True  70.0s B=  40768 sql=True sv=SV_AD,SV_BUDGET tab=DIM_BUDGET_ITEM,DIM_MONTH,FACT_BUDGET,FACT_BUDGET_YEARLY,SV_BUDGET err=['SQL compilation error:\\nUnsupported subquery type cannot be evaluated at line 31, position 6']
+AGENT_MARKETING_03 ok=True  53.1s B=  40488 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,SV_AD,WIDE_AD_COMBINED err=[]
+AGENT_MARKETING_04 ok=True  66.2s B=  78821 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,SV_AD,WIDE_AD_COMBINED err=["SQL compilation error: error line 10 at position 8\\ninvalid identifier '__AD.PERF_DATE'"]
+AGENT_MARKETING_05 ok=True  49.4s B=  44104 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,SV_AD,WIDE_AD_COMBINED err=["SQL compilation error: error line 11 at position 28\\ninvalid identifier '__AD.PERF_DATE'"]
+AGENT_MARKETING_06 ok=True  44.2s B=  39376 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,SV_AD,WIDE_AD_COMBINED err=[]
+AGENT_MARKETING_07 ok=True  55.6s B=  42203 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,DIM_MARKETING_CAMPAIGN,SV_AD,WIDE_AD_COMBINED err=[]
+AGENT_MARKETING_08 ok=True  42.3s B=  47036 sql=True sv=SV_DEV_ACHIEVEMENT,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBE tab=DIM_CAMPAIGN,DIM_DATE,DIM_MEMBER_ACQUISITION,FACT_MEMBER_EVENT,SV_MEMB err=[]
+AGENT_MARKETING_09 ok=True  56.4s B=  72743 sql=True sv=SV_AD,SV_MEMBER_COHORT,SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMB tab=DIM_CAMPAIGN,FACT_MEMBER_COHORT,FACT_MEMBER_EVENT,FACT_MEMBER_FEE,SV_M err=["SQL compilation error: error line 32 at position 2\\ninvalid identifier '\\"]
+AGENT_MARKETING_10 ok=True  16.4s B=   1379 sql=False sv= tab= err=[]
+AGENT_MARKETING_11 ok=True  59.0s B= 107010 sql=True sv=SV_MEMBER_MONTHLY,SV_MEMBER_SPONSOR_BIZ tab=DIM_CAMPAIGN,DIM_SPONSORSHIP,FACT_MEMBER_SPONSORSHIP_SPAN,SV_MEMBER_SP err=[]
+AGENT_EXECUTIVE_01 ok=True  51.8s B=  33545 sql=True sv=SV_AD,SV_BUDGET tab=DIM_BUDGET_ITEM,DIM_MONTH,FACT_BUDGET,FACT_BUDGET_YEARLY,SV_BUDGET err=[]
+AGENT_EXECUTIVE_02 ok=True  70.7s B=  84054 sql=True sv=SV_AD,SV_BUDGET,SV_MEMBER_EVENT tab=DIM_DATE,SV_AD,WIDE_AD_COMBINED err=[]
+AGENT_EXECUTIVE_03 ok=True  40.7s B=  39965 sql=True sv=SV_MEMBER_EVENT,SV_MEMBER_FEE,SV_MEMBER_MONTHLY,SV_MEMBER_SP tab=DIM_MONTH,FACT_MEMBER_MONTHLY,SV_MEMBER_MONTHLY err=[]
+AGENT_EXECUTIVE_04 ok=True  31.1s B=  49234 sql=True sv=SV_SERVICE tab=DIM_DATE,DIM_SERVICE,FACT_MESSAGE_DISPATCH,SV_SERVICE err=['SQL compilation error:\\nSubquery containing correlated aggregate function [MAX(SYS_VW.FULL_DATE_2)] can only appear in having or select clause']
+AGENT_EXECUTIVE_05 ok=True  48.3s B=  65255 sql=True sv=SV_ML_DVLP_FORECAST tab=ML_DVLP_FORECAST_V,SV_ML_DVLP_FORECAST err=[]
+AGENT_EXECUTIVE_06 ok=True  61.7s B=  43287 sql=True sv=SV_ML_DVLP_FORECAST tab=ML_DVLP_FORECAST_V,SV_ML_DVLP_FORECAST err=[]
+AGENT_EXECUTIVE_07 ok=True  43.4s B=  58446 sql=True sv=SV_ML_LTV_FORECAST,SV_ML_LTV_SCORE tab=ML_LTV_SCORE_V,SV_ML_LTV_SCORE err=[]
+AGENT_EXECUTIVE_08 ok=True  23.0s B=  25501 sql=True sv=SV_ML_LTV_FORECAST,SV_ML_LTV_SCORE tab=ML_LTV_SCORE_V,SV_ML_LTV_SCORE err=[]
+AGENT_EXECUTIVE_09 ok=True  32.9s B=  27220 sql=True sv=SV_ML_FEATURE_IMPORTANCE tab=ML_FEATURE_IMPORTANCE_V,SV_ML_FEATURE_IMPORTANCE err=[]
+AGENT_EXECUTIVE_10 ok=True  20.1s B=   1598 sql=False sv= tab=ML_DVLP_FORECAST_V err=[]
+
+총 36문항 · 호출성공 36 · SQL생성 33 · 실패 0
+  🔴 중간 오류 AGENT_MEMBER_01: SQL compilation error: error line 11 at position 2\ninvalid identifier 'FEE.SPONSORSHIP'
+  🔴 중간 오류 AGENT_MEMBER_03: SQL compilation error: error line 8 at position 48\ninvalid identifier 'FME.EVENT_DATE'
+  🔴 중간 오류 AGENT_MEMBER_04: SQL compilation error: error line 9 at position 8\ninvalid identifier 'FME.EVENT_DATE'
+  🔴 중간 오류 AGENT_MEMBER_05: SQL compilation error: error line 15 at position 8\ninvalid identifier 'DATE.FULL_DATE'
+  🔴 중간 오류 AGENT_MEMBER_11:  containing correlated aggregate function [MAX(SYS_VW.FULL_DATE_2)] can only appear in having or select clause
+  🔴 중간 오류 AGENT_MEMBER_12: SQL compilation error: error line 12 at position 6\ninvalid identifier 'FEP.TOTAL_PARTICIPANTS'
+  🔴 중간 오류 AGENT_MARKETING_02: SQL compilation error:\nUnsupported subquery type cannot be evaluated at line 31, position 6
+  🔴 중간 오류 AGENT_MARKETING_04: SQL compilation error: error line 10 at position 8\ninvalid identifier '__AD.PERF_DATE'
+  🔴 중간 오류 AGENT_MARKETING_05: SQL compilation error: error line 11 at position 28\ninvalid identifier '__AD.PERF_DATE'
+  🔴 중간 오류 AGENT_MARKETING_09: SQL compilation error: error line 32 at position 2\ninvalid identifier '\
+  🔴 중간 오류 AGENT_EXECUTIVE_04:  containing correlated aggregate function [MAX(SYS_VW.FULL_DATE_2)] can only appear in having or select clause
+① 최종 응답 실패 0 ⇒ 🟢 · ② 중간 오류 11 (기준선 10 이하) ⇒ 🔴 ⇒ 🔴 FAIL

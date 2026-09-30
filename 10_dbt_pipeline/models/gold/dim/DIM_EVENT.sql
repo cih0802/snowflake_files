@@ -36,7 +36,11 @@ select
     -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 행사구분 코드→라벨. 전파만 한다 — 코드사전 조인은 SILVER 소관이다
     --    (같은 조인을 두 계층에 두면 갈라진다 · 문서30 §23-J). 신설 위치 = 감사컬럼 뒤(정본 DDL 규약).
     EVENT_DIV_GROUP                               as EVENT_CATEGORY_GROUP,
-    EVENT_DIV_NM                                  as EVENT_CATEGORY_NAME
+    EVENT_DIV_NM                                  as EVENT_CATEGORY_NAME,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_EVENT 승계(행사 grain · 원천별 비해당 = NULL).
+    --   당첨 2종 = 일반행사(EVENT) 전용 · 나머지 8종 = 캠페인행사(CRMN) 전용.
+    PRZWIN_PSNNL_CO, PRZWIN_GFT_SNDNG_DE, CRMN_PLACE_NM, CRMN_PART_STRT_DE, CRMN_PART_END_DE,
+    TAT, RESRCE_SRVC_FG, CPR_DIV_CD, ENTRPS_CD, USE_YN
 from e
 
 union all
@@ -48,4 +52,5 @@ select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, NULL, N
     {{ gold_meta('CRM') }},
     -- ⚠️ 센티넬 행도 컬럼 수를 맞춰야 한다(UNION ALL 위치 대응). 코드군·라벨은 값이 없으므로 NULL —
     --    '(미매핑)' 을 넣지 않는다: 이 행은 「행사 미매핑」을 뜻하고 코드군·라벨 축의 미매핑이 아니다.
-    NULL, NULL
+    NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL

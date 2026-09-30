@@ -10,6 +10,9 @@ SELECT
   'CRM'                               AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()                 AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()                 AS DW_UPDATE_TS,
-  NULL                                AS DW_BATCH_ID
+  NULL                                AS DW_BATCH_ID,
+  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼 2종(문서32 §3)
+  SORT_ORDR                           AS SORT_ORDR,
+  NULLIF(TRIM(USE_YN),'')             AS USE_YN
 FROM {{ source('bronze_crm','TM_CM_SPNSR_BSNS_INFO') }}
 WHERE SPNSR_BSNS_ID IS NOT NULL

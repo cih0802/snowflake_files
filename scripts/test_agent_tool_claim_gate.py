@@ -131,6 +131,37 @@ check(not _R.violations("회원 획득 코호트 팩트(FMC, grain=**회원 1행
 check(bool(_R.violations("grain 기준 적재 2,170,572행이다.")),
       "무력화 아님 — grain 근방의 **큰 수**는 면제되지 않는다(자릿수 제한이 작동한다)")
 
+print("== 축10 키 순서 무관 (O191 신설 · O190 수리의 음성 축)")
+# 🔴 O190 결함 = `tool_resources:` 가 `tools:` 앞인 스펙(EXEC)에서 설명 9건이 분모에서 빠졌다(거짓 PASS).
+import os as _os, tempfile as _tf  # noqa: E402
+_FIX = (
+    "models:\n  orchestration: auto\n"
+    "tool_resources:\n  analyst_a:\n    semantic_view: GN_DW.SERVING.SV_FIX_A\n"
+    "  analyst_b:\n    semantic_view: GN_DW.SERVING.SV_FIX_B\n"
+    "tools:\n"
+    "  - tool_spec:\n      type: cortex_analyst_text_to_sql\n      name: analyst_a\n"
+    "      description: 후원사업별 분해는 정본 도구다.\n"
+    "  - tool_spec:\n      type: cortex_analyst_text_to_sql\n      name: analyst_b\n"
+    "      description: 캠페인별 활동회원 수.\n"
+)
+_d = _tf.mkdtemp(prefix="atcg_fix_")
+_os.makedirs(_os.path.join(_d, "AGENT_FIX"))
+open(_os.path.join(_d, "AGENT_FIX", "agent_spec.yaml"), "w", encoding="utf-8").write(_FIX)
+_orig_glob = G.AGENT_GLOB
+G.AGENT_GLOB = _os.path.join(_d, "*", "agent_spec.yaml")
+try:
+    fx = G.load_tools()
+finally:
+    G.AGENT_GLOB = _orig_glob
+print(f"   fixture tools = {[(t, sv, len(d)) for _a, t, sv, d in fx]}")
+check(len(fx) == 2, "tool_resources 선행 스펙 — 도구 2건 전부 분모에 있다")
+check(all(d for _a, _t, _s, d in fx), "tool_resources 선행 스펙 — 설명 미확보 0건(거짓 PASS 경로 차단)")
+check(dict((t, sv) for _a, t, sv, _d2 in fx) == {"analyst_a": "SV_FIX_A", "analyst_b": "SV_FIX_B"},
+      "도구 ↔ SV 매핑이 키 순서와 무관하게 정확하다")
+# 🔴 대조군 — 시정 전 구현(`tool_resources:` 앞만 도구 영역)은 설명을 0건 읽는다.
+_legacy_seg = _FIX.split("tool_resources:", 1)[0]
+check("description:" not in _legacy_seg, "시정 전 구현은 이 픽스처에서 설명을 못 읽는다 = 결함 재현")
+
 print()
 print(f"단정 {ASSERTS}건 · 실패 {len(FAILS)}건")
 if FAILS:

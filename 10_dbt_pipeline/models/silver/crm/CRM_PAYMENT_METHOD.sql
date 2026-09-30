@@ -19,7 +19,21 @@ SELECT
   'CRM'                            AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
-  NULL                             AS DW_BATCH_ID
+  NULL                             AS DW_BATCH_ID,
+  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼 13종(문서32 §3) — 🔴 개인정보(결제자명·연락처·카드유효기간·빌키·인증데이터) 제외
+  s.WTDRW_ASMT_SQNC                      AS WTDRW_ASMT_SQNC,
+  NULLIF(TRIM(s.SETLE_ENTRPS_CD),'')     AS SETLE_ENTRPS_CD,
+  s.ACNUT_SER_NO                         AS ACNUT_SER_NO,
+  NULLIF(TRIM(s.PAYER_MBER_REL_CD),'')   AS PAYER_MBER_REL_CD,
+  NULLIF(TRIM(s.APRV_YN),'')             AS APRV_YN,
+  s.FRST_BEGIN_DE                        AS FRST_BEGIN_DE,
+  NULLIF(TRIM(s.RQEST_EXCL_YN),'')       AS RQEST_EXCL_YN,
+  s.RQEST_EXCL_STRT_DE                   AS RQEST_EXCL_STRT_DE,
+  s.RQEST_EXCL_END_DE                    AS RQEST_EXCL_END_DE,
+  s.BF_SETLE_KEY                         AS BF_SETLE_KEY,
+  NULLIF(TRIM(s.OPERT_DIV_CD),'')        AS OPERT_DIV_CD,
+  NULLIF(TRIM(s.CRTFC_TY_CD),'')         AS CRTFC_TY_CD,
+  NULLIF(TRIM(s.USE_YN),'')              AS USE_YN
 FROM {{ source('bronze_crm','TM_PM_SETLE_INFO') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} pm ON pm.CD_ID='PM040' AND pm.DTL_CD_ID = NULLIF(TRIM(s.SETLE_CD),'')
 WHERE s.SETLE_KEY IS NOT NULL

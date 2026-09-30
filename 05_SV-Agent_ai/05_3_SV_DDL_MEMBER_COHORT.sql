@@ -143,7 +143,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.BIZ_CASE_TYPE        AS fmc.ACQ_CMPGN_TYPE2_NM       WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '획득 캠페인의 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 acq_campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''',
     fmc.MARKETING_CAMPAIGN   AS fmc.ACQ_MKTG_CMPGN_NM        WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인명') COMMENT = '획득 캠페인의 마케팅캠페인명. 🔴적재 시점 동결값(구 acq_campaign.MARKETING_CAMPAIGN 대체). 실제값 예: ''24년 이전컨텐츠''·''그외 지역개발캠페인''·''유어턴(통합A)''·''유어턴(통합B)''·''기존회원캠페인 및 기타''·''25년 이전컨텐츠(영상광고)''·''TS/TM''. 카디널리티가 높다',
     -- ── [2026-08-06 O45] 획득 조직·후원사업 축 (종전 「비활성」 서술 회수) ──────────
-    acq_org.ACQ_DEPARTMENT            AS acq_org.DEPARTMENT                WITH SYNONYMS ('획득부서', '가입부서', '모집부서', '획득 시점 부서') COMMENT = '🔴**획득(최초 약정) 시점의 실적부서명**(정본 #116). 개발실적보고의 「부서」와 **다른 축**이다 — 그쪽은 **사건 부서**(SV_MEMBER_EVENT.ORG_DEPARTMENT)이며 회원이 이후 다른 부서 실적으로 잡혀도 이 축은 변하지 않는다. ⚠️ 상위 조직(본부/지부·팀·법인)은 산출 불가(CONF-4) — 부서명에서 상위 조직을 추측하지 말 것. ⚠️ 획득 사건의 부서를 알 수 없는 회원은 ''(미매핑)''이다',
+    acq_org.ACQ_DEPARTMENT            AS acq_org.DEPARTMENT                WITH SYNONYMS ('획득부서', '가입부서', '모집부서', '획득 시점 부서') COMMENT = '🔴**획득(최초 약정) 시점의 실적부서명**(정본 #116). 개발실적보고의 「부서」와 **다른 축**이다 — 그쪽은 **사건 부서**(SV_MEMBER_EVENT.ORG_DEPARTMENT)이며 회원이 이후 다른 부서 실적으로 잡혀도 이 축은 변하지 않는다. ⚠️ 본부/지부는 ACQ_ORG_DIV_GROUP·ACQ_ORG_DIV 를 쓴다 — 부서명에서 상위 조직을 추측하지 말 것(팀·법인은 산출 불가 · CONF-4). 🔴 폐지된 과거 실적부서는 옛 부서명 그대로 나온다(현재 부서로 연결하지 않는다 · DEC-56). ⚠️ 획득 사건의 부서를 알 수 없는 회원은 ''(미매핑)''이다',
+    -- 🆕 [2026-09-30 O191-B · DEC-56] 획득 시점 실적 본부/지부 — 실적트리 부서코드 접두 ZB(구분)·ZC(단위)
+    acq_org.ACQ_ORG_DIV_GROUP         AS acq_org.ACMSLT_DIV_GROUP_NM       WITH SYNONYMS ('획득 본부지부구분', '가입 조직구분') COMMENT = '획득 시점 실적 본부/지부 **구분**(ZB 노드 · DEC-56). 실제값 8종: ''본부''·''지부''·''시도본부''·''지부외''·''지부(사복)''·''본부(사복)''·''협력시설''·''시도본부 및 중앙'' + NULL. ⚠️ ''협력시설''·''지부외''는 시설·기타 묶음이다(본부/지부 조직이 아니다). 사건 시점 축(SV_MEMBER_EVENT.ORG_DIV_GROUP)과 다르다',
+    acq_org.ACQ_ORG_DIV               AS acq_org.ACMSLT_DIV_NM             WITH SYNONYMS ('획득 본부', '획득 지부', '가입 본부지부', '모집 본부지부') COMMENT = '획득 시점 실적 본부/지부 **단위명**(ZC 노드 · DEC-56). 🔴🔴 같은 이름이 여러 구분에 있다(예: 서울) — 반드시 ACQ_ORG_DIV_GROUP 과 함께 그룹핑한다. 도달 못 한 부서는 NULL',
+    acq_org.ACQ_ORG_DIV_GROUP_CODE    AS acq_org.ACMSLT_DIV_GROUP_ID       WITH SYNONYMS ('획득 본부지부구분코드') COMMENT = '획득 시점 실적 본부/지부 구분 부서코드(ZB 접두). 🔴 본부/지부를 보여줄 때 이름과 코드를 함께 표시한다(현업 회신 41.3 · O191-C)',
+    acq_org.ACQ_ORG_DIV_CODE          AS acq_org.ACMSLT_DIV_ID             WITH SYNONYMS ('획득 본부지부코드', '획득 지부코드') COMMENT = '획득 시점 실적 본부/지부 단위 부서코드(ZC 접두). 🔴 이름이 같아도 코드가 다르면 다른 조직 — 합치지 말고 코드로 나눠 보여준다(현업 회신 41.3 · O191-C)',
     acq_sponsorship.ACQ_SPONSORSHIP   AS acq_sponsorship.SPONSORSHIP_NAME  WITH SYNONYMS ('획득 후원사업', '가입 후원사업', '모집 후원사업', '후원사업(획득)') COMMENT = '🔴**획득 시점 후원사업명** — 그 회원을 데려온 사업이다(정본 #123). ⚠️ **회비를 낸 후원사업이 아니다**: 납입 대상 후원사업은 `SV_MEMBER_FEE` 의 SPONSORSHIP_NAME 이며, 한 회원이 여러 후원사업에 내므로 두 축의 값은 다르다. 회원 특성·이탈률 분석에는 이 축이 맞고, 회비 금액 분해에는 SV_MEMBER_FEE 가 맞다. ⚠️ 미매칭은 ''(미매핑)'''
   )
   METRICS (
@@ -174,7 +179,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
       WITH SYNONYMS ('평균 유지기간', '평균 유지일수', '평균 후원기간') COMMENT = '이탈 회원의 평균 유지기간(일) = 최초 중단일 − 획득일. N(비가산, 재집계 금지). 🔴 **이탈한 회원만** 모수다(미중단 회원은 유지기간이 NULL = 아직 끝나지 않은 관측이라 평균에서 제외된다). 따라서 이 값은 "이탈한 사람은 평균 며칠 유지했나"이며 **전체 회원의 평균 후원기간이 아니다** — 아직 유지 중인 회원이 많은 캠페인일수록 이 값만 보면 과소평가된다. 반드시 CHURN_RATE_12M 과 함께 해석한다.'
   )
   COMMENT = 'Phase-1 회원 획득 코호트 SV (base: GOLD.FACT_MEMBER_COHORT, grain: 회원 1행=1회원). 캠페인별 12개월 고정 이탈률(CHURN_RATE_12M, % 단위), 평균 유지기간(AVG_TENURE_DAYS), 획득 시점 회원속성 뷰. ⚠️ 중단 건수는 SV_MEMBER_EVENT, 중단률(%)은 본 뷰가 정본. 캠페인 비교 시 누적 이탈률이 아닌 12개월 고정 이탈률 사용 필수. 획득 부서/후원사업은 획득 시점 축임.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 이탈률 정본: 캠페인별 중단률/이탈률 질문은 CHURN_RATE_12M (% 단위) 사용. 누적 이탈률(STOPPED_MEMBERS_EVER/TOTAL_ACQ_MEMBERS)은 기간 편향이 발생하므로 캠페인 비교에 사용 금지. (2) 기간 필터: 연도/월 필터는 획득 시점 기준임. (3) 건수 vs 비율 분기: 중단 건수 질의는 SV_MEMBER_EVENT 로 라우팅. (4) 유지기간: AVG_TENURE_DAYS 는 이탈 회원만의 평균 유지일수이며 CHURN_RATE_12M 과 함께 제시. (5) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (6) 획득 속성: ACQ_DEPARTMENT, ACQ_SPONSORSHIP 은 획득 시점 속성이며 납입 대상 회비는 SV_MEMBER_FEE 로 라우팅.';
+  AI_SQL_GENERATION '핵심 규칙: (1) 이탈률 정본: 캠페인별 중단률/이탈률 질문은 CHURN_RATE_12M (% 단위) 사용. 누적 이탈률(STOPPED_MEMBERS_EVER/TOTAL_ACQ_MEMBERS)은 기간 편향이 발생하므로 캠페인 비교에 사용 금지. (2) 기간 필터: 연도/월 필터는 획득 시점 기준임. (3) 건수 vs 비율 분기: 중단 건수 질의는 SV_MEMBER_EVENT 로 라우팅. (4) 유지기간: AVG_TENURE_DAYS 는 이탈 회원만의 평균 유지일수이며 CHURN_RATE_12M 과 함께 제시. (5) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (6) 획득 속성: ACQ_DEPARTMENT, ACQ_SPONSORSHIP 은 획득 시점 속성이며 납입 대상 회비는 SV_MEMBER_FEE 로 라우팅. (R-O191) ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다(별칭 일부만 쓰면 invalid identifier). 「총납입회비」처럼 이 SV 에 없는 지표로 정렬·결합을 요구받으면 이 SV 에서 억지로 만들지 말고 SV_MEMBER_FEE 를 따로 호출해 표를 분리한다. 「최근 N개월」 기준일은 비상관 CTE 1개로 구하고 CROSS JOIN 한다.'
+  -- 🆕 [2026-09-30 O191] VQR — 스모크 중간 오류(ORDER BY 별칭 불일치) 정답 패턴
+  AI_VERIFIED_QUERIES (
+    vqr_o191_campaign_churn_top10 AS (
+      QUESTION '캠페인별 평균 유지기간과 12개월 이탈률 상위 10곳'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'SELECT acq_campaign.CAMPAIGN_NAME, SUM(fmc.ACQ_MEMBERS) AS TOTAL_ACQ_MEMBERS, AVG(fmc.TENURE_DAYS) AS AVG_TENURE_DAYS, SUM(fmc.STOPPED_12M_MEMBERS) / NULLIF(SUM(fmc.OBSERVABLE_12M_MEMBERS), 0) * 100 AS CHURN_RATE_12M FROM fmc LEFT JOIN acq_campaign ON fmc.ACQ_CAMPAIGN_SK = acq_campaign.CAMPAIGN_SK WHERE fmc.ACQ_BASIS = ''NEW'' GROUP BY acq_campaign.CAMPAIGN_NAME HAVING SUM(fmc.OBSERVABLE_12M_MEMBERS) >= 100 ORDER BY TOTAL_ACQ_MEMBERS DESC NULLS LAST LIMIT 10'
+    )
+  );
 
 
 /* =====================================================================================

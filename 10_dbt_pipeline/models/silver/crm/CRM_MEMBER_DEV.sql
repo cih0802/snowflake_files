@@ -142,7 +142,9 @@ SELECT
   --      ㉢ 증분을 되살릴 근거가 나오면 워터마크 원천으로 다시 쓸 수 있다.
   --   ⚠️ `DW_LOAD_TS` 와 혼동하지 마라 — 그쪽은 매 run `CURRENT_TIMESTAMP()` 로 덮이는 **빌드 시각**이고
   --      재실행하면 항상 지금 시각이 된다(워터마크로 쓸 수 없다).
-  s._LOAD_DT                       AS SRC_LOAD_DT
+  s._LOAD_DT                       AS SRC_LOAD_DT,
+  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼(문서32 §3)
+  s.SPNSR_TIME_CO                  AS SPNSR_TIME_CO
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_DVLP_AMT') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} a ON a.CD_ID='CM018' AND a.DTL_CD_ID=NULLIF(TRIM(s.AREA_CD),'')
 -- MM015 = 정본 컬럼정의서 167행이 DVLP_DIV_CD 에 지정한 코드그룹. CRM_CODE PK=(CD_ID,DTL_CD_ID) 이므로

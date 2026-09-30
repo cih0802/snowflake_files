@@ -58,6 +58,25 @@ tree as (
     from b c
     join tree t on c.UPPER_DEPT_ID = t.DEPT_ID and c.DEPT_ID <> c.UPPER_DEPT_ID
     where t.LVL < 12
+),
+-- 🆕 [2026-09-30 O191 · F-1] 실적트리(ACMSLT_UPPER_DEPT_ID) 상위 중 부서코드 접두 `ZB`(본부/지부 구분)·`ZC`(본부/지부 단위).
+--    📏 bt97381 실측 = 실적부서 455 중 449 가 `자기 > ZD > ZC > ZB` · ZB 도달 454 · ZC 도달 450(미도달 = 회장 1 · ZD→ZB 직결 4).
+--    🔴 접두 판정은 코드 체계이고 명칭 판정이 아니다(O16 범주오류 회피) · 자기 자신이 ZB/ZC 면 자기를 쓴다.
+--    🔴 DIVISION(실적지부)은 이 값으로 채우지 않는다 — 협력시설·지부외 분류와 동명 ZC 병합 여부가 현업 확인 대기(`41_현업회신_F-1`).
+pa (DEPT_ID, CUR_ID, HOP) as (
+    select DEPT_ID, DEPT_ID, 0 from o
+    union all
+    select pa.DEPT_ID, u.ACMSLT_UPPER_DEPT_ID, pa.HOP + 1
+    from pa
+    join o u on u.DEPT_ID = pa.CUR_ID
+    where pa.HOP < 12 and u.ACMSLT_UPPER_DEPT_ID is not null and u.ACMSLT_UPPER_DEPT_ID <> u.DEPT_ID
+),
+div as (
+    select pa.DEPT_ID,
+           MIN(IFF(pa.CUR_ID like 'ZB%', pa.CUR_ID, NULL)) as ACMSLT_DIV_GROUP_ID,
+           MIN(IFF(pa.CUR_ID like 'ZC%', pa.CUR_ID, NULL)) as ACMSLT_DIV_ID
+    from pa
+    group by pa.DEPT_ID
 )
 
 select
@@ -73,12 +92,20 @@ select
     {{ gold_meta('CRM') }},
     COALESCE(t.IS_LIVE, FALSE)                    as IS_ACTIVE_ORG,  -- 🆕 O188-E 활성 조직 트리 소속
     t.PATH                                        as ORG_PATH,       -- 🆕 O188-E 조직표 「부서 경로」(루트 제외 · 순환 노드는 NULL)
-    t.LVL                                         as ORG_LEVEL       -- 🆕 O188-E 루트=0
+    t.LVL                                         as ORG_LEVEL,      -- 🆕 O188-E 루트=0
+    dv.ACMSLT_DIV_GROUP_ID                        as ACMSLT_DIV_GROUP_ID,  -- 🆕 O191 실적트리 ZB 상위(본부/지부 구분)
+    gz.DEPT_NM                                    as ACMSLT_DIV_GROUP_NM,
+    dv.ACMSLT_DIV_ID                              as ACMSLT_DIV_ID,        -- 🆕 O191 실적트리 ZC 상위(본부/지부 단위)
+    cz.DEPT_NM                                    as ACMSLT_DIV_NM
 from o
 left join tree t on t.DEPT_ID = o.DEPT_ID
+left join div dv on dv.DEPT_ID = o.DEPT_ID
+left join o gz on gz.DEPT_ID = dv.ACMSLT_DIV_GROUP_ID
+left join o cz on cz.DEPT_ID = dv.ACMSLT_DIV_ID
 
 union all
 -- unknown 멤버(SK=0): 팩트 ORG_SK=0(미매핑) 조인 유실 방지
 select 0, 0, NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL,
     {{ gold_meta('CRM') }},
-    FALSE, NULL, NULL
+    FALSE, NULL, NULL,
+    NULL, NULL, NULL, NULL
