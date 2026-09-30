@@ -1,0 +1,146 @@
+-- GN_DW 3단계: Semantic View DDL 정본 — SV_BUDGET (예산)
+-- Co-authored with CoCo
+-- ============================================================================
+-- ▶ 이 파일의 위상  [2026-08-05 O37 분할]
+--   대상 SV = **SV_BUDGET** — 이 파일 하나로 **독립 실행**된다(상세 = 아래 포인터).
+--
+-- 🟢🟢 **[2026-09-28 O186] 아래 O118 「보류」는 해제됐다 — DEC-44 집행 완료(§30-I 2~4·6 실측).**
+--   · GOLD `FACT_BUDGET`·`FACT_BUDGET_YEARLY` = 연도별 최신 차수만(`BUDGET_PROCEDURE` · dense_rank)
+--   · 판정(xf98254) = YEARLY `PLAN` 65,202,608,327 · `EXEC` 55,094,546,654(§30-I ④ 기대값과 1원 이내) ·
+--     SV `TOTAL_EXEC_BUDGET` 55,094,546,656 · grain 가드 `warn_fact_budget_grain`·`_yearly_grain` = error
+--   · ⚠️ 월 팩트 `PLAN` 합(44.7B)은 **2024 월 배분 0**(원천 BRONZE 월 12컬럼 전건 0) 때문이며 결함이 아니다 ⇒ 규칙 (5).
+--   ⇒ `TOTAL_EXEC_BUDGET`·`EXEC_RATE` 인용 금지 조항(아래 27행)도 함께 해제된다. 아래는 이력이다.
+-- 🔴🔴 **[2026-08-29 O118] 이 SV 는 「보류」다 — metric 을 확정하지 말고 아래를 먼저 읽어라.**
+--   🟢 정본 = `04_SV_설계.md` **§0.9-D·§0.9-E** · `20_issue/30_설계_의사결정.md` **§30-G**(`DEC-44`).
+--
+--   ▶ 무엇이 문제인가 (실측)
+--     `TOTAL_EXEC_BUDGET = SUM(fbd.EXEC_BUDGET_ERP)` 가 **예산 편성 차수를 이중계상**한다.
+--     원천 `BRONZE_ERP.BDGT_ACMSLT_LEDGER` 는 같은 세세목·연도에 `BDGT_PRCD_NM` 이
+--     '연사업'·'추가경정' 두 행으로 들어오고, **집행액(EXEC)이 두 행에서 완전히 동일**하다
+--     (항목×연도 24키 중 **상이 0 / 동일 23**) ⇒ 합산하면 그 연도 집행이 **두 배**가 된다.
+--     보정 = 전 차수 합산 → **최신 차수만**. 과대율 **+79.70%**(O115 기재와 완전 일치 = 재현 확인).
+--     🔴 편성(PLAN)은 다르다 — 차수 간 **상이 17 / 24** 이므로 「어느 차수의 편성인가」가 실질 정보다.
+--
+--   ▶ 🔴 종전 차단조항이 **지목한 객체가 틀렸다**
+--     인수인계는 "`FACT_BUDGET_YEARLY` 에 붙이지 마라"였고 이 파일의 base 는 `FACT_BUDGET`(월)이다
+--     ⇒ 문자적으로는 준수했다. 그러나 **두 팩트의 집행액 합이 완전히 동일**(차이 0)하므로
+--     **결함은 그대로 상속됐다.** 🟢 판정식 = **차단조항이 객체명으로 쓰여 있으면 그 결함값이
+--     다른 객체에도 있는지 대조하라.** 「그 테이블을 안 썼다」 ≠ 「그 결함을 피했다」.
+--
+--   ▶ 🔴 그래서 무엇을 하지 않았는가 (결정 선점 금지)
+--     `DROP` · metric 삭제 · `where` 축소 · 차수 필터 추가를 **하지 않았다.** 남은 것은 정책 판단이다
+--     (§30-G ㉠ 「최신 차수」의 정의 · ㉡ 편성 차수를 차원으로 노출할 것인가) ⇒ **회신 후 배선**한다.
+--   ▶ 🔴 그때까지의 사용 규칙: `TOTAL_EXEC_BUDGET`·`EXEC_RATE` 를 **확정 수치로 인용·발행하지 마라.**
+--     편성(`TOTAL_PLAN_BUDGET`)만 쓰거나, 차수를 명시한 임시 쿼리로 답한다.
+--
+--   🔴 **파일 규약·선행 조건·정본 근거의 정본 = `05_0_SV_DDL.sql` §공통 규약** (2026-08-10 O55 DUP-1).
+--      독립 실행 · 파일 간 순서 무관 · 재실행 반영 · `CREATE OR ALTER`(GRANT·소유권 보존) ·
+--      분할 이력(O37) · 선행 조건은 `dbt build` **하나** · 실행 역할 `GN_DW_ADMIN`.
+--      ⛔ 이 항목들을 이 파일에 다시 복제하지 말 것 — 그것이 P140(9중 중복)의 원인이었다.
+--
+-- ▶ 가드레일 요약 (전문 = `05_0_SV_DDL.sql` §공통규약)
+--   R1 fan-out : 월팩트→`GOLD.DIM_MONTH` · 회원속성→`GOLD.DIM_MEMBER` ·
+--                광고팩트→`GOLD.WIDE_AD_COMBINED`. raw `DIM_DATE`/`DIM_MEMBER` 직접조인 금지.
+--                🔴 [2026-08-10 O54·O55] SERVING helper 3종 → GOLD 재배선 완료 후 **물리 DROP 완료**(DEC-34 §0.8-D).
+--   R5 가산성  : F(flow)=SUM / D=COUNT(DISTINCT MEMBER_DK) / 비율=분자·분모 각각 집계 후 division.
+--   조인키 타입: `MEMBER_DK`=VARCHAR(캐스팅 금지) · `MONTH_KEY`/`DATE_SK`/`*_SK`=NUMBER.
+--   PRIMARY KEY: 실측 유일한 것만 선언. 비유일 grain 은 PK 미선언.
+--   비활성 지표: 원천 미적재분은 SV 에서 아예 제외한다(빈 metric 이 0/NULL 을 사실처럼 반환).
+--   COMMENT 규약: 🔴 **수치를 넣지 않는다**(Agent 가 COMMENT 를 근거로 인용 → 적재량 변하면 거짓이 된다) ·
+--                `[원천]` 절은 테이블·컬럼 이름만 · 저카디널리티 코드 차원은 **실제 코드값을 열거**.
+-- ============================================================================
+
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+/* =====================================================================================
+   5. SV_BUDGET (overall Agent) — base FBD(월×조직×세세목)
+      활성: 편성예산(월)·집행예산(ERP)·집행율 · 세세목명/예산구분
+   ===================================================================================== */
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
+  TABLES (
+    fbd AS GN_DW.GOLD.FACT_BUDGET
+      PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
+      WITH SYNONYMS ('예산', '예산 집행')
+      COMMENT = '예산 편성 및 집행 실적 분석 (base: GOLD.FACT_BUDGET). [Grain: 월 × 부서 × 예산과목]. [활성 지표: 편성예산/집행예산/집행률(%)]. [주의: 월 집행액을 더해 연 총액으로 쓰지 말 것 — 연 예산 정본은 GOLD.FACT_BUDGET_YEARLY 이나 어떤 Semantic View 에도 미배선이므로 이 SV 로 연 총액 질의에 답하지 않는다]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET → GOLD.FACT_BUDGET].',
+    month AS GN_DW.GOLD.DIM_MONTH
+      PRIMARY KEY (MONTH_KEY)
+      WITH SYNONYMS ('월', '예산월')
+      COMMENT = '월 차원. fan-out 차단용 helper 뷰. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
+    item AS GN_DW.GOLD.DIM_BUDGET_ITEM
+      PRIMARY KEY (BUDGET_ITEM_SK)
+      WITH SYNONYMS ('세세목', '예산항목')
+      COMMENT = '예산 세세목 차원. [원천] 시스템=ERP · BRONZE=GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER(JANG_NM~SUBDTL_ITEM_NM 장·관·항·목·세목·세세목 계층 + BDGT_UNIT_NM 예산단위) — DISTINCT 마스터화·MD5 대리키 · SILVER=ERP_BUDGET_ITEM.'
+  )
+  RELATIONSHIPS (
+    fbd_to_month AS fbd (MONTH_KEY)      REFERENCES month,
+    fbd_to_item  AS fbd (BUDGET_ITEM_SK) REFERENCES item
+  )
+  DIMENSIONS (
+    month.MONTH_KEY  AS month.MONTH_KEY WITH SYNONYMS ('예산연월', '연월') COMMENT = 'YYYYMM 정수',
+    month.CAL_YEAR   AS month.YEAR      WITH SYNONYMS ('연도', '년')      COMMENT = '연도',
+    month.CAL_MONTH  AS month.MONTH     WITH SYNONYMS ('월')             COMMENT = '월(1~12)',
+    item.BUDGET_ITEM_NAME AS item.BUDGET_ITEM_NAME WITH SYNONYMS ('세세목명', '예산항목명') COMMENT = '예산 세세목명',
+    -- 🔴🔴 [2026-08-29 O119] 이 축의 열거를 **라이브 실측으로 교체**했다(`sv_code_label_gate` 축1·축2 FAIL).
+    --   종전 문안 = 「실제값 2종: '수입'·'지출' + NULL」. 🔴 **`'수입'` 은 라이브에 존재하지 않는다**
+    --   (`GOLD.DIM_BUDGET_ITEM` 실측 = `'지출'` 과 NULL 뿐) ⇒ Agent 가 「수입 예산」을 물어
+    --   `BUDGET_CATEGORY='수입'` 으로 필터하면 **0행을 사실로 답한다**(무증상 오답 · `O58-C` 계열).
+    --   🔴 이것은 위 `DEC-44` 보류와 **다른 축이다** — metric·차수·`where` 를 건드리지 않았고
+    --      차원 COMMENT 의 열거만 실측으로 맞췄다. 재배포 시 metric 정의는 라이브와 전건 동일하다
+    --      (O119 가 `DESC SEMANTIC VIEW` 로 드리프트 0 을 확인한 뒤 재배포했다).
+    --   🔴🔴 **[2026-08-29 O119-B 자기시정] 초판의 라이브 문안과 이 주석이 서로 모순됐다.**
+    --      초판 COMMENT 는 「**원천에 지출 예산만 적재돼 있다는 사실**을 답한다」로 **단정**했는데,
+    --      바로 이 주석은 같은 것을 「**미규명**」이라고 적고 있었다 ⇒ Agent 가 읽는 쪽이 근거 없이 단정했다.
+    --   🟢 **O119-B 가 실측으로 규명했다** — `BRONZE_ERP.BDGT_ACMSLT_LEDGER` 의 장(`JANG_NM`)이
+    --      **모금비·사업비·일반관리비·사회복지법인예산 4종뿐이고 전부 비용(지출) 계정**이다
+    --      ⇒ **적재된 원천 자체에 수입 계정이 구조적으로 없다**(SILVER `INCOME_EXPENSE_DIV` 도 `지출` 단일).
+    --   🔴 **경계를 명시한다**: 확인된 것은 「**적재분에 수입이 없다**」이고,
+    --      「ERP 원본에 수입 예산이 있으나 업로드 범위에서 빠졌는가」는 **여전히 별개 질문**이다.
+    --      ⇒ 라이브 문안도 그 경계를 그대로 담는다(단정 범위를 넘기지 않는다 · `R2-7-4`).
+    item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 1종: ''지출'' + NULL. 🔴 **''수입''은 이 데이터에 존재하지 않는다** — ''수입'' 으로 필터하면 0행이 반환되므로 「수입 예산」 질문에 이 축으로 답하지 말 것. 🟢 사유는 실측으로 확인됐다: **적재된 예산 원장의 장(章) 계정이 전부 비용(지출) 계정**이므로 이 데이터에는 지출 예산만 있다. 🔴 다만 「ERP 원본에 수입 예산이 있는데 업로드 범위에서 빠진 것인지」는 **확인 전**이다 ⇒ 「조직에 수입 예산이 없다」로 확대해 답하지 말고 **「적재된 예산 데이터에는 지출만 있다」**로 답한다(추정치 생성 금지). ⚠️ 이 축은 사실상 단일값이라 그루핑 축으로서의 정보량이 없다'
+  )
+  METRICS (
+    fbd.TOTAL_PLAN_BUDGET AS SUM(fbd.PLAN_BUDGET_MONTH)
+      WITH SYNONYMS ('편성예산', '월 편성예산', '예산 편성액') COMMENT = '월 편성예산 합계(원). F(가산).',
+    fbd.TOTAL_EXEC_BUDGET AS SUM(fbd.EXEC_BUDGET_ERP)
+      WITH SYNONYMS ('집행예산', 'ERP 집행액', '예산 집행액') COMMENT = 'ERP 집행예산 합계(원). F(가산).',
+    fbd.EXEC_RATE AS SUM(fbd.EXEC_BUDGET_ERP) / NULLIF(SUM(fbd.PLAN_BUDGET_MONTH), 0) * 100
+      WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N). ⚠편성은 12개월 전량이지만 집행은 적재된 월까지만 존재하므로, 집행 미적재 월을 분모에 넣으면 집행율이 구조적으로 낮게 나온다 — 스코프 정합 규칙은 AI_SQL_GENERATION 참조.',
+    -- 🆕 [2026-09-30 O191-C · 현업 회신 42 · DEC-57] 모금성비용은 하나로 정하지 않고 원장 플래그 이름 그대로 두 지표로 둔다.
+    fbd.DIRECT_FUNDRAISING_COST_1 AS SUM(fbd.EXEC_DIRECT_MNYRS_1)
+      WITH SYNONYMS ('직접모금비1', '직접모금비 1', '모금성비용1')
+      COMMENT = '직접모금비1(원) — 원장 플래그 직접모금비1(DIRECT_MNYRS_YN_1)=Y 인 원장행의 집행액 합. F(가산). 🔴 **화면·답변에는 「직접모금비1」 이름 그대로 표시한다**(현업 회신 42) — 「모금성비용」 하나로 부르지 말고 직접모금비2 와 나란히 보여준다. ⚠️ 두 값은 포함관계가 아니다(행 단위로 1 이 2 보다 큰 행이 있다) ⇒ 차이를 「1 을 뺀 나머지」로 해석하지 말 것.',
+    fbd.DIRECT_FUNDRAISING_COST_2 AS SUM(fbd.EXEC_DIRECT_MNYRS_2)
+      WITH SYNONYMS ('직접모금비2', '직접모금비 2', '모금성비용2')
+      COMMENT = '직접모금비2(원) — 원장 플래그 직접모금비2(DIRECT_MNYRS_YN_2)=Y 인 원장행의 집행액 합. F(가산). 🔴 「직접모금비2」 이름 그대로 표시한다(현업 회신 42). ⚠️ 이 플래그는 사실상 전 원장행이 Y 라 합계가 집행예산(TOTAL_EXEC_BUDGET)과 거의 같다 — 「모금비가 전체 집행과 같다」로 해석하지 말고 플래그 정의가 넓다는 사실을 함께 밝힌다.'
+  )
+  COMMENT = 'Phase-1 예산 SV (base: GOLD.FACT_BUDGET, grain: 월×세세목 1행). ERP 예산 원장 기반 월별 편성예산(TOTAL_PLAN_BUDGET), 집행예산(TOTAL_EXEC_BUDGET), 집행율(EXEC_RATE, %) 및 세세목별 집계 뷰. ⚠️ 광고비는 본 뷰에 없으며 SV_AD 소관. 수입 예산은 적재 원천에 부재하며 지출 예산만 포함됨.'
+  AI_SQL_GENERATION '핵심 규칙: (1) 지표 매핑: 편성예산=TOTAL_PLAN_BUDGET, 집행예산=TOTAL_EXEC_BUDGET, 집행율=EXEC_RATE (%). (2) 집행율 산정: 집행예산이 적재된 월까지만 편성을 분모에 포함하여 산정(집행 미적재 월 분모 제외). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 예산구분: BUDGET_CATEGORY 는 ''지출'' 단일 계정이므로 ''수입'' 필터 사용 금지. (5) 2024년 편성 결손 가드: 2024년은 원천 예산 원장에 월별 편성 배분이 없고 연 총액만 있어 월 편성예산이 0 으로 집계되므로, 다년 집행율 산정 시 YEAR >= 2025 를 적용하거나 연도별로 표를 분리하여 제시하고 2024년 집행율은 산출 불가로 답한다(연 총액은 이 SV 에 미배선). (R-O191 기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 월은 **비상관 CTE 1개**(SELECT MAX(fbd.MONTH_KEY) FROM fbd)로 구하고 CROSS JOIN 한다. ORDER BY … LIMIT/OFFSET 서브쿼리·스칼라 서브쿼리로 기준 월을 구하지 않는다(미지원 서브쿼리 오류). 월 경계는 TO_DATE(TO_VARCHAR(MONTH_KEY), ''YYYYMM'') 로 날짜화해 DATEADD 한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (R-O191-C 모금성비용) 「모금성비용·직접모금비」 질의는 DIRECT_FUNDRAISING_COST_1·_2 를 **둘 다** 「직접모금비1」「직접모금비2」 이름으로 나란히 보여주고 하나를 골라 단정하지 않는다.'
+  -- 🆕 [2026-09-30 O190] VQR — 스모크 중간 오류(metric 이름을 CTE 컬럼으로 참조) 정답 패턴 · SVA validate_verified_queries 검증 통과
+  AI_VERIFIED_QUERIES (
+    vqr_monthly_plan_exec AS (
+      QUESTION '월별 편성예산과 집행예산'
+      VERIFIED_BY '(DW = O190)'
+      SQL 'SELECT month.CAL_YEAR, month.CAL_MONTH, SUM(fbd.PLAN_BUDGET_MONTH) AS TOTAL_PLAN_BUDGET, SUM(fbd.EXEC_BUDGET_ERP) AS TOTAL_EXEC_BUDGET FROM fbd LEFT JOIN month ON fbd.MONTH_KEY = month.MONTH_KEY GROUP BY month.CAL_YEAR, month.CAL_MONTH ORDER BY month.CAL_YEAR, month.CAL_MONTH'
+    ),
+    -- 🆕 [2026-09-30 O191] VQR — 스모크 중간 오류(OFFSET 서브쿼리 기준 월) 정답 패턴
+    vqr_o191_last12m_by_item AS (
+      QUESTION '최근 12개월 예산구분별·세세목별 편성예산과 집행예산'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'WITH mx AS (SELECT MAX(fbd.MONTH_KEY) AS mk FROM fbd) SELECT item.BUDGET_CATEGORY, item.BUDGET_ITEM_NAME, SUM(fbd.PLAN_BUDGET_MONTH) AS TOTAL_PLAN_BUDGET, SUM(fbd.EXEC_BUDGET_ERP) AS TOTAL_EXEC_BUDGET FROM fbd JOIN item ON fbd.BUDGET_ITEM_SK = item.BUDGET_ITEM_SK CROSS JOIN mx WHERE fbd.MONTH_KEY > TO_NUMBER(TO_CHAR(DATEADD(MONTH, -12, TO_DATE(TO_VARCHAR(mx.mk), ''YYYYMM'')), ''YYYYMM'')) AND fbd.MONTH_KEY <= mx.mk GROUP BY item.BUDGET_CATEGORY, item.BUDGET_ITEM_NAME ORDER BY TOTAL_PLAN_BUDGET DESC NULLS LAST'
+    )
+  );
+
+
+/* =====================================================================================
+   GRANT — Cortex Analyst 소비 권한 (docs: REFERENCES, SELECT 필요 · USAGE 아님)
+      ANALYST 가 VIEWER 를 상속하나 명확성을 위해 3역할 모두 명시(02 §E 패턴).
+      🟢 [2026-08-10 O54] 본문이 `CREATE OR ALTER` 이므로 **기존 GRANT 는 보존**된다 →
+         아래 GRANT 는 멱등 재확인이다. 🔴 판정은 소유자 세션이 아니라 **소비 역할 세션**으로
+         한다(P126) — 검사기 = `scripts/sv_unit_gate.py`.
+         분할의 이점: GRANT 가 대상 SV 와 같은 파일에 있어 빠뜨릴 수 없다.
+   ===================================================================================== */
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET TO ROLE GN_DW_SERVICE;

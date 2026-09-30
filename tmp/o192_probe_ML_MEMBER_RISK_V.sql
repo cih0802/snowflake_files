@@ -1,0 +1,33 @@
+CREATE OR REPLACE VIEW SANDBOX.PUBLIC.P_ML_MEMBER_RISK_V (
+    STDR_MT                COMMENT '기준월 YYYYMM(모델 실행월) — 여러 기준월 합산은 중복계상',
+    STDR_MONTH_KEY         COMMENT '기준월 숫자키 YYYYMM(STDR_MT 파생)',
+    MBER_NO                COMMENT '정기회원번호(7자리 TEXT) [원천: ML 회원 예측]',
+    MBER_STAT_CD           COMMENT '기준월 회원상태코드(MM010) — 월말 상태 spell 기준 dedup 대표값 · 모델 피처',
+    MBER_STAT_NAME         COMMENT '회원상태 라벨(MM010) — 사전 미매칭은 NULL',
+    SETLE_CD               COMMENT '결제수단코드(PM040)',
+    SETLE_NAME             COMMENT '결제수단 라벨(PM040) — 사전 미매칭은 NULL',
+    CPR_DIV_CD             COMMENT '법인구분코드(A/I/S)',
+    CPR_DIV_NM             COMMENT '법인구분 라벨(통합/사단/사복 · 캠페인 마스터 DISTINCT 짝)',
+    MONTHS_SINCE_JOIN      COMMENT '가입 후 경과 월수 [원천]',
+    ACTIVE_SPNSR_CNT       COMMENT '활성 후원건 수 [원천]',
+    TOTAL_SPNSR_AMT        COMMENT '총 후원금액(원) [원천]',
+    DNST_RT                COMMENT '중단율(금액 기준) [원천] — 모델 피처',
+    PAY_RATE               COMMENT '납입 성공률 [원천] — 모델 피처',
+    CHURN_PROB             COMMENT '중단 예측 확률(0~1) · 예측 지평은 발행하지 않는다(원천 기간 표기 불일치)',
+    CHURN_CLASS            COMMENT '중단 예측 분류(모델 class) — 업무 판정선 아님',
+    INC_PROB               COMMENT '증액 예측 확률(0~1)',
+    INC_CLASS              COMMENT '증액 예측 분류(모델 class)',
+    LOYAL_PROB             COMMENT '충성회원 예측 확률(0~1) — 모집단이 중단·증액과 다르다(HAS_LOYAL_PRED)',
+    LOYAL_CLASS            COMMENT '충성회원 예측 분류(모델 class)',
+    LOYAL_CURRENT_TENURE   COMMENT '현재 가입 경과 월수(충성 모델 입력) [원천]',
+    LOYAL_ACTIVE_MONTHS_24 COMMENT '초기 24개월 중 활성 월수 [원천]',
+    LOYAL_TOTAL_AMT_24     COMMENT '초기 24개월 총 후원금액(원) [원천]',
+    HAS_CHURN_PRED         COMMENT '중단 예측 존재 여부 — 분모 판정용',
+    HAS_INC_PRED           COMMENT '증액 예측 존재 여부 — 분모 판정용',
+    HAS_LOYAL_PRED         COMMENT '충성 예측 존재 여부 — 분모 판정용(모집단 상이)',
+    PREDICTION_HAS_ERROR   COMMENT '예측 로그에 오류가 있는 행 여부(PREDICTION:logs:Error 비어있지 않음) · 3종 중 하나라도',
+    CHURN_GRADE            COMMENT '중단위험 등급(F-4 · O190) — 기준월 내 백분위: 상위 10% 고위험 · 10~25% 주의 · 나머지 일반 · 예측 없음 NULL. 🔴 확률 임계가 아니라 순위다',
+    LOYAL_GRADE            COMMENT '장기회원 등급(F-4 · O190) — 기준월 내 백분위: 상위 5% 최상위 · 5~10% 상 · 10~25% 중 · 나머지 하 · 충성 예측 모집단만(그 외 NULL)'
+)
+  COMMENT = 'ML 회원단위 예측(중단·증액·충성) 통합. grain=기준월×회원(dedup 후 유일). 원천 중복은 월말 상태 spell 기준으로 단일화했다(원천 미해소·완화). 예측치이며 실적이 아니다.'
+AS SELECT NULL AS STDR_MT, NULL AS STDR_MONTH_KEY, NULL AS MBER_NO, NULL AS MBER_STAT_CD, NULL AS MBER_STAT_NAME, NULL AS SETLE_CD, NULL AS SETLE_NAME, NULL AS CPR_DIV_CD, NULL AS CPR_DIV_NM, NULL AS MONTHS_SINCE_JOIN, NULL AS ACTIVE_SPNSR_CNT, NULL AS TOTAL_SPNSR_AMT, NULL AS DNST_RT, NULL AS PAY_RATE, NULL AS CHURN_PROB, NULL AS CHURN_CLASS, NULL AS INC_PROB, NULL AS INC_CLASS, NULL AS LOYAL_PROB, NULL AS LOYAL_CLASS, NULL AS LOYAL_CURRENT_TENURE, NULL AS LOYAL_ACTIVE_MONTHS_24, NULL AS LOYAL_TOTAL_AMT_24, NULL AS HAS_CHURN_PRED, NULL AS HAS_INC_PRED, NULL AS HAS_LOYAL_PRED, NULL AS PREDICTION_HAS_ERROR, NULL AS CHURN_GRADE, NULL AS LOYAL_GRADE
