@@ -284,42 +284,45 @@ LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN  cm_u ON cm_u.CMPGN_CD    = cm.UPPER_CMPGN_C
 
 
 /* =====================================================================================
-   [3] ML_DVLP_FORECAST_V — 개발금액 예측 5종 통합
+   [3] ML_DVLP_FORECAST_V — 개발금액 예측 2종 통합 (부서·후원사업·신규기존 3종 비활성)
        grain = 기준월 × 계열유형 × 계열 × 예측월
 
-   🟢 **5종을 한 뷰에 묶는 근거는 단위 동질성 실측이다.**
-      부서 30계열 평균 881 × 30 = 26,430 ≈ 전사 30,457 ·
-      신규기존 2계열 평균 15,777 × 2 = 31,554 ≈ 전사 30,457
-      ⇒ 세 테이블이 **같은 스케일**임을 교차검증했다. 캠페인·후원사업도 같은 자리수다.
+   🟢 **2종(전사·캠페인)을 한 뷰에 묶는 근거는 단위 동질성 실측이다.**
+      (과거 실측 · 원천 삭제로 현재 검증 불가: 부서 30계열 평균 881 × 30 = 26,430 ≈ 전사 30,457 ·
+       신규기존 2계열 평균 15,777 × 2 = 31,554 ≈ 전사 30,457)
+      ⇒ 캠페인도 전사와 같은 자리수다.
    🔴 **단위는 「만원」이다**(프로시저가 원 → 만원으로 나눈다 · 자리수 실측이 이를 지지한다).
       ⇒ 원 단위인 회비·LTV 를 **이 뷰에 섞지 않는다**(섞으면 10,000배 오차).
    🔴 계열유형별 라벨 축이 다르므로 `SERIES_TYPE` 을 **항상 함께 봐야 한다** —
-      `SERIES_CD` 하나로는 부서코드인지 캠페인코드인지 알 수 없다.
-   ⚠️ 계열유형 간 합산은 **중복계상이다**(전사 = 부서합 = 신규기존합). SV 문안에서 차단한다.
+      `SERIES_CD` 하나로는 전사인지 캠페인코드인지 알 수 없다.
+   ⚠️ 계열유형 간 합산은 **중복계상이다**. SV 문안에서 차단한다.
    ===================================================================================== */
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V
-  COMMENT = 'ML 개발금액 예측 5종(전사·부서·후원사업·신규기존·캠페인) 통합. grain=기준월×계열유형×계열×예측월. 단위=만원. 계열유형 간 합산은 중복계상이다. 예측치이며 실적이 아니다.'
+  COMMENT = 'ML 개발금액 예측 2종(전사·캠페인) 통합. 부서·후원사업·신규기존 예측은 원천 삭제로 제공하지 않음. grain=기준월×계열유형×계열×예측월. 단위=만원. 계열유형 간 합산은 중복계상이다. 예측치이며 실적이 아니다.'
 AS
 SELECT 'TOTAL'                          AS SERIES_TYPE,
        '(전사)'                          AS SERIES_CD,
        '(전사 합계)'                      AS SERIES_NAME,
        t.STDR_MT, t.TS, t.FORECAST, t.LOWER_BOUND, t.UPPER_BOUND
 FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT t
-UNION ALL
-SELECT 'DEPT', d.SERIES, og.DEPT_NM,
-       d.STDR_MT, d.TS, d.FORECAST, d.LOWER_BOUND, d.UPPER_BOUND
-FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT d
-LEFT JOIN GN_DW.SILVER.CRM_ORG og ON og.DEPT_ID = d.SERIES
-UNION ALL
-SELECT 'SPNSR_BSNS', s.SERIES, sp.SPNSR_BSNS_NM,
-       s.STDR_MT, s.TS, s.FORECAST, s.LOWER_BOUND, s.UPPER_BOUND
-FROM GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT s
-LEFT JOIN GN_DW.SILVER.CRM_SPONSORSHIP sp ON sp.SPNSR_BSNS_ID = s.SERIES
-UNION ALL
-SELECT 'NEW_OLD', n.SERIES,
-       CASE n.SERIES WHEN 'NEW' THEN '신규' WHEN 'OLD' THEN '기존' END,
-       n.STDR_MT, n.TS, n.FORECAST, n.LOWER_BOUND, n.UPPER_BOUND
-FROM GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT n
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- UNION ALL
+-- SELECT 'DEPT', d.SERIES, og.DEPT_NM,
+--        d.STDR_MT, d.TS, d.FORECAST, d.LOWER_BOUND, d.UPPER_BOUND
+-- FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT d
+-- LEFT JOIN GN_DW.SILVER.CRM_ORG og ON og.DEPT_ID = d.SERIES
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- UNION ALL
+-- SELECT 'SPNSR_BSNS', s.SERIES, sp.SPNSR_BSNS_NM,
+--        s.STDR_MT, s.TS, s.FORECAST, s.LOWER_BOUND, s.UPPER_BOUND
+-- FROM GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT s
+-- LEFT JOIN GN_DW.SILVER.CRM_SPONSORSHIP sp ON sp.SPNSR_BSNS_ID = s.SERIES
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- UNION ALL
+-- SELECT 'NEW_OLD', n.SERIES,
+--        CASE n.SERIES WHEN 'NEW' THEN '신규' WHEN 'OLD' THEN '기존' END,
+--        n.STDR_MT, n.TS, n.FORECAST, n.LOWER_BOUND, n.UPPER_BOUND
+-- FROM GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT n
 UNION ALL
 SELECT 'CAMPAIGN', c.SERIES, cm.CMPGN_NM,
        c.STDR_MT, c.TS, c.FORECAST, c.LOWER_BOUND, c.UPPER_BOUND
@@ -599,8 +602,8 @@ ALTER VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V MODIFY COLUMN CHURN_PROB COMMENT '후
 ALTER VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V MODIFY COLUMN CHURN_CLASS COMMENT '이탈 예측 분류(모델 class) — 업무 판정선 아님';
 ALTER VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V MODIFY COLUMN PREDICTION_HAS_ERROR COMMENT '예측 로그에 오류가 있는 행 여부(PREDICTION:logs:Error 비어있지 않음)';
 ALTER VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V MODIFY COLUMN CHURN_GRADE COMMENT '후원건 이탈위험 등급(F-4 · O190) — 기준월 내 후원건 백분위: 상위 5% 고위험 · 5~25% 주의 · 나머지 일반. 🔴 확률 임계가 아니라 순위다';
-ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN SERIES_TYPE COMMENT '계열유형: TOTAL·DEPT·SPNSR_BSNS·NEW_OLD·CAMPAIGN — 🔴 유형 간 합산은 중복계상 · 항상 고정·그룹';
-ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN SERIES_CD COMMENT '계열코드(유형에 따라 부서·후원사업·캠페인 코드 / NEW·OLD / (전사))';
+ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN SERIES_TYPE COMMENT '계열유형: TOTAL·CAMPAIGN — 🔴 유형 간 합산은 중복계상 · 항상 고정·그룹 (부서·후원사업·신규기존은 원천 삭제로 비활성)';
+ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN SERIES_CD COMMENT '계열코드(유형에 따라 캠페인 코드 / (전사))';
 ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN SERIES_NAME COMMENT '계열명(마스터 조인 라벨 · 미매칭 NULL)';
 ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN STDR_MT COMMENT '예측 실행 기준월 YYYYMM [원천 COMMENT]';
 ALTER VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V MODIFY COLUMN TS COMMENT '예측월 시작일 [원천 COMMENT]';
