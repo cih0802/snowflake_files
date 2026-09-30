@@ -945,7 +945,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     JOIN_PATH_CD         VARCHAR(3)       COMMENT '후원 가입경로 코드 raw. 코드id:MM014 · O188-F',  -- 🆕 O189 편입(ALTER ADD · 라이브 ordinal 말미)
-    CMPGN_CD             VARCHAR(20)      COMMENT '후원(SPNSR_NO) 등록 캠페인코드 raw [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR: 캠페인코드] · 채움 100% · O189 2차-B',  -- 🆕 O189-B 2차-B
+    CMPGN_CD             VARCHAR(20)      COMMENT '후원(SPNSR_NO) 등록 캠페인코드 raw [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR: 캠페인코드] · O189 2차-B',  -- 🆕 O189-B 2차-B
     ACMSLT_DEPT_CD       VARCHAR(10)      COMMENT '후원(SPNSR_NO) 실적부서코드 raw [원천 COMMENT · 실적부서코드 (참조: TM_CM_DEPT_INFO)] · O189 2차-B',
     PRIMARY KEY (SPNSR_NO, SPNSR_BSNS_NO)
 ) COMMENT = '회원×후원사업 활동구간 마스터. [Grain: MBER_NO × SPNSR_BSNS_NO (1행=1활동구간)]. [주의: 시작월~중단월 기반 활동회원 as-of 판정]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT/SPNSR_DSCNTC].';
@@ -962,8 +962,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     ORG_NM              VARCHAR         COMMENT '조직 (이름조인 보완)',
     SPONSOR_BIZ_NM      VARCHAR         COMMENT '후원사업',
     CAMPAIGN_NM         VARCHAR         COMMENT '캠페인 (연결키 부재 Q10)',
-    TARGET_TYPE         VARCHAR         COMMENT '목표유형: 당초/추경1차/추경2차',
-    TARGET_CNT          NUMBER(18,4)    COMMENT '목표 건수(건) — 지표사전 #152~155',
+    TARGET_TYPE         VARCHAR         COMMENT '목표 편성 차수: 당초(원천 BDGT_PRCD_NM=연사업) / 추경(추가경정) · O190 파생',
+    TARGET_CNT          NUMBER(18,4)    COMMENT '목표값 — 단위는 GOAL_TYPE_NM 에 따른다(건·명·원·비율) · 지표사전 #152~155 · O190',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
@@ -972,13 +972,15 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     -- 🆕 [2026-09-29 O188] 원천 `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV` 입고 → 원천 축 보존(선언 위치 = 감사컬럼 뒤 · ALTER ADD 규약).
     --   🔴 GOAL_TYPE_NM 은 이중계상 가드다 — 「연사업」·「팀」 두 유형의 12개월 합이 348,024 · 348,000 으로 거의 같다
     --      (같은 목표의 다른 분해로 추정 · 문서20 N-24 ① 회신 대기) ⇒ **유형을 섞어 합산하지 말 것**.
-    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 분해유형: 연사업 / 팀 (🔴 두 유형 합산 금지 · N-24)',
+    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 지표 유형 원천 표기 그대로(O190 · 9종): 건 = 후원사업·회원개발 / 명 = 월말활동회원 / 원 = 정기회비 / 비율 = 후원사업활동율·신규기존활동율·후원사업납입율·신규기존납입율·신규기존누계납입율. 🔴 유형마다 단위가 달라 섞어 합산하지 말 것 · 후원사업과 회원개발은 같은 개발 목표의 다른 분해(문서20 N-24)',
     CPR_DIV_NM          VARCHAR         COMMENT '법인구분 (사단/사복)',
-    NEW_OLD_DIV_NM      VARCHAR         COMMENT '신규/기존 구분 (연사업 유형만 · 팀 유형은 NULL)',
+    NEW_OLD_DIV_NM      VARCHAR         COMMENT '신규/기존 구분 원천 표기. 🔴 비율 유형에는 소계 행(합계·신규합계)이 있다 — 신규/기존과 함께 합산하면 이중계상. 회원개발 유형은 NULL · O190',
     ORG_DIV_NM          VARCHAR         COMMENT '조직구분 (본부/지부/대면 등)',
-    DTL_DIV_NM          VARCHAR         COMMENT '세부구분 (팀 유형만 · 채널 등 · 연사업 유형은 NULL)',
+    DTL_DIV_NM          VARCHAR         COMMENT '세부구분 원천 표기(채널 등 · 회원개발 유형만 · 그 외 NULL) · O190',
+    -- 🆕 [2026-09-30 O190] 원천 정의 갱신(2026-09-29) 반영 — ALTER ADD 규약(말미) · 하단 O190 절 참조.
+    BDGT_PRCD_NM        VARCHAR         COMMENT '예산절차(편성 차수) 원천 표기 그대로: 연사업/추가경정 [원천 COMMENT · BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV: 예산절차] — TARGET_TYPE 파생 입력 · O190',
     PRIMARY KEY (BIZ_TARGET_DK)
-) COMMENT = '사업/프로젝트 목표 마스터. [Grain: STDYY × STDR_MT × DEPT_ID × SPNSR_BSNS_ID (1행=1사업목표)]. [주의: 원천 미입고 시 스키마 전용 0행 유지(E-6)]. [원천: CRM → 신규 목표 테이블 입고 대기].';
+) COMMENT = '사업목표 마스터. [Grain: TARGET_YEAR × MONTH_NO × BDGT_PRCD_NM × GOAL_TYPE_NM × 원천 구분축(법인·신규기존·조직구분·팀·후원사업·세부구분) (1행=1목표값)]. [주의: GOAL_TYPE_NM 9종은 단위가 다르다(건·명·원·비율) — 유형 필터 필수]. [원천: CRM → BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV].';
 
 -- ============================================================================
 -- STEP 4 — AGENCY 8테이블 (코어 2 + staging 3 + 위성 3)
@@ -1736,8 +1738,13 @@ ALTER TABLE GN_DW.SILVER.CRM_SEND_MEMBER ADD COLUMN IF NOT EXISTS CURRENT_BRND V
 -- SILVER.CRM_MEMBER_SPONSOR_SPAN — 기존 테이블 컬럼 증설 (ordinal 말미 · 데이터 보존)
 ALTER TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN ADD COLUMN IF NOT EXISTS JOIN_PATH_CD VARCHAR(3) COMMENT '후원 가입경로 코드 raw. 코드id:MM014 · O188-F';
 -- 🆕 [2026-09-29 O189-B · 2차-B 1단] 후원 마스터 누락 컬럼 2종(문서32 §3 `TM_MM_FDRM_MBER_SPNSR`) — DDL 선행 · ADMIN 적용 후 모델
-ALTER TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN ADD COLUMN IF NOT EXISTS CMPGN_CD VARCHAR(20) COMMENT '후원(SPNSR_NO) 등록 캠페인코드 raw [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR: 캠페인코드] · 채움 100% · O189 2차-B';
+ALTER TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN ADD COLUMN IF NOT EXISTS CMPGN_CD VARCHAR(20) COMMENT '후원(SPNSR_NO) 등록 캠페인코드 raw [원천 COMMENT · BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR: 캠페인코드] · O189 2차-B';
 ALTER TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN ADD COLUMN IF NOT EXISTS ACMSLT_DEPT_CD VARCHAR(10) COMMENT '후원(SPNSR_NO) 실적부서코드 raw [원천 COMMENT · 실적부서코드 (참조: TM_CM_DEPT_INFO)] · O189 2차-B';
+
+-- 🆕 [2026-09-30 O190] 원천 정의 갱신 하류 반영 — `TM_CM_MBER_DVLP_GOAL_DIV.BDGT_PRCD_NM`('예산절차')
+--   실측(bt97381) = 값 1종 '연사업' 438행 · ERP 같은 축 어휘 = 연사업 / 추가경정 ⇒ 편성 차수(당초/추경) 축으로 판정.
+--   ⇒ TARGET_TYPE = 연사업→'당초' · 추가경정→'추경' 파생 · DK 해시에 포함(추경 입고 시 키 충돌 방지).
+ALTER TABLE GN_DW.SILVER.CRM_BIZ_TARGET ADD COLUMN IF NOT EXISTS BDGT_PRCD_NM VARCHAR COMMENT '예산절차(편성 차수) 원천 표기 그대로: 연사업/추가경정 [원천 COMMENT · BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV: 예산절차] — TARGET_TYPE 파생 입력 · O190';
 
 -- SILVER CRM_BIZ_PLACE — O188-F 2차-A 신설 · 원천 = BRONZE_CRM.TM_RM_BPLC_MNG
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_PLACE (

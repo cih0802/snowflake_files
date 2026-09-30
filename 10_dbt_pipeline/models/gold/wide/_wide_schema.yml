@@ -333,7 +333,7 @@ models:
       - name: SPONSORSHIP_NAME
         description: "DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123)"
       - name: SPONSORSHIP_DIV_NAME
-        description: "[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선(3,594,843)이라 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24)."
+        description: "[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선돼 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24)."
       - name: SPONSORSHIP_GROUP_NAME
         description: "[2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️STOP 브랜치 센티넬은 위 DIV_NAME 주석과 동일."
       - name: ORG_CORP
@@ -1003,7 +1003,7 @@ models:
       - name: SPONSORSHIP_NAME
         description: "DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
   - name: WIDE_TARGET_BIZ
-    description: "사업목표 팩트(FTG_B) 평탄화 — ORG·SPONSORSHIP·CAMPAIGN. 월 grain=MONTH_KEY. 🟢[2026-09-29 O188] 입고 배선(TM_CM_MBER_DVLP_GOAL_DIV). 🔴🔴 GOAL_TYPE_NM(연사업/팀)으로 반드시 필터 — 두 유형 합산 시 약 2배(문서20 N-24)."
+    description: "사업목표 팩트(FTG_B) 평탄화 — ORG·SPONSORSHIP·CAMPAIGN. 월 grain=MONTH_KEY. 🟢[2026-09-29 O188] 입고 배선(TM_CM_MBER_DVLP_GOAL_DIV). 🔴🔴 GOAL_TYPE_NM(9종 · 단위 상이 · O190)으로 반드시 필터 — 후원사업·회원개발은 같은 개발 목표의 다른 분해라 합산 금지(문서20 N-24)."
     # [O51-F] ✅ [2026-08-10] 빈 축·희소축 경고 **오버레이 적용**(기존 문안 보존).
     # [O51-F]   🔴 경위: O51-D-C 의 빈 축 감사는 O51-D 대상 8객체만 스캔했고, O51-C 가 이미 물리에 배포한
     # [O51-F]      136컬럼은 감사되지 않았다 → 재스캔에서 **전건 센티넬이 침묵 중**임이 드러났다(O51-F-B).
@@ -1016,7 +1016,7 @@ models:
       - name: CAL_MONTH
         description: "MOD(MONTH_KEY,100) — 월"
       - name: ANNUAL_GOAL_CNT
-        description: "연사업목표(건) (#152)"
+        description: "당초 목표값(#152). 🔴 단위는 GOAL_TYPE_NM 에 따른다(건·명·원·비율) — 유형 필터 없이 합산 금지 · O190"
       - name: SUPP_GOAL_CNT
         description: "추경목표(건) (#153)"
       - name: ANNUAL_CUM_GOAL_CNT
@@ -1044,7 +1044,7 @@ models:
       - name: CAMPAIGN_NAME
         description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120)"
       - name: GOAL_TYPE_NM
-        description: "목표 분해유형: 연사업 / 팀 (O188). 🔴 두 유형을 섞어 합산하지 말 것 — 같은 목표의 다른 분해로 보인다(문서20 N-24)."
+        description: "목표 지표 유형 원천 표기 그대로(O190 · 9종): 건 = 후원사업·회원개발 / 명 = 월말활동회원 / 원 = 정기회비 / 비율 = 후원사업활동율·신규기존활동율·후원사업납입율·신규기존납입율·신규기존누계납입율. 🔴 유형마다 단위가 달라 섞어 합산하지 말 것 · 후원사업과 회원개발은 같은 개발 목표의 다른 분해(문서20 N-24)."
       - name: CPR_DIV_NM
         description: "법인구분 (사단/사복) (O188)."
       - name: ORG_PATH
@@ -1052,13 +1052,13 @@ models:
       - name: SRC_TEAM_NM
         description: "O188-E 원천 팀명(TEAM_NM) 그대로 — 조직 차원 매칭 실패(동명·비조직명) 행도 이 값으로 구분된다."
       - name: SRC_SPONSOR_BIZ_NM
-        description: "O188-E 원천 후원사업 표기 그대로 — 연사업 = 사업명 · 팀 = 4그룹(국내/결연/해외프로젝트/기타)."
+        description: "원천 후원사업 표기 그대로 — 후원사업 유형 = 사업명 · 회원개발 유형 = 4그룹(국내/결연/해외프로젝트/기타) · O190."
       - name: NEW_OLD_DIV_NM
-        description: "O188-E 신규/기존 구분(연사업 유형만 · 팀 유형은 NULL)."
+        description: "신규/기존 구분 원천 표기. 🔴 비율 유형에는 소계 행(합계·신규합계)이 있다 — 신규/기존과 함께 합산하면 이중계상. 회원개발 유형은 NULL · O190."
       - name: ORG_DIV_NM
         description: "O188-E 조직구분(본부/지부/대면) — 원천 표기."
       - name: DTL_DIV_NM
-        description: "O188-E 세부구분(팀 유형) — 원천 표기."
+        description: "세부구분 원천 표기(채널 등 · 회원개발 유형만 · 그 외 NULL) · O190."
   - name: WIDE_BUDGET
     description: "예산 팩트(FBD) 평탄화 — ORG·BUDGET_ITEM·CAMPAIGN·SPONSORSHIP. 월 grain=MONTH_KEY. 🔴외부 원천 미입고로 전건 NULL: 집행 추정 · FUNDRAISING_COST(**E-1**). 🔴🔴[2026-09-21 O175] **광고비는 이 목록에서 제외했다** — `AD_COST` 는 원천 미입고가 아니라 **폐기 슬롯**이다(의도적 영구 NULL · 종전 「**E-4** 원천부재」는 거짓이었다). 광고비를 물으면 `WIDE_BUDGET` 이 아니라 **`SERVING.SV_AD.TOTAL_AD_COST`**(base `GOLD.WIDE_AD_COMBINED` ← `FACT_AD_PERFORMANCE`)를 봐야 한다. 🔴🔴[2026-08-20 O96] **연간 편성도 이 목록에서 제외했다** — 원천 미입고가 아니라 **연 grain 을 `FACT_BUDGET_YEARLY` 로 분리**했기 때문이다(`PLAN_BUDGET_YEAR` = 폐기 슬롯·의도적 영구 NULL · DEC42). 연 편성예산을 물으면 **`FACT_BUDGET_YEARLY`** 를 봐야 한다. ⚠️광고비는 예산 원장에 예산항목이 없어 `BUDGET_ITEM_SK` 귀속 근거가 없다 — **예산과 같은 표에 합산하지 말 것**(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). 🔴🔴[O51-F 실측] **부서·캠페인별 분해가 현재 불가능**하다 — `ORG_DEPARTMENT`·`CAMPAIGN_BK`·`CAMPAIGN_NAME` 이 전건 `'(미매핑)'` 센티넬이라 「부서별 예산·집행」 요구에 **조용히 총계 1행**이 돌아온다. 조직 상위 계층(CORP·DIVISION·TEAM)도 차원 자체가 비어 있다(CONF-4)."
   # [2026-08-07 O50 신설] 종전 이 파일에 유일하게 누락된 모델이었다(models 14 vs 등재 13). O45 신설분 미전파.

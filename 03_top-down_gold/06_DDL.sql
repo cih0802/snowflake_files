@@ -1135,7 +1135,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_PROJECT (
     ORG_SK              NUMBER(38,0)    NOT NULL COMMENT '조직 (FK→DIM_ORG)',
     SPONSORSHIP_SK      NUMBER(38,0)    NOT NULL COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 (FK→DIM_CAMPAIGN)',                         -- 선택 grain
-    ANNUAL_GOAL_CNT     NUMBER(18,4)    COMMENT '연사업목표(건) (#152)',
+    ANNUAL_GOAL_CNT     NUMBER(18,4)    COMMENT '당초 목표값(#152). 🔴 단위는 GOAL_TYPE_NM 에 따른다(건·명·원·비율) — 유형 필터 없이 합산 금지 · O190',
     SUPP_GOAL_CNT       NUMBER(18,4)    COMMENT '추경목표(건) (#153)',
     ANNUAL_CUM_GOAL_CNT NUMBER(18,4)    COMMENT '연사업누계목표(건) (#154)',
     SUPP_CUM_GOAL_CNT   NUMBER(18,4)    COMMENT '추경누계목표(건) (#155)',
@@ -1144,14 +1144,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_PROJECT (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     -- 🆕 [2026-09-29 O188] 원천 입고 배선 · degen 2축(선언 위치 = 맨 끝). grain 에 포함된다.
-    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 분해유형: 연사업 / 팀. 🔴 두 유형을 섞어 합산하지 말 것(같은 목표의 다른 분해 추정 · 문서20 N-24)',
+    GOAL_TYPE_NM        VARCHAR         COMMENT '목표 지표 유형 원천 표기 그대로(O190 · 9종): 건 = 후원사업·회원개발 / 명 = 월말활동회원 / 원 = 정기회비 / 비율 = 후원사업활동율·신규기존활동율·후원사업납입율·신규기존납입율·신규기존누계납입율. 🔴 유형마다 단위가 달라 섞어 합산하지 말 것 · 후원사업과 회원개발은 같은 개발 목표의 다른 분해(문서20 N-24)',
     CPR_DIV_NM          VARCHAR         COMMENT '법인구분 (사단/사복)',
     SRC_TEAM_NM          VARCHAR          COMMENT '원천 목표표의 팀명 (CRM_BIZ_TARGET.ORG_NM 그대로) · O188-E',  -- 🆕 O189 편입(ALTER ADD · 라이브 ordinal 말미)
-    SRC_SPONSOR_BIZ_NM   VARCHAR          COMMENT '원천 목표표의 후원사업명 (CRM_BIZ_TARGET.SPONSOR_BIZ_NM 그대로) · O188-E',
-    NEW_OLD_DIV_NM       VARCHAR          COMMENT '신규/기존 구분명 (원천 그대로) · O188-E',
+    SRC_SPONSOR_BIZ_NM   VARCHAR          COMMENT '원천 후원사업 표기 그대로 — 후원사업 유형 = 사업명 · 회원개발 유형 = 4그룹(국내/결연/해외프로젝트/기타) · O190',
+    NEW_OLD_DIV_NM       VARCHAR          COMMENT '신규/기존 구분 원천 표기. 🔴 비율 유형에는 소계 행(합계·신규합계)이 있다 — 신규/기존과 함께 합산하면 이중계상. 회원개발 유형은 NULL · O190',
     ORG_DIV_NM           VARCHAR          COMMENT '조직 구분명 (원천 그대로) · O188-E',
-    DTL_DIV_NM           VARCHAR          COMMENT '세부 구분명 (원천 그대로) · O188-E'
-) COMMENT = '사업/프로젝트 목표 팩트. [Grain: MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM]. [주의: GOAL_TYPE_NM 으로 반드시 필터(연사업·팀 합산 금지)]. [원천: CRM TM_CM_MBER_DVLP_GOAL_DIV → SILVER.CRM_BIZ_TARGET].';
+    DTL_DIV_NM           VARCHAR          COMMENT '세부구분 원천 표기(채널 등 · 회원개발 유형만 · 그 외 NULL) · O190'
+) COMMENT = '사업/프로젝트 목표 팩트. [Grain: MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM]. [주의: GOAL_TYPE_NM 으로 반드시 필터(9종 · 단위 상이 · 후원사업·회원개발 합산 금지)]. [원천: CRM TM_CM_MBER_DVLP_GOAL_DIV → SILVER.CRM_BIZ_TARGET].';
 
 
 -- ============================================================================

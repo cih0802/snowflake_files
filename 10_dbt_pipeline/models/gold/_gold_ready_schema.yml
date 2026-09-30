@@ -1036,8 +1036,8 @@ models:
   - name: FACT_TARGET_PROJECT
     description: >
       사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM. 원천 = **CRM 확정**(2026-07-20).
-      🟢 [2026-09-29 O188] **입고 배선** — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(2026 · 290행 × 12월).
-      🔴🔴 `GOAL_TYPE_NM`(연사업/팀)으로 **반드시 필터**하라 — 두 유형 합이 348,024 · 348,000 으로 같은 목표의 다른 분해로 보인다(문서20 N-24).
+      🟢 [2026-09-29 O188] **입고 배선** — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(월 12컬럼 → 월 행).
+      🔴🔴 `GOAL_TYPE_NM`(9종 · 단위 상이 · O190)으로 **반드시 필터**하라 — 후원사업·회원개발은 같은 개발 목표의 다른 분해다(문서20 N-24 · 규모는 이슈원장).
       🔴 조직 이름 조인은 **유일한 부서명만** 매칭한다(DIM_ORG.DEPARTMENT 중복 4명 → SK=0).
       (종전 문안: ~~현재 0행 · 입고 대기 E-6 · 아래 테스트는 공허하게 통과~~ — 이제 실데이터로 검증된다.)
       🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒

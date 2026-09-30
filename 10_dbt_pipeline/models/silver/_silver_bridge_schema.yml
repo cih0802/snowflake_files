@@ -110,6 +110,11 @@ models:
     columns:
       - name: BIZ_TARGET_DK   # 🟢 O188 입고 배선(3,480행 · DK 유일 실측). 원천=CRM 확정(구 ERP_BIZ_TARGET).
         tests: [not_null, unique]
+      - name: TARGET_TYPE     # 🆕 O190 BDGT_PRCD_NM 파생(연사업→당초 · 추가경정→추경) — 미지 원천값 유입을 warn 으로 감시
+        tests:
+          - accepted_values:
+              values: ['당초', '추경']
+              config: { severity: warn }
 
   # ─── [DEC-45] CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE (캠페인 ↔ 후원사업 1:N 브릿지) ───
   - name: CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE

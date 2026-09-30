@@ -81,7 +81,7 @@ sources:
     description: "CRM 원천 중 target 과 무관하게 BRONZE_CRM 을 읽는 참조 테이블."
     tables:
       - name: TM_CM_SCHDUL_MNG              # 일정관리(0=공휴일 · 1=업무일정) → DIM_DATE.IS_HOLIDAY
-      - name: TM_CM_MBER_DVLP_GOAL_DIV      # 🆕 O188 사업목표(연사업/팀 · 월 12컬럼) → CRM_BIZ_TARGET (BRONZE_CRM_2 에 없음)
+      - name: TM_CM_MBER_DVLP_GOAL_DIV      # 🆕 O188 사업목표(월 12컬럼) → CRM_BIZ_TARGET (BRONZE_CRM_2 에 없음) · O190 BDGT_PRCD_NM(예산절차) 2번째 컬럼 · GOAL_TYPE_NM = 지표 9종(bt97381)
 
   - name: bronze_crm
     database: GN_DW
