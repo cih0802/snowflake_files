@@ -252,38 +252,39 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_LOYAL_MBER (
 )COMMENT='회원(MBER_NO) 단위 충성회원 성장 가능성 예측 결과'
 ;
 
+-- ⛔ [2026-10-01 O195] 운영계·개발계 모두 DROP 완료(사용자 지시) — 재생성하지 않는다. 재활성은 O192-A D-3 사용자 결정
 --  6/16 · 기획실 1 · 부서별 연도말 개발 예측치 (6컬럼)
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '부서코드 (ACMSLT_DEPT_CD)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='부서(ACMSLT_DEPT_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
+-- create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT (
+-- 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
+-- 	SERIES VARCHAR(16777216) COMMENT '부서코드 (ACMSLT_DEPT_CD)',
+-- 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
+-- 	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
+-- 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
+-- 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
+-- )COMMENT='부서(ACMSLT_DEPT_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
+-- ;
 
 --  7/16 · 기획실 2 · 후원사업별 연도말 개발 예측치 (6컬럼)
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '후원사업ID (SPNSR_BSNS_ID)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='후원사업(SPNSR_BSNS_ID)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
+-- create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
+-- 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
+-- 	SERIES VARCHAR(16777216) COMMENT '후원사업ID (SPNSR_BSNS_ID)',
+-- 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
+-- 	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
+-- 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
+-- 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
+-- )COMMENT='후원사업(SPNSR_BSNS_ID)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
+-- ;
 
 --  8/16 · 기획실 3 · 신규/기존별 개발 건수 예측 (6컬럼)
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '개발 유형 (NEW=신규, OLD=기존 증액+재후원)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='신규/기존별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
+-- create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT (
+-- 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
+-- 	SERIES VARCHAR(16777216) COMMENT '개발 유형 (NEW=신규, OLD=기존 증액+재후원)',
+-- 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
+-- 	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위)',
+-- 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
+-- 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
+-- )COMMENT='신규/기존별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
+-- ;
 
 --  9/16 · 나마본 1 · 월별 신규 후원개발 금액 예측 (5컬럼)
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT (

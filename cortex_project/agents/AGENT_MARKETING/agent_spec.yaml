@@ -14,8 +14,8 @@ instructions:
 
     데이터 포인트가 충분하면(여러 기간의 추이 또는 여러 범주 비교) 표와 함께 그래프로 시각화합니다 — 시계열 추이는 선 그래프, 범주 비교는 막대 그래프.
 
-    **원천이 다른 데이터를 함께 제시할 때는 표를 분리하고 각 표 아래에 원천을 한 줄로 각주 표기합니다** (예: "원천: 대행사 광고 리포트 → BRONZE_AGENCY" /
-    "원천: ERP 예산·실적 원장 → BRONZE_ERP" / "원천: CRM(eCRM) → BRONZE_CRM"). 같은 원천이면 각주는 한 번만 답니다.
+    **원천이 다른 데이터를 함께 제시할 때는 표를 분리하고 각 표 아래에 원천을 한 줄로 각주 표기합니다** — 형식 = "원천: <원천시스템> → BRONZE_<스키마>.<테이블>·<테이블> → GOLD.<팩트>" (예: "원천: 대행사 광고 리포트 → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS" /
+    "원천: ERP 예산·실적 원장 → BRONZE_ERP.BDGT_ACMSLT_LEDGER" / "원천: CRM(eCRM) → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT → GOLD.FACT_MEMBER_EVENT"). 🔴 **BRONZE 테이블명은 답변에 쓴 도구 description 의 원천 괄호에 적힌 이름만 옮겨 쓴다** — 추측·추가·약칭 금지 · 질문 핵심 지표의 테이블만 고르고 코드사전(TC_*)은 생략한다. 🔴 조인용 차원 원천(캠페인·브랜드·회원·조직 마스터 등 GOLD DIM_* 의 원천)도 생략하고, 지표를 담은 핵심 사실 테이블만 적는다(DEC-59 #7). 같은 원천이면 각주는 한 번만 답니다.
 
     **광고 지표를 제시할 때는 출처유형(디지털/방송/재방송)을 표 제목 또는 각주에 반드시 밝힙니다** — 계열이 상호배타이므로 어느 계열의 수치인지 밝히지 않으면 오독됩니다.
 
@@ -147,8 +147,7 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_dev_achievement
-    description: '회원개발 **목표 대비 실적** 팩트(grain=월×부서×개발구분). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(목표 TM_CM_MBER_DVLP_GOAL
-      · 실적 TM_MM_FDRM_MBER_DVLP_AMT). 🔴 **마케팅 보고서 「1. 개발현황(목표, 실적)」과 월/누계/연 목표 달성율(정본 공#1·#2·#3)의 정본 도구**다.
+    description: '회원개발 **목표 대비 실적** 팩트(grain=월×부서×개발구분). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(목표 TM_CM_MBER_DVLP_GOAL · 실적 TM_MM_FDRM_MBER_DVLP_AMT) → GOLD.FACT_MEMBER_DEV_ACHIEVEMENT. 🔴 **마케팅 보고서 「1. 개발현황(목표, 실적)」과 월/누계/연 목표 달성율(정본 공#1·#2·#3)의 정본 도구**다.
       활성 지표: 회원개발목표(건) · 개발실적(건) · 목표편성분 실적(건) · **목표 달성율(%)**. 차원: 연·월·연월, **부서명(실적부서)**, 개발구분(신규·증액·재후원),
       목표편성여부, 실적발생여부. "월 목표"·"연 목표"·"누계 목표"·"목표 달성율"·"목표 대비 실적"·"부서별 달성율"·"목표를 못 채운 부서" 류 질문에 사용. 🟢 누계·연
       전용 지표는 없고 필요하지도 않다 — 기간 필터만 바꾸면 월(단월)·누계(1월~기준월)·연(연 전체)이 모두 나온다. 🔴 **달성율은 이 도구의 달성율 지표를 그대로 쓴다**
@@ -170,7 +169,7 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_event
-    description: '회원 상태전이 사건 팩트(FME, grain=일×회원×개발/중단 사건). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM. 🔴 **마케팅 보고서
+    description: '회원 상태전이 사건 팩트(FME, grain=일×회원×개발/중단 사건). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(개발사건 TM_MM_FDRM_MBER_DVLP_AMT · 중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC · 캠페인 TM_CM_CMPGN_MNG · 회원 TM_MM_FDRM_MBER_INFO·TM_MM_ONCE_MBER_INFO) → GOLD.FACT_MEMBER_EVENT. 🔴 **마케팅 보고서
       「4. 전환회원 특성」의 정본 도구**이며 「1. 개발현황」의 **일별 실적**도 이 도구가 답한다. 활성 지표: 개발/중단 건수, 개발/중단 고유 회원수, 증액/감액 금액·회원수,
       캠페인 귀속 중단건. 차원: 사건일·연·월·**주차·요일**, **개발구분 5종**(코드 1~5 = 신규·증액·감액·재후원·후원중단 · 2026-08-14 실측 확인), 원천계통(DEV/STOP),
       **캠페인명·브랜드·상위캠페인·홍보방법·사업사례구분·유입경로·국내해외·마케팅캠페인**, **사건시점 연령대·지역·성별**, **후원사업(사건 시점 · 중단 행은 끊은 사업)**, 🆕 **데려온 사업**(획득 후원사업 · 중단 보고 병기 축 · 두 축 합계는 다르다 · O190 L-2), **부서명(실적부서)**,
@@ -188,11 +187,11 @@ tools:
       — **세부캠페인 법인구분**(CM019)은 이 도구로 **산출 가능**하고, 위에 적은 **조직 계층의 법인**은 **불가**하다. 「법인별」 질문에 무조건 산출 불가로
       답하지 말고 어느 축을 묻는지 먼저 확인한다. 🔴 추가 4종은 모두 **개발(DEV) 사건 전용** — 중단(STOP) 행은 전건 NULL 이므로 「후원구분별 중단건」·「법인구분별
       중단건」으로 쓰지 말 것. ⚠️ **UTM 라벨은 채움이 낮다** — 코드는 있으나 원천 코드사전 미등재분이 다수다(결측이 아니라 미등재다) ⇒ 채움 비율을 기억으로
-      답하지 말고 도구로 조회해 확인한 뒤 UTM 별 분해가 부분집합임을 밝힌다.'
+      답하지 말고 도구로 조회해 확인한 뒤 UTM 별 분해가 부분집합임을 밝힌다. 🆕 [O193-B] 차원 추가: 회원 **문자수신 여부**(CHRCTR_RECPTN_YN · 현재 마스터 스냅샷이며 사건 시점 값이 아니다 · NULL 은 미입력).'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_cohort
-    description: '회원 획득 코호트 팩트(FMC, grain=**회원 1행**). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM. 🔴 **마케팅 보고서 「5-1.
+    description: '회원 획득 코호트 팩트(FMC, grain=**회원 1행**). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(개발사건 TM_MM_FDRM_MBER_DVLP_AMT · 중단 TM_MM_FDRM_MBER_SPNSR_DSCNTC · 캠페인 TM_CM_CMPGN_MNG) → GOLD.FACT_MEMBER_EVENT 에서 파생 → GOLD.FACT_MEMBER_COHORT. 🔴 **마케팅 보고서 「5-1.
       캠페인별 활동기간」과 캠페인별 중단률(이탈률)의 정본 도구**다. 활성 지표: 획득 회원수, **12개월 고정 이탈률(CHURN_RATE_12M)**, 12개월 이탈 회원수/분모,
       누적 이탈 회원수, **평균 유지기간**. 차원: **획득 캠페인 전 축**(캠페인명·카테고리(=주요캠페인)·브랜드·상위캠페인·홍보방법·모집채널·국내해외·사업사례·마케팅캠페인),
       **획득 시점 회원특성**(연령대·지역·성별), 획득일·연·월, **최초 중단일**(=가입캠페인중단일), 최초 중단사유, 획득 개발구분(코드), 획득근거(NEW/FALLBACK),
@@ -204,7 +203,7 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_fee
-    description: '회비 분해 팩트(FMF, grain=**회원 × 회비월 × 후원사업 × 회비구분 × 납입유형 × 결제수단**). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM.
+    description: '회비 분해 팩트(FMF, grain=**회원 × 회비월 × 후원사업 × 회비구분 × 납입유형 × 결제수단**). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(회비청구·납입 TM_PM_MBRFEE_ACMSLT·TM_PM_DNTN_DTLS · 결제수단 TM_PM_SETLE_INFO · 후원사업 TM_CM_SPNSR_BSNS_INFO) → GOLD.FACT_MEMBER_FEE → WIDE_MEMBER_FEE.
       🔴 **마케팅 보고서 「5-2. 캠페인별 납입회비」와 「총납입금액(회비)」의 정본 도구**다. 활성 지표: 청구액·납입회비·총수납액·미납금액·납부율·미납비중·**고유 납입회원수(명)**·원천
       회비행수. 차원: 회비월·연·월·납입일, **후원사업(=납입 대상)**, **납입방식(결제수단)**, **회비구분(정기·선물금·일시·긴급구호)**, 납입유형(회비/기부금),
       미납여부, 회원 속성(현재 스냅샷), **획득 귀속축**(브랜드·가입캠페인·상위캠페인·홍보방법·마케팅캠페인·가입부서·획득 후원사업·획득시점 연령대·지역). "캠페인별 회비/납입금액"·"후원사업별
@@ -217,8 +216,7 @@ tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_sponsor_biz
-    description: '회원×후원약정 팩트(FMSB, grain=회원×후원사업번호 SPNSR_BSNS_NO). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV)
-      → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제
+    description: '회원×후원약정 팩트(FMSB, grain=회원×후원사업번호 SPNSR_BSNS_NO). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(후원약정 TM_MM_FDRM_MBER_SPNSR·후원사업약정 TM_MM_FDRM_MBER_SPNSR_BSNS · 개발사건(캠페인 귀속) TM_MM_FDRM_MBER_DVLP_AMT) → SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV) → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제
       없이 약정(SPNSR_BSNS_NO) grain 에서 캠페인이 거의 1:1(다중은 극소수·최대 2, 실측)이라 대표캠페인 규칙으로 분해 가능하다. 활성 지표: 지금 시점 활동회원수(CURRENTLY_ACTIVE_MEMBERS)·지금
       시점 활동 약정금액·약정건수·고유회원수. 차원: 후원사업(명·정기일시구분·약칭카테고리)·대표캠페인(명·카테고리)·다중캠페인여부·활동개시월·중단월. "캠페인별/후원사업별 활동회원"
       류 질문에 사용. 🔴🔴 **이 도구는 analyst_member_event(전환·개발/중단 사건)와 다른 질문이다** — 「지금 후원을 유지 중인 회원 수」이며 개발·전환

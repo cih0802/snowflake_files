@@ -412,4 +412,9 @@ def main():
 
 
 if __name__ == '__main__':
+    # 🔴 [O196] MUTATES 가드 — `--write` 는 `--apply` 를 함께 줘야 집행된다(R4-4-3)
+    if '--write' in sys.argv:
+        from mutating_guard import require_apply  # noqa: E402
+        require_apply(__file__, 'SILVER·GOLD DDL 정본 재작성 + 부록 생성')
+        sys.argv = [x for x in sys.argv if x != '--apply']
     sys.exit(main())

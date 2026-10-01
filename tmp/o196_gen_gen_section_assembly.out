@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_section_assembly.py", line 1134, in <module>
+    main()
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_section_assembly.py", line 397, in main
+    census = json.load(open(CENSUS, encoding="utf-8"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/census.json'

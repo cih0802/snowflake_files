@@ -169,6 +169,15 @@ KNOWN_ORPHANS = {
         "DEGEN", "발송 대상의 결연 원천키(우편·SND 전용). 실측 NOT NULL 3,976,241 · distinct 504,835 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION)."),
     ("FACT_MESSAGE_DISPATCH", "MSG_KEY"): (
         "DEGEN", "SND 메시지 원천키(발송 행 식별). 실측 NOT NULL 3,965,865 · 유일 · 메시지 차원 없음."),
+    # 🆕 [2026-10-01 O196-D · DEC-58] 발송 요청 차원 · 결연활동 팩트(SILVER 원천 실측 · pw69582 · build 전).
+    ("DIM_SEND_REQUEST", "SNDNG_KEY"): (
+        "DEGEN", "발송요청 원천키(자연키). 실측 1,722,090 · 유일 ⇒ 자기 차원의 업무키 · FK 아님(SEND_REQUEST_SK 가 대리키)."),
+    ("FACT_RELATION_ACTIVITY", "ACTIVITY_KEY"): (
+        "DEGEN", "결연활동 행 식별자(서신·선물금 대체키). 실측 398,630 · 유일 · 차원 없음."),
+    ("FACT_RELATION_ACTIVITY", "RELATNSP_KEY"): (
+        "DEGEN", "결연 원천키. 실측 398,630 · distinct 143,275 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION) — FRC·FMD 와 같은 판정."),
+    ("FACT_RELATION_ACTIVITY", "MBRFEE_KEY"): (
+        "DEGEN", "선물금 회비 원천키(선물금 행 전용). 실측 NOT NULL 183,374 · distinct 183,325 · 회비 행 grain 차원 없음."),
 }
 
 # 🔴 논리 관계로 ERD 에 추가해야 하는 분류 — gen_gold_erd.py 가 이 규칙을 읽어 관계선을 만든다.

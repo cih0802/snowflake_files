@@ -907,7 +907,7 @@ models:
       - name: WIN_FLAG
         description: "당첨여부"
       - name: SELF_PART_FLAG
-        description: "본인참여여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_EVENT_ATTENDANCE.SELF_PART_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C."
+        description: "본인참여 여부 — 캠페인행사 자기참여코드(MS060) 파생: 1(본인만)·2(함께)=TRUE · 0(동반자만)=FALSE(`FACT_EVENT_ATTENDANCE.sql`). 🔴 일반행사 행은 원천에 자기참여 컬럼이 없어 전건 NULL 이다(구조적 부재) — NULL 을 FALSE·'본인 미참여'로 읽지 말 것. 종전 「전건 NULL·미적재」(O51-D) 판정은 2차-B 배선(O191-G)으로 해소됐다."
       - name: PART_STATUS
         description: "참여상태"
       - name: PART_PATH

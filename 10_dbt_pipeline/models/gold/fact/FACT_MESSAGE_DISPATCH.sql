@@ -151,7 +151,10 @@ select
     -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SEND_MEMBER 승계(발송×회원 grain degen · 채널별 비해당 NULL).
     --   대체문자 = 알림톡 전용 · 결연KEY = 우편·SND · 관리번호 = 우편 · 나머지 5종 = SND 전용.
     s.ALTRTV_MSG_SNDNG_YN, s.RELATNSP_KEY, s.MNG_NO, s.MSG_KEY, s.CINFO,
-    s.RESPONSED_YN, s.RESPONSED_DT, s.REAL_SEND_DT
+    s.RESPONSED_YN, s.RESPONSED_DT, s.REAL_SEND_DT,
+    -- 🆕 [2026-10-01 O196-D · DEC-58 #1] 발송 요청 차원 FK — 요청 속성은 DIM_SEND_REQUEST 에서 읽는다(degen 금지).
+    --   🔴 [O196-E] 요청 미매칭(발송 대상에만 키가 있고 요청 마스터에 없음 · 📏 11,421행)도 0 으로 보낸다 — 고아 FK 금지.
+    CASE WHEN r.SNDNG_KEY IS NULL THEN 0 ELSE {{ gold_sk(['r.SNDNG_KEY']) }} END as SEND_REQUEST_SK
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 cross join open_window ow

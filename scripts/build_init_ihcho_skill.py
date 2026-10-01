@@ -3,9 +3,11 @@
 
 정본 본문 = `00_guides/03_init_ihcho_스킬_본문.md` 의
 `<!-- SKILL-BODY-BEGIN -->` ~ `<!-- SKILL-BODY-END -->` 사이.
+  🆕 [O194] 그 안의 `<!-- SKILL-REF-BEGIN references/x.md -->` ~ `<!-- SKILL-REF-END -->` 블록은
+  `SKILL.md` 에서 빠지고 `references/x.md` 로 나간다(지연 로드 · 경량화).
 설명·불변식·개정 이력 = `00_guides/03_init_ihcho_스킬_정본.md`(§1~§5).
 
-🔴 **왜 두 파일인가** = 본문만으로 36KB 라서 명세와 합치면 **조각 상한 40KB** 를 넘고,
+🔴 **왜 두 파일인가** = 본문과 명세를 합치면 **조각 상한 40KB** 에 닿고,
    그러면 `read` 1회로 전량 확보가 안 된다(`doc_type_gate` 축3 이 실제로 잡았다).
    🔴 허브+조각 분할은 **마커를 갈라 이 추출을 깨뜨리므로** 쓰지 않는다.
 
@@ -30,6 +32,7 @@ import argparse
 import difflib
 import io
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,9 +57,57 @@ ARTIFACTS = {
 BEGIN = '<!-- SKILL-BODY-BEGIN -->'
 END = '<!-- SKILL-BODY-END -->'
 
+#: 🆕 [O194] 본문 안의 지연 로드 블록 — `SKILL.md` 에서는 빠지고 `references/<경로>` 로 나간다.
+#:   🔴 **왜 정본을 한 파일로 두고 마커로 가르나** = 본문과 참조를 별 정본으로 나누면 「본문에서 뺐는데
+#:   참조에 안 넣었다」가 조용히 생긴다(뺀 것이 아니라 잃은 것 · `I8`). 같은 파일 안에서 **잘라 옮기면**
+#:   토큰 집합이 정의상 보존된다(§5-1 대조가 body ∪ refs 로 닫힌다).
+#:   🔴 블록 바로 앞(본문 쪽)에 **그 경로를 가리키는 문장**을 둬야 한다 — 검증기 `I8` 이 집행한다.
+REF_BEGIN = re.compile(r'^<!-- SKILL-REF-BEGIN (references/[A-Za-z0-9_\-]+\.md) -->$', re.M)
+REF_END = '<!-- SKILL-REF-END -->'
 
-def extract_body(spec_path=BODY_DOC):
-    """본문 정본에서 산출물 본문을 뽑는다. 마커 줄은 포함하지 않는다."""
+
+def split_refs(body):
+    """본문에서 `SKILL-REF` 블록을 잘라낸다. 반환 = (스킬 본문, {references/x.md: 내용}).
+
+    🔴 마커가 짝이 안 맞거나 중첩·중복 경로면 **쓰지 않고 exit 1**(반쯤 잘린 스킬은 조용히 지시를 잃는다).
+    """
+    refs, out, pos = {}, [], 0
+    n_end = len(re.findall(r'^' + re.escape(REF_END) + r'$', body, re.M))
+    starts = list(REF_BEGIN.finditer(body))
+    if len(starts) != n_end:
+        raise SystemExit(f'🔴 SKILL-REF 마커 짝 불일치(BEGIN {len(starts)} · END {n_end}) — 쓰지 않는다.')
+    for m in starts:
+        if m.start() < pos:
+            raise SystemExit(f'🔴 SKILL-REF 중첩 금지: {m.group(1)}')
+        path = m.group(1)
+        if path in refs:
+            raise SystemExit(f'🔴 SKILL-REF 경로 중복: {path}')
+        end = body.find('\n' + REF_END, m.end())
+        if end < 0:
+            raise SystemExit(f'🔴 SKILL-REF-END 부재: {path}')
+        nxt = REF_BEGIN.search(body, m.end())
+        if nxt and nxt.start() < end:
+            raise SystemExit(f'🔴 SKILL-REF 중첩 금지: {path} 안에 {nxt.group(1)}')
+        content = body[m.end():end].strip('\n') + '\n'
+        if len(content.strip()) < 100:
+            raise SystemExit(f'🔴 SKILL-REF 내용이 비었거나 너무 짧다: {path}')
+        refs[path] = content
+        out.append(body[pos:m.start()])
+        pos = end + len('\n' + REF_END)
+        if body.startswith('\n', pos):
+            pos += 1                         # END 줄의 개행까지 소비
+    out.append(body[pos:])
+    if not refs:
+        return body, refs                    # 블록이 없으면 원문 그대로(정규화로 바이트를 바꾸지 않는다)
+    # 🔴 빈 줄 정규화는 **잘라낸 이음매에만** 한다 — 본문 전체에 걸면 무관한 코드 블록이 바뀐다.
+    skill = out[0]
+    for seg in out[1:]:
+        skill = skill.rstrip('\n') + '\n\n' + seg.lstrip('\n')
+    return skill, refs
+
+
+def extract_raw(spec_path=BODY_DOC):
+    """본문 정본에서 마커 사이를 그대로 뽑는다(`SKILL-REF` 블록 포함). 마커 줄은 포함하지 않는다."""
     if not os.path.isfile(spec_path):
         raise SystemExit(f'🔴 정본 부재: {spec_path}')
     text = io.open(spec_path, encoding='utf-8').read()
@@ -70,13 +121,37 @@ def extract_body(spec_path=BODY_DOC):
     return body
 
 
-def build_one(art, canon, apply_, label):
+def extract_body(spec_path=BODY_DOC):
+    """산출물 본문 = 마커 사이에서 `SKILL-REF` 블록을 뺀 것(그 블록은 `extract_refs` 가 낸다)."""
+    return split_refs(extract_raw(spec_path))[0]
+
+
+def extract_refs(spec_path=BODY_DOC):
+    """본문 정본의 `SKILL-REF` 블록 = {references/x.md: 내용}."""
+    return split_refs(extract_raw(spec_path))[1]
+
+
+def render_artifacts():
+    """🆕 [O194] 산출물 전건 = {산출물 절대경로: (내용, 정본 표시명)}.
+
+    ㉠ `ARTIFACTS` 의 별 정본(SKILL.md · session-end.md) ㉡ 본문 `SKILL-REF` 블록에서 나온 참조.
+    🔴 둘이 같은 경로를 내면 exit 1(어느 쪽이 정본인지 모호해진다).
+    """
+    out = {art: (extract_body(canon), os.path.relpath(canon, ROOT)) for art, canon in ARTIFACTS.items()}
+    for rel, content in extract_refs(BODY_DOC).items():
+        art = os.path.join(SKILL_DIR, rel)
+        if art in out:
+            raise SystemExit(f'🔴 산출물 경로 충돌: {rel} — ARTIFACTS 와 SKILL-REF 가 같은 파일을 낸다.')
+        out[art] = (content, f'{os.path.relpath(BODY_DOC, ROOT)} [SKILL-REF {rel}]')
+    return out
+
+
+def build_one(art, body, canon_label, apply_, label):
     """산출물 1종을 정본에서 만든다. 반환 = (변경 있었나, rc)."""
     rel = os.path.relpath(art, ROOT)
-    body = extract_body(canon)
     cur = io.open(art, encoding='utf-8').read() if os.path.isfile(art) else ''
     print(f'\n▣ {rel}')
-    print(f'   정본 = {os.path.relpath(canon, ROOT)} · {len(body.splitlines())}줄 · {len(body.encode())} B')
+    print(f'   정본 = {canon_label} · {len(body.splitlines())}줄 · {len(body.encode())} B')
     print(f'   현행 = {len(cur.splitlines())}줄 · {len(cur.encode())} B' if cur else '   현행 = 부재(신규 생성)')
     if cur == body:
         print('   🟢 이미 동일 — 쓸 것이 없다(멱등).')
@@ -121,15 +196,16 @@ def main():
     a = ap.parse_args()
 
     changed = rc = 0
-    for art, canon in ARTIFACTS.items():
-        ch, r = build_one(art, canon, a.apply, a.label)
+    arts = render_artifacts()
+    for art, (body, canon_label) in arts.items():
+        ch, r = build_one(art, body, canon_label, a.apply, a.label)
         changed += int(ch)
         rc = rc or r
     print('')
     if rc:
         return rc
     if not changed:
-        print(f'🟢 산출물 {len(ARTIFACTS)}종 전건 정본과 동일 — 쓸 것이 없다.')
+        print(f'🟢 산출물 {len(arts)}종 전건 정본과 동일 — 쓸 것이 없다.')
         return 0
     if not a.apply:
         print(f'🟠 DRY-RUN — 변경 대상 {changed}종. 집행하려면 `--apply` 를 붙여라.')

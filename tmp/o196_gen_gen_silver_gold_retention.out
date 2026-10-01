@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_silver_gold_retention.py", line 236, in <module>
+    main()
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_silver_gold_retention.py", line 62, in main
+    census = json.load(open(os.environ.get("GN_DW_CENSUS", "/tmp/census.json"), encoding="utf-8"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/census.json'

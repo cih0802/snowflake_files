@@ -1,0 +1,21 @@
+[2026-10-01] BRONZE 노출감사 (호스트 실행)
+  모드: Snowflake 직접조회 (OAuth)
+  조회 완료: 4206행
+  BRONZE 1310컬럼 · SILVER 703 · GOLD 688
+  dbt 하드코딩 85건 · 실적재 projection 904건 검출
+  판정 완료 1310건
+    노출됨(GOLD): 379
+    대체노출(파생): 18
+    ⚠️설계O·값미주입: 12
+    SILVER까지만: 471
+    판정보류(동명이의): 13
+    미노출(검토대상): 252
+    제외(PII·본문·메타): 61
+    제외(적재제어메타): 104
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/06_BRONZE노출감사.md.UNLABELED-regen.5  [UNLABELED · 178,240 B · 1409b6e5d029d20e]
+   🟠 라벨 미지정 — `--label O1NN` 또는 `export SESSION_LABEL=O1NN` 을 쓰라(스냅샷의 「누가」가 비어 있다).
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/06_BRONZE노출감사.csv.UNLABELED-regen.5  [UNLABELED · 166,749 B · 4db373f85bca5273]
+   🟠 라벨 미지정 — `--label O1NN` 또는 `export SESSION_LABEL=O1NN` 을 쓰라(스냅샷의 「누가」가 비어 있다).
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/06_BRONZE노출감사.xlsx.UNLABELED-regen.6  [UNLABELED · 60,468 B · 3c9609fb95d3e56e]
+   🟠 라벨 미지정 — `--label O1NN` 또는 `export SESSION_LABEL=O1NN` 을 쓰라(스냅샷의 「누가」가 비어 있다).
+  출력 → /workspace/30_output_share/06_BRONZE노출감사.{md,csv,xlsx}

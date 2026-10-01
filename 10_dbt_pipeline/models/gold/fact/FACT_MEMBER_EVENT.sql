@@ -32,16 +32,25 @@ spb_lookup as (
     select SPONSORSHIP_BK, SPONSORSHIP_SK from {{ ref('DIM_SPONSORSHIP') }}
 ),
 stop_single_biz as (
-    -- [2026-09-14 O160] 착수표 ⑭ 분해 배선: 단일 후원사업 중단 건(92.45%) 1:1 배선 (팬아웃 0)
-    -- 다중사업 동시중단(7.29%) 및 미매칭(0.26%)은 0 센티넬 유지 (현업 질의 §N-12 대기)
+    -- [2026-09-14 O160] 착수표 ⑭ 분해 배선: 단일 후원사업 중단 건 1:1 배선 (팬아웃 0)
+    -- 🆕 [2026-10-01 O196-D · DEC-59 #3·#4 사용자 결정] 다중사업 동시중단도 1건으로 귀속한다:
+    --   ① 시작월(START_MONTH_KEY)이 가장 늦은 사업(= 가장 최근에 시작된 중단사업)
+    --   ② 같은 달 동률이면 가장 최근 후원(SPNSR_NO · SPNSR_BSNS_NO 내림차순)을 대표로 한다.
+    --   ⇒ (회원×중단일)당 1행 · 팬아웃 0 · 미매칭(원천 결손)만 0 센티넬로 남는다.
+    --   🔴 원천 중단이력에 후원사업 식별자가 없으므로 이것은 **업무 귀속 규칙**이지 원천 사실이 아니다.
     select
         MBER_NO,
         SPNSR_DSCNTC_DE,
-        max(SPNSR_BSNS_ID) as SPNSR_BSNS_ID
+        SPNSR_BSNS_ID
     from {{ ref('CRM_MEMBER_SPONSOR_SPAN') }}
     where SPNSR_DSCNTC_YN = 'Y' and SPNSR_DSCNTC_DE is not null
-    group by MBER_NO, SPNSR_DSCNTC_DE
-    having count(distinct SPNSR_BSNS_ID) = 1
+    qualify row_number() over (
+        partition by MBER_NO, SPNSR_DSCNTC_DE
+        order by START_MONTH_KEY desc nulls last,
+                 TRY_TO_NUMBER(SPNSR_NO) desc nulls last,
+                 SPNSR_BSNS_NO desc nulls last,
+                 SPNSR_BSNS_ID desc
+    ) = 1
 ),
 -- [O183] #113 신규기존구분 기준일 = 회원 최초가입일(#28) = LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일)
 --   — FMM member_first 와 **같은 규칙·같은 월키 식**(첫 청구월 = FMM billing 의 MONTH_KEY 산식).

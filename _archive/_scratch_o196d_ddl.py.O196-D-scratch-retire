@@ -1,0 +1,99 @@
+"""[O196-D 임시] DEC-58 DDL 삽입 — 06_DDL.sql 4앵커(각 1회 assert). --write 없으면 드라이런."""
+import io, sys
+sys.path.insert(0, 'scripts')
+from sfconn import conn
+from snapshot_util import snapshot
+
+P = '03_top-down_gold/06_DDL.sql'
+cur = conn().cursor()
+cur.execute("""select TABLE_NAME, COLUMN_NAME, DATA_TYPE, NUMERIC_PRECISION, NUMERIC_SCALE, CHARACTER_MAXIMUM_LENGTH, COMMENT
+from GN_DW.INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA='SILVER'
+and TABLE_NAME in ('CRM_SEND_REQUEST','CRM_SEND_RESULT','CRM_RELATION_ACTIVITY')""")
+S = {(r[0], r[1]): r[2:] for r in cur.fetchall()}
+
+def typ(t, c):
+    dt, p, s, ln, _ = S[(t, c)]
+    if dt == 'NUMBER':
+        return f'NUMBER({p},{s})'
+    if dt == 'TEXT':
+        return 'VARCHAR' if ln == 16777216 else f'VARCHAR({ln})'
+    return dt
+
+def cm(t, c):
+    base = (S[(t, c)][4] or c).split(' [원천:')[0].replace("'", "''")
+    return f"{base} [원천: SILVER.{t}]"
+
+def col(name, t, c=None, note=None):
+    c = c or name
+    return f"    {name:<24}{typ(t, c):<16}COMMENT '{note or cm(t, c)}'"
+
+REQ = 'CRM_SEND_REQUEST'; RES = 'CRM_SEND_RESULT'; ACT = 'CRM_RELATION_ACTIVITY'
+req_cols = ['SNDNG_KEY', 'SEND_CHANNEL', 'SNDNG_TY_CD', 'SEND_GBN_TOP', 'SEND_GBN_TOP_NM', 'SEND_GBN_MID',
+            'SEND_GBN_MID_NM', 'SEND_GBN_BOT', 'SEND_GBN_BOT_NM', 'TIT', 'SNDNG_STDR_DE', 'REQ_SEQ_NO',
+            'SNDNG_CD_ID', 'SNDNG_DTL_CD_ID', 'PRCS_DE', 'PRCS_YN', 'TMPLAT_ID', 'ALTRTV_MSG_SNDNG_YN',
+            'LQY_YN', 'RE_SNDNG_YN', 'MSG_TYPE', 'REGULARLY', 'SEND_STATUS', 'SEND_ROUND',
+            'CONDITION_TITLE', 'MENU_CODE', 'SERVICE_MENU_CODE', 'USE_YN']
+res_cols = ['RECPTN_CNT', 'ALTRTV_SNDNG_CNT', 'SNDNG_STRT_DT', 'SNDNG_END_DT', 'RESVE_SNDNG_DE', 'SNDNG_SQNC', 'SNDNG_TIT']
+act_cols = ['ACTIVITY_KEY', 'ACTIVITY_TYPE', 'RELATNSP_KEY', 'MNG_NO']
+act_cols2 = ['GFTMNEY', 'LETTER_DIV_CD', 'RCEPT_DE', 'SNDNG_DE', 'LETTER_STAT_CD', 'LANG_CD', 'ONLINE_POST_WRITNG_YN',
+             'ONLINE_INFLOW_CD', 'UNREPLY_RSN_CD', 'MBRFEE_KEY', 'SETLE_DE', 'SETLE_CD', 'GFT_DIV_CD',
+             'GFTMNEY_DOLLAR_AMT', 'APRV_DE', 'TRNSFER_YN']
+META = [
+    "    DW_SOURCE_SYSTEM        VARCHAR NOT NULL COMMENT '원천 시스템 식별 (공통감사)'",
+    "    DW_LOAD_TS              TIMESTAMP_NTZ NOT NULL COMMENT '최초 적재 시각 (공통감사)'",
+    "    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)'",
+    "    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'",
+]
+dsr = (["-- DIM_SEND_REQUEST — 발송 요청 차원 · O196-D DEC-58 #1 신설",
+        "CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_REQUEST (",
+        "    SEND_REQUEST_SK         NUMBER(38,0)    NOT NULL COMMENT '대리키 = HASH(SNDNG_KEY) · FACT_MESSAGE_DISPATCH.SEND_REQUEST_SK 가 참조'"]
+       + [col(c, REQ) for c in req_cols] + [col(c, RES) for c in res_cols] + META)
+dsr = ',\n'.join(dsr[2:]) and (dsr[0] + '\n' + dsr[1] + '\n' + ',\n'.join(dsr[2:]) + '\n'
+      ") COMMENT = '발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다(DEC-58)]. "
+      "[원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]';\n")
+fra = (["    DATE_SK                 NUMBER(8,0)     COMMENT '활동일 YYYYMMDD(서신 = 접수일 · 선물금 = 발송일) → DIM_DATE · 0=일자 무효'",
+        "    MEMBER_DK               VARCHAR(10)     COMMENT '회원번호 — 결연키로 결연 마스터(CRM_SPONSOR_RELATION)를 조회한 MBER_NO · 매칭 실패(고아 결연)는 NULL'"]
+       + [col(c, ACT) for c in act_cols]
+       + ["    ACTIVITY_CNT            NUMBER(1,0)     COMMENT '활동(건) = 1 · 회원수는 MEMBER_DK 중복제거로 센다'"]
+       + [col(c, ACT) for c in act_cols2] + META)
+fra = ("-- FACT_RELATION_ACTIVITY — 결연활동 팩트 · O196-D DEC-58 #2 신설\n"
+       "CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY (\n" + ',\n'.join(fra) + '\n'
+       ") COMMENT = '결연활동 팩트(서신·선물금). [Grain: ACTIVITY_KEY (1행=1활동)]. [주의: 선물금(GFTMNEY)은 선물금 행만 값 · 서신/선물금 계열 속성은 비해당 NULL]. "
+       "[원천: SILVER.CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION]. [적재: dbt]';\n")
+
+edits = [
+    ("    REAL_SEND_DT           TIMESTAMP_NTZ   COMMENT '실제발신일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]'\n) COMMENT = '메시지 발송",
+     "    REAL_SEND_DT           TIMESTAMP_NTZ   COMMENT '실제발신일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',\n"
+     "    SEND_REQUEST_SK        NUMBER(38,0)    COMMENT '발송 요청 (FK→DIM_SEND_REQUEST) · 0=요청 미매칭 [O196-D DEC-58]'\n) COMMENT = '메시지 발송"),
+    ("-- FACT_PAYMENT_METHOD_CHANGE — FACT_PAYMENT_METHOD_CHANGE — O188-F 2차-A 신설\n",
+     dsr + "\n" + fra + "\n-- FACT_PAYMENT_METHOD_CHANGE — FACT_PAYMENT_METHOD_CHANGE — O188-F 2차-A 신설\n"),
+    ("  RETURN 'constraint drop (idempotent) done';",
+     "  BEGIN ALTER TABLE GN_DW.GOLD.DIM_SEND_REQUEST DROP CONSTRAINT PK_DIM_SEND_REQUEST; EXCEPTION WHEN OTHER THEN NULL; END;\n"
+     "  BEGIN ALTER TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH DROP CONSTRAINT FK_FMD_DIM_SEND_REQUEST; EXCEPTION WHEN OTHER THEN NULL; END;\n"
+     "  BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;\n"
+     "  BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_MEMBER; EXCEPTION WHEN OTHER THEN NULL; END;\n"
+     "  RETURN 'constraint drop (idempotent) done';"),
+    ("\n-- 검증(값이 아니라 방법이 정본이다",
+     "\nALTER TABLE GN_DW.GOLD.DIM_SEND_REQUEST ADD CONSTRAINT PK_DIM_SEND_REQUEST PRIMARY KEY (SEND_REQUEST_SK) NOT ENFORCED NORELY;\n"
+     "ALTER TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH ADD CONSTRAINT FK_FMD_DIM_SEND_REQUEST\n"
+     "    FOREIGN KEY (SEND_REQUEST_SK) REFERENCES GN_DW.GOLD.DIM_SEND_REQUEST (SEND_REQUEST_SK) NOT ENFORCED NORELY;\n"
+     "ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY ADD CONSTRAINT FK_FRA_DIM_DATE\n"
+     "    FOREIGN KEY (DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;\n"
+     "ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY ADD CONSTRAINT FK_FRA_DIM_MEMBER\n"
+     "    FOREIGN KEY (MEMBER_DK) REFERENCES GN_DW.GOLD.DIM_MEMBER (MEMBER_DK) NOT ENFORCED NORELY;\n"
+     "\n-- 검증(값이 아니라 방법이 정본이다"),
+]
+src = io.open(P, encoding='utf-8', newline='').read()
+new = src
+for a, b in edits:
+    n = new.count(a)
+    assert n == 1, (a[:60], n)
+    new = new.replace(a, b)
+print('cols DSR', len(req_cols) + len(res_cols) + 1 + 4, '· FRA', 2 + len(act_cols) + 1 + len(act_cols2) + 4)
+print('added lines', new.count('\n') - src.count('\n'))
+if '--write' in sys.argv:
+    snapshot(P, 'dec58-ddl', label='O196-D', archive='_archive')
+    io.open(P, 'w', encoding='utf-8', newline='').write(new)
+    assert io.open(P, encoding='utf-8', newline='').read() == new
+    io.open('tmp/o196d_dec58_ddl.sql', 'w', encoding='utf-8').write(dsr + '\n' + fra)
+    print('written')

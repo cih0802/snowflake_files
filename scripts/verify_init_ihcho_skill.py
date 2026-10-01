@@ -17,6 +17,11 @@
   I8 참조 산출물 **전건** 정본과 바이트 동일 + 본문이 **그 경로를 가리킨다**
      — 🔴 지연 로드는 「본문에서 뺐다」가 아니라 「본문이 가리키는 곳으로 옮겼다」여야 한다.
        가리키지 않으면 그 내용은 **영구 미독**이 된다(뺀 것이 아니라 잃은 것이다).
+  🆕 [O194] I8 은 본문 `SKILL-REF` 블록에서 나온 참조도 전건 포함한다.
+  I9  `references/` 고아 파일 0                     — 정본 없는 참조는 낡은 지시를 계속 노출한다
+  I10 마커 사이 원문 토큰 ⊆ `SKILL.md ∪ references/*` — 잘라 옮긴 것이 잃은 것이 되지 않게
+  I11 브리핑 백그라운드 기동이 §1 가드보다 앞       — 문서 순서 = 행동 순서(2분 대기 재발 방지)
+  I12 본문·참조(session-end 제외)에 세션 라벨 0     — 경위는 개발이력 파일에만 둔다
 
 사용 = `python3 scripts/verify_init_ihcho_skill.py [--verbose]`
 """
@@ -28,7 +33,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'scripts'))
-from build_init_ihcho_skill import ARTIFACTS, BODY_DOC, SKILL, SPEC, extract_body  # noqa: E402
+from build_init_ihcho_skill import (  # noqa: E402
+    BODY_DOC, REF_END, SKILL, SPEC, extract_body, extract_raw, render_artifacts)
 
 SKILL_DIR_LOCAL = os.path.dirname(SKILL)   # 참조 경로를 스킬 폴더 기준 상대경로로 만든다
 MAX_LINES = 500
@@ -132,10 +138,10 @@ def main():
         print('✅ I7 하드코딩 수치 0')
 
     # I8 — 참조 산출물 전건 대조 + 본문 포인터 실재
-    refs = {a: c for a, c in ARTIFACTS.items() if a != SKILL}
-    for art, canon in refs.items():
+    arts = render_artifacts()
+    refs = {a: v for a, v in arts.items() if a != SKILL}
+    for art, (want, _label) in refs.items():
         rel = os.path.relpath(art, ROOT)
-        want = extract_body(canon)
         if not os.path.isfile(art):
             fails.append(f'I8 참조 산출물 부재: {rel} — `build_init_ihcho_skill.py --apply` 를 돌려라')
             continue
@@ -148,6 +154,58 @@ def main():
             fails.append(f'I8 본문이 `{needle}` 를 가리키지 않는다 — 지연 로드가 아니라 유실이다')
         else:
             print(f'✅ I8 {rel} 바이트 동일 + 본문 포인터 실재({want.count(chr(10))}줄)')
+
+    # 🆕 [O194] I9 — `references/` 에 정본 없는 파일이 없는가(고아 = 낡은 지시가 계속 읽힌다)
+    ref_dir = os.path.join(SKILL_DIR_LOCAL, 'references')
+    if os.path.isdir(ref_dir):
+        orphans = sorted(f for f in os.listdir(ref_dir)
+                         if os.path.join(ref_dir, f) not in refs)
+        if orphans:
+            fails.append(f'I9 정본 없는 참조 파일 = {orphans} — 정본에 SKILL-REF 로 넣거나 개별 삭제하라')
+        else:
+            print('✅ I9 references/ 고아 파일 0')
+
+    # 🆕 [O194] I10 — 본문을 참조로 잘라 옮긴 뒤에도 토큰 집합이 보존되는가(정본 §5-1 의 기계 축)
+    #   🔴 마커 사이 원문의 조문·사고 토큰이 `SKILL.md ∪ references/*` 어딘가에 남아 있어야 한다.
+    raw = extract_raw()
+    rx = re.compile(r'\b(?:R\d[\d\-]*[a-z]?|A\d{1,2}|P\d{2,3}|OPS-\d|BLOCKING-\d|J\d)\b')
+    have = set(rx.findall(got))
+    for _art, (txt, _l) in refs.items():
+        have |= set(rx.findall(txt))
+    lost = sorted(set(rx.findall(raw)) - have)
+    if lost:
+        fails.append(f'I10 잘라 옮기며 토큰 유실 = {lost}')
+    elif REF_END in got:
+        fails.append('I10 SKILL.md 에 SKILL-REF 마커가 남았다 — 빌더 분리가 깨졌다')
+    else:
+        print('✅ I10 본문 ∪ 참조 토큰 보존(유실 0)')
+
+    # 🆕 [O194] I11 — 브리핑 백그라운드 기동이 **가드·지침 독해보다 앞**에 있는가
+    #   🔴 실사고 = 기동 지시가 Step 1 안(가드 110줄 뒤)에 있어 에이전트가 지침을 먼저 읽고 기동했다
+    #   ⇒ 생성 2분이 그대로 대기 시간이 됐다. 문서 순서 = 행동 순서다(정본 §2).
+    cmd = 'session_brief.py --write'
+    i_cmd, i_g = got.find(cmd), got.find('\n## §1.')
+    if i_cmd < 0 or 'run_in_background' not in got[:max(i_cmd, 0) + 400]:
+        fails.append('I11 브리핑 백그라운드 기동문(`run_in_background` + `session_brief.py --write`) 부재')
+    elif i_g >= 0 and i_cmd > i_g:
+        fails.append('I11 브리핑 기동이 §1 가드 뒤에 있다 — Step 0(첫 도구 호출)로 올려라')
+    else:
+        print('✅ I11 브리핑 백그라운드 기동이 §1 가드보다 앞')
+
+    # 🆕 [O194] I12 — 스킬 산출물(본문 + 참조)에 **세션 라벨이 없는가**
+    #   🔴 본문에는 현재 지시만 둔다 — 「O167 신설」 같은 귀속·경위는 개발이력 파일로 간다.
+    #   판정 = `O` + 2~3자리(+접미) 토큰. 라벨 파일명 예시(`O0172-A`, 4자리)는 걸리지 않는다.
+    lab = re.compile(r'\bO\d{2,3}(?:-[A-Z])?\b')
+    found = []
+    for art, txt in [(SKILL, got)] + [(a, v[0]) for a, v in refs.items()
+                                      if not a.endswith('session-end.md')]:
+        found += [(os.path.relpath(art, ROOT), i, m.group(0))
+                  for i, l in enumerate(txt.split('\n'), 1) for m in lab.finditer(l)]
+    if found:
+        for rel, i, tok in found[:10]:
+            fails.append(f'I12 {rel}:{i} 세션 라벨 `{tok}` — 경위는 `03_init_ihcho_스킬_개발이력.md` 로 옮겨라')
+    else:
+        print('✅ I12 본문·참조에 세션 라벨 0(session-end 제외)')
 
     print('-' * 74)
     for w in warns:

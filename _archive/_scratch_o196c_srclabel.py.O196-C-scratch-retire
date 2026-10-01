@@ -1,0 +1,52 @@
+"""[O196-C 임시] EXEC/MKT 도구 원천 괄호를 AGENT_MEMBER 같은 SV 도구의 원천 절로 맞춘다.
+--write 없으면 드라이런. 원천 절 = '원천=' 부터 첫 '. ' 까지(마침표 포함).
+"""
+import io, os, re, sys, yaml
+sys.path.insert(0, 'scripts')
+from snapshot_util import snapshot
+
+BASE = 'cortex_project/agents'
+TARGETS = {
+    'AGENT_EXECUTIVE': ['analyst_member_monthly', 'analyst_service'],
+    'AGENT_MARKETING': ['analyst_member_event', 'analyst_member_cohort', 'analyst_member_fee',
+                        'analyst_member_sponsor_biz', 'analyst_dev_achievement'],
+}
+
+def descs(agent):
+    d = yaml.safe_load(io.open(f'{BASE}/{agent}/agent_spec.yaml', encoding='utf-8'))
+    return {t['tool_spec']['name']: t['tool_spec'].get('description', '') for t in d['tools']}
+
+def clause(s):
+    i = s.index('원천=')
+    j = s.index('. ', i)
+    return s[i:j + 1]
+
+mem = descs('AGENT_MEMBER')
+ok = True
+for agent, names in TARGETS.items():
+    p = f'{BASE}/{agent}/agent_spec.yaml'
+    raw = io.open(p, encoding='utf-8', newline='').read()
+    cur = descs(agent)
+    new_raw = raw
+    for n in names:
+        old = clause(cur[n])
+        k = cur[n].index(old)
+        pre = cur[n][max(0, k - 15):k]
+        flex = lambda t: r'\s+'.join(re.escape(w) for w in t.split(' '))
+        pat = re.compile('(' + flex(pre) + r'\s*)' + flex(old)) if pre.strip() else re.compile(flex(old))
+        c = len(pat.findall(new_raw))
+        rep = clause(mem[n])
+        if n == 'analyst_dev_achievement' and 'GOLD.' not in old:
+            rep = clause(mem[n])
+        print(f'{agent}/{n}: anchor={c} | {old[:60]} -> {rep[:70]}…')
+        if c != 1 or "'" in rep:
+            ok = False
+            continue
+        new_raw = pat.sub(lambda m: (m.group(1) if pat.groups else '') + rep, new_raw)
+    if '--write' in sys.argv and ok:
+        snapshot(p, 'src-label', label='O196-C', archive='_archive')
+        io.open(p, 'w', encoding='utf-8', newline='').write(new_raw)
+        back = io.open(p, encoding='utf-8', newline='').read()
+        yaml.safe_load(back)
+        print('  written · readback', back == new_raw)
+print('OK' if ok else 'ANCHOR FAIL')

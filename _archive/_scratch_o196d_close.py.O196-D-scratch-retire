@@ -1,0 +1,25 @@
+import io, sys
+sys.path.insert(0, 'scripts')
+from snapshot_util import snapshot
+R = [
+    ('99_NEXT_SESSION_조각/99_NEXT_SESSION-022.md',
+     '| **⑭** | 🟡 **[2026-09-14 O160 부분배선]',
+     '| ~~⑭~~ | ✅ **[2026-10-01 O196-D · DEC-59 #3·#4 사용자 결정으로 종결]** 다중사업 동시중단 = 시작월 최신 사업 → 동률은 최근 후원 · `FACT_MEMBER_EVENT` 반영(dbt build 후 라이브 · 📏 사전 실측 배선 99.74% · 팬아웃 0) · 🔴 하지 마라 = 현업 회신 대기로 되돌리기 ➔ ~~🟡 **[2026-09-14 O160 부분배선]'),
+    ('99_NEXT_SESSION_조각/99_NEXT_SESSION-023.md',
+     '| **⑩** | 🟠 이월 묶음',
+     '| ~~⑩~~ | ✅ **[2026-10-01 O196-D · DEC-59 #5·#6 사용자 결정으로 종결]** ㉤ 정의 소유 = DEC→30_설계 · P→10_진단(P216~P225 문서50) · 문서 간 중복 blocking · ㉥ DEC-34 재분류 = `04_SV_설계.md` §0.8-G ➔ ~~🟠 이월 묶음'),
+    ('20_issue/20_현업확인_요청_조각/20_현업확인_요청-008.md',
+     '**판정**: 🔴 **현업 회신 대기 (착수표 ⑭ 연계)**',
+     '**판정**: ~~🔴 **현업 회신 대기 (착수표 ⑭ 연계)**~~ ➔ 🟢 **[2026-10-01 O196-D · DEC-59 #3·#4 사용자 결정]** ① 시작월(`START_MONTH_KEY`)이 가장 늦은 중단사업 ② 동률은 최근 후원(`SPNSR_NO` 내림차순) — 현업 회신 불요로 종결'),
+]
+files = {}
+for f, o, n in R:
+    files.setdefault(f, io.open(f, encoding='utf-8', newline='').read())
+    c = files[f].count(o)
+    assert c == 1, (f, o, c)
+    files[f] = files[f].replace(o, n)
+for f, t in files.items():
+    snapshot(f, 'close-14-10', label='O196-D', archive='_archive', quiet=True)
+    io.open(f, 'w', encoding='utf-8', newline='').write(t)
+    assert io.open(f, encoding='utf-8', newline='').read() == t
+print('OK', len(R))

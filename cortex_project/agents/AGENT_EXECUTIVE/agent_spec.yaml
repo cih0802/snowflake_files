@@ -31,7 +31,7 @@ instructions:
 
     데이터 포인트가 충분하면(여러 기간의 추이 또는 여러 범주 비교) 표와 함께 그래프로 시각화합니다 — 시계열 추이는 선 그래프, 범주 비교는 막대 그래프.
 
-    서로 다른 원천 시스템의 데이터를 함께 제시할 때는 표를 분리하고, 각 표 아래에 원천을 한 줄로 각주 표기합니다(예: "원천: ERP 예산·실적 원장 → BRONZE_ERP"). 같은 원천이면 각주는 한 번만
+    서로 다른 원천 시스템의 데이터를 함께 제시할 때는 표를 분리하고, 각 표 아래에 원천을 한 줄로 각주 표기합니다. 형식 = "원천: <원천시스템> → BRONZE_<스키마>.<테이블>·<테이블> → GOLD.<팩트>"(예: "원천: ERP 예산·실적 원장 → BRONZE_ERP.BDGT_ACMSLT_LEDGER" · "원천: CRM(eCRM) → BRONZE_CRM.TM_PM_MBRFEE_ACMSLT·TM_PM_DNTN_DTLS → GOLD.FACT_MEMBER_MONTHLY"). 🔴 **BRONZE 테이블명은 답변에 쓴 도구 description 의 원천 괄호에 적힌 이름만 옮겨 쓴다** — 추측·추가·약칭 금지. 질문 핵심 지표에 해당하는 테이블만 고르고 코드사전(TC_*)은 생략한다. 🔴 조인용 차원 원천(캠페인·브랜드·회원·조직 마스터 등 GOLD DIM_* 의 원천)도 생략하고, 지표를 담은 핵심 사실 테이블만 적는다(DEC-59 #7). 예측 도구는 "원천: GN_DW.ML 머신러닝 산출물 → <도구 description 에 적힌 SERVING 예측 뷰명>(학습 원천은 BRONZE_CRM)"로 표기한다. 같은 원천이면 각주는 한 번만
     답니다.
 
     **시각화(차트) 규칙**: 차트에 표시할 데이터는 반드시 도구(tool) 실행 결과의 컬럼을 참조한다. 숫자를 직접 입력(하드코딩)하여 차트를 생성하지 않는다 — 도구 결과를 참조하는 데 실패하면 표(텍스트)로
@@ -174,16 +174,16 @@ tools:
     name: analyst_ad
     type: cortex_analyst_text_to_sql
 - tool_spec:
-    description: '회원 월별 실적 팩트(FMM, grain=월×회원). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM. 전사 요약용: 납입회비·청구금액·납부율·미납비중·평균납입회비, 월 롤업 개발/중단
+    description: '회원 월별 실적 팩트(FMM, grain=월×회원). 원천=CRM(eCRM) → GN_DW.BRONZE_CRM(회비청구·납입 TM_PM_MBRFEE_ACMSLT·TM_PM_DNTN_DTLS · 후원약정 TM_MM_FDRM_MBER_SPNSR · 증감액 TM_MM_FDRM_MBER_IRSD · 회원 TM_MM_FDRM_MBER_INFO·TM_MM_ONCE_MBER_INFO · 개발/중단 롤업은 FACT_MEMBER_EVENT 경유) → GOLD.FACT_MEMBER_MONTHLY. 전사 요약용: 납입회비·청구금액·납부율·미납비중·평균납입회비, 월 롤업 개발/중단
       총건, 미납회원수. 차원: 연/월/분기, 성별·회원상태·회원구분. 전사 회비/실적 요약 질문에 사용. 🔴 [2026-08-05] **이 도구에는 개발 목표가 없다**(실적만 있다) — 개발건을 목표로 나눠 달성율을
-      만들지 말 것. 부서별 월 목표 대비 실적·달성율은 **회원 도메인 어시스턴트(AGENT_MEMBER)** 의 전용 도구가 답한다.'
+      만들지 말 것. 부서별 월 목표 대비 실적·달성율은 **회원 도메인 어시스턴트(AGENT_MEMBER)** 의 전용 도구가 답한다. 🆕 [O193-B] 차원 추가: 회원 **문자수신 여부**(CHRCTR_RECPTN_YN · 현재 마스터 스냅샷 · 과거월 조회도 현재값 · NULL 은 미입력).'
     name: analyst_member_monthly
     type: cortex_analyst_text_to_sql
 - tool_spec:
-    description: '서비스 발송 팩트(FSE, grain=일×회원×서비스). 원천=CRM(UMS 발송) → GN_DW.BRONZE_CRM. 전사 요약용: 발송수, 발송 대상 고유 회원수. 차원: 발송일·연·월,
+    description: '서비스 발송 팩트(FSE, grain=일×회원×서비스). 원천=CRM(UMS 발송) → GN_DW.BRONZE_CRM(발송요청 SND_REQ_MST·TM_MS_EMAIL_SNDNG·TM_MS_MSG_AT_SNDNG·TM_MS_PSTMTR_SNDNG · 발송대상·결과 SND_MEMBER_LIST·SND_MEMBER_OPEN_LOG·TD_MS_EMAIL_SNDNG_DTLS·TD_MS_MSG_AT_SNDNG_DTLS·TD_MS_PSTMTR_SNDNG_DTL · D5 서신·선물금 TM_RM_RELATNSP_LETTER_INFO·TM_RM_RELATNSP_GFTMNEY_INFO·TM_RM_RELATNSP_MSTR_INFO) → GOLD.FACT_MESSAGE_DISPATCH. 전사 요약용: 발송수, 발송 대상 고유 회원수. 차원: 발송일·연·월,
       서비스구분·채널, **발송상태 라벨(축A)**·**통신사 도달결과 라벨(축B)**. 전사 발송 규모 요약 질문에 사용. 🔴 발송결과를 물으면 **코드축이 아니라 라벨축**으로 답하고, **두 축을 섞거나 합산하지
       않는다**(축A=우리 발송 시스템 상태 · 축B=통신사 도달 결과). 🔴 라벨 NULL 은 결측이 아니라 채널별 사전 라벨 부재·원천 부재이므로 **성공/실패·도달률을 전 채널 기준으로 단정하지 말고 채널과
-      NULL 버킷을 함께 밝힌다**.'
+      NULL 버킷을 함께 밝힌다**. 🆕 [O193-B] 차원 추가: **대체문자 발송 여부(ALTRTV_MSG_SNDNG_YN · 알림톡 MSG_AT 전용 · 원천 값은 Y 뿐)**·**확인여부(RESPONSED_YN · 문자 SND 전용 · Y/N)**·회원 문자수신 여부(현재 마스터 스냅샷). 🔴 두 축은 해당 채널(CHANNEL)로 한정해 쓴다. 🔴 확인여부는 오픈(링크 클릭)과 다른 축이다 — 합산·비교해 하나의 반응률로 만들지 않는다.'
     name: analyst_service
     type: cortex_analyst_text_to_sql
 - tool_spec:

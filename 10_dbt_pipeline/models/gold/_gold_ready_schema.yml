@@ -136,6 +136,19 @@ models:
     columns:
       - name: PAYMENT_ACCOUNT_SK
         tests: [not_null, unique]
+  # 🆕 [2026-10-01 O196-D · DEC-58] 발송 요청 차원 · 결연활동 팩트
+  - name: DIM_SEND_REQUEST
+    columns:
+      - name: SEND_REQUEST_SK
+        tests: [not_null, unique]
+      - name: SNDNG_KEY
+        tests: [not_null, unique]
+  - name: FACT_RELATION_ACTIVITY
+    columns:
+      - name: ACTIVITY_KEY
+        tests: [not_null, unique]
+      - name: DATE_SK
+        tests: [not_null]
   - name: DIM_CAMPAIGN
     columns:
       - name: CAMPAIGN_SK

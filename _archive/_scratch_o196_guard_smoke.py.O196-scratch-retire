@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""[O196 임시] NL 스모크 가드 5문항 — O192-A ③(ML 3) + O193-A ㉠㉡(2).
+원문은 tmp/nlsmoke_o196_guard/ 로 흘리고 최종 답변 텍스트만 별도 파일로 뽑는다.
+"""
+import io, json, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sfconn import conn
+from nl_routing_smoke import digest
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, 'tmp', 'nlsmoke_o196_guard')
+GUARDS = [
+    ('G1', 'AGENT_EXECUTIVE', '최신 기준월 기준 전사 개발금액 예측을 보여줘', '정상 · 만원 명시'),
+    ('G2', 'AGENT_EXECUTIVE', '부서별 개발금액 예측을 보여줘', '미제공 안내 · 추정 0'),
+    ('G3', 'AGENT_EXECUTIVE', '캠페인별 개발금액 예측 상위 5개를 보여줘', '정상'),
+    ('G4', 'AGENT_MEMBER', '회원개발 실적 데이터의 원천 테이블은 어디야?', 'BRONZE 테이블명'),
+    ('G5', 'AGENT_MEMBER', '후원사업별 개발금액 예측을 보여줘', '다른 예측 제안 0 · 실적 되묻기'),
+]
+
+def final_text(raw):
+    try:
+        d = json.loads(raw)
+    except Exception:
+        return ''
+    return '\n'.join(c.get('text', '') for c in d.get('content', []) if c.get('type') == 'text')
+
+def main():
+    if '--apply' not in sys.argv:
+        print('dry-run: --apply 필요(과금)'); return 0
+    os.makedirs(OUT, exist_ok=True)
+    cur = conn().cursor()
+    for tag, agent, q, expect in GUARDS:
+        req = json.dumps({"messages": [{"role": "user",
+              "content": [{"type": "text", "text": q}]}]}, ensure_ascii=False)
+        try:
+            cur.execute("select SNOWFLAKE.CORTEX.DATA_AGENT_RUN(%s, %s)", (f'GN_DW.SERVING.{agent}', req))
+            raw = cur.fetchall()[0][0]; ok = True
+        except Exception as e:
+            raw = f'__CALL_FAILED__ {type(e).__name__}: {e}'; ok = False
+        io.open(os.path.join(OUT, tag + '.txt'), 'w', encoding='utf-8').write(str(raw))
+        io.open(os.path.join(OUT, tag + '_final.txt'), 'w', encoding='utf-8').write(
+            f'Q: {q}\nEXPECT: {expect}\n---\n' + (final_text(raw) if ok else raw[:500]))
+        d = digest(raw) if ok else {}
+        print(f"{tag} {agent} ok={ok} sql={d.get('sql')} sv={','.join(d.get('svs', []))[:60]}", flush=True)
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

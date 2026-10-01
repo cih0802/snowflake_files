@@ -1,0 +1,24 @@
+import io, sys
+sys.path.insert(0, 'scripts')
+from snapshot_util import snapshot
+B = '20_issue/'
+R = [
+    ('10_진단_원인분석_조각/10_진단_원인분석-002.md', '| **DEC-8** |', '| DEC-8 (정의 = 30_설계) |'),
+    ('10_진단_원인분석_조각/10_진단_원인분석-002.md', '| **DEC-9** |', '| DEC-9 (정의 = 30_설계) |'),
+    ('10_진단_원인분석_조각/10_진단_원인분석-002.md', '| **DEC-10** |', '| DEC-10 (정의 = 30_설계) |'),
+    ('10_진단_원인분석_조각/10_진단_원인분석-002.md', '| **DEC-11** |', '| DEC-11 (정의 = 30_설계) |'),
+    ('30_설계_의사결정_조각/30_설계_의사결정-008.md', '🆕 **P56 (', '(정의 = 10_진단 · 요약 인용) **P56 ('),
+    ('30_설계_의사결정_조각/30_설계_의사결정-008.md', '> ⇒ 🆕 **P220:', '> ⇒ (정의 = 문서50 · 요약 인용) **P220:'),
+    ('50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md', '(🆕 **P202**)', '(P202 · 정의 = 10_진단)'),
+]
+files = {}
+for f, o, n in R:
+    files.setdefault(f, io.open(B + f, encoding='utf-8', newline='').read())
+    c = files[f].count(o)
+    assert c == 1, (f, o, c)
+    files[f] = files[f].replace(o, n)
+for f, t in files.items():
+    snapshot(B + f, 'def-owner', label='O196-D', archive='_archive', quiet=True)
+    io.open(B + f, 'w', encoding='utf-8', newline='').write(t)
+    assert io.open(B + f, encoding='utf-8', newline='').read() == t
+print('OK', len(R), 'replacements in', len(files), 'files')

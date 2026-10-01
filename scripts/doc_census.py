@@ -100,6 +100,7 @@ SINGLES = [
     '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 미분할 · 스킬 정본
     '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
     '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)
+    '00_guides/03_init_ihcho_스킬_개발이력.md',   # 🆕 [O194] 스킬 개발이력(append · 경위 이관처)
     '20_issue/31_코드군_매핑등재부.md',
     '20_issue/32_컬럼개명표.md',
     '20_issue/40_입고대기_원천의존.md',

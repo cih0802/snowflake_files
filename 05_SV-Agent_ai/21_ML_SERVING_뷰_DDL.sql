@@ -4,7 +4,7 @@
 --   · 뷰를 끼우는 이유 = ML 테이블 교체 내성 · VARIANT(PREDICTION) 평탄화 · 회원 예측 dedup.
 --   · 실행 = GN_DW_ADMIN · 선행 = GN_DW.ML 결과 테이블 적재(dbt 무관).
 --   · 컬럼 COMMENT 는 뷰 정의 안에 있다 — 재생성해도 유지된다. GRANT 는 재생성 시 사라지므로 같은 파일 말미에 있다.
---   · 🔴 ⛔ 표식 구간 = 원천 삭제로 비활성인 코드(재적재 시 주석 해제로 복구).
+--   · 🔴 ⛔ 표식 구간 = 원천 삭제로 비활성인 코드(ML 개발예측 3종은 D-3 종결로 복구 대상 아님 · 되살리려면 새 사용자 결정).
 --   · 설계근거·실측 이력 = 21_ML_SERVING_뷰_설계이력_부록.md · 설계 = 20_ML_SV_설계.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -264,19 +264,19 @@ SELECT 'TOTAL'                          AS SERIES_TYPE,
        '(전사 합계)'                      AS SERIES_NAME,
        t.STDR_MT, t.TS, t.FORECAST, t.LOWER_BOUND, t.UPPER_BOUND
 FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT t
--- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · [2026-10-01 O196] D-3 종결 = 재활성하지 않는다(라이브 DROP · 되살리려면 새 사용자 결정)
 -- UNION ALL
 -- SELECT 'DEPT', d.SERIES, og.DEPT_NM,
 --        d.STDR_MT, d.TS, d.FORECAST, d.LOWER_BOUND, d.UPPER_BOUND
 -- FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT d
 -- LEFT JOIN GN_DW.SILVER.CRM_ORG og ON og.DEPT_ID = d.SERIES
--- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · [2026-10-01 O196] D-3 종결 = 재활성하지 않는다(라이브 DROP · 되살리려면 새 사용자 결정)
 -- UNION ALL
 -- SELECT 'SPNSR_BSNS', s.SERIES, sp.SPNSR_BSNS_NM,
 --        s.STDR_MT, s.TS, s.FORECAST, s.LOWER_BOUND, s.UPPER_BOUND
 -- FROM GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT s
 -- LEFT JOIN GN_DW.SILVER.CRM_SPONSORSHIP sp ON sp.SPNSR_BSNS_ID = s.SERIES
--- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구
+-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · [2026-10-01 O196] D-3 종결 = 재활성하지 않는다(라이브 DROP · 되살리려면 새 사용자 결정)
 -- UNION ALL
 -- SELECT 'NEW_OLD', n.SERIES,
 --        CASE n.SERIES WHEN 'NEW' THEN '신규' WHEN 'OLD' THEN '기존' END,

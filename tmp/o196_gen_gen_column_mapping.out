@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_column_mapping.py", line 482, in <module>
+    main()
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/gen_column_mapping.py", line 248, in main
+    schema = json.load(open(SCHEMA_JSON, encoding="utf-8"))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/schema.json'

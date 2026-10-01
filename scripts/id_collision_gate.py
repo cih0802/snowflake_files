@@ -192,7 +192,9 @@ def num_of(_id):
 def main():
     argv = sys.argv[1:]
     observe = '--observe' in argv
-    cross_strict = '--cross-strict' in argv
+    # 🆕 [2026-10-01 O196-D · DEC-59 #6] 정의 소유 규약 확정(DEC = 30_설계 · P = 10_진단 · P216~P225 = 문서50)
+    #   ⇒ 문서 간 중복을 기본 blocking 으로 승격. 관측만 하려면 `--cross-observe`.
+    cross_strict = '--cross-observe' not in argv
     undefined_all = '--undefined-all' in argv
     want = argv[argv.index('--next') + 1].upper() if '--next' in argv else None
 

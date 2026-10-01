@@ -43,6 +43,7 @@ DOCS = [
     '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 스킬 정본
     '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
     '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)   # [O85] R1-7 무변경 이관 신설
+    '00_guides/03_init_ihcho_스킬_개발이력.md',   # 🆕 [O194] 스킬 개발이력(append · 경위 이관처)
     '20_issue/00_INDEX_이슈원장.md',
     '20_issue/00_BRIEF.md',       # [O106] 세션 착수 브리핑(자동 생성 · session_brief.py)
     '20_issue/01_세션이력.md',

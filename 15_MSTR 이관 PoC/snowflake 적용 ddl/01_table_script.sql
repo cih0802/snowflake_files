@@ -1,0 +1,289 @@
+-- Co-authored with CoCo
+-- =====================================================================
+-- 01. GN_DW.MSTR 테이블 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql
+--   변환 규칙: [mart].[X] → GN_DW.MSTR.X · varchar/char/nvarchar → VARCHAR · datetime → TIMESTAMP_NTZ
+--             bigint/int/smallint/tinyint → NUMBER · float → FLOAT · bit → BOOLEAN · IDENTITY → AUTOINCREMENT
+--             NONCLUSTERED·WITH(...)·ON [PRIMARY] 제거 · PK 는 선언만(Snowflake 미강제)
+--   🔴 D_STRD_DE_CD 는 원본에 VIEW 와 USP_D_STRD_DE_CD 적재 TABLE 이 이름 충돌한다
+--      ⇒ VIEW 를 정본으로 채택(02 파일) · 이 파일에 테이블로 만들지 않는다 · 04 의 USP_D_STRD_DE_CD 는 미이관
+-- =====================================================================
+USE ROLE GN_DW_ADMIN;
+USE SCHEMA GN_DW.MSTR;
+
+-- [1] 최종 마트 팩트 — F_회원_정기회원후원개발 집계
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM (
+  STRD_MT              VARCHAR(6)   NOT NULL COMMENT '기준년월',
+  OCCRRNC_DE           VARCHAR(8)   NOT NULL COMMENT '발생일자',
+  SPNSR_NO             VARCHAR(9)   NOT NULL COMMENT '후원번호',
+  SPNSR_BSNS_NO        NUMBER(19,0) NOT NULL COMMENT '후원사업번호',
+  SER_NO               NUMBER(10,0) NOT NULL COMMENT '일련번호',
+  MBER_NO              VARCHAR(10)  COMMENT '회원번호',
+  ACT_DEPT_CD          VARCHAR(10)  COMMENT '활동부서코드',
+  ACMSLT_DEPT_CD       VARCHAR(10)  COMMENT '실적부서코드',
+  ACMSLT_DEPT2_CD      VARCHAR(10)  COMMENT '실적부서2코드',
+  ACMSLT_DEPT3_CD      VARCHAR(10)  COMMENT '실적부서3코드',
+  ACMSLT_DEPT4_CD      VARCHAR(10)  COMMENT '실적부서4코드',
+  CMPGN_CD             VARCHAR(20)  COMMENT '캠페인코드',
+  CMPGN_CLS1_CD        VARCHAR(3)   COMMENT '캠페인구분 희망TV. ExplCampList 미이관으로 전건 99',
+  CMPGN_CLS2_CD        VARCHAR(3)   COMMENT '캠페인구분 희망편지쓰기. ExplCampList 미이관으로 전건 99',
+  CMPGN_CLS3_CD        VARCHAR(3)   COMMENT '캠페인구분 희망학교(후원사업 38 기준 산출)',
+  UPPER_CMPGN_CD       VARCHAR(20)  COMMENT '상위캠페인코드',
+  BRND_ID              VARCHAR(30)  COMMENT '브랜드ID',
+  PR_MTH_CD            VARCHAR(4)   COMMENT '홍보방법코드(미매핑 9999 수용 위해 4자리)',
+  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. ExplCampList 미이관으로 전건 N',
+  PRE_CMPGN_CD         VARCHAR(20)  COMMENT '직전캠페인코드',
+  SETLE_CD             VARCHAR(3)   COMMENT '결제코드',
+  MBER_DIV_CD          VARCHAR(3)   COMMENT '회원구분코드',
+  SEX                  VARCHAR(2)   COMMENT '성별',
+  AREA_CD              VARCHAR(3)   COMMENT '지역코드',
+  AGE_TERM_CD          VARCHAR(3)   COMMENT '연령대코드(원천 AGE)',
+  AGE                  NUMBER(10,0) COMMENT '연령. BRONZE TM_MM_FDRM_MBER_INFO 에 BRTHDY 부재로 NULL',
+  PAYER_AGE_TERM_CD    VARCHAR(3)   COMMENT '결제자연령대코드',
+  SPNSR_TIME_CO        NUMBER(10,0) COMMENT '후원시간수',
+  SPNSR_TERM_MT_CNT    NUMBER(5,0)  COMMENT '후원기간월수',
+  SPNSR_TERM_CD        VARCHAR(3)   COMMENT '후원기간대코드',
+  SPNSR_AMT_CD         VARCHAR(3)   COMMENT '후원금액코드',
+  SPNSR_TERM2_CD       VARCHAR(3)   COMMENT '후원기간대2코드',
+  SPNSR_AMT2_CD        VARCHAR(3)   COMMENT '후원금액2코드',
+  SPNSR_BSNS_ID        VARCHAR(20)  COMMENT '후원사업ID',
+  SPNSR_BSNS2_ID       VARCHAR(20)  COMMENT '후원사업2ID(14·15·16·21·22 → 4)',
+  SPNSR_BSNS_ABRV_CD   VARCHAR(3)   COMMENT '후원사업약칭코드',
+  CPR_DIV_CD           VARCHAR(3)   COMMENT '법인구분코드',
+  CANCL_RDCAMT_RSN_CD  VARCHAR(3)   COMMENT '취소감액사유코드',
+  SPNSR_AMT            NUMBER(19,0) COMMENT '후원금액',
+  SPNSR_AMT_CNT        FLOAT        COMMENT '후원금액건수(후원금액/10000)',
+  MT_GOAL_CNT          NUMBER(10,0) COMMENT '월목표후원건수',
+  YY_GOAL_CNT          NUMBER(10,0) COMMENT '년목표후원건수',
+  DVLP_DIV_CD          VARCHAR(3)   COMMENT '개발구분코드',
+  DVLP_CNT             NUMBER(10,0) COMMENT '개발구분건수',
+  RDCAMT_YN            VARCHAR(1)   COMMENT '감액여부',
+  MT_ADD_SPNSR_AMT_YN  VARCHAR(1)   COMMENT '증액여부',
+  WORK_DE              VARCHAR(8)   NOT NULL COMMENT '작업일자',
+  NEW_OLD_DIV_CD       VARCHAR(20)  COMMENT '신규기존구분',
+  CONSTRAINT F_MM_SPNSR_DVLP_SUM_PK PRIMARY KEY (STRD_MT, OCCRRNC_DE, SPNSR_NO, SPNSR_BSNS_NO, SER_NO)
+)
+CLUSTER BY (STRD_MT)
+COMMENT = 'MSTR 이관 — F_회원_정기회원후원개발(집계). 적재 = USP_F_MM_SPNSR_DVLP_SUM';
+
+-- [2] 중간 팩트 — F_회원_정기회원후원개발(원장) · SUM 의 SPNSR_AMT2_CD 산출용
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.F_MM_SPNSR_DVLP (
+  STRD_MT              VARCHAR(6)   NOT NULL,
+  OCCRRNC_DE           VARCHAR(8)   NOT NULL,
+  SPNSR_NO             VARCHAR(9)   NOT NULL,
+  SPNSR_BSNS_NO        NUMBER(19,0) NOT NULL,
+  SER_NO               NUMBER(10,0) NOT NULL,
+  MBER_NO              VARCHAR(10),
+  ACT_DEPT_CD          VARCHAR(10),
+  ACMSLT_DEPT_CD       VARCHAR(10),
+  ACMSLT_DEPT2_CD      VARCHAR(10),
+  ACMSLT_DEPT3_CD      VARCHAR(10),
+  ACMSLT_DEPT4_CD      VARCHAR(10),
+  CMPGN_CD             VARCHAR(20),
+  CMPGN_CLS1_CD        VARCHAR(3),
+  CMPGN_CLS2_CD        VARCHAR(3),
+  CMPGN_CLS3_CD        VARCHAR(3),
+  UPPER_CMPGN_CD       VARCHAR(20),
+  BRND_ID              VARCHAR(30),
+  PR_MTH_CD            VARCHAR(4),
+  SPCL_CMPGN_YN        VARCHAR(1),
+  PRE_CMPGN_CD         VARCHAR(20),
+  SETLE_CD             VARCHAR(3),
+  MBER_DIV_CD          VARCHAR(3),
+  SEX                  VARCHAR(2),
+  AREA_CD              VARCHAR(3),
+  AGE_TERM_CD          VARCHAR(3),
+  AGE                  NUMBER(10,0) COMMENT 'BRTHDY 부재로 NULL',
+  PAYER_AGE_TERM_CD    VARCHAR(3),
+  SPNSR_TIME_CO        NUMBER(10,0),
+  SPNSR_TERM_MT_CNT    NUMBER(5,0),
+  SPNSR_TERM_CD        VARCHAR(3),
+  SPNSR_AMT_CD         VARCHAR(3),
+  SPNSR_TERM2_CD       VARCHAR(3),
+  SPNSR_AMT2_CD        VARCHAR(3),
+  SPNSR_BSNS_ID        VARCHAR(20),
+  SPNSR_BSNS_ABRV_CD   VARCHAR(3),
+  CPR_DIV_CD           VARCHAR(3),
+  CANCL_RDCAMT_RSN_CD  VARCHAR(3),
+  SPNSR_AMT            NUMBER(19,0),
+  SPNSR_AMT_CNT        FLOAT,
+  MT_GOAL_CNT          NUMBER(10,0),
+  YY_GOAL_CNT          NUMBER(10,0),
+  DVLP_DIV_CD          VARCHAR(3),
+  DVLP_CNT             NUMBER(10,0),
+  RDCAMT_YN            VARCHAR(1),
+  MT_ADD_SPNSR_AMT_YN  VARCHAR(1),
+  WORK_DE              VARCHAR(8)   NOT NULL,
+  CONSTRAINT F_MM_SPNSR_DVLP_PK PRIMARY KEY (STRD_MT, OCCRRNC_DE, SPNSR_NO, SPNSR_BSNS_NO, SER_NO)
+)
+CLUSTER BY (STRD_MT)
+COMMENT = 'MSTR 이관 — F_회원_정기회원후원개발(원장). 적재 = USP_F_MM_SPNSR_DVLP';
+
+-- [3] 차원 — 브랜드
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_BRND_CD (
+  BRND_ID         VARCHAR(30)   NOT NULL,
+  BRND_NM         VARCHAR(200),
+  USE_DEPT_CD     VARCHAR(10),
+  USE_YN          VARCHAR(1),
+  FRST_RGSTR_ID   VARCHAR(30),
+  FRST_REGIST_DT  TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID  VARCHAR(30),
+  LAST_UPDT_DT    TIMESTAMP_NTZ,
+  PR_MTH_LIST     VARCHAR(4000),
+  WORK_DE         VARCHAR(8)    NOT NULL,
+  CONSTRAINT D_BRND_CD_PK PRIMARY KEY (BRND_ID)
+) COMMENT = 'MSTR 이관 — 브랜드. 원천 BRONZE_CRM.TM_CM_BRND_MNG';
+
+-- [4] 차원 — 캠페인
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CMPGN_CD (
+  CMPGN_CD             VARCHAR(20)  NOT NULL,
+  CMPGN_NM             VARCHAR(200),
+  UPPER_CMPGN_CD       VARCHAR(20),
+  UPPER_CMPGN_YN       VARCHAR(1),
+  SPNSR_DIV_CD         VARCHAR(3),
+  CPR_DIV_CD           VARCHAR(3),
+  CMPGN_TRGET_CD       VARCHAR(2),
+  USE_DEPT_CD          VARCHAR(10),
+  USE_SCOPE            VARCHAR(1),
+  SPNSR_ENTRPRS_ID     VARCHAR(20),
+  BRND_ID              VARCHAR(30)  NOT NULL,
+  PR_MTH_CD            VARCHAR(3),
+  CMPGN_STRT_DE        VARCHAR(8),
+  MBRFEE_BNKB_LIST     VARCHAR(4000),
+  INICIS_ACNT_NO       VARCHAR(50),
+  USE_YN               VARCHAR(1),
+  REFER_URL            VARCHAR(255),
+  SPNSR_BSNS_ID        VARCHAR(100),
+  ATCHFL_ID            VARCHAR(20),
+  FRST_RGSTR_ID        VARCHAR(30),
+  FRST_REGIST_DT       TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID       VARCHAR(30),
+  LAST_UPDT_DT         TIMESTAMP_NTZ,
+  CMPGN_DC             VARCHAR(500),
+  EMRGNCY_AID_BPLC_CD  NUMBER(10,0),
+  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. 원본은 ExplCampList(CampaignCls=3)로 Y 갱신 — 원천 부재로 미이관 · 전건 N',
+  WORK_DE              VARCHAR(8)   NOT NULL,
+  CONSTRAINT D_CMPGN_CD_PK PRIMARY KEY (CMPGN_CD)
+) COMMENT = 'MSTR 이관 — 캠페인. 원천 BRONZE_CRM.TM_CM_CMPGN_MNG';
+
+-- [5] 차원 — 후원사업정보
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_SPNSR_BSNS_INFO (
+  SPNSR_BSNS_ID       VARCHAR(20)   NOT NULL,
+  SPNSR_DIV_CD        VARCHAR(3),
+  SPNSR_BSNS_NM       VARCHAR(50),
+  SPNSR_BSNS_ABRV_CD  VARCHAR(3),
+  DNTN_TY_CD          VARCHAR(3),
+  SORT_ORDR           NUMBER(10,0),
+  CPR_DIV_CD          VARCHAR(3),
+  RM                  VARCHAR(1000),
+  USE_YN              VARCHAR(1),
+  FRST_RGSTR_ID       VARCHAR(30),
+  FRST_REGIST_DT      TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID      VARCHAR(30),
+  LAST_UPDT_DT        TIMESTAMP_NTZ,
+  WORK_DE             VARCHAR(8)    NOT NULL,
+  CONSTRAINT D_SPNSR_BSNS_INFO_PK PRIMARY KEY (SPNSR_BSNS_ID)
+) COMMENT = 'MSTR 이관 — 후원사업정보. 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO';
+
+-- [6] 베이스 — 공통상세코드 (코드 뷰 6종의 원천)
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CMMN_DTL_CD (
+  CD_ID           VARCHAR(20)   NOT NULL,
+  DTL_CD_ID       VARCHAR(50)   NOT NULL,
+  CD_NM           VARCHAR(500)  NOT NULL,
+  DTL_CD_NM       VARCHAR(500)  NOT NULL,
+  SORT_ORDR       NUMBER(10,0),
+  RM              VARCHAR(1000),
+  USE_YN          VARCHAR(1),
+  CD_ATRB1        VARCHAR(100),
+  CD_ATRB2        VARCHAR(100),
+  CD_ATRB3        VARCHAR(100),
+  FRST_RGSTR_ID   VARCHAR(30),
+  FRST_REGIST_DT  TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID  VARCHAR(30),
+  LAST_UPDT_DT    TIMESTAMP_NTZ,
+  UPPER_CD_ID     VARCHAR(20),
+  CD_TYP_CD       VARCHAR(5),
+  WORK_DE         VARCHAR(8),
+  CONSTRAINT D_CMMN_DTL_CD_PK PRIMARY KEY (CD_ID, DTL_CD_ID)
+) COMMENT = 'MSTR 이관 — 공통상세코드(CRM + MART 고정코드 + 코드별 없음 멤버). 원천 BRONZE_CRM.TC_CMMN_CD·TC_CMMN_DTL_CD';
+
+-- [7] 베이스 — 달력 (원천 없음 · 프로시저가 생성)
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_STRD_CAL_CD (
+  SYMD      DATE         NOT NULL,
+  YMD       VARCHAR(8),
+  YM        VARCHAR(6),
+  YY        VARCHAR(4),
+  MM        VARCHAR(2),
+  DD        VARCHAR(2),
+  QQ        VARCHAR(2),
+  BA        VARCHAR(2),
+  DW        VARCHAR(10),
+  HDAY_YN   VARCHAR(1),
+  HDAY_NM   VARCHAR(50),
+  WORK_DE   VARCHAR(8),
+  CONSTRAINT D_STRD_CAL_CD_PK PRIMARY KEY (SYMD)
+) COMMENT = 'MSTR 이관 — 기준달력 1970-01-01부터 365*60일 + 1900-01-01 + 9999-12-31. 적재 = USP_D_STRD_CAL_CD';
+
+-- [8] 베이스 — 부서정보 (부서 뷰 4종의 원천)
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CM_DEPT_INFO (
+  DEPT_ID               VARCHAR(20)  NOT NULL,
+  DEPT_NM               VARCHAR(50),
+  UPPER_DEPT_ID         VARCHAR(20),
+  SORT_ORDR             NUMBER(10,0),
+  USE_YN                VARCHAR(1),
+  FRST_RGSTR_ID         VARCHAR(30),
+  FRST_REGIST_DT        TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID        VARCHAR(30),
+  LAST_UPDT_DT          TIMESTAMP_NTZ,
+  ACMSLT_DEPT_YN        VARCHAR(1),
+  STATS_DEPT_LVL        NUMBER(3,0),
+  ACMSLT_UPPER_DEPT_ID  VARCHAR(20),
+  WORK_DE               VARCHAR(8)   NOT NULL,
+  CONSTRAINT D_CM_DEPT_INFO_PK PRIMARY KEY (DEPT_ID)
+) COMMENT = 'MSTR 이관 — 부서정보. 원천 BRONZE_CRM.TM_CM_DEPT_INFO';
+
+-- [9] 베이스 — 캠페인특별코드 (원천 ExplCampList 미이관 ⇒ 빈 테이블로 유지 · 조인 시 기본값 99)
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CMPGN_EXPL_CD (
+  CMPGN_CD        VARCHAR(20)  NOT NULL,
+  CMPGN_NM        VARCHAR(200),
+  CMPGN_CLS_CD    VARCHAR(20)  NOT NULL,
+  UPPER_CMPGN_CD  VARCHAR(20),
+  UPPER_CMPGN_NM  VARCHAR(200),
+  PR_MTH_CD       VARCHAR(3),
+  USE_DEPT_CD     VARCHAR(20),
+  "COMMENT"       VARCHAR(200),
+  WORK_DE         VARCHAR(8)   NOT NULL,
+  CONSTRAINT D_CMPGN_EXPL_CD_PK PRIMARY KEY (CMPGN_CD, CMPGN_CLS_CD)
+) COMMENT = 'MSTR 이관 — 캠페인특별코드. 원본 원천 MSTR_ODS.DBO.ExplCampList 는 BRONZE 에 없어 미적재(빈 테이블). 원천 확보 시 적재 프로시저 추가';
+
+-- [10] 베이스 — 회원개발목표
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_MBER_DVLP_GOAL_CD (
+  STDYY             VARCHAR(4)   NOT NULL,
+  STDR_MT           VARCHAR(6)   NOT NULL COMMENT '월(MM 2자리 — 원천 실측)',
+  MBER_DVLP_DIV_CD  VARCHAR(1)   NOT NULL,
+  DEPT_ID           VARCHAR(20)  NOT NULL,
+  GOAL_CNT          NUMBER(10,0),
+  FRST_RGSTR_ID     VARCHAR(30),
+  FRST_REGIST_DT    TIMESTAMP_NTZ,
+  LAST_UPDUSR_ID    VARCHAR(30),
+  LAST_UPDT_DT      TIMESTAMP_NTZ,
+  WORK_DE           VARCHAR(8)   NOT NULL,
+  CONSTRAINT D_MBER_DVLP_GOAL_CD_PK PRIMARY KEY (STDYY, STDR_MT, MBER_DVLP_DIV_CD, DEPT_ID)
+) COMMENT = 'MSTR 이관 — 회원개발목표. 원천 BRONZE_CRM.TM_CM_MBER_DVLP_GOAL';
+
+-- [11] 배치 로그
+CREATE TABLE IF NOT EXISTS GN_DW.MSTR.BCHLOG (
+  LOGKEY       NUMBER(38,0) AUTOINCREMENT START 1 INCREMENT 1 NOT NULL,
+  LOGTIME      TIMESTAMP_NTZ NOT NULL,
+  RUNKEY       NUMBER(19,0),
+  LOGMSG       VARCHAR(1000),
+  LOGPROC      VARCHAR(126),
+  LOGMAN       VARCHAR(20),
+  ERRNUM       NUMBER(10,0),
+  ERRSEVERITY  NUMBER(10,0),
+  ERRSTTS      VARCHAR(10)   COMMENT 'Snowflake SQLSTATE(원본 ERROR_STATE int 대체)',
+  ERRLINE      NUMBER(10,0),
+  ERRMSG       VARCHAR(2048),
+  ERRNOTE      VARCHAR(1000),
+  ALMYN        BOOLEAN,
+  CONSTRAINT BCHLOG_PK PRIMARY KEY (LOGKEY)
+) COMMENT = 'MSTR 이관 — 배치 로그(USP_BCHLOG·USP_BCHERR)';

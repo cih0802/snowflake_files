@@ -1,0 +1,117 @@
+# MSTR 1차 이관 대상 → Snowflake 전환 작업계획
+
+## 1. 목적
+`mstr DDL 원본/1차 이관대상 관련 추출/` 폴더에 있는 SQL 5개는 MSTR 원천 DB(SQL Server, T-SQL) 기준입니다. 이를 Snowflake 문법으로 바꿔 `snowflake 적용 ddl/` 폴더에 저장합니다.
+
+- **원천(읽기 전용)**: `GN_DW.BRONZE_CRM` (MSTR_ODS.DBO.* 와 같은 이름의 테이블)
+- **산출물(중간·최종 마트)**: `GN_DW.MSTR` 스키마 (새로 생성)
+- 원본 MSTR_ODS에는 직접 연결하지 않습니다. 모든 원천 참조는 `GN_DW.BRONZE_CRM`으로 바꿉니다.
+
+## 2. 산출물 (총 6개, `15_MSTR 이관 PoC/snowflake 적용 ddl/`)
+
+| # | 파일명 | 내용 | 원본 |
+|---|---|---|---|
+| 0 | `00_mstr_schema_role.sql` | MSTR 스키마 생성, 롤 생성 및 권한 매핑 | (신규) |
+| 1 | `01_table_script.sql` | 테이블 DDL 9개 | table_script.sql |
+| 2 | `02_view_script.sql` | 뷰 DDL 13개 | view_script.sql |
+| 3 | `03_function_script.sql` | UDTF 2개 | function_script.sql |
+| 4 | `04_sp_script.sql` | 프로시저 11개 (Snowflake Scripting) | sp_script.sql |
+| 5 | `05_mstr_1차_이관_대상_쿼리.sql` | MSTR 리포트 쿼리 전환본 | mstr 1차 이관 대상 쿼리.sql |
+
+실행 순서: 00 → 01 → 02 → 03 → 04 → (적재 프로시저 실행) → 05  
+※ 뷰와 함수가 서로를 참조하므로(FN이 `D_SPNSR_BSNS_V` 참조), 02(뷰)를 03(함수)보다 먼저 실행합니다.
+
+## 3. 원천 매핑 (MSTR_ODS.DBO → GN_DW.BRONZE_CRM)
+
+| MSTR 원천 | Snowflake 원천 | 존재 여부 |
+|---|---|---|
+| TC_CMMN_CD / TC_CMMN_DTL_CD | BRONZE_CRM.TC_CMMN_CD / TC_CMMN_DTL_CD | O |
+| TM_CM_BRND_MNG | BRONZE_CRM.TM_CM_BRND_MNG | O |
+| TM_CM_CMPGN_MNG | BRONZE_CRM.TM_CM_CMPGN_MNG | O |
+| TM_CM_DEPT_INFO | BRONZE_CRM.TM_CM_DEPT_INFO | O |
+| TM_CM_SPNSR_BSNS_INFO | BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO | O |
+| TM_MM_FDRM_MBER_DVLP_AMT / _INFO / _RE_SPNSR / _SPNSR / _SPNSR_BSNS / _SPNSR_DSCNTC | BRONZE_CRM 같은 이름 | O |
+| **EXPLCAMPLIST** | **없음** | **X** → 확인 필요 (아래 6장) |
+
+MSTR 내부 객체(`mart.*`, `dbo.FN_*`)는 모두 `GN_DW.MSTR.*`로 매핑합니다.
+
+## 4. 단계별 작업
+
+### Step 0. 스키마·롤 (`00_mstr_schema_role.sql`)
+- `CREATE SCHEMA IF NOT EXISTS GN_DW.MSTR`
+- 롤 구성 (안)
+  - `MSTR_ETL_ROLE`: BRONZE_CRM SELECT, MSTR 스키마 CREATE TABLE/VIEW/FUNCTION/PROCEDURE, DML, 웨어하우스 USAGE
+  - `MSTR_READ_ROLE`: MSTR 스키마 USAGE + 모든/미래 테이블·뷰 SELECT (BI 조회용)
+  - 두 롤을 `SYSADMIN`에 상속시키고 담당 사용자에게 GRANT
+- FUTURE GRANTS를 설정해 나중에 생기는 객체에도 권한이 자동 적용되게 합니다.
+
+### Step 1. 테이블 (`01_table_script.sql`)
+- 대상: F_MM_SPNSR_DVLP_SUM, D_BRND_CD, D_CMPGN_CD, D_SPNSR_BSNS_INFO, D_CMMN_DTL_CD, D_STRD_CAL_CD, D_CM_DEPT_INFO, D_CMPGN_EXPL_CD, BCHLOG
+- 바꿀 내용
+  - `[mart].[X]` → `GN_DW.MSTR.X`, 대괄호 제거
+  - 타입: `NVARCHAR/VARCHAR(n)`→`VARCHAR(n)`, `DATETIME`→`TIMESTAMP_NTZ`, `BIT`→`BOOLEAN`, `MONEY`→`NUMBER(19,4)`, `INT IDENTITY`→`NUMBER AUTOINCREMENT`
+  - `ON [PRIMARY]`, `WITH (PAD_INDEX…)`, `CLUSTERED`, `GO`, `SET ANSI_NULLS` 등 제거
+  - PK/UNIQUE는 선언만 유지 (Snowflake에서는 강제되지 않음)
+  - 큰 팩트(F_MM_SPNSR_DVLP_SUM)는 `CLUSTER BY (STRD_MT)` 적용을 검토
+- 타입 정밀도는 BRONZE_CRM 원천 컬럼과 비교해 맞춥니다.
+
+### Step 2. 뷰 (`02_view_script.sql`)
+- 13개 뷰를 `CREATE OR REPLACE VIEW GN_DW.MSTR.…`로 변환
+- 함수 치환: `ISNULL`→`IFNULL/COALESCE`, `CONVERT(CHAR(8),dt,112)`→`TO_CHAR(dt,'YYYYMMDD')`, `CONVERT(CHAR(6),dt,112)`→`TO_CHAR(dt,'YYYYMM')`, `+` 문자열 연결→`||`
+- `D_SPNSR_BSNS_V`의 원천은 `GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR(_BSNS)`로 변경
+
+### Step 3. 함수 (`03_function_script.sql`)
+- `FN_MM_ACT_DATE`, `FN_MM_SPNSR_DVLP` (Inline TVF) → SQL UDTF
+  `CREATE OR REPLACE FUNCTION GN_DW.MSTR.FN_…(STRD_MT VARCHAR) RETURNS TABLE(…) AS $$ … $$`
+- 반환 컬럼 목록과 타입을 명시
+- `@STRD_MT`→`STRD_MT`, `DateAdd(d,-1,x)`→`DATEADD(day,-1,x)`, `CONVERT(DATE, s)`→`TO_DATE(s,'YYYYMMDD')`
+- `@STRD_MT + '31'`처럼 말일을 문자열로 붙이는 부분은 동작을 그대로 유지(문자열 비교)하고, 필요하면 `LAST_DAY`로 바꿀지 검토
+- UDTF 안의 윈도우 함수(LAG, ROW_NUMBER)가 지원되는지 컴파일로 확인
+
+### Step 4. 프로시저 (`04_sp_script.sql`)
+- T-SQL 프로시저 → `LANGUAGE SQL` Snowflake Scripting
+- 주요 변환 규칙
+
+| T-SQL | Snowflake |
+|---|---|
+| `@i_ym VARCHAR(6)`, `OUTPUT` 파라미터 | `I_YM VARCHAR` 인자, 결과 메시지는 `RETURNS VARCHAR`로 반환 |
+| `SET NOCOUNT`, `ISOLATION LEVEL READ UNCOMMITTED` | 제거 |
+| `WHILE @@ROWCOUNT > 0 DELETE TOP(10000) … WITH(TABLOCK)` | `DELETE FROM … WHERE STRD_MT = :I_YM;` 한 번에 실행 |
+| `@@ROWCOUNT` | `SQLROWCOUNT` |
+| `@@PROCID` | 프로시저 이름 문자열 상수 |
+| `BEGIN TRY … END TRY BEGIN CATCH` | `BEGIN … EXCEPTION WHEN OTHER THEN … END` |
+| `BEGIN TRAN / COMMIT / ROLLBACK` | `BEGIN TRANSACTION / COMMIT / ROLLBACK` |
+| `EXEC MART.USP_BCHLOG …` | `CALL GN_DW.MSTR.USP_BCHLOG(…)` |
+| `GETDATE()` | `CURRENT_TIMESTAMP()` |
+| `FROM dbo.FN_X(@p)` | `FROM TABLE(GN_DW.MSTR.FN_X(:I_YM))` |
+| 변수 참조 | SQL 안에서는 `:VAR` (콜론 접두사) |
+
+- 오류 정보는 `SQLERRM`, `SQLCODE`로 `USP_BCHERR`에 기록
+- (선택) 월별 적재 순서를 Task로 구성하는 것은 후속 과제로 둡니다.
+
+### Step 5. 리포트 쿼리 (`05_mstr_1차_이관_대상_쿼리.sql`)
+- `mart.`→`GN_DW.MSTR.` 접두사 변경. 나머지 SELECT·JOIN·GROUP BY는 ANSI라 거의 그대로 사용
+- 하단의 `[분석엔진 계산 단계: …]` 블록은 MSTR 엔진 내부 단계라 SQL이 아닙니다. 주석으로 남기고, 필요하면 동적 집계(@{…})는 GROUP BY/GROUPING SETS로 따로 구현
+
+## 5. 검증 계획
+1. 각 파일을 `only_compile`로 컴파일 검증 → 00~04 순서로 실제 생성
+2. 차원 적재 프로시저 실행 → 팩트 `CALL USP_F_MM_SPNSR_DVLP_SUM('202601','POC')`
+3. 행 수 확인, 키 NULL 비율 확인, `BCHLOG`에 기록됐는지 확인
+4. 05 쿼리 실행 결과(2026-01, DVLP_DIV_CD 1·2·4)를 MSTR 리포트 결과와 비교 (건수, `SUM(SPNSR_AMT)`, 회원 수)
+
+## 6. 리스크·확인 필요 사항
+- **EXPLCAMPLIST가 BRONZE_CRM에 없음**: `D_CMPGN_EXPL_CD` 적재(USP_D_CMPGN_CD 계열)에 영향이 있습니다. 대안은 (a) 원천 적재 요청, (b) 임시로 빈 테이블/수동 CSV, (c) 해당 로직 제외 중 선택해야 합니다.
+- BRONZE_CRM 컬럼명·타입이 MSTR_ODS와 완전히 같은지 컬럼 단위로 비교해야 합니다.
+- `D_STRD_CAL_CD`(달력)는 원천 없이 프로시저로 생성되는지 확인하고, 필요하면 `GENERATOR`로 생성합니다.
+- 롤 이름과 권한을 받을 사용자는 결정이 필요합니다. 현재는 ACCOUNTADMIN으로 실행 중이며, 운영 시에는 전용 롤 사용을 권장합니다.
+- 원본 소스는 UTF-16이었고, 추출본과 전환본은 UTF-8로 저장합니다.
+
+## 7. 작업 체크리스트
+- [ ] 00 스키마·롤 스크립트 작성 및 실행
+- [ ] BRONZE_CRM ↔ 원본 DDL 컬럼 비교표 작성
+- [ ] 01 테이블 전환 + 컴파일
+- [ ] 02 뷰 전환 + 컴파일
+- [ ] 03 함수 전환 + 컴파일
+- [ ] 04 프로시저 전환 + 컴파일
+- [ ] 05 리포트 쿼리 전환
+- [ ] 적재 실행 및 MSTR 결과와 비교 검증

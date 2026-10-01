@@ -47,6 +47,7 @@ SCRIPTS = os.path.join(ROOT, 'scripts')
 # 🔴 등재는 「이름 → 축」이다. 축을 적지 않으면 다음 세션이 무엇을 재는지 모른다.
 JUDGE = {
     'agent_object_ref_gate':  'Agent 스펙 본문의 DB·스키마·객체명이 라이브에 실재하는가',
+    'agent_source_lineage_gate': 'Agent 도구 description 의 BRONZE/GOLD 원천이 그 SV 의 dbt 리니지 안인가(파일만 읽음 · `--suggest` 로 원천 문구 생성 · O193)',
     'agent_tool_claim_gate':  'Agent 도구 주장 모순 + 스펙 description 규칙7 수치',
     'audit_ddl_rule7':        'DDL COMMENT 규칙7(실측 수치 금지) — DDL 파일을 **읽는다**',
     'clause_order_gate':      '조문 번호 역전·중복',
@@ -216,10 +217,15 @@ GEN = {
     # 🆕 [2026-09-16 O167] `init_ihcho` 스킬이 정본(`00_guides/03_init_ihcho_스킬_정본.md` §6)과
     #   **바이트 동일**한지 + 형식 불변식 7종(I1~I7)을 지키는지 본다. 🔴 라이브 접속 0 · 파일만 읽는다.
     #   🔴 I7 은 「하드코딩 수치 금지」다 — 실제로 초판에서 「게이트 6종」 기재를 잡아냈다.
-    'verify_init_ihcho_skill': '스킬 ↔ 정본 바이트 동일 + 형식 불변식 7종(줄수·조문집합·수치금지)',
+    'verify_init_ihcho_skill': '스킬 ↔ 정본 바이트 동일 + 형식 불변식(줄수·조문집합·수치금지·참조·기동순서·라벨)',
 }
 
 MUTATES = {
+    # 🆕 [2026-10-01 O195] O192-B DDL 정본 압축기 3종 — `--write` 가 정본 DDL·부록 md 를 **다중 파일 재작성**한다
+    #   (`R4-4-3`). 무인자는 대조만 하지만 `--run` 분모에 넣지 않는다(일회성 이관 도구 · 재실행 = 멱등 확인 용도).
+    'o192_ddl_compact': 'SILVER·GOLD DDL 정본 압축(--layer 필수 · --write = 정본+부록 재작성 · O192-B)',
+    'o192_ml_serving_compact': '21_ML_SERVING_뷰_DDL 압축(--write = 정본+부록 재작성 · O192-B)',
+    'o192_sv_compact': '05_N·22 SV DDL 머리말·세션태그 압축(--write = 정본+부록 재작성 · O192-B)',
     # 🆕 [2026-09-16 O167] `init_ihcho` 스킬 빌더 — 정본 §6 → `SKILL.md` 를 **통째로 다시 쓴다**.
     #   🔴 대상이 생성물이라 `R1-7-1`(부분 치환 기본)의 예외이지만, **파일 하나를 전량 재작성**하므로
     #   여기 둔다. 기본 dry-run · `--apply` 로만 쓰고 스냅샷은 `snapshot_util` 경유(`R1-7-10`).

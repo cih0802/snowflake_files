@@ -1,0 +1,65 @@
+-- ============================================================================
+-- 05_12_SV_DDL_RELATION_ACTIVITY.sql — Semantic View DDL 정본: SV_RELATION_ACTIVITY
+--   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능(파일 간 순서 없음).
+--   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · 공통 규약 = 05_0_SV_DDL.sql · 신설 근거 = DEC-58 #2 · 사용자 결정 2026-10-01 O196-E
+-- ============================================================================
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
+  TABLES (
+    fra AS GN_DW.GOLD.FACT_RELATION_ACTIVITY
+      PRIMARY KEY (ACTIVITY_KEY)
+      WITH SYNONYMS ('결연활동', '서신', '선물금', '결연 서신', '아동 선물금')
+      COMMENT = '결연활동 팩트(서신·선물금). [Grain: 활동 1행]. [원천: CRM(eCRM) → BRONZE_CRM.TM_RM_RELATNSP_LETTER_INFO·TM_RM_RELATNSP_GFTMNEY_INFO → SILVER.CRM_RELATION_ACTIVITY → GOLD.FACT_RELATION_ACTIVITY].',
+    date AS GN_DW.GOLD.DIM_DATE
+      PRIMARY KEY (DATE_SK)
+      WITH SYNONYMS ('날짜', '활동일')
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
+    member AS GN_DW.GOLD.DIM_MEMBER
+      PRIMARY KEY (MEMBER_DK)
+      WITH SYNONYMS ('회원', '결연 후원자')
+      COMMENT = '정규 회원 마스터 차원(회원 1명 = 1행). 결연키 → 결연 마스터로 찾은 후원 회원이다. [원천] 시스템=CRM(eCRM) · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
+  )
+  RELATIONSHIPS (
+    fra_to_date   AS fra (DATE_SK)   REFERENCES date,
+    fra_to_member AS fra (MEMBER_DK) REFERENCES member
+  )
+  DIMENSIONS (
+    date.ACTIVITY_DATE AS date.FULL_DATE WITH SYNONYMS ('활동일', '접수일', '일자', '날짜') COMMENT = '활동일 — 서신은 접수일 · 선물금은 원천에 접수일이 없어 발송일이다. ⚠️ 일자가 없거나 달력 범위 밖인 행은 Unknown(0)으로 라우팅되어 날짜 축 집계에서 빠진다',
+    date.FULL_DATE AS date.FULL_DATE COMMENT = '달력 날짜(DIM_DATE.FULL_DATE) — ACTIVITY_DATE 와 같은 값이다(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
+    date.YEAR  AS date.YEAR  WITH SYNONYMS ('연도', '년') COMMENT = '연도',
+    date.MONTH AS date.MONTH WITH SYNONYMS ('월')        COMMENT = '월(1~12)',
+    fra.ACTIVITY_TYPE AS fra.ACTIVITY_TYPE WITH SYNONYMS ('활동유형', '결연활동유형') COMMENT = '활동 유형 — **계열 분해의 정본 축**이다. 실제값 2종: ''서신''·''선물금''. 🔴 두 계열은 속성이 다르다(서신 계열 속성은 선물금 행에서 NULL · 선물금 계열 속성은 서신 행에서 NULL) ⇒ 계열 속성으로 분해할 때는 이 축을 동반한다',
+    fra.LETTER_DIV_CD AS fra.LETTER_DIV_CD WITH SYNONYMS ('서신구분코드') COMMENT = '서신 구분 **원천 코드**(라벨 미배선 · 코드군 미확정). 실제값 3종: 1·5·9 + NULL. 🔴 라벨을 추측하지 말 것 — 현업에 코드 의미를 물어야 한다',
+    fra.LETTER_STAT_CD AS fra.LETTER_STAT_CD WITH SYNONYMS ('편지상태코드', '서신상태코드') COMMENT = '편지 상태 **원천 코드**(서신 계열 · 라벨 미배선). 실제값 2종: 2·3 + NULL. 🔴 라벨 추측 금지 · 선물금 행은 NULL(구조적 부재)',
+    fra.ONLINE_POST_WRITNG_YN AS fra.ONLINE_POST_WRITNG_YN WITH SYNONYMS ('온라인우편작성여부', '온라인 작성') COMMENT = '온라인 우편 작성 여부(서신 계열). 실제값 2종: ''0''·''1'' + NULL. ⚠️ 원천이 Y/N 이 아니라 0/1 이다 · 선물금 행은 NULL',
+    fra.GFT_DIV_CD AS fra.GFT_DIV_CD WITH SYNONYMS ('선물구분코드') COMMENT = '선물 구분 **원천 코드**(선물금 계열 · 라벨 미배선). 실제값 7종: ''0''·''1''·''2''·''3''·''4''·''5''·''6'' + NULL. 🔴 라벨 추측 금지 · 서신 행은 NULL',
+    fra.TRNSFER_YN AS fra.TRNSFER_YN WITH SYNONYMS ('이관여부') COMMENT = '이관 여부(선물금 계열). 실제값 3종: ''0''·''1''·''2'' + NULL. 🔴 여부 컬럼이지만 3값이다 — 2 의 뜻은 원천 미확정(창작 금지)',
+    member.GENDER_NAME AS member.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨)',
+    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(MM010 · 현재 마스터 스냅샷 · 활동 시점 값이 아니다). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)'''
+  )
+  METRICS (
+    fra.TOTAL_ACTIVITY_CNT AS SUM(fra.ACTIVITY_CNT)
+      WITH SYNONYMS ('활동건수', '서신건수', '선물금건수', '결연활동(건)') COMMENT = '결연활동(건) 합계. F(가산). 서신·선물금을 나누려면 ACTIVITY_TYPE 으로 그룹핑한다.',
+    fra.DISTINCT_ACTIVITY_MEMBERS AS COUNT(DISTINCT fra.MEMBER_DK)
+      WITH SYNONYMS ('활동 회원수', '참여 회원수', '결연활동(명)') COMMENT = '결연활동 고유 회원수(명). D(distinct). 🔴 월·유형별 회원수를 더해 기간 회원수를 만들지 말 것(중복). ⚠️ 결연 마스터에 매칭되지 않은 고아 결연 행은 회원이 NULL 이라 세지 않는다',
+    fra.TOTAL_GIFT_AMT AS SUM(fra.GFTMNEY)
+      WITH SYNONYMS ('선물금', '선물금액', '선물금(원)') COMMENT = '선물금 합계(원). F(가산). 🔴 선물금 행만 값이 있다(서신 행은 NULL) · 미화금액(GFTMNEY_DOLLAR_AMT)은 문자열 원천이라 합산하지 않는다'
+  )
+  COMMENT = '결연활동 SV (base: GOLD.FACT_RELATION_ACTIVITY · grain = 서신/선물금 활동 1행 · DEC-58). 결연 후원자의 서신 접수·선물금 전달 건수, 고유 회원수, 선물금(원). ⚠️ 서신과 선물금은 계열 속성이 다르므로 ACTIVITY_TYPE 동반. 코드 속성은 라벨 미배선(코드군 미확정)이다. 발송(서비스) 실적과는 별도 팩트이며 합산하지 않는다.'
+  AI_SQL_GENERATION '핵심 규칙: (1) 계열 동반: 서신·선물금 계열 속성(LETTER_*, GFT_DIV_CD, TRNSFER_YN)으로 분해할 때는 ACTIVITY_TYPE 을 함께 그룹핑한다. (2) 건수 vs 회원수: 건수는 SUM(fra.ACTIVITY_CNT), 회원수(명)는 COUNT(DISTINCT fra.MEMBER_DK) 로 집계하고 월별 회원수를 더하지 않는다. (3) 선물금(원)은 SUM(fra.GFTMNEY) — 선물금 행만 값이 있다. (4) 코드 라벨 미배선: 코드값을 그대로 보여주고 라벨을 추측하지 않는다. (5) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하고 그 기간을 밝힌다. 「최근 N개월」 기준일은 비상관 CTE 1개(SELECT MAX(date.FULL_DATE) FROM fra JOIN date ON fra.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. (6) metric 이름(TOTAL_ACTIVITY_CNT 등)을 fra 컬럼처럼 참조하지 않는다. (7) 발송 실적(SV_SERVICE)과 한 쿼리로 조인·합산하지 않는다 — 필요하면 표를 분리한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다.'
+  AI_VERIFIED_QUERIES (
+    vqr_o196_type_month AS (
+      QUESTION '활동유형별 월별 결연활동 건수와 회원수, 선물금'
+      VERIFIED_BY '(DW = O196-E)'
+      SQL 'SELECT date.YEAR, date.MONTH, fra.ACTIVITY_TYPE, SUM(fra.ACTIVITY_CNT) AS TOTAL_ACTIVITY_CNT, COUNT(DISTINCT fra.MEMBER_DK) AS DISTINCT_ACTIVITY_MEMBERS, SUM(fra.GFTMNEY) AS TOTAL_GIFT_AMT FROM fra JOIN date ON fra.DATE_SK = date.DATE_SK GROUP BY date.YEAR, date.MONTH, fra.ACTIVITY_TYPE ORDER BY date.YEAR, date.MONTH, fra.ACTIVITY_TYPE'
+    )
+  );
+
+-- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY TO ROLE GN_DW_SERVICE;

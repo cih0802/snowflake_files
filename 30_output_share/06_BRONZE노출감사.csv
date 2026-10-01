@@ -1,4 +1,4 @@
-﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-09-29
+﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-10-01
 # 자동 생성물 — 생성기 scripts/gen_bronze_exposure_audit.py(+러너 scripts/run_bronze_audit_host.py) 재실행으로 갱신. 직접 편집 금지.
 
 원천시스템,BRONZE_테이블,BRONZE_컬럼,데이터타입,판정,신뢰도,비고
@@ -123,7 +123,7 @@ CRM,SND_MEMBER_LIST,CHILD_NO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬�
 CRM,SND_MEMBER_LIST,LST_BRND_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,SND_MEMBER_LIST,LST_BRND_NM,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,SND_MEMBER_LIST,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
-CRM,SND_MEMBER_LIST,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_MEMBER_LIST,MNG_NO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,SND_MEMBER_LIST,LETTER_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_MEMBER_LIST,CHILD_DTL_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_MEMBER_LIST,CHILD_DTL_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -171,13 +171,13 @@ CRM,SND_MEMBER_LIST,FIRST_UPPER_CMPGN,TEXT,미노출(검토대상),낮음(이름
 CRM,SND_MEMBER_LIST,FIRST_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_MEMBER_LIST,LAST_TOP_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_MEMBER_LIST,LAST_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_MEMBER_LIST,MSG_KEY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_MEMBER_LIST,CINFO,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_MEMBER_LIST,RESPONSED_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_MEMBER_LIST,RESPONSED_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,MSG_KEY,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,SND_MEMBER_LIST,CINFO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,SND_MEMBER_LIST,RESPONSED_YN,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,SND_MEMBER_LIST,RESPONSED_DT,TIMESTAMP_NTZ,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,SND_MEMBER_LIST,SYNCED_AT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_MEMBER_LIST,CALL_STATUS,TEXT,노출됨(GOLD),높음,개명 적재 → GOLD `SEND_RESULT_CD` (FACT_MESSAGE_DISPATCH.sql)
-CRM,SND_MEMBER_LIST,REAL_SEND_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_MEMBER_LIST,REAL_SEND_DT,TIMESTAMP_NTZ,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,SND_MEMBER_LIST,LAST_UPPER_CMPGN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_MEMBER_LIST,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,SND_MEMBER_LIST,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
@@ -210,14 +210,14 @@ CRM,SND_REQ_MST,SEND_GBN_TOP,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + �
 CRM,SND_REQ_MST,SEND_GBN_MID,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,SND_REQ_MST,SEND_GBN_BOT,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,SND_REQ_MST,SEND_TITLE,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
-CRM,SND_REQ_MST,MSG_TYPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,TMPL_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,MSG_TYPE,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,SND_REQ_MST,TMPL_CODE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,SND_REQ_MST,AUTHOR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,CREATE_DATE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,CONDITION_TITLE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,CONDITION_TITLE,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,CALL_NUMBER,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,ALT_SMS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,REGULARLY,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,ALT_SMS_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,SND_REQ_MST,REGULARLY,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,PERIODIC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,PERIODIC_WEEK,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,PERIODIC_DAY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -244,26 +244,26 @@ CRM,SND_REQ_MST,FAIL_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토
 CRM,SND_REQ_MST,LAST_ERR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,END_DATE,DATE,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,SND_REQ_MST,PAPER_YEAR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,MENU_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,MENU_CODE,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,SEND_GBN_TOP_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,SEND_GBN_MID_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,SEND_GBN_BOT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,TARGET_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,SND_REQ_MST,SEND_ROUND,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SEND_ROUND,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,EXTRA,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,ASSIGN_TARGET_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,FIRST_SEQ_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,JOB_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,SYNCED_AT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,SND_REQ_MST,REG_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,SND_REQ_MST,SERVICE_MENU_CODE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,SND_REQ_MST,SERVICE_MENU_CODE,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,SND_REQ_MST,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,SND_REQ_MST,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,SND_REQ_MST,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TC_CMMN_CD,CD_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TC_CMMN_CD,CD_NM,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TC_CMMN_CD,CD_DC,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
-CRM,TC_CMMN_CD,SORT_ORDR,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TC_CMMN_CD,SORT_ORDR,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TC_CMMN_CD,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TC_CMMN_CD,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TC_CMMN_CD,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -276,8 +276,8 @@ CRM,TC_CMMN_CD,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어
 CRM,TC_CMMN_DTL_CD,CD_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TC_CMMN_DTL_CD,DTL_CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TC_CMMN_DTL_CD,DTL_CD_NM,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TC_CMMN_DTL_CD,DTL_CD_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TC_CMMN_DTL_CD,SORT_ORDR,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TC_CMMN_DTL_CD,DTL_CD_DC,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TC_CMMN_DTL_CD,SORT_ORDR,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TC_CMMN_DTL_CD,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TC_CMMN_DTL_CD,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TC_CMMN_DTL_CD,CD_ATRB1,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -295,7 +295,7 @@ CRM,TC_MKTNG_DTL_CD,CD_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 
 CRM,TC_MKTNG_DTL_CD,CD_NM,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TC_MKTNG_DTL_CD,DTL_CD_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TC_MKTNG_DTL_CD,DTL_CD_NM,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TC_MKTNG_DTL_CD,SORT_ORDR,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TC_MKTNG_DTL_CD,SORT_ORDR,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TC_MKTNG_DTL_CD,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TC_MKTNG_DTL_CD,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TC_MKTNG_DTL_CD,CD_ATRB1,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -327,16 +327,16 @@ CRM,TD_MS_CRMN_PRTCPNT,CRMN_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER S
 CRM,TD_MS_CRMN_PRTCPNT,PRTCPNT_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TD_MS_CRMN_PRTCPNT,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_CRMN_PRTCPNT,RQST_PATH_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_TIME_CO,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TD_MS_CRMN_PRTCPNT,SELF_PARTCPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_STAT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_CRMN_PRTCPNT,REFND_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_CRMN_PRTCPNT,RQST_DATE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,SELF_PARTCPT_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_STAT_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_DATE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TD_MS_CRMN_PRTCPNT,REFND_DATE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TD_MS_CRMN_PRTCPNT,RQST_DATE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TD_MS_CRMN_PRTCPNT,PARTCPT_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TD_MS_CRMN_PRTCPNT,RCPMNY_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TD_MS_CRMN_PRTCPNT,ACMPNY_PARTCPT_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_CRMN_PRTCPNT,ACMPNY_PARTCPT_CO,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TD_MS_CRMN_PRTCPNT,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TD_MS_CRMN_PRTCPNT,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_CRMN_PRTCPNT,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
@@ -351,9 +351,9 @@ CRM,TD_MS_EMAIL_LQY_SNDNG,MKT_TRGET_CTNT,TEXT,미노출(검토대상),낮음(이
 CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EMAIL_LQY_SNDNG,SUCCES_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EMAIL_LQY_SNDNG,FAILR_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TD_MS_EMAIL_LQY_SNDNG,RECPTN_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_STRT_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_END_DT,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EMAIL_LQY_SNDNG,RECPTN_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_STRT_DT,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_END_DT,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EMAIL_LQY_SNDNG,INFLOW_PATH_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_YEAR_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_EMAIL_LQY_SNDNG,SNDNG_MT_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -388,7 +388,7 @@ CRM,TD_MS_EMAIL_SNDNG_DTLS,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE �
 CRM,TD_MS_EVENT_PRTCPNT_DTL,EVENT_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TD_MS_EVENT_PRTCPNT_DTL,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_SEQ,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
-CRM,TD_MS_EVENT_PRTCPNT_DTL,EVENT_PARTCPT_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_EVENT_PRTCPNT_DTL,EVENT_PARTCPT_DIV_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TD_MS_EVENT_PRTCPNT_DTL,PRZWIN_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_CHNNL_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_EVENT_PRTCPNT_DTL,PARTCPT_PATH_CD,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -407,9 +407,9 @@ CRM,TD_MS_MSG_AT_LQY_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승�
 CRM,TD_MS_MSG_AT_LQY_SNDNG,DIVS_DTL_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_MSG_AT_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_MSG_AT_LQY_SNDNG,SUCCES_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TD_MS_MSG_AT_LQY_SNDNG,AT_ALTRTV_SNDNG_CNT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,AT_ALTRTV_SNDNG_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TD_MS_MSG_AT_LQY_SNDNG,AT_FAILR_CNT,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TD_MS_MSG_AT_LQY_SNDNG,RESVE_SNDNG_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_MSG_AT_LQY_SNDNG,RESVE_SNDNG_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_MSG_AT_LQY_SNDNG,RESVE_HM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_MSG_AT_LQY_SNDNG,TOT_CLICK_CNT_CTNT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TD_MS_MSG_AT_LQY_SNDNG,CLICK_CNT_CTNT1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -442,8 +442,8 @@ CRM,TD_MS_MSG_AT_SNDNG_DTLS,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE
 CRM,TD_MS_MSG_AT_SNDNG_DTLS,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_CNT,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_TIT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_SQNC,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_TIT,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_PSTMTR_LQY_SNDNG,SNDNG_MEMO_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_PSTMTR_LQY_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_PSTMTR_LQY_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
@@ -457,7 +457,7 @@ CRM,TD_MS_PSTMTR_SNDNG_DTL,SNDNG_DTL_KEY,NUMBER,SILVER까지만,높음,GOLD 미�
 CRM,TD_MS_PSTMTR_SNDNG_DTL,SNDNG_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_PSTMTR_SNDNG_DTL,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TD_MS_PSTMTR_SNDNG_DTL,RELATNSP_KEY,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
-CRM,TD_MS_PSTMTR_SNDNG_DTL,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TD_MS_PSTMTR_SNDNG_DTL,MNG_NO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TD_MS_PSTMTR_SNDNG_DTL,DTL_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_PSTMTR_SNDNG_DTL,BIZN_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TD_MS_PSTMTR_SNDNG_DTL,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -528,7 +528,7 @@ CRM,TH_PM_SETLE_INFO_HIST,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE �
 CRM,TH_PM_SETLE_INFO_HIST,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_CM_BRND_MNG,BRND_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_BRND_MNG,BRND_NM,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_CM_BRND_MNG,USE_DEPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_BRND_MNG,USE_DEPT_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_CM_BRND_MNG,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_CM_BRND_MNG,PR_MTH_LIST,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_CM_BRND_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -545,9 +545,9 @@ CRM,TM_CM_CMPGN_MNG,UPPER_CMPGN_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_CMPGN_MNG,SPNSR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_CMPGN_MNG,CPR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_CMPGN_MNG,CMPGN_TRGET_CD,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_CM_CMPGN_MNG,USE_DEPT_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_CM_CMPGN_MNG,USE_SCOPE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_CM_CMPGN_MNG,SPNSR_ENTRPRS_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,USE_DEPT_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_CM_CMPGN_MNG,USE_SCOPE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_CM_CMPGN_MNG,SPNSR_ENTRPRS_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_CM_CMPGN_MNG,BRND_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_CMPGN_MNG,PR_MTH_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_CMPGN_MNG,CMPGN_STRT_DE,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -557,8 +557,8 @@ CRM,TM_CM_CMPGN_MNG,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 �
 CRM,TM_CM_CMPGN_MNG,REFER_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_CM_CMPGN_MNG,SPNSR_BSNS_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_CMPGN_MNG,CMPGN_DC,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_CM_CMPGN_MNG,EMRGNCY_AID_BPLC_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_CM_CMPGN_MNG,CMPGN_PRPT_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_CM_CMPGN_MNG,EMRGNCY_AID_BPLC_CD,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_CM_CMPGN_MNG,CMPGN_PRPT_YN,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_CM_CMPGN_MNG,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_CM_CMPGN_MNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_CM_CMPGN_MNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
@@ -579,7 +579,7 @@ CRM,TM_CM_CMPGN_MNG,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 �
 CRM,TM_CM_DEPT_INFO,DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_DEPT_INFO,DEPT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_DEPT_INFO,UPPER_DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_CM_DEPT_INFO,SORT_ORDR,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_CM_DEPT_INFO,SORT_ORDR,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_DEPT_INFO,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_CM_DEPT_INFO,ACMSLT_DEPT_YN,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_DEPT_INFO,STATS_DEPT_LVL,NUMBER,SILVER까지만,높음,GOLD 미승격
@@ -604,6 +604,7 @@ CRM,TM_CM_MBER_DVLP_GOAL,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조
 CRM,TM_CM_MBER_DVLP_GOAL,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_CM_MBER_DVLP_GOAL,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_CM_MBER_DVLP_GOAL_DIV,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
+CRM,TM_CM_MBER_DVLP_GOAL_DIV,BDGT_PRCD_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_MBER_DVLP_GOAL_DIV,GOAL_TYPE_NM,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_MBER_DVLP_GOAL_DIV,CPR_DIV_NM,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_MBER_DVLP_GOAL_DIV,NEW_OLD_DIV_NM,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
@@ -640,7 +641,7 @@ CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD �
 CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_BSNS_NM,TEXT,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
 CRM,TM_CM_SPNSR_BSNS_INFO,SPNSR_BSNS_ABRV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_CM_SPNSR_BSNS_INFO,DNTN_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_CM_SPNSR_BSNS_INFO,SORT_ORDR,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_CM_SPNSR_BSNS_INFO,SORT_ORDR,NUMBER,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_SPNSR_BSNS_INFO,CPR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_CM_SPNSR_BSNS_INFO,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TM_CM_SPNSR_BSNS_INFO,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
@@ -670,7 +671,7 @@ CRM,TM_MM_FDRM_MBER_DVLP_AMT,MBER_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,SEX,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,AREA_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,AGE,NUMBER,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
-CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_TIME_CO,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_AMT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,SPNSR_BSNS_ID,TEXT,노출됨(GOLD),높음,개명 적재 → GOLD `SPONSORSHIP_SK` (FACT_MEMBER_EVENT.sql)
 CRM,TM_MM_FDRM_MBER_DVLP_AMT,CANCL_RDCAMT_RSN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -693,9 +694,9 @@ CRM,TM_MM_FDRM_MBER_INFO,ETC_CTTPC_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미�
 CRM,TM_MM_FDRM_MBER_INFO,EMAIL_STAT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_INFO,PSTMTR_RECPTN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MM_FDRM_MBER_INFO,EMAIL_RECPTN_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MM_FDRM_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_INFO,BL_ENTRPS_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MM_FDRM_MBER_INFO,SPECL_MNG_CD1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_INFO,SPECL_MNG_CD1,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_INFO,SPECL_MNG_CD2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MM_FDRM_MBER_INFO,TNI_CU_BL_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MM_FDRM_MBER_INFO,CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -724,7 +725,7 @@ CRM,TM_MM_FDRM_MBER_IRSD,MBER_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬
 CRM,TM_MM_FDRM_MBER_IRSD,SEX,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_IRSD,AREA_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_FDRM_MBER_IRSD,AGE,NUMBER,판정보류(동명이의),낮음(일반명 충돌),동명 GOLD/SILVER 컬럼이 있으나 계보 무관 가능 — 실측 필요(P14)
-CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_TIME_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_TIME_CO,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_IRSD,SPNSR_AMT_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_IRSD,RDCAMT_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_FDRM_MBER_IRSD,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -794,9 +795,9 @@ CRM,TM_MM_ONCE_MBER_INFO,ENTRPS_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_ONCE_MBER_INFO,HMPG_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MM_ONCE_MBER_INFO,PSTMTR_RECPTN_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MM_ONCE_MBER_INFO,EMAIL_RECPTN_YN,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MM_ONCE_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MM_ONCE_MBER_INFO,FDRM_MBER_TRNSFER_FG,BOOLEAN,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MM_ONCE_MBER_INFO,SPECL_MNG_CD1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MM_ONCE_MBER_INFO,CHRCTR_RECPTN_YN,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
+CRM,TM_MM_ONCE_MBER_INFO,FDRM_MBER_TRNSFER_FG,BOOLEAN,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
+CRM,TM_MM_ONCE_MBER_INFO,SPECL_MNG_CD1,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_MM_ONCE_MBER_INFO,SPECL_MNG_CD2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MM_ONCE_MBER_INFO,TNI_CU_BL_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MM_ONCE_MBER_INFO,CTI_SYNCHRN_DIV_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -835,19 +836,19 @@ CRM,TM_MS_AT_TMPLAT_MNG,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적�
 CRM,TM_MS_CRMN,CRMN_CD,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MS_CRMN,CRMN_DIV_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MS_CRMN,CRMN_TIT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MS_CRMN,CRMN_PLACE_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_PLACE_NM,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_CRMN,BRNCH_DEPT_ID,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_CRMN,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_CRMN,SITE_URL,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_CRMN,CRMN_STRT_DE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MS_CRMN,CRMN_END_DE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MS_CRMN,CRMN_PART_STRT_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_CRMN,CRMN_PART_END_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_CRMN,TAT,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,CRMN_PART_STRT_DE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_MS_CRMN,CRMN_PART_END_DE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_MS_CRMN,TAT,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_CRMN,RCRIT_PSNNL_CO,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TM_MS_CRMN,RESRCE_SRVC_FG,BOOLEAN,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,RESRCE_SRVC_FG,BOOLEAN,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_CRMN,CPR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
-CRM,TM_MS_CRMN,ENTRPS_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_CRMN,ENTRPS_CD,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_CRMN,RM,TEXT,⚠️설계O·값미주입,높음,DIM_PAYMENT_ACCOUNT.sql:19 `CAST(NULL AS VARCHAR) as RM`
 CRM,TM_MS_CRMN,CRMN_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_CRMN,USE_YN,TEXT,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
@@ -875,9 +876,9 @@ CRM,TM_MS_EMAIL_SNDNG,SNDNG_STDR_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD �
 CRM,TM_MS_EMAIL_SNDNG,SNDNG_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_EMAIL_SNDNG,TIT,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_EMAIL_SNDNG,EMAIL_RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_EMAIL_SNDNG,PRCS_DE,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,PRCS_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_EMAIL_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_EMAIL_SNDNG,PRCS_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EMAIL_SNDNG,PRCS_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_EMAIL_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_EMAIL_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_MS_EMAIL_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -907,8 +908,8 @@ CRM,TM_MS_EVENT,EVENT_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_EVENT,EVENT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_EVENT,STRT_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_MS_EVENT,END_DATE,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MS_EVENT,PRZWIN_PSNNL_CO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_EVENT,PRZWIN_GFT_SNDNG_DE,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_EVENT,PRZWIN_PSNNL_CO,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_MS_EVENT,PRZWIN_GFT_SNDNG_DE,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_EVENT,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_EVENT,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_MS_EVENT,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -925,7 +926,7 @@ CRM,TM_MS_MSG_AT_SNDNG,SNDNG_TIME_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승
 CRM,TM_MS_MSG_AT_SNDNG,MSG_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_MSG_AT_SNDNG,TIT,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_MSG_AT_SNDNG,MSG_AT_RM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_MSG_AT_SNDNG,PRCS_DE,TIMESTAMP_NTZ,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_MSG_AT_SNDNG,PRCS_DE,TIMESTAMP_NTZ,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_MSG_AT_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_MSG_AT_SNDNG,ATCHFL_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_MSG_AT_SNDNG,TMPLAT_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
@@ -943,11 +944,11 @@ CRM,TM_MS_PSTMTR_SNDNG,SNDNG_CD_ID,TEXT,노출됨(GOLD),중간(스키마만),GOL
 CRM,TM_MS_PSTMTR_SNDNG,SNDNG_DTL_CD_ID,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_MS_PSTMTR_SNDNG,SNDNG_STDR_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_PSTMTR_SNDNG,SNDNG_TY_CD,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_MS_PSTMTR_SNDNG,PRCS_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,PRCS_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_PSTMTR_SNDNG,PCPSN_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_PSTMTR_SNDNG,PRCS_STAT_CD,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_MS_PSTMTR_SNDNG,LQY_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_MS_PSTMTR_SNDNG,RE_SNDNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_MS_PSTMTR_SNDNG,LQY_YN,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_MS_PSTMTR_SNDNG,RE_SNDNG_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_MS_PSTMTR_SNDNG,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_MS_PSTMTR_SNDNG,FRST_REGIST_DT,TIMESTAMP_NTZ,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_MS_PSTMTR_SNDNG,LAST_UPDUSR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
@@ -959,7 +960,7 @@ CRM,TM_PM_DNTN_DTLS,DNTN_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL
 CRM,TM_PM_DNTN_DTLS,ONCE_MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_DNTN_DTLS,CPR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_PM_DNTN_DTLS,SETLE_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
-CRM,TM_PM_DNTN_DTLS,ONCE_CMPGN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_DNTN_DTLS,ONCE_CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_DNTN_DTLS,ELCTR_SETLE_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_PM_DNTN_DTLS,SETLE_ENTRPS_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_PM_DNTN_DTLS,SETLE_CMPNY_ACNT_NO,NUMBER,SILVER까지만,높음,GOLD 미승격
@@ -1003,7 +1004,7 @@ CRM,TM_PM_INSTT_ACNUT,LAST_UPDT_DT,TIMESTAMP_NTZ,노출됨(GOLD),중간(스키�
 CRM,TM_PM_INSTT_ACNUT,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_PM_INSTT_ACNUT,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_PM_INSTT_ACNUT,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
-CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,MBER_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_PM_MBRFEE_ACMSLT,MBER_NO,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,CPR_DIV_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
@@ -1014,14 +1015,14 @@ CRM,TM_PM_MBRFEE_ACMSLT,RELATNSP_KEY,NUMBER,노출됨(GOLD),중간(스키마만)
 CRM,TM_PM_MBRFEE_ACMSLT,OVSEA_AID_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_MT,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_SQNC,NUMBER,SILVER까지만,높음,GOLD 미승격
-CRM,TM_PM_MBRFEE_ACMSLT,RQEST_MT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_PM_MBRFEE_ACMSLT,RQEST_SQNC,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_MT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_PM_MBRFEE_ACMSLT,RQEST_SQNC,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,MBRFEE_DIV_CD,TEXT,노출됨(GOLD),높음,개명 적재 → GOLD `FEE_DIV_CD` (FACT_MEMBER_FEE.sql)
 CRM,TM_PM_MBRFEE_ACMSLT,GFT_DIV_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,GFTMNEY_CHILD_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_PM_MBRFEE_ACMSLT,ONCE_CMPGN_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,ONCE_CMPGN_CD,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,TOGETH_WTDRW_REQUST_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_PM_MBRFEE_ACMSLT,TOGETH_WTDRW_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_PM_MBRFEE_ACMSLT,TOGETH_WTDRW_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_PM_MBRFEE_ACMSLT,SETLE_KEY,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_PM_MBRFEE_ACMSLT,SETLE_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_PM_MBRFEE_ACMSLT,SETLE_ENTRPS_CD,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
@@ -1176,9 +1177,9 @@ CRM,TM_RM_RELATNSP_CHG_INFO,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참
 CRM,TM_RM_RELATNSP_CHG_INFO,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_RM_RELATNSP_CHG_INFO,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,RELATNSP_KEY,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MBRFEE_KEY,NUMBER,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MNG_NO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,MBRFEE_KEY,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_CD,TEXT,노출됨(GOLD),높음,동명 GOLD 컬럼 + 실적재 projection 확인
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SETLE_BANK_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFTMNEY,NUMBER,SILVER까지만,높음,GOLD 미승격
@@ -1187,29 +1188,29 @@ CRM,TM_RM_RELATNSP_GFTMNEY_INFO,KOREAN_RM_CTNT,TEXT,미노출(검토대상),낮�
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,ENGL_RM_CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,SNDNG_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,EHGT,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFTMNEY_DOLLAR_AMT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,APRV_DE,DATE,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,UNREPLY_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,GFTMNEY_DOLLAR_AMT,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,APRV_DE,DATE,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,UNREPLY_RSN_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,TRNSFER_AFTER_RELATNSP_KEY,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_RM_RELATNSP_GFTMNEY_INFO,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_RM_RELATNSP_LETTER_INFO,RELATNSP_KEY,NUMBER,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
-CRM,TM_RM_RELATNSP_LETTER_INFO,MNG_NO,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,MNG_NO,TEXT,노출됨(GOLD),중간(스키마만),GOLD 컬럼 존재하나 dbt projection 미확인 — 값 유무 실측 필요(P15)
 CRM,TM_RM_RELATNSP_LETTER_INFO,LETTER_DIV_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_LETTER_INFO,CTNT,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_RM_RELATNSP_LETTER_INFO,RCEPT_DE,DATE,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_LETTER_INFO,SNDNG_DE,DATE,SILVER까지만,높음,GOLD 미승격
-CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_POST_WRITNG_YN,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_POST_WRITNG_YN,TEXT,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_LETTER_INFO,FRST_RGSTR_ID,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 CRM,TM_RM_RELATNSP_LETTER_INFO,FRST_REGIST_DE,DATE,제외(PII·본문·메타),—,패턴 매칭 제외(감사 범위 외)
 CRM,TM_RM_RELATNSP_LETTER_INFO,EXCEL_SER_NO,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_LETTER_INFO,UNREPLY_RSN_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_LETTER_INFO,LANG_CD,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_INFLOW_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-CRM,TM_RM_RELATNSP_LETTER_INFO,LETTER_STAT_CD,NUMBER,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+CRM,TM_RM_RELATNSP_LETTER_INFO,UNREPLY_RSN_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,LANG_CD,TEXT,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,ONLINE_INFLOW_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
+CRM,TM_RM_RELATNSP_LETTER_INFO,LETTER_STAT_CD,NUMBER,SILVER까지만,높음,GOLD 미승격
 CRM,TM_RM_RELATNSP_LETTER_INFO,_LOAD_DT,TIMESTAMP_NTZ,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
 CRM,TM_RM_RELATNSP_LETTER_INFO,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 CRM,TM_RM_RELATNSP_LETTER_INFO,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
@@ -1229,7 +1230,7 @@ CRM,TM_RM_RELATNSP_MSTR_INFO,_BATCH_ID,TEXT,제외(적재제어메타),—,BRONZ
 CRM,TM_RM_RELATNSP_MSTR_INFO,_STDR_YM,TEXT,제외(적재제어메타),—,BRONZE 적재 제어 컬럼 — SILVER 미승격 확정(O175)
 ERP,BDGT_ACMSLT_LEDGER,YEAR,TEXT,대체노출(파생),높음,DATE 파생(YEAR(AD_DATE)) 로 대체 — 텍스트 파싱 금지 원칙
 ERP,BDGT_ACMSLT_LEDGER,INCOME_EXPS_DIV_NM,TEXT,SILVER까지만,높음,GOLD 미승격
-ERP,BDGT_ACMSLT_LEDGER,BDGT_PRCD_NM,TEXT,SILVER까지만,중간(SQL참조),SILVER SQL 토큰 참조
+ERP,BDGT_ACMSLT_LEDGER,BDGT_PRCD_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,BDGT_UNIT_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,JANG_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,KWAN_NM,TEXT,SILVER까지만,높음,GOLD 미승격
@@ -1241,8 +1242,8 @@ ERP,BDGT_ACMSLT_LEDGER,FUND_SOURCE_NM,TEXT,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,BDGT_ITEM_NM,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 ERP,BDGT_ACMSLT_LEDGER,VENDOR,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
 ERP,BDGT_ACMSLT_LEDGER,DVLP_INBOUND_PATH,TEXT,SILVER까지만,높음,GOLD 미승격
-ERP,BDGT_ACMSLT_LEDGER,DIRECT_MNYRS_YN_1,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
-ERP,BDGT_ACMSLT_LEDGER,DIRECT_MNYRS_YN_2,TEXT,미노출(검토대상),낮음(이름기반·P13),개명·VARIANT param 승격 가능성 — 확정 아님
+ERP,BDGT_ACMSLT_LEDGER,DIRECT_MNYRS_YN_1,TEXT,SILVER까지만,높음,GOLD 미승격
+ERP,BDGT_ACMSLT_LEDGER,DIRECT_MNYRS_YN_2,TEXT,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,YEAR_BDGT_TOT_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,CHN_BDGT_TOT_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격
 ERP,BDGT_ACMSLT_LEDGER,ADJ_BDGT_TOT_AMT,NUMBER,SILVER까지만,높음,GOLD 미승격

@@ -62,6 +62,7 @@ EXTRA_DOCS = [
     '00_guides/03_init_ihcho_스킬_정본.md',
     '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
     '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)   # [O85] R1-7 무변경 이관 신설
+    '00_guides/03_init_ihcho_스킬_개발이력.md',   # 🆕 [O194] 스킬 개발이력(append · 경위 이관처)
     '99_NEXT_SESSION.md',
     #   🆕 🔴🔴 [2026-09-16 O165-B 편입] Inspection 절차 정본 — **분모 밖이어서 실사고를 놓쳤다.**
     #     O165 가 `edit` 앵커로 그 문서 `## ▣ 5` 제목을 삼키고 **꼬리 36줄(§6·§7)까지 소실**시켰는데

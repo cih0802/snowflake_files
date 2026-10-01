@@ -47,9 +47,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 -- (2-A) [최초 1회만] DBT PROJECT 신규 생성 (VERSION$1)
 -- 최초 배포 후 '08_After_Deploy_DBT.sql' 돌리고 ENGINEER권한으로 BUILD
 -- CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE
-  -- FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
--- CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW2_PIPELINE
-  -- FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+--   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE

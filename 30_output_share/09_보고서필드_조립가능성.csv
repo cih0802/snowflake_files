@@ -27,8 +27,8 @@
 마케팅,마케팅 보고서,2. 집행예산 및 개발효율,예산구분,(215밖),DIM_BUDGET_ITEM.BUDGET_CATEGORY,필드인벤토리,,,FACT_BUDGET,,,조립가능,`FACT_BUDGET` → `DIM_BUDGET_ITEM` FK 생존(비영 존재)
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,매체명(브랜드2),,"⛔ 불가 — `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 243,545/243,545 전건 센티넬 + 목표측 매체 축 부재",⛔불가(등록부),,,FACT_AD_PERFORMANCE,,,원천부재,"불가 — `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 243,545/243,545 전건 센티넬 + 목표측 매체 축 부재"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,기준일시,,⛔ 불가 — 목표 원천 `TM_CM_MBER_DVLP_GOAL` 11컬럼 시간축이 `STDYY`+`STDR_MT` 뿐 — 일자 컬럼 부재,⛔불가(등록부),,,FACT_AD_PERFORMANCE,,,원천부재,불가 — 목표 원천 `TM_CM_MBER_DVLP_GOAL` 11컬럼 시간축이 `STDYY`+`STDR_MT` 뿐 — 일자 컬럼 부재
-마케팅,마케팅 보고서,3. 매체별 개발효율 상세,요일,(215밖),DIM_DATE.DAY_OF_WEEK,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `DAY_OF_WEEK` 을 직접 보유**한다 (실측 채움 77,505/77,505) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
-마케팅,마케팅 보고서,3. 매체별 개발효율 상세,주차,(215밖),DIM_DATE.WEEK_OF_YEAR,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `WEEK_OF_YEAR` 을 직접 보유**한다 (실측 채움 77,505/77,505) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
+마케팅,마케팅 보고서,3. 매체별 개발효율 상세,요일,(215밖),DIM_DATE.DAY_OF_WEEK,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `DAY_OF_WEEK` 을 직접 보유**한다 (실측 채움 271,175/271,175) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
+마케팅,마케팅 보고서,3. 매체별 개발효율 상세,주차,(215밖),DIM_DATE.WEEK_OF_YEAR,필드인벤토리,,,FACT_AD_PERFORMANCE,,,조립가능,"앵커 팩트 `FACT_AD_PERFORMANCE` 가 **동명 degenerate 컬럼 `WEEK_OF_YEAR` 을 직접 보유**한다 (실측 채움 271,175/271,175) — `DIM_DATE` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고시작시간,(215밖),FACT_AD_BROADCAST.AD_START_TIME,필드인벤토리~,,,FACT_AD_PERFORMANCE,,,조립가능,"위성 `FACT_AD_BROADCAST` 는 `AD_PERF_DK` **PK = 코어와 1:1**(실측 38,486 전건 유일 · 조인 후 38,486행 = 폭발 0) → 코어와 같은 표에 둘 수 있다(DEC-13). 위성에 `*_DATE_SK` 가 없는 것은 시간축 부재가 아니라 **코어가 시간축을 소유**하기 때문이다"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,법인명,공114,DIM_ORG.CORP,필드인벤토리·별칭등록부,,,FACT_AD_PERFORMANCE,,,값없음,"`DIM_ORG.CORP` 전건 NULL (1,315행)"
 마케팅,마케팅 보고서,3. 매체별 개발효율 상세,광고유형,(215밖),DIM_AD_CREATIVE.AD_TYPE,필드인벤토리~,,,FACT_AD_PERFORMANCE,,,도달불가,"`FACT_AD_PERFORMANCE` → `DIM_AD_CREATIVE` FK **전건 센티넬** — 조인해도 `(미매핑)` 한 덩어리가 된다 ▸ BRONZE 근거: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` **243,545/243,545 전건 센티넬**. `DIM_AD_CREATIVE` 는 8,716행·`MEDIA_NAME` 106종이 실재하지만 **팩트에서 도달할 수 없다** — 소재 연결키가 대행사 원천에 없다(Q10)."
@@ -349,7 +349,7 @@
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,평균 세션 시간2,공98,FGA 물리적재(비가산) —,지표사전~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,세션당 평균 참여 시간2,(215밖),FACT_BIGQUERY_BEHAVIOR.AVG_ENGAGEMENT_TIME_PER_SESSION,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,방문수,공92,FACT_BIGQUERY_BEHAVIOR.VISITS,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
-회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,663,437행)"
+회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,398,512행)"
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,세션 수동 광고 콘텐츠,공103,DIM_BIGQUERY_SOURCE.UTM_CONTENT,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,세션 수동 검색어,공104,DIM_BIGQUERY_SOURCE.UTM_TERM,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-2. [회원] 증액마케팅보고 *월간기준 · GA 필드,페이지경로+쿼리문자열,공105,FBQ(attr),지표사전,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
@@ -395,7 +395,7 @@
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · CRM 필드,회원상태,공132,DIM_MEMBER,지표사전,,,FACT_MESSAGE_DISPATCH,,,조립가능,`FACT_MESSAGE_DISPATCH` → `DIM_MEMBER` FK 생존(비영 존재)
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · CRM 필드,납입방식,,FACT_MEMBER_FEE.PAYMENT_SK,교정등록부(OPENED_O45),OPENED_O45,FACT_MEMBER_FEE.PAYMENT_SK,FACT_MESSAGE_DISPATCH,,,배분규칙필요,[매핑교정 OPENED_O45] [O45] 결제수단은 **회비 행의 속성**이다(`SETLE_CD` 11종 · 채움 99.78%). `FMM` 은 회원-월 grain 이라 붙이면 귀속 규칙이 필요했다. ⚠️라벨 커버리지 99.3% — 5종(`3`·`10`·`6`·`13`·`7`)은 코드그룹 미특정(O45-B). ▸ 종전 매핑 `FACT_MEMBER_FEE.PAYMENT_SK` → 교정 `FACT_MEMBER_FEE.PAYMENT_SK` ▸ 시간축 상이 — `FACT_MESSAGE_DISPATCH`=일 vs `FACT_MEMBER_FEE`=월. 🔴 굵은 쪽을 잘게 내리려면 **배분(귀속) 규칙**이 필요하다 — 규칙 없이 조인하면 굵은 값이 잘은 행마다 복제된다. 이것은 모델링이 아니라 **업무 판단**이다(O47·P95).
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · CRM 필드,중단채널,(215밖),FACT_MESSAGE_DISPATCH.STOP_CHANNEL,필드인벤토리,,,FACT_MESSAGE_DISPATCH,,,조립가능,앵커 팩트 `FACT_MESSAGE_DISPATCH` 자체의 컬럼
-회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,663,437행)"
+회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,398,512행)"
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · GA 필드,세션콘텐츠,공103,DIM_BIGQUERY_SOURCE.UTM_CONTENT,필드인벤토리·별칭등록부,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · GA 필드,조회수,공96,FACT_BIGQUERY_BEHAVIOR.VIEW_CNT,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-4. [회원] 미납중단안내서비스보고 *일간기준 · GA 필드,세션수,공97,FACT_BIGQUERY_BEHAVIOR.SESSION_CNT,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
@@ -434,7 +434,7 @@
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,세션수,공97,FACT_BIGQUERY_BEHAVIOR.SESSION_CNT,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,이탈률,공108,FGA 물리적재(비가산) —,지표사전,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,평균 세션시간,공98,FGA 물리적재(비가산) —,지표사전,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
-회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,663,437행)"
+회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,398,512행)"
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,세션수동콘텐츠,공103,DIM_BIGQUERY_SOURCE.UTM_CONTENT,필드인벤토리·별칭등록부,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,세션수동검색어,공104,DIM_BIGQUERY_SOURCE.UTM_TERM,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-5. [회원] 참여콘텐츠분석보고 (온라인이벤트) *일간기준 · GA 필드,페이지경로,공105,FACT_BIGQUERY_BEHAVIOR.PAGE_PATH,필드인벤토리~,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
@@ -458,7 +458,7 @@
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,회원번호,,DIM_MEMBER.MEMBER_DK,교정등록부(WRONG_DIM),WRONG_DIM,DIM_MEMBER.MEMBER_DK,FACT_EVENT_ATTENDANCE,,,조립가능,"[매핑교정 WRONG_DIM] `DIM_MEMBER_IDENTITY` 는 GA↔CRM 신원 브리지 전용 차원이고 **CRM 팩트에서 가는 FK 가 없다**. 회원번호는 모든 팩트에 `MEMBER_DK` 로 실재하고 `DIM_MEMBER` 자연키 조인이 살아 있다. 이 오매핑이 12필드에 걸쳐 반복됐다. ▸ 종전 매핑 `DIM_MEMBER.MEMBER_DK` → 교정 `DIM_MEMBER.MEMBER_DK` ▸ 앵커 팩트 `FACT_EVENT_ATTENDANCE` 가 **동명 degenerate 컬럼 `MEMBER_DK` 을 직접 보유**한다 (실측 채움 1,248,727/1,248,727) — `DIM_MEMBER` 를 경유할 필요가 없다. 매핑을 앵커 로컬로 교정할 것(O47·P96-②)"
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,회원상태,공132,DIM_MEMBER,지표사전,,,FACT_EVENT_ATTENDANCE,,,조립가능,`FACT_EVENT_ATTENDANCE` → `DIM_MEMBER` FK 생존(비영 존재)
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,참여상태,(215밖),FACT_EVENT_ATTENDANCE.PART_STATUS,필드인벤토리,,,FACT_EVENT_ATTENDANCE,,,조립가능,앵커 팩트 `FACT_EVENT_ATTENDANCE` 자체의 컬럼
-회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,본인참여,(215밖),FACT_EVENT_ATTENDANCE.SELF_PART_FLAG,필드인벤토리,,,FACT_EVENT_ATTENDANCE,,,값없음,"`FACT_EVENT_ATTENDANCE.SELF_PART_FLAG` 전건 NULL (1,248,727행)"
+회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,본인참여,(215밖),FACT_EVENT_ATTENDANCE.SELF_PART_FLAG,필드인벤토리,,,FACT_EVENT_ATTENDANCE,,,조립가능,앵커 팩트 `FACT_EVENT_ATTENDANCE` 자체의 컬럼
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,후원사업명,,FACT_MEMBER_FEE.SPONSORSHIP_SK (회비) / DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK (획득),교정등록부(OPENED_O45),OPENED_O45,FACT_MEMBER_FEE.SPONSORSHIP_SK (회비) / DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK (획득),FACT_EVENT_ATTENDANCE,,,조립가능,[매핑교정 OPENED_O45] 위 「후원사업」과 동일 — 🔴 같은 라벨이 두 축이다. ▸ 종전 매핑 `FACT_MEMBER_FEE.SPONSORSHIP_SK (회비) / DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK (획득)` → 교정 `FACT_MEMBER_FEE.SPONSORSHIP_SK (회비) / DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK (획득)` ▸ [축 병기 — 앵커 `FACT_EVENT_ATTENDANCE` 에 맞는 축 선택] `DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK` ▸ `FACT_EVENT_ATTENDANCE` → `DIM_MEMBER_ACQUISITION` FK 생존(비영 존재) ▸ 다른 병기 축 `FACT_MEMBER_FEE.SPONSORSHIP_SK` 은 `배분규칙필요` (O47)
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,후원금액,(215밖),DIM_MEMBER_ACQUISITION.ACQ_SPNSR_AMT,필드인벤토리~,,,FACT_EVENT_ATTENDANCE,,,조립가능,`FACT_EVENT_ATTENDANCE` → `DIM_MEMBER_ACQUISITION` FK 생존(비영 존재)
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · CRM 필드,신청경로,(215밖),DIM_EVENT.APPLY_CHANNEL,필드인벤토리,,,FACT_EVENT_ATTENDANCE,,,값없음,"`DIM_EVENT.APPLY_CHANNEL` 전건 NULL (3,937행)"
@@ -474,7 +474,7 @@
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,참여 세션수,(215밖),FACT_BIGQUERY_BEHAVIOR.ENGAGED_SESSIONS,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,이탈률,공108,FGA 물리적재(비가산) —,지표사전,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,평균 세션시간,공98,FGA 물리적재(비가산) —,지표사전,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,앵커 팩트 `FACT_BIGQUERY_BEHAVIOR` 자체의 컬럼
-회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,663,437행)"
+회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션캠페인,공102,FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,값없음,"`FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 전건 0 (1,398,512행)"
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션수동콘텐츠,공103,DIM_BIGQUERY_SOURCE.UTM_CONTENT,필드인벤토리·별칭등록부,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션수동검색어,공104,DIM_BIGQUERY_SOURCE.UTM_TERM,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)
 회원,3. 서비스,3-6. [회원] 참여콘텐츠분석보고 (문화이벤트) *일간기준 · GA 필드,세션 소스/매체,공109,DIM_BIGQUERY_SOURCE.SOURCE_MEDIUM,필드인벤토리,,,FACT_BIGQUERY_BEHAVIOR,,,조립가능,`FACT_BIGQUERY_BEHAVIOR` → `DIM_BIGQUERY_SOURCE` FK 생존(비영 존재)

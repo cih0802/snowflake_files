@@ -1,0 +1,10 @@
+import io, hashlib
+p = '05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql'
+old = '-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · 재적재 시 복구'
+new = '-- ⛔ [2026-09-30] 원천 테이블 삭제로 비활성 · [2026-10-01 O196] D-3 종결 = 재활성하지 않는다(라이브 DROP · 되살리려면 새 사용자 결정)'
+b = io.open(p, encoding='utf-8', newline='').read()
+n = b.count(old)
+assert n == 3, n
+io.open(p, 'w', encoding='utf-8', newline='').write(b.replace(old, new))
+a = io.open(p, encoding='utf-8', newline='').read()
+print('replaced', n, 'left', a.count(old), 'new', a.count(new), hashlib.sha256(a.encode()).hexdigest()[:12])
