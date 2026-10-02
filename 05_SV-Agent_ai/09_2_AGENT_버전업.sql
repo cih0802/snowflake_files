@@ -87,7 +87,7 @@ WITH required AS (
     ('AGENT_EXECUTIVE',   'SV_SERVICE'),
     ('AGENT_EXECUTIVE',   'SV_ML_DVLP_FORECAST'),
     ('AGENT_EXECUTIVE',   'SV_ML_LTV_FORECAST'),
-    ('AGENT_EXECUTIVE',   'SV_ML_LTV_SCORE'),
+    -- ⛔ [2026-10-02 O199] SV_ML_LTV_SCORE 폐기(원천 이관 제외 · 22번 O198) — analyst_ml_ltv_score 도구 제거
     ('AGENT_EXECUTIVE',   'SV_ML_FEATURE_IMPORTANCE'),
     ('AGENT_MARKETING', 'SV_AD'),
     ('AGENT_MARKETING', 'SV_DEV_ACHIEVEMENT'),
@@ -314,7 +314,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 -- ---- [3-B] AGENT_EXECUTIVE ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 예산·광고실적·회원월실적·발송 + ML 예측 4종(개발금액·LTV예측·LTV스코어·기여요인).';
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 사업목표·예산·광고실적·회원월실적·발송 + ML 예측 3종(개발금액·LTV예측·기여요인). LTV스코어는 원천 폐기(O199).';
 
 -- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING

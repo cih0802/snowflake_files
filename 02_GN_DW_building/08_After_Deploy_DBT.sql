@@ -139,6 +139,7 @@ REVOKE USAGE, MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_ENGIN
       ⚠️ SP_EXEC_MONTH_END 는 SILVER 집계(ANNUAL_* · MM_SPNSR_CLS_AGGR_DATA)와 ML 예측결과(ML_RST_DATA_*)를 다시 쓴다
          ⇒ dbt build 와 동시에 돌리지 말 것(같은 SILVER 를 읽고 쓴다).
    ===================================================================== */
+/*
 USE ROLE GN_DW_LOADER;
 USE WAREHOUSE GN_DW_ETL_WH;
 
@@ -158,3 +159,4 @@ SELECT
 FROM GN_DW.ML.ML_PROCEDURE_LOG
 WHERE START_TIME >= DATEADD('HOUR', -1, CURRENT_TIMESTAMP())
 ORDER BY START_TIME DESC;
+*/

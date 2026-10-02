@@ -307,7 +307,7 @@ ML 이 테스트 단계라 **테이블이 `CREATE OR REPLACE` 로 갈릴 수 있
 | 〃 GRANT 누락 | 🟢 0건(SV 16종) |
 | 〃 **COMMENT 수치 금지** | 🟢 검출 0 — 🔴 **최초엔 내 산출물에서 6건 검출**됐다(「10,000배」·「계열당 1행」) ⇒ 게이트를 고치지 않고 **문안을 숫자 없이 다시 썼다**(「만 배」·「계열당 단일 행」) |
 | 〃 **필수 문안(REQUIRED_TEXT)** | 🔴 **소실 5건** — `SV_DEV_ACHIEVEMENT`·`SV_MEMBER_EVENT`·`SV_MEMBER_FEE`·`SV_MEMBER_MONTHLY`·`SV_SERVICE` |
-| `sv_code_label_gate` **코드값 부재** | 🟢 **0** — 🔴 **최초에 내 산출물에서 1건**: `SV_ML_MEMBER_RISK.MBER_STAT_NAME` 이 데이터에 없는 `'후원중단'`을 열거했다 ⇒ **0행 오답 경로** |
+| `sv_code_label_gate` **코드값 부재** | 🟢 **0** — 🔴 **최초에 내 산출물에서 1건**: `SV_ML_MEMBER_RISK` 의 회원상태 라벨(`MBER_STAT_NAME` · 🔴 [O199] 원천 피처 제거로 컬럼 삭제 · 이력 기재)이 데이터에 없는 `'후원중단'`을 열거했다 ⇒ **0행 오답 경로** |
 | 〃 열거 누락 | 🟠 **22 → 10** (아래 사유로 의도적 잔여) |
 | 〃 라벨축·폐기리터럴 | 🟢 0 |
 

@@ -1,5 +1,5 @@
--- C 계정(Target) 실행 SQL — 브론즈 3개 스키마 + SILVER 정제 테이블 + ML 예측결과 적재
--- 2026-08-20
+-- C 계정(Target) 실행 SQL — 브론즈 3개 스키마 + SILVER 4 테이블 + ML 예측결과 12종 적재
+-- 2026-08-20 (초판) · 최근 갱신일 : 2026-10-02 (O198)
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -21,14 +21,30 @@
 --              → 5.2(파일포맷/스테이지) / 5.3.1(적재 전 검증) / 5.4(일괄 적재) /
 --                5.5(SILVER) / 5.6(ML) / 6장(검증) / 7장(정리)
 --   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql   → 브론즈 64 테이블 생성
---              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql   → SILVER 1 테이블 생성
---              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       → ML 17 테이블 생성
+--              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql   → SILVER 4 테이블 생성
+--              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       → ML 12 테이블 생성
 --              ⚠️ 셋 다 먼저 실행해야 한다. 미실행 시 loaded tables: 0. 상호 선후 관계는 없다.
 --   [선행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql  (A: 공유/DDL 추출)
 --              50_handoff/03_데이터마이그 B_BROKER.sql    (B: 공유 마운트/CSV 언로드)
 --
 -- 갱신 이력 / CHANGES
---   2026-09-28  선행 DDL(04·05번) 갱신 반영 — 🔴 **이번에는 SQL 본문도 고쳤다**(A.5-B).
+--   2026-10-02  🆕 O198 · 선행 DDL(04·05·06번) 2026-10-02 판 반영 — 🔴 **SQL 본문을 고쳤다**(A.1 · A.5 · A.5-B · A.6).
+--     🔴🔴 ML 이관 범위 17 → **12종** · 구조 대변경(05번 O198-C) ⇒ **이전 판 ML CSV·테이블 전부 무효**(재언로드·재생성).
+--        · 분류 4종 피처 컬럼 제거 = MBER_CHURN_12M 18→3 · MBER_INC_12M 21→3 · LOYAL_MBER 22→3 (VARIANT $3)
+--        · SPNSR_CHURN_12M 18→6 (VARIANT $6) · ONCE_CONVERSION 5→3 = (STDR_MT, ONCE_MBER_NO, PREDICT) (VARIANT $3)
+--        ⇒ A.5-B.2 의 $n 목록을 전부 다시 썼다. 🔴 구판 $18/$21/$22/$5 로 실행하면 열 수 불일치로 실패한다.
+--        − 제외 = UCMPGN_LTV · UCMPGN_LTV_SCORE · CMPGN_LTV · CMPGN_LTV_SCORE (02번 2-C REVOKE) · 기획실 3종(O195 DROP)
+--        + 신규 = MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV (6컬럼 · VARIANT 없음)
+--        · 시계열 SERIES → 의미 컬럼명(CMPGN_CTGR_CD · CMPGN_CD · MKTG_CHANNEL) · CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 5→4
+--        ⇒ A.5-B.1 프로시저를 `LIKE 'ML_RST_DATA_%'` → **명시 목록 7종**으로 바꿨다.
+--           (C 에 구판 테이블이 남아 있으면 LIKE 가 그것까지 COPY 해 실패·오적재한다.) 기대 반환값 12 → **7**.
+--        ⇒ A.1 (4) · A.6 의 ML 필터도 명시 목록 12종으로 바꿨다(잔존 구판 테이블이 기대값을 오염시키지 않게).
+--     + SILVER 1 → **4** = ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA(17) · ANNUAL_MBRFEE_PRDT_ACTL_DATA(29) · MM_SPNSR_CLS_AGGR_DATA(8)
+--        · 반정형 없음 ⇒ A.5-A 일반 COPY 3건 신설. A.1 (4) · A.6 필터에 추가.
+--     · 브론즈 64 그대로 · TM_CM_MBER_DVLP_GOAL_DIV 20 → **21컬럼**(09-29 BDGT_PRCD_NM 2번째 삽입)
+--        · M01~M12_GOAL_CNT FLOAT → NUMBER(38,10) — FLOAT 로 이미 만든 C 테이블은 재생성한다.
+--     · 총계 82 → **80** (브론즈 64 + SILVER 4 + ML 12).
+--   2026-09-28  선행 DDL(04·05번) 갱신 반영  (⚠️ 아래 ML 구조·수치는 2026-10-02 판으로 대체됨) — 🔴 **이번에는 SQL 본문도 고쳤다**(A.5-B).
 --     + ML.ML_RST_DATA_ONCE_CONVERSION 신규(5컬럼 · VARIANT **PREDICT** $5 · 기존 4종과 컬럼명이 다르다).
 --        ⇒ A.5-B.1 제외 목록에 추가 · A.5-B.2 (5) 개별 COPY 신설 · A.5-B.4 (3) 파싱 검사에 추가.
 --        🔴 이 수정 없이 실행하면 A.5-B.1 이 일반 COPY 로 적재해 PREDICT 가 **JSON 문자열**이 된다(오류 없음).
@@ -39,28 +55,28 @@
 --        스테이지 2026-09-28 업로드분 헤더는 04번과 순서까지 일치(실측) — 그래도 A.1 (4) 를 먼저 통과시킨다.
 --     · 브론즈 61 → **64** · ML 16 → **17** · 총계 78 → **82**. A.6 (1) 기대값의 GSC 2 → **3** 누락도 정정했다.
 --   2026-09-17  선행 DDL(04번) 갱신에 맞춰 **수치·구조 주의사항만** 정정했다(SQL 본문 무변경).
---     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --        ⇒ **CRM CSV 는 전건 재언로드 대상이다**(열이 1개씩 늘었다). 이전 판 CSV 로 적재하면
 --           열 수 불일치로 실패한다. 🔴 A.1 (4) 대조를 반드시 다시 통과시킨 뒤 적재한다.
 --        · SND_MEMBER_LIST 는 76 → **77컬럼**(OPEN_DT 삭제분 + _STDR_YM 추가분이 상계되지 않는다).
 --     🔴 BRONZE_AGENCY.DGT_AD_CMPGN_DTLS 의 28번째 컬럼이 UPPER_CMPGN_NM → CMPGN_UTM_NM 으로
 --        **개명**되었다(컬럼 수·위치 불변) ⇒ 위치 기반 적재에는 영향이 없다.
---     + BRONZE_GSC.SEARCH_CONSOLE_DATA2 신규 ⇒ 브론즈 61 · 총계 78. GSC 는 CSV 대조 대상이 아니다.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     + BRONZE_GSC.SEARCH_CONSOLE_DATA2 신규 ⇒ 브론즈 61 · 총계 78. GSC 는 CSV 대조 대상이 아니다.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --     🔴 BRONZE_ERP.EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 정정되었다(원천 13번 정본 ·
 --        2026-09-17 사용자 결정). 열 수·순서 불변이라 A.1 (4) 열 대조는 통과하지만
 --        **문자열 → DATE 형변환이 새로 생긴다** ⇒ 🔴 GN_CSV_FORMAT_EUCKR2 로 **소량 시적재해 거부행 0**
 --        을 먼저 확인하고 전량 적재한다. 날짜 표기가 'YYYY-MM-DD' 가 아니면 DATE_FORMAT 지정이 필요하다.
 --   2026-09-15  선행 DDL(04번) 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 52 → **60** · 총계 69 → **77**  (⇒ 2026-09-17 현행 = 브론즈 61 · 총계 78)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
---       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 61 / 78 은 ㉡·㉢ 이후)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
---       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77 (현행 61 / 78)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
---       ㉢ 2026-09-17 GSC 2 → **3** (SEARCH_CONSOLE_DATA2 신규) ⇒ 브론즈 61 · 총계 78  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     · 브론즈 52 → **60** · 총계 69 → **77**  (⇒ 2026-09-17 현행 = 브론즈 61 · 총계 78)  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
+--       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 61 / 78 은 ㉡·㉢ 이후)  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
+--       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77 (현행 61 / 78)  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
+--       ㉢ 2026-09-17 GSC 2 → **3** (SEARCH_CONSOLE_DATA2 신규) ⇒ 브론즈 61 · 총계 78  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --     · 파일명 정정: 04·06번에서 날짜를 뗐다(구 = *_20260730 / *_20260820).
 --     🔴 SND_MEMBER_LIST 는 OPEN_DT 삭제로 **76컬럼**이다 — 이전 판 CSV(77열)로 적재하면 실패한다.
 --        오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 이동했다 ⇒ 재언로드가 필요하다.
 --     🔴 A.1 (4) 대조를 **반드시 다시 통과**시킨 뒤 적재한다(대상 테이블 집합이 바뀌었다).
 --   2026-08-29  선행 DDL 3종의 2026-08-29 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-28 항목 = 64/82)  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-28 항목 = 64/82)  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --     · 파일명 정정: 「04_2번 SILVER」 → **06번** (실제 파일명이 06_ 이다)
 --     · 🔴 A.1 [원인 B] 사례(2026-08-13 BDGT_ACMSLT_LEDGER)의 **결론이 뒤집혔다** — 아래 A.1 참조.
 --     · A.1 (4) · A.6 (1) 의 SQL 은 스키마 조건으로 돌기 때문에 **쿼리 수정이 불필요**했다
@@ -70,21 +86,31 @@
 --   적재 스테이지 = @SANDBOX.TOOLS.MIG_LOAD_STAGE/<SCHEMA>/<TABLE>/
 --   파일 포맷 = SANDBOX.TOOLS.FF_CSV_LOAD (적재) · SANDBOX.TOOLS.FF_CSV_PEEK (진단)
 --
--- 적재 대상 / SCOPE (82 테이블)
+-- 적재 대상 / SCOPE (80 테이블 · 2026-10-02 O198)
 --   BRONZE_CRM 53 · BRONZE_AGENCY 4 · BRONZE_ERP 2                  → A.4 프로시저 일괄 적재
 --   BRONZE_GA4 2 · BRONZE_GSC 3                                     → 🟢 CSV 이관 대상이 아니다
 --     (Google API 를 호출하는 SP_LOAD_* 가 DELETE 후 재적재한다 · 04번은 빈 구조만 만든다)
---   SILVER.BIGQUERY_REFINED_DATA 1                    → A.5 개별 적재
---   ML.ML_RST_DATA_* 17                               → A.5-B (12종 프로시저 + 5종 개별)
+--   SILVER 4                                          → A.5 (BIGQUERY_REFINED_DATA · ITEMS 변환)
+--                                                       + A.5-A (집계 3종 · 일반 COPY)
+--   ML.ML_RST_DATA_* 12                               → A.5-B (7종 프로시저 + VARIANT 5종 개별)
+--
+-- 🔴 SILVER/ML 이관 대상 명시 목록 (A.1 (4) · A.5-B.1 · A.6 필터가 이 목록과 같아야 한다)
+--   SILVER : BIGQUERY_REFINED_DATA(118) · ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA(17)
+--            · ANNUAL_MBRFEE_PRDT_ACTL_DATA(29) · MM_SPNSR_CLS_AGGR_DATA(8)
+--   ML 비VARIANT 7 : CMPGN_CTGR_AMT(6) · MONTHLY_DVLP_AMT(5) · MKTG_CHANNEL_MBER_AVG_LTV(6)
+--            · CMPGN_SPNSR_AMT_LTV(6) · CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION(4)
+--            · MONTHLY_CMPGN_DVLP_AMT(6) · DVLP_INC_CONTRIBUTION(5)            (전부 ML_RST_DATA_ 접두)
+--   ML VARIANT 5   : 아래 총람
+--   ⚠️ SILVER 원천은 61테이블 · ML 원천은 52테이블이다 — 스키마 단위(LIKE) 필터를 쓰지 마라.
 --
 -- 🔴 반정형 컬럼 총람 (일반 COPY 금지 · 전부 TRY_PARSE_JSON 변환 필요)
 --   SILVER.BIGQUERY_REFINED_DATA    118컬럼 · ARRAY   $118 (ITEMS)         → A.5
---   ML.ML_RST_DATA_SPNSR_CHURN_12M   18컬럼 · VARIANT $18  (PREDICTION)    → A.5-B.2
---   ML.ML_RST_DATA_MBER_CHURN_12M    18컬럼 · VARIANT $18  (PREDICTION)    → A.5-B.2
---   ML.ML_RST_DATA_MBER_INC_12M      21컬럼 · VARIANT $21  (PREDICTION)    → A.5-B.2
---   ML.ML_RST_DATA_LOYAL_MBER        22컬럼 · VARIANT $22  (PREDICTION)    → A.5-B.2
---   ML.ML_RST_DATA_ONCE_CONVERSION    5컬럼 · VARIANT $5   (🔴 PREDICT)    → A.5-B.2 (5)
---   ⇒ 브론즈 64개 테이블에는 반정형 컬럼이 없다. A.4 프로시저로 그대로 처리 가능하다.
+--   ML.ML_RST_DATA_SPNSR_CHURN_12M    6컬럼 · VARIANT $6   (PREDICTION)    → A.5-B.2 (1)
+--   ML.ML_RST_DATA_MBER_CHURN_12M     3컬럼 · VARIANT $3   (PREDICTION)    → A.5-B.2 (2)
+--   ML.ML_RST_DATA_MBER_INC_12M       3컬럼 · VARIANT $3   (PREDICTION)    → A.5-B.2 (3)
+--   ML.ML_RST_DATA_LOYAL_MBER         3컬럼 · VARIANT $3   (PREDICTION)    → A.5-B.2 (4)
+--   ML.ML_RST_DATA_ONCE_CONVERSION    3컬럼 · VARIANT $3   (🔴 PREDICT)    → A.5-B.2 (5)
+--   ⇒ 브론즈 64개 · SILVER 집계 3종 · ML 비VARIANT 7종에는 반정형 컬럼이 없다.
 -- =====================================================================
 
 USE ROLE ACCOUNTADMIN;
@@ -193,8 +219,11 @@ ORDER BY 1;
 --     COPY 는 '위치 기반' 적재이므로 컬럼 수뿐 아니라 순서까지 같아야 한다.
 --     헤더 1줄만 읽으므로 (3) 과 달리 비용이 거의 없다. DDL 실행 직후 반드시 실행할 것.
 --     ⚠️ DDL(테이블 생성)이 끝난 뒤에 실행해야 한다. 미실행 시 전 테이블이 TABLE_MISSING 으로 나온다.
---     ⚠️ 대상 = 브론즈 3스키마 + SILVER 대상 1테이블 + ML 결과 17종.
+--     ⚠️ 대상 = 브론즈 5스키마 + SILVER 4테이블 + ML 결과 12종(2026-10-02 O198 · 명시 목록).
 --        DDL 이 그 범위만 만들기 때문에 필터도 같은 범위로 맞춘다.
+--        🔴 ML 을 LIKE 'ML_RST_DATA_%' 로 걸면 C 에 남은 구판 테이블(UCMPGN_LTV 등)이 섞여 판정이 오염된다.
+--     ⚠️ 스테이지에 구판 ML 폴더(ML_RST_DATA_UCMPGN_LTV · _UCMPGN_LTV_SCORE · _CMPGN_LTV · _CMPGN_LTV_SCORE)가
+--        남아 있으면 TABLE_MISSING 으로 나온다 ⇒ DDL 문제가 아니라 **스테이지 잔존**이다. REMOVE 한다.
 WITH stage_hdr AS (
   SELECT SPLIT_PART(METADATA$FILENAME, '/', 1)                              AS sch,
          SPLIT_PART(METADATA$FILENAME, '/', 2)                              AS tbl,
@@ -215,8 +244,14 @@ t AS (
          UPPER(LISTAGG(column_name, ',') WITHIN GROUP (ORDER BY ordinal_position))       AS tbl_col_list
   FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
   WHERE table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
-     OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-     OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%')
+     OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA',
+                                                'ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
+     OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_MBER_INC_12M',
+                                                'ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_ONCE_CONVERSION',
+                                                'ML_RST_DATA_CMPGN_CTGR_AMT','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                                'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                                'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
+                                                'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT','ML_RST_DATA_DVLP_INC_CONTRIBUTION'))
   GROUP BY 1, 2
 )
 SELECT COALESCE(f.sch, t.sch) AS sch,
@@ -237,7 +272,7 @@ ORDER BY 1, 2;
 --   COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 나오면 절대 적재하지 말고 DDL 을 먼저 고친다.
 --     · 🔴 **[2026-08-29 정본 교체] 브론즈 정본은 99_provided_definition/11~13(+15·16)번이다.**
 --       종전 기재 「02_1_A DB정보.sql (A 계정 GET_DDL 실측)」은 **낡았다** —
---       그 파일은 CRM 45 · ERP 1 이고 삭제된 MNYRS_COST_DIV_YN 이 남아 있다(1341행 · 현행 CRM 50).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--       그 파일은 CRM 45 · ERP 1 이고 삭제된 MNYRS_COST_DIV_YN 이 남아 있다(1341행 · 현행 CRM 50).  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --       (현행 CRM 은 50 이다 · 2026-09-15.)
 --       ⇒ 02_1 을 정본으로 쓰면 이 검사에서 나온 불일치를 **거꾸로** 고치게 된다.
 --       근거·판정식은 04번 「병합 규칙」 절을 읽어라.
@@ -313,9 +348,12 @@ $$;
 
 ------------------------------------------------------------
 -- A.4 브론즈 CSV 스키마 적재 실행 (ERP → AGENCY → CRM 순)
---   기대 반환값: ERP 'loaded tables: 2' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 46'
---   ⚠️ CRM 이 43·45 로 나오면 04번 DDL 구판을 실행한 것이다(45 = 2026-08-20 판). 최신판으로 다시 생성할 것.
+--   기대 반환값: ERP 'loaded tables: 2' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 53'
+--     / GA4 'loaded tables: 2' · GSC 'loaded tables: 3' (스테이지 폴더가 없으면 COPY 0행 — 정상)
+--   ⚠️ CRM 이 50 이하로 나오면 04번 DDL 구판을 실행한 것이다. 최신판(2026-10-02)으로 다시 생성할 것.
 --   ⚠️ ERP 가 1 로 나오면 EXPENSE_RESOLUTION 이 없는 구판이다. 04번 최신판으로 다시 생성할 것.
+--   🔴 TM_CM_MBER_DVLP_GOAL_DIV 는 21컬럼(2번째 BDGT_PRCD_NM)이고 M01~M12_GOAL_CNT 가 NUMBER(38,10) 이다.
+--      20컬럼 또는 FLOAT 로 만들어진 C 테이블이면 04번 해당 블록으로 재생성한 뒤 적재한다(A.1 (4) 로 확인).
 --   ⚠️ 선행 조건: A.1 (4) 가 0건(또는 0행 테이블의 FILE_MISSING 만)이어야 한다.
 --
 --   🔴 SILVER · ML 은 이 프로시저로 적재하지 않는다.
@@ -328,8 +366,8 @@ CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_AGENCY');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_CRM');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GA4');
 CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('BRONZE_GSC');
--- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('SILVER');   -- 사용 금지 (ITEMS 가 문자열로 적재된다)
--- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('ML');       -- 사용 금지 (PREDICTION 4종이 문자열로 적재된다)
+-- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('SILVER');   -- 사용 금지 (ITEMS 가 문자열로 적재 · 원천 61테이블 중 이관 대상 외까지 순회)
+-- CALL SANDBOX.TOOLS.LOAD_BRONZE_SCHEMA('ML');       -- 사용 금지 (PREDICTION/PREDICT 5종이 문자열로 적재된다)
 
 ------------------------------------------------------------
 -- A.5 SILVER 적재 — CSV + TRY_PARSE_JSON 변환
@@ -365,22 +403,56 @@ PURGE = FALSE;
 -- SELECT * FROM TABLE(VALIDATE(GN_DW.SILVER.BIGQUERY_REFINED_DATA, JOB_ID => '_last'));
 
 ------------------------------------------------------------
--- A.5-B ML 예측결과 적재 — 17종
---   ⚠️ 선행 필수: 05_데이터마이그 GN_DW_ML_DDL_20260814.sql 실행(ML 테이블 17개 생성).
+-- A.5-A SILVER 예측용 집계 3종 — 일반 COPY (2026-10-02 O198 신규)
+--   대상: ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (17) · ANNUAL_MBRFEE_PRDT_ACTL_DATA (29)
+--         · MM_SPNSR_CLS_AGGR_DATA (8)
+--   🟢 반정형 컬럼이 없다 ⇒ TRY_PARSE_JSON 불필요 · 일반 COPY 로 충분하다(06번 2026-10-02 이력).
+--   ⚠️ A.1 (4) 에서 세 테이블이 0건(또는 0행 원천의 FILE_MISSING)인 것을 먼저 확인한다.
+--   ⚠️ SILVER 원천은 61테이블이므로 스키마 일괄 프로시저를 쓰지 않고 이름으로 하나씩 건다.
+------------------------------------------------------------
+COPY INTO GN_DW.SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA
+FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/SILVER/ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA/
+FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
+ON_ERROR = ABORT_STATEMENT
+PURGE = FALSE;
+
+COPY INTO GN_DW.SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA
+FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/SILVER/ANNUAL_MBRFEE_PRDT_ACTL_DATA/
+FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
+ON_ERROR = ABORT_STATEMENT
+PURGE = FALSE;
+
+COPY INTO GN_DW.SILVER.MM_SPNSR_CLS_AGGR_DATA
+FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/SILVER/MM_SPNSR_CLS_AGGR_DATA/
+FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
+ON_ERROR = ABORT_STATEMENT
+PURGE = FALSE;
+
+------------------------------------------------------------
+-- A.5-B ML 예측결과 적재 — 12종 (2026-10-02 O198 · 종전 17종)
+--   ⚠️ 선행 필수: 05_데이터마이그 GN_DW_ML_DDL_20260814.sql 2026-10-02 판 실행(ML 테이블 12개 생성).
 --      미실행 상태로 적재하면 A.1 (4) 가 ML 전량 TABLE_MISSING 을 낸다.
 --   ⚠️ 선행 필수: A.1 (4) 에서 ML 관련 COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 0건이어야 한다.
+--   🔴🔴 05번 O198-C 로 **10종의 구조가 바뀌었다**(분류 4종 피처 제거 · 시계열 SERIES 개명 등).
+--      ⇒ C 에 구판으로 만든 ML 테이블이 있으면 05번으로 **전부 재생성**하고, 스테이지 ML/ 도 신판 CSV 로 교체한다.
+--      ⇒ 구판 전용 4종(UCMPGN_LTV · UCMPGN_LTV_SCORE · CMPGN_LTV · CMPGN_LTV_SCORE)이 C 에 남아 있으면 DROP 대상이다
+--         (이관 범위 밖 · 02번 2-C REVOKE). 🔴 DROP 은 되돌릴 수 없으니 행수·용도를 확인한 뒤 수동으로 실행한다:
+--         -- DROP TABLE IF EXISTS GN_DW.ML.ML_RST_DATA_UCMPGN_LTV;        (외 3종 동일)
 --
 --   🔴 **A.3 의 LOAD_BRONZE_SCHEMA('ML') 를 쓰지 않는다.**
 --      그 프로시저는 전 테이블에 일반 COPY 를 걸기 때문에 VARIANT 5종의 PREDICTION/PREDICT 가
 --      **JSON 문자열**로 들어가고, `PREDICTION:probability:"1"` 탐색이 불가해진다.
---      ⇒ VARIANT 없는 12종은 A.5-B.1 전용 프로시저로, VARIANT 5종은 A.5-B.2 개별 COPY 로 처리한다.
+--      ⇒ VARIANT 없는 7종은 A.5-B.1 전용 프로시저로, VARIANT 5종은 A.5-B.2 개별 COPY 로 처리한다.
 --
 --   🔴 SERVING 뷰가 이 평탄화 결과에 의존한다(05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql).
 --      문자열로 적재되면 오류 없이 **SV 층에서 조용히 NULL** 이 된다 — 반드시 A.5-B.4 (3) 으로 확인한다.
+--      ⚠️ O198-C 로 피처 컬럼·SERIES 컬럼이 사라졌으므로 SERVING 뷰의 컬럼 참조도 재작성 대상이다(본 파일 범위 밖).
 ------------------------------------------------------------
--- A.5-B.1 VARIANT 없는 12종 일괄 적재
---   대상 = ML_RST_DATA_* 중 VARIANT 컬럼이 없는 것.
---   제외 5종은 프로시저 안에서 이름으로 걸러낸다(위치가 아니라 이름 기준 — 안전하다).
+-- A.5-B.1 VARIANT 없는 7종 일괄 적재
+--   대상 = 이관 대상 12종 중 VARIANT 컬럼이 없는 7종 — **이름 명시 목록**(2026-10-02 변경).
+--   🔴 종전의 `LIKE 'ML_RST_DATA_%' AND NOT IN (VARIANT 5종)` 방식은 폐기했다.
+--      C 에 구판 테이블(UCMPGN_LTV 등)이 남아 있으면 그것까지 COPY 해 실패하거나(폴더 없음 → 0행)
+--      잔존 CSV 를 적재하게 되기 때문이다. 명시 목록은 05번 DDL 과 1:1 이다.
 CREATE OR REPLACE PROCEDURE SANDBOX.TOOLS.LOAD_ML_RESULT_TABLES()
 RETURNS STRING
 LANGUAGE SQL
@@ -391,12 +463,13 @@ DECLARE
     SELECT table_name FROM GN_DW.INFORMATION_SCHEMA.TABLES
     WHERE table_schema = 'ML'
       AND table_type = 'BASE TABLE'
-      AND table_name LIKE 'ML_RST_DATA_%'
-      AND table_name NOT IN ('ML_RST_DATA_SPNSR_CHURN_12M',
-                             'ML_RST_DATA_MBER_CHURN_12M',
-                             'ML_RST_DATA_MBER_INC_12M',
-                             'ML_RST_DATA_LOYAL_MBER',
-                             'ML_RST_DATA_ONCE_CONVERSION');
+      AND table_name IN ('ML_RST_DATA_CMPGN_CTGR_AMT',
+                         'ML_RST_DATA_MONTHLY_DVLP_AMT',
+                         'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV',
+                         'ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                         'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
+                         'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT',
+                         'ML_RST_DATA_DVLP_INC_CONTRIBUTION');
   v_tbl STRING DEFAULT NULL;
   v_sql STRING;
   v_cnt INT DEFAULT 0;
@@ -420,67 +493,65 @@ BEGIN
 END;
 $$;
 
--- 기대 반환값: 'ML non-variant loaded tables: 12'
---   ⚠️ 12 가 아니면 05번 DDL 이 17종을 다 만들지 않았거나 제외 목록(VARIANT 5종)이 어긋난 것이다. A.1 (4) 로 어느 테이블인지 특정한다.
+-- 기대 반환값: 'ML non-variant loaded tables: 7'
+--   ⚠️ 7 이 아니면 05번 DDL 이 7종을 다 만들지 않은 것이다(신규 MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV 확인).
+--      A.1 (4) 로 어느 테이블인지 특정한다.
 CALL SANDBOX.TOOLS.LOAD_ML_RESULT_TABLES();
 
 -- A.5-B.2 VARIANT 5종 — PREDICTION/PREDICT 를 TRY_PARSE_JSON 으로 복원
 --   VARIANT 컬럼은 전부 **마지막 컬럼**이므로 앞 컬럼은 스칼라로 그대로 넘긴다.
+--   🔴 2026-10-02 O198-C 로 위치가 바뀌었다: $18/$18/$21/$22/$5 → **$6/$3/$3/$3/$3**.
 --   ⚠️ 05번 DDL 의 컬럼 순서가 바뀌면 아래 $n 목록을 함께 갱신해야 한다(위치 기반 적재).
 
--- (1) ML_RST_DATA_SPNSR_CHURN_12M — 18컬럼 · VARIANT $18
+-- (1) ML_RST_DATA_SPNSR_CHURN_12M — 6컬럼 · VARIANT $6
+--     (STDR_MT, MBER_NO, SPNSR_BSNS_ID, SPNSR_BSNS_NO, CMPGN_CTGR_CD, PREDICTION)
 COPY INTO GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M
 FROM (
-  SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-         $11,$12,$13,$14,$15,$16,$17, TRY_PARSE_JSON($18)
+  SELECT $1,$2,$3,$4,$5, TRY_PARSE_JSON($6)
   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/ML_RST_DATA_SPNSR_CHURN_12M/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT
 PURGE = FALSE;
 
--- (2) ML_RST_DATA_MBER_CHURN_12M — 18컬럼 · VARIANT $18
+-- (2) ML_RST_DATA_MBER_CHURN_12M — 3컬럼 · VARIANT $3  (STDR_MT, MBER_NO, PREDICTION)
 COPY INTO GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M
 FROM (
-  SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-         $11,$12,$13,$14,$15,$16,$17, TRY_PARSE_JSON($18)
+  SELECT $1,$2, TRY_PARSE_JSON($3)
   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/ML_RST_DATA_MBER_CHURN_12M/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT
 PURGE = FALSE;
 
--- (3) ML_RST_DATA_MBER_INC_12M — 21컬럼 · VARIANT $21
+-- (3) ML_RST_DATA_MBER_INC_12M — 3컬럼 · VARIANT $3  (STDR_MT, MBER_NO, PREDICTION)
 COPY INTO GN_DW.ML.ML_RST_DATA_MBER_INC_12M
 FROM (
-  SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-         $11,$12,$13,$14,$15,$16,$17,$18,$19,$20, TRY_PARSE_JSON($21)
+  SELECT $1,$2, TRY_PARSE_JSON($3)
   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/ML_RST_DATA_MBER_INC_12M/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT
 PURGE = FALSE;
 
--- (4) ML_RST_DATA_LOYAL_MBER — 22컬럼 · VARIANT $22
+-- (4) ML_RST_DATA_LOYAL_MBER — 3컬럼 · VARIANT $3  (STDR_MT, MBER_NO, PREDICTION)
 COPY INTO GN_DW.ML.ML_RST_DATA_LOYAL_MBER
 FROM (
-  SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-         $11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21, TRY_PARSE_JSON($22)
+  SELECT $1,$2, TRY_PARSE_JSON($3)
   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/ML_RST_DATA_LOYAL_MBER/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
 ON_ERROR = ABORT_STATEMENT
 PURGE = FALSE;
 
--- (5) ML_RST_DATA_ONCE_CONVERSION — 5컬럼 · VARIANT $5  (2026-09-28 신규)
+-- (5) ML_RST_DATA_ONCE_CONVERSION — 3컬럼 · VARIANT $3  (STDR_MT, ONCE_MBER_NO, PREDICT)
 --     🔴 VARIANT 컬럼명이 **PREDICT** 다(위 4종은 PREDICTION). 위치 기반이라 COPY 는 동일하지만
 --        검증·SERVING 뷰에서 컬럼명을 PREDICTION 으로 쓰면 invalid identifier 가 난다.
---     🟢 2026-09-28 실측(xf98254): 이 COPY 컴파일 OK · 스테이지 8파일 48,864행 · TRY_PARSE_JSON 성공 48,864
---        · 적재 테이블 48,864행 · A.5-B.4 (3) PARSED 48,864 / UNPARSED 0 / PTYPE OBJECT
---        · PREDICT:probability:"1" NULL 0 · 범위 0~0.9966. (행수는 스테이지 기준이며 A 계정 라이브 대조는 아니다)
+--     🔴 O198-C 로 5→3컬럼 · STDR_MT 가 1번으로 이동 ⇒ 2026-09-28 실측(8파일 48,864행)은 **구판 CSV 기준**이라 무효.
+--        신판 CSV 로 재언로드·재업로드 후 A.1 (4) 와 A.5-B.4 (3) 을 다시 통과시킨다.
 COPY INTO GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION
 FROM (
-  SELECT $1,$2,$3,$4, TRY_PARSE_JSON($5)
+  SELECT $1,$2, TRY_PARSE_JSON($3)
   FROM @SANDBOX.TOOLS.MIG_LOAD_STAGE/ML/ML_RST_DATA_ONCE_CONVERSION/
 )
 FILE_FORMAT = (FORMAT_NAME = SANDBOX.TOOLS.FF_CSV_LOAD)
@@ -498,8 +569,10 @@ PURGE = FALSE;
 -- (1) 테이블 수 / 총 행수 — 03번 3.1 의 ML 집계와 대조
 SELECT COUNT(*) AS tables, SUM(row_count) AS total_rows
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
-WHERE table_schema = 'ML' AND table_type = 'BASE TABLE';
--- 기대: tables = 17 · total_rows = 03번 3.1 실측값과 일치
+WHERE table_schema = 'ML' AND table_type = 'BASE TABLE'
+  AND table_name LIKE 'ML_RST_DATA_%';
+-- 기대: tables = 12 · total_rows = 03번 3.1 실측값과 일치
+--   ⚠️ 12 보다 크면 구판 전용 4종(UCMPGN_LTV 등)이 C 에 남아 있는 것이다 — A.5-B 머리말 참조.
 --   정본 = 05_SV-Agent_ai/20_ML_SV_설계.md §0-A (테이블별 행수)
 
 -- (2) 테이블별 행수 대조표 — 03번 3.1 과 테이블 단위로 비교
@@ -569,13 +642,19 @@ SELECT table_schema, COUNT(*) AS tables, SUM(row_count) AS total_rows
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA',
+                                                   'ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
+        OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_MBER_INC_12M',
+                                                   'ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_ONCE_CONVERSION',
+                                                   'ML_RST_DATA_CMPGN_CTGR_AMT','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                                   'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                                   'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
+                                                   'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT','ML_RST_DATA_DVLP_INC_CONTRIBUTION')) )
 GROUP BY 1 ORDER BY 1;
 -- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 2 · BRONZE_GA4 2 · BRONZE_GSC 3
---       · ML 17 · SILVER 1 = 82 테이블
+--       · ML 12 · SILVER 4 = 80 테이블
 --       행수는 03번 3.1 / 02번 5단계 실측값과 일치해야 한다.
---       🔴 이 수치는 04·05·06번 DDL 의 2026-09-28 판 기준이다. DDL 을 갱신하면 여기도 함께 고쳐라
+--       🔴 이 수치는 04·05·06번 DDL 의 2026-10-02 판(O198) 기준이다. DDL 을 갱신하면 여기도 함께 고쳐라
 --          (수치가 문서 두 곳에 있으므로 한 곳만 고치면 조용히 어긋난다).
 --       ⚠️ BRONZE_GA4 · BRONZE_GSC 는 CSV 적재 대상이 아니므로 **행수 0 이 정상**이다
 --          (구조만 생성 · Google API 적재는 C 에서 SP_LOAD_* 를 별도 구성해야 채워진다).
@@ -589,8 +668,14 @@ SELECT table_schema, table_name
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE' AND row_count = 0
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') );
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA',
+                                                   'ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
+        OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_MBER_INC_12M',
+                                                   'ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_ONCE_CONVERSION',
+                                                   'ML_RST_DATA_CMPGN_CTGR_AMT','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                                   'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                                   'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
+                                                   'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT','ML_RST_DATA_DVLP_INC_CONTRIBUTION')) );
 
 -- (3) 🔴 SILVER ITEMS JSON 파싱 확인 → PTYPE = 'ARRAY' 여야 정상
 --     PTYPE 가 'VARCHAR' 로 나오면 TRY_PARSE_JSON 이 적용되지 않은 것이다
@@ -612,8 +697,14 @@ SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA',
+                                                   'ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
+        OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_MBER_INC_12M',
+                                                   'ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_ONCE_CONVERSION',
+                                                   'ML_RST_DATA_CMPGN_CTGR_AMT','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                                   'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                                   'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
+                                                   'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT','ML_RST_DATA_DVLP_INC_CONTRIBUTION')) )
 ORDER BY table_schema, table_name;
 
 -- (5) VALIDATE — 직전 COPY의 거부 행 확인 (기대: 0건)
