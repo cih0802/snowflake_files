@@ -28,38 +28,18 @@ END-METADATA -->
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0196-A.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-A.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0197-A.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0197-A.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 6개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-D.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-E.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-F.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O196-A-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-A.md:17` |
-| ▣ O196-A-1 🟠 남은 작업 (우선순) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-A.md:23` |
-| ▣ O196-B-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582 · 사용자 일괄 승인 집행) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-B.md:17` |
-| ▣ O196-B-1 🟠 남은 작업 — ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-B.md:23` |
-| ▣ O196-B-2 🟠 남은 작업 — ㉡ 워크스페이스 백로그(사용자·현업 결정) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-B.md:30` |
-| ▣ O196-C-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-C.md:17` |
-| ▣ O196-C-1 🟠 남은 작업 — ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-C.md:24` |
-| ▣ O196-C-2 🟠 남은 작업 — ㉡ 외부 회신 대기(실측 = 여전히 열림) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-C.md:32` |
-| ▣ O196-D-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-D.md:17` |
-| ▣ O196-D-1 🟠 남은 작업 — ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-D.md:24` |
-| ▣ O196-D-2 🟠 남은 작업 — ㉡ 결정·외부 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-D.md:33` |
-| ▣ O196-E-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-E.md:17` |
-| ▣ O196-E-1 🟠 남은 작업 — ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-E.md:24` |
-| ▣ O196-F-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582 · 세션 마무리) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-F.md:17` |
-| ▣ O196-F-1 🟠 남은 작업 — ㉠ O196 계열 잔여 (신규 요건 뒤) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-F.md:24` |
-| ▣ O196-F-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0196-F.md:34` |
+| ▣ O197-A-0 🔴 먼저 알아라 (2026-10-01 · 개발계 pw69582 · MSTR 1차 이관 PoC) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0197-A.md:17` |
+| ▣ O197-A-1 🟠 남은 작업 — ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0197-A.md:25` |
+| ▣ O197-A-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0197-A.md:34` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -78,18 +58,18 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O196-E` | 🟢 O196-E — build 판정 · SV_RELATION_ACTIVITY 신설 · D-4 ⓑ 확정 (2026-10-01 · pw69582) | 🟢 STOP 99.74% · 신규 2종 행수 일치 · 🟠 FMD 고아 FK 11,421(모델 수정 · 재build… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:104` |
-| `O196-D` | 🟢 O196-D — DEC-59 결정 집행(⑭ 귀속 · ⑩ 재분류·정의 소유 · 원천 각주 차원 제외) + DEC-58 구현(DIM_SEND_REQUEST · FACT_RELAT… | 🟢 DDL 라이브 · 게이트 PASS · Agent V5/V6/V6 · 🟠 dbt build 대기 · 🔴 D-4 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O196-C` | 🟢 O196-C — EXEC·MKT Agent 원천 괄호 MEMBER 형식(BRONZE 테이블명) · DEC-58 결정 등재 · 백로그 실측 (2026-10-01 · pw6958… | 🟢 Agent EXEC V5 · MKT V5(default) · lineage ④ 6→0 · 🟠 DEC-58 구현… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O196` | 🟢 O196 — NL 스모크 재측정(39 + 가드 5 · O195-A ▣1 순1) (2026-10-01 · 계정 pw69582 · 개발계) | 🟢 39/39 PASS(중간 오류 1 · 기준선 2→1) · 🟢 가드 5/5 · 🟢 트라이얼 차단 없음 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O194` | 🟢 O194 — init_ihcho 스킬 브리핑 백그라운드 Step 0 승격 + 정본 경량화(현재 지시만 · 경위는 개발이력) (2026-10-01 · pw69582 · 라이브 … | 🟢 SKILL.md 432→260줄(36.6→19.2KB) · 본문 정본 40.9→24KB · 검증기 I9~I12… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O195` | 🟢 O195 — ML 예측 3종 DROP(사용자 지시) + DDL 정본 반영 · o192_* 3종 gate_census 등재(MUTATES) · Step 0 첫 호출 실측 (20… | 🟢 ML 14종 · 정본 CREATE 14/GRANT 14 일치 · 🟢 census 미분류 0 · 테스트 2종 통… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O197` | 🟢 O197 — MSTR 1차 이관 PoC Snowflake 전환 + 도구 모듈화(2026-10-01 · pw69582 · 개발계) | 🟢 GN_DW.MSTR 매니페스트↔라이브 일치 · 202601 baseline PASS · ExplCampList… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:104` |
+| `O196-E` | 🟢 O196-E — build 판정 · SV_RELATION_ACTIVITY 신설 · D-4 ⓑ 확정 (2026-10-01 · pw69582) | 🟢 STOP 99.74% · 신규 2종 행수 일치 · 🟠 FMD 고아 FK 11,421(모델 수정 · 재build… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O196-D` | 🟢 O196-D — DEC-59 결정 집행(⑭ 귀속 · ⑩ 재분류·정의 소유 · 원천 각주 차원 제외) + DEC-58 구현(DIM_SEND_REQUEST · FACT_RELAT… | 🟢 DDL 라이브 · 게이트 PASS · Agent V5/V6/V6 · 🟠 dbt build 대기 · 🔴 D-4 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O196-C` | 🟢 O196-C — EXEC·MKT Agent 원천 괄호 MEMBER 형식(BRONZE 테이블명) · DEC-58 결정 등재 · 백로그 실측 (2026-10-01 · pw6958… | 🟢 Agent EXEC V5 · MKT V5(default) · lineage ④ 6→0 · 🟠 DEC-58 구현… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O196` | 🟢 O196 — NL 스모크 재측정(39 + 가드 5 · O195-A ▣1 순1) (2026-10-01 · 계정 pw69582 · 개발계) | 🟢 39/39 PASS(중간 오류 1 · 기준선 2→1) · 🟢 가드 5/5 · 🟢 트라이얼 차단 없음 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O194` | 🟢 O194 — init_ihcho 스킬 브리핑 백그라운드 Step 0 승격 + 정본 경량화(현재 지시만 · 경위는 개발이력) (2026-10-01 · pw69582 · 라이브 … | 🟢 SKILL.md 432→260줄(36.6→19.2KB) · 본문 정본 40.9→24KB · 검증기 I9~I12… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 17 | 443,083 | 40,370 | 590 🟠 |
+| `00_INDEX_이슈원장` | 17 | 443,465 | 40,752 | 208 🟠 |
 | `01_세션이력` | 84 | 2,105,732 | 38,225 | 28,697 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
@@ -112,10 +92,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 24,867 | 24,867 | 16,093 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 6,632 | 6,632 | 34,328 |
-| `00_BRIEF` | — | 10,672 | 10,672 | 30,288 |
+| `00_BRIEF` | — | 11,390 | 11,390 | 29,570 |
 | `11_O누적작업_점검_재현_절차` | — | 30,765 | 30,765 | 10,195 |
 
-> 전 문서군 = **3,121,071 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,121,935 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태

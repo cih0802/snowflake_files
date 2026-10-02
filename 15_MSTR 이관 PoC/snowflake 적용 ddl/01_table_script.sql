@@ -24,13 +24,13 @@ CREATE TABLE IF NOT EXISTS GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM (
   ACMSLT_DEPT3_CD      VARCHAR(10)  COMMENT '실적부서3코드',
   ACMSLT_DEPT4_CD      VARCHAR(10)  COMMENT '실적부서4코드',
   CMPGN_CD             VARCHAR(20)  COMMENT '캠페인코드',
-  CMPGN_CLS1_CD        VARCHAR(3)   COMMENT '캠페인구분 희망TV. ExplCampList 미이관으로 전건 99',
-  CMPGN_CLS2_CD        VARCHAR(3)   COMMENT '캠페인구분 희망편지쓰기. ExplCampList 미이관으로 전건 99',
+  CMPGN_CLS1_CD        VARCHAR(3)   COMMENT '캠페인구분 희망TV. ExplCampList 미이관(IT 확인 skip) — 고정 99',
+  CMPGN_CLS2_CD        VARCHAR(3)   COMMENT '캠페인구분 희망편지쓰기. ExplCampList 미이관(IT 확인 skip) — 고정 99',
   CMPGN_CLS3_CD        VARCHAR(3)   COMMENT '캠페인구분 희망학교(후원사업 38 기준 산출)',
   UPPER_CMPGN_CD       VARCHAR(20)  COMMENT '상위캠페인코드',
   BRND_ID              VARCHAR(30)  COMMENT '브랜드ID',
   PR_MTH_CD            VARCHAR(4)   COMMENT '홍보방법코드(미매핑 9999 수용 위해 4자리)',
-  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. ExplCampList 미이관으로 전건 N',
+  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. ExplCampList 미이관(IT 확인 skip) — 고정 N',
   PRE_CMPGN_CD         VARCHAR(20)  COMMENT '직전캠페인코드',
   SETLE_CD             VARCHAR(3)   COMMENT '결제코드',
   MBER_DIV_CD          VARCHAR(3)   COMMENT '회원구분코드',
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CMPGN_CD (
   LAST_UPDT_DT         TIMESTAMP_NTZ,
   CMPGN_DC             VARCHAR(500),
   EMRGNCY_AID_BPLC_CD  NUMBER(10,0),
-  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. 원본은 ExplCampList(CampaignCls=3)로 Y 갱신 — 원천 부재로 미이관 · 전건 N',
+  SPCL_CMPGN_YN        VARCHAR(1)   COMMENT '특정캠페인여부. 원본은 ExplCampList(CampaignCls=3)로 Y 갱신 — IT 확인 skip · 고정 N',
   WORK_DE              VARCHAR(8)   NOT NULL,
   CONSTRAINT D_CMPGN_CD_PK PRIMARY KEY (CMPGN_CD)
 ) COMMENT = 'MSTR 이관 — 캠페인. 원천 BRONZE_CRM.TM_CM_CMPGN_MNG';
@@ -241,19 +241,11 @@ CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CM_DEPT_INFO (
   CONSTRAINT D_CM_DEPT_INFO_PK PRIMARY KEY (DEPT_ID)
 ) COMMENT = 'MSTR 이관 — 부서정보. 원천 BRONZE_CRM.TM_CM_DEPT_INFO';
 
--- [9] 베이스 — 캠페인특별코드 (원천 ExplCampList 미이관 ⇒ 빈 테이블로 유지 · 조인 시 기본값 99)
-CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_CMPGN_EXPL_CD (
-  CMPGN_CD        VARCHAR(20)  NOT NULL,
-  CMPGN_NM        VARCHAR(200),
-  CMPGN_CLS_CD    VARCHAR(20)  NOT NULL,
-  UPPER_CMPGN_CD  VARCHAR(20),
-  UPPER_CMPGN_NM  VARCHAR(200),
-  PR_MTH_CD       VARCHAR(3),
-  USE_DEPT_CD     VARCHAR(20),
-  "COMMENT"       VARCHAR(200),
-  WORK_DE         VARCHAR(8)   NOT NULL,
-  CONSTRAINT D_CMPGN_EXPL_CD_PK PRIMARY KEY (CMPGN_CD, CMPGN_CLS_CD)
-) COMMENT = 'MSTR 이관 — 캠페인특별코드. 원본 원천 MSTR_ODS.DBO.ExplCampList 는 BRONZE 에 없어 미적재(빈 테이블). 원천 확보 시 적재 프로시저 추가';
+-- [9] (제거) D_CMPGN_EXPL_CD — 원천 MSTR_ODS.DBO.ExplCampList 는 「스페셜 캠페인」 하드코딩 마스터로
+--     2년간 갱신 없음 · IT팀 확인 「UPDATE 부분 skip」(2026-10-01) ⇒ 테이블·적재·조인 전부 미이관
+--     영향 컬럼 = F_MM_SPNSR_DVLP(_SUM).CMPGN_CLS1_CD·CLS2_CD(고정 99) · D_CMPGN_CD.SPCL_CMPGN_YN(고정 N)
+--     · 1차 리포트 쿼리 미사용 · IT 제공 코드목록(278건)은 CampaignCls 가 없어 원본 재현 불가
+
 
 -- [10] 베이스 — 회원개발목표
 CREATE TABLE IF NOT EXISTS GN_DW.MSTR.D_MBER_DVLP_GOAL_CD (

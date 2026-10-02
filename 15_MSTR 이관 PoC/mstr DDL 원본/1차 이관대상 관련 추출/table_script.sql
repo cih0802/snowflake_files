@@ -274,26 +274,6 @@ GO
 
 -- ======================================================================
 
-CREATE TABLE [mart].[D_CMPGN_EXPL_CD](
-	[CMPGN_CD] [varchar](20) NOT NULL,
-	[CMPGN_NM] [varchar](200) NULL,
-	[CMPGN_CLS_CD] [varchar](20) NOT NULL,
-	[UPPER_CMPGN_CD] [varchar](20) NULL,
-	[UPPER_CMPGN_NM] [varchar](200) NULL,
-	[PR_MTH_CD] [varchar](3) NULL,
-	[USE_DEPT_CD] [varchar](20) NULL,
-	[COMMENT] [varchar](200) NULL,
-	[WORK_DE] [varchar](8) NOT NULL,
- CONSTRAINT [D_CMPGN_EXPL_CD_PK] PRIMARY KEY NONCLUSTERED 
-(
-	[CMPGN_CD] ASC,
-	[CMPGN_CLS_CD] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-
--- ======================================================================
-
 CREATE TABLE [mart].[D_MBER_DVLP_GOAL_CD](
 	[STDYY] [varchar](4) NOT NULL,
 	[STDR_MT] [varchar](6) NOT NULL,
@@ -334,6 +314,26 @@ CREATE TABLE [mart].[BchLog](
  CONSTRAINT [BchLog_PK] PRIMARY KEY NONCLUSTERED 
 (
 	[LogKey] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-- ======================================================================
+
+CREATE TABLE [mart].[D_CMPGN_EXPL_CD](
+	[CMPGN_CD] [varchar](20) NOT NULL,
+	[CMPGN_NM] [varchar](200) NULL,
+	[CMPGN_CLS_CD] [varchar](20) NOT NULL,
+	[UPPER_CMPGN_CD] [varchar](20) NULL,
+	[UPPER_CMPGN_NM] [varchar](200) NULL,
+	[PR_MTH_CD] [varchar](3) NULL,
+	[USE_DEPT_CD] [varchar](20) NULL,
+	[COMMENT] [varchar](200) NULL,
+	[WORK_DE] [varchar](8) NOT NULL,
+ CONSTRAINT [D_CMPGN_EXPL_CD_PK] PRIMARY KEY NONCLUSTERED 
+(
+	[CMPGN_CD] ASC,
+	[CMPGN_CLS_CD] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO

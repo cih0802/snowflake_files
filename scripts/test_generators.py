@@ -235,6 +235,9 @@ def measure():
         r08 = list(csv.DictReader(open(os.path.join(OUT, "08_SILVER→GOLD_보존율.csv"), encoding="utf-8-sig")))
         m["08.rows"] = len(r08)
         m["08.status"] = dict(collections.Counter(r["STATUS"] for r in r08))
+        # 🆕 [2026-10-02 O198] 행 키 목록도 저장한다 — 개수만 담은 골든은 +104 행 중 2행을
+        #   귀속할 수 없었다(O196-B · O111-B 와 같은 결함) ⇒ diff() 가 원소 단위로 열거한다.
+        m["08.row_keys"] = sorted(f'{r["SILVER_TABLE"]}.{r["COLUMN"]}' for r in r08)
     _guard(m, "08", _08)
 
     # 07 — md 전용. 존재·생성기 표기만 확인(수치는 md 본문 파싱이 취약해 골든에 넣지 않는다).

@@ -1,0 +1,165 @@
+{
+ "batch": "1차",
+ "label": "O197",
+ "report_query": "mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql",
+ "extract_dir": "mstr DDL 원본/1차 이관대상 관련 추출",
+ "deps_snapshot": "tools/manifests/1차_deps.json",
+ "objects": {
+  "TABLE": [
+   "F_MM_SPNSR_DVLP_SUM",
+   "F_MM_SPNSR_DVLP",
+   "D_BRND_CD",
+   "D_CMPGN_CD",
+   "D_SPNSR_BSNS_INFO",
+   "D_CMMN_DTL_CD",
+   "D_STRD_CAL_CD",
+   "D_CM_DEPT_INFO",
+   "D_MBER_DVLP_GOAL_CD",
+   "BCHLOG"
+  ],
+  "VIEW": [
+   "D_DVLP_DIV_CD",
+   "D_STRD_DE_CD",
+   "D_CPR_DIV_CD",
+   "D_DEPT4_CD",
+   "D_DEPT_CD",
+   "D_DEPT3_CD",
+   "D_UP_CMPGN_CD",
+   "D_SEX_CD",
+   "D_AGE_TERM_CD",
+   "D_DEPT2_CD",
+   "D_PR_MTH_CD",
+   "D_STRD_MT_CD",
+   "D_SPNSR_BSNS_V"
+  ],
+  "PROCEDURE": [
+   "USP_BCHLOG",
+   "USP_BCHERR",
+   "USP_D_CMMN_DTL_CD",
+   "USP_D_STRD_CAL_CD",
+   "USP_D_CM_DEPT_INFO",
+   "USP_D_BRND_CD",
+   "USP_D_CMPGN_CD",
+   "USP_D_SPNSR_BSNS_INFO",
+   "USP_D_MBER_DVLP_GOAL_CD",
+   "USP_F_MM_SPNSR_DVLP",
+   "USP_F_MM_SPNSR_DVLP_SUM",
+   "USP_F_MM_SPNSR_DVLP_SUM_INIT"
+  ],
+  "FUNCTION": [
+   "FN_MM_SPNSR_DVLP",
+   "FN_MM_ACT_DATE"
+  ]
+ },
+ "new_objects": {
+  "PROCEDURE": [
+   "USP_RUN_MSTR_1ST"
+  ]
+ },
+ "evidence": {
+  "PROCEDURE": [
+   "USP_D_STRD_DE_CD",
+   "USP_D_CMPGN_EXPL_CD",
+   "USP_F_MM_SPNSR_DVLP_INIT"
+  ],
+  "TABLE": [
+   "D_CMPGN_EXPL_CD"
+  ]
+ },
+ "decisions": [
+  {
+   "id": "X1",
+   "object": "ExplCampList · D_CMPGN_EXPL_CD · USP_D_CMPGN_EXPL_CD",
+   "action": "제외",
+   "effect": "CMPGN_CLS1/2_CD 고정 99 · SPCL_CMPGN_YN 고정 N",
+   "basis": "IT팀 확인 2026-10-01 — 스페셜 캠페인 하드코딩 마스터 · 2년 미갱신 · UPDATE skip. IT 제공 코드목록 278건은 CampaignCls 부재로 재현 불가"
+  },
+  {
+   "id": "X2",
+   "object": "USP_D_STRD_DE_CD (TABLE D_STRD_DE_CD 적재)",
+   "action": "제외",
+   "effect": "D_STRD_DE_CD 는 VIEW 로 이관",
+   "basis": "원본에서 같은 이름이 VIEW·TABLE 로 충돌"
+  },
+  {
+   "id": "X3",
+   "object": "USP_F_MM_SPNSR_DVLP_INIT",
+   "action": "제외",
+   "effect": "USP_RUN_MSTR_1ST(I_HIST=TRUE) 가 월별 재적재로 대체",
+   "basis": "mstr_deps 자동 탐지 · 초기 적재 전용"
+  },
+  {
+   "id": "K1",
+   "object": "FN_MM_ACT_DATE",
+   "action": "이관(미사용)",
+   "effect": "호출부 원본 주석 — 정의만 보존",
+   "basis": "mstr_deps 가 호출 0 으로 탐지(주석 제외)"
+  },
+  {
+   "id": "K2",
+   "object": "TM_MM_FDRM_MBER_INFO.BRTHDY",
+   "action": "NULL",
+   "effect": "AGE = 원천 AGE 1~9 행 NULL · 그 외 0",
+   "basis": "BRONZE_CRM 에 컬럼 부재(실측)"
+  },
+  {
+   "id": "K3",
+   "object": "D_STRD_DE_CD·D_CMPGN_CD 등 PR_MTH_CD",
+   "action": "VARCHAR(4)",
+   "effect": "미매핑 기본값 '9999' 수용",
+   "basis": "원본 varchar(3) 에 '9999' 는 잘림"
+  }
+ ],
+ "baseline": {
+  "202601": {
+   "fact_by_dvlp": [
+    {
+     "DVLP_DIV_CD": "1",
+     "N": 10930,
+     "MBR": 10122,
+     "AMT": 213467600
+    },
+    {
+     "DVLP_DIV_CD": "2",
+     "N": 2692,
+     "MBR": 2390,
+     "AMT": 52044600
+    },
+    {
+     "DVLP_DIV_CD": "3",
+     "N": 1571,
+     "MBR": 1571,
+     "AMT": -35288611
+    },
+    {
+     "DVLP_DIV_CD": "4",
+     "N": 1452,
+     "MBR": 1306,
+     "AMT": 28565000
+    },
+    {
+     "DVLP_DIV_CD": "5",
+     "N": 11942,
+     "MBR": 10658,
+     "AMT": -240246299
+    }
+   ],
+   "fixed_cols": [
+    {
+     "CLS1_NOT_99": 0,
+     "CLS2_NOT_99": 0,
+     "SPCL_NOT_N": 0,
+     "DEPT_UNMAPPED": 0
+    }
+   ],
+   "report_summary": [
+    {
+     "ROWS_OUT": 10227,
+     "CNT": 29407.72,
+     "AMT": 294077200,
+     "ROWS_WITH_UNMAPPED": 0
+    }
+   ]
+  }
+ }
+}

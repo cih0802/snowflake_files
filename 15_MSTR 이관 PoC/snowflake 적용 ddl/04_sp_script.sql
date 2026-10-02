@@ -1,0 +1,1018 @@
+-- Co-authored with CoCo
+-- =====================================================================
+-- 04. GN_DW.MSTR 프로시저 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
+--   T-SQL → Snowflake Scripting(LANGUAGE SQL). 공통 변환 규칙:
+--     @i_ym/@i_ymd · @i_oper · @o_msg OUTPUT  → I_YM/I_YMD · I_OPER 인자 + RETURNS VARCHAR(메시지)
+--     SET NOCOUNT · READ UNCOMMITTED · WITH(TABLOCK) · WHILE DELETE TOP(10000) → 제거 / DELETE 1회
+--     TRUNCATE TABLE (트랜잭션 안)       → DELETE FROM (Snowflake 에서 롤백 가능한 DML 로 유지)
+--     @@ROWCOUNT → SQLROWCOUNT · @@PROCID → 프로시저 이름 상수 · GETDATE() → CURRENT_TIMESTAMP()
+--     BEGIN TRY/CATCH · XACT_STATE        → EXCEPTION WHEN OTHER THEN ROLLBACK
+--     EXEC MART.USP_BCHLOG …             → CALL GN_DW.MSTR.USP_BCHLOG(…)
+--     FROM FN_X(@p)                       → FROM TABLE(GN_DW.MSTR.FN_X(:I_YM))
+--     MSTR_ODS.DBO.<T>                    → GN_DW.BRONZE_CRM.<T>
+--   🔴 미이관 2건(사유):
+--     ㉠ USP_D_CMPGN_EXPL_CD·D_CMPGN_EXPL_CD — 원천 ExplCampList(스페셜 캠페인 하드코딩 · 2년 미갱신) IT 확인 skip ⇒ 테이블·조인 제거
+--        · USP_D_CMPGN_CD 의 ExplCampList UPDATE(SPCL_CMPGN_YN='Y')도 제외 ⇒ 전건 'N'
+--     ㉡ USP_D_STRD_DE_CD — 원본에서 D_STRD_DE_CD 가 VIEW 로도 정의돼 이름 충돌 ⇒ VIEW(02) 채택
+--   🔴 BRONZE TM_MM_FDRM_MBER_INFO 에 BRTHDY 가 없다 ⇒ AGE: 원천 AGE 1~9 행 = NULL · 그 외 0(원본 ELSE 그대로)
+--   실행 순서 = USP_RUN_MSTR_1ST(맨 아래) 참조
+-- =====================================================================
+USE ROLE GN_DW_ADMIN;
+USE SCHEMA GN_DW.MSTR;
+
+-- ---------------------------------------------------------------------
+-- [0] 배치 로그 2종
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_BCHLOG(
+  I_RUNKEY NUMBER, I_LOGPROC VARCHAR, I_LOGMAN VARCHAR, I_LOGMSG VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — 배치 로그 기록'
+AS
+$$
+BEGIN
+  INSERT INTO GN_DW.MSTR.BCHLOG (LOGTIME, RUNKEY, LOGMSG, LOGPROC, LOGMAN, ALMYN)
+  VALUES (CURRENT_TIMESTAMP()::TIMESTAMP_NTZ, :I_RUNKEY, :I_LOGMSG, :I_LOGPROC, :I_LOGMAN, FALSE);
+  RETURN :I_LOGMSG;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_BCHERR(
+  I_RUNKEY NUMBER, I_LOGPROC VARCHAR, I_LOGMAN VARCHAR,
+  I_ERRNUM NUMBER, I_ERRMSG VARCHAR, I_SQLSTATE VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — 오류 로그 기록. 원본의 사용자정의 오류(50000·feecd 조회)는 Snowflake 대응 없음으로 제외'
+AS
+$$
+DECLARE
+  V_LOGMSG  VARCHAR;
+  V_ERRNOTE VARCHAR;
+BEGIN
+  V_LOGMSG := 'Error#' || IFNULL(I_ERRNUM::VARCHAR, '?') || ': 기타오류';
+  V_ERRNOTE := CASE I_ERRNUM
+                 WHEN 100072 THEN 'NULL값이 들어갈수 없음.(NOT NULL 제약조건)'
+                 WHEN 100038 THEN '데이터타입 변환 오류.'
+                 ELSE NULL END;
+  INSERT INTO GN_DW.MSTR.BCHLOG
+    (LOGTIME, RUNKEY, LOGMSG, LOGPROC, LOGMAN, ERRNUM, ERRSTTS, ERRMSG, ERRNOTE, ALMYN)
+  VALUES
+    (CURRENT_TIMESTAMP()::TIMESTAMP_NTZ, :I_RUNKEY, :V_LOGMSG, :I_LOGPROC, :I_LOGMAN,
+     :I_ERRNUM, :I_SQLSTATE, LEFT(:I_ERRMSG, 2048), :V_ERRNOTE, FALSE);
+  RETURN V_LOGMSG;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [1] 베이스 — 공통상세코드 (CRM 코드 + MART 고정코드 + 코드별 「없음」 멤버)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_CMMN_DTL_CD(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_CMMN_DTL_CD 적재. 원천 BRONZE_CRM.TC_CMMN_CD·TC_CMMN_DTL_CD'
+AS
+$$
+DECLARE
+  V_PROC   VARCHAR DEFAULT 'USP_D_CMMN_DTL_CD';
+  V_MSG    VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+  V_JOBDT  TIMESTAMP_NTZ DEFAULT CURRENT_DATE()::TIMESTAMP_NTZ;
+  V_WORKDE VARCHAR DEFAULT TO_CHAR(CURRENT_DATE(), 'YYYYMMDD');
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_CMMN_DTL_CD;
+
+  -- (1) CRM 공통코드
+  INSERT INTO GN_DW.MSTR.D_CMMN_DTL_CD
+    (CD_ID, DTL_CD_ID, CD_NM, DTL_CD_NM, SORT_ORDR, RM, USE_YN, CD_ATRB1, CD_ATRB2, CD_ATRB3,
+     FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, UPPER_CD_ID, CD_TYP_CD, WORK_DE)
+  SELECT DISTINCT
+    B.CD_ID, B.DTL_CD_ID, A.CD_NM, B.DTL_CD_NM, B.SORT_ORDR, B.RM, IFNULL(B.USE_YN, 'Y'),
+    B.CD_ATRB1, B.CD_ATRB2, B.CD_ATRB3,
+    B.FRST_RGSTR_ID, B.FRST_REGIST_DT, B.LAST_UPDUSR_ID, B.LAST_UPDT_DT, B.UPPER_CD_ID,
+    'CRM', :V_WORKDE
+  FROM GN_DW.BRONZE_CRM.TC_CMMN_CD A
+  JOIN GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD B
+    ON A.CD_ID = B.CD_ID;
+  V_MSG := '일배치 : MART공통코드 Insert01: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  -- (2) MART 고정코드 (원본 VALUES 그대로 · 주석 처리된 DMPM10 미납서비스 4행은 원본도 제외)
+  INSERT INTO GN_DW.MSTR.D_CMMN_DTL_CD
+    (CD_ID, DTL_CD_ID, CD_NM, DTL_CD_NM, SORT_ORDR, RM, USE_YN, CD_ATRB1, CD_ATRB2, CD_ATRB3,
+     FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, UPPER_CD_ID, CD_TYP_CD, WORK_DE)
+  SELECT V.CD_ID, V.DTL_CD_ID, V.CD_NM, V.DTL_CD_NM, V.SORT_ORDR, '', 'Y', 'NA', 'NA', 'NA',
+         'dwdev', :V_JOBDT, 'dwdev', :V_JOBDT, '', 'MART', :V_WORKDE
+  FROM (VALUES
+     ('DMMS01', '1', '입입채널구분코드', '온라인', 1)
+    ,('DMMS01', '2', '입입채널구분코드', '콜센터', 2)
+    ,('DMMS02', '1', '문자구분코드', '알림톡', 1)
+    ,('DMMS02', '2', '문자구분코드', '문자', 2)
+    ,('DMMS03', '1', '활동중단구분코드', '활동', 1)
+    ,('DMMS03', '2', '활동중단구분코드', '중단', 2)
+    ,('DMMS03', '3', '활동중단구분코드', '증액', 3)
+    ,('DMMS03', '4', '활동중단구분코드', '감액', 4)
+    ,('DMMS05', '1', '미납서비스코드', '우편', 1)
+    ,('DMMS05', '2', '미납서비스코드', '이메일', 2)
+    ,('DMMS05', '3', '미납서비스코드', '문자', 3)
+    ,('DMMS05', '4', '미납서비스코드', 'TS', 4)
+    ,('DMMS06', '1', '발신결과코드', '성공', 1)
+    ,('DMMS06', '0', '발신결과코드', '실패', 2)
+    ,('DMMM01', '1', '회원상태구분2코드', '활동', 1)
+    ,('DMMM01', '2', '회원상태구분2코드', '중단', 2)
+    ,('DMMM02', 'Y', '여부코드', '예', 1)
+    ,('DMMM02', 'N', '여부코드', '아니오', 2)
+    ,('DMMM03', '1', '중단경로코드', '시스템중단', 1)
+    ,('DMMM03', '2', '중단경로코드', '직원중단', 2)
+    ,('DMMM03', '3', '중단경로코드', '회원중단', 3)
+    ,('DMMM04', '1', '캠페인구분코드', '희망TV', 1)
+    ,('DMMM04', '2', '캠페인구분코드', '희망편지쓰기대회', 2)
+    ,('DMMM04', '3', '캠페인구분코드', '희망학교', 3)
+    ,('DMMM05', '1', '가입회원구분코드', '정기', 1)
+    ,('DMMM05', '2', '가입회원구분코드', '일시', 2)
+    ,('DMMM06', 'M', '성별구분코드', '남자', 1)
+    ,('DMMM06', 'F', '성별구분코드', '여자', 2)
+    ,('DMMM07', '1', '신규/기존회원구분코드', '신규', 1)
+    ,('DMMM07', '2', '신규/기존회원구분코드', '기존', 2)
+    ,('DMMM08', '1', '후원기간대2코드', '1년미만', 1)
+    ,('DMMM08', '2', '후원기간대2코드', '1년이상~2년미만', 2)
+    ,('DMMM08', '3', '후원기간대2코드', '2년이상~3년미만', 3)
+    ,('DMMM08', '4', '후원기간대2코드', '3년이상~4년미만', 4)
+    ,('DMMM08', '5', '후원기간대2코드', '4년이상~5년미만', 5)
+    ,('DMMM08', '6', '후원기간대2코드', '5년이상~6년미만', 6)
+    ,('DMMM08', '7', '후원기간대2코드', '6년이상~7년미만', 7)
+    ,('DMMM08', '8', '후원기간대2코드', '7년이상~8년미만', 8)
+    ,('DMMM08', '9', '후원기간대2코드', '8년이상~9년미만', 9)
+    ,('DMMM08', '10', '후원기간대2코드', '9년이상~10년미만', 10)
+    ,('DMMM08', '11', '후원기간대2코드', '10년이상', 11)
+    ,('DMMM09', '1', '후원금액2코드', '1만원미만', 1)
+    ,('DMMM09', '2', '후원금액2코드', '1만원이상~2만원미만', 2)
+    ,('DMMM09', '3', '후원금액2코드', '2만원이상~3만원미만', 3)
+    ,('DMMM09', '4', '후원금액2코드', '3만원이상~4만원미만', 4)
+    ,('DMMM09', '5', '후원금액2코드', '4만원이상~5만원미만', 5)
+    ,('DMMM09', '6', '후원금액2코드', '5만원이상~6만원미만', 6)
+    ,('DMMM09', '7', '후원금액2코드', '6만원이상~7만원미만', 7)
+    ,('DMMM09', '8', '후원금액2코드', '7만원이상~8만원미만', 8)
+    ,('DMMM09', '9', '후원금액2코드', '8만원이상~9만원미만', 9)
+    ,('DMMM09', '10', '후원금액2코드', '9만원이상~10만원미만', 10)
+    ,('DMMM09', '11', '후원금액2코드', '10만원이상~50만원미만', 11)
+    ,('DMMM09', '12', '후원금액2코드', '50만원이상', 12)
+    ,('DMMM10', '1', '중단사유분류코드', '개인측면', 1)
+    ,('DMMM10', '2', '중단사유분류코드', '기관측면', 2)
+    ,('DMMM10', '3', '중단사유분류코드', '시스템측면', 3)
+    ,('DMMM10', '4', '중단사유분류코드', '기타', 4)
+    ,('DMRM01', '1', '결연기록구분코드', '결연기록있음', 1)
+    ,('DMRM01', '2', '결연기록구분코드', '결연기록없음', 2)
+    ,('DMRM02', '1', '사업장상태코드', '신규', 1)
+    ,('DMRM02', '2', '사업장상태코드', '기존', 2)
+    ,('DMRM02', '3', '사업장상태코드', '종결', 3)
+    ,('DMRM03', '1', '결연유지기간코드', '1년미만', 1)
+    ,('DMRM03', '2', '결연유지기간코드', '1년이상~5년미만', 2)
+    ,('DMRM03', '3', '결연유지기간코드', '5년이상~10년미만', 3)
+    ,('DMRM03', '4', '결연유지기간코드', '10년이상', 4)
+    ,('DMRM04', '1', '결연회원유형코드', '결연회원', 1)
+    ,('DMRM04', '2', '결연회원유형코드', '1:2이상&3만미만결연회원', 2)
+    ,('DMRM04', '3', '결연회원유형코드', '1:2이상결연회원', 3)
+    ,('DMRM04', '4', '결연회원유형코드', '3만원미만결연회원', 4)
+    ,('DMRM05', '1', '회원유형코드', '일반회원', 1)
+    ,('DMRM05', '2', '회원유형코드', '기업매칭회원', 2)
+    ,('DMRM06', 'F', '아동성별코드', '여자', 2)
+    ,('DMRM06', 'M', '아동성별코드', '남자', 1)
+    ,('DMPM01', '1', '기준년월구분코드', '납입일자', 1)
+    ,('DMPM01', '2', '기준년월구분코드', '환급일자', 2)
+    ,('DMPM02', '1', '정기일시회비구분코드', '정기회비', 1)
+    ,('DMPM02', '2', '정기일시회비구분코드', '일시회비', 2)
+    ,('DMPM03', '1', '함께출금구분코드', '청구', 1)
+    ,('DMPM03', '2', '함께출금구분코드', '출금', 2)
+    ,('DMPM03', '3', '함께출금구분코드', '미출금', 3)
+    ,('DMPM03', '4', '함께출금구분코드', '미청구', 4)
+    ,('DMPM03', '5', '함께출금구분코드', '환급', 5)
+    ,('DMPM03', '9', '함께출금구분코드', '함께출금', 6)
+    ,('DMPM04', '1', '회비통장작업구분코드', '회비종류별', 1)
+    ,('DMPM04', '2', '회비통장작업구분코드', '후원사업별', 2)
+    ,('DMPM04', '3', '회비통장작업구분코드', '가입회원별', 3)
+    ,('DMPM04', '4', '회비통장작업구분코드', '정기66회원현황', 4)
+    ,('DMPM05', '1', '66회원구분코드', '일시(비지정)', 1)
+    ,('DMPM05', '2', '66회원구분코드', '확인불가', 2)
+    ,('DMPM05', '3', '66회원구분코드', '회원확인', 3)
+    ,('DMPM06', '1', '선물금이관구분코드', '이관(입)', 1)
+    ,('DMPM06', '2', '선물금이관구분코드', '이관(출)', 2)
+    ,('DMPM07', '1', '환급방식코드', '계좌환급', 1)
+    ,('DMPM07', '2', '환급방식코드', '승인취소', 2)
+    ,('DMPM08', '1', '회비유형코드', '일반회비', 1)
+    ,('DMPM08', '2', '회비유형코드', '지정회비', 2)
+    ,('DMPM09', '1', '고액기준대코드', '10만원이상~100만원미만', 1)
+    ,('DMPM09', '2', '고액기준대코드', '100만원이상~1000만원미만', 2)
+    ,('DMPM09', '3', '고액기준대코드', '1000만원이상', 2)
+    ,('DMPM10', '1', '정기일시미처리코드', '정기', 1)
+    ,('DMPM10', '2', '정기일시미처리코드', '일시', 2)
+    ,('DMPM10', '3', '정기일시미처리코드', '미처리', 2)
+    ,('DMPM11', '1', '회비유형코드', '지정', 1)
+    ,('DMPM11', '2', '회비유형코드', '비지정', 2)
+    ,('DMPM12', '1', '회비기부금유형코드', '회비', 1)
+    ,('DMPM12', '2', '회비기부금유형코드', '기부금', 2)
+    ,('DMPM13', '11', '청구출금구분코드', '신규', 1)
+    ,('DMPM13', '12', '청구출금구분코드', '기존지정', 2)
+    ,('DMPM13', '13', '청구출금구분코드', '전차수미청구', 3)
+    ,('DMPM13', '14', '청구출금구분코드', '재청구', 4)
+    ,('DMPM13', '22', '청구출금구분코드', '출금', 5)
+    ,('DMPM13', '33', '청구출금구분코드', '미출금', 6)
+    ,('DMPM13', '44', '청구출금구분코드', '미청구', 7)
+    ,('DMPM13', '55', '청구출금구분코드', '환급', 8)
+    ,('DMPM13', '99', '청구출금구분코드', '함께출금', 9)
+    ,('DMPM14', '1', '청구출금구분코드', '청구', 1)
+    ,('DMPM14', '2', '청구출금구분코드', '출금', 2)
+    ,('DMPM14', '3', '청구출금구분코드', '미출금', 3)
+    ,('DMPM14', '4', '청구출금구분코드', '미청구', 4)
+    ,('DMPM14', '5', '청구출금구분코드', '환급', 5)
+  ) AS V (CD_ID, DTL_CD_ID, CD_NM, DTL_CD_NM, SORT_ORDR);
+  V_MSG := '일배치 : MART공통코드 Insert02: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  -- (3) 코드별 「없음」 멤버 (최대값이 영문 → Z / Z~ · 숫자 → 자릿수별 99… )
+  --     원본 DATALENGTH(바이트) → LENGTH(문자) — DTL_CD_ID 는 영숫자라 동일
+  INSERT INTO GN_DW.MSTR.D_CMMN_DTL_CD
+    (CD_ID, DTL_CD_ID, CD_NM, DTL_CD_NM, SORT_ORDR, RM, USE_YN, CD_ATRB1, CD_ATRB2, CD_ATRB3,
+     FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, UPPER_CD_ID, CD_TYP_CD, WORK_DE)
+  SELECT
+    CD_ID,
+    CASE WHEN MVAL > 'A' AND MSIZE = 1 THEN 'Z'
+         WHEN MVAL > 'A' AND MSIZE > 1 THEN 'Z~'
+         WHEN MVAL < 'A' AND MSIZE = 1 THEN '99'
+         WHEN MVAL < 'A' AND MSIZE = 2 THEN '999'
+         WHEN MVAL < 'A' AND MSIZE = 3 THEN '9999'
+         ELSE '99999' END,
+    CD_NM, '없음', 999, '', 'Y', '', '', '',
+    FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, UPPER_CD_ID, CD_TYP_CD, WORK_DE
+  FROM (
+    SELECT
+      MAX(LENGTH(DTL_CD_ID)) OVER (PARTITION BY CD_ID) AS MSIZE,
+      MAX(DTL_CD_ID)         OVER (PARTITION BY CD_ID) AS MVAL,
+      D.*
+    FROM GN_DW.MSTR.D_CMMN_DTL_CD D
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY CD_ID ORDER BY DTL_CD_ID) = 1
+  );
+  V_MSG := '일배치 : MART공통코드 Insert03: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [2] 베이스 — 달력 (원천 없음 · 1970-01-01 부터 365*60일 + 9999-12-31 + 1900-01-01)
+--     원본 WHILE 21,900회 INSERT → GENERATOR 1회 · DATENAME(DW) 한글(서버 로캘) → 요일 매핑
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_STRD_CAL_CD(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_STRD_CAL_CD 생성'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_STRD_CAL_CD';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_STRD_CAL_CD;
+
+  INSERT INTO GN_DW.MSTR.D_STRD_CAL_CD
+    (SYMD, YMD, YM, YY, MM, DD, QQ, BA, DW, HDAY_YN, HDAY_NM, WORK_DE)
+  SELECT * FROM (
+  WITH D AS (
+    SELECT DATEADD(DAY, ROW_NUMBER() OVER (ORDER BY SEQ4()), '1969-12-31'::DATE) AS SYMD
+    FROM TABLE(GENERATOR(ROWCOUNT => 21900))
+    UNION ALL SELECT '9999-12-31'::DATE
+    UNION ALL SELECT '1900-01-01'::DATE
+  ),
+  W AS (
+    SELECT SYMD,
+           DECODE(DAYOFWEEKISO(SYMD), 1, '월요일', 2, '화요일', 3, '수요일', 4, '목요일',
+                                      5, '금요일', 6, '토요일', 7, '일요일') AS DW
+    FROM D
+  )
+  SELECT
+    SYMD,
+    TO_CHAR(SYMD, 'YYYYMMDD'),
+    TO_CHAR(SYMD, 'YYYYMM'),
+    TO_CHAR(SYMD, 'YYYY'),
+    TO_CHAR(SYMD, 'MM'),
+    TO_CHAR(SYMD, 'DD'),
+    QUARTER(SYMD)::VARCHAR,
+    CASE WHEN TO_CHAR(SYMD, 'MM') BETWEEN '01' AND '06' THEN '1' ELSE '2' END,
+    DW,
+    CASE WHEN DW IN ('토요일', '일요일') THEN 'Y' ELSE 'N' END,
+    CASE WHEN DW IN ('토요일', '일요일') THEN DW END,
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM W
+  );
+
+  V_MSG := '일배치 : 달력생성 Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [3] 베이스 — 부서정보 (+ Z~ 멤버: 원본 DEPT_ID = A000000 행 속성 복제)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_CM_DEPT_INFO(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_CM_DEPT_INFO 적재. 원천 BRONZE_CRM.TM_CM_DEPT_INFO'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_CM_DEPT_INFO';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_CM_DEPT_INFO;
+
+  INSERT INTO GN_DW.MSTR.D_CM_DEPT_INFO
+    (DEPT_ID, DEPT_NM, UPPER_DEPT_ID, SORT_ORDR, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT,
+     LAST_UPDUSR_ID, LAST_UPDT_DT, ACMSLT_DEPT_YN, STATS_DEPT_LVL, ACMSLT_UPPER_DEPT_ID, WORK_DE)
+  SELECT
+    DEPT_ID, DEPT_NM, UPPER_DEPT_ID, SORT_ORDR, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT,
+    LAST_UPDUSR_ID, LAST_UPDT_DT, ACMSLT_DEPT_YN, STATS_DEPT_LVL, ACMSLT_UPPER_DEPT_ID,
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO
+  UNION ALL
+  SELECT
+    'Z~', 'N/A', 'ZV000000', SORT_ORDR, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT,
+    LAST_UPDUSR_ID, LAST_UPDT_DT, ACMSLT_DEPT_YN, STATS_DEPT_LVL, 'A000001',
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO
+  WHERE DEPT_ID = 'A000000';
+
+  V_MSG := '일배치 : D_부서정보Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [4] 차원 — 브랜드 (+ Z~ 없음 · 원본 TOP 1 → LIMIT 1)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_BRND_CD(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_BRND_CD 적재. 원천 BRONZE_CRM.TM_CM_BRND_MNG'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_BRND_CD';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_BRND_CD;
+
+  INSERT INTO GN_DW.MSTR.D_BRND_CD
+    (BRND_ID, BRND_NM, USE_DEPT_CD, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT,
+     LAST_UPDUSR_ID, LAST_UPDT_DT, PR_MTH_LIST, WORK_DE)
+  SELECT BRND_ID, BRND_NM, USE_DEPT_CD, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT,
+         LAST_UPDUSR_ID, LAST_UPDT_DT, PR_MTH_LIST, TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_BRND_MNG
+  UNION ALL
+  SELECT * FROM (
+    SELECT 'Z~', '없음', 'Z~', 'Y', FRST_RGSTR_ID, FRST_REGIST_DT,
+           LAST_UPDUSR_ID, LAST_UPDT_DT, NULL, TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+    FROM GN_DW.BRONZE_CRM.TM_CM_BRND_MNG
+    LIMIT 1
+  );
+
+  V_MSG := '일배치 : 브랜드관리Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [5] 차원 — 캠페인 (+ Z~ 없음: 원본 CMPGN_CD = U0027 행 속성 복제)
+--     🔴 ExplCampList UPDATE(SPCL_CMPGN_YN = 'Y') 미이관 — IT 확인 skip(2년 미갱신) · 1차 리포트 쿼리 미사용 컬럼
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_CMPGN_CD(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_CMPGN_CD 적재. 원천 BRONZE_CRM.TM_CM_CMPGN_MNG. ExplCampList 갱신 제외'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_CMPGN_CD';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_CMPGN_CD;
+
+  INSERT INTO GN_DW.MSTR.D_CMPGN_CD
+    (CMPGN_CD, CMPGN_NM, UPPER_CMPGN_CD, UPPER_CMPGN_YN, SPNSR_DIV_CD, CPR_DIV_CD,
+     CMPGN_TRGET_CD, USE_DEPT_CD, USE_SCOPE, SPNSR_ENTRPRS_ID, BRND_ID, PR_MTH_CD,
+     CMPGN_STRT_DE, MBRFEE_BNKB_LIST, INICIS_ACNT_NO, USE_YN, REFER_URL, SPNSR_BSNS_ID,
+     ATCHFL_ID, FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, CMPGN_DC,
+     EMRGNCY_AID_BPLC_CD, SPCL_CMPGN_YN, WORK_DE)
+  SELECT
+    CMPGN_CD, CMPGN_NM, UPPER_CMPGN_CD, UPPER_CMPGN_YN, SPNSR_DIV_CD, CPR_DIV_CD,
+    CMPGN_TRGET_CD, USE_DEPT_CD, USE_SCOPE, SPNSR_ENTRPRS_ID, IFNULL(BRND_ID, '0'), PR_MTH_CD,
+    CMPGN_STRT_DE, MBRFEE_BNKB_LIST, INICIS_ACNT_NO, USE_YN, REFER_URL, SPNSR_BSNS_ID,
+    ATCHFL_ID, FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, CMPGN_DC,
+    EMRGNCY_AID_BPLC_CD, 'N', TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
+  UNION ALL
+  SELECT
+    'Z~', '없음', 'Z~', UPPER_CMPGN_YN, SPNSR_DIV_CD, CPR_DIV_CD,
+    CMPGN_TRGET_CD, USE_DEPT_CD, USE_SCOPE, SPNSR_ENTRPRS_ID, IFNULL(BRND_ID, 'Z~'), PR_MTH_CD,
+    CMPGN_STRT_DE, MBRFEE_BNKB_LIST, INICIS_ACNT_NO, USE_YN, REFER_URL, SPNSR_BSNS_ID,
+    ATCHFL_ID, FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, CMPGN_DC,
+    EMRGNCY_AID_BPLC_CD, 'N', TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
+  WHERE CMPGN_CD = 'U0027';
+
+  V_MSG := '일배치 : 캠페인코드 Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [6] 차원 — 후원사업정보 (법인 1→I · 2→S · + 99 없음)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_SPNSR_BSNS_INFO(I_YMD VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_SPNSR_BSNS_INFO 적재. 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_SPNSR_BSNS_INFO';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_SPNSR_BSNS_INFO;
+
+  INSERT INTO GN_DW.MSTR.D_SPNSR_BSNS_INFO
+    (SPNSR_BSNS_ID, SPNSR_DIV_CD, SPNSR_BSNS_NM, SPNSR_BSNS_ABRV_CD, DNTN_TY_CD, SORT_ORDR,
+     CPR_DIV_CD, RM, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, WORK_DE)
+  SELECT
+    SPNSR_BSNS_ID, SPNSR_DIV_CD, SPNSR_BSNS_NM, SPNSR_BSNS_ABRV_CD, DNTN_TY_CD, SORT_ORDR,
+    CASE WHEN CPR_DIV_CD = '1' THEN 'I' WHEN CPR_DIV_CD = '2' THEN 'S' ELSE CPR_DIV_CD END,
+    RM, USE_YN, FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT,
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO
+  UNION ALL
+  SELECT * FROM (
+    SELECT '99', '0', '없음', '99', '0', 999, 'Z', '', 'Y',
+           FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT,
+           TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+    FROM GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO
+    LIMIT 1
+  );
+
+  V_MSG := '일배치 :D_후원사업정보관리Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [7] 베이스 — 회원개발목표
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_MBER_DVLP_GOAL_CD(I_YM VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — D_MBER_DVLP_GOAL_CD 적재. 원천 BRONZE_CRM.TM_CM_MBER_DVLP_GOAL'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_D_MBER_DVLP_GOAL_CD';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.D_MBER_DVLP_GOAL_CD;
+
+  INSERT INTO GN_DW.MSTR.D_MBER_DVLP_GOAL_CD
+    (STDYY, STDR_MT, MBER_DVLP_DIV_CD, DEPT_ID, GOAL_CNT,
+     FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, WORK_DE)
+  SELECT DISTINCT
+    STDYY, STDR_MT, MBER_DVLP_DIV_CD, DEPT_ID, GOAL_CNT,
+    FRST_RGSTR_ID, FRST_REGIST_DT, LAST_UPDUSR_ID, LAST_UPDT_DT, TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL;
+
+  V_MSG := '일배치 :D_회원개발목표Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [8] 중간 팩트 — F_MM_SPNSR_DVLP (월 단위 DELETE → INSERT → DVLP_CNT·증액여부 MERGE 2회)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_F_MM_SPNSR_DVLP(I_YM VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — F_MM_SPNSR_DVLP 월 적재. 원천 BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_F_MM_SPNSR_DVLP';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.F_MM_SPNSR_DVLP WHERE STRD_MT = :I_YM;
+  V_MSG := '일배치 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Delete: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  INSERT INTO GN_DW.MSTR.F_MM_SPNSR_DVLP
+    (STRD_MT, OCCRRNC_DE, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, ACT_DEPT_CD, ACMSLT_DEPT_CD,
+     ACMSLT_DEPT2_CD, ACMSLT_DEPT3_CD, ACMSLT_DEPT4_CD, CMPGN_CD, CMPGN_CLS1_CD, CMPGN_CLS2_CD,
+     CMPGN_CLS3_CD, UPPER_CMPGN_CD, BRND_ID, PR_MTH_CD, SPCL_CMPGN_YN, PRE_CMPGN_CD, SETLE_CD,
+     MBER_DIV_CD, SEX, AREA_CD, AGE_TERM_CD, AGE, PAYER_AGE_TERM_CD, SPNSR_TIME_CO,
+     SPNSR_TERM_MT_CNT, SPNSR_TERM_CD, SPNSR_AMT_CD, SPNSR_TERM2_CD, SPNSR_AMT2_CD, SPNSR_BSNS_ID,
+     SPNSR_BSNS_ABRV_CD, CPR_DIV_CD, CANCL_RDCAMT_RSN_CD, SPNSR_AMT, SPNSR_AMT_CNT, MT_GOAL_CNT,
+     YY_GOAL_CNT, DVLP_DIV_CD, DVLP_CNT, RDCAMT_YN, MT_ADD_SPNSR_AMT_YN, WORK_DE)
+  SELECT
+    LEFT(A.OCCRRNC_DE, 6), A.OCCRRNC_DE, A.SPNSR_NO, A.SPNSR_BSNS_NO, A.SER_NO, A.MBER_NO,
+    A.ACT_DEPT_CD, A.ACMSLT_DEPT_CD,
+    B.DEPT2_ID, B.DEPT3_ID, B.DEPT4_ID,
+    A.CMPGN_CD,
+    '99', '99', '99',  -- CMPGN_CLS1~3 · ExplCampList 미이관(IT 확인 skip)
+    IFNULL(C.UPPER_CMPGN_CD, 'Z~'), IFNULL(C.BRND_ID, 'Z~'), IFNULL(C.PR_MTH_CD, '9999'),
+    IFNULL(C.SPCL_CMPGN_YN, 'Z'),
+    IFNULL(CASE WHEN A.DVLP_DIV_CD = '4' AND A.SPNSR_AMT > 0 THEN A.PRE_CMPGN_CD END, 'Z~'),
+    A.SETLE_CD, A.MBER_DIV_CD, A.SEX, A.AREA_CD,
+    A.AGE,
+    CASE WHEN A.AGE IN (1, 2, 3, 4, 5, 6, 7, 8, 9) THEN NULL ELSE 0 END,  -- BRTHDY 부재
+    '0', A.SPNSR_TIME_CO,
+    0, '0', A.SPNSR_AMT_CD, '0', '0',
+    A.SPNSR_BSNS_ID,
+    IFNULL(F.SPNSR_BSNS_ABRV_CD, '99'), IFNULL(F.CPR_DIV_CD, '0'),
+    IFNULL(A.CANCL_RDCAMT_RSN_CD, '999'),
+    A.SPNSR_AMT, A.SPNSR_AMT / 10000.0,
+    IFNULL(G.GOAL_CNT, 0), IFNULL(G.YYAMT, 0),
+    A.DVLP_DIV_CD, 0, 'N', 'N',
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM (
+    SELECT
+      LAG(CMPGN_CD, 1) OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO ORDER BY OCCRRNC_DE) AS PRE_CMPGN_CD,
+      X.*
+    FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT X
+    WHERE X.OCCRRNC_DE BETWEEN :I_YM || '01' AND :I_YM || '31'
+  ) A
+  LEFT JOIN GN_DW.MSTR.D_DEPT_CD B        ON A.ACMSLT_DEPT_CD = B.DEPT_ID
+  LEFT JOIN GN_DW.MSTR.D_CMPGN_CD C       ON A.CMPGN_CD = C.CMPGN_CD
+  LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_INFO F ON A.SPNSR_BSNS_ID = F.SPNSR_BSNS_ID
+  LEFT JOIN (
+    SELECT SUM(GOAL_CNT) OVER (PARTITION BY STDYY, DEPT_ID, MBER_DVLP_DIV_CD) AS YYAMT, GL.*
+    FROM GN_DW.MSTR.D_MBER_DVLP_GOAL_CD GL
+  ) G
+    ON A.ACMSLT_DEPT_CD = G.DEPT_ID
+   AND LEFT(A.OCCRRNC_DE, 6) = G.STDYY || G.STDR_MT
+   AND A.DVLP_DIV_CD = G.MBER_DVLP_DIV_CD;
+  V_MSG := '일배치 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  -- MERGE 1: 개발건수 대상(신규·재후원 후원사업 월합 > 0 / 증액·감액·중단 회원 월합 > 0) → DVLP_CNT = 1
+  MERGE INTO GN_DW.MSTR.F_MM_SPNSR_DVLP A
+  USING (
+    SELECT DISTINCT STRD_MT, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, OCCRRNC_DE
+    FROM (
+      SELECT STRD_MT, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, OCCRRNC_DE
+      FROM GN_DW.MSTR.F_MM_SPNSR_DVLP
+      WHERE DVLP_DIV_CD IN ('1', '4') AND STRD_MT = :I_YM
+      QUALIFY SUM(SPNSR_AMT) OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO, STRD_MT) > 0
+      UNION ALL
+      SELECT STRD_MT, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, OCCRRNC_DE
+      FROM GN_DW.MSTR.F_MM_SPNSR_DVLP
+      WHERE DVLP_DIV_CD IN ('2', '3', '5') AND STRD_MT = :I_YM
+      QUALIFY SUM(SPNSR_AMT) OVER (PARTITION BY MBER_NO, STRD_MT) > 0
+    )
+  ) C
+    ON  A.STRD_MT = C.STRD_MT AND A.SPNSR_NO = C.SPNSR_NO AND A.SPNSR_BSNS_NO = C.SPNSR_BSNS_NO
+    AND A.SER_NO = C.SER_NO AND A.MBER_NO = C.MBER_NO AND A.OCCRRNC_DE = C.OCCRRNC_DE
+  WHEN MATCHED THEN UPDATE SET DVLP_CNT = 1;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  UPDATE1: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  -- MERGE 2: 증액·감액 개발건 중 후원사업 월합 > 0 이고 회원 누적(후원번호순) > 0 → 증액여부 Y
+  MERGE INTO GN_DW.MSTR.F_MM_SPNSR_DVLP A
+  USING (
+    SELECT
+      STRD_MT, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, OCCRRNC_DE,
+      SUM(SPNSR_AMT) OVER (PARTITION BY MBER_NO, STRD_MT ORDER BY SPNSR_NO) AS RAMT,
+      SUM(SPNSR_AMT) OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO, STRD_MT) AS SAMT
+    FROM GN_DW.MSTR.F_MM_SPNSR_DVLP
+    WHERE STRD_MT = :I_YM
+      AND DVLP_DIV_CD IN ('2', '3')
+      AND DVLP_CNT = 1
+  ) C
+    ON  A.STRD_MT = C.STRD_MT AND A.SPNSR_NO = C.SPNSR_NO AND A.SPNSR_BSNS_NO = C.SPNSR_BSNS_NO
+    AND A.SER_NO = C.SER_NO AND A.MBER_NO = C.MBER_NO AND A.OCCRRNC_DE = C.OCCRRNC_DE
+  WHEN MATCHED THEN UPDATE SET MT_ADD_SPNSR_AMT_YN = CASE WHEN C.SAMT > 0 AND C.RAMT > 0 THEN 'Y' ELSE 'N' END;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  UPDATE2: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [9] 최종 마트 — F_MM_SPNSR_DVLP_SUM 월 적재 (FN_MM_SPNSR_DVLP 기반)
+--     선행 = 차원·베이스 적재 + F_MM_SPNSR_DVLP(이력 전체 — SPNSR_AMT2_CD 의 최초 개발금액 조회)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_F_MM_SPNSR_DVLP_SUM(I_YM VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — F_MM_SPNSR_DVLP_SUM 월 적재'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_F_MM_SPNSR_DVLP_SUM';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM WHERE STRD_MT = :I_YM;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Delete: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  INSERT INTO GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM
+    (STRD_MT, OCCRRNC_DE, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, ACT_DEPT_CD, ACMSLT_DEPT_CD,
+     ACMSLT_DEPT2_CD, ACMSLT_DEPT3_CD, ACMSLT_DEPT4_CD, CMPGN_CD, CMPGN_CLS1_CD, CMPGN_CLS2_CD,
+     CMPGN_CLS3_CD, UPPER_CMPGN_CD, BRND_ID, PR_MTH_CD, SPCL_CMPGN_YN, PRE_CMPGN_CD, SETLE_CD,
+     MBER_DIV_CD, SEX, AREA_CD, AGE_TERM_CD, AGE, PAYER_AGE_TERM_CD, SPNSR_TIME_CO,
+     SPNSR_TERM_MT_CNT, SPNSR_TERM_CD, SPNSR_AMT_CD, SPNSR_TERM2_CD, SPNSR_AMT2_CD, SPNSR_BSNS_ID,
+     SPNSR_BSNS2_ID, SPNSR_BSNS_ABRV_CD, CPR_DIV_CD, CANCL_RDCAMT_RSN_CD, SPNSR_AMT, SPNSR_AMT_CNT,
+     MT_GOAL_CNT, YY_GOAL_CNT, DVLP_DIV_CD, DVLP_CNT, RDCAMT_YN, MT_ADD_SPNSR_AMT_YN,
+     NEW_OLD_DIV_CD, WORK_DE)
+  SELECT
+    LEFT(A.OCCRRNC_DE, 6), A.OCCRRNC_DE, A.SPNSR_NO, A.SPNSR_BSNS_NO, A.SER_NO, A.MBER_NO,
+    A.ACT_DEPT_CD, A.ACMSLT_DEPT_CD,
+    B.DEPT2_ID, B.DEPT3_ID, B.DEPT4_ID,
+    A.CMPGN_CD,
+    '99',  -- CMPGN_CLS1 · ExplCampList 미이관(IT 확인 skip)
+    '99',  -- CMPGN_CLS2
+    CASE WHEN A.H_DSC_DE > LEFT(A.OCCRRNC_DE, 6) AND A.H_BSNS_ID = '38' THEN '3' ELSE '99' END,
+    IFNULL(C.UPPER_CMPGN_CD, 'Z~'), IFNULL(C.BRND_ID, 'Z~'), IFNULL(C.PR_MTH_CD, '9999'),
+    IFNULL(C.SPCL_CMPGN_YN, 'N'),
+    IFNULL(CASE WHEN A.DVLP_DIV_CD = '4' AND A.SPNSR_AMT > 0 THEN A.PRE_CMPGN_CD END, '0'),
+    A.SETLE_CD, A.MBER_DIV_CD, A.SEX, A.AREA_CD,
+    A.AGE,
+    CASE WHEN A.AGE IN (1, 2, 3, 4, 5, 6, 7, 8, 9) THEN NULL ELSE 0 END,  -- BRTHDY 부재
+    '0', A.SPNSR_TIME_CO,
+    A.TERM_MT,
+    CASE WHEN A.TERM_YY < 1 THEN '1' WHEN A.TERM_YY < 5 THEN '2'
+         WHEN A.TERM_YY < 10 THEN '3' WHEN A.TERM_YY >= 10 THEN '4' ELSE '99' END,
+    A.SPNSR_AMT_CD,
+    CASE WHEN A.TERM_YY < 1 THEN '1'
+         WHEN A.TERM_YY BETWEEN 1 AND 9 THEN (A.TERM_YY + 1)::VARCHAR
+         WHEN A.TERM_YY >= 10 THEN '11' ELSE '999' END,
+    CASE WHEN I.SPNSR_AMT2 < 10000 THEN '1'
+         WHEN I.SPNSR_AMT2 BETWEEN 10000  AND 19999  THEN '2'
+         WHEN I.SPNSR_AMT2 BETWEEN 20000  AND 29999  THEN '3'
+         WHEN I.SPNSR_AMT2 BETWEEN 30000  AND 39999  THEN '4'
+         WHEN I.SPNSR_AMT2 BETWEEN 40000  AND 49999  THEN '5'
+         WHEN I.SPNSR_AMT2 BETWEEN 50000  AND 59999  THEN '6'
+         WHEN I.SPNSR_AMT2 BETWEEN 60000  AND 69999  THEN '7'
+         WHEN I.SPNSR_AMT2 BETWEEN 70000  AND 79999  THEN '8'
+         WHEN I.SPNSR_AMT2 BETWEEN 80000  AND 89999  THEN '9'
+         WHEN I.SPNSR_AMT2 BETWEEN 90000  AND 99999  THEN '10'
+         WHEN I.SPNSR_AMT2 BETWEEN 100000 AND 499999 THEN '11'
+         WHEN I.SPNSR_AMT2 >= 500000 THEN '12'
+         ELSE '999' END,
+    A.SPNSR_BSNS_ID,
+    CASE WHEN A.SPNSR_BSNS_ID IN ('14', '15', '16', '21', '22') THEN '4' ELSE A.SPNSR_BSNS_ID END,
+    IFNULL(F.SPNSR_BSNS_ABRV_CD, '0'), IFNULL(F.CPR_DIV_CD, '0'),
+    A.CANCL_RDCAMT_RSN_CD,
+    A.SPNSR_AMT, A.SPNSR_AMT / 10000.0,
+    IFNULL(G.GOAL_CNT, 0), IFNULL(G.YYAMT, 0),
+    A.DVLP_DIV_CD, 1,
+    CASE WHEN A.DVLP_DIV_CD = '3' THEN 'Y' ELSE 'N' END,
+    CASE WHEN A.DVLP_DIV_CD = '2' THEN 'Y' ELSE 'N' END,
+    CASE WHEN SUBSTR(A.OCCRRNC_DE, 1, 4) = TO_CHAR(E.FRST_REGIST_DT, 'YYYY') THEN '1' ELSE '2' END,
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM (
+    SELECT
+      F.*,
+      H.SPNSR_BSNS_ID AS H_BSNS_ID, H.FST_DE AS H_FST_DE, H.DSC_DE AS H_DSC_DE,
+      -- 후원기간 종료 기준일 = MIN(발생일, 중단일)
+      DATEDIFF(YEAR,  TO_DATE(H.FST_DE, 'YYYYMMDD'),
+               TO_DATE(CASE WHEN F.OCCRRNC_DE < H.DSC_DE THEN F.OCCRRNC_DE ELSE H.DSC_DE END, 'YYYYMMDD')) AS TERM_YY,
+      DATEDIFF(MONTH, TO_DATE(H.FST_DE, 'YYYYMMDD'),
+               TO_DATE(CASE WHEN F.OCCRRNC_DE < H.DSC_DE THEN F.OCCRRNC_DE ELSE H.DSC_DE END, 'YYYYMMDD')) AS TERM_MT
+    FROM TABLE(GN_DW.MSTR.FN_MM_SPNSR_DVLP(:I_YM)) F
+    LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_V H
+      ON F.SPNSR_NO = H.SPNSR_NO AND F.SPNSR_BSNS_NO = H.SPNSR_BSNS_NO
+    WHERE F.STRD_MT = :I_YM
+  ) A
+  LEFT JOIN GN_DW.MSTR.D_DEPT_CD B        ON A.ACMSLT_DEPT_CD = B.DEPT_ID
+  LEFT JOIN GN_DW.MSTR.D_CMPGN_CD C       ON A.CMPGN_CD = C.CMPGN_CD
+  LEFT JOIN GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO E ON A.MBER_NO = E.MBER_NO
+  LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_INFO F ON A.SPNSR_BSNS_ID = F.SPNSR_BSNS_ID
+  LEFT JOIN (
+    SELECT SUM(GOAL_CNT) OVER (PARTITION BY STDYY, DEPT_ID, MBER_DVLP_DIV_CD) AS YYAMT, GL.*
+    FROM GN_DW.MSTR.D_MBER_DVLP_GOAL_CD GL
+  ) G
+    ON A.ACMSLT_DEPT_CD = G.DEPT_ID
+   AND LEFT(A.OCCRRNC_DE, 6) = G.STDYY || G.STDR_MT
+   AND A.DVLP_DIV_CD = G.MBER_DVLP_DIV_CD
+  LEFT JOIN (
+    -- 후원사업별 최초(일련번호 순) 정상 개발건의 금액 · 이력 전체 대상(원본 동일)
+    SELECT SPNSR_NO, SPNSR_BSNS_NO, STRD_MT, DVLP_DIV_CD AS DVLP_DIV_CD2,
+           SPNSR_AMT AS SPNSR_AMT2
+    FROM GN_DW.MSTR.F_MM_SPNSR_DVLP
+    WHERE DVLP_DIV_CD IN ('1', '2', '4')
+      AND IFNULL(CANCL_RDCAMT_RSN_CD, '999') = '999'
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO ORDER BY SER_NO) = 1
+  ) I
+    ON  A.SPNSR_NO = I.SPNSR_NO
+    AND A.SPNSR_BSNS_NO = I.SPNSR_BSNS_NO
+    AND A.STRD_MT >= I.STRD_MT
+    AND A.DVLP_DIV_CD >= I.DVLP_DIV_CD2;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [10] 최종 마트 — F_MM_SPNSR_DVLP_SUM 전체 초기화 (기준월 이하 전건 재적재 + SPNSR_AMT2_CD 사후 갱신)
+--      원본과의 차이 = 원본 그대로(기본값 '0' · NEW_OLD_DIV_CD 미적재 · CLS3 에 DVLP 1·2·4 조건)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_F_MM_SPNSR_DVLP_SUM_INIT(I_YM VARCHAR, I_OPER VARCHAR)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — F_MM_SPNSR_DVLP_SUM 전체 초기화(기준월 이하)'
+AS
+$$
+DECLARE
+  V_PROC VARCHAR DEFAULT 'USP_F_MM_SPNSR_DVLP_SUM_INIT';
+  V_MSG  VARCHAR;
+  V_ERRC   NUMBER;
+  V_ERRM   VARCHAR;
+  V_ERRS   VARCHAR;
+BEGIN
+  BEGIN TRANSACTION;
+  DELETE FROM GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Delete: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  INSERT INTO GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM
+    (STRD_MT, OCCRRNC_DE, SPNSR_NO, SPNSR_BSNS_NO, SER_NO, MBER_NO, ACT_DEPT_CD, ACMSLT_DEPT_CD,
+     ACMSLT_DEPT2_CD, ACMSLT_DEPT3_CD, ACMSLT_DEPT4_CD, CMPGN_CD, CMPGN_CLS1_CD, CMPGN_CLS2_CD,
+     CMPGN_CLS3_CD, UPPER_CMPGN_CD, BRND_ID, PR_MTH_CD, SPCL_CMPGN_YN, PRE_CMPGN_CD, SETLE_CD,
+     MBER_DIV_CD, SEX, AREA_CD, AGE_TERM_CD, AGE, PAYER_AGE_TERM_CD, SPNSR_TIME_CO,
+     SPNSR_TERM_MT_CNT, SPNSR_TERM_CD, SPNSR_AMT_CD, SPNSR_TERM2_CD, SPNSR_AMT2_CD, SPNSR_BSNS_ID,
+     SPNSR_BSNS2_ID, SPNSR_BSNS_ABRV_CD, CPR_DIV_CD, CANCL_RDCAMT_RSN_CD, SPNSR_AMT, SPNSR_AMT_CNT,
+     MT_GOAL_CNT, YY_GOAL_CNT, DVLP_DIV_CD, DVLP_CNT, RDCAMT_YN, MT_ADD_SPNSR_AMT_YN, WORK_DE)
+  SELECT
+    LEFT(A.OCCRRNC_DE, 6), A.OCCRRNC_DE, A.SPNSR_NO, A.SPNSR_BSNS_NO, A.SER_NO, A.MBER_NO,
+    A.ACT_DEPT_CD, A.ACMSLT_DEPT_CD,
+    B.DEPT2_ID, B.DEPT3_ID, B.DEPT4_ID,
+    A.CMPGN_CD,
+    '99',  -- CMPGN_CLS1 · ExplCampList 미이관(IT 확인 skip)
+    '99',  -- CMPGN_CLS2
+    CASE WHEN A.H_DSC_DE > LEFT(A.OCCRRNC_DE, 6) AND A.H_BSNS_ID = '38'
+              AND A.DVLP_DIV_CD IN ('1', '2', '4') THEN '3' ELSE '99' END,
+    IFNULL(C.UPPER_CMPGN_CD, '0'), IFNULL(C.BRND_ID, '0'), IFNULL(C.PR_MTH_CD, '0'),
+    IFNULL(C.SPCL_CMPGN_YN, 'N'),
+    IFNULL(CASE WHEN A.DVLP_DIV_CD = '4' AND A.SPNSR_AMT > 0 THEN A.PRE_CMPGN_CD END, '0'),
+    A.SETLE_CD, A.MBER_DIV_CD, A.SEX, A.AREA_CD,
+    A.AGE,
+    CASE WHEN A.AGE IN (1, 2, 3, 4, 5, 6, 7, 8, 9) THEN NULL ELSE 0 END,  -- BRTHDY 부재
+    '0', A.SPNSR_TIME_CO,
+    A.TERM_MT,
+    CASE WHEN A.TERM_YY < 1 THEN '1' WHEN A.TERM_YY < 5 THEN '2'
+         WHEN A.TERM_YY < 10 THEN '3' WHEN A.TERM_YY >= 10 THEN '4' ELSE '99' END,
+    A.SPNSR_AMT_CD,
+    CASE WHEN A.TERM_YY < 1 THEN '1'
+         WHEN A.TERM_YY BETWEEN 1 AND 9 THEN (A.TERM_YY + 1)::VARCHAR
+         WHEN A.TERM_YY >= 10 THEN '11' ELSE '999' END,
+    '999',
+    A.SPNSR_BSNS_ID,
+    CASE WHEN A.SPNSR_BSNS_ID IN ('14', '15', '16', '21', '22') THEN '4' ELSE A.SPNSR_BSNS_ID END,
+    IFNULL(F.SPNSR_BSNS_ABRV_CD, '0'), IFNULL(F.CPR_DIV_CD, '0'),
+    A.CANCL_RDCAMT_RSN_CD,
+    A.SPNSR_AMT, A.SPNSR_AMT / 10000.0,
+    IFNULL(G.GOAL_CNT, 0), IFNULL(G.YYAMT, 0),
+    A.DVLP_DIV_CD, 1,
+    CASE WHEN A.DVLP_DIV_CD = '3' THEN 'Y' ELSE 'N' END,
+    CASE WHEN A.DVLP_DIV_CD = '2' THEN 'Y' ELSE 'N' END,
+    TO_CHAR(CURRENT_DATE(), 'YYYYMMDD')
+  FROM (
+    SELECT
+      F.*,
+      H.SPNSR_BSNS_ID AS H_BSNS_ID, H.DSC_DE AS H_DSC_DE,
+      DATEDIFF(YEAR,  TO_DATE(H.FST_DE, 'YYYYMMDD'),
+               TO_DATE(CASE WHEN F.OCCRRNC_DE < H.DSC_DE THEN F.OCCRRNC_DE ELSE H.DSC_DE END, 'YYYYMMDD')) AS TERM_YY,
+      DATEDIFF(MONTH, TO_DATE(H.FST_DE, 'YYYYMMDD'),
+               TO_DATE(CASE WHEN F.OCCRRNC_DE < H.DSC_DE THEN F.OCCRRNC_DE ELSE H.DSC_DE END, 'YYYYMMDD')) AS TERM_MT
+    FROM TABLE(GN_DW.MSTR.FN_MM_SPNSR_DVLP(:I_YM)) F
+    LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_V H
+      ON F.SPNSR_NO = H.SPNSR_NO AND F.SPNSR_BSNS_NO = H.SPNSR_BSNS_NO
+  ) A
+  LEFT JOIN GN_DW.MSTR.D_DEPT_CD B        ON A.ACMSLT_DEPT_CD = B.DEPT_ID
+  LEFT JOIN GN_DW.MSTR.D_CMPGN_CD C       ON A.CMPGN_CD = C.CMPGN_CD
+  LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_INFO F ON A.SPNSR_BSNS_ID = F.SPNSR_BSNS_ID
+  LEFT JOIN (
+    SELECT SUM(GOAL_CNT) OVER (PARTITION BY STDYY, DEPT_ID, MBER_DVLP_DIV_CD) AS YYAMT, GL.*
+    FROM GN_DW.MSTR.D_MBER_DVLP_GOAL_CD GL
+  ) G
+    ON A.ACMSLT_DEPT_CD = G.DEPT_ID
+   AND LEFT(A.OCCRRNC_DE, 6) = G.STDYY || G.STDR_MT
+   AND A.DVLP_DIV_CD = G.MBER_DVLP_DIV_CD;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Insert: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  -- 후원금액2코드 사후 갱신 (후원사업·개발구분별 최초 정상 개발건 금액)
+  UPDATE GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM A
+  SET SPNSR_AMT2_CD =
+    CASE WHEN I.SPNSR_AMT2 < 10000 THEN '1'
+         WHEN I.SPNSR_AMT2 BETWEEN 10000  AND 19999  THEN '2'
+         WHEN I.SPNSR_AMT2 BETWEEN 20000  AND 29999  THEN '3'
+         WHEN I.SPNSR_AMT2 BETWEEN 30000  AND 39999  THEN '4'
+         WHEN I.SPNSR_AMT2 BETWEEN 40000  AND 49999  THEN '5'
+         WHEN I.SPNSR_AMT2 BETWEEN 50000  AND 59999  THEN '6'
+         WHEN I.SPNSR_AMT2 BETWEEN 60000  AND 69999  THEN '7'
+         WHEN I.SPNSR_AMT2 BETWEEN 70000  AND 79999  THEN '8'
+         WHEN I.SPNSR_AMT2 BETWEEN 80000  AND 89999  THEN '9'
+         WHEN I.SPNSR_AMT2 BETWEEN 90000  AND 99999  THEN '10'
+         WHEN I.SPNSR_AMT2 BETWEEN 100000 AND 499999 THEN '11'
+         WHEN I.SPNSR_AMT2 >= 500000 THEN '12'
+         ELSE '999' END
+  FROM (
+    SELECT SPNSR_NO, SPNSR_BSNS_NO, DVLP_DIV_CD, SPNSR_AMT AS SPNSR_AMT2
+    FROM GN_DW.MSTR.F_MM_SPNSR_DVLP
+    WHERE DVLP_DIV_CD IN ('1', '2', '4')
+      AND IFNULL(CANCL_RDCAMT_RSN_CD, '999') = '999'
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO, DVLP_DIV_CD ORDER BY SER_NO) = 1
+  ) I
+  WHERE A.SPNSR_NO = I.SPNSR_NO
+    AND A.SPNSR_BSNS_NO = I.SPNSR_BSNS_NO
+    AND A.DVLP_DIV_CD = I.DVLP_DIV_CD;
+  V_MSG := '초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Update: ' || SQLROWCOUNT;
+  CALL GN_DW.MSTR.USP_BCHLOG(NULL, :V_PROC, :I_OPER, :V_MSG);
+
+  COMMIT;
+  RETURN V_MSG;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    V_ERRC := SQLCODE;
+    V_ERRM := SQLERRM;
+    V_ERRS := SQLSTATE;
+    CALL GN_DW.MSTR.USP_BCHERR(NULL, :V_PROC, :I_OPER, :V_ERRC, :V_ERRM, :V_ERRS);
+    RETURN 'ERROR ' || V_ERRC || ': ' || V_ERRM;
+END;
+$$;
+
+-- ---------------------------------------------------------------------
+-- [11] 1차 이관 실행 순서 (신규 · 원본 USP_RUN_* 대체) — 차원·베이스 → 원장 → 집계
+--      I_HIST = TRUE 이면 F_MM_SPNSR_DVLP 를 기준월 이하 전 월 재적재(SPNSR_AMT2_CD 정확도 · 최초 1회)
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_RUN_MSTR_1ST(I_YM VARCHAR, I_OPER VARCHAR, I_HIST BOOLEAN)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'MSTR 이관 — 1차 대상 실행 오케스트레이션'
+AS
+$$
+DECLARE
+  V_YMD VARCHAR DEFAULT TO_CHAR(CURRENT_DATE(), 'YYYYMMDD');
+  V_RET VARCHAR;
+  V_LOG VARCHAR DEFAULT '';
+  V_YM  VARCHAR;
+  RS    RESULTSET;
+BEGIN
+  CALL GN_DW.MSTR.USP_D_CMMN_DTL_CD(:V_YMD, :I_OPER) INTO :V_RET;       V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_STRD_CAL_CD(:V_YMD, :I_OPER) INTO :V_RET;       V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_CM_DEPT_INFO(:V_YMD, :I_OPER) INTO :V_RET;      V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_BRND_CD(:V_YMD, :I_OPER) INTO :V_RET;           V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_CMPGN_CD(:V_YMD, :I_OPER) INTO :V_RET;          V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_SPNSR_BSNS_INFO(:V_YMD, :I_OPER) INTO :V_RET;   V_LOG := V_LOG || V_RET || ' | ';
+  CALL GN_DW.MSTR.USP_D_MBER_DVLP_GOAL_CD(:I_YM, :I_OPER) INTO :V_RET;  V_LOG := V_LOG || V_RET || ' | ';
+  IF (I_HIST) THEN
+    RS := (SELECT DISTINCT LEFT(OCCRRNC_DE, 6) AS YM
+           FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT
+           WHERE LEFT(OCCRRNC_DE, 6) <= :I_YM
+           ORDER BY YM);
+    LET C_YM CURSOR FOR RS;
+    FOR R IN C_YM DO
+      V_YM := R.YM;
+      CALL GN_DW.MSTR.USP_F_MM_SPNSR_DVLP(:V_YM, :I_OPER) INTO :V_RET;
+    END FOR;
+    V_LOG := V_LOG || 'F_MM_SPNSR_DVLP 이력 재적재 완료 | ';
+  ELSE
+    CALL GN_DW.MSTR.USP_F_MM_SPNSR_DVLP(:I_YM, :I_OPER) INTO :V_RET;    V_LOG := V_LOG || V_RET || ' | ';
+  END IF;
+  CALL GN_DW.MSTR.USP_F_MM_SPNSR_DVLP_SUM(:I_YM, :I_OPER) INTO :V_RET; V_LOG := V_LOG || V_RET;
+  RETURN V_LOG;
+END;
+$$;
+
+-- 실행 예 (2026-01 · 최초 1회 이력 포함)
+-- CALL GN_DW.MSTR.USP_RUN_MSTR_1ST('202601', 'POC', TRUE);

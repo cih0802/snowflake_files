@@ -4,13 +4,13 @@ doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장�
 project: GN_DW (굿네이버스)
 grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md · 30_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · field_mapping_override.py(교정 등록부) · 04·05 보고서필드 인벤토리
 generator: scripts/gen_metric_gold_mapping.py
-measured: 2026-10-01
+measured: 2026-10-02
 generated: auto (do-not-edit)
 END-METADATA -->
 
 # 지표 → GOLD 매핑 장표 (현업용)
 
-> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-10-01** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
+> ⚙️ **생성기**: `scripts/gen_metric_gold_mapping.py` · 측정일 **2026-10-02** — 본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 scripts/gen_metric_gold_mapping.py 수정 후 재실행하세요.
 > **읽는 법**: 현업/기획이 원하는 **지표(지표번호)** 를 기준으로, 그 지표가 GOLD의 어느 **배속(FACT/DIM/SV)** 에
 > 어떤 **물리컬럼**(measure·dimension) 또는 **SV base**(derived=율/구성비/LTV 등)로 매핑됐고, 그 값이
 > 어떤 **SILVER→BRONZE 원천**에서 오는지 한 줄로 추적합니다.
