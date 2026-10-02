@@ -39,7 +39,11 @@ GRANT SELECT ON TABLE  GN_DW.SILVER.BIGQUERY_REFINED_DATA  TO SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_BIGQUERY                FROM SHARE mig_share;
 
 ------------------------------------------------------------
--- 2-B. ML 스키마 부여 — 예측결과 17종만
+-- 2-B. ML 스키마 부여 — 예측결과 12종만
+--    🆕 [2026-10-02 O198 · 사용자 지시] 17 → 12종 확정.
+--       + 신규 2 = MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV
+--       − 제외 4 = UCMPGN_LTV · UCMPGN_LTV_SCORE · CMPGN_LTV · CMPGN_LTV_SCORE (아래 2-C 에서 REVOKE)
+--       − 기획실 3 = O195 DROP 유지
 --    ⚠️ ALL TABLES 금지. 학습용 20종 + 스냅샷 12종 + 로그 1종이 함께 열려
 --       Agent 노출 금지 지시를 위반한다(상단 '테이블 단위 부여 원칙' 참조).
 ------------------------------------------------------------
@@ -55,16 +59,24 @@ GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_LOYAL_MBER                          T
 -- GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT               TO SHARE mig_share;
 -- GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT      TO SHARE mig_share;
 -- GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT            TO SHARE mig_share;
--- 나눔마케팅본부 9종
+-- 나눔마케팅본부 7종
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT                    TO SHARE mig_share;
-GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV                          TO SHARE mig_share;
-GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE                    TO SHARE mig_share;
-GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV                           TO SHARE mig_share;
-GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE                     TO SHARE mig_share;
+GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV           TO SHARE mig_share;  -- 🆕 O198
+GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV                 TO SHARE mig_share;  -- 🆕 O198
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT              TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION               TO SHARE mig_share;
 GRANT SELECT ON TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION                     TO SHARE mig_share;
+
+------------------------------------------------------------
+-- 2-C. 🆕 [O198] 재공유 시 제외 4종 회수 — 기존 share 를 재사용할 때만 실행
+--    🔴 GRANT 만 다시 돌리면 이전에 부여한 4종이 share 에 **그대로 남는다**(조용히 열려 있다).
+--    ⚠️ 원천에 이미 없는 테이블이면 REVOKE 가 「does not exist」로 실패한다 — 그 줄은 건너뛴다(정상).
+------------------------------------------------------------
+REVOKE SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV          FROM SHARE mig_share;
+REVOKE SELECT ON TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE    FROM SHARE mig_share;
+REVOKE SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV           FROM SHARE mig_share;
+REVOKE SELECT ON TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE     FROM SHARE mig_share;
 
 -- ⛔ 부여하지 않는 것 (부여하면 사용자 지시 위반) — 참고용 목록, 실행하지 말 것
 --    ML_TRAIN_DATA_* 20종 / CMPGN_MBER_SNAPSHOT · CMPGN_MONTHLY_SNAPSHOT · DAILY_CMPGN_DVLP_AMT ·
@@ -83,7 +95,7 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 82(브론즈 64 + SILVER 1 + ML 17)
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 77(브론즈 64 + SILVER 1 + ML 12)  🆕 [O198] ML 17→12 · 총계 82→77
 --    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 --       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
 ------------------------------------------------------------
@@ -94,20 +106,21 @@ SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 �
 SHOW GRANTS TO SHARE mig_share;
 SELECT
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 50
-  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 17
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 12 (O198)
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 1
   COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 7
   COUNT_IF("name" ILIKE '%BRONZE_BIGQUERY%')                         AS bigquery_grants   -- 기대 0
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
 -- → bigquery_grants ≠ 0 이면 2.2 하단의 REVOKE 로 즉시 회수한다.
---   ml_tables ≠ 16 또는 silver_tables ≠ 1 이면 2.1 / 2-B 를 다시 실행한다.
+--   ml_tables ≠ 12 또는 silver_tables ≠ 1 이면 2.1 / 2-B / 2-C 를 다시 실행한다(12 초과 = 2-C 미실행 · 제외 4종 잔존).
 
 ------------------------------------------------------------
 -- 5. 대조 기준값 스냅샷 (⚠️ 공유 직후 기록)
 --    결과를 02_1_A DB정보.sql 에 보관한다.
 --    → B(03번 3.1) · C(06번 A.6) 가 테이블 단위로 대조하는 원본 기준값이다.
---    ⚠️ ML 필터는 `table_name LIKE 'ML_RST_DATA_%'` 다. 스키마 통짜로 세면
---       학습·스냅샷 33종이 섞여 기준값이 부풀고 C 검증이 전부 어긋난다.
+--    ⚠️ ML 필터는 **12종 명시 목록**이다(🆕 O198 · 종전 `LIKE 'ML_RST_DATA_%'` 폐기).
+--       원천에 제외 대상 ML_RST_DATA_*(구 LTV 4종 등)가 남아 있으면 LIKE 로는 기준값이 부풀어 C 검증이 어긋난다.
+--       스키마 통짜로 세면 학습·스냅샷 33종까지 섞인다.
 --    ⚠️ 브론즈 필터를 `LIKE 'BRONZE_%'` 로 되돌리지 말 것 — 공유 대상 아닌 스키마가 섞인다.
 ------------------------------------------------------------
 SELECT table_schema, table_name, row_count, bytes
@@ -115,10 +128,14 @@ FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
+        OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',
+                                    'ML_RST_DATA_MBER_INC_12M','ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                    'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                    'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION','ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT',
+                                    'ML_RST_DATA_DVLP_INC_CONTRIBUTION','ML_RST_DATA_ONCE_CONVERSION')) )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 17 · SILVER 1 = 82)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 12 · SILVER 1 = 77)  🆕 [O198]
 --   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
 SELECT table_schema,
        COUNT(*)       AS tables,
@@ -128,7 +145,11 @@ FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
-        OR (table_schema = 'ML'     AND table_name LIKE 'ML_RST_DATA_%') )
+        OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',
+                                    'ML_RST_DATA_MBER_INC_12M','ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_MONTHLY_DVLP_AMT',
+                                    'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
+                                    'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION','ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT',
+                                    'ML_RST_DATA_DVLP_INC_CONTRIBUTION','ML_RST_DATA_ONCE_CONVERSION')) )
 GROUP BY 1 ORDER BY 1;
 
 -- 5.1 반정형 컬럼 통제총계 (⚠️ C 검증에 필수 — 없으면 파싱 실패를 검출할 수 없다)
@@ -189,9 +210,21 @@ SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_GSC', TRUE);
 
 -- 🟢 ML 은 이미 추출되어 있다 — 재추출 불필요
 --    산출물 = 99_provided_definition/20_ML_ddl.sql (프로시저·모델 포함 전량)
---    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 17종만)
+--    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 12종만 · O198)
+--    🔴 [O198] 신규 2종(MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV)은 20_ML_ddl.sql 에 없다 ⇒ 아래 6.3 을 실행해 05번을 확정한다.
 --    ⚠️ 모델·프로시저가 교체되어 결과 테이블 컬럼이 바뀌면 아래를 재실행해 05번을 갱신한다.
 -- SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
+
+-- 6.3 🆕 [O198] 신규 ML 2종 구조 추출 → 05번의 「추정 구조」 2블록을 이 출력으로 교체한다
+--    🔴 05번의 두 CREATE 문은 구 LTV 테이블 구조로 **추정**해 둔 것이다(원천 정의 부재).
+--       컬럼 수·순서가 다르면 C 의 위치 기반 CSV 적재가 한 칸씩 밀린다 ⇒ 반드시 이 결과로 대조·교체.
+SELECT GET_DDL('TABLE', 'GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV', TRUE);
+SELECT GET_DDL('TABLE', 'GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV', TRUE);
+SELECT table_name, ordinal_position, column_name, data_type
+FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+WHERE table_schema = 'ML'
+  AND table_name IN ('ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV', 'ML_RST_DATA_CMPGN_SPNSR_AMT_LTV')
+ORDER BY 1, 2;
 
 ------------------------------------------------------------
 -- 7. Teardown — 이관·검증 완료 확인 후에만 실행 (01번 문서 7장)

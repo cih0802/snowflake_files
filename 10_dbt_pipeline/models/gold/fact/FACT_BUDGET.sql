@@ -52,12 +52,17 @@ select
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
     {{ gold_meta('ERP') }},
     -- 🆕 [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).
-    --   🔴 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK) 유일을 강제한다.
+    --   🔴 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH) 유일을 강제한다(O198 확장).
     SUM(IFF(DIRECT_MNYRS_YN_1 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_1,
-    SUM(IFF(DIRECT_MNYRS_YN_2 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_2
+    SUM(IFF(DIRECT_MNYRS_YN_2 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_2,
+    -- 🆕 [2026-10-02 O198 · DEC-60] 개발 유입경로 = 퇴화 차원 · grain 키 편입(월×세세목 안에서 2~3종 · 실측 336/2,652 grain).
+    --   (MONTH_KEY, BUDGET_ITEM_DK, BUDGET_PROCEDURE, DVLP_INBOUND_PATH) = 원천 원장 grain 과 일치(3,096 = 3,096) ⇒ 합계 불변.
+    --   NULL 은 NULL 로 둔다(R2-7 · 원장에 경로 미기재).
+    DVLP_INBOUND_PATH                     as DVLP_INBOUND_PATH
 from ranked
 where rnk = 1
 group by
     COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MONTH_KEY)') }}, 0),
     {{ gold_sk(['BUDGET_ITEM_DK']) }},
-    BUDGET_PROCEDURE
+    BUDGET_PROCEDURE,
+    DVLP_INBOUND_PATH

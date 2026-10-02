@@ -421,7 +421,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BUDGET_ITEM (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명(ERP 원천 BDGT_UNIT_NM 그대로 · 조직명 표기 · 코드 없음). 세세목에 1:1 종속(2026-10-02 O198 실측 179/179). 🔴 DIM_ORG(CRM 조직)와 다른 체계다 — 같은 이름의 팀이라도 ORG_SK 로 조인하지 말 것. 실측 값 6종(ERP 표기 그대로)'
 ) COMMENT = '예산 세세목 차원. [Grain: BUDGET_ITEM_SK (1행=1세세목)]. [주의: 장/관/항/목/세목/세세목 계층 매핑]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET_ITEM].';
 
 -- DIM_BIZ_PLACE — DIM_BIZ_PLACE — O188-F 2차-A 신설
@@ -974,8 +975,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     EXEC_DIRECT_MNYRS_1 NUMBER(18,2)    COMMENT '직접모금비1(원천 DIRECT_MNYRS_YN_1=Y) 원장행의 집행액(원) — 🔴 모금성비용 **후보 A**(판정 중립). YN_1/YN_2 중 무엇이 모금성비용인지 현업 회신 전이다(문서20 -009) ⇒ FUNDRAISING_COST 로 부르지 말고 두 후보를 병기한다. 부분집합이며 EXEC_BUDGET_ERP 이하',
-    EXEC_DIRECT_MNYRS_2 NUMBER(18,2)    COMMENT '직접모금비2(원천 DIRECT_MNYRS_YN_2=Y) 원장행의 집행액(원) — 🔴 모금성비용 **후보 B**(판정 중립 · YN_1 을 포함하는 더 넓은 범위로 보인다). 현업 회신 전이다(문서20 -009)'
-) COMMENT = '월 예산 팩트. [Grain: MONTH_KEY × ORG_SK × BUDGET_ITEM_SK (1행=1예산)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET].';
+    EXEC_DIRECT_MNYRS_2 NUMBER(18,2)    COMMENT '직접모금비2(원천 DIRECT_MNYRS_YN_2=Y) 원장행의 집행액(원) — 🔴 모금성비용 **후보 B**(판정 중립 · YN_1 을 포함하는 더 넓은 범위로 보인다). 현업 회신 전이다(문서20 -009)',
+    DVLP_INBOUND_PATH   VARCHAR         COMMENT '개발 유입경로(ERP 원천 DVLP_INBOUND_PATH 그대로 · 퇴화 차원 · 2026-10-02 O198 DEC-60). 실측 값 7종(디지털·방송·재송출·영상광고·뉴미디어·모금시스템·콜개발). 🔴 NULL = ERP 원장행에 유입경로가 기재되지 않은 예산(개발 비용이 아닌 과목이 대부분 · 집행액 0) — 창작 라벨로 채우지 않는다(R2-7). 🔴 grain 키의 일부다 — 같은 월·세세목에 경로가 2~3종 있다'
+) COMMENT = '월 예산 팩트. [Grain: MONTH_KEY × BUDGET_ITEM_SK × DVLP_INBOUND_PATH (1행=1예산 · 2026-10-02 O198 DEC-60 확장 · 원천 원장 grain 과 일치)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET].';
 
 -- FACT_BUDGET_YEARLY — 연 예산 팩트
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BUDGET_YEARLY (

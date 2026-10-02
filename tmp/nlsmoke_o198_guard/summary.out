@@ -1,0 +1,2 @@
+R1 AGENT_MEMBER 26.0s tools= ['analyst_relation_activity'] WANT analyst_relation_activity HIT
+R2 AGENT_MEMBER 20.6s tools= ['analyst_service'] WANT analyst_service HIT

@@ -80,6 +80,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST'),
     ('AGENT_MEMBER',    'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
     ('AGENT_MEMBER',    'SV_ML_ONCE_CONVERSION'),   -- 🆕 2026-09-28 O182 신설 (일시→정기 전환 예측)
+    ('AGENT_MEMBER',    'SV_RELATION_ACTIVITY'),    -- 🆕 2026-10-02 O198 배선 (결연활동 · DEC-58)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
     ('AGENT_EXECUTIVE',   'SV_AD'),
     ('AGENT_EXECUTIVE',   'SV_MEMBER_MONTHLY'),

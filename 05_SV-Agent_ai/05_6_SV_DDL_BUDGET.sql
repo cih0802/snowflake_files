@@ -11,7 +11,7 @@ USE SCHEMA GN_DW.SERVING;
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
   TABLES (
     fbd AS GN_DW.GOLD.FACT_BUDGET
-      PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK)
+      PRIMARY KEY (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH)
       WITH SYNONYMS ('예산', '예산 집행')
       COMMENT = '예산 편성 및 집행 실적 분석 (base: GOLD.FACT_BUDGET). [Grain: 월 × 부서 × 예산과목]. [활성 지표: 편성예산/집행예산/집행률(%)]. [주의: 월 집행액을 더해 연 총액으로 쓰지 말 것 — 연 예산 정본은 GOLD.FACT_BUDGET_YEARLY 이나 어떤 Semantic View 에도 미배선이므로 이 SV 로 연 총액 질의에 답하지 않는다]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET → GOLD.FACT_BUDGET].',
     month AS GN_DW.GOLD.DIM_MONTH
@@ -32,7 +32,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     month.CAL_YEAR   AS month.YEAR      WITH SYNONYMS ('연도', '년')      COMMENT = '연도',
     month.CAL_MONTH  AS month.MONTH     WITH SYNONYMS ('월')             COMMENT = '월(1~12)',
     item.BUDGET_ITEM_NAME AS item.BUDGET_ITEM_NAME WITH SYNONYMS ('세세목명', '예산항목명') COMMENT = '예산 세세목명',
-    item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 1종: ''지출'' + NULL. 🔴 **''수입''은 이 데이터에 존재하지 않는다** — ''수입'' 으로 필터하면 0행이 반환되므로 「수입 예산」 질문에 이 축으로 답하지 말 것. 🟢 사유는 실측으로 확인됐다: **적재된 예산 원장의 장(章) 계정이 전부 비용(지출) 계정**이므로 이 데이터에는 지출 예산만 있다. 🔴 다만 「ERP 원본에 수입 예산이 있는데 업로드 범위에서 빠진 것인지」는 **확인 전**이다 ⇒ 「조직에 수입 예산이 없다」로 확대해 답하지 말고 **「적재된 예산 데이터에는 지출만 있다」**로 답한다(추정치 생성 금지). ⚠️ 이 축은 사실상 단일값이라 그루핑 축으로서의 정보량이 없다'
+    item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 1종: ''지출'' + NULL. 🔴 **''수입''은 이 데이터에 존재하지 않는다** — ''수입'' 으로 필터하면 0행이 반환되므로 「수입 예산」 질문에 이 축으로 답하지 말 것. 🟢 사유는 실측으로 확인됐다: **적재된 예산 원장의 장(章) 계정이 전부 비용(지출) 계정**이므로 이 데이터에는 지출 예산만 있다. 🔴 다만 「ERP 원본에 수입 예산이 있는데 업로드 범위에서 빠진 것인지」는 **확인 전**이다 ⇒ 「조직에 수입 예산이 없다」로 확대해 답하지 말고 **「적재된 예산 데이터에는 지출만 있다」**로 답한다(추정치 생성 금지). ⚠️ 이 축은 사실상 단일값이라 그루핑 축으로서의 정보량이 없다',
+    item.BDGT_UNIT_NM AS item.BDGT_UNIT_NM WITH SYNONYMS ('예산단위', '예산 팀', '예산 부서', '예산단위명')
+      COMMENT = '예산단위명(ERP 표기 그대로 · 세세목 1:1 · O198 DEC-60). 실측 값 6종 = 데이터분석센터 · 마케팅기획1팀 · 마케팅기획2팀 · 매체운영팀 · 사회복지법인예산 · 콘텐츠기획팀. 🔴 CRM 조직(DIM_ORG)과 다른 체계다 — 부서·팀 이름이 CRM 조직명과 같아 보여도 같은 조직으로 단정하지 말 것. 🔴 목록에 없는 팀(예: 「컬쳐콘텐츠팀」)을 물으면 0 으로 답하지 말고 「ERP 예산단위에 그 이름이 없다」고 밝힌 뒤 위 6종을 제시한다.',
+    fbd.DVLP_INBOUND_PATH AS fbd.DVLP_INBOUND_PATH WITH SYNONYMS ('개발인입경로', '개발 유입경로', '인입경로', '유입경로', '개발경로')
+      COMMENT = '개발 유입경로(ERP 원장 그대로 · O198 DEC-60). 실측 값 7종 = 디지털 · 방송 · 재송출 · 영상광고 · 뉴미디어 · 모금시스템 · 콜개발. 🔴 NULL = 원장에 경로가 기재되지 않은 예산(대부분 집행 0) — 「미분류」 같은 이름을 지어내지 말고 「경로 미기재」로 표기한다. 🔴 CRM 회원 가입경로(JOIN_PATH)와 다른 축이다.'
   )
   METRICS (
     fbd.TOTAL_PLAN_BUDGET AS SUM(fbd.PLAN_BUDGET_MONTH)

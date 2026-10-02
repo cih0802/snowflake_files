@@ -103,12 +103,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 47336,
+  "bytes": 48042,
   "agent": "AGENT_MEMBER",
   "n": 1,
   "q": "2026년 사단법인 매체운영팀 7월 회원개발 실적을 명/건으로 알려줘",
   "ok": true,
-  "sec": 21.7
+  "sec": 22.1
  },
  {
   "tools": [
@@ -209,12 +209,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 68704,
+  "bytes": 52113,
   "agent": "AGENT_MEMBER",
   "n": 2,
   "q": "캠페인카테고리별 26년 1~6월 중단명·중단건과 7월 중단명·중단건 전망을 보여줘",
   "ok": true,
-  "sec": 37.8
+  "sec": 32.2
  },
  {
   "tools": [
@@ -248,6 +248,7 @@
    "chrctr_recptn_yn",
    "cmmn_brnd_nm",
    "cpr_div_nm",
+   "data_to_chart",
    "date",
    "date_sk",
    "day_of_week",
@@ -321,17 +322,19 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 54463,
+  "bytes": 67531,
   "agent": "AGENT_MEMBER",
   "n": 3,
   "q": "본부/지부별 2026년 개발 고유 회원수를 코드와 함께 보여줘",
   "ok": true,
-  "sec": 29.0
+  "sec": 48.0
  },
  {
   "tools": [
-   "BILLED",
+   "MAX_REAL",
+   "MN",
    "MONTH_KEY",
+   "MX",
    "PAYMENT_METHOD",
    "PAYMENT_RATE_FEE",
    "ROWS_",
@@ -349,7 +352,6 @@
    "analyst_member_fee",
    "cal_month",
    "cal_year",
-   "data_to_chart",
    "distinct_paying_members",
    "fee",
    "fee_div",
@@ -362,7 +364,6 @@
    "payment_method",
    "payment_rate_fee",
    "payment_type",
-   "server_skill",
    "setle_cd",
    "sponsorship",
    "system_execute_sql",
@@ -388,12 +389,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 92639,
+  "bytes": 56390,
   "agent": "AGENT_MEMBER",
   "n": 4,
   "q": "후원사업별·납입방식(결제수단)별 회비 청구액과 납부율을 보여줘",
   "ok": true,
-  "sec": 86.2
+  "sec": 66.4
  },
  {
   "tools": [
@@ -473,12 +474,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 40920,
+  "bytes": 41158,
   "agent": "AGENT_MEMBER",
   "n": 5,
   "q": "연도별 납부율과 미납비중 추이를 보여줘 (2023-2025)",
   "ok": true,
-  "sec": 36.9
+  "sec": 47.3
  },
  {
   "tools": [
@@ -548,7 +549,6 @@
    "parent_campaign_name",
    "promo_method_name",
    "region_at_event",
-   "server_skill",
    "sex",
    "sex_at_event",
    "sex_nm",
@@ -581,21 +581,25 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 79830,
+  "bytes": 54990,
   "agent": "AGENT_MEMBER",
   "n": 6,
   "q": "개발구분별(신규·증액·감액·재후원·후원중단) 개발/중단 건수와 고유 회원수는?",
   "ok": true,
-  "sec": 41.1
+  "sec": 50.5
  },
  {
   "tools": [
+   "CPR_DIV",
+   "DEV_MEMBER_COUNT",
    "FME_TO_ACQ",
    "FME_TO_CAMPAIGN",
    "FME_TO_DATE",
    "FME_TO_MEMBER",
    "FME_TO_ORG",
    "FME_TO_SPB",
+   "SPNSR_DIV",
+   "TOTAL_DEV_CNT",
    "acq",
    "acq_sponsorship",
    "age_at_event",
@@ -687,12 +691,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 48897,
+  "bytes": 49005,
   "agent": "AGENT_MEMBER",
   "n": 7,
   "q": "세부캠페인 후원구분(정기후원/일시후원)·법인구분(통합/사단/사복)별 개발건수는?",
   "ok": true,
-  "sec": 33.8
+  "sec": 35.3
  },
  {
   "tools": [
@@ -762,7 +766,6 @@
    "parent_campaign_name",
    "promo_method_name",
    "region_at_event",
-   "server_skill",
    "sex",
    "sex_at_event",
    "sex_nm",
@@ -795,12 +798,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 86048,
+  "bytes": 59606,
   "agent": "AGENT_MEMBER",
   "n": 8,
   "q": "연령대별·지역별 개발건수는? (약정 시점 기준)",
   "ok": true,
-  "sec": 58.0
+  "sec": 48.1
  },
  {
   "tools": [
@@ -840,6 +843,7 @@
    "campaign_sk",
    "campaign_type",
    "churn_rate_12m",
+   "data_to_chart",
    "date_sk",
    "domestic_overseas",
    "first_stop_reason",
@@ -870,20 +874,15 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 41782,
+  "bytes": 71163,
   "agent": "AGENT_MEMBER",
   "n": 9,
   "q": "주요캠페인(캠페인카테고리)별 12개월 이탈률과 획득 회원수를 비교해줘",
   "ok": true,
-  "sec": 29.7
+  "sec": 54.6
  },
  {
   "tools": [
-   "ACHIEVEMENT_RATE",
-   "CAL_MONTH",
-   "ORG_DEPARTMENT",
-   "TOTAL_ACTUAL_CNT",
-   "TOTAL_GOAL_CNT",
    "achievement_rate",
    "achv",
    "analyst_dev_achievement",
@@ -915,12 +914,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 147675,
+  "bytes": 146534,
   "agent": "AGENT_MEMBER",
   "n": 10,
   "q": "2025년 부서별·월별 개발 목표와 실적, 달성율 추이를 보여줘",
   "ok": true,
-  "sec": 62.6
+  "sec": 66.4
  },
  {
   "tools": [
@@ -962,18 +961,23 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 33875,
+  "bytes": 32407,
   "agent": "AGENT_MEMBER",
   "n": 11,
   "q": "캠페인별·후원사업별 지금 활동회원 수를 보여줘",
   "ok": true,
-  "sec": 28.8
+  "sec": 31.1
  },
  {
   "tools": [
+   "CHANNEL",
+   "DISTINCT_SEND_MEMBERS",
    "FSE_TO_DATE",
    "FSE_TO_MEMBER",
    "FSE_TO_SERVICE",
+   "SEND_RESULT_NAME",
+   "SEND_STATUS_NAME",
+   "TOTAL_SEND_MEMBERS",
    "altrtv_msg_sndng_yn",
    "analyst_service",
    "cal_month",
@@ -988,6 +992,7 @@
    "d5_letter_members",
    "d5_stop_cnt_sum",
    "d5_stop_members_sum",
+   "data_to_chart",
    "date",
    "date_sk",
    "distinct_send_members",
@@ -1009,6 +1014,7 @@
    "send_result_name",
    "send_status",
    "send_status_name",
+   "server_skill",
    "service",
    "service_cnt_sum",
    "service_members_sum",
@@ -1032,12 +1038,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 46229,
+  "bytes": 78815,
   "agent": "AGENT_MEMBER",
   "n": 12,
   "q": "채널별 발송수와 발송결과(발송상태·통신사 도달결과)를 보여줘",
   "ok": true,
-  "sec": 45.0
+  "sec": 73.1
  },
  {
   "tools": [
@@ -1116,12 +1122,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 38203,
+  "bytes": 38264,
   "agent": "AGENT_MEMBER",
   "n": 13,
   "q": "2025년 12월 신규/기존별 활동(건)·미납(건)과 공76 미납율(건 기준)은?",
   "ok": true,
-  "sec": 26.0
+  "sec": 30.7
  },
  {
   "tools": [
@@ -1190,12 +1196,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 41624,
+  "bytes": 41402,
   "agent": "AGENT_MEMBER",
   "n": 14,
   "q": "최근 6개월 월별 발송 후 5일 내 증액·중단 매칭 회원수는?",
   "ok": true,
-  "sec": 33.3
+  "sec": 28.6
  },
  {
   "tools": [
@@ -1267,12 +1273,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 79533,
+  "bytes": 79311,
   "agent": "AGENT_MEMBER",
   "n": 15,
   "q": "행사종류별 참여자수와 참여상태별 분포는?",
   "ok": true,
-  "sec": 44.5
+  "sec": 44.1
  },
  {
   "tools": [
@@ -1303,6 +1309,7 @@
    "predicted_loyal_members",
    "predicted_members",
    "prediction_has_error",
+   "read",
    "setle_cd",
    "setle_name",
    "stdr_mt",
@@ -1321,21 +1328,17 @@
   ],
   "sql": true,
   "errors": [
-   "SQL compilation error: error line 16 at position 2\\ninvalid identifier 'MR.MODEL_CHURN_MEMBERS'"
+   "failed to read file: file \\"
   ],
-  "bytes": 33407,
+  "bytes": 30887,
   "agent": "AGENT_MEMBER",
   "n": 16,
   "q": "회원상태별로 모델이 중단으로 분류한 회원수와 평균 중단확률을 보여줘 (예측)",
   "ok": true,
-  "sec": 42.3
+  "sec": 32.8
  },
  {
   "tools": [
-   "AVG_CONVERT_PROB",
-   "MODEL_CONVERT_MEMBERS",
-   "ONCE_JOIN_MT",
-   "PREDICTED_ONCE_MEMBERS",
    "analyst_ml_once_conversion",
    "avg_convert_prob",
    "convert_class",
@@ -1364,28 +1367,28 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 29793,
+  "bytes": 27915,
   "agent": "AGENT_MEMBER",
   "n": 17,
   "q": "일시후원회원 중 정기후원 전환 가능성이 높은 회원은 몇 명이고 가입월별로는 어때? (예측)",
   "ok": true,
-  "sec": 28.3
+  "sec": 27.9
  },
  {
   "tools": [],
   "svs": [],
   "tables": [
-   "FACT_MEMBER_FEE",
-   "FACT_MEMBER_MONTHLY"
+   "ML_FEE_FORECAST_V",
+   "WIDE_MEMBER_FEE"
   ],
   "sql": false,
   "errors": [],
-  "bytes": 1824,
+  "bytes": 1756,
   "agent": "AGENT_MEMBER",
   "n": 18,
   "q": "납입회비와 회비 예측 데이터의 원천(bronze)은 각각 어디야?",
   "ok": true,
-  "sec": 20.2
+  "sec": 20.3
  },
  {
   "tools": [
@@ -1394,6 +1397,7 @@
    "analyst_dev_achievement",
    "cal_month",
    "cal_year",
+   "data_to_chart",
    "dev_type",
    "dev_type_name",
    "has_actual",
@@ -1401,6 +1405,7 @@
    "month_key",
    "org_department",
    "org_sk",
+   "server_skill",
    "system_execute_sql",
    "total_actual_cnt",
    "total_actual_cnt_on_goal",
@@ -1418,18 +1423,19 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 107074,
+  "bytes": 144533,
   "agent": "AGENT_MARKETING",
   "n": 1,
   "q": "2025년 부서별·월별 개발 목표와 실적, 달성율을 보여줘",
   "ok": true,
-  "sec": 39.5
+  "sec": 58.8
  },
  {
   "tools": [
    "FBD_TO_ITEM",
    "FBD_TO_MONTH",
    "analyst_budget",
+   "bdgt_unit_nm",
    "budget_category",
    "budget_item_name",
    "budget_item_sk",
@@ -1438,12 +1444,12 @@
    "data_to_chart",
    "direct_fundraising_cost_1",
    "direct_fundraising_cost_2",
+   "dvlp_inbound_path",
    "exec_rate",
    "fbd",
    "item",
    "month",
    "month_key",
-   "server_skill",
    "system_execute_sql",
    "total_exec_budget",
    "total_plan_budget"
@@ -1460,12 +1466,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 68407,
+  "bytes": 37880,
   "agent": "AGENT_MARKETING",
   "n": 2,
   "q": "예산구분별·세세목별 편성예산과 집행예산, 집행율을 보여줘",
   "ok": true,
-  "sec": 49.1
+  "sec": 51.0
  },
  {
   "tools": [
@@ -1538,19 +1544,18 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 39048,
+  "bytes": 43822,
   "agent": "AGENT_MARKETING",
   "n": 3,
   "q": "2025년 디지털 광고의 광고유형별 광고비·노출·클릭·CTR과 개발단가를 보여줘",
   "ok": true,
-  "sec": 36.6
+  "sec": 58.8
  },
  {
   "tools": [
    "AD_TO_DATE",
    "AD_TO_DEVICE",
    "AD_TO_MKTG",
-   "CTR",
    "ad",
    "ad_group_nm",
    "ad_perf_dk",
@@ -1588,7 +1593,6 @@
    "program_nm",
    "rebrdc_dev_unit_price",
    "rt_type",
-   "server_skill",
    "spot_type",
    "system_execute_sql",
    "time_band",
@@ -1618,12 +1622,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 75019,
+  "bytes": 47802,
   "agent": "AGENT_MARKETING",
   "n": 4,
   "q": "디지털 광고의 주차별·요일별 효율(노출·클릭·CTR)을 비교해줘",
   "ok": true,
-  "sec": 49.5
+  "sec": 46.9
  },
  {
   "tools": [
@@ -1695,12 +1699,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 43262,
+  "bytes": 43671,
   "agent": "AGENT_MARKETING",
   "n": 5,
   "q": "방송 채널사별·CM위치별 광고비와 인입콜을 보여줘",
   "ok": true,
-  "sec": 30.3
+  "sec": 38.3
  },
  {
   "tools": [
@@ -1724,6 +1728,7 @@
    "creative_type",
    "ctr",
    "cvr",
+   "data_to_chart",
    "date",
    "date_sk",
    "day_of_week",
@@ -1769,30 +1774,25 @@
    "SV_MEMBER_EVENT"
   ],
   "tables": [
+   "DIM_DATE",
    "SV_AD",
    "WIDE_AD_COMBINED"
   ],
   "sql": true,
   "errors": [],
-  "bytes": 35189,
+  "bytes": 40586,
   "agent": "AGENT_MARKETING",
   "n": 6,
   "q": "재방유형별 재방송 개발건수와 재방송 개발단가는?",
   "ok": true,
-  "sec": 28.6
+  "sec": 45.2
  },
  {
   "tools": [
-   "AD_COST",
    "AD_TO_DATE",
    "AD_TO_DEVICE",
    "AD_TO_MKTG",
-   "CAMPAIGN",
    "CTR",
-   "END_DATE",
-   "START_DATE",
-   "TOTAL_AD_COST",
-   "TOTAL_CTR",
    "ad",
    "ad_group_nm",
    "ad_perf_dk",
@@ -1830,7 +1830,6 @@
    "program_nm",
    "rebrdc_dev_unit_price",
    "rt_type",
-   "server_skill",
    "spot_type",
    "system_execute_sql",
    "time_band",
@@ -1860,22 +1859,29 @@
    "WIDE_AD_COMBINED"
   ],
   "sql": true,
-  "errors": [],
-  "bytes": 73428,
+  "errors": [
+   "SQL compilation error: error line 29 at position 2\\ninvalid identifier '__AD.MARKETING_CAMPAIGN'"
+  ],
+  "bytes": 47461,
   "agent": "AGENT_MARKETING",
   "n": 7,
   "q": "마케팅캠페인별 광고비와 CTR 상위 10곳을 전체 총계와 함께 보여줘",
   "ok": true,
-  "sec": 48.7
+  "sec": 64.9
  },
  {
   "tools": [
+   "AGE_BAND",
+   "DISTINCT_MEMBERS",
+   "DVLP_DIV_NM",
+   "EVENT_CNT",
    "FME_TO_ACQ",
    "FME_TO_CAMPAIGN",
    "FME_TO_DATE",
    "FME_TO_MEMBER",
    "FME_TO_ORG",
    "FME_TO_SPB",
+   "PARENT_CAMPAIGN_NAME",
    "acq",
    "acq_sponsorship",
    "age_at_event",
@@ -1968,12 +1974,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 67507,
+  "bytes": 58842,
   "agent": "AGENT_MARKETING",
   "n": 8,
   "q": "연령대별·개발구분별 전환회원 건수와 고유 회원수를 상위캠페인 축과 함께 보여줘",
   "ok": true,
-  "sec": 64.5
+  "sec": 53.3
  },
  {
   "tools": [
@@ -1986,7 +1992,7 @@
    "FMC_TO_ACQ_ORG",
    "FMC_TO_ACQ_SPB",
    "TOTAL_ACQ_MEMBERS",
-   "TOTAL_PAID_FEE",
+   "TOTAL_PAID_FEE_BILLABLE",
    "acq_age_band",
    "acq_age_cd",
    "acq_area_cd",
@@ -2082,43 +2088,46 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 71065,
+  "bytes": 70680,
   "agent": "AGENT_MARKETING",
   "n": 9,
   "q": "캠페인별 평균 유지기간·12개월 이탈률과 총납입회비를 상위 10곳으로 보여줘",
   "ok": true,
-  "sec": 46.2
+  "sec": 48.3
  },
  {
   "tools": [],
   "svs": [],
-  "tables": [],
+  "tables": [
+   "FACT_MEMBER_EVENT"
+  ],
   "sql": false,
   "errors": [],
-  "bytes": 1573,
+  "bytes": 1683,
   "agent": "AGENT_MARKETING",
   "n": 10,
   "q": "광고·예산·전환회원 데이터의 원천(bronze)은 각각 어디야?",
   "ok": true,
-  "sec": 16.5
+  "sec": 15.8
  },
  {
   "tools": [
+   "CAMPAIGN",
+   "CURRENTLY_ACTIVE_MEMBERS",
    "FMSB_TO_CAMPAIGN",
    "FMSB_TO_SPONSORSHIP",
+   "SPONSORSHIP",
    "acq_cmpgn_ctgr_nm",
    "analyst_member_sponsor_biz",
    "campaign",
    "campaign_sk",
    "currently_active_members",
    "currently_active_spnsr_amt",
-   "data_to_chart",
    "distinct_members",
    "dscntc_month_key",
    "fmsb",
    "is_multi_campaign",
    "member_dk",
-   "server_skill",
    "spnsr_bsns_no",
    "sponsorship",
    "sponsorship_abbr_category",
@@ -2141,18 +2150,19 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 99757,
+  "bytes": 31626,
   "agent": "AGENT_MARKETING",
   "n": 11,
   "q": "캠페인별·후원사업별 지금 활동회원 수를 보여줘",
   "ok": true,
-  "sec": 41.1
+  "sec": 27.3
  },
  {
   "tools": [
    "FBD_TO_ITEM",
    "FBD_TO_MONTH",
    "analyst_budget",
+   "bdgt_unit_nm",
    "budget_category",
    "budget_item_name",
    "budget_item_sk",
@@ -2160,6 +2170,7 @@
    "cal_year",
    "direct_fundraising_cost_1",
    "direct_fundraising_cost_2",
+   "dvlp_inbound_path",
    "exec_rate",
    "fbd",
    "item",
@@ -2182,26 +2193,19 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 33591,
+  "bytes": 35593,
   "agent": "AGENT_EXECUTIVE",
   "n": 1,
   "q": "예산구분별 편성예산과 집행예산, 집행율을 집행이 있는 월까지로 보여줘",
   "ok": true,
-  "sec": 52.9
+  "sec": 52.4
  },
  {
   "tools": [
    "AD_TO_DATE",
    "AD_TO_DEVICE",
    "AD_TO_MKTG",
-   "CAL_MONTH",
-   "CHANNEL_COMPANY",
    "CTR",
-   "DEV_UNIT_PRICE",
-   "LAST_YYYYMM",
-   "TOTAL_AD_COST",
-   "TOTAL_CRM_DEV_CNT",
-   "TOTAL_INBOUND_CALL",
    "ad",
    "ad_group_nm",
    "ad_perf_dk",
@@ -2239,6 +2243,7 @@
    "program_nm",
    "rebrdc_dev_unit_price",
    "rt_type",
+   "server_skill",
    "spot_type",
    "system_execute_sql",
    "time_band",
@@ -2268,12 +2273,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 53090,
+  "bytes": 83732,
   "agent": "AGENT_EXECUTIVE",
   "n": 2,
   "q": "2025년 디지털 광고 CTR·개발단가와 방송 채널사별 광고비·인바운드콜을 계열을 나눠 보여줘",
   "ok": true,
-  "sec": 50.6
+  "sec": 63.0
  },
  {
   "tools": [
@@ -2352,12 +2357,12 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 40184,
+  "bytes": 39935,
   "agent": "AGENT_EXECUTIVE",
   "n": 3,
   "q": "전사 납입회비 총액과 미납비중을 연도별로 보여줘",
   "ok": true,
-  "sec": 44.2
+  "sec": 35.8
  },
  {
   "tools": [
@@ -2423,15 +2428,19 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 48349,
+  "bytes": 47673,
   "agent": "AGENT_EXECUTIVE",
   "n": 4,
   "q": "채널별 발송수를 월별로 보여줘",
   "ok": true,
-  "sec": 30.8
+  "sec": 29.7
  },
  {
   "tools": [
+   "FORECAST_AMT",
+   "FORECAST_LOWER",
+   "FORECAST_UPPER",
+   "TS",
    "analyst_ml_dvlp_forecast",
    "avg_monthly_forecast",
    "data_to_chart",
@@ -2457,15 +2466,20 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 35075,
+  "bytes": 35562,
   "agent": "AGENT_EXECUTIVE",
   "n": 5,
   "q": "전사 개발금액 예측을 예측월별로 보여줘 (만원, 예측)",
   "ok": true,
-  "sec": 24.8
+  "sec": 24.3
  },
  {
   "tools": [
+   "FORECAST_AMT",
+   "FORECAST_LOWER",
+   "FORECAST_MONTHS",
+   "FORECAST_UPPER",
+   "SERIES_NAME",
    "analyst_ml_dvlp_forecast",
    "avg_monthly_forecast",
    "df",
@@ -2490,12 +2504,51 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 27125,
+  "bytes": 27399,
   "agent": "AGENT_EXECUTIVE",
   "n": 6,
   "q": "캠페인별 개발금액 예측 상위 5개를 보여줘 (예측)",
   "ok": true,
-  "sec": 27.7
+  "sec": 29.1
+ },
+ {
+  "tools": [
+   "AVG_LTV",
+   "SERIES_NAME",
+   "analyst_ml_ltv_score",
+   "avg_active_months",
+   "avg_future_amt",
+   "avg_hist_amt",
+   "avg_ltv",
+   "data_to_chart",
+   "ls",
+   "ltv_type",
+   "ltv_type_name",
+   "max_ltv",
+   "mean_monthly_actual",
+   "mean_monthly_forecast",
+   "series_cd",
+   "series_count",
+   "series_name",
+   "stdr_mt",
+   "system_execute_sql"
+  ],
+  "svs": [
+   "SV_ML_LTV_FORECAST",
+   "SV_ML_LTV_SCORE"
+  ],
+  "tables": [
+   "ML_LTV_SCORE_V",
+   "SV_ML_LTV_SCORE"
+  ],
+  "sql": true,
+  "errors": [],
+  "bytes": 28850,
+  "agent": "AGENT_EXECUTIVE",
+  "n": 7,
+  "q": "상위캠페인(채널)별 회원평균 LTV 예측 상위 10곳은? (예측)",
+  "ok": true,
+  "sec": 30.8
  },
  {
   "tools": [
@@ -2528,51 +2581,21 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 25073,
-  "agent": "AGENT_EXECUTIVE",
-  "n": 7,
-  "q": "상위캠페인(채널)별 회원평균 LTV 예측 상위 10곳은? (예측)",
-  "ok": true,
-  "sec": 24.6
- },
- {
-  "tools": [
-   "analyst_ml_ltv_score",
-   "avg_active_months",
-   "avg_future_amt",
-   "avg_hist_amt",
-   "avg_ltv",
-   "ls",
-   "ltv_type",
-   "ltv_type_name",
-   "max_ltv",
-   "mean_monthly_actual",
-   "mean_monthly_forecast",
-   "series_cd",
-   "series_count",
-   "series_name",
-   "stdr_mt",
-   "system_execute_sql"
-  ],
-  "svs": [
-   "SV_ML_LTV_FORECAST",
-   "SV_ML_LTV_SCORE"
-  ],
-  "tables": [
-   "ML_LTV_SCORE_V",
-   "SV_ML_LTV_SCORE"
-  ],
-  "sql": true,
-  "errors": [],
-  "bytes": 25254,
+  "bytes": 25191,
   "agent": "AGENT_EXECUTIVE",
   "n": 8,
   "q": "캠페인별 후원총액 LTV 스코어 상위 10곳은? (예측)",
   "ok": true,
-  "sec": 23.2
+  "sec": 24.5
  },
  {
   "tools": [
+   "ANALYSIS_TYPE_NAME",
+   "FEATURE",
+   "FEATURE_TYPE",
+   "RANK",
+   "SCORE",
+   "STDR_MT",
    "analysis_type",
    "analysis_type_name",
    "analyst_ml_feature_importance",
@@ -2596,24 +2619,26 @@
   ],
   "sql": true,
   "errors": [],
-  "bytes": 26381,
+  "bytes": 26764,
   "agent": "AGENT_EXECUTIVE",
   "n": 9,
   "q": "신규 후원 유치와 증액 개발의 상위 5개 기여 요인을 보여줘 (예측)",
   "ok": true,
-  "sec": 32.2
+  "sec": 30.8
  },
  {
   "tools": [],
   "svs": [],
-  "tables": [],
+  "tables": [
+   "ML_DVLP_FORECAST_V"
+  ],
   "sql": false,
   "errors": [],
-  "bytes": 1646,
+  "bytes": 1444,
   "agent": "AGENT_EXECUTIVE",
   "n": 10,
   "q": "예산·광고비·개발 예측 데이터의 원천(bronze)은 각각 어디야?",
   "ok": true,
-  "sec": 17.7
+  "sec": 16.3
  }
 ]
