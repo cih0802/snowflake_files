@@ -25,11 +25,21 @@ GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_GA4    TO SHARE mig_share;
 GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_GSC    TO SHARE mig_share;
 
 ------------------------------------------------------------
--- 2.1 SILVER 부여 — 정제 테이블 1개만
+-- 2.1 SILVER 부여 — 정제 테이블 1개 + 🆕 예측용 집계 3종(O198) = 4개만
 --    ⚠️ ALL TABLES 금지. 이관 대상이 아닌 테이블이 함께 열린다.
 ------------------------------------------------------------
 GRANT USAGE  ON SCHEMA GN_DW.SILVER                        TO SHARE mig_share;
 GRANT SELECT ON TABLE  GN_DW.SILVER.BIGQUERY_REFINED_DATA  TO SHARE mig_share;
+-- 🆕 [2026-10-02 O198 · 사용자 지시] 예측용 집계 3종 — 기획실·회원실 자체 계산 수식 결과(C 계정 부재 · A 원천)
+--    · ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA = 기획실 연도말 개발 예측치(부서별·후원사업별·전체) · DATA_TYPE_NM 목표/실적
+--    · ANNUAL_MBRFEE_PRDT_ACTL_DATA      = 회원실 회비예측(연사업·월·추경) · DATA_TYPE_NM 예측/실측
+--    · MM_SPNSR_CLS_AGGR_DATA            = 회원실 월별 후원 집계(위 실측 입력)
+--    ⚠️ A 원천에서 이름·스키마가 다르면 GRANT 가 실패한다 — 먼저 아래 확인 쿼리로 실재를 본다:
+--       SELECT table_schema, table_name, row_count FROM GN_DW.INFORMATION_SCHEMA.TABLES
+--       WHERE table_name IN ('ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA');
+GRANT SELECT ON TABLE  GN_DW.SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA TO SHARE mig_share;
+GRANT SELECT ON TABLE  GN_DW.SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA      TO SHARE mig_share;
+GRANT SELECT ON TABLE  GN_DW.SILVER.MM_SPNSR_CLS_AGGR_DATA            TO SHARE mig_share;
 
 ------------------------------------------------------------
 -- 2.2 ⛔ BRONZE_BIGQUERY — 부여하지 않는다
@@ -95,8 +105,8 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 77(브론즈 64 + SILVER 1 + ML 12)  🆕 [O198] ML 17→12 · 총계 82→77
---    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 80(브론즈 64 + SILVER 4 + ML 12)  🆕 [O198] ML 17→12 · SILVER 1→4(예측용 집계 3) · 총계 82→80
+--    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
@@ -107,12 +117,12 @@ SHOW GRANTS TO SHARE mig_share;
 SELECT
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 50
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 12 (O198)
-  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 1
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 4 (O198 · 정제 1 + 예측용 집계 3)
   COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 7
   COUNT_IF("name" ILIKE '%BRONZE_BIGQUERY%')                         AS bigquery_grants   -- 기대 0
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
 -- → bigquery_grants ≠ 0 이면 2.2 하단의 REVOKE 로 즉시 회수한다.
---   ml_tables ≠ 12 또는 silver_tables ≠ 1 이면 2.1 / 2-B / 2-C 를 다시 실행한다(12 초과 = 2-C 미실행 · 제외 4종 잔존).
+--   ml_tables ≠ 12 또는 silver_tables ≠ 4 이면 2.1 / 2-B / 2-C 를 다시 실행한다(12 초과 = 2-C 미실행 · 제외 4종 잔존).
 
 ------------------------------------------------------------
 -- 5. 대조 기준값 스냅샷 (⚠️ 공유 직후 기록)
@@ -127,7 +137,7 @@ SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',
                                     'ML_RST_DATA_MBER_INC_12M','ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_MONTHLY_DVLP_AMT',
                                     'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
@@ -135,16 +145,16 @@ WHERE table_type = 'BASE TABLE'
                                     'ML_RST_DATA_DVLP_INC_CONTRIBUTION','ML_RST_DATA_ONCE_CONVERSION')) )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 12 · SILVER 1 = 77)  🆕 [O198]
---   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 12 · SILVER 4 = 80)  🆕 [O198]
+--   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 SELECT table_schema,
-       COUNT(*)       AS tables,
+       COUNT(*)       AS tables,z`
        SUM(row_count) AS total_rows,
        SUM(CASE WHEN row_count = 0 THEN 1 ELSE 0 END) AS zero_row_tables
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',
                                     'ML_RST_DATA_MBER_INC_12M','ML_RST_DATA_LOYAL_MBER','ML_RST_DATA_MONTHLY_DVLP_AMT',
                                     'ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV','ML_RST_DATA_CMPGN_SPNSR_AMT_LTV',
@@ -199,8 +209,21 @@ SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_GSC', TRUE);
 --   ⚠️ GET_DDL('DATABASE', 'GN_DW', TRUE) 는 쓰지 않는다.
 --      공유 대상이 아닌 스키마·테이블까지 전부 덤프된다.
 
--- 6.2 SILVER 정제 테이블 1개 → 06_데이터마이그 GN_DW_SILVER_DDL.sql 로 저장
--- SELECT GET_DDL('TABLE', 'GN_DW.SILVER.BIGQUERY_REFINED_DATA', TRUE);
+-- 6.2 SILVER 정제 테이블 1개 + 예측용 집계 3종 → 06_데이터마이그 GN_DW_SILVER_DDL.sql 로 저장
+SELECT GET_DDL('SCHEMA', 'GN_DW.SILVER', TRUE);
+/*
+SELECT GET_DDL('TABLE', 'GN_DW.SILVER.BIGQUERY_REFINED_DATA', TRUE);
+--   🆕 [O198] 예측용 집계 3종은 C 쪽 DDL 정의가 **아직 없다** ⇒ 반드시 실행해 06번에 추가한다(위치 기반 CSV 적재의 유일한 구조 기준).
+SELECT GET_DDL('TABLE', 'GN_DW.SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA', TRUE);
+SELECT GET_DDL('TABLE', 'GN_DW.SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA', TRUE);
+SELECT GET_DDL('TABLE', 'GN_DW.SILVER.MM_SPNSR_CLS_AGGR_DATA', TRUE);
+--   반정형(VARIANT/ARRAY/OBJECT) 컬럼이 있으면 5.1 처럼 NULL 통제총계가 필요하다 — 아래로 먼저 확인:
+SELECT table_name, ordinal_position, column_name, data_type
+FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+WHERE table_schema = 'SILVER'
+  AND table_name IN ('ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA', 'ANNUAL_MBRFEE_PRDT_ACTL_DATA', 'MM_SPNSR_CLS_AGGR_DATA')
+ORDER BY 1, 2;
+*/
 --   ⚠️ SCHEMA 단위로 뽑지 말 것. 대상 아닌 테이블까지 포함된다.
 --   ⚠️ 컬럼 수/순서가 06번(06_데이터마이그 GN_DW_SILVER_DDL.sql) 파일과 다르면
 --      C 적재가 전량 실패하거나 한 칸씩 밀려 오적재된다.
@@ -213,7 +236,7 @@ SELECT GET_DDL('SCHEMA', 'GN_DW.BRONZE_GSC', TRUE);
 --    이관용 구조 발췌 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql (예측결과 12종만 · O198)
 --    🔴 [O198] 신규 2종(MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV)은 20_ML_ddl.sql 에 없다 ⇒ 아래 6.3 을 실행해 05번을 확정한다.
 --    ⚠️ 모델·프로시저가 교체되어 결과 테이블 컬럼이 바뀌면 아래를 재실행해 05번을 갱신한다.
--- SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
+SELECT GET_DDL('SCHEMA', 'GN_DW.ML', TRUE);
 
 -- 6.3 🆕 [O198] 신규 ML 2종 구조 추출 → 05번의 「추정 구조」 2블록을 이 출력으로 교체한다
 --    🔴 05번의 두 CREATE 문은 구 LTV 테이블 구조로 **추정**해 둔 것이다(원천 정의 부재).
@@ -243,6 +266,9 @@ ORDER BY 1, 2;
 -- --   🟢 ALL TABLES 를 써도 안전하다(부여하지 않은 것은 회수할 것이 없다).
 -- --      단 회수 후 4.1 을 다시 돌려 ml_tables=0 · silver_tables=0 인지 확인한다.
 -- REVOKE SELECT ON TABLE GN_DW.SILVER.BIGQUERY_REFINED_DATA FROM SHARE mig_share;
+-- REVOKE SELECT ON TABLE GN_DW.SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA FROM SHARE mig_share;
+-- REVOKE SELECT ON TABLE GN_DW.SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA      FROM SHARE mig_share;
+-- REVOKE SELECT ON TABLE GN_DW.SILVER.MM_SPNSR_CLS_AGGR_DATA            FROM SHARE mig_share;
 -- REVOKE SELECT ON ALL TABLES IN SCHEMA GN_DW.ML            FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_CRM    FROM SHARE mig_share;
 -- REVOKE USAGE  ON SCHEMA GN_DW.BRONZE_AGENCY FROM SHARE mig_share;

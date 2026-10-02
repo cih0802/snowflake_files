@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 최근 갱신일 : 2026-09-28
+-- 최근 갱신일 : 2026-10-02
 -- 🟢 파일명에 날짜를 넣지 않는다(2026-09-15 사용자 결정 · 구 파일명 = *_20260730).
 --    이유 = 갱신마다 개명하면 이 파일을 참조하는 01·02·03·05·07번 문서와 게이트 경로를
 --    매번 함께 고쳐야 하고, 한 곳이라도 놓치면 참조가 깨진다. **날짜는 파일 안에만 적는다.**
@@ -20,8 +20,8 @@
 --   [형제 DDL] 50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
---              → GN_DW.ML.ML_RST_DATA_* (예측결과 17종)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 82 테이블이 완성된다. 선후 관계는 없다.
+--              → GN_DW.ML.ML_RST_DATA_* (예측결과 12종 · O198)
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 80 테이블(브론즈 64 + SILVER 4 + ML 12)이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
@@ -50,7 +50,7 @@
 --   🔴 **[2026-08-29 개정] 구조 정본이 02_1_A DB정보.sql → 99_provided_definition/11~13 으로 바뀌었다.**
 --     종전 규칙은 「02_1_A DB정보.sql 을 최우선 정본으로 하고, 원천 정의 문서와 어긋나면 실측값을 따른다」
 --     였다. 그 규칙을 그대로 따르면 2026-08-29 갱신분이 **되돌려진다.**
---     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --       · BRONZE_BIGQUERY 3** 이고, 삭제된 컬럼 `MNYRS_COST_DIV_YN` 이 아직 살아 있다(1341행).
 --       ⇒ 그 파일은 **더 이른 시점의 스냅샷**이다. 「실측」이라는 이유만으로 최신이 되지는 않는다.
 --     ⇒ 규칙 = **날짜가 더 최신인 스냅샷을 정본으로 한다.** 현재는 11~13 이다.
@@ -85,7 +85,7 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-09-29
+--   - 갱신일자    : 2026-10-02
 --   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
 --   - 테이블 수   : 64  (CRM 53, AGENCY 4, ERP 2, GA4 2, GSC 3)
 --   - 시퀀스 수   : 3   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_GA4.SEQ_SYNC_ERR_INFO,
@@ -96,6 +96,12 @@
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-10-02  (O198 · 원천 정의 문서 11~16 재수령분 반영 — `scripts/handoff_ddl_gate.py` 6축 기계 대조)
+--     ~ [TYPE] GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV : M01_GOAL_CNT ~ M12_GOAL_CNT 12컬럼 FLOAT → NUMBER(38,10) (원천 정렬)
+--     · 테이블 집합 64(CRM 53 · AGENCY 4 · ERP 2 · GA4 2 · GSC 3) · 컬럼 이름·순서 · DEFAULT · COMMENT 차이 0건.
+--     · 원천 파일 번호 교환 = 12번 ERP · 13번 AGENCY(구 12 AGENCY · 13 ERP) — 게이트 매핑만 고쳤다(내용 무관).
+--     ⚠️ C 계정 적재 CSV 는 위치 기반이라 타입 변경은 적재 성패와 무관하나, FLOAT 로 이미 생성된 C 테이블은
+--        소수 정밀도가 다르다 ⇒ C 에서 재생성하거나 `ALTER … SET DATA TYPE` 이 불가하면 재생성한다.
 --   2026-09-29  (원천 정의 문서 11/12 재갱신분 반영 — 기계 대조)
 --     ~ [COLUMN] GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV : + BDGT_PRCD_NM VARCHAR COMMENT '예산절차' (2번째 · YEAR 뒤) · 20 → 21컬럼
 --     ~ [PROC]   GN_DW.BRONZE_AGENCY.SP_LOAD_* 3종 본문 변경(원천 12번) — 🔴 이 파일은 프로시저를 싣지 않는다(아래 「제외」 절)
@@ -116,7 +122,7 @@
 --     * 스키마 5 유지 · 테이블 61 → 64(CRM 50 → 53) · 시퀀스 3 유지 · 파일 포맷 4 유지.
 --     * ERP / GA4 / GSC 는 변경 없다(기계 대조 차이 0).
 --   2026-09-17  (원천 정의 문서 11/12/16 갱신분 반영 — 기계 대조로 확정)
---     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 열이 1개씩 늘었으므로 이전 판 CSV 는 열 수가
 --           1개 부족하다 — 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것(재언로드가 정답이다).
 --        · 컬럼 코멘트는 원천 11번에 없어 명명 규칙으로 부여했다(현업 확인 대상).
@@ -165,7 +171,7 @@
 --     🟠 [TABLE]  GN_DW.BRONZE_CRM.TM_PM_SETLE_CMPNY_ACNT    (14컬럼) — 종전 판 **누락분 보완**
 --        ⇒ 이 2개는 이번 개편으로 신설된 것이 아니라 원천 11번에 계속 있었는데 본 파일에 빠져
 --           있었다(게이트 축1 이 적발). 신규분과 구분해 적는다.
---     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --     * AGENCY 4테이블 · ERP 2테이블 · GA4 2테이블 · GSC 2테이블은 구조·컬럼·코멘트 변경 없다
 --       (12번·18번 기계 대조 결과 차이 0).
 --     * 신규 CRM 테이블·컬럼의 한글 코멘트는 컬럼정의서 CSV 에 **없다**(전건 0건 실측) ⇒
@@ -225,7 +231,7 @@
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
 --   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 53 / ERP 2 / GA4 2 / GSC 3 / ML 17 / SILVER 1 = 82):
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 53 / ERP 2 / GA4 2 / GSC 3 / ML 12 / SILVER 4 = 80 · O198):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
 --          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
@@ -248,7 +254,7 @@
 --     이전 판 CSV 와는 열 구성이 두 번 어긋났다 — 그대로 적재하면 실패하거나 조용히 밀린다.
 --     재언로드가 정답이다. 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것.
 --     오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 옮겨졌으므로 그 2개도 함께 받는다.
---   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --     ⇒ CRM CSV 는 **전건 재언로드** 대상이다(열이 1개씩 늘었다).
 --   - 🔴 2026-09-17 자로 EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 바뀌었다(원천 13번 정본).
 --     열 수·순서는 그대로이므로 A.1 (4) 열 대조는 통과하지만, **문자열 → DATE 형변환이 새로 생긴다.**
@@ -308,7 +314,7 @@
 --        원천 16번에 적재 경로(SP_LOAD_*)가 없다 — 용도·테이블 COMMENT 문안은 현업 확인 대상이다.
 --
 --   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
---   [별도 파일] GN_DW.ML.ML_RST_DATA_* 17종        — 05번 참조 (PREDICTION/PREDICT=VARIANT 5종 포함)
+--   [별도 파일] GN_DW.ML.ML_RST_DATA_* 12종(O198)  — 05번 참조 (PREDICTION/PREDICT=VARIANT 5종 포함)
 -- =====================================================================
 
 
@@ -924,18 +930,18 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV (
   TEAM_NM VARCHAR(16777216) COMMENT '팀명',
   SPNSR_BSNS_DIV_NM VARCHAR(16777216) COMMENT '후원사업구분',
   DTL_DIV_NM VARCHAR(16777216) COMMENT '상세목표구분',
-  M01_GOAL_CNT FLOAT COMMENT '1월 목표치',
-  M02_GOAL_CNT FLOAT COMMENT '2월 목표치',
-  M03_GOAL_CNT FLOAT COMMENT '3월 목표치',
-  M04_GOAL_CNT FLOAT COMMENT '4월 목표치',
-  M05_GOAL_CNT FLOAT COMMENT '5월 목표치',
-  M06_GOAL_CNT FLOAT COMMENT '6월 목표치',
-  M07_GOAL_CNT FLOAT COMMENT '7월 목표치',
-  M08_GOAL_CNT FLOAT COMMENT '8월 목표치',
-  M09_GOAL_CNT FLOAT COMMENT '9월 목표치',
-  M10_GOAL_CNT FLOAT COMMENT '10월 목표치',
-  M11_GOAL_CNT FLOAT COMMENT '11월 목표치',
-  M12_GOAL_CNT FLOAT COMMENT '12월 목표치'
+  M01_GOAL_CNT NUMBER(38,10) COMMENT '1월 목표치',
+  M02_GOAL_CNT NUMBER(38,10) COMMENT '2월 목표치',
+  M03_GOAL_CNT NUMBER(38,10) COMMENT '3월 목표치',
+  M04_GOAL_CNT NUMBER(38,10) COMMENT '4월 목표치',
+  M05_GOAL_CNT NUMBER(38,10) COMMENT '5월 목표치',
+  M06_GOAL_CNT NUMBER(38,10) COMMENT '6월 목표치',
+  M07_GOAL_CNT NUMBER(38,10) COMMENT '7월 목표치',
+  M08_GOAL_CNT NUMBER(38,10) COMMENT '8월 목표치',
+  M09_GOAL_CNT NUMBER(38,10) COMMENT '9월 목표치',
+  M10_GOAL_CNT NUMBER(38,10) COMMENT '10월 목표치',
+  M11_GOAL_CNT NUMBER(38,10) COMMENT '11월 목표치',
+  M12_GOAL_CNT NUMBER(38,10) COMMENT '12월 목표치'
 )COMMENT='목표구분별 회원개발목표'
 ;
 -- 2026-09-28 신규 — 원천 11번. 일정 관리 마스터(12컬럼).

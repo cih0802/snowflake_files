@@ -20,6 +20,7 @@ create or replace TABLE GN_DW.ML.CMPGN_MBER_SNAPSHOT (
 create or replace TABLE GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
 	CMPGN_CD VARCHAR(16777216),
 	UPPER_CMPGN_CD VARCHAR(16777216),
+	MKTG_CHANNEL VARCHAR(16777216),
 	STDR_MT VARCHAR(16777216),
 	STDR_DE DATE,
 	TOT_CNT NUMBER(38,0),
@@ -36,25 +37,6 @@ create or replace TABLE GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
 	CANCL_AMT_CNT NUMBER(38,6),
 	ACT_AMT_CNT NUMBER(38,6)
 );
-create or replace TABLE GN_DW.ML.DAILY_CMPGN_DVLP_AMT (
-	CMPGN_CD VARCHAR(16777216),
-	UPPER_CMPGN_CD VARCHAR(16777216),
-	STDR_MT VARCHAR(16777216),
-	STDR_DE VARCHAR(16777216),
-	TOT_CNT NUMBER(38,0),
-	NEW_CNT NUMBER(38,0),
-	INC_CNT NUMBER(38,0),
-	DEC_CNT NUMBER(38,0),
-	RE_CNT NUMBER(38,0),
-	CANCL_CNT NUMBER(38,0),
-	ACT_CNT NUMBER(38,0),
-	NEW_AMT_CNT NUMBER(38,0),
-	INC_AMT_CNT NUMBER(38,0),
-	DEC_AMT_CNT NUMBER(38,0),
-	RE_AMT_CNT NUMBER(38,0),
-	CANCL_AMT_CNT NUMBER(38,0),
-	ACT_AMT_CNT NUMBER(38,0)
-);
 create or replace TABLE GN_DW.ML.DVLP_AMT_SNAPSHOT (
 	STDR_MT VARCHAR(16777216),
 	STDR_DE DATE,
@@ -64,10 +46,11 @@ create or replace TABLE GN_DW.ML.DVLP_AMT_SNAPSHOT (
 	SPNSR_BSNS_ID VARCHAR(16777216),
 	CMPGN_CD VARCHAR(16777216),
 	UPPER_CMPGN_CD VARCHAR(16777216),
-	STDR_MT_DVLP_DIV_CD VARCHAR(16777216),
+	CUR_DVLP_DIV_CD VARCHAR(16777216),
 	FIRST_OCCRRNC_DE VARCHAR(16777216),
 	LAST_OCCRRNC_DE VARCHAR(16777216),
 	CANCL_RDCAMT_RSN_CD VARCHAR(16777216),
+	CANCL_RDCAMT_DE VARCHAR(16777216),
 	CHN_CNT NUMBER(38,0),
 	NEW_CNT NUMBER(38,0),
 	INC_CNT NUMBER(38,0),
@@ -79,7 +62,7 @@ create or replace TABLE GN_DW.ML.DVLP_AMT_SNAPSHOT (
 	DEC_SPNSR_AMT NUMBER(38,0),
 	RE_SPNSR_AMT NUMBER(38,0),
 	CANCL_SPNSR_AMT NUMBER(38,0),
-	STDR_MT_SPNSR_AMT NUMBER(38,0)
+	CUR_SPNSR_AMT NUMBER(38,0)
 );
 create or replace TABLE GN_DW.ML.MBER_MONTHLY_INFO (
 	STDR_MT VARCHAR(16777216),
@@ -127,23 +110,6 @@ create or replace TABLE GN_DW.ML.MBER_MONTHLY_SNAPSHOT (
 	CANCL_AMT_CNT NUMBER(38,6),
 	ACT_AMT_CNT NUMBER(38,6)
 );
-create or replace TABLE GN_DW.ML.MBER_NO_DSCNT_ML_DATA (
-	MBER_NO VARCHAR(16777216),
-	FRST_REGIST_DT TIMESTAMP_NTZ(9),
-	SEX VARCHAR(16777216),
-	MBER_STAT_CD VARCHAR(16777216),
-	ACT_YN VARCHAR(16777216),
-	SPNSR_AMT NUMBER(38,0),
-	NEW_SPNSR_AMT NUMBER(38,0),
-	INC_SPNSR_AMT NUMBER(38,0),
-	DEC_SPNSR_AMT NUMBER(38,0),
-	RE_SPNSR_AMT NUMBER(38,0),
-	CANCL_SPNSR_AMT NUMBER(38,0),
-	CHN_CNT NUMBER(38,0),
-	SETLE_CD VARCHAR(16777216),
-	PAY_CNT NUMBER(38,0),
-	NONPAY_CNT NUMBER(38,0)
-);
 create or replace TABLE GN_DW.ML.MBER_SERVICE_INFO (
 	SVC_TYPE VARCHAR(16777216),
 	TYPE1 VARCHAR(16777216),
@@ -183,38 +149,26 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION
 	STDR_MT VARCHAR(16777216) COMMENT '분석 실행 기준월 (YYYYMM)',
 	RANK NUMBER(38,0) COMMENT '피처 중요도 순위',
 	FEATURE VARCHAR(16777216) COMMENT '피처명',
-	SCORE FLOAT COMMENT '피처 중요도 점수 (0~1, 합계=1)',
-	FEATURE_TYPE VARCHAR(16777216) COMMENT '피처 유형 (user_provided)'
+	SCORE FLOAT COMMENT '피처 중요도 점수 (0~1, 합계=1)'
 )COMMENT='신규 후원 유치 상위 채널 결정 요인 (피처 중요도) 분석 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_CTGR_AMT (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '캠페인카테고리코드 (CMPGN_CTGR_CD)',
+	CMPGN_CTGR_CD VARCHAR(16777216) COMMENT '캠페인 카테고리 코드 (CMPGN_CTGR_CD)',
 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
 	FORECAST FLOAT COMMENT '예측 회비금액',
 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
 )COMMENT='캠페인카테고리별 향후 12개월 월간 회비(후원금액) 예측 결과'
 ;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV (
+create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '캠페인코드 (CMPGN_CD)',
+	MKTG_CHANNEL VARCHAR(16777216) COMMENT '캠페인 채널 코드 (MKTG_CHANNEL)',
 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
 	FORECAST FLOAT COMMENT '예측 월간 후원금액',
 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='캠페인(CMPGN_CD)별 월간 후원금액 향후 12개월 예측 결과'
-;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
-	HIST_TOTAL_AMT FLOAT COMMENT '과거 누적 후원금액 합계 (학습 기간 전체)',
-	FUTURE_TOTAL_AMT FLOAT COMMENT '향후 12개월 예측 금액 합계',
-	LTV FLOAT COMMENT '장기가치 (과거 누적 + 향후 예측)',
-	AVG_MONTHLY_FORECAST FLOAT COMMENT '향후 월평균 예측 금액',
-	ACTIVE_MONTHS NUMBER(38,0) COMMENT '과거 활성 월수',
-	AVG_MONTHLY_ACTUAL FLOAT COMMENT '과거 월평균 실제 금액'
-)COMMENT='캠페인(CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'
+)COMMENT='채널(MKTG_CHANNEL)별 월간 후원금액 향후 12개월 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION (
 	STDR_MT VARCHAR(16777216) COMMENT '분석 실행 기준월 (YYYYMM)',
@@ -227,90 +181,38 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION (
 create or replace TABLE GN_DW.ML.ML_RST_DATA_LOYAL_MBER (
 	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
 	MBER_NO VARCHAR(16777216) COMMENT '회원번호',
-	CURRENT_TENURE NUMBER(38,0) COMMENT '현재 가입 경과 월수',
-	ACTIVE_MONTHS_24 NUMBER(38,0) COMMENT '초기 24개월 중 활성 월수',
-	SPNSR_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 후원건 수',
-	TOTAL_AMT_24 NUMBER(38,0) COMMENT '초기 24개월 총 후원금액',
-	AVG_AMT_24 FLOAT COMMENT '초기 24개월 평균 후원금액',
-	INC_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 증액 건수',
-	DEC_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 감액 건수',
-	CANCL_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 해지 건수',
-	RE_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 재후원 건수',
-	INC_AMT_24 NUMBER(38,0) COMMENT '초기 24개월 증액 금액',
-	DEC_AMT_24 NUMBER(38,0) COMMENT '초기 24개월 감액 금액',
-	CANCL_AMT_24 NUMBER(38,0) COMMENT '초기 24개월 해지 금액',
-	DNST_RT_24 FLOAT COMMENT '초기 24개월 중단율 (금액 기준)',
-	AMT_STDDEV_24 FLOAT COMMENT '초기 24개월 후원금액 표준편차',
-	PAY_RATE_24 FLOAT COMMENT '초기 24개월 납입 성공률',
-	PAY_REQ_CNT_24 NUMBER(38,0) COMMENT '초기 24개월 납입 요청 건수',
-	TOTAL_PAY_AMT_24 NUMBER(38,0) COMMENT '초기 24개월 총 납입 금액',
-	SETLE_CD VARCHAR(16777216) COMMENT '결제수단코드',
-	CPR_DIV_CD VARCHAR(16777216) COMMENT '법인/개인 구분코드',
 	PREDICTION VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
 )COMMENT='회원(MBER_NO) 단위 충성회원 성장 가능성 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M (
 	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
 	MBER_NO VARCHAR(16777216) COMMENT '회원번호',
-	MBER_STAT_CD VARCHAR(16777216) COMMENT '회원 상태코드',
-	MONTHS_SINCE_JOIN NUMBER(38,0) COMMENT '가입 후 경과 월수',
-	ACTIVE_SPNSR_CNT NUMBER(38,0) COMMENT '활성 후원건 수',
-	TOTAL_SPNSR_AMT NUMBER(38,0) COMMENT '총 후원금액',
-	TOTAL_INC_CNT NUMBER(38,0) COMMENT '총 증액 건수',
-	TOTAL_DEC_CNT NUMBER(38,0) COMMENT '총 감액 건수',
-	TOTAL_CANCL_CNT NUMBER(38,0) COMMENT '총 해지 건수',
-	TOTAL_INC_AMT NUMBER(38,0) COMMENT '총 증액 금액',
-	TOTAL_DEC_AMT NUMBER(38,0) COMMENT '총 감액 금액',
-	TOTAL_CANCL_AMT NUMBER(38,0) COMMENT '총 해지 금액',
-	DNST_RT FLOAT COMMENT '중단율 (금액 기준)',
-	PAY_RATE FLOAT COMMENT '납입 성공률',
-	PAY_REQ_CNT NUMBER(38,0) COMMENT '납입 요청 건수',
-	SETLE_CD VARCHAR(16777216) COMMENT '결제수단코드',
-	CPR_DIV_CD VARCHAR(16777216) COMMENT '법인/개인 구분코드',
 	PREDICTION VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
 )COMMENT='회원(MBER_NO) 단위 향후 6개월 내 중단확률 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MBER_INC_12M (
 	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
 	MBER_NO VARCHAR(16777216) COMMENT '회원번호',
-	MBER_STAT_CD VARCHAR(16777216) COMMENT '회원 상태코드',
-	MONTHS_SINCE_JOIN NUMBER(38,0) COMMENT '가입 후 경과 월수',
-	ACTIVE_SPNSR_CNT NUMBER(38,0) COMMENT '활성 후원건 수',
-	TOTAL_SPNSR_AMT NUMBER(38,0) COMMENT '총 후원금액',
-	TOTAL_NEW_CNT NUMBER(38,0) COMMENT '총 신규 건수',
-	TOTAL_INC_CNT NUMBER(38,0) COMMENT '총 증액 건수',
-	TOTAL_DEC_CNT NUMBER(38,0) COMMENT '총 감액 건수',
-	TOTAL_RE_CNT NUMBER(38,0) COMMENT '총 재후원 건수',
-	TOTAL_CANCL_CNT NUMBER(38,0) COMMENT '총 해지 건수',
-	TOTAL_INC_AMT NUMBER(38,0) COMMENT '총 증액 금액',
-	TOTAL_DEC_AMT NUMBER(38,0) COMMENT '총 감액 금액',
-	TOTAL_CANCL_AMT NUMBER(38,0) COMMENT '총 해지 금액',
-	DNST_RT FLOAT COMMENT '중단율 (금액 기준)',
-	PAY_RATE FLOAT COMMENT '납입 성공률',
-	PAY_REQ_CNT NUMBER(38,0) COMMENT '납입 요청 건수',
-	TOTAL_PAY_AMT NUMBER(38,0) COMMENT '총 납입 금액',
-	SETLE_CD VARCHAR(16777216) COMMENT '결제수단코드',
-	CPR_DIV_CD VARCHAR(16777216) COMMENT '법인/개인 구분코드',
 	PREDICTION VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
 )COMMENT='회원(MBER_NO) 단위 향후 12개월 내 증액 가능성 예측 결과'
 ;
+create or replace TABLE GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV (
+	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
+	MKTG_CHANNEL VARCHAR(16777216) COMMENT '캠페인 채널 코드 (MKTG_CHANNEL)',
+	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
+	FORECAST FLOAT COMMENT '예측 회원평균 후원금액',
+	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
+	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
+)COMMENT='캠페인 채널 코드 (MKTG_CHANNEL)별 회원평균 후원금액 향후 12개월 예측 결과'
+;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '캠페인코드 (CMPGN_CD)',
+	CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드 (CMPGN_CD)',
 	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
 	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
 	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
 )COMMENT='캠페인(CMPGN_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '부서코드 (ACMSLT_DEPT_CD)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='부서(ACMSLT_DEPT_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT (
 	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
@@ -320,29 +222,9 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_DVLP_AMT (
 	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
 )COMMENT='월별 전체 신규 후원개발 금액(만원) 향후 12개월 예측 결과'
 ;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '개발 유형 (NEW=신규, OLD=기존 증액+재후원)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='신규/기존별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '후원사업ID (SPNSR_BSNS_ID)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 개발금액 (만원 단위, 신규+증액+재후원)',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='후원사업(SPNSR_BSNS_ID)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'
-;
 create or replace TABLE GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
-	ONCE_MBER_NO VARCHAR(16777216) COMMENT '회원번호',
 	STDR_MT VARCHAR(16777216) COMMENT '기준월 (YYYYMM)',
-	CONVERSION_YN VARCHAR(16777216) COMMENT '회원 전환여부',
-	DATA_TYPE VARCHAR(16777216) COMMENT '데이터유형',
+	ONCE_MBER_NO VARCHAR(16777216) COMMENT '회원번호',
 	PREDICT VARIANT COMMENT '예측결과'
 )COMMENT='일시회원 향후 6개월 내 전환 가능성 예측 결과'
 ;
@@ -351,41 +233,9 @@ create or replace TABLE GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M (
 	MBER_NO VARCHAR(16777216) COMMENT '회원번호',
 	SPNSR_BSNS_ID VARCHAR(16777216) COMMENT '후원사업ID',
 	SPNSR_BSNS_NO VARCHAR(16777216) COMMENT '후원사업번호',
-	CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
-	STDR_MT_SPNSR_AMT NUMBER(38,0) COMMENT '기준월 후원금액',
-	TENURE_MONTHS NUMBER(38,0) COMMENT '후원 유지기간 (월)',
-	CHN_CNT NUMBER(38,0) COMMENT '변경 건수',
-	INC_CNT NUMBER(38,0) COMMENT '증액 건수',
-	DEC_CNT NUMBER(38,0) COMMENT '감액 건수',
-	RE_CNT NUMBER(38,0) COMMENT '재후원 건수',
-	CANCL_CNT NUMBER(38,0) COMMENT '해지 건수',
-	INC_SPNSR_AMT NUMBER(38,0) COMMENT '증액 금액',
-	DEC_SPNSR_AMT NUMBER(38,0) COMMENT '감액 금액',
-	CANCL_SPNSR_AMT NUMBER(38,0) COMMENT '해지 금액',
-	PAY_RATE FLOAT COMMENT '납입 성공률',
-	SETLE_CD VARCHAR(16777216) COMMENT '결제수단코드',
+	CMPGN_CTGR_CD VARCHAR(16777216) COMMENT '캠페인 카테고리 코드',
 	PREDICTION VARIANT COMMENT '예측 결과 (VARIANT: probability, class 포함)'
-)COMMENT='후원건(SPNSR_BSNS_ID) 단위 향후 12개월 내 중단확률 예측 결과'
-;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	SERIES VARCHAR(16777216) COMMENT '상위캠페인코드 (UPPER_CMPGN_CD)',
-	TS TIMESTAMP_NTZ(9) COMMENT '예측 기준일 (월 시작일)',
-	FORECAST FLOAT COMMENT '예측 회원평균 후원금액',
-	LOWER_BOUND FLOAT COMMENT '95% 신뢰구간 하한',
-	UPPER_BOUND FLOAT COMMENT '95% 신뢰구간 상한'
-)COMMENT='상위캠페인(UPPER_CMPGN_CD)별 회원평균 후원금액 향후 12개월 예측 결과'
-;
-create or replace TABLE GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE (
-	STDR_MT VARCHAR(16777216) COMMENT '예측 실행 기준월 (YYYYMM)',
-	UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
-	HIST_TOTAL_AMT FLOAT COMMENT '과거 누적 회원평균 금액 합계 (학습 기간 전체)',
-	FUTURE_TOTAL_AMT FLOAT COMMENT '향후 12개월 예측 금액 합계',
-	LTV FLOAT COMMENT '장기가치 (과거 누적 + 향후 예측)',
-	AVG_MONTHLY_FORECAST FLOAT COMMENT '향후 월평균 예측 금액',
-	ACTIVE_MONTHS NUMBER(38,0) COMMENT '과거 활성 월수',
-	AVG_MONTHLY_ACTUAL FLOAT COMMENT '과거 월평균 실제 금액'
-)COMMENT='상위캠페인(UPPER_CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'
+)COMMENT='후원건(SPNSR_BSNS_NO) 단위 향후 12개월 내 중단확률 예측 결과'
 ;
 create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_ACT_MBER_CHURN_12M (
 	STDR_MT VARCHAR(16777216),
@@ -411,17 +261,15 @@ create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_ACT_SPNSR_CHURN_12M (
 	MBER_NO VARCHAR(16777216),
 	SPNSR_BSNS_ID VARCHAR(16777216),
 	SPNSR_BSNS_NO VARCHAR(16777216),
-	CMPGN_CD VARCHAR(16777216),
+	CMPGN_CTGR_CD VARCHAR(16777216),
 	STDR_MT_SPNSR_AMT NUMBER(38,0),
 	TENURE_MONTHS NUMBER(9,0),
 	CHN_CNT NUMBER(38,0),
 	INC_CNT NUMBER(38,0),
 	DEC_CNT NUMBER(38,0),
 	RE_CNT NUMBER(38,0),
-	CANCL_CNT NUMBER(38,0),
 	INC_SPNSR_AMT NUMBER(38,0),
 	DEC_SPNSR_AMT NUMBER(38,0),
-	CANCL_SPNSR_AMT NUMBER(38,0),
 	PAY_RATE NUMBER(19,6),
 	SETLE_CD VARCHAR(16777216)
 );
@@ -435,7 +283,7 @@ create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_CHANNEL_NEW_SPNSR_DVLP (
 	ACTIVE_MONTHS NUMBER(18,0)
 );
 create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_CHANNEL_SPNSR_DVLP (
-	UPPER_CMPGN_CD VARCHAR(16777216),
+	MKTG_CHANNEL VARCHAR(16777216),
 	TOT_CNT NUMBER(38,0),
 	ACT_CNT NUMBER(38,0),
 	ACT_RATE NUMBER(38,6),
@@ -575,27 +423,12 @@ create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_DVLP_AMT (
 	CMPGN_CD VARCHAR(16777216),
 	DVLP_CNT NUMBER(38,1)
 );
-create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_DEPT_DVLP_AMT (
-	STDR_DE DATE,
-	ACMSLT_DEPT_CD VARCHAR(16777216),
-	DVLP_CNT NUMBER(38,1)
-);
 create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_DVLP_AMT (
 	STDR_DE DATE,
 	DVLP_CNT NUMBER(38,1)
 );
-create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_NEW_OLD_DVLP_AMT (
-	STDR_DE DATE,
-	DVLP_TYPE VARCHAR(3),
-	DVLP_CNT NUMBER(38,1)
-);
-create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
-	STDR_DE DATE,
-	SPNSR_BSNS_ID VARCHAR(16777216),
-	DVLP_CNT NUMBER(38,1)
-);
-create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_UCMPGN_AVG_AMT (
-	UPPER_CMPGN_CD VARCHAR(16777216),
+create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT (
+	CMPGN_CTGR_CD VARCHAR(16777216),
 	STDR_DE DATE,
 	AVG_MBER_AMT NUMBER(38,0)
 );
@@ -656,17 +489,15 @@ create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_SPNSR_CHURN_12M (
 	MBER_NO VARCHAR(16777216),
 	SPNSR_BSNS_ID VARCHAR(16777216),
 	SPNSR_BSNS_NO VARCHAR(16777216),
-	CMPGN_CD VARCHAR(16777216),
+	CMPGN_CTGR_CD VARCHAR(16777216),
 	STDR_MT_SPNSR_AMT NUMBER(38,0),
 	TENURE_MONTHS NUMBER(9,0),
 	CHN_CNT NUMBER(38,0),
 	INC_CNT NUMBER(38,0),
 	DEC_CNT NUMBER(38,0),
 	RE_CNT NUMBER(38,0),
-	CANCL_CNT NUMBER(38,0),
 	INC_SPNSR_AMT NUMBER(38,0),
 	DEC_SPNSR_AMT NUMBER(38,0),
-	CANCL_SPNSR_AMT NUMBER(38,0),
 	PAY_RATE NUMBER(19,6),
 	SETLE_CD VARCHAR(16777216),
 	CHURN_12M NUMBER(1,0)
@@ -681,6 +512,8 @@ create or replace TABLE GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT (
 	CMPGN_CD VARCHAR(16777216),
 	UPPER_CMPGN_CD VARCHAR(16777216),
 	ACMSLT_DEPT_CD VARCHAR(16777216),
+	CMPGN_CTGR_CD VARCHAR(16777216),
+	MKTG_CHANNEL VARCHAR(16777216),
 	STDR_MT_DVLP_DIV_CD VARCHAR(16777216),
 	FIRST_OCCRRNC_DE VARCHAR(16777216),
 	LAST_OCCRRNC_DE VARCHAR(16777216),
@@ -697,11 +530,6 @@ create or replace TABLE GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT (
 	RE_SPNSR_AMT NUMBER(38,0),
 	CANCL_SPNSR_AMT NUMBER(38,0),
 	STDR_MT_SPNSR_AMT NUMBER(38,0)
-);
-create or replace TABLE GN_DW.ML.ONCE_BQ (
-	ONCE_MBER_NO VARCHAR(16777216),
-	USER_PSEUDO_ID VARCHAR(16777216),
-	EP_GA_SESSION_ID VARCHAR(16777216)
 );
 create or replace TABLE GN_DW.ML.SNPSR_BSNS_NO_DSCNT_ML_DATA (
 	MBER_NO VARCHAR(16777216),
@@ -721,6 +549,41 @@ create or replace TABLE GN_DW.ML.SNPSR_BSNS_NO_DSCNT_ML_DATA (
 	SETLE_CD VARCHAR(16777216),
 	PAY_CNT NUMBER(38,0),
 	NONPAY_CNT NUMBER(38,0)
+);
+create or replace TABLE GN_DW.ML.TEST_COUNT (
+	ACMSLT_DEPT_CD2 VARCHAR(10),
+	DVLP_DIV_CD2 VARCHAR(3),
+	RNUM NUMBER(18,0),
+	RAMT NUMBER(38,0),
+	AAMT NUMBER(38,0),
+	DAMT NUMBER(31,0),
+	SAMT NUMBER(31,0),
+	MAMT NUMBER(31,0),
+	STRD_MT VARCHAR(8),
+	SPNSR_NO VARCHAR(9),
+	SPNSR_BSNS_NO NUMBER(19,0),
+	OCCRRNC_DE VARCHAR(8),
+	SER_NO NUMBER(10,0),
+	MBER_NO VARCHAR(10),
+	ACT_DEPT_CD VARCHAR(10),
+	ACMSLT_DEPT_CD VARCHAR(10),
+	CMPGN_CD VARCHAR(20),
+	SETLE_CD VARCHAR(3),
+	MBER_DIV_CD VARCHAR(3),
+	SEX VARCHAR(2),
+	AREA_CD VARCHAR(3),
+	AGE NUMBER(10,0),
+	SPNSR_TIME_CO NUMBER(10,0),
+	SPNSR_AMT_CD VARCHAR(3),
+	SPNSR_BSNS_ID VARCHAR(20),
+	CANCL_RDCAMT_RSN_CD VARCHAR(3),
+	SPNSR_AMT NUMBER(19,0),
+	DVLP_DIV_CD VARCHAR(3),
+	FRST_RGSTR_ID VARCHAR(30),
+	FRST_RGSTR_NM VARCHAR(100),
+	_LOAD_DT TIMESTAMP_NTZ(9),
+	_BATCH_ID VARCHAR(50),
+	_STDR_YM VARCHAR(6)
 );
 create or replace view GN_DW.ML.ML_TRAIN_DATA_MBER_CHURN_6M_V(
 	MBER_STAT_CD,
@@ -790,33 +653,31 @@ create or replace view GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_DVLP_V(
         SELECT * EXCLUDE (CMPGN_CD, STDR_MT)
         FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_DVLP;
 create or replace view GN_DW.ML.ML_TRAIN_DATA_SPNSR_CHURN_12M_V(
-	CMPGN_CD,
+	CMPGN_CTGR_CD,
 	STDR_MT_SPNSR_AMT,
 	TENURE_MONTHS,
 	CHN_CNT,
 	INC_CNT,
 	DEC_CNT,
 	RE_CNT,
-	CANCL_CNT,
 	INC_SPNSR_AMT,
 	DEC_SPNSR_AMT,
-	CANCL_SPNSR_AMT,
 	PAY_RATE,
 	SETLE_CD,
 	CHURN_12M
 ) as
         SELECT 
-            CMPGN_CD,
+            CMPGN_CTGR_CD,
             STDR_MT_SPNSR_AMT,
             TENURE_MONTHS,
             CHN_CNT,
             INC_CNT,
             DEC_CNT,
             RE_CNT,
-            CANCL_CNT,
+            -- CANCL_CNT,
             INC_SPNSR_AMT,
             DEC_SPNSR_AMT,
-            CANCL_SPNSR_AMT,
+            -- CANCL_SPNSR_AMT,
             PAY_RATE,
             SETLE_CD,
             CHURN_12M
@@ -893,30 +754,30 @@ AS 'BEGIN
         -- =============================================================================
         -- STEP 1: 채널별 신규 개발 현황 (기초 통계)
         -- =============================================================================
-        EXECUTE IMMEDIATE ''
-        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_CHANNEL_NEW_SPNSR_DVLP AS
-        SELECT 
-            UPPER_CMPGN_CD,
-            COUNT(DISTINCT CMPGN_CD) AS CMPGN_CNT,
-            SUM(NEW_CNT) AS TOTAL_NEW_CNT,
-            COUNT(DISTINCT MBER_NO) AS TOTAL_MBER_CNT,
-            SUM(NEW_SPNSR_AMT) AS TOTAL_NEW_AMT,
-            ROUND(DIV0NULL(SUM(NEW_CNT), COUNT(DISTINCT STDR_MT)), 1) AS AVG_MONTHLY_NEW,
-            COUNT(DISTINCT STDR_MT) AS ACTIVE_MONTHS
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE STDR_MT BETWEEN ''''202201'''' AND '''''' || :V_STDR_MT || ''''''
-          AND NEW_CNT > 0
-        GROUP BY UPPER_CMPGN_CD
-        ORDER BY TOTAL_NEW_CNT DESC
-        '';
+        -- EXECUTE IMMEDIATE ''
+        -- CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_CHANNEL_NEW_SPNSR_DVLP AS
+        -- SELECT 
+        --     MKTG_CHANNEL,
+        --     COUNT(DISTINCT CMPGN_CD) AS CMPGN_CNT,
+        --     SUM(NEW_CNT) AS TOTAL_NEW_CNT,
+        --     COUNT(DISTINCT MBER_NO) AS TOTAL_MBER_CNT,
+        --     SUM(NEW_SPNSR_AMT) AS TOTAL_NEW_AMT,
+        --     ROUND(DIV0NULL(SUM(NEW_CNT), COUNT(DISTINCT STDR_MT)), 1) AS AVG_MONTHLY_NEW,
+        --     COUNT(DISTINCT STDR_MT) AS ACTIVE_MONTHS
+        -- FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
+        -- WHERE STDR_MT BETWEEN ''''202201'''' AND '''''' || :V_STDR_MT || ''''''
+        --   AND NEW_CNT > 0
+        -- GROUP BY MKTG_CHANNEL
+        -- ORDER BY TOTAL_NEW_CNT DESC
+        -- '';
 
         -- =============================================================================
-        -- STEP 2: ML 학습 데이터 구성 (캠페인-월 단위, 신규유치 발생 여부 분류)
+        -- STEP 1: ML 학습 데이터 구성 (캠페인-월 단위, 신규유치 발생 여부 분류)
         -- =============================================================================
         EXECUTE IMMEDIATE ''
         CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_CHANNEL_SPNSR_DVLP AS
         SELECT 
-            UPPER_CMPGN_CD,
+            MKTG_CHANNEL,
             c.TOT_CNT,
             c.ACT_CNT,
             DIV0NULL(c.ACT_CNT, c.TOT_CNT) AS ACT_RATE,
@@ -949,8 +810,7 @@ AS 'BEGIN
             STDR_MT VARCHAR COMMENT ''분석 실행 기준월 (YYYYMM)'',
             RANK NUMBER COMMENT ''피처 중요도 순위'',
             FEATURE VARCHAR COMMENT ''피처명'',
-            SCORE FLOAT COMMENT ''피처 중요도 점수 (0~1, 합계=1)'',
-            FEATURE_TYPE VARCHAR COMMENT ''피처 유형 (user_provided)''
+            SCORE FLOAT COMMENT ''피처 중요도 점수 (0~1, 합계=1)''
         )
         COMMENT = ''신규 후원 유치 상위 채널 결정 요인 (피처 중요도) 분석 결과'';
 
@@ -967,7 +827,6 @@ AS 'BEGIN
             "RANK",
             "FEATURE",
             "SCORE",
-            "FEATURE_TYPE"
         FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
         '';
 
@@ -1050,7 +909,7 @@ AS 'BEGIN
         -- =============================================================================
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_CMPGN_CTGR_AMT (
             STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''캠페인카테고리코드 (CMPGN_CTGR_CD)'',
+            CMPGN_CTGR_CD VARCHAR COMMENT ''캠페인 카테고리 코드 (CMPGN_CTGR_CD)'',
             TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
             FORECAST FLOAT COMMENT ''예측 회비금액'',
             LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
@@ -1066,7 +925,7 @@ AS 'BEGIN
         INSERT INTO GN_DW.ML.ML_RST_DATA_CMPGN_CTGR_AMT
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
+            SERIES AS CMPGN_CTGR_CD,
             TS,
             FORECAST,
             LOWER_BOUND,
@@ -1106,7 +965,7 @@ AS 'BEGIN
             RETURN ''FAILED: '' || :V_ERR_MSG;
     END;
 END';
-CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_CMPGN_LTV_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_CMPGN_SPNSR_AMT_LTV_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
 RETURNS VARCHAR
 LANGUAGE SQL
 EXECUTE AS CALLER
@@ -1114,7 +973,7 @@ AS 'BEGIN
     -- 변수 선언
     LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
     LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_CMPGN_LTV_FORECAST'';
+    LET V_PROC_NAME VARCHAR := ''SP_CMPGN_SPNSR_AMT_LTV_FORECAST'';
 
     BEGIN
         -- 웨어하우스 설정 (15분 타임아웃)
@@ -1122,11 +981,14 @@ AS 'BEGIN
         USE WAREHOUSE GN_DW_ML_WH;
 
         -- =============================================================================
-        -- STEP 1: 학습 데이터 구성 (캠페인별 월별 후원금액 시계열)
+        -- STEP 1: 학습 데이터 구성 (캠페인 채널별 월별 후원금액 시계열)
         -- =============================================================================
         EXECUTE IMMEDIATE ''
         CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_AVG_AMT AS
-        SELECT CMPGN_CD, STDR_DE, ROUND(SUM(STDR_MT_SPNSR_AMT)) AS SPNSR_AMT
+        SELECT 
+            CMPGN_CD, 
+            STDR_DE, 
+            ROUND(SUM(STDR_MT_SPNSR_AMT)) AS SPNSR_AMT
         FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
         WHERE CMPGN_CD IN (
             SELECT CMPGN_CD 
@@ -1151,11 +1013,11 @@ AS 'BEGIN
         GROUP BY CMPGN_CD, STDR_DE
         ORDER BY CMPGN_CD, STDR_DE
         '';
-
+        
         -- =============================================================================
         -- STEP 2: FORECAST 모델 학습
         -- =============================================================================
-        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.CMPGN_LTV_FORECAST_MODEL(
+        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.CMPGN_SPNSR_AMT_LTV_FORECAST_MODEL(
             INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_AVG_AMT''),
             SERIES_COLNAME => ''CMPGN_CD'',
             TIMESTAMP_COLNAME => ''STDR_DE'',
@@ -1163,32 +1025,32 @@ AS 'BEGIN
         );
 
         -- =============================================================================
-        -- STEP 3: 결과 테이블1 (ML_RST_DATA_CMPGN_LTV) - 없으면 생성, 있으면 DELETE+INSERT
+        -- STEP 3: 결과 테이블1 (ML_RST_DATA_CMPGN_SPNSR_AMT_LTV) - 없으면 생성, 있으면 DELETE+INSERT
         -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_CMPGN_LTV (
+        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV (
             STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''캠페인코드 (CMPGN_CD)'',
+            MKTG_CHANNEL VARCHAR COMMENT ''캠페인 채널 코드 (MKTG_CHANNEL)'',
             TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
             FORECAST FLOAT COMMENT ''예측 월간 후원금액'',
             LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
             UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
         )
-        COMMENT = ''캠페인(CMPGN_CD)별 월간 후원금액 향후 12개월 예측 결과'';
+        COMMENT = ''채널(MKTG_CHANNEL)별 월간 후원금액 향후 12개월 예측 결과'';
 
         -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_CMPGN_LTV WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
+        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
 
         -- 예측 실행 및 INSERT
         EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_CMPGN_LTV
+        INSERT INTO GN_DW.ML.ML_RST_DATA_CMPGN_SPNSR_AMT_LTV
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
+            SERIES AS MKTG_CHANNEL,
             TS,
             FORECAST,
             LOWER_BOUND,
             UPPER_BOUND
-        FROM TABLE(GN_DW.ML.CMPGN_LTV_FORECAST_MODEL!FORECAST(
+        FROM TABLE(GN_DW.ML.CMPGN_SPNSR_AMT_LTV_FORECAST_MODEL!FORECAST(
             FORECASTING_PERIODS => 12
         ))
         '';
@@ -1196,50 +1058,50 @@ AS 'BEGIN
         -- =============================================================================
         -- STEP 4: 결과 테이블2 (ML_RST_DATA_CMPGN_LTV_SCORE) - LTV 산출
         -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            CMPGN_CD VARCHAR COMMENT ''캠페인코드'',
-            HIST_TOTAL_AMT FLOAT COMMENT ''과거 누적 후원금액 합계 (학습 기간 전체)'',
-            FUTURE_TOTAL_AMT FLOAT COMMENT ''향후 12개월 예측 금액 합계'',
-            LTV FLOAT COMMENT ''장기가치 (과거 누적 + 향후 예측)'',
-            AVG_MONTHLY_FORECAST FLOAT COMMENT ''향후 월평균 예측 금액'',
-            ACTIVE_MONTHS NUMBER COMMENT ''과거 활성 월수'',
-            AVG_MONTHLY_ACTUAL FLOAT COMMENT ''과거 월평균 실제 금액''
-        )
-        COMMENT = ''캠페인(CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'';
+        -- CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE (
+        --     STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
+        --     CMPGN_CD VARCHAR COMMENT ''캠페인코드'',
+        --     HIST_TOTAL_AMT FLOAT COMMENT ''과거 누적 후원금액 합계 (학습 기간 전체)'',
+        --     FUTURE_TOTAL_AMT FLOAT COMMENT ''향후 12개월 예측 금액 합계'',
+        --     LTV FLOAT COMMENT ''장기가치 (과거 누적 + 향후 예측)'',
+        --     AVG_MONTHLY_FORECAST FLOAT COMMENT ''향후 월평균 예측 금액'',
+        --     ACTIVE_MONTHS NUMBER COMMENT ''과거 활성 월수'',
+        --     AVG_MONTHLY_ACTUAL FLOAT COMMENT ''과거 월평균 실제 금액''
+        -- )
+        -- COMMENT = ''캠페인(CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'';
 
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
+        -- -- 기존 동일 STDR_MT 데이터 삭제
+        -- EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
 
-        -- LTV 산출 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            h.CMPGN_CD,
-            h.HIST_TOTAL_AMT,
-            f.FUTURE_TOTAL_AMT,
-            h.HIST_TOTAL_AMT + f.FUTURE_TOTAL_AMT AS LTV,
-            f.FUTURE_TOTAL_AMT / 12 AS AVG_MONTHLY_FORECAST,
-            h.ACTIVE_MONTHS,
-            ROUND(h.HIST_TOTAL_AMT / h.ACTIVE_MONTHS, 0) AS AVG_MONTHLY_ACTUAL
-        FROM (
-            SELECT 
-                CMPGN_CD,
-                SUM(SPNSR_AMT) AS HIST_TOTAL_AMT,
-                COUNT(DISTINCT STDR_DE) AS ACTIVE_MONTHS
-            FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_AVG_AMT
-            GROUP BY CMPGN_CD
-        ) h
-        JOIN (
-            SELECT 
-                SERIES AS CMPGN_CD,
-                SUM(FORECAST) AS FUTURE_TOTAL_AMT
-            FROM GN_DW.ML.ML_RST_DATA_CMPGN_LTV
-            WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
-            GROUP BY SERIES
-        ) f ON h.CMPGN_CD = f.CMPGN_CD
-        '';
+        -- -- LTV 산출 및 INSERT
+        -- EXECUTE IMMEDIATE ''
+        -- INSERT INTO GN_DW.ML.ML_RST_DATA_CMPGN_LTV_SCORE
+        -- SELECT 
+        --     '''''' || :V_STDR_MT || '''''' AS STDR_MT,
+        --     h.CMPGN_CD,
+        --     h.HIST_TOTAL_AMT,
+        --     f.FUTURE_TOTAL_AMT,
+        --     h.HIST_TOTAL_AMT + f.FUTURE_TOTAL_AMT AS LTV,
+        --     f.FUTURE_TOTAL_AMT / 12 AS AVG_MONTHLY_FORECAST,
+        --     h.ACTIVE_MONTHS,
+        --     ROUND(h.HIST_TOTAL_AMT / h.ACTIVE_MONTHS, 0) AS AVG_MONTHLY_ACTUAL
+        -- FROM (
+        --     SELECT 
+        --         CMPGN_CD,
+        --         SUM(SPNSR_AMT) AS HIST_TOTAL_AMT,
+        --         COUNT(DISTINCT STDR_DE) AS ACTIVE_MONTHS
+        --     FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_CMPGN_AVG_AMT
+        --     GROUP BY CMPGN_CD
+        -- ) h
+        -- JOIN (
+        --     SELECT 
+        --         SERIES AS CMPGN_CD,
+        --         SUM(FORECAST) AS FUTURE_TOTAL_AMT
+        --     FROM GN_DW.ML.ML_RST_DATA_CMPGN_LTV
+        --     WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
+        --     GROUP BY SERIES
+        -- ) f ON h.CMPGN_CD = f.CMPGN_CD
+        -- '';
 
         -- 성공 로그 기록
         INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
@@ -1526,7 +1388,8 @@ AS 'BEGIN
     BEGIN
         CREATE OR REPLACE TABLE GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
             CMPGN_CD            VARCHAR  ,     
-            UPPER_CMPGN_CD            VARCHAR  ,     
+            UPPER_CMPGN_CD            VARCHAR  ,  
+            MKTG_CHANNEL            VARCHAR  ,  
             STDR_MT            VARCHAR  ,
             STDR_DE             DATE,
             TOT_CNT           NUMBER  ,
@@ -1546,6 +1409,7 @@ AS 'BEGIN
         INSERT INTO GN_DW.ML.CMPGN_MONTHLY_SNAPSHOT (
             CMPGN_CD,  
             UPPER_CMPGN_CD,
+            MKTG_CHANNEL,
             STDR_MT,
             STDR_DE,
             TOT_CNT,
@@ -1565,6 +1429,7 @@ AS 'BEGIN
         SELECT 
             M.CMPGN_CD,
             M.UPPER_CMPGN_CD,
+            M.MKTG_CHANNEL,
             M.YYYYMM AS STDR_MT,
             TO_DATE(M.YYYYMM || ''01'', ''YYYYMMDD'') AS STDR_DE,
             COUNT(S.CMPGN_CD) AS TOT_CNT,
@@ -1651,13 +1516,14 @@ AS 'BEGIN
         FROM (
             -- 3. 캠페인별로 시작월부터 종료월까지 월(YYYYMM) 단위 행 생성
             SELECT 
-                P.CMPGN_CD, P.UPPER_CMPGN_CD,
+                P.CMPGN_CD, P.UPPER_CMPGN_CD, P.MKTG_CHANNEL,
                 TO_CHAR(DATEADD(month, G.SEQ, P.START_DATE), ''YYYYMM'') AS YYYYMM
             FROM (
                 -- 2. 캠페인별 시작월, 종료월 및 총 개월 수 산출
                 SELECT 
                     CMPGN_CD, 
                     UPPER_CMPGN_CD,
+                    MKTG_CHANNEL,
                     MIN_YM,
                     MAX_YM,
                     TO_DATE(MIN_YM, ''YYYYMM'') AS START_DATE,
@@ -1667,9 +1533,11 @@ AS 'BEGIN
                     SELECT 
                         CMPGN_CD, 
                         MAX(UPPER_CMPGN_CD) as UPPER_CMPGN_CD,
+                        MAX(MKTG_CHANNEL) as MKTG_CHANNEL,
                         SUBSTR(MIN(FIRST_OCCRRNC_DE), 1, 6) AS MIN_YM,
                         SUBSTR(MAX(LAST_OCCRRNC_DE), 1, 6)  AS MAX_YM
-                    FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    -- FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
                     -- WHERE STDR_MT = ''202606''
                       -- AND FIRST_OCCRRNC_DE >= ''20100101''
                     GROUP BY CMPGN_CD
@@ -1682,7 +1550,8 @@ AS 'BEGIN
             ) G 
               ON G.SEQ < P.TOTAL_MONTHS
         ) M
-        LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+        -- LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+        LEFT JOIN GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT S
                 ON S.STDR_MT = M.YYYYMM
               AND S.CMPGN_CD = M.CMPGN_CD
               AND S.FIRST_OCCRRNC_DE >= ''20100101''
@@ -1696,9 +1565,131 @@ AS 'BEGIN
         GROUP BY 
             M.CMPGN_CD,
             M.UPPER_CMPGN_CD,
+            M.MKTG_CHANNEL,
             M.YYYYMM;
         
         RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_INSERT_ML_DATASET_DVLP_AMT_SNAPSHOT("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_DVLP_AMT_SNAPSHOT'';
+    
+    BEGIN
+        CREATE OR REPLACE TABLE GN_DW.ML.DVLP_AMT_SNAPSHOT (
+            STDR_MT            VARCHAR  ,
+            STDR_DE            DATE ,     
+            MBER_NO            VARCHAR  ,
+            SPNSR_NO           VARCHAR  ,
+            SPNSR_BSNS_NO      VARCHAR  ,
+            SPNSR_BSNS_ID      VARCHAR  ,
+            CMPGN_CD           VARCHAR  ,
+            UPPER_CMPGN_CD           VARCHAR  ,
+            CUR_DVLP_DIV_CD           VARCHAR  ,
+            FIRST_OCCRRNC_DE   VARCHAR  ,
+            LAST_OCCRRNC_DE   VARCHAR  ,
+            CANCL_RDCAMT_RSN_CD   VARCHAR  ,
+            CANCL_RDCAMT_DE   VARCHAR  ,
+            CHN_CNT NUMBER,
+            NEW_CNT NUMBER,
+            INC_CNT NUMBER,
+            DEC_CNT NUMBER,
+            RE_CNT  NUMBER,
+            CANCL_CNT NUMBER,
+            NEW_SPNSR_AMT      NUMBER   ,
+            INC_SPNSR_AMT      NUMBER   ,
+            DEC_SPNSR_AMT      NUMBER   ,
+            RE_SPNSR_AMT      NUMBER   ,
+            CANCL_SPNSR_AMT      NUMBER   ,
+            CUR_SPNSR_AMT      NUMBER
+        );
+        INSERT INTO GN_DW.ML.DVLP_AMT_SNAPSHOT (
+            STDR_MT,     
+            STDR_DE,     
+            MBER_NO,
+            SPNSR_NO,
+            SPNSR_BSNS_NO,
+            SPNSR_BSNS_ID,
+            CMPGN_CD,
+            UPPER_CMPGN_CD,
+            CUR_DVLP_DIV_CD,
+            FIRST_OCCRRNC_DE,
+            LAST_OCCRRNC_DE,
+            CANCL_RDCAMT_RSN_CD,
+            CANCL_RDCAMT_DE,
+            CHN_CNT,
+            NEW_CNT,
+            INC_CNT,
+            DEC_CNT,
+            RE_CNT,
+            CANCL_CNT,
+            NEW_SPNSR_AMT,
+            INC_SPNSR_AMT,
+            DEC_SPNSR_AMT,
+            RE_SPNSR_AMT,
+            CANCL_SPNSR_AMT,
+            CUR_SPNSR_AMT
+        )
+        SELECT 
+            :V_STDR_MT AS STDR_MT,
+            TO_DATE(:V_STDR_MT || ''01'', ''YYYYMMDD'') AS STDR_DE,
+            a.MBER_NO,
+            a.SPNSR_NO, 
+            a.SPNSR_BSNS_NO,
+            a.SPNSR_BSNS_ID,
+            MAX(a.CMPGN_CD)              AS CMPGN_CD,
+            MAX(b.UPPER_CMPGN_CD)        AS UPPER_CMPGN_CD,
+            -- MAX(SETLE_CD)              AS SETLE_CD,
+            -- MAX(SEX)                   AS SEX,
+            -- MAX(AREA_CD)               AS AREA_CD,
+            MAX(a.DVLP_DIV_CD)   AS CUR_DVLP_DIV_CD,
+            MIN(a.OCCRRNC_DE) AS FIRST_OCCRRNC_DE,
+            MAX(a.OCCRRNC_DE) AS LAST_OCCRRNC_DE,
+            MAX(a.CANCL_RDCAMT_RSN_CD)   AS CANCL_RDCAMT_RSN_CD,
+            MAX(CASE WHEN a.DVLP_DIV_CD = 5 THEN a.OCCRRNC_DE END) AS CANCL_RDCAMT_DE,
+            COUNT(*) - 1 AS CHN_CNT,
+            COUNT(CASE WHEN a.DVLP_DIV_CD = 1 THEN 1 END) AS NEW_CNT,
+            COUNT(CASE WHEN a.DVLP_DIV_CD = 2 THEN 1 END) AS INC_CNT,
+            COUNT(CASE WHEN a.DVLP_DIV_CD = 3 THEN 1 END) AS DEC_CNT,
+            COUNT(CASE WHEN a.DVLP_DIV_CD = 4 THEN 1 END) AS RE_CNT,
+            COUNT(CASE WHEN a.DVLP_DIV_CD = 5 THEN 1 END) AS CANCL_CNT,
+            SUM(CASE WHEN a.DVLP_DIV_CD = 1 THEN a.SPNSR_AMT ELSE 0 END) AS NEW_SPNSR_AMT,     -- 1: 신규 금액
+            SUM(CASE WHEN a.DVLP_DIV_CD = 2 THEN a.SPNSR_AMT ELSE 0 END) AS INC_SPNSR_AMT,     -- 2: 증액 금액 합계
+            SUM(CASE WHEN a.DVLP_DIV_CD = 3 THEN a.SPNSR_AMT ELSE 0 END) AS DEC_SPNSR_AMT,     -- 3: 감액 금액 합계
+            SUM(CASE WHEN a.DVLP_DIV_CD = 4 THEN a.SPNSR_AMT ELSE 0 END) AS RE_SPNSR_AMT,      -- 4: 재후원 금액
+            SUM(CASE WHEN a.DVLP_DIV_CD = 5 THEN a.SPNSR_AMT ELSE 0 END) AS CANCL_SPNSR_AMT,      -- 5: 중단 금액
+            SUM(SPNSR_AMT) AS CUR_SPNSR_AMT
+        FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT a
+            LEFT OUTER JOIN GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG b ON a.CMPGN_CD = b.CMPGN_CD
+            WHERE a.OCCRRNC_DE <= :V_STDR_MT_EDAY
+        GROUP BY 
+            a.MBER_NO,
+            a.SPNSR_NO,
+            a.SPNSR_BSNS_NO,
+            a.SPNSR_BSNS_ID;
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;    
     EXCEPTION
         WHEN OTHER THEN
             LET V_ERR_MSG VARCHAR := SQLERRM;
@@ -2141,7 +2132,8 @@ AS 'BEGIN
                         MBER_NO, 
                         SUBSTR(MIN(FIRST_OCCRRNC_DE), 1, 6) AS MIN_YM,
                         SUBSTR(MAX(LAST_OCCRRNC_DE), 1, 6)  AS MAX_YM
-                    FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    -- FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                    FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
                     -- WHERE STDR_MT = ''202606''
                       -- AND FIRST_OCCRRNC_DE >= ''20100101''
                     GROUP BY MBER_NO
@@ -2154,7 +2146,8 @@ AS 'BEGIN
             ) G 
               ON G.SEQ < P.TOTAL_MONTHS
         ) M
-        LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+        -- LEFT JOIN GN_DW.ML.DVLP_AMT_SNAPSHOT S
+        LEFT JOIN GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT S
                 ON S.STDR_MT = M.YYYYMM
               AND S.MBER_NO = M.MBER_NO
               AND S.FIRST_OCCRRNC_DE >= ''20100101''
@@ -2197,7 +2190,7 @@ AS 'BEGIN
     LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
     LET V_STDR_MT_EDAY VARCHAR := TO_CHAR(LAST_DAY(TO_DATE(P_STDR_MT || ''01'', ''YYYYMMDD'')), ''YYYYMMDD'');
     LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_CMPGN_MONTHLY_SNAPSHOT'';
+    LET V_PROC_NAME VARCHAR := ''SP_INSERT_ML_DATASET_MBER_SERVICE_INFO'';
     
     BEGIN
         -- 인입쿼리 시작
@@ -2451,7 +2444,8 @@ AS 'BEGIN
             CMPGN_CD           VARCHAR  ,
             UPPER_CMPGN_CD           VARCHAR  ,
             ACMSLT_DEPT_CD          VARCHAR,
-            -- CMPGN_CTGR_CD           VARCHAR  ,
+            CMPGN_CTGR_CD           VARCHAR  ,
+            MKTG_CHANNEL            VARCHAR ,
             STDR_MT_DVLP_DIV_CD           VARCHAR  ,
             FIRST_OCCRRNC_DE   VARCHAR  ,
             LAST_OCCRRNC_DE   VARCHAR  ,
@@ -2480,7 +2474,8 @@ AS 'BEGIN
             CMPGN_CD,
             UPPER_CMPGN_CD,
             ACMSLT_DEPT_CD,
-            -- CMPGN_CTGR_CD,
+            CMPGN_CTGR_CD,
+            MKTG_CHANNEL,
             STDR_MT_DVLP_DIV_CD,
             FIRST_OCCRRNC_DE,
             LAST_OCCRRNC_DE,
@@ -2503,7 +2498,7 @@ AS 'BEGIN
         BASE AS (
             SELECT
                 a.MBER_NO, a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SPNSR_BSNS_ID,
-                a.CMPGN_CD, b.UPPER_CMPGN_CD,--b.CMPGN_CTGR_CD,
+                a.CMPGN_CD, b.UPPER_CMPGN_CD, b.CMPGN_CTGR_CD, b.MKTG_CHANNEL,
                 a.ACMSLT_DEPT_CD,
                 a.DVLP_DIV_CD, a.OCCRRNC_DE, a.SPNSR_AMT,
                 a.CANCL_RDCAMT_RSN_CD
@@ -2512,7 +2507,6 @@ AS 'BEGIN
                 ON a.CMPGN_CD = b.CMPGN_CD
             WHERE a.OCCRRNC_DE <= :V_STDR_MT_EDAY
         ),
-        
         /* 그룹별 요약: 시작/종료월 + 활동상태 판별 */
         GRP_SUMMARY AS (
             SELECT
@@ -2559,7 +2553,8 @@ AS 'BEGIN
             MAX(B.CMPGN_CD) AS CMPGN_CD,
             MAX(B.UPPER_CMPGN_CD) AS UPPER_CMPGN_CD,
             MAX(B.ACMSLT_DEPT_CD) AS ACMSLT_DEPT_CD,
-            -- MAX(B.CMPGN_CTGR_CD) AS CMPGN_CTGR_CD,
+            MAX(B.CMPGN_CTGR_CD) AS CMPGN_CTGR_CD,
+            MAX(B.MKTG_CHANNEL) AS MKTG_CHANNEL,
             -- MAX(B.DVLP_DIV_CD) AS STDR_MT_DVLP_DIV_CD,
             COALESCE(MAX(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT THEN B.DVLP_DIV_CD END)::INT, 6) AS STDR_MT_DVLP_DIV_CD,
             -- MAX(CASE WHEN LEFT(B.OCCRRNC_DE, 6) = M.STDR_MT THEN B.DVLP_DIV_CD ELSE 6 END) AS STDR_MT_DVLP_DIV_CD,
@@ -2737,7 +2732,8 @@ AS 'BEGIN
                     SUM(RE_SPNSR_AMT) AS RE_SPNSR_AMT,
                     SUM(CANCL_SPNSR_AMT) AS CANCL_SPNSR_AMT,
                     SUM(CHN_CNT) AS CHN_CNT
-                FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                -- FROM GN_DW.ML.DVLP_AMT_SNAPSHOT
+                FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
                 GROUP BY MBER_NO, SPNSR_BSNS_NO, CMPGN_CD
             ) c ON a.mber_no = c.mber_no
             LEFT OUTER JOIN (
@@ -2987,25 +2983,25 @@ AS 'BEGIN
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_LOYAL_MBER (
             STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
             MBER_NO VARCHAR COMMENT ''회원번호'',
-            CURRENT_TENURE NUMBER COMMENT ''현재 가입 경과 월수'',
-            ACTIVE_MONTHS_24 NUMBER COMMENT ''초기 24개월 중 활성 월수'',
-            SPNSR_CNT_24 NUMBER COMMENT ''초기 24개월 후원건 수'',
-            TOTAL_AMT_24 NUMBER COMMENT ''초기 24개월 총 후원금액'',
-            AVG_AMT_24 FLOAT COMMENT ''초기 24개월 평균 후원금액'',
-            INC_CNT_24 NUMBER COMMENT ''초기 24개월 증액 건수'',
-            DEC_CNT_24 NUMBER COMMENT ''초기 24개월 감액 건수'',
-            CANCL_CNT_24 NUMBER COMMENT ''초기 24개월 해지 건수'',
-            RE_CNT_24 NUMBER COMMENT ''초기 24개월 재후원 건수'',
-            INC_AMT_24 NUMBER COMMENT ''초기 24개월 증액 금액'',
-            DEC_AMT_24 NUMBER COMMENT ''초기 24개월 감액 금액'',
-            CANCL_AMT_24 NUMBER COMMENT ''초기 24개월 해지 금액'',
-            DNST_RT_24 FLOAT COMMENT ''초기 24개월 중단율 (금액 기준)'',
-            AMT_STDDEV_24 FLOAT COMMENT ''초기 24개월 후원금액 표준편차'',
-            PAY_RATE_24 FLOAT COMMENT ''초기 24개월 납입 성공률'',
-            PAY_REQ_CNT_24 NUMBER COMMENT ''초기 24개월 납입 요청 건수'',
-            TOTAL_PAY_AMT_24 NUMBER COMMENT ''초기 24개월 총 납입 금액'',
-            SETLE_CD VARCHAR COMMENT ''결제수단코드'',
-            CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
+            -- CURRENT_TENURE NUMBER COMMENT ''현재 가입 경과 월수'',
+            -- ACTIVE_MONTHS_24 NUMBER COMMENT ''초기 24개월 중 활성 월수'',
+            -- SPNSR_CNT_24 NUMBER COMMENT ''초기 24개월 후원건 수'',
+            -- TOTAL_AMT_24 NUMBER COMMENT ''초기 24개월 총 후원금액'',
+            -- AVG_AMT_24 FLOAT COMMENT ''초기 24개월 평균 후원금액'',
+            -- INC_CNT_24 NUMBER COMMENT ''초기 24개월 증액 건수'',
+            -- DEC_CNT_24 NUMBER COMMENT ''초기 24개월 감액 건수'',
+            -- CANCL_CNT_24 NUMBER COMMENT ''초기 24개월 해지 건수'',
+            -- RE_CNT_24 NUMBER COMMENT ''초기 24개월 재후원 건수'',
+            -- INC_AMT_24 NUMBER COMMENT ''초기 24개월 증액 금액'',
+            -- DEC_AMT_24 NUMBER COMMENT ''초기 24개월 감액 금액'',
+            -- CANCL_AMT_24 NUMBER COMMENT ''초기 24개월 해지 금액'',
+            -- DNST_RT_24 FLOAT COMMENT ''초기 24개월 중단율 (금액 기준)'',
+            -- AMT_STDDEV_24 FLOAT COMMENT ''초기 24개월 후원금액 표준편차'',
+            -- PAY_RATE_24 FLOAT COMMENT ''초기 24개월 납입 성공률'',
+            -- PAY_REQ_CNT_24 NUMBER COMMENT ''초기 24개월 납입 요청 건수'',
+            -- TOTAL_PAY_AMT_24 NUMBER COMMENT ''초기 24개월 총 납입 금액'',
+            -- SETLE_CD VARCHAR COMMENT ''결제수단코드'',
+            -- CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
             PREDICTION VARIANT COMMENT ''예측 결과 (VARIANT: probability, class 포함)''
         )
         COMMENT = ''회원(MBER_NO) 단위 충성회원 성장 가능성 예측 결과'';
@@ -3018,12 +3014,13 @@ AS 'BEGIN
         INSERT INTO GN_DW.ML.ML_RST_DATA_LOYAL_MBER
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            MBER_NO, CURRENT_TENURE,
-            ACTIVE_MONTHS_24, SPNSR_CNT_24, TOTAL_AMT_24, AVG_AMT_24,
-            INC_CNT_24, DEC_CNT_24, CANCL_CNT_24, RE_CNT_24,
-            INC_AMT_24, DEC_AMT_24, CANCL_AMT_24, DNST_RT_24, AMT_STDDEV_24,
-            PAY_RATE_24, PAY_REQ_CNT_24, TOTAL_PAY_AMT_24,
-            SETLE_CD, CPR_DIV_CD,
+            MBER_NO, 
+            -- CURRENT_TENURE,
+            -- ACTIVE_MONTHS_24, SPNSR_CNT_24, TOTAL_AMT_24, AVG_AMT_24,
+            -- INC_CNT_24, DEC_CNT_24, CANCL_CNT_24, RE_CNT_24,
+            -- INC_AMT_24, DEC_AMT_24, CANCL_AMT_24, DNST_RT_24, AMT_STDDEV_24,
+            -- PAY_RATE_24, PAY_REQ_CNT_24, TOTAL_PAY_AMT_24,
+            -- SETLE_CD, CPR_DIV_CD,
             GN_DW.ML.LOYAL_MBER_CLASSIFIER_MODEL!PREDICT(
                 INPUT_DATA => OBJECT_CONSTRUCT(
                     ''''ACTIVE_MONTHS_24'''', ACTIVE_MONTHS_24,
@@ -3272,21 +3269,21 @@ AS 'BEGIN
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M (
             STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
             MBER_NO VARCHAR COMMENT ''회원번호'',
-            MBER_STAT_CD VARCHAR COMMENT ''회원 상태코드'',
-            MONTHS_SINCE_JOIN NUMBER COMMENT ''가입 후 경과 월수'',
-            ACTIVE_SPNSR_CNT NUMBER COMMENT ''활성 후원건 수'',
-            TOTAL_SPNSR_AMT NUMBER COMMENT ''총 후원금액'',
-            TOTAL_INC_CNT NUMBER COMMENT ''총 증액 건수'',
-            TOTAL_DEC_CNT NUMBER COMMENT ''총 감액 건수'',
-            TOTAL_CANCL_CNT NUMBER COMMENT ''총 해지 건수'',
-            TOTAL_INC_AMT NUMBER COMMENT ''총 증액 금액'',
-            TOTAL_DEC_AMT NUMBER COMMENT ''총 감액 금액'',
-            TOTAL_CANCL_AMT NUMBER COMMENT ''총 해지 금액'',
-            DNST_RT FLOAT COMMENT ''중단율 (금액 기준)'',
-            PAY_RATE FLOAT COMMENT ''납입 성공률'',
-            PAY_REQ_CNT NUMBER COMMENT ''납입 요청 건수'',
-            SETLE_CD VARCHAR COMMENT ''결제수단코드'',
-            CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
+            -- MBER_STAT_CD VARCHAR COMMENT ''회원 상태코드'',
+            -- MONTHS_SINCE_JOIN NUMBER COMMENT ''가입 후 경과 월수'',
+            -- ACTIVE_SPNSR_CNT NUMBER COMMENT ''활성 후원건 수'',
+            -- TOTAL_SPNSR_AMT NUMBER COMMENT ''총 후원금액'',
+            -- TOTAL_INC_CNT NUMBER COMMENT ''총 증액 건수'',
+            -- TOTAL_DEC_CNT NUMBER COMMENT ''총 감액 건수'',
+            -- TOTAL_CANCL_CNT NUMBER COMMENT ''총 해지 건수'',
+            -- TOTAL_INC_AMT NUMBER COMMENT ''총 증액 금액'',
+            -- TOTAL_DEC_AMT NUMBER COMMENT ''총 감액 금액'',
+            -- TOTAL_CANCL_AMT NUMBER COMMENT ''총 해지 금액'',
+            -- DNST_RT FLOAT COMMENT ''중단율 (금액 기준)'',
+            -- PAY_RATE FLOAT COMMENT ''납입 성공률'',
+            -- PAY_REQ_CNT NUMBER COMMENT ''납입 요청 건수'',
+            -- SETLE_CD VARCHAR COMMENT ''결제수단코드'',
+            -- CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
             PREDICTION VARIANT COMMENT ''예측 결과 (VARIANT: probability, class 포함)''
         )
         COMMENT = ''회원(MBER_NO) 단위 향후 6개월 내 중단확률 예측 결과'';
@@ -3300,21 +3297,21 @@ AS 'BEGIN
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
             MBER_NO,
-            MBER_STAT_CD,
-            MONTHS_SINCE_JOIN,
-            ACTIVE_SPNSR_CNT,
-            TOTAL_SPNSR_AMT,
-            TOTAL_INC_CNT,
-            TOTAL_DEC_CNT,
-            TOTAL_CANCL_CNT,
-            TOTAL_INC_AMT,
-            TOTAL_DEC_AMT,
-            TOTAL_CANCL_AMT,
-            DNST_RT,
-            PAY_RATE,
-            PAY_REQ_CNT,
-            SETLE_CD,
-            CPR_DIV_CD,
+            -- MBER_STAT_CD,
+            -- MONTHS_SINCE_JOIN,
+            -- ACTIVE_SPNSR_CNT,
+            -- TOTAL_SPNSR_AMT,
+            -- TOTAL_INC_CNT,
+            -- TOTAL_DEC_CNT,
+            -- TOTAL_CANCL_CNT,
+            -- TOTAL_INC_AMT,
+            -- TOTAL_DEC_AMT,
+            -- TOTAL_CANCL_AMT,
+            -- DNST_RT,
+            -- PAY_RATE,
+            -- PAY_REQ_CNT,
+            -- SETLE_CD,
+            -- CPR_DIV_CD,
             GN_DW.ML.MBER_CHURN_CLASSIFIER_MODEL!PREDICT(
                 INPUT_DATA => OBJECT_CONSTRUCT(
                     ''''MBER_STAT_CD'''', MBER_STAT_CD,
@@ -3560,24 +3557,24 @@ AS 'BEGIN
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MBER_INC_12M (
             STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
             MBER_NO VARCHAR COMMENT ''회원번호'',
-            MBER_STAT_CD VARCHAR COMMENT ''회원 상태코드'',
-            MONTHS_SINCE_JOIN NUMBER COMMENT ''가입 후 경과 월수'',
-            ACTIVE_SPNSR_CNT NUMBER COMMENT ''활성 후원건 수'',
-            TOTAL_SPNSR_AMT NUMBER COMMENT ''총 후원금액'',
-            TOTAL_NEW_CNT NUMBER COMMENT ''총 신규 건수'',
-            TOTAL_INC_CNT NUMBER COMMENT ''총 증액 건수'',
-            TOTAL_DEC_CNT NUMBER COMMENT ''총 감액 건수'',
-            TOTAL_RE_CNT NUMBER COMMENT ''총 재후원 건수'',
-            TOTAL_CANCL_CNT NUMBER COMMENT ''총 해지 건수'',
-            TOTAL_INC_AMT NUMBER COMMENT ''총 증액 금액'',
-            TOTAL_DEC_AMT NUMBER COMMENT ''총 감액 금액'',
-            TOTAL_CANCL_AMT NUMBER COMMENT ''총 해지 금액'',
-            DNST_RT FLOAT COMMENT ''중단율 (금액 기준)'',
-            PAY_RATE FLOAT COMMENT ''납입 성공률'',
-            PAY_REQ_CNT NUMBER COMMENT ''납입 요청 건수'',
-            TOTAL_PAY_AMT NUMBER COMMENT ''총 납입 금액'',
-            SETLE_CD VARCHAR COMMENT ''결제수단코드'',
-            CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
+            -- MBER_STAT_CD VARCHAR COMMENT ''회원 상태코드'',
+            -- MONTHS_SINCE_JOIN NUMBER COMMENT ''가입 후 경과 월수'',
+            -- ACTIVE_SPNSR_CNT NUMBER COMMENT ''활성 후원건 수'',
+            -- TOTAL_SPNSR_AMT NUMBER COMMENT ''총 후원금액'',
+            -- TOTAL_NEW_CNT NUMBER COMMENT ''총 신규 건수'',
+            -- TOTAL_INC_CNT NUMBER COMMENT ''총 증액 건수'',
+            -- TOTAL_DEC_CNT NUMBER COMMENT ''총 감액 건수'',
+            -- TOTAL_RE_CNT NUMBER COMMENT ''총 재후원 건수'',
+            -- TOTAL_CANCL_CNT NUMBER COMMENT ''총 해지 건수'',
+            -- TOTAL_INC_AMT NUMBER COMMENT ''총 증액 금액'',
+            -- TOTAL_DEC_AMT NUMBER COMMENT ''총 감액 금액'',
+            -- TOTAL_CANCL_AMT NUMBER COMMENT ''총 해지 금액'',
+            -- DNST_RT FLOAT COMMENT ''중단율 (금액 기준)'',
+            -- PAY_RATE FLOAT COMMENT ''납입 성공률'',
+            -- PAY_REQ_CNT NUMBER COMMENT ''납입 요청 건수'',
+            -- TOTAL_PAY_AMT NUMBER COMMENT ''총 납입 금액'',
+            -- SETLE_CD VARCHAR COMMENT ''결제수단코드'',
+            -- CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
             PREDICTION VARIANT COMMENT ''예측 결과 (VARIANT: probability, class 포함)''
         )
         COMMENT = ''회원(MBER_NO) 단위 향후 12개월 내 증액 가능성 예측 결과'';
@@ -3590,12 +3587,13 @@ AS 'BEGIN
         INSERT INTO GN_DW.ML.ML_RST_DATA_MBER_INC_12M
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            MBER_NO, MBER_STAT_CD, MONTHS_SINCE_JOIN,
-            ACTIVE_SPNSR_CNT, TOTAL_SPNSR_AMT, TOTAL_NEW_CNT,
-            TOTAL_INC_CNT, TOTAL_DEC_CNT, TOTAL_RE_CNT, TOTAL_CANCL_CNT,
-            TOTAL_INC_AMT, TOTAL_DEC_AMT, TOTAL_CANCL_AMT,
-            DNST_RT, PAY_RATE, PAY_REQ_CNT, TOTAL_PAY_AMT,
-            SETLE_CD, CPR_DIV_CD,
+            MBER_NO, 
+            -- MBER_STAT_CD, MONTHS_SINCE_JOIN,
+            -- ACTIVE_SPNSR_CNT, TOTAL_SPNSR_AMT, TOTAL_NEW_CNT,
+            -- TOTAL_INC_CNT, TOTAL_DEC_CNT, TOTAL_RE_CNT, TOTAL_CANCL_CNT,
+            -- TOTAL_INC_AMT, TOTAL_DEC_AMT, TOTAL_CANCL_AMT,
+            -- DNST_RT, PAY_RATE, PAY_REQ_CNT, TOTAL_PAY_AMT,
+            -- SETLE_CD, CPR_DIV_CD,
             GN_DW.ML.MBER_INC_12M_CLASSIFIER_MODEL!PREDICT(
                 INPUT_DATA => OBJECT_CONSTRUCT(
                     ''''MBER_STAT_CD'''', MBER_STAT_CD,
@@ -3633,6 +3631,166 @@ AS 'BEGIN
             NULL;
 
         RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT || '', TRAIN_END='' || :V_TRAIN_END;
+
+    EXCEPTION
+        WHEN OTHER THEN
+            LET V_ERR_MSG VARCHAR := SQLERRM;
+            -- 실패 로그 기록
+            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+            SELECT 
+                :V_PROC_NAME,
+                :V_STDR_MT,
+                :V_START_TIME,
+                CURRENT_TIMESTAMP(),
+                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+                ''FAILED'',
+                :V_ERR_MSG;
+
+            RETURN ''FAILED: '' || :V_ERR_MSG;
+    END;
+END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_MKTG_CHANNEL_MBER_AVG_LTV_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS 'BEGIN
+    -- 변수 선언
+    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
+    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
+    LET V_PROC_NAME VARCHAR := ''SP_MKTG_CHANNEL_MBER_AVG_LTV_FORECAST'';
+
+    BEGIN
+        -- 웨어하우스 설정 (15분 타임아웃)
+        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
+        USE WAREHOUSE GN_DW_ML_WH;
+
+        -- =============================================================================
+        -- STEP 1: 학습 데이터 구성 (채널별 월별 회원평균 후원금액 시계열)
+        -- =============================================================================
+        EXECUTE IMMEDIATE ''
+        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT AS
+        SELECT 
+            CMPGN_CTGR_CD, 
+            STDR_DE, 
+            ROUND(SUM(STDR_MT_SPNSR_AMT) / COUNT(DISTINCT MBER_NO)) AS AVG_MBER_AMT
+        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
+        WHERE CMPGN_CD IN (
+            SELECT CMPGN_CD 
+            FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT 
+            WHERE CMPGN_CD IN (
+                SELECT CMPGN_CD 
+                FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT 
+                WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
+            )
+            GROUP BY CMPGN_CD 
+            HAVING COUNT(DISTINCT STDR_MT) >= 24
+        )
+        AND STDR_MT BETWEEN ''''202401'''' AND '''''' || :V_STDR_MT || ''''''
+        GROUP BY CMPGN_CTGR_CD, STDR_DE
+        ORDER BY CMPGN_CTGR_CD, STDR_DE
+        '';
+
+        -- =============================================================================
+        -- STEP 2: FORECAST 모델 학습
+        -- =============================================================================
+        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.MKTG_CHANNEL_LTV_FORECAST_MODEL(
+            INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT''),
+            SERIES_COLNAME => ''CMPGN_CTGR_CD'',
+            TIMESTAMP_COLNAME => ''STDR_DE'',
+            TARGET_COLNAME => ''AVG_MBER_AMT''
+        );
+
+        -- =============================================================================
+        -- STEP 3: 결과 테이블1 (ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV) - 없으면 생성, 있으면 DELETE+INSERT
+        -- =============================================================================
+        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV (
+            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
+            MKTG_CHANNEL VARCHAR COMMENT ''캠페인 채널 코드 (MKTG_CHANNEL)'',
+            TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
+            FORECAST FLOAT COMMENT ''예측 회원평균 후원금액'',
+            LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
+            UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
+        )
+        COMMENT = ''캠페인 채널 코드 (MKTG_CHANNEL)별 회원평균 후원금액 향후 12개월 예측 결과'';
+
+        -- 기존 동일 STDR_MT 데이터 삭제
+        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
+
+        -- 예측 실행 및 INSERT
+        EXECUTE IMMEDIATE ''
+        INSERT INTO GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV
+        SELECT 
+            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
+            SERIES AS MKTG_CHANNEL,
+            TS,
+            FORECAST,
+            LOWER_BOUND,
+            UPPER_BOUND
+        FROM TABLE(GN_DW.ML.MKTG_CHANNEL_LTV_FORECAST_MODEL!FORECAST(
+            FORECASTING_PERIODS => 12
+        ))
+        '';
+
+        -- =============================================================================
+        -- STEP 4: 결과 테이블2 (ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE) - LTV 산출
+        -- =============================================================================
+        -- CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE (
+        --     STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
+        --     UPPER_CMPGN_CD VARCHAR COMMENT ''상위캠페인코드'',
+        --     HIST_TOTAL_AMT FLOAT COMMENT ''과거 누적 회원평균 금액 합계 (학습 기간 전체)'',
+        --     FUTURE_TOTAL_AMT FLOAT COMMENT ''향후 12개월 예측 금액 합계'',
+        --     LTV FLOAT COMMENT ''장기가치 (과거 누적 + 향후 예측)'',
+        --     AVG_MONTHLY_FORECAST FLOAT COMMENT ''향후 월평균 예측 금액'',
+        --     ACTIVE_MONTHS NUMBER COMMENT ''과거 활성 월수'',
+        --     AVG_MONTHLY_ACTUAL FLOAT COMMENT ''과거 월평균 실제 금액''
+        -- )
+        -- COMMENT = ''상위캠페인(UPPER_CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'';
+
+        -- -- 기존 동일 STDR_MT 데이터 삭제
+        -- EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
+
+        -- -- LTV 산출 및 INSERT
+        -- EXECUTE IMMEDIATE ''
+        -- INSERT INTO GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE
+        -- SELECT 
+        --     '''''' || :V_STDR_MT || '''''' AS STDR_MT,
+        --     h.UPPER_CMPGN_CD,
+        --     h.HIST_TOTAL_AMT,
+        --     f.FUTURE_TOTAL_AMT,
+        --     h.HIST_TOTAL_AMT + f.FUTURE_TOTAL_AMT AS LTV,
+        --     f.FUTURE_TOTAL_AMT / 12 AS AVG_MONTHLY_FORECAST,
+        --     h.ACTIVE_MONTHS,
+        --     ROUND(h.HIST_TOTAL_AMT / h.ACTIVE_MONTHS, 0) AS AVG_MONTHLY_ACTUAL
+        -- FROM (
+        --     SELECT 
+        --         UPPER_CMPGN_CD,
+        --         SUM(AVG_MBER_AMT) AS HIST_TOTAL_AMT,
+        --         COUNT(DISTINCT STDR_DE) AS ACTIVE_MONTHS
+        --     FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT
+        --     GROUP BY UPPER_CMPGN_CD
+        -- ) h
+        -- JOIN (
+        --     SELECT 
+        --         SERIES AS UPPER_CMPGN_CD,
+        --         SUM(FORECAST) AS FUTURE_TOTAL_AMT
+        --     FROM GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV
+        --     WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
+        --     GROUP BY SERIES
+        -- ) f ON h.UPPER_CMPGN_CD = f.UPPER_CMPGN_CD
+        -- '';
+
+        -- 성공 로그 기록
+        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
+        SELECT 
+            :V_PROC_NAME,
+            :V_STDR_MT,
+            :V_START_TIME,
+            CURRENT_TIMESTAMP(),
+            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
+            ''SUCCESS'',
+            NULL;
+
+        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
 
     EXCEPTION
         WHEN OTHER THEN
@@ -3708,7 +3866,7 @@ AS 'BEGIN
         -- =============================================================================
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT (
             STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''캠페인코드 (CMPGN_CD)'',
+            CMPGN_CD VARCHAR COMMENT ''캠페인코드 (CMPGN_CD)'',
             TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
             FORECAST FLOAT COMMENT ''예측 개발금액 (만원 단위, 신규+증액+재후원)'',
             LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
@@ -3724,125 +3882,12 @@ AS 'BEGIN
         INSERT INTO GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT
         SELECT 
             '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
+            SERIES AS CMPGN_CD,
             TS,
             FORECAST,
             LOWER_BOUND,
             UPPER_BOUND
         FROM TABLE(GN_DW.ML.MONTHLY_CMPGN_DVLP_AMT_FORECAST_MODEL!FORECAST(
-            FORECASTING_PERIODS => 12
-        ))
-        '';
-
-        -- 성공 로그 기록
-        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-        SELECT 
-            :V_PROC_NAME,
-            :V_STDR_MT,
-            :V_START_TIME,
-            CURRENT_TIMESTAMP(),
-            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-            ''SUCCESS'',
-            NULL;
-
-        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
-
-    EXCEPTION
-        WHEN OTHER THEN
-            LET V_ERR_MSG VARCHAR := SQLERRM;
-            -- 실패 로그 기록
-            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-            SELECT 
-                :V_PROC_NAME,
-                :V_STDR_MT,
-                :V_START_TIME,
-                CURRENT_TIMESTAMP(),
-                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-                ''FAILED'',
-                :V_ERR_MSG;
-
-            RETURN ''FAILED: '' || :V_ERR_MSG;
-    END;
-END';
-CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_MONTHLY_DEPT_DVLP_AMT_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
-RETURNS VARCHAR
-LANGUAGE SQL
-EXECUTE AS CALLER
-AS 'BEGIN
-    -- 변수 선언
-    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
-    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_MONTHLY_DEPT_DVLP_AMT_FORECAST'';
-
-    BEGIN
-        -- 웨어하우스 설정 (15분 타임아웃)
-        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
-        USE WAREHOUSE GN_DW_ML_WH;
-
-        -- =============================================================================
-        -- STEP 1: 학습 데이터 구성 (부서별 월별 개발금액 시계열) 신규 증액 재후원
-        -- =============================================================================
-        EXECUTE IMMEDIATE ''
-        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_DEPT_DVLP_AMT AS
-        SELECT 
-            TO_DATE(STDR_MT || ''''01'''', ''''YYYYMMDD'''') AS STDR_DE,
-            ACMSLT_DEPT_CD,
-            ROUND(
-                (SUM(NEW_SPNSR_AMT) / 10000) + (SUM(INC_SPNSR_AMT) / 10000) + (SUM(RE_SPNSR_AMT) / 10000)
-            , 1) AS DVLP_CNT
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-          AND ACMSLT_DEPT_CD IN (
-              SELECT ACMSLT_DEPT_CD
-              FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-              WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-              GROUP BY ACMSLT_DEPT_CD
-              HAVING COUNT(DISTINCT STDR_MT) >= 24
-                 AND MAX(CASE WHEN STDR_MT = '''''' || :V_STDR_MT || '''''' THEN 1 ELSE 0 END) = 1
-              ORDER BY SUM(NEW_SPNSR_AMT + INC_SPNSR_AMT + RE_SPNSR_AMT) DESC
-              LIMIT 30
-          )
-        GROUP BY STDR_MT, ACMSLT_DEPT_CD
-        ORDER BY STDR_DE, ACMSLT_DEPT_CD
-        '';
-
-        -- =============================================================================
-        -- STEP 2: FORECAST 모델 학습
-        -- =============================================================================
-        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.MONTHLY_DEPT_DVLP_AMT_FORECAST_MODEL(
-            INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_DEPT_DVLP_AMT''),
-            SERIES_COLNAME => ''ACMSLT_DEPT_CD'',
-            TIMESTAMP_COLNAME => ''STDR_DE'',
-            TARGET_COLNAME => ''DVLP_CNT''
-        );
-
-        -- =============================================================================
-        -- STEP 3: 결과 테이블 (없으면 CREATE, 있으면 DELETE+INSERT)
-        -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''부서코드 (ACMSLT_DEPT_CD)'',
-            TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
-            FORECAST FLOAT COMMENT ''예측 개발금액 (만원 단위, 신규+증액+재후원)'',
-            LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
-            UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
-        )
-        COMMENT = ''부서(ACMSLT_DEPT_CD)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'';
-
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- 예측 실행 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_MONTHLY_DEPT_DVLP_AMT
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
-            TS,
-            FORECAST,
-            LOWER_BOUND,
-            UPPER_BOUND
-        FROM TABLE(GN_DW.ML.MONTHLY_DEPT_DVLP_AMT_FORECAST_MODEL!FORECAST(
             FORECASTING_PERIODS => 12
         ))
         '';
@@ -3942,228 +3987,6 @@ AS 'BEGIN
             LOWER_BOUND,
             UPPER_BOUND
         FROM TABLE(GN_DW.ML.MONTHLY_DVLP_AMT_FORECAST_MODEL!FORECAST(
-            FORECASTING_PERIODS => 12
-        ))
-        '';
-
-        -- 성공 로그 기록
-        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-        SELECT 
-            :V_PROC_NAME,
-            :V_STDR_MT,
-            :V_START_TIME,
-            CURRENT_TIMESTAMP(),
-            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-            ''SUCCESS'',
-            NULL;
-
-        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
-
-    EXCEPTION
-        WHEN OTHER THEN
-            LET V_ERR_MSG VARCHAR := SQLERRM;
-            -- 실패 로그 기록
-            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-            SELECT 
-                :V_PROC_NAME,
-                :V_STDR_MT,
-                :V_START_TIME,
-                CURRENT_TIMESTAMP(),
-                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-                ''FAILED'',
-                :V_ERR_MSG;
-
-            RETURN ''FAILED: '' || :V_ERR_MSG;
-    END;
-END';
-CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_MONTHLY_NEW_OLD_DVLP_AMT_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
-RETURNS VARCHAR
-LANGUAGE SQL
-EXECUTE AS CALLER
-AS 'BEGIN
-    -- 변수 선언
-    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
-    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_MONTHLY_NEW_OLD_DVLP_AMT_FORECAST'';
-
-    BEGIN
-        -- 웨어하우스 설정 (15분 타임아웃)
-        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
-        USE WAREHOUSE GN_DW_ML_WH;
-
-        -- =============================================================================
-        -- STEP 1: 학습 데이터 구성 (신규/기존별 월별 개발금액 시계열)
-        -- =============================================================================
-        EXECUTE IMMEDIATE ''
-        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_NEW_OLD_DVLP_AMT AS
-        SELECT 
-            TO_DATE(STDR_MT || ''''01'''', ''''YYYYMMDD'''') AS STDR_DE,
-            ''''NEW'''' AS DVLP_TYPE,
-            ROUND(SUM(NEW_SPNSR_AMT) / 10000, 1) AS DVLP_CNT
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-        GROUP BY STDR_MT
-        UNION ALL
-        SELECT 
-            TO_DATE(STDR_MT || ''''01'''', ''''YYYYMMDD'''') AS STDR_DE,
-            ''''OLD'''' AS DVLP_TYPE,
-            ROUND((SUM(INC_SPNSR_AMT) / 10000) + (SUM(RE_SPNSR_AMT) / 10000), 1) AS DVLP_CNT
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-        GROUP BY STDR_MT
-        ORDER BY STDR_DE, DVLP_TYPE
-        '';
-
-        -- =============================================================================
-        -- STEP 2: FORECAST 모델 학습
-        -- =============================================================================
-        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.MONTHLY_NEW_OLD_DVLP_AMT_FORECAST_MODEL(
-            INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_NEW_OLD_DVLP_AMT''),
-            SERIES_COLNAME => ''DVLP_TYPE'',
-            TIMESTAMP_COLNAME => ''STDR_DE'',
-            TARGET_COLNAME => ''DVLP_CNT''
-        );
-
-        -- =============================================================================
-        -- STEP 3: 결과 테이블 (없으면 CREATE, 있으면 DELETE+INSERT)
-        -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''개발 유형 (NEW=신규, OLD=기존 증액+재후원)'',
-            TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
-            FORECAST FLOAT COMMENT ''예측 개발금액 (만원 단위)'',
-            LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
-            UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
-        )
-        COMMENT = ''신규/기존별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'';
-
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- 예측 실행 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_MONTHLY_NEW_OLD_DVLP_AMT
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
-            TS,
-            FORECAST,
-            LOWER_BOUND,
-            UPPER_BOUND
-        FROM TABLE(GN_DW.ML.MONTHLY_NEW_OLD_DVLP_AMT_FORECAST_MODEL!FORECAST(
-            FORECASTING_PERIODS => 12
-        ))
-        '';
-
-        -- 성공 로그 기록
-        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-        SELECT 
-            :V_PROC_NAME,
-            :V_STDR_MT,
-            :V_START_TIME,
-            CURRENT_TIMESTAMP(),
-            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-            ''SUCCESS'',
-            NULL;
-
-        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
-
-    EXCEPTION
-        WHEN OTHER THEN
-            LET V_ERR_MSG VARCHAR := SQLERRM;
-            -- 실패 로그 기록
-            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-            SELECT 
-                :V_PROC_NAME,
-                :V_STDR_MT,
-                :V_START_TIME,
-                CURRENT_TIMESTAMP(),
-                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-                ''FAILED'',
-                :V_ERR_MSG;
-
-            RETURN ''FAILED: '' || :V_ERR_MSG;
-    END;
-END';
-CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
-RETURNS VARCHAR
-LANGUAGE SQL
-EXECUTE AS CALLER
-AS 'BEGIN
-    -- 변수 선언
-    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
-    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT_FORECAST'';
-
-    BEGIN
-        -- 웨어하우스 설정 (15분 타임아웃)
-        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
-        USE WAREHOUSE GN_DW_ML_WH;
-
-        -- =============================================================================
-        -- STEP 1: 학습 데이터 구성 (후원사업별 월별 개발금액 시계열) 신규 증액 재후원
-        -- =============================================================================
-        EXECUTE IMMEDIATE ''
-        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT AS
-        SELECT 
-            TO_DATE(STDR_MT || ''''01'''', ''''YYYYMMDD'''') AS STDR_DE,
-            SPNSR_BSNS_ID,
-            ROUND(
-                (SUM(NEW_SPNSR_AMT) / 10000) + (SUM(INC_SPNSR_AMT) / 10000) + (SUM(RE_SPNSR_AMT) / 10000)
-            , 1) AS DVLP_CNT
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-          AND SPNSR_BSNS_ID IN (
-              SELECT SPNSR_BSNS_ID
-              FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-              WHERE STDR_MT BETWEEN ''''201801'''' AND '''''' || :V_STDR_MT || ''''''
-              GROUP BY SPNSR_BSNS_ID
-              HAVING COUNT(DISTINCT STDR_MT) >= 24
-                 AND MAX(CASE WHEN STDR_MT = '''''' || :V_STDR_MT || '''''' THEN 1 ELSE 0 END) = 1
-              ORDER BY SUM(NEW_SPNSR_AMT + INC_SPNSR_AMT + RE_SPNSR_AMT) DESC
-              LIMIT 30
-          )
-        GROUP BY STDR_MT, SPNSR_BSNS_ID
-        ORDER BY SPNSR_BSNS_ID, STDR_MT
-        '';
-
-        -- =============================================================================
-        -- STEP 2: FORECAST 모델 학습
-        -- =============================================================================
-        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.MONTHLY_SPNSR_BSNS_ID_DVLP_AMT_FORECAST_MODEL(
-            INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT''),
-            SERIES_COLNAME => ''SPNSR_BSNS_ID'',
-            TIMESTAMP_COLNAME => ''STDR_DE'',
-            TARGET_COLNAME => ''DVLP_CNT''
-        );
-
-        -- =============================================================================
-        -- STEP 3: 결과 테이블 (없으면 CREATE, 있으면 DELETE+INSERT)
-        -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''후원사업ID (SPNSR_BSNS_ID)'',
-            TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
-            FORECAST FLOAT COMMENT ''예측 개발금액 (만원 단위, 신규+증액+재후원)'',
-            LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
-            UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
-        )
-        COMMENT = ''후원사업(SPNSR_BSNS_ID)별 월간 후원개발 금액(만원) 향후 12개월 예측 결과'';
-
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- 예측 실행 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_MONTHLY_SPNSR_BSNS_ID_DVLP_AMT
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
-            TS,
-            FORECAST,
-            LOWER_BOUND,
-            UPPER_BOUND
-        FROM TABLE(GN_DW.ML.MONTHLY_SPNSR_BSNS_ID_DVLP_AMT_FORECAST_MODEL!FORECAST(
             FORECASTING_PERIODS => 12
         ))
         '';
@@ -4490,10 +4313,10 @@ AS 'BEGIN
         );
         
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION (
-            ONCE_MBER_NO VARCHAR COMMENT ''회원번호'',
             STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
-            CONVERSION_YN VARCHAR COMMENT ''회원 전환여부'',
-            DATA_TYPE VARCHAR COMMENT ''데이터유형'',
+            ONCE_MBER_NO VARCHAR COMMENT ''회원번호'',
+            -- CONVERSION_YN VARCHAR COMMENT ''회원 전환여부'',
+            -- DATA_TYPE VARCHAR COMMENT ''데이터유형'',
             PREDICT VARIANT COMMENT ''예측결과''
         )
         COMMENT = ''일시회원 향후 6개월 내 전환 가능성 예측 결과'';
@@ -4504,10 +4327,10 @@ AS 'BEGIN
         -- 예측 결과 INSERT
         INSERT INTO GN_DW.ML.ML_RST_DATA_ONCE_CONVERSION
         SELECT
-            t.ONCE_MBER_NO,
             :V_STDR_MT,
-            t.CONVERSION_YN,
-            t.DATA_TYPE,
+            t.ONCE_MBER_NO,
+            -- t.CONVERSION_YN,
+            -- t.DATA_TYPE,
             pred.PREDICT
         FROM GN_DW.ML.ML_TRAIN_DATA_ONCE_TO_FDRM_CONVERSION_6M t,
         LATERAL (
@@ -4588,12 +4411,13 @@ AS 'BEGIN
 
         -- =============================================================================
         -- STEP 1: 학습 데이터셋 구성
+        -- 건수 많아서 분기별.....
         -- =============================================================================
         EXECUTE IMMEDIATE ''
         CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_SPNSR_CHURN_12M AS
         WITH 
         CMPGN_CTGR AS (
-            SELECT DISTINCT CMPGN_CD, CMPGN_CTGR_CD
+            SELECT DISTINCT CMPGN_CTGR_CD
             FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
             WHERE CMPGN_CTGR_CD IS NOT NULL
         ),
@@ -4603,14 +4427,14 @@ AS 'BEGIN
                 d.MBER_NO,
                 d.SPNSR_BSNS_ID,
                 d.SPNSR_BSNS_NO,
-                d.CMPGN_CD,
+                d.CMPGN_CTGR_CD,
                 d.STDR_MT_DVLP_DIV_CD,
                 d.STDR_MT_SPNSR_AMT,
                 d.NEW_CNT,
                 d.INC_CNT,
                 d.DEC_CNT,
                 d.RE_CNT,
-                d.CANCL_CNT,
+                --d.CANCL_CNT,
                 d.CHN_CNT,
                 d.NEW_SPNSR_AMT,
                 d.INC_SPNSR_AMT,
@@ -4618,10 +4442,10 @@ AS 'BEGIN
                 d.CANCL_SPNSR_AMT,
                 DATEDIFF(''''MONTH'''', TO_DATE(d.FIRST_OCCRRNC_DE, ''''YYYYMMDD''''), TO_DATE(d.STDR_MT || ''''01'''', ''''YYYYMMDD'''')) AS TENURE_MONTHS
             FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT d
-            JOIN CMPGN_CTGR c ON d.CMPGN_CD = c.CMPGN_CD
+            JOIN CMPGN_CTGR c ON d.CMPGN_CTGR_CD = c.CMPGN_CTGR_CD
             WHERE d.STDR_MT_DVLP_DIV_CD NOT IN (''''5'''')
-              AND d.STDR_MT BETWEEN ''''202201'''' AND '''''' || :V_TRAIN_END || ''''''
-              AND RIGHT(d.STDR_MT, 2) IN (''''01'''', ''''04'''', ''''07'''', ''''10'''')
+              AND d.STDR_MT BETWEEN ''''202301'''' AND '''''' || :V_TRAIN_END || ''''''
+              -- AND RIGHT(d.STDR_MT, 2) IN (''''01'''', ''''04'''', ''''07'''', ''''10'''')
         ),
         CHURN_EVENTS AS (
             SELECT 
@@ -4672,17 +4496,17 @@ AS 'BEGIN
             f.MBER_NO,
             f.SPNSR_BSNS_ID,
             f.SPNSR_BSNS_NO,
-            f.CMPGN_CD,
+            f.CMPGN_CTGR_CD,
             f.STDR_MT_SPNSR_AMT,
             f.TENURE_MONTHS,
             f.CHN_CNT,
             f.INC_CNT,
-            f.DEC_CNT,
+            f.DEC_CNT, 
             f.RE_CNT,
-            f.CANCL_CNT,
+            -- f.CANCL_CNT,
             f.INC_SPNSR_AMT,
             f.DEC_SPNSR_AMT,
-            f.CANCL_SPNSR_AMT,
+            -- f.CANCL_SPNSR_AMT,
             COALESCE(p.PAY_RATE, 1) AS PAY_RATE,
             COALESCE(s.STDR_MT_SETLE_CD, ''''UNKNOWN'''') AS SETLE_CD,
             COALESCE(cf.CHURN_12M, 0) AS CHURN_12M
@@ -4707,17 +4531,17 @@ AS 'BEGIN
         -- =============================================================================
         CREATE OR REPLACE VIEW GN_DW.ML.ML_TRAIN_DATA_SPNSR_CHURN_12M_V AS
         SELECT 
-            CMPGN_CD,
+            CMPGN_CTGR_CD,
             STDR_MT_SPNSR_AMT,
             TENURE_MONTHS,
             CHN_CNT,
             INC_CNT,
             DEC_CNT,
             RE_CNT,
-            CANCL_CNT,
+            -- CANCL_CNT,
             INC_SPNSR_AMT,
             DEC_SPNSR_AMT,
-            CANCL_SPNSR_AMT,
+            -- CANCL_SPNSR_AMT,
             PAY_RATE,
             SETLE_CD,
             CHURN_12M
@@ -4736,7 +4560,7 @@ AS 'BEGIN
         CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_ACT_SPNSR_CHURN_12M AS
         WITH 
         CMPGN_CTGR AS (
-            SELECT DISTINCT CMPGN_CD, CMPGN_CTGR_CD
+            SELECT DISTINCT CMPGN_CTGR_CD
             FROM GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG
             WHERE CMPGN_CTGR_CD IS NOT NULL
         ),
@@ -4746,19 +4570,19 @@ AS 'BEGIN
                 d.MBER_NO,
                 d.SPNSR_BSNS_ID,
                 d.SPNSR_BSNS_NO,
-                d.CMPGN_CD,
+                d.CMPGN_CTGR_CD,
                 d.STDR_MT_SPNSR_AMT,
                 DATEDIFF(''''MONTH'''', TO_DATE(d.FIRST_OCCRRNC_DE, ''''YYYYMMDD''''), TO_DATE(d.STDR_MT || ''''01'''', ''''YYYYMMDD'''')) AS TENURE_MONTHS,
                 d.CHN_CNT,
                 d.INC_CNT,
                 d.DEC_CNT,
                 d.RE_CNT,
-                d.CANCL_CNT,
+                -- d.CANCL_CNT,
                 d.INC_SPNSR_AMT,
-                d.DEC_SPNSR_AMT,
-                d.CANCL_SPNSR_AMT
+                d.DEC_SPNSR_AMT
+                -- d.CANCL_SPNSR_AMT
             FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT d
-            JOIN CMPGN_CTGR c ON d.CMPGN_CD = c.CMPGN_CD
+            JOIN CMPGN_CTGR c ON d.CMPGN_CTGR_CD = c.CMPGN_CTGR_CD
             WHERE d.STDR_MT = '''''' || :V_STDR_MT || ''''''
               AND d.STDR_MT_DVLP_DIV_CD NOT IN (''''5'''')
         ),
@@ -4781,17 +4605,17 @@ AS 'BEGIN
             a.MBER_NO,
             a.SPNSR_BSNS_ID,
             a.SPNSR_BSNS_NO,
-            a.CMPGN_CD,
+            a.CMPGN_CTGR_CD,
             a.STDR_MT_SPNSR_AMT,
             a.TENURE_MONTHS,
             a.CHN_CNT,
             a.INC_CNT,
             a.DEC_CNT,
             a.RE_CNT,
-            a.CANCL_CNT,
+            -- a.CANCL_CNT,
             a.INC_SPNSR_AMT,
             a.DEC_SPNSR_AMT,
-            a.CANCL_SPNSR_AMT,
+            -- a.CANCL_SPNSR_AMT,
             COALESCE(p.PAY_RATE, 1) AS PAY_RATE,
             COALESCE(s.STDR_MT_SETLE_CD, ''''UNKNOWN'''') AS SETLE_CD
         FROM CURRENT_ACTIVE a
@@ -4810,22 +4634,22 @@ AS 'BEGIN
             MBER_NO VARCHAR COMMENT ''회원번호'',
             SPNSR_BSNS_ID VARCHAR COMMENT ''후원사업ID'',
             SPNSR_BSNS_NO VARCHAR COMMENT ''후원사업번호'',
-            CMPGN_CD VARCHAR COMMENT ''캠페인코드'',
-            STDR_MT_SPNSR_AMT NUMBER COMMENT ''기준월 후원금액'',
-            TENURE_MONTHS NUMBER COMMENT ''후원 유지기간 (월)'',
-            CHN_CNT NUMBER COMMENT ''변경 건수'',
-            INC_CNT NUMBER COMMENT ''증액 건수'',
-            DEC_CNT NUMBER COMMENT ''감액 건수'',
-            RE_CNT NUMBER COMMENT ''재후원 건수'',
-            CANCL_CNT NUMBER COMMENT ''해지 건수'',
-            INC_SPNSR_AMT NUMBER COMMENT ''증액 금액'',
-            DEC_SPNSR_AMT NUMBER COMMENT ''감액 금액'',
-            CANCL_SPNSR_AMT NUMBER COMMENT ''해지 금액'',
-            PAY_RATE FLOAT COMMENT ''납입 성공률'',
-            SETLE_CD VARCHAR COMMENT ''결제수단코드'',
+            CMPGN_CTGR_CD VARCHAR COMMENT ''캠페인 카테고리 코드'',
+            -- STDR_MT_SPNSR_AMT NUMBER COMMENT ''기준월 후원금액'',
+            -- TENURE_MONTHS NUMBER COMMENT ''후원 유지기간 (월)'',
+            -- CHN_CNT NUMBER COMMENT ''변경 건수'',
+            -- INC_CNT NUMBER COMMENT ''증액 건수'',
+            -- DEC_CNT NUMBER COMMENT ''감액 건수'',
+            -- RE_CNT NUMBER COMMENT ''재후원 건수'',
+            -- CANCL_CNT NUMBER COMMENT ''해지 건수'',
+            -- INC_SPNSR_AMT NUMBER COMMENT ''증액 금액'',
+            -- DEC_SPNSR_AMT NUMBER COMMENT ''감액 금액'',
+            -- CANCL_SPNSR_AMT NUMBER COMMENT ''해지 금액'',
+            -- PAY_RATE FLOAT COMMENT ''납입 성공률'',
+            -- SETLE_CD VARCHAR COMMENT ''결제수단코드'',
             PREDICTION VARIANT COMMENT ''예측 결과 (VARIANT: probability, class 포함)''
         )
-        COMMENT = ''후원건(SPNSR_BSNS_ID) 단위 향후 12개월 내 중단확률 예측 결과'';
+        COMMENT = ''후원건(SPNSR_BSNS_NO) 단위 향후 12개월 내 중단확률 예측 결과'';
 
         -- 기존 동일 STDR_MT 데이터 삭제
         EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
@@ -4838,32 +4662,20 @@ AS 'BEGIN
             MBER_NO,
             SPNSR_BSNS_ID,
             SPNSR_BSNS_NO,
-            CMPGN_CD,
-            STDR_MT_SPNSR_AMT,
-            TENURE_MONTHS,
-            CHN_CNT,
-            INC_CNT,
-            DEC_CNT,
-            RE_CNT,
-            CANCL_CNT,
-            INC_SPNSR_AMT,
-            DEC_SPNSR_AMT,
-            CANCL_SPNSR_AMT,
-            PAY_RATE,
-            SETLE_CD,
+            CMPGN_CTGR_CD,
             GN_DW.ML.SPNSR_CHURN_CLASSIFIER_MODEL!PREDICT(
                 INPUT_DATA => OBJECT_CONSTRUCT(
-                    ''''CMPGN_CD'''', CMPGN_CD,
+                    ''''CMPGN_CTGR_CD'''', CMPGN_CTGR_CD,
                     ''''STDR_MT_SPNSR_AMT'''', STDR_MT_SPNSR_AMT,
                     ''''TENURE_MONTHS'''', TENURE_MONTHS,
                     ''''CHN_CNT'''', CHN_CNT,
                     ''''INC_CNT'''', INC_CNT,
                     ''''DEC_CNT'''', DEC_CNT,
                     ''''RE_CNT'''', RE_CNT,
-                    ''''CANCL_CNT'''', CANCL_CNT,
+                    -- ''''CANCL_CNT'''', CANCL_CNT,
                     ''''INC_SPNSR_AMT'''', INC_SPNSR_AMT,
                     ''''DEC_SPNSR_AMT'''', DEC_SPNSR_AMT,
-                    ''''CANCL_SPNSR_AMT'''', CANCL_SPNSR_AMT,
+                    -- ''''CANCL_SPNSR_AMT'''', CANCL_SPNSR_AMT,
                     ''''PAY_RATE'''', PAY_RATE,
                     ''''SETLE_CD'''', SETLE_CD
                 )
@@ -4883,171 +4695,6 @@ AS 'BEGIN
             NULL;
 
         RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT || '', TRAIN_END='' || :V_TRAIN_END;
-
-    EXCEPTION
-        WHEN OTHER THEN
-            LET V_ERR_MSG VARCHAR := SQLERRM;
-            -- 실패 로그 기록
-            INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-            SELECT 
-                :V_PROC_NAME,
-                :V_STDR_MT,
-                :V_START_TIME,
-                CURRENT_TIMESTAMP(),
-                DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-                ''FAILED'',
-                :V_ERR_MSG;
-
-            RETURN ''FAILED: '' || :V_ERR_MSG;
-    END;
-END';
-CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_UCMPGN_LTV_FORECAST("P_STDR_MT" VARCHAR DEFAULT null)
-RETURNS VARCHAR
-LANGUAGE SQL
-EXECUTE AS CALLER
-AS 'BEGIN
-    -- 변수 선언
-    LET V_STDR_MT VARCHAR := COALESCE(P_STDR_MT, TO_CHAR(DATEADD(MONTH, -1, CURRENT_DATE()), ''YYYYMM''));
-    LET V_START_TIME TIMESTAMP_NTZ := CURRENT_TIMESTAMP();
-    LET V_PROC_NAME VARCHAR := ''SP_UCMPGN_LTV_FORECAST'';
-
-    BEGIN
-        -- 웨어하우스 설정 (15분 타임아웃)
-        ALTER WAREHOUSE GN_DW_ML_WH SET STATEMENT_TIMEOUT_IN_SECONDS = 900;
-        USE WAREHOUSE GN_DW_ML_WH;
-
-        -- =============================================================================
-        -- STEP 1: 학습 데이터 구성 (채널별 월별 회원평균 후원금액 시계열)
-        -- =============================================================================
-        EXECUTE IMMEDIATE ''
-        CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_UCMPGN_AVG_AMT AS
-        SELECT UPPER_CMPGN_CD, STDR_DE, ROUND(SUM(STDR_MT_SPNSR_AMT) / COUNT(DISTINCT MBER_NO)) AS AVG_MBER_AMT
-        FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-        WHERE CMPGN_CD IN (
-            SELECT CMPGN_CD 
-            FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT 
-            WHERE CMPGN_CD IN (
-                SELECT CMPGN_CD 
-                FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT 
-                WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
-            )
-            GROUP BY CMPGN_CD 
-            HAVING COUNT(DISTINCT STDR_MT) >= 24
-        )
-        AND STDR_MT BETWEEN ''''202401'''' AND '''''' || :V_STDR_MT || ''''''
-        AND UPPER_CMPGN_CD IN (
-            SELECT UPPER_CMPGN_CD
-            FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
-            WHERE STDR_MT BETWEEN ''''202401'''' AND '''''' || :V_STDR_MT || ''''''
-            GROUP BY UPPER_CMPGN_CD
-            ORDER BY SUM(STDR_MT_SPNSR_AMT) DESC
-            LIMIT 50
-        )
-        GROUP BY UPPER_CMPGN_CD, STDR_DE
-        ORDER BY UPPER_CMPGN_CD, STDR_DE
-        '';
-
-        -- =============================================================================
-        -- STEP 2: FORECAST 모델 학습
-        -- =============================================================================
-        CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.UCMPGN_LTV_FORECAST_MODEL(
-            INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_UCMPGN_AVG_AMT''),
-            SERIES_COLNAME => ''UPPER_CMPGN_CD'',
-            TIMESTAMP_COLNAME => ''STDR_DE'',
-            TARGET_COLNAME => ''AVG_MBER_AMT''
-        );
-
-        -- =============================================================================
-        -- STEP 3: 결과 테이블1 (ML_RST_DATA_UCMPGN_LTV) - 없으면 생성, 있으면 DELETE+INSERT
-        -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_UCMPGN_LTV (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            SERIES VARCHAR COMMENT ''상위캠페인코드 (UPPER_CMPGN_CD)'',
-            TS TIMESTAMP_NTZ COMMENT ''예측 기준일 (월 시작일)'',
-            FORECAST FLOAT COMMENT ''예측 회원평균 후원금액'',
-            LOWER_BOUND FLOAT COMMENT ''95% 신뢰구간 하한'',
-            UPPER_BOUND FLOAT COMMENT ''95% 신뢰구간 상한''
-        )
-        COMMENT = ''상위캠페인(UPPER_CMPGN_CD)별 회원평균 후원금액 향후 12개월 예측 결과'';
-
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_UCMPGN_LTV WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- 예측 실행 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_UCMPGN_LTV
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            SERIES,
-            TS,
-            FORECAST,
-            LOWER_BOUND,
-            UPPER_BOUND
-        FROM TABLE(GN_DW.ML.UCMPGN_LTV_FORECAST_MODEL!FORECAST(
-            FORECASTING_PERIODS => 12
-        ))
-        '';
-
-        -- =============================================================================
-        -- STEP 4: 결과 테이블2 (ML_RST_DATA_UCMPGN_LTV_SCORE) - LTV 산출
-        -- =============================================================================
-        CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE (
-            STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-            UPPER_CMPGN_CD VARCHAR COMMENT ''상위캠페인코드'',
-            HIST_TOTAL_AMT FLOAT COMMENT ''과거 누적 회원평균 금액 합계 (학습 기간 전체)'',
-            FUTURE_TOTAL_AMT FLOAT COMMENT ''향후 12개월 예측 금액 합계'',
-            LTV FLOAT COMMENT ''장기가치 (과거 누적 + 향후 예측)'',
-            AVG_MONTHLY_FORECAST FLOAT COMMENT ''향후 월평균 예측 금액'',
-            ACTIVE_MONTHS NUMBER COMMENT ''과거 활성 월수'',
-            AVG_MONTHLY_ACTUAL FLOAT COMMENT ''과거 월평균 실제 금액''
-        )
-        COMMENT = ''상위캠페인(UPPER_CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'';
-
-        -- 기존 동일 STDR_MT 데이터 삭제
-        EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- LTV 산출 및 INSERT
-        EXECUTE IMMEDIATE ''
-        INSERT INTO GN_DW.ML.ML_RST_DATA_UCMPGN_LTV_SCORE
-        SELECT 
-            '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-            h.UPPER_CMPGN_CD,
-            h.HIST_TOTAL_AMT,
-            f.FUTURE_TOTAL_AMT,
-            h.HIST_TOTAL_AMT + f.FUTURE_TOTAL_AMT AS LTV,
-            f.FUTURE_TOTAL_AMT / 12 AS AVG_MONTHLY_FORECAST,
-            h.ACTIVE_MONTHS,
-            ROUND(h.HIST_TOTAL_AMT / h.ACTIVE_MONTHS, 0) AS AVG_MONTHLY_ACTUAL
-        FROM (
-            SELECT 
-                UPPER_CMPGN_CD,
-                SUM(AVG_MBER_AMT) AS HIST_TOTAL_AMT,
-                COUNT(DISTINCT STDR_DE) AS ACTIVE_MONTHS
-            FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_UCMPGN_AVG_AMT
-            GROUP BY UPPER_CMPGN_CD
-        ) h
-        JOIN (
-            SELECT 
-                SERIES AS UPPER_CMPGN_CD,
-                SUM(FORECAST) AS FUTURE_TOTAL_AMT
-            FROM GN_DW.ML.ML_RST_DATA_UCMPGN_LTV
-            WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
-            GROUP BY SERIES
-        ) f ON h.UPPER_CMPGN_CD = f.UPPER_CMPGN_CD
-        '';
-
-        -- 성공 로그 기록
-        INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
-        SELECT 
-            :V_PROC_NAME,
-            :V_STDR_MT,
-            :V_START_TIME,
-            CURRENT_TIMESTAMP(),
-            DATEDIFF(''SECOND'', :V_START_TIME, CURRENT_TIMESTAMP()),
-            ''SUCCESS'',
-            NULL;
-
-        RETURN ''SUCCESS: STDR_MT='' || :V_STDR_MT;
 
     EXCEPTION
         WHEN OTHER THEN

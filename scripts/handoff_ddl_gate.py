@@ -142,8 +142,11 @@ def cmp_comment(rep, axis, where, s_com, d_com, require=True, soft=False):
             rep.hit(axis, msg)
 
 
-def compare(label, src_paths, dst_path, prefix, rep, quiet, soft_comment=False):
+def compare(label, src_paths, dst_path, prefix, rep, quiet, soft_comment=False, only=None):
     src = {k: v for k, v in parse_many(src_paths).items() if k.startswith(prefix)}
+    # 🆕 [O198] 이관 범위가 원천 스키마의 **부분집합**인 경우(SILVER 4 · ML 12) — 범위 밖 원천 테이블을 축1 차이로 세지 않는다.
+    if only is not None:
+        src = {k: v for k, v in src.items() if k[len(prefix):] in only}
     dst = {k: v for k, v in parse(ROOT / dst_path).items() if k.startswith(prefix)}
 
     head = "== %s  (원천 %d · 인수인계 %d)" % (label, len(src), len(dst))
@@ -188,15 +191,23 @@ def compare(label, src_paths, dst_path, prefix, rep, quiet, soft_comment=False):
         print("")
 
 
+SILVER_SCOPE = {"BIGQUERY_REFINED_DATA", "ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA",
+                "ANNUAL_MBRFEE_PRDT_ACTL_DATA", "MM_SPNSR_CLS_AGGR_DATA"}
+ML_SCOPE = {"ML_RST_DATA_" + n for n in (
+    "SPNSR_CHURN_12M", "MBER_CHURN_12M", "CMPGN_CTGR_AMT", "MBER_INC_12M", "LOYAL_MBER",
+    "MONTHLY_DVLP_AMT", "MKTG_CHANNEL_MBER_AVG_LTV", "CMPGN_SPNSR_AMT_LTV",
+    "CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION", "MONTHLY_CMPGN_DVLP_AMT", "DVLP_INC_CONTRIBUTION",
+    "ONCE_CONVERSION")}
+
 TARGETS = [
     # (라벨, 원천 목록, 인수인계 파일, 접두, COMMENT 누락을 경고로 낮출지)
     #   soft=False = 그 문서가 「컬럼 코멘트 전 컬럼 부여 완료」를 **주장한다** ⇒ 누락은 blocking.
     #   soft=True  = 주장하지 않는다 ⇒ 누락은 🟠 경고(현업 확인 대상).
     ("BRONZE_CRM", ["90_provided_definition/11_bronze_crm_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_CRM.", False),
-    ("BRONZE_AGENCY", ["90_provided_definition/12_bronze_agency_ddl.sql"],
+    ("BRONZE_AGENCY", ["90_provided_definition/13_bronze_agency_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_AGENCY.", False),
-    ("BRONZE_ERP", ["90_provided_definition/13_bronze_erp_ddl.sql"],
+    ("BRONZE_ERP", ["90_provided_definition/12_bronze_erp_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_ERP.", False),
     # 🆕 [2026-09-17 O171] GA4·GSC 를 분모에 편입했다.
     #   🔴 왜 = 종전 TARGETS 에 두 스키마가 **없었다** ⇒ 축1(테이블 집합)이 그 스키마를
@@ -208,10 +219,12 @@ TARGETS = [
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GA4.", True),
     ("BRONZE_GSC", ["90_provided_definition/16_bronze_gsc_ddl.sql"],
      "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GSC.", True),
-    ("SILVER", ["90_provided_definition/18_silver_bigquery_refined.sql"],
-     "50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql", "SILVER.", True),
+    # 🆕 [2026-10-02 O198] 원천 재수령 — 12/13 번호 교환(ERP=12 · AGENCY=13) · 18번 = SILVER 스키마 전체(61) ·
+    #   이관 범위는 부분집합이다 ⇒ 6번째 원소 `only` 로 범위를 고정한다(SILVER 4 · ML 12 · 사용자 확정).
+    ("SILVER", ["90_provided_definition/18_silver_ddl.sql"],
+     "50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql", "SILVER.", True, SILVER_SCOPE),
     ("ML_RST_DATA", ["90_provided_definition/20_ML_ddl.sql"],
-     "50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql", "ML.ML_RST_DATA_", True),
+     "50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql", "ML.", True, ML_SCOPE),
 ]
 
 # ---------------------------------------------------------------------------
@@ -242,17 +255,25 @@ DOC_DIR = "50_handoff"
 #   🔴 [2026-09-28] 기준값을 한 세대 더 올렸다 — CRM 신규 3(원천 11번) + ML 신규 1(원천 20번 ONCE_CONVERSION)로
 #      **총계 82 · 브론즈 64 · CRM 53 · ML 17** 이 되었다. 종전 현행값(78 · 61 · 50 · 16)을 옛 세대로 내려 추가한다.
 STALE_TOKENS = [
-    ("67 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("67개 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("= 67", ("82",), "이관 총계 (현행 82)"),
-    ("69 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("69개 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("= 69", ("82",), "이관 총계 (현행 82)"),
-    ("73 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("= 73", ("82",), "이관 총계 (현행 82)"),
-    ("77 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("77개 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("= 77", ("82",), "이관 총계 (현행 82)"),
+    # 🆕 [2026-10-02 O198] 기준값 한 세대 더 — SILVER 1→4 · ML 17→12 ⇒ **총계 80 · 브론즈 64 · SILVER 4 · ML 12**.
+    ("82 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("82개 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 82", ("80",), "이관 총계 (현행 80)"),
+    ("총계 82", ("80",), "이관 총계 (현행 80)"),
+    ("ML 17", ("12",), "ML 예측결과 (현행 12)"),
+    ("17종", ("12",), "ML 예측결과 (현행 12)"),
+    ("SILVER 1 ", ("4",), "SILVER 이관 (현행 4)"),
+    ("67 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("67개 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 67", ("80",), "이관 총계 (현행 80)"),
+    ("69 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("69개 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 69", ("80",), "이관 총계 (현행 80)"),
+    ("73 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 73", ("80",), "이관 총계 (현행 80)"),
+    ("77 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("77개 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 77", ("80",), "이관 총계 (현행 80)"),
     ("브론즈 50", ("64",), "브론즈 소계 (현행 64)"),
     ("브론즈 52", ("64",), "브론즈 소계 (현행 64)"),
     ("브론즈 56", ("64",), "브론즈 소계 (현행 64)"),
@@ -262,15 +283,15 @@ STALE_TOKENS = [
     ("52개 테이블", ("64",), "브론즈 소계 (현행 64)"),
     ("60 테이블", ("64",), "브론즈 소계 (현행 64)"),
     ("60개 테이블", ("64",), "브론즈 소계 (현행 64)"),
-    ("78 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("78개 테이블", ("82",), "이관 총계 (현행 82)"),
-    ("= 78", ("82",), "이관 총계 (현행 82)"),
+    ("78 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("78개 테이블", ("80",), "이관 총계 (현행 80)"),
+    ("= 78", ("80",), "이관 총계 (현행 80)"),
     ("브론즈 61", ("64",), "브론즈 소계 (현행 64)"),
     ("61 테이블", ("64",), "브론즈 소계 (현행 64)"),
     ("61개 테이블", ("64",), "브론즈 소계 (현행 64)"),
     ("CRM 50", ("53",), "CRM 소계 (현행 53)"),
-    ("ML 16", ("17",), "ML 예측결과 (현행 17)"),
-    ("16종", ("17",), "ML 예측결과 (현행 17)"),
+    ("ML 16", ("12",), "ML 예측결과 (현행 12)"),
+    ("16종", ("12",), "ML 예측결과 (현행 12)"),
     ("CRM 45", ("53",), "CRM 소계 (현행 53)"),
     ("CRM 46", ("53",), "CRM 소계 (현행 53)"),
     ("CRM`(45)", ("53",), "CRM 소계 (현행 53)"),
@@ -317,8 +338,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     rep = Report()
-    for label, srcs, dst, pref, soft in TARGETS:
-        compare(label, srcs, dst, pref, rep, args.quiet, soft_comment=soft)
+    for label, srcs, dst, pref, soft, *rest in TARGETS:
+        compare(label, srcs, dst, pref, rep, args.quiet, soft_comment=soft, only=rest[0] if rest else None)
 
     a7, n_docs = axis7(args.quiet)
 

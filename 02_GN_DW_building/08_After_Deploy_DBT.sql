@@ -129,3 +129,32 @@ REVOKE CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit FROM ROLE GN_DW_ENGINEER;
 REVOKE USAGE, MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_ENGINEER;
 --     🔴 이 절 이후 D.2·D.3·D.5·D.6 의 ENGINEER GRANT 중 위 항목은 **이력**이다(재실행하면 되살아난다 — 재구축 시 D.9 를 마지막에 돌려라).
 */
+
+
+/* =====================================================================
+   [4] 🆕 [2026-10-02 O198] 월마감 + ML 파이프라인 실행 — GN_DW_LOADER
+      출처 = 임시 파일 `ML스키마에 LOADER롤추가_작업후삭제.sql` §2·§3 (이 절로 편입 · 원 파일은 삭제 대상).
+      🔴 선행 = 07번 §D.5-B(LOADER 프로시저·ML·WH 권한) · BRONZE 적재 완료 · BRONZE_CRM/SILVER/ML 프로시저 생성 완료.
+      🔴 기준월은 **실행할 때마다 바꾼다** — 아래 '202609' 는 예시다(마감 대상 월 YYYYMM).
+      ⚠️ SP_EXEC_MONTH_END 는 SILVER 집계(ANNUAL_* · MM_SPNSR_CLS_AGGR_DATA)와 ML 예측결과(ML_RST_DATA_*)를 다시 쓴다
+         ⇒ dbt build 와 동시에 돌리지 말 것(같은 SILVER 를 읽고 쓴다).
+   ===================================================================== */
+USE ROLE GN_DW_LOADER;
+USE WAREHOUSE GN_DW_ETL_WH;
+
+CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('202609');
+
+-- [4-a] 실행 결과·로그 확인(최근 1시간) — STATUS 가 전건 성공이어야 하며 실패 행은 ERROR_MSG 로 원인을 본다.
+--   ⚠️ LOADER 는 ML 테이블 SELECT 권한이 없다(07번 D.5 = 소비 3역할만) ⇒ 조회는 ADMIN 으로 한다.
+USE ROLE GN_DW_ADMIN;
+SELECT
+    PROC_NAME,
+    STDR_MT,
+    START_TIME,
+    END_TIME,
+    DURATION_SEC,
+    STATUS,
+    ERROR_MSG
+FROM GN_DW.ML.ML_PROCEDURE_LOG
+WHERE START_TIME >= DATEADD('HOUR', -1, CURRENT_TIMESTAMP())
+ORDER BY START_TIME DESC;
