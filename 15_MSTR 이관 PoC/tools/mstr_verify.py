@@ -14,7 +14,11 @@ def checks(batch, ym):
 
 
 def norm(v):
-    return float(v) if hasattr(v, 'is_finite') else v           # Decimal → float(JSON 비교)
+    # Decimal → float(JSON 비교) · float 는 소수 6자리 반올림
+    # 🔴 [O200-D] 부동소수 SUM 은 실행마다 끝자리가 흔들린다(29407.72 ↔ 29407.719999999998) → 오탐 DIFF 방지
+    if hasattr(v, 'is_finite'):
+        v = float(v)
+    return round(v, 6) if isinstance(v, float) else v
 
 
 def main():

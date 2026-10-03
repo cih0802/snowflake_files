@@ -113,9 +113,12 @@ MSTR 내부 객체(`mart.*`, `dbo.FN_*`)는 모두 `GN_DW.MSTR.*`로 매핑합�
 - [x] 05 리포트 쿼리 — 202601 결과 10,227행 · 차원명 미매핑 0 · 회귀 기준선 기록(`tools/manifests/1차.json`)
 - [x] **ExplCampList 제외 확정** — IT 확인(스페셜 캠페인 하드코딩 · 2년 미갱신 · skip) ⇒ `D_CMPGN_EXPL_CD` 라이브 DROP ·
       조인 제거 · CLS1/2 고정 99 · SPCL 고정 N (전후 결과 동일)
-- [ ] F_MM_SPNSR_DVLP 과거 이력 재적재(`USP_RUN_MSTR_1ST(…, TRUE)`) — SPNSR_AMT2_CD 정확도용 · 리포트 미사용
+- [x] F_MM_SPNSR_DVLP 과거 이력 재적재(`USP_RUN_MSTR_1ST(…, TRUE)`) — SPNSR_AMT2_CD 정확도용 · 리포트 미사용
+  · 🟢 2026-10-03 O200-D 집행(pw69582) · 원천 420개월(≤202601) 재적재 완료 · 202601 baseline PASS(리포트 요약 불변)
+  · `mstr_verify.norm` 부동소수 6자리 반올림 보정(끝자리 흔들림 오탐 DIFF 제거 · 음성 테스트 통과)
 - [ ] MSTR 원 리포트 결과와 대조(건수·금액·회원수) — MSTR 측 수치 확보 필요
 
 ## 8. 다음 단계 — 전체 이관 스킬화
 - 도구 = `tools/`(README 참조) · 배치 정의 = `tools/manifests/<batch>.json` · 단계 = deps → extract → 변환 → gen → deploy → run → verify
 - 1차에서 확정된 결정·변환 규칙은 매니페스트 `decisions` 와 `tools/README.md` 에 있다.
+- 🟢 [2026-10-03 O200-D] 스킬 = `.snowflake/cortex/skills/mstr-migration/SKILL.md`(순서·멈춤·금지만 · 규칙 정본은 README).

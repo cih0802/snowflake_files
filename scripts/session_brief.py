@@ -188,6 +188,28 @@ def open_tasks(lines=None):
     return rows
 
 
+# 🆕 [2026-10-03 O201 D1] 라벨 파일 「남은 작업」 표 — 3열(`순|작업|다음 행동`)도 받는다.
+#   🔴 완료 = 「순」 취소선 · 작업 셀 선두 `✅`/`🟢 ~~` · 취소선으로 시작하는 작업 셀.
+def open_label_tasks(lines):
+    rows = []
+    for rel, ln, cells in rows_of_table(lines, ('순',)):
+        if len(cells) < 3:
+            continue
+        order, task = cells[0], cells[1]
+        if STRIKE.match(order):
+            continue
+        head = task.strip()[:8]
+        if '✅' in head or head.lstrip('🟢 ').startswith('~~'):
+            continue
+        rows.append({
+            'order': strip_md(order),
+            'task': clip(strip_md(task), 130),
+            'stop': clip(strip_md(cells[-1] if len(cells) == 3 else cells[2]), 34),
+            'where': '%s:%d' % (rel, ln),
+        })
+    return rows
+
+
 # ── ② 문서50 열린 절 ────────────────────────────────────────────────────
 def open_sections(hub_rel, lines=None):
     out = []
@@ -606,6 +628,11 @@ def build(with_gates=True):
     else:
         cur, subs = current_handoff(nxt)
         hoff_lines = nxt
+    #   🆕 🔴🔴 [2026-10-03 O201 D1] 착수표가 비면 **라벨 파일 「남은 작업」 표**로 내려간다.
+    #     실사고 = O172 이후 열린 작업이 라벨 파일로 옮겨갔는데 이 함수는 조각 착수표만 읽어
+    #     브리핑 §1 이 「0건」을 냈다(게이트 전종 🟢 상태) ⇒ 분모 stale(카탈로그 #18·#24).
+    if not tasks and lcur:
+        tasks = open_label_tasks(llines)
     recent = recent_sessions()
     gates = run_gates() if with_gates else []
 

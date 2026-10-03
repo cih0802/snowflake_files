@@ -393,6 +393,23 @@ def main():
     check('말단 아님을 경고 축으로 노출', cl['is_last'], False)
     check('말단 절 좌표를 함께 운반', '0-BBB' in cl['tail_title'], True)
 
+    #   🆕 [2026-10-03 O201 D1] 라벨 파일 3열 「남은 작업」 표 — 종전 `open_tasks` 는 4열 조건으로 **0건**.
+    axis('라벨 파일 3열 남은 작업 표(O201 D1)')
+    LBL = """
+### ▣ O200-D-1 🟠 남은 작업
+
+| 순 | 작업 | 다음 행동 |
+|---|---|---|
+| 1 | 🔴 dbt(사용자) | build 후 COMMENT 확인 |
+| 2 | 🟢 ~~CoWork 스모크~~ | 완료 |
+| ~~3~~ | 현업 회신 | 완료 |
+| 4 | 스킬 공유(선택) | 결정 |
+"""
+    check('시정 전 경로(open_tasks)는 3열 표를 못 본다', sb.open_tasks(L(LBL)), [])
+    got = [t['order'] for t in sb.open_label_tasks(L(LBL))]
+    check('라벨 표 열린 행 = 1·4', got, ['1', '4'])
+    check('다음 행동 열 운반', sb.open_label_tasks(L(LBL))[0]['stop'], 'build 후 COMMENT 확인')
+
     print('')
     if FAILS:
         print('🔴 실패 %d건: %s' % (len(FAILS), ', '.join(FAILS)))
