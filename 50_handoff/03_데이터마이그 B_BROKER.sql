@@ -1,5 +1,5 @@
 -- B 계정(Broker) 실행 SQL — MIG_SHARE 공유 데이터를 스테이지에 CSV export
--- 2026-08-20
+-- 2026-08-20 · 🆕 2026-10-03 O200-D 현행화 = 범위 80(브론즈 64 · SILVER 4 · ML 12) · SILVER 필터 4종 IN 목록 · 후속 파일 번호 06번 → 07번(C_CONSUMER)
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -24,17 +24,17 @@
 --   언로드 스테이지 = @SANDBOX.TOOLS.my_export_stage/<SCHEMA>/<TABLE>/
 --
 -- 이관 대상 / SCOPE  (A가 MIG_SHARE 로 부여한 범위와 동일)
---   ① BRONZE_CRM (50 테이블)
+--   ① BRONZE_CRM (53 테이블)
 --   ② BRONZE_AGENCY (4 테이블)
 --   ③ BRONZE_ERP (2 테이블)
---   ③-2 BRONZE_GA4 (2 테이블) · ③-3 BRONZE_GSC (2 테이블)
---   ④ SILVER.BIGQUERY_REFINED_DATA (1 테이블 · 118컬럼 · ITEMS 가 ARRAY)
---   ⑤ ML.ML_RST_DATA_* (예측결과 17종만)
---   ⇒ 합계 82 테이블
---   🔴 **[2026-09-17] 종전 기재 69(브론즈 52)·77(브론즈 60)은 stale 이었다 — 현행 78(브론즈 61).**  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--   ③-2 BRONZE_GA4 (2 테이블) · ③-3 BRONZE_GSC (3 테이블)
+--   ④ SILVER 4 테이블 = BIGQUERY_REFINED_DATA(118컬럼 · ITEMS 가 ARRAY) + 예측용 집계 3(ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA · ANNUAL_MBRFEE_PRDT_ACTL_DATA · MM_SPNSR_CLS_AGGR_DATA · O198)
+--   ⑤ ML.ML_RST_DATA_* (예측결과 12종만 · 2026-10-02 O198)
+--   ⇒ 합계 80 테이블
+--   🔴 **[2026-09-17] 종전 기재 69(브론즈 52)·77(브론즈 60)은 stale 이었다 — 현행 78(브론즈 61).**  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --      ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 69 → 73
---      ㉡ 2026-09-15 CRM 46 → 50(신규 4 · 삭제 2 · 누락 보완 2) ⇒ 73 → 77  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
---   🔴 **[2026-08-29] 종전 기재 67(CRM 45 · ERP 1)도 stale 이었다** (현행 CRM 50 · 합계 77).  (🔴 2026-09-28 현행 = 브론즈 64 · CRM 53 · ML 17 · 총계 82)
+--      ㉡ 2026-09-15 CRM 46 → 50(신규 4 · 삭제 2 · 누락 보완 2) ⇒ 73 → 77  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
+--   🔴 **[2026-08-29] 종전 기재 67(CRM 45 · ERP 1)도 stale 이었다** (현행 CRM 50 · 합계 77).  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --      A 원천에 TM_CM_MKTNG_UTM · EXPENSE_RESOLUTION 이 추가되었다(04번 2026-08-29 이력).
 --      ⚠️ 그 TM_CM_MKTNG_UTM 은 2026-09-15 자로 **삭제**되었다(TC_MKTNG_DTL_CD 로 통합).
 --      ⇒ 이 수치는 04번 DDL 과 **한 쌍**이다. 한쪽만 고치면 3.1 대조가 조용히 어긋난다.
@@ -47,7 +47,7 @@
 --
 --   ⛔ 대상 아님 — ML 학습·스냅샷·로그 33종 + 뷰 4종
 --      A가 부여하지 않았으므로 공유 DB의 INFORMATION_SCHEMA 에 보이지 않는다.
---      ⇒ 5번의 `table_schema = 'ML'` 조건만으로 정확히 17종이 대상이 된다(3.1-B 에서 확인).
+--      ⇒ 5번의 `table_schema = 'ML'` 조건만으로 정확히 12종이 대상이 된다(3.1-B 에서 확인).
 -- =====================================================================
 
 -- B 계정 (Consumer), ACCOUNTADMIN 역할
@@ -83,15 +83,15 @@ SHOW SCHEMAS IN DATABASE GN_DW_SHARED;
 
 SELECT
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'BRONZE_CRM' AND table_type = 'BASE TABLE')         AS crm_visible,      -- 기대 50
+    WHERE table_schema = 'BRONZE_CRM' AND table_type = 'BASE TABLE')         AS crm_visible,      -- 기대 53
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')  AS silver_visible,   -- 기대 1
+    WHERE table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))  AS silver_visible,   -- 기대 4
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'ML' AND table_type = 'BASE TABLE')                 AS ml_visible,       -- 기대 17
+    WHERE table_schema = 'ML' AND table_type = 'BASE TABLE')                 AS ml_visible,       -- 기대 12
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.SCHEMATA
     WHERE schema_name = 'BRONZE_BIGQUERY')                                   AS bigquery_visible; -- 기대 0
 -- → silver_visible = 0 이면 A가 2.1 GRANT 를 실행하지 않은 것이다(A에게 요청).
---   ml_visible ≠ 16 이면 A의 2-B 부여가 불완전하다.
+--   ml_visible ≠ 12 이면 A의 2-B 부여가 불완전하다.
 --   bigquery_visible ≠ 0 이면 A가 2.2 를 실수로 실행한 것이다(A에게 REVOKE 요청).
 
 -- 3.1 ⚠️ 대조 기준값 확보 (언로드 전에 기록) — 01번 문서 6.1
@@ -103,13 +103,13 @@ SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR  table_schema = 'ML' )
 ORDER BY table_schema, table_name;
 
 -- 스키마별 요약
 --   기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 2 · BRONZE_GA4 2 · BRONZE_GSC 3
---         · ML 17 · SILVER 1 = 82 테이블
+--         · ML 12 · SILVER 4 = 80 테이블
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
@@ -117,13 +117,13 @@ SELECT table_schema,
 FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
-        OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+        OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR  table_schema = 'ML' )
 GROUP BY 1 ORDER BY 1;
 --   ⚠️ zero_row_tables 를 기록해 둔다. 0행 테이블은 COPY INTO 가 파일을 만들지 않아
 --      폴더가 생기지 않는다 ⇒ 6번의 '테이블 수 = 폴더 수' 판정에서 이 수만큼 차이가 나는 것이 정상이다.
 
--- 3.1-B ML 대상 테이블명 확인 (기대: 17행 · 전부 ML_RST_DATA_ 접두 — 2026-08-18 16행 확인 · 2026-09-28 ONCE_CONVERSION 추가로 17)
+-- 3.1-B ML 대상 테이블명 확인 (기대: 12행 · 전부 ML_RST_DATA_ 접두 — 2026-10-02 O198 원천 재수령으로 17 → 12)
 --   접두가 다른 테이블이 한 건이라도 나오면 학습·스냅샷이 섞인 것이므로 언로드하지 않는다.
 --   A 의 부여 오류이므로 A 에게 REVOKE 를 요청한 뒤 3번부터 다시 시작한다.
 SELECT table_name,
@@ -159,7 +159,7 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 5. INFORMATION_SCHEMA를 순회하며 각 테이블을 동적으로 COPY INTO
 --    대상: BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
---          · SILVER(1) · ML(17) = 82
+--          · SILVER(4) · ML(12) = 80
 --    경로 규칙: @stage/<스키마>/<테이블>/ , GZIP CSV
 --    ⚠️ WHERE 절을 LIKE 'BRONZE_%' 로 바꾸지 말 것 — 공유 구성 변경 시 의도 외 스키마가 섞인다.
 --    ⚠️ EXECUTE IMMEDIATE $$ ... $$ 로 감싼 이유:
@@ -167,11 +167,11 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 --       익명 블록(DECLARE...END;)을 그대로 두면 블록 내부 세미콜론에서 조각나 문법 오류가 난다.
 --       $$ 로 감싸면 블록 전체가 단일 문장으로 전달된다.
 --    ℹ️ WHERE 절의 `table_schema = 'ML'`:
---       ML 은 A 가 17종만 부여했으므로 이 조건만으로 정확히 17종이 대상이 된다(3.1-B 확인 완료).
+--       ML 은 A 가 12종만 부여했으므로 이 조건만으로 정확히 12종이 대상이 된다(3.1-B 확인 완료).
 --    ℹ️ 반정형 컬럼은 **언로드 쪽에서 할 일이 없다.** CSV 로 나가면 JSON 문자열이 되고,
---       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 06번 A.5,
---       ML PREDICTION/PREDICT(VARIANT) 5종 → 06번 A.5-B.2.
---    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 82개 테이블' 이 나와야 정상.
+--       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 07번 A.5,
+--       ML PREDICTION/PREDICT(VARIANT) 5종 → 07번 A.5-B.2.
+--    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 80개 테이블' 이 나와야 정상.
 --       (0행 테이블도 COPY INTO 는 성공하므로 cnt 에 포함된다. 폴더만 생기지 않는다.)
 EXECUTE IMMEDIATE $$
 DECLARE
@@ -180,7 +180,7 @@ DECLARE
     FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
     WHERE table_type = 'BASE TABLE'
       AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
-            OR (table_schema = 'SILVER' AND table_name = 'BIGQUERY_REFINED_DATA')
+            OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
             OR  table_schema = 'ML' );
   cnt INTEGER DEFAULT 0;
 BEGIN
@@ -221,11 +221,11 @@ BEGIN
   RETURN 'UNLOAD 완료: ' || cnt || '개 테이블';
 END;
 $$;
--- 기대 반환값: 'UNLOAD 완료: 82개 테이블'
---   77 이 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
+-- 기대 반환값: 'UNLOAD 완료: 80개 테이블'
+--   80 이 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
 
 -- 6. Export 결과 확인
---    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(06번 A.1 (1)).
+--    파일 수를 기록해 둔다 → C 업로드 후 동일한지 대조할 기준값이 된다(07번 A.1 (1)).
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 스키마별 파일/폴더 수 집계 (위 LIST 직후에 실행해야 RESULT_SCAN 이 유효)
@@ -235,7 +235,7 @@ SELECT SPLIT_PART("name", '/', 2) AS table_schema,
 FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 GROUP BY 1 ORDER BY 1;
 --   판정: 스키마별 table_folders = 3.1 의 tables − zero_row_tables 여야 한다.
---   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 06번 A.1 (1) 에서 대조한다.
+--   ⚠️ 이 결과(스키마별 파일 수)를 기록해 C 업로드 후 07번 A.1 (1) 에서 대조한다.
 
 -- 6.1 대상 외 폴더 잔존 점검 (0건이어야 함)
 --     이전 배치 잔존 또는 대상 필터 오설정을 잡는다.
@@ -247,7 +247,7 @@ WHERE SPLIT_PART("name", '/', 2)
 -- → 0 이 아니면 4번 REMOVE 를 건너뛴 것이다. 스테이지를 비우고 5번부터 다시 실행한다.
 
 -- 7. 정리(Teardown) — 01번 문서 7장
---    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(06번 A.6)이 끝난 뒤에 실행한다.
+--    ⚠️ 순서 주의: 로컬 다운로드(4.3)와 C 적재·검증(07번 A.6)이 끝난 뒤에 실행한다.
 --       스테이지를 먼저 비우면 재다운로드가 불가능해 B 언로드부터 다시 해야 한다.
 
 -- 7.1 공유 DB 정리 (export가 정상 완료된 것을 6번에서 확인한 뒤 실행)

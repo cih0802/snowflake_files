@@ -138,6 +138,11 @@ REVOKE USAGE, MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_ENGIN
       🔴 기준월은 **실행할 때마다 바꾼다** — 아래 '202609' 는 예시다(마감 대상 월 YYYYMM).
       ⚠️ SP_EXEC_MONTH_END 는 SILVER 집계(ANNUAL_* · MM_SPNSR_CLS_AGGR_DATA)와 ML 예측결과(ML_RST_DATA_*)를 다시 쓴다
          ⇒ dbt build 와 동시에 돌리지 말 것(같은 SILVER 를 읽고 쓴다).
+      🔴 [2026-10-03 O200-D 실측 · 계정 pw69582(개발계)] 이 절은 **이 계정에서 실행할 수 없다**.
+         · `SP_EXEC_MONTH_END` 부재(`SHOW USER PROCEDURES IN DATABASE GN_DW` = MSTR 13종뿐) · `ML_PROCEDURE_LOG` 부재.
+         · 이유 = 이관 범위가 ML **결과 테이블 12종**뿐이고 원천 프로시저·로그는 인도되지 않았다(O198 결정).
+         ⇒ O198-C ⑦ 「첫 실행 권한 오류 시 LOADER DML 부여」는 **전제 미충족**이다 — 권한을 미리 만들지 않는다.
+            프로시저가 인도되는 계정(운영)에서 이 절을 처음 돌릴 때 ⑦ 을 판정한다(EXECUTE AS CALLER/OWNER 확인 포함).
    ===================================================================== */
 /*
 USE ROLE GN_DW_LOADER;

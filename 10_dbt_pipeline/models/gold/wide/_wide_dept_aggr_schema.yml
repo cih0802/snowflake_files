@@ -1,0 +1,127 @@
+version: 2
+
+# 🆕 [2026-10-02 O200-A] 부서 자체 수식 집계 3종 GOLD 소비뷰 COMMENT 정본.
+#   적용 = materialized='gn_view_commented' ⇒ columns[] 는 SELECT 와 **개수·순서가 정확히 일치**해야 한다.
+#   별도 파일로 둔 이유 = `_wide_schema.yml`(1,300줄+) 전체 재작성 위험 회피(R1-7-1).
+
+models:
+  - name: WIDE_DVLP_GOAL_ACMSLT
+    description: "연간 개발 목표·실적 부서 집계(월 grain). 원천 = SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA(부서 자체 수식 · ML 예측 아님). 목표와 실적을 열로 분리했다 — 달성률은 ACMSLT_CNT/GOAL_CNT 로 계산한다. 실적이 아직 없는 월은 ACMSLT_CNT 가 NULL 이다(0 이 아니다)."
+    columns:
+      - name: MONTH_KEY
+        description: "기준월 YYYYMM ← YEAR × M01~M12 열 위치"
+        tests: [not_null]
+      - name: CAL_YEAR
+        description: "연도 ← YEAR"
+      - name: CAL_MONTH
+        description: "월(1~12) ← M01~M12 열 위치"
+      - name: DEPT_DIV_NM
+        description: "부서 구분 명"
+      - name: NEW_EXST_DIV_NM
+        description: "신규기존구분명"
+      - name: SPNSR_BSNS_GRP_NM
+        description: "후원 사업 그룹 명"
+      - name: GOAL_CNT
+        description: "개발 목표 건수 ← DATA_TYPE_NM='목표' 행의 해당 월 값"
+      - name: ACMSLT_CNT
+        description: "개발 실적 건수 ← DATA_TYPE_NM='실적' 행의 해당 월 값. 미도래 월은 NULL."
+
+  - name: WIDE_MBRFEE_PRDT_ACTL
+    description: "회원실 연간 회비 예측·실측(월 grain). 원천 = SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA(부서 자체 수식 · ML 예측 아님). 🔴 예측행과 실측행이 한 뷰에 함께 있다 — 합계·평균 전에 반드시 DATA_TYPE_NM(또는 IS_FORECAST)으로 스코프할 것. 율(_RT) 컬럼은 비가산이다 — 합산하지 말 것."
+    columns:
+      - name: MONTH_KEY
+        description: "기준월 YYYYMM ← STDR_MT"
+        tests: [not_null]
+      - name: CAL_YEAR
+        description: "연도 ← STDR_MT 앞 4자리"
+      - name: CAL_MONTH
+        description: "월(1~12) ← STDR_MT 뒤 2자리"
+      - name: DATA_TYPE_NM
+        description: "예측 실측 구분 명(예측/실측)"
+        tests:
+          - accepted_values:
+              values: ['예측', '실측']
+      - name: IS_FORECAST
+        description: "예측행 여부 ← DATA_TYPE_NM='예측'"
+      - name: SPNSR_BSNS_GRP_NM
+        description: "후원 사업 그룹 명"
+      - name: NEW_EXST_DIV_NM
+        description: "신규기존구분명"
+      - name: HDQ_BRNCH_GRP_NM
+        description: "본부 지부 그룹 명"
+      - name: DVLP_CNT
+        description: "개발건수"
+      - name: CMLT_DVLP_CNT
+        description: "누적개발건수"
+      - name: ADJ_DSCNTC_RT
+        description: "[비가산] 조정 중단율"
+      - name: ADJ_DSCNTC_CNT
+        description: "조정 중단건수"
+      - name: ADJ_RDCAMT_RT
+        description: "[비가산] 조정 감액율"
+      - name: ADJ_RDCAMT_CNT
+        description: "조정 감액건수"
+      - name: ADJ_RECALC_DSCNTC_RT
+        description: "[비가산] 조정 재산출 중단율"
+      - name: ADJ_DSCNTC_CNT2
+        description: "조정 중단건수2"
+      - name: ADJ_CMLT_DSCNTC_CNT
+        description: "조정 누계 중단건수"
+      - name: DSCNTC_RT
+        description: "[비가산] 중단율"
+      - name: DSCNTC_CNT
+        description: "중단건수"
+      - name: RDCAMT_RT
+        description: "[비가산] 감액율"
+      - name: SPNSR_BSNS_CHN_DEC_CNT
+        description: "후원사업변경감소건수"
+      - name: RDCAMT_CNT
+        description: "감액 건수2"
+      - name: CMLT_EOM_ACT_MBER_CNT
+        description: "누적 월말활동회원건수"
+      - name: CMLT_ACT_MBER_CNT
+        description: "누적 활동회원건수"
+      - name: ACT_RT
+        description: "[비가산] 활동율"
+      - name: ADJ_MT_PAY_RT
+        description: "[비가산] 조정 월납입율"
+      - name: ADJ_MBRFEE_AMT
+        description: "조정 회비"
+      - name: ADJ_CMLT_PAY_RT
+        description: "[비가산] 조정 누계납입율"
+      - name: ADJ_CMLT_MBRFEE_AMT
+        description: "조정 누계회비"
+      - name: CMLT_PAY_RT
+        description: "[비가산] 누계납입율"
+      - name: CMLT_MBRFEE_AMT
+        description: "누적 회비"
+      - name: MBRFEE_DIFF_AMT
+        description: "회비 차액"
+
+  - name: WIDE_SPNSR_CLS_AGGR
+    description: "회원실 회비예측 월간 후원 분류별 집계(월 grain). 원천 = SILVER.MM_SPNSR_CLS_AGGR_DATA(부서 자체 수식 · ML 예측 아님). AGGR_TY_NM(감액/개발/중단/활동/회비)마다 VALUE1·VALUE2 의 뜻이 다를 수 있다 — 서로 다른 집계 유형을 합산하지 말 것. VALUE1·VALUE2 = 후원분류집계 예측값1·2 — 원천 SILVER 테이블명(회원실 회비예측 월간 후원 분류별 집계)에서 유래한 명칭이다(현업 회신 2026-10-03 · O200-D). 예측값2 는 회비 유형에만 값이 있다."
+    columns:
+      - name: MONTH_KEY
+        description: "기준월 YYYYMM ← STDR_MT"
+        tests: [not_null]
+      - name: CAL_YEAR
+        description: "연도 ← STDR_MT 앞 4자리"
+      - name: CAL_MONTH
+        description: "월(1~12) ← STDR_MT 뒤 2자리"
+      - name: AGGR_TY_NM
+        description: "집계 유형명(감액/개발/중단/활동/회비)"
+        tests:
+          - accepted_values:
+              values: ['감액', '개발', '중단', '활동', '회비']
+      - name: CPR_NM
+        description: "법인명"
+      - name: SPNSR_BSNS_GRP_NM
+        description: "후원 사업 그룹 명"
+      - name: NEW_EXST_DIV_NM
+        description: "신규기존구분명"
+      - name: HDQ_BRNCH_GRP_NM
+        description: "본부 지부 그룹 명"
+      - name: VALUE1
+        description: "후원분류집계 예측값1 (명칭 = 원천 SILVER 테이블명 유래 · 현업 회신)"
+      - name: VALUE2
+        description: "후원분류집계 예측값2 (명칭 = 원천 SILVER 테이블명 유래 · 현업 회신 · 회비 유형에만 값이 있고 나머지 유형은 NULL)"

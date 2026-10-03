@@ -10,6 +10,10 @@ END-METADATA -->
 
 # 20. ML 예측결과 Semantic View 설계 (O74 · 실측 단계)
 
+> 🔴🔴 **[2026-10-03 O200-D] 현행 = 결과 테이블 12종(O198 원천 재수령 · 사용자 확정) · SERVING 뷰 7 · SV 7.**
+> · 현행 배포 상태의 정본 = 이 문서 **§7-A**(라이브 대조 완료) · 테이블 12종 목록 = `50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql`.
+> · 아래 §0~§6 의 「16종」·행수·컬럼 구조는 **2026-08-14 O74 실측 기록**이다 — 구조가 바뀌었으므로 현행으로 인용하지 마라.
+
 > 🔴 **이 문서는 「머신러닝 예측결과 테이블」을 Agent 에 노출하기 위한 설계다.**
 > 대상 스키마 = **`GN_DW.ML`** · 대상 = 사용자가 지정한 **결과 테이블 16종**(요건 14개).
 > ⛔ **여기 기재되지 않은 `GN_DW.ML` 테이블은 학습용(`ML_TRAIN_DATA_*`)·중간 스냅샷이며 Agent 에 노출하지 않는다**(사용자 지시).
@@ -248,9 +252,14 @@ ML 이 테스트 단계라 **테이블이 `CREATE OR REPLACE` 로 갈릴 수 있
 
 | 계층 | 산출물 | 개수 | 정본 파일 |
 |---|---|--:|---|
-| SERVING 뷰 | `ML_MEMBER_RISK_V`·`ML_SPONSOR_RISK_V`·`ML_DVLP_FORECAST_V`·`ML_FEE_FORECAST_V`·`ML_LTV_FORECAST_V`·`ML_LTV_SCORE_V`·`ML_FEATURE_IMPORTANCE_V` | **7** | `21_ML_SERVING_뷰_DDL.sql` |
-| Semantic View | `SV_ML_MEMBER_RISK`·`SV_ML_SPONSOR_RISK`·`SV_ML_DVLP_FORECAST`·`SV_ML_FEE_FORECAST`·`SV_ML_LTV_FORECAST`·`SV_ML_LTV_SCORE`·`SV_ML_FEATURE_IMPORTANCE` | **7** | `22_ML_SV_DDL.sql` |
-| Agent 도구 | `AGENT_MEMBER` +3(회원·후원건 risk · 회비 예측) · `AGENT_EXECUTIVE` +4(개발·LTV 예측 2 · 요인) | **7** | `cortex_project/agents/*/agent_spec.yaml` |
+| SERVING 뷰 | `ML_MEMBER_RISK_V`·`ML_SPONSOR_RISK_V`·`ML_DVLP_FORECAST_V`·`ML_FEE_FORECAST_V`·`ML_LTV_FORECAST_V`·`ML_FEATURE_IMPORTANCE_V`·`ML_ONCE_CONVERSION_V` | **7** | `21_ML_SERVING_뷰_DDL.sql` |
+| Semantic View | `SV_ML_MEMBER_RISK`·`SV_ML_SPONSOR_RISK`·`SV_ML_DVLP_FORECAST`·`SV_ML_FEE_FORECAST`·`SV_ML_LTV_FORECAST`·`SV_ML_FEATURE_IMPORTANCE`·`SV_ML_ONCE_CONVERSION` | **7** | `22_ML_SV_DDL.sql` |
+| Agent 도구 | `AGENT_MEMBER` 4(회원·후원건 risk · 회비 예측 · 일시전환) · `AGENT_EXECUTIVE` 3(개발·LTV 예측 · 요인) · `AGENT_MARKETING` 2(개발 예측 · 회원 risk) | — | `cortex_project/agents/*/agent_spec.yaml` · 정의 = `09_0_AGENT_정의서.md` |
+
+> 🔴 **[2026-10-03 O200-D 갱신] 위 표는 라이브 실측(계정 pw69582 · INFORMATION_SCHEMA)과 일치한다.**
+> 종전 표(2026-08 판) = 뷰·SV 에 `ML_LTV_SCORE_V`·`SV_ML_LTV_SCORE` 포함 · `ONCE_CONVERSION` 부재 · Agent 도구 7(MEMBER +3 · EXECUTIVE +4).
+> 변경 경위 = O182(`ONCE_CONVERSION` 신설) · O198/O199(원천 12종 재수령 · `LTV_SCORE` 폐기 = 결정 완료).
+> 아래 「검증」 bullets 는 **2026-08 시점 실측 기록**이다(수치를 현행으로 인용하지 마라).
 
 **검증(전부 실측)**
 * 뷰 7종 **전건 grain 유일** — 특히 `ML_MEMBER_RISK_V` 74,949행 = 74,949명(1:1).

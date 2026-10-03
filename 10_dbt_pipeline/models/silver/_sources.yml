@@ -71,6 +71,14 @@ sources:
             tests: [not_null]
           - name: EVENT_NAME
             tests: [not_null]
+      # 🆕 [2026-10-02 O200-A] 회원실·기획실 부서 자체 수식 집계 3종(외부 적재 · ML 모델 산출물 아님).
+      #   소비자 = `models/gold/wide/WIDE_DVLP_GOAL_ACMSLT`·`WIDE_MBRFEE_PRDT_ACTL`·`WIDE_SPNSR_CLS_AGGR`.
+      - name: ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA
+        description: "연간 개발 목표 실적 집계 데이터(월 = M01~M12 열 · DATA_TYPE_NM = 목표/실적)."
+      - name: ANNUAL_MBRFEE_PRDT_ACTL_DATA
+        description: "회원실 연간 회비 예측 실측 데이터(DATA_TYPE_NM = 예측/실측)."
+      - name: MM_SPNSR_CLS_AGGR_DATA
+        description: "회원실 회비예측 월간 후원 분류별 집계(AGGR_TY_NM = 감액/개발/중단/활동/회비)."
 
   # 🆕 [2026-09-29 O188] 공휴일 원천 — CRM 일정관리. SCHDUL_DIV_CD='0' = 공휴일(현업 회신 · 문서20 F-5).
   #   🔴 bronze_crm 에 넣지 않는다 — dev2 타깃의 BRONZE_CRM_2 에 이 테이블이 없어 compile 이 깨진다

@@ -166,6 +166,10 @@ USE SCHEMA GN_DW.SERVING;
 
 ## [6] ML_LTV_SCORE_V
 
+> ⛔ **[2026-10-03 O200-D] 폐기 — 이 뷰는 라이브에 없고 다시 만들지 않는다.**
+> 원천 `ML_RST_DATA_UCMPGN_LTV_SCORE`·`ML_RST_DATA_CMPGN_LTV_SCORE` 가 O198 원천 재수령(12종)에서 제외됐다 ⇒ O199 에서 `SV_ML_LTV_SCORE`·도구 제거(결정 완료 · 재론 금지).
+> 아래 블록은 **설계 이력 보존용**이다. 현행 [6] 슬롯 = `ML_ONCE_CONVERSION_V`(21번 DDL 정본).
+
 ```text
 /* =====================================================================================
    [6] ML_LTV_SCORE_V — LTV 스코어 2종

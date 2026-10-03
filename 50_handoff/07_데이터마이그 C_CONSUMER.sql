@@ -53,7 +53,7 @@
 --        · TM_CM_MBER_DVLP_GOAL_DIV 는 `_LOAD_DT/_BATCH_ID/_STDR_YM` 이 없다(20컬럼 · 원천 그대로).
 --     🔴 BRONZE_AGENCY 광고 3테이블 컬럼 구성·순서 재편(DGT 41 · REBRDC 21 · VIDEO 37) ⇒ 이전 판 CSV 무효.
 --        스테이지 2026-09-28 업로드분 헤더는 04번과 순서까지 일치(실측) — 그래도 A.1 (4) 를 먼저 통과시킨다.
---     · 브론즈 61 → **64** · ML 16 → **17** · 총계 78 → **82**. A.6 (1) 기대값의 GSC 2 → **3** 누락도 정정했다.
+--     · 브론즈 61 → **64** · ML 16 → **17** · 총계 78 → **82**. (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80) A.6 (1) 기대값의 GSC 2 → **3** 누락도 정정했다.
 --   2026-09-17  선행 DDL(04번) 갱신에 맞춰 **수치·구조 주의사항만** 정정했다(SQL 본문 무변경).
 --     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
 --        ⇒ **CRM CSV 는 전건 재언로드 대상이다**(열이 1개씩 늘었다). 이전 판 CSV 로 적재하면
@@ -101,7 +101,7 @@
 --            · CMPGN_SPNSR_AMT_LTV(6) · CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION(4)
 --            · MONTHLY_CMPGN_DVLP_AMT(6) · DVLP_INC_CONTRIBUTION(5)            (전부 ML_RST_DATA_ 접두)
 --   ML VARIANT 5   : 아래 총람
---   ⚠️ SILVER 원천은 61테이블 · ML 원천은 52테이블이다 — 스키마 단위(LIKE) 필터를 쓰지 마라.
+--   ⚠️ SILVER 원천은 61테이블 · ML 원천은 52테이블이다(이관 대상 = 브론즈 64 · SILVER 4 · ML 12 · 총계 80) — 스키마 단위(LIKE) 필터를 쓰지 마라.
 --
 -- 🔴 반정형 컬럼 총람 (일반 COPY 금지 · 전부 TRY_PARSE_JSON 변환 필요)
 --   SILVER.BIGQUERY_REFINED_DATA    118컬럼 · ARRAY   $118 (ITEMS)         → A.5

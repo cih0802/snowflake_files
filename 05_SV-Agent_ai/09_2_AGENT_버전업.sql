@@ -9,6 +9,8 @@
 --   스펙 정본 = `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml`
 --              `cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml`
 --              `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`   🆕 2026-08-18 O84
+--              `cortex_project/agents/AGENT_MSTR/agent_spec.yaml`        🆕 2026-10-03 O200-C
+--   📎 Agent 정의(역할·소관·배포 경로) = `05_SV-Agent_ai/09_0_AGENT_정의서.md` (O200-D) — 도구 수는 스펙에서 센다.
 --
 -- ▶ 🔴 파일 레이아웃 규약 (실측으로 확정 — 문서 예시가 틀렸다)
 --   · `ADD VERSION FROM <경로>` 의 <경로>는 **디렉터리**이고, 그 안에 스펙 파일이 있어야 한다.
@@ -81,6 +83,10 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
     ('AGENT_MEMBER',    'SV_ML_ONCE_CONVERSION'),   -- 🆕 2026-09-28 O182 신설 (일시→정기 전환 예측)
     ('AGENT_MEMBER',    'SV_RELATION_ACTIVITY'),    -- 🆕 2026-10-02 O198 배선 (결연활동 · DEC-58)
+    ('AGENT_MEMBER',    'SV_MBRFEE_PRDT_ACTL'),     -- 🆕 2026-10-02 O200-B 회원실 회비 예측·실측(자체 수식)
+    ('AGENT_MEMBER',    'SV_SPNSR_CLS_AGGR'),       -- 🆕 2026-10-02 O200-B 회원실 후원 분류별 집계(자체 수식)
+    ('AGENT_MEMBER',    'SV_DVLP_GOAL_ACMSLT'),     -- 🆕 2026-10-02 O200-B 기획실 연간 개발 목표·실적(자체 수식)
+    ('AGENT_EXECUTIVE',   'SV_TARGET_BIZ'),         -- 🆕 [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
     ('AGENT_EXECUTIVE',   'SV_AD'),
     ('AGENT_EXECUTIVE',   'SV_MEMBER_MONTHLY'),
@@ -95,7 +101,11 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_MEMBER_EVENT'),
     ('AGENT_MARKETING', 'SV_MEMBER_COHORT'),
     ('AGENT_MARKETING', 'SV_MEMBER_FEE'),
-    ('AGENT_MARKETING', 'SV_MEMBER_SPONSOR_BIZ')   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
+    ('AGENT_MARKETING', 'SV_MEMBER_SPONSOR_BIZ'),   -- 🆕 2026-08-21 신설 (활동회원 캠페인/후원사업 분해)
+    ('AGENT_MARKETING', 'SV_TARGET_BIZ'),           -- 🆕 [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
+    ('AGENT_MARKETING', 'SV_ML_DVLP_FORECAST'),     -- 🆕 [O200-B] 〃
+    ('AGENT_MARKETING', 'SV_ML_MEMBER_RISK'),       -- 🆕 [O200-B] 〃
+    ('AGENT_MSTR',      'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O200-C] 4번째 Agent(최초 배포 = 24_MSTR_AGENT_배포.sql)
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -145,6 +155,10 @@ COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE/
   PATTERN = '.*agent_spec[.]yaml';
 COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING/
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MARKETING/'
+  PATTERN = '.*agent_spec[.]yaml';
+-- 🆕 [O200-C] 4번째 Agent
+COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MSTR/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MSTR/'
   PATTERN = '.*agent_spec[.]yaml';
 
 
@@ -280,6 +294,16 @@ BEGIN
     res := res || 'AGENT_MARKETING=no_live';
   END IF;
 
+  -- 🆕 [O200-C] 4번째 Agent
+  SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MSTR;
+  LET s INT := (SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID())) WHERE "name" IS NULL);
+  IF (s > 0) THEN
+    ALTER AGENT GN_DW.SERVING.AGENT_MSTR COMMIT COMMENT = 'live 소진(버전업 직전 스냅샷)';
+    res := res || ' AGENT_MSTR=committed';
+  ELSE
+    res := res || ' AGENT_MSTR=no_live';
+  END IF;
+
   RETURN res;
 END;
 $$;
@@ -320,6 +344,12 @@ ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
   COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.';
+
+-- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
+--   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.
+ALTER AGENT GN_DW.SERVING.AGENT_MSTR
+  ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MSTR'
+  COMMENT = '굿네이버스 MSTR 리포트 이관 결과 조회 Agent. SV 1종: MSTR 정기회원 후원개발(MSTR 기준).';
 
 --   🆕 🔴 **[2026-08-18 O85-C] 경로가 개인 워크스페이스 → OPS 스테이지로 바뀌었다**(착수표 ㉔ ⑦).
 --      종전 = `snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/<AGENT>`
