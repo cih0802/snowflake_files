@@ -1,0 +1,43 @@
+<!-- LLM-METADATA
+doc_id: HANDOFF_O0201_C
+doc_role: 인수인계 — 세션 `O201-C` 가 다음 세션에 넘기는 것(라벨 파일 · O172 규격)
+project: GN_DW (굿네이버스)
+created: 2026-10-03
+created_by: O201-C
+parent: 99_NEXT_SESSION.md
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+<!-- HANDOFF-LABEL O0201-C -->
+
+> 🔴🔴 **이 파일은 인수인계 라벨 파일이다 — 조각이 아니다.**
+> 허브 목차·`--verify` concat·`발행 SHA256` 과 **무관**하다(`O172` 규격).
+> 🟢 **현행 판정식 = 라벨 최대값**(O번호 → 접미 길이 → 접미) ⇒ 취소선 승계 표기가 필요 없다.
+> 🔴 다음 세션은 **이 파일 1개만** 읽으면 된다. 조각에 남은 옛 절은 승계된 것이다.
+### ▣ O201-C-0 🔴 먼저 알아라 (2026-10-03 · JU93656 · ㉡ 적용 · 확정위반 0 · 사용자 일괄 승인)
+
+- 근거철 = `20_issue/_o201_inspection_evidence.md` §E14·§E15.
+- 🟢 MSTR 적재 = dbt 아님 · 프로시저 CALL · 문서 = `15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql` · 이력 적재 결과는 §E15.
+- 🟢 미승계 3 = O180-B 이미 구현(축8 · 판정 철회) · O183-A 단월 비율 5종 SV_MEMBER_MONTHLY 배포 · O182-A 재측정 + SV_AD 경고.
+- 🟢 소급 = 이력 8 · 원장 1행(12라벨) · 원장 재균형 PASS.
+
+### ▣ O201-C-1 🟠 남은 작업
+
+| 순 | 작업 | 다음 행동 |
+|---|---|---|
+| 1 | MSTR 3종 Agent 반영 여부 | 🟢 값 검증 끝(baseline PASS · AGENT_MSTR 일치 · §E15) → 기존 3종에 MSTR 도구를 붙일지 결정(「GN_DW 지표와 합산 금지」 규칙 유지 전제) · 다른 기준월은 `I_HIST=FALSE` 월 CALL |
+| 2 | 공45~47·54 비율 | 분모 「누계개발(YTD)」 정의 현업 확인(문서20) → FMM 누계개발 컬럼 또는 SV metric |
+| 3 | FMM 미래월 행 | MONTH_KEY 202911 1행 원인 조사 |
+| 4 | ML 질문 개선 후보 | MKT 에 LTV·일시전환 도구 · 기획실 A/B안 VQR · GA 행동 SV |
+| 5 | D6 게이트 | 근거철 §E6 설계안 |
+| 6 | MSTR 월 정기 Task | `06_MSTR_적재_실행.sql` [4] 설계안 → 생성 여부 결정 |
+| 7 | 👤 사람 대기 · dbt | `dbt build --project-dir 10_dbt_pipeline --select WIDE_SPNSR_CLS_AGGR` |
+| 8 | 👤 사람 대기 · CoWork | 새 COMMENT·별칭 규칙·신규 비율 5종 확인 스모크 |
+| 9 | 👤 사람 대기 · 현업 | 문서20 N-26 · 기획실 후원사업그룹 축 · 공45 분모 정의 |
+
+### ▣ O201-C-2 ⚪ 결정 완료(재론 금지)
+
+- 사용자 일괄 승인(2026-10-03) = 재균형 · 소급 등재 · 끊긴 작업 진행 · MSTR 적재.
+- 공45~47·54 는 정의 확정 전 구현하지 않는다(창작 금지).
+
+_Co-authored with CoCo_

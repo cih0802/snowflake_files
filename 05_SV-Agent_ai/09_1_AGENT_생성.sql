@@ -112,7 +112,9 @@ SHOW AGENTS IN SCHEMA GN_DW.SERVING;
 -- ============================================================================
 -- [1] Agent 껍데기 생성 — 최소 스펙
 --     📎 **Agent 정의(역할·소관·정본 경로) = `05_SV-Agent_ai/09_0_AGENT_정의서.md`** (O200-D).
---        아래 COMMENT 문안은 yaml 연결 전 **초기 샘플**이다 — 실제 도구와 다를 수 있다(사용자 결정 2026-10-03).
+--        ~~아래 COMMENT 문안은 yaml 연결 전 **초기 샘플**이다 — 실제 도구와 다를 수 있다(사용자 결정 2026-10-03).~~
+--        🆕 🔴 [2026-10-03 O201 · 사용자 결정 = O200-D ▣2 해제] COMMENT 는 CoWork·SHOW AGENTS 에 보이는 **라이브 AI 표면**이다
+--        ⇒ 라이브 스펙 tool_resources 기준으로 맞춘다 · 🔴 **종수·행수 수치를 문안에 넣지 마라**(다음 도구 변경에 stale · 규칙7).
 --        AGENT_MSTR 은 이 파일이 아니라 `24_MSTR_AGENT_배포.sql` 로 만든다.
 --     COMMENT·PROFILE 은 spec 이 아닌 DDL 속성이라 09_2 의 버전업으로는 바뀌지 않는다.
 --     따라서 이 파일이 COMMENT·PROFILE 의 정본이다.
@@ -132,7 +134,7 @@ SHOW AGENTS IN SCHEMA GN_DW.SERVING;
 -- 🔴 [2026-08-21 신설] 정본 yaml 이 **11종**(실적 8 + ML 예측 3)으로 늘었다 —
 --   `analyst_member_sponsor_biz`(SV_MEMBER_SPONSOR_BIZ, 회원×후원약정) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적 SV 8종(월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측 3종(회원단위 이탈위험·후원건 중단위험·회비납입예측) 종합 분석.'
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적(월실적·상태전이·서비스발송·행사참여·결연활동·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측(회원 이탈·후원건 중단·회비·일시회원 정기전환) + 부서 자체 수식 집계(회원실 회비예측·후원분류·기획실 개발목표) 분석.'
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}'
   FROM SPECIFICATION
   $$
@@ -144,7 +146,7 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
 --   ⚠ [2026-08-18 O85] 「운영 중(VERSION$3)」은 계정 `DV07626` 시점 사실이다(`P169`).
 -- 🔴 [2026-08-18 O84] 정본 yaml 이 **8종**(예산·광고·회원월실적·발송 + ML 예측 4)이다.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_EXECUTIVE
-  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적 SV 4종(예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 미래예측 4종(개발금액전망·LTV월별예측·LTV스코어순위·기여요인분석) 종합 지원.'
+  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적(사업목표·예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 예측(개발금액·LTV 월별·기여요인) 종합 지원.'
   PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}'
   FROM SPECIFICATION
   $$
@@ -161,7 +163,7 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_EXECUTIVE
 -- 🔴 [2026-08-21 신설] 정본 yaml 이 **7종**으로 늘었다 — `analyst_member_sponsor_biz`
 --   (SV_MEMBER_SPONSOR_BIZ, 캠페인별/후원사업별 활동회원) 추가.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MARKETING
-  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. SV 7종: 광고효율(디지털/방송)·개발목표달성·예산집행·사건시점전환회원·캠페인획득코호트·캠페인회비·후원약정활동회원 종합 분석.'
+  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. 실적(사업목표·광고효율·개발목표달성·예산집행·전환회원·획득코호트·캠페인회비·후원약정 활동회원) + 머신러닝(ML) 예측(개발금액·회원 증액 가능성) 분석.'
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}'
   FROM SPECIFICATION
   $$
@@ -321,13 +323,13 @@ $$;
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET
-  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적 SV 8종(월실적·상태전이·서비스발송·행사참여·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측 3종(회원단위 이탈위험·후원건 중단위험·회비납입예측) 종합 분석.',
+  COMMENT = '굿네이버스 회원 도메인 분석 Agent. 실적(월실적·상태전이·서비스발송·행사참여·결연활동·획득코호트·개발목표달성·회비분해·후원약정) + 머신러닝(ML) 예측(회원 이탈·후원건 중단·회비·일시회원 정기전환) + 부서 자체 수식 집계(회원실 회비예측·후원분류·기획실 개발목표) 분석.',
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET
-  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적 SV 4종(예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 미래예측 4종(개발금액전망·LTV월별예측·LTV스코어순위·기여요인분석) 종합 지원.',
+  COMMENT = '굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적(사업목표·예산편성/집행·광고실적·회원월실적·서비스발송) + 머신러닝(ML) 예측(개발금액·LTV 월별·기여요인) 종합 지원.',
   PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}';
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET
-  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. SV 7종: 광고효율(디지털/방송)·개발목표달성·예산집행·사건시점전환회원·캠페인획득코호트·캠페인회비·후원약정활동회원 종합 분석.',
+  COMMENT = '굿네이버스 마케팅/광고 분석 Agent. 실적(사업목표·광고효율·개발목표달성·예산집행·전환회원·획득코호트·캠페인회비·후원약정 활동회원) + 머신러닝(ML) 예측(개발금액·회원 증액 가능성) 분석.',
   PROFILE = '{"display_name":"마케팅 분석","color":"#FF9F36"}';
 
 

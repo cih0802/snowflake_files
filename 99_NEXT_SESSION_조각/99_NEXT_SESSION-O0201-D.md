@@ -1,0 +1,42 @@
+<!-- LLM-METADATA
+doc_id: HANDOFF_O0201_D
+doc_role: 인수인계 — 세션 `O201-D` 가 다음 세션에 넘기는 것(라벨 파일 · O172 규격)
+project: GN_DW (굿네이버스)
+created: 2026-10-03
+created_by: O201-D
+parent: 99_NEXT_SESSION.md
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+<!-- HANDOFF-LABEL O0201-D -->
+
+> 🔴🔴 **이 파일은 인수인계 라벨 파일이다 — 조각이 아니다.**
+> 허브 목차·`--verify` concat·`발행 SHA256` 과 **무관**하다(`O172` 규격).
+> 🟢 **현행 판정식 = 라벨 최대값**(O번호 → 접미 길이 → 접미) ⇒ 취소선 승계 표기가 필요 없다.
+> 🔴 다음 세션은 **이 파일 1개만** 읽으면 된다. 조각에 남은 옛 절은 승계된 것이다.
+### ▣ O201-D-0 🔴 먼저 알아라 (2026-10-03 · JU93656 · ㉡ 적용 · 확정위반 0)
+
+- 근거철 = `20_issue/_o201_inspection_evidence.md` §E16.
+- 🟢 MSTR 운영계 적재 = 2026-01~최신월만 · `06_MSTR_적재_실행.sql` [2] 루프 블록 · 개발계 실행 10개월 OK(≈ 29초/월).
+  · 전제 = 수정된 `04_sp_script.sql` 배포(후원금액대2 조회를 원천 직접 조회로 변경 · 결과 동일 실측).
+- 🟢 누계개발 확정 → 공45~47 = dbt 뷰 `WIDE_MEMBER_MONTHLY_KPI` + SV `05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql` 작성(사전 검증 끝 · 배포는 dbt 후).
+- 🟠 dbt 전까지 `test_verify_wide_doc` 은 FAIL 이 정상(dbt 모델 18 ↔ 라이브 17).
+
+### ▣ O201-D-1 🟠 남은 작업
+
+| 순 | 작업 | 다음 행동 |
+|---|---|---|
+| 1 | ✅ dbt build | 2026-10-03 사용자 완료 PASS=5 |
+| 2 | ✅ KPI SV 배포 | 05_14 배포·SV 공45/46/47(202512)=90.46/138.18/94.76 · WIDE 문서 재생성 · test_verify_wide_doc ALL PASS · AGENT_MEMBER 새 버전(도구 17) |
+| 3 | 현업 확인 | 요청서 41번 = MSTR 반영안 · 개발(건) 단위 · 공46 방향 · 공54 정의 |
+| 4 | FN B3 동점 | `03_function_script.sql:180` `ORDER BY SPNSR_NO DESC` 에 동점 해소키 추가 여부(원 MSTR 결과와 대조 후) |
+| 5 | 운영계 이관 | 00~04 배포 → 06 [0]~[3] 실행 → `mstr_verify --ym 202601` |
+| 6 | FMM 미래월 행 | MONTH_KEY 202911 1행 원인 · KPI 뷰 최종월 210103 도 같은 계열(미래일자 이상치) |
+| 7 | ML 질문 개선 후보 · D6 게이트 · MSTR 월 Task | O201-C ▣1 승계 |
+
+### ▣ O201-D-2 ⚪ 결정 완료(재론 금지)
+
+- 누계개발(건) = 당해년도 1월 ~ 조회월의 개발(건) 합계(사용자).
+- 운영계 MSTR 적재 범위 = 2026-01 ~ 최신월(사용자).
+
+_Co-authored with CoCo_

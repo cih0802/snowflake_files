@@ -1,23 +1,23 @@
 <!-- LLM-METADATA
 doc_id: GOLD_WIDE_VIEWS
-doc_role: consumption_wide_view (GOLD 빅테이블 뷰 14종 통합 정의서)
+doc_role: consumption_wide_view (GOLD 빅테이블 뷰 18종 통합 정의서)
 project: GN_DW (굿네이버스)
 derived_from: 10_dbt_pipeline/models/gold/wide/*.sql + _wide_schema.yml
 generator: scripts/build_wide_doc.py
 validator: scripts/verify_wide_doc.py
-structure: WIDE VIEW 14종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)
-status: 🟢 정본 최신화 완료 (물리 dbt 뷰 14종 100% 일치)
-updated: 2026-09-14
+structure: WIDE VIEW 18종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)
+status: 🟢 정본 최신화 완료 (물리 dbt 뷰 18종 100% 일치)
+updated: 2026-10-03
 END-METADATA -->
 
 # GOLD 빅테이블 VIEW (Wide View) 통합 정의서
 
-> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW 14종)**의 통합 설계 및 컬럼 정의서입니다.
+> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW 18종)**의 통합 설계 및 컬럼 정의서입니다.
 > 리포팅 및 BI, Semantic View, Cortex Agent 조회 성능과 편의성을 위해 **Fact 테이블과 Dimension 테이블을 LEFT JOIN으로 평탄화**한 구조를 표준화된 양식으로 제공합니다.
 > 
-> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 14종) 및 `_wide_schema.yml`
+> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 18종) 및 `_wide_schema.yml`
 > 🛠️ **자동 생성/동기화 도구**: `python3 scripts/build_wide_doc.py` (dbt 모델 변경 시 이 정의서를 자동 갱신)
-> 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 575컬럼 100% 일치 검증)
+> 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 전 컬럼 100% 일치 검증)
 > 📊 **자동 계보 매핑 산출물**: `30_output_share/04_컬럼계보매핑.md` (BRONZE→SILVER→GOLD→WIDE 역방향 실측 계보)
 
 ---
@@ -35,7 +35,7 @@ END-METADATA -->
 
 ---
 
-## 2. WIDE VIEW 14종 상세 정의서
+## 2. WIDE VIEW 18종 상세 정의서
 
 ### 2.1 `WIDE_MEMBER_MONTHLY` — 회원 월별 실적 평탄화 뷰 (Member Monthly Mart)
 
@@ -229,7 +229,7 @@ END-METADATA -->
 | **CAMPAIGN_CPR_DIV_NM** | `CAMPAIGN_CPR_DIV_NM` | TEXT | YES | GOLD.FACT_MEMBER_EVENT (f) | CAMPAIGN_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복). 🔴 조직 계층의 법인(ORG_CORP)과 **다른 축**이다 — 「법인별」 질문은 어느 축인지 먼저 가린다. 🔴🔴 [2026-08-28 O105] **소스 = FACT_MEMBER_EVENT.CPR_DIV_NM_AT_EVENT (적재 시점 동결값)** — 종전 DIM_CAMPAIGN 실시간 조인에서 전환했다. 캠페인 마스터가 이후 정정·개칭돼도 **과거 개발이력 사건의 값은 바뀌지 않는다**(SV_MEMBER_EVENT 와 같은 축 · DEC-43 계열). 전환 시점 두 소스 값은 전건 동일했다(규모·근거 = 이슈원장 §O105). ⚠️ 중단(STOP) 행은 개발원천에 이 컬럼이 없어 **NULL** 이다 — 이는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`). 🟢 **전환으로 NULL 의 의미가 바뀌지 않았다**(전환 前 라이브 실측 = STOP 행에서 이 축은 이미 전건 NULL · `'(미매핑)'` 0건 — `DIM_CAMPAIGN` SK=0 시드가 이름 컬럼만 채우기 때문 · `R2-7-3`). |
 | **후원사업코드(BK)** | `SPONSORSHIP_BK` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키 |
 | **후원사업명** | `SPONSORSHIP_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123) |
-| **SPONSORSHIP_DIV_NAME** | `SPONSORSHIP_DIV_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선(3,594,843)이라 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24). |
+| **SPONSORSHIP_DIV_NAME** | `SPONSORSHIP_DIV_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선돼 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24). |
 | **SPONSORSHIP_GROUP_NAME** | `SPONSORSHIP_GROUP_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️STOP 브랜치 센티넬은 위 DIV_NAME 주석과 동일. |
 | **법인구분** | `ORG_CORP` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | DIM_ORG.CORP — 법인 (#114). 🔴DIM_ORG 는 **SCD1**(DEC-2)이라 as-was 가 아니다 — 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다(조직 변경이력 원천·as-was 요구가 없어 SCD1 로 확정). 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.CORP`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C. |
 | **본부명** | `ORG_DIVISION` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | DIM_ORG.DIVISION — 본부/지부 (#115). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.DIVISION`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C. |
@@ -349,7 +349,7 @@ END-METADATA -->
 | **서비스** | `SERVICE_CNT` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 서비스(건) (#161) |
 | **제목** | `SEND_TITLE` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 제목 (#136) |
 | **발송상태** | `SEND_STATUS` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송상태 (#138) |
-| **SEND_STATUS2** | `SEND_STATUS2` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢대체 경로 = `SEND_STATUS`(대부분 채워져 있다). |
+| **SEND_STATUS2** | `SEND_STATUS2` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢 발송상태2 는 축B(통신사 도달결과) = `SEND_RESULT_CD`·`SEND_RESULT_NAME` 로 조회한다(사용자 결정 §4 #11 · 문서20 M-6 · O190). |
 | **SEND_TYPE** | `SEND_TYPE` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송유형 |
 | **축A** | `SEND_STATUS_GROUP` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 축A(채널상태) 코드군 ID (조인키 · MSG_AT→MS282). 🔴`SEND_STATUS` 는 채널별로 다른 코드체계가 한 컬럼에 모여 있다 — **`SEND_TYPE` 또는 이 컬럼 동반 필수**(단독 필터는 채널 간 오조인). EMAIL·SND·PSTMTR 은 NULL |
 | **축A 라벨** | `SEND_STATUS_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 **의도적 NULL** — 코드값은 있으나 코드사전에 라벨 문자열이 없어 조인으로 얻을 수 없고 의미 해석을 라벨로 넣는 것은 창작이다(문서30 §23-J 결정 3 · 현업 문서20 §M-4). PSTMTR 은 원천 컬럼 부재 |
@@ -428,7 +428,7 @@ END-METADATA -->
 | **CUM_APPLY_TIMES** | `CUM_APPLY_TIMES` | NUMBER | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 누적신청횟수 |
 | **정기후원금** | `REGULAR_DONATION` | NUMBER | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 정기후원금(원) |
 | **WIN_FLAG** | `WIN_FLAG` | BOOLEAN | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 당첨여부 |
-| **SELF_PART_FLAG** | `SELF_PART_FLAG` | BOOLEAN | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 본인참여여부 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_EVENT_ATTENDANCE.SELF_PART_FLAG`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. |
+| **본인참여 여부** | `SELF_PART_FLAG` | BOOLEAN | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 본인참여 여부 — 캠페인행사 자기참여코드(MS060) 파생: 1(본인만)·2(함께)=TRUE · 0(동반자만)=FALSE(`FACT_EVENT_ATTENDANCE.sql`). 🔴 일반행사 행은 원천에 자기참여 컬럼이 없어 전건 NULL 이다(구조적 부재) — NULL 을 FALSE·'본인 미참여'로 읽지 말 것. 종전 「전건 NULL·미적재」(O51-D) 판정은 2차-B 배선(O191-G)으로 해소됐다. |
 | **PART_STATUS** | `PART_STATUS` | TEXT | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 참여상태 |
 | **PART_PATH** | `PART_PATH` | TEXT | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 참여경로 |
 | **PART_CHANNEL** | `PART_CHANNEL` | TEXT | YES | GOLD.FACT_EVENT_ATTENDANCE (f) | 참여채널 |
@@ -574,7 +574,7 @@ END-METADATA -->
 | **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | NO | GOLD.FACT_TARGET_PROJECT (f) | 목표월 YYYYMM |
 | **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | 파생 (DERIVED 계산식) | FLOOR(MONTH_KEY/100) — 연도 |
 | **월(MM)** | `CAL_MONTH` | NUMBER | YES | 파생 (DERIVED 계산식) | MOD(MONTH_KEY,100) — 월 |
-| **연간목표건수** | `ANNUAL_GOAL_CNT` | NUMBER | YES | GOLD.FACT_TARGET_PROJECT (f) | 연사업목표(건) (#152) |
+| **연간목표건수** | `ANNUAL_GOAL_CNT` | NUMBER | YES | GOLD.FACT_TARGET_PROJECT (f) | 당초 목표값(#152). 🔴 단위는 GOAL_TYPE_NM 에 따른다(건·명·원·비율) — 유형 필터 없이 합산 금지 · O190 |
 | **추경목표건수** | `SUPP_GOAL_CNT` | NUMBER | YES | GOLD.FACT_TARGET_PROJECT (f) | 추경목표(건) (#153) |
 | **연사업누계목표** | `ANNUAL_CUM_GOAL_CNT` | NUMBER | YES | GOLD.FACT_TARGET_PROJECT (f) | 연사업누계목표(건) (#154) |
 | **추경누계목표** | `SUPP_CUM_GOAL_CNT` | NUMBER | YES | GOLD.FACT_TARGET_PROJECT (f) | 추경누계목표(건) (#155) |
@@ -588,14 +588,14 @@ END-METADATA -->
 | **캠페인코드(BK)** | `CAMPAIGN_BK` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 |
 | **캠페인브랜드** | `CAMPAIGN_BRAND` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) |
 | **캠페인명** | `CAMPAIGN_NAME` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) |
-| **목표 분해유형** | `GOAL_TYPE_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 목표 분해유형: 연사업 / 팀 (O188). 🔴 두 유형을 섞어 합산하지 말 것 — 같은 목표의 다른 분해로 보인다(문서20 N-24). |
+| **목표 지표 유형 원천 표기 그대로** | `GOAL_TYPE_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 목표 지표 유형 원천 표기 그대로(O190 · 9종): 건 = 후원사업·회원개발 / 명 = 월말활동회원 / 원 = 정기회비 / 비율 = 후원사업활동율·신규기존활동율·후원사업납입율·신규기존납입율·신규기존누계납입율. 🔴 유형마다 단위가 달라 섞어 합산하지 말 것 · 후원사업과 회원개발은 같은 개발 목표의 다른 분해(문서20 N-24). |
 | **법인구분** | `CPR_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 법인구분 (사단/사복) (O188). |
 | **ORG_PATH** | `ORG_PATH` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | O188-E 조직표 부서 경로(DIM_ORG.ORG_PATH · 활성 조직 트리 · 매칭 실패 행은 NULL). |
 | **SRC_TEAM_NM** | `SRC_TEAM_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | O188-E 원천 팀명(TEAM_NM) 그대로 — 조직 차원 매칭 실패(동명·비조직명) 행도 이 값으로 구분된다. |
-| **SRC_SPONSOR_BIZ_NM** | `SRC_SPONSOR_BIZ_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | O188-E 원천 후원사업 표기 그대로 — 연사업 = 사업명 · 팀 = 4그룹(국내/결연/해외프로젝트/기타). |
-| **NEW_OLD_DIV_NM** | `NEW_OLD_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | O188-E 신규/기존 구분(연사업 유형만 · 팀 유형은 NULL). |
+| **원천 후원사업 표기 그대로** | `SRC_SPONSOR_BIZ_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 원천 후원사업 표기 그대로 — 후원사업 유형 = 사업명 · 회원개발 유형 = 4그룹(국내/결연/해외프로젝트/기타) · O190. |
+| **NEW_OLD_DIV_NM** | `NEW_OLD_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 신규/기존 구분 원천 표기. 🔴 비율 유형에는 소계 행(합계·신규합계)이 있다 — 신규/기존과 함께 합산하면 이중계상. 회원개발 유형은 NULL · O190. |
 | **ORG_DIV_NM** | `ORG_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | O188-E 조직구분(본부/지부/대면) — 원천 표기. |
-| **DTL_DIV_NM** | `DTL_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | O188-E 세부구분(팀 유형) — 원천 표기. |
+| **세부구분 원천 표기** | `DTL_DIV_NM` | TEXT | YES | GOLD.FACT_TARGET_PROJECT (f) | 세부구분 원천 표기(채널 등 · 회원개발 유형만 · 그 외 NULL) · O190. |
 
 ---
 
@@ -942,6 +942,145 @@ END-METADATA -->
 | **캠페인코드(BK)** | `CAMPAIGN_BK` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F. |
 | **캠페인브랜드** | `CAMPAIGN_BRAND` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F. |
 | **캠페인명** | `CAMPAIGN_NAME` | TEXT | YES | GOLD.DIM_CAMPAIGN (캠페인 차원) | DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F. |
+
+---
+
+### 2.15 `WIDE_DVLP_GOAL_ACMSLT` — 기획실 연간 개발 목표·실적 부서 집계 뷰 (Dept Dev Goal Mart)
+
+#### 1. 뷰 개요 (Overview)
+- **목적**: 기획실 자체 수식 집계(SILVER 외부 적재)를 월 단위로 펼쳐 부서구분·신규기존·후원사업그룹별 목표·실적을 제공하는 소비 뷰
+- **분석 Grain**: `월 × 부서구분 × 신규기존 × 후원사업그룹`
+- **기준 Fact 테이블**: `SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external)`
+- **조인 Dimension 테이블**: 0개 차원 결합
+
+#### 2. 조인 및 관계 정의 (Join Logic)
+- **기준 테이블**: `SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external)`
+- **조인 상세 규칙**:
+
+#### 3. 확장 컬럼 정의서 (Column Definition Sheet)
+
+| 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
+|---|---|---|---|---|---|
+| **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 기준월 YYYYMM ← YEAR × M01~M12 열 위치 |
+| **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 연도 ← YEAR |
+| **월(MM)** | `CAL_MONTH` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 월(1~12) ← M01~M12 열 위치 |
+| **DEPT_DIV_NM** | `DEPT_DIV_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 부서 구분 명 |
+| **NEW_EXST_DIV_NM** | `NEW_EXST_DIV_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 신규기존구분명 |
+| **SPNSR_BSNS_GRP_NM** | `SPNSR_BSNS_GRP_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 후원 사업 그룹 명 |
+| **목표건수** | `GOAL_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 목표 건수 ← DATA_TYPE_NM='목표' 행의 해당 월 값 |
+| **ACMSLT_CNT** | `ACMSLT_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 실적 건수 ← DATA_TYPE_NM='실적' 행의 해당 월 값. 미도래 월은 NULL. |
+
+---
+
+### 2.16 `WIDE_MBRFEE_PRDT_ACTL` — 회원실 연간 회비 예측·실측 뷰 (Dept Fee Forecast Mart)
+
+#### 1. 뷰 개요 (Overview)
+- **목적**: 회원실 자체 수식 회비 예측·실측 집계(SILVER 외부 적재)를 그대로 노출하는 소비 뷰 — 예측/실측 구분 동반 필수
+- **분석 Grain**: `월 × 예측실측구분 × 후원사업그룹 × 신규기존 × 본부지부그룹`
+- **기준 Fact 테이블**: `SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external)`
+- **조인 Dimension 테이블**: 0개 차원 결합
+
+#### 2. 조인 및 관계 정의 (Join Logic)
+- **기준 테이블**: `SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external)`
+- **조인 상세 규칙**:
+
+#### 3. 확장 컬럼 정의서 (Column Definition Sheet)
+
+| 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
+|---|---|---|---|---|---|
+| **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | YES | 파생 (DERIVED 계산식) | 기준월 YYYYMM ← STDR_MT |
+| **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | 파생 (DERIVED 계산식) | 연도 ← STDR_MT 앞 4자리 |
+| **월(MM)** | `CAL_MONTH` | NUMBER | YES | 파생 (DERIVED 계산식) | 월(1~12) ← STDR_MT 뒤 2자리 |
+| **예측 실측 구분 명** | `DATA_TYPE_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 예측 실측 구분 명(예측/실측) |
+| **IS_FORECAST** | `IS_FORECAST` | BOOLEAN | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 예측행 여부 ← DATA_TYPE_NM='예측' |
+| **SPNSR_BSNS_GRP_NM** | `SPNSR_BSNS_GRP_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 후원 사업 그룹 명 |
+| **NEW_EXST_DIV_NM** | `NEW_EXST_DIV_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 신규기존구분명 |
+| **HDQ_BRNCH_GRP_NM** | `HDQ_BRNCH_GRP_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 본부 지부 그룹 명 |
+| **DVLP_CNT** | `DVLP_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 개발건수 |
+| **CMLT_DVLP_CNT** | `CMLT_DVLP_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 누적개발건수 |
+| **ADJ_DSCNTC_RT** | `ADJ_DSCNTC_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 조정 중단율 |
+| **ADJ_DSCNTC_CNT** | `ADJ_DSCNTC_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 중단건수 |
+| **ADJ_RDCAMT_RT** | `ADJ_RDCAMT_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 조정 감액율 |
+| **ADJ_RDCAMT_CNT** | `ADJ_RDCAMT_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 감액건수 |
+| **ADJ_RECALC_DSCNTC_RT** | `ADJ_RECALC_DSCNTC_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 조정 재산출 중단율 |
+| **ADJ_DSCNTC_CNT2** | `ADJ_DSCNTC_CNT2` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 중단건수2 |
+| **ADJ_CMLT_DSCNTC_CNT** | `ADJ_CMLT_DSCNTC_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 누계 중단건수 |
+| **DSCNTC_RT** | `DSCNTC_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 중단율 |
+| **DSCNTC_CNT** | `DSCNTC_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 중단건수 |
+| **RDCAMT_RT** | `RDCAMT_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 감액율 |
+| **SPNSR_BSNS_CHN_DEC_CNT** | `SPNSR_BSNS_CHN_DEC_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 후원사업변경감소건수 |
+| **RDCAMT_CNT** | `RDCAMT_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 감액 건수2 |
+| **CMLT_EOM_ACT_MBER_CNT** | `CMLT_EOM_ACT_MBER_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 누적 월말활동회원건수 |
+| **CMLT_ACT_MBER_CNT** | `CMLT_ACT_MBER_CNT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 누적 활동회원건수 |
+| **ACT_RT** | `ACT_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 활동율 |
+| **ADJ_MT_PAY_RT** | `ADJ_MT_PAY_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 조정 월납입율 |
+| **ADJ_MBRFEE_AMT** | `ADJ_MBRFEE_AMT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 회비 |
+| **ADJ_CMLT_PAY_RT** | `ADJ_CMLT_PAY_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 조정 누계납입율 |
+| **ADJ_CMLT_MBRFEE_AMT** | `ADJ_CMLT_MBRFEE_AMT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 조정 누계회비 |
+| **CMLT_PAY_RT** | `CMLT_PAY_RT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | [비가산] 누계납입율 |
+| **CMLT_MBRFEE_AMT** | `CMLT_MBRFEE_AMT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 누적 회비 |
+| **MBRFEE_DIFF_AMT** | `MBRFEE_DIFF_AMT` | NUMBER | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 회비 차액 |
+
+---
+
+### 2.17 `WIDE_SPNSR_CLS_AGGR` — 회원실 월간 후원 분류별 집계 뷰 (Dept Sponsor Class Mart)
+
+#### 1. 뷰 개요 (Overview)
+- **목적**: 회원실 회비예측 월간 후원 분류(감액·개발·중단·활동·회비)별 예측값 집계(SILVER 외부 적재) 소비 뷰
+- **분석 Grain**: `월 × 집계유형 × 법인 × 후원사업그룹 × 신규기존 × 본부지부그룹`
+- **기준 Fact 테이블**: `SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external)`
+- **조인 Dimension 테이블**: 0개 차원 결합
+
+#### 2. 조인 및 관계 정의 (Join Logic)
+- **기준 테이블**: `SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external)`
+- **조인 상세 규칙**:
+
+#### 3. 확장 컬럼 정의서 (Column Definition Sheet)
+
+| 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
+|---|---|---|---|---|---|
+| **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | YES | 파생 (DERIVED 계산식) | 기준월 YYYYMM ← STDR_MT |
+| **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | 파생 (DERIVED 계산식) | 연도 ← STDR_MT 앞 4자리 |
+| **월(MM)** | `CAL_MONTH` | NUMBER | YES | 파생 (DERIVED 계산식) | 월(1~12) ← STDR_MT 뒤 2자리 |
+| **집계 유형명** | `AGGR_TY_NM` | TEXT | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 집계 유형명(감액/개발/중단/활동/회비) |
+| **CPR_NM** | `CPR_NM` | TEXT | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 법인명 |
+| **SPNSR_BSNS_GRP_NM** | `SPNSR_BSNS_GRP_NM` | TEXT | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 후원 사업 그룹 명 |
+| **NEW_EXST_DIV_NM** | `NEW_EXST_DIV_NM` | TEXT | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 신규기존구분명 |
+| **HDQ_BRNCH_GRP_NM** | `HDQ_BRNCH_GRP_NM` | TEXT | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 본부 지부 그룹 명 |
+| **후원분류집계 예측값1** | `VALUE1` | NUMBER | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 후원분류집계 예측값1 (명칭 = 원천 SILVER 테이블명 유래 · 현업 회신) |
+| **후원분류집계 예측값2** | `VALUE2` | NUMBER | YES | SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external) | 후원분류집계 예측값2 (명칭 = 원천 SILVER 테이블명 유래 · 현업 회신 · 회비 유형에만 값이 있고 나머지 유형은 NULL) |
+
+---
+
+### 2.18 `WIDE_MEMBER_MONTHLY_KPI` — 회원 월 지표 모집단 집계 뷰 (Member Monthly KPI Mart)
+
+#### 1. 뷰 개요 (Overview)
+- **목적**: FACT_MEMBER_MONTHLY·FACT_MEMBER_EVENT 를 월 × 신규기존으로 먼저 합산하고 당해년 누계개발(건)을 붙인 활동율(공45~47) 계산 뷰
+- **분석 Grain**: `월(MONTH_KEY) × 신규기존(NEW_EXISTING_FLAG)`
+- **기준 Fact 테이블**: `GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산)`
+- **조인 Dimension 테이블**: 1개 차원 결합
+
+#### 2. 조인 및 관계 정의 (Join Logic)
+- **기준 테이블**: `GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산)`
+- **조인 상세 규칙**:
+  - `LEFT JOIN 개발 금액 월 합산(d) ON 월 · 신규기존`
+
+#### 3. 확장 컬럼 정의서 (Column Definition Sheet)
+
+| 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
+|---|---|---|---|---|---|
+| **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | NO | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
+| **연도(YYYY)** | `CAL_YEAR` | NUMBER | NO | 파생 (DERIVED 계산식) | — |
+| **NEW_EXISTING_FLAG** | `NEW_EXISTING_FLAG` | TEXT | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
+| **개발건수** | `DEV_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **활동건수** | `ACTIVE_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **MONTH_END_ACTIVE_CNT** | `MONTH_END_ACTIVE_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **YEAR_START_ACTIVE_CNT** | `YEAR_START_ACTIVE_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **PREV_MONTH_END_ACTIVE_CNT** | `PREV_MONTH_END_ACTIVE_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **중단건수** | `STOP_CNT` | NUMBER | YES | 파생 (DERIVED 계산식) | — |
+| **DEV_AMT_CNT** | `DEV_AMT_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
+| **DEV_CUM_CNT** | `DEV_CUM_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
+| **DEV_CUM_AMT_CNT** | `DEV_CUM_AMT_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
 
 ---
 

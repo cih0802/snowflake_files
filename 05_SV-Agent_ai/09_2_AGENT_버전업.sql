@@ -86,6 +86,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_MBRFEE_PRDT_ACTL'),     -- 🆕 2026-10-02 O200-B 회원실 회비 예측·실측(자체 수식)
     ('AGENT_MEMBER',    'SV_SPNSR_CLS_AGGR'),       -- 🆕 2026-10-02 O200-B 회원실 후원 분류별 집계(자체 수식)
     ('AGENT_MEMBER',    'SV_DVLP_GOAL_ACMSLT'),     -- 🆕 2026-10-02 O200-B 기획실 연간 개발 목표·실적(자체 수식)
+    ('AGENT_MEMBER',    'SV_MEMBER_MONTHLY_KPI'),   -- 🆕 2026-10-03 O201-D 누계개발·활동률(공45~47)
     ('AGENT_EXECUTIVE',   'SV_TARGET_BIZ'),         -- 🆕 [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
     ('AGENT_EXECUTIVE',   'SV_AD'),

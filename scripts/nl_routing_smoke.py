@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NL 라우팅 스모크 러너 (착수표 ㉗) — 3종 Agent × sample_questions 전량.
+"""NL 라우팅 스모크 러너 (착수표 ㉗) — Agent 4종(🆕 O201 · MSTR 편입) × sample_questions 전량.
 
 🔴 판정 축 = ㉠ 라우팅(질문 → 어떤 도구/SV 로 갔는가) ㉡ SQL 생성 여부·행수 ㉢ 오류.
 🔴 응답 원문은 tmp/nlsmoke/ 로 흘린다 — 세션 컨텍스트에 적재하지 않는다(비용 축).
@@ -17,6 +17,7 @@ SPECS = {
     'AGENT_MEMBER':    'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
     'AGENT_MARKETING': 'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
     'AGENT_EXECUTIVE': 'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
+    'AGENT_MSTR':      'cortex_project/agents/AGENT_MSTR/agent_spec.yaml',  # 🆕 [O201] O200-C 신설분
 }
 
 def questions(path):
@@ -45,7 +46,7 @@ def digest(raw):
     return dict(tools=tools, svs=svs, tables=tabs, sql=sql, errors=err[:3], bytes=len(txt))
 
 def main():
-    require_apply(__file__, 'Agent 3종 NL 스모크 — 🔴 LLM 대량 호출(크레딧 과금)')
+    require_apply(__file__, 'Agent 4종 NL 스모크 — 🔴 LLM 대량 호출(크레딧 과금)')
     os.makedirs(OUT, exist_ok=True)
     cn = conn(); cur = cn.cursor()
     rows = []

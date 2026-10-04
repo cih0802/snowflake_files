@@ -24,32 +24,42 @@ END-METADATA -->
 
 > 판정 = 「순」 셀이 **취소선이 아닌 행**. 취소선(`~~⑨~~`)은 완료 관례다.
 
-⚪ 착수표에서 열린 행을 찾지 못했다 — 표 형식이 바뀌었는지 확인하라.
+| 순 | 작업 | 정지점 | 정본 좌표 |
+|---|---|---|---|
+| 1 | MSTR 3종 Agent 반영 여부 | 🟢 값 검증 끝(baseline PASS · AGENT_MS… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:28` |
+| 2 | 공45~47·54 비율 | 분모 「누계개발(YTD)」 정의 현업 확인(문서20) → F… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:29` |
+| 3 | FMM 미래월 행 | MONTH_KEY 202911 1행 원인 조사 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:30` |
+| 4 | ML 질문 개선 후보 | MKT 에 LTV·일시전환 도구 · 기획실 A/B안 VQR … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:31` |
+| 5 | D6 게이트 | 근거철 §E6 설계안 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:32` |
+| 6 | MSTR 월 정기 Task | 06_MSTR_적재_실행.sql [4] 설계안 → 생성 여부… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:33` |
+| 7 | 👤 사람 대기 · dbt | dbt build --project-dir 10_dbt_pi… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:34` |
+| 8 | 👤 사람 대기 · CoWork | 새 COMMENT·별칭 규칙·신규 비율 5종 확인 스모크 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:35` |
+| 9 | 👤 사람 대기 · 현업 | 문서20 N-26 · 기획실 후원사업그룹 축 · 공45 분모… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:36` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0200-A.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-A.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0201-A.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-A.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
 > 🔴🔴 **이 세션은 단위 3개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-D.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O200-A-0 🔴 먼저 알아라 (2026-10-02 · pw69582 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-A.md:17` |
-| ▣ O200-A-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-A.md:26` |
-| ▣ O200-A-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-A.md:36` |
-| ▣ O200-C-0 🔴 먼저 알아라 (2026-10-03 · pw69582 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-C.md:17` |
-| ▣ O200-C-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-C.md:29` |
-| ▣ O200-C-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-C.md:39` |
-| ▣ O200-D-0 🔴 먼저 알아라 (2026-10-03 · pw69582 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-D.md:17` |
-| ▣ O200-D-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-D.md:33` |
-| ▣ O200-D-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0200-D.md:42` |
+| ▣ O201-A-0 🔴 먼저 알아라 (2026-10-03 · JU93656 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-A.md:17` |
+| ▣ O201-A-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-A.md:28` |
+| ▣ O201-A-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-A.md:42` |
+| ▣ O201-B-0 🔴 먼저 알아라 (2026-10-03 · JU93656 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-B.md:17` |
+| ▣ O201-B-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-B.md:25` |
+| ▣ O201-B-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-B.md:40` |
+| ▣ O201-C-0 🔴 먼저 알아라 (2026-10-03 · JU93656 · ㉡ 적용 · 확정위반 0 · 사용자 일괄 승인) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:17` |
+| ▣ O201-C-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:24` |
+| ▣ O201-C-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0201-C.md:38` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -68,19 +78,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O200-D` | 🟢 O200-D — CoWork 외 잔여 일괄(사용자 지시): ONCE_CONVERSION 재배포 · VALUE1/2 확정 · 09_0 Agent 정의서 · 문서 stale · … | 🟢 ONCE grant 7 · handoff 축7 73→0 · 설계 stale 3 · 문서20 N-26 · LOA… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:104` |
-| `O200-C` | 🟢 O200-C — O200-B 잔여: MSTR SV·서빙뷰 소유권 교정 + AGENT_MSTR 신설 배포 + O200-B 소급 기록 (2026-10-03 · pw69582 · … | 🟢 owner 교정 2(뷰 4행 · SV 7행) · AGENT_MSTR VERSION$3 default · 도구 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O200-B` | 🟠 O200-B — (소급 등재 · 다른 세션 집행 · 기록 누락) SV 3종(부서 자체 수식) · AGENT_MEMBER VERSION$4 · MSTR 재배포 · SV_MSTR… | 🟢 SV 3종 16:40~41 · MEMBER V4 default · GN_DW.MSTR 테이블 10·뷰 13 ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O200-A` | 🟢 O200-A — SILVER 회원실 집계 3종 적재 실측 + GOLD dbt 뷰 3종 배선(사용자 결정 = dbt view) (2026-10-02 · pw69582 · 개발계) | 🟢 적재 96·924·495행 · 키 중복 0 · 모델 3 + 테스트 1 작성 · 🟢 dbt build 완료(사용… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O199-A` | 🟢 O199-A — GN_DW 재구축 후 ML 12 SERVING 재배선(21·22 · 사용자 실행) · Agent 3종 스펙 갱신 + 09_2 집행 · SILVER 예측집계 3… | 🟢 Agent V3 default(MEMBER 13 · EXEC 8 · MKT 10 도구) · 참조 SV 31/3… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O198-C` | 🟢 O198-C — ML 12·SILVER 4 이관 문서(02·04·05·06 원천 재수령 6축 0) · LOADER ML 권한 07/08 편입 · GN_DW 재구축 직전 마무리… | 🟢 handoff_ddl_gate 6축 0 · 테스트 17/17 · 🟠 축7 stale 107(01·02_1·03… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O201-C` | 🟢 O201-C — (소급 등재 · O201-B §E13 실측) 원장 §1 행이 없던 O18x 라벨 12단위 · 상태 정본 = 각 라벨 파일 (2026-10-03 · JU9365… | 🟢 소급 12 · 이력 소급 8 · 🆕 MSTR 이력 적재 F 3,438,776 · SUM 28,587 · bas… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O201-B` | 🟢 O201-B — 사용자 결정 3건(SV_AD NULL 경고 · 별칭 규칙 · O180~O189 검토) + 남은 문제 2 + MSTR 실측 + ML 질문 판정 (2026-10-… | 🟢 SV_AD 경고 3 · Agent V4/V4/V4/V5 · EXEC·MKT V5(GA4) · test_veri… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O201` | 🟢 O201 — O171~O200 비판적 검토 후속 D1~D6 집행 (2026-10-03 · JU93656 · 신규 개발계 · 프롬프트는 pw69582 기재) | 🟢 D1 기집행 확인(테스트 80/80) · D2 결정 해제 + Agent COMMENT 4 라이브 교정 · NL… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O200-D` | 🟢 O200-D — CoWork 외 잔여 일괄(사용자 지시): ONCE_CONVERSION 재배포 · VALUE1/2 확정 · 09_0 Agent 정의서 · 문서 stale · … | 🟢 ONCE grant 7 · handoff 축7 73→0 · 설계 stale 3 · 문서20 N-26 · LOA… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O200-C` | 🟢 O200-C — O200-B 잔여: MSTR SV·서빙뷰 소유권 교정 + AGENT_MSTR 신설 배포 + O200-B 소급 기록 (2026-10-03 · pw69582 · … | 🟢 owner 교정 2(뷰 4행 · SV 7행) · AGENT_MSTR VERSION$3 default · 도구 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O200-B` | 🟠 O200-B — (소급 등재 · 다른 세션 집행 · 기록 누락) SV 3종(부서 자체 수식) · AGENT_MEMBER VERSION$4 · MSTR 재배포 · SV_MSTR… | 🟢 SV 3종 16:40~41 · MEMBER V4 default · GN_DW.MSTR 테이블 10·뷰 13 ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 17 | 447,933 | 31,845 | 9,115 |
-| `01_세션이력` | 84 | 2,117,234 | 38,225 | 17,197 |
+| `00_INDEX_이슈원장` | 18 | 450,781 | 29,328 | 11,632 |
+| `01_세션이력` | 85 | 2,128,858 | 38,225 | 39,969 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -102,10 +112,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 24,867 | 24,867 | 16,093 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 6,632 | 6,632 | 34,328 |
-| `00_BRIEF` | — | 9,236 | 9,236 | 31,724 |
-| `11_O누적작업_점검_재현_절차` | — | 30,765 | 30,765 | 10,195 |
+| `00_BRIEF` | — | 11,159 | 11,159 | 29,801 |
+| `11_O누적작업_점검_재현_절차` | — | 32,668 | 32,668 | 8,292 |
 
-> 전 문서군 = **3,134,087 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,146,302 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태

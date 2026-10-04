@@ -29,7 +29,7 @@ USE WAREHOUSE GN_DW_ETL_WH;
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
--- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ FACT_MESSAGE_DISPATCH+ --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ FACT_MESSAGE_DISPATCH+ --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';
 -- 운영계 일배치 테스트용 target변경
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --target dev2';
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --target dev2 --select BIGQUERY_BASIC+ FACT_MESSAGE_DISPATCH+ --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';

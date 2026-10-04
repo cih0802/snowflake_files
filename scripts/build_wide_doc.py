@@ -228,6 +228,40 @@ VIEW_META = {
             'LEFT JOIN GOLD.DIM_CAMPAIGN (c) ON f.CAMPAIGN_SK = c.CAMPAIGN_SK',
             'LEFT JOIN GOLD.DIM_MEMBER_IDENTITY (mi) ON f.IDENTITY_SK = mi.IDENTITY_SK'
         ]
+    },
+    # 🆕 [O201-B] O200-A 부서 자체 수식 집계 3종 — SILVER 외부 적재 테이블 직결(차원 조인 없음)
+    'WIDE_DVLP_GOAL_ACMSLT': {
+        'num': '15',
+        'title': '기획실 연간 개발 목표·실적 부서 집계 뷰 (Dept Dev Goal Mart)',
+        'purpose': '기획실 자체 수식 집계(SILVER 외부 적재)를 월 단위로 펼쳐 부서구분·신규기존·후원사업그룹별 목표·실적을 제공하는 소비 뷰',
+        'grain': '월 × 부서구분 × 신규기존 × 후원사업그룹',
+        'base': 'SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external)',
+        'joins': []
+    },
+    'WIDE_MBRFEE_PRDT_ACTL': {
+        'num': '16',
+        'title': '회원실 연간 회비 예측·실측 뷰 (Dept Fee Forecast Mart)',
+        'purpose': '회원실 자체 수식 회비 예측·실측 집계(SILVER 외부 적재)를 그대로 노출하는 소비 뷰 — 예측/실측 구분 동반 필수',
+        'grain': '월 × 예측실측구분 × 후원사업그룹 × 신규기존 × 본부지부그룹',
+        'base': 'SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external)',
+        'joins': []
+    },
+    'WIDE_SPNSR_CLS_AGGR': {
+        'num': '17',
+        'title': '회원실 월간 후원 분류별 집계 뷰 (Dept Sponsor Class Mart)',
+        'purpose': '회원실 회비예측 월간 후원 분류(감액·개발·중단·활동·회비)별 예측값 집계(SILVER 외부 적재) 소비 뷰',
+        'grain': '월 × 집계유형 × 법인 × 후원사업그룹 × 신규기존 × 본부지부그룹',
+        'base': 'SILVER.MM_SPNSR_CLS_AGGR_DATA (source silver_external)',
+        'joins': []
+    },
+    # 🆕 [O201-D] 공45~47 활동율 분모(누계개발) 전용 모집단 집계 — 행이 회원이 아니다
+    'WIDE_MEMBER_MONTHLY_KPI': {
+        'num': '18',
+        'title': '회원 월 지표 모집단 집계 뷰 (Member Monthly KPI Mart)',
+        'purpose': 'FACT_MEMBER_MONTHLY·FACT_MEMBER_EVENT 를 월 × 신규기존으로 먼저 합산하고 당해년 누계개발(건)을 붙인 활동율(공45~47) 계산 뷰',
+        'grain': '월(MONTH_KEY) × 신규기존(NEW_EXISTING_FLAG)',
+        'base': 'GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산)',
+        'joins': ['LEFT JOIN 개발 금액 월 합산(d) ON 월 · 신규기존']
     }
 }
 
@@ -414,30 +448,37 @@ def main():
     with open(YML_PATH, 'r', encoding='utf-8') as f:
         schema_data = yaml.safe_load(f)
     yaml_models = {m['name']: m for m in schema_data.get('models', [])}
+    # 🆕 [O201-B] 부서 집계 3종은 별도 yml 에 컬럼 정의가 있다
+    _dept = os.path.join(WIDE_DIR, '_wide_dept_aggr_schema.yml')
+    if os.path.exists(_dept):
+        with open(_dept, 'r', encoding='utf-8') as f:
+            for m in (yaml.safe_load(f) or {}).get('models', []):
+                yaml_models[m['name']] = m
+    NV = len(VIEW_META)
 
     L = []
     a = L.append
 
     a('<!-- LLM-METADATA')
     a('doc_id: GOLD_WIDE_VIEWS')
-    a('doc_role: consumption_wide_view (GOLD 빅테이블 뷰 14종 통합 정의서)')
+    a(f'doc_role: consumption_wide_view (GOLD 빅테이블 뷰 {NV}종 통합 정의서)')
     a('project: GN_DW (굿네이버스)')
     a('derived_from: 10_dbt_pipeline/models/gold/wide/*.sql + _wide_schema.yml')
     a('generator: scripts/build_wide_doc.py')
     a('validator: scripts/verify_wide_doc.py')
-    a('structure: WIDE VIEW 14종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)')
-    a('status: 🟢 정본 최신화 완료 (물리 dbt 뷰 14종 100% 일치)')
-    a('updated: 2026-09-14')
+    a(f'structure: WIDE VIEW {NV}종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)')
+    a(f'status: 🟢 정본 최신화 완료 (물리 dbt 뷰 {NV}종 100% 일치)')
+    a('updated: 2026-10-03')
     a('END-METADATA -->')
     a('')
     a('# GOLD 빅테이블 VIEW (Wide View) 통합 정의서')
     a('')
-    a('> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW 14종)**의 통합 설계 및 컬럼 정의서입니다.')
+    a(f'> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW {NV}종)**의 통합 설계 및 컬럼 정의서입니다.')
     a('> 리포팅 및 BI, Semantic View, Cortex Agent 조회 성능과 편의성을 위해 **Fact 테이블과 Dimension 테이블을 LEFT JOIN으로 평탄화**한 구조를 표준화된 양식으로 제공합니다.')
     a('> ')
-    a('> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 14종) 및 `_wide_schema.yml`')
+    a(f'> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 {NV}종) 및 `_wide_schema.yml`')
     a('> 🛠️ **자동 생성/동기화 도구**: `python3 scripts/build_wide_doc.py` (dbt 모델 변경 시 이 정의서를 자동 갱신)')
-    a('> 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 575컬럼 100% 일치 검증)')
+    a(f'> 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 전 컬럼 100% 일치 검증)')
     a('> 📊 **자동 계보 매핑 산출물**: `30_output_share/04_컬럼계보매핑.md` (BRONZE→SILVER→GOLD→WIDE 역방향 실측 계보)')
     a('')
     a('---')
@@ -455,7 +496,7 @@ def main():
     a('')
     a('---')
     a('')
-    a('## 2. WIDE VIEW 14종 상세 정의서')
+    a(f'## 2. WIDE VIEW {NV}종 상세 정의서')
     a('')
 
     for vname, vmeta in sorted(VIEW_META.items(), key=lambda x: int(x[1]['num'])):

@@ -116,7 +116,23 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.AVG_SPONSOR_MONTHS AS AVG(fmm.SPONSOR_MONTHS)
       WITH SYNONYMS ('평균 후원기간(개월)', '후원기간') COMMENT = '공#127 최초가입일~조회월 개월수의 평균. 한 달을 지정해 쓴다(회원별 값의 평균).',
     fmm.AVG_PAID_MONTHS AS AVG(fmm.PAID_MONTHS)
-      WITH SYNONYMS ('평균 납입개월수', '납입개월수') COMMENT = '공#129 조회월까지 정기납입이 있었던 달 수의 평균. 한 달을 지정해 쓴다.'
+      WITH SYNONYMS ('평균 납입개월수', '납입개월수') COMMENT = '공#129 조회월까지 정기납입이 있었던 달 수의 평균. 한 달을 지정해 쓴다.',
+    -- 🆕 [O201-C] 단월 정의가 확정된 비율 5종(정본 = 30_output_share/05_지표GOLD매핑.md:132~134·154~155)
+    --   🔴 공45~47·54 는 분모 「누계개발(YTD)」 정의가 미확정이라 넣지 않았다(문서20 질의)
+    fmm.STOP_RATE_2 AS SUM(fmm.STOP_CNT) / NULLIF(SUM(fmm.DEV_CNT), 0) * 100
+      WITH SYNONYMS ('중단율2', '공55', '개발 대비 중단율') COMMENT = '공55 중단율2(%) = 중단(건) ÷ 개발(건) ×100. 비율(N). 🔴 한 달을 지정해 쓴다 · 다른 중단율(코호트 12개월 이탈률 = SV_MEMBER_COHORT)과 정의가 다르다.',
+    fmm.STOP_RATE_NEW AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.STOP_CNT END)
+        / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.DEV_CNT + fmm.PREV_MONTH_END_ACTIVE_CNT END), 0) * 100
+      WITH SYNONYMS ('신규 중단율', '공56') COMMENT = '공56 신규 중단율(%) = 중단(건)[신규] ÷ (개발(건)[신규] + 전월말 활동(건)[신규]) ×100. 비율(N). 🔴 한 달을 지정한다 · 신규/기존은 NEW_EXISTING_FLAG.',
+    fmm.STOP_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.STOP_CNT END)
+        / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.DEV_CNT + fmm.PREV_MONTH_END_ACTIVE_CNT END), 0) * 100
+      WITH SYNONYMS ('기존 중단율', '공57') COMMENT = '공57 기존 중단율(%) = 중단(건)[기존] ÷ (개발(건)[기존] + 전월말 활동(건)[기존]) ×100. 비율(N). 🔴 한 달을 지정한다.',
+    fmm.UNPAID_RATE_NEW AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.UNPAID_CNT END)
+        / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.ACTIVE_CNT END), 0) * 100
+      WITH SYNONYMS ('신규 미납율', '공77') COMMENT = '공77 신규 미납율(%) 건 기준 = 미납(건)[신규] ÷ 활동(건)[신규] ×100. 비율(N). 스톡 — 한 달을 지정한다.',
+    fmm.UNPAID_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.UNPAID_CNT END)
+        / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.ACTIVE_CNT END), 0) * 100
+      WITH SYNONYMS ('기존 미납율', '공78') COMMENT = '공78 기존 미납율(%) 건 기준 = 미납(건)[기존] ÷ 활동(건)[기존] ×100. 비율(N). 스톡 — 한 달을 지정한다.'
   )
   COMMENT = 'Phase-1 회원 월별 실적 SV (base: GOLD.FACT_MEMBER_MONTHLY, grain: 회원×월 1행). CRM 원천 기반 납입/청구 총액, 정본 납부율(PAYMENT_RATE_FEE), 미납회원 감소율, 총미납금액(TOTAL_UNPAID_AMT), 미납비중(UNPAID_RATIO), 평균납입회비 요약. ⚠️ 후원사업·납입방식·회비구분 세부 분해는 SV_MEMBER_FEE(회비 grain)를 사용하며, 두 뷰의 회비 measure 합산 금지(이중계상). 캠페인별/후원사업별 활동회원은 SV_MEMBER_SPONSOR_BIZ(약정 grain) 사용.'
   AI_SQL_GENERATION '핵심 규칙:

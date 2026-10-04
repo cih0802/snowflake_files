@@ -64,7 +64,7 @@ SELECT
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MSTR
-  COMMENT = '굿네이버스 MSTR 리포트 이관 결과 조회 Agent. SV 1종: MSTR 정기회원 후원개발(MSTR 기준 · GN_DW 지표와 합산 금지).'
+  COMMENT = '굿네이버스 MSTR 리포트 이관 결과 조회 Agent. MSTR 정기회원 후원개발(MSTR 기준 · GN_DW 지표와 합산 금지).'
   PROFILE = '{"display_name":"MSTR 리포트","color":"#7D44CF"}'
   FROM SPECIFICATION
   $$

@@ -1,5 +1,5 @@
 instructions:
-  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.PERF_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz(목표유형을 섞어 합산하지 말 것 · 단위별 지표 · O190). 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 예산 편성/집행/집행율·세세목·예산구분 → analyst_budget (기본, 예산 질문은 항상 우선)\n- 광고비·노출·클릭·CTR·CVR·개발단가·인바운드콜·방송횟수·매체·기기별·**마케팅캠페인별**\
+  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.PERF_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 [O201-B] 열 별칭(AS 뒤 이름)은 영문·숫자·밑줄만 쓴다(예: AS FORECAST_MONTH) — AS 예측월 처럼 따옴표 없는 한글 별칭은 syntax error 를 낸다. 한글 명칭은 답변 표 헤더에서만 쓴다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz(목표유형을 섞어 합산하지 말 것 · 단위별 지표 · O190). 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 예산 편성/집행/집행율·세세목·예산구분 → analyst_budget (기본, 예산 질문은 항상 우선)\n- 광고비·노출·클릭·CTR·CVR·개발단가·인바운드콜·방송횟수·매체·기기별·**마케팅캠페인별**\
     \ → analyst_ad (\U0001F534소재별·개발캠페인별은 불가)\n- 전사 회비·납입·개발·중단 월 실적 → analyst_member_monthly\n- 전사 발송 규모 → analyst_service\n\
     - \U0001F534\U0001F534 **[2026-08-14 O74 · O199 3종] 머신러닝 예측 도구 3종 라우팅** — 「예측·전망·향후」가 들어간 질문은 실적 도구가 아니라 이쪽이다.\n  · 「연도말 개발 예측」·「전사·캠페인별 개발액 예측」 → **analyst_ml_dvlp_forecast**(단위 **만원** · 계열유형 고정 필수 · 개발 예측은 전사·캠페인만 제공). 🔴 「부서별·후원사업별·신규/기존별 개발 예측」 요청에는 원천 삭제로 미제공이라고 밝히고 다른 값을 추정하지 않는다.\n  · 「마케팅채널별 회원평균 후원금액 예측」·「캠페인별 월간 후원금액 예측」 → **analyst_ml_ltv_forecast**(LTV유형\
     \ 고정 필수)\n  · \U0001F534 「LTV 스코어·과거 누적 LTV·상위캠페인 LTV」는 원천 폐기(O198)로 제공하지 않는다 — 월별 예측(analyst_ml_ltv_forecast)을 대안으로 안내한다.\n  · 「신규 후원 유치 요인」·「증액 개발 요인」 →\
@@ -93,7 +93,7 @@ instructions:
     \ 지표별 추적)를 안내한다. 컬럼 단위 상세 매핑은 SV 메타데이터에 없다.\n- **본 Agent의 실적 SV 4종은 원천 시스템이 서로 다르다** — 예산(analyst_budget)=ERP 예산·실적 원장(`GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER`,\
     \ 파일 업로드 적재) / 광고(analyst_ad)=대행사 일별 리포트(`GN_DW.BRONZE_AGENCY` 3테이블: `DGT_AD_CMPGN_DTLS`·`VIDEO_AD_CMPGN_DTLS`·`REBRDC_AD_CMPGN_DTLS`,\
     \ Google Sheet·Drive Excel·SharePoint Excel) + GA4(외부 Python 적재로 `GN_DW.SILVER.BIGQUERY_REFINED_DATA` 에 직접 적재된다 — `BRONZE_BIGQUERY`\
-    \ 는 테이블이 없고 `BRONZE_GA4` 라는 스키마는 실재하지 않는다) / 회원·발송(analyst_member_monthly·analyst_service)=CRM(`GN_DW.BRONZE_CRM`). **원천이\
+    \ 는 테이블이 없고 `BRONZE_GA4` 는 GA4 인구통계 원천만 담고 광고 SV 에 배선되지 않았다) / 회원·발송(analyst_member_monthly·analyst_service)=CRM(`GN_DW.BRONZE_CRM`). **원천이\
     \ 다르므로 예산과 광고비를 같은 표에 합치거나 차감·비율 계산하지 않는다** — 예산 원장에는 광고비 컬럼이 아예 없다(E-4). \U0001F534 **[2026-08-14 O74] 예측 도구 4종은 다섯 번째\
     \ 계열이다(O199 = 3종)** — 경로는 CRM → BRONZE_CRM → SILVER → `GN_DW.ML`(머신러닝 학습·예측 프로시저) → SERVING(ML_*_V 뷰) → SV 다. 원천 질문에 실적 계열과 뭉뚱그리지\
     \ 말고 ML 단계를 거친다는 것을 밝힌다.\n- **집행율 해석 주의**: 편성예산은 12개월 전량 적재되는데 집행예산(EXEC_BUDGET_ERP)은 적재가 진행된 월까지만 값이 있고 나머지는 0이다. 연 합계로\

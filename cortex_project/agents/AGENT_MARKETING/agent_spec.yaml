@@ -31,7 +31,7 @@ instructions:
     방송 차원(채널사·프로그램)을 광고비 기준으로 정렬할 때는 광고비가 없는 항목이 상위를 점유하지 않도록 NULLS LAST 정렬 결과를 사용한다.
 
     '
-  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.EVENT_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz. 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 🆕 [O198] **회원개발 예측(익월·연말·향후 3개월)** → analyst_ml_dvlp_forecast(금액 만원 예측 · 건수 예측은 조회되지 않는다고 밝힌다) / **증액 가능성 높은 회원·증액 캠페인 제안 대상** → analyst_ml_member_risk(증액 확률 순 · 캠페인 추천 축 없음). 예측은 실적 도구와 한 표에 합산하지 않는다.\n- **월/누계/연 목표 · 목표 달성율 · 목표 대비 실적 · 부서별 달성율** → analyst_dev_achievement\n  (\U0001F534\
+  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.EVENT_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 [O201-B] 열 별칭(AS 뒤 이름)은 영문·숫자·밑줄만 쓴다(예: AS FORECAST_MONTH) — AS 예측월 처럼 따옴표 없는 한글 별칭은 syntax error 를 낸다. 한글 명칭은 답변 표 헤더에서만 쓴다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz. 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 🆕 [O198] **회원개발 예측(익월·연말·향후 3개월)** → analyst_ml_dvlp_forecast(금액 만원 예측 · 건수 예측은 조회되지 않는다고 밝힌다) / **증액 가능성 높은 회원·증액 캠페인 제안 대상** → analyst_ml_member_risk(증액 확률 순 · 캠페인 추천 축 없음). 예측은 실적 도구와 한 표에 합산하지 않는다.\n- **월/누계/연 목표 · 목표 달성율 · 목표 대비 실적 · 부서별 달성율** → analyst_dev_achievement\n  (\U0001F534\
     \ 「목표가 없습니다」로 답하지 말 것. 누계·연은 별도 지표가 아니라 **기간 필터**만 바꾸면 나온다)\n- **광고비·노출수·클릭수·CTR·CVR·개발단가·인입콜·방송횟수\
     \ · 매체(채널사)·광고유형·요일·주차·시간대·\n  CM위치·재방유형·기기·프로그램·마케팅캠페인별** → analyst_ad\n  (\U0001F534 소재별·개발캠페인별·초수·캠페인유형별은\
     \ 불가 · \U0001F534 출처유형(디지털/방송/재방송) 필터를 함께 전달한다)\n- **편성예산·집행예산·집행율·세세목·예산구분** → analyst_budget\n-\
@@ -102,7 +102,7 @@ instructions:
     \ 에\n  기재하지 않는 것이 규약이다. 원천 질문에는 이름만 답하고, 규모·기간·커버리지를 물으면 도구로 조회해\n  그 시점의 값으로 답한다. COMMENT 에 없는 수치를\
     \ 기억·추정해서 말하지 않는다.\n- **이 Agent 의 원천 지도는 4계열이다** — 광고(`analyst_ad`)=대행사 일별 리포트(`GN_DW.BRONZE_AGENCY`\n\
     \  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 `GN_DW.SILVER.BIGQUERY_REFINED_DATA`\n\
-    \  에 직접 적재된다 — `BRONZE_BIGQUERY` 는 비어 있고 `BRONZE_GA4` 스키마는 실재하지 않는다) /\n\
+    \  에 직접 적재된다 — `BRONZE_BIGQUERY` 는 비어 있고 `BRONZE_GA4` 는 GA4 인구통계 원천만 담고 광고 SV 에 배선되지 않았다) /\n\
     \  예산(`analyst_budget`)=ERP 예산·실적 원장(`GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER`, 파일 업로드 적재) /\n  목표·실적(`analyst_dev_achievement`)=CRM(목표\
     \ TM_CM_MBER_DVLP_GOAL · 실적 TM_MM_FDRM_MBER_DVLP_AMT) /\n  전환회원·코호트·회비·활동회원(`analyst_member_event`·`_cohort`·`_fee`·`_sponsor_biz`)=CRM(eCRM)\
     \ → `GN_DW.BRONZE_CRM`.\n- SV COMMENT 에 없는 원천은 추측하지 말고 정본 문서(`30_output_share/04_컬럼계보매핑.md` GOLD컬럼→SILVER→BRONZE\n\
@@ -138,7 +138,7 @@ tools:
     name: analyst_ad
     description: '광고 실적 팩트(WIDE_AD_COMBINED = FAP 코어 + 디지털·방송 위성 1:1 pre-join). 원천=대행사 일별 리포트(GN_DW.BRONZE_AGENCY:
       DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 GN_DW.SILVER.BIGQUERY_REFINED_DATA
-      에 직접 들어온다 — BRONZE_BIGQUERY 는 비어 있고 BRONZE_GA4 라는 스키마는 존재하지 않는다).
+      에 직접 들어온다 — BRONZE_BIGQUERY 는 비어 있고 BRONZE_GA4 는 GA4 인구통계 원천만 담고 이 도구에 배선되지 않았다).
       🔴 **마케팅 보고서 「3. 매체별 개발효율 상세」의 정본 도구**다. 활성 지표: 광고비·노출수·클릭수·CTR(공9)·CVR(공10)·CRM개발건·개발단가(공7, 디지털)·조회수·매체잠재고객수
       / 인바운드콜·방송횟수·방송개발건·방송개발회원(방송 · VIDEO 는 일부 행) / GA 개발단가(공8, DIGITAL) · 재방송 개발단가(참고, REBROADCAST 전용). 차원: 실적일·연/월/분기·**주차·요일**, 출처유형(DIGITAL/VIDEO/REBROADCAST)·기기유형(M/PC/(해당없음))·**광고유형**·소재유형·페이지유형·광고그룹(디지털)·**채널사·시간대(VIDEO=구간 라벨·REBROADCAST=시각)·프로그램·스팟유형·CM위치·재방유형**(방송)·마케팅캠페인명·개발캠페인
       수. ⚠디지털/방송 measure 상호배타 — AD_SOURCE_TYPE 필터 필수. ⚠개발단가(공7)는 원천 포맷 변경 이후 구간 산출 불가(경계 연월은 조회로 확인).
