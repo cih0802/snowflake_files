@@ -1,0 +1,30 @@
+report_id: CRM_SEND_PERFORMANCE
+
+required_cases:
+  - case_id: REPRESENTATIVE_PERIOD_1
+    description: 최근 정상 발송이 존재하는 대표 기간
+    status: PENDING_VALUE
+  - case_id: REPRESENTATIVE_PERIOD_2
+    description: 다른 월 또는 다른 발송유형이 포함된 기간
+    status: PENDING_VALUE
+
+checks:
+  - 발송요청 수와 내부 발송키 수
+  - 발송 대상 수와 수신자 전체키 수
+  - 발송 성공 수가 발송 수를 초과하지 않는지
+  - R_NUM NULL 수와 전체키 중복 수
+  - 오픈·클릭 로그의 미매칭 수
+  - 원시 로그와 사전집계 로그의 이벤트 수 보존
+  - 행동 귀속 전후 서신·선물금·중단 이벤트 수
+  - 하나의 행동이 여러 발송에 중복 귀속되지 않는지
+  - JOIN 전후 발송 수와 고유 수신자 수가 증가하지 않는지
+  - 표·KPI·다운로드의 총계 일치
+  - 종료일 경계와 시간대 처리
+  - 화면에 데이터 기준과 최신 적재시각이 표시되는지
+
+prohibited_reconciliation:
+  - 숫자 하드코딩
+  - 임의 회원 또는 캠페인 제외
+  - 의미 없는 SELECT DISTINCT
+  - 비율 보정 상수
+

@@ -1,0 +1,91 @@
+validation_version: "2.0"
+generated_at: "2026-09-01"
+
+policy:
+  ui_change_requires_data_validation: true
+  logic_change_requires_regression: true
+  hardcoding_to_match_reference: false
+  arbitrary_distinct_allowed: false
+  historical_recalc_can_differ_from_closed_snapshot: true
+
+gates:
+  DEV_SELECTED_MONTH_202606_ALL_CORP:
+    reports: ["DEV_1_1_MONTHLY_DEPT","DEV_1_3_MONTHLY_MEMBER_TYPE","DEV_1_5_CAMPAIGN_TOP10"]
+    status: "VERIFIED_BASE_FACT"
+    period: "202606"
+    scope: "ALL_CORPORATIONS"
+    expected_by_dvlp_div:
+      "1": {fact_row_count: 12832, member_count: 11969, sponsor_amount_count: 25713.8900000, sponsor_amount: 257138900}
+      "2": {fact_row_count: 2318, member_count: 2014, sponsor_amount_count: 4999.9501000, sponsor_amount: 49999501}
+      "4": {fact_row_count: 1605, member_count: 1465, sponsor_amount_count: 3350.7500000, sponsor_amount: 33507500}
+    detail_validation:
+      corporation_i_detail_key_count: 301
+      missing_key_count: 0
+      extra_key_count: 0
+      selected_month_metric_diff_count: 0
+    note: "2025 허수회원 토글과 2026-04 UI 수동보정은 Fact 검증과 별도"
+
+  DEV_YTD:
+    reports: ["DEV_1_2_YTD_DEPT","DEV_1_4_YTD_MEMBER_TYPE"]
+    status: "LOGIC_IMPLEMENTED_INDEPENDENT_REFERENCE_REQUIRED"
+    acceptance:
+      - "선택월 Base Gate 통과"
+      - "YTD 범위=기준연도 01월~선택월"
+      - "독립 원본 누계 기준값 없이 VERIFIED로 승격 금지"
+
+  ACTIVITY_202606_I:
+    reports: ["ACT_2_1_MEMBER_TYPE","ACT_2_2_BUSINESS"]
+    status: "VERIFIED_REFERENCE"
+    period: "202606"
+    corporation: "I"
+    expected:
+      active_fact_rows: 708866
+      active_member_count: 631207
+      active_amount_count: 1350547.9944002
+      normal_payment_amount: 12559666635
+      stop_fact_rows: 9262
+      stop_member_count_reference: 8323
+      stop_amount_count: 17728.91
+    active_member_precheck:
+      candidate_rows: 732745
+      candidate_distinct_members: 732745
+    source_domain_checks:
+      cpr_div_cd_observed: ["I","S"]
+      sponsor_discontinue_empty_string_count: 0
+      sponsor_discontinue_null_count: 841753
+
+  ACTIVITY_BY_BUSINESS_RECONCILIATION:
+    reports: ["ACT_2_2_BUSINESS"]
+    status: "RELATIONAL_GATE"
+    conditions:
+      - "ACT_2_1과 동일 ACTIVE_FACT 사용"
+      - "표시 대상 전체 사업 활동건 합 = 동일 scope ACTIVE_FACT 활동건 합"
+      - "미매핑 SPNSR_BSNS_ID 활동건 = 0 또는 기타에 명시 포함"
+      - "Grand 활동회원명 = raw ACTIVE_FACT COUNT(DISTINCT MBER_NO)"
+      - "사업별 활동회원명 단순합을 Grand로 사용하지 않음"
+    current_risk:
+      - "사업명 contains 기반 classify_biz"
+      - "total_cases_all과 화면 표시 합계의 대상 사업 범위가 달라질 가능성"
+
+  STOP_3_1:
+    reports: ["STOP_3_1_MEMBER_TYPE"]
+    status: "NOT_EQUIVALENCE_VERIFIED"
+    rule: "ACTIVITY stop_amount_count와 같은 지표라고 가정하지 않음"
+    before_modification:
+      - "현재 회원수 Base 조건 추출"
+      - "중단금액 Base 조건 추출"
+      - "CPR_DIV_CD 귀속 확인"
+      - "업무 기준 결과 표본 확보"
+
+cross_report:
+  new_member_semantics:
+    forbidden:
+      - "DEV_1_3 신규조건을 ACT_2_1에 재사용"
+      - "ACT_2_1 신규조건을 DEV_1_3에 재사용"
+  member_total:
+    rule: "상위 회원합계는 목표 Grain에서 DISTINCT 재계산"
+  amount_count:
+    rule: "금액/10000.0"
+    forbidden: ["COUNT(*)를 업무건수로 표시","물리 Row Count를 활동/개발건으로 표시"]
+  manual_adjustments:
+    rule: "2025 허수회원 및 2026-04 수동보정은 해당 REPORT_ID 전용. 다른 보고서로 자동 전파 금지."

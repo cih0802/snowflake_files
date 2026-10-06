@@ -1,0 +1,181 @@
+reference_pack:
+  name: "Snowflake CoCo MSTR_DW Specification to MSTR_ODS Workspace Pack"
+  version: "3.0"
+  generated_at: "2026-09-08"
+  source_database: "GN_DW"
+  source_schema: "BRONZE_CRM"
+  source_system: "MSTR_ODS_CRM"
+  legacy_system: "MSTR_DW"
+  legacy_dw_runtime_access_required: false
+  legacy_dw_runtime_access_allowed: false
+  legacy_dw_specification_required_for_new_report: true
+
+bootstrap:
+  always_read:
+    - "SNOWFLAKE.md"
+    - "references/common/00_COCO_READ_FIRST_ODS_ONLY.md"
+    - "references/06_REFERENCE_MANIFEST.yaml"
+  rule: "always_read 이후에는 task_routing과 REPORT_ID가 지정한 파일만 읽는다."
+
+common_references:
+  ods_physical_model: "references/common/01_ODS_PHYSICAL_MODEL.yaml"
+  validation_gates: "references/common/04_VALIDATION_GATES.yaml"
+  snapshot_policy: "references/common/07_SNAPSHOT_AND_DIFFERENCE_POLICY.md"
+  condition_matrix: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+  planner_template: "references/05_COCO_TASK_TEMPLATE.md"
+
+legacy_dw_references:
+  business_logic: "references/legacy_dw/snowflake_coco_mstr_dw_reference.md"
+  virtual_structure: "references/legacy_dw/snowflake_coco_mstr_virtual_structure_reference.md"
+  conversion_semantics: "references/legacy_dw/snowflake_coco_conversion_examples_semantic_reference.md"
+  rule: "신규 리포트 분석 또는 새로운 F_/D_/FN_/USP_/View가 등장할 때만 관련 부분을 읽는다."
+
+task_routing:
+  ANALYZE_LEGACY:
+    read:
+      - "legacy_dw_references"
+      - "common_references.ods_physical_model"
+    required_inputs:
+      - "MSTR 최종 SQL 전체"
+      - "한글 리포트명과 화면 경로"
+      - "화면 조회조건과 지표"
+  ONBOARD_REPORT:
+    read:
+      - "legacy_dw_references"
+      - "common_references.ods_physical_model"
+      - "common_references.condition_matrix"
+      - "common_references.validation_gates"
+      - "common_references.snapshot_policy"
+    required_inputs:
+      - "MSTR 최종 SQL 전체"
+      - "MSTR 분석엔진 필터·부분합 정보"
+      - "대표 기준 결과"
+      - "신규 함수·프로시저·View 정의"
+      - "월마감 Snapshot 또는 현재 ODS 재계산 정책"
+  VALIDATE_DATA:
+    read:
+      - "REPORT_ID validation_gate"
+      - "REPORT_ID source_of_truth"
+      - "common_references.snapshot_policy"
+  BUILD_APP:
+    read:
+      - "REPORT_ID entry"
+      - "검증된 APP View 또는 Base Fact"
+  CHANGE_UI:
+    read:
+      - "REPORT_ID entry"
+      - "현재 Streamlit 파일"
+
+legacy_report_aliases:
+  MEMBER_ACTIVITY_2_1:
+    canonical: "ACT_2_1_MEMBER_TYPE"
+  DEPT_MEMBER_DEVELOPMENT:
+    canonical_reports:
+      - "DEV_1_1_MONTHLY_DEPT"
+      - "DEV_1_2_YTD_DEPT"
+    note: "기존 단일 MSTR 리포트의 선택월/누계 지표가 현재 화면에서 분리됨"
+  FEE_FORECAST_DECREASE_NEW_OLD:
+    canonical: "FEE_FORECAST_DECREASE_NEW_OLD"
+
+reports:
+  DEV_1_1_MONTHLY_DEPT:
+    display_name: "1-1 회원개발 현황(당월)"
+    aliases: ["부서별 회원개발", "회원개발 당월", "개발현황"]
+    family: "MEMBER_DEVELOPMENT"
+    period: "selected_month"
+    source_of_truth: "references/legacy_dw/snowflake_coco_mstr_dw_reference.md"
+    validation_gate: "DEV_SELECTED_MONTH_202606_ALL_CORP"
+    status: "VERIFIED_BASE_FACT"
+    ui_exceptions:
+      fake_member_toggle_2025: "LEGACY_UI_EXCEPTION"
+      adjustment_2026_04: "LEGACY_UI_EXCEPTION"
+
+  DEV_1_2_YTD_DEPT:
+    display_name: "1-2 회원개발 현황(누계)"
+    aliases: ["부서별 회원개발 누계", "회원개발 누계"]
+    family: "MEMBER_DEVELOPMENT"
+    period: "year_start_to_selected_month"
+    source_of_truth: "references/legacy_dw/snowflake_coco_mstr_dw_reference.md"
+    validation_gate: "DEV_YTD"
+    status: "LOGIC_IMPLEMENTED_INDEPENDENT_REFERENCE_REQUIRED"
+
+  DEV_1_3_MONTHLY_MEMBER_TYPE:
+    display_name: "1-3 회원구분별 현황(당월)"
+    aliases: ["회원구분별 개발 당월"]
+    family: "MEMBER_DEVELOPMENT"
+    condition_reference: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+    validation_gate: "DEV_SELECTED_MONTH_202606_ALL_CORP"
+    warning: "ACT_2_1의 신규회원 정의와 다름"
+
+  DEV_1_4_YTD_MEMBER_TYPE:
+    display_name: "1-4 회원구분별 현황(누계)"
+    aliases: ["회원구분별 개발 누계"]
+    family: "MEMBER_DEVELOPMENT"
+    condition_reference: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+    validation_gate: "DEV_YTD"
+    warning: "ACT_2_1의 신규회원 정의와 다름"
+
+  DEV_1_5_CAMPAIGN_TOP10:
+    display_name: "1-5 상위캠페인별 개발 TOP10"
+    aliases: ["캠페인 TOP10", "상위캠페인 개발"]
+    family: "MEMBER_DEVELOPMENT"
+    condition_reference: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+    validation_gate: "DEV_SELECTED_MONTH_202606_ALL_CORP"
+    warning: "캠페인별 회원수는 비가산"
+
+  ACT_2_1_MEMBER_TYPE:
+    display_name: "2-1 활동회원 현황(회원구분별)"
+    aliases: ["활동회원", "회원구분별 활동회원", "MEMBER_ACTIVITY_2_1"]
+    family: "MEMBER_ACTIVITY"
+    source_of_truth: "references/reports/member_activity/03_ACTIVITY_MEMBER_SOURCE_OF_TRUTH.md"
+    detail_reference: "references/reports/member_activity/member_activity_2_1_detail_reference.md"
+    condition_reference: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+    validation_gate: "ACTIVITY_202606_I"
+    status: "VERIFIED_REFERENCE"
+
+  ACT_2_2_BUSINESS:
+    display_name: "2-2 활동회원 현황(후원사업별)"
+    aliases: ["후원사업별 활동회원", "활동회원 후원사업"]
+    family: "MEMBER_ACTIVITY"
+    source_of_truth: "references/reports/member_activity/03_ACTIVITY_MEMBER_SOURCE_OF_TRUTH.md"
+    must_share_base_with: "ACT_2_1_MEMBER_TYPE"
+    validation_gates: ["ACTIVITY_202606_I", "ACTIVITY_BY_BUSINESS_RECONCILIATION"]
+    mapping: "SPNSR_BSNS_ID explicit mapping"
+
+  STOP_3_1_MEMBER_TYPE:
+    display_name: "3-1 중단회원 현황(회원구분별)"
+    aliases: ["중단회원", "회원구분별 중단회원"]
+    family: "MEMBER_DISCONTINUATION"
+    condition_reference: "references/reports/02_REPORT_CONDITION_MATRIX.md"
+    validation_gate: "STOP_3_1"
+    status: "INDEPENDENT_VALIDATION_REQUIRED"
+    warning: "ACT_2_1 중단 Branch와 동일 지표로 간주하지 않음"
+
+  FEE_FORECAST_DECREASE_NEW_OLD:
+    display_name: "회비예측 월마감 후원사업별 감액회원 신규기존구분"
+    aliases: ["후원사업별 감액회원 신규기존구분", "회비예측 감액회원"]
+    family: "FEE_FORECAST"
+    source_of_truth: "references/legacy_dw/snowflake_coco_mstr_dw_reference.md"
+    conversion_example: "references/examples/ods_fee_forecast_decrease_new_old_202601.sql"
+    diagnostic_examples:
+      - "references/examples/diagnose_remaining_dw_ods_difference_202601.sql"
+      - "references/examples/diagnose_decrease_gap_and_snapshot_limits_202601.sql"
+    snapshot_policy: "references/common/07_SNAPSHOT_AND_DIFFERENCE_POLICY.md"
+    status: "CURRENT_ODS_RECALC_WITH_KNOWN_SNAPSHOT_DIFFERENCE"
+
+examples:
+  verified_conversion:
+    - "references/examples/mstr_dept_member_development_to_crm_final_202606.sql"
+    - "references/examples/ods_fee_forecast_decrease_new_old_202601.sql"
+  diagnostics:
+    - "references/examples/diagnose_remaining_dw_ods_difference_202601.sql"
+    - "references/examples/diagnose_decrease_gap_and_snapshot_limits_202601.sql"
+
+hard_rules:
+  - "MSTR_DW는 실행 원천이 아니지만 신규 리포트의 계산 명세다."
+  - "REPORT_ID를 먼저 식별한다."
+  - "다른 REPORT_ID 조건을 이름 유사성만으로 상속하지 않는다."
+  - "실제 Snowflake FQN과 컬럼을 확인한다."
+  - "검증되지 않은 리포트를 VERIFIED로 선언하지 않는다."
+  - "과거 마감월은 Snapshot 정책을 확인한다."
+  - "LEGACY_UI_EXCEPTION은 Fact나 다른 REPORT_ID로 전파하지 않는다."

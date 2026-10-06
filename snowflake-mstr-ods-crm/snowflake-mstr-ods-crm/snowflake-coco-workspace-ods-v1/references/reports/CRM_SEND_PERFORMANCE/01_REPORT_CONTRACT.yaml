@@ -1,0 +1,74 @@
+report_id: CRM_SEND_PERFORMANCE
+report_name: CRM 발송성과 및 참여현황
+source_standard: MSTR_ODS_CURRENT
+execution_schema: GN_DW.BRONZE_CRM
+status: BUSINESS_DEFINITION_PENDING
+
+purpose: >-
+  선택한 발송기간의 발송구분과 발송제목별 발송 결과를 확인하고,
+  해당 발송 이후의 클릭, 서신, 선물금, 후원 중단을 함께 비교한다.
+
+display_grain:
+  - 발송구분(대)
+  - 발송구분(중)
+  - 발송구분(소)
+  - 발송제목
+
+internal_grain_candidates:
+  request_key: SND_REQ_MST.SEQ_NO
+  recipient_key:
+    - REQ_SEQ_NO
+    - R_NUM
+  recipient_key_status: VALIDATION_REQUIRED
+
+output_columns:
+  - order: 1
+    name: 발송구분(대)
+  - order: 2
+    name: 발송구분(중)
+  - order: 3
+    name: 발송구분(소)
+  - order: 4
+    name: 발송제목
+  - order: 5
+    name: 발송 수
+  - order: 6
+    name: 발송 성공 수
+  - order: 7
+    name: 클릭율(GA)
+  - order: 8
+    name: 서신 참여 수
+  - order: 9
+    name: 선물금 참여 수
+  - order: 10
+    name: 선물금 참여 건
+  - order: 11
+    name: 중단 회원 수
+  - order: 12
+    name: 중단 회원 건
+
+primary_sources:
+  - table: SND_REQ_MST
+    role: 발송요청, 발송구분, 제목
+  - table: SND_MEMBER_LIST
+    role: 발송 대상과 발송 결과
+  - table: SND_MEMBER_OPEN_LOG
+    role: 메일 오픈 이벤트
+  - table: SND_MEMBER_MAIL_LINK_LOG
+    role: 메일 링크 클릭 이벤트
+  - table: TM_RM_RELATNSP_LETTER_INFO
+    role: 서신 참여
+  - table: TM_RM_RELATNSP_GFTMNEY_INFO
+    role: 선물금 참여
+  - table: TM_MM_FDRM_MBER_SPNSR_DSCNTC
+    role: 후원 중단 이벤트
+
+required_business_decisions:
+  - 발송 수를 대상 수, 시도 수, 실제 발송 수 중 무엇으로 볼지
+  - 발송 성공의 최종 상태와 재시도 처리
+  - 클릭률의 분자와 분모
+  - 실제 GA 원천 또는 추적 매핑 존재 여부
+  - 후속 행동 인정기간
+  - 한 회원이 여러 발송을 받은 경우 행동 귀속 방식
+  - 서신·선물금·중단의 인정 상태
+

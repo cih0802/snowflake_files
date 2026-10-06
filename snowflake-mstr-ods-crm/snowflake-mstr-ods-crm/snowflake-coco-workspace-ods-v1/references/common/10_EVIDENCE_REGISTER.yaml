@@ -1,0 +1,74 @@
+skill_version: 0.1.0
+updated_at: '2026-09-16'
+execution_scope:
+  database: GN_DW
+  schema: BRONZE_CRM
+  approved_table_count: 50
+
+evidence:
+  - evidence_id: SF_SEND_KEY_20260916_01
+    source: snowflake_information_schema
+    result_set: 04_SEND_KEY_CONTRACT
+    received_at: '2026-09-16'
+    status: confirmed_snowflake
+    facts:
+      - table: SND_MEMBER_LIST
+        ordinal_position: 2
+        column: R_NUM
+        data_type: NUMBER
+        is_nullable: 'YES'
+        comment: null
+      - table: SND_MEMBER_MAIL_LINK_LOG
+        ordinal_position: 3
+        column: R_NUM
+        data_type: NUMBER
+        is_nullable: 'YES'
+        comment: null
+      - table: SND_MEMBER_OPEN_LOG
+        ordinal_position: 3
+        column: R_NUM
+        data_type: NUMBER
+        is_nullable: 'YES'
+        comment: null
+    interpretation:
+      confirmed:
+        - 세 테이블의 R_NUM은 Snowflake에서 물리 타입이 호환된다.
+        - 세 컬럼은 NULL을 허용하므로 NULL 행은 귀속 대상에서 분리해야 한다.
+      not_confirmed:
+        - R_NUM 단독 전역 유일성
+        - SND_MEMBER_LIST에서 R_NUM 단독 또는 REQ_SEQ_NO와의 복합 유일성
+        - 오픈·클릭 로그의 수신자 목록 미매칭 비율
+        - R_NUM 생성·재사용 범위
+
+  - evidence_id: SQLSERVER_ODS_METADATA_20260916
+    source: sql_server_mstr_ods_metadata
+    extracted_at: '2026-09-16'
+    status: confirmed_source_structure
+    facts:
+      - MSTR_ODS.dbo 전체 사용자 테이블은 421개이며, Snowflake 승인 범위는 50개다.
+      - 원천 외래키는 4개뿐이어서 대부분의 업무 조인은 애플리케이션·업무 계약으로 관리해야 한다.
+      - SND_REQ_MST의 원천 PK는 SEQ_NO다.
+      - SND_MEMBER_LIST의 원천 인덱스에 REQ_SEQ_NO, R_NUM, MBER_NO 조합이 존재한다.
+      - SND_MEMBER_OPEN_LOG와 SND_MEMBER_MAIL_LINK_LOG의 원천 구조에 REQ_SEQ_NO와 R_NUM이 존재한다.
+
+pending_contracts:
+  - priority: 1
+    id: SEND_RECIPIENT_KEY_GRAIN
+    question: R_NUM이 전역 유일한가, 발송요청별로 재사용되는가?
+    required_evidence: scripts/01_PROFILE_SEND_KEY_CONTRACT.sql 결과
+  - priority: 2
+    id: SEND_COUNT_DEFINITION
+    question: 발송 수는 대상 수, 시도 수, 수신자 상세 행 수 중 무엇인가?
+  - priority: 3
+    id: SEND_SUCCESS_DEFINITION
+    question: 발송 성공 수의 최종 상태와 재시도 중복 제거 기준은 무엇인가?
+  - priority: 4
+    id: CLICK_RATE_DEFINITION
+    question: 클릭률의 분자와 분모는 무엇이며 GA 원천이 별도로 존재하는가?
+  - priority: 5
+    id: POST_ACTION_WINDOW
+    question: 서신·선물금·중단을 발송 후 얼마 동안 인정하며 다중 발송 시 어디에 귀속하는가?
+  - priority: 6
+    id: ACTION_STATUS_RULES
+    question: 서신·선물금·중단의 인정 상태와 취소·환불·상태변경 제외 규칙은 무엇인가?
+

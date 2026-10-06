@@ -1,0 +1,113 @@
+reference_version: "2.0"
+generated_at: "2026-09-01"
+
+environment:
+  source_database: "GN_DW"
+  source_schema: "BRONZE_CRM"
+  source_system: "MSTR_ODS_CRM"
+  mstr_dw_accessible: false
+  mstr_dw_dependency_allowed: false
+
+global_domains:
+  STRD_MT: {format: "YYYYMM"}
+  OCCRRNC_DE: {format: "YYYYMMDD"}
+  CPR_DIV_CD:
+    observed_for_activity_202606: ["I", "S"]
+    rule: "활동회원 ODS에서는 I/S가 확인됨. 1/2 변환을 자동 적용하지 않음."
+  amount_count:
+    formula: "AMOUNT / 10000.0"
+    row_count: false
+    preferred_type: "NUMBER(38,7)"
+
+tables:
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT:
+    role: ["개발/증감/재후원/중단 이벤트", "개발보고서 핵심", "활동 현재 후원잔액 재구성"]
+    expected_business_key: ["SPNSR_NO","SPNSR_BSNS_NO","OCCRRNC_DE","SER_NO"]
+    important_columns: ["MBER_NO","SPNSR_NO","SPNSR_BSNS_NO","OCCRRNC_DE","SER_NO","SPNSR_AMT","DVLP_DIV_CD","ACMSLT_DEPT_CD","SPNSR_BSNS_ID","MBER_DIV_CD","CMPGN_CD"]
+    activity_rules:
+      partition: ["SPNSR_NO","SPNSR_BSNS_NO"]
+      last_row_order: ["OCCRRNC_DE DESC","SER_NO DESC"]
+      current_balance: "기준월까지 SUM(SPNSR_AMT)"
+      forbidden: "마지막 이벤트 SPNSR_AMT를 현재 활동금액으로 사용"
+
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO:
+    role: ["회원 최초등록일/상태","기준월 회원상태"]
+    expected_key: ["MBER_NO"]
+    important_columns: ["MBER_NO","FRST_REGIST_DT","MBER_STAT_CD","STDR_DE"]
+    validation: "MBER_NO 중복 시 임의 DISTINCT하지 말고 STDR_DE/적재 규칙 확인"
+
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR:
+    role: ["회원-후원 관계","후원 최초등록일","활동 Fact 실적부서"]
+    expected_key: ["SPNSR_NO"]
+    important_columns: ["SPNSR_NO","MBER_NO","FRST_REGIST_DT","ACMSLT_DEPT_CD"]
+    activity_department_rule: "이 테이블 ACMSLT_DEPT_CD를 DEPT4로 매핑"
+
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS:
+    role: ["후원번호 내부 후원사업 관계","후원사업 중단일/상태"]
+    expected_key: ["SPNSR_NO","SPNSR_BSNS_NO"]
+    important_columns: ["SPNSR_NO","SPNSR_BSNS_NO","SPNSR_DSCNTC_DE","SPNSR_DSCNTC_YN","SPNSR_DSCNTC_RSN_CD","SPNSR_AMT"]
+    observed_activity_202606:
+      SPNSR_DSCNTC_DE_null_count: 841753
+      SPNSR_DSCNTC_DE_empty_count: 0
+    rule: "NULL만 미중단 기본값 처리; 공백을 임의 NULL 취급하지 않음"
+
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC:
+    role: ["회원 중단 이력","활동종료일 계산","중단회원 보고서"]
+    important_columns: ["MBER_NO","SPNSR_DSCNTC_DE","DSCNTC_RSN_CD","DSCNTC_PATH"]
+
+  GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR:
+    role: ["회원 재후원 이력","활동종료일 계산"]
+    important_columns: ["MBER_NO","RE_SPNSR_DE"]
+
+  GN_DW.BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS:
+    role: ["회원 상태 변경이력","기준월 상태 재구성"]
+    important_columns: ["MBER_NO","BF_STAT_CD","CHN_STAT_CD","FRST_REGIST_DT"]
+    rule: "기준월 회원별 FRST_REGIST_DT DESC 최신 1건"
+
+  GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO:
+    role: ["현재 결제정보","청구제외 예외"]
+    important_columns: ["SETLE_KEY","MBER_NO","CPR_DIV_CD","SETLE_CD","FNLT_DIV_CD","SETLE_ENTRPS_CD","SETLE_STAT_CD","FRST_REGIST_DT","RQEST_EXCL_END_DE"]
+
+  GN_DW.BRONZE_CRM.TH_PM_SETLE_INFO_HIST:
+    role: ["결제정보 이력","기준시점 결제정보 재구성"]
+    important_columns: ["SETLE_KEY","MBER_NO","CPR_DIV_CD","SETLE_CD","FNLT_DIV_CD","SETLE_ENTRPS_CD","SETLE_STAT_CD","REGIST_DT"]
+    rule: "현재+이력 UNION ALL 후 회원+법인별 SETLE_KEY DESC 최신 1건"
+
+  GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT:
+    role: ["납입 실적","활동회원 납입금액"]
+    important_columns: ["SPNSR_NO","SPNSR_BSNS_NO","MBER_NO","PAY_DE","PAY_AMT","USE_YN","PRCS_STAT_CD","PAY_STAT_CD","MBRFEE_DIV_CD","RETUN_MBRFEE_KEY"]
+    activity_filter: {USE_YN: "Y", PRCS_STAT_CD: "S", PAY_STAT_CD: "S", MBRFEE_DIV_CD: "E", RETUN_MBRFEE_KEY: "IS NULL"}
+
+  GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO:
+    role: ["부서마스터","실적부서 계층"]
+    expected_key: ["DEPT_ID"]
+    important_columns: ["DEPT_ID","DEPT_NM","UPPER_DEPT_ID","ACMSLT_UPPER_DEPT_ID","SORT_ORDR","USE_YN"]
+    hierarchy_root: "ZV000000"
+    activity_exclusion: "중간계층 C.DEPT_ID <> 'ZC000029'"
+
+  GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO:
+    role: ["후원사업 마스터"]
+    expected_key: ["SPNSR_BSNS_ID"]
+    important_columns: ["SPNSR_BSNS_ID","SPNSR_BSNS_NM","SPNSR_BSNS_ABRV_CD","CPR_DIV_CD","SORT_ORDR"]
+    warning: "사업마스터 법인을 활동 Fact의 최종 법인으로 자동 대체하지 않음"
+
+  GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG:
+    role: ["캠페인/상위캠페인 명칭"]
+    expected_key: ["CMPGN_CD"]
+    important_columns: ["CMPGN_CD","CMPGN_NM","UPPER_CMPGN_CD"]
+
+  GN_DW.BRONZE_CRM.TC_CMMN_CD:
+    role: ["공통코드 헤더"]
+    expected_key: ["CD_ID"]
+
+  GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD:
+    role: ["공통코드 상세"]
+    expected_key: ["CD_ID","DTL_CD_ID"]
+    corporate_group: "CM019"
+
+preflight_checks:
+  - "필요 테이블/컬럼 INFORMATION_SCHEMA 확인"
+  - "예상 업무키 중복 확인"
+  - "CPR_DIV_CD 실제 도메인 확인"
+  - "SPNSR_DSCNTC_DE NULL/공백 건수 확인"
+  - "회원/후원키 조인 행 증식 여부 확인"

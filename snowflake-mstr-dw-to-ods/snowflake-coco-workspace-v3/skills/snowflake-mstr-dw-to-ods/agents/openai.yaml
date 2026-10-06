@@ -1,0 +1,8 @@
+interface:
+  display_name: "MSTR DW → Snowflake ODS"
+  short_description: "기존 MSTR SQL을 실제 ODS 기반 Snowflake 로직으로 변환"
+  brand_color: "#29B5E8"
+  default_prompt: "Use $snowflake-mstr-dw-to-ods to convert the attached MSTR_DW report SQL into verified Snowflake MSTR_ODS logic."
+
+policy:
+  allow_implicit_invocation: true

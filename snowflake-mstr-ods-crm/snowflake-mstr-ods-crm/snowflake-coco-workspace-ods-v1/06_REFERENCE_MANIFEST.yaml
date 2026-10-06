@@ -1,0 +1,46 @@
+pack_name: snowflake-coco-workspace-ods-v1
+skill_name: mstr-ods-crm-schema
+invocation: $mstr-ods-crm-schema
+source_database: GN_DW
+source_schema: BRONZE_CRM
+approved_table_count: 50
+updated_at: '2026-09-17'
+
+entry_points:
+  workspace_rules: SNOWFLAKE.md
+  skill: skills/mstr-ods-crm-schema/SKILL.md
+  planner_quick_start: references/examples/01_PLANNER_QUICK_START.md
+  planner_full_guide: references/examples/02_NATURAL_LANGUAGE_PROMPT_GUIDE.md
+  common_task_template: 05_COCO_TASK_TEMPLATE.md
+  planner_workspace_guide: 07_PLANNER_GUIDE.md
+  planner_prompt_index: 08_PROMPT_INDEX.md
+
+common_references:
+  - references/common/00_COCO_READ_FIRST_ODS_ONLY.md
+  - references/common/01_APPROVED_TABLES.md
+  - references/common/02_SOURCE_PHYSICAL_CATALOG.json
+  - references/common/03_JOIN_CONTRACTS.md
+  - references/common/04_BUSINESS_RULES.md
+  - references/common/05_SEND_KEY_CONTRACT.yaml
+  - references/common/06_RELEVANT_CODE_MAP.json
+  - references/common/07_VALIDATION_GATES.yaml
+  - references/common/08_SNAPSHOT_AND_DIFFERENCE_POLICY.md
+  - references/common/09_PRIVACY_POLICY.md
+  - references/common/10_EVIDENCE_REGISTER.yaml
+
+reports:
+  CRM_SEND_PERFORMANCE:
+    path: references/reports/CRM_SEND_PERFORMANCE
+    status: BUSINESS_DEFINITION_PENDING
+    planner_prompt: references/reports/CRM_SEND_PERFORMANCE/05_PLANNER_PROMPT.md
+
+scripts:
+  - path: scripts/01_PROFILE_SEND_KEY_CONTRACT.sql
+    purpose: 발송 수신자·오픈·클릭 연결키의 NULL·중복·미매칭·유일성 검증
+
+precedence:
+  - current Snowflake metadata and data profiles
+  - confirmed business decisions
+  - confirmed reference contracts
+  - SQL Server source metadata
+  - naming-based candidates

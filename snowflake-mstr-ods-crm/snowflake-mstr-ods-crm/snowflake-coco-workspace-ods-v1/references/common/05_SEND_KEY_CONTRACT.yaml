@@ -1,0 +1,54 @@
+contract_id: MSTR_ODS_SEND_RECIPIENT_KEY
+updated_at: '2026-09-16'
+execution_schema: GN_DW.BRONZE_CRM
+
+snowflake_evidence:
+  result_set: 04_SEND_KEY_CONTRACT
+  status: CONFIRMED_SNOWFLAKE
+  columns:
+    - table: SND_MEMBER_LIST
+      ordinal_position: 2
+      column: R_NUM
+      data_type: NUMBER
+      nullable: true
+    - table: SND_MEMBER_MAIL_LINK_LOG
+      ordinal_position: 3
+      column: R_NUM
+      data_type: NUMBER
+      nullable: true
+    - table: SND_MEMBER_OPEN_LOG
+      ordinal_position: 3
+      column: R_NUM
+      data_type: NUMBER
+      nullable: true
+
+confirmed:
+  - 세 테이블의 R_NUM 물리 타입은 호환된다.
+  - R_NUM은 NULL을 허용하므로 NULL 키는 행동 귀속에서 분리한다.
+
+not_confirmed:
+  - R_NUM 단독 전역 유일성
+  - SND_MEMBER_LIST의 R_NUM 단독 유일성
+  - REQ_SEQ_NO와 R_NUM 복합키 유일성
+  - 로그 미매칭 비율
+  - 회원번호가 키에 추가로 필요한지 여부
+
+preferred_join:
+  member_to_log:
+    columns:
+      - REQ_SEQ_NO
+      - R_NUM
+    status: VALIDATION_REQUIRED
+
+r_num_only_join:
+  status: PROHIBITED_UNTIL_PROFILE_PASSES
+
+null_policy:
+  join_nulls: false
+  coalesce_to_sentinel: false
+
+aggregation_policy:
+  - 오픈 로그를 수신자 전체키별로 먼저 집계한다.
+  - 클릭 로그를 수신자 전체키별로 먼저 집계한다.
+  - 두 원시 로그를 동시에 수신자 목록에 JOIN하지 않는다.
+
