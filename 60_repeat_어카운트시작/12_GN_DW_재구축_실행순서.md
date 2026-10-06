@@ -57,7 +57,7 @@ END-METADATA -->
 | 7 | MSTR | `15_MSTR 이관 PoC/snowflake 적용 ddl/00~04` 또는 `tools/mstr_pipeline.py` | 에이전트 | 매니페스트 ↔ 라이브 일치 |
 | 8 | SERVING 기반 | `05_SV-Agent_ai/02_SERVING_setup.sql` | 에이전트 | — |
 | 9 | ML SERVING 뷰 | `05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql` | 에이전트 | 뷰 7 |
-| 10 | 실적·부서집계 SV | `05_SV-Agent_ai/05_0`·`05_1`~`05_13` · `13_SV_AD_배포_추가작업.sql` | 에이전트 | `sv_identifier_gate` |
+| 10 | 실적·부서집계 SV | `05_SV-Agent_ai/05_0`·`05_1`~`05_17`(🆕 O203 · `05_14` KPI · `05_15` GA 행동 · `05_16` 연 예산 · `05_17` 회원상태 as-of) · `13_SV_AD_배포_추가작업.sql` | 에이전트 | `sv_identifier_gate` |
 | 11 | 🔴 ML SV · MSTR SV | `22_ML_SV_DDL.sql` · `23_MSTR_SV_DDL.sql` | 에이전트 | **Agent 보다 먼저**(아래 주) |
 | 12 | Agent 3종 | `09_1_AGENT_생성.sql` → `09_2_AGENT_버전업.sql` | 에이전트 | `09_1 [6]` · 참조 SV 전건 실재 |
 | 13 | AGENT_MSTR | `24_MSTR_AGENT_배포.sql` | 에이전트 | `24 [3]`·`[8]` |

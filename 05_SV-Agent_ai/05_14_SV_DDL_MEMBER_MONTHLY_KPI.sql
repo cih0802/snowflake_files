@@ -27,9 +27,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI
       WITH SYNONYMS ('누계개발 회원월 경유') COMMENT = '참고 — 같은 MSTR 개발(건)을 회원 월 팩트(FMM) 경유로 누적한 값(O202 이후 정의 동일 · 신규기존 판정 경로만 다르다). 🔴 활동율 계산에는 DEV_CUM_AMT_CNT_SUM 을 쓴다.',
     kpi.ACTIVE_RATE AS SUM(kpi.MONTH_END_ACTIVE_CNT) / NULLIF(SUM(kpi.YEAR_START_ACTIVE_CNT) + SUM(kpi.DEV_CUM_AMT_CNT), 0) * 100
       WITH SYNONYMS ('활동율', '공45', '전체회원 활동율') COMMENT = '공45 활동율(%) = 월말활동(건) ÷ (연도초활동(건) + 누계개발(건)) ×100. 비율(N). 🔴 한 달을 지정한다.',
-    kpi.ACTIVE_RATE_NEW AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.ACTIVE_CNT END)
-        / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.DEV_CUM_AMT_CNT END), 0) * 100
-      WITH SYNONYMS ('신규 활동율', '공46') COMMENT = '공46 신규 활동율(%) = 활동(건)[신규] ÷ 누계개발(건)[신규] ×100. 🟢 [O202 · 2026-10-06 현업 회신] 지표 사전 표기(누계개발 ÷ 활동)는 분자·분모가 바뀐 **오타**였다 — 교정본이다. 비율(N). 🔴 한 달을 지정한다.',
+    kpi.ACTIVE_RATE_NEW AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.DEV_CUM_AMT_CNT END)
+        / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.ACTIVE_CNT END), 0) * 100
+      WITH SYNONYMS ('신규 활동율', '공46') COMMENT = '공46 신규 활동율(%) = 누계개발(건)[신규] ÷ 활동(건)[신규] ×100 — **지표 사전 원문 그대로**. 🟢 [O203 · 2026-10-06 현업 재회신] 원래 계산식이 맞다(O202 의 「오타」 판정 철회) · 🔴 **100% 를 넘는 값이 정상이다**(현업 확인) — 100% 초과를 오류·이상치로 설명하지 않는다. 비율(N). 🔴 한 달을 지정한다.',
     kpi.ACTIVE_RATE_EXISTING AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '기존' THEN kpi.ACTIVE_CNT END)
         / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '기존' THEN kpi.DEV_CUM_AMT_CNT + kpi.YEAR_START_ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('기존 활동율', '공47') COMMENT = '공47 기존 활동율(%) = 활동(건)[기존] ÷ (누계개발(건)[기존] + 연도초활동(건)[기존]) ×100. 비율(N). 🔴 한 달을 지정한다.'

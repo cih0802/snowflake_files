@@ -70,7 +70,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
       WITH SYNONYMS ('참여율')
       COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.'
   )
-  COMMENT = 'GA4 웹·앱 행동 SV(🆕 O203). 이벤트·페이지뷰·식별 방문자·채널 분석용. [원천: GA4 → GN_DW.SILVER.BIGQUERY_REFINED_DATA(외부 Python 적재) → GOLD.FACT_BIGQUERY_BEHAVIOR]. 🔴 개인 단위 예측(방문자 전환 예측·재방문 예측)은 없다 — 집계만 제공한다.'
+  COMMENT = 'GA4 웹·앱 행동 SV(🆕 O203). 이벤트·페이지뷰·식별 방문자·채널 분석용. [원천: GA4 → GN_DW.SILVER.BIGQUERY_REFINED_DATA(외부 Python 적재) → GOLD.FACT_BIGQUERY_BEHAVIOR]. 🔴 개인 단위 예측(방문자 전환 예측·재방문 예측)·퍼널 단계 라벨·신규 사용자(first_visit) 구분은 없다 — 집계만 제공한다. 🔴 [O203 사용자 결정] GA 원천은 추가되지 않는다 ⇒ 그런 질문에는 문구를 그대로 「현재 GA 데이터로는 답변할 수 없습니다. 자세한 내용은 IT부서에 문의 바랍니다.」 로 안내하고, 추가 적재·추후 제공·약속 관련 표현을 덧붙이지 않는다.'
   AI_SQL_GENERATION '핵심 규칙: (1) 건수는 TOTAL_EVENT_CNT(가산), 페이지 조회는 TOTAL_PAGE_VIEWS, 사람 수는 IDENTIFIED_VISITORS(식별자만 · distinct). (2) EVENT_SESSIONS 는 EVENT_CATEGORY 를 하나로 고정할 때만 쓰고, 여러 이벤트의 세션을 더해 총 세션으로 답하지 않는다. (3) 기간 미지정 시 데이터 최신월 기준 직전 3개월로 한정한다. 기준 시점은 비상관 CTE 1개(SELECT MAX(date.FULL_DATE) FROM fbq JOIN date ON fbq.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. (4) 채널 분포에는 Unassigned 를 함께 보여준다. (5) PAGE_PATH·EVENT_ACTION·EVENT_LABEL·UTM_CAMPAIGN 은 자유 텍스트이므로 ILIKE 부분일치로 필터한다. (6) CRM 실적(개발·회비)과 교차 계산하지 않는다. (7) ORDER BY 에는 SELECT 별칭을 그대로 쓴다.'
   AI_VERIFIED_QUERIES (
     vqr_o203_channel_3m AS (

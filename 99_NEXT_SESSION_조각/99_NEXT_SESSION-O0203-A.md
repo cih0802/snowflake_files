@@ -34,11 +34,15 @@ END-METADATA -->
 | ~~3~~ | ~~㉡ T3 잔여~~ | 🟢 AGENT_MEMBER VERSION$8 추세 참고치 · 7월 전망 스모크 PASS |
 | ~~4~~ | ~~㉡ 👤 T6~~ | 🟢 GN_DW_ANALYST 권한 누락 0 |
 | ~~5~~ | ~~㉡ 👤 T5 MSTR A/B/C~~ | 🟢 A안 확정 · 다음 MSTR 작업 시 B안 전환 질문(15_ 작업계획 §9 · 스킬 Step 6) |
-| 6 | ㉡ T8·T9 | 12_ 계획 순서대로 |
+| ~~6~~ | ~~㉡ T8·T9~~ | 🟢 SV_GA_BEHAVIOR · AGENT_MARKETING V6 · AGENT_EXECUTIVE V7 · 판단표 = `12_agent개선과제/00` §6·§7 |
+| ~~7~~ | ~~㉡ T8 2차 후보~~ | 🟢 SV_BUDGET_YEARLY(05_16) · SV_MEMBER_STATUS_ASOF(05_17) · EXEC V8 · MKT V7 · MEMBER V9 · 스모크 PASS |
+| ~~8~~ | ~~㉡ 👤 GA 원천 보강~~ | 🟢 원천 추가 없음(사용자 결정) ⇒ 「현재 GA 데이터로는 답변할 수 없습니다」 안내로 확정 |
+| 9 | ㉡ 👤 MSTR 일일 적재(전월+당월) | ⏸ 준비만 완료 · 현업 회신 대기 → `15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md` §5 (권고 = dbt `run-operation` 또는 Task AFTER · GN_DW_DBT 는 MSTR 권한 0) |
 
 ### ▣ O203-A-2 ⚪ 결정 완료(재론 금지)
 
 - 알림톡·메일 오픈은 원천에 없다(MSG_AT OPEN_MEMBERS 전건 NULL) — 발송 기준 D5 매칭으로 답한다.
 - 이탈 위험 분류(모델) ≠ 다음 달 중단 전망치 — Agent 는 둘을 구분해 안내한다.
+- 공46 신규 활동율 = **누계개발(건)[신규] ÷ 활동(건)[신규]**(지표 사전 원문) · 100% 초과 정상(현업 재회신 2026-10-06) — O202-B 의 「오타」 판정은 철회됐다.
 
 _Co-authored with CoCo_

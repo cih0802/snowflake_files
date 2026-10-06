@@ -33,6 +33,7 @@ instructions:
     / 🆕 **결연활동 자체(서신 접수·선물금 전달 건수·회원수·선물금액) → analyst_relation_activity**(O198) — 🔴 「발송 후 5일 안에 서신·선물금이 들어왔나」(발송 반응 매칭)는 analyst_service 소관이다.
     🆕 [O203] 「(특정 발송 제목·채널) 발송 후 5일 내 중단한 회원」 → **analyst_service 의 D5 중단 매칭 지표**(발송 제목·채널·월로 필터)로 답한다 — 「발송 팩트 미적재」라고 답하지 말 것(적재 완료).
     🔴 오픈은 **문자(SND) 링크 클릭만** 원천에 있다 — 알림톡(MSG_AT)·메일 「오픈」을 물으면 그 채널은 오픈 원천이 없다고 밝히고 **발송 기준** D5 중단 매칭을 대안으로 제시한다(오픈자를 추정하지 않는다).
+    🆕 [O203] 「(특정 과거 날짜·월말) 기준 회원상태별 회원수」·「작년 말 미납 상태 회원」·「상태 전환(직전→현재)」 → **analyst_member_status_asof**(기준일 1개 as-of 조건 필수). 🔴 「활동회원 수」 KPI 는 여전히 analyst_member_monthly — 상태 라벨 활동회원과 정의가 달라 두 값을 대체·비교하지 않는다.
     한 질문은 핵심 주제의 단일 도구로. 🔴🔴 **[O45 이중계상 금지] `analyst_member_monthly` 와 `analyst_member_fee` 의 회비 금액을 한
     표에 합치지 말 것** — 두 도구는 같은 원천을 다른 grain 으로 담은 형제 팩트다(실측: 합치면 청구액 +18.5% 과대계상). 둘 다 필요하면 **표를 분리하고 각 표의
     grain 을 명시**한다. 전체 합계는 두 도구가 일치해야 하며, 어긋나면 결함이므로 보고한다.
@@ -388,7 +389,7 @@ tools:
     name: analyst_member_monthly_kpi
     description: '[O201-D] 월별 회원 KPI(grain=월×신규기존 · GOLD.WIDE_MEMBER_MONTHLY_KPI). 누계개발 = 당해년도 1월~조회월 개발(건) 합계(금액 기준 DEV_CUM_AMT_CNT).
       지표: 누계개발·활동률(공45 = 월말활동 ÷ (연초활동 + 누계개발))·신규 활동률(공46)·기존 활동률(공47). "누계개발"·"활동률"·"공45/46/47" 류 질문에 사용.
-      🔴 비율은 합산하지 않는다. 🔴 공46 은 정의서 원문대로 누계개발 ÷ 활동이라 100% 를 넘을 수 있다(정의 방향 현업 확인 중). 🔴 월별 회원 일반 지표는 analyst_member_monthly 다.'
+      🔴 비율은 합산하지 않는다. 🔴 공46 은 지표 사전 원문대로 누계개발 ÷ 활동이며 **100% 를 넘는 것이 정상이다**(2026-10-06 현업 확인) — 100% 초과를 오류로 설명하지 않는다. 🔴 월별 회원 일반 지표는 analyst_member_monthly 다.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_ml_feature_importance
@@ -398,7 +399,21 @@ tools:
       "증액 요인"·"증액회원 특성 중 중요한 요인"·"신규 후원 유치 요인" 류 질문에 사용. 🔴🔴 **분석유형을 하나로 고정한다**(섞으면 합계가 1 을 넘는다).
       🔴🔴 **인과로 답하지 않는다** — 「모델이 이 요인에 가장 큰 상대 중요도를 부여했다」로 표현한다. 🔴 피처 목록은 사람이 지정한 후보다 — 지정되지 않은 요인을 「중요하지 않다」고 말하지 않는다.
       🔴 **개인별 증액 대상자 예측은 이 도구가 아니라 analyst_ml_member_risk(모델 증액 분류 회원)** 다. 🔴 상위 요인은 순위로 정렬한다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_member_status_asof
+    description: '[O203 T8 2차] 과거 시점 회원상태(SCD2 상태 이력 · 1행 = 회원 × 상태 유효구간). 원천=CRM(eCRM) → BRONZE_CRM.TH_MM_FDRM_MBER_STNG_DTLS → SILVER.CRM_MEMBER_STATUS_HIST → GOLD.DIM_MEMBER_STATUS_HISTORY.
+      활성 지표: 고유 회원수. 차원: 상태 시작일·종료일·현재여부·회원상태(13종)·회원상태 그룹·직전 회원상태·회원구분·성별·최초가입일·가입연도.
+      「2025년 6월 말 기준 회원상태별 회원수」·「작년 말 미납 상태였던 회원 수」·「상태 전환(직전 → 현재)」 질문에 사용.
+      🔴🔴 반드시 기준일 하나로 as-of 조건(EFFECTIVE_FROM <= 기준일 AND (EFFECTIVE_TO > 기준일 OR EFFECTIVE_TO IS NULL))을 건다 — 경계일 「>=」 는 회원 중복을 만든다.
+      🔴🔴 이 도구의 「활동회원」(상태 라벨)은 월실적 KPI 활동회원(analyst_member_monthly)과 정의가 다르다(2026-06 말 681,134 ↔ 723,406) — 「활동회원 수」 KPI 질문은 analyst_member_monthly 로 답하고 두 값을 비교·대체하지 않는다.
+      🔴 회원 속성(성별·회원구분)은 현재 마스터 값이다.'
 tool_resources:
+  analyst_member_status_asof:
+    semantic_view: GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
   analyst_ml_feature_importance:
     semantic_view: GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE
     execution_environment:

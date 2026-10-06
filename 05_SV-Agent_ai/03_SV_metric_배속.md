@@ -54,7 +54,7 @@ END-METADATA -->
 | # | derived | 분자 ÷ 분모 (SSOT 직역) | base FACT | 활성여부 | 가산성 | 시간 | Phase | 비고 |
 |---|---|---|---|---|---|---|---|---|
 | 공45 | 활동율(%) | MONTH_END_ACTIVE_CNT ÷ (YEAR_START_ACTIVE_CNT + DEV_CNT(YTD)) | FMM | 활성 | N·base S | 전체가능 | P1 | 시점값 |
-| 공46 | 신규 활동율(%) | DEV_CNT(YTD) ÷ ACTIVE_CNT | FMM | 활성 | N·base S | 전체가능 | P1 | ⚠#45·47과 분자/분모 역방향(§6-A) — 정본 그대로, 합의 전 확정금지 |
+| 공46 | 신규 활동율(%) | DEV_CNT(YTD) ÷ ACTIVE_CNT | FMM | 활성 | N·base S | 전체가능 | P1 | 🟢 [O203 · 2026-10-06 현업 확정] 정본 그대로(누계개발 ÷ 활동) · 100% 초과 정상 · SV_MEMBER_MONTHLY_KPI |
 | 공47 | 기존 활동율(%) | ACTIVE_CNT ÷ (DEV_CNT(YTD) + YEAR_START_ACTIVE_CNT) | FMM | 활성 | N·base S | 전체가능 | P1 | 신규/기존 필터 |
 | 공54 | 중단율1(%) | STOP_CNT ÷ (DEV_CNT + YEAR_START_ACTIVE_CNT) | FMM | 활성 | N·base S | 전체가능 | P1 | |
 | 공55 | 중단율2(%) | STOP_CNT ÷ DEV_CNT | FMM | 활성 | N | 전체가능 | P1 | |
@@ -274,7 +274,7 @@ END-METADATA -->
 > **2026-07-29 개정**: 공8 보류→**활성 복원**(오진 교정) → 활성 59→60·보류 4→3.
 
 ### 8.5 미해결·합의 플래그 (04 §6 A~G, 임의수정 금지 — 정본 그대로 배속)
-- **§6-A** 공46 활동율 분자/분모 역방향 (#45·47과 상충) → 현업 확인. *(잔여)*
+- ~~**§6-A** 공46 활동율 분자/분모 역방향 (#45·47과 상충) → 현업 확인. *(잔여)*~~ 🟢 [O203 · 2026-10-06] 현업 확정 = 정본(누계개발 ÷ 활동)이 맞다 · 100% 초과 정상 · 종결.
 - ~~**§6-B**~~ ✅**해소(2단계 실측)**: 공56·57·77·78 신규/기존 = `FMM.NEW_EXISTING_FLAG`(시점귀속 실재) → as-of 정합.
 - ~~**§6-C**~~ ✅**해소(2단계 실측)**: 공80 = `FMM.UNPAID_FLAG_BOM`/`UNPAID_FLAG_EOM`(월초·월말 미납회원) 실재 → COUNT DISTINCT 차분.
 - **§6-D** 공81·신32·신33 identity(DIM_MEMBER_IDENTITY) + 클릭=명(≠CLICKS 횟수) → 브리지·Phase 2. *(잔여, 커버리지 4.2%)*
