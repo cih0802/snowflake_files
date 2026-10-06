@@ -46,6 +46,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.SEND_RESULT_GROUP AS fse.SEND_RESULT_GROUP WITH SYNONYMS ('통신사결과코드군', '메시지타입코드군') COMMENT = '**축B 코드군 ID** — 사전 MS283 이 정의한 4그룹이며 **메시지 타입 판별자**다. 실제값 4종: ''MS056''·''MS057''·''MS058''·''MS059'' + NULL(축B 코드가 없는 행). MS056=공통 · MS057=알림톡 · MS058=SMS · MS059=MMS. 🟢 이 값은 리터럴 지정이 아니라 **사전 조인 결과에서 얻는다**(코드값이 4그룹에 걸쳐 중복 없음). 🔴 축B 코드를 필터할 때 이 축을 동반하면 오조인이 구조로 차단된다',
     fse.SEND_RESULT_NAME AS fse.SEND_RESULT_NAME WITH SYNONYMS ('통신사결과', '전송실패사유', '발송결과사유') COMMENT = '**축B 라벨 — 통신사가 반환한 도달 결과 사유**(사전 MS056~MS059). ⚠️ 카디널리티가 커 열거하지 않는다 — 「전달」이 도달 성공이고 나머지는 실패 사유다(타임아웃·전화번호 오류·템플릿 없음 등). 🔴🔴 **축A(SEND_STATUS_NAME) 와 의미가 다르다** — 축A 는 **우리 발송 시스템의 상태**(발송완료/에러/예약취소), 축B 는 **통신사 도달 결과**다. 한 표에 섞거나 합산하지 말고 어느 축으로 답했는지 밝힌다. 🔴 코드는 있으나 **사전에 라벨이 없는 행은 NULL** 이다(DEC-17-B) — 도달률·실패율의 분모를 낼 때 그 덩어리를 함께 밝힌다(문서20 §M-5)',
     fse.ALTRTV_MSG_SNDNG_YN AS fse.ALTRTV_MSG_SNDNG_YN WITH SYNONYMS ('대체문자', '대체문자 발송여부', '알림톡 대체발송') COMMENT = '대체문자 발송 여부 — **알림톡(CHANNEL=''MSG_AT'') 전용** 원천 값이다. 실제값 1종: ''Y'' + NULL. 🔴 다른 채널(EMAIL·SND·PSTMTR)은 원천에 이 컬럼이 없어 전건 NULL 이다(구조적 부재) ⇒ 반드시 CHANNEL=''MSG_AT'' 로 한정한다. 🔴 원천에 ''N'' 값이 없다 — MSG_AT 의 NULL 을 「대체문자 미발송」으로 단정하지 말고 「Y 표기 없음」으로 표현한다',
+    fse.SEND_TITLE AS fse.SEND_TITLE WITH SYNONYMS ('발송제목', '발송명', '메시지 제목', '알림톡 제목', '캠페인 메시지명') COMMENT = '[O203] 발송 제목(발송요청 원천 제목 · 자유 텍스트). 🔴 고유값이 수만 종인 자유 텍스트다 — 「행운의 카드」처럼 이름으로 물으면 **ILIKE ''%행운%카드%''** 처럼 부분일치로 필터하고 정확일치를 가정하지 않는다. 일치한 제목 목록을 함께 보여준다. ⚠️ 제목이 없는 발송은 NULL 이다(원천 미입력). 🔴 캠페인 축이 아니다 — 제목으로 캠페인을 추정하지 않는다',
     fse.RESPONSED_YN AS fse.RESPONSED_YN WITH SYNONYMS ('확인여부', '발송확인여부', '수신확인') COMMENT = '발송 확인 여부 — **문자(CHANNEL=''SND'') 전용** 원천 값이다. 실제값 2종: ''Y''·''N'' + NULL. 🔴 다른 채널은 원천에 컬럼이 없어 전건 NULL(구조적 부재) ⇒ CHANNEL=''SND'' 로 한정한다. 🔴🔴 **오픈(링크 클릭 · TOTAL_OPEN_MEMBERS)과 다른 축이다** — 확인여부를 오픈·클릭으로 바꿔 말하거나 두 값을 합산·비교해 하나의 반응률로 만들지 말 것. ⚠️ SND 에도 값이 없는 소수 행은 NULL 이다',
     member.CHRCTR_RECPTN_YN AS member.CHRCTR_RECPTN_YN WITH SYNONYMS ('문자수신여부', '문자수신', 'SMS 수신동의') COMMENT = '회원 문자수신 여부(현재 마스터 스냅샷 · 발송 시점 값이 아니다). 실제값 2종: ''Y''·''N'' + NULL. 🔴 과거 발송을 이 축으로 나누면 「발송 당시 수신 상태」가 아니라 **현재 상태**로 나뉜다 — 그 전제를 밝힌다. ⚠️ NULL 은 원천 미입력이며 ''N'' 으로 읽지 않는다',
     member.GENDER_NAME   AS member.GENDER_NAME   WITH SYNONYMS ('성별')     COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨). ⚠ 종전 코드값(''M''/''F''/''U'') 노출 → O26 교정',
@@ -79,6 +80,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       WITH SYNONYMS ('발송후 5일 중단(명)', 'D5 중단') COMMENT = '공#145 발송 다음날(D+1)~+5일 안에 후원중단이 있는 발송 대상 수(중복 포함). F(가산). 🔴 인과가 아니라 시간 창 매칭이다.',
     fse.D5_STOP_CNT_SUM AS SUM(fse.D5_STOP_CNT)
       WITH SYNONYMS ('발송후 5일 중단(건)') COMMENT = '공#146 위 매칭 회원의 활동(건) 합. F(가산).',
+    fse.D5_STOP_DISTINCT_MEMBERS AS COUNT(DISTINCT CASE WHEN fse.D5_STOP_MEMBERS > 0 THEN fse.MEMBER_DK END)
+      WITH SYNONYMS ('발송후 5일 중단 고유회원수', '발송 후 5일 내 중단한 회원 수', 'D5 중단 회원수')
+      COMMENT = '[O203] 발송 다음날(D+1)~+5일 안에 후원중단이 있는 **고유 회원수(명)**. D(distinct · 가산 금지). 「몇 명이 중단했나」 질문은 이 지표, 발송 행 기준 중복 포함 수는 D5_STOP_MEMBERS_SUM. 🔴 인과가 아니라 시간 창 매칭이다.',
     fse.SERVICE_MEMBERS_SUM AS SUM(fse.SERVICE_MEMBERS)
       WITH SYNONYMS ('서비스(명)', '회원서비스 발송(명)') COMMENT = '공#160 발송구분(대) 「회원서비스」 발송 대상 수(발송 행 기준 · 중복 포함). 고유 회원수가 필요하면 DISTINCT_SEND_MEMBERS 에 같은 조건을 건다. ⚠️ 발송구분이 없는 발송은 포함되지 않는다.',
     fse.SERVICE_CNT_SUM AS SUM(fse.SERVICE_CNT)
@@ -102,6 +106,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       QUESTION '최근 6개월 월별 발송 후 5일 내 증액·중단 매칭 회원수'
       VERIFIED_BY '(DW = O191)'
       SQL 'WITH mx AS (SELECT MAX(date.FULL_DATE) AS md FROM fse JOIN date ON fse.DATE_SK = date.DATE_SK) SELECT date.YEAR, date.MONTH, SUM(fse.D5_INCREASE_PART_MEMBERS) AS D5_INCREASE_MEMBERS, SUM(fse.D5_STOP_MEMBERS) AS D5_STOP_MEMBERS_SUM FROM fse JOIN date ON fse.DATE_SK = date.DATE_SK CROSS JOIN mx WHERE date.FULL_DATE > DATEADD(MONTH, -6, mx.md) AND date.FULL_DATE <= mx.md GROUP BY date.YEAR, date.MONTH ORDER BY date.YEAR, date.MONTH'
+    ),
+    vqr_o203_title_d5_stop AS (
+      QUESTION '2025년 9월 행운의 카드 알림톡 발송 회원 중 발송 후 5일 내 중단한 회원 수'
+      VERIFIED_BY '(DW = O203 · 기대 30명)'
+      SQL 'SELECT COUNT(DISTINCT CASE WHEN fse.D5_STOP_MEMBERS > 0 THEN fse.MEMBER_DK END) AS D5_STOP_DISTINCT_MEMBERS, COUNT(DISTINCT fse.MEMBER_DK) AS DISTINCT_SEND_MEMBERS FROM fse JOIN date ON fse.DATE_SK = date.DATE_SK JOIN service ON fse.SERVICE_SK = service.SERVICE_SK WHERE fse.SEND_TITLE ILIKE ''%행운%카드%'' AND service.CHANNEL = ''MSG_AT'' AND date.YEAR = 2025 AND date.MONTH = 9'
     )
   );
 

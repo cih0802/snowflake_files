@@ -50,6 +50,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME
       WITH SYNONYMS ('후원사업', '후원사업명', '사업', '사업명')
       COMMENT = '사건의 후원사업명(정본 #123). 개발 행 = 개발한 사업 · 🟢 중단 행 = **끊은 사업**(중단 보고 기본 축 · 사용자 결정 L-2) — 일부 미배선 중단행은 ''(미매핑)''. 데려온 사업은 ACQ_SPONSORSHIP 으로 나란히 보인다(두 축 합계는 다르다 · 합산 금지). ⚠️ **같은 라벨이 세 축이다**: ① 이 축 = **사건(개발) 시점** 후원사업 ② `SV_MEMBER_FEE` = **회비 납입 대상** 후원사업 ③ `SV_MEMBER_COHORT` = **획득 시점** 후원사업. 세 축의 값은 서로 다르며 합산·비교하면 조용히 틀린다 — 어느 축으로 답했는지 반드시 밝힌다. ⚠️ 목표(FACT_TARGET_MEMBER_DEV)에는 후원사업 축이 없어 **후원사업별 목표 대비 달성률은 불가**하다',
+    sponsorship.SPONSORSHIP_CPR_DIV_NM AS sponsorship.CPR_DIV_NM
+      WITH SYNONYMS ('법인', '법인구분', '사단법인', '사회복지법인', '사단', '사복', '후원사업 법인구분')
+      COMMENT = '🟢 **법인 질의의 기본 축** — 사건 후원사업의 법인구분(CM019 · O202 사용자 결정 = MSTR 기준). 실제값 = ''사단''(사단법인)·''사복''(사회복지법인) · 코드사전 같은 레벨에 ''통합''도 있으나 현재 후원사업에는 없다. 「사단법인 ○○팀」 같은 법인 조건은 **이 축으로 건다**. 🔴 세부캠페인 법인(CPR_DIV_NM)과 다른 축이다 — 그 축으로 답하면 MSTR 과 크게 어긋난다. ⚠️ 중단(STOP) 미배선 행은 NULL.',
     acq.ACQ_SPONSORSHIP AS acq.ACQ_SPONSORSHIP_NAME
       WITH SYNONYMS ('데려온 사업', '가입 후원사업', '획득 후원사업')
       COMMENT = '회원을 처음 가입시킨(획득) 후원사업 — L-2 병기 축. 중단 보고의 기본은 SPONSORSHIP(끊은 사업)이고 이 축은 나란히 보여준다. 🔴 두 축의 합계는 서로 다르며 더하거나 비교 기준을 섞지 않는다 · 획득 정보가 없는 회원은 NULL.',
@@ -85,8 +88,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.EVENT_TYPE    AS fme.EVENT_TYPE     WITH SYNONYMS ('원천계통', '사건원천') COMMENT = '원천 계통 구분. 실제값 2종뿐: ''DEV''(개발원천) / ''STOP''(중단원천). ⚠ 상태(신규·증액·감액·재후원·후원중단)는 이 컬럼이 아니라 DVLP_DIV_NM 을 쓴다 — O24. 종전 COMMENT 가 "개발/중단/증액/미납중단"이라 적혀 있어 ''증액'' 필터 생성 시 0행 무증상 오답이 가능했다(AD-4 유형)',
     fme.DVLP_DIV_NM   AS fme.DVLP_DIV_NM    WITH SYNONYMS ('개발구분', '상태구분', '증액감액구분', '개발구분명') COMMENT = '개발구분(정본 MM015). 실제값 5종: ''신규''·''증액''·''감액''·''재후원''·''후원중단''. 중단원천 행은 NULL. ⚠ ''후원중단''은 EVENT_TYPE=''STOP'' 과 동일 사건이 두 원천에 중복 존재 → 두 축 합산 금지(중복 규모는 이슈원장 §O24 참조 · 현업확인 대기)',
     fme.DVLP_DIV_CD   AS fme.DVLP_DIV_CD    WITH SYNONYMS ('개발구분코드') COMMENT = '개발구분 원천코드(1=신규 2=증액 3=감액 4=재후원 5=후원중단). 라벨은 DVLP_DIV_NM. 실제값 5종: ''1''·''2''·''3''·''4''·''5'' + NULL',
-    fme.JOIN_DATE     AS fme.JOIN_DATE      WITH SYNONYMS ('가입일')      COMMENT = '회원 가입일(유지기간 산출 기준)',
-    fme.STOP_DATE     AS fme.STOP_DATE      WITH SYNONYMS ('중단일', '해지일') COMMENT = '회원 중단일',
+    fme.JOIN_DATE     AS fme.JOIN_DATE      WITH SYNONYMS ('사건 가입일')      COMMENT = '사건 행의 가입일(원천 그대로). 🔴🔴 [O203 실측] **회원 최초 가입일이 아니다** — 개발원천 「후원중단」 행은 이 값이 사건일(=중단일)이고, 중단원천(STOP) 행은 전건 NULL 이다. 「가입연도별·가입일 기준」 질문에는 이 컬럼을 쓰지 말고 member.FIRST_JOIN_DATE · member.FIRST_JOIN_YEAR 를 쓴다',
+    fme.STOP_DATE     AS fme.STOP_DATE      WITH SYNONYMS ('중단일', '해지일') COMMENT = '회원 중단일. [O203 실측] 중단원천(STOP) 행은 사건일과 같고, 개발원천 「후원중단」 행은 NULL 이다(그 행의 중단일은 사건일 date.EVENT_DATE 로 본다)',
+    member.FIRST_JOIN_DATE AS member.FIRST_JOIN_DATE WITH SYNONYMS ('가입일', '최초가입일', '회원 가입일') COMMENT = '[O203] 회원 최초가입일 = 회원번호 생성일(정본 공#28 · 회원 마스터 현재값). 중단·개발 양쪽 행에 채워진다(2026-06 중단 행 100%). 「가입연도별」 분해의 정본 축',
+    member.FIRST_JOIN_YEAR AS YEAR(member.FIRST_JOIN_DATE) WITH SYNONYMS ('가입연도', '가입년도', '최초가입연도') COMMENT = '[O203] 회원 최초가입 연도(FIRST_JOIN_DATE 의 연도). 「중단회원 가입연도별」 질문은 이 축과 중단 고유회원수로 답한다',
     fme.NEW_EXISTING_FLAG AS fme.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존', '신규기존') COMMENT = ' 공#113 신규기존구분 — 사건 연도가 회원 최초가입 연도(회원 등록일·최초 개발일·첫 청구월 중 가장 이른 날)와 같으면 ''신규'', 이후면 ''기존''. 실제값 2종: ''신규''·''기존'' + NULL(기준일이 없는 회원). 🔴 공56·57 신규/기존 중단율의 분해 축이다 — 중단(STOP)·개발(DEV) 양쪽에 채워진다',
     fme.STOP_REASON_NM  AS fme.STOP_REASON_NM  WITH SYNONYMS ('중단사유', '해지사유', '중단이유') COMMENT = '중단사유 라벨(정본 MM005 단일 코드체계 — 혼입 없음). 실제값 예: ''개인(경제적)사유''·''장기미납''·''신규미납''·''다른곳지원''·''명의변경''·''아동퇴소''·''회원항의''·''기타''. 🔴**중단(STOP) 사건 전용 축**이다 — 개발(DEV) 행은 원천에 사유가 없어 NULL 이다. 따라서 중단 지표(중단건·중단회원수)와 함께 쓸 것이며, 개발 지표와 교차하면 전건 NULL 로 뭉개진다',
     fme.STOP_CHANNEL_NM AS fme.STOP_CHANNEL_NM WITH SYNONYMS ('중단경로', '해지경로', '중단채널') COMMENT = '중단 접수경로 라벨. 🔴중단(STOP) 사건 전용 — 개발 행은 NULL. 중단사유와 같은 원천 행에서 온다. 실제값 3종: ''CRM''·''홈페이지''·''SYSTEM'' + NULL',
@@ -114,13 +119,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.CMMN_BRND_NM       AS fme.CMMN_BRND_NM_AT_EVENT       WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '공통브랜드 라벨(코드사전 MM297). 🔴적재 시점 동결값(구 campaign.CMMN_BRND_NM 대체). 실제값 16종: ''교육기관''·''기업''·''뉴미디어''·''대면모금''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''재송출''·''지역개발''·''직원개발''·''콜개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발'' + NULL. ⚠️라벨이 CAMPAIGN_INFLOW_PATH(MM293 개발인입경로)와 상당 중복되나 현업 확인상 별도 축으로 유지한다. 🔴두 축의 열거가 겹쳐 보이더라도 값 집합은 다르다 — 한쪽 목록으로 다른 쪽을 필터하지 말 것. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.MKTG_UTM_NM        AS fme.MKTG_UTM_NM_AT_EVENT        WITH SYNONYMS ('UTM', 'UTM 라벨', '마케팅 UTM') COMMENT = 'UTM 라벨 — 코드사전이 아니라 원천 TM_CM_MKTNG_UTM(MK_UTM/MK_UTM_NM)과 연동된 값. 🔴적재 시점 동결값(구 campaign.MKTG_UTM_NM 대체). ⚠️원천 코드사전 매핑률이 낮아 다수 행이 NULL이다 — 결측이 아니라 미등재 코드다(채움 비율은 규칙7 상 여기 적지 않는다 · 조회로 확인하고 UTM별 분해가 부분집합임을 밝힐 것 · 규모는 이슈원장 §O105 참조). 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.SPNSR_DIV_NM       AS fme.SPNSR_DIV_NM_AT_EVENT       WITH SYNONYMS ('세부캠페인 후원구분', '캠페인 후원구분') COMMENT = '세부캠페인 후원구분 라벨(CM035). 🔴적재 시점 동결값(구 campaign.SPNSR_DIV_NM 대체). 실제값 2종: ''정기후원''·''일시후원'' + NULL. ⚠️ SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 적용 대상이 다르다 — 이 축은 세부캠페인 단위 구분이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
-    fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분', '법인', '법인구분', '사단법인', '사회복지법인') COMMENT = '세부캠페인 법인구분 라벨(CM019). 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 실제값 3종: ''통합''·''사단''·''사복'' + NULL. 🟢 「사단법인 ○○팀」 같은 **법인 조건은 이 축으로 건다**(''사단''=사단법인 · ''사복''=사회복지법인) — 회원 속성 법인 축은 이 SV 에 없으므로 「캠페인 법인구분 기준」임을 밝힌다. ⚠️ ''통합''은 사단·사복에 속하지 않는 별도 값이다(사단에 합치지 않는다). 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
+    fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분') COMMENT = '**세부캠페인** 법인구분 라벨(CM019). 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 실제값 3종: ''통합''·''사단''·''사복'' + NULL. 🔴 [O202] 「법인·사단법인·사복」 질의의 기본 축이 **아니다** — 법인 조건은 SPONSORSHIP_CPR_DIV_NM(후원사업 법인 · MSTR 기준)으로 건다. 이 축은 사용자가 「캠페인 법인」을 명시할 때만 쓴다. ⚠️ ''통합''은 사단·사복에 속하지 않는 별도 값이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.GENDER_AT_EVENT         AS fme.GENDER_AT_EVENT         WITH SYNONYMS ('사건시점 성별', '약정시점 성별') COMMENT = '**사건(개발약정) 시점** 성별 라벨(코드사전 CM013). 실제값 8종: ''국내(남자)''·''국내(여자)''·''외국인(남자)''·''외국인(여자)''·''외국인(기타)''·''단체''·''기업''·''기타''. 🔴 위 `member.GENDER_NAME`(회원 마스터 **현재 스냅샷** · CM017 계열)과 **코드체계가 다르다** — 두 축을 합산하지 말 것. 이 축이 사건 당시 정확값이다. 🔴 개발(DEV) 사건 전용(중단원천에 성별 컬럼 부재 → NULL). ⚠️ 사전 미등재 센티넬 ''0''은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다',
     fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL'
   )
   METRICS (
     fme.TOTAL_DEV_CNT     AS SUM(fme.DEV_CNT)
-      WITH SYNONYMS ('개발건', '개발 총건') COMMENT = '개발 건수 합계. F(가산). 정본 공#121 개발구분 = 신규·증액·재후원 한정(감액·후원중단 제외). ⚠ 2026-08-03 O24 교정 이전 값은 감액·후원중단까지 포함해 과대계상됐다(교정 전·후 값과 과대 비율은 이슈원장 §O24 참조) — 과거 리포트와 대조 시 주의.',
+      WITH SYNONYMS ('개발건', '개발 총건', '개발(건)') COMMENT = '개발(건) 합계 = **MSTR 정의**(O202 사용자 결정): 신규·재후원·증액의 MSTR 인정금액 ÷ 10,000(소수 발생). 신규·재후원 = 미중단 후원사업·후원사업×월 합>0 · 증액 = 감액 상계 순증액. F(가산). 🟢 2026-07 전사 MSTR 리포트와 일치(실측). 🔴 GN_DW.MSTR(AGENT_MSTR) 값과 한 표에서 합산 금지.',
     fme.TOTAL_STOP_CNT    AS SUM(fme.STOP_CNT)
       WITH SYNONYMS ('중단건', '중단 총건', '해지건') COMMENT = '중단 건수 합계. F(가산). 중단원천(EVENT_TYPE=''STOP'') 기준. ⚠ DVLP_DIV_NM=''후원중단'' 행수와 더하지 말 것(동일 사건 중복, O24).',
     fme.INCREASE_EVENT_AMT AS SUM(CASE WHEN fme.DVLP_DIV_NM = '증액' THEN fme.SPNSR_AMT END)
@@ -131,8 +136,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
       WITH SYNONYMS ('증액회원수') COMMENT = '증액 고유 회원수. D(distinct). 사건 기준.',
     fme.DECREASE_MEMBER_COUNT AS COUNT(DISTINCT CASE WHEN fme.DVLP_DIV_NM = '감액' THEN fme.MEMBER_DK END)
       WITH SYNONYMS ('감액회원수') COMMENT = '감액 고유 회원수. D(distinct). 사건 기준.',
-    fme.DEV_MEMBER_COUNT  AS COUNT(DISTINCT CASE WHEN fme.DEV_CNT > 0 THEN fme.MEMBER_DK END)
-      WITH SYNONYMS ('개발회원수', '신규 회원수') COMMENT = '개발 고유 회원수. D(distinct). 다기간도 중복 없음.',
+    fme.DEV_MEMBER_COUNT  AS COUNT(DISTINCT CASE WHEN fme.DEV_MEMBERS = 1 THEN fme.MEMBER_DK END)
+      WITH SYNONYMS ('개발회원수', '신규 회원수', '개발(명)') COMMENT = '개발(명) = MSTR 개발 인정 행을 가진 고유 회원수(O202 · MSTR 정의). D(distinct). 다기간도 중복 없음.',
     fme.STOP_MEMBER_COUNT AS COUNT(DISTINCT CASE WHEN fme.STOP_CNT > 0 THEN fme.MEMBER_DK END)
       WITH SYNONYMS ('중단회원수', '해지 회원수') COMMENT = '중단 고유 회원수. D(distinct).',
     fme.TOTAL_CAMPAIGN_STOP_CNT AS SUM(fme.CAMPAIGN_STOP_CNT)
@@ -142,7 +147,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
       WITH SYNONYMS ('캠페인별 중단회원수') COMMENT = '캠페인 귀속 중단 고유 회원수. D(distinct). 위 TOTAL_CAMPAIGN_STOP_CNT 와 동일 모집단(개발원천 후원중단 행).'
   )
   COMMENT = 'Phase-1 회원 상태전이 사건 분석 (base: GOLD.FACT_MEMBER_EVENT). [Grain: 회원 × 일 × 사건 1행]. [활성 지표: 개발건수/개발회원수/중단건수/증감금액, 개발구분 5종(신규/증액/감액/재후원/중단)]. [주의: 캠페인별 중단은 TOTAL_CAMPAIGN_STOP_CNT 사용(TOTAL_STOP_CNT 와 합산 금지), 캠페인별 중단률은 SV_MEMBER_COHORT(12개월 고정 이탈률), 부서별 목표대비 달성률은 SV_DEV_ACHIEVEMENT 사용]. [원천: CRM → BRONZE_CRM → SILVER.CRM_MEMBER_DEV/CRM_MEMBER_DISCONTINUE → GOLD.FACT_MEMBER_EVENT].'
-  AI_SQL_GENERATION '핵심 규칙: (1) 개발구분 필터: 증액·감액·신규·재후원·후원중단 질의는 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터. (2) 중단 지표: 전체 중단 규모는 TOTAL_STOP_CNT, 캠페인별 중단 분해는 TOTAL_CAMPAIGN_STOP_CNT 사용 (두 지표 절대 합산 금지). 캠페인별 중단률은 SV_MEMBER_COHORT 로 라우팅. (3) 개발 지표: 개발 실적 건수는 TOTAL_DEV_CNT (신규·증액·재후원 합산) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 속성 시점: 연령대(AGE_BAND_AT_EVENT) 및 지역(REGION_AT_EVENT)은 개발 사건 시점 값이며 개발(DEV) 사건 전용. (6) 주간 실적: 주간 개발실적은 WEEK_OF_YEAR 와 CAL_YEAR 를 동반하여 조회하며 주간 목표 대비는 SV_DEV_ACHIEVEMENT 와 표를 분리하여 제시. (7) 홍보방법 필터: PROMO_METHOD_NAME 라벨 필터 사용. (8) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 STOP_MEMBERS 합이 아니라 중단 고유회원수(COUNT DISTINCT MEMBER_DK)로 답하고 「명 ≠ 플래그 합」임을 밝힌다. 주차별 「명」을 월로 더하지 않는다(주차 distinct 합 > 월 distinct). (9) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 이 뷰 단독으로 답하지 않는다 — 월 목표·달성율은 SV_DEV_ACHIEVEMENT, 회비는 SV_MEMBER_FEE 를 각각 호출해 표를 분리하고 표마다 grain 을 밝힌다. 주간 목표는 원천 부재이므로 만들지 않는다.
+  AI_SQL_GENERATION '핵심 규칙: (1) 개발구분 필터: 증액·감액·신규·재후원·후원중단 질의는 EVENT_TYPE 이 아니라 DVLP_DIV_NM 으로 필터. (2) 중단 지표: 전체 중단 규모는 TOTAL_STOP_CNT, 캠페인별 중단 분해는 TOTAL_CAMPAIGN_STOP_CNT 사용 (두 지표 절대 합산 금지). 캠페인별 중단률은 SV_MEMBER_COHORT 로 라우팅. (3) 개발 지표: 개발 실적 건수는 TOTAL_DEV_CNT (신규·증액·재후원 합산) 사용. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 속성 시점: 연령대(AGE_BAND_AT_EVENT) 및 지역(REGION_AT_EVENT)은 개발 사건 시점 값이며 개발(DEV) 사건 전용. (6) 주간 실적: 주간 개발실적은 WEEK_OF_YEAR 와 CAL_YEAR 를 동반하여 조회하며 주간 목표 대비는 SV_DEV_ACHIEVEMENT 와 표를 분리하여 제시. (7) 홍보방법 필터: PROMO_METHOD_NAME 라벨 필터 사용. (8) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 STOP_MEMBERS 합이 아니라 중단 고유회원수(COUNT DISTINCT MEMBER_DK)로 답하고 「명 ≠ 플래그 합」임을 밝힌다. 주차별 「명」을 월로 더하지 않는다(주차 distinct 합 > 월 distinct). (9) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 이 뷰 단독으로 답하지 않는다 — 월 목표·달성율은 SV_DEV_ACHIEVEMENT, 회비는 SV_MEMBER_FEE 를 각각 호출해 표를 분리하고 표마다 grain 을 밝힌다. 주간 목표는 원천 부재이므로 만들지 않는다. (10) [O202] 법인 축: 「법인·사단법인·사단·사복」 조건은 sponsorship.SPONSORSHIP_CPR_DIV_NM(후원사업 법인 · MSTR 기준)으로 건다(fme JOIN sponsorship ON fme.SPONSORSHIP_SK = sponsorship.SPONSORSHIP_SK) — 세부캠페인 법인(fme.CPR_DIV_NM)은 사용자가 「캠페인 법인」을 명시할 때만 쓴다. 개발(명)은 DEV_MEMBERS = 1 인 회원의 COUNT DISTINCT 다(DEV_CNT > 0 으로 세지 않는다).
 (기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준일은 **비상관 CTE 1개**(SELECT MAX(date.FULL_DATE) AS md FROM fme JOIN date ON fme.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. 스칼라 서브쿼리·상관 서브쿼리로 기준일을 구하지 않는다. 🔴 사건일은 fme 에 컬럼으로 없다 — fme.EVENT_DATE 를 쓰지 말고 date.FULL_DATE(fme.DATE_SK 조인)로만 건다. CTE 안에서 그 CTE 의 FROM 에 없는 별칭을 쓰지 않는다. 🔴 **차원은 논리 이름(DIMENSIONS 좌변)으로 참조한다** — 물리 컬럼명(DEPARTMENT·ACMSLT_DIV_*·CPR_DIV_NM_AT_EVENT·CMPGN_CTGR_NM_AT_EVENT·SPNSR_DIV_NM_AT_EVENT 등 _AT_EVENT 계열)을 CTE 컬럼으로 쓰면 invalid identifier 다 ⇒ ORG_DEPARTMENT·ORG_DIV_GROUP·ORG_DIV·CPR_DIV_NM·CAMPAIGN_TYPE·SPNSR_DIV_NM 을 쓴다. 🔴 **소속 테이블을 지킨다** — 캠페인 마스터 속성(CAMPAIGN_NAME·CAMPAIGN_BRAND·PARENT_CAMPAIGN_NAME·PROMO_METHOD_NAME)은 **campaign.** 이고 fme 에 없다(fme.PARENT_CAMPAIGN_NAME 은 invalid identifier) ⇒ fme JOIN campaign ON fme.CAMPAIGN_SK = campaign.CAMPAIGN_SK. 적재 시점 동결 속성(CAMPAIGN_TYPE·DOMESTIC_OVERSEAS·BIZ_CASE_TYPE·MARKETING_CAMPAIGN·CPR_DIV_NM 등)은 fme. 이다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (예측) 「다음 달 중단·개발을 예측해줘」는 이 SV 가 **실적 SV** 라 모델 예측이 없다 — 🔴 이 SV 로 예측치를 만들지 않는다(직전 월 평균·추세 연장 등 추정값도 만들지 않는다). 예측이 없다는 사실을 밝히고, 이 SV 로 볼 수 있는 실적(지표·축·최신월)을 안내한 뒤 실적을 먼저 보겠는지 되묻는다. 어떤 예측 도구로 보낼지는 Agent 의 라우팅 소관이며 이 SV 가 정하지 않는다.'
   AI_VERIFIED_QUERIES (
     vqr_o191_last12m_dev_div AS (
@@ -152,8 +157,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     ),
     vqr_o191_dept_corp_month_dev AS (
       QUESTION '2026년 사단법인 매체운영팀 7월 회원개발 실적 명/건'
-      VERIFIED_BY '(DW = O191)'
-      SQL 'SELECT org.ORG_DEPARTMENT, fme.CPR_DIV_NM, COUNT(DISTINCT CASE WHEN fme.DEV_CNT > 0 THEN fme.MEMBER_DK END) AS DEV_MEMBER_COUNT, SUM(fme.DEV_CNT) AS TOTAL_DEV_CNT FROM fme JOIN org ON fme.ORG_SK = org.ORG_SK JOIN date ON fme.DATE_SK = date.DATE_SK WHERE org.ORG_DEPARTMENT = ''매체운영팀'' AND fme.CPR_DIV_NM = ''사단'' AND date.YEAR = 2026 AND date.MONTH = 7 GROUP BY org.ORG_DEPARTMENT, fme.CPR_DIV_NM'
+      VERIFIED_BY '(DW = O202 · 후원사업 법인 · MSTR 5,989명/11,956.2055건 일치)'
+      SQL 'SELECT org.ORG_DEPARTMENT, sponsorship.SPONSORSHIP_CPR_DIV_NM, COUNT(DISTINCT CASE WHEN fme.DEV_MEMBERS = 1 THEN fme.MEMBER_DK END) AS DEV_MEMBER_COUNT, SUM(fme.DEV_CNT) AS TOTAL_DEV_CNT FROM fme JOIN org ON fme.ORG_SK = org.ORG_SK JOIN sponsorship ON fme.SPONSORSHIP_SK = sponsorship.SPONSORSHIP_SK JOIN date ON fme.DATE_SK = date.DATE_SK WHERE org.ORG_DEPARTMENT = ''매체운영팀'' AND sponsorship.SPONSORSHIP_CPR_DIV_NM = ''사단'' AND date.YEAR = 2026 AND date.MONTH = 7 GROUP BY org.ORG_DEPARTMENT, sponsorship.SPONSORSHIP_CPR_DIV_NM'
     ),
     vqr_o191_category_stop_month AS (
       QUESTION '캠페인카테고리별 2026년 1~6월 월별 중단명과 중단건'
@@ -163,7 +168,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     vqr_o191_div_code_members AS (
       QUESTION '본부/지부별 2026년 개발 고유 회원수를 코드와 함께'
       VERIFIED_BY '(DW = O191)'
-      SQL 'SELECT org.ORG_DIV_GROUP, org.ORG_DIV_GROUP_CODE, org.ORG_DIV, org.ORG_DIV_CODE, COUNT(DISTINCT CASE WHEN fme.DEV_CNT > 0 THEN fme.MEMBER_DK END) AS DEV_MEMBER_COUNT FROM fme JOIN org ON fme.ORG_SK = org.ORG_SK JOIN date ON fme.DATE_SK = date.DATE_SK WHERE date.YEAR = 2026 GROUP BY org.ORG_DIV_GROUP, org.ORG_DIV_GROUP_CODE, org.ORG_DIV, org.ORG_DIV_CODE ORDER BY DEV_MEMBER_COUNT DESC NULLS LAST'
+      SQL 'SELECT org.ORG_DIV_GROUP, org.ORG_DIV_GROUP_CODE, org.ORG_DIV, org.ORG_DIV_CODE, COUNT(DISTINCT CASE WHEN fme.DEV_MEMBERS = 1 THEN fme.MEMBER_DK END) AS DEV_MEMBER_COUNT FROM fme JOIN org ON fme.ORG_SK = org.ORG_SK JOIN date ON fme.DATE_SK = date.DATE_SK WHERE date.YEAR = 2026 GROUP BY org.ORG_DIV_GROUP, org.ORG_DIV_GROUP_CODE, org.ORG_DIV, org.ORG_DIV_CODE ORDER BY DEV_MEMBER_COUNT DESC NULLS LAST'
     )
   );
 

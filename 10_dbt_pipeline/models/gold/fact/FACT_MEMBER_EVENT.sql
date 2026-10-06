@@ -81,6 +81,72 @@ member_first_dev as (
     group by MBER_NO
 ),
 
+-- 🆕 [2026-10-06 O202 · 사용자 결정 「DEV_CNT 를 MSTR 정의로 교체」] 개발(건)·개발(명) = MSTR 기준.
+--   정본 = `15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql` `FN_MM_SPNSR_DVLP` B1·B2
+--        + `04_sp_script.sql` `USP_F_MM_SPNSR_DVLP_SUM`(개발(건) = 인정금액 / 10,000).
+--   · B1 신규·재후원(1·4) = 미중단 후원사업(중단일 > 발생월 말일) · 후원사업×월 금액합 > 0 인 행 · 인정금액 = 그 행 금액.
+--   · B2 증액(2) = 회원×월 합 > 0 · 후원사업×월 증감합(2·3) > 0 · 누적(발생일·일련번호 순) − |감액| > 0 · 인정금액 = 상계 금액(RAMT).
+--   🟢 검증(O202 · JU93656 · 2026-10-06) = 202607 SILVER 재현 ↔ `GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM`(1·2·4)
+--      14,188명 · 29,714.1888건 · 15,125행 **전건 일치** · 매체운영팀×사단 5,989명 · 11,956.2055건 일치.
+--   🔴 B3 감액·B4 중단은 MSTR 개발(건) 1·2·4 집계에 들어가지 않으므로 여기서 다루지 않는다.
+--   🔴 종전 정의(1·2·4 사건 = 1)는 폐기 — 「사건 여부」 판정이 필요한 하류는 `DVLP_DIV_CD in ('1','2','4')` 로 본다.
+mstr_dev_base as (
+    select
+        d.SPNSR_NO, d.SPNSR_BSNS_NO, d.SER_NO, d.OCCRRNC_DE, d.MBER_NO, d.DVLP_DIV_CD, d.SPNSR_AMT,
+        LEFT(d.OCCRRNC_DE, 6) as STRD_MT
+    from {{ ref('CRM_MEMBER_DEV') }} d
+),
+mstr_span as (
+    select SPNSR_NO, SPNSR_BSNS_NO, COALESCE(SPNSR_DSCNTC_DE, '99991231') as DSC_DE
+    from {{ ref('CRM_MEMBER_SPONSOR_SPAN') }}
+),
+mstr_b1 as (
+    select a.SPNSR_NO, a.SPNSR_BSNS_NO, a.SER_NO, a.OCCRRNC_DE, a.SPNSR_AMT as MSTR_AMT
+    from mstr_dev_base a
+    join mstr_span s
+      on a.SPNSR_NO = s.SPNSR_NO and a.SPNSR_BSNS_NO = s.SPNSR_BSNS_NO
+     and s.DSC_DE > a.STRD_MT || '31'
+    where a.DVLP_DIV_CD in ('1', '4')
+    qualify SUM(a.SPNSR_AMT) over (partition by a.SPNSR_NO, a.SPNSR_BSNS_NO, a.STRD_MT) > 0
+),
+mstr_b2a as (
+    select
+        SUM(IFF(DVLP_DIV_CD in ('2', '3'), SPNSR_AMT, 0)) over (partition by SPNSR_NO, SPNSR_BSNS_NO, STRD_MT) as SAMT,
+        SUM(SPNSR_AMT) over (partition by MBER_NO, STRD_MT) as MAMT,
+        b.*
+    from mstr_dev_base b
+    where DVLP_DIV_CD in ('2', '3', '5')
+),
+mstr_b2b as (
+    select SUM(IFF(DVLP_DIV_CD = '3', SPNSR_AMT, 0)) over (partition by MBER_NO, STRD_MT) as DAMT, a.*
+    from mstr_b2a a
+    where MAMT > 0
+      and ((SAMT > 0 and DVLP_DIV_CD = '2') or (SAMT < 0 and DVLP_DIV_CD = '3'))
+),
+mstr_b2c as (
+    -- 프레임 = RANGE UNBOUNDED PRECEDING(동순위 합산) — MSTR 원본(SQL Server 기본값)과 동일
+    select
+        SUM(SAMT) over (partition by MBER_NO, STRD_MT order by OCCRRNC_DE, SER_NO
+                        range between unbounded preceding and current row) as AAMT,
+        b.*
+    from mstr_b2b b
+    where DVLP_DIV_CD = '2'
+),
+mstr_b2 as (
+    select SPNSR_NO, SPNSR_BSNS_NO, SER_NO, OCCRRNC_DE,
+        case when MAMT <= SAMT and AAMT + DAMT <= MAMT then AAMT + DAMT
+             when MAMT >  SAMT and AAMT + DAMT <= SAMT then AAMT + DAMT
+             when MAMT <= SAMT then MAMT
+             else SAMT end as MSTR_AMT
+    from mstr_b2c
+    where AAMT - ABS(DAMT) > 0
+),
+mstr_dev as (
+    select * from mstr_b1
+    union all
+    select * from mstr_b2
+),
+
 dev as (
     select
         COALESCE({{ date_sk("TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')") }}, 0)  as DATE_SK,
@@ -96,8 +162,8 @@ dev as (
         d.DVLP_DIV_CD                                       as DVLP_DIV_CD,
         d.DVLP_DIV_NM                                       as DVLP_DIV_NM,
         d.SPNSR_AMT                                         as SPNSR_AMT,
-        case when d.DVLP_DIV_CD in ('1','2','4') then 1 else 0 end as DEV_CNT,
-        case when d.DVLP_DIV_CD in ('1','2','4') then 1 else 0 end as DEV_MEMBERS,
+        case when d.DVLP_DIV_CD in ('1','2','4') then COALESCE(md.MSTR_AMT, 0) / 10000 else 0 end as DEV_CNT,
+        case when d.DVLP_DIV_CD in ('1','2','4') and md.MD_SER_NO is not null then 1 else 0 end as DEV_MEMBERS,
         0 as STOP_CNT, 0 as STOP_MEMBERS, 0 as UNPAID_STOP_CNT, 0 as UNPAID_STOP_MEMBERS,
         TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')                  as JOIN_DATE,
         CAST(NULL AS DATE)                                  as STOP_DATE,
@@ -145,6 +211,14 @@ dev as (
     left join org_lookup     og on og.ORG_DK = ABS(HASH(d.ACMSLT_DEPT_CD))
     left join spb_lookup     sp on sp.SPONSORSHIP_BK = d.SPNSR_BSNS_ID
     left join member_first_dev mfd on mfd.MBER_NO = d.MBER_NO
+    -- [O202] MSTR 개발 인정 행 — 키 컬럼을 개명해 dev 의 비한정 OCCRRNC_DE 와 충돌하지 않게 한다.
+    left join (
+        select SPNSR_NO as MD_SPNSR_NO, SPNSR_BSNS_NO as MD_SPNSR_BSNS_NO, SER_NO as MD_SER_NO,
+               OCCRRNC_DE as MD_OCCRRNC_DE, MSTR_AMT
+        from mstr_dev
+    ) md
+      on md.MD_SPNSR_NO = d.SPNSR_NO and md.MD_SPNSR_BSNS_NO = d.SPNSR_BSNS_NO
+     and md.MD_SER_NO = d.SER_NO and md.MD_OCCRRNC_DE = d.OCCRRNC_DE
 ),
 
 stop as (

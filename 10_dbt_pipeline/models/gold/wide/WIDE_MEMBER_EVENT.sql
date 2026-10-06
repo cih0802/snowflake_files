@@ -94,6 +94,10 @@ select
     --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
     s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
     s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,
+    -- 🆕 [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업 법인구분(CM019 · I 사단 · S 사복 · A 통합).
+    --   🔴 「법인」 질의의 기본 축이다 — CAMPAIGN_CPR_DIV_*(세부캠페인 법인)과 다르다.
+    s.CPR_DIV_CD             as SPONSORSHIP_CPR_DIV_CD,
+    s.CPR_DIV_NM             as SPONSORSHIP_CPR_DIV_NM,
     o.CORP                as ORG_CORP,
     o.DIVISION            as ORG_DIVISION,
     o.DEPARTMENT          as ORG_DEPARTMENT,

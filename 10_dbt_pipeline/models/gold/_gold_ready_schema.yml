@@ -175,6 +175,12 @@ models:
     columns:
       - name: SPONSORSHIP_SK
         tests: [not_null, unique]
+      # [O202] 후원사업 법인구분 — CM019 같은 레벨 3종(A 통합 · I 사단 · S 사복) 밖의 값이 들어오면 경고.
+      - name: CPR_DIV_CD
+        tests:
+          - accepted_values:
+              values: ['A', 'I', 'S']
+              config: { where: "SPONSORSHIP_SK != 0", severity: warn }
   - name: DIM_PAYMENT
     columns:
       - name: PAYMENT_SK

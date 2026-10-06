@@ -200,7 +200,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 
 | 필드 | 도구 | 상태 | 근거·제약 |
 |---|---|---|---|
-| 개발(건) | `analyst_member_event` | 🟢 | SV metric **`TOTAL_DEV_CNT`**(회원수는 `DEV_MEMBER_COUNT`) · 🔴 정본은 **FME 사건수**다 — O24 가 개발구분 1·2·4 한정으로 교정했다(금액÷10,000 이 아니다 · `CONF-2` 와 구별) · 🔴 **[O76-B A8 정정]** 최초 `DEV_CNT` 로 적었으나 그것은 FACT 컬럼명이다 |
+| 개발(건) | `analyst_member_event` | 🟢 | SV metric **`TOTAL_DEV_CNT`**(회원수는 `DEV_MEMBER_COUNT`) · 🆕 **[O202 사용자 결정] 정본 = MSTR 개발(건)**(MSTR 인정금액 ÷ 10,000 · 신규·재후원·증액) — ~~FME 사건수(1·2·4 = 1)~~ 정의는 폐기됐다 · 🔴 **[O76-B A8 정정]** 최초 `DEV_CNT` 로 적었으나 그것은 FACT 컬럼명이다 |
 | 개발구분 | `analyst_member_event` | 🟢 | **M4 정정분** — `DVLP_DIV_NM` 5종(신규·증액·감액·재후원·후원중단) 전건 |
 | 성별(회원) · 연령대 | `analyst_member_event` | 🟢 | **M6 경로** — **사건 시점** 값이며 현재 나이·성별이 아니다 |
 | 브랜드 · 상위캠페인 · 캠페인명 | `analyst_member_event` | 🟢 | 개발(DEV) 사건 전용 |
@@ -208,7 +208,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 | 회원번호 | `analyst_member_event` | 🟡 | 개별 회원 식별은 **개인정보** 취급 — 집계로 답하는 것을 기본으로 한다 |
 | 기준일시 | `analyst_member_event` | 🟢 | 사건일(일 grain) |
 | 매체명(브랜드2) | — | 🔴 | §3.1 과 동일 |
-| 법인명 | — | 🔴 | `CONF-4` |
+| 법인명 | `analyst_member_event` | 🟢 | 🆕 **[O202]** 후원사업 법인 `SPONSORSHIP_CPR_DIV_NM`(사단·사복 · MSTR 기준)으로 답한다 — ~~`CONF-4`~~ 는 조직 법인(`DIM_ORG.CORP`) 축이며 이 필드의 경로가 아니다 · ⚠️ dbt build + SV 재배포 후 유효 |
 
 🔴 **하위 4종(연령대별·후원사업별·개발구분별·성별 전환회원)은 전부 `analyst_member_event` 단일 호출로 답한다.**
 연령대 × 캠페인 교차가 이 SV 안에서 성립한다(O35) — SV 간 교차계산은 금지이며 불가능하다.

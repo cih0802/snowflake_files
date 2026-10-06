@@ -22,14 +22,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI
   )
   METRICS (
     kpi.DEV_CUM_AMT_CNT_SUM AS SUM(kpi.DEV_CUM_AMT_CNT)
-      WITH SYNONYMS ('누계개발(건)', '누계개발건', '당해년 누계개발') COMMENT = '누계개발(건) = 당해년도 1월~조회월의 개발(건) 합계 · 개발(건) = 신규·증액·재후원 금액 ÷ 10,000(활동(건)과 같은 단위). 🔴 한 달을 지정한다(누계라 여러 달을 더하지 않는다).',
+      WITH SYNONYMS ('누계개발(건)', '누계개발건', '당해년 누계개발') COMMENT = '누계개발(건) = 당해년도 1월~조회월의 개발(건) 합계 · 개발(건) = **MSTR 정의**(O202): 신규·재후원·증액 MSTR 인정금액 ÷ 10,000(활동(건)과 같은 단위). 🔴 한 달을 지정한다(누계라 여러 달을 더하지 않는다).',
     kpi.DEV_CUM_EVENT_CNT_SUM AS SUM(kpi.DEV_CUM_CNT)
-      WITH SYNONYMS ('누계개발 사건수') COMMENT = '참고 — 누계개발을 사건 수로 센 값. 🔴 활동율 계산에는 쓰지 않는다(활동(건)과 단위가 다르다).',
+      WITH SYNONYMS ('누계개발 회원월 경유') COMMENT = '참고 — 같은 MSTR 개발(건)을 회원 월 팩트(FMM) 경유로 누적한 값(O202 이후 정의 동일 · 신규기존 판정 경로만 다르다). 🔴 활동율 계산에는 DEV_CUM_AMT_CNT_SUM 을 쓴다.',
     kpi.ACTIVE_RATE AS SUM(kpi.MONTH_END_ACTIVE_CNT) / NULLIF(SUM(kpi.YEAR_START_ACTIVE_CNT) + SUM(kpi.DEV_CUM_AMT_CNT), 0) * 100
       WITH SYNONYMS ('활동율', '공45', '전체회원 활동율') COMMENT = '공45 활동율(%) = 월말활동(건) ÷ (연도초활동(건) + 누계개발(건)) ×100. 비율(N). 🔴 한 달을 지정한다.',
-    kpi.ACTIVE_RATE_NEW AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.DEV_CUM_AMT_CNT END)
-        / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.ACTIVE_CNT END), 0) * 100
-      WITH SYNONYMS ('신규 활동율', '공46') COMMENT = '공46 신규 활동율(%) = 누계개발(건)[신규] ÷ 활동(건)[신규] ×100 — 지표 사전 표기 그대로. 🔴 100% 를 넘을 수 있다(사전의 분자·분모 방향 현업 확인 중) — 값을 해석할 때 이 사실을 밝힌다.',
+    kpi.ACTIVE_RATE_NEW AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.ACTIVE_CNT END)
+        / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '신규' THEN kpi.DEV_CUM_AMT_CNT END), 0) * 100
+      WITH SYNONYMS ('신규 활동율', '공46') COMMENT = '공46 신규 활동율(%) = 활동(건)[신규] ÷ 누계개발(건)[신규] ×100. 🟢 [O202 · 2026-10-06 현업 회신] 지표 사전 표기(누계개발 ÷ 활동)는 분자·분모가 바뀐 **오타**였다 — 교정본이다. 비율(N). 🔴 한 달을 지정한다.',
     kpi.ACTIVE_RATE_EXISTING AS SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '기존' THEN kpi.ACTIVE_CNT END)
         / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '기존' THEN kpi.DEV_CUM_AMT_CNT + kpi.YEAR_START_ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('기존 활동율', '공47') COMMENT = '공47 기존 활동율(%) = 활동(건)[기존] ÷ (누계개발(건)[기존] + 연도초활동(건)[기존]) ×100. 비율(N). 🔴 한 달을 지정한다.'

@@ -122,3 +122,11 @@ MSTR 내부 객체(`mart.*`, `dbo.FN_*`)는 모두 `GN_DW.MSTR.*`로 매핑합�
 - 도구 = `tools/`(README 참조) · 배치 정의 = `tools/manifests/<batch>.json` · 단계 = deps → extract → 변환 → gen → deploy → run → verify
 - 1차에서 확정된 결정·변환 규칙은 매니페스트 `decisions` 와 `tools/README.md` 에 있다.
 - 🟢 [2026-10-03 O200-D] 스킬 = `.snowflake/cortex/skills/mstr-migration/SKILL.md`(순서·멈춤·금지만 · 규칙 정본은 README).
+
+## 9. Agent 배선 방침 (O203 · 2026-10-06 · 사용자 결정)
+
+- 🟢 **현행 = A안**: MSTR 결과는 **AGENT_MSTR 에만** 배선한다. AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선하지 않았다.
+- 🔴 **다음에 MSTR 관련 작업(2차 이관·재적재·SV 변경 등)을 하면 착수 시 사용자에게 묻는다**:
+  「MSTR 결과는 아직 다른 Agent 에 배선되지 않았습니다(A안). 회원 분석 Agent(AGENT_MEMBER)에도 붙이는 **B안으로 전환할까요?**」
+- B안 = AGENT_MEMBER 에만 MSTR 도구 추가 · 답변마다 「MSTR 기준」 표기(문구는 사용자에게 받는다) · C안 = 3종 모두(혼동 위험 최대).
+- 선택지 원문 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md` 요청 1 · 스킬 `mstr-migration` Step 6 에도 같은 질문을 넣었다.

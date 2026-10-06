@@ -51,7 +51,11 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deploy,run,verify --ym <
 - 서빙뷰 + SV DDL = `05_SV-Agent_ai/23_MSTR_SV_DDL.sql` 형식(파일 단독 실행 · 🔴 `USE ROLE GN_DW_ADMIN` 부터).
 - 도구 추가 = `cortex_project/agents/AGENT_MSTR/agent_spec.yaml` → `05_SV-Agent_ai/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3-D].
 - Agent 정의 = `05_SV-Agent_ai/09_0_AGENT_정의서.md`.
-**⚠️ STOP**: CoWork UI 스모크는 사용자(트라이얼 계정은 Agent NL 실행 불가).
+- 🔴 **[O203 · 사용자 결정 2026-10-06] 다른 Agent 배선은 A안(붙이지 않음)이 현행이다.** MSTR 도구는 AGENT_MSTR 에만 있고 AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선되지 않았다.
+  ⇒ 이 단계에 오면 **사용자에게 반드시 묻는다**: 「MSTR 결과는 아직 AGENT_MSTR 에만 배선돼 있습니다(A안). 회원 분석(AGENT_MEMBER)에도 붙이는 B안으로 전환할까요?」
+  · B안 선택 시 = AGENT_MEMBER 스펙에 SV_MSTR_* 도구 추가 + 답변마다 「MSTR 기준」 표기 문구를 사용자에게 받는다 · 선택지 원문 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md` 요청 1.
+  · 답이 없으면 A안 유지(임의 전환 금지).
+**⚠️ STOP**: B안 전환 여부 질문 · CoWork UI 스모크는 사용자(트라이얼 계정은 Agent NL 실행 불가).
 
 ### Step 7. 기록
 원장 §1 행 · 세션이력 · 인수인계 라벨 파일(`init_ihcho` §5) · 작업계획 문서 체크리스트.

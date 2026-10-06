@@ -31,7 +31,7 @@ instructions:
     방송 차원(채널사·프로그램)을 광고비 기준으로 정렬할 때는 광고비가 없는 항목이 상위를 점유하지 않도록 NULLS LAST 정렬 결과를 사용한다.
 
     '
-  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.EVENT_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 [O201-B] 열 별칭(AS 뒤 이름)은 영문·숫자·밑줄만 쓴다(예: AS FORECAST_MONTH) — AS 예측월 처럼 따옴표 없는 한글 별칭은 syntax error 를 낸다. 한글 명칭은 답변 표 헤더에서만 쓴다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz. 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 🆕 [O198] **회원개발 예측(익월·연말·향후 3개월)** → analyst_ml_dvlp_forecast(금액 만원 예측 · 건수 예측은 조회되지 않는다고 밝힌다) / **증액 가능성 높은 회원·증액 캠페인 제안 대상** → analyst_ml_member_risk(증액 확률 순 · 캠페인 추천 축 없음). 예측은 실적 도구와 한 표에 합산하지 않는다.\n- **월/누계/연 목표 · 목표 달성율 · 목표 대비 실적 · 부서별 달성율** → analyst_dev_achievement\n  (\U0001F534\
+  orchestration: "🔴 식별자 규칙(O189): SQL 에는 시맨틱 뷰가 선언한 이름(논리테이블.차원명·지표명)만 쓴다 — 물리 테이블 별칭·물리 컬럼명을 추측해 쓰지 말 것(예: 날짜는 D.FULL_DATE 가 아니라 date.EVENT_DATE 같은 SV 날짜 차원). 한글은 문자열 값·따옴표 별칭 안에서만 쓰고 식별자로 쓰지 않는다. 🔴 [O201-B] 열 별칭(AS 뒤 이름)은 영문·숫자·밑줄만 쓴다(예: AS FORECAST_MONTH) — AS 예측월 처럼 따옴표 없는 한글 별칭은 syntax error 를 낸다. 한글 명칭은 답변 표 헤더에서만 쓴다. 🔴 사업목표(후원사업·회원개발 건수 · 월말활동회원 · 정기회비 · 활동율/납입율 목표) 질문 → analyst_target_biz. 🔴 SQL 작성 규칙(O188): 시맨틱 뷰가 만든 `__` 접두 CTE 에는 metric 이 없고 베이스 컬럼만 있다 — metric 이름을 컬럼처럼 쓰지 말고 베이스 컬럼을 SUM·COUNT 로 직접 집계하라.\n도구 선택:\n- 🆕 [O198] **회원개발 예측(익월·연말·향후 3개월)** → analyst_ml_dvlp_forecast(금액 만원 예측 · 건수 예측은 조회되지 않는다고 밝힌다) / **증액 가능성 높은 회원·증액 캠페인 제안 대상** → analyst_ml_member_risk(증액 확률 순 · 캠페인 추천 축 없음). 예측은 실적 도구와 한 표에 합산하지 않는다.\n- 🆕 [O203] **채널별·캠페인별 LTV(장기 가치) 예측** → analyst_ml_ltv_forecast(LTV유형 고정 · 실적 LTV 는 ⑤) / **일시후원 → 정기 전환 가능성** → analyst_ml_once_conversion(증액 확률로 대신 답하지 않는다) / **개발 증가·신규 유치 요인** → analyst_ml_feature_importance(모델 상대 중요도 · 인과 아님) / **GA 웹·앱 행동(채널그룹·페이지·이벤트·식별 방문자)** → analyst_ga_behavior(방문자 단위 예측·퍼널 단계 라벨은 없다 · CRM 실적과 교차 금지).\n- **월/누계/연 목표 · 목표 달성율 · 목표 대비 실적 · 부서별 달성율** → analyst_dev_achievement\n  (\U0001F534\
     \ 「목표가 없습니다」로 답하지 말 것. 누계·연은 별도 지표가 아니라 **기간 필터**만 바꾸면 나온다)\n- **광고비·노출수·클릭수·CTR·CVR·개발단가·인입콜·방송횟수\
     \ · 매체(채널사)·광고유형·요일·주차·시간대·\n  CM위치·재방유형·기기·프로그램·마케팅캠페인별** → analyst_ad\n  (\U0001F534 소재별·개발캠페인별·초수·캠페인유형별은\
     \ 불가 · \U0001F534 출처유형(디지털/방송/재방송) 필터를 함께 전달한다)\n- **편성예산·집행예산·집행율·세세목·예산구분** → analyst_budget\n-\
@@ -45,7 +45,7 @@ instructions:
     \ 이라 일별 목표가 없다).\n  · ② 집행예산·개발효율 → analyst_budget. 집행 **추정치**는 미적재이므로 ERP 마감값만 답한다.\n  · ③ 매체별 개발효율\
     \ 상세 → analyst_ad. 하위 7종 중 **주차·요일·광고유형·시간대·CM위치/재방유형은 가능**,\n    **매체별은 방송 계열만**, **캠페인 유형별은 불가**다.\n\
     \  · ④ 전환회원 특성 → analyst_member_event **단일 호출**. 연령대 × 캠페인 교차가 이 도구 안에서 성립한다.\n  · ⑤ 캠페인별 LTV → 활동기간은\
-    \ analyst_member_cohort, 납입회비는 analyst_member_fee.\n    \U0001F534 두 도구를 조인하지 말고 **캠페인 축에서 표를 병기**한다.\n\
+    \ analyst_member_cohort, 납입회비는 analyst_member_fee.\n    \U0001F534 두 도구를 조인하지 말고 **캠페인 축에서 표를 병기**한다. 🆕 [O203] **「LTV 예측」**을 물으면 analyst_ml_ltv_forecast 를 따로 호출해 「머신러닝 예측」 표로 분리한다(실적 표와 합산 금지).\n\
     \n\U0001F534 **「개발」이 들어간 질문은 어느 개발인지 먼저 가른다.**\n  · 광고 리포트가 보고한 개발건·개발단가 → analyst_ad\n  · CRM 개발\
     \ 사건(건수·회원수·개발구분) → analyst_member_event\n  · 목표 대비 개발 실적·달성율 → analyst_dev_achievement\n  \U0001F534\
     \ 세 도구의 개발 수치는 **정의와 grain 이 달라 더하거나 나누지 않는다.**\n\n\U0001F534 **달성율·집행율·CTR·CVR·개발단가는 직접 나누지 않는다**\
@@ -246,7 +246,58 @@ tools:
       단정하지 말 것** — 「고위험군」은 등급 축(순위 구간)으로 답하고 확률 임계로 바꿔 말하지 않는다 · 모델 판정은 「모델이 중단으로 분류한 회원」으로 표현한다. 🔴 회원수는 반드시 중복제거 지표를 쓴다.
       ⚠️ 원천이 같은 기준월에 회원당 확률이 다른 예측을 여러 행 담고 있어(실행순번 없음) 확률은 평균, 판정은 「하나라도 1」로 단일화한 값이다 — 원천 교정 시 수치가 변한다.
       🆕 [O198 · 나눔마케팅 배선] 「증액 캠페인 우선 제안 대상 회원」 = 증액 확률(INC_PROB) 내림차순 회원 목록 + 증액 판정 회원수로 답한다. 🔴 **캠페인별 추천은 없다** — 모델에 캠페인 축이 없으므로 「어떤 캠페인에 넣을지」는 데이터에서 조회되지 않는다고 밝히고 회원 목록만 제시한다. 🔴 개인 식별 정보는 회원번호까지만 제시한다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ml_ltv_forecast
+    description: '[O203 T9 배선] ML LTV 월별 예측 2종(grain=기준월×LTV유형×계열×예측월). 원천=GN_DW.ML → SERVING.ML_LTV_FORECAST_V. 🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계다.
+      🔴 단위는 원이다(개발금액 예측의 만원과 다르다). 활성 지표: 예측 평균·합계·신뢰구간·예측 개월수·계열수. 차원: 기준월·**LTV유형**·계열코드·계열명·예측월.
+      "어떤 채널의 회원이 장기 가치가 높은가"·"채널별 LTV 예측"·"어떤 캠페인이 가장 높은 LTV를 낼까" 류 질문에 사용. 🔴🔴 **LTV유형을 반드시 하나로 고정한다** —
+      ''MKTG_CHANNEL_AVG_MEMBER''=마케팅채널의 회원 1인당 평균 후원금액 예측 · ''CMPGN_TOTAL''=캠페인의 월간 후원금액 총액 예측. 「채널별」은 MKTG_CHANNEL_AVG_MEMBER, 「캠페인별」은 CMPGN_TOTAL.
+      🔴 회원평균 유형은 합산하지 않는다(평균 지표 사용). 🔴 **회원 단위 LTV(개인별 3년 LTV)는 없다** — 그 질문에는 조회되지 않는다고 밝힌다. 🔴 실적 LTV(누적 납입·유지기간)는 analyst_member_cohort·analyst_member_fee 이며 예측과 한 표에 합산하지 않는다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ml_once_conversion
+    description: '[O203 T9 배선] ML 일시후원회원 → 정기후원 전환 예측(grain=기준월×일시후원회원 · 원천이 회원당 여러 예측행을 담는다). 원천=GN_DW.ML → SERVING.ML_ONCE_CONVERSION_V.
+      🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계다. 활성 지표: 예측 대상 일시회원수·모델 전환분류 회원수·전환확률 평균/최대. 차원: 기준월(모델 실행월)·일시회원번호·모델 판정·성별·회원구분·등록부서(현재 스냅샷).
+      "일시 후원자 중 정기 후원으로 전환할 확률이 높은 회원" 류 질문에 사용 — 🔴 증액 확률(analyst_ml_member_risk)로 대신 답하지 않는다.
+      🔴 「현재」 질문은 최신 기준월 하나로 한정한다. 🔴 회원수는 중복제거 지표로만 답한다. 🔴 일시회원번호는 정기회원번호와 체계가 달라 다른 도구와 조인하지 않는다.
+      🔴 예측 지평을 숫자로 답하지 않는다. 🔴 「모델이 전환으로 분류한 회원」으로 표현한다. 🔴 실제 전환 실적은 이 도구로 답하지 않는다. 🔴 개인 식별 정보는 회원번호까지만.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ml_feature_importance
+    description: '[O203 T9 배선] ML 요인분석(피처 중요도) 2종(grain=기준월×분석유형×피처). 원천=GN_DW.ML → SERVING.ML_FEATURE_IMPORTANCE_V.
+      🔴🔴 측정 대상이 데이터가 아니라 모델이다 — 값은 0~1 기여도(분석유형 내 합계=1)이며 금액·건수가 아니다. 🔴 머신러닝은 테스트 단계다.
+      차원: 기준월·**분석유형**(CHANNEL_NEW_SPNSR 신규 후원 유치 요인 · DVLP_INC 후원개발 증가 요인)·피처명·순위. "개발을 늘리려면 무엇을 개선해야 하나"·"신규 후원 유치 요인" 류 질문에 사용.
+      🔴🔴 분석유형을 하나로 고정한다. 🔴🔴 인과로 답하지 않는다(「모델이 이 요인에 가장 큰 상대 중요도를 부여했다」). 🔴 피처는 사람이 지정한 후보다. 🔴 실적 미달분 분석(analyst_dev_achievement)과 한 표에 합산하지 않는다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ga_behavior
+    description: '[O203 T8 배선] GA4 웹·앱 행동 팩트(grain=일×식별자×이벤트×트래픽소스×기기×페이지). 원천=GA4 → GN_DW.SILVER.BIGQUERY_REFINED_DATA(외부 Python 적재) → GOLD.FACT_BIGQUERY_BEHAVIOR · 2024-01~2026-09.
+      활성 지표: 이벤트수(가산)·페이지뷰(가산)·식별 방문자수(distinct)·이벤트 단위 세션수(이벤트 고정 시만)·참여율 평균(참고). 차원: 방문일·연·월·주차·이벤트 카테고리/액션/라벨·채널그룹·소스/매체·UTM·기기유형·페이지 경로.
+      "신규 사용자 유입 상위 채널"·"페이지별 이벤트"·"후원창 이벤트가 많은 페이지"·"채널별 방문 행동" 류 질문에 사용. 🔴🔴 **세션·사용자 수를 이벤트 간에 더하지 않는다**(행마다 반복됨) — 사람 수는 식별 방문자수, 건수는 이벤트수로 답한다.
+      🔴 식별 방문자는 로그인 등으로 식별된 사람만이다(비식별 제외) — 「전체 방문자」라 하지 않는다. 🔴 채널 분포에는 Unassigned(약 64%)를 함께 보여준다.
+      🔴 **방문자 단위 예측(7일 내 첫 후원·재방문 가능성)·퍼널 단계 라벨(유입/중간/전환 페이지)은 없다** — 조회되지 않는다고 밝히고 집계 대안을 제시한다. 🔴 CRM 개발·회비 실적과 원천이 달라 한 표에 합산·비율 계산하지 않는다.'
 tool_resources:
+  analyst_ml_ltv_forecast:
+    semantic_view: GN_DW.SERVING.SV_ML_LTV_FORECAST
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_ml_once_conversion:
+    semantic_view: GN_DW.SERVING.SV_ML_ONCE_CONVERSION
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_ml_feature_importance:
+    semantic_view: GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_ga_behavior:
+    semantic_view: GN_DW.SERVING.SV_GA_BEHAVIOR
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
   analyst_ml_dvlp_forecast:
     semantic_view: GN_DW.SERVING.SV_ML_DVLP_FORECAST
     execution_environment:

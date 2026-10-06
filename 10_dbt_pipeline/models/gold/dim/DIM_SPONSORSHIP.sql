@@ -34,6 +34,12 @@ cd_grp as (
     select DTL_CD_ID, DTL_CD_NM
     from {{ ref('CRM_CODE') }}
     where CD_ID = 'CM003'
+),
+-- CM019 법인구분: A=통합 · I=사단 · S=사복 (O202)
+cd_cpr as (
+    select DTL_CD_ID, DTL_CD_NM
+    from {{ ref('CRM_CODE') }}
+    where CD_ID = 'CM019'
 )
 
 select
@@ -56,14 +62,23 @@ select
     END                                           as SPONSORSHIP_GROUP4_NAME,
     -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SPONSORSHIP 승계(후원사업 grain).
     s.SORT_ORDR                                   as SORT_ORDR,
-    s.USE_YN                                      as USE_YN
+    s.USE_YN                                      as USE_YN,
+    -- 🆕 [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업의 법인구분(CM019).
+    --   MSTR `USP_D_SPNSR_BSNS_INFO` 와 같은 원천(TM_CM_SPNSR_BSNS_INFO.CPR_DIV_CD)이다.
+    --   CM019 같은 레벨 = A 통합 · I 사단 · S 사복(실측 2026-10-06 · 후원사업 50 = I 42 · S 8 · A 0).
+    --   🔴 MSTR 은 원천 '1'/'2' 를 I/S 로 바꾸는 방어식을 두지만 원천 실측값은 이미 I/S 다 ⇒ 변환하지 않는다.
+    --   🔴 캠페인 법인(`DIM_CAMPAIGN.CPR_DIV_*` · FME `CPR_DIV_*_AT_EVENT`)과 **다른 축**이다.
+    s.CPR_DIV_CD                                  as CPR_DIV_CD,
+    cd_cpr.DTL_CD_NM                              as CPR_DIV_NM
 from s
 left join cd_div on cd_div.DTL_CD_ID = s.SPNSR_DIV_CD
 left join cd_grp on cd_grp.DTL_CD_ID = s.SPNSR_BSNS_ABRV_CD
+left join cd_cpr on cd_cpr.DTL_CD_ID = s.CPR_DIV_CD
 
 union all
 -- unknown 멤버(SK=0): 팩트 SPONSORSHIP_SK=0(미매핑) 조인 유실 방지
 select 0, '(미매핑)', '(미매핑)', NULL,
     {{ gold_meta('CRM') }},
     NULL, NULL, NULL, NULL,
+    NULL, NULL,
     NULL, NULL

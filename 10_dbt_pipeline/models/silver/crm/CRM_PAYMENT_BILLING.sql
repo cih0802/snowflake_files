@@ -69,3 +69,8 @@ SELECT
   ,NULLIF(TRIM(ACMSLT_DEPT_CD),'')
   ,NULLIF(TRIM(USE_YN),'')
 FROM {{ source('bronze_crm','TM_PM_DNTN_DTLS') }} WHERE DNTN_KEY IS NOT NULL
+  -- 🆕 [2026-10-06 O202 · 현업 지시 「원천은 변경 없으니 필터링으로 걸러낸다」] 미래 납입일 = 원천 입력 오타.
+  --   실측(JU93656) = 3행 · 일시회원 S00009035·S00009077·S00009183 · PAY_DE 2101-03-31 · MBRFEE_MT NULL
+  --   ⇒ GOLD 월키가 210103 으로 튀었다(FMM·FACT_MEMBER_FEE 각 3행). 납입일은 미래일 수 없으므로 행을 제외한다.
+  --   🔴 회비월(MBRFEE_MT)이 미래인 선납 행은 대상이 아니다(납입일이 과거다) — 이 술어는 PAY_DE 만 본다.
+  AND (PAY_DE IS NULL OR PAY_DE <= CURRENT_DATE())

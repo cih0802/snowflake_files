@@ -106,3 +106,8 @@ LEFT JOIN {{ ref('CRM_CODE') }} pt
 --    📏 실측 = 고아 10,048행 / 1,258,775 (고아 회원 8,299명) ⇒ 적재 후 1,248,727행 예상.
 --    🔴 위 REGEXP 필터는 「형식이 정상인가」를 보고, 이 술어는 「마스터에 실재하는가」를 본다. 다른 축이다.
 WHERE {{ gn_member_master_filter('b.MBER_NO') }}
+-- 🆕 [2026-10-06 O202-B · 현업 회신 BLOCKING-2 이슈 E] 행사 마스터(CRM_EVENT)에 없는 참여 행 제거.
+--    현업 = 「휴먼에러라 복구 불가 · 마스터에 없는 행사는 GOLD 까지 올리지 마라」.
+--    📏 실측(JU93656) = 고아 279,904행 / 1,274,437 · 고유 키 54 · EVENT_105 204,758 + EVENT_106 73,705 = 99.5%.
+--    🔴 위 회원 필터와 다른 축이다(회원 실재 ↔ 행사 실재) — 둘 다 걸어야 한다.
+  AND EXISTS (SELECT 1 FROM {{ ref('CRM_EVENT') }} ev WHERE ev.EVENT_KEY = b.EVENT_KEY)

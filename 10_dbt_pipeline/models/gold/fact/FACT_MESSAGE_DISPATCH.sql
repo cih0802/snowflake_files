@@ -129,7 +129,8 @@ select
     IFF(sl.SEND_TYPE_L = '회원서비스', COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
     r.TIT                                          as SEND_TITLE,
     s.SNDNG_RST_CD                                as SEND_STATUS,
-    CAST(NULL AS VARCHAR)                          as SEND_STATUS2,
+    -- 🗑 [2026-10-06 O202-C · 사용자 결정 처분 ①] SEND_STATUS2(전건 NULL 자리 컬럼) 제거.
+    --   발송상태2 = 축B 통신사 도달결과 = SEND_RESULT_CD·SEND_RESULT_NAME(상태1 「발송완료」 → 「전달」 · 「에러」 → 실패사유).
     s.SEND_CHANNEL                                as SEND_TYPE,
     CAST(NULL AS BOOLEAN)                          as MAIL_RECEIVE_FLAG,
     CAST(NULL AS BOOLEAN)                          as MEMBER_STOP_FLAG,

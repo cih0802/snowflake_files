@@ -118,13 +118,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.AVG_PAID_MONTHS AS AVG(fmm.PAID_MONTHS)
       WITH SYNONYMS ('평균 납입개월수', '납입개월수') COMMENT = '공#129 조회월까지 정기납입이 있었던 달 수의 평균. 한 달을 지정해 쓴다.',
     -- 🆕 [O201-C] 단월 정의가 확정된 비율 5종(정본 = 30_output_share/05_지표GOLD매핑.md:132~134·154~155)
-    --   🔴 공45~47·54 는 분모 「누계개발(YTD)」 정의가 미확정이라 넣지 않았다(문서20 질의)
-    fmm.STOP_RATE_2 AS SUM(fmm.STOP_CNT) / NULLIF(SUM(fmm.DEV_CNT), 0) * 100
+    --   🔴 공45~47 은 SV_MEMBER_MONTHLY_KPI 소관(누계개발 모집단 집계) · 공54 는 O202 에서 사전 정의 그대로 신설.
+    --   🆕 [O202] 분자 = STOP_AMT_CNT(#35 중단(건) = 금액 ÷ 10,000) — DEV_CNT 가 MSTR 금액 기준이 되어 사건 수(STOP_CNT)와 단위가 어긋났다.
+    fmm.STOP_RATE_1 AS SUM(fmm.STOP_AMT_CNT) / NULLIF(SUM(fmm.DEV_CNT) + SUM(fmm.YEAR_START_ACTIVE_CNT), 0) * 100
+      WITH SYNONYMS ('중단율1', '공54', '활동 대비 중단율') COMMENT = '공54 중단율1(%) = 중단(건) ÷ (개발(건) + 연도초활동회원(건)) ×100 — 지표 사전 정의 그대로(O202 현업 지시). 개발(건)은 그 달 값(누계 아님). 비율(N). 🔴 한 달을 지정한다.',
+    fmm.STOP_RATE_2 AS SUM(fmm.STOP_AMT_CNT) / NULLIF(SUM(fmm.DEV_CNT), 0) * 100
       WITH SYNONYMS ('중단율2', '공55', '개발 대비 중단율') COMMENT = '공55 중단율2(%) = 중단(건) ÷ 개발(건) ×100. 비율(N). 🔴 한 달을 지정해 쓴다 · 다른 중단율(코호트 12개월 이탈률 = SV_MEMBER_COHORT)과 정의가 다르다.',
-    fmm.STOP_RATE_NEW AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.STOP_CNT END)
+    fmm.STOP_RATE_NEW AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.STOP_AMT_CNT END)
         / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.DEV_CNT + fmm.PREV_MONTH_END_ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('신규 중단율', '공56') COMMENT = '공56 신규 중단율(%) = 중단(건)[신규] ÷ (개발(건)[신규] + 전월말 활동(건)[신규]) ×100. 비율(N). 🔴 한 달을 지정한다 · 신규/기존은 NEW_EXISTING_FLAG.',
-    fmm.STOP_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.STOP_CNT END)
+    fmm.STOP_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.STOP_AMT_CNT END)
         / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.DEV_CNT + fmm.PREV_MONTH_END_ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('기존 중단율', '공57') COMMENT = '공57 기존 중단율(%) = 중단(건)[기존] ÷ (개발(건)[기존] + 전월말 활동(건)[기존]) ×100. 비율(N). 🔴 한 달을 지정한다.',
     fmm.UNPAID_RATE_NEW AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '신규' THEN fmm.UNPAID_CNT END)

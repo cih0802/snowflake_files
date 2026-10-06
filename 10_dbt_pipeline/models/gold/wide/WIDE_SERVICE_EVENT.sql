@@ -20,7 +20,7 @@ select
     f.D5_INCREASE_PART_MEMBERS, f.D5_INCREASE_PART_CNT,
     f.D5_STOP_MEMBERS, f.D5_STOP_CNT,
     f.SERVICE_MEMBERS, f.SERVICE_CNT,
-    f.SEND_TITLE, f.SEND_STATUS, f.SEND_STATUS2, f.SEND_TYPE,
+    f.SEND_TITLE, f.SEND_STATUS, f.SEND_TYPE,
     -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
     --   🔴 O59-N 이 SILVER·GOLD 에 라벨을 붙였지만 WIDE 는 **코드축만** 노출하고 있었다 —
     --      소비계층(SV·Analyst·현업 직접조회)이 라벨을 볼 수 없으면 라벨을 만든 목적이 달성되지 않는다.

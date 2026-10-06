@@ -28,7 +28,7 @@
 --    요건3 = PAID_SPONSOR_BIZ_CNT·IS_MULTI_PAID_BIZ (그 달 납입 발생 사업수, 회비·PAY_AMT>0 한정)
 --    🔴 정본 (건)=약정금액÷10,000 과 다른 실제 개수·횟수 — INCREASE_CNT(#151)·DECREASE_CNT(#38)와 혼용 금지(CONF-2).
 --    ⚠️ 요건2(연속미납횟수)는 스파인 sparse(gap>1 3.94%·최대370개월)로 run-length 오판 → W4 제외, dense 스파인 선행 필요.
--- ⚠️ DEV_CNT = FME 사건수(금액/10000 아님 — 06_DDL 주석/별도트랙).
+-- ⚠️ [O202 · 2026-10-06 사용자 결정] DEV_CNT = MSTR 개발(건) = 인정금액/10,000(FME 정본 주석 참조). 종전 「사건수」 폐기.
 -- 순서9(G-1/G-2 해소): incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 -- 순서9-C(#80/DEC-4): UNPAID_FLAG_EOM/BOM — 미납 = PAY_STAT_CD IN ('F', NULL).
 {{ config(
@@ -214,15 +214,16 @@ fme_rollup as (
     select
         FLOOR(DATE_SK / 100)                          as MONTH_KEY,   -- YYYYMMDD→YYYYMM (FME DATE_SK 는 이미 범위클램프; 0 → 0=Unknown월)
         MEMBER_DK,
-        SUM(DEV_CNT)                                  as DEV_CNT,      -- 개발 사건수 합
-        IFF(SUM(DEV_CNT) > 0, 1, 0)                    as DEV_MEMBERS,  -- 월×회원 grain: 개발발생 1/0 (다월 SUM 시 distinct 회원수)
+        SUM(DEV_CNT)                                  as DEV_CNT,      -- [O202] 개발(건) = MSTR 인정금액/10,000 합
+        IFF(SUM(DEV_MEMBERS) > 0, 1, 0)                as DEV_MEMBERS,  -- [O202] MSTR 개발 인정 행 보유 1/0 (다월 SUM 시 distinct 회원수)
         SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
         IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS,
-        -- [O183] 개발구분(#121)·증액(#33)·재후원(#34) 월 판정 재료. 개발 사건(DEV_CNT>0)만 본다.
-        COUNT(DISTINCT IFF(DEV_CNT > 0, DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
-        MAX(IFF(DEV_CNT > 0, DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
-        BOOLOR_AGG(DEV_CNT > 0 AND DVLP_DIV_CD = '2')       as HAS_INCREASE_DEV,
-        BOOLOR_AGG(DEV_CNT > 0 AND DVLP_DIV_CD = '4')       as HAS_REDONATE_DEV,
+        -- [O183] 개발구분(#121)·증액(#33)·재후원(#34) 월 판정 재료. 개발 사건(1·2·4)만 본다.
+        --   🔴 [O202] DEV_CNT 가 금액 기반으로 바뀌었으므로 사건 판정은 DVLP_DIV_CD 로 한다(종전 결과 보존).
+        COUNT(DISTINCT IFF(DVLP_DIV_CD in ('1','2','4'), DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
+        MAX(IFF(DVLP_DIV_CD in ('1','2','4'), DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
+        BOOLOR_AGG(DVLP_DIV_CD = '2')                       as HAS_INCREASE_DEV,
+        BOOLOR_AGG(DVLP_DIV_CD = '4')                       as HAS_REDONATE_DEV,
         MAX(STOP_DATE)                                      as MONTH_STOP_DATE
     from {{ ref('FACT_MEMBER_EVENT') }}
     group by MONTH_KEY, MEMBER_DK
@@ -239,7 +240,7 @@ member_first as (
     from (
         select MEMBER_DK, JOIN_DATE as D
         from {{ ref('FACT_MEMBER_EVENT') }}
-        where EVENT_TYPE = 'DEV' and DEV_CNT > 0 and JOIN_DATE is not null and YEAR(JOIN_DATE) > 1900
+        where EVENT_TYPE = 'DEV' and DVLP_DIV_CD in ('1','2','4') and JOIN_DATE is not null and YEAR(JOIN_DATE) > 1900  -- [O202] 사건 판정 보존
         union all
         select MEMBER_DK, FRST_REGIST_DT::DATE
         from {{ ref('CRM_MEMBER') }}
@@ -392,6 +393,10 @@ joined as (
         -- [O183] #38 감액(건) = 감액금액/10,000 · CHURN_CNT(신규#20 이탈) = (중단 약정금액 + 감액금액)/10,000.
         COALESCE(am.DEC_AMT, 0) / 10000                                          as DECREASE_CNT,
         (COALESCE(sa.STOP_BIZ_AMT, 0) + COALESCE(am.DEC_AMT, 0)) / 10000        as CHURN_CNT,
+        -- 🆕 [O202] #35 중단(건) = 그 달 중단된 후원사업의 약정금액 ÷ 10,000(정본 「후원중단한 회원의 총 개발 건 = 전체 후원금액/10,000」).
+        --   🔴 왜 신설하나 = DEV_CNT 가 금액 기준(MSTR)으로 바뀌어 공54~57 의 분자 STOP_CNT(사건 수)와 단위가 어긋났다.
+        --      STOP_CNT(사건 수)는 그대로 둔다(TOTAL_STOP_CNT 소비처 보존) — 비율의 분자는 이 컬럼이다.
+        COALESCE(sa.STOP_BIZ_AMT, 0) / 10000                                     as STOP_AMT_CNT,
         aa.YEAR_START_BIZ_AMT / 10000        as YEAR_START_ACTIVE_CNT,   -- 연초(YYYY01) as-of
         aa.YEAR_END_BIZ_AMT   / 10000        as YEAR_END_ACTIVE_CNT,     -- 연말(YYYY12) as-of
         -- 🟢 당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.

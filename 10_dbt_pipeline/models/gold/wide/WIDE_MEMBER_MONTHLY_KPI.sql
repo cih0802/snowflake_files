@@ -9,6 +9,10 @@
 --      · DEV_CUM_AMT_CNT = 금액 ÷ 10,000(FME 개발구분 신규·증액·재후원 · 활동(건)과 같은 단위)
 --      ⇒ 공45·46·47 은 분모·분자에 활동(건)(금액 ÷ 10,000)과 섞이므로 **DEV_CUM_AMT_CNT** 를 쓴다
 --        (사건 수로 계산하면 공45 가 100% 를 넘는 달이 생긴다 · O201-D 실측).
+--   🆕 [2026-10-06 O202 · 사용자 결정 「DEV_CNT = MSTR 정의」] 위 두 갈래는 **하나로 수렴했다**:
+--      · FME.DEV_CNT 자체가 MSTR 개발(건) = 인정금액 ÷ 10,000 이 됐다(사건 수 정의 폐기 · 요청서 41번 단위 결정).
+--      · DEV_AMT_CNT 도 원금액 단순합이 아니라 **FME.DEV_CNT 합**(MSTR 상계 후)으로 바꾼다 — 컬럼명·SV 는 유지.
+--      · DEV_CUM_CNT(FMM 경유)와 DEV_CUM_AMT_CNT(FME 경유)는 같은 정의이며 차이는 신규기존 판정 경로뿐이다.
 --   🔴 이 뷰의 행은 회원이 아니다 — 회원 속성(성별·상태 등)으로 쪼개지 않는다.
 with m as (
     select
@@ -29,7 +33,7 @@ d as (
     select
         FLOOR(DATE_SK / 100)                   as MONTH_KEY,
         NEW_EXISTING_FLAG,
-        SUM(IFF(DVLP_DIV_CD in ('1', '2', '4'), SPNSR_AMT, 0)) / 10000 as DEV_AMT_CNT
+        SUM(DEV_CNT)                           as DEV_AMT_CNT  -- [O202] MSTR 개발(건)(인정금액 ÷ 10,000)
     from {{ ref('FACT_MEMBER_EVENT') }}
     where EVENT_TYPE = 'DEV' and DATE_SK > 0
     group by 1, 2

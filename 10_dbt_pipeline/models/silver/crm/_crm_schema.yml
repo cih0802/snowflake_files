@@ -334,7 +334,7 @@ models:
           - relationships:
               to: ref('CRM_EVENT')
               field: EVENT_KEY
-              config: { severity: warn }   # 이슈 E 고아 263,611(23.24%) — 원천 마스터 결번(O116 실측). warn 관측(문서50 BLOCKING-2 · §O116-3 ㉡).
+              config: { severity: error }   # 🟢 [2026-10-06 O202-B] warn → error 복귀 — 모델이 마스터 부재 행을 필터한다(현업 회신 · 휴먼에러 복구 불가) ⇒ 고아 0 이 불변식. 종전 = 이슈 E 고아 279,904(22%) warn 관측.
       - name: MBER_NO
         tests:
           - not_null

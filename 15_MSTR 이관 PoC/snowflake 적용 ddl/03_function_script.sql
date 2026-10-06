@@ -47,6 +47,12 @@ $$
       CASE
         WHEN R.RE_SPNSR_DE IS NULL THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
         WHEN D.SPNSR_DSCNTC_DE > R.RE_SPNSR_DE THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
+        -- 🆕 [2026-10-06 O202-B · 현업 규칙] 중단일 = 재후원일(같은 날)이면 시각으로 가를 수 없다 ⇒
+        --   「재후원한 후원의 번호(SPNSR_NO) > 그날 중단된 후원의 번호」일 때만 재후원으로 인정한다.
+        --   원본은 같은 날을 무조건 재후원으로 봤다. 실측(JU93656) = 같은 날 6,018쌍 · 판정 가능 5,959 ·
+        --   재후원 유효 4,690 · 🔴 무효(=중단) 1,269 · 번호 미확인 59(원본대로 재후원 처리 · 창작 금지).
+        WHEN D.SPNSR_DSCNTC_DE = R.RE_SPNSR_DE AND NN.NEW_NO <= NS.STOP_NO
+          THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
         WHEN TO_DATE(R.RE_SPNSR_DE, 'YYYYMMDD') < LAST_DAY(TO_DATE(STRD_MT || '01', 'YYYYMMDD'))
           THEN LAST_DAY(TO_DATE(STRD_MT || '01', 'YYYYMMDD'))
         ELSE TO_DATE(R.RE_SPNSR_DE, 'YYYYMMDD')
@@ -64,6 +70,15 @@ $$
       QUALIFY ROW_NUMBER() OVER (PARTITION BY MBER_NO ORDER BY RE_SPNSR_DE DESC) = 1
     ) R
       ON D.MBER_NO = R.MBER_NO
+    -- 🆕 [O202-B] 같은 날 중단·재후원의 후원 번호(중단된 후원 최대 · 그날 개시한 후원 최대)
+    LEFT JOIN (
+      SELECT MBER_NO, FST_DE AS DE, MAX(TRY_TO_NUMBER(SPNSR_NO)) AS NEW_NO
+      FROM GN_DW.MSTR.D_SPNSR_BSNS_V GROUP BY 1, 2
+    ) NN ON NN.MBER_NO = D.MBER_NO AND NN.DE = D.SPNSR_DSCNTC_DE
+    LEFT JOIN (
+      SELECT MBER_NO, DSC_DE AS DE, MAX(TRY_TO_NUMBER(SPNSR_NO)) AS STOP_NO
+      FROM GN_DW.MSTR.D_SPNSR_BSNS_V GROUP BY 1, 2
+    ) NS ON NS.MBER_NO = D.MBER_NO AND NS.DE = D.SPNSR_DSCNTC_DE
   ) T2
     ON T1.MBER_NO = T2.MBER_NO
   WHERE LAST_DAY(TO_DATE(STRD_MT || '01', 'YYYYMMDD'))
@@ -177,7 +192,11 @@ $$
   B3 AS (
     SELECT
       ACMSLT_DEPT_CD AS ACMSLT_DEPT_CD2, '3' AS DVLP_DIV_CD2,
-      ROW_NUMBER() OVER (PARTITION BY MBER_NO, STRD_MT ORDER BY SPNSR_NO DESC) AS RNUM,
+      -- 🆕 [O202] 동점 해소키 추가(SPNSR_BSNS_NO DESC, SER_NO DESC) — 원본은 SPNSR_NO 만이라 비결정적이다.
+      --   실측(2026-01~10 · JU93656) = 감액 그룹 11,700 중 동점 753 · 그중 후원사업이 갈리는 120 그룹은
+      --   적재본이 최대 SER_NO 55 / 최소 57 로 임의 선택(법인 귀속이 실행마다 바뀔 수 있다). 금액(MAMT)은 불변.
+      --   🔴 라이브 함수 교체·재적재는 별도 승인 후(R4-4-3) · 원 SQL Server 결과 대조는 IT 회신 대기.
+      ROW_NUMBER() OVER (PARTITION BY MBER_NO, STRD_MT ORDER BY SPNSR_NO DESC, SPNSR_BSNS_NO DESC, SER_NO DESC) AS RNUM,
       0 AS RAMT, 0 AS AAMT, 0 AS DAMT, 0 AS SAMT,
       SUM(SPNSR_AMT) OVER (PARTITION BY MBER_NO, STRD_MT) AS MAMT,
       BASE.*

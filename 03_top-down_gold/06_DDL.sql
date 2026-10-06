@@ -4,6 +4,10 @@
 --   · 실행 = GN_DW_ADMIN · 새 환경은 이 파일 전체 실행 → dbt build.
 --   · 🔴 적재된 환경에서 전체 재실행 금지 — CREATE OR REPLACE 가 데이터·FK·GRANT 를 지운다.
 --       FK 만 다시 걸 때는 제약 절만 실행한다(선삭제 블록이 있어 멱등).
+--   · 🔴🔴 [2026-10-06 O202-B 실사고] 2026-10-05 19:49 PDT 이 파일 전체 실행 → GOLD 48 중 41 테이블 0행 →
+--       FK 테스트 11 FAIL · ROLLING 팩트(FACT_BIGQUERY_BEHAVIOR)는 전량 build 로도 복구 안 됨(백필 별도 필요).
+--       ⇒ **컬럼 1개 추가는 이 파일을 돌리지 말고** ① 이 파일 선언 수정 ② 그 컬럼만 `ALTER TABLE … ADD COLUMN IF NOT EXISTS`
+--         ③ `SHOW COLUMNS` 확인(INFORMATION_SCHEMA 는 반영이 늦다) ④ dbt build — 이 순서뿐이다.
 --   · 🔴 FK 는 참조 PK 와 타입이 정확히 같아야 한다(폭이 넓어도 실패):
 --       *_DATE_SK NUMBER(8,0) · MONTH_KEY NUMBER(6,0) · *_SK NUMBER(38,0) · MEMBER_DK VARCHAR(10).
 --   · 뷰(WIDE_* · DIM_MEMBER_ACQUISITION 계열 뷰)는 dbt 모델 소관 — 이 파일에서 만들지 않는다.
@@ -273,7 +277,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SPONSORSHIP (
     SPONSORSHIP_GROUP_NAME VARCHAR      COMMENT '후원약칭명. 코드id:CM003.',
     SPONSORSHIP_GROUP4_NAME VARCHAR     COMMENT '후원사업 4그룹(ML 요건 · 국내/결연/해외프로젝트/기타) — CM003 라벨 접기: 해외구호·해외→해외프로젝트 · 북한→기타(사용자 결정 §4 #2 · 문서20 F-2). 규칙 밖 라벨은 NULL',
     SORT_ORDR              NUMBER(10,0)    COMMENT '정렬순서 [SILVER.CRM_SPONSORSHIP 승계 · 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO]',
-    USE_YN                 VARCHAR(1)      COMMENT '사용여부 [SILVER.CRM_SPONSORSHIP 승계 · 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO]'
+    USE_YN                 VARCHAR(1)      COMMENT '사용여부 [SILVER.CRM_SPONSORSHIP 승계 · 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO]',
+    CPR_DIV_CD             VARCHAR         COMMENT '[O202] 후원사업 법인구분 코드(CM019: A 통합 · I 사단 · S 사복) — MSTR 법인 축. 코드id:CM019. [SILVER.CRM_SPONSORSHIP 승계]',
+    CPR_DIV_NM             VARCHAR         COMMENT '[O202] 후원사업 법인구분명(통합/사단/사복). 코드id:CM019. 🔴 세부캠페인 법인(FACT_MEMBER_EVENT.CPR_DIV_*_AT_EVENT)과 다른 축.'
 ) COMMENT = '후원사업 차원. [Grain: SPONSORSHIP_SK (1행=1후원사업)]. [주의: 정기/일시 구분 및 상위 사업군 분류]. [원천: CRM → BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO → SILVER.CRM_SPONSORSHIP].';
 
 -- DIM_AD_CREATIVE — 광고 소재/매체 차원
@@ -571,8 +577,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     SPONSORSHIP_SK              NUMBER(38,0)    COMMENT '후원사업 (FK→DIM_SPONSORSHIP)',
     PAYMENT_SK                  NUMBER(38,0)    COMMENT '납입/결제 유형 (FK→DIM_PAYMENT)',
     REASON_SK                   NUMBER(38,0)    COMMENT '대리키',
-    DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) (#4).',
-    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) (#148).',
+    DEV_CNT                     NUMBER(18,4)    COMMENT '개발(건) (#4) = [O202] MSTR 개발(건)(인정금액 ÷ 10,000) 월 합.',
+    DEV_MEMBERS                 NUMBER(38,0)    COMMENT '개발(명) (#148) = [O202] 그 달 MSTR 개발 인정 행 보유 1/0.',
     STOP_CNT                    NUMBER(18,4)    COMMENT '중단(건) (#35).',
     UNPAID_CNT                  NUMBER(18,4)    COMMENT '미납(건) (#36)',
     ACTIVE_CNT                  NUMBER(18,4)    COMMENT '활동(건) (#37·157) (#37).',
@@ -583,6 +589,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     INCREASE_MEMBERS            NUMBER(38,0)    COMMENT '증액(명) (#150)',
     DECREASE_CNT                NUMBER(18,4)    COMMENT '감액(건) SUM(감액금액)/10000 (#38)',
     CHURN_CNT                   NUMBER(18,4)    COMMENT '이탈(건) SUM(취소+감액)/10000 (신규#20)',
+    STOP_AMT_CNT                NUMBER(18,4)    COMMENT '[O202] 중단(건) (#35) = 그 달 중단 후원사업 약정금액 ÷ 10,000. 공54~57 분자(DEV_CNT 와 같은 단위). STOP_CNT(사건 수)와 다르다.',
     YEAR_START_ACTIVE_CNT       NUMBER(18,4)    COMMENT '연도초 활동회원(건) (#49).',
     YEAR_END_ACTIVE_CNT         NUMBER(18,4)    COMMENT '연도말 활동회원(건) (#50).',
     MONTH_END_ACTIVE_CNT        NUMBER(18,4)    COMMENT '월말활동회원(건) (#52).',
@@ -640,8 +647,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     DVLP_DIV_CD         VARCHAR         COMMENT '개발구분코드. 코드id:MM015.',
     DVLP_DIV_NM         VARCHAR         COMMENT '개발구분명. 코드id:MM015.',
     SPNSR_AMT           NUMBER(18,0)    COMMENT '후원금액(원) (#38).',
-    DEV_CNT             NUMBER(18,4)    COMMENT '개발(건) (#149).',
-    DEV_MEMBERS         NUMBER(38,0)    COMMENT '「명」이 아니다 (#148).',
+    DEV_CNT             NUMBER(18,4)    COMMENT '개발(건) (#149) = [O202 사용자 결정] MSTR 정의: 사건의 MSTR 인정금액 ÷ 10,000(신규·재후원 = 미중단 후원사업·월합>0 · 증액 = 감액 상계 순증액). 원본 FN_MM_SPNSR_DVLP B1·B2.',
+    DEV_MEMBERS         NUMBER(38,0)    COMMENT '「명」이 아니다 (#148) — [O202] MSTR 개발 인정 행이면 1 · 기간 개발(명) = COUNT DISTINCT 회원.',
     STOP_CNT            NUMBER(18,4)    COMMENT '중단(건) (#35)',
     STOP_MEMBERS        NUMBER(38,0)    COMMENT '「명」이 아니다.',
     UNPAID_STOP_CNT     NUMBER(18,4)    COMMENT '미납중단(건)',
@@ -751,7 +758,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SERVICE_CNT                 NUMBER(18,4)    COMMENT '서비스(건) (#161)',
     SEND_TITLE                  VARCHAR         COMMENT '제목(#136)',
     SEND_STATUS                 VARCHAR         COMMENT '발송상태(#138)',
-    SEND_STATUS2                VARCHAR         COMMENT '발송상태2 (05 3-1) — 🔴 전건 NULL 자리 컬럼. 발송상태2 는 축B(통신사 도달결과) = SEND_RESULT_CD·SEND_RESULT_NAME 로 조회한다(사용자 결정 §4 #11 · 문서20 M-6 · O190).',
+    -- 🗑 [2026-10-06 O202-C · 사용자 결정 처분 ①] SEND_STATUS2 제거 — 발송상태2 = SEND_RESULT_CD·SEND_RESULT_NAME(축B).
     SEND_TYPE                   VARCHAR         COMMENT '발송유형.',
     MAIL_RECEIVE_FLAG           BOOLEAN         COMMENT '메일수신여부. [사유:원천 미보유]',
     MEMBER_STOP_FLAG            BOOLEAN         COMMENT '결연회원 중단여부. [사유:원천 미보유]',

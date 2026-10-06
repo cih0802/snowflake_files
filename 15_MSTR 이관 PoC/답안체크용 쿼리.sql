@@ -1,7 +1,7 @@
 -- Co-authored with CoCo
 -- =====================================================================
 -- 답안체크용 쿼리 (O197) — MSTR 원 리포트 답안 ↔ GN_DW.MSTR 이관 결과 대조
---   답안 원문 = 15_MSTR 이관 PoC/mstr-answer.csv
+--   답안 원문 = `15_MSTR 이관 PoC/mstr-answer.csv`
 --     → GN_DW.MSTR.CHK_MSTR_ANSWER (적재 = tools/mstr_load_answer.py · 원문 문자열 그대로)
 --   비교 grain = MSTR 분석엔진 1단계 동적집계(사업부/시도권역·홍보방법·후원사업 제외) + 캠페인코드(CP)
 --   판정 규칙

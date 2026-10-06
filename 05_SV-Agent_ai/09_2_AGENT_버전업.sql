@@ -87,6 +87,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_SPNSR_CLS_AGGR'),       -- 🆕 2026-10-02 O200-B 회원실 후원 분류별 집계(자체 수식)
     ('AGENT_MEMBER',    'SV_DVLP_GOAL_ACMSLT'),     -- 🆕 2026-10-02 O200-B 기획실 연간 개발 목표·실적(자체 수식)
     ('AGENT_MEMBER',    'SV_MEMBER_MONTHLY_KPI'),   -- 🆕 2026-10-03 O201-D 누계개발·활동률(공45~47)
+    ('AGENT_MEMBER',    'SV_ML_FEATURE_IMPORTANCE'),-- 🆕 2026-10-06 O203 요인분석(증액 요인 · 회원실 문항 8)
     ('AGENT_EXECUTIVE',   'SV_TARGET_BIZ'),         -- 🆕 [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
     ('AGENT_EXECUTIVE',   'SV_AD'),
@@ -106,6 +107,10 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_TARGET_BIZ'),           -- 🆕 [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
     ('AGENT_MARKETING', 'SV_ML_DVLP_FORECAST'),     -- 🆕 [O200-B] 〃
     ('AGENT_MARKETING', 'SV_ML_MEMBER_RISK'),       -- 🆕 [O200-B] 〃
+    ('AGENT_MARKETING', 'SV_ML_LTV_FORECAST'),      -- 🆕 2026-10-06 O203 T9
+    ('AGENT_MARKETING', 'SV_ML_ONCE_CONVERSION'),   -- 🆕 2026-10-06 O203 T9
+    ('AGENT_MARKETING', 'SV_ML_FEATURE_IMPORTANCE'),-- 🆕 2026-10-06 O203 T9
+    ('AGENT_MARKETING', 'SV_GA_BEHAVIOR'),          -- 🆕 2026-10-06 O203 T8 (05_15)
     ('AGENT_MSTR',      'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O200-C] 4번째 Agent(최초 배포 = 24_MSTR_AGENT_배포.sql)
   AS t(AGENT_NAME, SV_NAME)
 )

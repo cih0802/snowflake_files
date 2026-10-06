@@ -41,9 +41,9 @@ models:
       - name: MEMBER_DK
         description: "불변 회원키(조인용)"
       - name: DEV_CNT
-        description: "개발(건) SUM(금액)/10000 (#4·5·149)"
+        description: "개발(건) (#4·5·149) = **MSTR 정의**(O202 · 사용자 결정): 회원×월 MSTR 인정금액 ÷ 10,000 합. 인정금액 = 신규·재후원은 미중단 후원사업·월합>0 행의 금액, 증액은 감액과 상계한 순증액(원본 FN_MM_SPNSR_DVLP B1·B2). 소수가 나온다. 🔴 GN_DW.MSTR 지표와 같은 표에서 합산 금지(정의가 같아도 출처가 다르다)."
       - name: DEV_MEMBERS
-        description: "개발(명) COUNT (#148)"
+        description: "개발(명) (#148) = 그 달 MSTR 개발 인정 행 보유 1/0 — 다월 SUM 은 회원-월 수이며 기간 distinct 회원수는 COUNT(DISTINCT MEMBER_DK)."
       - name: STOP_CNT
         description: "중단(건) (#35, FME 롤업)"
       - name: UNPAID_CNT
@@ -217,9 +217,9 @@ models:
       - name: SPNSR_AMT
         description: "FACT_MEMBER_EVENT.SPNSR_AMT — 후원금액(원) raw. 원천 TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT 무변환 전파. 🔴감액·후원중단 사건은 **음수**다 — 무조건 SUM 하면 개발금액이 상계된다. 🔴정본 공#38 감액(건)·#151 증액(건)이 **금액을 만원 단위로 나눈 값**이라는 규약이므로 원금액을 보존한다(설계 §1·CONF-2) — 이 컬럼을 그대로 '건수'로 쓰지 말 것. ⚠️중단원천 행은 NULL."
       - name: DEV_CNT
-        description: "개발(건) (#149)"
+        description: "개발(건) (#149) = **MSTR 정의**(O202 · 사용자 결정): 이 사건의 MSTR 인정금액 ÷ 10,000(신규·재후원 = 미중단 후원사업·후원사업×월 합>0 행 금액 · 증액 = 감액 상계 순증액 · 그 밖 0). 원본 = FN_MM_SPNSR_DVLP B1·B2 + USP_F_MM_SPNSR_DVLP_SUM. 🟢 202607 전사 14,188명·29,714.1888건 MSTR 전건 일치. 🔴 GN_DW.MSTR 지표와 같은 표에서 합산 금지."
       - name: DEV_MEMBERS
-        description: "개발(명) (#148)"
+        description: "개발(명) (#148) = MSTR 개발 인정 행이면 1. 기간 개발(명)은 COUNT(DISTINCT CASE WHEN DEV_MEMBERS=1 THEN MEMBER_DK END)."
       - name: STOP_CNT
         description: "중단(건) (#35)"
       - name: STOP_MEMBERS
@@ -336,6 +336,10 @@ models:
         description: "[2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선돼 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24)."
       - name: SPONSORSHIP_GROUP_NAME
         description: "[2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️STOP 브랜치 센티넬은 위 DIV_NAME 주석과 동일."
+      - name: SPONSORSHIP_CPR_DIV_CD
+        description: "[2026-10-06 O202 · 사용자 결정] **후원사업 법인구분** 원천코드(코드그룹 CM019: A=통합 · I=사단 · S=사복). MSTR 법인 축과 같은 원천(TM_CM_SPNSR_BSNS_INFO.CPR_DIV_CD)이다. 🔴 「법인·사단·사복」 질의의 **기본 축** — CAMPAIGN_CPR_DIV_*(세부캠페인 법인)·ORG_CORP(조직 법인)와 다른 축이다. ⚠️ STOP 행은 후원사업 미배선분이 SK=0 이라 NULL 이다."
+      - name: SPONSORSHIP_CPR_DIV_NM
+        description: "SPONSORSHIP_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복). 「사단법인」=사단 · 「사회복지법인」=사복. 🔴 법인 질의 기본 축(O202) — 세부캠페인 법인(CAMPAIGN_CPR_DIV_NM)으로 답하지 마라."
       - name: ORG_CORP
         description: "DIM_ORG.CORP — 법인 (#114). 🔴DIM_ORG 는 **SCD1**(DEC-2)이라 as-was 가 아니다 — 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다(조직 변경이력 원천·as-was 요구가 없어 SCD1 로 확정). 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.CORP`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C."
       - name: ORG_DIVISION
@@ -437,8 +441,6 @@ models:
         description: "제목 (#136)"
       - name: SEND_STATUS
         description: "발송상태 (#138)"
-      - name: SEND_STATUS2
-        description: "발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢 발송상태2 는 축B(통신사 도달결과) = `SEND_RESULT_CD`·`SEND_RESULT_NAME` 로 조회한다(사용자 결정 §4 #11 · 문서20 M-6 · O190)."
       - name: SEND_TYPE
         description: "발송유형"
       - name: SEND_STATUS_GROUP
