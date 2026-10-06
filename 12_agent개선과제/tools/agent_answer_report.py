@@ -387,7 +387,10 @@ def write_excel(jobs, results, info):
     os.makedirs(OUT_DIR, exist_ok=True)
     stamp = dt.datetime.now().strftime('%Y%m%d_%H%M')
     path = os.path.join(OUT_DIR, f"질문별_답변현황_{info.get('계정', 'NA')}_{stamp}.xlsx")
-    wb.save(path)
+    tmp_path = f"/tmp/report_{stamp}.xlsx"
+    wb.save(tmp_path)
+    with open(tmp_path, 'rb') as f_in, open(path, 'wb') as f_out:
+        f_out.write(f_in.read())
     return path
 
 

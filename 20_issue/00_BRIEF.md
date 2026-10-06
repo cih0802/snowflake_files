@@ -26,56 +26,22 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| 1 | ㉠ 👤 dbt build (O202 반영) | dbt build --project-dir 10_dbt_pi… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:30` |
-| 2 | ㉠ SV 재배포 + 검증 | dbt 후 05_2·05_14 배포 → VQR(매체운영팀×사… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:31` |
-| 3 | ㉠ A0 매핑표 · A2 차원 대조 | 02_MSTR_GOLD_매핑표.md 신설 → 계획 §3-1 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:32` |
-| 4 | ㉠ FN B3 라이브 교체 | 03_function_script.sql:184 해소키 → … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:33` |
-| 5 | ㉡ MSTR 3종 Agent 반영 | 사용자 결정(요청서 41 요청 1 · A/B/C) — 정의가… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:34` |
-| 6 | ㉡ MSTR 월 정기 Task | 06_MSTR_적재_실행.sql [4] → 생성 여부 사용자… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:35` |
-| 7 | ㉡ ML 질문 개선 후보 | MKT LTV·일시전환 도구 · 기획실 A/B안 VQR · … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:36` |
-| 8 | ㉡ FMM 미래월 처리 방침 | 선납 회비월 행(202611~202911) 유지/절단 사용자… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:37` |
-| 9 | ㉡ 👤 운영계 이관 | 00~04 배포 → 06 [0]~[3] → mstr_veri… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:38` |
-| 10 | ㉡ 👤 CoWork 스모크 | 새 COMMENT·별칭·비율 5종 + O202 법인 축 질의 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:39` |
-| 11 | ㉡ 👤 현업 | 공46 방향 · 공54 정의 · 문서20 N-26(①②) ·… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:40` |
-| 1 | ㉠ 👤 build | --select CRM_PAYMENT_BILLING+ FAC… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:28` |
-| 2 | ㉠ SV_MEMBER_MONTHLY 배포 | build 후 05_1 배포 · STOP_AMT_CNT 비N… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:29` |
-| 3 | ㉠ 검증 | FMM·FEE MONTH_KEY>210000 = 0 · FA… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:30` |
-| 4 | ㉡ 👤 ML 회원예측 중복 | 원천에 인입순서 근거 없음(컬럼·병렬 unload 파일) ⇒… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:31` |
-| 5 | ㉡ 👤 기획실 4그룹 | MSTR 근거 없음(약칭 CM003·후원사업2만 존재) ⇒ … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:32` |
-| 6 | ㉡ 👤 FN B3 동점 | 사용자 결정(해소키 라이브 반영 여부) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:33` |
-| 7 | ㉡ 👤 BLOCKING-2 E · SEND_STATUS2 | 미해결 실측(E 고아 279,904/1,274,437 · E… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:34` |
-| 8 | ㉡ 06_DDL 전체실행 방지 | 헤더 경고 문구 · on_schema_change 유지 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:35` |
-| 1 | ㉠ 👤 배포본 갱신 | ALTER DBT PROJECT GN_DW.OPS.DW_PI… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:28` |
-| 2 | ㉠ 👤 build | ARGS='build --select CRM_PAYMENT_… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:29` |
-| 3 | ㉠ 검증·배포 | MONTH_KEY>210000 = 0 · STOP_AMT_C… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:30` |
-| 4 | ㉡ 👤 SEND_STATUS2 | 원천 컬럼 아님 · 보고서 요건(05 §3-1 발송상태1·2… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:31` |
-| 5 | ㉡ 👤 ML 회원예측 중복 | 인입순서 근거 없음 · 입력 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:32` |
+| 9 | ㉡ 👤 MSTR 일일 적재(전월+당월) | ⏸ 준비만 완료 · 현업 회신 대기 → 15_MSTR 이관 … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0203-A.md:40` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `O202-D 인수인계`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-D.md:17`
+> 🔴 **현행 시작점** = `O203-A 인수인계`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0203-A.md:17`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-D.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O202-A-0 🔴 먼저 알아라 (2026-10-06 · JU93656 · ㉡ 적용 · 확정위반 1) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:17` |
-| ▣ O202-A-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:26` |
-| ▣ O202-A-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:42` |
-| ▣ O202-B-0 🔴 먼저 알아라 (2026-10-06 · JU93656 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:17` |
-| ▣ O202-B-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:24` |
-| ▣ O202-B-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-B.md:37` |
-| ▣ O202-C-0 🔴 먼저 알아라 (2026-10-06 · JU93656 · ㉡ 적용 · 확정위반 0) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:17` |
-| ▣ O202-C-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:24` |
-| ▣ O202-C-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-C.md:34` |
+| ▣ O203-A-0 🔴 먼저 알아라 (2026-10-06 · JU93656 · ㉡ 적용 · 확정위반 1 = R1-4-3 라벨 선점 미이행) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0203-A.md:19` |
+| ▣ O203-A-1 🟠 남은 작업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0203-A.md:27` |
+| ▣ O203-A-2 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0203-A.md:42` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -94,18 +60,18 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O202-C` | 🟢 O202-C — 현업 회신 3차: 4그룹 A안 확정 · 행사 고아 SILVER 필터 · MSTR FN 2종 라이브 교체(B3 해소키 · ACT_DATE 같은날 규칙) · 06… | 🟢 MSTR 2026-01~10 재적재 OK · GOLD↔MSTR 10/10 · B3 동점 120/120 결정적 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O202-B` | 🟢 O202-B — dbt build 후속: SV 재배포(SV_MEMBER_EVENT · SV_MEMBER_MONTHLY_KPI) · 현업 회신 9건 처리 · GOLD 41테이블… | 🟢 GOLD 10개월 MSTR 일치 · SV 매체운영팀 사단 5,989/11,956.2055 · 공46 교정(10… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O202` | 🟢 O202 — MSTR 원본 기반 메달리온 보완 A안 계획 + A1(법인 축 · DEV_CNT MSTR 정의 · 합산 금지 유지) + O201 잔여 실측 (2026-10-06 … | 🟢 SILVER 재현 = MSTR SUM 10개월 전건 일치 · 매체운영팀×사단 5,989명/11,956.2055… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O201-D` | 🟢 O201-D — MSTR 운영계 적재 범위(2026-01~) 전환 + 누계개발 확정 반영(공45~47) (2026-10-03 · JU93656) | 🟢 SUM 후원금액대2 원천 직접 조회(조회 2,092,147건 일치 · baseline PASS) · 06 운영… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O201-C` | 🟢 O201-C — (소급 등재 · O201-B §E13 실측) 원장 §1 행이 없던 O18x 라벨 12단위 · 상태 정본 = 각 라벨 파일 (2026-10-03 · JU9365… | 🟢 소급 12 · 이력 소급 8 · 🆕 MSTR 이력 적재 F 3,438,776 · SUM 28,587 · bas… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O201-B` | 🟢 O201-B — 사용자 결정 3건(SV_AD NULL 경고 · 별칭 규칙 · O180~O189 검토) + 남은 문제 2 + MSTR 실측 + ML 질문 판정 (2026-10-… | 🟢 SV_AD 경고 3 · Agent V4/V4/V4/V5 · EXEC·MKT V5(GA4) · test_veri… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
+| `O204-A` | 🟢 O204-A — 질문별 Agent 답변 현황 Excel 생성 (운영계 · 기준년월 2026-09 · GN_DW_ANALYST) (2026-10-06 · zl50263) | 🟢 36개 질문 38회 호출 전건 성공 (성공 38/38 · ⭕10 △21 ✕7 · Excel: 12_agent개… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O203` | 🟢 O203 — 회원실 Agent 테스트 피드백 배선: SV_SERVICE 발송제목·D5 중단 고유회원 · AGENT_MEMBER 요인분석 도구 · AGENT_EXECUTIVE→… | 🟢 배포 2026-10-06 = SV_SERVICE(SEND_TITLE · D5_STOP_DISTINCT_MEMB… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O202-C` | 🟢 O202-C — 현업 회신 3차: 4그룹 A안 확정 · 행사 고아 SILVER 필터 · MSTR FN 2종 라이브 교체(B3 해소키 · ACT_DATE 같은날 규칙) · 06… | 🟢 MSTR 2026-01~10 재적재 OK · GOLD↔MSTR 10/10 · B3 동점 120/120 결정적 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O202-B` | 🟢 O202-B — dbt build 후속: SV 재배포(SV_MEMBER_EVENT · SV_MEMBER_MONTHLY_KPI) · 현업 회신 9건 처리 · GOLD 41테이블… | 🟢 GOLD 10개월 MSTR 일치 · SV 매체운영팀 사단 5,989/11,956.2055 · 공46 교정(10… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O202` | 🟢 O202 — MSTR 원본 기반 메달리온 보완 A안 계획 + A1(법인 축 · DEV_CNT MSTR 정의 · 합산 금지 유지) + O201 잔여 실측 (2026-10-06 … | 🟢 SILVER 재현 = MSTR SUM 10개월 전건 일치 · 매체운영팀×사단 5,989명/11,956.2055… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O201-D` | 🟢 O201-D — MSTR 운영계 적재 범위(2026-01~) 전환 + 누계개발 확정 반영(공45~47) (2026-10-03 · JU93656) | 🟢 SUM 후원금액대2 원천 직접 조회(조회 2,092,147건 일치 · baseline PASS) · 06 운영… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 18 | 453,298 | 31,845 | 9,115 |
+| `00_INDEX_이슈원장` | 18 | 455,824 | 34,371 | 6,589 🟠 |
 | `01_세션이력` | 85 | 2,130,991 | 38,225 | 37,838 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
@@ -128,10 +94,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 24,867 | 24,867 | 16,093 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 6,090 | 6,090 | 34,870 |
-| `00_BRIEF` | — | 12,601 | 12,601 | 28,359 |
+| `00_BRIEF` | — | 9,404 | 9,404 | 31,556 |
 | `11_O누적작업_점검_재현_절차` | — | 32,668 | 32,668 | 8,292 |
 
-> 전 문서군 = **3,150,045 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,149,398 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -139,7 +105,7 @@ END-METADATA -->
 | 게이트 | 판정 | 결론 |
 |---|---|---|
 | `doc_census` | ✅ | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다 |
-| `doc_type_gate` | ✅ | ✅ 게이트 통과 — 선언 누락 0 · 상한 초과 0 · 여유 부족 0 |
+| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 1건) |
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 112개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |
