@@ -160,6 +160,56 @@
      "ROWS_WITH_UNMAPPED": 0
     }
    ]
+  },
+  "202610": {
+   "fact_by_dvlp": [
+    {
+     "DVLP_DIV_CD": "1",
+     "N": 1647,
+     "MBR": 1591,
+     "AMT": 31874000
+    },
+    {
+     "DVLP_DIV_CD": "2",
+     "N": 277,
+     "MBR": 260,
+     "AMT": 4969000
+    },
+    {
+     "DVLP_DIV_CD": "3",
+     "N": 233,
+     "MBR": 233,
+     "AMT": -5581298
+    },
+    {
+     "DVLP_DIV_CD": "4",
+     "N": 257,
+     "MBR": 241,
+     "AMT": 4915000
+    },
+    {
+     "DVLP_DIV_CD": "5",
+     "N": 6276,
+     "MBR": 5476,
+     "AMT": -116959000
+    }
+   ],
+   "fixed_cols": [
+    {
+     "CLS1_NOT_99": 0,
+     "CLS2_NOT_99": 0,
+     "SPCL_NOT_N": 0,
+     "DEPT_UNMAPPED": 0
+    }
+   ],
+   "report_summary": [
+    {
+     "ROWS_OUT": 1588,
+     "CNT": 4175.8,
+     "AMT": 41758000,
+     "ROWS_WITH_UNMAPPED": 0
+    }
+   ]
   }
  }
 }
