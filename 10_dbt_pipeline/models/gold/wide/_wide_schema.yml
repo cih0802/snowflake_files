@@ -1200,6 +1200,22 @@ models:
         description: "획득 시점 연령대명(**CM014** 라벨) ← FACT_MEMBER_COHORT.ACQ_AGE_BAND. 코드 = FMC.ACQ_AGE_CD. 🔴**현재 나이가 아니다** — BRONZE 에 생년월일이 없어 현재 연령은 산출 불가(O34). 🔴연속형이 아니므로 평균·재구간화 금지. ✅'10대 미만'이 상위인 것은 오류가 아니다(편지쓰기대회 계열 아동 모집 캠페인) — 결측·기본값 오염으로 설명하지 말 것(O34-B). ⚠️사전에 '70대'·'70대 이상'이 의미 중복으로 공존한다."
       - name: ACQ_REGION
         description: "획득 시점 지역명(**CM018** 약칭 라벨) ← FACT_MEMBER_COHORT.ACQ_REGION. 코드 = FMC.ACQ_AREA_CD. 🔴**현재 거주지가 아니다** — BRONZE 에 현주소 축이 없다(O34). ⚠️센티넬 코드 '0'(개발약정 실적재에 존재)은 사전에 라벨이 없어 NULL 이며 '미상'으로 창작하지 않는다."
+      - name: ACQ_CAMPAIGN_TYPE
+        description: "[O205] 획득 캠페인의 캠페인카테고리(=주요캠페인) ← DIM_MEMBER_ACQUISITION.ACQ_CAMPAIGN_TYPE. 🔴**획득 시점 적재 동결값**이다 — WIDE_MEMBER_EVENT 의 사건 시점 캠페인카테고리와 다른 축이다. ML 회비 예측(캠페인카테고리)과 이름이 같아도 실적·예측을 한 표에 합산하지 않는다."
+      - name: ACQ_INFLOW_PATH
+        description: "[O205] 획득 캠페인의 개발인입경로(MM293 라벨) ← DIM_MEMBER_ACQUISITION.ACQ_INFLOW_PATH. 🔴획득 시점 동결값."
+      - name: ACQ_DOMESTIC_OVERSEAS
+        description: "[O205] 획득 캠페인의 국내해외 구분 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_DOMESTIC_OVERSEAS. 🔴획득 시점 동결값."
+      - name: ACQ_BIZ_CASE_TYPE
+        description: "[O205] 획득 캠페인의 사업사례구분 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_BIZ_CASE_TYPE. 🔴획득 시점 동결값."
+      - name: ACQ_CMMN_BRND_NM
+        description: "[O205] 획득 캠페인의 공통브랜드(MM297 라벨) ← DIM_MEMBER_ACQUISITION.ACQ_CMMN_BRND_NM. ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다. 🔴획득 시점 동결값."
+      - name: ACQ_MKTG_UTM_NM
+        description: "[O205] 획득 캠페인의 UTM 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_MKTG_UTM_NM. ⚠️채움이 낮다(코드사전 미등재분은 NULL · 결측이 아니라 미등재) ⇒ UTM 별 합계는 전체보다 작다."
+      - name: ACQ_SPNSR_DIV_NM
+        description: "[O205] 획득 세부캠페인의 후원구분 라벨(CM035 정기후원/일시후원) ← DIM_MEMBER_ACQUISITION.ACQ_SPNSR_DIV_NM. ⚠️SPONSORSHIP_DIV_NAME(납입 대상 후원사업의 정기일시구분)과 다른 축이다."
+      - name: ACQ_CPR_DIV_NM
+        description: "[O205] 획득 세부캠페인의 법인구분 라벨(CM019 통합/사단/사복) ← DIM_MEMBER_ACQUISITION.ACQ_CPR_DIV_NM. 🔴조직 계층 법인(ORG_CORP · 산출 불가)과 다른 축이다."
       - name: BILLED_AMT
         description: "청구액(원) = SUM(RQEST_AMT). 🔴FMM 과 **동일한 식**이므로 두 팩트의 전체 합계가 일치해야 한다 — 이 일치가 검증 관문이다(GATE-D · 기준값은 이슈원장 §O45). 🔴🔴WIDE_MEMBER_MONTHLY 의 회비 measure 와 **같은 표에서 합산 금지**(DEC-31) — 동일 원천을 다른 grain 으로 담은 형제 팩트라 이중계상된다."
       - name: PAID_FEE
@@ -1317,3 +1333,78 @@ models:
         description: "[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
       - name: CPC_CALL_SRC
         description: "[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용] — 🔴 [O174] 종전 이름 BRDC_CPC_SRC 는 접두로만 구분해 **같은 지표의 다른 출처**로 읽혔다(실제로는 분모가 클릭 ↔ 콜로 다르다). DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
+  - name: WIDE_MEMBER_SERVICE_COHORT
+    description: "[O205] 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도. 발송(FACT_MESSAGE_DISPATCH)·획득(DIM_MEMBER_ACQUISITION)·중단(FACT_MEMBER_EVENT)·행사참여(FACT_EVENT_ATTENDANCE)를 회원 단위로 미리 결합해 SV 간 교차결합 없이 「수신/미수신 비교」·「발송 후 5일 내 중단자 특성」·「수신회원 유지기간·참여횟수」를 답한다. 🔴수신 행 = 그 해 그 그룹 발송을 1회 이상 받은 회원(연도별 1행) · 미수신 행 = 획득 코호트 회원 중 그 그룹을 받은 적 없는 회원(RECEIVE_YEAR NULL 1행). 🔴서비스그룹은 발송 제목 부분일치 **임시 규칙**(현업 확인 대기). 🔴수신·미수신 차이는 인과(효과)가 아니다."
+    columns:
+      - name: MEMBER_DK
+        description: "회원 대리키. 🔴연도를 고정하지 않으면 한 회원이 여러 행이다 — 회원수는 COUNT DISTINCT."
+      - name: SERVICE_GROUP_CD
+        description: "서비스그룹 코드(임시 규칙) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다)."
+      - name: SERVICE_GROUP_NAME
+        description: "서비스그룹 이름(임시 규칙 라벨). 현업 서비스명과 1:1 확정 전이다."
+      - name: RECEIVE_YEAR
+        description: "수신연도(발송일 연도). 미수신 행은 NULL."
+      - name: RECEIVED_FLAG
+        description: "그 그룹 발송 수신 여부(TRUE=수신 · FALSE=미수신 · 미수신은 획득 코호트 회원 중 한 번도 받지 않은 회원)."
+      - name: FIRST_RECEIVE_DATE
+        description: "그 연도 첫 수신일. 미수신 NULL."
+      - name: LAST_RECEIVE_DATE
+        description: "그 연도 마지막 수신일. 미수신 NULL."
+      - name: RECEIVE_ROWS
+        description: "그 연도 수신일 수(서로 다른 발송일 개수 · O205-B). 🔴회원수가 아니다."
+      - name: D5_STOP_FLAG
+        description: "그 연도 수신 발송 중 하나라도 발송 다음날~+5일(D+1~D+5) 안에 중단 매칭(FACT_MESSAGE_DISPATCH.D5_STOP_MEMBERS)이 있었는가. 🔴인과가 아니라 시간창 매칭이다."
+      - name: D5_INCREASE_FLAG
+        description: "D+1~D+5 증액 매칭 여부(D5_INCREASE_PART_MEMBERS). 🔴시간창 매칭."
+      - name: D5_STOP_DATE
+        description: "D+1~D+5 안의 첫 중단 사건일(FACT_MEMBER_EVENT STOP). 🔴D5_STOP_FLAG 와 원천이 달라(발송팩트 플래그 ↔ 사건팩트 직접 매칭) 드물게 한쪽만 채워질 수 있다."
+      - name: D5_STOP_REASON
+        description: "그 첫 중단 사건의 중단사유 라벨."
+      - name: D5_STOP_CHANNEL
+        description: "그 첫 중단 사건의 중단경로 라벨."
+      - name: D5_STOP_SPONSORSHIP
+        description: "그 첫 중단 사건이 끊은 후원사업명."
+      - name: D5_STOP_SPONSOR_DAYS
+        description: "D5 중단 회원의 후원기간(일) = 획득일 → D+1~D+5 첫 중단일(O205-B). 🔴중단 사건 원천에는 가입일·후원금액이 없어(구조적 NULL) 획득 코호트 기준으로 계산한다 — 후원금액은 ACQ_SPNSR_AMT 를 쓴다."
+      - name: ACQ_DATE
+        description: "획득일(DIM_MEMBER_ACQUISITION.ACQ_DATE_SK). 미수신·수신 모두 획득 코호트 기준."
+      - name: ACQ_YEAR
+        description: "획득 연도."
+      - name: ACQ_MONTH_KEY
+        description: "획득 월 YYYYMM."
+      - name: ACQ_CAMPAIGN_NAME
+        description: "획득 캠페인명(획득 시점 동결값)."
+      - name: ACQ_PARENT_CAMPAIGN_NAME
+        description: "획득 상위캠페인명. 🔴「선넘는좋은일 캠페인 가입」은 이 축(2026_통합_전체사업_선넘는좋은일 …)으로 거른다 — 캠페인명에는 없다."
+      - name: ACQ_CAMPAIGN_TYPE
+        description: "획득 캠페인카테고리(주요캠페인)."
+      - name: ACQ_INFLOW_PATH
+        description: "획득 개발인입경로(MM293)."
+      - name: ACQ_MARKETING_CAMPAIGN
+        description: "획득 마케팅캠페인명."
+      - name: ACQ_BRAND
+        description: "획득 캠페인 브랜드."
+      - name: ACQ_CPR_DIV_NM
+        description: "획득 세부캠페인 법인구분(CM019 통합/사단/사복)."
+      - name: ACQ_SPONSORSHIP_NAME
+        description: "획득 후원사업명(그 회원을 데려온 사업)."
+      - name: ACQ_AGE_BAND
+        description: "획득 시점 연령대(CM014) — 현재 나이가 아니다."
+      - name: ACQ_REGION
+        description: "획득 시점 지역(CM018) — 현재 거주지가 아니다."
+      - name: ACQ_GENDER
+        description: "획득 시점 성별."
+      - name: ACQ_SPNSR_AMT
+        description: "획득 시점 약정 후원금액(원)."
+      - name: TENURE_DAYS
+        description: "후원 유지기간(일) = DIM_MEMBER_ACQUISITION.TENURE_DAYS 그대로(정의는 그 컬럼 COMMENT · 이 뷰에서 재계산하지 않는다)."
+      - name: EVER_STOPPED_FLAG
+        description: "최초 중단 이력 존재 여부(FIRST_STOP_DATE_SK > 0)."
+      - name: FIRST_STOP_REASON_NM
+        description: "최초 중단사유(획득 코호트 기준 · D5 중단사유와 다를 수 있다)."
+      - name: GENERAL_EVENT_PART_ROWS
+        description: "일반행사(EVENT) 참여 기록 행 수(전 기간). 🔴일반행사 「참여」는 다단계 이벤트 단계 기록이다 — 캠페인행사와 합산하지 않는다."
+      - name: GENERAL_EVENT_PART_ROWS_AFTER
+        description: "첫 수신일 이후 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음)."
+      - name: CAMPAIGN_EVENT_PART_ROWS
+        description: "캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천 날짜가 1970 계열로 깨져 있어 수신 전후 구분을 하지 않는다(O205 실측)."

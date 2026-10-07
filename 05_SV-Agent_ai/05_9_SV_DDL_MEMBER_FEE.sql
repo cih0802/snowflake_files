@@ -37,7 +37,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.ACQ_DEPARTMENT   AS fee.ACQ_DEPARTMENT   WITH SYNONYMS ('부서', '가입부서', '획득부서') COMMENT = '🔴**획득 시점 부서명**. ⚠️개발실적보고의 「부서」는 **사건 부서**(`SV_MEMBER_EVENT.ORG_DEPARTMENT`)이며 **다른 축**이다 — 같은 라벨, 다른 값. 연간분석(회비)의 부서가 이 축이다. ⚠️상위 조직(본부/지부·팀·법인)은 산출 불가(CONF-4)',
     fee.ACQ_SPONSORSHIP  AS fee.ACQ_SPONSORSHIP_NAME WITH SYNONYMS ('획득 후원사업', '가입 후원사업') COMMENT = '🔴**획득 시점** 후원사업명(그 회원을 데려온 사업). ⚠️이 SV 의 SPONSORSHIP(=납입 대상)과 **다른 축**이다 — 회비가 들어간 사업과 회원을 데려온 사업은 다를 수 있다',
     fee.ACQ_AGE_BAND     AS fee.ACQ_AGE_BAND     WITH SYNONYMS ('연령대', '나이대') COMMENT = '🔴**획득 시점** 연령대(CM014) — **현재 나이가 아니다**(현재 연령은 BRONZE 에 생년월일이 없어 산출 불가 · O34). ''10대 미만''이 많은 것은 오류가 아니며 편지쓰기대회 계열 아동 모집 캠페인 때문이다 — 결측·오염으로 설명하지 말 것. ⚠️''단체''·''기업''은 나이가 아니라 법인 구분이므로 연령 추이에서 제외한다. 실제값 12종: ''기업''·''기타''·''단체''·''10대''·''20대''·''30대''·''40대''·''50대''·''60대''·''70대''·''10대 미만''·''70대 이상'' + NULL',
-    fee.ACQ_REGION       AS fee.ACQ_REGION       WITH SYNONYMS ('지역', '시도') COMMENT = '🔴**획득 시점** 지역(CM018 약칭) — **현재 거주지가 아니다**(O34). 센티넬은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다. 실제값 18종: ''강원''·''경기''·''경남''·''경북''·''광주''·''기타''·''대구''·''대전''·''부산''·''서울''·''세종''·''울산''·''인천''·''전남''·''전북''·''제주''·''충남''·''충북'' + NULL'
+    fee.ACQ_REGION       AS fee.ACQ_REGION       WITH SYNONYMS ('지역', '시도') COMMENT = '🔴**획득 시점** 지역(CM018 약칭) — **현재 거주지가 아니다**(O34). 센티넬은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다. 실제값 18종: ''강원''·''경기''·''경남''·''경북''·''광주''·''기타''·''대구''·''대전''·''부산''·''서울''·''세종''·''울산''·''인천''·''전남''·''전북''·''제주''·''충남''·''충북'' + NULL',
+    -- [2026-10-07 O205] 획득 캠페인 분류 8축(DIM_MEMBER_ACQUISITION 동결값 · WIDE_MEMBER_FEE 에 노출)
+    fee.ACQ_CAMPAIGN_TYPE AS fee.ACQ_CAMPAIGN_TYPE WITH SYNONYMS ('캠페인카테고리', '주요캠페인', '캠페인 카테고리', '캠페인카테고리 구분') COMMENT = '[O205] 🔴**획득 시점** 캠페인카테고리(=주요캠페인). 「캠페인카테고리별 납입회비·회비흐름」은 이 축으로 답한다. ⚠️`SV_MEMBER_EVENT` 의 캠페인카테고리는 **사건 시점**이라 다른 축이다. 🔴ML 회비 예측(`SV_ML_FEE_FORECAST`)의 캠페인카테고리와 이름이 같아도 실적·예측을 한 표에 합산하지 않는다',
+    fee.ACQ_INFLOW_PATH  AS fee.ACQ_INFLOW_PATH  WITH SYNONYMS ('개발인입경로', '인입경로', '유입경로', '회원인입경로') COMMENT = '[O205] 🔴**획득 시점** 개발인입경로(MM293 라벨). 적재 시점 동결값',
+    fee.ACQ_DOMESTIC_OVERSEAS AS fee.ACQ_DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '[O205] 🔴**획득 시점** 캠페인 국내해외 구분. 적재 시점 동결값. ⚠️납입 대상 후원사업의 국내·해외 분류(SPONSORSHIP)와 다른 축이다',
+    fee.ACQ_BIZ_CASE_TYPE AS fee.ACQ_BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업사례구분') COMMENT = '[O205] 🔴**획득 시점** 캠페인 사업사례구분. 적재 시점 동결값',
+    fee.ACQ_CMMN_BRAND   AS fee.ACQ_CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공동브랜드') COMMENT = '[O205] 🔴**획득 시점** 공통브랜드(MM297). ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다 — 「공통브랜드」를 물으면 이 축을 쓴다',
+    fee.ACQ_UTM          AS fee.ACQ_MKTG_UTM_NM  WITH SYNONYMS ('UTM', 'utm') COMMENT = '[O205] 🔴**획득 시점** UTM 라벨. ⚠️채움이 낮다(코드사전 미등재분 NULL · 결측이 아니라 미등재) — UTM 별 합계는 전체보다 작으므로 부분집합임을 밝히고 채움 비율은 조회로 확인한다',
+    fee.ACQ_SPNSR_DIV    AS fee.ACQ_SPNSR_DIV_NM WITH SYNONYMS ('후원구분', '세부캠페인 후원구분', '정기일시구분(캠페인)') COMMENT = '[O205] 🔴**획득 세부캠페인** 후원구분(CM035 정기후원/일시후원). ⚠️회비구분(FEE_DIV)·납입유형과 다른 축이다',
+    fee.ACQ_CPR_DIV      AS fee.ACQ_CPR_DIV_NM   WITH SYNONYMS ('법인구분', '세부캠페인 법인구분', '법인') COMMENT = '[O205] 🔴**획득 세부캠페인** 법인구분(CM019 통합/사단/사복). 🔴조직 계층 법인(산출 불가)과 다른 축이다 — 「사단 회원 회비」는 이 축으로 답하고 캠페인 법인구분 기준임을 밝힌다'
   )
   METRICS (
     fee.TOTAL_BILLED_AMT AS SUM(fee.BILLED_AMT)

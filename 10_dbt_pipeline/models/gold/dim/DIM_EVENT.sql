@@ -22,8 +22,11 @@ select
     CASE EVENT_SOURCE WHEN 'EVENT' THEN '일반행사' WHEN 'CRMN' THEN '캠페인행사' END as EVENT_KIND_NAME,
     EVENT_DIV_CD                                  as EVENT_CATEGORY,
     EVENT_NM                                      as EVENT_NAME,
-    STRT_DE                                       as EVENT_START_DATE,
-    END_DE                                        as EVENT_END_DATE,
+    -- 🔴 [2026-10-07 O205] 형식 지정 변환. 종전 `STRT_DE` 를 그대로 DATE 컬럼(06_DDL 소유)에 넣어
+    --   'YYYYMMDD' 문자열이 **epoch 초**로 해석됐다('20090228' → 1970-08-21 · DIM_EVENT 4,022행 전건 1970-08 ·
+    --   FACT_EVENT_ATTENDANCE 캠페인행사 166,962행이 참여일 NULL 폴백으로 이 값을 받았다). BRONZE 값은 정상이다.
+    TRY_TO_DATE(STRT_DE, 'YYYYMMDD')              as EVENT_START_DATE,
+    TRY_TO_DATE(END_DE, 'YYYYMMDD')               as EVENT_END_DATE,
     CAST(NULL AS VARCHAR)                          as APPLY_CHANNEL,   -- ⚠️ A-10 대기
     -- 🟢 [DEC-30 2026-08-04] 모집인원 이관 — 참여 팩트가 아니라 **행사 차원**이 정본이다.
     --   원천 `CRM_EVENT.RCRIT_PSNNL_CO` 채움 3,361/3,786=88.8%·74종.

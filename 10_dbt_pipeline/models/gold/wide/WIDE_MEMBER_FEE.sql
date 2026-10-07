@@ -60,6 +60,16 @@ select
     acq.ACQ_SPONSORSHIP_NAME                    as ACQ_SPONSORSHIP_NAME,
     acq.ACQ_AGE_BAND                            as ACQ_AGE_BAND,
     acq.ACQ_REGION                              as ACQ_REGION,
+    -- [2026-10-07 O205] 획득 캠페인 분류 8축 — DIM_MEMBER_ACQUISITION 이 이미 보유(적재 시점 동결값 · 조인 추가 없음).
+    --   🔴 SV_MEMBER_EVENT 의 같은 이름 축은 **사건 시점**이고 이것은 **획득 시점**이다 — 값이 다를 수 있다.
+    acq.ACQ_CAMPAIGN_TYPE                       as ACQ_CAMPAIGN_TYPE,
+    acq.ACQ_INFLOW_PATH                         as ACQ_INFLOW_PATH,
+    acq.ACQ_DOMESTIC_OVERSEAS                   as ACQ_DOMESTIC_OVERSEAS,
+    acq.ACQ_BIZ_CASE_TYPE                       as ACQ_BIZ_CASE_TYPE,
+    acq.ACQ_CMMN_BRND_NM                        as ACQ_CMMN_BRND_NM,
+    acq.ACQ_MKTG_UTM_NM                         as ACQ_MKTG_UTM_NM,
+    acq.ACQ_SPNSR_DIV_NM                        as ACQ_SPNSR_DIV_NM,
+    acq.ACQ_CPR_DIV_NM                          as ACQ_CPR_DIV_NM,
     -- ── measure ──────────────────────────────────────────────────────────────
     f.BILLED_AMT,
     f.PAID_FEE,
