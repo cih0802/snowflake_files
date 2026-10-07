@@ -17,7 +17,7 @@ SPECS = {
     'AGENT_MEMBER':    'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
     'AGENT_MARKETING': 'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
     'AGENT_EXECUTIVE': 'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
-    'AGENT_MSTR':      'cortex_project/agents/AGENT_MSTR/agent_spec.yaml',  # 🆕 [O201] O200-C 신설분
+    # 🔴 [O207-C] AGENT_MSTR 은퇴(DROP · 스펙 파일 삭제) — 항목 제거
 }
 
 def questions(path):

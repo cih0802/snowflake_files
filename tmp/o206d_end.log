@@ -1,0 +1,6 @@
+== index_row_gate.py rc=0 :: ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0
+== doc_heading_gate.py rc=0 :: ✅ 게이트 통과 — 제목 유실 0
+== sv_rule7_scan.py rc=0 :: 🟠 문서 주석 stale 은 blocking 이 아니다(라이브 미도달 · 기지 부채) — 경고로만 낸
+== sv_identifier_gate.py rc=0 :: 🟢 PASS — blocking 위반 0건
+TESTS_DONE
+BRIEF_RC=0

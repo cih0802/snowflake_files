@@ -160,6 +160,7 @@ NEEDS_ARGS = {
     'o145_transcript_audit': '트랜스크립트 JSON/JSONL 경로(무인자 exit 2) — 세션의 실행 SQL·파일쓰기·'
                              'bash 를 추출하고 위험 신호 6종(`rm -rf`·dbt 실행·파이프 뒤 rc·awk length·'
                              '`python3 -c`·quoted heredoc)을 판정한다. 🔴 자기검토 **재료**이고 판정이 아니다',
+    'agent_answer_judge': 'Agent 답변 원문(JSON) 판정 — 표 헤더 한글 + 본문 수치가 도구 결과 셀/열합에 근거하는가',
 }
 
 # 🆕 [2026-09-08 O145-B] O144 가 남긴 일회성 라이브 프로브 6종을 `OBSERVE` 로 등재했다.

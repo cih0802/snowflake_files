@@ -138,7 +138,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('기존 미납율', '공78') COMMENT = '공78 기존 미납율(%) 건 기준 = 미납(건)[기존] ÷ 활동(건)[기존] ×100. 비율(N). 스톡 — 한 달을 지정한다.'
   )
   COMMENT = 'Phase-1 회원 월별 실적 SV (base: GOLD.FACT_MEMBER_MONTHLY, grain: 회원×월 1행). CRM 원천 기반 납입/청구 총액, 정본 납부율(PAYMENT_RATE_FEE), 미납회원 감소율, 총미납금액(TOTAL_UNPAID_AMT), 미납비중(UNPAID_RATIO), 평균납입회비 요약. ⚠️ 후원사업·납입방식·회비구분 세부 분해는 SV_MEMBER_FEE(회비 grain)를 사용하며, 두 뷰의 회비 measure 합산 금지(이중계상). 캠페인별/후원사업별 활동회원은 SV_MEMBER_SPONSOR_BIZ(약정 grain) 사용.'
-  AI_SQL_GENERATION '핵심 규칙:
+  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  핵심 규칙:
 (1) 지표 매핑: 납부율=PAYMENT_RATE_FEE (유일 정본), 납입회비(회비만)=TOTAL_PAID_FEE_BILLABLE, 총수납액(회비+기부금)=TOTAL_PAID_ALL, 총미납금액=TOTAL_UNPAID_AMT (DEC-3 정본), 미납비중(%)=UNPAID_RATIO.
 (2) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환.
 (3) 뷰 라우팅 및 이중계상 방지: 후원사업·납입방식·납입일별 회비 분해는 SV_MEMBER_FEE 로 라우팅. 두 뷰의 회비 measure 를 동일 표에 합산하지 말 것. 캠페인별/후원사업별 활동회원수는 SV_MEMBER_SPONSOR_BIZ 로 라우팅.

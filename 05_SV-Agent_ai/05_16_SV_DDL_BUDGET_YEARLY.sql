@@ -37,7 +37,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET_YEARLY
       WITH SYNONYMS ('연 집행율', '연간 집행율') COMMENT = '연 집행율(%) = 연 집행 ÷ 연 편성 ×100. 비율(N · 재합산 금지). 🔴 진행 중 연도는 연간 편성 대비 누계라 구조적으로 낮다 — 그 사실을 밝힌다.'
   )
   COMMENT = '연 예산 SV(🆕 O203). 「2024 연 편성예산」·「연도별 편성 대비 집행」 질문용. 월별 편성·집행·세세목 추이는 SV_BUDGET(월 grain)이다. 🔴 두 SV 의 수치를 한 표에 합산하지 않는다.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 연 편성=TOTAL_PLAN_BUDGET_YEAR, 연 집행=TOTAL_EXEC_BUDGET_YEAR, 연 집행율=EXEC_RATE_YEAR(%). (2) 연도(BUDGET_YEAR)를 반드시 GROUP BY 하거나 고정한다 — 여러 연도를 하나로 합산하지 않는다. (3) 결과에 예산절차(BUDGET_PROCEDURE)를 함께 보여준다. (4) 2026 은 진행 중 연도이므로 집행·집행율이 부분 연도임을 밝힌다. (5) ORDER BY 에는 SELECT 별칭을 그대로 쓴다.'
+  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  핵심 규칙: (1) 연 편성=TOTAL_PLAN_BUDGET_YEAR, 연 집행=TOTAL_EXEC_BUDGET_YEAR, 연 집행율=EXEC_RATE_YEAR(%). (2) 연도(BUDGET_YEAR)를 반드시 GROUP BY 하거나 고정한다 — 여러 연도를 하나로 합산하지 않는다. (3) 결과에 예산절차(BUDGET_PROCEDURE)를 함께 보여준다. (4) 2026 은 진행 중 연도이므로 집행·집행율이 부분 연도임을 밝힌다. (5) ORDER BY 에는 SELECT 별칭을 그대로 쓴다.'
   AI_VERIFIED_QUERIES (
     vqr_o203_yearly_plan_exec AS (
       QUESTION '연도별 편성예산과 집행예산, 집행율'

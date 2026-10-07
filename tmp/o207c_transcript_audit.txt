@@ -1,0 +1,32 @@
+records 175
+SQL calls 45
+  DDL/DML: DROP AGENT GN_DW.SERVING.AGENT_MSTR
+EDIT/WRITE
+  edit 1 05_SV-Agent_ai/09_2_AGENT_버전업.sql
+  edit 21 05_SV-Agent_ai/23_MSTR_SV_DDL.sql
+  edit 4 12_agent개선과제/00_작업계획.md
+  edit 1 15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md
+  edit 1 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md
+  edit 2 cortex_project/agents/AGENT_MSTR/agent_spec.yaml
+  edit 2 scripts/live_change_gate.py
+  edit 1 scripts/run_bronze_audit_host.py
+  edit 2 scripts/session_brief.py
+  edit 1 scripts/test_generators.py
+  edit 1 tmp/o207_agent_patch.py
+  write 1 15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql
+  write 1 scripts/agent_answer_judge.py
+  write 1 scripts/test_agent_answer_judge.py
+  write 1 tmp/o207_agent_patch.py
+  write 1 tmp/o207_handoff_entry.md
+  write 1 tmp/o207_history_entry.md
+  write 1 tmp/o207_sql_file_run.py
+  write 1 tmp/o207_w5.py
+  write 1 tmp/o207_w5_route.py
+  write 1 tmp/o207b_route_patch.py
+  write 1 tmp/o207c_quality_patch.py
+  write 1 tmp/o207c_smoke.py
+DESTRUCTIVE/SED BASH
+  cd /workspace && sed -i "s/    assert names.count('analyst_mstr_spnsr_dvlp') == 1 and 'analyst_mstr_spnsr_dvlp' in d\['t
+  cd /workspace && sed -i "s/COMMENT = 'O207 4차 개선 C안 — MSTR 개발 정본 도구·목표·연도말 추세 참고치'/COMMENT = 'O207-B 연도말 개발 예측 라우팅(건수·부서
+  cd /workspace && timeout 60 python3 scripts/line_len.py 05_SV-Agent_ai/23_MSTR_SV_DDL.sql 12_agent개선과제/00_작업계획.md </dev/
+  cd /workspace && python3 -c " import os; d='cortex_project/agents/AGENT_MSTR'; print(os.listdir(d)) os.remove(d+'/agent_

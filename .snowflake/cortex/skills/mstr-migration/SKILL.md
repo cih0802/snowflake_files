@@ -49,9 +49,10 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deploy,run,verify --ym <
 
 ### Step 6. SV · Agent 배선
 - 서빙뷰 + SV DDL = `05_SV-Agent_ai/23_MSTR_SV_DDL.sql` 형식(파일 단독 실행 · 🔴 `USE ROLE GN_DW_ADMIN` 부터).
-- 도구 추가 = `cortex_project/agents/AGENT_MSTR/agent_spec.yaml` → `05_SV-Agent_ai/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3-D].
+- 도구 추가 = `cortex_project/agents/AGENT_{MEMBER,MARKETING,EXECUTIVE}/agent_spec.yaml` → `05_SV-Agent_ai/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3] · 패치 예 = `tmp/o207_agent_patch.py`.
+- 🟢 [O207 · 2026-10-07 · 사용자 결정 C안 → O207-C AGENT_MSTR 은퇴] MSTR 도구(analyst_mstr_spnsr_dvlp · SV_MSTR_SPNSR_DVLP)는 AGENT_MEMBER·AGENT_MARKETING·AGENT_EXECUTIVE 에 배선돼 있고 개발 실적·목표·연도말 전망의 정본이다. AGENT_MSTR 는 DROP 됐다(스펙 사본 = _archive/agent_spec.yaml.O207-C-retire-agent-mstr).
 - Agent 정의 = `05_SV-Agent_ai/09_0_AGENT_정의서.md`.
-- 🔴 **[O203 · 사용자 결정 2026-10-06] 다른 Agent 배선은 A안(붙이지 않음)이 현행이다.** MSTR 도구는 AGENT_MSTR 에만 있고 AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선되지 않았다.
+- ~~🔴 **[O203 · 사용자 결정 2026-10-06] 다른 Agent 배선은 A안(붙이지 않음)이 현행이다.**~~ ➔ 폐기(O207) — 아래 3줄의 질문은 더 하지 않는다. MSTR 도구는 AGENT_MSTR 에만 있고 AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선되지 않았다.
   ⇒ 이 단계에 오면 **사용자에게 반드시 묻는다**: 「MSTR 결과는 아직 AGENT_MSTR 에만 배선돼 있습니다(A안). 회원 분석(AGENT_MEMBER)에도 붙이는 B안으로 전환할까요?」
   · B안 선택 시 = AGENT_MEMBER 스펙에 SV_MSTR_* 도구 추가 + 답변마다 「MSTR 기준」 표기 문구를 사용자에게 받는다 · 선택지 원문 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md` 요청 1.
   · 답이 없으면 A안 유지(임의 전환 금지).

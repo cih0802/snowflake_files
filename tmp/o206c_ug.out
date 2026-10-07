@@ -1,0 +1,7 @@
+골든 갱신 — 차이 3건
+  · 06.verdicts.SILVER까지만: 골든 410 ≠ 산출물 407
+  · 06.verdicts.노출됨(GOLD): 골든 440 ≠ 산출물 443
+  · art.measured.06_BRONZE노출감사.md: 골든 '2026-10-02' ≠ 산출물 '2026-10-07'
+  🟢 스키마 지문 보전 — 현재 측정 불가(`/tmp/schema.json` 부재)라 이전 골든 값(c4ce5015f55bf61f)을 유지한다(지우지 않는다).
+WROTE: /snowflake/stages/user__public__snowflake_files_/scripts/golden/outputs.json · 스키마 지문 c4ce5015f55bf61f
+   발행 이력 = 2026-10-07 07:41:43 · UNLABELED · O206-C: 06 재생성(정식 러너) — SILVER까지만→노출됨(GOLD) 3 = ERP BDGT_ACMSLT_LEDGER.BDGT_UNIT_NM·DVLP_INBOUND_PATH · EXPENSE_RESOLUTION.BDGT_UNIT_NM(직전 06 = _archive UNLABELED-regen.7 대조 · 컬럼 단위 전량 특정 · O206 무관 누적분) · 06 측정일

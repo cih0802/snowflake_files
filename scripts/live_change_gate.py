@@ -14,7 +14,8 @@
     · 날짜 = created_on 의 계정 시간대 날짜와 그 다음 날(KST 기재 관례 · 시차 흡수) 둘 중 하나면 인정.
     · 시행일 `--since`(기본 2026-10-06 = O202 시행) 이전 변경은 보지 않는다 —
       그 이전 재구축(2026-10-03 런북 일괄 생성)은 객체명을 행마다 적는 규약이 없던 시기다.
-    · 🔴 한계 = created_on 은 CREATE OR ALTER 시각이다(ALTER … SET COMMENT 같은 변경은 못 본다).
+    · 🔴 [O207 정정] created_on 은 **최초 생성 시각**이다(CREATE OR ALTER·ADD VERSION 이 바꾸지 않는다) ⇒
+      Agent = SHOW VERSIONS 의 버전 created_on · SV = INFORMATION_SCHEMA.QUERY_HISTORY 의 CREATE OR … SEMANTIC VIEW 성공 이력(최근 7일 · 실행자 가시 범위).
 
 사용
     python3 scripts/live_change_gate.py                 # 라이브 조회 + 판정
@@ -38,6 +39,7 @@ SHOWS = (
     "SHOW AGENTS IN SCHEMA GN_DW.SERVING",
 )
 ROW_LABEL = re.compile(r"^\|\s*\S*\s*\*\*`O\d+")
+SV_DDL = re.compile(r"SEMANTIC\s+VIEW\s+GN_DW\.SERVING\.(\w+)", re.I)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
@@ -83,9 +85,27 @@ def live_changes():
             ci, ni = cols.index("created_on"), cols.index("name")
             for r in cur.fetchall():
                 out.append((r[ni], r[ci].date()))
+        # 🆕 [O207] created_on 은 **최초 생성 시각**이다 — CREATE OR ALTER SEMANTIC VIEW · ALTER AGENT ADD VERSION 은
+        #   그 값을 바꾸지 않는다(실측 2026-10-07: SV_MSTR_SPNSR_DVLP 당일 ALTER 후에도 created_on = 2026-10-06).
+        #   ⇒ 종전 「--since 이후 변경 0」 은 거짓 음성이었다. 보강 = ① Agent 버전 created_on ② SV DDL 질의 이력.
+        agents = [n for n, _ in out if n.startswith("AGENT_")]
+        for a in agents:
+            cur.execute("SHOW VERSIONS IN AGENT GN_DW.SERVING.%s" % a)
+            cols = [d[0] for d in cur.description]
+            ci = cols.index("created_on")
+            for r in cur.fetchall():
+                out.append((a, r[ci].date()))
+        cur.execute(
+            "SELECT QUERY_TEXT, START_TIME FROM TABLE(GN_DW.INFORMATION_SCHEMA.QUERY_HISTORY("
+            "RESULT_LIMIT => 10000)) WHERE EXECUTION_STATUS = 'SUCCESS' "
+            "AND QUERY_TEXT ILIKE 'CREATE OR %SEMANTIC VIEW GN_DW.SERVING.%'")
+        for text, ts in cur.fetchall():
+            m = SV_DDL.search(text)
+            if m:
+                out.append((m.group(1).upper(), ts.date()))
     finally:
         conn.close()
-    return out
+    return sorted(set(out))
 
 
 def main(argv=None):

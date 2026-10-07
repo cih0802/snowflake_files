@@ -34,7 +34,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI
         / NULLIF(SUM(CASE WHEN kpi.NEW_EXISTING_FLAG = '기존' THEN kpi.DEV_CUM_AMT_CNT + kpi.YEAR_START_ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('기존 활동율', '공47') COMMENT = '공47 기존 활동율(%) = 활동(건)[기존] ÷ (누계개발(건)[기존] + 연도초활동(건)[기존]) ×100. 비율(N). 🔴 한 달을 지정한다.'
   )
-  COMMENT = '회원 활동율(공45·46·47) SV (base: GOLD.WIDE_MEMBER_MONTHLY_KPI · grain = 월 × 신규기존). 누계개발(건) = 당해년도 1월~조회월 개발(건) 합계. 🔴 회원 월 실적 상세(회비·미납 등)는 SV_MEMBER_MONTHLY 소관이며 두 SV 수치를 한 표에서 합산하지 않는다.';
+  COMMENT = '회원 활동율(공45·46·47) SV (base: GOLD.WIDE_MEMBER_MONTHLY_KPI · grain = 월 × 신규기존). 누계개발(건) = 당해년도 1월~조회월 개발(건) 합계. 🔴 회원 월 실적 상세(회비·미납 등)는 SV_MEMBER_MONTHLY 소관이며 두 SV 수치를 한 표에서 합산하지 않는다.'
+  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.';
 
 -- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI TO ROLE GN_DW_ANALYST;

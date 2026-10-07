@@ -125,8 +125,9 @@ MSTR 내부 객체(`mart.*`, `dbo.FN_*`)는 모두 `GN_DW.MSTR.*`로 매핑합�
 
 ## 9. Agent 배선 방침 (O203 · 2026-10-06 · 사용자 결정)
 
-- 🟢 **현행 = A안**: MSTR 결과는 **AGENT_MSTR 에만** 배선한다. AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선하지 않았다.
-- 🔴 **다음에 MSTR 관련 작업(2차 이관·재적재·SV 변경 등)을 하면 착수 시 사용자에게 묻는다**:
+- 🟢 [O207 · 2026-10-07 · 사용자 결정 C안 → O207-C AGENT_MSTR 은퇴] MSTR 도구(analyst_mstr_spnsr_dvlp · SV_MSTR_SPNSR_DVLP)는 AGENT_MEMBER·AGENT_MARKETING·AGENT_EXECUTIVE 에 배선돼 있고 개발 실적·목표·연도말 전망의 정본이다. AGENT_MSTR 는 DROP 됐다(스펙 사본 = _archive/agent_spec.yaml.O207-C-retire-agent-mstr).
+- ~~🟢 **현행 = A안**: MSTR 결과는 **AGENT_MSTR 에만** 배선한다.~~ ➔ 폐기(O207). AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선하지 않았다.
+- ~~🔴 **다음에 MSTR 관련 작업(2차 이관·재적재·SV 변경 등)을 하면 착수 시 사용자에게 묻는다**:~~ ➔ 폐기(O207 · 더 묻지 않는다)
   「MSTR 결과는 아직 다른 Agent 에 배선되지 않았습니다(A안). 회원 분석 Agent(AGENT_MEMBER)에도 붙이는 **B안으로 전환할까요?**」
 - B안 = AGENT_MEMBER 에만 MSTR 도구 추가 · 답변마다 「MSTR 기준」 표기(문구는 사용자에게 받는다) · C안 = 3종 모두(혼동 위험 최대).
 - 선택지 원문 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md` 요청 1 · 스킬 `mstr-migration` Step 6 에도 같은 질문을 넣었다.

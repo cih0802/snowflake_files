@@ -1334,14 +1334,14 @@ models:
       - name: CPC_CALL_SRC
         description: "[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용] — 🔴 [O174] 종전 이름 BRDC_CPC_SRC 는 접두로만 구분해 **같은 지표의 다른 출처**로 읽혔다(실제로는 분모가 클릭 ↔ 콜로 다르다). DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
   - name: WIDE_MEMBER_SERVICE_COHORT
-    description: "[O205] 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도. 발송(FACT_MESSAGE_DISPATCH)·획득(DIM_MEMBER_ACQUISITION)·중단(FACT_MEMBER_EVENT)·행사참여(FACT_EVENT_ATTENDANCE)를 회원 단위로 미리 결합해 SV 간 교차결합 없이 「수신/미수신 비교」·「발송 후 5일 내 중단자 특성」·「수신회원 유지기간·참여횟수」를 답한다. 🔴수신 행 = 그 해 그 그룹 발송을 1회 이상 받은 회원(연도별 1행) · 미수신 행 = 획득 코호트 회원 중 그 그룹을 받은 적 없는 회원(RECEIVE_YEAR NULL 1행). 🔴서비스그룹은 발송 제목 부분일치 **임시 규칙**(현업 확인 대기). 🔴수신·미수신 차이는 인과(효과)가 아니다."
+    description: "[O205] 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도. 발송(FACT_MESSAGE_DISPATCH)·획득(DIM_MEMBER_ACQUISITION)·중단(FACT_MEMBER_EVENT)·행사참여(FACT_EVENT_ATTENDANCE)를 회원 단위로 미리 결합해 SV 간 교차결합 없이 「수신/미수신 비교」·「발송 후 5일 내 중단자 특성」·「수신회원 유지기간·참여횟수」를 답한다. 🔴수신 행 = 그 해 그 그룹 발송을 1회 이상 받은 회원(연도별 1행) · 미수신 행 = 획득 코호트 회원 중 그 그룹을 받은 적 없는 회원(RECEIVE_YEAR NULL 1행). 🟢[O206 A안] 서비스그룹은 원천 서비스코드(발송코드 MS049 상위 카테고리) 우선 · 카테고리가 없는 발송은 발송 제목 부분일치(MATCH_BASIS 로 근거 구분). 🔴수신·미수신 차이는 인과(효과)가 아니다."
     columns:
       - name: MEMBER_DK
         description: "회원 대리키. 🔴연도를 고정하지 않으면 한 회원이 여러 행이다 — 회원수는 COUNT DISTINCT."
       - name: SERVICE_GROUP_CD
-        description: "서비스그룹 코드(임시 규칙) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다)."
+        description: "서비스그룹 코드(O206 A안 · 서비스코드 우선 → 발송제목 보조) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다)."
       - name: SERVICE_GROUP_NAME
-        description: "서비스그룹 이름(임시 규칙 라벨). 현업 서비스명과 1:1 확정 전이다."
+        description: "서비스그룹 이름. 원천 서비스 카테고리명은 SVC_CATEGORY_NAMES 에 따로 있다(이 이름은 4그룹 묶음 라벨)."
       - name: RECEIVE_YEAR
         description: "수신연도(발송일 연도). 미수신 행은 NULL."
       - name: RECEIVED_FLAG
@@ -1408,3 +1408,21 @@ models:
         description: "첫 수신일 이후 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음)."
       - name: CAMPAIGN_EVENT_PART_ROWS
         description: "캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천에 참여일이 없어(FEA 날짜 = 행사 시작일) 수신 전후 구분을 하지 않는다(O205-B)."
+      - name: MATCH_BASIS
+        description: "[O206 A안] 그 수신 행이 서비스그룹에 든 근거 — '서비스코드'(발송코드 MS049 상위 서비스코드 = 원천 서비스 카테고리) · '발송제목'(카테고리가 없어 제목 부분일치로 매핑) · '서비스코드+발송제목'. 미수신 행은 NULL."
+      - name: RECEIVED_SADAN_FLAG
+        description: "[O206] 그 연도 사단 법인 발송 수신 여부. 법인 = 서비스코드명의 (사단)/(사복)/(통합) → 없으면 알림톡·메일 템플릿 법인구분(CPR_DIV_CD · CM019). 미수신 행은 NULL."
+      - name: RECEIVED_SABOK_FLAG
+        description: "[O206] 그 연도 사복 법인 발송 수신 여부(판정 규칙은 RECEIVED_SADAN_FLAG 와 같다). 미수신 행은 NULL."
+      - name: RECEIVED_TONGHAP_FLAG
+        description: "[O206] 그 연도 통합 법인 발송 수신 여부(판정 규칙은 RECEIVED_SADAN_FLAG 와 같다). 🔴 세 플래그가 모두 FALSE 인 수신 = 서비스코드·템플릿이 없어 법인을 판별할 수 없는 발송만 받은 회원. 미수신 행은 NULL."
+      - name: CHRG_DEPT_NAMES
+        description: "[O206] 그 연도 수신 발송의 템플릿 담당부서명(CRM_ORG · 여러 개면 ' · ' 로 이음). 처리자→부서 마스터는 원천에 없어 템플릿 담당부서로 대신한다. 템플릿이 없는 발송만 받았으면 NULL."
+      - name: SVC_CATEGORY_NAMES
+        description: "[O206] 그 연도 수신 발송의 원천 서비스 카테고리명(발송코드 MS049 상위코드명 · 여러 개면 ' · ' 로 이음). 서비스코드 계층이 없는 발송만 받았으면 NULL."
+      - name: CULTURE_EVENT_PART_ROWS
+        description: "[O206] 문화서비스 계열 캠페인행사(DIM_EVENT.EVENT_CATEGORY = MS002 6 문화서비스 · 14 전시 · 15 서적 · 16 공연) 참여 기록 행 수(전 기간). 「문화이벤트」 질문의 유사 매핑 대상."
+      - name: ONLINE_EVENT_PART_ROWS
+        description: "[O206] 온라인 구분 일반행사(DIM_EVENT.EVENT_CATEGORY = MS286 100 온라인) 참여 기록 행 수(전 기간). 「온라인 이벤트」 질문의 유사 매핑 대상."
+      - name: ONLINE_EVENT_PART_ROWS_AFTER
+        description: "[O206] 첫 수신일 이후 온라인 구분 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음)."

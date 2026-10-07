@@ -87,7 +87,7 @@ ORDER BY 1 DESC
 LIMIT 20;                                         -- 프로시저 실행 로그 · 오류는 USP_BCHERR 경유
 
 SELECT COUNT(*) AS VIEW_ROWS
-FROM GN_DW.SERVING.MSTR_SPNSR_DVLP_V;             -- AGENT_MSTR 가 읽는 서빙 뷰 > 0
+FROM GN_DW.SERVING.MSTR_SPNSR_DVLP_V;             -- 3개 Agent 의 MSTR 도구가 읽는 서빙 뷰 > 0 (O207-C · AGENT_MSTR 은퇴)
 --   baseline(리포트 답안) 대조 = python3 "15_MSTR 이관 PoC/tools/mstr_verify.py" manifests/1차.json --ym 202601
 
 -- ----------------------------------------------------------------------------

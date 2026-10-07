@@ -222,6 +222,9 @@ def measure():
     def _04():
         r04 = list(csv.DictReader(open(os.path.join(OUT, "04_컬럼계보매핑.csv"), encoding="utf-8-sig")))
         m["04.rows"] = len(r04)
+        # 🆕 [2026-10-07 O207] 04 도 행 키를 저장한다(08 O198 과 같은 처방) — 행수만으로는 O206 의
+        #   재생성 차이를 행 단위로 귀속할 수 없었다 · 키 = WIDE_마트.WIDE_컬럼(실측 687/687 고유)
+        m["04.row_keys"] = sorted(f'{r["WIDE_마트"]}.{r["WIDE_컬럼"]}' for r in r04)
     _guard(m, "04", _04)
 
     def _06():

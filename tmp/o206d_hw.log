@@ -1,0 +1,12 @@
+🟢 라벨 파일 생성 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0206-D.md
+   2,400 B / 38줄 (상한 40,960 B AND 300줄 · 여유 38,560 B)
+   도달 재검사(전부 ≥1 이어야 한다):
+     🟢 라벨 마커 = 1
+     🟢 본문 선두 40자 = 1
+     🟢 말미 서명 = 1
+🟢 색인 재생성 99_NEXT_SESSION_조각/00_인수인계_색인.md — 라벨 파일 92개 · 17,089 B
+   현행 = 99_NEXT_SESSION-O0206-D.md
+   한 줄 2,000자 초과 = 0줄
+
+🔴 남은 1단계 = 허브 색인 포인터 반영(라벨 파일이 **처음** 생겼을 때만):
+   python3 scripts/split_doc.py 99_NEXT_SESSION.md --republish --expect "<토큰>"

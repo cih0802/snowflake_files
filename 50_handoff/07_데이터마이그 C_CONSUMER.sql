@@ -165,7 +165,7 @@ USE SCHEMA SANDBOX.TOOLS;
 --     ⚠️ 03번 6단계에서 기록한 스키마별 폴더/파일 수를 옆에 두고 비교한다.
 --        0행 테이블은 폴더가 생기지 않으므로 03번 3.1 의 zero_row_tables 만큼 차이가 나는 것이 정상이다.
 LIST @SANDBOX.TOOLS.MIG_LOAD_STAGE;
-
+/*
 SELECT SPLIT_PART("name", '/', 2) AS table_schema,
        COUNT(DISTINCT SPLIT_PART("name", '/', 3)) AS table_folders,
        COUNT(*)    AS files
@@ -292,7 +292,7 @@ ORDER BY 1, 2;
 --     · ML 만 전량 → 05번 미실행 · SILVER 만 → 06번 미실행 · 브론즈만 전량 → 04번 미실행.
 --   🔴 ORDER_OR_NAME_MISMATCH 는 COPY 가 오류 없이 통과할 수 있어 가장 위험하다. 반드시 해소할 것.
 --      A.5 의 $118 · A.5-B.2 의 $n 위치 기반 적재가 전부 이 검사에 의존한다.
-
+*/
 ------------------------------------------------------------
 -- A.2 적재용 파일 포맷 생성 (NULL 토큰 \\N 3글자 대응)
 --   ⚠️ 언로드 데이터의 NULL 은 `\\N`(백슬래시 2개 + N, 3글자)로 기록돼 있다.
@@ -564,7 +564,7 @@ PURGE = FALSE;
 --     ⇒ 🔴 **C 계정에서 모델 재실행·재예측은 불가하다.** 새 기준월 예측이 필요하면
 --        원천 계정에서 프로시저를 돌린 뒤 결과를 다시 이관한다(A.5-B 을 재실행).
 --   · ML 뷰 5종(ML_TRAIN_DATA_*_V · V_TRAIN_ONCE_CONVERSION) 생성 — 학습 입력 뷰이며 노출 대상이 아니다.
-
+/*
 -- A.5-B.4 ML 적재 검증
 -- (1) 테이블 수 / 총 행수 — 03번 3.1 의 ML 집계와 대조
 SELECT COUNT(*) AS tables, SUM(row_count) AS total_rows
@@ -627,12 +627,13 @@ SELECT DISTINCT STDR_MT FROM GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M ORDER BY 1;
 -- A.5-B.5 ML 적재 후 후속 작업 (본 파일 범위 밖 · 포인터만)
 --   1) SERVING 뷰 7종 생성  → 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql
 --   2) Semantic View 7종 생성 → 05_SV-Agent_ai/22_ML_SV_DDL.sql
---   3) Agent 도구 등록(MEMBER +3 · OVERALL +4) → cortex_project/agents/*/agent_spec.yaml
+--   3) Agent 도구 등록(MEMBER +3 · OVERALL +4) → cortex_project/agents/*\/agent_spec.yaml
 --   🟢 GN_DW.ML 에 소비 역할 GRANT 는 불필요하다 — 뷰가 소유자 권한으로 읽고 SV 로만 노출된다
 --      (근거·실측 = 20_ML_SV_설계.md §7-A) ⇒ 학습·중간 테이블이 구조적으로 차폐된다.
 --   ⚠️ 위 1)~3) 은 계정 재구축 이력이 있어 배포 상태를 실행 직전에 확인해야 한다
 --      (`SHOW VIEWS IN SCHEMA GN_DW.SERVING` · `SHOW SEMANTIC VIEWS`).
-
+*/
+/*
 ------------------------------------------------------------
 -- A.6 검증
 --   ML 전용 심화 검증(JSON 파싱·확률 평탄화·기준월)은 A.5-B.4 가 담당한다.
@@ -723,7 +724,7 @@ WHERE table_schema_name IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY','BRONZE_
 ORDER BY last_load_time DESC;
 -- → 0건이어야 정상. (ACCOUNT_USAGE 는 최대 2시간 지연될 수 있다.
 --    즉시 확인이 필요하면 INFORMATION_SCHEMA.COPY_HISTORY 테이블 함수를 쓴다.)
-
+*/
 ------------------------------------------------------------
 -- A.7 정리(Teardown) — 01번 문서 7장
 --   ⚠️ A.6 검증 + A.5-B.4 (ML) 이 전부 통과한 뒤에만 실행한다.

@@ -1148,7 +1148,16 @@ END-METADATA -->
 | **최초 중단사유** | `FIRST_STOP_REASON_NM` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 최초 중단사유(획득 코호트 기준 · D5 중단사유와 다를 수 있다). |
 | **일반행사** | `GENERAL_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 일반행사(EVENT) 참여 기록 행 수(전 기간). 🔴일반행사 「참여」는 다단계 이벤트 단계 기록이다 — 캠페인행사와 합산하지 않는다. |
 | **GENERAL_EVENT_PART_ROWS_AFTER** | `GENERAL_EVENT_PART_ROWS_AFTER` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 첫 수신일 이후 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음). |
-| **캠페인행사** | `CAMPAIGN_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천 날짜가 1970 계열로 깨져 있어 수신 전후 구분을 하지 않는다(O205 실측). |
+| **캠페인행사** | `CAMPAIGN_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천에 참여일이 없어(FEA 날짜 = 행사 시작일) 수신 전후 구분을 하지 않는다(O205-B). |
+| **MATCH_BASIS** | `MATCH_BASIS` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206 A안] 그 수신 행이 서비스그룹에 든 근거 — '서비스코드'(발송코드 MS049 상위 서비스코드 = 원천 서비스 카테고리) · '발송제목'(카테고리가 없어 제목 부분일치로 매핑) · '서비스코드+발송제목'. 미수신 행은 NULL. |
+| **RECEIVED_SADAN_FLAG** | `RECEIVED_SADAN_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 그 연도 사단 법인 발송 수신 여부. 법인 = 서비스코드명의 (사단)/(사복)/(통합) → 없으면 알림톡·메일 템플릿 법인구분(CPR_DIV_CD · CM019). 미수신 행은 NULL. |
+| **RECEIVED_SABOK_FLAG** | `RECEIVED_SABOK_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 그 연도 사복 법인 발송 수신 여부(판정 규칙은 RECEIVED_SADAN_FLAG 와 같다). 미수신 행은 NULL. |
+| **RECEIVED_TONGHAP_FLAG** | `RECEIVED_TONGHAP_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 그 연도 통합 법인 발송 수신 여부(판정 규칙은 RECEIVED_SADAN_FLAG 와 같다). 🔴 세 플래그가 모두 FALSE 인 수신 = 서비스코드·템플릿이 없어 법인을 판별할 수 없는 발송만 받은 회원. 미수신 행은 NULL. |
+| **CHRG_DEPT_NAMES** | `CHRG_DEPT_NAMES` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 그 연도 수신 발송의 템플릿 담당부서명(CRM_ORG · 여러 개면 ' · ' 로 이음). 처리자→부서 마스터는 원천에 없어 템플릿 담당부서로 대신한다. 템플릿이 없는 발송만 받았으면 NULL. |
+| **SVC_CATEGORY_NAMES** | `SVC_CATEGORY_NAMES` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 그 연도 수신 발송의 원천 서비스 카테고리명(발송코드 MS049 상위코드명 · 여러 개면 ' · ' 로 이음). 서비스코드 계층이 없는 발송만 받았으면 NULL. |
+| **CULTURE_EVENT_PART_ROWS** | `CULTURE_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 문화서비스 계열 캠페인행사(DIM_EVENT.EVENT_CATEGORY = MS002 6 문화서비스 · 14 전시 · 15 서적 · 16 공연) 참여 기록 행 수(전 기간). 「문화이벤트」 질문의 유사 매핑 대상. |
+| **ONLINE_EVENT_PART_ROWS** | `ONLINE_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 온라인 구분 일반행사(DIM_EVENT.EVENT_CATEGORY = MS286 100 온라인) 참여 기록 행 수(전 기간). 「온라인 이벤트」 질문의 유사 매핑 대상. |
+| **ONLINE_EVENT_PART_ROWS_AFTER** | `ONLINE_EVENT_PART_ROWS_AFTER` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | [O206] 첫 수신일 이후 온라인 구분 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음). |
 
 ---
 

@@ -115,7 +115,10 @@ WITH required AS (
     ('AGENT_EXECUTIVE', 'SV_BUDGET_YEARLY'),        -- 🆕 2026-10-06 O203 T8 2차 (05_16)
     ('AGENT_MEMBER',    'SV_MEMBER_STATUS_ASOF'),   -- 🆕 2026-10-06 O203 T8 2차 (05_17)
     ('AGENT_MEMBER',    'SV_MEMBER_SERVICE_COHORT'),-- 🆕 2026-10-07 O205 2차 Agent 개선 (05_18)
-    ('AGENT_MSTR',      'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O200-C] 4번째 Agent(최초 배포 = 24_MSTR_AGENT_배포.sql)
+    -- ('AGENT_MSTR', 'SV_MSTR_SPNSR_DVLP') — 🔴 [O207-C 은퇴 · 2026-10-07] AGENT_MSTR 는 DROP 됐다(역할 = AGENT_MEMBER·MARKETING·EXECUTIVE 의 analyst_mstr_spnsr_dvlp) — 이 블록을 실행하지 마라
+    ('AGENT_MEMBER',    'SV_MSTR_SPNSR_DVLP'),      -- 🆕 [O207] 4차 개선 C안 — MSTR 개발 정본 도구
+    ('AGENT_MARKETING', 'SV_MSTR_SPNSR_DVLP'),      -- 🆕 [O207]
+    ('AGENT_EXECUTIVE', 'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O207]
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -166,10 +169,8 @@ COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE/
 COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING/
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MARKETING/'
   PATTERN = '.*agent_spec[.]yaml';
--- 🆕 [O200-C] 4번째 Agent
-COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MSTR/
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MSTR/'
-  PATTERN = '.*agent_spec[.]yaml';
+-- 🔴 [O207-C 은퇴 · 2026-10-07] AGENT_MSTR 는 DROP 됐다(역할 = AGENT_MEMBER·MARKETING·EXECUTIVE 의 analyst_mstr_spnsr_dvlp) — 이 블록을 실행하지 마라
+-- COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MSTR/ … (O200-C 원문 · 스펙 사본 = _archive/agent_spec.yaml.O207-C-retire-agent-mstr)
 
 
 -- ============================================================================
@@ -304,15 +305,7 @@ BEGIN
     res := res || 'AGENT_MARKETING=no_live';
   END IF;
 
-  -- 🆕 [O200-C] 4번째 Agent
-  SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MSTR;
-  LET s INT := (SELECT COUNT(*) FROM TABLE(RESULT_SCAN(LAST_QUERY_ID())) WHERE "name" IS NULL);
-  IF (s > 0) THEN
-    ALTER AGENT GN_DW.SERVING.AGENT_MSTR COMMIT COMMENT = 'live 소진(버전업 직전 스냅샷)';
-    res := res || ' AGENT_MSTR=committed';
-  ELSE
-    res := res || ' AGENT_MSTR=no_live';
-  END IF;
+  -- 🔴 [O207-C 은퇴 · 2026-10-07] AGENT_MSTR 는 DROP 됐다(역할 = AGENT_MEMBER·MARKETING·EXECUTIVE 의 analyst_mstr_spnsr_dvlp) — 이 블록을 실행하지 마라(4번째 Agent live 소진 블록 제거)
 
   RETURN res;
 END;
@@ -357,9 +350,8 @@ ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
 
 -- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
 --   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.
-ALTER AGENT GN_DW.SERVING.AGENT_MSTR
-  ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MSTR'
-  COMMENT = '굿네이버스 MSTR 리포트 이관 결과 조회 Agent. SV 1종: MSTR 정기회원 후원개발(MSTR 기준).';
+--   🔴 [O207-C 은퇴 · 2026-10-07] AGENT_MSTR 는 DROP 됐다(역할 = AGENT_MEMBER·MARKETING·EXECUTIVE 의 analyst_mstr_spnsr_dvlp) — 이 블록을 실행하지 마라
+-- ALTER AGENT GN_DW.SERVING.AGENT_MSTR ADD VERSION … (O200-C 원문)
 
 --   🆕 🔴 **[2026-08-18 O85-C] 경로가 개인 워크스페이스 → OPS 스테이지로 바뀌었다**(착수표 ㉔ ⑦).
 --      종전 = `snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/<AGENT>`

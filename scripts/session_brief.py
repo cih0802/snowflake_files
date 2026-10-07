@@ -383,7 +383,9 @@ def label_handoff():
     if not lines:
         return None, [], []
     head = None
-    for rel, ln, line in lines:
+    # 🆕 [O207] 시작점 = **최대 접미 단위**의 첫 절 — 종전은 전 단위를 이어 붙인 첫 `## ` 라 항상 -A 를 뽑았다.
+    last_rel = lines[-1][0]
+    for rel, ln, line in [x for x in lines if x[0] == last_rel]:
         t = dequote(line)
         if t.startswith('## ') or (head is None and t.startswith('# ')):
             head = {'title': clip(strip_md(t.lstrip('#').strip()), 120),
@@ -391,7 +393,7 @@ def label_handoff():
             if t.startswith('## '):
                 break
     if head is None:
-        rel = lines[0][0]
+        rel = last_rel
         head = {'title': os.path.basename(rel), 'where': '%s:1' % rel}
     m = DATE_RX.search('\n'.join(l for _r, _n, l in lines[:20]))
     head['date'] = m.group(1) if m else '0000-00-00'

@@ -1,0 +1,11 @@
+== doc_census.py rc=0 :: ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다
+== gen_measure_backlog.py --write rc=0 :: 🟢 20_issue/92_실측필요_후속작업.md 생성 — 5항목 · 6,090 B
+== decision_closure_gate.py rc=0 ::  - 🔴 「의도적으로 열린 것」이면 그 사실을 인용처에 쓰면 이 경고가 근거를 갖는다.
+== index_row_gate.py rc=0 :: ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0
+== doc_heading_gate.py rc=0 :: ✅ 게이트 통과 — 제목 유실 0
+== clause_order_gate.py rc=0 :: ✅ 게이트 통과 — 조문 112개 · 역전 0 · 중복 0 (경고 0건)
+== sv_rule7_scan.py rc=0 :: 🟠 문서 주석 stale 은 blocking 이 아니다(라이브 미도달 · 기지 부채) — 경고로만 낸다.
+== agent_tool_claim_gate.py rc=0 :: 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건
+🔴 scripts/test_generators.py rc=1
+TESTS_DONE
+BRIEF_RC=0

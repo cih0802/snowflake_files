@@ -464,6 +464,9 @@ def main():
     try:
         sys.path.insert(0, os.path.join(WS, "scripts"))
         from snapshot_util import snapshot, ARCHIVE
+        # 🆕 [O207] O206-C 가 SESSION_LABEL 없이 실행해 `06_BRONZE노출감사.*.UNLABELED-regen` 이 남았다 ⇒ 미지정을 시끄럽게 알린다.
+        if not os.environ.get("SESSION_LABEL"):
+            print("  🟠 SESSION_LABEL 미지정 — 스냅샷이 UNLABELED 로 남는다 · 실행 예: SESSION_LABEL=O207 python3 scripts/run_bronze_audit_host.py")
         for ext in ("md", "csv", "xlsx"):
             prev = os.path.join(OUT_DIR, BASENAME + "." + ext)
             if os.path.exists(prev):
