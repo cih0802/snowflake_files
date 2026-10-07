@@ -1,0 +1,49 @@
+문항ID,출처,질문,질문단위_초안,질문단위_수정안,정답 Agent(현행),정답 도구,기대 기준,계산 전 확인,현업 예상 Agent,비고
+Q01,O204 Q01 · CSV 회원실#1,주요캠페인(캠페인카테고리)을 대상으로 향후 12개월 내 중단확률을 예측해줘. 중단률이 높은 캠페인과 낮은 캠페인을 비교하고 캠페인별 회원 특성을 분석해줘.,회원,회원,AGENT_MEMBER,analyst_member_cohort; analyst_ml_sponsor_risk,GN_DW,N,AGENT_MEMBER,실적(12개월 이탈률)과 ML 이탈 분류는 표 분리
+Q02,O204 Q02 · CSV 회원실#2,현재 활동회원 중 향후 6개월 이내 중단 가능성이 높은 회원을 예측하고 위험도별로 등급으로 분류해줘. 해당회원들의 특성을 분석하고 중단을 방어하기 위한 유지전략을 제안해줘.,회원,회원,AGENT_MEMBER,analyst_ml_member_risk,GN_DW,N,AGENT_MEMBER,예측 지평 숫자 답변 금지
+Q03,O204 Q03 · CSV 회원실#3,2027년 연간 회비를 예측해줘.,경영·기획,경영·기획,AGENT_MEMBER,analyst_mbrfee_prdt_actl,GN_DW,Y,AGENT_MEMBER,자리표시 채움(O204 규칙) · 차년도 원천 없음
+Q04,O204 Q04 · CSV 회원실#4,2026-09 마감 데이터로 2026년 연도말 회비를 예측해줘.,경영·기획,경영·기획,AGENT_MEMBER,analyst_mbrfee_prdt_actl,GN_DW,N,AGENT_MEMBER,회원실 자체 수식(예측/실측 구분 고정)
+Q05,O204 Q05 · CSV 회원실#5 · O207-C Q5,2026-09 마감 기준 2026년 연도말 추경 회비를 예측해줘.,경영·기획,경영·기획,AGENT_MEMBER,analyst_mbrfee_prdt_actl,GN_DW,Y,AGENT_MEMBER,추경 = 미정의 지표(O207-C)
+Q06,O204 Q06 · CSV 회원실#6 · O207-C Q6,2026년 회비를 시나리오별로 시뮬레이션해줘.,경영·기획,경영·기획,AGENT_MEMBER,analyst_mbrfee_prdt_actl,GN_DW,Y,AGENT_MEMBER,시나리오 = 미정의 지표(O207-C)
+Q07,O204 Q07 · CSV 회원실#7,2026-09 기준 주요 캠페인(캠페인카테고리)별 향후 12개월 회비를 예측해줘. 캠페인별 회비 기여도와 위험요인을 분석하고 회비 확보를 위한 캠페인 운영 전략을 제안해줘.,회원|마케팅,경영·기획,AGENT_MEMBER,analyst_ml_fee_forecast; analyst_member_fee,GN_DW,N,AGENT_MEMBER,캠페인 축 × 회비 지표 — 지표 우선이면 회원 · 🆕 [O209] 수정안 = 경영·기획으로 정정(「회비 예측 → 경영·기획」 규칙 · 사용자 일괄 승인)
+Q08,O204 Q08 · CSV 회원실#8,2026-09 기준 현재 활동회원 중 향후 12개월 내 증액 가능성이 높은 회원을 예측하고 증액확률 등급별로 분류해줘. 기존 증액회원의 특성을 분석하여 어떤 캠페인의 어떤 타겟에게 증액 마케팅을 집중해야 하는지 전략을 제안해줘.,회원|마케팅,회원,AGENT_MEMBER,analyst_ml_member_risk; analyst_member_event,GN_DW,N,AGENT_MEMBER,회원 단위 예측 + 마케팅 전략 문장
+Q09,O204 Q09 · CSV 회원실#9,현재 후원기간이 10년이상인 장기회원의 활동패턴을 분석하여 장기회원(충성회원)을 만드는 핵심요인을 도출하고 현재 회원 중 장기회원(충성회원)으로 성장할 가능성이 높은 회원을 선별해줘.,회원,회원,AGENT_MEMBER,analyst_member_monthly; analyst_ml_member_risk,GN_DW,N,AGENT_MEMBER,
+Q10,O204 Q10A·B · CSV 기획실#1 · O207 W5 P1·P1M,부서별로 연도말 개발 예측치를 알려줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,연도말 추세 참고치(건)
+Q11,O204 Q11A·B · CSV 기획실#2 · O207 W5 P2,후원사업별로 연도말 개발 예측치를 알려줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,후원사업별 연도말 추세 테이블
+Q12,O204 Q12A·B · CSV 기획실#3 · O207 W5 P3,연도말 개발 예측치를 알려줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,
+Q13,O204 Q13 · CSV 나눔마케팅#1,다음 달 신규 회원개발은 몇건으로 예상되는가?,경영·기획,경영·기획,AGENT_EXECUTIVE,analyst_ml_dvlp_forecast; analyst_mstr_spnsr_dvlp,MSTR|GN_DW(분리),Y,AGENT_MARKETING,현업 비고「건수 아닌 금액 예측」 · 월 건수 예측은 미발행
+Q14,O204 Q14 · CSV 나눔마케팅#2 · O207 W5 K2,현재 추세가 유지되면 연말 신규 회원개발은 몇건이 될 것으로 예상되는가?,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MARKETING,
+Q15,O204 Q15 · CSV 나눔마케팅#3,특정 캠페인의 최종 회원개발은 얼마가 될 것으로 예상되는가?,경영·기획|마케팅,경영·기획,AGENT_EXECUTIVE,analyst_ml_dvlp_forecast,GN_DW,N,AGENT_MARKETING,캠페인 미지정 → 되묻기
+Q16,O204 Q16 · CSV 나눔마케팅#4,계절성(연말/휴일) 반영시 향후 3개월간 월별 회원개발의 변동은 어떻게 예상되는가?,경영·기획,경영·기획,AGENT_EXECUTIVE,analyst_ml_dvlp_forecast,GN_DW,N,AGENT_MARKETING,
+Q17,O204 Q17 · CSV 나눔마케팅#5,광고비를 20% 증액하면 개발건수는 얼마나 증가할 것으로 예상되는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ad,GN_DW,Y,AGENT_MARKETING,탄력성 모델 없음
+Q18,O204 Q18 · CSV 나눔마케팅#6,현재 대비 회원개발을 20% 증가시키기 위해 우선적으로 개선해야 할 요인은 무엇인가?,미배정,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_ml_feature_importance,GN_DW,N,AGENT_MARKETING,요인분석 = 3종 공통 · 단위를 정할 지표가 없다
+Q19,O204 Q19 · CSV 나눔마케팅#7,동일 예산 기준 가장 높은 개발 건수를 창출할 조합(채널+캠페인)은 무엇인가?,마케팅,마케팅,AGENT_MARKETING,analyst_ad,GN_DW,Y,AGENT_MARKETING,최적화 미정의
+Q20,O204 Q20 · CSV 나눔마케팅#8,특정 채널의 광고비 집행 시 효율성이 급격히 떨어지는 임계점은 얼마인가?,마케팅,마케팅,AGENT_MARKETING,analyst_ad,GN_DW,Y,AGENT_MARKETING,임계점 미정의
+Q21,O204 Q21 · CSV 나눔마케팅#9,다음 달 광고 예산을 어떻게 배분하면 개발단가 효율이 최대화되는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ad; analyst_budget,GN_DW,Y,AGENT_MARKETING,배분 최적화 미정의 · 예산·광고 교차 금지
+Q22,O204 Q22 · CSV 나눔마케팅#10,A캠페인의 신규 회원개발 가능성이 가장 높은 타겟 세그먼트는 누구인가?,마케팅|회원,마케팅,AGENT_MARKETING,analyst_member_cohort; analyst_member_event,GN_DW,N,AGENT_MARKETING,캠페인 미지정 → 되묻기 · 단위 = 출처 부서(나눔마케팅) 타이브레이크(사용자 결정 O208)
+Q23,O204 Q23 · CSV 나눔마케팅#11,어떤 방문자가 향후 7일 내 첫 후원자가 될 가능성이 높은가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior,GN_DW,N,AGENT_MARKETING,방문자 예측 모델 없음 → 불가 안내가 정답
+Q24,O204 Q24 · CSV 나눔마케팅#12,후원창 2단계 이탈자 중 재방문 가능성이 높은 사용자는 누구인가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior,GN_DW,N,AGENT_MARKETING,
+Q25,O204 Q25 · CSV 나눔마케팅#13,현재 이탈 위험이 가장 높은 페이지는 어디인가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior,GN_DW,N,AGENT_MARKETING,
+Q26,O204 Q26 · CSV 나눔마케팅#14,유입과 전환 페이지를 제외하고 가장 높은 기여도를 보인 중간페이지는 어디인가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior,GN_DW,N,AGENT_MARKETING,
+Q27,O204 Q27 · CSV 나눔마케팅#15,어떤 행동 패턴을 보이는 방문자가 높은 전환 의도를 가지고 있는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior,GN_DW,N,AGENT_MARKETING,
+Q28,O204 Q28 · CSV 나눔마케팅#16,일시 후원자 중 6개월 내 정기 후원자로 전환할 확률이 가장 높은 회원은 누구인가?,회원|마케팅,회원,AGENT_MEMBER,analyst_ml_once_conversion,GN_DW,N,AGENT_MARKETING,MEMBER·MARKETING 양쪽 도구 보유
+Q29,O204 Q29(EXEC·MKT) · CSV 나눔마케팅#17,어떤 채널의 회원이 가장 높은 장기 가치를 창출하는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ml_ltv_forecast,GN_DW,N,AGENT_MARKETING,O204 에서 EXEC·MKT 답 정의가 갈림
+Q30,O204 Q30 · CSV 나눔마케팅#18,이번 달 개발 회원 중 향후 3년 LTV 상위 50%로 예측되는 회원은 누구인가?,회원|마케팅,마케팅,AGENT_MARKETING,analyst_ml_ltv_forecast,GN_DW,N,AGENT_MARKETING,회원 단위 LTV 원천 없음 → 불가 안내가 정답
+Q31,O204 Q31(EXEC·MKT) · CSV 나눔마케팅#19,어떤 캠페인이 가장 높은 LTV를 창출할 것으로 예상되는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ml_ltv_forecast,GN_DW,N,AGENT_MARKETING,
+Q32,O204 Q32 · CSV 나눔마케팅#20,어떤 회원에게 증액 캠페인을 우선 제안해야 하는가?,회원|마케팅,회원,AGENT_MEMBER,analyst_ml_member_risk,GN_DW,N,AGENT_MARKETING,
+Q33,O204 Q33 · CSV 나눔마케팅#21,신규 사용자 확보 상위 채널은 무엇이며 각 채널의 유입 기여도는 어떻게 분포되는가?,마케팅,마케팅,AGENT_MARKETING,analyst_ga_behavior; analyst_member_cohort,GN_DW,N,AGENT_MARKETING,「신규 사용자」 = GA 사용자 / 회원 획득 해석 갈림
+R10,CSV 회원실#10,선넘는좋은일 캠페인을 통해 2026년 1월부터 2026년 9월까지 가입한 회원 중에서 개별화서비스신규(사단)의 선넘는좋은일 즉시 알림톡을 받은 회원과 받지 않은 회원의 온라인 이벤트 및 문화이벤트 참여율 비교해줘,회원,회원,AGENT_MEMBER,analyst_service_cohort,GN_DW,N,AGENT_MEMBER,
+R11,CSV 회원실#11,ACPI 행운의 카드 알림톡을 오픈한 후 수신일로부터 5일 이내에 중단한 회원의 가입캠페인·중단사유·후원금액·연령대·후원사업·후원기간을 분석하고 분석 내용을 토대로 중단을 방어할 수 있는 전략을 도출해줘.,회원,회원,AGENT_MEMBER,analyst_service_cohort; analyst_service,GN_DW,N,AGENT_MEMBER,알림톡 오픈 원천 없음 → 수신 기준 대안
+R12,CSV 회원실#12,알림톡 중 장기회원감사서비스(사단)의 25년 및 26년 수신회원의 후원유지기간 및 이벤트 참여횟수를 분석하고 각 연도별로 서비스 효과가 가장 높게 나타났던 대상과 가장 낮게 나타났던 대상을 비교해줘. 비교한 내용을 토대로 27년 전략을 도출해줘.,회원,회원,AGENT_MEMBER,analyst_service_cohort,GN_DW,Y,AGENT_MEMBER,서비스 효과·대조군 미정의
+R13,CSV 회원실#13,발송 서비스 기반 유지율 및 증액율 분석,회원,회원,AGENT_MEMBER,analyst_service; analyst_service_cohort,GN_DW,Y,AGENT_MEMBER,짧은 제목 원문 · 유지율 N개월 축 부재(근사)
+R14,CSV 회원실#14,감액/증액에 따른 콘텐츠 오픈여부 분석,회원,회원,AGENT_MEMBER,analyst_service,GN_DW,N,AGENT_MEMBER,짧은 제목 원문 · 오픈 = 문자(SND) 링크 클릭만
+R15,CSV 회원실#15,나의후원페이지에서 후원한 회원 특성 분석,마케팅|회원,회원,AGENT_MEMBER,analyst_member_cohort; analyst_member_event; analyst_ga_behavior; analyst_mstr_spnsr_dvlp,GN_DW,N,AGENT_MEMBER,짧은 제목 원문 · 종전 답은 MSTR 홍보방법으로 대체 · 단위 = 출처 부서(회원실) 타이브레이크(사용자 결정 O208) · O208-C 기대 도구 확대(실측 = cohort·event 로 정상 답변)
+D1,O207 W5 D1,2026년 9월 구분_팀별 신규 개발(건)과 개발(명)을 보여줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,
+D2,O207 W5 D2 · O207-C M2,2026년 9월 신규 기존으로 구분한 개발건과 개발(명)을 보여줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,
+D3,O207 W5 D3,2026년 9월 후원중단 사유별 중단 건수와 회원수,회원|경영·기획,회원,AGENT_MEMBER(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,중단 지표 → 회원 · 도구는 MSTR
+D4,O207 W5 D4,2026년 9월 결제수단별 신규 개발(건),경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MARKETING,
+D5,O207 W5 D5 · O207-C D5,2026년 1월부터 9월까지 월별 신규 개발 목표 대비 달성률,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_EXECUTIVE,
+X1,O207 W5 X1 · O207-C X1,2026년 9월 캠페인카테고리별 신규 개발 건수,경영·기획|마케팅,경영·기획,AGENT_MEMBER,analyst_member_event,GN_DW,N,AGENT_MEMBER,🔴 §11-3 경영·기획에 member_event 없음 → 틀 수정 필요
+X2,O207 W5 X2,2026년 9월 개발인입경로별 신규 개발 건수,마케팅|경영·기획,경영·기획,AGENT_MARKETING,analyst_member_event,GN_DW,N,AGENT_MARKETING,🔴 §11-3 경영·기획·마케팅에 member_event 없음 → 틀 수정 필요
+M1,O207-C M1,2026년 9월 MSTR 기준 본부/본부 외 그룹별 개발구분별 개발(건)을 보여줘,경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MEMBER,
+M3,O207-C M3,MSTR 기준 상위캠페인별 개발(건) 상위 10개를 보여줘,마케팅|경영·기획,경영·기획,AGENT_EXECUTIVE(3종 공통 도구),analyst_mstr_spnsr_dvlp,MSTR,N,AGENT_MARKETING,캠페인 축 × 개발 지표 — 지표 우선이면 경영·기획

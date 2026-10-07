@@ -15,3 +15,19 @@ artifacts:
     targets:
       default:
         object: GN_DW.SERVING.AGENT_MARKETING
+  - path: agent_executive_eval_20261007_155611.eval.yaml
+    type: eval_config
+  - path: agent_executive_eval_o208c_v3.eval.yaml
+    type: eval_config
+  - path: agent_executive_eval_o209_x6.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v10.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v11.eval.yaml
+    type: eval_config
+  - path: agent_marketing_eval_o209_before.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v12.eval.yaml
+    type: eval_config
+  - path: agent_marketing_eval_o209_after.eval.yaml
+    type: eval_config

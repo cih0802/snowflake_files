@@ -1,0 +1,13 @@
+evaluation:
+  agent: GN_DW.SERVING.AGENT_EXECUTIVE
+  agent_version: DEFAULT
+  dataset_fqn: GN_DW.SERVING.AGENT_EXECUTIVE_O208_BASELINE_20261007_155611
+metrics:
+  - name: answer_correctness
+    version: auto
+  - name: logical_consistency
+    version: auto
+  - name: tool_selection_accuracy
+    version: auto
+  - name: tool_execution_accuracy
+    version: auto

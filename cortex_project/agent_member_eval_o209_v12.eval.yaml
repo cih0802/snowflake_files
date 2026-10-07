@@ -1,0 +1,11 @@
+evaluation:
+  agent: GN_DW.SERVING.AGENT_MEMBER
+  agent_version: VERSION$12
+  dataset_fqn: GN_DW.SERVING.agent_member_o209_20261007
+metrics:
+  - name: answer_correctness
+    version: v3_0
+  - name: logical_consistency
+    version: v3_0
+  - name: tool_selection_accuracy
+    version: v3_0
