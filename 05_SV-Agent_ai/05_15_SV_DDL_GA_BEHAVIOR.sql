@@ -45,13 +45,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
     evt.EVENT_CATEGORY AS evt.EVENT_CATEGORY WITH SYNONYMS ('이벤트 카테고리', '이벤트구분') COMMENT = 'GA4 이벤트 카테고리. 주요값 예: ''donor_action''·''나의후원''·''캠페인스크롤깊이''·''후원창''·''header''·''메뉴''·''캠페인버튼클릭''. 🔴 NULL = 페이지뷰 행(카테고리 없음)이며 결측이 아니다 — 페이지뷰는 TOTAL_PAGE_VIEWS 로 센다',
     evt.EVENT_ACTION AS evt.EVENT_ACTION WITH SYNONYMS ('이벤트 액션') COMMENT = 'GA4 이벤트 액션(자유 텍스트 · 카디널리티 큼) — 이름으로 물으면 ILIKE 부분일치로 필터한다',
     evt.EVENT_LABEL AS evt.EVENT_LABEL WITH SYNONYMS ('이벤트 라벨') COMMENT = 'GA4 이벤트 라벨(자유 텍스트 · 카디널리티 큼) — ILIKE 부분일치로 필터한다',
-    src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 16종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Video''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 약 64%다 — 채널 분포를 낼 때 함께 밝힌다',
+    src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 16종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Video''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 큰 비중을 차지한다(비율은 조회로 확인) — 채널 분포를 낼 때 함께 밝힌다',
     src.SOURCE_MEDIUM AS src.SOURCE_MEDIUM WITH SYNONYMS ('소스/매체', '소스매체') COMMENT = 'GA4 소스/매체(예: google / cpc)',
     src.UTM_SOURCE AS src.UTM_SOURCE WITH SYNONYMS ('UTM 소스') COMMENT = 'UTM source',
     src.UTM_MEDIUM AS src.UTM_MEDIUM WITH SYNONYMS ('UTM 매체') COMMENT = 'UTM medium',
     fbq.UTM_CAMPAIGN AS fbq.UTM_CAMPAIGN WITH SYNONYMS ('UTM 캠페인', 'GA 캠페인') COMMENT = 'UTM campaign(자유 텍스트). 🔴 CRM 캠페인 코드와 다른 체계다 — CRM 캠페인으로 바꿔 말하지 않는다',
     dev.DEVICE_TYPE AS dev.DEVICE_TYPE WITH SYNONYMS ('기기유형', '디바이스유형') COMMENT = '기기 유형(PC·모바일 등)',
-    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로') COMMENT = '페이지 경로(14,566종 · 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다'
+    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다'
   )
   METRICS (
     fbq.TOTAL_EVENT_CNT AS SUM(fbq.EVENT_CNT)
@@ -62,10 +62,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
       COMMENT = '페이지뷰 합계. F(가산). 페이지뷰 행(EVENT_CATEGORY NULL)에만 값이 있다 — 다른 이벤트로 필터하면 0 이다.',
     fbq.IDENTIFIED_VISITORS AS COUNT(DISTINCT CASE WHEN fbq.IDENTITY_SK > 0 THEN fbq.IDENTITY_SK END)
       WITH SYNONYMS ('식별 방문자수', '로그인 방문자수', '회원 방문자수')
-      COMMENT = '로그인 등으로 식별된 고유 방문자 수(명). D(distinct · 가산 금지). 🔴 비식별 방문자(전체 행의 약 23%)는 빠진다 — 전체 방문자 수가 아니다. 식별자는 CRM 회원과 연결되지만 이 SV 에서 CRM 실적과 결합하지 않는다.',
+      COMMENT = '로그인 등으로 식별된 고유 방문자 수(명). D(distinct · 가산 금지). 🔴 비식별 방문자(전체 행의 일부 · 비중은 조회로 확인)는 빠진다 — 전체 방문자 수가 아니다. 식별자는 CRM 회원과 연결되지만 이 SV 에서 CRM 실적과 결합하지 않는다.',
     fbq.EVENT_SESSIONS AS SUM(fbq.SESSION_CNT)
       WITH SYNONYMS ('세션수(이벤트 기준)')
-      COMMENT = '🔴🔴 이벤트 단위 세션 수 — 같은 세션이 이벤트마다 반복 집계된다(실측 302,842/420,831 키 중복). **EVENT_CATEGORY 를 하나로 고정했을 때만** 쓴다. 여러 이벤트를 합친 「총 세션」·「총 방문」으로 답하지 않는다.',
+      COMMENT = '🔴🔴 이벤트 단위 세션 수 — 같은 세션이 이벤트마다 반복 집계된다(실측 키 중복 다수 · 규모는 파일 머리 주석). **EVENT_CATEGORY 를 하나로 고정했을 때만** 쓴다. 여러 이벤트를 합친 「총 세션」·「총 방문」으로 답하지 않는다.',
     fbq.AVG_ENGAGEMENT_RATE AS AVG(fbq.ENGAGEMENT_RATE)
       WITH SYNONYMS ('참여율')
       COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.'

@@ -30,17 +30,17 @@ END-METADATA -->
 
 | 순 | 작업 | 다음 행동 |
 |---|---|---|
-| 1 | 👤 dbt build | `dbt build --select DIM_EVENT+ WIDE_MEMBER_SERVICE_COHORT --project-dir /10_dbt_pipeline` |
-| 2 | 검증 | FEA 캠페인행사 DATE_SK 1970 = 0 · 장기회원 2026 수신 161,967 · Q2·Q3 재질문(`tmp/o205_smoke.py`) |
-| 3 | 문서 | `python3 scripts/build_wide_doc.py` → test_verify_wide_doc 복구 |
-| 4 | 👤 현업 확인 | ① 서비스명 ↔ 제목·서비스코드(MS0505/0201) 규칙 ② 문화이벤트 = 캠페인행사? ③ 효과 대조군 ④ 장기회원 제목 법인 표기 |
+| ~~1~~ | ~~👤 dbt build~~ | 🟢 [O205-C] 사용자 build PASS 24 · WARN 2 · ERROR 0 |
+| ~~2~~ | ~~검증~~ | 🟢 [O205-C] FEA 1970 = 0 · 장기회원 2026 = 161,967 · Q2 v2 ⭕ · Q3 v3 ⭕ |
+| ~~3~~ | ~~문서~~ | 🟢 [O205-C] build_wide_doc VIEW_META 보강 후 재생성 · test_verify_wide_doc PASS |
+| ~~4~~ | ~~👤 현업 확인~~ | ➔ 🟠 [O205-C] 문서20 N-27 등재 · 추적 = `99_NEXT_SESSION-O0205-C.md` ▣ O205-C-1 순1 |
 
 ㉡ 워크스페이스 백로그
 
 | 순 | 작업 | 다음 행동 |
 |---|---|---|
 | 9 | ㉡ 👤 MSTR 일일 적재 | ⏸ 현업 회신 대기 |
-| — | 기존 게이트 FAIL 3 | sv_rule7(05_15·05_17) · agent_tool_claim(681,134 등) · test_generators 골든 4 — 규명 전 골든 갱신 금지 |
+| ~~—~~ | ~~기존 게이트 FAIL 3~~ | 🟢 [O205-C] sv_rule7 0 · agent_tool_claim 0 · test_generators 21/21(골든 O205-C 재발행 · 차이 10건 분해) |
 
 ### ▣ O205-B-2 ⚪ 결정 완료(재론 금지)
 

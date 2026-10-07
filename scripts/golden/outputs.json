@@ -146,11 +146,17 @@
    "diff_count": 18,
    "label": "O198",
    "reason": "O198: 골든(O189 09-29) 이후 04~09 전량 재생성(새 계정 pw69582 · 의존순서 04→05→06(정식 러너)→07→08→09). 08 +104 = 2차-B 99(tmp/o191g_fill.txt 테이블별 일치) + O190 CRM_BIZ_TARGET.BDGT_PRCD_NM 1 + O190-F ERP_BUDGET.DIRECT_MNYRS_YN_1/2 2 = 102 귀속 · 잔여 2 = O189 증설 9(ORG1·SPAN3·SEND_MEMBER5) 중 골든 측정 시 라이브 미반영 추정 — 구 골든이 개수만 저장해 행 단위 검증 불가(미규명으로 명시) ⇒ 재발 방지로 08.row_keys 신설. 06 +1행(TM_CM_MBER_DVLP_GOAL_DIV.BDGT_PRCD_NM · O190) · 판정 이동 110 전부 노출 증가 방향(미노출→GOLD 60 · SILVER→GOLD 37 · 미노출→SILVER 13 · 역행 0) = 2차-B·O191-G GOLD 전파·DEC-58 신규 2종 · 대조 기준 _archive/06_BRONZE노출감사.csv.UNLABELED-regen.5(감사일 09-29). 09 값없음→조립가능 1 = FACT_EVENT_PARTICIPATION.SELF_PART_FLAG(O191-G MS060 배선 · 구 판본 전건 NULL). 측정일 7종 = 재생성일."
+  },
+  {
+   "date": "2026-10-07 02:41:43",
+   "diff_count": 10,
+   "label": "O205-C",
+   "reason": "O205-C: 골든(O198 10-02) 이후 04→05→09 재생성(dump_schema·census_columns 선행). 차이 10건 분해: (1) inv 4건 = FACT_MESSAGE_DISPATCH.SEND_STATUS2 DROP(O203 사용자 승인 2026-10-06 · 329→328 · 312→311) (2) 측정일 3건 = 재생성일 (3) 04.rows 571→678 = +107 · O205 귀속 44(WIDE_MEMBER_FEE 획득 8축 +8 · WIDE_MEMBER_SERVICE_COHORT 신설 36) · 잔여 63 = O202·O203 WIDE 재빌드(라이브 created 10-05·10-06) 귀속 추정 — 골든이 04 행수만 저장해 행 단위 검증 불가(미규명 명시 · 재발 방지 = 04.row_keys 신설 후보) (4) 09 값없음→조립가능 1건 이동 = 행 단위 대조 근거 없음(미규명 명시)."
   }
  ],
- "measured": "2026-10-02",
+ "measured": "2026-10-07",
  "metrics": {
-  "04.rows": 571,
+  "04.rows": 678,
   "05.field_sections": {
    "## 마케팅 보고서필드 → 지표#/GOLD": 73,
    "## 회원 보고서필드 → 지표#/GOLD": 434
@@ -1289,12 +1295,12 @@
   "09.verdict_kinds": 12,
   "09.verdicts": {
    "grain부정합": 6,
-   "값없음": 27,
+   "값없음": 26,
    "도달불가": 19,
    "배분규칙필요": 18,
    "요구grain부정합": 1,
    "원천부재": 10,
-   "조립가능": 316,
+   "조립가능": 317,
    "집계필요": 3,
    "타원천": 3,
    "판정불가": 8,
@@ -1324,12 +1330,12 @@
   "art.measured": {
    "01_DW_현업활용가이드.md": "2026-08-11",
    "03_GN_DW_개념도.html": "2026-10-02",
-   "04_컬럼계보매핑.md": "2026-10-02",
-   "05_지표GOLD매핑.md": "2026-10-02",
+   "04_컬럼계보매핑.md": "2026-10-07",
+   "05_지표GOLD매핑.md": "2026-10-07",
    "06_BRONZE노출감사.md": "2026-10-02",
    "07_코드체계_관문측정.md": "2026-10-02",
    "08_SILVER→GOLD_보존율.md": "2026-10-02",
-   "09_보고서필드_조립가능성.md": "2026-10-02"
+   "09_보고서필드_조립가능성.md": "2026-10-07"
   },
   "inv.desc_cell_list": [
    "DIM_AD_CREATIVE.AD_TYPE",
@@ -1392,7 +1398,7 @@
    "FACT_MEMBER_EVENT.STOP_REASON"
   ],
   "inv.desc_cells": 58,
-  "inv.entries": 329,
+  "inv.entries": 328,
   "inv.entry_keys": [
    "DIM_AD_CREATIVE.AD_TYPE",
    "DIM_AD_CREATIVE.CM_POSITION",
@@ -1708,7 +1714,6 @@
    "FACT_MESSAGE_DISPATCH.OPEN_MEMBERS",
    "FACT_MESSAGE_DISPATCH.SEND_MEMBERS",
    "FACT_MESSAGE_DISPATCH.SEND_STATUS",
-   "FACT_MESSAGE_DISPATCH.SEND_STATUS2",
    "FACT_MESSAGE_DISPATCH.SEND_TITLE",
    "FACT_MESSAGE_DISPATCH.SEND_TYPE",
    "FACT_MESSAGE_DISPATCH.SERVICE_CNT",
@@ -1834,7 +1839,6 @@
    "발송구분소",
    "발송구분중",
    "발송상태",
-   "발송상태2",
    "발송수명",
    "발송유형",
    "발송일",
@@ -2038,9 +2042,9 @@
    "후원사업전체",
    "휴일여부"
   ],
-  "inv.index_keys": 312,
+  "inv.index_keys": 311,
   "inv.label_collisions": 14,
   "inv.unreachable": []
  },
- "schema_fingerprint": "129f0091fa01a7a6"
+ "schema_fingerprint": "35f3f2d104749555"
 }

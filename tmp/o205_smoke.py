@@ -11,6 +11,10 @@ QS = {
     'Q4': '2026년 1월-9월 캠페인카테고리 구분 기준으로 납입회비금액 확인 및 회비흐름을 분석하고, 2026년 10월-12월의 납입회비를 예측해줘',
 }
 out = '/workspace/tmp/o205_smoke'
+only = sys.argv[1:]  # [O205-C] 지정 문항만 재질문(예: Q2 Q3) · 결과는 <문항>_v2 로 저장
+if only:
+    QS = {k: v for k, v in QS.items() if k in only}
+sfx = os.environ.get('SFX', '_v2') if only else ''
 os.makedirs(out, exist_ok=True)
 c = conn()
 cur = c.cursor()
@@ -21,7 +25,7 @@ for k, q in QS.items():
         raw = cur.fetchone()[0]
     except Exception as e:
         raw = json.dumps({'error': str(e)})
-    open(f'{out}/{k}.json', 'w', encoding='utf-8').write(raw if isinstance(raw, str) else json.dumps(raw))
+    open(f'{out}/{k}{sfx}.json', 'w', encoding='utf-8').write(raw if isinstance(raw, str) else json.dumps(raw))
     d = json.loads(raw) if isinstance(raw, str) else raw
     tools, text = [], []
     for item in d.get('content', []) if isinstance(d, dict) else []:
@@ -30,5 +34,5 @@ for k, q in QS.items():
         if item.get('type') == 'text':
             text.append(item.get('text', ''))
     body = ' '.join(text).replace('\n', ' ')
-    open(f'{out}/{k}.txt', 'w', encoding='utf-8').write('\n'.join(text))
+    open(f'{out}/{k}{sfx}.txt', 'w', encoding='utf-8').write('\n'.join(text))
     print(f'{k} tools={tools} err={d.get("error") if isinstance(d, dict) else None} len={len(body)}')

@@ -30,11 +30,11 @@ END-METADATA -->
 
 | 순 | 작업 | 다음 행동 |
 |---|---|---|
-| 1 | 👤 dbt build | `dbt build --select WIDE_MEMBER_FEE WIDE_MEMBER_SERVICE_COHORT --project-dir /10_dbt_pipeline` |
-| 2 | SV 배포 | 05_9 재배포 · 05_18 신설 배포 · 스모크(수신 3,508 · 미수신 666) |
-| 3 | AGENT_MEMBER | 도구 `analyst_service_cohort` 추가 · analyst_member_fee 설명에 8축 · 「SV 간 교차계산 금지」에 예외 1줄 · 질문1~3·회비 질문 재질문 |
-| 4 | 👤 현업 확인 3 | ① 서비스명 ↔ 발송 제목 규칙 ② 문화이벤트 = 캠페인행사? ③ 효과 대조군 기준 → 문서20 등재 |
-| 5 | 이슈 등재 | CRMN DATE_SK 1970 계열 → 문서50 |
+| ~~1~~ | ~~👤 dbt build~~ | 🟢 [O205-B] 사용자 build PASS 2 · WARN 1 |
+| ~~2~~ | ~~SV 배포~~ | 🟢 [O205-B] 05_9 · 05_18 배포 · 스모크 수신 3,508 · 미수신 666 일치 |
+| ~~3~~ | ~~AGENT_MEMBER~~ | 🟢 [O205-B·C] VERSION$11 → $14 · 재질문 Q1~Q4 ⭕ |
+| ~~4~~ | ~~👤 현업 확인 3~~ | ➔ 🟠 [O205-C] 4건으로 확대 · 문서20 N-27 등재 · 추적 = `99_NEXT_SESSION-O0205-C.md` ▣ O205-C-1 순1 |
+| ~~5~~ | ~~이슈 등재~~ | 🟢 [O205-C] 문서50 `-024` 절(원인 = DIM_EVENT epoch 결함 · 교정 · 빌드 확인) |
 
 ㉡ 워크스페이스 백로그
 

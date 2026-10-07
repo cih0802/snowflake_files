@@ -1,21 +1,21 @@
 <!-- LLM-METADATA
 doc_id: GOLD_WIDE_VIEWS
-doc_role: consumption_wide_view (GOLD 빅테이블 뷰 18종 통합 정의서)
+doc_role: consumption_wide_view (GOLD 빅테이블 뷰 19종 통합 정의서)
 project: GN_DW (굿네이버스)
 derived_from: 10_dbt_pipeline/models/gold/wide/*.sql + _wide_schema.yml
 generator: scripts/build_wide_doc.py
 validator: scripts/verify_wide_doc.py
-structure: WIDE VIEW 18종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)
-status: 🟢 정본 최신화 완료 (물리 dbt 뷰 18종 100% 일치)
+structure: WIDE VIEW 19종 전수 수록 (개요 + 조인 로직 + 확장 컬럼 정의서)
+status: 🟢 정본 최신화 완료 (물리 dbt 뷰 19종 100% 일치)
 updated: 2026-10-03
 END-METADATA -->
 
 # GOLD 빅테이블 VIEW (Wide View) 통합 정의서
 
-> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW 18종)**의 통합 설계 및 컬럼 정의서입니다.
+> **문서 목적**: GN_DW GOLD 계층에 배포된 **비정규화 리포팅 뷰(WIDE VIEW 19종)**의 통합 설계 및 컬럼 정의서입니다.
 > 리포팅 및 BI, Semantic View, Cortex Agent 조회 성능과 편의성을 위해 **Fact 테이블과 Dimension 테이블을 LEFT JOIN으로 평탄화**한 구조를 표준화된 양식으로 제공합니다.
 > 
-> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 18종) 및 `_wide_schema.yml`
+> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 19종) 및 `_wide_schema.yml`
 > 🛠️ **자동 생성/동기화 도구**: `python3 scripts/build_wide_doc.py` (dbt 모델 변경 시 이 정의서를 자동 갱신)
 > 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 전 컬럼 100% 일치 검증)
 > 📊 **자동 계보 매핑 산출물**: `30_output_share/04_컬럼계보매핑.md` (BRONZE→SILVER→GOLD→WIDE 역방향 실측 계보)
@@ -35,7 +35,7 @@ END-METADATA -->
 
 ---
 
-## 2. WIDE VIEW 18종 상세 정의서
+## 2. WIDE VIEW 19종 상세 정의서
 
 ### 2.1 `WIDE_MEMBER_MONTHLY` — 회원 월별 실적 평탄화 뷰 (Member Monthly Mart)
 
@@ -62,8 +62,8 @@ END-METADATA -->
 | **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | 파생 (DERIVED 계산식) | FLOOR(MONTH_KEY/100) — 연도 |
 | **월(MM)** | `CAL_MONTH` | NUMBER | YES | 파생 (DERIVED 계산식) | MOD(MONTH_KEY,100) — 월 |
 | **회원식별키(DK)** | `MEMBER_DK` | TEXT | NO | GOLD.FACT_MEMBER_MONTHLY (f) | 불변 회원키(조인용) |
-| **개발건수** | `DEV_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 개발(건) SUM(금액)/10000 (#4·5·149) |
-| **개발회원수(플래그)** | `DEV_MEMBERS` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 개발(명) COUNT (#148) |
+| **개발건수** | `DEV_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 개발(건) (#4·5·149) = **MSTR 정의**(O202 · 사용자 결정): 회원×월 MSTR 인정금액 ÷ 10,000 합. 인정금액 = 신규·재후원은 미중단 후원사업·월합>0 행의 금액, 증액은 감액과 상계한 순증액(원본 FN_MM_SPNSR_DVLP B1·B2). 소수가 나온다. 🔴 GN_DW.MSTR 지표와 같은 표에서 합산 금지(정의가 같아도 출처가 다르다). |
+| **개발회원수(플래그)** | `DEV_MEMBERS` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 개발(명) (#148) = 그 달 MSTR 개발 인정 행 보유 1/0 — 다월 SUM 은 회원-월 수이며 기간 distinct 회원수는 COUNT(DISTINCT MEMBER_DK). |
 | **중단건수** | `STOP_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 중단(건) (#35, FME 롤업) |
 | **미납** | `UNPAID_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 미납(건) (#36) |
 | **활동건수** | `ACTIVE_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (f) | 활동(건) (#37·157) |
@@ -171,8 +171,8 @@ END-METADATA -->
 | **DVLP_DIV_CD** | `DVLP_DIV_CD` | TEXT | YES | GOLD.FACT_MEMBER_EVENT (f) | FACT_MEMBER_EVENT.DVLP_DIV_CD — 개발구분 코드 raw. 코드그룹 **MM015(개발구분)**. 코드사전 = 1신규·2증액·3감액·4재후원·5후원중단. 실적재(TM_MM_FDRM_MBER_DVLP_AMT.DVLP_DIV_CD)에 **사전 전종이 등장**한다. 🔴MM015 는 회원상태 MM010 이 **아니다** — 두 그룹 모두 '후원중단'을 포함해 혼동되기 쉽다(회원상태는 MBER_STAT_CD). ⚠️중단원천(EVENT_TYPE='STOP') 행은 원천에 이 컬럼이 부재해 NULL 이다. 라벨 = DVLP_DIV_NM. |
 | **DVLP_DIV_NM** | `DVLP_DIV_NM` | TEXT | YES | GOLD.FACT_MEMBER_EVENT (f) | FACT_MEMBER_EVENT.DVLP_DIV_NM — 개발구분명(MM015 라벨): 신규·증액·감액·재후원·후원중단. 코드 = DVLP_DIV_CD. MM015 는 폐지코드가 없고 실적재가 사전과 일치한다. 🔴🔴값 '후원중단' 은 EVENT_TYPE='STOP' 과 **동일 사건이 거의 전부 중복 존재**한다(동일 회원·일자) — 두 축을 합산하면 이중계상이다(O24 · 현업확인 대기). |
 | **SPNSR_AMT** | `SPNSR_AMT` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | FACT_MEMBER_EVENT.SPNSR_AMT — 후원금액(원) raw. 원천 TM_MM_FDRM_MBER_DVLP_AMT.SPNSR_AMT 무변환 전파. 🔴감액·후원중단 사건은 **음수**다 — 무조건 SUM 하면 개발금액이 상계된다. 🔴정본 공#38 감액(건)·#151 증액(건)이 **금액을 만원 단위로 나눈 값**이라는 규약이므로 원금액을 보존한다(설계 §1·CONF-2) — 이 컬럼을 그대로 '건수'로 쓰지 말 것. ⚠️중단원천 행은 NULL. |
-| **개발건수** | `DEV_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 개발(건) (#149) |
-| **개발회원수(플래그)** | `DEV_MEMBERS` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 개발(명) (#148) |
+| **개발건수** | `DEV_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 개발(건) (#149) = **MSTR 정의**(O202 · 사용자 결정): 이 사건의 MSTR 인정금액 ÷ 10,000(신규·재후원 = 미중단 후원사업·후원사업×월 합>0 행 금액 · 증액 = 감액 상계 순증액 · 그 밖 0). 원본 = FN_MM_SPNSR_DVLP B1·B2 + USP_F_MM_SPNSR_DVLP_SUM. 🟢 202607 전사 14,188명·29,714.1888건 MSTR 전건 일치. 🔴 GN_DW.MSTR 지표와 같은 표에서 합산 금지. |
+| **개발회원수(플래그)** | `DEV_MEMBERS` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 개발(명) (#148) = MSTR 개발 인정 행이면 1. 기간 개발(명)은 COUNT(DISTINCT CASE WHEN DEV_MEMBERS=1 THEN MEMBER_DK END). |
 | **중단건수** | `STOP_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 중단(건) (#35) |
 | **중단회원수(플래그)** | `STOP_MEMBERS` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 중단(명) |
 | **미납중단건수** | `UNPAID_STOP_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_EVENT (f) | 미납중단(건) |
@@ -231,6 +231,8 @@ END-METADATA -->
 | **후원사업명** | `SPONSORSHIP_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | DIM_SPONSORSHIP.SPONSORSHIP_NAME — 후원사업 전체 (#123) |
 | **SPONSORSHIP_DIV_NAME** | `SPONSORSHIP_DIV_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-08-19 O89] 후원사업 분류 **최상위** — 정기일시후원구분 라벨(코드사전 CM035): 정기후원 · 일시후원. 3계층 = DIV_NAME → GROUP_NAME → SPONSORSHIP_NAME. 🟢DEV 브랜치는 O45 로 배선돼 **분류별 개발실적 집계가 된다.** ⚠️STOP 브랜치는 `SPONSORSHIP_SK` 센티넬 0 이라 `'(미매핑)'` 이다 — 중단 분해는 개발원천 코드5 경로를 쓸 것(DEC-32 철회·O47). 🔴DEV·STOP 을 합산하면 이중계상이다(O24). |
 | **SPONSORSHIP_GROUP_NAME** | `SPONSORSHIP_GROUP_NAME` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-08-19 O89] 후원사업 분류 **중위** — SPONSORSHIP_ABBR(코드)을 코드사전 CM003(후원약칭)으로 해소한 라벨: 국내 · 결연 · 해외구호 · 북한 · 기타 · 해외 · 선물금(미사용). 사업수 17/1/6/3/21/2 = 50. 🔴🔴**이 컬럼 단독으로 「해외」를 집계하지 말 것** — 해외구호(3)와 해외(6)가 갈라지고 6은 정기일시=일시후원에서만 나타난다 ⇒ 정확한 분류축은 **(DIV_NAME, GROUP_NAME) 쌍**이다. ⚠️STOP 브랜치 센티넬은 위 DIV_NAME 주석과 동일. |
+| **SPONSORSHIP_CPR_DIV_CD** | `SPONSORSHIP_CPR_DIV_CD` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | [2026-10-06 O202 · 사용자 결정] **후원사업 법인구분** 원천코드(코드그룹 CM019: A=통합 · I=사단 · S=사복). MSTR 법인 축과 같은 원천(TM_CM_SPNSR_BSNS_INFO.CPR_DIV_CD)이다. 🔴 「법인·사단·사복」 질의의 **기본 축** — CAMPAIGN_CPR_DIV_*(세부캠페인 법인)·ORG_CORP(조직 법인)와 다른 축이다. ⚠️ STOP 행은 후원사업 미배선분이 SK=0 이라 NULL 이다. |
+| **SPONSORSHIP_CPR_DIV_NM** | `SPONSORSHIP_CPR_DIV_NM` | TEXT | YES | GOLD.DIM_SPONSORSHIP (후원사업 차원) | SPONSORSHIP_CPR_DIV_CD 를 CM019 로 해소한 라벨(통합/사단/사복). 「사단법인」=사단 · 「사회복지법인」=사복. 🔴 법인 질의 기본 축(O202) — 세부캠페인 법인(CAMPAIGN_CPR_DIV_NM)으로 답하지 마라. |
 | **법인구분** | `ORG_CORP` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | DIM_ORG.CORP — 법인 (#114). 🔴DIM_ORG 는 **SCD1**(DEC-2)이라 as-was 가 아니다 — 조직 개편 시 과거 사건에도 **현재 조직명**이 붙는다(조직 변경이력 원천·as-was 요구가 없어 SCD1 로 확정). 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.CORP`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C. |
 | **본부명** | `ORG_DIVISION` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | DIM_ORG.DIVISION — 본부/지부 (#115). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴[O51-D 실측] **전건 NULL** — 원인은 팩트가 아니라 **차원 컬럼 자체가 비어 있다**: `DIM_ORG.DIVISION`. `DIM_ORG` 는 **DEPARTMENT 만 채워져 있고 CORP·DIVISION·TEAM 은 전건 비어 있다.** 부서 코드에서 상위 계층을 유도하는 규칙이 미확정이다(CONF-4) ⇒ **조직 계층 분석은 현재 불가**하고 부서 단위까지만 된다. 실측 규모는 이슈원장 §O51-D-C. |
 | **부서명** | `ORG_DEPARTMENT` | TEXT | YES | GOLD.DIM_ORG (조직/부서 차원) | DIM_ORG.DEPARTMENT — 부서 (#116). 🔴SCD1(DEC-2) — current-value 이며 as-was 가 아니다. 🔴🔴「부서」는 축이 둘이다 — 이 컬럼은 **사건 부서**이고 획득 부서는 DIM_MEMBER_ACQUISITION.ACQ_DEPARTMENT 다(O34). 🔴[O51-D 실측] `'(미매핑)'` 이 **다수**다 — 중단원천 행은 부서가 없다. 부서별 집계 시 이 그룹이 상위권 규모로 나타나며 **실재 부서가 아니다.** 실측 규모는 이슈원장 §O51-D-C. |
@@ -297,6 +299,14 @@ END-METADATA -->
 | **ACQ_SPONSORSHIP_NAME** | `ACQ_SPONSORSHIP_NAME` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | 획득 시점 후원사업명 ← DIM_SPONSORSHIP.SPONSORSHIP_NAME. 코드 = ACQ_SPONSORSHIP_SK. 🔴납입 대상 후원사업명(SPONSORSHIP_NAME)과 **다른 컬럼**이다 — 두 컬럼을 같은 표에 두면 반드시 혼동되므로 접두 ACQ_ 로 구분한다. |
 | **획득 시점 연령대명** | `ACQ_AGE_BAND` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | 획득 시점 연령대명(**CM014** 라벨) ← FACT_MEMBER_COHORT.ACQ_AGE_BAND. 코드 = FMC.ACQ_AGE_CD. 🔴**현재 나이가 아니다** — BRONZE 에 생년월일이 없어 현재 연령은 산출 불가(O34). 🔴연속형이 아니므로 평균·재구간화 금지. ✅'10대 미만'이 상위인 것은 오류가 아니다(편지쓰기대회 계열 아동 모집 캠페인) — 결측·기본값 오염으로 설명하지 말 것(O34-B). ⚠️사전에 '70대'·'70대 이상'이 의미 중복으로 공존한다. |
 | **획득 시점 지역명** | `ACQ_REGION` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | 획득 시점 지역명(**CM018** 약칭 라벨) ← FACT_MEMBER_COHORT.ACQ_REGION. 코드 = FMC.ACQ_AREA_CD. 🔴**현재 거주지가 아니다** — BRONZE 에 현주소 축이 없다(O34). ⚠️센티넬 코드 '0'(개발약정 실적재에 존재)은 사전에 라벨이 없어 NULL 이며 '미상'으로 창작하지 않는다. |
+| **ACQ_CAMPAIGN_TYPE** | `ACQ_CAMPAIGN_TYPE` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 캠페인카테고리(=주요캠페인) ← DIM_MEMBER_ACQUISITION.ACQ_CAMPAIGN_TYPE. 🔴**획득 시점 적재 동결값**이다 — WIDE_MEMBER_EVENT 의 사건 시점 캠페인카테고리와 다른 축이다. ML 회비 예측(캠페인카테고리)과 이름이 같아도 실적·예측을 한 표에 합산하지 않는다. |
+| **ACQ_INFLOW_PATH** | `ACQ_INFLOW_PATH` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 개발인입경로(MM293 라벨) ← DIM_MEMBER_ACQUISITION.ACQ_INFLOW_PATH. 🔴획득 시점 동결값. |
+| **ACQ_DOMESTIC_OVERSEAS** | `ACQ_DOMESTIC_OVERSEAS` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 국내해외 구분 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_DOMESTIC_OVERSEAS. 🔴획득 시점 동결값. |
+| **ACQ_BIZ_CASE_TYPE** | `ACQ_BIZ_CASE_TYPE` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 사업사례구분 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_BIZ_CASE_TYPE. 🔴획득 시점 동결값. |
+| **ACQ_CMMN_BRND_NM** | `ACQ_CMMN_BRND_NM` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 공통브랜드(MM297 라벨) ← DIM_MEMBER_ACQUISITION.ACQ_CMMN_BRND_NM. ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다. 🔴획득 시점 동결값. |
+| **ACQ_MKTG_UTM_NM** | `ACQ_MKTG_UTM_NM` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 캠페인의 UTM 라벨 ← DIM_MEMBER_ACQUISITION.ACQ_MKTG_UTM_NM. ⚠️채움이 낮다(코드사전 미등재분은 NULL · 결측이 아니라 미등재) ⇒ UTM 별 합계는 전체보다 작다. |
+| **ACQ_SPNSR_DIV_NM** | `ACQ_SPNSR_DIV_NM` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 세부캠페인의 후원구분 라벨(CM035 정기후원/일시후원) ← DIM_MEMBER_ACQUISITION.ACQ_SPNSR_DIV_NM. ⚠️SPONSORSHIP_DIV_NAME(납입 대상 후원사업의 정기일시구분)과 다른 축이다. |
+| **ACQ_CPR_DIV_NM** | `ACQ_CPR_DIV_NM` | TEXT | YES | GOLD.DIM_MEMBER_ACQUISITION (획득 코호트 귀속축) | [O205] 획득 세부캠페인의 법인구분 라벨(CM019 통합/사단/사복) ← DIM_MEMBER_ACQUISITION.ACQ_CPR_DIV_NM. 🔴조직 계층 법인(ORG_CORP · 산출 불가)과 다른 축이다. |
 | **청구회비(원)** | `BILLED_AMT` | NUMBER | YES | GOLD.FACT_MEMBER_FEE (f) | 청구액(원) = SUM(RQEST_AMT). 🔴FMM 과 **동일한 식**이므로 두 팩트의 전체 합계가 일치해야 한다 — 이 일치가 검증 관문이다(GATE-D · 기준값은 이슈원장 §O45). 🔴🔴WIDE_MEMBER_MONTHLY 의 회비 measure 와 **같은 표에서 합산 금지**(DEC-31) — 동일 원천을 다른 grain 으로 담은 형제 팩트라 이중계상된다. |
 | **납입회비(원)** | `PAID_FEE` | NUMBER | YES | GOLD.FACT_MEMBER_FEE (f) | 납입 총액(원) = 회비 + 기부금. 🔴납부율 분자로 쓰지 말 것(O40) — PAID_FEE_BILLABLE 을 쓴다 |
 | **회비 납입액** | `PAID_FEE_BILLABLE` | NUMBER | YES | GOLD.FACT_MEMBER_FEE (f) | 회비 납입액(원) — 납부율 분자 정본(O40) |
@@ -349,7 +359,6 @@ END-METADATA -->
 | **서비스** | `SERVICE_CNT` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 서비스(건) (#161) |
 | **제목** | `SEND_TITLE` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 제목 (#136) |
 | **발송상태** | `SEND_STATUS` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송상태 (#138) |
-| **SEND_STATUS2** | `SEND_STATUS2` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송상태2 🔴🔴[O51-D 실측] **전건 NULL** — **팩트 컬럼 자체가 비어 있다**(`FACT_MESSAGE_DISPATCH.SEND_STATUS2`). 결측이 아니라 **미적재**다: 0·FALSE·'해당없음' 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 실측 규모는 이슈원장 §O51-D-C. 🟢 발송상태2 는 축B(통신사 도달결과) = `SEND_RESULT_CD`·`SEND_RESULT_NAME` 로 조회한다(사용자 결정 §4 #11 · 문서20 M-6 · O190). |
 | **SEND_TYPE** | `SEND_TYPE` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 발송유형 |
 | **축A** | `SEND_STATUS_GROUP` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 축A(채널상태) 코드군 ID (조인키 · MSG_AT→MS282). 🔴`SEND_STATUS` 는 채널별로 다른 코드체계가 한 컬럼에 모여 있다 — **`SEND_TYPE` 또는 이 컬럼 동반 필수**(단독 필터는 채널 간 오조인). EMAIL·SND·PSTMTR 은 NULL |
 | **축A 라벨** | `SEND_STATUS_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (f) | 축A 라벨 (CRM_CODE 조인). 🔴EMAIL·SND 는 **의도적 NULL** — 코드값은 있으나 코드사전에 라벨 문자열이 없어 조인으로 얻을 수 없고 의미 해석을 라벨로 넣는 것은 창작이다(문서30 §23-J 결정 3 · 현업 문서20 §M-4). PSTMTR 은 원천 컬럼 부재 |
@@ -1081,6 +1090,65 @@ END-METADATA -->
 | **DEV_AMT_CNT** | `DEV_AMT_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
 | **DEV_CUM_CNT** | `DEV_CUM_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
 | **DEV_CUM_AMT_CNT** | `DEV_CUM_AMT_CNT` | NUMBER | YES | GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산) | — |
+
+---
+
+### 2.19 `WIDE_MEMBER_SERVICE_COHORT` — 서비스 수신 코호트 뷰 (Member Service Receipt Cohort Mart)
+
+#### 1. 뷰 개요 (Overview)
+- **목적**: 서비스그룹(발송 제목 부분일치 임시 규칙) 수신/미수신 회원의 획득 속성·D5 중단·행사 참여를 회원 단위로 미리 결합 — SV 교차결합 없이 수신/미수신 비교 질문에 답한다(인과 아님)
+- **분석 Grain**: `회원 × 서비스그룹 × 수신연도 (미수신 = 획득 코호트 회원 · 수신연도 NULL 단일 행)`
+- **기준 Fact 테이블**: `GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹`
+- **조인 Dimension 테이블**: 4개 차원 결합
+
+#### 2. 조인 및 관계 정의 (Join Logic)
+- **기준 테이블**: `GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹`
+- **조인 상세 규칙**:
+  - `LEFT JOIN D5 첫 중단(FACT_MEMBER_EVENT STOP · D+1~D+5) ON 회원 · 서비스그룹 · 수신연도`
+  - `LEFT JOIN DIM_MEMBER_ACQUISITION ON MEMBER_DK`
+  - `LEFT JOIN DIM_DATE(획득일) ON ACQ_DATE_SK`
+  - `LEFT JOIN 행사 참여 집계(FACT_EVENT_ATTENDANCE) ON 회원 · 서비스그룹 · 수신연도`
+
+#### 3. 확장 컬럼 정의서 (Column Definition Sheet)
+
+| 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
+|---|---|---|---|---|---|
+| **회원식별키(DK)** | `MEMBER_DK` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 회원 대리키. 🔴연도를 고정하지 않으면 한 회원이 여러 행이다 — 회원수는 COUNT DISTINCT. |
+| **서비스그룹 코드** | `SERVICE_GROUP_CD` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 코드(임시 규칙) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다). |
+| **서비스그룹 이름** | `SERVICE_GROUP_NAME` | TEXT | NO | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 이름(임시 규칙 라벨). 현업 서비스명과 1:1 확정 전이다. |
+| **수신연도** | `RECEIVE_YEAR` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 수신연도(발송일 연도). 미수신 행은 NULL. |
+| **그 그룹 발송 수신 여부** | `RECEIVED_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 그룹 발송 수신 여부(TRUE=수신 · FALSE=미수신 · 미수신은 획득 코호트 회원 중 한 번도 받지 않은 회원). |
+| **FIRST_RECEIVE_DATE** | `FIRST_RECEIVE_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 첫 수신일. 미수신 NULL. |
+| **LAST_RECEIVE_DATE** | `LAST_RECEIVE_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 마지막 수신일. 미수신 NULL. |
+| **그 연도 수신일 수** | `RECEIVE_ROWS` | NUMBER | NO | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 수신일 수(서로 다른 발송일 개수 · O205-B). 🔴회원수가 아니다. |
+| **D5_STOP_FLAG** | `D5_STOP_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 수신 발송 중 하나라도 발송 다음날~+5일(D+1~D+5) 안에 중단 매칭(FACT_MESSAGE_DISPATCH.D5_STOP_MEMBERS)이 있었는가. 🔴인과가 아니라 시간창 매칭이다. |
+| **D5_INCREASE_FLAG** | `D5_INCREASE_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | D+1~D+5 증액 매칭 여부(D5_INCREASE_PART_MEMBERS). 🔴시간창 매칭. |
+| **D5_STOP_DATE** | `D5_STOP_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | D+1~D+5 안의 첫 중단 사건일(FACT_MEMBER_EVENT STOP). 🔴D5_STOP_FLAG 와 원천이 달라(발송팩트 플래그 ↔ 사건팩트 직접 매칭) 드물게 한쪽만 채워질 수 있다. |
+| **D5_STOP_REASON** | `D5_STOP_REASON` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 첫 중단 사건의 중단사유 라벨. |
+| **D5_STOP_CHANNEL** | `D5_STOP_CHANNEL` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 첫 중단 사건의 중단경로 라벨. |
+| **D5_STOP_SPONSORSHIP** | `D5_STOP_SPONSORSHIP` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 첫 중단 사건이 끊은 후원사업명. |
+| **D5 중단 회원의 후원기간** | `D5_STOP_SPONSOR_DAYS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | D5 중단 회원의 후원기간(일) = 획득일 → D+1~D+5 첫 중단일(O205-B). 🔴중단 사건 원천에는 가입일·후원금액이 없어(구조적 NULL) 획득 코호트 기준으로 계산한다 — 후원금액은 ACQ_SPNSR_AMT 를 쓴다. |
+| **획득일** | `ACQ_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득일(DIM_MEMBER_ACQUISITION.ACQ_DATE_SK). 미수신·수신 모두 획득 코호트 기준. |
+| **ACQ_YEAR** | `ACQ_YEAR` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 연도. |
+| **ACQ_MONTH_KEY** | `ACQ_MONTH_KEY` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 월 YYYYMM. |
+| **획득 캠페인명** | `ACQ_CAMPAIGN_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 캠페인명(획득 시점 동결값). |
+| **ACQ_PARENT_CAMPAIGN_NAME** | `ACQ_PARENT_CAMPAIGN_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 상위캠페인명. 🔴「선넘는좋은일 캠페인 가입」은 이 축(2026_통합_전체사업_선넘는좋은일 …)으로 거른다 — 캠페인명에는 없다. |
+| **획득 캠페인카테고리** | `ACQ_CAMPAIGN_TYPE` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 캠페인카테고리(주요캠페인). |
+| **획득 개발인입경로** | `ACQ_INFLOW_PATH` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 개발인입경로(MM293). |
+| **ACQ_MARKETING_CAMPAIGN** | `ACQ_MARKETING_CAMPAIGN` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 마케팅캠페인명. |
+| **ACQ_BRAND** | `ACQ_BRAND` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 캠페인 브랜드. |
+| **획득 세부캠페인 법인구분** | `ACQ_CPR_DIV_NM` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 세부캠페인 법인구분(CM019 통합/사단/사복). |
+| **획득 후원사업명** | `ACQ_SPONSORSHIP_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 후원사업명(그 회원을 데려온 사업). |
+| **획득 시점 연령대** | `ACQ_AGE_BAND` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 시점 연령대(CM014) — 현재 나이가 아니다. |
+| **획득 시점 지역** | `ACQ_REGION` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 시점 지역(CM018) — 현재 거주지가 아니다. |
+| **ACQ_GENDER** | `ACQ_GENDER` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 시점 성별. |
+| **획득 시점 약정 후원금액** | `ACQ_SPNSR_AMT` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 획득 시점 약정 후원금액(원). |
+| **후원 유지기간** | `TENURE_DAYS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 후원 유지기간(일) = DIM_MEMBER_ACQUISITION.TENURE_DAYS 그대로(정의는 그 컬럼 COMMENT · 이 뷰에서 재계산하지 않는다). |
+| **최초 중단 이력 존재 여부** | `EVER_STOPPED_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 최초 중단 이력 존재 여부(FIRST_STOP_DATE_SK > 0). |
+| **최초 중단사유** | `FIRST_STOP_REASON_NM` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 최초 중단사유(획득 코호트 기준 · D5 중단사유와 다를 수 있다). |
+| **일반행사** | `GENERAL_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 일반행사(EVENT) 참여 기록 행 수(전 기간). 🔴일반행사 「참여」는 다단계 이벤트 단계 기록이다 — 캠페인행사와 합산하지 않는다. |
+| **GENERAL_EVENT_PART_ROWS_AFTER** | `GENERAL_EVENT_PART_ROWS_AFTER` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 첫 수신일 이후 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음). |
+| **캠페인행사** | `CAMPAIGN_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천 날짜가 1970 계열로 깨져 있어 수신 전후 구분을 하지 않는다(O205 실측). |
 
 ---
 

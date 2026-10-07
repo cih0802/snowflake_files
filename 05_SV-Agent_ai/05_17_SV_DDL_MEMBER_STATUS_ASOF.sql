@@ -21,7 +21,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
   DIMENSIONS (
     msh.EFFECTIVE_FROM AS msh.EFFECTIVE_FROM WITH SYNONYMS ('상태 시작일', '유효 시작일') COMMENT = '이 상태가 시작된 날. as-of 조건 = EFFECTIVE_FROM <= 기준일',
     msh.EFFECTIVE_TO AS msh.EFFECTIVE_TO WITH SYNONYMS ('상태 종료일', '유효 종료일') COMMENT = '이 상태가 끝난 날(다음 상태 시작일과 같은 날 · NULL = 현재 상태). 🔴 as-of 조건 = (EFFECTIVE_TO > 기준일 OR EFFECTIVE_TO IS NULL) — 「>=」 를 쓰면 경계일에 회원이 중복된다',
-    msh.IS_CURRENT AS msh.IS_CURRENT WITH SYNONYMS ('현재 상태 여부') COMMENT = '현재 유효 행 여부(회원당 TRUE 1행). 「지금」 질문은 이것으로 거른다',
+    msh.IS_CURRENT AS msh.IS_CURRENT WITH SYNONYMS ('현재 상태 여부') COMMENT = '현재 유효 행 여부(회원당 TRUE 단일 행). 「지금」 질문은 이것으로 거른다',
     msh.MEMBER_STATUS_NAME AS msh.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태', '상태') COMMENT = '회원상태 라벨(MM010). 실제값 13종: ''활동회원''·''후원중단''·''신규미납1~5''·''장기미납1~5''·''(해당없음)''(일시회원). 🔴 이 라벨의 「활동회원」은 월실적 KPI 활동회원(월말 활동 약정 보유)과 정의가 다르다 — 두 수치를 비교·대체하지 않는다',
     msh.MEMBER_STATUS_GROUP AS msh.MEMBER_STATUS_GROUP WITH SYNONYMS ('회원상태 그룹', '상태 그룹') COMMENT = '회원상태 상위 그룹',
     msh.PREV_MEMBER_STATUS_NAME AS msh.PREV_MEMBER_STATUS_NAME WITH SYNONYMS ('직전 회원상태', '이전 상태') COMMENT = '이 상태 직전의 회원상태 라벨(상태 전환 분석용)',

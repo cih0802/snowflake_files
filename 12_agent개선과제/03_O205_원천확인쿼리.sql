@@ -22,13 +22,15 @@ FROM GN_DW.BRONZE_CRM.TM_MS_CRMN
 GROUP BY 1;
 
 -- ── ①-3 GOLD 비교: 같은 행사의 시작일이 GOLD 에서 1970 이 됐는가 ───────────────────
---   DIM_EVENT 가 'YYYYMMDD' 문자열을 형식 없이 DATE 로 넣어 epoch 초로 해석됐다 → O205 에서 DIM_EVENT.sql 수정(dbt build 필요)
+--   DIM_EVENT 가 'YYYYMMDD' 문자열을 형식 없이 DATE 로 넣어 epoch 초로 해석됐다 → O205-B 에서 DIM_EVENT.sql 교정
+--   🟢 dbt build 후 실측(2026-10-07) = 2009-02-28 ~ 2026-10-16 · FACT_EVENT_ATTENDANCE 1970 계열 0행
 SELECT EVENT_KIND, COUNT(*) AS n, MIN(EVENT_START_DATE) AS min_d, MAX(EVENT_START_DATE) AS max_d
 FROM GN_DW.GOLD.DIM_EVENT
 GROUP BY 1;
 
 -- ── ②-1 장기회원 알림톡(제목 기준) 월별 발송·수신 회원 ─────────────────────────────
---   O205 실측: 2025 = 9월 41,789명 · 10월 30,551명에 집중 · 2026 = 9월까지 그 규모 발송 없음
+--   O205 실측: 2025 = 9월 41,789명 · 10월 30,551명에 집중 · 2026 은 「장기회원」 제목으로는 소량뿐
+--   🔴 [O205-B] 2026-08 대량 발송은 제목에서 「장기회원」이 빠졌다(②-2 참조) — 이 쿼리만으로 「급감」이라 판정하지 마라
 SELECT LEFT(m.SNDNG_STDR_DE, 7)              AS ym,
        COUNT(DISTINCT m.SNDNG_KEY)           AS send_requests,
        COUNT(DISTINCT d.MBER_NO)             AS recipients,

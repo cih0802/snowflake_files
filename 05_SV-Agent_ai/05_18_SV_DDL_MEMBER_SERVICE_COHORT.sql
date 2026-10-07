@@ -66,8 +66,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
       WITH SYNONYMS ('5일 내 중단 회원수')
       COMMENT = 'D+1~D+5 중단 매칭 고유 회원수(시간창 매칭 · 인과 아님).',
     svc.AVG_TENURE_DAYS AS AVG(svc.TENURE_DAYS)
-      WITH SYNONYMS ('평균 후원유지기간', '평균 유지기간(일)')
-      COMMENT = '평균 후원 유지기간(일). 🔴 수신연도를 고정한 상태에서 쓴다.',
+      WITH SYNONYMS ('이탈 회원 평균 유지기간', '중단 회원 평균 유지일수')
+      COMMENT = '🔴 **이탈(최초 중단)한 회원만**의 평균 유지기간(일) = 최초 중단일 − 획득일(SV_MEMBER_COHORT 와 같은 정의 · O205-C). 미중단 회원은 NULL 이라 빠진다 ⇒ 「수신회원 평균 후원유지기간」으로 쓰지 않는다 — 그 질문은 AVG_SPONSOR_DAYS_TO_DATE 를 쓴다. 🔴 수신연도를 고정한 상태에서 쓴다.',
+    svc.AVG_SPONSOR_DAYS_TO_DATE AS AVG(COALESCE(svc.TENURE_DAYS, DATEDIFF('day', svc.ACQ_DATE, CURRENT_DATE())))
+      WITH SYNONYMS ('평균 후원유지기간', '평균 유지기간(일)', '평균 후원기간')
+      COMMENT = '🆕 [O205-C] 수신회원 평균 후원유지기간(일) — 중단 회원은 획득일 → 최초 중단일, 미중단 회원은 획득일 → 오늘. 「후원유지기간」 질문의 기본 지표다. ⚠️ 미중단 회원은 아직 진행 중인 기간이라 관측 시점에 따라 값이 늘어난다(조회일을 밝힌다). 🔴 수신연도를 고정한 상태에서 쓴다.',
+    svc.EVER_STOPPED_RATE AS DIV0(COUNT(DISTINCT IFF(svc.EVER_STOPPED_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT svc.MEMBER_DK)) * 100
+      WITH SYNONYMS ('중단 이력 비율', '누적 중단 비율')
+      COMMENT = '🆕 [O205-C] 최초 중단 이력이 있는 회원 비율(%) · 관측 기간 무보정 누적값 — 캠페인별 이탈률 정본(12개월 고정)은 SV_MEMBER_COHORT 다. N(비가산).',
     svc.AVG_ACQ_SPNSR_AMT AS AVG(svc.ACQ_SPNSR_AMT)
       WITH SYNONYMS ('평균 후원금액', '평균 약정금액')
       COMMENT = '획득 시점 평균 약정 후원금액(원).',
@@ -76,7 +82,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
       COMMENT = 'D5 중단 회원의 평균 후원기간(일 · 획득일 → D5 중단일 · O205-B). 🔴 중단 사건 원천에는 후원금액이 없다 — 중단 회원의 후원금액은 AVG_ACQ_SPNSR_AMT(획득 시점 약정금액)로 답하고 그 전제를 밝힌다.'
   )
   COMMENT = '서비스 수신 코호트 SV(🆕 O205). 「서비스 수신/미수신 회원의 이벤트 참여율 비교」·「발송 후 5일 이내 중단한 회원의 가입캠페인·중단사유·후원금액·연령대·후원사업·후원기간」·「연도별 수신회원 유지기간·참여횟수」에 쓴다. 🔴 수신·미수신 차이는 인과(서비스 효과)가 아니다.'
-  AI_SQL_GENERATION '핵심 규칙: (1) 반드시 svc.SERVICE_GROUP_CD 를 하나로 고정한다. (2) 연도별 질문은 svc.RECEIVE_YEAR 로 고정하고, 수신/미수신 비교는 svc.RECEIVED_FLAG 로 나눈다(미수신은 RECEIVE_YEAR 가 NULL 이므로 연도 조건을 걸면 사라진다 — 미수신 비교가 필요하면 연도 조건을 RECEIVED_FLAG = TRUE 쪽에만 건다). (3) 회원수·참여율은 반드시 COUNT(DISTINCT svc.MEMBER_DK) 기반 지표를 쓴다. (4) 「선넘는좋은일 캠페인으로 가입」은 svc.ACQ_PARENT_CAMPAIGN_NAME ILIKE ''%선넘는좋은일%'', 가입기간은 svc.ACQ_DATE 로 거른다. (5) 「온라인 이벤트」 = 일반행사 지표, 「문화이벤트」 = 캠페인행사 지표로 답하되 그 매핑이 현업 확인 대기임을 밝힌다. (6) 「효과가 높다/낮다」를 인과로 단정하지 않는다 — 지표 차이로만 표현한다. (7) 「오픈」 조건은 이 SV 에 없다(알림톡 오픈 원천 부재) — 수신 기준으로 답하고 그 사실을 밝힌다. (8) 🔴 「수신 회원」·「발송 후 5일 내 중단」·「수신회원 유지기간·참여횟수」 질문은 반드시 svc.RECEIVED_FLAG = TRUE 로 거른다 — 거르지 않으면 미수신(획득 코호트 전체) 회원이 모수에 섞인다. 수신 회원수를 말할 때는 이 조건을 건 값만 쓴다. (9) 장기회원 서비스의 법인(사단·사복)은 제목 접두로만 드러나고 이 SV 에는 제목 법인 축이 없다(2025·2026 제목에는 「사단」 표기가 없고 「사복」 또는 표기 없음만 있다) — 「(사단)」을 물으면 서비스그룹 전체(법인 구분 없음)로 답하고 그 한계를 밝힌다. 획득 세부캠페인 법인구분(svc.ACQ_CPR_DIV_NM)은 발송 법인과 다른 축이므로 대신 쓰지 않는다.'
+  AI_SQL_GENERATION '핵심 규칙: (1) 반드시 svc.SERVICE_GROUP_CD 를 하나로 고정한다. (2) 연도별 질문은 svc.RECEIVE_YEAR 로 고정하고, 수신/미수신 비교는 svc.RECEIVED_FLAG 로 나눈다(미수신은 RECEIVE_YEAR 가 NULL 이므로 연도 조건을 걸면 사라진다 — 미수신 비교가 필요하면 연도 조건을 RECEIVED_FLAG = TRUE 쪽에만 건다). (3) 회원수·참여율은 반드시 COUNT(DISTINCT svc.MEMBER_DK) 기반 지표를 쓴다. (4) 「선넘는좋은일 캠페인으로 가입」은 svc.ACQ_PARENT_CAMPAIGN_NAME ILIKE ''%선넘는좋은일%'', 가입기간은 svc.ACQ_DATE 로 거른다. (5) 「온라인 이벤트」 = 일반행사 지표, 「문화이벤트」 = 캠페인행사 지표로 답하되 그 매핑이 현업 확인 대기임을 밝힌다. (6) 「효과가 높다/낮다」를 인과로 단정하지 않는다 — 지표 차이로만 표현한다. (7) 「오픈」 조건은 이 SV 에 없다(알림톡 오픈 원천 부재) — 수신 기준으로 답하고 그 사실을 밝힌다. (8) 🔴 「수신 회원」·「발송 후 5일 내 중단」·「수신회원 유지기간·참여횟수」 질문은 반드시 svc.RECEIVED_FLAG = TRUE 로 거른다 — 거르지 않으면 미수신(획득 코호트 전체) 회원이 모수에 섞인다. 수신 회원수를 말할 때는 이 조건을 건 값만 쓴다. (9) 장기회원 서비스의 법인(사단·사복)은 제목 접두로만 드러나고 이 SV 에는 제목 법인 축이 없다(2025·2026 제목에는 「사단」 표기가 없고 「사복」 또는 표기 없음만 있다) — 「(사단)」을 물으면 서비스그룹 전체(법인 구분 없음)로 답하고 그 한계를 밝힌다. 획득 세부캠페인 법인구분(svc.ACQ_CPR_DIV_NM)은 발송 법인과 다른 축이므로 대신 쓰지 않는다. (10) 「후원유지기간」은 AVG_SPONSOR_DAYS_TO_DATE 로 답한다 — AVG_TENURE_DAYS 는 이탈 회원만의 평균이다. (11) 연도 간 지표가 달라진 원인(구성 변화 등)을 말하려면 그 분해(연령대·가입연도 등)를 실제로 조회해 보여준 뒤에만 말하고, 조회하지 않은 원인을 단정하지 않는다.'
   AI_VERIFIED_QUERIES (
     vqr_o205_sng_part AS (
       QUESTION '선넘는좋은일 캠페인으로 2026년 1월부터 9월까지 가입한 회원 중 선넘는좋은일 즉시 알림톡 수신/미수신 회원의 온라인 이벤트·문화이벤트 참여율 비교'

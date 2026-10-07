@@ -114,6 +114,7 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_BUDGET_YEARLY'),        -- 🆕 2026-10-06 O203 T8 2차 (05_16)
     ('AGENT_EXECUTIVE', 'SV_BUDGET_YEARLY'),        -- 🆕 2026-10-06 O203 T8 2차 (05_16)
     ('AGENT_MEMBER',    'SV_MEMBER_STATUS_ASOF'),   -- 🆕 2026-10-06 O203 T8 2차 (05_17)
+    ('AGENT_MEMBER',    'SV_MEMBER_SERVICE_COHORT'),-- 🆕 2026-10-07 O205 2차 Agent 개선 (05_18)
     ('AGENT_MSTR',      'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O200-C] 4번째 Agent(최초 배포 = 24_MSTR_AGENT_배포.sql)
   AS t(AGENT_NAME, SV_NAME)
 )

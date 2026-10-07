@@ -262,6 +262,20 @@ VIEW_META = {
         'grain': '월(MONTH_KEY) × 신규기존(NEW_EXISTING_FLAG)',
         'base': 'GOLD.FACT_MEMBER_MONTHLY (월 합산) + GOLD.FACT_MEMBER_EVENT (개발 금액 월 합산)',
         'joins': ['LEFT JOIN 개발 금액 월 합산(d) ON 월 · 신규기존']
+    },
+    # 🆕 [O205] 서비스 수신 코호트 — 발송·획득·중단·행사참여 회원 단위 사전 결합(SV_MEMBER_SERVICE_COHORT base)
+    'WIDE_MEMBER_SERVICE_COHORT': {
+        'num': '19',
+        'title': '서비스 수신 코호트 뷰 (Member Service Receipt Cohort Mart)',
+        'purpose': '서비스그룹(발송 제목 부분일치 임시 규칙) 수신/미수신 회원의 획득 속성·D5 중단·행사 참여를 회원 단위로 미리 결합 — SV 교차결합 없이 수신/미수신 비교 질문에 답한다(인과 아님)',
+        'grain': '회원 × 서비스그룹 × 수신연도 (미수신 = 획득 코호트 회원 · 수신연도 NULL 단일 행)',
+        'base': 'GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹',
+        'joins': [
+            'LEFT JOIN D5 첫 중단(FACT_MEMBER_EVENT STOP · D+1~D+5) ON 회원 · 서비스그룹 · 수신연도',
+            'LEFT JOIN DIM_MEMBER_ACQUISITION ON MEMBER_DK',
+            'LEFT JOIN DIM_DATE(획득일) ON ACQ_DATE_SK',
+            'LEFT JOIN 행사 참여 집계(FACT_EVENT_ATTENDANCE) ON 회원 · 서비스그룹 · 수신연도',
+        ]
     }
 }
 

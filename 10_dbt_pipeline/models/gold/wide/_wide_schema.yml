@@ -1407,4 +1407,4 @@ models:
       - name: GENERAL_EVENT_PART_ROWS_AFTER
         description: "첫 수신일 이후 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음)."
       - name: CAMPAIGN_EVENT_PART_ROWS
-        description: "캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천 날짜가 1970 계열로 깨져 있어 수신 전후 구분을 하지 않는다(O205 실측)."
+        description: "캠페인행사(CRMN) 참여 기록 행 수(전 기간). ⚠️원천에 참여일이 없어(FEA 날짜 = 행사 시작일) 수신 전후 구분을 하지 않는다(O205-B)."

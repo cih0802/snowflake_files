@@ -21,7 +21,8 @@
 --   · 한 제목이 여러 패턴에 맞으면 여러 그룹에 모두 들어간다(그룹 간 합산 금지).
 --
 -- 🔴 「효과」는 이 뷰가 정의하지 않는다 — 수신·미수신 비교는 단순 차이이며 인과가 아니다(대조군 규칙 현업 대기).
--- ⚠️ 캠페인행사(CRMN) 참여는 FEA.DATE_SK 가 1970 계열로 깨져 있어(O205 실측) 날짜 조건 없이 총계만 싣는다.
+-- ⚠️ 캠페인행사(CRMN) 참여는 원천에 참여일이 없어(PARTCPT_DATE 전건 NULL) FEA 날짜가 행사 시작일이다
+--   (종전 1970 계열은 DIM_EVENT 변환 결함이었고 O205-B 에서 교정됐다) ⇒ 수신 전후 구분 없이 총계만 싣는다.
 -- 🔴 컬럼 COMMENT 정본 = `_wide_schema.yml` columns[] — SELECT 컬럼 추가·순서 변경 시 함께 고친다(gn_view_commented).
 {{ config(
     materialized='gn_view_commented',
