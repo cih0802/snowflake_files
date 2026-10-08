@@ -20,6 +20,8 @@ FILES = {
     "SV_MEMBER_STATUS_ASOF": "05_17_SV_DDL_MEMBER_STATUS_ASOF.sql",
     "SV_GA_BEHAVIOR": "05_15_SV_DDL_GA_BEHAVIOR.sql",
     "SV_AD": "05_7_SV_DDL_AD.sql",
+    "SV_BUDGET": "05_6_SV_DDL_BUDGET.sql",
+    "SV_BUDGET_YEARLY": "05_16_SV_DDL_BUDGET_YEARLY.sql",
 }
 DIR = "/workspace/05_SV-Agent_ai/"
 

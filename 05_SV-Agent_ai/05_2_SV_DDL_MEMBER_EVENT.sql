@@ -124,7 +124,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL',
     fme.MKTG_CHANNEL_NM_AT_EVENT AS fme.MKTG_CHANNEL_NM_AT_EVENT
       WITH SYNONYMS ('마케팅채널', '마케팅 채널', '캠페인 채널')
-      COMMENT = '🆕 [O213] 마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 캠페인 37,204 중 5,211 · 2026-10-08 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
+      COMMENT = '🆕 [O213] 마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
     member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME
       WITH SYNONYMS ('가입경로', '회원 가입경로')
       COMMENT = '🆕 [O213] 회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음). 🔴 개발인입경로(캠페인 모집채널)와 다른 축이다.',

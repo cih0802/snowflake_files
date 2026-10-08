@@ -190,3 +190,18 @@ sources:
       - name: DGT_AD_CMPGN_DTLS             # 디지털 광고 → AGENCY_AD_PERFORMANCE/CREATIVE
       - name: REBRDC_AD_CMPGN_DTLS          # 재방송 광고 → AGENCY_AD_PERFORMANCE/CREATIVE
       - name: VIDEO_AD_CMPGN_DTLS           # 영상 광고 → AGENCY_AD_PERFORMANCE/CREATIVE
+
+  # 🆕 [2026-10-08 O213-F Y3-F] GA4 인구통계 · 서치콘솔 — 종전 소비 모델 0(SILVER·GOLD·MSTR 전무 실측).
+  - name: bronze_ga4
+    database: GN_DW
+    schema: BRONZE_GA4
+    description: "GA4 Data API 일 집계(외부 적재). 전 컬럼 TEXT."
+    tables:
+      - name: GA4_USER_DEMOGRAPHIC          # 일×기기×성별×연령 집계 → GA4_USER_DEMOGRAPHIC(SILVER)
+  - name: bronze_gsc
+    database: GN_DW
+    schema: BRONZE_GSC
+    description: "Google Search Console 일×검색어×페이지×국가×기기 집계(byPage)."
+    tables:
+      - name: SEARCH_CONSOLE_DATA           # 정본 → SEARCH_CONSOLE(SILVER)
+      # 🔴 SEARCH_CONSOLE_DATA2 는 선언하지 않는다 — 2026-09-08 까지 DATA 와 941,298행 전건 일치(5키+지표 INTERSECT 실측) · 기간만 짧은 복사본.

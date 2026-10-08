@@ -295,6 +295,18 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 * ⚠️ **중복 보유의 대가**: 같은 SV 의 도구 설명을 고칠 때 **Agent 3종을 함께 고쳐야 한다**(자동 전파 없음).
   이것이 사용자 결정(중복 허용)의 알려진 비용이며 §7 잔여 ② 로 등재한다.
 
+### 4.1 🆕 7차 추가 도구 (O213-Y4 · 2026-10-08 · VERSION$7 · 현행 도구 목록 정본 = 스펙 파일)
+
+| 도구명 | Semantic View | 질문 범위 | 다른 Agent 중복 |
+|---|---|---|---|
+| `analyst_ga_session` | `SV_GA_SESSION`(05_20) | 회원유형·후원자유형·국가·기기·브라우저·사이트·유입채널별 방문(세션)·방문자 | 없음(MARKETING 전용) |
+| `analyst_search_console` | `SV_SEARCH_CONSOLE`(05_21) | 구글 검색어·노출·클릭·클릭률·평균순위 | 없음 |
+| `analyst_ga_demographic` | `SV_GA_DEMOGRAPHIC`(05_22) | 성별·연령대별 방문(GA4 추정값) | 없음 |
+| `analyst_expense_resolution` | `SV_EXPENSE_RESOLUTION`(05_23) | 부서별·과목별·재원별 지출결의 | `AGENT_EXECUTIVE` |
+
+- 🟢 「같은 SV = 같은 주장」(P212): 기존 공유 도구(ad·budget·budget_yearly·member_event·member_cohort·member_sponsor_biz)의 7차 보강 문장은 **SV 단위로 한 문장을 3종에 동일 적용**했다(`tmp/o213_y4_agent_patch.py` EXT 표).
+- 🔴 신규 교차 금지 = ga_session ↔ ga_behavior(grain) · GA ↔ 서치콘솔 ↔ 인구통계(원천·모수) · 지출결의 ↔ 예산(원천·범위).
+
 ---
 
 ## 5. 라우팅·가드 규칙 (instructions 설계)

@@ -78,6 +78,22 @@ END-METADATA -->
 - 전사 회비/납입/개발·중단 월 실적 요약 → `analyst_member_monthly`
 - 전사 발송 규모 요약 → `analyst_service`
 
+### 1.2 🆕 7차 배선 (O213-Y4 · 2026-10-08 · nj58180 · VERSION$7)
+
+> 위 §1·§1.1 은 Phase-1 기록이다(도구 4종 시점). **현행 도구 목록의 정본은 스펙 파일**이고, 아래는 7차가 바꾼 것만 적는다.
+
+| Agent | 신규 도구(SV) | 기존 도구 설명 보강(신규 축) |
+|---|---|---|
+| MEMBER | `analyst_payment_billing_status`→SV_PAYMENT_BILLING_STATUS | member_monthly·member_event·member_cohort·member_sponsor_biz·member_status_asof(회원 속성·가입경로·마케팅채널) · service(발송 카테고리·메시지 구분·우편 처리상태·발송 시점 스냅샷·수신동의) · relation_activity(결연 중단·중단사유·정산은행) · event_participation(참여신청 사용여부) |
+| EXECUTIVE | `analyst_expense_resolution`→SV_EXPENSE_RESOLUTION · `analyst_payment_billing_status` | ad(매체·소재·예산출처·캠페인유형·CM·국내해외 등) · budget·budget_yearly(장·관·항·재원) · service · member_monthly |
+| MARKETING | `analyst_ga_session`→SV_GA_SESSION · `analyst_search_console`→SV_SEARCH_CONSOLE · `analyst_ga_demographic`→SV_GA_DEMOGRAPHIC · `analyst_expense_resolution` | ad · budget·budget_yearly · ga_behavior(세션 질문은 ga_session 으로) · member_event·member_cohort·member_sponsor_biz |
+
+- 라우팅 = 각 스펙 `orchestration` 말미 「🆕 [O213 7차] 신규 축·도구 라우팅」 블록 · 추천 질문 +3·+3·+4.
+- 🔴 신규 교차 금지: 지출결의 ↔ 예산(원천·범위 상이) · GA 세션 ↔ GA 행동(grain 상이) · GA 세션 ↔ 서치콘솔 ↔ GA 인구통계(원천·모수 상이) · 회비 청구 처리 ↔ 회원 단위 회비(grain 상이).
+- 배포 = `09_2` [0] 0행 → [0-B] 복사 → [0-C] 3종 OK → [2] no_live → [3] → **VERSION$7 default · 도구 22·12·20 = 스펙** · grant 4행 보존 · COMMENT = `09_1` [1]·[5] 동시 갱신 후 [5] 실행.
+- NL 스모크(DATA_AGENT_RUN · GN_DW_ANALYST · 10문항) = **최종 결과 10/10** · 기대 도구 라우팅 10/10(편성액 질문은 budget_yearly 선택 = 정상) · 직접 조회 수치 일치(청구 922,963건 · 클릭 3,633 · 성별 추정불가 998,835 · 개인 후원자 세션 992). ⚠️ 3건은 Analyst 1차 SQL 컴파일 오류(지표명을 컬럼처럼 사용 · CTE 미선택 컬럼) 후 **자가 재시도로 성공** — SV 결함 아님(직접 조회 정상) · 응답 지연 요인.
+- 롤백 = `ALTER AGENT … SET DEFAULT_VERSION = 'VERSION$6'`(3종 공통).
+
 ---
 
 ## 2. custom instruction 반영 매핑 (06 §4 / 07 §6 → Agent instructions)

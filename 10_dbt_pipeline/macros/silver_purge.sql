@@ -32,7 +32,7 @@
         그쪽도 여기와 동일한 「모델명을 문자열로 아는 유일한 지점」 위험을 갖는다.
 #}
 {% macro silver_purge(relation) %}
-  {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC'] -%}
+  {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC', 'BIGQUERY_SESSION'] -%}  {#- 🆕 O213-F BIGQUERY_SESSION(EVENT_DT 보유 · 일자 내 폐쇄) -#}
   {%- if relation.identifier | upper in RANGED_MODELS -%}
     {{ bigquery_range_purge(relation) }}
   {%- else -%}

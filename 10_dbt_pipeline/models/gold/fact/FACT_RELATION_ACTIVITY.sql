@@ -22,6 +22,10 @@ select
     -- 결연활동 12 (SILVER 2차-B · 서신 계열 5 · 선물금 계열 7 · 미답신사유는 양쪽 원천 · 비해당 NULL)
     a.LETTER_STAT_CD, a.LANG_CD, a.ONLINE_POST_WRITNG_YN, a.ONLINE_INFLOW_CD, a.UNREPLY_RSN_CD,
     a.MBRFEE_KEY, a.SETLE_DE, a.SETLE_CD, a.GFT_DIV_CD, a.GFTMNEY_DOLLAR_AMT, a.APRV_DE, a.TRNSFER_YN,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [2026-10-08 O213-F Y3-J] 선물금 정산은행 — 코드군 PM039(자동이체 은행코드 · 커버리지 143,866/144,232 실측) · 서신 행 NULL(개념 없음)
+    a.SETLE_BANK_CD,
+    bk.DTL_CD_NM                               as SETLE_BANK_NAME
 from {{ ref('CRM_RELATION_ACTIVITY') }} a
 left join rel r on r.RELATNSP_KEY = a.RELATNSP_KEY
+left join {{ ref('CRM_CODE') }} bk on bk.CD_ID = 'PM039' and bk.DTL_CD_ID = a.SETLE_BANK_CD

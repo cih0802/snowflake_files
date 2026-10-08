@@ -32,6 +32,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 | `AGENT_OVERALL.agent_DUPLICATE_20260804.yaml` | 🟢 `agents/AGENT_OVERALL/agent_spec.yaml` 과 **byte-identical** 중복이었다 — 내용 손실 없음. |
 | `AGENT_MEMBER.agent_STALE_20260821.yaml` | 🔴 **동일 결함 재발(2회차)**. `cortex_agent_write` 를 `file_path` 없이 호출해 루트에 `AGENT_MEMBER.agent.yaml` 이 또 생겼다(도구 10개 → 신규 SV_MEMBER_SPONSOR_BIZ 도구 추가분 11개가 정본에 반영 안 된 상태). 정본을 이 파일로 교체하면 `analyst_member_sponsor_biz` 도구가 소실된다. |
 | `AGENT_MARKETING.agent_STALE_20260821.yaml` | 🔴 위와 동일 사유(도구 6개 → 7개 누락분). |
+| `AGENT_GUIDE.agent_spec_RETIRED_20261008.yaml` | 🟢 **은퇴 보존(O213-I · 사용자 지시 「보존 이관」)**. 원 경로 `agents/AGENT_GUIDE/agent_spec.yaml` · sha256 `5ef7df03…` byte-identical 복사 후 원본 폴더 제거. 객체 `SERVING.AGENT_GUIDE` 는 O212-B 에서 DROP(6차 「4차 상태 롤백」) · 도구 0(가이드 라우팅 지시문만). 🔴 폴더가 남아 `agent_object_ref_gate` FAIL·`09_2 [0-C]` MISSING 을 냈다 → 이관으로 해소. 재사용 시 `agents/AGENT_GUIDE/agent_spec.yaml` 로 되돌리고 `09_1` 로 객체부터 만든다. |
 
 ## 2026-08-21 재발 경위 (O38 과 동일 결함)
 

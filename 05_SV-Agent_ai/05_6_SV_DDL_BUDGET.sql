@@ -36,7 +36,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     item.BDGT_UNIT_NM AS item.BDGT_UNIT_NM WITH SYNONYMS ('예산단위', '예산 팀', '예산 부서', '예산단위명')
       COMMENT = '예산단위명(ERP 표기 그대로 · 세세목 1:1 · O198 DEC-60). 실측 값 6종 = 데이터분석센터 · 마케팅기획1팀 · 마케팅기획2팀 · 매체운영팀 · 사회복지법인예산 · 콘텐츠기획팀. 🔴 CRM 조직(DIM_ORG)과 다른 체계다 — 부서·팀 이름이 CRM 조직명과 같아 보여도 같은 조직으로 단정하지 말 것. 🔴 목록에 없는 팀(예: 「컬쳐콘텐츠팀」)을 물으면 0 으로 답하지 말고 「현재 데이터에서 조회되지 않고 <조회되는 유사 예산단위>가 조회된다」고 밝힌 뒤 그 예산단위의 수치를 제시한다(같은 조직이라 단정하지 않는다 · 유사 항목이 없으면 위 6종을 제시).',
     fbd.DVLP_INBOUND_PATH AS fbd.DVLP_INBOUND_PATH WITH SYNONYMS ('개발인입경로', '개발 유입경로', '인입경로', '유입경로', '개발경로')
-      COMMENT = '개발 유입경로(ERP 원장 그대로 · O198 DEC-60). 실측 값 7종 = 디지털 · 방송 · 재송출 · 영상광고 · 뉴미디어 · 모금시스템 · 콜개발. 🔴 NULL = 원장에 경로가 기재되지 않은 예산(대부분 집행 0) — 「미분류」 같은 이름을 지어내지 말고 「경로 미기재」로 표기한다. 🔴 CRM 회원 가입경로(JOIN_PATH)와 다른 축이다.'
+      COMMENT = '개발 유입경로(ERP 원장 그대로 · O198 DEC-60). 실측 값 7종 = 디지털 · 방송 · 재송출 · 영상광고 · 뉴미디어 · 모금시스템 · 콜개발. 🔴 NULL = 원장에 경로가 기재되지 않은 예산(대부분 집행 0) — 「미분류」 같은 이름을 지어내지 말고 「경로 미기재」로 표기한다. 🔴 CRM 회원 가입경로(JOIN_PATH)와 다른 축이다.',
+    item.ITEM_JANG_NM AS item.JANG_NM WITH SYNONYMS ('장', '예산 장') COMMENT = '🆕 [O213-F] 예산 과목 계층 최상위 「장」(원값 4종 · ERP 원장). 장 > 관 > 항 > 목 > 세목 > 세세목 순으로 좁아진다.',
+    item.ITEM_KWAN_NM AS item.KWAN_NM WITH SYNONYMS ('관', '예산 관') COMMENT = '🆕 [O213-F] 예산 과목 계층 「관」(원값 6종).',
+    item.ITEM_HANG_NM AS item.HANG_NM WITH SYNONYMS ('항', '예산 항') COMMENT = '🆕 [O213-F] 예산 과목 계층 「항」(원값 9종).',
+    item.ITEM_FUND_SOURCE_NM AS item.FUND_SOURCE_NM WITH SYNONYMS ('재원', '예산 재원') COMMENT = '🆕 [O213-F] 예산 재원명(원값 8종 · ERP 원장).'
   )
   METRICS (
     fbd.TOTAL_PLAN_BUDGET AS SUM(fbd.PLAN_BUDGET_MONTH)

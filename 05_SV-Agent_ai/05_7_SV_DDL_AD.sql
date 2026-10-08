@@ -74,7 +74,37 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = '🆕 [O213] CTV구분(TV·CTV·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL.',
     ad.DAY_DIV AS ad.DAY_DIV
       WITH SYNONYMS ('요일구분', '주중/주말')
-      COMMENT = '🆕 [O213] 요일구분(주중·토·일) — 🔴 VIDEO 전용 · 디지털행은 NULL.'
+      COMMENT = '🆕 [O213] 요일구분(주중·토·일) — 🔴 VIDEO 전용 · 디지털행은 NULL.',
+    ad.MEDIA_CHANNEL_NM AS ad.MEDIA_CHANNEL_NM
+      WITH SYNONYMS ('매체', '매체명', '광고 매체', '매체별')
+      COMMENT = '🆕 [O213-F] 매체/채널명 원값(YOUTUBE·META·NBRAND·EBS·GDN·MMT 등) — 디지털·영상·재방송 3원천 공통. 「매체별 광고비·성과」 질문의 1순위 축. ⚠️방송 채널사만 보려면 CHANNEL_COMPANY.',
+    ad.CREATIVE_NM AS ad.CREATIVE_NM
+      WITH SYNONYMS ('소재명', '광고 소재', '소재')
+      COMMENT = '🆕 [O213-F] 소재명(디지털 MATR · 영상 MATR_NM · 재방송은 방송명). 원천별 의미가 달라 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프한다.',
+    ad.COST_TYPE AS ad.COST_TYPE
+      WITH SYNONYMS ('비용유형', '광고비 산정 기준')
+      COMMENT = '🆕 [O213-F] 비용유형 GA(디지털)·집행(영상)·편성(재방송) 3값 — 광고비 산정 기준이 원천별로 다르다는 표시(AD_SOURCE_TYPE 과 사실상 1:1).',
+    ad.BDGT_SOURCE_NM AS ad.BDGT_SOURCE_NM
+      WITH SYNONYMS ('예산출처', '법인(사단/사복)', '예산 법인')
+      COMMENT = '🆕 [O213-F] 예산출처 사단·사복·통합 원값(디지털·영상). 🔴재방송은 원천 개념 없음 = NULL(결측 아님).',
+    ad.MATR_TY_NM AS ad.MATR_TY_NM
+      WITH SYNONYMS ('소재유형(디지털·영상)', '영상/이미지')
+      COMMENT = '🆕 [O213-F] 소재유형 원값(영상·이미지 등 · 디지털·영상). 재방송 NULL(원천 부재). ⚠️CREATIVE_TYPE 은 디지털 전용 같은 원천값 — 영상까지 보려면 이 축.',
+    ad.CMPGN_TYPE_BSN_NM AS ad.CMPGN_TYPE_BSN_NM
+      WITH SYNONYMS ('캠페인유형', '사업유형', '국내/해외 사례')
+      COMMENT = '🆕 [O213-F] 캠페인유형(사업) 원값 6종: 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 [디지털 전용 · 방송 NULL].',
+    ad.UTM_CMPGN_NM AS ad.UTM_CMPGN_NM
+      WITH SYNONYMS ('UTM 캠페인', 'UTM 태그')
+      COMMENT = '🆕 [O213-F] UTM 캠페인 태그 원값(turn24b·children2406 등) [디지털 전용].',
+    ad.BSNS_CASE_DIV_NM AS ad.BSNS_CASE_DIV_NM
+      WITH SYNONYMS ('사업/사례 구분', '영상 소재 구분')
+      COMMENT = '🆕 [O213-F] 사업/사례 구분 원값 사례·굿즈·사업·기타 [영상 전용 · 그 밖 NULL].',
+    ad.CM AS ad.CM
+      WITH SYNONYMS ('CM 구분', '전CM/중CM/후CM')
+      COMMENT = '🆕 [O213-F] CM 구분 원값 전CM·중CM·후CM·전SPOT CM·후SPOT CM [영상 전용]. ⚠️CM_POSITION(CM 위치)과 다른 원천 컬럼.',
+    ad.DMST_OVSEA_DIV_NM AS ad.DMST_OVSEA_DIV_NM
+      WITH SYNONYMS ('국내/해외', '국내해외 구분')
+      COMMENT = '🆕 [O213-F] 국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL].'
   )
   METRICS (
     ad.TOTAL_AD_COST   AS SUM(ad.AD_COST)

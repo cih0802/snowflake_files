@@ -888,6 +888,16 @@ END-METADATA -->
 | **DVLP_CNT** | `DVLP_CNT` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | 개발건수 ← REBRDC.DVLP_CNT [VIDEO·REBRDC · O184 정정: VIDEO 도 O182 원천 재편 후 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
 | **BRDC_AD_VIEW_RT_SRC** | `BRDC_AD_VIEW_RT_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | [비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것. |
 | **CPC_CALL_SRC** | `CPC_CALL_SRC` | NUMBER | YES | GOLD.FACT_AD_BROADCAST | [비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용] — 🔴 [O174] 종전 이름 BRDC_CPC_SRC 는 접두로만 구분해 **같은 지표의 다른 출처**로 읽혔다(실제로는 분모가 클릭 ↔ 콜로 다르다). DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것. |
+| **매체/채널명** | `MEDIA_CHANNEL_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 매체/채널명(YOUTUBE·META·NBRAND·EBS·GDN 등 원값) ← 성과 원천 3종 공통(DGT MEDIA_NM · VIDEO/REBRDC CHNNL_NM). 「매체별 광고비·성과」의 1순위 축. |
+| **CREATIVE_NM** | `CREATIVE_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 소재명 ← DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM(재방송은 방송명). 원천별 의미가 조금씩 다르다 — 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. |
+| **비용유형 GA** | `COST_TYPE` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 비용유형 GA(디지털)·집행(영상)·편성(재방송) — 광고비 산정 기준이 원천별로 다르다는 표시. 사실상 AD_SOURCE_TYPE 과 1:1. |
+| **예산출처** | `BDGT_SOURCE_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 예산출처(사단·사복·통합 원값) ← DGT·VIDEO.BDGT_SOURCE_NM. 🔴재방송(REBRDC) 원천에는 개념이 없어 NULL(결측 아님). |
+| **소재유형** | `MATR_TY_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 소재유형(영상·이미지 등 원값) ← DGT·VIDEO.MATR_TY_NM. 재방송 NULL(원천 부재). ⚠️디지털 위성 CREATIVE_TYPE 과 디지털 행에서는 같은 원천값이다. |
+| **캠페인유형** | `CMPGN_TYPE_BSN_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 캠페인유형(사업 · 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 원값) ← DGT.CMPGN_TYPE_BSN_NM [DGT 전용 · 방송행 NULL = 원천 부재]. |
+| **UTM 캠페인 태그** | `UTM_CMPGN_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | UTM 캠페인 태그(turn24b·children2406 등 원값) ← DGT.UTM_CMPGN_NM [DGT 전용]. GA4 유입 캠페인(UTM)과 대조할 때 쓰는 연결 키 후보(조인 미검증). |
+| **사업/사례 구분** | `BSNS_CASE_DIV_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 사업/사례 구분(사례·굿즈·사업·기타 원값) ← VIDEO.BSNS_CASE_DIV_NM [VIDEO 전용 · 그 밖 NULL = 원천 부재]. |
+| **CM 구분** | `CM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | CM 구분(전CM·중CM·후CM·전SPOT CM·후SPOT CM 원값) ← VIDEO.CM [VIDEO 전용]. ⚠️CM_POSITION(CM 위치 ← CM_AREA)과 다른 원천 컬럼이다. |
+| **국내/해외 구분** | `DMST_OVSEA_DIV_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 국내/해외 구분(국내·해외·통합 원값) ← VIDEO.DMST_OVSEA_DIV_NM [VIDEO 전용 · 그 밖 NULL = 원천 부재]. |
 
 ---
 
@@ -1114,8 +1124,8 @@ END-METADATA -->
 | 논리명 (한글명) | 물리명 (컬럼명) | 데이터 타입 | Null 여부 | 출처 (Source) | 설명 및 비즈니스 규칙 |
 |---|---|---|---|---|---|
 | **회원식별키(DK)** | `MEMBER_DK` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 회원 대리키. 🔴연도를 고정하지 않으면 한 회원이 여러 행이다 — 회원수는 COUNT DISTINCT. |
-| **서비스그룹 코드** | `SERVICE_GROUP_CD` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 코드(임시 규칙) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다). |
-| **서비스그룹 이름** | `SERVICE_GROUP_NAME` | TEXT | NO | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 이름(임시 규칙 라벨). 현업 서비스명과 1:1 확정 전이다. |
+| **서비스그룹 코드** | `SERVICE_GROUP_CD` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 코드(O206 A안 · 서비스코드 우선 → 발송제목 보조) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다). |
+| **SERVICE_GROUP_NAME** | `SERVICE_GROUP_NAME` | TEXT | NO | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 이름. 원천 서비스 카테고리명은 SVC_CATEGORY_NAMES 에 따로 있다(이 이름은 4그룹 묶음 라벨). |
 | **수신연도** | `RECEIVE_YEAR` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 수신연도(발송일 연도). 미수신 행은 NULL. |
 | **그 그룹 발송 수신 여부** | `RECEIVED_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 그룹 발송 수신 여부(TRUE=수신 · FALSE=미수신 · 미수신은 획득 코호트 회원 중 한 번도 받지 않은 회원). |
 | **FIRST_RECEIVE_DATE** | `FIRST_RECEIVE_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 첫 수신일. 미수신 NULL. |

@@ -38,7 +38,7 @@
            (정본 = `dbt_project.yml` vars `cal_start`·`cal_end` · 여기는 인용이다).
 #}
 {% macro gold_fact_purge(relation) %}
-  {%- set RANGED_FACTS = ['FACT_BIGQUERY_BEHAVIOR'] -%}
+  {%- set RANGED_FACTS = ['FACT_BIGQUERY_BEHAVIOR', 'FACT_BIGQUERY_SESSION'] -%}  {#- 🆕 O213-F FACT_BIGQUERY_SESSION(grain 첫 키 DATE_SK · 세션 일자 분할) -#}
   {%- if relation.identifier | upper in RANGED_FACTS -%}
     {%- if is_incremental() -%}
       DELETE FROM {{ relation }}

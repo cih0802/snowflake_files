@@ -27,6 +27,7 @@ WITH base AS (
   ,CAST(NULL AS VARCHAR(3)) AS CPR_DIV_CD
   ,CAST(NULL AS NUMBER(10,0)) AS ENTRPS_CD
   ,CAST(NULL AS VARCHAR(1)) AS USE_YN
+  ,CAST(NULL AS VARCHAR(1)) AS PART_USE_YN      -- 🆕 [O213-F Y3-I] 캠페인행사 전용 · 일반행사 = 원천 개념 없음
   FROM {{ source('bronze_crm','TM_MS_EVENT') }} WHERE EVENT_CD IS NOT NULL
   UNION ALL
   SELECT 'CRMN_'||CRMN_CD, 'CRMN', NULLIF(TRIM(CRMN_DIV_CD),''), NULLIF(TRIM(CRMN_TIT),''),
@@ -42,6 +43,7 @@ WITH base AS (
   ,NULLIF(TRIM(CPR_DIV_CD),'')
   ,ENTRPS_CD
   ,NULLIF(TRIM(USE_YN),'')
+  ,NULLIF(TRIM(PART_USE_YN),'')                  -- 🆕 [O213-F Y3-I] 참여신청 사용 여부 Y/N
   FROM {{ source('bronze_crm','TM_MS_CRMN') }} WHERE CRMN_CD IS NOT NULL
 )
 SELECT
@@ -72,6 +74,7 @@ SELECT
   ,b.CPR_DIV_CD                     AS CPR_DIV_CD
   ,b.ENTRPS_CD                      AS ENTRPS_CD
   ,b.USE_YN                         AS USE_YN
+  ,b.PART_USE_YN                    AS PART_USE_YN   -- 🆕 [O213-F Y3-I]
 FROM base b
 LEFT JOIN {{ ref('CRM_CODE') }} dv
   ON dv.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS286' ELSE 'MS002' END

@@ -67,8 +67,22 @@ select
     -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
     p.CALL_CTR_OPER_COST         as CALL_CTR_OPER_COST,
-    p.TOT_COST                   as TOT_COST
+    p.TOT_COST                   as TOT_COST,
+    -- 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10 — AD_PERF_DK 1:1(ROW_DGT·ROW_VIDEO 키 유일 실측) · 감사컬럼 뒤 append.
+    --   원천 컬럼명 원칙(O212) · 원천에 개념이 없는 출처 행은 NULL(결측 아님). 상위캠페인명(코드·이름 혼재)은 보류(문서20 N-29 ⑥).
+    p.MEDIA_CHANNEL_NM           as MEDIA_CHANNEL_NM,      -- 매체/채널(전 원천)
+    p.CREATIVE_NM                as CREATIVE_NM,           -- 소재명(DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM)
+    p.COST_TYPE                  as COST_TYPE,             -- 비용유형 GA/집행/편성
+    COALESCE(d.BDGT_SOURCE_NM, v.BDGT_SOURCE_NM)  as BDGT_SOURCE_NM,   -- 예산출처(사단·사복·통합 · DGT·VIDEO)
+    COALESCE(d.MATR_TY_NM, v.MATR_TY_NM)          as MATR_TY_NM,       -- 소재유형(DGT·VIDEO)
+    d.CMPGN_TYPE_BSN_NM          as CMPGN_TYPE_BSN_NM,     -- 캠페인유형(사업) [DGT 전용]
+    d.UTM_CMPGN_NM               as UTM_CMPGN_NM,          -- UTM 캠페인 [DGT 전용]
+    v.BSNS_CASE_DIV_NM           as BSNS_CASE_DIV_NM,      -- 사업/사례 구분 [VIDEO 전용]
+    v.CM                         as CM,                    -- CM 구분(전CM·중CM·후CM) [VIDEO 전용]
+    v.DMST_OVSEA_DIV_NM          as DMST_OVSEA_DIV_NM      -- 국내/해외 구분 [VIDEO 전용]
 from p
+left join {{ ref('AGENCY_AD_ROW_DGT') }}   d on d.AD_PERF_DK = p.AD_PERF_DK
+left join {{ ref('AGENCY_AD_ROW_VIDEO') }} v on v.AD_PERF_DK = p.AD_PERF_DK
 -- 실기기 매칭(DGT). 방송행은 DEVICE_NM 이 NULL 이라 매칭되지 않는다.
 left join dev d_real
        on d_real.DEVICE_TYPE = p.DEVICE_NM

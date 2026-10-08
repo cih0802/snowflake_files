@@ -17,11 +17,16 @@ select
     COALESCE(SUBDTL_ITEM_NM, DTL_ITEM_NM, MOK_NM)     as BUDGET_ITEM_NAME,   -- 세세목명(최하위 우선)
     INCOME_EXPS_DIV_NM                                as BUDGET_CATEGORY,    -- 예산구분(수입/지출)
     {{ gold_meta('ERP') }},
-    BDGT_UNIT_NM                                      as BDGT_UNIT_NM        -- 🆕 [O198 · DEC-60] 예산단위(세세목 1:1 · DDL 말미 ordinal)
+    BDGT_UNIT_NM                                      as BDGT_UNIT_NM,       -- 🆕 [O198 · DEC-60] 예산단위(세세목 1:1 · DDL 말미 ordinal)
+    -- 🆕 [2026-10-08 O213-F Y3-K] 예산 과목 계층 장·관·항 + 재원 — SILVER 에만 있던 4축(원천 컬럼명 원칙)
+    JANG_NM,
+    KWAN_NM,
+    HANG_NM,
+    FUND_SOURCE_NM
 from s
 
 union all
--- unknown 멤버(SK=0): FACT_BUDGET.BUDGET_ITEM_SK 미매핑 조인 유실 방지 센티넬
 select 0, '(미매핑)', NULL,
     {{ gold_meta('ERP') }},
-    NULL
+    NULL,
+    NULL, NULL, NULL, NULL

@@ -1043,6 +1043,57 @@ models:
       - name: "MONTH_KEY || '|' || SPONSORSHIP_SK || '|' || COALESCE(FEE_DIV_CD,'~') || '|' || COALESCE(PAYMENT_TYPE,'~') || '|' || COALESCE(RQEST_DIV_CD,'~') || '|' || COALESCE(PRCS_STAT_CD,'~') || '|' || COALESCE(RETUN_RSN_CD,'~')"
         tests: [unique]
 
+  # 🆕 [2026-10-08 O213-F Y3-F] GA4/검색 신규 팩트 3종 — 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`(SESSION 은 build 후 COMMENT ALTER).
+  - name: FACT_BIGQUERY_SESSION
+    description: >
+      GA4 세션 팩트 — grain = DATE_SK × BIGQUERY_SESSION_KEY(자정 경계 세션은 일자별 2행).
+      `SV_GA_SESSION` 의 base. 🔴 FACT_BIGQUERY_BEHAVIOR 와 한 표 합산 금지(같은 원천 · 다른 grain).
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: BIGQUERY_SESSION_KEY
+        tests: [not_null]
+      - name: "DATE_SK || '|' || BIGQUERY_SESSION_KEY"
+        tests: [unique]
+  - name: FACT_SEARCH_CONSOLE
+    description: >
+      구글 검색 노출·클릭 팩트 — grain = DATE_SK × QUERY × PAGE × COUNTRY × DEVICE. `SV_SEARCH_CONSOLE` 의 base.
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: "DATE_SK || '|' || COALESCE(QUERY,'~') || '|' || COALESCE(PAGE,'~') || '|' || COALESCE(COUNTRY,'~') || '|' || COALESCE(DEVICE,'~')"
+        tests: [unique]
+  - name: FACT_GA4_DEMOGRAPHIC
+    description: >
+      GA4 인구통계 일 팩트 — grain = DATE_SK × DEVICE_CATEGORY × USER_GENDER × USER_AGE_BRACKET. `SV_GA_SESSION` 보조 base 아님(별도 SV).
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: "DATE_SK || '|' || COALESCE(DEVICE_CATEGORY,'~') || '|' || COALESCE(USER_GENDER,'~') || '|' || COALESCE(USER_AGE_BRACKET,'~')"
+        tests: [unique]
+
+  # 🆕 [2026-10-08 O213-F Y3-J] 결연 차원 — 1행 = 1결연(SILVER 871,953 = 고유 키 871,953 실측)
+  - name: DIM_RELATIONSHIP
+    columns:
+      - name: RELATNSP_KEY
+        tests: [not_null, unique]
+
+  # 🆕 [2026-10-08 O213-F Y3-K] 지출결의 팩트 — 원천 1행 = 1행(ROW_SEQ 는 DW 부여)
+  - name: FACT_EXPENSE_RESOLUTION
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_DATE'), field: DATE_SK }
+      - name: "COALESCE(RESOLUTION_NO,'~') || '|' || ROW_SEQ"
+        tests: [unique]
+
   - name: FACT_MEMBER_SPONSORSHIP_SPAN
     description: >
       회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며

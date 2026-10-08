@@ -1,0 +1,9 @@
+sv	dim	metric	groups	top6	sentinel	status
+SV_BUDGET	item.ITEM_JANG_NM	fbd.DIRECT_FUNDRAISING_COST_1	4	모금비=51150469228.00 / 사회복지법인예산=2616075232.00 / 사업비=65933020.00 / 일반관리비=0.00		OK
+SV_BUDGET	item.ITEM_KWAN_NM	fbd.DIRECT_FUNDRAISING_COST_1	6	모금비=51150469228.00 / 사회복지법인예산=2616075232.00 / 해외사업비=64066250.00 / 나눔문화연구사업=1866770.00 / 일반관리비=0.00 / 국내사업비=0.00		OK
+SV_BUDGET	item.ITEM_HANG_NM	fbd.DIRECT_FUNDRAISING_COST_1	9	모금관리비=51150469228.00 / 사회복지법인예산=2616075232.00 / 해외기획사업=64066250.00 / 나눔문화연구사업=1866770.00 / 사무국운영사업=0.00 / 해외아동권리지원및지역개발사업=0.00		OK
+SV_BUDGET	item.ITEM_FUND_SOURCE_NM	fbd.DIRECT_FUNDRAISING_COST_1	8	법인전입=49925256385.00 / 사회복지법인예산=2616075232.00 / 이자수익=716530371.00 / 비지정일반=573491342.00 / 잡수익=1124150.00 / 국내지정=0.00		OK
+SV_BUDGET_YEARLY	item.ITEM_JANG_NM	fby.EXEC_RATE_YEAR	4	모금비=87.52041300 / 사회복지법인예산=87.12815800 / 사업비=26.54757700 / 일반관리비=None		OK
+SV_BUDGET_YEARLY	item.ITEM_KWAN_NM	fby.EXEC_RATE_YEAR	6	모금비=87.52041300 / 사회복지법인예산=87.12815800 / 해외사업비=29.93537200 / 나눔문화연구사업=14.31894700 / 국내사업비=None / 일반관리비=None		OK
+SV_BUDGET_YEARLY	item.ITEM_HANG_NM	fby.EXEC_RATE_YEAR	9	모금관리비=87.52455700 / 사회복지법인예산=87.12815800 / 회원관리비=82.16394900 / 해외기획사업=29.93537200 / 나눔문화연구사업=14.31894700 / 국내아동권리지원사업=None		OK
+SV_BUDGET_YEARLY	item.ITEM_FUND_SOURCE_NM	fby.EXEC_RATE_YEAR	8	비지정일반=264.86525200 / 사회복지법인예산=87.12815800 / 법인전입=82.55693200 / 이자수익=None / 잡수익=None / 이월국내지정=None		OK

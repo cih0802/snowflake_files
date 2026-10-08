@@ -118,14 +118,20 @@ WITH required AS (
     -- ('AGENT_MSTR', 'SV_MSTR_SPNSR_DVLP') — 🔴 [O207-C 은퇴 · 2026-10-07] AGENT_MSTR 는 DROP 됐다(역할 = AGENT_MEMBER·MARKETING·EXECUTIVE 의 analyst_mstr_spnsr_dvlp) — 이 블록을 실행하지 마라
     ('AGENT_MEMBER',    'SV_MSTR_SPNSR_DVLP'),      -- 🆕 [O207] 4차 개선 C안 — MSTR 개발 정본 도구
     ('AGENT_MARKETING', 'SV_MSTR_SPNSR_DVLP'),      -- 🆕 [O207]
-    ('AGENT_EXECUTIVE', 'SV_MEMBER_EVENT'),         -- 🆕 [O209 X5] 경영·기획 재편(§11-3) 7종
-    ('AGENT_EXECUTIVE', 'SV_DEV_ACHIEVEMENT'),
-    ('AGENT_EXECUTIVE', 'SV_MEMBER_MONTHLY_KPI'),
-    ('AGENT_EXECUTIVE', 'SV_MBRFEE_PRDT_ACTL'),
-    ('AGENT_EXECUTIVE', 'SV_SPNSR_CLS_AGGR'),
-    ('AGENT_EXECUTIVE', 'SV_DVLP_GOAL_ACMSLT'),
-    ('AGENT_EXECUTIVE', 'SV_ML_FEE_FORECAST'),
-    ('AGENT_EXECUTIVE', 'SV_MSTR_SPNSR_DVLP')       -- 🆕 [O207]
+    -- 🔴 [O213-Y4 정정] 아래 EXECUTIVE 7종(O209 X5 재편)은 O212 「4차 상태 롤백」으로 스펙에서 빠졌다(라이브 VERSION$6 도구 10).
+    --   SV 가 라이브에 실재해 이 검사는 통과했지만 **스펙과 무관한 행**이었다 ⇒ 주석 처리(정본 = 스펙 · sv_identifier_gate).
+    -- ('AGENT_EXECUTIVE', 'SV_MEMBER_EVENT'), ('AGENT_EXECUTIVE', 'SV_DEV_ACHIEVEMENT'), ('AGENT_EXECUTIVE', 'SV_MEMBER_MONTHLY_KPI'),
+    -- ('AGENT_EXECUTIVE', 'SV_MBRFEE_PRDT_ACTL'), ('AGENT_EXECUTIVE', 'SV_SPNSR_CLS_AGGR'), ('AGENT_EXECUTIVE', 'SV_DVLP_GOAL_ACMSLT'),
+    -- ('AGENT_EXECUTIVE', 'SV_ML_FEE_FORECAST'),
+    ('AGENT_EXECUTIVE', 'SV_MSTR_SPNSR_DVLP'),      -- 🆕 [O207]
+    -- 🆕 [O213-Y4 · 2026-10-08] 7차 신규 SV 5종 도구 배선(도구 수 MEMBER 22 · EXECUTIVE 12 · MARKETING 20)
+    ('AGENT_MEMBER',    'SV_PAYMENT_BILLING_STATUS'), -- 05_19 회비 청구 처리 상태
+    ('AGENT_EXECUTIVE', 'SV_PAYMENT_BILLING_STATUS'),
+    ('AGENT_EXECUTIVE', 'SV_EXPENSE_RESOLUTION'),     -- 05_23 지출결의
+    ('AGENT_MARKETING', 'SV_EXPENSE_RESOLUTION'),
+    ('AGENT_MARKETING', 'SV_GA_SESSION'),             -- 05_20 GA4 세션
+    ('AGENT_MARKETING', 'SV_SEARCH_CONSOLE'),         -- 05_21 서치콘솔
+    ('AGENT_MARKETING', 'SV_GA_DEMOGRAPHIC')          -- 05_22 GA4 인구통계
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -343,17 +349,17 @@ $$;
 --   실행 전 반드시 이 세션에서 [0] 을 다시 돌려 0행을 직접 확인할 것(계정 상태는 재이관 시 달라진다).
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = '굿네이버스 회원 분석 Agent. SV 12종:ML 4 포함. 마케팅 보고서 5분석구분의 정본 Agent.';
+  COMMENT = '굿네이버스 회원 분석 Agent. SV 22종(ML 5 포함) · 🆕 O213 7차 = 회비 청구 처리 상태 + 회원 속성·발송·결연·행사 신규 축.';
 
 -- ---- [3-B] AGENT_EXECUTIVE ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 8종: 사업목표·예산·광고실적·회원월실적·발송 + ML 예측 3종(개발금액·LTV예측·기여요인). LTV스코어는 원천 폐기(O199).';
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 12종: MSTR 개발·사업목표·예산(월·연)·광고·회원월실적·발송·ML 3 · 🆕 O213 7차 = 지출결의(부서별 지출)·회비 청구 처리 + 광고·예산 신규 축.';
 
 -- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 7종: 광고효율·개발목표달성·예산집행·전환회원·캠페인코호트·캠페인회비. 마케팅 보고서 5분석구분의 정본 Agent.';
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 20종(ML 5 포함) · 🆕 O213 7차 = GA4 세션·서치콘솔·GA4 인구통계·지출결의 + 광고·예산 신규 축.';
 
 -- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
 --   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.

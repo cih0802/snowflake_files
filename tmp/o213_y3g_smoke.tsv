@@ -1,0 +1,11 @@
+sv	dim	metric	groups	top6	sentinel	status
+SV_AD	ad.MEDIA_CHANNEL_NM	ad.CTR	93	NBRAND=39.842100 / GSA=9.013700 / TIKTOK=6.590500 / KNOTE=3.732400 / ANLAB=2.951500 / TOSS=2.338500	None	OK
+SV_AD	ad.CREATIVE_NM	ad.CTR	6995	N10=49.533800 / K5=48.947400 / L4=48.717900 / A10=48.199000 / H17=46.101600 / H28=45.936100	None	OK
+SV_AD	ad.COST_TYPE	ad.CTR	3	집행=0.582900 / GA=0.285100 / 편성=None		OK
+SV_AD	ad.BDGT_SOURCE_NM	ad.CTR	4	통합=3.399600 / 사복=0.295800 / 사단=0.282900 / None=None	None	OK
+SV_AD	ad.MATR_TY_NM	ad.CTR	6	키워드=1.908100 / 영상=0.528600 / 기타=0.518700 / None=0.224600 / 이미지=0.208500 / 해당없음=None	기타,None	OK
+SV_AD	ad.CMPGN_TYPE_BSN_NM	ad.CTR	9	통합 기타=2.979600 / 통합 통합=1.335200 / None=0.582900 / 해외 사례=0.374800 / 국내 사례=0.313500 / 국내 사업=0.292400	None	OK
+SV_AD	ad.UTM_CMPGN_NM	ad.CTR	110	위기가정(선오)=4.283600 / exploration26a=2.406000 / spring24a=2.294400 / 2026_해외_지역개발_참전용사(2차)=1.836400 / 2026_국내_결식_함께한끼(2차)=1.786500 / connect26a=1.651400	None	OK
+SV_AD	ad.BSNS_CASE_DIV_NM	ad.CTR	5	사례=0.718900 / 굿즈=0.479100 / None=0.285100 / 사업=0.083500 / 기타=None	None,기타	OK
+SV_AD	ad.CM	ad.CTR	6	None=0.286600 / 후CM=None / 전SPOT CM=None / 중CM=None / 후SPOT CM=None / 전CM=None	None	OK
+SV_AD	ad.DMST_OVSEA_DIV_NM	ad.CTR	4	국내=0.717700 / None=0.285100 / 해외=0.279200 / 통합=None	None	OK

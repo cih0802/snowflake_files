@@ -1,0 +1,6 @@
+sv	alias	col	expose	synonyms	comment
+SV_RELATION_ACTIVITY	fra	SETLE_BANK_NAME	SETLE_BANK_NAME	선물금 정산은행|정산은행|입금은행	🆕 [O213-F] 선물금 정산은행명(PM039 자동이체 은행코드 라벨 · 우리은행·국민은행·신한은행 등). 선물금 계열 전용 — 서신 행은 NULL(구조적 부재).
+SV_RELATION_ACTIVITY	rel	IS_DISCONTINUED	REL_IS_DISCONTINUED	결연 중단 여부|결연중단|중단된 결연	🆕 [O213-F] 결연 중단 여부 Y/N(원천 0/1 파생 · 현재값). 「중단된 결연의 서신·선물금」 질문에 쓴다.
+SV_RELATION_ACTIVITY	rel	RELATNSP_DSCNTC_RSN_NAME	REL_DSCNTC_RSN_NAME	결연 중단사유|결연 종료사유|아동교체 사유	🆕 [O213-F] 결연 중단(종료) 사유명(MM002 라벨 · 후원중단·18세종결교체·아동퇴소교체·개인사유(감액) 등 · 현재값). 🔴 코드군은 커버리지로 특정했다(현업 확인 중) — 답할 때 「사유 라벨은 확인 중」이라고 밝힌다. 진행 중 결연은 NULL.
+SV_RELATION_ACTIVITY	rel	RELATNSP_DSCNTC_RSN_CD	REL_DSCNTC_RSN_CD	결연 중단사유코드	🆕 [O213-F] 결연 중단 사유 원천 코드(MM002). 라벨 없는 코드를 구분할 때 쓴다.
+SV_EVENT_PARTICIPATION	event	PART_USE_YN	EVENT_PART_USE_YN	참여신청 사용여부|온라인 참여신청	🆕 [O213-F] 행사의 참여신청 기능 사용 여부 Y/N 원값(캠페인행사 전용 · 일반행사 NULL = 원천 개념 없음).

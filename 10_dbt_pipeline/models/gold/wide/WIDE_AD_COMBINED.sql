@@ -84,7 +84,18 @@ select
     brc.DVLP_MEMBER_CNT,
     brc.DVLP_CNT,
     brc.AD_VIEW_RT_SRC as BRDC_AD_VIEW_RT_SRC,
-    brc.CPC_CALL_SRC as CPC_CALL_SRC
+    brc.CPC_CALL_SRC as CPC_CALL_SRC,
+    -- 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10(코어 팩트 말미 · _wide_schema.yml columns 같은 순서 필수)
+    fap.MEDIA_CHANNEL_NM,
+    fap.CREATIVE_NM,
+    fap.COST_TYPE,
+    fap.BDGT_SOURCE_NM,
+    fap.MATR_TY_NM,
+    fap.CMPGN_TYPE_BSN_NM,
+    fap.UTM_CMPGN_NM,
+    fap.BSNS_CASE_DIV_NM,
+    fap.CM,
+    fap.DMST_OVSEA_DIV_NM
 from {{ ref('FACT_AD_PERFORMANCE') }} fap
 -- 위성은 AD_PERF_DK 로 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(fan-out 0).
 --   1:N 위성인 FACT_AD_BROADCAST_CASE 는 **의도적으로 제외**한다 — 사례 수만큼 광고비가 복제된다.

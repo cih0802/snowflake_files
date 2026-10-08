@@ -24,12 +24,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member AS GN_DW.GOLD.DIM_MEMBER
       PRIMARY KEY (MEMBER_DK)
       WITH SYNONYMS ('회원')
-      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
+      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.',
+    req AS GN_DW.GOLD.DIM_SEND_REQUEST
+      PRIMARY KEY (SEND_REQUEST_SK)
+      WITH SYNONYMS ('발송 요청', '발송 요청 차원')
+      COMMENT = '🆕 [O213-E] 발송 요청 차원(요청당 한 행). 메시지구분(MS010)·발송시간구분(MS267)·우편처리상태(MS061)·법인유형(CM019)·분할발송유형. [원천] 시스템=CRM(UMS) · BRONZE=GN_DW.BRONZE_CRM.SND_REQ_MST · SILVER=CRM_SEND_REQUEST · GOLD=DIM_SEND_REQUEST.'
   )
   RELATIONSHIPS (
     fse_to_date    AS fse (DATE_SK)    REFERENCES date,
     fse_to_service AS fse (SERVICE_SK) REFERENCES service,
-    fse_to_member  AS fse (MEMBER_DK)  REFERENCES member
+    fse_to_member  AS fse (MEMBER_DK)  REFERENCES member,
+    fse_to_req     AS fse (SEND_REQUEST_SK) REFERENCES req
   )
   DIMENSIONS (
     date.SEND_DATE  AS date.FULL_DATE  WITH SYNONYMS ('발송일', '일자', '날짜') COMMENT = '발송일',
@@ -77,7 +82,21 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member.MEMBER_POST_RECV_REFUSE_YN AS member.POST_RECV_REFUSE_YN WITH SYNONYMS ('우편물 수신거부 수신', '우편물 수신항목 수신거부') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「수신거부」(MS027 코드 1)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
     member.MEMBER_POST_RECV_REGULAR_YN AS member.POST_RECV_REGULAR_YN WITH SYNONYMS ('우편물 정기우편 수신', '우편물 수신항목 정기우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「정기우편」(MS027 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
     member.MEMBER_POST_RECV_RELATION_YN AS member.POST_RECV_RELATION_YN WITH SYNONYMS ('우편물 결연우편 수신', '우편물 수신항목 결연우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「결연우편」(MS027 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
-    member.MEMBER_POST_RECV_NEW_THANKS_YN AS member.POST_RECV_NEW_THANKS_YN WITH SYNONYMS ('우편물 신규/감사 우편 수신', '우편물 수신항목 신규/감사 우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「신규/감사 우편」(MS027 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.'
+    member.MEMBER_POST_RECV_NEW_THANKS_YN AS member.POST_RECV_NEW_THANKS_YN WITH SYNONYMS ('우편물 신규/감사 우편 수신', '우편물 수신항목 신규/감사 우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「신규/감사 우편」(MS027 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    req.REQ_SEND_GBN_TOP_NM AS req.SEND_GBN_TOP_NM WITH SYNONYMS ('발송 카테고리(대)', '발송구분 대분류', '발송 대분류') COMMENT = '🆕 [O213-E] 발송 카테고리 대분류(회원서비스·결연·회비·회원·참여·사업보고·회원만족·기타 등) — 문자(SND) 요청에 값이 있다. 이메일·알림톡·우편 요청은 NULL(원천 개념 없음).',
+    req.REQ_SEND_GBN_MID_NM AS req.SEND_GBN_MID_NM WITH SYNONYMS ('발송 카테고리(중)', '발송구분 중분류', '발송 중분류') COMMENT = '🆕 [O213-E] 발송 카테고리 중분류(예: 신규결연회원발송·아동답신·기부금영수증·결제오류·장기회원감사서비스) — 문자(SND) 요청 전용.',
+    req.REQ_SEND_GBN_BOT_NM AS req.SEND_GBN_BOT_NM WITH SYNONYMS ('발송 카테고리(소)', '발송구분 소분류', '발송 소분류') COMMENT = '🆕 [O213-E] 발송 카테고리 소분류 — 문자(SND) 요청 전용.',
+    req.REQ_MSG_DIV_NAME AS req.MSG_DIV_NAME WITH SYNONYMS ('메시지 구분', 'SMS/LMS/MMS', '문자 종류') COMMENT = '🆕 [O213-E] 메시지 구분(MS010 · SMS·LMS·MMS·알림톡) — 알림톡(MSG_AT) 요청 전용 · 타 채널 NULL.',
+    req.REQ_SNDNG_TIME_DIV_NAME AS req.SNDNG_TIME_DIV_NAME WITH SYNONYMS ('발송 시간 구분', '즉시/예약/분할') COMMENT = '🆕 [O213-E] 발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송) — 알림톡 요청 전용.',
+    req.REQ_PSTMTR_PRCS_STAT_NAME AS req.PSTMTR_PRCS_STAT_NAME WITH SYNONYMS ('우편물 처리상태', '우편 발송완료 여부') COMMENT = '🆕 [O213-E] 우편물 처리상태(MS061 · 발송대기·발송완료) — 우편(PSTMTR) 요청 전용.',
+    req.REQ_RE_SNDNG_YN AS req.RE_SNDNG_YN WITH SYNONYMS ('재발송 여부', '재발신 여부') COMMENT = '🆕 [O213-E] 재발신 여부(Y/N) — 우편 요청 전용.',
+    req.REQ_LQY_YN AS req.LQY_YN WITH SYNONYMS ('대량발송 여부', '대량 여부') COMMENT = '🆕 [O213-E] 대량 발송 여부(Y/N) — 우편 요청 전용.',
+    req.REQ_CORP_TYPE_NAME AS req.CORP_TYPE_NAME WITH SYNONYMS ('발송 법인구분', '요청 법인') COMMENT = '🆕 [O213-E] 발송 요청 법인구분(CM019 · 사단·사복) — 문자(SND) 요청 일부에만 값(대다수 NULL).',
+    req.REQ_SEND_SPLIT_TYPE AS req.SEND_SPLIT_TYPE WITH SYNONYMS ('문자 분할 방식', '일괄/분할') COMMENT = '🆕 [O213-E] 문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할) — 문자(SND) 요청 전용.',
+    fse.SND_SPNSR_NM AS fse.SND_SPNSR_NM WITH SYNONYMS ('발송 시점 후원사업', '발송 당시 후원사업') COMMENT = '🆕 [O213-E] 문자(SND) 발송 시점 수신 회원의 후원사업명(원천 발송 스냅샷) — 타 채널 NULL. 현재 후원사업과 다를 수 있다.',
+    fse.SND_DSCNTC_RSN_NM AS fse.SND_DSCNTC_RSN_NM WITH SYNONYMS ('발송 시점 중단사유', '발송 당시 중단사유') COMMENT = '🆕 [O213-E] 문자(SND) 발송 시점 수신 회원의 중단사유명(중단 이력 회원만 값 · 원천 스냅샷) — 타 채널 NULL.',
+    fse.SND_CHILD_PROJECT_COUNTRY AS fse.SND_CHILD_PROJECT_COUNTRY WITH SYNONYMS ('결연아동 사업국', '신규 결연아동 국가') COMMENT = '🆕 [O213-E] 문자(SND) 발송 시점 신규 결연아동 사업국(방글라데시·우간다·에티오피아 등) — 결연 안내 발송 분석용 · 타 채널 NULL.',
+    fse.SND_CHILD_WORKPLACE_NM AS fse.SND_CHILD_WORKPLACE_NM WITH SYNONYMS ('결연아동 사업장', '신규 결연아동 사업장') COMMENT = '🆕 [O213-E] 문자(SND) 발송 시점 신규 결연아동 사업장명 — 타 채널 NULL.'
   )
   METRICS (
     fse.TOTAL_SEND_MEMBERS AS SUM(fse.SEND_MEMBERS)

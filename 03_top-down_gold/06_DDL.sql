@@ -445,7 +445,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_EVENT (
     RESRCE_SRVC_FG         BOOLEAN         COMMENT '자원봉사유무 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
     CPR_DIV_CD             VARCHAR(3)      COMMENT '법인구분코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
     ENTRPS_CD              NUMBER(10,0)    COMMENT '업체코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
-    USE_YN                 VARCHAR(1)      COMMENT '사용여부 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]'
+    USE_YN                 VARCHAR(1)      COMMENT '사용여부 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
+    PART_USE_YN            VARCHAR(1)      COMMENT '🆕 [O213-F] 참여신청 사용여부 Y/N(캠페인행사 전용 · 일반행사 NULL) [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]'
 ) COMMENT = '행사/이벤트 마스터 차원. [Grain: EVENT_SK (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT/CRMN → SILVER.CRM_EVENT].';
 
 -- DIM_BUDGET_ITEM — 예산 세세목 차원
@@ -457,7 +458,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BUDGET_ITEM (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명(ERP 원천 BDGT_UNIT_NM 그대로 · 조직명 표기 · 코드 없음). 세세목에 1:1 종속(2026-10-02 O198 실측 179/179). 🔴 DIM_ORG(CRM 조직)와 다른 체계다 — 같은 이름의 팀이라도 ORG_SK 로 조인하지 말 것. 실측 값 6종(ERP 표기 그대로)'
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명(ERP 원천 BDGT_UNIT_NM 그대로 · 조직명 표기 · 코드 없음). 세세목에 1:1 종속(2026-10-02 O198 실측 179/179). 🔴 DIM_ORG(CRM 조직)와 다른 체계다 — 같은 이름의 팀이라도 ORG_SK 로 조인하지 말 것. 실측 값 6종(ERP 표기 그대로)',
+    JANG_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「장」(원값 4종 · SILVER.ERP_BUDGET_ITEM 승계).',
+    KWAN_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「관」(원값 6종).',
+    HANG_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「항」(원값 9종).',
+    FUND_SOURCE_NM      VARCHAR         COMMENT '🆕 [O213-F] 예산 재원명(원값 8종).'
 ) COMMENT = '예산 세세목 차원. [Grain: BUDGET_ITEM_SK (1행=1세세목)]. [주의: 장/관/항/목/세목/세세목 계층 매핑]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET_ITEM].';
 
 -- DIM_BIZ_PLACE — DIM_BIZ_PLACE — O188-F 2차-A 신설
@@ -874,7 +879,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     ,
     CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
     CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
-    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)'
+    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)',
+    -- 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10 (AD_PERF_DK 1:1 · 원천 부재 출처 행 = NULL)
+    MEDIA_CHANNEL_NM    VARCHAR         COMMENT '매체/채널명(YOUTUBE·META·EBS 등 원값 · 전 원천).',
+    CREATIVE_NM         VARCHAR         COMMENT '소재명(DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM).',
+    COST_TYPE           VARCHAR         COMMENT '비용유형 GA·집행·편성.',
+    BDGT_SOURCE_NM      VARCHAR         COMMENT '예산출처 사단·사복·통합(DGT·VIDEO · REBRDC NULL).',
+    MATR_TY_NM          VARCHAR         COMMENT '소재유형(DGT·VIDEO · REBRDC NULL).',
+    CMPGN_TYPE_BSN_NM   VARCHAR         COMMENT '캠페인유형(사업) [DGT 전용].',
+    UTM_CMPGN_NM        VARCHAR         COMMENT 'UTM 캠페인 태그 [DGT 전용].',
+    BSNS_CASE_DIV_NM    VARCHAR         COMMENT '사업/사례 구분 [VIDEO 전용].',
+    CM                  VARCHAR         COMMENT 'CM 구분 전CM·중CM·후CM [VIDEO 전용].',
+    DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '국내/해외 구분 [VIDEO 전용].'
 ) COMMENT = '광고 성과 코어 팩트. [Grain: AD_PERF_DK (1행=1광고집행)]. [주의: 디지털/방송 3원천 공통 지표(비용/노출/클릭)]. [원천: AGENCY 3소스 → SILVER.AGENCY_AD_PERFORMANCE].';
 
 -- FACT_AD_BROADCAST — 방송광고 성과 위성 팩트
@@ -1138,6 +1154,63 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '회비 청구 처리 상태 팩트. [Grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV × PAYMENT_TYPE × 청구구분 × 처리상태 × 환급사유]. [주의: 회원 축 없음 · FACT_MEMBER_FEE·FACT_MEMBER_MONTHLY 와 동일 원천 다른 Grain, 합산 금지]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING].';
 
+-- 🆕 [2026-10-08 O213-F Y3-F] FACT_SEARCH_CONSOLE · FACT_GA4_DEMOGRAPHIC (GA4/검색 신규 · 종전 GOLD 소비 0)
+--   🔴 FACT_BIGQUERY_SESSION 은 선생성하지 않는다 — RANGED_FACTS 는 테이블이 있으면 첫 run 이 롤링 창만 적재한다.
+--      첫 build CTAS 전량 생성 후 COMMENT ALTER(계획서 §13-1-8).
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SEARCH_CONSOLE (
+    DATE_SK             NUMBER(8,0)     COMMENT '검색 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
+    QUERY               VARCHAR         COMMENT '검색어(구글 검색창 입력 원문).',
+    PAGE                VARCHAR         COMMENT '노출 페이지 URL.',
+    COUNTRY             VARCHAR(10)     COMMENT '검색자 국가 ISO alpha-3 소문자 코드(kor·usa…) · 라벨 없음.',
+    DEVICE              VARCHAR(20)     COMMENT '검색 기기 DESKTOP·MOBILE·TABLET.',
+    CLICKS              NUMBER(38,0)    COMMENT '클릭수(가산).',
+    IMPRESSIONS         NUMBER(38,0)    COMMENT '노출수(가산).',
+    CTR                 FLOAT           COMMENT '행 단위 클릭률 · 🔴 비가산.',
+    POSITION            FLOAT           COMMENT '행 단위 평균순위 · 🔴 비가산.',
+    POSITION_X_IMPRESSIONS FLOAT        COMMENT 'POSITION × IMPRESSIONS — 노출 가중 평균순위 산출용(SUM 후 SUM(IMPRESSIONS) 로 나눈다).',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '구글 검색 노출·클릭 팩트. [Grain: DATE_SK × QUERY × PAGE × COUNTRY × DEVICE]. [주의: GA4 유입 세션과 다른 원천 · CTR·POSITION 비가산]. [원천: GSC → SILVER.SEARCH_CONSOLE_DATA].';
+
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA4_DEMOGRAPHIC (
+    DATE_SK             NUMBER(8,0)     COMMENT '집계 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
+    DEVICE_CATEGORY     VARCHAR(20)     COMMENT '기기 desktop·mobile·tablet.',
+    USER_GENDER         VARCHAR(20)     COMMENT '성별 female·male·unknown(GA4 추정 불가 버킷).',
+    USER_AGE_BRACKET    VARCHAR(20)     COMMENT '연령대 18-24 ~ 65+ · unknown.',
+    SESSIONS            NUMBER(38,0)    COMMENT '세션수(가산).',
+    TOTAL_USERS         NUMBER(38,0)    COMMENT '총 사용자수 · 🔴 비가산(grain 고유값).',
+    NEW_USERS           NUMBER(38,0)    COMMENT '신규 사용자수 · 🔴 비가산(grain 고유값).',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = 'GA4 인구통계 일 팩트. [Grain: DATE_SK × 기기 × 성별 × 연령대]. [주의: GA4 Data API 집계 · 이벤트 원천과 모수 상이 · 사용자수 비가산]. [원천: GA4 → SILVER.GA4_USER_DEMOGRAPHIC].';
+
+-- 🆕 [2026-10-08 O213-F Y3-K] FACT_EXPENSE_RESOLUTION — 지출결의 팩트(부서별 지출의 유일 원천)
+--   🔴 FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지(원천·범위 상이 · 조인 근거 없음) · 동일 행 보존(문서20 N-29 ⑧).
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EXPENSE_RESOLUTION (
+    DATE_SK             NUMBER(38,0)    COMMENT '결의 작성일 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
+    RESOLUTION_NO       VARCHAR         COMMENT '결의번호.',
+    ROW_SEQ             NUMBER(18,0)    COMMENT '결의번호 내 행 일련(DW 부여).',
+    RESOLUTION_YEAR     NUMBER(38,0)    COMMENT '회계연도.',
+    RESOLUTION_DEPT_NM  VARCHAR         COMMENT '결의부서명 — 부서별 지출 축.',
+    EXPS_RESOLUTION_NM  VARCHAR         COMMENT '지출결의명(자유문).',
+    SOURCE_DIV_NM       VARCHAR         COMMENT '출처구분명.',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명.',
+    MOK_NM              VARCHAR         COMMENT '목명.',
+    DTL_ITEM_NM         VARCHAR         COMMENT '세목명.',
+    SUBDTL_ITEM_NM      VARCHAR         COMMENT '세세목명.',
+    FUND_SOURCE_NM      VARCHAR         COMMENT '재원명.',
+    DESCRIPTION         VARCHAR         COMMENT '적요.',
+    SUM_AMT             NUMBER(38,0)    COMMENT '지출 금액(원 · 가산).',
+    DW_SOURCE_SYSTEM    VARCHAR         COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '지출결의 팩트. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지 · 부서별 지출의 유일 원천]. [원천: ERP → SILVER.ERP_EXPENSE_RESOLUTION].';
+
 -- FACT_MEMBER_DEV_ACHIEVEMENT — 회원개발 목표 대비 실적 월 Conform 팩트
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT (
     MONTH_KEY         NUMBER(6,0)     NOT NULL COMMENT '월 conform 키 YYYYMM.',
@@ -1326,8 +1399,30 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY (
     DW_SOURCE_SYSTEM        VARCHAR NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    SETLE_BANK_CD           VARCHAR(10)     COMMENT '🆕 [O213-F] 선물금 정산은행 코드(PM039 · 서신 행 NULL).',
+    SETLE_BANK_NAME         VARCHAR         COMMENT '🆕 [O213-F] 선물금 정산은행명(PM039 라벨 · 사전에 없는 코드는 NULL).'
 ) COMMENT = '결연활동 팩트(서신·선물금). [Grain: ACTIVITY_KEY (1행=1활동)]. [주의: 선물금(GFTMNEY)은 선물금 행만 값 · 서신/선물금 계열 속성은 비해당 NULL]. [원천: SILVER.CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION]. [적재: dbt]';
+
+-- 🆕 [2026-10-08 O213-F Y3-J] DIM_RELATIONSHIP — 결연 차원(1행 = 1결연 · 결연 중단 여부·사유의 유일한 GOLD 위치)
+--   🔴 중단사유 라벨 코드군 MM002 = 커버리지로 특정(현업 확인 = 문서20 N-29 ⑦).
+CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_RELATIONSHIP (
+    RELATNSP_KEY            NUMBER(10,0)    NOT NULL PRIMARY KEY COMMENT '결연키(PK · FACT_RELATION_ACTIVITY.RELATNSP_KEY 조인키).',
+    MEMBER_DK               VARCHAR(10)     COMMENT '결연 회원번호(FK→DIM_MEMBER).',
+    SPNSR_NO                VARCHAR(9)      COMMENT '후원번호.',
+    SPNSR_BSNS_NO           NUMBER(19,0)    COMMENT '후원사업번호.',
+    CHILD_CD                NUMBER(10,0)    COMMENT '결연 아동코드.',
+    RELATNSP_STRT_DE        DATE            COMMENT '결연 시작일.',
+    RELATNSP_DSCNTC_DE      DATE            COMMENT '결연 중단일(진행 중 결연은 NULL).',
+    RELATNSP_DSCNTC_YN      VARCHAR(1)      COMMENT '결연 중단 여부 원값 0/1(1 = 중단).',
+    IS_DISCONTINUED         VARCHAR(1)      COMMENT '결연 중단 여부 Y/N(원값 1→Y · 0→N 파생).',
+    RELATNSP_DSCNTC_RSN_CD  VARCHAR         COMMENT '결연 중단(종료) 사유 코드(MM002).',
+    RELATNSP_DSCNTC_RSN_NAME VARCHAR        COMMENT '결연 중단(종료) 사유명(MM002 라벨 · 후원중단·18세종결교체·아동퇴소교체 등).',
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '결연 차원. [Grain: RELATNSP_KEY (1행=1결연)]. [주의: 결연 상태·중단사유는 현재값 · 사건 이력은 FACT_RELATION_CHANGE/DEV]. [원천: CRM → SILVER.CRM_SPONSOR_RELATION].';
 
 -- FACT_PAYMENT_METHOD_CHANGE — FACT_PAYMENT_METHOD_CHANGE — O188-F 2차-A 신설
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_METHOD_CHANGE (

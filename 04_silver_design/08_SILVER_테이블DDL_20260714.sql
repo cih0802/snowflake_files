@@ -532,6 +532,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
     CPR_DIV_CD          VARCHAR(3)      COMMENT '법인구분코드 [원천: BRONZE_CRM.TM_MS_CRMN]',
     ENTRPS_CD           NUMBER(10,0)    COMMENT '업체코드 [원천: BRONZE_CRM.TM_MS_CRMN]',
     USE_YN              VARCHAR(1)      COMMENT '사용여부 [원천: BRONZE_CRM.TM_MS_CRMN]',
+    PART_USE_YN         VARCHAR(1)      COMMENT '🆕 [O213-F] 참여신청 사용여부 Y/N · 일반행사 NULL [원천: BRONZE_CRM.TM_MS_CRMN]',
     PRIMARY KEY (EVENT_KEY)
 ) COMMENT = '행사/이벤트 마스터. [Grain: EVENT_KEY (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT ∪ TM_MS_CRMN].';
 
@@ -595,6 +596,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_RELATION_ACTIVITY (
     GFTMNEY_DOLLAR_AMT  VARCHAR(30)     COMMENT '선물금미화금액 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     APRV_DE             DATE            COMMENT '승인일 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     TRNSFER_YN          VARCHAR(1)      COMMENT '이관여부 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
+    SETLE_BANK_CD       VARCHAR(10)     COMMENT '🆕 [O213-F] 선물금 정산은행 코드(PM039) · 서신 행 NULL [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     PRIMARY KEY (ACTIVITY_KEY)
 ) COMMENT = '결연 활동 내역 (서신∪선물금). [Grain: ACTV_NO (1행=1활동)]. [주의: 서신교환 및 선물금 전달 이력]. [원천: CRM → BRONZE_CRM.TM_MM_LTR_EXCHG ∪ TM_MM_GIFT_DLVRY].';
 
@@ -1534,3 +1536,69 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (USER_PSEUDO_ID)
 ) COMMENT = '온-오프라인 신원 연계 브릿지. [Grain: USER_PSEUDO_ID × MEMBER_DK (1행=1연계)]. [주의: BIGQUERY 사용자 식별자와 CRM 회원번호 연결]. [원천: BIGQUERY/CRM → SILVER.BIGQUERY_IDENTITY].';
+
+-- ============================================================================
+-- 🆕 [2026-10-08 O213-F Y3-F] GA4 인구통계 · 서치콘솔 (종전 소비 모델 0)
+--   🔴 BIGQUERY_SESSION 은 여기서 선생성하지 않는다 — range 모델(silver_purge RANGED_MODELS)은
+--      대상 테이블이 있으면 첫 run 이 is_incremental() = 롤링 창(3일)만 적재한다(bigquery_load_window ⓑ).
+--      ⇒ 첫 build 가 CTAS 로 전량 생성 · 컬럼 COMMENT 는 build 후 ALTER(§13-1-8).
+-- ============================================================================
+CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_USER_DEMOGRAPHIC (
+    EVENT_DT            DATE            COMMENT '집계 일자(원천 DATE YYYYMMDD).',
+    DEVICE_CATEGORY     VARCHAR(20)     COMMENT '기기 카테고리 desktop·mobile·tablet (GA4 원값).',
+    USER_GENDER         VARCHAR(20)     COMMENT '성별 female·male·unknown (GA4 추정 · unknown = 추정 불가 버킷).',
+    USER_AGE_BRACKET    VARCHAR(20)     COMMENT '연령대 18-24·25-34·35-44·45-54·55-64·65+·unknown (GA4 추정).',
+    SESSIONS            NUMBER(38,0)    COMMENT '세션수(가산).',
+    TOTAL_USERS         NUMBER(38,0)    COMMENT '총 사용자수 — grain 단위 고유값 · 🔴 비가산.',
+    NEW_USERS           NUMBER(38,0)    COMMENT '신규 사용자수 — grain 단위 고유값 · 🔴 비가산.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = 'GA4 인구통계 일 집계. [Grain: 일 × 기기 × 성별 × 연령대]. [주의: GA4 Data API 집계 · 이벤트 원천(BIGQUERY_*)과 모수 상이 · 사용자수 비가산]. [원천: GA4 → BRONZE_GA4.GA4_USER_DEMOGRAPHIC].';
+
+CREATE OR REPLACE TABLE GN_DW.SILVER.SEARCH_CONSOLE_DATA (
+    EVENT_DT            DATE            COMMENT '검색 일자(원천 DATE).',
+    QUERY               VARCHAR         COMMENT '검색어(구글 검색창 입력 원문).',
+    PAGE                VARCHAR         COMMENT '노출된 페이지 URL.',
+    COUNTRY             VARCHAR(10)     COMMENT '검색자 국가 = ISO 3166-1 alpha-3 소문자 코드(예 kor·usa) · 원천에 라벨 없음.',
+    DEVICE              VARCHAR(20)     COMMENT '검색 기기 DESKTOP·MOBILE·TABLET.',
+    CLICKS              NUMBER(38,0)    COMMENT '클릭수(가산).',
+    IMPRESSIONS         NUMBER(38,0)    COMMENT '노출수(가산).',
+    CTR                 FLOAT           COMMENT '클릭률(행 단위) · 🔴 합산·평균 금지 — SUM(CLICKS)/SUM(IMPRESSIONS).',
+    POSITION            FLOAT           COMMENT '평균 노출순위(행 단위) · 🔴 합산 금지 — 노출 가중 평균.',
+    RESPONSE_AGGREGATION_TYPE VARCHAR(20) COMMENT 'GSC 집계 방식(전건 byPage).',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '구글 서치콘솔 검색 성과. [Grain: 일 × 검색어 × 페이지 × 국가 × 기기]. [주의: CTR·POSITION 비가산 · SEARCH_CONSOLE_DATA2 는 중복 복사본이라 미사용]. [원천: GSC → BRONZE_GSC.SEARCH_CONSOLE_DATA].';
+
+-- 🆕 [2026-10-08 O213-F Y3-K] ERP_EXPENSE_RESOLUTION — 지출결의 명세(종전 소비 모델 0 · 원천 1행 = 1행)
+--   🔴 예산 원장(ERP_BUDGET)과 합산·조인 금지 · 전 컬럼 동일 행 7,287 보존(문서20 N-29 ⑧) · 물리 = GN_DW_ADMIN CTAS LIMIT 0 후 감사컬럼 VARCHAR 확장.
+CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_EXPENSE_RESOLUTION (
+    RESOLUTION_NO       VARCHAR         COMMENT '결의번호(1결의 = 여러 명세행).',
+    ROW_SEQ             NUMBER(18,0)    COMMENT '결의번호 내 행 일련(결정적 정렬 · 원천 키 부재로 DW 부여).',
+    RESOLUTION_YEAR     NUMBER(38,0)    COMMENT '회계연도.',
+    WRITE_DATE          DATE            COMMENT '결의 작성일.',
+    RESOLUTION_DEPT_NM  VARCHAR         COMMENT '결의부서명(55종 원값) — 부서별 지출 축.',
+    EXPS_RESOLUTION_NM  VARCHAR         COMMENT '지출결의명(자유문).',
+    SOURCE_DIV_NM       VARCHAR         COMMENT '출처구분명(6종 원값).',
+    SOURCE_NO           VARCHAR         COMMENT '출처번호.',
+    BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명.',
+    MOK_NM              VARCHAR         COMMENT '목명(예산 과목).',
+    DTL_ITEM_NM         VARCHAR         COMMENT '세목명.',
+    SUBDTL_ITEM_NM      VARCHAR         COMMENT '세세목명.',
+    FUND_SOURCE_NM      VARCHAR         COMMENT '재원명(26종 원값).',
+    BDGT_ITEM_NM        VARCHAR         COMMENT '예산항목명(원값).',
+    DESCRIPTION         VARCHAR         COMMENT '적요(원천 DESCRIPTIONVARCHAR).',
+    SUM_AMT             NUMBER(38,0)    COMMENT '금액(원 · 가산).',
+    CONTENTS_DELIMITER  VARCHAR         COMMENT '내용 구분자(원천 문서번호형 값).',
+    DW_SOURCE_SYSTEM    VARCHAR         COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '지출결의 명세. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: 예산 원장과 합산·조인 금지 · 전 컬럼 동일 행 보존]. [원천: ERP → BRONZE_ERP.EXPENSE_RESOLUTION].';

@@ -1,0 +1,9 @@
+sv	alias	col	expose	synonyms	comment
+SV_BUDGET	item	JANG_NM	ITEM_JANG_NM	장|예산 장	🆕 [O213-F] 예산 과목 계층 최상위 「장」(원값 4종 · ERP 원장). 장 > 관 > 항 > 목 > 세목 > 세세목 순으로 좁아진다.
+SV_BUDGET	item	KWAN_NM	ITEM_KWAN_NM	관|예산 관	🆕 [O213-F] 예산 과목 계층 「관」(원값 6종).
+SV_BUDGET	item	HANG_NM	ITEM_HANG_NM	항|예산 항	🆕 [O213-F] 예산 과목 계층 「항」(원값 9종).
+SV_BUDGET	item	FUND_SOURCE_NM	ITEM_FUND_SOURCE_NM	재원|예산 재원	🆕 [O213-F] 예산 재원명(원값 8종 · ERP 원장).
+SV_BUDGET_YEARLY	item	JANG_NM	ITEM_JANG_NM	장|예산 장	🆕 [O213-F] 예산 과목 계층 최상위 「장」(원값 4종 · ERP 원장). 장 > 관 > 항 > 목 > 세목 > 세세목 순으로 좁아진다.
+SV_BUDGET_YEARLY	item	KWAN_NM	ITEM_KWAN_NM	관|예산 관	🆕 [O213-F] 예산 과목 계층 「관」(원값 6종).
+SV_BUDGET_YEARLY	item	HANG_NM	ITEM_HANG_NM	항|예산 항	🆕 [O213-F] 예산 과목 계층 「항」(원값 9종).
+SV_BUDGET_YEARLY	item	FUND_SOURCE_NM	ITEM_FUND_SOURCE_NM	재원|예산 재원	🆕 [O213-F] 예산 재원명(원값 8종 · ERP 원장).

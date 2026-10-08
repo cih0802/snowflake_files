@@ -43,17 +43,13 @@ select
     -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_EVENT 승계(행사 grain · 원천별 비해당 = NULL).
     --   당첨 2종 = 일반행사(EVENT) 전용 · 나머지 8종 = 캠페인행사(CRMN) 전용.
     PRZWIN_PSNNL_CO, PRZWIN_GFT_SNDNG_DE, CRMN_PLACE_NM, CRMN_PART_STRT_DE, CRMN_PART_END_DE,
-    TAT, RESRCE_SRVC_FG, CPR_DIV_CD, ENTRPS_CD, USE_YN
+    TAT, RESRCE_SRVC_FG, CPR_DIV_CD, ENTRPS_CD, USE_YN,
+    PART_USE_YN                                   -- 🆕 [O213-F Y3-I] 참여신청 사용 여부(캠페인행사 전용 · 일반행사 NULL)
 from e
 
 union all
--- unknown 멤버(SK=0): 팩트 EVENT_SK=0(미매핑) 조인 유실 방지
--- [2026-08-03 O27] 센티넬 표기 통일: EVENT_KIND_NAME 도 '(미매핑)' 을 쓴다.
---   종전에는 같은 한 행 안에서 다른 컬럼은 '(미매핑)' 인데 이 컬럼만 '미상' 이었다(표기 분열).
---   이 1행이 GOLD 전체에 남아 있던 마지막 '미상' 이다(문서10 §14-D 실측) → 이로써 GOLD '미상' 은 소멸.
 select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, NULL, NULL, NULL,
     {{ gold_meta('CRM') }},
-    -- ⚠️ 센티넬 행도 컬럼 수를 맞춰야 한다(UNION ALL 위치 대응). 코드군·라벨은 값이 없으므로 NULL —
-    --    '(미매핑)' 을 넣지 않는다: 이 행은 「행사 미매핑」을 뜻하고 코드군·라벨 축의 미매핑이 아니다.
     NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL

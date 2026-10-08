@@ -26,7 +26,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET_YEARLY
     fby.BUDGET_YEAR AS fby.BUDGET_YEAR WITH SYNONYMS ('예산연도', '연도', '년') COMMENT = '예산 연도. 실제값 3종: 2024·2025·2026',
     fby.BUDGET_PROCEDURE AS fby.BUDGET_PROCEDURE WITH SYNONYMS ('예산절차', '예산 단계') COMMENT = '예산 절차. 실제값: 2024·2025 = ''추가경정'' · 2026 = ''연사업''. 🔴 연도마다 절차가 다르다 — 연도 비교 시 함께 밝힌다',
     item.BUDGET_ITEM_NAME AS item.BUDGET_ITEM_NAME WITH SYNONYMS ('세세목명', '예산항목명') COMMENT = '예산 세세목명',
-    item.BDGT_UNIT_NM AS item.BDGT_UNIT_NM WITH SYNONYMS ('예산단위', '예산 팀', '예산 부서', '예산단위명') COMMENT = '예산단위명(ERP 표기 그대로)'
+    item.BDGT_UNIT_NM AS item.BDGT_UNIT_NM WITH SYNONYMS ('예산단위', '예산 팀', '예산 부서', '예산단위명') COMMENT = '예산단위명(ERP 표기 그대로)',
+    item.ITEM_JANG_NM AS item.JANG_NM WITH SYNONYMS ('장', '예산 장') COMMENT = '🆕 [O213-F] 예산 과목 계층 최상위 「장」(원값 4종 · ERP 원장). 장 > 관 > 항 > 목 > 세목 > 세세목 순으로 좁아진다.',
+    item.ITEM_KWAN_NM AS item.KWAN_NM WITH SYNONYMS ('관', '예산 관') COMMENT = '🆕 [O213-F] 예산 과목 계층 「관」(원값 6종).',
+    item.ITEM_HANG_NM AS item.HANG_NM WITH SYNONYMS ('항', '예산 항') COMMENT = '🆕 [O213-F] 예산 과목 계층 「항」(원값 9종).',
+    item.ITEM_FUND_SOURCE_NM AS item.FUND_SOURCE_NM WITH SYNONYMS ('재원', '예산 재원') COMMENT = '🆕 [O213-F] 예산 재원명(원값 8종 · ERP 원장).'
   )
   METRICS (
     fby.TOTAL_PLAN_BUDGET_YEAR AS SUM(fby.PLAN_BUDGET_YEAR)

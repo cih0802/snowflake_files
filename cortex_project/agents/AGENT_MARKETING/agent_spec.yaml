@@ -77,7 +77,10 @@ instructions:
     \ 중인 회원 수) → analyst_member_sponsor_biz / 「전환·개발·중단 건수」\n→ analyst_member_event. 이 도구의 캠페인·후원사업별 합계는 다중후원 정상현상으로 서로 겹칠 수 있다\n(N 비가산 — SUM 금지). 특정 과거월 as-of 질문은 이 도구에 사전정의 지표가 없어 지금 시점 질문에만 쓴다.\n\n기간·필터·정렬·집계\
     \ 등 SQL 스코프는 각 SV 의 AI_SQL_GENERATION 이 담당하므로 여기서 반복하지 않되,\n사용자가 기간을 안 밝히면 SV 그레인에 맞는 기본 창을 질의에 명시해 전달한다\n(analyst_dev_achievement·analyst_budget=최근 12개월 월별 / analyst_ad·analyst_member_event=최근 7일 일별\
     \ /\nanalyst_member_cohort·analyst_member_fee·analyst_member_sponsor_biz=최근 12개월/지금 시점). 「전체·전기간」 명시 시 미적용. 시간은 절대 연/월로 표기.\n\n데이터 출처만 묻는 질문(SQL 불필요)은 도구를 호출하지 않고 SV COMMENT 의 [원천] 절로 바로 답한다 —\n단 규모·적재기간·커버리지를\
-    \ 함께 물으면 그 부분은 도구를 호출해 조회한다.\n"
+    \ 함께 물으면 그 부분은 도구를 호출해 조회한다.\n\n\U0001F534\U0001F534 \U0001F195 [O213 7차] 신규 축·도구 라우팅. ① 「회원유형·후원자유형·관심 후원사업·국가·기기·브라우저·사이트·유입채널(채널 그룹·광고 플랫폼)별 홈페이지 방문(세션)·방문자·페이지뷰」 → **analyst_ga_session** / 페이지 경로·이벤트\
+    \ 분류·UTM 원값 단위 → analyst_ga_behavior (두 도구 합산 금지). ② 「어떤 검색어로 들어왔나·구글 검색 노출·클릭·클릭률·순위」 → **analyst_search_console** (구글만 · 방문 세션과 대조 금지). ③ 「성별·연령대별 방문」 → **analyst_ga_demographic** (GA4 추정값 · CRM 회원\
+    \ 성별/나이 아님). ④ 「부서별·과목별 지출」 → **analyst_expense_resolution** (예산 도구와 합산 금지). ⑤ 광고를 매체·소재·예산출처·캠페인유형·UTM·CM 구분으로 분해 → analyst_ad. ⑥ GA·검색·광고·CRM 은 서로 다른 원천이다 — 「광고 클릭 → 방문 → 후원」을 한 표에서 이어 계산하지 않고 각 도구\
+    \ 값을 따로 제시한다.\n"
   system: "굿네이버스(Good Neighbors) 마케팅 도메인 분석 어시스턴트. 마케팅 보고서 5개 분석구분을 담당한다 — ①개발현황(목표·실적) ②집행예산·개발효율 ③매체별 개발효율 상세 ④전환회원 특성 ⑤캠페인별 LTV.\n- 배포된 활성 지표만 산출한다. 미가용 항목은 창작하지 않고 사유를 답한다.\n- \U0001F534\U0001F534 **「개발단가」는\
     \ 두 가지이며 섞으면 반드시 틀린다.**\n  · **대행사 리포트 기준**(정본 공7·공8) = `analyst_ad` 가 답한다. 분모는 대행사가 보고한 개발건수다.\n    공7 은 **디지털 전용**, 공8(GA 개발단가 · `GA_DEV_UNIT_PRICE`)도 **디지털 전용**이다. 재방송 개발단가는 참고 지표(공8 아님)로 재방송 전용이다.\n\
     \  · **CRM 개발실적 기준**(광고비 ÷ CRM 개발 사건수) = **산출 불가**다. 광고비와 CRM 개발실적은\n    서로 다른 팩트이므로 한 지표식으로 묶을 수 없다(cross-fact). 요구받으면 SQL 을 만들지 말고\n    두 팩트가 다르다는 것과 대행사 기준 대안을 밝힌다.\n  · 답변에 **어느 기준의 개발단가인지 반드시 명시**한다.\n\
@@ -120,6 +123,10 @@ instructions:
   - question: 캠페인별 평균 유지기간·12개월 이탈률과 총납입회비를 상위 10곳으로 보여줘
   - question: 광고·예산·전환회원 데이터의 원천(bronze)은 각각 어디야?
   - question: 캠페인별·후원사업별 지금 활동회원 수를 보여줘
+  - question: 2026년 9월 후원자유형별 홈페이지 방문 세션수를 보여줘
+  - question: 2026년 9월 구글 검색어 클릭수 상위 20개와 클릭률은?
+  - question: 성별·연령대별 홈페이지 방문 비중은?
+  - question: 유입 채널 그룹별 방문자수와 참여 세션수는?
 tools:
 - tool_spec:
     type: cortex_analyst_text_to_sql
@@ -144,7 +151,8 @@ tools:
       전체 지표 아님(개발건수는 O184 정정: VIDEO 도 보고). ⚠전환콜은 원천이 전건 비어 미노출. ⚠예산(analyst_budget)과 원천이 달라 교차 집계 불가. ⚠️ 마케팅캠페인 축으로 그루핑하면 미도달 광고행이 (미매핑)으로 모여 **캠페인별 합계 < 전체 합계**다 — 총계는 축 없이 답한다. 🔴 여전히 불가: **소재별 분해**(소재
       연결키 부재) · **개발캠페인(개별 캠페인명)별 분해**(광고비 배분 규칙 부재 — 「개발캠페인 수」 축이 그 배수를 보여준다) · **초수**(원천 표기 혼재·단위 오류로 미노출) · **캠페인 유형/국내해외/사업사례별 광고 효율**(광고 팩트에 캠페인 축 미도달). 🔴 광고비 ÷ CRM 개발실적(회원 팩트) 형태의 개발단가는 cross-fact
       라 불가하며 이 도구의 개발단가는 **대행사 리포트 기준**이다. 🔴 **매체 축은 방송 계열(채널사)만 실질적으로 채워져 있고 디지털 매체 축은 사실상 비어 있다** — 「매체별」 질문에는 계열을 밝힌다. 🟢 [O191 · 현업 회신 46] **전년 대비 가능** — 디지털 광고는 2024-01 부터 연속 적재돼 있다(「이전 데이터 없음」으로 답하지
-      말 것) · 월 집계를 전년 동월과 자기조인한다 · 개발실적 전년 대비는 analyst_member_event 를 따로 호출해 월 단위로 나란히 둔다(한 SQL 로 합치지 않는다).'
+      말 것) · 월 집계를 전년 동월과 자기조인한다 · 개발실적 전년 대비는 analyst_member_event 를 따로 호출해 월 단위로 나란히 둔다(한 SQL 로 합치지 않는다). 🆕 [O213 7차] 차원 추가: 매체(YOUTUBE·META·EBS 등 3원천 공통)·소재명·비용유형·예산출처(사단·사복·통합)·소재유형(디지털·영상)·캠페인유형(국내/해외
+      사례·사업)·UTM 캠페인 · 영상 전용 사업/사례 구분·CM 구분·국내/해외 · 방송구분·채널사유형·CTV구분·요일구분. 🔴 원천 전용 축은 다른 원천 행에서 NULL(결측 아님) — 혼합 집계 전에 출처유형으로 스코프한다.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_dev_achievement
@@ -161,7 +169,8 @@ tools:
     description: '예산 팩트(FBD, grain=월×세세목). 원천=ERP 예산·실적 원장(GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER, 파일 업로드 적재). 🔴 **마케팅 보고서 「2. 집행예산 및 개발효율」의 정본 도구**다. 활성 지표: 편성예산(월)·집행예산(ERP 마감값)·집행율. 차원: 연/월, 세세목명·예산구분 ·
       🆕 **예산단위(ERP 팀 6종)** · **개발인입경로(7종)**(O198). 🔴 예산단위는 ERP 표기이며 CRM 조직과 다르다 — 목록에 없는 팀(예: 컬쳐콘텐츠팀)은 「현재 데이터에서 조회되지 않고 콘텐츠기획팀이 조회된다」처럼 조회되는 예산단위와 그 수치를 함께 답한다(부재값 응답 규칙 · 같은 조직이라 단정 금지 · 0 을 만들지 않는다).
       예산 편성/집행/집행율 질문의 기본 도구. ⚠집행예산은 적재가 진행된 월까지만 값이 있어 연 합계 집행율은 분모 과대 — 집행 존재 월만 분모에 포함할 것. 🔴 비활성(적재 대기): **연 편성예산** · **월/누계 집행예산(추정치)**(원천이 대행사 리포트이며 예산 원장에 컬럼 부재) · **광고비**(광고비는 이 원천에 없다 — analyst_ad
-      소관) · 조직/캠페인별 · ROI. 🔴 예산(ERP)과 광고비(대행사)는 **서로 다른 원천이라 교차 집계·차감·비율 계산 금지**다. 🟢 [O191 · 현업 회신 42] 모금성비용은 **직접모금비1·직접모금비2 두 지표를 이름 그대로 나란히** 보여준다(하나로 단정 금지 · DIRECT_FUNDRAISING_COST_1·_2).'
+      소관) · 조직/캠페인별 · ROI. 🔴 예산(ERP)과 광고비(대행사)는 **서로 다른 원천이라 교차 집계·차감·비율 계산 금지**다. 🟢 [O191 · 현업 회신 42] 모금성비용은 **직접모금비1·직접모금비2 두 지표를 이름 그대로 나란히** 보여준다(하나로 단정 금지 · DIRECT_FUNDRAISING_COST_1·_2). 🆕 [O213 7차]
+      차원 추가: 예산 과목 장·관·항·재원(ERP 원장). 🔴 부서별 지출은 analyst_expense_resolution(다른 원천 · 합산 금지).'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_event
@@ -176,7 +185,8 @@ tools:
       법인구분**(CM019 통합/사단/사복). 이로써 회원 개발이력 비정규화 7속성 전부와 후원구분·법인구분이 회원 기준으로 집계된다. 🔴🔴 **이 9속성(캠페인카테고리·국내해외·사업사례구분·유입경로·마케팅캠페인·공통브랜드·UTM·후원구분·법인구분)은 캠페인 마스터 실시간 조인이 아니라 적재 시점 동결값이다** — 캠페인이 나중에 정정·개칭돼도 과거 개발이력
       사건의 값은 바뀌지 않는다. ⇒ 「현재 캠페인 분류 기준」을 묻는 질문에는 이 축으로 답할 수 없음을 밝히고, 같은 축을 다른 표면(WIDE 뷰 등)에서 조회한 값과 다를 수 있다는 것을 전제로 단다. 🔴🔴 **「법인구분」은 두 축이며 서로 다른 것이다** — **세부캠페인 법인구분**(CM019)은 이 도구로 **산출 가능**하고, 위에 적은 **조직
       계층의 법인**은 **불가**하다. 「법인별」 질문에 무조건 산출 불가로 답하지 말고 어느 축을 묻는지 먼저 확인한다. 🔴 추가 4종은 모두 **개발(DEV) 사건 전용** — 중단(STOP) 행은 전건 NULL 이므로 「후원구분별 중단건」·「법인구분별 중단건」으로 쓰지 말 것. ⚠️ **UTM 라벨은 채움이 낮다** — 코드는 있으나 원천 코드사전
-      미등재분이 다수다(결측이 아니라 미등재다) ⇒ 채움 비율을 기억으로 답하지 말고 도구로 조회해 확인한 뒤 UTM 별 분해가 부분집합임을 밝힌다. 🆕 [O193-B] 차원 추가: 회원 **문자수신 여부**(CHRCTR_RECPTN_YN · 현재 마스터 스냅샷이며 사건 시점 값이 아니다 · NULL 은 미입력).'
+      미등재분이 다수다(결측이 아니라 미등재다) ⇒ 채움 비율을 기억으로 답하지 말고 도구로 조회해 확인한 뒤 UTM 별 분해가 부분집합임을 밝힌다. 🆕 [O193-B] 차원 추가: 회원 **문자수신 여부**(CHRCTR_RECPTN_YN · 현재 마스터 스냅샷이며 사건 시점 값이 아니다 · NULL 은 미입력). 🆕 [O213 7차] 차원 추가(회원 현재
+      마스터 값): 결연구분·특별관리·최초후원사업·휴대폰/이메일 상태·TM/TS 거절 · 마케팅채널·가입경로·가입 공통브랜드.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_cohort
@@ -184,7 +194,8 @@ tools:
       → GOLD.FACT_MEMBER_COHORT. 🔴 **마케팅 보고서 「5-1. 캠페인별 활동기간」과 캠페인별 중단률(이탈률)의 정본 도구**다. 활성 지표: 획득 회원수, **12개월 고정 이탈률(CHURN_RATE_12M)**, 12개월 이탈 회원수/분모, 누적 이탈 회원수, **평균 유지기간**. 차원: **획득 캠페인 전 축**(캠페인명·카테고리(=주요캠페인)·브랜드·상위캠페인·홍보방법·모집채널·국내해외·사업사례·마케팅캠페인),
       **획득 시점 회원특성**(연령대·지역·성별), 획득일·연·월, **최초 중단일**(=가입캠페인중단일), 최초 중단사유, 획득 개발구분(코드), 획득근거(NEW/FALLBACK), 12개월 관측가능 여부. "캠페인별 활동기간/유지기간"·"캠페인별 중단률/이탈률"·"어떤 캠페인이 오래 남는가"·"캠페인별 회원 특성" 류 질문에 사용. 🔴 중단 **건수**는
       analyst_member_event, 중단 **률**·**유지기간**은 이 도구다 — grain 이 달라 두 도구의 수치를 더하거나 나누지 않는다. 🔴 중단률은 **12개월 고정**을 쓴다(누적 이탈률은 관측 기간에 지배되어 실행 연도가 다른 캠페인 비교를 왜곡한다). ⚠️**최초 중단일은 중단한 회원에게만 있다** — 값이 없는 것은 결손이 아니라
-      아직 중단하지 않은 회원이다. ⚠️획득 개발구분은 **코드만** 실재하고 라벨 컬럼이 없다 — 코드로 답하고 라벨이 필요하면 analyst_member_event 를 쓴다. ⚠기간 필터는 **획득 시점** 기준이다. ⚠획득시점 회원속성은 현재 값이 아니다. ⚠캠페인 비교 시 획득근거=NEW 로 한정하고 모집 규모 하한을 적용할 것을 권한다.'
+      아직 중단하지 않은 회원이다. ⚠️획득 개발구분은 **코드만** 실재하고 라벨 컬럼이 없다 — 코드로 답하고 라벨이 필요하면 analyst_member_event 를 쓴다. ⚠기간 필터는 **획득 시점** 기준이다. ⚠획득시점 회원속성은 현재 값이 아니다. ⚠캠페인 비교 시 획득근거=NEW 로 한정하고 모집 규모 하한을 적용할 것을 권한다. 🆕 [O213
+      7차] 차원 추가: 마케팅채널·후원사업 4그룹.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_member_fee
@@ -201,7 +212,7 @@ tools:
       SILVER(CRM_MEMBER_SPONSOR_SPAN+CRM_MEMBER_DEV) → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN. 🔴 **캠페인별/후원사업별 활동회원 수(지금 시점)의 정본 도구**다 — 회원grain 다중귀속(O8 미결) 문제 없이 약정(SPNSR_BSNS_NO) grain 에서 캠페인이 거의 1:1(다중은 극소수·최대
       2, 실측)이라 대표캠페인 규칙으로 분해 가능하다. 활성 지표: 지금 시점 활동회원수(CURRENTLY_ACTIVE_MEMBERS)·지금 시점 활동 약정금액·약정건수·고유회원수. 차원: 후원사업(명·정기일시구분·약칭카테고리)·대표캠페인(명·카테고리)·다중캠페인여부·활동개시월·중단월. "캠페인별/후원사업별 활동회원" 류 질문에 사용. 🔴🔴 **이 도구는
       analyst_member_event(전환·개발/중단 사건)와 다른 질문이다** — 「지금 후원을 유지 중인 회원 수」이며 개발·전환 건수가 아니다. 캠페인·후원사업별 합계는 다중후원 정상현상으로 서로 겹칠 수 있다(N 비가산 — SUM 금지, 「전체」와 각 캠페인 합계를 같게 기대하지 말 것). 🔴 특정 과거월 as-of 질문에는 사전정의 지표가
-      없다 — 지금 시점 질문에만 쓴다. 대표캠페인은 결정적 규칙(신규사건 우선, 없으면 최초사건)으로 정해졌으며 IS_MULTI_CAMPAIGN=TRUE 인 행이 있으면 다중이었다는 사실을 밝힌다.'
+      없다 — 지금 시점 질문에만 쓴다. 대표캠페인은 결정적 규칙(신규사건 우선, 없으면 최초사건)으로 정해졌으며 IS_MULTI_CAMPAIGN=TRUE 인 행이 있으면 다중이었다는 사실을 밝힌다. 🆕 [O213 7차] 차원 추가: 마케팅채널·후원 가입경로·후원사업 4그룹.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_ml_dvlp_forecast
@@ -247,13 +258,36 @@ tools:
       방문자수(distinct)·이벤트 단위 세션수(이벤트 고정 시만)·참여율 평균(참고). 차원: 방문일·연·월·주차·이벤트 카테고리/액션/라벨·채널그룹·소스/매체·UTM·기기유형·페이지 경로. "신규 사용자 유입 상위 채널"·"페이지별 이벤트"·"후원창 이벤트가 많은 페이지"·"채널별 방문 행동" 류 질문에 사용. 🔴🔴 **세션·사용자 수를 이벤트 간에
       더하지 않는다**(행마다 반복됨) — 사람 수는 식별 방문자수, 건수는 이벤트수로 답한다. 🔴 식별 방문자는 로그인 등으로 식별된 사람만이다(비식별 제외) — 「전체 방문자」라 하지 않는다. 🔴 채널 분포에는 Unassigned(큰 비중 · 비율은 조회 값으로)를 함께 보여준다. 🔴 **방문자 단위 예측(7일 내 첫 후원·재방문 가능성)·퍼널 단계
       라벨(유입/중간/전환 페이지)·신규 사용자(first_visit) 구분은 없다** — 🔴🔴 [O203 사용자 결정] GA 원천은 더 추가되지 않는다 ⇒ 답할 수 없는 부분은 **문구를 그대로** 「현재 GA 데이터로는 답변할 수 없습니다. 자세한 내용은 IT부서에 문의 바랍니다.」 로 안내한 뒤 집계 대안을 제시한다. 🔴 「추가 적재가 필요하다」·「준비되는
-      대로 제공하겠다」·「추후 제공을 약속할 수 없다」 같은 미래·약속 관련 표현을 덧붙이지 않는다. 🔴 CRM 개발·회비 실적과 원천이 달라 한 표에 합산·비율 계산하지 않는다.'
+      대로 제공하겠다」·「추후 제공을 약속할 수 없다」 같은 미래·약속 관련 표현을 덧붙이지 않는다. 🔴 CRM 개발·회비 실적과 원천이 달라 한 표에 합산·비율 계산하지 않는다. 🆕 [O213 7차] 차원 추가: UTM 콘텐츠·UTM 검색어. 🔴 회원유형·후원자유형·국가·브라우저·사이트별 방문(세션) 질문은 analyst_ga_session 으로 답한다.'
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_budget_yearly
     description: '[O203 T8 2차] 연 예산 편성·집행(grain=연×부서×예산과목×예산절차). 원천=ERP → GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET_YEARLY → GOLD.FACT_BUDGET_YEARLY. 활성 지표: 연 편성예산·연 집행예산·연 집행율(%). 차원: 예산연도(2024·2025·2026)·예산절차(2024·2025
       추가경정 · 2026 연사업)·세세목·예산단위. 「2024 연 편성예산」·「연도별 편성 대비 집행」 질문에 사용 — 🟢 2024 편성은 월 예산 도구(analyst_budget)에는 0 이고 이 도구에만 있다. 🔴 연도를 고정하거나 연도별로 나눈다(연도 합산 금지). 🔴 2026 은 진행 중 연도라 집행·집행율이 부분 연도다. 🔴 월 예산 도구(analyst_budget)와
-      한 표에 합산하지 않는다.'
+      한 표에 합산하지 않는다. 🆕 [O213 7차] 차원 추가: 예산 과목 장·관·항·재원(ERP 원장).'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ga_session
+    description: '🆕 [O213 7차] GA4 홈페이지 세션(1일 × 1세션). 원천=GA4(BigQuery export) → SILVER.BIGQUERY_REFINED_DATA → SILVER.BIGQUERY_SESSION → GOLD.FACT_BIGQUERY_SESSION. 활성 지표: 세션수(회)·방문자수(명)·참여 세션수·페이지뷰(회)·이벤트수(건).
+      차원: 방문일/연/월 · 회원유형(비로그인·정기회원·중단회원·일시회원·앱회원)·후원자유형(개인·단체·기업)·후원 행동 유형(신규·증액·감액·재후원)·관심 후원사업 유형·로그인 여부·결제수단 · 기기·운영체제·브라우저·기기 언어·휴대폰 제조사·사이트(호스트) · 대륙·하위대륙·국가·광역권 · 기본/주 채널 그룹·유입 플랫폼·구글애즈 캠페인·광고그룹·최초
+      유입 소스/매체·수집 UTM 매체 · 회원 식별 여부. 「후원자유형·회원유형·국가·기기·브라우저·사이트·유입채널별 방문(세션)·방문자」 질문의 정본. 🔴 세션·방문자수는 비가산(일자별 합산 금지). 🔴 페이지 경로·이벤트 분류 질문은 analyst_ga_behavior(다른 grain · 합산 금지). 🔴 「{{…}}」 형태 값은 GTM 미치환 수집
+      오류로 밝힌다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_search_console
+    description: '🆕 [O213 7차] 구글 서치콘솔 검색 성과(일 × 검색어 × 페이지 × 국가 × 기기). 원천=Google Search Console → BRONZE_GSC.SEARCH_CONSOLE_DATA → SILVER.SEARCH_CONSOLE_DATA → GOLD.FACT_SEARCH_CONSOLE. 활성 지표: 클릭수(회)·노출수(회)·클릭률(%)·평균순위(노출
+      가중). 차원: 검색일/연/월·검색어·노출 페이지·국가(alpha-3 코드 · kor=한국)·기기. 「어떤 검색어로 들어왔나」「구글 검색 노출·클릭·순위」 질문의 정본. 🔴 구글 검색만이다(네이버 등 없음). 🔴 홈페이지 방문(세션)과 다른 원천 — 클릭수를 세션수와 대조·합산하지 않는다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_ga_demographic
+    description: '🆕 [O213 7차] GA4 방문자 인구통계(일 × 기기 × 성별 × 연령대). 원천=GA4 Data API → BRONZE_GA4.GA4_USER_DEMOGRAPHIC → SILVER.GA4_USER_DEMOGRAPHIC → GOLD.FACT_GA4_DEMOGRAPHIC. 활성 지표: 세션수(회). 차원: 방문일/연/월·기기·성별(여성·남성·추정불가)·연령대(18-24~65+·추정불가).
+      「성별·연령대별 홈페이지 방문」 질문의 정본. 🔴 GA4 가 구글 신호로 추정한 값이다 — CRM 회원 성별·나이가 아니다. 🔴 사용자수는 비가산이라 제공하지 않는다. 🔴 analyst_ga_session 과 세션 정의·모수가 달라 대조·합산하지 않는다.'
+- tool_spec:
+    type: cortex_analyst_text_to_sql
+    name: analyst_expense_resolution
+    description: '🆕 [O213 7차] ERP 지출결의 명세(원천 1행 = 1행). 원천=ERP → BRONZE_ERP.EXPENSE_RESOLUTION → SILVER.ERP_EXPENSE_RESOLUTION → GOLD.FACT_EXPENSE_RESOLUTION. 활성 지표: 지출액(원)·결의 건수(건 · 비가산). 차원: 결의일/연/월·회계연도·결의부서(55종)·출처구분·예산단위·목·세목·세세목·재원·지출결의명·결의번호.
+      「부서별·과목별·재원별 지출(집행) 금액」 질문의 정본 — 예산 원장(analyst_budget)의 부서 축은 비어 있어 부서별 지출은 이 도구로만 답할 수 있다. 🔴🔴 예산 원장(analyst_budget·analyst_budget_yearly)과 원천·범위가 달라 금액을 대조·합산·비율 계산하지 않는다(「예산 대비 지출률」을 두 도구로 섞어 내지
+      않는다).'
 tool_resources:
   analyst_mstr_spnsr_dvlp:
     semantic_view: GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
@@ -332,6 +366,26 @@ tool_resources:
       warehouse: GN_DW_ANALYTICS_WH
   analyst_member_sponsor_biz:
     semantic_view: GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_ga_session:
+    semantic_view: GN_DW.SERVING.SV_GA_SESSION
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_search_console:
+    semantic_view: GN_DW.SERVING.SV_SEARCH_CONSOLE
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_ga_demographic:
+    semantic_view: GN_DW.SERVING.SV_GA_DEMOGRAPHIC
+    execution_environment:
+      type: warehouse
+      warehouse: GN_DW_ANALYTICS_WH
+  analyst_expense_resolution:
+    semantic_view: GN_DW.SERVING.SV_EXPENSE_RESOLUTION
     execution_environment:
       type: warehouse
       warehouse: GN_DW_ANALYTICS_WH

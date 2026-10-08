@@ -1333,6 +1333,27 @@ models:
         description: "[비가산 N] 대행사 산정 광고시청률 ← VIDEO.AD_VIEW_RT [VIDEO 전용]. base 부재로 DW 재계산 불가 ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
       - name: CPC_CALL_SRC
         description: "[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용] — 🔴 [O174] 종전 이름 BRDC_CPC_SRC 는 접두로만 구분해 **같은 지표의 다른 출처**로 읽혔다(실제로는 분모가 클릭 ↔ 콜로 다르다). DW 재계산=AD_COST/CLICKS (DEC-9 대조용) ⚠️[WIDE_AD_COMBINED] 방송 원천 전용 컬럼이다 — 디지털행은 **NULL 이며 결측이 아니라 원천 부재**다. 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것. ⚠️[WIDE_AD_COMBINED] 디지털 위성에 동명 컬럼이 있어 **BRDC_ 접두**를 붙였다 — 이 컬럼은 방송 원천값이다. 디지털 쪽 동명 컬럼과 같은 표에서 비교하지 말 것."
+      # 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10 — WIDE_AD_COMBINED SELECT 말미와 같은 순서(gn_view_commented 전량 등재 규칙)
+      - name: MEDIA_CHANNEL_NM
+        description: "매체/채널명(YOUTUBE·META·NBRAND·EBS·GDN 등 원값) ← 성과 원천 3종 공통(DGT MEDIA_NM · VIDEO/REBRDC CHNNL_NM). 「매체별 광고비·성과」의 1순위 축."
+      - name: CREATIVE_NM
+        description: "소재명 ← DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM(재방송은 방송명). 원천별 의미가 조금씩 다르다 — 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+      - name: COST_TYPE
+        description: "비용유형 GA(디지털)·집행(영상)·편성(재방송) — 광고비 산정 기준이 원천별로 다르다는 표시. 사실상 AD_SOURCE_TYPE 과 1:1."
+      - name: BDGT_SOURCE_NM
+        description: "예산출처(사단·사복·통합 원값) ← DGT·VIDEO.BDGT_SOURCE_NM. 🔴재방송(REBRDC) 원천에는 개념이 없어 NULL(결측 아님)."
+      - name: MATR_TY_NM
+        description: "소재유형(영상·이미지 등 원값) ← DGT·VIDEO.MATR_TY_NM. 재방송 NULL(원천 부재). ⚠️디지털 위성 CREATIVE_TYPE 과 디지털 행에서는 같은 원천값이다."
+      - name: CMPGN_TYPE_BSN_NM
+        description: "캠페인유형(사업 · 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 원값) ← DGT.CMPGN_TYPE_BSN_NM [DGT 전용 · 방송행 NULL = 원천 부재]."
+      - name: UTM_CMPGN_NM
+        description: "UTM 캠페인 태그(turn24b·children2406 등 원값) ← DGT.UTM_CMPGN_NM [DGT 전용]. GA4 유입 캠페인(UTM)과 대조할 때 쓰는 연결 키 후보(조인 미검증)."
+      - name: BSNS_CASE_DIV_NM
+        description: "사업/사례 구분(사례·굿즈·사업·기타 원값) ← VIDEO.BSNS_CASE_DIV_NM [VIDEO 전용 · 그 밖 NULL = 원천 부재]."
+      - name: CM
+        description: "CM 구분(전CM·중CM·후CM·전SPOT CM·후SPOT CM 원값) ← VIDEO.CM [VIDEO 전용]. ⚠️CM_POSITION(CM 위치 ← CM_AREA)과 다른 원천 컬럼이다."
+      - name: DMST_OVSEA_DIV_NM
+        description: "국내/해외 구분(국내·해외·통합 원값) ← VIDEO.DMST_OVSEA_DIV_NM [VIDEO 전용 · 그 밖 NULL = 원천 부재]."
   - name: WIDE_MEMBER_SERVICE_COHORT
     description: "[O205] 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도. 발송(FACT_MESSAGE_DISPATCH)·획득(DIM_MEMBER_ACQUISITION)·중단(FACT_MEMBER_EVENT)·행사참여(FACT_EVENT_ATTENDANCE)를 회원 단위로 미리 결합해 SV 간 교차결합 없이 「수신/미수신 비교」·「발송 후 5일 내 중단자 특성」·「수신회원 유지기간·참여횟수」를 답한다. 🔴수신 행 = 그 해 그 그룹 발송을 1회 이상 받은 회원(연도별 1행) · 미수신 행 = 획득 코호트 회원 중 그 그룹을 받은 적 없는 회원(RECEIVE_YEAR NULL 1행). 🟢[O206 A안] 서비스그룹은 원천 서비스코드(발송코드 MS049 상위 카테고리) 우선 · 카테고리가 없는 발송은 발송 제목 부분일치(MATCH_BASIS 로 근거 구분). 🔴수신·미수신 차이는 인과(효과)가 아니다."
     columns:
