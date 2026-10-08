@@ -28,6 +28,10 @@ FROM (
 ) a
 WHERE a.run IN ('agent_executive_eval_o208c_v3', 'agent_executive_eval_o209_x6_v11',
                 'agent_member_eval_o209_v10', 'agent_member_eval_o209_v11', 'agent_member_eval_o209_v12',
-                'agent_marketing_eval_o209_before', 'agent_marketing_eval_o209_after')
+                'agent_marketing_eval_o209_before', 'agent_marketing_eval_o209_after',
+                -- [O211] 새 계정 nj58180 재실행(옛 실행 7종은 이관되지 않음 · 데이터셋 = SERVING.O211_*_DS)
+                'o211_executive_v3', 'o211_member_v3', 'o211_marketing_v3',
+                -- [O211 v2 데이터셋] 무도구 정답 12문항 = ground_truth_invocations [](EXEC 2 · MKT 10)
+                'o211_executive_v3_ds2', 'o211_marketing_v3_ds2')
 GROUP BY a.agent, a.run, a.metric, a.ver
 ORDER BY 1, 2, 3;

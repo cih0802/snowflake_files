@@ -31,3 +31,19 @@ artifacts:
     type: eval_config
   - path: agent_marketing_eval_o209_after.eval.yaml
     type: eval_config
+  - path: o211_executive_eval.eval.yaml
+    type: eval_config
+  - path: o211_executive_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_member_eval.eval.yaml
+    type: eval_config
+  - path: o211_member_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_marketing_eval.eval.yaml
+    type: eval_config
+  - path: o211_marketing_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_executive_eval_v2.eval.yaml
+    type: eval_config
+  - path: o211_marketing_eval_v2.eval.yaml
+    type: eval_config

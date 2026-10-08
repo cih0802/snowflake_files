@@ -1,7 +1,7 @@
 문항ID,Agent,정답Agent여부,사용도구,정답도구사용,무도구정답,라우팅판정,MSTR기준,GN_DW기준,계산전확인,영문사고문
 Q01,AGENT_MEMBER,True,analyst_member_cohort analyst_ml_sponsor_risk,True,False,True,False,False,False,False
 Q02,AGENT_MEMBER,True,analyst_ml_member_risk,True,False,True,False,False,False,False
-Q03,AGENT_EXECUTIVE,True,analyst_mbrfee_prdt_actl analyst_ml_fee_forecast,True,False,True,False,False,False,False
+Q03,AGENT_EXECUTIVE,True,analyst_mbrfee_prdt_actl analyst_ml_fee_forecast,True,False,True,False,False,True,False
 Q03,AGENT_MEMBER,False,analyst_mbrfee_prdt_actl,True,False,True,False,False,True,False
 Q04,AGENT_EXECUTIVE,True,analyst_mbrfee_prdt_actl,True,False,True,False,False,False,False
 Q04,AGENT_MEMBER,False,analyst_mbrfee_prdt_actl,True,False,True,False,False,False,False
@@ -29,15 +29,15 @@ Q16,AGENT_EXECUTIVE,True,analyst_ml_dvlp_forecast,True,False,True,True,True,Fals
 Q16,AGENT_MARKETING,False,analyst_ml_dvlp_forecast,True,False,True,False,False,False,False
 Q17,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q18,AGENT_EXECUTIVE,True,analyst_ml_feature_importance,True,False,True,False,False,True,False
-Q18,AGENT_MARKETING,False,analyst_ml_feature_importance,True,False,True,False,False,False,False
+Q18,AGENT_MARKETING,False,analyst_ml_feature_importance,True,False,True,False,False,True,False
 Q19,AGENT_MARKETING,True,,False,True,True,False,False,True,False
-Q20,AGENT_MARKETING,True,,False,False,False,False,False,False,False
+Q20,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q21,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q22,AGENT_MARKETING,True,analyst_member_event,True,False,True,False,True,True,False
 Q23,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q24,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q25,AGENT_MARKETING,True,,False,True,True,False,False,True,False
-Q26,AGENT_MARKETING,True,,False,True,True,False,False,False,False
+Q26,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q27,AGENT_MARKETING,True,,False,True,True,False,False,True,False
 Q28,AGENT_MEMBER,True,analyst_ml_once_conversion,True,False,True,False,False,False,False
 Q28,AGENT_MARKETING,False,analyst_ml_once_conversion,True,False,True,False,False,False,False
@@ -45,7 +45,7 @@ Q29,AGENT_MARKETING,True,analyst_ml_ltv_forecast,True,False,True,False,False,Fal
 Q30,AGENT_MARKETING,True,,False,True,True,False,False,False,False
 Q31,AGENT_MARKETING,True,analyst_ml_ltv_forecast,True,False,True,False,False,False,False
 Q32,AGENT_MEMBER,True,analyst_ml_member_risk,True,False,True,False,True,False,False
-Q32,AGENT_MARKETING,False,analyst_ml_member_risk,True,False,True,False,False,False,False
+Q32,AGENT_MARKETING,False,analyst_ml_member_risk,True,False,True,False,False,True,False
 Q33,AGENT_MARKETING,True,analyst_ga_behavior,True,False,True,False,False,False,False
 R10,AGENT_MEMBER,True,analyst_service_cohort,True,False,True,False,False,False,False
 R11,AGENT_MEMBER,True,analyst_service analyst_service_cohort,True,False,True,False,True,True,False

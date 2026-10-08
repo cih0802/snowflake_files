@@ -1,0 +1,70 @@
+# O212 6차 R3 — 4차(O207-C) 원본 복원 + 이월 a·b + O212 신설 규칙 덧붙이기(K6 예외 · 작업계획 §12 에 목록 기록)
+# 사용: python3 tmp/o212_restore.py   (3종 일괄 · 원본 해시 불일치면 중단)
+# Co-authored with CoCo
+import hashlib, shutil, sys, yaml
+
+SRC = '/workspace/12_agent개선과제/12_O211_4차복원_AGENT_{}_spec.yaml'
+DST = '/workspace/cortex_project/agents/AGENT_{}/agent_spec.yaml'
+SHA = {
+    'EXECUTIVE': '844537b98e231656db5a53c05887d159110cb36e18efc56a9bae68f12e148e42',
+    'MEMBER': 'ed721cbadd96865409f5217f383d0e5eeca0f8b90be999d99f325c4f53935e5f',
+    'MARKETING': '52d1f345187facef1f534385570d99b8918501dd0dd7d562608ea084ea878ab8',
+}
+
+# 이월 a·b = 5차(O209) 원문 그대로(라벨만 「O209 이월」)
+CARRY_A = ('[공통 · 중간 메시지 언어 · O209 이월] 도구를 호출하기 전후에 쓰는 중간 메시지·진행 안내·계획도 사용자에게 보인다. '
+           '한국어 한 문장으로만 쓰거나 쓰지 않는다 — 「I\'ll」「Let me」「Now I」 같은 영어 문장을 절대 쓰지 않는다. '
+           '도구 결과를 해석하는 생각은 출력하지 않는다.')
+CARRY_B = ('[공통 · 「신규」 해석 · O209 이월] 「신규 개발」의 「신규」는 기본적으로 개발구분 = 신규로 해석한다. '
+           '사용자가 「신규/기존」「신규기존구분」을 명시할 때만 신규기존구분 축을 쓴다. 어느 축으로 해석했는지 표 제목에 밝힌다.')
+ORCH_O212 = ('🔴🔴 [O212-B 원천 컬럼명 원칙 · 분류 축] 질문의 분류 이름은 원천 컬럼 COMMENT 의 한글 이름 그대로 축에 대응한다 '
+             '— 「브랜드」 = 브랜드(MSTR BRND_NM · FME CAMPAIGN_BRAND) · 「공통브랜드」 = 공통브랜드(CMMN_BRND_NM) '
+             '· 「캠페인유형」 = 캠페인유형(국내/해외 · MSTR CMPGN_TYPE1_NM · FME DOMESTIC_OVERSEAS) '
+             '· 「캠페인유형2」 = 캠페인유형(사업/사례 · CMPGN_TYPE2_NM · BIZ_CASE_TYPE) '
+             '· 「캠페인카테고리」·「주요캠페인」 = 캠페인카테고리(CMPGN_CTGR_NM · CAMPAIGN_TYPE) '
+             '· 「개발인입경로」·「인입경로」 = 개발인입경로(DVLP_INFLOW_PATH_NM · CAMPAIGN_INFLOW_PATH). '
+             '묻지 않은 분류 축을 함께 GROUP BY 하지 않는다. '
+             '공통브랜드·개발인입경로·캠페인유형·캠페인유형2·캠페인카테고리는 analyst_mstr_spnsr_dvlp 에도 있다 '
+             '— 개발 실적을 이 축으로 물으면 MSTR 도구로 답한다(O207 교차 규칙에서 제외). '
+             'analyst 도구에 질의를 넘길 때 축 이름(예: 「캠페인유형별」)을 그대로 넣는다.')
+RESP_O212 = ('🔴🔴 [O212 두괄식 답변 형식 · 보고용] 답변은 3단으로만 쓴다. '
+             '① **핵심 요약**(맨 위 · 3줄 이내 · 한 줄 = 결론 한 문장 + 핵심 수치 1개 · 기준(MSTR/GN_DW)과 기간을 함께). '
+             '② **그래프**(값이 2개 이상 기간 또는 범주이면 1개 · 시계열 = 선 그래프 · 범주 비교 = 막대 그래프 · 예측은 실적과 다른 계열로 같은 선 그래프에 구분). '
+             '③ **▼ 상세**(표 · 산식 · 한계 · 각주 · 원천 · 드릴다운 제안). '
+             '🔴 해석·주의사항·방법론·모델 설명은 ① 에 쓰지 않고 전부 ③ 으로 내린다. 같은 내용을 반복하지 않는다. ① 과 ② 만 읽어도 결론이 서야 한다. '
+             '예측(중단 예측·회비 예측·개발 예측) 답변의 ① 은 「예측값 · 예측 기간 · 직전 실적 대비 증감」만 쓴다 — 신뢰구간·모델·한계는 ③ 으로. '
+             '이 규칙은 아래 「결론 → 표 → 산식·한계」 순서를 구체화한다(표는 ③ 에 둔다). '
+             '🔴 [O212 스모크 결함 4종] ㉠ 금액은 도구 결과의 원 단위를 천단위 쉼표로 그대로 쓴다(예: 1,884,450,000원) — 억·만원으로 환산하지 않는다(실측 = 18억을 188억·1억으로 오기). '
+             '㉡ ① 핵심 요약은 한 번만 쓴다(같은 블록 재출력 금지). ㉢ <answer> 같은 태그·마크업 이름을 본문에 쓰지 않는다. '
+             '㉣ 중간 진행 문장도 한국어로만 쓴다(「Now let me」 등 영어 금지).')
+TONE_O212B = ('[O212-B NGO 친화 표현 · 전 Agent 공통] 어투는 전문적이되 단어·표현은 일상적이고 NGO 사업에 맞는 것으로 쓴다. '
+              '「횡보적 평형」→「보합세」 · 「전환율」→「정기후원 전환 비율」 · 「이탈」→「중단」 · 「리텐션」→「유지율」 · 「이탈 확률이 높은 고위험군」→「중단 가능성이 큰 후원자」 '
+              '· 「세그먼트」→「분류」 · 「코호트」→「가입 시기별 회원 묶음」 · 「인사이트」→「시사점」. '
+              '번역투(「~는 ~한 것으로 나타납니다」)를 쓰지 말고 자연스러운 한국어(「~ 입니다」「~ 줄었습니다」)로 쓴다. '
+              '후원자·후원금을 지칭할 때 「고객」이 아니라 「후원자」「후원회원」을 쓴다.')
+
+
+def sha(p):
+    return hashlib.sha256(open(p, 'rb').read()).hexdigest()
+
+
+for a, h in SHA.items():
+    src, dst = SRC.format(a), DST.format(a)
+    if sha(src) != h:
+        sys.exit(f'{a} 원본 해시 불일치 — 중단')
+    shutil.copyfile(src, dst)
+    if sha(dst) != h:
+        sys.exit(f'{a} 복원 후 해시 불일치 — 중단')
+    d = yaml.safe_load(open(dst, encoding='utf-8'))
+    ins = d['instructions']
+    for k in ('orchestration', 'response'):
+        if ins.get(k) in (None, 'auto'):
+            sys.exit(f'{a} instructions.{k} 부재 — 중단')
+    ins['orchestration'] = '\n\n'.join([CARRY_A, CARRY_B, ORCH_O212, ins['orchestration']])
+    ins['response'] = RESP_O212 + '\n\n' + TONE_O212B + '\n\n' + ins['response']
+    with open(dst, 'w', encoding='utf-8') as f:
+        yaml.safe_dump(d, f, allow_unicode=True, sort_keys=False, width=200)
+    d2 = yaml.safe_load(open(dst, encoding='utf-8'))
+    tools = len(d2.get('tools', []))
+    print(a, 'restored', h[:12], '→', sha(dst)[:12], 'tools', tools,
+          'orch', len(d2['instructions']['orchestration']), 'resp', len(d2['instructions']['response']))

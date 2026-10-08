@@ -1,3 +1,5 @@
+# 🔴 [O212 · 2026-10-08] 개념 보존 · 이 사이트 미배포 — 라이브 GN_DW.SERVING.AGENT_GUIDE 는 6차 롤백에서 DROP 했다.
+#    재생성 = 12_agent개선과제/09_O209_AGENT_GUIDE_create.sql (다른 사이트 재사용용 · 작업계획 §11)
 models:
   orchestration: "auto"
 instructions:

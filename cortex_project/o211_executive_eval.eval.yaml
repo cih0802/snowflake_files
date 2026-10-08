@@ -1,0 +1,13 @@
+evaluation:
+  agent: GN_DW.SERVING.AGENT_EXECUTIVE
+  agent_version: DEFAULT
+  dataset_fqn: GN_DW.SERVING.O211_EXECUTIVE_DS
+metrics:
+  - name: answer_correctness
+    version: v3_0
+  - name: logical_consistency
+    version: v3_0
+  - name: tool_selection_accuracy
+    version: v3_0
+  - name: tool_execution_accuracy
+    version: v3_0

@@ -30,7 +30,8 @@ def run(c):
 
 
 def judge():
-    ask = re.compile('(계산할까요|진행할까요|드릴까요|원하시면|알려주시면|확인해야)')
+    # [O211] Q20 거짓 음성 보강 — 「알려 주세요」·「확인해 주세요」·「정해 주시면」(띄어쓰기 변이 포함)
+    ask = re.compile(r'(계산할까요|진행할까요|드릴까요|원하시면|알려\s?주시면|확인해야|알려\s?주세요|확인해\s?주세요|정해\s?주시면)')
     eng = re.compile(r"\b(I'll|I will|Let me|Found it|There's|Now I)\b")
     by = {r['문항ID']: r for r in ROWS}
     w = csv.writer(open(f'{OUT}/_judge.csv', 'w', encoding='utf-8', newline=''))
