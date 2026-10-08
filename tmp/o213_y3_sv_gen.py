@@ -8,7 +8,7 @@
 import collections, csv, hashlib, io, re, sys
 
 APPLY = "--apply" in sys.argv
-SPEC = "/workspace/tmp/o213_y3_sv_spec.tsv"
+SPEC = sys.argv[sys.argv.index("--spec") + 1] if "--spec" in sys.argv else "/workspace/tmp/o213_y3_sv_spec.tsv"
 FILES = {
     "SV_MEMBER_EVENT": "05_2_SV_DDL_MEMBER_EVENT.sql",
     "SV_MEMBER_COHORT": "05_3_SV_DDL_MEMBER_COHORT.sql",

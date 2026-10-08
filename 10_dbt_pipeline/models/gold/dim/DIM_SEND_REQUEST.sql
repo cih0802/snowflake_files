@@ -20,7 +20,21 @@ select
     q.CONDITION_TITLE, q.MENU_CODE, q.SERVICE_MENU_CODE, q.USE_YN,
     -- 발송결과 7 (요청 1:1 · 결과 미적재 요청은 NULL)
     r.RECPTN_CNT, r.ALTRTV_SNDNG_CNT, r.SNDNG_STRT_DT, r.SNDNG_END_DT, r.RESVE_SNDNG_DE, r.SNDNG_SQNC, r.SNDNG_TIT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [2026-10-08 O213-E · 7차 Y3-E] 요청 분류 축 라벨(감사 컬럼 뒤 · 코드그룹 실측 · 채널 비해당 NULL)
+    q.MSG_DIV_CD,                                   -- MS010 · 알림톡 전용
+    c_md.DTL_CD_NM                                  as MSG_DIV_NAME,
+    q.SNDNG_TIME_DIV_CD,                            -- MS267 · 알림톡 전용
+    c_tm.DTL_CD_NM                                  as SNDNG_TIME_DIV_NAME,
+    q.PSTMTR_PRCS_STAT_CD,                          -- MS061 · 우편 전용
+    c_ps.DTL_CD_NM                                  as PSTMTR_PRCS_STAT_NAME,
+    q.CORP_TYPE,                                    -- CM019 · SND 전용
+    c_cp.DTL_CD_NM                                  as CORP_TYPE_NAME,
+    q.SEND_SPLIT_TYPE                               -- SND 전용 원천값 once / divide
 from {{ ref('CRM_SEND_REQUEST') }} q
 left join {{ ref('CRM_SEND_RESULT') }} r
     on r.SNDNG_KEY = q.SNDNG_KEY and r.SEND_CHANNEL = q.SEND_CHANNEL
+left join {{ ref('CRM_CODE') }} c_md on c_md.CD_ID = 'MS010' and c_md.DTL_CD_ID = q.MSG_DIV_CD
+left join {{ ref('CRM_CODE') }} c_tm on c_tm.CD_ID = 'MS267' and c_tm.DTL_CD_ID = q.SNDNG_TIME_DIV_CD
+left join {{ ref('CRM_CODE') }} c_ps on c_ps.CD_ID = 'MS061' and c_ps.DTL_CD_ID = q.PSTMTR_PRCS_STAT_CD
+left join {{ ref('CRM_CODE') }} c_cp on c_cp.CD_ID = 'CM019' and c_cp.DTL_CD_ID = q.CORP_TYPE

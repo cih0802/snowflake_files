@@ -8,8 +8,10 @@ con = snowflake.connector.connect(account=os.environ["SNOWFLAKE_ACCOUNT"], host=
                                   database="GN_DW", schema="SERVING")
 cur = con.cursor()
 SENT = {"-", "(미매핑)", "(해당없음)", "미확인", "기타", "없음", "UNKNOWN", "Unknown"}
-spec = list(csv.DictReader(io.open("/workspace/tmp/o213_y3_sv_spec.tsv", encoding="utf-8"), delimiter="\t"))
-out = io.open("/workspace/tmp/o213_y3_smoke.tsv", "w", encoding="utf-8")
+SPEC = sys.argv[sys.argv.index("--spec")+1] if "--spec" in sys.argv else "/workspace/tmp/o213_y3_sv_spec.tsv"
+OUTP = SPEC.replace("_sv_spec.tsv", "_smoke.tsv")
+spec = list(csv.DictReader(io.open(SPEC, encoding="utf-8"), delimiter="\t"))
+out = io.open(OUTP, "w", encoding="utf-8")
 out.write("sv\tdim\tmetric\tgroups\ttop6\tsentinel\tstatus\n")
 bad = 0
 metric_of = {}

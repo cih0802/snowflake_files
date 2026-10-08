@@ -146,7 +146,36 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     JOIN_CMMN_BRND_NM    VARCHAR(100)     COMMENT '가입 공통브랜드명. 코드id:MM297',
     CHRCTR_RECPTN_YN       VARCHAR(1)      COMMENT '문자수신여부 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     SPECL_MNG_CD1          VARCHAR(100)    COMMENT '특별관리코드1 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
-    FDRM_MBER_TRNSFER_FG   BOOLEAN         COMMENT '정기회원이관유무 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_ONCE_MBER_INFO]'
+    FDRM_MBER_TRNSFER_FG   BOOLEAN         COMMENT '정기회원이관유무 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
+    -- 🆕 [2026-10-08 O213-D · 7차 Y3-C] 회원 분류 축 라벨 27컬럼 — 코드그룹 실측 확정 · 사전에 없는 코드는 라벨 NULL(코드 보존)
+    RELATNSP_DIV_CD        VARCHAR         COMMENT '결연구분 코드(MM019). 코드id:MM019.',
+    RELATNSP_DIV_NAME      VARCHAR         COMMENT '결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원). 일시회원은 NULL(원천 개념 없음).',
+    SPECL_MNG_NAME         VARCHAR         COMMENT '특별관리 구분(SPECL_MNG_CD1 의 MM012 라벨 · 예: 일반·더네이버스클럽·평생회원·홍보대사·이사회). 대부분 「일반」.',
+    SPECL_MNG_CD2          VARCHAR(100)    COMMENT '특별관리코드2(MM012). 코드id:MM012.',
+    SPECL_MNG2_NAME        VARCHAR         COMMENT '특별관리 구분2(SPECL_MNG_CD2 의 MM012 라벨) — 값이 있는 회원은 소수다.',
+    FIRST_SPONSORSHIP_NAME VARCHAR         COMMENT '최초 후원사업명(FIRST_SPONSORSHIP → DIM_SPONSORSHIP.SPONSORSHIP_BK · 2026-10-08 매칭 100%).',
+    MOBLPHON_STAT_CD       VARCHAR         COMMENT '휴대폰 상태 코드(MM008). 코드id:MM008.',
+    MOBLPHON_STAT_NAME     VARCHAR         COMMENT '휴대폰 상태(MM008 · 정상·결번·타인번호).',
+    ETC_CTTPC_STAT_CD      VARCHAR         COMMENT '기타연락처 상태 코드(MM008). 코드id:MM008.',
+    ETC_CTTPC_STAT_NAME    VARCHAR         COMMENT '기타연락처 상태(MM008 · 정상·결번·타인번호).',
+    EMAIL_STAT_CD          VARCHAR         COMMENT '이메일 상태 코드(MM009). 코드 0 은 사전에 없다. 코드id:MM009.',
+    EMAIL_STAT_NAME        VARCHAR         COMMENT '이메일 상태(MM009 · 정상·계정없음·도메인오류). 코드 0 은 라벨 NULL.',
+    TSTM_DIV_CD            VARCHAR         COMMENT 'TM/TS 거절구분 코드(MS026). 🔴 코드 0(대다수)은 사전에 없다 — 의미 미확정. 코드id:MS026.',
+    TSTM_DIV_NAME          VARCHAR         COMMENT 'TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 코드 0 은 라벨 NULL.',
+    ETC_TSTM_DIV_CD        VARCHAR         COMMENT '기타연락처 TM/TS 거절구분 코드(MS026). 코드 0 은 사전에 없다. 코드id:MS026.',
+    ETC_TSTM_DIV_NAME      VARCHAR         COMMENT '기타연락처 TM/TS 거절구분(MS026). 코드 0 은 라벨 NULL.',
+    REL_NAME               VARCHAR         COMMENT '일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).',
+    SLRCLD_LRR_NAME        VARCHAR         COMMENT '생일 양력/음력(CM029 · 양력·음력·불명확). 코드 0 은 라벨 NULL.',
+    EMAIL_RECV_REFUSE_YN   BOOLEAN         COMMENT '이메일 수신 항목 = 수신거부(MS028 코드 1) 포함 여부. 원천 구 체계 값(Y·N·0)·NULL 은 NULL.',
+    EMAIL_RECV_REGULAR_YN  BOOLEAN         COMMENT '이메일 수신 항목 = 정기우편물(MS028 코드 2) 포함 여부.',
+    EMAIL_RECV_RELATION_YN BOOLEAN         COMMENT '이메일 수신 항목 = 결연이메일(MS028 코드 3) 포함 여부.',
+    EMAIL_RECV_THANKS_YN   BOOLEAN         COMMENT '이메일 수신 항목 = 감사서비스(MS028 코드 4) 포함 여부.',
+    EMAIL_RECV_WEBZINE_YN  BOOLEAN         COMMENT '이메일 수신 항목 = 웹진(MS028 코드 5) 포함 여부.',
+    EMAIL_RECV_DEV_YN      BOOLEAN         COMMENT '이메일 수신 항목 = 개발이메일(MS028 코드 6) 포함 여부.',
+    POST_RECV_REFUSE_YN    BOOLEAN         COMMENT '우편물 수신 항목 = 수신거부(MS027 코드 1) 포함 여부. 원천 구 체계 값(Y·N·0)·NULL 은 NULL.',
+    POST_RECV_REGULAR_YN   BOOLEAN         COMMENT '우편물 수신 항목 = 정기우편(MS027 코드 2) 포함 여부.',
+    POST_RECV_RELATION_YN  BOOLEAN         COMMENT '우편물 수신 항목 = 결연우편(MS027 코드 3) 포함 여부.',
+    POST_RECV_NEW_THANKS_YN BOOLEAN        COMMENT '우편물 수신 항목 = 신규/감사 우편(MS027 코드 4) 포함 여부. 🔴 원천에 사전 밖 코드 5·6·8·10 이 소수 있다(무시).'
 ) COMMENT = '정규 회원 마스터 차원 (분석 기본 진입점). [Grain: MEMBER_DK (1행=1회원, IS_CURRENT 투영)]. [주의: 과거 시점 상태 분석은 DIM_MEMBER_STATUS_HISTORY 시점조인 사용]. [원천: SILVER.CRM_MEMBER_STATUS_HIST(IS_CURRENT)].';
 
 -- DIM_MEMBER_ACQUISITION — 회원 획득(가입) 귀속 차원
@@ -785,7 +814,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     RESPONSED_YN           VARCHAR(255)    COMMENT '발송확인여부 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',
     RESPONSED_DT           TIMESTAMP_NTZ   COMMENT '확인일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',
     REAL_SEND_DT           TIMESTAMP_NTZ   COMMENT '실제발신일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',
-    SEND_REQUEST_SK        NUMBER(38,0)    COMMENT '발송 요청 (FK→DIM_SEND_REQUEST) · 0=요청 미매칭 [O196-D DEC-58]'
+    SEND_REQUEST_SK        NUMBER(38,0)    COMMENT '발송 요청 (FK→DIM_SEND_REQUEST) · 0=요청 미매칭 [O196-D DEC-58]',
+    SND_SPNSR_NM           VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 회원 후원사업명(문자 SND 전용 스냅샷 · 타 채널 NULL) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_DSCNTC_RSN_NM      VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 중단사유명(SND 전용 · 중단 이력 회원만 값) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_CHILD_PROJECT_COUNTRY VARCHAR      COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업국(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_CHILD_WORKPLACE_NM VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업장명(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -1253,7 +1286,16 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_REQUEST (
     DW_SOURCE_SYSTEM        VARCHAR NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    MSG_DIV_CD              VARCHAR         COMMENT '🆕 [O213-E] 메시지 구분 코드(MS010 · 알림톡 요청 전용). 코드id:MS010.',
+    MSG_DIV_NAME            VARCHAR         COMMENT '🆕 [O213-E] 메시지 구분(MS010 · SMS·LMS·MMS·알림톡). 타 채널 NULL.',
+    SNDNG_TIME_DIV_CD       VARCHAR         COMMENT '🆕 [O213-E] 발송 시간 구분 코드(MS267 · 알림톡 요청 전용). 코드id:MS267.',
+    SNDNG_TIME_DIV_NAME     VARCHAR         COMMENT '🆕 [O213-E] 발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송). 타 채널 NULL.',
+    PSTMTR_PRCS_STAT_CD     VARCHAR         COMMENT '🆕 [O213-E] 우편물 처리상태 코드(MS061 · 우편 요청 전용). 코드id:MS061.',
+    PSTMTR_PRCS_STAT_NAME   VARCHAR         COMMENT '🆕 [O213-E] 우편물 처리상태(MS061 · 발송대기·발송완료). 타 채널 NULL.',
+    CORP_TYPE               VARCHAR(10)     COMMENT '🆕 [O213-E] 요청 법인구분 코드(CM019 · 문자 SND 요청 전용 · 대다수 NULL). 코드id:CM019.',
+    CORP_TYPE_NAME          VARCHAR         COMMENT '🆕 [O213-E] 요청 법인구분(CM019 · 사단·사복).',
+    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '🆕 [O213-E] 문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).'
 ) COMMENT = '발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다(DEC-58)]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]';
 
 -- FACT_RELATION_ACTIVITY — 결연활동 팩트 · O196-D DEC-58 #2 신설

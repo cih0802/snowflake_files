@@ -40,7 +40,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     fra.TRNSFER_YN AS fra.TRNSFER_YN WITH SYNONYMS ('이관여부') COMMENT = '이관 여부(선물금 계열). 실제값 3종: ''0''·''1''·''2'' + NULL. 🔴 여부 컬럼이지만 3값이다 — 2 의 뜻은 원천 미확정(창작 금지)',
     member.GENDER_NAME AS member.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨)',
     member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(MM010 · 현재 마스터 스냅샷 · 활동 시점 값이 아니다). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''',
-    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).'
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).',
+    member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME WITH SYNONYMS ('결연구분', '결연/비결연') COMMENT = '🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
+    member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분') COMMENT = '🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
+    member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME WITH SYNONYMS ('최초후원사업', '최초 후원사업') COMMENT = '🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
+    member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태') COMMENT = '🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
+    member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME WITH SYNONYMS ('이메일상태', '이메일 상태') COMMENT = '🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
+    member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = '🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.'
   )
   METRICS (
     fra.TOTAL_ACTIVITY_CNT AS SUM(fra.ACTIVITY_CNT)

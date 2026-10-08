@@ -1,0 +1,15 @@
+sv	alias	col	expose	synonyms	comment
+SV_SERVICE	req	SEND_GBN_TOP_NM	REQ_SEND_GBN_TOP_NM	발송 카테고리(대)|발송구분 대분류|발송 대분류	🆕 [O213-E] 발송 카테고리 대분류(회원서비스·결연·회비·회원·참여·사업보고·회원만족·기타 등) — 문자(SND) 요청에 값이 있다. 이메일·알림톡·우편 요청은 NULL(원천 개념 없음).
+SV_SERVICE	req	SEND_GBN_MID_NM	REQ_SEND_GBN_MID_NM	발송 카테고리(중)|발송구분 중분류|발송 중분류	🆕 [O213-E] 발송 카테고리 중분류(예: 신규결연회원발송·아동답신·기부금영수증·결제오류·장기회원감사서비스) — 문자(SND) 요청 전용.
+SV_SERVICE	req	SEND_GBN_BOT_NM	REQ_SEND_GBN_BOT_NM	발송 카테고리(소)|발송구분 소분류|발송 소분류	🆕 [O213-E] 발송 카테고리 소분류 — 문자(SND) 요청 전용.
+SV_SERVICE	req	MSG_DIV_NAME	REQ_MSG_DIV_NAME	메시지 구분|SMS/LMS/MMS|문자 종류	🆕 [O213-E] 메시지 구분(MS010 · SMS·LMS·MMS·알림톡) — 알림톡(MSG_AT) 요청 전용 · 타 채널 NULL.
+SV_SERVICE	req	SNDNG_TIME_DIV_NAME	REQ_SNDNG_TIME_DIV_NAME	발송 시간 구분|즉시/예약/분할	🆕 [O213-E] 발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송) — 알림톡 요청 전용.
+SV_SERVICE	req	PSTMTR_PRCS_STAT_NAME	REQ_PSTMTR_PRCS_STAT_NAME	우편물 처리상태|우편 발송완료 여부	🆕 [O213-E] 우편물 처리상태(MS061 · 발송대기·발송완료) — 우편(PSTMTR) 요청 전용.
+SV_SERVICE	req	RE_SNDNG_YN	REQ_RE_SNDNG_YN	재발송 여부|재발신 여부	🆕 [O213-E] 재발신 여부(Y/N) — 우편 요청 전용.
+SV_SERVICE	req	LQY_YN	REQ_LQY_YN	대량발송 여부|대량 여부	🆕 [O213-E] 대량 발송 여부(Y/N) — 우편 요청 전용.
+SV_SERVICE	req	CORP_TYPE_NAME	REQ_CORP_TYPE_NAME	발송 법인구분|요청 법인	🆕 [O213-E] 발송 요청 법인구분(CM019 · 사단·사복) — 문자(SND) 요청 일부에만 값(대다수 NULL).
+SV_SERVICE	req	SEND_SPLIT_TYPE	REQ_SEND_SPLIT_TYPE	문자 분할 방식|일괄/분할	🆕 [O213-E] 문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할) — 문자(SND) 요청 전용.
+SV_SERVICE	fse	SND_SPNSR_NM	SND_SPNSR_NM	발송 시점 후원사업|발송 당시 후원사업	🆕 [O213-E] 문자(SND) 발송 시점 수신 회원의 후원사업명(원천 발송 스냅샷) — 타 채널 NULL. 현재 후원사업과 다를 수 있다.
+SV_SERVICE	fse	SND_DSCNTC_RSN_NM	SND_DSCNTC_RSN_NM	발송 시점 중단사유|발송 당시 중단사유	🆕 [O213-E] 문자(SND) 발송 시점 수신 회원의 중단사유명(중단 이력 회원만 값 · 원천 스냅샷) — 타 채널 NULL.
+SV_SERVICE	fse	SND_CHILD_PROJECT_COUNTRY	SND_CHILD_PROJECT_COUNTRY	결연아동 사업국|신규 결연아동 국가	🆕 [O213-E] 문자(SND) 발송 시점 신규 결연아동 사업국(방글라데시·우간다·에티오피아 등) — 결연 안내 발송 분석용 · 타 채널 NULL.
+SV_SERVICE	fse	SND_CHILD_WORKPLACE_NM	SND_CHILD_WORKPLACE_NM	결연아동 사업장|신규 결연아동 사업장	🆕 [O213-E] 문자(SND) 발송 시점 신규 결연아동 사업장명 — 타 채널 NULL.

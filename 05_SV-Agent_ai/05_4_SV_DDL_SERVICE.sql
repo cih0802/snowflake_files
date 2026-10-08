@@ -60,7 +60,24 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member.MEMBER_JOIN_CMMN_BRND_NM AS member.JOIN_CMMN_BRND_NM WITH SYNONYMS ('가입 공통브랜드', '회원 가입 공통브랜드') COMMENT = '🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준.',
     fse.FRST_BRND_NM AS fse.FRST_BRND_NM WITH SYNONYMS ('최초 브랜드', '발송 시점 최초 브랜드') COMMENT = '🆕 [O213] 발송 시점 회원의 최초 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).',
     fse.LST_BRND_NM AS fse.LST_BRND_NM WITH SYNONYMS ('최종 브랜드', '발송 시점 최종 브랜드') COMMENT = '🆕 [O213] 발송 시점 회원의 최종 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).',
-    fse.SEND_TYPE AS fse.SEND_TYPE WITH SYNONYMS ('발송채널 원천구분', '발송 원천') COMMENT = '🆕 [O213] 발송 원천 계열(EMAIL·PSTMTR(우편)·MSG_AT(알림톡)·SND(문자)). 🔴 채널(CHANNEL) 라벨과 같은 축의 원천 코드다 — 채널 질문은 채널 차원을 먼저 쓴다.'
+    fse.SEND_TYPE AS fse.SEND_TYPE WITH SYNONYMS ('발송채널 원천구분', '발송 원천') COMMENT = '🆕 [O213] 발송 원천 계열(EMAIL·PSTMTR(우편)·MSG_AT(알림톡)·SND(문자)). 🔴 채널(CHANNEL) 라벨과 같은 축의 원천 코드다 — 채널 질문은 채널 차원을 먼저 쓴다.',
+    member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME WITH SYNONYMS ('결연구분', '결연/비결연') COMMENT = '🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
+    member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분') COMMENT = '🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
+    member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME WITH SYNONYMS ('최초후원사업', '최초 후원사업') COMMENT = '🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
+    member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태') COMMENT = '🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
+    member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME WITH SYNONYMS ('이메일상태', '이메일 상태') COMMENT = '🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
+    member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = '🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.',
+    member.MEMBER_ETC_CTTPC_STAT_NAME AS member.ETC_CTTPC_STAT_NAME WITH SYNONYMS ('기타연락처 상태') COMMENT = '🆕 [O213-D] 기타연락처 상태(MM008 · 정상·결번·타인번호).',
+    member.MEMBER_EMAIL_RECV_REFUSE_YN AS member.EMAIL_RECV_REFUSE_YN WITH SYNONYMS ('이메일 수신거부 수신', '이메일 수신항목 수신거부') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「수신거부」(MS028 코드 1)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_EMAIL_RECV_REGULAR_YN AS member.EMAIL_RECV_REGULAR_YN WITH SYNONYMS ('이메일 정기우편물 수신', '이메일 수신항목 정기우편물') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「정기우편물」(MS028 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_EMAIL_RECV_RELATION_YN AS member.EMAIL_RECV_RELATION_YN WITH SYNONYMS ('이메일 결연이메일 수신', '이메일 수신항목 결연이메일') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「결연이메일」(MS028 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_EMAIL_RECV_THANKS_YN AS member.EMAIL_RECV_THANKS_YN WITH SYNONYMS ('이메일 감사서비스 수신', '이메일 수신항목 감사서비스') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「감사서비스」(MS028 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_EMAIL_RECV_WEBZINE_YN AS member.EMAIL_RECV_WEBZINE_YN WITH SYNONYMS ('이메일 웹진 수신', '이메일 수신항목 웹진') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「웹진」(MS028 코드 5)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_EMAIL_RECV_DEV_YN AS member.EMAIL_RECV_DEV_YN WITH SYNONYMS ('이메일 개발이메일 수신', '이메일 수신항목 개발이메일') COMMENT = '🆕 [O213-D] 이메일 수신 항목에 「개발이메일」(MS028 코드 6)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_POST_RECV_REFUSE_YN AS member.POST_RECV_REFUSE_YN WITH SYNONYMS ('우편물 수신거부 수신', '우편물 수신항목 수신거부') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「수신거부」(MS027 코드 1)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_POST_RECV_REGULAR_YN AS member.POST_RECV_REGULAR_YN WITH SYNONYMS ('우편물 정기우편 수신', '우편물 수신항목 정기우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「정기우편」(MS027 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_POST_RECV_RELATION_YN AS member.POST_RECV_RELATION_YN WITH SYNONYMS ('우편물 결연우편 수신', '우편물 수신항목 결연우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「결연우편」(MS027 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
+    member.MEMBER_POST_RECV_NEW_THANKS_YN AS member.POST_RECV_NEW_THANKS_YN WITH SYNONYMS ('우편물 신규/감사 우편 수신', '우편물 수신항목 신규/감사 우편') COMMENT = '🆕 [O213-D] 우편물 수신 항목에 「신규/감사 우편」(MS027 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.'
   )
   METRICS (
     fse.TOTAL_SEND_MEMBERS AS SUM(fse.SEND_MEMBERS)

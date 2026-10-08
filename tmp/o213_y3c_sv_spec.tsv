@@ -1,0 +1,45 @@
+sv	alias	col	expose	synonyms	comment
+SV_MEMBER_EVENT	member	RELATNSP_DIV_NAME	MEMBER_RELATNSP_DIV_NAME	결연구분|결연/비결연	🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).
+SV_MEMBER_EVENT	member	SPECL_MNG_NAME	MEMBER_SPECL_MNG_NAME	특별관리|회원 특별관리|특별관리 구분	🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.
+SV_MEMBER_EVENT	member	FIRST_SPONSORSHIP_NAME	MEMBER_FIRST_SPONSORSHIP_NAME	최초후원사업|최초 후원사업	🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).
+SV_MEMBER_EVENT	member	MOBLPHON_STAT_NAME	MEMBER_MOBLPHON_STAT_NAME	휴대폰상태|휴대폰 상태|연락처 상태	🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.
+SV_MEMBER_EVENT	member	EMAIL_STAT_NAME	MEMBER_EMAIL_STAT_NAME	이메일상태|이메일 상태	🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.
+SV_MEMBER_EVENT	member	TSTM_DIV_NAME	MEMBER_TSTM_DIV_NAME	TM/TS 거절|전화 거절구분|TM 거절	🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.
+SV_MEMBER_MONTHLY	member	RELATNSP_DIV_NAME	MEMBER_RELATNSP_DIV_NAME	결연구분|결연/비결연	🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).
+SV_MEMBER_MONTHLY	member	SPECL_MNG_NAME	MEMBER_SPECL_MNG_NAME	특별관리|회원 특별관리|특별관리 구분	🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.
+SV_MEMBER_MONTHLY	member	FIRST_SPONSORSHIP_NAME	MEMBER_FIRST_SPONSORSHIP_NAME	최초후원사업|최초 후원사업	🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).
+SV_MEMBER_MONTHLY	member	MOBLPHON_STAT_NAME	MEMBER_MOBLPHON_STAT_NAME	휴대폰상태|휴대폰 상태|연락처 상태	🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.
+SV_MEMBER_MONTHLY	member	EMAIL_STAT_NAME	MEMBER_EMAIL_STAT_NAME	이메일상태|이메일 상태	🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.
+SV_MEMBER_MONTHLY	member	TSTM_DIV_NAME	MEMBER_TSTM_DIV_NAME	TM/TS 거절|전화 거절구분|TM 거절	🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.
+SV_SERVICE	member	RELATNSP_DIV_NAME	MEMBER_RELATNSP_DIV_NAME	결연구분|결연/비결연	🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).
+SV_SERVICE	member	SPECL_MNG_NAME	MEMBER_SPECL_MNG_NAME	특별관리|회원 특별관리|특별관리 구분	🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.
+SV_SERVICE	member	FIRST_SPONSORSHIP_NAME	MEMBER_FIRST_SPONSORSHIP_NAME	최초후원사업|최초 후원사업	🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).
+SV_SERVICE	member	MOBLPHON_STAT_NAME	MEMBER_MOBLPHON_STAT_NAME	휴대폰상태|휴대폰 상태|연락처 상태	🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.
+SV_SERVICE	member	EMAIL_STAT_NAME	MEMBER_EMAIL_STAT_NAME	이메일상태|이메일 상태	🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.
+SV_SERVICE	member	TSTM_DIV_NAME	MEMBER_TSTM_DIV_NAME	TM/TS 거절|전화 거절구분|TM 거절	🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.
+SV_EVENT_PARTICIPATION	member	RELATNSP_DIV_NAME	MEMBER_RELATNSP_DIV_NAME	결연구분|결연/비결연	🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).
+SV_EVENT_PARTICIPATION	member	SPECL_MNG_NAME	MEMBER_SPECL_MNG_NAME	특별관리|회원 특별관리|특별관리 구분	🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.
+SV_EVENT_PARTICIPATION	member	FIRST_SPONSORSHIP_NAME	MEMBER_FIRST_SPONSORSHIP_NAME	최초후원사업|최초 후원사업	🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).
+SV_EVENT_PARTICIPATION	member	MOBLPHON_STAT_NAME	MEMBER_MOBLPHON_STAT_NAME	휴대폰상태|휴대폰 상태|연락처 상태	🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.
+SV_EVENT_PARTICIPATION	member	EMAIL_STAT_NAME	MEMBER_EMAIL_STAT_NAME	이메일상태|이메일 상태	🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.
+SV_EVENT_PARTICIPATION	member	TSTM_DIV_NAME	MEMBER_TSTM_DIV_NAME	TM/TS 거절|전화 거절구분|TM 거절	🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.
+SV_RELATION_ACTIVITY	member	RELATNSP_DIV_NAME	MEMBER_RELATNSP_DIV_NAME	결연구분|결연/비결연	🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).
+SV_RELATION_ACTIVITY	member	SPECL_MNG_NAME	MEMBER_SPECL_MNG_NAME	특별관리|회원 특별관리|특별관리 구분	🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.
+SV_RELATION_ACTIVITY	member	FIRST_SPONSORSHIP_NAME	MEMBER_FIRST_SPONSORSHIP_NAME	최초후원사업|최초 후원사업	🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).
+SV_RELATION_ACTIVITY	member	MOBLPHON_STAT_NAME	MEMBER_MOBLPHON_STAT_NAME	휴대폰상태|휴대폰 상태|연락처 상태	🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.
+SV_RELATION_ACTIVITY	member	EMAIL_STAT_NAME	MEMBER_EMAIL_STAT_NAME	이메일상태|이메일 상태	🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.
+SV_RELATION_ACTIVITY	member	TSTM_DIV_NAME	MEMBER_TSTM_DIV_NAME	TM/TS 거절|전화 거절구분|TM 거절	🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.
+SV_SERVICE	member	ETC_CTTPC_STAT_NAME	MEMBER_ETC_CTTPC_STAT_NAME	기타연락처 상태	🆕 [O213-D] 기타연락처 상태(MM008 · 정상·결번·타인번호).
+SV_SERVICE	member	EMAIL_RECV_REFUSE_YN	MEMBER_EMAIL_RECV_REFUSE_YN	이메일 수신거부 수신|이메일 수신항목 수신거부	🆕 [O213-D] 이메일 수신 항목에 「수신거부」(MS028 코드 1)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	EMAIL_RECV_REGULAR_YN	MEMBER_EMAIL_RECV_REGULAR_YN	이메일 정기우편물 수신|이메일 수신항목 정기우편물	🆕 [O213-D] 이메일 수신 항목에 「정기우편물」(MS028 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	EMAIL_RECV_RELATION_YN	MEMBER_EMAIL_RECV_RELATION_YN	이메일 결연이메일 수신|이메일 수신항목 결연이메일	🆕 [O213-D] 이메일 수신 항목에 「결연이메일」(MS028 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	EMAIL_RECV_THANKS_YN	MEMBER_EMAIL_RECV_THANKS_YN	이메일 감사서비스 수신|이메일 수신항목 감사서비스	🆕 [O213-D] 이메일 수신 항목에 「감사서비스」(MS028 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	EMAIL_RECV_WEBZINE_YN	MEMBER_EMAIL_RECV_WEBZINE_YN	이메일 웹진 수신|이메일 수신항목 웹진	🆕 [O213-D] 이메일 수신 항목에 「웹진」(MS028 코드 5)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	EMAIL_RECV_DEV_YN	MEMBER_EMAIL_RECV_DEV_YN	이메일 개발이메일 수신|이메일 수신항목 개발이메일	🆕 [O213-D] 이메일 수신 항목에 「개발이메일」(MS028 코드 6)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	POST_RECV_REFUSE_YN	MEMBER_POST_RECV_REFUSE_YN	우편물 수신거부 수신|우편물 수신항목 수신거부	🆕 [O213-D] 우편물 수신 항목에 「수신거부」(MS027 코드 1)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	POST_RECV_REGULAR_YN	MEMBER_POST_RECV_REGULAR_YN	우편물 정기우편 수신|우편물 수신항목 정기우편	🆕 [O213-D] 우편물 수신 항목에 「정기우편」(MS027 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	POST_RECV_RELATION_YN	MEMBER_POST_RECV_RELATION_YN	우편물 결연우편 수신|우편물 수신항목 결연우편	🆕 [O213-D] 우편물 수신 항목에 「결연우편」(MS027 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_SERVICE	member	POST_RECV_NEW_THANKS_YN	MEMBER_POST_RECV_NEW_THANKS_YN	우편물 신규/감사 우편 수신|우편물 수신항목 신규/감사 우편	🆕 [O213-D] 우편물 수신 항목에 「신규/감사 우편」(MS027 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.
+SV_MEMBER_MONTHLY	member	SPECL_MNG2_NAME	MEMBER_SPECL_MNG2_NAME	특별관리2|특별관리 구분2	🆕 [O213-D] 회원 특별관리 구분2(MM012) — 값이 있는 회원은 소수다.
+SV_MEMBER_MONTHLY	member	SLRCLD_LRR_NAME	MEMBER_SLRCLD_LRR_NAME	생일 양력/음력|양음력	🆕 [O213-D] 생일 양력/음력(CM029 · 양력·음력·불명확).
+SV_MEMBER_MONTHLY	member	REL_NAME	MEMBER_REL_NAME	일시회원 관계	🆕 [O213-D] 일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).

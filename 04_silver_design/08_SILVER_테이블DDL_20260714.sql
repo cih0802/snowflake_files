@@ -46,7 +46,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     MOBLPHON_STAT_CD        VARCHAR         COMMENT 'MOBLPHON_STAT_CD. 코드id:MM008.',
     REL_CD                  VARCHAR         COMMENT '관계 코드 raw (정본 CM009). ONCE 전용. 코드id:CM009.',
     RELATNSP_DIV_CD         VARCHAR         COMMENT 'RELATNSP_DIV_CD. 코드id:MM019.',
-    SLRCLD_LRR_CD           VARCHAR         COMMENT '급여공제 코드 raw (정본 CM029). 코드id:CM029.',
+    SLRCLD_LRR_CD           VARCHAR         COMMENT '양력음력 코드 raw(생일 기준 · CM029 · 1=양력 2=음력 3=불명확 · 0 은 사전에 없음). 코드id:CM029. 🔴 [O213-D 정정] 종전 「급여공제」는 오기였다(BRONZE 원천 COMMENT = 양력음력코드 · CM029 라벨 실측).',
     TSTM_DIV_CD             VARCHAR         COMMENT 'TSTM_DIV_CD. 코드id:MS026.',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
@@ -56,6 +56,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     CHRCTR_RECPTN_YN    VARCHAR(1)      COMMENT '문자수신여부 [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     SPECL_MNG_CD1       VARCHAR(100)    COMMENT '특별관리코드1 [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     FDRM_MBER_TRNSFER_FG BOOLEAN         COMMENT '정기회원이관유무 [원천: BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
+    SPECL_MNG_CD2       VARCHAR(100)    COMMENT '🆕 [O213-D] 특별관리코드2(MM012 · 특별관리코드1 과 같은 코드그룹) [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     PRIMARY KEY (MEMBER_DK)
 ) COMMENT = '회원 통합 마스터 (정기∪일시). [Grain: MBER_NO (1행=1회원)]. [주의: 정기회원과 일시회원 통합]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_MNG].';
 
@@ -435,6 +436,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
     MENU_CODE           VARCHAR(255)    COMMENT '메뉴코드 [원천: BRONZE_CRM.SND_REQ_MST]',
     SERVICE_MENU_CODE   VARCHAR(100)    COMMENT '서비스메뉴코드 [원천: BRONZE_CRM.SND_REQ_MST]',
     USE_YN              VARCHAR(255)    COMMENT '사용 여부 [원천: BRONZE_CRM.SND_REQ_MST]',
+    CORP_TYPE           VARCHAR(10)     COMMENT '🆕 [O213-E] 법인구분 코드(CM019 · I=사단 S=사복 · SND 요청 전용 · 대다수 NULL) [원천: BRONZE_CRM.SND_REQ_MST]',
+    SEND_SPLIT_TYPE     VARCHAR(20)     COMMENT '🆕 [O213-E] 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용) [원천: BRONZE_CRM.SND_REQ_MST]',
     PRIMARY KEY (SNDNG_KEY)
 ) COMMENT = '메시지 발송 요청 마스터. [Grain: SNDNG_REQ_NO (1행=1발송요청)]. [주의: 발송채널 및 대/중/소 발송구분 보유]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR_SNDNG].';
 
@@ -472,6 +475,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     RESPONSED_YN        VARCHAR(255)    COMMENT '발송확인여부 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
     RESPONSED_DT        TIMESTAMP_NTZ   COMMENT '확인일시 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
     REAL_SEND_DT        TIMESTAMP_NTZ   COMMENT '실제발신일시 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
+    SND_SPNSR_NM        VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 회원 후원사업명(SND 전용 스냅샷 · 타 채널 NULL) [원천: BRONZE_CRM.SND_MEMBER_LIST.SPNSR_NM]',
+    SND_DSCNTC_RSN_NM   VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 중단사유명(SND 전용 · 중단 이력 있는 회원만) [원천: BRONZE_CRM.SND_MEMBER_LIST.DSCNTC_RSN_NM]',
+    SND_CHILD_PROJECT_COUNTRY VARCHAR   COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업국(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_PROJECT_COUNTRY]',
+    SND_CHILD_WORKPLACE_NM VARCHAR      COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업장명(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_WORKPLACE_NM]',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 

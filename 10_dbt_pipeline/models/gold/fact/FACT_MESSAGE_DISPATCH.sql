@@ -155,7 +155,9 @@ select
     s.RESPONSED_YN, s.RESPONSED_DT, s.REAL_SEND_DT,
     -- 🆕 [2026-10-01 O196-D · DEC-58 #1] 발송 요청 차원 FK — 요청 속성은 DIM_SEND_REQUEST 에서 읽는다(degen 금지).
     --   🔴 [O196-E] 요청 미매칭(발송 대상에만 키가 있고 요청 마스터에 없음 · 📏 11,421행)도 0 으로 보낸다 — 고아 FK 금지.
-    CASE WHEN r.SNDNG_KEY IS NULL THEN 0 ELSE {{ gold_sk(['r.SNDNG_KEY']) }} END as SEND_REQUEST_SK
+    CASE WHEN r.SNDNG_KEY IS NULL THEN 0 ELSE {{ gold_sk(['r.SNDNG_KEY']) }} END as SEND_REQUEST_SK,
+    -- 🆕 [2026-10-08 O213-E · 7차 Y3-E] SND 발송 시점 회원 스냅샷 4종(degen · 타 채널 NULL · FRST_BRND_* 와 같은 관례).
+    s.SND_SPNSR_NM, s.SND_DSCNTC_RSN_NM, s.SND_CHILD_PROJECT_COUNTRY, s.SND_CHILD_WORKPLACE_NM
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 cross join open_window ow
