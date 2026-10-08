@@ -124,31 +124,31 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL',
     fme.MKTG_CHANNEL_NM_AT_EVENT AS fme.MKTG_CHANNEL_NM_AT_EVENT
       WITH SYNONYMS ('마케팅채널', '마케팅 채널', '캠페인 채널')
-      COMMENT = '🆕 [O213] 마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
+      COMMENT = '마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
     member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME
       WITH SYNONYMS ('가입경로', '회원 가입경로')
-      COMMENT = '🆕 [O213] 회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음). 🔴 개발인입경로(캠페인 모집채널)와 다른 축이다.',
+      COMMENT = '회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음). 🔴 개발인입경로(캠페인 모집채널)와 다른 축이다.',
     member.MEMBER_JOIN_CMMN_BRND_NM AS member.JOIN_CMMN_BRND_NM
       WITH SYNONYMS ('가입 공통브랜드', '회원 가입 공통브랜드')
-      COMMENT = '🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준. 🔴 「공통브랜드」(사건 캠페인 기준 CMMN_BRND_NM_AT_EVENT)와 다른 축이다 — 「가입 공통브랜드」를 명시할 때만 쓴다.',
+      COMMENT = '회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준. 🔴 「공통브랜드」(사건 캠페인 기준 CMMN_BRND_NM_AT_EVENT)와 다른 축이다 — 「가입 공통브랜드」를 명시할 때만 쓴다.',
     member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME
       WITH SYNONYMS ('결연구분', '결연/비결연')
-      COMMENT = '🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
+      COMMENT = '결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
     member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME
       WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분')
-      COMMENT = '🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
+      COMMENT = '회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
     member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME
       WITH SYNONYMS ('최초후원사업', '최초 후원사업')
-      COMMENT = '🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
+      COMMENT = '회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
     member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME
       WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태')
-      COMMENT = '🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
+      COMMENT = '휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
     member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME
       WITH SYNONYMS ('이메일상태', '이메일 상태')
-      COMMENT = '🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
+      COMMENT = '이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
     member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME
       WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절')
-      COMMENT = '🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.'
+      COMMENT = 'TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.'
   )
   METRICS (
     fme.TOTAL_DEV_CNT     AS SUM(fme.DEV_CNT)

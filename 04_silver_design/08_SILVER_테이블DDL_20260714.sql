@@ -46,7 +46,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     MOBLPHON_STAT_CD        VARCHAR         COMMENT 'MOBLPHON_STAT_CD. 코드id:MM008.',
     REL_CD                  VARCHAR         COMMENT '관계 코드 raw (정본 CM009). ONCE 전용. 코드id:CM009.',
     RELATNSP_DIV_CD         VARCHAR         COMMENT 'RELATNSP_DIV_CD. 코드id:MM019.',
-    SLRCLD_LRR_CD           VARCHAR         COMMENT '양력음력 코드 raw(생일 기준 · CM029 · 1=양력 2=음력 3=불명확 · 0 은 사전에 없음). 코드id:CM029. 🔴 [O213-D 정정] 종전 「급여공제」는 오기였다(BRONZE 원천 COMMENT = 양력음력코드 · CM029 라벨 실측).',
+    SLRCLD_LRR_CD           VARCHAR         COMMENT '양력음력 코드 raw(생일 기준 · CM029 · 1=양력 2=음력 3=불명확 · 0 은 사전에 없음). 코드id:CM029.',
     TSTM_DIV_CD             VARCHAR         COMMENT 'TSTM_DIV_CD. 코드id:MS026.',
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
@@ -56,7 +56,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER (
     CHRCTR_RECPTN_YN    VARCHAR(1)      COMMENT '문자수신여부 [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     SPECL_MNG_CD1       VARCHAR(100)    COMMENT '특별관리코드1 [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     FDRM_MBER_TRNSFER_FG BOOLEAN         COMMENT '정기회원이관유무 [원천: BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
-    SPECL_MNG_CD2       VARCHAR(100)    COMMENT '🆕 [O213-D] 특별관리코드2(MM012 · 특별관리코드1 과 같은 코드그룹) [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
+    SPECL_MNG_CD2       VARCHAR(100)    COMMENT '특별관리코드2(MM012 · 특별관리코드1 과 같은 코드그룹) [원천: BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     PRIMARY KEY (MEMBER_DK)
 ) COMMENT = '회원 통합 마스터 (정기∪일시). [Grain: MBER_NO (1행=1회원)]. [주의: 정기회원과 일시회원 통합]. [원천: CRM → BRONZE_CRM.TM_MM_MBER_MNG].';
 
@@ -436,8 +436,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
     MENU_CODE           VARCHAR(255)    COMMENT '메뉴코드 [원천: BRONZE_CRM.SND_REQ_MST]',
     SERVICE_MENU_CODE   VARCHAR(100)    COMMENT '서비스메뉴코드 [원천: BRONZE_CRM.SND_REQ_MST]',
     USE_YN              VARCHAR(255)    COMMENT '사용 여부 [원천: BRONZE_CRM.SND_REQ_MST]',
-    CORP_TYPE           VARCHAR(10)     COMMENT '🆕 [O213-E] 법인구분 코드(CM019 · I=사단 S=사복 · SND 요청 전용 · 대다수 NULL) [원천: BRONZE_CRM.SND_REQ_MST]',
-    SEND_SPLIT_TYPE     VARCHAR(20)     COMMENT '🆕 [O213-E] 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용) [원천: BRONZE_CRM.SND_REQ_MST]',
+    CORP_TYPE           VARCHAR(10)     COMMENT '법인구분 코드(CM019 · I=사단 S=사복 · SND 요청 전용 · 대다수 NULL) [원천: BRONZE_CRM.SND_REQ_MST]',
+    SEND_SPLIT_TYPE     VARCHAR(20)     COMMENT '발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용) [원천: BRONZE_CRM.SND_REQ_MST]',
     PRIMARY KEY (SNDNG_KEY)
 ) COMMENT = '메시지 발송 요청 마스터. [Grain: SNDNG_REQ_NO (1행=1발송요청)]. [주의: 발송채널 및 대/중/소 발송구분 보유]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR_SNDNG].';
 
@@ -475,10 +475,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     RESPONSED_YN        VARCHAR(255)    COMMENT '발송확인여부 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
     RESPONSED_DT        TIMESTAMP_NTZ   COMMENT '확인일시 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
     REAL_SEND_DT        TIMESTAMP_NTZ   COMMENT '실제발신일시 [원천: BRONZE_CRM.SND_MEMBER_LIST]',
-    SND_SPNSR_NM        VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 회원 후원사업명(SND 전용 스냅샷 · 타 채널 NULL) [원천: BRONZE_CRM.SND_MEMBER_LIST.SPNSR_NM]',
-    SND_DSCNTC_RSN_NM   VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 중단사유명(SND 전용 · 중단 이력 있는 회원만) [원천: BRONZE_CRM.SND_MEMBER_LIST.DSCNTC_RSN_NM]',
-    SND_CHILD_PROJECT_COUNTRY VARCHAR   COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업국(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_PROJECT_COUNTRY]',
-    SND_CHILD_WORKPLACE_NM VARCHAR      COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업장명(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_WORKPLACE_NM]',
+    SND_SPNSR_NM        VARCHAR         COMMENT '발송 시점 회원 후원사업명(SND 전용 스냅샷 · 타 채널 NULL) [원천: BRONZE_CRM.SND_MEMBER_LIST.SPNSR_NM]',
+    SND_DSCNTC_RSN_NM   VARCHAR         COMMENT '발송 시점 중단사유명(SND 전용 · 중단 이력 있는 회원만) [원천: BRONZE_CRM.SND_MEMBER_LIST.DSCNTC_RSN_NM]',
+    SND_CHILD_PROJECT_COUNTRY VARCHAR   COMMENT '발송 시점 신규 결연아동 사업국(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_PROJECT_COUNTRY]',
+    SND_CHILD_WORKPLACE_NM VARCHAR      COMMENT '발송 시점 신규 결연아동 사업장명(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_WORKPLACE_NM]',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 
@@ -532,7 +532,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_EVENT (
     CPR_DIV_CD          VARCHAR(3)      COMMENT '법인구분코드 [원천: BRONZE_CRM.TM_MS_CRMN]',
     ENTRPS_CD           NUMBER(10,0)    COMMENT '업체코드 [원천: BRONZE_CRM.TM_MS_CRMN]',
     USE_YN              VARCHAR(1)      COMMENT '사용여부 [원천: BRONZE_CRM.TM_MS_CRMN]',
-    PART_USE_YN         VARCHAR(1)      COMMENT '🆕 [O213-F] 참여신청 사용여부 Y/N · 일반행사 NULL [원천: BRONZE_CRM.TM_MS_CRMN]',
+    PART_USE_YN         VARCHAR(1)      COMMENT '참여신청 사용여부 Y/N · 일반행사 NULL [원천: BRONZE_CRM.TM_MS_CRMN]',
     PRIMARY KEY (EVENT_KEY)
 ) COMMENT = '행사/이벤트 마스터. [Grain: EVENT_KEY (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT ∪ TM_MS_CRMN].';
 
@@ -596,7 +596,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_RELATION_ACTIVITY (
     GFTMNEY_DOLLAR_AMT  VARCHAR(30)     COMMENT '선물금미화금액 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     APRV_DE             DATE            COMMENT '승인일 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     TRNSFER_YN          VARCHAR(1)      COMMENT '이관여부 [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
-    SETLE_BANK_CD       VARCHAR(10)     COMMENT '🆕 [O213-F] 선물금 정산은행 코드(PM039) · 서신 행 NULL [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
+    SETLE_BANK_CD       VARCHAR(10)     COMMENT '선물금 정산은행 코드(PM039) · 서신 행 NULL [원천: BRONZE_CRM.TM_RM_RELATNSP_GFTMNEY_INFO]',
     PRIMARY KEY (ACTIVITY_KEY)
 ) COMMENT = '결연 활동 내역 (서신∪선물금). [Grain: ACTV_NO (1행=1활동)]. [주의: 서신교환 및 선물금 전달 이력]. [원천: CRM → BRONZE_CRM.TM_MM_LTR_EXCHG ∪ TM_MM_GIFT_DLVRY].';
 
@@ -1543,6 +1543,51 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
 --      대상 테이블이 있으면 첫 run 이 is_incremental() = 롤링 창(3일)만 적재한다(bigquery_load_window ⓑ).
 --      ⇒ 첫 build 가 CTAS 로 전량 생성 · 컬럼 COMMENT 는 build 후 ALTER(§13-1-8).
 -- ============================================================================
+/* ── 비실행 선언(COMMENT 정본 전용) — 이 블록을 실행하지 마라: range 모델은 선생성 금지 ──
+CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_SESSION (
+    EVENT_DT                         DATE            COMMENT '세션 일자(원천 EVENT_DATE YYYYMMDD) · 자정을 넘는 세션은 일자별로 나뉜다.',
+    USER_PSEUDO_ID                   VARCHAR(200)    COMMENT 'GA4 가명 사용자 ID(브라우저·앱 단위 · 원천 user_pseudo_id).',
+    BIGQUERY_SESSION_ID              NUMBER          COMMENT 'GA4 세션ID(EP_GA_SESSION_ID TRY_CAST) · 세션ID 결측 이벤트는 적재하지 않는다.',
+    BIGQUERY_SESSION_KEY             VARCHAR         COMMENT '세션 자연키 = USER_PSEUDO_ID-EP_GA_SESSION_ID · 기간 세션수는 이 키의 COUNT(DISTINCT).',
+    BIGQUERY_SESSION_NUMBER          NUMBER          COMMENT '사용자 기준 세션 순번(EP_GA_SESSION_NUMBER 최댓값).',
+    SESSION_START_TS                 TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 첫 이벤트 시각(EVENT_TIMESTAMP 마이크로초 최솟값 → TIMESTAMP_NTZ).',
+    PLATFORM                         VARCHAR         COMMENT 'GA4 플랫폼(WEB) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_CATEGORY                  VARCHAR         COMMENT '기기 카테고리(mobile·desktop·tablet·smart tv) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_OPERATING_SYSTEM          VARCHAR         COMMENT '운영체제 원값(Android·iOS·Windows·Macintosh·Linux·Chrome OS 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_WEB_INFO_BROWSER          VARCHAR         COMMENT '브라우저 원값(Chrome·Android Webview·Edge·Samsung Internet·Safari 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_LANGUAGE                  VARCHAR         COMMENT '기기 언어 로캘 원값(ko-kr·ko·en-us 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_MOBILE_BRAND_NAME         VARCHAR         COMMENT '기기 제조사 원값(Samsung·Apple 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    DEVICE_WEB_INFO_HOSTNAME         VARCHAR         COMMENT '접속 호스트명 원값(www.goodneighbors.kr·m.goodneighbors.kr 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    GEO_CONTINENT                    VARCHAR         COMMENT '대륙(Asia·Americas·Europe·Oceania·Africa·(not set)) · (not set) = GA4 위치 미판정 원값 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    GEO_SUB_CONTINENT                VARCHAR         COMMENT '하위 대륙 GA4 영문 원값(Eastern Asia 등 · (not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    GEO_COUNTRY                      VARCHAR         COMMENT '국가 GA4 영문 원값(South Korea 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    GEO_METRO                        VARCHAR         COMMENT '대도시권 GA4 원값((not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    TS_SOURCE                        VARCHAR         COMMENT '사용자 최초 유입 소스(traffic_source.source 원값 · google·(direct)·네이버M 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    TS_MEDIUM                        VARCHAR         COMMENT '사용자 최초 유입 매체(traffic_source.medium 원값 · cpc·organic·(none) 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    CTS_MANUAL_MEDIUM                VARCHAR         COMMENT '수집 트래픽 수동 매체(collected_traffic_source.manual_medium = utm_medium 원값) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    EP_MEDIUM                        VARCHAR         COMMENT '이벤트 파라미터 medium 원값 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    STSLC_CRC_DEFAULT_CHANNEL_GROUP  VARCHAR         COMMENT '세션 기본 채널 그룹(last click cross-channel · Display·Cross-network·Direct·Unassigned·Organic Search·Organic Social·Paid Search·Paid Other·Referral·Email·SMS·AI Assistant·Paid Social·Organic Video·Mobile Push Notifications) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    STSLC_CRC_PRIMARY_CHANNEL_GROUP  VARCHAR         COMMENT '세션 주 채널 그룹(값 체계는 기본 채널 그룹과 같다) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    STSLC_CRC_SOURCE_PLATFORM        VARCHAR         COMMENT '세션 소스 플랫폼(Manual·Google Ads·Meta Ads·Other Ads·Unlabeled) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    STSLC_GAC_CAMPAIGN_NAME          VARCHAR         COMMENT 'Google Ads 캠페인명 원값(세션 last click) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    STSLC_GAC_AD_GROUP_NAME          VARCHAR         COMMENT 'Google Ads 광고그룹명 원값((not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    UP_MEMBER_TYPE                   VARCHAR         COMMENT '회원유형 user_property 원값(비로그인·정기회원·일시회원·중단회원·앱회원·활동회원·정기후원·일시후원·후원중단) · 🔴 GTM 미치환 변수명 원문(이중 중괄호로 감싼 값)은 수집 오류다(원값 보존) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    UP_DONOR_TYPE                    VARCHAR         COMMENT '후원자유형 user_property(개인·단체·기업) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    UP_DONATION_TYPE                 VARCHAR         COMMENT '후원유형 user_property 원값(신규후원·증액후원·증액·감액·재후원) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    UP_BIZ_TYPE                      VARCHAR         COMMENT '후원사업유형 user_property 원값(복수 사업은 | 로 이어진 한 문자열) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    UP_LOGIN_STATUS                  VARCHAR         COMMENT '로그인 여부 user_property(y·n) · 🔴 GTM 미치환 변수명 원문은 수집 오류다 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    EP_PAYMENT_TYPE                  VARCHAR         COMMENT '결제수단 이벤트 파라미터(신용카드·계좌이체·네이버페이) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL).',
+    EVENT_CNT                        NUMBER          COMMENT '그 일자·세션의 이벤트 수(가산).',
+    PAGE_VIEW_CNT                    NUMBER          COMMENT 'page_view 이벤트 수(가산).',
+    IS_ENGAGED                       BOOLEAN         COMMENT 'GA4 참여 세션 여부(EP_SESSION_ENGAGED = 1 이벤트가 하나라도 있으면 TRUE).',
+    ENGAGEMENT_TIME_MSEC             NUMBER          COMMENT '참여 시간 합계(밀리초 · EP_ENGAGEMENT_TIME_MSEC 합 · 가산).',
+    DW_SOURCE_SYSTEM                 VARCHAR         COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE                  VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 (공통감사) · 이 모델은 채우지 않아 NULL 이다.'
+) COMMENT = 'GA4 세션 속성. [Grain: EVENT_DT × USER_PSEUDO_ID × BIGQUERY_SESSION_ID (자정 경계 세션은 일자별로 나뉜다)]. [주의: 속성 = 세션 첫 non-NULL 값 · 원값 보존 · range 재적재 · 선생성 금지]. [원천: GA4 → SILVER.BIGQUERY_REFINED_DATA].';
+── 비실행 선언 끝 */
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_USER_DEMOGRAPHIC (
     EVENT_DT            DATE            COMMENT '집계 일자(원천 DATE YYYYMMDD).',
     DEVICE_CATEGORY     VARCHAR(20)     COMMENT '기기 카테고리 desktop·mobile·tablet (GA4 원값).',
@@ -1583,15 +1628,15 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_EXPENSE_RESOLUTION (
     ROW_SEQ             NUMBER(18,0)    COMMENT '결의번호 내 행 일련(결정적 정렬 · 원천 키 부재로 DW 부여).',
     RESOLUTION_YEAR     NUMBER(38,0)    COMMENT '회계연도.',
     WRITE_DATE          DATE            COMMENT '결의 작성일.',
-    RESOLUTION_DEPT_NM  VARCHAR         COMMENT '결의부서명(55종 원값) — 부서별 지출 축.',
+    RESOLUTION_DEPT_NM  VARCHAR         COMMENT '결의부서명(원값) — 부서별 지출 축.',
     EXPS_RESOLUTION_NM  VARCHAR         COMMENT '지출결의명(자유문).',
-    SOURCE_DIV_NM       VARCHAR         COMMENT '출처구분명(6종 원값).',
+    SOURCE_DIV_NM       VARCHAR         COMMENT '출처구분명(원값 = 가지급금정산서·구매품의·기안서·대체결의·외화출장품의서·품의서).',
     SOURCE_NO           VARCHAR         COMMENT '출처번호.',
     BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명.',
     MOK_NM              VARCHAR         COMMENT '목명(예산 과목).',
     DTL_ITEM_NM         VARCHAR         COMMENT '세목명.',
     SUBDTL_ITEM_NM      VARCHAR         COMMENT '세세목명.',
-    FUND_SOURCE_NM      VARCHAR         COMMENT '재원명(26종 원값).',
+    FUND_SOURCE_NM      VARCHAR         COMMENT '재원명(원값).',
     BDGT_ITEM_NM        VARCHAR         COMMENT '예산항목명(원값).',
     DESCRIPTION         VARCHAR         COMMENT '적요(원천 DESCRIPTIONVARCHAR).',
     SUM_AMT             NUMBER(38,0)    COMMENT '금액(원 · 가산).',

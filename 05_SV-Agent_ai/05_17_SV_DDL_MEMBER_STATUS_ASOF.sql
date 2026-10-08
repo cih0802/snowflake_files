@@ -29,7 +29,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
     msh.GENDER_NAME AS msh.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '성별 라벨',
     msh.FIRST_JOIN_DATE AS msh.FIRST_JOIN_DATE WITH SYNONYMS ('최초가입일', '가입일') COMMENT = '회원 최초가입일',
     msh.FIRST_JOIN_YEAR AS YEAR(msh.FIRST_JOIN_DATE) WITH SYNONYMS ('가입연도') COMMENT = '회원 최초가입 연도',
-    msh.ENROLL_PATH_NAME AS msh.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 상태이력 기준. 일시회원은 (해당없음).'
+    msh.ENROLL_PATH_NAME AS msh.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014) — 상태이력 기준. 일시회원은 (해당없음).'
   )
   METRICS (
     msh.MEMBER_COUNT AS COUNT(DISTINCT msh.MEMBER_DK)

@@ -446,7 +446,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_EVENT (
     CPR_DIV_CD             VARCHAR(3)      COMMENT '법인구분코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
     ENTRPS_CD              NUMBER(10,0)    COMMENT '업체코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
     USE_YN                 VARCHAR(1)      COMMENT '사용여부 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]',
-    PART_USE_YN            VARCHAR(1)      COMMENT '🆕 [O213-F] 참여신청 사용여부 Y/N(캠페인행사 전용 · 일반행사 NULL) [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]'
+    PART_USE_YN            VARCHAR(1)      COMMENT '참여신청 사용여부 Y/N(캠페인행사 전용 · 일반행사 NULL) [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]'
 ) COMMENT = '행사/이벤트 마스터 차원. [Grain: EVENT_SK (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT/CRMN → SILVER.CRM_EVENT].';
 
 -- DIM_BUDGET_ITEM — 예산 세세목 차원
@@ -459,10 +459,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_BUDGET_ITEM (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     BDGT_UNIT_NM        VARCHAR         COMMENT '예산단위명(ERP 원천 BDGT_UNIT_NM 그대로 · 조직명 표기 · 코드 없음). 세세목에 1:1 종속(2026-10-02 O198 실측 179/179). 🔴 DIM_ORG(CRM 조직)와 다른 체계다 — 같은 이름의 팀이라도 ORG_SK 로 조인하지 말 것. 실측 값 6종(ERP 표기 그대로)',
-    JANG_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「장」(원값 4종 · SILVER.ERP_BUDGET_ITEM 승계).',
-    KWAN_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「관」(원값 6종).',
-    HANG_NM             VARCHAR         COMMENT '🆕 [O213-F] 예산 과목 「항」(원값 9종).',
-    FUND_SOURCE_NM      VARCHAR         COMMENT '🆕 [O213-F] 예산 재원명(원값 8종).'
+    JANG_NM             VARCHAR         COMMENT '예산 과목 「장」(원값 = 모금비·사업비·사회복지법인예산·일반관리비 · SILVER.ERP_BUDGET_ITEM 승계).',
+    KWAN_NM             VARCHAR         COMMENT '예산 과목 「관」(원값 = 국내사업비·나눔문화연구사업·모금비·사회복지법인예산·일반관리비·해외사업비).',
+    HANG_NM             VARCHAR         COMMENT '예산 과목 「항」(원값 = 국내아동권리지원사업·기획및연수인력사업·나눔문화연구사업·모금관리비·사무국운영사업·사회복지법인예산·해외기획사업·해외아동권리지원및지역개발사업·회원관리비).',
+    FUND_SOURCE_NM      VARCHAR         COMMENT '예산 재원명(원값 = 국내지정·법인전입·비지정일반·사회복지법인예산·이월국내지정·이월비지정일반·이자수익·잡수익).'
 ) COMMENT = '예산 세세목 차원. [Grain: BUDGET_ITEM_SK (1행=1세세목)]. [주의: 장/관/항/목/세목/세세목 계층 매핑]. [원천: ERP → BRONZE_ERP → SILVER.ERP_BUDGET_ITEM].';
 
 -- DIM_BIZ_PLACE — DIM_BIZ_PLACE — O188-F 2차-A 신설
@@ -820,10 +820,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     RESPONSED_DT           TIMESTAMP_NTZ   COMMENT '확인일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',
     REAL_SEND_DT           TIMESTAMP_NTZ   COMMENT '실제발신일시 [SILVER.CRM_SEND_MEMBER 승계 · 원천 BRONZE_CRM.SND_MEMBER_LIST]',
     SEND_REQUEST_SK        NUMBER(38,0)    COMMENT '발송 요청 (FK→DIM_SEND_REQUEST) · 0=요청 미매칭 [O196-D DEC-58]',
-    SND_SPNSR_NM           VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 회원 후원사업명(문자 SND 전용 스냅샷 · 타 채널 NULL) [SILVER.CRM_SEND_MEMBER 승계]',
-    SND_DSCNTC_RSN_NM      VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 중단사유명(SND 전용 · 중단 이력 회원만 값) [SILVER.CRM_SEND_MEMBER 승계]',
-    SND_CHILD_PROJECT_COUNTRY VARCHAR      COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업국(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
-    SND_CHILD_WORKPLACE_NM VARCHAR         COMMENT '🆕 [O213-E] 발송 시점 신규 결연아동 사업장명(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]'
+    SND_SPNSR_NM           VARCHAR         COMMENT '발송 시점 회원 후원사업명(문자 SND 전용 스냅샷 · 타 채널 NULL) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_DSCNTC_RSN_NM      VARCHAR         COMMENT '발송 시점 중단사유명(SND 전용 · 중단 이력 회원만 값) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_CHILD_PROJECT_COUNTRY VARCHAR      COMMENT '발송 시점 신규 결연아동 사업국(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
+    SND_CHILD_WORKPLACE_NM VARCHAR         COMMENT '발송 시점 신규 결연아동 사업장명(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -1142,7 +1142,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
     PRCS_STAT_CD        VARCHAR         COMMENT '회비 처리상태 코드(PM013). 코드id:PM013.',
     PRCS_STAT_NAME      VARCHAR         COMMENT '회비 처리상태명(PM013 라벨: 청구·완료). 원천 코드 F 는 코드사전에 없어 NULL(2026-10-08 실측 · 현업 확인 대상).',
     RETUN_RSN_CD        VARCHAR         COMMENT '환급사유 코드(PM042). 환급이 아닌 청구행은 원천 NULL. 코드id:PM042.',
-    RETUN_RSN_NAME      VARCHAR         COMMENT '환급사유명(PM042 라벨 11종). 환급이 아닌 청구행은 NULL(개념 없음).',
+    RETUN_RSN_NAME      VARCHAR         COMMENT '환급사유명(PM042 라벨). 환급이 아닌 청구행은 NULL(개념 없음).',
     BILLING_ROWS        NUMBER(38,0)    COMMENT '집계된 원천 청구행 수(건).',
     BILLED_MEMBERS      NUMBER(38,0)    COMMENT '청구 대상 고유 회원수(명). 🔴 비가산 — 다른 축으로 다시 묶어 합하지 않는다.',
     BILLED_AMT          NUMBER(38,2)    COMMENT '청구액(원) = SUM(RQEST_AMT) · FACT_MEMBER_FEE 와 같은 식.',
@@ -1157,6 +1157,50 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
 -- 🆕 [2026-10-08 O213-F Y3-F] FACT_SEARCH_CONSOLE · FACT_GA4_DEMOGRAPHIC (GA4/검색 신규 · 종전 GOLD 소비 0)
 --   🔴 FACT_BIGQUERY_SESSION 은 선생성하지 않는다 — RANGED_FACTS 는 테이블이 있으면 첫 run 이 롤링 창만 적재한다.
 --      첫 build CTAS 전량 생성 후 COMMENT ALTER(계획서 §13-1-8).
+/* ── 비실행 선언(COMMENT 정본 전용) — 이 블록을 실행하지 마라: range 모델은 선생성 금지 ──
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_SESSION (
+    DATE_SK                          NUMBER(8,0)     COMMENT '세션 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
+    IDENTITY_SK                      NUMBER          COMMENT 'FK→DIM_MEMBER_IDENTITY · 0 = 미매칭(회원 연계가 없는 방문자 · SK=0 시드 멤버).',
+    BIGQUERY_SESSION_KEY             VARCHAR         COMMENT '세션 자연키 = USER_PSEUDO_ID-GA_SESSION_ID · 기간 세션수는 이 키의 COUNT(DISTINCT)(자정 경계 세션은 일자별 행).',
+    USER_PSEUDO_ID                   VARCHAR         COMMENT 'GA4 가명 사용자 ID [SILVER.BIGQUERY_SESSION 승계].',
+    BIGQUERY_SESSION_NUMBER          NUMBER          COMMENT '사용자 기준 세션 순번 [SILVER.BIGQUERY_SESSION 승계].',
+    SESSION_START_TS                 TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 첫 이벤트 시각 [SILVER.BIGQUERY_SESSION 승계].',
+    PLATFORM                         VARCHAR         COMMENT 'GA4 플랫폼(WEB) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_CATEGORY                  VARCHAR         COMMENT '기기 카테고리(mobile·desktop·tablet·smart tv) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_OPERATING_SYSTEM          VARCHAR         COMMENT '운영체제 원값(Android·iOS·Windows·Macintosh·Linux·Chrome OS 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_WEB_INFO_BROWSER          VARCHAR         COMMENT '브라우저 원값(Chrome·Android Webview·Edge·Samsung Internet·Safari 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_LANGUAGE                  VARCHAR         COMMENT '기기 언어 로캘 원값(ko-kr·ko·en-us 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_MOBILE_BRAND_NAME         VARCHAR         COMMENT '기기 제조사 원값(Samsung·Apple 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    DEVICE_WEB_INFO_HOSTNAME         VARCHAR         COMMENT '접속 호스트명 원값(www.goodneighbors.kr·m.goodneighbors.kr 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    GEO_CONTINENT                    VARCHAR         COMMENT '대륙(Asia·Americas·Europe·Oceania·Africa·(not set)) · (not set) = GA4 위치 미판정 원값 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    GEO_SUB_CONTINENT                VARCHAR         COMMENT '하위 대륙 GA4 영문 원값(Eastern Asia 등 · (not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    GEO_COUNTRY                      VARCHAR         COMMENT '국가 GA4 영문 원값(South Korea 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    GEO_METRO                        VARCHAR         COMMENT '대도시권 GA4 원값((not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    TS_SOURCE                        VARCHAR         COMMENT '사용자 최초 유입 소스(traffic_source.source 원값 · google·(direct)·네이버M 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    TS_MEDIUM                        VARCHAR         COMMENT '사용자 최초 유입 매체(traffic_source.medium 원값 · cpc·organic·(none) 등) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    CTS_MANUAL_MEDIUM                VARCHAR         COMMENT '수집 트래픽 수동 매체(collected_traffic_source.manual_medium = utm_medium 원값) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    EP_MEDIUM                        VARCHAR         COMMENT '이벤트 파라미터 medium 원값 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    STSLC_CRC_DEFAULT_CHANNEL_GROUP  VARCHAR         COMMENT '세션 기본 채널 그룹(last click cross-channel · Display·Cross-network·Direct·Unassigned·Organic Search·Organic Social·Paid Search·Paid Other·Referral·Email·SMS·AI Assistant·Paid Social·Organic Video·Mobile Push Notifications) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    STSLC_CRC_PRIMARY_CHANNEL_GROUP  VARCHAR         COMMENT '세션 주 채널 그룹(값 체계는 기본 채널 그룹과 같다) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    STSLC_CRC_SOURCE_PLATFORM        VARCHAR         COMMENT '세션 소스 플랫폼(Manual·Google Ads·Meta Ads·Other Ads·Unlabeled) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    STSLC_GAC_CAMPAIGN_NAME          VARCHAR         COMMENT 'Google Ads 캠페인명 원값(세션 last click) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    STSLC_GAC_AD_GROUP_NAME          VARCHAR         COMMENT 'Google Ads 광고그룹명 원값((not set) 포함) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    UP_MEMBER_TYPE                   VARCHAR         COMMENT '회원유형 user_property 원값(비로그인·정기회원·일시회원·중단회원·앱회원·활동회원·정기후원·일시후원·후원중단) · 🔴 GTM 미치환 변수명 원문(이중 중괄호로 감싼 값)은 수집 오류다(원값 보존) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    UP_DONOR_TYPE                    VARCHAR         COMMENT '후원자유형 user_property(개인·단체·기업) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    UP_DONATION_TYPE                 VARCHAR         COMMENT '후원유형 user_property 원값(신규후원·증액후원·증액·감액·재후원) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    UP_BIZ_TYPE                      VARCHAR         COMMENT '후원사업유형 user_property 원값(복수 사업은 | 로 이어진 한 문자열) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    UP_LOGIN_STATUS                  VARCHAR         COMMENT '로그인 여부 user_property(y·n) · 🔴 GTM 미치환 변수명 원문은 수집 오류다 · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    EP_PAYMENT_TYPE                  VARCHAR         COMMENT '결제수단 이벤트 파라미터(신용카드·계좌이체·네이버페이) · 첫 non-NULL 값(EVENT_TIMESTAMP 순 · 세션 진입 시점 값 · 세션 내 전 이벤트가 NULL 이면 NULL) [SILVER.BIGQUERY_SESSION 승계].',
+    EVENT_CNT                        NUMBER          COMMENT '그 일자·세션의 이벤트 수(가산).',
+    PAGE_VIEW_CNT                    NUMBER          COMMENT 'page_view 이벤트 수(가산).',
+    ENGAGED_FLAG                     NUMBER          COMMENT 'GA4 참여 세션 1/0(SILVER IS_ENGAGED 파생 · 참여 세션수 = SUM).',
+    ENGAGEMENT_TIME_MSEC             NUMBER          COMMENT '참여 시간 합계(밀리초 · 가산).',
+    DW_SOURCE_SYSTEM                 VARCHAR         COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = 'GA4 세션 팩트. [Grain: DATE_SK × BIGQUERY_SESSION_KEY]. [주의: FACT_BIGQUERY_BEHAVIOR 와 같은 원천 다른 Grain, 합산 금지 · 세션수는 COUNT(DISTINCT BIGQUERY_SESSION_KEY) · 선생성 금지]. [원천: GA4 → SILVER.BIGQUERY_SESSION].';
+── 비실행 선언 끝 */
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SEARCH_CONSOLE (
     DATE_SK             NUMBER(8,0)     COMMENT '검색 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
     QUERY               VARCHAR         COMMENT '검색어(구글 검색창 입력 원문).',
@@ -1360,15 +1404,15 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_REQUEST (
     DW_LOAD_TS              TIMESTAMP_NTZ NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    MSG_DIV_CD              VARCHAR         COMMENT '🆕 [O213-E] 메시지 구분 코드(MS010 · 알림톡 요청 전용). 코드id:MS010.',
-    MSG_DIV_NAME            VARCHAR         COMMENT '🆕 [O213-E] 메시지 구분(MS010 · SMS·LMS·MMS·알림톡). 타 채널 NULL.',
-    SNDNG_TIME_DIV_CD       VARCHAR         COMMENT '🆕 [O213-E] 발송 시간 구분 코드(MS267 · 알림톡 요청 전용). 코드id:MS267.',
-    SNDNG_TIME_DIV_NAME     VARCHAR         COMMENT '🆕 [O213-E] 발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송). 타 채널 NULL.',
-    PSTMTR_PRCS_STAT_CD     VARCHAR         COMMENT '🆕 [O213-E] 우편물 처리상태 코드(MS061 · 우편 요청 전용). 코드id:MS061.',
-    PSTMTR_PRCS_STAT_NAME   VARCHAR         COMMENT '🆕 [O213-E] 우편물 처리상태(MS061 · 발송대기·발송완료). 타 채널 NULL.',
-    CORP_TYPE               VARCHAR(10)     COMMENT '🆕 [O213-E] 요청 법인구분 코드(CM019 · 문자 SND 요청 전용 · 대다수 NULL). 코드id:CM019.',
-    CORP_TYPE_NAME          VARCHAR         COMMENT '🆕 [O213-E] 요청 법인구분(CM019 · 사단·사복).',
-    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '🆕 [O213-E] 문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).'
+    MSG_DIV_CD              VARCHAR         COMMENT '메시지 구분 코드(MS010 · 알림톡 요청 전용). 코드id:MS010.',
+    MSG_DIV_NAME            VARCHAR         COMMENT '메시지 구분(MS010 · SMS·LMS·MMS·알림톡). 타 채널 NULL.',
+    SNDNG_TIME_DIV_CD       VARCHAR         COMMENT '발송 시간 구분 코드(MS267 · 알림톡 요청 전용). 코드id:MS267.',
+    SNDNG_TIME_DIV_NAME     VARCHAR         COMMENT '발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송). 타 채널 NULL.',
+    PSTMTR_PRCS_STAT_CD     VARCHAR         COMMENT '우편물 처리상태 코드(MS061 · 우편 요청 전용). 코드id:MS061.',
+    PSTMTR_PRCS_STAT_NAME   VARCHAR         COMMENT '우편물 처리상태(MS061 · 발송대기·발송완료). 타 채널 NULL.',
+    CORP_TYPE               VARCHAR(10)     COMMENT '요청 법인구분 코드(CM019 · 문자 SND 요청 전용 · 대다수 NULL). 코드id:CM019.',
+    CORP_TYPE_NAME          VARCHAR         COMMENT '요청 법인구분(CM019 · 사단·사복).',
+    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).'
 ) COMMENT = '발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다(DEC-58)]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]';
 
 -- FACT_RELATION_ACTIVITY — 결연활동 팩트 · O196-D DEC-58 #2 신설
@@ -1400,8 +1444,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY (
     DW_LOAD_TS              TIMESTAMP_NTZ NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    SETLE_BANK_CD           VARCHAR(10)     COMMENT '🆕 [O213-F] 선물금 정산은행 코드(PM039 · 서신 행 NULL).',
-    SETLE_BANK_NAME         VARCHAR         COMMENT '🆕 [O213-F] 선물금 정산은행명(PM039 라벨 · 사전에 없는 코드는 NULL).'
+    SETLE_BANK_CD           VARCHAR(10)     COMMENT '선물금 정산은행 코드(PM039 · 서신 행 NULL).',
+    SETLE_BANK_NAME         VARCHAR         COMMENT '선물금 정산은행명(PM039 라벨 · 사전에 없는 코드는 NULL).'
 ) COMMENT = '결연활동 팩트(서신·선물금). [Grain: ACTIVITY_KEY (1행=1활동)]. [주의: 선물금(GFTMNEY)은 선물금 행만 값 · 서신/선물금 계열 속성은 비해당 NULL]. [원천: SILVER.CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION]. [적재: dbt]';
 
 -- 🆕 [2026-10-08 O213-F Y3-J] DIM_RELATIONSHIP — 결연 차원(1행 = 1결연 · 결연 중단 여부·사유의 유일한 GOLD 위치)

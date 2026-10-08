@@ -66,8 +66,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     acq_org.ACQ_ORG_DIV_GROUP_CODE    AS acq_org.ACMSLT_DIV_GROUP_ID       WITH SYNONYMS ('획득 본부지부구분코드') COMMENT = '획득 시점 실적 본부/지부 구분 부서코드(ZB 접두). 🔴 본부/지부를 보여줄 때 이름과 코드를 함께 표시한다(현업 회신 41.3)',
     acq_org.ACQ_ORG_DIV_CODE          AS acq_org.ACMSLT_DIV_ID             WITH SYNONYMS ('획득 본부지부코드', '획득 지부코드') COMMENT = '획득 시점 실적 본부/지부 단위 부서코드(ZC 접두). 🔴 이름이 같아도 코드가 다르면 다른 조직 — 합치지 말고 코드로 나눠 보여준다(현업 회신 41.3)',
     acq_sponsorship.ACQ_SPONSORSHIP   AS acq_sponsorship.SPONSORSHIP_NAME  WITH SYNONYMS ('획득 후원사업', '가입 후원사업', '모집 후원사업', '후원사업(획득)') COMMENT = '🔴**획득 시점 후원사업명** — 그 회원을 데려온 사업이다(정본 #123). ⚠️ **회비를 낸 후원사업이 아니다**: 납입 대상 후원사업은 `SV_MEMBER_FEE` 의 SPONSORSHIP_NAME 이며, 한 회원이 여러 후원사업에 내므로 두 축의 값은 다르다. 회원 특성·이탈률 분석에는 이 축이 맞고, 회비 금액 분해에는 SV_MEMBER_FEE 가 맞다. ⚠️ 미매칭은 ''(미매핑)''',
-    acq_campaign.ACQ_MKTG_CHANNEL_NM AS acq_campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '획득 마케팅채널') COMMENT = '🆕 [O213] 획득 캠페인의 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
-    acq_sponsorship.ACQ_SPONSORSHIP_GROUP4_NAME AS acq_sponsorship.SPONSORSHIP_GROUP4_NAME WITH SYNONYMS ('후원사업 4그룹', '후원사업그룹') COMMENT = '🆕 [O213] 획득 후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).'
+    acq_campaign.ACQ_MKTG_CHANNEL_NM AS acq_campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '획득 마케팅채널') COMMENT = '획득 캠페인의 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
+    acq_sponsorship.ACQ_SPONSORSHIP_GROUP4_NAME AS acq_sponsorship.SPONSORSHIP_GROUP4_NAME WITH SYNONYMS ('후원사업 4그룹', '후원사업그룹') COMMENT = '획득 후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).'
   )
   METRICS (
     fmc.TOTAL_ACQ_MEMBERS AS SUM(fmc.ACQ_MEMBERS)

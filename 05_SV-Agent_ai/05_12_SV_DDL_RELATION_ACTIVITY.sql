@@ -25,7 +25,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     rel AS GN_DW.GOLD.DIM_RELATIONSHIP
       PRIMARY KEY (RELATNSP_KEY)
       WITH SYNONYMS ('결연', '결연 마스터', '결연 상태')
-      COMMENT = '🆕 [O213-F] 결연 차원(결연당 한 행). 결연 중단 여부·중단(종료) 사유·결연 시작/중단일. [원천] CRM(eCRM) → SILVER.CRM_SPONSOR_RELATION → GOLD.DIM_RELATIONSHIP. 🔴 중단사유 라벨 코드군(MM002)은 커버리지로 특정 — 현업 확인 중.'
+      COMMENT = '결연 차원(결연당 한 행). 결연 중단 여부·중단(종료) 사유·결연 시작/중단일. [원천] CRM(eCRM) → SILVER.CRM_SPONSOR_RELATION → GOLD.DIM_RELATIONSHIP. 🔴 중단사유 라벨 코드군(MM002)은 커버리지로 특정 — 현업 확인 중.'
   )
   RELATIONSHIPS (
     fra_to_date   AS fra (DATE_SK)   REFERENCES date,
@@ -45,17 +45,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     fra.TRNSFER_YN AS fra.TRNSFER_YN WITH SYNONYMS ('이관여부') COMMENT = '이관 여부(선물금 계열). 실제값 3종: ''0''·''1''·''2'' + NULL. 🔴 여부 컬럼이지만 3값이다 — 2 의 뜻은 원천 미확정(창작 금지)',
     member.GENDER_NAME AS member.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨)',
     member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(MM010 · 현재 마스터 스냅샷 · 활동 시점 값이 아니다). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''',
-    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).',
-    member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME WITH SYNONYMS ('결연구분', '결연/비결연') COMMENT = '🆕 [O213-D] 결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
-    member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분') COMMENT = '🆕 [O213-D] 회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
-    member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME WITH SYNONYMS ('최초후원사업', '최초 후원사업') COMMENT = '🆕 [O213-D] 회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
-    member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태') COMMENT = '🆕 [O213-D] 휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
-    member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME WITH SYNONYMS ('이메일상태', '이메일 상태') COMMENT = '🆕 [O213-D] 이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
-    member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = '🆕 [O213-D] TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.',
-    fra.SETLE_BANK_NAME AS fra.SETLE_BANK_NAME WITH SYNONYMS ('선물금 정산은행', '정산은행', '입금은행') COMMENT = '🆕 [O213-F] 선물금 정산은행명(PM039 자동이체 은행코드 라벨 · 우리은행·국민은행·신한은행 등). 선물금 계열 전용 — 서신 행은 NULL(구조적 부재).',
-    rel.REL_IS_DISCONTINUED AS rel.IS_DISCONTINUED WITH SYNONYMS ('결연 중단 여부', '결연중단', '중단된 결연') COMMENT = '🆕 [O213-F] 결연 중단 여부 Y/N(원천 0/1 파생 · 현재값). 「중단된 결연의 서신·선물금」 질문에 쓴다.',
-    rel.REL_DSCNTC_RSN_NAME AS rel.RELATNSP_DSCNTC_RSN_NAME WITH SYNONYMS ('결연 중단사유', '결연 종료사유', '아동교체 사유') COMMENT = '🆕 [O213-F] 결연 중단(종료) 사유명(MM002 라벨 · 후원중단·18세종결교체·아동퇴소교체·개인사유(감액) 등 · 현재값). 🔴 코드군은 커버리지로 특정했다(현업 확인 중) — 답할 때 「사유 라벨은 확인 중」이라고 밝힌다. 진행 중 결연은 NULL.',
-    rel.REL_DSCNTC_RSN_CD AS rel.RELATNSP_DSCNTC_RSN_CD WITH SYNONYMS ('결연 중단사유코드') COMMENT = '🆕 [O213-F] 결연 중단 사유 원천 코드(MM002). 라벨 없는 코드를 구분할 때 쓴다.'
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).',
+    member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME WITH SYNONYMS ('결연구분', '결연/비결연') COMMENT = '결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
+    member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분') COMMENT = '회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
+    member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME WITH SYNONYMS ('최초후원사업', '최초 후원사업') COMMENT = '회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
+    member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태') COMMENT = '휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
+    member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME WITH SYNONYMS ('이메일상태', '이메일 상태') COMMENT = '이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
+    member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = 'TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.',
+    fra.SETLE_BANK_NAME AS fra.SETLE_BANK_NAME WITH SYNONYMS ('선물금 정산은행', '정산은행', '입금은행') COMMENT = '선물금 정산은행명(PM039 자동이체 은행코드 라벨 · 우리은행·국민은행·신한은행 등). 선물금 계열 전용 — 서신 행은 NULL(구조적 부재).',
+    rel.REL_IS_DISCONTINUED AS rel.IS_DISCONTINUED WITH SYNONYMS ('결연 중단 여부', '결연중단', '중단된 결연') COMMENT = '결연 중단 여부 Y/N(원천 0/1 파생 · 현재값). 「중단된 결연의 서신·선물금」 질문에 쓴다.',
+    rel.REL_DSCNTC_RSN_NAME AS rel.RELATNSP_DSCNTC_RSN_NAME WITH SYNONYMS ('결연 중단사유', '결연 종료사유', '아동교체 사유') COMMENT = '결연 중단(종료) 사유명(MM002 라벨 · 후원중단·18세종결교체·아동퇴소교체·개인사유(감액) 등 · 현재값). 🔴 코드군은 커버리지로 특정했다(현업 확인 중) — 답할 때 「사유 라벨은 확인 중」이라고 밝힌다. 진행 중 결연은 NULL.',
+    rel.REL_DSCNTC_RSN_CD AS rel.RELATNSP_DSCNTC_RSN_CD WITH SYNONYMS ('결연 중단사유코드') COMMENT = '결연 중단 사유 원천 코드(MM002). 라벨 없는 코드를 구분할 때 쓴다.'
   )
   METRICS (
     fra.TOTAL_ACTIVITY_CNT AS SUM(fra.ACTIVITY_CNT)
