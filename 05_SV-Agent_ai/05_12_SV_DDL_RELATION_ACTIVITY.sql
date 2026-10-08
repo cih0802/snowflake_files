@@ -39,7 +39,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     fra.GFT_DIV_CD AS fra.GFT_DIV_CD WITH SYNONYMS ('선물구분코드') COMMENT = '선물 구분 **원천 코드**(선물금 계열 · 라벨 미배선). 실제값 7종: ''0''·''1''·''2''·''3''·''4''·''5''·''6'' + NULL. 🔴 라벨 추측 금지 · 서신 행은 NULL',
     fra.TRNSFER_YN AS fra.TRNSFER_YN WITH SYNONYMS ('이관여부') COMMENT = '이관 여부(선물금 계열). 실제값 3종: ''0''·''1''·''2'' + NULL. 🔴 여부 컬럼이지만 3값이다 — 2 의 뜻은 원천 미확정(창작 금지)',
     member.GENDER_NAME AS member.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨)',
-    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(MM010 · 현재 마스터 스냅샷 · 활동 시점 값이 아니다). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)'''
+    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(MM010 · 현재 마스터 스냅샷 · 활동 시점 값이 아니다). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''',
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).'
   )
   METRICS (
     fra.TOTAL_ACTIVITY_CNT AS SUM(fra.ACTIVITY_CNT)

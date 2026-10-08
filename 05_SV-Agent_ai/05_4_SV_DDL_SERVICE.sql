@@ -55,7 +55,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(공#132, MM010). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''. 🔴 **라벨에 숫자 접두가 없다** — 상태 코드번호를 라벨 앞에 붙인 형태로 필터하면 0행 무증상 오답이다(경위는 원장 §O58-C). ⚠️ ''(해당없음)''은 일시회원이며 정기후원 상태축의 **구조적 부재**다 — 결측이 아니다',
     member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드') COMMENT = '회원상태 원천코드(MM010 1~12). 실제값 12종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''9''·''10''·''11''·''12'' + NULL',
     member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018): 개인·기업·단체. 실제값 3종: ''개인''·''기업''·''단체''',
-    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018). 실제값 3종: ''1''·''2''·''3'''
+    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018). 실제값 3종: ''1''·''2''·''3''',
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).',
+    member.MEMBER_JOIN_CMMN_BRND_NM AS member.JOIN_CMMN_BRND_NM WITH SYNONYMS ('가입 공통브랜드', '회원 가입 공통브랜드') COMMENT = '🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준.',
+    fse.FRST_BRND_NM AS fse.FRST_BRND_NM WITH SYNONYMS ('최초 브랜드', '발송 시점 최초 브랜드') COMMENT = '🆕 [O213] 발송 시점 회원의 최초 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).',
+    fse.LST_BRND_NM AS fse.LST_BRND_NM WITH SYNONYMS ('최종 브랜드', '발송 시점 최종 브랜드') COMMENT = '🆕 [O213] 발송 시점 회원의 최종 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).',
+    fse.SEND_TYPE AS fse.SEND_TYPE WITH SYNONYMS ('발송채널 원천구분', '발송 원천') COMMENT = '🆕 [O213] 발송 원천 계열(EMAIL·PSTMTR(우편)·MSG_AT(알림톡)·SND(문자)). 🔴 채널(CHANNEL) 라벨과 같은 축의 원천 코드다 — 채널 질문은 채널 차원을 먼저 쓴다.'
   )
   METRICS (
     fse.TOTAL_SEND_MEMBERS AS SUM(fse.SEND_MEMBERS)

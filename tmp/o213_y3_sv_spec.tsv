@@ -1,0 +1,25 @@
+sv	alias	col	expose	synonyms	comment
+SV_MEMBER_EVENT	fme	MKTG_CHANNEL_NM_AT_EVENT	MKTG_CHANNEL_NM_AT_EVENT	마케팅채널|마케팅 채널|캠페인 채널	🆕 [O213] 마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다.
+SV_MEMBER_EVENT	member	ENROLL_PATH_NAME	MEMBER_ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음). 🔴 개발인입경로(캠페인 모집채널)와 다른 축이다.
+SV_MEMBER_EVENT	member	JOIN_CMMN_BRND_NM	MEMBER_JOIN_CMMN_BRND_NM	가입 공통브랜드|회원 가입 공통브랜드	🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준. 🔴 「공통브랜드」(사건 캠페인 기준 CMMN_BRND_NM_AT_EVENT)와 다른 축이다 — 「가입 공통브랜드」를 명시할 때만 쓴다.
+SV_MEMBER_COHORT	acq_campaign	MKTG_CHANNEL_NM	ACQ_MKTG_CHANNEL_NM	마케팅채널|획득 마케팅채널	🆕 [O213] 획득 캠페인의 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값.
+SV_MEMBER_COHORT	acq_sponsorship	SPONSORSHIP_GROUP4_NAME	ACQ_SPONSORSHIP_GROUP4_NAME	후원사업 4그룹|후원사업그룹	🆕 [O213] 획득 후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).
+SV_MEMBER_SPONSOR_BIZ	campaign	MKTG_CHANNEL_NM	CAMPAIGN_MKTG_CHANNEL_NM	마케팅채널|캠페인 마케팅채널	🆕 [O213] 캠페인 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값.
+SV_MEMBER_SPONSOR_BIZ	fmsb	SPNSR_JOIN_PATH_NM	SPNSR_JOIN_PATH_NM	후원 가입경로|가입경로	🆕 [O213] 후원(약정) 단위 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM).
+SV_MEMBER_SPONSOR_BIZ	sponsorship	SPONSORSHIP_GROUP4_NAME	SPONSORSHIP_GROUP4_NAME	후원사업 4그룹|후원사업그룹	🆕 [O213] 후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).
+SV_MEMBER_MONTHLY	member	ENROLL_PATH_NAME	MEMBER_ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음).
+SV_MEMBER_MONTHLY	member	JOIN_CMMN_BRND_NM	MEMBER_JOIN_CMMN_BRND_NM	가입 공통브랜드|회원 가입 공통브랜드	🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준.
+SV_SERVICE	member	ENROLL_PATH_NAME	MEMBER_ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).
+SV_SERVICE	member	JOIN_CMMN_BRND_NM	MEMBER_JOIN_CMMN_BRND_NM	가입 공통브랜드|회원 가입 공통브랜드	🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준.
+SV_SERVICE	fse	FRST_BRND_NM	FRST_BRND_NM	최초 브랜드|발송 시점 최초 브랜드	🆕 [O213] 발송 시점 회원의 최초 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).
+SV_SERVICE	fse	LST_BRND_NM	LST_BRND_NM	최종 브랜드|발송 시점 최종 브랜드	🆕 [O213] 발송 시점 회원의 최종 브랜드명(원천 SND_MEMBER_LIST · 발송 원천 스냅샷).
+SV_SERVICE	fse	SEND_TYPE	SEND_TYPE	발송채널 원천구분|발송 원천	🆕 [O213] 발송 원천 계열(EMAIL·PSTMTR(우편)·MSG_AT(알림톡)·SND(문자)). 🔴 채널(CHANNEL) 라벨과 같은 축의 원천 코드다 — 채널 질문은 채널 차원을 먼저 쓴다.
+SV_EVENT_PARTICIPATION	member	ENROLL_PATH_NAME	MEMBER_ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).
+SV_RELATION_ACTIVITY	member	ENROLL_PATH_NAME	MEMBER_ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).
+SV_MEMBER_STATUS_ASOF	msh	ENROLL_PATH_NAME	ENROLL_PATH_NAME	가입경로|회원 가입경로	🆕 [O213] 회원 가입경로(MM014) — 상태이력 기준. 일시회원은 (해당없음).
+SV_GA_BEHAVIOR	src	UTM_CONTENT	UTM_CONTENT	UTM 콘텐츠|광고 콘텐츠	🆕 [O213] 세션 수동 광고 콘텐츠(utm_content · #103).
+SV_GA_BEHAVIOR	src	UTM_TERM	UTM_TERM	UTM 검색어|검색어	🆕 [O213] 세션 수동 검색어(utm_term · #104).
+SV_AD	ad	BRDC_DIV	BRDC_DIV	방송구분|본방/재방	🆕 [O213] 방송구분(레귤러·본방송·재방송·삼방송·보상송출·송출오류) — 🔴 REBROADCAST 전용 · 디지털행은 NULL(원천 부재) ⇒ 출처유형 REBROADCAST 로 고정해 쓴다.
+SV_AD	ad	CHANNEL_COMPANY_TYPE	CHANNEL_COMPANY_TYPE	채널사유형|방송사 유형	🆕 [O213] 채널사유형(지상파·종편·케이블·CTV·YOUTUBETV·퍼포머셜·TEADS·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL ⇒ 출처유형 VIDEO 로 고정해 쓴다.
+SV_AD	ad	CTV_DIV	CTV_DIV	CTV구분|TV/CTV	🆕 [O213] CTV구분(TV·CTV·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL.
+SV_AD	ad	DAY_DIV	DAY_DIV	요일구분|주중/주말	🆕 [O213] 요일구분(주중·토·일) — 🔴 VIDEO 전용 · 디지털행은 NULL.

@@ -1,0 +1,22 @@
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
+    MONTH_KEY           NUMBER(6,0)     COMMENT '월 conform 키 YYYYMM(회비월 우선 · 납입월 폴백 · 0 = Unknown월 · FACT_MEMBER_FEE 와 같은 규칙).',
+    SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '납입 대상 후원사업 대리키(FK→DIM_SPONSORSHIP · 0 = 미매핑).',
+    FEE_DIV_CD          VARCHAR         COMMENT '회비구분 코드(PM010). 기부금 행은 원천 NULL. 코드id:PM010.',
+    FEE_DIV_NAME        VARCHAR         COMMENT '회비구분명: 정기·선물금·일시·긴급구호 (PM010 라벨). 기부금 행은 NULL.',
+    PAYMENT_TYPE        VARCHAR         COMMENT '납입유형 = 회비/기부금.',
+    RQEST_DIV_CD        VARCHAR         COMMENT '청구구분 코드(PM024). 코드id:PM024.',
+    RQEST_DIV_NAME      VARCHAR         COMMENT '청구구분명(PM024 라벨: 정기청구·OCR신규·개별청구). 원천 코드 Y 는 코드사전에 없어 NULL(2026-10-08 실측 · 현업 확인 대상).',
+    PRCS_STAT_CD        VARCHAR         COMMENT '회비 처리상태 코드(PM013). 코드id:PM013.',
+    PRCS_STAT_NAME      VARCHAR         COMMENT '회비 처리상태명(PM013 라벨: 청구·완료). 원천 코드 F 는 코드사전에 없어 NULL(2026-10-08 실측 · 현업 확인 대상).',
+    RETUN_RSN_CD        VARCHAR         COMMENT '환급사유 코드(PM042). 환급이 아닌 청구행은 원천 NULL. 코드id:PM042.',
+    RETUN_RSN_NAME      VARCHAR         COMMENT '환급사유명(PM042 라벨 11종). 환급이 아닌 청구행은 NULL(개념 없음).',
+    BILLING_ROWS        NUMBER(38,0)    COMMENT '집계된 원천 청구행 수(건).',
+    BILLED_MEMBERS      NUMBER(38,0)    COMMENT '청구 대상 고유 회원수(명). 🔴 비가산 — 다른 축으로 다시 묶어 합하지 않는다.',
+    BILLED_AMT          NUMBER(38,2)    COMMENT '청구액(원) = SUM(RQEST_AMT) · FACT_MEMBER_FEE 와 같은 식.',
+    PAID_FEE            NUMBER(38,2)    COMMENT '납입 총액(원) = 회비 + 기부금 · FACT_MEMBER_FEE 와 같은 식.',
+    UNPAID_BILLED_AMT   NUMBER(38,2)    COMMENT '미납 청구액(원) = 결제상태 F 또는 NULL 인 청구액(DEC-3) · FACT_MEMBER_FEE 와 같은 식.',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '회비 청구 처리 상태 팩트. [Grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV × PAYMENT_TYPE × 청구구분 × 처리상태 × 환급사유]. [주의: 회원 축 없음 · FACT_MEMBER_FEE·FACT_MEMBER_MONTHLY 와 동일 원천 다른 Grain, 합산 금지]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING].'

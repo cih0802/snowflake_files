@@ -51,7 +51,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
     src.UTM_MEDIUM AS src.UTM_MEDIUM WITH SYNONYMS ('UTM 매체') COMMENT = 'UTM medium',
     fbq.UTM_CAMPAIGN AS fbq.UTM_CAMPAIGN WITH SYNONYMS ('UTM 캠페인', 'GA 캠페인') COMMENT = 'UTM campaign(자유 텍스트). 🔴 CRM 캠페인 코드와 다른 체계다 — CRM 캠페인으로 바꿔 말하지 않는다',
     dev.DEVICE_TYPE AS dev.DEVICE_TYPE WITH SYNONYMS ('기기유형', '디바이스유형') COMMENT = '기기 유형(PC·모바일 등)',
-    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다'
+    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다',
+    src.UTM_CONTENT AS src.UTM_CONTENT WITH SYNONYMS ('UTM 콘텐츠', '광고 콘텐츠') COMMENT = '🆕 [O213] 세션 수동 광고 콘텐츠(utm_content · #103).',
+    src.UTM_TERM AS src.UTM_TERM WITH SYNONYMS ('UTM 검색어', '검색어') COMMENT = '🆕 [O213] 세션 수동 검색어(utm_term · #104).'
   )
   METRICS (
     fbq.TOTAL_EVENT_CNT AS SUM(fbq.EVENT_CNT)

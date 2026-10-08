@@ -1019,6 +1019,30 @@ models:
       - name: "MONTH_KEY || '|' || MEMBER_DK || '|' || SPONSORSHIP_SK || '|' || PAYMENT_SK || '|' || COALESCE(FEE_DIV_CD,'~') || '|' || COALESCE(PAYMENT_TYPE,'~') || '|' || COALESCE(SETLE_CD,'~')"
         tests: [unique]
 
+  # 🆕 [2026-10-08 O213 Y3-D] 회비 청구 처리 상태 팩트 — FACT_MEMBER_FEE 와 grain 이 달라 분리(O45 선례)
+  - name: FACT_PAYMENT_BILLING_STATUS
+    description: >
+      회비 청구 처리 상태 팩트 — grain = MONTH_KEY × SPONSORSHIP_SK × FEE_DIV_CD × PAYMENT_TYPE ×
+      RQEST_DIV_CD × PRCS_STAT_CD × RETUN_RSN_CD. `SV_PAYMENT_BILLING_STATUS` 의 base 다.
+      🔴 회원 축이 없다 — 회원 단위 질문은 `FACT_MEMBER_FEE`·`FACT_MEMBER_MONTHLY` 소관이다.
+      🔴🔴 두 형제 팩트와 **한 표에 합산 금지**(같은 원천 `SILVER.CRM_PAYMENT_BILLING` · 다른 grain).
+      🟢 measure 식은 FACT_MEMBER_FEE 와 같다 — 사전 검증(2026-10-08) 청구·납입·미납·원천행수 4종 원 단위 일치.
+      🔴 청구결과(PM002 불일치)·처리결과(코드그룹 미특정)는 넣지 않았다(문서20 현업 확인).
+      ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.
+    columns:
+      - name: MONTH_KEY
+        tests: [not_null]
+      - name: SPONSORSHIP_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SPONSORSHIP')
+              field: SPONSORSHIP_SK
+              config: { where: "SPONSORSHIP_SK != 0" }
+      # grain 가드: 7컬럼 경로 유일(사전 검증 2026-10-08 = 12,102행 · NULL 키는 '~' 로 접는다)
+      - name: "MONTH_KEY || '|' || SPONSORSHIP_SK || '|' || COALESCE(FEE_DIV_CD,'~') || '|' || COALESCE(PAYMENT_TYPE,'~') || '|' || COALESCE(RQEST_DIV_CD,'~') || '|' || COALESCE(PRCS_STAT_CD,'~') || '|' || COALESCE(RETUN_RSN_CD,'~')"
+        tests: [unique]
+
   - name: FACT_MEMBER_SPONSORSHIP_SPAN
     description: >
       회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며

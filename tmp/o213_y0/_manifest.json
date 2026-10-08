@@ -1,0 +1,301 @@
+{
+  "AGENT_EXECUTIVE": {
+    "file": "AGENT_EXECUTIVE_spec_vLAST.json",
+    "version": "LAST",
+    "sha256": "f447d3e288eb40123e684047e9a1558253ea057b975ab8b05d2cf34bea2f3f39"
+  },
+  "AGENT_MEMBER": {
+    "file": "AGENT_MEMBER_spec_vLAST.json",
+    "version": "LAST",
+    "sha256": "00bc5456d35fb5fb84befa4c0b548efa2db364cf1a65e79d5300d98b62d60a1d"
+  },
+  "AGENT_MARKETING": {
+    "file": "AGENT_MARKETING_spec_vLAST.json",
+    "version": "LAST",
+    "sha256": "c301fa54b7be2502934e8217e991aae463b96ff908160d55187e6dafb40229c6"
+  },
+  "SV_SV_AD": {
+    "file": "SV_SV_AD.sql",
+    "sha256": "2cd76dc9e4124ceb588b67152482482f4ebf10eff2359a4e30fd92f83a1fc8b6"
+  },
+  "SV_SV_BUDGET": {
+    "file": "SV_SV_BUDGET.sql",
+    "sha256": "3f1ee1ba085a63bc08e616be44882d11ca395f952a6dc99c98452c4a2395c522"
+  },
+  "SV_SV_BUDGET_YEARLY": {
+    "file": "SV_SV_BUDGET_YEARLY.sql",
+    "sha256": "a34a9734eb30c38a4b392427a0393f36921d16174a3d6575a1e61e93e9af61f1"
+  },
+  "SV_SV_DEV_ACHIEVEMENT": {
+    "file": "SV_SV_DEV_ACHIEVEMENT.sql",
+    "sha256": "c6a165290ebc58385104de33e9dbf8f58f119647587cc380543f81d987d6a5c9"
+  },
+  "SV_SV_DVLP_GOAL_ACMSLT": {
+    "file": "SV_SV_DVLP_GOAL_ACMSLT.sql",
+    "sha256": "5e35a62740e4f1ec56ce6adeffd3a14431becc6ef607da41837319b925d88a24"
+  },
+  "SV_SV_EVENT_PARTICIPATION": {
+    "file": "SV_SV_EVENT_PARTICIPATION.sql",
+    "sha256": "9d3d48796040b782b62dd0091cbec1e1c594c1626976ab7335beca7d9981c25f"
+  },
+  "SV_SV_GA_BEHAVIOR": {
+    "file": "SV_SV_GA_BEHAVIOR.sql",
+    "sha256": "ec93c88d685470e50ce5a0ce03dfd42baa85eadb336a620f75ce0e496236e438"
+  },
+  "SV_SV_MBRFEE_PRDT_ACTL": {
+    "file": "SV_SV_MBRFEE_PRDT_ACTL.sql",
+    "sha256": "801e00919bd67e4bea3843ed7b8461f54de1effcd8dc413b25fbb74d51af0479"
+  },
+  "SV_SV_MEMBER_COHORT": {
+    "file": "SV_SV_MEMBER_COHORT.sql",
+    "sha256": "b70a04f010cb1b32fae169d40e86e0c882dfa68f454cfda0545f10d2e01a069a"
+  },
+  "SV_SV_MEMBER_EVENT": {
+    "file": "SV_SV_MEMBER_EVENT.sql",
+    "sha256": "c00067f46c1011327f05051376964daf062def46949f2209b6b4ba72ff54234a"
+  },
+  "SV_SV_MEMBER_FEE": {
+    "file": "SV_SV_MEMBER_FEE.sql",
+    "sha256": "fbc45c101afd153024ec750ff20c5dfe65ba38c2712d97a34e9fab453a094425"
+  },
+  "SV_SV_MEMBER_MONTHLY": {
+    "file": "SV_SV_MEMBER_MONTHLY.sql",
+    "sha256": "01fd1b2a0fa813a205a3e9d4b06bc8f9faf9ca33dcddbb5a905558ed47e2fcda"
+  },
+  "SV_SV_MEMBER_MONTHLY_KPI": {
+    "file": "SV_SV_MEMBER_MONTHLY_KPI.sql",
+    "sha256": "affef896e2bbe83b0016e7f15cb8e2b8aa7e05905111bd68b50d7038713dc99c"
+  },
+  "SV_SV_MEMBER_SERVICE_COHORT": {
+    "file": "SV_SV_MEMBER_SERVICE_COHORT.sql",
+    "sha256": "108b562dc70bd8e732ef129007642078781006b055bd950588a6a9cc840ce370"
+  },
+  "SV_SV_MEMBER_SPONSOR_BIZ": {
+    "file": "SV_SV_MEMBER_SPONSOR_BIZ.sql",
+    "sha256": "513fad61ee236fd769265e0d2a2032106ac087f5d956bdffaa0bf5891337b834"
+  },
+  "SV_SV_MEMBER_STATUS_ASOF": {
+    "file": "SV_SV_MEMBER_STATUS_ASOF.sql",
+    "sha256": "3825cfea1ef2aa88fd11bd4ed1b3727adfab85ed6f56398006514ff0f8f3d4e9"
+  },
+  "SV_SV_ML_DVLP_FORECAST": {
+    "file": "SV_SV_ML_DVLP_FORECAST.sql",
+    "sha256": "6725e65409dc7dfa95711242a7b998bee38dc268fe519c1889c6dcada1d28807"
+  },
+  "SV_SV_ML_FEATURE_IMPORTANCE": {
+    "file": "SV_SV_ML_FEATURE_IMPORTANCE.sql",
+    "sha256": "ce1a6b10e5eff61cf43a14b3ce548ed8c57c3a55f5680f35e0e364546c4391bc"
+  },
+  "SV_SV_ML_FEE_FORECAST": {
+    "file": "SV_SV_ML_FEE_FORECAST.sql",
+    "sha256": "9b94c45e6b09c57a0063d3c2cec0521656213c41cd2987b063ce223f432bcae9"
+  },
+  "SV_SV_ML_LTV_FORECAST": {
+    "file": "SV_SV_ML_LTV_FORECAST.sql",
+    "sha256": "46768eb2c1b80e4916a5b9d39ea91a1a003e793e0bccc7f5a15744aea67b27a0"
+  },
+  "SV_SV_ML_MEMBER_RISK": {
+    "file": "SV_SV_ML_MEMBER_RISK.sql",
+    "sha256": "e885e1fb473316a3d9640bc3f5efecfadb54f08ed7a809e28b011e81c43fb2bb"
+  },
+  "SV_SV_ML_ONCE_CONVERSION": {
+    "file": "SV_SV_ML_ONCE_CONVERSION.sql",
+    "sha256": "bdee34f439cc76765f08e6c91e166052fceb1a28d4b237da31c4aebf275a9494"
+  },
+  "SV_SV_ML_SPONSOR_RISK": {
+    "file": "SV_SV_ML_SPONSOR_RISK.sql",
+    "sha256": "8bb3a311db0cc2ec291933096542092610591d78b1334abfdd0a266ef4b7b61b"
+  },
+  "SV_SV_MSTR_SPNSR_DVLP": {
+    "file": "SV_SV_MSTR_SPNSR_DVLP.sql",
+    "sha256": "b93926f4b02e6f843262cf212e51a7e6e8f53bd07360040d3f94cb604532e217"
+  },
+  "SV_SV_RELATION_ACTIVITY": {
+    "file": "SV_SV_RELATION_ACTIVITY.sql",
+    "sha256": "4a1f3801520bd38cca604d2539be7dd5ddfddaa2312edaf1ba1017fdf493d933"
+  },
+  "SV_SV_SERVICE": {
+    "file": "SV_SV_SERVICE.sql",
+    "sha256": "22c35db300c96b981803450fa7a27c071d0ad627f4704fa9e2d077f5250fc55b"
+  },
+  "SV_SV_SPNSR_CLS_AGGR": {
+    "file": "SV_SV_SPNSR_CLS_AGGR.sql",
+    "sha256": "f24aafd0a2ca803b2eb02ee9a4508f238111fb4b203308f7142f1f7890c7e935"
+  },
+  "SV_SV_TARGET_BIZ": {
+    "file": "SV_SV_TARGET_BIZ.sql",
+    "sha256": "314899e30eecb9e2755eae72bef25f9f388b217b65b0ba97df906bef0496ac73"
+  },
+  "GOLD.WIDE_AD_BROADCAST": {
+    "file": "VIEW_GOLD_WIDE_AD_BROADCAST.sql",
+    "sha256": "0e90cc069cac152afb464d9d7b5c757dd7f5761e6686a2fde30e1fad4a98cc69"
+  },
+  "GOLD.WIDE_AD_BROADCAST_CASE": {
+    "file": "VIEW_GOLD_WIDE_AD_BROADCAST_CASE.sql",
+    "sha256": "146f881cab34d2294a9fcff0cfb3bbf6de819953a71793cb7a0a1cc974991108"
+  },
+  "GOLD.WIDE_AD_COMBINED": {
+    "file": "VIEW_GOLD_WIDE_AD_COMBINED.sql",
+    "sha256": "a8eb24d13f14fb05767d01256cb16e7e7f70b44c10be6d7cdc3d09baa186f805"
+  },
+  "GOLD.WIDE_AD_DIGITAL": {
+    "file": "VIEW_GOLD_WIDE_AD_DIGITAL.sql",
+    "sha256": "d582464db43692d6f13ff685360ac62a919eb53f5067967533fa0137cdec088b"
+  },
+  "GOLD.WIDE_AD_PERFORMANCE": {
+    "file": "VIEW_GOLD_WIDE_AD_PERFORMANCE.sql",
+    "sha256": "6a143b2ec4313a8d722c78d6919888bb5fbb861d43b3ef6962ceb713deb2b43c"
+  },
+  "GOLD.WIDE_BIGQUERY_BEHAVIOR": {
+    "file": "VIEW_GOLD_WIDE_BIGQUERY_BEHAVIOR.sql",
+    "sha256": "d6d3c1f88fbd8af8d711daa3ec390d176919676ce18d168e174af5fb751418e6"
+  },
+  "GOLD.WIDE_BUDGET": {
+    "file": "VIEW_GOLD_WIDE_BUDGET.sql",
+    "sha256": "cb7fbf3ca21d5628c6375fc1725bd106a3a5ec1ffd175358d9a505c6cc3d41f7"
+  },
+  "GOLD.WIDE_DVLP_GOAL_ACMSLT": {
+    "file": "VIEW_GOLD_WIDE_DVLP_GOAL_ACMSLT.sql",
+    "sha256": "01caf436d93a5065b2e64ea4230a290964543c7ae9b363fd58f359e4c41922e4"
+  },
+  "GOLD.WIDE_EVENT_PARTICIPATION": {
+    "file": "VIEW_GOLD_WIDE_EVENT_PARTICIPATION.sql",
+    "sha256": "e71fba5746fd4a29a6557e75063d27e196ada96ab46f7f2050f223fcf927a1e3"
+  },
+  "GOLD.WIDE_MBRFEE_PRDT_ACTL": {
+    "file": "VIEW_GOLD_WIDE_MBRFEE_PRDT_ACTL.sql",
+    "sha256": "7e2c237eb4d917730d2253c9a0593014b80b1f0387ae6ded264f71fe3d701765"
+  },
+  "GOLD.WIDE_MEMBER_EVENT": {
+    "file": "VIEW_GOLD_WIDE_MEMBER_EVENT.sql",
+    "sha256": "74595cd90f3f60575aa854b3fe9701d4a3073d0a631e395786387b62be5bd835"
+  },
+  "GOLD.WIDE_MEMBER_FEE": {
+    "file": "VIEW_GOLD_WIDE_MEMBER_FEE.sql",
+    "sha256": "9da1ff56ebefe51b4e41d3050668b2b5680d9770462fcc44ac93d047c4e21020"
+  },
+  "GOLD.WIDE_MEMBER_MONTHLY": {
+    "file": "VIEW_GOLD_WIDE_MEMBER_MONTHLY.sql",
+    "sha256": "a61b74759fe0d86101fd0b365a00776bd1c59d5870ae905fb87c9bf22291624d"
+  },
+  "GOLD.WIDE_MEMBER_MONTHLY_KPI": {
+    "file": "VIEW_GOLD_WIDE_MEMBER_MONTHLY_KPI.sql",
+    "sha256": "04220e484a0cb74e6f2ac02c27dd68a8552c47824fe8858b94d2a2df4948e49a"
+  },
+  "GOLD.WIDE_MEMBER_SERVICE_COHORT": {
+    "file": "VIEW_GOLD_WIDE_MEMBER_SERVICE_COHORT.sql",
+    "sha256": "85e6b8066940ca2fcf00ea791f527fb33e6daeaabe9c63d4f73cb662d61ce8fb"
+  },
+  "GOLD.WIDE_SERVICE_EVENT": {
+    "file": "VIEW_GOLD_WIDE_SERVICE_EVENT.sql",
+    "sha256": "8c9445a95ac92d7c0d16bb96a85b3aaacf0c39b9bdc7f0080b3bad4281c1f314"
+  },
+  "GOLD.WIDE_SPNSR_CLS_AGGR": {
+    "file": "VIEW_GOLD_WIDE_SPNSR_CLS_AGGR.sql",
+    "sha256": "b16cf88b5ea1a70daa0a0d19bb9e8d04329b1ef2ce88e1ad399e982de4a5ce92"
+  },
+  "GOLD.WIDE_TARGET_BIZ": {
+    "file": "VIEW_GOLD_WIDE_TARGET_BIZ.sql",
+    "sha256": "93db9f4ab760833f6e974bd68ca236a506c327877cd58b9a7a569aaf194c4706"
+  },
+  "GOLD.WIDE_TARGET_DEV": {
+    "file": "VIEW_GOLD_WIDE_TARGET_DEV.sql",
+    "sha256": "66156aedce3e8fad3c9ce174988fb0ccf921df263d0a00ecf15b1e2d9d5e1081"
+  },
+  "MSTR.D_AGE_TERM_CD": {
+    "file": "VIEW_MSTR_D_AGE_TERM_CD.sql",
+    "sha256": "02f7defb2f95be5ddaf03e3f87fe89279d95ee0fa814af53d36fe190bf139356"
+  },
+  "MSTR.D_CPR_DIV_CD": {
+    "file": "VIEW_MSTR_D_CPR_DIV_CD.sql",
+    "sha256": "be21a31c414416ce9e183d3b963e0b4e29b80771bb05ffd3830e93f137a44fd0"
+  },
+  "MSTR.D_DEPT2_CD": {
+    "file": "VIEW_MSTR_D_DEPT2_CD.sql",
+    "sha256": "7362ff220cfd034993fc418cd7a25e3d5206849e6cc9ac56c17ca5d69f201776"
+  },
+  "MSTR.D_DEPT3_CD": {
+    "file": "VIEW_MSTR_D_DEPT3_CD.sql",
+    "sha256": "3c044d6b66138fc72c22c1539ec230e0453c726c7d646c4390ad67bad93d68f0"
+  },
+  "MSTR.D_DEPT4_CD": {
+    "file": "VIEW_MSTR_D_DEPT4_CD.sql",
+    "sha256": "71ad26e53c9f745a4dba74b21af72e74cbb79b461f671f81573f44738e3cd60d"
+  },
+  "MSTR.D_DEPT_CD": {
+    "file": "VIEW_MSTR_D_DEPT_CD.sql",
+    "sha256": "07c39af31291294db7ed48692af7e861ab10152dc3b2cd55d10c1feb07a794de"
+  },
+  "MSTR.D_DVLP_DIV_CD": {
+    "file": "VIEW_MSTR_D_DVLP_DIV_CD.sql",
+    "sha256": "ee53226377f031cca6b7a79ad43bfd7ba37752b66a2b3ff7cadea9ec61cdfcc9"
+  },
+  "MSTR.D_PR_MTH_CD": {
+    "file": "VIEW_MSTR_D_PR_MTH_CD.sql",
+    "sha256": "b0b337b5d9cdccbc0f3c5e8f8ae13a5528fcf838b9e9d310d5cfad8d8dc83ab2"
+  },
+  "MSTR.D_SEX_CD": {
+    "file": "VIEW_MSTR_D_SEX_CD.sql",
+    "sha256": "0ad588fcb66ae0b9dc1923da440ed33e3b891fda9ef8cd357d2d5ef30c51db70"
+  },
+  "MSTR.D_SPNSR_BSNS_V": {
+    "file": "VIEW_MSTR_D_SPNSR_BSNS_V.sql",
+    "sha256": "4d7c0eb0cd2cdeca5da0ddac5315edb3f74835cc4fe3b46b4f6c3d981f8ecc12"
+  },
+  "MSTR.D_STRD_DE_CD": {
+    "file": "VIEW_MSTR_D_STRD_DE_CD.sql",
+    "sha256": "535b577e4e6e4f779231239babd95591453d83906b0b3359ba9aeb5f31410f06"
+  },
+  "MSTR.D_STRD_MT_CD": {
+    "file": "VIEW_MSTR_D_STRD_MT_CD.sql",
+    "sha256": "1bc0124d70ec19714aceb20e4b811e9f5e7855d19f4255292b126d7b560b9527"
+  },
+  "MSTR.D_UP_CMPGN_CD": {
+    "file": "VIEW_MSTR_D_UP_CMPGN_CD.sql",
+    "sha256": "24d384d14e2a453b4bce50baa691900a9ec22bee46caf2db6d8d768b4054087d"
+  },
+  "SERVING.ML_DVLP_FORECAST_V": {
+    "file": "VIEW_SERVING_ML_DVLP_FORECAST_V.sql",
+    "sha256": "85c928e9377d0766555be1c5e0fde9c054e54e1b2c880cfdeac959f3a4908524"
+  },
+  "SERVING.ML_FEATURE_IMPORTANCE_V": {
+    "file": "VIEW_SERVING_ML_FEATURE_IMPORTANCE_V.sql",
+    "sha256": "36d1213ca893ae158cf27db6cfbc403a76120d768b43bcd1f99031c1f5692d4a"
+  },
+  "SERVING.ML_FEE_FORECAST_V": {
+    "file": "VIEW_SERVING_ML_FEE_FORECAST_V.sql",
+    "sha256": "12a7c974ddbfbb81365280f0bf966a696dd4b219cb5282933d7a23c19c170358"
+  },
+  "SERVING.ML_LTV_FORECAST_V": {
+    "file": "VIEW_SERVING_ML_LTV_FORECAST_V.sql",
+    "sha256": "e234b6675874efa9c2e51a9a2cc9200f55e7ce37863432a724198afb5c5dac4c"
+  },
+  "SERVING.ML_MEMBER_RISK_V": {
+    "file": "VIEW_SERVING_ML_MEMBER_RISK_V.sql",
+    "sha256": "c7ff3f3c6c3b6e76ff1efd93749d729e8e8ae32c7bf9a73d5dfcff411251ef42"
+  },
+  "SERVING.ML_ONCE_CONVERSION_V": {
+    "file": "VIEW_SERVING_ML_ONCE_CONVERSION_V.sql",
+    "sha256": "758cc4bf626d332042f03bd8eac2e170c02f209172be8985290c90925df525e0"
+  },
+  "SERVING.ML_SPONSOR_RISK_V": {
+    "file": "VIEW_SERVING_ML_SPONSOR_RISK_V.sql",
+    "sha256": "69f75e38cfefe00bb9c76e1914aebf14a957d4746a7c8f90dd413db8f9f88708"
+  },
+  "SERVING.MSTR_DVLP_GOAL_V": {
+    "file": "VIEW_SERVING_MSTR_DVLP_GOAL_V.sql",
+    "sha256": "80af4bb0e3efdf3a91c5bb4e807df0c843809163b97217004f07f454a73d1eb1"
+  },
+  "SERVING.MSTR_DVLP_YE_TREND_BSNS_V": {
+    "file": "VIEW_SERVING_MSTR_DVLP_YE_TREND_BSNS_V.sql",
+    "sha256": "024149696f32b8c5406008da82f7378223e0532a6f97355a2d14b78c6e7abf74"
+  },
+  "SERVING.MSTR_DVLP_YE_TREND_V": {
+    "file": "VIEW_SERVING_MSTR_DVLP_YE_TREND_V.sql",
+    "sha256": "0f747212b32626e06e98c9e9b0fdf57c55a0e18812ba314492906409fba6e723"
+  },
+  "SERVING.MSTR_SPNSR_DVLP_V": {
+    "file": "VIEW_SERVING_MSTR_SPNSR_DVLP_V.sql",
+    "sha256": "c84cd7d6f70261fb3db39b0408dd285787f90ea335fedee5ec41912b2a11bc2b"
+  }
+}

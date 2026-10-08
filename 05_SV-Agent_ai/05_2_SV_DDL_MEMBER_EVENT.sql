@@ -121,7 +121,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.SPNSR_DIV_NM       AS fme.SPNSR_DIV_NM_AT_EVENT       WITH SYNONYMS ('세부캠페인 후원구분', '캠페인 후원구분') COMMENT = '세부캠페인 후원구분 라벨(CM035). 🔴적재 시점 동결값(구 campaign.SPNSR_DIV_NM 대체). 실제값 2종: ''정기후원''·''일시후원'' + NULL. ⚠️ SPONSORSHIP.SPONSORSHIP_DIV_NAME(후원사업 축 CM035)과 코드사전은 같지만 적용 대상이 다르다 — 이 축은 세부캠페인 단위 구분이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.CPR_DIV_NM         AS fme.CPR_DIV_NM_AT_EVENT         WITH SYNONYMS ('세부캠페인 법인구분', '캠페인 법인구분') COMMENT = '**세부캠페인** 법인구분 라벨(CM019). 🔴적재 시점 동결값(구 campaign.CPR_DIV_NM 대체). 실제값 3종: ''통합''·''사단''·''사복'' + NULL. 🔴 [O202] 「법인·사단법인·사복」 질의의 기본 축이 **아니다** — 법인 조건은 SPONSORSHIP_CPR_DIV_NM(후원사업 법인 · MSTR 기준)으로 건다. 이 축은 사용자가 「캠페인 법인」을 명시할 때만 쓴다. ⚠️ ''통합''은 사단·사복에 속하지 않는 별도 값이다. 개발(DEV) 사건 전용 — 중단(STOP) 행은 NULL',
     fme.GENDER_AT_EVENT         AS fme.GENDER_AT_EVENT         WITH SYNONYMS ('사건시점 성별', '약정시점 성별') COMMENT = '**사건(개발약정) 시점** 성별 라벨(코드사전 CM013). 실제값 8종: ''국내(남자)''·''국내(여자)''·''외국인(남자)''·''외국인(여자)''·''외국인(기타)''·''단체''·''기업''·''기타''. 🔴 위 `member.GENDER_NAME`(회원 마스터 **현재 스냅샷** · CM017 계열)과 **코드체계가 다르다** — 두 축을 합산하지 말 것. 이 축이 사건 당시 정확값이다. 🔴 개발(DEV) 사건 전용(중단원천에 성별 컬럼 부재 → NULL). ⚠️ 사전 미등재 센티넬 ''0''은 라벨이 없어 NULL 이며 ''미상''으로 창작하지 않는다',
-    fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL'
+    fme.SEX_AT_EVENT            AS fme.SEX_AT_EVENT            WITH SYNONYMS ('사건시점 성별코드') COMMENT = '사건시점 성별 원천코드(CM013 1~8 + 라벨 없는 센티넬 ''0''). 라벨은 GENDER_AT_EVENT. 실제값 9종: ''0''·''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8'' + NULL',
+    fme.MKTG_CHANNEL_NM_AT_EVENT AS fme.MKTG_CHANNEL_NM_AT_EVENT
+      WITH SYNONYMS ('마케팅채널', '마케팅 채널', '캠페인 채널')
+      COMMENT = '🆕 [O213] 마케팅채널명(원천 COMMENT = 마케팅 채널명 · C002) — 사건 시점 동결값. 🔴 개발인입경로(MM293)와 다른 축이다. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 캠페인 37,204 중 5,211 · 2026-10-08 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME
+      WITH SYNONYMS ('가입경로', '회원 가입경로')
+      COMMENT = '🆕 [O213] 회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음). 🔴 개발인입경로(캠페인 모집채널)와 다른 축이다.',
+    member.MEMBER_JOIN_CMMN_BRND_NM AS member.JOIN_CMMN_BRND_NM
+      WITH SYNONYMS ('가입 공통브랜드', '회원 가입 공통브랜드')
+      COMMENT = '🆕 [O213] 회원 가입 시 공통브랜드(MM297) — 회원 마스터 기준. 🔴 「공통브랜드」(사건 캠페인 기준 CMMN_BRND_NM_AT_EVENT)와 다른 축이다 — 「가입 공통브랜드」를 명시할 때만 쓴다.'
   )
   METRICS (
     fme.TOTAL_DEV_CNT     AS SUM(fme.DEV_CNT)

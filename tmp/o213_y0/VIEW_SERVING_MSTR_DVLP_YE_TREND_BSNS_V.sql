@@ -1,0 +1,47 @@
+create or replace view MSTR_DVLP_YE_TREND_BSNS_V(
+	STRD_YY COMMENT '기준연도(YYYY 문자열)',
+	AS_OF_MT COMMENT '산출 기준 최신 기준년월(진행 중 · 부분 실적)',
+	DVLP_DIV_CD COMMENT '개발구분코드(MSTR)',
+	DVLP_DIV_NM COMMENT '개발구분명',
+	SPNSR_BSNS2_ID COMMENT '후원사업2 ID(MSTR 재분류)',
+	SPNSR_BSNS2_NM COMMENT '후원사업2 명(MSTR 재분류)',
+	CLOSED_ACT_CNT COMMENT '그 해 마감월 MSTR 개발(건) 실적 합',
+	CUR_MONTH_ACT_CNT COMMENT '진행 중 최신 기준월의 부분 실적(건 · 참고)',
+	CLOSED_MONTHS COMMENT '그 해 마감월 수',
+	LAST3_AVG_CNT COMMENT '직전 3개 마감월 월평균 실적(건 · 현재 연도만 · 지난 연도 0)',
+	YE_TREND_CNT COMMENT '연도말 개발 추세 참고치(건) · 🔴 모델 예측이 아니다 · 후원사업 축에는 목표가 없다'
+) COMMENT='🆕 [O207] MSTR 후원사업2 별 연도말 개발 추세 참고치. 원천 = GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM. 🔴🔴 모델 예측이 아니다 · 목표 없음(목표는 부서 단위만 등록). 🔴 MSTR 기준.'
+ as
+WITH mx AS (
+  SELECT MAX(STRD_MT) AS CUR_MT FROM GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM
+), m AS (
+  SELECT f.SPNSR_BSNS2_ID, f.STRD_MT, f.DVLP_DIV_CD, SUM(f.SPNSR_AMT_CNT) AS ACT_CNT
+  FROM GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM f
+  GROUP BY 1, 2, 3
+), y AS (
+  SELECT m.SPNSR_BSNS2_ID, LEFT(m.STRD_MT, 4) AS STRD_YY, m.DVLP_DIV_CD,
+         SUM(IFF(m.STRD_MT < mx.CUR_MT, m.ACT_CNT, 0)) AS CLOSED_ACT_CNT,
+         SUM(IFF(m.STRD_MT = mx.CUR_MT, m.ACT_CNT, 0)) AS CUR_MONTH_ACT_CNT
+  FROM m CROSS JOIN mx
+  GROUP BY 1, 2, 3
+), l3 AS (
+  SELECT m.SPNSR_BSNS2_ID, m.DVLP_DIV_CD, SUM(m.ACT_CNT) / 3 AS L3
+  FROM m CROSS JOIN mx
+  WHERE m.STRD_MT < mx.CUR_MT
+    AND m.STRD_MT >= TO_CHAR(DATEADD(MONTH, -3, TO_DATE(mx.CUR_MT, 'YYYYMM')), 'YYYYMM')
+  GROUP BY 1, 2
+)
+SELECT
+  y.STRD_YY, mx.CUR_MT, y.DVLP_DIV_CD, dv.DVLP_DIV_NM, y.SPNSR_BSNS2_ID, b.SPNSR_BSNS_NM,
+  ROUND(y.CLOSED_ACT_CNT, 4)::NUMBER(18,4),
+  ROUND(y.CUR_MONTH_ACT_CNT, 4)::NUMBER(18,4),
+  -- 마감월 수 = 달력 기준(실적 없는 달도 마감월로 센다 · 부서 뷰와 같은 기준)
+  IFF(y.STRD_YY = LEFT(mx.CUR_MT, 4), TO_NUMBER(RIGHT(mx.CUR_MT, 2)) - 1, 12),
+  ROUND(IFF(y.STRD_YY = LEFT(mx.CUR_MT, 4), COALESCE(l3.L3, 0), 0), 4)::NUMBER(18,4),
+  ROUND(y.CLOSED_ACT_CNT
+        + IFF(y.STRD_YY = LEFT(mx.CUR_MT, 4), COALESCE(l3.L3, 0) * (13 - TO_NUMBER(RIGHT(mx.CUR_MT, 2))), 0), 4)::NUMBER(18,4)
+FROM y
+CROSS JOIN mx
+LEFT JOIN l3 ON l3.SPNSR_BSNS2_ID = y.SPNSR_BSNS2_ID AND l3.DVLP_DIV_CD = y.DVLP_DIV_CD
+LEFT JOIN GN_DW.MSTR.D_SPNSR_BSNS_INFO b ON y.SPNSR_BSNS2_ID = b.SPNSR_BSNS_ID
+LEFT JOIN GN_DW.MSTR.D_DVLP_DIV_CD dv ON y.DVLP_DIV_CD = dv.DVLP_DIV_CD;
