@@ -1,0 +1,17 @@
+evaluation:
+  agent_params:
+    agent_name: GN_DW.SERVING.AGENT_MEMBER
+    agent_type: CORTEX AGENT
+    agent_version: VERSION$6
+  source_metadata:
+    type: dataset
+    dataset_name: GN_DW.SERVING.O211_MEMBER_DS
+metrics:
+  - name: answer_correctness
+    version: v3_0
+  - name: logical_consistency
+    version: v3_0
+  - name: tool_selection_accuracy
+    version: v3_0
+  - name: tool_execution_accuracy
+    version: v3_0

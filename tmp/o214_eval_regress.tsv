@@ -1,0 +1,41 @@
+agent	qid	metric	base	now	expected	called	question
+AGENT_EXECUTIVE	Q07	answer_correctness	1.0	0.33	analyst_ml_fee_forecast,analyst_member_fee	analyst_ml_ltv_forecast,analyst_mstr_spnsr_dvlp,search_mode	2026-09 기준 주요 캠페인(캠페인카테고리)별 향후 12개월 회비를 예측해줘. 캠페인별 회비 기여도와 위험요인을 분석하고 회비 확보를 위한 캠페인 운영 전략을
+AGENT_EXECUTIVE	Q04	answer_correctness	1.0	0.0	analyst_mbrfee_prdt_actl	search_mode	2026-09 마감 데이터로 2026년 연도말 회비를 예측해줘.
+AGENT_EXECUTIVE	Q04	tool_execution_accuracy	1.0	0.0	analyst_mbrfee_prdt_actl	search_mode	2026-09 마감 데이터로 2026년 연도말 회비를 예측해줘.
+AGENT_EXECUTIVE	Q04	tool_selection_accuracy	1.0	0.0	analyst_mbrfee_prdt_actl	search_mode	2026-09 마감 데이터로 2026년 연도말 회비를 예측해줘.
+AGENT_EXECUTIVE	X2	answer_correctness	0.67	0.33	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 개발인입경로별 신규 개발 건수
+AGENT_EXECUTIVE	X2	tool_execution_accuracy	0.7	0.0	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 개발인입경로별 신규 개발 건수
+AGENT_EXECUTIVE	X2	tool_selection_accuracy	0.5	0.0	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 개발인입경로별 신규 개발 건수
+AGENT_EXECUTIVE	D2	tool_selection_accuracy	1.0	0.5	analyst_mstr_spnsr_dvlp	search_mode	2026년 9월 신규 기존으로 구분한 개발건과 개발(명)을 보여줘
+AGENT_EXECUTIVE	X1	answer_correctness	0.67	0.33	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 캠페인카테고리별 신규 개발 건수
+AGENT_EXECUTIVE	X1	tool_execution_accuracy	0.5	0.0	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 캠페인카테고리별 신규 개발 건수
+AGENT_EXECUTIVE	X1	tool_selection_accuracy	1.0	0.0	analyst_member_event	analyst_mstr_spnsr_dvlp,search_mode	2026년 9월 캠페인카테고리별 신규 개발 건수
+AGENT_EXECUTIVE	Q03	tool_execution_accuracy	0.7	0.0	analyst_mbrfee_prdt_actl	search_mode	2027년 연간 회비를 예측해줘.
+AGENT_EXECUTIVE	Q03	tool_selection_accuracy	0.33	0.0	analyst_mbrfee_prdt_actl	search_mode	2027년 연간 회비를 예측해줘.
+AGENT_EXECUTIVE	M3	tool_execution_accuracy	0.8	0.5	analyst_mstr_spnsr_dvlp	analyst_mstr_spnsr_dvlp,search_mode	MSTR 기준 상위캠페인별 개발(건) 상위 10개를 보여줘
+AGENT_EXECUTIVE	Q16	logical_consistency	1.0	0.67	analyst_ml_dvlp_forecast	analyst_ml_dvlp_forecast,search_mode	계절성(연말/휴일) 반영시 향후 3개월간 월별 회원개발의 변동은 어떻게 예상되는가?
+AGENT_EXECUTIVE	Q13	answer_correctness	0.67	0.33	analyst_ml_dvlp_forecast,analyst_mstr_spnsr_dvlp	analyst_mstr_spnsr_dvlp,search_mode	다음 달 신규 회원개발은 몇건으로 예상되는가?
+AGENT_EXECUTIVE	Q10	logical_consistency	1.0	0.67	analyst_mstr_spnsr_dvlp	search_mode	부서별로 연도말 개발 예측치를 알려줘
+AGENT_EXECUTIVE	Q10	tool_execution_accuracy	1.0	0.4	analyst_mstr_spnsr_dvlp	search_mode	부서별로 연도말 개발 예측치를 알려줘
+AGENT_EXECUTIVE	Q10	tool_selection_accuracy	1.0	0.5	analyst_mstr_spnsr_dvlp	search_mode	부서별로 연도말 개발 예측치를 알려줘
+AGENT_EXECUTIVE	Q15	answer_correctness	1.0	0.33	analyst_ml_dvlp_forecast	analyst_ml_dvlp_forecast,search_mode	특정 캠페인의 최종 회원개발은 얼마가 될 것으로 예상되는가?
+AGENT_EXECUTIVE	Q15	logical_consistency	1.0	0.67	analyst_ml_dvlp_forecast	analyst_ml_dvlp_forecast,search_mode	특정 캠페인의 최종 회원개발은 얼마가 될 것으로 예상되는가?
+AGENT_EXECUTIVE	Q18	logical_consistency	1.0	0.67	analyst_ml_feature_importance	search_mode	현재 대비 회원개발을 20% 증가시키기 위해 우선적으로 개선해야 할 요인은 무엇인가?
+AGENT_EXECUTIVE	Q18	tool_execution_accuracy	1.0	0.7	analyst_ml_feature_importance	search_mode	현재 대비 회원개발을 20% 증가시키기 위해 우선적으로 개선해야 할 요인은 무엇인가?
+AGENT_MEMBER	D3	answer_correctness	0.67	0.33	analyst_mstr_spnsr_dvlp	analyst_member_event,search_mode	2026년 9월 후원중단 사유별 중단 건수와 회원수
+AGENT_MEMBER	R14	answer_correctness	1.0	0.33	analyst_service	analyst_member_event,analyst_service,analyst_service_cohort,search_mode	감액/증액에 따른 콘텐츠 오픈여부 분석
+AGENT_MEMBER	R14	tool_execution_accuracy	0.5	0.0	analyst_service	analyst_member_event,analyst_service,analyst_service_cohort,search_mode	감액/증액에 따른 콘텐츠 오픈여부 분석
+AGENT_MEMBER	R14	tool_selection_accuracy	1.0	0.0	analyst_service	analyst_member_event,analyst_service,analyst_service_cohort,search_mode	감액/증액에 따른 콘텐츠 오픈여부 분석
+AGENT_MEMBER	R15	logical_consistency	1.0	0.67	analyst_member_cohort,analyst_member_event,analyst_ga_behavior,analyst_mstr_spnsr_dvlp	analyst_member_cohort,search_mode	나의후원페이지에서 후원한 회원 특성 분석
+AGENT_MEMBER	R10	tool_selection_accuracy	1.0	0.5	analyst_service_cohort	search_mode	선넘는좋은일 캠페인을 통해 2026년 1월부터 2026년 9월까지 가입한 회원 중에서 개별화서비스신규(사단)의 선넘는좋은일 즉시 알림톡을 받은 회원과 받지 않은 
+AGENT_MARKETING	Q22	answer_correctness	0.67	0.33	analyst_member_cohort,analyst_member_event	analyst_member_event,analyst_ml_,search_mode	A캠페인의 신규 회원개발 가능성이 가장 높은 타겟 세그먼트는 누구인가?
+AGENT_MARKETING	Q21	answer_correctness	0.67	0.33		analyst_ad,search_mode	다음 달 광고 예산을 어떻게 배분하면 개발단가 효율이 최대화되는가?
+AGENT_MARKETING	Q21	logical_consistency	1.0	0.67		analyst_ad,search_mode	다음 달 광고 예산을 어떻게 배분하면 개발단가 효율이 최대화되는가?
+AGENT_MARKETING	Q21	tool_selection_accuracy	1.0	0.0		analyst_ad,search_mode	다음 달 광고 예산을 어떻게 배분하면 개발단가 효율이 최대화되는가?
+AGENT_MARKETING	Q19	answer_correctness	1.0	0.0		analyst_ad,analyst_ml_dvlp_forecast,analyst_mstr_spnsr_dvlp,search_mode	동일 예산 기준 가장 높은 개발 건수를 창출할 조합(채널+캠페인)은 무엇인가?
+AGENT_MARKETING	Q19	logical_consistency	1.0	0.67		analyst_ad,analyst_ml_dvlp_forecast,analyst_mstr_spnsr_dvlp,search_mode	동일 예산 기준 가장 높은 개발 건수를 창출할 조합(채널+캠페인)은 무엇인가?
+AGENT_MARKETING	Q19	tool_selection_accuracy	1.0	0.0		analyst_ad,analyst_ml_dvlp_forecast,analyst_mstr_spnsr_dvlp,search_mode	동일 예산 기준 가장 높은 개발 건수를 창출할 조합(채널+캠페인)은 무엇인가?
+AGENT_MARKETING	Q33	tool_selection_accuracy	0.33	0.0	analyst_ga_behavior,analyst_member_cohort	analyst_ga_behavior,analyst_ga_session,search_mode	신규 사용자 확보 상위 채널은 무엇이며 각 채널의 유입 기여도는 어떻게 분포되는가?
+AGENT_MARKETING	Q29	tool_execution_accuracy	1.0	0.7	analyst_ml_ltv_forecast	analyst_ml_ltv_forecast,search_mode	어떤 채널의 회원이 가장 높은 장기 가치를 창출하는가?
+AGENT_MARKETING	Q31	tool_selection_accuracy	1.0	0.5	analyst_ml_ltv_forecast	analyst_ml_ltv_forecast,search_mode	어떤 캠페인이 가장 높은 LTV를 창출할 것으로 예상되는가?
+AGENT_MARKETING	Q20	answer_correctness	1.0	0.67		search_mode	특정 채널의 광고비 집행 시 효율성이 급격히 떨어지는 임계점은 얼마인가?
