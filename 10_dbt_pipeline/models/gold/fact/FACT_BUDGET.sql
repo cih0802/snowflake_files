@@ -3,7 +3,7 @@
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
---   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재).
+--   NULL: EXEC_BUDGET_EST(추정집행 미산출) · FUNDRAISING_COST(DEC-57 · 하나로 정하지 않음 · 정본 = EXEC_DIRECT_MNYRS_1·2).
 -- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
 --    *"E-4 원천부재"* 는 **거짓이었다**. 대행사 원천 3종에 광고비가 전량 실재하고
 --    이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다(원천 합 일치).
@@ -48,7 +48,10 @@ select
     --    연값은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` 로 이미 분리돼 있어 이 컬럼은 항상 NULL이었다.
     SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
-    CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
+    -- 🔴 [2026-10-12 O216-E] FUNDRAISING_COST 는 **의도적 NULL** 이다 — 현업 회신 42(DEC-57 · 문서30 -017.md:44)
+    --   「모금성비용은 하나로 정하지 않는다 · 직접모금비1·2 를 이름 그대로 나란히」. 정본 = 아래 EXEC_DIRECT_MNYRS_1·2.
+    --   ⚠️ 여기에 YN_1/YN_2 중 하나를 넣지 말 것(O216-E 가 한 번 넣었다가 되돌렸다).
+    CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- DEC-57 · 정본 = EXEC_DIRECT_MNYRS_1·2
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
     {{ gold_meta('ERP') }},
     -- 🆕 [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).

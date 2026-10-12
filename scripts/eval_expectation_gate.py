@@ -14,7 +14,7 @@
     (면제 조건 = 같은 줄에 `종전`·`폐기`·`이력`·`O57`·`~~` 중 하나가 있을 때).
     🔴 P145 준수: 검사기가 살아 있음을 **양성 대조**(`--self-check`)로 증명한다.
   · **[INVARIANT]** 값 판정을 절대값이 아니라 **불변식**으로 확인한다(`04_SV_설계.md` §6.9-(8)).
-    V6 시간 가산성 · V7 차원 fan-out 무증폭 · V8 개발 건수 정의(O24) 유지.
+    V6 시간 가산성 · V7 차원 fan-out 무증폭 · V8 개발 건수 범위(O24 코드 1·2·4 · 값은 O202 MSTR 정의) 유지.
   · **[DIMNAME]** 평가셋·VQR 문서가 **존재하지 않는 차원/metric** 을 지목하는지
     (O57 실측: `member.GENDER`·`member.MEMBER_STATUS` 는 SV 에 없었다 · P163).
 
@@ -122,8 +122,12 @@ INVARIANTS = [
              DIMENSIONS member.GENDER_NAME METRICS TOTAL_DEV_CNT)) d,
           (SELECT TOTAL_DEV_CNT b FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY
              METRICS TOTAL_DEV_CNT)) t"""),
-    ('V8 개발 건수 정의 유지(O24: 코드 1·2·4 한정)', """
-        SELECT SUM(DEV_CNT), SUM(IFF(DVLP_DIV_CD IN ('1','2','4'),1,0))
+    # 🔄 [2026-10-12 O216-F] V8 갱신 — 종전 판정식 「SUM(DEV_CNT) = 코드 1·2·4 **행 수**」는 O24 정의(사건 수)였다.
+    #   O202 사용자 결정으로 DEV_CNT = **MSTR 정의(후원금액 ÷ 10,000)** 로 바뀌어(FACT_MEMBER_EVENT.sql:165)
+    #   종전 식은 결정 후 **항상 FAIL** 하는 stale 판정이었다(4,054,971.7624 ≠ 2,345,915).
+    #   O24 의 살아 있는 축 = 「개발구분 1·2·4 한정」 ⇒ 그 범위의 합 = 전체 합(범위 밖 DEV_CNT 0)으로 판정한다.
+    ('V8 개발 건수 범위 유지(O24 코드 1·2·4 한정 · 값 = O202 MSTR 정의)', """
+        SELECT SUM(DEV_CNT), SUM(IFF(DVLP_DIV_CD IN ('1','2','4'), DEV_CNT, 0))
         FROM GN_DW.GOLD.FACT_MEMBER_EVENT"""),
     ('V9 SV=FACT 개발/중단(EVENT)', """
         SELECT (SELECT TOTAL_DEV_CNT FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_EVENT

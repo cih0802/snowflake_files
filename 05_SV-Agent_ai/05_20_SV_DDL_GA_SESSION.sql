@@ -74,7 +74,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
       COMMENT = '전체 이벤트 수 합(건). F(가산).'
   )
   COMMENT = 'GA4 세션 SV. 「회원유형·후원자유형·후원사업유형·국가·기기·브라우저·사이트·유입채널별 방문(세션)·방문자·페이지뷰」 질문에 쓴다. 🔴 페이지 경로·이벤트 분류 질문은 SV_GA_BEHAVIOR 소관(다른 grain · 합산 금지). 🔴 인구통계(성별·연령)는 SV_GA_DEMOGRAPHIC · 구글 검색어·노출은 SV_SEARCH_CONSOLE 소관. 제외 축: EP_GAD_SOURCE(라벨 없는 숫자 코드).'
-  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "세션수(회)" · "방문자수(명)"). 영문 식별자를 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행을 반환한다(고유 세션·방문자수 합계는 ROLLUP 이 다시 세므로 그룹 합과 다를 수 있다 — 그 차이를 밝힌다).
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "세션수(회)" · "방문자수(명)"). 영문 식별자를 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행을 반환한다(고유 세션·방문자수 합계는 ROLLUP 이 다시 세므로 그룹 합과 다를 수 있다 — 그 차이를 밝힌다).
   핵심 규칙: (1) 기간 미지정 시 데이터에 존재하는 최신 월 하나로 한정하고 밝힌다. (2) 세션·방문자수는 일자별 값을 더하지 않는다. (3) NULL 값은 「값 없음(해당 없음)」으로 밝히고 다른 값으로 합치지 않는다. (4) 「{{…}}」 형태 값은 GTM 미치환 수집 오류로 밝힌다. (5) 회원 단위 후원 실적은 이 SV 가 아니라 CRM SV 소관이다.'
   AI_VERIFIED_QUERIES (
     vqr_o213f_donor_type AS (
@@ -92,4 +93,5 @@ USE WAREHOUSE GN_DW_ANALYTICS_WH;
 
 -- 스모크 — SV 고유 세션수 = 팩트 고유 세션키 수
 SELECT (SELECT SESSION_CNT FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_GA_SESSION METRICS gs.SESSION_CNT)) AS sv_val,
-       (SELECT COUNT(
+       (SELECT COUNT(DISTINCT BIGQUERY_SESSION_KEY) FROM GN_DW.GOLD.FACT_BIGQUERY_SESSION)         AS fact_val,
+       (SELECT COUNT(DISTINCT BIGQUERY_SESSION_KEY) FROM GN_DW.SILVER.BIGQUERY_SESSION)            AS silver_val;

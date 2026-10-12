@@ -349,17 +349,17 @@ $$;
 --   실행 전 반드시 이 세션에서 [0] 을 다시 돌려 0행을 직접 확인할 것(계정 상태는 재이관 시 달라진다).
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = '굿네이버스 회원 분석 Agent. SV 22종(ML 5 포함) · 🆕 O213 7차 = 회비 청구 처리 상태 + 회원 속성·발송·결연·행사 신규 축.';
+  COMMENT = '굿네이버스 회원 분석 Agent. SV 22종(ML 5 포함) · 🆕 O213 7차 = 회비 청구 처리 상태 + 회원 속성·발송·결연·행사 신규 축 · 🆕 O216 8차 = Analyst 위임 SQL 규칙.';
 
 -- ---- [3-B] AGENT_EXECUTIVE ---- 🟢 [0] 통과(ML SV 4종 2026-08-18 배포 완료) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 12종: MSTR 개발·사업목표·예산(월·연)·광고·회원월실적·발송·ML 3 · 🆕 O213 7차 = 지출결의(부서별 지출)·회비 청구 처리 + 광고·예산 신규 축.';
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. SV 12종: MSTR 개발·사업목표·예산(월·연)·광고·회원월실적·발송·ML 3 · 🆕 O213 7차 = 지출결의(부서별 지출)·회비 청구 처리 + 광고·예산 신규 축 · 🆕 O216 8차 = Analyst 위임 SQL 규칙.';
 
 -- ---- [3-C] AGENT_MARKETING ---- 🟢 [0] 통과(참조 SV 7종 전건 라이브, SV_MEMBER_SPONSOR_BIZ 포함) ⇒ 실행 가능
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 20종(ML 5 포함) · 🆕 O213 7차 = GA4 세션·서치콘솔·GA4 인구통계·지출결의 + 광고·예산 신규 축.';
+  COMMENT = '굿네이버스 마케팅 분석 Agent. SV 20종(ML 5 포함) · 🆕 O213 7차 = GA4 세션·서치콘솔·GA4 인구통계·지출결의 + 광고·예산 신규 축 · 🆕 O216 8차 = 최적화·시뮬레이션 무도구 가드레일 + Analyst 위임 SQL 규칙.';
 
 -- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
 --   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.

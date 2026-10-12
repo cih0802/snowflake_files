@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NL 라우팅 스모크 러너 (착수표 ㉗) — Agent 4종(🆕 O201 · MSTR 편입) × sample_questions 전량.
+"""NL 라우팅 스모크 러너 (착수표 ㉗) — Agent 3종(🔄 O216-F · O207-C 에서 AGENT_MSTR 은퇴 · 종전 「4종」) × sample_questions 전량.
 
 🔴 판정 축 = ㉠ 라우팅(질문 → 어떤 도구/SV 로 갔는가) ㉡ SQL 생성 여부·행수 ㉢ 오류.
 🔴 응답 원문은 tmp/nlsmoke/ 로 흘린다 — 세션 컨텍스트에 적재하지 않는다(비용 축).

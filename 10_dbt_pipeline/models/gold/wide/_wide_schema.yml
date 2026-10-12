@@ -163,13 +163,13 @@ models:
       - name: MEMBER_LAST_STOP_DATE
         description: "DIM_MEMBER.LAST_STOP_DATE — 최종 중단일. 원천 BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC.SPNSR_DSCNTC_DE. 🔴**그 버전 시점까지의 as-of max** 다(전체 단순 max 가 아니다). 단순 max 는 미래 정보를 과거 버전에 누설해 예측 피처(LTV·유지기간)를 오염시킨다. ⚠️중단 이력이 없는 회원·중단 이전 버전은 NULL 이며 '중단하지 않았다'와 '이력이 없다'를 구분하지 않는다. 🔴이 뷰의 STOP_DATE(월 팩트 measure)와 다른 축이다."
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_BRAND
         description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_PARENT
         description: "DIM_CAMPAIGN.PARENT_CAMPAIGN — 공통상위캠페인 (#119) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_PROMO_METHOD
         description: "DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_TYPE
@@ -510,13 +510,13 @@ models:
       - name: SERVICE_CHANNEL
         description: "DIM_SERVICE.CHANNEL — CRM_UMS / ADMIN"
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_BRAND
         description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_PARENT
         description: "DIM_CAMPAIGN.PARENT_CAMPAIGN — 공통상위캠페인 (#119) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_PROMO_METHOD
         description: "DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_MESSAGE_DISPATCH.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
   - name: WIDE_BIGQUERY_BEHAVIOR
@@ -597,11 +597,13 @@ models:
       - name: DEVICE_TYPE
         description: "DIM_DEVICE.DEVICE_TYPE — PC / M / APP"
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-E A4-W 영구 센티넬] GA4 이벤트에는 CRM 캠페인 키가 없고 UTM ↔ 캠페인이 1:N(최대 902)이라 배선하지 않는다 — 이 컬럼으로 GROUP BY·필터하지 않는다(GA4 캠페인 분해는 UTM_CAMPAIGN 을 쓴다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_BRAND
-        description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-E A4-W 영구 센티넬] GA4 이벤트에는 CRM 캠페인 키가 없고 UTM ↔ 캠페인이 1:N(최대 902)이라 배선하지 않는다 — 이 컬럼으로 GROUP BY·필터하지 않는다(GA4 캠페인 분해는 UTM_CAMPAIGN 을 쓴다). DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-E A4-W 영구 센티넬] GA4 이벤트에는 CRM 캠페인 키가 없고 UTM ↔ 캠페인이 1:N(최대 902)이라 배선하지 않는다 — 이 컬럼으로 GROUP BY·필터하지 않는다(GA4 캠페인 분해는 UTM_CAMPAIGN 을 쓴다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BIGQUERY_BEHAVIOR.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+      - name: UTM_CAMPAIGN
+        description: "FACT_BIGQUERY_BEHAVIOR.UTM_CAMPAIGN — GA4 캠페인 UTM 원값(utm_campaign · O190 degen). 🆕 [O216-E] 이 뷰의 GA4 캠페인 축 정본이다. (not set)·(organic)·(referral) 은 GA4 원값이다. 🔴 2025-06-26 이전은 원천(SILVER.BIGQUERY_EVENT)에도 값이 없어 NULL 이다(수집 공백 · 백필로 채워지지 않음 · O216-E 실측 0/3,876,172). 🔴 CRM 캠페인(CAMPAIGN_BK)과 1:N 이라 캠페인 마스터 축으로 환산하지 않는다."
   - name: WIDE_AD_PERFORMANCE
     description: "광고 성과 **코어** 팩트(FAD) 평탄화 — DATE·CAMPAIGN·AD_CREATIVE·DEVICE. grain=AD_PERF_DK. [2026-07-28 DEC-8] 방송 degen 5종은 위성 뷰로 이관했다 — 본 뷰는 3원천 공통 컬럼만 담는다. **전 유형 집계는 본 뷰만 사용**할 것(위성 뷰와 합산하면 이중계상). 🔴[O51-F 실측] `CAMPAIGN_SK`·`AD_CREATIVE_SK` 는 **0 스캐폴드**이며 그 귀결이 컸다 — 캠페인·매체·소재 속성이 전건 NULL 또는 전건 `'(미매핑)'` 센티넬이다(기지 **P52·O38-C** · 연결키는 **Q10**). 센티넬은 GROUP BY 가 단일 그룹을 반환해 **오답이 에러 없이 나온다.** 🟢대안 = 마케팅캠페인 축(O45). 🔴휴일축(`PERF_IS_HOLIDAY`)도 전건 FALSE 로 미주입이다(**HOL-1**). DEVICE_SK 는 실배선 완료(DEC-10). ⚠️AD_SOURCE_TYPE(원천 출처축) ≠ AD_CREATIVE_TYPE(소재 광고유형). 🔴행수는 하드코딩하지 않는다 — 종전 기재가 재적재로 stale 이 됐다(규칙 7)."
     # [O51-F] ✅ [2026-08-10] 빈 축·희소축 경고 **오버레이 적용**(기존 문안 보존).
@@ -644,13 +646,13 @@ models:
       - name: PERF_IS_HOLIDAY
         description: "DIM_DATE.IS_HOLIDAY — 실적일 휴일여부 🔴🔴[O51-F 실측] **휴일축이 미주입이다 — 전건 `FALSE`.** `DIM_DATE.IS_HOLIDAY` 에 TRUE 가 하나도 없다. NULL 이 아니라 FALSE 라서 **집계가 성공한 것처럼 보이고**, 「휴일 대비 평일 성과」 질의가 **전건 평일**로 응답된다. ⇒ 이 컬럼으로 휴일 분석을 하지 말 것(기지 **HOL-1** — 공휴일 원천이 전 스키마에 없어 외부 입고 대기). 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-G Q10 영구 센티넬] 광고 원천·예산 원장에 개발캠페인 코드가 없다(현업 회신 Q10 「코드 없음」) — 배선되지 않으며 이 컬럼으로 GROUP BY·필터하지 않는다(광고는 마케팅캠페인·UTM 캠페인·매체 축으로 분해한다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_BRAND
-        description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-G Q10 영구 센티넬] 광고 원천·예산 원장에 개발캠페인 코드가 없다(현업 회신 Q10 「코드 없음」) — 배선되지 않으며 이 컬럼으로 GROUP BY·필터하지 않는다(광고는 마케팅캠페인·UTM 캠페인·매체 축으로 분해한다). DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_PARENT
         description: "DIM_CAMPAIGN.PARENT_CAMPAIGN — 공통상위캠페인 (#119) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-G Q10 영구 센티넬] 광고 원천·예산 원장에 개발캠페인 코드가 없다(현업 회신 Q10 「코드 없음」) — 배선되지 않으며 이 컬럼으로 GROUP BY·필터하지 않는다(광고는 마케팅캠페인·UTM 캠페인·매체 축으로 분해한다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_PROMO_METHOD
         description: "DIM_CAMPAIGN.PROMO_METHOD — 홍보방법 (#118) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_TYPE
@@ -747,7 +749,7 @@ models:
       - name: PERF_IS_HOLIDAY
         description: "DIM_DATE.IS_HOLIDAY — 실적일 휴일여부 🔴🔴[O51-F 실측] **휴일축이 미주입이다 — 전건 `FALSE`.** `DIM_DATE.IS_HOLIDAY` 에 TRUE 가 하나도 없다. NULL 이 아니라 FALSE 라서 **집계가 성공한 것처럼 보이고**, 「휴일 대비 평일 성과」 질의가 **전건 평일**로 응답된다. ⇒ 이 컬럼으로 휴일 분석을 하지 말 것(기지 **HOL-1** — 공휴일 원천이 전 스키마에 없어 외부 입고 대기). 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 🟢대안 = 마케팅캠페인 축(`MKTG_CAMPAIGN_SK`)은 살아 있다(O45) — 광고↔개발 결합은 그 grain 에서 한다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-G Q10 영구 센티넬] 광고 원천·예산 원장에 개발캠페인 코드가 없다(현업 회신 Q10 「코드 없음」) — 배선되지 않으며 이 컬럼으로 GROUP BY·필터하지 않는다(광고는 마케팅캠페인·UTM 캠페인·매체 축으로 분해한다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 🟢대안 = 마케팅캠페인 축(`MKTG_CAMPAIGN_SK`)은 살아 있다(O45) — 광고↔개발 결합은 그 grain 에서 한다. 실측 규모는 이슈원장 §O51-F."
       - name: AD_MEDIA_NAME
         description: "DIM_AD_CREATIVE.MEDIA_NAME — 매체명 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_AD_PERFORMANCE.AD_CREATIVE_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 🔴🔴 원천에는 있는 축이다 — SILVER `AGENCY_AD_PERFORMANCE.MEDIA_CHANNEL_NM`·`CREATIVE_NM` 과 BRONZE 매체명은 **전건 채워져 있다.** GOLD 에서만 소실됐다 — 팩트 FK 가 0 하드코딩이다(기지 **P52·O38-C**, 연결키는 **Q10** 소관). 실측 규모는 이슈원장 §O51-F."
       - name: AD_CREATIVE
@@ -869,7 +871,7 @@ models:
       - name: PERF_QUARTER
         description: "DIM_DATE.QUARTER — 실적일 분기"
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-G Q10 영구 센티넬] 광고 원천·예산 원장에 개발캠페인 코드가 없다(현업 회신 Q10 「코드 없음」) — 배선되지 않으며 이 컬럼으로 GROUP BY·필터하지 않는다(광고는 마케팅캠페인·UTM 캠페인·매체 축으로 분해한다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_AD_PERFORMANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
   - name: WIDE_EVENT_PARTICIPATION
     description: "행사 참여 팩트(FEP) 평탄화 — DATE·MEMBER[현재버전]·EVENT·CAMPAIGN·SPONSORSHIP."
     # ✅ [2026-08-07 O51-D] 컬럼 문안 전량 등재 · ORDINAL_POSITION 순서로 기계 생성(손 이관 금지).
@@ -995,11 +997,11 @@ models:
       - name: EVENT_RECRUIT_HEADCOUNT
         description: "DIM_EVENT.RECRUIT_HEADCOUNT — 행사 모집인원(정원) ← `SILVER CRM_EVENT.RCRIT_PSNNL_CO`. 일부 행사는 정원이 없다. 🔴🔴**행사 grain 속성이므로 참여행에서 SUM 금지** — 참여행마다 반복되어 **두 자리 배수로 과대계상**된다(실측 배율은 이슈원장 §O51-D-C). 정원 대비 참여율은 행사 단위로 집계한 뒤 나눌 것. 🔧[DEC-30] 종전 팩트의 RECRUIT_CNT 를 제거하고 이 행사 차원 값으로 대체했다."
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_BRAND
         description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-D 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_EVENT_ATTENDANCE.CAMPAIGN_SK` 는 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있으니 다른 팩트에서는 쓸 수 있다. 실측 규모는 이슈원장 §O51-D-C."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: SPONSORSHIP_BK
         description: "DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키 🔴🔴[O51-D 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이므로 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_EVENT_ATTENDANCE.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 캠페인·후원사업별 분해를 시도하지 말 것. 실측 규모는 이슈원장 §O51-D-C."
       - name: SPONSORSHIP_NAME
@@ -1109,11 +1111,11 @@ models:
       - name: BUDGET_CATEGORY
         description: "DIM_BUDGET_ITEM.BUDGET_CATEGORY — 예산구분"
       - name: CAMPAIGN_BK
-        description: "DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BUDGET.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_BK — 캠페인 업무키 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BUDGET.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_BRAND
         description: "DIM_CAMPAIGN.BRAND — 공통브랜드 (#117) 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BUDGET.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: CAMPAIGN_NAME
-        description: "DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BUDGET.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
+        description: "[O216-D A4-X 영구 센티넬] 원천에 캠페인 연결 키가 없어 이 뷰에서는 **배선을 기다려도 값이 생기지 않는다** — 이 컬럼으로 GROUP BY·필터하지 않는다(캠페인 분해는 FACT_MEMBER_EVENT·MSTR 를 쓴다). DIM_CAMPAIGN.CAMPAIGN_NAME — 캠페인명 (#120) 🔴🔴[O51-F 실측] **전건 `'(미매핑)'` 센티넬** — NULL 이 아니라 **문자열**이라 GROUP BY 하면 단일 그룹이 생겨 **집계에 성공한 것처럼 보인다.** 원인 = `FACT_BUDGET.CAMPAIGN_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ 이 컬럼으로 분해를 시도하지 말 것 — 「캠페인별」·「부서별」 요구에 **조용히 총계 1행**이 돌아온다. 실측 규모는 이슈원장 §O51-F."
       - name: SPONSORSHIP_BK
         description: "DIM_SPONSORSHIP.SPONSORSHIP_BK — 후원사업 업무키 🔴🔴[O51-F 실측] **이 뷰에서 전건 NULL** — 원인은 차원이 아니라 **팩트 FK 가 전건 센티넬**이다: `FACT_BUDGET.SPONSORSHIP_SK` 의 실측값이 센티넬 하나뿐이다. ⇒ **이 축으로는 분해가 불가능하다.** 차원 자체는 채워져 있다. 실측 규모는 이슈원장 §O51-F."
       - name: SPONSORSHIP_NAME

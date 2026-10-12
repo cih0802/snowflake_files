@@ -113,6 +113,29 @@ def render_model(cn, path, layer='GOLD'):
     s = re.sub(r'\{#.*?#\}', '', s, flags=re.DOTALL)
     # Strip all config blocks
     s = re.sub(r'\{\{\s*config\s*\(.*?\)\s*\}\}', '', s, flags=re.DOTALL)
+    # 🆕 [2026-10-12 O216-E] 문자열 리스트 `{% set X = ['a', 'b'] %}` + `{% for c in X %}…{% endfor %}` 전개.
+    #   `BIGQUERY_SESSION.sql:29-48` 은 종전에 아래 범용 for 치환(다른 용도의 날짜 술어)으로 **조용히 오렌더**됐고
+    #   여러 줄 set 은 leftover 검사(단일 줄)를 빠져나가 SQL 구문 오류로만 드러났다 ⇒ 범용 치환보다 **먼저** 전개한다.
+    #   🔴 리스트 원소가 전부 문자열 리터럴일 때만 전개한다 — 아니면 손대지 않는다(leftover 로 실패).
+    _lists = {}
+
+    def _list_stmt(m):
+        items = re.findall(r'"([^"]*)"|\'([^\']*)\'', m.group(2))
+        body = re.sub(r'"[^"]*"|\'[^\']*\'|[\s,]', '', m.group(2))
+        if body:
+            return m.group(0)
+        _lists[m.group(1)] = [a if a else b for a, b in items]
+        return ''
+
+    s = re.sub(r'\{%-?\s*set\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\[(.*?)\]\s*-?%\}', _list_stmt, s, flags=re.DOTALL)
+
+    def _for_list(m):
+        var, name, body = m.group(1), m.group(2), m.group(3)
+        if name not in _lists:
+            return m.group(0)
+        return ''.join(re.sub(r'\{\{-?\s*' + var + r'\s*-?\}\}', lambda _m, v=v: v, body) for v in _lists[name])
+
+    s = re.sub(r'\{%-?\s*for\s+([A-Za-z_]\w*)\s+in\s+([A-Za-z_]\w*)\s*-?%\}(.*?)\{%-?\s*endfor\s*-?%\}', _for_list, s, flags=re.DOTALL)
     # Strip jinja control blocks
     s = re.sub(r'\{%\s*if\s+is_incremental\(\)[^%]*%\}.*?\{%\s*endif\s*%\}', '', s, flags=re.DOTALL)
     s = re.sub(r'\{%-?\s*for\s+[^%]+%-?\}.*?\{%-?\s*endfor\s*%-?\}', "(EVENT_DATE between '20240101' and '20240102')", s, flags=re.DOTALL)
@@ -139,6 +162,34 @@ def render_model(cn, path, layer='GOLD'):
     for _pred in (r'bigquery_range_predicate(?:_text|_sk)?', r'gn_member_master_filter'):
         s = re.sub(r"\{\{\s*" + _pred + r"\(.*?\)\s*\}\}", '1=1', s, flags=re.DOTALL)
     s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
+
+    # 🆕 [2026-10-12 O216-E] 문자열 `{% set name = ... %}` 렌더 — `DIM_MEMBER.sql:67-70` 에서 게이트가 rc=1 로 멈췄다.
+    #   🔴 지원 범위를 좁게 둔다 = 우변이 **문자열 리터럴과 앞서 set 된 이름을 `~` 로 이은 것**뿐이다.
+    #      그 밖의 식(필터·함수·숫자)은 치환하지 않고 남긴다 ⇒ 아래 leftover 검사가 종전처럼 실패한다(조용한 오렌더 방지).
+    _sets = {}
+
+    def _set_val(expr):
+        out = []
+        for tok in re.split(r'\s*~\s*', expr.strip()):
+            m2 = re.fullmatch(r'"([^"]*)"|\'([^\']*)\'', tok)
+            if m2:
+                out.append(m2.group(1) if m2.group(1) is not None else m2.group(2))
+            elif tok in _sets:
+                out.append(_sets[tok])
+            else:
+                return None
+        return ''.join(out)
+
+    def _set_stmt(m):
+        v = _set_val(m.group(2))
+        if v is None:
+            return m.group(0)
+        _sets[m.group(1)] = v
+        return ''
+
+    s = re.sub(r'\{%-?\s*set\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*-?%\}', _set_stmt, s, flags=re.DOTALL)
+    for _k, _v in _sets.items():
+        s = re.sub(r'\{\{-?\s*' + _k + r'\s*-?\}\}', lambda _m, _v=_v: _v, s)
 
     def _arg(x):
         return x.strip().strip('\'"')
@@ -168,7 +219,8 @@ def render_model(cn, path, layer='GOLD'):
         return f"ABS(HASH({expr}))"
 
     s = re.sub(r"\{\{\s*gold_sk\(\[([^\]]*)\]\)\s*\}\}", _gold_sk, s)
-    leftover = re.findall(r'\{\{[^}]*\}\}|\{%.*?%\}', s)
+    # 🆕 [O216-E] DOTALL — 여러 줄 `{% … %}` 가 종전에 이 검사를 빠져나갔다(BIGQUERY_SESSION 오렌더 경위).
+    leftover = re.findall(r'\{\{.*?\}\}|\{%.*?%\}', s, flags=re.DOTALL)
     if leftover:
         sys.exit(f'🔴 렌더되지 않은 jinja 가 남았다 in {path}: {leftover[:3]}')
     return s.strip().rstrip(';')

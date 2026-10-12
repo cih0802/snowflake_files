@@ -33,7 +33,11 @@ select
     dv.DEVICE_TYPE        as DEVICE_TYPE,
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
     c.BRAND               as CAMPAIGN_BRAND,
-    c.CAMPAIGN_NAME       as CAMPAIGN_NAME
+    c.CAMPAIGN_NAME       as CAMPAIGN_NAME,
+    -- 🆕 [2026-10-12 O216-E · O91-F A4-W BIGQUERY] GA4 캠페인 축 = UTM 원값(팩트 O190 degen 을 소비 뷰에 노출).
+    --   CAMPAIGN_SK 배선은 하지 않는다 — UTM 1개 ↔ 캠페인 최대 902개(DIM_CAMPAIGN.MKTG_UTM_NM · 1:1 67행뿐)라
+    --   팬아웃 또는 임의 대표 선택이 된다(DEC-41). 🔴 말미 추가 = 기존 38컬럼 순서 불변.
+    f.UTM_CAMPAIGN        as UTM_CAMPAIGN
 from {{ ref('FACT_BIGQUERY_BEHAVIOR') }} f
 left join {{ ref('DIM_DATE') }}      d  on f.DATE_SK      = d.DATE_SK
 left join {{ ref('DIM_BIGQUERY_EVENT') }}  ge on f.BIGQUERY_EVENT_SK  = ge.BIGQUERY_EVENT_SK

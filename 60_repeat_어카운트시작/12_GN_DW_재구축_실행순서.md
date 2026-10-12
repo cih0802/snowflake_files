@@ -66,6 +66,27 @@ END-METADATA -->
 > 🔴 순 11 → 12 순서를 지켜라. JU93656 에서는 ML SV 가 Agent 보다 **늦게** 생성됐다(§1 순11·12).
 > `09_2` 의 버전 추가 시점에 참조 SV 가 없으면 그 도구가 죽은 채로 버전이 굳는다(`09_1 [1-C]` 주석과 같은 축).
 
+### 2-1. 🆕 [O216 · 2026-10-12 · CK24285] 재구축 반영분
+
+> 근거 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0216-A.md` ▣ O216-A-1 · 라이브 실측 = CK24285(2026-10-12).
+
+| 순 | 단계 | 정본 파일 | 주체 | 판정 |
+|---|---|---|---|---|
+| 4·6 | BIGQUERY_SESSION COMMENT | `04_silver_design/08_SILVER_테이블DDL_20260714.sql`(SILVER.BIGQUERY_SESSION) · `03_top-down_gold/06_DDL.sql`(GOLD.FACT_BIGQUERY_SESSION) | 에이전트 | 🟢 파일 정본에 이미 반영 · 두 테이블 모두 **선생성 금지**(range 모델) ⇒ dbt 가 만든 뒤 `comment_drift_gate --apply` · 드리프트 0 |
+| 10·11 | SV `AI_SQL_GENERATION` [O216 SQL 작성 규칙] | `05_*_SV_DDL_*.sql` · `22_ML_SV_DDL.sql` · `23_MSTR_SV_DDL.sql` | 에이전트 | 🟢 파일에 이미 들어 있다 ⇒ 순 10·11 을 그대로 실행하면 반영된다 · `sv_identifier_gate` PASS |
+| 10 | `05_18` 장문 행 | `05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql` | 에이전트 | 🟢 2,007자 행 분할 완료 · `line_len.py` PASS |
+| 12 | Agent 3종 8·9차 | `cortex_project/agents/<AGENT>/agent_spec.yaml`(O216 · O216-C · O216-D · O216-F 블록 포함) → `09_2_AGENT_버전업.sql` | 에이전트 | 새 버전 default · 도구 수 22·12·20 무변경 · 🔴 버전 번호는 계정마다 다르다(CK24285 = **VERSION$7** · 롤백 VERSION$6 · 이력 = `12_agent개선과제/00_작업계획.md` §14) |
+| 15 | eval 인프라 | `tmp/o216_eval_ds.py v2` · `tmp/o216_eval_ds.py v3` | 에이전트 | `SERVING.EVAL_CONFIG_STAGE` · 입력 테이블 6종(`EVAL_O211_*` 3 · `EVAL_O216_*_V3` 3) · 데이터셋 6종 |
+| 16 | eval 기준선 | `tmp/o216_eval.py start <VERSION> v3 <tag>` → `status` | 에이전트(과금 승인) | 기준선 = **DS V3** · 같은 데이터셋끼리만 비교(O215-A-2) |
+| 17 | 🆕 OPS 수기 객체(O216-G) | `08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql`(NULL 사유 코드 · 등록부 · OPS 객체 목록 뷰) | 에이전트 | `SELECT * FROM GN_DW.OPS.V_OPS_OBJECT_INVENTORY WHERE MANAGED_BY = '수기' AND DDL_FILE IS NULL` = 0행 |
+| 18 | 🟠 모니터링·비용 가드(미배포) | `08_mornitoring/05_AI비용가드_구축.sql` · `06_웨어하우스비용가드_구축.sql` · `07_OPS_알림수신자관리_…sql` | 👤 사람(ACCOUNTADMIN · 알림 이메일 결정) | 🔴 CK24285 에 **0건**(O216-G 실측 · 이 런북 §2 에 단계가 없었다) — 배포 여부는 사용자 결정 |
+
+- 🟢 [O216-B] eval 스크립트 2종의 실행 롤 = **GN_DW_ADMIN**(`o216_eval_ds.py:20` · `o216_eval.py:21` · 종전 ACCOUNTADMIN).
+  CK24285 실측상 GN_DW_ADMIN 이 요건을 전부 갖는다 ⇒ 재구축·운영계에서도 그대로 실행한다.
+  · CORTEX_USER · USE AI FUNCTIONS = PUBLIC 경유 · EXECUTE TASK = GN_DW_DBT 상속 · SERVING 스키마·Agent = owner.
+  · 🟢 [O216-B] CK24285 eval 객체 13종(테이블 6 · 스테이지 1 · 데이터셋 6) owner → GN_DW_ADMIN 이관 완료 · 스크립트 2종 롤도 GN_DW_ADMIN 으로 수정.
+- 🔴 eval 데이터셋 원천 = `12_agent개선과제/06_O208_문항코퍼스.csv` · resolved.yaml 원본 = `tmp/o215/`(파일 이관 필수).
+
 ## 3. 완료 판정 SQL
 
 ```sql

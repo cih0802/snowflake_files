@@ -182,7 +182,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.ML       COMMENT = '머신러닝 계층 — �
    --------------------------------------------------------------------- */
 CREATE STAGE IF NOT EXISTS GN_DW.OPS.AGENT_SPEC_STAGE
   DIRECTORY = (ENABLE = TRUE)
-  COMMENT = 'Cortex Agent 정본 yaml 배포 스냅샷. 원본 = 워크스페이스 cortex_project/agents/<AGENT>/agent_spec.yaml. 09_2_AGENT_버전업.sql 의 ADD VERSION FROM 소스. 개인 워크스페이스(USER$) 의존 제거 목적 — O85-C.';
+  COMMENT = 'Cortex Agent 정본 yaml 배포 스냅샷. 원본 = 워크스페이스 cortex_project/agents/<AGENT>/agent_spec.yaml. 09_2_AGENT_버전업.sql 의 ADD VERSION FROM 소스. 개인 워크스페이스(USER$) 의존 제거 목적 — O85-C. [원천: 수기 · 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql]';
 CREATE SCHEMA IF NOT EXISTS GN_DW.SECURITY WITH MANAGED ACCESS COMMENT = '거버넌스 정책 격리 — 마스킹/네트워크 정책';
 -- 기존 배포본 재실행 시 COMMENT 갱신 (IF NOT EXISTS 는 기존 스키마의 COMMENT 를 덮지 않음)
 ALTER SCHEMA GN_DW.SILVER SET COMMENT = '정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';
@@ -485,6 +485,7 @@ GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
 --   - ENGINEER: dbt snapshot 모델 테이블 생성/적재/갱신 (USAGE, CREATE TABLE, ALL PRIVILEGES ON TABLES)
 --   - 소비 역할(ANALYST/VIEWER/SERVICE): 미부여 (최소 권한 원칙 — 소비자는 GOLD/SERVING 마트를 통해 소비)
 --   - 현업 활용도가 낮을 것으로 잠정판단되어 관리포인트를 줄이기 위해 보류
+--   - 🔴 [DEC-61 · 2026-10-12 사용자 결정] 보류가 아니라 **영구 미가동**이다 — 아래 블록 주석을 풀지 마라.
 /*
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
