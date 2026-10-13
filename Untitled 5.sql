@@ -1,0 +1,1 @@
+snow://workspace/USER$TRIALADMIN.PUBLIC."snowflake_files"/versions/head/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql

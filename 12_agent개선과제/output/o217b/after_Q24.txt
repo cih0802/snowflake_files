@@ -1,0 +1,15 @@
+**핵심 요약**
+- 2026년 5월 META 매체의 일별리포트(디지털) GA 개발(건)은 **2,697건**입니다.
+
+**▼ 상세**
+
+
+
+- 지표: GA 개발(건) = 대행사 디지털 일별리포트의 GA 전환(건). 질문에 「일별리포트」가 있어 MSTR 개발(건)이 아닌 이 지표로 산출했습니다.
+- 출처유형: 디지털(META는 디지털 매체). 조회 기간: 2026년 5월.
+- GA 개발(건)에는 소수값이 섞여 있어(정확값 2,697.0000) 기여도 배분값일 수 있습니다 — 정수 「건수」로 단정하지 않습니다.
+- 원천: 대행사 광고 리포트 → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS → GOLD.WIDE_AD_COMBINED
+
+다음으로 볼 수 있는 기준: META 월별 추이 · 디지털 전체 매체별 GA 개발(건) 비교 · META의 노출·클릭·CTR·CVR.
+
+[Trace: intermediate tool calls and results saved to /tmp/cortex-agent-trace-AGENT_MARKETING-2026-10-13T13-07-41-348Z.json -- use Read tool if you need details]

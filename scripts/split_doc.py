@@ -1187,7 +1187,7 @@ def declared_kind(src):
     return val[0] if isinstance(val, (tuple, list)) else val
 
 
-def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None, force=False):
+def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None, force=False, dry_run=False):
     """허브+조각을 **현재 내용**으로 재분할해 상한 여유를 회복한다(`R1-6-14`).
 
     🔴 왜 필요한가 (2026-08-18 O83-B 실측): 갱신형 원장은 신규 행이 표 머리(최신 우선)에
@@ -1250,6 +1250,16 @@ def rebalance(src, mode=None, fill=0.7, snap_label=None, expect=None, force=Fals
     #   그 낡은 내용으로 **전 조각을 재기록**해 편집이 사라진다. 쓰기 전에 반드시 막는다.
     if expect_guard('rebalance', logical, expect):
         return 1
+
+    # 🆕 🔴🔴 [O218] dry-run 은 **여기서 멈춘다** — 종전에는 `main()` 이 `--dry-run` 을 넘기지 않아
+    #   `--rebalance --dry-run` 이 스냅샷·조각 재기록·허브 재발행을 **실제로 집행**했다(O217-B 실증 · 18조각).
+    if dry_run:
+        sizes = [nbytes('\n'.join(chunk_header(src, n, len(chunks), a, b)) + '\n' + seg_text(lines, a, b))
+                 for n, (a, b) in enumerate(chunks, 1)]
+        print('  (예상) 조각 %d개 · max %d B · 최소 여유 %d B'
+              % (len(chunks), max(sizes), MAX_BYTES - max(sizes)))
+        print('\n--dry-run — 파일을 쓰지 않았다.')
+        return 0
 
     if not os.path.isdir(ARCHIVE):
         os.makedirs(ARCHIVE)
@@ -1556,6 +1566,10 @@ def main():
         raise SystemExit('🔴 경로 부재: %s' % src)
     if a.to_outdir:
         return to_outdir(src, a.to_outdir, a.apply, a.drop_siblings, snap_label=a.label)
+    # 🆕 🔴 [O218] dry-run 을 지원하지 않는 쓰기 연산은 **조용히 쓰지 말고 거부**한다.
+    if a.dry_run and (a.rollover or a.republish):
+        print('🔴 거부 — `--rollover`·`--republish` 는 --dry-run 을 지원하지 않는다(파일을 쓴다).')
+        return 2
     if a.rollover:
         p = a.entry_file
         if p and not os.path.isabs(p):
@@ -1563,7 +1577,7 @@ def main():
         return rollover(src, p)
     if a.rebalance:
         return rebalance(src, a.boundary, a.fill, snap_label=a.label,
-                         expect=a.expect, force=a.force_rebalance)
+                         expect=a.expect, force=a.force_rebalance, dry_run=a.dry_run)
     if a.republish:
         return republish(src, snap_label=a.label, expect=a.expect)
     if a.verify:

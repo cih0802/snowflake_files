@@ -55,7 +55,7 @@ check('ML SV 표본이 잡힌다', 'SV_ML_MEMBER_RISK' in sv)
 # 오염: 정본 문법을 못 보게 만들면 분모가 무너지는가(초판 재현)
 orig_files = C.SV_DIR
 with tempfile.TemporaryDirectory() as td:
-    src = (ROOT / '05_SV-Agent_ai' / '05_1_SV_DDL_MEMBER_MONTHLY.sql').read_text(
+    src = (ROOT / '05_SV-Agent_ai' / '05_01_SV_DDL_MEMBER_MONTHLY.sql').read_text(
         encoding='utf-8', errors='replace')
     poisoned = re.sub(r'CREATE OR ALTER SEMANTIC VIEW', 'CREATE SEMANTIC_VIEW_X', src)
     (Path(td) / 'poison.sql').write_text(poisoned, encoding='utf-8')

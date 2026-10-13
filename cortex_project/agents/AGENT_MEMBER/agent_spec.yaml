@@ -42,7 +42,11 @@ instructions:
     예: 컬쳐콘텐츠팀 예산을 물으면 컬쳐콘텐츠팀은 조회되지 않고 콘텐츠기획팀이 조회된다고 밝히고 콘텐츠기획팀 수치를 제시한다. 🔴 두 이름이 같은 조직이라고 단정하지 않는다(데이터에 연결 근거가 없다) · 0 을 만들지 않는다 · 유사 항목이 없으면 조회되는 전체 목록을 제시한다.
 
     '
-  orchestration: '[공통 · 중간 메시지 언어 · O209 이월] 도구를 호출하기 전후에 쓰는 중간 메시지·진행 안내·계획도 사용자에게 보인다. 한국어 한 문장으로만 쓰거나 쓰지 않는다 — 「I''ll」「Let me」「Now I」 같은 영어 문장을 절대 쓰지 않는다. 도구 결과를 해석하는 생각은 출력하지 않는다.
+  orchestration: '🔴🔴 🆕 [O217 정의 조회] 질문의 지표·용어·분류 이름이 낯설거나 「정의되지 않았다·산출할 수 없다」고 답하려 할 때는 먼저 **search_biz_definition** 으로 정의·계산식·담당 도구(TOOL_NAME)·SV 필드(SV_FIELD)를 조회하고, 결과의 도구가 이 Agent 에 있으면 그 도구로 답한다. 🔴
+    search 결과는 정의 확인용이다 — 수치는 analyst 도구 결과로만 쓴다. 🔴 [O217 사용자 결정 A] 개발건수는 「GA·일별리포트」 명시가 없으면 MSTR 개발(건)으로 답한다. 🔴 [O217] 답변 끝에 정기 리포트·자동 발송·자동화 설정을 권유하지 않는다.
+
+
+    [공통 · 중간 메시지 언어 · O209 이월] 도구를 호출하기 전후에 쓰는 중간 메시지·진행 안내·계획도 사용자에게 보인다. 한국어 한 문장으로만 쓰거나 쓰지 않는다 — 「I''ll」「Let me」「Now I」 같은 영어 문장을 절대 쓰지 않는다. 도구 결과를 해석하는 생각은 출력하지 않는다.
 
 
     [공통 · 「신규」 해석 · O209 이월] 「신규 개발」의 「신규」는 기본적으로 개발구분 = 신규로 해석한다. 사용자가 「신규/기존」「신규기존구분」을 명시할 때만 신규기존구분 축을 쓴다. 어느 축으로 해석했는지 표 제목에 밝힌다.
@@ -205,6 +209,11 @@ instructions:
   - question: 결연 중단 사유별 서신·선물금 활동 건수를 보여줘
   - question: 결연구분별 2025년 신규 개발 건수는?
 tools:
+- tool_spec:
+    type: cortex_search
+    name: search_biz_definition
+    description: 🆕 [O217] 굿네이버스 비즈니스 정의 검색 — 현업 지표사전(공통·신규·추가)·지표 용어·조직(부서명·부서코드)·라우팅 결정(어느 도구·어느 SV 필드로 답하는지)·확정 산식. 원천=90_provided_definition 문서 → GN_DW.SERVING.BIZ_DEFINITION_CORPUS. 「~의 정의·계산식」「이 지표는
+      어느 데이터로 보나」 질문과 낯선 지표 이름을 만났을 때 사용. 🔴 정의만 담는다 — 수치는 analyst 도구로만 낸다.
 - tool_spec:
     type: cortex_analyst_text_to_sql
     name: analyst_mstr_spnsr_dvlp
@@ -502,3 +511,8 @@ tool_resources:
     execution_environment:
       type: warehouse
       warehouse: GN_DW_ANALYTICS_WH
+  search_biz_definition:
+    search_service: GN_DW.SERVING.SEARCH_BIZ_DEFINITION
+    id_column: DOC_ID
+    title_column: TITLE
+    max_results: 5
