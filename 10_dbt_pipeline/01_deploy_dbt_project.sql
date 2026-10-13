@@ -46,15 +46,15 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.OPS
 
 -- (2-A) [최초 1회만] DBT PROJECT 신규 생성 (VERSION$1)
 -- 최초 배포 후 '08_After_Deploy_DBT.sql' 돌리고 ENGINEER권한으로 BUILD
--- CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
-ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION AGENT_ANSWER_REFINED_20261013095906
-  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
+-- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
+--   ADD VERSION AGENT_ANSWER_REFINED_20261013095906
+--   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
-ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
-  COMMENT = 'BRONZE→SILVER→GOLD. [20261013] AGENT 답변 친화적으로 수정';
+-- ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
+--   COMMENT = 'BRONZE→SILVER→GOLD. [20261013] AGENT 답변 친화적으로 수정';
 
 -- (3) 배포된 버전 상태 확인
 SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;

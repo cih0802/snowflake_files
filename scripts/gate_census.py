@@ -87,9 +87,11 @@ JUDGE = {
     'wide_select_yml_gate':   'WIDE 뷰 SELECT ↔ yml',
     'jinja_config_gate': 'dbt Jinja 안전 6축 — config 안 SQL주석 · 따옴표밖 중첩닫기 · 주석안 Jinja태그 · 공백제거형 주석의 실행문 흡수 · 주석 구분자 개수 불균형',
     'live_change_gate': 'D6 기록 없는 라이브 변경 탐지 — SV·Agent created_on 날짜에 원장 §1 행(날짜+객체명)이 있는가',
+    'null_reason_registry_gate': 'NULL 사유 등록부 상설 게이트 — 100% NULL 컬럼 사유 코드 표준화 및 COMMENT 부합 검증',
 }
 
 OBSERVE = {
+    'scan_100pct_null_columns': '100% 전건 NULL 컬럼 검출 스크립트(SILVER·GOLD 전수 관측)',
     'alias_census':        '모델 SELECT 별칭 P/L/X 관측 — 🔴 판정 분모 정본은 `scripts/o122_name_drift.sql`(라이브) 이다',
     'classify_doc_type':   '문서 유형 추천(등재 정본은 원장 §0)',
     'comment_len_probe':   'COMMENT 길이 분포 관측',

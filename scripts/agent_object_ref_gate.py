@@ -80,8 +80,9 @@ NEG_RE = re.compile(
     r'0\s*%(o)s|%(o)s\s*0(?:개)?)' % {'o': NEG_OBJ})
 NEG_WINDOW = 60
 
-# 🔴 SV 는 이 게이트의 축이 아니다(위 docstring ② 참조).
+# 🔴 SV 및 CORTEX SEARCH SERVICE는 이 게이트의 축이 아니다(위 docstring ② 참조).
 SV_PREFIX = 'SV_'
+SEARCH_PREFIX = 'SEARCH_'
 
 # 라이브에 없는 것이 정상이며 그 사유가 명시된 토큰 — 행선지를 적는다.
 # 🔴 `sv_identifier_gate.RETIRED_IDENTS` 와 같은 규약이다: 등재하지 않은 부재는 계속 blocking.
@@ -239,7 +240,7 @@ def run(inv=None, verbose_advisory=False):
                 fail.append('① %s:%d `%s.%s` → **스키마 라이브 부재**' % (rel, ln, DB, sch))
 
         for ln, sch, obj, neg in obj_hits:
-            if obj.startswith(SV_PREFIX):
+            if obj.startswith(SV_PREFIX) or obj.startswith(SEARCH_PREFIX):
                 a2_sv += 1
                 continue
             a2 += 1

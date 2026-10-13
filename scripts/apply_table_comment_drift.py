@@ -31,18 +31,30 @@ import sfconn  # noqa: E402
 
 
 def build_todo(cn):
-    """반영 대상 = 파일(정본)과 라이브가 다른 컬럼. 🔴 손으로 고르지 않는다."""
+    """반영 대상 = 파일(정본)과 라이브가 다른 컬럼 및 테이블. 🔴 손으로 고르지 않는다."""
     want = g.parse_ddl()
     got = g.live(cn, "'BASE TABLE'")
     todo = [k for k, v in sorted(want.items())
             if k in got and g.sha(v) != g.sha(got[k])]
-    return want, todo
+
+    want_tbl = g.parse_ddl_table_level()
+    got_tbl = g.live_table_level(cn, "'BASE TABLE'", schema='GOLD')
+    todo_tbl = [k for k, v in sorted(want_tbl.items())
+                if k in got_tbl and g.sha(v) != g.sha(got_tbl[k])]
+
+    return want, todo, want_tbl, todo_tbl
 
 
 def stmt_for(tbl, col, text):
     lit = text.replace("'", "''")
     return ("ALTER TABLE GN_DW.GOLD.%s ALTER COLUMN %s COMMENT '%s'"
             % (tbl, col, lit))
+
+
+def stmt_for_table(tbl, text):
+    lit = text.replace("'", "''")
+    return ("ALTER TABLE GN_DW.GOLD.%s SET COMMENT = '%s'"
+            % (tbl, lit))
 
 
 def main():
@@ -61,12 +73,16 @@ def main():
 
     cn = sfconn.conn()
     try:
-        want, todo = build_todo(cn)
-        if not todo:
+        want, todo, want_tbl, todo_tbl = build_todo(cn)
+        if not todo and not todo_tbl:
             print('🟢 불일치 0 — 반영할 것이 없다')
             return 0
 
-        print('대상 %d컬럼: %s' % (len(todo), ', '.join(todo)))
+        if todo:
+            print('대상 %d컬럼: %s' % (len(todo), ', '.join(todo)))
+        if todo_tbl:
+            print('대상 %d테이블: %s' % (len(todo_tbl), ', '.join(todo_tbl)))
+
         if not a.apply:
             # 🟢 dry-run 은 **실행할 SQL 전문**을 낸다 — 승인자가 눈으로 검토할 수 있어야 한다.
             print('')
@@ -74,6 +90,8 @@ def main():
             for key in todo:
                 tbl, col = key.split('.', 1)
                 print('  ' + stmt_for(tbl, col, want[key]))
+            for tbl in todo_tbl:
+                print('  ' + stmt_for_table(tbl, want_tbl[tbl]))
             print('')
             print('🔴 집행하려면 `--apply` 를 주어라(`R4-4-3` 별도 승인 대상).')
             return 0
@@ -82,7 +100,10 @@ def main():
         for key in todo:
             tbl, col = key.split('.', 1)
             cur.execute(stmt_for(tbl, col, want[key]))
-        print('🟢 %d컬럼 ALTER 완료 — 판정은 comment_drift_gate 재실행으로 낸다' % len(todo))
+        for tbl in todo_tbl:
+            cur.execute(stmt_for_table(tbl, want_tbl[tbl]))
+        print('🟢 %d컬럼 및 %d테이블 ALTER 완료 — 판정은 comment_drift_gate 재실행으로 낸다' 
+              % (len(todo), len(todo_tbl)))
         return 0
     finally:
         cn.close()
