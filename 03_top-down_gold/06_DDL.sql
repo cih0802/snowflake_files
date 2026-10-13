@@ -1154,10 +1154,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '회비 청구 처리 상태 팩트. [Grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV × PAYMENT_TYPE × 청구구분 × 처리상태 × 환급사유]. [주의: 회원 축 없음 · FACT_MEMBER_FEE·FACT_MEMBER_MONTHLY 와 동일 원천 다른 Grain, 합산 금지]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING].';
 
+-- ============================================================================
 -- 🆕 [2026-10-08 O213-F Y3-F] FACT_SEARCH_CONSOLE · FACT_GA4_DEMOGRAPHIC (GA4/검색 신규 · 종전 GOLD 소비 0)
---   🔴 FACT_BIGQUERY_SESSION 은 선생성하지 않는다 — RANGED_FACTS 는 테이블이 있으면 첫 run 이 롤링 창만 적재한다.
---      첫 build CTAS 전량 생성 후 COMMENT ALTER(계획서 §13-1-8).
-/* ── 비실행 선언(COMMENT 정본 전용) — 이 블록을 실행하지 마라: range 모델은 선생성 금지 ──
+--   ℹ️ FACT_BIGQUERY_SESSION DDL 선생성 후 dbt 적재:
+--      DDL 형상/COMMENT 보존을 위해 ADMIN 역할로 테이블을 선생성하고,
+--      최초 적재 시 전 기간 풀적재 var 를 전달하여 실행:
+--      EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select FACT_BIGQUERY_SESSION --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';
+-- ============================================================================
+-- FACT_BIGQUERY_SESSION — GA4 세션 팩트
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_SESSION (
     DATE_SK                          NUMBER(8,0)     COMMENT '세션 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
     IDENTITY_SK                      NUMBER          COMMENT 'FK→DIM_MEMBER_IDENTITY · 0 = 미매칭(회원 연계가 없는 방문자 · SK=0 시드 멤버).',
@@ -1199,8 +1203,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_SESSION (
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
-) COMMENT = 'GA4 세션 팩트. [Grain: DATE_SK × BIGQUERY_SESSION_KEY]. [주의: FACT_BIGQUERY_BEHAVIOR 와 같은 원천 다른 Grain, 합산 금지 · 세션수는 COUNT(DISTINCT BIGQUERY_SESSION_KEY) · 선생성 금지]. [원천: GA4 → SILVER.BIGQUERY_SESSION].';
-── 비실행 선언 끝 */
+) COMMENT = 'GA4 세션 팩트. [Grain: DATE_SK × BIGQUERY_SESSION_KEY]. [주의: FACT_BIGQUERY_BEHAVIOR 와 같은 원천 다른 Grain, 합산 금지 · 세션수는 COUNT(DISTINCT BIGQUERY_SESSION_KEY)]. [원천: GA4 → SILVER.BIGQUERY_SESSION].';
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SEARCH_CONSOLE (
     DATE_SK             NUMBER(8,0)     COMMENT '검색 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
     QUERY               VARCHAR         COMMENT '검색어(구글 검색창 입력 원문).',

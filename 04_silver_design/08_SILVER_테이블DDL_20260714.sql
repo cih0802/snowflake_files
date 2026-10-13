@@ -1539,11 +1539,12 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
 
 -- ============================================================================
 -- 🆕 [2026-10-08 O213-F Y3-F] GA4 인구통계 · 서치콘솔 (종전 소비 모델 0)
---   🔴 BIGQUERY_SESSION 은 여기서 선생성하지 않는다 — range 모델(silver_purge RANGED_MODELS)은
---      대상 테이블이 있으면 첫 run 이 is_incremental() = 롤링 창(3일)만 적재한다(bigquery_load_window ⓑ).
---      ⇒ 첫 build 가 CTAS 로 전량 생성 · 컬럼 COMMENT 는 build 후 ALTER(§13-1-8).
+--   ℹ️ BIGQUERY_SESSION DDL 선생성 후 dbt 적재:
+--      DDL 형상/COMMENT 보존을 위해 ADMIN 역할로 테이블을 선생성하고,
+--      최초 적재 시 전 기간 풀적재 var 를 전달하여 실행:
+--      EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_SESSION --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';
 -- ============================================================================
-/* ── 비실행 선언(COMMENT 정본 전용) — 이 블록을 실행하지 마라: range 모델은 선생성 금지 ──
+-- BIGQUERY_SESSION — GA4 세션 속성
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_SESSION (
     EVENT_DT                         DATE            COMMENT '세션 일자(원천 EVENT_DATE YYYYMMDD) · 자정을 넘는 세션은 일자별로 나뉜다.',
     USER_PSEUDO_ID                   VARCHAR(200)    COMMENT 'GA4 가명 사용자 ID(브라우저·앱 단위 · 원천 user_pseudo_id).',
@@ -1586,8 +1587,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_SESSION (
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 (공통감사) · 이 모델은 채우지 않아 NULL 이다.'
-) COMMENT = 'GA4 세션 속성. [Grain: EVENT_DT × USER_PSEUDO_ID × BIGQUERY_SESSION_ID (자정 경계 세션은 일자별로 나뉜다)]. [주의: 속성 = 세션 첫 non-NULL 값 · 원값 보존 · range 재적재 · 선생성 금지]. [원천: GA4 → SILVER.BIGQUERY_REFINED_DATA].';
-── 비실행 선언 끝 */
+) COMMENT = 'GA4 세션 속성. [Grain: EVENT_DT × USER_PSEUDO_ID × BIGQUERY_SESSION_ID (자정 경계 세션은 일자별로 나뉜다)]. [주의: 속성 = 세션 첫 non-NULL 값 · 원값 보존 · range 재적재]. [원천: GA4 → SILVER.BIGQUERY_REFINED_DATA].';
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_USER_DEMOGRAPHIC (
     EVENT_DT            DATE            COMMENT '집계 일자(원천 DATE YYYYMMDD).',
     DEVICE_CATEGORY     VARCHAR(20)     COMMENT '기기 카테고리 desktop·mobile·tablet (GA4 원값).',

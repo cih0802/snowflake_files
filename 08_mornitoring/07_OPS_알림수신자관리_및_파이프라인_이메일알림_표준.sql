@@ -107,11 +107,11 @@ $$;
 -- 동기화 초기 1회 실행
 CALL GN_DW.OPS.USP_SYNC_ALERT_RECIPIENTS();
 
--- 초기 기본 파이프라인 관리자 플래그 부여 예시 (현재 로그인 유저 TRIALADMIN)
+-- 초기 기본 파이프라인 관리자 플래그 부여 예시 (현재 로그인 유저 CHOIH)
 UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG
 SET IS_PIPELINE_ADMIN_YN = 'Y',
     IS_ANALYST_YN = 'Y'
-WHERE USER_NAME = 'TRIALADMIN';
+WHERE USER_NAME = 'CHOIH';
 
 
 -- ------------------------------------------------------------------------------
