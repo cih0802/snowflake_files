@@ -1,0 +1,25 @@
+
+
+2025년 6월 DR광고의 채널별 개발 실적을 조회하겠습니다.
+
+**① 핵심 요약** (MSTR 기준 · 2025년 6월 · DR광고(공통브랜드 방송·영상광고) · 개발구분 신규·증액·재후원)
+- 채널별 개발(명)은 **SBS가 1,040명**으로 가장 많고, 2위 EBS(207명)와 큰 격차가 있습니다.
+- 개발(건)도 SBS가 2,882건으로 최다입니다.
+
+**② 그래프**
+
+**③ 상세**
+
+
+
+- **DR광고 정의**: 공통브랜드가 「방송」 또는 「영상광고」인 캠페인으로 한정했습니다(사용자 기준 B).
+- **채널 축**: 마케팅채널(MSTR 캠페인 마스터 현재값)로 분해했습니다.
+- **개발구분**: 미지정이므로 MSTR 개발 리포트 기본 범위인 신규·증액·재후원으로 한정했습니다.
+- **산식 각주**: MSTR 개발(건) = 후원금액 ÷ 10,000. 개발(명)은 회원번호 중복제거값이라 비가산입니다 — 채널별 값을 더해 전체 합계로 쓰지 않습니다.
+- 원천: CRM(eCRM) → BRONZE_CRM → GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM → SERVING.MSTR_SPNSR_DVLP_V
+
+다음으로 볼 수 있는 기준: 캠페인카테고리별 · 신규/기존 구분별 · 상위캠페인별 개발 실적
+
+[Chart saved to /tmp/cortex-agent-chart-AGENT_MARKETING-2026-10-13T08-24-17-566Z.html -- open in browser to view, or run: open '/tmp/cortex-agent-chart-AGENT_MARKETING-2026-10-13T08-24-17-566Z.html']
+
+[Trace: intermediate tool calls and results saved to /tmp/cortex-agent-trace-AGENT_MARKETING-2026-10-13T08-24-17-566Z.json -- use Read tool if you need details]

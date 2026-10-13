@@ -49,7 +49,9 @@ WITH src AS (
         MATR_TY_NM              AS MATR_TY_NM,
         EXPSR_CNT               AS EXPSR_CNT,
         CLICK_CNT               AS CLICK_CNT,
-        MD5(TO_JSON(OBJECT_CONSTRUCT(*)))   AS ROW_HASH
+        MD5(TO_JSON(OBJECT_CONSTRUCT(*)))   AS ROW_HASH,
+        -- OBJECT_CONSTRUCT 는 NULL 값을 키에서 뺀다 ⇒ 키 0개 = 37컬럼 전부 NULL 인 빈 행
+        ARRAY_SIZE(OBJECT_KEYS(OBJECT_CONSTRUCT(*))) = 0   AS IS_ALL_NULL_ROW
     FROM {{ source('bronze_agency','VIDEO_AD_CMPGN_DTLS') }}
 ),
 seq AS (
@@ -57,6 +59,11 @@ seq AS (
         src.*,
         ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL) AS DUP_SEQ
     FROM src
+    -- 🆕 [2026-10-13] 운영계 dbt build 실패 대응 — not_null_AGENCY_AD_PERFORMANCE_AD_DATE 165건.
+    --   원인 = 원천에 전 컬럼 NULL 빈 행 165건 적재(엑셀 공백 행 추정) → 코어에서 AD_DATE NULL.
+    --   처방 = 빈 행만 제외(값이 하나라도 있는 행은 보존 · 원천 무손실 원칙의 예외는 「정보 0 행」뿐).
+    --   ⚠️ 빈 행끼리는 같은 ROW_HASH 라 그들만의 파티션이다 ⇒ 실데이터 행의 DUP_SEQ·AD_PERF_DK 는 불변.
+    WHERE NOT IS_ALL_NULL_ROW
 )
 
 SELECT

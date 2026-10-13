@@ -299,7 +299,6 @@ ORDER BY 1, 2;
 --      숫자 컬럼에서 `Numeric value '\N' is not recognized` 오류의 직접 원인이므로
 --      NULL_IF 에 3글자 토큰을 반드시 포함한다.
 ------------------------------------------------------------
-use role gn_dw_admin;
 CREATE OR REPLACE FILE FORMAT SANDBOX.TOOLS.FF_CSV_LOAD
   TYPE = CSV
   COMPRESSION = GZIP

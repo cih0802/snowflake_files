@@ -235,6 +235,12 @@ GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_ANALYST;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_VIEWER;
 GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_SERVICE;
 
+-- [3-b] 🆕 [2026-10-13] ANALYST — CoWork 답변의 「자기 쿼리」 열람 = **추가 GRANT 없음(의도)**
+--   🟢 자기 질문이 실행한 SQL 은 본인 쿼리 이력(Snowsight Query History · INFORMATION_SCHEMA.QUERY_HISTORY)에서
+--      본다 — 자기 쿼리 조회에는 별도 권한이 필요 없다. 실행 권한(Agent USAGE · SV SELECT · GOLD 등 SELECT)은 이미 있다.
+--   🔴 `GRANT MONITOR ON AGENT` 는 **부여하지 않는다** — Agent Observability 로 **타 사용자 대화까지** 열람된다(최소권한 위배 · 사용자 결정).
+--   ⚠️ 운영 확인 = ANALYST 로 CoWork 질의 1건 → 같은 사용자로 Query History 에 그 SQL 이 보이는지 실측.
+
 
 -- ============================================================================
 -- [4] CoWork(Snowflake Intelligence) 연결 — 🆕 [2026-08-18 O85 · ㉔ ③ 시정] **분기형으로 교체**

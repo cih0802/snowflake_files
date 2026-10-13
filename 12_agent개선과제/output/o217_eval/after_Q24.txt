@@ -1,0 +1,15 @@
+**핵심 요약**
+- 일별리포트(대행사 디지털 리포트) 기준, 2026년 5월 META 매체의 개발건수는 **2,697건**입니다(GA 개발(건) · 디지털).
+
+**▼ 상세**
+
+
+
+- 지표: GA 개발(건) = 대행사 디지털 일별리포트가 보고한 개발건수(공8 GA 개발단가의 분모). 소수값이 섞여 있어 정수 건수로 단정하지 않으며, 실제 값은 2,697.0000입니다.
+- 이 값은 MSTR 개발(건)·CRM 개발건과 정의·원천이 달라 한 표에서 합산·비교하지 않습니다.
+- 조회 조건: 출처유형 = 디지털, 매체 = META, 기간 = 2026년 5월.
+- 원천: 대행사 광고 리포트(GA4) → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS → GOLD.WIDE_AD_COMBINED
+
+다음으로 볼 수 있는 기준: 월별 추이 · 광고유형(검색/디스플레이)별 · 다른 매체(YOUTUBE 등)와 비교
+
+[Trace: intermediate tool calls and results saved to /tmp/cortex-agent-trace-AGENT_MARKETING-2026-10-13T08-23-17-664Z.json -- use Read tool if you need details]

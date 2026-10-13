@@ -1,0 +1,27 @@
+
+
+공통브랜드별 2026년 9월 개발(건)을 조회하겠습니다.
+
+2026년 9월 공통브랜드별 개발(건)을 조회하겠습니다.
+
+## ① 핵심 요약
+- 2026년 9월 전체 개발은 **26,455.7011건**(MSTR 기준 · 신규·증액·재후원 합계)입니다.
+- 공통브랜드 중 **디지털(7,765.2건)**이 가장 많고, 지역개발(4,348.95건)·대면모금(3,766.2건)이 뒤를 잇습니다.
+
+## ② 그래프
+
+## ▼ 상세
+
+
+
+- 표의 첫 행(공통브랜드 빈칸, 26,455.7011건 / 13,119명)은 **전체 합계(ROLLUP) 행**입니다. 개발(명)은 중복제거 값이라 공통브랜드별 값을 더해도 전체 합계와 맞지 않습니다(한 회원이 여러 브랜드에 걸칠 수 있음).
+- 표 중간의 빈 값 행(1,263.6건)은 공통브랜드가 지정되지 않은 캠페인(미지정)입니다.
+- 기준: **MSTR 기준** · MSTR 개발(건) = 후원금액 ÷ 10,000. 개발구분은 신규·증액·재후원 합계(감액·후원중단 제외)입니다.
+- 조회 기간: 2026년 9월 · 축: 공통브랜드(캠페인 마스터 현재값).
+- 원천: CRM(eCRM) → BRONZE_CRM → GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM → SERVING.MSTR_SPNSR_DVLP_V
+
+다음으로 볼 수 있는 기준: 개발구분별(신규/증액/재후원) · 공통브랜드 × 부서별 · 월별 추이
+
+[Chart saved to /tmp/cortex-agent-chart-AGENT_MARKETING-2026-10-13T08-28-13-060Z.html -- open in browser to view, or run: open '/tmp/cortex-agent-chart-AGENT_MARKETING-2026-10-13T08-28-13-060Z.html']
+
+[Trace: intermediate tool calls and results saved to /tmp/cortex-agent-trace-AGENT_MARKETING-2026-10-13T08-28-13-060Z.json -- use Read tool if you need details]
