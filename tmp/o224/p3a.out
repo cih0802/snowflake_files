@@ -1,0 +1,17 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+AGENT_MARKETING live len {'response': 4731, 'orchestration': 9589, 'system': 3657} | 계산전확인 위치 {'response': [1534, 1636, 1709], 'orchestration': [1645, 8133], 'system': []}
+AGENT_MARKETING local len {'response': 4731, 'orchestration': 10095, 'system': 3657} | 계산전확인 위치 {'response': [1534, 1636, 1709], 'orchestration': [1645, 8639], 'system': []}
+  diff orchestration 2 [('insert', '', ".\n\n🔴🔴 [O223 언어 가드레일 강제 · 전 Agent 공통] 모든 사고 과정(Reasoning / Thinking), 도구 호출 전후 중간 진행 안내, 최종 답변은 반드시 **한국어**로만 작성한다. 일본어나 영어 등 다른 언어로 생각하거나 출력하지 않는다. 「Now let me」, 「Let''s check」, 「検索します」 등 외국어 추론/진행 문장"), ('insert', '', "23 법인구분(사단/사복) 질의 라우팅] 사단법인/사회복지법인 관련 질의: ① 사단법인 회비/납입 실적 → AGENT_MEMBER 안내(analyst_member_fee, fee.ACQ_CPR_DIV = ''사단'') ② 사단법인 개발실적 → analyst_mstr_spnsr_dvlp 또는 analyst_member_event (SPONSORSHIP_CPR")]
+  tools live-only set() local-only set()
+  tool desc diff []
+AGENT_EXECUTIVE live len {'response': 4448, 'orchestration': 8729, 'system': 5924} | 계산전확인 위치 {'response': [1261, 1363, 1436], 'orchestration': [8292, 8334, 8571], 'system': []}
+AGENT_EXECUTIVE local len {'response': 4448, 'orchestration': 9235, 'system': 5924} | 계산전확인 위치 {'response': [1261, 1363, 1436], 'orchestration': [8798, 8840, 9077], 'system': []}
+  diff orchestration 2 [('insert', '', "하지 않는다.\n\n🔴🔴 [O223 언어 가드레일 강제 · 전 Agent 공통] 모든 사고 과정(Reasoning / Thinking), 도구 호출 전후 중간 진행 안내, 최종 답변은 반드시 **한국어**로만 작성한다. 일본어나 영어 등 다른 언어로 생각하거나 출력하지 않는다. 「Now let me」, 「Let''s check」, 「検索します」 등 외국어 추론"), ('insert', '', "23 법인구분(사단/사복) 질의 라우팅] 사단법인/사회복지법인 관련 질의: ① 사단법인 회비/납입 실적 → AGENT_MEMBER 안내(analyst_member_fee, fee.ACQ_CPR_DIV = ''사단'') ② 사단법인 개발실적 → analyst_mstr_spnsr_dvlp 또는 analyst_member_event (SPONSORSHIP_CPR")]
+  tools live-only set() local-only set()
+  tool desc diff []
+AGENT_MEMBER live len {'response': 4378, 'orchestration': 14660, 'system': 5817} | 계산전확인 위치 {'response': [1261, 1363, 1436], 'orchestration': [11602, 11634, 11649], 'system': []}
+AGENT_MEMBER local len {'response': 4378, 'orchestration': 15289, 'system': 5817} | 계산전확인 위치 {'response': [1261, 1363, 1436], 'orchestration': [12231, 12263, 12278], 'system': []}
+  diff orchestration 2 [('insert', '', "\n🔴🔴 [O223 언어 가드레일 강제 · 전 Agent 공통] 모든 사고 과정(Reasoning / Thinking), 도구 호출 전후 중간 진행 안내, 최종 답변은 반드시 **한국어**로만 작성한다. 일본어나 영어 등 다른 언어로 생각하거나 출력하지 않는다. 「Now let me」, 「Let's check」, 「検索します」 등 외국어 추론/진행 문장을 절"), ('insert', '', "23 법인구분(사단/사복) 질의 라우팅 · 최우선] 「사단법인」·「사회복지법인」·「사단」·「사복」 관련 질의 처리: ① **사단법인 회원 회비/납입 실적 질의** → **analyst_member_fee** 사용 (필터: `fee.ACQ_CPR_DIV = '사단'`). 답변에 캠페인 법인구분 기준임을 밝힌다. ② **사단법인 개발실적/개발건수 질의** → ")]
+  tools live-only set() local-only set()
+  tool desc diff []

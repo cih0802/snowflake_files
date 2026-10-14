@@ -138,7 +138,9 @@ WITH required AS (
     -- 🆕 [O220 13차] 실시간 경량 ML 시뮬레이터 SV (25_ML_REALTIME_SIMULATOR_DDL.sql)
     ('AGENT_MEMBER',    'SV_ML_REALTIME_SIMULATOR'),
     ('AGENT_EXECUTIVE', 'SV_ML_REALTIME_SIMULATOR'),
-    ('AGENT_MARKETING', 'SV_ML_REALTIME_SIMULATOR')
+    ('AGENT_MARKETING', 'SV_ML_REALTIME_SIMULATOR'),
+    -- 🆕 [O224 14차] ML 중단 예측 × 활동 후원 캠페인카테고리 사전 결합 SV (26_ML_CHURN_CMPGN_CTGR_DDL.sql)
+    ('AGENT_MEMBER',    'SV_ML_CHURN_CAMPAIGN')
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -354,7 +356,7 @@ $$;
 -- ---- [3-A] AGENT_MEMBER ----
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = '굿네이버스 회원 분석 Agent. 도구 24종(SV 23 + 비즈니스정의Search 1) · 🆕 13차(O220) = 실시간 경량 ML 시뮬레이터(SV_ML_REALTIME_SIMULATOR) 및 2단계 가드레일 배선.';
+  COMMENT = '굿네이버스 회원 분석 Agent. 도구 25종(SV 24 + 비즈니스정의Search 1) · 🆕 14차(O224) = 중단 예측 × 캠페인카테고리 사전 결합(SV_ML_CHURN_CAMPAIGN) · 도구 호출 전 판정 · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
 
 -- ---- [3-B] AGENT_EXECUTIVE ----
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE

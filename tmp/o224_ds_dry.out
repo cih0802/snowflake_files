@@ -1,0 +1,6 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+AGENT_EXECUTIVE 문항 21 무도구 5 부재도구 []
+AGENT_MEMBER 문항 13 무도구 0 부재도구 []
+AGENT_MARKETING 문항 14 무도구 10 부재도구 []
+부재도구 합 0

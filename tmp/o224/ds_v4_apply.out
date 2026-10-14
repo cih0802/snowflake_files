@@ -1,0 +1,18 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+OVR AGENT_EXECUTIVE Q13 ['analyst_mstr_spnsr_dvlp'] | O203 T3 · O207-B 사용자 결정 = 발행된 예측이 없으면 추세 참고치로 답한다(V3 의 「계산 전 확인」 요구와 충돌)
+OVR AGENT_EXECUTIVE Q15 ['analyst_ml_dvlp_forecast'] | O211-B ② 사용자 결정 = 두 경로 제시 + 대상 되묻기 = ⭕(정답지 문안을 결정에 맞춘다)
+OVR AGENT_EXECUTIVE Q18 ['analyst_ml_feature_importance'] | V3 비고 「요인분석 = 3종 공통」(= 3개 Agent 공통 도구)을 판정 모델이 「분석유형 3종」으로 오독 · 의미 무변경 문안 교정
+AGENT_EXECUTIVE rows 21
+AGENT_EXECUTIVE GN_DW.SERVING.EVAL_O224_AGENT_EXECUTIVE_V4 (21,)
+O224_EXECUTIVE_DS_V4 ('Successfully created Cortex Agent dataset \'O224_EXECUTIVE_DS_V4\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_D
+AGENT_MEMBER rows 13
+AGENT_MEMBER GN_DW.SERVING.EVAL_O224_AGENT_MEMBER_V4 (13,)
+O224_MEMBER_DS_V4 ('Successfully created Cortex Agent dataset \'O224_MEMBER_DS_V4\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_DW.S
+OVR AGENT_MARKETING Q17 [] | O220 실시간 ML 시뮬레이터 신설 + 2단계 가드레일 ⇒ V3 「탄력성 모델 없음」은 거짓이 됐다
+OVR AGENT_MARKETING Q22 [] | V3 비고 「캠페인 미지정 → 되묻기」와 정답 도구 2종이 서로 모순 ⇒ 되묻기를 정답으로 정렬
+OVR AGENT_MARKETING Q33 ['analyst_ga_session'] | O213 Y3-F SV_GA_SESSION(세션 grain · 유입 9축) 신설 ⇒ 채널 질문의 정본 도구
+AGENT_MARKETING rows 14
+AGENT_MARKETING GN_DW.SERVING.EVAL_O224_AGENT_MARKETING_V4 (14,)
+O224_MARKETING_DS_V4 ('Successfully created Cortex Agent dataset \'O224_MARKETING_DS_V4\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_D
+덮어쓰기 6 / 6

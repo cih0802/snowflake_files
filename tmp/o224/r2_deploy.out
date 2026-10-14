@@ -1,0 +1,27 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+1 OK  USE ROLE GN_DW_ADMIN · 1행
+      {'status': 'Statement executed successfully.'}
+2 OK  USE WAREHOUSE GN_DW_DEV_WH · 1행
+      {'status': 'Statement executed successfully.'}
+3 OK  USE SCHEMA GN_DW.SERVING · 1행
+      {'status': 'Statement executed successfully.'}
+4 OK  CREATE OR REPLACE VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V ( STDR_MT COMMENT '모델 실행 기준월 · 1행
+      {'status': 'View ML_CHURN_BY_CMPGN_CTGR_V successfully created.'}
+5 OK  CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TABLES ( cc AS GN_DW.SERV · 1행
+      {'status': 'Semantic view SV_ML_CHURN_CAMPAIGN successfully created.'}
+6 OK  GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_ANALYST · 1행
+      {'status': 'Statement executed successfully.'}
+7 OK  GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_VIEWER · 1행
+      {'status': 'Statement executed successfully.'}
+8 OK  GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_SERVICE · 1행
+      {'status': 'Statement executed successfully.'}
+9 OK  GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW · 1행
+      {'status': 'Statement executed successfully.'}
+10 OK  GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW · 1행
+      {'status': 'Statement executed successfully.'}
+11 OK  GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW · 1행
+      {'status': 'Statement executed successfully.'}
+12 OK  SELECT STDR_MT, COUNT(DISTINCT MBER_NO) AS ACT, COUNT(DISTINCT IFF(HAS_MEMBER_PRED, MBER_N · 2행
+      {'STDR_MT': '202606', 'ACT': 16906, 'PRED': 0, 'HIGH': 0, 'SP_HIGH': 1223}
+      {'STDR_MT': '202609', 'ACT': 17753, 'PRED': 2033, 'HIGH': 137, 'SP_HIGH': 1254}

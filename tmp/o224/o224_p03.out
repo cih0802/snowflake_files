@@ -1,0 +1,15 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+COLUMNS ['RECORD_ID', 'INPUT_ID', 'REQUEST_ID', 'TIMESTAMP', 'DURATION_MS', 'INPUT', 'OUTPUT', 'ERROR', 'GROUND_TRUTH', 'METRIC_NAME', 'EVAL_AGG_SCORE', 'METRIC_TYPE', 'METRIC_STATUS', 'METRIC_CALLS', 'TOTAL_INPUT_TOKENS', 'TOTAL_OUTPUT_TOKENS', 'LLM_CALL_COUNT']
+AGENT_EXECUTIVE n=21 AC=0.9205 LC=0.9057 TS=0.9286 TE=0.7500
+AGENT_MEMBER n=13 AC=0.8715 LC=0.7969 TS=0.4769 TE=0.5715
+AGENT_MARKETING n=14 AC=0.6900 LC=0.7636 TS=0.5414 TE=0.8143
+분해 AGENT_EXECUTIVE ② 도구실행 1
+분해 AGENT_EXECUTIVE ③ 형식·행동 2
+분해 AGENT_EXECUTIVE ⭕ 18
+분해 AGENT_MARKETING ① 도구선택 7
+분해 AGENT_MARKETING ③ 형식·행동 2
+분해 AGENT_MARKETING ⭕ 5
+분해 AGENT_MEMBER ① 도구선택 7
+분해 AGENT_MEMBER ③ 형식·행동 1
+분해 AGENT_MEMBER ⭕ 5

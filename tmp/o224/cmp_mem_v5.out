@@ -1,0 +1,11 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+AGENT_MEMBER answer_correctness: base 0.8715 → v5 0.8200 (n=13 · 미채점 0)
+AGENT_MEMBER logical_consistency: base 0.7969 → v5 0.7708 (n=13 · 미채점 0)
+AGENT_MEMBER tool_selection_accuracy: base 0.4769 → v5 0.4923 (n=13 · 미채점 0)
+AGENT_MEMBER tool_execution_accuracy: base 0.5715 → v5 0.5938 (n=13 · 미채점 0)
+--- 문항별 AC·TS 변화(|Δ|≥0.3)
+   Q09: AC 1.0 → 0.67 · TS 0.33 → 0.33
+   R10: AC 1.0 → 1.0 · TS 0.5 → 1.0
+   R14: AC 1.0 → 0.33 · TS 0.33 → 0.0
+   R15: AC 0.67 → 1.0 · TS 0.14 → 0.17

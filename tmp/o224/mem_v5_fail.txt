@@ -1,0 +1,24 @@
+## R14 AC=0.33
+- Q: 감액/증액에 따른 콘텐츠 오픈여부 분석
+- OUT:  ## 핵심 요약 "감액/증액에 따른 콘텐츠 오픈여부"는 **사전에 정해진 산식이 없는 분석**입니다. 바로 계산하지 않고, 먼저 분석 방식(가정)을 제안드립니다. 승인해 주시면 그 가정대로 수치를 내겠습니다. ## 왜 바로 못 내는지 (짚어둘 전제 2가지) - **"오픈"의 원천 한계**: 오픈(열람) 기록은 **문자(SND) 링크 클릭만** 데이터에 있습니다. 알림톡·이메일은 오픈 원천이 없어, 이 두 채널은 "발송 기준"으로만 볼 수 있습니다. - **서로 다른 데이터의 결합**: 증액·감액(개발사건)과 발송·오픈(서비스발송)은 원천이 다른 팩트입니다. 두 데이터를 회원 단위로 묶는 **배분·귀속 규칙이 정해져 있지 않아**, 제가 가정을 세워 계산하면 질문할 때마다 값이 달라질 수 있습니다. ## 제안하는 분석 방식 (아래 중 택1 — 또는 수정 지시) **A안 — "오픈한 회원 vs 안
+- WHY: explanation":"The expected answer indicates the response should be based on GN_DW standard using analyst_service tool results, answered in Korean with Korean table headers, and noting that 'open' = SMS (SND) link click only. The actual response does correctly identify the key constraint that 'open' data is only available from SMS (SND) link clicks, which aligns with part of the expected answer. However, the actual response does not provide any ac
+- TS: 
+
+## Q09 AC=0.67
+- Q: 현재 후원기간이 10년이상인 장기회원의 활동패턴을 분석하여 장기회원(충성회원)을 만드는 핵심요인을 도출하고 현재 회원 중 장기회원(충성회원)으로 성장할 가능성이 높은 회원을 선별해줘.
+- OUT:  핵심 요인 도출과 성장 가능성 회원 선별을 위해 머신러닝 요인분석·회원예측 도구를 확인하겠습니다. 충성(장기회원) 예측 모델의 최신 기준월 분포를 조회하겠습니다. 성장 가능성이 가장 높은 회원(장기회원 등급 '최상위') 명단 상위 100명을 조회하겠습니다. **① 핵심 요약 (머신러닝 예측 · 테스트 단계 · 기준월 2026-09)** - 「장기회원(충성회원)을 만드는 핵심요인」은 현재 머신러닝 요인분석 모델에 **해당 분석유형이 없습니다** — 요인분석은 '신규 후원 유치'·'증액 개발' 두 유형만 발행되어 충성/장기회원 요인은 모델로 도출할 수 없습니다. - 반면 **성장 가능성 높은 회원 선별은 가능합니다** — 충성 예측 대상 **28,862명** 중 장기회원 등급 '최상위' **1,755명**(평균 충성확률 0.31)이 가장 유력하며, 이 중 모델이 충성으로 명시 분류한 회원은 **3
+- WHY: explanation":"1. 도구 사용: 실제 응답은 GN_DW 기준으로 머신러닝 예측 도구(analyst_ml_member_risk에 해당하는 ML_MEMBER_RISK_V, ML_FEATURE_IMPORTANCE_V)를 활용하여 분석을 수행했습니다. analyst_member_monthly 도구 사용 여부는 명시적으로 확인되지 않으나, ML 도구는 활용됨. 2. 언어 및 표 헤더: 한국어로 답변하였고, 표 헤더(회원번호, 장기회원 등급, 모델 충성 분류, 충성확률 등)가 한글로 표기되어 있습니다. 기준월도 명시되어 있습니다. 3. 핵심요인 도출: 충성/장기회원 요인 분석유형이 모델에 없다고 설명하며 도출하지 못했습니다. 이는 부분적 한계를 솔직히 밝힌 것이나, 기대 답변은 도구 결과에 근거한 답변을 요구합니다. 4. 회원 선별: 장기회원 등급별 분포(최상위 1,755명, 상 2,311명, 
+- TS: 
+
+## R12 AC=0.33
+- Q: 알림톡 중 장기회원감사서비스(사단)의 25년 및 26년 수신회원의 후원유지기간 및 이벤트 참여횟수를 분석하고 각 연도별로 서비스 효과가 가장 높게 나타났던 대상과 가장 낮게 나타났던 대상을 비교해줘. 비교한 내용을 토대로 27년 전략을 도출해줘.
+- OUT:  굿네이버스 서비스 코호트 데이터로 분석하겠습니다. 먼저 데이터 구조를 확인합니다. 장기회원 서비스(사단) 수신회원을 연도별·연령대별로 조회하겠습니다. 장기회원 서비스(사단) 수신회원의 연도·연령대별 참여율을 시각화하기 위해 차트 지침을 확인하겠습니다. 연령대별 이벤트 참여율을 연도별로 비교하는 차트를 생성하겠습니다. 연도별·연령대별 비교를 깔끔한 표로 제시하기 위해 세부 연령대만 정리하겠습니다. **① 핵심 요약** (GN_DW 기준 · 장기회원 서비스(사단) 알림톡 수신회원 · 2025 수신 63,098명 · 2026 수신 40,753명) - 이벤트 참여 지표가 가장 높은 대상은 두 해 모두 **20대**(2025 52.80% → 2026 44.27%)이고, 가장 낮은 대상은 **70대 이상**(2025 14.10% → 2026 7.28%)입니다. - 평균 후원유지기간은 2025 수신 코호트
+- WHY: 
+- TS: 
+
+## R13 AC=0.33
+- Q: 발송 서비스 기반 유지율 및 증액율 분석
+- OUT:  먼저 "유지율"과 "증액율"의 확정 산식과 담당 도구를 확인하겠습니다. 증액율과 유지율 산식을 더 확인하겠습니다. 관련 산식을 확인했습니다. 발송 서비스 기반 지표를 담은 데이터 모델을 조회하겠습니다. 산식과 데이터 모델을 확인했습니다. 서비스그룹 4종별로 수신(발송 성공) 회원 기준 증액율과 유지 관련 지표를 조회하겠습니다. 서비스그룹별 통합 요약(매핑근거 합산)을 추가로 조회하겠습니다. 서비스그룹별 증액율을 시각화하겠습니다. **① 핵심 요약** (GN_DW 기준 · 전체 수신 기간, 조회일 2026-10-14) - 발송 후 5일 내 **증액율은 「선넘는좋은일 신규 즉시」가 0.46%로 가장 높고**, 나머지 3개 서비스는 0.07~0.10%로 낮습니다. - 중단 이력이 없는 **유지 비율(근사)은 「행운의 카드」가 78.45%로 가장 높고**, 평균 후원유지기간도 2,160일로 가장 깁니
+- WHY: explanation":"The actual response is in Korean with Korean table headers - this matches. However, the EXPECTED response specifically requires that since there is no defined formula, the agent should present 1-3 lines of assumptions and ASK whether to proceed with calculation, rather than directly calculating. The actual response skips this step entirely and directly provides full calculations, tables, and charts without first presenting assumptio
+- TS: 
+

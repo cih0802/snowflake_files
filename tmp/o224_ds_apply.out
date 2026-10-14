@@ -1,0 +1,12 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+AGENT_EXECUTIVE 문항 21 무도구 5 부재도구 []
+AGENT_EXECUTIVE GN_DW.SERVING.EVAL_O224_AGENT_EXECUTIVE_V3 (21, 5)
+O224_EXECUTIVE_DS_V3 ('Successfully created Cortex Agent dataset \'O224_EXECUTIVE_DS_V3\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_DW.SERVING.EVAL_O224_AGENT_EXECUTIVE_V3\'. Metadata: {"row_count":21,"source_table":"GN_DW.SERVING.EVAL_O224_AGENT_EXECUTIVE_V3"}',)
+AGENT_MEMBER 문항 13 무도구 0 부재도구 []
+AGENT_MEMBER GN_DW.SERVING.EVAL_O224_AGENT_MEMBER_V3 (13, 0)
+O224_MEMBER_DS_V3 ('Successfully created Cortex Agent dataset \'O224_MEMBER_DS_V3\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_DW.SERVING.EVAL_O224_AGENT_MEMBER_V3\'. Metadata: {"row_count":13,"source_table":"GN_DW.SERVING.EVAL_O224_AGENT_MEMBER_V3"}',)
+AGENT_MARKETING 문항 14 무도구 10 부재도구 []
+AGENT_MARKETING GN_DW.SERVING.EVAL_O224_AGENT_MARKETING_V3 (14, 10)
+O224_MARKETING_DS_V3 ('Successfully created Cortex Agent dataset \'O224_MARKETING_DS_V3\' with version \'SYSTEM_AI_OBS_CORTEX_AGENT_DATASET_VERSION_DO_NOT_DELETE\' from table \'GN_DW.SERVING.EVAL_O224_AGENT_MARKETING_V3\'. Metadata: {"row_count":14,"source_table":"GN_DW.SERVING.EVAL_O224_AGENT_MARKETING_V3"}',)
+부재도구 합 0

@@ -1,0 +1,10 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+Q18  40.2s tools=['analyst_ml_feature_importance', 'system_execute_sql', 'data_to_chart'] 확인=True 거절=False | **① 핵심 요약** - 머신러닝 요인분석(GN_DW 기준, 기준월 2026-09, 신규 후원 유치 요인)에서 모델이 가장 중요하게 본 요인은 **ACT_RATE(활동율로 추정)**입니다. 기여도는 0.1993입니다. - 그다음은 ACT_AMT_CNT(0.1360), TOT_CNT(0.1247), CANCL_RATE(중단율로 추정, 0.1140) 순입니다. 이 네 요인을 먼저 살펴볼 것을 권합니다. - 다만 "어떤 요인을 얼마나 개선하면 개발이 20% 늘어난다"는 수치는 낼 수 없습니다. 기여도는 인과 관계를 뜻하지 않고 효과 크기
+Q13  34.5s tools=['analyst_mstr_spnsr_dvlp', 'system_execute_sql'] 확인=False 거절=False | **핵심 요약** - 2026-11 신규 회원개발은 **약 20,596.3538건**으로 예상됩니다. 직전 3개 마감월(2026-07 - 2026-09)의 월평균을 그대로 적용한 추세 참고치이며, 모델 예측은 아닙니다(MSTR 기준). - 같은 방식으로 계산한 2026년 연도말 신규 개발은 **250,243.3201건**입니다. 연 개발 목표는 **352,702건**입니다. 값이 하나뿐이라 그래프는 넣지 않았습니다. **▼ 상세** - **계산 방법**: 연도말 추세 참고치 = 마감월 누적 실적 + 남은 월 수 × 직전 3개 마감월
+Q15  12.1s tools=[] 확인=True 거절=False | 어느 캠페인인지 알려주시면 바로 조회해 드리겠습니다. 이 질문에 답하려면 두 가지를 먼저 정해야 합니다. **① 대상 캠페인** - 캠페인명이나 캠페인코드를 알려주세요. - 머신러닝 개발금액 예측은 일부 캠페인만 예측합니다. 원하시면 지금 예측이 있는 캠페인 목록을 먼저 보여드리겠습니다. **② 「최종 회원개발」의 단위** - **금액 예측(만원)**: 머신러닝 개발금액 예측의 캠페인 계열을 씁니다. 특정 캠페인의 예측월별 개발액과 연도말까지의 합계를 볼 수 있습니다. - **건수(개발(건)) 전망**: 연도말 추세 참고치(MSTR
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/tmp/o224_smoke.py", line 20, in <module>
+    q, qid = c.fetchone()[0], it
+             ~~~~~~~~~~~~^^^
+TypeError: 'NoneType' object is not subscriptable
