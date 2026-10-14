@@ -43,6 +43,42 @@ dev_fan as (
     from {{ ref('CRM_CAMPAIGN') }}
     where MKTG_CMPGN_NM is not null
     group by 1
+),
+
+-- 🆕 [2026-10-14 O225-C] 광고비를 나눌 마케팅캠페인 속성 3종(사용자 결정 O225-B · 인입경로·채널·카테고리는 붙이지 않는다).
+--   마케팅캠페인 1개 아래 개발캠페인이 여럿이라 속성이 갈릴 수 있다(xh20001 실측: 590개 중 UTM 다중 0 · 국내해외 41 · 사업사례 33
+--   · 광고비 기준 다중 4.3%). ⇒ 값 = 매핑 행수 최다 → 값 오름차순(결정성) · `*_IS_MULTI` 로 다중을 표시한다(버리지 않는다).
+--   🔴 인입경로(97.2%)·채널(95.7%)·카테고리(72.0%)는 다중이 커서 대표값이 왜곡된다 ⇒ 회원 측 SV 로 본다.
+attr_long as (
+    select TO_VARCHAR(MKTG_CMPGN_NM) as MK_CD, 'UTM' as K, MKTG_UTM_NM as V from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and MKTG_UTM_NM is not null
+    union all
+    select TO_VARCHAR(MKTG_CMPGN_NM), 'T1', CMPGN_TYPE1_NM from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and CMPGN_TYPE1_NM is not null
+    union all
+    select TO_VARCHAR(MKTG_CMPGN_NM), 'T2', CMPGN_TYPE2_NM from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and CMPGN_TYPE2_NM is not null
+),
+attr_cnt as (
+    select MK_CD, K, V, count(*) as ROWS_V
+    from attr_long
+    group by 1, 2, 3
+),
+attr_rep as (
+    select MK_CD, K, V,
+           count(*) over (partition by MK_CD, K)                        as N_V
+    from attr_cnt
+    qualify row_number() over (partition by MK_CD, K order by ROWS_V desc, V) = 1
+),
+attr as (
+    select MK_CD,
+        MAX(IFF(K = 'UTM', V, NULL))        as MKTG_UTM_NM,
+        MAX(IFF(K = 'T1', V, NULL))         as DOMESTIC_OVERSEAS,
+        BOOLOR_AGG(K = 'T1' AND N_V > 1)    as DOMESTIC_OVERSEAS_IS_MULTI,
+        MAX(IFF(K = 'T2', V, NULL))         as BIZ_CASE_TYPE,
+        BOOLOR_AGG(K = 'T2' AND N_V > 1)    as BIZ_CASE_TYPE_IS_MULTI
+    from attr_rep
+    group by 1
 )
 
 select
@@ -56,12 +92,20 @@ select
     --   ⚠️ 설계문서가 인용해 온 「9,037종 · 평균 118.9」은 **오늘 데이터로 재현되지 않는다**(P89).
     --      같은 문서의 `218,402/243,545 = 89.7%` 는 재현된다 — 즉 일부 수치만 낡았다.
     coalesce(f.CNT, 0)                    as DEV_CAMPAIGN_CNT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- 🆕 [O225-C] 속성 3종 + 다중 플래그(06_DDL 동기 · 맨 끝 append) · 개발캠페인 매핑이 없으면 NULL
+    a.MKTG_UTM_NM                         as MKTG_UTM_NM,
+    a.DOMESTIC_OVERSEAS                   as DOMESTIC_OVERSEAS,
+    a.DOMESTIC_OVERSEAS_IS_MULTI          as DOMESTIC_OVERSEAS_IS_MULTI,
+    a.BIZ_CASE_TYPE                       as BIZ_CASE_TYPE,
+    a.BIZ_CASE_TYPE_IS_MULTI              as BIZ_CASE_TYPE_IS_MULTI
 from m
 left join dev_fan f on f.MK_CD = m.MK_CMPGN_CD
+left join attr a    on a.MK_CD = m.MK_CMPGN_CD
 
 union all
 -- unknown 멤버(SK=0): 팩트 MKTG_CAMPAIGN_SK=0(미매핑) 조인 유실 방지.
 --   🔴 광고측 10.3% 미도달분이 여기 모인다 — 이 버킷을 「미집행」으로 읽으면 안 된다.
 select 0, '(미매핑)', '(미매핑)', NULL, 0,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    '(미매핑)', '(미매핑)', NULL, '(미매핑)', NULL

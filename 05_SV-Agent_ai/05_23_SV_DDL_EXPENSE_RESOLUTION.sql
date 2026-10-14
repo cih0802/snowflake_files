@@ -19,10 +19,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '결의일')
-      COMMENT = '일 차원. [원천] ETL 생성(달력).'
+      COMMENT = '일 차원. [원천] ETL 생성(달력).',
+    -- 🆕 [2026-10-14 O225-B] 세부캠페인코드(콘텐츠구분자) → 마케팅캠페인 축
+    mkc AS GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
+      PRIMARY KEY (MKTG_CAMPAIGN_SK)
+      WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인')
+      COMMENT = '마케팅캠페인 conformed 차원. SK=0 = (미매핑) — 지출결의에 세부캠페인코드 미기재·CRM 미등록.'
   )
   RELATIONSHIPS (
-    exp_to_date AS exp (DATE_SK) REFERENCES date
+    exp_to_date AS exp (DATE_SK) REFERENCES date,
+    exp_to_mkc AS exp (MKTG_CAMPAIGN_SK) REFERENCES mkc
   )
   DIMENSIONS (
     date.RESOLUTION_DATE AS date.FULL_DATE WITH SYNONYMS ('결의일', '작성일', '일자') COMMENT = '지출결의 작성일.',
@@ -37,7 +43,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
     exp.SUBDTL_ITEM_NM AS exp.SUBDTL_ITEM_NM WITH SYNONYMS ('세세목', '지출 항목') COMMENT = '예산 과목 세세목(원값 100종).',
     exp.FUND_SOURCE_NM AS exp.FUND_SOURCE_NM WITH SYNONYMS ('재원', '재원명') COMMENT = '재원명(원값 26종).',
     exp.EXPS_RESOLUTION_NM AS exp.EXPS_RESOLUTION_NM WITH SYNONYMS ('지출결의명', '결의 제목') COMMENT = '지출결의명(자유문 · 부분일치 검색용).',
-    exp.RESOLUTION_NO AS exp.RESOLUTION_NO WITH SYNONYMS ('결의번호') COMMENT = '결의번호 — 1결의가 여러 명세행이다.'
+    exp.RESOLUTION_NO AS exp.RESOLUTION_NO WITH SYNONYMS ('결의번호') COMMENT = '결의번호 — 1결의가 여러 명세행이다.',
+    exp.CONTENTS_DELIMITER AS exp.CONTENTS_DELIMITER WITH SYNONYMS ('세부캠페인코드', '콘텐츠구분자', '세부캠페인') COMMENT = '콘텐츠구분자 = 세부캠페인코드(CRM 캠페인코드 원값). NULL·「-」 = 미기재.',
+    mkc.MKTG_CAMPAIGN_NAME AS mkc.MKTG_CAMPAIGN_NAME WITH SYNONYMS ('마케팅캠페인명', '마케팅캠페인', '캠페인명') COMMENT = '세부캠페인코드로 연결한 마케팅캠페인명. (미매핑) = 코드 미기재·미등록 지출.'
   )
   METRICS (
     exp.SUM_AMT_TOTAL AS SUM(exp.SUM_AMT)
@@ -50,7 +58,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
   COMMENT = '지출결의 SV. 「부서·과목(목/세목/세세목)·재원·출처구분별 지출 금액과 결의 건수」 질문에 쓴다. 🔴 예산 편성·집행 원장(SV_BUDGET·SV_BUDGET_YEARLY)과 다른 원천이다 — 「예산 대비 지출」을 이 SV 와 예산 SV 를 섞어 계산하지 말고 두 값을 따로 밝힌다.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "지출액(원)"). 영문 식별자를 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행을 반환한다.
-  핵심 규칙: (1) 기간 미지정 시 데이터에 존재하는 최신 연도 하나로 한정하고 밝힌다(작성일 기준). (2) 부서별 질문은 RESOLUTION_DEPT_NM 으로 묶고 상위 20개로 한정해 밝힌다. (3) 예산 대비 비율을 요구받으면 이 SV 로 계산하지 말고 원천이 다르다고 밝힌다. (4) 결의 건수는 COUNT DISTINCT 이므로 부서별 합이 전체와 다를 수 있다.';
+  핵심 규칙: (1) 기간 미지정 시 데이터에 존재하는 최신 연도 하나로 한정하고 밝힌다(작성일 기준). (2) 부서별 질문은 RESOLUTION_DEPT_NM 으로 묶고 상위 20개로 한정해 밝힌다. (3) 예산 대비 비율을 요구받으면 이 SV 로 계산하지 말고 원천이 다르다고 밝힌다. (4) 결의 건수는 COUNT DISTINCT 이므로 부서별 합이 전체와 다를 수 있다. (5) [O225-B] 마케팅캠페인별·세부캠페인별 지출(제작비)은 MKTG_CAMPAIGN_NAME·CONTENTS_DELIMITER 로 묶는다 — 세부캠페인코드가 기재된 지출만 연결되므로 결과에 「(미매핑)」 금액(코드 미기재분)을 ROLLUP 과 함께 반드시 표시하고 「세부캠페인코드 기재분만 집계」라고 밝힌다. 광고비와 합쳐 CAC 를 낼 때도 이 한계를 함께 적는다.';
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION TO ROLE GN_DW_VIEWER;

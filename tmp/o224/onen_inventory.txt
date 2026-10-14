@@ -1,0 +1,41 @@
+10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql:28:    qualify row_number() over (partition by MBER_NO, EFFECTIVE_FROM::DATE order by SER_NO desc) = 1
+10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql:87:    qualify row_number() over (
+10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql:110:    qualify row_number() over (partition by MBER_NO order by OCCRRNC_DE asc, SER_NO asc) = 1
+10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql:119:    qualify row_number() over (
+10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql:42:    qualify row_number() over (partition by USER_PSEUDO_ID order by MEMBER_DK) = 1
+10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql:23:    qualify row_number() over (partition by USER_PSEUDO_ID order by MEMBER_DK) = 1
+10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql:85:        row_number() over (
+10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql:122:           row_number() over (partition by MEMBER_DK, DATE_SK
+10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql:47:    qualify row_number() over (
+10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql:132:            ROW_NUMBER() OVER (
+10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql:28:        row_number() over (
+10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql:14:    qualify row_number() over (partition by RELATNSP_KEY order by MBER_NO) = 1
+10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql:12:    qualify row_number() over (partition by RELATNSP_KEY order by MBER_NO) = 1
+10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql:79:    qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK
+10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql:114:    qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK
+10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql:85:-- 🔴 [2026-08-11 O58] 종전 이 자리는 `DIM_MEMBER_STATUS_HISTORY` + `IS_CURRENT` + `QUALIFY ROW_NUMBER()` 자체 dedup 이었다.
+10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql:82:    qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK
+10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql:150:    qualify ROW_NUMBER() over (partition by x.MEMBER_DK, x.SERVICE_GROUP_CD, x.RECEIVE_YEAR
+10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql:68:    qualify ROW_NUMBER() OVER (PARTITION BY MEMBER_DK
+10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql:69:        ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL) AS DUP_SEQ
+10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql:43:        ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL) AS DUP_SEQ
+10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql:60:        ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL) AS DUP_SEQ
+10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql:67:        row_number() over (
+10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql:23:QUALIFY ROW_NUMBER() OVER (PARTITION BY CMPGN_CD, SPNSR_BSNS_ID ORDER BY DW_SOURCE_TABLE) = 1
+10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql:41:  QUALIFY ROW_NUMBER() OVER (PARTITION BY EVENT_CD, MBER_NO, PARTCPT_SEQ ORDER BY PARTCPT_DT DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql:60:  QUALIFY ROW_NUMBER() OVER (PARTITION BY CRMN_CD, MBER_NO, PRTCPNT_KEY ORDER BY TRY_TO_TIMESTAMP(PARTCPT_DATE) DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql:61:QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(f.MBER_NO),'') ORDER BY f.FRST_REGIST_DT DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql:87:QUALIFY ROW_NUMBER() OVER (PARTITION BY NULLIF(TRIM(o.ONCE_MBER_NO),'') ORDER BY o.FRST_REGIST_DT DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql:17:QUALIFY ROW_NUMBER() OVER (PARTITION BY SPNSR_NO, SPNSR_BSNS_NO ORDER BY SPNSR_DSCNTC_DE DESC NULLS LAST) = 1
+10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql:43:QUALIFY ROW_NUMBER() OVER (PARTITION BY s.SETLE_KEY ORDER BY s.WTDRW_STRT_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql:31:QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY RCEPT_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql:50:QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY SNDNG_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql:76:  QUALIFY ROW_NUMBER() OVER (PARTITION BY s.REQ_SEQ_NO, s.R_NUM ORDER BY s.SND_DT DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql:99:  QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql:117:  QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DT DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql:135:  QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY, SNDNG_DTL_KEY ORDER BY SNDNG_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql:36:QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql:61:QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql:86:QUALIFY ROW_NUMBER() OVER (PARTITION BY SNDNG_KEY ORDER BY SNDNG_STDR_DE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql:114:QUALIFY ROW_NUMBER() OVER (PARTITION BY SEQ_NO ORDER BY SEND_DATE DESC NULLS LAST)=1
+10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql:13:    row_number() over (

@@ -1,0 +1,25 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[COMMENT 드리프트 게이트] 파일 정본 ↔ 라이브 물리 · 판정 = SHA256(언이스케이프 값) · P223
+  GOLD 테이블 (06_DDL.sql): 파일 1256 · 대조 1256 · 🟢일치 1256 · 🔴불일치 0  · ⚪라이브부재 0
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/comment_drift_gate.py", line 274, in <module>
+    main()
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/comment_drift_gate.py", line 223, in main
+    slv_live = live(cn, "'BASE TABLE'", 'SILVER')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/comment_drift_gate.py", line 160, in live
+    _, rows = sfconn.q(sql, cn)
+              ^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/sfconn.py", line 22, in q
+    cur.execute(sql)
+  File "/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/cursor.py", line 1155, in execute
+    Error.errorhandler_wrapper(self.connection, self, error_class, errvalue)
+  File "/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/errors.py", line 298, in errorhandler_wrapper
+    handed_over = Error.hand_to_other_handler(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/errors.py", line 354, in hand_to_other_handler
+    cursor.errorhandler(connection, cursor, error_class, error_value)
+  File "/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/errors.py", line 229, in default_errorhandler
+    raise error_class(
+snowflake.connector.errors.ProgrammingError: 000666 (57014): Your account is suspended due to lack of payment method.

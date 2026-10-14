@@ -1,0 +1,3 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+X01  61.3s tools=['analyst_ml_churn_campaign', 'system_execute_sql'] 확인=False 거절=False | **① 핵심 요약** - 2026년 9월 기준, 고려인캠페인을 후원 중인 활동회원은 **17,753명**입니다(GN_DW 기준 · 머신러닝 중단 예측). - 이 가운데 머신러닝 중단 예측을 받은 회원은 **2,033명**이고, 그중 중단 가능성이 큰 후원자(회원 단위 등급 「고위험」)는 **137명**입니다. - 아래 표는 이 137명 가운데 중단확률이 높은 순서로 **상위 100명**의 회원번호입니다. **▼ 상세** - **고위험의 기준**: 회원 단위 중단위험 등급이 「고위험」인 회원입니다. 이 등급은 확률을 일정 값으로 자른

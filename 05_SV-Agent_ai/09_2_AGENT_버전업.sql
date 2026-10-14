@@ -140,7 +140,10 @@ WITH required AS (
     ('AGENT_EXECUTIVE', 'SV_ML_REALTIME_SIMULATOR'),
     ('AGENT_MARKETING', 'SV_ML_REALTIME_SIMULATOR'),
     -- 🆕 [O224 14차] ML 중단 예측 × 활동 후원 캠페인카테고리 사전 결합 SV (26_ML_CHURN_CMPGN_CTGR_DDL.sql)
-    ('AGENT_MEMBER',    'SV_ML_CHURN_CAMPAIGN')
+    ('AGENT_MEMBER',    'SV_ML_CHURN_CAMPAIGN'),
+    -- 🆕 [O224-E] 같은 결합 도구를 경영·마케팅에도 배선
+    ('AGENT_EXECUTIVE', 'SV_ML_CHURN_CAMPAIGN'),
+    ('AGENT_MARKETING', 'SV_ML_CHURN_CAMPAIGN')
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -361,12 +364,12 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 -- ---- [3-B] AGENT_EXECUTIVE ----
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. 도구 14종(SV 13 + 비즈니스정의Search 1) · 🆕 13차(O220) = 실시간 경량 ML 시뮬레이터(SV_ML_REALTIME_SIMULATOR) 및 2단계 가드레일 배선.';
+  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. 도구 15종(SV 14 + 비즈니스정의Search 1) · 🆕 14차(O224) = 도구 호출 전 판정 · 중단 예측 × 캠페인카테고리 결합(SV_ML_CHURN_CAMPAIGN) · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
 
 -- ---- [3-C] AGENT_MARKETING ----
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = '굿네이버스 마케팅 분석 Agent. 도구 25종(SV 24 + 비즈니스정의Search 1) · 🆕 13차(O220) = 실시간 경량 ML 시뮬레이터(SV_ML_REALTIME_SIMULATOR) 및 2단계 가드레일 배선.';
+  COMMENT = '굿네이버스 마케팅 분석 Agent. 도구 26종(SV 25 + 비즈니스정의Search 1) · 🆕 14차(O224) = 도구 호출 전 판정 · 중단 예측 × 캠페인카테고리 결합(SV_ML_CHURN_CAMPAIGN) · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
 
 -- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
 --   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.

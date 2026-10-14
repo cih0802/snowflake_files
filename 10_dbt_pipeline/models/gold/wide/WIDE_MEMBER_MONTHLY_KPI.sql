@@ -14,6 +14,10 @@
 --      · DEV_AMT_CNT 도 원금액 단순합이 아니라 **FME.DEV_CNT 합**(MSTR 상계 후)으로 바꾼다 — 컬럼명·SV 는 유지.
 --      · DEV_CUM_CNT(FMM 경유)와 DEV_CUM_AMT_CNT(FME 경유)는 같은 정의이며 차이는 신규기존 판정 경로뿐이다.
 --   🔴 이 뷰의 행은 회원이 아니다 — 회원 속성(성별·상태 등)으로 쪼개지 않는다.
+-- 🆕 [2026-10-14 O226] 뷰·컬럼 COMMENT 물리 반영 = gn_view_commented(yml columns[] 순서 = SELECT 순서 · 불일치는 build ERROR).
+{{ config(
+    materialized='gn_view_commented'
+) }}
 with m as (
     select
         MONTH_KEY,

@@ -193,6 +193,29 @@ sponsor_rep as (
         on ds.SPONSORSHIP_BK = agg.SOLE_SPNSR_BSNS_ID
 ),
 
+-- 🆕 [2026-10-14 O225-C] 월×회원 「그 달 후원 캠페인」 — 사용자 결정 O225-B · DEC-41 패턴을 그대로 따른다.
+--   청구 행별 캠페인 = macros/billing_campaign_asof.sql(정의 지점 하나 · FACT_PAYMENT_BILLING_STATUS 와 공유).
+--   · 그 달 캠페인이 **하나면** CAMPAIGN_SK 배선 · 여럿이면 0(센티넬) + IS_MULTI_CAMPAIGN=TRUE + CAMPAIGN_CNT.
+--   · 🔴 대표 1개를 고르지 않는다 — 다중 월이 금액의 10.5%(98,677,368,326원 · xh20001 dry-run)라 임의 귀속은
+--      캠페인별 회비를 왜곡한다. 캠페인별 정확 금액은 청구 grain 팩트(FACT_PAYMENT_BILLING_STATUS)가 담는다.
+--   · CAMPAIGN_CNT 는 캠페인이 귀속된 청구 행만 센다(캠페인 미귀속 청구 행은 판정에서 빠진다).
+cmpgn_rep as (
+    select
+        agg.MONTH_KEY, agg.MEMBER_DK, agg.CAMPAIGN_CNT,
+        CASE WHEN agg.CAMPAIGN_CNT = 1 THEN COALESCE(dc.CAMPAIGN_SK, 0) ELSE 0 END as CAMPAIGN_SK
+    from (
+        select
+            bc.BILLING_MK                          as MONTH_KEY,
+            bc.MBER_NO                             as MEMBER_DK,
+            COUNT(DISTINCT bc.BILLING_CMPGN_CD)    as CAMPAIGN_CNT,
+            MIN(bc.BILLING_CMPGN_CD)               as SOLE_CMPGN_CD   -- CAMPAIGN_CNT = 1 일 때만 쓴다(유일값)
+        from ( {{ billing_campaign_asof('b') }} ) bc
+        where bc.MBER_NO is not null
+        group by 1, 2
+    ) agg
+    left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = agg.SOLE_CMPGN_CD
+),
+
 -- W4 요건1(DEC-22) step1: 금액변경 이력을 월×회원 증액/감액 횟수로 집계.
 -- 범위 밖 발생일 88행(19000101 등)은 month_key_clamp → 0(Unknown월) 라우팅.
 amt_month as (
@@ -360,7 +383,7 @@ joined as (
     select
         sp.MONTH_KEY,
         sp.MEMBER_DK,
-        0 as CAMPAIGN_SK,
+        COALESCE(cr.CAMPAIGN_SK, 0) as CAMPAIGN_SK,   -- 🆕 [O225-C] 그 달 후원 캠페인(단일 월만 · 다중·미귀속 0)
         -- [2026-08-20 O92 / DEC-41] 단일 확정 월만 배선. 다중 월·후원사업 부재 월은 0(센티넬) 유지.
         COALESCE(sr.SPONSORSHIP_SK, 0) as SPONSORSHIP_SK,
         0 as PAYMENT_SK,
@@ -405,7 +428,8 @@ joined as (
         aa.PREV_BIZ_AMT   / 10000            as PREV_MONTH_END_ACTIVE_CNT,  -- DEC-19 (d) ADD_MONTHS(-1)
         -- [O183] #84 회원상태별 미납(건) = 미납회비금액(DEC-3 정본 UNPAID_BILLED_AMT)/10,000.
         --   「회원상태별」은 조회 시 회원상태 차원으로 나누는 축이다(값은 월×회원 미납회비 환산).
-        --   🔴 #83 캠페인별은 CAMPAIGN_SK 축이 없어(B3 원천 부재) 0 유지 — 축 없이 채우면 오해를 낳는다.
+        --   🔴 #83 캠페인별 미납은 [O225-C] 이후 CAMPAIGN_SK 축이 생겼으나 다중 캠페인 월(0)의 귀속 규칙이 미정이라
+        --      이 컬럼은 0 유지 — 캠페인별 미납 금액은 FACT_PAYMENT_BILLING_STATUS(청구 grain · 정확 귀속)로 답한다.
         0 as CAMPAIGN_UNPAID_CNT,
         bl.UNPAID_BILLED_AMT / 10000   as STATUS_UNPAID_CNT,
         -- [O27/DEC-28] 회비 3분해 실배선. NULL(해당 구분 납입 없음)은 0 으로 보정하지 않는다
@@ -463,7 +487,11 @@ joined as (
         COALESCE(sr.SPONSOR_BIZ_CNT > 1, FALSE)        as IS_MULTI_SPONSORSHIP,
         -- A1: 출처 플래그. billing 매칭 행 존재 여부(billing MEMBER_DK 는 group 키라 매칭 시 non-null).
         IFF(bl.MEMBER_DK IS NOT NULL, TRUE, FALSE)     as HAS_BILLING,
-        {{ gold_meta('CRM') }}
+        {{ gold_meta('CRM') }},
+        -- 🆕 [2026-10-14 O225-C] CAMPAIGN_SK 가 0 인 이유의 구분자(IS_MULTI_SPONSORSHIP 와 같은 설계) · 06_DDL 맨 끝 append.
+        --   회비 행이 없는 월(HAS_BILLING=FALSE)은 CAMPAIGN_CNT NULL · IS_MULTI_CAMPAIGN FALSE.
+        cr.CAMPAIGN_CNT                                as CAMPAIGN_CNT,
+        COALESCE(cr.CAMPAIGN_CNT > 1, FALSE)           as IS_MULTI_CAMPAIGN
     from spine sp
     left join billing    bl on sp.MONTH_KEY = bl.MONTH_KEY and sp.MEMBER_DK = bl.MEMBER_DK
     left join fme_rollup fr on sp.MONTH_KEY = fr.MONTH_KEY and sp.MEMBER_DK = fr.MEMBER_DK
@@ -471,6 +499,7 @@ joined as (
     left join paid_biz   pb on sp.MONTH_KEY = pb.MONTH_KEY and sp.MEMBER_DK = pb.MEMBER_DK
     left join amt_cum    ac on sp.MONTH_KEY = ac.MONTH_KEY and sp.MEMBER_DK = ac.MEMBER_DK
     left join sponsor_rep sr on sp.MONTH_KEY = sr.MONTH_KEY and sp.MEMBER_DK = sr.MEMBER_DK  -- DEC-41
+    left join cmpgn_rep  cr on sp.MONTH_KEY = cr.MONTH_KEY and sp.MEMBER_DK = cr.MEMBER_DK   -- [O225-C] 월×회원 유일
     -- [2026-08-20 O93] 활동 as-of. left join 이라 미매칭 월은 활동 measure 가 NULL 로 남는다(의도).
     left join active_asof aa on sp.MONTH_KEY = aa.MONTH_KEY and sp.MEMBER_DK = aa.MEMBER_DK
     -- [O183] 감액금액·중단 약정금액·가입 기준(모두 월×회원 유일 키 ⇒ fan-out 0).

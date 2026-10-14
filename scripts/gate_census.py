@@ -88,6 +88,7 @@ JUDGE = {
     'jinja_config_gate': 'dbt Jinja 안전 6축 — config 안 SQL주석 · 따옴표밖 중첩닫기 · 주석안 Jinja태그 · 공백제거형 주석의 실행문 흡수 · 주석 구분자 개수 불균형',
     'live_change_gate': 'D6 기록 없는 라이브 변경 탐지 — SV·Agent created_on 날짜에 원장 §1 행(날짜+객체명)이 있는가',
     'null_reason_registry_gate': 'NULL 사유 등록부 상설 게이트 — 100% NULL 컬럼 사유 코드 표준화 및 COMMENT 부합 검증',
+    'campaign_axis_gate': 'BRONZE 캠페인 컬럼 → SILVER·GOLD·SV 배선 등재표 대조 · 미등재 FAIL · GAP 은 경고',
 }
 
 OBSERVE = {

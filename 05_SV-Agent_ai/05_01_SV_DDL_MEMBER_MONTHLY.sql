@@ -25,12 +25,24 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     reason AS GN_DW.GOLD.DIM_REASON
       PRIMARY KEY (REASON_SK)
       WITH SYNONYMS ('사유', '미납사유', '결제사유')
-      COMMENT = '사유 차원. PK 유일(fan-out 0). 🔴코드그룹이 섞여 있다 — REASON_TYPE 으로 먼저 분리하지 않으면 서로 다른 코드체계를 한 축으로 합산하게 된다(O28 유형). [원천] 시스템=CRM · SILVER=CRM_CODE 파생.'
+      COMMENT = '사유 차원. PK 유일(fan-out 0). 🔴코드그룹이 섞여 있다 — REASON_TYPE 으로 먼저 분리하지 않으면 서로 다른 코드체계를 한 축으로 합산하게 된다(O28 유형). [원천] 시스템=CRM · SILVER=CRM_CODE 파생.',
+    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인(단일 월만 · 다중 월 = (미매핑) + IS_MULTI_CAMPAIGN)
+    campaign AS GN_DW.GOLD.DIM_CAMPAIGN
+      PRIMARY KEY (CAMPAIGN_SK)
+      WITH SYNONYMS ('캠페인', '후원 캠페인', '그 달 캠페인')
+      COMMENT = '캠페인 차원(PK 유일 · fan-out 0). 회원×월의 「그 달 후원 캠페인」이 하나일 때만 연결된다 — 여러 캠페인을 후원한 달(IS_MULTI_CAMPAIGN=TRUE)과 회비 행이 없는 달은 (미매핑). [원천] BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR.CMPGN_CD · TM_PM_*.ONCE_CMPGN_CD → TM_CM_CMPGN_MNG.',
+    -- 🆕 [2026-10-14 O226 · campaign_axis_gate GAP] 회원 최초 캠페인(DIM_MEMBER.FIRST_CAMPAIGN = 캠페인 코드) — 같은 마스터를 별칭으로 한 번 더 붙인다
+    first_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
+      PRIMARY KEY (CAMPAIGN_BK)
+      WITH SYNONYMS ('최초 캠페인', '가입 캠페인')
+      COMMENT = '회원 최초 캠페인 차원(DIM_CAMPAIGN 을 캠페인 코드 CAMPAIGN_BK 로 조인 · BK 유일 · fan-out 0). 회원 마스터의 현재값이며 월과 무관하다 — 「그 달 후원 캠페인」(campaign)과 다른 축이다. [원천] BRONZE_CRM.TM_MM_FDRM_MBER_INFO.CMPGN_CD → TM_CM_CMPGN_MNG.'
   )
   RELATIONSHIPS (
     fmm_to_month  AS fmm (MONTH_KEY) REFERENCES month,
     fmm_to_member AS fmm (MEMBER_DK) REFERENCES member,
-    fmm_to_reason AS fmm (REASON_SK) REFERENCES reason
+    fmm_to_reason AS fmm (REASON_SK) REFERENCES reason,
+    fmm_to_campaign AS fmm (CAMPAIGN_SK) REFERENCES campaign,
+    member_to_first_campaign AS member (FIRST_CAMPAIGN) REFERENCES first_campaign
   )
   DIMENSIONS (
     month.MONTH_KEY   AS month.MONTH_KEY WITH SYNONYMS ('연월', '조회연월') COMMENT = 'YYYYMM 정수',
@@ -68,7 +80,23 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = 'TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.',
     member.MEMBER_SPECL_MNG2_NAME AS member.SPECL_MNG2_NAME WITH SYNONYMS ('특별관리2', '특별관리 구분2') COMMENT = '회원 특별관리 구분2(MM012) — 값이 있는 회원은 소수다.',
     member.MEMBER_SLRCLD_LRR_NAME AS member.SLRCLD_LRR_NAME WITH SYNONYMS ('생일 양력/음력', '양음력') COMMENT = '생일 양력/음력(CM029 · 양력·음력·불명확).',
-    member.MEMBER_REL_NAME AS member.REL_NAME WITH SYNONYMS ('일시회원 관계') COMMENT = '일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).'
+    member.MEMBER_REL_NAME AS member.REL_NAME WITH SYNONYMS ('일시회원 관계') COMMENT = '일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).',
+    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 속성(단일 캠페인 월만 값 · 다중 월 = (미매핑))
+    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '그 달 후원 캠페인', '캠페인') COMMENT = '그 달 후원 캠페인명. 🔴 한 달에 여러 캠페인을 후원한 회원은 (미매핑) — IS_MULTI_CAMPAIGN 으로 구분한다.',
+    campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
+    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
+    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296).',
+    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('인입경로', '회원인입', '개발인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
+    campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
+    campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002).',
+    campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('UTM', 'UTM 캠페인') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
+    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
+    fmm.IS_MULTI_CAMPAIGN AS fmm.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중 캠페인 여부', '여러 캠페인 후원') COMMENT = '그 달 여러 캠페인을 후원했는가(TRUE = 캠페인 축 (미매핑)의 사유). 회비 행이 없는 달은 FALSE.',
+    -- 🆕 [2026-10-14 O226] 회원 최초 캠페인 축(DIM_MEMBER.FIRST_CAMPAIGN → DIM_CAMPAIGN BK)
+    member.FIRST_CAMPAIGN AS member.FIRST_CAMPAIGN WITH SYNONYMS ('최초캠페인코드', '최초 캠페인 코드') COMMENT = '공#29 회원 최초캠페인 원천코드(회원 마스터 현재값). 라벨은 FIRST_CAMPAIGN_NAME. 원천에 값이 없는 회원은 NULL.',
+    first_campaign.FIRST_CAMPAIGN_NAME AS first_campaign.CAMPAIGN_NAME WITH SYNONYMS ('최초캠페인', '최초 캠페인', '가입 캠페인', '최초 가입 캠페인') COMMENT = '공#29 회원 최초캠페인명. 🔴 월과 무관한 회원 속성이다 — 「그 달 후원 캠페인」(CAMPAIGN_NAME)과 섞지 않는다. 최초캠페인 코드가 없는 회원은 NULL.',
+    first_campaign.FIRST_CAMPAIGN_TYPE AS first_campaign.CAMPAIGN_TYPE WITH SYNONYMS ('최초캠페인 카테고리', '최초 캠페인유형') COMMENT = '최초캠페인의 카테고리(MM294 라벨).',
+    first_campaign.FIRST_MARKETING_CAMPAIGN AS first_campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('최초 마케팅캠페인') COMMENT = '최초캠페인의 마케팅캠페인명.'
   )
   METRICS (
     fmm.TOTAL_PAID_ALL   AS SUM(fmm.PAID_FEE)
@@ -154,7 +182,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
   핵심 규칙:
 (1) 지표 매핑: 납부율=PAYMENT_RATE_FEE (유일 정본), 납입회비(회비만)=TOTAL_PAID_FEE_BILLABLE, 총수납액(회비+기부금)=TOTAL_PAID_ALL, 총미납금액=TOTAL_UNPAID_AMT (DEC-3 정본), 미납비중(%)=UNPAID_RATIO.
 (2) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환.
-(3) 뷰 라우팅 및 이중계상 방지: 후원사업·납입방식·납입일별 회비 분해는 SV_MEMBER_FEE 로 라우팅. 두 뷰의 회비 measure 를 동일 표에 합산하지 말 것. 캠페인별/후원사업별 활동회원수는 SV_MEMBER_SPONSOR_BIZ 로 라우팅.
+(3) 뷰 라우팅 및 이중계상 방지: 후원사업·납입방식·납입일별 회비 분해는 SV_MEMBER_FEE 로 라우팅. 두 뷰의 회비 measure 를 동일 표에 합산하지 말 것. 캠페인별/후원사업별 활동회원수는 SV_MEMBER_SPONSOR_BIZ 로 라우팅. 🆕 [O225-C] 이 뷰의 campaign 차원은 「그 달 후원 캠페인」이 하나인 회원×월만 연결된다 — 다중 캠페인 월은 (미매핑)이므로 캠페인별 회비 금액(청구·납입·미납)의 정확한 합계는 SV_PAYMENT_BILLING_STATUS(청구 행 단위 귀속)로 답하고, 이 뷰로 캠페인별 값을 낼 때는 (미매핑) 행과 IS_MULTI_CAMPAIGN 비중을 함께 밝힌다.
 (4) 사건 연계: 중단(명) 등 사건 기준 지표는 SV_MEMBER_EVENT 를 회원·월로 사전집계하여 병기하며 주차 합계를 월로 더하지 않는다.
 (5) 판정 라벨 [집계필요]: 월간 중단보고의 「중단(명)」은 이 뷰의 플래그 합이 아니라 SV_MEMBER_EVENT 의 중단 고유회원수로 답한다. 회원-월 요약과 사건 집계는 표를 분리하고 각 표의 grain 을 밝힌다.
 (6) 판정 라벨 [형제팩트중복]: 납입방식·「납입(원)」은 이 뷰가 앵커가 아니다 — SV_MEMBER_FEE 를 앵커로 답하고 두 뷰를 한 표에 합치지 않는다.

@@ -1,0 +1,6 @@
+scripts/doc_census.py rc=0 :: ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다
+scripts/gen_measure_backlog.py --write rc=0 :: 🟢 20_issue/92_실측필요_후속작업.md 생성 — 0항목 · 4,061 B
+scripts/decision_closure_gate.py rc=0 ::  - 🔴 「의도적으로 열린 것」이면 그 사실을 인용처에 쓰면 이 경고가 근거를 갖는다.
+scripts/line_len.py tmp/o227/01_evidence.md tmp/o227/handoff_entry.md tmp/o227/history_entry.md 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md rc=0 :: 🟢 PASS — 5파일 · 상한(2000자) 초과 0줄
+TESTS_DONE
+BRIEF_RC=0

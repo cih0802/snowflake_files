@@ -1,0 +1,53 @@
+<!-- LLM-METADATA
+doc_id: HANDOFF_O0225_E
+doc_role: 인수인계 — 세션 `O225-E` 가 다음 세션에 넘기는 것(라벨 파일 · O172 규격)
+project: GN_DW (굿네이버스)
+created: 2026-10-14
+created_by: O225-E
+parent: 99_NEXT_SESSION.md
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+<!-- HANDOFF-LABEL O0225-E -->
+
+> 🔴🔴 **이 파일은 인수인계 라벨 파일이다 — 조각이 아니다.**
+> 허브 목차·`--verify` concat·`발행 SHA256` 과 **무관**하다(`O172` 규격).
+> 🟢 **현행 판정식 = 라벨 최대값**(O번호 → 접미 길이 → 접미) ⇒ 취소선 승계 표기가 필요 없다.
+> 🔴 다음 세션은 **이 파일 1개만** 읽으면 된다. 조각에 남은 옛 절은 승계된 것이다.
+### ▣ O225-E-0 🔴 먼저 알아라
+
+- 사용자 지시 = **다음 세션은 이전부터 남겨온 작업을 한꺼번에 진행**한다 ⇒ 아래 E-1 이 통합 착수표다(O224-A·B · O225-A·C·D 잔여 전건 승계).
+- 라이브(xh20001) = Agent MKT V$8 · EXEC V$7 · MEMBER V$6(변경 없음) · SV 5종 O225 배포(`SV_EXPENSE_RESOLUTION` · `SV_AD` · `SV_PAYMENT_BILLING_STATUS` · `SV_SERVICE` · `SV_MEMBER_MONTHLY`).
+- 🔴 dbt `parse`·`compile`·`build` 는 사용자가 실행한다(`R4-1`) — 모델 작업은 모아서 build 1회로 끝낸다(사용자 선호 · O225-C).
+- 🔴 SV COMMENT·규칙 문안에 실측 수치를 넣지 마라(규칙7 · `test_sv_rule7_scan` 이 O225 에서 실제로 잡았다) — 수치는 원장·주석(`--`)에.
+
+### ▣ O225-E-1 다음 세션 통합 착수표 (권장 순서)
+
+| 순 | 작업 | 출처 | 판정 |
+|---|---|---|---|
+| ① | dbt WARN 5건 원문 확인(`select system$get_dbt_log('<invocation>')` · 신규 3종은 조건 미충족 실측) | O225-D | 원인 표 |
+| ② | `campaign_axis_gate` 🟠 GAP 15건 처리 — 우선 = `DIM_MEMBER.FIRST_CAMPAIGN` SV 노출 · IRSD 증감액 캠페인 · DGT 캠페인유형1·2 · 나머지는 사유 유지/현업 확인 분류 | O225-C | GAP 감소 · 게이트 PASS |
+| ③ | 1:N 안전장치 전수 — 후보 41곳 28파일 `tmp/o224/onen_inventory.txt` · 축 = 1:N 실재 · 버려지는 행·금액 · 시점·결정성 · 총량 테스트 | O224-B ⑤ | 파일별 판정표 |
+| ④ | 작업계획 `12_agent개선과제/00_작업계획.md` §15-9 대안 규칙 순서 갱신(행수 최다 → 시작일 최근 · O225-A 교정 근거) | O225-A | 문서 반영 |
+| ⑤ | 영향 SV·Agent 재확인 = `SV_AD` · `SV_MSTR_SPNSR_DVLP` · `SV_ML_INC_CAMPAIGN`(마케팅캠페인 귀속 변경) 스모크 | O224-B ⑥ | 수치 대조 |
+| ⑥ | ERP 「코드는 있으나 마케팅캠페인 미지정」 30코드(전 기간 1,016행) · 사용자 제시 UTM 메시지의 `DIGITAL_MAP` 코드 위치 → 현업 확인(문서20 등재 후보) | O225-D · O224-B ① | 👤 질의 등재 |
+| ⑦ | MEMBER 「계산 전 확인」 R12·R13 — `[O217 정의 조회]` ↔ 판정 순서 충돌 재설계(덧붙이기 금지 K6) | O224-A ① | 재설계안 + 스모크 |
+| ⑧ | native eval 미측정 — EXEC V$7 · MKT V$8 · MEMBER V$6 · V3(비교) + V4(새 기준선) 둘 다 · 🔴 과금 = 승인 필요 | O224-A ② | AC 표 |
+| ⑨ | 👤 결정 = 요건 R 을 MKT 에도 붙일지(현재 3종 공통 도구 배선 · 답변 범위만 상이) · 영문 중간 진행 문장 1건(MEMBER · 런타임 · 기록만) | O224-A ③④ | 결정 기록 |
+| ⑩ | COMMENT 룰 확정 위반 전수(C7 15 · C4 4 · C9 13 · C3 622) | O224-A ⑤ | 시정 계획 |
+
+### ▣ O225-E-2 🟡 ㉡ 워크스페이스 백로그 (이 작업과 무관 · 함께 진행 가능)
+
+- `12_agent개선과제/20_O21X_잔여작업_정리.md` 열림 4건(#12 · #14 · #17 · #19) — 내용은 그 파일 정본을 읽고 판정.
+- 운영계 반영 미결 = O224(26_ DDL · 스펙 3종 · 09_2 [0]) + O225(SILVER/GOLD DDL 6테이블 ALTER · 매크로 · SV 5종 · 테스트 6종 · 게이트) — 운영계 런북 `18_O217_운영계_재현_런북.md` 에 단계 추가 필요.
+- 🟠 `decision_closure_gate` 미봉합 인용처 5건 · 대상 3종(경고 · O225 종료 시점).
+
+### ▣ O225-E-3 ⚪ 결정 완료(재론 금지)
+
+- 광고 UTM 귀속 = 이름매칭 우선 → UTM as-of(시작일 ≤ 광고일) → 매핑 행수 최다 → 시작일 최근 → 이름 → 코드. 「가장 최근 생성」 단독 · 「시작일 최근 우선」은 채택하지 않는다.
+- 회원 월실적 캠페인 = 그 달 후원 캠페인 · 단일 월만 SK · 다중은 0 + `IS_MULTI_CAMPAIGN`(대표 선정 안 함) · 캠페인별 정확 금액 = `SV_PAYMENT_BILLING_STATUS`.
+- 광고비에 인입경로·채널·카테고리를 붙이지 않는다(회원 측 SV 로 안내) · ERP NULL·「-」 99% 는 향후 입고 가정.
+
+_Co-authored with CoCo_
+
+_Co-authored with CoCo_

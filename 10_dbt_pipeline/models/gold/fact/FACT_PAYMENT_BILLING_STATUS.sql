@@ -9,7 +9,12 @@
 --    (실측 2026-08 SILVER 기준 · NULL-safe = 기본 42,672,118 → 처리 6축 포함 44,401,745 · +4.05%).
 --    ⇒ O45 선례(「grain 이 다르면 팩트를 나눈다」)를 따른다. FACT_MEMBER_FEE 는 **무변경**이다.
 --
--- grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV_CD × PAYMENT_TYPE × RQEST_DIV_CD × PRCS_STAT_CD × RETUN_RSN_CD
+-- grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV_CD × PAYMENT_TYPE × RQEST_DIV_CD × PRCS_STAT_CD × RETUN_RSN_CD × CAMPAIGN_SK
+--    🆕 [2026-10-14 O225-C] CAMPAIGN_SK 를 grain 에 편입 — 「그 달 후원 캠페인」(사용자 결정 O225-B).
+--       규칙 = 일시후원 `ONCE_CMPGN_CD` 우선 → 정기는 같은 회원×후원사업 span 중 청구월에 **유효한 span**
+--       (시작 ≤ 청구월 · 미중단/중단월 > 청구월 우선 → 시작월 최근 → 캠페인코드) · 후보 없으면 0(미매핑).
+--       📏 dry-run(xh20001) = grain 12,116 → 1,104,308행 · 원천 50,835,411행 보존 · 캠페인 보유 금액 98.86%.
+--       🔴 BILLED_MEMBERS(COUNT DISTINCT)는 캠페인 간에 더하면 중복된다(종전과 같은 비가산 성질).
 --    🔴 회원 축을 두지 않는다 — 이 팩트는 「청구 처리 현황」(몇 건이 어떤 상태로 처리됐나) 질문용이고
 --       회원 단위 질문은 FACT_MEMBER_FEE / FACT_MEMBER_MONTHLY 소관이다(행 수 · 비용 · 중복 정의 회피).
 --
@@ -31,6 +36,15 @@ with b as (
     select * from {{ ref('CRM_PAYMENT_BILLING') }}
 ),
 
+-- 🆕 [O225-C] 청구 행 + 그 달 후원 캠페인(정의 지점 = macros/billing_campaign_asof.sql · 행수 불변)
+bc as (
+    {{ billing_campaign_asof('b') }}
+),
+
+cmp as (
+    select CAMPAIGN_BK, CAMPAIGN_SK from {{ ref('DIM_CAMPAIGN') }}
+),
+
 spb as (
     select SPONSORSHIP_BK, SPONSORSHIP_SK from {{ ref('DIM_SPONSORSHIP') }}
 ),
@@ -42,25 +56,26 @@ code as (
 
 keyed as (
     select
-        -- 회비월 우선, 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 (FACT_MEMBER_FEE 와 동일 규칙)
-        COALESCE({{ month_key_clamp('TRY_TO_NUMBER(b.MBRFEE_MT)') }},
-                 {{ month_key_clamp("TRY_TO_NUMBER(TO_CHAR(b.PAY_DE,'YYYYMM'))") }}, 0) as MONTH_KEY,
+        -- 회비월 우선, 무효/NULL 이면 납입월 폴백, 둘 다 무효면 0=Unknown월 (FACT_MEMBER_FEE 와 동일 규칙 · 매크로가 계산)
+        b.BILLING_MK                                    as MONTH_KEY,
         COALESCE(s.SPONSORSHIP_SK, 0)                   as SPONSORSHIP_SK,
         b.MBRFEE_DIV_CD                                 as FEE_DIV_CD,
         b.PAYMENT_TYPE                                  as PAYMENT_TYPE,
         b.RQEST_DIV_CD                                  as RQEST_DIV_CD,
         b.MBRFEE_PRCS_STAT_CD                           as PRCS_STAT_CD,
         b.RETUN_RSN_CD                                  as RETUN_RSN_CD,
+        COALESCE(c.CAMPAIGN_SK, 0)                      as CAMPAIGN_SK,
         b.MBER_NO, b.RQEST_AMT, b.PAY_AMT, b.PAY_STAT_CD
-    from b
+    from bc b
     left join spb s on s.SPONSORSHIP_BK = b.SPNSR_BSNS_ID
+    left join cmp c on c.CAMPAIGN_BK = b.BILLING_CMPGN_CD
     -- FACT_MEMBER_FEE 와 같은 필터(O45-C · 회원 미귀속 불량 행 제외)
     where b.MBER_NO is not null
 ),
 
 agg as (
     select
-        MONTH_KEY, SPONSORSHIP_SK, FEE_DIV_CD, PAYMENT_TYPE, RQEST_DIV_CD, PRCS_STAT_CD, RETUN_RSN_CD,
+        MONTH_KEY, SPONSORSHIP_SK, FEE_DIV_CD, PAYMENT_TYPE, RQEST_DIV_CD, PRCS_STAT_CD, RETUN_RSN_CD, CAMPAIGN_SK,
         COUNT(*)                                                    as BILLING_ROWS,
         COUNT(DISTINCT MBER_NO)                                     as BILLED_MEMBERS,
         SUM(RQEST_AMT)                                              as BILLED_AMT,
@@ -68,7 +83,7 @@ agg as (
         SUM(CASE WHEN PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL
                  THEN RQEST_AMT END)                                as UNPAID_BILLED_AMT
     from keyed
-    group by 1,2,3,4,5,6,7
+    group by 1,2,3,4,5,6,7,8
 )
 
 select
@@ -84,7 +99,8 @@ select
     rr.DTL_CD_NM                                                    as RETUN_RSN_NAME,
     a.BILLING_ROWS, a.BILLED_MEMBERS,
     a.BILLED_AMT, a.PAID_FEE, a.UNPAID_BILLED_AMT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    a.CAMPAIGN_SK                                                   as CAMPAIGN_SK   -- 🆕 [O225-C] 06_DDL 동기 · 맨 끝 append
 from agg a
 left join code fd on fd.CD_ID = 'PM010' and fd.DTL_CD_ID = a.FEE_DIV_CD
 left join code rd on rd.CD_ID = 'PM024' and rd.DTL_CD_ID = a.RQEST_DIV_CD

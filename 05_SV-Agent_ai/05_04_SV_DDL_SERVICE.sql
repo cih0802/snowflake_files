@@ -12,7 +12,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
   TABLES (
     fse AS GN_DW.GOLD.FACT_MESSAGE_DISPATCH
       WITH SYNONYMS ('발송', '서비스 발송', '문자메일 발송', '메시지 발송')
-      COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 🔴🔴 **캠페인 축은 이 SV 에 없다** — 종전 문안이 grain 에 「캠페인」을 적었으나 캠페인 차원이 배선돼 있지 않고 base 의 캠페인 키도 전건 센티넬이다(원천 CRM_SEND* 에 캠페인 키가 부재 · 결측이 아니라 구조적 부재) ⇒ 「캠페인별 발송」 질문에는 **축 부재를 밝히고** 캠페인으로 분해하지 말 것]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].',
+      COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 🆕 [O225-C] 캠페인 축 = 문자(SND) 발송 캠페인만 배선(원천 SND_MEMBER_LIST.CMPGN_CD) — 이메일·알림톡·우편은 원천에 캠페인 키가 없어 (미매핑)(구조적 부재) ⇒ 「캠페인별 발송」은 SND 기준임을 밝힌다]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].',
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '발송일')
@@ -28,13 +28,19 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     req AS GN_DW.GOLD.DIM_SEND_REQUEST
       PRIMARY KEY (SEND_REQUEST_SK)
       WITH SYNONYMS ('발송 요청', '발송 요청 차원')
-      COMMENT = '발송 요청 차원(요청당 한 행). 메시지구분(MS010)·발송시간구분(MS267)·우편처리상태(MS061)·법인유형(CM019)·분할발송유형. [원천] 시스템=CRM(UMS) · BRONZE=GN_DW.BRONZE_CRM.SND_REQ_MST · SILVER=CRM_SEND_REQUEST · GOLD=DIM_SEND_REQUEST.'
+      COMMENT = '발송 요청 차원(요청당 한 행). 메시지구분(MS010)·발송시간구분(MS267)·우편처리상태(MS061)·법인유형(CM019)·분할발송유형. [원천] 시스템=CRM(UMS) · BRONZE=GN_DW.BRONZE_CRM.SND_REQ_MST · SILVER=CRM_SEND_REQUEST · GOLD=DIM_SEND_REQUEST.',
+    -- 🆕 [2026-10-14 O225-C] 발송 캠페인 축(SND 채널만 값 · 그 외 채널 = (미매핑) SK=0)
+    campaign AS GN_DW.GOLD.DIM_CAMPAIGN
+      PRIMARY KEY (CAMPAIGN_SK)
+      WITH SYNONYMS ('캠페인', '발송 캠페인')
+      COMMENT = '캠페인 차원(PK 유일 · fan-out 0). 🔴 문자(SND) 발송만 캠페인코드가 있다 — 이메일·알림톡·우편은 전건 (미매핑). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD → TM_CM_CMPGN_MNG · SILVER=CRM_CAMPAIGN.'
   )
   RELATIONSHIPS (
     fse_to_date    AS fse (DATE_SK)    REFERENCES date,
     fse_to_service AS fse (SERVICE_SK) REFERENCES service,
     fse_to_member  AS fse (MEMBER_DK)  REFERENCES member,
-    fse_to_req     AS fse (SEND_REQUEST_SK) REFERENCES req
+    fse_to_req     AS fse (SEND_REQUEST_SK) REFERENCES req,
+    fse_to_campaign AS fse (CAMPAIGN_SK) REFERENCES campaign
   )
   DIMENSIONS (
     date.SEND_DATE  AS date.FULL_DATE  WITH SYNONYMS ('발송일', '일자', '날짜') COMMENT = '발송일',
@@ -96,7 +102,23 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.SND_SPNSR_NM AS fse.SND_SPNSR_NM WITH SYNONYMS ('발송 시점 후원사업', '발송 당시 후원사업') COMMENT = '문자(SND) 발송 시점 수신 회원의 후원사업명(원천 발송 스냅샷) — 타 채널 NULL. 현재 후원사업과 다를 수 있다.',
     fse.SND_DSCNTC_RSN_NM AS fse.SND_DSCNTC_RSN_NM WITH SYNONYMS ('발송 시점 중단사유', '발송 당시 중단사유') COMMENT = '문자(SND) 발송 시점 수신 회원의 중단사유명(중단 이력 회원만 값 · 원천 스냅샷) — 타 채널 NULL.',
     fse.SND_CHILD_PROJECT_COUNTRY AS fse.SND_CHILD_PROJECT_COUNTRY WITH SYNONYMS ('결연아동 사업국', '신규 결연아동 국가') COMMENT = '문자(SND) 발송 시점 신규 결연아동 사업국(방글라데시·우간다·에티오피아 등) — 결연 안내 발송 분석용 · 타 채널 NULL.',
-    fse.SND_CHILD_WORKPLACE_NM AS fse.SND_CHILD_WORKPLACE_NM WITH SYNONYMS ('결연아동 사업장', '신규 결연아동 사업장') COMMENT = '문자(SND) 발송 시점 신규 결연아동 사업장명 — 타 채널 NULL.'
+    fse.SND_CHILD_WORKPLACE_NM AS fse.SND_CHILD_WORKPLACE_NM WITH SYNONYMS ('결연아동 사업장', '신규 결연아동 사업장') COMMENT = '문자(SND) 발송 시점 신규 결연아동 사업장명 — 타 채널 NULL.',
+    -- 🆕 [2026-10-14 O225-C] 발송 캠페인 속성(DIM_CAMPAIGN) + SND 회원 최종·현재 캠페인코드
+    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '발송 캠페인', '캠페인') COMMENT = '문자(SND) 발송 캠페인명. 타 채널 = (미매핑)(원천에 캠페인코드 없음).',
+    campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
+    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
+    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296).',
+    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('인입경로', '회원인입', '개발인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
+    campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
+    campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002). 발송 채널(CHANNEL)과 다른 축이다.',
+    campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('UTM', 'UTM 캠페인') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
+    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
+    campaign.PROMO_METHOD_NAME AS campaign.PROMO_METHOD_NAME WITH SYNONYMS ('홍보방법') COMMENT = '홍보방법명(CM008).',
+    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드') COMMENT = '공통브랜드명(MM297).',
+    campaign.CPR_DIV_NM AS campaign.CPR_DIV_NM WITH SYNONYMS ('캠페인 법인구분') COMMENT = '캠페인 법인구분명(CM019).',
+    campaign.SPNSR_DIV_NM AS campaign.SPNSR_DIV_NM WITH SYNONYMS ('캠페인 후원구분') COMMENT = '캠페인 후원구분명(CM035 정기/일시).',
+    fse.SND_LAST_CMPGN AS fse.SND_LAST_CMPGN WITH SYNONYMS ('발송 시점 최종캠페인코드') COMMENT = '문자(SND) 발송 시점 수신 회원의 최종 캠페인코드(코드값 · 라벨은 캠페인 SV 로) — 타 채널 NULL.',
+    fse.SND_CURRENT_CMPGN AS fse.SND_CURRENT_CMPGN WITH SYNONYMS ('발송 시점 현재캠페인코드') COMMENT = '문자(SND) 발송 시점 수신 회원의 현재 캠페인코드(코드값) — 타 채널 NULL.'
   )
   METRICS (
     fse.TOTAL_SEND_MEMBERS AS SUM(fse.SEND_MEMBERS)
@@ -135,10 +157,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       WITH SYNONYMS ('오픈율', '클릭률', '링크 클릭률', '문자 오픈율')
       COMMENT = '문자 오픈율(%) = 링크 클릭 ÷ 오픈 기록이 있는 발송(SND) ×100(현업 회신 44). 비율(N · 재집계 금지). 🔴 SND 전용 — 다른 채널 발송은 분모에서 빠진다(오픈 원천 부재).'
   )
-  COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 🔴🔴 **캠페인 축은 이 SV 에 없다** — 종전 문안이 grain 에 「캠페인」을 적었으나 캠페인 차원이 배선돼 있지 않고 base 의 캠페인 키도 전건 센티넬이다(원천 CRM_SEND* 에 캠페인 키가 부재 · 결측이 아니라 구조적 부재) ⇒ 「캠페인별 발송」 질문에는 **축 부재를 밝히고** 캠페인으로 분해하지 말 것]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
+  COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 🆕 [O225-C] 캠페인 축 = 문자(SND) 발송 캠페인만 배선(원천 SND_MEMBER_LIST.CMPGN_CD) — 이메일·알림톡·우편은 원천에 캠페인 키가 없어 (미매핑)(구조적 부재) ⇒ 「캠페인별 발송」은 SND 기준임을 밝힌다]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. 단 정본 「발송(+5일차)」 지표(D5_* metric: 서신·선물금·증액·중단)는 정의된 시간창 매칭이므로 그 metric 으로 답한다(인과가 아니라 D+1~D+5 창 매칭이며 발송 당일은 처리 통보 역인과 때문에 제외됨을 밝힌다 · DEC-33). (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다. (기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 시점은 **비상관 CTE 1개**에서 그 CTE 의 FROM 에 쓴 이름으로만 MAX 를 구하고 본 쿼리에 CROSS JOIN 한다. 스칼라 서브쿼리·상관 서브쿼리·ORDER BY … LIMIT/OFFSET 서브쿼리로 기준 시점을 구하지 않는다. CTE 안에서 그 CTE 의 FROM 에 없는 별칭을 쓰지 않는다. 날짜 조건은 DIMENSIONS 에 선언된 날짜 차원(date.FULL_DATE · 월키 MONTH_KEY)으로만 걸고 팩트에 없는 날짜 컬럼을 팩트 별칭에 붙이지 않는다. metric 이름을 컬럼처럼 참조하지 말고 metric 정의식(SUM(원천컬럼))으로 집계한다. ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다. (🆕 O206 서비스명 매핑) 「○○서비스」처럼 서비스(카테고리) 이름으로 물으면, 이 SV 에는 원천 서비스 카테고리 축이 없으므로 fse.SEND_TITLE 부분일치로 매핑하고 답변에 「상위 카테고리 정의에 없어 발송 제목으로 매핑했다(매핑한 제목 패턴: …)」를 반드시 밝힌다. 선넘는좋은일 즉시·개별화 신규(사단)·행운의 카드·장기회원 서비스 4종의 수신 회원 분석은 서비스코드 기준 판정이 있는 서비스 수신 코호트 SV 소관이다.'
+  핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. 단 정본 「발송(+5일차)」 지표(D5_* metric: 서신·선물금·증액·중단)는 정의된 시간창 매칭이므로 그 metric 으로 답한다(인과가 아니라 D+1~D+5 창 매칭이며 발송 당일은 처리 통보 역인과 때문에 제외됨을 밝힌다 · DEC-33). (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다. (기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 시점은 **비상관 CTE 1개**에서 그 CTE 의 FROM 에 쓴 이름으로만 MAX 를 구하고 본 쿼리에 CROSS JOIN 한다. 스칼라 서브쿼리·상관 서브쿼리·ORDER BY … LIMIT/OFFSET 서브쿼리로 기준 시점을 구하지 않는다. CTE 안에서 그 CTE 의 FROM 에 없는 별칭을 쓰지 않는다. 날짜 조건은 DIMENSIONS 에 선언된 날짜 차원(date.FULL_DATE · 월키 MONTH_KEY)으로만 걸고 팩트에 없는 날짜 컬럼을 팩트 별칭에 붙이지 않는다. metric 이름을 컬럼처럼 참조하지 말고 metric 정의식(SUM(원천컬럼))으로 집계한다. ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다. (🆕 O206 서비스명 매핑) 「○○서비스」처럼 서비스(카테고리) 이름으로 물으면, 이 SV 에는 원천 서비스 카테고리 축이 없으므로 fse.SEND_TITLE 부분일치로 매핑하고 답변에 「상위 카테고리 정의에 없어 발송 제목으로 매핑했다(매핑한 제목 패턴: …)」를 반드시 밝힌다. 선넘는좋은일 즉시·개별화 신규(사단)·행운의 카드·장기회원 서비스 4종의 수신 회원 분석은 서비스코드 기준 판정이 있는 서비스 수신 코호트 SV 소관이다. (🆕 O225-C 캠페인 축) 발송 캠페인별 질문은 campaign 차원으로 묶는다 — 캠페인코드는 문자(SND) 발송에만 있으므로 결과에 「(미매핑)」(이메일·알림톡·우편 + 코드 미기재 SND)을 ROLLUP 과 함께 표시하고 「문자(SND) 발송 기준」이라고 밝힌다.'
   AI_VERIFIED_QUERIES (
     vqr_monthly_send_members AS (
       QUESTION '월별 발송 대상 회원수'

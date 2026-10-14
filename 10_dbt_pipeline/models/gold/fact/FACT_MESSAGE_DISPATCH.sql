@@ -88,7 +88,7 @@ select
     s.MBER_NO                                     as MEMBER_DK,
     CASE WHEN r.SNDNG_KEY IS NULL THEN 0
          ELSE {{ gold_sk(['r.SEND_CHANNEL', 'r.SNDNG_TY_CD']) }} END  as SERVICE_SK,
-    0                                             as CAMPAIGN_SK,
+    COALESCE(dc.CAMPAIGN_SK, 0)                   as CAMPAIGN_SK,      -- 🆕 [O225-C] SND 발송 캠페인(타 채널·미매핑 0)
     1                                             as SEND_MEMBERS,
     CASE
         WHEN s.SEND_CHANNEL = 'EMAIL'  AND s.SNDNG_RST_CD = '1' THEN 1
@@ -157,9 +157,13 @@ select
     --   🔴 [O196-E] 요청 미매칭(발송 대상에만 키가 있고 요청 마스터에 없음 · 📏 11,421행)도 0 으로 보낸다 — 고아 FK 금지.
     CASE WHEN r.SNDNG_KEY IS NULL THEN 0 ELSE {{ gold_sk(['r.SNDNG_KEY']) }} END as SEND_REQUEST_SK,
     -- 🆕 [2026-10-08 O213-E · 7차 Y3-E] SND 발송 시점 회원 스냅샷 4종(degen · 타 채널 NULL · FRST_BRND_* 와 같은 관례).
-    s.SND_SPNSR_NM, s.SND_DSCNTC_RSN_NM, s.SND_CHILD_PROJECT_COUNTRY, s.SND_CHILD_WORKPLACE_NM
+    s.SND_SPNSR_NM, s.SND_DSCNTC_RSN_NM, s.SND_CHILD_PROJECT_COUNTRY, s.SND_CHILD_WORKPLACE_NM,
+    -- 🆕 [2026-10-14 O225-C] SND 회원 최종·현재 캠페인코드(degen · 발송 캠페인은 CAMPAIGN_SK) · 06_DDL 동기 맨 끝
+    s.SND_LAST_CMPGN, s.SND_CURRENT_CMPGN
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
+-- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
+left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = s.SND_CMPGN_CD
 cross join open_window ow
 left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
 left join active_m am on am.MEMBER_DK = s.MBER_NO

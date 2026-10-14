@@ -28,6 +28,44 @@ with p as (
 dev as (
     -- 기기 차원 조회용 축약 — DEVICE_TYPE 은 GOLD 내 유일값이므로 fan-out 없음.
     select DEVICE_TYPE, DEVICE_SK from {{ ref('DIM_DEVICE') }}
+),
+-- 🆕 [2026-10-14 O225] UTM 보조 경로 — 이름매칭(O45) 실패 행에만 적용한다(이름매칭 우선).
+--   왜: DIGITAL 미매핑 11,379,933,112원(33.69%) 중 8,686,093,136원이 UTM 후보를 가진다(xh20001 실측).
+--   🔴 1:N 을 버리지 않는다(`HAVING = 1` 폐기 금지 · 작업계획 §15-9) — 광고행마다 as-of 대표 1개:
+--     ① 캠페인 시작일 ≤ 광고일(시점 필터) ② 매핑 행수 최다 ③ 시작일 최근 ④ 마케팅캠페인명 ⑤ 코드(결정성).
+--   🔴 [O225 교정] §15-9 초안은 ② 시작일 최근 → ③ 행수 순이었다 — 실측하니 1:N 비용 57.3억 중
+--     turn24b 4,895,482,455원 전액이 협업 캠페인(사진실의광선생님_* · 매핑 6행)으로, meal24a 779,488,400원이
+--     `사진실의광선생님_정용화` 로 갔다(본 캠페인 `유어턴(2기)` 609행 · `국내결식(한끼모험)` 은 0원) ⇒ 행수 우선으로 뒤집었다.
+--   🔴 「가장 최근 생성」 단독 규칙은 쓰지 않는다(광고일 이후 생성 캠페인 귀속 22.47% · 시점 역전).
+--   이름매칭 ↔ UTM 1:1 일치 = 91.9%(광고비 기준 13,849,338,516 / 15,062,608,889) ⇒ 이름매칭을 우선한다.
+utm_cand as (
+    select
+        c.MKTG_UTM_NM                                       as UTM_NM,
+        mk.MKTG_CAMPAIGN_SK                                 as MKTG_CAMPAIGN_SK,
+        mk.MKTG_CAMPAIGN_NAME                               as MKTG_CAMPAIGN_NAME,
+        mk.MKTG_CAMPAIGN_BK                                 as MKTG_CAMPAIGN_BK,
+        min(TRY_TO_DATE(c.CMPGN_STRT_DE, 'YYYYMMDD'))       as STRT_DATE,
+        count(*)                                            as MAP_ROWS
+    from {{ ref('CRM_CAMPAIGN') }} c
+    join {{ ref('DIM_MARKETING_CAMPAIGN') }} mk
+      on mk.MKTG_CAMPAIGN_BK = TO_VARCHAR(c.MKTG_CMPGN_NM)
+    where c.MKTG_UTM_NM is not null
+    group by 1, 2, 3, 4
+),
+utm_pick as (
+    select
+        p.AD_PERF_DK,
+        u.MKTG_CAMPAIGN_SK,
+        count(*) over (partition by p.AD_PERF_DK)          as CAND_CNT
+    from p
+    join {{ ref('AGENCY_AD_ROW_DGT') }} d on d.AD_PERF_DK = p.AD_PERF_DK
+    join utm_cand u
+      on u.UTM_NM = d.UTM_CMPGN_NM
+     and u.STRT_DATE <= p.AD_DATE
+    qualify row_number() over (
+        partition by p.AD_PERF_DK
+        order by u.MAP_ROWS desc, u.STRT_DATE desc, u.MKTG_CAMPAIGN_NAME, u.MKTG_CAMPAIGN_BK
+    ) = 1
 )
 
 select
@@ -62,7 +100,7 @@ select
     --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
     --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
-    COALESCE(mk.MKTG_CAMPAIGN_SK, 0)    as MKTG_CAMPAIGN_SK,
+    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, 0)    as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM → 0
     {{ gold_meta('AGENCY') }},
     -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
@@ -79,7 +117,12 @@ select
     d.UTM_CMPGN_NM               as UTM_CMPGN_NM,          -- UTM 캠페인 [DGT 전용]
     v.BSNS_CASE_DIV_NM           as BSNS_CASE_DIV_NM,      -- 사업/사례 구분 [VIDEO 전용]
     v.CM                         as CM,                    -- CM 구분(전CM·중CM·후CM) [VIDEO 전용]
-    v.DMST_OVSEA_DIV_NM          as DMST_OVSEA_DIV_NM      -- 국내/해외 구분 [VIDEO 전용]
+    v.DMST_OVSEA_DIV_NM          as DMST_OVSEA_DIV_NM,     -- 국내/해외 구분 [VIDEO 전용]
+    -- 🆕 [2026-10-14 O225] 귀속 경로·후보 수(06_DDL 동기 · 맨 끝 append) — 1:N 은 버리지 않고 표시한다.
+    case when mk.MKTG_CAMPAIGN_SK is not null then 'NAME'
+         when up.MKTG_CAMPAIGN_SK is not null then 'UTM'
+         else 'NONE' end         as MKTG_MAP_METHOD,
+    iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT
 from p
 left join {{ ref('AGENCY_AD_ROW_DGT') }}   d on d.AD_PERF_DK = p.AD_PERF_DK
 left join {{ ref('AGENCY_AD_ROW_VIDEO') }} v on v.AD_PERF_DK = p.AD_PERF_DK
@@ -93,3 +136,6 @@ left join dev d_na
 -- [2026-08-06 O45] 마케팅캠페인 이름매칭. `MKTG_CAMPAIGN_NAME` 은 차원에서 유일하므로 fan-out 0.
 left join {{ ref('DIM_MARKETING_CAMPAIGN') }} mk
        on mk.MKTG_CAMPAIGN_NAME = p.CAMPAIGN_NM
+-- [2026-10-14 O225] UTM 보조 경로 — utm_pick 은 AD_PERF_DK 당 1행(qualify) ⇒ fan-out 0.
+left join utm_pick up
+       on up.AD_PERF_DK = p.AD_PERF_DK
