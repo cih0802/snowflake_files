@@ -97,15 +97,15 @@ CANON = [
 #      legacy·PoC 는 넣지 않는다 — 항상 빨간 게이트는 무력화된다(`P130`). 그 잔여는 원장에 등재한다.
 CANON_CODE = [
     '05_SV-Agent_ai/05_0_SV_DDL.sql',
-    '05_SV-Agent_ai/05_1_SV_DDL_MEMBER_MONTHLY.sql',
-    '05_SV-Agent_ai/05_2_SV_DDL_MEMBER_EVENT.sql',
-    '05_SV-Agent_ai/05_3_SV_DDL_MEMBER_COHORT.sql',
-    '05_SV-Agent_ai/05_4_SV_DDL_SERVICE.sql',
-    '05_SV-Agent_ai/05_5_SV_DDL_EVENT_PARTICIPATION.sql',
-    '05_SV-Agent_ai/05_6_SV_DDL_BUDGET.sql',
-    '05_SV-Agent_ai/05_7_SV_DDL_AD.sql',
-    '05_SV-Agent_ai/05_8_SV_DDL_DEV_ACHIEVEMENT.sql',
-    '05_SV-Agent_ai/05_9_SV_DDL_MEMBER_FEE.sql',
+    '05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql',
+    '05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql',
+    '05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql',
+    '05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql',
+    '05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql',
+    '05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql',
+    '05_SV-Agent_ai/05_07_SV_DDL_AD.sql',
+    '05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql',
+    '05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql',
     'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
     # 🔴 [2026-09-10 O154 시정] 종전 `AGENT_OVERALL` 은 **개명으로 소멸한 경로**였다
     #   (O152·O153 이 `AGENT_EXECUTIVE` 로 개명했으나 이 분모를 함께 고치지 않았다).

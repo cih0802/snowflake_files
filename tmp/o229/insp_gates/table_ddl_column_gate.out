@@ -1,0 +1,33 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (적재 전 판정 · P120 · GOLD 37 + SILVER 42 전수)
+  🔴 blocking = **집합** 불일치(누락·초과) · 🟠 advisory = **순서** 드리프트(문서 축)
+
+=== [GOLD 계층: 54 테이블] ===
+  DIM_DATE                     DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MONTH                    DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_ORG                      DDL 20 · 모델 20 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_STATUS_HISTORY    DDL 30 · 모델 30 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER                   DDL 57 · 모델 57 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_ACQUISITION       DDL 37 · 모델 37 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_IDENTITY          DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CAMPAIGN                 DDL 38 · 모델 38 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MARKETING_CAMPAIGN       DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SPONSORSHIP              DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_AD_CREATIVE              DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIGQUERY_SOURCE          DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIGQUERY_EVENT           DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SERVICE                  DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SEND_TYPE                DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_PAYMENT                  DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_REASON                   DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_DEVICE                   DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_EVENT                    DDL 27 · 모델 27 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BUDGET_ITEM              DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIZ_PLACE                DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CHILD                    DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CODE_GROUP               DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MSG_TEMPLATE             DDL 28 · 모델 28 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MSG_TEMPLATE_BUTTON      DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_PAYMENT_ACCOUNT          DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+🔴 렌더되지 않은 jinja 가 남았다 in /workspace/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql: ["{{ billing_campaign_asof('b') }}"]

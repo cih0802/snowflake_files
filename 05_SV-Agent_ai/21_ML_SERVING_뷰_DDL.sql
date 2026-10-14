@@ -45,10 +45,10 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_RISK_V (
     HAS_INC_PRED           COMMENT '증액 예측 존재 여부 — 분모 판정용',
     HAS_LOYAL_PRED         COMMENT '충성 예측 존재 여부 — 분모 판정용(모집단 상이)',
     PREDICTION_HAS_ERROR   COMMENT '예측 로그에 오류가 있는 행 여부(PREDICTION:logs:Error 비어있지 않음) · 3종·중복행 중 하나라도',
-    CHURN_GRADE            COMMENT '중단위험 등급(F-4 · O190) — 기준월 내 백분위: 상위 10% 고위험 · 10~25% 주의 · 나머지 일반 · 예측 없음 NULL. 🔴 확률 임계가 아니라 순위다',
-    LOYAL_GRADE            COMMENT '장기회원 등급(F-4 · O190) — 기준월 내 백분위: 상위 5% 최상위 · 5~10% 상 · 10~25% 중 · 나머지 하 · 충성 예측 모집단만(그 외 NULL)'
+    CHURN_GRADE            COMMENT '중단위험 등급(F-4) — 기준월 내 백분위: 상위 10% 고위험 · 10~25% 주의 · 나머지 일반 · 예측 없음 NULL. 🔴 확률 임계가 아니라 순위다',
+    LOYAL_GRADE            COMMENT '장기회원 등급(F-4) — 기준월 내 백분위: 상위 5% 최상위 · 5~10% 상 · 10~25% 중 · 나머지 하 · 충성 예측 모집단만(그 외 NULL)'
 )
-  COMMENT = 'ML 회원단위 예측(중단·증액·충성) 통합. grain=기준월×회원(키 집계 후 유일). 원천 중복행은 확률 평균·분류 MAX 로 단일화했다(원천 미해소·완화 · O198 이후 피처 컬럼 없음). 예측치이며 실적이 아니다.'
+  COMMENT = 'ML 회원단위 예측(중단·증액·충성) 통합. grain=기준월×회원(키 집계 후 유일). 원천 중복행은 확률 평균·분류 MAX 로 단일화했다(원천 미해소·완화 · 이후 피처 컬럼 없음). 예측치이며 실적이 아니다.'
 AS
 WITH churn AS (
   SELECT STDR_MT,
@@ -134,7 +134,7 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V (
     CHURN_PROB           COMMENT '후원건 이탈 예측 확률(0~1) · 예측 지평 미발행',
     CHURN_CLASS          COMMENT '이탈 예측 분류(모델 class) — 업무 판정선 아님',
     PREDICTION_HAS_ERROR COMMENT '예측 로그에 오류가 있는 행 여부(PREDICTION:logs:Error 비어있지 않음)',
-    CHURN_GRADE          COMMENT '후원건 이탈위험 등급(F-4 · O190) — 기준월 내 후원건 백분위: 상위 5% 고위험 · 5~25% 주의 · 나머지 일반. 🔴 확률 임계가 아니라 순위다'
+    CHURN_GRADE          COMMENT '후원건 이탈위험 등급(F-4) — 기준월 내 후원건 백분위: 상위 5% 고위험 · 5~25% 주의 · 나머지 일반. 🔴 확률 임계가 아니라 순위다'
 )
   COMMENT = 'ML 후원건단위 이탈 예측. grain=기준월×회원×후원사업ID×후원사업번호(실측 유일). 회원수는 반드시 중복제거로 센다. 예측치이며 실적이 아니다.'
 AS
@@ -306,7 +306,7 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V (
     MEMBER_DIV_NAME      COMMENT '회원구분 라벨(현재 스냅샷)',
     REGIST_DEPT_NAME     COMMENT '등록부서명(DIM_ORG · 현재 스냅샷)'
 )
-  COMMENT = 'ML 일시후원회원의 정기후원 전환 예측. grain=기준월×일시후원회원이나 원천이 회원당 다중 예측행을 담는다(실행순번 없음 · DEC-59 #1 유지). 회원수는 중복제거로 센다. 예측치이며 실적이 아니다.'
+  COMMENT = 'ML 일시후원회원의 정기후원 전환 예측. grain=기준월×일시후원회원이나 원천이 회원당 다중 예측행을 담는다(실행순번 없음 · #1 유지). 회원수는 중복제거로 센다. 예측치이며 실적이 아니다.'
 AS
 SELECT
     o.STDR_MT                                 AS STDR_MT,

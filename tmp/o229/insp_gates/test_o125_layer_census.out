@@ -1,0 +1,40 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+축1 — SV 추출기가 정본 문법(CREATE OR ALTER)을 보는가
+========================================================================
+  🟢 PASS  SV 분모가 비어 있지 않다  — 35종
+  🟢 PASS  실적 SV 표본이 잡힌다
+  🟢 PASS  ML SV 표본이 잡힌다
+  🟢 PASS  오염(문법 변형) 시 그 파일에서 SV 가 0 이 된다 — 초판 결함 재현  — 0종
+========================================================================
+축2 — SERVING 뷰 추출은 스키마 한정인가
+========================================================================
+  🟢 PASS  SERVING 뷰 분모가 비어 있지 않다  — 10종
+  🟢 PASS  GOLD WIDE 뷰가 섞여 들어오지 않는다  — ML_CHURN_BY_CMPGN_CTGR_V,ML_DVLP_FORECAST_V,ML_FEATURE_IMPOR
+========================================================================
+축3·4 — DDL 컬럼 파서(빈 집합 금지 · 주석 CREATE 제외)
+========================================================================
+  🟢 PASS  GOLD DDL 분모가 비어 있지 않다  — 54개
+  🟢 PASS  SILVER DDL 분모가 비어 있지 않다  — 61개
+  🟢 PASS  GOLD 테이블 중 컬럼 빈 집합 0
+  🟢 PASS  SILVER 테이블 중 컬럼 빈 집합 0
+  🟢 PASS  주석 처리된 CREATE TABLE 은 분모에 없다(BIGQUERY_REFINED_DATA)
+  🟢 PASS  표본 컬럼수가 독립 파서(table_ddl_column_gate)와 일치한다  — OK
+========================================================================
+축5 — column_report 가 누락·부재를 양방향으로 잡는가
+========================================================================
+  🟢 PASS  라이브에 컬럼이 없으면 불일치로 센다  — 1
+  🟢 PASS  DDL 밖 컬럼도 불일치로 센다  — 1
+  🟢 PASS  라이브 테이블 부재를 잡는다  — 1
+  🟢 PASS  일치는 0 을 낸다(재현율 축)  — 0
+========================================================================
+축6 — 모델 분모 3종이 하나라도 0 이면 FAIL
+========================================================================
+  🟢 PASS  models/silver 분모 > 0  — 61개
+  🟢 PASS  models/gold/dim 분모 > 0  — 28개
+  🟢 PASS  models/gold/fact 분모 > 0  — 26개
+  🟢 PASS  models/gold/wide 분모 > 0  — 19개
+========================================================================
+단정 20개 · 실패 0개
+🟢 PASS

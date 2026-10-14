@@ -1,0 +1,31 @@
+🟠 declared_kind: 유형 등재표를 읽지 못했다(AttributeError("module 'doc_type_gate' has no attribute 'parse_registry'")) ⇒ 유형 가드가 동작하지 않는다.
+🔴🔴 거부 — `50_dbt_파이프라인_미결조치.md` 는 **증분형**이다(원장 §0 유형 등재표).
+   `--rebalance` 는 조각 번호를 밀어 타 문서의 `-0NN.md:행` 인용 좌표를 깨뜨린다.
+   🟢 대체 경로 = `--rollover --entry-file <파일>` (꼬리 조각 신설 · 기존 조각 불변)
+   🟠 그래도 강행하려면 `--force-rebalance` (🔴 좌표 파괴 감수 · 사용자 승인 대상)
+🔴🔴 거부 — `20_현업확인_요청.md` 는 **증분형**이다(원장 §0 유형 등재표).
+   `--rebalance` 는 조각 번호를 밀어 타 문서의 `-0NN.md:행` 인용 좌표를 깨뜨린다.
+   🟢 대체 경로 = `--rollover --entry-file <파일>` (꼬리 조각 신설 · 기존 조각 불변)
+   🟠 그래도 강행하려면 `--force-rebalance` (🔴 좌표 파괴 감수 · 사용자 승인 대상)
+[test_doc_type_increment] 단정 19개
+  🟢 등재㉠ KINDS 에 증분형 실재  — KINDS=('갱신형', 'append형', '증분형', '정적', '자동생성')
+  🟢 등재㉡ INCREMENTAL 상수 = 증분형  — '증분형'
+  🟢 등재㉢ 20_현업확인_요청.md = 증분형  — 실측 '증분형'
+  🟢 등재㉢ 50_dbt_파이프라인_미결조치.md = 증분형  — 실측 '증분형'
+  🟢 판정 20_현업확인_요청.md = 증분형  — 실측 '증분형'
+  🟢 판정 50_dbt_파이프라인_미결조치.md = 증분형  — 실측 '증분형'
+  🟢 판정 01_세션이력.md = append형  — 실측 'append형'
+  🟢 판정 00_INDEX_이슈원장.md = 갱신형  — 실측 '갱신형'
+  🟢 판정 90_해소완료_로그.md = append형  — 실측 'append형'
+  🟢 여유㉠ TAIL_KINDS 에 증분형  — TAIL_KINDS=('append형', '증분형')
+  🟢 여유㉡ TAIL_KINDS 에 append형도 유지  — TAIL_KINDS=('append형', '증분형')
+  🟢 회귀㉠ 등재표 고장 시 None 재현  — 실측 None
+  🟢 회귀㉡ 복귀 후 증분형 정상 판정  — 실측 '증분형'
+  🟢 회귀㉢ 고장 시 경고가 보인다  — 출력 '🟠 declared_kind: 유형 등재표를 읽지 못했다(AttributeError("module \'doc_type_gate\''
+  🟢 차단㉠ 증분형 재균형 거부(rc=1)  — rc=1
+  🟢 차단㉡ 문서20 도 거부(rc=1)  — rc=1
+  🟢 차단㉢ 00_INDEX_이슈원장.md 는 증분형이 아니다(가드 비적용)  — 실측 '갱신형'
+  🟢 차단㉢ 01_세션이력.md 는 증분형이 아니다(가드 비적용)  — 실측 'append형'
+  🟢 차단㉢ 90_해소완료_로그.md 는 증분형이 아니다(가드 비적용)  — 실측 'append형'
+
+판정 = 통과 19 / 19

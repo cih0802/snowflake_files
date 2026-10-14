@@ -1,0 +1,20 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[2026-08-10 O54] SV base 재배선 값 불변 게이트.
+
+base 를 SERVING helper → GOLD 정본으로 바꾼 것은 **값이 같은 객체로의 교체**여야 한다
+(행수·PK 유일성 실측 동일 확인). 그 전제를 metric 총계로 실증한다.
+
+사용
+  python3 scripts/o54_sv_value_gate.py --snap  before.json   # 배포 전
+  python3 scripts/o54_sv_value_gate.py --snap  after.json    # 배포 후
+  python3 scripts/o54_sv_value_gate.py --diff  before.json after.json
+
+🔴 P106: 대상이 없는 상태의 통과는 검증이 아니다 → metric 0 개인 SV 는 실패로 본다.
+
+
+사용법 (🔴 무인자 게이트가 아니다 — 인자가 필수다):
+  python3 scripts/o54_sv_value_gate.py --snap <출력.json>     # 현재 값 스냅샷
+  python3 scripts/o54_sv_value_gate.py <before.json> <after.json>  # 값 변동 비교
+
+종료코드: 0=값 불변 · 1=값 변동 검출 · 2=사용법 오류(판정 아님)

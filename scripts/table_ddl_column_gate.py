@@ -161,6 +161,10 @@ def render_model(cn, path, layer='GOLD'):
     #      (`CRM_MEMBER_AMT_CHANGE.sql` 실물 · O181 2차 시정).
     for _pred in (r'bigquery_range_predicate(?:_text|_sk)?', r'gn_member_master_filter'):
         s = re.sub(r"\{\{\s*" + _pred + r"\(.*?\)\s*\}\}", '1=1', s, flags=re.DOTALL)
+    # 🆕 [2026-10-14 O229 D3] relation 형 macro `billing_campaign_asof(rel)`(O225-C) — 반환 형태 =
+    #   입력 rel 전 컬럼 + BILLING_MK + BILLING_CMPGN_CD(macro 정본 주석 「반환」). 같은 형태의 최소 SELECT 로 렌더한다.
+    s = re.sub(r"\{\{\s*billing_campaign_asof\(\s*'([A-Za-z0-9_]+)'\s*\)\s*\}\}",
+               lambda m: f"select bb.*, 0 as BILLING_MK, CAST(NULL AS VARCHAR) as BILLING_CMPGN_CD from {m.group(1)} bb", s)
     s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
 
     # 🆕 [2026-10-12 O216-E] 문자열 `{% set name = ... %}` 렌더 — `DIM_MEMBER.sql:67-70` 에서 게이트가 rc=1 로 멈췄다.

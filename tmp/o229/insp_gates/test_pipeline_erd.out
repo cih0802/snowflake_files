@@ -1,0 +1,30 @@
+=== Pipeline ERD & Lineage Generator Test Suite ===
+
+  🟢 index.html 실재
+  🟢 총 38개 HTML 파일 실재 (실측: 38)
+  🟢 index.html 에 snowflake-source 메타태그 포함
+  🟢 index.html 에 report-metadata JSON 포함
+  🟢 index.html 에 인라인 onclick 없음 (CSP 준수)
+  🟢 index.html 에 eval 없음 (CSP 준수)
+  🟢 DIM_MEMBER.html 에 snowflake-source 메타태그 포함
+  🟢 DIM_MEMBER.html 에 report-metadata JSON 포함
+  🟢 DIM_MEMBER.html 에 인라인 onclick 없음 (CSP 준수)
+  🟢 DIM_MEMBER.html 에 eval 없음 (CSP 준수)
+  🟢 FACT_MEMBER_FEE.html 에 snowflake-source 메타태그 포함
+  🟢 FACT_MEMBER_FEE.html 에 report-metadata JSON 포함
+  🟢 FACT_MEMBER_FEE.html 에 인라인 onclick 없음 (CSP 준수)
+  🟢 FACT_MEMBER_FEE.html 에 eval 없음 (CSP 준수)
+  🟢 FACT_BUDGET.html 에 snowflake-source 메타태그 포함
+  🟢 FACT_BUDGET.html 에 report-metadata JSON 포함
+  🟢 FACT_BUDGET.html 에 인라인 onclick 없음 (CSP 준수)
+  🟢 FACT_BUDGET.html 에 eval 없음 (CSP 준수)
+  🟢 FACT_MEMBER_FEE 에 BRONZE 서브그래프 존재
+  🟢 FACT_MEMBER_FEE 에 SILVER 서브그래프 존재
+  🟢 FACT_MEMBER_FEE 에 GOLD 서브그래프 존재
+  🟢 FACT_MEMBER_FEE 에 CRM_PAYMENT_BILLING 연결
+  🟢 37개 테이블 ERD Mermaid 문법 오류 0건 (실측 오류: 0)
+  🟢 한 줄 2000자 초과 0건 (최대 길이: 782자)
+
+============================================================
+단정 24건 · 🟢 통과 24 · 🔴 실패 0
+🟢 ALL PASS

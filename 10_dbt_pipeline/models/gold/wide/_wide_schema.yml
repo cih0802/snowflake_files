@@ -1273,7 +1273,7 @@ models:
       - name: CTR_SRC
         description: "[비가산 N] 대행사 산정 CTR ← DGT.CTR. DW 재계산=CLICKS/IMPRESSIONS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CVR_SRC
-        description: "[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS (O5 확정) ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
+        description: "[비가산 N] 대행사 산정 CVR ← DGT.CVR. DW 재계산=AGENCY_CONV_MEMBERS/CLICKS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CPC_CLICK_SRC
         description: "[비가산 N] 대행사 산정 **클릭당** 단가 ← DGT.CPC(개명 · 방송 CPC_CALL_SRC 와 분모가 다르다 ⇒ 합산 금지). DW 재계산=AD_COST/CLICKS ⚠️[WIDE_AD_COMBINED] 디지털 원천 전용 컬럼이다 — 방송행(AD_SOURCE_TYPE 이 디지털이 아닌 행)은 **NULL 이며 그것은 결측이 아니라 원천 부재**다(위성 완전분할). 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프할 것."
       - name: CPM_SRC

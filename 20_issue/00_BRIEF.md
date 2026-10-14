@@ -26,42 +26,26 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 👤 IRSD 재확인 — 결정 「FME 증감 사건 신설」을 실측(FME DEV 2·3 과 같은 사건 · 이중계상)으로 보류 · 그래도 신설이면 착수 | O226-A ⑨ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:35` |
-| ② | 👤 dbt build(뷰 10 · 위 명령) → 라이브 뷰 COMMENT 잔여 이슈ID 0 확인 → MEMBER·EXEC·MKT eval V4 기준선 재측정 | O227-A ③-① | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:36` |
-| ③ | COMMENT C3 단계 ②~④(컬럼 298 · SV_FIELD 180·SV 8 · AGENT_TOOL 58) = tmp/o226/10_comment_fix.md · 단계마다 eval | O226-A ⑩ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:37` |
-| ④ | 👤 문서20 N-30 회신(ERP 30코드 · DIGITAL_MAP 위치 · SND 결과코드 13종 · ) 2행 · 캠페인 속성 2) | O226-A ⑥ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:38` |
-| ⑤ | MEMBER D3 회귀 · TS 0.43 · TE 0.50 — 재측정 1회 후 지속이면 D3 원인(MSTR 개발(건) 분수값 표기) 조사 | O227-A ② | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:39` |
-| ① | 👤 IRSD 재확인 — 결정 「FME 증감 사건 신설」을 실측(FME DEV 2·3 과 같은 사건 · 이중계상)으로 보류 · 그래도 신설이면 착수 | O226-A ⑨ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:36` |
-| ② | 👤 dbt build(뷰 15 · 위 명령) → comment_drift_gate PENDING 0 → eval V4 3종 재측정(MKT Q31 판정 포함) | O227-B ② | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:37` |
-| ③ | COMMENT C3 단계 ③ SV_FIELD 180 · SEMANTIC_VIEW 8 → ④ AGENT_TOOL 58 = tmp/o226/10_comment_fix.md · 단계마다 eval | O226-A ⑩ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:38` |
-| ④ | 👤 문서20 N-30 회신(ERP 30코드 · DIGITAL_MAP 위치 · SND 결과코드 13종 · ) 2행 · 캠페인 속성 2) | O226-A ⑥ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:39` |
-| ⑤ | MEMBER TS 0.48 · TE 0.56 저조 — search_biz_definition 선행 호출 영향(정답지에 search 없음) · 정답지 보강 여부 결정 | O227-A ② | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:40` |
-| ⑥ | C3 SILVER COLUMN 32 · SERVING VIEW 7·COLUMN 5·TABLE 1(계획 4단계 밖 잔여) | O227-B | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:41` |
+| ① | eval 재측정 = EXEC·MKT V4 · MEMBER V5(python3 tmp/o224_eval.py start DEFAULT <tag> member V5) · C3 ③④ 전후 효과 판정(MKT 기준선 jw1) | O228-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:39` |
+| ② | MKT Q29 AC 0.67 · TS 0.2 원인 조사 | O228-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:40` |
+| ③ | 👤 문서20 N-30 회신(ERP 30코드 · DIGITAL_MAP 위치 · SND 결과코드 13종 · ) 2행 · 캠페인 속성 2) | O226-A ⑥ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:41` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0227-B.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0228-A.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 2개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O227-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:17` |
-| ▣ O227-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:24` |
-| ▣ O227-A-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:31` |
-| ▣ O227-A-3 🟡 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:41` |
-| ▣ O227-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-A.md:48` |
-| ▣ O227-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:17` |
-| ▣ O227-B-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:24` |
-| ▣ O227-B-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:32` |
-| ▣ O227-B-3 🟡 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:43` |
-| ▣ O227-B-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0227-B.md:51` |
+| ▣ O228-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:17` |
+| ▣ O228-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:24` |
+| ▣ O228-A-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:35` |
+| ▣ O228-A-3 🟡 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:43` |
+| ▣ O228-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md:51` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -73,19 +57,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O227` | 🟢 O227 — O226-A 잔여 ②·③-①·③-② 집행 (2026-10-14 · xh20001 · ㉡ · 사용자 승인 · 확정위반 2 = R1-3-7-b 독해 토큰 사후 기록 … | 🟢 MEMBER V$9(교차 집계 예외 · 롤백 V$8) · C3 테이블 21 · 뷰 12 · GOLD 컬럼 29… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O226` | 🟢 O226 — O225-E 통합 착수표 10건 집행 (2026-10-14 · xh20001 · ㉡ · 일괄 승인 · 확정위반 2 = R1-7-8 원장 행 앵커(즉시 복구) · … | 🟢 WARN 22 원인표 · GAP 15 → 11(최초캠페인 SV 노출 · IRSD = FME DEV 동일 사건 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O225` | 🟢 O225 — dbt 1:N 매핑 안전장치(UTM) + ERP 세부캠페인 배선 + 캠페인 축 전수 배선 (2026-10-14 · xh20001 · ㉡ · 일괄 승인 · 확정위반… | 🟢 광고 = 이름매칭 우선 → UTM as-of(매핑 행수 최다 우선 · §15-9 초안 「시작일 최근 우선」은 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O224` | 🟢 O224 — 14차 Agent 개선 = 측정 우선 성능 향상 + 요건 R(회원 Agent 중단 예측 × 캠페인 결합 해제) (2026-10-14 · xh20001 · ㉡ · … | 🟢 eval 데이터셋 재등록 V3·V4(근거 6) · 기준선 = 실패 원인 1순위 「계산 전 확인 미이행」(도구 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O223` | 🟢 O223 — Agent 언어 가드레일 강화 및 법인구분(CPR_DIV_CD) 회비·실적 매핑 개선 (2026-10-14 · xh20001 · ㉡ · 승인 완료 · 단위 O22… | 🟢 Agent 3종 사고/진행/답변 한국어 전용 강제(일본어/영어 금지 O223 가드레일) · SV_MEMBER_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O222` | 🟢 O222 — 운영계(zl50263) 착수 점검 및 dbt 파이프라인 무결성 실측 (2026-10-13 · zl50263 · ㉡ · 승인 완료 · 단위 O222-A) | 🟢 0단계 착수 점검: 09_2_AGENT_버전업.sql [0] 사전검증 0행 결손, Agent 3종 live 배… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
+| `O228` | 🟢 O228 — 계정 이전(jw08094) 후 O227-B ② 마감 + COMMENT C3 단계 ③·④·잔여 + MEMBER 정답지 V5 (2026-10-14 · jw08094 … | 🟢 드리프트 0 · MKT V4 jw1 AC 0.9764(Q31 회복) · SV 22 · Agent 3종 VERS… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O227` | 🟢 O227 — O226-A 잔여 ②·③-①·③-② 집행 (2026-10-14 · xh20001 · ㉡ · 사용자 승인 · 확정위반 2 = R1-3-7-b 독해 토큰 사후 기록 … | 🟢 MEMBER V$9(교차 집계 예외 · 롤백 V$8) · C3 테이블 21 · 뷰 12 · GOLD 컬럼 29… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O226` | 🟢 O226 — O225-E 통합 착수표 10건 집행 (2026-10-14 · xh20001 · ㉡ · 일괄 승인 · 확정위반 2 = R1-7-8 원장 행 앵커(즉시 복구) · … | 🟢 WARN 22 원인표 · GAP 15 → 11(최초캠페인 SV 노출 · IRSD = FME DEV 동일 사건 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O225` | 🟢 O225 — dbt 1:N 매핑 안전장치(UTM) + ERP 세부캠페인 배선 + 캠페인 축 전수 배선 (2026-10-14 · xh20001 · ㉡ · 일괄 승인 · 확정위반… | 🟢 광고 = 이름매칭 우선 → UTM as-of(매핑 행수 최다 우선 · §15-9 초안 「시작일 최근 우선」은 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O224` | 🟢 O224 — 14차 Agent 개선 = 측정 우선 성능 향상 + 요건 R(회원 Agent 중단 예측 × 캠페인 결합 해제) (2026-10-14 · xh20001 · ㉡ · … | 🟢 eval 데이터셋 재등록 V3·V4(근거 6) · 기준선 = 실패 원인 1순위 「계산 전 확인 미이행」(도구 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O223` | 🟢 O223 — Agent 언어 가드레일 강화 및 법인구분(CPR_DIV_CD) 회비·실적 매핑 개선 (2026-10-14 · xh20001 · ㉡ · 승인 완료 · 단위 O22… | 🟢 Agent 3종 사고/진행/답변 한국어 전용 강제(일본어/영어 금지 O223 가드레일) · SV_MEMBER_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 18 | 471,660 | 37,670 | 3,290 🟠 |
-| `01_세션이력` | 87 | 2,203,180 | 38,225 | 22,857 |
+| `00_INDEX_이슈원장` | 18 | 472,312 | 38,322 | 2,638 🟠 |
+| `01_세션이력` | 87 | 2,205,809 | 38,225 | 20,228 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -107,10 +91,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 9,938 | 9,938 | 31,022 |
+| `00_BRIEF` | — | 9,356 | 9,356 | 31,604 |
 | `11_O누적작업_점검_재현_절차` | — | 32,668 | 32,668 | 8,292 |
 
-> 전 문서군 = **3,232,757 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,234,805 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태

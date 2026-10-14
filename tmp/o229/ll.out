@@ -1,0 +1,10 @@
+  ⚠️ 05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql:179: 1170자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql:180: 1173자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql:165: 1620자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_07_SV_DDL_AD.sql:164: 1723자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql:81: 1302자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql:107: 1095자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/22_ML_SV_DDL.sql:100: 1298자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/22_ML_SV_DDL.sql:222: 1051자 (권고 1000 초과 · 상한 이내)
+  ⚠️ 05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql:165: 1620자 (권고 1000 초과 · 상한 이내)
+🟢 PASS — 45파일 · 상한(2000자) 초과 0줄

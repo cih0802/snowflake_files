@@ -1,0 +1,82 @@
+=== gen_gold_erd / gold_erd_coverage_gate 음성 테스트 ===
+
+[축1] rel_op — 논리 관계는 점선이어야 한다
+  🟢 축1-a 선언 FK = 실선 — ||--o{
+  🟢 축1-b live = 실선 — ||--o{
+  🟢 축1-c yaml = 실선 — ||--o{
+  🟢 축1-d logical = 점선 — ||..o{
+  🟢 축1-e src 미지정도 실선으로 안전 기본 — ||--o{
+
+[축2] 오염 입력 — 논리 관계 없이 그리면 DIM_MONTH 가 고립된다(초판 재현)
+  🟢 축2-a 오염 입력에서 DIM_MONTH 관계선 0 (결함 재현 성공) — 관계선 0
+
+[축3] 복구 — 논리 관계 병합 후 DIM_MONTH 관계선이 생긴다
+  🟢 축3-a MONTH_KEY 논리 관계 1건 추가 — added=1
+  🟢 축3-b DIM_MONTH → FACT_BUDGET 점선 관계선 생성 — 점선 1
+  🟢 축3-c ORG_SK 는 미분류로 보고된다(분류부에 없다) — [('FACT_BUDGET', 'ORG_SK')]
+
+[축4] 미분류 고립은 blocking 이어야 한다(경고로 흘리면 안 된다)
+  🟢 축4-a main() 이 미분류 고립에서 return 1 한다
+  🟢 축4-b __main__ 이 sys.exit(main()) 로 종료코드를 전달한다
+
+[축5] 규칙 단일 정본 — 생성기가 규칙을 복사하지 않았는가
+  🟢 축5-a 생성기가 게이트를 import 한다
+  🟢 축5-b 생성기에 LOGICAL_FK 정의가 없다(복사 금지)
+  🟢 축5-c 생성기에 KNOWN_ORPHANS 정의가 없다(복사 금지)
+
+[축6] --yaml-only 산출물이 전량판 경로를 덮지 않는다
+  🟢 축6-a 별도 출력 경로가 정의돼 있다
+  🟢 축6-b 두 경로가 다르다 — GOLD_ERD_테이블별_YAML전용.html
+  🟢 축6-c main() 이 플래그로 경로를 가른다
+
+[축7] CONFORM 분류는 반드시 LOGICAL_FK 대상을 가진다
+  🟢 축7-a CONFORM 전건이 LOGICAL_FK 에 대상을 가진다 — CONFORM 10 · 대상 누락 0 []
+  🟢 축7-b 전역 CONFORM 은 컬럼 전역 대상을 가진다 — 전역 CONFORM 3 · 누락 0 []
+
+[축8] Mermaid 타입 정규화 — 괄호·쉼표가 남으면 렌더가 깨진다
+  🟢 축8-a NUMBER(6,0) 정규화 — NUMBER_6_0
+  🟢 축8-b VARCHAR(16777216) 정규화 — VARCHAR_16777216
+  🟢 축8-c 꼬리 밑줄 제거 — NUMBER_8_0
+
+[축9] 산출물 회귀 가드 — 발행된 HTML 에 DIM_MONTH 관계가 실재한다
+  🟢 축9-a 전체 ERD 에 DIM_MONTH 점선 관계가 1건 이상 — 점선 8건
+  🟢 축9-b DIM_MONTH 섹션에 역참조 팩트가 1건 이상 — 7건 ['FACT_BUDGET.MONTH_KEY', 'FACT_MEMBER_FEE.MONTH_KEY', 'FACT_MEMBER_MONTHLY.MONTH_KEY']
+  🟢 축9-c logical 배지가 산출물에 실재한다
+  🟢 축9-d CDN 실패 폴백이 산출물에 실재한다
+
+[축10] 산출물 회전 — 기존 판본을 덮지 않고 `_archive/` 에 보관한다
+  🟢 축10-a 선언된 생성일을 읽는다 — 20260830 / 선언
+  🟢 축10-b 회전 이름이 .html 확장자를 보존한다 — OUT_20260830.html
+  🟢 축10-c 보관본 바이트가 원본과 동일 — created
+  🟢 축10-d 충돌 시 접미가 확장자 앞에 붙는다 — OUT_20260830_2.html
+  🟢 축10-e 🔴 첫 보관본이 덮이지 않았다
+  🟢 축10-f 멱등 — 동일 내용은 파일 수를 늘리지 않는다 — reused · 2→2
+  🟢 축10-g 산출물 미존재 시 None 을 돌려준다
+
+[축11] `R1-7-10` — 회전이 snapshot_util 을 경유하고 경로를 조립하지 않는다
+  🟢 축11-a snapshot_util 을 import 한다
+  🟢 축11-b 보관 경로를 직접 조립하지 않는다(shutil.copy 없음)
+  🟢 축11-c 라벨 산식을 재구현하지 않는다(resolve_label 경유) — 환경변수 직독 없음
+  🟢 축11-d 회전이 write 보다 먼저 온다
+
+[축12] 개정 ② — 생성 시각만 다르면 회전을 생략한다
+  🟢 축12-a 생성 시각이 달라도 정규화 결과는 같다
+  🟢 축12-b 🔴 계정·관계수는 지우지 않는다(실질 변경을 놓치면 안 된다)
+  🟢 축12-c 시각만 다르면 'unchanged' 를 돌려준다 — unchanged
+  🟢 축12-d 🔴 보관 파일이 생기지 않았다
+스냅샷 = ../tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html  [TEST · 87 B · d1ce8edaa9fed885]
+  🟢 축12-e 실질 변경이 있으면 보관한다 — /tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html
+스냅샷(기존 재사용 · 바이트 동일) = ../tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html  [TEST · 87 B · d1ce8edaa9fed885]
+  🟢 축12-f new_html 없으면 무조건 보관한다(안전측) — /tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html
+  🟢 축12-g(e) 🔴 보관본이 임시 경로 안에 있다(실 _archive 오염 0) — ../tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html
+  🟢 축12-g(f) 🔴 보관본이 임시 경로 안에 있다(실 _archive 오염 0) — ../tmp/erdnochg_6ejp2djx/_archive/_rolling/OUT_20260830.html
+
+[축13] 개정 ① — 롤링 백업이 `_archive/_rolling/` 으로 격리된다
+  🟢 축13-a ARCHIVE_DIR 이 `_rolling` 하위다 — /workspace/30_output_share/_archive/_rolling
+  🟢 축13-b 날짜 폴더 관례(`_archive/` 최상위)와 층이 다르다
+  🟢 축13-c `_archive/` 최상위에 롤링 파일이 남아 있지 않다 — 잔존 0건 []
+  🟢 축13-d 🔴 실 `_rolling/` 에 테스트 잔재가 없다 — 잔재 0건 []
+
+============================================================
+단정 49건 · 🟢 통과 49 · 🔴 실패 0
+🟢 ALL PASS

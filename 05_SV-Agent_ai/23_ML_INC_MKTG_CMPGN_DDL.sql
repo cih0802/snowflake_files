@@ -28,7 +28,7 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V (
     ATTR_STRD_MT     COMMENT '귀속 개발행의 MSTR 기준년월(YYYYMM). NULL = 귀속 불가',
     IS_LINKED        COMMENT 'TRUE = 마케팅캠페인에 귀속됨'
 )
-  COMMENT = 'O217-B ML 증액 예측(회원) × MSTR 마케팅캠페인 귀속. grain = 기준월 × 회원. 수치 원천 = SERVING.ML_MEMBER_RISK_V(증액 예측 보유 회원) · 귀속 원천 = SERVING.MSTR_SPNSR_DVLP_V.'
+  COMMENT = 'ML 증액 예측(회원) × MSTR 마케팅캠페인 귀속. grain = 기준월 × 회원. 수치 원천 = SERVING.ML_MEMBER_RISK_V(증액 예측 보유 회원) · 귀속 원천 = SERVING.MSTR_SPNSR_DVLP_V.'
 AS
 WITH pred AS (
     SELECT STDR_MT, MBER_NO, INC_PROB, INC_CLASS
@@ -117,7 +117,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN
       WITH SYNONYMS ('모델 증액분류 회원수')
       COMMENT = '모델이 증액으로 분류한 회원수(명). 극소수다.'
   )
-  COMMENT = 'ML 증액 예측 × 마케팅캠페인 SV(🆕 O217-B). base=SERVING.ML_INC_BY_MKTG_CMPGN_V. 「증액이 높을 것으로 예상되는 마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리」 질문에 쓴다. 🔴🔴 머신러닝 예측치이며 실적이 아니다 — MSTR 증액 실적(SV_MSTR_SPNSR_DVLP)과 같은 표에 합산하지 않고 표를 나눈다. 🔴 머신러닝은 테스트 단계다. 🔴🔴 예측은 회원 단위 증액확률이다 — 캠페인 값은 그 캠페인에 귀속한 회원들의 확률을 모은 것이고 「N월 증액 건수」 예측이 아니다. 🔴 귀속은 Agent 데이터 규칙이다(그 해 MSTR 최근 개발 1건의 마케팅캠페인) · 모델이 캠페인을 학습한 것이 아니다. 🔴 귀속 불가 회원(MK_CMPGN_NM NULL)은 순위에서 빼고 그 회원수를 따로 밝힌다. 활성: 예측 대상 회원수·기대 증액 회원수·평균 증액확률·모델 증액분류 회원수 · 기준월·마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리 축. 비활성: 증액 금액 예측(원천에 없음) · 월별 증액 건수 예측(원천에 없음).'
+  COMMENT = 'ML 증액 예측 × 마케팅캠페인 SV. base=SERVING.ML_INC_BY_MKTG_CMPGN_V. 「증액이 높을 것으로 예상되는 마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리」 질문에 쓴다. 🔴🔴 머신러닝 예측치이며 실적이 아니다 — MSTR 증액 실적(SV_MSTR_SPNSR_DVLP)과 같은 표에 합산하지 않고 표를 나눈다. 🔴 머신러닝은 테스트 단계다. 🔴🔴 예측은 회원 단위 증액확률이다 — 캠페인 값은 그 캠페인에 귀속한 회원들의 확률을 모은 것이고 「N월 증액 건수」 예측이 아니다. 🔴 귀속은 Agent 데이터 규칙이다(그 해 MSTR 최근 개발 1건의 마케팅캠페인) · 모델이 캠페인을 학습한 것이 아니다. 🔴 귀속 불가 회원(MK_CMPGN_NM NULL)은 순위에서 빼고 그 회원수를 따로 밝힌다. 활성: 예측 대상 회원수·기대 증액 회원수·평균 증액확률·모델 증액분류 회원수 · 기준월·마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리 축. 비활성: 증액 금액 예측(원천에 없음) · 월별 증액 건수 예측(원천에 없음).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
   핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(ic.STDR_MT)) 하나로 한정하고 밝힌다 — 비상관 CTE 로 구해 CROSS JOIN 한다. (2) 「증액이 높을 캠페인 상위 N」 = ic.MK_CMPGN_NM IS NOT NULL 로 한정하고 마케팅캠페인별 SUM(ic.INC_PROB) 내림차순 상위 N 을 반환한다. 열 = 마케팅캠페인 · 예측 대상 회원수 COUNT(DISTINCT ic.MBER_NO) · 기대 증액 회원수 ROUND(SUM(ic.INC_PROB),1) · 평균 증액확률(%) ROUND(AVG(ic.INC_PROB)*100,2) · 구성비(%) = 그 캠페인 SUM(INC_PROB) ÷ 귀속 회원 전체 SUM(INC_PROB) × 100(소수 2자리 · 분모는 SQL 로 구한다). (3) 귀속 불가 회원수(ic.MK_CMPGN_NM IS NULL 의 COUNT DISTINCT)와 전체 예측 대상 회원수를 별도 행 또는 별도 쿼리로 함께 반환한다. (4) 평균 증액확률 순위를 요청받으면 예측 대상 회원 100명 이상 캠페인으로 한정하고 그 하한을 밝힌다. (5) 공통브랜드·마케팅채널·캠페인카테고리별도 같은 방식이다. (6) 🔴 실적 SV 와 조인하지 않는다.';

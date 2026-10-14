@@ -1,0 +1,39 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+== 축1 wrap 불변성 (같은 문안 · 줄바꿈 위치만 다름)
+   stance(A)=1  stance(B)=1
+  🟢 ok    줄바꿈 위치를 옮겨도 stance 동일 (wrap 무관)
+  🟢 ok    일치 방향이 옳다 — 「분해 가능하다」 문안은 +1(가능)이어야 한다
+== 축2 오탐 재현 (시정 전 구현에서는 갈렸다)
+   legacy(A)=-1  legacy(B)=1
+  🟢 ok    시정 전 구현은 판정이 갈린다 = 이 테스트가 진짜 결함을 재현한다
+== 축3 태도 감지 (기능 보존)
+  🟢 ok    순수 긍정 = +1
+  🟢 ok    순수 부정 = -1
+  🟢 ok    단서 없음 = 0
+== 축4 개념 미등장 (다른 문장의 부정에 오염되지 않는다)
+  🟢 ok    개념이 없으면 0 (문서 전체의 '불가' 에 오염 0)
+== 축5 라이브 판정 (실제 스펙에서 모순 0)
+   「후원사업별」 모순 0건 []
+  🟢 ok    라이브 스펙에서 「후원사업별」 blocking 모순 0건
+== 축8 가산성 분리 (O119-B 신설 · 진짜 부정을 잃지 않는가)
+  🟢 ok    가산성만 말하는 문장은 중립(0) — 「불가」로 읽지 않는다
+  🟢 ok    진짜 부정(원천 축 부재)은 가산성 단서와 무관하게 살아 있다
+  🟢 ok    긍정 + 가산성 경고 = +1 (실제 스펙 형태)
+  🟢 ok    ADDITIVITY_CUES 가 선언돼 있다
+== 축9 축③ 스펙 표면 규칙7 (O119-B 신설 · 형제 표면 편입)
+  🟢 ok    축③ 예외가 sv_unit_gate.NUM_EXEMPT 와 동일 객체다(3게이트 공유 · 복제 0)
+   스펙 description 규칙7 위반 = 0건 []
+  🟢 ok    라이브 스펙 description 규칙7 위반 0건
+  🟢 ok    무력화 아님 — 스펙 문안의 실측 백분율은 여전히 검출된다
+  🟢 ok    grain 정의(grain 이 앞)는 면제된다
+  🟢 ok    무력화 아님 — grain 근방의 **큰 수**는 면제되지 않는다(자릿수 제한이 작동한다)
+== 축10 키 순서 무관 (O191 신설 · O190 수리의 음성 축)
+   fixture tools = [('analyst_a', 'SV_FIX_A', 17), ('analyst_b', 'SV_FIX_B', 12)]
+  🟢 ok    tool_resources 선행 스펙 — 도구 2건 전부 분모에 있다
+  🟢 ok    tool_resources 선행 스펙 — 설명 미확보 0건(거짓 PASS 경로 차단)
+  🟢 ok    도구 ↔ SV 매핑이 키 순서와 무관하게 정확하다
+  🟢 ok    시정 전 구현은 이 픽스처에서 설명을 못 읽는다 = 결함 재현
+
+단정 21건 · 실패 0건
+🟢 테스트 통과

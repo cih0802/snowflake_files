@@ -1,0 +1,8 @@
+scripts/doc_census.py rc=0 :: ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다
+scripts/gen_measure_backlog.py --write rc=0 :: 🟢 20_issue/92_실측필요_후속작업.md 생성 — 0항목 · 4,061 B
+scripts/decision_closure_gate.py rc=0 ::  - 🔴 「의도적으로 열린 것」이면 그 사실을 인용처에 쓰면 이 경고가 근거를 갖는다.
+scripts/clause_order_gate.py rc=0 :: ✅ 게이트 통과 — 조문 112개 · 역전 0 · 중복 0 (경고 0건)
+scripts/doc_coord_gate.py rc=0 :: ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 2건은 사람 판단)
+scripts/line_len.py tmp/o228/04_c3_sv.md tmp/o228/handoff_entry.md tmp/o228/history_entry.md tmp/o228/ledger_close.py 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0228-A.md 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md rc=0 :: 🟢 PASS — 6파일 · 상한(2000자) 초과 0줄
+TESTS_DONE
+BRIEF_RC=0

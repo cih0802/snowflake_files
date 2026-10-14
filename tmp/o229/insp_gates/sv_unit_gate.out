@@ -1,0 +1,21 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[SV 단위 게이트] SV 36종 · 나눗셈 metric 26개 검사
+  ⚪ 예외: SV_AD.DEV_UNIT_PRICE (개발단가(원/건) — 금액÷건수이므로 percent 가 아니다)
+  ⚪ 예외: SV_AD.GA_DEV_UNIT_PRICE (공8 GA 개발단가(원/건) — O188-D 신설)
+  ⚪ 예외: SV_AD.REBRDC_DEV_UNIT_PRICE (재방송 개발단가(원/건))
+  🔴 위반: SV_DVLP_GOAL_ACMSLT.ACMSLT_RATE  [비율 명명]  SUM(ga.ACMSLT_CNT) / NULLIF(SUM(CASE WHEN ga.ACMSLT_CNT IS NOT NULL THEN ga.GOAL_CNT END),
+  ⇒ 위반 1건 · 예외 3건
+  🔴 GRANT 누락: SV_ML_REALTIME_SIMULATOR  (5건) REFERENCES→GN_DW_ANALYST; REFERENCES→GN_DW_SERVICE; REFERENCES→GN_DW_VIEWER; SELECT→GN_DW_SERVICE; SELECT→GN_DW_VIEWER
+  ⇒ GRANT 검사: SV 36종 · 누락 객체 1건
+  ⇒ 폐기식 검사: 등재 패턴 2종 · 노출 0건
+  🔴 COMMENT 수치 **신규 유입**: SV_ML_CHURN_CAMPAIGN.METRIC.SPONSOR_HIGH_RISK_MEMBERS [COMMENT] 1건
+  🔴 COMMENT 수치 **신규 유입**: SV_ML_INC_CAMPAIGN.CUSTOM_INSTRUCTION.None [AI_SQL_GENERATION] 100명
+  ⇒ COMMENT 수치 금지 검사: SV 36종 · **검출 2건** · 의미 예외 46토큰 (baseline 비움 = 모든 검출이 실패 · O59-R 정리 종결)
+  ⇒ 필수 문안 검사: 등재 SV 5종 · 토큰 16개 · 소실 0건
+  🔴 AGENT 발행 표면 결함: AGENT_EXECUTIVE ▸ 소관 SV 종수 선언 부재(기대 총수 8): 굿네이버스 전사 경영/재무 요약 및 AI 미래 예측 Agent. 실적(사업목표·예산편성/집행·광고실적·회원월
+  🔴 AGENT 발행 표면 결함: AGENT_MARKETING ▸ 소관 SV 종수 선언 부재(기대 총수 7): 굿네이버스 마케팅/광고 분석 Agent. 실적(사업목표·광고효율·개발목표달성·예산집행·전환회원·획득코호트·캠
+  🔴 AGENT 발행 표면 결함: AGENT_MEMBER ▸ 소관 SV 종수 선언 부재(기대 총수 11): 굿네이버스 회원 도메인 분석 Agent. 실적(월실적·상태전이·서비스발송·행사참여·결연활동·획득코호트·개발목
+  ⇒ AGENT 발행 표면 검사: Agent 3종 · 결함 3건
+
+🔴 게이트 실패

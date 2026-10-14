@@ -1,0 +1,38 @@
+-- O228 ④ C3 AGENT_TOOL — Agent 3종 버전업(도구 설명 58건 · 스펙 구조 불변 · 09_2 절차)
+-- 👤 GN_DW_ADMIN 으로 전체 실행(Run All). 현재 default = 3종 모두 VERSION$3 (2026-10-14 jw08094 실측)
+-- 롤백 = ALTER AGENT GN_DW.SERVING.<AGENT> SET DEFAULT_VERSION = 'VERSION$3';
+-- 확인 = 에이전트가 SHOW VERSIONS + 라이브 스펙 이슈ID 잔여 0 대조
+-- Co-authored with CoCo
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_ETL_WH;
+
+-- [1] 정본 스펙 → 스테이지
+COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_EXECUTIVE/'
+  PATTERN = '.*agent_spec[.]yaml';
+COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MEMBER/'
+  PATTERN = '.*agent_spec[.]yaml';
+COPY FILES INTO @GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/cortex_project/agents/AGENT_MARKETING/'
+  PATTERN = '.*agent_spec[.]yaml';
+-- 크기 확인 = 워크스페이스 정본 바이트(EXEC 70,167 · MEMBER 110,702 · MKT 93,800)와 같아야 한다
+LIST @GN_DW.OPS.AGENT_SPEC_STAGE PATTERN = '.*agent_spec[.]yaml';
+
+-- [2] 명명 버전 추가(현재 live 버전 없음 = 3종 모두 VERSION$1~3 명명 버전만 존재)
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
+  COMMENT = 'O228 C3 도구 설명 이슈ID·경위 서사 제거(13 · 구조 불변) · 롤백 = VERSION$3';
+ALTER AGENT GN_DW.SERVING.AGENT_MEMBER ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
+  COMMENT = 'O228 C3 도구 설명 이슈ID·경위 서사 제거(22 · 구조 불변) · 롤백 = VERSION$3';
+ALTER AGENT GN_DW.SERVING.AGENT_MARKETING ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
+  COMMENT = 'O228 C3 도구 설명 이슈ID·경위 서사 제거(23 · 구조 불변) · 롤백 = VERSION$3';
+
+-- [3] default 를 새 버전으로(09_2 P66 — ADD VERSION 만으로는 default 가 옮겨졌다고 단정하지 않는다)
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET DEFAULT_VERSION = LAST;
+ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET DEFAULT_VERSION = LAST;
+ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET DEFAULT_VERSION = LAST;
+
+-- [4] 확인 — 각 Agent 에서 VERSION$4 is_default = true
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;

@@ -112,7 +112,6 @@
 --   ML.ML_RST_DATA_ONCE_CONVERSION    3컬럼 · VARIANT $3   (🔴 PREDICT)    → A.5-B.2 (5)
 --   ⇒ 브론즈 64개 · SILVER 집계 3종 · ML 비VARIANT 7종에는 반정형 컬럼이 없다.
 -- =====================================================================
-
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE COMPUTE_WH;
 CREATE DATABASE IF NOT EXISTS SANDBOX;

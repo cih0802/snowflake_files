@@ -1,0 +1,25 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[COMMENT 드리프트 게이트] 파일 정본 ↔ 라이브 물리 · 판정 = SHA256(언이스케이프 값) · P223
+  GOLD 테이블 (06_DDL.sql): 파일 1256 · 대조 1256 · 🟢일치 1256 · 🔴불일치 0  · ⚪라이브부재 0
+  SILVER 테이블 (08_SILVER_테이블DDL): 파일 1303 · 대조 1303 · 🟢일치 1303 · 🔴불일치 0  · ⚪라이브부재 0
+  GOLD 뷰 (_wide_schema.yml): 파일 660 · 대조 660 · 🟢일치 660 · 🟡불일치 0  · ⚪라이브부재 0
+
+[테이블레벨 COMMENT] 🆕 O121-B 신설 — 종전 3축은 컬럼 COMMENT 만 봤다
+  ⚠️ 분모가 `audit_ddl_rule7` 의 「블록 수」와 다를 수 있다 — **둘 다 옳다.**
+     그 도구는 `CREATE TABLE` 줄을 세고(주석 처리된 선언 포함) 이 축은 **값이 있는 것**만
+     센다. 실측 = SILVER 블록 43 ↔ 이 축 42 · 차이는 `BIGQUERY_REFINED_DATA`
+     (파일에서 주석 처리된 선언 · 외부 Python 적재 · DEC-37) 1건이다.
+     🔴 「불일치」를 결함으로 단정하기 전에 두 판정식의 자격 조건을 읽어라(O120 ㉡).
+  GOLD 테이블레벨 (06_DDL.sql): 파일 54 · 대조 54 · 🟢일치 54 · 🔴불일치 0  · ⚪라이브부재 0
+  SILVER 테이블레벨 (08_SILVER_테이블DDL): 파일 61 · 대조 61 · 🟢일치 61 · 🔴불일치 0  · ⚪라이브부재 0
+
+[금지 문안 검사] 폐기 규약(R2-7-1) · BASE TABLE 자기 「뷰」 지칭(O63-J ③)
+  🟢 GOLD 테이블 파일: 검사 1256 · 위반 0
+  🟢 GOLD 테이블 라이브: 검사 1256 · 위반 0
+  🟢 SILVER 테이블 파일: 검사 1303 · 위반 0
+  🟢 SILVER 테이블 라이브: 검사 1475 · 위반 0
+  🟢 GOLD 뷰 파일: 검사 660 · 위반 0
+  🟢 GOLD 뷰 라이브: 검사 710 · 위반 0
+
+✅ 게이트 통과 — 드리프트 0 · 금지 문안 0
