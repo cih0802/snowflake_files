@@ -47,7 +47,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.ACQ_CMMN_BRAND   AS fee.ACQ_CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공동브랜드') COMMENT = '[O205] 🔴**획득 시점** 공통브랜드(MM297). ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다 — 「공통브랜드」를 물으면 이 축을 쓴다',
     fee.ACQ_UTM          AS fee.ACQ_MKTG_UTM_NM  WITH SYNONYMS ('UTM', 'utm') COMMENT = '[O205] 🔴**획득 시점** UTM 라벨. ⚠️채움이 낮다(코드사전 미등재분 NULL · 결측이 아니라 미등재) — UTM 별 합계는 전체보다 작으므로 부분집합임을 밝히고 채움 비율은 조회로 확인한다',
     fee.ACQ_SPNSR_DIV    AS fee.ACQ_SPNSR_DIV_NM WITH SYNONYMS ('후원구분', '세부캠페인 후원구분', '정기일시구분(캠페인)') COMMENT = '[O205] 🔴**획득 세부캠페인** 후원구분(CM035 정기후원/일시후원). ⚠️회비구분(FEE_DIV)·납입유형과 다른 축이다',
-    fee.ACQ_CPR_DIV      AS fee.ACQ_CPR_DIV_NM   WITH SYNONYMS ('법인구분', '세부캠페인 법인구분', '법인') COMMENT = '[O205] 🔴**획득 세부캠페인** 법인구분(CM019 통합/사단/사복). 🔴조직 계층 법인(산출 불가)과 다른 축이다 — 「사단 회원 회비」는 이 축으로 답하고 캠페인 법인구분 기준임을 밝힌다'
+    fee.ACQ_CPR_DIV      AS fee.ACQ_CPR_DIV_NM   WITH SYNONYMS ('법인구분', '세부캠페인 법인구분', '법인', '사단법인', '사복', '사회복지법인', '사단', '법인명') COMMENT = '[O205] 🔴**획득 세부캠페인** 법인구분(CM019 통합/사단/사복). 🔴조직 계층 법인(산출 불가)과 다른 축이다 — 「사단 회원 회비」·「사단법인 회비」는 이 축(ACQ_CPR_DIV = ''사단'')으로 답하고 캠페인 법인구분 기준임을 밝힌다'
   )
   METRICS (
     fee.TOTAL_BILLED_AMT AS SUM(fee.BILLED_AMT)
@@ -84,6 +84,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       QUESTION '최근 12개월 후원사업별·납입방식별 회비 청구액과 납부율'
       VERIFIED_BY '(DW = O191)'
       SQL 'WITH mx AS (SELECT MAX(fee.MONTH_KEY) AS mk FROM fee) SELECT fee.SPONSORSHIP, fee.PAYMENT_METHOD, SUM(fee.BILLED_AMT) AS TOTAL_BILLED_AMT, SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100 AS PAYMENT_RATE_FEE FROM fee CROSS JOIN mx WHERE fee.MONTH_KEY > TO_NUMBER(TO_CHAR(DATEADD(MONTH, -12, TO_DATE(TO_VARCHAR(mx.mk), ''YYYYMM'')), ''YYYYMM'')) AND fee.MONTH_KEY <= mx.mk GROUP BY fee.SPONSORSHIP, fee.PAYMENT_METHOD ORDER BY TOTAL_BILLED_AMT DESC NULLS LAST'
+    ),
+    vqr_o223_sadan_member_fee AS (
+      QUESTION '사단법인 연도별 회비 납입액과 청구액 및 납부율'
+      VERIFIED_BY '(DW = O223)'
+      SQL 'SELECT fee.CAL_YEAR, fee.ACQ_CPR_DIV, SUM(fee.BILLED_AMT) AS TOTAL_BILLED_AMT, SUM(fee.PAID_FEE_BILLABLE) AS TOTAL_PAID_FEE_BILLABLE, SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100 AS PAYMENT_RATE_FEE FROM fee WHERE fee.ACQ_CPR_DIV = ''사단'' GROUP BY fee.CAL_YEAR, fee.ACQ_CPR_DIV ORDER BY fee.CAL_YEAR DESC'
     )
   );
 
