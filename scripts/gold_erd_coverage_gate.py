@@ -98,6 +98,26 @@ KNOWN_ORPHANS = {
         "조직 차원의 자연키(업무키). 실측 = 1,315행 · distinct 1,315(유일) · 미해소 0 ⇒ "
         "자기 테이블의 키이고 FK 가 아니다.",
     ),
+    # 🆕 [2026-10-14 O229 D4] 미분류 고립 4건 — jw08094 라이브 실측으로 분류
+    ("DIM_RELATIONSHIP", "MEMBER_DK"): (
+        "CONFORM",
+        "회원 conform 축 → DIM_MEMBER.MEMBER_DK. 실측 872,358행 · distinct 558,888 · 해소 558,888(100%) "
+        "⇒ 🔴 ERD 에 논리 관계로 표기한다(물리 FK 미선언).",
+    ),
+    ("FACT_BIGQUERY_SESSION", "BIGQUERY_SESSION_KEY"): (
+        "DEGEN",
+        "BigQuery 세션 원천키. 실측 1,230,352행 · distinct 1,230,352(유일) ⇒ 팩트 grain 키 · 대상 차원 없음.",
+    ),
+    ("FACT_BIGQUERY_SESSION", "IDENTITY_SK"): (
+        "CONFORM",
+        "식별자 conform 축 → DIM_MEMBER_IDENTITY.IDENTITY_SK. 실측 distinct 38,652 · 해소 38,652(100%) "
+        "⇒ 🔴 ERD 에 논리 관계로 표기한다(FACT_BIGQUERY_BEHAVIOR 와 같은 축).",
+    ),
+    ("FACT_EXPENSE_RESOLUTION", "MKTG_CAMPAIGN_SK"): (
+        "CONFORM",
+        "마케팅캠페인 conform 축 → DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK. 실측 111,649행 · distinct 132 · "
+        "해소 132(100%) ⇒ 🔴 ERD 에 논리 관계로 표기한다(O225 배선).",
+    ),
     ("DIM_MEMBER_IDENTITY", "MEMBER_DK"): (
         "CONFORM",
         "회원 식별 차원 → DIM_MEMBER.MEMBER_DK 참조. 실측 = 1,763,066행 · 유일 · "
@@ -196,6 +216,10 @@ LOGICAL_FK = {
 
     # 🆕 [O128] DIM 측 논리 관계 7건 — 근거·실측은 위 KNOWN_ORPHANS 의 같은 키에 있다.
     ("DIM_MEMBER_IDENTITY", "MEMBER_DK"):        ("DIM_MEMBER", "MEMBER_DK"),
+    # 🆕 [O229 D4] CONFORM 3건의 논리 관계 대상(근거·실측 = KNOWN_ORPHANS 같은 키 · test_gold_erd 축7-a)
+    ("DIM_RELATIONSHIP", "MEMBER_DK"):           ("DIM_MEMBER", "MEMBER_DK"),
+    ("FACT_BIGQUERY_SESSION", "IDENTITY_SK"):    ("DIM_MEMBER_IDENTITY", "IDENTITY_SK"),
+    ("FACT_EXPENSE_RESOLUTION", "MKTG_CAMPAIGN_SK"): ("DIM_MARKETING_CAMPAIGN", "MKTG_CAMPAIGN_SK"),
     ("DIM_MEMBER", "MEMBER_SK"):                 ("DIM_MEMBER_STATUS_HISTORY", "MEMBER_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_CAMPAIGN_SK"):    ("DIM_CAMPAIGN", "CAMPAIGN_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_DATE_SK"):        ("DIM_DATE", "DATE_SK"),

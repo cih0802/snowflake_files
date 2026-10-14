@@ -44,4 +44,21 @@ END-METADATA -->
 - D10 = MKT eval 정답지 Q29 작업 메모 채점 오염(`tmp/o229/01_q29_cause.md` · `02_gt_memo_scan.md`).
 - D11 = 런북 파일명 stale 3곳(`24_BIZ…` · `25_ML_REALTIME…` ×2) → O229 시정.
 
+## 시정 결과 (O229-A 2단위 · 사용자 승인 「eval 외 남은 작업」)
+
+| D | 시정 | 판정 |
+|---|---|---|
+| D2 | `doc_line_length_gate.CANON_CODE` 9경로 `05_N_` → `05_0N_` | 경로 실재 9/9 · 🟠 게이트 자체가 스테이지 마운트에서 120초 초과(rc=143) → 900초 재실행 결과는 아래 |
+| D3 | `table_ddl_column_gate` 렌더러에 `billing_campaign_asof(rel)` = `rel.* + BILLING_MK + BILLING_CMPGN_CD` | rc=0 |
+| D4 | `gold_erd_coverage_gate.KNOWN_ORPHANS` 4행(CONFORM 3 · DEGEN 1 · 해소율 전건 100% 실측) | rc=0 · 미분류 0 |
+| D5 | `live_change_gate` 명시 표지 `REBUILD:ALL` + 음성 축 ㉣ 3단정(시정 전 판정식 = 경보 → 뒤집힘 1 실증) · 원장 O229 행에 소급 표지 | rc=0 · 무기록 0 |
+| D6 | GRANT 5(라이브) + `24_ML_REALTIME_SIMULATOR_DDL.sql` 동시 | sv_unit GRANT 누락 0 |
+| D7 | `sv_unit_gate.NUM_EXEMPT` 조건 임계값(`N건/N명 이상` + 인·의·캠페인·으로) · 음성 = 「실측 1,234명 이상 증가」 미면제 | 검출 0 |
+| D8 | `EXPECTED_AGENT_SVS` 24·14·25(스펙 실측) + Agent 3종 COMMENT 「소관 SV N종」 라이브·`09_1` 각 2곳 | 결함 0 |
+| D9 | `SV_DVLP_GOAL_ACMSLT.ACMSLT_RATE` ×100(%) · 재배포 (dim,fact,metric) 불변 · 스모크 90.92 | 위반 0 · `sv_unit_gate` rc=0 |
+| D12 | `sv_code_label_gate`(900초 재실행 rc=1 → blocking 4) = GA 채널그룹 「16종 · 'Paid Video'」 ↔ 실측 15종(Paid Video 부재) · 편지상태 「2종 2·3」 ↔ 실측 3종 2·3·8 · 회원상태 `'신규미납1~5'` 범위 표기 → 13값 열거 · SV 3종 재배포(dim 불변) | rc=0 · blocking 0(advisory 열거누락 209 = 종전 축) |
+| D2 확정 | `doc_line_length_gate` 900초 재실행 | rc=0 |
+
+- 미집행 = D1 브리핑 GATES 편입(실행 시간 · 라이브 조회 — 사용자 결정) · D10 MKT 정답지 V5(eval 축 · 제외 지시).
+
 _Co-authored with CoCo_

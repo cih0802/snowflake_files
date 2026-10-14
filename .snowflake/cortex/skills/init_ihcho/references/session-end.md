@@ -79,6 +79,20 @@ for t in scripts/test_*.py; do python3 "$t" >/tmp/t.out 2>&1; r=$?; [ $r -ne 0 ]
 
 ---
 
+### 1-2. 🆕 [O229-B] 선택 게이트 — 브리핑 밖 게이트는 정리 후 **묻고** 돌린다
+
+🔴 **사용자 결정(O229-B)** = 브리핑 `GATES` 밖 게이트(`sv_unit` · `live_change` · `gold_erd_coverage` ·
+`table_ddl_column` · `sv_code_label` · `doc_line_length` 등)는 **브리핑에 넣지 않는다**(실행 시간 · 라이브 조회).
+🟢 대신 **세션 정리(§1)를 끝낸 뒤 마지막 응답 끝에** 아래 한 줄로 실행 여부를 묻는다(실행하지 않고 묻는다):
+
+```
+선택 게이트(브리핑 밖) 실행할까요? — `sh scripts/optional_gates.sh`(게이트당 최대 900초 · 라이브 조회) [실행 / 생략]
+```
+
+- 대상 목록은 **문서에 적지 않는다** — 스크립트가 `scripts/*_gate.py` − `session_brief.GATES` 차집합으로 받는다.
+- 「실행」이면 `run_in_background=true` 로 띄우고 `fail=0` 을 확인한다 · FAIL 은 사유를 열어 보고만 한다(임의 시정 금지).
+- 🔴 O229 Inspection 실측 = 브리핑 전 🟢 상태에서 밖 게이트 5종 rc=1 · 1종 rc=143(근거 = `20_issue/_o229_inspection_evidence.md` D1).
+
 ## 2. 문서 유지 도구 (정본 = `00_guides/01_문서분할_규약.md` `R1-6` 계열)
 
 | 도구 | 용도 | 필수 인자 · 조문 |

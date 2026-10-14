@@ -41,6 +41,10 @@ SHOWS = (
 ROW_LABEL = re.compile(r"^\|\s*\S*\s*\*\*`O\d+")
 SV_DDL = re.compile(r"SEMANTIC\s+VIEW\s+GN_DW\.SERVING\.(\w+)", re.I)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+# 🆕 [2026-10-14 O229 D5] 계정 전량 재구축 표지 — 원장 행에 `REBUILD:ALL` 과 날짜가 함께 있으면 그 날짜의
+#   SV·Agent 변경을 객체명 없이 인정한다(재구축 1회 = 객체 36종 · 행마다 객체명을 나열하지 않는다).
+#   🔴 표지는 **명시 토큰**만 인정한다 — 「재구축」 같은 자유문으로 넓히면 무기록 변경이 숨는다.
+REBUILD = "REBUILD:ALL"
 
 
 def ledger_rows(paths):
@@ -60,7 +64,7 @@ def judge(changes, rows, since):
         if day < since:
             continue
         ok_days = {day.isoformat(), (day + dt.timedelta(days=1)).isoformat()}
-        hit = any(name in r and ok_days & set(DATE.findall(r)) for r in rows)
+        hit = any((name in r or REBUILD in r) and ok_days & set(DATE.findall(r)) for r in rows)
         if not hit:
             alarms.append((name, day.isoformat()))
     return alarms

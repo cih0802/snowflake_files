@@ -145,7 +145,7 @@ REGISTRY = {
     'BRONZE_CRM.TM_CM_CMPGN_MNG.MKTG_CHANNEL': camp_attr('MKTG_CHANNEL_NM'),
     'BRONZE_CRM.TM_CM_CMPGN_MNG.MKTG_CMPGN_NM': camp_attr('MARKETING_CAMPAIGN'),
     'BRONZE_CRM.TM_CM_CMPGN_MNG.UPPER_CMPGN_CD': camp_attr('PARENT_CAMPAIGN_NAME'),
-    'BRONZE_CRM.TM_CM_CMPGN_MNG.UPPER_CMPGN_YN': G('SILVER CRM_CAMPAIGN 까지만 · GOLD·SV 미배선'),
+    'BRONZE_CRM.TM_CM_CMPGN_MNG.UPPER_CMPGN_YN': camp_attr('IS_PARENT_CAMPAIGN_YN'),  # [O229-B] DIM_CAMPAIGN build 후 SV_SERVICE 노출
     # ── CRM 회원 사건·약정·회비 ─────────────────────────────────
     'BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT.CMPGN_CD': W((M + 'gold/fact/FACT_MEMBER_EVENT.sql', 'campaign_valid'),
                                                      (SV + '05_02_SV_DDL_MEMBER_EVENT.sql', 'AS GN_DW.GOLD.DIM_CAMPAIGN')),

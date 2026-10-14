@@ -53,9 +53,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DVLP_GOAL_ACMSLT
     ga.GOAL_TO_DATE_CNT AS SUM(CASE WHEN ga.ACMSLT_CNT IS NOT NULL THEN ga.GOAL_CNT END)
       WITH SYNONYMS ('실적월 목표 건수', '누적 목표')
       COMMENT = '실적이 있는 월에 한정한 목표 건수 합계(건) — 달성률의 분모.',
-    ga.ACMSLT_RATE AS SUM(ga.ACMSLT_CNT) / NULLIF(SUM(CASE WHEN ga.ACMSLT_CNT IS NOT NULL THEN ga.GOAL_CNT END), 0)
+    ga.ACMSLT_RATE AS SUM(ga.ACMSLT_CNT) * 100 / NULLIF(SUM(CASE WHEN ga.ACMSLT_CNT IS NOT NULL THEN ga.GOAL_CNT END), 0)
       WITH SYNONYMS ('달성률', '목표 달성률')
-      COMMENT = '[비가산] 달성률 = 실적 ÷ 실적이 있는 월의 목표. 연간 목표 대비 진척률은 TOTAL_ACMSLT_CNT ÷ TOTAL_GOAL_CNT 로 따로 계산한다.'
+      COMMENT = '[비가산] 달성률(%) = 실적 ÷ 실적이 있는 월의 목표 × 100. 연간 목표 대비 진척률은 TOTAL_ACMSLT_CNT ÷ TOTAL_GOAL_CNT 로 따로 계산한다.'
   )
   COMMENT = '기획실 연간 개발 목표·실적 SV. base=GOLD.WIDE_DVLP_GOAL_ACMSLT. 🔴🔴 부서 자체 수식 집계이며 ML 예측이 아니다 — ML 개발금액 예측(SV_ML_DVLP_FORECAST · 만원)과 같은 표에 합산하지 않는다. 🔴 단위는 건이다(금액 아님). 🔴 미도래 월의 실적은 NULL 이며 0 이 아니다. ⚠️ 부서구분은 기획실 집계 기준이며 GN_DW 조직 차원과 같은 조직이라 단정하지 않는다. 활성: 목표·실적·달성률 · 월/부서구분/신규기존/후원사업그룹 축. 비활성: 금액 목표(원천 부재) · 본부·지부 분해(원천 축 부재).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

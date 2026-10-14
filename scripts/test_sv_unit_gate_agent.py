@@ -38,10 +38,13 @@ def noop_scanner(_text):
 RESULTS = []
 
 
+#: 🆕 [O229 D8] 픽스처 기대표 — 게이트 기대표(라이브 실측값)가 바뀌어도 판정 논리 단정이 흔들리지 않게 고정한다.
+FIXTURE_EXPECTED = {'AGENT_MEMBER': 11, 'AGENT_EXECUTIVE': 8, 'AGENT_MARKETING': 7}
+
+
 def check(name, agents, want_n, expect_sub=None, expect_not_sub=None, expected_map=None):
     saved = G.EXPECTED_AGENT_SVS
-    if expected_map is not None:
-        G.EXPECTED_AGENT_SVS = expected_map
+    G.EXPECTED_AGENT_SVS = expected_map if expected_map is not None else FIXTURE_EXPECTED
     try:
         bad = G.judge_agent_surface(agents, noop_scanner)
     finally:

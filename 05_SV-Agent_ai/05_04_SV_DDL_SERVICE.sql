@@ -119,6 +119,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     campaign.SPNSR_DIV_NM AS campaign.SPNSR_DIV_NM WITH SYNONYMS ('캠페인 후원구분') COMMENT = '캠페인 후원구분명(CM035 정기/일시).',
     -- 🆕 [2026-10-14 O229] campaign_axis_gate GAP 해소 = CMPGN_STRT_DE → DIM_CAMPAIGN.CAMPAIGN_OPEN_DATE
     campaign.CAMPAIGN_OPEN_DATE AS campaign.CAMPAIGN_OPEN_DATE WITH SYNONYMS ('캠페인 시작일', '캠페인 개설일') COMMENT = '캠페인 시작일(원천 캠페인관리 시작일자). 시작일이 없는 캠페인은 NULL.',
+    campaign.IS_PARENT_CAMPAIGN_YN AS campaign.IS_PARENT_CAMPAIGN_YN WITH SYNONYMS ('상위캠페인여부', '상위캠페인 여부') COMMENT = '상위캠페인 여부. 실제값 2종: ''Y''(그 자신이 상위캠페인)·''N''(하위캠페인) + NULL(미매핑 멤버).',
     fse.SND_LAST_CMPGN AS fse.SND_LAST_CMPGN WITH SYNONYMS ('발송 시점 최종캠페인코드') COMMENT = '문자(SND) 발송 시점 수신 회원의 최종 캠페인코드(코드값 · 라벨은 캠페인 SV 로) — 타 채널 NULL.',
     fse.SND_CURRENT_CMPGN AS fse.SND_CURRENT_CMPGN WITH SYNONYMS ('발송 시점 현재캠페인코드') COMMENT = '문자(SND) 발송 시점 수신 회원의 현재 캠페인코드(코드값) — 타 채널 NULL.'
   )

@@ -9,6 +9,11 @@ from sfconn import conn
 
 F = '/workspace/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql'
 SV = 'SV_SERVICE'
+DIM_DELTA = 1
+# 🆕 O229 D9 — 인자 = <파일> <SV> <기대 dim 증분>(생략 시 종전 SV_SERVICE · +1)
+_a = [x for x in sys.argv[1:] if x != 'dry']
+if len(_a) == 3:
+    F, SV, DIM_DELTA = '/workspace/05_SV-Agent_ai/' + _a[0], _a[1], int(_a[2])
 
 
 def cut(t, sv):
@@ -42,6 +47,6 @@ except Exception as e:  # noqa: BLE001
     print('🔴', str(e)[:400])
     sys.exit(1)
 after = shape(cur)
-ok = after == (before[0] + 1, before[1], before[2])
-print('🟢' if ok else '🔴', '후', after, '(기대 = dim +1)')
+ok = after == (before[0] + DIM_DELTA, before[1], before[2])
+print('🟢' if ok else '🔴', '후', after, f'(기대 = dim +{DIM_DELTA})')
 sys.exit(0 if ok else 1)

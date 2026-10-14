@@ -39,7 +39,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     date.MONTH AS date.MONTH WITH SYNONYMS ('월')        COMMENT = '월(1~12)',
     fra.ACTIVITY_TYPE AS fra.ACTIVITY_TYPE WITH SYNONYMS ('활동유형', '결연활동유형') COMMENT = '활동 유형 — **계열 분해의 정본 축**이다. 실제값 2종: ''서신''·''선물금''. 🔴 두 계열은 속성이 다르다(서신 계열 속성은 선물금 행에서 NULL · 선물금 계열 속성은 서신 행에서 NULL) ⇒ 계열 속성으로 분해할 때는 이 축을 동반한다',
     fra.LETTER_DIV_CD AS fra.LETTER_DIV_CD WITH SYNONYMS ('서신구분코드') COMMENT = '서신 구분 **원천 코드**(라벨 미배선 · 코드군 미확정). 실제값 3종: 1·5·9 + NULL. 🔴 라벨을 추측하지 말 것 — 현업에 코드 의미를 물어야 한다',
-    fra.LETTER_STAT_CD AS fra.LETTER_STAT_CD WITH SYNONYMS ('편지상태코드', '서신상태코드') COMMENT = '편지 상태 **원천 코드**(서신 계열 · 라벨 미배선). 실제값 2종: 2·3 + NULL. 🔴 라벨 추측 금지 · 선물금 행은 NULL(구조적 부재)',
+    fra.LETTER_STAT_CD AS fra.LETTER_STAT_CD WITH SYNONYMS ('편지상태코드', '서신상태코드') COMMENT = '편지 상태 **원천 코드**(서신 계열 · 라벨 미배선). 실제값 3종: 2·3·8 + NULL. 🔴 라벨 추측 금지 · 선물금 행은 NULL(구조적 부재)',
     fra.ONLINE_POST_WRITNG_YN AS fra.ONLINE_POST_WRITNG_YN WITH SYNONYMS ('온라인우편작성여부', '온라인 작성') COMMENT = '온라인 우편 작성 여부(서신 계열). 실제값 2종: ''0''·''1'' + NULL. ⚠️ 원천이 Y/N 이 아니라 0/1 이다 · 선물금 행은 NULL',
     fra.GFT_DIV_CD AS fra.GFT_DIV_CD WITH SYNONYMS ('선물구분코드') COMMENT = '선물 구분 **원천 코드**(선물금 계열 · 라벨 미배선). 실제값 7종: ''0''·''1''·''2''·''3''·''4''·''5''·''6'' + NULL. 🔴 라벨 추측 금지 · 서신 행은 NULL',
     fra.TRNSFER_YN AS fra.TRNSFER_YN WITH SYNONYMS ('이관여부') COMMENT = '이관 여부(선물금 계열). 실제값 3종: ''0''·''1''·''2'' + NULL. 🔴 여부 컬럼이지만 3값이다 — 2 의 뜻은 원천 미확정(창작 금지)',

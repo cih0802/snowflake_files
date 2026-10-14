@@ -35,6 +35,13 @@ check("㉠ 행 지움 → 경보 1", len(g.judge([("SV_TEST", D)], [], SINCE)) =
 check("㉡ 날짜 다른 행 → 인정 안 함", len(g.judge([("SV_TEST", D)], [OTHER], SINCE)) == 1)
 check("㉡ 시행일 이전 변경 → 보지 않음", g.judge([("SV_TEST", dt.date(2026, 10, 3))], [], SINCE) == [])
 check("㉢ 다음 날 기재 → 인정", g.judge([("SV_TEST", dt.date(2026, 10, 6))], [ROW], SINCE) == [])
+# 🆕 [O229 D5] 축 ㉣ 재구축 표지 — 명시 토큰 + 같은 날짜만 인정(자유문 「재구축」은 불인정)
+RB = "| 🟢 **`O997`** — 계정 재구축 `REBUILD:ALL` (2026-10-07) | x | y | z |\n"
+RB_FREE = "| 🟢 **`O996`** — 계정 재구축 (2026-10-07) | x | y | z |\n"
+RB_OLD = "| 🟢 **`O995`** — `REBUILD:ALL` (2026-09-01) | x | y | z |\n"
+check("㉣ 재구축 표지 → 객체명 없이 인정", g.judge([("SV_OTHER", D)], [RB], SINCE) == [])
+check("㉣ 자유문 「재구축」 → 불인정", len(g.judge([("SV_OTHER", D)], [RB_FREE], SINCE)) == 1)
+check("㉣ 날짜 다른 표지 → 불인정", len(g.judge([("SV_OTHER", D)], [RB_OLD], SINCE)) == 1)
 
 # 종단(CLI · 종료코드) — 픽스처 파일로 행 삭제 → rc=1 · 복원 → rc=0
 with tempfile.TemporaryDirectory() as td:

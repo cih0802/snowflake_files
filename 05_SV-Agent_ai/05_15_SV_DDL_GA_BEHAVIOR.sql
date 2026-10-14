@@ -45,7 +45,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
     evt.EVENT_CATEGORY AS evt.EVENT_CATEGORY WITH SYNONYMS ('이벤트 카테고리', '이벤트구분') COMMENT = 'GA4 이벤트 카테고리. 주요값 예: ''donor_action''·''나의후원''·''캠페인스크롤깊이''·''후원창''·''header''·''메뉴''·''캠페인버튼클릭''. 🔴 NULL = 페이지뷰 행(카테고리 없음)이며 결측이 아니다 — 페이지뷰는 TOTAL_PAGE_VIEWS 로 센다',
     evt.EVENT_ACTION AS evt.EVENT_ACTION WITH SYNONYMS ('이벤트 액션') COMMENT = 'GA4 이벤트 액션(자유 텍스트 · 카디널리티 큼) — 이름으로 물으면 ILIKE 부분일치로 필터한다',
     evt.EVENT_LABEL AS evt.EVENT_LABEL WITH SYNONYMS ('이벤트 라벨') COMMENT = 'GA4 이벤트 라벨(자유 텍스트 · 카디널리티 큼) — ILIKE 부분일치로 필터한다',
-    src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 16종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Video''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 큰 비중을 차지한다(비율은 조회로 확인) — 채널 분포를 낼 때 함께 밝힌다',
+    src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 15종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Social''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 큰 비중을 차지한다(비율은 조회로 확인) — 채널 분포를 낼 때 함께 밝힌다',
     src.SOURCE_MEDIUM AS src.SOURCE_MEDIUM WITH SYNONYMS ('소스/매체', '소스매체') COMMENT = 'GA4 소스/매체(예: google / cpc)',
     src.UTM_SOURCE AS src.UTM_SOURCE WITH SYNONYMS ('UTM 소스') COMMENT = 'UTM source',
     src.UTM_MEDIUM AS src.UTM_MEDIUM WITH SYNONYMS ('UTM 매체') COMMENT = 'UTM medium',
