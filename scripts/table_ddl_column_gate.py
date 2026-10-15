@@ -108,11 +108,50 @@ def resolve_source(source_name, table_name):
     return f'GN_DW.{source_name.upper()}.{table_name}'
 
 
+def _dbt_vars():
+    import yaml
+    p = '/workspace/10_dbt_pipeline/dbt_project.yml'
+    return (yaml.safe_load(io.open(p, encoding='utf-8')) or {}).get('vars', {}) or {}
+
+
+def _prerender_var_blocks(s):
+    # 🆕 [O234] `{% set x = var(...) %}` · `{% if %}` · `{% for c in x %}` 처럼 **vars 로 모양이 정해지는** 모델
+    #   (FACT_MEMBER_COHORT_SURVIVAL · CRM_MEMBER_DEV)은 정규식 치환으로 풀 수 없다 ⇒ jinja2 로 먼저 렌더한다.
+    #   🔴 vars 정본 = dbt_project.yml `vars:` (기본값을 쓰지 않는다 — 실제 빌드와 같은 모양이어야 컬럼 집합이 맞는다).
+    #   🟢 ref·source·gold_meta 등 다른 매크로는 **원문 그대로 재방출**해 아래 기존 치환이 처리한다(분모 불변).
+    if not re.search(r'\{%-?\s*(?:set|if|for)\b[^%]*\bvar\(', s):
+        return s
+    import jinja2
+
+    class _Keep:
+        def __init__(self, name):
+            self.name = name
+
+        def __call__(self, *a, **k):
+            args = ', '.join([repr(x) for x in a] + ['%s=%r' % kv for kv in k.items()])
+            return '{{ %s(%s) }}' % (self.name, args)
+
+    vs = _dbt_vars()
+    env = jinja2.Environment(undefined=jinja2.StrictUndefined)
+    ctx = {'var': lambda k, d=None: vs.get(k, d), 'is_incremental': lambda: False}
+    for n in ('ref', 'source', 'gold_meta', 'clean_str', 'month_key', 'date_sk', 'month_key_clamp',
+              'gold_sk', 'gn_code', 'gn_is_unpaid', 'gn_is_unpaid_stop_reason', 'gn_evt_stat',
+              'gn_evt_attended', 'gn_is_notice_title', 'gn_erp_not_total', 'gn_member_master_filter',
+              'billing_campaign_asof', 'bigquery_range_predicate', 'bigquery_range_predicate_text',
+              'bigquery_range_predicate_sk'):
+        ctx[n] = _Keep(n)
+    ctx['invocation_id'] = '{{ invocation_id }}'
+    return env.from_string(s).render(**ctx)
+
+
 def render_model(cn, path, layer='GOLD'):
     s = io.open(path, encoding='utf-8').read()
     s = re.sub(r'\{#.*?#\}', '', s, flags=re.DOTALL)
     # Strip all config blocks
-    s = re.sub(r'\{\{\s*config\s*\(.*?\)\s*\}\}', '', s, flags=re.DOTALL)
+    #   🆕 [O234] 빈 문자열이 아니라 SQL 주석 표지로 바꾼다 — 비우면 바로 뒤 `{%- … -%}` 의 공백 제거가 앞 주석 줄까지
+    #   당겨 붙여 `with …` 이 주석 안으로 들어간다(FMCS 실측 · 실제 dbt 는 config 출력이 경계를 막아 발생하지 않음).
+    s = re.sub(r'\{\{\s*config\s*\(.*?\)\s*\}\}', '/* config */', s, flags=re.DOTALL)
+    s = _prerender_var_blocks(s)
     # 🆕 [2026-10-12 O216-E] 문자열 리스트 `{% set X = ['a', 'b'] %}` + `{% for c in X %}…{% endfor %}` 전개.
     #   `BIGQUERY_SESSION.sql:29-48` 은 종전에 아래 범용 for 치환(다른 용도의 날짜 술어)으로 **조용히 오렌더**됐고
     #   여러 줄 set 은 leftover 검사(단일 줄)를 빠져나가 SQL 구문 오류로만 드러났다 ⇒ 범용 치환보다 **먼저** 전개한다.
@@ -166,6 +205,12 @@ def render_model(cn, path, layer='GOLD'):
     s = re.sub(r"\{\{\s*billing_campaign_asof\(\s*'([A-Za-z0-9_]+)'\s*\)\s*\}\}",
                lambda m: f"select bb.*, 0 as BILLING_MK, CAST(NULL AS VARCHAR) as BILLING_CMPGN_CD from {m.group(1)} bb", s)
     s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
+    # 🆕 [O234] O232 코드 매크로(`macros/gn_biz_codes.sql`) — 컬럼 집합에 영향 없는 식이므로 형만 맞춰 렌더한다.
+    #   `gn_code(key)` = IN 목록 리터럴 · 나머지 `gn_is_*`·`gn_evt_*`·`gn_erp_not_total` = 불리언 술어.
+    #   🔴 매크로를 새로 만들면 여기 분모도 넓혀라(아래 leftover 검사가 미렌더를 rc=1 로 잡는다).
+    s = re.sub(r"\{\{\s*gn_code\(.*?\)\s*\}\}", "'0'", s, flags=re.DOTALL)
+    s = re.sub(r"\{\{\s*gn_(?:is_unpaid_stop_reason|is_unpaid|evt_stat|evt_attended|is_notice_title|erp_not_total)\(.*?\)\s*\}\}",
+               '(1=1)', s, flags=re.DOTALL)
 
     # 🆕 [2026-10-12 O216-E] 문자열 `{% set name = ... %}` 렌더 — `DIM_MEMBER.sql:67-70` 에서 게이트가 rc=1 로 멈췄다.
     #   🔴 지원 범위를 좁게 둔다 = 우변이 **문자열 리터럴과 앞서 set 된 이름을 `~` 로 이은 것**뿐이다.

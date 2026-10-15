@@ -158,6 +158,13 @@ KNOWN_ORPHANS = {
         "NOT NULL **901,577**(미중단은 NULL · 0 아님) · distinct 6,405 · 미해소 0. "
         "🔴 NULL 이 정상인 축이다 — not_null 을 요구하지 않는다(`R2-7-1`).",
     ),
+    # 🆕 [O234] O233-A 신설 컬럼 — 최종 중단일(재후원 포함 LTV 입력)
+    ("FACT_MEMBER_COHORT", "LAST_STOP_DATE_SK"): (
+        "CONFORM",
+        "역할기반 일자 축(최종 중단일) → DIM_DATE.DATE_SK. 실측(2026-10-15 jw08094) = 1,621,070행 · "
+        "NOT NULL **931,014**(유효 중단 없음은 NULL · 0 아님) · distinct 5,907 · 미해소 0. "
+        "🔴 NULL 이 정상인 축이다 — not_null 을 요구하지 않는다(`R2-7-1`).",
+    ),
     # 🟢 DIM_DATE.MONTH_KEY 는 위 ("*", "MONTH_KEY") 전역 규칙이 이미 덮는다
     #   (실측 = 16,437행 · distinct 541 · 미해소 0) ⇒ 여기 중복 등재하지 않는다.
 

@@ -1,0 +1,4 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+MD: /workspace/30_output_share/07_코드체계_관문측정.md
+모집단 86 | G1 55/55 | G2 {'활성만': 56, '사전부재값 有': 27, '폐지코드 사용': 3} | G3 {'보존(개명)': 5, '보존': 81} | G4 {'도달': 80, '미도달': 6} | G6 31

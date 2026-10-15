@@ -1,0 +1,25 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+==============================================================================
+SV DDL 규칙7 스캔 — 라이브 도달(COMMENT) ↔ 문서 주석(--) 분리
+==============================================================================
+
+## 05_07_SV_DDL_AD.sql  라이브 1 · 문서주석 0
+
+## 05_15_SV_DDL_GA_BEHAVIOR.sql  라이브 0 · 문서주석 3
+
+## 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql  라이브 0 · 문서주석 5
+
+## 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql  라이브 0 · 문서주석 6
+
+## 05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql  라이브 0 · 문서주석 16
+
+## 05_23_SV_DDL_EXPENSE_RESOLUTION.sql  라이브 0 · 문서주석 4
+
+==============================================================================
+🔴 라이브 도달 위반(진짜 위반) = 1건
+🟠 문서 주석 stale(경고)      = 34건
+==============================================================================
+🔴 게이트 실패 — 라이브 도달 위반은 blocking 이다(Analyst 가 읽는 표면이다).
+   🔴 판정 전에 그 토큰이 **실측치인가 정의·관례인가**를 가려라 —
+      정의·관례이면 `sv_unit_gate.NUM_EXEMPT`(두 게이트 공유)에 예외를 추가한다.

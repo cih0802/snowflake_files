@@ -1,0 +1,12 @@
+=== test_verify_wide_doc: WIDE 정의서 정합성 검증 테스트 ===
+  🟢 축1: 09번 문서 내 생성기 및 검증 게이트 명시 확인 완료
+Traceback (most recent call last):
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/test_verify_wide_doc.py", line 33, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/snowflake/stages/user__public__snowflake_files_/scripts/test_verify_wide_doc.py", line 25, in main
+    assert r.returncode == 0, f"verify_wide_doc 실행 실패: {r.stderr or r.stdout}"
+           ^^^^^^^^^^^^^^^^^
+AssertionError: verify_wide_doc 실행 실패: /opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+
