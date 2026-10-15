@@ -127,6 +127,24 @@ stop_first as (
     group by 1
 ),
 
+-- 🆕 [O233 · 잠정 정의 · 현업 회신 「중단 후 재후원 포함」] 최종 중단 = 획득일 이후 마지막 유효 중단.
+--   그 뒤 개발(DEV) 사건이 있으면 재후원 중 ⇒ 관측 중(IS_STOPPED_OBS_LAST = 0)으로 본다.
+stop_last as (
+    select
+        a.MEMBER_DK,
+        max(case when s.DATE_SK <> 0 and s.DATE_SK >= a.DATE_SK then s.DATE_SK end) as LAST_STOP_VALID
+    from acq a
+    join stop_all s on s.MEMBER_DK = a.MEMBER_DK
+    group by 1
+),
+
+dev_after_last as (
+    select l.MEMBER_DK, 1 as HAS_DEV_AFTER
+    from stop_last l
+    join dev d on d.MEMBER_DK = l.MEMBER_DK and d.DATE_SK > l.LAST_STOP_VALID
+    group by 1
+),
+
 -- 최초 중단의 사유 라벨. 같은 일자에 복수 중단행이 있을 수 있어 결정적으로 1건만 고른다.
 stop_reason as (
     select MEMBER_DK, DATE_SK, STOP_REASON_NM,
@@ -180,6 +198,10 @@ joined as (
         sr.STOP_REASON_NM                                           as FIRST_STOP_REASON_NM,
         to_date(to_char(nullif(a.DATE_SK, 0)), 'YYYYMMDD')          as ACQ_DATE,
         to_date(to_char(sf.FIRST_STOP_VALID), 'YYYYMMDD')           as FIRST_STOP_DATE,
+        -- 🆕 [O233] 최종 중단(재후원이 있으면 NULL = 관측 중)
+        sl.LAST_STOP_VALID                                          as LAST_STOP_DATE_SK,
+        case when coalesce(dl.HAS_DEV_AFTER, 0) = 0
+             then to_date(to_char(sl.LAST_STOP_VALID), 'YYYYMMDD') end as LAST_STOP_DATE_EFF,
         -- 관측 기준일은 단일 행이므로 cross join 이 fan-out 을 만들지 않는다.
         --   (스칼라 서브쿼리는 Snowflake 가 이 위치에서 허용하지 않는다 — 검증 중 확인)
         --   ⚠️ CTE 명을 `asof` 로 쓰면 안 된다 — ASOF JOIN 예약어와 충돌한다(검증 중 확인).
@@ -187,6 +209,8 @@ joined as (
     from acq a
     cross join obs_window ao
     left join stop_first sf on sf.MEMBER_DK = a.MEMBER_DK
+    left join stop_last sl on sl.MEMBER_DK = a.MEMBER_DK
+    left join dev_after_last dl on dl.MEMBER_DK = a.MEMBER_DK
     left join stop_reason sr on sr.MEMBER_DK = a.MEMBER_DK
                             and sr.DATE_SK  = sf.FIRST_STOP_VALID
                             and sr.rn = 1
@@ -240,7 +264,15 @@ final as (
         case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
              else FLOOR(datediff(day, ACQ_DATE, COALESCE(FIRST_STOP_DATE, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) / 30.44) end as OBS_TENURE_MONTHS,
         case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
-             when FIRST_STOP_DATE is not null then 1 else 0 end   as IS_STOPPED_OBS
+              when FIRST_STOP_DATE is not null then 1 else 0 end   as IS_STOPPED_OBS,
+        -- 🆕 [O233 · 잠정 정의] 최종 중단 기준 생존분석 입력(현업 회신 「재후원 포함」).
+        --   제외 조건은 최초 기준과 같다(같은 회원 집합 ⇒ 두 기준을 같은 분모로 비교한다).
+        --   중단 = 획득일 → 마지막 유효 중단일 · 재후원 중·미중단 = 획득일 → 관측기준일.
+        LAST_STOP_DATE_SK,
+        case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
+             else FLOOR(datediff(day, ACQ_DATE, COALESCE(LAST_STOP_DATE_EFF, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) / 30.44) end as OBS_TENURE_MONTHS_LAST,
+        case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
+             when LAST_STOP_DATE_EFF is not null then 1 else 0 end as IS_STOPPED_OBS_LAST
     from joined
 )
 
@@ -265,5 +297,7 @@ select
     ACQ_BRAND, ACQ_PARENT_CAMPAIGN_NAME, ACQ_PROMO_METHOD_NAME,
     {{ gold_meta('CRM') }},
     -- [O231] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
-    OBS_TENURE_DAYS, OBS_TENURE_MONTHS, IS_STOPPED_OBS
+    OBS_TENURE_DAYS, OBS_TENURE_MONTHS, IS_STOPPED_OBS,
+    -- [O233] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    LAST_STOP_DATE_SK, OBS_TENURE_MONTHS_LAST, IS_STOPPED_OBS_LAST
 from final

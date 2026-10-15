@@ -1140,7 +1140,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     -- [O231] LTV 생존분석 입력(잠정 정의) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
     OBS_TENURE_DAYS         NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일(FME 최종일) − 획득일. 획득일 무효(1900 센티널·NULL)·중단일 무효(DATE_SK=0) = NULL(생존분석 제외).',
     OBS_TENURE_MONTHS       NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(개월) = FLOOR(OBS_TENURE_DAYS / 30.44). 생존분석 경과월 축(획득 후 경과월 · 달력월 아님).',
-    IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[잠정 정의 · O231] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.'
+    IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[잠정 정의 · O231] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.',
+    -- [O233] 최종 중단 기준(현업 회신 「중단 후 재후원 포함」) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    LAST_STOP_DATE_SK       NUMBER(38,0)    COMMENT '[잠정 정의 · O233] 획득일 이후 마지막 유효 중단일(YYYYMMDD). 획득 후 유효 중단이 없으면 NULL. 이후 재개발이 있어도 값은 남긴다(판정은 IS_STOPPED_OBS_LAST).',
+    OBS_TENURE_MONTHS_LAST  NUMBER(38,0)    COMMENT '[잠정 정의 · O233] 최종 중단 기준 관측 유지기간(개월). 중단 = 마지막 유효 중단일 − 획득일 · 마지막 중단 뒤 재개발(재후원) 또는 미중단 = 관측기준일 − 획득일. 제외 조건은 OBS_TENURE_MONTHS 와 같다(NULL).',
+    IS_STOPPED_OBS_LAST     NUMBER(1,0)     COMMENT '[잠정 정의 · O233] 1 = 마지막 유효 중단 뒤 재개발 없음(최종 중단) · 0 = 관측 중(재후원 중 포함). OBS_TENURE_MONTHS_LAST 가 NULL 이면 NULL.'
 ) COMMENT = '회원 획득 코호트 팩트. [Grain: MEMBER_DK (1행=1회원)]. [주의: 캠페인별 12개월 고정 이탈률 및 유지기간 정본]. [원천: GOLD.FACT_MEMBER_EVENT].';
 
 -- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 🟠 잠정 정의)
@@ -1149,14 +1153,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     AXIS_TYPE           VARCHAR(20)     NOT NULL COMMENT '분류 축. 전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2(획득 시점 동결값)',
     AXIS_VALUE          VARCHAR(200)    NOT NULL COMMENT '축값. 원천 NULL = (미상). 축 전체이면 전체',
-    ELAPSED_MONTH       NUMBER(4,0)     NOT NULL COMMENT '획득 후 경과월 0 ~ (최대 상한 − 1). 달력월이 아니다',
+    ELAPSED_MONTH       NUMBER(4,0)     NOT NULL COMMENT '획득 후 경과월 0 ~ (max(최대 상한, dbt var ltv_horizon_max) − 1). 달력월이 아니다. 셀 최대 관측월을 넘는 행은 마지막 생존율 연장(외삽)',
     AT_RISK_MEMBERS     NUMBER(18,0)    COMMENT '경과월 시작 시점 위험 회원수(관측 유지 ≥ 경과월)',
-    STOP_MEMBERS        NUMBER(18,0)    COMMENT '그 경과월에 최초 중단한 회원수',
+    STOP_MEMBERS        NUMBER(18,0)    COMMENT '그 경과월에 중단한 회원수. O233 부터 최종 중단 기준(재후원 중 회원은 중단으로 세지 않는다)',
     CENSORED_MEMBERS    NUMBER(18,0)    COMMENT '그 경과월에서 관측이 끝난 활동 회원수(우절단)',
     SURV_START          NUMBER(12,10)   COMMENT '경과월 시작 생존율 P(T ≥ m)',
     SURV_END            NUMBER(12,10)   COMMENT '경과월 종료 생존율 P(T > m) — Kaplan–Meier',
     RMST_CUM            NUMBER(10,4)    COMMENT '경과월까지 누적 제한평균 유지개월 = Σ SURV_START. LTV_CAP_MONTHS 행의 값이 그 상한의 기대 유지개월',
-    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[잠정] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 아니면 NULL. 상한 목록 = dbt var ltv_caps',
+    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[잠정] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 셀 최대 관측월 행이면 9999(무기한 · O233) · 아니면 NULL. 상한 목록 = dbt var ltv_caps · 9999 = ltv_unlimited. 최대 관측월이 N−1 과 같으면 N 이 우선(RMST 동일)',
     COHORT_MEMBERS      NUMBER(18,0)    COMMENT '셀 획득 회원수(생존분석 대상 · 획득일·중단일 무효 제외). 셀 상수',
     STOPPED_MEMBERS_TOTAL NUMBER(18,0)  COMMENT '셀 관측기간 중 중단 회원수. 셀 상수',
     IS_CELL_RELIABLE    BOOLEAN         COMMENT 'COHORT_MEMBERS ≥ dbt var ltv_min_cell. FALSE 셀은 비교·순위에 쓰지 않는다',

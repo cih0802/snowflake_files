@@ -19,10 +19,25 @@ where SURV_END < 0 or SURV_END > 1 or SURV_START < 0 or SURV_START > 1 or SURV_E
 
 union all
 
-select 'CAP_ROWS:' || AXIS_TYPE || '|' || AXIS_VALUE, COUNT(LTV_CAP_MONTHS)
+select 'CAP_ROWS:' || AXIS_TYPE || '|' || AXIS_VALUE, COUNT_IF(LTV_CAP_MONTHS <> 9999)
 from {{ ref('FACT_MEMBER_COHORT_SURVIVAL') }}
 group by AXIS_TYPE, AXIS_VALUE
-having COUNT(LTV_CAP_MONTHS) <> {{ n_caps }}
+having COUNT_IF(LTV_CAP_MONTHS <> 9999) <> {{ n_caps }}
+
+union all
+
+-- 🆕 [O233] ㉤ 무기한 표지(9999) = 셀의 최대 관측월(관측이 끝난 마지막 경과월) 행에 정확히 1개.
+--   예외 = 그 경과월이 상한−1 과 겹치면 상한 표지가 우선한다(모델 주석 · RMST 동일).
+--   horizon(ltv_horizon_max)이 최대 관측월보다 짧으면 이 검사가 잡는다.
+select 'UNLIMITED_ROW:' || t.AXIS_TYPE || '|' || t.AXIS_VALUE, COUNT_IF(t.LTV_CAP_MONTHS = 9999)
+from {{ ref('FACT_MEMBER_COHORT_SURVIVAL') }} t
+join (
+    select AXIS_TYPE, AXIS_VALUE, MAX(IFF(STOP_MEMBERS + CENSORED_MEMBERS > 0, ELAPSED_MONTH, NULL)) as MAX_T
+    from {{ ref('FACT_MEMBER_COHORT_SURVIVAL') }}
+    group by 1, 2
+) m on m.AXIS_TYPE = t.AXIS_TYPE and m.AXIS_VALUE = t.AXIS_VALUE
+group by t.AXIS_TYPE, t.AXIS_VALUE, m.MAX_T
+having COUNT_IF(t.LTV_CAP_MONTHS = 9999) <> IFF(m.MAX_T + 1 IN ({{ var('ltv_caps', [36, 60]) | join(', ') }}), 0, 1)
 
 union all
 

@@ -17,12 +17,18 @@
     tags=['gold_ready']
 ) }}
 {%- set caps = var('ltv_caps', [36, 60]) -%}
-{%- set horizon = caps | max -%}
+{#- 🆕 [O233] 무기한 = 셀별 최대 관측월 행에 LTV_CAP_MONTHS = 9999 표지(현업 회신 「무기한」).
+    경과월 범위 = max(최대 상한, 관측 최대월 + 1) — GENERATOR 행수는 상수여야 하므로 ltv_horizon_max 로 덮는다
+    (실측 최대 관측월 426 · 2026-10-15 jw08094). 셀의 최대 관측월이 상한−1 과 같으면 상한 표지가 우선한다
+    (두 값의 RMST 가 같으므로 정보 손실 없음). -#}
+{%- set unlimited = var('ltv_unlimited', true) -%}
+{%- set horizon = [caps | max, var('ltv_horizon_max', 480)] | max if unlimited else caps | max -%}
 {%- set learn_start = var('ltv_learn_start', none) -%}
 with base as (
     select
-        OBS_TENURE_MONTHS                                   as T,
-        IS_STOPPED_OBS                                      as E,
+        -- 🆕 [O233] 입력 = 최종 중단 기준(현업 회신 「재후원 포함」) · 최초 기준 = OBS_TENURE_MONTHS·IS_STOPPED_OBS
+        OBS_TENURE_MONTHS_LAST                              as T,
+        IS_STOPPED_OBS_LAST                                 as E,
         COALESCE(ACQ_MBER_INFLOW_PATH_NM, '(미상)')          as INFLOW_PATH,
         COALESCE(ACQ_CMPGN_CTGR_NM, '(미상)')                as CMPGN_CTGR,
         COALESCE(ACQ_CMPGN_TYPE1_NM, '(미상)')               as CMPGN_TYPE1,
@@ -41,7 +47,7 @@ ax as (
     union all select '캠페인유형2', CMPGN_TYPE2, T, E from base
 ),
 cell as (
-    select AXIS_TYPE, AXIS_VALUE, COUNT(*) as COHORT_MEMBERS, SUM(E) as STOPPED_MEMBERS_TOTAL
+    select AXIS_TYPE, AXIS_VALUE, COUNT(*) as COHORT_MEMBERS, SUM(E) as STOPPED_MEMBERS_TOTAL, MAX(T) as MAX_T
     from ax group by 1, 2
 ),
 months as (
@@ -53,7 +59,7 @@ g as (
     from ax where T < {{ horizon }} group by 1, 2, 3
 ),
 j as (
-    select c.AXIS_TYPE, c.AXIS_VALUE, c.COHORT_MEMBERS, c.STOPPED_MEMBERS_TOTAL, m.ELAPSED_MONTH,
+    select c.AXIS_TYPE, c.AXIS_VALUE, c.COHORT_MEMBERS, c.STOPPED_MEMBERS_TOTAL, c.MAX_T, m.ELAPSED_MONTH,
            COALESCE(g.N_END, 0) as N_END, COALESCE(g.D, 0) as D
     from cell c
     cross join months m
@@ -97,6 +103,9 @@ select
          {%- for c in caps %}
          WHEN {{ c - 1 }} THEN {{ c }}
          {%- endfor %}
+         {%- if unlimited %}
+         WHEN MAX_T THEN 9999
+         {%- endif %}
          END AS NUMBER(4,0))                                        as LTV_CAP_MONTHS,
     CAST(COHORT_MEMBERS AS NUMBER(18,0))                            as COHORT_MEMBERS,
     CAST(STOPPED_MEMBERS_TOTAL AS NUMBER(18,0))                     as STOPPED_MEMBERS_TOTAL,

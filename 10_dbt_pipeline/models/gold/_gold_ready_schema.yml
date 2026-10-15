@@ -502,6 +502,17 @@ models:
           - accepted_values:
               values: [0, 1]
               quote: false
+      # 🆕 [O233 · 잠정 정의] 최종 중단 기준(현업 회신 「재후원 포함」) — FACT_MEMBER_COHORT_SURVIVAL 입력
+      - name: LAST_STOP_DATE_SK
+        description: "[잠정] 획득일 이후 마지막 유효 중단일(YYYYMMDD) · 없으면 NULL · 재개발이 있어도 값은 남긴다"
+      - name: OBS_TENURE_MONTHS_LAST
+        description: "[잠정] 최종 중단 기준 관측 유지기간(개월) · 재후원 중·미중단 = 관측기준일까지 · 제외 조건은 OBS_TENURE_MONTHS 와 같다"
+      - name: IS_STOPPED_OBS_LAST
+        description: "[잠정] 1 = 마지막 중단 뒤 재개발 없음 · 0 = 관측 중(재후원 중 포함) · NULL = 생존분석 제외"
+        tests:
+          - accepted_values:
+              values: [0, 1]
+              quote: false
       - name: MEMBER_DK
         description: "회원 불변키(grain·PK)"
         tests:

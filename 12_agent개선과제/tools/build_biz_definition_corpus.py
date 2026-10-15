@@ -153,6 +153,23 @@ def curated(out):
                            r["TOOL_NAME"], r["SV_FIELD"]))
 
 
+def synonym_overlay(out):
+    # 🆕 [O233] 동의어 오버레이 — 90_provided_definition 원천에는 SYNONYMS 칸이 없다(R2-8 · 원천 무수정).
+    #   tools/O233_synonym_overlay.csv 의 DOC_ID 행에 한해 **빈 SYNONYMS 만** 채운다(덮어쓰기 금지).
+    f = os.path.join(TOOLS, "O233_synonym_overlay.csv")
+    if not os.path.exists(f):
+        return
+    by_id = {r["DOC_ID"]: r for r in out}
+    with open(f, encoding="utf-8-sig", newline="") as fh:
+        for o in csv.DictReader(fh):
+            r = by_id.get(o["DOC_ID"])
+            if r is None:
+                sys.exit("동의어 오버레이 DOC_ID 부재: %s" % o["DOC_ID"])
+            if r["SYNONYMS"]:
+                sys.exit("동의어 오버레이 대상이 이미 값을 가짐(덮어쓰기 금지): %s" % o["DOC_ID"])
+            r["SYNONYMS"] = clean(o["SYNONYMS"].replace("|", ", "))
+
+
 def build():
     out = []
     curated(out)
@@ -162,6 +179,7 @@ def build():
     terms(out)
     orgs(out)
     source_refs(out)
+    synonym_overlay(out)
     for r in out:
         parts = ["[%s] %s" % (r["DOC_TYPE"], r["TITLE"])]
         for k, lab in [("SYNONYMS", "동의어"), ("DEFINITION", "정의"), ("FORMULA", "계산식"),
