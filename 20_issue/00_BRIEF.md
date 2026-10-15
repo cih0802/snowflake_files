@@ -26,50 +26,25 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 👤 05_03 재배포(CREATE OR ALTER SV_MEMBER_COHORT + GRANT 3) — 승인 대기 | #32 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:40` |
-| ② | 👤 무기한 표지 9999 유지 vs 999 변경 결정(변경 시 dbt 모델 1줄 + SV COMMENT + RT-29 · build 필요) | #32 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:41` |
-| ③ | 탐침 잔여 miss 3 = 「매체별로 몇 건 개발됐어」「어느 채널에서 개발 많이 됐어」(RT-04 2위 밖) · 「팀별 실적」(RT-21) | RAG | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:42` |
-| ④ | 👤 운영계 = O231~O234 덧입힘 + 코퍼스 재적재·검색 서비스 REFRESH | #35 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:43` |
-| ⑤ | CoWork UI Agent 수동 스모크(트라이얼 DATA_AGENT_RUN 차단) | Agent | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:44` |
-| ① | 👤 운영계 = O231~O234 덧입힘(문서실행순서) + 코퍼스 재적재 · 검색 서비스 REFRESH · 05_03 재배포 | #35 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:36` |
-| ② | 👤 eval(Agent 평가) = 운영계 또는 다음 세션(사용자) | Agent | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:37` |
-| ① | 👤 운영계 = 문서실행순서.md 운영계 순서(06_DDL → dbt deploy/build → 05_* SV → 26 코퍼스·검색 → 09_1/09_2 Agent) · 기존 계정 덧입힘은 보조주석 O225~O234 절 | #35 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:37` |
-| ② | 👤 eval = 운영계 또는 다음 세션(사용자) | Agent | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:38` |
-| ① | 👤 운영계 반영 = 문서실행순서.md 운영계 순서 · 기존 계정 덧입힘은 보조주석 O225~O234 절 | #35 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:40` |
-| ② | 👤 eval = 운영계 또는 다음 세션(사용자) | Agent | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:41` |
+| ① | 👤 jw08094 = 05_24b [0] → dbt build --select FACT_CAMPAIGN_CUM_STOP → 05_24 → 26 코퍼스 → 09_2 → 05_24b [1]~[5] 결과 회신 | #35 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:37` |
+| ② | 대사 [1] DIFF 3개 = 0 확인 후 원장 O236 🟡 → 🟢 · 0 아니면 원인 분해(스파인·월 경계·FMSS 중복) | 검증 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:38` |
+| ③ | [3] 캠페인 규칙 불일치율이 크면 현업 확인(중단·연도초 = 후원사업 대표캠페인 vs 개발 = 사건 캠페인) | 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:39` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0234-D.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0236-A.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O234-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:17` |
-| ▣ O234-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:23` |
-| ▣ O234-A-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:36` |
-| ▣ O234-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-A.md:46` |
-| ▣ O234-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:17` |
-| ▣ O234-B-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:23` |
-| ▣ O234-B-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:32` |
-| ▣ O234-B-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md:45` |
-| ▣ O234-C-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:17` |
-| ▣ O234-C-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:22` |
-| ▣ O234-C-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:33` |
-| ▣ O234-C-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-C.md:42` |
-| ▣ O234-D-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:17` |
-| ▣ O234-D-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:25` |
-| ▣ O234-D-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:36` |
-| ▣ O234-D-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-D.md:45` |
+| ▣ O236-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:17` |
+| ▣ O236-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:24` |
+| ▣ O236-A-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:33` |
+| ▣ O236-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0236-A.md:43` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -81,19 +56,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O234` | 🟢 O234 — O233-B 승계: RAG 보강 + LTV 현업 회신 확정 반영 + SV_MEMBER_COHORT 재배포 + #34·광고비 닫기 (2026-10-15 · jw08… | 🟢 탐침 24문항 hit@1 50%→79% · hit@3 62%→88% · RT-29(기대 유지개월) 신설 · R… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O233` | 🟢 O233 — O232-B 승계: 유실 기록 복구(#36) + DEC-62(#33 잔여) + 작업계획_LTV80_RAG유사_광고비 3건 + RAG 하이브리드 고도화 (2026-… | 🟢 A: #36 재측정·DEC-62·LTV FMC *_LAST 3컬럼·vars 80·비교표§6·👤build PAS… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O229` | 🟢 O229 — O228-A 잔여(eval·현업회신 제외) 전건 + Inspection O202~O228 (2026-10-14 · jw08094 · ㉡ · 사용자 승인 · 확정위… | 🟢 Q29 원인 = 정답지 메모·기대도구 stale · WIDE_AD_BROADCAST_CASE 0행 = 설계 ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O228` | 🟢 O228 — 계정 이전(jw08094) 후 O227-B ② 마감 + COMMENT C3 단계 ③·④·잔여 + MEMBER 정답지 V5 (2026-10-14 · jw08094 … | 🟢 드리프트 0 · MKT V4 jw1 AC 0.9764(Q31 회복) · SV 22 · Agent 3종 VERS… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O227` | 🟢 O227 — O226-A 잔여 ②·③-①·③-② 집행 (2026-10-14 · xh20001 · ㉡ · 사용자 승인 · 확정위반 2 = R1-3-7-b 독해 토큰 사후 기록 … | 🟢 MEMBER V$9(교차 집계 예외 · 롤백 V$8) · C3 테이블 21 · 뷰 12 · GOLD 컬럼 29… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O226` | 🟢 O226 — O225-E 통합 착수표 10건 집행 (2026-10-14 · xh20001 · ㉡ · 일괄 승인 · 확정위반 2 = R1-7-8 원장 행 앵커(즉시 복구) · … | 🟢 WARN 22 원인표 · GAP 15 → 11(최초캠페인 SV 노출 · IRSD = FME DEV 동일 사건 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
+| `O236` | 🟡 O236 — 캠페인별 누계중단율 계산 배선(후원건 캠페인 귀속 · 사용자 결정 A) (2026-10-15 · ua91864 작성 · 👤 운영계 반영 대기 · ㉡ · 사용자 승… | 🟡 원인 실측(jw08094) = FMM 연도초 월 반복 8.66배 · 「그 달 캠페인」 중단 미귀속 58.3% … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O235` | 🟢 O235 — 누계중단비중 「산식 미등록」 답변 시정: 검색 도구 컬럼 배선 + 산식 질문 필터·규칙 (2026-10-15 · ua91864 작성 · jw08094 반영(사용자… | 🟢 원인 = ① Agent 검색 도구가 multi-index 서비스에 컬럼 미지정(DOC_ID 텍스트 색인 오류)… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O234` | 🟢 O234 — O233-B 승계: RAG 보강 + LTV 현업 회신 확정 반영 + SV_MEMBER_COHORT 재배포 + #34·광고비 닫기 (2026-10-15 · jw08… | 🟢 탐침 24문항 hit@1 50%→79% · hit@3 62%→88% · RT-29(기대 유지개월) 신설 · R… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O233` | 🟢 O233 — O232-B 승계: 유실 기록 복구(#36) + DEC-62(#33 잔여) + 작업계획_LTV80_RAG유사_광고비 3건 + RAG 하이브리드 고도화 (2026-… | 🟢 A: #36 재측정·DEC-62·LTV FMC *_LAST 3컬럼·vars 80·비교표§6·👤build PAS… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O229` | 🟢 O229 — O228-A 잔여(eval·현업회신 제외) 전건 + Inspection O202~O228 (2026-10-14 · jw08094 · ㉡ · 사용자 승인 · 확정위… | 🟢 Q29 원인 = 정답지 메모·기대도구 stale · WIDE_AD_BROADCAST_CASE 0행 = 설계 ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O228` | 🟢 O228 — 계정 이전(jw08094) 후 O227-B ② 마감 + COMMENT C3 단계 ③·④·잔여 + MEMBER 정답지 V5 (2026-10-14 · jw08094 … | 🟢 드리프트 0 · MKT V4 jw1 AC 0.9764(Q31 회복) · SV 22 · Agent 3종 VERS… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 18 | 475,233 | 30,078 | 10,882 |
-| `01_세션이력` | 87 | 2,210,988 | 38,225 | 15,049 |
+| `00_INDEX_이슈원장` | 18 | 477,426 | 32,271 | 8,689 |
+| `01_세션이력` | 87 | 2,218,206 | 38,225 | 7,831 🟠 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -115,10 +90,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 12,015 | 12,015 | 28,945 |
+| `00_BRIEF` | — | 10,102 | 10,102 | 30,858 |
 | `11_O누적작업_점검_재현_절차` | — | 33,527 | 33,527 | 7,433 🟠 |
 
-> 전 문서군 = **3,245,180 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,250,317 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -126,17 +101,17 @@ END-METADATA -->
 | 게이트 | 판정 | 결론 |
 |---|---|---|
 | `doc_census` | ✅ | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다 |
-| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 1건) |
+| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 2건) |
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 112개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |
-| `doc_coord_gate` | 🔴 | (출력 없음) |
+| `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 2건은 사람 판단) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
-| `agent_object_ref_gate` | 🔴 | 🔴 FAIL — blocking 위반 111건 |
+| `agent_object_ref_gate` | 🔴 | 🔴 FAIL — blocking 위반 88건 |
 | `agent_source_lineage_gate` | ✅ | 🟢 PASS — blocking 0건 |
 | `eval_expectation_gate` | ✅ | ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제) |
-| `sv_identifier_gate` | 🔴 | 🔴 FAIL — blocking 위반 54건 |
+| `sv_identifier_gate` | 🔴 | 🔴 FAIL — blocking 위반 57건 |
 | `null_reason_registry_gate` | ✅ | 🟢 PASS — NULL 사유 규격 검증 완료 |
 | `campaign_axis_gate` | ✅ | ✅ 게이트 통과 — 미등재·배선 끊김 0 (🟠 GAP 9 건은 알려진 미배선) |
 

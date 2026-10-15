@@ -17,7 +17,7 @@ sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(_
 from o217_agent_io import load  # noqa: E402
 
 COLS = {
-    "TITLE": {"description": "지표명·용어·부서명·라우팅 항목명(예: 캠페인별 누계중단율(%))",
+    "TITLE": {"description": "지표명·용어·부서명·라우팅 항목명(예 캠페인별 누계중단율(%))",
               "type": "string", "searchable": True, "filterable": False},
     "KEYWORDS": {"description": "제목·동의어 표기 변형(누계↔누적 · 율↔률↔비중 · 띄어쓰기 제거)",
                  "type": "string", "searchable": True, "filterable": False},

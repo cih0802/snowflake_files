@@ -1,0 +1,64 @@
+version: 1
+artifacts:
+  - path: agents/AGENT_MEMBER/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MEMBER
+  - path: agents/AGENT_OVERALL/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_OVERALL
+  - path: agents/AGENT_MARKETING/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MARKETING
+  - path: agent_executive_eval_20261007_155611.eval.yaml
+    type: eval_config
+  - path: agent_executive_eval_o208c_v3.eval.yaml
+    type: eval_config
+  - path: agent_executive_eval_o209_x6.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v10.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v11.eval.yaml
+    type: eval_config
+  - path: agent_marketing_eval_o209_before.eval.yaml
+    type: eval_config
+  - path: agent_member_eval_o209_v12.eval.yaml
+    type: eval_config
+  - path: agent_marketing_eval_o209_after.eval.yaml
+    type: eval_config
+  - path: o211_executive_eval.eval.yaml
+    type: eval_config
+  - path: o211_executive_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_member_eval.eval.yaml
+    type: eval_config
+  - path: o211_member_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_marketing_eval.eval.yaml
+    type: eval_config
+  - path: o211_marketing_eval.dataset.yaml
+    type: eval_dataset
+  - path: o211_executive_eval_v2.eval.yaml
+    type: eval_config
+  - path: o211_marketing_eval_v2.eval.yaml
+    type: eval_config
+  - path: AGENT_MARKETING.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MARKETING
+  - path: AGENT_EXECUTIVE.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_EXECUTIVE
+  - path: AGENT_MEMBER.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MEMBER

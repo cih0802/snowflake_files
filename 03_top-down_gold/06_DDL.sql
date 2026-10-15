@@ -1588,6 +1588,20 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_METHOD_CHANGE (
     DW_BATCH_ID               VARCHAR          COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '결제수단 변경 이력. [원천: SILVER.CRM_PAYMENT_METHOD_HIST]. [적재: dbt]';
 
+-- FACT_CAMPAIGN_CUM_STOP — 기준연월 × 캠페인 누계 중단·개발·연도초활동 (🆕 O236 · 신규지표 #17)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP (
+    BASE_MONTH_KEY        NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM. 누계 = 같은 해 1월 ~ 이 월. 🔴 기준월 하나를 골라 조회한다 — 여러 기준월을 SUM 하면 누계가 겹친다',
+    BASE_YEAR             NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도 · 연도초 기준 해)',
+    CAMPAIGN_SK           NUMBER(38,0)    NOT NULL COMMENT '대리키 ※비강제 FK→DIM_CAMPAIGN. 중단·연도초 = 후원사업 대표캠페인(FMSS) · 개발 = 개발 사건 캠페인(FME) · 0 = 미매핑',
+    CUM_STOP_CNT          NUMBER(18,4)    COMMENT '누계중단(건) = 1월~기준월 중단 후원사업 약정금액 ÷ 10,000 (FMM STOP_AMT_CNT 와 같은 식)',
+    CUM_DEV_CNT           NUMBER(18,4)    COMMENT '누계개발(건) = 1월~기준월 MSTR 개발(건)(인정금액 ÷ 10,000) 합 (FMM DEV_CNT 와 같은 원천)',
+    YEAR_START_ACTIVE_CNT NUMBER(18,4)    COMMENT '연도초활동회원(건) = 기준연도 1월 as-of 활동 후원사업 약정금액 ÷ 10,000 (FMM 1월 행 YEAR_START_ACTIVE_CNT 와 같은 판정) · 기준월마다 1회만 들어간다',
+    DW_SOURCE_SYSTEM      VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS            TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS          TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID           VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '캠페인별 누계중단율(신규 #17) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인 합 = FMM 1~기준월 합(연도초는 1월 행)]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT]. [적재: dbt]';
+
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)
 -- ============================================================================
@@ -1673,6 +1687,7 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH DROP CONSTRAINT FK_FMD_DIM_SEND_REQUEST; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_MEMBER; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP DROP CONSTRAINT FK_FCCS_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   RETURN 'constraint drop (idempotent) done';
 END;
 $$;
@@ -1818,6 +1833,8 @@ ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY ADD CONSTRAINT FK_FRA_DIM_DATE
     FOREIGN KEY (DATE_SK) REFERENCES GN_DW.GOLD.DIM_DATE (DATE_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY ADD CONSTRAINT FK_FRA_DIM_MEMBER
     FOREIGN KEY (MEMBER_DK) REFERENCES GN_DW.GOLD.DIM_MEMBER (MEMBER_DK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP ADD CONSTRAINT FK_FCCS_DIM_CAMPAIGN
+    FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
 
 -- 검증(값이 아니라 방법이 정본이다 — 기대 건수를 여기 적지 않는다)
 --   파일 선언 테이블 = grep -oE 'CREATE OR REPLACE TABLE GN_DW\.GOLD\.[A-Z_]+' 06_DDL.sql | sort -u | wc -l

@@ -1247,3 +1247,19 @@ models:
         tests:
           - not_null
           - relationships: { to: ref('DIM_CAMPAIGN'), field: CAMPAIGN_SK }
+  # 🆕 [2026-10-15 O236] 캠페인별 누계중단율(신규 #17) 분자·분모 — 컬럼 문안 정본 = 03_top-down_gold/06_DDL.sql
+  - name: FACT_CAMPAIGN_CUM_STOP
+    description: >
+      기준연월 × 캠페인 누계 중단·개발·연도초활동 팩트 — grain = BASE_MONTH_KEY × CAMPAIGN_SK.
+      대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인이라 전 캠페인 합이 FMM 1~기준월 합(연도초는 1월 행)과 같아야 한다.
+      🔴 누계 grain — 기준월 하나를 골라 조회한다(여러 기준월 SUM 금지).
+      🔴 중단·연도초 캠페인 = 후원사업 대표캠페인(FMSS) · 개발 캠페인 = 개발 사건 캠페인(FME) — 규칙이 다르다.
+      ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.
+    columns:
+      - name: BASE_MONTH_KEY
+        tests:
+          - not_null
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_CAMPAIGN'), field: CAMPAIGN_SK }
