@@ -1,6 +1,6 @@
 -- FACT_MEMBER_COHORT_SURVIVAL: 획득 코호트 생존 곡선 팩트(분류 축 × 획득 후 경과월) — LTV 기대 유지개월 산출용
 -- Co-authored with CoCo
--- 🆕 [2026-10-15 O232 · 🟠 잠정 정의 — 현업 확인 전] O231 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL` → **GOLD 테이블**(사용자 결정).
+-- 🆕 [2026-10-15 O232 · O234 확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)] O231 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL` → **GOLD 테이블**(사용자 결정).
 --   구조 정본 = `03_top-down_gold/06_DDL.sql` FACT_MEMBER_COHORT_SURVIVAL · 모든 컬럼을 DDL 타입으로 CAST 한다
 --   (dbt 롤은 구조 권한이 없다 · 타입이 넓으면 gn_no_structural_alter 가 SKIP 로그를 남긴다).
 --   🔴 상한은 **컬럼이 아니라 행 표지** `LTV_CAP_MONTHS` 다(O231 뷰는 EXP_TENURE_36M·60M 컬럼이라 상한을 바꾸면

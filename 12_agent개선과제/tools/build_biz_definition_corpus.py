@@ -19,7 +19,44 @@ ALL = "MARKETING|MEMBER|EXECUTIVE"
 COLS = [
     "DOC_ID", "DOC_TYPE", "TITLE", "SYNONYMS", "DEFINITION", "FORMULA",
     "AGENT_SCOPE", "TOOL_NAME", "SV_FIELD", "LIMITATION", "SOURCE_FILE", "SEARCH_TEXT",
+    # 🆕 [O233-B] 맨 끝 추가(COPY 는 위치 기준) — 검색 품질용 파생 열 · 원천 내용 창작 없음
+    "KEYWORDS", "IS_ADDITIVE",
 ]
+
+# 🆕 [O233-B] 표기 변형 규칙(질문이 동의어와 조금만 달라도 키워드 색인이 맞도록) — 규칙 기반 · 의미 추가 없음
+UNIT_SUFFIX = re.compile(r"\((건|명|%|%p|원|개월|일|회|만원)\)$")
+SWAPS = [("율", "률"), ("률", "율"), ("누계", "누적"), ("누적", "누계")]
+
+
+def variants(term):
+    out = set()
+    t = term.strip()
+    if not t:
+        return out
+    base = UNIT_SUFFIX.sub("", t).strip()
+    for s in {t, base}:
+        out.add(s)
+        out.add(re.sub(r"[\s·()\[\]/]+", "", s))  # 띄어쓰기·괄호·가운뎃점 제거
+    for s in list(out):
+        for a, b in SWAPS:
+            if a in s:
+                out.add(s.replace(a, b))
+    return {x for x in out if x}
+
+
+def keywords(r):
+    terms = [r["TITLE"]] + [x for x in re.split(r"[,，]", r["SYNONYMS"]) if x.strip()]
+    ks = set()
+    for t in terms:
+        ks |= variants(t)
+    ks -= {r["TITLE"]}
+    return " ".join(sorted(ks))
+
+
+def is_additive(r):
+    # 원천 문구에 「비가산」이 명시된 행만 N · 근거 없는 행은 빈 값(창작 금지)
+    txt = " ".join([r["DEFINITION"], r["FORMULA"], r["LIMITATION"]])
+    return "N" if "비가산" in txt else ""
 
 
 def clean(s):
@@ -181,11 +218,16 @@ def build():
     source_refs(out)
     synonym_overlay(out)
     for r in out:
-        parts = ["[%s] %s" % (r["DOC_TYPE"], r["TITLE"])]
+        # 🆕 [O233-B] SEARCH_TEXT = Markdown 헤더·불릿(청크 경계·라벨이 임베딩·LLM 모두에 분명해진다)
+        r["KEYWORDS"] = keywords(r)
+        r["IS_ADDITIVE"] = is_additive(r)
+        parts = ["# [%s] %s" % (r["DOC_TYPE"], r["TITLE"])]
         for k, lab in [("SYNONYMS", "동의어"), ("DEFINITION", "정의"), ("FORMULA", "계산식"),
                        ("TOOL_NAME", "도구"), ("SV_FIELD", "SV 필드"), ("LIMITATION", "한계")]:
             if r[k]:
-                parts.append("%s: %s" % (lab, r[k]))
+                parts.append("- **%s**: %s" % (lab, r[k]))
+        if r["IS_ADDITIVE"] == "N":
+            parts.append("- **집계**: 비가산 — 하위 값을 더해 합계를 만들지 않는다")
         r["SEARCH_TEXT"] = "\n".join(parts)
     ids = [r["DOC_ID"] for r in out]
     dup = sorted({x for x in ids if ids.count(x) > 1})

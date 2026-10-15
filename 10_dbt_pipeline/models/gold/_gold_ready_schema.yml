@@ -491,24 +491,24 @@ models:
       중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 —
       누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다(P63).
     columns:
-      # 🆕 [O231 · 잠정 정의] LTV 생존분석 입력 — 관측 유지기간 + 중단 여부(우절단 포함)
+      # 🆕 [O231 · O234 확정] LTV 생존분석 입력 — 관측 유지기간 + 중단 여부(우절단 포함)
       - name: OBS_TENURE_DAYS
-        description: "[잠정] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일 − 획득일. 획득일·중단일 무효 = NULL(생존분석 제외)"
+        description: "[O234 확정] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일 − 획득일. 획득일·중단일 무효 = NULL(생존분석 제외)"
       - name: OBS_TENURE_MONTHS
-        description: "[잠정] 관측 유지기간(개월) = FLOOR(일/30.44) · 획득 후 경과월 축"
+        description: "[O234 확정] 관측 유지기간(개월) = FLOOR(일/30.44) · 획득 후 경과월 축"
       - name: IS_STOPPED_OBS
-        description: "[잠정] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단) · NULL = 생존분석 제외"
+        description: "[O234 확정] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단) · NULL = 생존분석 제외"
         tests:
           - accepted_values:
               values: [0, 1]
               quote: false
-      # 🆕 [O233 · 잠정 정의] 최종 중단 기준(현업 회신 「재후원 포함」) — FACT_MEMBER_COHORT_SURVIVAL 입력
+      # 🆕 [O233 · O234 확정] 최종 중단 기준(현업 회신 「재후원 포함」) — FACT_MEMBER_COHORT_SURVIVAL 입력
       - name: LAST_STOP_DATE_SK
-        description: "[잠정] 획득일 이후 마지막 유효 중단일(YYYYMMDD) · 없으면 NULL · 재개발이 있어도 값은 남긴다"
+        description: "[O234 확정] 획득일 이후 마지막 유효 중단일(YYYYMMDD) · 없으면 NULL · 재개발이 있어도 값은 남긴다"
       - name: OBS_TENURE_MONTHS_LAST
-        description: "[잠정] 최종 중단 기준 관측 유지기간(개월) · 재후원 중·미중단 = 관측기준일까지 · 제외 조건은 OBS_TENURE_MONTHS 와 같다"
+        description: "[O234 확정] 최종 중단 기준 관측 유지기간(개월) · 재후원 중·미중단 = 관측기준일까지 · 제외 조건은 OBS_TENURE_MONTHS 와 같다"
       - name: IS_STOPPED_OBS_LAST
-        description: "[잠정] 1 = 마지막 중단 뒤 재개발 없음 · 0 = 관측 중(재후원 중 포함) · NULL = 생존분석 제외"
+        description: "[O234 확정] 1 = 마지막 중단 뒤 재개발 없음 · 0 = 관측 중(재후원 중 포함) · NULL = 생존분석 제외"
         tests:
           - accepted_values:
               values: [0, 1]
@@ -986,10 +986,10 @@ models:
     description: "회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql."
   - name: DIM_MONTH
     description: "월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
-  # 🆕 [2026-10-15 O232] FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선(🟠 잠정 정의 · 종전 = WIDE 뷰 O231)
+  # 🆕 [2026-10-15 O232] FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선(O234 확정 · 종전 = WIDE 뷰 O231)
   #   grain 유일성·곡선 불변식 = tests/assert_fmcs_grain_and_survival.sql(dbt_utils 미설치 · singular)
   - name: FACT_MEMBER_COHORT_SURVIVAL
-    description: "[잠정 정의 · 현업 확인 전] 획득 코호트 생존 곡선(Kaplan–Meier · 월 이산). 1행 = 분류 축값 × 획득 후 경과월. 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM(상한까지 제한평균 · 관측 중 회원 포함). 🔴 AXIS_TYPE 고정 필수. ⚠️ 컬럼 문안 정본 = 06_DDL.sql."
+    description: "[확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)] 획득 코호트 생존 곡선(Kaplan–Meier · 월 이산). 1행 = 분류 축값 × 획득 후 경과월. 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM(상한까지 제한평균 · 관측 중 회원 포함). 🔴 AXIS_TYPE 고정 필수. ⚠️ 컬럼 문안 정본 = 06_DDL.sql."
     columns:
       - name: AXIS_TYPE
         tests:
@@ -1003,7 +1003,7 @@ models:
       - name: RMST_CUM
         tests: [not_null]
       - name: LTV_CAP_MONTHS
-        description: "[잠정] 상한 N개월의 마지막 경과월(N−1) 행이면 N · 아니면 NULL. 상한 목록 = dbt var ltv_caps"
+        description: "[O234 확정] 상한 N개월의 마지막 경과월(N−1) 행이면 N · 셀 최대 관측월 행이면 9999(무기한 · 관측 최대까지) · 아니면 NULL. 상한 목록 = dbt var ltv_caps(80) · 9999 = ltv_unlimited"
 
   - name: FACT_MEMBER_DEV_ACHIEVEMENT
     description: "회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql."

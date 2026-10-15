@@ -127,7 +127,7 @@ stop_first as (
     group by 1
 ),
 
--- 🆕 [O233 · 잠정 정의 · 현업 회신 「중단 후 재후원 포함」] 최종 중단 = 획득일 이후 마지막 유효 중단.
+-- 🆕 [O233 · O234 확정 · 현업 회신 「중단 후 재후원 포함」] 최종 중단 = 획득일 이후 마지막 유효 중단.
 --   그 뒤 개발(DEV) 사건이 있으면 재후원 중 ⇒ 관측 중(IS_STOPPED_OBS_LAST = 0)으로 본다.
 stop_last as (
     select
@@ -255,7 +255,7 @@ final as (
                   and add_months(ACQ_DATE, 12)
                       <= to_date(to_char(MAX_DATE_SK), 'YYYYMMDD')
              then 1 else 0 end                                      as OBSERVABLE_12M_MEMBERS,
-        -- 🆕 [O231 · 잠정 정의] LTV 생존분석 입력 = 관측 유지기간 + 중단 여부(우절단 포함).
+        -- 🆕 [O231 · O234 확정] LTV 생존분석 입력 = 관측 유지기간 + 중단 여부(우절단 포함).
         --   🔴 TENURE_DAYS(중단자 전용)와 다르다 — 관측 중 회원은 기준일까지의 경과를 갖고 IS_STOPPED_OBS=0.
         --   제외(NULL) = 획득일 무효(NULL·1900 센티널) · 중단일 무효만 있는 회원(FIRST_STOP_DATE_SK=0 · 기간 산출 불가).
         --   개월 = FLOOR(일/30.44) — O230 진단과 같은 식(경과월 축).
@@ -265,7 +265,7 @@ final as (
              else FLOOR(datediff(day, ACQ_DATE, COALESCE(FIRST_STOP_DATE, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) / 30.44) end as OBS_TENURE_MONTHS,
         case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
               when FIRST_STOP_DATE is not null then 1 else 0 end   as IS_STOPPED_OBS,
-        -- 🆕 [O233 · 잠정 정의] 최종 중단 기준 생존분석 입력(현업 회신 「재후원 포함」).
+        -- 🆕 [O233 · O234 확정] 최종 중단 기준 생존분석 입력(현업 회신 「재후원 포함」).
         --   제외 조건은 최초 기준과 같다(같은 회원 집합 ⇒ 두 기준을 같은 분모로 비교한다).
         --   중단 = 획득일 → 마지막 유효 중단일 · 재후원 중·미중단 = 획득일 → 관측기준일.
         LAST_STOP_DATE_SK,

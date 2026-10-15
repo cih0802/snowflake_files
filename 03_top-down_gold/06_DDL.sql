@@ -1137,17 +1137,17 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- [O231] LTV 생존분석 입력(잠정 정의) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
-    OBS_TENURE_DAYS         NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일(FME 최종일) − 획득일. 획득일 무효(1900 센티널·NULL)·중단일 무효(DATE_SK=0) = NULL(생존분석 제외).',
-    OBS_TENURE_MONTHS       NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(개월) = FLOOR(OBS_TENURE_DAYS / 30.44). 생존분석 경과월 축(획득 후 경과월 · 달력월 아님).',
-    IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[잠정 정의 · O231] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.',
+    -- [O231 · O234 확정] LTV 생존분석 입력 — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    OBS_TENURE_DAYS         NUMBER(38,0)    COMMENT '[O231 · O234 확정] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일(FME 최종일) − 획득일. 획득일 무효(1900 센티널·NULL)·중단일 무효(DATE_SK=0) = NULL(생존분석 제외).',
+    OBS_TENURE_MONTHS       NUMBER(38,0)    COMMENT '[O231 · O234 확정] 관측 유지기간(개월) = FLOOR(OBS_TENURE_DAYS / 30.44). 생존분석 경과월 축(획득 후 경과월 · 달력월 아님).',
+    IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[O231 · O234 확정] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.',
     -- [O233] 최종 중단 기준(현업 회신 「중단 후 재후원 포함」) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
-    LAST_STOP_DATE_SK       NUMBER(38,0)    COMMENT '[잠정 정의 · O233] 획득일 이후 마지막 유효 중단일(YYYYMMDD). 획득 후 유효 중단이 없으면 NULL. 이후 재개발이 있어도 값은 남긴다(판정은 IS_STOPPED_OBS_LAST).',
-    OBS_TENURE_MONTHS_LAST  NUMBER(38,0)    COMMENT '[잠정 정의 · O233] 최종 중단 기준 관측 유지기간(개월). 중단 = 마지막 유효 중단일 − 획득일 · 마지막 중단 뒤 재개발(재후원) 또는 미중단 = 관측기준일 − 획득일. 제외 조건은 OBS_TENURE_MONTHS 와 같다(NULL).',
-    IS_STOPPED_OBS_LAST     NUMBER(1,0)     COMMENT '[잠정 정의 · O233] 1 = 마지막 유효 중단 뒤 재개발 없음(최종 중단) · 0 = 관측 중(재후원 중 포함). OBS_TENURE_MONTHS_LAST 가 NULL 이면 NULL.'
+    LAST_STOP_DATE_SK       NUMBER(38,0)    COMMENT '[O233 · O234 확정] 획득일 이후 마지막 유효 중단일(YYYYMMDD). 획득 후 유효 중단이 없으면 NULL. 이후 재개발이 있어도 값은 남긴다(판정은 IS_STOPPED_OBS_LAST).',
+    OBS_TENURE_MONTHS_LAST  NUMBER(38,0)    COMMENT '[O233 · O234 확정] 최종 중단 기준 관측 유지기간(개월). 중단 = 마지막 유효 중단일 − 획득일 · 마지막 중단 뒤 재개발(재후원) 또는 미중단 = 관측기준일 − 획득일. 제외 조건은 OBS_TENURE_MONTHS 와 같다(NULL).',
+    IS_STOPPED_OBS_LAST     NUMBER(1,0)     COMMENT '[O233 · O234 확정] 1 = 마지막 유효 중단 뒤 재개발 없음(최종 중단) · 0 = 관측 중(재후원 중 포함). OBS_TENURE_MONTHS_LAST 가 NULL 이면 NULL.'
 ) COMMENT = '회원 획득 코호트 팩트. [Grain: MEMBER_DK (1행=1회원)]. [주의: 캠페인별 12개월 고정 이탈률 및 유지기간 정본]. [원천: GOLD.FACT_MEMBER_EVENT].';
 
--- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 🟠 잠정 정의)
+-- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1))
 --   🆕 [2026-10-15 O232] 종전 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL`(O231) → **DDL 소유 테이블**로 전환(사용자 결정).
 --   ⚠️ 상한은 컬럼이 아니라 **행 표지 LTV_CAP_MONTHS** 다 — 상한을 바꿔도 이 DDL 은 바뀌지 않는다(dbt vars 만 수정).
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
@@ -1160,7 +1160,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     SURV_START          NUMBER(12,10)   COMMENT '경과월 시작 생존율 P(T ≥ m)',
     SURV_END            NUMBER(12,10)   COMMENT '경과월 종료 생존율 P(T > m) — Kaplan–Meier',
     RMST_CUM            NUMBER(10,4)    COMMENT '경과월까지 누적 제한평균 유지개월 = Σ SURV_START. LTV_CAP_MONTHS 행의 값이 그 상한의 기대 유지개월',
-    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[잠정] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 셀 최대 관측월 행이면 9999(무기한 · O233) · 아니면 NULL. 상한 목록 = dbt var ltv_caps · 9999 = ltv_unlimited. 최대 관측월이 N−1 과 같으면 N 이 우선(RMST 동일)',
+    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[O234 확정 · 상한 80 + 무기한] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 셀 최대 관측월 행이면 9999(무기한 · O233) · 아니면 NULL. 상한 목록 = dbt var ltv_caps · 9999 = ltv_unlimited. 최대 관측월이 N−1 과 같으면 N 이 우선(RMST 동일)',
     COHORT_MEMBERS      NUMBER(18,0)    COMMENT '셀 획득 회원수(생존분석 대상 · 획득일·중단일 무효 제외). 셀 상수',
     STOPPED_MEMBERS_TOTAL NUMBER(18,0)  COMMENT '셀 관측기간 중 중단 회원수. 셀 상수',
     IS_CELL_RELIABLE    BOOLEAN         COMMENT 'COHORT_MEMBERS ≥ dbt var ltv_min_cell. FALSE 셀은 비교·순위에 쓰지 않는다',
@@ -1170,7 +1170,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AXIS_TYPE, AXIS_VALUE, ELAPSED_MONTH)
-) COMMENT = '획득 코호트 생존 곡선 팩트(🟠 잠정 정의 · 현업 확인 전). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
+) COMMENT = '획득 코호트 생존 곡선 팩트(확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
 
 -- FACT_MEMBER_FEE — 회비 분해 팩트
 --   ⚠️ PK 미선언 — grain 키 FEE_DIV_CD 가 기부금 행에서 NULL. 유일성은 dbt GROUP BY 가 보증.

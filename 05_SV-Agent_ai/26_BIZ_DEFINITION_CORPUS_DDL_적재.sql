@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS GN_DW.SERVING.BIZ_DEFINITION_CORPUS (
     SV_FIELD     VARCHAR COMMENT 'SV 논리 테이블.필드명(라우팅·확정 지표 행만)',
     LIMITATION   VARCHAR COMMENT '산출 범위·불가 사유·데이터 출처·합의 필요사항',
     SOURCE_FILE  VARCHAR COMMENT '90_provided_definition 파일:행 또는 사용자 결정 출처',
-    SEARCH_TEXT  VARCHAR COMMENT '검색 본문(위 컬럼 합본)'
+    SEARCH_TEXT  VARCHAR COMMENT '검색 본문(위 컬럼 합본 · 🆕 O233-B Markdown 포맷)',
+    -- 🆕 [O233-B] 검색 품질용 파생 열 · 원천 내용 창작 없음
+    KEYWORDS     VARCHAR COMMENT '🆕 O233-B 검색 키워드 변형(제목·동의어의 띄어쓰기 제거·율↔률·누계↔누적·단위 괄호 제거 · 규칙 생성)',
+    IS_ADDITIVE  VARCHAR COMMENT '🆕 O233-B 가산성. N = 원천 문구에 「비가산」 명시 · 빈 값 = 근거 없음'
 )
 COMMENT = '비즈니스 정의 코퍼스 — 현업 지표사전·용어·조직·원천 정의 + 라우팅 결정. Cortex Search(SEARCH_BIZ_DEFINITION) 원천. 수치 원천이 아니다.';
 
@@ -57,16 +60,22 @@ COPY INTO GN_DW.SERVING.BIZ_DEFINITION_CORPUS
   ON_ERROR = ABORT_STATEMENT
   FORCE = TRUE;
 
--- [5] Cortex Search(원천참고 = BRONZE 물리명은 SQL 식별자로 오용되므로 검색에서 뺀다 · 테이블에는 보존)
+-- [5] 🆕 [O233-B] Cortex Search — multi-index 하이브리드(다국어 벡터 + 제목·키워드·본문 키워드 색인)
+--     원천참고 = BRONZE 물리명은 SQL 식별자로 오용되므로 검색에서 뺀다(테이블에는 보존)
+--     모델 = snowflake-arctic-embed-l-v2.0(다국어) · 종전 = snowflake-arctic-embed-m-v1.5(영어)
+--     평가(40문항) = V1 hit@3=33% → V2 hit@3=45% (jw08094 · 2026-10-15)
 CREATE OR REPLACE CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION
-    ON SEARCH_TEXT
-    ATTRIBUTES DOC_TYPE, AGENT_SCOPE, TITLE
+    TEXT INDEXES TITLE, KEYWORDS, SEARCH_TEXT
+    VECTOR INDEXES SEARCH_TEXT (model='snowflake-arctic-embed-l-v2.0')
+    PRIMARY KEY (DOC_ID)
+    ATTRIBUTES DOC_TYPE, AGENT_SCOPE_ARR
     WAREHOUSE = GN_DW_ANALYTICS_WH
     TARGET_LAG = '1 day'
-    COMMENT = 'O217 비즈니스 정의 검색(지표 정의·계산식·라우팅·용어·조직·원천 참고). 수치는 analyst 도구로만 낸다.'
+    COMMENT = 'O233-B 비즈니스 정의 검색(다국어 임베딩 · 제목·키워드·본문 키워드 색인 하이브리드 · hit@3 33→45%). 수치는 analyst 도구로만 낸다.'
 AS
 SELECT DOC_ID, DOC_TYPE, TITLE, SYNONYMS, DEFINITION, FORMULA, AGENT_SCOPE,
-       TOOL_NAME, SV_FIELD, LIMITATION, SOURCE_FILE, SEARCH_TEXT
+       SPLIT(AGENT_SCOPE, '|') AS AGENT_SCOPE_ARR,
+       TOOL_NAME, SV_FIELD, LIMITATION, SOURCE_FILE, SEARCH_TEXT, KEYWORDS, IS_ADDITIVE
 FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
 WHERE DOC_TYPE <> '원천참고';
 
