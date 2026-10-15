@@ -78,7 +78,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용. 실제값 4종: ''CA''·''PR''·''SP''·''TJ'' + NULL',
     ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서') COMMENT = 'CM 내 위치. 방송 전용. 실제값 16종: ''`''(🔴 **오염값** — 백틱 1문자이며 정상 CM 위치가 아니다. 이 값으로 필터하지 말 것 ··''st''·''E-2nd''·''E-3rd''·''th''·''E-5th''·''E-6th''·''E-7th''·''T-1st''·''T-2nd''·''T-3rd''·''T-4th''·''T-5th''·''T-6th''·''T-7th''·''middle'' + NULL',
     ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 실제값 2종: ''재송출''·''방송'' + NULL',
-    ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 방송(VIDEO/REBROADCAST) 전용. 실제값: 15·20·30·60 등 + NULL.',
+    ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 🔴 영상(VIDEO) 전용 — 재방송·디지털은 전건 NULL ⇒ AD_SOURCE_TYPE=''VIDEO'' 로 고정해 쓴다. 실제값 4종: 30·60·90·120 + NULL(영상 행 일부).',
     ad.BRDC_DIV AS ad.BRDC_DIV
       WITH SYNONYMS ('방송구분', '본방/재방')
       COMMENT = '방송구분(레귤러·본방송·재방송·삼방송·보상송출·송출오류) — 🔴 REBROADCAST 전용 · 디지털행은 NULL(원천 부재) ⇒ 출처유형 REBROADCAST 로 고정해 쓴다.',

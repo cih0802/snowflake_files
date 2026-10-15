@@ -16,6 +16,8 @@ select
     --   ⚠️ DVLP_DIV_NM='후원중단' 과 EVENT_TYPE='STOP' 은 동일 사건 중복 → 합산 금지.
     f.DVLP_DIV_CD, f.DVLP_DIV_NM, f.SPNSR_AMT,
     f.DEV_CNT, f.DEV_MEMBERS,
+    -- 🆕 [O231] 상계 전 원천값·0 처리 사유(FME O-HC). DEV_CNT(MSTR 정본)는 불변.
+    f.DEV_CNT_RAW, f.DEV_EXCL_REASON,
     f.STOP_CNT, f.STOP_MEMBERS,
     f.UNPAID_STOP_CNT, f.UNPAID_STOP_MEMBERS,
     f.JOIN_DATE, f.STOP_DATE, f.STOP_REASON, f.STOP_CHANNEL,

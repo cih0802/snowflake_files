@@ -27,7 +27,7 @@ campaign_pick as (
         BRND_NM, PARENT_CAMPAIGN_NAME, PROMO_METHOD_NAME,
         row_number() over (
             partition by SPNSR_BSNS_NO
-            order by iff(DVLP_DIV_CD = '1', 0, 1), OCCRRNC_DE, SER_NO
+            order by iff(DVLP_DIV_CD = {{ gn_code('DEV_NEW') }}, 0, 1), OCCRRNC_DE, SER_NO
         ) as rn
     from {{ ref('CRM_MEMBER_DEV') }}
 ),

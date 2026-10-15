@@ -97,10 +97,10 @@ agg as (
         SUM(PAY_AMT)                                                as PAID_FEE,
         SUM(CASE WHEN PAYMENT_TYPE = '회비' THEN PAY_AMT END)        as PAID_FEE_BILLABLE,
         -- DEC-3 정본 미납 = 결제상태 실패(F) 또는 NULL 인 **청구액**. 차감식 금지(O40).
-        SUM(CASE WHEN PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL
+        SUM(CASE WHEN {{ gn_is_unpaid('PAY_STAT_CD') }}
                  THEN RQEST_AMT END)                                as UNPAID_BILLED_AMT,
         COUNT(*)                                                    as BILLING_ROWS,
-        BOOLOR_AGG(PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL)        as UNPAID_FLAG,
+        BOOLOR_AGG({{ gn_is_unpaid('PAY_STAT_CD') }})        as UNPAID_FLAG,
         -- 🔴 일 grain 축: 「기준일(납입일)」 요구를 여기서만 답할 수 있다(FMM 은 월 팩트).
         --   같은 조합에 납입일이 여러 개면 **최종 납입일**을 쓴다 — 합계가 아니라 시점 축이다.
         COALESCE({{ date_sk('MAX(PAY_DE)') }}, 0)                   as LAST_PAY_DATE_SK,

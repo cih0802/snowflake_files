@@ -61,7 +61,7 @@ member_first_dev as (
     from (
         select MBER_NO, TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD') as D
         from {{ ref('CRM_MEMBER_DEV') }}
-        where DVLP_DIV_CD in ('1','2','4')
+        where DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }})
           and YEAR(TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')) > 1900
         union all
         select MEMBER_DK, FRST_REGIST_DT::DATE
@@ -106,22 +106,22 @@ mstr_b1 as (
     join mstr_span s
       on a.SPNSR_NO = s.SPNSR_NO and a.SPNSR_BSNS_NO = s.SPNSR_BSNS_NO
      and s.DSC_DE > a.STRD_MT || '31'
-    where a.DVLP_DIV_CD in ('1', '4')
+    where a.DVLP_DIV_CD in ({{ gn_code('MSTR_B1') }})
     qualify SUM(a.SPNSR_AMT) over (partition by a.SPNSR_NO, a.SPNSR_BSNS_NO, a.STRD_MT) > 0
 ),
 mstr_b2a as (
     select
-        SUM(IFF(DVLP_DIV_CD in ('2', '3'), SPNSR_AMT, 0)) over (partition by SPNSR_NO, SPNSR_BSNS_NO, STRD_MT) as SAMT,
+        SUM(IFF(DVLP_DIV_CD in ({{ gn_code('MSTR_B2_NET') }}), SPNSR_AMT, 0)) over (partition by SPNSR_NO, SPNSR_BSNS_NO, STRD_MT) as SAMT,
         SUM(SPNSR_AMT) over (partition by MBER_NO, STRD_MT) as MAMT,
         b.*
     from mstr_dev_base b
-    where DVLP_DIV_CD in ('2', '3', '5')
+    where DVLP_DIV_CD in ({{ gn_code('MSTR_B2_BASE') }})
 ),
 mstr_b2b as (
-    select SUM(IFF(DVLP_DIV_CD = '3', SPNSR_AMT, 0)) over (partition by MBER_NO, STRD_MT) as DAMT, a.*
+    select SUM(IFF(DVLP_DIV_CD = {{ gn_code('DEV_DECREASE') }}, SPNSR_AMT, 0)) over (partition by MBER_NO, STRD_MT) as DAMT, a.*
     from mstr_b2a a
     where MAMT > 0
-      and ((SAMT > 0 and DVLP_DIV_CD = '2') or (SAMT < 0 and DVLP_DIV_CD = '3'))
+      and ((SAMT > 0 and DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }}) or (SAMT < 0 and DVLP_DIV_CD = {{ gn_code('DEV_DECREASE') }}))
 ),
 mstr_b2c as (
     -- 프레임 = RANGE UNBOUNDED PRECEDING(동순위 합산) — MSTR 원본(SQL Server 기본값)과 동일
@@ -130,7 +130,7 @@ mstr_b2c as (
                         range between unbounded preceding and current row) as AAMT,
         b.*
     from mstr_b2b b
-    where DVLP_DIV_CD = '2'
+    where DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }}
 ),
 mstr_b2 as (
     select SPNSR_NO, SPNSR_BSNS_NO, SER_NO, OCCRRNC_DE,
@@ -145,6 +145,20 @@ mstr_dev as (
     select * from mstr_b1
     union all
     select * from mstr_b2
+),
+-- 🆕 [2026-10-15 O-HC] 0 처리 사유 진단 — mstr_b1·b2 와 **같은 창 정의**를 필터 전 행에 다시 계산한다.
+--   mstr_* 를 고치지 않고 옆에서 재는 이유 = DEV_CNT(MSTR 대사값)가 바뀔 경로를 0 으로 만들기 위해서다.
+--   · B1_BIZ_MT_AMT = b1 QUALIFY 의 후원사업×월 1·4 합 (span 은 후원사업당 1행이라 조인 필터 전후 동일)
+--   · B2_SAMT/B2_MAMT = b2a 의 SAMT/MAMT 와 같은 식(MAMT 는 2·3·5 행만 합산 = b2a WHERE 와 동일)
+dev_diag as (
+    select
+        b.SPNSR_NO as DG_SPNSR_NO, b.SPNSR_BSNS_NO as DG_SPNSR_BSNS_NO, b.SER_NO as DG_SER_NO, b.OCCRRNC_DE as DG_OCCRRNC_DE,
+        s.DSC_DE as DG_DSC_DE,
+        SUM(IFF(b.DVLP_DIV_CD in ({{ gn_code('MSTR_B1') }}), b.SPNSR_AMT, 0)) over (partition by b.SPNSR_NO, b.SPNSR_BSNS_NO, b.STRD_MT) as B1_BIZ_MT_AMT,
+        SUM(IFF(b.DVLP_DIV_CD in ({{ gn_code('MSTR_B2_NET') }}), b.SPNSR_AMT, 0)) over (partition by b.SPNSR_NO, b.SPNSR_BSNS_NO, b.STRD_MT) as B2_SAMT,
+        SUM(IFF(b.DVLP_DIV_CD in ({{ gn_code('MSTR_B2_BASE') }}), b.SPNSR_AMT, 0)) over (partition by b.MBER_NO, b.STRD_MT) as B2_MAMT
+    from mstr_dev_base b
+    left join mstr_span s on s.SPNSR_NO = b.SPNSR_NO and s.SPNSR_BSNS_NO = b.SPNSR_BSNS_NO
 ),
 
 dev as (
@@ -162,8 +176,21 @@ dev as (
         d.DVLP_DIV_CD                                       as DVLP_DIV_CD,
         d.DVLP_DIV_NM                                       as DVLP_DIV_NM,
         d.SPNSR_AMT                                         as SPNSR_AMT,
-        case when d.DVLP_DIV_CD in ('1','2','4') then COALESCE(md.MSTR_AMT, 0) / 10000 else 0 end as DEV_CNT,
-        case when d.DVLP_DIV_CD in ('1','2','4') and md.MD_SER_NO is not null then 1 else 0 end as DEV_MEMBERS,
+        case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) then COALESCE(md.MSTR_AMT, 0) / 10000 else 0 end as DEV_CNT,
+        case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) and md.MD_SER_NO is not null then 1 else 0 end as DEV_MEMBERS,
+        -- 🆕 [2026-10-15 O-HC] 상계 전 원천값·0 처리 사유 — DEV_CNT 산식은 손대지 않는다(MSTR 대사 보존).
+        case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) then COALESCE(d.SPNSR_AMT, 0) / 10000 else 0 end as DEV_CNT_RAW,
+        case when d.DVLP_DIV_CD not in ({{ gn_code('DEV_RECOGNIZED') }}) then CAST(NULL AS VARCHAR)
+             when COALESCE(d.SPNSR_AMT, 0) <= 0 then '원금액0이하'
+             when md.MD_SER_NO is not null then IFF(md.MSTR_AMT < d.SPNSR_AMT, '부분상계', CAST(NULL AS VARCHAR))
+             when d.DVLP_DIV_CD in ({{ gn_code('MSTR_B1') }}) then
+                  case when dg.DG_DSC_DE is null then '후원사업없음'
+                       when dg.DG_DSC_DE <= LEFT(d.OCCRRNC_DE, 6) || '31' then '동월중단'
+                       when dg.B1_BIZ_MT_AMT <= 0 then '사업월상계'
+                       else '기타' end
+             when dg.B2_MAMT <= 0 then '회원월상계'
+             when dg.B2_SAMT <= 0 then '사업월상계'
+             else '누적상계' end                              as DEV_EXCL_REASON,
         0 as STOP_CNT, 0 as STOP_MEMBERS, 0 as UNPAID_STOP_CNT, 0 as UNPAID_STOP_MEMBERS,
         TRY_TO_DATE(OCCRRNC_DE,'YYYYMMDD')                  as JOIN_DATE,
         CAST(NULL AS DATE)                                  as STOP_DATE,
@@ -180,7 +207,7 @@ dev as (
         d.AREA_NM                                           as REGION_AT_EVENT,
         d.SEX                                               as SEX_AT_EVENT,
         csx.DTL_CD_NM                                       as GENDER_AT_EVENT,
-        case when d.DVLP_DIV_CD = '5' then 1 else 0 end      as CAMPAIGN_STOP_CNT,
+        case when d.DVLP_DIV_CD = {{ gn_code('DEV_STOP') }} then 1 else 0 end as CAMPAIGN_STOP_CNT,
         d.MBER_INFLOW_PATH_CD                                as MBER_INFLOW_PATH_CD_AT_EVENT,
         d.MBER_INFLOW_PATH_NM                                as MBER_INFLOW_PATH_NM_AT_EVENT,
         d.CMPGN_CTGR_CD                                      as CMPGN_CTGR_CD_AT_EVENT,
@@ -219,6 +246,9 @@ dev as (
     ) md
       on md.MD_SPNSR_NO = d.SPNSR_NO and md.MD_SPNSR_BSNS_NO = d.SPNSR_BSNS_NO
      and md.MD_SER_NO = d.SER_NO and md.MD_OCCRRNC_DE = d.OCCRRNC_DE
+    left join dev_diag dg
+      on dg.DG_SPNSR_NO = d.SPNSR_NO and dg.DG_SPNSR_BSNS_NO = d.SPNSR_BSNS_NO
+     and dg.DG_SER_NO = d.SER_NO and dg.DG_OCCRRNC_DE = d.OCCRRNC_DE
 ),
 
 stop as (
@@ -237,6 +267,7 @@ stop as (
         CAST(NULL AS VARCHAR)                               as DVLP_DIV_NM,
         CAST(NULL AS NUMBER(18,0))                          as SPNSR_AMT,
         0 as DEV_CNT, 0 as DEV_MEMBERS,
+        0 as DEV_CNT_RAW, CAST(NULL AS VARCHAR) as DEV_EXCL_REASON,
         -- 🆕 🟢 [2026-09-16 O168] `UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 배선.
         --   종전 = 스캐폴드 상수 `0` (BLOCKING-5 버킷 B · 라이브 전건 0 실측).
         --   판정 = **중단사유명에 「미납」이 포함된 중단**을 미납중단으로 센다.
@@ -248,8 +279,8 @@ stop as (
         --      근거·대안은 문서30 `DEC-54` 에 등재했다 — 현업이 달리 정하면 술어만 바꾼다.
         --   ⚠️ `STOP_CNT` 의 부분집합이다(미납중단 ⊂ 중단) ⇒ 두 measure 를 합산하지 마라.
         1 as STOP_CNT, 1 as STOP_MEMBERS,
-        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_CNT,
-        case when s.DSCNTC_RSN_NM like '%미납%' then 1 else 0 end as UNPAID_STOP_MEMBERS,
+        case when {{ gn_is_unpaid_stop_reason('s.DSCNTC_RSN_NM') }} then 1 else 0 end as UNPAID_STOP_CNT,
+        case when {{ gn_is_unpaid_stop_reason('s.DSCNTC_RSN_NM') }} then 1 else 0 end as UNPAID_STOP_MEMBERS,
         CAST(NULL AS DATE)                                  as JOIN_DATE,
         TRY_TO_DATE(s.SPNSR_DSCNTC_DE,'YYYYMMDD')           as STOP_DATE,
         s.DSCNTC_RSN_CD                                     as STOP_REASON,
@@ -321,5 +352,7 @@ select
     SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
     CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
     BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- [O231] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    DEV_CNT_RAW, DEV_EXCL_REASON
 from unioned

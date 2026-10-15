@@ -1,0 +1,11 @@
+
+    
+    
+
+
+
+select SPONSORSHIP_SK
+from GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS
+where SPONSORSHIP_SK is null
+
+

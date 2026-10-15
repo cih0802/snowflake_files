@@ -81,17 +81,28 @@ acq_ranked as (
         SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
         CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT,
         BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
-        case when DVLP_DIV_CD = '1' then 'NEW' else 'FALLBACK' end as ACQ_BASIS,
+        case when DVLP_DIV_CD = {{ gn_code('DEV_NEW') }} then 'NEW' else 'FALLBACK' end as ACQ_BASIS,
         row_number() over (
             partition by MEMBER_DK
             order by
-                case when DVLP_DIV_CD = '1' then 0 else 1 end,   -- 신규 우선
+                case when DVLP_DIV_CD = {{ gn_code('DEV_NEW') }} then 0 else 1 end,   -- 신규 우선
                 case when DATE_SK = 0 then 1 else 0 end,         -- 무효 일자는 뒤로
                 DATE_SK,
                 CAMPAIGN_SK,
                 coalesce(SPNSR_AMT, 0),
                 coalesce(AREA_CD_AT_EVENT, ''),
-                coalesce(AGE_AT_EVENT, -1)
+                coalesce(AGE_AT_EVENT, -1),
+                -- 🆕 [O231] 결정화 — 종전 키만으로는 회원 18,321명이 동률이라 build 마다 대표행이 바뀌었다.
+                --   남은 동률(실측 8,442명)은 아래 해시 = **이 팩트가 승계하는 출력 컬럼 전부**가 같은 행끼리라
+                --   어느 행을 골라도 출력이 같다 ⇒ 결과가 결정적이다(원천 SER_NO 는 FME 에 없다).
+                SPONSORSHIP_SK, ORG_SK, DVLP_DIV_CD,
+                HASH(AGE_BAND_AT_EVENT, REGION_AT_EVENT, SEX_AT_EVENT, GENDER_AT_EVENT,
+                     MBER_INFLOW_PATH_CD_AT_EVENT, MBER_INFLOW_PATH_NM_AT_EVENT, CMPGN_CTGR_CD_AT_EVENT, CMPGN_CTGR_NM_AT_EVENT,
+                     CMPGN_TYPE1_BSN_AT_EVENT, CMPGN_TYPE1_NM_AT_EVENT, CMPGN_TYPE2_BSN_AT_EVENT, CMPGN_TYPE2_NM_AT_EVENT,
+                     MKTG_CMPGN_CD_AT_EVENT, MKTG_CMPGN_NM_AT_EVENT, CMMN_BRND_AT_EVENT, CMMN_BRND_NM_AT_EVENT,
+                     MKTG_UTM_AT_EVENT, MKTG_UTM_NM_AT_EVENT, SPNSR_DIV_CD_AT_EVENT, SPNSR_DIV_NM_AT_EVENT,
+                     CPR_DIV_CD_AT_EVENT, CPR_DIV_NM_AT_EVENT, BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT,
+                     PROMO_METHOD_NAME_AT_EVENT)
         ) as rn
     from dev
 ),
@@ -219,7 +230,17 @@ final as (
         case when ACQ_DATE is not null
                   and add_months(ACQ_DATE, 12)
                       <= to_date(to_char(MAX_DATE_SK), 'YYYYMMDD')
-             then 1 else 0 end                                      as OBSERVABLE_12M_MEMBERS
+             then 1 else 0 end                                      as OBSERVABLE_12M_MEMBERS,
+        -- 🆕 [O231 · 잠정 정의] LTV 생존분석 입력 = 관측 유지기간 + 중단 여부(우절단 포함).
+        --   🔴 TENURE_DAYS(중단자 전용)와 다르다 — 관측 중 회원은 기준일까지의 경과를 갖고 IS_STOPPED_OBS=0.
+        --   제외(NULL) = 획득일 무효(NULL·1900 센티널) · 중단일 무효만 있는 회원(FIRST_STOP_DATE_SK=0 · 기간 산출 불가).
+        --   개월 = FLOOR(일/30.44) — O230 진단과 같은 식(경과월 축).
+        case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
+             else datediff(day, ACQ_DATE, COALESCE(FIRST_STOP_DATE, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) end as OBS_TENURE_DAYS,
+        case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
+             else FLOOR(datediff(day, ACQ_DATE, COALESCE(FIRST_STOP_DATE, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) / 30.44) end as OBS_TENURE_MONTHS,
+        case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
+             when FIRST_STOP_DATE is not null then 1 else 0 end   as IS_STOPPED_OBS
     from joined
 )
 
@@ -242,5 +263,7 @@ select
     ACQ_SPNSR_DIV_CD, ACQ_SPNSR_DIV_NM,
     ACQ_CPR_DIV_CD, ACQ_CPR_DIV_NM,
     ACQ_BRAND, ACQ_PARENT_CAMPAIGN_NAME, ACQ_PROMO_METHOD_NAME,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- [O231] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    OBS_TENURE_DAYS, OBS_TENURE_MONTHS, IS_STOPPED_OBS
 from final

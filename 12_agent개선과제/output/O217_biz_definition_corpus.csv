@@ -136,13 +136,14 @@ RT-20,라우팅,목표 유형(회원개발·매체별·일별·사업목표),"�
 도구: analyst_dev_achievement|analyst_target_biz"
 RT-21,라우팅,산출 불가 항목과 사유(마케팅),"소재별, 초수, 광고 길이, 캠페인 유형별 광고 효율, 법인명, 팀별, 연 편성예산, 집행 추정치, 잠재고객, 타겟그룹, GA 전환수","🔴 **산출 불가 항목과 그 사유**(창작 금지 · 「데이터가 없다」로 뭉개지 말고 사유를 구분해 답한다):
   · **소재별 분해** = 소재 연결키 부재. 소재**유형**은 다른 축이므로 대체물이 아니다.
-  · **초수(광고 길이)** = 원천 표기가 두 형식으로 섞여 있고 단위 오류가 확인돼 노출하지 않는다.
-  · **캠페인 유형별 광고 효율** = 광고 팩트에 캠페인 축이 도달하지 않는다.
-    🟡 단 **캠페인 유형·국내해외·사업사례별 「개발 실적」은 산출된다**(analyst_member_event).
-    ⇒ 「캠페인 유형별」을 뭉뚱그려 불가로 답하면 틀린다. 광고비를 그 축으로 내리는 것만 불가다.
+  · **초수(광고 길이)** = 🆕 [O230 실측 정정] 산출된다 — analyst_ad 의 초수(DURATION_SEC) 축 · **영상(VIDEO) 전용**(채움 35,736/47,769행 · 값 30·60·90·120초) · 재방송·디지털은 값 없음. 영상 외 출처를 섞어 초수별로 묶지 않는다.
+  · **캠페인 유형별 광고 효율** = 🆕 [O230 실측 정정] **디지털 광고는 산출된다**(analyst_ad 캠페인유형 CMPGN_TYPE_BSN_NM · 디지털 221,530행 전건 채움). 영상·재방송 행은 값이 없어 그 출처만 불가다. 마케팅캠페인에 연결된 광고행은 마케팅캠페인 속성(국내/해외·사업/사례 대표값)으로도 나눌 수 있다.
+    🟡 **캠페인 유형·국내해외·사업사례별 「개발 실적」도 산출된다**(analyst_member_event · analyst_mstr_spnsr_dvlp).
+    ⇒ 「캠페인 유형별」을 뭉뚱그려 불가로 답하면 틀린다.
   · **법인명** = 조직 차원의 법인 컬럼(DIM_ORG.CORP)은 부서-법인 N:M 혼재로 **전건 비어 있다**(값 미주입). 🟢 단 회원 회비(analyst_member_fee · ACQ_CPR_DIV) 및 개발실적(analyst_member_event · SPONSORSHIP_CPR_DIV_NM)의 사단/사복 법인구분은 원천 CPR_DIV_CD(CM019)로 정상 산출된다.
   · **팀별 분해** = 조직 계층 팀 컬럼이 비어 있다(🟢 본부/지부는 analyst_member_event 의 ORG_DIV_GROUP·ORG_DIV + 코드로 산출 가능 · DEC-56 · O191).
-  · **연 편성예산 · 집행예산(추정치)** = 미적재(추정치는 대행사 원천이며 예산 원장에 없다).
+  · **연 편성예산** = 🆕 [O230 실측 정정] 산출된다 — analyst_budget_yearly(2024·2025 연 편성·집행 · 2026 은 편성 0 · 집행만 진행 중). 월 예산 도구와 합산하지 않는다.
+  · **집행예산(추정치)** = 미적재(추정치는 대행사 원천이며 예산 원장에 없다).
   · **잠재고객 이름(타겟그룹) · member_id 기준 광고 성과** = 미적재 및 광고↔회원 연결키 부재.
     광고 성과를 회원 단위로 내리지 않는다.
   · **GA 전환수(건)** = 🆕 [O217 사용자 결정 A] 「GA·일별리포트 개발건수」로 물으면 analyst_ad 의 GA 개발(건)(디지털 · 소수 포함)으로 답한다. (명)과 (건)을 같은 지표로 답하지 않는다.
@@ -150,13 +151,14 @@ RT-21,라우팅,산출 불가 항목과 사유(마케팅),"소재별, 초수, �
 동의어: 소재별, 초수, 광고 길이, 캠페인 유형별 광고 효율, 법인명, 팀별, 연 편성예산, 집행 추정치, 잠재고객, 타겟그룹, GA 전환수
 정의: 🔴 **산출 불가 항목과 그 사유**(창작 금지 · 「데이터가 없다」로 뭉개지 말고 사유를 구분해 답한다):
   · **소재별 분해** = 소재 연결키 부재. 소재**유형**은 다른 축이므로 대체물이 아니다.
-  · **초수(광고 길이)** = 원천 표기가 두 형식으로 섞여 있고 단위 오류가 확인돼 노출하지 않는다.
-  · **캠페인 유형별 광고 효율** = 광고 팩트에 캠페인 축이 도달하지 않는다.
-    🟡 단 **캠페인 유형·국내해외·사업사례별 「개발 실적」은 산출된다**(analyst_member_event).
-    ⇒ 「캠페인 유형별」을 뭉뚱그려 불가로 답하면 틀린다. 광고비를 그 축으로 내리는 것만 불가다.
+  · **초수(광고 길이)** = 🆕 [O230 실측 정정] 산출된다 — analyst_ad 의 초수(DURATION_SEC) 축 · **영상(VIDEO) 전용**(채움 35,736/47,769행 · 값 30·60·90·120초) · 재방송·디지털은 값 없음. 영상 외 출처를 섞어 초수별로 묶지 않는다.
+  · **캠페인 유형별 광고 효율** = 🆕 [O230 실측 정정] **디지털 광고는 산출된다**(analyst_ad 캠페인유형 CMPGN_TYPE_BSN_NM · 디지털 221,530행 전건 채움). 영상·재방송 행은 값이 없어 그 출처만 불가다. 마케팅캠페인에 연결된 광고행은 마케팅캠페인 속성(국내/해외·사업/사례 대표값)으로도 나눌 수 있다.
+    🟡 **캠페인 유형·국내해외·사업사례별 「개발 실적」도 산출된다**(analyst_member_event · analyst_mstr_spnsr_dvlp).
+    ⇒ 「캠페인 유형별」을 뭉뚱그려 불가로 답하면 틀린다.
   · **법인명** = 조직 차원의 법인 컬럼(DIM_ORG.CORP)은 부서-법인 N:M 혼재로 **전건 비어 있다**(값 미주입). 🟢 단 회원 회비(analyst_member_fee · ACQ_CPR_DIV) 및 개발실적(analyst_member_event · SPONSORSHIP_CPR_DIV_NM)의 사단/사복 법인구분은 원천 CPR_DIV_CD(CM019)로 정상 산출된다.
   · **팀별 분해** = 조직 계층 팀 컬럼이 비어 있다(🟢 본부/지부는 analyst_member_event 의 ORG_DIV_GROUP·ORG_DIV + 코드로 산출 가능 · DEC-56 · O191).
-  · **연 편성예산 · 집행예산(추정치)** = 미적재(추정치는 대행사 원천이며 예산 원장에 없다).
+  · **연 편성예산** = 🆕 [O230 실측 정정] 산출된다 — analyst_budget_yearly(2024·2025 연 편성·집행 · 2026 은 편성 0 · 집행만 진행 중). 월 예산 도구와 합산하지 않는다.
+  · **집행예산(추정치)** = 미적재(추정치는 대행사 원천이며 예산 원장에 없다).
   · **잠재고객 이름(타겟그룹) · member_id 기준 광고 성과** = 미적재 및 광고↔회원 연결키 부재.
     광고 성과를 회원 단위로 내리지 않는다.
   · **GA 전환수(건)** = 🆕 [O217 사용자 결정 A] 「GA·일별리포트 개발건수」로 물으면 analyst_ad 의 GA 개발(건)(디지털 · 소수 포함)으로 답한다. (명)과 (건)을 같은 지표로 답하지 않는다.
@@ -197,8 +199,8 @@ RT-24,라우팅,마케팅 원천 지도(4계열)·원천 질문 응답,"원천, 
   기재하지 않는 것이 규약이다. 원천 질문에는 이름만 답하고, 규모·기간·커버리지를 물으면 도구로 조회해
   그 시점의 값으로 답한다. COMMENT 에 없는 수치를 기억·추정해서 말하지 않는다.
 - **이 Agent 의 원천 지도는 4계열이다** — 광고(analyst_ad)=대행사 일별 리포트(GN_DW.BRONZE_AGENCY
-  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 GN_DW.SILVER.BIGQUERY_REFINED_DATA
-  에 직접 적재된다 — BRONZE_BIGQUERY 는 비어 있고 BRONZE_GA4 는 GA4 인구통계 원천만 담고 광고 SV 에 배선되지 않았다) /
+  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(GN_DW.SILVER.BIGQUERY_REFINED_DATA
+  부터 쓴다 — BRONZE_BIGQUERY 는 광고 SV 의 직접 원천이 아니다(운영계는 BRONZE_BIGQUERY 를 프로시저가 이 SILVER 로 정제한다 · 환경별 적재 경로는 이름만 답하고 규모·유무를 단정하지 않는다) · BRONZE_GA4 는 GA4 인구통계 원천이며 광고 SV 에 배선되지 않았다) /
   예산(analyst_budget)=ERP 예산·실적 원장(GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER, 파일 업로드 적재) /
   목표·실적(analyst_dev_achievement)=CRM(목표 TM_CM_MBER_DVLP_GOAL · 실적 TM_MM_FDRM_MBER_DVLP_AMT) /
   전환회원·코호트·회비·활동회원(analyst_member_event·_cohort·_fee·_sponsor_biz)=CRM(eCRM) → GN_DW.BRONZE_CRM.
@@ -215,8 +217,8 @@ RT-24,라우팅,마케팅 원천 지도(4계열)·원천 질문 응답,"원천, 
   기재하지 않는 것이 규약이다. 원천 질문에는 이름만 답하고, 규모·기간·커버리지를 물으면 도구로 조회해
   그 시점의 값으로 답한다. COMMENT 에 없는 수치를 기억·추정해서 말하지 않는다.
 - **이 Agent 의 원천 지도는 4계열이다** — 광고(analyst_ad)=대행사 일별 리포트(GN_DW.BRONZE_AGENCY
-  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(외부 Python 적재로 GN_DW.SILVER.BIGQUERY_REFINED_DATA
-  에 직접 적재된다 — BRONZE_BIGQUERY 는 비어 있고 BRONZE_GA4 는 GA4 인구통계 원천만 담고 광고 SV 에 배선되지 않았다) /
+  3테이블: DGT_AD_CMPGN_DTLS·VIDEO_AD_CMPGN_DTLS·REBRDC_AD_CMPGN_DTLS) + GA4(GN_DW.SILVER.BIGQUERY_REFINED_DATA
+  부터 쓴다 — BRONZE_BIGQUERY 는 광고 SV 의 직접 원천이 아니다(운영계는 BRONZE_BIGQUERY 를 프로시저가 이 SILVER 로 정제한다 · 환경별 적재 경로는 이름만 답하고 규모·유무를 단정하지 않는다) · BRONZE_GA4 는 GA4 인구통계 원천이며 광고 SV 에 배선되지 않았다) /
   예산(analyst_budget)=ERP 예산·실적 원장(GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER, 파일 업로드 적재) /
   목표·실적(analyst_dev_achievement)=CRM(목표 TM_CM_MBER_DVLP_GOAL · 실적 TM_MM_FDRM_MBER_DVLP_AMT) /
   전환회원·코호트·회비·활동회원(analyst_member_event·_cohort·_fee·_sponsor_biz)=CRM(eCRM) → GN_DW.BRONZE_CRM.

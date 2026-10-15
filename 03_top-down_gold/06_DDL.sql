@@ -737,7 +737,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [O231] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약 · 라이브 ORDINAL 58·59)
+    DEV_CNT_RAW         NUMBER(18,4)    COMMENT '개발(건) 원천값 = 상계 전 후원금액 ÷ 10,000 (개발구분 1·2·4 행만, 그 외 0). DEV_CNT(MSTR 상계 후)와의 차이 = 상계로 빠진 몫. 🔴 MSTR 대사에는 DEV_CNT 를 쓴다.',
+    DEV_EXCL_REASON     VARCHAR(20)     COMMENT 'DEV_CNT 가 DEV_CNT_RAW 보다 작은 사유. 동월중단·사업월상계·회원월상계·누적상계·부분상계·후원사업없음·원금액0이하. 상계 없음 = NULL. 개발구분 1·2·4 외 = NULL.'
 ) COMMENT = '회원 생애주기 전이 팩트. [Grain: DATE_SK × MEMBER_DK × EVENT_TYPE (1행=1상태전이)]. [주의: 개발(신규/증액/재후원)과 중단 사건의 통합 이력]. [원천: SILVER.CRM_MEMBER_DEV ∪ CRM_MEMBER_DISCONTINUE].';
 
 -- FACT_TARGET_MEMBER_DEV — 회원개발 부문 목표 팩트
@@ -1117,7 +1120,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- [O231] LTV 생존분석 입력(잠정 정의) — 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
+    OBS_TENURE_DAYS         NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일(FME 최종일) − 획득일. 획득일 무효(1900 센티널·NULL)·중단일 무효(DATE_SK=0) = NULL(생존분석 제외).',
+    OBS_TENURE_MONTHS       NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(개월) = FLOOR(OBS_TENURE_DAYS / 30.44). 생존분석 경과월 축(획득 후 경과월 · 달력월 아님).',
+    IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[잠정 정의 · O231] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.'
 ) COMMENT = '회원 획득 코호트 팩트. [Grain: MEMBER_DK (1행=1회원)]. [주의: 캠페인별 12개월 고정 이탈률 및 유지기간 정본]. [원천: GOLD.FACT_MEMBER_EVENT].';
 
 -- FACT_MEMBER_FEE — 회비 분해 팩트

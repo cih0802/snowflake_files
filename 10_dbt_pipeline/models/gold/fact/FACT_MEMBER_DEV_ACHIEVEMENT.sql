@@ -33,7 +33,7 @@ actual as (
     from {{ ref('FACT_MEMBER_EVENT') }} f
     where f.EVENT_TYPE = 'DEV'
       and f.JOIN_DATE is not null
-      and f.DVLP_DIV_CD in ('1', '2', '4')
+      and f.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }})
     group by 1, 2, 3
 ),
 

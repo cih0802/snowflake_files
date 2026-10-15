@@ -47,7 +47,7 @@ followup as (
     union all
     select MEMBER_DK, 'INCREASE', JOIN_DATE
     from {{ ref('FACT_MEMBER_EVENT') }}
-    where EVENT_TYPE = 'DEV' and DVLP_DIV_CD = '2' and JOIN_DATE is not null
+    where EVENT_TYPE = 'DEV' and DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }} and JOIN_DATE is not null
     union all
     select MEMBER_DK, 'STOP', STOP_DATE
     from {{ ref('FACT_MEMBER_EVENT') }}

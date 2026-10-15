@@ -80,7 +80,7 @@ agg as (
         COUNT(DISTINCT MBER_NO)                                     as BILLED_MEMBERS,
         SUM(RQEST_AMT)                                              as BILLED_AMT,
         SUM(PAY_AMT)                                                as PAID_FEE,
-        SUM(CASE WHEN PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL
+        SUM(CASE WHEN {{ gn_is_unpaid('PAY_STAT_CD') }}
                  THEN RQEST_AMT END)                                as UNPAID_BILLED_AMT
     from keyed
     group by 1,2,3,4,5,6,7,8

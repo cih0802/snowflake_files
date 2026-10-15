@@ -455,6 +455,17 @@ models:
               values: ['국내(남자)','국내(여자)','외국인(남자)','외국인(여자)','외국인(기타)','단체','기업','기타']
               quote: true
               config: { where: "GENDER_AT_EVENT is not null", severity: warn }
+      # 🆕 [2026-10-15 O-HC] 상계 전 원천값·0 처리 사유. DEV_CNT(MSTR 대사값)는 불변이다.
+      - name: DEV_CNT_RAW
+        description: "개발(건) 원천값 = 상계 전 후원금액 ÷ 10,000(개발구분 1·2·4 행만). DEV_CNT_RAW − DEV_CNT = MSTR 상계로 빠진 몫. 🔴 MSTR 대사·공식 실적은 DEV_CNT."
+        tests:
+          - not_null
+      - name: DEV_EXCL_REASON
+        description: "DEV_CNT < DEV_CNT_RAW 인 사유. 동월중단(B1 · 발생월 내 중단 후원사업) · 사업월상계(후원사업×월 순액≤0) · 회원월상계(B2 · 회원×월 2·3·5 순액≤0 — 다른 사업의 감액·중단과 상계) · 누적상계(B2 · 누적−감액≤0) · 부분상계(인정액<원금액) · 후원사업없음 · 원금액0이하. 상계 없음·비개발 = NULL."
+        tests:
+          - accepted_values:
+              values: ['동월중단', '사업월상계', '회원월상계', '누적상계', '부분상계', '후원사업없음', '원금액0이하']
+              config: { severity: warn }
       # 🔴 캠페인 귀속 중단건은 개발원천 코드5 행에만 1 이다. 이 불변식이 깨지면 STOP_CNT 와
       #   이중계상되므로 error 로 잡는다(O24 중복 원천 문제의 재발 방지).
       - name: CAMPAIGN_STOP_CNT
@@ -480,6 +491,17 @@ models:
       중단률은 12개월 고정 이탈률(STOPPED_12M_MEMBERS/OBSERVABLE_12M_MEMBERS)을 쓴다 —
       누적 이탈률은 관측 기간에 지배되어 캠페인 비교를 왜곡한다(P63).
     columns:
+      # 🆕 [O231 · 잠정 정의] LTV 생존분석 입력 — 관측 유지기간 + 중단 여부(우절단 포함)
+      - name: OBS_TENURE_DAYS
+        description: "[잠정] 관측 유지기간(일). 중단 = 최초중단일 − 획득일 · 관측 중 = 관측기준일 − 획득일. 획득일·중단일 무효 = NULL(생존분석 제외)"
+      - name: OBS_TENURE_MONTHS
+        description: "[잠정] 관측 유지기간(개월) = FLOOR(일/30.44) · 획득 후 경과월 축"
+      - name: IS_STOPPED_OBS
+        description: "[잠정] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단) · NULL = 생존분석 제외"
+        tests:
+          - accepted_values:
+              values: [0, 1]
+              quote: false
       - name: MEMBER_DK
         description: "회원 불변키(grain·PK)"
         tests:

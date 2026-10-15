@@ -88,6 +88,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme.EVENT_TYPE    AS fme.EVENT_TYPE     WITH SYNONYMS ('원천계통', '사건원천') COMMENT = '원천 계통 구분. 실제값 2종뿐: ''DEV''(개발원천) / ''STOP''(중단원천). ⚠ 상태(신규·증액·감액·재후원·후원중단)는 이 컬럼이 아니라 DVLP_DIV_NM 을 쓴다 — ''증액'' 등 상태값으로 이 컬럼을 필터하면 0행이 반환된다.',
     fme.DVLP_DIV_NM   AS fme.DVLP_DIV_NM    WITH SYNONYMS ('개발구분', '상태구분', '증액감액구분', '개발구분명') COMMENT = '개발구분(정본 MM015). 실제값 5종: ''신규''·''증액''·''감액''·''재후원''·''후원중단''. 중단원천 행은 NULL. ⚠ ''후원중단''은 EVENT_TYPE=''STOP'' 과 동일 사건이 두 원천에 중복 존재 → 두 축 합산 금지(중복',
     fme.DVLP_DIV_CD   AS fme.DVLP_DIV_CD    WITH SYNONYMS ('개발구분코드') COMMENT = '개발구분 원천코드(1=신규 2=증액 3=감액 4=재후원 5=후원중단). 라벨은 DVLP_DIV_NM. 실제값 5종: ''1''·''2''·''3''·''4''·''5'' + NULL',
+    fme.DEV_EXCL_REASON AS fme.DEV_EXCL_REASON WITH SYNONYMS ('상계사유', '개발 제외사유', '개발 0 처리 사유', '상계 구분') COMMENT = '🆕 [O231] MSTR 개발(건)이 원천 금액보다 작아진 사유. 실제값: ''동월중단''(신규·재후원 · 발생월 안에 중단된 후원사업) · ''회원월상계''(증액 · 같은 달 다른 후원사업의 감액·중단과 회원 단위 상계) · ''사업월상계''(후원사업×월 순액 ≤ 0) · ''누적상계''(증액 누적 − 감액 ≤ 0) · ''부분상계''(일부만 인정) · ''후원사업없음'' · ''원금액0이하'' + NULL(상계 없음·비개발 행). 🔴 MSTR 정의 자체는 바꾸지 않는다 — 「왜 개발(건)이 금액보다 적은가」 설명용이다. 개발구분 신규·증액·재후원 행에만 값이 있다.',
     fme.JOIN_DATE     AS fme.JOIN_DATE      WITH SYNONYMS ('사건 가입일')      COMMENT = '사건 행의 가입일(원천 그대로). 🔴🔴 **회원 최초 가입일이 아니다** — 개발원천 「후원중단」 행은 이 값이 사건일(=중단일)이고, 중단원천(STOP) 행은 전건 NULL 이다. 「가입연도별·가입일 기준」 질문에는 이 컬럼을 쓰지 말고 member.FIRST_JOIN_DATE · member.FIRST_JOIN_YEAR 를 쓴다',
     fme.STOP_DATE     AS fme.STOP_DATE      WITH SYNONYMS ('중단일', '해지일') COMMENT = '회원 중단일. 중단원천(STOP) 행은 사건일과 같고, 개발원천 「후원중단」 행은 NULL 이다(그 행의 중단일은 사건일 date.EVENT_DATE 로 본다)',
     member.FIRST_JOIN_DATE AS member.FIRST_JOIN_DATE WITH SYNONYMS ('가입일', '최초가입일', '회원 가입일') COMMENT = '회원 최초가입일 = 회원번호 생성일(정본 공#28 · 회원 마스터 현재값). 중단·개발 양쪽 행에 채워진다(2026-06 중단 행 100%). 「가입연도별」 분해의 정본 축',
@@ -153,6 +154,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
   METRICS (
     fme.TOTAL_DEV_CNT     AS SUM(fme.DEV_CNT)
       WITH SYNONYMS ('개발건', '개발 총건', '개발(건)') COMMENT = '개발(건) 합계 = **MSTR 정의**(사용자 결정): 신규·재후원·증액의 MSTR 인정금액 ÷ 10,000(소수 발생). 신규·재후원 = 미중단 후원사업·후원사업×월 합>0 · 증액 = 감액 상계 순증액. F(가산). 🟢 2026-07 전사 MSTR 리포트와 일치(실측). 🔴 GN_DW.MSTR(AGENT_MSTR) 값과 한 표에서 합산 금지.',
+    fme.TOTAL_DEV_CNT_RAW AS SUM(fme.DEV_CNT_RAW)
+      WITH SYNONYMS ('상계 전 개발건', '원천 개발건', '개발(건) 원천값') COMMENT = '🆕 [O231] 상계 전 개발(건) = 신규·증액·재후원 원천 후원금액 ÷ 10,000 합. F(가산). 🔴 공식 개발(건)은 TOTAL_DEV_CNT(MSTR 정의)다 — 이 값은 「상계로 얼마가 빠졌나」를 보여주는 참고치이며 MSTR 대사·실적 보고에 쓰지 않는다. 감액 상계 전이라 원금액이 음수인 행도 포함된다.',
+    fme.TOTAL_DEV_EXCLUDED_CNT AS SUM(fme.DEV_CNT_RAW - fme.DEV_CNT)
+      WITH SYNONYMS ('상계로 빠진 개발건', '상계 제외 개발건', '개발 상계분') COMMENT = '🆕 [O231] 상계로 빠진 개발(건) = TOTAL_DEV_CNT_RAW − TOTAL_DEV_CNT. F(가산). 사유 분해는 DEV_EXCL_REASON 차원과 함께 쓴다(사유 NULL 행의 차이는 0 에 가깝다).',
     fme.TOTAL_STOP_CNT    AS SUM(fme.STOP_CNT)
       WITH SYNONYMS ('중단건', '중단 총건', '해지건') COMMENT = '중단 건수 합계. F(가산). 중단원천(EVENT_TYPE=''STOP'') 기준. ⚠ DVLP_DIV_NM=''후원중단'' 행수와 더하지 말 것(동일 사건 중복).',
     fme.INCREASE_EVENT_AMT AS SUM(CASE WHEN fme.DVLP_DIV_NM = '증액' THEN fme.SPNSR_AMT END)

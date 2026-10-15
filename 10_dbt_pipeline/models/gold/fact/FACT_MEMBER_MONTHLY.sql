@@ -101,10 +101,10 @@ billing as (
         --   ⚠️ 분자는 `RQEST_AMT`(청구액)다 — 미납은 "청구했으나 안 들어온 금액"이므로 PAY_AMT 가 아니다.
         --   시뮬레이션(2026-08-05 · 본 모델 MONTH_KEY 로직 재현): 2025 = **29,251,314,636** 으로
         --   BRONZE 직접 집계값과 **정확히 일치**(차감식은 12,335,580,090 = 2.37배 과소였다).
-        SUM(CASE WHEN b.PAY_STAT_CD = 'F' OR b.PAY_STAT_CD IS NULL
+        SUM(CASE WHEN {{ gn_is_unpaid('b.PAY_STAT_CD') }}
                  THEN b.RQEST_AMT END)                            as UNPAID_BILLED_AMT,
         -- #80(DEC-4): 월×회원에 미납 청구행(PAY_STAT_CD='F' OR NULL)이 하나라도 있으면 월말 미납.
-        BOOLOR_AGG(PAY_STAT_CD = 'F' OR PAY_STAT_CD IS NULL)  as UNPAID_FLAG_EOM
+        BOOLOR_AGG({{ gn_is_unpaid('PAY_STAT_CD') }})  as UNPAID_FLAG_EOM
     from b
     left join mtype m on m.MT_MEMBER_DK = b.MBER_NO   -- 1:1 lookup (fan-out 0, 실측 확인)
     where b.MBER_NO is not null                       -- 순수 불량 5행 제외(NOT NULL MEMBER_DK)
@@ -136,7 +136,7 @@ reason_rep as (
                 ORDER BY MBRFEE_SQNC DESC NULLS LAST, RQEST_DE DESC, RQEST_RST_CD
             ) as rn
         from b
-        where PAY_STAT_CD = 'F'
+        where PAY_STAT_CD = {{ gn_code('PAY_FAIL') }}
           and MBER_NO is not null
           and RQEST_RST_CD is not null
     ) ranked
@@ -243,10 +243,10 @@ fme_rollup as (
         IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS,
         -- [O183] 개발구분(#121)·증액(#33)·재후원(#34) 월 판정 재료. 개발 사건(1·2·4)만 본다.
         --   🔴 [O202] DEV_CNT 가 금액 기반으로 바뀌었으므로 사건 판정은 DVLP_DIV_CD 로 한다(종전 결과 보존).
-        COUNT(DISTINCT IFF(DVLP_DIV_CD in ('1','2','4'), DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
-        MAX(IFF(DVLP_DIV_CD in ('1','2','4'), DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
-        BOOLOR_AGG(DVLP_DIV_CD = '2')                       as HAS_INCREASE_DEV,
-        BOOLOR_AGG(DVLP_DIV_CD = '4')                       as HAS_REDONATE_DEV,
+        COUNT(DISTINCT IFF(DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}), DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
+        MAX(IFF(DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}), DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
+        BOOLOR_AGG(DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }})                       as HAS_INCREASE_DEV,
+        BOOLOR_AGG(DVLP_DIV_CD = {{ gn_code('DEV_REDONATE') }})                       as HAS_REDONATE_DEV,
         MAX(STOP_DATE)                                      as MONTH_STOP_DATE
     from {{ ref('FACT_MEMBER_EVENT') }}
     group by MONTH_KEY, MEMBER_DK
@@ -263,7 +263,7 @@ member_first as (
     from (
         select MEMBER_DK, JOIN_DATE as D
         from {{ ref('FACT_MEMBER_EVENT') }}
-        where EVENT_TYPE = 'DEV' and DVLP_DIV_CD in ('1','2','4') and JOIN_DATE is not null and YEAR(JOIN_DATE) > 1900  -- [O202] 사건 판정 보존
+        where EVENT_TYPE = 'DEV' and DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) and JOIN_DATE is not null and YEAR(JOIN_DATE) > 1900  -- [O202] 사건 판정 보존
         union all
         select MEMBER_DK, FRST_REGIST_DT::DATE
         from {{ ref('CRM_MEMBER') }}
