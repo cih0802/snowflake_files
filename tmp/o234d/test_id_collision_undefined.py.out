@@ -1,0 +1,9 @@
+[음성 테스트] id_collision_gate 미정의 번호 열거 축 (O176 신설)
+  PASS  T0.runs — 임시 코퍼스에서 rc=0
+  PASS  T1.detect — P902(정의 0 · 참조 3회)를 정확한 건수로 열거했다
+  PASS  T2.no-false-positive — P901(정의 보유)은 열거되지 않았다
+  PASS  T3.denominator — 분모를 문면에 밝히고 P903 을 크로스워크 전용으로 표시했다
+  PASS  T4.regression — 고치기 전 구현은 P902 를 열거하지 못한다(최대값 비교만 한다) ⇒ T1 이 신설분을 단정한다
+
+PASS 5 · FAIL 0
+✅ 4축 전건 통과 — 신설 축이 실제로 돌고, 고치기 전 구현에서는 실패한다

@@ -1,0 +1,17 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+comment_drift_gate 테이블레벨 축 음성 테스트
+========================================================================
+  🟢 PASS  ① `) COMMENT = ...;` 한 줄 형태를 뽑는다  — {'T1': '설명 하나'}
+  🟢 PASS  ② 🔴 파일 마지막 테이블에서 꼬리를 삼키지 않는다(탐욕 회귀 차단)  — 길이=10
+  🟢 PASS  ③ `''` 이스케이프를 삼키고 값으로 언이스케이프  — "미매핑은 '(미매핑)' 표기를 쓴다"
+  🟢 PASS  ④ `)` 와 `COMMENT =` 줄바꿈 분리 형태를 받는다  — '줄바꿈 분리 형태'
+  🟢 PASS  ⑤ 다중 테이블을 각자에게 귀속(귀속 밀림 없음)  — {'T5': 'A 설명', 'T6': 'B 설명'}
+  🟢 PASS  ⑥ 테이블 COMMENT 부재는 키를 만들지 않는다  — {}
+  🟢 PASS  ⑦ 주석 처리된 선언은 분모에 들어오지 않는다  — {}
+  🟢 PASS  ⑧ 컬럼 COMMENT 를 값으로 잡지 않는다  — {'T9': '테이블 설명'}
+  🟢 PASS  ⑨ 🔴 RE_TBL_COMMENT 에 DOTALL 이 없다(탐욕 회귀의 원인)  — flags=40
+  🟢 PASS  ⑩ 실물 정본에서 최대 값 길이가 상식 범위(< 4,000자)  — GOLD 55개 · SILVER 62개 · 최대 494자
+========================================================================
+🟢 음성 테스트 10/10 통과 — 탐욕 회귀 차단 + 분모 자격 조건 축 포함

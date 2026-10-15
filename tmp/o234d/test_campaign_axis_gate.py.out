@@ -1,0 +1,10 @@
+🟢 축0 현 정본 위반 0
+🟢 축0 GAP 은 위반이 아니라 경고로만 나온다
+🟢 축1 미등재 BRONZE 컬럼 → UNREGISTERED
+🟢 축2 분모에 없는 등재 → STALE
+🟢 축3 SV 관계 토큰 삭제 → BROKEN
+🟢 축4 근거 파일 부재 → MISSING_FILE
+🟢 축5 사유 없는 GAP → NO_REASON
+🟢 축6 체크 없는 WIRED → NO_CHECKS
+🟢 축7 상태 오타 → BAD_STATUS
+FAIL 0
