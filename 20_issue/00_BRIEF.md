@@ -115,10 +115,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 11,246 | 11,246 | 29,714 |
+| `00_BRIEF` | — | 12,015 | 12,015 | 28,945 |
 | `11_O누적작업_점검_재현_절차` | — | 33,527 | 33,527 | 7,433 🟠 |
 
-> 전 문서군 = **3,244,592 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,245,180 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -130,13 +130,13 @@ END-METADATA -->
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 112개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |
-| `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 2건은 사람 판단) |
+| `doc_coord_gate` | 🔴 | (출력 없음) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
-| `agent_object_ref_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
+| `agent_object_ref_gate` | 🔴 | 🔴 FAIL — blocking 위반 111건 |
 | `agent_source_lineage_gate` | ✅ | 🟢 PASS — blocking 0건 |
 | `eval_expectation_gate` | ✅ | ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제) |
-| `sv_identifier_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
+| `sv_identifier_gate` | 🔴 | 🔴 FAIL — blocking 위반 54건 |
 | `null_reason_registry_gate` | ✅ | 🟢 PASS — NULL 사유 규격 검증 완료 |
 | `campaign_axis_gate` | ✅ | ✅ 게이트 통과 — 미등재·배선 끊김 0 (🟠 GAP 9 건은 알려진 미배선) |
 

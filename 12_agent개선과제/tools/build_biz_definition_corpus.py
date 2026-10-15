@@ -21,6 +21,8 @@ COLS = [
     "AGENT_SCOPE", "TOOL_NAME", "SV_FIELD", "LIMITATION", "SOURCE_FILE", "SEARCH_TEXT",
     # 🆕 [O233-B] 맨 끝 추가(COPY 는 위치 기준) — 검색 품질용 파생 열 · 원천 내용 창작 없음
     "KEYWORDS", "IS_ADDITIVE",
+    # 🆕 [O235] 맨 끝 추가 — 산식 등록 여부(Y = FORMULA 비어 있지 않음) · 검색 필터 속성
+    "HAS_FORMULA",
 ]
 
 # 🆕 [O233-B] 표기 변형 규칙(질문이 동의어와 조금만 달라도 키워드 색인이 맞도록) — 규칙 기반 · 의미 추가 없음
@@ -221,11 +223,15 @@ def build():
         # 🆕 [O233-B] SEARCH_TEXT = Markdown 헤더·불릿(청크 경계·라벨이 임베딩·LLM 모두에 분명해진다)
         r["KEYWORDS"] = keywords(r)
         r["IS_ADDITIVE"] = is_additive(r)
+        r["HAS_FORMULA"] = "Y" if r["FORMULA"] else "N"
         parts = ["# [%s] %s" % (r["DOC_TYPE"], r["TITLE"])]
         for k, lab in [("SYNONYMS", "동의어"), ("DEFINITION", "정의"), ("FORMULA", "계산식"),
                        ("TOOL_NAME", "도구"), ("SV_FIELD", "SV 필드"), ("LIMITATION", "한계")]:
             if r[k]:
                 parts.append("- **%s**: %s" % (lab, r[k]))
+            elif k == "FORMULA" and r["DOC_TYPE"] in ("지표", "용어"):
+                # 🆕 [O235] 산식 공란을 본문에 명시 — 산식 질문에 이 행을 근거로 쓰지 않게 한다(내용 창작 없음)
+                parts.append("- **계산식**: 이 항목에는 미등록(원천 공란)")
         if r["IS_ADDITIVE"] == "N":
             parts.append("- **집계**: 비가산 — 하위 값을 더해 합계를 만들지 않는다")
         r["SEARCH_TEXT"] = "\n".join(parts)
