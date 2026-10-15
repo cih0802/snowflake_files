@@ -27,4 +27,4 @@ SELECT
   CURRENT_TIMESTAMP()                       AS DW_UPDATE_TS,
   NULL                                      AS DW_BATCH_ID
 FROM {{ source('bronze_erp','BDGT_ACMSLT_LEDGER') }}
-WHERE INCOME_EXPS_DIV_NM <> 'TOTAL'
+WHERE {{ gn_erp_not_total('INCOME_EXPS_DIV_NM') }}

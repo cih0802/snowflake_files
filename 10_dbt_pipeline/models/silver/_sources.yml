@@ -79,6 +79,10 @@ sources:
         description: "회원실 연간 회비 예측 실측 데이터(DATA_TYPE_NM = 예측/실측)."
       - name: MM_SPNSR_CLS_AGGR_DATA
         description: "회원실 회비예측 월간 후원 분류별 집계(AGGR_TY_NM = 감액/개발/중단/활동/회비)."
+      # 🆕 [2026-10-15 O232] 미연결 광고 소재 → 캠페인 매핑(사용자 확정 추천안 · 소유자 롤 적재 · 구조 정본 = 08 DDL).
+      #   소비자 = `models/gold/fact/FACT_AD_PERFORMANCE`(이름매칭·UTM 다음 3순위).
+      - name: AD_CREATIVE_CAMPAIGN_MAP
+        description: "광고 소재(VIDEO·REBROADCAST) → 캠페인카테고리·마케팅캠페인 매핑. grain = AD_SOURCE_TYPE × CREATIVE_NM. 원천 = 12_agent개선과제/output/O232_광고_매핑_추천안.csv."
 
   # 🆕 [2026-09-29 O188] 공휴일 원천 — CRM 일정관리. SCHDUL_DIV_CD='0' = 공휴일(현업 회신 · 문서20 F-5).
   #   🔴 bronze_crm 에 넣지 않는다 — dev2 타깃의 BRONZE_CRM_2 에 이 테이블이 없어 compile 이 깨진다

@@ -116,14 +116,15 @@ select
     -- 🆕 [2026-09-30 O190] L-1① (사용자 결정 §4 #6) — 제목에 「미납·중단·감사」 포함 발송은 **처리통보성**이라 귀속 제외.
     --   이유 = 사건의 결과로 나간 발송을 원인으로 세면 인과가 뒤집힌다(문서20 L-1 실측).
     --   🔴 제목이 없는 발송(요청 미매칭)은 판정 근거가 없어 규칙 대상이 아니다(종전대로 귀속 · 창작 0).
-    IFF(d.D5_LETTER   AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_LETTER_PART_MEMBERS,
-    IFF(d.D5_LETTER   AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_LETTER_PART_CNT,
-    IFF(d.D5_GIFT     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_GIFT_PART_MEMBERS,
-    IFF(d.D5_GIFT     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_GIFT_PART_CNT,
-    IFF(d.D5_INCREASE AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_INCREASE_PART_MEMBERS,
-    IFF(d.D5_INCREASE AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_INCREASE_PART_CNT,
-    IFF(d.D5_STOP     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), 1, 0) as D5_STOP_MEMBERS,
-    IFF(d.D5_STOP     AND NOT COALESCE(REGEXP_LIKE(r.TIT, '.*(미납|중단|감사).*'), FALSE), COALESCE(am.ACTIVE_CNT, 0), 0) as D5_STOP_CNT,
+    --   🆕 [O232] 키워드 정의 지점 = macros/gn_biz_codes.sql `gn_is_notice_title`(렌더 동일 · 현업 확인 #33).
+    IFF(d.D5_LETTER   AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as D5_LETTER_PART_MEMBERS,
+    IFF(d.D5_LETTER   AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_LETTER_PART_CNT,
+    IFF(d.D5_GIFT     AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as D5_GIFT_PART_MEMBERS,
+    IFF(d.D5_GIFT     AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_GIFT_PART_CNT,
+    IFF(d.D5_INCREASE AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as D5_INCREASE_PART_MEMBERS,
+    IFF(d.D5_INCREASE AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_INCREASE_PART_CNT,
+    IFF(d.D5_STOP     AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as D5_STOP_MEMBERS,
+    IFF(d.D5_STOP     AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_STOP_CNT,
     -- [O183] #160 서비스(명) = 발송구분(대) 「회원서비스」 발송 대상 1/0 · #161 서비스(건) = 그 회원의 활동(건).
     IFF(sl.SEND_TYPE_L = '회원서비스', 1, 0)                           as SERVICE_MEMBERS,
     IFF(sl.SEND_TYPE_L = '회원서비스', COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,

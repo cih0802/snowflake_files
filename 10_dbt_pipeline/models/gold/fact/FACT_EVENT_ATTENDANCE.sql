@@ -40,21 +40,22 @@ select
     0                                             as CAMPAIGN_SK,
     0                                             as SPONSORSHIP_SK,
     1 as TOTAL_CNT,
-    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)  as WAIT_CNT,
-    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '취소', 1, 0)      as CANCEL_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_WAIT') }}, 1, 0)  as WAIT_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_CANCEL') }}, 1, 0)      as CANCEL_CNT,
     -- [O183] 신청확정인원 = 캠페인행사(MS006) 신청이 대기·취소가 아닌 확정 상태(신청·참여·불참) 1/0.
-    IFF(p.PARTCPT_STAT_GROUP = 'MS006' AND p.PARTCPT_STAT_NM IN ('신청', '참여', '불참'), 1, 0) as CONFIRM_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_CONFIRM') }}, 1, 0) as CONFIRM_CNT,
     1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
-    IFF(p.PARTCPT_STAT_GROUP IS NOT NULL AND p.PARTCPT_STAT_NM = '불참', 1, 0)      as ABSENT_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_ABSENT') }}, 1, 0)      as ABSENT_CNT,
     -- [O183] 회원별 누적 횟수(그 신청 시점까지 · 신청일시 → 행사키 → 순번 순). 캠페인행사(MS006)는 명칭 「참여」,
     --   일반행사(MS304 다단계)는 「Success」를 참여로 본다. 누적신청 = 상태 무관 신청 행 수.
-    SUM(IFF(p.PARTCPT_STAT_NM IN ('참여', 'Success'), 1, 0)) OVER (
+    -- 🆕 [O232] 판정 = 라벨 문자열 → **상태코드**(macros/gn_biz_codes.sql · 코드↔라벨 1:1 실측 · 결과 동일).
+    SUM(IFF({{ gn_evt_attended('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD') }}, 1, 0)) OVER (
         PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as PARTICIPATION_TIMES,
-    SUM(IFF(p.PARTCPT_STAT_NM LIKE '대기%', 1, 0)) OVER (
+    SUM(IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_WAIT') }}, 1, 0)) OVER (
         PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as WAIT_TIMES,
-    SUM(IFF(p.PARTCPT_STAT_NM = '불참', 1, 0)) OVER (
+    SUM(IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_ABSENT') }}, 1, 0)) OVER (
         PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as ABSENT_TIMES,
     COUNT(*) OVER (

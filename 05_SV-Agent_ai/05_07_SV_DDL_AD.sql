@@ -56,6 +56,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     mktg.BIZ_CASE_TYPE_IS_MULTI AS mktg.BIZ_CASE_TYPE_IS_MULTI
       WITH SYNONYMS ('사업사례 대표값 여부')
       COMMENT = 'TRUE = 사업/사례 값이 여럿이라 대표값을 쓴 마케팅캠페인.',
+    -- 🆕 [2026-10-15 O232-B] 마케팅캠페인 대표 카테고리(캠페인 목록 속성용 · 광고비 분해는 ad.AD_CTGR_NM)
+    mktg.CMPGN_CTGR_NM AS mktg.CMPGN_CTGR_NM
+      WITH SYNONYMS ('마케팅캠페인 카테고리', '마케팅캠페인 대표 카테고리')
+      COMMENT = '마케팅캠페인 대표 캠페인카테고리(매핑 행수 최다). 🔴 카테고리별 광고비는 이 축이 아니라 ad.AD_CTGR_NM 으로 낸다 — 이 축은 미연결 재방송·영상의 소재 매핑 카테고리를 놓친다.',
+    mktg.CMPGN_CTGR_IS_MULTI AS mktg.CMPGN_CTGR_IS_MULTI
+      WITH SYNONYMS ('마케팅캠페인 카테고리 대표값 여부')
+      COMMENT = 'TRUE = 카테고리가 여럿이라 대표값을 쓴 마케팅캠페인.',
+    mktg.CMPGN_CTGR_NM_LIST AS mktg.CMPGN_CTGR_NM_LIST
+      WITH SYNONYMS ('마케팅캠페인 카테고리 목록')
+      COMMENT = '마케팅캠페인 카테고리명 나열(쉼표 구분 · 첫 항목 = 대표 CMPGN_CTGR_NM). 🔴 표시 전용 — GROUP BY·WHERE·합산 금지.',
     date.PERF_DATE    AS date.FULL_DATE  WITH SYNONYMS ('실적일', '광고일', '일자', '날짜') COMMENT = '광고 실적 발생일',
     date.FULL_DATE AS date.FULL_DATE  COMMENT = '달력 날짜(DIM_DATE.FULL_DATE) — PERF_DATE 와 같은 값이다(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
     date.CAL_YEAR     AS date.YEAR       WITH SYNONYMS ('연도', '년')   COMMENT = '연도',
@@ -120,7 +130,24 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = 'CM 구분 원값 전CM·중CM·후CM·전SPOT CM·후SPOT CM [영상 전용]. ⚠️CM_POSITION(CM 위치)과 다른 원천 컬럼.',
     ad.DMST_OVSEA_DIV_NM AS ad.DMST_OVSEA_DIV_NM
       WITH SYNONYMS ('국내/해외', '국내해외 구분')
-      COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL].'
+      COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL].',
+    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축 · 원천 CRM 캠페인카테고리 MM294)
+    ad.AD_CTGR_NM AS ad.AD_CTGR_NM
+      WITH SYNONYMS ('광고비 귀속 카테고리', '캠페인 카테고리', '캠페인카테고리', '카테고리별 광고비')
+      COMMENT = '광고비 귀속 캠페인카테고리명(원천 CRM 캠페인카테고리). 이름매칭·UTM 으로 마케팅캠페인에 연결된 행 = 그 마케팅캠페인의 대표 카테고리 · 연결되지 않은 재방송·영상 행 = 소재 매핑 확정 카테고리 · 귀속 없음 = NULL. 🔴 대표값이 섞여 있다 — 카테고리별 광고비를 답할 때 AD_CTGR_IS_MULTI = TRUE 광고비 비중과 NULL(귀속 없음) 광고비를 함께 밝힌다.',
+    ad.AD_CTGR_CD AS ad.AD_CTGR_CD
+      WITH SYNONYMS ('카테고리 코드', '캠페인카테고리 코드')
+      COMMENT = '광고비 귀속 캠페인카테고리 코드(MM294 · AD_CTGR_NM 과 1:1).',
+    ad.AD_CTGR_SRC AS ad.AD_CTGR_SRC
+      WITH SYNONYMS ('카테고리 귀속 출처', '카테고리 출처')
+      COMMENT = '카테고리 귀속 출처. 실제값 3종: ''MKTG_REP''(마케팅캠페인 대표값)·''CREATIVE_MAP''(소재 매핑 확정)·''NONE''(귀속 없음).',
+    ad.AD_CTGR_IS_MULTI AS ad.AD_CTGR_IS_MULTI
+      WITH SYNONYMS ('카테고리 대표값 여부', '카테고리 다중')
+      COMMENT = 'TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값을 쓴 행. CREATIVE_MAP = FALSE · NONE = NULL.',
+    -- 🆕 [2026-10-15 O233 #36] 표시 전용 카테고리명 나열(그루핑·필터 금지)
+    ad.AD_CTGR_NM_LIST AS ad.AD_CTGR_NM_LIST
+      WITH SYNONYMS ('카테고리 전체 목록', '해당 카테고리 전부')
+      COMMENT = '광고비 귀속 카테고리명 나열(쉼표 구분 · 첫 항목 = AD_CTGR_NM). 🔴 표시 전용 — GROUP BY·WHERE·합산에 쓰지 않는다(집계는 AD_CTGR_NM). 다중 캠페인이 어떤 카테고리에 걸쳐 있는지 보여줄 때만 함께 SELECT 한다.'
   )
   METRICS (
     ad.TOTAL_AD_COST   AS SUM(ad.AD_COST)
@@ -161,8 +188,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
   COMMENT = 'Phase-1 광고 실적 SV (base: GOLD.WIDE_AD_COMBINED). 대행사(디지털/방송) 일별 리포트 및 GA4 기반 광고비, 노출, 클릭, 전환, 방송실적 통합 뷰. ⚠️ 디지털/방송 measure는 상호배타적이며, 광고비만 전체 합산 가능. 마케팅캠페인(MKTG_CAMPAIGN_NAME) 축으로 분해 가능(소재별/개별캠페인별 분해 불가). 예산(SV_BUDGET) 및 회원개발실적(SV_MEMBER_EVENT)과의 교차 집계는 불가.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 출처 필터: 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객 질의는 AD_SOURCE_TYPE=''DIGITAL'' 자동 추가. 인바운드콜·방송횟수·방송 개발건수·방송 개발회원수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 추가하고 개발건수는 출처별로 나눠 반환. GA 개발단가(공8)·GA 개발(건)(GA_DEV_CNT)은 AD_SOURCE_TYPE=''DIGITAL'' 추가. 재방송 개발단가(참고 · 공8 아님)는 AD_SOURCE_TYPE=''REBROADCAST'' 추가. 광고비만 전체 합산 허용. (2) 기간 미지정 시: 최신 데이터 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (3) 캠페인 분해: MARKETING_CAMPAIGN 축으로 그루핑하며 ''(미매핑)'' 버킷 존재로 캠페인별 합계 < 전체 합계임을 명시. 🆕 (O230 · 0원 단정 금지) 캠페인별 질문은 미매핑 버킷을 0·산출 불가로 두지 말고 AD_SOURCE_TYPE 별로 나눈 뒤 원천 축으로 분해한 결과를 함께 반환한다 — REBROADCAST·VIDEO·DIGITAL 미매핑 행은 ad.CREATIVE_NM(재방송 = 방송명) 으로 그루핑하고(VIDEO 는 ad.PROGRAM_NM 도 가능), 연결분 + 미매핑 분해의 합이 같은 기간 TOTAL_AD_COST 와 같아야 한다. 방송명을 특정 마케팅캠페인 값으로 바꾸거나 합치지 않는다. 소재별 및 개별 개발캠페인별 ROI/단가는 생성 거부 및 사유 안내. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M'', 데스크톱은 ''PC''. 방송은 ''(해당없음)''. (5) 정렬: 방송 차원 광고비 기준 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (기준시점 규칙) 「최근 N주·N개월」·기간 미지정 질의의 기준 시점은 **비상관 CTE 1개**에서 그 CTE 의 FROM 에 쓴 이름으로만 MAX 를 구하고 본 쿼리에 CROSS JOIN 한다. 스칼라·상관 서브쿼리로 기준 시점을 구하지 않는다. 광고 성과일은 ad 에 없다 — date.FULL_DATE(ad.PERF_DATE_SK = date.DATE_SK 조인)로만 건다(ad.PERF_DATE 는 없다). metric 이름을 컬럼처럼 참조하지 말고 정의식으로 집계한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (전년대비) 전년 대비는 월(또는 주) 집계 CTE 를 만든 뒤 **그 CTE 를 연도-1 로 자기조인**한다(LAG 는 빠진 월이 있으면 어긋난다). 디지털 광고는 2024-01 부터 적재돼 있으므로 「전년 데이터 없음」으로 답하지 않는다. 광고와 개발실적의 전년 대비를 함께 물으면 이 SV(광고)와 SV_MEMBER_EVENT(개발)를 **각각 호출해 월 단위로 나란히** 보여주고, 한 SQL 로 조인하지 않는다(교차 집계 불가). (소속 테이블) 마케팅캠페인 축은 **mktg.MARKETING_CAMPAIGN** 이다 — ad 테이블에 없다(ad.MARKETING_CAMPAIGN 은 invalid identifier) ⇒ ad JOIN mktg ON ad.MKTG_CAMPAIGN_SK = mktg.MKTG_CAMPAIGN_SK 로 붙인다. 기기 축은 device.*, 날짜 축은 date.* 소속이다. (🆕 O225-C 캠페인 속성 분해) 광고비는 마케팅캠페인 단위로만 붙어 있다 — UTM(MKTG_UTM_NM)·국내/해외·사업/사례별로는 이 SV 로 나눈다(국내/해외·사업/사례는 대표값이므로 *_IS_MULTI 비중을 밝힌다). 🔴 캠페인 인입경로·마케팅채널·캠페인 카테고리별 광고비는 이 SV 로 내지 않는다 — 마케팅캠페인 하나 아래 값이 갈리는 비중이 커서(실측은 이슈원장 §O225) 대표값이 왜곡된다. 그 축의 성과(개발·회비)는 회원 측 SV(SV_MEMBER_EVENT·SV_MEMBER_FEE·SV_PAYMENT_BILLING_STATUS)로 안내한다.'
+  핵심 규칙: (1) 출처 필터: 노출·클릭·CTR·CVR·CRM개발건·개발단가(공7)·조회수·잠재고객 질의는 AD_SOURCE_TYPE=''DIGITAL'' 자동 추가. 인바운드콜·방송횟수·방송 개발건수·방송 개발회원수는 AD_SOURCE_TYPE IN (''VIDEO'',''REBROADCAST'') 추가하고 개발건수는 출처별로 나눠 반환. GA 개발단가(공8)·GA 개발(건)(GA_DEV_CNT)은 AD_SOURCE_TYPE=''DIGITAL'' 추가. 재방송 개발단가(참고 · 공8 아님)는 AD_SOURCE_TYPE=''REBROADCAST'' 추가. 광고비만 전체 합산 허용. (2) 기간 미지정 시: 최신 데이터 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (3) 캠페인 분해: MARKETING_CAMPAIGN 축으로 그루핑하며 ''(미매핑)'' 버킷 존재로 캠페인별 합계 < 전체 합계임을 명시. 🆕 (O230 · 0원 단정 금지) 캠페인별 질문은 미매핑 버킷을 0·산출 불가로 두지 말고 AD_SOURCE_TYPE 별로 나눈 뒤 원천 축으로 분해한 결과를 함께 반환한다 — REBROADCAST·VIDEO·DIGITAL 미매핑 행은 ad.CREATIVE_NM(재방송 = 방송명) 으로 그루핑하고(VIDEO 는 ad.PROGRAM_NM 도 가능), 연결분 + 미매핑 분해의 합이 같은 기간 TOTAL_AD_COST 와 같아야 한다. 방송명을 특정 마케팅캠페인 값으로 바꾸거나 합치지 않는다. 소재별 및 개별 개발캠페인별 ROI/단가는 생성 거부 및 사유 안내. (4) 기기 필터: 모바일은 DEVICE_TYPE=''M'', 데스크톱은 ''PC''. 방송은 ''(해당없음)''. (5) 정렬: 방송 차원 광고비 기준 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (기준시점 규칙) 「최근 N주·N개월」·기간 미지정 질의의 기준 시점은 **비상관 CTE 1개**에서 그 CTE 의 FROM 에 쓴 이름으로만 MAX 를 구하고 본 쿼리에 CROSS JOIN 한다. 스칼라·상관 서브쿼리로 기준 시점을 구하지 않는다. 광고 성과일은 ad 에 없다 — date.FULL_DATE(ad.PERF_DATE_SK = date.DATE_SK 조인)로만 건다(ad.PERF_DATE 는 없다). metric 이름을 컬럼처럼 참조하지 말고 정의식으로 집계한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (전년대비) 전년 대비는 월(또는 주) 집계 CTE 를 만든 뒤 **그 CTE 를 연도-1 로 자기조인**한다(LAG 는 빠진 월이 있으면 어긋난다). 디지털 광고는 2024-01 부터 적재돼 있으므로 「전년 데이터 없음」으로 답하지 않는다. 광고와 개발실적의 전년 대비를 함께 물으면 이 SV(광고)와 SV_MEMBER_EVENT(개발)를 **각각 호출해 월 단위로 나란히** 보여주고, 한 SQL 로 조인하지 않는다(교차 집계 불가). (소속 테이블) 마케팅캠페인 축은 **mktg.MARKETING_CAMPAIGN** 이다 — ad 테이블에 없다(ad.MARKETING_CAMPAIGN 은 invalid identifier) ⇒ ad JOIN mktg ON ad.MKTG_CAMPAIGN_SK = mktg.MKTG_CAMPAIGN_SK 로 붙인다. 기기 축은 device.*, 날짜 축은 date.* 소속이다. (🆕 O225-C 캠페인 속성 분해) 광고비는 마케팅캠페인 단위로만 붙어 있다 — UTM(MKTG_UTM_NM)·국내/해외·사업/사례별로는 이 SV 로 나눈다(국내/해외·사업/사례는 대표값이므로 *_IS_MULTI 비중을 밝힌다). 🔴 캠페인 인입경로·마케팅채널별 광고비는 이 SV 로 내지 않는다 — 마케팅캠페인 하나 아래 값이 갈리는 비중이 커서(실측은 이슈원장 §O225) 대표값이 왜곡된다. 그 축의 성과(개발·회비)는 회원 측 SV(SV_MEMBER_EVENT·SV_MEMBER_FEE·SV_PAYMENT_BILLING_STATUS)로 안내한다.
+  (🆕 O232-B 카테고리별 광고비) 캠페인 카테고리별 광고비는 ad.AD_CTGR_NM 으로 그루핑한다(mktg 축이 아니라 ad 축 — 미연결 재방송·영상의 소재 매핑 카테고리까지 포함한다). 반드시 같은 쿼리에서 ① 카테고리별 TOTAL_AD_COST ② 그중 AD_CTGR_IS_MULTI = TRUE 광고비(대표값 · 실제로는 여러 카테고리에 걸친 캠페인) ③ AD_CTGR_NM IS NULL(귀속 없음) 광고비를 함께 반환하고, 카테고리 합 + 귀속 없음 = 같은 기간 전체 광고비임을 맞춘다. 대표값 광고비를 다른 카테고리로 나누거나 배분하지 않는다.'
   AI_VERIFIED_QUERIES (
+    vqr_o232b_ad_cost_by_category AS (
+      QUESTION '캠페인 카테고리별 광고비(대표값·귀속 없음 포함)'
+      VERIFIED_BY '(DW = O232-B)'
+      SQL 'SELECT COALESCE(ad.AD_CTGR_NM, ''(귀속 없음)'') AS AD_CTGR_NM, SUM(ad.AD_COST) AS TOTAL_AD_COST, SUM(CASE WHEN ad.AD_CTGR_IS_MULTI THEN ad.AD_COST END) AS MULTI_REP_AD_COST FROM ad GROUP BY ROLLUP(COALESCE(ad.AD_CTGR_NM, ''(귀속 없음)'')) ORDER BY TOTAL_AD_COST DESC NULLS LAST'
+    ),
     vqr_ad_cost_by_source AS (
       QUESTION '출처유형별 광고비 합계'
       VERIFIED_BY '(DW = O190)'

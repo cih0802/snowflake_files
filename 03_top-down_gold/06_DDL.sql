@@ -295,7 +295,13 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (
     DOMESTIC_OVERSEAS           VARCHAR     COMMENT '캠페인유형 국내/통합/해외(MM295). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).',
     DOMESTIC_OVERSEAS_IS_MULTI  BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 국내/해외 값이 여럿(대표값 사용).',
     BIZ_CASE_TYPE               VARCHAR     COMMENT '캠페인유형 굿즈/기타/사례/사업(MM296). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).',
-    BIZ_CASE_TYPE_IS_MULTI      BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 사업/사례 값이 여럿(대표값 사용).'
+    BIZ_CASE_TYPE_IS_MULTI      BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 사업/사례 값이 여럿(대표값 사용).',
+    -- 🆕 [2026-10-15 O232-B] 대표 캠페인카테고리(사용자 요청 · 다중 비중 72% 를 플래그로 드러낸다 · 맨 끝 append)
+    CMPGN_CTGR_CD               NUMBER(38,0) COMMENT '대표 캠페인카테고리 코드(MM294 · CRM_CAMPAIGN.CMPGN_CTGR_CD). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 코드 오름차순).',
+    CMPGN_CTGR_NM               VARCHAR     COMMENT '대표 캠페인카테고리명(코드와 1:1).',
+    CMPGN_CTGR_IS_MULTI         BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 카테고리가 여럿(대표값 사용 · 마케팅캠페인 273/590).',
+    -- 🆕 [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
+    CMPGN_CTGR_NM_LIST          VARCHAR(1000) COMMENT '카테고리명 나열(표시 전용 · 쉼표 구분 · 매핑 행수 많은 순 · 첫 항목 = CMPGN_CTGR_NM). 매핑 없음 = NULL. GROUP BY·필터·합산 금지.'
 ) COMMENT = '마케팅 캠페인 Conformed 차원. [Grain: MKTG_CAMPAIGN_SK (1행=1마케팅캠페인)]. [주의: 광고(AGENCY)와 CRM 개발 결합의 유일 결합축]. [원천: SILVER.CRM_MARKETING_CAMPAIGN].';
 
 -- DIM_SPONSORSHIP — 후원사업 차원
@@ -908,8 +914,18 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     CM                  VARCHAR         COMMENT 'CM 구분 전CM·중CM·후CM [VIDEO 전용].',
     DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '국내/해외 구분 [VIDEO 전용].',
     -- 🆕 [2026-10-14 O225] 마케팅캠페인 귀속 경로·후보 수 (1:N 안전장치 · 감사컬럼 뒤 append)
-    MKTG_MAP_METHOD     VARCHAR         COMMENT '마케팅캠페인 귀속 경로 NAME(대행사 캠페인명 일치)·UTM(UTM as-of 규칙)·NONE(미매핑 SK=0).',
-    MKTG_MAP_CAND_CNT   NUMBER(38,0)    COMMENT 'UTM 경로 후보 캠페인 수(광고일 이전 시작분). 2 이상 = 1:N 대표 선택. NAME·NONE 경로는 NULL(개념 부재).'
+    MKTG_MAP_METHOD     VARCHAR         COMMENT '마케팅캠페인 귀속 경로 NAME(대행사 캠페인명 일치)·UTM(UTM as-of 규칙)·CREATIVE_MAP(O232 소재 매핑표 · MKTG 수준)·NONE(미매핑 SK=0).',
+    MKTG_MAP_CAND_CNT   NUMBER(38,0)    COMMENT 'UTM 경로 후보 캠페인 수(광고일 이전 시작분). 2 이상 = 1:N 대표 선택. NAME·NONE 경로는 NULL(개념 부재).',
+    -- 🆕 [2026-10-15 O232] 소재 매핑(3순위 · SILVER.AD_CREATIVE_CAMPAIGN_MAP) — 맨 끝 append
+    AD_MAP_LEVEL        VARCHAR(10)     COMMENT '소재 매핑 연결 수준 MKTG·CTGR·NONE(SILVER.AD_CREATIVE_CAMPAIGN_MAP). 이름매칭·UTM 으로 연결된 행과 매핑표에 없는 소재는 NULL.',
+    AD_MAP_CMPGN_CTGR_NM VARCHAR(100)   COMMENT '광고비 귀속 캠페인카테고리(MM294 라벨) — 소재 매핑 MKTG·CTGR 행만. 전 광고행 단일 축은 AD_CTGR_NM.',
+    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — 맨 끝 append
+    AD_CTGR_CD          NUMBER(38,0)    COMMENT '광고비 귀속 캠페인카테고리 코드(MM294). 이름매칭·UTM 연결 = 마케팅캠페인 대표값 · 그 밖 = 소재 매핑 확정 · 귀속 없음 = NULL.',
+    AD_CTGR_NM          VARCHAR(200)    COMMENT '광고비 귀속 캠페인카테고리명(코드와 1:1).',
+    AD_CTGR_SRC         VARCHAR(20)     COMMENT '카테고리 귀속 출처 MKTG_REP·CREATIVE_MAP·NONE.',
+    AD_CTGR_IS_MULTI    BOOLEAN         COMMENT 'TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값(광고비 기준 약 72%). CREATIVE_MAP = FALSE · NONE = NULL.',
+    -- 🆕 [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
+    AD_CTGR_NM_LIST     VARCHAR(1000)   COMMENT '광고비 귀속 카테고리명 나열(표시 전용 · 첫 항목 = AD_CTGR_NM · 다중 아니면 1개 · 귀속 없음 = NULL). GROUP BY·필터·합산 금지.'
 ) COMMENT = '광고 성과 코어 팩트. [Grain: AD_PERF_DK (1행=1광고집행)]. [주의: 디지털/방송 3원천 공통 지표(비용/노출/클릭)]. [원천: AGENCY 3소스 → SILVER.AGENCY_AD_PERFORMANCE].';
 
 -- FACT_AD_BROADCAST — 방송광고 성과 위성 팩트
@@ -1126,6 +1142,31 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
     OBS_TENURE_MONTHS       NUMBER(38,0)    COMMENT '[잠정 정의 · O231] 관측 유지기간(개월) = FLOOR(OBS_TENURE_DAYS / 30.44). 생존분석 경과월 축(획득 후 경과월 · 달력월 아님).',
     IS_STOPPED_OBS          NUMBER(1,0)     COMMENT '[잠정 정의 · O231] 1 = 관측기간 내 최초 중단 · 0 = 관측 중(우절단). OBS_TENURE_DAYS 가 NULL 이면 NULL.'
 ) COMMENT = '회원 획득 코호트 팩트. [Grain: MEMBER_DK (1행=1회원)]. [주의: 캠페인별 12개월 고정 이탈률 및 유지기간 정본]. [원천: GOLD.FACT_MEMBER_EVENT].';
+
+-- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 🟠 잠정 정의)
+--   🆕 [2026-10-15 O232] 종전 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL`(O231) → **DDL 소유 테이블**로 전환(사용자 결정).
+--   ⚠️ 상한은 컬럼이 아니라 **행 표지 LTV_CAP_MONTHS** 다 — 상한을 바꿔도 이 DDL 은 바뀌지 않는다(dbt vars 만 수정).
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
+    AXIS_TYPE           VARCHAR(20)     NOT NULL COMMENT '분류 축. 전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2(획득 시점 동결값)',
+    AXIS_VALUE          VARCHAR(200)    NOT NULL COMMENT '축값. 원천 NULL = (미상). 축 전체이면 전체',
+    ELAPSED_MONTH       NUMBER(4,0)     NOT NULL COMMENT '획득 후 경과월 0 ~ (최대 상한 − 1). 달력월이 아니다',
+    AT_RISK_MEMBERS     NUMBER(18,0)    COMMENT '경과월 시작 시점 위험 회원수(관측 유지 ≥ 경과월)',
+    STOP_MEMBERS        NUMBER(18,0)    COMMENT '그 경과월에 최초 중단한 회원수',
+    CENSORED_MEMBERS    NUMBER(18,0)    COMMENT '그 경과월에서 관측이 끝난 활동 회원수(우절단)',
+    SURV_START          NUMBER(12,10)   COMMENT '경과월 시작 생존율 P(T ≥ m)',
+    SURV_END            NUMBER(12,10)   COMMENT '경과월 종료 생존율 P(T > m) — Kaplan–Meier',
+    RMST_CUM            NUMBER(10,4)    COMMENT '경과월까지 누적 제한평균 유지개월 = Σ SURV_START. LTV_CAP_MONTHS 행의 값이 그 상한의 기대 유지개월',
+    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[잠정] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 아니면 NULL. 상한 목록 = dbt var ltv_caps',
+    COHORT_MEMBERS      NUMBER(18,0)    COMMENT '셀 획득 회원수(생존분석 대상 · 획득일·중단일 무효 제외). 셀 상수',
+    STOPPED_MEMBERS_TOTAL NUMBER(18,0)  COMMENT '셀 관측기간 중 중단 회원수. 셀 상수',
+    IS_CELL_RELIABLE    BOOLEAN         COMMENT 'COHORT_MEMBERS ≥ dbt var ltv_min_cell. FALSE 셀은 비교·순위에 쓰지 않는다',
+    LEARN_START         VARCHAR(20)     COMMENT '학습(획득) 시작일 설정값 — dbt var ltv_learn_start · 미설정 = 전체 이력',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (AXIS_TYPE, AXIS_VALUE, ELAPSED_MONTH)
+) COMMENT = '획득 코호트 생존 곡선 팩트(🟠 잠정 정의 · 현업 확인 전). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
 
 -- FACT_MEMBER_FEE — 회비 분해 팩트
 --   ⚠️ PK 미선언 — grain 키 FEE_DIV_CD 가 기부금 행에서 NULL. 유일성은 dbt GROUP BY 가 보증.

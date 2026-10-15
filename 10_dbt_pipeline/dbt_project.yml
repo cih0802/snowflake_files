@@ -163,7 +163,8 @@ vars:
   #   📏 DIM_DATE 행수 = 16,437 → **73,415**(73,414일 + Unknown 1). `incremental` + `unique_key=DATE_SK`
   #      라 2036~2145 행만 INSERT 되고 기존 행은 재작성되지 않는다(1945~1990 행도 신규 INSERT).
   #   🔴 `rowcount` 는 범위에서 자동 산출된다(순서9-B 가 매직상수를 제거했다) ⇒ 조용히 잘리지 않는다.
-  # 🆕 [O231 · 잠정 정의] LTV 생존분석(GOLD.WIDE_MEMBER_COHORT_SURVIVAL) 설정 — 현업 피드백 후 여기만 바꾼다.
+  # 🆕 [O231 · 잠정 정의] LTV 생존분석(GOLD.FACT_MEMBER_COHORT_SURVIVAL · 🆕 O232 뷰→테이블) 설정 — 현업 피드백 후 여기만 바꾼다.
+  #   🟢 [O232] 상한은 행 표지(LTV_CAP_MONTHS)라 ltv_caps 를 바꿔도 DDL·yml·SV 는 그대로다 — vars 수정 후 FACT_MEMBER_COHORT_SURVIVAL 만 build.
   #   ltv_caps        = 기대 유지개월 상한(개월) 목록 · 상한 τ 의 기대 유지 = RMST(τ) = Σ_{m=0}^{τ-1} P(T ≥ m) = E[min(T, τ)] (표준 · 사용자 O231)
   #                     ⚠️ O230 진단식 1+Σ_{t<τ}S(t) 는 τ+1 항이라 S(τ-1) 만큼 과대(전체 36 기준 +0.61개월)
   #   ltv_learn_start = 학습(획득) 시작일 'YYYY-MM-DD' · null = 전체 이력

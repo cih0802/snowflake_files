@@ -108,6 +108,6 @@ END-METADATA -->
 - 기대 유지개월(상한 τ) = Σ_{m=0}^{τ−1} P(유지 ≥ m) — 표준 제한평균(RMST). 
   - O230 진단 문서의 28.0 / 41.2개월은 같은 데이터에 항이 하나 더 들어간 식(1 + Σ_{t<τ} S(t))이라 0.5~0.6개월 큽니다 — 표준식으로 정정했습니다(사용자 결정 O231).
 - 셀 = 획득 시점 개발인입경로 · 캠페인카테고리(원천 NULL = ‘(미상)’).
-- 반영 위치(개발계): `GOLD.FACT_MEMBER_COHORT`(OBS_TENURE_*·IS_STOPPED_OBS) · `GOLD.WIDE_MEMBER_COHORT_SURVIVAL` · `SERVING.SV_MEMBER_COHORT`(EXP_TENURE_36M·60M 등) · 설정 = dbt vars `ltv_caps`·`ltv_learn_start`·`ltv_min_cell`.
+- 반영 위치(개발계): `GOLD.FACT_MEMBER_COHORT`(OBS_TENURE_*·IS_STOPPED_OBS) · `GOLD.FACT_MEMBER_COHORT_SURVIVAL`(O232 · 생존 곡선 테이블) · `SERVING.SV_MEMBER_COHORT`(EXP_TENURE_MONTHS × 상한 차원) · 설정 = dbt vars `ltv_caps`·`ltv_learn_start`·`ltv_min_cell`(상한을 바꿔도 컬럼은 그대로).
 
 _Co-authored with CoCo_

@@ -853,6 +853,25 @@ models:
 
   - name: FACT_AD_PERFORMANCE
     columns:
+      # 🆕 [2026-10-15 O232] 귀속 경로·소재 매핑 수준 도메인(값이 늘면 06_DDL COMMENT 와 함께 고친다)
+      - name: MKTG_MAP_METHOD
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['NAME', 'UTM', 'CREATIVE_MAP', 'NONE']
+      - name: AD_MAP_LEVEL
+        tests:
+          - accepted_values:
+              values: ['MKTG', 'CTGR', 'NONE']
+      # 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리 — 출처 도메인 · 코드 실재(출처↔값 정합 = tests/assert_fap_ad_ctgr_consistency.sql)
+      - name: AD_CTGR_SRC
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['MKTG_REP', 'CREATIVE_MAP', 'NONE']
+      - name: AD_CTGR_CD
+        tests:
+          - relationships: { to: ref('CRM_CAMPAIGN'), field: CMPGN_CTGR_CD }
       - name: AD_PERF_DK
         tests:
           - not_null
@@ -956,6 +975,25 @@ models:
     description: "회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql."
   - name: DIM_MONTH
     description: "월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
+  # 🆕 [2026-10-15 O232] FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선(🟠 잠정 정의 · 종전 = WIDE 뷰 O231)
+  #   grain 유일성·곡선 불변식 = tests/assert_fmcs_grain_and_survival.sql(dbt_utils 미설치 · singular)
+  - name: FACT_MEMBER_COHORT_SURVIVAL
+    description: "[잠정 정의 · 현업 확인 전] 획득 코호트 생존 곡선(Kaplan–Meier · 월 이산). 1행 = 분류 축값 × 획득 후 경과월. 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM(상한까지 제한평균 · 관측 중 회원 포함). 🔴 AXIS_TYPE 고정 필수. ⚠️ 컬럼 문안 정본 = 06_DDL.sql."
+    columns:
+      - name: AXIS_TYPE
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['전체', '개발인입경로', '캠페인카테고리', '캠페인유형1', '캠페인유형2']
+      - name: AXIS_VALUE
+        tests: [not_null]
+      - name: ELAPSED_MONTH
+        tests: [not_null]
+      - name: RMST_CUM
+        tests: [not_null]
+      - name: LTV_CAP_MONTHS
+        description: "[잠정] 상한 N개월의 마지막 경과월(N−1) 행이면 N · 아니면 NULL. 상한 목록 = dbt var ltv_caps"
+
   - name: FACT_MEMBER_DEV_ACHIEVEMENT
     description: "회원개발 목표 대비 실적 월 conform 팩트 — FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT FULL OUTER. grain = MONTH_KEY×ORG_SK×DEV_TYPE. 달성율은 저장하지 않고 SUM(실적)/SUM(목표) 로 재계산하며 분모·분자는 HAS_POSITIVE_GOAL 로 스코프한다. [O53] 구 GOLD.WIDE_DEV_ACHIEVEMENT(뷰) 개명·테이블화 — SV_DEV_ACHIEVEMENT 의 base 다. ⚠️컬럼 문안 정본 = 06_DDL.sql."
 

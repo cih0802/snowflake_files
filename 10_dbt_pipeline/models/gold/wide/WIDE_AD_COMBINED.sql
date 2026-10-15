@@ -95,7 +95,18 @@ select
     fap.UTM_CMPGN_NM,
     fap.BSNS_CASE_DIV_NM,
     fap.CM,
-    fap.DMST_OVSEA_DIV_NM
+    fap.DMST_OVSEA_DIV_NM,
+    -- 🆕 [2026-10-15 O232] 귀속 경로 + 소재 매핑(카테고리 축) — yml columns[] 맨 끝과 같은 순서.
+    fap.MKTG_MAP_METHOD,
+    fap.AD_MAP_LEVEL,
+    fap.AD_MAP_CMPGN_CTGR_NM,
+    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — yml columns[] 맨 끝과 같은 순서.
+    fap.AD_CTGR_CD,
+    fap.AD_CTGR_NM,
+    fap.AD_CTGR_SRC,
+    fap.AD_CTGR_IS_MULTI,
+    -- 🆕 [2026-10-15 O233 #36] 표시 전용 카테고리명 나열 — yml columns[] 맨 끝과 같은 순서.
+    fap.AD_CTGR_NM_LIST
 from {{ ref('FACT_AD_PERFORMANCE') }} fap
 -- 위성은 AD_PERF_DK 로 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(fan-out 0).
 --   1:N 위성인 FACT_AD_BROADCAST_CASE 는 **의도적으로 제외**한다 — 사례 수만큼 광고비가 복제된다.

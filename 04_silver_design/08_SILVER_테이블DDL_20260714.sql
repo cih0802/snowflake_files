@@ -1651,3 +1651,21 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_EXPENSE_RESOLUTION (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '지출결의 명세. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: 예산 원장과 합산·조인 금지 · 전 컬럼 동일 행 보존]. [원천: ERP → BRONZE_ERP.EXPENSE_RESOLUTION].';
+
+-- AD_CREATIVE_CAMPAIGN_MAP — 미연결 광고 소재 → 캠페인 매핑(🆕 O232 · 사용자 확정 추천안)
+--   🔴 dbt 가 만들지 않는다 — 소유자 롤이 `12_agent개선과제/output/O232_광고_매핑_추천안.csv` 를 적재한다
+--      (dbt 롤은 SILVER CREATE TABLE 권한이 없다 · 구조 정본 = 이 DDL · dbt 는 source `silver_external` 로 읽는다).
+--   🔴 이 표는 이름매칭·UTM 이 실패한 소재에만 쓰는 3순위 규칙이다(FACT_AD_PERFORMANCE.MKTG_MAP_METHOD = CREATIVE_MAP).
+CREATE OR REPLACE TABLE GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP (
+    AD_SOURCE_TYPE      VARCHAR(20)     NOT NULL COMMENT '광고구분 VIDEO·REBROADCAST (DIGITAL 미연결분은 플랫폼 합계 행이라 대상 아님)',
+    CREATIVE_NM         VARCHAR(200)    NOT NULL COMMENT '소재명(원천 그대로 · REBROADCAST 는 방송명) — FACT_AD_PERFORMANCE.CREATIVE_NM 과 완전일치 조인',
+    MAP_LEVEL           VARCHAR(10)     NOT NULL COMMENT '연결 수준 MKTG(마케팅캠페인까지)·CTGR(캠페인카테고리까지)·NONE(미연결 확정)',
+    CMPGN_CTGR_NM       VARCHAR(100)    COMMENT '확정 캠페인카테고리(MM294 라벨) — MAP_LEVEL = NONE 이면 NULL',
+    MKTG_CAMPAIGN_NAME  VARCHAR(200)    COMMENT '확정 마케팅캠페인명(DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_NAME 유일) — MAP_LEVEL = MKTG 일 때만',
+    MAP_GRADE           VARCHAR(40)     COMMENT '추천 등급 ①~③(추천 근거 · 확정과 별개)',
+    CONFIRMED_NOTE      VARCHAR(200)    COMMENT '확정 기록(누가·언제)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
+    -- 🆕 [2026-10-15 O232-B] 카테고리 코드(원천 CRM_CAMPAIGN.CMPGN_CTGR_CD · 이름↔코드 1:1 실측 59/59) — 맨 끝 append
+    CMPGN_CTGR_CD       NUMBER(38,0)    COMMENT '확정 캠페인카테고리 코드(MM294 · SILVER.CRM_CAMPAIGN.CMPGN_CTGR_CD) — CMPGN_CTGR_NM 과 1:1 · NONE 이면 NULL',
+    PRIMARY KEY (AD_SOURCE_TYPE, CREATIVE_NM)
+) COMMENT = '미연결 광고 소재 → 캠페인 매핑(사용자 확정). [Grain: AD_SOURCE_TYPE × CREATIVE_NM (1행=1소재)]. [주의: 이름매칭·UTM 실패 소재 전용 3순위 규칙 · 카테고리 수준 행은 마케팅캠페인으로 배분하지 않는다]. [원천: 12_agent개선과제/output/O232_광고_매핑_추천안.csv (재송출·방송·영상광고 CRM 개발 실적 대조)].';

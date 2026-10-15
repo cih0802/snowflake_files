@@ -26,37 +26,37 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | eval 재측정(EXEC·MKT V4 · MEMBER V5 · C3 효과) — O228-A ① 승계 | O228-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:35` |
-| ② | MKT 정답지 V5 = Q29 메모 제거 + 기대 도구 2종(V4 보존) · 처방 tmp/o229/01_q29_cause.md | O229-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:36` |
-| ③ | 👤 dbt build --select DIM_CAMPAIGN → tmp/o229/04_upper_yn_post_build.sql → SV 차원 + GAP 9 | O229-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:37` |
-| ④ | 👤 문서20 N-30 회신 — O226-A ⑥ 승계 | O226-A ⑥ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:38` |
-| ① | 👤 운영계 eval = EXEC·MKT V4 · MEMBER V5 · MKT 정답지 V5(Q29 · tmp/o229/01_q29_cause.md) · 런북 §7 ⑰ | O229-A ①② | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:36` |
-| ② | 👤 문서20 N-30 회신(ERP 30코드 · DIGITAL_MAP · SND 결과코드 13종 · ) 2행 · 캠페인 속성 2) | O226-A ⑥ | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:37` |
+| ① | 👤 LTV 상한·학습기간·셀최소 결정 → dbt_project.yml vars → dbt build --select FACT_MEMBER_COHORT_SURVIVAL → RT-14·27·Agent LTV 지침 교체 | #32 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:40` |
+| ② | 👤 운영계 = o163_ddl_live_drift.py 전수 대조 → 소유자 롤 ADD COLUMN · SURVIVAL CREATE → dbt build → SV 2종 → 코퍼스·Agent | 런북 §7 ⑲·§7-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:41` |
+| ③ | 👤 현업 = 처리통보 키워드 정의(DEC-33 ①) | #34 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:42` |
+| ④ | 코호트 획득건 「신규 우선」 결정문 미발견(30-012:47 언급만) — 근거 확정 또는 결정 등재 | #33 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:43` |
+| ① | 👤 다중 카테고리 캠페인 = 카테고리명 나열 컬럼 착수 여부(표시 전용 · 그루핑·합산 금지 · 최대 21개 212자) | #36 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:42` |
+| ② | 👤 운영계 = 문서실행순서 「O231·O232 덧입힐 때」 ①~④ | #35 · 런북 §7-A | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:43` |
+| ③ | 👤 LTV 상한·학습기간·셀최소 결정 → vars → build | #32 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:44` |
+| ④ | 👤 WARN 2건 이름 확인(클라이언트 build 로그) — 종전 상시 WARN(FMF·FMM relationships 등)인지 대조 | 이번 단위 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:45` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0229-B.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0232-B.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
 > 🔴🔴 **이 세션은 단위 2개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O229-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:17` |
-| ▣ O229-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:23` |
-| ▣ O229-A-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:31` |
-| ▣ O229-A-3 🟡 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:40` |
-| ▣ O229-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-A.md:47` |
-| ▣ O229-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:17` |
-| ▣ O229-B-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:23` |
-| ▣ O229-B-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:32` |
-| ▣ O229-B-3 🟡 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:39` |
-| ▣ O229-B-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0229-B.md:46` |
+| ▣ O232-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:17` |
+| ▣ O232-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:25` |
+| ▣ O232-A-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:36` |
+| ▣ O232-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-A.md:45` |
+| ▣ O232-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:17` |
+| ▣ O232-B-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:25` |
+| ▣ O232-B-2 ㉠ 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:38` |
+| ▣ O232-B-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0232-B.md:47` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -102,10 +102,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 9,412 | 9,412 | 31,548 |
+| `00_BRIEF` | — | 10,801 | 10,801 | 30,159 |
 | `11_O누적작업_점검_재현_절차` | — | 33,527 | 33,527 | 7,433 🟠 |
 
-> 전 문서군 = **3,239,330 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,240,271 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태

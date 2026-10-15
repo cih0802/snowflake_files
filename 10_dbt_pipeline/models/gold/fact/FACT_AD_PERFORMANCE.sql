@@ -100,7 +100,7 @@ select
     --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
     --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
-    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, 0)    as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM → 0
+    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · 🆕 O232: → 소재 매핑(MKTG) → 0
     {{ gold_meta('AGENCY') }},
     -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
@@ -121,8 +121,37 @@ select
     -- 🆕 [2026-10-14 O225] 귀속 경로·후보 수(06_DDL 동기 · 맨 끝 append) — 1:N 은 버리지 않고 표시한다.
     case when mk.MKTG_CAMPAIGN_SK is not null then 'NAME'
          when up.MKTG_CAMPAIGN_SK is not null then 'UTM'
+         when cm_mk.MKTG_CAMPAIGN_SK is not null then 'CREATIVE_MAP'
          else 'NONE' end         as MKTG_MAP_METHOD,
-    iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT
+    iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT,
+    -- 🆕 [2026-10-15 O232 · 사용자 확정 추천안] 소재 매핑 3순위 — 이름매칭·UTM 실패 행에만 적용한다(06_DDL 동기 · 맨 끝 append).
+    --   재방송 = 캠페인카테고리 수준(한 방송에 마케팅캠페인 6~23개 → 아래로 배분하지 않는다) · 영상 = 마케팅캠페인 1개 확정분만 MKTG.
+    --   🔴 매핑표는 dbt 가 만들지 않는다(SILVER.AD_CREATIVE_CAMPAIGN_MAP · 소유자 롤 적재 · 08 DDL 정본).
+    iff(mk.MKTG_CAMPAIGN_SK is null and up.MKTG_CAMPAIGN_SK is null, cm.MAP_LEVEL, NULL)       as AD_MAP_LEVEL,
+    iff(mk.MKTG_CAMPAIGN_SK is null and up.MKTG_CAMPAIGN_SK is null, cm.CMPGN_CTGR_NM, NULL)   as AD_MAP_CMPGN_CTGR_NM,
+    -- 🆕 [2026-10-15 O232-B · 사용자 요청] 광고비 귀속 카테고리(전 광고행 단일 축 · 06_DDL 동기 · 맨 끝 append)
+    --   우선순위 = 이름매칭·UTM 연결 → 그 마케팅캠페인의 대표 카테고리(MKTG_REP) → 소재 매핑 확정 카테고리(CREATIVE_MAP) → NULL.
+    --   🔴 MKTG_REP 는 대표값이다 — 다중이면 AD_CTGR_IS_MULTI = TRUE(광고비 기준 약 72%) · CREATIVE_MAP 은 확정이라 FALSE.
+    --   ⚠️ 이름매칭이 성공하면 그 캠페인 값만 쓴다(카테고리가 비어도 UTM 쪽으로 넘어가지 않는다) ⇒ coalesce 가 아니라 iff.
+    case when mk.MKTG_CAMPAIGN_SK is not null then mk.CMPGN_CTGR_CD
+         when up.MKTG_CAMPAIGN_SK is not null then up_mk.CMPGN_CTGR_CD
+         else cm.CMPGN_CTGR_CD end                                                as AD_CTGR_CD,
+    case when mk.MKTG_CAMPAIGN_SK is not null then mk.CMPGN_CTGR_NM
+         when up.MKTG_CAMPAIGN_SK is not null then up_mk.CMPGN_CTGR_NM
+         else cm.CMPGN_CTGR_NM end                                                as AD_CTGR_NM,
+    case when mk.MKTG_CAMPAIGN_SK is not null then iff(mk.CMPGN_CTGR_CD is null, 'NONE', 'MKTG_REP')
+         when up.MKTG_CAMPAIGN_SK is not null then iff(up_mk.CMPGN_CTGR_CD is null, 'NONE', 'MKTG_REP')
+         when cm.CMPGN_CTGR_NM is not null then 'CREATIVE_MAP'
+         else 'NONE' end                                                          as AD_CTGR_SRC,
+    case when mk.MKTG_CAMPAIGN_SK is not null then mk.CMPGN_CTGR_IS_MULTI
+         when up.MKTG_CAMPAIGN_SK is not null then up_mk.CMPGN_CTGR_IS_MULTI
+         when cm.CMPGN_CTGR_NM is not null then FALSE end                         as AD_CTGR_IS_MULTI,
+    -- 🆕 [2026-10-15 O233 · 사용자 결정 #36] 표시 전용 카테고리명 나열(06_DDL 동기 · 맨 끝 append) — AD_CTGR_NM 과 같은 우선순위.
+    --   MKTG_REP = 그 마케팅캠페인의 나열(첫 항목 = AD_CTGR_NM) · CREATIVE_MAP = 확정 이름 1개 · NONE = NULL.
+    --   🔴 그루핑·필터·합산 금지 — 집계는 AD_CTGR_NM 으로만 한다.
+    case when mk.MKTG_CAMPAIGN_SK is not null then iff(mk.CMPGN_CTGR_CD is null, NULL, mk.CMPGN_CTGR_NM_LIST)
+         when up.MKTG_CAMPAIGN_SK is not null then iff(up_mk.CMPGN_CTGR_CD is null, NULL, up_mk.CMPGN_CTGR_NM_LIST)
+         else cm.CMPGN_CTGR_NM end                                                as AD_CTGR_NM_LIST
 from p
 left join {{ ref('AGENCY_AD_ROW_DGT') }}   d on d.AD_PERF_DK = p.AD_PERF_DK
 left join {{ ref('AGENCY_AD_ROW_VIDEO') }} v on v.AD_PERF_DK = p.AD_PERF_DK
@@ -139,3 +168,13 @@ left join {{ ref('DIM_MARKETING_CAMPAIGN') }} mk
 -- [2026-10-14 O225] UTM 보조 경로 — utm_pick 은 AD_PERF_DK 당 1행(qualify) ⇒ fan-out 0.
 left join utm_pick up
        on up.AD_PERF_DK = p.AD_PERF_DK
+-- 🆕 [2026-10-15 O232-B] UTM 경로 캠페인의 대표 카테고리 — SK = PK ⇒ fan-out 0.
+left join {{ ref('DIM_MARKETING_CAMPAIGN') }} up_mk
+       on up_mk.MKTG_CAMPAIGN_SK = up.MKTG_CAMPAIGN_SK
+-- 🆕 [2026-10-15 O232] 소재 매핑 — PK(AD_SOURCE_TYPE, CREATIVE_NM) 유일 ⇒ fan-out 0 · 마케팅캠페인명은 DIM 에서 유일(실측 53/53).
+left join {{ source('silver_external', 'AD_CREATIVE_CAMPAIGN_MAP') }} cm
+       on cm.AD_SOURCE_TYPE = p.AD_SOURCE_TYPE
+      and cm.CREATIVE_NM = p.CREATIVE_NM
+left join {{ ref('DIM_MARKETING_CAMPAIGN') }} cm_mk
+       on cm.MAP_LEVEL = 'MKTG'
+      and cm_mk.MKTG_CAMPAIGN_NAME = cm.MKTG_CAMPAIGN_NAME

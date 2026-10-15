@@ -30,10 +30,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
       PRIMARY KEY (SPONSORSHIP_SK)
       WITH SYNONYMS ('획득 후원사업', '가입 후원사업', '모집 후원사업')
       COMMENT = '🔴**획득 시점 후원사업**(그 회원을 데려온 사업) 차원. 회비 **납입 대상** 후원사업(SV_MEMBER_FEE)과 **다른 축**이다 — 한 회원이 여러 후원사업에 내므로 두 축은 값이 다르다. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_MM_FDRM_MBER_DVLP_AMT(SPNSR_BSNS_ID) + TM_CM_SPNSR_BSNS_INFO · SILVER=CRM_MEMBER_DEV + CRM_SPONSOR_BIZ.'
-    ,surv AS GN_DW.GOLD.WIDE_MEMBER_COHORT_SURVIVAL
+    ,surv AS GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL
       PRIMARY KEY (AXIS_TYPE, AXIS_VALUE, ELAPSED_MONTH)
       WITH SYNONYMS ('생존분석', '유지 곡선', 'LTV 유지개월', '기대 유지개월')
-      COMMENT = '🆕 [O231 · 🟠 잠정 정의 — 현업 확인 전] 획득 코호트 생존 집계(Kaplan–Meier · 월 이산). 1행 = 분류 축값 × 획득 후 경과월. fmc 와 관계가 없다(회원 grain 이 아니다) — 이 테이블의 지표는 surv 차원과만 쓴다. 기대 유지개월 = 상한까지의 제한 평균 유지기간(RMST · 관측 중 회원 포함). [원천: GOLD.FACT_MEMBER_COHORT.OBS_TENURE_MONTHS · IS_STOPPED_OBS].'
+      COMMENT = '🆕 [O231·O232 · 🟠 잠정 정의 — 현업 확인 전] 획득 코호트 생존 곡선(Kaplan–Meier · 월 이산). 1행 = 분류 축값 × 획득 후 경과월. fmc 와 관계가 없다(회원 grain 이 아니다) — 이 테이블의 지표는 surv 차원과만 쓴다. 기대 유지개월 = 상한(SURV_LTV_CAP_MONTHS)별 제한 평균 유지기간(RMST · 관측 중 회원 포함). [원천: GOLD.FACT_MEMBER_COHORT.OBS_TENURE_MONTHS · IS_STOPPED_OBS].'
   )
   RELATIONSHIPS (
     fmc_to_acq_campaign AS fmc (ACQ_CAMPAIGN_SK) REFERENCES acq_campaign,
@@ -76,6 +76,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     ,surv.SURV_AXIS_VALUE AS surv.AXIS_VALUE WITH SYNONYMS ('생존분석 축값', '분류값') COMMENT = '🆕 [O231 · 잠정] 축값(획득 시점 동결 라벨 · 원천 NULL = ''(미상)''). 축 ''전체''이면 ''전체''.'
     ,surv.SURV_ELAPSED_MONTH AS surv.ELAPSED_MONTH WITH SYNONYMS ('획득 후 경과월', '경과월') COMMENT = '🆕 [O231 · 잠정] 획득 후 경과월 0~59(달력월 아님). N개월 생존율은 경과월 = N−1 행의 SURVIVAL_RATE 다.'
     ,surv.SURV_IS_CELL_RELIABLE AS surv.IS_CELL_RELIABLE WITH SYNONYMS ('표본 충분') COMMENT = '🆕 [O231 · 잠정] 셀 획득 회원수 ≥ 500(dbt var ltv_min_cell). FALSE 셀은 비교·순위에 쓰지 않는다(값은 참고로만).'
+    ,surv.SURV_LTV_CAP_MONTHS AS surv.LTV_CAP_MONTHS WITH SYNONYMS ('상한', 'LTV 상한', '유지개월 상한', '상한 개월') COMMENT = '🆕 [O232 · 잠정] 기대 유지개월의 **상한(개월)**. 상한 N 의 마지막 경과월(N−1) 행에만 값이 있고 나머지는 NULL — 기대 유지개월·상한 생존율은 이 차원으로 그룹하고 NULL 을 빼서 읽는다. 상한 목록은 설정값(현재 36·60)이며 바뀔 수 있다 — 값을 단정하지 말고 조회한다.'
   )
   METRICS (
     fmc.TOTAL_ACQ_MEMBERS AS SUM(fmc.ACQ_MEMBERS)
@@ -90,19 +91,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.STOPPED_MEMBERS_EVER AS SUM(fmc.STOPPED_MEMBERS)
       WITH SYNONYMS ('누적 이탈회원수', '전체 이탈회원수') COMMENT = '관측 기간 전체에서 한 번이라도 이탈한 회원수. F(가산). ⚠️ 이 값을 TOTAL_ACQ_MEMBERS 로 나눈 **누적 이탈률로 캠페인을 비교하지 말 것** — 획득 시점이 이를수록 관측 기간이 길어 구조적으로 높게 나온다(실측 확인). 캠페인 비교는 CHURN_RATE_12M 을 쓴다. 이 measure 는 「전체 기간 누적 이탈 규모」를 물을 때만 쓴다.',
     fmc.AVG_TENURE_DAYS AS AVG(fmc.TENURE_DAYS)
-      WITH SYNONYMS ('중단자 평균 유지일수', '평균 유지기간', '평균 유지일수', '평균 후원기간') COMMENT = '🔴 [O231 명확화] **중단자 평균** — LTV 의 유지개월로 쓰지 않는다(관측 중 회원이 빠져 과소 · 24개월 코호트 4~8개월 vs 생존분석 14~22개월). 회원 전체의 기대 유지개월은 EXP_TENURE_36M·EXP_TENURE_60M(잠정)이다. 이탈 회원의 평균 유지기간(일) = 최초 중단일 − 획득일. N(비가산, 재집계 금지). 🔴 **이탈한 회원만** 모수다(미중단 회원은 유지기간이 NULL = 아직 끝나지 않은 관측이라 평균에서 제외된다). 따라서 이 값은 "이탈한 사람은 평균 며칠 유지했나"이며 **전체 회원의 평균 후원기간이 아니다** — 아직 유지 중인 회원이 많은 캠페인일수록 이 값만 보면 과소평가된다. 반드시 CHURN_RATE_12M 과 함께 해석한다.',
+      WITH SYNONYMS ('중단자 평균 유지일수', '평균 유지기간', '평균 유지일수', '평균 후원기간') COMMENT = '🔴 [O231 명확화] **중단자 평균** — LTV 의 유지개월로 쓰지 않는다(관측 중 회원이 빠져 과소 · 24개월 코호트 4~8개월 vs 생존분석 14~22개월). 회원 전체의 기대 유지개월은 EXP_TENURE_MONTHS(상한별 · 잠정)이다. 이탈 회원의 평균 유지기간(일) = 최초 중단일 − 획득일. N(비가산, 재집계 금지). 🔴 **이탈한 회원만** 모수다(미중단 회원은 유지기간이 NULL = 아직 끝나지 않은 관측이라 평균에서 제외된다). 따라서 이 값은 "이탈한 사람은 평균 며칠 유지했나"이며 **전체 회원의 평균 후원기간이 아니다** — 아직 유지 중인 회원이 많은 캠페인일수록 이 값만 보면 과소평가된다. 반드시 CHURN_RATE_12M 과 함께 해석한다.',
     fmc.TOTAL_OBS_MEMBERS AS COUNT(fmc.OBS_TENURE_DAYS)
       WITH SYNONYMS ('관측 회원수', '생존분석 대상 회원수') COMMENT = '🆕 [O231 · 잠정] 생존분석 대상 회원수(관측 유지기간이 있는 회원 · 획득일·중단일 무효 제외). 관측 중(아직 유지) 회원 포함.',
-    surv.EXP_TENURE_36M AS MAX(surv.EXP_TENURE_36M)
-      WITH SYNONYMS ('기대 유지개월(36개월 상한)', '36개월 기대 유지개월', 'LTV 유지개월 36') COMMENT = '🆕 [O231 · 🟠 잠정 정의] 기대 유지개월(개월) = 획득 후 36개월 상한 안에서의 평균 유지기간 RMST(36) = E[min(유지개월, 36)] · Kaplan–Meier · 관측 중 회원 포함. 셀 상수 — SURV_AXIS_TYPE·SURV_AXIS_VALUE 로 그룹하고 경과월로 쪼개지 않는다. 전체 실측 27.36개월. 🔴 현업 확정 전 — 답할 때 「잠정 정의(상한 36개월)」를 밝히고 60개월 값과 나란히 보여준다.',
-    surv.EXP_TENURE_60M AS MAX(surv.EXP_TENURE_60M)
-      WITH SYNONYMS ('기대 유지개월(60개월 상한)', '60개월 기대 유지개월', 'LTV 유지개월 60') COMMENT = '🆕 [O231 · 🟠 잠정 정의] 기대 유지개월(개월) = RMST(60). 전체 실측 40.73개월. 상한이 길수록 값이 커진다(상한 밖 유지는 세지 않는다). 🔴 현업 확정 전.',
-    surv.SURVIVAL_12M AS MAX(surv.SURV_12M)
-      WITH SYNONYMS ('12개월 생존율', '12개월 유지율') COMMENT = '🆕 [O231 · 잠정] 획득 후 12개월 유지 확률(0~1 · Kaplan–Meier). 🔴 CHURN_RATE_12M(관측 가능 회원 단순비율 · %)과 모집단·방법이 달라 1−값이 같지 않을 수 있다 — 중단률 정본은 CHURN_RATE_12M.',
-    surv.SURVIVAL_36M AS MAX(surv.SURV_36M)
-      WITH SYNONYMS ('36개월 생존율', '36개월 유지율') COMMENT = '🆕 [O231 · 잠정] 획득 후 36개월 유지 확률(0~1). 셀 상수.',
-    surv.SURVIVAL_60M AS MAX(surv.SURV_60M)
-      WITH SYNONYMS ('60개월 생존율', '60개월 유지율') COMMENT = '🆕 [O231 · 잠정] 획득 후 60개월 유지 확률(0~1). 셀 상수.',
+    surv.EXP_TENURE_MONTHS AS MAX(IFF(surv.LTV_CAP_MONTHS IS NOT NULL, surv.RMST_CUM, NULL))
+      WITH SYNONYMS ('기대 유지개월', 'LTV 유지개월', '평균 기대 유지기간', 'RMST') COMMENT = '🆕 [O232 · 🟠 잠정 정의] 기대 유지개월(개월) = 상한 N개월 안의 평균 유지기간 RMST(N) = E[min(유지개월, N)] · Kaplan–Meier · 관측 중 회원 포함. 🔴 반드시 SURV_LTV_CAP_MONTHS 로 그룹하고(NULL 제외) SURV_AXIS_TYPE 을 고정한다 — 상한을 묶으면 큰 상한 값만 나온다. 상한이 길수록 값이 커진다(상한 밖 유지는 세지 않는다). 🔴 현업 확정 전 — 답할 때 「잠정 정의(상한 N개월)」를 밝히고 상한별 값을 나란히 보여준다.',
+    surv.SURVIVAL_AT_CAP AS MAX(IFF(surv.LTV_CAP_MONTHS IS NOT NULL, surv.SURV_END, NULL))
+      WITH SYNONYMS ('상한 시점 생존율', '상한 시점 유지율') COMMENT = '🆕 [O232 · 잠정] 상한 N개월 시점 유지 확률 P(유지 > N−1)(0~1). SURV_LTV_CAP_MONTHS 로 그룹한다. 임의 N개월 생존율은 SURVIVAL_RATE 를 경과월 N−1 로 거른다.',
     surv.SURVIVAL_RATE AS AVG(surv.SURV_END)
       WITH SYNONYMS ('N개월 생존율', '경과월 생존율', '유지 곡선') COMMENT = '🆕 [O231 · 잠정] 경과월 종료 생존율 P(유지 > 경과월). SURV_ELAPSED_MONTH 와 함께 쓴다(N개월 생존율 = 경과월 N−1). 경과월을 묶어 평균 내지 않는다.',
     surv.SURV_COHORT_MEMBERS AS MAX(surv.COHORT_MEMBERS)
@@ -111,7 +106,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
   COMMENT = 'Phase-1 회원 획득 코호트 SV (base: GOLD.FACT_MEMBER_COHORT, grain: 회원 1행=1회원). 캠페인별 12개월 고정 이탈률(CHURN_RATE_12M, % 단위), 평균 유지기간(AVG_TENURE_DAYS), 획득 시점 회원속성 뷰. ⚠️ 중단 건수는 SV_MEMBER_EVENT, 중단률(%)은 본 뷰가 정본. 캠페인 비교 시 누적 이탈률이 아닌 12개월 고정 이탈률 사용 필수. 획득 부서/후원사업은 획득 시점 축임.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 이탈률 정본: 캠페인별 중단률/이탈률 질문은 CHURN_RATE_12M (% 단위) 사용. 누적 이탈률(STOPPED_MEMBERS_EVER/TOTAL_ACQ_MEMBERS)은 기간 편향이 발생하므로 캠페인 비교에 사용 금지. (2) 기간 필터: 연도/월 필터는 획득 시점 기준임. (3) 건수 vs 비율 분기: 중단 건수 질의는 SV_MEMBER_EVENT 로 라우팅. (4) 유지기간: AVG_TENURE_DAYS 는 이탈 회원만의 평균 유지일수이며 CHURN_RATE_12M 과 함께 제시. (5) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (6) 획득 속성: ACQ_DEPARTMENT, ACQ_SPONSORSHIP 은 획득 시점 속성이며 납입 대상 회비는 SV_MEMBER_FEE 로 라우팅. ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다(별칭 일부만 쓰면 invalid identifier). 「총납입회비」처럼 이 SV 에 없는 지표로 정렬·결합을 요구받으면 이 SV 에서 억지로 만들지 말고 SV_MEMBER_FEE 를 따로 호출해 표를 분리한다. 「최근 N개월」 기준일은 비상관 CTE 1개로 구하고 CROSS JOIN 한다. (O231 · 잠정) 유지개월·LTV·생존율 질문: 회원 전체 기대 유지개월은 surv 테이블의 EXP_TENURE_36M·EXP_TENURE_60M 을 쓰고 두 값을 함께 보여주며 「잠정 정의(현업 확인 전)」라고 밝힌다. surv 는 fmc 와 조인하지 않는다 — surv 단독으로 SURV_AXIS_TYPE 을 하나로 고정(전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2)하고 SURV_AXIS_VALUE 로 그룹한다. 기대 유지개월·N개월 생존율은 SURV_ELAPSED_MONTH 로 그룹하지 않는다(셀 상수) · 생존 곡선만 SURV_ELAPSED_MONTH 로 그린다. SURV_IS_CELL_RELIABLE = FALSE 셀은 순위에서 빼거나 표본 부족으로 표시한다. AVG_TENURE_DAYS 는 중단자 평균이라 LTV 유지개월로 쓰지 않는다.'
+  핵심 규칙: (1) 이탈률 정본: 캠페인별 중단률/이탈률 질문은 CHURN_RATE_12M (% 단위) 사용. 누적 이탈률(STOPPED_MEMBERS_EVER/TOTAL_ACQ_MEMBERS)은 기간 편향이 발생하므로 캠페인 비교에 사용 금지. (2) 기간 필터: 연도/월 필터는 획득 시점 기준임. (3) 건수 vs 비율 분기: 중단 건수 질의는 SV_MEMBER_EVENT 로 라우팅. (4) 유지기간: AVG_TENURE_DAYS 는 이탈 회원만의 평균 유지일수이며 CHURN_RATE_12M 과 함께 제시. (5) 정렬: 비율 metric 정렬 시 ORDER BY ... DESC NULLS LAST 사용. (6) 획득 속성: ACQ_DEPARTMENT, ACQ_SPONSORSHIP 은 획득 시점 속성이며 납입 대상 회비는 SV_MEMBER_FEE 로 라우팅. ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다(별칭 일부만 쓰면 invalid identifier). 「총납입회비」처럼 이 SV 에 없는 지표로 정렬·결합을 요구받으면 이 SV 에서 억지로 만들지 말고 SV_MEMBER_FEE 를 따로 호출해 표를 분리한다. 「최근 N개월」 기준일은 비상관 CTE 1개로 구하고 CROSS JOIN 한다. (O231·O232 · 잠정) 유지개월·LTV·생존율 질문: 회원 전체 기대 유지개월은 surv 테이블의 EXP_TENURE_MONTHS 를 SURV_LTV_CAP_MONTHS 로 그룹(NULL 제외)해 상한별 값을 함께 보여주며 「잠정 정의(현업 확인 전)」라고 밝힌다. surv 는 fmc 와 조인하지 않는다 — surv 단독으로 SURV_AXIS_TYPE 을 하나로 고정(전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2)하고 SURV_AXIS_VALUE 로 그룹한다. N개월 생존율은 SURVIVAL_RATE 를 SURV_ELAPSED_MONTH = N−1 로 거른다 · 생존 곡선은 SURV_ELAPSED_MONTH 로 그린다. SURV_IS_CELL_RELIABLE = FALSE 셀은 순위에서 빼거나 표본 부족으로 표시한다. AVG_TENURE_DAYS 는 중단자 평균이라 LTV 유지개월로 쓰지 않는다.'
   AI_VERIFIED_QUERIES (
     vqr_o191_campaign_churn_top10 AS (
       QUESTION '캠페인별 평균 유지기간과 12개월 이탈률 상위 10곳'
