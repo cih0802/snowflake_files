@@ -65,15 +65,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.CHRCTR_RECPTN_YN AS member.CHRCTR_RECPTN_YN WITH SYNONYMS ('문자수신여부', '문자수신', 'SMS 수신동의') COMMENT = '회원 문자수신 여부(현재 마스터 스냅샷 · 과거월 조회도 현재값). 실제값 2종: ''Y''·''N'' + NULL. ⚠️ NULL 은 원천 미입력이며 ''N'' 으로 읽지 않는다',
     fmm.HAS_BILLING      AS fmm.HAS_BILLING      WITH SYNONYMS ('결제출처여부', '결제원천 존재') COMMENT = 'TRUE=결제(billing) 원천 행이 존재하는 월×회원. 🔴**「회비만」 스코프가 아니다** — 기저 CTE 가 회비(TM_PM_MBRFEE_ACMSLT)와 **기부금(TM_PM_DNTN_DTLS)을 함께** 담으므로 TRUE 인 행에도 기부금이 섞여 있고, 청구가 없는 기부금 전용 월도 TRUE 다. 따라서 이 필터를 걸어도 **회비 납부율의 분자는 정화되지 않는다.** 회비 지표를 볼 때 행 범위를 좁히는 용도로만 쓰고, 「회비 기준」이라고 서술하지 말 것.',
     reason.UNPAID_REASON_TYPE AS reason.REASON_TYPE WITH SYNONYMS ('사유 코드체계', '사유그룹') COMMENT = '🔴사유 코드그룹(PM002·PM018·PM032·PM033·PM019). **사유별 분해 시 이 축을 먼저 걸거나 함께 GROUP BY 할 것** — 그룹이 다르면 같은 이름도 다른 의미다. 그룹 미분리 합산은 조용히 틀린다(유형)',
-    reason.UNPAID_REASON      AS reason.REASON_NAME WITH SYNONYMS ('미납사유', '사유', '결제실패사유') COMMENT = '사유 라벨. 🔴**미납/결제실패 행에만 배선**된다 — 정상 납입 행은 전건 ''(미매핑)''이므로 대부분이 (미매핑) 한 덩어리로 나온다. 따라서 미납 관련 지표(총미납금액·미납비중·미납회원수)와 함께 쓸 때만 의미가 있다. ⚠️반드시 UNPAID_REASON_TYPE 과 함께 볼 것',
-    fmm.NEW_EXISTING_FLAG AS fmm.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존', '신규기존') COMMENT = '공#113 신규기존구분 — 조회년도에 최초가입한 회원이면 ''신규'', 그 이전이면 ''기존''. 실제값 2종: ''신규''·''기존'' + NULL(그 달까지 가입 기준일이 없는 회원·Unknown 월). 🔴 기준일은 회원 **최초가입일**(회원 등록일·최초 개발일·첫 청구월 중 가장 이른 날)이다(캠페인별 가입일이 아니다)',
+    reason.UNPAID_REASON      AS reason.REASON_NAME WITH SYNONYMS ('미납사유', '사유', '결제실패사유', '공82') COMMENT = '사유 라벨. 🔴**미납/결제실패 행에만 배선**된다 — 정상 납입 행은 전건 ''(미매핑)''이므로 대부분이 (미매핑) 한 덩어리로 나온다. 따라서 미납 관련 지표(총미납금액·미납비중·미납회원수)와 함께 쓸 때만 의미가 있다. ⚠️반드시 UNPAID_REASON_TYPE 과 함께 볼 것',
+    fmm.NEW_EXISTING_FLAG AS fmm.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존', '신규기존', '공32', '공43', '공44') COMMENT = '공#113 신규기존구분 — 조회년도에 최초가입한 회원이면 ''신규'', 그 이전이면 ''기존''. 실제값 2종: ''신규''·''기존'' + NULL(그 달까지 가입 기준일이 없는 회원·Unknown 월). 🔴 기준일은 회원 **최초가입일**(회원 등록일·최초 개발일·첫 청구월 중 가장 이른 날)이다(캠페인별 가입일이 아니다)',
     fmm.DEV_TYPE AS fmm.DEV_TYPE WITH SYNONYMS ('개발구분코드', '월 개발구분') COMMENT = '공#121 그 달 개발구분 원천코드(MM015). 실제값 3종: ''1''(신규)·''2''(증액)·''4''(재후원) + NULL. 🔴 그 달 개발 사건의 구분이 **하나로 확정될 때만** 채운다 — 여러 구분이 섞인 달·개발이 없는 달은 NULL 이다(대표값을 고르지 않는다). 증액·재후원 여부만 필요하면 INCREASE_FLAG·REDONATE_FLAG 를 쓴다',
     fmm.INCREASE_FLAG AS fmm.INCREASE_FLAG WITH SYNONYMS ('증액여부', '증액 발생') COMMENT = '공#33 그 달 증액 개발(MM015 ''2'') 사건이 있으면 TRUE',
     fmm.REDONATE_FLAG AS fmm.REDONATE_FLAG WITH SYNONYMS ('재후원여부', '재후원 발생') COMMENT = '공#34 그 달 재후원 개발(MM015 ''4'') 사건이 있으면 TRUE',
     fmm.AMOUNT_BAND1 AS fmm.AMOUNT_BAND1 WITH SYNONYMS ('후원금액대1', '5만원 단위 금액대') COMMENT = '공#72 조회년월 약정금액(활동 후원사업금액 합) 5만원 구간. 값 형식 = ''<하한>~<상한>만원 미만''(예: ''0~5만원 미만''·''5~10만원 미만''). 약정 없음 ⇒ NULL',
     fmm.AMOUNT_BAND2 AS fmm.AMOUNT_BAND2 WITH SYNONYMS ('후원금액대2', '1만원 단위 금액대') COMMENT = '공#73 조회년월 약정금액 1만원 구간. 값 형식 = ''<하한>~<상한>만원 미만''(예: ''3~4만원 미만''). 약정 없음 ⇒ NULL. ⚠️ 문자열 정렬은 숫자 순서가 아니다',
     fmm.PERIOD_BAND1 AS fmm.PERIOD_BAND1 WITH SYNONYMS ('후원기간대1', '5년 단위 기간대') COMMENT = '공#74 최초가입일~조회년월 기간 5년 구간. 값 형식 = ''<하한>~<상한>년 미만''(예: ''0~5년 미만''). 기준일 없음 ⇒ NULL',
-    fmm.PERIOD_BAND2 AS fmm.PERIOD_BAND2 WITH SYNONYMS ('후원기간대2', '1년 단위 기간대') COMMENT = '공#75 최초가입일~조회년월 기간 1년 구간. 값 형식 = ''<하한>~<상한>년 미만''(예: ''2~3년 미만''). 기준일 없음 ⇒ NULL',
+    fmm.PERIOD_BAND2 AS fmm.PERIOD_BAND2 WITH SYNONYMS ('후원기간대2', '1년 단위 기간대', '공128') COMMENT = '공#75 최초가입일~조회년월 기간 1년 구간. 값 형식 = ''<하한>~<상한>년 미만''(예: ''2~3년 미만''). 기준일 없음 ⇒ NULL',
     member.REGION AS member.REGION WITH SYNONYMS ('지역', '약정시점 지역', '가입시점 지역', '시도') COMMENT = '🔴**약정(개발) 시점의** 회원 지역 라벨 — **현재 거주지가 아니다**(확정). 정본 공#131 · 코드사전 CM018 약칭. 실제값: ''서울''·''경기''·''인천''·''강원''·''대전''·''대구''·''부산''·''광주''·''울산''·''세종''·''충남''·''충북''·''전남''·''전북''·''경남''·''경북''·''제주''·''기타''. 원천 = 개발약정 테이블의 지역코드이며 약정 당시 값이 그대로 굳는다 — 이후 이사해도 갱신되지 않는다. 코드는 DIM_MEMBER.AREA_CD. ⚠️''현재 거주지역별'' 질문에는 답할 수 없다 — 원천에 현재 주소 축이 없다. ⚠️개발약정이 없는 회원(주로 일시회원)은 NULL 이며 ''미상''이 아니라 원천 부재다',
     member.AGE_BAND AS member.AGE_BAND WITH SYNONYMS ('연령대', '약정시점 연령대', '가입시점 연령대') COMMENT = '🔴**약정(개발) 시점의** 회원 연령대 라벨 — **현재 나이가 아니다**(확정). 코드사전 CM014. 실제값: ''10대 미만''·''10대''·''20대''·''30대''·''40대''·''50대''·''60대''·''70대''·''70대 이상''·''단체''·''기업''·''기타''. ✅라벨 매핑은 CM014 사전과 일치 검증됨(우리 쪽 결함 아님). ✅''10대 미만''이 최다인 것도 **실제이며 데이터 오류가 아니다** — 원인은 **편지쓰기대회 계열 캠페인**(희망편지쓰기대회·가족그림편지쓰기대회·세계시민교육편지)이다. 이 계열은 학교·부모 DB 를 통해 **아동 본인 명의로 후원 약정을 맺는 모집 이벤트**여서 20세 미만 비중이 그 외 캠페인보다 압도적으로 높다(개발사건 단위 실측). 따라서 *''왜 10대 미만이 많은가''* 라는 질문에는 **''특정 아동 모집 캠페인(편지쓰기대회 계열) 때문이며 약정 당시 연령 기준이다''** 라고 답하면 된다 — 결측·오류로 설명하지 말 것. 🔴그러나 이 값은 **약정 당시에 굳은 스냅샷**이라 오래된 회원일수록 실제 나이와 벌어진다 — 독립 원천(SND_MEMBER_LIST 연령대 라벨)과 회원 단위 대조 시 불일치가 **전부 노화 방향**이었고, 약정연도가 오래될수록 격차가 단조 증가했다. ⚠️**현재 연령대는 산출 불가**다 — BRONZE 전체에 생년월일 컬럼이 없다. 따라서 ''현재 연령별'' 질문에 이 축으로 답하지 말 것. ⚠️''단체''·''기업''은 나이가 아니라 법인 구분이므로 연령 추이에서 제외할 것 · 원천 부재 시 NULL',
     member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM) — 회원 마스터 현재값. 일시회원은 (해당없음).',
@@ -88,15 +88,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.MEMBER_SLRCLD_LRR_NAME AS member.SLRCLD_LRR_NAME WITH SYNONYMS ('생일 양력/음력', '양음력') COMMENT = '생일 양력/음력(CM029 · 양력·음력·불명확).',
     member.MEMBER_REL_NAME AS member.REL_NAME WITH SYNONYMS ('일시회원 관계') COMMENT = '일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).',
     -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 속성(단일 캠페인 월만 값 · 다중 월 = (미매핑))
-    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '그 달 후원 캠페인', '캠페인') COMMENT = '그 달 후원 캠페인명. 🔴 한 달에 여러 캠페인을 후원한 회원은 (미매핑) — IS_MULTI_CAMPAIGN 으로 구분한다.',
+    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '그 달 후원 캠페인', '캠페인', '공18', '공120') COMMENT = '그 달 후원 캠페인명. 🔴 한 달에 여러 캠페인을 후원한 회원은 (미매핑) — IS_MULTI_CAMPAIGN 으로 구분한다.',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
-    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
-    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296).',
+    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외', '공17') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
+    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례', '공17') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296).',
     campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('인입경로', '회원인입', '개발인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
     campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
     campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002).',
     campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('UTM', 'UTM 캠페인') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
-    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
+    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '공119') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
     fmm.IS_MULTI_CAMPAIGN AS fmm.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중 캠페인 여부', '여러 캠페인 후원') COMMENT = '그 달 여러 캠페인을 후원했는가(TRUE = 캠페인 축 (미매핑)의 사유). 회비 행이 없는 달은 FALSE.',
     -- 🆕 [2026-10-14 O226] 회원 최초 캠페인 축(DIM_MEMBER.FIRST_CAMPAIGN → DIM_CAMPAIGN BK)
     member.FIRST_CAMPAIGN AS member.FIRST_CAMPAIGN WITH SYNONYMS ('최초캠페인코드', '최초 캠페인 코드') COMMENT = '공#29 회원 최초캠페인 원천코드(회원 마스터 현재값). 라벨은 FIRST_CAMPAIGN_NAME. 원천에 값이 없는 회원은 NULL.',
@@ -112,25 +112,25 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.TOTAL_PAID_ALL   AS SUM(fmm.PAID_FEE)
       WITH SYNONYMS ('총수납액', '수납액', '납입총액') COMMENT = '납입 **총액**(원) = 회비 + 기부금. F(가산). 🔴**「납입회비」가 아니다** — 기저 `PAID_FEE` 는 회비(TM_PM_MBRFEE_ACMSLT)와 기부금(TM_PM_DNTN_DTLS)의 `PAY_AMT` 를 **모두** 합한 값이다. 🔴**납부율의 분자로 쓰지 말 것** — 기부금은 원천에 청구(`RQEST_AMT`) 컬럼이 아예 없어(전건 NULL) 분모 `TOTAL_BILLED_AMT` 에 구조적으로 들어갈 수 없다. 분자에만 더해지면 납부율이 과대해진다(과대. 회비만의 납입액은 **`TOTAL_PAID_FEE_BILLABLE`** 이다. 🟢「총수납액(회비+기부금)」을 명시적으로 물을 때 이 metric 을 쓰고 그때도 기부금 포함임을 밝힌다. 형제 SV `SV_MEMBER_FEE.TOTAL_PAID_ALL` 과 같은 이름·같은 정의다.',
     fmm.TOTAL_BILLED_AMT AS SUM(fmm.BILLED_AMT)
-      WITH SYNONYMS ('청구금액', '청구액 총액') COMMENT = '청구금액 합계(원, 재청구 중복 포함). F(가산).',
+      WITH SYNONYMS ('청구금액', '청구액 총액', '공71') COMMENT = '청구금액 합계(원, 재청구 중복 포함). F(가산).',
     fmm.TOTAL_DEV_CNT    AS SUM(fmm.DEV_CNT)
-      WITH SYNONYMS ('개발건', '개발 총건', '신규개발수') COMMENT = '개발(신규 후원) 건수 합계. F(가산). FME 월 롤업(A1).',
+      WITH SYNONYMS ('개발건', '개발 총건', '신규개발수', '공149') COMMENT = '개발(신규 후원) 건수 합계. F(가산). FME 월 롤업(A1).',
     fmm.TOTAL_STOP_CNT   AS SUM(fmm.STOP_CNT)
       WITH SYNONYMS ('중단건', '중단 총건', '해지건') COMMENT = '중단(해지) 건수 합계. F(가산). FME 월 롤업(A1).',
     fmm.UNPAID_MEMBERS_BOM AS COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END)
       WITH SYNONYMS ('월초 미납회원수') COMMENT = '월초(BOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
     fmm.UNPAID_MEMBERS_EOM AS COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END)
-      WITH SYNONYMS ('월말 미납회원수') COMMENT = '월말(EOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
+      WITH SYNONYMS ('월말 미납회원수', '공42') COMMENT = '월말(EOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
     fmm.UNPAID_REDUCTION_RATE AS
       (COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END)
        - COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END))
       / NULLIF(COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END), 0) * 100
       WITH SYNONYMS ('미납회원 감소율') COMMENT = '공80 미납회원 감소율(%) = (월초미납−월말미납) ÷ 월초미납 ×100. 비율(N).',
     fmm.TOTAL_PAID_FEE_BILLABLE AS SUM(fmm.PAID_FEE_BILLABLE)
-      WITH SYNONYMS ('납입회비', '납입회비 총액', '회비 납입액', '수납회비', '회비 수납액')
+      WITH SYNONYMS ('납입회비', '납입회비 총액', '회비 납입액', '수납회비', '회비 수납액', '공69')
       COMMENT = '납입회비(원) — **회비만**. F(가산). 정본 #69·70. 기부금은 제외된다(기부금은 원천에 청구 컬럼이 없어 납부율 분모에 들어갈 수 없다). 회비+기부금 총수납액은 `TOTAL_PAID_ALL` 이다(2026-08-10 이전 이름 = `TOTAL_PAID_FEE`).',
     fmm.PAYMENT_RATE_FEE AS SUM(fmm.PAID_FEE_BILLABLE) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
-      WITH SYNONYMS ('납부율', '수납율', '회비 납부율', '납부율(%)')
+      WITH SYNONYMS ('납부율', '수납율', '회비 납부율', '납부율(%)', '공65')
       COMMENT = '**공64 납부율(%) 정본** = 회비 납입액 ÷ 회비 청구액 ×100. 분자·분모가 모두 회비라 모집단이 일치한다. 비율(N, 재집계 금지). 🟢납부율을 묻는 질문에는 이 metric 을 쓴다 — **유일한 납부율 정본**이다.',
     fmm.TOTAL_UNPAID_AMT AS SUM(fmm.UNPAID_BILLED_AMT)
       WITH SYNONYMS ('총미납금액', '미납금액', '미납액', '미납액 총액', '못 걷은 금액')
@@ -141,9 +141,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.AVG_PAID_FEE AS AVG(fmm.PAID_FEE)
       WITH SYNONYMS ('평균납입회비', '평균회비') COMMENT = '행(월×회원)당 평균 납입회비(원). HAS_BILLING=TRUE 전제 권장. PoC AVG_PAID 로직 이식.',
     fmm.ACTIVE_CNT_SUM AS SUM(fmm.ACTIVE_CNT)
-      WITH SYNONYMS ('활동(건)', '월말활동회원(건)', '활동건') COMMENT = '공#157·#52 활동(건) = 월말 활동 회원의 약정금액 ÷ 10,000. 스톡 — 🔴 **한 달을 지정해** 조회한다(여러 달 합산은 연인원·연건이 된다).',
+      WITH SYNONYMS ('활동(건)', '월말활동회원(건)', '활동건', '공37', '공50', '공52', '공53') COMMENT = '공#157·#52 활동(건) = 월말 활동 회원의 약정금액 ÷ 10,000. 스톡 — 🔴 **한 달을 지정해** 조회한다(여러 달 합산은 연인원·연건이 된다).',
     fmm.ACTIVE_MEMBERS_SUM AS SUM(fmm.ACTIVE_MEMBERS)
-      WITH SYNONYMS ('활동(명)', '월말활동회원', '활동회원수') COMMENT = '공#156·#51 활동(명) = 월말 활동 회원수. 스톡 — 🔴 한 달을 지정해 조회한다.',
+      WITH SYNONYMS ('활동(명)', '월말활동회원', '활동회원수', '공40', '공51') COMMENT = '공#156·#51 활동(명) = 월말 활동 회원수. 스톡 — 🔴 한 달을 지정해 조회한다.',
     fmm.ACTIVE_CUM_CNT_SUM AS SUM(fmm.ACTIVE_CUM_CNT)
       WITH SYNONYMS ('활동누계(건)', '활동 누계 건') COMMENT = '공#159 활동누계(건) = 당해년도 1월~조회월 활동(건) 누계. 🔴 **조회월 하나를 지정**해야 한다 — 이미 누계라 여러 달을 더하면 이중 누계다.',
     fmm.ACTIVE_CUM_MEMBERS_SUM AS SUM(fmm.ACTIVE_CUM_MEMBERS)

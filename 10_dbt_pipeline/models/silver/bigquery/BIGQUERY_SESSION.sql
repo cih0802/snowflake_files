@@ -54,6 +54,8 @@ select
     CAST('SILVER.BIGQUERY_REFINED_DATA' AS VARCHAR(16777216))         as DW_SOURCE_TABLE,
     CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ)                        as DW_LOAD_TS,
     CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ)                        as DW_UPDATE_TS,
-    NULL                                                              as DW_BATCH_ID
+    NULL                                                              as DW_BATCH_ID,
+    -- 🆕 [2026-10-16 O241] 공98 추천안B(UA식 세션 지속시간) 재료 · 맨 끝(append_new_columns 순서)
+    max(TO_TIMESTAMP_NTZ(EVENT_TIMESTAMP / 1000000))                  as SESSION_END_TS
 from raw
 group by EVENT_DATE, USER_PSEUDO_ID, EP_GA_SESSION_ID

@@ -69,10 +69,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
       WITH SYNONYMS ('청구액(원)', '청구금액', '청구액')
       COMMENT = '청구액 합(원). F(가산) · FACT_MEMBER_FEE 의 청구액과 같은 식.',
     pbs.PAID_FEE_SUM AS SUM(pbs.PAID_FEE)
-      WITH SYNONYMS ('납입액(원)', '납입금액', '납입액')
+      WITH SYNONYMS ('납입액(원)', '납입금액', '납입액', '신규26')
       COMMENT = '납입 총액(원) = 회비 + 기부금. F(가산).',
     pbs.UNPAID_AMT_SUM AS SUM(pbs.UNPAID_BILLED_AMT)
-      WITH SYNONYMS ('미납액(원)', '미납 청구액', '미납액')
+      WITH SYNONYMS ('미납액(원)', '미납 청구액', '미납액', '신규29')
       COMMENT = '미납 청구액(원) = 결제상태 실패 또는 미기록인 청구액. F(가산).',
     pbs.BILLED_MEMBER_MAX AS MAX(pbs.BILLED_MEMBERS)
       WITH SYNONYMS ('청구 회원수(조합 최대)')

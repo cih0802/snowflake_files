@@ -63,7 +63,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
     fra.DISTINCT_ACTIVITY_MEMBERS AS COUNT(DISTINCT fra.MEMBER_DK)
       WITH SYNONYMS ('활동 회원수', '참여 회원수', '결연활동(명)') COMMENT = '결연활동 고유 회원수(명). D(distinct). 🔴 월·유형별 회원수를 더해 기간 회원수를 만들지 말 것(중복). ⚠️ 결연 마스터에 매칭되지 않은 고아 결연 행은 회원이 NULL 이라 세지 않는다',
     fra.TOTAL_GIFT_AMT AS SUM(fra.GFTMNEY)
-      WITH SYNONYMS ('선물금', '선물금액', '선물금(원)') COMMENT = '선물금 합계(원). F(가산). 🔴 선물금 행만 값이 있다(서신 행은 NULL) · 미화금액(GFTMNEY_DOLLAR_AMT)은 문자열 원천이라 합산하지 않는다'
+      WITH SYNONYMS ('선물금', '선물금액', '선물금(원)', '선물금참여(원)(추천안A)', '공91A') COMMENT = '선물금 합계(원). F(가산). 🔴 선물금 행만 값이 있다(서신 행은 NULL) · 미화금액(GFTMNEY_DOLLAR_AMT)은 문자열 원천이라 합산하지 않는다. 🆕 [O241] 공91 추천안A(잠정) = 결연활동 전체 선물금 — 추천안B(발송 매칭 선물금 = SV_SERVICE.D5_GIFT_AMT)와 병기 대상이며 다른 팩트라 한 쿼리로 결합하지 않는다.'
   )
   COMMENT = '결연활동 SV (base: GOLD.FACT_RELATION_ACTIVITY · grain = 서신/선물금 활동 1행). 결연 후원자의 서신 접수·선물금 전달 건수, 고유 회원수, 선물금(원). ⚠️ 서신과 선물금은 계열 속성이 다르므로 ACTIVITY_TYPE 동반. 코드 속성은 라벨 미배선(코드군 미확정)이다. 발송(서비스) 실적과는 별도 팩트이며 합산하지 않는다.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

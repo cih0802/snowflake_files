@@ -44,7 +44,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_CUM_STOP
     fccs.CUM_DEV AS SUM(fccs.CUM_DEV_CNT)
       WITH SYNONYMS ('누계개발(건)', '캠페인별 누계개발', '누계개발') COMMENT = '누계개발(건) = 1월~기준월 MSTR 개발(건)(인정금액 ÷ 10,000). 가산(기준월은 고정).',
     fccs.YEAR_START_ACTIVE AS SUM(fccs.YEAR_START_ACTIVE_CNT)
-      WITH SYNONYMS ('연도초활동회원(건)', '캠페인별 연도초활동회원', '연도초활동(건)', '연초활동') COMMENT = '연도초활동회원(건) = 기준연도 1월 as-of 활동 후원사업 약정금액 ÷ 10,000. 기준월마다 1회만 들어 있다(월 반복 없음).',
+      WITH SYNONYMS ('연도초활동회원(건)', '캠페인별 연도초활동회원', '연도초활동(건)', '연초활동', '공49') COMMENT = '연도초활동회원(건) = 기준연도 1월 as-of 활동 후원사업 약정금액 ÷ 10,000. 기준월마다 1회만 들어 있다(월 반복 없음).',
     fccs.CUM_STOP_RATE AS SUM(fccs.CUM_STOP_CNT) / NULLIF(SUM(fccs.CUM_DEV_CNT) + SUM(fccs.YEAR_START_ACTIVE_CNT), 0) * 100
       WITH SYNONYMS ('캠페인별 누계중단율(%)', '누계중단율', '누계중단비중', '누적중단율', '누계중단률', '캠페인별 누계중단비중')
       COMMENT = '신규 #17 캠페인별 누계중단율(%) = 누계중단(건) ÷ (누계개발(건) + 연도초활동회원(건)) ×100. 비율(재합산 금지 · 상위 축은 이 지표를 그대로 다시 계산한다). 25년부터 산출(연도초 기준).',

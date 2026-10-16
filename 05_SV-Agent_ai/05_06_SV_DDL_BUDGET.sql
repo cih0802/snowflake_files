@@ -35,7 +35,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     item.BUDGET_CATEGORY  AS item.BUDGET_CATEGORY  WITH SYNONYMS ('예산구분', '예산카테고리') COMMENT = '예산 구분. 실제값 1종: ''지출'' + NULL. 🔴 **''수입''은 이 데이터에 존재하지 않는다** — ''수입'' 으로 필터하면 0행이 반환되므로 「수입 예산」 질문에 이 축으로 답하지 말 것. 🟢 사유는 실측으로 확인됐다: **적재된 예산 원장의 장(章) 계정이 전부 비용(지출) 계정**이므로 이 데이터에는 지출 예산만 있다. 🔴 다만 「ERP 원본에 수입 예산이 있는데 업로드 범위에서 빠진 것인지」는 **확인 전**이다 ⇒ 「조직에 수입 예산이 없다」로 확대해 답하지 말고 **「적재된 예산 데이터에는 지출만 있다」**로 답한다(추정치 생성 금지). ⚠️ 이 축은 사실상 단일값이라 그루핑 축으로서의 정보량이 없다',
     item.BDGT_UNIT_NM AS item.BDGT_UNIT_NM WITH SYNONYMS ('예산단위', '예산 팀', '예산 부서', '예산단위명')
       COMMENT = '예산단위명(ERP 표기 그대로 · 세세목 1:1). 실측 값 6종 = 데이터분석센터 · 마케팅기획1팀 · 마케팅기획2팀 · 매체운영팀 · 사회복지법인예산 · 콘텐츠기획팀. 🔴 CRM 조직(DIM_ORG)과 다른 체계다 — 부서·팀 이름이 CRM 조직명과 같아 보여도 같은 조직으로 단정하지 말 것. 🔴 목록에 없는 팀(예: 「컬쳐콘텐츠팀」)을 물으면 0 으로 답하지 말고 「현재 데이터에서 조회되지 않고 <조회되는 유사 예산단위>가 조회된다」고 밝힌 뒤 그 예산단위의 수치를 제시한다(같은 조직이라 단정하지 않는다 · 유사 항목이 없으면 위 6종을 제시).',
-    fbd.DVLP_INBOUND_PATH AS fbd.DVLP_INBOUND_PATH WITH SYNONYMS ('개발인입경로', '개발 유입경로', '인입경로', '유입경로', '개발경로')
+    fbd.DVLP_INBOUND_PATH AS fbd.DVLP_INBOUND_PATH WITH SYNONYMS ('개발인입경로', '개발 유입경로', '인입경로', '유입경로', '개발경로', '신규9')
       COMMENT = '개발 유입경로(ERP 원장 그대로). 실측 값 7종 = 디지털 · 방송 · 재송출 · 영상광고 · 뉴미디어 · 모금시스템 · 콜개발. 🔴 NULL = 원장에 경로가 기재되지 않은 예산(대부분 집행 0) — 「미분류」 같은 이름을 지어내지 말고 「경로 미기재」로 표기한다. 🔴 CRM 회원 가입경로(JOIN_PATH)와 다른 축이다.',
     item.ITEM_JANG_NM AS item.JANG_NM WITH SYNONYMS ('장', '예산 장') COMMENT = '예산 과목 계층 최상위 「장」(원값 = 모금비·사업비·사회복지법인예산·일반관리비 · ERP 원장). 장 > 관 > 항 > 목 > 세목 > 세세목 순으로 좁아진다.',
     item.ITEM_KWAN_NM AS item.KWAN_NM WITH SYNONYMS ('관', '예산 관') COMMENT = '예산 과목 계층 「관」(원값 = 국내사업비·나눔문화연구사업·모금비·사회복지법인예산·일반관리비·해외사업비).',
@@ -50,10 +50,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
     fbd.EXEC_RATE AS SUM(fbd.EXEC_BUDGET_ERP) / NULLIF(SUM(fbd.PLAN_BUDGET_MONTH), 0) * 100
       WITH SYNONYMS ('집행율', '예산 집행율') COMMENT = '집행율(%) = 집행예산 ÷ 편성예산 ×100. 비율(N). ⚠편성은 12개월 전량이지만 집행은 적재된 월까지만 존재하므로, 집행 미적재 월을 분모에 넣으면 집행율이 구조적으로 낮게 나온다 — 스코프 정합 규칙은 AI_SQL_GENERATION 참조.',
     fbd.DIRECT_FUNDRAISING_COST_1 AS SUM(fbd.EXEC_DIRECT_MNYRS_1)
-      WITH SYNONYMS ('직접모금비1', '직접모금비 1', '모금성비용1')
+      WITH SYNONYMS ('직접모금비1', '직접모금비 1', '모금성비용1', '신규9', '신규11')
       COMMENT = '직접모금비1(원) — 원장 플래그 직접모금비1(DIRECT_MNYRS_YN_1)=Y 인 원장행의 집행액 합. F(가산). 🔴 **화면·답변에는 「직접모금비1」 이름 그대로 표시한다**(현업 회신 42) — 「모금성비용」 하나로 부르지 말고 직접모금비2 와 나란히 보여준다. ⚠️ 두 값은 포함관계가 아니다(행 단위로 1 이 2 보다 큰 행이 있다) ⇒ 차이를 「1 을 뺀 나머지」로 해석하지 말 것.',
     fbd.DIRECT_FUNDRAISING_COST_2 AS SUM(fbd.EXEC_DIRECT_MNYRS_2)
-      WITH SYNONYMS ('직접모금비2', '직접모금비 2', '모금성비용2')
+      WITH SYNONYMS ('직접모금비2', '직접모금비 2', '모금성비용2', '신규9')
       COMMENT = '직접모금비2(원) — 원장 플래그 직접모금비2(DIRECT_MNYRS_YN_2)=Y 인 원장행의 집행액 합. F(가산). 🔴 「직접모금비2」 이름 그대로 표시한다(현업 회신 42). ⚠️ 이 플래그는 사실상 전 원장행이 Y 라 합계가 집행예산(TOTAL_EXEC_BUDGET)과 거의 같다 — 「모금비가 전체 집행과 같다」로 해석하지 말고 플래그 정의가 넓다는 사실을 함께 밝힌다.'
   )
   COMMENT = 'Phase-1 예산 SV (base: GOLD.FACT_BUDGET, grain: 월×세세목 1행). ERP 예산 원장 기반 월별 편성예산(TOTAL_PLAN_BUDGET), 집행예산(TOTAL_EXEC_BUDGET), 집행율(EXEC_RATE, %) 및 세세목별 집계 뷰. ⚠️ 광고비는 본 뷰에 없으며 SV_AD 소관. 수입 예산은 적재 원천에 부재하며 지출 예산만 포함됨.'

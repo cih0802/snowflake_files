@@ -1,0 +1,122 @@
+﻿지표#,지표명,유형,GOLD_배속,상태,판정,동의어_일치_필드
+공4,CRM 개발(건),measure,FMM,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.TOTAL_CRM_DEV_CNT
+공12,플랫폼,dimension,DIM_AD_CREATIVE,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_GA_SESSION.PLATFORM
+공14,기기,dimension,DIM_AD_CREATIVE,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_GA_DEMOGRAPHIC.DEVICE_CATEGORY · SV_GA_SESSION.DEVICE_CATEGORY · SV_SEARCH_CONSOLE.DEVICE
+공15,국내/해외 구분,dimension,DIM_CAMPAIGN,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.DMST_OVSEA_DIV_NM
+공16,사업/사례 구분,dimension,DIM_CAMPAIGN,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.BSNS_CASE_DIV_NM · SV_MEMBER_COHORT.BIZ_CASE_TYPE · SV_MEMBER_FEE.ACQ_BIZ_CASE_TYPE
+공17,캠페인 유형,dimension,DIM_CAMPAIGN,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.CMPGN_TYPE_BSN_NM · SV_CAMPAIGN_CUM_STOP.DOMESTIC_OVERSEAS · SV_CAMPAIGN_MONTHLY.DOMESTIC_OVERSEAS · SV_MEMBER_COHORT.CAMPAIGN_TYPE · SV_MEMBER_EVENT.DOMESTIC_OVERSEAS · SV_MEMBER_MONTHLY.CAMPAIGN_TYPE · SV_PAYMENT_BILLING_STATUS.CAMPAIGN_TYPE · SV_SERVICE.CAMPAIGN_TYPE
+공18,캠페인명,dimension,DIM_CAMPAIGN,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.MARKETING_CAMPAIGN · SV_CAMPAIGN_CUM_STOP.CAMPAIGN_NAME · SV_CAMPAIGN_MONTHLY.CAMPAIGN_NAME · SV_EXPENSE_RESOLUTION.MKTG_CAMPAIGN_NAME · SV_MEMBER_COHORT.CAMPAIGN_NAME · SV_MEMBER_EVENT.CAMPAIGN_NAME · SV_MEMBER_FEE.ACQ_CAMPAIGN · SV_MEMBER_MONTHLY.CAMPAIGN_NAME · SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME · SV_MEMBER_SPONSOR_BIZ.CAMPAIGN · SV_PAYMENT_BILLING_STATUS.CAMPAIGN_NAME · SV_SERVICE.CAMPAIGN_NAME
+공20,소재,dimension,DIM_AD_CREATIVE,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.CREATIVE_NM
+공21,CM위치,dimension,DIM_AD_CREATIVE,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.CM_POSITION
+공22,초수,dimension,DIM_AD_CREATIVE,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.DURATION_SEC
+공23,노출수,measure,FAD,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.TOTAL_IMPRESSIONS · SV_SEARCH_CONSOLE.IMPRESSIONS_SUM
+공24,클릭수,measure,FAD,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.TOTAL_CLICKS · SV_GA_BEHAVIOR.TOTAL_EVENT_CNT · SV_SEARCH_CONSOLE.CLICKS_SUM
+공69,납입회비,measure,FMM,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_FEE.TOTAL_PAID_FEE_BILLABLE · SV_MEMBER_MONTHLY.TOTAL_PAID_FEE_BILLABLE
+공71,청구,measure,FMM,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_FEE.TOTAL_BILLED_AMT
+공81,미납서비스 전환율(%),derived,SV,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_GA_CHILD_UNPAID.UNPAID_SVC_CONV_RATE_A
+공82,미납사유,dimension,DIM_REASON,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_MONTHLY.UNPAID_REASON
+공110,회원번호,dimension,DIM_MEMBER_IDENTITY,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_SPONSOR_BIZ.MEMBER_DK
+공114,법인,dimension,DIM_ORG,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_DVLP_GOAL_ACMSLT.CPR_NM · SV_MEMBER_EVENT.SPONSORSHIP_CPR_DIV_NM · SV_MEMBER_FEE.ACQ_CPR_DIV · SV_TARGET_BIZ.CORP_DIV
+공115,본부/지부,dimension,DIM_ORG,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_DVLP_GOAL_ACMSLT.HDQ_BRNCH_GRP_NM · SV_MEMBER_EVENT.ORG_DIV · SV_TARGET_BIZ.ORG_DIV
+공116,부서,dimension,DIM_ORG,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_DEV_ACHIEVEMENT.ORG_DEPARTMENT · SV_DVLP_GOAL_ACMSLT.DEPT_DIV_NM · SV_EXPENSE_RESOLUTION.RESOLUTION_DEPT_NM · SV_MEMBER_EVENT.ORG_DEPARTMENT · SV_MEMBER_FEE.ACQ_DEPARTMENT · SV_TARGET_BIZ.TEAM_NAME
+공117,공통브랜드,dimension,DIM_CAMPAIGN,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_CAMPAIGN_CUM_STOP.CMMN_BRND_NM · SV_CAMPAIGN_MONTHLY.CMMN_BRND_NM · SV_MEMBER_EVENT.CMMN_BRND_NM · SV_MEMBER_FEE.ACQ_CMMN_BRAND · SV_PAYMENT_BILLING_STATUS.CMMN_BRND_NM · SV_SERVICE.CMMN_BRND_NM
+공118,홍보방법,dimension,DIM_CAMPAIGN,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_COHORT.PROMO_METHOD_NAME · SV_MEMBER_EVENT.PROMO_METHOD_NAME · SV_MEMBER_FEE.ACQ_PROMO_METHOD · SV_PAYMENT_BILLING_STATUS.PROMO_METHOD_NAME · SV_SERVICE.PROMO_METHOD_NAME
+공120,캠페인,dimension,DIM_CAMPAIGN,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_AD.MARKETING_CAMPAIGN · SV_CAMPAIGN_CUM_STOP.CAMPAIGN_NAME · SV_CAMPAIGN_MONTHLY.CAMPAIGN_NAME · SV_MEMBER_COHORT.CAMPAIGN_NAME · SV_MEMBER_EVENT.CAMPAIGN_NAME · SV_MEMBER_FEE.ACQ_CAMPAIGN · SV_MEMBER_MONTHLY.CAMPAIGN_NAME · SV_MEMBER_SPONSOR_BIZ.CAMPAIGN · SV_PAYMENT_BILLING_STATUS.CAMPAIGN_NAME · SV_SERVICE.CAMPAIGN_NAME
+공122,결연아동코드,dimension,DIM_MEMBER_IDENTITY,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_GA_CHILD_UNPAID.CHILD_CODE
+공124,후원사업(약칭),dimension,DIM_SPONSORSHIP,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_SPONSOR_BIZ.SPONSORSHIP_ABBR_CATEGORY
+공125,납입방식,dimension,DIM_PAYMENT,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_CAMPAIGN_MONTHLY.SETTLE_METHOD · SV_MEMBER_FEE.PAYMENT_METHOD
+공137,발송일,dimension,DIM_DATE,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_SERVICE.SEND_DATE
+공138,발송상태,dimension,FSE(degen),OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_SERVICE.SEND_STATUS_NAME
+공149,개발(건),measure,FME→FMM,PARTIAL,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_DEV_ACHIEVEMENT.TOTAL_ACTUAL_CNT · SV_MEMBER_EVENT.TOTAL_DEV_CNT · SV_MEMBER_MONTHLY.TOTAL_DEV_CNT
+공162,중단사유,dimension,DIM_REASON,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_COHORT.FIRST_STOP_REASON · SV_MEMBER_EVENT.STOP_REASON_NM · SV_MEMBER_SERVICE_COHORT.D5_STOP_REASON
+신7,n개월 유지율(%),derived,SV,OK,㉠ 미표기(동의어 있음 · 토큰만 추가),SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE
+공5,GA 개발(건),measure,FMM,PARTIAL,동의어 없음(수동 대조 필요),
+공6,GA 광고비,measure,FAD,PARTIAL,동의어 없음(수동 대조 필요),
+공11,매체명(공동브랜드),dimension,DIM_AD_CREATIVE,PARTIAL,동의어 없음(수동 대조 필요),
+공13,플랫폼 유형,dimension,DIM_AD_CREATIVE,PARTIAL,동의어 없음(수동 대조 필요),
+공19,캠페인 오픈일자,dimension,DIM_CAMPAIGN,OK,동의어 없음(수동 대조 필요),
+공25,인입콜,measure,FAD,PARTIAL,동의어 없음(수동 대조 필요),
+공26,가입캠페인 중단일,dimension,FMM(degen),OK,동의어 없음(수동 대조 필요),
+공27,캠페인 가입일,dimension,FMM(degen),OK,동의어 없음(수동 대조 필요),
+공30,최종중단일,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공32,신규,dimension,FMM(degen),OK,동의어 없음(수동 대조 필요),
+공37,활동(건),measure,FMM,OK,동의어 없음(수동 대조 필요),
+공39,개발회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공40,활동회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공41,중단회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공42,미납회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공43,신규회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공44,기존회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공48,연도초 활동회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공49,연도초 활동회원(건),measure,FMM,PARTIAL,동의어 없음(수동 대조 필요),
+공50,연도말 활동회원(건),measure,FMM,OK,동의어 없음(수동 대조 필요),
+공51,월말활동회원,dimension,DIM_MEMBER,OK,동의어 없음(수동 대조 필요),
+공52,월말활동회원(건),measure,FMM,OK,동의어 없음(수동 대조 필요),
+공53,전월말 활동회원(건),measure,FMM,PARTIAL,동의어 없음(수동 대조 필요),
+공58,주간 평균 1일 중단(건),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+공59,증감(건),derived,SV,OK,동의어 없음(수동 대조 필요),
+공60,증감율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+공65,누계납부율(%),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+공66,정기회비,measure,FMM,PARTIAL,동의어 없음(수동 대조 필요),
+공70,납입,measure,FMM,PARTIAL,동의어 없음(수동 대조 필요),
+공85,발송수(명),measure,FSE,OK,동의어 없음(수동 대조 필요),
+공86,성공수(명),measure,FSE,PARTIAL,동의어 없음(수동 대조 필요),
+공87,실패수(명),measure,FSE,PARTIAL,동의어 없음(수동 대조 필요),
+공89,서신참여(건),measure,FSE,OK,동의어 없음(수동 대조 필요),
+공92,방문수(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공93,활성사용자수(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공94,총사용자(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공95,이벤트수(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공96,조회수(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공97,세션수(명),measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공99,event_category,dimension,DIM_BIGQUERY_EVENT,PARTIAL,동의어 없음(수동 대조 필요),
+공100,event_label,dimension,DIM_BIGQUERY_EVENT,PARTIAL,동의어 없음(수동 대조 필요),
+공101,event_action,dimension,DIM_BIGQUERY_EVENT,PARTIAL,동의어 없음(수동 대조 필요),
+공102,세션캠페인,dimension,DIM_CAMPAIGN,PARTIAL,동의어 없음(수동 대조 필요),
+공103,세션 수동 광고 콘텐츠,dimension,DIM_BIGQUERY_SOURCE,PARTIAL,동의어 없음(수동 대조 필요),
+공104,세션 수동 검색어,dimension,DIM_BIGQUERY_SOURCE,PARTIAL,동의어 없음(수동 대조 필요),
+공105,페이지경로+쿼리문자열,dimension,FBQ(attr),PARTIAL,동의어 없음(수동 대조 필요),
+공106,페이지위치,dimension,FBQ(attr),PARTIAL,동의어 없음(수동 대조 필요),
+공107,스크롤깊이,measure,FBQ,PARTIAL,동의어 없음(수동 대조 필요),
+공109,세션 소스/매체,dimension,DIM_BIGQUERY_SOURCE,PARTIAL,동의어 없음(수동 대조 필요),
+공111,memnum,dimension,DIM_MEMBER_IDENTITY,OK,동의어 없음(수동 대조 필요),
+공112,member id,dimension,DIM_MEMBER_IDENTITY,PARTIAL,동의어 없음(수동 대조 필요),
+공119,공통상위캠페인,dimension,DIM_CAMPAIGN,OK,동의어 없음(수동 대조 필요),
+공123,후원사업(전체),dimension,DIM_SPONSORSHIP,OK,동의어 없음(수동 대조 필요),
+공126,캠페인별 납입방식,dimension,DIM_PAYMENT,OK,동의어 없음(수동 대조 필요),
+공128,후원기간(년),dimension,FMM(스냅샷),OK,동의어 없음(수동 대조 필요),
+공133,발송구분(대),dimension,DIM_SERVICE,OK,동의어 없음(수동 대조 필요),
+공134,발송구분(중),dimension,DIM_SERVICE,OK,동의어 없음(수동 대조 필요),
+공135,발송구분(소),dimension,DIM_SERVICE,OK,동의어 없음(수동 대조 필요),
+공136,제목(발송),dimension,FSE(degen),OK,동의어 없음(수동 대조 필요),
+공147,공통캠페인,dimension,DIM_CAMPAIGN,OK,동의어 없음(수동 대조 필요),
+공148,개발(명),measure,FME→FMM,PARTIAL,동의어 없음(수동 대조 필요),
+신1,개발캠페인별 납입회비(원),measure,FMM,OK,동의어 없음(수동 대조 필요),
+신3,개발캠페인별 유지기간(년),derived,SV,OK,동의어 없음(수동 대조 필요),
+신4,평균 유지기간(개월),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신5,평균 유지기간(년),derived,SV,OK,동의어 없음(수동 대조 필요),
+신6,개발캠페인별 이탈율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신8,LTV(원),derived,SV,OK,동의어 없음(수동 대조 필요),
+신9,캠페인별 개발단가(원),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신11,캠페인별 ROI(%),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신26,캠페인별 납입회비 구성비(%),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신30,서비스별 발송율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신31,발송대비 수신율(%),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신32,발송대비 클릭율(%),derived,SV,PARTIAL,동의어 없음(수동 대조 필요),
+신35,서비스별 증액회원 N개월 유지율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신36,서비스별 참여회원 N개월 유지율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신37,서비스별 증액회원 납입율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신38,서비스별 참여회원 납입율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신39,서비스별 증액회원 중단율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신40,서비스별 참여회원 중단율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신41,서비스별 증액회원 가입캠페인 구성비(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신42,서비스별 참여회원 가입캠페인 구성비(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신43,서비스×가입캠페인별 N개월 유지율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신45,서비스별 서신참여회원 N개월 유지율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신46,서비스별 서신참여회원 납입율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신47,서비스별 서신참여회원 중단율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신48,서비스별 서신참여회원 가입캠페인 구성비(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신50,서비스별 선물금참여회원 N개월 유지율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신51,서비스별 선물금참여회원 납입율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신52,서비스별 선물금참여회원 중단율(%),derived,SV,OK,동의어 없음(수동 대조 필요),
+신53,서비스별 선물금참여회원 가입캠페인 구성비(%),derived,SV,OK,동의어 없음(수동 대조 필요),

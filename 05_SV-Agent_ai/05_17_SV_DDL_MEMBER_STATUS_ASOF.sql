@@ -33,7 +33,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
   )
   METRICS (
     msh.MEMBER_COUNT AS COUNT(DISTINCT msh.MEMBER_DK)
-      WITH SYNONYMS ('회원수', '회원 수', '명')
+      WITH SYNONYMS ('회원수', '회원 수', '명', '신규30')
       COMMENT = '고유 회원수(명). D(distinct). 🔴 as-of 조건(기준일 1개)을 건 상태에서만 의미가 있다.'
   )
   COMMENT = '과거 시점 회원상태 SV. 「2025년 6월 말 기준 회원상태별 회원수」처럼 기준일을 정한 질문에 쓴다. 월별 활동회원 KPI·회비·개발 실적은 다른 SV 소관이며 한 표에 합산하지 않는다.'

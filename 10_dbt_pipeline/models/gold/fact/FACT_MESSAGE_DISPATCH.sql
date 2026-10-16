@@ -36,20 +36,22 @@ open_window as (
 rel as (
     select distinct RELATNSP_KEY, MBER_NO from {{ ref('CRM_SPONSOR_RELATION') }}
 ),
+-- 🆕 [2026-10-16 O241] ACT_KEY·AMT = 선물금 분기만 채운다(공91 추천안B 금액 귀속용 · 다른 분기 NULL).
 followup as (
-    select r.MBER_NO as MEMBER_DK, 'LETTER' as KIND, a.RCEPT_DE as EV_DATE
+    select r.MBER_NO as MEMBER_DK, 'LETTER' as KIND, a.RCEPT_DE as EV_DATE,
+           CAST(NULL AS VARCHAR) as ACT_KEY, CAST(NULL AS NUMBER(38,0)) as AMT
     from {{ ref('CRM_RELATION_ACTIVITY') }} a join rel r on r.RELATNSP_KEY = a.RELATNSP_KEY
     where a.ACTIVITY_TYPE = '서신' and a.RCEPT_DE is not null
     union all
-    select r.MBER_NO, 'GIFT', a.SNDNG_DE
+    select r.MBER_NO, 'GIFT', a.SNDNG_DE, a.ACTIVITY_KEY, a.GFTMNEY
     from {{ ref('CRM_RELATION_ACTIVITY') }} a join rel r on r.RELATNSP_KEY = a.RELATNSP_KEY
     where a.ACTIVITY_TYPE = '선물금' and a.SNDNG_DE is not null
     union all
-    select MEMBER_DK, 'INCREASE', JOIN_DATE
+    select MEMBER_DK, 'INCREASE', JOIN_DATE, NULL, NULL
     from {{ ref('FACT_MEMBER_EVENT') }}
     where EVENT_TYPE = 'DEV' and DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }} and JOIN_DATE is not null
     union all
-    select MEMBER_DK, 'STOP', STOP_DATE
+    select MEMBER_DK, 'STOP', STOP_DATE, NULL, NULL
     from {{ ref('FACT_MEMBER_EVENT') }}
     where EVENT_TYPE = 'STOP' and STOP_DATE is not null
 ),
@@ -73,6 +75,29 @@ d5 as (
       on f.MEMBER_DK = p.MEMBER_DK
      and f.EV_DATE between DATEADD(day, 1, p.SEND_DATE) and DATEADD(day, 5, p.SEND_DATE)
     group by p.MEMBER_DK, p.SEND_DATE
+),
+-- 🆕 [2026-10-16 O241 · 공91 추천안B(잠정) · 사용자 결정 ㉡] 발송 매칭 선물금(원).
+--   🔴 선물금 1건은 D+1~D+5 창 안 **가장 가까운 직전 발송일 1개**에만 귀속한다(QUALIFY) — 쌍별로 붙이면
+--      창이 겹치는 연속 발송마다 같은 금액이 다시 더해져 기간 합이 부풀려진다(건수 플래그와 다른 성질).
+--   후보 발송일 = 처리통보성 제목이 아닌 발송이 1건 이상 있는 (회원, 발송일) — D5 플래그와 같은 제외 규칙.
+gift_send_ok as (
+    select distinct s.MBER_NO as MEMBER_DK, s.SNDNG_DE::DATE as SEND_DATE
+    from s left join req r on s.SNDNG_KEY = r.SNDNG_KEY
+    where s.MBER_NO is not null and s.SNDNG_DE is not null
+      and NOT {{ gn_is_notice_title('r.TIT') }}
+),
+gift_attr as (
+    select MEMBER_DK, SEND_DATE, SUM(AMT) as D5_GIFT_AMT
+    from (
+        select p.MEMBER_DK, p.SEND_DATE, f.AMT
+        from gift_send_ok p
+        join followup f
+          on f.KIND = 'GIFT'
+         and f.MEMBER_DK = p.MEMBER_DK
+         and f.EV_DATE between DATEADD(day, 1, p.SEND_DATE) and DATEADD(day, 5, p.SEND_DATE)
+        qualify row_number() over (partition by f.ACT_KEY order by p.SEND_DATE desc) = 1
+    )
+    group by MEMBER_DK, SEND_DATE
 ),
 -- 🆕 [2026-10-16 O237-C · 신규#33 클릭대비 전환율 · 잠정 · 사용자 결정 = 5일·30일 두 창 모두]
 --   기준일 = **클릭일(OPEN_DT)** · 창 = D+1~D+5 · D+1~D+30(DEC-33 과 같이 당일 제외) · 개발 = FME 인정 개발(DEV_CNT > 0).
@@ -182,7 +207,15 @@ select
     s.SND_LAST_CMPGN, s.SND_CURRENT_CMPGN,
     -- 🆕 [2026-10-16 O237-C] 클릭 후 개발 회원 1/0(클릭 행만 · 처리통보성 제목 제외 = D5 규칙과 같다) · 06_DDL 동기 맨 끝
     IFF(cd.CLICK_DEV_D5  AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as CLICK_DEV_D5_MEMBERS,
-    IFF(cd.CLICK_DEV_D30 AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as CLICK_DEV_D30_MEMBERS
+    IFF(cd.CLICK_DEV_D30 AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as CLICK_DEV_D30_MEMBERS,
+    -- 🆕 [2026-10-16 O241] 공91 추천안B 발송 매칭 선물금(원) · 06_DDL 동기 맨 끝.
+    --   (회원, 발송일) 금액을 그날 비통보성 발송 행 **1행에만** 싣는다 ⇒ SUM 이 곧 귀속 금액(행 간 중복 0).
+    --   행 선택 순서는 결정적이기만 하면 되고 의미는 없다(합계 불변).
+    IFF(NOT {{ gn_is_notice_title('r.TIT') }}
+        AND row_number() over (
+            partition by s.MBER_NO, s.SNDNG_DE::DATE, {{ gn_is_notice_title('r.TIT') }}
+            order by s.SNDNG_KEY, s.SEND_CHANNEL, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) = 1,
+        COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
@@ -190,6 +223,7 @@ left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = s.SND_CMPGN_CD
 cross join open_window ow
 left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
 left join click_dev cd on cd.MEMBER_DK = s.MBER_NO and cd.OPEN_DATE = s.OPEN_DT::DATE
+left join gift_attr ga on ga.MEMBER_DK = s.MBER_NO and ga.SEND_DATE = s.SNDNG_DE::DATE
 left join active_m am on am.MEMBER_DK = s.MBER_NO
                      and am.MONTH_KEY = TO_NUMBER(TO_CHAR(s.SNDNG_DE, 'YYYYMM'))
 left join send_l sl   on sl.SEND_GBN_TOP = r.SEND_GBN_TOP

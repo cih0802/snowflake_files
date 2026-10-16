@@ -42,7 +42,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc_to_acq_spb      AS fmc (ACQ_SPONSORSHIP_SK) REFERENCES acq_sponsorship
   )
   DIMENSIONS (
-    acq_date.ACQ_DATE       AS acq_date.FULL_DATE  WITH SYNONYMS ('획득일', '약정일', '모집일', 'FULL_DATE', '날짜') COMMENT = '회원을 획득한 날(최초 신규 약정일). 🔴 이 SV 의 기간 필터는 **획득 시점** 기준이다 — "2024년"으로 물으면 「2024년에 획득한 회원의 이탈률」이 되며 「2024년에 이탈한 회원」이 아니다. 후자는 SV_MEMBER_EVENT 의 중단건을 쓴다',
+    acq_date.ACQ_DATE       AS acq_date.FULL_DATE  WITH SYNONYMS ('획득일', '약정일', '모집일', 'FULL_DATE', '날짜', '공27') COMMENT = '회원을 획득한 날(최초 신규 약정일). 🔴 이 SV 의 기간 필터는 **획득 시점** 기준이다 — "2024년"으로 물으면 「2024년에 획득한 회원의 이탈률」이 되며 「2024년에 이탈한 회원」이 아니다. 후자는 SV_MEMBER_EVENT 의 중단건을 쓴다',
     acq_date.ACQ_YEAR       AS acq_date.YEAR       WITH SYNONYMS ('획득연도', '가입연도', '모집연도') COMMENT = '획득 연도(코호트 연도)',
     acq_date.ACQ_MONTH      AS acq_date.MONTH      WITH SYNONYMS ('획득월') COMMENT = '획득 월(1~12)',
     fmc.ACQ_BASIS           AS fmc.ACQ_BASIS       WITH SYNONYMS ('획득근거', '코호트 판정근거') COMMENT = '획득 캠페인을 무엇으로 판정했는지. 실제값 2종: ''NEW''(개발구분 신규=MM015 코드1 사건으로 판정 — 대다수) / ''FALLBACK''(신규 사건이 없어 최초 개발 사건으로 대체 판정). 🔴 캠페인별 중단률을 비교할 때는 ''NEW'' 로 한정할 것을 권한다 — FALLBACK 은 획득 캠페인 신뢰도가 낮고, 극소수는 획득 근거가 ''후원중단''(코드5) 기록이라 「모집 캠페인」이라 부를 수 없다',
@@ -59,7 +59,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.CAMPAIGN_TYPE        AS fmc.ACQ_CMPGN_CTGR_NM        WITH SYNONYMS ('캠페인카테고리', '캠페인유형', '주요캠페인', '캠페인 종류', '캠페인 분류') COMMENT = '캠페인 카테고리(정본 MM294 라벨) — 현업이 말하는 **''주요캠페인''** 축이다. 🔴적재 시점 동결값(구 acq_campaign.CAMPAIGN_TYPE 대체). 실제값 예: ''초등캠페인''·''국내사례캠페인''·''굿즈캠페인''·''해외캠페인''·''기타 영상광고''·''홈페이지(PC/모바일)''·''국내여아지원캠페인''·''그외 지역개발캠페인''·''희망TV''·''인바운드''·''대학생캠페인''·''가두캠페인''·''유아캠페인''·''청소년캠페인''·''교회캠페인''·''기존회원캠페인 및 기타''. 🔴 캠페인별 중단률 비교의 **1순위 축**이다(개별 캠페인명보다 표본이 안정적이다)',
     fmc.CAMPAIGN_BRAND       AS fmc.ACQ_BRAND                WITH SYNONYMS ('브랜드', '캠페인 브랜드') COMMENT = '획득 캠페인의 브랜드. 🔴적재 시점 동결값(구 acq_campaign.BRAND 대체)',
     fmc.PARENT_CAMPAIGN_NAME AS fmc.ACQ_PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '캠페인 그룹') COMMENT = '획득 캠페인의 **상위캠페인명**. 🔴적재 시점 동결값(구 acq_campaign.PARENT_CAMPAIGN_NAME 대체). 캠페인을 묶어 보는 축이다. ⚠️ 상위가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 캠페인 카테고리(CAMPAIGN_TYPE)와 다른 축이다',
-    fmc.PROMO_METHOD_NAME    AS fmc.ACQ_PROMO_METHOD_NAME    WITH SYNONYMS ('홍보방법', '광고방법', '매체', '홍보수단') COMMENT = '획득 캠페인의 **홍보방법** 라벨(코드사전 CM008, 2026-08-05 신설). 🔴적재 시점 동결값(구 acq_campaign.PROMO_METHOD_NAME 대체). 실제값 계열: ''PC배너광고(DA)''·''M배너광고(DA)''·''PC검색광고(SA)''·''M검색광고(SA)''·''TM''·''TS''·''PC캠페인-홈페이지''·''M캠페인-홈페이지''·''PC캠페인-홍보''·''M캠페인-홍보''·''온라인''·''오프라인''·''APP캠페인''·''M모바일앱''·''M페이스북광고''·''기존회원메일''·''PC기업공동캠페인''·''M기업 공동캠페인''·''기타''. 🔴 원천 `PR_MTH_CD` 는 **숫자 코드**이다 — 코드로 필터하면 Analyst 가 0행을 반환한다. 반드시 이 라벨 컬럼으로 필터·그루핑한다. ⚠️ 원천 코드가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 모집 채널(CAMPAIGN_INFLOW_PATH)과 다른 축이다 — 이쪽은 광고·접촉 수단, 그쪽은 개발인입경로다',
+    fmc.PROMO_METHOD_NAME    AS fmc.ACQ_PROMO_METHOD_NAME    WITH SYNONYMS ('홍보방법', '광고방법', '매체', '홍보수단', '공118') COMMENT = '획득 캠페인의 **홍보방법** 라벨(코드사전 CM008, 2026-08-05 신설). 🔴적재 시점 동결값(구 acq_campaign.PROMO_METHOD_NAME 대체). 실제값 계열: ''PC배너광고(DA)''·''M배너광고(DA)''·''PC검색광고(SA)''·''M검색광고(SA)''·''TM''·''TS''·''PC캠페인-홈페이지''·''M캠페인-홈페이지''·''PC캠페인-홍보''·''M캠페인-홍보''·''온라인''·''오프라인''·''APP캠페인''·''M모바일앱''·''M페이스북광고''·''기존회원메일''·''PC기업공동캠페인''·''M기업 공동캠페인''·''기타''. 🔴 원천 `PR_MTH_CD` 는 **숫자 코드**이다 — 코드로 필터하면 Analyst 가 0행을 반환한다. 반드시 이 라벨 컬럼으로 필터·그루핑한다. ⚠️ 원천 코드가 없는 캠페인은 NULL 이며 ''(미매핑)''이 아니다. ⚠️ 모집 채널(CAMPAIGN_INFLOW_PATH)과 다른 축이다 — 이쪽은 광고·접촉 수단, 그쪽은 개발인입경로다',
     fmc.CAMPAIGN_INFLOW_PATH AS fmc.ACQ_MBER_INFLOW_PATH_NM   WITH SYNONYMS ('모집채널', '유입경로', '개발인입경로') COMMENT = '획득 캠페인의 **모집 채널**(정본 MM293 라벨). 🔴적재 시점 동결값(구 acq_campaign.INFLOW_PATH 대체). 실제값 12종: ''교육기관''·''기타 기업개발''·''뉴미디어''·''대면모금''·''디지털''·''방송''·''영상광고''·''오프라인''·''일시''·''재송출''·''지역개발''·''콜개발'' + NULL. 🔴🔴 **아래 라벨은 이 데이터에 존재하지 않으므로 필터에 쓰면 0행이 반환된다**: ''회원 온라인개발''·''회원 콜개발''·''기업''·''회원 기타''·''마케팅콜개발''·''회원 오프라인개발''·''직원개발''. 원천 라벨이 개칭됐으므로 ''회원 콜개발''은 ''콜개발'', ''회원 오프라인개발''은 ''오프라인'', ''기업''은 ''기타 기업개발'' 로 읽는다. ⚠️ 이 축은 채널이며 「주요캠페인」이 아니다 — 주요캠페인은 CAMPAIGN_TYPE 이다. ⚠️ 회원 가입경로(회원 속성)와도 다른 축이다',
     fmc.DOMESTIC_OVERSEAS    AS fmc.ACQ_CMPGN_TYPE1_NM       WITH SYNONYMS ('국내해외', '국내외') COMMENT = '획득 캠페인의 국내/해외 구분(MM295). 🔴적재 시점 동결값(구 acq_campaign.DOMESTIC_OVERSEAS 대체). 실제값 4종: ''국내''·''해외''·''통합''·''전체사업'' + NULL. ⚠️ ''통합''과 ''전체사업''은 서로 다른 값이다 — 하나로 묶지 말고 원천 라벨 그대로 노출한다',
     fmc.BIZ_CASE_TYPE        AS fmc.ACQ_CMPGN_TYPE2_NM       WITH SYNONYMS ('사업사례구분', '사업/사례') COMMENT = '획득 캠페인의 사업/사례 구분(MM296). 🔴적재 시점 동결값(구 acq_campaign.BIZ_CASE_TYPE 대체). 실제값 4종: ''사례''·''사업''·''굿즈''·''기타''',
@@ -82,7 +82,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.TOTAL_ACQ_MEMBERS AS SUM(fmc.ACQ_MEMBERS)
       WITH SYNONYMS ('획득회원수', '모집회원수', '신규회원수') COMMENT = '획득 회원수. D(회원 grain이라 SUM 이 곧 distinct 회원수 — 이 팩트는 회원당 1행이므로 다기간 중복이 없다). 캠페인별 모집 규모.',
     fmc.CHURN_RATE_12M AS SUM(fmc.STOPPED_12M_MEMBERS) / NULLIF(SUM(fmc.OBSERVABLE_12M_MEMBERS), 0) * 100
-      WITH SYNONYMS ('중단률', '이탈률', '12개월 이탈률', '12개월 중단률', '해지율', '이탈율')
+      WITH SYNONYMS ('중단률', '이탈률', '12개월 이탈률', '12개월 중단률', '해지율', '이탈율', '신규6')
       COMMENT = '🔴**캠페인별 중단률의 정본(단위 %)** = 획득 후 12개월 내 이탈 회원수 ÷ 12개월 관측 가능 회원수 ×100. 비율(N) — 재집계 금지, 분자·분모를 각각 집계한 뒤 나눈다. **왜 12개월 고정인가**: 누적 이탈률은 관측 기간에 지배되어(획득이 이를수록 높다) 실행 연도가 다른 캠페인을 비교하면 오래된 캠페인이 자동으로 「중단률 높음」이 된다 — 값이 정상인데 답이 틀리는 결함이다. 12개월로 고정하면 캠페인 간 공정 비교가 된다. 분모는 IS_12M_OBSERVABLE=TRUE 회원으로 자동 제한된다. 🔴 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것.',
     fmc.TOTAL_STOPPED_12M_MEMBERS AS SUM(fmc.STOPPED_12M_MEMBERS)
       WITH SYNONYMS ('12개월 이탈회원수', '12개월 중단회원수') COMMENT = '획득 후 12개월 내 이탈한 회원수(분자). F(가산). 🔴 관측 가능 회원에 한해서만 1 로 집계된다 — 분모는 반드시 TOTAL_OBSERVABLE_12M_MEMBERS 를 쓴다. TOTAL_ACQ_MEMBERS 로 나누면 과소추정된다.',
@@ -95,11 +95,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
     fmc.TOTAL_OBS_MEMBERS AS COUNT(fmc.OBS_TENURE_DAYS)
       WITH SYNONYMS ('관측 회원수', '생존분석 대상 회원수') COMMENT = '🆕 [O231 · O234 확정] 생존분석 대상 회원수(관측 유지기간이 있는 회원 · 획득일·중단일 무효 제외). 관측 중(아직 유지) 회원 포함.',
     surv.EXP_TENURE_MONTHS AS MAX(IFF(surv.LTV_CAP_MONTHS IS NOT NULL, surv.RMST_CUM, NULL))
-      WITH SYNONYMS ('기대 유지개월', 'LTV 유지개월', '평균 기대 유지기간', 'RMST') COMMENT = '🆕 [O232 · O234 현업 확정] 기대 유지개월(개월) = 상한 N개월 안의 평균 유지기간 RMST(N) = E[min(유지개월, N)] · Kaplan–Meier · 관측 중 회원 포함. 🔴 반드시 SURV_LTV_CAP_MONTHS 로 그룹하고(NULL 제외) SURV_AXIS_TYPE 을 고정한다 — 상한을 묶으면 큰 상한 값만 나온다. 상한이 길수록 값이 커진다(상한 밖 유지는 세지 않는다). 답할 때 상한 80개월 값과 무기한(9999 표지 · 관측 최대까지) 값을 나란히 보인다.',
+      WITH SYNONYMS ('기대 유지개월', 'LTV 유지개월', '평균 기대 유지기간', 'RMST', '신규3', '신규4', '신규5', '신규8') COMMENT = '🆕 [O232 · O234 현업 확정] 기대 유지개월(개월) = 상한 N개월 안의 평균 유지기간 RMST(N) = E[min(유지개월, N)] · Kaplan–Meier · 관측 중 회원 포함. 🔴 반드시 SURV_LTV_CAP_MONTHS 로 그룹하고(NULL 제외) SURV_AXIS_TYPE 을 고정한다 — 상한을 묶으면 큰 상한 값만 나온다. 상한이 길수록 값이 커진다(상한 밖 유지는 세지 않는다). 답할 때 상한 80개월 값과 무기한(9999 표지 · 관측 최대까지) 값을 나란히 보인다.',
     surv.SURVIVAL_AT_CAP AS MAX(IFF(surv.LTV_CAP_MONTHS IS NOT NULL, surv.SURV_END, NULL))
       WITH SYNONYMS ('상한 시점 생존율', '상한 시점 유지율') COMMENT = '🆕 [O232 · O234 확정] 상한 N개월 시점 유지 확률 P(유지 > N−1)(0~1). SURV_LTV_CAP_MONTHS 로 그룹한다. 임의 N개월 생존율은 SURVIVAL_RATE 를 경과월 N−1 로 거른다.',
     surv.SURVIVAL_RATE AS AVG(surv.SURV_END)
-      WITH SYNONYMS ('N개월 생존율', '경과월 생존율', '유지 곡선') COMMENT = '🆕 [O231 · O234 확정] 경과월 종료 생존율 P(유지 > 경과월). SURV_ELAPSED_MONTH 와 함께 쓴다(N개월 생존율 = 경과월 N−1). 경과월을 묶어 평균 내지 않는다.',
+      WITH SYNONYMS ('N개월 생존율', '경과월 생존율', '유지 곡선', '신규7', '신규6') COMMENT = '🆕 [O231 · O234 확정] 경과월 종료 생존율 P(유지 > 경과월). SURV_ELAPSED_MONTH 와 함께 쓴다(N개월 생존율 = 경과월 N−1). 경과월을 묶어 평균 내지 않는다.',
     surv.SURV_COHORT_MEMBERS AS MAX(surv.COHORT_MEMBERS)
       WITH SYNONYMS ('생존분석 셀 회원수') COMMENT = '🆕 [O231 · O234 확정] 셀 획득 회원수(생존분석 대상). 셀 상수 — 축값끼리 더하지 않는다(MAX 이므로 여러 셀을 묶으면 최대값만 나온다).'
   )

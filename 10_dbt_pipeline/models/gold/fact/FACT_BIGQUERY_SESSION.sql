@@ -42,7 +42,17 @@ select
     s.PAGE_VIEW_CNT,
     IFF(s.IS_ENGAGED, 1, 0)                    as ENGAGED_FLAG,
     s.ENGAGEMENT_TIME_MSEC,
-    {{ gold_meta('BIGQUERY') }}
+    {{ gold_meta('BIGQUERY') }},
+    -- 🆕 [2026-10-16 O241] 공98 추천안B(잠정) UA식 세션 지속시간 · 06_DDL 동기 맨 끝.
+    --   SV metric 은 중첩 집계를 못 하므로 세션 단위 값을 여기서 미리 만든다 — 자정 경계 세션은
+    --   세션 전체(min 시작 ~ max 끝)를 **첫 일자 행에만** 싣고 다음 일자 행은 0 ⇒ SUM ÷ COUNT(DISTINCT 키).
+    --   🔴 범위 재적재 창 경계에 걸린 세션은 창 안 일자만 보고 계산한다(일일 롤링 창에서는 경계 세션 양일이 함께 들어온다).
+    s.SESSION_END_TS,
+    IFF(s.EVENT_DT = MIN(s.EVENT_DT) OVER (PARTITION BY s.BIGQUERY_SESSION_KEY),
+        DATEDIFF(second,
+                 MIN(s.SESSION_START_TS) OVER (PARTITION BY s.BIGQUERY_SESSION_KEY),
+                 MAX(s.SESSION_END_TS)   OVER (PARTITION BY s.BIGQUERY_SESSION_KEY)),
+        0)                                     as SESSION_DURATION_SEC
 from s
 left join xref x on x.USER_PSEUDO_ID = s.USER_PSEUDO_ID
 left join {{ ref('DIM_MEMBER_IDENTITY') }} dmi on dmi.MEMBER_DK = x.MEMBER_DK

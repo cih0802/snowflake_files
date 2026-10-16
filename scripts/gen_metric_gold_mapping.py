@@ -60,10 +60,14 @@ DOC_SV = os.path.join(WS, "03_top-down_gold", "04_SV파생 매핑.md")
 DOC_INV = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
 DOC_MKT = os.path.join(WS, "90_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
 DOC_MEM = os.path.join(WS, "90_provided_definition", "05_회원_보고서필드 인벤토리.md")
+# 🆕 [2026-10-16 O241 · 착수표 ⑥] SV·Agent 배선 축 — 상태(물리 채움률)와 **별개의 축**이다.
+#   상태 WAIT 가 「Agent 산출 불가」로 오독됐다(O240-B ⑥) ⇒ 지표가 어느 SV metric·Agent 로 닿는지를 따로 보인다.
+DIR_SV = os.path.join(WS, "05_SV-Agent_ai")
+DIR_AGENT = os.path.join(WS, "cortex_project", "agents")
 
 HEADER = ("지표#", "구분", "지표명", "유형", "소스", "단위", "GOLD_배속",
           "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천", "정본_계산식",
-          "상태", "상태_근거")
+          "상태", "상태_근거", "SV_배선", "Agent_배선")
 FIELD_HEADER = ("영역", "섹션", "필드값", "데이터원천", "데이터TYPE",
                 "대응_지표#", "GOLD_매핑", "분해축", "매핑근거")
 
@@ -312,6 +316,83 @@ def load_census():
     return json.load(open(CENSUS, encoding="utf-8"))
 
 
+# ───────────────────────────── SV·Agent 배선 축 (🆕 O241) ─────────────────────────────
+#   🔴 사실을 리터럴로 두지 않는다(P85-①) — SV DDL 정본 · agent_spec.yaml 을 매번 파싱한다.
+#   🔴 토큰이 없는 metric 은 「미배선」이 아니라 「미표기」일 수 있다 ⇒ 공란을 곧 「Agent 산출 불가」로 읽지 마라.
+SV_NAME_RE = re.compile(r"CREATE\s+OR\s+ALTER\s+SEMANTIC\s+VIEW\s+[\w.]*?\.?(SV_\w+)", re.I)
+SV_ITEM_RE = re.compile(r"^ {4}(\w+)\.(\w+)\s+AS\s")
+#   🔴 앞 글자가 한글이면 토큰이 아니다 — 「현업 회신 44」 의 `신 44` 가 신44 로 오탐됐다(O241 실측).
+METRIC_TOKEN_RE = re.compile(r"(?<![가-힣])(신규|공|신)\s*#?\s*(\d+(?:\s*[·~]\s*\d+)*)")
+AGENT_SV_RE = re.compile(r"semantic_view:\s*['\"]?[\w]+\.[\w]+\.(SV_\w+)")
+
+
+def _expand_tokens(text):
+    """'공#139~141 · 신규 #44 · 공88·90' → {'공139','공140','공141','신44','공88','공90'}."""
+    out = set()
+    for pref, body in METRIC_TOKEN_RE.findall(text or ""):
+        p = "신" if pref in ("신규", "신") else "공"
+        for tok in re.split(r"\s*·\s*", body):
+            if "~" in tok:
+                a, b = [x.strip() for x in tok.split("~")[:2]]
+                if a.isdigit() and b.isdigit() and int(a) <= int(b):
+                    out.update(f"{p}{n}" for n in range(int(a), int(b) + 1))
+            elif tok.strip().isdigit():
+                out.add(f"{p}{int(tok)}")
+    return out
+
+
+def parse_sv_wiring_text(text):
+    """SV DDL 텍스트 1개 → (SV명, {지표#: {'SV.필드', …}}).
+       항목 = 4칸 들여쓴 `별칭.이름 AS …` 줄부터 다음 항목·절(들여쓰기 ≤2) 직전까지(동의어·COMMENT 포함)."""
+    m = SV_NAME_RE.search(text or "")
+    sv = m.group(1).upper() if m else ""
+    wiring, cur, buf = {}, None, []
+
+    def flush():
+        if cur:
+            for k in _expand_tokens(" ".join(buf)):
+                wiring.setdefault(k, set()).add(f"{sv}.{cur}")
+
+    for ln in (text or "").splitlines():
+        if ln.strip().startswith("--"):
+            continue
+        im = SV_ITEM_RE.match(ln)
+        if im:
+            flush()
+            cur, buf = im.group(2).upper(), [ln]
+        elif cur and (not ln.strip() or re.match(r"^ {0,2}\S", ln)):
+            flush()
+            cur, buf = None, []
+        elif cur:
+            buf.append(ln)
+    flush()
+    return sv, wiring
+
+
+def load_sv_wiring():
+    """05_*_SV_DDL_*.sql 전건 → {지표#: {'SV.필드'}}."""
+    out = {}
+    for fn in sorted(os.listdir(DIR_SV)):
+        if not re.match(r"05_\d+_SV_DDL_.+\.sql$", fn):
+            continue
+        _, w = parse_sv_wiring_text(open(os.path.join(DIR_SV, fn), encoding="utf-8").read())
+        for k, v in w.items():
+            out.setdefault(k, set()).update(v)
+    return out
+
+
+def load_agent_wiring():
+    """agents/*/agent_spec.yaml 의 tool_resources.semantic_view → {SV명: {Agent명}}."""
+    out = {}
+    for ag in sorted(os.listdir(DIR_AGENT)):
+        p = os.path.join(DIR_AGENT, ag, "agent_spec.yaml")
+        if not os.path.isfile(p):
+            continue
+        for sv in AGENT_SV_RE.findall(open(p, encoding="utf-8").read()):
+            out.setdefault(sv.upper(), set()).add(ag)
+    return out
+
+
 def _inv_label(desc):
     """설명에서 보고서필드 한글 라벨만: '개발(건) SUM(금액)/10000 (#4·5)' → '개발(건)'."""
     # 🔴 [2026-08-07 O48] **편집 마커 접두를 먼저 제거한다.** 정본 인벤토리의 설명 칸에는
@@ -492,6 +573,8 @@ def build_metric_rows():
     num2base, derived = load_sv()
     col2src, obj2src = load_lineage()
     census = load_census()
+    sv_wiring = load_sv_wiring()        # 🆕 O241 — 상태 판정에는 쓰지 않는다(축만 추가)
+    agent_wiring = load_agent_wiring()
 
     def src_for_col(col):
         return col2src.get(col, ("", ""))
@@ -534,8 +617,11 @@ def build_metric_rows():
             silver, bronze = src_for_obj(ABBR.get(place, place))
 
         status, why = derive_status(key, c, num2base, derived, census)
+        svw = sorted(sv_wiring.get(key, ()))
+        agw = sorted({a for f in svw for a in agent_wiring.get(f.split(".", 1)[0], ())})
         rows.append([key, d.get("cat", ""), c["name"], typ, c["src"], c["unit"],
-                     place, mapping, silver, bronze, d.get("formula", ""), status, why])
+                     place, mapping, silver, bronze, d.get("formula", ""), status, why,
+                     " · ".join(svw), " · ".join(agw)])
         num2map[key] = (mapping, typ, place, status)
     return rows, num2map
 
@@ -823,6 +909,24 @@ def write_md(rows, mkt, mem):
     A("> 계약·개발 산출물의 근거로 단독 인용하지 말고, `교정등록부`/`필드인벤토리`/`지표사전`(정확일치)으로 재확인할 것.")
     A("> 생성 시점 원천 문서가 바뀌면 이 장표는 **자동 갱신되지 않는다** → 생성기 재실행 필요.")
     A("")
+    # 🆕 [2026-10-16 O241 · 착수표 ⑥] 배선 축 — 상태와 별개
+    unwired = [r for r in rows if r[11] in ("OK", "PARTIAL") and not r[13]]
+    A("### 0-3. 🆕 SV·Agent 배선 축 (상태와 별개)")
+    A("")
+    A(f"- `SV_배선` 이 채워진 지표 **{sum(1 for r in rows if r[13])}** / {len(rows)} · "
+      f"`Agent_배선` 이 채워진 지표 **{sum(1 for r in rows if r[14])}**.")
+    A("- 판정 = SV DDL 정본(`05_SV-Agent_ai/05_*_SV_DDL_*.sql`)의 metric·dimension 동의어·COMMENT 안 "
+      "`공NN`·`공#NN`·`신NN`·`신규 #NN` 토큰 → 그 SV 를 `tool_resources` 로 가진 Agent(`agent_spec.yaml`).")
+    A("- 🔴 **상태 `WAIT` 는 물리 컬럼 채움률이지 「Agent 산출 불가」가 아니다** — 이 축으로 따로 본다.")
+    A("- 🔴 **`SV_배선` 공란 = 「토큰 미표기」일 수 있다** — 미배선으로 단정하기 전에 동의어를 수동 대조한다.")
+    A("")
+    A(f"상태 OK/PARTIAL 인데 `SV_배선` 공란 = **{len(unwired)}개**:")
+    A("")
+    A("| 지표# | 지표명 | 유형 | GOLD 배속 | 상태 |")
+    A("|---|---|---|---|---|")
+    for r in unwired:
+        A(f"| `{r[0]}` | {r[2]} | {r[3]} | `{r[6]}` | {r[11]} |")
+    A("")
     A("## 1. 지표 → GOLD 전체 매핑")
     A("")
 
@@ -830,12 +934,12 @@ def write_md(rows, mkt, mem):
         A(f"### {title} ({len(subset)})")
         A("")
         A("| 지표# | 지표명 | 유형 | 소스 | 단위 | GOLD 배속 | GOLD 매핑 (물리컬럼 / SV base) | "
-          "SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 |")
-        A("|---|---|---|---|---|---|---|---|---|---|---|---|")
+          "SILVER 원천 | BRONZE 원천 | 정본 계산식 | 상태 | 상태 근거 | SV 배선 | Agent 배선 |")
+        A("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
         for r in subset:
             f10 = (r[10] or "").replace("|", "\\|")
             A(f"| `{r[0]}` | {r[2]} | {r[3]} | {r[4]} | {r[5]} | `{r[6]}` | `{r[7]}` | "
-              f"`{r[8]}` | `{r[9]}` | {f10} | {r[11]} | {r[12]} |")
+              f"`{r[8]}` | `{r[9]}` | {f10} | {r[11]} | {r[12]} | {r[13]} | {r[14]} |")
         A("")
 
     emit("1-A. 공통 지표", [r for r in rows if r[0].startswith("공")])
@@ -917,7 +1021,7 @@ def write_xlsx(rows, mkt, mem):
                     s.cell(row=i, column=status_col).fill = stat_fill[v]
         s.freeze_panes = "A5"
 
-    sheet("01_지표GOLD매핑", HEADER, rows, (8, 8, 30, 10, 8, 8, 16, 40, 34, 40, 46, 9, 48), 12)
+    sheet("01_지표GOLD매핑", HEADER, rows, (8, 8, 30, 10, 8, 8, 16, 40, 34, 40, 46, 9, 48, 40, 24), 12)
     sheet("02_마케팅보고서필드", FIELD_HEADER, mkt, (18, 26, 26, 22, 12, 12, 40, 30, 18))
     sheet("03_회원보고서필드", FIELD_HEADER, mem, (16, 30, 26, 20, 12, 12, 40, 30, 18))
     tmp = os.path.join("/tmp", BASENAME + ".xlsx")

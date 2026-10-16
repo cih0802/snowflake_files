@@ -32,7 +32,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_CHILD_UNPAID
     date.VISIT_DATE AS date.FULL_DATE WITH SYNONYMS ('방문일', '일자') COMMENT = '결연아동 페이지 방문일',
     date.YEAR  AS date.YEAR  WITH SYNONYMS ('연도', '년') COMMENT = '방문 연도',
     date.MONTH AS date.MONTH WITH SYNONYMS ('월') COMMENT = '방문 월(1~12)',
-    gcv.CHILD_CODE AS gcv.CHILD_CODE_RAW WITH SYNONYMS ('결연아동코드', '아동코드', 'childnum') COMMENT = '결연아동코드(URL childnum= 원값 · 대문자). NULL = 값이 비어 있는 URL(원천 그대로) — 집계에서 「코드 없음」으로 따로 밝힌다',
+    gcv.CHILD_CODE AS gcv.CHILD_CODE_RAW WITH SYNONYMS ('결연아동코드', '아동코드', 'childnum', '공122') COMMENT = '결연아동코드(URL childnum= 원값 · 대문자). NULL = 값이 비어 있는 URL(원천 그대로) — 집계에서 「코드 없음」으로 따로 밝힌다',
     gcv.IS_FORMAT_VALID AS gcv.IS_FORMAT_VALID WITH SYNONYMS ('형식 유효', '추천안A 판정') COMMENT = '추천안A = 영문3-숫자4-숫자6 형식 코드(TRUE/FALSE)',
     gcv.IS_CRM_MATCHED AS gcv.IS_CRM_MATCHED WITH SYNONYMS ('CRM 아동 일치', '추천안B 판정') COMMENT = '추천안B = CRM 아동번호(CRM_CHILD.CHILD_NO)에 실재하는 코드(TRUE/FALSE)',
     gcv.CRM_CHILD_CD AS gcv.CHILD_CD WITH SYNONYMS ('CRM 아동코드') COMMENT = 'CRM 숫자 아동코드(추천안B 일치분만)',
@@ -43,10 +43,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_CHILD_UNPAID
   )
   METRICS (
     gcv.CHILD_CODE_CNT_A AS COUNT(DISTINCT CASE WHEN gcv.IS_FORMAT_VALID THEN gcv.CHILD_CODE_RAW END)
-      WITH SYNONYMS ('결연아동코드 수', '결연아동 수(추천안A)')
+      WITH SYNONYMS ('결연아동코드 수', '결연아동 수(추천안A)', '공122')
       COMMENT = '고유 결연아동코드 수 — 추천안A(형식 기준 · 잠정). D(distinct · 가산 금지).',
     gcv.CHILD_CODE_CNT_B AS COUNT(DISTINCT CASE WHEN gcv.IS_CRM_MATCHED THEN gcv.CHILD_CODE_RAW END)
-      WITH SYNONYMS ('결연아동 수(추천안B)', 'CRM 일치 결연아동 수')
+      WITH SYNONYMS ('결연아동 수(추천안B)', 'CRM 일치 결연아동 수', '공122')
       COMMENT = '고유 결연아동코드 수 — 추천안B(CRM 아동번호 대조 · 잠정). D(distinct · 가산 금지).',
     gcv.CHILD_PAGE_VIEWS AS SUM(gcv.VIEW_CNT)
       WITH SYNONYMS ('결연아동 페이지뷰')
@@ -55,25 +55,25 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_CHILD_UNPAID
       WITH SYNONYMS ('결연아동 페이지 이벤트수')
       COMMENT = '결연아동 페이지 이벤트 합계(건). F(가산).',
     gcv.CHILD_PAGE_MEMBERS AS COUNT(DISTINCT gcv.URL_MEMBER_DK)
-      WITH SYNONYMS ('결연아동 페이지 방문 회원수')
+      WITH SYNONYMS ('결연아동 페이지 방문 회원수', '공111')
       COMMENT = 'URL 회원번호(memnum)로 식별된 고유 회원 수(명). D. 비식별 방문은 빠진다.',
     usc.UNPAID_SVC_CLICK_MEMBERS_A AS COUNT(CASE WHEN usc.SVC_SCOPE = 'A' THEN 1 END)
       WITH SYNONYMS ('미납서비스 클릭회원(추천안A)')
       COMMENT = '미납서비스 클릭회원(명 · 회원×월) — 추천안A 분모. 월 하나면 회원수와 같다.',
     usc.UNPAID_SVC_CONV_RATE_A AS SUM(CASE WHEN usc.SVC_SCOPE = 'A' THEN usc.ARREAR_PAID_D30_FLAG END) / NULLIF(COUNT(CASE WHEN usc.SVC_SCOPE = 'A' THEN 1 END), 0) * 100
-      WITH SYNONYMS ('미납서비스 전환율', '미납서비스 전환율(추천안A)')
+      WITH SYNONYMS ('미납서비스 전환율', '미납서비스 전환율(추천안A)', '공81')
       COMMENT = '미납서비스 전환율(%) — 추천안A(잠정) = 미납 안내 페이지 클릭회원 중 클릭 후 30일 안에 미납분(청구월 < 클릭월)을 납입한 비중. N(비율 · 재합산 금지).',
     usc.UNPAID_SVC_CONV_RATE_A_D5 AS SUM(CASE WHEN usc.SVC_SCOPE = 'A' THEN usc.ARREAR_PAID_D5_FLAG END) / NULLIF(COUNT(CASE WHEN usc.SVC_SCOPE = 'A' THEN 1 END), 0) * 100
-      WITH SYNONYMS ('미납서비스 5일 전환율(추천안A)')
+      WITH SYNONYMS ('미납서비스 5일 전환율(추천안A)', '공81')
       COMMENT = '추천안A 의 5일 창 판본(%). 창 길이 현업 확인 대상. N.',
     usc.UNPAID_SVC_CLICK_MEMBERS_B AS COUNT(CASE WHEN usc.SVC_SCOPE = 'B' THEN 1 END)
       WITH SYNONYMS ('미납서비스 클릭회원(추천안B)')
       COMMENT = '미납서비스 클릭회원(명 · 회원×월) — 추천안B 분모(결제정보 변경 페이지 포함).',
     usc.UNPAID_SVC_CONV_RATE_B AS SUM(CASE WHEN usc.SVC_SCOPE = 'B' THEN usc.PAID_D30_FLAG END) / NULLIF(COUNT(CASE WHEN usc.SVC_SCOPE = 'B' THEN 1 END), 0) * 100
-      WITH SYNONYMS ('미납서비스 전환율(추천안B)')
+      WITH SYNONYMS ('미납서비스 전환율(추천안B)', '공81')
       COMMENT = '미납서비스 전환율(%) — 추천안B(잠정) = 미납 안내 + 결제정보 변경 페이지 클릭회원 중 클릭 후 30일 안에 납입(종류 무관)한 비중. N.',
     usc.UNPAID_SVC_CONV_RATE_B_D5 AS SUM(CASE WHEN usc.SVC_SCOPE = 'B' THEN usc.PAID_D5_FLAG END) / NULLIF(COUNT(CASE WHEN usc.SVC_SCOPE = 'B' THEN 1 END), 0) * 100
-      WITH SYNONYMS ('미납서비스 5일 전환율(추천안B)')
+      WITH SYNONYMS ('미납서비스 5일 전환율(추천안B)', '공81')
       COMMENT = '추천안B 의 5일 창 판본(%). N.'
   )
   COMMENT = 'GA 기반 결연아동코드(공#122)·미납서비스 전환율(공#81) SV. 🔴 두 지표 모두 추천안 A/B 를 함께 싣는 잠정판이다 — 답변에 두 안의 값을 나란히 보여주고 「잠정 · 현업 정의 확정 대기」를 밝힌다. [원천: GA4 → SILVER.BIGQUERY_EVENT · CRM → SILVER.CRM_CHILD · CRM_PAYMENT_BILLING].'

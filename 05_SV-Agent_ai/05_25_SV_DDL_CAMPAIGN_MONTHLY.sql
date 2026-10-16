@@ -32,17 +32,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_MONTHLY
   DIMENSIONS (
     fcm.BASE_MONTH_KEY AS fcm.BASE_MONTH_KEY WITH SYNONYMS ('기준연월', '기준월', '조회연월', '연월') COMMENT = '기준연월 YYYYMM 정수(예: 202609 = 2026년 9월 · 누계 = 1월~9월). 🔴 반드시 하나로 고정한다',
     fcm.BASE_YEAR AS fcm.BASE_YEAR WITH SYNONYMS ('기준연도', '연도', '년') COMMENT = '기준연도. 「연도별」 질문은 각 연도의 마지막 적재 기준월(또는 12월)을 고른다 — 연도로 묶어 SUM 하지 않는다',
-    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '캠페인', '개발캠페인') COMMENT = '후원건 캠페인명. (미매핑) = 캠페인이 연결되지 않은 건',
+    campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '캠페인', '개발캠페인', '공18', '공120') COMMENT = '후원건 캠페인명. (미매핑) = 캠페인이 연결되지 않은 건',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인카테고리', '캠페인 카테고리', '주요캠페인') COMMENT = '캠페인 카테고리(MM294 라벨).',
     campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('캠페인유형', '국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
     campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('캠페인유형2', '사업사례', '사업/사례') COMMENT = '캠페인유형2 굿즈/기타/사례/사업(MM296).',
     campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('개발인입경로', '인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
-    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '캠페인 공통브랜드(MM297).',
+    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공통 브랜드', '공117') COMMENT = '캠페인 공통브랜드(MM297).',
     campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
     campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002).',
     campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('마케팅UTM', 'UTM') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
-    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
-    payment.SETTLE_METHOD AS payment.SETTLE_METHOD WITH SYNONYMS ('납입방식', '결제수단', '결제방식') COMMENT = '결제수단 라벨(자동이체·신용카드·회비통장·휴대폰·네이버페이·OCR). NULL = (미매핑). 🔴 잠정 축 = 그 달 회원×후원사업 청구 행의 결제수단(현업 확인 대상)'
+    campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '공119') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
+    payment.SETTLE_METHOD AS payment.SETTLE_METHOD WITH SYNONYMS ('납입방식', '결제수단', '결제방식', '공125', '공126') COMMENT = '결제수단 라벨(자동이체·신용카드·회비통장·휴대폰·네이버페이·OCR). NULL = (미매핑). 🔴 잠정 축 = 그 달 회원×후원사업 청구 행의 결제수단(현업 확인 대상)'
   )
   METRICS (
     fcm.ACTIVE_CNT_SUM AS SUM(fcm.ACTIVE_CNT)
@@ -56,7 +56,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_MONTHLY
     fcm.CUM_DEV_CNT_SUM AS SUM(fcm.CUM_DEV_CNT)
       WITH SYNONYMS ('캠페인별 누계개발(건)', '개발누계건') COMMENT = '누계개발(건) = 1월~기준월 개발(건). 기준월 고정.',
     fcm.YEAR_START_ACTIVE_CNT_SUM AS SUM(fcm.YEAR_START_ACTIVE_CNT)
-      WITH SYNONYMS ('캠페인별 연도초활동(건)', '연도초활동건') COMMENT = '연도초활동(건) = 기준연도 1월 as-of 활동 ÷ 10,000. 🔴 기준월 하나에서만 쓴다(기준월마다 같은 값이 반복된다).',
+      WITH SYNONYMS ('캠페인별 연도초활동(건)', '연도초활동건', '공49') COMMENT = '연도초활동(건) = 기준연도 1월 as-of 활동 ÷ 10,000. 🔴 기준월 하나에서만 쓴다(기준월마다 같은 값이 반복된다).',
     fcm.PAID_FEE_SUM AS SUM(fcm.PAID_FEE_BILLABLE)
       WITH SYNONYMS ('캠페인별 납입회비', '월 납입회비') COMMENT = '당월 납입회비(원 · 회비만). 가산.',
     fcm.UNPAID_FEE_SUM AS SUM(fcm.UNPAID_BILLED_AMT)

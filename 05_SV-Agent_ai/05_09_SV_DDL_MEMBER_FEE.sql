@@ -20,20 +20,20 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.CAL_YEAR         AS fee.CAL_YEAR    WITH SYNONYMS ('연도', '년') COMMENT = '회비 연도',
     fee.CAL_MONTH        AS fee.CAL_MONTH   WITH SYNONYMS ('월') COMMENT = '회비 월(1~12)',
     fee.LAST_PAY_DATE    AS fee.LAST_PAY_DATE WITH SYNONYMS ('납입일', '기준일(납입일)', '최종납입일') COMMENT = '해당 조합의 **최종 납입일**. 🔴시점 축이며 합계가 아니다. `SV_MEMBER_MONTHLY` 는 월 팩트라 일자 분해가 불가하므로 「기준일(납입일)」 요구는 이 SV 에서만 답한다. ⚠️여러 번 납입한 조합은 마지막 납입일만 남는다 — 납입 횟수·일별 추이를 이 축으로 세지 말 것',
-    fee.SPONSORSHIP      AS fee.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '납입 후원사업', '사업') COMMENT = '🔴**납입 대상** 후원사업명(정본 #123) — 그 회비가 어느 사업으로 들어갔는가다. ⚠️**획득 시점 후원사업과 다른 축**이다: 그 회원을 데려온 사업은 `SV_MEMBER_COHORT` 의 획득 후원사업(또는 이 SV 의 ACQ_SPONSORSHIP)이며, 한 회원이 여러 후원사업에 내므로 두 축의 값이 다르다. ⚠️개발 사건의 후원사업(`SV_MEMBER_EVENT`)과도 또 다른 축이다 — 세 축을 합산하지 말고 어느 축으로 답했는지 밝힌다. ⚠️미매칭은 ''(미매핑)''',
+    fee.SPONSORSHIP      AS fee.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명', '납입 후원사업', '사업', '공123') COMMENT = '🔴**납입 대상** 후원사업명(정본 #123) — 그 회비가 어느 사업으로 들어갔는가다. ⚠️**획득 시점 후원사업과 다른 축**이다: 그 회원을 데려온 사업은 `SV_MEMBER_COHORT` 의 획득 후원사업(또는 이 SV 의 ACQ_SPONSORSHIP)이며, 한 회원이 여러 후원사업에 내므로 두 축의 값이 다르다. ⚠️개발 사건의 후원사업(`SV_MEMBER_EVENT`)과도 또 다른 축이다 — 세 축을 합산하지 말고 어느 축으로 답했는지 밝힌다. ⚠️미매칭은 ''(미매핑)''',
     fee.FEE_DIV          AS fee.FEE_DIV_NAME WITH SYNONYMS ('회비구분', '회비 종류') COMMENT = '회비구분명(정본 PM010). 실제값 4종: ''정기''·''선물금''·''일시''·''긴급구호''. 🔴**기부금 행은 원천이 NULL** 이다 — 결측이 아니라 「해당없음」이며 ''미상''으로 창작하지 말 것. 기부금을 보려면 PAYMENT_TYPE 을 쓴다',
     fee.FEE_DIV_CD       AS fee.FEE_DIV_CD  WITH SYNONYMS ('회비구분코드') COMMENT = '회비구분 원천코드(PM010: E=정기 · G=선물금 · I=일시 · U=긴급구호). 라벨은 FEE_DIV. 실제값 4종: ''E''·''G''·''I''·''U'' + NULL',
     fee.PAYMENT_TYPE     AS fee.PAYMENT_TYPE WITH SYNONYMS ('납입유형', '회비/기부금 구분') COMMENT = '납입유형. 실제값 2종: ''회비''·''기부금''. 🔴**납부율·미납 분석은 회비만으로 스코프해야 한다** — 기부금은 원천에 청구액(RQEST_AMT)이 전건 NULL 이라 분모에 들어갈 수 없다. 정본 납부율 metric 은 이 스코프를 이미 반영하고 있다',
-    fee.PAYMENT_METHOD   AS fee.PAYMENT_METHOD_NAME WITH SYNONYMS ('납입방식', '결제수단', '결제방식', '수납방법') COMMENT = '결제수단 라벨. 실제값 6종: ''자동이체''·''신용카드''·''네이버페이''·''회비통장''·''OCR''·''휴대폰''. 🔴**라벨 커버리지가 100% 가 아니다** — 원천 결제수단 코드 11종 중 5종은 코드그룹이 특정되지 않아 ''(미매핑)''으로 모인다(현업 확인 대상). 따라서 **결제수단별 합계는 전체 합계보다 작다** — 총계는 이 축 없이 답한다. 원본 코드는 SETLE_CD 로 확인한다. ⚠️CRM_CODE 에서 11종을 덮는 그룹이 여럿 나왔으나 전부 의미 무관(간사/질병/취미…)이어서 **추측하지 않았다**(숫자 코드 우연 일치)',
+    fee.PAYMENT_METHOD   AS fee.PAYMENT_METHOD_NAME WITH SYNONYMS ('납입방식', '결제수단', '결제방식', '수납방법', '공125') COMMENT = '결제수단 라벨. 실제값 6종: ''자동이체''·''신용카드''·''네이버페이''·''회비통장''·''OCR''·''휴대폰''. 🔴**라벨 커버리지가 100% 가 아니다** — 원천 결제수단 코드 11종 중 5종은 코드그룹이 특정되지 않아 ''(미매핑)''으로 모인다(현업 확인 대상). 따라서 **결제수단별 합계는 전체 합계보다 작다** — 총계는 이 축 없이 답한다. 원본 코드는 SETLE_CD 로 확인한다. ⚠️CRM_CODE 에서 11종을 덮는 그룹이 여럿 나왔으나 전부 의미 무관(간사/질병/취미…)이어서 **추측하지 않았다**(숫자 코드 우연 일치)',
     fee.SETLE_CD         AS fee.SETLE_CD    WITH SYNONYMS ('결제수단코드', '수납코드') COMMENT = 'degen: 결제수단 **원본 코드**. 라벨이 없는 5종을 잃지 않기 위해 보존한다 — ''(미매핑)'' 버킷의 정체를 이 축으로 확인할 수 있다. 🔴코드값 자체의 업무 의미는 현업 미확인이므로 **코드로 의미를 추정해 답하지 말 것**. 실제값 11종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''10''·''12''·''13'' + NULL',
     fee.UNPAID_FLAG      AS fee.UNPAID_FLAG WITH SYNONYMS ('미납여부') COMMENT = '해당 조합에 미납 청구행이 하나라도 있는가(TRUE/FALSE). ⚠️**회원 단위 미납 여부가 아니다** — 회원 월말 미납 여부는 `SV_MEMBER_MONTHLY` 의 UNPAID_FLAG_EOM 이다',
     fee.MEMBER_STATUS    AS fee.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '회원상태 라벨(MM010). 🔴**현재 스냅샷**이다 — 과거 회비월 행에도 현재 상태가 붙는다. 실제값 13종: ''활동회원''·''후원중단''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''(해당없음)'' + NULL',
     fee.MEMBER_TYPE      AS fee.MEMBER_TYPE_NAME   WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018). 실제값 3종: ''개인''·''기업''·''단체''. 🔴현재 스냅샷',
     fee.MEMBER_GENDER    AS fee.GENDER_NAME        WITH SYNONYMS ('성별') COMMENT = '회원 성별 라벨(CM017). 실제값 5종: ''남자''·''여자''·''기타''·''단체''·''기업''. 🔴현재 스냅샷. ⚠️`SV_MEMBER_COHORT` 의 획득시점 성별(CM013)과 **코드체계가 다르다** — 합산 금지',
     fee.ACQ_BRAND        AS fee.ACQ_BRAND        WITH SYNONYMS ('브랜드', '획득 브랜드', '최초브랜드') COMMENT = '🔴**획득 시점** 캠페인의 공통브랜드. 회비를 획득 캠페인별로 볼 때 쓴다(캠페인별 LTV 계열). 현재 속성이 아니다',
-    fee.ACQ_CAMPAIGN     AS fee.ACQ_CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명', '가입캠페인', '획득캠페인') COMMENT = '🔴**획득 시점** 캠페인명. `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 다중귀속 규칙 미확정으로 센티넬이라 회원-월 팩트로는 캠페인 분해가 안 되지만, **획득 시점이라는 명시 규칙**으로 이 축이 성립한다. 카디널리티가 높으니 규모가 작은 캠페인의 비율은 불안정하다',
+    fee.ACQ_CAMPAIGN     AS fee.ACQ_CAMPAIGN_NAME WITH SYNONYMS ('캠페인', '캠페인명', '가입캠페인', '획득캠페인', '신규1') COMMENT = '🔴**획득 시점** 캠페인명. `FACT_MEMBER_MONTHLY.CAMPAIGN_SK` 는 다중귀속 규칙 미확정으로 센티넬이라 회원-월 팩트로는 캠페인 분해가 안 되지만, **획득 시점이라는 명시 규칙**으로 이 축이 성립한다. 카디널리티가 높으니 규모가 작은 캠페인의 비율은 불안정하다',
     fee.ACQ_PARENT_CAMPAIGN AS fee.ACQ_PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인') COMMENT = '획득 캠페인의 상위캠페인명. 상위가 없으면 NULL 이며 ''(미매핑)''이 아니다',
-    fee.ACQ_PROMO_METHOD AS fee.ACQ_PROMO_METHOD_NAME WITH SYNONYMS ('홍보방법', '광고방법') COMMENT = '획득 캠페인의 홍보방법 라벨(CM008). 🔴원천 코드는 숫자라 코드로 필터하면 0행이 된다 — 반드시 이 라벨로 필터한다',
+    fee.ACQ_PROMO_METHOD AS fee.ACQ_PROMO_METHOD_NAME WITH SYNONYMS ('홍보방법', '광고방법', '공118') COMMENT = '획득 캠페인의 홍보방법 라벨(CM008). 🔴원천 코드는 숫자라 코드로 필터하면 0행이 된다 — 반드시 이 라벨로 필터한다',
     fee.ACQ_MARKETING_CAMPAIGN AS fee.ACQ_MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인') COMMENT = '획득 캠페인의 마케팅캠페인명(광고↔CRM conformed 축). 광고비와 대응시킬 때 이 축을 쓴다 — 단 광고비 자체는 `SV_AD` 소관이며 두 SV 를 조인할 수 없다(각각 조회해 표를 분리한다)',
     fee.ACQ_DEPARTMENT   AS fee.ACQ_DEPARTMENT   WITH SYNONYMS ('부서', '가입부서', '획득부서') COMMENT = '🔴**획득 시점 부서명**. ⚠️개발실적보고의 「부서」는 **사건 부서**(`SV_MEMBER_EVENT.ORG_DEPARTMENT`)이며 **다른 축**이다 — 같은 라벨, 다른 값. 연간분석(회비)의 부서가 이 축이다. ⚠️상위 조직(본부/지부·팀·법인)은 산출 불가',
     fee.ACQ_SPONSORSHIP  AS fee.ACQ_SPONSORSHIP_NAME WITH SYNONYMS ('획득 후원사업', '가입 후원사업') COMMENT = '🔴**획득 시점** 후원사업명(그 회원을 데려온 사업). ⚠️이 SV 의 SPONSORSHIP(=납입 대상)과 **다른 축**이다 — 회비가 들어간 사업과 회원을 데려온 사업은 다를 수 있다',
@@ -44,17 +44,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.ACQ_INFLOW_PATH  AS fee.ACQ_INFLOW_PATH  WITH SYNONYMS ('개발인입경로', '인입경로', '유입경로', '회원인입경로') COMMENT = '🔴**획득 시점** 개발인입경로(MM293 라벨). 적재 시점 동결값',
     fee.ACQ_DOMESTIC_OVERSEAS AS fee.ACQ_DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '🔴**획득 시점** 캠페인 국내해외 구분. 적재 시점 동결값. ⚠️납입 대상 후원사업의 국내·해외 분류(SPONSORSHIP)와 다른 축이다',
     fee.ACQ_BIZ_CASE_TYPE AS fee.ACQ_BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업사례구분') COMMENT = '🔴**획득 시점** 캠페인 사업사례구분. 적재 시점 동결값',
-    fee.ACQ_CMMN_BRAND   AS fee.ACQ_CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공동브랜드') COMMENT = '🔴**획득 시점** 공통브랜드(MM297). ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다 — 「공통브랜드」를 물으면 이 축을 쓴다',
+    fee.ACQ_CMMN_BRAND   AS fee.ACQ_CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공동브랜드', '공117') COMMENT = '🔴**획득 시점** 공통브랜드(MM297). ⚠️ACQ_BRAND(캠페인 브랜드)와 다른 축이다 — 「공통브랜드」를 물으면 이 축을 쓴다',
     fee.ACQ_UTM          AS fee.ACQ_MKTG_UTM_NM  WITH SYNONYMS ('UTM', 'utm') COMMENT = '🔴**획득 시점** UTM 라벨. ⚠️채움이 낮다(코드사전 미등재분 NULL · 결측이 아니라 미등재) — UTM 별 합계는 전체보다 작으므로 부분집합임을 밝히고 채움 비율은 조회로 확인한다',
     fee.ACQ_SPNSR_DIV    AS fee.ACQ_SPNSR_DIV_NM WITH SYNONYMS ('후원구분', '세부캠페인 후원구분', '정기일시구분(캠페인)') COMMENT = '🔴**획득 세부캠페인** 후원구분(CM035 정기후원/일시후원). ⚠️회비구분(FEE_DIV)·납입유형과 다른 축이다',
-    fee.ACQ_CPR_DIV      AS fee.ACQ_CPR_DIV_NM   WITH SYNONYMS ('법인구분', '세부캠페인 법인구분', '법인', '사단법인', '사복', '사회복지법인', '사단', '법인명') COMMENT = '🔴**획득 세부캠페인** 법인구분(CM019 통합/사단/사복). 🔴조직 계층 법인(산출 불가)과 다른 축이다 — 「사단 회원 회비」·「사단법인 회비」는 이 축(ACQ_CPR_DIV = ''사단'')으로 답하고 캠페인 법인구분 기준임을 밝힌다'
+    fee.ACQ_CPR_DIV      AS fee.ACQ_CPR_DIV_NM   WITH SYNONYMS ('법인구분', '세부캠페인 법인구분', '법인', '사단법인', '사복', '사회복지법인', '사단', '법인명', '공114') COMMENT = '🔴**획득 세부캠페인** 법인구분(CM019 통합/사단/사복). 🔴조직 계층 법인(산출 불가)과 다른 축이다 — 「사단 회원 회비」·「사단법인 회비」는 이 축(ACQ_CPR_DIV = ''사단'')으로 답하고 캠페인 법인구분 기준임을 밝힌다'
   )
   METRICS (
     fee.TOTAL_BILLED_AMT AS SUM(fee.BILLED_AMT)
-      WITH SYNONYMS ('청구액', '청구회비', '청구', '총청구액')
+      WITH SYNONYMS ('청구액', '청구회비', '청구', '총청구액', '공71')
       COMMENT = '청구액(원) 합계 = SUM(RQEST_AMT) · 정본 #71. F(가산). 🔴재청구 중복을 포함한다 — 정본 #71 비고가 「청구회비금액: 재청구 중복 포함」을 명시하므로 이것이 정본 정의다. 🔴`SV_MEMBER_MONTHLY` 의 청구액과 **같은 원천**이므로 두 SV 의 값을 더하지 말 것 — 전체 합계는 두 SV 가 일치해야 한다.',
     fee.TOTAL_PAID_FEE_BILLABLE AS SUM(fee.PAID_FEE_BILLABLE)
-      WITH SYNONYMS ('납입회비', '회비 납입액', '수납회비')
+      WITH SYNONYMS ('납입회비', '회비 납입액', '수납회비', '공69', '공70', '신규1')
       COMMENT = '**회비** 납입액(원) 합계 — 납부율 분자 **정본**. F(가산). 기부금을 제외한다.',
     fee.TOTAL_PAID_ALL AS SUM(fee.PAID_FEE)
       WITH SYNONYMS ('총수납액')
@@ -69,7 +69,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       WITH SYNONYMS ('미납비중', '미납율', '미납률')
       COMMENT = '미납비중(**%**) = 미납 청구액 ÷ 회비 청구액 ×100. N(비가산). 정본 분자. 🔴 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것. `SV_MEMBER_MONTHLY.UNPAID_RATIO` 와 **같은 이름·같은 식·같은 단위**이며 전체 합계가 일치해야 한다(실측 일치 확인).',
     fee.DISTINCT_PAYING_MEMBERS AS COUNT(DISTINCT fee.MEMBER_DK)
-      WITH SYNONYMS ('납입 회원수', '회비 회원수', '납입(명)')
+      WITH SYNONYMS ('납입 회원수', '회비 회원수', '납입(명)', '공70', '신규8')
       COMMENT = '**고유 회원수(명)** = COUNT(DISTINCT 회원). N(비가산 — 기간·축을 가로질러 더하면 중복된다). 🔴이 팩트는 회원당 여러 행이므로 **행 수를 「명」으로 쓰면 크게 과대**해진다(`*_MEMBERS` 계열 함정과 같은 유형). 「납입 회원수」 질문은 반드시 이 metric 으로 답한다.',
     fee.TOTAL_BILLING_ROWS AS SUM(fee.BILLING_ROWS)
       WITH SYNONYMS ('청구행수', '원천 회비행수')

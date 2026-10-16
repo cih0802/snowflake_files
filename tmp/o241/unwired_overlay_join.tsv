@@ -1,0 +1,121 @@
+공4	CRM 개발(건)	C1_METRIC	analyst_mstr_spnsr_dvlp	SV_MSTR_SPNSR_DVLP.MSTR_DVLP_CNT❌부재
+공12	플랫폼	C4_DIMENSION	analyst_ad	SV_AD.CHANNEL_COMPANY ; SV_AD.MEDIA_CHANNEL_NM
+공14	기기	-	-	overlay없음
+공15	국내/해외 구분	-	-	overlay없음
+공16	사업/사례 구분	-	-	overlay없음
+공17	캠페인 유형	C4_DIMENSION	analyst_member_monthly	SV_MEMBER_MONTHLY.DOMESTIC_OVERSEAS ; SV_MEMBER_MONTHLY.BIZ_CASE_TYPE
+공18	캠페인명	-	-	overlay없음
+공20	소재	-	-	overlay없음
+공21	CM위치	-	-	overlay없음
+공22	초수	-	-	overlay없음
+공23	노출수	-	-	overlay없음
+공24	클릭수	-	-	overlay없음
+공69	납입회비	-	-	overlay없음
+공71	청구	-	-	overlay없음
+공81	미납서비스 전환율(%)	C5_PARTIAL	analyst_ga_child_unpaid	SV_GA_CHILD_UNPAID.UNPAID_SVC_CONV_RATE_A ; SV_GA_CHILD_UNPAID.UNPAID_SVC_CONV_RATE_B ; SV_GA_CHILD_UNPAID.UNPAID_SVC_CLICK_MEMBERS_A ; SV_GA_CHILD_UNPAID.UNPAID_SVC_CLICK_MEMBERS_B
+공82	미납사유	C4_DIMENSION	analyst_member_monthly	SV_MEMBER_MONTHLY.UNPAID_REASON
+공110	회원번호	-	-	overlay없음
+공114	법인	-	-	overlay없음
+공115	본부/지부	-	-	overlay없음
+공116	부서	C4_DIMENSION	analyst_member_event	SV_MEMBER_EVENT.ORG_PATH
+공117	공통브랜드	-	-	overlay없음
+공118	홍보방법	-	-	overlay없음
+공120	캠페인	-	-	overlay없음
+공122	결연아동코드	C4_DIMENSION	analyst_ga_child_unpaid	SV_GA_CHILD_UNPAID.CHILD_CODE ; SV_GA_CHILD_UNPAID.CHILD_CODE_CNT_A ; SV_GA_CHILD_UNPAID.CHILD_CODE_CNT_B
+공124	후원사업(약칭)	C4_DIMENSION	analyst_mstr_spnsr_dvlp	SV_MSTR_SPNSR_DVLP.SPNSR_BSNS_ABRV_NM❌부재
+공125	납입방식	-	-	overlay없음
+공137	발송일	-	-	overlay없음
+공138	발송상태	-	-	overlay없음
+공149	개발(건)	-	-	overlay없음
+공162	중단사유	C4_DIMENSION	analyst_member_event	SV_MEMBER_EVENT.STOP_REASON_NM
+신7	n개월 유지율(%)	C2_COMBINE	analyst_member_cohort	SV_MEMBER_COHORT.SURVIVAL_RATE ; SV_MEMBER_COHORT.SURV_ELAPSED_MONTH❌부재
+공5	GA 개발(건)	C1_METRIC	analyst_ad	SV_AD.GA_DEV_CNT
+공6	GA 광고비	G2_NEED_CONFIRM	analyst_ad	SV_AD.TOTAL_AD_COST
+공11	매체명(공동브랜드)	-	-	overlay없음
+공13	플랫폼 유형	-	-	overlay없음
+공19	캠페인 오픈일자	-	-	overlay없음
+공25	인입콜	-	-	overlay없음
+공26	가입캠페인 중단일	-	-	overlay없음
+공27	캠페인 가입일	-	-	overlay없음
+공30	최종중단일	C5_PARTIAL	analyst_member_event	SV_MEMBER_EVENT.STOP_DATE
+공32	신규	-	-	overlay없음
+공37	활동(건)	C1_METRIC	analyst_member_monthly	SV_MEMBER_MONTHLY.ACTIVE_CNT_SUM
+공39	개발회원	-	-	overlay없음
+공40	활동회원	-	-	overlay없음
+공41	중단회원	-	-	overlay없음
+공42	미납회원	-	-	overlay없음
+공43	신규회원	-	-	overlay없음
+공44	기존회원	-	-	overlay없음
+공48	연도초 활동회원	-	-	overlay없음
+공49	연도초 활동회원(건)	C1_METRIC	analyst_campaign_cum_stop	SV_CAMPAIGN_CUM_STOP.YEAR_START_ACTIVE
+공50	연도말 활동회원(건)	-	-	overlay없음
+공51	월말활동회원	C1_METRIC	analyst_member_monthly	SV_MEMBER_MONTHLY.ACTIVE_MEMBERS_SUM ; SV_MEMBER_MONTHLY.ACTIVE_CNT_SUM
+공52	월말활동회원(건)	C1_METRIC	analyst_member_monthly	SV_MEMBER_MONTHLY.ACTIVE_CNT_SUM
+공53	전월말 활동회원(건)	-	-	overlay없음
+공58	주간 평균 1일 중단(건)	C2_COMBINE	analyst_member_event	SV_MEMBER_EVENT.TOTAL_STOP_CNT ; SV_MEMBER_EVENT.WEEK_OF_YEAR
+공59	증감(건)	C2_COMBINE	(질문 지표의 도구)	(질문 지표의 metric)(형식?)
+공60	증감율(%)	C2_COMBINE	(질문 지표의 도구)	(질문 지표의 metric)(형식?)
+공65	누계납부율(%)	C2_COMBINE	analyst_member_monthly	SV_MEMBER_MONTHLY.PAYMENT_RATE_FEE
+공66	정기회비	-	-	overlay없음
+공70	납입	C1_METRIC	analyst_member_fee	SV_MEMBER_FEE.DISTINCT_PAYING_MEMBERS ; SV_MEMBER_FEE.TOTAL_PAID_FEE_BILLABLE
+공85	발송수(명)	C1_METRIC	analyst_service	SV_SERVICE.TOTAL_SEND_MEMBERS
+공86	성공수(명)	C5_PARTIAL	analyst_service	SV_SERVICE.TOTAL_SEND_MEMBERS ; SV_SERVICE.SEND_STATUS_NAME
+공87	실패수(명)	C5_PARTIAL	analyst_service	SV_SERVICE.TOTAL_SEND_MEMBERS ; SV_SERVICE.SEND_STATUS_NAME
+공89	서신참여(건)	-	-	overlay없음
+공92	방문수(명)	-	-	overlay없음
+공93	활성사용자수(명)	-	-	overlay없음
+공94	총사용자(명)	-	-	overlay없음
+공95	이벤트수(명)	-	-	overlay없음
+공96	조회수(명)	-	-	overlay없음
+공97	세션수(명)	-	-	overlay없음
+공99	event_category	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.EVENT_CATEGORY
+공100	event_label	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.EVENT_LABEL
+공101	event_action	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.EVENT_ACTION
+공102	세션캠페인	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.UTM_CAMPAIGN ; SV_GA_SESSION.STSLC_GAC_CAMPAIGN_NAME
+공103	세션 수동 광고 콘텐츠	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.UTM_CONTENT
+공104	세션 수동 검색어	-	-	overlay없음
+공105	페이지경로+쿼리문자열	-	-	overlay없음
+공106	페이지위치	C4_DIMENSION	analyst_ga_behavior	SV_GA_BEHAVIOR.PAGE_PATH
+공107	스크롤깊이	-	-	overlay없음
+공109	세션 소스/매체	-	-	overlay없음
+공111	memnum	-	-	overlay없음
+공112	member id	-	-	overlay없음
+공119	공통상위캠페인	-	-	overlay없음
+공123	후원사업(전체)	-	-	overlay없음
+공126	캠페인별 납입방식	-	-	overlay없음
+공128	후원기간(년)	-	-	overlay없음
+공133	발송구분(대)	-	-	overlay없음
+공134	발송구분(중)	-	-	overlay없음
+공135	발송구분(소)	-	-	overlay없음
+공136	제목(발송)	-	-	overlay없음
+공147	공통캠페인	-	-	overlay없음
+공148	개발(명)	-	-	overlay없음
+신1	개발캠페인별 납입회비(원)	C1_METRIC	analyst_member_fee	SV_MEMBER_FEE.TOTAL_PAID_FEE_BILLABLE ; SV_MEMBER_FEE.ACQ_CAMPAIGN
+신3	개발캠페인별 유지기간(년)	C5_PARTIAL	analyst_member_cohort	SV_MEMBER_COHORT.EXP_TENURE_MONTHS
+신4	평균 유지기간(개월)	C5_PARTIAL	analyst_member_cohort	SV_MEMBER_COHORT.EXP_TENURE_MONTHS
+신5	평균 유지기간(년)	C5_PARTIAL	analyst_member_cohort	SV_MEMBER_COHORT.EXP_TENURE_MONTHS
+신6	개발캠페인별 이탈율(%)	G2_NEED_CONFIRM	analyst_member_cohort	SV_MEMBER_COHORT.SURVIVAL_RATE ; SV_MEMBER_COHORT.CHURN_RATE_12M
+신8	LTV(원)	C1_METRIC	analyst_member_fee · analyst_member_cohort	SV_MEMBER_FEE.TOTAL_PAID_FEE_BILLABLE ; SV_MEMBER_FEE.DISTINCT_PAYING_MEMBERS ; SV_MEMBER_COHORT.EXP_TENURE_MONTHS
+신9	캠페인별 개발단가(원)	C5_PARTIAL	analyst_budget	SV_BUDGET.DIRECT_FUNDRAISING_COST_1 ; SV_BUDGET.DIRECT_FUNDRAISING_COST_2 ; SV_BUDGET.DVLP_INBOUND_PATH
+신11	캠페인별 ROI(%)	C3_CROSS	analyst_budget | analyst_mstr_spnsr_dvlp	SV_BUDGET.DIRECT_FUNDRAISING_COST_1 ; SV_BUDGET.DVLP_INBOUND_PATH ; SV_MSTR_SPNSR_DVLP.MSTR_DVLP_CNT❌부재 ; SV_MSTR_SPNSR_DVLP.DVLP_INFLOW_PATH_NM❌부재
+신26	캠페인별 납입회비 구성비(%)	C2_COMBINE	analyst_payment_billing_status	SV_PAYMENT_BILLING_STATUS.PAID_FEE_SUM ; SV_PAYMENT_BILLING_STATUS.PAYMENT_TYPE ; SV_PAYMENT_BILLING_STATUS.CAMPAIGN_NAME
+신30	서비스별 발송율(%)	C3_CROSS	analyst_service | analyst_member_status_asof	SV_SERVICE.DISTINCT_SEND_MEMBERS ; SV_MEMBER_STATUS_ASOF.MEMBER_COUNT
+신31	발송대비 수신율(%)	C5_PARTIAL	analyst_service	SV_SERVICE.TOTAL_SEND_MEMBERS ; SV_SERVICE.SEND_STATUS_NAME
+신32	발송대비 클릭율(%)	C5_PARTIAL	analyst_service	SV_SERVICE.OPEN_RATE_SND
+신35	서비스별 증액회원 N개월 유지율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_6M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_12M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_INCREASE_FLAG
+신36	서비스별 참여회원 N개월 유지율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_6M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_12M_RATE ; SV_MEMBER_SERVICE_COHORT.RECEIVED_FLAG
+신37	서비스별 증액회원 납입율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.PAID_AFTER_3M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_INCREASE_FLAG
+신38	서비스별 참여회원 납입율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.PAID_AFTER_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RECEIVED_FLAG
+신39	서비스별 증액회원 중단율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.EVER_STOPPED_RATE ; SV_MEMBER_SERVICE_COHORT.D5_INCREASE_FLAG ; SV_MEMBER_SERVICE_COHORT.SERVICE_GROUP_NAME
+신40	서비스별 참여회원 중단율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.EVER_STOPPED_RATE ; SV_MEMBER_SERVICE_COHORT.RECEIVED_FLAG ; SV_MEMBER_SERVICE_COHORT.SERVICE_GROUP_NAME
+신41	서비스별 증액회원 가입캠페인 구성비(%)	C2_COMBINE	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.MEMBER_COUNT ; SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME ; SV_MEMBER_SERVICE_COHORT.D5_INCREASE_FLAG
+신42	서비스별 참여회원 가입캠페인 구성비(%)	C2_COMBINE	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.MEMBER_COUNT ; SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME ; SV_MEMBER_SERVICE_COHORT.RECEIVED_FLAG
+신43	서비스×가입캠페인별 N개월 유지율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_6M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_12M_RATE ; SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME
+신45	서비스별 서신참여회원 N개월 유지율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_6M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_12M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_LETTER_FLAG
+신46	서비스별 서신참여회원 납입율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.PAID_AFTER_3M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_LETTER_FLAG
+신47	서비스별 서신참여회원 중단율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.EVER_STOPPED_RATE ; SV_MEMBER_SERVICE_COHORT.D5_LETTER_FLAG
+신48	서비스별 서신참여회원 가입캠페인 구성비(%)	C2_COMBINE	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.MEMBER_COUNT ; SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME ; SV_MEMBER_SERVICE_COHORT.D5_LETTER_FLAG
+신50	서비스별 선물금참여회원 N개월 유지율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.RETAINED_3M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_6M_RATE ; SV_MEMBER_SERVICE_COHORT.RETAINED_12M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_GIFT_FLAG
+신51	서비스별 선물금참여회원 납입율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.PAID_AFTER_3M_RATE ; SV_MEMBER_SERVICE_COHORT.D5_GIFT_FLAG
+신52	서비스별 선물금참여회원 중단율(%)	C5_PARTIAL	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.EVER_STOPPED_RATE ; SV_MEMBER_SERVICE_COHORT.D5_GIFT_FLAG
+신53	서비스별 선물금참여회원 가입캠페인 구성비(%)	C2_COMBINE	analyst_service_cohort	SV_MEMBER_SERVICE_COHORT.MEMBER_COUNT ; SV_MEMBER_SERVICE_COHORT.ACQ_CAMPAIGN_NAME ; SV_MEMBER_SERVICE_COHORT.D5_GIFT_FLAG

@@ -42,25 +42,25 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
     date.YEAR  AS date.YEAR  WITH SYNONYMS ('연도', '년') COMMENT = '연도',
     date.MONTH AS date.MONTH WITH SYNONYMS ('월') COMMENT = '월(1~12)',
     date.WEEK_OF_YEAR AS date.WEEK_OF_YEAR WITH SYNONYMS ('주차') COMMENT = '연중 주차',
-    evt.EVENT_CATEGORY AS evt.EVENT_CATEGORY WITH SYNONYMS ('이벤트 카테고리', '이벤트구분') COMMENT = 'GA4 이벤트 카테고리. 주요값 예: ''donor_action''·''나의후원''·''캠페인스크롤깊이''·''후원창''·''header''·''메뉴''·''캠페인버튼클릭''. 🔴 NULL = 페이지뷰 행(카테고리 없음)이며 결측이 아니다 — 페이지뷰는 TOTAL_PAGE_VIEWS 로 센다',
-    evt.EVENT_ACTION AS evt.EVENT_ACTION WITH SYNONYMS ('이벤트 액션') COMMENT = 'GA4 이벤트 액션(자유 텍스트 · 카디널리티 큼) — 이름으로 물으면 ILIKE 부분일치로 필터한다',
-    evt.EVENT_LABEL AS evt.EVENT_LABEL WITH SYNONYMS ('이벤트 라벨') COMMENT = 'GA4 이벤트 라벨(자유 텍스트 · 카디널리티 큼) — ILIKE 부분일치로 필터한다',
+    evt.EVENT_CATEGORY AS evt.EVENT_CATEGORY WITH SYNONYMS ('이벤트 카테고리', '이벤트구분', '공99') COMMENT = 'GA4 이벤트 카테고리. 주요값 예: ''donor_action''·''나의후원''·''캠페인스크롤깊이''·''후원창''·''header''·''메뉴''·''캠페인버튼클릭''. 🔴 NULL = 페이지뷰 행(카테고리 없음)이며 결측이 아니다 — 페이지뷰는 TOTAL_PAGE_VIEWS 로 센다',
+    evt.EVENT_ACTION AS evt.EVENT_ACTION WITH SYNONYMS ('이벤트 액션', '공101') COMMENT = 'GA4 이벤트 액션(자유 텍스트 · 카디널리티 큼) — 이름으로 물으면 ILIKE 부분일치로 필터한다',
+    evt.EVENT_LABEL AS evt.EVENT_LABEL WITH SYNONYMS ('이벤트 라벨', '공100') COMMENT = 'GA4 이벤트 라벨(자유 텍스트 · 카디널리티 큼) — ILIKE 부분일치로 필터한다',
     src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 15종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Social''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 큰 비중을 차지한다(비율은 조회로 확인) — 채널 분포를 낼 때 함께 밝힌다',
-    src.SOURCE_MEDIUM AS src.SOURCE_MEDIUM WITH SYNONYMS ('소스/매체', '소스매체') COMMENT = 'GA4 소스/매체(예: google / cpc)',
+    src.SOURCE_MEDIUM AS src.SOURCE_MEDIUM WITH SYNONYMS ('소스/매체', '소스매체', '공109') COMMENT = 'GA4 소스/매체(예: google / cpc)',
     src.UTM_SOURCE AS src.UTM_SOURCE WITH SYNONYMS ('UTM 소스') COMMENT = 'UTM source',
     src.UTM_MEDIUM AS src.UTM_MEDIUM WITH SYNONYMS ('UTM 매체') COMMENT = 'UTM medium',
-    fbq.UTM_CAMPAIGN AS fbq.UTM_CAMPAIGN WITH SYNONYMS ('UTM 캠페인', 'GA 캠페인') COMMENT = 'UTM campaign(자유 텍스트). 🔴 CRM 캠페인 코드와 다른 체계다 — CRM 캠페인으로 바꿔 말하지 않는다',
+    fbq.UTM_CAMPAIGN AS fbq.UTM_CAMPAIGN WITH SYNONYMS ('UTM 캠페인', 'GA 캠페인', '공102') COMMENT = 'UTM campaign(자유 텍스트). 🔴 CRM 캠페인 코드와 다른 체계다 — CRM 캠페인으로 바꿔 말하지 않는다',
     dev.DEVICE_TYPE AS dev.DEVICE_TYPE WITH SYNONYMS ('기기유형', '디바이스유형') COMMENT = '기기 유형(PC·모바일 등)',
-    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다',
-    src.UTM_CONTENT AS src.UTM_CONTENT WITH SYNONYMS ('UTM 콘텐츠', '광고 콘텐츠') COMMENT = '세션 수동 광고 콘텐츠(utm_content · #103).',
-    src.UTM_TERM AS src.UTM_TERM WITH SYNONYMS ('UTM 검색어', '검색어') COMMENT = '세션 수동 검색어(utm_term · #104).'
+    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로', '공105', '공106') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다',
+    src.UTM_CONTENT AS src.UTM_CONTENT WITH SYNONYMS ('UTM 콘텐츠', '광고 콘텐츠', '공103') COMMENT = '세션 수동 광고 콘텐츠(utm_content · #103).',
+    src.UTM_TERM AS src.UTM_TERM WITH SYNONYMS ('UTM 검색어', '검색어', '공104') COMMENT = '세션 수동 검색어(utm_term · #104).'
   )
   METRICS (
     fbq.TOTAL_EVENT_CNT AS SUM(fbq.EVENT_CNT)
-      WITH SYNONYMS ('이벤트수', '이벤트 건수', '클릭수')
+      WITH SYNONYMS ('이벤트수', '이벤트 건수', '클릭수', '공95')
       COMMENT = '이벤트 발생 건수 합계. F(가산) — 이벤트·채널·페이지 어느 축으로도 더할 수 있다.',
     fbq.TOTAL_PAGE_VIEWS AS SUM(fbq.VIEW_CNT)
-      WITH SYNONYMS ('페이지뷰', '조회수', 'PV')
+      WITH SYNONYMS ('페이지뷰', '조회수', 'PV', '공96')
       COMMENT = '페이지뷰 합계. F(가산). 페이지뷰 행(EVENT_CATEGORY NULL)에만 값이 있다 — 다른 이벤트로 필터하면 0 이다.',
     fbq.IDENTIFIED_VISITORS AS COUNT(DISTINCT CASE WHEN fbq.IDENTITY_SK > 0 THEN fbq.IDENTITY_SK END)
       WITH SYNONYMS ('식별 방문자수', '로그인 방문자수', '회원 방문자수')

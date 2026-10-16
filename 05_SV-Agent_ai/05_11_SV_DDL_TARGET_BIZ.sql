@@ -22,10 +22,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_TARGET_BIZ
       WITH SYNONYMS ('목표유형', '목표 지표', '목표구분', '후원사업 목표', '회원개발 목표')
       COMMENT = '목표 지표 유형(원천 표기 그대로). 단위별: 건 = ''후원사업''(구 연사업 관점) · ''회원개발''(구 팀 관점 · 팀×세부구분 분해) / 명 = ''월말활동회원'' / 원 = ''정기회비'' / 비율 = ''후원사업활동율'' · ''신규기존활동율'' · ''후원사업납입율'' · ''신규기존납입율'' · ''신규기존누계납입율''. 🔴 후원사업·회원개발은 같은 개발 목표의 다른 분해이므로 합산 금지 — 반드시 하나로 필터하거나 나란히 보여줄 것.',
     tgt.CORP_DIV   AS tgt.CPR_DIV_NM
-      WITH SYNONYMS ('법인', '법인구분', '사단', '사복')
+      WITH SYNONYMS ('법인', '법인구분', '사단', '사복', '공114')
       COMMENT = '법인구분. 원천 표기 그대로(사단/사복). 값 목록은 SELECT DISTINCT 로 조회한다 — 목표가 편성되지 않은 법인·구분의 0 을 실적 부진으로 해석하지 말 것.',
     tgt.TEAM_NAME  AS tgt.SRC_TEAM_NM
-      WITH SYNONYMS ('팀', '팀명', '부서', '조직')
+      WITH SYNONYMS ('팀', '팀명', '부서', '조직', '공116')
       COMMENT = '원천 팀명 그대로. 조직 차원과 이름이 일치하지 않는 값(동명 팀 · 조직명이 아닌 구분값)도 이 축으로 구분된다 — 팀별 질문은 이 축을 쓴다.',
     tgt.ORG_DEPARTMENT AS tgt.ORG_DEPARTMENT
       WITH SYNONYMS ('조직 차원 부서명')
@@ -40,7 +40,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_TARGET_BIZ
       WITH SYNONYMS ('신규기존', '신규/기존')
       COMMENT = '신규/기존 구분 원천 표기. 값 = 신규 · 기존 · 🔴 소계 행 ''합계'' · ''신규합계''(비율 지표에만 있다) — 소계 행을 신규/기존과 함께 더하면 이중계상이다. 회원개발 유형은 NULL.',
     tgt.ORG_DIV    AS tgt.ORG_DIV_NM
-      WITH SYNONYMS ('조직구분', '본부지부', '본부/지부/대면')
+      WITH SYNONYMS ('조직구분', '본부지부', '본부/지부/대면', '공115')
       COMMENT = '조직구분 원천 표기(본부/지부/대면 계열). 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다.',
     tgt.DTL_DIV    AS tgt.DTL_DIV_NM
       WITH SYNONYMS ('세부구분')
@@ -48,7 +48,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_TARGET_BIZ
   )
   METRICS (
     tgt.GOAL_CNT AS SUM(CASE WHEN tgt.GOAL_TYPE_NM IN ('후원사업', '회원개발') THEN tgt.ANNUAL_GOAL_CNT END)
-      WITH SYNONYMS ('목표', '목표건수', '개발 목표(건)', '월 목표(건)', '사업목표', '연사업목표(건)')
+      WITH SYNONYMS ('목표', '목표건수', '개발 목표(건)', '월 목표(건)', '사업목표', '연사업목표(건)', '공152', '공154')
       COMMENT = '개발 목표 건수(당초). 단위=건. 후원사업·회원개발 유형만 집계. F(가산) — 🔴 GOAL_TYPE 안에서만 가산한다. 연 목표 = 해당 연도 월 목표의 합.',
     tgt.GOAL_MEMBER_CNT AS SUM(CASE WHEN tgt.GOAL_TYPE_NM = '월말활동회원' THEN tgt.ANNUAL_GOAL_CNT END)
       WITH SYNONYMS ('월말활동회원 목표', '활동회원 목표', '회원수 목표')

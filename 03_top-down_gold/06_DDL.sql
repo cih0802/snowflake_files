@@ -850,7 +850,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SND_CURRENT_CMPGN   VARCHAR            COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]',
     -- 🆕 [2026-10-16 O237-C] 신규#33 클릭대비 전환율(잠정) — 클릭일 기준 인정 개발 매칭 · 처리통보성 제목 제외
     CLICK_DEV_D5_MEMBERS  NUMBER(1,0)      COMMENT '클릭 후 D+1~D+5 안에 인정 개발(FME DEV_CNT>0)이 있는 클릭 발송 1/0. 클릭이 없는 행·처리통보성 제목은 0. 잠정(창 길이 현업 확인).',
-    CLICK_DEV_D30_MEMBERS NUMBER(1,0)      COMMENT '클릭 후 D+1~D+30 안에 인정 개발이 있는 클릭 발송 1/0(D5 를 포함한다). 잠정.'
+    CLICK_DEV_D30_MEMBERS NUMBER(1,0)      COMMENT '클릭 후 D+1~D+30 안에 인정 개발이 있는 클릭 발송 1/0(D5 를 포함한다). 잠정.',
+    -- 🆕 [2026-10-16 O241] 공91 추천안B(잠정) — 발송 매칭 선물금 · 선물금 1건 = 직전 발송일 1개 귀속
+    D5_GIFT_PART_AMT      NUMBER(38,0)     COMMENT '공91 추천안B(잠정) 발송 매칭 선물금(원) = 발송 D+1~D+5 안 선물금 GFTMNEY 합. 선물금 1건은 창 안 가장 가까운 직전 발송일 1개에만 귀속하고, 그 (회원, 발송일)의 비통보성 발송 1행에만 싣는다(기간 합 가산). 처리통보성 제목·매칭 없음은 0.'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -1277,7 +1279,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_SESSION (
     DW_SOURCE_SYSTEM                 VARCHAR         COMMENT '원천 시스템 식별 (공통감사)',
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    -- 🆕 [2026-10-16 O241] 공98 추천안B(잠정) UA식 세션 지속시간 · 맨 끝(append_new_columns 순서)
+    SESSION_END_TS                   TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 마지막 이벤트 시각 [SILVER.BIGQUERY_SESSION 승계].',
+    SESSION_DURATION_SEC             NUMBER          COMMENT '공98 추천안B(잠정) UA식 세션 지속시간(초) = 세션 전체 마지막 − 첫 이벤트 시각. 세션의 첫 일자 행에만 값 · 자정 경계 다음 일자 행은 0(평균 = SUM ÷ 세션키 COUNT DISTINCT). 단일 이벤트 세션은 0.'
 ) COMMENT = 'GA4 세션 팩트. [Grain: DATE_SK × BIGQUERY_SESSION_KEY]. [주의: FACT_BIGQUERY_BEHAVIOR 와 같은 원천 다른 Grain, 합산 금지 · 세션수는 COUNT(DISTINCT BIGQUERY_SESSION_KEY)]. [원천: GA4 → SILVER.BIGQUERY_SESSION].';
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SEARCH_CONSOLE (
     DATE_SK             NUMBER(8,0)     COMMENT '검색 일자 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',

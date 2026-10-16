@@ -34,7 +34,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DVLP_GOAL_ACMSLT
       WITH SYNONYMS ('월')
       COMMENT = '월(1~12).',
     ga.DEPT_DIV_NM AS ga.DEPT_DIV_NM
-      WITH SYNONYMS ('부서', '부서구분')
+      WITH SYNONYMS ('부서', '부서구분', '공116')
       COMMENT = '부서 구분 명(기획실 집계 기준 · DIM_ORG 부서와 같은 조직으로 단정하지 않는다).',
     ga.NEW_EXST_DIV_NM AS ga.NEW_EXST_DIV_NM
       WITH SYNONYMS ('신규기존', '신규/기존')
@@ -99,7 +99,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
       WITH SYNONYMS ('신규기존', '신규/기존')
       COMMENT = '신규기존구분명.',
     mp.HDQ_BRNCH_GRP_NM AS mp.HDQ_BRNCH_GRP_NM
-      WITH SYNONYMS ('본부지부', '본부/지부', '지부그룹')
+      WITH SYNONYMS ('본부지부', '본부/지부', '지부그룹', '공115')
       COMMENT = '본부 지부 그룹 명(회원실 집계 기준).'
   )
   METRICS (
@@ -191,7 +191,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SPNSR_CLS_AGGR
       WITH SYNONYMS ('집계유형', '분류', '후원분류')
       COMMENT = '집계 유형명(감액/개발/중단/활동/회비). 🔴 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.',
     sc.CPR_NM AS sc.CPR_NM
-      WITH SYNONYMS ('법인', '법인명')
+      WITH SYNONYMS ('법인', '법인명', '공114')
       COMMENT = '법인명.',
     sc.SPNSR_BSNS_GRP_NM AS sc.SPNSR_BSNS_GRP_NM
       WITH SYNONYMS ('후원사업그룹', '후원사업')
