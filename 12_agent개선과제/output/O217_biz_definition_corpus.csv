@@ -474,12 +474,14 @@ MET_CMN-30,지표,최종중단일,,[중단] 회원의 가장 마지막 중단일
 - **SV 필드**: SV_MEMBER_EVENT.FME.STOP_DATE
 - **대응상태**: C5_PARTIAL
 - **답변 절차**: 중단 사건 일자 차원이다. 회원별 최종중단일 = 회원별 STOP_DATE 의 최댓값. 회원 목록 출력은 개인정보 범위를 확인한다.",,,Y,C5_PARTIAL,중단 사건 일자 차원이다. 회원별 최종중단일 = 회원별 STOP_DATE 의 최댓값. 회원 목록 출력은 개인정보 범위를 확인한다.
-MET_CMN-31,지표,최종캠페인,,[중단] 회원이 최종중단 시 캠페인,회원이 최종중단 시 최종캠페인,MARKETING|MEMBER|EXECUTIVE,,,갭 처방: 처방 = DIM_MEMBER 에 최종캠페인(원천 회원 최종캠페인 코드) 노출 → SV_MEMBER_MONTHLY 차원 추가,공통지표_flat_20261003.csv:30,"# [지표] 최종캠페인
+MET_CMN-31,지표,최종캠페인,,[중단] 회원이 최종중단 시 캠페인,회원이 최종중단 시 최종캠페인,MARKETING|MEMBER|EXECUTIVE,analyst_member_monthly,SV_MEMBER_MONTHLY.LAST_CAMPAIGN.LAST_CAMPAIGN_NAME · SV_MEMBER_MONTHLY.MEMBER.LAST_CAMPAIGN,갭 처방: 현업 확인 = 최종캠페인 정의(최근 시작 약정 vs CRM LAST_CMPGN),공통지표_flat_20261003.csv:30,"# [지표] 최종캠페인
 - **정의**: [중단] 회원이 최종중단 시 캠페인
 - **계산식**: 회원이 최종중단 시 최종캠페인
-- **대응상태**: G1_NEED_MODEL
-- **답변 절차**: 회원 단위 「최종 중단 시 캠페인」 차원이 SV 에 없다(SV_SERVICE.FSE.SND_LAST_CMPGN 은 문자 발송 시점 코드값뿐). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
-- **한계**: 갭 처방: 처방 = DIM_MEMBER 에 최종캠페인(원천 회원 최종캠페인 코드) 노출 → SV_MEMBER_MONTHLY 차원 추가",,,Y,G1_NEED_MODEL,회원 단위 「최종 중단 시 캠페인」 차원이 SV 에 없다(SV_SERVICE.FSE.SND_LAST_CMPGN 은 문자 발송 시점 코드값뿐). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
+- **도구**: analyst_member_monthly
+- **SV 필드**: SV_MEMBER_MONTHLY.LAST_CAMPAIGN.LAST_CAMPAIGN_NAME · SV_MEMBER_MONTHLY.MEMBER.LAST_CAMPAIGN
+- **대응상태**: C4_DIMENSION
+- **답변 절차**: 🆕 LAST_CAMPAIGN_NAME(회원 최종캠페인 · 잠정 = 가장 최근 시작 후원약정의 대표캠페인)으로 분해한다. 회원수는 고유회원으로 세고 ROLLUP 전체를 함께 낸다. 🔴 「잠정(최근 시작 후원약정 기준) · CRM 발송명단 최종캠페인과 정의가 다를 수 있다」를 밝힌다.
+- **한계**: 갭 처방: 현업 확인 = 최종캠페인 정의(최근 시작 약정 vs CRM LAST_CMPGN)",,,Y,C4_DIMENSION,🆕 LAST_CAMPAIGN_NAME(회원 최종캠페인 · 잠정 = 가장 최근 시작 후원약정의 대표캠페인)으로 분해한다. 회원수는 고유회원으로 세고 ROLLUP 전체를 함께 낸다. 🔴 「잠정(최근 시작 후원약정 기준) · CRM 발송명단 최종캠페인과 정의가 다를 수 있다」를 밝힌다.
 MET_CMN-32,지표,신규,,[개발] 조회년월 기준 당해년도 개발,,MARKETING|MEMBER|EXECUTIVE,,,데이터 출처: CRM,공통지표_flat_20261003.csv:31,"# [지표] 신규
 - **정의**: [개발] 조회년월 기준 당해년도 개발
 - **계산식**: 이 항목에는 미등록(원천 공란)
@@ -759,12 +761,13 @@ MET_CMN-78,지표,기존 미납율(%),,[미납] 활동회원 대비 기존미납
 - **SV 필드**: SV_MEMBER_MONTHLY.FMM.UNPAID_RATE_EXISTING
 - **대응상태**: C1_METRIC
 - **답변 절차**: UNPAID_RATE_EXISTING 로 답한다.",기존 미납률 기존 미납률(%) 기존 미납율 기존미납률 기존미납률% 기존미납율 기존미납율%,,Y,C1_METRIC,UNPAID_RATE_EXISTING 로 답한다.
-MET_CMN-79,지표,후원사업별 미납율(%),,[미납] 후원사업별 활동회원 대비 미납회원 비중,후원사업 미납(건)/후원사업 활동(건),MARKETING|MEMBER|EXECUTIVE,,,갭 처방: 처방 = 회원×월×후원사업 grain 의 활동(건)·미납(건) 팩트 또는 FMM 후원사업 배분 규칙 확정 후 SV 확장,공통지표_flat_20261003.csv:78,"# [지표] 후원사업별 미납율(%)
+MET_CMN-79,지표,후원사업별 미납율(%),,[미납] 후원사업별 활동회원 대비 미납회원 비중,후원사업 미납(건)/후원사업 활동(건),MARKETING|MEMBER|EXECUTIVE,analyst_member_sponsor_biz,SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_RATE · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_CNT · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_ACTIVE_CNT · SV_MEMBER_SPONSOR_BIZ.FSM.BASE_MONTH_KEY,,공통지표_flat_20261003.csv:78,"# [지표] 후원사업별 미납율(%)
 - **정의**: [미납] 후원사업별 활동회원 대비 미납회원 비중
 - **계산식**: 후원사업 미납(건)/후원사업 활동(건)
-- **대응상태**: G1_NEED_MODEL
-- **답변 절차**: 후원사업 축에서 미납(건)과 활동(건)을 함께 담은 SV 가 없다(SV_MEMBER_MONTHLY 는 후원사업 차원 없음 · SV_MEMBER_FEE·PAYMENT_BILLING_STATUS 는 활동(건) 없음). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
-- **한계**: 갭 처방: 처방 = 회원×월×후원사업 grain 의 활동(건)·미납(건) 팩트 또는 FMM 후원사업 배분 규칙 확정 후 SV 확장",후원사업별 미납률 후원사업별 미납률(%) 후원사업별 미납율 후원사업별미납률 후원사업별미납률% 후원사업별미납율 후원사업별미납율%,,Y,G1_NEED_MODEL,후원사업 축에서 미납(건)과 활동(건)을 함께 담은 SV 가 없다(SV_MEMBER_MONTHLY 는 후원사업 차원 없음 · SV_MEMBER_FEE·PAYMENT_BILLING_STATUS 는 활동(건) 없음). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
+- **도구**: analyst_member_sponsor_biz
+- **SV 필드**: SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_RATE · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_CNT · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_ACTIVE_CNT · SV_MEMBER_SPONSOR_BIZ.FSM.BASE_MONTH_KEY
+- **대응상태**: C1_METRIC
+- **답변 절차**: 🆕 SPONSORSHIP_UNPAID_RATE(후원사업 미납(건) ÷ 활동(건) ×100)를 SPONSORSHIP 별로 낸다 — 기준연월 하나 고정(fsm.BASE_MONTH_KEY) · 분자(SPONSORSHIP_UNPAID_CNT)·분모(SPONSORSHIP_ACTIVE_CNT)를 함께 보이고 ROLLUP 전체 행.",후원사업별 미납률 후원사업별 미납률(%) 후원사업별 미납율 후원사업별미납률 후원사업별미납률% 후원사업별미납율 후원사업별미납율%,,Y,C1_METRIC,🆕 SPONSORSHIP_UNPAID_RATE(후원사업 미납(건) ÷ 활동(건) ×100)를 SPONSORSHIP 별로 낸다 — 기준연월 하나 고정(fsm.BASE_MONTH_KEY) · 분자(SPONSORSHIP_UNPAID_CNT)·분모(SPONSORSHIP_ACTIVE_CNT)를 함께 보이고 ROLLUP 전체 행.
 MET_CMN-80,지표,미납회원 감소율(%),,[미납] 월초미납명수 대비 월말미납명수 감소비중,(월초미납명수-월말미납명수)/월초미납명수,MARKETING|MEMBER|EXECUTIVE,analyst_member_monthly,SV_MEMBER_MONTHLY.FMM.UNPAID_REDUCTION_RATE,,공통지표_flat_20261003.csv:79,"# [지표] 미납회원 감소율(%)
 - **정의**: [미납] 월초미납명수 대비 월말미납명수 감소비중
 - **계산식**: (월초미납명수-월말미납명수)/월초미납명수
@@ -772,12 +775,14 @@ MET_CMN-80,지표,미납회원 감소율(%),,[미납] 월초미납명수 대비 
 - **SV 필드**: SV_MEMBER_MONTHLY.FMM.UNPAID_REDUCTION_RATE
 - **대응상태**: C1_METRIC
 - **답변 절차**: UNPAID_REDUCTION_RATE 로 답한다.",미납회원 감소률 미납회원 감소률(%) 미납회원 감소율 미납회원감소률 미납회원감소률% 미납회원감소율 미납회원감소율%,,Y,C1_METRIC,UNPAID_REDUCTION_RATE 로 답한다.
-MET_CMN-81,지표,미납서비스 전환율(%),,[미납] 미납서비스 대상회원의 전환비중,납입회원(명)/미납서비스 클릭회원(명)*100,MARKETING|MEMBER|EXECUTIVE,,,합의 필요사항: *미납서비스 클릭회원명수는 GA값으로 가져와야함 · 갭 처방: 처방 = 미납안내 발송(서비스 구분) × 클릭 × 이후 납입 매칭 열을 FACT_MESSAGE_DISPATCH 에 추가(D5 매칭과 같은 시간창 규칙 · 현업 창 길이 확정 필요),공통지표_flat_20261003.csv:80,"# [지표] 미납서비스 전환율(%)
+MET_CMN-81,지표,미납서비스 전환율(%),,[미납] 미납서비스 대상회원의 전환비중,납입회원(명)/미납서비스 클릭회원(명)*100,MARKETING|MEMBER|EXECUTIVE,analyst_ga_child_unpaid,SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_B · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_B,합의 필요사항: *미납서비스 클릭회원명수는 GA값으로 가져와야함 · 갭 처방: 현업 확인 = 미납서비스 페이지 범위 · 납입 판정(미납분 vs 전체) · 창 길이 — Agent 실사용 후 결정,공통지표_flat_20261003.csv:80,"# [지표] 미납서비스 전환율(%)
 - **정의**: [미납] 미납서비스 대상회원의 전환비중
 - **계산식**: 납입회원(명)/미납서비스 클릭회원(명)*100
-- **대응상태**: G1_NEED_MODEL
-- **답변 절차**: 「미납서비스 클릭 회원」→ 납입 연결이 GOLD 에 없다(SV_SERVICE 오픈은 SND 링크 클릭 플래그만 있고 납입 결과와 연결되지 않는다). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
-- **한계**: 합의 필요사항: *미납서비스 클릭회원명수는 GA값으로 가져와야함 · 갭 처방: 처방 = 미납안내 발송(서비스 구분) × 클릭 × 이후 납입 매칭 열을 FACT_MESSAGE_DISPATCH 에 추가(D5 매칭과 같은 시간창 규칙 · 현업 창 길이 확정 필요)",미납서비스 전환률 미납서비스 전환률(%) 미납서비스 전환율 미납서비스전환률 미납서비스전환률% 미납서비스전환율 미납서비스전환율%,,Y,G1_NEED_MODEL,「미납서비스 클릭 회원」→ 납입 연결이 GOLD 에 없다(SV_SERVICE 오픈은 SND 링크 클릭 플래그만 있고 납입 결과와 연결되지 않는다). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
+- **도구**: analyst_ga_child_unpaid
+- **SV 필드**: SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_B · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_B
+- **대응상태**: C5_PARTIAL
+- **답변 절차**: 🆕 UNPAID_SVC_CONV_RATE_A·UNPAID_SVC_CONV_RATE_B 와 각 분모(클릭회원)를 클릭월별로 함께 내고 ROLLUP 전체 행. 🔴 잠정 추천안 2개 = A 미납 안내 페이지(unpayed*) 클릭 · 30일 안 미납분(청구월 < 클릭월) 납입 / B A + 결제정보 변경 페이지 클릭 · 30일 안 모든 납입 — 클릭회원 = GA URL memnum · 분모는 회원×월임을 밝힌다.
+- **한계**: 합의 필요사항: *미납서비스 클릭회원명수는 GA값으로 가져와야함 · 갭 처방: 현업 확인 = 미납서비스 페이지 범위 · 납입 판정(미납분 vs 전체) · 창 길이 — Agent 실사용 후 결정",미납서비스 전환률 미납서비스 전환률(%) 미납서비스 전환율 미납서비스전환률 미납서비스전환률% 미납서비스전환율 미납서비스전환율%,,Y,C5_PARTIAL,🆕 UNPAID_SVC_CONV_RATE_A·UNPAID_SVC_CONV_RATE_B 와 각 분모(클릭회원)를 클릭월별로 함께 내고 ROLLUP 전체 행. 🔴 잠정 추천안 2개 = A 미납 안내 페이지(unpayed*) 클릭 · 30일 안 미납분(청구월 < 클릭월) 납입 / B A + 결제정보 변경 페이지 클릭 · 30일 안 모든 납입 — 클릭회원 = GA URL memnum · 분모는 회원×월임을 밝힌다.
 MET_CMN-82,지표,미납사유,,[미납] 매월 정기회원의 회비미납 시 사유,crm>회원요약정보>회비내역>미납/환급정보>미납내역,MARKETING|MEMBER|EXECUTIVE,analyst_member_monthly,SV_MEMBER_MONTHLY.REASON.UNPAID_REASON,합의 필요사항: *캠페인별 미납사유는 볼수없음,공통지표_flat_20261003.csv:81,"# [지표] 미납사유
 - **정의**: [미납] 매월 정기회원의 회비미납 시 사유
 - **계산식**: crm>회원요약정보>회비내역>미납/환급정보>미납내역
@@ -966,12 +971,14 @@ MET_CMN-120,지표,캠페인,,[공통] 캠페인,,MARKETING|MEMBER|EXECUTIVE,,,,
 MET_CMN-121,지표,개발구분,,"[공통] 신규,증액,재후원",,MARKETING|MEMBER|EXECUTIVE,,,,공통지표_flat_20261003.csv:120,"# [지표] 개발구분
 - **정의**: [공통] 신규,증액,재후원
 - **계산식**: 이 항목에는 미등록(원천 공란)",,,N,,
-MET_CMN-122,지표,결연아동코드,,[공통] 결연아동코드,"페이지 경로+쿼리 문자열""에서 파생. URL에서 chilenum= 뒤에 오는 13자리(예) https://gni.kr/url/25acl_25ABC.gn?memnum=1831636&childnum=CMR-0102-002758)/ 결연아동코드 = CMR-0102-002758",MARKETING|MEMBER|EXECUTIVE,,,갭 처방: 처방 = GA 행동 팩트에 URL 쿼리 childnum 파생 열 추가 → SV_GA_BEHAVIOR 차원,공통지표_flat_20261003.csv:121,"# [지표] 결연아동코드
+MET_CMN-122,지표,결연아동코드,,[공통] 결연아동코드,"페이지 경로+쿼리 문자열""에서 파생. URL에서 chilenum= 뒤에 오는 13자리(예) https://gni.kr/url/25acl_25ABC.gn?memnum=1831636&childnum=CMR-0102-002758)/ 결연아동코드 = CMR-0102-002758",MARKETING|MEMBER|EXECUTIVE,analyst_ga_child_unpaid,SV_GA_CHILD_UNPAID.GCV.CHILD_CODE · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_A · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_B,갭 처방: 현업 확인 = 결연아동코드 판정 기준(형식 vs CRM 대조) — Agent 실사용 후 결정,공통지표_flat_20261003.csv:121,"# [지표] 결연아동코드
 - **정의**: [공통] 결연아동코드
 - **계산식**: 페이지 경로+쿼리 문자열""에서 파생. URL에서 chilenum= 뒤에 오는 13자리(예) https://gni.kr/url/25acl_25ABC.gn?memnum=1831636&childnum=CMR-0102-002758)/ 결연아동코드 = CMR-0102-002758
-- **대응상태**: G1_NEED_MODEL
-- **답변 절차**: GA 페이지 URL 의 childnum 파싱 차원이 SV 에 없다(PAGE_PATH 부분일치만 가능). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
-- **한계**: 갭 처방: 처방 = GA 행동 팩트에 URL 쿼리 childnum 파생 열 추가 → SV_GA_BEHAVIOR 차원",,,Y,G1_NEED_MODEL,GA 페이지 URL 의 childnum 파싱 차원이 SV 에 없다(PAGE_PATH 부분일치만 가능). 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
+- **도구**: analyst_ga_child_unpaid
+- **SV 필드**: SV_GA_CHILD_UNPAID.GCV.CHILD_CODE · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_A · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_B
+- **대응상태**: C4_DIMENSION
+- **답변 절차**: 🆕 CHILD_CODE(URL childnum= 값)로 분해하고 고유 코드 수는 CHILD_CODE_CNT_A·CHILD_CODE_CNT_B 를 함께 낸다. 🔴 잠정 추천안 2개 = A 형식 기준(영문3-숫자4-숫자6) · B CRM 아동번호(CRM_CHILD.CHILD_NO) 일치 — 두 값을 나란히 보이고 정의를 1줄씩 밝힌다.
+- **한계**: 갭 처방: 현업 확인 = 결연아동코드 판정 기준(형식 vs CRM 대조) — Agent 실사용 후 결정",,,Y,C4_DIMENSION,🆕 CHILD_CODE(URL childnum= 값)로 분해하고 고유 코드 수는 CHILD_CODE_CNT_A·CHILD_CODE_CNT_B 를 함께 낸다. 🔴 잠정 추천안 2개 = A 형식 기준(영문3-숫자4-숫자6) · B CRM 아동번호(CRM_CHILD.CHILD_NO) 일치 — 두 값을 나란히 보이고 정의를 1줄씩 밝힌다.
 MET_CMN-123,지표,후원사업(후원사업전체),,[공통] 정기후원사업,,MARKETING|MEMBER|EXECUTIVE,,,,공통지표_flat_20261003.csv:122,"# [지표] 후원사업(후원사업전체)
 - **정의**: [공통] 정기후원사업
 - **계산식**: 이 항목에는 미등록(원천 공란)",후원사업후원사업전체,,N,,
@@ -1447,12 +1454,14 @@ MET_NEW-32,지표,발송대비 클릭율(%),,[서비스] 서비스 발송 대비
 - **대응상태**: C5_PARTIAL
 - **답변 절차**: OPEN_RATE_SND(링크 클릭 ÷ 오픈 기록이 있는 SND 발송 ×100)로 답한다. 🔴 문자(SND) 전용이다.
 - **한계**: 25년부터 가능",발송대비 클릭률 발송대비 클릭률(%) 발송대비 클릭율 발송대비클릭률 발송대비클릭률% 발송대비클릭율 발송대비클릭율%,,Y,C5_PARTIAL,OPEN_RATE_SND(링크 클릭 ÷ 오픈 기록이 있는 SND 발송 ×100)로 답한다. 🔴 문자(SND) 전용이다.
-MET_NEW-33,지표,클릭대비 전환율(%),,[서비스] 서비스 클릭 대비 개발비중,개발회원(명)/서비스 클릭수(명)*100,MARKETING|MEMBER|EXECUTIVE,,,25년부터 가능 · 갭 처방: 처방 = FACT_MESSAGE_DISPATCH 에 클릭 후 D+N 개발 매칭 열 추가(D5 매칭 규칙 · 창 길이 현업 확정),신규지표_20260820.csv:45,"# [지표] 클릭대비 전환율(%)
+MET_NEW-33,지표,클릭대비 전환율(%),,[서비스] 서비스 클릭 대비 개발비중,개발회원(명)/서비스 클릭수(명)*100,MARKETING|MEMBER|EXECUTIVE,analyst_service,SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D5 · SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D30 · SV_SERVICE.FSE.CLICK_MEMBERS_DISTINCT · SV_SERVICE.FSE.CLICK_DEV_D5_MEMBERS_DISTINCT · SV_SERVICE.FSE.CLICK_DEV_D30_MEMBERS_DISTINCT,25년부터 가능 · 갭 처방: 현업 확인 = 클릭 후 전환 창 길이,신규지표_20260820.csv:45,"# [지표] 클릭대비 전환율(%)
 - **정의**: [서비스] 서비스 클릭 대비 개발비중
 - **계산식**: 개발회원(명)/서비스 클릭수(명)*100
-- **대응상태**: G1_NEED_MODEL
-- **답변 절차**: 발송 클릭 → 개발 회원 매칭이 GOLD 에 없다. 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
-- **한계**: 25년부터 가능 · 갭 처방: 처방 = FACT_MESSAGE_DISPATCH 에 클릭 후 D+N 개발 매칭 열 추가(D5 매칭 규칙 · 창 길이 현업 확정)",클릭대비 전환률 클릭대비 전환률(%) 클릭대비 전환율 클릭대비전환률 클릭대비전환률% 클릭대비전환율 클릭대비전환율%,,Y,G1_NEED_MODEL,발송 클릭 → 개발 회원 매칭이 GOLD 에 없다. 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다.
+- **도구**: analyst_service
+- **SV 필드**: SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D5 · SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D30 · SV_SERVICE.FSE.CLICK_MEMBERS_DISTINCT · SV_SERVICE.FSE.CLICK_DEV_D5_MEMBERS_DISTINCT · SV_SERVICE.FSE.CLICK_DEV_D30_MEMBERS_DISTINCT
+- **대응상태**: C5_PARTIAL
+- **답변 절차**: 🆕 5일·30일 두 창을 함께 낸다(사용자 결정) = 클릭 회원(명) · 5일 내 개발회원(명) · 30일 내 개발회원(명) · 두 전환율. 🔴 클릭일 기준 D+1~5 · D+1~30 · 문자(SND) 클릭만 · 처리통보성 제목 제외 · 잠정(창 길이 현업 확인)을 밝힌다.
+- **한계**: 25년부터 가능 · 갭 처방: 현업 확인 = 클릭 후 전환 창 길이",클릭대비 전환률 클릭대비 전환률(%) 클릭대비 전환율 클릭대비전환률 클릭대비전환률% 클릭대비전환율 클릭대비전환율%,,Y,C5_PARTIAL,🆕 5일·30일 두 창을 함께 낸다(사용자 결정) = 클릭 회원(명) · 5일 내 개발회원(명) · 30일 내 개발회원(명) · 두 전환율. 🔴 클릭일 기준 D+1~5 · D+1~30 · 문자(SND) 클릭만 · 처리통보성 제목 제외 · 잠정(창 길이 현업 확인)을 밝힌다.
 MET_NEW-34,지표,서비스별 증액율(%),,[서비스] 서비스 발송성공회원의 증액비중,"(증액 회원수(명,건)/ 서비스별 발송 성공회원(명,건))*100",MARKETING|MEMBER|EXECUTIVE,analyst_service,SV_SERVICE.FSE.D5_INCREASE_RATE,꼭 필요함. · 갭 처방: 현업 확인 = 성공 판정 확정 후 분모를 성공 발송으로 교체,신규지표_20260820.csv:46,"# [지표] 서비스별 증액율(%)
 - **정의**: [서비스] 서비스 발송성공회원의 증액비중
 - **계산식**: (증액 회원수(명,건)/ 서비스별 발송 성공회원(명,건))*100

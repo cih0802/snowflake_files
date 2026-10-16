@@ -1,0 +1,62 @@
+    " 🔴 클릭일 기준 D+1~5 · D+1~30 · 문자(SND) 클릭만 · 처리통보성 제목 제외 · 잠정(창 길이 현업 확인)을 밝힌다.",
+    "현업 확인 = 클릭 후 전환 창 길이")
+
+
+def tokens(sv):
+    out = []
+    for t in sv.split(" · "):
+        t = t.strip()
+        if t.count(".") == 2 and t.startswith("SV_"):
+            out.append(t.upper())
+    return out
+
+
+def check():
+    from snowflake.snowpark import Session
+    tok = open(os.environ.get("SNOWFLAKE_TOKEN_FILE_PATH", "/snowflake/session/token")).read().strip()
+    s = Session.builder.configs({"account": os.environ["SNOWFLAKE_ACCOUNT"], "host": os.environ["SNOWFLAKE_HOST"],
+                                "authenticator": "oauth", "token": tok, "warehouse": "GN_DW_DEV_WH",
+                                "role": "GN_DW_ADMIN"}).create()
+    live = set()
+    for kind in ("METRICS", "DIMENSIONS"):
+        for r in s.sql("SHOW SEMANTIC %s IN SCHEMA GN_DW.SERVING" % kind).collect():
+            d = r.as_dict()
+            live.add(("%s.%s.%s" % (d["semantic_view_name"], d["table_name"], d["name"])).upper())
+    ids = {r[0] for r in s.sql("SELECT DOC_ID FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS WHERE HAS_FORMULA='Y'").collect()}
+    mine = {m["DOC_ID"] for m in M}
+    bad, pend = [], []
+    for m in M:
+        for t in tokens(m["SV_FIELD"]):
+            if t in live:
+                continue
+            (pend if t in PENDING else bad).append((m["DOC_ID"], t))
+    print("산식 행 =", len(ids), "· 매핑 행 =", len(mine), "· 누락 =", sorted(ids - mine), "· 초과 =", sorted(mine - ids))
+    print("라이브 부재(blocking) =", bad)
+    print("배포 대기(🆕 PENDING) =", len(pend), sorted({t for _, t in pend}))
+    deployed = sorted(PENDING & live)
+    print("PENDING 중 이미 라이브 =", deployed)
+    return 0 if (not bad and ids == mine) else 1
+
+
+def main():
+    ids = [m["DOC_ID"] for m in M]
+    dup = sorted({x for x in ids if ids.count(x) > 1})
+    if dup:
+        sys.exit("DOC_ID 중복: %s" % dup)
+    for m in M:
+        assert m["COVERAGE"] in ("C1_METRIC", "C2_COMBINE", "C3_CROSS", "C4_DIMENSION", "C5_PARTIAL",
+                                 "G1_NEED_MODEL", "G2_NEED_CONFIRM"), m
+        if m["COVERAGE"] != "G1_NEED_MODEL":
+            assert m["TOOL_NAME"], m["DOC_ID"]
+    with open(OUT, "w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=COLS)
+        w.writeheader()
+        w.writerows(M)
+    from collections import Counter
+    print("행수 =", len(M), dict(sorted(Counter(m["COVERAGE"] for m in M).items())))
+    if "--check" in sys.argv:
+        sys.exit(check())
+
+
+if __name__ == "__main__":
+    main()

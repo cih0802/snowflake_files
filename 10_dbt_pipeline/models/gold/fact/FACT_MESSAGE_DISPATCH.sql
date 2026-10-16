@@ -74,6 +74,25 @@ d5 as (
      and f.EV_DATE between DATEADD(day, 1, p.SEND_DATE) and DATEADD(day, 5, p.SEND_DATE)
     group by p.MEMBER_DK, p.SEND_DATE
 ),
+-- 🆕 [2026-10-16 O237-C · 신규#33 클릭대비 전환율 · 잠정 · 사용자 결정 = 5일·30일 두 창 모두]
+--   기준일 = **클릭일(OPEN_DT)** · 창 = D+1~D+5 · D+1~D+30(DEC-33 과 같이 당일 제외) · 개발 = FME 인정 개발(DEV_CNT > 0).
+--   🔴 발송일 기준으로 재면 클릭 전 개발이 섞인다(실측 = 발송일 D5 531명 vs 클릭일 D5 377명 · 2025~).
+click_pairs as (
+    select distinct MBER_NO as MEMBER_DK, OPEN_DT::DATE as OPEN_DATE
+    from s where MBER_NO is not null and OPEN_DT is not null
+),
+click_dev as (
+    select
+        p.MEMBER_DK, p.OPEN_DATE,
+        BOOLOR_AGG(e.JOIN_DATE <= DATEADD(day, 5, p.OPEN_DATE)) as CLICK_DEV_D5,
+        TRUE                                                    as CLICK_DEV_D30
+    from click_pairs p
+    join {{ ref('FACT_MEMBER_EVENT') }} e
+      on e.MEMBER_DK = p.MEMBER_DK
+     and e.EVENT_TYPE = 'DEV' and e.DEV_CNT > 0
+     and e.JOIN_DATE between DATEADD(day, 1, p.OPEN_DATE) and DATEADD(day, 30, p.OPEN_DATE)
+    group by p.MEMBER_DK, p.OPEN_DATE
+),
 -- 「활동건」 = 그 회원의 발송월 활동(건)(#157 = 약정금액/10,000) — FMM 월×회원 유일.
 active_m as (
     select MONTH_KEY, MEMBER_DK, ACTIVE_CNT from {{ ref('FACT_MEMBER_MONTHLY') }}
@@ -160,13 +179,17 @@ select
     -- 🆕 [2026-10-08 O213-E · 7차 Y3-E] SND 발송 시점 회원 스냅샷 4종(degen · 타 채널 NULL · FRST_BRND_* 와 같은 관례).
     s.SND_SPNSR_NM, s.SND_DSCNTC_RSN_NM, s.SND_CHILD_PROJECT_COUNTRY, s.SND_CHILD_WORKPLACE_NM,
     -- 🆕 [2026-10-14 O225-C] SND 회원 최종·현재 캠페인코드(degen · 발송 캠페인은 CAMPAIGN_SK) · 06_DDL 동기 맨 끝
-    s.SND_LAST_CMPGN, s.SND_CURRENT_CMPGN
+    s.SND_LAST_CMPGN, s.SND_CURRENT_CMPGN,
+    -- 🆕 [2026-10-16 O237-C] 클릭 후 개발 회원 1/0(클릭 행만 · 처리통보성 제목 제외 = D5 규칙과 같다) · 06_DDL 동기 맨 끝
+    IFF(cd.CLICK_DEV_D5  AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as CLICK_DEV_D5_MEMBERS,
+    IFF(cd.CLICK_DEV_D30 AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as CLICK_DEV_D30_MEMBERS
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
 left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = s.SND_CMPGN_CD
 cross join open_window ow
 left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
+left join click_dev cd on cd.MEMBER_DK = s.MBER_NO and cd.OPEN_DATE = s.OPEN_DT::DATE
 left join active_m am on am.MEMBER_DK = s.MBER_NO
                      and am.MONTH_KEY = TO_NUMBER(TO_CHAR(s.SNDNG_DE, 'YYYYMM'))
 left join send_l sl   on sl.SEND_GBN_TOP = r.SEND_GBN_TOP

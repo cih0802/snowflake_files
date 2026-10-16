@@ -77,8 +77,20 @@ select
     iff({{ pst_ok }}, array_contains('1'::variant, split({{ pst }}, ',')), null) as POST_RECV_REFUSE_YN,
     iff({{ pst_ok }}, array_contains('2'::variant, split({{ pst }}, ',')), null) as POST_RECV_REGULAR_YN,
     iff({{ pst_ok }}, array_contains('3'::variant, split({{ pst }}, ',')), null) as POST_RECV_RELATION_YN,
-    iff({{ pst_ok }}, array_contains('4'::variant, split({{ pst }}, ',')), null) as POST_RECV_NEW_THANKS_YN
+    iff({{ pst_ok }}, array_contains('4'::variant, split({{ pst }}, ',')), null) as POST_RECV_NEW_THANKS_YN,
+    -- 🆕 [2026-10-16 O237-C · 공#31 최종캠페인 · 잠정(사용자 결정)] 가장 최근 시작한 후원약정(span)의 대표캠페인 코드.
+    --   🟢 MSTR 로직 없음 · 90 정의서 = 「CRM 최종 캠페인 명」뿐 ⇒ 원천 SND_MEMBER_LIST.LAST_CMPGN(발송 대상 546,221명)과
+    --      파생안(1,621,410명)을 비교해 회원수·활동금액이 큰 파생안을 택했다(원천과 일치 58% · 정의 차이 = 잠정 표기).
+    --   🔴 같은 시작월이 여러 개면 SPNSR_CMPGN_CD 가 큰 쪽(결정적 tie-break) · span 이 없는 회원(일시회원 등)은 NULL(R2-7).
+    lc.LAST_CAMPAIGN                              as LAST_CAMPAIGN
 from {{ ref('DIM_MEMBER_STATUS_HISTORY') }} h
+left join (
+    select MEMBER_DK, SPNSR_CMPGN_CD as LAST_CAMPAIGN
+    from {{ ref('FACT_MEMBER_SPONSORSHIP_SPAN') }}
+    where SPNSR_CMPGN_CD is not null
+    qualify row_number() over (partition by MEMBER_DK
+                               order by START_MONTH_KEY desc nulls last, SPNSR_CMPGN_CD desc) = 1
+) lc on lc.MEMBER_DK = h.MEMBER_DK
 left join {{ ref('CRM_MEMBER') }}   m on m.MEMBER_DK = h.MEMBER_DK
 left join {{ ref('CRM_CAMPAIGN') }} c on c.CMPGN_CD  = m.CMPGN_CD
 left join {{ ref('DIM_SPONSORSHIP') }} sp on sp.SPONSORSHIP_BK = h.FIRST_SPONSORSHIP

@@ -31,6 +31,11 @@ NOT_RATIO = {
     'DEV_UNIT_PRICE':        '개발단가(원/건) — 금액÷건수이므로 percent 가 아니다',
     'REBRDC_DEV_UNIT_PRICE': '재방송 개발단가(원/건)',
     'GA_DEV_UNIT_PRICE':     '공8 GA 개발단가(원/건) — O188-D 신설',
+    # 🆕 [O239] O237-A·C 신설 metric — 이름은 비율 꼴이 아니고 단위가 % 가 아니다(O239 판단 · 예외 등재)
+    'AVG_PAID_PER_MEMBER':    '1명당 평균 납입금액(원/명) — O237-A',
+    'CNT_PER_ACTIVE_MEMBER':  '활동회원 1명당 활동(건/명) — O237-A',
+    'UNPAID_CNT_EQ':          '미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-A',
+    'SPONSORSHIP_UNPAID_CNT': '후원사업 미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-C',
 }
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')

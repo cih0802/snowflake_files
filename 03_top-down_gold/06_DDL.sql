@@ -175,7 +175,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     POST_RECV_REFUSE_YN    BOOLEAN         COMMENT '우편물 수신 항목 = 수신거부(MS027 코드 1) 포함 여부. 원천 구 체계 값(Y·N·0)·NULL 은 NULL.',
     POST_RECV_REGULAR_YN   BOOLEAN         COMMENT '우편물 수신 항목 = 정기우편(MS027 코드 2) 포함 여부.',
     POST_RECV_RELATION_YN  BOOLEAN         COMMENT '우편물 수신 항목 = 결연우편(MS027 코드 3) 포함 여부.',
-    POST_RECV_NEW_THANKS_YN BOOLEAN        COMMENT '우편물 수신 항목 = 신규/감사 우편(MS027 코드 4) 포함 여부. 🔴 원천에 사전 밖 코드 5·6·8·10 이 소수 있다(무시).'
+    POST_RECV_NEW_THANKS_YN BOOLEAN        COMMENT '우편물 수신 항목 = 신규/감사 우편(MS027 코드 4) 포함 여부. 🔴 원천에 사전 밖 코드 5·6·8·10 이 소수 있다(무시).',
+    -- 🆕 [2026-10-16 O237-C] 공#31 최종캠페인(잠정 · 파생) — dbt append_new_columns 로도 추가되지만 정본 DDL 에 등재한다
+    LAST_CAMPAIGN          VARCHAR         COMMENT '최종캠페인 코드(공#31 · 잠정) = 회원의 가장 최근 시작 후원약정 대표캠페인(FACT_MEMBER_SPONSORSHIP_SPAN.SPNSR_CMPGN_CD). 후원약정이 없는 회원은 NULL. CRM 발송명단 LAST_CMPGN 과는 정의가 다르다.'
 ) COMMENT = '정규 회원 마스터 차원 (분석 기본 진입점). [Grain: MEMBER_DK (1행=1회원, IS_CURRENT 투영)]. [주의: 과거 시점 상태 분석은 DIM_MEMBER_STATUS_HISTORY 시점조인 사용]. [원천: SILVER.CRM_MEMBER_STATUS_HIST(IS_CURRENT)].';
 
 -- DIM_MEMBER_ACQUISITION — 회원 획득(가입) 귀속 차원
@@ -845,7 +847,10 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SND_CHILD_WORKPLACE_NM VARCHAR         COMMENT '발송 시점 신규 결연아동 사업장명(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
     -- 🆕 [2026-10-14 O225-C] SND 회원 최종·현재 캠페인코드 degen (발송 캠페인 = CAMPAIGN_SK)
     SND_LAST_CMPGN      VARCHAR            COMMENT '발송 시점 회원 최종 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]',
-    SND_CURRENT_CMPGN   VARCHAR            COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]'
+    SND_CURRENT_CMPGN   VARCHAR            COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]',
+    -- 🆕 [2026-10-16 O237-C] 신규#33 클릭대비 전환율(잠정) — 클릭일 기준 인정 개발 매칭 · 처리통보성 제목 제외
+    CLICK_DEV_D5_MEMBERS  NUMBER(1,0)      COMMENT '클릭 후 D+1~D+5 안에 인정 개발(FME DEV_CNT>0)이 있는 클릭 발송 1/0. 클릭이 없는 행·처리통보성 제목은 0. 잠정(창 길이 현업 확인).',
+    CLICK_DEV_D30_MEMBERS NUMBER(1,0)      COMMENT '클릭 후 D+1~D+30 안에 인정 개발이 있는 클릭 발송 1/0(D5 를 포함한다). 잠정.'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -914,7 +919,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     CM                  VARCHAR         COMMENT 'CM 구분 전CM·중CM·후CM [VIDEO 전용].',
     DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '국내/해외 구분 [VIDEO 전용].',
     -- 🆕 [2026-10-14 O225] 마케팅캠페인 귀속 경로·후보 수 (1:N 안전장치 · 감사컬럼 뒤 append)
-    MKTG_MAP_METHOD     VARCHAR         COMMENT '마케팅캠페인 귀속 경로 NAME(대행사 캠페인명 일치)·UTM(UTM as-of 규칙)·CREATIVE_MAP(O232 소재 매핑표 · MKTG 수준)·NONE(미매핑 SK=0).',
+    MKTG_MAP_METHOD     VARCHAR         COMMENT '마케팅캠페인 귀속 경로 NAME(대행사 캠페인명 일치)·UTM(UTM as-of 규칙)·CREATIVE_MAP(O232 소재 매핑표 · MKTG 수준)·UPPER_CODE(O238 영상 상위캠페인코드 → 하위 캠페인 마케팅캠페인 1:1)·NONE(미매핑 SK=0).',
     MKTG_MAP_CAND_CNT   NUMBER(38,0)    COMMENT 'UTM 경로 후보 캠페인 수(광고일 이전 시작분). 2 이상 = 1:N 대표 선택. NAME·NONE 경로는 NULL(개념 부재).',
     -- 🆕 [2026-10-15 O232] 소재 매핑(3순위 · SILVER.AD_CREATIVE_CAMPAIGN_MAP) — 맨 끝 append
     AD_MAP_LEVEL        VARCHAR(10)     COMMENT '소재 매핑 연결 수준 MKTG·CTGR·NONE(SILVER.AD_CREATIVE_CAMPAIGN_MAP). 이름매칭·UTM 으로 연결된 행과 매핑표에 없는 소재는 NULL.',
@@ -1627,6 +1632,56 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '캠페인별 월 지표(활동율·중단율·이탈율·납입율·미납율) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK × PAYMENT_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인·납입방식 합 = FMM 같은 월 합]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT · FACT_MEMBER_FEE · SILVER.CRM_MEMBER_AMT_CHANGE]. [적재: dbt]';
 
+-- FACT_SPONSORSHIP_MONTHLY — 기준연월 × 후원사업 월 팩트 (🆕 O237-C · 공#79 후원사업별 미납율)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY (
+    BASE_MONTH_KEY            NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM',
+    BASE_YEAR                 NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도)',
+    SPONSORSHIP_SK            NUMBER(38,0)    NOT NULL COMMENT '대리키 ※비강제 FK→DIM_SPONSORSHIP. 활동 = 약정(span) 후원사업 · 회비 = 청구 행 후원사업 · 0 = 미매핑',
+    ACTIVE_CNT                NUMBER(18,4)    COMMENT '월말 활동(건) = 기준월 as-of 활동 약정금액 ÷ 10,000 (FMM ACTIVE_CNT 와 같은 판정)',
+    PAID_FEE_BILLABLE         NUMBER(18,2)    COMMENT '당월 납입회비(원 · 회비만) (FMM PAID_FEE_BILLABLE 과 같은 값)',
+    UNPAID_BILLED_AMT         NUMBER(18,2)    COMMENT '당월 미납회비(원) (FMM UNPAID_BILLED_AMT 와 같은 값) · 미납(건) = 이 값 ÷ 10,000',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '후원사업별 월 지표(미납율) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × SPONSORSHIP_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 후원사업 합 = FMM 같은 월 합]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_FEE]. [적재: dbt]';
+
+-- FACT_GA_CHILD_VIEW — GA 결연아동 페이지 조회 팩트 (🆕 O239 · 공#122 결연아동코드 · 추천안 A/B 동시 탑재)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_CHILD_VIEW (
+    DATE_SK                   NUMBER(8,0)     NOT NULL COMMENT '방문일 YYYYMMDD ※비강제 FK→DIM_DATE · 0 = 범위 밖',
+    PAGE_PATH                 VARCHAR         NOT NULL COMMENT '페이지 경로(URL 의 ? 앞)',
+    CHILD_CODE_RAW            VARCHAR         COMMENT '결연아동코드 원값 = URL 쿼리 childnum= 뒤 값(대문자·공백 제거만). NULL = URL 에 childnum= 은 있으나 값이 비어 있다(원천 그대로)',
+    IS_FORMAT_VALID           BOOLEAN         NOT NULL COMMENT '추천안A 판정 = CHILD_CODE_RAW 가 영문3-숫자4-숫자6 형식(지표사전 예시 CMR-0102-002758 형태). 잠정(현업 결정 대기)',
+    IS_CRM_MATCHED            BOOLEAN         NOT NULL COMMENT '추천안B 판정 = CHILD_CODE_RAW 가 SILVER.CRM_CHILD.CHILD_NO 에 실재. 잠정(현업 결정 대기)',
+    CHILD_CD                  NUMBER(10,0)    COMMENT 'CRM 아동코드(SILVER.CRM_CHILD.CHILD_CD). NULL = CRM 아동번호와 일치하지 않는 코드 또는 빈 값',
+    URL_MEMBER_DK             VARCHAR         COMMENT 'URL 쿼리 memnum= 값(회원번호 · DIM_MEMBER.MEMBER_DK 체계). NULL = URL 에 memnum 이 없다(비식별 방문)',
+    EVENT_CNT                 NUMBER(18,0)    COMMENT '이벤트 건수(가산)',
+    VIEW_CNT                  NUMBER(18,0)    COMMENT '페이지뷰 건수(가산)',
+    USER_CNT                  NUMBER(18,0)    COMMENT 'grain 안 고유 GA 사용자 수(비가산 · 행 간 합산 금지)',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = 'GA 결연아동 관련 페이지(URL 에 childnum= 포함) 조회 팩트. [Grain: DATE_SK × PAGE_PATH × CHILD_CODE_RAW × URL_MEMBER_DK]. 결연아동코드 집계 = 추천안A(IS_FORMAT_VALID) 또는 추천안B(IS_CRM_MATCHED) 중 하나로 고정. [원천: SILVER.BIGQUERY_EVENT · SILVER.CRM_CHILD]. [적재: dbt]';
+
+-- FACT_UNPAID_SERVICE_CONV — 미납서비스 클릭회원 × 이후 납입 전환 팩트 (🆕 O239 · 공#81 미납서비스 전환율 · 추천안 A/B 동시 탑재)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_UNPAID_SERVICE_CONV (
+    CLICK_MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '클릭월 YYYYMM',
+    MEMBER_DK                 VARCHAR         NOT NULL COMMENT '클릭회원 = GA URL memnum= 값 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
+    SVC_SCOPE                 VARCHAR(1)      NOT NULL COMMENT '서비스 범위 = A(미납 안내 페이지 unpayed* 만) · B(A + 결제정보 변경 빠른 페이지 paymentchange_quick·check). 🔴 B 는 A 를 포함한다 — 반드시 하나로 고정해 센다',
+    FIRST_CLICK_DATE_SK       NUMBER(8,0)     NOT NULL COMMENT '그 달 그 범위 첫 클릭일 YYYYMMDD',
+    CLICK_EVENT_CNT           NUMBER(18,0)    COMMENT '그 달 그 범위 GA 이벤트 건수',
+    PAID_D5_FLAG              NUMBER(1,0)     COMMENT '첫 클릭일 D+0~D+5 안에 납입(CRM_PAYMENT_BILLING PAY_AMT>0) 1/0. 잠정(창 길이 현업 확인)',
+    PAID_D30_FLAG             NUMBER(1,0)     COMMENT '첫 클릭일 D+0~D+30 안에 납입 1/0(D5 포함) · 추천안B 전환 판정. 잠정',
+    ARREAR_PAID_D5_FLAG       NUMBER(1,0)     COMMENT '첫 클릭일 D+0~D+5 안에 미납분(청구월 < 클릭월) 납입 1/0. 잠정',
+    ARREAR_PAID_D30_FLAG      NUMBER(1,0)     COMMENT '첫 클릭일 D+0~D+30 안에 미납분(청구월 < 클릭월) 납입 1/0 · 추천안A 전환 판정. 잠정',
+    PAID_AMT_D30              NUMBER(18,2)    COMMENT 'D+0~D+30 납입액 합(원 · 모든 납입)',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '미납서비스 전환율 분자·분모 팩트. [Grain: CLICK_MONTH_KEY × MEMBER_DK × SVC_SCOPE]. 전환율 = 전환 플래그 합 ÷ 행수(같은 SVC_SCOPE). 추천안A = SVC_SCOPE A · ARREAR_PAID_D30_FLAG / 추천안B = SVC_SCOPE B · PAID_D30_FLAG. [원천: SILVER.BIGQUERY_EVENT(GA) · SILVER.CRM_PAYMENT_BILLING(CRM)]. [적재: dbt]';
+
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)
 -- ============================================================================
@@ -1715,6 +1770,7 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP DROP CONSTRAINT FK_FCCS_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY DROP CONSTRAINT FK_FCM_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY DROP CONSTRAINT FK_FCM_DIM_PAYMENT; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY DROP CONSTRAINT FK_FSM_DIM_SPONSORSHIP; EXCEPTION WHEN OTHER THEN NULL; END;
   RETURN 'constraint drop (idempotent) done';
 END;
 $$;
@@ -1866,6 +1922,8 @@ ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY ADD CONSTRAINT FK_FCM_DIM_CAMPAIGN
     FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY ADD CONSTRAINT FK_FCM_DIM_PAYMENT
     FOREIGN KEY (PAYMENT_SK) REFERENCES GN_DW.GOLD.DIM_PAYMENT (PAYMENT_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY ADD CONSTRAINT FK_FSM_DIM_SPONSORSHIP
+    FOREIGN KEY (SPONSORSHIP_SK) REFERENCES GN_DW.GOLD.DIM_SPONSORSHIP (SPONSORSHIP_SK) NOT ENFORCED NORELY;
 
 -- 검증(값이 아니라 방법이 정본이다 — 기대 건수를 여기 적지 않는다)
 --   파일 선언 테이블 = grep -oE 'CREATE OR REPLACE TABLE GN_DW\.GOLD\.[A-Z_]+' 06_DDL.sql | sort -u | wc -l

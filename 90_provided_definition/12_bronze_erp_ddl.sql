@@ -1,5 +1,6 @@
 create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
 
+create or replace sequence GN_DW.BRONZE_ERP.SEQ_SYNC_ERR_INFO start with 1 increment by 1 order;
 create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
 	YEAR VARCHAR(16777216) COMMENT '연도',
 	INCOME_EXPS_DIV_NM VARCHAR(16777216) COMMENT '수지구분',
@@ -90,6 +91,13 @@ create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
 	CONTENTS_DELIMITER VARCHAR(16777216) COMMENT '콘텐츠구분자'
 )COMMENT='지출 결의'
 ;
+create or replace TABLE GN_DW.BRONZE_ERP.SYNC_ERR_INFO (
+	ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_ERP.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 이력 일련번호',
+	ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
+	DATA_TYPE VARCHAR(16777216) COMMENT '오류 데이터 유형',
+	ERR_INFO VARCHAR(16777216) COMMENT '오류 상세 내용'
+)COMMENT='ERP 외부 파일 업로드 및 데이터 적재 오류 이력'
+;
 CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_ERP.GN_CSV_FORMAT
 	SKIP_HEADER = 1
 	FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
@@ -113,10 +121,17 @@ DECLARE
     v_file_name VARCHAR;
     v_delete_sql VARCHAR;
     v_copy_sql VARCHAR;
+
+    v_sqlcode NUMBER;
+    v_sqlstate VARCHAR;
+    v_sqlerrm VARCHAR;
+
+    e_invalid_year EXCEPTION;
+    e_file_not_found EXCEPTION;
 BEGIN
     -- P_YEAR YYYY 형태 검증 (4자리 숫자)
     IF (:P_YEAR IS NULL OR LENGTH(:P_YEAR) != 4 OR TRY_TO_NUMBER(:P_YEAR) IS NULL) THEN
-        RETURN ''ERROR: P_YEAR는 YYYY 형태의 4자리 연도여야 합니다 (입력값: '' || NVL(:P_YEAR, ''NULL'') || '')'';
+        RAISE e_invalid_year;
     END IF;
 
     -- 디렉터리 메타데이터 갱신
@@ -130,7 +145,7 @@ BEGIN
     LIMIT 1;
 
     IF (v_file_name IS NULL) THEN
-        RETURN :P_YEAR || ''_budget.csv 패턴에 맞는 파일을 찾을 수 없습니다'';
+        RAISE e_file_not_found;
     END IF;
 
     -- 해당 연도 기존 데이터 삭제
@@ -142,68 +157,128 @@ BEGIN
         COPY INTO GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
         FROM (
             SELECT
-                '''''' || :P_YEAR || '''''',
                 $1,$2,$3,$4,$5,
                 $6,$7,$8,$9,$10,
                 $11, $12, $13, $14, $15,
-                NVL(TRY_TO_NUMBER(REPLACE($16, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($17, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($18, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($19, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($20, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($21, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($22, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($23, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($24, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($25, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($26, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($27, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($28, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($29, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($30, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($31, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($32, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($33, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($34, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($35, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($36, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($37, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($38, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($39, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($40, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($41, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($42, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($43, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($44, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($45, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($46, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($47, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($48, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($49, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($50, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($51, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($52, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($53, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($54, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($55, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($56, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($57, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($58, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($59, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($60, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($61, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($62, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($63, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($64, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($65, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($66, '''','''', '''''''')), 0),
-                NVL(TRY_TO_NUMBER(REPLACE($67, '''','''', '''''''')), 0)
+                $16,
+                $17,
+                $18,
+                $19,
+                $20,
+                $21,
+                $22,
+                $23,
+                $24,
+                $25,
+                $26,
+                $27,
+                $28,
+                $29,
+                $30,
+                $31,
+                $32,
+                $33,
+                $34,
+                $35,
+                $36,
+                $37,
+                $38,
+                $39,
+                $40,
+                $41,
+                $42,
+                $43,
+                $44,
+                $45,
+                $46,
+                $47,
+                $48,
+                $49,
+                $50,
+                $51,
+                $52,
+                $53,
+                $54,
+                $55,
+                $56,
+                $57,
+                $58,
+                $59,
+                $60,
+                $61,
+                $62,
+                $63,
+                $64,
+                $65,
+                $66,
+                $67,
+                $68
             FROM @GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE
             (FILE_FORMAT => ''''GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR'''', PATTERN => ''''.*'' || v_file_name || '''''')
         ) FORCE = TRUE'';
     EXECUTE IMMEDIATE v_copy_sql;
 
     RETURN :P_YEAR || '': '' || v_file_name || '' 적재완료'';
+-- ================================================================
+-- 예외 처리
+-- ================================================================
+EXCEPTION
+
+    WHEN OTHER THEN
+        -- 예외 정보 변수에 저장
+        v_sqlcode := SQLCODE;
+        v_sqlstate := SQLSTATE;
+        v_sqlerrm := SQLERRM;
+        
+        -- 에러 로그 저장
+        INSERT INTO GN_DW.BRONZE_ERP.SYNC_ERR_INFO
+        (
+            ERR_DATETIME,
+            DATA_TYPE,
+            ERR_INFO
+        )
+        VALUES
+        (
+            CURRENT_TIMESTAMP(),
+            ''예산'',
+            ''P_YEAR=''
+            || NVL(:P_YEAR, ''NULL'')
+            || '', FILE=''
+            || NVL(:v_file_name, ''NULL'')
+            || '', SQLCODE=''
+            || :v_sqlcode
+            || '', SQLSTATE=''
+            || :v_sqlstate
+            || '', SQLERRM=''
+            || :v_sqlerrm
+        );
+        CALL SYSTEM$SEND_EMAIL(''EMAIL_ALERT_INTEGRATION'',
+            ''it@gni.kr'',
+            ''ERP 예산 원장 적재 실패'',
+            ''ERROR: ''
+               || ''P_YEAR=''
+               || NVL(:P_YEAR, ''NULL'')
+               || '', FILE=''
+               || NVL(:v_file_name, ''NULL'')
+               || '', SQLCODE=''
+               || :v_sqlcode
+               || '', SQLSTATE=''
+               || :v_sqlstate
+               || '', SQLERRM=''
+               || :v_sqlerrm,
+            ''text/html''
+        );
+        RETURN ''ERROR: ''
+               || ''P_YEAR=''
+               || NVL(:P_YEAR, ''NULL'')
+               || '', FILE=''
+               || NVL(:v_file_name, ''NULL'')
+               || '', SQLCODE=''
+               || :v_sqlcode
+               || '', SQLSTATE=''
+               || :v_sqlstate
+               || '', SQLERRM=''
+               || :v_sqlerrm;   
 END;
 ';
 CREATE OR REPLACE PROCEDURE GN_DW.BRONZE_ERP.SP_LOAD_EXPENSE_RESOLUTION_BY_YEAR("P_YEAR" VARCHAR)
@@ -215,10 +290,17 @@ DECLARE
     v_file_name VARCHAR;
     v_delete_sql VARCHAR;
     v_copy_sql VARCHAR;
+
+    v_sqlcode NUMBER;
+    v_sqlstate VARCHAR;
+    v_sqlerrm VARCHAR;
+
+    e_invalid_year EXCEPTION;
+    e_file_not_found EXCEPTION;
 BEGIN
     -- P_YEAR YYYY 형태 검증 (4자리 숫자)
     IF (:P_YEAR IS NULL OR LENGTH(:P_YEAR) != 4 OR TRY_TO_NUMBER(:P_YEAR) IS NULL) THEN
-        RETURN ''ERROR: P_YEAR는 YYYY 형태의 4자리 연도여야 합니다 (입력값: '' || NVL(:P_YEAR, ''NULL'') || '')'';
+        RAISE e_invalid_year;
     END IF;
 
     -- 디렉터리 메타데이터 갱신
@@ -232,7 +314,7 @@ BEGIN
     LIMIT 1;
 
     IF (v_file_name IS NULL) THEN
-        RETURN :P_YEAR || ''_expense.csv 패턴에 맞는 파일을 찾을 수 없습니다'';
+        RAISE e_file_not_found;
     END IF;
 
     -- 해당 연도 기존 데이터 삭제
@@ -248,7 +330,7 @@ BEGIN
                 $1,$2,$3,$4,$5,
                 $6,$7,$8,$9,$10,
                 $11, $12, $13, 
-                NVL(TRY_TO_NUMBER(REPLACE($14, '''','''', '''''''')), 0),
+                $14,
                 $15 
             FROM @GN_DW.BRONZE_ERP.CSV_UPLOAD_STAGE2
             (FILE_FORMAT => ''''GN_DW.BRONZE_ERP.GN_CSV_FORMAT_EUCKR2'''', PATTERN => ''''.*'' || v_file_name || '''''')
@@ -256,5 +338,65 @@ BEGIN
     EXECUTE IMMEDIATE v_copy_sql;
 
     RETURN :P_YEAR || '': '' || v_file_name || '' 적재완료'';
+-- ================================================================
+-- 예외 처리
+-- ================================================================
+EXCEPTION
+
+    WHEN OTHER THEN
+        -- 예외 정보 변수에 저장
+        v_sqlcode := SQLCODE;
+        v_sqlstate := SQLSTATE;
+        v_sqlerrm := SQLERRM;
+        
+        -- 에러 로그 저장
+        INSERT INTO GN_DW.BRONZE_ERP.SYNC_ERR_INFO
+        (
+            ERR_DATETIME,
+            DATA_TYPE,
+            ERR_INFO
+        )
+        VALUES
+        (
+            CURRENT_TIMESTAMP(),
+            ''지출'',
+            ''P_YEAR=''
+            || NVL(:P_YEAR, ''NULL'')
+            || '', FILE=''
+            || NVL(:v_file_name, ''NULL'')
+            || '', SQLCODE=''
+            || :v_sqlcode
+            || '', SQLSTATE=''
+            || :v_sqlstate
+            || '', SQLERRM=''
+            || :v_sqlerrm
+        );
+        CALL SYSTEM$SEND_EMAIL(''EMAIL_ALERT_INTEGRATION'',
+            ''it@gni.kr'',
+            ''ERP 제작비 적재 실패'',
+            ''ERROR: ''
+               || ''P_YEAR=''
+               || NVL(:P_YEAR, ''NULL'')
+               || '', FILE=''
+               || NVL(:v_file_name, ''NULL'')
+               || '', SQLCODE=''
+               || :v_sqlcode
+               || '', SQLSTATE=''
+               || :v_sqlstate
+               || '', SQLERRM=''
+               || :v_sqlerrm,
+            ''text/html''
+        );
+        RETURN ''ERROR: ''
+               || ''P_YEAR=''
+               || NVL(:P_YEAR, ''NULL'')
+               || '', FILE=''
+               || NVL(:v_file_name, ''NULL'')
+               || '', SQLCODE=''
+               || :v_sqlcode
+               || '', SQLSTATE=''
+               || :v_sqlstate
+               || '', SQLERRM=''
+               || :v_sqlerrm;      
 END;
 ';

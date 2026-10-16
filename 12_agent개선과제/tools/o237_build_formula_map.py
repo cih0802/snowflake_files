@@ -379,6 +379,55 @@ for doc, flag in [("MET_NEW-48", "D5_LETTER_FLAG"), ("MET_NEW-53", "D5_GIFT_FLAG
     upd(doc, "C2_COMBINE", SC, CNT + " · SV_MEMBER_SERVICE_COHORT.SVC." + flag,
         "🆕 %s = TRUE 인 MEMBER_COUNT 를 ACQ_CAMPAIGN_NAME 별로 내고 서비스별 전체(ROLLUP)로 나눠 ×100 한다." % flag + SFX)
 
+# ---- 🆕 [O237-C] G1 잔여 5 중 3 해소(최종캠페인 · 후원사업별 미납율 · 클릭대비 전환율) ----
+#   남은 G1 2 = MET_CMN-122 결연아동코드 · MET_CMN-81 미납서비스 전환율 — 둘 다 GA 행동 팩트 백필(👤) 후 설계(사용자 결정)
+PENDING |= {
+    "SV_MEMBER_MONTHLY.MEMBER.LAST_CAMPAIGN", "SV_MEMBER_MONTHLY.LAST_CAMPAIGN.LAST_CAMPAIGN_NAME",
+    "SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_RATE", "SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_CNT",
+    "SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_ACTIVE_CNT", "SV_MEMBER_SPONSOR_BIZ.FSM.BASE_MONTH_KEY",
+    "SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D5", "SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D30",
+    "SV_SERVICE.FSE.CLICK_MEMBERS_DISTINCT", "SV_SERVICE.FSE.CLICK_DEV_D5_MEMBERS_DISTINCT",
+    "SV_SERVICE.FSE.CLICK_DEV_D30_MEMBERS_DISTINCT",
+}
+upd("MET_CMN-31", "C4_DIMENSION", "analyst_member_monthly",
+    "SV_MEMBER_MONTHLY.LAST_CAMPAIGN.LAST_CAMPAIGN_NAME · SV_MEMBER_MONTHLY.MEMBER.LAST_CAMPAIGN",
+    "🆕 LAST_CAMPAIGN_NAME(회원 최종캠페인 · 잠정 = 가장 최근 시작 후원약정의 대표캠페인)으로 분해한다. 회원수는 고유회원으로 세고 ROLLUP 전체를 함께 낸다."
+    " 🔴 「잠정(최근 시작 후원약정 기준) · CRM 발송명단 최종캠페인과 정의가 다를 수 있다」를 밝힌다.",
+    "현업 확인 = 최종캠페인 정의(최근 시작 약정 vs CRM LAST_CMPGN)")
+upd("MET_CMN-79", "C1_METRIC", "analyst_member_sponsor_biz",
+    "SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_RATE · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_UNPAID_CNT"
+    " · SV_MEMBER_SPONSOR_BIZ.FSM.SPONSORSHIP_ACTIVE_CNT · SV_MEMBER_SPONSOR_BIZ.FSM.BASE_MONTH_KEY",
+    "🆕 SPONSORSHIP_UNPAID_RATE(후원사업 미납(건) ÷ 활동(건) ×100)를 SPONSORSHIP 별로 낸다 — 기준연월 하나 고정(fsm.BASE_MONTH_KEY)"
+    " · 분자(SPONSORSHIP_UNPAID_CNT)·분모(SPONSORSHIP_ACTIVE_CNT)를 함께 보이고 ROLLUP 전체 행.")
+upd("MET_NEW-33", "C5_PARTIAL", "analyst_service",
+    "SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D5 · SV_SERVICE.FSE.CLICK_TO_DEV_RATE_D30 · SV_SERVICE.FSE.CLICK_MEMBERS_DISTINCT"
+    " · SV_SERVICE.FSE.CLICK_DEV_D5_MEMBERS_DISTINCT · SV_SERVICE.FSE.CLICK_DEV_D30_MEMBERS_DISTINCT",
+    "🆕 5일·30일 두 창을 함께 낸다(사용자 결정) = 클릭 회원(명) · 5일 내 개발회원(명) · 30일 내 개발회원(명) · 두 전환율."
+    " 🔴 클릭일 기준 D+1~5 · D+1~30 · 문자(SND) 클릭만 · 처리통보성 제목 제외 · 잠정(창 길이 현업 확인)을 밝힌다.",
+    "현업 확인 = 클릭 후 전환 창 길이")
+
+# ---- 🆕 [O239] G1 잔여 2 해소(결연아동코드 · 미납서비스 전환율) — 추천안 A/B 동시 탑재(사용자 결정 = Agent 실사용 후 현업 결정) ----
+#   SV = 05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql · 팩트 = FACT_GA_CHILD_VIEW · FACT_UNPAID_SERVICE_CONV
+#   현업이 한 안을 고르면 여기 문안과 SV 의 다른 안 metric 을 함께 걷어낸다.
+GCU = "analyst_ga_child_unpaid"
+PENDING |= {
+    "SV_GA_CHILD_UNPAID.GCV.CHILD_CODE", "SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_A", "SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_B",
+    "SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_A", "SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_B",
+    "SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_A", "SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_B",
+}
+upd("MET_CMN-122", "C4_DIMENSION", GCU,
+    "SV_GA_CHILD_UNPAID.GCV.CHILD_CODE · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_A · SV_GA_CHILD_UNPAID.GCV.CHILD_CODE_CNT_B",
+    "🆕 CHILD_CODE(URL childnum= 값)로 분해하고 고유 코드 수는 CHILD_CODE_CNT_A·CHILD_CODE_CNT_B 를 함께 낸다."
+    " 🔴 잠정 추천안 2개 = A 형식 기준(영문3-숫자4-숫자6) · B CRM 아동번호(CRM_CHILD.CHILD_NO) 일치 — 두 값을 나란히 보이고 정의를 1줄씩 밝힌다.",
+    "현업 확인 = 결연아동코드 판정 기준(형식 vs CRM 대조) — Agent 실사용 후 결정")
+upd("MET_CMN-81", "C5_PARTIAL", GCU,
+    "SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CONV_RATE_B"
+    " · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_A · SV_GA_CHILD_UNPAID.USC.UNPAID_SVC_CLICK_MEMBERS_B",
+    "🆕 UNPAID_SVC_CONV_RATE_A·UNPAID_SVC_CONV_RATE_B 와 각 분모(클릭회원)를 클릭월별로 함께 내고 ROLLUP 전체 행."
+    " 🔴 잠정 추천안 2개 = A 미납 안내 페이지(unpayed*) 클릭 · 30일 안 미납분(청구월 < 클릭월) 납입 /"
+    " B A + 결제정보 변경 페이지 클릭 · 30일 안 모든 납입 — 클릭회원 = GA URL memnum · 분모는 회원×월임을 밝힌다.",
+    "현업 확인 = 미납서비스 페이지 범위 · 납입 판정(미납분 vs 전체) · 창 길이 — Agent 실사용 후 결정")
+
 
 def tokens(sv):
     out = []

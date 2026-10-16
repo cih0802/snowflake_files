@@ -873,7 +873,7 @@ def main(session, input_yyyymm=None):
                         file_stream,
                         sheet_name=sheet_title,
                         skiprows=HEADER_ROW_NUM,
-                        usecols=lambda col_idx: 0 <= col_idx <= 25,
+                        usecols=lambda col_idx: 0 <= col_idx <= 40,
                         header=None
                     )
 
@@ -913,8 +913,8 @@ def main(session, input_yyyymm=None):
                     # 캠페인유형 분리
                     if ''캠페인유형'' in df.columns:
                         split_data = df[''캠페인유형''].str.split('' '', n=1, expand=True)
-                        df[''국내해외구분''] = split_data[0]
-                        df[''사업사례구분''] = split_data[1] if split_data.shape[1] > 1 else ""
+                        df[''캠페인유형(국내/해외)''] = split_data[0]
+                        df[''캠페인유형(사업/사례)''] = split_data[1] if split_data.shape[1] > 1 else ""
 
                     for col in header_columns_clean:
                         if col not in comment_to_eng_map:

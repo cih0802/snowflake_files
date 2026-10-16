@@ -869,7 +869,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['NAME', 'UTM', 'CREATIVE_MAP', 'NONE']
+              values: ['NAME', 'UTM', 'CREATIVE_MAP', 'UPPER_CODE', 'NONE']
       - name: AD_MAP_LEVEL
         tests:
           - accepted_values:
@@ -1281,3 +1281,56 @@ models:
       - name: PAYMENT_SK
         tests:
           - not_null
+  # 🆕 [2026-10-16 O237-C] 공#79 후원사업별 미납율
+  - name: FACT_SPONSORSHIP_MONTHLY
+    description: >
+      기준연월 × 후원사업 월 팩트 — grain = BASE_MONTH_KEY × SPONSORSHIP_SK.
+      대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인이라 같은 월 전 후원사업 합이 FMM 합과 같아야 한다.
+      🔴 비율은 저장하지 않는다 · 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql` · 키 중복 대사 = 05_SV-Agent_ai/28_O237C_G1해소_배포순서.sql [C4].
+    columns:
+      - name: BASE_MONTH_KEY
+        tests:
+          - not_null
+      - name: SPONSORSHIP_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_SPONSORSHIP'), field: SPONSORSHIP_SK }
+  # 🆕 [2026-10-16 O239] G1 잔여 — 공#122 결연아동코드 · 공#81 미납서비스 전환율(추천안 A/B 동시 탑재 · 현업 결정 대기)
+  - name: FACT_GA_CHILD_VIEW
+    description: >
+      GA 결연아동 페이지 조회 팩트 — grain = DATE_SK × PAGE_PATH × CHILD_CODE_RAW × URL_MEMBER_DK(NULL 포함 유일).
+      결연아동코드 = URL childnum= 값 · 추천안A = IS_FORMAT_VALID · 추천안B = IS_CRM_MATCHED(SILVER.CRM_CHILD.CHILD_NO 대조).
+      🔴 원천 이벤트 합 = SILVER.BIGQUERY_EVENT 의 childnum= 포함 행수 · 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.
+    columns:
+      - name: DATE_SK
+        tests:
+          - not_null
+      - name: PAGE_PATH
+        tests:
+          - not_null
+      - name: IS_FORMAT_VALID
+        tests:
+          - not_null
+      - name: IS_CRM_MATCHED
+        tests:
+          - not_null
+  - name: FACT_UNPAID_SERVICE_CONV
+    description: >
+      미납서비스 클릭회원 × 이후 납입 전환 팩트 — grain = CLICK_MONTH_KEY × MEMBER_DK × SVC_SCOPE.
+      추천안A = SVC_SCOPE 'A'(unpayed* 페이지) · ARREAR_PAID_D30_FLAG / 추천안B = SVC_SCOPE 'B'(+ paymentchange_quick·check) · PAID_D30_FLAG.
+      🔴 B 는 A 를 포함한다 — SV 는 범위를 하나로 고정한다 · 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.
+    columns:
+      # grain 유일 — dbt_utils 미설치이므로 복합 표현식에 unique 를 건다.
+      - name: "CLICK_MONTH_KEY || '|' || MEMBER_DK || '|' || SVC_SCOPE"
+        tests: [unique]
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }
+      - name: SVC_SCOPE
+        tests:
+          - not_null
+          - accepted_values: { values: ['A', 'B'] }

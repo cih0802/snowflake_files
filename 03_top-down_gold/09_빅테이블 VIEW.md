@@ -1179,6 +1179,12 @@ END-METADATA -->
 | **문화서비스 계열 캠페인행사** | `CULTURE_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 문화서비스 계열 캠페인행사(DIM_EVENT.EVENT_CATEGORY = MS002 6 문화서비스 · 14 전시 · 15 서적 · 16 공연) 참여 기록 행 수(전 기간). 「문화이벤트」 질문의 유사 매핑 대상. |
 | **온라인 구분 일반행사** | `ONLINE_EVENT_PART_ROWS` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 온라인 구분 일반행사(DIM_EVENT.EVENT_CATEGORY = MS286 100 온라인) 참여 기록 행 수(전 기간). 「온라인 이벤트」 질문의 유사 매핑 대상. |
 | **ONLINE_EVENT_PART_ROWS_AFTER** | `ONLINE_EVENT_PART_ROWS_AFTER` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 첫 수신일 이후 온라인 구분 일반행사 참여 기록 행 수. 미수신 행은 NULL(기준일 없음). |
+| **D5_LETTER_FLAG** | `D5_LETTER_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 그 해 그 그룹 발송 후 D+1~D+5 안에 서신 참여가 있었는가(FACT_MESSAGE_DISPATCH D5_LETTER_PART_MEMBERS · 안내성 제목 제외). 미수신 행은 FALSE. |
+| **D5_GIFT_FLAG** | `D5_GIFT_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 그 해 그 그룹 발송 후 D+1~D+5 안에 선물금 참여가 있었는가(선물금 원천에 접수일이 없어 선물금 발송일로 매칭). 미수신 행은 FALSE. |
+| **RETAINED_3M_FLAG** | `RETAINED_3M_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 첫 수신월 + 3개월 시점에 미중단 후원사업이 있는가(FMSS as-of). 그 시점이 데이터 최신월을 넘으면 NULL(관측 불가) · 미수신 행 NULL. |
+| **RETAINED_6M_FLAG** | `RETAINED_6M_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 첫 수신월 + 6개월 시점 유지 여부(규칙은 RETAINED_3M_FLAG 와 같다). |
+| **RETAINED_12M_FLAG** | `RETAINED_12M_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 첫 수신월 + 12개월 시점 유지 여부(규칙은 RETAINED_3M_FLAG 와 같다). |
+| **PAID_AFTER_3M_FLAG** | `PAID_AFTER_3M_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 🆕 O237-B 첫 수신 다음 달 ~ +3개월 안에 회비 납입(PAID_FEE_BILLABLE > 0)이 있는가. 창 길이 잠정(현업 확인 대상) · +3개월이 최신월을 넘으면 NULL · 미수신 행 NULL. |
 
 ---
 

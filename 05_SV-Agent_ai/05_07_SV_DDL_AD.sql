@@ -87,7 +87,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.PROGRAM_NM      AS ad.PROGRAM_NM      WITH SYNONYMS ('프로그램', '프로그램명', '방송프로그램') COMMENT = '방송 프로그램명(고카디널리티 — Cortex Search 백킹 후보). 방송 전용.',
     ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용. 실제값 4종: ''CA''·''PR''·''SP''·''TJ'' + NULL',
     ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서') COMMENT = 'CM 내 위치. 방송 전용. 실제값 16종: ''`''(🔴 **오염값** — 백틱 1문자이며 정상 CM 위치가 아니다. 이 값으로 필터하지 말 것 ··''st''·''E-2nd''·''E-3rd''·''th''·''E-5th''·''E-6th''·''E-7th''·''T-1st''·''T-2nd''·''T-3rd''·''T-4th''·''T-5th''·''T-6th''·''T-7th''·''middle'' + NULL',
-    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 실제값 2종: ''재송출''·''방송'' + NULL',
+    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분', '특집', '특집방송', '특집/재송출') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 실제값 2종: ''재송출''·''방송'' + NULL. 🆕 [O238 W1] 질문의 「특집」 = 값 ''방송''(현업이 보고용 명칭을 「특집」→「방송」으로 합의 · 원천 값은 그대로) ⇒ 「특집」으로 물으면 RT_TYPE = ''방송'' 으로 거르고 답변에 「특집(= 방송)」으로 표기한다.',
     ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 🔴 영상(VIDEO) 전용 — 재방송·디지털은 전건 NULL ⇒ AD_SOURCE_TYPE=''VIDEO'' 로 고정해 쓴다. 실제값 4종: 30·60·90·120 + NULL(영상 행 일부).',
     ad.BRDC_DIV AS ad.BRDC_DIV
       WITH SYNONYMS ('방송구분', '본방/재방')

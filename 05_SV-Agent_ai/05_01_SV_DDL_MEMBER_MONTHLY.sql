@@ -35,14 +35,20 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     first_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_BK)
       WITH SYNONYMS ('최초 캠페인', '가입 캠페인')
-      COMMENT = '회원 최초 캠페인 차원(DIM_CAMPAIGN 을 캠페인 코드 CAMPAIGN_BK 로 조인 · BK 유일 · fan-out 0). 회원 마스터의 현재값이며 월과 무관하다 — 「그 달 후원 캠페인」(campaign)과 다른 축이다. [원천] BRONZE_CRM.TM_MM_FDRM_MBER_INFO.CMPGN_CD → TM_CM_CMPGN_MNG.'
+      COMMENT = '회원 최초 캠페인 차원(DIM_CAMPAIGN 을 캠페인 코드 CAMPAIGN_BK 로 조인 · BK 유일 · fan-out 0). 회원 마스터의 현재값이며 월과 무관하다 — 「그 달 후원 캠페인」(campaign)과 다른 축이다. [원천] BRONZE_CRM.TM_MM_FDRM_MBER_INFO.CMPGN_CD → TM_CM_CMPGN_MNG.',
+    -- 🆕 [2026-10-16 O237-C] 회원 최종 캠페인(DIM_MEMBER.LAST_CAMPAIGN = 캠페인 코드 · 잠정) — 같은 마스터를 별칭으로 한 번 더 붙인다
+    last_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
+      PRIMARY KEY (CAMPAIGN_BK)
+      WITH SYNONYMS ('최종 캠페인', '마지막 캠페인')
+      COMMENT = '회원 최종 캠페인 차원(DIM_CAMPAIGN 을 CAMPAIGN_BK 로 조인 · fan-out 0). 공#31 최종캠페인 = 회원의 가장 최근 시작 후원약정 대표캠페인(잠정 · 파생) — 월과 무관한 회원 속성이며 「그 달 후원 캠페인」·「최초 캠페인」과 다른 축이다. [원천] CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN → DIM_MEMBER.LAST_CAMPAIGN.'
   )
   RELATIONSHIPS (
     fmm_to_month  AS fmm (MONTH_KEY) REFERENCES month,
     fmm_to_member AS fmm (MEMBER_DK) REFERENCES member,
     fmm_to_reason AS fmm (REASON_SK) REFERENCES reason,
     fmm_to_campaign AS fmm (CAMPAIGN_SK) REFERENCES campaign,
-    member_to_first_campaign AS member (FIRST_CAMPAIGN) REFERENCES first_campaign
+    member_to_first_campaign AS member (FIRST_CAMPAIGN) REFERENCES first_campaign,
+    member_to_last_campaign AS member (LAST_CAMPAIGN) REFERENCES last_campaign
   )
   DIMENSIONS (
     month.MONTH_KEY   AS month.MONTH_KEY WITH SYNONYMS ('연월', '조회연월') COMMENT = 'YYYYMM 정수',
@@ -96,7 +102,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.FIRST_CAMPAIGN AS member.FIRST_CAMPAIGN WITH SYNONYMS ('최초캠페인코드', '최초 캠페인 코드') COMMENT = '공#29 회원 최초캠페인 원천코드(회원 마스터 현재값). 라벨은 FIRST_CAMPAIGN_NAME. 원천에 값이 없는 회원은 NULL.',
     first_campaign.FIRST_CAMPAIGN_NAME AS first_campaign.CAMPAIGN_NAME WITH SYNONYMS ('최초캠페인', '최초 캠페인', '가입 캠페인', '최초 가입 캠페인') COMMENT = '공#29 회원 최초캠페인명. 🔴 월과 무관한 회원 속성이다 — 「그 달 후원 캠페인」(CAMPAIGN_NAME)과 섞지 않는다. 최초캠페인 코드가 없는 회원은 NULL.',
     first_campaign.FIRST_CAMPAIGN_TYPE AS first_campaign.CAMPAIGN_TYPE WITH SYNONYMS ('최초캠페인 카테고리', '최초 캠페인유형') COMMENT = '최초캠페인의 카테고리(MM294 라벨).',
-    first_campaign.FIRST_MARKETING_CAMPAIGN AS first_campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('최초 마케팅캠페인') COMMENT = '최초캠페인의 마케팅캠페인명.'
+    first_campaign.FIRST_MARKETING_CAMPAIGN AS first_campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('최초 마케팅캠페인') COMMENT = '최초캠페인의 마케팅캠페인명.',
+    -- 🆕 [2026-10-16 O237-C] 회원 최종 캠페인 축(DIM_MEMBER.LAST_CAMPAIGN → DIM_CAMPAIGN BK · 잠정)
+    member.LAST_CAMPAIGN AS member.LAST_CAMPAIGN WITH SYNONYMS ('최종캠페인코드', '최종 캠페인 코드') COMMENT = '공#31 회원 최종캠페인 코드(잠정 · 가장 최근 시작 후원약정의 대표캠페인). 라벨은 LAST_CAMPAIGN_NAME. 후원약정이 없는 회원은 NULL.',
+    last_campaign.LAST_CAMPAIGN_NAME AS last_campaign.CAMPAIGN_NAME WITH SYNONYMS ('최종캠페인', '최종 캠페인', '마지막 캠페인') COMMENT = '공#31 회원 최종캠페인명(잠정). 🔴 월과 무관한 회원 속성 — 「그 달 후원 캠페인」(CAMPAIGN_NAME)·「최초캠페인」(FIRST_CAMPAIGN_NAME)과 섞지 않는다. 회원수는 이 축으로 고유회원을 센다. 답변에 「잠정(최근 시작 후원약정 기준)」을 밝힌다.',
+    last_campaign.LAST_CAMPAIGN_TYPE AS last_campaign.CAMPAIGN_TYPE WITH SYNONYMS ('최종캠페인 카테고리', '최종 캠페인유형') COMMENT = '최종캠페인의 카테고리(MM294 라벨).'
   )
   METRICS (
     fmm.TOTAL_PAID_ALL   AS SUM(fmm.PAID_FEE)

@@ -71,6 +71,7 @@ SELECT PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFI
 --     WIDE_MEMBER_SERVICE_COHORT = 기존 45열이 라이브 뷰와 양방향 MINUS 0(6,602,895행) · 신규 6열은 미수신 행 전부 NULL/FALSE
 -- ============================================================================
 -- [B1] 👤 05_25b [0] FACT_CAMPAIGN_MONTHLY 테이블 단독 생성(06_DDL 블록 복사 · IF NOT EXISTS) + FK 2줄
+--   🆕 [O237-C] 05_25b 실제 위치 = 05_SV-Agent_ai/_archive/05_25b_대사_CAMPAIGN_MONTHLY.sql(2026-10-16 ua91864 대사 [1]~[4] 전부 기대값 · 집행 완료)
 -- [B2] 👤 dbt build --select FACT_CAMPAIGN_MONTHLY WIDE_MEMBER_SERVICE_COHORT
 -- [B3] 05_25b [1]~[4] 대사(기대 = [1] BAD_* 전부 0 · [2] DIFF 0)
 -- [B4] SV = 05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql(신규) · 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql(+6 차원 · +6 metric)

@@ -66,6 +66,18 @@ utm_pick as (
         partition by p.AD_PERF_DK
         order by u.MAP_ROWS desc, u.STRT_DATE desc, u.MKTG_CAMPAIGN_NAME, u.MKTG_CAMPAIGN_BK
     ) = 1
+),
+-- 🆕 [2026-10-16 O238 W3-L4 · 사용자 결정 = 코드형 값만 즉시 연결] 영상 「상위캠페인」 열의 코드형 값(U####)
+--   → CRM 상위캠페인코드 → 하위 캠페인의 마케팅캠페인. 🔴 마케팅캠페인이 **정확히 1개**인 코드만 쓴다(1:N 은 미매핑 유지 · 추측 금지).
+--   이름형 값(TV_ 접두 등)은 쓰지 않는다 — 현업 코드 전환(O238 W5) 대기. 실측(ua91864) = 코드 10종 전건 1:1 · 3,406행.
+video_code_mk as (
+    select UPPER(TRIM(c.UPPER_CMPGN_CD)) as UPPER_CODE, MIN(mk.MKTG_CAMPAIGN_SK) as MKTG_CAMPAIGN_SK
+    from {{ ref('CRM_CAMPAIGN') }} c
+    join {{ ref('DIM_MARKETING_CAMPAIGN') }} mk
+      on mk.MKTG_CAMPAIGN_BK = TO_VARCHAR(c.MKTG_CMPGN_NM)
+    where c.UPPER_CMPGN_CD is not null and c.MKTG_CMPGN_NM is not null
+    group by 1
+    having COUNT(DISTINCT mk.MKTG_CAMPAIGN_SK) = 1
 )
 
 select
@@ -100,7 +112,7 @@ select
     --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
     --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
-    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · 🆕 O232: → 소재 매핑(MKTG) → 0
+    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, vc.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · O232: → 소재 매핑(MKTG) · 🆕 O238: → 영상 상위캠페인코드 → 0
     {{ gold_meta('AGENCY') }},
     -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
@@ -122,7 +134,8 @@ select
     case when mk.MKTG_CAMPAIGN_SK is not null then 'NAME'
          when up.MKTG_CAMPAIGN_SK is not null then 'UTM'
          when cm_mk.MKTG_CAMPAIGN_SK is not null then 'CREATIVE_MAP'
-         else 'NONE' end         as MKTG_MAP_METHOD,
+         when vc.MKTG_CAMPAIGN_SK is not null then 'UPPER_CODE'
+          else 'NONE' end         as MKTG_MAP_METHOD,
     iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT,
     -- 🆕 [2026-10-15 O232 · 사용자 확정 추천안] 소재 매핑 3순위 — 이름매칭·UTM 실패 행에만 적용한다(06_DDL 동기 · 맨 끝 append).
     --   재방송 = 캠페인카테고리 수준(한 방송에 마케팅캠페인 6~23개 → 아래로 배분하지 않는다) · 영상 = 마케팅캠페인 1개 확정분만 MKTG.
@@ -177,4 +190,8 @@ left join {{ source('silver_external', 'AD_CREATIVE_CAMPAIGN_MAP') }} cm
       and cm.CREATIVE_NM = p.CREATIVE_NM
 left join {{ ref('DIM_MARKETING_CAMPAIGN') }} cm_mk
        on cm.MAP_LEVEL = 'MKTG'
-      and cm_mk.MKTG_CAMPAIGN_NAME = cm.MKTG_CAMPAIGN_NAME
+       and cm_mk.MKTG_CAMPAIGN_NAME = cm.MKTG_CAMPAIGN_NAME
+-- 🆕 [2026-10-16 O238] 영상 코드형 상위캠페인 — video_code_mk 는 코드당 1행(HAVING = 1) ⇒ fan-out 0.
+left join video_code_mk vc
+       on p.AD_SOURCE_TYPE = 'VIDEO'
+      and vc.UPPER_CODE = UPPER(TRIM(v.UPPER_CMPGN_NM))

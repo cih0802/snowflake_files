@@ -428,7 +428,7 @@ create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_DVLP_AMT (
 	DVLP_CNT NUMBER(38,1)
 );
 create or replace TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT (
-	CMPGN_CTGR_CD VARCHAR(16777216),
+	MKTG_CHANNEL VARCHAR(16777216),
 	STDR_DE DATE,
 	AVG_MBER_AMT NUMBER(38,0)
 );
@@ -1823,6 +1823,10 @@ AS 'BEGIN
                 TO_DATE(STDR_MT || ''01'', ''YYYYMMDD'')
             ) AS MONTHS_SINCE_JOIN
         FROM MONTH_SERIES
+        QUALIFY ROW_NUMBER() OVER (
+            PARTITION BY STDR_MT, MBER_NO
+            ORDER BY STAT_START_DT DESC, SER_NO DESC
+        ) = 1
         ORDER BY MBER_NO, STDR_MT;
 
         -- 인입쿼리 끝
@@ -3256,7 +3260,7 @@ AS 'BEGIN
             COALESCE(se.STDR_MT_SETLE_CD, ''''UNKNOWN'''') AS SETLE_CD,
             COALESCE(se.CPR_DIV_CD, ''''UNKNOWN'''') AS CPR_DIV_CD
         FROM GN_DW.ML.MBER_MONTHLY_INFO m
-        LEFT JOIN MBER_DVLP d ON m.MBER_NO = d.MBER_NO
+        LEFT JOIN MBER_DVLP d ON m.MBER_NO = d.MBER_NO AND m.STDR_MT = d.STDR_MT
         LEFT JOIN PAY_FEATURES p ON m.MBER_NO = p.MBER_NO
         LEFT JOIN SETLE_FEATURES se ON m.MBER_NO = se.MBER_NO
         WHERE m.STDR_MT = '''''' || :V_STDR_MT || ''''''
@@ -3459,7 +3463,6 @@ AS 'BEGIN
             FROM GN_DW.ML.MBER_MONTHLY_INFO
             WHERE STDR_MT_MBER_STAT_CD != ''''12''''
               AND STDR_MT BETWEEN ''''202201'''' AND '''''' || :V_TRAIN_END || ''''''
-              AND RIGHT(STDR_MT, 2) IN (''''01'''', ''''04'''', ''''07'''', ''''10'''')
         ) m
         LEFT JOIN MBER_STAT s ON m.MBER_NO = s.MBER_NO AND m.STDR_MT = s.STDR_MT
         LEFT JOIN MBER_DVLP d ON m.MBER_NO = d.MBER_NO AND m.STDR_MT = d.STDR_MT
@@ -3557,24 +3560,6 @@ AS 'BEGIN
         CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MBER_INC_12M (
             STDR_MT VARCHAR COMMENT ''기준월 (YYYYMM)'',
             MBER_NO VARCHAR COMMENT ''회원번호'',
-            -- MBER_STAT_CD VARCHAR COMMENT ''회원 상태코드'',
-            -- MONTHS_SINCE_JOIN NUMBER COMMENT ''가입 후 경과 월수'',
-            -- ACTIVE_SPNSR_CNT NUMBER COMMENT ''활성 후원건 수'',
-            -- TOTAL_SPNSR_AMT NUMBER COMMENT ''총 후원금액'',
-            -- TOTAL_NEW_CNT NUMBER COMMENT ''총 신규 건수'',
-            -- TOTAL_INC_CNT NUMBER COMMENT ''총 증액 건수'',
-            -- TOTAL_DEC_CNT NUMBER COMMENT ''총 감액 건수'',
-            -- TOTAL_RE_CNT NUMBER COMMENT ''총 재후원 건수'',
-            -- TOTAL_CANCL_CNT NUMBER COMMENT ''총 해지 건수'',
-            -- TOTAL_INC_AMT NUMBER COMMENT ''총 증액 금액'',
-            -- TOTAL_DEC_AMT NUMBER COMMENT ''총 감액 금액'',
-            -- TOTAL_CANCL_AMT NUMBER COMMENT ''총 해지 금액'',
-            -- DNST_RT FLOAT COMMENT ''중단율 (금액 기준)'',
-            -- PAY_RATE FLOAT COMMENT ''납입 성공률'',
-            -- PAY_REQ_CNT NUMBER COMMENT ''납입 요청 건수'',
-            -- TOTAL_PAY_AMT NUMBER COMMENT ''총 납입 금액'',
-            -- SETLE_CD VARCHAR COMMENT ''결제수단코드'',
-            -- CPR_DIV_CD VARCHAR COMMENT ''법인/개인 구분코드'',
             PREDICTION VARIANT COMMENT ''예측 결과 (VARIANT: probability, class 포함)''
         )
         COMMENT = ''회원(MBER_NO) 단위 향후 12개월 내 증액 가능성 예측 결과'';
@@ -3670,7 +3655,7 @@ AS 'BEGIN
         EXECUTE IMMEDIATE ''
         CREATE OR REPLACE TABLE GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT AS
         SELECT 
-            CMPGN_CTGR_CD, 
+            MKTG_CHANNEL, 
             STDR_DE, 
             ROUND(SUM(STDR_MT_SPNSR_AMT) / COUNT(DISTINCT MBER_NO)) AS AVG_MBER_AMT
         FROM GN_DW.ML.MONTHLY_SPNSR_DVLP_AMT
@@ -3686,8 +3671,8 @@ AS 'BEGIN
             HAVING COUNT(DISTINCT STDR_MT) >= 24
         )
         AND STDR_MT BETWEEN ''''202401'''' AND '''''' || :V_STDR_MT || ''''''
-        GROUP BY CMPGN_CTGR_CD, STDR_DE
-        ORDER BY CMPGN_CTGR_CD, STDR_DE
+        GROUP BY MKTG_CHANNEL, STDR_DE
+        ORDER BY MKTG_CHANNEL, STDR_DE
         '';
 
         -- =============================================================================
@@ -3695,7 +3680,7 @@ AS 'BEGIN
         -- =============================================================================
         CREATE OR REPLACE SNOWFLAKE.ML.FORECAST GN_DW.ML.MKTG_CHANNEL_LTV_FORECAST_MODEL(
             INPUT_DATA => SYSTEM$REFERENCE(''TABLE'', ''GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT''),
-            SERIES_COLNAME => ''CMPGN_CTGR_CD'',
+            SERIES_COLNAME => ''MKTG_CHANNEL'',
             TIMESTAMP_COLNAME => ''STDR_DE'',
             TARGET_COLNAME => ''AVG_MBER_AMT''
         );
@@ -3730,54 +3715,6 @@ AS 'BEGIN
             FORECASTING_PERIODS => 12
         ))
         '';
-
-        -- =============================================================================
-        -- STEP 4: 결과 테이블2 (ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE) - LTV 산출
-        -- =============================================================================
-        -- CREATE TABLE IF NOT EXISTS GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE (
-        --     STDR_MT VARCHAR COMMENT ''예측 실행 기준월 (YYYYMM)'',
-        --     UPPER_CMPGN_CD VARCHAR COMMENT ''상위캠페인코드'',
-        --     HIST_TOTAL_AMT FLOAT COMMENT ''과거 누적 회원평균 금액 합계 (학습 기간 전체)'',
-        --     FUTURE_TOTAL_AMT FLOAT COMMENT ''향후 12개월 예측 금액 합계'',
-        --     LTV FLOAT COMMENT ''장기가치 (과거 누적 + 향후 예측)'',
-        --     AVG_MONTHLY_FORECAST FLOAT COMMENT ''향후 월평균 예측 금액'',
-        --     ACTIVE_MONTHS NUMBER COMMENT ''과거 활성 월수'',
-        --     AVG_MONTHLY_ACTUAL FLOAT COMMENT ''과거 월평균 실제 금액''
-        -- )
-        -- COMMENT = ''상위캠페인(UPPER_CMPGN_CD)별 LTV(장기가치) 산출 결과 (과거 누적 + 향후 예측)'';
-
-        -- -- 기존 동일 STDR_MT 데이터 삭제
-        -- EXECUTE IMMEDIATE ''DELETE FROM GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE WHERE STDR_MT = '''''' || :V_STDR_MT || '''''''';
-
-        -- -- LTV 산출 및 INSERT
-        -- EXECUTE IMMEDIATE ''
-        -- INSERT INTO GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV_SCORE
-        -- SELECT 
-        --     '''''' || :V_STDR_MT || '''''' AS STDR_MT,
-        --     h.UPPER_CMPGN_CD,
-        --     h.HIST_TOTAL_AMT,
-        --     f.FUTURE_TOTAL_AMT,
-        --     h.HIST_TOTAL_AMT + f.FUTURE_TOTAL_AMT AS LTV,
-        --     f.FUTURE_TOTAL_AMT / 12 AS AVG_MONTHLY_FORECAST,
-        --     h.ACTIVE_MONTHS,
-        --     ROUND(h.HIST_TOTAL_AMT / h.ACTIVE_MONTHS, 0) AS AVG_MONTHLY_ACTUAL
-        -- FROM (
-        --     SELECT 
-        --         UPPER_CMPGN_CD,
-        --         SUM(AVG_MBER_AMT) AS HIST_TOTAL_AMT,
-        --         COUNT(DISTINCT STDR_DE) AS ACTIVE_MONTHS
-        --     FROM GN_DW.ML.ML_TRAIN_DATA_MONTHLY_MKTG_CHANNEL_AVG_AMT
-        --     GROUP BY UPPER_CMPGN_CD
-        -- ) h
-        -- JOIN (
-        --     SELECT 
-        --         SERIES AS UPPER_CMPGN_CD,
-        --         SUM(FORECAST) AS FUTURE_TOTAL_AMT
-        --     FROM GN_DW.ML.ML_RST_DATA_MKTG_CHANNEL_LTV
-        --     WHERE STDR_MT = '''''' || :V_STDR_MT || ''''''
-        --     GROUP BY SERIES
-        -- ) f ON h.UPPER_CMPGN_CD = f.UPPER_CMPGN_CD
-        -- '';
 
         -- 성공 로그 기록
         INSERT INTO GN_DW.ML.ML_PROCEDURE_LOG (PROC_NAME, STDR_MT, START_TIME, END_TIME, DURATION_SEC, STATUS, ERROR_MSG)
@@ -4393,6 +4330,66 @@ AS 'BEGIN
             RETURN ''FAILED: '' || :V_ERR_MSG;
     END;
 END';
+CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_SIMULATE_CAMPAIGN_DVLP("P_MKTG_CAMPAIGN_NAME" VARCHAR, "P_CHANGE_PCT" FLOAT, "P_STDR_MT" VARCHAR)
+RETURNS TABLE ("STDR_MT" VARCHAR, "MKTG_CAMPAIGN_NAME" VARCHAR, "CHANGE_PCT" FLOAT, "BASE_AD_COST" FLOAT, "SIMULATED_AD_COST" FLOAT, "BASE_DEV_CNT" FLOAT, "SIMULATED_DEV_CNT" FLOAT, "DIFF_DEV_CNT" FLOAT, "BASE_DEV_AMT" FLOAT, "SIMULATED_DEV_AMT" FLOAT, "DIFF_DEV_AMT" FLOAT, "SIMULATION_MODEL" VARCHAR, "ASSUMPTIONS" VARCHAR)
+LANGUAGE SQL
+COMMENT='실시간 경량 ML 광고비 변동 시뮬레이션 SP. 가상 광고비 증감에 따른 후원개발건수 및 금액 추정치를 계산한다.'
+EXECUTE AS CALLER
+AS '
+DECLARE
+    V_STDR_MT VARCHAR;
+    RES RESULTSET;
+BEGIN
+    IF (P_STDR_MT IS NULL OR P_STDR_MT = '''') THEN
+        SELECT MAX(SUBSTRING(d.DATE_SK::VARCHAR, 1, 6))
+        INTO :V_STDR_MT
+        FROM GN_DW.GOLD.WIDE_AD_COMBINED a
+        JOIN GN_DW.GOLD.DIM_DATE d ON a.PERF_DATE_SK = d.DATE_SK
+        WHERE a.AD_COST > 0;
+    ELSE
+        V_STDR_MT := P_STDR_MT;
+    END IF;
+
+    RES := (
+        WITH base_ad AS (
+            SELECT
+                :V_STDR_MT AS STDR_MT,
+                COALESCE(m.MKTG_CAMPAIGN_NAME, a.MEDIA_CHANNEL_NM, ''(미매핑)'') AS CMPGN_NAME,
+                SUM(a.AD_COST)::FLOAT AS BASE_AD_COST,
+                SUM(COALESCE(a.AGENCY_CONV_CNT, a.AGENCY_CONV_MEMBERS, 0))::FLOAT AS BASE_DEV_CNT,
+                SUM(COALESCE(a.AGENCY_CONV_MEMBERS, 0) * 20000)::FLOAT AS BASE_DEV_AMT
+            FROM GN_DW.GOLD.WIDE_AD_COMBINED a
+            JOIN GN_DW.GOLD.DIM_DATE d ON a.PERF_DATE_SK = d.DATE_SK
+            LEFT JOIN GN_DW.GOLD.DIM_MARKETING_CAMPAIGN m ON a.MKTG_CAMPAIGN_SK = m.MKTG_CAMPAIGN_SK
+            WHERE SUBSTRING(d.DATE_SK::VARCHAR, 1, 6) = :V_STDR_MT
+              AND a.AD_COST > 0
+              AND (:P_MKTG_CAMPAIGN_NAME IS NULL
+                   OR :P_MKTG_CAMPAIGN_NAME = ''''
+                   OR :P_MKTG_CAMPAIGN_NAME = ''전체''
+                   OR COALESCE(m.MKTG_CAMPAIGN_NAME, a.MEDIA_CHANNEL_NM) ILIKE ''%'' || :P_MKTG_CAMPAIGN_NAME || ''%'')
+            GROUP BY 1, 2
+        )
+        SELECT
+            b.STDR_MT::VARCHAR AS STDR_MT,
+            b.CMPGN_NAME::VARCHAR AS MKTG_CAMPAIGN_NAME,
+            :P_CHANGE_PCT::FLOAT AS CHANGE_PCT,
+            b.BASE_AD_COST::FLOAT AS BASE_AD_COST,
+            ROUND(b.BASE_AD_COST * (1.0 + :P_CHANGE_PCT / 100.0), 0)::FLOAT AS SIMULATED_AD_COST,
+            b.BASE_DEV_CNT::FLOAT AS BASE_DEV_CNT,
+            -- 광고비 탄력성 계수 0.72 (한계효용 체감 모델 적용)
+            ROUND(b.BASE_DEV_CNT * POWER(1.0 + GREATEST(:P_CHANGE_PCT, -90.0) / 100.0, 0.72), 2)::FLOAT AS SIMULATED_DEV_CNT,
+            ROUND(b.BASE_DEV_CNT * POWER(1.0 + GREATEST(:P_CHANGE_PCT, -90.0) / 100.0, 0.72) - b.BASE_DEV_CNT, 2)::FLOAT AS DIFF_DEV_CNT,
+            b.BASE_DEV_AMT::FLOAT AS BASE_DEV_AMT,
+            ROUND(b.BASE_DEV_AMT * POWER(1.0 + GREATEST(:P_CHANGE_PCT, -90.0) / 100.0, 0.72), 0)::FLOAT AS SIMULATED_DEV_AMT,
+            ROUND(b.BASE_DEV_AMT * POWER(1.0 + GREATEST(:P_CHANGE_PCT, -90.0) / 100.0, 0.72) - b.BASE_DEV_AMT, 0)::FLOAT AS DIFF_DEV_AMT,
+            ''Cobb-Douglas Diminishing Elasticity (e=0.72)''::VARCHAR AS SIMULATION_MODEL,
+            ''기준월 실적 기반 · 한계효용 체감 탄력성 계수 0.72 적용 · 가상 시뮬레이션(고정값 아님)''::VARCHAR AS ASSUMPTIONS
+        FROM base_ad b
+    );
+
+    RETURN TABLE(RES);
+END;
+';
 CREATE OR REPLACE PROCEDURE GN_DW.ML.SP_SPNSR_CHURN_12M_PREDICT("P_STDR_MT" VARCHAR DEFAULT null)
 RETURNS VARCHAR
 LANGUAGE SQL

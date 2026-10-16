@@ -66,6 +66,34 @@ KNOWN_ORPHANS = {
         "역할기반 월 축(중단월) → DIM_MONTH.MONTH_KEY. 위와 같은 사유. "
         "🔴 ERD 에 논리 관계로 표기한다.",
     ),
+    # 🆕 [O239] O236·O237 월 팩트 3종(FCCS·FCM·FSM)의 기준월 — 등재 누락분
+    ("*", "BASE_MONTH_KEY"): (
+        "CONFORM",
+        "역할기반 월 축(기준연월) → DIM_MONTH.MONTH_KEY. 위와 같은 사유. "
+        "🔴 ERD 에 논리 관계로 표기한다.",
+    ),
+    ("*", "CLICK_MONTH_KEY"): (
+        "CONFORM",
+        "역할기반 월 축(미납서비스 클릭월 · O239 FACT_UNPAID_SERVICE_CONV) → DIM_MONTH.MONTH_KEY. "
+        "🔴 ERD 에 논리 관계로 표기한다.",
+    ),
+    ("FACT_UNPAID_SERVICE_CONV", "FIRST_CLICK_DATE_SK"): (
+        "CONFORM",
+        "역할기반 일자 축(그 달 첫 클릭일 · O239) → DIM_DATE.DATE_SK. 물리 FK 미선언(06_DDL).",
+    ),
+    ("FACT_UNPAID_SERVICE_CONV", "MEMBER_DK"): (
+        "CONFORM",
+        "클릭회원 = GA URL memnum → DIM_MEMBER.MEMBER_DK(O239 · dbt relationships warn). "
+        "사전 실측(ua91864 2026-10-16) = 502행 전건 DIM_MEMBER 실재.",
+    ),
+    ("FACT_GA_CHILD_VIEW", "DATE_SK"): (
+        "CONFORM",
+        "방문일 → DIM_DATE.DATE_SK(O239 · 물리 FK 미선언 · SV_GA_CHILD_UNPAID 관계로 사용).",
+    ),
+    ("FACT_GA_CHILD_VIEW", "URL_MEMBER_DK"): (
+        "CONFORM",
+        "GA URL memnum 회원번호 → DIM_MEMBER.MEMBER_DK(O239). NULL = URL 에 memnum 없음(비식별 · 0 아님).",
+    ),
     ("*", "AD_PERF_DK"): (
         "DEGEN",
         "광고 성과 degenerate key. 코어 FACT_AD_PERFORMANCE 의 PK 이고 위성 3종이 이를 참조한다 "
@@ -233,6 +261,14 @@ LOGICAL_FK = {
     ("DIM_MEMBER_ACQUISITION", "ACQ_ORG_SK"):         ("DIM_ORG", "ORG_SK"),
     ("DIM_MEMBER_ACQUISITION", "ACQ_SPONSORSHIP_SK"): ("DIM_SPONSORSHIP", "SPONSORSHIP_SK"),
     ("DIM_MEMBER_ACQUISITION", "FIRST_STOP_DATE_SK"): ("DIM_DATE", "DATE_SK"),
+    # 🆕 [O239] O234 이 KNOWN_ORPHANS 에 CONFORM 으로 등재하고 대상 등재를 빠뜨렸다(test_gold_erd 축7-a)
+    ("FACT_MEMBER_COHORT", "LAST_STOP_DATE_SK"):     ("DIM_DATE", "DATE_SK"),
+    "BASE_MONTH_KEY":  ("DIM_MONTH", "MONTH_KEY"),
+    "CLICK_MONTH_KEY": ("DIM_MONTH", "MONTH_KEY"),
+    ("FACT_UNPAID_SERVICE_CONV", "FIRST_CLICK_DATE_SK"): ("DIM_DATE", "DATE_SK"),
+    ("FACT_UNPAID_SERVICE_CONV", "MEMBER_DK"):           ("DIM_MEMBER", "MEMBER_DK"),
+    ("FACT_GA_CHILD_VIEW", "DATE_SK"):                   ("DIM_DATE", "DATE_SK"),
+    ("FACT_GA_CHILD_VIEW", "URL_MEMBER_DK"):             ("DIM_MEMBER", "MEMBER_DK"),
 }
 
 #: 고립 판정의 **분모**가 되는 테이블 접두. 🔴 이 한 곳에서만 정한다(`R3-9 ㉡`).
