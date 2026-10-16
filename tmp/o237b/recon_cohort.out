@@ -1,0 +1,6 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+live cols 45
+old-col diff {'A': 0, 'B': 0, 'N': 6602895, 'N_LIVE': 6602895}
+[Row(SERVICE_GROUP_NAME='장기회원 서비스', RCV=485207, LETTER=181, GIFT=79, INC=388, OBS3=308187, RET3=294131, OBS12=273848, RET12=232997, OBSP=308187, PAID=288592), Row(SERVICE_GROUP_NAME='개별화 신규(사단)', RCV=257618, LETTER=1252, GIFT=3, INC=264, OBS3=225968, RET3=198573, OBS12=148274, RET12=104774, OBSP=225968, PAID=201047), Row(SERVICE_GROUP_NAME='행운의 카드', RCV=35881, LETTER=385, GIFT=38, INC=29, OBS3=35881, RET3=33373, OBS12=14552, RET12=12771, OBSP=35881, PAID=33154), Row(SERVICE_GROUP_NAME='선넘는좋은일 신규 즉시', RCV=4159, LETTER=12, GIFT=0, INC=19, OBS3=2797, RET3=2136, OBS12=0, RET12=0, OBSP=2797, PAID=2246)]
+nonrcv non-null 0

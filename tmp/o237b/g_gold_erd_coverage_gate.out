@@ -1,0 +1,91 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+GOLD ERD FK 커버리지 게이트
+  분모 = 접두 DIM·FACT × 접미 _SK·_KEY·_DK
+  키 컬럼             = 150
+  병합 FK 관계        = 83 (YAML 72 · 물리 68 · YAML만 15 · 물리만 11)
+  고립 키 컬럼        = 39  (DIM 15 · FACT 24)
+  └ 분류됨            = 38
+  └ 🔴 미분류         = 1
+
+  [CONFORM]      DIM_DATE.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [CONFORM]      DIM_MEMBER.MEMBER_SK → DIM_MEMBER_STATUS_HISTORY.MEMBER_SK
+                 └ 현재행 투영 차원 → DIM_MEMBER_STATUS_HISTORY.MEMBER_SK 참조(1:1 투영). 실측 = 1,763,065행 · distinct 1,763,065(유일) · 미해소 0. ⚠️ 이 컬럼은 **자기 차원의 grain 키이면서 동시에 참조**다 —
+  [CONFORM]      DIM_MEMBER_ACQUISITION.ACQ_CAMPAIGN_SK → DIM_CAMPAIGN.CAMPAIGN_SK
+                 └ 획득 귀속 차원의 역할기반 캠페인 축 → DIM_CAMPAIGN.CAMPAIGN_SK. 실측 = 1,585,949행 · distinct 13,038 · 미해소 0. base 인 FACT_MEMBER_COHORT 쪽에는 relationships 가 있으나 **이 차원에는
+  [CONFORM]      DIM_MEMBER_ACQUISITION.ACQ_DATE_SK → DIM_DATE.DATE_SK
+                 └ 역할기반 일자 축(획득일) → DIM_DATE.DATE_SK. 실측 = 1,585,949행 · distinct 10,040 · 미해소 0.
+  [CONFORM]      DIM_MEMBER_ACQUISITION.ACQ_ORG_SK → DIM_ORG.ORG_SK
+                 └ 역할기반 조직 축(획득 조직) → DIM_ORG.ORG_SK. 실측 = 1,585,949행 · distinct 344 · 미해소 0.
+  [CONFORM]      DIM_MEMBER_ACQUISITION.ACQ_SPONSORSHIP_SK → DIM_SPONSORSHIP.SPONSORSHIP_SK
+                 └ 역할기반 후원유형 축 → DIM_SPONSORSHIP.SPONSORSHIP_SK. 실측 = 1,585,949행 · distinct 29 · 미해소 0.
+  [CONFORM]      DIM_MEMBER_ACQUISITION.FIRST_STOP_DATE_SK → DIM_DATE.DATE_SK
+                 └ 역할기반 일자 축(최초 중단일) → DIM_DATE.DATE_SK. 실측 = 1,585,949행 · NOT NULL **901,577**(미중단은 NULL · 0 아님) · distinct 6,405 · 미해소 0. 🔴 NULL 이 정상인 축이다 — not_null 을
+  [CONFORM]      DIM_MEMBER_IDENTITY.MEMBER_DK → DIM_MEMBER.MEMBER_DK
+                 └ 회원 식별 차원 → DIM_MEMBER.MEMBER_DK 참조. 실측 = 1,763,066행 · 유일 · 🟠 **미해소 1행**(DIM_MEMBER 에 없는 MEMBER_DK 가 1건) ⇒ 관계는 실재하고 결손은 회원 마스터 미완전 축(문서50 §O116 ㉠)의 1행이
+  [DEGEN]        DIM_MEMBER_STATUS_HISTORY.MEMBER_DK
+                 └ SCD2 차원의 자연키(업무키). 실측 = 7,925,716행 · distinct 1,763,065 ⇒ 버전 반복이라 비유일이지만 **자기 테이블의 업무키이고 다른 차원을 참조하지 않는다**. 🔴 이름이 같은 DIM_MEMBER_IDENTITY.MEMBER_DK 와 성
+  [DEGEN]        DIM_MSG_TEMPLATE.ALTRTV_MSG_TMPLAT_KEY
+                 └ 대체메시지 템플릿 원천키. 실측 NOT NULL 952/7,011 · distinct 61 · 대상 차원 없음(원천 속성).
+  [DEGEN]        DIM_MSG_TEMPLATE.TEMPLATE_KEY
+                 └ 알림톡 템플릿 원천키(자연키). 실측 7,011 · 유일 ⇒ 자기 차원의 업무키 · FK 아님.
+  [DEGEN]        DIM_ORG.ORG_DK
+                 └ 조직 차원의 자연키(업무키). 실측 = 1,315행 · distinct 1,315(유일) · 미해소 0 ⇒ 자기 테이블의 키이고 FK 가 아니다.
+  [DEGEN]        DIM_PAYMENT_ACCOUNT.ACCOUNT_KEY
+                 └ 기관·결제사 계좌 원천키. 실측 288행 · distinct 256(두 원천 union) · 차원 없음.
+  [CONFORM]      DIM_RELATIONSHIP.MEMBER_DK → DIM_MEMBER.MEMBER_DK
+                 └ 회원 conform 축 → DIM_MEMBER.MEMBER_DK. 실측 872,358행 · distinct 558,888 · 해소 558,888(100%) ⇒ 🔴 ERD 에 논리 관계로 표기한다(물리 FK 미선언).
+  [DEGEN]        DIM_SEND_REQUEST.SNDNG_KEY
+                 └ 발송요청 원천키(자연키). 실측 1,722,090 · 유일 ⇒ 자기 차원의 업무키 · FK 아님(SEND_REQUEST_SK 가 대리키).
+  [DEGEN]        FACT_BIGQUERY_SESSION.BIGQUERY_SESSION_KEY
+                 └ BigQuery 세션 원천키. 실측 1,230,352행 · distinct 1,230,352(유일) ⇒ 팩트 grain 키 · 대상 차원 없음.
+  [CONFORM]      FACT_BIGQUERY_SESSION.IDENTITY_SK → DIM_MEMBER_IDENTITY.IDENTITY_SK
+                 └ 식별자 conform 축 → DIM_MEMBER_IDENTITY.IDENTITY_SK. 실측 distinct 38,652 · 해소 38,652(100%) ⇒ 🔴 ERD 에 논리 관계로 표기한다(FACT_BIGQUERY_BEHAVIOR 와 같은 축).
+  [CONFORM]      FACT_BUDGET.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [🔴 미분류]        FACT_CAMPAIGN_CUM_STOP.BASE_MONTH_KEY
+  [CONFORM]      FACT_EXPENSE_RESOLUTION.MKTG_CAMPAIGN_SK → DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK
+                 └ 마케팅캠페인 conform 축 → DIM_MARKETING_CAMPAIGN.MKTG_CAMPAIGN_SK. 실측 111,649행 · distinct 132 · 해소 132(100%) ⇒ 🔴 ERD 에 논리 관계로 표기한다(O225 배선).
+  [CONFORM]      FACT_MEMBER_COHORT.LAST_STOP_DATE_SK
+                 └ 역할기반 일자 축(최종 중단일) → DIM_DATE.DATE_SK. 실측(2026-10-15 jw08094) = 1,621,070행 · NOT NULL **931,014**(유효 중단 없음은 NULL · 0 아님) · distinct 5,907 · 미해소 0. 🔴 NU
+  [CONFORM]      FACT_MEMBER_FEE.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [CONFORM]      FACT_MEMBER_MONTHLY.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [CONFORM]      FACT_MEMBER_SPONSORSHIP_SPAN.DSCNTC_MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 역할기반 월 축(중단월) → DIM_MONTH.MONTH_KEY. 위와 같은 사유. 🔴 ERD 에 논리 관계로 표기한다.
+  [CONFORM]      FACT_MEMBER_SPONSORSHIP_SPAN.START_MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 역할기반 월 축(개시월) → DIM_MONTH.MONTH_KEY. 역할별 별칭이라 FK 대상이 비유일 취급. 🔴 ERD 에 논리 관계로 표기한다.
+  [DEGEN]        FACT_MESSAGE_DISPATCH.MSG_KEY
+                 └ SND 메시지 원천키(발송 행 식별). 실측 NOT NULL 3,965,865 · 유일 · 메시지 차원 없음.
+  [DEGEN]        FACT_MESSAGE_DISPATCH.RELATNSP_KEY
+                 └ 발송 대상의 결연 원천키(우편·SND 전용). 실측 NOT NULL 3,976,241 · distinct 504,835 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION).
+  [CONFORM]      FACT_PAYMENT_BILLING_STATUS.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [DEGEN]        FACT_PAYMENT_METHOD_CHANGE.APRV_REQUST_KEY
+                 └ 승인요청 원천키. 실측 NOT NULL 329,941 · distinct 274,061 · 차원 없음.
+  [DEGEN]        FACT_PAYMENT_METHOD_CHANGE.APRV_RST_KEY
+                 └ 승인결과 원천키. 실측 NOT NULL 464,206 · distinct 402,043 · 차원 없음.
+  [DEGEN]        FACT_PAYMENT_METHOD_CHANGE.BF_SETLE_KEY
+                 └ 변경 전 결제정보 원천키. 실측 NOT NULL 370,067 · distinct 370,064 · 차원 없음.
+  [DEGEN]        FACT_PAYMENT_METHOD_CHANGE.SETLE_KEY
+                 └ 결제수단 변경 이력의 결제정보 원천키. 실측 1,086,969 · 유일 · 결제정보 차원 없음(SILVER 전용).
+  [DEGEN]        FACT_RELATION_ACTIVITY.ACTIVITY_KEY
+                 └ 결연활동 행 식별자(서신·선물금 대체키). 실측 398,630 · 유일 · 차원 없음.
+  [DEGEN]        FACT_RELATION_ACTIVITY.MBRFEE_KEY
+                 └ 선물금 회비 원천키(선물금 행 전용). 실측 NOT NULL 183,374 · distinct 183,325 · 회비 행 grain 차원 없음.
+  [DEGEN]        FACT_RELATION_ACTIVITY.RELATNSP_KEY
+                 └ 결연 원천키. 실측 398,630 · distinct 143,275 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION) — FRC·FMD 와 같은 판정.
+  [DEGEN]        FACT_RELATION_CHANGE.CHG_RELATNSP_KEY
+                 └ 변경 후 결연 원천키. 실측 197,547 · 유일 · 차원 없음.
+  [DEGEN]        FACT_RELATION_CHANGE.RELATNSP_KEY
+                 └ 결연 변경 사건의 결연 원천키. 실측 197,547 · 유일 · 결연 차원 없음(SILVER CRM_SPONSOR_RELATION).
+  [CONFORM]      FACT_TARGET_MEMBER_DEV.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+  [CONFORM]      FACT_TARGET_PROJECT.MONTH_KEY → DIM_MONTH.MONTH_KEY
+                 └ 월 conform 축 → DIM_MONTH.MONTH_KEY. 🔴 물리 FK 도 dbt relationships 도 **둘 다 없다** — 06_DDL [관계 제약] 이 월 conform 키를 비유일 참조로 보아 선언을 보류했고, yml 에도 테스트가 없다. ⇒ 두 소
+
+🔴 FAIL — 미분류 고립 1건. KNOWN_ORPHANS 에 분류와 사유를 등재하라.
+   🔴 사유를 적기 전에 그 컬럼이 conform 축인지 degenerate key 인지 판정하라 —
+      conform 축을 DEGEN 으로 잘못 적으면 ERD 에서 관계가 영구히 사라진다.

@@ -1,0 +1,6 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+202601 {'D_ACTIVE': Decimal('0.000000'), 'D_PREV': Decimal('0.000000'), 'D_STOP': Decimal('0.000000'), 'D_DEV': Decimal('0.0000'), 'D_DEC': Decimal('0.000000'), 'D_CHURN': Decimal('0.000000'), 'D_PAID': Decimal('0.00'), 'D_UNPAID': Decimal('0.00'), 'YS': Decimal('1535186.102200'), 'CS': Decimal('31151.120800'), 'CD': Decimal('29407.7200'), 'STOP_SK0': Decimal('0E-12'), 'ACT_SK0': Decimal('0E-12'), 'ACT_PAY0': Decimal('0.006165643362'), 'N_ROWS': 30366}
+202609 {'D_ACTIVE': Decimal('0.000000'), 'D_PREV': Decimal('0.000000'), 'D_STOP': Decimal('0.000000'), 'D_DEV': Decimal('0.0000'), 'D_DEC': Decimal('0.000000'), 'D_CHURN': Decimal('0.000000'), 'D_PAID': Decimal('0.00'), 'D_UNPAID': Decimal('0.00'), 'YS': Decimal('1535186.102200'), 'CS': Decimal('246039.232500'), 'CD': Decimal('249973.7993'), 'STOP_SK0': Decimal('0E-12'), 'ACT_SK0': Decimal('0E-12'), 'ACT_PAY0': Decimal('0.005852769086'), 'N_ROWS': 39871}
+total rows 2166493
+dup keys 0

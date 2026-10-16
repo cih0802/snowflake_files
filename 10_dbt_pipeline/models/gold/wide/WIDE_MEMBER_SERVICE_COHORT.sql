@@ -83,14 +83,16 @@ req as (
 disp_raw as (
     -- ① 서비스코드 판정(등가조인)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'CODE' as MATCH_BASIS, f.DATE_SK,
-           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME
+           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
+           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- 🆕 [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join req q                         on q.SEND_REQUEST_SK = f.SEND_REQUEST_SK
     join rules r                       on r.MATCH_BASIS = 'CODE' and q.SNDNG_CD_ID = 'MS049' and q.SVC_UPPER_CD = r.SVC_UPPER_CD
     union all
     -- ② 발송 제목 판정(카테고리가 없는 발송 · 코드 계층에 없는 서비스)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'TITLE', f.DATE_SK,
-           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME
+           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
+           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- 🆕 [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join rules r                       on r.MATCH_BASIS = 'TITLE' and f.SEND_TITLE ilike r.TITLE_PATTERN
     left join req q                    on q.SEND_REQUEST_SK = f.SEND_REQUEST_SK
@@ -105,7 +107,9 @@ disp as (
         x.D5_INCREASE_PART_MEMBERS,
         x.SEND_CPR_NM,
         x.CHRG_DEPT_NM,
-        x.SVC_CATEGORY_NAME
+        x.SVC_CATEGORY_NAME,
+        x.D5_LETTER_PART_MEMBERS,
+        x.D5_GIFT_PART_MEMBERS
     from disp_raw x
     join {{ ref('DIM_DATE') }} d       on d.DATE_SK = x.DATE_SK
 ),
@@ -119,6 +123,9 @@ rcv as (
         COUNT(DISTINCT SEND_DATE)                   as RECEIVE_ROWS,  -- [O205-B] 수신일 수 · 한 발송이 코드·제목 둘 다에 맞아도 중복되지 않는다
         MAX(IFF(D5_STOP_MEMBERS > 0, 1, 0)) = 1     as D5_STOP_FLAG,
         MAX(IFF(D5_INCREASE_PART_MEMBERS > 0, 1, 0)) = 1 as D5_INCREASE_FLAG,
+        -- 🆕 [O237-B] 발송 후 D+1~D+5 서신·선물금 참여(FACT_MESSAGE_DISPATCH 와 같은 시간창 · 안내성 제목 제외 동일)
+        MAX(IFF(D5_LETTER_PART_MEMBERS > 0, 1, 0)) = 1 as D5_LETTER_FLAG,
+        MAX(IFF(D5_GIFT_PART_MEMBERS > 0, 1, 0)) = 1   as D5_GIFT_FLAG,
         -- [O206] 판정 근거 · 법인 · 담당부서 · 원천 서비스분류
         MAX(IFF(MATCH_BASIS = 'CODE', 1, 0)) = 1    as MATCHED_BY_CODE_FLAG,
         MAX(IFF(MATCH_BASIS = 'TITLE', 1, 0)) = 1   as MATCHED_BY_TITLE_FLAG,
@@ -166,6 +173,8 @@ base as (
         COALESCE(r.RECEIVE_ROWS, 0)                 as RECEIVE_ROWS,
         COALESCE(r.D5_STOP_FLAG, false)             as D5_STOP_FLAG,
         COALESCE(r.D5_INCREASE_FLAG, false)         as D5_INCREASE_FLAG,
+        COALESCE(r.D5_LETTER_FLAG, false)           as D5_LETTER_FLAG,      -- 🆕 [O237-B]
+        COALESCE(r.D5_GIFT_FLAG, false)             as D5_GIFT_FLAG,        -- 🆕 [O237-B]
         r.MATCHED_BY_CODE_FLAG,
         r.MATCHED_BY_TITLE_FLAG,
         r.RECEIVED_SADAN_FLAG,
@@ -204,6 +213,49 @@ ev_agg as (
     from base b
     join ev v on v.MEMBER_DK = b.MEMBER_DK
     group by 1, 2, 3
+),
+-- 🆕 [O237-B] 첫 수신월 기준 N개월 유지 · 수신 후 납입(수신 행만 · 미수신 NULL)
+--   · 유지 = 첫 수신월 + N 개월 시점에 미중단 후원사업(FMSS span as-of · FMM 활동 판정과 같은 식)이 있는가
+--   · 관측 = 첫 수신월 + N 이 데이터 최신월(마감된 직전 월 이하 FMM 최대월) 이하일 때만 TRUE/FALSE · 넘으면 NULL(아직 관측 불가)
+--   · 🔴 수신 후 납입 = 첫 수신 **다음 달 ~ +3개월** 안에 회비 납입(PAID_FEE_BILLABLE > 0)이 있는가 — 창 길이 잠정(사용자 승인 2026-10-16 · 현업 확인 대상)
+max_mk as (
+    -- 🔴 FMM 에는 미래 회비월 청구 행이 있다(2029-11 등 · O237-B 실측) ⇒ 최신월 = 마감된 직전 월 이하의 최대 월
+    select MAX(MONTH_KEY) as MK from {{ ref('FACT_MEMBER_MONTHLY') }}
+    where MONTH_KEY > 0
+      and MONTH_KEY <= TRY_TO_NUMBER(TO_CHAR(ADD_MONTHS(CURRENT_DATE(), -1), 'YYYYMM'))
+),
+rcv_mk as (
+    select MEMBER_DK, SERVICE_GROUP_CD, RECEIVE_YEAR,
+           TRY_TO_NUMBER(TO_CHAR(FIRST_RECEIVE_DATE, 'YYYYMM')) as FRM
+    from base
+    where RECEIVED_FLAG
+),
+ret as (
+    select r.MEMBER_DK, r.SERVICE_GROUP_CD, r.RECEIVE_YEAR,
+           case when {{ month_key_offset('r.FRM', 3) }} <= mx.MK then
+                COUNT_IF(sn.START_MONTH_KEY <= {{ month_key_offset('r.FRM', 3) }}
+                         and (sn.DSCNTC_MONTH_KEY is null or sn.DSCNTC_MONTH_KEY > {{ month_key_offset('r.FRM', 3) }})) > 0 end  as RETAINED_3M_FLAG,
+           case when {{ month_key_offset('r.FRM', 6) }} <= mx.MK then
+                COUNT_IF(sn.START_MONTH_KEY <= {{ month_key_offset('r.FRM', 6) }}
+                         and (sn.DSCNTC_MONTH_KEY is null or sn.DSCNTC_MONTH_KEY > {{ month_key_offset('r.FRM', 6) }})) > 0 end  as RETAINED_6M_FLAG,
+           case when {{ month_key_offset('r.FRM', 12) }} <= mx.MK then
+                COUNT_IF(sn.START_MONTH_KEY <= {{ month_key_offset('r.FRM', 12) }}
+                         and (sn.DSCNTC_MONTH_KEY is null or sn.DSCNTC_MONTH_KEY > {{ month_key_offset('r.FRM', 12) }})) > 0 end as RETAINED_12M_FLAG
+    from rcv_mk r
+    cross join max_mk mx
+    left join {{ ref('FACT_MEMBER_SPONSORSHIP_SPAN') }} sn on sn.MEMBER_DK = r.MEMBER_DK
+    group by r.MEMBER_DK, r.SERVICE_GROUP_CD, r.RECEIVE_YEAR, r.FRM, mx.MK
+),
+paid_after as (
+    select r.MEMBER_DK, r.SERVICE_GROUP_CD, r.RECEIVE_YEAR,
+           case when {{ month_key_offset('r.FRM', 3) }} <= mx.MK then
+                COALESCE(SUM(fe.PAID_FEE_BILLABLE), 0) > 0 end as PAID_AFTER_3M_FLAG
+    from rcv_mk r
+    cross join max_mk mx
+    left join {{ ref('FACT_MEMBER_FEE') }} fe
+      on fe.MEMBER_DK = r.MEMBER_DK
+     and fe.MONTH_KEY between {{ month_key_offset('r.FRM', 1) }} and {{ month_key_offset('r.FRM', 3) }}
+    group by r.MEMBER_DK, r.SERVICE_GROUP_CD, r.RECEIVE_YEAR, r.FRM, mx.MK
 )
 select
     b.MEMBER_DK,
@@ -259,7 +311,14 @@ select
     -- ── [O206] 원천 행사구분 기준 참여(문화서비스 · 온라인) ──────────────────────
     COALESCE(v.CULTURE_EVENT_PART_ROWS, 0)          as CULTURE_EVENT_PART_ROWS,
     COALESCE(v.ONLINE_EVENT_PART_ROWS, 0)           as ONLINE_EVENT_PART_ROWS,
-    v.ONLINE_EVENT_PART_ROWS_AFTER                  as ONLINE_EVENT_PART_ROWS_AFTER
+    v.ONLINE_EVENT_PART_ROWS_AFTER                  as ONLINE_EVENT_PART_ROWS_AFTER,
+    -- ── 🆕 [O237-B] 참여 플래그 · 유지 · 수신 후 납입(맨 끝 append) ──────────────────
+    b.D5_LETTER_FLAG,
+    b.D5_GIFT_FLAG,
+    rt.RETAINED_3M_FLAG,
+    rt.RETAINED_6M_FLAG,
+    rt.RETAINED_12M_FLAG,
+    pa.PAID_AFTER_3M_FLAG
 from base b
 join grp g                                    on g.SERVICE_GROUP_CD = b.SERVICE_GROUP_CD
 left join d5_stop ds
@@ -272,3 +331,11 @@ left join ev_agg v
   on v.MEMBER_DK = b.MEMBER_DK
  and v.SERVICE_GROUP_CD = b.SERVICE_GROUP_CD
  and v.RECEIVE_YEAR is not distinct from b.RECEIVE_YEAR
+left join ret rt
+  on rt.MEMBER_DK = b.MEMBER_DK
+ and rt.SERVICE_GROUP_CD = b.SERVICE_GROUP_CD
+ and rt.RECEIVE_YEAR = b.RECEIVE_YEAR
+left join paid_after pa
+  on pa.MEMBER_DK = b.MEMBER_DK
+ and pa.SERVICE_GROUP_CD = b.SERVICE_GROUP_CD
+ and pa.RECEIVE_YEAR = b.RECEIVE_YEAR

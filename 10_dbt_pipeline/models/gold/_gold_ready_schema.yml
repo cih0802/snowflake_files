@@ -1263,3 +1263,21 @@ models:
         tests:
           - not_null
           - relationships: { to: ref('DIM_CAMPAIGN'), field: CAMPAIGN_SK }
+  - name: FACT_CAMPAIGN_MONTHLY
+    description: >
+      기준연월 × 캠페인 × 납입방식 월 팩트 — grain = BASE_MONTH_KEY × CAMPAIGN_SK × PAYMENT_SK.
+      대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인이라 같은 월 전 캠페인·납입방식 합이 FMM 합과 같아야 한다(대사 = 05_25b).
+      🔴 누계·연도초는 기준월마다 as-of 값이다 — 기준월 하나를 골라 조회한다(여러 기준월 SUM 금지).
+      🔴 캠페인 = 후원건 대표캠페인(활동·중단·연도초·회비) · 개발 사건 캠페인(개발) · 금액변경 캠페인(감액) — 규칙이 다르다.
+      ⚠️ 납입방식 축은 잠정(그 달 청구 결제수단) · 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.
+    columns:
+      - name: BASE_MONTH_KEY
+        tests:
+          - not_null
+      - name: CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships: { to: ref('DIM_CAMPAIGN'), field: CAMPAIGN_SK }
+      - name: PAYMENT_SK
+        tests:
+          - not_null

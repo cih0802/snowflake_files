@@ -1602,6 +1602,31 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP (
     DW_BATCH_ID           VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '캠페인별 누계중단율(신규 #17) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인 합 = FMM 1~기준월 합(연도초는 1월 행)]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT]. [적재: dbt]';
 
+-- FACT_CAMPAIGN_MONTHLY — 기준연월 × 캠페인 × 납입방식 월 팩트 (🆕 O237-B · 신규지표 #12~#16 · #19~#25 · #27~#28)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY (
+    BASE_MONTH_KEY            NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM. 당월 measure = 이 월 · 누계 measure = 같은 해 1월 ~ 이 월. 🔴 기준월 하나를 골라 조회한다',
+    BASE_YEAR                 NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도)',
+    CAMPAIGN_SK               NUMBER(38,0)    NOT NULL COMMENT '대리키 ※비강제 FK→DIM_CAMPAIGN. 활동·중단·연도초·회비 = 후원사업 대표캠페인(FMSS) · 개발 = 개발 사건 캠페인(FME) · 감액 = 금액변경 원천 캠페인 · 0 = 미매핑',
+    PAYMENT_SK                NUMBER(38,0)    NOT NULL COMMENT '대리키 ※비강제 FK→DIM_PAYMENT. 잠정 = 그 달 회원×후원사업 청구 행 결제수단(청구액 최대) → 회원×월 대표 결제수단 → 0(청구 없음)',
+    ACTIVE_CNT                NUMBER(18,4)    COMMENT '월말 활동(건) = 기준월 as-of 활동 후원사업 약정금액 ÷ 10,000 (FMM ACTIVE_CNT 와 같은 판정)',
+    PREV_MONTH_END_ACTIVE_CNT NUMBER(18,4)    COMMENT '전월말 활동(건) = 전월 as-of 활동 약정금액 ÷ 10,000 (FMM 과 같은 판정)',
+    YEAR_START_ACTIVE_CNT     NUMBER(18,4)    COMMENT '연도초활동(건) = 기준연도 1월 as-of 활동 약정금액 ÷ 10,000 · 같은 해 기준월마다 같은 값이 실린다(기준월 1개 고정 · 여러 달 SUM 금지)',
+    STOP_CNT                  NUMBER(18,4)    COMMENT '당월 중단(건) = 기준월 중단 후원사업 약정금액 ÷ 10,000 (FMM STOP_AMT_CNT 와 같은 식)',
+    DEV_CNT                   NUMBER(18,4)    COMMENT '당월 개발(건) = MSTR 개발(건)(인정금액 ÷ 10,000) (FMM DEV_CNT 와 같은 원천)',
+    DECREASE_CNT              NUMBER(18,4)    COMMENT '당월 감액(건) = 감액금액 ÷ 10,000 (FMM DECREASE_CNT 와 같은 식)',
+    CHURN_CNT                 NUMBER(18,4)    COMMENT '당월 이탈(건) = 중단(건) + 감액(건) (FMM CHURN_CNT 와 같은 식 · 신규 #20)',
+    PAID_FEE_BILLABLE         NUMBER(18,2)    COMMENT '당월 납입회비(원 · 회비만) (FMM PAID_FEE_BILLABLE 과 같은 값)',
+    UNPAID_BILLED_AMT         NUMBER(18,2)    COMMENT '당월 미납회비(원) = 결제 실패·미기록 청구액 (FMM UNPAID_BILLED_AMT 와 같은 값)',
+    CUM_STOP_CNT              NUMBER(18,4)    COMMENT '누계중단(건) = 1월~기준월 STOP_CNT 합',
+    CUM_DEV_CNT               NUMBER(18,4)    COMMENT '누계개발(건) = 1월~기준월 DEV_CNT 합',
+    CUM_ACTIVE_CNT            NUMBER(18,4)    COMMENT '누계 활동(건) = 1월~기준월 ACTIVE_CNT 합(누계납입율 분모)',
+    CUM_PAID_FEE_BILLABLE     NUMBER(18,2)    COMMENT '누계 납입회비(원) = 1월~기준월 PAID_FEE_BILLABLE 합',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '캠페인별 월 지표(활동율·중단율·이탈율·납입율·미납율) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK × PAYMENT_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인·납입방식 합 = FMM 같은 월 합]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT · FACT_MEMBER_FEE · SILVER.CRM_MEMBER_AMT_CHANGE]. [적재: dbt]';
+
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)
 -- ============================================================================
@@ -1688,6 +1713,8 @@ BEGIN
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_DATE; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY DROP CONSTRAINT FK_FRA_DIM_MEMBER; EXCEPTION WHEN OTHER THEN NULL; END;
   BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP DROP CONSTRAINT FK_FCCS_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY DROP CONSTRAINT FK_FCM_DIM_CAMPAIGN; EXCEPTION WHEN OTHER THEN NULL; END;
+  BEGIN ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY DROP CONSTRAINT FK_FCM_DIM_PAYMENT; EXCEPTION WHEN OTHER THEN NULL; END;
   RETURN 'constraint drop (idempotent) done';
 END;
 $$;
@@ -1835,6 +1862,10 @@ ALTER TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY ADD CONSTRAINT FK_FRA_DIM_MEMBER
     FOREIGN KEY (MEMBER_DK) REFERENCES GN_DW.GOLD.DIM_MEMBER (MEMBER_DK) NOT ENFORCED NORELY;
 ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP ADD CONSTRAINT FK_FCCS_DIM_CAMPAIGN
     FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY ADD CONSTRAINT FK_FCM_DIM_CAMPAIGN
+    FOREIGN KEY (CAMPAIGN_SK) REFERENCES GN_DW.GOLD.DIM_CAMPAIGN (CAMPAIGN_SK) NOT ENFORCED NORELY;
+ALTER TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY ADD CONSTRAINT FK_FCM_DIM_PAYMENT
+    FOREIGN KEY (PAYMENT_SK) REFERENCES GN_DW.GOLD.DIM_PAYMENT (PAYMENT_SK) NOT ENFORCED NORELY;
 
 -- 검증(값이 아니라 방법이 정본이다 — 기대 건수를 여기 적지 않는다)
 --   파일 선언 테이블 = grep -oE 'CREATE OR REPLACE TABLE GN_DW\.GOLD\.[A-Z_]+' 06_DDL.sql | sort -u | wc -l

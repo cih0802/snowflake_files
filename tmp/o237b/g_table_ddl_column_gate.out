@@ -1,0 +1,133 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (적재 전 판정 · P120 · GOLD 37 + SILVER 42 전수)
+  🔴 blocking = **집합** 불일치(누락·초과) · 🟠 advisory = **순서** 드리프트(문서 축)
+
+=== [GOLD 계층: 57 테이블] ===
+  DIM_DATE                     DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MONTH                    DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_ORG                      DDL 20 · 모델 20 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_STATUS_HISTORY    DDL 30 · 모델 30 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER                   DDL 57 · 모델 57 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_ACQUISITION       DDL 37 · 모델 37 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MEMBER_IDENTITY          DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CAMPAIGN                 DDL 38 · 모델 38 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MARKETING_CAMPAIGN       DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SPONSORSHIP              DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_AD_CREATIVE              DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIGQUERY_SOURCE          DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIGQUERY_EVENT           DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SERVICE                  DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SEND_TYPE                DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_PAYMENT                  DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_REASON                   DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_DEVICE                   DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_EVENT                    DDL 27 · 모델 27 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BUDGET_ITEM              DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_BIZ_PLACE                DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CHILD                    DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_CODE_GROUP               DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MSG_TEMPLATE             DDL 28 · 모델 28 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_MSG_TEMPLATE_BUTTON      DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_PAYMENT_ACCOUNT          DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_MONTHLY          DDL 62 · 모델 62 · 누락 0 · 초과 0 · 순서 불일치 🟠
+     🟠 순서 드리프트(앞 5건): 13:ACTIVE_CUM_CNT≠INCREASE_CNT, 14:ACTIVE_CUM_MEMBERS≠INCREASE_MEMBERS, 15:INCREASE_CNT≠DECREASE_CNT, 16:INCREASE_MEMBERS≠CHURN_CNT, 17:DECREASE_CNT≠STOP_AMT_CNT
+  FACT_MEMBER_EVENT            DDL 59 · 모델 59 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_TARGET_MEMBER_DEV       DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_TARGET_PROJECT          DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MESSAGE_DISPATCH        DDL 57 · 모델 57 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_BIGQUERY_BEHAVIOR       DDL 25 · 모델 25 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_AD_PERFORMANCE          DDL 41 · 모델 41 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_AD_BROADCAST            DDL 26 · 모델 26 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_AD_DIGITAL              DDL 20 · 모델 20 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_AD_BROADCAST_CASE       DDL 10 · 모델 10 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_EVENT_ATTENDANCE        DDL 44 · 모델 44 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_BUDGET                  DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_BUDGET_YEARLY           DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_COHORT           DDL 53 · 모델 53 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_COHORT_SURVIVAL  DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_FEE              DDL 20 · 모델 20 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_PAYMENT_BILLING_STATUS  DDL 21 · 모델 21 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_BIGQUERY_SESSION        DDL 40 · 모델 40 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_SEARCH_CONSOLE          DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_GA4_DEMOGRAPHIC         DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_EXPENSE_RESOLUTION      DDL 20 · 모델 20 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_DEV_ACHIEVEMENT  DDL 23 · 모델 23 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_MEMBER_SPONSORSHIP_SPAN DDL 38 · 모델 38 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_RELATION_DEV            DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_RELATION_CHANGE         DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_SEND_REQUEST             DDL 49 · 모델 49 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_RELATION_ACTIVITY       DDL 29 · 모델 29 · 누락 0 · 초과 0 · 순서 일치 ✅
+  DIM_RELATIONSHIP             DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_PAYMENT_METHOD_CHANGE   DDL 40 · 모델 40 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_CAMPAIGN_CUM_STOP       DDL 10 · 모델 10 · 누락 0 · 초과 0 · 순서 일치 ✅
+  FACT_CAMPAIGN_MONTHLY        DDL 21 · 모델 21 · 누락 0 · 초과 0 · 순서 일치 ✅
+
+=== [SILVER 계층: 61 테이블] ===
+  AGENCY_AD_BROADCAST          DDL 27 · 모델 27 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_BROADCAST_CASE     DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_CREATIVE           DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_DIGITAL            DDL 21 · 모델 21 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_PERFORMANCE        DDL 29 · 모델 29 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_ROW_DGT            DDL 50 · 모델 50 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_ROW_REBRDC         DDL 30 · 모델 30 · 누락 0 · 초과 0 · 순서 일치 ✅
+  AGENCY_AD_ROW_VIDEO          DDL 46 · 모델 46 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_BASIC               DDL 51 · 모델 51 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_DEVICE              DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_EVENT               DDL 44 · 모델 44 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_EVENT_DIM           DDL  9 · 모델  9 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_IDENTITY            DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_SESSION             DDL 41 · 모델 41 · 누락 0 · 초과 0 · 순서 일치 ✅
+  BIGQUERY_TRAFFIC_SOURCE      DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  GA4_USER_DEMOGRAPHIC         DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  SEARCH_CONSOLE_DATA          DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  IDENTITY_MEMBER_XREF         DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_BIZ_PLACE                DDL 21 · 모델 21 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_BIZ_TARGET               DDL 21 · 모델 21 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_CAMPAIGN                 DDL 43 · 모델 43 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_CHILD                    DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_CODE                     DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_CODE_GROUP               DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_DEV_TARGET               DDL 10 · 모델 10 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_EVENT                    DDL 26 · 모델 26 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_EVENT_PARTICIPATION      DDL 28 · 모델 28 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_INSTT_ACCOUNT            DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MARKETING_CAMPAIGN       DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER                   DDL 36 · 모델 36 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_AMT_CHANGE        DDL 19 · 모델 19 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_CONVERT_HIST      DDL  7 · 모델  7 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_DEV               DDL 49 · 모델 49 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_DISCONTINUE       DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_RESPONSOR         DDL  8 · 모델  8 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_SPONSOR_BIZ       DDL 11 · 모델 11 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_SPONSOR_SPAN      DDL 17 · 모델 17 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MEMBER_STATUS_HIST       DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MKTNG_CODE               DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MSG_TEMPLATE             DDL 27 · 모델 27 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_MSG_TEMPLATE_BUTTON      DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_ORG                      DDL 13 · 모델 13 · 누락 0 · 초과 0 · 순서 불일치 🟠
+     🟠 순서 드리프트(앞 5건): 9:DW_SOURCE_SYSTEM≠LAST_UPDT_DT, 10:DW_LOAD_TS≠DW_SOURCE_SYSTEM, 11:DW_UPDATE_TS≠DW_LOAD_TS, 12:DW_BATCH_ID≠DW_UPDATE_TS, 13:LAST_UPDT_DT≠DW_BATCH_ID
+  CRM_PAYMENT_BILLING          DDL 35 · 모델 35 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_PAYMENT_METHOD           DDL 31 · 모델 31 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_PAYMENT_METHOD_HIST      DDL 40 · 모델 40 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_RELATION_ACTIVITY        DDL 26 · 모델 26 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_RELATION_CHANGE          DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_RELATION_DEV             DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SEND_MEMBER              DDL 37 · 모델 37 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SEND_MEMBER_LINK_LOG     DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SEND_MEMBER_OPEN_LOG     DDL 10 · 모델 10 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SEND_REQUEST             DDL 38 · 모델 38 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SEND_RESULT              DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SETLE_CMPNY_ACCOUNT      DDL 15 · 모델 15 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SPONSORSHIP              DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  CRM_SPONSOR_RELATION         DDL 14 · 모델 14 · 누락 0 · 초과 0 · 순서 일치 ✅
+  ERP_BUDGET                   DDL 18 · 모델 18 · 누락 0 · 초과 0 · 순서 일치 ✅
+  ERP_BUDGET_ITEM              DDL 16 · 모델 16 · 누락 0 · 초과 0 · 순서 일치 ✅
+  ERP_BUDGET_YEARLY            DDL 12 · 모델 12 · 누락 0 · 초과 0 · 순서 일치 ✅
+  ERP_EXPENSE_RESOLUTION       DDL 22 · 모델 22 · 누락 0 · 초과 0 · 순서 일치 ✅
+
+집합 불일치(blocking) 0건 · 순서 드리프트(advisory) 2건 / 대상 118개 (GOLD 57 + SILVER 61)
+🟠 순서 드리프트 2건 — **문서 축이며 적재 위험이 아니다**(종료코드 무영향).
+   🔴 다만 「파일이 정본」 주장은 약해진다 ⇒ DDL 파일 선언 순서를 모델에 맞출 것.
+✅ 집합 일치 118/118 — 적재 안전

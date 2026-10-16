@@ -304,6 +304,82 @@ add("RT-29", "기대 유지개월(생존분석 · 상한 80 / 무기한)", "C1_M
 add("RT-30", "누계중단율·누계중단비중(산식 등록 지표 안내)", "C1_METRIC", "analyst_campaign_cum_stop", "SV_CAMPAIGN_CUM_STOP.FCCS.CUM_STOP_RATE", "라우팅 결정대로 답한다.")
 
 
+def upd(doc, cov, tool, sv, guide, gap=""):
+    # 🆕 [O237-B] G1 해소 — 기존 행을 덮어쓴다(행 키 보존 · 이력은 이 블록의 존재로 남는다)
+    hit = [m for m in M if m["DOC_ID"] == doc]
+    assert len(hit) == 1, doc
+    hit[0].update({"COVERAGE": cov, "TOOL_NAME": tool, "SV_FIELD": sv, "ANSWER_GUIDE": guide, "GAP_ACTION": gap})
+
+
+# ---- 🆕 [O237-B] 캠페인 월 팩트(SV_CAMPAIGN_MONTHLY) · 서비스 코호트 확장(SV_MEMBER_SERVICE_COHORT) ----
+PENDING |= {
+    "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_ACTIVE_RATE", "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_STOP_RATE",
+    "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_STOP_RATE_PREV", "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_CHURN_RATE",
+    "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_PAY_IN_RATE", "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_CUM_PAY_IN_RATE",
+    "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_UNPAID_RATE", "SV_CAMPAIGN_MONTHLY.FCM.CHURN_CNT_SUM",
+    "SV_CAMPAIGN_MONTHLY.PAYMENT.SETTLE_METHOD", "SV_CAMPAIGN_MONTHLY.CAMPAIGN.CAMPAIGN_NAME",
+    "SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_3M_RATE", "SV_MEMBER_SERVICE_COHORT.SVC.PAID_AFTER_3M_RATE",
+    "SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_6M_RATE", "SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_12M_RATE",
+    "SV_MEMBER_SERVICE_COHORT.SVC.D5_LETTER_FLAG", "SV_MEMBER_SERVICE_COHORT.SVC.D5_GIFT_FLAG",
+}
+CM = "analyst_campaign_monthly"
+FIX = " 기준연월 하나 고정(fcm.BASE_MONTH_KEY) · 분자·분모를 함께 보이고 ROLLUP 전체 행 · (미매핑) 행 유지."
+YEARLY = " 「연도별」은 각 연도 마지막 마감 기준월을 연도마다 하나씩 골라 같은 식을 낸다(연도로 SUM 금지)."
+upd("MET_NEW-12", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_ACTIVE_RATE · SV_CAMPAIGN_MONTHLY.CAMPAIGN.CAMPAIGN_NAME",
+    "🆕 CAMPAIGN_ACTIVE_RATE(활동 ÷ (누계개발 + 연도초활동) ×100)를 CAMPAIGN_NAME 별로 낸다." + FIX)
+upd("MET_NEW-13", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_ACTIVE_RATE",
+    "🆕 CAMPAIGN_ACTIVE_RATE 를 연도별로 낸다." + YEARLY + FIX)
+upd("MET_NEW-14", "C5_PARTIAL", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_ACTIVE_RATE · SV_CAMPAIGN_MONTHLY.PAYMENT.SETTLE_METHOD",
+    "🆕 CAMPAIGN_ACTIVE_RATE 를 CAMPAIGN_NAME × SETTLE_METHOD 로 낸다. 🔴 납입방식 = 그 달 청구 결제수단(잠정 · 현업 확인 대상)을 답변에 밝힌다." + FIX)
+upd("MET_NEW-15", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_STOP_RATE",
+    "🆕 CAMPAIGN_STOP_RATE(당월 중단 ÷ (당월 개발 + 연도초활동) ×100 · 사전 원문 그대로)로 낸다." + FIX)
+upd("MET_NEW-16", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_STOP_RATE_PREV",
+    "🆕 CAMPAIGN_STOP_RATE_PREV(중단 ÷ (개발 + 전월말활동) ×100)로 낸다." + YEARLY + FIX)
+upd("MET_NEW-19", "C5_PARTIAL", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_STOP_RATE · SV_CAMPAIGN_MONTHLY.PAYMENT.SETTLE_METHOD",
+    "🆕 CAMPAIGN_STOP_RATE 를 CAMPAIGN_NAME × SETTLE_METHOD 로 낸다. 🔴 납입방식 잠정 축임을 밝힌다." + FIX)
+upd("MET_NEW-20", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CHURN_CNT_SUM",
+    "🆕 CHURN_CNT_SUM(중단(건) + 감액(건))을 CAMPAIGN_NAME 별로 낸다(후원건 캠페인 귀속 · 감액 = 금액변경 원천 캠페인)." + FIX)
+upd("MET_NEW-21", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_CHURN_RATE",
+    "🆕 CAMPAIGN_CHURN_RATE(이탈 ÷ 개발 ×100 · 당월)로 낸다. 개발이 작은 캠페인의 100% 초과는 해석 주의." + FIX)
+upd("MET_NEW-22", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_PAY_IN_RATE",
+    "🆕 CAMPAIGN_PAY_IN_RATE(월 납입회비 ÷ (월말활동(건) × 1만 원) ×100)로 낸다. 납부율(청구 대비)과 구분한다." + FIX)
+upd("MET_NEW-23", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_PAY_IN_RATE",
+    "🆕 CAMPAIGN_PAY_IN_RATE 를 「조회시점 기준」 기준월 하나로 낸다." + YEARLY + FIX)
+upd("MET_NEW-24", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_CUM_PAY_IN_RATE",
+    "🆕 CAMPAIGN_CUM_PAY_IN_RATE(1월~기준월 납입회비 ÷ (1월~기준월 월말활동(건) 합 × 1만 원) ×100)로 낸다." + FIX)
+upd("MET_NEW-25", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_CUM_PAY_IN_RATE",
+    "🆕 CAMPAIGN_CUM_PAY_IN_RATE 를 연도별로 낸다." + YEARLY + FIX)
+upd("MET_NEW-27", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_UNPAID_RATE",
+    "🆕 CAMPAIGN_UNPAID_RATE(월 미납회비 ÷ (월말활동(건) × 1만 원) ×100)로 낸다. 공76 미납율(건 기준)과 구분한다." + FIX)
+upd("MET_NEW-28", "C1_METRIC", CM, "SV_CAMPAIGN_MONTHLY.FCM.CAMPAIGN_UNPAID_RATE",
+    "🆕 CAMPAIGN_UNPAID_RATE 를 연도별로 낸다." + YEARLY + FIX)
+
+SC = "analyst_service_cohort"
+SFX = (" SERVICE_GROUP_CD 하나 고정 · RECEIVED_FLAG = TRUE · 관측 불가(NULL) 회원은 분모 제외 · 시간창 매칭(인과 아님)과"
+       " 서비스 = 코호트 4개 그룹(선넘는좋은일 즉시·개별화 신규(사단)·행운의 카드·장기회원)임을 밝힌다.")
+RET = "SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_3M_RATE · SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_6M_RATE · SV_MEMBER_SERVICE_COHORT.SVC.RETAINED_12M_RATE"
+for doc, flag in [("MET_NEW-35", "D5_INCREASE_FLAG"), ("MET_NEW-36", "RECEIVED_FLAG"), ("MET_NEW-45", "D5_LETTER_FLAG"),
+                  ("MET_NEW-50", "D5_GIFT_FLAG")]:
+    upd(doc, "C5_PARTIAL", SC, RET + " · SV_MEMBER_SERVICE_COHORT.SVC." + flag,
+        "🆕 %s = TRUE 로 거른 뒤 N 에 맞는 RETAINED_{3|6|12}M_RATE 를 낸다(N 은 3·6·12 개월만 · 다른 N 은 가장 가까운 값과 함께 「미산출」을 밝힌다)." % flag + SFX)
+upd("MET_NEW-43", "C5_PARTIAL", SC, RET + " · SV_MEMBER_SERVICE_COHORT.SVC.ACQ_CAMPAIGN_NAME",
+    "🆕 RETAINED_{3|6|12}M_RATE 를 SERVICE_GROUP_NAME × ACQ_CAMPAIGN_NAME 으로 낸다." + SFX)
+PAID = "SV_MEMBER_SERVICE_COHORT.SVC.PAID_AFTER_3M_RATE"
+for doc, flag in [("MET_NEW-37", "D5_INCREASE_FLAG"), ("MET_NEW-38", "RECEIVED_FLAG"), ("MET_NEW-46", "D5_LETTER_FLAG"),
+                  ("MET_NEW-51", "D5_GIFT_FLAG")]:
+    upd(doc, "C5_PARTIAL", SC, PAID + " · SV_MEMBER_SERVICE_COHORT.SVC." + flag,
+        "🆕 %s = TRUE 로 거른 PAID_AFTER_3M_RATE(첫 수신 다음 달~+3개월 회비 납입 회원 비율)로 낸다. 🔴 창 3개월 잠정(현업 확인 대상)을 밝힌다." % flag + SFX,
+        "현업 확인 = 수신 후 납입 판정 창 길이")
+STOPR = "SV_MEMBER_SERVICE_COHORT.SVC.EVER_STOPPED_RATE"
+for doc, flag in [("MET_NEW-47", "D5_LETTER_FLAG"), ("MET_NEW-52", "D5_GIFT_FLAG")]:
+    upd(doc, "C5_PARTIAL", SC, STOPR + " · SV_MEMBER_SERVICE_COHORT.SVC." + flag,
+        "🆕 %s = TRUE 로 거른 EVER_STOPPED_RATE(누적 중단 이력 비율)로 낸다. 기간 한정 중단율이 아님을 밝힌다." % flag + SFX)
+CNT = "SV_MEMBER_SERVICE_COHORT.SVC.MEMBER_COUNT · SV_MEMBER_SERVICE_COHORT.SVC.ACQ_CAMPAIGN_NAME"
+for doc, flag in [("MET_NEW-48", "D5_LETTER_FLAG"), ("MET_NEW-53", "D5_GIFT_FLAG")]:
+    upd(doc, "C2_COMBINE", SC, CNT + " · SV_MEMBER_SERVICE_COHORT.SVC." + flag,
+        "🆕 %s = TRUE 인 MEMBER_COUNT 를 ACQ_CAMPAIGN_NAME 별로 내고 서비스별 전체(ROLLUP)로 나눠 ×100 한다." % flag + SFX)
+
+
 def tokens(sv):
     out = []
     for t in sv.split(" · "):

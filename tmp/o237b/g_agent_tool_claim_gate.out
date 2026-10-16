@@ -1,0 +1,44 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+중복 보유 SV 25종 / 전체 참조 SV 38종 · 도구 69건
+  · SV_AD: AGENT_EXECUTIVE/analyst_ad + AGENT_MARKETING/analyst_ad
+  · SV_BUDGET: AGENT_EXECUTIVE/analyst_budget + AGENT_MARKETING/analyst_budget
+  · SV_BUDGET_YEARLY: AGENT_EXECUTIVE/analyst_budget_yearly + AGENT_MARKETING/analyst_budget_yearly
+  · SV_CAMPAIGN_CUM_STOP: AGENT_EXECUTIVE/analyst_campaign_cum_stop + AGENT_MARKETING/analyst_campaign_cum_stop + AGENT_MEMBER/analyst_campaign_cum_stop
+  · SV_CAMPAIGN_MONTHLY: AGENT_EXECUTIVE/analyst_campaign_monthly + AGENT_MARKETING/analyst_campaign_monthly + AGENT_MEMBER/analyst_campaign_monthly
+  · SV_DEV_ACHIEVEMENT: AGENT_MARKETING/analyst_dev_achievement + AGENT_MEMBER/analyst_dev_achievement
+  · SV_EXPENSE_RESOLUTION: AGENT_EXECUTIVE/analyst_expense_resolution + AGENT_MARKETING/analyst_expense_resolution
+  · SV_MBRFEE_PRDT_ACTL: AGENT_MARKETING/analyst_mbrfee_prdt_actl + AGENT_MEMBER/analyst_mbrfee_prdt_actl
+  · SV_MEMBER_COHORT: AGENT_MARKETING/analyst_member_cohort + AGENT_MEMBER/analyst_member_cohort
+  · SV_MEMBER_EVENT: AGENT_MARKETING/analyst_member_event + AGENT_MEMBER/analyst_member_event
+  · SV_MEMBER_FEE: AGENT_MARKETING/analyst_member_fee + AGENT_MEMBER/analyst_member_fee
+  · SV_MEMBER_MONTHLY: AGENT_EXECUTIVE/analyst_member_monthly + AGENT_MEMBER/analyst_member_monthly
+  · SV_MEMBER_SPONSOR_BIZ: AGENT_MARKETING/analyst_member_sponsor_biz + AGENT_MEMBER/analyst_member_sponsor_biz
+  · SV_ML_CHURN_CAMPAIGN: AGENT_EXECUTIVE/analyst_ml_churn_campaign + AGENT_MARKETING/analyst_ml_churn_campaign + AGENT_MEMBER/analyst_ml_churn_campaign
+  · SV_ML_DVLP_FORECAST: AGENT_EXECUTIVE/analyst_ml_dvlp_forecast + AGENT_MARKETING/analyst_ml_dvlp_forecast
+  · SV_ML_FEATURE_IMPORTANCE: AGENT_EXECUTIVE/analyst_ml_feature_importance + AGENT_MARKETING/analyst_ml_feature_importance + AGENT_MEMBER/analyst_ml_feature_importance
+  · SV_ML_LTV_FORECAST: AGENT_EXECUTIVE/analyst_ml_ltv_forecast + AGENT_MARKETING/analyst_ml_ltv_forecast
+  · SV_ML_MEMBER_RISK: AGENT_MARKETING/analyst_ml_member_risk + AGENT_MEMBER/analyst_ml_member_risk
+  · SV_ML_ONCE_CONVERSION: AGENT_MARKETING/analyst_ml_once_conversion + AGENT_MEMBER/analyst_ml_once_conversion
+  · SV_ML_REALTIME_SIMULATOR: AGENT_EXECUTIVE/analyst_ml_realtime_simulator + AGENT_MARKETING/analyst_ml_realtime_simulator + AGENT_MEMBER/analyst_ml_realtime_simulator
+  · SV_MSTR_SPNSR_DVLP: AGENT_EXECUTIVE/analyst_mstr_spnsr_dvlp + AGENT_MARKETING/analyst_mstr_spnsr_dvlp + AGENT_MEMBER/analyst_mstr_spnsr_dvlp
+  · SV_PAYMENT_BILLING_STATUS: AGENT_EXECUTIVE/analyst_payment_billing_status + AGENT_MEMBER/analyst_payment_billing_status
+  · SV_SERVICE: AGENT_EXECUTIVE/analyst_service + AGENT_MEMBER/analyst_service
+  · SV_SPNSR_CLS_AGGR: AGENT_MARKETING/analyst_spnsr_cls_aggr + AGENT_MEMBER/analyst_spnsr_cls_aggr
+  · SV_TARGET_BIZ: AGENT_EXECUTIVE/analyst_target_biz + AGENT_MARKETING/analyst_target_biz
+========================================================================
+① 가불가 모순 (blocking)
+========================================================================
+  양쪽이 태도를 밝힌 (SV×개념) 쌍 10건 검사
+========================================================================
+② 문안 이격 (advisory)
+========================================================================
+  임계 0.45 미달 1건
+    · ② SV_ML_FEATURE_IMPORTANCE 유사도 0.424 — AGENT_EXECUTIVE/analyst_ml_feature_importance ↔ AGENT_MARKETING/analyst_ml_feature_importance
+========================================================================
+③ 스펙 description 규칙7 수치 혼입 (blocking · O119-B 신설)
+========================================================================
+  검사 69건 · 위반 0건
+========================================================================
+🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건

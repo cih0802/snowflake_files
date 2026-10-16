@@ -45,7 +45,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
     svc.ACQ_AGE_BAND AS svc.ACQ_AGE_BAND WITH SYNONYMS ('연령대') COMMENT = '획득 시점 연령대 — 현재 나이가 아니다',
     svc.ACQ_REGION AS svc.ACQ_REGION WITH SYNONYMS ('지역') COMMENT = '획득 시점 지역 — 현재 거주지가 아니다',
     svc.ACQ_GENDER AS svc.ACQ_GENDER WITH SYNONYMS ('성별') COMMENT = '획득 시점 성별',
-    svc.EVER_STOPPED_FLAG AS svc.EVER_STOPPED_FLAG WITH SYNONYMS ('중단 이력') COMMENT = '최초 중단 이력 여부'
+    svc.EVER_STOPPED_FLAG AS svc.EVER_STOPPED_FLAG WITH SYNONYMS ('중단 이력') COMMENT = '최초 중단 이력 여부',
+    -- 🆕 [O237-B] 서비스 참여 유형 · 유지 · 수신 후 납입 플래그(신규지표 #35~#53)
+    svc.D5_LETTER_FLAG AS svc.D5_LETTER_FLAG WITH SYNONYMS ('서신참여', '서신 참여회원', '5일 내 서신참여') COMMENT = '그 해 그 그룹 발송 후 D+1~D+5 서신 참여 여부. 🔴 시간창 매칭(인과 아님) · 미수신 행 FALSE',
+    svc.D5_GIFT_FLAG AS svc.D5_GIFT_FLAG WITH SYNONYMS ('선물금참여', '선물금 참여회원', '5일 내 선물금참여') COMMENT = '그 해 그 그룹 발송 후 D+1~D+5 선물금 참여 여부(선물금 발송일 매칭). 🔴 시간창 매칭 · 미수신 행 FALSE',
+    svc.RETAINED_3M_FLAG AS svc.RETAINED_3M_FLAG WITH SYNONYMS ('3개월 유지') COMMENT = '첫 수신월 + 3개월 시점 미중단 후원사업 보유 여부. NULL = 아직 관측 불가 또는 미수신',
+    svc.RETAINED_6M_FLAG AS svc.RETAINED_6M_FLAG WITH SYNONYMS ('6개월 유지') COMMENT = '첫 수신월 + 6개월 시점 유지 여부. NULL = 관측 불가 또는 미수신',
+    svc.RETAINED_12M_FLAG AS svc.RETAINED_12M_FLAG WITH SYNONYMS ('12개월 유지') COMMENT = '첫 수신월 + 12개월 시점 유지 여부. NULL = 관측 불가 또는 미수신',
+    svc.PAID_AFTER_3M_FLAG AS svc.PAID_AFTER_3M_FLAG WITH SYNONYMS ('수신 후 납입', '납입회원') COMMENT = '첫 수신 다음 달 ~ +3개월 회비 납입 여부. 🔴 창 길이 잠정(현업 확인 대상) · NULL = 관측 불가 또는 미수신'
   )
   METRICS (
     svc.MEMBER_COUNT AS COUNT(DISTINCT svc.MEMBER_DK)
@@ -98,7 +105,26 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
       COMMENT = '획득 시점 평균 약정 후원금액(원).',
     svc.AVG_D5_STOP_SPONSOR_DAYS AS AVG(svc.D5_STOP_SPONSOR_DAYS)
       WITH SYNONYMS ('중단 회원 평균 후원기간')
-      COMMENT = 'D5 중단 회원의 평균 후원기간(일 · 획득일 → D5 중단일). 🔴 중단 사건 원천에는 후원금액이 없다 — 중단 회원의 후원금액은 AVG_ACQ_SPNSR_AMT(획득 시점 약정금액)로 답하고 그 전제를 밝힌다.'
+      COMMENT = 'D5 중단 회원의 평균 후원기간(일 · 획득일 → D5 중단일). 🔴 중단 사건 원천에는 후원금액이 없다 — 중단 회원의 후원금액은 AVG_ACQ_SPNSR_AMT(획득 시점 약정금액)로 답하고 그 전제를 밝힌다.',
+    -- 🆕 [O237-B] 신규지표 #35~#53 — 참여 유형(서신·선물금·증액·참여 전체)은 차원 플래그로 고정하고 아래 비율을 쓴다
+    svc.RETAINED_3M_RATE AS DIV0(COUNT(DISTINCT IFF(svc.RETAINED_3M_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RETAINED_3M_FLAG IS NOT NULL, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('3개월 유지율', '참여회원 3개월 유지율', 'N개월 유지율')
+      COMMENT = '첫 수신월 + 3개월 유지율(%) = 유지 회원 ÷ 관측 가능 회원. N(비가산). 서신·선물금·증액 참여회원 유지율은 D5_LETTER_FLAG·D5_GIFT_FLAG·D5_INCREASE_FLAG = TRUE 로 거른다. 🔴 관측 불가(NULL) 회원은 분모에서 빠진다.',
+    svc.RETAINED_6M_RATE AS DIV0(COUNT(DISTINCT IFF(svc.RETAINED_6M_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RETAINED_6M_FLAG IS NOT NULL, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('6개월 유지율', '참여회원 6개월 유지율')
+      COMMENT = '첫 수신월 + 6개월 유지율(%). 규칙은 RETAINED_3M_RATE 와 같다.',
+    svc.RETAINED_12M_RATE AS DIV0(COUNT(DISTINCT IFF(svc.RETAINED_12M_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RETAINED_12M_FLAG IS NOT NULL, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('12개월 유지율', '참여회원 12개월 유지율')
+      COMMENT = '첫 수신월 + 12개월 유지율(%). 규칙은 RETAINED_3M_RATE 와 같다.',
+    svc.PAID_AFTER_3M_RATE AS DIV0(COUNT(DISTINCT IFF(svc.PAID_AFTER_3M_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.PAID_AFTER_3M_FLAG IS NOT NULL, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('참여회원 납입율', '서비스 참여회원 납입율', '수신 후 납입율')
+      COMMENT = '수신 후 납입율(%) = 첫 수신 다음 달~+3개월 회비 납입 회원 ÷ 관측 가능 회원. N(비가산). 🔴 창 길이 3개월은 잠정(현업 확인 대상) — 답변에 밝힌다. 참여 유형은 플래그 차원으로 거른다.',
+    svc.D5_LETTER_PART_RATE AS DIV0(COUNT(DISTINCT IFF(svc.D5_LETTER_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RECEIVED_FLAG, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('서비스별 서신 참여율(회원 기준)', '수신회원 서신 참여율')
+      COMMENT = '수신회원 중 D+1~D+5 서신 참여 회원 비율(%). N(비가산). 발송 행 기준 참여율은 SV_SERVICE.D5_LETTER_RATE 다(분모가 다르다).',
+    svc.D5_GIFT_PART_RATE AS DIV0(COUNT(DISTINCT IFF(svc.D5_GIFT_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RECEIVED_FLAG, svc.MEMBER_DK, NULL))) * 100
+      WITH SYNONYMS ('서비스별 선물금 참여율(회원 기준)', '수신회원 선물금 참여율')
+      COMMENT = '수신회원 중 D+1~D+5 선물금 참여 회원 비율(%). N(비가산). 발송 행 기준은 SV_SERVICE.D5_GIFT_RATE.'
   )
   COMMENT = '서비스 수신 코호트 SV. 「서비스 수신/미수신 회원의 이벤트 참여율 비교」·「발송 후 5일 이내 중단한 회원의 가입캠페인·중단사유·후원금액·연령대·후원사업·후원기간」·「연도별 수신회원 유지기간·참여횟수」에 쓴다. 🔴 수신·미수신 차이는 인과(서비스 효과)가 아니다.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

@@ -1,0 +1,16 @@
+[jinja_config_gate] 분모 = 150 파일
+
+✅ 축1 config 블록 안 SQL 주석 (Jinja 가 연산자로 파싱 ⇒ 컴파일 에러 · blocking) = 0건
+
+✅ 축2 config 블록 안 따옴표 밖 중첩 닫기 (조기 종료 · blocking) = 0건
+
+✅ 축3 SQL 주석 안 Jinja 태그 (주석이어도 렌더된다 · 경고) = 0건
+
+✅ 축4 SQL 주석 직후 공백제거형 Jinja 주석 (다음 실행문을 먹는다 · blocking) = 0건
+
+✅ 축5 공백제거형 닫기 직후가 실행문 (붙는다 · 경고 · macros 는 정상) = 0건
+
+✅ 축6 Jinja 주석 구분자 개수 불균형 (본문 인용 ⇒ 조기 종료 · blocking) = 0건
+
+판정 = blocking 0건(축1+축2+축4+축6) · 경고 0건(축3+축5)
+✅ 게이트 통과 — blocking 0건

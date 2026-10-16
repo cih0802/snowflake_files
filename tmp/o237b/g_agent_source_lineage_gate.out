@@ -1,0 +1,50 @@
+[원천 리니지 게이트] Agent 도구 69개 · dbt 모델 148개 · SV 정의 37개 · BRONZE 테이블 모집단 60개
+
+⚪ 관측 23건
+  AGENT_EXECUTIVE/analyst_mstr_spnsr_dvlp(SV_MSTR_SPNSR_DVLP) → SV DDL 파일에서 정의를 찾지 못함(판정 생략)
+  AGENT_EXECUTIVE/analyst_ml_dvlp_forecast(SV_ML_DVLP_FORECAST) → dbt 밖 base(SERVING.ML_DVLP_FORECAST_V) · 판정 대상 아님
+  AGENT_EXECUTIVE/analyst_ml_ltv_forecast(SV_ML_LTV_FORECAST) → dbt 밖 base(SERVING.ML_LTV_FORECAST_V) · 판정 대상 아님
+  AGENT_EXECUTIVE/analyst_ml_feature_importance(SV_ML_FEATURE_IMPORTANCE) → dbt 밖 base(SERVING.ML_FEATURE_IMPORTANCE_V) · 판정 대상 아님
+  AGENT_EXECUTIVE/analyst_ml_realtime_simulator(SV_ML_REALTIME_SIMULATOR) → dbt 밖 base(SERVING.ML_REALTIME_SIMULATOR_V) · 판정 대상 아님
+  AGENT_EXECUTIVE/analyst_ml_churn_campaign(SV_ML_CHURN_CAMPAIGN) → dbt 밖 base(SERVING.ML_CHURN_BY_CMPGN_CTGR_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_mstr_spnsr_dvlp(SV_MSTR_SPNSR_DVLP) → SV DDL 파일에서 정의를 찾지 못함(판정 생략)
+  AGENT_MARKETING/analyst_ml_dvlp_forecast(SV_ML_DVLP_FORECAST) → dbt 밖 base(SERVING.ML_DVLP_FORECAST_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_member_risk(SV_ML_MEMBER_RISK) → dbt 밖 base(SERVING.ML_MEMBER_RISK_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_ltv_forecast(SV_ML_LTV_FORECAST) → dbt 밖 base(SERVING.ML_LTV_FORECAST_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_once_conversion(SV_ML_ONCE_CONVERSION) → dbt 밖 base(SERVING.ML_ONCE_CONVERSION_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_feature_importance(SV_ML_FEATURE_IMPORTANCE) → dbt 밖 base(SERVING.ML_FEATURE_IMPORTANCE_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_inc_campaign(SV_ML_INC_CAMPAIGN) → dbt 밖 base(SERVING.ML_INC_BY_MKTG_CMPGN_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_realtime_simulator(SV_ML_REALTIME_SIMULATOR) → dbt 밖 base(SERVING.ML_REALTIME_SIMULATOR_V) · 판정 대상 아님
+  AGENT_MARKETING/analyst_ml_churn_campaign(SV_ML_CHURN_CAMPAIGN) → dbt 밖 base(SERVING.ML_CHURN_BY_CMPGN_CTGR_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_mstr_spnsr_dvlp(SV_MSTR_SPNSR_DVLP) → SV DDL 파일에서 정의를 찾지 못함(판정 생략)
+  AGENT_MEMBER/analyst_ml_member_risk(SV_ML_MEMBER_RISK) → dbt 밖 base(SERVING.ML_MEMBER_RISK_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_sponsor_risk(SV_ML_SPONSOR_RISK) → dbt 밖 base(SERVING.ML_SPONSOR_RISK_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_fee_forecast(SV_ML_FEE_FORECAST) → dbt 밖 base(SERVING.ML_FEE_FORECAST_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_once_conversion(SV_ML_ONCE_CONVERSION) → dbt 밖 base(SERVING.ML_ONCE_CONVERSION_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_feature_importance(SV_ML_FEATURE_IMPORTANCE) → dbt 밖 base(SERVING.ML_FEATURE_IMPORTANCE_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_realtime_simulator(SV_ML_REALTIME_SIMULATOR) → dbt 밖 base(SERVING.ML_REALTIME_SIMULATOR_V) · 판정 대상 아님
+  AGENT_MEMBER/analyst_ml_churn_campaign(SV_ML_CHURN_CAMPAIGN) → dbt 밖 base(SERVING.ML_CHURN_BY_CMPGN_CTGR_V) · 판정 대상 아님
+
+🟠 advisory 20건
+  ④ AGENT_EXECUTIVE/analyst_campaign_cum_stop(SV_CAMPAIGN_CUM_STOP) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_CUM_STOP` 로 문구 생성)
+  ④ AGENT_EXECUTIVE/analyst_campaign_monthly(SV_CAMPAIGN_MONTHLY) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_MONTHLY` 로 문구 생성)
+  ③ AGENT_MARKETING/analyst_dev_achievement(SV_DEV_ACHIEVEMENT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ③ AGENT_MARKETING/analyst_member_event(SV_MEMBER_EVENT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ③ AGENT_MARKETING/analyst_member_cohort(SV_MEMBER_COHORT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ④ AGENT_MARKETING/analyst_ga_behavior(SV_GA_BEHAVIOR) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_GA_BEHAVIOR` 로 문구 생성)
+  ④ AGENT_MARKETING/analyst_ga_session(SV_GA_SESSION) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_GA_SESSION` 로 문구 생성)
+  ④ AGENT_MARKETING/analyst_mbrfee_prdt_actl(SV_MBRFEE_PRDT_ACTL) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_MBRFEE_PRDT_ACTL` 로 문구 생성)
+  ④ AGENT_MARKETING/analyst_spnsr_cls_aggr(SV_SPNSR_CLS_AGGR) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_SPNSR_CLS_AGGR` 로 문구 생성)
+  ④ AGENT_MARKETING/analyst_campaign_cum_stop(SV_CAMPAIGN_CUM_STOP) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_CUM_STOP` 로 문구 생성)
+  ④ AGENT_MARKETING/analyst_campaign_monthly(SV_CAMPAIGN_MONTHLY) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_MONTHLY` 로 문구 생성)
+  ③ AGENT_MEMBER/analyst_member_event(SV_MEMBER_EVENT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ③ AGENT_MEMBER/analyst_member_cohort(SV_MEMBER_COHORT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ③ AGENT_MEMBER/analyst_dev_achievement(SV_DEV_ACHIEVEMENT) → 핵심 원천 미기재 3: TM_MM_FDRM_MBER_SPNSR · TM_PM_DNTN_DTLS · TM_PM_MBRFEE_ACMSLT (차원 원천 제외 후 · DEC-59 #7 = 사용자 결정으로 수용)
+  ④ AGENT_MEMBER/analyst_mbrfee_prdt_actl(SV_MBRFEE_PRDT_ACTL) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_MBRFEE_PRDT_ACTL` 로 문구 생성)
+  ④ AGENT_MEMBER/analyst_spnsr_cls_aggr(SV_SPNSR_CLS_AGGR) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_SPNSR_CLS_AGGR` 로 문구 생성)
+  ④ AGENT_MEMBER/analyst_dvlp_goal_acmslt(SV_DVLP_GOAL_ACMSLT) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_DVLP_GOAL_ACMSLT` 로 문구 생성)
+  ④ AGENT_MEMBER/analyst_member_monthly_kpi(SV_MEMBER_MONTHLY_KPI) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_MEMBER_MONTHLY_KPI` 로 문구 생성)
+  ④ AGENT_MEMBER/analyst_campaign_cum_stop(SV_CAMPAIGN_CUM_STOP) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_CUM_STOP` 로 문구 생성)
+  ④ AGENT_MEMBER/analyst_campaign_monthly(SV_CAMPAIGN_MONTHLY) → 원천 괄호에 BRONZE 테이블 0개 (`--suggest --sv SV_CAMPAIGN_MONTHLY` 로 문구 생성)
+========================================================================
+🟢 PASS — blocking 0건
