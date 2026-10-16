@@ -67,7 +67,7 @@ video AS (
     SELECT
         *,
         COALESCE(
-            BRDC_DATE,                              -- 송출일 우선(종전 기준)
+            NULLIF(BRDC_DATE, '1970-01-01'::DATE),  -- 송출일 우선(종전 기준) · O240: VIDEO 도 에포크 1,573행(텍스트축 2025-10~2026-02) → 폴백
             TRY_TO_DATE("YEAR"
                         || LPAD(REGEXP_REPLACE("MONTH", '[^0-9]', ''), 2, '0')
                         || LPAD(REGEXP_REPLACE("DAY",   '[^0-9]', ''), 2, '0'), 'YYYYMMDD')

@@ -23,7 +23,7 @@ SELECT
     CAST(NULL AS VARCHAR)                       AS RT_TYPE,                 -- 재방송 전용 → VIDEO 는 개념 없음
     {{ clean_str('AD_STRT_TIME') }}             AS AD_START_TIME,           -- 광고시작시간
     {{ clean_str('AD_END_TIME') }}              AS AD_END_TIME,             -- 광고종료시간
-    BRDC_DATE                                   AS BROADCAST_DATE,          -- 송출일(≠실적일)
+    NULLIF(BRDC_DATE, '1970-01-01'::DATE)       AS BROADCAST_DATE,          -- 송출일(≠실적일) · O240: 에포크 1,573행 = 날짜 아님 → NULL
     {{ clean_str('SCHDL_NM') }}                 AS PROGRAM_NM,              -- 편성/프로그램명
     {{ clean_str('CHNNL_NM') }}                 AS CHANNEL_COMPANY,         -- 채널사
     {{ clean_str('CHNNL_CMPNY_TY_NM') }}        AS CHANNEL_COMPANY_TYPE,    -- 채널사유형

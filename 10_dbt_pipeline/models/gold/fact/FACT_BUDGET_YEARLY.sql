@@ -38,10 +38,16 @@ with y as (
     from {{ ref('ERP_BUDGET_YEARLY') }}
 ),
 ranked as (
+    -- 🆕 [O240] 「최신 차수」가 아니라 「편성액이 있는 차수 중 최신」 — 원장이 추경 미편성 상태로 추가경정 행을
+    --   먼저 만든다(실측 2026: 추가경정 48행 편성 0 · 연사업 65행 22,554,689,599) ⇒ 종전 규칙은 2026 편성을 0 으로 냈다.
     select
         *,
-        dense_rank() over (partition by BUDGET_YEAR order by PRCD_SEQ desc) as rnk
-    from y
+        dense_rank() over (partition by BUDGET_YEAR
+                           order by IFF(PRCD_PLAN_TOT > 0, 1, 0) desc, PRCD_SEQ desc) as rnk
+    from (
+        select y.*, SUM(YEAR_BDGT_TOT_AMT) over (partition by BUDGET_YEAR, BUDGET_PROCEDURE) as PRCD_PLAN_TOT
+        from y
+    )
 )
 
 select

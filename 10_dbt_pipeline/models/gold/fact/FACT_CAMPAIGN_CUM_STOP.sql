@@ -64,7 +64,10 @@ monthly as (
 ),
 
 base_month as (
+    -- O240: 회비원장 전량 적재 전(연도초 분모 공백 → 누계중단율 85~99%) · 미래 선납월은 기준월에서 뺀다
     select distinct MONTH_KEY as BASE_MONTH_KEY from spine
+    where MONTH_KEY >= {{ var('billing_coverage_start_month') }}
+      and MONTH_KEY <= TO_NUMBER(TO_CHAR(CURRENT_DATE(), 'YYYYMM'))
 ),
 
 -- 기준월 M 의 누계 = 같은 해 1월 ~ M월 합

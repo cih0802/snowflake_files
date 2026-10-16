@@ -71,7 +71,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
       COMMENT = 'page_view 이벤트 수 합(회). F(가산).',
     gs.EVENT_SUM AS SUM(gs.EVENT_CNT)
       WITH SYNONYMS ('이벤트수', '이벤트(건)')
-      COMMENT = '전체 이벤트 수 합(건). F(가산).'
+      COMMENT = '전체 이벤트 수 합(건). F(가산).',
+    gs.AVG_SESSION_ENGAGEMENT_SEC AS SUM(gs.ENGAGEMENT_TIME_MSEC) / 1000 / NULLIF(COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY), 0)
+      WITH SYNONYMS ('평균세션시간', 'GA 평균세션시간', '세션당 평균 참여시간', '공98')
+      COMMENT = '공#98 GA 평균세션시간(초) 잠정 = 참여시간 합(engagement_time_msec ÷ 1,000) ÷ 고유 세션수. GA4 「세션당 평균 참여시간」 정의다(UA 세션 지속시간과 다르다 — 답변에 밝힌다). 참여시간 미수집 세션은 0초로 분모에 남는다. 비율(N · 재집계 금지). O240 신설.',
+    gs.BOUNCE_RATE AS (1 - COUNT(DISTINCT IFF(gs.ENGAGED_FLAG = 1, gs.BIGQUERY_SESSION_KEY, NULL)) / NULLIF(COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY), 0)) * 100
+      WITH SYNONYMS ('이탈율', 'GA 이탈율', '이탈률', '공108')
+      COMMENT = '공#108 GA 이탈율(%) = (1 − 참여 세션 ÷ 전체 세션) × 100. GA4 bounce rate 정의(참여하지 않은 세션 비율). 비율(N · 재집계 금지). 🔴 FACT_BIGQUERY_BEHAVIOR.BOUNCE_RATE 컬럼은 전건 NULL 이라 쓰지 않는다. O240 신설.'
   )
   COMMENT = 'GA4 세션 SV. 「회원유형·후원자유형·후원사업유형·국가·기기·브라우저·사이트·유입채널별 방문(세션)·방문자·페이지뷰」 질문에 쓴다. 🔴 페이지 경로·이벤트 분류 질문은 SV_GA_BEHAVIOR 소관(다른 grain · 합산 금지). 🔴 인구통계(성별·연령)는 SV_GA_DEMOGRAPHIC · 구글 검색어·노출은 SV_SEARCH_CONSOLE 소관. 제외 축: EP_GAD_SOURCE(라벨 없는 숫자 코드).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

@@ -153,7 +153,10 @@ monthly as (
 ),
 
 base_month as (
+    -- O240: 회비원장 전량 적재 전(분모 공백) · 미래 선납월은 기준월에서 뺀다(dbt_project.yml vars 근거)
     select distinct MONTH_KEY as BASE_MONTH_KEY from spine
+    where MONTH_KEY >= {{ var('billing_coverage_start_month') }}
+      and MONTH_KEY <= TO_NUMBER(TO_CHAR(CURRENT_DATE(), 'YYYYMM'))
 ),
 
 -- 기준월 M 의 누계 = 같은 해 1월 ~ M월 합(FCCS 와 같은 식)
@@ -183,7 +186,8 @@ ys_by_month as (
 ),
 
 keys as (
-    select MONTH_KEY as BASE_MONTH_KEY, CAMPAIGN_SK, PAYMENT_SK from monthly
+    select mo.MONTH_KEY as BASE_MONTH_KEY, mo.CAMPAIGN_SK, mo.PAYMENT_SK from monthly mo
+    join base_month b on b.BASE_MONTH_KEY = mo.MONTH_KEY   -- O240: 기준월 범위 밖 월값은 내지 않는다
     union
     select BASE_MONTH_KEY, CAMPAIGN_SK, PAYMENT_SK from cum
     union

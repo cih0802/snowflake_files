@@ -1,0 +1,2 @@
+__CALL_FAILED__ 002141 (42601): SQL compilation error:
+Unknown user-defined function SNOWFLAKE.CORTEX.DATA_AGENT_RUN.

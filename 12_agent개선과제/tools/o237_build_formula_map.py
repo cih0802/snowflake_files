@@ -144,6 +144,8 @@ add("MET_CMN-87", "실패수(명)", "C5_PARTIAL", "analyst_service", "SV_SERVICE
 add("MET_CMN-88", "서신참여(명)", "C1_METRIC", "analyst_service", "SV_SERVICE.FSE.D5_LETTER_MEMBERS",
     "D5_LETTER_MEMBERS(발송 후 D+1~D+5 서신 접수 · 중복 포함)로 답한다. 결연활동 전체 서신 회원수는 SV_RELATION_ACTIVITY.FRA.DISTINCT_ACTIVITY_MEMBERS.")
 add("MET_CMN-90", "선물금참여(명)", "C1_METRIC", "analyst_service", "SV_SERVICE.FSE.D5_GIFT_MEMBERS", "D5_GIFT_MEMBERS(중복 포함)로 답한다.")
+# 🔴 [O240] 공91·98·108 은 사전 FORMULA 가 비어 오버레이 대상이 아니다(코퍼스 빌더가 거부) —
+#   배선 = SV_GA_SESSION 신설 metric 의 동의어(공98·공108) + Agent 규칙 O240 ⑤(MEMBER 공91 · MARKETING 공98·108)
 add("MET_CMN-99", "event_category", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_CATEGORY", "차원 EVENT_CATEGORY 로 분해한다(member_id 식별 이벤트).")
 add("MET_CMN-100", "event_label", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_LABEL", "차원 EVENT_LABEL 로 분해한다.")
 add("MET_CMN-101", "event_action", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_ACTION", "차원 EVENT_ACTION 으로 분해한다.")

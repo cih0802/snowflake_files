@@ -30,10 +30,15 @@ with b as (
     from {{ ref('ERP_BUDGET') }}
 ),
 ranked as (
+    -- 🆕 [O240] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 미편성 연도는 연사업)
     select
         *,
-        dense_rank() over (partition by BUDGET_YEAR order by PRCD_SEQ desc) as rnk
-    from b
+        dense_rank() over (partition by BUDGET_YEAR
+                           order by IFF(PRCD_PLAN_TOT > 0, 1, 0) desc, PRCD_SEQ desc) as rnk
+    from (
+        select b.*, SUM(YEAR_BUDGET_AMT) over (partition by BUDGET_YEAR, BUDGET_PROCEDURE) as PRCD_PLAN_TOT
+        from b
+    )
 )
 
 select
