@@ -29,6 +29,9 @@ WITH base AS (
   ,CAST(NULL AS VARCHAR(1)) AS USE_YN
   ,CAST(NULL AS VARCHAR(1)) AS PART_USE_YN      -- 🆕 [O213-F Y3-I] 캠페인행사 전용 · 일반행사 = 원천 개념 없음
   FROM {{ source('bronze_crm','TM_MS_EVENT') }} WHERE EVENT_CD IS NOT NULL
+  -- [2026-10-16 grain 보정] BRONZE 이중 적재 방어 — 원천 키당 최신 수정·최신 적재 1행.
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY EVENT_CD
+                             ORDER BY LAST_UPDT_DT DESC NULLS LAST, _LOAD_DT DESC NULLS LAST) = 1
   UNION ALL
   SELECT 'CRMN_'||CRMN_CD, 'CRMN', NULLIF(TRIM(CRMN_DIV_CD),''), NULLIF(TRIM(CRMN_TIT),''),
     NULLIF(TRIM(CRMN_STRT_DE),''), NULLIF(TRIM(CRMN_END_DE),''), RCRIT_PSNNL_CO, NULLIF(TRIM(BRNCH_DEPT_ID),''),
@@ -45,6 +48,9 @@ WITH base AS (
   ,NULLIF(TRIM(USE_YN),'')
   ,NULLIF(TRIM(PART_USE_YN),'')                  -- 🆕 [O213-F Y3-I] 참여신청 사용 여부 Y/N
   FROM {{ source('bronze_crm','TM_MS_CRMN') }} WHERE CRMN_CD IS NOT NULL
+  -- [2026-10-16 grain 보정] 📏 7,312행 / CRMN_CD 3,668(내용 다른 버전 15키) ⇒ 최신 1행.
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY CRMN_CD
+                             ORDER BY LAST_UPDT_DT DESC NULLS LAST, _LOAD_DT DESC NULLS LAST) = 1
 )
 SELECT
   b.EVENT_KEY                      AS EVENT_KEY,

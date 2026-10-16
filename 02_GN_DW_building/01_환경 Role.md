@@ -85,6 +85,14 @@ roles:
     warehouse: [GN_DW_DEV_WH]
     scope: 전체
     note: "ALL PRIVILEGES 보유로 모든 WH 사용 가능하나, 기본값은 DEV_WH. 운영 WH(ETL/ANALYTICS) 사용 시 명시적 USE WAREHOUSE 필요"
+    account_privileges: |
+      🆕 [2026-10-16] `EXECUTE ALERT ON ACCOUNT` — OPS ALERT(`ALERT_DBT_WARN_SPNSR_CLS_DUP`) 소유 롤의 RESUME/실행 전제.
+         없으면 `Cannot execute alert, EXECUTE ALERT privilege must be granted to owner role` (개발계 실측 · 부여 완료).
+         부여 = ACCOUNTADMIN · 정본 위치 = `08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql` §1(ACCOUNTADMIN 구간).
+      · `USAGE ON INTEGRATION EMAIL_ALERT_INTEGRATION`(07 §1) — 발송 프로시저가 EXECUTE AS OWNER 로 SYSTEM$SEND_EMAIL 호출.
+        공통 발송 프로시저는 GN_DW_ADMIN 소유라 09 §2 의 호출 USAGE 는 소유권으로 충족.
+      🔴 `CREATE OR REPLACE` PROCEDURE/ALERT 는 객체 GRANT 를 지운다 ⇒ 07 §4 재배포 후 07 §6, 09 §2·§3 재실행 후 09 §5 를 다시 실행.
+         (2026-10-16 실측: 07 §6 누락 → `Unknown user-defined function USP_SEND_PIPELINE_ERROR_ALERT`)
   - id: GN_DW_ENGINEER
     purpose: ETL 개발, dbt 파이프라인
     warehouse: [GN_DW_ETL_WH, GN_DW_DEV_WH]
@@ -123,6 +131,7 @@ creation_rules:
   - "모든 Custom Role 최종 SYSADMIN 귀속 (P4)"
   - "소유 모델: GN_DW DB·전 스키마·테이블/뷰·SV/Agent/DBT PROJECT = GN_DW_ADMIN 소유(07 §B.5로 ACCOUNTADMIN→ADMIN 이관). 커스텀 롤(ENGINEER/ANALYST/VIEWER/LOADER/SERVICE)은 적재·조회만(소유 없음)."
   - "계정 레벨 객체는 ACCOUNTADMIN 유지(이관 대상 아님): 네트워크/인증 정책·Resource Monitor·CoWork object·SNOWFLAKE.CORTEX_* 부여."
+  - "🆕 [2026-10-16] OPS 알림 객체 소유 = GN_DW_ADMIN: 수신자 테이블 ALERT_RECIPIENT_CONFIG · 프로시저 USP_SYNC_ALERT_RECIPIENTS·USP_SEND_PIPELINE_ERROR_ALERT·SAMPLE_ETL_PIPELINE_PROC(07 §2~§6) · USP_SEND_DBT_WARN_SPNSR_CLS_DUP·ALERT_DBT_WARN_SPNSR_CLS_DUP(09). ACCOUNTADMIN 은 계정 레벨만 = EMAIL_ALERT_INTEGRATION 생성·USAGE 부여 · EXECUTE ALERT 부여(07 §1). 종전 ACCOUNTADMIN 소유분은 07 §1-1 로 이관 완료(개발계 2026-10-16 · COPY CURRENT GRANTS). SHOW USERS email 조회는 GN_DW_ADMIN 의 MANAGE GRANTS 로 충족(실측). GN_DW_ENGINEER = 발송 프로시저 USAGE·ALERT MONITOR(조회만)."
   - "MANAGED ACCESS 스키마 → 소유자 GN_DW_ADMIN이 모든 object grant 발급. dbt WIDE view는 생성 롤(ENGINEER) 소유(dbt 산출물)."
   - "ETL은 dbt 파이프라인(GN_DW.OPS.DW_PIPELINE)으로 운영 — 별도 Serverless Task 없음(향후 dbt 스케줄 Task 래핑 시 EXECUTE MANAGED TASK ON ACCOUNT를 GN_DW_ADMIN/ENGINEER에 부여)"
 ```

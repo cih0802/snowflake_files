@@ -25,3 +25,8 @@ select
     CAST(CURRENT_TIMESTAMP() AS TIMESTAMP_NTZ)   as DW_UPDATE_TS,
     NULL                                         as DW_BATCH_ID
 from {{ source('bronze_gsc', 'SEARCH_CONSOLE_DATA') }}
+-- [2026-10-16 grain 보정] BRONZE 이중 적재(📏 1,483,144행 / 5키 994,778 · 전건 완전 동일 행) 방어 — 5키당 1행.
+qualify ROW_NUMBER() over (
+    partition by DATE, QUERY, PAGE, COUNTRY, DEVICE
+    order by IMPRESSIONS desc nulls last, CLICKS desc nulls last
+) = 1

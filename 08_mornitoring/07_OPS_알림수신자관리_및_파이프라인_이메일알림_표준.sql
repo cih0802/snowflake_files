@@ -10,10 +10,22 @@
 --   4. 파이프라인 에러 알림 발송 프로시저 USP_SEND_PIPELINE_ERROR_ALERT 생성 (역할/페르소나별 라우팅)
 --   5. RBAC 권한 부여 (GN_DW_ADMIN, GN_DW_ENGINEER, SYSADMIN 등)
 --   6. 스케줄링 Task 연동 예시
+--   7. [2026-10-16] dbt 경고 알림 수신자 = §3-1 변수 DBT_ALERT_RECIPIENTS (발송 ALERT 는 09 문서)
+--
+-- 실행 역할 (2026-10-16 정정 — 01_환경 Role.md 소유 모델: GN_DW 내부 객체 = GN_DW_ADMIN · 계정 레벨 = ACCOUNTADMIN)
+--   §1 ~ §1-1 = ACCOUNTADMIN  (Notification Integration · 계정 권한 EXECUTE ALERT · 기존 객체 소유권 이관)
+--   §2 ~ §6   = GN_DW_ADMIN   (OPS 테이블·프로시저·수신자 지정·GRANT)
+--   🔴 종전 판은 전 구간 ACCOUNTADMIN 이었다 ⇒ OPS 객체 4종이 ACCOUNTADMIN 소유가 됐고
+--      GN_DW_ADMIN 이 ALTER TABLE 을 못 했다(MODIFY 부재 실측). §1-1 이 이를 바로잡는다.
+--   ✅ GN_DW_ADMIN 은 MANAGE GRANTS 보유(07_ENVIRONMENT_RBAC_setup.sql) ⇒ SHOW USERS 의 email 조회 가능(실측) —
+--      USP_SYNC_ALERT_RECIPIENTS(EXECUTE AS OWNER)를 GN_DW_ADMIN 소유로 둬도 동작한다.
 -- ==============================================================================
 
+-- ==============================================================================
+-- [ACCOUNTADMIN 구간] §1 ~ §1-1
+-- ==============================================================================
 USE ROLE ACCOUNTADMIN;
-USE WAREHOUSE COMPUTE_WH;
+USE WAREHOUSE GN_DW_ETL_WH;
 USE DATABASE GN_DW;
 USE SCHEMA OPS;
 
@@ -30,6 +42,30 @@ CREATE OR REPLACE NOTIFICATION INTEGRATION EMAIL_ALERT_INTEGRATION
 GRANT USAGE ON INTEGRATION EMAIL_ALERT_INTEGRATION TO ROLE SYSADMIN;
 GRANT USAGE ON INTEGRATION EMAIL_ALERT_INTEGRATION TO ROLE GN_DW_ADMIN;
 GRANT USAGE ON INTEGRATION EMAIL_ALERT_INTEGRATION TO ROLE GN_DW_ENGINEER;
+
+-- 계정 권한: OPS ALERT(09 문서 ALERT_DBT_WARN_SPNSR_CLS_DUP) 소유 롤 = GN_DW_ADMIN 의 RESUME/실행 전제.
+--   없으면 'Cannot execute alert, EXECUTE ALERT privilege must be granted to owner role' (2026-10-16 실측).
+GRANT EXECUTE ALERT ON ACCOUNT TO ROLE GN_DW_ADMIN;
+
+
+-- ------------------------------------------------------------------------------
+-- 1-1. [1회 · 기존 환경만] 종전 판이 ACCOUNTADMIN 으로 만든 OPS 객체 → GN_DW_ADMIN 소유 이관
+-- ------------------------------------------------------------------------------
+-- 신규 환경(객체 미존재)은 건너뛴다 — 아래 §2~ 를 GN_DW_ADMIN 으로 실행하면 처음부터 ADMIN 소유다.
+-- COPY CURRENT GRANTS = ENGINEER/ANALYST 등 기존 부여 유지. 재실행 안전(이미 ADMIN 소유면 무변화).
+GRANT OWNERSHIP ON TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON PROCEDURE GN_DW.OPS.USP_SYNC_ALERT_RECIPIENTS() TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON PROCEDURE GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT(STRING, STRING, STRING, STRING) TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+GRANT OWNERSHIP ON PROCEDURE GN_DW.OPS.SAMPLE_ETL_PIPELINE_PROC(STRING) TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+
+
+-- ==============================================================================
+-- [GN_DW_ADMIN 구간] §2 ~ §6
+-- ==============================================================================
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_ETL_WH;
+USE DATABASE GN_DW;
+USE SCHEMA OPS;
 
 
 -- ------------------------------------------------------------------------------
@@ -48,6 +84,23 @@ CREATE TABLE IF NOT EXISTS GN_DW.OPS.ALERT_RECIPIENT_CONFIG (
     CONSTRAINT PK_ALERT_RECIPIENT_CONFIG PRIMARY KEY (USER_NAME)
 )
 COMMENT = '데이터 파이프라인 및 마트 알림 수신자 관리 메타데이터 테이블';
+
+-- [2026-10-16 확장] dbt 데이터 품질 경고(WARN 테스트) 알림 수신 플래그 — 기존 테이블에 비파괴 추가.
+--   USP_SYNC_ALERT_RECIPIENTS 의 MERGE 는 이 컬럼을 건드리지 않는다(DEFAULT 'N' · 기존값 보존).
+--   🔴 `ADD COLUMN IF NOT EXISTS … DEFAULT` 는 컬럼이 이미 있으면 'ambiguous column name' 으로 실패한다(2026-10-16 실측)
+--      ⇒ 존재 여부를 먼저 보고 없을 때만 ADD · COMMENT 는 별도 ALTER(재실행 안전).
+EXECUTE IMMEDIATE $$
+BEGIN
+  IF (NOT EXISTS (SELECT 1 FROM GN_DW.INFORMATION_SCHEMA.COLUMNS
+                  WHERE TABLE_SCHEMA = 'OPS' AND TABLE_NAME = 'ALERT_RECIPIENT_CONFIG' AND COLUMN_NAME = 'IS_DBT_ALERT_YN')) THEN
+    ALTER TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG ADD COLUMN IS_DBT_ALERT_YN VARCHAR(1) DEFAULT 'N';
+    RETURN 'ADDED';
+  END IF;
+  RETURN 'EXISTS';
+END;
+$$;
+ALTER TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG ALTER COLUMN IS_DBT_ALERT_YN
+  COMMENT 'dbt 데이터 품질 경고(WARN 테스트 · 수기 업로드 원천 중복 등) 알림 수신 여부 (Y/N) — 09 문서 ALERT 가 사용';
 
 
 -- ------------------------------------------------------------------------------
@@ -115,13 +168,38 @@ WHERE USER_NAME = 'CHOIH';
 
 
 -- ------------------------------------------------------------------------------
+-- 3-1. [dbt 알림 수신자 지정] ★ 수신자 변경은 이 변수 한 줄만 고치고 이 블록을 실행한다 ★
+-- ------------------------------------------------------------------------------
+-- 값 = Snowflake USER_NAME 목록(쉼표 구분 · 대소문자/공백 무관). 이메일은 ALERT_RECIPIENT_CONFIG 의 인증 주소를 쓴다.
+--   🔴 목록에 없는 사용자는 'N' 으로 내려간다(선언형 — 이 변수가 dbt 알림 수신자의 정본이다).
+--   🔴 USER_NAME 이 테이블에 없으면 먼저 §3 CALL USP_SYNC_ALERT_RECIPIENTS() 로 동기화한다(이메일 미등록 유저는 제외됨).
+SET DBT_ALERT_RECIPIENTS = 'TRIALADMIN';
+
+UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG
+SET IS_DBT_ALERT_YN = IFF(ARRAY_CONTAINS(UPPER(USER_NAME)::VARIANT,
+                                         SPLIT(UPPER(REPLACE($DBT_ALERT_RECIPIENTS, ' ', '')), ',')), 'Y', 'N'),
+    UPDATED_AT = CURRENT_TIMESTAMP(),
+    UPDATED_BY = CURRENT_USER();
+
+-- 검증: 변수에 적었는데 테이블에 없는(=메일이 가지 않는) 사용자
+SELECT f.value::STRING AS MISSING_USER_NAME
+FROM TABLE(FLATTEN(SPLIT(UPPER(REPLACE($DBT_ALERT_RECIPIENTS, ' ', '')), ','))) f
+WHERE f.value::STRING NOT IN (SELECT UPPER(USER_NAME) FROM GN_DW.OPS.ALERT_RECIPIENT_CONFIG WHERE IS_ACTIVE_YN = 'Y');
+
+-- 확인: 현재 dbt 알림 수신자
+SELECT USER_NAME, USER_EMAIL, IS_ACTIVE_YN, IS_DBT_ALERT_YN
+FROM GN_DW.OPS.ALERT_RECIPIENT_CONFIG
+WHERE IS_DBT_ALERT_YN = 'Y';
+
+
+-- ------------------------------------------------------------------------------
 -- 4. [알림 공통 프로시저] 대상 타겟(PIPELINE, ANALYST, BIZ)별 에러 메일 발송
 -- ------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT(
     pipeline_name STRING,
     error_summary STRING,
     stack_trace STRING,
-    target_role_category STRING  -- 'PIPELINE_ADMIN', 'ANALYST', 'BUSINESS_USER', 'ALL'
+    target_role_category STRING  -- 'PIPELINE_ADMIN', 'ANALYST', 'BUSINESS_USER', 'DBT_ALERT', 'ALL'
 )
 RETURNS STRING
 LANGUAGE PYTHON
@@ -144,6 +222,8 @@ def send_alert(session: snowpark.Session, pipeline_name: str, error_summary: str
         where_clause += " AND IS_ANALYST_YN = 'Y'"
     elif target_role_category == "BUSINESS_USER":
         where_clause += " AND IS_BUSINESS_USER_YN = 'Y'"
+    elif target_role_category == "DBT_ALERT":
+        where_clause += " AND IS_DBT_ALERT_YN = 'Y'"
     elif target_role_category == "ALL":
         where_clause += " AND (IS_PIPELINE_ADMIN_YN = 'Y' OR IS_ANALYST_YN = 'Y' OR IS_BUSINESS_USER_YN = 'Y')"
     

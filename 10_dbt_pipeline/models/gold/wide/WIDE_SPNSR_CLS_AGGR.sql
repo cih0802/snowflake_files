@@ -20,3 +20,10 @@ select
     VALUE1,
     VALUE2
 from {{ source('silver_external', 'MM_SPNSR_CLS_AGGR_DATA') }}
+-- [2026-10-16 grain 보정 · 사용자 결정] 수기 업로드 문서라 같은 grain 에 값이 다른 행이 섞인다(📏 970행 / 511키).
+--   예측값이라 정밀도 요구가 낮다 ⇒ 큰 값 1건을 유지한다. 중복 발생은 tests/warn_spnsr_cls_aggr_src_dup.sql
+--   (store_failures → OPS) 가 기록하고 담당자 메일 알림의 근거가 된다.
+qualify ROW_NUMBER() over (
+    partition by STDR_MT, AGGR_TY_NM, CPR_NM, SPNSR_BSNS_GRP_NM, NEW_EXST_DIV_NM, HDQ_BRNCH_GRP_NM
+    order by VALUE1 desc nulls last, VALUE2 desc nulls last
+) = 1

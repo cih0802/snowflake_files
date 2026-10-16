@@ -45,6 +45,9 @@ SELECT
   ,CAST(NULL AS VARCHAR(10)) AS ACMSLT_DEPT_CD
   ,NULLIF(TRIM(USE_YN),'') AS USE_YN
 FROM {{ source('bronze_crm','TM_PM_MBRFEE_ACMSLT') }} WHERE MBRFEE_KEY IS NOT NULL
+-- [2026-10-16 grain 보정] BRONZE 이중 적재(📏 415,830키 · 전건 완전 동일 행) 방어 — (MBRFEE_KEY, MBRFEE_SQNC) 당 1행.
+--   ⇒ FACT_PAYMENT_BILLING_STATUS 매크로 dedup 과 원천 행수가 다시 일치한다(assert_fpbs_billing_preserved).
+QUALIFY ROW_NUMBER() OVER (PARTITION BY MBRFEE_KEY, MBRFEE_SQNC ORDER BY _LOAD_DT DESC NULLS LAST) = 1
 UNION ALL
 SELECT
   'DNTN_'||DNTN_KEY, '기부금', NULLIF(TRIM(ONCE_MBER_NO),''), NULLIF(TRIM(SPNSR_BSNS_ID),''), NULL,
@@ -74,3 +77,5 @@ FROM {{ source('bronze_crm','TM_PM_DNTN_DTLS') }} WHERE DNTN_KEY IS NOT NULL
   --   ⇒ GOLD 월키가 210103 으로 튀었다(FMM·FACT_MEMBER_FEE 각 3행). 납입일은 미래일 수 없으므로 행을 제외한다.
   --   🔴 회비월(MBRFEE_MT)이 미래인 선납 행은 대상이 아니다(납입일이 과거다) — 이 술어는 PAY_DE 만 본다.
   AND (PAY_DE IS NULL OR PAY_DE <= CURRENT_DATE())
+-- [2026-10-16 grain 보정] BRONZE 이중 적재(📏 기부금 15키 · 전건 완전 동일 행) 방어 — DNTN_KEY 당 1행.
+QUALIFY ROW_NUMBER() OVER (PARTITION BY DNTN_KEY ORDER BY _LOAD_DT DESC NULLS LAST) = 1

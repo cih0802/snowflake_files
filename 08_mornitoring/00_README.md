@@ -15,6 +15,8 @@ Snowflake 운영 모니터링 및 AI(CoCo·CoWork·Agent·AI 함수) 사용량·
 | `03_비용제한_예산 쿼터.md` | Per-user quota / Budget / RBAC 3계층 통제 |
 | `04_알림_및 거버넌스.md` | quota 내장 알림, Alert, 거버넌스 체크리스트 |
 | **`05_AI비용가드_구축.sql`** | **실행 가능한 구축 런북 (정본)** |
+| `07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql` | 알림 수신자 관리 표준 · 공통 발송 프로시저. **dbt 알림 수신자 = §3-1 변수 `DBT_ALERT_RECIPIENTS`** |
+| `09_OPS_dbt경고_이메일알림_구축.sql` | dbt WARN 테스트(store_failures → OPS) 결과를 ALERT 로 감시해 07 수신자에게 메일 발송 |
 
 ## 핵심 요약
 
