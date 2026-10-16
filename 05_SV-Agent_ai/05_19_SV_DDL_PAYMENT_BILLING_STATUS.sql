@@ -76,7 +76,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
       COMMENT = '미납 청구액(원) = 결제상태 실패 또는 미기록인 청구액. F(가산).',
     pbs.BILLED_MEMBER_MAX AS MAX(pbs.BILLED_MEMBERS)
       WITH SYNONYMS ('청구 회원수(조합 최대)')
-      COMMENT = '🔴 참고용 — 팩트 행(조합)마다 센 고유 회원수의 최대값이다. 고유 회원수는 조합을 넘어 더할 수 없으므로 「몇 명에게 청구했나」 질문은 SV_MEMBER_FEE 로 답한다.'
+      COMMENT = '🔴 참고용 — 팩트 행(조합)마다 센 고유 회원수의 최대값이다. 고유 회원수는 조합을 넘어 더할 수 없으므로 「몇 명에게 청구했나」 질문은 SV_MEMBER_FEE 로 답한다.',
+    -- 🆕 [O237] 공83 캠페인별 미납(건)
+    pbs.UNPAID_CNT_EQ AS SUM(pbs.UNPAID_BILLED_AMT) / 10000
+      WITH SYNONYMS ('캠페인별 미납(건)', '미납(건) 금액 환산', '공83')
+      COMMENT = '공83 캠페인별 미납(건) = 미납 청구액(원) ÷ 10,000. F(가산). campaign 차원(그 달 후원 캠페인 · 청구 행 단위 귀속)으로 분해한다. 🔴 SV_MEMBER_MONTHLY.UNPAID_CNT_SUM(공36 · 미납 회원의 **약정금액** ÷ 10,000)과 분자가 다르다 — 「캠페인별 미납(건)」은 이 metric 이다.'
   )
   COMMENT = '회비 청구 처리 상태 SV. 「청구구분·처리상태·환급사유별 청구 건수·금액」 질문에 쓴다. 활성: 청구(건)·청구액·납입액·미납액 · 회비월/회비구분/납입유형/청구구분/처리상태/환급사유/후원사업/캠페인(그 달 후원 캠페인) 축. 🔴 회원 단위 질문·고유 회원수는 SV_MEMBER_FEE 소관이며 이 SV 와 한 표에 합산하지 않는다(같은 원천 · 다른 grain). 비활성: 청구결과·처리결과(코드 사전 불일치 · 현업 확인 대상).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

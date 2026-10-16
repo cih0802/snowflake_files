@@ -1,0 +1,26 @@
+## O237-A 산식 대응 개선 — 지표사전 산식 146건 LLM 매핑표 + SV metric 12 + 코퍼스·Agent 배선 (2026-10-16 · ua91864 작성 · 👤 배포 대기 · ㉡ 적용 · 사용자 지시 · 확정위반 1)
+
+- 착수 = 사용자 질문 「analyst 가 산식에 다 대응하는가」 → 실측 = 산식 146건 중 SV_FIELD 9 · TOOL_NAME 12 · 동의어 자동 대조 42/146 ⇒ 사용자 지시 「LLM 용 매핑표 + 지표사전·SV·RAG 업데이트 · O 선점」.
+- 매핑 = `12_agent개선과제/tools/o237_build_formula_map.py` → `O237_formula_wiring_overlay.csv`(DOC_ID · COVERAGE · TOOL_NAME · SV_FIELD · ANSWER_GUIDE · GAP_ACTION) · 146/146 · 누락·초과 0 · `--check` 라이브 부재 0.
+- COVERAGE = C1_METRIC 52 · C2_COMBINE 15 · C3_CROSS 8 · C4_DIMENSION 19 · C5_PARTIAL 18 · G1_NEED_MODEL 31 · G2_NEED_CONFIRM 3.
+- G1 사유 = 캠페인 축 월 팩트 부재 17(O236 실측 「그 달 캠페인」 중단 미귀속 58.3%) · 서비스 코호트 플래그 부재 11 · 개별 3(최종캠페인 · 결연아동코드 · 후원사업별 미납율 grain) + 미납서비스·클릭 전환.
+- SV metric +12 = 05_01 `STOP_AMT_CNT_SUM`·`CNT_PER_ACTIVE_MEMBER`·`AVG_PLEDGE_AMT`·`PAY_IN_RATE`·`REGULAR_ONETIME_FEE_SUM`·`ONETIME_ONETIME_FEE_SUM` · 05_09 `AVG_PAID_PER_MEMBER` · 05_19 `UNPAID_CNT_EQ` · 05_24 `CUM_STOP_RATE_DEV` · 05_04 `D5_LETTER_RATE`·`D5_GIFT_RATE`·`D5_INCREASE_RATE`(잠정 · 분모 = 발송).
+- 동의어 시정 = 공64 납부율 metric 에 붙은 '납입률'(05_01)·'납입율'(05_09) 제거 ⇒ 공62 납입율(약정 대비)과 분리.
+- 기각 = FMM 연도초 metric(월 행 값이 월마다 다름 · 202609 FMM 1,412,376.6188 vs FCCS 1,535,149.1022) ⇒ 공49 = SV_CAMPAIGN_CUM_STOP · 발송 성공·실패 metric(EMAIL·SND 성공 라벨 미확정 · 기존 「라벨 창작 금지」) ⇒ C5 알림톡 한정.
+- 사전 검증 = SV 5종을 GN_DW.OPS `*_O237_PROBE` 로 생성 → 신규 metric 202609 조회 → GOLD 직접식과 대조(누계납입율 1~9월 96.390536 = 96.390536) → probe 5종 DROP(정리 스크립트 이름 파싱 결함으로 수동 DROP · 시정).
+- 코퍼스 = 생성기 `formula_wiring_overlay()`(빈 TOOL_NAME·SV_FIELD 만 채움 · GAP_ACTION → LIMITATION 덧붙임) · 열 +2(COVERAGE·ANSWER_GUIDE · 26 DDL · Search ATTRIBUTES COVERAGE) · 2,156행 유지 · 변경 행 = 산식 146 뿐.
+- Agent = `tmp/o237/patch_agents.py`(O236 방식) · search_biz_definition 열 6→10 · [O236] 문장 뒤 [O237 산식 대응] 1문장 · 의미 diff 3/3.
+- 게이트 = sv_rule7 1차 FAIL 2(신규 COMMENT 「× 10,000」 · 예외 규칙은 「÷」 만) → 「× 1만 원」 문구로 시정 → 0 · 나머지 PASS.
+- 확정위반 1: 배경 셸에서 rc 를 `>>` 로 누적 → 마운트 미지원으로 유실(G4 명시 금지) · 산출물 무손상 · 게이트 판정은 개별 출력 파일로 재확인.
+- 배포 순서 = `05_SV-Agent_ai/27_O237_산식대응_배포순서.sql` · 백업 = `tmp/o237/bak/`.
+
+### 독해 기록(`R1-3-7-b`)
+
+- `00_guides/00_작업지침_세션운영규칙.md` 1~304 · 도착 · `R0-8-4` · `R4-4-4` · `O173`.
+- `20_issue/00_BRIEF.md` 1~138 · 도착 · `O236-B` · `13.78%` · `조문 112개`.
+- `99_NEXT_SESSION-O0236-A.md` 1~48 · `-B.md` 1~44 · 도착 · `8.66배` · `519줄` · `only_09`.
+- `05_01`·`05_09`·`05_19`·`05_24`·`05_04`·`05_14` SV DDL 전량 · 도착 · `first_campaign` · `vqr_o213_rqest_div` · `SND_CURRENT_CMPGN` · `DEV_CUM_AMT_CNT`.
+- `26_BIZ_DEFINITION_CORPUS_DDL_적재.sql` 1~97 · `build_biz_definition_corpus.py` 1~280 · `tmp/o236/patch_agents.py` 1~67 · 도착 · `hit@3 33→45%` · `synonym_overlay` · `ANCHOR_RULE`.
+- read 미반환 0 · 재호출 0.
+
+_Co-authored with CoCo_

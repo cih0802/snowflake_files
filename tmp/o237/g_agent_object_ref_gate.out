@@ -1,0 +1,131 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+Agent 스펙 객체명 실재 게이트 — 분모 = 스펙 파일 3개 **전문**
+========================================================================
+  라이브 = 스키마 15종 · 객체 329개
+------------------------------------------------------------------------
+① 스키마 실재 (blocking) — 검사 251건 · 부정서술 면제 0건
+② 객체 실재 (blocking) — 검사 128건 · 부정서술 면제 0건 · SV 제외 71건
+   🔴 SV 제외는 오탐 회피다 — SV 는 INFORMATION_SCHEMA.TABLES 에 없고
+      `sv_identifier_gate` ① 축이 SHOW SEMANTIC VIEWS 로 판정한다.
+------------------------------------------------------------------------
+③ 빈 스키마를 원천으로 발행 (advisory · 종료코드 무영향) — 6건
+    · cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:134 `BRONZE_BIGQUERY` (객체 0)
+    · cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:134 `BRONZE_BIGQUERY` (객체 0)
+    · cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:173 `BRONZE_BIGQUERY` (객체 0)
+    · cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:173 `BRONZE_BIGQUERY` (객체 0)
+    · cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:171 `BRONZE_BIGQUERY` (객체 0)
+    · cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:171 `BRONZE_BIGQUERY` (객체 0)
+------------------------------------------------------------------------
+④ 미수식 테이블명 (advisory · 종료코드 무영향) — 미규명 11건 · 규명 등재 9건
+   🔴 **미규명이 0 이어야 한다** — 「6건」처럼 수만 보고하고 규명하지 않으면
+      그 안에 진짜 위반이 숨는다(O121 이 실제로 그렇게 남겼다).
+    🟢 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:136 `EXEC_BUDGET_ERP` — 컬럼명 — 집행예산(ERP 마감값) measure
+    🟢 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:173 `AD_SOURCE_TYPE` — 컬럼명 — 광고 계열 필터 축(DIGITAL/VIDEO/REBROADCAST)
+    🟢 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:202 `CHANNEL_NEW_SPNSR` — 코드값 — ML 분석유형(신규 후원 유치 요인)
+    🟢 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:208 `SPNSR_BSNS_NO` — 컬럼명 — `FACT_MEMBER_SPONSORSHIP_SPAN` 의 grain 키(후원사업번호)
+    🟢 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:208 `SPNSR_BSNS_NO` — 컬럼명 — `FACT_MEMBER_SPONSORSHIP_SPAN` 의 grain 키(후원사업번호)
+    🟢 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:232 `CHANNEL_NEW_SPNSR` — 코드값 — ML 분석유형(신규 후원 유치 요인)
+    🟢 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:294 `SPNSR_BSNS_NO` — 컬럼명 — `FACT_MEMBER_SPONSORSHIP_SPAN` 의 grain 키(후원사업번호)
+    🟢 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:294 `SPNSR_BSNS_NO` — 컬럼명 — `FACT_MEMBER_SPONSORSHIP_SPAN` 의 grain 키(후원사업번호)
+    🟢 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:338 `CHANNEL_NEW_SPNSR` — 코드값 — ML 분석유형(신규 후원 유치 요인)
+    🟠 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:179 `CHRCTR_RECPTN_YN`
+    🟠 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:197 `MKTG_CHANNEL_AVG_MEMBER`
+    🟠 cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml:197 `MKTG_CHANNEL_AVG_MEMBER`
+    🟠 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:194 `CHURN_RATE_12M`
+    🟠 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:208 `CURRENTLY_ACTIVE_MEMBERS`
+    🟠 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:223 `MKTG_CHANNEL_AVG_MEMBER`
+    🟠 cortex_project/agents/AGENT_MARKETING/agent_spec.yaml:223 `MKTG_CHANNEL_AVG_MEMBER`
+    🟠 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:243 `CHRCTR_RECPTN_YN`
+    🟠 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:261 `CHURN_RATE_12M`
+    🟠 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:266 `PART_EVENT_KIND_NAME`
+    🟠 cortex_project/agents/AGENT_MEMBER/agent_spec.yaml:294 `CURRENTLY_ACTIVE_MEMBERS`
+   ⇒ 🔴 위 미규명 토큰을 조사해 `NOT_TABLE_REASON` 에 **사유와 함께** 등재하거나,
+      진짜 객체명이면 실제 라이브 이름으로 고쳐라.
+------------------------------------------------------------------------
+⑤ 표면 인벤토리 (관측 · 판정 아님) — 🔴 이 게이트의 분모는 전문이지만,
+   여기 나열된 표면 전건이 판정 대상에 들어왔음을 눈으로 셀 수 있게 둔다.
+  cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml — 문자열 표면 133개 · 총 36125자
+      · instructions.response (4836자)
+      · instructions.orchestration (11926자)
+      · instructions.system (5963자)
+      · tools.[0].tool_spec.description (246자)
+      · tools.[1].tool_spec.description (643자)
+      · tools.[2].tool_spec.description (553자)
+      · tools.[3].tool_spec.description (494자)
+      · tools.[4].tool_spec.description (1603자)
+      · tools.[5].tool_spec.description (688자)
+      · tools.[6].tool_spec.description (1152자)
+      · tools.[7].tool_spec.description (852자)
+      · tools.[8].tool_spec.description (742자)
+      · tools.[9].tool_spec.description (695자)
+      · tools.[10].tool_spec.description (494자)
+      · tools.[11].tool_spec.description (586자)
+      · tools.[12].tool_spec.description (475자)
+      · tools.[13].tool_spec.description (364자)
+      · tools.[14].tool_spec.description (696자)
+      · tools.[15].tool_spec.description (473자)
+  cortex_project/agents/AGENT_MARKETING/agent_spec.yaml — 문자열 표면 201개 · 총 46868자
+      · instructions.response (5119자)
+      · instructions.orchestration (12786자)
+      · instructions.system (3814자)
+      · tools.[0].tool_spec.description (268자)
+      · tools.[1].tool_spec.description (643자)
+      · tools.[2].tool_spec.description (554자)
+      · tools.[3].tool_spec.description (1974자)
+      · tools.[4].tool_spec.description (1303자)
+      · tools.[5].tool_spec.description (893자)
+      · tools.[6].tool_spec.description (2384자)
+      · tools.[7].tool_spec.description (1044자)
+      · tools.[8].tool_spec.description (1084자)
+      · tools.[9].tool_spec.description (916자)
+      · tools.[10].tool_spec.description (1110자)
+      · tools.[11].tool_spec.description (1174자)
+      · tools.[12].tool_spec.description (622자)
+      · tools.[13].tool_spec.description (515자)
+      · tools.[14].tool_spec.description (429자)
+      · tools.[15].tool_spec.description (946자)
+      · tools.[16].tool_spec.description (494자)
+      · tools.[17].tool_spec.description (583자)
+      · tools.[18].tool_spec.description (353자)
+      · tools.[19].tool_spec.description (350자)
+      · tools.[20].tool_spec.description (586자)
+      · tools.[21].tool_spec.description (549자)
+      · tools.[22].tool_spec.description (457자)
+      · tools.[23].tool_spec.description (495자)
+      · tools.[24].tool_spec.description (364자)
+      · tools.[25].tool_spec.description (696자)
+      · tools.[26].tool_spec.description (473자)
+  cortex_project/agents/AGENT_MEMBER/agent_spec.yaml — 문자열 표면 201개 · 총 54525자
+      · instructions.response (4378자)
+      · instructions.orchestration (17408자)
+      · instructions.system (5915자)
+      · tools.[0].tool_spec.description (246자)
+      · tools.[1].tool_spec.description (643자)
+      · tools.[2].tool_spec.description (772자)
+      · tools.[3].tool_spec.description (2543자)
+      · tools.[4].tool_spec.description (1712자)
+      · tools.[5].tool_spec.description (875자)
+      · tools.[6].tool_spec.description (1987자)
+      · tools.[7].tool_spec.description (733자)
+      · tools.[8].tool_spec.description (1293자)
+      · tools.[9].tool_spec.description (1337자)
+      · tools.[10].tool_spec.description (1492자)
+      · tools.[11].tool_spec.description (1011자)
+      · tools.[12].tool_spec.description (987자)
+      · tools.[13].tool_spec.description (620자)
+      · tools.[14].tool_spec.description (527자)
+      · tools.[15].tool_spec.description (581자)
+      · tools.[16].tool_spec.description (549자)
+      · tools.[17].tool_spec.description (457자)
+      · tools.[18].tool_spec.description (696자)
+      · tools.[19].tool_spec.description (361자)
+      · tools.[20].tool_spec.description (604자)
+      · tools.[21].tool_spec.description (653자)
+      · tools.[22].tool_spec.description (475자)
+      · tools.[23].tool_spec.description (364자)
+      · tools.[24].tool_spec.description (696자)
+      · tools.[25].tool_spec.description (473자)
+========================================================================
+🟢 PASS — blocking 위반 0건

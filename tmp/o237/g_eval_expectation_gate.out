@@ -1,0 +1,21 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+==============================================================================
+[평가셋 기대값 게이트] O57 신설 — 폐기값이 정답으로 고정되는 것을 차단
+==============================================================================
+
+[RETIRED] 라이브 문서 9종 · 폐기값 등록부 10개 패턴
+  ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제)
+
+[INVARIANT] 불변식 5종 (절대값 판정 금지 · §6.9-(8))
+  ✅ V6 시간 가산성(연도 분해 재합 = 총량)  = 4058471.3214
+  ✅ V7 차원 fan-out 무증폭(성별 분해 합 = 총량)  = 4058471.3214
+  ✅ V8 개발 건수 범위 유지(O24 코드 1·2·4 한정 · 값 = O202 MSTR 정의)  = 4058471.3214
+  ✅ V9 SV=FACT 개발/중단(EVENT)  = 4058471.3214
+  ✅ V10 SV=FACT 편성예산(BUDGET)  = 47717169947.00
+
+[DIMNAME] 문서가 지목한 SV 차원·metric 실존 대조 (P163)
+  ✅ 미존재 차원 지목 0건
+
+==============================================================================
+판정: PASS  (종료코드 0)

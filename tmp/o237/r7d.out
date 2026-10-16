@@ -1,0 +1,56 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+==============================================================================
+SV DDL 규칙7 스캔 — 라이브 도달(COMMENT) ↔ 문서 주석(--) 분리
+==============================================================================
+
+## 05_15_SV_DDL_GA_BEHAVIOR.sql  라이브 0 · 문서주석 3
+   🟠 DOC   L4     천단위   1,536,507
+   🟠 DOC   L5     천단위   420,831
+   🟠 DOC   L5     천단위   302,842
+
+## 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql  라이브 0 · 문서주석 5
+   🟠 DOC   L4     천단위   8,141,302
+   🟠 DOC   L4     천단위   1,796,798
+   🟠 DOC   L5     소규모   259명
+   🟠 DOC   L8     천단위   681,134
+   🟠 DOC   L8     천단위   723,406
+
+## 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql  라이브 0 · 문서주석 6
+   🟠 DOC   L6     천단위   4,174
+   🟠 DOC   L6     천단위   3,508
+   🟠 DOC   L7     천단위   1,173
+   🟠 DOC   L7     백분율   33.44%
+   🟠 DOC   L7     백분율   39.79%
+   🟠 DOC   L122   천단위   3,508
+
+## 05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql  라이브 0 · 문서주석 16
+   🟠 DOC   L6     천단위   50,835,082
+   🟠 DOC   L7     천단위   12,102
+   🟠 DOC   L8     천단위   922,963
+   🟠 DOC   L8     천단위   17,497,729,843
+   🟠 DOC   L8     천단위   2,375
+   🟠 DOC   L8     천단위   1,116
+   🟠 DOC   L8     천단위   391,000
+   🟠 DOC   L8     소규모   634건
+   🟠 DOC   L8     소규모   84건
+   🟠 DOC   L9     소규모   16건
+   🟠 DOC   L10    천단위   1,100
+   🟠 DOC   L11    천단위   391,000
+   🟠 DOC   L11    천단위   1,100
+   🟠 DOC   L11    천단위   391,000
+   🟠 DOC   L11    소규모   16건
+   🟠 DOC   L12    천단위   955,144,520,496
+
+## 05_23_SV_DDL_EXPENSE_RESOLUTION.sql  라이브 0 · 문서주석 4
+   🟠 DOC   L7     백분율   0.02%
+   🟠 DOC   L7     배수    9.9배
+   🟠 DOC   L8     천단위   7,287
+   🟠 DOC   L69    천단위   212,342,534,942
+
+==============================================================================
+🔴 라이브 도달 위반(진짜 위반) = 0건
+🟠 문서 주석 stale(경고)      = 34건
+==============================================================================
+✅ 게이트 통과 — 라이브 도달 위반 0건
+🟠 문서 주석 stale 은 blocking 이 아니다(라이브 미도달 · 기지 부채) — 경고로만 낸다.

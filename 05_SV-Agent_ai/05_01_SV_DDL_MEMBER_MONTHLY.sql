@@ -120,7 +120,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('납입회비', '납입회비 총액', '회비 납입액', '수납회비', '회비 수납액')
       COMMENT = '납입회비(원) — **회비만**. F(가산). 정본 #69·70. 기부금은 제외된다(기부금은 원천에 청구 컬럼이 없어 납부율 분모에 들어갈 수 없다). 회비+기부금 총수납액은 `TOTAL_PAID_ALL` 이다(2026-08-10 이전 이름 = `TOTAL_PAID_FEE`).',
     fmm.PAYMENT_RATE_FEE AS SUM(fmm.PAID_FEE_BILLABLE) / NULLIF(SUM(fmm.BILLED_AMT), 0) * 100
-      WITH SYNONYMS ('납부율', '수납율', '회비 납부율', '납입률', '납부율(%)')
+      WITH SYNONYMS ('납부율', '수납율', '회비 납부율', '납부율(%)')
       COMMENT = '**공64 납부율(%) 정본** = 회비 납입액 ÷ 회비 청구액 ×100. 분자·분모가 모두 회비라 모집단이 일치한다. 비율(N, 재집계 금지). 🟢납부율을 묻는 질문에는 이 metric 을 쓴다 — **유일한 납부율 정본**이다.',
     fmm.TOTAL_UNPAID_AMT AS SUM(fmm.UNPAID_BILLED_AMT)
       WITH SYNONYMS ('총미납금액', '미납금액', '미납액', '미납액 총액', '못 걷은 금액')
@@ -174,7 +174,26 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('신규 미납율', '공77') COMMENT = '공77 신규 미납율(%) 건 기준 = 미납(건)[신규] ÷ 활동(건)[신규] ×100. 비율(N). 스톡 — 한 달을 지정한다.',
     fmm.UNPAID_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.UNPAID_CNT END)
         / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.ACTIVE_CNT END), 0) * 100
-      WITH SYNONYMS ('기존 미납율', '공78') COMMENT = '공78 기존 미납율(%) 건 기준 = 미납(건)[기존] ÷ 활동(건)[기존] ×100. 비율(N). 스톡 — 한 달을 지정한다.'
+      WITH SYNONYMS ('기존 미납율', '공78') COMMENT = '공78 기존 미납율(%) 건 기준 = 미납(건)[기존] ÷ 활동(건)[기존] ×100. 비율(N). 스톡 — 한 달을 지정한다.',
+    -- 🆕 [O237] 지표사전 산식 대응 6종(정본 = 12_agent개선과제/tools/O237_formula_wiring_overlay.csv)
+    fmm.STOP_AMT_CNT_SUM AS SUM(fmm.STOP_AMT_CNT)
+      WITH SYNONYMS ('중단(건)', '중단 건(금액 기준)', '공35')
+      COMMENT = '공35 중단(건) = 중단한 후원사업 약정금액 ÷ 10,000. F(가산). 🔴 TOTAL_STOP_CNT(중단 **사건 수**)와 단위가 다르다 — 「중단(건)」은 이 metric 이다(STOP_RATE_1·2 의 분자와 같은 값).',
+    fmm.CNT_PER_ACTIVE_MEMBER AS SUM(fmm.ACTIVE_CNT) / NULLIF(SUM(fmm.ACTIVE_MEMBERS), 0)
+      WITH SYNONYMS ('1명당 건수', '1인당 건수', '공61')
+      COMMENT = '공61 1명당 건수 = 활동(건) ÷ 활동(명). 비율(N · 재집계 금지). 스톡 — 🔴 한 달을 지정한다.',
+    fmm.AVG_PLEDGE_AMT AS SUM(fmm.ACTIVE_CNT) * 10000 / NULLIF(SUM(fmm.ACTIVE_MEMBERS), 0)
+      WITH SYNONYMS ('평균 약정금액(원)', '평균 약정금액', '1인당 약정금액', '공177')
+      COMMENT = '공177 평균 약정금액(원) = (활동(건) × 1만 원) ÷ 활동(명). 비율(N). 스톡 — 🔴 한 달을 지정한다. 획득 시점 약정(SV_MEMBER_SERVICE_COHORT.AVG_ACQ_SPNSR_AMT)과 다르다.',
+    fmm.PAY_IN_RATE AS SUM(fmm.PAID_FEE_BILLABLE) / NULLIF(SUM(fmm.ACTIVE_CNT) * 10000, 0) * 100
+      WITH SYNONYMS ('납입율(%)', '납입율', '약정 대비 납입율', '공62', '누계납입율', '공63')
+      COMMENT = '공62 납입율(%) = 납입회비(원) ÷ (활동(건) × 1만 원) ×100 — **약정 대비**. 비율(N). 🔴 공64 납부율(PAYMENT_RATE_FEE · 청구 대비)과 다른 지표다. 한 달 = 월 납입율 · 같은 해 1월~조회월 필터 = 공63 누계납입율(분자·분모가 모두 월 합이라 기간 필터만 바꾼다).',
+    fmm.REGULAR_ONETIME_FEE_SUM AS SUM(fmm.REGULAR_ONETIME_FEE)
+      WITH SYNONYMS ('정기회원 일시회비', '공67')
+      COMMENT = '공67 정기회원 일시회비(원) = 정기회원이 정기후원사업 외 비지정(기타·국내사업·해외사업)으로 낸 일시회비 합. F(가산).',
+    fmm.ONETIME_ONETIME_FEE_SUM AS SUM(fmm.ONETIME_ONETIME_FEE)
+      WITH SYNONYMS ('일시회원 일시회비', '공68')
+      COMMENT = '공68 일시회원 일시회비(원) = 일시회원이 낸 회비 합. F(가산).'
   )
   COMMENT = 'Phase-1 회원 월별 실적 SV (base: GOLD.FACT_MEMBER_MONTHLY, grain: 회원×월 1행). CRM 원천 기반 납입/청구 총액, 정본 납부율(PAYMENT_RATE_FEE), 미납회원 감소율, 총미납금액(TOTAL_UNPAID_AMT), 미납비중(UNPAID_RATIO), 평균납입회비 요약. ⚠️ 후원사업·납입방식·회비구분 세부 분해는 SV_MEMBER_FEE(회비 grain)를 사용하며, 두 뷰의 회비 measure 합산 금지(이중계상). 캠페인별/후원사업별 활동회원은 SV_MEMBER_SPONSOR_BIZ(약정 grain) 사용.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

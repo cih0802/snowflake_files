@@ -63,7 +63,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       WITH SYNONYMS ('미납금액', '총미납금액', '미납액')
       COMMENT = '미납 청구액(원) 합계 — **정본**(결제상태 실패 F 또는 NULL 인 청구액). F(가산). 🔴「청구−납입」 차감식이 아니다(차감식은 기부금이 미납을 상쇄해 음수가 나온다). ⚠️**조회 시점 스냅샷**이다 — 과거 연도 미납이 이후에 납입되면 값이 바뀐다. 「마감·확정」이라 단정하지 말 것.',
     fee.PAYMENT_RATE_FEE AS SUM(fee.PAID_FEE_BILLABLE) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100
-      WITH SYNONYMS ('납부율', '납입율', '수납율')
+      WITH SYNONYMS ('납부율', '수납율')
       COMMENT = '납부율(**%**) = **회비** 납입액 ÷ **회비** 청구액 ×100. N(비가산 — 분자·분모를 각각 집계한 뒤 나눈다). 🔴분자·분모가 모두 회비라 모집단이 일치한다. `TOTAL_PAID_ALL` 을 분자로 바꾸면 기부금이 섞여 **100% 를 넘는다** — 에서 실제로 그 상태가 배포된 적이 있다. ⚠️기간 스코프 없이 답하지 말 것 — 미납이 이후 납입되는 구조라 최근 기간은 낮게 보인다. 🔴 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것. `SV_MEMBER_MONTHLY.PAYMENT_RATE_FEE`(공64 정본)와 **같은 단위**이므로 전체 합계는 두 SV 가 일치해야 한다.',
     fee.UNPAID_RATIO AS SUM(fee.UNPAID_BILLED_AMT) / NULLIF(SUM(fee.BILLED_AMT), 0) * 100
       WITH SYNONYMS ('미납비중', '미납율', '미납률')
@@ -73,7 +73,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
       COMMENT = '**고유 회원수(명)** = COUNT(DISTINCT 회원). N(비가산 — 기간·축을 가로질러 더하면 중복된다). 🔴이 팩트는 회원당 여러 행이므로 **행 수를 「명」으로 쓰면 크게 과대**해진다(`*_MEMBERS` 계열 함정과 같은 유형). 「납입 회원수」 질문은 반드시 이 metric 으로 답한다.',
     fee.TOTAL_BILLING_ROWS AS SUM(fee.BILLING_ROWS)
       WITH SYNONYMS ('청구행수', '원천 회비행수')
-      COMMENT = '집계된 원천 회비행 수. F(가산). 🔴**금액도 「건수」도 아니다** — 정본 `(건)` 은 금액÷10,000 규약이므로 이 값을 「건」이라 부르면 정의가 깨진다. 재청구 시도 강도를 볼 때만 쓴다.'
+      COMMENT = '집계된 원천 회비행 수. F(가산). 🔴**금액도 「건수」도 아니다** — 정본 `(건)` 은 금액÷10,000 규약이므로 이 값을 「건」이라 부르면 정의가 깨진다. 재청구 시도 강도를 볼 때만 쓴다.',
+    -- 🆕 [O237] 공178 평균 납입금액
+    fee.AVG_PAID_PER_MEMBER AS SUM(fee.PAID_FEE_BILLABLE) / NULLIF(COUNT(DISTINCT fee.MEMBER_DK), 0)
+      WITH SYNONYMS ('평균 납입금액(원)', '평균 납입금액', '1인당 납입금액', '공178')
+      COMMENT = '공178 평균 납입금액(원) = 납입회비(회비만) ÷ 납입(명 · 고유 회원). 비율(N · 재집계 금지) — 기간·축을 바꾸면 다시 계산한다(명은 가산 불가). 행(월×회원) 평균인 SV_MEMBER_MONTHLY.AVG_PAID_FEE 와 다르다.'
   )
   COMMENT = 'Phase-1 회비 분해 SV (base: GOLD.WIDE_MEMBER_FEE, grain: 회원×회비월×후원사업×회비구분×납입유형×결제수단). 후원사업, 납입방식(결제수단), 회비구분, 납입일별 회비 청구/납입/미납 정본 뷰. ⚠️ 회원-월 요약(SV_MEMBER_MONTHLY)과 동일 표 합산 금지(이중계상). 후원사업은 납입 대상 후원사업 기준임.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

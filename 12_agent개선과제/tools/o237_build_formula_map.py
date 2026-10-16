@@ -1,0 +1,364 @@
+# O237 — 지표사전 산식(HAS_FORMULA=Y) 전건 ↔ SV metric·dimension·도구 매핑표 생성기 (LLM 소비용)
+# 출력 = tools/O237_formula_wiring_overlay.csv (build_biz_definition_corpus.py 가 오버레이로 읽는다)
+# 검증 = --check : 모든 SV 필드 토큰이 라이브 SHOW SEMANTIC METRICS/DIMENSIONS 에 실재하는지(🆕 = 이번 배포 대기 metric 은 PENDING 집합과 대조)
+# COVERAGE 코드(LLM 판정용)
+#   C1_METRIC    = SV metric 하나로 산식 그대로 답한다
+#   C2_COMBINE   = 같은 SV 안의 metric + 필터·기간·ROLLUP 조합으로 답한다(ANSWER_GUIDE 의 절차를 따른다)
+#   C3_CROSS     = 두 analyst 도구 결과를 표 분리 후 나눗셈(RT-28 원천 간 계산 규칙)
+#   C4_DIMENSION = 산식이 아니라 값 목록·속성이다 → 차원으로 분해·필터한다
+#   C5_PARTIAL   = 답할 수 있으나 정의·채널·축 제약이 있다 → 제약을 답변에 반드시 밝힌다
+#   G1_NEED_MODEL   = 현재 GOLD 에 산식 분자·분모를 같은 축으로 담은 모델이 없다 → 「현재 산출 불가(모델 추가 예정)」로 답하고 근사하지 않는다
+#   G2_NEED_CONFIRM = 원천 산식 문구 오기·정의 불명 → 현행 근사 답을 주되 「산식 원문 확인 필요」를 밝힌다
+# Co-authored with CoCo
+import csv
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "O237_formula_wiring_overlay.csv")
+COLS = ["DOC_ID", "TITLE", "COVERAGE", "TOOL_NAME", "SV_FIELD", "ANSWER_GUIDE", "GAP_ACTION"]
+
+# 🆕 O237 에서 SV DDL 에 추가하는 metric(배포 전에는 라이브에 없다 → --check 가 PENDING 으로 분류)
+PENDING = {
+    "SV_MEMBER_MONTHLY.FMM.STOP_AMT_CNT_SUM",
+    "SV_MEMBER_MONTHLY.FMM.CNT_PER_ACTIVE_MEMBER", "SV_MEMBER_MONTHLY.FMM.AVG_PLEDGE_AMT",
+    "SV_MEMBER_MONTHLY.FMM.PAY_IN_RATE", "SV_MEMBER_MONTHLY.FMM.REGULAR_ONETIME_FEE_SUM",
+    "SV_MEMBER_MONTHLY.FMM.ONETIME_ONETIME_FEE_SUM",
+    "SV_MEMBER_FEE.FEE.AVG_PAID_PER_MEMBER",
+    "SV_PAYMENT_BILLING_STATUS.PBS.UNPAID_CNT_EQ",
+    "SV_CAMPAIGN_CUM_STOP.FCCS.CUM_STOP_RATE_DEV",
+    "SV_SERVICE.FSE.D5_LETTER_RATE", "SV_SERVICE.FSE.D5_GIFT_RATE", "SV_SERVICE.FSE.D5_INCREASE_RATE",
+}
+
+G1_CAMP = ("캠페인 축 월 팩트 부재 — SV_MEMBER_MONTHLY 의 캠페인은 「그 달 단일 캠페인」만 연결돼 중단의 58.3% 가 미귀속(O236 실측)."
+           " 처방 = FACT_CAMPAIGN_CUM_STOP 과 같은 귀속(사용자 결정 A · 후원건 캠페인)으로 기준연월×캠페인 월 팩트"
+           "(활동건·전월말활동건·당월중단건·당월개발건·이탈건·납입회비·미납회비·납입방식 축) 신설 → SV 확장")
+G1_SVC = ("서비스 참여 코호트에 해당 플래그·지표 부재(WIDE_MEMBER_SERVICE_COHORT 에 N개월 유지·납입·서신/선물금 참여 플래그 없음)."
+          " 처방 = 코호트에 D5 서신·선물금 참여 플래그 · 참여 후 N개월 유지 · 참여 후 납입 여부 열 추가 → SV_MEMBER_SERVICE_COHORT metric")
+NO_APPROX = " 🔴 근사하지 말고 「현재 산출 불가 — 모델 추가 예정(O237)」으로 답한 뒤 가장 가까운 산출 가능 지표를 별도로 제시한다."
+
+M = []
+
+
+def add(doc, title, cov, tool, sv, guide, gap=""):
+    M.append({"DOC_ID": doc, "TITLE": title, "COVERAGE": cov, "TOOL_NAME": tool, "SV_FIELD": sv,
+              "ANSWER_GUIDE": guide, "GAP_ACTION": gap})
+
+
+# ---- 공통지표 ----
+add("MET_CMN-1", "월 목표대비 개발(%)", "C1_METRIC", "analyst_dev_achievement", "SV_DEV_ACHIEVEMENT.ACHV.ACHIEVEMENT_RATE",
+    "월 하나로 필터(ACHV.MONTH_KEY)해 ACHIEVEMENT_RATE 를 낸다. 분자·분모 = TOTAL_ACTUAL_CNT_ON_GOAL · TOTAL_GOAL_CNT 를 함께 보인다.")
+add("MET_CMN-2", "누계 목표대비 개발(%)", "C1_METRIC", "analyst_dev_achievement", "SV_DEV_ACHIEVEMENT.ACHV.ACHIEVEMENT_RATE",
+    "같은 해 1월~조회월로 필터해 ACHIEVEMENT_RATE 를 한 값으로 낸다(월별 비율을 평균하지 않는다).")
+add("MET_CMN-3", "연 목표대비 개발(%)", "C1_METRIC", "analyst_dev_achievement", "SV_DEV_ACHIEVEMENT.ACHV.ACHIEVEMENT_RATE",
+    "ACHV.CAL_YEAR 로 그룹해 ACHIEVEMENT_RATE 를 낸다.")
+add("MET_CMN-4", "CRM 개발(건)", "C1_METRIC", "analyst_mstr_spnsr_dvlp", "SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT",
+    "RT-01 결정(MSTR 개발(건) = 후원금액 ÷ 10,000)으로 답한다.")
+add("MET_CMN-5", "GA 개발(건)", "C1_METRIC", "analyst_ad", "SV_AD.AD.GA_DEV_CNT", "RT-02 결정(대행사 리포트 GA 전환(건) 합 · 디지털)으로 답한다.")
+add("MET_CMN-6", "GA 광고비", "G2_NEED_CONFIRM", "analyst_ad", "SV_AD.AD.TOTAL_AD_COST",
+    "디지털 광고비 합계(TOTAL_AD_COST · 디지털 필터)로 답한다. 🔴 사전 산식 문구 「(=전체 후원금액/10,000)」은 개발(건) 문구의 복사 오기로 보인다 — 「산식 원문 확인 필요」를 한 줄 밝힌다.",
+    "현업 확인 = 공6 산식 문구 정정")
+add("MET_CMN-7", "CRM 개발단가", "C1_METRIC", "analyst_ad", "SV_AD.AD.DEV_UNIT_PRICE",
+    "DEV_UNIT_PRICE(광고비 ÷ CRM 개발건 · 디지털)로 답한다. 분모 미적재 구간은 NULL — 「원천 미적재로 산출 불가」라고 답하고 GA 개발단가를 별도 안내한다.")
+add("MET_CMN-8", "GA 개발단가", "C1_METRIC", "analyst_ad", "SV_AD.AD.GA_DEV_UNIT_PRICE", "GA_DEV_UNIT_PRICE 로 답한다.")
+add("MET_CMN-9", "GA CTR", "C1_METRIC", "analyst_ad", "SV_AD.AD.CTR", "CTR(클릭 ÷ 노출 ×100 · 디지털)로 답한다. 노출·클릭(TOTAL_IMPRESSIONS·TOTAL_CLICKS)을 함께 보인다.")
+add("MET_CMN-10", "GA CVR", "C1_METRIC", "analyst_ad", "SV_AD.AD.CVR", "CVR(대행사전환회원 ÷ 클릭 ×100)로 답한다. 분자·분모를 함께 보인다.")
+add("MET_CMN-12", "플랫폼", "C4_DIMENSION", "analyst_ad", "SV_AD.AD.CHANNEL_COMPANY · SV_AD.AD.MEDIA_CHANNEL_NM",
+    "값 목록이다. 광고 송출 플랫폼별 분해는 CHANNEL_COMPANY(매체사) 또는 MEDIA_CHANNEL_NM 으로 GROUP BY 한다.")
+add("MET_CMN-17", "캠페인 유형", "C4_DIMENSION", "analyst_member_monthly",
+    "SV_MEMBER_MONTHLY.CAMPAIGN.DOMESTIC_OVERSEAS · SV_MEMBER_MONTHLY.CAMPAIGN.BIZ_CASE_TYPE",
+    "값 목록(국내 사례·국내 사업·해외 사례…)은 DOMESTIC_OVERSEAS(국내/해외/통합) × BIZ_CASE_TYPE(사례/사업/굿즈) 두 차원의 조합이다. 질문 SV 의 같은 이름 차원을 쓴다.")
+add("MET_CMN-29", "최초캠페인", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FIRST_CAMPAIGN.FIRST_CAMPAIGN_NAME",
+    "회원 속성 차원이다. 「그 달 후원 캠페인」(CAMPAIGN_NAME)과 섞지 않는다.")
+add("MET_CMN-30", "최종중단일", "C5_PARTIAL", "analyst_member_event", "SV_MEMBER_EVENT.FME.STOP_DATE",
+    "중단 사건 일자 차원이다. 회원별 최종중단일 = 회원별 STOP_DATE 의 최댓값. 회원 목록 출력은 개인정보 범위를 확인한다.")
+add("MET_CMN-31", "최종캠페인", "G1_NEED_MODEL", "", "",
+    "회원 단위 「최종 중단 시 캠페인」 차원이 SV 에 없다(SV_SERVICE.FSE.SND_LAST_CMPGN 은 문자 발송 시점 코드값뿐)." + NO_APPROX,
+    "처방 = DIM_MEMBER 에 최종캠페인(원천 회원 최종캠페인 코드) 노출 → SV_MEMBER_MONTHLY 차원 추가")
+add("MET_CMN-35", "중단(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STOP_AMT_CNT_SUM",
+    "🆕 STOP_AMT_CNT_SUM(중단 약정금액 ÷ 10,000)으로 답한다. 🔴 TOTAL_STOP_CNT 는 중단 **사건 수**라 단위가 다르다.")
+add("MET_CMN-36", "미납(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.UNPAID_CNT_SUM", "UNPAID_CNT_SUM 로 답한다. 한 달을 지정한다(스톡).")
+add("MET_CMN-37", "활동(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_CNT_SUM",
+    "ACTIVE_CNT_SUM 으로 답한다(월말 활동 = 활동 + 미납1~5 · 공52 와 같은 정의). 한 달을 지정한다.")
+add("MET_CMN-38", "감액(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.DECREASE_CNT_SUM", "DECREASE_CNT_SUM 으로 답한다.")
+add("MET_CMN-45", "활동율(%)", "C1_METRIC", "analyst_member_monthly_kpi", "SV_MEMBER_MONTHLY_KPI.KPI.ACTIVE_RATE", "ACTIVE_RATE 로 답한다. 한 달을 지정한다.")
+add("MET_CMN-46", "신규 활동율(%)", "C1_METRIC", "analyst_member_monthly_kpi", "SV_MEMBER_MONTHLY_KPI.KPI.ACTIVE_RATE_NEW", "ACTIVE_RATE_NEW 로 답한다(100% 초과 정상).")
+add("MET_CMN-47", "기존 활동율(%)", "C1_METRIC", "analyst_member_monthly_kpi", "SV_MEMBER_MONTHLY_KPI.KPI.ACTIVE_RATE_EXISTING", "ACTIVE_RATE_EXISTING 로 답한다.")
+add("MET_CMN-49", "연도초 활동회원(건)", "C1_METRIC", "analyst_campaign_cum_stop",
+    "SV_CAMPAIGN_CUM_STOP.FCCS.YEAR_START_ACTIVE",
+    "YEAR_START_ACTIVE 를 기준연월 하나로 고정해 ROLLUP 전체 행으로 낸다(전사 = 전 캠페인 합 · O236 대사 DIFF 0). 🔴 SV_MEMBER_MONTHLY 의 월 행 연도초 값은 그 달 행이 있는 회원만 담아 월마다 달라진다(O237 실측 202609 = 1,412,377 vs 1,535,149) — 쓰지 않는다.")
+add("MET_CMN-51", "월말활동회원", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_MEMBERS_SUM · SV_MEMBER_MONTHLY.FMM.ACTIVE_CNT_SUM",
+    "명 = ACTIVE_MEMBERS_SUM · 건 = ACTIVE_CNT_SUM. 한 달을 지정한다.")
+add("MET_CMN-52", "월말활동회원(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_CNT_SUM", "ACTIVE_CNT_SUM 으로 답한다. 한 달을 지정한다.")
+add("MET_CMN-54", "중단율1(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STOP_RATE_1", "STOP_RATE_1 로 답한다. 한 달을 지정한다(다월 합산 시 분모 과대).")
+add("MET_CMN-55", "중단율2(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STOP_RATE_2", "STOP_RATE_2 로 답한다.")
+add("MET_CMN-56", "신규 중단율", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STOP_RATE_NEW", "STOP_RATE_NEW 로 답한다.")
+add("MET_CMN-57", "기존 중단율", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STOP_RATE_EXISTING", "STOP_RATE_EXISTING 로 답한다.")
+add("MET_CMN-58", "주간 평균 1일 중단(건)", "C2_COMBINE", "analyst_member_event", "SV_MEMBER_EVENT.FME.TOTAL_STOP_CNT · SV_MEMBER_EVENT.DATE.WEEK_OF_YEAR",
+    "주(DATE.YEAR·WEEK_OF_YEAR)별 TOTAL_STOP_CNT ÷ 그 주의 일수(부분 주는 실제 일수 · COUNT(DISTINCT DATE.FULL_DATE))로 SQL 에서 계산한다. 중단 사건 수 기준임을 밝힌다.")
+add("MET_CMN-59", "증감(건)", "C2_COMBINE", "(질문 지표의 도구)", "(질문 지표의 metric)",
+    "질문 지표를 비교 기간(전주·전월·전년 동기)과 함께 같은 도구로 조회하고 SQL 에서 차이(당기 − 비교기)를 낸다. 스톡 지표는 각 기간 말 월 값끼리 비교한다.")
+add("MET_CMN-60", "증감율(%)", "C2_COMBINE", "(질문 지표의 도구)", "(질문 지표의 metric)",
+    "증감(건) ÷ 비교기 값 ×100 을 SQL 에서 낸다. 비율 지표의 증감은 %p 로 표기한다.")
+add("MET_CMN-61", "1명당 건수", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.CNT_PER_ACTIVE_MEMBER",
+    "🆕 CNT_PER_ACTIVE_MEMBER(활동(건) ÷ 활동(명))로 답한다. 한 달을 지정한다.")
+add("MET_CMN-62", "납입율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PAY_IN_RATE",
+    "🆕 PAY_IN_RATE(납입회비 ÷ (활동(건) × 10,000) ×100)로 답한다. 🔴 납부율(공64 · 청구 대비)과 다른 지표다 — 혼동 금지.")
+add("MET_CMN-63", "누계납입율(%)", "C2_COMBINE", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PAY_IN_RATE",
+    "같은 해 1월~조회월로 필터한 PAY_IN_RATE 한 값이 누계납입율이다(누계 활동(건) = 1월~조회월 활동(건) 합). 월별 비율을 평균하지 않는다.")
+add("MET_CMN-64", "납부율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PAYMENT_RATE_FEE", "PAYMENT_RATE_FEE 로 답한다(유일 정본).")
+add("MET_CMN-65", "누계납부율(%)", "C2_COMBINE", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PAYMENT_RATE_FEE",
+    "같은 해 1월~조회월로 필터한 PAYMENT_RATE_FEE 한 값이 누계납부율이다.")
+add("MET_CMN-67", "정기회원 일시회비", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.REGULAR_ONETIME_FEE_SUM", "🆕 REGULAR_ONETIME_FEE_SUM 으로 답한다.")
+add("MET_CMN-68", "일시회원 일시회비", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ONETIME_ONETIME_FEE_SUM", "🆕 ONETIME_ONETIME_FEE_SUM 으로 답한다.")
+add("MET_CMN-70", "납입", "C1_METRIC", "analyst_member_fee", "SV_MEMBER_FEE.FEE.DISTINCT_PAYING_MEMBERS · SV_MEMBER_FEE.FEE.TOTAL_PAID_FEE_BILLABLE",
+    "납입(명) = DISTINCT_PAYING_MEMBERS · 납입(원) = TOTAL_PAID_FEE_BILLABLE 를 함께 낸다.")
+add("MET_CMN-72", "후원금액대1", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.AMOUNT_BAND1", "차원 AMOUNT_BAND1 로 분해한다. 하한 숫자 순으로 정렬한다.")
+add("MET_CMN-73", "후원금액대2", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.AMOUNT_BAND2", "차원 AMOUNT_BAND2 로 분해한다.")
+add("MET_CMN-74", "후원기간대1", "C5_PARTIAL", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PERIOD_BAND1",
+    "차원 PERIOD_BAND1 로 분해한다. 🔴 SV 의 기간 기준일은 회원 **최초가입일**이다(사전 = 캠페인 가입일) — 차이를 밝힌다.")
+add("MET_CMN-75", "후원기간대2", "C5_PARTIAL", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.PERIOD_BAND2",
+    "차원 PERIOD_BAND2 로 분해한다. 🔴 기준일 = 최초가입일(사전 = 캠페인 가입일)임을 밝힌다.")
+add("MET_CMN-76", "미납율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.UNPAID_RATE_CNT", "UNPAID_RATE_CNT(건 기준 · 공76)로 답한다. 금액 기준 미납비중(UNPAID_RATIO)과 구분한다.")
+add("MET_CMN-77", "신규 미납율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.UNPAID_RATE_NEW", "UNPAID_RATE_NEW 로 답한다.")
+add("MET_CMN-78", "기존 미납율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.UNPAID_RATE_EXISTING", "UNPAID_RATE_EXISTING 로 답한다.")
+add("MET_CMN-79", "후원사업별 미납율(%)", "G1_NEED_MODEL", "", "",
+    "후원사업 축에서 미납(건)과 활동(건)을 함께 담은 SV 가 없다(SV_MEMBER_MONTHLY 는 후원사업 차원 없음 · SV_MEMBER_FEE·PAYMENT_BILLING_STATUS 는 활동(건) 없음)." + NO_APPROX,
+    "처방 = 회원×월×후원사업 grain 의 활동(건)·미납(건) 팩트 또는 FMM 후원사업 배분 규칙 확정 후 SV 확장")
+add("MET_CMN-80", "미납회원 감소율(%)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.UNPAID_REDUCTION_RATE", "UNPAID_REDUCTION_RATE 로 답한다.")
+add("MET_CMN-81", "미납서비스 전환율(%)", "G1_NEED_MODEL", "", "",
+    "「미납서비스 클릭 회원」→ 납입 연결이 GOLD 에 없다(SV_SERVICE 오픈은 SND 링크 클릭 플래그만 있고 납입 결과와 연결되지 않는다)." + NO_APPROX,
+    "처방 = 미납안내 발송(서비스 구분) × 클릭 × 이후 납입 매칭 열을 FACT_MESSAGE_DISPATCH 에 추가(D5 매칭과 같은 시간창 규칙 · 현업 창 길이 확정 필요)")
+add("MET_CMN-82", "미납사유", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.REASON.UNPAID_REASON",
+    "차원 UNPAID_REASON 으로 분해하고 UNPAID_REASON_TYPE 을 함께 건다.")
+add("MET_CMN-83", "캠페인별 미납(건)", "C1_METRIC", "analyst_payment_billing_status", "SV_PAYMENT_BILLING_STATUS.PBS.UNPAID_CNT_EQ",
+    "🆕 UNPAID_CNT_EQ(미납 청구액 ÷ 10,000)를 CAMPAIGN.CAMPAIGN_NAME 으로 분해하고 (미매핑)과 ROLLUP 을 함께 보인다.")
+add("MET_CMN-84", "회원상태별 미납(건)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.STATUS_UNPAID_CNT_SUM", "STATUS_UNPAID_CNT_SUM 을 MEMBER_STATUS_NAME 으로 분해한다.")
+add("MET_CMN-85", "발송수(명)", "C1_METRIC", "analyst_service", "SV_SERVICE.FSE.TOTAL_SEND_MEMBERS",
+    "사전 정의 = 회원번호 개수(중복 포함) ⇒ TOTAL_SEND_MEMBERS 로 답한다. 고유 회원수를 따로 물으면 DISTINCT_SEND_MEMBERS.")
+add("MET_CMN-86", "성공수(명)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.TOTAL_SEND_MEMBERS · SV_SERVICE.FSE.SEND_STATUS_NAME",
+    "알림톡(CHANNEL='MSG_AT')만 SEND_STATUS_NAME='발송완료' 로 필터한 TOTAL_SEND_MEMBERS 로 답한다. 🔴 EMAIL·SND 는 성공 라벨이 없고 우편은 결과 원천이 없다 — 「알림톡 기준 · 타 채널 성공 판정은 현업 확인 대상」을 밝힌다.",
+    "현업 확인 = EMAIL(0/1)·SND(Y/N) 성공 코드 의미 확정 후 성공·실패 metric 신설")
+add("MET_CMN-87", "실패수(명)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.TOTAL_SEND_MEMBERS · SV_SERVICE.FSE.SEND_STATUS_NAME",
+    "알림톡만 SEND_STATUS_NAME='에러' 로 필터해 답한다. 타 채널 제약은 성공수(명)과 같다.", "MET_CMN-86 과 같은 현업 확인")
+add("MET_CMN-88", "서신참여(명)", "C1_METRIC", "analyst_service", "SV_SERVICE.FSE.D5_LETTER_MEMBERS",
+    "D5_LETTER_MEMBERS(발송 후 D+1~D+5 서신 접수 · 중복 포함)로 답한다. 결연활동 전체 서신 회원수는 SV_RELATION_ACTIVITY.FRA.DISTINCT_ACTIVITY_MEMBERS.")
+add("MET_CMN-90", "선물금참여(명)", "C1_METRIC", "analyst_service", "SV_SERVICE.FSE.D5_GIFT_MEMBERS", "D5_GIFT_MEMBERS(중복 포함)로 답한다.")
+add("MET_CMN-99", "event_category", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_CATEGORY", "차원 EVENT_CATEGORY 로 분해한다(member_id 식별 이벤트).")
+add("MET_CMN-100", "event_label", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_LABEL", "차원 EVENT_LABEL 로 분해한다.")
+add("MET_CMN-101", "event_action", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.EVT.EVENT_ACTION", "차원 EVENT_ACTION 으로 분해한다.")
+add("MET_CMN-102", "세션캠페인", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.FBQ.UTM_CAMPAIGN · SV_GA_SESSION.GS.STSLC_GAC_CAMPAIGN_NAME",
+    "행동 이벤트는 UTM_CAMPAIGN, 세션 집계는 SV_GA_SESSION 의 STSLC_GAC_CAMPAIGN_NAME 으로 분해한다.")
+add("MET_CMN-103", "세션 수동 광고 콘텐츠", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.SRC.UTM_CONTENT", "차원 UTM_CONTENT 로 분해한다.")
+add("MET_CMN-106", "페이지위치", "C4_DIMENSION", "analyst_ga_behavior", "SV_GA_BEHAVIOR.FBQ.PAGE_PATH", "차원 PAGE_PATH 로 분해·부분일치 필터한다.")
+add("MET_CMN-113", "신규기존구분", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.NEW_EXISTING_FLAG", "차원 NEW_EXISTING_FLAG('신규'·'기존')로 분해한다.")
+add("MET_CMN-116", "부서", "C4_DIMENSION", "analyst_member_event", "SV_MEMBER_EVENT.ORG.ORG_PATH",
+    "개발 사건 부서 = SV_MEMBER_EVENT.ORG.ORG_PATH · 목표 부서 = SV_TARGET_BIZ.TGT.ORG_PATH. 질문 지표의 SV 축을 쓴다.")
+add("MET_CMN-122", "결연아동코드", "G1_NEED_MODEL", "", "",
+    "GA 페이지 URL 의 childnum 파싱 차원이 SV 에 없다(PAGE_PATH 부분일치만 가능)." + NO_APPROX,
+    "처방 = GA 행동 팩트에 URL 쿼리 childnum 파생 열 추가 → SV_GA_BEHAVIOR 차원")
+add("MET_CMN-124", "후원사업(약칭)", "C4_DIMENSION", "analyst_mstr_spnsr_dvlp", "SV_MSTR_SPNSR_DVLP.MD.SPNSR_BSNS_ABRV_NM",
+    "개발 실적은 SPNSR_BSNS_ABRV_NM(약칭) 차원으로 분해한다. 회비는 SV_MEMBER_FEE.FEE.SPONSORSHIP(정식명)이다.")
+add("MET_CMN-132", "회원상태", "C4_DIMENSION", "analyst_member_status_asof", "SV_MEMBER_STATUS_ASOF.MSH.MEMBER_STATUS_NAME",
+    "조회시점 기준 상태는 SV_MEMBER_STATUS_ASOF(EFFECTIVE_FROM/TO 로 시점 고정)로 답한다. 다른 SV 의 MEMBER_STATUS_NAME 은 현재 스냅샷이다.")
+add("MET_CMN-162", "중단사유", "C4_DIMENSION", "analyst_member_event", "SV_MEMBER_EVENT.FME.STOP_REASON_NM", "차원 STOP_REASON_NM 으로 분해한다.")
+add("MET_CMN-163", "신규미납", "C2_COMBINE", "analyst_member_monthly",
+    "SV_MEMBER_MONTHLY.FMM.UNPAID_CNT_SUM · SV_MEMBER_MONTHLY.MEMBER.MEMBER_STATUS_NAME · SV_MEMBER_STATUS_ASOF.MSH.MEMBER_COUNT",
+    "건 = UNPAID_CNT_SUM 을 MEMBER_STATUS_NAME IN ('신규미납1'~'신규미납5')로 필터 · 명 = SV_MEMBER_STATUS_ASOF.MEMBER_COUNT 를 같은 상태·시점으로 필터. 상태 라벨에 숫자 접두가 없다.")
+add("MET_CMN-164", "장기미납", "C2_COMBINE", "analyst_member_monthly",
+    "SV_MEMBER_MONTHLY.FMM.UNPAID_CNT_SUM · SV_MEMBER_MONTHLY.MEMBER.MEMBER_STATUS_NAME · SV_MEMBER_STATUS_ASOF.MSH.MEMBER_COUNT",
+    "신규미납과 같은 방식으로 상태 '장기미납1'~'장기미납5' 로 필터한다.")
+add("MET_CMN-165", "월말활동회원(명)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_MEMBERS_SUM", "ACTIVE_MEMBERS_SUM 으로 답한다. 한 달을 지정한다.")
+add("MET_CMN-166", "월말활동목표(건)", "G2_NEED_CONFIRM", "analyst_target_biz", "SV_TARGET_BIZ.TGT.GOAL_MEMBER_CNT",
+    "GOAL_MEMBER_CNT(월말 활동회원 목표)로 답하되 🔴 SV 단위는 **명**이고 사전은 **건**이다 — 「단위 확인 필요」를 밝힌다. 월끼리 더하지 않는다.",
+    "현업 확인 = 월말활동목표 단위(건/명)")
+add("MET_CMN-167", "연활동율목표(%)", "C1_METRIC", "analyst_target_biz", "SV_TARGET_BIZ.TGT.GOAL_RATE",
+    "GOAL_RATE 를 GOAL_TYPE(활동율 유형) 1개 · 월 1개로 고정해 ×100 으로 표기한다(원값 0~1).")
+add("MET_CMN-175", "월말 신규활동회원(건)", "C2_COMBINE", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_CNT_SUM · SV_MEMBER_MONTHLY.FMM.NEW_EXISTING_FLAG",
+    "ACTIVE_CNT_SUM 을 NEW_EXISTING_FLAG='신규' 로 필터한다. 한 달을 지정한다.")
+add("MET_CMN-176", "월말 기존활동회원(건)", "C2_COMBINE", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.ACTIVE_CNT_SUM · SV_MEMBER_MONTHLY.FMM.NEW_EXISTING_FLAG",
+    "ACTIVE_CNT_SUM 을 NEW_EXISTING_FLAG='기존' 으로 필터한다.")
+add("MET_CMN-177", "평균 약정금액(원)", "C1_METRIC", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.AVG_PLEDGE_AMT",
+    "🆕 AVG_PLEDGE_AMT((활동(건) × 10,000) ÷ 활동(명))로 답한다. SV_MEMBER_SERVICE_COHORT.AVG_ACQ_SPNSR_AMT 는 획득 시점 약정이라 다르다.")
+add("MET_CMN-178", "평균 납입금액(원)", "C1_METRIC", "analyst_member_fee", "SV_MEMBER_FEE.FEE.AVG_PAID_PER_MEMBER",
+    "🆕 AVG_PAID_PER_MEMBER(납입회비 ÷ 납입(명))로 답한다. 기간을 바꾸면 재집계한다(명은 비가산).")
+
+# ---- 신규지표 ----
+add("MET_NEW-1", "최근 5개년 개발캠페인별 납입회비(원)", "C1_METRIC", "analyst_member_fee", "SV_MEMBER_FEE.FEE.TOTAL_PAID_FEE_BILLABLE · SV_MEMBER_FEE.FEE.ACQ_CAMPAIGN",
+    "TOTAL_PAID_FEE_BILLABLE 를 ACQ_CAMPAIGN(획득 캠페인) × CAL_YEAR(최근 5개년)로 분해한다.")
+add("MET_NEW-2", "개발캠페인별 유지기간(N개월)", "C5_PARTIAL", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS",
+    "회원 단위 값이라 SV 에 행 값으로 없다. 캠페인 집계는 RT-29 기대 유지개월(EXP_TENURE_MONTHS · 생존분석 · O234 현업 확정)로 답하고 「사전 정의(가입일~조회일 단순 개월)와 산출 방식이 다르다」를 밝힌다.")
+add("MET_NEW-3", "개발캠페인별 유지기간(Y년)", "C5_PARTIAL", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS",
+    "유지기간(N개월)과 같다 — EXP_TENURE_MONTHS ÷ 12 로 년 환산해 답한다.")
+add("MET_NEW-4", "개발캠페인별 평균 유지기간(N개월)", "C5_PARTIAL", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS",
+    "RT-29 기대 유지개월(상한 80 기본 · 무기한 병기)로 답한다. 🔴 AVG_TENURE_DAYS 는 중단자 평균이라 쓰지 않는다.")
+add("MET_NEW-5", "개발캠페인별 평균  유지기간(Y년)", "C5_PARTIAL", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS",
+    "평균 유지기간(N개월) ÷ 12 로 답한다.")
+add("MET_NEW-6", "개발캠페인별 이탈율(%)", "G2_NEED_CONFIRM", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.SURVIVAL_RATE · SV_MEMBER_COHORT.FMC.CHURN_RATE_12M",
+    "사전 산식이 유지율(신규7)과 글자 그대로 같다(오기 의심). N개월 이탈율 = 100 − N개월 유지율(SURVIVAL_RATE · 경과월 N−1)로 답하고, 12개월 고정 비교는 CHURN_RATE_12M 을 병기한다. 「산식 원문 확인 필요」를 밝힌다.",
+    "현업 확인 = 신규6 산식 문구(1 − 유지율 여부)")
+add("MET_NEW-7", "개발캠페인별 n개월 유지율(%)", "C2_COMBINE", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.SURVIVAL_RATE · SV_MEMBER_COHORT.SURV.SURV_ELAPSED_MONTH",
+    "SURVIVAL_RATE 를 SURV_ELAPSED_MONTH = N−1 · SURV_AXIS_TYPE = 캠페인 축으로 필터해 ×100 표기한다. 경과월을 묶어 평균 내지 않는다.")
+add("MET_NEW-8", "개발캠페인별 LTV(원)", "C1_METRIC", "analyst_member_fee · analyst_member_cohort",
+    "SV_MEMBER_FEE.FEE.TOTAL_PAID_FEE_BILLABLE · SV_MEMBER_FEE.FEE.DISTINCT_PAYING_MEMBERS · SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS",
+    "RT-14 결정(평균 월 납입회비 × 기대 유지개월)으로 답한다.")
+add("MET_NEW-9", "매체별 직접모금비", "C5_PARTIAL", "analyst_budget",
+    "SV_BUDGET.FBD.DIRECT_FUNDRAISING_COST_1 · SV_BUDGET.FBD.DIRECT_FUNDRAISING_COST_2 · SV_BUDGET.FBD.DVLP_INBOUND_PATH",
+    "사전 산식은 「-」(미기재)다. ERP 직접모금비1·2 를 DVLP_INBOUND_PATH(개발인입경로 = 매체 축)로 분해해 이름 그대로 나란히 보인다.")
+add("MET_NEW-10", "최근 2개년 캠페인별 개발단가 (원)", "C3_CROSS", "analyst_ad | analyst_mstr_spnsr_dvlp",
+    "SV_AD.AD.TOTAL_AD_COST · SV_AD.MKTG.MARKETING_CAMPAIGN · SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT · SV_MSTR_SPNSR_DVLP.MD.MK_CMPGN_NM",
+    "RT-28 원천 간 계산: 광고비(마케팅캠페인별 · 최근 2개년)와 MSTR 개발(건)(MK_CMPGN_NM 별 · 신규 개발)을 각각 조회 → 표 분리 → 마케팅캠페인 이름으로 맞춰 나눗셈. 매칭 안 된 캠페인을 따로 밝힌다.")
+add("MET_NEW-11", "최근 2개년 매체별 개발단가 (원)", "C3_CROSS", "analyst_budget | analyst_mstr_spnsr_dvlp",
+    "SV_BUDGET.FBD.DIRECT_FUNDRAISING_COST_1 · SV_BUDGET.FBD.DVLP_INBOUND_PATH · SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT · SV_MSTR_SPNSR_DVLP.MD.DVLP_INFLOW_PATH_NM",
+    "RT-28 원천 간 계산: ERP 직접모금비(개발인입경로별)와 MSTR 개발(건)(DVLP_INFLOW_PATH_NM 별)을 각각 조회해 경로 이름으로 맞춰 나눈다. 직접모금비1·2 중 어느 것을 썼는지 밝힌다.")
+add("MET_NEW-12", "캠페인별 활동율(%)", "G1_NEED_MODEL", "", "", "캠페인별 활동(건)·누계개발·연도초활동을 같은 귀속으로 담은 월 팩트가 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-13", "연도별 캠페인 활동율(%)", "G1_NEED_MODEL", "", "", "캠페인별 활동율과 같은 사유." + NO_APPROX, G1_CAMP)
+add("MET_NEW-14", "캠페인별 납입방식 활동율(%)", "G1_NEED_MODEL", "", "", "캠페인 × 납입방식 축의 활동(건) 팩트가 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-15", "캠페인별 중단율(%)", "G1_NEED_MODEL", "", "",
+    "당월 캠페인별 중단(건)·개발(건)을 담은 팩트가 없다(SV_CAMPAIGN_CUM_STOP 은 1월~기준월 누계만 · 1월 기준월은 당월과 같다)." + NO_APPROX, G1_CAMP)
+add("MET_NEW-16", "연도별 캠페인 중단율(%)", "G1_NEED_MODEL", "", "", "캠페인별 전월말활동회원(건)이 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-17", "캠페인별 누계중단율(%)", "C1_METRIC", "analyst_campaign_cum_stop", "SV_CAMPAIGN_CUM_STOP.FCCS.CUM_STOP_RATE",
+    "RT-30 결정 — 기준연월 하나 고정 · 누계중단·누계개발·연도초활동·누계중단율을 함께 보인다.")
+add("MET_NEW-18", "연도별 캠페인 신규 중단율(%)", "C1_METRIC", "analyst_campaign_cum_stop", "SV_CAMPAIGN_CUM_STOP.FCCS.CUM_STOP_RATE_DEV",
+    "🆕 CUM_STOP_RATE_DEV(누계중단 ÷ 누계개발 ×100)로 답한다. 기준연월 하나 고정 · 분모가 작은 캠페인은 해석 주의.")
+add("MET_NEW-19", "캠페인별 납입방식 중단율(%)", "G1_NEED_MODEL", "", "", "캠페인 × 납입방식 축의 중단·개발·연도초 팩트가 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-20", "캠페인별 이탈(건)", "C5_PARTIAL", "analyst_member_monthly", "SV_MEMBER_MONTHLY.FMM.CHURN_CNT_SUM",
+    "전사 이탈(건)은 CHURN_CNT_SUM 으로 답한다. 🔴 캠페인별 분해는 「그 달 단일 캠페인」만 연결돼 (미매핑)이 크다 — 캠페인별 값은 (미매핑)·IS_MULTI_CAMPAIGN 비중을 함께 밝히고 「캠페인 귀속 팩트 추가 예정」을 덧붙인다.", G1_CAMP)
+add("MET_NEW-21", "캠페인별 이탈율(%)", "G1_NEED_MODEL", "", "", "캠페인 귀속이 같은 이탈(건)·개발(건) 팩트가 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-22", "캠페인별 납입율(%)", "G1_NEED_MODEL", "", "", "캠페인별 납입회비와 월말활동(건)을 같은 캠페인 귀속으로 담은 팩트가 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-23", "연도별 캠페인별 납입율(%)", "G1_NEED_MODEL", "", "", "캠페인별 납입율과 같은 사유." + NO_APPROX, G1_CAMP)
+add("MET_NEW-24", "캠페인별 누계 납입율(%)", "G1_NEED_MODEL", "", "", "캠페인별 납입율과 같은 사유." + NO_APPROX, G1_CAMP)
+add("MET_NEW-25", "연도별 캠페인 누계납입율(%)", "G1_NEED_MODEL", "", "", "캠페인별 납입율과 같은 사유." + NO_APPROX, G1_CAMP)
+add("MET_NEW-26", "캠페인별 납입회비 구성비(%)", "C2_COMBINE", "analyst_payment_billing_status",
+    "SV_PAYMENT_BILLING_STATUS.PBS.PAID_FEE_SUM · SV_PAYMENT_BILLING_STATUS.PBS.PAYMENT_TYPE · SV_PAYMENT_BILLING_STATUS.CAMPAIGN.CAMPAIGN_NAME",
+    "PAYMENT_TYPE='회비' 로 필터한 PAID_FEE_SUM 을 CAMPAIGN_NAME 별로 내고, 같은 SQL 의 ROLLUP 전체 행으로 나눠 ×100 한다. (미매핑) 행을 빼지 않는다.")
+add("MET_NEW-27", "캠페인별 미납율(%)", "G1_NEED_MODEL", "", "", "분자(미납회비)는 SV_PAYMENT_BILLING_STATUS 에 있으나 분모(캠페인별 월말활동(건))가 같은 귀속으로 없다." + NO_APPROX, G1_CAMP)
+add("MET_NEW-28", "연도별 캠페인 미납율(%)", "G1_NEED_MODEL", "", "", "캠페인별 미납율과 같은 사유." + NO_APPROX, G1_CAMP)
+add("MET_NEW-29", "캠페인별 미납회비 구성비(%)", "C2_COMBINE", "analyst_payment_billing_status",
+    "SV_PAYMENT_BILLING_STATUS.PBS.UNPAID_AMT_SUM · SV_PAYMENT_BILLING_STATUS.CAMPAIGN.CAMPAIGN_NAME",
+    "UNPAID_AMT_SUM 을 CAMPAIGN_NAME 별로 내고 ROLLUP 전체 행으로 나눠 ×100 한다.")
+add("MET_NEW-30", "서비스별 발송율(%)", "C3_CROSS", "analyst_service | analyst_member_status_asof",
+    "SV_SERVICE.FSE.DISTINCT_SEND_MEMBERS · SV_MEMBER_STATUS_ASOF.MSH.MEMBER_COUNT",
+    "서비스(발송 제목·카테고리)별 발송(명) = DISTINCT_SEND_MEMBERS 와 같은 시점 전체 회원수(SV_MEMBER_STATUS_ASOF.MEMBER_COUNT · 시점 고정)를 각각 조회해 나눈다. 전체회원 정의(정기·일시 포함 여부)를 밝힌다.")
+add("MET_NEW-31", "발송대비 수신율(%)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.TOTAL_SEND_MEMBERS · SV_SERVICE.FSE.SEND_STATUS_NAME",
+    "알림톡(MSG_AT)만 「발송완료 ÷ 전체 발송 ×100」을 SQL 로 낸다. 타 채널은 성공 라벨이 없어 산출하지 않고 그 사실을 밝힌다.", "MET_CMN-86 과 같은 현업 확인")
+add("MET_NEW-32", "발송대비 클릭율(%)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.OPEN_RATE_SND",
+    "OPEN_RATE_SND(링크 클릭 ÷ 오픈 기록이 있는 SND 발송 ×100)로 답한다. 🔴 문자(SND) 전용이다.")
+add("MET_NEW-33", "클릭대비 전환율(%)", "G1_NEED_MODEL", "", "", "발송 클릭 → 개발 회원 매칭이 GOLD 에 없다." + NO_APPROX,
+    "처방 = FACT_MESSAGE_DISPATCH 에 클릭 후 D+N 개발 매칭 열 추가(D5 매칭 규칙 · 창 길이 현업 확정)")
+add("MET_NEW-34", "서비스별 증액율(%)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.D5_INCREASE_RATE",
+    "🆕 D5_INCREASE_RATE(발송 후 D+1~D+5 증액 매칭 ÷ 발송 ×100 · 잠정)로 답한다. 🔴 사전 분모는 「발송 성공 회원」이나 SV 분모는 전체 발송이다(성공 판정 축 미확정) — 차이를 밝힌다.",
+    "현업 확인 = 성공 판정 확정 후 분모를 성공 발송으로 교체")
+add("MET_NEW-35", "서비스별 증액회원의 N개월 유지율(%)", "G1_NEED_MODEL", "", "", "서비스 참여 후 N개월 유지 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-36", "서비스별 참여회원의 N개월 유지율(%)", "G1_NEED_MODEL", "", "", "서비스 참여 후 N개월 유지 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-37", "서비스별 증액회원의 납입율(%)", "G1_NEED_MODEL", "", "", "서비스 참여회원 ↔ 납입 연결 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-38", "서비스별 참여회원의 납입율(%)", "G1_NEED_MODEL", "", "", "서비스 참여회원 ↔ 납입 연결 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-39", "서비스별 증액회원의 중단율(%)", "C5_PARTIAL", "analyst_service_cohort",
+    "SV_MEMBER_SERVICE_COHORT.SVC.EVER_STOPPED_RATE · SV_MEMBER_SERVICE_COHORT.SVC.D5_INCREASE_FLAG · SV_MEMBER_SERVICE_COHORT.SVC.SERVICE_GROUP_NAME",
+    "EVER_STOPPED_RATE 를 D5_INCREASE_FLAG = TRUE 로 필터하고 SERVICE_GROUP_NAME 별로 낸다. 🔴 「중단 이력 비율(누적)」이며 기간 한정 중단율이 아님을 밝힌다.")
+add("MET_NEW-40", "서비스별 참여회원의 중단율(%)", "C5_PARTIAL", "analyst_service_cohort",
+    "SV_MEMBER_SERVICE_COHORT.SVC.EVER_STOPPED_RATE · SV_MEMBER_SERVICE_COHORT.SVC.RECEIVED_FLAG · SV_MEMBER_SERVICE_COHORT.SVC.SERVICE_GROUP_NAME",
+    "EVER_STOPPED_RATE 를 RECEIVED_FLAG = TRUE 로 필터하고 SERVICE_GROUP_NAME 별로 낸다. 누적 중단 이력 기준임을 밝힌다.")
+add("MET_NEW-41", "서비스별 증액회원의 가입캠페인별 구성비(%)", "C2_COMBINE", "analyst_service_cohort",
+    "SV_MEMBER_SERVICE_COHORT.SVC.MEMBER_COUNT · SV_MEMBER_SERVICE_COHORT.SVC.ACQ_CAMPAIGN_NAME · SV_MEMBER_SERVICE_COHORT.SVC.D5_INCREASE_FLAG",
+    "D5_INCREASE_FLAG = TRUE 인 MEMBER_COUNT 를 ACQ_CAMPAIGN_NAME 별로 내고 서비스별 ROLLUP 합으로 나눠 ×100 한다.")
+add("MET_NEW-42", "서비스별 참여회원의 가입캠페인별 구성비(%)", "C2_COMBINE", "analyst_service_cohort",
+    "SV_MEMBER_SERVICE_COHORT.SVC.MEMBER_COUNT · SV_MEMBER_SERVICE_COHORT.SVC.ACQ_CAMPAIGN_NAME · SV_MEMBER_SERVICE_COHORT.SVC.RECEIVED_FLAG",
+    "RECEIVED_FLAG = TRUE 인 MEMBER_COUNT 를 ACQ_CAMPAIGN_NAME 별로 내고 서비스별 합으로 나눠 ×100 한다.")
+add("MET_NEW-43", "서비스x가입캠페인별 N개월 유지율(%)", "G1_NEED_MODEL", "", "", "서비스 참여 후 N개월 유지 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-44", "서비스별 서신 참여율(%)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.D5_LETTER_RATE",
+    "🆕 D5_LETTER_RATE(발송 후 D+1~D+5 서신 참여 ÷ 발송 ×100 · 잠정 · 발송 행 기준)로 답한다. 사전 분모 「해당 서비스 참여회원」 = 발송 대상으로 해석했음을 밝힌다.",
+    "현업 확인 = 분모(서비스 참여회원) 정의")
+add("MET_NEW-45", "서비스별 서신참여회원의 N개월 유지율", "G1_NEED_MODEL", "", "", "서신 참여회원 코호트의 N개월 유지 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-46", "서비스별 서신참여회원의 납입율", "G1_NEED_MODEL", "", "", "서신 참여회원 ↔ 납입 연결이 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-47", "서비스별 서신참여회원의 중단율", "G1_NEED_MODEL", "", "", "서비스 코호트에 서신 참여 플래그가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-48", "서비스별 서신참여회원의 가입캠페인별 구성비(%)", "G1_NEED_MODEL", "", "", "서비스 코호트에 서신 참여 플래그가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-49", "서비스별 선물금 참여율(%)", "C5_PARTIAL", "analyst_service", "SV_SERVICE.FSE.D5_GIFT_RATE",
+    "🆕 D5_GIFT_RATE(발송 후 D+1~D+5 선물금 참여 ÷ 발송 ×100 · 잠정)로 답한다. 분모 해석을 서신 참여율과 같이 밝힌다.", "현업 확인 = 분모 정의")
+add("MET_NEW-50", "서비스별 선물금참여회원의 N개월 유지율(%)", "G1_NEED_MODEL", "", "", "선물금 참여회원 코호트의 N개월 유지 지표가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-51", "서비스별 선물금참여회원의 납입율(%)", "G1_NEED_MODEL", "", "", "선물금 참여회원 ↔ 납입 연결이 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-52", "서비스별 선물금참여회원의 중단율(%)", "G1_NEED_MODEL", "", "", "서비스 코호트에 선물금 참여 플래그가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-53", "서비스별 선물금참여회원의 가입캠페인별 구성비(%)", "G1_NEED_MODEL", "", "", "서비스 코호트에 선물금 참여 플래그가 없다." + NO_APPROX, G1_SVC)
+add("MET_NEW-54", "개발인입경로", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.CAMPAIGN.INFLOW_PATH",
+    "차원 INFLOW_PATH(개발인입경로)로 분해한다. 개발 실적은 SV_MSTR_SPNSR_DVLP.MD.DVLP_INFLOW_PATH_NM.")
+add("MET_NEW-55", "캠페인카테고리", "C4_DIMENSION", "analyst_member_monthly", "SV_MEMBER_MONTHLY.CAMPAIGN.CAMPAIGN_TYPE",
+    "차원 CAMPAIGN_TYPE(캠페인 카테고리 · MM294)으로 분해한다. 개발 실적은 SV_MSTR_SPNSR_DVLP.MD.CMPGN_CTGR_NM.")
+
+# ---- 라우팅 행(이미 배선) ----
+add("RT-01", "개발건수(기본 · CRM건)", "C1_METRIC", "analyst_mstr_spnsr_dvlp", "SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT", "라우팅 결정대로 답한다.")
+add("RT-02", "GA 개발건수(일별리포트)", "C1_METRIC", "analyst_ad", "SV_AD.AD.GA_DEV_CNT", "라우팅 결정대로 답한다.")
+add("RT-03", "DR광고", "C2_COMBINE", "analyst_mstr_spnsr_dvlp", "SV_MSTR_SPNSR_DVLP.MD.CMMN_BRND_NM · SV_MSTR_SPNSR_DVLP.MD.MKTG_CHANNEL_NM", "라우팅 결정대로 답한다.")
+add("RT-14", "회원 LTV(캠페인·인입경로별)", "C3_CROSS", "analyst_member_fee · analyst_member_cohort",
+    "SV_MEMBER_FEE.FEE.TOTAL_PAID_FEE_BILLABLE · SV_MEMBER_FEE.FEE.DISTINCT_PAYING_MEMBERS · SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS", "라우팅 결정대로 답한다.")
+add("RT-15", "CAC(회원 획득 비용)", "C3_CROSS", "analyst_budget · analyst_expense_resolution · analyst_ad · analyst_mstr_spnsr_dvlp",
+    "SV_BUDGET.FBD.TOTAL_EXEC_BUDGET · SV_AD.AD.TOTAL_AD_COST · SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT", "라우팅 결정대로 답한다.")
+add("RT-16", "LTV/CAC(마케팅 효율)", "C3_CROSS", "(RT-14 · RT-15 도구)", "(RT-14 · RT-15 필드)", "RT-14 와 RT-15 결과를 같은 축으로 맞춰 나눈다.")
+add("RT-19", "증액 예측(마케팅캠페인별)", "C1_METRIC", "analyst_ml_inc_campaign", "SV_ML_INC_CAMPAIGN.IC.EXPECTED_INC_MEMBERS", "라우팅 결정대로 답한다.")
+add("RT-26", "개발 예측 우선순위(익월·연말)", "C1_METRIC", "analyst_ml_dvlp_forecast|analyst_mstr_spnsr_dvlp",
+    "SV_ML_DVLP_FORECAST.DF.FORECAST_AMT · SV_MSTR_SPNSR_DVLP.YE.YE_TREND_DVLP_CNT", "라우팅 결정대로 답한다.")
+add("RT-27", "LTV 질문 기본 응답(예측 + 실적)", "C3_CROSS", "analyst_ml_ltv_forecast|analyst_member_fee|analyst_member_cohort",
+    "SV_ML_LTV_FORECAST.LF.AVG_FORECAST_LTV · SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS", "라우팅 결정대로 답한다.")
+add("RT-28", "원천 간 계산(사용자 지정 산식)", "C3_CROSS", "analyst_expense_resolution|analyst_ad|analyst_mstr_spnsr_dvlp",
+    "SV_EXPENSE_RESOLUTION.EXP.SUM_AMT_TOTAL · SV_AD.AD.TOTAL_AD_COST · SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT", "라우팅 결정대로 답한다.")
+add("RT-29", "기대 유지개월(생존분석 · 상한 80 / 무기한)", "C1_METRIC", "analyst_member_cohort", "SV_MEMBER_COHORT.SURV.EXP_TENURE_MONTHS", "라우팅 결정대로 답한다.")
+add("RT-30", "누계중단율·누계중단비중(산식 등록 지표 안내)", "C1_METRIC", "analyst_campaign_cum_stop", "SV_CAMPAIGN_CUM_STOP.FCCS.CUM_STOP_RATE", "라우팅 결정대로 답한다.")
+
+
+def tokens(sv):
+    out = []
+    for t in sv.split(" · "):
+        t = t.strip()
+        if t.count(".") == 2 and t.startswith("SV_"):
+            out.append(t.upper())
+    return out
+
+
+def check():
+    from snowflake.snowpark import Session
+    tok = open(os.environ.get("SNOWFLAKE_TOKEN_FILE_PATH", "/snowflake/session/token")).read().strip()
+    s = Session.builder.configs({"account": os.environ["SNOWFLAKE_ACCOUNT"], "host": os.environ["SNOWFLAKE_HOST"],
+                                "authenticator": "oauth", "token": tok, "warehouse": "GN_DW_DEV_WH",
+                                "role": "GN_DW_ADMIN"}).create()
+    live = set()
+    for kind in ("METRICS", "DIMENSIONS"):
+        for r in s.sql("SHOW SEMANTIC %s IN SCHEMA GN_DW.SERVING" % kind).collect():
+            d = r.as_dict()
+            live.add(("%s.%s.%s" % (d["semantic_view_name"], d["table_name"], d["name"])).upper())
+    ids = {r[0] for r in s.sql("SELECT DOC_ID FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS WHERE HAS_FORMULA='Y'").collect()}
+    mine = {m["DOC_ID"] for m in M}
+    bad, pend = [], []
+    for m in M:
+        for t in tokens(m["SV_FIELD"]):
+            if t in live:
+                continue
+            (pend if t in PENDING else bad).append((m["DOC_ID"], t))
+    print("산식 행 =", len(ids), "· 매핑 행 =", len(mine), "· 누락 =", sorted(ids - mine), "· 초과 =", sorted(mine - ids))
+    print("라이브 부재(blocking) =", bad)
+    print("배포 대기(🆕 PENDING) =", len(pend), sorted({t for _, t in pend}))
+    deployed = sorted(PENDING & live)
+    print("PENDING 중 이미 라이브 =", deployed)
+    return 0 if (not bad and ids == mine) else 1
+
+
+def main():
+    ids = [m["DOC_ID"] for m in M]
+    dup = sorted({x for x in ids if ids.count(x) > 1})
+    if dup:
+        sys.exit("DOC_ID 중복: %s" % dup)
+    for m in M:
+        assert m["COVERAGE"] in ("C1_METRIC", "C2_COMBINE", "C3_CROSS", "C4_DIMENSION", "C5_PARTIAL",
+                                 "G1_NEED_MODEL", "G2_NEED_CONFIRM"), m
+        if m["COVERAGE"] != "G1_NEED_MODEL":
+            assert m["TOOL_NAME"], m["DOC_ID"]
+    with open(OUT, "w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=COLS)
+        w.writeheader()
+        w.writerows(M)
+    from collections import Counter
+    print("행수 =", len(M), dict(sorted(Counter(m["COVERAGE"] for m in M).items())))
+    if "--check" in sys.argv:
+        sys.exit(check())
+
+
+if __name__ == "__main__":
+    main()

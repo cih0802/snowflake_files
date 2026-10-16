@@ -158,7 +158,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       COMMENT = '문자 오픈 수 = **링크 클릭**(현업 회신 44). 발송 행별 0/1 플래그 합이라 중복 포함이다(고유 회원은 DISTINCT_SEND_MEMBERS 에 조건을 건다). 🔴 **문자(SND) 채널에만 값이 있다** — 다른 채널은 오픈 원천이 없어 NULL 이다(0 이 아니다) ⇒ 오픈율 분모는 SND 발송으로만 잡고 CHANNEL=''SND'' 를 반드시 건다. F(가산).',
     fse.OPEN_RATE_SND AS SUM(fse.OPEN_MEMBERS) / NULLIF(SUM(CASE WHEN fse.OPEN_MEMBERS IS NOT NULL THEN fse.SEND_MEMBERS END), 0) * 100
       WITH SYNONYMS ('오픈율', '클릭률', '링크 클릭률', '문자 오픈율')
-      COMMENT = '문자 오픈율(%) = 링크 클릭 ÷ 오픈 기록이 있는 발송(SND) ×100(현업 회신 44). 비율(N · 재집계 금지). 🔴 SND 전용 — 다른 채널 발송은 분모에서 빠진다(오픈 원천 부재).'
+      COMMENT = '문자 오픈율(%) = 링크 클릭 ÷ 오픈 기록이 있는 발송(SND) ×100(현업 회신 44). 비율(N · 재집계 금지). 🔴 SND 전용 — 다른 채널 발송은 분모에서 빠진다(오픈 원천 부재).',
+    -- 🆕 [O237] 신규 #44·#49·#34 서비스별 참여율·증액율(잠정 · 분모 = 발송 행 · 현업 확인 대상)
+    fse.D5_LETTER_RATE AS SUM(fse.D5_LETTER_PART_MEMBERS) / NULLIF(SUM(fse.SEND_MEMBERS), 0) * 100
+      WITH SYNONYMS ('서비스별 서신 참여율(%)', '서신 참여율', '신규44')
+      COMMENT = '신규 #44 서비스별 서신 참여율(%) 잠정 = 발송 후 D+1~D+5 서신 참여(D5_LETTER_PART_MEMBERS) ÷ 발송(SEND_MEMBERS) ×100. 비율(N · 재집계 금지). 🔴 분모 = 발송 행(중복 포함) — 사전 분모 「해당 서비스 참여회원」을 발송 대상으로 해석했다(현업 확인 대상) ⇒ 답변에 이 해석을 밝힌다. 🔴 인과가 아니라 시간 창 매칭이다.',
+    fse.D5_GIFT_RATE AS SUM(fse.D5_GIFT_PART_MEMBERS) / NULLIF(SUM(fse.SEND_MEMBERS), 0) * 100
+      WITH SYNONYMS ('서비스별 선물금 참여율(%)', '선물금 참여율', '신규49')
+      COMMENT = '신규 #49 서비스별 선물금 참여율(%) 잠정 = 발송 후 D+1~D+5 선물금 참여 ÷ 발송 ×100. 비율(N). 🔴 분모 해석·시간 창 주의는 D5_LETTER_RATE 와 같다 · 선물금 원천에 접수일이 없어 선물금 발송일로 매칭한다.',
+    fse.D5_INCREASE_RATE AS SUM(fse.D5_INCREASE_PART_MEMBERS) / NULLIF(SUM(fse.SEND_MEMBERS), 0) * 100
+      WITH SYNONYMS ('서비스별 증액율(%)', '서비스 증액율', '신규34')
+      COMMENT = '신규 #34 서비스별 증액율(%) 잠정 = 발송 후 D+1~D+5 증액 개발 매칭 ÷ 발송 ×100. 비율(N). 🔴 사전 분모는 「발송 성공 회원」이나 성공 판정이 알림톡(SEND_STATUS_NAME)만 가능해 전체 발송을 분모로 쓴다 — 답변에 이 차이를 밝힌다(현업 확인 대상).'
   )
   COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 캠페인 축 = 문자(SND) 발송 캠페인만 배선(원천 SND_MEMBER_LIST.CMPGN_CD) — 이메일·알림톡·우편은 원천에 캠페인 키가 없어 (미매핑)(구조적 부재) ⇒ 「캠페인별 발송」은 SND 기준임을 밝힌다]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

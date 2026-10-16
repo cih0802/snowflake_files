@@ -23,6 +23,8 @@ COLS = [
     "KEYWORDS", "IS_ADDITIVE",
     # 🆕 [O235] 맨 끝 추가 — 산식 등록 여부(Y = FORMULA 비어 있지 않음) · 검색 필터 속성
     "HAS_FORMULA",
+    # 🆕 [O237] 맨 끝 추가 — 산식 대응 상태(C1~C5 = 답변 가능 · G1/G2 = 갭) · LLM 답변 절차(tools/O237_formula_wiring_overlay.csv)
+    "COVERAGE", "ANSWER_GUIDE",
 ]
 
 # 🆕 [O233-B] 표기 변형 규칙(질문이 동의어와 조금만 달라도 키워드 색인이 맞도록) — 규칙 기반 · 의미 추가 없음
@@ -209,6 +211,33 @@ def synonym_overlay(out):
             r["SYNONYMS"] = clean(o["SYNONYMS"].replace("|", ", "))
 
 
+def formula_wiring_overlay(out):
+    # 🆕 [O237] 산식 배선 오버레이 — 지표사전 원천(90_provided_definition)에는 도구·SV 칸이 없다(R2-8 · 원천 무수정).
+    #   tools/O237_formula_wiring_overlay.csv(생성 = tools/o237_build_formula_map.py)의 DOC_ID 행에
+    #   ① 빈 TOOL_NAME·SV_FIELD 만 채운다(이미 값이 있는 라우팅 행은 원값 유지 · 덮어쓰기 금지) ② COVERAGE·ANSWER_GUIDE 를 싣는다.
+    #   GAP_ACTION 은 LIMITATION 끝에 「갭 처방:」으로 덧붙인다(원문 보존 · 덧붙임만).
+    f = os.path.join(TOOLS, "O237_formula_wiring_overlay.csv")
+    for r in out:
+        r["COVERAGE"], r["ANSWER_GUIDE"] = "", ""
+    if not os.path.exists(f):
+        return
+    by_id = {r["DOC_ID"]: r for r in out}
+    with open(f, encoding="utf-8-sig", newline="") as fh:
+        for o in csv.DictReader(fh):
+            r = by_id.get(o["DOC_ID"])
+            if r is None:
+                sys.exit("산식 오버레이 DOC_ID 부재: %s" % o["DOC_ID"])
+            if not r["FORMULA"]:
+                sys.exit("산식 오버레이 대상에 FORMULA 없음: %s" % o["DOC_ID"])
+            for k in ("TOOL_NAME", "SV_FIELD"):
+                if not r[k]:
+                    r[k] = clean(o[k])
+            r["COVERAGE"] = o["COVERAGE"]
+            r["ANSWER_GUIDE"] = clean(o["ANSWER_GUIDE"])
+            if o["GAP_ACTION"]:
+                r["LIMITATION"] = " · ".join(x for x in [r["LIMITATION"], "갭 처방: " + clean(o["GAP_ACTION"])] if x)
+
+
 def build():
     out = []
     curated(out)
@@ -219,6 +248,7 @@ def build():
     orgs(out)
     source_refs(out)
     synonym_overlay(out)
+    formula_wiring_overlay(out)
     for r in out:
         # 🆕 [O233-B] SEARCH_TEXT = Markdown 헤더·불릿(청크 경계·라벨이 임베딩·LLM 모두에 분명해진다)
         r["KEYWORDS"] = keywords(r)
@@ -226,7 +256,8 @@ def build():
         r["HAS_FORMULA"] = "Y" if r["FORMULA"] else "N"
         parts = ["# [%s] %s" % (r["DOC_TYPE"], r["TITLE"])]
         for k, lab in [("SYNONYMS", "동의어"), ("DEFINITION", "정의"), ("FORMULA", "계산식"),
-                       ("TOOL_NAME", "도구"), ("SV_FIELD", "SV 필드"), ("LIMITATION", "한계")]:
+                       ("TOOL_NAME", "도구"), ("SV_FIELD", "SV 필드"),
+                       ("COVERAGE", "대응상태"), ("ANSWER_GUIDE", "답변 절차"), ("LIMITATION", "한계")]:
             if r[k]:
                 parts.append("- **%s**: %s" % (lab, r[k]))
             elif k == "FORMULA" and r["DOC_TYPE"] in ("지표", "용어"):
