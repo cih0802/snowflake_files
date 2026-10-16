@@ -44,10 +44,15 @@ SELECT
     NULLIF(t.$6, ''),
     NULLIF(t.$11, ''),
     CURRENT_TIMESTAMP()::TIMESTAMP_NTZ,
-    TRY_TO_NUMBER(NULLIF(t.$15, ''))
+    -- 🆕 [2026-10-16] CSV $15 코드가 SILVER.CRM_CAMPAIGN 코드 체계와 어긋나 assert_fap_ad_ctgr_consistency(CD_NM_PAIR) 14건 FAIL
+    --   ⇒ 이름($13)으로 CRM 코드를 우선 조회하고, 없을 때만 CSV 값을 쓴다.
+    COALESCE(c.CMPGN_CTGR_CD, TRY_TO_NUMBER(NULLIF(t.$15, '')))
 -- ⚠️ 경로에 한글 파일명이 있어 따옴표로 감싼다(따옴표 없으면 syntax error · 실측 2026-10-15)
 FROM '@GN_DW.OPS.AD_CREATIVE_MAP_STAGE/O232_광고_매핑_추천안.csv'
-     (FILE_FORMAT => 'GN_DW.OPS.FF_AD_CREATIVE_MAP_CSV') t;
+     (FILE_FORMAT => 'GN_DW.OPS.FF_AD_CREATIVE_MAP_CSV') t
+LEFT JOIN (SELECT CMPGN_CTGR_NM, MIN(CMPGN_CTGR_CD) AS CMPGN_CTGR_CD
+           FROM GN_DW.SILVER.CRM_CAMPAIGN GROUP BY CMPGN_CTGR_NM) c
+       ON c.CMPGN_CTGR_NM = NULLIF(t.$13, '');
 
 -- [4] 확인 — 기대(2026-10-15) = 258행 · MKTG 53 · CTGR 112 · NONE 93 · 이름 있는데 코드 없음 0
 SELECT MAP_LEVEL, COUNT(*) AS N, COUNT(CMPGN_CTGR_NM) AS N_NM, COUNT(CMPGN_CTGR_CD) AS N_CD,
