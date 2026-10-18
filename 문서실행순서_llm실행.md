@@ -2,7 +2,7 @@
 
 > 대상: 이 문서를 읽고 `문서실행순서.md` 의 SQL 을 실행하는 LLM 에이전트.
 > 정본 순서 = `문서실행순서.md`. 이 문서는 **실행 방법·병렬화·예외 처리·금지 사항**만 정한다.
-> 근거 = 2026-10-16 개발계(ua91864) 실측.
+> 근거 = 2026-10-16 개발계(ua91864) 실측 · 🆕 §3.4 = 2026-10-18 개발계(iw20760 · 데이터 = 운영계와 같음 · 사용자 확인) 실측.
 
 ---
 
@@ -163,6 +163,21 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
      (정본 명령 = `10_dbt_pipeline/02_dbt_parse_compile_build.sql` 의 BigQuery 범위 build).
 - 완료 확인 = 배포순서 파일의 `[D3]` 확인 SELECT · Agent 기본 버전에 그 회차 규칙 문자열이 있는가(`SHOW VERSIONS IN AGENT … ->> SELECT "name", "is_default", CONTAINS("agent_spec", '<규칙 표지>') FROM $1`).
 
+### 3.4 🆕 O243~O245 증분(`문서실행순서.md` 「기존 환경 갱신」 14~19 · 개발계 iw20760 2026-10-18 실측)
+
+| 순 | 실행 방식 | 실측 |
+|---|---|---|
+| 14 · 15 · 17 · 18 | 각 파일을 **첫 줄 ~ 마지막 `GRANT` 줄**까지 실행(뒤의 스모크 SELECT 제외) | 18 = 21 → 22 → 25 순서 필수(22·25 의 SV 가 21 의 뷰를 참조 · 신설 `ML_CHURN_BY_SPONSORSHIP_V`) · 84문 OK |
+| 16 | `dbt_build_fact_ad_performance_budget.sql` = dbt 재배포 + build | 🔴 dbt 는 사용자가 실행한다(에이전트 정지점) |
+| 19 | 09_2 의 [0-B] COPY FILES → [0-C] 크기 대조 → [2] live 소진 → [3] ADD VERSION | Agent 3종 신규 기본 버전 · 롤백 = 직전 버전 |
+
+- 🔴 `USE ROLE GN_DW_ADMIN` 직후 **웨어하우스가 풀린다**(`000606 No active warehouse`) ⇒ 확인 SELECT·Agent 호출 전에 `USE WAREHOUSE GN_DW_ANALYTICS_WH` 를 다시 건다(SV DDL 파일은 파일 안에 이미 있다).
+- 🔴 `SHOW VERSIONS IN AGENT` 행 순서는 생성순이 아니다 ⇒ `created_on` 으로 정렬해 최신 버전과 `is_default` 를 판정한다.
+- 🔴 `ACCOUNTADMIN` 에서도 `GN_DW` 객체가 보이는 경우가 있으나 배포·판정은 `GN_DW_ADMIN` 으로 한다(소유자 일치 · `sfconn` 기본 역할은 ACCOUNTADMIN).
+- 확인 = `문서실행순서.md` 19번 아래 확인 수치. Agent 응답 확인 문항 = `tmp/o245/agent_test.py`(17문항 · 기대값 = SV 직접 질의 · 판정 = `tmp/o245/agent_judge.py`).
+  🔴 러너 자체 판정(`err`·`tok`)은 쓰지 마라 — `err` 는 SV 지침 안의 「invalid identifier」 문구를 오류로 잡는다(전건 오탐).
+- Agent 호출(`DATA_AGENT_RUN`)은 1문항 약 1분이다 ⇒ 백그라운드로 돌리고 `QUERY_HISTORY` 로 진행을 본다(마운트 파일 목록은 수 분 늦게 반영된다 · 실측).
+
 ---
 
 ## 4. 알려진 예외 (재실행 시 이미 반영 또는 처리 규칙)
@@ -175,6 +190,8 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
 | `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` 47행 | 사용자명 `TRIALADMIN` 하드코딩 | §0-3 |
 | 🆕 `10_dbt_pipeline` build — 새 열을 추가한 모델(예: O241 `SILVER.BIGQUERY_SESSION.SESSION_END_TS`) | `003001 Insufficient privileges … must have MODIFY … GN_DW_DBT` — 테이블 소유자는 GN_DW_ADMIN 이고 dbt 역할은 `append_new_columns` 의 `ALTER TABLE ADD COLUMN` 을 못 한다(실측 2026-10-16 mn11232) | 신규 구축 = DDL 정본(`08_SILVER_테이블DDL` · `06_DDL`)에 열이 이미 들어 있어 발생하지 않는다. **기존 환경 갱신** = 배포순서 파일의 `[D1-a]` ALTER(소유자 역할)를 **dbt build 전에** 실행한다. 실패했으면 그 ALTER 를 실행한 뒤 build 만 재실행(이미 성공한 모델은 다시 돌아도 멱등) |
 | 🆕 `/workspace` 로그 파일 | 실행기가 쓰는 중인 로그를 `tail` 하면 `read error: No such file or directory`(스테이지 마운트 · 실측) | 진행 판정은 **상태 파일(`STATE`)** 과 §6.1 `QUERY_HISTORY` 로 한다. 로그는 프로세스 종료 후 읽는다 |
+| 🆕 [O245] `shutil.copy2` 로 `/workspace` 에 백업 | `FileNotFoundError`(마운트가 xattr 를 지원하지 않는다 · 실측) — 빈 파일이 남을 수 있다 | `shutil.copyfile` 을 쓴다. 백업 후 원본을 쓰기 전에 백업 크기를 확인한다 |
+| 🆕 [O245] 예산(`FACT_BUDGET`·`FACT_BUDGET_YEARLY`) 차수 | 추경(추가경정) 편성 데이터가 없는 연도가 있다(2026 = 편성 0) | 규칙 = 편성액이 있는 차수 중 최신(사용자 결정 · 현행 유지). 추경 목표(공153·155)는 데이터가 없다 — 「산출 불가」로 답한다 |
 
 ### 4.1 에러 처리 원칙
 - 에러가 나면 **원인을 확인한 뒤** 고친다. 테스트 severity 를 낮추거나 테스트를 지우는 방식으로 넘기지 않는다.
