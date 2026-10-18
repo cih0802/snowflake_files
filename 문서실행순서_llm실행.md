@@ -79,6 +79,8 @@
 2. **`conn.execute_stream(str)` 에 문자열을 넘겼다** → 실행 0건으로 실패. 파일 객체 또는 `io.StringIO` 를 넘겨야 한다.
 3. **로그·상태를 `/tmp` 에 두었다가 샌드박스 재시작으로 잃었다.** 상태 파일은 `/tmp` 와 함께
    **진행 요약을 매 파일 완료 시 대화에 한 줄로 남긴다**(재시작 후 재개 기준).
+   - 🆕 [2026-10-16 O241] 상태·로그를 **`/workspace/tmp/runner/`** 에 두면 재시작 후에도 남는다(실측 · 쓰는 중 읽기 제약은 §4).
+     단 `/tmp/census.json` 처럼 `/tmp` 에만 있는 생성기 입력은 재시작 시 사라진다 — 생성기 실행 전 존재를 확인한다.
 4. 폴링 간격이 짧고 잦았다. dbt build·MSTR 은 **2분 간격**으로 `QUERY_HISTORY` 를 보면 충분하다.
 
 ### 3.2 실행기 (문장 단위 · 재개 가능 · 원천 쓰기 차단)
@@ -137,6 +139,29 @@ STATE=/tmp/runner/state_main.json python3 /tmp/runner/run.py > /tmp/runner/main.
 - `split_statements` 는 `$$ … $$` 블록(EXECUTE IMMEDIATE·프로시저)을 한 문장으로 처리한다(실측 정상).
 - 파일 하나 = 문장 여러 개. 실패하면 `STATE` 에 실패 문장 번호가 남는다 → 원인 수정 후 같은 명령으로 재개.
 - 실패 문장이 **서버에서 아직 실행 중**일 수 있다(클라이언트만 죽은 경우). §6.1 로 확인 후 재개 위치를 정한다.
+- 🆕 [O241] 샌드박스에 `connections.toml` 이 없으면 `connection_name=` 대신 `scripts/sfconn.py` 의 `conn()`(세션 OAuth 토큰)을 쓴다.
+  `EXECUTE`·`CALL` 문은 반환값을 로그에 남긴다(MSTR 블록의 `ERROR` 판정 근거).
+
+### 3.3 🆕 dbt 이후만 실행할 때 (기존 환경 · O241 실측)
+
+dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번호부터** 두 레인으로 돌린다.
+
+| 레인 | 개발계 번호 | 운영계 번호 | 실측 소요(개발계 2026-10-16) |
+|---|---|---|---|
+| A | 20 · 22 ~ 55 (35파일) | 16 · 18 ~ 51 | 약 4분 · 35/35 OK · FAIL 0 · SKIP 0 |
+| B | 21 (MSTR 적재) | 17 | 약 18분(1,096초) · 34/34개월 · 반환 문자열 `ERROR` 없음 |
+
+- 실측 기준 = 개발계 mn11232 · 2026-10-16 15:33~15:52(PDT) · 실행 전 §6.1 실행 중 쿼리 0건 · 두 레인 별도 프로세스·별도 연결.
+- 결과 확인(O241) = `SV_SERVICE.D5_GIFT_AMT` 1,303,750,000 · `SV_GA_SESSION` 2026-09 A 31.87초 · B 90.27초 ·
+  지표번호 토큰 동의어가 있는 metric 87개 · AGENT_MEMBER·AGENT_MARKETING 기본 = VERSION$4(O241 규칙 포함 · 롤백 = VERSION$3).
+
+- 🔴 SV·Agent 파일은 `CREATE OR ALTER`·`ADD VERSION` 이라 재실행해도 데이터·이전 버전이 사라지지 않는다 — 롤백 = 직전 Agent VERSION.
+- 🟢 GOLD·SILVER 를 `CREATE OR REPLACE` 로 비워도 dbt 모델이 TRUNCATE → INSERT(전량 재적재)라 다음 build 로 복구된다(사용자 확인 2026-10-16).
+  🔴 단 **BRONZE 는 예외** — 원천이라 dbt 가 다시 만들지 못한다(§1 금지 유지).
+  🔴 **GA(BigQuery) 범위 재적재 모델도 예외** — `BIGQUERY_*`·`FACT_BIGQUERY_*` 는 TRUNCATE 가 아니라 **창(기본 최근 3일)만 DELETE→INSERT** 한다.
+     비워졌으면 일반 build 로는 최근 3일치만 채워진다(O237-C 실측 = 0행 사고) ⇒ `--vars '{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}'` 로 전량 백필한다
+     (정본 명령 = `10_dbt_pipeline/02_dbt_parse_compile_build.sql` 의 BigQuery 범위 build).
+- 완료 확인 = 배포순서 파일의 `[D3]` 확인 SELECT · Agent 기본 버전에 그 회차 규칙 문자열이 있는가(`SHOW VERSIONS IN AGENT … ->> SELECT "name", "is_default", CONTAINS("agent_spec", '<규칙 표지>') FROM $1`).
 
 ---
 
@@ -148,6 +173,8 @@ STATE=/tmp/runner/state_main.json python3 /tmp/runner/run.py > /tmp/runner/main.
 | `04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql` | CSV 15열 코드가 `SILVER.CRM_CAMPAIGN` 과 어긋나 dbt 테스트 `assert_fap_ad_ctgr_consistency` FAIL 14 → `GOLD.WIDE_AD_*` 5개 SKIP | **2026-10-16 파일 수정 완료**(이름으로 CRM 코드 조회 우선). 적재 후 기대 = 258행 · MKTG 53 · CTGR 112 · NONE 93 |
 | `15_MSTR 이관 PoC/…/06_MSTR_적재_실행.sql` [2] | 주석은 「2026-01 ~」, 코드는 `BETWEEN '202401' AND 현재월` (34개월) | 코드대로 실행. 결과 문자열에 `ERROR` 가 없어야 한다. 기간 축소 여부는 사용자 결정 |
 | `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` 47행 | 사용자명 `TRIALADMIN` 하드코딩 | §0-3 |
+| 🆕 `10_dbt_pipeline` build — 새 열을 추가한 모델(예: O241 `SILVER.BIGQUERY_SESSION.SESSION_END_TS`) | `003001 Insufficient privileges … must have MODIFY … GN_DW_DBT` — 테이블 소유자는 GN_DW_ADMIN 이고 dbt 역할은 `append_new_columns` 의 `ALTER TABLE ADD COLUMN` 을 못 한다(실측 2026-10-16 mn11232) | 신규 구축 = DDL 정본(`08_SILVER_테이블DDL` · `06_DDL`)에 열이 이미 들어 있어 발생하지 않는다. **기존 환경 갱신** = 배포순서 파일의 `[D1-a]` ALTER(소유자 역할)를 **dbt build 전에** 실행한다. 실패했으면 그 ALTER 를 실행한 뒤 build 만 재실행(이미 성공한 모델은 다시 돌아도 멱등) |
+| 🆕 `/workspace` 로그 파일 | 실행기가 쓰는 중인 로그를 `tail` 하면 `read error: No such file or directory`(스테이지 마운트 · 실측) | 진행 판정은 **상태 파일(`STATE`)** 과 §6.1 `QUERY_HISTORY` 로 한다. 로그는 프로세스 종료 후 읽는다 |
 
 ### 4.1 에러 처리 원칙
 - 에러가 나면 **원인을 확인한 뒤** 고친다. 테스트 severity 를 낮추거나 테스트를 지우는 방식으로 넘기지 않는다.

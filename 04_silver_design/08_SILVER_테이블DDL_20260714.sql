@@ -1590,7 +1590,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_SESSION (
     DW_SOURCE_TABLE                  VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
-    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 (공통감사) · 이 모델은 채우지 않아 NULL 이다.'
+    DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 (공통감사) · 이 모델은 채우지 않아 NULL 이다.',
+    -- 🆕 [2026-10-16 O241] 공98 추천안B 재료 · 맨 끝(모델 열 순서) — 누락 시 dbt(GN_DW_DBT) 가 append_new_columns ALTER 에서 003001
+    SESSION_END_TS                   TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 마지막 이벤트 시각(EVENT_TIMESTAMP 마이크로초 최댓값 → TIMESTAMP_NTZ).'
 ) COMMENT = 'GA4 세션 속성. [Grain: EVENT_DT × USER_PSEUDO_ID × BIGQUERY_SESSION_ID (자정 경계 세션은 일자별로 나뉜다)]. [주의: 속성 = 세션 첫 non-NULL 값 · 원값 보존 · range 재적재]. [원천: GA4 → SILVER.BIGQUERY_REFINED_DATA].';
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_USER_DEMOGRAPHIC (
     EVENT_DT            DATE            COMMENT '집계 일자(원천 DATE YYYYMMDD).',

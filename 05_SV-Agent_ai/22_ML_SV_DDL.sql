@@ -22,7 +22,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
     mr AS GN_DW.SERVING.ML_MEMBER_RISK_V
       PRIMARY KEY (STDR_MT, MBER_NO)
       WITH SYNONYMS ('회원 예측', '회원 위험', '중단 예측', '증액 예측', '충성회원 예측')
-      COMMENT = '회원 단위 ML 예측 분석 (중단·증액·충성) (base: SERVING.ML_MEMBER_RISK_V). [Grain: 기준월 × 회원]. [활성 지표: 중단확률/증액확률/충성확률 · 등급]. [주의: 예측치이며 실적 아님, 기준월별 독립 산출(합산 금지), 원천 중복행은 확률 평균으로 단일화]. [원천: ML 예측 결과 3종 → SERVING.ML_MEMBER_RISK_V].'
+      COMMENT = '회원 단위 ML 예측 분석 (중단·증액·충성) (base: SERVING.ML_MEMBER_RISK_V). [Grain: 기준월 × 회원]. [활성 지표: 중단확률/증액확률/충성확률 · 등급]. [주의: 예측치이며 실적 아님, 기준월별 독립 산출(합산 금지), 원천 중복행은 확률 평균으로 단일화]. [원천: ML 예측 결과 3종 → SERVING.ML_MEMBER_RISK_V].',
+    ma AS GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V
+      PRIMARY KEY (STDR_MT, MBER_NO)
+      WITH SYNONYMS ('회원 특성', '예측 회원 특성', '기준월 시점 회원 속성')
+      COMMENT = '예측 대상 회원의 기준월 말 시점 특성(성별·연령대·지역·회원상태·회원구분·후원금액대·유지기간대·신규기존·납입방식). grain = 기준월 × 회원. 🔴 모델 피처가 아니다 — 예측 결과를 특성으로 나눠 보는 집계용이다. 미매칭 = (미매칭).'
+  )
+  RELATIONSHIPS (
+    mr_to_member_attr AS mr(STDR_MT, MBER_NO) REFERENCES ma
   )
   DIMENSIONS (
     mr.STDR_MT AS mr.STDR_MT
@@ -60,7 +67,37 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
       COMMENT = 'TRUE=모델 산출 로그에 오류가 기록됐다. 품질 점검용.',
     mr.CHURN_PRED_ROWS AS mr.CHURN_PRED_ROWS
       WITH SYNONYMS ('중단 예측 원천 행수')
-      COMMENT = '이 회원·기준월의 원천 중단 예측 행수. 🔴1 을 넘으면 원천이 같은 회원에 확률이 다른 예측을 여러 개 담은 것이다(실행순번이 없어 최신을 고를 수 없어 평균으로 단일화했다). 품질 점검용이며 업무 축이 아니다.'
+      COMMENT = '이 회원·기준월의 원천 중단 예측 행수. 🔴1 을 넘으면 원천이 같은 회원에 확률이 다른 예측을 여러 개 담은 것이다(실행순번이 없어 최신을 고를 수 없어 평균으로 단일화했다). 품질 점검용이며 업무 축이 아니다.',
+    ma.GENDER_NAME AS ma.GENDER_NAME
+      WITH SYNONYMS ('성별', '남녀')
+      COMMENT = '성별(기준월 말 시점). 🔴 모델 피처가 아니다.',
+    ma.AGE_BAND AS ma.AGE_BAND
+      WITH SYNONYMS ('연령대', '나이대')
+      COMMENT = '연령대(기준월 말 시점). 값에 기업·단체·기타가 섞여 있다 — 개인 연령 분석은 회원구분 개인으로 거른다.',
+    ma.REGION AS ma.REGION
+      WITH SYNONYMS ('지역', '거주지역', '시도')
+      COMMENT = '지역(기준월 말 시점).',
+    ma.MEMBER_STATUS_NAME AS ma.MEMBER_STATUS_NAME
+      WITH SYNONYMS ('회원상태')
+      COMMENT = '회원상태(기준월 말 시점).',
+    ma.MEMBER_TYPE_NAME AS ma.MEMBER_TYPE_NAME
+      WITH SYNONYMS ('회원구분', '법인구분', '개인 기업 단체')
+      COMMENT = '회원구분 = 개인·기업·단체(법인구분 · 기준월 말 시점).',
+    ma.AMOUNT_BAND AS ma.AMOUNT_BAND
+      WITH SYNONYMS ('후원금액대', '금액대')
+      COMMENT = '후원금액대(그 달 회원 월실적 금액대1).',
+    ma.TENURE_BAND AS ma.TENURE_BAND
+      WITH SYNONYMS ('유지기간', '가입기간', '후원기간대')
+      COMMENT = '유지기간대(그 달 회원 월실적 기간대1).',
+    ma.NEW_EXISTING AS ma.NEW_EXISTING
+      WITH SYNONYMS ('신규기존', '신규 기존 구분')
+      COMMENT = '신규/기존(그 달 회원 월실적).',
+    ma.PAYMENT_METHOD_NAME AS ma.PAYMENT_METHOD_NAME
+      WITH SYNONYMS ('납입방식', '결제수단')
+      COMMENT = '납입방식(그 달 청구액이 가장 큰 결제수단 · 잠정).',
+    ma.ATTR_MATCHED AS ma.ATTR_MATCHED
+      WITH SYNONYMS ('특성 매칭 여부')
+      COMMENT = 'TRUE=기준월 시점 회원 이력이 매칭됐다. FALSE 회원은 특성이 (미매칭)이다.'
   )
   METRICS (
     mr.PREDICTED_MEMBERS AS COUNT(DISTINCT mr.MBER_NO)
@@ -94,9 +131,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK
       WITH SYNONYMS ('원천 중복 회원수')
       COMMENT = '원천에 중단 또는 증액 예측이 여러 행 있는 회원수(중복제거). 품질 점검용 — 업무 수치로 답하지 않는다.'
   )
-  COMMENT = 'ML 회원단위 예측 SV(중단·증액·충성). base=SERVING.ML_MEMBER_RISK_V. 🔴🔴 이 SV 의 모든 값은 **머신러닝 예측치이며 실적이 아니다** — 실적 SV(SV_MEMBER_MONTHLY·SV_MEMBER_FEE·SV_MEMBER_EVENT)의 measure 와 같은 표에 합산하지 않는다. 🔴 머신러닝은 **테스트 단계**이며 모델·피처·테이블 구조가 교체될 수 있다 ⇒ 값의 안정성을 보장하지 않는다(2026-10-02 원천 구조 교체로 회원상태·결제수단·법인구분·피처 축이 사라졌다). 🔴 **중단 예측의 예측 지평은 발행하지 않는다** — 원천의 테이블명은 12개월을 뜻하는데 원천 테이블 설명은 6개월이어서 부정합이 있고, 어느 쪽이 맞는지 원천 담당자 확인 전이다 ⇒ 「향후 N개월」이라고 답하지 말고 「예측 지평은 원천 확인 중」이라고 밝힌다. 🔴 원천이 같은 기준월에 회원당 확률이 다른 예측을 여러 행 담고 있어(실행순번 없음) 확률은 평균, 분류는 「하나라도 1」로 단일화했다 — 원천 교정 시 확률·건수가 변한다. 🔴 모집단은 전체 회원이 아니라 예측 대상 회원이다 ⇒ 「전 회원 대비 비율」 산출 불가. 활성: 예측 대상 회원수·모델 분류 회원수·확률 평균/최대·원천 중복 회원수 · 판정·등급 축. 비활성: 회원상태·결제수단·법인구분·가입기간 등 회원 속성 축(원천 피처 제거로 미배선) · 업무 위험 임계값(미확정).'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  COMMENT = 'ML 회원단위 예측 SV(중단·증액·충성). base=SERVING.ML_MEMBER_RISK_V. 🔴🔴 이 SV 의 모든 값은 **머신러닝 예측치이며 실적이 아니다** — 실적 SV(SV_MEMBER_MONTHLY·SV_MEMBER_FEE·SV_MEMBER_EVENT)의 measure 와 같은 표에 합산하지 않는다. 🔴 머신러닝은 **테스트 단계**이며 모델·피처·테이블 구조가 교체될 수 있다 ⇒ 값의 안정성을 보장하지 않는다(2026-10-02 원천 구조 교체로 회원상태·결제수단·법인구분·피처 축이 사라졌다). 🔴 **중단 예측의 예측 지평은 발행하지 않는다** — 원천의 테이블명은 12개월을 뜻하는데 원천 테이블 설명은 6개월이어서 부정합이 있고, 어느 쪽이 맞는지 원천 담당자 확인 전이다 ⇒ 「향후 N개월」이라고 답하지 말고 「예측 지평은 원천 확인 중」이라고 밝힌다. 🔴 원천이 같은 기준월에 회원당 확률이 다른 예측을 여러 행 담고 있어(실행순번 없음) 확률은 평균, 분류는 「하나라도 1」로 단일화했다 — 원천 교정 시 확률·건수가 변한다. 🔴 모집단은 전체 회원이 아니라 예측 대상 회원이다 ⇒ 「전 회원 대비 비율」 산출 불가. 활성: 예측 대상 회원수·모델 분류 회원수·확률 평균/최대·원천 중복 회원수 · 판정·등급 축. 활성(O241-M): 기준월 시점 회원 특성 축(ma · 성별·연령대·지역·회원상태·회원구분·금액대·유지기간·납입방식 · 모델 피처 아님) · 비활성: 업무 위험 임계값(미확정).'
+  AI_SQL_GENERATION '[O241-M 회원 특성 축] 성별·연령대·지역·회원상태·회원구분(법인구분)·후원금액대·유지기간·신규기존·납입방식으로 나눠 달라는 질문은 ma 테이블 차원으로 GROUP BY 한다(기준월 말 시점 · 모델 피처 아님). 회원수는 반드시 예측 테이블 회원번호의 COUNT(DISTINCT) 로 센다. (미매칭) 행은 따로 밝힌다. [O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **예측과 실적을 한 표에 합산하지 않는다.** 이 SV 는 예측 전용이다. 실적 수치가 함께 필요하면 표를 분리하고 각 표가 예측인지 실적인지 명시한다. (2) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 서로 다른 모델 실행 결과이며 같은 회원이 여러 기준월에 등장한다. 기준월 지정이 없으면 데이터에 존재하는 최신 기준월(MAX(STDR_MT)) 하나로 한정하고 그 기준월을 답변에 밝힌다. (3) 🔴 **회원수는 반드시 중복제거로 센다** — PREDICTED_MEMBERS·MODEL_*_MEMBERS 를 쓰고 COUNT(*) 를 만들지 않는다. (4) 🔴 **「위험 회원」이라 단정하지 않는다** — 업무 위험 판정선이 미확정이므로 모델 분류 결과는 「모델이 중단으로 분류한 회원」으로 표현하고, 확률 기준을 사용자가 지정하면 그 기준을 답변에 명시한다. 「고위험군」은 CHURN_GRADE 순위 등급으로 답한다. (5) 🔴 **예측 지평(몇 개월)을 숫자로 답하지 않는다** — 원천 부정합이 미해소이므로 「예측 지평은 원천 확인 중」이라고 밝힌다. 증액·충성 예측에도 같은 원칙으로 기간을 임의로 붙이지 않는다. (6) 🔴 **비율의 분모를 밝힌다** — 이 SV 의 모집단은 전체 회원이 아니라 예측 대상 회원이고, 충성 예측은 더 좁은 부분집합이다. 충성 비율의 분모는 PREDICTED_LOYAL_MEMBERS 다. (7) **확률은 평균·최대만 쓴다** — SUM 하지 않는다. (8) **NULL 판정은 「아니다」가 아니라 「예측 대상 아님」이다** — 특히 충성 예측의 NULL 을 비충성으로 세지 않는다. (9) 🔴 **회원상태·결제수단·법인구분·가입기간별 분해를 물으면 SQL 을 만들지 않는다** — 원천 구조 교체로 이 SV 에 해당 축이 없다고 답하고, 등급(CHURN_GRADE·LOYAL_GRADE)별 분해를 대안으로 안내한다. (10) **답변에 항상 예측치임과 테스트 단계임을 한 문장으로 밝힌다.** (11) 적용 조건(기준월·그룹 모두 미지정 시): 최신 기준월로 한정하고 CHURN_GRADE 별 회원수와 평균 중단확률을 함께 반환한다. (12) 🔴 metric 이름(PREDICTED_MEMBERS·MODEL_CHURN_MEMBERS·MODEL_INC_MEMBERS·MODEL_LOYAL_MEMBERS·AVG_CHURN_PROB 등)을 mr 컬럼처럼 참조하지 않는다 — 정의식(COUNT(DISTINCT CASE WHEN mr.CHURN_CLASS = ''1'' THEN mr.MBER_NO END) 등)으로 집계한다.';
 
 -- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
@@ -109,7 +146,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
     sr AS GN_DW.SERVING.ML_SPONSOR_RISK_V
       PRIMARY KEY (STDR_MT, MBER_NO, SPNSR_BSNS_ID, SPNSR_BSNS_NO)
       WITH SYNONYMS ('후원건 이탈 예측', '카테고리별 이탈 예측', '후원 이탈')
-      COMMENT = '후원계좌 단위 이탈 예측 분석 (base: SERVING.ML_SPONSOR_RISK_V). [Grain: 기준월 × 회원 × 후원사업 × 약정번호]. [활성 지표: 후원계좌 이탈확률]. [주의: 1회원 다수 약정 보유(회원수는 COUNT DISTINCT 집계)]. [원천: ML 이탈모델 → SERVING.ML_SPONSOR_RISK_V].'
+      COMMENT = '후원계좌 단위 이탈 예측 분석 (base: SERVING.ML_SPONSOR_RISK_V). [Grain: 기준월 × 회원 × 후원사업 × 약정번호]. [활성 지표: 후원계좌 이탈확률]. [주의: 1회원 다수 약정 보유(회원수는 COUNT DISTINCT 집계)]. [원천: ML 이탈모델 → SERVING.ML_SPONSOR_RISK_V].',
+    ma AS GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V
+      PRIMARY KEY (STDR_MT, MBER_NO)
+      WITH SYNONYMS ('회원 특성', '예측 회원 특성', '기준월 시점 회원 속성')
+      COMMENT = '예측 대상 회원의 기준월 말 시점 특성(성별·연령대·지역·회원상태·회원구분·후원금액대·유지기간대·신규기존·납입방식). grain = 기준월 × 회원. 🔴 모델 피처가 아니다 — 예측 결과를 특성으로 나눠 보는 집계용이다. 미매칭 = (미매칭).'
+  )
+  RELATIONSHIPS (
+    sr_to_member_attr AS sr(STDR_MT, MBER_NO) REFERENCES ma
   )
   DIMENSIONS (
     sr.STDR_MT AS sr.STDR_MT
@@ -141,7 +185,37 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
       COMMENT = 'F-4 후원건 이탈위험 등급 — 값 3종: ''고위험''·''주의''·''일반''(기준월 안의 후원건 확률 순위 구간 · 경계 정의 = SERVING.ML_SPONSOR_RISK_V). 🔴 순위 기반 · 기준월 1개로 고정한다.',
     sr.PREDICTION_HAS_ERROR AS sr.PREDICTION_HAS_ERROR
       WITH SYNONYMS ('예측 오류 여부')
-      COMMENT = 'TRUE=모델 산출 로그에 오류가 기록됐다.'
+      COMMENT = 'TRUE=모델 산출 로그에 오류가 기록됐다.',
+    ma.GENDER_NAME AS ma.GENDER_NAME
+      WITH SYNONYMS ('성별', '남녀')
+      COMMENT = '성별(기준월 말 시점). 🔴 모델 피처가 아니다.',
+    ma.AGE_BAND AS ma.AGE_BAND
+      WITH SYNONYMS ('연령대', '나이대')
+      COMMENT = '연령대(기준월 말 시점). 값에 기업·단체·기타가 섞여 있다 — 개인 연령 분석은 회원구분 개인으로 거른다.',
+    ma.REGION AS ma.REGION
+      WITH SYNONYMS ('지역', '거주지역', '시도')
+      COMMENT = '지역(기준월 말 시점).',
+    ma.MEMBER_STATUS_NAME AS ma.MEMBER_STATUS_NAME
+      WITH SYNONYMS ('회원상태')
+      COMMENT = '회원상태(기준월 말 시점).',
+    ma.MEMBER_TYPE_NAME AS ma.MEMBER_TYPE_NAME
+      WITH SYNONYMS ('회원구분', '법인구분', '개인 기업 단체')
+      COMMENT = '회원구분 = 개인·기업·단체(법인구분 · 기준월 말 시점).',
+    ma.AMOUNT_BAND AS ma.AMOUNT_BAND
+      WITH SYNONYMS ('후원금액대', '금액대')
+      COMMENT = '후원금액대(그 달 회원 월실적 금액대1).',
+    ma.TENURE_BAND AS ma.TENURE_BAND
+      WITH SYNONYMS ('유지기간', '가입기간', '후원기간대')
+      COMMENT = '유지기간대(그 달 회원 월실적 기간대1).',
+    ma.NEW_EXISTING AS ma.NEW_EXISTING
+      WITH SYNONYMS ('신규기존', '신규 기존 구분')
+      COMMENT = '신규/기존(그 달 회원 월실적).',
+    ma.PAYMENT_METHOD_NAME AS ma.PAYMENT_METHOD_NAME
+      WITH SYNONYMS ('납입방식', '결제수단')
+      COMMENT = '납입방식(그 달 청구액이 가장 큰 결제수단 · 잠정).',
+    ma.ATTR_MATCHED AS ma.ATTR_MATCHED
+      WITH SYNONYMS ('특성 매칭 여부')
+      COMMENT = 'TRUE=기준월 시점 회원 이력이 매칭됐다. FALSE 회원은 특성이 (미매칭)이다.'
   )
   METRICS (
     sr.PREDICTED_SPONSORSHIPS AS COUNT(*)
@@ -164,8 +238,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK
       COMMENT = '이탈확률 최대값. 상위 위험 후원건 정렬에 쓴다.'
   )
   COMMENT = 'ML 후원건단위 이탈 예측 SV. base=SERVING.ML_SPONSOR_RISK_V. 🔴🔴 예측치이며 실적이 아니다 — 실적 SV 와 합산 금지. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다(2026-10-02 원천 구조 교체로 캠페인·상위캠페인·결제수단·후원금액·피처 축이 사라졌다). 🔴 **grain 이 후원건이다** — 회원 단위 질문에는 반드시 중복제거 회원수를 쓴다. 회원단위 예측(SV_ML_MEMBER_RISK)과 이 SV 를 조인해 한 표로 만들지 않는다(회원당 후원건 다건이라 회원 지표가 과대계상된다). 🔴 예측 지평은 발행하지 않는다(원천 기간 표기 확인 전). 활성: 후원건수·회원수·모델 분류 건수/회원수·확률 평균/최대 · 후원사업·캠페인카테고리·판정·등급 축. 비활성: 캠페인·상위캠페인(채널)·결제수단 축 · 이탈분류 후원금액(원천 금액 컬럼 제거) · 업무 위험 임계값(미확정) · 부서 축(원천에 부재).'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  AI_SQL_GENERATION '[O241-M 회원 특성 축] 성별·연령대·지역·회원상태·회원구분(법인구분)·후원금액대·유지기간·신규기존·납입방식으로 나눠 달라는 질문은 ma 테이블 차원으로 GROUP BY 한다(기준월 말 시점 · 모델 피처 아님). 회원수는 반드시 예측 테이블 회원번호의 COUNT(DISTINCT) 로 센다. (미매칭) 행은 따로 밝힌다. [O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **예측과 실적을 합산하지 않는다.** (2) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (3) 🔴🔴 **「명」과 「건」을 구분한다** — grain 이 후원건이므로 회원수는 PREDICTED_MEMBERS·MODEL_CHURN_MEMBERS(중복제거)를 쓰고, 건수는 PREDICTED_SPONSORSHIPS·MODEL_CHURN_SPONSORSHIPS 를 쓴다. 회원수를 COUNT(*) 로 세면 과대다. (4) 🔴 **SV_ML_MEMBER_RISK 와 한 쿼리로 조인하지 않는다** — grain 이 달라 팬아웃이 난다. 둘 다 필요하면 표를 분리하고 각 표의 grain 을 명시한다. (5) 🔴 **「위험」·「이탈할 것이다」로 단정하지 않는다** — 업무 임계값 미확정이므로 「모델이 이탈로 분류」로 표현한다. (6) 🔴 **캠페인별·상위캠페인(채널)별·결제수단별 이탈 예측이나 이탈분류 후원금액을 물으면 SQL 을 만들지 않는다** — 원천 구조 교체로 해당 축·금액이 없다고 답하고, 캠페인카테고리별 분해를 대안으로 안내한다. (7) 🔴 **예측 지평을 숫자로 답하지 않는다**(원천 확인 중). (8) **확률은 평균·최대만 쓴다.** 평균은 후원건 가중임을 밝힌다. (9) **답변에 예측치임과 테스트 단계임을 밝힌다.** (10) 적용 조건(기준월·그룹 미지정 시): 최신 기준월로 한정하고 캠페인카테고리(CMPGN_CTGR_NAME)별 후원건수·모델 이탈분류 건수·평균 이탈확률을 반환한다. (11) 🔴 metric 이름(PREDICTED_MEMBERS·MODEL_CHURN_MEMBERS·PREDICTED_SPONSORSHIPS·MODEL_CHURN_SPONSORSHIPS 등)을 sr 컬럼처럼 참조하지 않는다 — 정의식(COUNT(DISTINCT CASE WHEN sr.CHURN_CLASS = ''1'' THEN sr.MBER_NO END) 등)으로 집계한다.';
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK TO ROLE GN_DW_ANALYST;
@@ -218,13 +292,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
   )
   COMMENT = 'ML 개발금액 예측 SV(2종 통합 · 전사·캠페인). base=SERVING.ML_DVLP_FORECAST_V. 🔴🔴 **단위는 만원이다** — 원 단위 실적(예산·회비 SV)과 같은 표에 넣으면 만 배 오차가 난다. 🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **계열유형(SERIES_TYPE)을 반드시 고정하거나 그룹에 넣는다** — 유형을 섞어 합하면 같은 개발 활동을 여러 축으로 겹쳐 세어 과대가 된다. 🔴🔴 **유형별 합계는 서로 일치하지 않는다** — 계열마다 독립적으로 예측했기 때문에 전사와 캠페인 합이 다르다(캠페인은 일부 계열) ⇒ 한 유형으로 다른 유형을 검산하지 말고, 「캠페인 합이 전사와 다르다」는 지적에는 이 구조를 설명한다. 🔴 기준월(모델 실행월)과 예측월(TS)은 다른 축이다. ⚠️ 예측치에 음수가 존재한다(감액·해지 반영) — 음수를 오류로 보지 않는다. ⚠️ 캠페인 계열은 원천이 일부 캠페인만 담고 있다(근거 = 20_ML_SV_설계.md). 🔴 부서·후원사업·신규기존 예측은 원천 테이블 삭제로 제공하지 않는다. 활성: 예측액·신뢰구간·월평균·예측개월수·계열수 · 계열유형/계열/예측월 축. 비활성: 본부·지부 분해(조직 계층 산출규칙 미확정) · 부서/후원사업/신규기존 분해(원천 삭제) · 실적 대비 정확도(실적 조인 미배선) · 유형 간 정합 검산(원천이 보장하지 않는다).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **SERIES_TYPE 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 넣지 않으면 전사와 캠페인을 겹쳐 세어 합계가 과대가 된다. 질문이 「전사/전체 개발 예측」이면 SERIES_TYPE=''TOTAL'' 로 고정한다. 「캠페인별」이면 ''CAMPAIGN'' 이다. 🔴 「부서별·후원사업별·신규/기존별 개발 예측」을 물으면 SQL을 만들지 말고, 해당 예측은 원천 삭제로 현재 제공하지 않는다고 답한다. 전사 또는 캠페인 예측을 대안으로 안내하되 이를 부서 값처럼 나눠 계산하지 않는다. (2) 🔴🔴 **단위는 만원이다.** 답변에 항상 단위를 밝히고, 원으로 환산하면 환산했다고 명시한다. 예산·회비 등 원 단위 지표와 같은 표에 합산하지 않는다. (3) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 그 기준월을 밝힌다. (4) 🔴 **기준월과 예측월(TS)을 혼동하지 않는다** — 「향후 12개월 예측」은 하나의 기준월에 속한 TS 12개다. 연도말 전망을 물으면 해당 연도에 속한 TS 만 합산하고 기준월을 밝힌다. (5) 🔴 **예측치임을 답변에 밝힌다** — 실적으로 읽히는 표현(「개발액은 …이다」)을 쓰지 않고 「예측치는 …」으로 쓴다. 테스트 단계임도 함께 밝힌다. (6) **음수 예측치를 오류로 처리하거나 0 으로 바꾸지 않는다** — 감액·해지가 반영된 값이다. (7) **신뢰구간을 별개 수치로 나열하지 않는다** — 예측치와 함께 구간으로 제시한다. (8) 🔴 **유형 간 검산을 시도하지 않는다** — 캠페인 합은 전사 예측과 일치하지 않는다(계열별 독립 예측 · 캠페인은 일부 계열). 사용자가 불일치를 지적하면 원천이 정합을 보장하지 않는 구조라고 설명하고, 임의로 비례배분해 맞추지 않는다. 캠페인 계열은 일부 캠페인만 예측 대상임도 밝힌다. (9) 적용 조건(기준월·계열유형 모두 미지정 시): 최신 기준월 + SERIES_TYPE=''TOTAL'' 로 한정해 예측월별 예측액과 신뢰구간을 반환하고, 다른 분해축이 있음을 안내한다.'
   AI_VERIFIED_QUERIES (
     vqr_total_forecast_by_month AS (
       QUESTION '최신 기준월 전사 개발금액 예측(예측월별)'
       VERIFIED_BY '(DW = O190)'
-      SQL 'SELECT df.TS, SUM(df.FORECAST) AS FORECAST_AMT FROM df WHERE df.SERIES_TYPE = ''TOTAL'' AND df.STDR_MT = (SELECT MAX(df.STDR_MT) FROM df) GROUP BY df.TS ORDER BY df.TS'
+      SQL 'SELECT TS AS "예측월", FORECAST_AMT AS "개발금액 예측(원)" FROM (SELECT df.TS, SUM(df.FORECAST) AS FORECAST_AMT FROM df WHERE df.SERIES_TYPE = ''TOTAL'' AND df.STDR_MT = (SELECT MAX(df.STDR_MT) FROM df) GROUP BY df.TS ORDER BY df.TS) ORDER BY TS'
     )
   );
 
@@ -278,7 +352,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST
   )
   COMMENT = 'ML 캠페인카테고리별 회비 예측 SV. base=SERVING.ML_FEE_FORECAST_V. 🔴🔴 예측치이며 실적이 아니다 — 회비 실적은 SV_MEMBER_FEE 소관이고 이 SV 와 같은 표에 합산하지 않는다. 🔴🔴 **단위는 원이다** — 개발금액 예측 SV(만원)와 단위가 다르다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴 기준월(모델 실행월)과 예측월은 다른 축이며 여러 기준월 합산은 중복계상이다. ⚠️ 캠페인카테고리 일부는 원천 마스터에 이름이 없어 라벨이 NULL 이다. ⚠️ 예측 대상 카테고리가 전체 카테고리와 같다고 단정하지 않는다. 활성: 예측 회비·신뢰구간·월평균·예측개월수·카테고리수 · 카테고리/예측월 축. 비활성: 캠페인 단위 분해(원천 grain 이 카테고리) · 실적 대비 정확도.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **단위는 원이다.** 개발금액 예측(SV_ML_DVLP_FORECAST · 만원)과 같은 표에 합산하지 않는다. 두 예측을 함께 물으면 표를 나누고 각 단위를 밝힌다. (2) 🔴🔴 **예측과 실적을 합산하지 않는다** — 회비 실적은 SV_MEMBER_FEE 다. 실적과 예측을 함께 보여줄 때는 표를 분리하고 각각을 명시한다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **기준월과 예측월을 혼동하지 않는다.** 연도 전망은 해당 연도의 예측월만 합산한다. (5) 🔴 **예측치임과 테스트 단계임을 밝힌다.** (6) **라벨이 NULL 인 카테고리를 숨기거나 이름을 추정하지 않는다** — 코드로 표기하고 원천에 이름이 없다고 밝힌다. (7) **신뢰구간은 예측치와 함께 구간으로 제시한다.** (8) 적용 조건(기준월·그룹 미지정 시): 최신 기준월로 한정해 예측월별 합계와 신뢰구간을 반환하고, 카테고리별 분해가 가능함을 안내한다.';
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST TO ROLE GN_DW_ANALYST;
@@ -334,13 +408,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_LTV_FORECAST
   )
   COMMENT = 'ML LTV 월별 예측 SV(2종). base=SERVING.ML_LTV_FORECAST_V. 🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **LTV_TYPE 을 반드시 하나로 고정한다** — ''MKTG_CHANNEL_AVG_MEMBER''는 마케팅채널의 **회원 1인당 평균 후원금액** 예측이고 ''CMPGN_TOTAL''은 캠페인의 **월간 후원금액 총액** 예측이다. 두 유형은 의미·자리수·계열 축이 달라 합산·순위 비교를 함께 하면 반드시 틀린다. ⚠️ **원천 표기와 데이터가 다르다** — 원천은 두 테이블 모두 계열 컬럼을 MKTG_CHANNEL(채널)로 이름 붙였으나 CMPGN_TOTAL 쪽 값은 캠페인코드다 ⇒ 「채널별」 질문은 MKTG_CHANNEL_AVG_MEMBER 로, 「캠페인별 후원금액 예측」은 CMPGN_TOTAL 로 답한다(원천 확인 중). 🔴 회원평균 유형을 합산하지 않는다. 활성: 예측 평균/합계·신뢰구간·예측개월수·계열수 · LTV유형/계열/예측월 축. 비활성: 회원 단위 LTV(원천 grain 이 계열) · 계열당 LTV 스코어(원천 폐기) · 실적 대비 정확도.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **LTV_TYPE 을 WHERE 로 하나 고정한다.** 두 유형을 한 표에 섞지 않는다 — 하나는 1인당 평균, 하나는 총액이며 계열 축이 다르다. 「채널별/마케팅채널별 (회원평균) 후원금액·LTV」는 ''MKTG_CHANNEL_AVG_MEMBER'', 「캠페인별 후원금액 예측」은 ''CMPGN_TOTAL'' 이다. 어느 쪽인지 불분명하면 사용자에게 확인하거나 두 표로 나눠 각 정의를 밝힌다. (2) 🔴🔴 **회원평균 유형에서 TOTAL_FORECAST_LTV(합계)를 쓰지 않는다** — 1인당 평균을 더한 값은 의미가 없다. 그 유형에서는 AVG_FORECAST_LTV 를 쓴다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **예측치임과 테스트 단계임을 밝힌다.** (5) **단위는 원이다.** 개발금액 예측(만원)과 합산하지 않는다. (6) 🔴 **「LTV 스코어·과거 누적 LTV·상위캠페인 LTV」를 물으면 SQL 을 만들지 않는다** — 원천 폐기로 제공하지 않는다고 답하고 이 SV 의 월별 예측을 대안으로 안내한다. (7) 적용 조건(기준월·유형 미지정 시): 최신 기준월 + LTV_TYPE=''MKTG_CHANNEL_AVG_MEMBER'' 로 한정해 계열별 평균 예측 상위를 반환하고, 다른 유형이 있음을 안내한다.'
   AI_VERIFIED_QUERIES (
     vqr_o198_top_channel_avg AS (
       QUESTION '마케팅채널별 회원평균 후원금액 예측 상위 10(최신 기준월)'
       VERIFIED_BY '(DW = O198)'
-      SQL 'SELECT lf.SERIES_NAME, AVG(lf.FORECAST) AS AVG_FORECAST_LTV FROM lf WHERE lf.LTV_TYPE = ''MKTG_CHANNEL_AVG_MEMBER'' AND lf.STDR_MT = (SELECT MAX(lf.STDR_MT) FROM lf) GROUP BY lf.SERIES_NAME ORDER BY AVG_FORECAST_LTV DESC NULLS LAST LIMIT 10'
+      SQL 'SELECT SERIES_NAME AS "마케팅채널", ROUND(AVG_FORECAST_LTV, 2)::NUMBER(38,2) AS "회원평균 후원금액 예측(원)" FROM (SELECT lf.SERIES_NAME, AVG(lf.FORECAST) AS AVG_FORECAST_LTV FROM lf WHERE lf.LTV_TYPE = ''MKTG_CHANNEL_AVG_MEMBER'' AND lf.STDR_MT = (SELECT MAX(lf.STDR_MT) FROM lf) GROUP BY lf.SERIES_NAME ORDER BY AVG_FORECAST_LTV DESC NULLS LAST LIMIT 10) ORDER BY AVG_FORECAST_LTV DESC NULLS LAST'
     )
   );
 
@@ -396,7 +470,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE
   )
   COMMENT = 'ML 요인분석(피처 중요도) SV(2종). base=SERVING.ML_FEATURE_IMPORTANCE_V. 🔴🔴 **이 SV 는 모델을 설명하는 것이고 업무 실적을 측정하는 것이 아니다** — 값은 0~1 기여도이며 금액·건수·회원수가 아니다. 다른 SV 의 measure 와 같은 표에 넣으면 업무 수치로 오독된다. 🔴 머신러닝은 테스트 단계이며 모델·피처가 교체될 수 있다. 🔴🔴 **ANALYSIS_TYPE 을 반드시 하나로 고정한다** — 유형 내 기여도 합계가 1 이므로 섞으면 합계가 1 을 넘는다. 🔴🔴 **피처 목록은 사람이 지정한 것이다**(피처 유형 ''user_provided'' · CHANNEL_NEW_SPNSR 는 원천에서 유형 컬럼이 제거돼 NULL 이나 같은 방식의 지정 후보로 본다 — 원천 확인 대상) ⇒ 「데이터 분석으로 발견한 요인」이라 답하지 않고 「지정된 후보 요인 중 모델이 매긴 상대 중요도」로 답한다. 🔴 **기여도는 인과가 아니다** — 「이 요인을 늘리면 신규 후원이 늘어난다」는 결론을 내지 않는다. 활성: 기여도 합계/평균/최대·피처수 · 분석유형/피처/순위/피처유형 축. 비활성: 인과 효과 크기 · 요인별 금액 환산.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **ANALYSIS_TYPE 을 하나 고정한다** — 유형 내 기여도 합계가 1 이므로 두 유형을 섞으면 합계가 1 을 넘고 순위도 뒤섞인다. (2) 🔴🔴 **이 값을 업무 수치로 답하지 않는다** — 금액·건수·회원수가 아니라 모델 기여도(0~1)다. 다른 SV 의 measure 와 같은 표에 넣지 않는다. (3) 🔴🔴 **인과로 답하지 않는다** — 「A 를 늘리면 신규 후원이 늘어난다」가 아니라 「모델이 A 에 가장 큰 상대 중요도를 부여했다」로 표현한다. (4) 🔴 **피처 목록이 사람이 지정한 후보라는 사실을 밝힌다**(피처 유형=user_provided · CHANNEL_NEW_SPNSR 는 NULL) — 「데이터가 찾아낸 요인」이라 하지 않는다. 지정되지 않은 요인은 애초에 후보가 아니었으므로 「중요하지 않다」고 말할 수 없다. (5) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (6) **상위 요인은 RANK 로 정렬한다.** (7) **답변에 모델 설명이며 테스트 단계임을 밝힌다.** (8) 적용 조건(기준월·유형 미지정 시): 최신 기준월 + 사용자가 언급한 주제에 맞는 분석유형 하나로 한정해 RANK 순 상위 요인과 기여도를 반환하고, 다른 분석유형이 있음을 안내한다.';
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEATURE_IMPORTANCE TO ROLE GN_DW_ANALYST;
@@ -452,13 +526,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION
   )
   COMMENT = 'ML 일시후원회원 정기후원 전환 예측 SV. base=SERVING.ML_ONCE_CONVERSION_V. 🔴🔴 원천이 같은 기준월에 회원당 **여러 개의 서로 다른 예측행**을 담고 있다 — 원천에 **실행 시각·실행순번 컬럼이 없어 어느 행이 최신인지 판별할 수 없다**(현업 결정 45 의 「최신만 남기고 실행순번 추가」는 집행 불가 ⇒ **현행 유지로 확정** · #1). 따라서 행 수 기반 수치와 **확률 평균은 여러 실행이 섞인 값**이다 — 회원 수는 반드시 중복제거 지표로 답하고 그 사실을 밝힌다. 🔴🔴 예측치이며 실적이 아니다 — 실제 정기 전환 실적과 같은 표에 합산하지 않는다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴 **STDR_MT 는 모델 실행 기준월이다**. 관측월·가입월·가입경과월 축은 없다. 기준월 미지정 시 최신 기준월 하나로 한정한다. 🔴 예측 지평(몇 개월 안에 전환)을 숫자로 발행하지 않는다 — 원천 테이블 설명은 6개월이나 원천 프로시저가 인도되지 않아 정의를 확인할 수 없다. 🔴 일시회원번호는 정기회원번호와 체계가 달라 다른 회원 SV 와 조인하지 않는다. 🔴 업무 판정선은 미확정이다. 활성: 예측 대상 일시회원수·모델 전환분류 회원수·전환확률 평균/최대 · 기준월/판정 축 · 성별·회원구분·등록부서(현재 마스터 스냅샷). 비활성: 가입월·관측월·가입경과월 축(원천 교체로 폐기) · 실제 전환 실적 대비 정확도 · 가입경로 축 · 전환 후 약정금액.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 🔴🔴 **예측과 실적을 한 표에 합산하지 않는다.** (2) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월(MAX(STDR_MT)) 하나로 한정하고 그 기준월을 밝힌다. (3) 🔴🔴 **회원수는 PREDICTED_ONCE_MEMBERS·MODEL_CONVERT_MEMBERS(중복제거)를 쓴다** — 원천에 회원당 여러 예측행이 있어 COUNT(*) 는 과대다. (4) 🔴 **가입월·관측월·가입 후 경과월별 분해를 물으면 SQL 을 만들지 않는다** — 원천 구조 교체로 해당 축이 없다고 답하고, 성별·회원구분·등록부서별 분해를 대안으로 안내한다. (5) 🔴 **「전환할 회원」이라 단정하지 않는다** — 「모델이 전환으로 분류한 회원」으로 표현하고, 사용자가 확률 기준을 지정하면 그 기준을 밝힌다. (6) 🔴 **예측 지평(몇 개월 안에)을 숫자로 답하지 않는다.** (7) **확률은 평균·최대만 쓴다.** 평균은 다중 예측행이 섞인 값임을 밝힌다. (8) **비율의 분모는 PREDICTED_ONCE_MEMBERS 이며 전체 일시후원회원이 아님을 밝힌다.** (9) **답변에 예측치임과 테스트 단계임을 밝힌다.** (10) 적용 조건(기간·그룹 미지정 시): 최신 기준월로 한정해 예측 대상 일시회원수·모델 전환분류 회원수·평균 전환확률을 반환하고, 회원구분·등록부서별 분해가 가능함을 안내한다. (11) 🔴 metric 이름(MODEL_CONVERT_MEMBERS·PREDICTED_ONCE_MEMBERS·AVG_CONVERT_PROB)을 oc 컬럼처럼 참조하지 않는다 — 정의식(COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = ''1'' THEN oc.ONCE_MBER_NO END) 등)으로 집계한다.'
   AI_VERIFIED_QUERIES (
     vqr_o198_once_member_div AS (
       QUESTION '회원구분별 모델 전환분류 회원수와 예측 대상 일시회원수, 평균 전환확률(최신 기준월)'
       VERIFIED_BY '(DW = O198)'
-      SQL 'SELECT oc.MEMBER_DIV_NAME, COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = ''1'' THEN oc.ONCE_MBER_NO END) AS MODEL_CONVERT_MEMBERS, COUNT(DISTINCT oc.ONCE_MBER_NO) AS PREDICTED_ONCE_MEMBERS, AVG(oc.CONVERT_PROB) AS AVG_CONVERT_PROB FROM oc WHERE oc.STDR_MT = (SELECT MAX(oc.STDR_MT) FROM oc) GROUP BY oc.MEMBER_DIV_NAME ORDER BY PREDICTED_ONCE_MEMBERS DESC'
+      SQL 'SELECT MEMBER_DIV_NAME AS "회원구분", MODEL_CONVERT_MEMBERS AS "모델 전환분류 회원수(명)", PREDICTED_ONCE_MEMBERS AS "예측 대상 일시회원수(명)", ROUND(AVG_CONVERT_PROB, 2)::NUMBER(38,2) AS "평균 전환확률" FROM (SELECT oc.MEMBER_DIV_NAME, COUNT(DISTINCT CASE WHEN oc.CONVERT_CLASS = ''1'' THEN oc.ONCE_MBER_NO END) AS MODEL_CONVERT_MEMBERS, COUNT(DISTINCT oc.ONCE_MBER_NO) AS PREDICTED_ONCE_MEMBERS, AVG(oc.CONVERT_PROB) AS AVG_CONVERT_PROB FROM oc WHERE oc.STDR_MT = (SELECT MAX(oc.STDR_MT) FROM oc) GROUP BY oc.MEMBER_DIV_NAME ORDER BY PREDICTED_ONCE_MEMBERS DESC) ORDER BY PREDICTED_ONCE_MEMBERS DESC'
     )
   );
 

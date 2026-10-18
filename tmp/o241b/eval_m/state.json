@@ -1,0 +1,1177 @@
+{
+ "smoke": [
+  {
+   "id": "S1",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 선물금참여(원)",
+   "sec": 36.3,
+   "tools": [
+    "analyst_service",
+    "analyst_relation_activity",
+    "system_execute_sql"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": false,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S2",
+   "agent": "AGENT_MARKETING",
+   "q": "2026년 9월 GA 평균세션시간",
+   "sec": 28.7,
+   "tools": [
+    "analyst_ga_session",
+    "system_execute_sql"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": false,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S3",
+   "agent": "AGENT_MEMBER",
+   "q": "연도별 결연아동코드 수",
+   "sec": 40.3,
+   "tools": [
+    "system_execute_sql",
+    "analyst_ga_child_unpaid",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S4",
+   "agent": "AGENT_MEMBER",
+   "q": "클릭월별 미납서비스 전환율",
+   "sec": 30.3,
+   "tools": [
+    "system_execute_sql",
+    "server_skill",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": false,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": true,
+   "F3_decimal": false,
+   "F4_one_summary": true,
+   "F5_kor_header": false
+  },
+  {
+   "id": "S5",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 중단 고위험 회원을 연령대별로 보여줘",
+   "sec": 53.3,
+   "tools": [
+    "analyst_ml_member_risk",
+    "system_execute_sql",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": false,
+   "provisional": false,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": false,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S6",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 후원건 이탈 고위험 회원 수를 납입방식별로",
+   "sec": 71.5,
+   "tools": [
+    "analyst_ml_sponsor_risk",
+    "system_execute_sql",
+    "server_skill",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  }
+ ],
+ "eval_started": true,
+ "score": {
+  "AGENT_EXECUTIVE": {
+   "tool_selection_accuracy": [
+    0.9762,
+    21,
+    0
+   ],
+   "answer_correctness": [
+    1.0,
+    21,
+    0
+   ],
+   "logical_consistency": [
+    0.9529,
+    21,
+    0
+   ],
+   "tool_execution_accuracy": [
+    0.8048,
+    21,
+    0
+   ],
+   "per_q": [
+    [
+     "D1",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "D1",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "D1",
+     "tool_execution_accuracy",
+     0.8
+    ],
+    [
+     "D1",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "D2",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "D2",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "D2",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "D2",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "D4",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "D4",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "D4",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "D4",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "D5",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "D5",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "D5",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "D5",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "M1",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "M1",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "M1",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "M1",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "M3",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "M3",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "M3",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "M3",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q03",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q03",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q03",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q03",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q04",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q04",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q04",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q04",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q05",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q05",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q05",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q05",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q06",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q06",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q06",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q06",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q07",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q07",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q07",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q07",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q10",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q10",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q10",
+     "tool_execution_accuracy",
+     0.9
+    ],
+    [
+     "Q10",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q11",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q11",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q11",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "Q11",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q12",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q12",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q12",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "Q12",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q13",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q13",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q13",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q13",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q14",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q14",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q14",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q14",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q15",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q15",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q15",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "Q15",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q16",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q16",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q16",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "Q16",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q18",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q18",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q18",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q18",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "X1",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "X1",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "X1",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "X1",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "X2",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "X2",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "X2",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "X2",
+     "tool_selection_accuracy",
+     1.0
+    ]
+   ]
+  },
+  "AGENT_MEMBER": {
+   "tool_execution_accuracy": [
+    0.4938,
+    13,
+    0
+   ],
+   "tool_selection_accuracy": [
+    0.4792,
+    13,
+    0
+   ],
+   "answer_correctness": [
+    0.8715,
+    13,
+    0
+   ],
+   "logical_consistency": [
+    0.7192,
+    13,
+    0
+   ],
+   "per_q": [
+    [
+     "D3",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "D3",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "D3",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "D3",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q01",
+     "answer_correctness",
+     0.67
+    ],
+    [
+     "Q01",
+     "logical_consistency",
+     0.33
+    ],
+    [
+     "Q01",
+     "tool_execution_accuracy",
+     0.0
+    ],
+    [
+     "Q01",
+     "tool_selection_accuracy",
+     0.0
+    ],
+    [
+     "Q02",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q02",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q02",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q02",
+     "tool_selection_accuracy",
+     0.33
+    ],
+    [
+     "Q08",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q08",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q08",
+     "tool_execution_accuracy",
+     0.25
+    ],
+    [
+     "Q08",
+     "tool_selection_accuracy",
+     0.2
+    ],
+    [
+     "Q09",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q09",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q09",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q09",
+     "tool_selection_accuracy",
+     0.33
+    ],
+    [
+     "Q28",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q28",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q28",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q28",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "Q32",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q32",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q32",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q32",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "R10",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "R10",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "R10",
+     "tool_execution_accuracy",
+     0.7
+    ],
+    [
+     "R10",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "R11",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "R11",
+     "logical_consistency",
+     0.33
+    ],
+    [
+     "R11",
+     "tool_execution_accuracy",
+     0.35
+    ],
+    [
+     "R11",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "R12",
+     "answer_correctness",
+     0.33
+    ],
+    [
+     "R12",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "R12",
+     "tool_execution_accuracy",
+     0.0
+    ],
+    [
+     "R12",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "R13",
+     "answer_correctness",
+     0.33
+    ],
+    [
+     "R13",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "R13",
+     "tool_execution_accuracy",
+     0.75
+    ],
+    [
+     "R13",
+     "tool_selection_accuracy",
+     0.67
+    ],
+    [
+     "R14",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "R14",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "R14",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "R14",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "R15",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "R15",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "R15",
+     "tool_execution_accuracy",
+     0.17
+    ],
+    [
+     "R15",
+     "tool_selection_accuracy",
+     0.2
+    ]
+   ]
+  },
+  "AGENT_MARKETING": {
+   "logical_consistency": [
+    0.905,
+    14,
+    0
+   ],
+   "tool_selection_accuracy": [
+    0.9107,
+    14,
+    0
+   ],
+   "answer_correctness": [
+    0.9764,
+    14,
+    0
+   ],
+   "tool_execution_accuracy": [
+    0.9643,
+    14,
+    0
+   ],
+   "per_q": [
+    [
+     "Q17",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q17",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q17",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q17",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q19",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q19",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q19",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q19",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q20",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q20",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q20",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q20",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q21",
+     "answer_correctness",
+     0.67
+    ],
+    [
+     "Q21",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q21",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q21",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q22",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q22",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q22",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q22",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q23",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q23",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q23",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q23",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q24",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q24",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q24",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q24",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q25",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q25",
+     "logical_consistency",
+     0.33
+    ],
+    [
+     "Q25",
+     "tool_execution_accuracy",
+     0.5
+    ],
+    [
+     "Q25",
+     "tool_selection_accuracy",
+     0.25
+    ],
+    [
+     "Q26",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q26",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q26",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q26",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q27",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q27",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q27",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q27",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q29",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q29",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q29",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q29",
+     "tool_selection_accuracy",
+     0.5
+    ],
+    [
+     "Q30",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q30",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q30",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q30",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q31",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q31",
+     "logical_consistency",
+     0.67
+    ],
+    [
+     "Q31",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q31",
+     "tool_selection_accuracy",
+     1.0
+    ],
+    [
+     "Q33",
+     "answer_correctness",
+     1.0
+    ],
+    [
+     "Q33",
+     "logical_consistency",
+     1.0
+    ],
+    [
+     "Q33",
+     "tool_execution_accuracy",
+     1.0
+    ],
+    [
+     "Q33",
+     "tool_selection_accuracy",
+     1.0
+    ]
+   ]
+  }
+ }
+}

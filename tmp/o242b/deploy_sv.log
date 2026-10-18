@@ -1,0 +1,21 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+OK 21_ML_SERVING_뷰_DDL.sql 42
+OK 05_02_SV_DDL_MEMBER_EVENT.sql 9
+OK 05_03_SV_DDL_MEMBER_COHORT.sql 13
+OK 05_04_SV_DDL_SERVICE.sql 9
+OK 05_05_SV_DDL_EVENT_PARTICIPATION.sql 7
+OK 05_06_SV_DDL_BUDGET.sql 7
+OK 05_07_SV_DDL_AD.sql 14
+OK 05_08_SV_DDL_DEV_ACHIEVEMENT.sql 15
+OK 05_09_SV_DDL_MEMBER_FEE.sql 14
+OK 05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql 13
+OK 05_12_SV_DDL_RELATION_ACTIVITY.sql 7
+OK 05_15_SV_DDL_GA_BEHAVIOR.sql 9
+OK 05_16_SV_DDL_BUDGET_YEARLY.sql 9
+OK 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql 9
+OK 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql 9
+OK 05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql 9
+OK 05_25_SV_DDL_CAMPAIGN_MONTHLY.sql 9
+OK 22_ML_SV_DDL.sql 31
+OK 25_ML_CHURN_CMPGN_CTGR_DDL.sql 8

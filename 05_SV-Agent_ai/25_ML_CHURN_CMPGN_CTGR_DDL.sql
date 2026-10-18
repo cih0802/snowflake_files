@@ -6,8 +6,8 @@
 --     원인 = Analyst 도구는 SV 1개 안에서만 SQL 을 만든다 · 회원 단위 예측(SV_ML_MEMBER_RISK)에 캠페인 축이 없다.
 --     MKT 는 같은 class 를 사전 결합 SV(23_ · SV_ML_INC_CAMPAIGN · 증액)로 풀었다 ⇒ 같은 패턴을 중단 예측에 적용한다.
 --   · grain = 기준월 × 회원 × 캠페인카테고리(그 기준월 말 활동 중인 후원약정의 카테고리 · 회원당 여러 행 가능).
---   · 구성 = USE → 뷰 → SV → GRANT → 스모크. 파일 단독 실행 가능.
---   · 의존 = SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V(21_) · GOLD.FACT_MEMBER_SPONSORSHIP_SPAN
+--   · 구성 = USE → SV → GRANT → 스모크(🆕 O242-B 뷰 정의는 21 로 이동 · 21 을 먼저 실행).
+--   · 의존 = SERVING.ML_CHURN_BY_CMPGN_CTGR_V · ML_MEMBER_ATTR_ASOF_V(21_ · 둘 다)
 --   · 롤백 = DROP SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN; DROP VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V;
 -- Co-authored with CoCo
 -- ============================================================================
@@ -15,70 +15,21 @@ USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
 
--- 활동 판정(결정적): 기준월(YYYYMM) 말 기준 START_MONTH_KEY <= 기준월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 기준월).
---   기준월 집합 = 두 ML 뷰의 기준월 합집합. 카테고리 = 약정의 대표캠페인 카테고리(ACQ_CMPGN_CTGR_NM · 적재 시점 동결값).
---   회원 단위 예측이 없는 회원은 MEMBER_* 가 NULL 이고 HAS_MEMBER_PRED = FALSE 다(R2-7 · 값 창작 금지).
-CREATE OR REPLACE VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V (
-    STDR_MT                COMMENT '모델 실행 기준월(YYYYMM) = 활동 판정 기준월',
-    MBER_NO                COMMENT '회원번호',
-    CMPGN_CTGR_NM          COMMENT '기준월 말 활동 중인 후원약정의 캠페인카테고리(MM294 · 적재 시점 동결값). NULL = 약정 대표캠페인에 카테고리 값이 없음',
-    ACTIVE_SPNSR_CNT       COMMENT '그 회원이 이 카테고리로 기준월 말 활동 중인 약정 수(건)',
-    HAS_MEMBER_PRED        COMMENT 'TRUE = 회원 단위 중단 예측(ML_MEMBER_RISK_V) 대상 회원',
-    MEMBER_CHURN_PROB      COMMENT '회원 단위 중단확률(0~1). NULL = 회원 단위 예측 대상 아님',
-    MEMBER_CHURN_CLASS     COMMENT '회원 단위 모델 판정 0/1. NULL = 회원 단위 예측 대상 아님',
-    MEMBER_CHURN_GRADE     COMMENT '회원 단위 중단위험 등급(고위험/주의/일반 · 기준월 내 순위 구간). NULL = 회원 단위 예측 대상 아님',
-    HAS_SPONSOR_PRED       COMMENT 'TRUE = 이 카테고리 후원건이 후원건 단위 이탈 예측(ML_SPONSOR_RISK_V) 대상',
-    SPONSOR_MAX_CHURN_PROB COMMENT '이 카테고리 후원건 이탈확률 최댓값(0~1). NULL = 후원건 예측 대상 아님',
-    SPONSOR_HIGH_CNT       COMMENT '이 카테고리 후원건 중 이탈위험 등급 고위험 건수(건). 0 = 고위험 후원건 없음 · NULL = 후원건 예측 대상 아님',
-    SPONSOR_CHURN_GRADE    COMMENT '이 카테고리 후원건 중 가장 높은 이탈위험 등급(고위험 > 주의 > 일반). NULL = 후원건 예측 대상 아님'
-)
-  COMMENT = 'ML 중단 예측(회원 단위 + 후원건 단위) × 기준월 말 활동 후원 캠페인카테고리. [Grain: 기준월 × 회원 × 캠페인카테고리]. [주의: 회원당 여러 카테고리 행 · 회원수는 중복제거 · 예측치이며 실적이 아니다]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
-AS
-WITH mt AS (
-    SELECT DISTINCT STDR_MT FROM GN_DW.SERVING.ML_MEMBER_RISK_V
-    UNION
-    SELECT DISTINCT STDR_MT FROM GN_DW.SERVING.ML_SPONSOR_RISK_V
-),
-act AS (
-    SELECT mt.STDR_MT, f.MEMBER_DK AS MBER_NO, f.ACQ_CMPGN_CTGR_NM AS CMPGN_CTGR_NM, COUNT(*) AS ACTIVE_SPNSR_CNT
-    FROM mt
-    JOIN GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN f
-      ON f.START_MONTH_KEY <= TO_NUMBER(mt.STDR_MT)
-     AND (f.DSCNTC_MONTH_KEY IS NULL OR f.DSCNTC_MONTH_KEY > TO_NUMBER(mt.STDR_MT))
-    GROUP BY 1, 2, 3
-),
-sp AS (
-    SELECT STDR_MT, MBER_NO, CMPGN_CTGR_NAME AS CMPGN_CTGR_NM,
-           MAX(CHURN_PROB) AS SPONSOR_MAX_CHURN_PROB,
-           COUNT_IF(CHURN_GRADE = '고위험') AS SPONSOR_HIGH_CNT,
-           CASE MAX(CASE CHURN_GRADE WHEN '고위험' THEN 3 WHEN '주의' THEN 2 WHEN '일반' THEN 1 END)
-                WHEN 3 THEN '고위험' WHEN 2 THEN '주의' WHEN 1 THEN '일반' END AS SPONSOR_CHURN_GRADE
-    FROM GN_DW.SERVING.ML_SPONSOR_RISK_V
-    GROUP BY 1, 2, 3
-)
-SELECT a.STDR_MT,
-       a.MBER_NO,
-       a.CMPGN_CTGR_NM,
-       a.ACTIVE_SPNSR_CNT,
-       (m.MBER_NO IS NOT NULL),
-       m.CHURN_PROB,
-       m.CHURN_CLASS,
-       m.CHURN_GRADE,
-       (s.MBER_NO IS NOT NULL),
-       s.SPONSOR_MAX_CHURN_PROB,
-       s.SPONSOR_HIGH_CNT,
-       s.SPONSOR_CHURN_GRADE
-FROM act a
-LEFT JOIN GN_DW.SERVING.ML_MEMBER_RISK_V m
-  ON m.STDR_MT = a.STDR_MT AND m.MBER_NO = a.MBER_NO AND m.HAS_CHURN_PRED
-LEFT JOIN sp s
-  ON s.STDR_MT = a.STDR_MT AND s.MBER_NO = a.MBER_NO AND s.CMPGN_CTGR_NM = a.CMPGN_CTGR_NM;
+-- [O242-B] ML_CHURN_BY_CMPGN_CTGR_V 정의와 그 GRANT 3줄은 21_ML_SERVING_뷰_DDL.sql 로 옮겼다(문면 무변경 · 신규 구축 순서 의존성).
+--   이 파일은 그 뷰가 이미 있다고 보고 SV 만 만든다 ⇒ 단독 실행 전에 21 을 먼저 실행한다.
 
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
   TABLES (
     cc AS GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V
       WITH SYNONYMS ('중단 예측 캠페인', '캠페인카테고리별 중단 위험 회원', '중단 위험 회원 캠페인 매칭')
-      COMMENT = 'ML 중단 예측을 기준월 말 활동 후원 캠페인카테고리에 미리 결합한 표(base: SERVING.ML_CHURN_BY_CMPGN_CTGR_V). [Grain: 기준월 × 회원 × 캠페인카테고리]. [주의: 회원당 여러 행 · 회원수 중복제거]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
+      COMMENT = 'ML 중단 예측을 기준월 말 활동 후원 캠페인카테고리에 미리 결합한 표(base: SERVING.ML_CHURN_BY_CMPGN_CTGR_V). [Grain: 기준월 × 회원 × 캠페인카테고리]. [주의: 회원당 여러 행 · 회원수 중복제거]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].',
+    ma AS GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V
+      PRIMARY KEY (STDR_MT, MBER_NO)
+      WITH SYNONYMS ('회원 특성', '예측 회원 특성', '기준월 시점 회원 속성')
+      COMMENT = '예측 대상 회원의 기준월 말 시점 특성(성별·연령대·지역·회원상태·회원구분·후원금액대·유지기간대·신규기존·납입방식). grain = 기준월 × 회원. 🔴 모델 피처가 아니다 — 예측 결과를 특성으로 나눠 보는 집계용이다. 미매칭 = (미매칭).'
+  )
+  RELATIONSHIPS (
+    cc_to_member_attr AS cc(STDR_MT, MBER_NO) REFERENCES ma
   )
   DIMENSIONS (
     cc.STDR_MT AS cc.STDR_MT
@@ -107,7 +58,37 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
       COMMENT = '이 카테고리 후원건 중 가장 높은 이탈위험 등급. 실제값 3종: ''고위험''·''주의''·''일반''. NULL = 후원건 예측 대상 아님.',
     cc.ACTIVE_SPNSR_CNT AS cc.ACTIVE_SPNSR_CNT
       WITH SYNONYMS ('활동 약정 수', '후원 중인 약정 수')
-      COMMENT = '그 회원이 이 캠페인카테고리로 기준월 말 활동 중인 약정 수(건). 행마다 이미 집계된 값이다 — 명단에는 이 값을 그대로 쓰고 COUNT 로 다시 세지 않는다.'
+      COMMENT = '그 회원이 이 캠페인카테고리로 기준월 말 활동 중인 약정 수(건). 행마다 이미 집계된 값이다 — 명단에는 이 값을 그대로 쓰고 COUNT 로 다시 세지 않는다.',
+    ma.GENDER_NAME AS ma.GENDER_NAME
+      WITH SYNONYMS ('성별', '남녀')
+      COMMENT = '성별(기준월 말 시점). 🔴 모델 피처가 아니다.',
+    ma.AGE_BAND AS ma.AGE_BAND
+      WITH SYNONYMS ('연령대', '나이대')
+      COMMENT = '연령대(기준월 말 시점). 값에 기업·단체·기타가 섞여 있다 — 개인 연령 분석은 회원구분 개인으로 거른다.',
+    ma.REGION AS ma.REGION
+      WITH SYNONYMS ('지역', '거주지역', '시도')
+      COMMENT = '지역(기준월 말 시점).',
+    ma.MEMBER_STATUS_NAME AS ma.MEMBER_STATUS_NAME
+      WITH SYNONYMS ('회원상태')
+      COMMENT = '회원상태(기준월 말 시점).',
+    ma.MEMBER_TYPE_NAME AS ma.MEMBER_TYPE_NAME
+      WITH SYNONYMS ('회원구분', '법인구분', '개인 기업 단체')
+      COMMENT = '회원구분 = 개인·기업·단체(법인구분 · 기준월 말 시점).',
+    ma.AMOUNT_BAND AS ma.AMOUNT_BAND
+      WITH SYNONYMS ('후원금액대', '금액대')
+      COMMENT = '후원금액대(그 달 회원 월실적 금액대1).',
+    ma.TENURE_BAND AS ma.TENURE_BAND
+      WITH SYNONYMS ('유지기간', '가입기간', '후원기간대')
+      COMMENT = '유지기간대(그 달 회원 월실적 기간대1).',
+    ma.NEW_EXISTING AS ma.NEW_EXISTING
+      WITH SYNONYMS ('신규기존', '신규 기존 구분')
+      COMMENT = '신규/기존(그 달 회원 월실적).',
+    ma.PAYMENT_METHOD_NAME AS ma.PAYMENT_METHOD_NAME
+      WITH SYNONYMS ('납입방식', '결제수단')
+      COMMENT = '납입방식(그 달 청구액이 가장 큰 결제수단 · 잠정).',
+    ma.ATTR_MATCHED AS ma.ATTR_MATCHED
+      WITH SYNONYMS ('특성 매칭 여부')
+      COMMENT = 'TRUE=기준월 시점 회원 이력이 매칭됐다. FALSE 회원은 특성이 (미매칭)이다.'
   )
   METRICS (
     cc.ACTIVE_MEMBERS AS COUNT(DISTINCT cc.MBER_NO)
@@ -127,8 +108,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
       COMMENT = '회원 단위 중단확률 평균(0~1 · 표기는 %로 ×100). 회원당 여러 카테고리 행이 있으면 같은 회원 확률이 중복 반영된다 — 카테고리 하나로 거른 뒤 쓴다.'
   )
   COMMENT = 'ML 중단 예측 × 활동 후원 캠페인카테고리 SV. base=SERVING.ML_CHURN_BY_CMPGN_CTGR_V. [Grain: 기준월 × 회원 × 캠페인카테고리]. 「N월 활동회원 중 중단 가능성 높은 회원 중 ○○캠페인(카테고리) 후원 회원 · 회원번호 명단·수」 질문에 쓴다. [활성 지표: 활동회원수 · 중단 고위험 회원수 · 회원 단위 예측 대상 회원수 · 후원건 고위험 회원수 · 평균 중단확률]. [주의: 머신러닝 예측치이며 실적이 아니다 · 회원 단위 모델은 활동회원 일부만 예측한다 · 회원 단위 등급과 후원건 단위 등급은 서로 다른 모델이다 · 실적 SV 와 같은 표에 합산하지 않는다]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
+  AI_SQL_GENERATION '[O241-M 회원 특성 축] 성별·연령대·지역·회원상태·회원구분(법인구분)·후원금액대·유지기간·신규기존·납입방식으로 나눠 달라는 질문은 ma 테이블 차원으로 GROUP BY 한다(기준월 말 시점 · 모델 피처 아님). 회원수는 반드시 예측 테이블 회원번호의 COUNT(DISTINCT) 로 센다. (미매칭) 행은 따로 밝힌다. [O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
   핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(cc.STDR_MT)) 하나로 한정하고 밝힌다. (2) 「중단 가능성 높은 회원」의 기본 = 회원 단위 등급 cc.MEMBER_CHURN_GRADE = ''고위험''. 질문이 「그 캠페인 후원의 이탈 위험」을 물으면 cc.SPONSOR_HIGH_CNT > 0 을 쓴다 — 어느 기준인지 표 제목에 밝힌다. (3) 캠페인카테고리는 cc.CMPGN_CTGR_NM = ''<값>'' 으로 거른다. (4) 명단 요청 = 회원번호 · 회원 중단확률(%) ROUND(cc.MEMBER_CHURN_PROB*100,2) · 회원 중단위험 등급 · 후원건 이탈위험 등급 · 활동 약정 수 cc.ACTIVE_SPNSR_CNT(값 그대로 · COUNT 금지) 를 회원번호 중복 없이 반환하고 중단확률 내림차순으로 정렬한다. (5) 명단과 함께 같은 기준월·카테고리의 활동회원수 · 회원 단위 예측 대상 회원수 · 고위험 회원수를 분모로 반환한다 — 🔴 분모 집계에는 등급 조건(MEMBER_CHURN_GRADE = ''고위험'')을 WHERE 에 넣지 않고 COUNT(DISTINCT CASE WHEN …) 로만 건다(WHERE 에 넣으면 활동회원수·예측 대상이 고위험 수와 같아지는 오류). 명단 CTE 에만 등급 조건을 둔다. (6) 🔴 실적 SV 와 조인하지 않는다.'
   AI_VERIFIED_QUERIES (
     vqr_o224_korean_high_risk_list AS (
@@ -143,9 +124,6 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
     )
   );
 
-GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_ANALYST;
-GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_VIEWER;
-GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_SERVICE;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN TO ROLE GN_DW_SERVICE;

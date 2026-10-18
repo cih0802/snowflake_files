@@ -1,0 +1,15 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+03:49:10 SMOKE {"id": "S4", "agent": "AGENT_MEMBER", "q": "클릭월별 미납서비스 전환율", "sec": 51.0, "tools": ["system_execute_sql", "data_to_chart"], "errors": [], "vqr_used": false, "kor_cols": true, "vals_ok": true, "F1_no_tag": true, "F2_comma": true, "F3_decimal": true, "F4_one_summary": true, "F5_kor_header": true}
+03:49:39 EVAL START 0 o224_executive_o241s [('Function executed successfully.',)]
+o224_member_o241s [('Function executed successfully.',)]
+o224_marketing_o241s [('Function executed successfully.',)]
+03:49:52 STATUS o224_executive_o241s [('o224_executive_o241s', 'AGENT_EXECUTIVE', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')] | o224_member_o241s [('o224_member_o241s', 'AGENT_MEMBER', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')] | o224_marketing_o241s [('o224_marketing_o241s', 'AGENT_MARKETING', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')]
+03:52:07 STATUS o224_executive_o241s [('o224_executive_o241s', 'AGENT_EXECUTIVE', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')] | o224_member_o241s [('o224_member_o241s', 'AGENT_MEMBER', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')] | o224_marketing_o241s [('o224_marketing_o241s', 'AGENT_MARKETING', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')]
+03:54:21 STATUS o224_executive_o241s [('o224_executive_o241s', 'AGENT_EXECUTIVE', 'Cortex Agent', 'COMPUTATION_IN_PROGRESS', '[]')] | o224_member_o241s [('o224_member_o241s', 'AGENT_MEMBER', 'Cortex Agent', 'INVOCATION_IN_PROGRESS', '[]')] | o224_marketing_o241s [('o224_marketing_o241s', 'AGENT_MARKETING', 'Cortex Agent', 'COMPUTATION_IN_PROGRESS', '[]')]
+03:56:35 STATUS o224_executive_o241s [('o224_executive_o241s', 'AGENT_EXECUTIVE', 'Cortex Agent', 'COMPLETED', '[]')] | o224_member_o241s [('o224_member_o241s', 'AGENT_MEMBER', 'Cortex Agent', 'COMPUTATION_IN_PROGRESS', '[]')] | o224_marketing_o241s [('o224_marketing_o241s', 'AGENT_MARKETING', 'Cortex Agent', 'COMPLETED', '[]')]
+03:58:49 STATUS o224_executive_o241s [('o224_executive_o241s', 'AGENT_EXECUTIVE', 'Cortex Agent', 'COMPLETED', '[]')] | o224_member_o241s [('o224_member_o241s', 'AGENT_MEMBER', 'Cortex Agent', 'COMPLETED', '[]')] | o224_marketing_o241s [('o224_marketing_o241s', 'AGENT_MARKETING', 'Cortex Agent', 'COMPLETED', '[]')]
+03:58:53 SCORE AGENT_EXECUTIVE {"tool_selection_accuracy": [1.0, 21, 0], "logical_consistency": [0.779, 21, 0], "tool_execution_accuracy": [0.8071, 21, 0], "answer_correctness": [0.9843, 21, 0]}
+03:58:57 SCORE AGENT_MEMBER {"tool_selection_accuracy": [0.4362, 13, 0], "tool_execution_accuracy": [0.4785, 13, 0], "logical_consistency": [0.6162, 13, 0], "answer_correctness": [0.8454, 13, 0]}
+03:59:00 SCORE AGENT_MARKETING {"tool_selection_accuracy": [0.875, 14, 0], "answer_correctness": [0.9286, 14, 0], "tool_execution_accuracy": [0.9357, 14, 0], "logical_consistency": [0.8336, 14, 0]}
+03:59:00 ALL DONE

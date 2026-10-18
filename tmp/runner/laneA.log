@@ -1,0 +1,77 @@
+=== [08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql] 17 stmts from 0
+  RESULT 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql:9: [('ALERT created with USING CRON 0 9 * * * Asia/Seoul',)]
+  RESULT 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql:11: [('SKIPPED: no duplicate keys',)]
+OK [08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql]
+=== [05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql]
+=== [05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql]
+=== [05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql] 13 stmts from 0
+OK [05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql]
+=== [05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql]
+=== [05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql] 7 stmts from 0
+OK [05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql]
+=== [05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql] 7 stmts from 0
+OK [05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql]
+=== [05_SV-Agent_ai/05_07_SV_DDL_AD.sql] 14 stmts from 0
+OK [05_SV-Agent_ai/05_07_SV_DDL_AD.sql]
+=== [05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql] 15 stmts from 0
+OK [05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql]
+=== [05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql] 14 stmts from 0
+OK [05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql]
+=== [05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql] 13 stmts from 0
+OK [05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql]
+=== [05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql]
+=== [05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql] 7 stmts from 0
+OK [05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql]
+=== [05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql] 15 stmts from 0
+OK [05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql]
+=== [05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql] 7 stmts from 0
+OK [05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql]
+=== [05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql]
+=== [05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql]
+=== [05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql]
+=== [05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql]
+=== [05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql]
+=== [05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql]
+=== [05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql]
+=== [05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql]
+=== [05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql]
+=== [05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql]
+=== [05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql]
+=== [05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql] 9 stmts from 0
+OK [05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql]
+=== [05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql] 34 stmts from 0
+OK [05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql]
+=== [05_SV-Agent_ai/22_ML_SV_DDL.sql] 31 stmts from 0
+OK [05_SV-Agent_ai/22_ML_SV_DDL.sql]
+=== [05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql] 12 stmts from 0
+OK [05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql]
+=== [05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql] 19 stmts from 0
+OK [05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql]
+=== [05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql] 12 stmts from 0
+OK [05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql]
+=== [05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql] 19 stmts from 0
+OK [05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql]
+=== [05_SV-Agent_ai/09_1_AGENT_생성.sql] 41 stmts from 0
+  RESULT 05_SV-Agent_ai/09_1_AGENT_생성.sql:14: [('OWNER_OK: 전건 GN_DW_ADMIN',)]
+  RESULT 05_SV-Agent_ai/09_1_AGENT_생성.sql:27: [('AGENT_MEMBER=skipped AGENT_EXECUTIVE=skipped AGENT_MARKETING=skipped',)]
+OK [05_SV-Agent_ai/09_1_AGENT_생성.sql]
+=== [05_SV-Agent_ai/09_2_AGENT_버전업.sql] 28 stmts from 0
+  RESULT 05_SV-Agent_ai/09_2_AGENT_버전업.sql:7: [('AGENT_EXECUTIVE', 81472, 81472, datetime.datetime(2026, 10, 16, 17, 3, 48), datetime.datetime(2026, 10, 16, 22, 36, 38), 'OK'), ('AGENT_MARKETING', 105904, 105904, datetime.datetime(2026, 10, 16, 18, 13, 4), datetime.datetime(2026, 10, 16, 22, 36, 39), 'OK'), ('AGENT_MEMBER', 122448, 122448, datetime.datetime(2026, 10, 16, 18, 13, 4), datetime.datetime(2026, 10, 16, 22, 36, 37), 'OK')]
+  RESULT 05_SV-Agent_ai/09_2_AGENT_버전업.sql:12: [('AGENT_MEMBER=no_live AGENT_EXECUTIVE=no_live AGENT_MARKETING=no_live',)]
+OK [05_SV-Agent_ai/09_2_AGENT_버전업.sql]
+ALL DONE

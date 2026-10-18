@@ -1,0 +1,23 @@
+{
+ "smoke": [
+  {
+   "id": "S4",
+   "agent": "AGENT_MEMBER",
+   "q": "클릭월별 미납서비스 전환율",
+   "sec": 36.8,
+   "tools": [
+    "system_execute_sql",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "vqr_used": false,
+   "kor_cols": true,
+   "vals_ok": true,
+   "F1_no_tag": true,
+   "F2_comma": true,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  }
+ ]
+}

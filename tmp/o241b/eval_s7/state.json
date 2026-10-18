@@ -1,0 +1,140 @@
+{
+ "smoke": [
+  {
+   "id": "S1",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 선물금참여(원)",
+   "sec": 31.2,
+   "tools": [
+    "analyst_service",
+    "analyst_relation_activity",
+    "system_execute_sql"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": false,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S2",
+   "agent": "AGENT_MARKETING",
+   "q": "2026년 9월 GA 평균세션시간",
+   "sec": 25.1,
+   "tools": [
+    "analyst_ga_session",
+    "system_execute_sql"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S3",
+   "agent": "AGENT_MEMBER",
+   "q": "연도별 결연아동코드 수",
+   "sec": 39.0,
+   "tools": [
+    "system_execute_sql",
+    "analyst_ga_child_unpaid",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S4",
+   "agent": "AGENT_MEMBER",
+   "q": "클릭월별 미납서비스 전환율",
+   "sec": 55.0,
+   "tools": [
+    "system_execute_sql",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": false,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": true,
+   "F3_decimal": false,
+   "F4_one_summary": true,
+   "F5_kor_header": false
+  },
+  {
+   "id": "S5",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 중단 고위험 회원을 연령대별로 보여줘",
+   "sec": 50.4,
+   "tools": [
+    "analyst_ml_member_risk",
+    "system_execute_sql",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": false,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  },
+  {
+   "id": "S6",
+   "agent": "AGENT_MEMBER",
+   "q": "2026년 9월 후원건 이탈 고위험 회원 수를 납입방식별로",
+   "sec": 56.9,
+   "tools": [
+    "analyst_ml_sponsor_risk",
+    "system_execute_sql",
+    "data_to_chart"
+   ],
+   "errors": [],
+   "tools_ok": true,
+   "vals_ok": true,
+   "ab_both": true,
+   "provisional": true,
+   "no_unanswerable": true,
+   "no_direct_sql": false,
+   "F1_no_tag": true,
+   "F2_comma": false,
+   "F3_decimal": true,
+   "F4_one_summary": true,
+   "F5_kor_header": true
+  }
+ ]
+}

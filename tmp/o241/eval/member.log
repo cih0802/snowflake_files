@@ -1,0 +1,6 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+23:25:19 o224_member_o241 [('o224_member_o241', 'AGENT_MEMBER', 'Cortex Agent', 'COMPUTATION_IN_PROGRESS', '[]')]
+23:27:25 o224_member_o241 [('o224_member_o241', 'AGENT_MEMBER', 'Cortex Agent', 'COMPLETED', '[]')]
+SCORE {"logical_consistency": [0.7454, 13, 0], "tool_selection_accuracy": [0.42, 13, 0], "answer_correctness": [0.8208, 13, 0], "tool_execution_accuracy": [0.5331, 13, 0], "low_ac": [["R12", 0.33, "알림톡 중 장기회원감사서비스(사단)의 25년 및 26년 수신회원의 후원유지기간 및 이벤트 참여횟수를 분석하고 각 연도별로 서비스 효과가 가장 높"], ["R13", 0.33, "발송 서비스 기반 유지율 및 증액율 분석"]]}
+DONE
