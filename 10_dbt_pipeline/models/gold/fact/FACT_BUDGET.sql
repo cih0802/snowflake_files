@@ -30,7 +30,7 @@ with b as (
     from {{ ref('ERP_BUDGET') }}
 ),
 ranked as (
-    -- 🆕 [O240] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 미편성 연도는 연사업)
+    -- 🆕 [O240 · O245 문안 정정] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 편성 데이터가 없는 연도는 연사업)
     select
         *,
         dense_rank() over (partition by BUDGET_YEAR

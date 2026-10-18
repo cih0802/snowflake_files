@@ -1,0 +1,47 @@
+== 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql · lines 1..600 · 2026-10-18T12:44:20.569372
+  OK 01c7cffc-0208-e79d-0005-852e000e0522 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df7f2 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0526 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df7f6 | View ML_MEMBER_RISK_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e052a | View ML_SPONSOR_RISK_V successfully created.
+  OK 01c7cffc-0208-e110-0005-852e000df7fa | View ML_DVLP_FORECAST_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e052e | View ML_FEE_FORECAST_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e0532 | View ML_LTV_FORECAST_V successfully created.
+  OK 01c7cffc-0208-e110-0005-852e000df7fe | View ML_FEATURE_IMPORTANCE_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e0536 | View ML_ONCE_CONVERSION_V successfully created.
+  OK 01c7cffc-0208-e110-0005-852e000df802 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df806 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df80a | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e053a | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e053e | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df80e | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0542 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0546 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e054a | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df812 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e054e | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df816 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0552 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df81a | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0556 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e055a | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df81e | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e055e | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df822 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0562 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df826 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0566 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df82a | Statement executed successfully. 12 objects affected.
+  OK 01c7cffc-0208-e79d-0005-852e000e056a | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df82e | View ML_CHURN_BY_CMPGN_CTGR_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e056e | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df832 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0572 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df836 | View ML_MEMBER_ATTR_ASOF_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e0576 | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df83a | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e057a | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df83e | View ML_CHURN_BY_SPONSORSHIP_V successfully created.
+  OK 01c7cffc-0208-e79d-0005-852e000e057e | Statement executed successfully.
+  OK 01c7cffc-0208-e110-0005-852e000df842 | Statement executed successfully.
+  OK 01c7cffc-0208-e79d-0005-852e000e0582 | Statement executed successfully.

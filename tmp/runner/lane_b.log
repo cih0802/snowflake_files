@@ -1,0 +1,6 @@
+Connecting to Snowflake as TRIALADMIN...
+Total files to process: 1, starting from file index 0
+=== [1/1] [15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql] 11 stmts (from stmt 0) ===
+  [EXEC 6] 202401=OK 202402=OK 202403=OK 202404=OK 202405=OK 202406=OK 202407=OK 202408=OK 202409=OK 202410=OK 202411=OK 202412=OK 202501=OK 202502=OK 202503=OK 202504=OK 202505=OK 202506=OK 202507=OK 202508=OK 
+OK [1/1] [15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql]
+ALL DONE

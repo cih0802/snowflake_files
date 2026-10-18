@@ -1,0 +1,9 @@
+Connecting to Snowflake as TRIALADMIN...
+Total files to process: 2, starting from file index 0
+=== [1/2] [10_dbt_pipeline/02_dbt_parse_compile_build.sql] 16 stmts (from stmt 0) ===
+OK [1/2] [10_dbt_pipeline/02_dbt_parse_compile_build.sql]
+=== [2/2] [08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql] 17 stmts (from stmt 0) ===
+  [EXEC 9] ALERT created with USING CRON 0 9 * * * Asia/Seoul
+  [EXEC 11] SKIPPED: no duplicate keys
+OK [2/2] [08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql]
+ALL DONE

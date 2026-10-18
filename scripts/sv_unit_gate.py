@@ -36,6 +36,9 @@ NOT_RATIO = {
     'CNT_PER_ACTIVE_MEMBER':  '활동회원 1명당 활동(건/명) — O237-A',
     'UNPAID_CNT_EQ':          '미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-A',
     'SPONSORSHIP_UNPAID_CNT': '후원사업 미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-C',
+    # 🆕 [O244] O240 신설 SV_GA_SESSION 평균 2종 — 초/세션이며 percent 가 아니다(O243-B 백로그 · 사용자 결정 = 예외 등재)
+    'AVG_SESSION_DURATION_SEC':   '세션당 평균 세션시간(초/세션) — O240 · O244 등재',
+    'AVG_SESSION_ENGAGEMENT_SEC': '세션당 평균 참여시간(초/세션 · msec÷1000) — O240 · O244 등재',
 }
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')
@@ -222,6 +225,10 @@ NUM_EXEMPT = [
     #   실사고 = `agent_tool_claim_gate` ③ 이 AGENT_MEMBER/analyst_ml_once_conversion 의 「(회원당 1행)」을 위반으로 잡았다.
     #   🔴 「당」 앞에 명사가 붙은 형태만 면제한다 — 「1,234행」 같은 적재량 서술은 여전히 잡힌다.
     (re.compile(r'[가-힣]+당\s*1\s*행'),                 'grain 정의(○○당 1행) — 구조이고 적재량과 무관'),
+    # 🆕 [O244] O241-R 공통 반올림 규칙의 **FLOAT 표시 예시** — 실측 문안 = *"FLOAT 그대로 두면 0.98999… 처럼 보이므로"*
+    #   (SV 36종 CUSTOM_INSTRUCTION AI_SQL_GENERATION · 05_01:214 · 05_07:190). 사용자 결정 = SV 재배포 없이 예외 등재.
+    #   🔴 바로 뒤에 「…/... 처럼 보이」가 올 때만 면제한다 — 서술형 소수 실측치는 계속 잡힌다.
+    (re.compile(r'\d+\.\d+\s*(?:…|\.\.\.)\s*처럼\s*보이'), '반올림 규칙의 FLOAT 표시 예시(0.98999… 처럼 보임) — 실측치가 아니다'),
 ]
 
 

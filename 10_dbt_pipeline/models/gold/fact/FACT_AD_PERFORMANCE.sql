@@ -112,7 +112,7 @@ select
     --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
     --   ⚠️ 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
-    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, vc.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · O232: → 소재 매핑(MKTG) · 🆕 O238: → 영상 상위캠페인코드 → 0
+    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, vc.MKTG_CAMPAIGN_SK, rc.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · O232: → 소재 매핑(MKTG) · 🆕 O238: → 영상 상위캠페인코드 · 🆕 O245: → 재방송 상위캠페인코드 → 0
     {{ gold_meta('AGENCY') }},
     -- 🆕 [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
@@ -135,6 +135,7 @@ select
          when up.MKTG_CAMPAIGN_SK is not null then 'UTM'
          when cm_mk.MKTG_CAMPAIGN_SK is not null then 'CREATIVE_MAP'
          when vc.MKTG_CAMPAIGN_SK is not null then 'UPPER_CODE'
+         when rc.MKTG_CAMPAIGN_SK is not null then 'UPPER_CODE'
           else 'NONE' end         as MKTG_MAP_METHOD,
     iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT,
     -- 🆕 [2026-10-15 O232 · 사용자 확정 추천안] 소재 매핑 3순위 — 이름매칭·UTM 실패 행에만 적용한다(06_DDL 동기 · 맨 끝 append).
@@ -195,3 +196,10 @@ left join {{ ref('DIM_MARKETING_CAMPAIGN') }} cm_mk
 left join video_code_mk vc
        on p.AD_SOURCE_TYPE = 'VIDEO'
       and vc.UPPER_CODE = UPPER(TRIM(v.UPPER_CMPGN_NM))
+-- 🆕 [2026-10-18 O245 · O238 W6] 재방송(특집·재송출) 상위캠페인코드 — 원천 입고 확인(재측정: 방송 165/237 · 재송출 1,722/1,953 채움 ·
+--   CRM 상위캠페인코드 일치 100%). 영상과 같은 규칙 = 마케팅캠페인이 정확히 1개인 코드만(video_code_mk 재사용 · 1:N 78행은 미매핑 유지).
+--   실측 효과 = 재방송 2,190행 중 1,809행 · 광고비 12,211,671,575원 연결. 「캠페인코드」 열(마케팅캠페인명 기대)은 CRM 일치 0 ⇒ 쓰지 않는다.
+left join {{ ref('AGENCY_AD_ROW_REBRDC') }} rb on rb.AD_PERF_DK = p.AD_PERF_DK
+left join video_code_mk rc
+       on p.AD_SOURCE_TYPE = 'REBROADCAST'
+      and rc.UPPER_CODE = UPPER(TRIM(rb.UPPER_CMPGN_CD::VARCHAR))

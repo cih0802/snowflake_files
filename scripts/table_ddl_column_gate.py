@@ -175,13 +175,28 @@ def render_model(cn, path, layer='GOLD'):
         return ''.join(re.sub(r'\{\{-?\s*' + var + r'\s*-?\}\}', lambda _m, v=v: v, body) for v in _lists[name])
 
     s = re.sub(r'\{%-?\s*for\s+([A-Za-z_]\w*)\s+in\s+([A-Za-z_]\w*)\s*-?%\}(.*?)\{%-?\s*endfor\s*-?%\}', _for_list, s, flags=re.DOTALL)
+    # 🆕 [O244] 리스트 `{{ X | join(', ') }}` · `{{ (X + Y) | join(', ') }}` 전개(FACT_UNPAID_SERVICE_CONV 실측).
+    #   🔴 등재되지 않은 이름이 하나라도 있으면 손대지 않는다(leftover 로 실패).
+
+    def _join_list(m):
+        names = [n.strip() for n in m.group(1).strip('() ').split('+')]
+        if not all(n in _lists for n in names):
+            return m.group(0)
+        return m.group(2).join(v for n in names for v in _lists[n])
+
+    s = re.sub(r"\{\{-?\s*(\(?\s*[A-Za-z_]\w*(?:\s*\+\s*[A-Za-z_]\w*)*\s*\)?)\s*\|\s*join\(\s*'([^']*)'\s*\)\s*-?\}\}", _join_list, s)
     # Strip jinja control blocks
     s = re.sub(r'\{%\s*if\s+is_incremental\(\)[^%]*%\}.*?\{%\s*endif\s*%\}', '', s, flags=re.DOTALL)
     s = re.sub(r'\{%-?\s*for\s+[^%]+%-?\}.*?\{%-?\s*endfor\s*%-?\}', "(EVENT_DATE between '20240101' and '20240102')", s, flags=re.DOTALL)
     s = re.sub(r'\{\{\s*\(modules\.datetime.*?\)\.days\s*\+\s*1\s*\}\}', '1000', s)
     s = re.sub(r"\{\{\s*var\(['\"]cal_start['\"]\)\s*\}\}", "2020-01-01", s)
     s = re.sub(r"\{\{\s*var\(['\"]cal_end['\"]\)\s*\}\}", "2030-12-31", s)
-    s = re.sub(r"\{\{\s*gold_meta\('([A-Z0-9_]+)'\)\s*\}\}", lambda m: AUDIT_SQL.format(src=m.group(1)), s)
+    # 🆕 [O244] 단독 `{{ var('k') }}` 범용 치환 — 값 정본 = dbt_project.yml `vars:`(FACT_CAMPAIGN_CUM_STOP
+    #   billing_coverage_start_month 실측). 🔴 vars 에 없는 키는 그대로 둔다 ⇒ 아래 leftover 검사가 실패시킨다.
+    _vs = _dbt_vars()
+    s = re.sub(r"\{\{\s*var\(['\"]([A-Za-z0-9_]+)['\"]\)\s*\}\}",
+               lambda m: str(_vs[m.group(1)]) if m.group(1) in _vs else m.group(0), s)
+    s = re.sub(r"\{\{\s*gold_meta\('([A-Z0-9_+]+)'\)\s*\}\}", lambda m: AUDIT_SQL.format(src=m.group(1)), s)
     s = re.sub(r"\{\{\s*ref\('([A-Za-z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
     s = re.sub(r"\{\{\s*source\('([^']+)',\s*'([^']+)'\)\s*\}\}", lambda m: resolve_source(m.group(1), m.group(2)), s)
     s = re.sub(r"\{\{\s*clean_str\('([^']+)'\)\s*\}\}", lambda m: f"NULLIF(TRIM({m.group(1)}), '')", s)

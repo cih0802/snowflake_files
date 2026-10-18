@@ -121,6 +121,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('월초 미납회원수') COMMENT = '월초(BOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
     fmm.UNPAID_MEMBERS_EOM AS COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END)
       WITH SYNONYMS ('월말 미납회원수', '공42') COMMENT = '월말(EOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
+    -- 🆕 [O243] 공48 직전 연도말 활동회원(명) (사용자 승인 2026-10-18)
+    fmm.YEAR_START_ACTIVE_MEMBERS AS COUNT(DISTINCT CASE WHEN fmm.YEAR_START_ACTIVE_CNT > 0 THEN fmm.MEMBER_DK END)
+      WITH SYNONYMS ('연도초 활동회원수(명)', '직전 연도말 활동회원(명)', '전년말 활동회원수', '공48')
+      COMMENT = '연도초(= 직전 연도말) 활동 후원건이 1건 이상인 회원 고유수(명). D(distinct). 🔴 월 하나를 고정해 쓴다 — 여러 달을 합산하지 않는다. 건 단위는 YEAR_START_ACTIVE_CNT(건)이며 한 회원이 여러 건을 가질 수 있다.',
     fmm.UNPAID_REDUCTION_RATE AS
       (COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_BOM THEN fmm.MEMBER_DK END)
        - COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END))

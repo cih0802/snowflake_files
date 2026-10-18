@@ -105,9 +105,9 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 80(브론즈 64 + SILVER 4 + ML 12)  🆕 [O198] ML 17→12 · SILVER 1→4(예측용 집계 3) · 총계 82→80
---    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
---       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(2) · BRONZE_GA4(2) · BRONZE_GSC(3)
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 81(브론즈 65 + SILVER 4 + ML 12)  🆕 [O198] ML 17→12 · SILVER 1→4(예측용 집계 3) · 총계 82→80 · 🆕 [O244] ERP 2→3 · 총계 80→81
+--    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(3) · BRONZE_GA4(2) · BRONZE_GSC(3)
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
 SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 함
@@ -145,8 +145,8 @@ WHERE table_type = 'BASE TABLE'
                                     'ML_RST_DATA_DVLP_INC_CONTRIBUTION','ML_RST_DATA_ONCE_CONVERSION')) )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 2 · GA4 2 · GSC 3 · ML 12 · SILVER 4 = 80)  🆕 [O198]
---   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-10-02 현행 = 브론즈 64 · CRM 53 · SILVER 4 · ML 12 · 총계 80)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 3 · GA4 2 · GSC 3 · ML 12 · SILVER 4 = 81)  🆕 [O198]
+--   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
 SELECT table_schema,
        COUNT(*)       AS tables,z`
        SUM(row_count) AS total_rows,

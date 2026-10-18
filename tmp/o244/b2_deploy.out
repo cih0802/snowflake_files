@@ -1,0 +1,18 @@
+== 05_02_SV_DDL_MEMBER_EVENT.sql · lines 1..212 · 2026-10-18T11:54:36.559467
+  OK 01c7cfca-0208-e110-0005-852e000ca8f6 | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4c6 | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca8fa | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4ca | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca8fe | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4ce | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca902 | Statement executed successfully.
+== 05_03_SV_DDL_MEMBER_COHORT.sql · lines 1..121 · 2026-10-18T11:54:37.441321
+  OK 01c7cfca-0208-e79d-0005-852e000cb4d2 | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca906 | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4d6 | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca90a | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4da | Statement executed successfully.
+  OK 01c7cfca-0208-e110-0005-852e000ca90e | Statement executed successfully.
+  OK 01c7cfca-0208-e79d-0005-852e000cb4de | Statement executed successfully.
+VERIFY SV_MEMBER_EVENT.CMMN_BRND_NM 직원개발=False 16종=False 15종=True 25년영상=False
+VERIFY SV_MEMBER_COHORT.MARKETING_CAMPAIGN 직원개발=False 16종=False 15종=False 25년영상=False

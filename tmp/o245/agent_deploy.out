@@ -1,0 +1,10 @@
+COPY AGENT_EXECUTIVE [('AGENT_EXECUTIVE/agent_spec.yaml',)]
+COPY AGENT_MARKETING [('AGENT_MARKETING/agent_spec.yaml',)]
+VERIFY AGENT_EXECUTIVE ws=84000 stage=84000 OK
+VERIFY AGENT_MARKETING ws=108544 stage=108544 OK
+ADD_VERSION AGENT_EXECUTIVE [('Version nullsuccessfully created.',)] qid=01c7d002-0208-e79d-0005-852e000e27e2
+  VERSION$2 default=false created=2026-10-17 23:23:23.029000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:06.121000-07:00
+ADD_VERSION AGENT_MARKETING [('Version nullsuccessfully created.',)] qid=01c7d002-0208-e110-0005-852e000e1a42
+  VERSION$2 default=false created=2026-10-17 23:23:24.157000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:06.866000-07:00

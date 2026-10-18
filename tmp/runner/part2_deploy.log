@@ -1,0 +1,7 @@
+Connecting to Snowflake as TRIALADMIN...
+Total files to process: 2, starting from file index 0
+=== [1/2] [10_dbt_pipeline/01_deploy_dbt_project.sql] 11 stmts (from stmt 0) ===
+OK [1/2] [10_dbt_pipeline/01_deploy_dbt_project.sql]
+=== [2/2] [02_GN_DW_building/08_After_Deploy_DBT.sql] 16 stmts (from stmt 0) ===
+OK [2/2] [02_GN_DW_building/08_After_Deploy_DBT.sql]
+ALL DONE

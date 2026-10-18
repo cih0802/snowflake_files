@@ -1,0 +1,20 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[SV 단위 게이트] SV 39종 · 나눗셈 metric 54개 검사
+  ⚪ 예외: SV_AD.DEV_UNIT_PRICE (개발단가(원/건) — 금액÷건수이므로 percent 가 아니다)
+  ⚪ 예외: SV_AD.GA_DEV_UNIT_PRICE (공8 GA 개발단가(원/건) — O188-D 신설)
+  ⚪ 예외: SV_AD.REBRDC_DEV_UNIT_PRICE (재방송 개발단가(원/건))
+  ⚪ 예외: SV_GA_SESSION.AVG_SESSION_DURATION_SEC (세션당 평균 세션시간(초/세션) — O240 · O244 등재)
+  ⚪ 예외: SV_GA_SESSION.AVG_SESSION_ENGAGEMENT_SEC (세션당 평균 참여시간(초/세션 · msec÷1000) — O240 · O244 등재)
+  ⚪ 예외: SV_MEMBER_FEE.AVG_PAID_PER_MEMBER (1명당 평균 납입금액(원/명) — O237-A)
+  ⚪ 예외: SV_MEMBER_MONTHLY.CNT_PER_ACTIVE_MEMBER (활동회원 1명당 활동(건/명) — O237-A)
+  ⚪ 예외: SV_MEMBER_SPONSOR_BIZ.SPONSORSHIP_UNPAID_CNT (후원사업 미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-C)
+  ⚪ 예외: SV_PAYMENT_BILLING_STATUS.UNPAID_CNT_EQ (미납(건) 환산 = 미납회비 ÷ 10,000(건 · 단위 환산) — O237-A)
+  ⇒ 위반 0건 · 예외 9건
+  ⇒ GRANT 검사: SV 39종 · 누락 객체 0건
+  ⇒ 폐기식 검사: 등재 패턴 2종 · 노출 0건
+  ⇒ COMMENT 수치 금지 검사: SV 39종 · **검출 0건** · 의미 예외 102토큰 (baseline 비움 = 모든 검출이 실패 · O59-R 정리 종결)
+  ⇒ 필수 문안 검사: 등재 SV 5종 · 토큰 16개 · 소실 0건
+  ⇒ AGENT 발행 표면 검사: Agent 3종 · 결함 0건
+
+✅ 게이트 통과 — 비율 metric 전량 percent · GRANT 전량 정상 · 폐기식 노출 0 · COMMENT 수치 0 · 필수 문안 전량 존재 · AGENT 발행 표면 정상

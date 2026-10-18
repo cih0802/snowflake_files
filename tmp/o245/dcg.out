@@ -1,0 +1,57 @@
+[문서 좌표 실재 게이트] 스캔 472파일
+  축1a 경로가 깨진 좌표(우리 연산이 옮겼다 · blocking): 0건
+  축1b 참조 대상이 어디에도 없다(경고 · 사람 판단): 2건
+    🟠 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md:9  20_issue/00_통합이슈_레지스트리_20260715.md
+    🟠 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0202-A.md:32  02_MSTR_GOLD_매핑표.md
+  축2 이력(append형) 죽은 좌표: 19건 (관측 · 소급 수정 대상 아님)
+  축3 행 번호가 파일 끝을 넘는 좌표: 11건 (경고)
+    🟠 20_issue/01_세션이력_조각/01_세션이력-011.md:10  99_NEXT_SESSION.md → 99_NEXT_SESSION.md 은 132줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-019.md:279  30_설계_의사결정.md → 20_issue/30_설계_의사결정.md 은 92줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-024.md:18  01_세션이력.md → 20_issue/01_세션이력.md 은 236줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:189  02_상태상세-008.md → 20_issue/02_상태상세_대시보드_갱신형_조각/02_상태상세_대시보드_갱신형-008.md 은 29줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-054.md:126  99_NEXT_SESSION_조각/99_NEXT_SESSION-013.md → 99_NEXT_SESSION_조각/99_NEXT_SESSION-013.md 은 109줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-062.md:268  99_NEXT_SESSION_조각/99_NEXT_SESSION-027.md → 99_NEXT_SESSION_조각/99_NEXT_SESSION-027.md 은 84줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-065.md:30  99_NEXT_SESSION-030.md → 99_NEXT_SESSION_조각/99_NEXT_SESSION-030.md 은 54줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-067.md:15  99_NEXT_SESSION_조각/99_NEXT_SESSION-003.md → 99_NEXT_SESSION_조각/99_NEXT_SESSION-003.md 은 24줄
+    🟠 20_issue/01_세션이력_조각/01_세션이력-067.md:39  99_NEXT_SESSION-016.md → 99_NEXT_SESSION_조각/99_NEXT_SESSION-016.md 은 13줄
+    🟠 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md:92  20_현업확인_요청-007.md → 20_issue/20_현업확인_요청_조각/20_현업확인_요청-007.md 은 194줄
+  축4 약칭 좌표(정확한 파일명이 아니다): 7건 (경고)
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:189  02_상태상세-008.md → 아마 20_issue/02_상태상세_대시보드_갱신형_조각/02_상태상세_대시보드_갱신형-008.md
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:191  50_dbt-013.md → 아마 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:196  50_dbt-012.md → 아마 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:196  10_진단-009.md → 아마 20_issue/10_진단_원인분석_조각/10_진단_원인분석-009.md
+    🟠 20_issue/01_세션이력_조각/01_세션이력-039.md:198  02_상태상세-008.md → 아마 20_issue/02_상태상세_대시보드_갱신형_조각/02_상태상세_대시보드_갱신형-008.md
+    🟠 20_issue/01_세션이력_조각/01_세션이력-073.md:14  99_NEXT-031.md → 아마 99_NEXT_SESSION_조각/99_NEXT_SESSION-031.md
+    🟠 20_issue/90_해소완료_로그_조각/90_해소완료_로그-019.md:44  00_INDEX-006.md → 아마 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md
+  축5 모호한 파일명 인용(같은 이름이 여러 곳): 25건 (경고)
+    🟠 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:47  00_선택표.md → 11곳에 있다(첫 후보 00_guides/01_문서분할_규약_조각/00_선택표.md) ⇒ 경로를 붙여라
+    🟠 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:58  00_선택표.md → 11곳에 있다(첫 후보 00_guides/01_문서분할_규약_조각/00_선택표.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-001.md:55  99_next_prompt.md → 2곳에 있다(첫 후보 03_top-down_gold/99_next_prompt.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-008.md:29  00_README.md → 5곳에 있다(첫 후보 03_top-down_gold/00_README.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-015.md:208  00_README.md → 5곳에 있다(첫 후보 03_top-down_gold/00_README.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-021.md:175  99_next_prompt.md → 2곳에 있다(첫 후보 03_top-down_gold/99_next_prompt.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-021.md:182  00_README.md → 5곳에 있다(첫 후보 03_top-down_gold/00_README.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-038.md:81  00_README.md → 5곳에 있다(첫 후보 03_top-down_gold/00_README.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-038.md:81  99_next_prompt.md → 2곳에 있다(첫 후보 03_top-down_gold/99_next_prompt.md) ⇒ 경로를 붙여라
+    🟠 20_issue/01_세션이력_조각/01_세션이력-046.md:230  00_README.md → 5곳에 있다(첫 후보 03_top-down_gold/00_README.md) ⇒ 경로를 붙여라
+  축6 은퇴본만 존재(`_archive/` 에 실재 · 관측): 16건
+    ⚪ 20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md:17  14_현업의사결정_DB실측근거.md → 은퇴본 30_output_share/_archive/20260830/14_현업의사결정_DB실측근거.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-008.md:269  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-018.md:8  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-037.md:167  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-037.md:167  00_README_이관안내.md → 은퇴본 30_output_share/_archive/20260716/00_README_이관안내.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-038.md:213  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+    ⚪ 20_issue/01_세션이력_조각/01_세션이력-038.md:213  00_README_이관안내.md → 은퇴본 30_output_share/_archive/20260716/00_README_이관안내.md
+    ⚪ 20_issue/02_상태상세_대시보드_갱신형_조각/02_상태상세_대시보드_갱신형-002.md:49  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+    ⚪ 20_issue/02_상태상세_대시보드_갱신형_조각/02_상태상세_대시보드_갱신형-003.md:89  00_README_이관안내.md → 은퇴본 30_output_share/_archive/20260716/00_README_이관안내.md
+    ⚪ 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-009.md:72  02_원천결손_Gap분석.md → 은퇴본 30_output_share/_archive/20260716/02_원천결손_Gap분석.md
+  축7 인수인계 절 라벨 재사용: 4건 (경고 · 라벨만으로 인용하면 어긋난다)
+    🟠 0-AAAA × 2 → 99_NEXT_SESSION_조각/99_NEXT_SESSION-001.md:46(2026-08-30) / 99_NEXT_SESSION_조각/99_NEXT_SESSION-030.md:42(2026-09-10)
+    🟠 0-BBBB × 2 → 99_NEXT_SESSION_조각/99_NEXT_SESSION-002.md:15(2026-08-30) / 99_NEXT_SESSION_조각/99_NEXT_SESSION-030.md:49(2026-09-10)
+    🟠 0-EEEE × 2 → 99_NEXT_SESSION_조각/99_NEXT_SESSION-027.md:4(2026-08-31) / 99_NEXT_SESSION_조각/99_NEXT_SESSION-031.md:44(2026-09-11)
+    🟠 0-FFFF × 2 → 99_NEXT_SESSION_조각/99_NEXT_SESSION-027.md:14(2026-09-01) / 99_NEXT_SESSION_조각/99_NEXT_SESSION-031.md:72(2026-09-14)
+       🟢 처방 = 앞으로 **세션 라벨 병기**(`0-MMMM/O166`) · 🔴 기존 라벨을 바꾸지 마라(발행된 인용 좌표가 깨진다)
+  축8 인용 줄이 빈 줄인 좌표: 0건 (경고 · 재균형이 행을 밀었다)
+  축8b 이력(append형)의 빈 줄 인용: 7건 (관측 · 소급 수정 대상 아님)
+
+✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 2건은 사람 판단)

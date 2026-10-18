@@ -70,7 +70,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
       COMMENT = '🔴🔴 이벤트 단위 세션 수 — 같은 세션이 이벤트마다 반복 집계된다(실측 키 중복 다수 · 규모는 파일 머리 주석). **EVENT_CATEGORY 를 하나로 고정했을 때만** 쓴다. 여러 이벤트를 합친 「총 세션」·「총 방문」으로 답하지 않는다.',
     fbq.AVG_ENGAGEMENT_RATE AS AVG(fbq.ENGAGEMENT_RATE)
       WITH SYNONYMS ('참여율')
-      COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.'
+      COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.',
+    -- 🆕 [O243] 공93 GA 활성사용자 · 공107 스크롤깊이 (사용자 승인 2026-10-18)
+    fbq.ACTIVE_USERS_ROWSUM AS SUM(fbq.ACTIVE_USERS)
+      WITH SYNONYMS ('활성사용자(행 합계)', 'GA 활성사용자', '공93')
+      COMMENT = '🔴🔴 GA4 활성사용자(active user) 수 — 팩트 행(일 × 이벤트 × 소스 × 기기 × 페이지) 안에서만 고유하다. 같은 사용자가 여러 행에 반복 집계되므로 **하루 · EVENT_CATEGORY 하나 · 페이지 하나로 고정했을 때만** 쓴다. 기간 전체·전 이벤트 합계를 「총 활성사용자」로 답하지 않는다(그 경우 근사치이며 과대라고 밝힌다).',
+    fbq.AVG_SCROLL_DEPTH AS AVG(NULLIF(fbq.SCROLL_DEPTH, 0))
+      WITH SYNONYMS ('평균 스크롤깊이(%)', '스크롤깊이', '스크롤 깊이', '공107')
+      COMMENT = '스크롤 깊이(%) 평균 — 행별 최대 스크롤 비율(1~100)을 스크롤 이벤트가 있는 행만으로 평균한 참고치(가중치 없음). 비율(N) — 재합산 금지. 스크롤 값이 없는 행(0)은 제외한다.',
+    fbq.MAX_SCROLL_DEPTH AS MAX(fbq.SCROLL_DEPTH)
+      WITH SYNONYMS ('최대 스크롤깊이(%)')
+      COMMENT = '스크롤 깊이(%) 최댓값(1~100). 비가산.'
   )
   COMMENT = 'GA4 웹·앱 행동 SV. 이벤트·페이지뷰·식별 방문자·채널 분석용. [원천: GA4 → GN_DW.SILVER.BIGQUERY_REFINED_DATA(외부 Python 적재) → GOLD.FACT_BIGQUERY_BEHAVIOR]. 🔴 개인 단위 예측(방문자 전환 예측·재방문 예측)·퍼널 단계 라벨·신규 사용자(first_visit) 구분은 없다 — 집계만 제공한다. 🔴 GA 원천은 추가되지 않는다 ⇒ 그런 질문에는 문구를 그대로 「현재 GA 데이터로는 답변할 수 없습니다. 자세한 내용은 IT부서에 문의 바랍니다.」 로 안내하고, 추가 적재·추후 제공·약속 관련 표현을 덧붙이지 않는다.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.

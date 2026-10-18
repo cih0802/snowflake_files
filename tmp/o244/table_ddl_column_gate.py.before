@@ -1,0 +1,439 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+table_ddl_column_gate.py — DDL 선언 ↔ dbt 모델 SELECT 컬럼 대조 게이트 (GOLD + SILVER 전수).
+Co-authored with CoCo
+
+검사 대상:
+  - GOLD 37개 테이블 (models/gold/ ↔ 03_top-down_gold/06_DDL.sql)
+  - SILVER 42개 테이블 (models/silver/ ↔ 04_silver_design/08_SILVER_테이블DDL_20260714.sql)
+"""
+import io
+import os
+import re
+import sys
+from pathlib import Path
+
+sys.path.insert(0, '/workspace/scripts')
+import sfconn  # noqa: E402
+
+GOLD_DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+
+AUDIT_SQL = ("'{src}' AS DW_SOURCE_SYSTEM,\n"
+             "CURRENT_TIMESTAMP()::TIMESTAMP_NTZ AS DW_LOAD_TS,\n"
+             "CURRENT_TIMESTAMP()::TIMESTAMP_NTZ AS DW_UPDATE_TS,\n"
+             "'gate' AS DW_BATCH_ID")
+
+
+def gold_ddl_columns(table):
+    s = io.open(GOLD_DDL, encoding='utf-8').read()
+    pat = rf'CREATE\s+OR\s+REPLACE\s+TABLE\s+GN_DW\.GOLD\.{table}\s*\('
+    m = re.search(pat, s)
+    if not m:
+        return None
+    i = m.start()
+    j = s.index('\n) COMMENT =', i)
+    out = []
+    for line in s[i:j].split('\n')[1:]:
+        t = line.strip()
+        if not t or t.startswith('--') or t.startswith('PRIMARY KEY') or t.startswith(')'):
+            continue
+        m_col = re.match(r'([A-Z0-9_]+)\s+', t)
+        if m_col:
+            out.append(m_col.group(1))
+    return out
+
+
+def silver_ddl_columns(table):
+    s = io.open(SILVER_DDL, encoding='utf-8').read()
+    pat = rf'CREATE\s+(?:OR\s+REPLACE\s+|TABLE\s+IF\s+NOT\s+EXISTS\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?GN_DW\.SILVER\.{table}\s*\('
+    m = re.search(pat, s)
+    if not m:
+        return None
+    i = m.start()
+    j = s.find('\n) COMMENT =', i)
+    if j == -1:
+        j = s.find('\n)\nCOMMENT =', i)
+    out = []
+    for line in s[i:j].split('\n')[1:]:
+        t = line.strip()
+        if not t or t.startswith('--') or t.startswith('PRIMARY KEY') or t.startswith(')'):
+            continue
+        m_col = re.match(r'([A-Z0-9_]+)\s+', t)
+        if m_col:
+            out.append(m_col.group(1))
+    return out
+
+
+_KNOWN_TABLES = None
+
+
+def load_known_tables(cn):
+    global _KNOWN_TABLES
+    if _KNOWN_TABLES is None:
+        cur = cn.cursor()
+        cur.execute("select table_schema, table_name from GN_DW.INFORMATION_SCHEMA.TABLES where table_schema in ('GOLD', 'SILVER', 'SNAPSHOT')")
+        _KNOWN_TABLES = {(r[0], r[1]) for r in cur.fetchall()}
+
+
+def resolve_ref(cn, name):
+    load_known_tables(cn)
+    uname = name.upper()
+    if ('GOLD', uname) in _KNOWN_TABLES:
+        return f'GN_DW.GOLD.{uname}'
+    if ('SILVER', uname) in _KNOWN_TABLES:
+        return f'GN_DW.SILVER.{uname}'
+    if ('SNAPSHOT', uname) in _KNOWN_TABLES or uname.startswith('SNP_'):
+        return f'GN_DW.SNAPSHOT.{uname}'
+    # 🆕 [2026-09-16 O166] 종전 폴백(`FACT_MEMBER_EVENT` → 개명 전 이름 `GOLD.FACT_MEMBER_LIFECYCLE`)을 지웠다.
+    #   ㉠ 그 이름은 **라이브에 없다**(개명 후 실물이 `FACT_MEMBER_EVENT` 다 · 위 `_KNOWN_TABLES` 분기가 먼저 잡는다)
+    #   ㉡ 조건이 `(A and B) or A` 형태여서 **`A`(=이름이 `FACT_MEMBER_EVENT`)만 성립하면 `B` 와 무관하게 참**이었다
+    #      — 즉 개명 전 이름 `('GOLD','FACT_MEMBER_LIFECYCLE') in _KNOWN_TABLES` 검사가 **무력**했다.
+    #      🔴 [O166-B 문안 정정] 초판은 이것을 「항상 참」이라 적었는데 그것은 부정확하다 —
+    #      **무조건 참이 아니라 `A` 조건부로 참**이고, 무력화된 것은 **`B` 검사**다.
+    #   ⇒ 그 팩트가 라이브에 없는 계정에서 이 분기에 닿으면 **존재하지 않는 객체를 조회하러 간다.**
+    #   🟢 해석 실패는 아래 `sys.exit` 로 **드러내는 것**이 맞다(폴백으로 감추지 않는다).
+    sys.exit(f'🔴 ref 해석 실패: {name} (GOLD·SILVER·SNAPSHOT 어디에도 없다)')
+
+
+def resolve_source(source_name, table_name):
+    # 🔴 [2026-09-29 O189] source 이름 ≠ 스키마 이름인 선언(`bronze_crm_ref` → `BRONZE_CRM`)을
+    #   종전 이 함수가 이름 대문자화로 처리해 **존재하지 않는 스키마**를 조회했고 게이트 전체가 죽었다
+    #   ⇒ O188 신규 모델·컬럼 누락을 못 잡았다. 🟢 매핑 정본 = `_sources.yml` 의 `schema:`.
+    if source_name.lower() == 'silver_external':
+        return f'GN_DW.SILVER.{table_name}'
+    if source_name.lower() == 'bronze_crm_ref':
+        return f'GN_DW.BRONZE_CRM.{table_name}'
+    return f'GN_DW.{source_name.upper()}.{table_name}'
+
+
+def _dbt_vars():
+    import yaml
+    p = '/workspace/10_dbt_pipeline/dbt_project.yml'
+    return (yaml.safe_load(io.open(p, encoding='utf-8')) or {}).get('vars', {}) or {}
+
+
+def _prerender_var_blocks(s):
+    # 🆕 [O234] `{% set x = var(...) %}` · `{% if %}` · `{% for c in x %}` 처럼 **vars 로 모양이 정해지는** 모델
+    #   (FACT_MEMBER_COHORT_SURVIVAL · CRM_MEMBER_DEV)은 정규식 치환으로 풀 수 없다 ⇒ jinja2 로 먼저 렌더한다.
+    #   🔴 vars 정본 = dbt_project.yml `vars:` (기본값을 쓰지 않는다 — 실제 빌드와 같은 모양이어야 컬럼 집합이 맞는다).
+    #   🟢 ref·source·gold_meta 등 다른 매크로는 **원문 그대로 재방출**해 아래 기존 치환이 처리한다(분모 불변).
+    if not re.search(r'\{%-?\s*(?:set|if|for)\b[^%]*\bvar\(', s):
+        return s
+    import jinja2
+
+    class _Keep:
+        def __init__(self, name):
+            self.name = name
+
+        def __call__(self, *a, **k):
+            args = ', '.join([repr(x) for x in a] + ['%s=%r' % kv for kv in k.items()])
+            return '{{ %s(%s) }}' % (self.name, args)
+
+    vs = _dbt_vars()
+    env = jinja2.Environment(undefined=jinja2.StrictUndefined)
+    ctx = {'var': lambda k, d=None: vs.get(k, d), 'is_incremental': lambda: False}
+    for n in ('ref', 'source', 'gold_meta', 'clean_str', 'month_key', 'date_sk', 'month_key_clamp',
+              'gold_sk', 'gn_code', 'gn_is_unpaid', 'gn_is_unpaid_stop_reason', 'gn_evt_stat',
+              'gn_evt_attended', 'gn_is_notice_title', 'gn_erp_not_total', 'gn_member_master_filter',
+              'billing_campaign_asof', 'bigquery_range_predicate', 'bigquery_range_predicate_text',
+              'bigquery_range_predicate_sk'):
+        ctx[n] = _Keep(n)
+    ctx['invocation_id'] = '{{ invocation_id }}'
+    return env.from_string(s).render(**ctx)
+
+
+def render_model(cn, path, layer='GOLD'):
+    s = io.open(path, encoding='utf-8').read()
+    s = re.sub(r'\{#.*?#\}', '', s, flags=re.DOTALL)
+    # Strip all config blocks
+    #   🆕 [O234] 빈 문자열이 아니라 SQL 주석 표지로 바꾼다 — 비우면 바로 뒤 `{%- … -%}` 의 공백 제거가 앞 주석 줄까지
+    #   당겨 붙여 `with …` 이 주석 안으로 들어간다(FMCS 실측 · 실제 dbt 는 config 출력이 경계를 막아 발생하지 않음).
+    s = re.sub(r'\{\{\s*config\s*\(.*?\)\s*\}\}', '/* config */', s, flags=re.DOTALL)
+    s = _prerender_var_blocks(s)
+    # 🆕 [2026-10-12 O216-E] 문자열 리스트 `{% set X = ['a', 'b'] %}` + `{% for c in X %}…{% endfor %}` 전개.
+    #   `BIGQUERY_SESSION.sql:29-48` 은 종전에 아래 범용 for 치환(다른 용도의 날짜 술어)으로 **조용히 오렌더**됐고
+    #   여러 줄 set 은 leftover 검사(단일 줄)를 빠져나가 SQL 구문 오류로만 드러났다 ⇒ 범용 치환보다 **먼저** 전개한다.
+    #   🔴 리스트 원소가 전부 문자열 리터럴일 때만 전개한다 — 아니면 손대지 않는다(leftover 로 실패).
+    _lists = {}
+
+    def _list_stmt(m):
+        items = re.findall(r'"([^"]*)"|\'([^\']*)\'', m.group(2))
+        body = re.sub(r'"[^"]*"|\'[^\']*\'|[\s,]', '', m.group(2))
+        if body:
+            return m.group(0)
+        _lists[m.group(1)] = [a if a else b for a, b in items]
+        return ''
+
+    s = re.sub(r'\{%-?\s*set\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\[(.*?)\]\s*-?%\}', _list_stmt, s, flags=re.DOTALL)
+
+    def _for_list(m):
+        var, name, body = m.group(1), m.group(2), m.group(3)
+        if name not in _lists:
+            return m.group(0)
+        return ''.join(re.sub(r'\{\{-?\s*' + var + r'\s*-?\}\}', lambda _m, v=v: v, body) for v in _lists[name])
+
+    s = re.sub(r'\{%-?\s*for\s+([A-Za-z_]\w*)\s+in\s+([A-Za-z_]\w*)\s*-?%\}(.*?)\{%-?\s*endfor\s*-?%\}', _for_list, s, flags=re.DOTALL)
+    # Strip jinja control blocks
+    s = re.sub(r'\{%\s*if\s+is_incremental\(\)[^%]*%\}.*?\{%\s*endif\s*%\}', '', s, flags=re.DOTALL)
+    s = re.sub(r'\{%-?\s*for\s+[^%]+%-?\}.*?\{%-?\s*endfor\s*%-?\}', "(EVENT_DATE between '20240101' and '20240102')", s, flags=re.DOTALL)
+    s = re.sub(r'\{\{\s*\(modules\.datetime.*?\)\.days\s*\+\s*1\s*\}\}', '1000', s)
+    s = re.sub(r"\{\{\s*var\(['\"]cal_start['\"]\)\s*\}\}", "2020-01-01", s)
+    s = re.sub(r"\{\{\s*var\(['\"]cal_end['\"]\)\s*\}\}", "2030-12-31", s)
+    s = re.sub(r"\{\{\s*gold_meta\('([A-Z0-9_]+)'\)\s*\}\}", lambda m: AUDIT_SQL.format(src=m.group(1)), s)
+    s = re.sub(r"\{\{\s*ref\('([A-Za-z0-9_]+)'\)\s*\}\}", lambda m: resolve_ref(cn, m.group(1)), s)
+    s = re.sub(r"\{\{\s*source\('([^']+)',\s*'([^']+)'\)\s*\}\}", lambda m: resolve_source(m.group(1), m.group(2)), s)
+    s = re.sub(r"\{\{\s*clean_str\('([^']+)'\)\s*\}\}", lambda m: f"NULLIF(TRIM({m.group(1)}), '')", s)
+    # 🔴 [2026-09-23 O181] `_text`·`_sk` **변종**까지 잡는다 — 종전 패턴은 `bigquery_range_predicate(`
+    #   만 봐서 `bigquery_range_predicate_text('EVENT_DATE')` 에서 **게이트가 예외로 죽었다**
+    #   (`BIGQUERY_BASIC.sql:62` · rc=1 이 「위반」으로 보였으나 실체는 **분모 결함**이었다).
+    #   🟢 macro 정본 = `macros/bigquery_range_predicate.sql` 에 `predicate`·`predicate_text`·
+    #      `predicate_sk` **3종**이 있다 ⇒ 셋 다 창 술어이므로 판정에는 `1=1` 로 충분하다.
+    #   🔴 판정식 = **개명·파생 macro 가 생기면 이 렌더러의 분모도 같이 넓혀야 한다**(O178-B 개명 잔여).
+    #   🟢 [O181] 그래서 **술어형 macro 를 한곳에 열거**한다 — 이들은 `WHERE`/`AND` 뒤에만 오므로
+    #      출력 컬럼 집합에 영향이 없고 판정에는 `1=1` 로 충분하다. 추가는 이 목록 한 줄이다.
+    #      · `bigquery_range_predicate{,_text,_sk}` = 적재 창 술어(O178-B 개명)
+    #      · `gn_member_master_filter`             = 고아 회원 제거 semi-join(O179 신설 · `EXISTS`)
+    #   🔴 인자 안에 **괄호가 들어온다** — `gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')")`
+    #      ⇒ `[^)]*` 는 첫 `)` 에서 끊겨 실패한다. 닫는 `}}` 까지 **비탐욕**으로 잡아야 한다
+    #      (`CRM_MEMBER_AMT_CHANGE.sql` 실물 · O181 2차 시정).
+    for _pred in (r'bigquery_range_predicate(?:_text|_sk)?', r'gn_member_master_filter'):
+        s = re.sub(r"\{\{\s*" + _pred + r"\(.*?\)\s*\}\}", '1=1', s, flags=re.DOTALL)
+    # 🆕 [2026-10-14 O229 D3] relation 형 macro `billing_campaign_asof(rel)`(O225-C) — 반환 형태 =
+    #   입력 rel 전 컬럼 + BILLING_MK + BILLING_CMPGN_CD(macro 정본 주석 「반환」). 같은 형태의 최소 SELECT 로 렌더한다.
+    s = re.sub(r"\{\{\s*billing_campaign_asof\(\s*'([A-Za-z0-9_]+)'\s*\)\s*\}\}",
+               lambda m: f"select bb.*, 0 as BILLING_MK, CAST(NULL AS VARCHAR) as BILLING_CMPGN_CD from {m.group(1)} bb", s)
+    s = re.sub(r"\{\{\s*invocation_id\s*\}\}", 'gate_batch', s)
+    # 🆕 [O234] O232 코드 매크로(`macros/gn_biz_codes.sql`) — 컬럼 집합에 영향 없는 식이므로 형만 맞춰 렌더한다.
+    #   `gn_code(key)` = IN 목록 리터럴 · 나머지 `gn_is_*`·`gn_evt_*`·`gn_erp_not_total` = 불리언 술어.
+    #   🔴 매크로를 새로 만들면 여기 분모도 넓혀라(아래 leftover 검사가 미렌더를 rc=1 로 잡는다).
+    s = re.sub(r"\{\{\s*gn_code\(.*?\)\s*\}\}", "'0'", s, flags=re.DOTALL)
+    s = re.sub(r"\{\{\s*gn_(?:is_unpaid_stop_reason|is_unpaid|evt_stat|evt_attended|is_notice_title|erp_not_total)\(.*?\)\s*\}\}",
+               '(1=1)', s, flags=re.DOTALL)
+
+    # 🆕 [2026-10-12 O216-E] 문자열 `{% set name = ... %}` 렌더 — `DIM_MEMBER.sql:67-70` 에서 게이트가 rc=1 로 멈췄다.
+    #   🔴 지원 범위를 좁게 둔다 = 우변이 **문자열 리터럴과 앞서 set 된 이름을 `~` 로 이은 것**뿐이다.
+    #      그 밖의 식(필터·함수·숫자)은 치환하지 않고 남긴다 ⇒ 아래 leftover 검사가 종전처럼 실패한다(조용한 오렌더 방지).
+    _sets = {}
+
+    def _set_val(expr):
+        out = []
+        for tok in re.split(r'\s*~\s*', expr.strip()):
+            m2 = re.fullmatch(r'"([^"]*)"|\'([^\']*)\'', tok)
+            if m2:
+                out.append(m2.group(1) if m2.group(1) is not None else m2.group(2))
+            elif tok in _sets:
+                out.append(_sets[tok])
+            else:
+                return None
+        return ''.join(out)
+
+    def _set_stmt(m):
+        v = _set_val(m.group(2))
+        if v is None:
+            return m.group(0)
+        _sets[m.group(1)] = v
+        return ''
+
+    s = re.sub(r'\{%-?\s*set\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*-?%\}', _set_stmt, s, flags=re.DOTALL)
+    for _k, _v in _sets.items():
+        s = re.sub(r'\{\{-?\s*' + _k + r'\s*-?\}\}', lambda _m, _v=_v: _v, s)
+
+    def _arg(x):
+        return x.strip().strip('\'"')
+
+    s = re.sub(r'\{\{\s*month_key\(\s*\"([^\"]+)\"\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMM'))", s)
+    s = re.sub(r'\{\{\s*month_key\(\s*\'([^\']+)\'\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMM'))", s)
+    s = re.sub(r'\{\{\s*month_key\(\s*([A-Za-z0-9_\.]+)\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMM'))", s)
+    s = re.sub(r'\{\{\s*date_sk\(\s*\"([^\"]+)\"\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMMDD'))", s)
+    s = re.sub(r'\{\{\s*date_sk\(\s*\'([^\']+)\'\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMMDD'))", s)
+    s = re.sub(r'\{\{\s*date_sk\(\s*([A-Za-z0-9_\.]+)\s*\)\s*\}\}', lambda m: f"TRY_TO_NUMBER(TO_CHAR({m.group(1)}, 'YYYYMMDD'))", s)
+    s = re.sub(r'\{\{\s*month_key_clamp\(\s*\"([^\"]+)\"\s*\)\s*\}\}', lambda m: f"({m.group(1)})", s)
+    s = re.sub(r'\{\{\s*month_key_clamp\(\s*\'([^\']+)\'\s*\)\s*\}\}', lambda m: f"({m.group(1)})", s)
+    s = re.sub(r'\{\{\s*month_key_offset\(\s*[\'\"]?([^\'\"]+)[\'\"]?\s*,\s*(-?\d+)\s*\)\s*\}\}', lambda m: f"({m.group(1)} + {m.group(2)})", s)
+
+    def _gold_sk(m):
+        raw = m.group(1)
+        cols = []
+        for item in re.split(r',(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)(?=(?:[^\']*\'[^\']*\')*[^\']*$)', raw):
+            item = item.strip()
+            if (item.startswith('\"\'') and item.endswith('\'\"')) or (item.startswith('\"') and item.endswith('\"')):
+                cols.append(item.strip('\"'))
+            elif item.startswith('\'') and item.endswith('\''):
+                cols.append(item)
+            else:
+                cols.append(f"COALESCE(CAST({item} AS VARCHAR), '∅')")
+        expr = " || '‖' || ".join(cols)
+        return f"ABS(HASH({expr}))"
+
+    s = re.sub(r"\{\{\s*gold_sk\(\[([^\]]*)\]\)\s*\}\}", _gold_sk, s)
+    # 🆕 [O216-E] DOTALL — 여러 줄 `{% … %}` 가 종전에 이 검사를 빠져나갔다(BIGQUERY_SESSION 오렌더 경위).
+    leftover = re.findall(r'\{\{.*?\}\}|\{%.*?%\}', s, flags=re.DOTALL)
+    if leftover:
+        sys.exit(f'🔴 렌더되지 않은 jinja 가 남았다 in {path}: {leftover[:3]}')
+    return s.strip().rstrip(';')
+
+
+def model_columns(cn, path, layer='GOLD'):
+    sql = render_model(cn, path, layer)
+    cur = cn.cursor()
+    # 🔴 [2026-09-29 O189] 한 모델의 조회 실패(상류 라이브에 새 컬럼 미반영 등)가 **게이트 전체를 죽여**
+    #   나머지 전수가 판정되지 않았다 ⇒ 실패는 None 으로 돌려 호출부가 blocking 으로 센다(감추지 않는다).
+    try:
+        cur.execute(f'select * from (\n{sql}\n) limit 0')
+    except Exception as e:  # noqa: BLE001
+        print(f'     🔴 조회 실패 {Path(path).stem}: {str(e).splitlines()[-1][:160]}')
+        return None
+    return [d[0] for d in cur.description]
+
+
+def self_check(cn):
+    """게이트 탐지력 실증(P106)"""
+    print('게이트 자기검사 (P106 — 탐지력 실증)\n')
+    table = 'DIM_MONTH'
+    p = '/workspace/10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql'
+    base_d = gold_ddl_columns(table)
+    base_m = model_columns(cn, p, 'GOLD')
+    swapped = base_d[:]
+    swapped[1], swapped[2] = swapped[2], swapped[1]
+    cases = [
+        ('정상(대조군)',   base_d,                    []),
+        ('DDL 에만 1건',   base_d + ['GHOST_COL'],     ['누락']),
+        ('모델에만 1건',   [c for c in base_d if c != 'QUARTER'], ['초과']),
+        ('순서만 어긋남',  swapped,                    ['순서']),
+    ]
+    ok = 0
+    for label, d, expect in cases:
+        missing = [c for c in d if c not in base_m]
+        extra = [c for c in base_m if c not in d]
+        got = ([] + (['누락'] if missing else []) + (['초과'] if extra else [])
+               + (['순서'] if d != base_m and not missing and not extra else []))
+        hit = sorted(set(got)) == sorted(set(expect))
+        ok += hit
+        print(f"  {label:<16} 기대={expect or '없음'} 실제={got or '없음'} {'✅' if hit else '🔴'}")
+    print(f"\n자기검사 {ok}/{len(cases)} 일치")
+    if ok != len(cases):
+        sys.exit('🔴 게이트가 기대대로 탐지하지 못한다')
+
+    print('\nseverity 매핑 자기검사 (강등이 무력화가 아님을 단정)')
+    sev_cases = [
+        ('누락 → blocking', base_d + ['GHOST_COL'], True),
+        ('초과 → blocking', [c for c in base_d if c != 'QUARTER'], True),
+        ('순서만 → advisory(blocking 아님)', swapped, False),
+        ('정상 → blocking 아님', base_d, False),
+    ]
+    sok = 0
+    for label, d, want_block in sev_cases:
+        missing = [c for c in d if c not in base_m]
+        extra = [c for c in base_m if c not in d]
+        got_block = bool(missing or extra)
+        hit = (got_block == want_block)
+        sok += hit
+        print(f"  {label:<34} blocking 기대={want_block} 실제={got_block} {'✅' if hit else '🔴'}")
+    print(f"\nseverity 자기검사 {sok}/{len(sev_cases)} 일치")
+    if sok != len(sev_cases):
+        sys.exit('🔴 severity 매핑이 어긋난다 — 강등이 진짜 위험까지 껐을 수 있다')
+
+
+def main():
+    cn = sfconn.conn()
+    cn.cursor().execute('USE WAREHOUSE GN_DW_DEV_WH')
+    load_known_tables(cn)
+
+    if '--self-check' in sys.argv:
+        self_check(cn)
+        cn.close()
+        return
+
+    fails = 0
+    drift = 0
+
+    gold_tables = re.findall(r'CREATE OR REPLACE TABLE GN_DW\.GOLD\.([A-Z0-9_]+)', io.open(GOLD_DDL, encoding='utf-8').read())
+    gold_model_files = {p.stem: p for p in Path('/workspace/10_dbt_pipeline/models/gold').glob('**/*.sql')}
+
+    silver_models = sorted(list(Path('/workspace/10_dbt_pipeline/models/silver').glob('**/*.sql')))
+
+    print('DDL 선언 ↔ dbt 모델 출력 컬럼 대조 (적재 전 판정 · P120 · GOLD 37 + SILVER 42 전수)')
+    print('  🔴 blocking = **집합** 불일치(누락·초과) · 🟠 advisory = **순서** 드리프트(문서 축)\n')
+
+    # 🔴 [2026-09-29 O189] 역방향 축 — 종전에는 분모를 **DDL 에서만** 뽑아서 DDL 에 없는 GOLD 모델
+    #   (O188-F 신규 9종)이 **원리적으로 안 보였다**. dbt 롤은 CREATE TABLE 권한이 없으므로 이런 모델은
+    #   build 에서 반드시 죽는다 ⇒ 뷰(wide)를 뺀 GOLD 모델 중 DDL 블록이 없는 것은 blocking 이다.
+    orphan = sorted(n for n, p in gold_model_files.items() if n not in gold_tables and '/wide/' not in str(p))
+    for n in orphan:
+        print(f'  {n:<28} 🔴 DDL block not found (모델만 있다 — dbt 롤은 CTAS 불가)')
+    fails += len(orphan)
+
+    print(f'=== [GOLD 계층: {len(gold_tables)} 테이블] ===')
+    for tbl in gold_tables:
+        if tbl not in gold_model_files:
+            print(f'  {tbl:<28} 🔴 Model file not found')
+            fails += 1
+            continue
+        p = gold_model_files[tbl]
+        d = gold_ddl_columns(tbl)
+        m = model_columns(cn, p, 'GOLD')
+        if m is None:
+            fails += 1
+            continue
+        missing = [c for c in d if c not in m]
+        extra = [c for c in m if c not in d]
+        order_ok = (d == m)
+        blocking = bool(missing or extra)
+        fails += blocking
+        drift += (not order_ok)
+        mism = [] if order_ok else [f'{k+1}:{a}≠{b}' for k, (a, b) in enumerate(zip(d, m)) if a != b][:5]
+        status = '🔴' if blocking else ('🟠' if not order_ok else '✅')
+        print(f"  {tbl:<28} DDL {len(d):>2} · 모델 {len(m):>2} · 누락 {len(missing)} · 초과 {len(extra)} · 순서 {'일치' if order_ok else '불일치'} {status}")
+        if missing:
+            print(f"     🔴 DDL 에만(모델이 채우지 않는다): {', '.join(missing)}")
+        if extra:
+            print(f"     🔴 모델에만(물리가 정본보다 앞서 나간다): {', '.join(extra)}")
+        if mism:
+            print(f"     🟠 순서 드리프트(앞 5건): {', '.join(mism)}")
+
+    print(f'\n=== [SILVER 계층: {len(silver_models)} 테이블] ===')
+    for p in silver_models:
+        tbl = p.stem
+        d = silver_ddl_columns(tbl)
+        if d is None:
+            print(f'  {tbl:<28} 🔴 DDL block not found')
+            fails += 1
+            continue
+        m = model_columns(cn, p, 'SILVER')
+        if m is None:
+            fails += 1
+            continue
+        missing = [c for c in d if c not in m]
+        extra = [c for c in m if c not in d]
+        order_ok = (d == m)
+        blocking = bool(missing or extra)
+        fails += blocking
+        drift += (not order_ok)
+        mism = [] if order_ok else [f'{k+1}:{a}≠{b}' for k, (a, b) in enumerate(zip(d, m)) if a != b][:5]
+        status = '🔴' if blocking else ('🟠' if not order_ok else '✅')
+        print(f"  {tbl:<28} DDL {len(d):>2} · 모델 {len(m):>2} · 누락 {len(missing)} · 초과 {len(extra)} · 순서 {'일치' if order_ok else '불일치'} {status}")
+        if missing:
+            print(f"     🔴 DDL 에만(모델이 채우지 않는다): {', '.join(missing)}")
+        if extra:
+            print(f"     🔴 모델에만(물리가 정본보다 앞서 나간다): {', '.join(extra)}")
+        if mism:
+            print(f"     🟠 순서 드리프트(앞 5건): {', '.join(mism)}")
+
+    tot_targets = len(gold_tables) + len(silver_models)
+    print()
+    print(f'집합 불일치(blocking) {fails}건 · 순서 드리프트(advisory) {drift}건 / 대상 {tot_targets}개 (GOLD {len(gold_tables)} + SILVER {len(silver_models)})')
+    cn.close()
+
+    if fails:
+        sys.exit(f'🔴 {fails}/{tot_targets} 객체 **집합** 불일치 — 모델이 컬럼을 채우지 않거나 '
+                 f'물리가 정본을 앞서 나갔다. 적재 전에 정본을 맞출 것.')
+    if drift:
+        print(f'🟠 순서 드리프트 {drift}건 — **문서 축이며 적재 위험이 아니다**(종료코드 무영향).')
+        print('   🔴 다만 「파일이 정본」 주장은 약해진다 ⇒ DDL 파일 선언 순서를 모델에 맞출 것.')
+    print(f'✅ 집합 일치 {tot_targets}/{tot_targets} — 적재 안전')
+
+
+if __name__ == '__main__':
+    main()

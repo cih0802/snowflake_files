@@ -182,9 +182,15 @@
    "diff_count": 1,
    "label": "UNLABELED",
    "reason": "O241 ⑥ 05_지표GOLD매핑 재생성(SV_배선·Agent_배선 열 추가) — 차이 = 05 측정일 2026-10-07→2026-10-16 1건뿐 · 상태 분포 OK 110·PARTIAL 89·WAIT 16 불변 · 상태 변경 0행"
+  },
+  {
+   "date": "2026-10-18 07:35:03",
+   "diff_count": 3,
+   "label": "UNLABELED",
+   "reason": "O243 공91 MEASURE_OVERRIDE GIFT_PART_AMT(전건0)→D5_GIFT_PART_AMT 로 WAIT 16→15 · PARTIAL 89→90(1건 이동) · 05 측정일 2026-10-18 재생성 · 실유실 0"
   }
  ],
- "measured": "2026-10-16",
+ "measured": "2026-10-18",
  "metrics": {
   "04.row_keys": [
    "WIDE_AD_BROADCAST.AD_CNT",
@@ -883,8 +889,8 @@
   "05.metric_rows": 215,
   "05.status": {
    "OK": 110,
-   "PARTIAL": 89,
-   "WAIT": 16
+   "PARTIAL": 90,
+   "WAIT": 15
   },
   "05.sv_bound_rows": 79,
   "06.rows": 1310,
@@ -2104,7 +2110,7 @@
    "01_DW_현업활용가이드.md": "2026-08-11",
    "03_GN_DW_개념도.html": "2026-10-02",
    "04_컬럼계보매핑.md": "2026-10-07",
-   "05_지표GOLD매핑.md": "2026-10-16",
+   "05_지표GOLD매핑.md": "2026-10-18",
    "06_BRONZE노출감사.md": "2026-10-07",
    "07_코드체계_관문측정.md": "2026-10-15",
    "08_SILVER→GOLD_보존율.md": "2026-10-07",

@@ -95,9 +95,10 @@ SRC_TIME_GAP = frozenset({"GA4", "GA"})
 OK_FILL_MIN = 0.95
 
 # base 물리명을 지표번호로 역인덱스할 수 없는 경우의 명시 배속(측정 대상 컬럼 지정)
+# 🆕 [O243] 공91 = GIFT_PART_AMT(0 하드코딩 · 전건 0 실측 44,406,102행) → D5_GIFT_PART_AMT(공91 추천안B · 같은 팩트)
 MEASURE_OVERRIDE = {
     "공25": "INBOUND_CALL", "공66": "REGULAR_FEE", "공87": "FAIL_MEMBERS",
-    "공91": "GIFT_PART_AMT", "공97": "SESSION_CNT", "공107": "SCROLL_DEPTH",
+    "공91": "D5_GIFT_PART_AMT", "공97": "SESSION_CNT", "공107": "SCROLL_DEPTH",
 }
 
 INV_DELIMS = re.compile(r"\s(?:SUM|COUNT|AVG|COALESCE|비가산|conform|롤업|GA4)|—|"

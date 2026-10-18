@@ -1,0 +1,17 @@
+M1 ok=True 61s sv=True tok=False nodata=None sqls=3 err=True
+M2 ok=True 62s sv=True tok=False nodata=None sqls=2 err=True
+M3 ok=True 68s sv=True tok=False nodata=None sqls=3 err=True
+M4 ok=True 72s sv=True tok=False nodata=None sqls=3 err=True
+M5 ok=True 71s sv=True tok=False nodata=None sqls=2 err=True
+C1 ok=True 95s sv=False tok=False nodata=None sqls=4 err=True
+C2 ok=True 48s sv=True tok=False nodata=None sqls=4 err=False
+C3 ok=True 98s sv=True tok=False nodata=None sqls=6 err=False
+S1 ok=True 60s sv=True tok=False nodata=None sqls=2 err=True
+S2 ok=True 68s sv=True tok=False nodata=None sqls=2 err=True
+O1 ok=True 92s sv=True tok=False nodata=None sqls=5 err=True
+O2 ok=True 72s sv=True tok=False nodata=None sqls=3 err=True
+O3 ok=True 94s sv=True tok=False nodata=None sqls=5 err=True
+O4 ok=True 81s sv=True tok=False nodata=None sqls=5 err=True
+N1 ok=True 53s sv=True tok=None nodata=True sqls=3 err=True
+N2 ok=True 48s sv=True tok=None nodata=True sqls=3 err=True
+R1 ok=True 56s sv=True tok=False nodata=None sqls=4 err=False

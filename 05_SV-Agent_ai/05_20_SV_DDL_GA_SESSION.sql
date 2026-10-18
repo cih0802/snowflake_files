@@ -19,10 +19,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
     date AS GN_DW.GOLD.DIM_DATE
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '방문일')
-      COMMENT = '일 차원. [원천] ETL 생성(달력).'
+      COMMENT = '일 차원. [원천] ETL 생성(달력).',
+    ident AS GN_DW.GOLD.DIM_MEMBER_IDENTITY
+      PRIMARY KEY (IDENTITY_SK)
+      WITH SYNONYMS ('회원 식별', 'GA 회원')
+      COMMENT = '🆕 [O245 공112] 회원 식별 결선 차원(GA member id ↔ CRM 회원번호). GA member id 는 CRM 회원번호와 같은 값이다(2026-10-18 실측 불일치 0).'
   )
   RELATIONSHIPS (
-    gs_to_date AS gs (DATE_SK) REFERENCES date
+    gs_to_date AS gs (DATE_SK) REFERENCES date,
+    gs_to_ident AS gs (IDENTITY_SK) REFERENCES ident
   )
   DIMENSIONS (
     date.VISIT_DATE AS date.FULL_DATE WITH SYNONYMS ('방문일', '일자', '날짜') COMMENT = '세션 일자(GA4 event_date · 한국시간 기준 속성).',
@@ -54,7 +59,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
     gs.UP_BIZ_TYPE AS gs.UP_BIZ_TYPE WITH SYNONYMS ('관심 후원사업', '후원사업 유형') COMMENT = '후원사업 유형(해외아동결연·보건의료지원사업·국내아동권리보호사업 등 원값 · 457종 · 후원 페이지 진입 사용자만 값).',
     gs.UP_LOGIN_STATUS AS gs.UP_LOGIN_STATUS WITH SYNONYMS ('로그인 여부') COMMENT = '로그인 여부 y·n 원값. 🔴 GTM 미치환 값 「{{로그인여부}}」 가 섞여 있다 — 수집 오류로 밝힌다.',
     gs.EP_PAYMENT_TYPE AS gs.EP_PAYMENT_TYPE WITH SYNONYMS ('결제수단', '후원 결제수단') COMMENT = '세션 내 후원 결제 이벤트의 결제수단(신용카드·계좌이체·네이버페이 원값 · 결제 이벤트 없는 세션은 NULL).',
-    gs.IS_MEMBER_MATCHED AS IFF(gs.IDENTITY_SK > 0, 'Y', 'N') WITH SYNONYMS ('회원 식별 여부') COMMENT = 'CRM 회원과 매칭된 방문자인가(Y/N · IDENTITY_MEMBER_XREF 결선 · 매칭률 낮음).'
+    gs.IS_MEMBER_MATCHED AS IFF(gs.IDENTITY_SK > 0, 'Y', 'N') WITH SYNONYMS ('회원 식별 여부') COMMENT = 'CRM 회원과 매칭된 방문자인가(Y/N · IDENTITY_MEMBER_XREF 결선 · 매칭률 낮음).',
+    ident.MEMBER_DK AS IFF(ident.IDENTITY_SK > 0, ident.MEMBER_DK, NULL) WITH SYNONYMS ('공112', 'GA member id', 'GA 회원번호', '회원번호', 'CRM 회원번호') COMMENT = '🆕 [O245 공112] GA member id = CRM 회원번호(MEMBER_DK · 같은 값 · 사용자 결정 2026-10-18 = CRM 에 있는 회원이면 노출). 비회원·미매칭 세션은 NULL 이다(IS_MEMBER_MATCHED = N). 회원별 방문 질문에 쓰고, 다른 SV 와는 이 회원번호로 대조한다.'
   )
   METRICS (
     gs.SESSION_CNT AS COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY)

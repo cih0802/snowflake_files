@@ -339,6 +339,19 @@ def load_live():
             print(f"  ⚪ distinct 조회 불가 {bt}.{bc}: {str(e)[:60]}")
             continue
         distinct_map[(bt, bc)] = {('' if x[0] is None else str(x[0])) for x in r}
+        # 🆕 [O244] 표본 상한(500)에 닿은 고카디널리티 축은 **COMMENT 열거값을 직접 조회**해 합친다.
+        #   실사고 = SV_MEMBER_COHORT.ACQ_MKTG_CMPGN_NM '유어턴(통합A)' 240행 실재인데 표본 밖이라 「부재」로 오탐(O243-B).
+        #   🔴 열거값만 조회하므로 진짜 부재('25년 이전컨텐츠(영상광고)' 0행)는 계속 잡힌다.
+        if len(r) >= 500:
+            want = set()
+            for sv, lt, dim, bt2, bc2, cmt in dims:
+                if (bt2, bc2) == (bt, bc):
+                    want |= set(enumerated_values(cmt, bc2)[0] or [])
+            want -= distinct_map[(bt, bc)]
+            if want:
+                lits = ', '.join("'%s'" % w.replace("'", "''") for w in sorted(want))
+                _, r2 = q(f'select distinct "{bc}" from {SCHEMA_DB}.{bt} where "{bc}" in ({lits})', cn)
+                distinct_map[(bt, bc)] |= {str(x[0]) for x in r2}
     cn.close()
     return dims, distinct_map, base_cols, exposed, card, dtype
 

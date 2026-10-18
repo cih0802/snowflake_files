@@ -1,0 +1,10 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+[SV COMMENT 객체 실재 게이트] SV 39종 · 라이브 객체 FQ 390개
+========================================================================
+  ① 스키마 정규화 참조 274건 · 접두 와일드카드 통과 1건 · 은퇴 등재 면제 0건
+  ② 형제 승계 참조 6건 (어간 공유 판정)
+  ③ 무스키마 객체형 토큰 373건
+========================================================================
+🟢 PASS — blocking 위반 0건 (①②③ 축)

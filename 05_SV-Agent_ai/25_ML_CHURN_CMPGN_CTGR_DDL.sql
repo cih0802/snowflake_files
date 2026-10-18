@@ -26,10 +26,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
     ma AS GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V
       PRIMARY KEY (STDR_MT, MBER_NO)
       WITH SYNONYMS ('회원 특성', '예측 회원 특성', '기준월 시점 회원 속성')
-      COMMENT = '예측 대상 회원의 기준월 말 시점 특성(성별·연령대·지역·회원상태·회원구분·후원금액대·유지기간대·신규기존·납입방식). grain = 기준월 × 회원. 🔴 모델 피처가 아니다 — 예측 결과를 특성으로 나눠 보는 집계용이다. 미매칭 = (미매칭).'
+      COMMENT = '예측 대상 회원의 기준월 말 시점 특성(성별·연령대·지역·회원상태·회원구분·후원금액대·유지기간대·신규기존·납입방식). grain = 기준월 × 회원. 🔴 모델 피처가 아니다 — 예측 결과를 특성으로 나눠 보는 집계용이다. 미매칭 = (미매칭).',
+    cs AS GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V
+      WITH SYNONYMS ('후원사업별 중단 예측', '중단 예측 후원사업', '카테고리 후원사업별 중단 위험')
+      COMMENT = '🆕 [O245] ML 중단 예측을 기준월 말 활동 약정의 캠페인카테고리 × 후원사업에 결합한 표(base: SERVING.ML_CHURN_BY_SPONSORSHIP_V). [Grain: 기준월 × 회원 × 캠페인카테고리 × 후원사업]. 「후원사업별」 또는 「캠페인카테고리 × 후원사업별」 중단 예측 질문에 쓴다. 🔴 cc 테이블과 grain 이 다르다 — 한 쿼리에서 cc 와 조인하지 않는다.'
   )
   RELATIONSHIPS (
-    cc_to_member_attr AS cc(STDR_MT, MBER_NO) REFERENCES ma
+    cc_to_member_attr AS cc(STDR_MT, MBER_NO) REFERENCES ma,
+    cs_to_member_attr AS cs(STDR_MT, MBER_NO) REFERENCES ma
   )
   DIMENSIONS (
     cc.STDR_MT AS cc.STDR_MT
@@ -72,8 +76,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
       WITH SYNONYMS ('회원상태')
       COMMENT = '회원상태(기준월 말 시점).',
     ma.MEMBER_TYPE_NAME AS ma.MEMBER_TYPE_NAME
-      WITH SYNONYMS ('회원구분', '법인구분', '개인 기업 단체')
-      COMMENT = '회원구분 = 개인·기업·단체(법인구분 · 기준월 말 시점).',
+      WITH SYNONYMS ('회원구분', '개인 기업 단체')
+      COMMENT = '회원구분 = 개인·기업·단체(기준월 말 시점). 🔴 법인구분(통합·사단·사복)은 CPR_DIV_NAME 이다(O245).',
     ma.AMOUNT_BAND AS ma.AMOUNT_BAND
       WITH SYNONYMS ('후원금액대', '금액대')
       COMMENT = '후원금액대(그 달 회원 월실적 금액대1).',
@@ -88,7 +92,40 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
       COMMENT = '납입방식(그 달 청구액이 가장 큰 결제수단 · 잠정).',
     ma.ATTR_MATCHED AS ma.ATTR_MATCHED
       WITH SYNONYMS ('특성 매칭 여부')
-      COMMENT = 'TRUE=기준월 시점 회원 이력이 매칭됐다. FALSE 회원은 특성이 (미매칭)이다.'
+      COMMENT = 'TRUE=기준월 시점 회원 이력이 매칭됐다. FALSE 회원은 특성이 (미매칭)이다.',
+    ma.REGIST_DEPT_NAME AS ma.REGIST_DEPT_NAME
+      WITH SYNONYMS ('등록부서', '회원 등록부서')
+      COMMENT = '🆕 [O245] 회원 등록부서명(CRM 회원 마스터 현재 값). 🔴 실적부서·귀속부서가 아니다 — 부서 목표·실적과 대조하지 않는다.',
+    ma.CPR_DIV_NAME AS ma.CPR_DIV_NAME
+      WITH SYNONYMS ('법인구분', '사단 사복 통합')
+      COMMENT = '🆕 [O245] 회원 법인구분(코드사전 CM019 · 통합·사단·사복 · CRM 회원 마스터 현재 값). 개인·기업·단체 구분은 MEMBER_TYPE_NAME 이다.',
+    ma.MEMBER_ACTIVE_SPNSR_CNT AS ma.ACTIVE_SPNSR_CNT
+      WITH SYNONYMS ('활동 약정 수', '회원 활동 약정 수', '후원 중인 약정 수')
+      COMMENT = '🆕 [O245] 그 회원의 기준월 말 활동 중인 후원약정 수(건 · 카테고리·후원사업 무관 전체). 0 = 활동 약정 없음. 회원당 1개 값이다 — 구간으로 나눠 GROUP BY 하거나 그대로 출력하고 SUM 하지 않는다.',
+    cs.SP_STDR_MT AS cs.STDR_MT
+      WITH SYNONYMS ('후원사업 표 기준월')
+      COMMENT = '🆕 [O245] cs 표의 기준월(YYYYMM). 🔴 여러 기준월 합산 금지 — 미지정 시 최신 기준월 하나.',
+    cs.SP_MBER_NO AS cs.MBER_NO
+      WITH SYNONYMS ('후원사업 표 회원번호')
+      COMMENT = '🆕 [O245] cs 표의 회원번호. 회원수는 이 축의 중복제거로 센다.',
+    cs.SP_CMPGN_CTGR_NM AS cs.CMPGN_CTGR_NM
+      WITH SYNONYMS ('후원사업 표 캠페인카테고리')
+      COMMENT = '🆕 [O245] cs 표의 캠페인카테고리(기준월 말 활동 약정 · MM294 · 적재 시점 동결값). 실제값은 조회로 확인한다.',
+    cs.SPONSORSHIP_NAME AS cs.SPONSORSHIP_NAME
+      WITH SYNONYMS ('후원사업', '후원사업명', '활동 후원사업')
+      COMMENT = '🆕 [O245] 기준월 말 활동 약정의 후원사업명(DIM_SPONSORSHIP). 🔴 실제값은 열거하지 않는다 — 후원사업 마스터가 늘어나면 낡는다. 값 목록은 조회로 확인한다.',
+    cs.SP_ACTIVE_SPNSR_CNT AS cs.ACTIVE_SPNSR_CNT
+      WITH SYNONYMS ('후원사업별 활동 약정 수')
+      COMMENT = '🆕 [O245] 그 회원이 이 카테고리·후원사업으로 기준월 말 활동 중인 약정 수(건). 행마다 이미 집계된 값이다 — 명단에는 그대로 쓰고 COUNT 로 다시 세지 않는다.',
+    cs.SP_HAS_MEMBER_PRED AS cs.HAS_MEMBER_PRED
+      WITH SYNONYMS ('후원사업 표 회원 단위 예측 대상 여부')
+      COMMENT = '🆕 [O245] TRUE = 회원 단위 중단 예측 대상 회원.',
+    cs.SP_MEMBER_CHURN_GRADE AS cs.MEMBER_CHURN_GRADE
+      WITH SYNONYMS ('후원사업 표 회원 중단위험 등급')
+      COMMENT = '🆕 [O245] 회원 단위 중단위험 등급. 실제값 3종: ''고위험''·''주의''·''일반''. NULL = 회원 단위 예측 대상 아님.',
+    cs.SP_SPONSOR_CHURN_GRADE AS cs.SPONSOR_CHURN_GRADE
+      WITH SYNONYMS ('후원사업별 후원건 이탈위험 등급')
+      COMMENT = '🆕 [O245] 이 카테고리·후원사업 약정 중 가장 높은 이탈위험 등급. 실제값 3종: ''고위험''·''주의''·''일반''. NULL = 후원건 예측 대상 아님.'
   )
   METRICS (
     cc.ACTIVE_MEMBERS AS COUNT(DISTINCT cc.MBER_NO)
@@ -105,12 +142,24 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
       COMMENT = '이 카테고리 후원건 중 고위험 후원건이 1건 이상인 활동회원수(명 · 중복제거).',
     cc.AVG_MEMBER_CHURN_PROB AS AVG(cc.MEMBER_CHURN_PROB)
       WITH SYNONYMS ('평균 중단확률')
-      COMMENT = '회원 단위 중단확률 평균(0~1 · 표기는 %로 ×100). 회원당 여러 카테고리 행이 있으면 같은 회원 확률이 중복 반영된다 — 카테고리 하나로 거른 뒤 쓴다.'
+      COMMENT = '회원 단위 중단확률 평균(0~1 · 표기는 %로 ×100). 회원당 여러 카테고리 행이 있으면 같은 회원 확률이 중복 반영된다 — 카테고리 하나로 거른 뒤 쓴다.',
+    cs.SP_ACTIVE_MEMBERS AS COUNT(DISTINCT cs.MBER_NO)
+      WITH SYNONYMS ('후원사업별 활동회원수')
+      COMMENT = '🆕 [O245] 기준월 말 그 후원사업(·카테고리)으로 활동 중인 고유 회원수(명 · 중복제거). 🔴 후원사업별 값을 더하면 다중 후원 회원이 중복된다.',
+    cs.SP_MEMBER_HIGH_RISK_MEMBERS AS COUNT(DISTINCT CASE WHEN cs.MEMBER_CHURN_GRADE = '고위험' THEN cs.MBER_NO END)
+      WITH SYNONYMS ('후원사업별 중단 고위험 회원수')
+      COMMENT = '🆕 [O245] 회원 단위 중단위험 등급이 고위험인 활동회원수(명 · 중복제거).',
+    cs.SP_MEMBER_PRED_MEMBERS AS COUNT(DISTINCT CASE WHEN cs.HAS_MEMBER_PRED THEN cs.MBER_NO END)
+      WITH SYNONYMS ('후원사업별 회원 단위 예측 대상 회원수')
+      COMMENT = '🆕 [O245] 회원 단위 중단 예측 대상인 활동회원수(명 · 중복제거). 고위험 비율의 분모.',
+    cs.SP_SPONSOR_HIGH_RISK_MEMBERS AS COUNT(DISTINCT CASE WHEN cs.SPONSOR_HIGH_CNT > 0 THEN cs.MBER_NO END)
+      WITH SYNONYMS ('후원사업별 후원건 고위험 회원수')
+      COMMENT = '🆕 [O245] 이 후원사업(·카테고리) 약정 중 고위험 후원건이 1건 이상인 활동회원수(명 · 중복제거).'
   )
-  COMMENT = 'ML 중단 예측 × 활동 후원 캠페인카테고리 SV. base=SERVING.ML_CHURN_BY_CMPGN_CTGR_V. [Grain: 기준월 × 회원 × 캠페인카테고리]. 「N월 활동회원 중 중단 가능성 높은 회원 중 ○○캠페인(카테고리) 후원 회원 · 회원번호 명단·수」 질문에 쓴다. [활성 지표: 활동회원수 · 중단 고위험 회원수 · 회원 단위 예측 대상 회원수 · 후원건 고위험 회원수 · 평균 중단확률]. [주의: 머신러닝 예측치이며 실적이 아니다 · 회원 단위 모델은 활동회원 일부만 예측한다 · 회원 단위 등급과 후원건 단위 등급은 서로 다른 모델이다 · 실적 SV 와 같은 표에 합산하지 않는다]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
-  AI_SQL_GENERATION '[O241-M 회원 특성 축] 성별·연령대·지역·회원상태·회원구분(법인구분)·후원금액대·유지기간·신규기존·납입방식으로 나눠 달라는 질문은 ma 테이블 차원으로 GROUP BY 한다(기준월 말 시점 · 모델 피처 아님). 회원수는 반드시 예측 테이블 회원번호의 COUNT(DISTINCT) 로 센다. (미매칭) 행은 따로 밝힌다. [O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
+  COMMENT = 'ML 중단 예측 × 활동 후원 캠페인카테고리 SV. base=SERVING.ML_CHURN_BY_CMPGN_CTGR_V. [Grain: 기준월 × 회원 × 캠페인카테고리]. 「N월 활동회원 중 중단 가능성 높은 회원 중 ○○캠페인(카테고리) 후원 회원 · 회원번호 명단·수」 질문에 쓴다. 🆕 [O245] 후원사업별·카테고리 × 후원사업별 질문은 cs 테이블(ML_CHURN_BY_SPONSORSHIP_V)로 답한다. [활성 지표: 활동회원수 · 중단 고위험 회원수 · 회원 단위 예측 대상 회원수 · 후원건 고위험 회원수 · 평균 중단확률]. [주의: 머신러닝 예측치이며 실적이 아니다 · 회원 단위 모델은 활동회원 일부만 예측한다 · 회원 단위 등급과 후원건 단위 등급은 서로 다른 모델이다 · 실적 SV 와 같은 표에 합산하지 않는다]. [원천: GN_DW.ML → SERVING.ML_MEMBER_RISK_V · SERVING.ML_SPONSOR_RISK_V · CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
+  AI_SQL_GENERATION '[O241-M · O245 회원 특성 축] 성별·연령대·지역·회원상태·회원구분·법인구분(통합·사단·사복)·등록부서·활동 약정 수·후원금액대·유지기간·신규기존·납입방식으로 나눠 달라는 질문은 ma 테이블 차원으로 GROUP BY 한다(기준월 말 시점 · 모델 피처 아님). 회원수는 반드시 예측 테이블 회원번호의 COUNT(DISTINCT) 로 센다. (미매칭) 행은 따로 밝힌다. 🆕 [O245] ROLLUP 합계 행에는 COALESCE(차원, (미매칭)) 를 씌우지 않는다 — CASE WHEN GROUPING(차원) = 1 THEN 전체 합계 WHEN 차원 IS NULL THEN (미매칭) ELSE 차원 END 로 구분한다. [O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
-  핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(cc.STDR_MT)) 하나로 한정하고 밝힌다. (2) 「중단 가능성 높은 회원」의 기본 = 회원 단위 등급 cc.MEMBER_CHURN_GRADE = ''고위험''. 질문이 「그 캠페인 후원의 이탈 위험」을 물으면 cc.SPONSOR_HIGH_CNT > 0 을 쓴다 — 어느 기준인지 표 제목에 밝힌다. (3) 캠페인카테고리는 cc.CMPGN_CTGR_NM = ''<값>'' 으로 거른다. (4) 명단 요청 = 회원번호 · 회원 중단확률(%) ROUND(cc.MEMBER_CHURN_PROB*100,2) · 회원 중단위험 등급 · 후원건 이탈위험 등급 · 활동 약정 수 cc.ACTIVE_SPNSR_CNT(값 그대로 · COUNT 금지) 를 회원번호 중복 없이 반환하고 중단확률 내림차순으로 정렬한다. (5) 명단과 함께 같은 기준월·카테고리의 활동회원수 · 회원 단위 예측 대상 회원수 · 고위험 회원수를 분모로 반환한다 — 🔴 분모 집계에는 등급 조건(MEMBER_CHURN_GRADE = ''고위험'')을 WHERE 에 넣지 않고 COUNT(DISTINCT CASE WHEN …) 로만 건다(WHERE 에 넣으면 활동회원수·예측 대상이 고위험 수와 같아지는 오류). 명단 CTE 에만 등급 조건을 둔다. (6) 🔴 실적 SV 와 조인하지 않는다.'
+  핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(cc.STDR_MT)) 하나로 한정하고 밝힌다. (2) 「중단 가능성 높은 회원」의 기본 = 회원 단위 등급 cc.MEMBER_CHURN_GRADE = ''고위험''. 질문이 「그 캠페인 후원의 이탈 위험」을 물으면 cc.SPONSOR_HIGH_CNT > 0 을 쓴다 — 어느 기준인지 표 제목에 밝힌다. (3) 캠페인카테고리는 cc.CMPGN_CTGR_NM = ''<값>'' 으로 거른다. (4) 명단 요청 = 회원번호 · 회원 중단확률(%) ROUND(cc.MEMBER_CHURN_PROB*100,2) · 회원 중단위험 등급 · 후원건 이탈위험 등급 · 활동 약정 수 cc.ACTIVE_SPNSR_CNT(값 그대로 · COUNT 금지) 를 회원번호 중복 없이 반환하고 중단확률 내림차순으로 정렬한다. (5) 명단과 함께 같은 기준월·카테고리의 활동회원수 · 회원 단위 예측 대상 회원수 · 고위험 회원수를 분모로 반환한다 — 🔴 분모 집계에는 등급 조건(MEMBER_CHURN_GRADE = ''고위험'')을 WHERE 에 넣지 않고 COUNT(DISTINCT CASE WHEN …) 로만 건다(WHERE 에 넣으면 활동회원수·예측 대상이 고위험 수와 같아지는 오류). 명단 CTE 에만 등급 조건을 둔다. (6) 🔴 실적 SV 와 조인하지 않는다. (7) 🆕 [O245] 「후원사업별」·「캠페인카테고리 × 후원사업별」 질문은 cs 테이블(cs.SPONSORSHIP_NAME · cs.SP_CMPGN_CTGR_NM)로 답한다 — 분모·고위험 규칙은 (2)·(5)와 같고 cs 컬럼으로 쓴다. 🔴 cc 와 cs 를 한 쿼리에서 조인하지 않는다(grain 이 다르다).'
   AI_VERIFIED_QUERIES (
     vqr_o224_korean_high_risk_list AS (
       QUESTION '26년 9월 활동회원 중 중단가능성 높은 회원 중 고려인캠페인 후원 회원번호 명단'
