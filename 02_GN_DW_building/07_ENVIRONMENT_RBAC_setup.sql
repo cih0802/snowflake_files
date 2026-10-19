@@ -44,7 +44,7 @@
 --    · 종전 ANALYST 범위는 SILVER·GOLD 읽기까지였다(01_환경 Role.md §2.2 scope = "SILVER(읽기), GOLD(읽기), SERVING 소비").
 --      BRONZE 가 추가되면서 **owner's rights 경유 확산**이 새 위험으로 들어온다 → §D.7 상단 경고 참조.
 use role accountadmin;
-alter user identifier('TRIALADMIN') set default_secondary_roles=();
+alter user identifier('CHOIH') set default_secondary_roles=();
 /* =====================================================================
    A. 웨어하우스 (01_환경 Role.md §1.2)
    ===================================================================== */

@@ -50,7 +50,7 @@ CREATE DBT PROJECT IF NOT EXISTS GN_DW.OPS.DW_PIPELINE  FROM 'snow://workspace/U
 
 -- (2-B) [코드 수정 시] 신규 버전 추가 배포 (VERSION$N+1 자동 증가 및 default 승격)
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE
-  ADD VERSION AGENT_ML_Tuning_20261016140806
+  ADD VERSION PROD_20261019
   FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/10_dbt_pipeline';
 
 ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE SET
