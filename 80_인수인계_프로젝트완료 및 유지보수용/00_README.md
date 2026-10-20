@@ -17,7 +17,7 @@
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
 | 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 57 |
-| 02_dbt_pipeline | dbt 프로젝트 원본 | 211 |
+| 02_dbt_pipeline | dbt 프로젝트 원본 | 215 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
 | 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 4 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
@@ -154,6 +154,7 @@
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -169,6 +170,7 @@
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -285,11 +287,13 @@
 | 10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/assert_fmec_event_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
