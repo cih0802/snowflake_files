@@ -40,7 +40,6 @@ MANIFEST = [
 
     ("04_SV_Agent_스펙", "cortex_project/cortex-project.yaml", "Cortex 프로젝트 설정"),
     ("04_SV_Agent_스펙", "cortex_project/agents", "09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙"),
-    ("04_SV_Agent_스펙", "cortex_project/AGENT_*.agent.yaml", "Agent 3종 스펙 (루트 사본)"),
 
     ("05_RAG_지표사전", "12_agent개선과제/output/O217_biz_definition_corpus.csv",
      "RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV"),
@@ -155,8 +154,10 @@ def main():
             dst = OUT / r["서브폴더"] / r["파일경로"]
             dst.parent.mkdir(parents=True, exist_ok=True)
             if dst.exists():
+                if dst.stat().st_size == r["크기(byte)"] and dst.read_bytes() == r["_src"].read_bytes():
+                    continue  # 동일 파일 — 재실행 시 재개(stage 마운트 쓰기가 느림)
                 print(f"  overwrite: {dst.relative_to(OUT)}")
-            shutil.copy2(r["_src"], dst)
+            shutil.copyfile(r["_src"], dst)
 
     if args.apply:
         write_index(rows)

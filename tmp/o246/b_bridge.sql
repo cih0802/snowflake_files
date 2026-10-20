@@ -1,0 +1,107 @@
+-- O246-B 신규 — GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V (회원 브리지 · 사용자 승인 2026-10-19)
+USE ROLE GN_DW_ADMIN;
+CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V (
+  STDR_MT COMMENT '모델 실행 기준월(YYYYMM)',
+  MBER_NO COMMENT '회원번호(정기회원 체계)',
+  HAS_CHURN_PRED COMMENT 'TRUE = 회원 단위 중단 예측 대상',
+  CHURN_PROB COMMENT '중단확률(0~1 · 예측치) — NULL = 중단 예측 대상 아님',
+  CHURN_GRADE COMMENT '중단위험 등급(고위험/주의/일반 · 기준월 내 순위 구간) — NULL = 중단 예측 대상 아님',
+  HAS_INC_PRED COMMENT 'TRUE = 증액 예측 대상',
+  INC_PROB COMMENT '증액확률(0~1 · 예측치) — NULL = 증액 예측 대상 아님',
+  INC_CLASS COMMENT '증액 모델 판정 0/1 — NULL = 증액 예측 대상 아님',
+  HAS_LOYAL_PRED COMMENT 'TRUE = 충성(장기회원) 예측 대상',
+  LOYAL_PROB COMMENT '충성확률(0~1 · 예측치) — NULL = 충성 예측 대상 아님',
+  LOYAL_GRADE COMMENT '장기회원 등급(최상위/상/중/하) — NULL = 충성 예측 대상 아님',
+  REP_SPNSR_NO COMMENT '대표 약정번호(기준월 말 활동 약정 중 약정금액 최대 · 없으면 마지막 종료 약정) — NULL = 기준월 이전 약정 이력 없음',
+  REP_SPNSR_SOURCE COMMENT '대표 약정 출처 = 활동약정 / 종료약정(활동 약정이 없어 마지막 종료 약정으로 보완). NULL = 약정 이력 없음',
+  SPONSORSHIP_NAME COMMENT '대표 약정의 후원사업명(DIM_SPONSORSHIP) — NULL = 약정 이력 없음 또는 차원 미매핑',
+  ACQ_CMPGN_CTGR_NM COMMENT '대표 약정의 획득 캠페인카테고리(적재 시점 동결값) — NULL = 원천 값 없음',
+  ACQ_MKTG_CMPGN_NM COMMENT '대표 약정의 획득 마케팅캠페인명 — NULL = 원천 값 없음',
+  ACQ_CMMN_BRND_NM COMMENT '대표 약정의 획득 공통브랜드 — NULL = 원천 값 없음',
+  ACQ_MKTG_UTM_NM COMMENT '대표 약정의 획득 UTM — NULL = 원천에 UTM 이 없다(디지털 외 경로 다수)',
+  ACQ_INFLOW_PATH_NM COMMENT '대표 약정의 획득 회원유입경로 — NULL = 원천 값 없음',
+  ACTIVE_SPNSR_CNT COMMENT '기준월 말 활동 약정 수(건) — 0 = 활동 약정 없음',
+  AMOUNT_BAND COMMENT '후원금액대(ML_MEMBER_ATTR_ASOF_V · 기준월 행 없으면 직전 12개월 최근 월)',
+  TENURE_BAND COMMENT '유지기간대(ML_MEMBER_ATTR_ASOF_V · 폴백 동일)',
+  PAYMENT_METHOD_NAME COMMENT '납입방식(ML_MEMBER_ATTR_ASOF_V · 폴백 동일 · 잠정)',
+  ATTR_FALLBACK COMMENT 'TRUE = 금액대·기간대가 기준월이 아닌 직전 실적 월 값',
+  LAST_BILL_MONTH_KEY COMMENT '기준월 포함 직전 12개월 중 마지막 청구월(YYYYMM) — NULL = 12개월 청구 없음',
+  LAST_BILLED_AMT COMMENT '마지막 청구월의 청구액(원 · 실적) — NULL = 12개월 청구 없음',
+  PAID_FEE_12M COMMENT '기준월 포함 직전 12개월 납입회비 합(원 · 실적) — NULL = 12개월 청구 없음',
+  UNPAID_AMT_12M COMMENT '기준월 포함 직전 12개월 미납 청구액 합(원 · 실적) — NULL = 12개월 청구 없음',
+  UNPAID_MONTHS_12M COMMENT '직전 12개월 중 미납이 있는 월 수(개월 · 실적) — NULL = 12개월 청구 없음',
+  IS_UNPAID_STDR COMMENT 'TRUE = 기준월에 미납 청구가 있다(실적) · FALSE = 기준월 청구가 없거나 완납',
+  DVLP_UP_CNT_12M COMMENT '직전 12개월 MSTR 개발(신규·증액·재후원) 건수(건 · 실적) — 0 = 없음',
+  DVLP_DOWN_CNT_12M COMMENT '직전 12개월 MSTR 감액·후원중단 건수(건 · 실적) — 0 = 없음'
+) COMMENT = 'O246-B ML 회원 단위 예측 × 실적 축·실적 상태 브리지. grain = 기준월 × 회원. 예측 = SERVING.ML_MEMBER_RISK_V(중단·증액·충성) · 축 = GOLD.FACT_MEMBER_SPONSORSHIP_SPAN 대표 약정 · 특성 = SERVING.ML_MEMBER_ATTR_ASOF_V · 회비·미납 = GOLD.WIDE_MEMBER_FEE · 개발 = SERVING.MSTR_SPNSR_DVLP_V. 실적 축으로 나눈 값은 매칭 집계이며 추정이 아니다. 확률을 합한 값은 추정치다.'
+AS
+WITH r AS (
+  SELECT STDR_MT, TO_NUMBER(STDR_MT) AS MK, MBER_NO,
+         HAS_CHURN_PRED, CHURN_PROB, CHURN_GRADE,
+         HAS_INC_PRED, INC_PROB, INC_CLASS,
+         HAS_LOYAL_PRED, LOYAL_PROB, LOYAL_GRADE
+  FROM GN_DW.SERVING.ML_MEMBER_RISK_V
+), sp AS (
+  SELECT r.STDR_MT, r.MBER_NO, s.SPNSR_NO, s.SPONSORSHIP_SK,
+         s.ACQ_CMPGN_CTGR_NM, s.ACQ_MKTG_CMPGN_NM, s.ACQ_CMMN_BRND_NM, s.ACQ_MKTG_UTM_NM, s.ACQ_MBER_INFLOW_PATH_NM,
+         IFF(s.DSCNTC_MONTH_KEY IS NULL OR s.DSCNTC_MONTH_KEY > r.MK, '활동약정', '종료약정') AS SRC
+  FROM r
+  JOIN GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN s
+    ON s.MEMBER_DK = r.MBER_NO
+   AND s.START_MONTH_KEY <= r.MK
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY r.STDR_MT, r.MBER_NO
+    ORDER BY IFF(s.DSCNTC_MONTH_KEY IS NULL OR s.DSCNTC_MONTH_KEY > r.MK, 0, 1),
+             IFF(s.DSCNTC_MONTH_KEY IS NULL OR s.DSCNTC_MONTH_KEY > r.MK, 0, s.DSCNTC_MONTH_KEY) DESC,
+             s.SPNSR_AMT DESC NULLS LAST, s.START_MONTH_KEY DESC, s.SPNSR_NO
+  ) = 1
+), fm AS (
+  SELECT r.STDR_MT, r.MBER_NO, w.MONTH_KEY,
+         SUM(w.BILLED_AMT) AS BILLED, SUM(w.PAID_FEE) AS PAID, SUM(w.UNPAID_BILLED_AMT) AS UNPAID
+  FROM r
+  JOIN GN_DW.GOLD.WIDE_MEMBER_FEE w
+    ON w.MEMBER_DK = r.MBER_NO
+   AND w.MONTH_KEY <= r.MK
+   AND w.MONTH_KEY > r.MK - 100
+  GROUP BY 1, 2, 3
+), fee AS (
+  SELECT STDR_MT, MBER_NO,
+         MAX(MONTH_KEY) AS LAST_BILL_MONTH_KEY,
+         MAX_BY(BILLED, MONTH_KEY) AS LAST_BILLED_AMT,
+         SUM(PAID) AS PAID_FEE_12M,
+         SUM(UNPAID) AS UNPAID_AMT_12M,
+         COUNT_IF(UNPAID > 0) AS UNPAID_MONTHS_12M,
+         BOOLOR_AGG(MONTH_KEY = STDR_MT::INT AND UNPAID > 0) AS IS_UNPAID_STDR
+  FROM fm
+  GROUP BY 1, 2
+), dv AS (
+  SELECT r.STDR_MT, r.MBER_NO,
+         SUM(IFF(d.DVLP_DIV_NM IN ('신규', '증액', '재후원'), d.DVLP_CNT, 0)) AS UP_CNT,
+         SUM(IFF(d.DVLP_DIV_NM IN ('감액', '후원중단'), d.DVLP_CNT, 0)) AS DOWN_CNT
+  FROM r
+  JOIN GN_DW.SERVING.MSTR_SPNSR_DVLP_V d
+    ON d.MBER_NO = r.MBER_NO
+   AND TO_NUMBER(d.STRD_MT) <= r.MK
+   AND TO_NUMBER(d.STRD_MT) > r.MK - 100
+  GROUP BY 1, 2
+)
+SELECT r.STDR_MT, r.MBER_NO,
+       r.HAS_CHURN_PRED, r.CHURN_PROB, r.CHURN_GRADE,
+       r.HAS_INC_PRED, r.INC_PROB, r.INC_CLASS,
+       r.HAS_LOYAL_PRED, r.LOYAL_PROB, r.LOYAL_GRADE,
+       sp.SPNSR_NO, sp.SRC, ds.SPONSORSHIP_NAME,
+       sp.ACQ_CMPGN_CTGR_NM, sp.ACQ_MKTG_CMPGN_NM, sp.ACQ_CMMN_BRND_NM, sp.ACQ_MKTG_UTM_NM, sp.ACQ_MBER_INFLOW_PATH_NM,
+       COALESCE(a.ACTIVE_SPNSR_CNT, 0),
+       a.AMOUNT_BAND, a.TENURE_BAND, a.PAYMENT_METHOD_NAME, a.ATTR_FALLBACK,
+       fee.LAST_BILL_MONTH_KEY, fee.LAST_BILLED_AMT, fee.PAID_FEE_12M, fee.UNPAID_AMT_12M, fee.UNPAID_MONTHS_12M,
+       COALESCE(fee.IS_UNPAID_STDR, FALSE),
+       COALESCE(dv.UP_CNT, 0), COALESCE(dv.DOWN_CNT, 0)
+FROM r
+LEFT JOIN sp ON sp.STDR_MT = r.STDR_MT AND sp.MBER_NO = r.MBER_NO
+LEFT JOIN GN_DW.GOLD.DIM_SPONSORSHIP ds ON ds.SPONSORSHIP_SK = sp.SPONSORSHIP_SK
+LEFT JOIN GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V a ON a.STDR_MT = r.STDR_MT AND a.MBER_NO = r.MBER_NO
+LEFT JOIN fee ON fee.STDR_MT = r.STDR_MT AND fee.MBER_NO = r.MBER_NO
+LEFT JOIN dv ON dv.STDR_MT = r.STDR_MT AND dv.MBER_NO = r.MBER_NO;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V TO ROLE GN_DW_SERVICE;

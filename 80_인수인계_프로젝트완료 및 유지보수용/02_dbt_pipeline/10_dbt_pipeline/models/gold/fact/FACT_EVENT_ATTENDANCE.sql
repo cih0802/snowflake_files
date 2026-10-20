@@ -1,0 +1,93 @@
+-- FACT_EVENT_ATTENDANCE: 행사 참여/출석 팩트 (행사별 회원 참여, 출석, 신청, 대기, 취소 현황)
+-- Co-authored with CoCo
+-- 🔴 [2026-09-22 O179 · I1] 리터럴 pre_hook='TRUNCATE TABLE IF EXISTS <this>' **제거**.
+--    이유 = dbt 는 hook 을 누적하므로 `dbt_project.yml` `gold.fact:+pre-hook: gold_fact_purge(this)`
+--    와 **이중 실행**됐다(dbt_project.yml:239-246 이 경고한 구조).
+--    🟢 피해는 0 이었다 — 이 팩트는 `RANGED_FACTS` 에 없어 매크로도 `TRUNCATE` 를 내고
+--       **TRUNCATE 는 멱등**이라 2회 실행이 1회와 같다 ⇒ 제거 후 기대값은 **행수 불변**이다.
+--    🔴 그래도 제거하는 이유 = 이 팩트를 나중에 `RANGED_FACTS` 에 넣는 순간
+--       TRUNCATE + 범위 DELETE 가 함께 돌아 **에러 없이 창 크기로 쪼그라든다.**
+--       즉 지금은 무해하지만 **한 줄만 바뀌면 사고가 되는 배선**이었다.
+--    🔴 pre-hook 정의 지점은 `macros/gold_fact_purge.sql` 하나다 — 여기에 다시 쓰지 마라.
+-- 🆕 🔴🔴 [2026-09-22 O180] **위 주석은 원래 config 블록 안에 있었고 그것이 컴파일을 깨뜨렸다.**
+--    config 호출은 **Jinja 표현식**이므로 `--` 는 SQL 주석이 아니라 연산자로 파싱된다.
+--    게다가 주석 안에 인용해 둔 Jinja 태그(중괄호 2개로 감싼 this)가 닫는 중괄호로
+--    **config 를 조기 종료**시켰다
+--    ⇒ `Compilation Error ... invalid syntax for function call expression line 3`.
+--    🟢 그래서 이 주석을 **config 바깥으로 옮기고** 그 인용을 `<this>` 로 바꿨다.
+--    🔴🔴 판정식 3개 — 전부 이 한 사고에서 나왔다:
+--       ㉠ **config 안에 `--` 주석을 쓰지 마라.** 설명은 config 위·아래 SQL 주석에 둔다.
+--       ㉡ **주석 안에서도 Jinja 태그를 인용하지 마라** — dbt 는 파일 전체를 Jinja 로 렌더하므로
+--          `--` 는 Jinja 를 막지 못한다. 백틱도 막지 못한다. 태그 이름만 말로 적어라.
+--       ㉢ **Jinja 를 인용해야 하면 Jinja 주석 블록에 넣어라** — 그 안은 렌더되지 않는다.
+--          🔴 단 그 블록 안에서도 **닫는 구분자를 글자로 적지 마라** — 거기서 주석이 끝난다
+--             (O180 이 `CRM_MEMBER_DEV` 에서 실제로 그 사고를 냈다). 구분자는 말로 서술한다.
+--    🔴 O180 이 ㉡ 를 모른 채 1차 수정에서 같은 결함을 재생산했다(자체 적발·즉시 정정).
+{{ config(
+    materialized='incremental',
+    incremental_strategy='append',
+    tags=['gold_ready']
+) }}
+
+with p as (
+    select * from {{ ref('CRM_EVENT_PARTICIPATION') }}
+)
+
+select
+    COALESCE({{ date_sk('p.PARTCPT_DT::DATE') }}, {{ date_sk('e.EVENT_START_DATE') }}, 0) as DATE_SK,
+    p.MBER_NO                                     as MEMBER_DK,
+    COALESCE(e.EVENT_SK, 0)                        as EVENT_SK,
+    0                                             as CAMPAIGN_SK,
+    0                                             as SPONSORSHIP_SK,
+    1 as TOTAL_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_WAIT') }}, 1, 0)  as WAIT_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_CANCEL') }}, 1, 0)      as CANCEL_CNT,
+    -- [O183] 신청확정인원 = 캠페인행사(MS006) 신청이 대기·취소가 아닌 확정 상태(신청·참여·불참) 1/0.
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_CONFIRM') }}, 1, 0) as CONFIRM_CNT,
+    1 as PARTICIPATE_CNT, 1 as PARTICIPANT_CNT,
+    IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_ABSENT') }}, 1, 0)      as ABSENT_CNT,
+    -- [O183] 회원별 누적 횟수(그 신청 시점까지 · 신청일시 → 행사키 → 순번 순). 캠페인행사(MS006)는 명칭 「참여」,
+    --   일반행사(MS304 다단계)는 「Success」를 참여로 본다. 누적신청 = 상태 무관 신청 행 수.
+    -- 🆕 [O232] 판정 = 라벨 문자열 → **상태코드**(macros/gn_biz_codes.sql · 코드↔라벨 1:1 실측 · 결과 동일).
+    SUM(IFF({{ gn_evt_attended('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD') }}, 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as PARTICIPATION_TIMES,
+    SUM(IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_WAIT') }}, 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as WAIT_TIMES,
+    SUM(IFF({{ gn_evt_stat('p.PARTCPT_STAT_GROUP', 'p.PARTCPT_STAT_CD', 'EVT_MS006_ABSENT') }}, 1, 0)) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as ABSENT_TIMES,
+    COUNT(*) OVER (
+        PARTITION BY p.MBER_NO ORDER BY p.PARTCPT_DT, p.EVENT_KEY, p.PARTCPT_SEQ
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)                       as CUM_APPLY_TIMES,
+    p.RCPMNY_AMT                                  as REGULAR_DONATION,
+    (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
+    -- 🆕 [2026-09-30 O191-G] 종전 전건 NULL → MS060 본인참여(0=동반자만·1=본인만·2=함께) 로 채움.
+    --   본인이 참여 = 1·2 → TRUE · 동반자만 = 0 → FALSE · 코드 없음(일반행사 전건 등) → NULL(창작 0).
+    CASE p.SELF_PARTCPT_CD WHEN '1' THEN TRUE WHEN '2' THEN TRUE WHEN '0' THEN FALSE END as SELF_PART_FLAG,
+    p.PARTCPT_STAT_CD                             as PART_STATUS,
+    p.PARTCPT_PATH_CD                             as PART_PATH,
+    p.PARTCPT_CHNNL_CD                            as PART_CHANNEL,
+    p.EVENT_KEY                                   as EVENT_BK,
+    p.PARTCPT_SEQ                                 as PARTCPT_SEQ,
+    {{ gold_meta('CRM') }},
+    p.PARTCPT_STAT_GROUP                          as PART_STATUS_GROUP,
+    p.PARTCPT_STAT_NM                             as PART_STATUS_NAME,
+    p.PARTCPT_PATH_GROUP                          as PART_PATH_GROUP,
+    p.PARTCPT_PATH_NM                             as PART_PATH_NAME,
+    p.PARTCPT_CHNNL_GROUP                         as PART_CHANNEL_GROUP,
+    p.PARTCPT_CHNNL_NM                            as PART_CHANNEL_NAME,
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then 'EVENT'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then 'CRMN' end as EVENT_KIND,
+    case p.DW_SOURCE_TABLE
+         when 'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' then '일반행사'
+         when 'BRONZE_CRM.TD_MS_CRMN_PRTCPNT'      then '캠페인행사' end as EVENT_KIND_NAME,
+    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_EVENT_PARTICIPATION 승계(참여 grain degen).
+    --   참여구분 = 일반행사 전용 · 나머지 7종 = 캠페인행사 전용(비해당 NULL).
+    p.EVENT_PARTCPT_DIV_CD, p.RQST_DATE, p.SELF_PARTCPT_CD, p.ACMPNY_PARTCPT_CO,
+    p.PARTCPT_TIME_CO, p.RCPMNY_STAT_CD, p.RCPMNY_DATE, p.REFND_DATE
+from p
+left join {{ ref('DIM_EVENT') }} e
+    on e.EVENT_BK = p.EVENT_KEY

@@ -269,7 +269,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
     df AS GN_DW.SERVING.ML_DVLP_FORECAST_V
       PRIMARY KEY (STDR_MT, SERIES_TYPE, SERIES_CD, TS)
       WITH SYNONYMS ('개발 예측', '개발금액 예측', '개발액 예측', '연도말 개발 예측')
-      COMMENT = '개발금액 시계열 예측 2계열 분석 (base: SERVING.ML_DVLP_FORECAST_V). [Grain: 기준월 × 계열유형 × 계열 × 예측월]. [활성 지표: 예측 개발금액(만원)]. [주의: 단위=만원, 계열유형 간 단순 합산 금지(독립 예측), 부서·후원사업·신규기존 예측은 원천 삭제로 미제공]. [원천: ML 시계열모델 2종 → SERVING.ML_DVLP_FORECAST_V].'
+      COMMENT = '개발금액 시계열 예측 2계열 분석 (base: SERVING.ML_DVLP_FORECAST_V). [Grain: 기준월 × 계열유형 × 계열 × 예측월]. [활성 지표: 예측 개발금액(만원)]. [주의: 단위=만원, 계열유형 간 단순 합산 금지(독립 예측), 부서·후원사업·신규기존 예측은 원천 삭제로 미제공]. [원천: ML 시계열모델 2종 → SERVING.ML_DVLP_FORECAST_V].',
+    fa AS GN_DW.SERVING.ML_DVLP_FORECAST_ALLOC_V
+      PRIMARY KEY (STDR_MT, FORECAST_MONTH_KEY, ALLOC_AXIS, AXIS_VALUE)
+      WITH SYNONYMS ('후원사업별 개발 예측', '마케팅캠페인명별 개발 예측', '공통브랜드별 개발 예측', '채널별 개발 예측', '개발 예측 배분')
+      COMMENT = '🆕 [O246-B] 개발금액 예측 배분 추정 (base: SERVING.ML_DVLP_FORECAST_ALLOC_V). [Grain: 기준월 × 예측월 × 배분축 × 축값]. [산식: 전사(TOTAL) 예측 × 직전 12개월 MSTR 신규·증액·재후원 약정금액 비중]. 🔴🔴 모델 예측치가 아니라 실적 비중 배분 추정치. 🔴🔴 ALLOC_AXIS 를 반드시 1개로 필터한다(축끼리 합산 = 같은 금액 중복계상). 단위 만원. df 와 조인하지 않는다.'
   )
   DIMENSIONS (
     df.STDR_MT AS df.STDR_MT
@@ -286,7 +290,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
       COMMENT = '계열 라벨(계열유형별로 캠페인명·전사 합계).',
     df.TS AS df.TS
       WITH SYNONYMS ('예측월', '예측 시점', '전망월')
-      COMMENT = '예측 대상 월(월 시작일 타임스탬프). 🔴기준월(STDR_MT)과 다르다 — 기준월은 모델을 돌린 달이고 이것은 예측하는 달이다.'
+      COMMENT = '예측 대상 월(월 시작일 타임스탬프). 🔴기준월(STDR_MT)과 다르다 — 기준월은 모델을 돌린 달이고 이것은 예측하는 달이다.',
+    fa.STDR_MT AS fa.STDR_MT WITH SYNONYMS ('배분 기준월') COMMENT = '[배분] 모델 실행 기준월(YYYYMM). 미지정 시 최신 1개.',
+    fa.FORECAST_MONTH_KEY AS fa.FORECAST_MONTH_KEY WITH SYNONYMS ('배분 예측연월') COMMENT = '[배분] 예측 대상 연월(YYYYMM 정수).',
+    fa.ALLOC_AXIS AS fa.ALLOC_AXIS WITH SYNONYMS ('배분 축', '분해 기준') COMMENT = '[배분] 후원사업 / 마케팅캠페인명 / 공통브랜드 / 마케팅채널. 🔴 반드시 1개 값으로 필터한다.',
+    fa.AXIS_VALUE AS fa.AXIS_VALUE WITH SYNONYMS ('배분 대상', '후원사업', '마케팅캠페인명', '공통브랜드', '마케팅채널') COMMENT = '[배분] 축 값. (미지정) = 실적 행에 값 없음 — 숨기지 말고 별도 행 · 마케팅채널은 (미지정) 비중이 크다.'
   )
   METRICS (
     df.FORECAST_AMT AS SUM(df.FORECAST)
@@ -306,12 +314,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST
       COMMENT = '예측 대상 개월 수. 예측 기간을 밝힐 때 쓴다.',
     df.SERIES_COUNT AS COUNT(DISTINCT df.SERIES_CD)
       WITH SYNONYMS ('계열 수')
-      COMMENT = '계열 수. 🔴전 계열이 예측 대상은 아니다 — 원천이 일부 계열만 담을 수 있으므로 「전체」로 단정하지 않는다.'
+      COMMENT = '계열 수. 🔴전 계열이 예측 대상은 아니다 — 원천이 일부 계열만 담을 수 있으므로 「전체」로 단정하지 않는다.',
+    fa.TOTAL_ALLOC_FORECAST_AMT AS SUM(fa.ALLOC_FORECAST_AMT) WITH SYNONYMS ('배분 추정 개발액', '후원사업별 예측 개발액', '마케팅캠페인별 예측 개발액') COMMENT = '[배분] 배분 추정 개발금액 합계(만원). 🔴 모델 예측치 아님 · 실적 비중 배분 추정치. 한 축의 합 = 전사 예측 합.',
+    fa.TOTAL_ALLOC_FORECAST_LOWER AS SUM(fa.ALLOC_LOWER) WITH SYNONYMS ('배분 하한') COMMENT = '[배분] 하한 합계(만원).',
+    fa.TOTAL_ALLOC_FORECAST_UPPER AS SUM(fa.ALLOC_UPPER) WITH SYNONYMS ('배분 상한') COMMENT = '[배분] 상한 합계(만원).'
   )
   COMMENT = 'ML 개발금액 예측 SV(2종 통합 · 전사·캠페인). base=SERVING.ML_DVLP_FORECAST_V. 🔴🔴 **단위는 만원이다** — 원 단위 실적(예산·회비 SV)과 같은 표에 넣으면 만 배 오차가 난다. 🔴🔴 예측치이며 실적이 아니다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴🔴 **계열유형(SERIES_TYPE)을 반드시 고정하거나 그룹에 넣는다** — 유형을 섞어 합하면 같은 개발 활동을 여러 축으로 겹쳐 세어 과대가 된다. 🔴🔴 **유형별 합계는 서로 일치하지 않는다** — 계열마다 독립적으로 예측했기 때문에 전사와 캠페인 합이 다르다(캠페인은 일부 계열) ⇒ 한 유형으로 다른 유형을 검산하지 말고, 「캠페인 합이 전사와 다르다」는 지적에는 이 구조를 설명한다. 🔴 기준월(모델 실행월)과 예측월(TS)은 다른 축이다. ⚠️ 예측치에 음수가 존재한다(감액·해지 반영) — 음수를 오류로 보지 않는다. ⚠️ 캠페인 계열은 원천이 일부 캠페인만 담고 있다(근거 = 20_ML_SV_설계.md). 🔴 부서·후원사업·신규기존 예측은 원천 테이블 삭제로 제공하지 않는다. 활성: 예측액·신뢰구간·월평균·예측개월수·계열수 · 계열유형/계열/예측월 축. 비활성: 본부·지부 분해(조직 계층 산출규칙 미확정) · 부서/후원사업/신규기존 분해(원천 삭제) · 실적 대비 정확도(실적 조인 미배선) · 유형 간 정합 검산(원천이 보장하지 않는다).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 🔴🔴 **SERIES_TYPE 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 넣지 않으면 전사와 캠페인을 겹쳐 세어 합계가 과대가 된다. 질문이 「전사/전체 개발 예측」이면 SERIES_TYPE=''TOTAL'' 로 고정한다. 「캠페인별」이면 ''CAMPAIGN'' 이다. 🔴 「부서별·후원사업별·신규/기존별 개발 예측」을 물으면 SQL을 만들지 말고, 해당 예측은 원천 삭제로 현재 제공하지 않는다고 답한다. 전사 또는 캠페인 예측을 대안으로 안내하되 이를 부서 값처럼 나눠 계산하지 않는다. (2) 🔴🔴 **단위는 만원이다.** 답변에 항상 단위를 밝히고, 원으로 환산하면 환산했다고 명시한다. 예산·회비 등 원 단위 지표와 같은 표에 합산하지 않는다. (3) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 그 기준월을 밝힌다. (4) 🔴 **기준월과 예측월(TS)을 혼동하지 않는다** — 「향후 12개월 예측」은 하나의 기준월에 속한 TS 12개다. 연도말 전망을 물으면 해당 연도에 속한 TS 만 합산하고 기준월을 밝힌다. (5) 🔴 **예측치임을 답변에 밝힌다** — 실적으로 읽히는 표현(「개발액은 …이다」)을 쓰지 않고 「예측치는 …」으로 쓴다. 테스트 단계임도 함께 밝힌다. (6) **음수 예측치를 오류로 처리하거나 0 으로 바꾸지 않는다** — 감액·해지가 반영된 값이다. (7) **신뢰구간을 별개 수치로 나열하지 않는다** — 예측치와 함께 구간으로 제시한다. (8) 🔴 **유형 간 검산을 시도하지 않는다** — 캠페인 합은 전사 예측과 일치하지 않는다(계열별 독립 예측 · 캠페인은 일부 계열). 사용자가 불일치를 지적하면 원천이 정합을 보장하지 않는 구조라고 설명하고, 임의로 비례배분해 맞추지 않는다. 캠페인 계열은 일부 캠페인만 예측 대상임도 밝힌다. (9) 적용 조건(기준월·계열유형 모두 미지정 시): 최신 기준월 + SERIES_TYPE=''TOTAL'' 로 한정해 예측월별 예측액과 신뢰구간을 반환하고, 다른 분해축이 있음을 안내한다.'
+  핵심 규칙: (1) 🔴🔴 **SERIES_TYPE 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 넣지 않으면 전사와 캠페인을 겹쳐 세어 합계가 과대가 된다. 질문이 「전사/전체 개발 예측」이면 SERIES_TYPE=''TOTAL'' 로 고정한다. 「캠페인별」이면 ''CAMPAIGN'' 이다. 🔴 「부서별·신규/기존별 개발 예측」을 물으면 SQL을 만들지 말고, 해당 예측은 원천 삭제로 현재 제공하지 않는다고 답한다. 🆕 [O246-B] 「후원사업별·마케팅캠페인명별·공통브랜드별·마케팅채널별 개발 예측」은 fa 표(배분 추정)만 쓴다 — WHERE ALLOC_AXIS 를 1개 넣고 최신 STDR_MT 1개로 한정하며 df 와 섞지 않는다. 표 제목에 [실적 비중 배분 추정치 · 모델 예측 아님] 을 붙인다. (2) 🔴🔴 **단위는 만원이다.** 답변에 항상 단위를 밝히고, 원으로 환산하면 환산했다고 명시한다. 예산·회비 등 원 단위 지표와 같은 표에 합산하지 않는다. (3) 🔴 **기준월(STDR_MT)을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 그 기준월을 밝힌다. (4) 🔴 **기준월과 예측월(TS)을 혼동하지 않는다** — 「향후 12개월 예측」은 하나의 기준월에 속한 TS 12개다. 연도말 전망을 물으면 해당 연도에 속한 TS 만 합산하고 기준월을 밝힌다. (5) 🔴 **예측치임을 답변에 밝힌다** — 실적으로 읽히는 표현(「개발액은 …이다」)을 쓰지 않고 「예측치는 …」으로 쓴다. 테스트 단계임도 함께 밝힌다. (6) **음수 예측치를 오류로 처리하거나 0 으로 바꾸지 않는다** — 감액·해지가 반영된 값이다. (7) **신뢰구간을 별개 수치로 나열하지 않는다** — 예측치와 함께 구간으로 제시한다. (8) 🔴 **유형 간 검산을 시도하지 않는다** — 캠페인 합은 전사 예측과 일치하지 않는다(계열별 독립 예측 · 캠페인은 일부 계열). 사용자가 불일치를 지적하면 원천이 정합을 보장하지 않는 구조라고 설명하고, 임의로 비례배분해 맞추지 않는다. 캠페인 계열은 일부 캠페인만 예측 대상임도 밝힌다. (9) 적용 조건(기준월·계열유형 모두 미지정 시): 최신 기준월 + SERIES_TYPE=''TOTAL'' 로 한정해 예측월별 예측액과 신뢰구간을 반환하고, 다른 분해축이 있음을 안내한다.'
   AI_VERIFIED_QUERIES (
     vqr_total_forecast_by_month AS (
       QUESTION '최신 기준월 전사 개발금액 예측(예측월별)'
@@ -324,55 +335,40 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO R
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_SERVICE;
 
+-- 🆕 [O246] 2026-10-19 · FA = ML_FEE_FORECAST_ALLOC_V(후원사업·마케팅캠페인명·공통브랜드 배분 추정) 추가 · AI_SQL 규칙 (9)
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST
-  TABLES (
-    ff AS GN_DW.SERVING.ML_FEE_FORECAST_V
-      PRIMARY KEY (STDR_MT, CMPGN_CTGR_CD, FORECAST_TS)
-      WITH SYNONYMS ('회비 예측', '카테고리별 회비 예측', '후원금액 예측')
-      COMMENT = '캠페인 카테고리별 회비 예측 분석 (base: SERVING.ML_FEE_FORECAST_V). [Grain: 기준월 × 캠페인카테고리 × 예측월]. [활성 지표: 예측 회비금액(원)]. [주의: 단위=원, 개발금액(만원)과 단위 상이(합산 금지)]. [원천: ML 회비예측모델 → SERVING.ML_FEE_FORECAST_V].'
-  )
-  DIMENSIONS (
-    ff.STDR_MT AS ff.STDR_MT
-      WITH SYNONYMS ('기준월', '예측 기준월')
-      COMMENT = '모델 실행 기준월(YYYYMM). 여러 기준월 합산 금지. 🔴 실제값은 열거하지 않는다(실행할 때마다 늘어난다) — 조회해서 확인한다.',
-    ff.CMPGN_CTGR_CD AS ff.CMPGN_CTGR_CD
-      WITH SYNONYMS ('캠페인카테고리코드')
-      COMMENT = 'degen: 캠페인 카테고리 코드. 라벨은 CMPGN_CTGR_NAME.',
-    ff.CMPGN_CTGR_NAME AS ff.CMPGN_CTGR_NAME
-      WITH SYNONYMS ('캠페인카테고리', '캠페인 구분', '카테고리')
-      COMMENT = '캠페인 카테고리명. ⚠️일부 카테고리는 원천 마스터에 이름이 없어 NULL 이다 — 이름을 추정해 채우지 않고 코드로 답한다.',
-    ff.FORECAST_TS AS ff.FORECAST_TS
-      WITH SYNONYMS ('예측월', '예측 시점')
-      COMMENT = '예측 대상 월(월 시작일). 기준월과 다르다.',
-    ff.FORECAST_MONTH_KEY AS ff.FORECAST_MONTH_KEY
-      WITH SYNONYMS ('예측연월', '예측 YYYYMM')
-      COMMENT = '예측 대상 연월(YYYYMM 정수). 연·월 필터에 쓴다.'
-  )
-  METRICS (
-    ff.TOTAL_FORECAST_FEE AS SUM(ff.FORECAST_AMT)
-      WITH SYNONYMS ('예측 회비', '회비 예측치', '예측 후원금액')
-      COMMENT = '회비(후원금액) 예측 합계(**원**). 🔴개발금액 예측(만원)과 합산하지 않는다.',
-    ff.TOTAL_FORECAST_FEE_LOWER AS SUM(ff.FORECAST_LOWER)
-      WITH SYNONYMS ('예측 하한')
-      COMMENT = '95% 신뢰구간 하한 합계(원).',
-    ff.TOTAL_FORECAST_FEE_UPPER AS SUM(ff.FORECAST_UPPER)
-      WITH SYNONYMS ('예측 상한')
-      COMMENT = '95% 신뢰구간 상한 합계(원).',
-    ff.AVG_MONTHLY_FORECAST_FEE AS AVG(ff.FORECAST_AMT)
-      WITH SYNONYMS ('월평균 예측 회비')
-      COMMENT = '예측월당 평균 회비 예측(원).',
-    ff.FORECAST_MONTHS AS COUNT(DISTINCT ff.FORECAST_TS)
-      WITH SYNONYMS ('예측 개월수')
-      COMMENT = '예측 대상 개월 수.',
-    ff.CATEGORY_COUNT AS COUNT(DISTINCT ff.CMPGN_CTGR_CD)
-      WITH SYNONYMS ('카테고리 수')
-      COMMENT = '예측 대상 캠페인카테고리 수.'
-  )
-  COMMENT = 'ML 캠페인카테고리별 회비 예측 SV. base=SERVING.ML_FEE_FORECAST_V. 🔴🔴 예측치이며 실적이 아니다 — 회비 실적은 SV_MEMBER_FEE 소관이고 이 SV 와 같은 표에 합산하지 않는다. 🔴🔴 **단위는 원이다** — 개발금액 예측 SV(만원)와 단위가 다르다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴 기준월(모델 실행월)과 예측월은 다른 축이며 여러 기준월 합산은 중복계상이다. ⚠️ 캠페인카테고리 일부는 원천 마스터에 이름이 없어 라벨이 NULL 이다. ⚠️ 예측 대상 카테고리가 전체 카테고리와 같다고 단정하지 않는다. 활성: 예측 회비·신뢰구간·월평균·예측개월수·카테고리수 · 카테고리/예측월 축. 비활성: 캠페인 단위 분해(원천 grain 이 카테고리) · 실적 대비 정확도.'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 🔴🔴 **단위는 원이다.** 개발금액 예측(SV_ML_DVLP_FORECAST · 만원)과 같은 표에 합산하지 않는다. 두 예측을 함께 물으면 표를 나누고 각 단위를 밝힌다. (2) 🔴🔴 **예측과 실적을 합산하지 않는다** — 회비 실적은 SV_MEMBER_FEE 다. 실적과 예측을 함께 보여줄 때는 표를 분리하고 각각을 명시한다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **기준월과 예측월을 혼동하지 않는다.** 연도 전망은 해당 연도의 예측월만 합산한다. (5) 🔴 **예측치임과 테스트 단계임을 밝힌다.** (6) **라벨이 NULL 인 카테고리를 숨기거나 이름을 추정하지 않는다** — 코드로 표기하고 원천에 이름이 없다고 밝힌다. (7) **신뢰구간은 예측치와 함께 구간으로 제시한다.** (8) 적용 조건(기준월·그룹 미지정 시): 최신 기준월로 한정해 예측월별 합계와 신뢰구간을 반환하고, 카테고리별 분해가 가능함을 안내한다.';
-
+	tables (
+		FF as GN_DW.SERVING.ML_FEE_FORECAST_V primary key (STDR_MT,CMPGN_CTGR_CD,FORECAST_TS) with synonyms=('회비 예측','카테고리별 회비 예측','후원금액 예측') comment='캠페인 카테고리별 회비 예측 분석 (base: SERVING.ML_FEE_FORECAST_V). [Grain: 기준월 × 캠페인카테고리 × 예측월]. [활성 지표: 예측 회비금액(원)]. [주의: 단위=원, 개발금액(만원)과 단위 상이(합산 금지)]. [원천: ML 회비예측모델 → SERVING.ML_FEE_FORECAST_V].',
+		FA as GN_DW.SERVING.ML_FEE_FORECAST_ALLOC_V primary key (STDR_MT,CMPGN_CTGR_CD,FORECAST_MONTH_KEY,ALLOC_AXIS,AXIS_VALUE) with synonyms=('후원사업별 회비 예측','마케팅캠페인명별 회비 예측','공통브랜드별 회비 예측','회비 예측 배분') comment='🆕 [O246] 회비 예측 배분 추정 (base: SERVING.ML_FEE_FORECAST_ALLOC_V). [Grain: 기준월 × 캠페인카테고리 × 예측월 × 배분축 × 축값]. [산식: 카테고리 예측 × 직전 12개월 회비 납입 비중]. 🔴🔴 모델 예측치가 아니라 실적 비중 배분 추정치. 🔴🔴 ALLOC_AXIS 를 반드시 1개로 필터한다(축끼리 합산 = 같은 금액 중복계상). FF 와 조인하지 않는다.'
+	)
+	dimensions (
+		FF.STDR_MT as ff.STDR_MT with synonyms=('기준월','예측 기준월') comment='모델 실행 기준월(YYYYMM). 여러 기준월 합산 금지. 🔴 실제값은 열거하지 않는다(실행할 때마다 늘어난다) — 조회해서 확인한다.',
+		FF.CMPGN_CTGR_CD as ff.CMPGN_CTGR_CD with synonyms=('캠페인카테고리코드') comment='degen: 캠페인 카테고리 코드. 라벨은 CMPGN_CTGR_NAME.',
+		FF.CMPGN_CTGR_NAME as ff.CMPGN_CTGR_NAME with synonyms=('캠페인카테고리','캠페인 구분','카테고리') comment='캠페인 카테고리명. ⚠️일부 카테고리는 원천 마스터에 이름이 없어 NULL 이다 — 이름을 추정해 채우지 않고 코드로 답한다.',
+		FF.FORECAST_TS as ff.FORECAST_TS with synonyms=('예측월','예측 시점') comment='예측 대상 월(월 시작일). 기준월과 다르다.',
+		FF.FORECAST_MONTH_KEY as ff.FORECAST_MONTH_KEY with synonyms=('예측연월','예측 YYYYMM') comment='예측 대상 연월(YYYYMM 정수). 연·월 필터에 쓴다.',
+		FA.STDR_MT as fa.STDR_MT with synonyms=('배분 기준월') comment='[배분] 모델 실행 기준월(YYYYMM). 미지정 시 최신 1개.',
+		FA.CMPGN_CTGR_CD as fa.CMPGN_CTGR_CD with synonyms=('배분 캠페인카테고리코드') comment='[배분] 캠페인카테고리 코드.',
+		FA.CMPGN_CTGR_NAME as fa.CMPGN_CTGR_NAME with synonyms=('배분 캠페인카테고리') comment='[배분] 캠페인카테고리명(NULL = 원천 이름 없음 · 코드로 답한다).',
+		FA.FORECAST_MONTH_KEY as fa.FORECAST_MONTH_KEY with synonyms=('배분 예측연월') comment='[배분] 예측 대상 연월(YYYYMM 정수).',
+		FA.ALLOC_AXIS as fa.ALLOC_AXIS with synonyms=('배분 축','분해 기준') comment='[배분] 배분 축 = 후원사업 / 마케팅캠페인명 / 공통브랜드. 🔴 반드시 1개 값으로 필터한다.',
+		FA.AXIS_VALUE as fa.AXIS_VALUE with synonyms=('배분 대상','후원사업','마케팅캠페인명','공통브랜드') comment='[배분] 축 값(후원사업명·마케팅캠페인명·공통브랜드명). (실적 비중 없음) = 그 카테고리에 직전 12개월 회비 실적이 없어 배분 불가(예: 일시) — 숨기지 말고 별도 행으로 표기. (미지정) = 실적 행에 값 없음.'
+	)
+	metrics (
+		FF.TOTAL_FORECAST_FEE as SUM(ff.FORECAST_AMT) with synonyms=('예측 회비','회비 예측치','예측 후원금액') comment='회비(후원금액) 예측 합계(**원**). 🔴개발금액 예측(만원)과 합산하지 않는다.',
+		FF.TOTAL_FORECAST_FEE_LOWER as SUM(ff.FORECAST_LOWER) with synonyms=('예측 하한') comment='95% 신뢰구간 하한 합계(원).',
+		FF.TOTAL_FORECAST_FEE_UPPER as SUM(ff.FORECAST_UPPER) with synonyms=('예측 상한') comment='95% 신뢰구간 상한 합계(원).',
+		FF.AVG_MONTHLY_FORECAST_FEE as AVG(ff.FORECAST_AMT) with synonyms=('월평균 예측 회비') comment='예측월당 평균 회비 예측(원).',
+		FF.FORECAST_MONTHS as COUNT(DISTINCT ff.FORECAST_TS) with synonyms=('예측 개월수') comment='예측 대상 개월 수.',
+		FF.CATEGORY_COUNT as COUNT(DISTINCT ff.CMPGN_CTGR_CD) with synonyms=('카테고리 수') comment='예측 대상 캠페인카테고리 수.',
+		FA.TOTAL_ALLOC_FORECAST_FEE as SUM(fa.ALLOC_FORECAST_AMT) with synonyms=('배분 추정 회비','후원사업별 예측 회비','마케팅캠페인별 예측 회비','브랜드별 예측 회비') comment='[배분] 배분 추정 회비 합계(원). 🔴 모델 예측치 아님 · 실적 비중 배분 추정치. 한 축의 합 = 원 예측 합.',
+		FA.TOTAL_ALLOC_FORECAST_LOWER as SUM(fa.ALLOC_LOWER) with synonyms=('배분 하한') comment='[배분] 하한 합계(원) = 카테고리 95% 하한 × 비중.',
+		FA.TOTAL_ALLOC_FORECAST_UPPER as SUM(fa.ALLOC_UPPER) with synonyms=('배분 상한') comment='[배분] 상한 합계(원) = 카테고리 95% 상한 × 비중.'
+	)
+	comment='ML 캠페인카테고리별 회비 예측 SV. base=SERVING.ML_FEE_FORECAST_V. 🔴🔴 예측치이며 실적이 아니다 — 회비 실적은 SV_MEMBER_FEE 소관이고 이 SV 와 같은 표에 합산하지 않는다. 🔴🔴 **단위는 원이다** — 개발금액 예측 SV(만원)와 단위가 다르다. 🔴 머신러닝은 테스트 단계이며 모델·구조가 교체될 수 있다. 🔴 기준월(모델 실행월)과 예측월은 다른 축이며 여러 기준월 합산은 중복계상이다. ⚠️ 캠페인카테고리 일부는 원천 마스터에 이름이 없어 라벨이 NULL 이다. ⚠️ 예측 대상 카테고리가 전체 카테고리와 같다고 단정하지 않는다. 활성: 예측 회비·신뢰구간·월평균·예측개월수·카테고리수 · 카테고리/예측월 축. 🆕 [O246] 후원사업·마케팅캠페인명·공통브랜드별 = FA(배분 추정치 · 모델 예측 아님). 비활성: 모델 수준 캠페인 단위 예측(원천 grain 이 카테고리) · 실적 대비 정확도.'
+	ai_sql_generation '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS ""한글명"". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: ""연 편성예산(원)"" · ""집행율(%)"" · ""개발(건)""). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  핵심 규칙: (1) 🔴🔴 **단위는 원이다.** 개발금액 예측(SV_ML_DVLP_FORECAST · 만원)과 같은 표에 합산하지 않는다. 두 예측을 함께 물으면 표를 나누고 각 단위를 밝힌다. (2) 🔴🔴 **예측과 실적을 합산하지 않는다** — 회비 실적은 SV_MEMBER_FEE 다. 실적과 예측을 함께 보여줄 때는 표를 분리하고 각각을 명시한다. (3) 🔴 **기준월을 여러 개 합산하지 않는다** — 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (4) 🔴 **기준월과 예측월을 혼동하지 않는다.** 연도 전망은 해당 연도의 예측월만 합산한다. (5) 🔴 **예측치임과 테스트 단계임을 밝힌다.** (6) **라벨이 NULL 인 카테고리를 숨기거나 이름을 추정하지 않는다** — 코드로 표기하고 원천에 이름이 없다고 밝힌다. (7) **신뢰구간은 예측치와 함께 구간으로 제시한다.** (8) 적용 조건(기준월·그룹 미지정 시): 최신 기준월로 한정해 예측월별 합계와 신뢰구간을 반환하고, 카테고리별 분해가 가능함을 안내한다. (9) 🆕 [O246] 후원사업별·마케팅캠페인명별·공통브랜드별 회비 예측 질문은 FA 테이블만 쓴다 — WHERE ALLOC_AXIS = ''후원사업''(또는 ''마케팅캠페인명''·''공통브랜드'') 를 반드시 1개 넣고, 최신 STDR_MT 1개로 한정하며, FF 와 섞지 않는다. 결과 표 제목에 [실적 비중 배분 추정치 · 모델 예측 아님] 을 붙이고, (실적 비중 없음) 행을 숨기지 않는다.';
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST TO ROLE GN_DW_SERVICE;
@@ -572,3 +568,58 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_SERVICE;
+
+-- ============================================================================
+-- 🆕 [O246-B] SV_ML_MEMBER_PRED_BRIDGE — 회원 브리지 SV(사용자 승인 2026-10-19)
+-- ============================================================================
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_BRIDGE
+  TABLES (
+    mb AS GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V
+      PRIMARY KEY (STDR_MT, MBER_NO)
+      WITH SYNONYMS ('예측 회원 브리지', '예측 실적 매칭', '중단 예측 회원 실적', '예측 회원 캠페인')
+      COMMENT = 'ML 회원 단위 예측(중단·증액·충성) × 실적 축·실적 상태 (base: SERVING.ML_MEMBER_PRED_BRIDGE_V). [Grain: 기준월 × 회원]. [축: 대표 약정의 후원사업·획득 캠페인카테고리·마케팅캠페인명·공통브랜드·UTM·유입경로 · 금액대·기간대·납입방식]. [실적 상태: 최근 청구액·직전 12개월 납입·미납·개발 건수]. [주의: 축으로 나눈 회원수는 매칭 집계 · 확률 합은 추정치].'
+  )
+  DIMENSIONS (
+    mb.STDR_MT AS mb.STDR_MT WITH SYNONYMS ('기준월', '예측 기준월') COMMENT = '모델 실행 기준월(YYYYMM). 🔴 여러 기준월 합산 금지 · 미지정 시 최신 1개.',
+    mb.MBER_NO AS mb.MBER_NO WITH SYNONYMS ('회원번호') COMMENT = '회원번호. 명단 질문에만 쓴다.',
+    mb.CHURN_GRADE AS mb.CHURN_GRADE WITH SYNONYMS ('중단위험 등급', '고위험군') COMMENT = '중단위험 등급(고위험/주의/일반 · 기준월 내 순위 구간). NULL = 중단 예측 대상 아님.',
+    mb.LOYAL_GRADE AS mb.LOYAL_GRADE WITH SYNONYMS ('장기회원 등급') COMMENT = '충성(장기회원) 등급. NULL = 충성 예측 대상 아님.',
+    mb.INC_CLASS AS mb.INC_CLASS WITH SYNONYMS ('증액 판정') COMMENT = '증액 모델 판정 0/1. NULL = 증액 예측 대상 아님.',
+    mb.HAS_CHURN_PRED AS mb.HAS_CHURN_PRED WITH SYNONYMS ('중단 예측 대상') COMMENT = 'TRUE = 중단 예측 대상. 중단 관련 질문은 이 값을 TRUE 로 필터한다.',
+    mb.HAS_INC_PRED AS mb.HAS_INC_PRED WITH SYNONYMS ('증액 예측 대상') COMMENT = 'TRUE = 증액 예측 대상.',
+    mb.HAS_LOYAL_PRED AS mb.HAS_LOYAL_PRED WITH SYNONYMS ('충성 예측 대상') COMMENT = 'TRUE = 충성 예측 대상.',
+    mb.SPONSORSHIP_NAME AS mb.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업') COMMENT = '대표 약정의 후원사업명(약정금액 최대 활동 약정).',
+    mb.ACQ_CMPGN_CTGR_NM AS mb.ACQ_CMPGN_CTGR_NM WITH SYNONYMS ('캠페인카테고리') COMMENT = '대표 약정의 획득 캠페인카테고리(적재 시점 동결값).',
+    mb.ACQ_MKTG_CMPGN_NM AS mb.ACQ_MKTG_CMPGN_NM WITH SYNONYMS ('마케팅캠페인명', '마케팅캠페인') COMMENT = '대표 약정의 획득 마케팅캠페인명.',
+    mb.ACQ_CMMN_BRND_NM AS mb.ACQ_CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '브랜드') COMMENT = '대표 약정의 획득 공통브랜드.',
+    mb.ACQ_MKTG_UTM_NM AS mb.ACQ_MKTG_UTM_NM WITH SYNONYMS ('UTM', '마케팅 UTM') COMMENT = '대표 약정의 획득 UTM. ⚠️ 값 보유가 일부(디지털 경로 위주)라 NULL 이 많다 — NULL 비중을 함께 밝힌다.',
+    mb.ACQ_INFLOW_PATH_NM AS mb.ACQ_INFLOW_PATH_NM WITH SYNONYMS ('유입경로', '회원유입경로') COMMENT = '대표 약정의 획득 회원유입경로.',
+    mb.REP_SPNSR_SOURCE AS mb.REP_SPNSR_SOURCE WITH SYNONYMS ('대표 약정 출처') COMMENT = '활동약정 / 종료약정(활동 약정이 없어 마지막 종료 약정으로 보완).',
+    mb.AMOUNT_BAND AS mb.AMOUNT_BAND WITH SYNONYMS ('후원금액대') COMMENT = '후원금액대(기준월 행 없으면 직전 실적 월 값 · ATTR_FALLBACK).',
+    mb.TENURE_BAND AS mb.TENURE_BAND WITH SYNONYMS ('유지기간대', '후원기간대') COMMENT = '유지기간대(폴백 동일).',
+    mb.PAYMENT_METHOD_NAME AS mb.PAYMENT_METHOD_NAME WITH SYNONYMS ('납입방식', '결제수단') COMMENT = '납입방식(폴백 동일 · 잠정).',
+    mb.ATTR_FALLBACK AS mb.ATTR_FALLBACK WITH SYNONYMS ('특성 보완 여부') COMMENT = 'TRUE = 금액대·기간대가 직전 실적 월 값으로 보완됐다.',
+    mb.IS_UNPAID_STDR AS mb.IS_UNPAID_STDR WITH SYNONYMS ('기준월 미납 여부') COMMENT = 'TRUE = 기준월에 미납 청구가 있다(실적).'
+  )
+  METRICS (
+    mb.PRED_MEMBERS AS COUNT(DISTINCT mb.MBER_NO) WITH SYNONYMS ('예측 대상 회원수') COMMENT = '예측 대상 회원수(명 · 매칭 집계).',
+    mb.HIGH_CHURN_MEMBERS AS COUNT(DISTINCT IFF(mb.CHURN_GRADE = '고위험', mb.MBER_NO, NULL)) WITH SYNONYMS ('중단 고위험 회원수') COMMENT = '중단위험 고위험 회원수(명 · 매칭 집계).',
+    mb.EXPECTED_CHURN_MEMBERS AS SUM(mb.CHURN_PROB) WITH SYNONYMS ('기대 중단 회원수', '예상 중단 회원수') COMMENT = '기대 중단 회원수(명 · 추정치) = 중단확률 합. 🔴 중단 예측 데이터 기반 추정치이며 모델이 직접 낸 건수가 아니다.',
+    mb.EXPECTED_REMAIN_MEMBERS AS SUM(IFF(mb.HAS_CHURN_PRED, 1 - mb.CHURN_PROB, NULL)) WITH SYNONYMS ('활동 유지 기대 회원수', '예상 활동회원') COMMENT = '활동 유지 기대 회원수(명 · 추정치) = 중단 예측 대상 중 (1 − 중단확률) 합. 🔴 활동회원 예측 모델은 없다 — 중단 예측 기반 추정치.',
+    mb.FEE_AT_RISK AS SUM(mb.CHURN_PROB * mb.LAST_BILLED_AMT) WITH SYNONYMS ('회비 위험액', '중단 예상 회비') COMMENT = '월 회비 위험액(원 · 추정치) = 중단확률 × 최근 청구액 합. 🔴 회비 예측 모델 값이 아니다 — 중단 예측 기반 추정치.',
+    mb.EXPECTED_INC_MEMBERS AS SUM(mb.INC_PROB) WITH SYNONYMS ('기대 증액 회원수') COMMENT = '기대 증액 회원수(명 · 추정치) = 증액확률 합.',
+    mb.AVG_CHURN_PROB AS AVG(mb.CHURN_PROB) WITH SYNONYMS ('평균 중단확률') COMMENT = '평균 중단확률(0~1 · 예측치 평균).',
+    mb.UNPAID_STDR_MEMBERS AS COUNT(DISTINCT IFF(mb.IS_UNPAID_STDR, mb.MBER_NO, NULL)) WITH SYNONYMS ('기준월 미납 회원수') COMMENT = '기준월 미납 회원수(명 · 실적).',
+    mb.TOTAL_UNPAID_AMT_12M AS SUM(mb.UNPAID_AMT_12M) WITH SYNONYMS ('직전 12개월 미납액') COMMENT = '직전 12개월 미납 청구액 합(원 · 실적).',
+    mb.TOTAL_PAID_FEE_12M AS SUM(mb.PAID_FEE_12M) WITH SYNONYMS ('직전 12개월 납입회비') COMMENT = '직전 12개월 납입회비 합(원 · 실적).',
+    mb.TOTAL_LAST_BILLED_AMT AS SUM(mb.LAST_BILLED_AMT) WITH SYNONYMS ('최근 월 청구액') COMMENT = '마지막 청구월 청구액 합(원 · 실적).',
+    mb.TOTAL_DVLP_UP_CNT_12M AS SUM(mb.DVLP_UP_CNT_12M) WITH SYNONYMS ('직전 12개월 개발건수') COMMENT = '직전 12개월 신규·증액·재후원 개발 건수(건 · 실적).',
+    mb.TOTAL_DVLP_DOWN_CNT_12M AS SUM(mb.DVLP_DOWN_CNT_12M) WITH SYNONYMS ('직전 12개월 감액중단건수') COMMENT = '직전 12개월 감액·후원중단 건수(건 · 실적).'
+  )
+  COMMENT = 'ML 회원 단위 예측 × 실적 브리지 SV. base=SERVING.ML_MEMBER_PRED_BRIDGE_V. 🔴🔴 값 라벨을 구분한다 — 회원수·실적 금액은 매칭 집계/실적, 확률 합(기대 중단·활동 유지·회비 위험액·기대 증액)은 예측 데이터 기반 추정치다. 🔴 미납·활동·회비 예측 모델은 없다 — 이 SV 의 추정 지표로 답하고 그 사실을 밝힌다. 🔴 머신러닝은 테스트 단계다. 🔴 예측 지평은 원천 확인 중이다(숫자로 말하지 않는다). 🔴 축은 단일 대표 약정 기준이다(회원이 여러 약정을 가지면 약정금액 최대 활동 약정).'
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — CTE 안에서는 베이스 컬럼을 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 SV 에 선언된 차원 이름만 쓴다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율·평균·확률·기대 회원수 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림한다. 금액·건수·명수는 숫자형 그대로 둔다. [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(동의어 첫 항목 + 단위). [O206-C 합계 규칙] 합계·분모는 SQL 이 낸다 — GROUP BY ROLLUP 합계 행을 함께 반환하고, 합계 행에는 COALESCE(차원, ''(미매칭)'') 를 씌우지 않는다(CASE WHEN GROUPING(차원) = 1 THEN ''전체 합계'' WHEN 차원 IS NULL THEN ''(미매칭)'' ELSE 차원 END).
+  핵심 규칙: (1) 🔴 최신 STDR_MT 1개로 한정한다. (2) 🔴 중단 관련 질문은 HAS_CHURN_PRED = TRUE 로, 증액은 HAS_INC_PRED, 충성은 HAS_LOYAL_PRED 로 필터한다(모집단이 다르다). (3) 축별 분해는 차원에 GROUP BY 하고 NULL 축값은 (미매칭) 별도 행으로 둔다. (4) 🔴 NULL 축값이 전체 회원의 절반 이상이면 결과에 그 비중을 함께 반환한다(답변 단계에서 보완 설명에 쓴다). (5) 기대 중단 회원수·활동 유지 기대 회원수·회비 위험액·기대 증액 회원수는 추정치 지표다 — 출력 별칭에 (추정) 을 붙인다. (6) 회원번호 명단 질문만 MBER_NO 를 선택하고 LIMIT 을 둔다.';
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_BRIDGE TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_BRIDGE TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_BRIDGE TO ROLE GN_DW_SERVICE;

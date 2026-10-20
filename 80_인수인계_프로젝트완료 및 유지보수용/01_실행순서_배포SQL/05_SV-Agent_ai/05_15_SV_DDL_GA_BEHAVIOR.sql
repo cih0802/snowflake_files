@@ -1,0 +1,111 @@
+-- ============================================================================
+-- 05_15_SV_DDL_GA_BEHAVIOR.sql — Semantic View DDL 정본: SV_GA_BEHAVIOR (🆕 O203 · T8 1차 배선)
+--   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
+--   · 종전 보류 사유(BigQuery 1일 샤드 · 01_SV-Agent 작업계획 §Phase 2)는 해소 — 2024-01-02~2026-09-15 · 1,536,507행(2026-10-06 실측).
+--   · 🔴 grain 실측: 세션·사용자 수는 이벤트 행마다 반복된다(키 420,831 중 302,842 가 다중 이벤트) ⇒ 이벤트 간 합산 금지.
+--   · 공통 규약 = 05_0_SV_DDL.sql
+-- ============================================================================
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
+  TABLES (
+    fbq AS GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR
+      WITH SYNONYMS ('GA', 'GA4', '웹 행동', '앱 행동', '방문 행동', '홈페이지 행동')
+      COMMENT = '웹·앱 사용자 행동 팩트(GA4). [Grain: 일 × 식별자 × 이벤트 × 트래픽소스 × 기기 × 페이지]. [원천: GA4 → BigQuery → 외부 Python 적재 → GN_DW.SILVER.BIGQUERY_REFINED_DATA → SILVER.BIGQUERY_EVENT 등 → GOLD.FACT_BIGQUERY_BEHAVIOR · BRONZE_BIGQUERY 는 비어 있다]. 🔴 CRM 회비·개발 실적과 원천이 다르다(GA4 ↔ CRM) — 한 표에 합산·비율 계산하지 않는다.',
+    date AS GN_DW.GOLD.DIM_DATE
+      PRIMARY KEY (DATE_SK)
+      WITH SYNONYMS ('날짜', '방문일')
+      COMMENT = '일 차원. [원천] ETL 생성(달력).',
+    evt AS GN_DW.GOLD.DIM_BIGQUERY_EVENT
+      PRIMARY KEY (BIGQUERY_EVENT_SK)
+      WITH SYNONYMS ('이벤트', 'GA 이벤트')
+      COMMENT = 'GA4 이벤트 분류 차원(카테고리·액션·라벨). [원천] SILVER.BIGQUERY_REFINED_DATA → SILVER.BIGQUERY_EVENT_DIM.',
+    src AS GN_DW.GOLD.DIM_BIGQUERY_SOURCE
+      PRIMARY KEY (BIGQUERY_SOURCE_SK)
+      WITH SYNONYMS ('유입경로', '트래픽소스', '유입채널')
+      COMMENT = 'GA4 트래픽 소스 차원(채널그룹·소스/매체·UTM). [원천] SILVER.BIGQUERY_REFINED_DATA → SILVER.BIGQUERY_TRAFFIC_SOURCE.',
+    dev AS GN_DW.GOLD.DIM_DEVICE
+      PRIMARY KEY (DEVICE_SK)
+      WITH SYNONYMS ('기기', '디바이스')
+      COMMENT = '기기 차원. [원천] SILVER.BIGQUERY_REFINED_DATA → SILVER.BIGQUERY_DEVICE.'
+  )
+  RELATIONSHIPS (
+    fbq_to_date AS fbq (DATE_SK)           REFERENCES date,
+    fbq_to_evt  AS fbq (BIGQUERY_EVENT_SK) REFERENCES evt,
+    fbq_to_src  AS fbq (BIGQUERY_SOURCE_SK) REFERENCES src,
+    fbq_to_dev  AS fbq (DEVICE_SK)         REFERENCES dev
+  )
+  DIMENSIONS (
+    date.VISIT_DATE AS date.FULL_DATE WITH SYNONYMS ('방문일', '일자', '날짜') COMMENT = '행동 발생일',
+    date.YEAR  AS date.YEAR  WITH SYNONYMS ('연도', '년') COMMENT = '연도',
+    date.MONTH AS date.MONTH WITH SYNONYMS ('월') COMMENT = '월(1~12)',
+    date.WEEK_OF_YEAR AS date.WEEK_OF_YEAR WITH SYNONYMS ('주차') COMMENT = '연중 주차',
+    evt.EVENT_CATEGORY AS evt.EVENT_CATEGORY WITH SYNONYMS ('이벤트 카테고리', '이벤트구분', '공99') COMMENT = 'GA4 이벤트 카테고리. 주요값 예: ''donor_action''·''나의후원''·''캠페인스크롤깊이''·''후원창''·''header''·''메뉴''·''캠페인버튼클릭''. 🔴 NULL = 페이지뷰 행(카테고리 없음)이며 결측이 아니다 — 페이지뷰는 TOTAL_PAGE_VIEWS 로 센다',
+    evt.EVENT_ACTION AS evt.EVENT_ACTION WITH SYNONYMS ('이벤트 액션', '공101') COMMENT = 'GA4 이벤트 액션(자유 텍스트 · 카디널리티 큼) — 이름으로 물으면 ILIKE 부분일치로 필터한다',
+    evt.EVENT_LABEL AS evt.EVENT_LABEL WITH SYNONYMS ('이벤트 라벨', '공100') COMMENT = 'GA4 이벤트 라벨(자유 텍스트 · 카디널리티 큼) — ILIKE 부분일치로 필터한다',
+    src.DEFAULT_CHANNEL_GROUP AS src.DEFAULT_CHANNEL_GROUP WITH SYNONYMS ('채널그룹', '유입채널', 'GA 채널') COMMENT = 'GA4 기본 채널그룹. 실제값 15종 예: ''Unassigned''·''Display''·''Organic Social''·''Organic Search''·''Paid Search''·''Paid Other''·''Paid Social''·''Referral''·''Email''·''SMS''. ⚠️ ''Unassigned''가 행의 큰 비중을 차지한다(비율은 조회로 확인) — 채널 분포를 낼 때 함께 밝힌다',
+    src.SOURCE_MEDIUM AS src.SOURCE_MEDIUM WITH SYNONYMS ('소스/매체', '소스매체', '공109') COMMENT = 'GA4 소스/매체(예: google / cpc)',
+    src.UTM_SOURCE AS src.UTM_SOURCE WITH SYNONYMS ('UTM 소스') COMMENT = 'UTM source',
+    src.UTM_MEDIUM AS src.UTM_MEDIUM WITH SYNONYMS ('UTM 매체') COMMENT = 'UTM medium',
+    fbq.UTM_CAMPAIGN AS fbq.UTM_CAMPAIGN WITH SYNONYMS ('UTM 캠페인', 'GA 캠페인', '공102') COMMENT = 'UTM campaign(자유 텍스트). 🔴 CRM 캠페인 코드와 다른 체계다 — CRM 캠페인으로 바꿔 말하지 않는다',
+    dev.DEVICE_TYPE AS dev.DEVICE_TYPE WITH SYNONYMS ('기기유형', '디바이스유형') COMMENT = '기기 유형(PC·모바일 등)',
+    fbq.PAGE_PATH AS fbq.PAGE_PATH WITH SYNONYMS ('페이지', '페이지 경로', 'URL 경로', '공105', '공106') COMMENT = '페이지 경로(고유값이 매우 많은 자유 텍스트). 특정 페이지는 ILIKE 부분일치로 필터한다. 「유입/전환/중간 페이지」 같은 퍼널 단계 라벨은 원천에 없다 — 창작하지 않는다',
+    src.UTM_CONTENT AS src.UTM_CONTENT WITH SYNONYMS ('UTM 콘텐츠', '광고 콘텐츠', '공103') COMMENT = '세션 수동 광고 콘텐츠(utm_content · #103).',
+    src.UTM_TERM AS src.UTM_TERM WITH SYNONYMS ('UTM 검색어', '검색어', '공104') COMMENT = '세션 수동 검색어(utm_term · #104).'
+  )
+  METRICS (
+    fbq.TOTAL_EVENT_CNT AS SUM(fbq.EVENT_CNT)
+      WITH SYNONYMS ('이벤트수', '이벤트 건수', '클릭수', '공95')
+      COMMENT = '이벤트 발생 건수 합계. F(가산) — 이벤트·채널·페이지 어느 축으로도 더할 수 있다.',
+    fbq.TOTAL_PAGE_VIEWS AS SUM(fbq.VIEW_CNT)
+      WITH SYNONYMS ('페이지뷰', '조회수', 'PV', '공96')
+      COMMENT = '페이지뷰 합계. F(가산). 페이지뷰 행(EVENT_CATEGORY NULL)에만 값이 있다 — 다른 이벤트로 필터하면 0 이다.',
+    fbq.IDENTIFIED_VISITORS AS COUNT(DISTINCT CASE WHEN fbq.IDENTITY_SK > 0 THEN fbq.IDENTITY_SK END)
+      WITH SYNONYMS ('식별 방문자수', '로그인 방문자수', '회원 방문자수')
+      COMMENT = '로그인 등으로 식별된 고유 방문자 수(명). D(distinct · 가산 금지). 🔴 비식별 방문자(전체 행의 일부 · 비중은 조회로 확인)는 빠진다 — 전체 방문자 수가 아니다. 식별자는 CRM 회원과 연결되지만 이 SV 에서 CRM 실적과 결합하지 않는다.',
+    fbq.EVENT_SESSIONS AS SUM(fbq.SESSION_CNT)
+      WITH SYNONYMS ('세션수(이벤트 기준)')
+      COMMENT = '🔴🔴 이벤트 단위 세션 수 — 같은 세션이 이벤트마다 반복 집계된다(실측 키 중복 다수 · 규모는 파일 머리 주석). **EVENT_CATEGORY 를 하나로 고정했을 때만** 쓴다. 여러 이벤트를 합친 「총 세션」·「총 방문」으로 답하지 않는다.',
+    fbq.AVG_ENGAGEMENT_RATE AS AVG(fbq.ENGAGEMENT_RATE)
+      WITH SYNONYMS ('참여율')
+      COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.',
+    -- 🆕 [O243] 공93 GA 활성사용자 · 공107 스크롤깊이 (사용자 승인 2026-10-18)
+    fbq.ACTIVE_USERS_ROWSUM AS SUM(fbq.ACTIVE_USERS)
+      WITH SYNONYMS ('활성사용자(행 합계)', 'GA 활성사용자', '공93')
+      COMMENT = '🔴🔴 GA4 활성사용자(active user) 수 — 팩트 행(일 × 이벤트 × 소스 × 기기 × 페이지) 안에서만 고유하다. 같은 사용자가 여러 행에 반복 집계되므로 **하루 · EVENT_CATEGORY 하나 · 페이지 하나로 고정했을 때만** 쓴다. 기간 전체·전 이벤트 합계를 「총 활성사용자」로 답하지 않는다(그 경우 근사치이며 과대라고 밝힌다).',
+    fbq.AVG_SCROLL_DEPTH AS AVG(NULLIF(fbq.SCROLL_DEPTH, 0))
+      WITH SYNONYMS ('평균 스크롤깊이(%)', '스크롤깊이', '스크롤 깊이', '공107')
+      COMMENT = '스크롤 깊이(%) 평균 — 행별 최대 스크롤 비율(1~100)을 스크롤 이벤트가 있는 행만으로 평균한 참고치(가중치 없음). 비율(N) — 재합산 금지. 스크롤 값이 없는 행(0)은 제외한다.',
+    fbq.MAX_SCROLL_DEPTH AS MAX(fbq.SCROLL_DEPTH)
+      WITH SYNONYMS ('최대 스크롤깊이(%)')
+      COMMENT = '스크롤 깊이(%) 최댓값(1~100). 비가산.'
+  )
+  COMMENT = 'GA4 웹·앱 행동 SV. 이벤트·페이지뷰·식별 방문자·채널 분석용. [원천: GA4 → GN_DW.SILVER.BIGQUERY_REFINED_DATA(외부 Python 적재) → GOLD.FACT_BIGQUERY_BEHAVIOR]. 🔴 개인 단위 예측(방문자 전환 예측·재방문 예측)·퍼널 단계 라벨·신규 사용자(first_visit) 구분은 없다 — 집계만 제공한다. 🔴 GA 원천은 추가되지 않는다 ⇒ 그런 질문에는 문구를 그대로 「현재 GA 데이터로는 답변할 수 없습니다. 자세한 내용은 IT부서에 문의 바랍니다.」 로 안내하고, 추가 적재·추후 제공·약속 관련 표현을 덧붙이지 않는다.'
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  핵심 규칙: (1) 건수는 TOTAL_EVENT_CNT(가산), 페이지 조회는 TOTAL_PAGE_VIEWS, 사람 수는 IDENTIFIED_VISITORS(식별자만 · distinct). (2) EVENT_SESSIONS 는 EVENT_CATEGORY 를 하나로 고정할 때만 쓰고, 여러 이벤트의 세션을 더해 총 세션으로 답하지 않는다. (3) 기간 미지정 시 데이터 최신월 기준 직전 3개월로 한정한다. 기준 시점은 비상관 CTE 1개(SELECT MAX(date.FULL_DATE) FROM fbq JOIN date ON fbq.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. (4) 채널 분포에는 Unassigned 를 함께 보여준다. (5) PAGE_PATH·EVENT_ACTION·EVENT_LABEL·UTM_CAMPAIGN 은 자유 텍스트이므로 ILIKE 부분일치로 필터한다. (6) CRM 실적(개발·회비)과 교차 계산하지 않는다. (7) ORDER BY 에는 SELECT 별칭을 그대로 쓴다.'
+  AI_VERIFIED_QUERIES (
+    vqr_o203_channel_3m AS (
+      QUESTION '최근 3개월 GA 채널그룹별 이벤트수와 식별 방문자수'
+      VERIFIED_BY '(DW = O203)'
+      SQL 'SELECT DEFAULT_CHANNEL_GROUP AS "채널그룹", TOTAL_EVENT_CNT AS "이벤트수(건)", IDENTIFIED_VISITORS AS "식별 방문자수(명)" FROM (WITH mx AS (SELECT MAX(date.FULL_DATE) AS md FROM fbq JOIN date ON fbq.DATE_SK = date.DATE_SK) SELECT src.DEFAULT_CHANNEL_GROUP, SUM(fbq.EVENT_CNT) AS TOTAL_EVENT_CNT, COUNT(DISTINCT CASE WHEN fbq.IDENTITY_SK > 0 THEN fbq.IDENTITY_SK END) AS IDENTIFIED_VISITORS FROM fbq JOIN date ON fbq.DATE_SK = date.DATE_SK JOIN src ON fbq.BIGQUERY_SOURCE_SK = src.BIGQUERY_SOURCE_SK CROSS JOIN mx WHERE date.FULL_DATE > DATEADD(MONTH, -3, mx.md) GROUP BY src.DEFAULT_CHANNEL_GROUP ORDER BY TOTAL_EVENT_CNT DESC) ORDER BY TOTAL_EVENT_CNT DESC'
+    ),
+    vqr_o203_donation_window AS (
+      QUESTION '후원창 이벤트가 많이 발생한 페이지 상위 10개'
+      VERIFIED_BY '(DW = O203)'
+      SQL 'SELECT PAGE_PATH AS "페이지 경로", TOTAL_EVENT_CNT AS "이벤트수(건)", IDENTIFIED_VISITORS AS "식별 방문자수(명)" FROM (SELECT fbq.PAGE_PATH, SUM(fbq.EVENT_CNT) AS TOTAL_EVENT_CNT, COUNT(DISTINCT CASE WHEN fbq.IDENTITY_SK > 0 THEN fbq.IDENTITY_SK END) AS IDENTIFIED_VISITORS FROM fbq JOIN evt ON fbq.BIGQUERY_EVENT_SK = evt.BIGQUERY_EVENT_SK WHERE evt.EVENT_CATEGORY = ''후원창'' GROUP BY fbq.PAGE_PATH ORDER BY TOTAL_EVENT_CNT DESC LIMIT 10) ORDER BY TOTAL_EVENT_CNT DESC'
+    )
+  );
+
+-- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR TO ROLE GN_DW_SERVICE;
+
+USE WAREHOUSE GN_DW_ANALYTICS_WH;
+
+-- 스모크(배포 확인)
+SELECT (SELECT TOTAL_EVENT_CNT FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_GA_BEHAVIOR METRICS fbq.TOTAL_EVENT_CNT)) AS sv_val,
+       (SELECT SUM(EVENT_CNT) FROM GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR)                                 AS fact_val;

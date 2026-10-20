@@ -1,0 +1,185 @@
+﻿그룹,최상위 필드,중첩 필드,데이터 타입,모드,설명
+event,event_date,,STRING,NULLABLE,이벤트가 기록된 날짜. 앱/웹 속성의 등록된 시간대 기준 YYYYMMDD 형식 문자열.
+,event_timestamp,,INTEGER,NULLABLE,GA4 서버가 이벤트를 수신한 시각. UTC 기준 마이크로초(μs) 단위 정수.
+,event_name,,STRING,NULLABLE,이벤트 이름. GA4 자동수집 이벤트 및 커스텀 이벤트 이름.
+,event_params,key,STRING,NULLABLE,이벤트 파라미터의 이름(키). GA4 자동수집 파라미터 및 커스텀 파라미터 이름.
+,event_params,value.string_value,STRING,NULLABLE,"파라미터 값이 문자열인 경우 저장. URL, 페이지명, 캠페인명 등 텍스트 값."
+,event_params,value.int_value,INTEGER,NULLABLE,파라미터 값이 정수인 경우 저장.
+,event_params,value.float_value,FLOAT,NULLABLE,파라미터 값이 단정밀도 부동소수점인 경우 저장.
+,event_params,value.double_value,FLOAT,NULLABLE,파라미터 값이 배정밀도 부동소수점인 경우 저장. 수익·금액 등 소수점 정밀도 필요 값.
+,event_previous_timestamp,,INTEGER,NULLABLE,동일 기기에서 직전에 발생한 이벤트의 수신 시각. UTC 마이크로초.
+,event_value_in_usd,,FLOAT,NULLABLE,이벤트의 'value' 파라미터를 USD로 환산한 값. GA4 속성 통화 기준 자동 변환.
+,event_bundle_sequence_id,,INTEGER,NULLABLE,기기에서 GA4 서버로 전송하는 배치(bundle) 요청의 순번 ID.
+,event_server_timestamp_offset,,INTEGER,NULLABLE,이벤트가 기기에서 수집된 시각과 GA4 서버에 업로드된 시각의 차이. 마이크로초.
+user,user_id,,STRING,NULLABLE,개발자가 GA4에 직접 설정한 사용자 고유 ID. 로그인한 사용자에게만 값이 존재.
+,user_pseudo_id,,STRING,NULLABLE,GA4가 자동 생성하는 익명 사용자 식별자. 앱 최초 실행 또는 웹사이트 최초 방문 시 부여.
+,privacy_info,analytics_storage,STRING,NULLABLE,GA4 Consent Mode 적용 시 애널리틱스 데이터 저장 동의 여부. 값: 'Yes' / 'No' / 'Unset'
+,privacy_info,ads_storage,STRING,NULLABLE,광고 타겟팅 목적의 데이터 저장 동의 여부. 값: 'Yes' / 'No' / 'Unset'
+,privacy_info,uses_transient_token,STRING,NULLABLE,웹 사용자가 analytics_storage를 거부했으나 쿠키 없이 서버측 임시 토큰 기반 측정을 활성화한 경우 'Yes'. 값: 'Yes' / 'No' / 'Unset'
+,user_properties,key,STRING,NULLABLE,개발자가 GA4에 설정한 사용자 속성(User Property)의 이름(키). REPEATED RECORD.
+,user_properties,value.string_value,STRING,NULLABLE,사용자 속성 값이 문자열인 경우 저장.
+,user_properties,value.int_value,INTEGER,NULLABLE,사용자 속성 값이 정수인 경우 저장.
+,user_properties,value.float_value,FLOAT,NULLABLE,사용자 속성 값이 단정밀도 부동소수점인 경우 저장.
+,user_properties,value.double_value,FLOAT,NULLABLE,사용자 속성 값이 배정밀도 부동소수점인 경우 저장.
+,user_properties,value.set_timestamp_micros,INTEGER,NULLABLE,해당 사용자 속성이 마지막으로 설정된 시각. UTC 마이크로초.
+,user_first_touch_timestamp,,INTEGER,NULLABLE,해당 사용자가 앱을 최초 실행하거나 웹사이트에 최초 방문한 시각. UTC 마이크로초.
+user_ltv,user_ltv,revenue,FLOAT,NULLABLE,GA4가 추적한 해당 사용자의 누적 생애 가치(LTV) 수익. 속성 등록 이후 모든 purchase 이벤트 value 합산.
+,user_ltv,currency,STRING,NULLABLE,user_ltv.revenue의 통화 코드. ISO 4217 형식.
+device,device,category,STRING,NULLABLE,사용자 기기 카테고리. 값: 'mobile' / 'desktop' / 'tablet'
+,device,mobile_brand_name,STRING,NULLABLE,모바일 기기 제조사 브랜드명.
+,device,mobile_model_name,STRING,NULLABLE,모바일 기기 모델명.
+,device,mobile_marketing_name,STRING,NULLABLE,모바일 기기의 마케팅용 공식 제품명.
+,device,mobile_os_hardware_model,STRING,NULLABLE,운영체제에서 직접 보고하는 기기 하드웨어 모델 정보.
+,device,operating_system,STRING,NULLABLE,사용자 기기의 운영체제.
+,device,operating_system_version,STRING,NULLABLE,운영체제 버전.
+,device,vendor_id,STRING,NULLABLE,iOS 기기의 IDFV(Identifier for Vendor). 앱 사용자에게만 적용.
+,device,advertising_id,STRING,NULLABLE,"모바일 광고 식별자. Android=GAID, iOS=IDFA."
+,device,language,STRING,NULLABLE,사용자 기기/브라우저의 언어 설정.
+,device,is_limited_ad_tracking,STRING,NULLABLE,사용자가 기기에서 광고 추적 제한(LAT)을 활성화했는지 여부. 값: 'true' / 'false'
+,device,time_zone_offset_seconds,INTEGER,NULLABLE,UTC 대비 사용자 기기의 시간대 오프셋(초 단위).
+,device,browser,STRING,NULLABLE,웹 방문자의 브라우저 종류.
+,device,browser_version,STRING,NULLABLE,브라우저 버전.
+,device,web_info,RECORD,NULLABLE,웹 방문자의 추가 정보를 담는 중첩 레코드.
+geo,geo,city,STRING,NULLABLE,이벤트 발생 시 사용자의 도시. IP 주소 기반 지오코딩.
+,geo,country,STRING,NULLABLE,이벤트 발생 시 사용자의 국가. IP 기반.
+,geo,continent,STRING,NULLABLE,사용자의 대륙.
+,geo,region,STRING,NULLABLE,사용자의 지역(광역시·도 수준). IP 기반 지오코딩.
+,geo,sub_continent,STRING,NULLABLE,사용자의 세부 대륙 구분.
+,geo,metro,STRING,NULLABLE,사용자의 대도시권(Metropolitan area). 주로 미국 DMA 기반.
+app_info,app_info,id,STRING,NULLABLE,앱의 패키지명(Android) 또는 번들 ID(iOS).
+,app_info,version,STRING,NULLABLE,앱 버전 이름.
+,app_info,install_store,STRING,NULLABLE,앱이 설치된 스토어.
+,app_info,firebase_app_id,STRING,NULLABLE,Firebase에 등록된 앱의 고유 ID.
+,app_info,install_source,STRING,NULLABLE,앱 설치 출처(referrer).
+traffic_source,traffic_source,name,STRING,NULLABLE,"사용자 최초 유입 캠페인명(First-touch, User-scoped attribution)."
+,traffic_source,medium,STRING,NULLABLE,"사용자 최초 유입 매체(First-touch, User-scoped)."
+,traffic_source,source,STRING,NULLABLE,"사용자 최초 유입 소스(First-touch, User-scoped)."
+event_dimensions,event_dimensions,hostname,STRING,NULLABLE,이벤트가 발생한 웹사이트의 호스트명(도메인).
+ecommerce,ecommerce,total_item_quantity,INTEGER,NULLABLE,해당 전자상거래 이벤트의 총 아이템 수량. items 배열 내 quantity 합산.
+,ecommerce,purchase_revenue_in_usd,FLOAT,NULLABLE,purchase 이벤트의 구매 수익. USD 환산. GA4가 자동 환율 적용.
+,ecommerce,purchase_revenue,FLOAT,NULLABLE,purchase 이벤트의 구매 수익. GA4 속성 설정 현지 통화(KRW) 기준.
+,ecommerce,refund_value_in_usd,FLOAT,NULLABLE,refund 이벤트의 환불 금액 (USD 환산).
+,ecommerce,refund_value,FLOAT,NULLABLE,refund 이벤트의 환불 금액 (현지 통화).
+,ecommerce,shipping_value_in_usd,FLOAT,NULLABLE,배송비 (USD 환산).
+,ecommerce,shipping_value,FLOAT,NULLABLE,배송비 (현지 통화).
+,ecommerce,tax_value_in_usd,FLOAT,NULLABLE,세금 (USD 환산).
+,ecommerce,tax_value,FLOAT,NULLABLE,세금 (현지 통화).
+,ecommerce,unique_items,INTEGER,NULLABLE,해당 전자상거래 이벤트에서 고유한 아이템 종류 수.
+,ecommerce,transaction_id,STRING,NULLABLE,purchase 이벤트의 거래 고유 ID. 개발자가 직접 설정하는 값.
+items,items,item_id,STRING,NULLABLE,개별 아이템의 고유 ID. 개발자가 설정.
+,items,item_name,STRING,NULLABLE,아이템 이름.
+,items,item_brand,STRING,NULLABLE,아이템 브랜드명.
+,items,item_variant,STRING,NULLABLE,아이템 변형(옵션).
+,items,item_category,STRING,NULLABLE,아이템 1차 카테고리.
+,items,item_category2,STRING,NULLABLE,아이템 2차 카테고리.
+,items,item_category3,STRING,NULLABLE,아이템 3차 카테고리.
+,items,item_category4,STRING,NULLABLE,아이템 4차 카테고리.
+,items,item_category5,STRING,NULLABLE,아이템 5차 카테고리.
+,items,price_in_usd,FLOAT,NULLABLE,아이템 단가 (USD 환산).
+,items,price,FLOAT,NULLABLE,"아이템 단가 (현지 통화, KRW)."
+,items,quantity,INTEGER,NULLABLE,아이템 수량.
+,items,item_revenue_in_usd,FLOAT,NULLABLE,"아이템 수익 (price_in_usd × quantity, USD 환산)."
+,items,item_revenue,FLOAT,NULLABLE,"아이템 수익 (price × quantity, 현지 통화)."
+,items,item_refund_in_usd,FLOAT,NULLABLE,아이템 환불 금액 (USD).
+,items,item_refund,FLOAT,NULLABLE,아이템 환불 금액 (현지 통화).
+,items,coupon,STRING,NULLABLE,적용된 쿠폰 코드.
+,items,affiliation,STRING,NULLABLE,제휴사 또는 판매처 이름.
+,items,location_id,STRING,NULLABLE,아이템과 연관된 위치 ID.
+,items,item_list_id,STRING,NULLABLE,아이템이 표시된 목록의 ID.
+,items,item_list_name,STRING,NULLABLE,아이템이 표시된 목록의 이름.
+,items,item_list_index,STRING,NULLABLE,목록 내 아이템의 순서(위치 인덱스).
+,items,promotion_id,STRING,NULLABLE,적용된 프로모션 ID.
+,items,promotion_name,STRING,NULLABLE,프로모션 이름.
+,items,creative_name,STRING,NULLABLE,프로모션 크리에이티브(배너/소재) 이름.
+,items,creative_slot,STRING,NULLABLE,프로모션 크리에이티브가 표시된 슬롯 위치.
+collected_traffic_source,collected_traffic_source,manual_campaign_id,STRING,NULLABLE,utm_id 파라미터 값. 이벤트 발생 시점의 원시 캠페인 ID (Event-scoped).
+,collected_traffic_source,manual_campaign_name,STRING,NULLABLE,utm_campaign 파라미터 값. 이벤트 발생 시점의 원시 캠페인명.
+,collected_traffic_source,manual_source,STRING,NULLABLE,utm_source 파라미터 값. 이벤트 발생 시점의 원시 소스.
+,collected_traffic_source,manual_medium,STRING,NULLABLE,utm_medium 파라미터 값. 이벤트 발생 시점의 원시 매체.
+,collected_traffic_source,manual_term,STRING,NULLABLE,utm_term 파라미터 값. 유료 검색 키워드.
+,collected_traffic_source,manual_content,STRING,NULLABLE,utm_content 파라미터 값. 광고 소재 구분자.
+,collected_traffic_source,manual_source_platform,STRING,NULLABLE,utm_source_platform 파라미터 값. 소스 플랫폼 구분.
+,collected_traffic_source,manual_creative_format,STRING,NULLABLE,utm_creative_format 파라미터 값. 광고 소재 형식.
+,collected_traffic_source,manual_marketing_tactic,STRING,NULLABLE,utm_marketing_tactic 파라미터 값. 마케팅 전술 구분.
+,collected_traffic_source,gclid,STRING,NULLABLE,Google Click ID. Google Ads 클릭 시 자동 태깅되는 고유 클릭 식별자.
+,collected_traffic_source,dclid,STRING,NULLABLE,Display Click ID. Google DV360 클릭 시 자동 생성 식별자.
+,collected_traffic_source,srsltid,STRING,NULLABLE,Google 쇼핑 검색 결과 클릭 식별자(Search Result Slot ID).
+,is_active_user,,BOOLEAN,NULLABLE,해당 달력 날짜(event_date)에 사용자가 활성 상태였는지 여부. True=활성 / False=비활성.
+,batch_event_index,,INTEGER,NULLABLE,동일 배치 요청 내에서 이벤트 발생 순서를 나타내는 순번. 2024년 7월 추가된 필드.
+,batch_page_id,,INTEGER,NULLABLE,세션 내 페이지 뷰 순서를 나타내는 순번. 페이지 이동 시마다 증가. 2024년 7월 추가.
+,batch_ordering_id,,INTEGER,NULLABLE,특정 페이지에서 네트워크 요청이 전송될 때마다 단조 증가하는 순번. 2024년 7월 추가.
+session_traffic_source_last_click,session_traffic_source_last_click,manual_campaign.campaign_id,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_id. 세션 스코프(Session-scoped) Last-click attribution 적용.
+,session_traffic_source_last_click,manual_campaign.campaign_name,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_campaign.
+,session_traffic_source_last_click,manual_campaign.source,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_source.
+,session_traffic_source_last_click,manual_campaign.medium,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_medium.
+,session_traffic_source_last_click,manual_campaign.term,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_term.
+,session_traffic_source_last_click,manual_campaign.content,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_content.
+,session_traffic_source_last_click,manual_campaign.source_platform,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_source_platform.
+,session_traffic_source_last_click,manual_campaign.creative_format,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_creative_format.
+,session_traffic_source_last_click,manual_campaign.marketing_tactic,STRING,NULLABLE,세션 기준 마지막 클릭의 utm_marketing_tactic.
+,session_traffic_source_last_click,google_ads_campaign.customer_id,STRING,NULLABLE,Google Ads 고객(계정) ID. Google Ads 클릭으로 유입된 세션에만 값 존재.
+,session_traffic_source_last_click,google_ads_campaign.account_name,STRING,NULLABLE,Google Ads 계정명.
+,session_traffic_source_last_click,google_ads_campaign.campaign_id,STRING,NULLABLE,Google Ads 캠페인 ID. Ads 자동 태깅(gclid) 기반으로 GA4에서 수집.
+,session_traffic_source_last_click,google_ads_campaign.campaign_name,STRING,NULLABLE,Google Ads 캠페인명.
+,session_traffic_source_last_click,google_ads_campaign.ad_group_id,STRING,NULLABLE,Google Ads 광고 그룹 ID.
+,session_traffic_source_last_click,google_ads_campaign.ad_group_name,STRING,NULLABLE,Google Ads 광고 그룹명.
+,session_traffic_source_last_click,cross_channel_campaign.campaign_id,STRING,NULLABLE,GA4 크로스채널 attribution 모델 기준의 캠페인 ID.
+,session_traffic_source_last_click,cross_channel_campaign.campaign_name,STRING,NULLABLE,크로스채널 attribution 기준의 캠페인명.
+,session_traffic_source_last_click,cross_channel_campaign.source,STRING,NULLABLE,크로스채널 attribution 기준의 소스.
+,session_traffic_source_last_click,cross_channel_campaign.medium,STRING,NULLABLE,크로스채널 attribution 기준의 매체.
+,session_traffic_source_last_click,cross_channel_campaign.source_platform,STRING,NULLABLE,크로스채널 attribution 기준의 소스 플랫폼.
+,session_traffic_source_last_click,cross_channel_campaign.default_channel_group,STRING,NULLABLE,GA4 기본 채널 그룹 분류. GA4가 source/medium 규칙에 따라 자동 분류하는 채널.
+,session_traffic_source_last_click,cross_channel_campaign.primary_channel_group,STRING,NULLABLE,GA4 주요 채널 그룹. default_channel_group의 상위 분류.
+,session_traffic_source_last_click,sa360_campaign.campaign_id,STRING,NULLABLE,Search Ads 360(SA360) 캠페인 ID. SA360 연동 시에만 값 존재.
+,session_traffic_source_last_click,sa360_campaign.campaign_name,STRING,NULLABLE,SA360 캠페인명.
+,session_traffic_source_last_click,sa360_campaign.source,STRING,NULLABLE,SA360 소스.
+,session_traffic_source_last_click,sa360_campaign.medium,STRING,NULLABLE,SA360 매체.
+,session_traffic_source_last_click,sa360_campaign.ad_group_id,STRING,NULLABLE,SA360 광고 그룹 ID.
+,session_traffic_source_last_click,sa360_campaign.ad_group_name,STRING,NULLABLE,SA360 광고 그룹명.
+,session_traffic_source_last_click,sa360_campaign.engine_account_name,STRING,NULLABLE,SA360 엔진 계정명.
+,session_traffic_source_last_click,sa360_campaign.engine_account_type,STRING,NULLABLE,SA360 엔진 계정 유형.
+,session_traffic_source_last_click,sa360_campaign.manager_account_name,STRING,NULLABLE,SA360 관리자 계정명.
+,session_traffic_source_last_click,cm360_campaign.campaign_id,STRING,NULLABLE,Campaign Manager 360(CM360) 캠페인 ID. CM360 연동 시에만 값 존재.
+,session_traffic_source_last_click,cm360_campaign.campaign_name,STRING,NULLABLE,CM360 캠페인명.
+,session_traffic_source_last_click,cm360_campaign.source,STRING,NULLABLE,CM360 소스.
+,session_traffic_source_last_click,cm360_campaign.medium,STRING,NULLABLE,CM360 매체.
+,session_traffic_source_last_click,cm360_campaign.account_id,STRING,NULLABLE,CM360 계정 ID.
+,session_traffic_source_last_click,cm360_campaign.account_name,STRING,NULLABLE,CM360 계정명.
+,session_traffic_source_last_click,cm360_campaign.advertiser_id,STRING,NULLABLE,CM360 광고주 ID.
+,session_traffic_source_last_click,cm360_campaign.advertiser_name,STRING,NULLABLE,CM360 광고주명.
+,session_traffic_source_last_click,cm360_campaign.creative_id,STRING,NULLABLE,CM360 크리에이티브 ID.
+,session_traffic_source_last_click,cm360_campaign.creative_format,STRING,NULLABLE,CM360 크리에이티브 형식.
+,session_traffic_source_last_click,cm360_campaign.creative_name,STRING,NULLABLE,CM360 크리에이티브명.
+,session_traffic_source_last_click,cm360_campaign.creative_type,STRING,NULLABLE,CM360 크리에이티브 유형.
+,session_traffic_source_last_click,cm360_campaign.creative_type_id,STRING,NULLABLE,CM360 크리에이티브 유형 ID.
+,session_traffic_source_last_click,cm360_campaign.creative_version,STRING,NULLABLE,CM360 크리에이티브 버전.
+,session_traffic_source_last_click,cm360_campaign.placement_id,STRING,NULLABLE,CM360 게재위치 ID.
+,session_traffic_source_last_click,cm360_campaign.placement_cost_structure,STRING,NULLABLE,CM360 게재위치 비용 구조.
+,session_traffic_source_last_click,cm360_campaign.placement_name,STRING,NULLABLE,CM360 게재위치명.
+,session_traffic_source_last_click,cm360_campaign.rendering_id,STRING,NULLABLE,CM360 렌더링 ID.
+,session_traffic_source_last_click,cm360_campaign.site_id,STRING,NULLABLE,CM360 사이트 ID.
+,session_traffic_source_last_click,cm360_campaign.site_name,STRING,NULLABLE,CM360 사이트명.
+,session_traffic_source_last_click,dv360_campaign.campaign_id,STRING,NULLABLE,Display & Video 360(DV360) 캠페인 ID. DV360 연동 시에만 값 존재.
+,session_traffic_source_last_click,dv360_campaign.campaign_name,STRING,NULLABLE,DV360 캠페인명.
+,session_traffic_source_last_click,dv360_campaign.source,STRING,NULLABLE,DV360 소스.
+,session_traffic_source_last_click,dv360_campaign.medium,STRING,NULLABLE,DV360 매체.
+,session_traffic_source_last_click,dv360_campaign.advertiser_id,STRING,NULLABLE,DV360 광고주 ID.
+,session_traffic_source_last_click,dv360_campaign.advertiser_name,STRING,NULLABLE,DV360 광고주명.
+,session_traffic_source_last_click,dv360_campaign.creative_id,STRING,NULLABLE,DV360 크리에이티브 ID.
+,session_traffic_source_last_click,dv360_campaign.creative_format,STRING,NULLABLE,DV360 크리에이티브 형식.
+,session_traffic_source_last_click,dv360_campaign.creative_name,STRING,NULLABLE,DV360 크리에이티브명.
+,session_traffic_source_last_click,dv360_campaign.exchange_id,STRING,NULLABLE,DV360 광고 거래소 ID.
+,session_traffic_source_last_click,dv360_campaign.exchange_name,STRING,NULLABLE,DV360 광고 거래소명.
+,session_traffic_source_last_click,dv360_campaign.insertion_order_id,STRING,NULLABLE,DV360 삽입 주문 ID.
+,session_traffic_source_last_click,dv360_campaign.insertion_order_name,STRING,NULLABLE,DV360 삽입 주문명.
+,session_traffic_source_last_click,dv360_campaign.line_item_id,STRING,NULLABLE,DV360 라인 아이템 ID.
+,session_traffic_source_last_click,dv360_campaign.line_item_name,STRING,NULLABLE,DV360 라인 아이템명.
+,session_traffic_source_last_click,dv360_campaign.partner_id,STRING,NULLABLE,DV360 파트너 ID.
+,session_traffic_source_last_click,dv360_campaign.partner_name,STRING,NULLABLE,DV360 파트너명.
+,session_traffic_source_last_click,publisher.ad_revenue_in_usd,FLOAT,NULLABLE,퍼블리셔 광고 수익 (USD). AdMob 등 광고 수익 모델 앱에서 사용.
+,session_traffic_source_last_click,publisher.ad_format,STRING,NULLABLE,퍼블리셔 광고 형식.
+,session_traffic_source_last_click,publisher.ad_source_name,STRING,NULLABLE,퍼블리셔 광고 소스명.
+,session_traffic_source_last_click,publisher.ad_unit_id,STRING,NULLABLE,퍼블리셔 광고 유닛 ID.
+,event_original_occurrence_timestamp,,INTEGER,NULLABLE,이벤트가 기기에서 실제 발생한 원본 시각. UTC 마이크로초. 오프라인 이벤트 재전송 시 원래 발생 시각 보존.
+,stream_id,,STRING,NULLABLE,이벤트가 수집된 GA4 데이터 스트림의 고유 ID.
+,platform,,STRING,NULLABLE,이벤트가 발생한 플랫폼. 값: 'WEB' / 'ANDROID' / 'IOS'

@@ -1,0 +1,20 @@
+version: 1
+artifacts:
+  - path: agents/AGENT_MEMBER/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MEMBER
+  - path: agents/AGENT_MARKETING/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_MARKETING
+  - path: agents/AGENT_EXECUTIVE/agent_spec.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: GN_DW.SERVING.AGENT_EXECUTIVE
+# O235 정리 — 배포 정본 = agents/*/agent_spec.yaml(09_2_AGENT_버전업.sql [0-B])
+#   루트 *.agent.yaml 3 · *.eval.yaml 14 → _archive/ · 부재 항목(AGENT_OVERALL · *.dataset.yaml 3) 제거
+#   종전본 = _archive/cortex-project.yaml.O235-before

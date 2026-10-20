@@ -1,0 +1,5 @@
+COPY AGENT_MEMBER [('AGENT_MEMBER/agent_spec.yaml',)]
+VERIFY AGENT_MEMBER ws=127872 stage=127872 OK
+ADD_VERSION AGENT_MEMBER [('Version nullsuccessfully created.',)] qid=01c7d488-0208-ed8a-0005-852e00120672
+  VERSION$2 default=false created=2026-10-17 23:23:21.883000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:05.411000-07:00

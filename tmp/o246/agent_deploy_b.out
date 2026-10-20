@@ -1,0 +1,15 @@
+COPY AGENT_MEMBER [('AGENT_MEMBER/agent_spec.yaml',)]
+COPY AGENT_EXECUTIVE [('AGENT_EXECUTIVE/agent_spec.yaml',)]
+COPY AGENT_MARKETING [('AGENT_MARKETING/agent_spec.yaml',)]
+VERIFY AGENT_MEMBER ws=130976 stage=130976 OK
+VERIFY AGENT_EXECUTIVE ws=87760 stage=87760 OK
+VERIFY AGENT_MARKETING ws=112304 stage=112304 OK
+ADD_VERSION AGENT_MEMBER [('Version nullsuccessfully created.',)] qid=01c7d4ba-0208-eda9-0005-852e0013ae9a
+  VERSION$2 default=false created=2026-10-17 23:23:21.883000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:05.411000-07:00
+ADD_VERSION AGENT_EXECUTIVE [('Version nullsuccessfully created.',)] qid=01c7d4ba-0208-eda9-0005-852e0013aea2
+  VERSION$2 default=false created=2026-10-17 23:23:23.029000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:06.121000-07:00
+ADD_VERSION AGENT_MARKETING [('Version nullsuccessfully created.',)] qid=01c7d4ba-0208-ec8b-0005-852e0013b916
+  VERSION$2 default=false created=2026-10-17 23:23:24.157000-07:00
+  VERSION$1 default=false created=2026-10-17 23:23:06.866000-07:00
