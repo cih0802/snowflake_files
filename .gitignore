@@ -1,0 +1,2 @@
+./10_dbt_pipeline/target/
+./scripts/__pycache__/*.pyc
