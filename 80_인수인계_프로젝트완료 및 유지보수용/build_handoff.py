@@ -102,10 +102,36 @@ def excluded(rel: Path) -> bool:
     return any(fnmatch.fnmatch(p, pat) for p in rel.parts for pat in EXCLUDE)
 
 
+# 문서실행순서.md 중 인수인계에 넣을 절(「# 」 제목). 그 밖의 절(예: 개발계 · 50_handoff 데이터 이관)은 사본에서 뺀다.
+# 2026-10-20 사용자 결정(O247): 인수인계 문서에는 운영계 순서만 남긴다. 절을 추가하면 여기에 제목을 더한다.
+RUN_ORDER_DOC = "문서실행순서.md"
+RUN_ORDER_SKIP_SECTIONS = ["개발계"]
+# 번호 줄: "12. /경로.sql" · "16. 🆕 [O245] /경로.sql — 설명" 처럼 번호와 경로 사이에 '/' 없는 표기가 와도 잡는다.
+RUN_ORDER_LINE = re.compile(r"^\s*\d+\.\s*[^/\n]*?/(\S.*?\.sql)")
+
+
+def run_order_text():
+    """인수인계 대상 절만 남긴 문서실행순서 본문 — 첫 「# 」 제목 앞 머리말은 유지한다."""
+    out, keep = [], True
+    for line in (ROOT / RUN_ORDER_DOC).read_text(encoding="utf-8").splitlines():
+        if line.startswith("# "):
+            keep = line[2:].strip() not in RUN_ORDER_SKIP_SECTIONS
+        if keep:
+            out.append(line)
+    return "\n".join(out) + "\n"
+
+
 def extract_run_order_sql():
-    text = (ROOT / "문서실행순서.md").read_text(encoding="utf-8")
-    paths = sorted(set(m.strip() for m in re.findall(r"^\s*\d+\.\s*/(\S.*?\.sql)", text, re.M)))
-    return [("01_실행순서_배포SQL", p, "문서실행순서.md 명시 SQL") for p in paths]
+    paths, unmatched = set(), []
+    for line in run_order_text().splitlines():
+        m = RUN_ORDER_LINE.match(line)
+        if m:
+            paths.add(m.group(1).strip())
+        elif re.match(r"^\s*\d+\.", line) and ".sql" in line:
+            unmatched.append(line.strip()[:120])
+    for u in unmatched:  # 경로가 줄 안에 '/…sql' 형태로 없는 번호 줄 — 다른 줄에서 이미 잡혔는지 사람이 확인한다
+        print(f"[WARN] 실행순서 번호 줄에서 경로를 못 읽음: {u}")
+    return [("01_실행순서_배포SQL", p, "문서실행순서.md 명시 SQL") for p in sorted(paths)]
 
 
 def expand(pattern: str):
@@ -150,14 +176,22 @@ def main():
 
     for r in rows:
         print(f"[{'COPY' if args.apply else 'PLAN'}] {r['서브폴더']}/{r['파일경로']}")
+        # 문서실행순서.md 는 원본을 그대로 쓰지 않고 인수인계 대상 절만 남긴 본문을 쓴다(RUN_ORDER_SKIP_SECTIONS).
+        body = run_order_text().encode("utf-8") if r["파일경로"] == RUN_ORDER_DOC else None
+        if body is not None:
+            r["크기(byte)"] = len(body)
         if args.apply:
             dst = OUT / r["서브폴더"] / r["파일경로"]
             dst.parent.mkdir(parents=True, exist_ok=True)
+            data = body if body is not None else r["_src"].read_bytes()
             if dst.exists():
-                if dst.stat().st_size == r["크기(byte)"] and dst.read_bytes() == r["_src"].read_bytes():
+                if dst.stat().st_size == len(data) and dst.read_bytes() == data:
                     continue  # 동일 파일 — 재실행 시 재개(stage 마운트 쓰기가 느림)
                 print(f"  overwrite: {dst.relative_to(OUT)}")
-            shutil.copyfile(r["_src"], dst)
+            if body is not None:
+                dst.write_bytes(body)
+            else:
+                shutil.copyfile(r["_src"], dst)
 
     if args.apply:
         write_index(rows)

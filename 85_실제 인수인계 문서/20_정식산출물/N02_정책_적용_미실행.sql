@@ -1,4 +1,4 @@
--- N02 PII 마스킹 · 행 접근 정책 적용 SQL — 🔴 미실행(설계 산출물 · 실행은 사용자 승인 후 별도 세션)
+-- N02 PII 마스킹 · 행 접근 정책 적용 SQL — 🟡 부분 적용: [2-B] BRONZE 12 컬럼 = 🟢 2026-10-20 개발계 적용(`08_mornitoring/11_…_적용완료.sql`) · [1][2] 이메일 = ⬜ 미적용(사용자 결정)
 -- 근거 = N02_PII_정책정의서.md §2 분류 결과(2026-10-20 SYSTEM$CLASSIFY · 태그 미부착)
 -- 실행 롤 = GN_DW_ADMIN(SECURITY·OPS 스키마 소유) · 선행 = [0]
 -- 🔴 정책을 붙이는 순간 그 컬럼은 GN_DW_ADMIN 외에는 가려진다. 붙이기 전에 [5] 로 메일 프로시저가 정상인지 확인한다.
@@ -52,7 +52,7 @@ ALTER TABLE GN_DW.BRONZE_CRM.TM_PM_DNTN_DTLS MODIFY COLUMN PAYER_NM SET MASKING 
 ALTER TABLE GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT MODIFY COLUMN PAYER_NM SET MASKING POLICY GN_DW.SECURITY.MP_PII_STRING;
 --   🟢 2026-10-20 A8-28 결정 = SND_REQ_MST.SENDER_EMAIL 은 제외(값 4종 · 전부 조직 발신 주소 @gni.kr) — 아래 줄은 실행하지 않는다.
 -- ALTER TABLE GN_DW.BRONZE_CRM.SND_REQ_MST MODIFY COLUMN SENDER_EMAIL SET MASKING POLICY GN_DW.SECURITY.MP_PII_EMAIL;
---   원본 정본 = 08_mornitoring/11_BRONZE_개인정보_마스킹정책_미실행.sql (같은 12 컬럼)
+--   원본 정본 = 08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql (같은 12 컬럼)
 --   🔴 부착 후 dbt build 1회로 회귀 확인(ERROR 0 · SKIP 0 · A6 Q01) — 컬럼을 안 읽는다는 정적 확인을 실행으로 굳힌다.
 
 -- [3] 분류 태그 부착(선택) — 지금 결과를 태그로 남긴다. 붙이면 이후 태그 기반 정책으로 넓힐 수 있다.

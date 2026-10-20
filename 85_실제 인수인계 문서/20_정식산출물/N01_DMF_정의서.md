@@ -9,14 +9,14 @@ source_docs:
 source_queries:
   - SHOW DATA METRIC FUNCTIONS IN SNOWFLAKE.CORE · SHOW PRIMARY KEYS IN SCHEMA GN_DW.GOLD · ACCOUNT_USAGE.DATA_METRIC_FUNCTION_REFERENCES (2026-10-20)
   - 85_실제 인수인계 문서/_근거쿼리/N01_DMF_사전점검.sql (Q01~Q03 · 읽기 전용 · "[ENV] = _ENV/<계정>/N01_*.csv")
-  - 적용 SQL = 20_정식산출물/N01_DMF_적용_미실행.sql (🔴 미실행 · 136문장 compile 검증)
+  - 적용 SQL = 20_정식산출물/N01_DMF_적용완료.sql (🔴 미실행 · 136문장 compile 검증)
 owner: TBD
 status: review
 ---
 
 # N01. 데이터 품질(DMF) 정의서
 
-적용 = `N01_DMF_적용_미실행.sql`(🔴 미실행). 이 문서는 무엇을 왜 붙이는지와, 붙이면 바로 어디서 위반이 나는지를 적는다.
+적용 = `N01_DMF_적용완료.sql`(🔴 미실행). 이 문서는 무엇을 왜 붙이는지와, 붙이면 바로 어디서 위반이 나는지를 적는다.
 
 ## 1. [ENV] 현황
 

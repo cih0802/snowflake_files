@@ -1340,3 +1340,40 @@ models:
         tests:
           - not_null
           - accepted_values: { values: ['A', 'B'] }
+  # 🆕 [2026-10-20 O248] 광고비 → 개발인입경로 배분(MKT) · 개발사건 코호트(MEMBER) — 컬럼 문안 정본 = 03_top-down_gold/06_DDL.sql
+  - name: FACT_AD_INFLOW_ALLOC
+    description: >
+      월 × 마케팅캠페인 × 개발인입경로 광고비 배분 팩트 — grain = MONTH_KEY × MKTG_CAMPAIGN_SK × INFLOW_PATH × ROW_KIND × UNALLOC_REASON.
+      배분 = 광고원천별 허용 인입경로(모델 src_map) 안에서 같은 월·마케팅캠페인의 CRM 개발(건) 비중.
+      🔴 배분값이며 실측이 아니다 · 전 행 광고비 합 = FACT_AD_PERFORMANCE 합(assert_faia_ad_cost_preserved).
+      🔴 VIDEO 허용 경로(영상광고·방송·콜개발·디지털)는 현업 확인 전 가정이다.
+    columns:
+      - name: "MONTH_KEY || '|' || MKTG_CAMPAIGN_SK || '|' || COALESCE(INFLOW_PATH, '~') || '|' || ROW_KIND || '|' || COALESCE(UNALLOC_REASON, '~')"
+        tests: [unique]
+      - name: MKTG_CAMPAIGN_SK
+        tests:
+          - not_null
+      - name: ROW_KIND
+        tests:
+          - not_null
+          - accepted_values: { values: ['ALLOC', 'NOT_ALLOWED', 'UNALLOC'] }
+  - name: FACT_MEMBER_EVENT_COHORT
+    description: >
+      개발사건 코호트 × 경과월 팩트 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × MONTHS_AFTER(0~12).
+      사건 시점 속성(FME 첫 사건) + 관측월 활동·납입·미납·중단(FMM) + 후속 증액·재후원·감액·중단(FME) + 사건 전후 발송.
+      🔴 개발구분·경과월을 각각 하나로 고정해 센다 · MONTHS_AFTER = 0 사건 개발(건) 합 = FME DEV 합(같은 구간).
+      🔴 발송 플래그 NULL = 그 채널 적재 시작 전 사건(「안 보냈다」가 아니다) · 오픈은 문자(SND)만.
+    columns:
+      - name: "EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER"
+        tests: [unique]
+      - name: MEMBER_DK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }
+      - name: MONTHS_AFTER
+        tests:
+          - not_null
+          - accepted_values: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], quote: false }

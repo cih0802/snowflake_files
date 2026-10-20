@@ -9,20 +9,20 @@ source_docs:
 source_queries:
   - CALL SYSTEM$CLASSIFY(<표>, {'sample_count': 1000}) × 4 — BRONZE_CRM.TM_MM_FDRM_MBER_INFO · GOLD.DIM_MEMBER · GOLD.DIM_PAYMENT_ACCOUNT · OPS.ALERT_RECIPIENT_CONFIG (태그 미부착 · 읽기)
   - INFORMATION_SCHEMA.COLUMNS 컬럼명 패턴 스캔(EMAIL·TEL·ADDR·BIRTH·ACNUT 등) · SHOW GRANTS ON TABLE · INFORMATION_SCHEMA.PROCEDURES · GET_DDL(PROCEDURE)
-  - 적용 SQL = 20_정식산출물/N02_정책_적용_미실행.sql (🔴 미실행 · 정책 DDL compile 통과)
+  - 적용 SQL = 20_정식산출물/N02_정책_적용_미실행.sql (🟡 [2-B] 만 2026-10-20 적용 · [1][2] 미적용 · 정책 DDL compile 통과)
 owner: TBD
 status: review
 ---
 
 # N02. PII 마스킹 · 행 접근 정책 정의서
 
-본문 = `N02_PII_롤별노출.csv`(PII 컬럼 × 롤 노출) · 적용 = `N02_정책_적용_미실행.sql`(🔴 미실행).
+본문 = `N02_PII_롤별노출.csv`(PII 컬럼 × 롤 노출) · 적용 = `N02_정책_적용_미실행.sql`(🟡 부분 적용 — [2-B] 🟢 2026-10-20 · [1][2] ⬜ 미적용 · 사용자 결정).
 
 ## 1. [ENV] 현황
 
 | 항목 | IW20760(개발) | 운영계 |
 |---|---|---|
-| 마스킹 · 행 접근 정책 | 0 · 0(A0) | TBD(미검증) |
+| 마스킹 · 행 접근 정책 | 0 · 0(A0 · 적용 전) → 🟢 2026-10-20 마스킹 1(`MP_PII_STRING` · BRONZE 12 컬럼) · 행 접근 0 | TBD(미검증) |
 | 분류 태그(`SNOWFLAKE.CORE.SEMANTIC_CATEGORY`) | 부착 0 — 이번 분류는 `auto_tag` 없이 돌렸다 | TBD(미검증) |
 | 자동 분류 프로필 | 없음 | TBD(미검증) |
 
@@ -57,7 +57,7 @@ status: review
   - `SENDER_EMAIL` 제외 근거 = 값 683건이 **고유값 4종**이고 전부 조직 발신 주소(`@gni.kr` · 회원·직원 개인 주소 아님 · 2026-10-20 COUNT DISTINCT 실측).
   - 형태 재확인(같은 날 · 정규식 `01[016789]-?[0-9]{3,4}-?[0-9]{4}` · `[가-힣]{2,4}`) = 휴대폰 2컬럼 99.8~99.99% · 이름 4컬럼 97.6~98% · `TM_PM_DNTN_DTLS.PAYER_NM` 은 법인명 혼재(17%)지만 개인 이름이 있어 대상 유지.
   - 원천 값 중 「(임의생성)」 표기가 섞여 있다 — 개발계 데이터 일부 가공 가능성 · 실데이터 여부는 원천 담당 확인 전까지 **실데이터로 취급**한다.
-  - 원본 정본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_미실행.sql`(이 산출물의 [2-B] 와 같은 내용).
+  - 원본 정본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql`(이 산출물의 [2-B] 와 같은 내용).
 
 - 형태 기준 = 휴대폰·전화: 숫자만 남겨 `0` 으로 시작하는 9~11자리 · 이름: 한글 2~5자 · 이메일: `x@y.z`. 근사 집계다(형태만 보고 실제 개인 여부는 확인하지 않았다).
 - 읽을 수 있는 롤 = GN_DW_ADMIN(소유) · **GN_DW_ANALYST · GN_DW_ENGINEER · GN_DW_DBT**(SELECT · `SHOW GRANTS ON TABLE` 2026-10-20). ANALYST 의 BRONZE 읽기는 2026-08-18 요건 변경으로 열린 것이다(RUNBOOK §6.2).
@@ -75,7 +75,7 @@ status: review
 
 - 정책 객체는 `GN_DW.SECURITY`(소유 GN_DW_ADMIN · 객체 0)에 둔다.
 - 알림 메일 프로시저 2종(`USP_SEND_PIPELINE_ERROR_ALERT`·`USP_SEND_DBT_WARN_SPNSR_CLS_DUP`)은 `EXECUTE AS OWNER` · 소유 GN_DW_ADMIN 이다. 소유자 권한 프로시저 안에서는 소유 롤만 평가되므로(Snowflake 문서) 메일은 원문 주소로 나가야 한다 — 🔴 부착 후 수동 발송 1회로 실측한다(SQL [5]③).
-- A2 결정(ANALYST 의 OPS 권한 회수 · `A2_권한조정_미실행.sql` [2])이 먼저 적용되면 ANALYST 행은 「접근 없음」이 된다. 두 조치는 독립이다.
+- A2 결정(ANALYST 의 OPS 권한 회수 · `A2_권한조정_적용완료.sql` [2])이 먼저 적용되면 ANALYST 행은 「접근 없음」이 된다. 두 조치는 독립이다.
 
 ## 4. 적용 순서 (🔴 미실행)
 
@@ -88,6 +88,6 @@ status: review
 
 | # | 기대 | 실측 | 처리 |
 |---|---|---|---|
-| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 🟢 2026-10-20 결정(A8-28) = **12 컬럼 마스킹 · `SENDER_EMAIL` 제외 · 스키마 권한 유지** · 원본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_미실행.sql` · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
+| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 🟢 2026-10-20 결정(A8-28) = **12 컬럼 마스킹 · `SENDER_EMAIL` 제외 · 스키마 권한 유지** · 원본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql` · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
 
 - 정책 0 은 A0 와 일치한다.

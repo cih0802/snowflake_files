@@ -17,7 +17,7 @@ Snowflake 운영 모니터링 및 AI(CoCo·CoWork·Agent·AI 함수) 사용량·
 | **`05_AI비용가드_구축.sql`** | **실행 가능한 구축 런북 (정본)** |
 | `07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql` | 알림 수신자 관리 표준 · 공통 발송 프로시저. **dbt 알림 수신자 = §3-1 변수 `DBT_ALERT_RECIPIENTS`** |
 | `09_OPS_dbt경고_이메일알림_구축.sql` | dbt WARN 테스트(store_failures → OPS) 결과를 ALERT 로 감시해 07 수신자에게 메일 발송 |
-| 🆕 `11_BRONZE_개인정보_마스킹정책_미실행.sql` | BRONZE_CRM 이름·휴대폰·연락처 **12 컬럼** 마스킹(원문 = GN_DW_ADMIN 이상 · 그 외 `***`) · 2026-10-20 A8-28 결정 · 🔴 미실행 · `SND_REQ_MST.SENDER_EMAIL` 은 조직 주소라 제외 |
+| 🆕 `11_BRONZE_개인정보_마스킹정책_적용완료.sql` | BRONZE_CRM 이름·휴대폰·연락처 **12 컬럼** 마스킹(원문 = GN_DW_ADMIN 이상 · 그 외 `***`) · 2026-10-20 A8-28 결정 · 🔴 미실행 · `SND_REQ_MST.SENDER_EMAIL` 은 조직 주소라 제외 |
 
 ## 핵심 요약
 

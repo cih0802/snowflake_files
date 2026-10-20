@@ -318,6 +318,7 @@ MUTATES = {
     #   🔴 왜 스크립트인가 = `edit` 의 `replace_all` 이 듣지 않고 대상 줄이 매우 길어 앵커가 위험했다
     #     ⇒ `R1-7-8` 이 명시한 예외 경로(줄 인덱스 지정 치환)다.
     '_o154b_orphan_comment_fix': '「전량입고 후 warn→error 승격」 폐기 문안 일괄 정정(dbt yml 3파일)',
+    'n01_dmf_apply': 'N01_DMF_적용완료.sql [1]~[4] 를 GN_DW_ADMIN 으로 문장 단위 실행 · 결과 csv · 라이브 DMF 부착(R4-4-3 승인 대상)',
 }
 
 LIB = {

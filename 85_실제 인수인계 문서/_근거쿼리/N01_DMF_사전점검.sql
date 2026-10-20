@@ -1,5 +1,5 @@
 -- N01 DMF 사전 점검 (읽기 전용 · 붙이기 전에 「붙이면 바로 위반이 날 곳」을 센다 · env_capture --id N01)
--- 생성 = 2026-10-20 · 대상 = N01_DMF_적용_미실행.sql [3]·[4] 와 같은 목록
+-- 생성 = 2026-10-20 · 대상 = N01_DMF_적용완료.sql [3]·[4] 와 같은 목록
 
 -- Q01 PK 중복·NULL (단일 컬럼 PK)
 SELECT 'DIM_AD_CREATIVE' AS TBL, 'AD_CREATIVE_SK' AS COL, COUNT(*) AS N, COUNT(*) - COUNT(DISTINCT AD_CREATIVE_SK) AS DUP_PLUS_NULL, COUNT_IF(AD_CREATIVE_SK IS NULL) AS N_NULL FROM GN_DW.GOLD.DIM_AD_CREATIVE

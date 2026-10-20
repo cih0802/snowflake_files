@@ -16,12 +16,12 @@
 
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
-| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 60 |
-| 02_dbt_pipeline | dbt 프로젝트 원본 | 210 |
+| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 57 |
+| 02_dbt_pipeline | dbt 프로젝트 원본 | 211 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
 | 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 4 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
-| 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 18 |
+| 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 19 |
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
 | 08_현업공유_산출물 | 현업 공유 산출물 | 85 |
 | 09_설계근거_참고 | 설계 근거 · 보안/권한 참고 | 10 |
@@ -95,10 +95,7 @@
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql | 문서실행순서.md 명시 SQL |
-| 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql | 문서실행순서.md 명시 SQL |
-| 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql | 문서실행순서.md 명시 SQL |
-| 50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql | 문서실행순서.md 명시 SQL |
-| 50_handoff/07_데이터마이그 C_CONSUMER.sql | 문서실행순서.md 명시 SQL |
+| dbt_build_fact_ad_performance_budget.sql | 문서실행순서.md 명시 SQL |
 | 12_agent개선과제/output/O217_biz_definition_corpus.csv | 26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지) |
 
 ### 02_dbt_pipeline
@@ -238,6 +235,7 @@
 | 10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -419,6 +417,7 @@
 | 08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql | AI/웨어하우스 비용가드·알림·OPS 객체 |
 | 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql | AI/웨어하우스 비용가드·알림·OPS 객체 |
 | 08_mornitoring/10_Cortex_Code_모델별_비용_비교.md | AI/웨어하우스 비용가드·알림·OPS 객체 |
+| 08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql | AI/웨어하우스 비용가드·알림·OPS 객체 |
 | 08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql | AI/웨어하우스 비용가드·알림·OPS 객체 |
 
 ### 07_운영런북_이슈
