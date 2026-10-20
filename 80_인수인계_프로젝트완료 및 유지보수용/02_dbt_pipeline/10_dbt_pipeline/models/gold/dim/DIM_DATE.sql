@@ -14,13 +14,12 @@ with spine as (
 ),
 
 -- 🆕 [2026-09-29 O188] 공휴일 = CRM 일정관리 SCHDUL_DIV_CD='0'(현업 회신 · 문서20 F-5).
---   한글이 없는 제목(2013-01-01 '123123' 등 2건)은 입력 테스트로 보고 제외한다(같은 날 '새해' 행이 따로 있다).
---   ⚠️ 2021·2022 는 13일로 다른 해(16~22일)보다 적다 — 원천 기재 그대로이며 보정하지 않는다.
+-- 🔄 [2026-10-20 DR-25] 원천을 BRONZE 직접 참조 → **SILVER.CRM_HOLIDAY** 경유로 바꿨다(레이어 원칙 · 사용자 결정).
+--   필터 규칙(구분코드 '0' · 한글 없는 테스트 제목 제외 · 2021·2022 미보정)은 `models/silver/crm/CRM_HOLIDAY.sql` 로
+--   **그대로 이관**했다 ⇒ IS_HOLIDAY 결과는 종전과 같아야 한다(실측 기준 251일).
 holiday as (
-    select distinct SCHDUL_DE as HOLIDAY_DATE
-    from {{ source('bronze_crm_ref','TM_CM_SCHDUL_MNG') }}
-    where SCHDUL_DIV_CD = '0'
-      and REGEXP_LIKE(SCHDUL_TIT, '.*[가-힣].*')
+    select HOLIDAY_DATE
+    from {{ ref('CRM_HOLIDAY') }}
 ),
 
 calendar as (

@@ -739,6 +739,21 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     PRIMARY KEY (BIZ_TARGET_DK)
 ) COMMENT = '사업목표 마스터. [Grain: TARGET_YEAR × MONTH_NO × BDGT_PRCD_NM × GOAL_TYPE_NM × 원천 구분축 (1행=1목표값)]. [주의: GOAL_TYPE_NM 별 단위가 다르다(건·명·원·비율) — 유형 필터 필수]. [원천: CRM → BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV].';
 
+-- 🆕 [2026-10-20 DR-25] CRM_HOLIDAY — 공휴일 마스터(GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천)
+--   종전 DIM_DATE 가 BRONZE_CRM.TM_CM_SCHDUL_MNG 를 직접 읽었다(레이어 원칙 위반 · 사용자 결정 = SILVER 삽입).
+--   실측(IW20760 2026-10-20): 공휴일 원천행 256 → 고유 일자 251(5일은 제목 2건) ⇒ grain = 일자.
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_HOLIDAY (
+    HOLIDAY_DATE        DATE            NOT NULL COMMENT '공휴일 일자 (PK) [원천: BRONZE_CRM.TM_CM_SCHDUL_MNG: 일정일자]',
+    HOLIDAY_NM          VARCHAR         COMMENT '공휴일명 — 같은 날 제목이 여럿이면 " / " 로 이어 붙임(정렬)',
+    SRC_ROW_CNT         NUMBER(5,0)     COMMENT '같은 일자의 원천 공휴일 행수(중복 기재 감시용)',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_SOURCE_TABLE     VARCHAR         COMMENT '원천 테이블 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    PRIMARY KEY (HOLIDAY_DATE)
+) COMMENT = '공휴일 마스터. [Grain: HOLIDAY_DATE (1행=1일)]. [주의: SCHDUL_DIV_CD=0(공휴일)만 · 한글 없는 제목(입력 테스트)은 제외 · 주말 미포함 · 2021·2022 는 13일로 원천 기재 그대로]. [원천: CRM → BRONZE_CRM.TM_CM_SCHDUL_MNG].';
+
 -- CRM_MARKETING_CAMPAIGN — 마케팅 캠페인 마스터
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MARKETING_CAMPAIGN (
     MK_CMPGN_CD        VARCHAR       NOT NULL COMMENT 'MK_CMPGN_CD (PK · TC_MKTNG_DTL_CD DTL_CD_ID).',

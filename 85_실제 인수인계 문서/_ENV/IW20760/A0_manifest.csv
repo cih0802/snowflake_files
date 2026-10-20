@@ -1,0 +1,31 @@
+# doc_id: A0 · as_of: 2026-10-19 19:29:56.460 -0700 · account: IW20760 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q00,1,A0_Q00_1.csv,OK,1,0,SELECT 계정 컨텍스트
+Q01,1,A0_Q01_1.csv,OK,6,0,SHOW 데이터베이스
+Q02,1,A0_Q02_1.csv,OK,15,0,SELECT GN_DW 스키마별 객체 수
+Q03,1,A0_Q03_1.csv,OK,6,0,SELECT 프로시저·함수·스테이지 수
+Q04,1,A0_Q04_1.csv,OK,40,0,SHOW SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+Q04,2,A0_Q04_2.csv,OK,3,0,SHOW SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+Q04,3,A0_Q04_3.csv,OK,1,0,SHOW SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+Q04,4,A0_Q04_4.csv,OK,1,0,SHOW SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+Q04,5,A0_Q04_5.csv,OK,0,0,SHOW SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+Q05,1,A0_Q05_1.csv,OK,1,0,SHOW Task · Alert · Git · Integration
+Q05,2,A0_Q05_2.csv,OK,1,0,SHOW Task · Alert · Git · Integration
+Q05,3,A0_Q05_3.csv,OK,0,0,SHOW Task · Alert · Git · Integration
+Q05,4,A0_Q05_4.csv,OK,3,0,SHOW Task · Alert · Git · Integration
+Q06,1,A0_Q06_1.csv,OK,14,0,SHOW 롤 · 사용자 · 롤 계층
+Q06,2,A0_Q06_2.csv,OK,1,0,SHOW 롤 · 사용자 · 롤 계층
+Q06,3,A0_Q06_3.csv,OK,11,0,SELECT 롤 · 사용자 · 롤 계층
+Q07,1,A0_Q07_1.csv,OK,7,0,SHOW 웨어하우스 · 리소스 모니터 · 예산
+Q07,2,A0_Q07_2.csv,OK,0,0,SHOW 웨어하우스 · 리소스 모니터 · 예산
+Q07,3,A0_Q07_3.csv,OK,1,0,SHOW 웨어하우스 · 리소스 모니터 · 예산
+Q08,1,A0_Q08_1.csv,OK,0,0,SHOW 정책 · 태그 · DMF
+Q08,2,A0_Q08_2.csv,OK,0,0,SHOW 정책 · 태그 · DMF
+Q08,3,A0_Q08_3.csv,OK,0,0,SHOW 정책 · 태그 · DMF
+Q08,4,A0_Q08_4.csv,OK,12,0,SHOW 정책 · 태그 · DMF
+Q08,5,A0_Q08_5.csv,OK,0,0,SELECT 정책 · 태그 · DMF
+Q08,6,A0_Q08_6.csv,OK,0,0,SELECT 정책 · 태그 · DMF
+Q08,7,A0_Q08_7.csv,OK,0,0,SELECT 정책 · 태그 · DMF
+Q09,1,A0_Q09_1.csv,OK,1,0,SELECT [ENV] 데이터 차이 축 — SILVER.BIGQUERY_REFINED_DATA 적재 범위(외부 Python 적재 · 운영계와 범위가 다르다)
+Q10,1,A0_Q10_1.csv,OK,5,0,SELECT [ENV] 실행 이력 — Task(존재 이력 포함) · dbt 실행(최근 30일 · 롤별)
+Q10,2,A0_Q10_2.csv,OK,2,0,SELECT [ENV] 실행 이력 — Task(존재 이력 포함) · dbt 실행(최근 30일 · 롤별)

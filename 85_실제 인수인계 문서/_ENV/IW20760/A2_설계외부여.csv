@@ -1,0 +1,4 @@
+# doc_id: A2 · account: IW20760 · 생성 = scripts/a2_matrix_build.py · 설명 = A2_롤별_접근권한_매트릭스.md
+ROLE,GRANTED_ON,SCOPE,PRIVILEGE,N_OBJECTS
+GN_DW_ANALYST,SCHEMA,GN_DW.OPS,USAGE,1
+GN_DW_ANALYST,TABLE,GN_DW.OPS,SELECT,1

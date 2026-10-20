@@ -1,0 +1,8 @@
+# doc_id: A0 · as_of: 2026-10-19 19:29:56.460 -0700 · account: IW20760 · query: Q01-1 데이터베이스
+created_on,name,is_default,is_current,origin,owner,comment,options,retention_time,kind,owner_role_type,object_visibility,data_quality_monitoring_settings,resharing_settings
+2026-10-17 22:48:32.496000-07:00,GN_DW,N,N,,GN_DW_ADMIN,,,1,STANDARD,ROLE,,,
+2026-10-17 22:06:06.760000-07:00,SANDBOX,N,N,,SYSADMIN,,,1,STANDARD,ROLE,,,
+2026-10-17 22:05:00.078000-07:00,SNOWFLAKE,N,N,SNOWFLAKE.ACCOUNT_USAGE,,,,0,APPLICATION,,,,
+2026-10-17 22:05:05.549000-07:00,SNOWFLAKE_LEARNING_DB,N,N,,ACCOUNTADMIN,Created by Snowflake during account provisioning,,1,STANDARD,ROLE,,,
+2026-10-17 22:05:05.171000-07:00,SNOWFLAKE_SAMPLE_DATA,N,N,SFSALESSHARED.SFC_SAMPLES_EUFRANKFURT.SAMPLE_DATA,ACCOUNTADMIN,Preloaded TPCH Data provided by Snowflake during account provisioning,,0,IMPORTED DATABASE,ROLE,,,
+2026-10-17 22:05:41.117000-07:00,USER$TRIALADMIN,N,N,,,,,1,PERSONAL DATABASE,,,,

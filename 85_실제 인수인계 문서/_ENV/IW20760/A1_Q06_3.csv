@@ -1,0 +1,4 @@
+# doc_id: A1 · as_of: 2026-10-19 19:22:01.005 -0700 · account: IW20760 · query: Q06-3 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
+name,state,min_nodes,max_nodes,instance_family,num_services,num_jobs,auto_suspend_secs,auto_resume,active_nodes,idle_nodes,target_nodes,created_on,resumed_on,updated_on,owner,comment,is_exclusive,application,placement_group,backup_instance_families
+SYSTEM_COMPUTE_POOL_CPU,SUSPENDED,1,2,CPU_X64_S,0,0,300,true,0,0,0,2026-10-17 22:05:03.904000-07:00,1969-12-31 16:00:00-08:00,2026-10-17 22:05:03.928000-07:00,ACCOUNTADMIN,Snowflake created compute pool,false,,,
+SYSTEM_COMPUTE_POOL_GPU,SUSPENDED,1,2,GPU_NV_S,0,0,300,true,0,0,0,2026-10-17 22:05:03.932000-07:00,1969-12-31 16:00:00-08:00,2026-10-17 22:05:03.952000-07:00,ACCOUNTADMIN,Snowflake created compute pool,false,,,

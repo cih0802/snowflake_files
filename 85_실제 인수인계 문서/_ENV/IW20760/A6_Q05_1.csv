@@ -1,0 +1,2 @@
+# doc_id: A6 · as_of: 2026-10-19 20:49:55.137 -0700 · account: IW20760 · query: Q05-1 Task · Alert 상태와 최근 이력
+created_on,name,id,database_name,schema_name,owner,comment,warehouse,schedule,predecessors,state,definition,condition,allow_overlapping_execution,error_integration,last_committed_on,last_suspended_on,owner_role_type,config,task_relations,last_suspended_reason,success_integration,scheduling_mode,target_completion_interval,execute_as_user,overlap_policy,created_by_user

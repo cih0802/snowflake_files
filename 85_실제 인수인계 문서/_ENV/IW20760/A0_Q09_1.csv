@@ -1,0 +1,3 @@
+# doc_id: A0 · as_of: 2026-10-19 19:29:56.460 -0700 · account: IW20760 · query: Q09-1 [ENV] 데이터 차이 축 — SILVER.BIGQUERY_REFINED_DATA 적재 범위(외부 Python 적재 · 운영계와 범위가 다르다)
+N_ROWS,MIN_D,MAX_D,N_DAYS
+10022871,20240122,20261004,34

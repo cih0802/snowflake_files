@@ -1,0 +1,27 @@
+-- doc_id: B2 · as_of: 2026-10-20 · 목적: D01 지표 정의서 원천 조회(읽기 전용) · 설명: 20_정식산출물/D01_요구사항_지표정의서.md · DDL/DML 없음
+-- 캡처: python3 scripts/env_capture.py --id B2 <이 파일> → _ENV/<계정>/B2_<Qnn>_<k>.csv
+-- 원천 = GN_DW.SERVING.BIZ_DEFINITION_CORPUS (지표사전 90_provided_definition 을 build_biz_definition_corpus.py 가 적재 · 셀 무가공)
+
+-- Q01 지표 행 — 정의 · 산식 · 배선(도구 · SV 필드) · 대응 상태
+SELECT DOC_ID, TITLE, SYNONYMS, LEFT(DEFINITION, 400) AS DEFINITION, LEFT(FORMULA, 400) AS FORMULA,
+       AGENT_SCOPE, TOOL_NAME, SV_FIELD, HAS_FORMULA, COVERAGE, IS_ADDITIVE,
+       LEFT(LIMITATION, 300) AS LIMITATION, SOURCE_FILE
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE DOC_TYPE = '지표'
+ORDER BY DOC_ID;
+
+-- Q02 대응 상태 분포 (지표 행)
+SELECT SPLIT_PART(DOC_ID, '-', 1) AS SOURCE_GROUP,
+       COALESCE(NULLIF(COVERAGE, ''), '(산식 미등록)') AS COVERAGE,
+       COUNT(*) AS N,
+       COUNT_IF(TOOL_NAME <> '') AS N_WITH_TOOL
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE DOC_TYPE = '지표'
+GROUP BY 1, 2
+ORDER BY 1, 2;
+
+-- Q03 라우팅 행 (질문 → 도구 결정 · 사용자 결정 출처)
+SELECT DOC_ID, TITLE, AGENT_SCOPE, TOOL_NAME, SV_FIELD, LEFT(LIMITATION, 300) AS LIMITATION, SOURCE_FILE
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE DOC_TYPE = '라우팅'
+ORDER BY DOC_ID;

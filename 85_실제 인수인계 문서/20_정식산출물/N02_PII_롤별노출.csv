@@ -1,0 +1,16 @@
+# doc_id: N02 · as_of: 2026-10-20 (IW20760) · PII 컬럼 × 롤별 노출 매트릭스 · 설명 = N02_PII_정책정의서.md · 근거 = SYSTEM$CLASSIFY 4테이블 · SHOW GRANTS ON TABLE
+SCHEMA,TABLE,COLUMN,SEMANTIC_CATEGORY,PRIVACY_CATEGORY,CONFIDENCE,GN_DW_ADMIN,GN_DW_ENGINEER,GN_DW_ANALYST,GN_DW_VIEWER,GN_DW_SERVICE,GN_DW_DBT,GN_DW_LOADER,정책(미실행),비고
+OPS,ALERT_RECIPIENT_CONFIG,USER_EMAIL,EMAIL,IDENTIFIER,HIGH,원문(소유),원문 → 정책 후 도메인만,원문 → 정책 후 도메인만 · A2 결정으로 SELECT 회수 예정,접근 없음,접근 없음,접근 없음,접근 없음,SECURITY.MP_PII_EMAIL,1행 · 의존 객체 0 · 알림 프로시저 2종 EXECUTE AS OWNER(GN_DW_ADMIN)
+BRONZE_CRM,TM_PM_SETLE_INFO,MBTLNUM,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,휴대폰번호 · N02 §2-B
+BRONZE_CRM,TM_PM_SETLE_INFO,APPLCNT_MBTLNUM,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,신청자휴대폰번호 · N02 §2-B
+BRONZE_CRM,TM_PM_SETLE_INFO,PAYER_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,결제자명 · N02 §2-B
+BRONZE_CRM,TM_PM_SETLE_INFO,APPLCNT_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,신청자명 · N02 §2-B
+BRONZE_CRM,TM_PM_SETLE_INFO,ETC_CTTPC,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,기타연락처 · N02 §2-B
+BRONZE_CRM,TM_PM_SETLE_INFO,APPLCNT_ETC_CTTPC,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,신청자기타연락처 · N02 §2-B
+BRONZE_CRM,TH_PM_SETLE_INFO_HIST,PAYER_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,결제자명 · N02 §2-B
+BRONZE_CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,신청자명 · N02 §2-B
+BRONZE_CRM,TH_PM_SETLE_INFO_HIST,ETC_CTTPC,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,기타연락처 · N02 §2-B
+BRONZE_CRM,TH_PM_SETLE_INFO_HIST,APPLCNT_ETC_CTTPC,PHONE(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,신청자기타연락처 · N02 §2-B
+BRONZE_CRM,TM_PM_DNTN_DTLS,PAYER_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,결제자명 · N02 §2-B
+BRONZE_CRM,TM_PM_MBRFEE_ACMSLT,PAYER_NM,NAME(형태 집계 · 분류기 미검출),IDENTIFIER,형태 집계,원문(소유),원문 → 정책 후 ***,원문 → 정책 후 ***,접근 없음,접근 없음,원문 → 정책 후 *** · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_STRING,결제자명 · N02 §2-B
+BRONZE_CRM,SND_REQ_MST,SENDER_EMAIL,EMAIL,IDENTIFIER,HIGH,원문(소유),원문 → 정책 후 도메인만,원문 → 정책 후 도메인만,접근 없음,접근 없음,원문 → 정책 후 도메인만 · 모델 미사용,INSERT/UPDATE 만,SECURITY.MP_PII_EMAIL,"발신 메일주소 683/2,301 · N02 §2-B"

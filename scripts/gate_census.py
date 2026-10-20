@@ -223,6 +223,11 @@ GEN = {
     #   **바이트 동일**한지 + 형식 불변식 7종(I1~I7)을 지키는지 본다. 🔴 라이브 접속 0 · 파일만 읽는다.
     #   🔴 I7 은 「하드코딩 수치 금지」다 — 실제로 초판에서 「게이트 6종」 기재를 잡아냈다.
     'verify_init_ihcho_skill': '스킬 ↔ 정본 바이트 동일 + 형식 불변식(줄수·조문집합·수치금지·참조·기동순서·라벨)',
+    'env_capture': '85번 인수인계 [ENV] 값 캡처 — 읽기 전용 SQL(-- Qnn 마커) 결과를 _ENV/<계정>/<ID>_<Qnn>.csv 로 기록',
+    'a2_matrix_build': 'A2 롤 권한 매트릭스 생성 — _ENV/<계정>/A2_Q01·Q02 csv × 설계 csv 대조 → 매트릭스·설계대조·설계외부여 csv + xlsx',
+    'b_struct_build': '트랙 B 구조 산출물 생성 — _ENV/<계정>/B1 csv + dbt 모델·sources + Agent spec → D04 xlsx/csv · D05 FK csv+mermaid md · D06 테이블 계보 csv · D08 SV 요약 csv · D09 Agent 도구 csv',
+    'n03_catalog_build': 'N03 통합 데이터 사전 생성 — D01·D08·D09·D06 csv 를 지표 1행으로 잇고 xlsx·html 산출',
+    'n05_report_build': 'N05 테스트 결과서 xlsx 생성 — _ENV/<계정>/N05_*.csv 를 시트별로 모아 합격/불합격 요약',
 }
 
 MUTATES = {

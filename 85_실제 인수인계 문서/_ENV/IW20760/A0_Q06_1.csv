@@ -1,0 +1,16 @@
+# doc_id: A0 · as_of: 2026-10-19 19:29:56.460 -0700 · account: IW20760 · query: Q06-1 롤 · 사용자 · 롤 계층
+created_on,name,is_default,is_current,is_inherited,assigned_to_users,granted_to_roles,granted_roles,owner,comment,is_from_organization_user_group
+2026-10-17 22:04:58.855000-07:00,ACCOUNTADMIN,Y,Y,N,1,0,2,,Account administrator can manage all aspects of the account.,N
+2026-10-17 22:49:09.782000-07:00,GN_DW_ADMIN,N,N,Y,0,1,5,SECURITYADMIN,GN_DW DB/스키마 관리·DDL·SV/Agent 소유,N
+2026-10-17 22:49:10.093000-07:00,GN_DW_ANALYST,N,N,Y,0,1,1,SECURITYADMIN,분석가 - SELECT on BRONZE/SILVER/GOLD/SERVING(AGENT 사용),N
+2026-10-17 22:49:37.874000-07:00,GN_DW_DBT,N,N,Y,0,1,0,SECURITYADMIN,dbt 실행 전용(DW_PIPELINE) — 적재·WIDE 뷰·테스트 감사. 사람 작업은 GN_DW_ENGINEER,N
+2026-10-17 22:49:09.941000-07:00,GN_DW_ENGINEER,N,N,Y,0,1,0,SECURITYADMIN,ETL 개발·프로시저/태스크,N
+2026-10-17 22:49:10.383000-07:00,GN_DW_LOADER,N,N,Y,0,1,0,SECURITYADMIN,외부팀 BRONZE 적재,N
+2026-10-17 22:49:10.513000-07:00,GN_DW_SERVICE,N,N,Y,0,1,0,SECURITYADMIN,서비스 계정(API·Streamlit),N
+2026-10-17 22:49:10.236000-07:00,GN_DW_VIEWER,N,N,Y,0,1,0,SECURITYADMIN,읽기 전용·SV/Agent/Streamlit 소비,N
+2026-10-17 22:04:59.261000-07:00,ORGADMIN,N,N,N,1,0,0,,Organization administrator can manage organizations and accounts in organizations,N
+2026-10-17 22:04:58.845000-07:00,PUBLIC,N,N,Y,0,0,1,,Public role is automatically available to every user in the account.,N
+2026-10-17 22:04:58.874000-07:00,SECURITYADMIN,N,N,Y,0,1,1,,Security administrator can manage security aspects of the account.,N
+2026-10-17 22:05:05.562000-07:00,SNOWFLAKE_LEARNING_ROLE,N,N,Y,0,1,0,ACCOUNTADMIN,Created by Snowflake during account provisioning,N
+2026-10-17 22:04:58.830000-07:00,SYSADMIN,N,N,Y,0,1,1,,System administrator can create and manage databases and warehouses.,N
+2026-10-17 22:04:58.867000-07:00,USERADMIN,N,N,Y,0,1,0,,User administrator can create and manage users and roles,N
