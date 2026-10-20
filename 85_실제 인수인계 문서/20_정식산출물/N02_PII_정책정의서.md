@@ -53,6 +53,12 @@ status: review
 | `TM_PM_DNTN_DTLS`(기부 · 1,134,278행) | `PAYER_NM` | 1,133,604 | 한글 이름 202,264(나머지는 법인·단체명으로 보임 · 미확인) | 20 |
 | `SND_REQ_MST`(발송요청 · 2,301행) | `SENDER_EMAIL` | 683 | 이메일 683(분류기도 EMAIL 로 표시) | 0 |
 
+- 🟢 **2026-10-20 결정(A8-28) = 마스킹 적용 · 대상 12 컬럼 · `SND_REQ_MST.SENDER_EMAIL` 제외.** 스키마 권한은 줄이지 않는다.
+  - `SENDER_EMAIL` 제외 근거 = 값 683건이 **고유값 4종**이고 전부 조직 발신 주소(`@gni.kr` · 회원·직원 개인 주소 아님 · 2026-10-20 COUNT DISTINCT 실측).
+  - 형태 재확인(같은 날 · 정규식 `01[016789]-?[0-9]{3,4}-?[0-9]{4}` · `[가-힣]{2,4}`) = 휴대폰 2컬럼 99.8~99.99% · 이름 4컬럼 97.6~98% · `TM_PM_DNTN_DTLS.PAYER_NM` 은 법인명 혼재(17%)지만 개인 이름이 있어 대상 유지.
+  - 원천 값 중 「(임의생성)」 표기가 섞여 있다 — 개발계 데이터 일부 가공 가능성 · 실데이터 여부는 원천 담당 확인 전까지 **실데이터로 취급**한다.
+  - 원본 정본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_미실행.sql`(이 산출물의 [2-B] 와 같은 내용).
+
 - 형태 기준 = 휴대폰·전화: 숫자만 남겨 `0` 으로 시작하는 9~11자리 · 이름: 한글 2~5자 · 이메일: `x@y.z`. 근사 집계다(형태만 보고 실제 개인 여부는 확인하지 않았다).
 - 읽을 수 있는 롤 = GN_DW_ADMIN(소유) · **GN_DW_ANALYST · GN_DW_ENGINEER · GN_DW_DBT**(SELECT · `SHOW GRANTS ON TABLE` 2026-10-20). ANALYST 의 BRONZE 읽기는 2026-08-18 요건 변경으로 열린 것이다(RUNBOOK §6.2).
 - SILVER·GOLD 로는 흘러가지 않는다 — dbt 모델이 이 컬럼을 명시적으로 제외한다(`10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql:4` 「민감 컬럼 제외」) · SILVER·GOLD·SERVING·MSTR·ML 에 해당 컬럼 0(COLUMNS 스캔). ⇒ **노출면은 BRONZE 직접 조회뿐**이다.
@@ -62,7 +68,7 @@ status: review
 
 | 정책 | 대상 | 규칙 | 근거 |
 |---|---|---|---|
-| `SECURITY.MP_PII_EMAIL`(마스킹) | `OPS.ALERT_RECIPIENT_CONFIG.USER_EMAIL` · `BRONZE_CRM.SND_REQ_MST.SENDER_EMAIL` | `IS_ROLE_IN_SESSION('GN_DW_ADMIN')` → 원문 · 그 외 → `***@도메인` · NULL 은 NULL | 범용 이메일 정책 1개를 재사용한다 · `CURRENT_ROLE` 비교는 상위 롤을 거부하므로 쓰지 않는다 |
+| `SECURITY.MP_PII_EMAIL`(마스킹) | `OPS.ALERT_RECIPIENT_CONFIG.USER_EMAIL`(🟢 `BRONZE_CRM.SND_REQ_MST.SENDER_EMAIL` 은 A8-28 결정으로 제외 — 조직 주소 4종) | `IS_ROLE_IN_SESSION('GN_DW_ADMIN')` → 원문 · 그 외 → `***@도메인` · NULL 은 NULL | 범용 이메일 정책 1개를 재사용한다 · `CURRENT_ROLE` 비교는 상위 롤을 거부하므로 쓰지 않는다 |
 | 🔴 `SECURITY.MP_PII_STRING`(마스킹) | BRONZE §2-B 12 컬럼(이름 6 · 휴대폰 2 · 기타연락처 4) | `IS_ROLE_IN_SESSION('GN_DW_ADMIN')` → 원문 · 그 외 → `***` | 분석 가치가 없어 dbt 도 제외하는 값이다 — 부분 노출(가운데 글자만 가림 등)도 두지 않는다 · dbt 영향 0(모델 미사용) · 부착 후 build 1회로 회귀 확인 |
 | 행 접근 정책 | — | 만들지 않는다 | 행 단위 분리 요건(조직·지부별 열람 제한 등)이 문서·라이브 어디에도 없다 |
 | 자동 분류 프로필(선택) | DB `GN_DW` | 30일마다 재분류 · `auto_tag` | 신규 PII 컬럼이 생기면 태그로 잡는다 |
@@ -74,7 +80,7 @@ status: review
 ## 4. 적용 순서 (🔴 미실행)
 
 1. [0] ACCOUNTADMIN → `APPLY MASKING POLICY` 를 GN_DW_ADMIN 에.
-2. [1] 정책 생성 → [2] 컬럼 부착 → [2-B] BRONZE 12+1 컬럼 부착 → dbt build 1회(ERROR 0 · SKIP 0 확인).
+2. [1] 정책 생성 → [2] 컬럼 부착 → [2-B] BRONZE 12 컬럼 부착(`SENDER_EMAIL` 제외 · A8-28) → dbt build 1회(ERROR 0 · SKIP 0 확인).
 3. [5] 확인 — ① ADMIN 원문 ② `USE SECONDARY ROLES NONE` 후 ENGINEER 는 가려짐(RUNBOOK §6.2 · 안 하면 합집합 평가로 원문이 보여 오판한다) ③ 알림 메일 수동 발송 ④ `POLICY_REFERENCES`.
 4. 롤백 = [9].
 
@@ -82,6 +88,6 @@ status: review
 
 | # | 기대 | 실측 | 처리 |
 |---|---|---|---|
-| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 적용 여부 = 사용자 결정(A8-28) · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
+| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 🟢 2026-10-20 결정(A8-28) = **12 컬럼 마스킹 · `SENDER_EMAIL` 제외 · 스키마 권한 유지** · 원본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_미실행.sql` · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
 
 - 정책 0 은 A0 와 일치한다.
