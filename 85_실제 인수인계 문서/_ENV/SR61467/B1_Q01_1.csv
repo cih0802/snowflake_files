@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-20 17:52:37.766 -0700 · account: SR61467 · query: Q01-1 테이블·뷰 목록 (스키마 · 종류 · 행 수 · 바이트 · 소유 · COMMENT)
+# doc_id: B1 · as_of: 2026-10-20 18:22:31.668 -0700 · account: SR61467 · query: Q01-1 테이블·뷰 목록 (스키마 · 종류 · 행 수 · 바이트 · 소유 · COMMENT)
 TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,ROW_COUNT,BYTES,TABLE_OWNER,COMMENT
 BRONZE_AGENCY,DGT_AD_CMPGN_DTLS,BASE TABLE,222073,16260096,GN_DW_ADMIN,디지털 광고 성과 내역
 BRONZE_AGENCY,REBRDC_AD_CMPGN_DTLS,BASE TABLE,2190,67584,GN_DW_ADMIN,재송출 광고 성과 내역

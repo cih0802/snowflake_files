@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-20 17:52:37.766 -0700 · account: SR61467 · manifest
+# doc_id: B1 · as_of: 2026-10-20 18:22:31.668 -0700 · account: SR61467 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,B1_Q01_1.csv,OK,285,0,SELECT 테이블·뷰 목록 (스키마 · 종류 · 행 수 · 바이트 · 소유 · COMMENT)
 Q02,1,B1_Q02_1.csv,OK,5879,0,SELECT 컬럼 정의 (순서 · 타입 · NULL 허용 · 기본값 · COMMENT)
@@ -9,6 +9,6 @@ Q05,1,B1_Q05_1.csv,OK,108,0,SELECT SV 논리테이블 ↔ base 객체 (계보 SE
 Q06,1,B1_Q06_1.csv,OK,386,0,SELECT SV 메트릭 (이름 · 식 · 동의어 · 가산성)
 Q07,1,B1_Q07_1.csv,OK,896,0,SELECT SV 차원 (이름 · 식 · 동의어)
 Q08,1,B1_Q08_1.csv,OK,57,0,SELECT SV 관계
-Q09,1,B1_Q09_1.csv,OK,198,0,SELECT 객체 의존 (뷰·SV → 테이블 · GN_DW 내부)
+Q09,1,B1_Q09_1.csv,OK,211,0,SELECT 객체 의존 (뷰·SV → 테이블 · GN_DW 내부)
 Q10,1,B1_Q10_1.csv,OK,20,0,SELECT 프로시저 · 함수 (D07)
 Q11,1,B1_Q11_1.csv,OK,40,0,SELECT SV 별 VQR(검증 질의) 수 — GET_DDL 의 QUESTION 토큰 · SV 목록은 Q04 와 같아야 한다(새 SV 는 한 줄 추가)

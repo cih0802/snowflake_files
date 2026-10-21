@@ -31,6 +31,8 @@ EXCLUDE = ["_archive", "__pycache__", "*.pyc", "target", "logs", ".user.yml",
 MANIFEST = [
     # 01 — 실행순서 문서 + 문서에 명시된 SQL 은 extract_run_order_sql() 로 자동 추가
     ("01_실행순서_배포SQL", "문서실행순서.md", "개발계·운영계 배포 실행순서 (정본)"),
+    ("01_실행순서_배포SQL", "문서실행순서_llm실행.md", "🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항"),
+    ("01_실행순서_배포SQL", "문서실행순서_보조주석.md", "🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조)"),
     ("01_실행순서_배포SQL", "12_agent개선과제/output/O217_biz_definition_corpus.csv",
      "26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지)"),
 
@@ -41,6 +43,8 @@ MANIFEST = [
     ("04_SV_Agent_스펙", "cortex_project/cortex-project.yaml", "Cortex 프로젝트 설정"),
     ("04_SV_Agent_스펙", "cortex_project/agents", "09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙"),
     ("04_SV_Agent_스펙", "tmp/o249/agent_deploy.py", "🆕 O249 Agent 1종씩 버전업 스크립트(spec 스테이지 복사 → 크기 대조 → ADD VERSION · 환경변수 AG)"),
+    ("04_SV_Agent_스펙", "tmp/o250/deploy_agents.py", "🆕 O250 09_2 절차 집행기(pre = [0]·[0-B]·[0-C]·[1] · deploy = [2]·[3]·[5])"),
+    ("04_SV_Agent_스펙", "tmp/o250/ca_check.py", "🆕 O250 7축 SV 확인 — Cortex Analyst 생성 SQL ↔ 직접 SQL 값 대조(GN_DW_ANALYST)"),
 
     ("05_RAG_지표사전", "12_agent개선과제/output/O217_biz_definition_corpus.csv",
      "RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV"),

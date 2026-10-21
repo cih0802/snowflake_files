@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-20 17:52:37.766 -0700 · account: SR61467 · query: Q05-1 SV 논리테이블 ↔ base 객체 (계보 SERVING → GOLD/SERVING)
+# doc_id: B1 · as_of: 2026-10-20 18:22:31.668 -0700 · account: SR61467 · query: Q05-1 SV 논리테이블 ↔ base 객체 (계보 SERVING → GOLD/SERVING)
 SEMANTIC_VIEW_NAME,LOGICAL_TABLE,BASE_TABLE_SCHEMA,BASE_TABLE_NAME,PRIMARY_KEYS
 SV_AD,AD,GOLD,WIDE_AD_COMBINED,"[ ⏎   ""AD_PERF_DK"" ⏎ ]"
 SV_AD,DATE,GOLD,DIM_DATE,"[ ⏎   ""DATE_SK"" ⏎ ]"

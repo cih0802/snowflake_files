@@ -834,3 +834,227 @@ LEFT JOIN GN_DW.SERVING.ML_MEMBER_RISK_V m
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V TO ROLE GN_DW_SERVICE;
+
+-- ============================================================================
+-- [O250] ML_MEMBER_PRED_AXIS_V · ML_FEE_FORECAST_AXIS_V — ML 회원예측·회비예측 × 7축
+--   (신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명 · 사용자 승인 2026-10-21)
+--   원 정의 = 36_O250_ML예측_7축확장.sql(문면 무변경 이관 · O250-E) · SV = 05_29 · 05_30
+--   본부지부 = DIM_ORG.ACMSLT_DIV_GROUP_NM 8종 → 본부/지부/기타 3분류 · 법인 = SPAN.ACQ_CPR_DIV_NM
+-- ============================================================================
+CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V (
+    STDR_MT                COMMENT '모델 실행 기준월(YYYYMM)',
+    MBER_NO                COMMENT '회원번호(정기회원 체계)',
+    NEW_EXISTING           COMMENT '신규/기존(회원 축 · ML_MEMBER_ATTR_ASOF_V.NEW_EXISTING 그대로 · 기준월 행이 없으면 직전 12개월 최근 월 값)',
+    HQ_BRANCH_NM           COMMENT '본부지부 3분류(본부/지부/기타) = 약정 실적부서의 DIM_ORG 구분 8종을 묶은 값. NULL = 활동 약정 없음',
+    HQ_BRANCH_SRC_NM       COMMENT '본부지부 원값(DIM_ORG.ACMSLT_DIV_GROUP_NM 8종). NULL = 활동 약정 없음',
+    SPONSORSHIP_NAME       COMMENT '활동 약정의 후원사업명(DIM_SPONSORSHIP). NULL = 활동 약정 없음 또는 차원 미매핑',
+    CPR_DIV_NM             COMMENT '활동 약정의 법인(FACT_MEMBER_SPONSORSHIP_SPAN.ACQ_CPR_DIV_NM · 통합/사단/사복). NULL = 활동 약정 없음',
+    CMMN_BRND_NM           COMMENT '활동 약정의 획득 공통브랜드. NULL = 활동 약정 없음 또는 원천 값 없음',
+    CMPGN_CTGR_NM          COMMENT '활동 약정의 획득 캠페인카테고리. NULL = 활동 약정 없음 또는 원천 값 없음',
+    MKTG_CMPGN_NM          COMMENT '활동 약정의 획득 마케팅캠페인명. NULL = 활동 약정 없음 또는 원천 값 없음',
+    ACTIVE_SPNSR_CNT       COMMENT '이 조합에 속한 기준월 말 활동 약정 수(건). 0 = 활동 약정 없는 회원 행',
+    MEMBER_WEIGHT          COMMENT '회원 가중치 0~1 = 이 조합 약정 수 ÷ 회원 전체 활동 약정 수(약정 없는 회원 = 1). 회원별 합 = 1',
+    HAS_CHURN_PRED         COMMENT 'TRUE = 회원 단위 중단 예측 대상',
+    CHURN_PROB             COMMENT '회원 단위 중단확률(0~1 · 예측치). NULL = 중단 예측 대상 아님',
+    CHURN_GRADE            COMMENT '회원 단위 중단위험 등급(고위험/주의/일반). NULL = 중단 예측 대상 아님',
+    HAS_INC_PRED           COMMENT 'TRUE = 증액 예측 대상',
+    INC_PROB               COMMENT '증액확률(0~1 · 예측치). NULL = 증액 예측 대상 아님',
+    INC_CLASS              COMMENT '증액 모델 판정 0/1. NULL = 증액 예측 대상 아님',
+    HAS_SPONSOR_PRED       COMMENT 'TRUE = 이 조합 약정 중 후원건 단위 이탈 예측(ML_SPONSOR_RISK_V) 대상이 있다',
+    SPONSOR_MAX_CHURN_PROB COMMENT '이 조합 약정의 후원건 이탈확률 최댓값(0~1). NULL = 후원건 예측 대상 아님',
+    SPONSOR_CHURN_GRADE    COMMENT '이 조합 약정 중 가장 높은 후원건 이탈위험 등급. NULL = 후원건 예측 대상 아님',
+    IS_UNPAID_STDR         COMMENT '실적 · TRUE = 기준월에 미납 청구가 있다(회원 축 · ML_MEMBER_PRED_BRIDGE_V). 🔴 미납 예측 모델은 없다',
+    UNPAID_AMT_12M         COMMENT '실적 · 기준월 포함 직전 12개월 미납 청구액 합(원 · 회원 축). NULL = 12개월 청구 없음',
+    UNPAID_MONTHS_12M      COMMENT '실적 · 직전 12개월 중 미납이 있는 월 수(개월 · 회원 축). NULL = 12개월 청구 없음'
+)
+  COMMENT = 'ML 회원예측(중단·증액) + 미납 실적 × 7축(신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명). grain = 기준월 × 회원 × 7축 조합. 축 원천 = GOLD.FACT_MEMBER_SPONSORSHIP_SPAN 기준월 말 활동 약정.'
+AS
+WITH r AS (
+    SELECT STDR_MT, TO_NUMBER(STDR_MT) AS MK, MBER_NO,
+           HAS_CHURN_PRED, CHURN_PROB, CHURN_GRADE,
+           HAS_INC_PRED, INC_PROB, INC_CLASS
+    FROM GN_DW.SERVING.ML_MEMBER_RISK_V
+), act AS (
+    SELECT r.STDR_MT, r.MBER_NO, s.SPNSR_NO, s.SPNSR_BSNS_NO,
+           CASE
+               WHEN o.ACMSLT_DIV_GROUP_NM IN ('본부', '시도본부', '시도본부 및 중앙', '본부(사복)') THEN '본부'
+               WHEN o.ACMSLT_DIV_GROUP_NM IN ('지부', '지부(사복)') THEN '지부'
+               WHEN o.ACMSLT_DIV_GROUP_NM IS NOT NULL THEN '기타'
+           END AS HQ_BRANCH_NM,
+           o.ACMSLT_DIV_GROUP_NM AS HQ_BRANCH_SRC_NM,
+           ds.SPONSORSHIP_NAME,
+           s.ACQ_CPR_DIV_NM AS CPR_DIV_NM,
+           s.ACQ_CMMN_BRND_NM AS CMMN_BRND_NM,
+           s.ACQ_CMPGN_CTGR_NM AS CMPGN_CTGR_NM,
+           s.ACQ_MKTG_CMPGN_NM AS MKTG_CMPGN_NM
+    FROM r
+    JOIN GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN s
+      ON s.MEMBER_DK = r.MBER_NO
+     AND s.START_MONTH_KEY <= r.MK
+     AND (s.DSCNTC_MONTH_KEY IS NULL OR s.DSCNTC_MONTH_KEY > r.MK)
+    LEFT JOIN GN_DW.GOLD.DIM_ORG o
+      ON o.ORG_DK = ABS(HASH(s.SPNSR_ACMSLT_DEPT_CD))
+    LEFT JOIN GN_DW.GOLD.DIM_SPONSORSHIP ds
+      ON ds.SPONSORSHIP_SK = s.SPONSORSHIP_SK
+), sp AS (
+    SELECT a.*, k.CHURN_PROB AS SP_PROB, k.CHURN_GRADE AS SP_GRADE, (k.MBER_NO IS NOT NULL) AS HAS_SP
+    FROM act a
+    LEFT JOIN GN_DW.SERVING.ML_SPONSOR_RISK_V k
+      ON k.STDR_MT = a.STDR_MT
+     AND k.MBER_NO = a.MBER_NO
+     AND k.SPNSR_BSNS_NO = a.SPNSR_BSNS_NO
+), g AS (
+    SELECT STDR_MT, MBER_NO, HQ_BRANCH_NM, HQ_BRANCH_SRC_NM, SPONSORSHIP_NAME,
+           CPR_DIV_NM, CMMN_BRND_NM, CMPGN_CTGR_NM, MKTG_CMPGN_NM,
+           COUNT(DISTINCT SPNSR_NO) AS ACTIVE_SPNSR_CNT,
+           BOOLOR_AGG(HAS_SP) AS HAS_SPONSOR_PRED,
+           MAX(SP_PROB) AS SPONSOR_MAX_CHURN_PROB,
+           CASE MAX(CASE SP_GRADE WHEN '고위험' THEN 3 WHEN '주의' THEN 2 WHEN '일반' THEN 1 END)
+               WHEN 3 THEN '고위험' WHEN 2 THEN '주의' WHEN 1 THEN '일반'
+           END AS SPONSOR_CHURN_GRADE
+    FROM sp
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
+)
+SELECT r.STDR_MT,
+       r.MBER_NO,
+       at.NEW_EXISTING,
+       g.HQ_BRANCH_NM,
+       g.HQ_BRANCH_SRC_NM,
+       g.SPONSORSHIP_NAME,
+       g.CPR_DIV_NM,
+       g.CMMN_BRND_NM,
+       g.CMPGN_CTGR_NM,
+       g.MKTG_CMPGN_NM,
+       COALESCE(g.ACTIVE_SPNSR_CNT, 0),
+       COALESCE(g.ACTIVE_SPNSR_CNT / NULLIF(SUM(g.ACTIVE_SPNSR_CNT) OVER (PARTITION BY r.STDR_MT, r.MBER_NO), 0), 1),
+       r.HAS_CHURN_PRED,
+       r.CHURN_PROB,
+       r.CHURN_GRADE,
+       r.HAS_INC_PRED,
+       r.INC_PROB,
+       r.INC_CLASS,
+       COALESCE(g.HAS_SPONSOR_PRED, FALSE),
+       g.SPONSOR_MAX_CHURN_PROB,
+       g.SPONSOR_CHURN_GRADE,
+       COALESCE(b.IS_UNPAID_STDR, FALSE),
+       b.UNPAID_AMT_12M,
+       b.UNPAID_MONTHS_12M
+FROM r
+LEFT JOIN g
+  ON g.STDR_MT = r.STDR_MT AND g.MBER_NO = r.MBER_NO
+LEFT JOIN GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V at
+  ON at.STDR_MT = r.STDR_MT AND at.MBER_NO = r.MBER_NO
+LEFT JOIN GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V b
+  ON b.STDR_MT = r.STDR_MT AND b.MBER_NO = r.MBER_NO;
+
+CREATE OR REPLACE VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V (
+    STDR_MT            COMMENT '예측 실행 기준월(YYYYMM)',
+    CMPGN_CTGR_CD      COMMENT '캠페인카테고리코드(예측 계열)',
+    CMPGN_CTGR_NAME    COMMENT '캠페인카테고리명(ML_FEE_FORECAST_V). NULL = 원천 마스터에 이름 없음',
+    FORECAST_MONTH_KEY COMMENT '예측월(YYYYMM)',
+    NEW_EXISTING       COMMENT '신규/기존(납입월 회원 월실적 FACT_MEMBER_MONTHLY.NEW_EXISTING_FLAG). NULL = 배분 불가 행 또는 그 달 월실적 없음',
+    HQ_BRANCH_NM       COMMENT '본부지부 3분류(본부/지부/기타). NULL = 배분 불가 행',
+    HQ_BRANCH_SRC_NM   COMMENT '본부지부 원값(DIM_ORG.ACMSLT_DIV_GROUP_NM 8종). NULL = 배분 불가 행',
+    SPONSORSHIP_NAME   COMMENT '후원사업명(DIM_SPONSORSHIP). NULL = 배분 불가 행 또는 차원 미매핑',
+    CPR_DIV_NM         COMMENT '법인(SPAN.ACQ_CPR_DIV_NM). NULL = 배분 불가 행',
+    CMMN_BRND_NM       COMMENT '공통브랜드(SPAN.ACQ_CMMN_BRND_NM). NULL = 배분 불가 행 또는 원천 값 없음',
+    MKTG_CMPGN_NM      COMMENT '마케팅캠페인명(SPAN.ACQ_MKTG_CMPGN_NM). NULL = 배분 불가 행 또는 원천 값 없음',
+    IS_ALLOCATED       COMMENT 'TRUE = 실적 비중으로 배분됨 · FALSE = 그 카테고리에 직전 12개월 매칭 납입 실적이 없어 배분 불가(예측 전액이 이 1행)',
+    ALLOC_SHARE        COMMENT '카테고리 내 7축 조합 비중 0~1(카테고리별 합 = 1)',
+    ALLOC_FORECAST_AMT COMMENT '배분 추정 회비(원) = 카테고리 예측 × 비중 — 🔴 모델 예측치가 아니라 실적 비중 배분 추정치',
+    ALLOC_LOWER        COMMENT '배분 하한(원) = 카테고리 95% 하한 × 비중',
+    ALLOC_UPPER        COMMENT '배분 상한(원) = 카테고리 95% 상한 × 비중'
+)
+  COMMENT = 'ML 캠페인카테고리 회비 예측 × 7축 실적 비중 배분 추정. grain = 기준월 × 카테고리 × 예측월 × 7축 조합. 비중 원천 = GOLD.WIDE_MEMBER_FEE 직전 12개월 납입 × FACT_MEMBER_SPONSORSHIP_SPAN 활동 약정.'
+AS
+WITH fc AS (
+    SELECT STDR_MT, CMPGN_CTGR_CD::VARCHAR AS CMPGN_CTGR_CD, CMPGN_CTGR_NAME, FORECAST_MONTH_KEY,
+           FORECAST_AMT, FORECAST_LOWER, FORECAST_UPPER
+    FROM GN_DW.SERVING.ML_FEE_FORECAST_V
+), mt AS (
+    SELECT DISTINCT STDR_MT, STDR_MT::INT AS MK FROM fc
+), w AS (
+    SELECT mt.STDR_MT, w.MONTH_KEY, w.MEMBER_DK, w.SPONSORSHIP_SK, SUM(w.PAID_FEE) AS AMT
+    FROM GN_DW.GOLD.WIDE_MEMBER_FEE w
+    JOIN mt
+      ON w.MONTH_KEY <= mt.MK
+     AND w.MONTH_KEY > mt.MK - 100
+    WHERE w.PAID_FEE > 0
+    GROUP BY 1, 2, 3, 4
+), j AS (
+    SELECT w.STDR_MT, w.MONTH_KEY, w.MEMBER_DK, w.AMT,
+           s.ACQ_CMPGN_CTGR_CD::VARCHAR AS CMPGN_CTGR_CD,
+           s.SPNSR_ACMSLT_DEPT_CD, s.SPONSORSHIP_SK,
+           s.ACQ_CPR_DIV_NM, s.ACQ_CMMN_BRND_NM, s.ACQ_MKTG_CMPGN_NM
+    FROM w
+    JOIN GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN s
+      ON s.MEMBER_DK = w.MEMBER_DK
+     AND s.SPONSORSHIP_SK = w.SPONSORSHIP_SK
+     AND s.START_MONTH_KEY <= w.MONTH_KEY
+     AND (s.DSCNTC_MONTH_KEY IS NULL OR s.DSCNTC_MONTH_KEY > w.MONTH_KEY)
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY w.STDR_MT, w.MONTH_KEY, w.MEMBER_DK, w.SPONSORSHIP_SK
+        ORDER BY s.SPNSR_AMT DESC NULLS LAST, s.SPNSR_NO
+    ) = 1
+), base AS (
+    SELECT j.STDR_MT, j.CMPGN_CTGR_CD,
+           fm.NEW_EXISTING_FLAG::STRING AS NEW_EXISTING,
+           CASE
+               WHEN o.ACMSLT_DIV_GROUP_NM IN ('본부', '시도본부', '시도본부 및 중앙', '본부(사복)') THEN '본부'
+               WHEN o.ACMSLT_DIV_GROUP_NM IN ('지부', '지부(사복)') THEN '지부'
+               WHEN o.ACMSLT_DIV_GROUP_NM IS NOT NULL THEN '기타'
+           END AS HQ_BRANCH_NM,
+           o.ACMSLT_DIV_GROUP_NM AS HQ_BRANCH_SRC_NM,
+           ds.SPONSORSHIP_NAME,
+           j.ACQ_CPR_DIV_NM AS CPR_DIV_NM,
+           j.ACQ_CMMN_BRND_NM AS CMMN_BRND_NM,
+           j.ACQ_MKTG_CMPGN_NM AS MKTG_CMPGN_NM,
+           SUM(j.AMT) AS AMT
+    FROM j
+    LEFT JOIN GN_DW.GOLD.FACT_MEMBER_MONTHLY fm
+      ON fm.MEMBER_DK = j.MEMBER_DK
+     AND fm.MONTH_KEY = j.MONTH_KEY
+    LEFT JOIN GN_DW.GOLD.DIM_ORG o
+      ON o.ORG_DK = ABS(HASH(j.SPNSR_ACMSLT_DEPT_CD))
+    LEFT JOIN GN_DW.GOLD.DIM_SPONSORSHIP ds
+      ON ds.SPONSORSHIP_SK = j.SPONSORSHIP_SK
+    WHERE j.CMPGN_CTGR_CD IS NOT NULL
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9
+), sh AS (
+    SELECT b.*, TRUE AS IS_ALLOCATED,
+           AMT / SUM(AMT) OVER (PARTITION BY STDR_MT, CMPGN_CTGR_CD) AS SHARE
+    FROM base b
+), k AS (
+    SELECT DISTINCT STDR_MT, CMPGN_CTGR_CD FROM fc
+), sh_full AS (
+    SELECT STDR_MT, CMPGN_CTGR_CD, NEW_EXISTING, HQ_BRANCH_NM, HQ_BRANCH_SRC_NM, SPONSORSHIP_NAME,
+           CPR_DIV_NM, CMMN_BRND_NM, MKTG_CMPGN_NM, IS_ALLOCATED, SHARE
+    FROM sh
+    WHERE (STDR_MT, CMPGN_CTGR_CD) IN (SELECT STDR_MT, CMPGN_CTGR_CD FROM k)
+    UNION ALL
+    SELECT k.STDR_MT, k.CMPGN_CTGR_CD,
+           NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+           FALSE, 1
+    FROM k
+    WHERE NOT EXISTS (
+        SELECT 1 FROM sh
+        WHERE sh.STDR_MT = k.STDR_MT AND sh.CMPGN_CTGR_CD = k.CMPGN_CTGR_CD
+    )
+)
+SELECT f.STDR_MT, f.CMPGN_CTGR_CD, f.CMPGN_CTGR_NAME, f.FORECAST_MONTH_KEY,
+       s.NEW_EXISTING, s.HQ_BRANCH_NM, s.HQ_BRANCH_SRC_NM, s.SPONSORSHIP_NAME,
+       s.CPR_DIV_NM, s.CMMN_BRND_NM, s.MKTG_CMPGN_NM,
+       s.IS_ALLOCATED, s.SHARE,
+       f.FORECAST_AMT * s.SHARE,
+       f.FORECAST_LOWER * s.SHARE,
+       f.FORECAST_UPPER * s.SHARE
+FROM fc f
+JOIN sh_full s
+  ON s.STDR_MT = f.STDR_MT
+ AND s.CMPGN_CTGR_CD = f.CMPGN_CTGR_CD;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V TO ROLE GN_DW_SERVICE;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V TO ROLE GN_DW_ANALYST;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V TO ROLE GN_DW_SERVICE;

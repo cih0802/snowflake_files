@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-20 17:52:37.766 -0700 · account: SR61467 · query: Q03-1 PK · FK (컬럼 단위 · SHOW 는 계정 전체 대신 스키마별)
+# doc_id: B1 · as_of: 2026-10-20 18:22:31.668 -0700 · account: SR61467 · query: Q03-1 PK · FK (컬럼 단위 · SHOW 는 계정 전체 대신 스키마별)
 created_on,database_name,schema_name,table_name,column_name,key_sequence,constraint_name,rely,comment
 2026-10-20 07:22:15.315000-07:00,GN_DW,GOLD,DIM_AD_CREATIVE,AD_CREATIVE_SK,1,SYS_CONSTRAINT_dfd4c531-271f-4ee4-be38-2b63fd853d06,false,
 2026-10-20 07:22:16.003000-07:00,GN_DW,GOLD,DIM_BIGQUERY_EVENT,BIGQUERY_EVENT_SK,1,SYS_CONSTRAINT_b0350fc3-9c72-48cf-878d-8ccb7f5391a9,false,

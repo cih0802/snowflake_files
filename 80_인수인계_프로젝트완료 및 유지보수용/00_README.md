@@ -16,10 +16,10 @@
 
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
-| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 59 |
+| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 65 |
 | 02_dbt_pipeline | dbt 프로젝트 원본 | 216 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
-| 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 5 |
+| 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 7 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
 | 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 19 |
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
@@ -72,6 +72,10 @@
 | 05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/09_1_AGENT_생성.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/09_2_AGENT_버전업.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql | 문서실행순서.md 명시 SQL |
@@ -98,6 +102,8 @@
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql | 문서실행순서.md 명시 SQL |
+| 문서실행순서_llm실행.md | 🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항 |
+| 문서실행순서_보조주석.md | 🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조) |
 | 12_agent개선과제/output/O217_biz_definition_corpus.csv | 26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지) |
 
 ### 02_dbt_pipeline
@@ -374,6 +380,8 @@
 | cortex_project/agents/AGENT_MARKETING/agent_spec.yaml | 09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙 |
 | cortex_project/agents/AGENT_MEMBER/agent_spec.yaml | 09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙 |
 | tmp/o249/agent_deploy.py | 🆕 O249 Agent 1종씩 버전업 스크립트(spec 스테이지 복사 → 크기 대조 → ADD VERSION · 환경변수 AG) |
+| tmp/o250/deploy_agents.py | 🆕 O250 09_2 절차 집행기(pre = [0]·[0-B]·[0-C]·[1] · deploy = [2]·[3]·[5]) |
+| tmp/o250/ca_check.py | 🆕 O250 7축 SV 확인 — Cortex Analyst 생성 SQL ↔ 직접 SQL 값 대조(GN_DW_ANALYST) |
 
 ### 05_RAG_지표사전
 

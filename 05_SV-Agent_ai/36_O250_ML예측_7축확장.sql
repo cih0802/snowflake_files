@@ -1,4 +1,9 @@
 -- ============================================================================
+-- 🔴 [O250-E 2026-10-21] 이력 보존 파일 — 신규 구축에서 실행하지 않는다.
+--   정본 = 뷰 2종 → 21_ML_SERVING_뷰_DDL.sql [O250] 절 · SV 2종 → 05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql · 05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql
+--   (문면 무변경 이관 · 토큰 대조 부재 0) · 이 파일을 고치지 말고 정본을 고친다(두 곳 정본 = drift · P23).
+-- ============================================================================
+-- ============================================================================
 -- 36_O250_ML예측_7축확장.sql — 🆕 O250-A (2026-10-21 · TRIALADMIN(SR61467))
 --   ML 회원예측(증액·중단·미납·회비) × 7축 서빙 뷰 2종 + SV 2종
 --   · 배경 = 현업 요청: 증액·중단 예측이 캠페인카테고리까지만 보인다
@@ -328,7 +333,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_AXIS
   COMMENT = 'ML 회원예측 × 7축 SV. base=SERVING.ML_MEMBER_PRED_AXIS_V. 「증액·중단·미납 예측을 신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명별로」 질문에 쓴다. 🔴🔴 머신러닝 예측치이며 실적이 아니다(미납 컬럼만 실적). 🔴 미납 예측 모델은 없다 — 실적 미납 × 중단확률로 답하고 밝힌다. 🔴 머신러닝은 테스트 단계다. 🔴 축 = 기준월 말 활동 약정 기준(증액 MSTR 귀속 기준은 SV_ML_INC_CAMPAIGN). 🔴 회원당 여러 행 — 회원수 중복제거 · 기대 회원수는 가중합.'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호).
-  핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(pa.STDR_MT)) 하나로 한정하고 밝힌다. (2) 회원수는 COUNT(DISTINCT pa.MBER_NO) · 기대 회원수는 SUM(prob * pa.MEMBER_WEIGHT) 로 계산하고 COUNT(*) 를 쓰지 않는다. (3) 요청한 축만 GROUP BY 한다 — 축을 여러 개 요청하면 함께 GROUP BY 한다. (4) 축이 NULL 인 행(활동 약정 없음)은 순위에서 빼고 그 회원수를 따로 밝힌다. (5) 평균 확률 순위는 회원 100명 이상 축 값으로 한정하고 하한을 밝힌다. (6) 🔴 실적 SV 와 조인하지 않는다.';
+  핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(pa.STDR_MT)) 하나로 한정하고 밝힌다. (2) 회원수는 COUNT(DISTINCT pa.MBER_NO) · 기대 회원수는 SUM(prob * pa.MEMBER_WEIGHT) 로 계산하고 COUNT(*) 를 쓰지 않는다. (3) 요청한 축만 GROUP BY 한다 — 축을 여러 개 요청하면 함께 GROUP BY 한다. (4) 축이 NULL 인 행(활동 약정 없음)은 순위에서 빼고 그 회원수를 따로 밝힌다. (5) 평균 확률 순위는 회원 100명 이상 축 값으로 한정하고 하한을 밝힌다. (6) 🔴 실적 SV 와 조인하지 않는다. (7) 🆕 [O250-D 출력 형식] 모든 출력 열에 한글 별칭(예: "법인" · "본부지부" · "기준월 미납 회원수(명)") · 기대 회원수 ROUND(…, 1) · 확률은 ROUND(AVG(prob)*100, 2) AS "평균 증액확률(%)" 처럼 % 로 낸다 · 차원 열을 지표 열보다 앞에 둔다.';
 
 -- ▣ 4. SV — 회비 예측 7축 배분
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST_AXIS
@@ -386,7 +391,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST_AXIS
   COMMENT = 'ML 회비 예측 × 7축 배분 SV. base=SERVING.ML_FEE_FORECAST_AXIS_V. 「회비 예측을 신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명별로」 질문에 쓴다. 🔴🔴 모델 예측은 캠페인카테고리 단위뿐이다 — 7축 값은 직전 12개월 실적 비중 배분 추정치이며 그렇게 밝힌다. 🔴 단위 = 원. 🔴 기준월 여러 개 합산 금지. 🔴 회비 실적(SV_MEMBER_FEE)과 같은 표에 합산하지 않는다. 기존 축별 배분(SV_ML_FEE_FORECAST FA)과 카테고리 연결 기준이 다르다(이 SV = 약정 테이블 카테고리).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — CTE 안에서는 베이스 컬럼을 SUM 으로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
   [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호).
-  핵심 규칙: (1) 기준월 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (2) 예측월 미지정 시 그 기준월의 예측월 전체 합계를 쓰고 기간을 밝힌다. (3) 요청한 축만 GROUP BY 하고 SUM(fx.ALLOC_FORECAST_AMT) 로 집계한다. (4) IS_ALLOCATED = FALSE 금액은 별도 행 「배분 불가(실적 비중 없음)」로 밝힌다. (5) 금액은 원 단위 반올림 · 🔴 실적 SV 와 조인하지 않는다.';
+  핵심 규칙: (1) 기준월 미지정 시 최신 기준월 하나로 한정하고 밝힌다. (2) 예측월 미지정 시 그 기준월의 예측월 전체 합계를 쓰고 기간을 밝힌다. (3) 요청한 축만 GROUP BY 하고 SUM(fx.ALLOC_FORECAST_AMT) 로 집계한다. (4) IS_ALLOCATED = FALSE 금액은 별도 행 「배분 불가(실적 비중 없음)」로 밝힌다. (5) 금액은 원 단위 반올림 · 🔴 실적 SV 와 조인하지 않는다. (6) 🆕 [O250-D 출력 형식] 모든 출력 열에 한글 별칭 · 차원 열을 지표 열보다 앞에 둔다 · 배분 불가 행은 순위 행과 섞지 않고 맨 끝 1행으로 둔다.';
 
 -- ▣ 5. GRANT
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V TO ROLE GN_DW_ANALYST;
