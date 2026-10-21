@@ -144,7 +144,7 @@ WITH required AS (
     -- 🆕 [O224-E] 같은 결합 도구를 경영·마케팅에도 배선
     ('AGENT_EXECUTIVE', 'SV_ML_CHURN_CAMPAIGN'),
     ('AGENT_MARKETING', 'SV_ML_CHURN_CAMPAIGN'),
-    -- 🆕 [O250-B 15차] ML 회원예측·회비예측 × 7축(36_O250_ML예측_7축확장.sql)
+    -- 🆕 [O250-B 15차] ML 회원예측·회비예측 × 7축(36_DEPLOY_ML_PRED_7AXIS.sql)
     ('AGENT_MEMBER',    'SV_ML_MEMBER_PRED_AXIS'),
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST_AXIS'),
     ('AGENT_MARKETING', 'SV_ML_MEMBER_PRED_AXIS'),

@@ -1,5 +1,5 @@
 -- ============================================================================
--- 30_O240_실데이터이상치_배포순서.sql — O240 운영계 실데이터 이상치 보강 배포 순서
+-- 30_DEPLOY_DATA_ANOMALY.sql — O240 운영계 실데이터 이상치 보강 배포 순서
 -- Co-authored with CoCo
 --   작성 = ua91864 · 2026-10-16 · 사용자 승인(전부 진행)
 --   🔴 에이전트 세션은 Restricted Session Scope 라 DBT PROJECT·SEMANTIC VIEW·AGENT OWNERSHIP 작업이 거부됐다

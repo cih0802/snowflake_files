@@ -36,7 +36,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     org AS GN_DW.GOLD.DIM_ORG
       PRIMARY KEY (ORG_SK)
       WITH SYNONYMS ('조직', '부서', '실적부서')
-      COMMENT = '조직 차원(SCD1, 부서 grain). PK 유일이라 조인이 행수를 늘리지 않는다. 🔴개발(DEV)행에만 배선된다 — 중단(STOP)행은 원천이 등록부서만 보유해 역할이 달라 전건 ''(미매핑)''(SK=0)이다(결정 대기). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_CM_DEPT_INFO · SILVER=CRM_ORG.'
+      COMMENT = '조직 차원(SCD1, 부서 grain). PK 유일이라 조인이 행수를 늘리지 않는다. 🔴개발(DEV)행에만 배선된다 — 중단(STOP)행은 원천이 등록부서만 보유해 역할이 달라 전건 ''(미매핑)''(SK=0)이다(결정 대기). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_CM_DEPT_INFO · SILVER=CRM_ORG.',
+    -- 🆕 [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(개발 DEV 행 전용)
+    org_succ AS GN_DW.GOLD.DIM_ORG_SUCCESSION
+      PRIMARY KEY (OLD_ORG_SK)
+      WITH SYNONYMS ('부서 귀속', '현재 부서 귀속')
+      COMMENT = '폐지·개편 부서 현재 조직 귀속 차원(DIM_ORG 와 1:1 · OLD_ORG_SK = ORG_SK). PK 유일이라 조인이 행수를 늘리지 않는다. 🔴 중단(STOP) 행은 ORG_SK = 0(원천 실적부서 없음)이라 연결되지 않는다.'
   )
   RELATIONSHIPS (
     fme_to_date     AS fme (DATE_SK)     REFERENCES date,
@@ -44,7 +49,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     fme_to_campaign AS fme (CAMPAIGN_SK) REFERENCES campaign,
     fme_to_org      AS fme (ORG_SK)      REFERENCES org,
     fme_to_spb      AS fme (SPONSORSHIP_SK) REFERENCES sponsorship,
-    fme_to_acq      AS fme (MEMBER_DK) REFERENCES acq
+    fme_to_acq      AS fme (MEMBER_DK) REFERENCES acq,
+    fme_to_org_succ AS fme (ORG_SK) REFERENCES org_succ
   )
   DIMENSIONS (
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME
@@ -77,6 +83,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     org.ORG_PATH AS org.ORG_PATH
       WITH SYNONYMS ('조직 경로', '부서 경로', '공116')
       COMMENT = '조직도 부서 경로(조직 계통 UPPER_DEPT_ID · 루트 제외). 🔴 **실적 계통이 아니다** — 실적 본부/지부는 ORG_DIV_GROUP·ORG_DIV 를 쓴다(두 계통은 다르다). 현재 조직이 아니면 NULL 일 수 있다.',
+    -- 🆕 [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축(개발 DEV 사건 전용)
+    org_succ.CUR_DEPARTMENT AS org_succ.CUR_DEPARTMENT
+      WITH SYNONYMS ('현재 부서', '현재 부서-팀', '귀속 부서', '현재 조직 기준 부서')
+      COMMENT = '개발 실적부서를 **현재 활성 부서-팀**으로 귀속한 부서명(폐지·개편 부서 실적이 현재 부서에 합쳐진다 · DEC-63-E · 현업 확인 대기). 🔴 개발(DEV) 사건 전용 — 중단(STOP) 행은 원천 부서가 없어 NULL 이다(부서별 중단은 SV_MEMBER_SPONSOR_BIZ.CUR_DEPARTMENT). 개발 행의 NULL = 귀속 대상 없는 폐지 부서((미매핑 폐지부서)로 표시). 🔴 「부서별 개발 실적」 기본 축 · 「당시 부서」를 명시하면 ORG_DEPARTMENT.',
+    org_succ.CUR_ORG_PATH AS org_succ.CUR_ORG_PATH
+      WITH SYNONYMS ('현재 부서-팀 경로', '현재 조직 경로')
+      COMMENT = '귀속 현재 부서의 조직 경로(예: 본부 > 회원실 > 회원참여팀). NULL 사유 = CUR_DEPARTMENT 와 같다.',
+    org_succ.IS_CONFIRMED AS org_succ.IS_CONFIRMED
+      WITH SYNONYMS ('귀속 확정 여부')
+      COMMENT = 'TRUE = 활성 부서 또는 현업 확정 귀속 · FALSE = 자동 추정 귀속(현업 검토 전).',
     date.EVENT_DATE   AS date.FULL_DATE     WITH SYNONYMS ('사건일', '발생일', '일자', '날짜') COMMENT = '상태전이 발생일',
     date.FULL_DATE AS date.FULL_DATE  COMMENT = '달력 날짜(DIM_DATE.FULL_DATE) — EVENT_DATE 와 같은 값이다(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
     date.CAL_YEAR     AS date.YEAR          WITH SYNONYMS ('연도', '년')   COMMENT = '연도',

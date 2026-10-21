@@ -4,7 +4,7 @@
 --   이 파일을 고치지 말고 정본을 고친다(두 곳 정본 = drift · P23).
 -- ============================================================================
 -- ============================================================================
--- 35_O249_SV_신설_광고비배분_개발사건코호트.sql — O248-A ③ SV 2종 신설 (🆕 O249 · 2026-10-20 · SR61467 · 사용자 승인)
+-- 35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql — O248-A ③ SV 2종 신설 (🆕 O249 · 2026-10-20 · SR61467 · 사용자 승인)
 --   · SV_AD_INFLOW_ALLOC     = 마케팅 Agent · base GOLD.FACT_AD_INFLOW_ALLOC(광고비 → 개발인입경로 배분 · 인입경로별 개발단가)
 --   · SV_MEMBER_EVENT_COHORT = 회원 Agent   · base GOLD.FACT_MEMBER_EVENT_COHORT(개발사건 × 경과월 코호트)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

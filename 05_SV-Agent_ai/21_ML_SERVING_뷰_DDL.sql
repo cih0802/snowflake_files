@@ -838,7 +838,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V TO ROLE GN_DW_SERVI
 -- ============================================================================
 -- [O250] ML_MEMBER_PRED_AXIS_V · ML_FEE_FORECAST_AXIS_V — ML 회원예측·회비예측 × 7축
 --   (신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명 · 사용자 승인 2026-10-21)
---   원 정의 = 36_O250_ML예측_7축확장.sql(문면 무변경 이관 · O250-E) · SV = 05_29 · 05_30
+--   원 정의 = 36_DEPLOY_ML_PRED_7AXIS.sql(문면 무변경 이관 · O250-E) · SV = 05_29 · 05_30
 --   본부지부 = DIM_ORG.ACMSLT_DIV_GROUP_NM 8종 → 본부/지부/기타 3분류 · 법인 = SPAN.ACQ_CPR_DIV_NM
 -- ============================================================================
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V (

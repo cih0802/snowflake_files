@@ -13,7 +13,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
     achv AS GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT
       PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
       WITH SYNONYMS ('개발목표', '개발실적', '목표대비실적', '개발현황')
-      COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].'
+      COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].',
+    -- 🆕 [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(목표·실적이 같은 행이라 함께 옮겨진다)
+    org_succ AS GN_DW.GOLD.DIM_ORG_SUCCESSION
+      PRIMARY KEY (OLD_ORG_SK)
+      WITH SYNONYMS ('부서 귀속', '현재 부서 귀속')
+      COMMENT = '폐지·개편 부서 현재 조직 귀속 차원(DIM_ORG 와 1:1 · OLD_ORG_SK = ORG_SK). PK 유일이라 조인이 행수를 늘리지 않는다.'
+  )
+  RELATIONSHIPS (
+    achv_to_org_succ AS achv (ORG_SK) REFERENCES org_succ
   )
   DIMENSIONS (
     achv.MONTH_KEY AS achv.MONTH_KEY
@@ -39,7 +47,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
       COMMENT = 'TRUE=해당 월×부서×구분에 **0 보다 큰 목표가 편성**돼 있다. 🔴달성율 metric 이 이 조건으로 분자를 이미 스코프하므로 사용자가 따로 필터할 필요는 없다. 「목표가 편성된 부서만」 같은 요청에 이 축을 쓴다. ⚠️CRM 에 목표 0 으로 등록된 행이 다수 있어 「목표 행이 존재한다」와 「목표가 편성됐다」는 다르다 — 이 축은 후자다.',
     achv.HAS_ACTUAL AS achv.HAS_ACTUAL
       WITH SYNONYMS ('실적발생여부', '실적있음')
-      COMMENT = 'TRUE=해당 월×부서×구분에 개발 실적이 발생했다. FALSE 는 목표만 편성된 월이며 **아직 오지 않은 미래월도 포함**한다 — 「미달」로 단정하지 말 것.'
+      COMMENT = 'TRUE=해당 월×부서×구분에 개발 실적이 발생했다. FALSE 는 목표만 편성된 월이며 **아직 오지 않은 미래월도 포함**한다 — 「미달」로 단정하지 말 것.',
+    -- 🆕 [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축
+    org_succ.CUR_DEPARTMENT AS COALESCE(org_succ.CUR_DEPARTMENT, '(미매핑 폐지부서)')
+      WITH SYNONYMS ('현재 부서', '현재 부서-팀', '귀속 부서', '현재 조직 기준 부서')
+      COMMENT = '목표·실적의 부서를 **현재 활성 부서-팀**으로 귀속한 부서명(폐지·개편 부서의 목표와 실적이 함께 현재 부서로 합쳐진다). ''(미매핑 폐지부서)'' = 귀속 대상 없음(합계 보존). 🔴 「부서별 목표·실적·달성율」의 기본 축이다(DEC-63-E · 현업 확인 대기).',
+    org_succ.CUR_ORG_PATH AS COALESCE(org_succ.CUR_ORG_PATH, '(미매핑 폐지부서)')
+      WITH SYNONYMS ('현재 부서-팀 경로', '현재 조직 경로')
+      COMMENT = '귀속 현재 부서의 조직 경로(예: 본부 > 회원실 > 회원참여팀). 본부·권역 단위로 묶어 볼 때 쓴다.',
+    org_succ.IS_CONFIRMED AS org_succ.IS_CONFIRMED
+      WITH SYNONYMS ('귀속 확정 여부')
+      COMMENT = 'TRUE = 활성 부서 또는 현업 확정 귀속 · FALSE = 자동 추정 귀속(현업 검토 전).'
   )
   METRICS (
     achv.TOTAL_GOAL_CNT AS SUM(achv.GOAL_CNT)
@@ -58,7 +76,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
   COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 시간 스코프: 월 목표/실적/달성율은 단일 연월 필터, 누계는 당해 연도 1월~기준월 필터, 연간은 연도 필터 적용 (별도 누계 metric 불필요). (2) 달성율 정본: 달성율은 항상 ACHIEVEMENT_RATE (%) 사용 (TOTAL_ACTUAL_CNT ÷ TOTAL_GOAL_CNT 직접 계산 금지). (3) 목표 0 처리: 목표 편성 부서 한정 시 HAS_POSITIVE_GOAL=TRUE 사용. (4) 주간 분기: 주간 개발실적은 SV_MEMBER_EVENT 로 라우팅하며, 주간 목표는 원천 부재로 산출 불가. (5) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 경합 팩트가 동수이므로 하나를 골라 섹션 전체를 답하지 않는다 — 이 뷰(월 목표·달성율)와 SV_MEMBER_EVENT(주간 실적)·SV_MEMBER_FEE(회비)를 각각 호출해 연·월 축에서 병기하고 표마다 grain 을 밝힌다. 주간 목표 수치를 창작하지 않는다.'
+  핵심 규칙: (1) 시간 스코프: 월 목표/실적/달성율은 단일 연월 필터, 누계는 당해 연도 1월~기준월 필터, 연간은 연도 필터 적용 (별도 누계 metric 불필요). (2) 달성율 정본: 달성율은 항상 ACHIEVEMENT_RATE (%) 사용 (TOTAL_ACTUAL_CNT ÷ TOTAL_GOAL_CNT 직접 계산 금지). (3) 목표 0 처리: 목표 편성 부서 한정 시 HAS_POSITIVE_GOAL=TRUE 사용. (4) 주간 분기: 주간 개발실적은 SV_MEMBER_EVENT 로 라우팅하며, 주간 목표는 원천 부재로 산출 불가. (5) 판정 라벨 [앵커_경합]: 개발실적보고 주간 섹션은 경합 팩트가 동수이므로 하나를 골라 섹션 전체를 답하지 않는다 — 이 뷰(월 목표·달성율)와 SV_MEMBER_EVENT(주간 실적)·SV_MEMBER_FEE(회비)를 각각 호출해 연·월 축에서 병기하고 표마다 grain 을 밝힌다. 주간 목표 수치를 창작하지 않는다. (6) 🆕 [DEC-63-E] 부서별 목표·실적·달성율: 기본 축은 현재 조직 기준 CUR_DEPARTMENT(또는 CUR_ORG_PATH) 다 — 폐지·개편 부서의 목표와 실적이 **함께** 현재 부서로 합쳐지므로 달성율 분자·분모의 부서 기준이 같다. 「당시 부서 기준」을 명시할 때만 ORG_DEPARTMENT 를 쓴다. ''(미매핑 폐지부서)'' 행을 빼지 않고 보인다. IS_CONFIRMED = FALSE 행이 섞이면 「일부 폐지 부서는 자동 추정 귀속」이라고 밝힌다.'
   AI_VERIFIED_QUERIES (
     vqr_dept_achievement AS (
       QUESTION '2025년 부서별 목표·실적·달성율'
@@ -69,6 +87,11 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
       QUESTION '월별 개발 목표와 실적'
       VERIFIED_BY '(DW = O190)'
       SQL 'SELECT CAL_YEAR AS "연도", CAL_MONTH AS "월", TOTAL_GOAL_CNT AS "목표(건)", TOTAL_ACTUAL_CNT AS "실적(건)" FROM (SELECT achv.CAL_YEAR, achv.CAL_MONTH, SUM(achv.GOAL_CNT) AS TOTAL_GOAL_CNT, SUM(achv.ACTUAL_CNT) AS TOTAL_ACTUAL_CNT FROM achv GROUP BY achv.CAL_YEAR, achv.CAL_MONTH ORDER BY achv.CAL_YEAR, achv.CAL_MONTH) ORDER BY CAL_YEAR, CAL_MONTH'
+    ),
+    vqr_current_dept_achievement AS (
+      QUESTION '2025년 현재 부서-팀 기준 목표·실적·달성율'
+      VERIFIED_BY '(DW = DEC-63-E)'
+      SQL 'SELECT COALESCE(CUR_DEPARTMENT, ''전체'') AS "현재 부서", TOTAL_GOAL_CNT AS "목표(건)", TOTAL_ACTUAL_CNT AS "실적(건)", ROUND(ACHIEVEMENT_RATE, 2)::NUMBER(38,2) AS "달성율(%)" FROM (SELECT org_succ.CUR_DEPARTMENT, SUM(achv.GOAL_CNT) AS TOTAL_GOAL_CNT, SUM(achv.ACTUAL_CNT) AS TOTAL_ACTUAL_CNT, SUM(CASE WHEN achv.GOAL_CNT > 0 THEN achv.ACTUAL_CNT END) / NULLIF(SUM(achv.GOAL_CNT), 0) * 100 AS ACHIEVEMENT_RATE FROM achv LEFT JOIN org_succ ON achv.ORG_SK = org_succ.OLD_ORG_SK WHERE achv.CAL_YEAR = 2025 AND achv.HAS_POSITIVE_GOAL GROUP BY ROLLUP (org_succ.CUR_DEPARTMENT)) ORDER BY CUR_DEPARTMENT IS NULL DESC, ACHIEVEMENT_RATE DESC NULLS LAST'
     )
   );
 

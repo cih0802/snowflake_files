@@ -50,31 +50,33 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 | SNOWFLAKE_SAMPLE_DATA | IMPORTED | 있음(프로비저닝) |
 | USER$&lt;사용자&gt; | PERSONAL | USER$CHOIH 등 |
 
-## 3. [공통] GN_DW 스키마별 객체 수 (Q02 · Q03 → `A0_Q02_1.csv` · `A0_Q03_1.csv`)
-
-운영계는 DB 데이터가 같으므로 이 표는 그대로 유효해야 한다. 운영계 캡처 값과 다르면 `_드리프트/` 에 적는다.
+## 3. [공통] GN_DW 스키마별 객체 수 (Q02 · Q03 → `A0_Q02_1.csv` · `A0_Q03_1.csv` · 운영계 2026-10-21)
 
 | 스키마 | 테이블 | 뷰 | 합계 | 프로시저 | 함수 | 스테이지 |
 |---|---|---|---|---|---|---|
-| BRONZE_AGENCY | 4 | 0 | 4 | 0 | 0 | 0 |
-| BRONZE_BIGQUERY | 0 | 0 | 0 | 0 | 0 | 0 |
-| BRONZE_CRM | 53 | 0 | 53 | 0 | 0 | 0 |
-| BRONZE_ERP | 3 | 0 | 3 | 0 | 0 | 0 |
-| BRONZE_GA4 | 2 | 0 | 2 | 0 | 0 | 0 |
-| BRONZE_GSC | 3 | 0 | 3 | 0 | 0 | 0 |
+| BRONZE_AGENCY | 4 | 0 | 4 | 4 | 0 | 3 |
+| BRONZE_BIGQUERY | 1,051 | 0 | 1,051 | 2 | 0 | 1 |
+| BRONZE_CRM | 53 | 0 | 53 | 1 | 0 | 1 |
+| BRONZE_ERP | 3 | 0 | 3 | 2 | 0 | 2 |
+| BRONZE_GA4 | 2 | 0 | 2 | 1 | 0 | 1 |
+| BRONZE_GSC | 2 | 0 | 2 | 1 | 0 | 1 |
 | DBT_TEST__AUDIT | 0 | 0 | 0 | 0 | 0 | 0 |
-| GOLD | 60 | 19 | 79 | 0 | 0 | 0 |
-| ML | 12 | 0 | 12 | 1 | 0 | 0 |
+| GOLD | 62 | 19 | 81 | 0 | 0 | 0 |
+| LAB | 0 | 0 | 0 | 0 | 0 | 1 |
+| ML | 42 | 5 | 47 | 23 | 0 | 0 |
 | MSTR | 10 | 13 | 23 | 13 | 2 | 0 |
-| OPS | 14 | 1 | 15 | 4 | 0 | 3 |
+| OPS | 15 | 2 | 17 | 5 | 0 | 3 |
 | PUBLIC | 0 | 0 | 0 | 0 | 0 | 0 |
 | SECURITY | 0 | 0 | 0 | 0 | 0 | 0 |
-| SERVING | 13 | 19 | 32 | 0 | 0 | 1 |
-| SILVER | 66 | 0 | 66 | 0 | 0 | 0 |
-| **합계** | **240** | **52** | **292** | **18** | **2** | **4** |
+| SERVING | 1 | 25 | 26 | 0 | 0 | 0 |
+| SILVER | 69 | 0 | 69 | 8 | 0 | 1 |
+| **주 스키마 합계(16)** | **1,314** | **64** | **1,378** | **60** | **2** | **14** |
+| 백업 사본 6(`BRONZE_CRM_2` 52 · `SILVER_2` 61 · `SILVER_OLD` 57 · `GOLD_2` 46+17 · `GOLD_OLD` 46+14 · `OPS_2` 10+1) | 272 | 32 | 304 | 8(`SILVER_2`) | 0 | 0 |
 
 - 동적 테이블·구체화 뷰는 0건이다.
-- SV(40)·Agent(3)·Cortex Search(1)는 위 표에 포함되지 않는다(§4).
+- BRONZE_BIGQUERY 1,051 = GA4 export 일자 샤드 `events_*` 1,020 · 월 집계 `BQ_*` 30 · `SYNC_ERR_INFO` 1.
+- 백업 사본 스키마는 운영 경로가 아니다(이관 전 사본 · 정리 여부는 A8 후보).
+- SV(45)·Agent(7)·Cortex Search(1)는 위 표에 포함되지 않는다(§4).
 
 ## 4. AI·파이프라인 객체
 
@@ -82,17 +84,14 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 
 | 종류 | 건수 | 내역 |
 |---|---|---|
-| Semantic View | 40 | 전부 GN_DW.SERVING · 소유 GN_DW_ADMIN · 목록 = `A0_Q04_1.csv` |
-| Cortex Agent | 3 | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22 |
-| Agent SV 배선(spec 실측) | 17 / 28 / 28 | EXECUTIVE / MARKETING / MEMBER · 각 Search 1 · 합집합 40 = SV 전수(미배선 0) |
-| Cortex Search | 1 | SERVING.SEARCH_BIZ_DEFINITION · lag 1 day · ACTIVE |
-| DBT PROJECT | 1 | OPS.DW_PIPELINE · dbt 1.9.4 · 버전 LIVE |
+| Semantic View | 45 | 전부 GN_DW.SERVING · 소유 GN_DW_ADMIN · 목록 = `A0_Q04_1.csv` |
+| Cortex Agent | 7 | 서비스 3 = AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22 · 🟠 그 밖 4 = SERVING `AGENT_MSTR` · `AGENT_OVERALL` · `ASDF` · BRONZE_CRM `AGENT_MSTR_TEST`(서비스 대상 아님 · 정리 후보) |
+| Agent SV 배선(spec 실측) | 18 / 31 / 31 | EXECUTIVE / MARKETING / MEMBER · 각 Search 1 · 합집합 45 = SV 전수(미배선 0 · D09) |
+| Cortex Search | 1 | SERVING.SEARCH_BIZ_DEFINITION · lag 1 day · ACTIVE · 원천 1,002행 · WH GN_DW_ANALYTICS_WH |
+| DBT PROJECT | 2 | OPS.DW_PIPELINE · OPS.DW2_PIPELINE · dbt 1.9.4 |
 
-- 위 객체의 **정의**는 공통이다. 다음 속성은 `[ENV]` 로 본다.
-  - Search 원천 행 수(개발 1,002) · 서비스 WH(개발 GN_DW_ANALYTICS_WH)
-  - DBT PROJECT 배포 원천 경로(개발 = 워크스페이스 `10_dbt_pipeline/`) · 배포 버전
-- 🟠 Agent COMMENT 의 「소관 SV 14·25·24종」은 spec 실측(17·28·28)과 다르다 ⇒ COMMENT 가 낡았다(`_드리프트/` DR-03).
-  - SV base 분포: GOLD 기반 28종(논리테이블 82) · SERVING 뷰 기반 12종(21) — `INFORMATION_SCHEMA.SEMANTIC_TABLES` 실측.
+- 🟠 Agent COMMENT 의 「소관 SV 14·25·24종」은 spec 실측(18·31·31)과 다르다 ⇒ COMMENT 가 낡았다(`_드리프트/` DR-03).
+  - SV base 분포: GOLD 기반 30종(논리테이블 85) · SERVING 뷰 기반 15종(24) — `B1_Q04_1.csv` · `B1_Q05_1.csv` 실측.
 
 ### 4-2. [ENV] 배포·운영 객체 (Q04-5 · Q05 → `A0_Q04_5.csv` · `A0_Q05_1~4.csv`)
 
@@ -104,7 +103,7 @@ Task·Alert·Streamlit 은 GN_DW 안의 객체지만 **배포 상태가 계정�
 | Alert | 1 · OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP · 매일 09:00 KST · started |
 | Streamlit | 11개 (GN_DW.LAB 9개 + USER$CHOIH 2개) |
 | Git repository | 1개 (GIT_INTEGRATION 연동) |
-| Integration | 3 · EMAIL_ALERT_INTEGRATION · GIT_INTEGRATION · SNOWFLAKE$LOCAL_APPLICATION |
+| Integration | 8 · EMAIL_ALERT_INTEGRATION(EMAIL) · 외부 접근 5(`GOOGLE_API_ACCESS` · `GOOGLE_BQ_ACCESS_INTEGRATION` · `GOOGLE_GA4_ACCESS` · `GOOGLE_GSC_ACCESS` · `MS_GRAPH_ACCESS`) · `git_integration`(EXTERNAL_API) · SNOWFLAKE$LOCAL_APPLICATION |
 
 ## 5. 롤·사용자 (Q06 → `A0_Q06_1~3.csv`)
 
@@ -134,20 +133,19 @@ graph TD
 
 ## 6. [ENV] 웨어하우스·비용 가드 (Q07 → `A0_Q07_1~3.csv`)
 
-| WH | 개발: 크기 · auto_suspend(s) · 소유 · 용도(COMMENT) | 운영계(ZL50263) |
-|---|---|---|
-| COMPUTE_WH | X-Small · 300 · ACCOUNTADMIN · — | X-Small · 300 · ACCOUNTADMIN |
-| GN_DW_ANALYTICS_WH | Medium · 300 · SYSADMIN · 분석가 쿼리 / SV·Agent 소비 | X-Small · 300 · GN_DW_ADMIN |
-| GN_DW_DEV_WH | X-Small · 60 · SYSADMIN · 개발/테스트 | X-Small · 300 · GN_DW_ADMIN |
-| GN_DW_ETL_WH | Small · 60 · ACCOUNTADMIN · ETL / 데이터 적재 | X-Small · 300 · GN_DW_ADMIN |
-| GN_DW_ML_WH | Small · 60 · SYSADMIN · ML 학습·예측 프로시저 전용 | Large · 300 · GN_DW_ADMIN |
-| SNOWFLAKE_LEARNING_WH | X-Small · 300 · ACCOUNTADMIN · 프로비저닝 | 없음 |
-| SYSTEM$STREAMLIT_NOTEBOOK_WH | X-Small(max 10) · 60 · ACCOUNTADMIN · 시스템 | X-Small · 300 · ACCOUNTADMIN |
+| WH | 운영계(ZL50263): 크기 · auto_suspend(s) · 소유 · 용도(COMMENT) |
+|---|---|
+| COMPUTE_WH | X-Small · 300 · ACCOUNTADMIN · — |
+| GN_DW_ANALYTICS_WH | X-Small · 60 · ACCOUNTADMIN · 분석가 쿼리 전용 |
+| GN_DW_DEV_WH | X-Small · 60 · ACCOUNTADMIN · 개발 및 테스트 전용 |
+| GN_DW_ETL_WH | X-Small · 60 · ACCOUNTADMIN · ETL 및 데이터 적재 전용 (프로시저/태스크) |
+| GN_DW_ML_WH | Large · 60 · ACCOUNTADMIN · 머신러닝 전용 |
+| SYSTEM$STREAMLIT_NOTEBOOK_WH | X-Small(max 10) · 60 · ACCOUNTADMIN · 시스템 |
 
 | 항목 | 운영계(ZL50263) |
 |---|---|
-| 리소스 모니터 | 0 |
-| 예산 | ACCOUNT_ROOT_BUDGET 1건(기본) |
+| 리소스 모니터 | 0 (Q07-2) |
+| 사용자 생성 예산 | 0 (Q07-3) |
 | WH 세대 | 전부 STANDARD_GEN_2 |
 
 ## 7. [ENV] 거버넌스 (Q08 → `A0_Q08_1~7.csv`)
@@ -157,7 +155,7 @@ graph TD
 | 마스킹 정책 | 0 (미배포) |
 | 행 접근 정책 | 0 |
 | 네트워크 정책 | 0 |
-| 사용자 정의 태그 | 0 (계정의 13건은 시스템 태그) |
+| 사용자 정의 태그 | 1 (`GN_DW.SECURITY.AI_COST_SCOPE` · 부착 0 · 계정의 나머지 12건은 SNOWFLAKE 시스템 태그) |
 | GN_DW 정책 참조 | 0 (미배포) |
 | GN_DW 태그 참조 | 0 |
 | GN_DW DMF 부착 | 0 (미배포) |

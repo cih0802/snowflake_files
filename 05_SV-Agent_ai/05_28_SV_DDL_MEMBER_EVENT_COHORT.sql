@@ -3,7 +3,7 @@
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 대상 = 회원 개발사건 × 경과월(0~12) 코호트 (회원 Agent · analyst_member_event_cohort)
 --   · 선행 = GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT(03_top-down_gold/06_DDL.sql · dbt build)
---   · 원 배포 파일 = 35_O249_SV_신설_광고비배분_개발사건코호트.sql(이력 보존 · 문면 무변경 이관)
+--   · 원 배포 파일 = 35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql(이력 보존 · 문면 무변경 이관)
 --   · 공통 규약 = 05_0_SV_DDL.sql
 -- Co-authored with CoCo
 -- ============================================================================
