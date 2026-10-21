@@ -1,13 +1,13 @@
 ﻿서브폴더,파일경로,파일명,설명,원본경로,크기(byte)
-01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,7205
+01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,9374
 01_실행순서_배포SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,07_ENVIRONMENT_RBAC_setup.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,56276
 01_실행순서_배포SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,08_After_Deploy_DBT.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,13549
-01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,06_DDL.sql,문서실행순서.md 명시 SQL,03_top-down_gold/06_DDL.sql,224544
+01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,06_DDL.sql,문서실행순서.md 명시 SQL,03_top-down_gold/06_DDL.sql,224817
 01_실행순서_배포SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,08_SILVER_테이블DDL_20260714.sql,문서실행순서.md 명시 SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,159922
 01_실행순서_배포SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,문서실행순서.md 명시 SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,4047
 01_실행순서_배포SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,05_01_SV_DDL_MEMBER_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,42878
 01_실행순서_배포SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,05_02_SV_DDL_MEMBER_EVENT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,50509
-01_실행순서_배포SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,05_03_SV_DDL_MEMBER_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,35610
+01_실행순서_배포SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,05_03_SV_DDL_MEMBER_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,35915
 01_실행순서_배포SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,05_04_SV_DDL_SERVICE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,48071
 01_실행순서_배포SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,05_05_SV_DDL_EVENT_PARTICIPATION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,28911
 01_실행순서_배포SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,05_06_SV_DDL_BUDGET.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,14627
@@ -31,10 +31,10 @@
 01_실행순서_배포SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,12186
 01_실행순서_배포SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,16577
 01_실행순서_배포SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,05_26_SV_DDL_GA_CHILD_UNPAID.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,13107
-01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,09_1_AGENT_생성.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29797
-01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,34605
-01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,21_ML_SERVING_뷰_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,62611
-01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,22_ML_SV_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,100668
+01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,09_1_AGENT_생성.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29295
+01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,35319
+01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,21_ML_SERVING_뷰_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,62977
+01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,22_ML_SV_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,101069
 01_실행순서_배포SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,23_ML_INC_MKTG_CMPGN_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,11762
 01_실행순서_배포SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,24_ML_REALTIME_SIMULATOR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,15826
 01_실행순서_배포SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,25_ML_CHURN_CMPGN_CTGR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,21410
@@ -42,11 +42,14 @@
 01_실행순서_배포SQL,05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql,30_O240_실데이터이상치_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql,6066
 01_실행순서_배포SQL,05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql,32_O241_AB병기_SV배선_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql,9151
 01_실행순서_배포SQL,05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql,33_O241C_O242_운영계반영_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql,5448
+01_실행순서_배포SQL,05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql,35_O249_SV_신설_광고비배분_개발사건코호트.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql,12751
+01_실행순서_배포SQL,05_SV-Agent_ai/36_O250_ML예측_7축확장.sql,36_O250_ML예측_7축확장.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/36_O250_ML예측_7축확장.sql,29750
 01_실행순서_배포SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,문서실행순서.md 명시 SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101
 01_실행순서_배포SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,문서실행순서.md 명시 SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480
 01_실행순서_배포SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,문서실행순서.md 명시 SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143
 01_실행순서_배포SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,3832
 01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480
+01_실행순서_배포SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,400
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,3750
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,13688
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,02_view_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,7803
@@ -54,15 +57,15 @@
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,04_sp_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,48540
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,05_MSTR_SV_DDL.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,50926
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,06_MSTR_적재_실행.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5302
-01_실행순서_배포SQL,dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,dbt_build_fact_ad_performance_budget.sql,400
-01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지),12_agent개선과제/output/O217_biz_definition_corpus.csv,1189383
+01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지),12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787
 02_dbt_pipeline,10_dbt_pipeline/00_배포운영_통합_20260715.md,00_배포운영_통합_20260715.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/00_배포운영_통합_20260715.md,17833
 02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/01_deploy_dbt_project.sql,3832
 02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480
 02_dbt_pipeline,10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,10_성능검토_정적코드분석_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,9054
 02_dbt_pipeline,10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,11_성능검토_운영리스크_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,8360
 02_dbt_pipeline,10_dbt_pipeline/README.md,README.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/README.md,8792
-02_dbt_pipeline,10_dbt_pipeline/dbt_project.yml,dbt_project.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_project.yml,38241
+02_dbt_pipeline,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,400
+02_dbt_pipeline,10_dbt_pipeline/dbt_project.yml,dbt_project.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_project.yml,38395
 02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_predicate.sql,bigquery_range_predicate.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_predicate.sql,10090
 02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_purge.sql,bigquery_range_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_purge.sql,3694
 02_dbt_pipeline,10_dbt_pipeline/macros/billing_campaign_asof.sql,billing_campaign_asof.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/billing_campaign_asof.sql,2340
@@ -76,7 +79,7 @@
 02_dbt_pipeline,10_dbt_pipeline/macros/gold_helpers.sql,gold_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gold_helpers.sql,3625
 02_dbt_pipeline,10_dbt_pipeline/macros/silver_helpers.sql,silver_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_helpers.sql,839
 02_dbt_pipeline,10_dbt_pipeline/macros/silver_purge.sql,silver_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_purge.sql,3144
-02_dbt_pipeline,10_dbt_pipeline/models/gold/_gold_ready_schema.yml,_gold_ready_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/_gold_ready_schema.yml,75458
+02_dbt_pipeline,10_dbt_pipeline/models/gold/_gold_ready_schema.yml,_gold_ready_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/_gold_ready_schema.yml,75623
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,DIM_AD_CREATIVE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,4847
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,DIM_BIGQUERY_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,853
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,DIM_BIGQUERY_SOURCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,1477
@@ -94,14 +97,14 @@
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,DIM_MEMBER_IDENTITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,2531
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,DIM_MEMBER_STATUS_HISTORY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,9235
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,DIM_MONTH.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,1919
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,DIM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,1176
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,DIM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,672
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,DIM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,1620
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,DIM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,1009
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,DIM_ORG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,7727
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,DIM_PAYMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,976
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,DIM_PAYMENT_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,1511
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,DIM_REASON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,982
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,DIM_RELATIONSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,1894
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,DIM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,2875
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,DIM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,3633
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,DIM_SEND_TYPE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,4366
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,DIM_SERVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,1603
 02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,DIM_SPONSORSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,4891
@@ -121,7 +124,7 @@
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,FACT_GA4_DEMOGRAPHIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,840
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,FACT_GA_CHILD_VIEW.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,3381
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,FACT_MEMBER_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,19963
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,FACT_MEMBER_COHORT_SURVIVAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,6803
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,FACT_MEMBER_COHORT_SURVIVAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,7578
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,FACT_MEMBER_DEV_ACHIEVEMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,4193
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,FACT_MEMBER_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,23214
 02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,FACT_MEMBER_EVENT_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,11306
@@ -245,7 +248,7 @@
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,assert_fap_ad_cost_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,1803
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,assert_fap_ad_ctgr_consistency.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,2484
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,assert_fmc_churn_invariants.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,3253
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,assert_fmcs_grain_and_survival.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,2591
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,assert_fmcs_grain_and_survival.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,3415
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,assert_fme_campaign_stop_exclusivity.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,2032
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,assert_fmec_event_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,1444
 02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,assert_fmm_w4_ml_columns.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,1125
@@ -295,77 +298,78 @@
 03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,90_mstr_1차_이관_대상_쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,7417
 03_MSTR_이관,15_MSTR 이관 PoC/tools/README.md,README.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/README.md,4209
 03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차.json,1차.json,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/manifests/1차.json,4397
-03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,1차_deps.json,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,8560
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_common.py,mstr_common.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_common.py,2016
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deploy.py,mstr_deploy.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_deploy.py,3472
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deps.py,mstr_deps.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_deps.py,4880
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_extract.py,mstr_extract.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_extract.py,1744
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_gen.py,mstr_gen.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_gen.py,3056
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_load_answer.py,mstr_load_answer.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_load_answer.py,1920
+03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,1차_deps.json,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,8558
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_common.py,mstr_common.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_common.py,2014
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deploy.py,mstr_deploy.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_deploy.py,3470
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deps.py,mstr_deps.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_deps.py,4869
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_extract.py,mstr_extract.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_extract.py,1734
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_gen.py,mstr_gen.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_gen.py,3043
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_load_answer.py,mstr_load_answer.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_load_answer.py,1919
 03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_pipeline.py,mstr_pipeline.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_pipeline.py,3162
-03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_verify.py,mstr_verify.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_verify.py,2304
+03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_verify.py,mstr_verify.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_verify.py,2288
 03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,1차_04_sp_script.tmpl.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,40395
-03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,1차_verify.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,3536
-03_MSTR_이관,15_MSTR 이관 PoC/답안체크용 쿼리.sql,답안체크용 쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/답안체크용 쿼리.sql,6528
+03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,1차_verify.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,3527
+03_MSTR_이관,15_MSTR 이관 PoC/답안체크용 쿼리.sql,답안체크용 쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/답안체크용 쿼리.sql,6518
 03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증결과.md,스킬_MSTR_검증결과.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증결과.md,12253
-03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,스킬_MSTR_검증쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,18704
+03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,스킬_MSTR_검증쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,18701
 03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_비교항목.md,스킬_MSTR_비교항목.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_비교항목.md,4697
-04_SV_Agent_스펙,cortex_project/cortex-project.yaml,cortex-project.yaml,Cortex 프로젝트 설정,cortex_project/cortex-project.yaml,720
-04_SV_Agent_스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,88848
-04_SV_Agent_스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,113392
-04_SV_Agent_스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,132064
-05_RAG_지표사전,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV,12_agent개선과제/output/O217_biz_definition_corpus.csv,1189383
-05_RAG_지표사전,12_agent개선과제/tools/build_biz_definition_corpus.py,build_biz_definition_corpus.py,코퍼스 CSV 재생성 스크립트,12_agent개선과제/tools/build_biz_definition_corpus.py,14224
-05_RAG_지표사전,12_agent개선과제/tools/O217_routing_curated.csv,O217_routing_curated.csv,코퍼스 생성용 라우팅 큐레이션,12_agent개선과제/tools/O217_routing_curated.csv,27040
-05_RAG_지표사전,90_provided_definition/00_README.md,00_README.md,현업 제공 정의 자료 안내,90_provided_definition/00_README.md,3168
-05_RAG_지표사전,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,01_원천보고서_인벤토리 인덱스.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,3104
-05_RAG_지표사전,90_provided_definition/02_지표사전 공통.md,02_지표사전 공통.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/02_지표사전 공통.md,20688
-05_RAG_지표사전,90_provided_definition/03_지표사전 신규.md,03_지표사전 신규.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/03_지표사전 신규.md,17136
+04_SV_Agent_스펙,cortex_project/cortex-project.yaml,cortex-project.yaml,Cortex 프로젝트 설정,cortex_project/cortex-project.yaml,719
+04_SV_Agent_스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,91242
+04_SV_Agent_스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,118503
+04_SV_Agent_스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,136766
+04_SV_Agent_스펙,tmp/o249/agent_deploy.py,agent_deploy.py,🆕 O249 Agent 1종씩 버전업 스크립트(spec 스테이지 복사 → 크기 대조 → ADD VERSION · 환경변수 AG),tmp/o249/agent_deploy.py,1886
+05_RAG_지표사전,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV,12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787
+05_RAG_지표사전,12_agent개선과제/tools/build_biz_definition_corpus.py,build_biz_definition_corpus.py,코퍼스 CSV 재생성 스크립트,12_agent개선과제/tools/build_biz_definition_corpus.py,14209
+05_RAG_지표사전,12_agent개선과제/tools/O217_routing_curated.csv,O217_routing_curated.csv,코퍼스 생성용 라우팅 큐레이션,12_agent개선과제/tools/O217_routing_curated.csv,27039
+05_RAG_지표사전,90_provided_definition/00_README.md,00_README.md,현업 제공 정의 자료 안내,90_provided_definition/00_README.md,3157
+05_RAG_지표사전,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,01_원천보고서_인벤토리 인덱스.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,3099
+05_RAG_지표사전,90_provided_definition/02_지표사전 공통.md,02_지표사전 공통.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/02_지표사전 공통.md,20673
+05_RAG_지표사전,90_provided_definition/03_지표사전 신규.md,03_지표사전 신규.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/03_지표사전 신규.md,17128
 05_RAG_지표사전,90_provided_definition/04_마케팅_보고서필드 인벤토리.md,04_마케팅_보고서필드 인벤토리.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/04_마케팅_보고서필드 인벤토리.md,11472
-05_RAG_지표사전,90_provided_definition/05_회원_보고서필드 인벤토리.md,05_회원_보고서필드 인벤토리.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/05_회원_보고서필드 인벤토리.md,25424
+05_RAG_지표사전,90_provided_definition/05_회원_보고서필드 인벤토리.md,05_회원_보고서필드 인벤토리.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/05_회원_보고서필드 인벤토리.md,25419
 05_RAG_지표사전,90_provided_definition/06_지표용어사전 20260624.md,06_지표용어사전 20260624.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/06_지표용어사전 20260624.md,36845
 05_RAG_지표사전,90_provided_definition/07_추가_지표사전_20260813기준.md,07_추가_지표사전_20260813기준.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/07_추가_지표사전_20260813기준.md,7312
 05_RAG_지표사전,90_provided_definition/07_추가_지표사전_20260813기준_raw.txt,07_추가_지표사전_20260813기준_raw.txt,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/07_추가_지표사전_20260813기준_raw.txt,3619
-05_RAG_지표사전,90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv,CRM-AGENCY 컬럼명 매핑.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv,640
-05_RAG_지표사전,90_provided_definition/GA4스키마 20260626.csv,GA4스키마 20260626.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/GA4스키마 20260626.csv,20352
-05_RAG_지표사전,90_provided_definition/agent 질의 피드백_2.csv,agent 질의 피드백_2.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/agent 질의 피드백_2.csv,34192
-05_RAG_지표사전,90_provided_definition/gni_실적부서.csv,gni_실적부서.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/gni_실적부서.csv,22480
-05_RAG_지표사전,90_provided_definition/공통지표_flat_20261003.csv,공통지표_flat_20261003.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/공통지표_flat_20261003.csv,22768
-05_RAG_지표사전,90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv,데이터플랫폼 ML예측프롬프트_sample.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv,23264
-05_RAG_지표사전,90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv,데이터플랫폼 현업agent 피드백 추가본_20261007.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv,22368
-05_RAG_지표사전,90_provided_definition/신규지표_20260820.csv,신규지표_20260820.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/신규지표_20260820.csv,18480
+05_RAG_지표사전,90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv,CRM-AGENCY 컬럼명 매핑.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv,639
+05_RAG_지표사전,90_provided_definition/GA4스키마 20260626.csv,GA4스키마 20260626.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/GA4스키마 20260626.csv,20338
+05_RAG_지표사전,90_provided_definition/agent 질의 피드백_2.csv,agent 질의 피드백_2.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/agent 질의 피드백_2.csv,34187
+05_RAG_지표사전,90_provided_definition/gni_실적부서.csv,gni_실적부서.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/gni_실적부서.csv,22470
+05_RAG_지표사전,90_provided_definition/공통지표_flat_20261003.csv,공통지표_flat_20261003.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/공통지표_flat_20261003.csv,22757
+05_RAG_지표사전,90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv,데이터플랫폼 ML예측프롬프트_sample.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv,23260
+05_RAG_지표사전,90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv,데이터플랫폼 현업agent 피드백 추가본_20261007.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv,22362
+05_RAG_지표사전,90_provided_definition/신규지표_20260820.csv,신규지표_20260820.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/신규지표_20260820.csv,18471
 05_RAG_지표사전,90_provided_definition/조직도_20260914.csv,조직도_20260914.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/조직도_20260914.csv,22470
-05_RAG_지표사전,90_provided_definition/지표용어통합 20260623.csv,지표용어통합 20260623.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/지표용어통합 20260623.csv,32944
+05_RAG_지표사전,90_provided_definition/지표용어통합 20260623.csv,지표용어통합 20260623.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/지표용어통합 20260623.csv,32939
 05_RAG_지표사전,90_provided_definition/컬럼정의서 20260714.csv,컬럼정의서 20260714.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/컬럼정의서 20260714.csv,68748
 05_RAG_지표사전,90_provided_definition/테이블정의 20260629.csv,테이블정의 20260629.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/테이블정의 20260629.csv,3793
 06_일배치_모니터링,11_일적재pipeline 구성/00_개요_및_실행순서.md,00_개요_및_실행순서.md,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/00_개요_및_실행순서.md,10449
-06_일배치_모니터링,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,01_스키마생성_및_구조복제.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,4608
-06_일배치_모니터링,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,02_권한부여_LOADER_ENGINEER_ADMIN.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,8560
+06_일배치_모니터링,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,01_스키마생성_및_구조복제.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,4598
+06_일배치_모니터링,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,02_권한부여_LOADER_ENGINEER_ADMIN.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,8553
 06_일배치_모니터링,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,03_일배치_TASK_스케줄.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,3325
-06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,04_LOADER_임시권한_CALL_DBT.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,4032
-06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,4576
+06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,04_LOADER_임시권한_CALL_DBT.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,4021
+06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,4573
 06_일배치_모니터링,08_mornitoring/00_README.md,00_README.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/00_README.md,4784
 06_일배치_모니터링,08_mornitoring/01_모니터링_대상 개요.md,01_모니터링_대상 개요.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/01_모니터링_대상 개요.md,3450
 06_일배치_모니터링,08_mornitoring/02_Cortex_AI_사용량 모니터링.md,02_Cortex_AI_사용량 모니터링.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/02_Cortex_AI_사용량 모니터링.md,9149
 06_일배치_모니터링,08_mornitoring/03_비용제한_예산 쿼터.md,03_비용제한_예산 쿼터.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/03_비용제한_예산 쿼터.md,12533
 06_일배치_모니터링,08_mornitoring/04_알림_및 거버넌스.md,04_알림_및 거버넌스.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/04_알림_및 거버넌스.md,6513
-06_일배치_모니터링,08_mornitoring/05_AI비용가드_구축.sql,05_AI비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/05_AI비용가드_구축.sql,22976
-06_일배치_모니터링,08_mornitoring/06_웨어하우스비용가드_구축.sql,06_웨어하우스비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/06_웨어하우스비용가드_구축.sql,23888
+06_일배치_모니터링,08_mornitoring/05_AI비용가드_구축.sql,05_AI비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/05_AI비용가드_구축.sql,22971
+06_일배치_모니터링,08_mornitoring/06_웨어하우스비용가드_구축.sql,06_웨어하우스비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/06_웨어하우스비용가드_구축.sql,23875
 06_일배치_모니터링,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101
 06_일배치_모니터링,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480
 06_일배치_모니터링,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143
 06_일배치_모니터링,08_mornitoring/10_Cortex_Code_모델별_비용_비교.md,10_Cortex_Code_모델별_비용_비교.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/10_Cortex_Code_모델별_비용_비교.md,3329
-06_일배치_모니터링,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,11_BRONZE_개인정보_마스킹정책_적용완료.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,6112
-06_일배치_모니터링,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,2026-08-03_G3_코드컬럼전파_ALTER.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,10320
+06_일배치_모니터링,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,11_BRONZE_개인정보_마스킹정책_적용완료.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,6098
+06_일배치_모니터링,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,2026-08-03_G3_코드컬럼전파_ALTER.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,10319
 07_운영런북_이슈,02_GN_DW_building/05_ARCHITECTURE.md,05_ARCHITECTURE.md,아키텍처,02_GN_DW_building/05_ARCHITECTURE.md,14458
 07_운영런북_이슈,02_GN_DW_building/06_RUNBOOK.md,06_RUNBOOK.md,운영 런북,02_GN_DW_building/06_RUNBOOK.md,41890
-07_운영런북_이슈,02_GN_DW_building/09_user login mfa리셋.sql,09_user login mfa리셋.sql,사용자 MFA 리셋,02_GN_DW_building/09_user login mfa리셋.sql,11056
+07_운영런북_이슈,02_GN_DW_building/09_user login mfa리셋.sql,09_user login mfa리셋.sql,사용자 MFA 리셋,02_GN_DW_building/09_user login mfa리셋.sql,11049
 07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_런북.md,18_O217_운영계_재현_런북.md,기존 계정 덧입힘 런북(백업·diff·롤백),12_agent개선과제/18_O217_운영계_재현_런북.md,14915
-07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,18_O217_운영계_재현_검증.sql,운영계 재현 검증 SQL,12_agent개선과제/18_O217_운영계_재현_검증.sql,4448
+07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,18_O217_운영계_재현_검증.sql,운영계 재현 검증 SQL,12_agent개선과제/18_O217_운영계_재현_검증.sql,4445
 07_운영런북_이슈,PAID_재현_런북_20260722.md,PAID_재현_런북_20260722.md,PAID 재현 런북,PAID_재현_런북_20260722.md,8320
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,00_INDEX_이슈원장.md,이슈 원장,20_issue/00_INDEX_이슈원장.md,7022
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,00_INDEX_이슈원장-001.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,9599
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,32414
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,34938
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,28207
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,28401
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,26230
@@ -412,98 +416,98 @@
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,50_dbt_파이프라인_미결조치-024.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,23066
 07_운영런북_이슈,20_issue/91_사고사례집.md,91_사고사례집.md,사고 사례집,20_issue/91_사고사례집.md,20859
 07_운영런북_이슈,20_issue/92_실측필요_후속작업.md,92_실측필요_후속작업.md,실측 필요 후속작업,20_issue/92_실측필요_후속작업.md,4061
-08_현업공유_산출물,30_output_share/00_생성기-문서명 매핑.md,00_생성기-문서명 매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/00_생성기-문서명 매핑.md,8992
-08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,01_DW_현업활용가이드.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/01_DW_현업활용가이드.md,38368
-08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,02_SILVER 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,173952
-08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,02_SILVER 스키마 컬럼 인벤토리_20260904.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,163264
+08_현업공유_산출물,30_output_share/00_생성기-문서명 매핑.md,00_생성기-문서명 매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/00_생성기-문서명 매핑.md,8989
+08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,01_DW_현업활용가이드.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/01_DW_현업활용가이드.md,38353
+08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,02_SILVER 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,173947
+08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,02_SILVER 스키마 컬럼 인벤토리_20260904.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,163256
 08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv,02_SILVER 스키마 컬럼 인벤토리_20260916.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv,174025
-08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv,02_SILVER 스키마 컬럼 인벤토리_20260928.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv,172384
-08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv,02_gold 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv,403840
-08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv,02_gold 스키마 컬럼 인벤토리_20260916.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv,403280
+08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv,02_SILVER 스키마 컬럼 인벤토리_20260928.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv,172379
+08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv,02_gold 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv,403833
+08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv,02_gold 스키마 컬럼 인벤토리_20260916.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv,403278
 08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv,02_gold 스키마 컬럼 인벤토리_20260928.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv,408070
 08_현업공유_산출물,30_output_share/03_GN_DW_개념도.html,03_GN_DW_개념도.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/03_GN_DW_개념도.html,589476
-08_현업공유_산출물,30_output_share/04_컬럼계보매핑.csv,04_컬럼계보매핑.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/04_컬럼계보매핑.csv,136064
-08_현업공유_산출물,30_output_share/04_컬럼계보매핑.md,04_컬럼계보매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/04_컬럼계보매핑.md,159200
+08_현업공유_산출물,30_output_share/04_컬럼계보매핑.csv,04_컬럼계보매핑.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/04_컬럼계보매핑.csv,136061
+08_현업공유_산출물,30_output_share/04_컬럼계보매핑.md,04_컬럼계보매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/04_컬럼계보매핑.md,159186
 08_현업공유_산출물,30_output_share/04_컬럼계보매핑.xlsx,04_컬럼계보매핑.xlsx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/04_컬럼계보매핑.xlsx,64640
-08_현업공유_산출물,30_output_share/05_지표GOLD매핑.csv,05_지표GOLD매핑.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/05_지표GOLD매핑.csv,179952
-08_현업공유_산출물,30_output_share/05_지표GOLD매핑.md,05_지표GOLD매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/05_지표GOLD매핑.md,205920
+08_현업공유_산출물,30_output_share/05_지표GOLD매핑.csv,05_지표GOLD매핑.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/05_지표GOLD매핑.csv,179936
+08_현업공유_산출물,30_output_share/05_지표GOLD매핑.md,05_지표GOLD매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/05_지표GOLD매핑.md,205914
 08_현업공유_산출물,30_output_share/05_지표GOLD매핑.xlsx,05_지표GOLD매핑.xlsx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/05_지표GOLD매핑.xlsx,64941
-08_현업공유_산출물,30_output_share/06_BRONZE노출감사.csv,06_BRONZE노출감사.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.csv,169328
-08_현업공유_산출물,30_output_share/06_BRONZE노출감사.md,06_BRONZE노출감사.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.md,180624
-08_현업공유_산출물,30_output_share/06_BRONZE노출감사.xlsx,06_BRONZE노출감사.xlsx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.xlsx,60336
-08_현업공유_산출물,30_output_share/07_코드체계_관문측정.md,07_코드체계_관문측정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/07_코드체계_관문측정.md,38720
-08_현업공유_산출물,30_output_share/08_SILVER→GOLD_보존율.csv,08_SILVER→GOLD_보존율.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/08_SILVER→GOLD_보존율.csv,110496
+08_현업공유_산출물,30_output_share/06_BRONZE노출감사.csv,06_BRONZE노출감사.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.csv,169326
+08_현업공유_산출물,30_output_share/06_BRONZE노출감사.md,06_BRONZE노출감사.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.md,180608
+08_현업공유_산출물,30_output_share/06_BRONZE노출감사.xlsx,06_BRONZE노출감사.xlsx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/06_BRONZE노출감사.xlsx,60329
+08_현업공유_산출물,30_output_share/07_코드체계_관문측정.md,07_코드체계_관문측정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/07_코드체계_관문측정.md,38708
+08_현업공유_산출물,30_output_share/08_SILVER→GOLD_보존율.csv,08_SILVER→GOLD_보존율.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/08_SILVER→GOLD_보존율.csv,110494
 08_현업공유_산출물,30_output_share/08_SILVER→GOLD_보존율.md,08_SILVER→GOLD_보존율.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/08_SILVER→GOLD_보존율.md,24700
-08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.csv,09_보고서필드_조립가능성.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.csv,241760
-08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.md,09_보고서필드_조립가능성.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.md,67296
+08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.csv,09_보고서필드_조립가능성.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.csv,241752
+08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.md,09_보고서필드_조립가능성.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.md,67291
 08_현업공유_산출물,30_output_share/09_섹션배너.json,09_섹션배너.json,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_섹션배너.json,56950
 08_현업공유_산출물,30_output_share/10_원천입고_결손요약.md,10_원천입고_결손요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/10_원천입고_결손요약.md,30796
-08_현업공유_산출물,30_output_share/11_미해결이슈_요약.md,11_미해결이슈_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/11_미해결이슈_요약.md,17936
-08_현업공유_산출물,30_output_share/16_파이프라인 배선 수정.md,16_파이프라인 배선 수정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/16_파이프라인 배선 수정.md,19264
-08_현업공유_산출물,30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,18_목표데이터_요건_및_해결이슈_정의서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,13472
-08_현업공유_산출물,30_output_share/19_원천입고_및_항목신설_대기.md,19_원천입고_및_항목신설_대기.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/19_원천입고_및_항목신설_대기.md,24560
-08_현업공유_산출물,30_output_share/20260826_아키텍처 지도 요약본.html,20260826_아키텍처 지도 요약본.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/20260826_아키텍처 지도 요약본.html,977696
-08_현업공유_산출물,30_output_share/21_원천입고_대기_주니어_해설서.md,21_원천입고_대기_주니어_해설서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/21_원천입고_대기_주니어_해설서.md,23984
-08_현업공유_산출물,30_output_share/30_공8_GA개발단가_정의_요약.md,30_공8_GA개발단가_정의_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8_GA개발단가_정의_요약.md,2832
-08_현업공유_산출물,30_output_share/30_공8및미회신29건_질문요약.md,30_공8및미회신29건_질문요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8및미회신29건_질문요약.md,11840
+08_현업공유_산출물,30_output_share/11_미해결이슈_요약.md,11_미해결이슈_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/11_미해결이슈_요약.md,17932
+08_현업공유_산출물,30_output_share/16_파이프라인 배선 수정.md,16_파이프라인 배선 수정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/16_파이프라인 배선 수정.md,19258
+08_현업공유_산출물,30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,18_목표데이터_요건_및_해결이슈_정의서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,13465
+08_현업공유_산출물,30_output_share/19_원천입고_및_항목신설_대기.md,19_원천입고_및_항목신설_대기.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/19_원천입고_및_항목신설_대기.md,24557
+08_현업공유_산출물,30_output_share/20260826_아키텍처 지도 요약본.html,20260826_아키텍처 지도 요약본.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/20260826_아키텍처 지도 요약본.html,977680
+08_현업공유_산출물,30_output_share/21_원천입고_대기_주니어_해설서.md,21_원천입고_대기_주니어_해설서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/21_원천입고_대기_주니어_해설서.md,23968
+08_현업공유_산출물,30_output_share/30_공8_GA개발단가_정의_요약.md,30_공8_GA개발단가_정의_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8_GA개발단가_정의_요약.md,2822
+08_현업공유_산출물,30_output_share/30_공8및미회신29건_질문요약.md,30_공8및미회신29건_질문요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8및미회신29건_질문요약.md,11831
 08_현업공유_산출물,30_output_share/31_공8_GA개발단가_쿼리근거.sql,31_공8_GA개발단가_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8_GA개발단가_쿼리근거.sql,2833
-08_현업공유_산출물,30_output_share/31_공8및미회신29건_쿼리근거.sql,31_공8및미회신29건_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8및미회신29건_쿼리근거.sql,18480
-08_현업공유_산출물,30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,32_BRONZE_CRM_GOLD반영_설계.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,10144
-08_현업공유_산출물,30_output_share/40_현업회신요청_O190.md,40_현업회신요청_O190.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/40_현업회신요청_O190.md,4160
-08_현업공유_산출물,30_output_share/41_현업회신_F-1_본부지부.md,41_현업회신_F-1_본부지부.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/41_현업회신_F-1_본부지부.md,2592
-08_현업공유_산출물,30_output_share/42_현업회신_E-1_모금성비용.md,42_현업회신_E-1_모금성비용.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/42_현업회신_E-1_모금성비용.md,1040
+08_현업공유_산출물,30_output_share/31_공8및미회신29건_쿼리근거.sql,31_공8및미회신29건_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8및미회신29건_쿼리근거.sql,18467
+08_현업공유_산출물,30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,32_BRONZE_CRM_GOLD반영_설계.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,10139
+08_현업공유_산출물,30_output_share/40_현업회신요청_O190.md,40_현업회신요청_O190.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/40_현업회신요청_O190.md,4153
+08_현업공유_산출물,30_output_share/41_현업회신_F-1_본부지부.md,41_현업회신_F-1_본부지부.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/41_현업회신_F-1_본부지부.md,2589
+08_현업공유_산출물,30_output_share/42_현업회신_E-1_모금성비용.md,42_현업회신_E-1_모금성비용.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/42_현업회신_E-1_모금성비용.md,1025
 08_현업공유_산출물,30_output_share/43_현업회신_F-2_후원사업11개.md,43_현업회신_F-2_후원사업11개.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/43_현업회신_F-2_후원사업11개.md,619
-08_현업공유_산출물,30_output_share/44_현업회신_F-3_문자오픈.md,44_현업회신_F-3_문자오픈.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/44_현업회신_F-3_문자오픈.md,656
-08_현업공유_산출물,30_output_share/45_현업회신_ML_일시후원전환_grain.md,45_현업회신_ML_일시후원전환_grain.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/45_현업회신_ML_일시후원전환_grain.md,1584
+08_현업공유_산출물,30_output_share/44_현업회신_F-3_문자오픈.md,44_현업회신_F-3_문자오픈.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/44_현업회신_F-3_문자오픈.md,650
+08_현업공유_산출물,30_output_share/45_현업회신_ML_일시후원전환_grain.md,45_현업회신_ML_일시후원전환_grain.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/45_현업회신_ML_일시후원전환_grain.md,1576
 08_현업공유_산출물,30_output_share/46_현업회신_DGT_이전분.md,46_현업회신_DGT_이전분.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/46_현업회신_DGT_이전분.md,549
-08_현업공유_산출물,30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,47_신규19종_파생컬럼_COMMENT초안.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,4256
+08_현업공유_산출물,30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,47_신규19종_파생컬럼_COMMENT초안.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,4243
 08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별.html,GOLD_ERD_테이블별.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별.html,263062
-08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별_YAML전용.html,GOLD_ERD_테이블별_YAML전용.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별_YAML전용.html,73344
-08_현업공유_산출물,30_output_share/erd/DIM_AD_CREATIVE.html,DIM_AD_CREATIVE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_AD_CREATIVE.html,28240
+08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별_YAML전용.html,GOLD_ERD_테이블별_YAML전용.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별_YAML전용.html,73342
+08_현업공유_산출물,30_output_share/erd/DIM_AD_CREATIVE.html,DIM_AD_CREATIVE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_AD_CREATIVE.html,28230
 08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_EVENT.html,DIM_BIGQUERY_EVENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BIGQUERY_EVENT.html,23867
-08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_SOURCE.html,DIM_BIGQUERY_SOURCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BIGQUERY_SOURCE.html,25216
-08_현업공유_산출물,30_output_share/erd/DIM_BUDGET_ITEM.html,DIM_BUDGET_ITEM.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BUDGET_ITEM.html,23632
-08_현업공유_산출물,30_output_share/erd/DIM_CAMPAIGN.html,DIM_CAMPAIGN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_CAMPAIGN.html,42304
-08_현업공유_산출물,30_output_share/erd/DIM_DATE.html,DIM_DATE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_DATE.html,31840
+08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_SOURCE.html,DIM_BIGQUERY_SOURCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BIGQUERY_SOURCE.html,25208
+08_현업공유_산출물,30_output_share/erd/DIM_BUDGET_ITEM.html,DIM_BUDGET_ITEM.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BUDGET_ITEM.html,23621
+08_현업공유_산출물,30_output_share/erd/DIM_CAMPAIGN.html,DIM_CAMPAIGN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_CAMPAIGN.html,42295
+08_현업공유_산출물,30_output_share/erd/DIM_DATE.html,DIM_DATE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_DATE.html,31838
 08_현업공유_산출물,30_output_share/erd/DIM_DEVICE.html,DIM_DEVICE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_DEVICE.html,25900
 08_현업공유_산출물,30_output_share/erd/DIM_EVENT.html,DIM_EVENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_EVENT.html,27256
-08_현업공유_산출물,30_output_share/erd/DIM_MARKETING_CAMPAIGN.html,DIM_MARKETING_CAMPAIGN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MARKETING_CAMPAIGN.html,29648
-08_현업공유_산출물,30_output_share/erd/DIM_MEMBER.html,DIM_MEMBER.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER.html,34400
-08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_ACQUISITION.html,DIM_MEMBER_ACQUISITION.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_ACQUISITION.html,42352
-08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_IDENTITY.html,DIM_MEMBER_IDENTITY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_IDENTITY.html,27744
-08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html,DIM_MEMBER_STATUS_HISTORY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html,38064
-08_현업공유_산출물,30_output_share/erd/DIM_MONTH.html,DIM_MONTH.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MONTH.html,28640
-08_현업공유_산출물,30_output_share/erd/DIM_ORG.html,DIM_ORG.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_ORG.html,30256
-08_현업공유_산출물,30_output_share/erd/DIM_PAYMENT.html,DIM_PAYMENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_PAYMENT.html,23856
-08_현업공유_산출물,30_output_share/erd/DIM_REASON.html,DIM_REASON.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_REASON.html,23568
-08_현업공유_산출물,30_output_share/erd/DIM_SEND_TYPE.html,DIM_SEND_TYPE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SEND_TYPE.html,29344
-08_현업공유_산출물,30_output_share/erd/DIM_SERVICE.html,DIM_SERVICE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SERVICE.html,23920
-08_현업공유_산출물,30_output_share/erd/DIM_SPONSORSHIP.html,DIM_SPONSORSHIP.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SPONSORSHIP.html,31376
-08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST.html,FACT_AD_BROADCAST.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST.html,31216
-08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST_CASE.html,FACT_AD_BROADCAST_CASE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST_CASE.html,24368
-08_현업공유_산출물,30_output_share/erd/FACT_AD_DIGITAL.html,FACT_AD_DIGITAL.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_DIGITAL.html,27856
-08_현업공유_산출물,30_output_share/erd/FACT_AD_PERFORMANCE.html,FACT_AD_PERFORMANCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_PERFORMANCE.html,38000
-08_현업공유_산출물,30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html,FACT_BIGQUERY_BEHAVIOR.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html,41344
-08_현업공유_산출물,30_output_share/erd/FACT_BUDGET.html,FACT_BUDGET.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BUDGET.html,32240
-08_현업공유_산출물,30_output_share/erd/FACT_BUDGET_YEARLY.html,FACT_BUDGET_YEARLY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BUDGET_YEARLY.html,33488
-08_현업공유_산출물,30_output_share/erd/FACT_EVENT_ATTENDANCE.html,FACT_EVENT_ATTENDANCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_EVENT_ATTENDANCE.html,36608
+08_현업공유_산출물,30_output_share/erd/DIM_MARKETING_CAMPAIGN.html,DIM_MARKETING_CAMPAIGN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MARKETING_CAMPAIGN.html,29641
+08_현업공유_산출물,30_output_share/erd/DIM_MEMBER.html,DIM_MEMBER.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER.html,34389
+08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_ACQUISITION.html,DIM_MEMBER_ACQUISITION.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_ACQUISITION.html,42347
+08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_IDENTITY.html,DIM_MEMBER_IDENTITY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_IDENTITY.html,27732
+08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html,DIM_MEMBER_STATUS_HISTORY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html,38054
+08_현업공유_산출물,30_output_share/erd/DIM_MONTH.html,DIM_MONTH.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_MONTH.html,28633
+08_현업공유_산출물,30_output_share/erd/DIM_ORG.html,DIM_ORG.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_ORG.html,30243
+08_현업공유_산출물,30_output_share/erd/DIM_PAYMENT.html,DIM_PAYMENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_PAYMENT.html,23840
+08_현업공유_산출물,30_output_share/erd/DIM_REASON.html,DIM_REASON.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_REASON.html,23553
+08_현업공유_산출물,30_output_share/erd/DIM_SEND_TYPE.html,DIM_SEND_TYPE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SEND_TYPE.html,29340
+08_현업공유_산출물,30_output_share/erd/DIM_SERVICE.html,DIM_SERVICE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SERVICE.html,23906
+08_현업공유_산출물,30_output_share/erd/DIM_SPONSORSHIP.html,DIM_SPONSORSHIP.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SPONSORSHIP.html,31373
+08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST.html,FACT_AD_BROADCAST.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST.html,31214
+08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST_CASE.html,FACT_AD_BROADCAST_CASE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST_CASE.html,24359
+08_현업공유_산출물,30_output_share/erd/FACT_AD_DIGITAL.html,FACT_AD_DIGITAL.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_DIGITAL.html,27847
+08_현업공유_산출물,30_output_share/erd/FACT_AD_PERFORMANCE.html,FACT_AD_PERFORMANCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_PERFORMANCE.html,37995
+08_현업공유_산출물,30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html,FACT_BIGQUERY_BEHAVIOR.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html,41342
+08_현업공유_산출물,30_output_share/erd/FACT_BUDGET.html,FACT_BUDGET.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BUDGET.html,32234
+08_현업공유_산출물,30_output_share/erd/FACT_BUDGET_YEARLY.html,FACT_BUDGET_YEARLY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_BUDGET_YEARLY.html,33481
+08_현업공유_산출물,30_output_share/erd/FACT_EVENT_ATTENDANCE.html,FACT_EVENT_ATTENDANCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_EVENT_ATTENDANCE.html,36604
 08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_COHORT.html,FACT_MEMBER_COHORT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_COHORT.html,53303
-08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html,FACT_MEMBER_DEV_ACHIEVEMENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html,34704
-08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_EVENT.html,FACT_MEMBER_EVENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_EVENT.html,55280
-08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_FEE.html,FACT_MEMBER_FEE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_FEE.html,37648
-08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_MONTHLY.html,FACT_MEMBER_MONTHLY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_MONTHLY.html,77984
-08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html,FACT_MEMBER_SPONSORSHIP_SPAN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html,38944
-08_현업공유_산출물,30_output_share/erd/FACT_MESSAGE_DISPATCH.html,FACT_MESSAGE_DISPATCH.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MESSAGE_DISPATCH.html,47728
-08_현업공유_산출물,30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,FACT_TARGET_MEMBER_DEV.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,23792
-08_현업공유_산출물,30_output_share/erd/FACT_TARGET_PROJECT.html,FACT_TARGET_PROJECT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_PROJECT.html,29424
+08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html,FACT_MEMBER_DEV_ACHIEVEMENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html,34701
+08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_EVENT.html,FACT_MEMBER_EVENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_EVENT.html,55264
+08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_FEE.html,FACT_MEMBER_FEE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_FEE.html,37641
+08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_MONTHLY.html,FACT_MEMBER_MONTHLY.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_MONTHLY.html,77971
+08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html,FACT_MEMBER_SPONSORSHIP_SPAN.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html,38937
+08_현업공유_산출물,30_output_share/erd/FACT_MESSAGE_DISPATCH.html,FACT_MESSAGE_DISPATCH.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_MESSAGE_DISPATCH.html,47713
+08_현업공유_산출물,30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,FACT_TARGET_MEMBER_DEV.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,23780
+08_현업공유_산출물,30_output_share/erd/FACT_TARGET_PROJECT.html,FACT_TARGET_PROJECT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_PROJECT.html,29419
 08_현업공유_산출물,30_output_share/erd/index.html,index.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/index.html,86406
 09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,08_AGENT_spec.md,Agent 스펙 설계,05_SV-Agent_ai/08_AGENT_spec.md,47618
 09_설계근거_참고,05_SV-Agent_ai/09_0_AGENT_정의서.md,09_0_AGENT_정의서.md,Agent 정의서,05_SV-Agent_ai/09_0_AGENT_정의서.md,5867
 09_설계근거_참고,05_SV-Agent_ai/11_거버넌스_운영.md,11_거버넌스_운영.md,SV/Agent 거버넌스 운영,05_SV-Agent_ai/11_거버넌스_운영.md,9427
 09_설계근거_참고,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,AGENT_연결객체_메타데이터.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,157041
-09_설계근거_참고,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,AGENT_원천계보_BRONZE까지.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,179728
+09_설계근거_참고,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,AGENT_원천계보_BRONZE까지.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,179713
 09_설계근거_참고,06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md,01_스냅샷_아키텍처_및_네이밍룰.md,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md,14657
 09_설계근거_참고,06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md,02_스냅샷_파이프라인_구축_작업계획.md,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md,13516
-09_설계근거_참고,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,03_스냅샷_환경구축_및_검증쿼리.sql,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,8224
+09_설계근거_참고,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,03_스냅샷_환경구축_및_검증쿼리.sql,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,8209
 09_설계근거_참고,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,analyst-selfservice-streamlit.md,Streamlit 셀프서비스 권한,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,17575
-09_설계근거_참고,SECURITY.sql,SECURITY.sql,Git 자격증명 시크릿 갱신,SECURITY.sql,1968
+09_설계근거_참고,SECURITY.sql,SECURITY.sql,Git 자격증명 시크릿 갱신,SECURITY.sql,1958

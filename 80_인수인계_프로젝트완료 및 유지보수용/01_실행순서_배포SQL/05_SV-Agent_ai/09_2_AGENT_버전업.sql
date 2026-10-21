@@ -143,7 +143,13 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_CHURN_CAMPAIGN'),
     -- 🆕 [O224-E] 같은 결합 도구를 경영·마케팅에도 배선
     ('AGENT_EXECUTIVE', 'SV_ML_CHURN_CAMPAIGN'),
-    ('AGENT_MARKETING', 'SV_ML_CHURN_CAMPAIGN')
+    ('AGENT_MARKETING', 'SV_ML_CHURN_CAMPAIGN'),
+    -- 🆕 [O250-B 15차] ML 회원예측·회비예측 × 7축(36_O250_ML예측_7축확장.sql)
+    ('AGENT_MEMBER',    'SV_ML_MEMBER_PRED_AXIS'),
+    ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST_AXIS'),
+    ('AGENT_MARKETING', 'SV_ML_MEMBER_PRED_AXIS'),
+    ('AGENT_MARKETING', 'SV_ML_FEE_FORECAST_AXIS'),
+    ('AGENT_EXECUTIVE', 'SV_ML_MEMBER_PRED_AXIS')
   AS t(AGENT_NAME, SV_NAME)
 )
 SELECT r.AGENT_NAME, r.SV_NAME, '🔴 라이브 부재 — 배포하면 죽은 도구가 된다' AS VERDICT
@@ -359,17 +365,17 @@ $$;
 -- ---- [3-A] AGENT_MEMBER ----
 ALTER AGENT GN_DW.SERVING.AGENT_MEMBER 
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MEMBER'
-  COMMENT = '굿네이버스 회원 분석 Agent. 도구 25종(SV 24 + 비즈니스정의Search 1) · 🆕 14차(O224) = 중단 예측 × 캠페인카테고리 사전 결합(SV_ML_CHURN_CAMPAIGN) · 도구 호출 전 판정 · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
+  COMMENT = '굿네이버스 회원 분석 Agent. 조회 데이터 = 회원(월실적·상태전이·후원약정·획득코호트·회원 속성) · 회비(청구·납입·미납·청구 처리) · 캠페인(캠페인·마케팅캠페인별 회원) · 서비스 발송·행사 참여·결연활동 · 개발 목표·실적 · 부서 자체 수식 집계(회원실·기획실) · 머신러닝 예측(중단·증액·충성·회비·일시회원 정기전환).';
 
 -- ---- [3-B] AGENT_EXECUTIVE ----
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 전사·재무 요약 분석 Agent. 도구 15종(SV 14 + 비즈니스정의Search 1) · 🆕 14차(O224) = 도구 호출 전 판정 · 중단 예측 × 캠페인카테고리 결합(SV_ML_CHURN_CAMPAIGN) · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).';
 
 -- ---- [3-C] AGENT_MARKETING ----
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_MARKETING'
-  COMMENT = '굿네이버스 마케팅 분석 Agent. 도구 26종(SV 25 + 비즈니스정의Search 1) · 🆕 14차(O224) = 도구 호출 전 판정 · 중단 예측 × 캠페인카테고리 결합(SV_ML_CHURN_CAMPAIGN) · 13차(O220) = 실시간 경량 ML 시뮬레이터.';
+  COMMENT = '굿네이버스 마케팅 분석 Agent. 조회 데이터 = 마케팅·광고(매체·광고비·개발효율) · 캠페인(캠페인·마케팅캠페인별 개발·회비·활동회원) · 예산(편성·집행) · 개발 목표·실적 · 회원(전환·획득코호트) · 홈페이지 방문(GA4)·검색어 · 지출결의 · 머신러닝 예측(개발금액·증액·중단·회비·LTV·일시회원 정기전환).';
 
 -- ---- [3-D] AGENT_MSTR ---- 🆕 [O200-C] 4번째 Agent · 최초 배포는 `24_MSTR_AGENT_배포.sql`(이 블록은 그 이후 버전업용)
 --   🔴 Agent 가 없으면 이 블록은 객체 부재로 실패한다 ⇒ 24번 [2] 를 먼저 실행한다.

@@ -1,0 +1,3 @@
+# doc_id: N04 · as_of: 2026-10-20 15:42:02.154 -0700 · account: SR61467 · query: Q06-1 Alert 실행 이력 — 최근 6일 (상태 · 소요 · 🔴 함수 한도 「7일 이전 불가」라 -7 은 경계에서 실패 → -6)
+NAME,STATE,SCHEDULED_TIME,COMPLETED_TIME,SEC,SQL_ERROR_MESSAGE
+ALERT_DBT_WARN_SPNSR_CLS_DUP,SCHEDULED,2026-10-20 17:00:00-07:00,,,

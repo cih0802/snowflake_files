@@ -1,0 +1,75 @@
+Connecting to Snowflake as TRIALADMIN...
+Total files to process: 34, starting from file index 0
+=== [1/34] [05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql] 9 stmts (from stmt 0) ===
+OK [1/34] [05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql]
+=== [2/34] [05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql] 9 stmts (from stmt 0) ===
+OK [2/34] [05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql]
+=== [3/34] [05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql] 13 stmts (from stmt 0) ===
+OK [3/34] [05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql]
+=== [4/34] [05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql] 9 stmts (from stmt 0) ===
+OK [4/34] [05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql]
+=== [5/34] [05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql] 7 stmts (from stmt 0) ===
+OK [5/34] [05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql]
+=== [6/34] [05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql] 7 stmts (from stmt 0) ===
+OK [6/34] [05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql]
+=== [7/34] [05_SV-Agent_ai/05_07_SV_DDL_AD.sql] 14 stmts (from stmt 0) ===
+OK [7/34] [05_SV-Agent_ai/05_07_SV_DDL_AD.sql]
+=== [8/34] [05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql] 15 stmts (from stmt 0) ===
+OK [8/34] [05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql]
+=== [9/34] [05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql] 14 stmts (from stmt 0) ===
+OK [9/34] [05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql]
+=== [10/34] [05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql] 13 stmts (from stmt 0) ===
+OK [10/34] [05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql]
+=== [11/34] [05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql] 9 stmts (from stmt 0) ===
+OK [11/34] [05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql]
+=== [12/34] [05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql] 7 stmts (from stmt 0) ===
+OK [12/34] [05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql]
+=== [13/34] [05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql] 15 stmts (from stmt 0) ===
+OK [13/34] [05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql]
+=== [14/34] [05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql] 7 stmts (from stmt 0) ===
+OK [14/34] [05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql]
+=== [15/34] [05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql] 9 stmts (from stmt 0) ===
+OK [15/34] [05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql]
+=== [16/34] [05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql] 9 stmts (from stmt 0) ===
+OK [16/34] [05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql]
+=== [17/34] [05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql] 9 stmts (from stmt 0) ===
+OK [17/34] [05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql]
+=== [18/34] [05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql] 9 stmts (from stmt 0) ===
+OK [18/34] [05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql]
+=== [19/34] [05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql] 9 stmts (from stmt 0) ===
+OK [19/34] [05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql]
+=== [20/34] [05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql] 9 stmts (from stmt 0) ===
+OK [20/34] [05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql]
+=== [21/34] [05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql] 9 stmts (from stmt 0) ===
+OK [21/34] [05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql]
+=== [22/34] [05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql] 9 stmts (from stmt 0) ===
+OK [22/34] [05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql]
+=== [23/34] [05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql] 9 stmts (from stmt 0) ===
+OK [23/34] [05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql]
+=== [24/34] [05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql] 9 stmts (from stmt 0) ===
+OK [24/34] [05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql]
+=== [25/34] [05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql] 9 stmts (from stmt 0) ===
+OK [25/34] [05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql]
+=== [26/34] [05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql] 9 stmts (from stmt 0) ===
+OK [26/34] [05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql]
+=== [27/34] [05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql] 58 stmts (from stmt 0) ===
+OK [27/34] [05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql]
+=== [28/34] [05_SV-Agent_ai/22_ML_SV_DDL.sql] 35 stmts (from stmt 0) ===
+OK [28/34] [05_SV-Agent_ai/22_ML_SV_DDL.sql]
+=== [29/34] [05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql] 12 stmts (from stmt 0) ===
+OK [29/34] [05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql]
+=== [30/34] [05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql] 19 stmts (from stmt 0) ===
+OK [30/34] [05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql]
+=== [31/34] [05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql] 8 stmts (from stmt 0) ===
+OK [31/34] [05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql]
+=== [32/34] [05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql] 19 stmts (from stmt 0) ===
+OK [32/34] [05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql]
+=== [33/34] [05_SV-Agent_ai/09_1_AGENT_생성.sql] 41 stmts (from stmt 0) ===
+  [EXEC 14] OWNER_OK: 전건 GN_DW_ADMIN
+  [EXEC 27] AGENT_MEMBER=added AGENT_EXECUTIVE=added AGENT_MARKETING=added
+OK [33/34] [05_SV-Agent_ai/09_1_AGENT_생성.sql]
+=== [34/34] [05_SV-Agent_ai/09_2_AGENT_버전업.sql] 28 stmts (from stmt 0) ===
+  [EXEC 7] AGENT_EXECUTIVE
+  [EXEC 12] AGENT_MEMBER=committed AGENT_EXECUTIVE=committed AGENT_MARKETING=committed
+OK [34/34] [05_SV-Agent_ai/09_2_AGENT_버전업.sql]
+ALL DONE

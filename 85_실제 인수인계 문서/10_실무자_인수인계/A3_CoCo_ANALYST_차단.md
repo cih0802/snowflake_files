@@ -13,7 +13,7 @@ source_queries:
   - 85_실제 인수인계 문서/10_실무자_인수인계/A3_CoCo_ANALYST_차단_근거.sql (Q01~Q05 · 읽기 전용)
   - 85_실제 인수인계 문서/10_실무자_인수인계/A3_CoCo_ANALYST_차단_미실행.sql (🔴 미실행 · ALTER USER 2문은 compile-only 통과)
 owner: TBD
-status: draft — 🔴 결론 미확정(운영계 테스트 후 「차단 완료」 또는 「문의서 발송」으로 닫는다)
+status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단위 차단 유효 · 남은 결정 = [2] 롤 동기화 채택 여부(운영계)
 ---
 
 # A3. CoCo 에서 GN_DW_ANALYST 차단
@@ -57,6 +57,11 @@ status: draft — 🔴 결론 미확정(운영계 테스트 후 「차단 완료
 | Per-user quota | 0 | TBD(미검증) |
 
 - 개발계는 ANALYST 사용자가 없어 테스트할 수 없다 ⇒ 2026-10-20 사용자 결정으로 운영계 연기.
+- 🆕 [O249 · 2026-10-20 · SR61467(새 개발계)] 테스트 사용자 `GN_ANALYST_01`(GN_DW_ANALYST 직접 부여 · 사용자 생성) 확보 ⇒ **개발계에서 [1] 적용**.
+  - 적용 전 = 한도 3종 -1(level 공란) · 적용 후 = 0 · level = USER(`SHOW PARAMETERS … IN USER` 실측).
+  - ANALYST 권한 = Agent 3종 USAGE · SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT USAGE · SV 40종 SELECT ⇒ ㉡·㉢ 선행 조건 충족.
+  - §4-3 ㉠~㉤ 은 **사람이 그 사용자로 로그인해 확인**한다(최초 로그인 시 비밀번호 변경 · MUST_CHANGE_PASSWORD).
+  - 운영계에도 같은 조건의 테스트 사용자가 있다(사용자 확인) ⇒ 개발계 결과로 Q1·Q2 를 먼저 판정하고 운영계는 재확인만 한다.
 
 ## 4. 우회안 — 사용자 단위 차단 + 롤 동기화 (🔴 미실행 · `A3_CoCo_ANALYST_차단_미실행.sql`)
 
@@ -82,11 +87,11 @@ status: draft — 🔴 결론 미확정(운영계 테스트 후 「차단 완료
 
 | # | 확인 | 기대 | 결과 |
 |---|---|---|---|
-| ㉠ | Snowsight CoCo 패널 사용 | 차단 | TBD |
-| ㉡ | Snowflake Intelligence 에서 Agent 3종 질의 | 정상 | TBD |
-| ㉢ | SQL·API 로 Agent / Cortex Analyst 호출 | 정상 | TBD |
-| ㉣ | CLI·Desktop(사용 시) | 차단 | TBD |
-| ㉤ | `[1-R]` 롤백 후 CoCo | 복구 | TBD |
+| ㉠ | Snowsight CoCo 패널 사용 | 차단 | 🟢 차단(SR61467 · GN_ANALYST_01 로그인 · 사용자 확인 2026-10-20) |
+| ㉡ | Snowflake Intelligence 에서 Agent 3종 질의 | 정상 | ⏭ 생략(사용자 결정 · ㉢ 로 갈음) |
+| ㉢ | SQL·API 로 Agent / Cortex Analyst 호출 | 정상 | 🟢 정상(GN_DW_ANALYST 롤 · SV_MEMBER_EVENT_COHORT 조회 + DATA_AGENT_RUN(AGENT_MARKETING) 응답 · 🔴 롤 경로 검증 — 한도 0 은 사용자 속성이라 Agent 경로와 무관) |
+| ㉣ | CLI·Desktop(사용 시) | 차단 | ➖ 해당 없음(미사용) · 파라미터 0 확인 |
+| ㉤ | `[1-R]` 롤백 후 CoCo | 복구 | 🟢 UNSET → -1(기본값 · level 공란) 복귀 확인 후 다시 0 적용(현재 차단 유지) |
 
 ## 5. 미확정 사항 (운영계에서 판정)
 

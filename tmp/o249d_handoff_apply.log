@@ -1,0 +1,788 @@
+[COPY] 01_실행순서_배포SQL/문서실행순서.md
+[COPY] 01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql
+[COPY] 01_실행순서_배포SQL/02_GN_DW_building/08_After_Deploy_DBT.sql
+[COPY] 01_실행순서_배포SQL/03_top-down_gold/06_DDL.sql
+  overwrite: 01_실행순서_배포SQL/03_top-down_gold/06_DDL.sql
+[COPY] 01_실행순서_배포SQL/04_silver_design/08_SILVER_테이블DDL_20260714.sql
+  overwrite: 01_실행순서_배포SQL/04_silver_design/08_SILVER_테이블DDL_20260714.sql
+[COPY] 01_실행순서_배포SQL/04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_07_SV_DDL_AD.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/09_1_AGENT_생성.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/22_ML_SV_DDL.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql
+[COPY] 01_실행순서_배포SQL/05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql
+[COPY] 01_실행순서_배포SQL/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql
+[COPY] 01_실행순서_배포SQL/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
+[COPY] 01_실행순서_배포SQL/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql
+[COPY] 01_실행순서_배포SQL/10_dbt_pipeline/01_deploy_dbt_project.sql
+[COPY] 01_실행순서_배포SQL/10_dbt_pipeline/02_dbt_parse_compile_build.sql
+[COPY] 01_실행순서_배포SQL/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql
+[COPY] 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql
+[COPY] 01_실행순서_배포SQL/12_agent개선과제/output/O217_biz_definition_corpus.csv
+  overwrite: 01_실행순서_배포SQL/12_agent개선과제/output/O217_biz_definition_corpus.csv
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/00_배포운영_통합_20260715.md
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/01_deploy_dbt_project.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/02_dbt_parse_compile_build.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/11_성능검토_운영리스크_20260716.md
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/README.md
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/dbt_project.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_predicate.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_purge.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_purge.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/billing_campaign_asof.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/ga4_union_shards.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/macros/ga4_union_shards.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/generate_schema_name.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/macros/generate_schema_name.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gn_biz_codes.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gn_member_master_filter.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gn_no_structural_alter.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gn_view_commented.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gold_fact_purge.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/gold_helpers.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/silver_helpers.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/macros/silver_purge.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/_gold_ready_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DATE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_ORG.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_REASON.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_dept_aggr_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_schema.yml
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/_silver_bridge_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/_sources.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_ORG.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/_crm_schema.yml
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/_crm_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/_erp_schema.yml
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/_erp_schema.yml
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmec_event_preserved.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_load_gap.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_load_gap.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_evt_stat_code_label.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_evt_stat_code_label.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_grain.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_grain.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql
+[COPY] 02_dbt_pipeline/10_dbt_pipeline/verify_A1_A3_blocking5.sql
+  overwrite: 02_dbt_pipeline/10_dbt_pipeline/verify_A1_A3_blocking5.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/mstr-answer.csv
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/mstr-answer.csv
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/README.md
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/README.md
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/1차.json
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/1차.json
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/1차_deps.json
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_common.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_common.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deploy.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deploy.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deps.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deps.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_extract.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_extract.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_gen.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_gen.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_load_answer.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_load_answer.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_pipeline.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_pipeline.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_verify.py
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_verify.py
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_verify.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_verify.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/답안체크용 쿼리.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/답안체크용 쿼리.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증결과.md
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증결과.md
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql
+  overwrite: 03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql
+[COPY] 03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_비교항목.md
+[COPY] 04_SV_Agent_스펙/cortex_project/cortex-project.yaml
+  overwrite: 04_SV_Agent_스펙/cortex_project/cortex-project.yaml
+[COPY] 04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml
+  overwrite: 04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml
+[COPY] 04_SV_Agent_스펙/cortex_project/agents/AGENT_MARKETING/agent_spec.yaml
+  overwrite: 04_SV_Agent_스펙/cortex_project/agents/AGENT_MARKETING/agent_spec.yaml
+[COPY] 04_SV_Agent_스펙/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+  overwrite: 04_SV_Agent_스펙/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml
+[COPY] 04_SV_Agent_스펙/tmp/o249/agent_deploy.py
+  overwrite: 04_SV_Agent_스펙/tmp/o249/agent_deploy.py
+[COPY] 05_RAG_지표사전/12_agent개선과제/output/O217_biz_definition_corpus.csv
+  overwrite: 05_RAG_지표사전/12_agent개선과제/output/O217_biz_definition_corpus.csv
+[COPY] 05_RAG_지표사전/12_agent개선과제/tools/build_biz_definition_corpus.py
+  overwrite: 05_RAG_지표사전/12_agent개선과제/tools/build_biz_definition_corpus.py
+[COPY] 05_RAG_지표사전/12_agent개선과제/tools/O217_routing_curated.csv
+  overwrite: 05_RAG_지표사전/12_agent개선과제/tools/O217_routing_curated.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/00_README.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/00_README.md
+[COPY] 05_RAG_지표사전/90_provided_definition/01_원천보고서_인벤토리 인덱스.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/01_원천보고서_인벤토리 인덱스.md
+[COPY] 05_RAG_지표사전/90_provided_definition/02_지표사전 공통.md
+[COPY] 05_RAG_지표사전/90_provided_definition/03_지표사전 신규.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/03_지표사전 신규.md
+[COPY] 05_RAG_지표사전/90_provided_definition/04_마케팅_보고서필드 인벤토리.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/04_마케팅_보고서필드 인벤토리.md
+[COPY] 05_RAG_지표사전/90_provided_definition/05_회원_보고서필드 인벤토리.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/05_회원_보고서필드 인벤토리.md
+[COPY] 05_RAG_지표사전/90_provided_definition/06_지표용어사전 20260624.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/06_지표용어사전 20260624.md
+[COPY] 05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준.md
+  overwrite: 05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준.md
+[COPY] 05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준_raw.txt
+  overwrite: 05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준_raw.txt
+[COPY] 05_RAG_지표사전/90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/GA4스키마 20260626.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/GA4스키마 20260626.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/agent 질의 피드백_2.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/agent 질의 피드백_2.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/gni_실적부서.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/gni_실적부서.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/공통지표_flat_20261003.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/공통지표_flat_20261003.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/신규지표_20260820.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/신규지표_20260820.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/조직도_20260914.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/조직도_20260914.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/지표용어통합 20260623.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/지표용어통합 20260623.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/컬럼정의서 20260714.csv
+[COPY] 05_RAG_지표사전/90_provided_definition/테이블정의 20260629.csv
+  overwrite: 05_RAG_지표사전/90_provided_definition/테이블정의 20260629.csv
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/00_개요_및_실행순서.md
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/00_개요_및_실행순서.md
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql
+[COPY] 06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql
+  overwrite: 06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/00_README.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/00_README.md
+[COPY] 06_일배치_모니터링/08_mornitoring/01_모니터링_대상 개요.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/01_모니터링_대상 개요.md
+[COPY] 06_일배치_모니터링/08_mornitoring/02_Cortex_AI_사용량 모니터링.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/02_Cortex_AI_사용량 모니터링.md
+[COPY] 06_일배치_모니터링/08_mornitoring/03_비용제한_예산 쿼터.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/03_비용제한_예산 쿼터.md
+[COPY] 06_일배치_모니터링/08_mornitoring/04_알림_및 거버넌스.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/04_알림_및 거버넌스.md
+[COPY] 06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/10_Cortex_Code_모델별_비용_비교.md
+  overwrite: 06_일배치_모니터링/08_mornitoring/10_Cortex_Code_모델별_비용_비교.md
+[COPY] 06_일배치_모니터링/08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql
+[COPY] 06_일배치_모니터링/08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql
+  overwrite: 06_일배치_모니터링/08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql
+[COPY] 07_운영런북_이슈/02_GN_DW_building/05_ARCHITECTURE.md
+  overwrite: 07_운영런북_이슈/02_GN_DW_building/05_ARCHITECTURE.md
+[COPY] 07_운영런북_이슈/02_GN_DW_building/06_RUNBOOK.md
+  overwrite: 07_운영런북_이슈/02_GN_DW_building/06_RUNBOOK.md
+[COPY] 07_운영런북_이슈/02_GN_DW_building/09_user login mfa리셋.sql
+  overwrite: 07_운영런북_이슈/02_GN_DW_building/09_user login mfa리셋.sql
+[COPY] 07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_런북.md
+  overwrite: 07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_런북.md
+[COPY] 07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_검증.sql
+  overwrite: 07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_검증.sql
+[COPY] 07_운영런북_이슈/PAID_재현_런북_20260722.md
+  overwrite: 07_운영런북_이슈/PAID_재현_런북_20260722.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md
+[COPY] 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_선택표.md
+  overwrite: 07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_선택표.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-007.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-007.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-008.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-008.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-009.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-009.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md
+  overwrite: 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md
+[COPY] 07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md
+[COPY] 07_운영런북_이슈/20_issue/91_사고사례집.md
+  overwrite: 07_운영런북_이슈/20_issue/91_사고사례집.md
+[COPY] 07_운영런북_이슈/20_issue/92_실측필요_후속작업.md
+  overwrite: 07_운영런북_이슈/20_issue/92_실측필요_후속작업.md
+[COPY] 08_현업공유_산출물/30_output_share/00_생성기-문서명 매핑.md
+  overwrite: 08_현업공유_산출물/30_output_share/00_생성기-문서명 매핑.md
+[COPY] 08_현업공유_산출물/30_output_share/01_DW_현업활용가이드.md
+  overwrite: 08_현업공유_산출물/30_output_share/01_DW_현업활용가이드.md
+[COPY] 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv
+[COPY] 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv
+  overwrite: 08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv
+[COPY] 08_현업공유_산출물/30_output_share/03_GN_DW_개념도.html
+[COPY] 08_현업공유_산출물/30_output_share/04_컬럼계보매핑.csv
+[COPY] 08_현업공유_산출물/30_output_share/04_컬럼계보매핑.md
+  overwrite: 08_현업공유_산출물/30_output_share/04_컬럼계보매핑.md
+[COPY] 08_현업공유_산출물/30_output_share/04_컬럼계보매핑.xlsx
+  overwrite: 08_현업공유_산출물/30_output_share/04_컬럼계보매핑.xlsx
+[COPY] 08_현업공유_산출물/30_output_share/05_지표GOLD매핑.csv
+  overwrite: 08_현업공유_산출물/30_output_share/05_지표GOLD매핑.csv
+[COPY] 08_현업공유_산출물/30_output_share/05_지표GOLD매핑.md
+[COPY] 08_현업공유_산출물/30_output_share/05_지표GOLD매핑.xlsx
+  overwrite: 08_현업공유_산출물/30_output_share/05_지표GOLD매핑.xlsx
+[COPY] 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.csv
+  overwrite: 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.csv
+[COPY] 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.md
+  overwrite: 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.md
+[COPY] 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.xlsx
+  overwrite: 08_현업공유_산출물/30_output_share/06_BRONZE노출감사.xlsx
+[COPY] 08_현업공유_산출물/30_output_share/07_코드체계_관문측정.md
+  overwrite: 08_현업공유_산출물/30_output_share/07_코드체계_관문측정.md
+[COPY] 08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.csv
+  overwrite: 08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.csv
+[COPY] 08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.md
+  overwrite: 08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.md
+[COPY] 08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.csv
+  overwrite: 08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.csv
+[COPY] 08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.md
+  overwrite: 08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.md
+[COPY] 08_현업공유_산출물/30_output_share/09_섹션배너.json
+  overwrite: 08_현업공유_산출물/30_output_share/09_섹션배너.json
+[COPY] 08_현업공유_산출물/30_output_share/10_원천입고_결손요약.md
+  overwrite: 08_현업공유_산출물/30_output_share/10_원천입고_결손요약.md
+[COPY] 08_현업공유_산출물/30_output_share/11_미해결이슈_요약.md
+  overwrite: 08_현업공유_산출물/30_output_share/11_미해결이슈_요약.md
+[COPY] 08_현업공유_산출물/30_output_share/16_파이프라인 배선 수정.md
+  overwrite: 08_현업공유_산출물/30_output_share/16_파이프라인 배선 수정.md
+[COPY] 08_현업공유_산출물/30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md
+  overwrite: 08_현업공유_산출물/30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md
+[COPY] 08_현업공유_산출물/30_output_share/19_원천입고_및_항목신설_대기.md
+  overwrite: 08_현업공유_산출물/30_output_share/19_원천입고_및_항목신설_대기.md
+[COPY] 08_현업공유_산출물/30_output_share/20260826_아키텍처 지도 요약본.html
+  overwrite: 08_현업공유_산출물/30_output_share/20260826_아키텍처 지도 요약본.html
+[COPY] 08_현업공유_산출물/30_output_share/21_원천입고_대기_주니어_해설서.md
+  overwrite: 08_현업공유_산출물/30_output_share/21_원천입고_대기_주니어_해설서.md
+[COPY] 08_현업공유_산출물/30_output_share/30_공8_GA개발단가_정의_요약.md
+[COPY] 08_현업공유_산출물/30_output_share/30_공8및미회신29건_질문요약.md
+  overwrite: 08_현업공유_산출물/30_output_share/30_공8및미회신29건_질문요약.md
+[COPY] 08_현업공유_산출물/30_output_share/31_공8_GA개발단가_쿼리근거.sql
+  overwrite: 08_현업공유_산출물/30_output_share/31_공8_GA개발단가_쿼리근거.sql
+[COPY] 08_현업공유_산출물/30_output_share/31_공8및미회신29건_쿼리근거.sql
+  overwrite: 08_현업공유_산출물/30_output_share/31_공8및미회신29건_쿼리근거.sql
+[COPY] 08_현업공유_산출물/30_output_share/32_BRONZE_CRM_GOLD반영_설계.md
+  overwrite: 08_현업공유_산출물/30_output_share/32_BRONZE_CRM_GOLD반영_설계.md
+[COPY] 08_현업공유_산출물/30_output_share/40_현업회신요청_O190.md
+  overwrite: 08_현업공유_산출물/30_output_share/40_현업회신요청_O190.md
+[COPY] 08_현업공유_산출물/30_output_share/41_현업회신_F-1_본부지부.md
+  overwrite: 08_현업공유_산출물/30_output_share/41_현업회신_F-1_본부지부.md
+[COPY] 08_현업공유_산출물/30_output_share/42_현업회신_E-1_모금성비용.md
+  overwrite: 08_현업공유_산출물/30_output_share/42_현업회신_E-1_모금성비용.md
+[COPY] 08_현업공유_산출물/30_output_share/43_현업회신_F-2_후원사업11개.md
+[COPY] 08_현업공유_산출물/30_output_share/44_현업회신_F-3_문자오픈.md
+  overwrite: 08_현업공유_산출물/30_output_share/44_현업회신_F-3_문자오픈.md
+[COPY] 08_현업공유_산출물/30_output_share/45_현업회신_ML_일시후원전환_grain.md
+[COPY] 08_현업공유_산출물/30_output_share/46_현업회신_DGT_이전분.md
+  overwrite: 08_현업공유_산출물/30_output_share/46_현업회신_DGT_이전분.md
+[COPY] 08_현업공유_산출물/30_output_share/47_신규19종_파생컬럼_COMMENT초안.md
+  overwrite: 08_현업공유_산출물/30_output_share/47_신규19종_파생컬럼_COMMENT초안.md
+[COPY] 08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별.html
+  overwrite: 08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별.html
+[COPY] 08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별_YAML전용.html
+  overwrite: 08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별_YAML전용.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_AD_CREATIVE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_AD_CREATIVE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_BIGQUERY_EVENT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_BIGQUERY_EVENT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_BIGQUERY_SOURCE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_BUDGET_ITEM.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_BUDGET_ITEM.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_CAMPAIGN.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_CAMPAIGN.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_DATE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_DATE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_DEVICE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_DEVICE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_EVENT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_EVENT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MARKETING_CAMPAIGN.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_ACQUISITION.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_ACQUISITION.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_IDENTITY.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_MONTH.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_MONTH.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_ORG.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_ORG.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_PAYMENT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_PAYMENT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_REASON.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_REASON.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_SEND_TYPE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_SEND_TYPE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_SERVICE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_SERVICE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/DIM_SPONSORSHIP.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/DIM_SPONSORSHIP.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST_CASE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST_CASE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_AD_DIGITAL.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_AD_DIGITAL.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_AD_PERFORMANCE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_AD_PERFORMANCE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_BUDGET.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_BUDGET.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_BUDGET_YEARLY.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_EVENT_ATTENDANCE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_EVENT_ATTENDANCE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_COHORT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_COHORT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_EVENT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_EVENT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_FEE.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_FEE.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_MONTHLY.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_MONTHLY.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_MESSAGE_DISPATCH.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_MESSAGE_DISPATCH.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_TARGET_MEMBER_DEV.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_TARGET_MEMBER_DEV.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/FACT_TARGET_PROJECT.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/FACT_TARGET_PROJECT.html
+[COPY] 08_현업공유_산출물/30_output_share/erd/index.html
+  overwrite: 08_현업공유_산출물/30_output_share/erd/index.html
+[COPY] 09_설계근거_참고/05_SV-Agent_ai/08_AGENT_spec.md
+  overwrite: 09_설계근거_참고/05_SV-Agent_ai/08_AGENT_spec.md
+[COPY] 09_설계근거_참고/05_SV-Agent_ai/09_0_AGENT_정의서.md
+  overwrite: 09_설계근거_참고/05_SV-Agent_ai/09_0_AGENT_정의서.md
+[COPY] 09_설계근거_참고/05_SV-Agent_ai/11_거버넌스_운영.md
+  overwrite: 09_설계근거_참고/05_SV-Agent_ai/11_거버넌스_운영.md
+[COPY] 09_설계근거_참고/05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx
+  overwrite: 09_설계근거_참고/05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx
+[COPY] 09_설계근거_참고/05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx
+[COPY] 09_설계근거_참고/06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md
+[COPY] 09_설계근거_참고/06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md
+  overwrite: 09_설계근거_참고/06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md
+[COPY] 09_설계근거_참고/06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql
+[COPY] 09_설계근거_참고/09_streamlit 권한 설정/analyst-selfservice-streamlit.md
+  overwrite: 09_설계근거_참고/09_streamlit 권한 설정/analyst-selfservice-streamlit.md
+[COPY] 09_설계근거_참고/SECURITY.sql
+  overwrite: 09_설계근거_참고/SECURITY.sql
+
+파일 511개 / MISSING 0개

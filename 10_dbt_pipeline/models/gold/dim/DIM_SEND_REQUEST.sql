@@ -38,3 +38,14 @@ left join {{ ref('CRM_CODE') }} c_md on c_md.CD_ID = 'MS010' and c_md.DTL_CD_ID 
 left join {{ ref('CRM_CODE') }} c_tm on c_tm.CD_ID = 'MS267' and c_tm.DTL_CD_ID = q.SNDNG_TIME_DIV_CD
 left join {{ ref('CRM_CODE') }} c_ps on c_ps.CD_ID = 'MS061' and c_ps.DTL_CD_ID = q.PSTMTR_PRCS_STAT_CD
 left join {{ ref('CRM_CODE') }} c_cp on c_cp.CD_ID = 'CM019' and c_cp.DTL_CD_ID = q.CORP_TYPE
+
+union all
+-- 🆕 [O249 · DR-31 · A8-29] unknown 멤버(SK=0): FACT_MESSAGE_DISPATCH.SEND_REQUEST_SK=0(요청 미매핑 3,001행 · SR61467 실측)
+--   의 FK 고아 해소 · DIM_SERVICE 와 같은 센티넬 규약. 열 순서 = 라이브 49열(2 + 34 NULL + 감사 4 + 9 NULL).
+--   🔴 SNDNG_KEY 는 NUMBER 다 ⇒ 센티넬 키 = 0(원천에 0 없음 · 2026-10-20 실측 · 문자 '(미매핑)' 은 100038 로 실패했다).
+select 0, 0,
+    '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    {{ gold_meta('CRM') }},
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL

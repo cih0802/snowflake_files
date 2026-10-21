@@ -1,0 +1,2 @@
+# doc_id: A0 · as_of: 2026-10-20 15:38:24.555 -0700 · account: SR61467 · query: Q10-1 [ENV] 실행 이력 — Task(존재 이력 포함) · dbt 실행(최근 30일 · 롤별)
+SCHEMA_NAME,NAME_PATTERN,STATE,N,FIRST_RUN,LAST_RUN

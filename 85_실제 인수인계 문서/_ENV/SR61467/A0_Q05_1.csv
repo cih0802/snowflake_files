@@ -1,0 +1,3 @@
+# doc_id: A0 · as_of: 2026-10-20 15:38:24.555 -0700 · account: SR61467 · query: Q05-1 Task · Alert · Git · Integration
+created_on,name,id,database_name,schema_name,owner,comment,warehouse,schedule,predecessors,state,definition,condition,allow_overlapping_execution,error_integration,last_committed_on,last_suspended_on,owner_role_type,config,task_relations,last_suspended_reason,success_integration,scheduling_mode,target_completion_interval,execute_as_user,overlap_policy,created_by_user
+2026-10-19 17:33:06.702000-07:00,CORTEX_BASE_MODELS_REFRESH_TASK,01c7d861-0d31-9433-0000-000000000007,SNOWFLAKE,MODELS,SNOWFLAKE,,,using cron 20 11 * * * UTC,[],started,,,false,null,2026-10-19 17:33:07.155000-07:00,,APPLICATION,,"{""Predecessors"":[]}",,null,,,,NO_OVERLAP,

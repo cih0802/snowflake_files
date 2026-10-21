@@ -1,0 +1,52 @@
+# doc_id: A7 · as_of: 2026-10-20 15:39:48.562 -0700 · account: SR61467 · query: Q05-1 [주] 실패 쿼리 — 최근 7일 GN_DW 롤별 오류 상위
+ROLE_NAME,ERROR_CODE,ERROR_MESSAGE,N,LAST_T
+GN_DW_ANALYST,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",4,2026-10-20 13:52:13.883000-08:00
+GN_DW_ANALYST,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege granted,4,2026-10-20 13:52:13.981000-08:00
+GN_DW_ANALYST,002003,"SQL compilation error: ⏎ Workspace '""USER$"".PUBLIC.""DEFAULT$""' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have at least one privilege granted o",2,2026-10-20 13:52:13.833000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_SPONSORSHIP' does not exist,1,2026-10-20 06:22:37.292000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:33.599000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_DMTB_DIM_MSG_TEMPLATE' does not exist,1,2026-10-20 06:22:38.830000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBD_DIM_SPONSORSHIP' does not exist,1,2026-10-20 06:22:36.573000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSM_DIM_SPONSORSHIP' does not exist,1,2026-10-20 06:22:40.132000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FRD_DIM_MEMBER' does not exist,1,2026-10-20 06:22:39.031000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_PAY_DATE' does not exist,1,2026-10-20 06:22:37.478000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBY_DIM_BUDGET_ITEM' does not exist,1,2026-10-20 06:22:36.759000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_BIGQUERY_EVENT' does not exist,1,2026-10-20 06:22:34.871000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FRC_DIM_MEMBER' does not exist,1,2026-10-20 06:22:39.218000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMM_DIM_SPONSORSHIP' does not exist,1,2026-10-20 06:22:33.233000-08:00
+GN_DW_ADMIN,000606,No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command. ⏎ ,1,2026-10-20 14:33:35.307000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_ORG' does not exist,1,2026-10-20 06:22:33.753000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_PAYMENT' does not exist,1,2026-10-20 06:22:37.388000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBY_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:36.842000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSE_DIM_DATE' does not exist,1,2026-10-20 06:22:34.345000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMC_ACQ_SPONSORSHIP' does not exist,1,2026-10-20 06:22:37.727000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_DEVICE' does not exist,1,2026-10-20 06:22:35.070000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FPMC_DIM_DATE' does not exist,1,2026-10-20 06:22:39.279000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_DATE' does not exist,1,2026-10-20 06:22:33.490000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMSB_DIM_SPONSORSHIP' does not exist,1,2026-10-20 06:22:37.969000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'PK_DIM_SEND_REQUEST' does not exist,1,2026-10-20 06:22:39.511000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_BC_FAD' does not exist,1,2026-10-20 06:22:35.786000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FCM_DIM_PAYMENT' does not exist,1,2026-10-20 06:22:40.047000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_D_FAD' does not exist,1,2026-10-20 06:22:35.687000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_DIM_AD_CREATIVE' does not exist,1,2026-10-20 06:22:35.382000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_DIM_CAMPAIGN_MKTG' does not exist,1,2026-10-20 06:22:37.795000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FEP_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:36.096000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_MEMBER_IDENTITY' does not exist,1,2026-10-20 06:22:34.798000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMC_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:36.983000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMM_DIM_REASON' does not exist,1,2026-10-20 06:22:33.405000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FCM_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:39.967000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAP_MKTG_CAMPAIGN' does not exist,1,2026-10-20 06:22:37.895000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_DIM_DATE' does not exist,1,2026-10-20 06:22:35.208000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMD_DIM_SEND_REQUEST' does not exist,1,2026-10-20 06:22:39.606000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMSB_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:38.106000-08:00
+GN_DW_DBT,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",1,2026-10-20 14:33:55.095000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSE_DIM_CAMPAIGN' does not exist,1,2026-10-20 06:22:34.589000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_DIM_CAMPAIGN_DIM_ORG' does not exist,1,2026-10-20 06:22:32.949000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'PK_DIM_CHILD' does not exist,1,2026-10-20 06:22:38.293000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'PK_DIM_BIZ_PLACE' does not exist,1,2026-10-20 06:22:38.177000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSE_DIM_SEND_TYPE' does not exist,1,2026-10-20 06:22:34.497000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'PK_DIM_PAYMENT_ACCOUNT' does not exist,1,2026-10-20 06:22:38.653000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FRC_DIM_DATE' does not exist,1,2026-10-20 06:22:39.121000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_B_FAD' does not exist,1,2026-10-20 06:22:35.576000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBY_DIM_SPONSORSHIP' does not exist,1,2026-10-20 06:22:36.911000-08:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_REASON' does not exist,1,2026-10-20 06:22:33.880000-08:00

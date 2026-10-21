@@ -1,0 +1,30 @@
+# doc_id: A2 · as_of: 2026-10-20 15:38:59.410 -0700 · account: SR61467 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,A2_Q01_1.csv,OK,2545,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,2,A2_Q01_2.csv,OK,1246,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,3,A2_Q01_3.csv,OK,711,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,4,A2_Q01_4.csv,OK,153,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,5,A2_Q01_5.csv,OK,231,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,6,A2_Q01_6.csv,OK,372,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,7,A2_Q01_7.csv,OK,231,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q01,8,A2_Q01_8.csv,OK,114,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+Q02,1,A2_Q02_1.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
+Q02,2,A2_Q02_2.csv,OK,5,0,SHOW FUTURE grant — DB + 스키마별
+Q02,3,A2_Q02_3.csv,OK,4,0,SHOW FUTURE grant — DB + 스키마별
+Q02,4,A2_Q02_4.csv,OK,6,0,SHOW FUTURE grant — DB + 스키마별
+Q02,5,A2_Q02_5.csv,OK,5,0,SHOW FUTURE grant — DB + 스키마별
+Q02,6,A2_Q02_6.csv,OK,7,0,SHOW FUTURE grant — DB + 스키마별
+Q02,7,A2_Q02_7.csv,OK,7,0,SHOW FUTURE grant — DB + 스키마별
+Q02,8,A2_Q02_8.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
+Q02,9,A2_Q02_9.csv,OK,41,0,SHOW FUTURE grant — DB + 스키마별
+Q02,10,A2_Q02_10.csv,OK,30,0,SHOW FUTURE grant — DB + 스키마별
+Q02,11,A2_Q02_11.csv,OK,37,0,SHOW FUTURE grant — DB + 스키마별
+Q02,12,A2_Q02_12.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
+Q02,13,A2_Q02_13.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
+Q02,14,A2_Q02_14.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
+Q02,15,A2_Q02_15.csv,OK,19,0,SHOW FUTURE grant — DB + 스키마별
+Q03,1,A2_Q03_1.csv,OK,1154,0,SELECT 매트릭스 원본 — 롤 × 객체종류 × 스키마 × 권한 (직접 부여 · 상속 제외 · OWNERSHIP 포함)
+Q04,1,A2_Q04_1.csv,OK,11,0,SELECT GN_DW 객체 수(분모) — 스키마별 테이블·뷰 · SV · Agent (매트릭스 「전건 부여」 판정용)
+Q05,1,A2_Q05_1.csv,OK,3,0,SHOW Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
+Q05,2,A2_Q05_2.csv,OK,2,0,SHOW Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
+Q06,1,A2_Q06_1.csv,OK,3,0,SELECT 사용자 ↔ 롤 할당 (온보딩 현황 · A1 연결)

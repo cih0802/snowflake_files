@@ -1,4 +1,4 @@
-<!-- 자동 생성 = scripts/b_struct_build.py · account: IW20760 · 생성 2026-10-20 03:32 · 원천 = _ENV/IW20760/B1_*.csv · 손으로 고치지 않는다 -->
+<!-- 자동 생성 = scripts/b_struct_build.py · account: SR61467 · 생성 2026-10-21 00:57 · 원천 = _ENV/SR61467/B1_*.csv · 손으로 고치지 않는다 -->
 
 # D05 부록 — GOLD 물리 ERD (FK 실측 · 자동 생성)
 

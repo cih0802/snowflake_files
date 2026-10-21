@@ -1156,7 +1156,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
 
 -- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1))
 --   🆕 [2026-10-15 O232] 종전 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL`(O231) → **DDL 소유 테이블**로 전환(사용자 결정).
---   ⚠️ 상한은 컬럼이 아니라 **행 표지 LTV_CAP_MONTHS** 다 — 상한을 바꿔도 이 DDL 은 바뀌지 않는다(dbt vars 만 수정).
+--   ⚠️ 상한은 컬럼이 아니라 **행 표지 LTV_CAP_AVG_ACTIVE_MONTHS**(🆕 O249 · 구 LTV_CAP_MONTHS · 상한 = 관측 중 회원 평균 유지개월 올림) 다.
+--   🆕 [O249] 기존 테이블 = ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL RENAME COLUMN LTV_CAP_MONTHS TO LTV_CAP_AVG_ACTIVE_MONTHS;
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     AXIS_TYPE           VARCHAR(20)     NOT NULL COMMENT '분류 축. 전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2(획득 시점 동결값)',
     AXIS_VALUE          VARCHAR(200)    NOT NULL COMMENT '축값. 원천 NULL = (미상). 축 전체이면 전체',
@@ -1166,8 +1167,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     CENSORED_MEMBERS    NUMBER(18,0)    COMMENT '그 경과월에서 관측이 끝난 활동 회원수(우절단)',
     SURV_START          NUMBER(12,10)   COMMENT '경과월 시작 생존율 P(T ≥ m)',
     SURV_END            NUMBER(12,10)   COMMENT '경과월 종료 생존율 P(T > m) — Kaplan–Meier',
-    RMST_CUM            NUMBER(10,4)    COMMENT '경과월까지 누적 제한평균 유지개월 = Σ SURV_START. LTV_CAP_MONTHS 행의 값이 그 상한의 기대 유지개월',
-    LTV_CAP_MONTHS      NUMBER(4,0)     COMMENT '[O234 확정 · 상한 80 + 무기한] 이 행이 상한 N개월의 마지막 경과월(N−1)이면 N · 셀 최대 관측월 행이면 9999(무기한 · O233) · 아니면 NULL. 상한 목록 = dbt var ltv_caps · 9999 = ltv_unlimited. 최대 관측월이 N−1 과 같으면 N 이 우선(RMST 동일)',
+    RMST_CUM            NUMBER(10,4)    COMMENT '경과월까지 누적 제한평균 유지개월 = Σ SURV_START. LTV_CAP_AVG_ACTIVE_MONTHS 행의 값이 그 상한의 기대 유지개월',
+    LTV_CAP_AVG_ACTIVE_MONTHS NUMBER(4,0) COMMENT '[O249 · 구 LTV_CAP_MONTHS] 상한 N = CEIL(AVG(관측 중 회원의 최종중단 기준 유지개월))(전체 모집단 1값 · 2026-10-20 실측 80 · 데이터 증가 시 변동). 이 행이 상한의 마지막 경과월(N−1)이면 N · 셀 최대 관측월 행이면 9999(무기한 · O233) · 아니면 NULL. 최대 관측월이 N−1 과 같으면 N 이 우선(RMST 동일)',
     COHORT_MEMBERS      NUMBER(18,0)    COMMENT '셀 획득 회원수(생존분석 대상 · 획득일·중단일 무효 제외). 셀 상수',
     STOPPED_MEMBERS_TOTAL NUMBER(18,0)  COMMENT '셀 관측기간 중 중단 회원수. 셀 상수',
     IS_CELL_RELIABLE    BOOLEAN         COMMENT 'COHORT_MEMBERS ≥ dbt var ltv_min_cell. FALSE 셀은 비교·순위에 쓰지 않는다',
@@ -1177,7 +1178,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     PRIMARY KEY (AXIS_TYPE, AXIS_VALUE, ELAPSED_MONTH)
-) COMMENT = '획득 코호트 생존 곡선 팩트(확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
+) COMMENT = '획득 코호트 생존 곡선 팩트(확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_AVG_ACTIVE_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
 
 -- FACT_MEMBER_FEE — 회비 분해 팩트
 --   ⚠️ PK 미선언 — grain 키 FEE_DIV_CD 가 기부금 행에서 NULL. 유일성은 dbt GROUP BY 가 보증.

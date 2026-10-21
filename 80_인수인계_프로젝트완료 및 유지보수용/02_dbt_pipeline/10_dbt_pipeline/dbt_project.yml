@@ -170,9 +170,9 @@ vars:
   #   ltv_learn_start = 학습(획득) 시작일 'YYYY-MM-DD' · null = 전체 이력
   #   ltv_min_cell    = 셀 최소 획득 회원수 — 미만이면 IS_CELL_RELIABLE = FALSE(값은 남긴다)
   #   🆕 [O233 · 현업 회신] 상한 80 · 무기한 · 전체 이력 · 재후원 포함(최종 중단 = FMC *_LAST 입력) · 셀 최소 1
-  #   ltv_unlimited   = true 면 셀별 최대 관측월 행에 LTV_CAP_MONTHS = 9999(무기한) 표지
+  #   🆕 [O249] ltv_caps 폐지 — 상한 = CEIL(AVG(관측 중 회원 유지개월)) 계산형(모델 cap CTE) · 표지 컬럼 = LTV_CAP_AVG_ACTIVE_MONTHS
+  #   ltv_unlimited   = true 면 셀별 최대 관측월 행에 LTV_CAP_AVG_ACTIVE_MONTHS = 9999(무기한) 표지
   #   ltv_horizon_max = 무기한 산출 경과월 범위(GENERATOR 상수) · 최대 관측월(실측 426)보다 커야 한다 — 테스트 ㉤ 가 검사
-  ltv_caps: [80]
   ltv_learn_start: null
   ltv_min_cell: 1
   ltv_unlimited: true

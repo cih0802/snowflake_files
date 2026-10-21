@@ -1,0 +1,6 @@
+COPY [('AGENT_MARKETING/agent_spec.yaml',)]
+VERIFY ws=113472 stage=113472
+BEFORE [('VERSION$2', 'false'), ('VERSION$1', 'false')]
+ADD_VERSION [('Version nullsuccessfully created.',)] 01c7dc19-0208-f4ee-0005-869e000b9276
+  VERSION$2 default=false created=2026-10-20 07:48:40.268000-07:00
+  VERSION$1 default=false created=2026-10-20 07:48:13.735000-07:00

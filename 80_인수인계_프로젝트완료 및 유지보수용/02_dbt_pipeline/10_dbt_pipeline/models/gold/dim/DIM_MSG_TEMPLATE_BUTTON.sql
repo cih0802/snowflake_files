@@ -8,8 +8,11 @@
 ) }}
 
 select
-    {{ gold_sk(['TMPLAT_ID', 'BTN_SEQ']) }}          as TEMPLATE_BUTTON_SK,
-    {{ gold_sk(["'MSG_AT'", 'TMPLAT_ID']) }}         as TEMPLATE_SK,
-    TMPLAT_ID, BTN_SEQ, BTN_TY_CD, BTN_NM, ANDROID_URL, IOS_URL, MOBILE_URL, PC_URL,
+    {{ gold_sk(['b.TMPLAT_ID', 'b.BTN_SEQ']) }}      as TEMPLATE_BUTTON_SK,
+    -- 🆕 [O249 · DR-31] 템플릿 마스터에 없는 버튼 = SK 0(DIM_MSG_TEMPLATE unknown 멤버) · 원천 TMPLAT_ID 는 그대로 남긴다
+    IFF(t.TEMPLATE_KEY IS NULL, 0, {{ gold_sk(["'MSG_AT'", 'b.TMPLAT_ID']) }}) as TEMPLATE_SK,
+    b.TMPLAT_ID, b.BTN_SEQ, b.BTN_TY_CD, b.BTN_NM, b.ANDROID_URL, b.IOS_URL, b.MOBILE_URL, b.PC_URL,
     {{ gold_meta('CRM') }}
-from {{ ref('CRM_MSG_TEMPLATE_BUTTON') }}
+from {{ ref('CRM_MSG_TEMPLATE_BUTTON') }} b
+left join (select distinct TEMPLATE_KEY from {{ ref('CRM_MSG_TEMPLATE') }} where SEND_CHANNEL = 'MSG_AT') t
+    on t.TEMPLATE_KEY = b.TMPLAT_ID

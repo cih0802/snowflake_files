@@ -1,0 +1,28 @@
+# doc_id: B2 · as_of: 2026-10-20 15:41:15.459 -0700 · account: SR61467 · query: Q03-1 라우팅 행 (질문 → 도구 결정 · 사용자 결정 출처)
+DOC_ID,TITLE,AGENT_SCOPE,TOOL_NAME,SV_FIELD,LIMITATION,SOURCE_FILE
+RT-01,개발건수(기본 · CRM건),MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.MSTR_DVLP_CNT,처음 한 번 「MSTR 개발(건) = 후원금액 ÷ 10000」 각주를 단다. GN_DW 사건 수로 바꿔 답하지 않는다.,사용자 결정 A (2026-10-13 · O217)
+RT-02,GA 개발건수(일별리포트),MARKETING|EXECUTIVE,analyst_ad,ad.GA_DEV_CNT,디지털 전용 · 소수값이 있어 정수 건수로 단정하지 않는다 · MSTR 개발(건)과 한 표에서 합산·비교하지 않는다.,사용자 결정 A (2026-10-13 · O217) · 피드백_2 나눔마케팅 24
+RT-03,DR광고,MARKETING|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.CMMN_BRND_NM · md.MKTG_CHANNEL_NM,공통브랜드 실제 값은 도구로 조회해 확인한다 · 개발(명)은 비가산이라 채널별 값을 더해 합계를 만들지 않는다.,사용자 결정 B (2026-10-13 · O217) · 피드백_2 나눔마케팅 25·26
+RT-04,채널별(개발 실적),MARKETING|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.MKTG_CHANNEL_NM,값 「-」는 원천 코드사전의 채널 미지정 라벨이다.,사용자 결정 B (2026-10-13 · O217)
+RT-05,마케팅캠페인,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.MK_CMPGN_NM,「캠페인」(CMPGN_NM 개발캠페인)과 다른 축이다.,사용자 결정 C (2026-10-13 · O217)
+RT-06,공통브랜드,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.CMMN_BRND_NM,「브랜드」(BRND_NM)와 다른 축이다 · 개발인입경로와 라벨이 겹쳐도 다른 축이다.,사용자 결정 C (2026-10-13 · O217) · 공통지표 147
+RT-07,개발인입경로,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.DVLP_INFLOW_PATH_NM,공통브랜드 값으로 이 축을 필터하지 않는다.,사용자 결정 C (2026-10-13 · O217) · 추가 신규 54
+RT-08,캠페인유형(국내/해외),MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.CMPGN_TYPE1_NM,,사용자 결정 C (2026-10-13 · O217) · 추가 신규 56
+RT-09,캠페인유형2(사업/사례),MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.CMPGN_TYPE2_NM,,사용자 결정 C (2026-10-13 · O217) · 추가 신규 57
+RT-10,캠페인카테고리,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.CMPGN_CTGR_NM,회비 예측(카테고리별)은 ML 회비 예측 도구 소관이다.,사용자 결정 C (2026-10-13 · O217) · 추가 신규 55
+RT-11,마케팅채널,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.MKTG_CHANNEL_NM,개발인입경로와 다른 축이다.,사용자 결정 C (2026-10-13 · O217)
+RT-12,마케팅UTM,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.MKTG_UTM_NM,일부 캠페인에만 값이 있어 UTM별 합계는 전체보다 작다.,사용자 결정 C (2026-10-13 · O217)
+RT-13,드릴다운 기본 응답,MARKETING|MEMBER|EXECUTIVE,analyst_mstr_spnsr_dvlp,md.DVLP_DIV_NM,사용자가 신규를 명시하면 신규로 한정한다.,사용자 결정 D (2026-10-13 · O217)
+RT-17,회원실 회비 예측(연사업·추경·월별),MARKETING|MEMBER|EXECUTIVE,analyst_spnsr_cls_aggr · analyst_mbrfee_prdt_actl,sc.TOTAL_VALUE1·TOTAL_VALUE2 (원천 GN_DW.SILVER.MM_SPNSR_CLS_AGGR_DATA) · mp.TOTAL_ADJ_MBRFEE_AMT (원천 GN_DW.SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA),집계유형(AGGR_TY_NM)·예측실측구분(DATA_TYPE_NM)을 고정한다 · ML 예측이 아니다 · 법인(사단법인) 축은 sc.CPR_NM 에 있다.,사용자 지시 (2026-10-13 · O217) · 피드백_2 회원실 3·4·5
+RT-18,예측 질문 머신러닝 우선,MARKETING|EXECUTIVE,analyst_ml_dvlp_forecast,,ML 개발 예측은 금액(만원)이다 — 건수 예측은 없다고 밝힌다.,피드백_2 나눔마케팅 1·2
+RT-19,증액 예측(마케팅캠페인별),MARKETING,analyst_ml_inc_campaign,ic.EXPECTED_INC_MEMBERS · ic.AVG_INC_PROB · ic.MK_CMPGN_NM,회원 단위 확률을 캠페인에 모은 값이며 「N월 증액 건수」가 아니다 · 캠페인 귀속은 그 해 MSTR 최근 개발 1건 기준 데이터 규칙이다 · 귀속되지 않은 회원수를 함께 밝힌다 · 실적 표와 합산하지 않는다.,채팅 지적 (2026-10-13 · O217-B · 허지혜)
+RT-20,목표 유형(회원개발·매체별·일별·사업목표),MARKETING,analyst_dev_achievement|analyst_target_biz,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-21,산출 불가 항목과 사유(마케팅),MARKETING,analyst_ad|analyst_member_event,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-22,전환회원·코호트·회비 축의 시점 차이,MARKETING,analyst_member_event|analyst_member_cohort|analyst_member_fee,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-23,이탈률 비교·집행율 해석,MARKETING,analyst_member_cohort|analyst_budget,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-24,마케팅 원천 지도(4계열)·원천 질문 응답,MARKETING,,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-25,분류 축 ↔ 원천 컬럼 대응,MARKETING,analyst_mstr_spnsr_dvlp,,,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml)
+RT-26,개발 예측 우선순위(익월·연말),MARKETING,analyst_ml_dvlp_forecast|analyst_mstr_spnsr_dvlp,SV_ML_DVLP_FORECAST.DF.FORECAST_AMT · SV_MSTR_SPNSR_DVLP.YE.YE_TREND_DVLP_CNT,추세 참고치는 모델 예측이 아니다.,O218 지침 축약 이관(AGENT_MARKETING · 2026-10-13 · 원문 = output/o218/before_O218_AGENT_MARKETING.yaml) · o-18↔o-26 충돌 정리
+RT-27,LTV 질문 기본 응답(예측 + 실적),MARKETING,analyst_ml_ltv_forecast|analyst_member_fee|analyst_member_cohort,surv.EXP_TENURE_MONTHS · surv.SURV_LTV_CAP_AVG_ACTIVE_MONTHS,실적 LTV 는 Agent 계산값 · 🆕 [O234 현업 확정] 평균 유지개월수 = 기대 유지개월(surv.EXP_TENURE_MONTHS) 상한(관측 중 회원 평균 유지개월 올림 · 현재 80개월) · 무기한(9999) 두 값을 함께 쓴다(RT-29).,O218 사용자 결정 Q19 (2026-10-13) · O234 현업 회신
+RT-28,원천 간 계산(사용자 지정 산식),MARKETING,analyst_expense_resolution|analyst_ad|analyst_mstr_spnsr_dvlp,SV_EXPENSE_RESOLUTION.EXP.SUM_AMT_TOTAL · SV_AD.AD.TOTAL_AD_COST · SV_MSTR_SPNSR_DVLP.MD.MSTR_DVLP_CNT,「Agent 계산값 · 원천 간 계산 · 고정값 아님」 표기 필수 · 요청 없이 먼저 계산하지 않는다 · 대행사 리포트 기준 개발단가(공7·공8)와 다른 지표다.,O218 사용자 결정 F23 (2026-10-13)
+RT-29,기대 유지개월(생존분석 · 상한 80 / 무기한),MARKETING|MEMBER|EXECUTIVE,analyst_member_cohort,surv.EXP_TENURE_MONTHS · surv.SURV_LTV_CAP_AVG_ACTIVE_MONTHS · surv.SURV_AXIS_TYPE · surv.SURV_AXIS_VALUE · surv.SURVIVAL_RATE,현업 확정 조건 = 상한(관측 중 회원 평균 유지개월 올림 · 현재 80개월) · 무기한 · 학습 코호트 전체 이력 · 중단 후 재후원 포함 · 셀 최소 1인. 🔴 무기한은 무한대가 아니라 관측된 최대 유지개월까지다 · 상한을 섞어 묶지 않는다 · fmc 와 조인하지 않는다 · 중단자 평균(AVG_TENURE_DAYS)으로 대신하지 않는다.,O234 현업 회신 (2026-10-15)

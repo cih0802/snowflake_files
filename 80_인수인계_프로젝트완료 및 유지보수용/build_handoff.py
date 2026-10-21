@@ -40,6 +40,7 @@ MANIFEST = [
 
     ("04_SV_Agent_스펙", "cortex_project/cortex-project.yaml", "Cortex 프로젝트 설정"),
     ("04_SV_Agent_스펙", "cortex_project/agents", "09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙"),
+    ("04_SV_Agent_스펙", "tmp/o249/agent_deploy.py", "🆕 O249 Agent 1종씩 버전업 스크립트(spec 스테이지 복사 → 크기 대조 → ADD VERSION · 환경변수 AG)"),
 
     ("05_RAG_지표사전", "12_agent개선과제/output/O217_biz_definition_corpus.csv",
      "RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV"),

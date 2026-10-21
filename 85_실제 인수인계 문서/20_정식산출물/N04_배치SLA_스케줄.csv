@@ -1,8 +1,8 @@
-# doc_id: N04 · as_of: 2026-10-20 (IW20760 캡처 2026-10-19 21:01 PDT) · 배치 SLA·스케줄 표 · 설명 = N04_배치SLA_스케줄정의서.md · 근거 = _근거쿼리/N04_배치SLA_근거.sql → _ENV/IW20760/N04_*.csv
+﻿# doc_id: N04 · as_of: 2026-10-20 (IW20760 캡처 2026-10-19 21:01 PDT) · 배치 SLA·스케줄 표 · 설명 = N04_배치SLA_스케줄정의서.md · 근거 = _근거쿼리/N04_배치SLA_근거.sql → _ENV/IW20760/N04_*.csv
 JOB_ID,작업,실행 롤,WH,개발계(IW20760) 스케줄,운영계 스케줄,선행,평균_S,최대_S,측정 근거,실패 시 담당,재처리
 J1,BRONZE 원천 적재(CRM·ERP·AGENCY·GA4·GSC),GN_DW_LOADER(외부팀),TBD(미검증),수동(최근 2026-10-16 05:01 · A6 Q09),TBD(미검증),—,TBD(미검증),TBD(미검증),소요 이력 없음(외부 적재),LOADER 팀,LOADER 팀 재적재 → J3 재실행(A6 §7 · RUNBOOK §4.1)
 J2,GA 외부 Python 적재 → SILVER.BIGQUERY_REFINED_DATA,TBD(미검증),TBD(미검증),수동,TBD(미검증) — 운영계는 적재 범위가 다르다(작업계획 전제),—,TBD(미검증),TBD(미검증),소요 이력 없음(외부 적재),GA 적재 담당,재적재 → J3 백필(A4 §5 · A6 F2)
 J3,dbt build EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE,GN_DW_DBT,GN_DW_ETL_WH(Small),수동(A8-09 결정 · Task 0),"GN_DW.OPS.""daily"" 06:01 KST(MSTR 07 :12 기재 · TBD(미검증))",J1·J2,전체 610 · 부분 34~138,전체 610(1회),N04 Q03·Q04(최근 30일 build 4 · 전부 SUCCESS),DW 관리자(GN_DW_DBT),A6 F1 → ARGS='retry' 또는 실패 모델 --select
-J4,MSTR 적재 CALL GN_DW.MSTR.USP_RUN_MSTR_1ST(전월+당월),GN_DW_ADMIN,TBD(미검증),수동(34개월 일괄 2026-10-17 · 1,126초),GN_DW.MSTR.TSK_RUN_MSTR_DAILY 07:30 KST(MSTR 07 :11·:16 기재 · RESUME 여부 기록 없음 · TBD(미검증)),J3(시각으로만 보장 · AFTER 불가),월 1회분 33,월 1회분 72,N04 Q07(월 순환 33회 · 오류 0 · RUNKEY 전부 NULL),DW 관리자(GN_DW_ADMIN),A6 F5 → 해당 월만 재 CALL · SUM_INIT 금지
+J4,MSTR 적재 CALL GN_DW.MSTR.USP_RUN_MSTR_1ST(전월+당월),GN_DW_ADMIN,TBD(미검증),"수동(34개월 일괄 2026-10-17 · 1,126초)",GN_DW.MSTR.TSK_RUN_MSTR_DAILY 07:30 KST(MSTR 07 :11·:16 기재 · RESUME 여부 기록 없음 · TBD(미검증)),J3(시각으로만 보장 · AFTER 불가),월 1회분 33,월 1회분 72,N04 Q07(월 순환 33회 · 오류 0 · RUNKEY 전부 NULL),DW 관리자(GN_DW_ADMIN),A6 F5 → 해당 월만 재 CALL · SUM_INIT 금지
 J5,dbt WARN Alert OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP → 메일,GN_DW_ADMIN,GN_DW_ETL_WH,매일 09:00 KST(started),TBD(미검증),J3,6~7,7,N04 Q02·Q06(최근 2회 CONDITION_FALSE),DW 관리자,A6 F3·F4
 J6,월마감 BRONZE_CRM.SP_EXEC_MONTH_END(YYYYMM),GN_DW_LOADER,TBD(미검증),없음(개발계 부재),TBD(미검증),월 마감 · J3 와 동시 실행 금지,TBD(미검증),TBD(미검증),—,LOADER 팀,A6 §4-4

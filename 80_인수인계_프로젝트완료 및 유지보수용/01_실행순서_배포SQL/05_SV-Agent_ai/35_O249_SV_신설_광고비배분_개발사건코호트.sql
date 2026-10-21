@@ -1,0 +1,155 @@
+-- ============================================================================
+-- 35_O249_SV_신설_광고비배분_개발사건코호트.sql — O248-A ③ SV 2종 신설 (🆕 O249 · 2026-10-20 · SR61467 · 사용자 승인)
+--   · SV_AD_INFLOW_ALLOC     = 마케팅 Agent · base GOLD.FACT_AD_INFLOW_ALLOC(광고비 → 개발인입경로 배분 · 인입경로별 개발단가)
+--   · SV_MEMBER_EVENT_COHORT = 회원 Agent   · base GOLD.FACT_MEMBER_EVENT_COHORT(개발사건 × 경과월 코호트)
+--   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
+--   · 공통 규약 = 05_0_SV_DDL.sql · 🔴 VIDEO 허용 인입경로는 현업 확인 전 가정(O248-A ㉡) — SV COMMENT 에 명시.
+-- Co-authored with CoCo
+-- ============================================================================
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD_INFLOW_ALLOC
+  TABLES (
+    aia AS GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+      WITH SYNONYMS ('인입경로별 광고비', '광고비 배분', '인입경로별 개발단가')
+      COMMENT = '광고비 → 개발인입경로 배분 (base: GOLD.FACT_AD_INFLOW_ALLOC). [Grain: 월 × 마케팅캠페인 × 인입경로 × 행종류]. 배분 = 광고원천별 허용 인입경로 안에서 같은 월·마케팅캠페인의 CRM 개발(건) 비중. 🔴 배분값이며 실측 광고비가 아니다.',
+    mk AS GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
+      PRIMARY KEY (MKTG_CAMPAIGN_SK)
+      WITH SYNONYMS ('마케팅캠페인')
+      COMMENT = '마케팅캠페인 차원(현재값).'
+  )
+  RELATIONSHIPS (
+    aia_to_mk AS aia (MKTG_CAMPAIGN_SK) REFERENCES mk
+  )
+  DIMENSIONS (
+    aia.MONTH_KEY AS aia.MONTH_KEY
+      WITH SYNONYMS ('실적월', '연월', '월')
+      COMMENT = '실적월 YYYYMM 정수(광고 실적일 · 개발 사건일 같은 월).',
+    aia.INFLOW_PATH AS aia.INFLOW_PATH
+      WITH SYNONYMS ('개발인입경로', '인입경로', '유입경로')
+      COMMENT = '개발인입경로(사건 시점 동결값). NULL = 미배분 행 또는 인입경로가 비어 있는 개발 — 숨기지 말고 「(미배분)」으로 따로 보인다.',
+    aia.ROW_KIND AS aia.ROW_KIND
+      WITH SYNONYMS ('행 종류', '배분 구분')
+      COMMENT = '실제값: ''ALLOC''(허용 경로 · 광고비 배분) · ''NOT_ALLOWED''(광고 캠페인의 비허용 경로 개발 · 광고비 0) · ''UNALLOC''(광고비를 배분할 개발 없음). 개발단가는 ALLOC 만 쓴다.',
+    aia.UNALLOC_REASON AS aia.UNALLOC_REASON
+      WITH SYNONYMS ('미배분 사유')
+      COMMENT = 'ROW_KIND = UNALLOC 일 때만. 실제값: ''UNMAPPED_CAMPAIGN''(광고행 마케팅캠페인 미매핑) · ''NO_ALLOWED_DEV''(그 달 허용 경로 개발 0).',
+    mk.MKTG_CAMPAIGN_NAME AS mk.MKTG_CAMPAIGN_NAME
+      WITH SYNONYMS ('마케팅캠페인명', '캠페인명')
+      COMMENT = '마케팅캠페인명. SK 0 = 미매핑(마스터에 연결되지 않은 광고행).',
+    mk.CMPGN_CTGR_NM AS mk.CMPGN_CTGR_NM
+      WITH SYNONYMS ('캠페인카테고리')
+      COMMENT = '마케팅캠페인의 캠페인카테고리(현재값).'
+  )
+  METRICS (
+    aia.TOTAL_AD_COST_ALLOC AS SUM(aia.AD_COST_ALLOC)
+      WITH SYNONYMS ('배분 광고비', '광고비')
+      COMMENT = '배분 광고비 합(원). 🔴 배분값 · 전 행 합 = 원천 광고비 합(FACT_AD_PERFORMANCE).',
+    aia.TOTAL_AD_COST_DIGITAL AS SUM(aia.AD_COST_DIGITAL)
+      WITH SYNONYMS ('디지털 광고비')
+      COMMENT = '배분 광고비 중 디지털 원천분(원).',
+    aia.TOTAL_AD_COST_VIDEO AS SUM(aia.AD_COST_VIDEO)
+      WITH SYNONYMS ('방송광고비', '영상 광고비')
+      COMMENT = '배분 광고비 중 방송광고(VIDEO) 원천분(원). 🔴 허용 경로(영상광고·방송·콜개발·디지털)는 현업 확인 전 가정.',
+    aia.TOTAL_AD_COST_REBROADCAST AS SUM(aia.AD_COST_REBROADCAST)
+      WITH SYNONYMS ('재방송 광고비')
+      COMMENT = '배분 광고비 중 재방송 원천분(원).',
+    aia.TOTAL_DEV_CNT AS SUM(aia.DEV_CNT)
+      WITH SYNONYMS ('개발(건)', '개발건수')
+      COMMENT = '개발(건) = MSTR 인정금액 ÷ 10,000. UNALLOC 행은 NULL.',
+    aia.COST_PER_DEV AS SUM(IFF(aia.ROW_KIND = 'ALLOC', aia.AD_COST_ALLOC, 0)) / NULLIF(SUM(IFF(aia.ROW_KIND = 'ALLOC', aia.DEV_CNT, 0)), 0)
+      WITH SYNONYMS ('개발단가', '인입경로별 개발단가', '건당 광고비')
+      COMMENT = '개발단가(원/건) = ALLOC 행 배분 광고비 ÷ ALLOC 행 개발(건). 🔴 배분 추정치 · 실측 단가 아님.'
+  )
+  COMMENT = '광고비 인입경로 배분 SV(O248 · 인입경로별 개발단가). base=GOLD.FACT_AD_INFLOW_ALLOC. 🔴🔴 배분값이며 실측이 아니다 — 광고 실적 SV(SV_AD)의 광고비와 같은 표에 합산하지 않는다(같은 돈을 다시 나눈 것). 🔴 광고비 ÷ CRM 개발건수를 직접 나누지 말고 이 SV 의 개발단가(COST_PER_DEV)를 쓴다. 🔴 VIDEO(방송광고) 허용 인입경로 = 영상광고·방송·콜개발·디지털은 현업 확인 전 가정이며, VIDEO 미배분분은 방송 효과 시차(익월 개발) 가능성이 있다. 미배분(UNALLOC) 광고비를 숨기지 말고 사유와 함께 따로 밝힌다.'
+  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(동의어 첫 항목 + 단위). [O241-R] 비율·단가 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2). 핵심 규칙: (1) 개발단가는 COST_PER_DEV 만 쓴다(ROW_KIND ALLOC 한정 산식 내장). (2) 인입경로별 표에는 미배분(UNALLOC) 광고비 합을 별도 행으로 붙인다. (3) 기간 미지정 시 최근 12개월 MONTH_KEY 로 한정하고 기간을 밝힌다.'
+;
+
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD_INFLOW_ALLOC TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD_INFLOW_ALLOC TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_AD_INFLOW_ALLOC TO ROLE GN_DW_SERVICE;
+
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT_COHORT
+  TABLES (
+    mec AS GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+      WITH SYNONYMS ('개발사건 코호트', '개발 후 경과', '신규 후 증액', '개발 후 유지')
+      COMMENT = '개발사건 × 경과월 코호트 (base: GOLD.FACT_MEMBER_EVENT_COHORT). [Grain: 회원 × 사건월 × 개발구분 × 경과월(0~12)]. 사건 시점 속성은 동결값.'
+  )
+  DIMENSIONS (
+    mec.EVENT_MONTH_KEY AS mec.EVENT_MONTH_KEY
+      WITH SYNONYMS ('사건월', '개발월', '코호트월')
+      COMMENT = '사건월 YYYYMM 정수(코호트 기준).',
+    mec.DVLP_DIV_NM AS mec.DVLP_DIV_NM
+      WITH SYNONYMS ('개발구분')
+      COMMENT = '개발구분. 실제값: ''신규''·''증액''·''재후원''·''감액''·''후원중단''. 🔴 하나로 고정해 센다.',
+    mec.MONTHS_AFTER AS mec.MONTHS_AFTER
+      WITH SYNONYMS ('경과월', '개발 후 경과월')
+      COMMENT = '경과월 0~12(0 = 사건월). 🔴🔴 경과월 하나를 고정해 센다 — 여러 경과월을 합하면 회원을 중복 계상한다.',
+    mec.IS_OBSERVABLE AS mec.IS_OBSERVABLE
+      WITH SYNONYMS ('관측 가능')
+      COMMENT = '관측월이 현재월 이하인가. 유지율·후속 사건 비율은 TRUE 로 한정한다(미래 관측월 제외).',
+    mec.MKTG_CMPGN_NM_AT_EVENT AS mec.MKTG_CMPGN_NM_AT_EVENT
+      WITH SYNONYMS ('마케팅캠페인명')
+      COMMENT = '마케팅캠페인명(사건 시점).',
+    mec.INFLOW_PATH_AT_EVENT AS mec.INFLOW_PATH_AT_EVENT
+      WITH SYNONYMS ('개발인입경로', '인입경로')
+      COMMENT = '개발인입경로(사건 시점). 후원중단 사건은 원천에 없어 NULL.',
+    mec.CMPGN_CTGR_NM_AT_EVENT AS mec.CMPGN_CTGR_NM_AT_EVENT
+      WITH SYNONYMS ('캠페인카테고리')
+      COMMENT = '캠페인카테고리(사건 시점).',
+    mec.AGE_BAND_AT_EVENT AS mec.AGE_BAND_AT_EVENT
+      WITH SYNONYMS ('연령대')
+      COMMENT = '연령대(사건 시점 · 현재 나이 아님).',
+    mec.GENDER_AT_EVENT AS mec.GENDER_AT_EVENT
+      WITH SYNONYMS ('성별')
+      COMMENT = '성별(사건 시점).',
+    mec.NEW_EXISTING_FLAG AS mec.NEW_EXISTING_FLAG
+      WITH SYNONYMS ('신규기존 구분')
+      COMMENT = '신규/기존 구분(사건 시점).',
+    mec.AMOUNT_BAND2_AT_EVENT AS mec.AMOUNT_BAND2_AT_EVENT
+      WITH SYNONYMS ('후원금액대')
+      COMMENT = '사건월 후원금액대(1만 단위). NULL = 약정 없음 또는 사건월 월실적 행 없음.'
+  )
+  METRICS (
+    mec.EVENT_MEMBERS AS COUNT(DISTINCT mec.MEMBER_DK)
+      WITH SYNONYMS ('사건 회원수', '개발 회원수')
+      COMMENT = '사건 회원수(명) — 중복제거(경과월 필터와 무관하게 같은 값).',
+    mec.EVENT_DEV_CNT_TOTAL AS SUM(IFF(mec.MONTHS_AFTER = 0, mec.EVENT_DEV_CNT, 0))
+      WITH SYNONYMS ('개발(건)')
+      COMMENT = '사건 개발(건) = MSTR 인정금액 ÷ 10,000 — 경과월 0 행에만 값이 있다 ⇒ 경과월을 0 으로 두거나 경과월 필터 없이 쓴다.',
+    mec.OBS_MEMBERS AS COUNT(DISTINCT IFF(mec.IS_OBSERVABLE, mec.MEMBER_DK, NULL))
+      WITH SYNONYMS ('관측 대상 회원수')
+      COMMENT = '관측 가능 회원수(명) — 유지율·후속 사건 비율의 분모. 경과월 하나를 고정해서 쓴다.',
+    mec.ACTIVE_RATE AS COUNT(DISTINCT IFF(mec.IS_OBSERVABLE AND mec.ACTIVE_FLAG, mec.MEMBER_DK, NULL)) / NULLIF(COUNT(DISTINCT IFF(mec.IS_OBSERVABLE, mec.MEMBER_DK, NULL)), 0) * 100
+      WITH SYNONYMS ('유지율', '활동 유지율')
+      COMMENT = '경과월 시점 월말 활동 유지율(%) = 활동 회원 ÷ 관측 회원 × 100. 경과월 하나를 고정한다.',
+    mec.INC_BY_RATE AS COUNT(DISTINCT IFF(mec.IS_OBSERVABLE AND mec.INC_BY_FLAG, mec.MEMBER_DK, NULL)) / NULLIF(COUNT(DISTINCT IFF(mec.IS_OBSERVABLE, mec.MEMBER_DK, NULL)), 0) * 100
+      WITH SYNONYMS ('후속 증액 비율', '신규 후 증액 비율')
+      COMMENT = '관측월까지 후속 증액이 일어난 회원 비율(%).',
+    mec.STOP_BY_RATE AS COUNT(DISTINCT IFF(mec.IS_OBSERVABLE AND mec.STOP_BY_FLAG, mec.MEMBER_DK, NULL)) / NULLIF(COUNT(DISTINCT IFF(mec.IS_OBSERVABLE, mec.MEMBER_DK, NULL)), 0) * 100
+      WITH SYNONYMS ('후속 중단 비율')
+      COMMENT = '관측월까지 후속 후원중단이 일어난 회원 비율(%).',
+    mec.AT_D0_MEMBERS AS COUNT(DISTINCT IFF(mec.AT_D0_AUTO_FLAG OR mec.AT_D0_MANUAL_FLAG, mec.MEMBER_DK, NULL))
+      WITH SYNONYMS ('개발 당일 알림톡 수신 회원수')
+      COMMENT = '첫 사건일 당일 알림톡(자동·수동) 수신 회원수(명).',
+    mec.SND_OPEN_MEMBERS AS COUNT(DISTINCT IFF(mec.SND_D0_5_OPEN_FLAG, mec.MEMBER_DK, NULL))
+      WITH SYNONYMS ('문자 오픈 회원수')
+      COMMENT = 'D0~5 문자 링크 클릭(오픈) 회원수(명). 🔴 알림톡·메일·우편은 오픈 원천이 없다.'
+  )
+  COMMENT = '회원 개발사건 코호트 SV(O248 · 회원 Agent 전용). base=GOLD.FACT_MEMBER_EVENT_COHORT. 「신규 후 N개월 증액·유지·중단」·「개발 당일 알림톡·문자 오픈」 질문에 쓴다. 🔴🔴 개발구분 하나와 경과월 하나를 고정한다(경과월 합산 = 회원 중복). 🔴 비율은 IS_OBSERVABLE 회원만 분모로 쓴다. 🔴 발송 수신·오픈과 후속 사건의 차이는 인과가 아니다. 🔴 개발건수 실적 정본은 SV_MEMBER_EVENT 이며 같은 표에 합산하지 않는다.'
+  AI_SQL_GENERATION '[O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭(동의어 첫 항목 + 단위). [O241-R] 비율은 ROUND(<식>, 2)::NUMBER(38,2). 핵심 규칙: (1) WHERE 에 DVLP_DIV_NM 1개와 MONTHS_AFTER 1개를 반드시 넣는다(「12개월 내 증액」 = MONTHS_AFTER = 12). (2) 사건월 미지정 시 관측이 끝난 최근 12개 사건월(EVENT_MONTH_KEY)로 한정하고 기간을 밝힌다. (3) 개발 당일 발송 질문은 MONTHS_AFTER = 0.'
+;
+
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT_COHORT TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT_COHORT TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT_COHORT TO ROLE GN_DW_SERVICE;
+
+-- 스모크
+USE WAREHOUSE GN_DW_ANALYTICS_WH;
+SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_AD_INFLOW_ALLOC
+  DIMENSIONS aia.ROW_KIND METRICS aia.TOTAL_AD_COST_ALLOC, aia.TOTAL_DEV_CNT);
+SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_EVENT_COHORT
+  DIMENSIONS mec.DVLP_DIV_NM METRICS mec.EVENT_MEMBERS, mec.ACTIVE_RATE
+  WHERE mec.MONTHS_AFTER = 12);

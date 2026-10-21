@@ -84,7 +84,7 @@ status: draft (S1 게이트 확인 대기 · [ENV] 운영계 열 미캡처)
 | 종류 | 건수 | 내역 |
 |---|---|---|
 | Semantic View | 40 | 전부 GN_DW.SERVING · 소유 GN_DW_ADMIN · 목록 = `A0_Q04_1.csv` |
-| Cortex Agent | 3 | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 VERSION$8 |
+| Cortex Agent | 3 | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] SR61467 = MEMBER VERSION$5 · EXECUTIVE VERSION$5 · MARKETING VERSION$6(O250-B) · IW20760 = VERSION$8 |
 | Agent SV 배선(spec 실측) | 17 / 28 / 28 | EXECUTIVE / MARKETING / MEMBER · 각 Search 1 · 합집합 40 = SV 전수(미배선 0) |
 | Cortex Search | 1 | SERVING.SEARCH_BIZ_DEFINITION · lag 1 day · ACTIVE |
 | DBT PROJECT | 1 | OPS.DW_PIPELINE · dbt 1.9.4 · 버전 LIVE |

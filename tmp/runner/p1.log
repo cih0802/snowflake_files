@@ -1,0 +1,44 @@
+Connecting to Snowflake as TRIALADMIN...
+Total files to process: 16, starting from file index 0
+=== [1/16] [02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql] 254 stmts (from stmt 0) ===
+OK [1/16] [02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql]
+=== [2/16] [08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql] 34 stmts (from stmt 0) ===
+  [EXEC 14] ADDED
+  [EXEC 17] SUCCESS: Synchronized 1 users into ALERT_RECIPIENT_CONFIG.
+OK [2/16] [08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql]
+=== [3/16] [08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql] 10 stmts (from stmt 0) ===
+OK [3/16] [08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql]
+=== [4/16] [50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql] 83 stmts (from stmt 0) ===
+OK [4/16] [50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql]
+=== [5/16] [50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql] 18 stmts (from stmt 0) ===
+OK [5/16] [50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql]
+=== [6/16] [50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql] 12 stmts (from stmt 0) ===
+OK [6/16] [50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql]
+=== [7/16] [50_handoff/07_데이터마이그 C_CONSUMER.sql] 25 stmts (from stmt 0) ===
+  [EXEC 9] schema BRONZE_ERP loaded tables: 3
+  [EXEC 10] schema BRONZE_AGENCY loaded tables: 4
+  [EXEC 11] schema BRONZE_CRM loaded tables: 53
+  [EXEC 12] schema BRONZE_GA4 loaded tables: 2
+  [EXEC 13] schema BRONZE_GSC loaded tables: 3
+  [EXEC 19] ML non-variant loaded tables: 7
+OK [7/16] [50_handoff/07_데이터마이그 C_CONSUMER.sql]
+=== [8/16] [04_silver_design/08_SILVER_테이블DDL_20260714.sql] 68 stmts (from stmt 0) ===
+OK [8/16] [04_silver_design/08_SILVER_테이블DDL_20260714.sql]
+=== [9/16] [04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql] 7 stmts (from stmt 0) ===
+OK [9/16] [04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql]
+=== [10/16] [03_top-down_gold/06_DDL.sql] 147 stmts (from stmt 0) ===
+  [EXEC 68] constraint drop (idempotent) done
+OK [10/16] [03_top-down_gold/06_DDL.sql]
+=== [11/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql] 31 stmts (from stmt 0) ===
+OK [11/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql]
+=== [12/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql] 12 stmts (from stmt 0) ===
+OK [12/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql]
+=== [13/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql] 15 stmts (from stmt 0) ===
+OK [13/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql]
+=== [14/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql] 4 stmts (from stmt 0) ===
+OK [14/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql]
+=== [15/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql] 15 stmts (from stmt 0) ===
+OK [15/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql]
+=== [16/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql] 23 stmts (from stmt 0) ===
+OK [16/16] [15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql]
+ALL DONE

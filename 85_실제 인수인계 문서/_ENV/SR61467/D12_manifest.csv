@@ -1,0 +1,8 @@
+# doc_id: D12 · as_of: 2026-10-20 15:41:25.785 -0700 · account: SR61467 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,D12_Q01_1.csv,OK,2,0,SELECT #1 개발(명) — 플래그 합 vs 고유 회원 (사건 팩트 · 월 팩트)
+Q02,1,D12_Q02_1.csv,OK,1,0,SELECT #2 발송 건수 vs 고유 회원수
+Q03,1,D12_Q03_1.csv,OK,1,0,SELECT #3·#4 회비 납부율 · 미납 청구액 (월 팩트)
+Q04,1,D12_Q04_1.csv,OK,2,0,SELECT #6 형제 팩트 — 청구 총계 일치(따로 집계하면 같아야 한다 · 조인하면 부푼다)
+Q05,1,D12_Q05_1.csv,OK,2,0,SELECT 소비 객체 — SV · Agent · Streamlit 수
+Q05,2,D12_Q05_2.csv,OK,3,0,SHOW 소비 객체 — SV · Agent · Streamlit 수
