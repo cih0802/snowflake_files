@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 상태이력 SCD2 (MM010 라벨, LEAD 기반 EFFECTIVE_TO/IS_CURRENT), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_STATUS_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TH_MM_FDRM_MBER_STNG_DTLS
+-- Issue      : O179
+-- =============================================================================
 -- CRM_MEMBER_STATUS_HIST: 회원 상태이력 SCD2 (MM010 라벨, LEAD 기반 EFFECTIVE_TO/IS_CURRENT), 정본 09 STEP3.
 SELECT
   s.MBER_NO                        AS MBER_NO,

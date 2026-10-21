@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : BigQuery 행동 팩트(FGA) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.6)
+-- Target     : GOLD.WIDE_BIGQUERY_BEHAVIOR (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_BIGQUERY_BEHAVIOR, ref DIM_DATE, ref DIM_BIGQUERY_EVENT, ref DIM_BIGQUERY_SOURCE, ref DIM_DEVICE, ref DIM_CAMPAIGN 외 1
+-- Issue      : O51-C, O216-E, O91-F, O190 외 1
+-- =============================================================================
 -- WIDE_BIGQUERY_BEHAVIOR: BigQuery 행동 팩트(FGA) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.6)
 -- 2026-07-15: DIM_MEMBER_IDENTITY 활성화 → IDENTITY_* 4컬럼 실조인 복원(f.IDENTITY_SK = DIM_MEMBER_IDENTITY.IDENTITY_SK).
 --    WARN:[G-5 재확인] 현재 BigQuery 1일 샤드 기반(회원 매칭 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).

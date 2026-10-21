@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 후원중단 정제 + 사유(MM005)·경로(MM287) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_DISCONTINUE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC
+-- Issue      : O25, O179
+-- =============================================================================
 -- CRM_MEMBER_DISCONTINUE: 후원중단 정제 + 사유(MM005)·경로(MM287) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
 -- [2026-08-03 O25/G3] DSCNTC_PATH_NM 신설. 원천 DSCNTC_PATH 는 raw 코드 1/2/3 이며 MM287 라벨이
 --   SYSTEM/CRM/홈페이지 다 — 코드만 GOLD 로 올려서 현업이 숫자만 보던 상태를 해소한다.

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA4 `USER_PSEUDO_ID` NULL 탈락 행을 **행 단위로 고정**한다.
+-- Target     : dbt singular test warn_bigquery_null_user_pseudo_id_rows (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.BIGQUERY_REFINED_DATA
+-- Issue      : O176, O91-F, DEC-40, O167
+-- =============================================================================
 -- warn_bigquery_null_user_pseudo_id_rows: GA4 `USER_PSEUDO_ID` NULL 탈락 행을 **행 단위로 고정**한다.
 --
 --  WARN: [2026-09-22 O176 · 사용자 결정 B안] `O91-F A1` 의 정면 처방이다.

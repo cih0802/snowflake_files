@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : `FACT_BUDGET` 의 월×예산과목(최신차수) 단일 grain 불변식을 검증한다.
+-- Target     : dbt singular test warn_fact_budget_grain (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_BUDGET
+-- Issue      : DEC-44, O198, DEC-60
+-- =============================================================================
 -- warn_fact_budget_grain: `FACT_BUDGET` 의 월×예산과목(최신차수) 단일 grain 불변식을 검증한다.
 --
 -- WARN: DEC-44 집행 검증: 최신 차수만 필터링한 FACT_BUDGET 은 (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH) 가 유일해야 한다.

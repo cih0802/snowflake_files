@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [GN_DW] dbt 데이터 품질 경고(WARN 테스트) 이메일 알림 구축
+-- Target     : PROCEDURE GN_DW.OPS.USP_SEND_DBT_WARN_SPNSR_CLS_DUP, ALERT GN_DW.OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP
+-- Run order  : 운영계 #16
+-- Depends on : GN_DW.OPS.WARN_SPNSR_CLS_AGGR_SRC_DUP, GN_DW.OPS.ALERT_RECIPIENT_CONFIG
+-- Issue      : -
+-- =============================================================================
 -- ==============================================================================
 -- [GN_DW] dbt 데이터 품질 경고(WARN 테스트) 이메일 알림 구축
 -- 문서번호: 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql

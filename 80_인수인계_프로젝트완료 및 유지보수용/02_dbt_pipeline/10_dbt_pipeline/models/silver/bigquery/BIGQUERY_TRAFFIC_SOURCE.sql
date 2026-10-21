@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 세션 last-click 트래픽소스 DISTINCT (first-touch/collected 제외 = grain 팽창 방지), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_TRAFFIC_SOURCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87
+-- =============================================================================
 -- BIGQUERY_TRAFFIC_SOURCE: 세션 last-click 트래픽소스 DISTINCT (first-touch/collected 제외 = grain 팽창 방지), 정본 09 STEP6.
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards 매크로 → ref('BIGQUERY_REFINED_DATA').

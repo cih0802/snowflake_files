@@ -1,8 +1,15 @@
+-- =============================================================================
+-- Purpose    : GN_DW.SILVER 테이블 DDL — 구조 정본(타입 · PK · COMMENT)
+-- Target     : SCHEMA GN_DW.SILVER, TABLE GN_DW.SILVER.CRM_MEMBER, TABLE GN_DW.SILVER.CRM_MEMBER_STATUS_HIST, TABLE GN_DW.SILVER.CRM_MEMBER_DEV 외 60
+-- Run order  : 운영계 #4
+-- Depends on : -
+-- Issue      : O225-C, DR-25, O188-F, O213-F 외 3
+-- =============================================================================
 -- ============================================================================
 -- GN_DW.SILVER 테이블 DDL — 구조 정본(타입 · PK · COMMENT)
 --   · dbt SILVER 모델과 1:1(구조 = 이 파일 · 데이터 = dbt). 적재 쿼리 = 09_SILVER_적재쿼리.
 --   · 실행 = GN_DW_ADMIN · 새 환경은 이 파일 전체 실행 → dbt build.
---   · 🔴 재실행하면 데이터가 비워진다. 증분 모델은 재실행 뒤 반드시 백필한다
+--   · WARN: 재실행하면 데이터가 비워진다. 증분 모델은 재실행 뒤 반드시 백필한다
 --       GA4 = build --select BIGQUERY_BASIC+ --vars '{"bigquery_dt_ranges": [["2024-01-01", "9999-12-31"]]}'
 --       그 밖 = build --select <모델>+ --full-refresh
 --   · 설계근거·실측 이력 = 08_SILVER_DDL_설계이력_부록.md · 이슈 원장 = 20_issue/00_INDEX_이슈원장.md
@@ -298,8 +305,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_PAYMENT_METHOD (
 ) COMMENT = '회원별 결제수단 마스터. [Grain: MBER_NO × SETLE_CD (1행=1결제수단)]. [주의: CMS/카드 자동이체 등 수납방식 관리]. [원천: CRM → BRONZE_CRM.TM_PM_SETLE_INFO].';
 
 -- CRM_CAMPAIGN — 캠페인 마스터 (비정규화 통합)
---   ⚠️ 유형1 = 국내/통합/해외 · 유형2 = 굿즈/기타/사례/사업 — 혼동 금지.
---   ⚠️ 코드사전 미등재(고아) 코드는 라벨 NULL 로 둔다.
+--   WARN: 유형1 = 국내/통합/해외 · 유형2 = 굿즈/기타/사례/사업 — 혼동 금지.
+--   WARN: 코드사전 미등재(고아) 코드는 라벨 NULL 로 둔다.
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     CMPGN_CD            VARCHAR(20)     NOT NULL COMMENT '캠페인코드 (PK)',
     CMPGN_NM            VARCHAR(200)    COMMENT '캠페인명',
@@ -398,7 +405,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_DEV_TARGET (
 ) COMMENT = '회원개발 부문 목표 마스터. [Grain: STDYY × STDR_MT × DEPT_ID × MBER_DVLP_DIV_CD (1행=1개발목표)]. [주의: 부서별 월별 신규/증액/재후원 목표치]. [원천: CRM → BRONZE_CRM.TM_CM_MBER_DVLP_GOAL].';
 
 -- CRM_SEND_REQUEST — 메시지 발송 요청 마스터
---   ⚠️ 복합 PK 전환은 09 적재쿼리 상단 ALTER 가 한다(이 파일은 단일 PK).
+--   WARN: 복합 PK 전환은 09 적재쿼리 상단 ALTER 가 한다(이 파일은 단일 PK).
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
     SNDNG_KEY           NUMBER(10,0)    NOT NULL COMMENT '발송키 (PK)',
     SEND_CHANNEL        VARCHAR         COMMENT '발송채널 (SND/SMS/EMAIL 등)',
@@ -442,8 +449,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_REQUEST (
 ) COMMENT = '메시지 발송 요청 마스터. [Grain: SNDNG_REQ_NO (1행=1발송요청)]. [주의: 발송채널 및 대/중/소 발송구분 보유]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR_SNDNG].';
 
 -- CRM_SEND_MEMBER — 메시지 발송 대상 회원 상세
---   ⚠️ 복합 PK 전환은 09 적재쿼리 상단 ALTER 가 한다(이 파일은 단일 PK).
---   ⚠️ OPEN_DT = SND_MEMBER_OPEN_LOG 의 회원×발송별 MIN(OPEN_DT).
+--   WARN: 복합 PK 전환은 09 적재쿼리 상단 ALTER 가 한다(이 파일은 단일 PK).
+--   WARN: OPEN_DT = SND_MEMBER_OPEN_LOG 의 회원×발송별 MIN(OPEN_DT).
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SNDNG_KEY           NUMBER(10,0)    NOT NULL COMMENT '발송키 (PK, →CRM_SEND_REQUEST)',
     SNDNG_DTL_KEY       NUMBER(10,0)    NOT NULL COMMENT '발송상세키 (PK)',
@@ -479,7 +486,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SND_DSCNTC_RSN_NM   VARCHAR         COMMENT '발송 시점 중단사유명(SND 전용 · 중단 이력 있는 회원만) [원천: BRONZE_CRM.SND_MEMBER_LIST.DSCNTC_RSN_NM]',
     SND_CHILD_PROJECT_COUNTRY VARCHAR   COMMENT '발송 시점 신규 결연아동 사업국(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_PROJECT_COUNTRY]',
     SND_CHILD_WORKPLACE_NM VARCHAR      COMMENT '발송 시점 신규 결연아동 사업장명(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.NEW_CHILD_WORKPLACE_NM]',
-    -- 🆕 [2026-10-14 O225-C] SND 캠페인 코드 3종(CRM CMPGN_CD 체계 · 타 채널 NULL = 원천 개념 부재)
+    --  [2026-10-14 O225-C] SND 캠페인 코드 3종(CRM CMPGN_CD 체계 · 타 채널 NULL = 원천 개념 부재)
     SND_CMPGN_CD        VARCHAR         COMMENT '발송 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD]',
     SND_LAST_CMPGN      VARCHAR         COMMENT '발송 시점 회원 최종 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.LAST_CMPGN]',
     SND_CURRENT_CMPGN   VARCHAR         COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CURRENT_CMPGN]',
@@ -690,7 +697,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_CONVERT_HIST (
 ) COMMENT = '일시→정기 회원 전환 매핑 이력. [Grain: MBER_NO × ONCE_MBER_NO (1행=1전환매핑)]. [주의: 회비이관 발생 건 한정]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DT_DTLS].';
 
 -- CRM_MEMBER_SPONSOR_SPAN — 회원×후원사업 활동구간 마스터
---   ⚠️ 월말활동회원(#51) as-of 판정용 활동구간.
+--   WARN: 월말활동회원(#51) as-of 판정용 활동구간.
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
     MBER_NO             VARCHAR(10)     COMMENT '회원번호.',
     SPNSR_NO            VARCHAR         NOT NULL COMMENT '후원번호 (PK)',
@@ -713,7 +720,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_MEMBER_SPONSOR_SPAN (
 ) COMMENT = '회원×후원사업 활동구간 마스터. [Grain: MBER_NO × SPNSR_BSNS_NO (1행=1활동구간)]. [주의: 시작월~중단월 기반 활동회원 as-of 판정]. [원천: CRM → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT/SPNSR_DSCNTC].';
 
 -- CRM_BIZ_TARGET — 사업목표 마스터
---   ⚠️ GOAL_TYPE_NM 유형(연사업·팀)은 같은 목표의 다른 분해다 — 섞어 합산 금지.
+--   WARN: GOAL_TYPE_NM 유형(연사업·팀)은 같은 목표의 다른 분해다 — 섞어 합산 금지.
 CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     BIZ_TARGET_DK       VARCHAR         NOT NULL COMMENT '사업목표 대체키 (PK)',
     TARGET_YEAR         NUMBER(4,0)     COMMENT '목표연도 YYYY',
@@ -739,7 +746,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_BIZ_TARGET (
     PRIMARY KEY (BIZ_TARGET_DK)
 ) COMMENT = '사업목표 마스터. [Grain: TARGET_YEAR × MONTH_NO × BDGT_PRCD_NM × GOAL_TYPE_NM × 원천 구분축 (1행=1목표값)]. [주의: GOAL_TYPE_NM 별 단위가 다르다(건·명·원·비율) — 유형 필터 필수]. [원천: CRM → BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV].';
 
--- 🆕 [2026-10-20 DR-25] CRM_HOLIDAY — 공휴일 마스터(GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천)
+--  [2026-10-20 DR-25] CRM_HOLIDAY — 공휴일 마스터(GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천)
 --   종전 DIM_DATE 가 BRONZE_CRM.TM_CM_SCHDUL_MNG 를 직접 읽었다(레이어 원칙 위반 · 사용자 결정 = SILVER 삽입).
 --   실측(IW20760 2026-10-20): 공휴일 원천행 256 → 고유 일자 251(5일은 제목 2건) ⇒ grain = 일자.
 CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_HOLIDAY (
@@ -1061,7 +1068,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET (
 ) COMMENT = '월별 예산 편성 및 집행 원장. [Grain: BDGT_ITEM_CD × DEPT_ID × MONTH_KEY (1행=1월예산)]. [주의: 12개월 wide 컬럼을 월 long으로 언피벗]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER].';
 
 -- ERP_BUDGET_YEARLY — 연도별 예산 총액 원장
---   ⚠️ 연 총액 grain — 월 grain 인 ERP_BUDGET 에 합치면 12배 과대.
+--   WARN: 연 총액 grain — 월 grain 인 ERP_BUDGET 에 합치면 12배 과대.
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
     BUDGET_ITEM_DK      VARCHAR         NOT NULL COMMENT '불변 비즈니스 식별자',
     BUDGET_YEAR         NUMBER(4,0)     NOT NULL COMMENT '예산연도 YYYY . 본 테이블의 grain 은 **연**이다.',
@@ -1081,9 +1088,9 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_BUDGET_YEARLY (
 -- ============================================================================
 -- AGENCY (코어·staging·위성)
 -- ============================================================================
---   ⚠️ AD_PERF_DK 는 staging 3종(AGENCY_AD_ROW_*)에서만 발급한다 — 코어·위성·GOLD 는 승계만(재계산 금지).
---   ⚠️ staging 은 BRONZE 컬럼명·타입을 그대로 보존한다(개명·형변환 금지 · 정제는 코어/위성).
---   ⚠️ 텍스트 시간축(YEAR·MONTH 등) 파싱 금지 — DATE 컬럼에서 파생. 예외 DGT 는 코어에서만 COALESCE(DATE, TRY_TO_DATE(…)) 폴백. DATE_FROM_PARTS 금지(불량 월/일 롤오버).
+--   WARN: AD_PERF_DK 는 staging 3종(AGENCY_AD_ROW_*)에서만 발급한다 — 코어·위성·GOLD 는 승계만(재계산 금지).
+--   WARN: staging 은 BRONZE 컬럼명·타입을 그대로 보존한다(개명·형변환 금지 · 정제는 코어/위성).
+--   WARN: 텍스트 시간축(YEAR·MONTH 등) 파싱 금지 — DATE 컬럼에서 파생. 예외 DGT 는 코어에서만 COALESCE(DATE, TRY_TO_DATE(…)) 폴백. DATE_FROM_PARTS 금지(불량 월/일 롤오버).
 
 -- AGENCY_AD_CREATIVE — 광고 소재/매체 통합 차원
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
@@ -1103,7 +1110,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_CREATIVE (
 ) COMMENT = '광고 소재/매체 통합 차원. [Grain: MEDIA_NM × PLATFORM_NM × CREATIVE_NM (1행=1소재)]. [주의: 디지털/비디오/재방송 3소스 소재 결합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY_AD_PERFORMANCE — 광고 성과 통합 원장
---   ⚠️ 상위캠페인 자리에 utm 을 넣지 않는다(utm 은 AGENCY_AD_ROW_DGT 에 보존).
+--   WARN: 상위캠페인 자리에 utm 을 넣지 않는다(utm 은 AGENCY_AD_ROW_DGT 에 보존).
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '불변 비즈니스 식별자',
     AD_SOURCE_TYPE      VARCHAR         NOT NULL COMMENT 'AD_SOURCE_TYPE.',
@@ -1304,8 +1311,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_DIGITAL (
 ) COMMENT = '디지털 광고 고유속성 위성. [Grain: AD_PERF_DK (코어 1:1)]. [주의: 매체사 산정 CTR/CVR/CPC 비율 지표]. [원천: AGENCY → BRONZE_AGENCY.DGT_AD_CMPGN_DTLS].';
 
 -- AGENCY_AD_BROADCAST — 방송 광고 고유속성 위성
---   ⚠️ [VIDEO 전용]/[REBRDC 전용] 컬럼의 NULL = 해당 원천에 항목 없음 — 비율 분모는 해당 원천 행만.
---   ⚠️ 시간 파싱에 TRY_TO_TIME 금지(값을 조용히 바꾼다) · 숫자 3종은 단위 미확정이라 NULL.
+--   WARN: [VIDEO 전용]/[REBRDC 전용] 컬럼의 NULL = 해당 원천에 항목 없음 — 비율 분모는 해당 원천 행만.
+--   WARN: 시간 파싱에 TRY_TO_TIME 금지(값을 조용히 바꾼다) · 숫자 3종은 단위 미확정이라 NULL.
 CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT '코어 1:1 조인키(staging 발급값 승계)',
     TIME_BAND           VARCHAR         COMMENT '시간대',
@@ -1356,11 +1363,11 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_BROADCAST_CASE (
 -- ============================================================================
 -- BIGQUERY (GA4)
 -- ============================================================================
---   ⚠️ 입력 = source(silver_external.BIGQUERY_REFINED_DATA) — 외부 Python 적재 테이블이라 이 파일에서 만들지 않는다.
+--   WARN: 입력 = source(silver_external.BIGQUERY_REFINED_DATA) — 외부 Python 적재 테이블이라 이 파일에서 만들지 않는다.
 
 -- BIGQUERY_BASIC — BIGQUERY 웹/앱 이벤트 기본 Staging
---   ⚠️ EVENT_SEQ 는 PK 유일성만 보장 — 재실행 간 순번 안정성은 미보장(GA4-SEQ-1).
---   ⚠️ 적재 = 롤링 윈도우 증분 — [오늘-bigquery_lookback_days, 9999-12-31] 창만 DELETE 후 재적재(멱등) · 창보다 오래 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시.
+--   WARN: EVENT_SEQ 는 PK 유일성만 보장 — 재실행 간 순번 안정성은 미보장(GA4-SEQ-1).
+--   WARN: 적재 = 롤링 윈도우 증분 — [오늘-bigquery_lookback_days, 9999-12-31] 창만 DELETE 후 재적재(멱등) · 창보다 오래 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시.
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_BASIC (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
@@ -1464,8 +1471,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_DEVICE (
 ) COMMENT = 'BIGQUERY 디바이스 차원. [Grain: DEVICE_CATEGORY × OPERATING_SYSTEM (1행=1디바이스)]. [주의: 접속 기기 및 OS 분류]. [원천: BIGQUERY → BRONZE_BIGQUERY.EVENTS].';
 
 -- BIGQUERY_EVENT — BIGQUERY 사용자 행동 팩트 소스
---   ⚠️ EVENT_SEQ 는 PK 유일성만 보장 — 재실행 간 순번 안정성은 미보장(GA4-SEQ-1).
---   ⚠️ 적재 = 롤링 윈도우 증분 — [오늘-bigquery_lookback_days, 9999-12-31] 창만 DELETE 후 재적재(멱등) · 창보다 오래 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시.
+--   WARN: EVENT_SEQ 는 PK 유일성만 보장 — 재실행 간 순번 안정성은 미보장(GA4-SEQ-1).
+--   WARN: 적재 = 롤링 윈도우 증분 — [오늘-bigquery_lookback_days, 9999-12-31] 창만 DELETE 후 재적재(멱등) · 창보다 오래 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시.
 CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_EVENT (
     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
@@ -1536,8 +1543,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_IDENTITY (
 -- ============================================================================
 
 -- IDENTITY_MEMBER_XREF — 온-오프라인 신원 연계 브릿지
---   ⚠️ grain = 1행/USER_PSEUDO_ID(회원 grain 아님) — GOLD 는 MEMBER_DK DISTINCT + UNMATCHED 제외.
---   ⚠️ FACT 결합은 LEFT JOIN(익명 세션이 대부분).
+--   WARN: grain = 1행/USER_PSEUDO_ID(회원 grain 아님) — GOLD 는 MEMBER_DK DISTINCT + UNMATCHED 제외.
+--   WARN: FACT 결합은 LEFT JOIN(익명 세션이 대부분).
 CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
     USER_PSEUDO_ID      VARCHAR(200)    NOT NULL COMMENT 'BigQuery 세션 스파인 (PK)',
     BIGQUERY_MEMBER_ID  VARCHAR(64)     COMMENT 'BigQuery측 회원 식별자(원문 보존).',
@@ -1557,7 +1564,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.IDENTITY_MEMBER_XREF (
 ) COMMENT = '온-오프라인 신원 연계 브릿지. [Grain: USER_PSEUDO_ID × MEMBER_DK (1행=1연계)]. [주의: BIGQUERY 사용자 식별자와 CRM 회원번호 연결]. [원천: BIGQUERY/CRM → SILVER.BIGQUERY_IDENTITY].';
 
 -- ============================================================================
--- 🆕 [2026-10-08 O213-F Y3-F] GA4 인구통계 · 서치콘솔 (종전 소비 모델 0)
+--  [2026-10-08 O213-F Y3-F] GA4 인구통계 · 서치콘솔 (종전 소비 모델 0)
 --   ℹ️ BIGQUERY_SESSION DDL 선생성 후 dbt 적재:
 --      DDL 형상/COMMENT 보존을 위해 ADMIN 역할로 테이블을 선생성하고,
 --      최초 적재 시 전 기간 풀적재 var 를 전달하여 실행:
@@ -1606,7 +1613,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.BIGQUERY_SESSION (
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 (공통감사) · 이 모델은 채우지 않아 NULL 이다.',
-    -- 🆕 [2026-10-16 O241] 공98 추천안B 재료 · 맨 끝(모델 열 순서) — 누락 시 dbt(GN_DW_DBT) 가 append_new_columns ALTER 에서 003001
+    --  [2026-10-16 O241] 공98 추천안B 재료 · 맨 끝(모델 열 순서) — 누락 시 dbt(GN_DW_DBT) 가 append_new_columns ALTER 에서 003001
     SESSION_END_TS                   TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 마지막 이벤트 시각(EVENT_TIMESTAMP 마이크로초 최댓값 → TIMESTAMP_NTZ).'
 ) COMMENT = 'GA4 세션 속성. [Grain: EVENT_DT × USER_PSEUDO_ID × BIGQUERY_SESSION_ID (자정 경계 세션은 일자별로 나뉜다)]. [주의: 속성 = 세션 첫 non-NULL 값 · 원값 보존 · range 재적재]. [원천: GA4 → SILVER.BIGQUERY_REFINED_DATA].';
 CREATE OR REPLACE TABLE GN_DW.SILVER.GA4_USER_DEMOGRAPHIC (
@@ -1642,8 +1649,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.SEARCH_CONSOLE_DATA (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '구글 서치콘솔 검색 성과. [Grain: 일 × 검색어 × 페이지 × 국가 × 기기]. [주의: CTR·POSITION 비가산 · SEARCH_CONSOLE_DATA2 는 중복 복사본이라 미사용]. [원천: GSC → BRONZE_GSC.SEARCH_CONSOLE_DATA].';
 
--- 🆕 [2026-10-08 O213-F Y3-K] ERP_EXPENSE_RESOLUTION — 지출결의 명세(종전 소비 모델 0 · 원천 1행 = 1행)
---   🔴 예산 원장(ERP_BUDGET)과 합산·조인 금지 · 전 컬럼 동일 행 7,287 보존(문서20 N-29 ⑧) · 물리 = GN_DW_ADMIN CTAS LIMIT 0 후 감사컬럼 VARCHAR 확장.
+--  [2026-10-08 O213-F Y3-K] ERP_EXPENSE_RESOLUTION — 지출결의 명세(종전 소비 모델 0 · 원천 1행 = 1행)
+--   WARN: 예산 원장(ERP_BUDGET)과 합산·조인 금지 · 전 컬럼 동일 행 7,287 보존(문서20 N-29 ⑧) · 물리 = GN_DW_ADMIN CTAS LIMIT 0 후 감사컬럼 VARCHAR 확장.
 CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_EXPENSE_RESOLUTION (
     RESOLUTION_NO       VARCHAR         COMMENT '결의번호(1결의 = 여러 명세행).',
     ROW_SEQ             NUMBER(18,0)    COMMENT '결의번호 내 행 일련(결정적 정렬 · 원천 키 부재로 DW 부여).',
@@ -1669,10 +1676,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.ERP_EXPENSE_RESOLUTION (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '지출결의 명세. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: 예산 원장과 합산·조인 금지 · 전 컬럼 동일 행 보존]. [원천: ERP → BRONZE_ERP.EXPENSE_RESOLUTION].';
 
--- AD_CREATIVE_CAMPAIGN_MAP — 미연결 광고 소재 → 캠페인 매핑(🆕 O232 · 사용자 확정 추천안)
---   🔴 dbt 가 만들지 않는다 — 소유자 롤이 `12_agent개선과제/output/O232_광고_매핑_추천안.csv` 를 적재한다
+-- AD_CREATIVE_CAMPAIGN_MAP — 미연결 광고 소재 → 캠페인 매핑( O232 · 사용자 확정 추천안)
+--   WARN: dbt 가 만들지 않는다 — 소유자 롤이 `12_agent개선과제/output/O232_광고_매핑_추천안.csv` 를 적재한다
 --      (dbt 롤은 SILVER CREATE TABLE 권한이 없다 · 구조 정본 = 이 DDL · dbt 는 source `silver_external` 로 읽는다).
---   🔴 이 표는 이름매칭·UTM 이 실패한 소재에만 쓰는 3순위 규칙이다(FACT_AD_PERFORMANCE.MKTG_MAP_METHOD = CREATIVE_MAP).
+--   WARN: 이 표는 이름매칭·UTM 이 실패한 소재에만 쓰는 3순위 규칙이다(FACT_AD_PERFORMANCE.MKTG_MAP_METHOD = CREATIVE_MAP).
 CREATE OR REPLACE TABLE GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP (
     AD_SOURCE_TYPE      VARCHAR(20)     NOT NULL COMMENT '광고구분 VIDEO·REBROADCAST (DIGITAL 미연결분은 플랫폼 합계 행이라 대상 아님)',
     CREATIVE_NM         VARCHAR(200)    NOT NULL COMMENT '소재명(원천 그대로 · REBROADCAST 는 방송명) — FACT_AD_PERFORMANCE.CREATIVE_NM 과 완전일치 조인',
@@ -1682,7 +1689,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP (
     MAP_GRADE           VARCHAR(40)     COMMENT '추천 등급 ①~③(추천 근거 · 확정과 별개)',
     CONFIRMED_NOTE      VARCHAR(200)    COMMENT '확정 기록(누가·언제)',
     DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
-    -- 🆕 [2026-10-15 O232-B] 카테고리 코드(원천 CRM_CAMPAIGN.CMPGN_CTGR_CD · 이름↔코드 1:1 실측 59/59) — 맨 끝 append
+    --  [2026-10-15 O232-B] 카테고리 코드(원천 CRM_CAMPAIGN.CMPGN_CTGR_CD · 이름↔코드 1:1 실측 59/59) — 맨 끝 append
     CMPGN_CTGR_CD       NUMBER(38,0)    COMMENT '확정 캠페인카테고리 코드(MM294 · SILVER.CRM_CAMPAIGN.CMPGN_CTGR_CD) — CMPGN_CTGR_NM 과 1:1 · NONE 이면 NULL',
     PRIMARY KEY (AD_SOURCE_TYPE, CREATIVE_NM)
 ) COMMENT = '미연결 광고 소재 → 캠페인 매핑(사용자 확정). [Grain: AD_SOURCE_TYPE × CREATIVE_NM (1행=1소재)]. [주의: 이름매칭·UTM 실패 소재 전용 3순위 규칙 · 카테고리 수준 행은 마케팅캠페인으로 배분하지 않는다]. [원천: 12_agent개선과제/output/O232_광고_매핑_추천안.csv (재송출·방송·영상광고 CRM 개발 실적 대조)].';

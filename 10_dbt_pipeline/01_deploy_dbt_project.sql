@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : <!-- LLM-METADATA
+-- Target     : SCHEMA GN_DW.OPS
+-- Run order  : 운영계 #13 · 기존 환경 갱신 #21 · 기존 환경 갱신 #30
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- <!-- LLM-METADATA
 -- doc_id: GN_DW_DEPLOY_DBT_PROJECT_SQL
 -- doc_role: Snowflake Native DBT PROJECT (GN_DW.OPS.DW_PIPELINE) 배포, 실행, 스냅샷, 빌드 및 스케줄링 운영 정본 SQL

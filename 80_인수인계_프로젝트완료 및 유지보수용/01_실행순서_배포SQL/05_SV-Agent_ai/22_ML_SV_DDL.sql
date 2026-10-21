@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_ML_MEMBER_RISK · SV_ML_SPONSOR_RISK · SV_ML_DVLP_FORECAST · SV_ML_FEE_FORECAST · SV_ML_LTV_FORECAST · SV_ML_FEATURE_IMPORTANC
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_RISK, SEMANTIC VIEW GN_DW.SERVING.SV_ML_SPONSOR_RISK, SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST, SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST 외 4
+-- Run order  : 운영계 #47
+-- Depends on : -
+-- Issue      : O198, O246, O246-B
+-- =============================================================================
 -- ============================================================================
 -- 22_ML_SV_DDL.sql — Semantic View DDL 정본: SV_ML_MEMBER_RISK · SV_ML_SPONSOR_RISK · SV_ML_DVLP_FORECAST · SV_ML_FEE_FORECAST · SV_ML_LTV_FORECAST · SV_ML_FEATURE_IMPORTANCE · SV_ML_ONCE_CONVERSION (⛔ SV_ML_LTV_SCORE 폐기)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

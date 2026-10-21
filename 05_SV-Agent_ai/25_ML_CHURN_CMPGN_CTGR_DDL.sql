@@ -1,15 +1,21 @@
+-- =============================================================================
+-- Purpose    : 26_ML_CHURN_CMPGN_CTGR_DDL.sql — 🆕 O224 (2026-10-14 · xh20001)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN
+-- Run order  : 운영계 #50
+-- Depends on : -
+-- Issue      : O224, O242-B
+-- =============================================================================
 -- ============================================================================
--- 26_ML_CHURN_CMPGN_CTGR_DDL.sql — 🆕 O224 (2026-10-14 · xh20001)
+-- 26_ML_CHURN_CMPGN_CTGR_DDL.sql — O224 (2026-10-14 · xh20001)
 --   ML 중단 예측(회원 단위 + 후원건 단위) × 활동 후원 캠페인카테고리 사전 결합 서빙 뷰 + SV(SV_ML_CHURN_CAMPAIGN)
 --   · 배경 = 현업 질문 「26년 9월 활동회원 중 중단가능성 높은 회원 중 캠페인카테고리(고려인캠페인) 후원 회원을
 --     회원번호로 매칭해 달라」에 AGENT_MEMBER 가 「두 데이터셋 직접 결합은 플랫폼이 차단」이라고 답했다.
 --     원인 = Analyst 도구는 SV 1개 안에서만 SQL 을 만든다 · 회원 단위 예측(SV_ML_MEMBER_RISK)에 캠페인 축이 없다.
 --     MKT 는 같은 class 를 사전 결합 SV(23_ · SV_ML_INC_CAMPAIGN · 증액)로 풀었다 ⇒ 같은 패턴을 중단 예측에 적용한다.
 --   · grain = 기준월 × 회원 × 캠페인카테고리(그 기준월 말 활동 중인 후원약정의 카테고리 · 회원당 여러 행 가능).
---   · 구성 = USE → SV → GRANT → 스모크(🆕 O242-B 뷰 정의는 21 로 이동 · 21 을 먼저 실행).
+--   · 구성 = USE → SV → GRANT → 스모크( O242-B 뷰 정의는 21 로 이동 · 21 을 먼저 실행).
 --   · 의존 = SERVING.ML_CHURN_BY_CMPGN_CTGR_V · ML_MEMBER_ATTR_ASOF_V(21_ · 둘 다)
 --   · 롤백 = DROP SEMANTIC VIEW GN_DW.SERVING.SV_ML_CHURN_CAMPAIGN; DROP VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V;
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

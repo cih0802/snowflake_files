@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 차원 SCD2 다중 버전 이력 (CRM_MEMBER 현재값 + STATUS_HIST 이력)
+-- Target     : GOLD.DIM_MEMBER_STATUS_HISTORY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER, ref CRM_MEMBER_STATUS_HIST, ref CRM_MEMBER_DEV, ref CRM_MEMBER_DISCONTINUE, ref CRM_CODE
+-- Issue      : -
+-- =============================================================================
 -- DIM_MEMBER_STATUS_HISTORY: 회원 차원 SCD2 다중 버전 이력 (CRM_MEMBER 현재값 + STATUS_HIST 이력)
 -- 【회원번호 체계】 CRM은 정식(FDRM)·일시(ONCE)를 별도 테이블로 분리 관리:
 --   FDRM → TM_MM_FDRM_MBER_INFO: 번호 0000000~9999999 (7자리, leading-zero 보존)

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 지출결의 명세 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
+-- Target     : SILVER.ERP_EXPENSE_RESOLUTION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_erp.EXPENSE_RESOLUTION
+-- Issue      : O213-F, O114-B
+-- =============================================================================
 -- ERP_EXPENSE_RESOLUTION: 지출결의 명세 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
 -- 원천 BRONZE_ERP.EXPENSE_RESOLUTION(O114-B 선언 · 종전 소비 모델 0). 값 가공 없음(R2-7) · TRIM/NULLIF 만.
 -- WARN: 예산 원장(ERP_BUDGET·FACT_BUDGET)과 합산·조인 금지 — 과목키 일치 0.02% · 금액 약 9.9배(_sources.yml O114-B 실측).

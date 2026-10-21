@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : ERP 원장 연 총액 4종 (편성·추경·조정·집행) — 연 grain, O93 신설.
+-- Target     : SILVER.ERP_BUDGET_YEARLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_erp.BDGT_ACMSLT_LEDGER
+-- Issue      : O93
+-- =============================================================================
 -- ERP_BUDGET_YEARLY: ERP 원장 연 총액 4종 (편성·추경·조정·집행) — 연 grain, O93 신설.
 --
 -- 왜 신설했나: 형제 모델 `ERP_BUDGET` 은 같은 원장에서 **월별 12벌만** 언피벗한다.

@@ -1,0 +1,531 @@
+kind,sub,rel,src_B,cur_B,sim_B
+diff,01_실행순서_배포SQL,문서실행순서.md,11219,9742,11194
+repro,01_실행순서_배포SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,56276,55928,55928
+repro,01_실행순서_배포SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,13549,13469,13469
+diff,01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,229700,224667,229544
+repro,01_실행순서_배포SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,159922,159883,159883
+repro,01_실행순서_배포SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,4047,4012,4012
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,42878,42840,42840
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,52347,50510,52340
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,35915,35916,35916
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,48071,48048,48048
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,28911,28912,28912
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,14627,14628,14628
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_07_SV_DDL_AD.sql,38062,38047,38047
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,18297,15276,18290
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,26871,26868,26868
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,22439,15586,22408
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,11586,11587,11587
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,14999,15000,15000
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,25945,25942,25942
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,7139,7135,7135
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,14879,14872,14872
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,9018,9014,9014
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,8914,8912,8912
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,26952,26941,26941
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,14919,14901,14901
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,17513,17506,17506
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,7404,7401,7401
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,6626,6624,6624
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,8980,8971,8971
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,12186,12178,12178
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,16577,16548,16548
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,13107,13079,13079
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,6287,6278,6258
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,7340,7331,7311
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,9519,9495,9491
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,6417,6393,6389
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29295,29173,29173
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,35315,35032,35028
+diff,01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,76289,76232,76228
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,101069,101050,101050
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,11762,11709,11709
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,15826,15822,15822
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,21410,21353,21353
+repro,01_실행순서_배포SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,7876,7825,7825
+new,01_실행순서_배포SQL,05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql,6046,-1,5942
+new,01_실행순서_배포SQL,05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql,9140,-1,8964
+new,01_실행순서_배포SQL,05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql,5422,-1,5415
+new,01_실행순서_배포SQL,05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql,13214,-1,13090
+new,01_실행순서_배포SQL,05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql,30802,-1,30670
+new,01_실행순서_배포SQL,05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql,12599,-1,12607
+repro,01_실행순서_배포SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101,18095,18095
+repro,01_실행순서_배포SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480,10447,10447
+repro,01_실행순서_배포SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143,9117,9117
+same,01_실행순서_배포SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,3832,3832,3832
+repro,01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480,13432,13432
+diff,01_실행순서_배포SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,917,400,896
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,3750,3726,3726
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,13688,13664,13664
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,7803,7780,7780
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11050,10996,10996
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,48540,48451,48451
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,50926,50897,50897
+repro,01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5302,5299,5299
+diff,01_실행순서_배포SQL,문서실행순서_llm실행.md,23570,21953,23456
+diff,01_실행순서_배포SQL,문서실행순서_보조주석.md,18159,14031,18151
+same,01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787,1187787,1187787
+same,02_dbt_pipeline,10_dbt_pipeline/00_배포운영_통합_20260715.md,17833,17833,17833
+same,02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,3832,3832,3832
+repro,02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480,13432,13432
+same,02_dbt_pipeline,10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,9054,9054,9054
+same,02_dbt_pipeline,10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,8360,8360,8360
+same,02_dbt_pipeline,10_dbt_pipeline/README.md,8792,8792,8792
+diff,02_dbt_pipeline,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,917,400,896
+repro,02_dbt_pipeline,10_dbt_pipeline/dbt_project.yml,38395,38354,38354
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_predicate.sql,10090,9995,9995
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_purge.sql,3694,3688,3688
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/billing_campaign_asof.sql,2340,2321,2321
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/ga4_union_shards.sql,5968,5934,5934
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/generate_schema_name.sql,541,516,516
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gn_biz_codes.sql,4077,4019,4019
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gn_member_master_filter.sql,3419,3342,3342
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gn_no_structural_alter.sql,6891,6676,6676
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gn_view_commented.sql,3456,3395,3395
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gold_fact_purge.sql,3848,3820,3820
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/gold_helpers.sql,3625,3600,3600
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/silver_helpers.sql,839,814,814
+repro,02_dbt_pipeline,10_dbt_pipeline/macros/silver_purge.sql,3144,3126,3126
+diff,02_dbt_pipeline,10_dbt_pipeline/models/gold/_gold_ready_schema.yml,76453,75614,76444
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,4847,4819,4819
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,853,828,828
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,1477,1451,1451
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,926,893,893
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,1364,1330,1330
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,7611,7571,7571
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,941,911,911
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,648,619,619
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,4741,4711,4711
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,2467,2440,2440
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,3800,3757,3757
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,8927,8893,8893
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,7286,7240,7240
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,8390,8342,8342
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,2531,2506,2506
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,9235,9211,9211
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,1919,1893,1893
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,1620,1587,1587
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,1009,976,976
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,7727,7667,7667
+new,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql,8665,-1,8573
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,976,949,949
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,1511,1483,1483
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,982,956,956
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,1894,1867,1867
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,3633,3583,3583
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,4366,4324,4324
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,1603,1573,1573
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,4891,4838,4838
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,3307,3278,3278
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,1454,1425,1425
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,2673,2645,2645
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,6454,6428,6428
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,16770,16675,16675
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,9090,9050,9050
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,3479,3444,3444
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,5244,5209,5209
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,4444,4399,4399
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,4884,4860,4860
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,11830,11800,11800
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,7350,7300,7300
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,2373,2329,2329
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,840,812,812
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,3381,3354,3354
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,19963,19926,19926
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,7578,7537,7537
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,4193,4164,4164
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,23214,23147,23147
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,11306,11281,11281
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,8120,8021,8021
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,41851,41738,41738
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,5184,5148,5148
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,15679,15595,15595
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,6410,6361,6361
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,1245,1217,1217
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,2131,2086,2086
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,972,934,934
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,816,786,786
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,1020,992,992
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,2604,2572,2572
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,822,797,797
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,3977,3933,3933
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,3934,3908,3908
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,4453,4419,4419
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,2675,2645,2645
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,5049,4982,4982
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,4013,3981,3981
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,3151,3122,3122
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,3011,2981,2981
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,2024,1999,1999
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,1407,1382,1382
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,5905,5878,5878
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,1632,1608,1608
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,10267,10209,10209
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,6863,6827,6827
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,5518,5487,5487
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,3676,3638,3638
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,20749,20695,20695
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,4875,4845,4845
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,1548,1519,1519
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,1766,1733,1733
+repro,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,1493,1463,1463
+same,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/_wide_dept_aggr_schema.yml,6145,6145,6145
+same,02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/_wide_schema.yml,219725,219725,219725
+same,02_dbt_pipeline,10_dbt_pipeline/models/silver/_silver_bridge_schema.yml,7193,7193,7193
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/_sources.yml,16836,16817,16817
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,10219,10183,10183
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,2361,2324,2324
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,1916,1892,1892
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,3778,3750,3750
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,13686,13628,13628
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,5223,5189,5189
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,3353,3318,3318
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,5011,4974,4974
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,11261,11230,11230
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,1865,1841,1841
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,7731,7700,7700
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,2028,2025,2025
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,6126,6079,6079
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,4657,4626,4626
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,1977,1952,1952
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,1685,1657,1657
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,1952,1921,1921
+same,02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml,5599,5599,5599
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,947,922,922
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,2963,2935,2935
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,1239,1211,1211
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,4625,4588,4588
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,8572,8546,8546
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,1112,1084,1084
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,972,943,943
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,792,764,764
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,934,909,909
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,4982,4937,4937
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,7535,7489,7489
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,2109,2070,2070
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,1121,1094,1094
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,1440,1416,1416
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,6503,6472,6472
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,1992,1955,1955
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,1424,1395,1395
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,18797,18676,18676
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,2040,2011,2011
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,947,919,919
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,996,971,971
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,5586,5510,5510
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,1874,1842,1842
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,1689,1664,1664
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,3255,3222,3222
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,997,969,969
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,1019,989,989
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,5985,5939,5939
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,2796,2765,2765
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,2504,2478,2478
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,2628,2593,2593
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,812,784,784
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,1298,1271,1271
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,14350,14286,14286
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,1659,1634,1634
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,1287,1262,1262
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,5804,5774,5774
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,2477,2452,2452
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,1019,991,991
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,963,934,934
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,1883,1849,1849
+same,02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/_crm_schema.yml,51905,51905,51905
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,5610,5580,5580
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,1365,1340,1340
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,2300,2271,2271
+repro,02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,2545,2514,2514
+same,02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/_erp_schema.yml,3713,3713,3713
+new,02_dbt_pipeline,10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv,55,-1,55
+new,02_dbt_pipeline,10_dbt_pipeline/seeds/_seeds.yml,894,-1,894
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,481,481,481
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,719,719,719
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,505,505,505
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,929,929,929
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,633,633,633
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,627,627,627
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,642,642,642
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,787,787,787
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,585,585,585
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,516,516,516
+same,02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,818,818,818
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,4201,4170,4170
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,825,800,800
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,2408,2382,2382
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,1581,1557,1557
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,1803,1780,1780
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,2484,2454,2454
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,3253,3227,3227
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,3415,3377,3377
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,2032,2006,2006
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,1444,1420,1420
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,1125,1100,1100
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,1516,1493,1493
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,2308,2281,2281
+new,02_dbt_pipeline,10_dbt_pipeline/tests/assert_org_succession_invariants.sql,1202,-1,1177
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,3460,3409,3409
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,8459,8294,8294
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,5578,5503,5503
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,4531,4467,4467
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,1663,1603,1603
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,2423,2394,2394
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,3769,3738,3738
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,2595,2558,2558
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,1815,1790,1790
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_grain.sql,707,679,679
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,534,510,510
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,1583,1547,1547
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,6447,6401,6401
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,1462,1426,1426
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,1435,1409,1409
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,857,832,832
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,4549,4461,4461
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,10054,10009,10009
+repro,02_dbt_pipeline,10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,967,942,942
+repro,02_dbt_pipeline,10_dbt_pipeline/verify_A1_A3_blocking5.sql,6943,6918,6918
+repro,03_MSTR_이관,15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,7981,7952,7952
+repro,03_MSTR_이관,15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,10450,10420,10420
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql,7176,7176,7176
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql,4638,4638,4638
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql,99104,99104,99104
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql,11212,11212,11212
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql,9093,9093,9093
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql,1680,1680,1680
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql,115620,115620,115620
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql,1722920,1722920,1722920
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql,1339446,1339446,1339446
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql,224336,224336,224336
+same,03_MSTR_이관,15_MSTR 이관 PoC/mstr-answer.csv,169465,169465,169465
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,3750,3726,3726
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,13688,13664,13664
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,7803,7780,7780
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11050,10996,10996
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,48540,48451,48451
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,50926,50897,50897
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5302,5299,5299
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,5706,5704,5704
+repro,03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,7417,7389,7389
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/README.md,4209,4209,4209
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차.json,4397,4397,4397
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,8558,8558,8558
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_common.py,2014,2014,2014
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deploy.py,3470,3470,3470
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_deps.py,4869,4869,4869
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_extract.py,1734,1734,1734
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_gen.py,3043,3043,3043
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_load_answer.py,1919,1919,1919
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_pipeline.py,3162,3162,3162
+same,03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_verify.py,2288,2288,2288
+repro,03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,40395,40306,40306
+repro,03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,3527,3525,3525
+repro,03_MSTR_이관,15_MSTR 이관 PoC/답안체크용 쿼리.sql,6518,6493,6493
+same,03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증결과.md,12253,12253,12253
+repro,03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,18701,18676,18676
+same,03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_비교항목.md,4697,4697,4697
+same,04_SV_Agent_스펙,cortex_project/cortex-project.yaml,719,719,719
+same,04_SV_Agent_스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,91242,91242,91242
+same,04_SV_Agent_스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,118503,118503,118503
+same,04_SV_Agent_스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,136766,136766,136766
+same,04_SV_Agent_스펙,tmp/o249/agent_deploy.py,1886,1886,1886
+same,04_SV_Agent_스펙,tmp/o250/deploy_agents.py,3556,3556,3556
+same,04_SV_Agent_스펙,tmp/o250/ca_check.py,2640,2640,2640
+same,05_RAG_지표사전,12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787,1187787,1187787
+same,05_RAG_지표사전,12_agent개선과제/tools/build_biz_definition_corpus.py,14209,14209,14209
+same,05_RAG_지표사전,12_agent개선과제/tools/O217_routing_curated.csv,27039,27039,27039
+same,05_RAG_지표사전,90_provided_definition/00_README.md,3157,3157,3157
+same,05_RAG_지표사전,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,3099,3099,3099
+same,05_RAG_지표사전,90_provided_definition/02_지표사전 공통.md,20673,20673,20673
+same,05_RAG_지표사전,90_provided_definition/03_지표사전 신규.md,17128,17128,17128
+same,05_RAG_지표사전,90_provided_definition/04_마케팅_보고서필드 인벤토리.md,11472,11472,11472
+same,05_RAG_지표사전,90_provided_definition/05_회원_보고서필드 인벤토리.md,25419,25419,25419
+same,05_RAG_지표사전,90_provided_definition/06_지표용어사전 20260624.md,36845,36845,36845
+same,05_RAG_지표사전,90_provided_definition/07_추가_지표사전_20260813기준.md,7312,7312,7312
+same,05_RAG_지표사전,90_provided_definition/07_추가_지표사전_20260813기준_raw.txt,3619,3619,3619
+same,05_RAG_지표사전,90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv,639,639,639
+same,05_RAG_지표사전,90_provided_definition/GA4스키마 20260626.csv,20338,20338,20338
+same,05_RAG_지표사전,90_provided_definition/agent 질의 피드백_2.csv,34187,34187,34187
+same,05_RAG_지표사전,90_provided_definition/gni_실적부서.csv,22470,22470,22470
+same,05_RAG_지표사전,90_provided_definition/공통지표_flat_20261003.csv,22757,22757,22757
+same,05_RAG_지표사전,90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv,23260,23260,23260
+same,05_RAG_지표사전,90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv,22362,22362,22362
+same,05_RAG_지표사전,90_provided_definition/신규지표_20260820.csv,18471,18471,18471
+same,05_RAG_지표사전,90_provided_definition/조직도_20260914.csv,22470,22470,22470
+same,05_RAG_지표사전,90_provided_definition/지표용어통합 20260623.csv,32939,32939,32939
+same,05_RAG_지표사전,90_provided_definition/컬럼정의서 20260714.csv,68748,68748,68748
+same,05_RAG_지표사전,90_provided_definition/테이블정의 20260629.csv,3793,3793,3793
+diff,06_일배치_모니터링,11_일적재pipeline 구성/00_개요_및_실행순서.md,10449,10417,10418
+repro,06_일배치_모니터링,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,4598,4573,4573
+repro,06_일배치_모니터링,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,8553,8513,8513
+repro,06_일배치_모니터링,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,3325,3300,3300
+repro,06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,4021,3997,3997
+repro,06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,4573,4545,4545
+same,06_일배치_모니터링,08_mornitoring/00_README.md,4784,4784,4784
+same,06_일배치_모니터링,08_mornitoring/01_모니터링_대상 개요.md,3450,3450,3450
+same,06_일배치_모니터링,08_mornitoring/02_Cortex_AI_사용량 모니터링.md,9149,9149,9149
+same,06_일배치_모니터링,08_mornitoring/03_비용제한_예산 쿼터.md,12533,12533,12533
+same,06_일배치_모니터링,08_mornitoring/04_알림_및 거버넌스.md,6513,6513,6513
+repro,06_일배치_모니터링,08_mornitoring/05_AI비용가드_구축.sql,22971,22688,22688
+repro,06_일배치_모니터링,08_mornitoring/06_웨어하우스비용가드_구축.sql,23875,23631,23631
+repro,06_일배치_모니터링,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101,18095,18095
+repro,06_일배치_모니터링,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480,10447,10447
+repro,06_일배치_모니터링,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143,9117,9117
+same,06_일배치_모니터링,08_mornitoring/10_Cortex_Code_모델별_비용_비교.md,3329,3329,3329
+repro,06_일배치_모니터링,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,6098,6057,6057
+repro,06_일배치_모니터링,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,10319,10295,10295
+same,07_운영런북_이슈,02_GN_DW_building/05_ARCHITECTURE.md,14458,14458,14458
+same,07_운영런북_이슈,02_GN_DW_building/06_RUNBOOK.md,41890,41890,41890
+repro,07_운영런북_이슈,02_GN_DW_building/09_user login mfa리셋.sql,11049,10959,10959
+diff,07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_런북.md,14915,14877,14878
+repro,07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,4445,4435,4435
+same,07_운영런북_이슈,PAID_재현_런북_20260722.md,8320,8320,8320
+diff,07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,7022,7022,7022
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,9599,9599,9599
+diff,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,39070,30926,34997
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,28207,27803,27803
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,28401,26657,26657
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,26230,25981,25981
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,26533,26533,26533
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,27287,27287,27287
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,27466,27466,27466
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,27642,27642,27642
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,28010,28001,28001
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,27541,27541,27541
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,26975,26853,26853
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,27957,27902,27902
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,28213,28214,28214
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,27834,27834,27834
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,28049,28049,28049
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,11245,11207,11207
+same,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,26269,26269,26269
+repro,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,17890,17872,17872
+diff,07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8223,8211,8223
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치.md,11002,11002,11002
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,21420,21409,21409
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,16899,16899,16899
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md,15514,15514,15514
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md,9592,9572,9572
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md,14940,14940,14940
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md,19894,19894,19894
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md,18241,18241,18241
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-007.md,16881,16881,16881
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-008.md,11475,11475,11475
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-009.md,16083,16083,16083
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md,19320,19320,19320
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md,15307,15307,15307
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md,18693,18693,18693
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md,20208,20165,20165
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md,18003,17992,17992
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md,10801,10790,10790
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md,24108,24066,24066
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md,25606,25552,25552
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md,22392,22330,22330
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md,25658,25556,25556
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md,18072,18053,18053
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md,13234,13234,13234
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,12236,12227,12227
+same,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md,12556,12556,12556
+repro,07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,23066,22990,22990
+repro,07_운영런북_이슈,20_issue/91_사고사례집.md,20859,20318,20318
+same,07_운영런북_이슈,20_issue/92_실측필요_후속작업.md,4061,4061,4061
+same,08_현업공유_산출물,30_output_share/00_생성기-문서명 매핑.md,8989,8989,8989
+repro,08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,38353,38359,38359
+same,08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,173947,173947,173947
+same,08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,163256,163256,163256
+same,08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv,174025,174025,174025
+same,08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv,172379,172379,172379
+same,08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv,403833,403833,403833
+same,08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv,403278,403278,403278
+same,08_현업공유_산출물,30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv,408070,408070,408070
+same,08_현업공유_산출물,30_output_share/03_GN_DW_개념도.html,589476,589476,589476
+same,08_현업공유_산출물,30_output_share/04_컬럼계보매핑.csv,136061,136061,136061
+same,08_현업공유_산출물,30_output_share/04_컬럼계보매핑.md,159186,159186,159186
+same,08_현업공유_산출물,30_output_share/04_컬럼계보매핑.xlsx,64640,64640,64640
+same,08_현업공유_산출물,30_output_share/05_지표GOLD매핑.csv,179936,179936,179936
+same,08_현업공유_산출물,30_output_share/05_지표GOLD매핑.md,205914,205914,205914
+same,08_현업공유_산출물,30_output_share/05_지표GOLD매핑.xlsx,64941,64941,64941
+same,08_현업공유_산출물,30_output_share/06_BRONZE노출감사.csv,169326,169326,169326
+same,08_현업공유_산출물,30_output_share/06_BRONZE노출감사.md,180608,180608,180608
+same,08_현업공유_산출물,30_output_share/06_BRONZE노출감사.xlsx,60329,60329,60329
+same,08_현업공유_산출물,30_output_share/07_코드체계_관문측정.md,38708,38708,38708
+same,08_현업공유_산출물,30_output_share/08_SILVER→GOLD_보존율.csv,110494,110494,110494
+same,08_현업공유_산출물,30_output_share/08_SILVER→GOLD_보존율.md,24700,24700,24700
+same,08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.csv,241752,241752,241752
+same,08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.md,67291,67291,67291
+same,08_현업공유_산출물,30_output_share/09_섹션배너.json,56950,56950,56950
+repro,08_현업공유_산출물,30_output_share/10_원천입고_결손요약.md,30796,30808,30808
+same,08_현업공유_산출물,30_output_share/11_미해결이슈_요약.md,17932,17932,17932
+repro,08_현업공유_산출물,30_output_share/16_파이프라인 배선 수정.md,19258,19264,19264
+repro,08_현업공유_산출물,30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,13465,13471,13471
+repro,08_현업공유_산출물,30_output_share/19_원천입고_및_항목신설_대기.md,24557,24545,24545
+repro,08_현업공유_산출물,30_output_share/20260826_아키텍처 지도 요약본.html,977680,977668,977668
+repro,08_현업공유_산출물,30_output_share/21_원천입고_대기_주니어_해설서.md,23968,23974,23974
+repro,08_현업공유_산출물,30_output_share/30_공8_GA개발단가_정의_요약.md,2822,2804,2804
+repro,08_현업공유_산출물,30_output_share/30_공8및미회신29건_질문요약.md,11831,11813,11813
+repro,08_현업공유_산출물,30_output_share/31_공8_GA개발단가_쿼리근거.sql,2833,2790,2790
+repro,08_현업공유_산출물,30_output_share/31_공8및미회신29건_쿼리근거.sql,18467,18407,18407
+repro,08_현업공유_산출물,30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,10139,10112,10112
+same,08_현업공유_산출물,30_output_share/40_현업회신요청_O190.md,4153,4153,4153
+repro,08_현업공유_산출물,30_output_share/41_현업회신_F-1_본부지부.md,2589,2578,2578
+same,08_현업공유_산출물,30_output_share/42_현업회신_E-1_모금성비용.md,1025,1025,1025
+same,08_현업공유_산출물,30_output_share/43_현업회신_F-2_후원사업11개.md,619,619,619
+same,08_현업공유_산출물,30_output_share/44_현업회신_F-3_문자오픈.md,650,650,650
+same,08_현업공유_산출물,30_output_share/45_현업회신_ML_일시후원전환_grain.md,1576,1576,1576
+same,08_현업공유_산출물,30_output_share/46_현업회신_DGT_이전분.md,549,549,549
+repro,08_현업공유_산출물,30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,4243,4249,4249
+repro,08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별.html,263062,263044,263044
+same,08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별_YAML전용.html,73342,73342,73342
+new,08_현업공유_산출물,30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv,54418,-1,54418
+new,08_현업공유_산출물,30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx,39872,-1,39872
+new,08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx,39791,-1,39791
+new,08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx,40414,-1,40414
+new,08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx,41458,-1,41458
+same,08_현업공유_산출물,30_output_share/erd/DIM_AD_CREATIVE.html,28230,28230,28230
+same,08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_EVENT.html,23867,23867,23867
+same,08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_SOURCE.html,25208,25208,25208
+same,08_현업공유_산출물,30_output_share/erd/DIM_BUDGET_ITEM.html,23621,23621,23621
+same,08_현업공유_산출물,30_output_share/erd/DIM_CAMPAIGN.html,42295,42295,42295
+same,08_현업공유_산출물,30_output_share/erd/DIM_DATE.html,31838,31838,31838
+same,08_현업공유_산출물,30_output_share/erd/DIM_DEVICE.html,25900,25900,25900
+same,08_현업공유_산출물,30_output_share/erd/DIM_EVENT.html,27256,27256,27256
+same,08_현업공유_산출물,30_output_share/erd/DIM_MARKETING_CAMPAIGN.html,29641,29641,29641
+same,08_현업공유_산출물,30_output_share/erd/DIM_MEMBER.html,34389,34389,34389
+same,08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_ACQUISITION.html,42347,42347,42347
+same,08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_IDENTITY.html,27732,27732,27732
+same,08_현업공유_산출물,30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html,38054,38054,38054
+same,08_현업공유_산출물,30_output_share/erd/DIM_MONTH.html,28633,28633,28633
+same,08_현업공유_산출물,30_output_share/erd/DIM_ORG.html,30243,30243,30243
+same,08_현업공유_산출물,30_output_share/erd/DIM_PAYMENT.html,23840,23840,23840
+same,08_현업공유_산출물,30_output_share/erd/DIM_REASON.html,23553,23553,23553
+same,08_현업공유_산출물,30_output_share/erd/DIM_SEND_TYPE.html,29340,29340,29340
+same,08_현업공유_산출물,30_output_share/erd/DIM_SERVICE.html,23906,23906,23906
+repro,08_현업공유_산출물,30_output_share/erd/DIM_SPONSORSHIP.html,31373,31355,31355
+same,08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST.html,31214,31214,31214
+same,08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST_CASE.html,24359,24359,24359
+same,08_현업공유_산출물,30_output_share/erd/FACT_AD_DIGITAL.html,27847,27847,27847
+same,08_현업공유_산출물,30_output_share/erd/FACT_AD_PERFORMANCE.html,37995,37995,37995
+same,08_현업공유_산출물,30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html,41342,41342,41342
+same,08_현업공유_산출물,30_output_share/erd/FACT_BUDGET.html,32234,32234,32234
+same,08_현업공유_산출물,30_output_share/erd/FACT_BUDGET_YEARLY.html,33481,33481,33481
+same,08_현업공유_산출물,30_output_share/erd/FACT_EVENT_ATTENDANCE.html,36604,36604,36604
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_COHORT.html,53303,53303,53303
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html,34701,34701,34701
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_EVENT.html,55264,55264,55264
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_FEE.html,37641,37641,37641
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_MONTHLY.html,77971,77971,77971
+same,08_현업공유_산출물,30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html,38937,38937,38937
+same,08_현업공유_산출물,30_output_share/erd/FACT_MESSAGE_DISPATCH.html,47713,47713,47713
+same,08_현업공유_산출물,30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,23780,23780,23780
+same,08_현업공유_산출물,30_output_share/erd/FACT_TARGET_PROJECT.html,29419,29419,29419
+same,08_현업공유_산출물,30_output_share/erd/index.html,86406,86406,86406
+repro,09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,47618,47608,47608
+repro,09_설계근거_참고,05_SV-Agent_ai/09_0_AGENT_정의서.md,5867,5838,5838
+same,09_설계근거_참고,05_SV-Agent_ai/11_거버넌스_운영.md,9427,9427,9427
+same,09_설계근거_참고,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,157041,157041,157041
+same,09_설계근거_참고,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,179713,179713,179713
+same,09_설계근거_참고,06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md,14657,14657,14657
+same,09_설계근거_참고,06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md,13516,13516,13516
+same,09_설계근거_참고,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,8209,8209,8209
+repro,09_설계근거_참고,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,17575,17572,17572
+repro,09_설계근거_참고,SECURITY.sql,1958,1933,1933

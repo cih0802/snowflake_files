@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 기준연월 × 캠페인 누계 중단·개발·연도초활동 팩트 (캠페인별 누계중단율 신규 #17 분자·분모)
+-- Target     : GOLD.FACT_CAMPAIGN_CUM_STOP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY, ref FACT_MEMBER_SPONSORSHIP_SPAN, ref FACT_MEMBER_EVENT
+-- Issue      : O236, O240
+-- =============================================================================
 -- FACT_CAMPAIGN_CUM_STOP: 기준연월 × 캠페인 누계 중단·개발·연도초활동 팩트 (캠페인별 누계중단율 신규 #17 분자·분모)
 --  [2026-10-15 O236 · 사용자 결정 A = 후원건(후원사업)의 캠페인 귀속]
 --   왜 새 팩트인가 = FACT_MEMBER_MONTHLY(회원×월)는 ① YEAR_START_ACTIVE_CNT 를 매달 행에 반복해

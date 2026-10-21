@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연(아동) 정제 + Q15 NO→ID 크로스워크 (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SPONSOR_RELATION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER_SPONSOR_BIZ, source bronze_crm.TM_RM_RELATNSP_MSTR_INFO
+-- Issue      : O179
+-- =============================================================================
 -- CRM_SPONSOR_RELATION: 결연(아동) 정제 + Q15 NO→ID 크로스워크 (BRONZE → SILVER), 정본 09 STEP3.
 -- 교차참조: SPNSR_BSNS_ID 는 CRM_MEMBER_SPONSOR_BIZ 에서 조인 채움(단방향 BRONZE→SILVER 예외 아님, SILVER dim 참조).
 SELECT

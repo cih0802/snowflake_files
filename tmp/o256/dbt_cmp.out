@@ -1,0 +1,4 @@
+new parse rc=0
+new compile rc=0
+base parse rc=0
+base compile rc=0

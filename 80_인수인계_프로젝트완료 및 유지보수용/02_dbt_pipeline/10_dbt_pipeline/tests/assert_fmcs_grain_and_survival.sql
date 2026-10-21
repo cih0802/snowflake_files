@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : FACT_MEMBER_COHORT_SURVIVAL grain 유일성 + 생존 곡선 불변식 (O232 신설)
+-- Target     : dbt singular test assert_fmcs_grain_and_survival (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT_SURVIVAL, ref FACT_MEMBER_COHORT
+-- Issue      : O232, O249, O233
+-- =============================================================================
 -- assert_fmcs_grain_and_survival: FACT_MEMBER_COHORT_SURVIVAL grain 유일성 + 생존 곡선 불변식 (O232 신설)
 -- 반환 행 = 위반(0행이어야 PASS). dbt_utils 미설치라 singular 테스트로 둔다.
 --   ㉠ grain(AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH) 중복

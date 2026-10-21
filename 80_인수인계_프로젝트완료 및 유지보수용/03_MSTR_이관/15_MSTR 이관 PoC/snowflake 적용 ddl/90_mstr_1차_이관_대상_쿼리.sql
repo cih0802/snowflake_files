@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05. MSTR 1차 이관 대상 리포트 쿼리 — Snowflake 전환본 (O197)
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_STRD_DE_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD 외 10
+-- Issue      : O197
+-- =============================================================================
 use role gn_dw_admin;
 -- =====================================================================
 -- 05. MSTR 1차 이관 대상 리포트 쿼리 — Snowflake 전환본 (O197)

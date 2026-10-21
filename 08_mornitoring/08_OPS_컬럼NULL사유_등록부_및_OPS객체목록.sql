@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : 08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
+-- Target     : TABLE GN_DW.OPS.NULL_REASON_CODE, TABLE GN_DW.OPS.COLUMN_NULL_REGISTRY, VIEW GN_DW.OPS.V_OPS_OBJECT_INVENTORY
+-- Run order  : 운영계 #3
+-- Depends on : GN_DW.INFORMATION_SCHEMA.TABLES, GN_DW.INFORMATION_SCHEMA.PROCEDURES, GN_DW.INFORMATION_SCHEMA.FUNCTIONS, GN_DW.INFORMATION_SCHEMA.STAGES
+-- Issue      : O216-G, DEC-55
+-- =============================================================================
 -- ============================================================================
 -- 08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
--- Co-authored with CoCo
 -- ----------------------------------------------------------------------------
--- 🆕 [2026-10-12 O216-G · 사용자 승인] OPS 스키마 수기 객체 3종의 정본 DDL.
---   ① OPS.NULL_REASON_CODE      — NULL 사유 코드 마스터(분류 정본 = 문서30 DEC-55 §55-C · 지침 R2-7)
---   ② OPS.COLUMN_NULL_REGISTRY  — SILVER·GOLD 「전건 NULL」 컬럼의 사유 등록부(컬럼 1행)
+--  [2026-10-12 O216-G · 사용자 승인] OPS 스키마 수기 객체 3종의 정본 DDL.
+--   ① OPS.NULL_REASON_CODE — NULL 사유 코드 마스터(분류 정본 = 문서30 DEC-55 §55-C · 지침 R2-7)
+--   ② OPS.COLUMN_NULL_REGISTRY — SILVER·GOLD 「전건 NULL」 컬럼의 사유 등록부(컬럼 1행)
 --   ③ OPS.V_OPS_OBJECT_INVENTORY — OPS 스키마 객체 목록(관리 주체 자동 판정 · 수기 관리 불요)
 --
 -- ▶ 왜 테이블인가(문서 부록이 아니라)
@@ -18,7 +24,7 @@
 --
 -- ▶ 실행 규약
 --   · 실행 롤 = GN_DW_ADMIN · 재실행 안전(테이블 = IF NOT EXISTS · 코드 = MERGE · 뷰 = OR REPLACE … COPY GRANTS).
---   · 🔴 `CREATE OR REPLACE TABLE` 로 바꾸지 마라 — 등록부 내용(다음 세션 산출물)이 사라진다.
+--   · WARN: `CREATE OR REPLACE TABLE` 로 바꾸지 마라 — 등록부 내용(다음 세션 산출물)이 사라진다.
 --   · 재구축 순서 = `60_repeat_어카운트시작/12_GN_DW_재구축_실행순서.md` §2-1 순 17.
 -- ============================================================================
 
@@ -80,7 +86,7 @@ CREATE TABLE IF NOT EXISTS GN_DW.OPS.COLUMN_NULL_REGISTRY (
 -- ----------------------------------------------------------------------------
 -- ③ OPS 객체 목록 — 「OPS 에 무엇이 있는가」를 문서가 아니라 라이브에서 읽는다
 --   관리 주체 판정: owner = GN_DW_DBT ⇒ dbt(store_failures · 매 build 재생성) · 그 밖 ⇒ 수기(정본 DDL 파일 필요)
---   🔴 수기 객체는 COMMENT 의 [원천: 수기 · <DDL 파일 경로>] 로 정본 파일을 밝힌다 — 비어 있으면 「정본 미등록」.
+--   WARN: 수기 객체는 COMMENT 의 [원천: 수기 · <DDL 파일 경로>] 로 정본 파일을 밝힌다 — 비어 있으면 「정본 미등록」.
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE VIEW GN_DW.OPS.V_OPS_OBJECT_INVENTORY COPY GRANTS
 COMMENT = 'OPS 스키마 객체 목록(테이블·뷰·프로시저·함수·스테이지). [Grain: OBJECT_TYPE × OBJECT_NAME]. [주의: MANAGED_BY = dbt 는 build 가 재생성하므로 손대지 않는다 · 수기 객체는 DDL_FILE 이 비면 정본 미등록]. [원천: 수기 · 08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql] (데이터 = GN_DW.INFORMATION_SCHEMA).'

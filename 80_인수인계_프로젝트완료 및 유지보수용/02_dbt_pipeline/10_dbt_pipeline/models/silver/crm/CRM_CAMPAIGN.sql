@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 캠페인 + 브랜드/마케팅캠페인/분류코드 라벨 LEFT JOIN 정제 (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_CM_CMPGN_MNG, source bronze_crm.TM_CM_BRND_MNG, source bronze_crm.TC_MKTNG_DTL_CD
+-- Issue      : DEC-43, O37, O101, O162 외 1
+-- =============================================================================
 -- CRM_CAMPAIGN: 캠페인 + 브랜드/마케팅캠페인/분류코드 라벨 LEFT JOIN 정제 (BRONZE → SILVER), 정본 09 STEP3.
 -- Q16: MKTG_CMPGN_NM(NUMBER) ↔ MK_CMPGN_CD(TEXT) 조인키 불일치 → TO_VARCHAR 캐스팅 조인. [2026-07-16 재입고로 해소]
 -- Q2·Q3: 캠페인 분류 4축 코드→라벨 병행보존(master §3). 코드사전 = ref('CRM_CODE') (CRM_MEMBER 등 기존 모델과 동일 패턴).

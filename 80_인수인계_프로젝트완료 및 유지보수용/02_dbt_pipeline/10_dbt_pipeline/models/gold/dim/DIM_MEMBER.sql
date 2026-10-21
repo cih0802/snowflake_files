@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
+-- Target     : GOLD.DIM_MEMBER (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_MEMBER_STATUS_HISTORY, ref FACT_MEMBER_SPONSORSHIP_SPAN, ref CRM_MEMBER, ref CRM_CAMPAIGN, ref DIM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O188-F, O191-G, O213-D, O237-C
+-- =============================================================================
 -- DIM_MEMBER: 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
 {{ config(
     materialized='incremental',

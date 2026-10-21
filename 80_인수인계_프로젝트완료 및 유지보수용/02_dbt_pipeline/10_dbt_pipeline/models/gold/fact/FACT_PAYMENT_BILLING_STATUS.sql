@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회비 청구 처리 상태 팩트 — 청구구분 × 처리상태 × 환급사유별 청구·납입 건수·금액
+-- Target     : GOLD.FACT_PAYMENT_BILLING_STATUS (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_PAYMENT_BILLING, ref DIM_CAMPAIGN, ref DIM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O213, O45, O225-C, O225-B 외 2
+-- =============================================================================
 -- FACT_PAYMENT_BILLING_STATUS: 회비 청구 처리 상태 팩트 — 청구구분 × 처리상태 × 환급사유별 청구·납입 건수·금액
 --
 -- ============================================================================

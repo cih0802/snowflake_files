@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : O37 회귀 방어: 캠페인별 중단률의 구조 불변량 검증 (행이 반환되면 위반).
+-- Target     : dbt singular test assert_fmc_churn_invariants (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT
+-- Issue      : O37
+-- =============================================================================
 -- O37 회귀 방어: 캠페인별 중단률의 구조 불변량 검증 (행이 반환되면 위반).
--- Co-authored with CoCo
 --
 -- 이 테스트가 지키는 것 = O37 설계의 목적 자체다. 캠페인별 중단률은 값·매핑이 전부 정상이어도
 -- **분자·분모 모집단이 어긋나면 조용히 틀린다**. 그것이 애초에 Agent 를 오답으로 이끈 구조이며
@@ -17,7 +23,7 @@
 --    음수는 「획득 전 중단」이 섞였다는 뜻 = 코호트 귀속이 깨진 것이다.
 -- ⑤ 미중단 정합: FIRST_STOP_DATE_SK 가 NULL 이면 이탈 measure 는 전부 0 이어야 한다.
 --
--- ⚠️ [2026-08-05 자기지적] 초판이 `IIF` 를 썼다가 첫 build 의 유일한 ERROR 가 됐다(T-SQL 함수 —
+-- WARN: [2026-08-05 자기지적] 초판이 `IIF` 를 썼다가 첫 build 의 유일한 ERROR 가 됐다(T-SQL 함수 —
 --    Snowflake 는 `IFF`). 모델은 `EXPLAIN` 으로 사전 검증했는데 **singular test 는 하지 않았다**.
 --    `dbt compile` 은 Jinja 렌더만 하고 SQL 유효성을 DB 에 묻지 않으므로 이런 결함을 잡지 못한다
 --    → singular test 도 모델과 동일하게 `EXPLAIN`/실행으로 사전 검증할 것(P64).

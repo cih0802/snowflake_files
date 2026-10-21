@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : 마케팅캠페인 마스터 정제 (BRONZE TC_MKTNG_DTL_CD C001 → SILVER)
+-- Target     : SILVER.CRM_MARKETING_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TC_MKTNG_DTL_CD
+-- Issue      : O44, O162
+-- =============================================================================
 -- CRM_MARKETING_CAMPAIGN: 마케팅캠페인 마스터 정제 (BRONZE TC_MKTNG_DTL_CD C001 → SILVER)
--- Co-authored with CoCo
 --
 -- ============================================================================
 -- [2026-08-06 O44 · 2026-09-16 O162 개정]
 -- ----------------------------------------------------------------------------
--- 🔴 2026-09-15 원천 TM_CM_MKTNG_CMPGN_MNG 가 삭제되고 TC_MKTNG_DTL_CD 로 통합됨.
+-- WARN: 2026-09-15 원천 TM_CM_MKTNG_CMPGN_MNG 가 삭제되고 TC_MKTNG_DTL_CD 로 통합됨.
 --    dbt 모델에서는 TC_MKTNG_DTL_CD (CD_ID='C001' 마케팅캠페인명) 필터링으로 재정의되어 상위 호환성 유지.
 -- ============================================================================
 SELECT

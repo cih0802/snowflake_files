@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결제(청구·납입) = 회비 ∪ 기부금 (PAY_KEY 접두 통합키), 정본 09 STEP3.
+-- Target     : SILVER.CRM_PAYMENT_BILLING (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_PM_MBRFEE_ACMSLT, source bronze_crm.TM_PM_DNTN_DTLS
+-- Issue      : DEC-17, DEC-3, O26, O191-F 외 1
+-- =============================================================================
 -- CRM_PAYMENT_BILLING: 결제(청구·납입) = 회비 ∪ 기부금 (PAY_KEY 접두 통합키), 정본 09 STEP3.
 SELECT
   'MBRFEE_'||MBRFEE_KEY            AS PAY_KEY,

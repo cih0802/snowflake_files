@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
+-- Target     : GOLD.WIDE_MEMBER_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT, ref DIM_DATE, ref DIM_MEMBER_STATUS_HISTORY, ref DIM_CAMPAIGN, ref DIM_SPONSORSHIP, ref DIM_ORG 외 1
+-- Issue      : O51-B, O51-D, O24, O231 외 11
+-- =============================================================================
 -- WIDE_MEMBER_EVENT: 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).

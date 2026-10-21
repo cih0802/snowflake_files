@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 사업목표 팩트(FTG_B) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.4)
+-- Target     : GOLD.WIDE_TARGET_BIZ (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_PROJECT, ref DIM_ORG, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN
+-- Issue      : O51-C, O188, O188-E
+-- =============================================================================
 -- WIDE_TARGET_BIZ: 사업목표 팩트(FTG_B) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.4)
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.

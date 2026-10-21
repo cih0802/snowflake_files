@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
+-- Target     : TABLE GN_DW.OPS.NULL_REASON_CODE, TABLE GN_DW.OPS.COLUMN_NULL_REGISTRY, VIEW GN_DW.OPS.V_OPS_OBJECT_INVENTORY
+-- Run order  : 운영계 #3
+-- Depends on : GN_DW.INFORMATION_SCHEMA.TABLES, GN_DW.INFORMATION_SCHEMA.PROCEDURES, GN_DW.INFORMATION_SCHEMA.FUNCTIONS, GN_DW.INFORMATION_SCHEMA.STAGES
+-- Issue      : O216-G, DEC-55
+-- =============================================================================
 -- ============================================================================
 -- 08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql
 -- ----------------------------------------------------------------------------

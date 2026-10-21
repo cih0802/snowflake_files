@@ -1,18 +1,24 @@
+-- =============================================================================
+-- Purpose    : 광고 성과 **코어** 팩트(FAD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.7)
+-- Target     : GOLD.WIDE_AD_PERFORMANCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref DIM_DATE, ref DIM_CAMPAIGN, ref DIM_AD_CREATIVE, ref DIM_DEVICE
+-- Issue      : DEC-8, DEC-10, O51-C
+-- =============================================================================
 -- WIDE_AD_PERFORMANCE: 광고 성과 **코어** 팩트(FAD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.7)
--- Co-authored with CoCo
--- ⚠️ [2026-07-28 순서9-I DEC-8] 코어에서 위성으로 이관된 방송 degen 5종
+-- WARN: [2026-07-28 순서9-I DEC-8] 코어에서 위성으로 이관된 방송 degen 5종
 --    (TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)을 본 뷰에서 **제거**했다.
 --    본 뷰는 팩트와 1:1 대응 원칙을 지키며 **코어 컬럼만** 평탄화한다.
 --    → 방송 고유속성은 `WIDE_AD_BROADCAST` · 디지털은 `WIDE_AD_DIGITAL` · 사례는 `WIDE_AD_BROADCAST_CASE`.
--- ⚠️ 명명 충돌 해소: `AD_SOURCE_TYPE`(코어 degen = 원천 출처축 DIGITAL/VIDEO/REBROADCAST)과
+-- WARN: 명명 충돌 해소: `AD_SOURCE_TYPE`(코어 degen = 원천 출처축 DIGITAL/VIDEO/REBROADCAST)과
 --    `AD_CREATIVE_TYPE`(DIM_AD_CREATIVE 소재 광고유형)은 **다른 개념**이다. 종전 두 컬럼이 모두
 --    `AD_TYPE` 이라 혼동 소지가 있었으므로 내용에 맞게 분리 명명했다(소비자 부재 확인 후 적용).
--- ⚠️ CAMPAIGN_SK·AD_CREATIVE_SK 는 여전히 0 스캐폴드(Q10 이름매칭·소재 부분키 대기) → 관련 컬럼 NULL.
+-- WARN: CAMPAIGN_SK·AD_CREATIVE_SK 는 여전히 0 스캐폴드(Q10 이름매칭·소재 부분키 대기) → 관련 컬럼 NULL.
 --    DEVICE_SK 는 DEC-10 으로 실배선 완료(방송행은 `(해당없음)` 멤버).
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
 --   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
---   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
+--   WARN: columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
     materialized='gn_view_commented'
 ) }}

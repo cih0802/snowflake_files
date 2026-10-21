@@ -1,7 +1,14 @@
+-- =============================================================================
+-- Purpose    : 05_6_SV_DDL_BUDGET.sql — Semantic View DDL 정본: SV_BUDGET
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
+-- Run order  : 운영계 #23
+-- Depends on : GN_DW.GOLD.FACT_BUDGET, GN_DW.GOLD.DIM_MONTH, GN_DW.GOLD.DIM_BUDGET_ITEM, GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
+-- Issue      : -
+-- =============================================================================
 -- ============================================================================
 -- 05_6_SV_DDL_BUDGET.sql — Semantic View DDL 정본: SV_BUDGET
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;

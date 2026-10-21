@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 생애주기 사건 팩트 (개발/약정 ∪ 후원중단 이벤트) — 가입, 증액, 감액, 재후원, 중단 등 생애 이벤트 추적
+-- Target     : GOLD.FACT_MEMBER_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_ORG, ref CRM_CAMPAIGN, ref CRM_CODE, ref DIM_SPONSORSHIP, ref CRM_MEMBER_SPONSOR_SPAN, ref CRM_MEMBER_DEV 외 3
+-- Issue      : O179, O180, O160, O196-D 외 6
+-- =============================================================================
 -- FACT_MEMBER_EVENT: 회원 생애주기 사건 팩트 (개발/약정 ∪ 후원중단 이벤트) — 가입, 증액, 감액, 재후원, 중단 등 생애 이벤트 추적
 -- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
 --    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라

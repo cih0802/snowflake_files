@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송×회원 상세 = 채널별 상세 ∪ SND 회원리스트 (채널별 dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SEND_MEMBER (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.SND_MEMBER_OPEN_LOG, source bronze_crm.SND_MEMBER_LIST, source bronze_crm.TD_MS_EMAIL_SNDNG_DTLS, source bronze_crm.TD_MS_MSG_AT_SNDNG_DTLS, source bronze_crm.TD_MS_PSTMTR_SNDNG_DTL
+-- Issue      : O59-N, DEC-35, DEC-17-B, O116-B 외 8
+-- =============================================================================
 -- CRM_SEND_MEMBER: 발송×회원 상세 = 채널별 상세 ∪ SND 회원리스트 (채널별 dedup), 정본 09 STEP3.
 -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 정본 = 문서30 §23-G·§23-J · 매핑 = 문서31 §1·§2.
 --   구조를 바꾼 이유: 종전에는 4원천을 곧바로 UNION ALL 했는데, 라벨 조인을 각 브랜치에 붙이면

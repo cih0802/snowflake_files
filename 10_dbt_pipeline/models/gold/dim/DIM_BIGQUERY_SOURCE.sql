@@ -1,6 +1,12 @@
+-- =============================================================================
+-- Purpose    : 트래픽소스 차원 (BIGQUERY_TRAFFIC_SOURCE → source/medium grain)
+-- Target     : GOLD.DIM_BIGQUERY_SOURCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_TRAFFIC_SOURCE
+-- Issue      : -
+-- =============================================================================
 -- DIM_BIGQUERY_SOURCE: 트래픽소스 차원 (BIGQUERY_TRAFFIC_SOURCE → source/medium grain)
--- Co-authored with CoCo
--- ⚠️ grain=(UTM_SOURCE,UTM_MEDIUM): BIGQUERY_EVENT 팩트가 조인 가능한 유일 grain(content/term은 이벤트에 부재).
+-- WARN: grain=(UTM_SOURCE,UTM_MEDIUM): BIGQUERY_EVENT 팩트가 조인 가능한 유일 grain(content/term은 이벤트에 부재).
 --    content/term/source_medium 은 대표값(MAX) 보조표시 — 팩트 팬아웃 방지 위해 grain에서 제외.
 {{ config(
     materialized='incremental',

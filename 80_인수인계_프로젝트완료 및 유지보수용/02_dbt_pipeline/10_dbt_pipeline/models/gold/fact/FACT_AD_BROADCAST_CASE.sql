@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고성과 위성 — 재방송 사례(정규화). 순서9-I 신설(DEC-8).
+-- Target     : GOLD.FACT_AD_BROADCAST_CASE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_BROADCAST_CASE
+-- Issue      : DEC-8, O14
+-- =============================================================================
 -- FACT_AD_BROADCAST_CASE: 광고성과 위성 — 재방송 사례(정규화). 순서9-I 신설(DEC-8).
 -- grain: AD_PERF_DK × CASE_SEQ (1행 = 1사례) — 코어 FACT_AD_PERFORMANCE 에 **1:N**.
 -- WARN: fan-out 주의: 코어 measure(광고비·노출 등)와 함께 집계하면 **사례 수만큼 중복 합산**된다.

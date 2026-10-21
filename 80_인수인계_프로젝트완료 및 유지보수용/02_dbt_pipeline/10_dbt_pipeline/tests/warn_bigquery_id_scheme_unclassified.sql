@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-19 O87-B] `BIGQUERY_REFINED_DATA.ID_SCHEME = 'UNCLASSIFIED'` 를 관측한다.
+-- Target     : dbt singular test warn_bigquery_id_scheme_unclassified (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87-B, O87, DEC-17-B
+-- =============================================================================
 -- [2026-08-19 O87-B] `BIGQUERY_REFINED_DATA.ID_SCHEME = 'UNCLASSIFIED'` 를 관측한다.
 --
 -- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —

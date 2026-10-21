@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 서비스/발송 팩트(FSE) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.5)
+-- Target     : GOLD.WIDE_SERVICE_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MESSAGE_DISPATCH, ref DIM_DATE, ref DIM_MEMBER_STATUS_HISTORY, ref DIM_SEND_TYPE, ref DIM_SERVICE, ref DIM_CAMPAIGN
+-- Issue      : O51-B, O51-D, O59-P, DEC-35 외 5
+-- =============================================================================
 -- WIDE_SERVICE_EVENT: 서비스/발송 팩트(FSE) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.5)
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).

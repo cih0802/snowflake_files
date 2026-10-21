@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정 기반, O93 신설.
+-- Target     : SILVER.CRM_MEMBER_SPONSOR_SPAN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER_SPONSOR_BIZ, source bronze_crm.TM_MM_FDRM_MBER_SPNSR
+-- Issue      : O93, O188-F, O189-B, O179
+-- =============================================================================
 -- CRM_MEMBER_SPONSOR_SPAN: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정 기반, O93 신설.
 --
 -- 왜 신설했나 — 정본 #51「월말활동회원」의 as-of 판정에는 **구간**이 필요한데

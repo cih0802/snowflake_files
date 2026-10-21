@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Google Search Console 일 집계 (1행 = 일 × 검색어 × 페이지 × 국가 × 기기) · [2026-10-08 O213-F Y3-F]
+-- Target     : SILVER.SEARCH_CONSOLE_DATA (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_gsc.SEARCH_CONSOLE_DATA
+-- Issue      : O213-F
+-- =============================================================================
 -- SEARCH_CONSOLE_DATA: Google Search Console 일 집계 (1행 = 일 × 검색어 × 페이지 × 국가 × 기기) · [2026-10-08 O213-F Y3-F]
 -- 원천 BRONZE_GSC.SEARCH_CONSOLE_DATA(byPage 집계) → 값 가공 없음(R2-7). 실측 983,601행 · 5키 중복 0 · 2025-04-08~.
 --   WARN: SEARCH_CONSOLE_DATA2 는 읽지 않는다 — 2026-09-08 까지 이 표와 941,298행 전건 일치(기간만 짧은 복사본).

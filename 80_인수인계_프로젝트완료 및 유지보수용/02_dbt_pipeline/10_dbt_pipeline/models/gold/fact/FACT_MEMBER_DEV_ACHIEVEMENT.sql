@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원개발 목표 대비 실적 (월 conform)
+-- Target     : GOLD.FACT_MEMBER_DEV_ACHIEVEMENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_MEMBER_DEV, ref FACT_MEMBER_EVENT, ref DIM_ORG, ref CRM_CODE
+-- Issue      : O179, O180
+-- =============================================================================
 -- FACT_MEMBER_DEV_ACHIEVEMENT: 회원개발 목표 대비 실적 (월 conform)
 -- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
 --    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라

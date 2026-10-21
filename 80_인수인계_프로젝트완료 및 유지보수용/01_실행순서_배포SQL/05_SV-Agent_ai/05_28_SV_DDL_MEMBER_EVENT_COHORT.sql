@@ -1,9 +1,16 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_MEMBER_EVENT_COHORT ( O249 · O250-E 단독 파일로 이관)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT_COHORT
+-- Run order  : 운영계 #45
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+-- Issue      : O249, O250-E
+-- =============================================================================
 -- ============================================================================
 -- 05_28_SV_DDL_MEMBER_EVENT_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_EVENT_COHORT ( O249 · O250-E 단독 파일로 이관)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 대상 = 회원 개발사건 × 경과월(0~12) 코호트 (회원 Agent · analyst_member_event_cohort)
 --   · 선행 = GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT(03_top-down_gold/06_DDL.sql · dbt build)
---   · 원 배포 파일 = 35_O249_SV_신설_광고비배분_개발사건코호트.sql(이력 보존 · 문면 무변경 이관)
+--   · 원 배포 파일 = 35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql(이력 보존 · 문면 무변경 이관)
 --   · 공통 규약 = 05_0_SV_DDL.sql
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;

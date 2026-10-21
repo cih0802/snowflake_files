@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW Cortex Agent [1/2] 껍데기 생성 — 객체·소유권·GRANT·CoWork 등록만 (스펙 본문 없음)
+-- Target     : AGENT GN_DW.SERVING.AGENT_MEMBER, AGENT GN_DW.SERVING.AGENT_EXECUTIVE, AGENT GN_DW.SERVING.AGENT_MARKETING
+-- Run order  : 운영계 #54 · 기존 환경 갱신 #28
+-- Depends on : -
+-- Issue      : O84, O85, O200-D, O201 외 2
+-- =============================================================================
 -- GN_DW Cortex Agent [1/2] 껍데기 생성 — 객체·소유권·GRANT·CoWork 등록만 (스펙 본문 없음)
 -- ============================================================================
 -- ▶ 이 파일의 위상

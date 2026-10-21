@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 월 × 마케팅캠페인 × 개발인입경로 광고비 배분 팩트 (인입경로별 개발단가)
+-- Target     : GOLD.FACT_AD_INFLOW_ALLOC (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref FACT_MEMBER_EVENT, ref DIM_MARKETING_CAMPAIGN
+-- Issue      : O248, O225-C
+-- =============================================================================
 -- FACT_AD_INFLOW_ALLOC: 월 × 마케팅캠페인 × 개발인입경로 광고비 배분 팩트 (인입경로별 개발단가)
 --  [2026-10-20 O248 · 사용자 결정 = 원천 구분자 1차 매핑 + 개발(건) 비중 배분]
 --   왜 새 팩트인가 = 광고비(AGENCY)는 마케팅캠페인 grain 이고 인입경로가 없다. 한 마케팅캠페인 아래

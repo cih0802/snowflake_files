@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 일시→정기 회원 전환 매핑 이력 정제 (BRONZE TM_MM_FDRM_MBER_DT_DTLS → SILVER)
+-- Target     : SILVER.CRM_MEMBER_CONVERT_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MM_FDRM_MBER_DT_DTLS
+-- Issue      : O162
+-- =============================================================================
 -- CRM_MEMBER_CONVERT_HIST: 일시→정기 회원 전환 매핑 이력 정제 (BRONZE TM_MM_FDRM_MBER_DT_DTLS → SILVER)
--- Co-authored with CoCo
 --
 -- ============================================================================
 -- [2026-09-16 O162 신설]
@@ -17,7 +23,7 @@ SELECT
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_DT_DTLS') }}
 WHERE MBER_NO IS NOT NULL
   AND ONCE_MBER_NO IS NOT NULL
--- [2026-10-16 grain 보정] BRONZE 이중 적재(📏 14,500행 / PK 7,256) 방어 — PK(MBER_NO, ONCE_MBER_NO)당 1행.
+-- [2026-10-16 grain 보정] BRONZE 이중 적재( 14,500행 / PK 7,256) 방어 — PK(MBER_NO, ONCE_MBER_NO)당 1행.
 QUALIFY ROW_NUMBER() OVER (
   PARTITION BY NULLIF(TRIM(MBER_NO),''), NULLIF(TRIM(ONCE_MBER_NO),'')
   ORDER BY FRST_REGIST_DT DESC NULLS LAST, _LOAD_DT DESC NULLS LAST

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : LLM-METADATA
+-- Target     : SCHEMA GN_DW.SNAPSHOT
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.INFORMATION_SCHEMA.COLUMNS, GN_DW.BRONZE_CRM.TM_CM_MBER_DVLP_GOAL, GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD, GN_DW.SNAPSHOT.SNP_CRM_TM_CM_BRND_MNG, GN_DW.SNAPSHOT.SNP_CRM_TM_RM_BPLC_MNG, GN_DW.SNAPSHOT.SNP_CRM_TM_CM_MBER_DVLP_GOAL 외 9
+-- Issue      : -
+-- =============================================================================
 -- LLM-METADATA
 -- doc_id: GN_DW_SNAPSHOT_SETUP_AND_VERIFICATION_SQL
 -- doc_role: GN_DW dbt Snapshot 스키마 구축, 마트 DDL 선행 적용 및 무결성 검증 쿼리 모음

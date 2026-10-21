@@ -1,287 +1,292 @@
 ﻿서브폴더,파일경로,파일명,설명,원본경로,크기(byte)
-01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,9759
-01_실행순서_배포SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,07_ENVIRONMENT_RBAC_setup.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,56276
-01_실행순서_배포SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,08_After_Deploy_DBT.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,13549
-01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,06_DDL.sql,문서실행순서.md 명시 SQL,03_top-down_gold/06_DDL.sql,224817
-01_실행순서_배포SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,08_SILVER_테이블DDL_20260714.sql,문서실행순서.md 명시 SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,159922
-01_실행순서_배포SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,문서실행순서.md 명시 SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,4047
-01_실행순서_배포SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,05_01_SV_DDL_MEMBER_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,42878
-01_실행순서_배포SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,05_02_SV_DDL_MEMBER_EVENT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,50509
-01_실행순서_배포SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,05_03_SV_DDL_MEMBER_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,35915
-01_실행순서_배포SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,05_04_SV_DDL_SERVICE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,48071
-01_실행순서_배포SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,05_05_SV_DDL_EVENT_PARTICIPATION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,28911
-01_실행순서_배포SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,05_06_SV_DDL_BUDGET.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,14627
-01_실행순서_배포SQL,05_SV-Agent_ai/05_07_SV_DDL_AD.sql,05_07_SV_DDL_AD.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_07_SV_DDL_AD.sql,38062
-01_실행순서_배포SQL,05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,05_08_SV_DDL_DEV_ACHIEVEMENT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,15275
-01_실행순서_배포SQL,05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,05_09_SV_DDL_MEMBER_FEE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,26871
-01_실행순서_배포SQL,05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,15597
-01_실행순서_배포SQL,05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,05_11_SV_DDL_TARGET_BIZ.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,11586
-01_실행순서_배포SQL,05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,05_12_SV_DDL_RELATION_ACTIVITY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,14999
-01_실행순서_배포SQL,05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,05_13_SV_DDL_DEPT_AGGR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,25945
-01_실행순서_배포SQL,05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,7139
-01_실행순서_배포SQL,05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,05_15_SV_DDL_GA_BEHAVIOR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,14879
-01_실행순서_배포SQL,05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,05_16_SV_DDL_BUDGET_YEARLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,9018
-01_실행순서_배포SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,8914
-01_실행순서_배포SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,26952
-01_실행순서_배포SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,14919
-01_실행순서_배포SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,05_20_SV_DDL_GA_SESSION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,17513
-01_실행순서_배포SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,05_21_SV_DDL_SEARCH_CONSOLE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,7404
-01_실행순서_배포SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,05_22_SV_DDL_GA_DEMOGRAPHIC.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,6626
-01_실행순서_배포SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,05_23_SV_DDL_EXPENSE_RESOLUTION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,8980
-01_실행순서_배포SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,12186
-01_실행순서_배포SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,16577
-01_실행순서_배포SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,05_26_SV_DDL_GA_CHILD_UNPAID.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,13107
-01_실행순서_배포SQL,05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,05_27_SV_DDL_AD_INFLOW_ALLOC.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,6307
-01_실행순서_배포SQL,05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,7360
-01_실행순서_배포SQL,05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,9523
-01_실행순서_배포SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,6421
-01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,09_1_AGENT_생성.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29295
-01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,35319
-01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,21_ML_SERVING_뷰_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,76293
-01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,22_ML_SV_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,101069
-01_실행순서_배포SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,23_ML_INC_MKTG_CMPGN_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,11762
-01_실행순서_배포SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,24_ML_REALTIME_SIMULATOR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,15826
-01_실행순서_배포SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,25_ML_CHURN_CMPGN_CTGR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,21410
-01_실행순서_배포SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,7876
-01_실행순서_배포SQL,05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql,30_O240_실데이터이상치_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql,6066
-01_실행순서_배포SQL,05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql,32_O241_AB병기_SV배선_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql,9151
-01_실행순서_배포SQL,05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql,33_O241C_O242_운영계반영_배포순서.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql,5448
-01_실행순서_배포SQL,05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql,35_O249_SV_신설_광고비배분_개발사건코호트.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql,13234
-01_실행순서_배포SQL,05_SV-Agent_ai/36_O250_ML예측_7축확장.sql,36_O250_ML예측_7축확장.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/36_O250_ML예측_7축확장.sql,30806
-01_실행순서_배포SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,문서실행순서.md 명시 SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101
-01_실행순서_배포SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,문서실행순서.md 명시 SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480
-01_실행순서_배포SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,문서실행순서.md 명시 SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143
-01_실행순서_배포SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,3832
-01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480
-01_실행순서_배포SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,400
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,3750
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,13688
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,02_view_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,7803
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,03_function_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11050
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,04_sp_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,48540
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,05_MSTR_SV_DDL.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,50926
-01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,06_MSTR_적재_실행.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5302
-01_실행순서_배포SQL,문서실행순서_llm실행.md,문서실행순서_llm실행.md,🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항,문서실행순서_llm실행.md,22035
-01_실행순서_배포SQL,문서실행순서_보조주석.md,문서실행순서_보조주석.md,🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조),문서실행순서_보조주석.md,14031
+01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,11194
+01_실행순서_배포SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,07_ENVIRONMENT_RBAC_setup.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,56443
+01_실행순서_배포SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,08_After_Deploy_DBT.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,13840
+01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,06_DDL.sql,문서실행순서.md 명시 SQL,03_top-down_gold/06_DDL.sql,230042
+01_실행순서_배포SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,08_SILVER_테이블DDL_20260714.sql,문서실행순서.md 명시 SQL,04_silver_design/08_SILVER_테이블DDL_20260714.sql,160382
+01_실행순서_배포SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,문서실행순서.md 명시 SQL,04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,4512
+01_실행순서_배포SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,05_01_SV_DDL_MEMBER_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,43406
+01_실행순서_배포SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,05_02_SV_DDL_MEMBER_EVENT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,52919
+01_실행순서_배포SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,05_03_SV_DDL_MEMBER_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,36488
+01_실행순서_배포SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,05_04_SV_DDL_SERVICE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,48605
+01_실행순서_배포SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,05_05_SV_DDL_EVENT_PARTICIPATION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,29409
+01_실행순서_배포SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,05_06_SV_DDL_BUDGET.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,15097
+01_실행순서_배포SQL,05_SV-Agent_ai/05_07_SV_DDL_AD.sql,05_07_SV_DDL_AD.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_07_SV_DDL_AD.sql,38615
+01_실행순서_배포SQL,05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,05_08_SV_DDL_DEV_ACHIEVEMENT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,18781
+01_실행순서_배포SQL,05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,05_09_SV_DDL_MEMBER_FEE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,27303
+01_실행순서_배포SQL,05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,22983
+01_실행순서_배포SQL,05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,05_11_SV_DDL_TARGET_BIZ.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,11954
+01_실행순서_배포SQL,05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,05_12_SV_DDL_RELATION_ACTIVITY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,15474
+01_실행순서_배포SQL,05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,05_13_SV_DDL_DEPT_AGGR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,26554
+01_실행순서_배포SQL,05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,7531
+01_실행순서_배포SQL,05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,05_15_SV_DDL_GA_BEHAVIOR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,15426
+01_실행순서_배포SQL,05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,05_16_SV_DDL_BUDGET_YEARLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,9477
+01_실행순서_배포SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,9327
+01_실행순서_배포SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,27383
+01_실행순서_배포SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,15423
+01_실행순서_배포SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,05_20_SV_DDL_GA_SESSION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,18056
+01_실행순서_배포SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,05_21_SV_DDL_SEARCH_CONSOLE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,7859
+01_실행순서_배포SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,05_22_SV_DDL_GA_DEMOGRAPHIC.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,7084
+01_실행순서_배포SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,05_23_SV_DDL_EXPENSE_RESOLUTION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,9498
+01_실행순서_배포SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,12608
+01_실행순서_배포SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,16997
+01_실행순서_배포SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,05_26_SV_DDL_GA_CHILD_UNPAID.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,13546
+01_실행순서_배포SQL,05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,05_27_SV_DDL_AD_INFLOW_ALLOC.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,6728
+01_실행순서_배포SQL,05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,7758
+01_실행순서_배포SQL,05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,9904
+01_실행순서_배포SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,6804
+01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,09_1_AGENT_생성.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29707
+01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,35712
+01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,21_ML_SERVING_뷰_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,77035
+01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,22_ML_SV_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,101684
+01_실행순서_배포SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,23_ML_INC_MKTG_CMPGN_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,12083
+01_실행순서_배포SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,24_ML_REALTIME_SIMULATOR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,16400
+01_실행순서_배포SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,25_ML_CHURN_CMPGN_CTGR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,21725
+01_실행순서_배포SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,8457
+01_실행순서_배포SQL,05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql,30_DEPLOY_DATA_ANOMALY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql,6511
+01_실행순서_배포SQL,05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql,32_DEPLOY_AB_DUAL_SV_WIRING.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql,9603
+01_실행순서_배포SQL,05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql,33_DEPLOY_PROD_ROUNDING_VQR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql,5916
+01_실행순서_배포SQL,05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql,35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql,13670
+01_실행순서_배포SQL,05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql,36_DEPLOY_ML_PRED_7AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql,31384
+01_실행순서_배포SQL,05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql,37_DEPLOY_ORG_SUCCESSION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql,13153
+01_실행순서_배포SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,문서실행순서.md 명시 SQL,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18682
+01_실행순서_배포SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,문서실행순서.md 명시 SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,11023
+01_실행순서_배포SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,문서실행순서.md 명시 SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9621
+01_실행순서_배포SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,4183
+01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,14044
+01_실행순서_배포SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,1346
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,4087
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,14174
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,02_view_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,8456
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,03_function_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11652
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,04_sp_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,49162
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,05_MSTR_SV_DDL.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,51615
+01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,06_MSTR_적재_실행.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5849
+01_실행순서_배포SQL,문서실행순서_llm실행.md,문서실행순서_llm실행.md,🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항,문서실행순서_llm실행.md,23456
+01_실행순서_배포SQL,문서실행순서_보조주석.md,문서실행순서_보조주석.md,🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조),문서실행순서_보조주석.md,18151
 01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지),12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787
 02_dbt_pipeline,10_dbt_pipeline/00_배포운영_통합_20260715.md,00_배포운영_통합_20260715.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/00_배포운영_통합_20260715.md,17833
-02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/01_deploy_dbt_project.sql,3832
-02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/02_dbt_parse_compile_build.sql,13480
+02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/01_deploy_dbt_project.sql,4183
+02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/02_dbt_parse_compile_build.sql,14044
 02_dbt_pipeline,10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,10_성능검토_정적코드분석_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,9054
 02_dbt_pipeline,10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,11_성능검토_운영리스크_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,8360
 02_dbt_pipeline,10_dbt_pipeline/README.md,README.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/README.md,8792
-02_dbt_pipeline,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,400
-02_dbt_pipeline,10_dbt_pipeline/dbt_project.yml,dbt_project.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_project.yml,38395
-02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_predicate.sql,bigquery_range_predicate.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_predicate.sql,10090
-02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_purge.sql,bigquery_range_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_purge.sql,3694
-02_dbt_pipeline,10_dbt_pipeline/macros/billing_campaign_asof.sql,billing_campaign_asof.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/billing_campaign_asof.sql,2340
-02_dbt_pipeline,10_dbt_pipeline/macros/ga4_union_shards.sql,ga4_union_shards.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/ga4_union_shards.sql,5968
-02_dbt_pipeline,10_dbt_pipeline/macros/generate_schema_name.sql,generate_schema_name.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/generate_schema_name.sql,541
-02_dbt_pipeline,10_dbt_pipeline/macros/gn_biz_codes.sql,gn_biz_codes.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_biz_codes.sql,4077
-02_dbt_pipeline,10_dbt_pipeline/macros/gn_member_master_filter.sql,gn_member_master_filter.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_member_master_filter.sql,3419
-02_dbt_pipeline,10_dbt_pipeline/macros/gn_no_structural_alter.sql,gn_no_structural_alter.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_no_structural_alter.sql,6891
-02_dbt_pipeline,10_dbt_pipeline/macros/gn_view_commented.sql,gn_view_commented.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_view_commented.sql,3456
-02_dbt_pipeline,10_dbt_pipeline/macros/gold_fact_purge.sql,gold_fact_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gold_fact_purge.sql,3848
-02_dbt_pipeline,10_dbt_pipeline/macros/gold_helpers.sql,gold_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gold_helpers.sql,3625
-02_dbt_pipeline,10_dbt_pipeline/macros/silver_helpers.sql,silver_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_helpers.sql,839
-02_dbt_pipeline,10_dbt_pipeline/macros/silver_purge.sql,silver_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_purge.sql,3144
-02_dbt_pipeline,10_dbt_pipeline/models/gold/_gold_ready_schema.yml,_gold_ready_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/_gold_ready_schema.yml,75623
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,DIM_AD_CREATIVE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,4847
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,DIM_BIGQUERY_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,853
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,DIM_BIGQUERY_SOURCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,1477
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,DIM_BIZ_PLACE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,926
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,DIM_BUDGET_ITEM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,1364
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,DIM_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,7611
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,DIM_CHILD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,941
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,DIM_CODE_GROUP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,648
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,DIM_DATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,4741
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,DIM_DEVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,2467
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,DIM_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,3800
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,DIM_MARKETING_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,8927
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,DIM_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,7286
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,DIM_MEMBER_ACQUISITION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,8390
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,DIM_MEMBER_IDENTITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,2531
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,DIM_MEMBER_STATUS_HISTORY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,9235
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,DIM_MONTH.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,1919
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,DIM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,1620
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,DIM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,1009
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,DIM_ORG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,7727
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,DIM_PAYMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,976
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,DIM_PAYMENT_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,1511
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,DIM_REASON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,982
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,DIM_RELATIONSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,1894
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,DIM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,3633
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,DIM_SEND_TYPE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,4366
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,DIM_SERVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,1603
-02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,DIM_SPONSORSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,4891
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,FACT_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,3307
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,FACT_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,1454
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,FACT_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,2673
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,FACT_AD_INFLOW_ALLOC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,6454
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,FACT_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,16770
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,FACT_BIGQUERY_BEHAVIOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,9090
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,FACT_BIGQUERY_SESSION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,3479
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,FACT_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,5244
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,FACT_BUDGET_YEARLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,4444
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,FACT_CAMPAIGN_CUM_STOP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,4884
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,FACT_CAMPAIGN_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,11830
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,FACT_EVENT_ATTENDANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,7350
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,FACT_EXPENSE_RESOLUTION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,2373
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,FACT_GA4_DEMOGRAPHIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,840
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,FACT_GA_CHILD_VIEW.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,3381
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,FACT_MEMBER_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,19963
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,FACT_MEMBER_COHORT_SURVIVAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,7578
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,FACT_MEMBER_DEV_ACHIEVEMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,4193
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,FACT_MEMBER_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,23214
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,FACT_MEMBER_EVENT_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,11306
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,FACT_MEMBER_FEE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,8120
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,FACT_MEMBER_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,41851
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,FACT_MEMBER_SPONSORSHIP_SPAN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,5184
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,FACT_MESSAGE_DISPATCH.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,15679
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,FACT_PAYMENT_BILLING_STATUS.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,6410
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,FACT_PAYMENT_METHOD_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,1245
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,FACT_RELATION_ACTIVITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,2131
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,FACT_RELATION_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,972
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,FACT_RELATION_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,816
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,FACT_SEARCH_CONSOLE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,1020
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,FACT_SPONSORSHIP_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,2604
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,FACT_TARGET_MEMBER_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,822
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,FACT_TARGET_PROJECT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,3977
-02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,FACT_UNPAID_SERVICE_CONV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,3934
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,WIDE_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,4453
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,WIDE_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,2675
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,WIDE_AD_COMBINED.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,5049
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,WIDE_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,4013
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,WIDE_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,3151
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,WIDE_BIGQUERY_BEHAVIOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,3011
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,WIDE_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,2024
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,WIDE_DVLP_GOAL_ACMSLT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,1407
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,WIDE_EVENT_PARTICIPATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,5905
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,WIDE_MBRFEE_PRDT_ACTL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,1632
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,WIDE_MEMBER_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,10267
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,WIDE_MEMBER_FEE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,6863
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,WIDE_MEMBER_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,5518
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,WIDE_MEMBER_MONTHLY_KPI.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,3676
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,WIDE_MEMBER_SERVICE_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,20749
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,WIDE_SERVICE_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,4875
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,WIDE_SPNSR_CLS_AGGR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,1548
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,WIDE_TARGET_BIZ.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,1766
-02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,WIDE_TARGET_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,1493
+02_dbt_pipeline,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,1346
+02_dbt_pipeline,10_dbt_pipeline/dbt_project.yml,dbt_project.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/dbt_project.yml,38354
+02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_predicate.sql,bigquery_range_predicate.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_predicate.sql,10481
+02_dbt_pipeline,10_dbt_pipeline/macros/bigquery_range_purge.sql,bigquery_range_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/bigquery_range_purge.sql,4077
+02_dbt_pipeline,10_dbt_pipeline/macros/billing_campaign_asof.sql,billing_campaign_asof.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/billing_campaign_asof.sql,2771
+02_dbt_pipeline,10_dbt_pipeline/macros/ga4_union_shards.sql,ga4_union_shards.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/ga4_union_shards.sql,6382
+02_dbt_pipeline,10_dbt_pipeline/macros/generate_schema_name.sql,generate_schema_name.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/generate_schema_name.sql,961
+02_dbt_pipeline,10_dbt_pipeline/macros/gn_biz_codes.sql,gn_biz_codes.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_biz_codes.sql,4530
+02_dbt_pipeline,10_dbt_pipeline/macros/gn_member_master_filter.sql,gn_member_master_filter.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_member_master_filter.sql,3771
+02_dbt_pipeline,10_dbt_pipeline/macros/gn_no_structural_alter.sql,gn_no_structural_alter.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_no_structural_alter.sql,7103
+02_dbt_pipeline,10_dbt_pipeline/macros/gn_view_commented.sql,gn_view_commented.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gn_view_commented.sql,3823
+02_dbt_pipeline,10_dbt_pipeline/macros/gold_fact_purge.sql,gold_fact_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gold_fact_purge.sql,4194
+02_dbt_pipeline,10_dbt_pipeline/macros/gold_helpers.sql,gold_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/gold_helpers.sql,4049
+02_dbt_pipeline,10_dbt_pipeline/macros/silver_helpers.sql,silver_helpers.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_helpers.sql,1179
+02_dbt_pipeline,10_dbt_pipeline/macros/silver_purge.sql,silver_purge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/macros/silver_purge.sql,3498
+02_dbt_pipeline,10_dbt_pipeline/models/gold/_gold_ready_schema.yml,_gold_ready_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/_gold_ready_schema.yml,76444
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,DIM_AD_CREATIVE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,5298
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,DIM_BIGQUERY_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,1252
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,DIM_BIGQUERY_SOURCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,1875
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,DIM_BIZ_PLACE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,1291
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,DIM_BUDGET_ITEM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,1786
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,DIM_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,8014
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,DIM_CHILD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,1331
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,DIM_CODE_GROUP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,1056
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,DIM_DATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,5164
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,DIM_DEVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,2850
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,DIM_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,4178
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,DIM_MARKETING_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,9383
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,DIM_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,7842
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,DIM_MEMBER_ACQUISITION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,8873
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,DIM_MEMBER_IDENTITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,2964
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,DIM_MEMBER_STATUS_HISTORY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,9729
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,DIM_MONTH.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,2294
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,DIM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,2070
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,DIM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,1460
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,DIM_ORG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,8078
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql,DIM_ORG_SUCCESSION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql,9140
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,DIM_PAYMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,1376
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,DIM_PAYMENT_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,1977
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,DIM_REASON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,1347
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,DIM_RELATIONSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,2312
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,DIM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,4099
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,DIM_SEND_TYPE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,4782
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,DIM_SERVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,2021
+02_dbt_pipeline,10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,DIM_SPONSORSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,5292
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,FACT_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,3730
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,FACT_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,1867
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,FACT_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,3081
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,FACT_AD_INFLOW_ALLOC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,6941
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,FACT_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,17264
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,FACT_BIGQUERY_BEHAVIOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,9598
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,FACT_BIGQUERY_SESSION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,3928
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,FACT_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,5660
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,FACT_BUDGET_YEARLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,4853
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,FACT_CAMPAIGN_CUM_STOP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,5405
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,FACT_CAMPAIGN_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,12426
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,FACT_EVENT_ATTENDANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,7788
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,FACT_EXPENSE_RESOLUTION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,2824
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,FACT_GA4_DEMOGRAPHIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,1268
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,FACT_GA_CHILD_VIEW.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,3782
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,FACT_MEMBER_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,20390
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,FACT_MEMBER_COHORT_SURVIVAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,8030
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,FACT_MEMBER_DEV_ACHIEVEMENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,4629
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,FACT_MEMBER_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,23768
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,FACT_MEMBER_EVENT_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,11816
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,FACT_MEMBER_FEE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,8539
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,FACT_MEMBER_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,42329
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,FACT_MEMBER_SPONSORSHIP_SPAN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,5697
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,FACT_MESSAGE_DISPATCH.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,16209
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,FACT_PAYMENT_BILLING_STATUS.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,6916
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,FACT_PAYMENT_METHOD_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,1671
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,FACT_RELATION_ACTIVITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,2630
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,FACT_RELATION_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,1403
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,FACT_RELATION_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,1222
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,FACT_SEARCH_CONSOLE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,1464
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,FACT_SPONSORSHIP_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,3067
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,FACT_TARGET_MEMBER_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,1226
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,FACT_TARGET_PROJECT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,4432
+02_dbt_pipeline,10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,FACT_UNPAID_SERVICE_CONV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,4386
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,WIDE_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,4951
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,WIDE_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,3181
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,WIDE_AD_COMBINED.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,5491
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,WIDE_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,4531
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,WIDE_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,3676
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,WIDE_BIGQUERY_BEHAVIOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,3578
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,WIDE_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,2525
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,WIDE_DVLP_GOAL_ACMSLT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,1860
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,WIDE_EVENT_PARTICIPATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,6471
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,WIDE_MBRFEE_PRDT_ACTL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,2055
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,WIDE_MEMBER_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,10795
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,WIDE_MEMBER_FEE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,7378
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,WIDE_MEMBER_MONTHLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,6069
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,WIDE_MEMBER_MONTHLY_KPI.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,4149
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,WIDE_MEMBER_SERVICE_COHORT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,21264
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,WIDE_SERVICE_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,5435
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,WIDE_SPNSR_CLS_AGGR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,1981
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,WIDE_TARGET_BIZ.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,2255
+02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,WIDE_TARGET_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,1947
 02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/_wide_dept_aggr_schema.yml,_wide_dept_aggr_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/_wide_dept_aggr_schema.yml,6145
 02_dbt_pipeline,10_dbt_pipeline/models/gold/wide/_wide_schema.yml,_wide_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/gold/wide/_wide_schema.yml,219725
 02_dbt_pipeline,10_dbt_pipeline/models/silver/_silver_bridge_schema.yml,_silver_bridge_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/_silver_bridge_schema.yml,7193
-02_dbt_pipeline,10_dbt_pipeline/models/silver/_sources.yml,_sources.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/_sources.yml,16836
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,AGENCY_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,10219
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,AGENCY_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,2361
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,AGENCY_AD_CREATIVE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,1916
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,AGENCY_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,3778
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,AGENCY_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,13686
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,AGENCY_AD_ROW_DGT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,5223
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,AGENCY_AD_ROW_REBRDC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,3353
-02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,AGENCY_AD_ROW_VIDEO.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,5011
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,BIGQUERY_BASIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,11261
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,BIGQUERY_DEVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,1865
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,BIGQUERY_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,7731
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,BIGQUERY_EVENT_DIM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,2028
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,BIGQUERY_IDENTITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,6126
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,BIGQUERY_SESSION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,4657
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,BIGQUERY_TRAFFIC_SOURCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,1977
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,GA4_USER_DEMOGRAPHIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,1685
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,SEARCH_CONSOLE_DATA.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,1952
+02_dbt_pipeline,10_dbt_pipeline/models/silver/_sources.yml,_sources.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/_sources.yml,16817
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,AGENCY_AD_BROADCAST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,10657
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,AGENCY_AD_BROADCAST_CASE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,2776
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,AGENCY_AD_CREATIVE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,2430
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,AGENCY_AD_DIGITAL.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,4238
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,AGENCY_AD_PERFORMANCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,14152
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,AGENCY_AD_ROW_DGT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,5651
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,AGENCY_AD_ROW_REBRDC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,3794
+02_dbt_pipeline,10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,AGENCY_AD_ROW_VIDEO.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,5442
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,BIGQUERY_BASIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,11701
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,BIGQUERY_DEVICE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,2275
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,BIGQUERY_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,8125
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,BIGQUERY_EVENT_DIM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,2458
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,BIGQUERY_IDENTITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,6510
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,BIGQUERY_SESSION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,5086
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,BIGQUERY_TRAFFIC_SOURCE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,2416
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,GA4_USER_DEMOGRAPHIC.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,2129
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,SEARCH_CONSOLE_DATA.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,2409
 02_dbt_pipeline,10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml,_bigquery_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml,5599
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,947
-02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,IDENTITY_MEMBER_XREF.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,2963
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,CRM_BIZ_PLACE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,1239
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,CRM_BIZ_TARGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,4625
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,CRM_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,8572
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,CRM_CHILD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,1112
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,CRM_CODE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,972
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,CRM_CODE_GROUP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,792
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,CRM_DEV_TARGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,934
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,CRM_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,4982
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,CRM_EVENT_PARTICIPATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,7535
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,CRM_HOLIDAY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,2109
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,CRM_INSTT_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,1121
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,CRM_MARKETING_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,1440
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,CRM_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,6503
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,CRM_MEMBER_AMT_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,1992
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,CRM_MEMBER_CONVERT_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,1424
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,CRM_MEMBER_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,18797
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,CRM_MEMBER_DISCONTINUE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,2040
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,CRM_MEMBER_RESPONSOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,947
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,CRM_MEMBER_SPONSOR_BIZ.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,996
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,CRM_MEMBER_SPONSOR_SPAN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,5586
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,CRM_MEMBER_STATUS_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,1874
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,CRM_MKTNG_CODE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,1689
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,CRM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,3255
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,CRM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,997
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,CRM_ORG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,1019
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,CRM_PAYMENT_BILLING.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,5985
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,CRM_PAYMENT_METHOD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,2796
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,CRM_PAYMENT_METHOD_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,2504
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,CRM_RELATION_ACTIVITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,2628
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,CRM_RELATION_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,812
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,CRM_RELATION_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,1298
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,CRM_SEND_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,14350
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,CRM_SEND_MEMBER_LINK_LOG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,1659
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,CRM_SEND_MEMBER_OPEN_LOG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,1287
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,CRM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,5804
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,CRM_SEND_RESULT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,2477
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,CRM_SETLE_CMPNY_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,1019
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,CRM_SPONSORSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,963
-02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,CRM_SPONSOR_RELATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,1883
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,1370
+02_dbt_pipeline,10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,IDENTITY_MEMBER_XREF.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,3391
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,CRM_BIZ_PLACE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,1679
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,CRM_BIZ_TARGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,5038
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,CRM_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,9125
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,CRM_CHILD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,1559
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,CRM_CODE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,1375
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,CRM_CODE_GROUP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,1228
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,CRM_DEV_TARGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,1357
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,CRM_EVENT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,5445
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,CRM_EVENT_PARTICIPATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,8028
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,CRM_HOLIDAY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,2511
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,CRM_INSTT_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,1566
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,CRM_MARKETING_CAMPAIGN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,1863
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,CRM_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,7029
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,CRM_MEMBER_AMT_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,2429
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,CRM_MEMBER_CONVERT_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,1864
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,CRM_MEMBER_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,19208
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,CRM_MEMBER_DISCONTINUE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,2504
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,CRM_MEMBER_RESPONSOR.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,1371
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,CRM_MEMBER_SPONSOR_BIZ.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,1429
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,CRM_MEMBER_SPONSOR_SPAN.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,6036
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,CRM_MEMBER_STATUS_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,2326
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,CRM_MKTNG_CODE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,2095
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,CRM_MSG_TEMPLATE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,3726
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,CRM_MSG_TEMPLATE_BUTTON.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,1467
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,CRM_ORG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,1427
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,CRM_PAYMENT_BILLING.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,6459
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,CRM_PAYMENT_METHOD.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,3237
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,CRM_PAYMENT_METHOD_HIST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,2976
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,CRM_RELATION_ACTIVITY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,3103
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,CRM_RELATION_CHANGE.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,1270
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,CRM_RELATION_DEV.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,1816
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,CRM_SEND_MEMBER.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,14958
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,CRM_SEND_MEMBER_LINK_LOG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,2107
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,CRM_SEND_MEMBER_OPEN_LOG.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,1718
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,CRM_SEND_REQUEST.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,6354
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,CRM_SEND_RESULT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,3052
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,CRM_SETLE_CMPNY_ACCOUNT.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,1475
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,CRM_SPONSORSHIP.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,1390
+02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,CRM_SPONSOR_RELATION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,2339
 02_dbt_pipeline,10_dbt_pipeline/models/silver/crm/_crm_schema.yml,_crm_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/crm/_crm_schema.yml,51905
-02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,ERP_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,5610
-02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,ERP_BUDGET_ITEM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,1365
-02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,ERP_BUDGET_YEARLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,2300
-02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,ERP_EXPENSE_RESOLUTION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,2545
+02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,ERP_BUDGET.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,6049
+02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,ERP_BUDGET_ITEM.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,1779
+02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,ERP_BUDGET_YEARLY.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,2720
+02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,ERP_EXPENSE_RESOLUTION.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,2961
 02_dbt_pipeline,10_dbt_pipeline/models/silver/erp/_erp_schema.yml,_erp_schema.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/models/silver/erp/_erp_schema.yml,3713
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,snp_crm_tc_cmmn_cd.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,481
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,snp_crm_tc_cmmn_dtl_cd.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,719
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,snp_crm_tm_cm_brnd_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,505
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,snp_crm_tm_cm_cmpgn_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,929
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,snp_crm_tm_cm_dept_info.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,633
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,snp_crm_tm_cm_mber_dvlp_goal.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,627
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,snp_crm_tm_cm_spnsr_bsns_info.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,642
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,snp_crm_tm_ms_crmn.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,787
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,snp_crm_tm_ms_email_tmplat_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,585
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,snp_crm_tm_ms_event.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,516
-02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,snp_crm_tm_rm_bplc_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,818
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,assert_bigquery_pk_unique.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,4201
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,assert_dept_aggr_grain_unique.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,825
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,assert_fact_dev_achv_goal_rows_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,2408
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,assert_faia_ad_cost_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,1581
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,assert_fap_ad_cost_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,1803
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,assert_fap_ad_ctgr_consistency.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,2484
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,assert_fmc_churn_invariants.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,3253
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,assert_fmcs_grain_and_survival.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,3415
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,assert_fme_campaign_stop_exclusivity.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,2032
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,assert_fmec_event_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,1444
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,assert_fmm_w4_ml_columns.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,1125
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,assert_fpbs_billing_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,1516
-02_dbt_pipeline,10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,assert_ftg_dev_month_key_yyyymm.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,2308
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,warn_bigquery_id_scheme_unclassified.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,3460
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,warn_bigquery_load_gap.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,8459
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,warn_bigquery_null_user_pseudo_id.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,5578
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,warn_bigquery_null_user_pseudo_id_rows.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,4531
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,warn_campaign_axis_unmapped_ratio.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,1663
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,warn_erp_budget_month_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,2423
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,warn_erp_budget_procedure_merge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,3769
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,warn_erp_budget_yearly_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,2595
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,warn_evt_stat_code_label.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,1815
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_grain.sql,warn_fact_budget_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fact_budget_grain.sql,707
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,warn_fact_budget_yearly_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,534
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,warn_fap_mktg_unmapped_ratio.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,1583
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,warn_fep_nonnumeric_member_dk.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,6447
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,warn_fer_mktg_campaign_multi.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,1462
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,warn_fmm_future_month_cap.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,1435
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,warn_fmm_reason_unmapped_f_rows.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,857
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,warn_gold_fact_bigquery_date_sk_zero.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,4549
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,warn_gold_view_comment_coverage.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,10054
-02_dbt_pipeline,10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,warn_spnsr_cls_aggr_src_dup.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,967
-02_dbt_pipeline,10_dbt_pipeline/verify_A1_A3_blocking5.sql,verify_A1_A3_blocking5.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/verify_A1_A3_blocking5.sql,6943
-03_MSTR_이관,15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,10_MSTR_일일적재_dbt연동_준비.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,7981
-03_MSTR_이관,15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,MSTR_1차이관_Snowflake전환_작업계획.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,10450
+02_dbt_pipeline,10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv,ORG_SUCCESSION_MANUAL.csv,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv,55
+02_dbt_pipeline,10_dbt_pipeline/seeds/_seeds.yml,_seeds.yml,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/seeds/_seeds.yml,894
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,snp_crm_tc_cmmn_cd.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,879
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,snp_crm_tc_cmmn_dtl_cd.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,1129
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,snp_crm_tm_cm_brnd_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,915
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,snp_crm_tm_cm_cmpgn_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,1342
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,snp_crm_tm_cm_dept_info.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,1046
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,snp_crm_tm_cm_mber_dvlp_goal.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,1055
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,snp_crm_tm_cm_spnsr_bsns_info.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,1073
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,snp_crm_tm_ms_crmn.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,1185
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,snp_crm_tm_ms_email_tmplat_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,1019
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,snp_crm_tm_ms_event.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,917
+02_dbt_pipeline,10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,snp_crm_tm_rm_bplc_mng.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,1228
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,assert_bigquery_pk_unique.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,4675
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,assert_dept_aggr_grain_unique.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,1301
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,assert_fact_dev_achv_goal_rows_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,2913
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,assert_faia_ad_cost_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,2087
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,assert_fap_ad_cost_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,2339
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,assert_fap_ad_ctgr_consistency.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,2964
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,assert_fmc_churn_invariants.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,3704
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,assert_fmcs_grain_and_survival.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,3888
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,assert_fme_campaign_stop_exclusivity.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,2514
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,assert_fmec_event_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,1946
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,assert_fmm_w4_ml_columns.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,1564
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,assert_fpbs_billing_preserved.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,2019
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,assert_ftg_dev_month_key_yyyymm.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,2756
+02_dbt_pipeline,10_dbt_pipeline/tests/assert_org_succession_invariants.sql,assert_org_succession_invariants.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/assert_org_succession_invariants.sql,1666
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,warn_bigquery_id_scheme_unclassified.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,3897
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,warn_bigquery_load_gap.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,8839
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,warn_bigquery_null_user_pseudo_id.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,6017
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,warn_bigquery_null_user_pseudo_id_rows.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,4972
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,warn_campaign_axis_unmapped_ratio.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,2156
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,warn_erp_budget_month_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,2842
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,warn_erp_budget_procedure_merge.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,4213
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,warn_erp_budget_yearly_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,3008
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,warn_evt_stat_code_label.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,2312
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_grain.sql,warn_fact_budget_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fact_budget_grain.sql,1152
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,warn_fact_budget_yearly_grain.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,990
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,warn_fap_mktg_unmapped_ratio.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,2046
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,warn_fep_nonnumeric_member_dk.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,6958
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,warn_fer_mktg_campaign_multi.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,1983
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,warn_fmm_future_month_cap.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,1899
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,warn_fmm_reason_unmapped_f_rows.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,1313
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,warn_gold_fact_bigquery_date_sk_zero.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,4912
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,warn_gold_view_comment_coverage.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,10629
+02_dbt_pipeline,10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,warn_spnsr_cls_aggr_src_dup.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,1447
+02_dbt_pipeline,10_dbt_pipeline/verify_A1_A3_blocking5.sql,verify_A1_A3_blocking5.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/verify_A1_A3_blocking5.sql,7458
+03_MSTR_이관,15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,10_MSTR_일일적재_dbt연동_준비.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,7952
+03_MSTR_이관,15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,MSTR_1차이관_Snowflake전환_작업계획.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,10420
 03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql,function_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql,7176
 03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql,mstr 1차 이관 대상 쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql,4638
 03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql,sp_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql,99104
@@ -293,15 +298,15 @@
 03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql,table_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql,1339446
 03_MSTR_이관,15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql,view_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql,224336
 03_MSTR_이관,15_MSTR 이관 PoC/mstr-answer.csv,mstr-answer.csv,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/mstr-answer.csv,169465
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,3750
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,13688
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,02_view_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,7803
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,03_function_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11050
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,04_sp_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,48540
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,05_MSTR_SV_DDL.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,50926
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,06_MSTR_적재_실행.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5302
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,07_MSTR_일일적재_TASK.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,5706
-03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,90_mstr_1차_이관_대상_쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,7417
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,4087
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,14174
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,02_view_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,8456
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,03_function_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,11652
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,04_sp_script.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,49162
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,05_MSTR_SV_DDL.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,51615
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,06_MSTR_적재_실행.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,5849
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,07_MSTR_일일적재_TASK.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,6171
+03_MSTR_이관,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,90_mstr_1차_이관_대상_쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,7966
 03_MSTR_이관,15_MSTR 이관 PoC/tools/README.md,README.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/README.md,4209
 03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차.json,1차.json,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/manifests/1차.json,4397
 03_MSTR_이관,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,1차_deps.json,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/manifests/1차_deps.json,8558
@@ -313,11 +318,11 @@
 03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_load_answer.py,mstr_load_answer.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_load_answer.py,1919
 03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_pipeline.py,mstr_pipeline.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_pipeline.py,3162
 03_MSTR_이관,15_MSTR 이관 PoC/tools/mstr_verify.py,mstr_verify.py,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/mstr_verify.py,2288
-03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,1차_04_sp_script.tmpl.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,40395
-03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,1차_verify.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,3527
-03_MSTR_이관,15_MSTR 이관 PoC/답안체크용 쿼리.sql,답안체크용 쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/답안체크용 쿼리.sql,6518
+03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,1차_04_sp_script.tmpl.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,41048
+03_MSTR_이관,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,1차_verify.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/tools/templates/1차_verify.sql,4142
+03_MSTR_이관,15_MSTR 이관 PoC/답안체크용 쿼리.sql,답안체크용 쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/답안체크용 쿼리.sql,7081
 03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증결과.md,스킬_MSTR_검증결과.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증결과.md,12253
-03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,스킬_MSTR_검증쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,18701
+03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,스킬_MSTR_검증쿼리.sql,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,19300
 03_MSTR_이관,15_MSTR 이관 PoC/스킬_MSTR_비교항목.md,스킬_MSTR_비교항목.md,MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools,15_MSTR 이관 PoC/스킬_MSTR_비교항목.md,4697
 04_SV_Agent_스펙,cortex_project/cortex-project.yaml,cortex-project.yaml,Cortex 프로젝트 설정,cortex_project/cortex-project.yaml,719
 04_SV_Agent_스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml,91242
@@ -350,57 +355,57 @@
 05_RAG_지표사전,90_provided_definition/지표용어통합 20260623.csv,지표용어통합 20260623.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/지표용어통합 20260623.csv,32939
 05_RAG_지표사전,90_provided_definition/컬럼정의서 20260714.csv,컬럼정의서 20260714.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/컬럼정의서 20260714.csv,68748
 05_RAG_지표사전,90_provided_definition/테이블정의 20260629.csv,테이블정의 20260629.csv,"지표·컬럼·테이블 정의, 조직도 등 원본 CSV",90_provided_definition/테이블정의 20260629.csv,3793
-06_일배치_모니터링,11_일적재pipeline 구성/00_개요_및_실행순서.md,00_개요_및_실행순서.md,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/00_개요_및_실행순서.md,10449
-06_일배치_모니터링,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,01_스키마생성_및_구조복제.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,4598
-06_일배치_모니터링,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,02_권한부여_LOADER_ENGINEER_ADMIN.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,8553
-06_일배치_모니터링,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,03_일배치_TASK_스케줄.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,3325
-06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,04_LOADER_임시권한_CALL_DBT.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,4021
-06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,4573
+06_일배치_모니터링,11_일적재pipeline 구성/00_개요_및_실행순서.md,00_개요_및_실행순서.md,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/00_개요_및_실행순서.md,10418
+06_일배치_모니터링,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,01_스키마생성_및_구조복제.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,5099
+06_일배치_모니터링,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,02_권한부여_LOADER_ENGINEER_ADMIN.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,8924
+06_일배치_모니터링,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,03_일배치_TASK_스케줄.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,3721
+06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,04_LOADER_임시권한_CALL_DBT.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,4477
+06_일배치_모니터링,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,일배치 TASK 스케줄·LOADER 권한,11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,4979
 06_일배치_모니터링,08_mornitoring/00_README.md,00_README.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/00_README.md,4784
 06_일배치_모니터링,08_mornitoring/01_모니터링_대상 개요.md,01_모니터링_대상 개요.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/01_모니터링_대상 개요.md,3450
 06_일배치_모니터링,08_mornitoring/02_Cortex_AI_사용량 모니터링.md,02_Cortex_AI_사용량 모니터링.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/02_Cortex_AI_사용량 모니터링.md,9149
 06_일배치_모니터링,08_mornitoring/03_비용제한_예산 쿼터.md,03_비용제한_예산 쿼터.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/03_비용제한_예산 쿼터.md,12533
 06_일배치_모니터링,08_mornitoring/04_알림_및 거버넌스.md,04_알림_및 거버넌스.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/04_알림_및 거버넌스.md,6513
-06_일배치_모니터링,08_mornitoring/05_AI비용가드_구축.sql,05_AI비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/05_AI비용가드_구축.sql,22971
-06_일배치_모니터링,08_mornitoring/06_웨어하우스비용가드_구축.sql,06_웨어하우스비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/06_웨어하우스비용가드_구축.sql,23875
-06_일배치_모니터링,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18101
-06_일배치_모니터링,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,10480
-06_일배치_모니터링,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9143
+06_일배치_모니터링,08_mornitoring/05_AI비용가드_구축.sql,05_AI비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/05_AI비용가드_구축.sql,23113
+06_일배치_모니터링,08_mornitoring/06_웨어하우스비용가드_구축.sql,06_웨어하우스비용가드_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/06_웨어하우스비용가드_구축.sql,24150
+06_일배치_모니터링,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,18682
+06_일배치_모니터링,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,11023
+06_일배치_모니터링,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9621
 06_일배치_모니터링,08_mornitoring/10_Cortex_Code_모델별_비용_비교.md,10_Cortex_Code_모델별_비용_비교.md,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/10_Cortex_Code_모델별_비용_비교.md,3329
-06_일배치_모니터링,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,11_BRONZE_개인정보_마스킹정책_적용완료.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,6098
-06_일배치_모니터링,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,2026-08-03_G3_코드컬럼전파_ALTER.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,10319
+06_일배치_모니터링,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,11_BRONZE_개인정보_마스킹정책_적용완료.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,6647
+06_일배치_모니터링,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,2026-08-03_G3_코드컬럼전파_ALTER.sql,AI/웨어하우스 비용가드·알림·OPS 객체,08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,10886
 07_운영런북_이슈,02_GN_DW_building/05_ARCHITECTURE.md,05_ARCHITECTURE.md,아키텍처,02_GN_DW_building/05_ARCHITECTURE.md,14458
 07_운영런북_이슈,02_GN_DW_building/06_RUNBOOK.md,06_RUNBOOK.md,운영 런북,02_GN_DW_building/06_RUNBOOK.md,41890
-07_운영런북_이슈,02_GN_DW_building/09_user login mfa리셋.sql,09_user login mfa리셋.sql,사용자 MFA 리셋,02_GN_DW_building/09_user login mfa리셋.sql,11049
-07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_런북.md,18_O217_운영계_재현_런북.md,기존 계정 덧입힘 런북(백업·diff·롤백),12_agent개선과제/18_O217_운영계_재현_런북.md,14915
-07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,18_O217_운영계_재현_검증.sql,운영계 재현 검증 SQL,12_agent개선과제/18_O217_운영계_재현_검증.sql,4445
+07_운영런북_이슈,02_GN_DW_building/09_user login mfa리셋.sql,09_user login mfa리셋.sql,사용자 MFA 리셋,02_GN_DW_building/09_user login mfa리셋.sql,11372
+07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_런북.md,18_O217_운영계_재현_런북.md,기존 계정 덧입힘 런북(백업·diff·롤백),12_agent개선과제/18_O217_운영계_재현_런북.md,14878
+07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,18_O217_운영계_재현_검증.sql,운영계 재현 검증 SQL,12_agent개선과제/18_O217_운영계_재현_검증.sql,5043
 07_운영런북_이슈,PAID_재현_런북_20260722.md,PAID_재현_런북_20260722.md,PAID 재현 런북,PAID_재현_런북_20260722.md,8320
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,00_INDEX_이슈원장.md,이슈 원장,20_issue/00_INDEX_이슈원장.md,7022
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,00_INDEX_이슈원장-001.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,9599
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,34907
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,28207
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,28401
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,26230
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,35687
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,27803
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,26657
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,25981
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,00_INDEX_이슈원장-006.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,26533
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,00_INDEX_이슈원장-007.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,27287
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,00_INDEX_이슈원장-008.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,27466
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,00_INDEX_이슈원장-009.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,27642
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,00_INDEX_이슈원장-010.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,28010
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,00_INDEX_이슈원장-010.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,28001
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,00_INDEX_이슈원장-011.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,27541
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,00_INDEX_이슈원장-012.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,26975
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,00_INDEX_이슈원장-013.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,27957
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,00_INDEX_이슈원장-014.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,28213
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,00_INDEX_이슈원장-012.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,26853
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,00_INDEX_이슈원장-013.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,27902
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,00_INDEX_이슈원장-014.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,28214
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,00_INDEX_이슈원장-015.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,27834
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,00_INDEX_이슈원장-016.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,28049
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,00_INDEX_이슈원장-017.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,11245
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,00_INDEX_이슈원장-017.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,11207
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,00_INDEX_이슈원장-018.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,26269
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,00_INDEX_이슈원장-019.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,17890
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8211
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,00_INDEX_이슈원장-019.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,17872
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8224
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치.md,50_dbt_파이프라인_미결조치.md,dbt 파이프라인 미결 조치,20_issue/50_dbt_파이프라인_미결조치.md,11002
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,00_선택표.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,21420
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,00_선택표.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,21409
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,50_dbt_파이프라인_미결조치-001.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,16899
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md,50_dbt_파이프라인_미결조치-002.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md,15514
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md,50_dbt_파이프라인_미결조치-003.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md,9592
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md,50_dbt_파이프라인_미결조치-003.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md,9572
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md,50_dbt_파이프라인_미결조치-004.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md,14940
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md,50_dbt_파이프라인_미결조치-005.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md,19894
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md,50_dbt_파이프라인_미결조치-006.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md,18241
@@ -410,22 +415,22 @@
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md,50_dbt_파이프라인_미결조치-010.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md,19320
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md,50_dbt_파이프라인_미결조치-011.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md,15307
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md,50_dbt_파이프라인_미결조치-012.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md,18693
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md,50_dbt_파이프라인_미결조치-013.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md,20208
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md,50_dbt_파이프라인_미결조치-014.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md,18003
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md,50_dbt_파이프라인_미결조치-015.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md,10801
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md,50_dbt_파이프라인_미결조치-016.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md,24108
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md,50_dbt_파이프라인_미결조치-017.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md,25606
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md,50_dbt_파이프라인_미결조치-018.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md,22392
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md,50_dbt_파이프라인_미결조치-019.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md,25658
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md,50_dbt_파이프라인_미결조치-020.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md,18072
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md,50_dbt_파이프라인_미결조치-013.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md,20165
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md,50_dbt_파이프라인_미결조치-014.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md,17992
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md,50_dbt_파이프라인_미결조치-015.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md,10790
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md,50_dbt_파이프라인_미결조치-016.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md,24066
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md,50_dbt_파이프라인_미결조치-017.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md,25552
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md,50_dbt_파이프라인_미결조치-018.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md,22330
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md,50_dbt_파이프라인_미결조치-019.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md,25556
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md,50_dbt_파이프라인_미결조치-020.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md,18053
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md,50_dbt_파이프라인_미결조치-021.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md,13234
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,50_dbt_파이프라인_미결조치-022.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,12236
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,50_dbt_파이프라인_미결조치-022.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,12227
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md,50_dbt_파이프라인_미결조치-023.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md,12556
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,50_dbt_파이프라인_미결조치-024.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,23066
-07_운영런북_이슈,20_issue/91_사고사례집.md,91_사고사례집.md,사고 사례집,20_issue/91_사고사례집.md,20859
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,50_dbt_파이프라인_미결조치-024.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,22990
+07_운영런북_이슈,20_issue/91_사고사례집.md,91_사고사례집.md,사고 사례집,20_issue/91_사고사례집.md,20318
 07_운영런북_이슈,20_issue/92_실측필요_후속작업.md,92_실측필요_후속작업.md,실측 필요 후속작업,20_issue/92_실측필요_후속작업.md,4061
 08_현업공유_산출물,30_output_share/00_생성기-문서명 매핑.md,00_생성기-문서명 매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/00_생성기-문서명 매핑.md,8989
-08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,01_DW_현업활용가이드.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/01_DW_현업활용가이드.md,38353
+08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,01_DW_현업활용가이드.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/01_DW_현업활용가이드.md,38359
 08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,02_SILVER 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,173947
 08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,02_SILVER 스키마 컬럼 인벤토리_20260904.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv,163256
 08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv,02_SILVER 스키마 컬럼 인벤토리_20260916.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv,174025
@@ -449,28 +454,33 @@
 08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.csv,09_보고서필드_조립가능성.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.csv,241752
 08_현업공유_산출물,30_output_share/09_보고서필드_조립가능성.md,09_보고서필드_조립가능성.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_보고서필드_조립가능성.md,67291
 08_현업공유_산출물,30_output_share/09_섹션배너.json,09_섹션배너.json,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/09_섹션배너.json,56950
-08_현업공유_산출물,30_output_share/10_원천입고_결손요약.md,10_원천입고_결손요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/10_원천입고_결손요약.md,30796
+08_현업공유_산출물,30_output_share/10_원천입고_결손요약.md,10_원천입고_결손요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/10_원천입고_결손요약.md,30808
 08_현업공유_산출물,30_output_share/11_미해결이슈_요약.md,11_미해결이슈_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/11_미해결이슈_요약.md,17932
-08_현업공유_산출물,30_output_share/16_파이프라인 배선 수정.md,16_파이프라인 배선 수정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/16_파이프라인 배선 수정.md,19258
-08_현업공유_산출물,30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,18_목표데이터_요건_및_해결이슈_정의서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,13465
-08_현업공유_산출물,30_output_share/19_원천입고_및_항목신설_대기.md,19_원천입고_및_항목신설_대기.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/19_원천입고_및_항목신설_대기.md,24557
-08_현업공유_산출물,30_output_share/20260826_아키텍처 지도 요약본.html,20260826_아키텍처 지도 요약본.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/20260826_아키텍처 지도 요약본.html,977680
-08_현업공유_산출물,30_output_share/21_원천입고_대기_주니어_해설서.md,21_원천입고_대기_주니어_해설서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/21_원천입고_대기_주니어_해설서.md,23968
-08_현업공유_산출물,30_output_share/30_공8_GA개발단가_정의_요약.md,30_공8_GA개발단가_정의_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8_GA개발단가_정의_요약.md,2822
-08_현업공유_산출물,30_output_share/30_공8및미회신29건_질문요약.md,30_공8및미회신29건_질문요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8및미회신29건_질문요약.md,11831
-08_현업공유_산출물,30_output_share/31_공8_GA개발단가_쿼리근거.sql,31_공8_GA개발단가_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8_GA개발단가_쿼리근거.sql,2833
-08_현업공유_산출물,30_output_share/31_공8및미회신29건_쿼리근거.sql,31_공8및미회신29건_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8및미회신29건_쿼리근거.sql,18467
-08_현업공유_산출물,30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,32_BRONZE_CRM_GOLD반영_설계.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,10139
+08_현업공유_산출물,30_output_share/16_파이프라인 배선 수정.md,16_파이프라인 배선 수정.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/16_파이프라인 배선 수정.md,19264
+08_현업공유_산출물,30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,18_목표데이터_요건_및_해결이슈_정의서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,13471
+08_현업공유_산출물,30_output_share/19_원천입고_및_항목신설_대기.md,19_원천입고_및_항목신설_대기.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/19_원천입고_및_항목신설_대기.md,24545
+08_현업공유_산출물,30_output_share/20260826_아키텍처 지도 요약본.html,20260826_아키텍처 지도 요약본.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/20260826_아키텍처 지도 요약본.html,977668
+08_현업공유_산출물,30_output_share/21_원천입고_대기_주니어_해설서.md,21_원천입고_대기_주니어_해설서.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/21_원천입고_대기_주니어_해설서.md,23974
+08_현업공유_산출물,30_output_share/30_공8_GA개발단가_정의_요약.md,30_공8_GA개발단가_정의_요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8_GA개발단가_정의_요약.md,2804
+08_현업공유_산출물,30_output_share/30_공8및미회신29건_질문요약.md,30_공8및미회신29건_질문요약.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/30_공8및미회신29건_질문요약.md,11813
+08_현업공유_산출물,30_output_share/31_공8_GA개발단가_쿼리근거.sql,31_공8_GA개발단가_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8_GA개발단가_쿼리근거.sql,3352
+08_현업공유_산출물,30_output_share/31_공8및미회신29건_쿼리근거.sql,31_공8및미회신29건_쿼리근거.sql,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/31_공8및미회신29건_쿼리근거.sql,19093
+08_현업공유_산출물,30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,32_BRONZE_CRM_GOLD반영_설계.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,10112
 08_현업공유_산출물,30_output_share/40_현업회신요청_O190.md,40_현업회신요청_O190.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/40_현업회신요청_O190.md,4153
-08_현업공유_산출물,30_output_share/41_현업회신_F-1_본부지부.md,41_현업회신_F-1_본부지부.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/41_현업회신_F-1_본부지부.md,2589
+08_현업공유_산출물,30_output_share/41_현업회신_F-1_본부지부.md,41_현업회신_F-1_본부지부.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/41_현업회신_F-1_본부지부.md,2578
 08_현업공유_산출물,30_output_share/42_현업회신_E-1_모금성비용.md,42_현업회신_E-1_모금성비용.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/42_현업회신_E-1_모금성비용.md,1025
 08_현업공유_산출물,30_output_share/43_현업회신_F-2_후원사업11개.md,43_현업회신_F-2_후원사업11개.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/43_현업회신_F-2_후원사업11개.md,619
 08_현업공유_산출물,30_output_share/44_현업회신_F-3_문자오픈.md,44_현업회신_F-3_문자오픈.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/44_현업회신_F-3_문자오픈.md,650
 08_현업공유_산출물,30_output_share/45_현업회신_ML_일시후원전환_grain.md,45_현업회신_ML_일시후원전환_grain.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/45_현업회신_ML_일시후원전환_grain.md,1576
 08_현업공유_산출물,30_output_share/46_현업회신_DGT_이전분.md,46_현업회신_DGT_이전분.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/46_현업회신_DGT_이전분.md,549
-08_현업공유_산출물,30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,47_신규19종_파생컬럼_COMMENT초안.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,4243
-08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별.html,GOLD_ERD_테이블별.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별.html,263062
+08_현업공유_산출물,30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,47_신규19종_파생컬럼_COMMENT초안.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,4249
+08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별.html,GOLD_ERD_테이블별.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별.html,263044
 08_현업공유_산출물,30_output_share/GOLD_ERD_테이블별_YAML전용.html,GOLD_ERD_테이블별_YAML전용.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/GOLD_ERD_테이블별_YAML전용.html,73342
+08_현업공유_산출물,30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv,O252_폐지부서_귀속_현업리뷰_20261021.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv,54418
+08_현업공유_산출물,30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx,O252_폐지부서_연결결과_검토요청_20261021.xlsx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx,39872
+08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx,O252_폐지부서_현재부서연결_안내_20261021_v1.docx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx,39791
+08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx,O252_폐지부서_현재부서연결_안내_20261021_v2.docx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx,40414
+08_현업공유_산출물,30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx,O252_폐지부서_현재부서연결_안내_20261021_v3.docx,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx,41458
 08_현업공유_산출물,30_output_share/erd/DIM_AD_CREATIVE.html,DIM_AD_CREATIVE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_AD_CREATIVE.html,28230
 08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_EVENT.html,DIM_BIGQUERY_EVENT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BIGQUERY_EVENT.html,23867
 08_현업공유_산출물,30_output_share/erd/DIM_BIGQUERY_SOURCE.html,DIM_BIGQUERY_SOURCE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_BIGQUERY_SOURCE.html,25208
@@ -490,7 +500,7 @@
 08_현업공유_산출물,30_output_share/erd/DIM_REASON.html,DIM_REASON.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_REASON.html,23553
 08_현업공유_산출물,30_output_share/erd/DIM_SEND_TYPE.html,DIM_SEND_TYPE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SEND_TYPE.html,29340
 08_현업공유_산출물,30_output_share/erd/DIM_SERVICE.html,DIM_SERVICE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SERVICE.html,23906
-08_현업공유_산출물,30_output_share/erd/DIM_SPONSORSHIP.html,DIM_SPONSORSHIP.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SPONSORSHIP.html,31373
+08_현업공유_산출물,30_output_share/erd/DIM_SPONSORSHIP.html,DIM_SPONSORSHIP.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/DIM_SPONSORSHIP.html,31355
 08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST.html,FACT_AD_BROADCAST.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST.html,31214
 08_현업공유_산출물,30_output_share/erd/FACT_AD_BROADCAST_CASE.html,FACT_AD_BROADCAST_CASE.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_BROADCAST_CASE.html,24359
 08_현업공유_산출물,30_output_share/erd/FACT_AD_DIGITAL.html,FACT_AD_DIGITAL.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_AD_DIGITAL.html,27847
@@ -509,13 +519,13 @@
 08_현업공유_산출물,30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,FACT_TARGET_MEMBER_DEV.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_MEMBER_DEV.html,23780
 08_현업공유_산출물,30_output_share/erd/FACT_TARGET_PROJECT.html,FACT_TARGET_PROJECT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_PROJECT.html,29419
 08_현업공유_산출물,30_output_share/erd/index.html,index.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/index.html,86406
-09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,08_AGENT_spec.md,Agent 스펙 설계,05_SV-Agent_ai/08_AGENT_spec.md,47618
-09_설계근거_참고,05_SV-Agent_ai/09_0_AGENT_정의서.md,09_0_AGENT_정의서.md,Agent 정의서,05_SV-Agent_ai/09_0_AGENT_정의서.md,5867
+09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,08_AGENT_spec.md,Agent 스펙 설계,05_SV-Agent_ai/08_AGENT_spec.md,47608
+09_설계근거_참고,05_SV-Agent_ai/09_0_AGENT_정의서.md,09_0_AGENT_정의서.md,Agent 정의서,05_SV-Agent_ai/09_0_AGENT_정의서.md,5838
 09_설계근거_참고,05_SV-Agent_ai/11_거버넌스_운영.md,11_거버넌스_운영.md,SV/Agent 거버넌스 운영,05_SV-Agent_ai/11_거버넌스_운영.md,9427
 09_설계근거_참고,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,AGENT_연결객체_메타데이터.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,157041
 09_설계근거_참고,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,AGENT_원천계보_BRONZE까지.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx,179713
 09_설계근거_참고,06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md,01_스냅샷_아키텍처_및_네이밍룰.md,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md,14657
 09_설계근거_참고,06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md,02_스냅샷_파이프라인_구축_작업계획.md,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md,13516
-09_설계근거_참고,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,03_스냅샷_환경구축_및_검증쿼리.sql,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,8209
-09_설계근거_참고,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,analyst-selfservice-streamlit.md,Streamlit 셀프서비스 권한,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,17575
-09_설계근거_참고,SECURITY.sql,SECURITY.sql,Git 자격증명 시크릿 갱신,SECURITY.sql,1958
+09_설계근거_참고,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,03_스냅샷_환경구축_및_검증쿼리.sql,스냅샷 아키텍처·네이밍룰·구축 SQL,06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,8767
+09_설계근거_참고,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,analyst-selfservice-streamlit.md,Streamlit 셀프서비스 권한,09_streamlit 권한 설정/analyst-selfservice-streamlit.md,17572
+09_설계근거_참고,SECURITY.sql,SECURITY.sql,Git 자격증명 시크릿 갱신,SECURITY.sql,2318

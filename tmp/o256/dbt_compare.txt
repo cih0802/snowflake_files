@@ -1,0 +1,3 @@
+nodes base 729 new 729 · 집합 동일 True
+의존성 불일치(순서 무시) 0 · config 불일치 0
+compiled 비교 728 · 주석 제외·invocation_id 정규화 후 불일치 0 · 한쪽만 compiled 0

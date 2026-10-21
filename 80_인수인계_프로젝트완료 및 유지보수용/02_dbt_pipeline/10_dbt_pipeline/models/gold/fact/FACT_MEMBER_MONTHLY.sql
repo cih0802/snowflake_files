@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 월 팩트 (billing ∪ FME 스파인) — A1: 개발/중단 FME 롤업 + HAS_BILLING 출처플래그
+-- Target     : GOLD.FACT_MEMBER_MONTHLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_PAYMENT_BILLING, ref CRM_MEMBER, ref DIM_REASON, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN, ref CRM_MEMBER_AMT_CHANGE 외 2
+-- Issue      : O27, DEC-28, O183, DEC-55 외 17
+-- =============================================================================
 -- FACT_MEMBER_MONTHLY: 회원 월 팩트 (billing ∪ FME 스파인) — A1: 개발/중단 FME 롤업 + HAS_BILLING 출처플래그
 -- [2026-08-03 O27/DEC-28] 회비 3분해(#66·#67·#68) 실배선 — 종전 `0` 하드코딩 폐기.
 --   원천 `CRM_PAYMENT_BILLING.MBRFEE_DIV_CD`(PM010) 97.6% 채움 · 정본 정의는 billing CTE 주석 참조.

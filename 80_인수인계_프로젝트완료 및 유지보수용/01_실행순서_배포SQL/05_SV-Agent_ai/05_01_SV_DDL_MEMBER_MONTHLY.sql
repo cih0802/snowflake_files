@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_1_SV_DDL_MEMBER_MONTHLY.sql — Semantic View DDL 정본: SV_MEMBER_MONTHLY
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
+-- Run order  : 운영계 #18 · 기존 환경 갱신 #14
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_MONTHLY, GN_DW.GOLD.DIM_MONTH, GN_DW.GOLD.DIM_MEMBER, GN_DW.GOLD.DIM_REASON, GN_DW.GOLD.DIM_CAMPAIGN
+-- Issue      : O225-C, O226, O237-C, O243 외 3
+-- =============================================================================
 -- ============================================================================
 -- 05_1_SV_DDL_MEMBER_MONTHLY.sql — Semantic View DDL 정본: SV_MEMBER_MONTHLY
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

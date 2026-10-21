@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW Cortex Agent [2/2] yaml 기반 버전업 — 정본 yaml 을 stage 에서 직접 읽어 새 버전 발행
+-- Target     : AGENT GN_DW.SERVING.AGENT_MEMBER (변경), AGENT GN_DW.SERVING.AGENT_EXECUTIVE (변경), AGENT GN_DW.SERVING.AGENT_MARKETING (변경)
+-- Run order  : 운영계 #55 · 기존 환경 갱신 #5 · 기존 환경 갱신 #9 · 기존 환경 갱신 #19 · 기존 환경 갱신 #27
+-- Depends on : GN_DW.INFORMATION_SCHEMA.SEMANTIC_VIEWS
+-- Issue      : O84, O200-C, O200-D, O85 외 23
+-- =============================================================================
 -- GN_DW Cortex Agent [2/2] yaml 기반 버전업 — 정본 yaml 을 stage 에서 직접 읽어 새 버전 발행
 -- ============================================================================
 -- ▶ 이 파일의 위상
@@ -143,7 +150,7 @@ WITH required AS (
     --  [O224-E] 같은 결합 도구를 경영·마케팅에도 배선
     ('AGENT_EXECUTIVE', 'SV_ML_CHURN_CAMPAIGN'),
     ('AGENT_MARKETING', 'SV_ML_CHURN_CAMPAIGN'),
-    --  [O250-B 15차] ML 회원예측·회비예측 × 7축(36_O250_ML예측_7축확장.sql)
+    --  [O250-B 15차] ML 회원예측·회비예측 × 7축(36_DEPLOY_ML_PRED_7AXIS.sql)
     ('AGENT_MEMBER',    'SV_ML_MEMBER_PRED_AXIS'),
     ('AGENT_MEMBER',    'SV_ML_FEE_FORECAST_AXIS'),
     ('AGENT_MARKETING', 'SV_ML_MEMBER_PRED_AXIS'),

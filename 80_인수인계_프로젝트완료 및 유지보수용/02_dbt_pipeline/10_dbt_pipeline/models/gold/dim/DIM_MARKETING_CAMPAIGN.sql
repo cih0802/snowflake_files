@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 마케팅캠페인 conformed 차원 — AGENCY(광고) ↔ CRM(개발실적) 결합축
+-- Target     : GOLD.DIM_MARKETING_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MARKETING_CAMPAIGN, ref CRM_CAMPAIGN
+-- Issue      : O44, O225-C, O225-B, O232-B 외 1
+-- =============================================================================
 -- DIM_MARKETING_CAMPAIGN: 마케팅캠페인 conformed 차원 — AGENCY(광고) ↔ CRM(개발실적) 결합축
 --
 -- ============================================================================

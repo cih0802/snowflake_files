@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 이벤트 팩트 소스 (07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87, O88
+-- =============================================================================
 -- BIGQUERY_EVENT: 이벤트 팩트 소스 (07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
--- Co-authored with CoCo
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').
 --    FLATTEN·param 승격·VARIANT 경로 추출·DEVICE_TYPE 파생은 전부 기반 테이블로 이동했다.
@@ -7,30 +13,30 @@
 -- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —
 --    신설 `BIGQUERY_BASIC`(dbt) 이 그 파생을 되살리므로 ref() 로 되돌린다(source() → ref('BIGQUERY_BASIC')).
 --
--- 🟢 GA4-PK-1 해소 — PK 4번째 키를 BATCH_ORDERING_ID → EVENT_SEQ 로 교체(NOT NULL 위반 해소).
+--  GA4-PK-1 해소 — PK 4번째 키를 BATCH_ORDERING_ID → EVENT_SEQ 로 교체(NOT NULL 위반 해소).
 --    종전 PK 는 2024-01-01~07-18 · 199일 · 48,862,926행(17.10%)을 NOT NULL 위반으로 배제했다.
 --    EVENT_SEQ 는 BIGQUERY_BASIC 이 3키 내에서 BATCH_EVENT_INDEX+EVENT_BUNDLE_SEQUENCE_ID 순으로
---    부여한 surrogate 다. 🔴 「손실 0」은 아니다 — 두 컬럼으로도 2025-06 실측 8.66% 중복이
+--    부여한 surrogate 다. WARN: 「손실 0」은 아니다 — 두 컬럼으로도 2025-06 실측 8.66% 중복이
 --    남고(값 자체가 원천에서 중복 · 미결 GA4-SEQ-1), SRC_FILE_NAME 계보는 외부 적재에 없다.
---    ⚠️ BATCH_ORDERING_ID 는 컬럼으로는 보존한다(2024 상반기 NULL) — 계보·정렬 근거.
+--    WARN: BATCH_ORDERING_ID 는 컬럼으로는 보존한다(2024 상반기 NULL) — 계보·정렬 근거.
 --
--- 🟢 GA4-LEN-1 해소 — USER_ID·USER_ID_FILLED VARCHAR(10) → VARCHAR(64) + ID_SCHEME 분류축 승계.
+--  GA4-LEN-1 해소 — USER_ID·USER_ID_FILLED VARCHAR(10) → VARCHAR(64) + ID_SCHEME 분류축 승계.
 --    길이 확장만 하면 IDENTITY_MEMBER_XREF 매칭 분모에 비회원 ID(app-·이메일·'null')가 섞여
 --    채움률이 조용히 왜곡된다 ⇒ ID_SCHEME 을 함께 노출한다(설계문서 07 §7-B).
 --
--- 🔴 세션 채움의 범위 경계 — sess CTE 는 **기반 테이블 전량**을 본다(범위 제한 없음).
+-- WARN: 세션 채움의 범위 경계 — sess CTE 는 **기반 테이블 전량**을 본다(범위 제한 없음).
 --    근거: 세션은 자정을 넘고 GA4 는 D+3 소급 수정된다 ⇒ 범위로 자르면 세션이 경계에서 끊겨
---    CONFLICT·부분채움 오류가 난다(설계문서 07 §5-A ⚠️ 항목). 반면 최종 SELECT 는
+--    CONFLICT·부분채움 오류가 난다(설계문서 07 §5-A WARN: 항목). 반면 최종 SELECT 는
 --    적재 범위(pre-hook DELETE 와 동일 범위)로 제한해 멱등성을 지킨다.
 --    n_id >= 2 = CONFLICT(미채움). 원본 USER_ID 는 불변 보존.
--- 🔴 pre-hook 은 여기서 선언하지 않는다 — `macros/silver_purge.sql` 이 이 모델을 range 모델로
+-- WARN: pre-hook 은 여기서 선언하지 않는다 — `macros/silver_purge.sql` 이 이 모델을 range 모델로
 --    인식해 **TRUNCATE 대신 범위 DELETE** 를 낸다(dbt hook 누적 사고 방지 · dbt_project.yml 참조).
---    ⚠️ 모델명을 바꾸면 `silver_purge.RANGED_MODELS` 도 함께 고쳐야 한다.
+--    WARN: 모델명을 바꾸면 `silver_purge.RANGED_MODELS` 도 함께 고쳐야 한다.
 {{ config(materialized='incremental') }}
 WITH base AS (
     SELECT * FROM {{ ref('BIGQUERY_BASIC') }}
 ),
--- 세션 단위 신원 집계 — 🔴 Snowflake 는 COUNT(DISTINCT x) OVER(...) 를 지원하지 않는다.
+-- 세션 단위 신원 집계 — WARN: Snowflake 는 COUNT(DISTINCT x) OVER(...) 를 지원하지 않는다.
 --    MAX(user_id) OVER(파티션) 단독으로 채우면 CONFLICT 세션이 조용히 오귀속된다
 --    ⇒ 반드시 2단계(집계 CTE → LEFT JOIN). 설계문서 07 §5-A 「구현 주의」.
 --    세션 키는 복합(BIGQUERY_SESSION_KEY = user_pseudo_id ∥ '-' ∥ ga_session_id).
@@ -100,6 +106,6 @@ LEFT JOIN sess s
     ON b.BIGQUERY_SESSION_KEY IS NOT NULL
    AND s.BIGQUERY_SESSION_KEY = b.BIGQUERY_SESSION_KEY
 -- 적재 범위 = pre-hook DELETE 범위와 동일해야 멱등이다(둘이 어긋나면 행이 남거나 사라진다).
--- 🔴 [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
+-- WARN: [2026-08-19 O88] 그 「동일함」을 사람이 맞추지 않도록 술어를 매크로로 외부화했다 —
 --    정의 지점은 `macros/bigquery_range_predicate.sql` 하나다. 여기에 술어를 다시 쓰지 마라.
 WHERE {{ bigquery_range_predicate('b.EVENT_DT') }}

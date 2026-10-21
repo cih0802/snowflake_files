@@ -1,6 +1,12 @@
--- CRM_CHILD: 결연 아동 마스터 (BRONZE TM_RM_CHILD_MSTR_INFO → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = CHILD_CD (📏 xf98254 유일 실측)
+-- =============================================================================
+-- Purpose    : 결연 아동 마스터 (BRONZE TM_RM_CHILD_MSTR_INFO → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_CHILD (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_RM_CHILD_MSTR_INFO
+-- Issue      : O188-F
+-- =============================================================================
+-- CRM_CHILD: 결연 아동 마스터 (BRONZE TM_RM_CHILD_MSTR_INFO → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = CHILD_CD ( xf98254 유일 실측)
 SELECT
   CHILD_CD AS CHILD_CD,
   NULLIF(TRIM(CHILD_NO),'') AS CHILD_NO,

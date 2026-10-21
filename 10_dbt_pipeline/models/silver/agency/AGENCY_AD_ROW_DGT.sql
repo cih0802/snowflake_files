@@ -1,21 +1,27 @@
+-- =============================================================================
+-- Purpose    : BRONZE DGT 전 41컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
+-- Target     : SILVER.AGENCY_AD_ROW_DGT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_agency.DGT_AD_CMPGN_DTLS
+-- Issue      : DEC-11, O182
+-- =============================================================================
 -- AGENCY_AD_ROW_DGT: BRONZE DGT 전 41컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
--- Co-authored with CoCo
--- 🔴🔴 [2026-09-28 O182] 원천 12번 재편(36→41컬럼) 반영 — 원천 이름 그대로 보존(개명 금지 규약 유지).
+-- WARN: [2026-09-28 O182] 원천 12번 재편(36→41컬럼) 반영 — 원천 이름 그대로 보존(개명 금지 규약 유지).
 --    제거 4 = CPR_NM · DMST_OVSEA_DIV_NM · BSNS_CASE_DIV_NM · CMPGN_TY_NM
 --    개명 4 = GA_AD_COST→AD_COST · GA_CONV_MBER_CNT→SPNSER_MBER_CNT('후원자수(명)')
 --            · DEV_UNIT_PRICE→DVLP_UNIT_PRICE · CMPGN_UTM_NM→UTM_CMPGN_NM
 --    신규 9 = BDGT_SOURCE_NM · CMPGN_TYPE_BSN_NM · CMPGN_TYPE1_BSN_NM · CMPGN_TYPE2_BSN_NM
 --            · MARKUP_AMT · VAT_AMT · LAST_STMT_AMT · TOTAL_CPA · TOTAL_DVLP_UNIT_PRICE
---    ⚠️ 원천 컬럼이 바뀌었으므로 ROW_HASH·AD_PERF_DK 값은 전건 새 값이다(아래 전컬럼 해시 정의상 의도된 동작).
---    ⚠️ 실측(2026-09-28): 29,048행 · `DATE` 전건 채움이나 **3,531행이 1970-01-01**(텍스트축은 2026-06~09 정상)
+--    WARN: 원천 컬럼이 바뀌었으므로 ROW_HASH·AD_PERF_DK 값은 전건 새 값이다(아래 전컬럼 해시 정의상 의도된 동작).
+--    WARN: 실측(2026-09-28): 29,048행 · `DATE` 전건 채움이나 **3,531행이 1970-01-01**(텍스트축은 2026-06~09 정상)
 --       ⇒ 날짜 보정은 코어(AGENCY_AD_PERFORMANCE)에서 한다. staging 은 원천값 그대로 둔다.
--- ⚠️ 본 모델은 AD_PERF_DK **발급 단일지점**이다. 코어(FAD)·위성(FAD_D)이 같은 DK 를 쓰도록
+-- WARN: 본 모델은 AD_PERF_DK **발급 단일지점**이다. 코어(FAD)·위성(FAD_D)이 같은 DK 를 쓰도록
 --    DK 계산을 여기 한 곳에만 둔다. 하류 모델은 절대 DK 를 재계산하지 말고 이 모델을 ref 할 것.
--- ⚠️ 원천 무손실: BRONZE 41컬럼을 이름 그대로 보존한다(개명·가공 금지). 정제·개명은 하류(AGENCY_AD_*)에서.
--- ⚠️ ROW_HASH = MD5(TO_JSON(OBJECT_CONSTRUCT(*))) — 원천 '전컬럼' 해시(설계 §3-A-6).
+-- WARN: 원천 무손실: BRONZE 41컬럼을 이름 그대로 보존한다(개명·가공 금지). 정제·개명은 하류(AGENCY_AD_*)에서.
+-- WARN: ROW_HASH = MD5(TO_JSON(OBJECT_CONSTRUCT(*))) — 원천 '전컬럼' 해시(설계 §3-A-6).
 --    OBJECT 키는 정렬되어 직렬화되므로 컬럼 순서 변경에 불변. 단 **컬럼 추가 시 DK 값이 변한다**
 --    (전컬럼 해시의 정의상 의도된 동작 — 원천 스키마 변경은 새 행정체성으로 간주).
--- ⚠️ DUP_SEQ: 전컬럼 중복 그룹(실측 35그룹·최대 2중복) 내 순번. 그룹 내 행은 전컬럼이 동일하므로
+-- WARN: DUP_SEQ: 전컬럼 중복 그룹(실측 35그룹·최대 2중복) 내 순번. 그룹 내 행은 전컬럼이 동일하므로
 --    순번 부여 순서가 무관 → DK **집합**은 재실행 멱등.
 WITH src AS (
     SELECT

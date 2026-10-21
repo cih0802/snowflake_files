@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
+-- Target     : GOLD.DIM_SPONSORSHIP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O89, O25, O37, O202 외 2
+-- =============================================================================
 -- DIM_SPONSORSHIP: 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
 -- [2026-08-19 O89] 분류 3계층 라벨 배선 — DIV_CD/DIV_NAME(CM035) + GROUP_NAME(CM003).
 --   현업 요구 = "후원사업 상위/하위 분류를 각각 라벨로". 실측으로 대상 컬럼이 교정됐다:

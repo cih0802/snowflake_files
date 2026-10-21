@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 기준연월 × 후원사업 월 팩트 (후원사업별 미납율 분자·분모)
+-- Target     : GOLD.FACT_SPONSORSHIP_MONTHLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY, ref FACT_MEMBER_SPONSORSHIP_SPAN, ref FACT_MEMBER_FEE
+-- Issue      : O237-C
+-- =============================================================================
 -- FACT_SPONSORSHIP_MONTHLY: 기준연월 × 후원사업 월 팩트 (후원사업별 미납율 분자·분모)
 --  [2026-10-16 O237-C · 공#79 후원사업별 미납율 = 후원사업 미납(건) ÷ 후원사업 활동(건)]
 --   왜 새 팩트인가 = SV_MEMBER_MONTHLY 는 후원사업 축이 없고(FMM SPONSORSHIP_SK 는 단일 후원사업 월만 연결),

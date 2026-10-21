@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 월별 예산 wide→long 언피벗 (12개월 UNION ALL, MD5 키로 ERP_BUDGET_ITEM FK 정합), 정본 09 STEP4.
+-- Target     : SILVER.ERP_BUDGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_erp.BDGT_ACMSLT_LEDGER
+-- Issue      : O190
+-- =============================================================================
 -- ERP_BUDGET: 월별 예산 wide→long 언피벗 (12개월 UNION ALL, MD5 키로 ERP_BUDGET_ITEM FK 정합), 정본 09 STEP4.
 -- FK: BUDGET_ITEM_DK → ERP_BUDGET_ITEM (동일 MD5 식). Snowflake LATERAL VALUES 상관제약 회피 위해 CTE+UNION.
 WITH B AS (

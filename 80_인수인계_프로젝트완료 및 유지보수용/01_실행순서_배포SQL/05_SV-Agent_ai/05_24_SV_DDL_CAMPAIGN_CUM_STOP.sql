@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_CAMPAIGN_CUM_STOP ( O236)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_CUM_STOP
+-- Run order  : 운영계 #41
+-- Depends on : GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP, GN_DW.GOLD.DIM_CAMPAIGN
+-- Issue      : O236, O237
+-- =============================================================================
 -- ============================================================================
 -- 05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql — Semantic View DDL 정본: SV_CAMPAIGN_CUM_STOP ( O236)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

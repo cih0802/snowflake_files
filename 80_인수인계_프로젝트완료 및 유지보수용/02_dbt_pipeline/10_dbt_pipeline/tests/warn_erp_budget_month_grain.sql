@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : `ERP_BUDGET` 의 의도된 grain 이 유지되는지 관측한다.
+-- Target     : dbt singular test warn_erp_budget_month_grain (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET
+-- Issue      : O114-B, DEC-44
+-- =============================================================================
 -- warn_erp_budget_month_grain: `ERP_BUDGET` 의 의도된 grain 이 유지되는지 관측한다.
 --
 -- WARN: 왜 필요한가 (2026-08-29 O114-B 신설)

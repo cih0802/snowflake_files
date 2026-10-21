@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
+-- Target     : WAREHOUSE GN_DW_ETL_WH, WAREHOUSE GN_DW_ANALYTICS_WH, WAREHOUSE GN_DW_DEV_WH, WAREHOUSE GN_DW_ML_WH 외 22
+-- Run order  : 운영계 #1
+-- Depends on : -
+-- Issue      : O55, O36, O91, O90 외 9
+-- =============================================================================
 -- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
--- Co-authored with CoCo
 --   ⛔ [2026-08-10 O55] 종전 이 줄 끝의 「helper 뷰 생성」은 **삭제했다** — 이 파일에 helper 생성문이 없었고(O36),
 --      helper 자체가 물리 DROP 됐다(SV base 전건 GOLD).
 --
@@ -7,7 +13,7 @@
 --   01_환경 Role.md(설계) 와 짝이 되는 프로젝트 전역 환경/RBAC 부트스트랩. 원위치는 포인터 스텁만 유지.
 --
 -- 정본 근거:
---   02_GN_DW_building/01_환경 Role.md    §1.2 웨어하우스 · §2 role_hierarchy/roles
+--   02_GN_DW_building/01_환경 Role.md §1.2 웨어하우스 · §2 role_hierarchy/roles
 --   02_GN_DW_building/03_GOLD_SERVING.md §3.8 grants (schema_grants) · P7 serving_separation
 --   05_SV-Agent_ai/01_SV-Agent 작업계획.md §0단계 · §7 거버넌스
 --   Snowflake docs: Snowflake CoWork object (CREATE SNOWFLAKE INTELLIGENCE)
@@ -16,30 +22,30 @@
 --                  → BRONZE/SILVER/GOLD DDL(ADMIN 적재) → D~F(스키마 grant·SERVING·CoWork)
 --                  → dbt build → 08_After_Deploy_DBT.sql(GRANT·CoWork) → 05_1~05_9_SV_DDL_*.sql (SV 9종)
 --                  → 09_1_AGENT_생성.sql → 09_2_AGENT_버전업.sql
---   🔴 [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
+--   WARN: [2026-08-04 O36 교정] 종전 이 줄은 `09_AGENT_spec_구현.sql`(DEPRECATED 스텁)을 지목하고
 --      **helper 뷰를 이 파일(G절)이 만든다고 적었으나 이 파일에는 DIM_MONTH·구 DIM_MEMBER_CURRENT 가 없다.**
---      당시 실행 정본은 `08_After_Deploy_DBT.sql` §G 였다. 🟢 [2026-08-10 O55] **그 §G 절도 삭제됐다** —
+--      당시 실행 정본은 `08_After_Deploy_DBT.sql` §G 였다. [2026-08-10 O55] **그 §G 절도 삭제됐다** —
 --      helper 3종 물리 DROP 완료 ⇒ 어느 파일도 helper 를 만들지 않는다. 전체 순서 정본 = 06_RUNBOOK.md §11.2-C
 --   ※ B.5 로 DB·9스키마가 처음부터 ADMIN 소유로 생성됨(개별 OWNERSHIP 이관 불요). D 의 ALL TABLES grant 는 DDL 후 실행 권장(FUTURE grant 병행).
 --
--- 🔴🔴 [2026-08-20 O91 신설 — C 항목] **스키마를 드롭·재생성하면 그 스키마의 grant 는 FUTURE grant 까지 전부 사라진다.**
+-- WARN: [2026-08-20 O91 신설 — C 항목] **스키마를 드롭·재생성하면 그 스키마의 grant 는 FUTURE grant 까지 전부 사라진다.**
 --   ⇒ **재생성 후 §D 전량 재실행이 DoD 다.** 이것은 「권장」이 아니라 필수 조건이다.
 --   실측 근거(2026-08-20) = `SNOWFLAKE.ACCOUNT_USAGE.SCHEMATA` 에서 `GN_DW.SILVER` 가
 --     `SCHEMA_ID=44`(created 2026-08-18 20:50:41.247) → **DELETED 21:27:04.683** → `SCHEMA_ID=105`(21:34:28.101) 로 재생성됐고,
 --     그 결과 SILVER 는 `OWNERSHIP` 1건만 남아 ENGINEER grant·FUTURE grant 가 **0건**이 됐다.
 --     대조 증거 = 같은 기간 드롭되지 않은 `GOLD`(64)·`OPS`(65)는 FUTURE grant **35건**을 그대로 유지했다.
 --   ⇒ 이 사고로 `dbt build` 가 `003001 (42501)` 로 차단됐다(정본 = `20_issue/50_dbt_파이프라인_미결조치.md` §O90·§O91).
---   🔴 **`ON ALL TABLES` 는 시점 grant 다** — 부여 당시 존재한 테이블에만 걸린다. 그래서 §D 는
+--   WARN: **`ON ALL TABLES` 는 시점 grant 다** — 부여 당시 존재한 테이블에만 걸린다. 그래서 §D 는
 --      항상 `ALL` + `FUTURE` 를 **쌍으로** 부여하며, 그 쌍조차 **스키마 자체가 재생성되면 무효**다.
---   🟢 재발 방지 2원칙: ㉠ **적재·부여 완료 후 스키마 재생성 금지**(O86 `DDL-ORDER-1` 과 동일 계열)
+--    재발 방지 2원칙: ㉠ **적재·부여 완료 후 스키마 재생성 금지**(O86 `DDL-ORDER-1` 과 동일 계열)
 --      ㉡ 재생성이 불가피하면 **§D 전량 재실행을 완료 조건으로 고정**하고 `SHOW FUTURE GRANTS IN SCHEMA` 로 실측 확인.
---   ⚠️ **21:27 에 SILVER 를 드롭한 주체는 미확정이다**(`08_SILVER_테이블DDL:36` 은 `CREATE SCHEMA IF NOT EXISTS` 라
+--   WARN: **21:27 에 SILVER 를 드롭한 주체는 미확정이다**(`08_SILVER_테이블DDL:36` 은 `CREATE SCHEMA IF NOT EXISTS` 라
 --      드롭하지 않는다 · 워크스페이스 루트에 `TEARDOWN.sql` 이 있다). 추가 조사 대상으로 남긴다.
 -- 소유 모델: GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위).
 --            커스텀 롤은 적재·조회만. 계정 레벨(네트워크/인증 정책·Resource Monitor·CoWork·CORTEX)은 ACCOUNTADMIN 유지.
 -- 멱등: 전 구간 IF NOT EXISTS / OR REPLACE / OWNERSHIP 재이관 안전. 반복 실행 가능.
 --
--- 🟢 [2026-08-18] ANALYST 요건 변경 반영 — 요구: BRONZE/SILVER/GOLD SELECT + Agent·Streamlit 사용.
+--  [2026-08-18] ANALYST 요건 변경 반영 — 요구: BRONZE/SILVER/GOLD SELECT + Agent·Streamlit 사용.
 --    · 신규: §D.4 에 ANALYST BRONZE 4스키마 읽기 / §D.7 Agent·Streamlit 소비 / §D.8 Workspace 저작(ACCOUNTADMIN).
 --    · 종전 ANALYST 범위는 SILVER·GOLD 읽기까지였다(01_환경 Role.md §2.2 scope = "SILVER(읽기), GOLD(읽기), SERVING 소비").
 --      BRONZE 가 추가되면서 **owner's rights 경유 확산**이 새 위험으로 들어온다 → §D.7 상단 경고 참조.
@@ -62,8 +68,8 @@ CREATE WAREHOUSE IF NOT EXISTS GN_DW_DEV_WH
   WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE
   COMMENT = '개발/테스트 (Engineer·Admin 기본)';
 
--- 🆕 [2026-10-02 O198] ML 프로시저 전용 WH — 프로시저 내부 ALTER WAREHOUSE(크기 조정)를 위해 LOADER 에 MODIFY 를 준다(§D.5-B).
---   ⚠️ 초기 크기는 추정값(SMALL)이다 — 프로시저가 실행 중 직접 키우고 줄이므로 시작값만 정한다. 원천(A) 설정을 받으면 맞춘다.
+--  [2026-10-02 O198] ML 프로시저 전용 WH — 프로시저 내부 ALTER WAREHOUSE(크기 조정)를 위해 LOADER 에 MODIFY 를 준다(§D.5-B).
+--   WARN: 초기 크기는 추정값(SMALL)이다 — 프로시저가 실행 중 직접 키우고 줄이므로 시작값만 정한다. 원천(A) 설정을 받으면 맞춘다.
 CREATE WAREHOUSE IF NOT EXISTS GN_DW_ML_WH
   WAREHOUSE_SIZE = 'SMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE
   COMMENT = 'ML 학습·예측 프로시저 전용 (LOADER · 프로시저가 크기 조정)';
@@ -121,7 +127,7 @@ GRANT USAGE ON WAREHOUSE GN_DW_ANALYTICS_WH TO ROLE GN_DW_SERVICE;
              DBT PROJECT 는 GN_DW_ADMIN 이 "처음부터 직접 생성" → 생성 시점부터 ADMIN 소유(개별 이관 불요).
       효과: DB 트리 전체가 ADMIN 소유로 정합. MANAGED ACCESS 스키마의 grant 발급 주체 = 소유자 GN_DW_ADMIN.
              커스텀 롤(ENGINEER/ANALYST/VIEWER/LOADER/SERVICE)은 적재·조회만(소유 없음).
-      ⚠️ ACCOUNTADMIN 전용으로 남는 것(이관 대상 아님, 계정 레벨):
+      WARN: ACCOUNTADMIN 전용으로 남는 것(이관 대상 아님, 계정 레벨):
              네트워크/인증 정책(ALTER ACCOUNT SET ...), Resource Monitor, CoWork object(§F), SNOWFLAKE.CORTEX_* 부여.
       스키마 정본: 02_DB_BRONZE_SILVER.md §3.2 · 03_GOLD_SERVING.md §3.8.
              BRONZE_*·SECURITY = MANAGED ACCESS. SILVER/GOLD/SERVING/OPS = 일반. PUBLIC 은 자동 존재.
@@ -152,14 +158,14 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.BRONZE_GSC    WITH MANAGED ACCESS COMMENT = '�
 
 -- 정제·분석·소비·운영·거버넌스
 -- [2026-07-28 순서9-I] AGENCY 광고 팩트군 재설계(DEC-8) 반영: SILVER 32→38 · GOLD star 24→27 · WIDE 9→12
--- 🆕 🔴🔴 [2026-09-08 O144-C · 후속과제 후-6 + 문서50 §순서9-C·§결정대기 GOLD 6개 미반영분]
+--  WARN: [2026-09-08 O144-C · 후속과제 후-6 + 문서50 §순서9-C·§결정대기 GOLD 6개 미반영분]
 --   **스키마 COMMENT 에서 객체 개수를 뺐다.** 종전 문안은 SILVER 38 · GOLD star 27(15 DIM+12 FACT) ·
 --   WIDE 12 였고 라이브 실측(2026-09-08 · 계정 `hy04212` / `ACCOUNTADMIN`)은
 --   **SILVER 43 · GOLD DIM 20 + FACT 17 = 37 · WIDE 뷰 14** 였다 ⇒ 세 수치가 **전부 stale** 이었다.
---   🔴 이 COMMENT 는 **발행 문안**이다 — Cortex Analyst 가 스키마 설명을 근거로 답할 수 있으므로
+--   WARN: 이 COMMENT 는 **발행 문안**이다 — Cortex Analyst 가 스키마 설명을 근거로 답할 수 있으므로
 --     stale 한 개수는 「조용한 오답」의 자리가 된다(문서50 §BLOCKING-4 가 「9개 → 13개 갱신 필요(미반영)」로
 --     남겨 둔 그 항목이고, 그 사이 실제는 14 가 됐다 = 개수를 적으면 또 낡는다).
---   🟢 처방 = **수를 지우고 「재는 방법」으로 대체**한다(`R3-9 ㉦` · O126 ⑥ 이 확립한 선례).
+--    처방 = **수를 지우고 「재는 방법」으로 대체**한다(`R3-9 ㉦` · O126 ⑥ 이 확립한 선례).
 --     개수가 필요하면 `GN_DW.INFORMATION_SCHEMA.TABLES` 를 `TABLE_TYPE` 으로 집계해 그 시점 값을 쓴다.
 CREATE SCHEMA IF NOT EXISTS GN_DW.SILVER   COMMENT = '정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';
 CREATE SCHEMA IF NOT EXISTS GN_DW.GOLD     COMMENT = '분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다';
@@ -171,8 +177,8 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.ML       COMMENT = '머신러닝 계층 — �
 
 
 /* ---------------------------------------------------------------------
-   🆕 [2026-08-18 O85-C · 착수표 ㉔ ⑦ 처방] Agent 정본 yaml 배포 스테이지
-      🔴 **왜 OPS 인가**(SERVING 이 아니다):
+    [2026-08-18 O85-C · 착수표 ㉔ ⑦ 처방] Agent 정본 yaml 배포 스테이지
+      WARN: **왜 OPS 인가**(SERVING 이 아니다):
         ① 권한 — `SERVING` 은 소비 3역할(ANALYST·VIEWER·SERVICE)에 USAGE 가 부여된다
            (§D.7-2 → `08_After_Deploy_DBT.sql §E.1`). `OPS` 는 ENGINEER 의 CREATE TABLE 뿐이다.
            agent_spec.yaml 은 instructions·도구 배선·업무 로직 전문(31~40KB)이라 소비자가 볼 것이 아니다.
@@ -180,7 +186,7 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.ML       COMMENT = '머신러닝 계층 — �
            「COMMENT 가 내용물을 열거하는 스키마에 다른 것을 섞으면 그 서술이 깨지고 개수 검증이 오염된다」.
            `SERVING` COMMENT 가 정확히 그 유형이고 `09_1 [6]` 이 그 개수를 센다.
         ③ 정렬 — dbt 프로젝트 객체(`GN_DW.OPS.DW_PIPELINE`)가 이미 OPS 에 있다.
-      ⚠️ **GRANT 를 추가하지 않는다.** 소유자(GN_DW_ADMIN)만 읽고 쓴다 — 배포는 ADMIN 이 한다.
+      WARN: **GRANT 를 추가하지 않는다.** 소유자(GN_DW_ADMIN)만 읽고 쓴다 — 배포는 ADMIN 이 한다.
    --------------------------------------------------------------------- */
 CREATE STAGE IF NOT EXISTS GN_DW.OPS.AGENT_SPEC_STAGE
   DIRECTORY = (ENABLE = TRUE)
@@ -189,8 +195,8 @@ CREATE SCHEMA IF NOT EXISTS GN_DW.SECURITY WITH MANAGED ACCESS COMMENT = '거버
 -- 기존 배포본 재실행 시 COMMENT 갱신 (IF NOT EXISTS 는 기존 스키마의 COMMENT 를 덮지 않음)
 ALTER SCHEMA GN_DW.SILVER SET COMMENT = '정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';
 ALTER SCHEMA GN_DW.GOLD   SET COMMENT = '분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다';
--- 🆕 [2026-08-18 O85-C] OPS 도 같은 이유로 갱신문이 필요하다(스테이지 추가로 COMMENT 가 바뀌었다).
---   🔴 이것이 `09_1` ㉔ ② 와 **같은 결함 유형**이다 — `IF NOT EXISTS` 는 멱등이지만 **속성을 갱신하지 않는다.**
+--  [2026-08-18 O85-C] OPS 도 같은 이유로 갱신문이 필요하다(스테이지 추가로 COMMENT 가 바뀌었다).
+--   WARN: 이것이 `09_1` ㉔ ② 와 **같은 결함 유형**이다 — `IF NOT EXISTS` 는 멱등이지만 **속성을 갱신하지 않는다.**
 ALTER SCHEMA GN_DW.OPS    SET COMMENT = 'ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)';
 
 /* =====================================================================
@@ -244,7 +250,7 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_SERVICE;
 GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_SERVICE;
 
 -- D.3 SILVER (ENGINEER 개발 + ANALYST 읽기)
---   🔴 [2026-08-20 O91 — C 항목 포인터] 이 절의 `ON ALL TABLES` 는 **시점 grant** 이고
+--   WARN: [2026-08-20 O91 — C 항목 포인터] 이 절의 `ON ALL TABLES` 는 **시점 grant** 이고
 --      SILVER 스키마가 재생성되면 `FUTURE` 까지 함께 사라진다. 상세·실측 근거는 이 파일 머리말 25~37행.
 --      ⇒ SILVER 를 드롭·재생성했다면 **이 절과 §D.5 를 전량 재실행**한다(DoD).
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.SILVER TO ROLE GN_DW_ADMIN;
@@ -265,27 +271,27 @@ GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ANALYST;
 
 -- D.4 BRONZE_* 4종 (ADMIN 전체 / ENGINEER 읽기 / LOADER 적재 / ANALYST 읽기)
---   🟢 [2026-08-18] ANALYST 읽기 신설 — 요건 "bronze, silver, gold에 대한 select".
+--    [2026-08-18] ANALYST 읽기 신설 — 요건 "bronze, silver, gold에 대한 select".
 --      · BRONZE_* 는 MANAGED ACCESS 이므로 소유자 GN_DW_ADMIN 만 grant 발급 가능 → 이 절(USE ROLE GN_DW_ADMIN)이 정위치.
 --      · VIEWER 에는 부여하지 않는다. 계층은 `GRANT ROLE GN_DW_VIEWER TO ROLE GN_DW_ANALYST`(§B) 이므로
 --        ANALYST 가 VIEWER 를 상속하는 **단방향**이다 ⇒ ANALYST 의 BRONZE 권한은 VIEWER 로 내려가지 않는다.
---      · ⚠️ 단 Streamlit/앱의 owner's rights 경유로는 우회 가능하다 → §D.7 경고 참조.
+--      · WARN: 단 Streamlit/앱의 owner's rights 경유로는 우회 가능하다 → §D.7 경고 참조.
 --      · SELECT 만 부여한다(원천 무결성): INSERT/UPDATE 는 LOADER 전용을 유지.
---   🟢 [2026-08-18 라이브 실측 완료] 아래 12문을 실제 실행하고 임시 테이블로 검증했다(검증 후 DROP, BRONZE_CRM 0건 복구):
+--    [2026-08-18 라이브 실측 완료] 아래 12문을 실제 실행하고 임시 테이블로 검증했다(검증 후 DROP, BRONZE_CRM 0건 복구):
 --      ANALYST BRONZE SELECT = PASS(FUTURE grant 가 신규 테이블에 즉시 적용) · VIEWER BRONZE SELECT = FAIL(차단 확인)
 --      · ANALYST BRONZE INSERT = FAIL(SELECT 전용 확인). 상세 = 04_운영 확인.md §6 executed_results.
---      🔴 재검증 시 `USE SECONDARY ROLES NONE` 을 먼저 실행할 것 — 기본 세션은 secondary roles 활성(ALL)이라
+--      WARN: 재검증 시 `USE SECONDARY ROLES NONE` 을 먼저 실행할 것 — 기본 세션은 secondary roles 활성(ALL)이라
 --         권한이 합집합으로 평가되어 VIEWER 차단 테스트가 **거짓 PASS** 로 나온다(실제 오탐 발생).
---   🔴🔴 [2026-08-30 O121 · 계정 ka98941 실측] **이 절이 부분 실행된 상태로 방치돼 있었다.**
+--   WARN: [2026-08-30 O121 · 계정 ka98941 실측] **이 절이 부분 실행된 상태로 방치돼 있었다.**
 --      증상 = dbt build(DW_PIPELINE) ERROR 17건 중 **16건**이
 --        `002003 (02000) Schema 'GN_DW.BRONZE_CRM' does not exist or not authorized` (CRM 11 · AGENCY 4 · ERP 1).
---      🔴 스키마는 **존재했다** — 이 메시지의 뒷부분(`or not authorized`)이 진짜 원인이다.
+--      WARN: 스키마는 **존재했다** — 이 메시지의 뒷부분(`or not authorized`)이 진짜 원인이다.
 --         Snowflake 는 정보 노출을 막기 위해 「권한 없음」을 「없음」과 **같은 문구**로 보고한다.
 --         ⇒ 이 오류를 보고 DDL/스키마를 다시 만들러 가지 말 것. 먼저 `SHOW GRANTS TO ROLE` 을 봐라.
 --      원인 = 아래 4개 블록 중 **`BRONZE_BIGQUERY` 만 적용**되어 있었다(그래서 GA4 계열만 컴파일을 통과했다).
 --      ⇒ 2026-08-30 03:07(-0700) CRM·ERP·AGENCY 9문을 GN_DW_ADMIN 으로 재실행해 복구했다.
 --        부여 확인 = 스키마 USAGE 4종 전부 + BRONZE 테이블 SELECT 52건.
---      🟢 교훈 = 이 절은 **멱등**이다(GRANT 재실행은 무해) ⇒ 의심되면 절 전체를 다시 실행하라.
+--       교훈 = 이 절은 **멱등**이다(GRANT 재실행은 무해) ⇒ 의심되면 절 전체를 다시 실행하라.
 --         부분 실행은 조용히 남고, 몇 세션 뒤 **엉뚱한 계층(dbt)** 에서 터진다.
 --   BRONZE_CRM
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.BRONZE_CRM TO ROLE GN_DW_ADMIN;
@@ -394,11 +400,11 @@ GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.ML TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON FUTURE TABLES IN SCHEMA GN_DW.ML TO ROLE GN_DW_SERVICE;
 GRANT SELECT ON FUTURE VIEWS  IN SCHEMA GN_DW.ML TO ROLE GN_DW_SERVICE;
 
--- D.5-B 🆕 [2026-10-02 O198] ML·월마감 프로시저 실행 — GN_DW_LOADER
+-- D.5-B [2026-10-02 O198] ML·월마감 프로시저 실행 — GN_DW_LOADER
 --   출처 = 임시 파일 `ML스키마에 LOADER롤추가_작업후삭제.sql` §1 (이 절로 편입 · 원 파일은 삭제 대상).
 --   실행 흐름 = LOADER 가 `BRONZE_CRM.SP_EXEC_MONTH_END(<YYYYMM>)` 호출 → SILVER 집계 SP · ML 예측 SP 연쇄 실행(08번 §[4]).
---   🔴 전제 = 각 스키마의 프로시저가 **이미 생성돼 있어야** ALL PROCEDURES 가 대상을 갖는다 — FUTURE 는 이후 생성분을 덮는다.
---   🔴 스키마 USAGE 가 없으면 프로시저 USAGE 는 효과가 없다 ⇒ ML·SILVER USAGE 를 함께 준다(BRONZE_CRM 은 D.2 에서 부여됨).
+--   WARN: 전제 = 각 스키마의 프로시저가 **이미 생성돼 있어야** ALL PROCEDURES 가 대상을 갖는다 — FUTURE 는 이후 생성분을 덮는다.
+--   WARN: 스키마 USAGE 가 없으면 프로시저 USAGE 는 효과가 없다 ⇒ ML·SILVER USAGE 를 함께 준다(BRONZE_CRM 은 D.2 에서 부여됨).
 USE ROLE GN_DW_ADMIN;
 GRANT USAGE ON SCHEMA GN_DW.ML     TO ROLE GN_DW_LOADER;
 GRANT USAGE ON SCHEMA GN_DW.SILVER TO ROLE GN_DW_LOADER;
@@ -421,7 +427,7 @@ GRANT CREATE SNOWFLAKE.ML.ANOMALY_DETECTION ON SCHEMA GN_DW.ML TO ROLE GN_DW_LOA
 USE ROLE SECURITYADMIN;
 GRANT USAGE, OPERATE, MODIFY ON WAREHOUSE GN_DW_ML_WH TO ROLE GN_DW_LOADER;
 USE ROLE GN_DW_ADMIN;
---   ⚠️ 미확인 = 프로시저가 EXECUTE AS CALLER 면 LOADER 에 대상 테이블 DML(ML 결과 DELETE·INSERT · SILVER 집계 UPDATE)이 추가로 필요하다.
+--   WARN: 미확인 = 프로시저가 EXECUTE AS CALLER 면 LOADER 에 대상 테이블 DML(ML 결과 DELETE·INSERT · SILVER 집계 UPDATE)이 추가로 필요하다.
 --      원 임시 파일에는 없던 권한이라 여기서 부여하지 않았다 — 08번 §[4] 첫 실행에서 권한 오류가 나면 그 테이블만 골라 부여한다.
 
 /* =====================================================================
@@ -434,7 +440,7 @@ USE ROLE GN_DW_ADMIN;
       권한 사실: TRUNCATE 는 개별 grant 가능한 TABLE 권한(docs: GRANT ... ON TABLE {INSERT|DELETE|TRUNCATE|UPDATE|...}).
                  EXECUTE DBT PROJECT = USAGE ON DBT PROJECT(docs). → 소유권 없이 실행 가능.
       결정: 별도 GN_DW_DBT 롤 불필요(01_환경 Role.md §3 트리거 미충족). ADMIN 은 OWNERSHIP 만 유지.
-      🔴 [2026-09-28 O184] 위 결정은 **§D.9 로 대체**됐다(사용자 지시 · dbt 실행 롤 = GN_DW_DBT · 이 절은 이력).
+      WARN: [2026-09-28 O184] 위 결정은 **§D.9 로 대체**됐다(사용자 지시 · dbt 실행 롤 = GN_DW_DBT · 이 절은 이력).
    ===================================================================== */
 USE ROLE GN_DW_ADMIN;  -- GOLD/SILVER/OPS 소유자 = GN_DW_ADMIN(처음부터 생성) → ADMIN 이 발급
 
@@ -443,23 +449,23 @@ GRANT INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES    IN SCHEMA GN_DW.GOLD TO 
 GRANT INSERT, UPDATE, DELETE, TRUNCATE ON FUTURE TABLES IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_ENGINEER;
 
 -- SILVER: append(INSERT) + pre-hook TRUNCATE + 범위 DELETE. (USAGE·SELECT·CREATE TABLE 는 D.3 기보유)
---   🔴🔴 [2026-08-20 O91 정정 — D 항목] 종전 이 줄은 *"merge 없음 → UPDATE/DELETE 불요"* 였고 **stale 이었다.**
+--   WARN: [2026-08-20 O91 정정 — D 항목] 종전 이 줄은 *"merge 없음 → UPDATE/DELETE 불요"* 였고 **stale 이었다.**
 --      반증 = O87 이 신설한 `silver_purge` 매크로가 range 모델에 **범위 DELETE 문**을 낸다
 --      (`macros/ga4_range_purge.sql` · pre-hook 경유) ⇒ `DELETE` 없이는 GA4 SILVER 모델이 실패한다.
---      🟢 2026-08-20 라이브 부여·실측 확인(FUTURE 4종 = SELECT·INSERT·TRUNCATE·DELETE).
+--       2026-08-20 라이브 부여·실측 확인(FUTURE 4종 = SELECT·INSERT·TRUNCATE·DELETE).
 GRANT INSERT, TRUNCATE, DELETE, UPDATE ON ALL TABLES    IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 GRANT INSERT, TRUNCATE, DELETE, UPDATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER TO ROLE GN_DW_ENGINEER;
 
---   🔴🔴 [2026-08-30 O121 재정정 — UPDATE] 위 O91 이 남긴 「🟢 `UPDATE` 는 여전히 불요다(SILVER 에
+--   WARN: [2026-08-30 O121 재정정 — UPDATE] 위 O91 이 남긴 「 `UPDATE` 는 여전히 불요다(SILVER 에
 --      merge 전략 모델이 없다)」는 **더는 사실이 아니다.** 그 문장은 2026-08-20 자이고, 닷새 뒤
 --      **2026-08-25** 에 `models/silver/crm/CRM_MEMBER_DEV.sql` 이 현업 요건("1개월 주기 변경분 증분 적재")
 --      으로 `incremental_strategy='merge'` + `unique_key`(SPNSR_NO·SPNSR_BSNS_NO·OCCRRNC_DE·SER_NO) 로
 --      전환됐다. merge 는 matched 행에 **UPDATE** 를 낸다 ⇒ UPDATE 없이는 이 모델이 실패한다.
---      🔴 이 어긋남은 **모델 전략을 바꿀 때 이 절을 함께 고치지 않아서** 생겼다 — 권한은 모델 전략에 종속이다.
+--      WARN: 이 어긋남은 **모델 전략을 바꿀 때 이 절을 함께 고치지 않아서** 생겼다 — 권한은 모델 전략에 종속이다.
 --         2026-08-30 시점에는 BRONZE_CRM USAGE 부재(§D.4)가 이 모델을 먼저 막고 있어 **증상이 가려져 있었다**
 --         (ERROR 17건 중 CRM_MEMBER_DEV 는 스키마 권한 오류로 죽어서 UPDATE 부재까지 도달하지 못했다).
 --         ⇒ 결함이 결함을 가리는 구조였다. §D.4 를 고치면 이 항목이 곧바로 드러난다.
---      ⚠️ 스키마 전체(ALL/FUTURE)로 넓히지 **않는다** — merge 모델이 현재 1개뿐이므로 테이블 단위로 좁게 준다
+--      WARN: 스키마 전체(ALL/FUTURE)로 넓히지 **않는다** — merge 모델이 현재 1개뿐이므로 테이블 단위로 좁게 준다
 --         (O91 의 「좁힌 상태를 유지한다」 원칙 계승). 새 merge 모델이 생기면 **여기에 한 줄을 추가**하라.
 --         빠뜨려도 조용한 오작동이 아니다 — `003001 … must have MODIFY granted on TABLE …` 로 시끄럽게 실패한다.
 --      교차검증 = `grep -rn "incremental_strategy='merge'" 10_dbt_pipeline/models/silver/` ↔ 아래 GRANT 목록.
@@ -476,7 +482,7 @@ GRANT INSERT, TRUNCATE, DELETE, UPDATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER T
             `store_failures=true` 를 켜자 dbt 가 기본 감사 스키마를 만들려 했고 실패했다:
               create schema if not exists GN_DW.dbt_test__audit
               → 003001: GN_DW_ENGINEER must have CREATE SCHEMA granted on DATABASE GN_DW
-            ⚠️ 이 에러의 요구사항(DB 레벨 CREATE SCHEMA)을 그대로 부여하면 ENGINEER 가
+            WARN: 이 에러의 요구사항(DB 레벨 CREATE SCHEMA)을 그대로 부여하면 ENGINEER 가
                GN_DW 안에 **임의 스키마**를 만들 수 있게 된다 — 에러 메시지가 제안하는 권한이
                최소권한이라는 보장은 없다. 요구를 좁혀서 충족시킨다.
 
@@ -487,32 +493,32 @@ GRANT INSERT, TRUNCATE, DELETE, UPDATE ON FUTURE TABLES IN SCHEMA GN_DW.SILVER T
         ⇒ 스키마가 이미 존재하므로 dbt 는 create schema 를 호출하지 않고,
            DB 레벨 CREATE SCHEMA 없이 **스키마 1개 범위**의 CREATE TABLE 로 끝난다.
 
-      🔴 FUTURE TABLES 를 쓰지 않는다: 이 권한의 대상은 dbt 가 스스로 만들고 스스로 소유하는
+      WARN: FUTURE TABLES 를 쓰지 않는다: 이 권한의 대상은 dbt 가 스스로 만들고 스스로 소유하는
          테이블이다(생성자 = ENGINEER ⇒ OWNERSHIP 자동 취득 ⇒ 추가 grant 불요).
          FUTURE 를 걸면 ADMIN 이 나중에 OPS 에 만드는 운영 테이블까지 ENGINEER 에게
          새는데, 그건 이 요구와 무관한 확대다.
 
-      🔴🔴 [2026-08-20 O91 정정 — A 항목] 위 「배치 결정」의 결론 문장(*"스키마가 이미 존재하므로
+      WARN: [2026-08-20 O91 정정 — A 항목] 위 「배치 결정」의 결론 문장(*"스키마가 이미 존재하므로
          dbt 는 create schema 를 호출하지 않고 … CREATE TABLE 로 끝난다"*)은 **실측으로 반증됐다.**
          · 반증 = `target/manifest.json` 기준 테스트 **343노드**가 `GN_DW.dbt_test__audit` 소속이다.
            `logs/dbt.log:455~460` 은 `create schema if not exists GN_DW.dbt_test__audit` **1건**을 시도하고
            `003001 (42501)` 로 죽는다 ⇒ `store_failures` 대상을 OPS 로 돌려도 **audit 스키마는 우회되지 않는다.**
          · 원인 = `macros/generate_schema_name.sql` 이 커스텀 스키마 값을 **접두 없이 그대로** 반환한다
            ⇒ dbt 의 감사 스키마 이름은 `OPS` 로 치환되지 않고 `dbt_test__audit` 로 남는다.
-         · 🔴 처방은 **DB 레벨 `CREATE SCHEMA` 부여가 아니다** — 위 311~313 의 거부 판단은 그대로 옳다.
+         · WARN: 처방은 **DB 레벨 `CREATE SCHEMA` 부여가 아니다** — 위 311~313 의 거부 판단은 그대로 옳다.
            `GN_DW_ADMIN` 이 audit 스키마를 **선생성**하면 dbt 는 `create schema` 를 호출하지 않는다
            (SILVER·GOLD 가 그 경로로 통과하는 것이 증거다) ⇒ 아래 선생성 + 스키마 1개 범위 grant 로 좁힌다.
-         · 🟢 2026-08-20 라이브 실행·실측 확인(스키마 실재 1 · ENGINEER `USAGE`+`CREATE TABLE` 2건).
+         · 2026-08-20 라이브 실행·실측 확인(스키마 실재 1 · ENGINEER `USAGE`+`CREATE TABLE` 2건).
    ===================================================================== */
--- D.6-1 audit 스키마 선생성 (🆕 [O91] A 항목 처방 · DB 레벨 CREATE SCHEMA 회피의 핵심)
+-- D.6-1 audit 스키마 선생성 ( [O91] A 항목 처방 · DB 레벨 CREATE SCHEMA 회피의 핵심)
 CREATE SCHEMA IF NOT EXISTS GN_DW.dbt_test__audit
   COMMENT = 'dbt 테스트 실패 감사 — dbt 자동 생성 회피용 선생성';
 GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit TO ROLE GN_DW_ENGINEER;
 
 -- D.6-2 store_failures 테이블 적재 대상 스키마
---   🔴🔴 [2026-08-20 O91 정정 — B 항목] 종전에는 `CREATE TABLE` 만 부여하고 **`USAGE` 가 누락**돼 있었다.
+--   WARN: [2026-08-20 O91 정정 — B 항목] 종전에는 `CREATE TABLE` 만 부여하고 **`USAGE` 가 누락**돼 있었다.
 --      스키마 `USAGE` 없이는 그 안의 객체를 참조할 수 없으므로 `store_failures` 테이블 조회·적재가 막힌다.
---      🟠 미측정 = 「`USAGE` 없으면 store_failures 테스트가 실제로 실패하는가」는 재현하지 않았다
+--      NOTE: 미측정 = 「`USAGE` 없으면 store_failures 테스트가 실제로 실패하는가」는 재현하지 않았다
 --         (O90 ⑩ 승계). 부여는 필요조건 충족이고 실패 재현은 별건이다 — 인용 전 실측할 것.
 GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
 
@@ -521,7 +527,7 @@ GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
 --   - ENGINEER: dbt snapshot 모델 테이블 생성/적재/갱신 (USAGE, CREATE TABLE, ALL PRIVILEGES ON TABLES)
 --   - 소비 역할(ANALYST/VIEWER/SERVICE): 미부여 (최소 권한 원칙 — 소비자는 GOLD/SERVING 마트를 통해 소비)
 --   - 현업 활용도가 낮을 것으로 잠정판단되어 관리포인트를 줄이기 위해 보류
---   - 🔴 [DEC-61 · 2026-10-12 사용자 결정] 보류가 아니라 **영구 미가동**이다 — 아래 블록 주석을 풀지 마라.
+--   - WARN: [DEC-61 · 2026-10-12 사용자 결정] 보류가 아니라 **영구 미가동**이다 — 아래 블록 주석을 풀지 마라.
 /*
 GRANT ALL PRIVILEGES ON SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ADMIN;
@@ -533,12 +539,12 @@ GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENG
 */
 
 /* =====================================================================
-   D.7 ANALYST 의 Agent · Streamlit "소비" 권한 — 🟢 [2026-08-18] 신설
+   D.7 ANALYST 의 Agent · Streamlit "소비" 권한 — [2026-08-18] 신설
       요건: "agent / streamlit 사용이 필요".
-      ⚠️ 이 절은 **부여문이 거의 없다**. 대상 객체(SV·Agent·Streamlit)가 아직 없거나
+      WARN: 이 절은 **부여문이 거의 없다**. 대상 객체(SV·Agent·Streamlit)가 아직 없거나
          이 파일 실행 시점 이후에 만들어지기 때문이다. 정위치는 §D.7-2 표 참조.
 
-      🔴 최우선 경고 — owner's rights × BRONZE (D.4 와 짝을 이룸)
+      WARN: 최우선 경고 — owner's rights × BRONZE (D.4 와 짝을 이룸)
          Streamlit 앱과 소유자권한 객체는 **소유 롤의 권한으로 실행**된다. 따라서
          「ANALYST 소유 앱」에 `USAGE ON STREAMLIT` 만 받은 VIEWER 는 BRONZE(CRM 43테이블,
          회원 개인정보)를 **간접 조회**할 수 있다 — D.4 에서 VIEWER 를 제외한 통제가 무력화된다.
@@ -553,12 +559,12 @@ GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENG
 
       D.7-1 Cortex 사용 권한 — 부여문 불요(상속)
          SNOWFLAKE.CORTEX_USER 는 기본 PUBLIC 에 부여되어 있어 ANALYST 가 상속한다.
-         🟢 [라이브 실측 2026-08-18] `SHOW GRANTS TO ROLE PUBLIC` = USAGE ON DATABASE_ROLE SNOWFLAKE.CORTEX_USER 확인.
+          [라이브 실측 2026-08-18] `SHOW GRANTS TO ROLE PUBLIC` = USAGE ON DATABASE_ROLE SNOWFLAKE.CORTEX_USER 확인.
             함께 확인된 PUBLIC 보유 항목: USE AI FUNCTIONS · EXECUTE AGENT TASK · USAGE ON WAREHOUSE
             SYSTEM$STREAMLIT_NOTEBOOK_WH · USAGE ON COMPUTE POOL SYSTEM_COMPUTE_POOL_CPU(§D.8).
-         🔴 `IS_DATABASE_ROLE_IN_SESSION('SNOWFLAKE.CORTEX_USER')` 로 판정하지 말 것 —
+         WARN: `IS_DATABASE_ROLE_IN_SESSION('SNOWFLAKE.CORTEX_USER')` 로 판정하지 말 것 —
             ACCOUNTADMIN 으로도 FALSE 를 반환한다(PUBLIC 경유 상속을 반영하지 못함). SHOW GRANTS 로 판정한다.
-         🔴 [트라이얼 계정 제약 — 실측] 이 계정은 AI 함수가 전면 차단되어 **Agent 실동작 검증이 불가**하다:
+         WARN: [트라이얼 계정 제약 — 실측] 이 계정은 AI 함수가 전면 차단되어 **Agent 실동작 검증이 불가**하다:
             COUNT_TOKENS·AI_COMPLETE 모두 'not available for trial accounts' 반환.
             ⇒ 권한 준비는 완료지만 "agent 사용" 요건의 기능 확인은 **유료 전환 후** 재검증 대상이다.
          Agent 호출·Cortex Analyst 실행에 별도 grant 가 필요 없다(08_After_Deploy_DBT.sql §F 주석과 동일 사실).
@@ -566,31 +572,31 @@ GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENG
          CORTEX_AGENT_USER 를 ANALYST 에 명시 부여한다.
 
       D.7-2 객체 USAGE 의 정위치 — 이 파일이 아니다
-         | 대상                | 부여 위치                                   | 비고                                    |
+         | 대상 | 부여 위치 | 비고 |
          |---------------------|--------------------------------------------|-----------------------------------------|
-         | SERVING 스키마 USAGE | 08_After_Deploy_DBT.sql §E.1               | ANALYST 포함 소비 3역할 (이미 반영)      |
-         | CoWork object USAGE  | 08_After_Deploy_DBT.sql §F                 | Snowflake Intelligence 가시성 (이미 반영)|
-         | SEMANTIC VIEW USAGE  | 08 §E.1 주석 → 05_1~05_9_SV_DDL_*.sql 배포 후 | 🔴 FUTURE grant 미지원 → SV별 개별 부여   |
-         | AGENT USAGE          | 09_1_AGENT_생성.sql 이후                    | 🔴 FUTURE grant 미지원 → Agent별 개별 부여|
+         | SERVING 스키마 USAGE | 08_After_Deploy_DBT.sql §E.1 | ANALYST 포함 소비 3역할 (이미 반영) |
+         | CoWork object USAGE | 08_After_Deploy_DBT.sql §F | Snowflake Intelligence 가시성 (이미 반영)|
+         | SEMANTIC VIEW USAGE | 08 §E.1 주석 → 05_1~05_9_SV_DDL_*.sql 배포 후 | WARN: FUTURE grant 미지원 → SV별 개별 부여 |
+         | AGENT USAGE | 09_1_AGENT_생성.sql 이후 | WARN: FUTURE grant 미지원 → Agent별 개별 부여|
          이 파일(07)은 SV·Agent 생성 **전에** 실행되므로 여기서 부여하면 객체 부재로 실패한다.
 
       D.7-3 Streamlit 앱 USAGE — 앱 배포 후 실행할 템플릿
          GN_DW.SERVING 에 앱을 배포한다(스키마 신설 없음. SERVING COMMENT = 「Semantic View·
          Cortex Agent·Streamlit 배치(P7)」가 이미 정본). 배포 주체는 GN_DW_ADMIN,
          배포 직후 위 통제 (1)에 따라 소유권을 GN_DW_SERVICE 로 이관한다.
-         🔴 STREAMLIT 은 FUTURE grant 대상이 아니므로 앱마다 개별 부여한다(SV·Agent 와 동일 제약).
+         WARN: STREAMLIT 은 FUTURE grant 대상이 아니므로 앱마다 개별 부여한다(SV·Agent 와 동일 제약).
    ===================================================================== */
 -- (앱 배포 후 주석 해제 — <APP> 을 실제 앱 이름으로 치환)
 -- USE ROLE GN_DW_ADMIN;
--- CREATE STREAMLIT GN_DW.SERVING.<APP> ... ;                              -- 배포(ADMIN)
--- GRANT OWNERSHIP ON STREAMLIT GN_DW.SERVING.<APP> TO ROLE GN_DW_SERVICE  -- 통제(1): 최소권한 소유
+-- CREATE STREAMLIT GN_DW.SERVING.<APP> ... ; -- 배포(ADMIN)
+-- GRANT OWNERSHIP ON STREAMLIT GN_DW.SERVING.<APP> TO ROLE GN_DW_SERVICE -- 통제(1): 최소권한 소유
 --   COPY CURRENT GRANTS;
 -- GRANT USAGE ON STREAMLIT GN_DW.SERVING.<APP> TO ROLE GN_DW_ANALYST;
 -- GRANT USAGE ON STREAMLIT GN_DW.SERVING.<APP> TO ROLE GN_DW_VIEWER;
 
 /* =====================================================================
-   D.8 ANALYST 의 Streamlit "저작" 권한 (Workspace) — 🟢 [2026-08-18] 신설
-      ⚠️ 이 절의 대상은 계정 레벨 객체(COMPUTE POOL)이므로 부여가 필요해질 경우 **ACCOUNTADMIN 구간**이다
+   D.8 ANALYST 의 Streamlit "저작" 권한 (Workspace) — [2026-08-18] 신설
+      WARN: 이 절의 대상은 계정 레벨 객체(COMPUTE POOL)이므로 부여가 필요해질 경우 **ACCOUNTADMIN 구간**이다
          (헤더 소유 모델 §B.5 의 「계정 레벨은 ACCOUNTADMIN 유지」와 동일 취급 — GN_DW_ADMIN 으로는 실행 불가).
          단 현재는 PUBLIC 상속으로 충족되어 **실행문이 없다**(아래 실측 참조).
 
@@ -602,33 +608,33 @@ GRANT ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA GN_DW.SNAPSHOT TO ROLE GN_DW_ENG
 
       필요 권한: Workspace Streamlit 은 Container Runtime 에서 실행되므로 COMPUTE POOL USAGE 가 필수다.
                  웨어하우스(GN_DW_ANALYTICS_WH)는 §C 에서 기보유, 데이터 SELECT 는 §D.2~D.4 로 충족.
-      🟢 [라이브 실측 2026-08-18] `SHOW GRANTS ON COMPUTE POOL SYSTEM_COMPUTE_POOL_CPU` =
+       [라이브 실측 2026-08-18] `SHOW GRANTS ON COMPUTE POOL SYSTEM_COMPUTE_POOL_CPU` =
          USAGE 가 **이미 PUBLIC 에 부여**되어 있다(granted_by=ACCOUNTADMIN) ⇒ ANALYST 가 상속한다.
          **따라서 이 절에 실행할 부여문이 없다** — D.7-1 의 CORTEX_USER 와 동일한 「PUBLIC 상속」 패턴.
          아래 명시 부여문은 (a) PUBLIC 의 USAGE 를 회수해 최소권한을 조이는 경우,
          (b) 전용 풀을 신설하는 경우에만 필요하다.
 
-      ⚠️ 주의 2건:
+      WARN: 주의 2건:
          · SYSTEM_COMPUTE_POOL_CPU 는 Snowflake 가 만든 **계정 공유 풀**이고 max_nodes=2 다.
            분석가가 여럿이 동시에 개발하면 노드 경합이 생긴다 ⇒ 인원 증가 시 전용 풀 신설을 검토한다.
          · 앱이 GN_DW_ANALYTICS_WH(MEDIUM, AUTO_SUSPEND 300s)를 물면 접속 중 세션을 붙잡아
            크레딧 소모가 크다 ⇒ Resource Monitor 검토 대상.
 
-      🟡 미검증 1건 — 실행 전 반드시 확인할 것
+      NOTE: 미검증 1건 — 실행 전 반드시 확인할 것
          Workspace 의 **Run(미리보기)** 이 내부적으로 어느 스키마에 STREAMLIT 객체를 실제로
          생성하는지는 **확인하지 못했다**(라이브 `SHOW STREAMLITS IN ACCOUNT` = 0건이나 계정에
          Workspace Streamlit 을 만든 적이 없어 반증�
          */
 
 /* =====================================================================
-   D.9 dbt 실행 전용 롤 GN_DW_DBT — 🔴 **DBT PROJECT 생성 전**에 실행한다 (2026-10-01 O193 이동)
+   D.9 dbt 실행 전용 롤 GN_DW_DBT — WARN: **DBT PROJECT 생성 전**에 실행한다 (2026-10-01 O193 이동)
       설계 정본 = 08_After_Deploy_DBT.sql §D.9 (O184 · 사용자 지시) · 이 절은 그 [1] 중 프로젝트 비의존분이다.
-      🔴 왜 여기인가(실측 · pw69582 · 2026-10-01): `CREATE DBT PROJECT` 는 생성 시점에 `profiles.yml` 의
+      WARN: 왜 여기인가(실측 · pw69582 · 2026-10-01): `CREATE DBT PROJECT` 는 생성 시점에 `profiles.yml` 의
          role(= GN_DW_DBT)로 dbt 를 실행한다 ⇒ 롤이 없으면
          `DBT job failed … Failed to use role GN_DW_DBT: 002043 Object does not exist` 로 생성이 실패한다.
          O184 이전에는 실행 롤이 기존 ENGINEER 라 08 순서로도 성립했고, 새 계정 재구축에서 처음 드러났다.
-      🔴 선행 = §C(웨어하우스) · §D.4(BRONZE 스키마) · §D.6-1(dbt_test__audit 스키마) — 이 절은 그 뒤에 둔다.
-      🔴 남긴 것(08 에 잔존) = [1-e] `GRANT USAGE, MONITOR ON DBT PROJECT …`(프로젝트 생성 후) · [2] 소유권 이관 · [3] ENGINEER 축소.
+      WARN: 선행 = §C(웨어하우스) · §D.4(BRONZE 스키마) · §D.6-1(dbt_test__audit 스키마) — 이 절은 그 뒤에 둔다.
+      WARN: 남긴 것(08 에 잔존) = [1-e] `GRANT USAGE, MONITOR ON DBT PROJECT …`(프로젝트 생성 후) · [2] 소유권 이관 · [3] ENGINEER 축소.
    ===================================================================== */
 USE ROLE SECURITYADMIN;
 CREATE ROLE IF NOT EXISTS GN_DW_DBT COMMENT = 'dbt 실행 전용(DW_PIPELINE) — 적재·WIDE 뷰·테스트 감사. 사람 작업은 GN_DW_ENGINEER';

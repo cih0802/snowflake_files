@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 신원 브리지 (CRM_MEMBER × BIGQUERY_IDENTITY 매칭, IDENTITY_MEMBER_XREF 경유)
+-- Target     : GOLD.DIM_MEMBER_IDENTITY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER, ref IDENTITY_MEMBER_XREF
+-- Issue      : -
+-- =============================================================================
 -- DIM_MEMBER_IDENTITY: 회원 신원 브리지 (CRM_MEMBER × BIGQUERY_IDENTITY 매칭, IDENTITY_MEMBER_XREF 경유)
 -- WARN: 활성화(2026-07-15): SILVER BIGQUERY_IDENTITY 적재 확인 → enabled 해제. BIGQUERY_MEMBER_ID=exact member_id 매칭분만.
 --    grain 보호: XREF는 user_pseudo_id 단위(1회원 최대 3 pseudo) → MEMBER_DK로 집계 후 조인(IDENTITY_SK 유일성 보장).

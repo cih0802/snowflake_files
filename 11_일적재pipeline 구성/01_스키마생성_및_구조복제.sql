@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : BRONZE_CRM_2 / SILVER_2 / GOLD_2 스키마 생성 + SILVER/GOLD 라이브 테이블 구조 CLONE(데이터 0행)
+-- Target     : SCHEMA GN_DW.SILVER_2, SCHEMA GN_DW.GOLD_2, SCHEMA GN_DW.OPS_2, TABLE GN_DW.SILVER_2. 외 1
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.INFORMATION_SCHEMA.TABLES
+-- Issue      : -
+-- =============================================================================
 -- BRONZE_CRM_2 / SILVER_2 / GOLD_2 스키마 생성 + SILVER/GOLD 라이브 테이블 구조 CLONE(데이터 0행)
--- Co-authored with CoCo
 --
 -- 근거: 00_개요_및_실행순서.md "SILVER_2/GOLD_2 구조" 결정 — DDL이 구조를 소유하는 원칙을 유지하되,
 --   04_silver_design/08_SILVER_테이블DDL_*.sql · 03_top-down_gold/06_DDL.sql 을 손으로 재작성하지 않고

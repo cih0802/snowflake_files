@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : O37 회귀 방어: FACT_MEMBER_EVENT 의 캠페인 귀속 중단건이 개발원천 코드5 에만 붙는지 검증.
+-- Target     : dbt singular test assert_fme_campaign_stop_exclusivity (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT
+-- Issue      : O37, O24
+-- =============================================================================
 -- O37 회귀 방어: FACT_MEMBER_EVENT 의 캠페인 귀속 중단건이 개발원천 코드5 에만 붙는지 검증.
 --
 -- 왜 필요한가: `CAMPAIGN_STOP_CNT` 와 기존 `STOP_CNT` 는 **같은 중단 사건을 서로 다른 원천에서**

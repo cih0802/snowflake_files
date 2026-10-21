@@ -1,12 +1,19 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_DVLP_GOAL_ACMSLT · SV_MBRFEE_PRDT_ACTL · SV_SPNSR_CLS_AGGR
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_DVLP_GOAL_ACMSLT, SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL, SEMANTIC VIEW GN_DW.SERVING.SV_SPNSR_CLS_AGGR
+-- Run order  : 운영계 #30
+-- Depends on : GN_DW.GOLD.WIDE_DVLP_GOAL_ACMSLT, GN_DW.GOLD.WIDE_MBRFEE_PRDT_ACTL, GN_DW.GOLD.WIDE_SPNSR_CLS_AGGR
+-- Issue      : O200-B, O200-A, O200-C
+-- =============================================================================
 -- ============================================================================
 -- 05_13_SV_DDL_DEPT_AGGR.sql — Semantic View DDL 정본: SV_DVLP_GOAL_ACMSLT · SV_MBRFEE_PRDT_ACTL · SV_SPNSR_CLS_AGGR
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능.
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql
---   · 🆕 2026-10-02 O200-B 신설. base = GOLD dbt 뷰 3종(models/gold/wide/ · O200-A).
+--   · 2026-10-02 O200-B 신설. base = GOLD dbt 뷰 3종(models/gold/wide/ · O200-A).
 --       원천 = 부서 자체 수식 집계(ML 모델 산출물 아님) · 요청 부서 = 50_handoff/06번 SILVER DDL 머리말.
 --       ~~SV_DVLP_GOAL_ACMSLT = 기획실 → AGENT_EXECUTIVE 도구 · 나머지 2종 = 회원실 → AGENT_MEMBER 도구.~~
---       🔴 [2026-10-03 O200-C 정정] 실제 배선 = **3종 전부 AGENT_MEMBER**(스펙 · 09_2 [0] · 라이브 VERSION$4 일치).
+--       WARN: [2026-10-03 O200-C 정정] 실제 배선 = **3종 전부 AGENT_MEMBER**(스펙 · 09_2 [0] · 라이브 VERSION$4 일치).
 --          EXECUTIVE 스펙에는 SV_DVLP_GOAL_ACMSLT 참조가 0건이다 — 위 줄은 배선 전 계획 문안이었다.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;

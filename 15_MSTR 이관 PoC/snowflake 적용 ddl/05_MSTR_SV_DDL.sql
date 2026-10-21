@@ -1,16 +1,23 @@
+-- =============================================================================
+-- Purpose    : 23_MSTR_SV_DDL.sql — MSTR 서빙뷰 + Semantic View DDL 정본: MSTR_SPNSR_DVLP_V · SV_MSTR_SPNSR_DVLP
+-- Target     : VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V, VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V, VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V, VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V 외 1
+-- Run order  : 운영계 #12
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD, GN_DW.MSTR.D_BRND_CD 외 11
+-- Issue      : O200-B, O200-C, O207, O212 외 2
+-- =============================================================================
 -- ============================================================================
 -- 23_MSTR_SV_DDL.sql — MSTR 서빙뷰 + Semantic View DDL 정본: MSTR_SPNSR_DVLP_V · SV_MSTR_SPNSR_DVLP
 --   · 구성 = USE → CREATE OR REPLACE VIEW → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능.
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
---   · 🆕 2026-10-02 O200-B 신설. 선행 = GN_DW.MSTR 배포·적재(15_MSTR 이관 PoC/tools · mstr_pipeline.py).
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · 2026-10-02 O200-B 신설. 선행 = GN_DW.MSTR 배포·적재(15_MSTR 이관 PoC/tools · mstr_pipeline.py).
 --   · 서빙뷰를 GN_DW.MSTR 가 아니라 SERVING 에 두는 이유 = MSTR 매니페스트(1차.json) 대상이 아니다
 --       ⇒ `mstr_deploy.py --check` 에 잉여 객체로 잡히지 않게 한다(ML 서빙뷰 21번과 같은 관례).
 --   · 서빙뷰 SELECT·JOIN 은 05_mstr_1차_이관_대상_쿼리.sql [1] 과 동일(집계만 제거 · 회원번호 보존).
 --   · Agent = AGENT_MSTR(4번째 · cortex_project/agents/AGENT_MSTR/) · 현업 승인 후 기존 Agent 에 같은 SV 를 도구로 추가.
 -- ============================================================================
--- 🔴 [2026-10-03 O200-C] 이 파일은 O200-B 에서 ACCOUNTADMIN 세션으로 실행돼 서빙뷰·SV owner 가 ACCOUNTADMIN 이 됐다
+-- WARN: [2026-10-03 O200-C] 이 파일은 O200-B 에서 ACCOUNTADMIN 세션으로 실행돼 서빙뷰·SV owner 가 ACCOUNTADMIN 이 됐다
 --    (아래 `USE ROLE` 미실행 · `10_진단_원인분석-015.md:57` 과 같은 사고) ⇒ `24_MSTR_AGENT_배포.sql` [0] 으로 교정했다.
---    🔴 `CREATE OR REPLACE VIEW` 는 재실행 시 owner = 실행 역할이 된다 ⇒ 반드시 아래 USE ROLE 부터 실행한다.
+--    WARN: `CREATE OR REPLACE VIEW` 는 재실행 시 owner = 실행 역할이 된다 ⇒ 반드시 아래 USE ROLE 부터 실행한다.
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
@@ -52,7 +59,7 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V (
   SPNSR_AMT_CNT COMMENT 'MSTR 개발(건) = 후원금액 ÷ 10,000(MSTR 정의 · GN_DW 개발건수와 다름) · 원천 FLOAT 를 NUMBER(18,4) 로 고정(부동소수 꼬리 제거 · 합계 불변)',
   SPNSR_AMT COMMENT '후원금액(원)',
   DVLP_CNT COMMENT '개발구분건수(원천 행 단위 건수)',
-  -- 🆕 [O207 W2] 미노출 27컬럼 중 노출 판정 10축(판정표 = 12_agent개선과제/00_작업계획.md §10-5) · 목표 2컬럼은 별도 grain 뷰(아래)
+  --  [O207 W2] 미노출 27컬럼 중 노출 판정 10축(판정표 = 12_agent개선과제/00_작업계획.md §10-5) · 목표 2컬럼은 별도 grain 뷰(아래)
   SPNSR_TERM_CD COMMENT '후원기간대코드(CM016 · 첫 후원일 → 발생일 연수)',
   SPNSR_TERM_NM COMMENT '후원기간대명(1년 미만 · 1년 이상~5년 미만 · 5년 이상~10년 미만 · 10년 이상)',
   SPNSR_TERM2_CD COMMENT '후원기간대2코드(DMMM08 · 1년 단위)',
@@ -73,13 +80,13 @@ CREATE OR REPLACE VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V (
   CANCL_RDCAMT_RSN_NM COMMENT '중단·감액 사유명 — 후원중단 = 후원중단사유(MM005) · 감액 = 후원사업취소사유(MM002) · 그 외 개발구분은 NULL(개념 없음)',
   PRE_CMPGN_CD COMMENT '직전캠페인코드 — 재후원·금액>0 에만 값 · 그 외 NULL',
   PRE_CMPGN_NM COMMENT '직전캠페인명(재후원 전 마지막 캠페인)',
-  -- 🆕 [O212] 캠페인 분류 4축 — SILVER.CRM_CAMPAIGN(캠페인코드 1행) 조인 · 202608 매칭 25,337/25,337 · 캠페인 마스터 현재값(GN_DW FME 의 적재 시점 동결값과 다를 수 있다)
+  --  [O212] 캠페인 분류 4축 — SILVER.CRM_CAMPAIGN(캠페인코드 1행) 조인 · 202608 매칭 25,337/25,337 · 캠페인 마스터 현재값(GN_DW FME 의 적재 시점 동결값과 다를 수 있다)
   CMMN_BRND_NM COMMENT '공통브랜드(MM297 · 대분류 16종) — 원천 브랜드(BRND_NM · 세부 60여 종)의 상위 묶음이나 엄격한 계층은 아니다',
   DVLP_INFLOW_PATH_NM COMMENT '개발인입경로(MM293 · 12종 · 캠페인 모집채널)',
   CMPGN_TYPE2_NM COMMENT '캠페인유형2(원천 COMMENT = 캠페인유형(사업/사례) · MM296 · 4종 = 사례·사업·굿즈·기타)',
   CMPGN_CTGR_NM COMMENT '캠페인카테고리(MM294 · 주요캠페인 · 세부 40여 종) — 캠페인유형2 와 교차 축(엄격한 하위 계층 아님)',
   CMPGN_TYPE1_NM COMMENT '캠페인유형(원천 COMMENT = 캠페인유형(국내/해외) · MM295 · 국내·해외·통합 등)',
-  -- 🆕 [O213 Y3-A] 캠페인 마스터 마케팅 3축 + 후원구분 — 같은 SILVER.CRM_CAMPAIGN 조인 · 키 중복 0 · 행 수 불변(821,991) · 캠페인 마스터 현재값
+  --  [O213 Y3-A] 캠페인 마스터 마케팅 3축 + 후원구분 — 같은 SILVER.CRM_CAMPAIGN 조인 · 키 중복 0 · 행 수 불변(821,991) · 캠페인 마스터 현재값
   MK_CMPGN_NM COMMENT '마케팅캠페인(원천 COMMENT = 마케팅 캠페인명 · TC_MKTNG_DTL_CD C001 라벨 · 나마본캠페인) · 캠페인 마스터 현재값',
   MKTG_UTM_NM COMMENT '마케팅 UTM(원천 COMMENT = 마케팅 UTM 라벨 · U001) · 🔴 원천에 값이 있는 캠페인에만 값이 있다(그 외 NULL)',
   MKTG_CHANNEL_NM COMMENT '마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) · 캠페인 마스터 현재값',
@@ -150,7 +157,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_SERVICE;
 
--- 🆕 [O207 W2] 목표 grain 뷰 — 팩트의 MT/YY_GOAL_CNT 는 행마다 반복돼 합산하면 틀린다 ⇒ 목표는 이 뷰로만 낸다.
+--  [O207 W2] 목표 grain 뷰 — 팩트의 MT/YY_GOAL_CNT 는 행마다 반복돼 합산하면 틀린다 ⇒ 목표는 이 뷰로만 낸다.
 --   grain = 실적부서 × 기준년월 × 개발구분 · 목표 원천 = D_MBER_DVLP_GOAL_CD(일 배치 프로시저 USP_F_MM_SPNSR_DVLP_SUM 04_sp_script.sql:807-813 과 같은 키 · O207-C 좌표 정정)
 --   실적 = 같은 키의 MSTR 개발(건) 합 · 범위 = 팩트 최소 기준월 ~ 최신 기준월이 속한 해의 12월
 CREATE OR REPLACE VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V (
@@ -201,7 +208,7 @@ LEFT JOIN GN_DW.MSTR.D_DEPT4_CD    d4 ON d.DEPT4_ID = d4.DEPT4_ID
 LEFT JOIN GN_DW.MSTR.D_DVLP_DIV_CD dv ON m.DVLP_DIV_CD = dv.DVLP_DIV_CD
 WHERE m.STRD_MT BETWEEN mx.MIN_MT AND LEFT(mx.CUR_MT, 4) || '12';
 
--- 🆕 [O207 W2] 연도말 개발 추세 참고치 뷰 — MSTR 에 예측 로직은 없다(목표·실적만) ⇒ T3 규칙 그대로의 「추세 참고치」다.
+--  [O207 W2] 연도말 개발 추세 참고치 뷰 — MSTR 에 예측 로직은 없다(목표·실적만) ⇒ T3 규칙 그대로의 「추세 참고치」다.
 --   grain = 실적부서 × 기준연도 × 개발구분 · 산식 = 마감월 실적 합 + (12 − 마감월 수) × 직전 3개 마감월 평균
 --   (진행 중인 최신 기준월은 부분 실적이라 산식에서 평균으로 대체한다 · 지난 연도는 남은 월 0 ⇒ 참고치 = 실적)
 CREATE OR REPLACE VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V (
@@ -248,7 +255,7 @@ SELECT
   y.YY_GOAL_CNT,
   ROUND(y.CLOSED_ACT_CNT, 4)::NUMBER(18,4),
   ROUND(y.CUR_MONTH_ACT_CNT, 4)::NUMBER(18,4),
-  -- 🆕 [O207] 마감월 수 = 달력 기준(실적 없는 달도 마감월로 센다 · 행 존재로 세면 결측 월이 남은 월로 부풀려진다)
+  --  [O207] 마감월 수 = 달력 기준(실적 없는 달도 마감월로 센다 · 행 존재로 세면 결측 월이 남은 월로 부풀려진다)
   IFF(y.STRD_YY = LEFT(cur.CUR_MT, 4), TO_NUMBER(RIGHT(cur.CUR_MT, 2)) - 1, IFF(y.STRD_YY < LEFT(cur.CUR_MT, 4), 12, 0)),
   ROUND(IFF(y.STRD_YY = LEFT(cur.CUR_MT, 4), COALESCE(l3.L3, 0), 0), 4)::NUMBER(18,4),
   ROUND(y.CLOSED_ACT_CNT
@@ -264,8 +271,8 @@ GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_SERVICE;
 
--- 🆕 [O207 W2-b] 후원사업2 별 연도말 개발 추세 참고치 — 기획실 「후원사업별 연도말 개발 예측치」(피드백 CSV 기획실 2)
---   🔴 목표는 부서 단위로만 등록돼 있어 후원사업 축에는 목표가 없다 ⇒ 목표·달성률 컬럼을 두지 않는다.
+--  [O207 W2-b] 후원사업2 별 연도말 개발 추세 참고치 — 기획실 「후원사업별 연도말 개발 예측치」(피드백 CSV 기획실 2)
+--   WARN: 목표는 부서 단위로만 등록돼 있어 후원사업 축에는 목표가 없다 ⇒ 목표·달성률 컬럼을 두지 않는다.
 --   산식 = MSTR_DVLP_YE_TREND_V 와 동일(마감월 실적 + (12 − 마감월 수) × 직전 3개 마감월 평균) · grain = 후원사업2 × 기준연도 × 개발구분
 CREATE OR REPLACE VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V (
   STRD_YY COMMENT '기준연도(YYYY 문자열)',

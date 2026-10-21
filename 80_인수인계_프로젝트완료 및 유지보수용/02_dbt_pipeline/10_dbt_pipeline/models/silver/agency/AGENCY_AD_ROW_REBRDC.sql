@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : BRONZE REBRDC 전 21컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
+-- Target     : SILVER.AGENCY_AD_ROW_REBRDC (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_agency.REBRDC_AD_CMPGN_DTLS
+-- Issue      : DEC-11, O182, O14
+-- =============================================================================
 -- AGENCY_AD_ROW_REBRDC: BRONZE REBRDC 전 21컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
 -- WARN: [2026-09-28 O182] 원천 12번 재편(34→21컬럼) 반영 — 원천 이름 그대로 보존.
 --    제거 20 = RE_BRDC_TY_NM · BRDC_MT · TIME_RNG_DIV_NM · CELEB_NM · DMST_OVSEA_DIV_NM

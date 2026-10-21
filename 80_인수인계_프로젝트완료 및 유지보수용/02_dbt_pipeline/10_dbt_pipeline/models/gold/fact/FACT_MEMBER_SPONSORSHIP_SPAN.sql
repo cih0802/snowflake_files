@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
+-- Target     : GOLD.FACT_MEMBER_SPONSORSHIP_SPAN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER_SPONSOR_SPAN, ref CRM_MEMBER_DEV, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN, ref CRM_CODE
+-- Issue      : O188-F, O189-B
+-- =============================================================================
 -- FACT_MEMBER_SPONSORSHIP_SPAN: 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
 {{ config(
     materialized='incremental',

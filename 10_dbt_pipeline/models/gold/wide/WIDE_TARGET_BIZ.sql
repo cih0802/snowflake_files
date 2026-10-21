@@ -1,9 +1,15 @@
+-- =============================================================================
+-- Purpose    : 사업목표 팩트(FTG_B) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.4)
+-- Target     : GOLD.WIDE_TARGET_BIZ (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_PROJECT, ref DIM_ORG, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN
+-- Issue      : O51-C, O188, O188-E
+-- =============================================================================
 -- WIDE_TARGET_BIZ: 사업목표 팩트(FTG_B) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.4)
--- Co-authored with CoCo
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
 --   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
---   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
+--   WARN: columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -24,10 +30,10 @@ select
     c.CAMPAIGN_BK,
     c.BRAND      as CAMPAIGN_BRAND,
     c.CAMPAIGN_NAME,
-    -- 🆕 [2026-09-29 O188] 이중계상 가드 전파 — 🔴 GOAL_TYPE_NM 으로 필터하지 않으면 합계가 약 2배(N-24)
+    --  [2026-09-29 O188] 이중계상 가드 전파 — WARN: GOAL_TYPE_NM 으로 필터하지 않으면 합계가 약 2배(N-24)
     f.GOAL_TYPE_NM,
     f.CPR_DIV_NM,
-    -- 🆕 [2026-09-29 O188-E] 조직 경로 + 원천 이름 degen 5축(SV_TARGET_BIZ 노출용 · yml columns 순서 동기)
+    --  [2026-09-29 O188-E] 조직 경로 + 원천 이름 degen 5축(SV_TARGET_BIZ 노출용 · yml columns 순서 동기)
     o.ORG_PATH,
     f.SRC_TEAM_NM,
     f.SRC_SPONSOR_BIZ_NM,

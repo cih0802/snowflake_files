@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 공통 코드그룹 차원 (CD_ID grain) — CRM_CODE_GROUP (+ 상세코드 수)
+-- Target     : GOLD.DIM_CODE_GROUP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, ref CRM_CODE_GROUP
+-- Issue      : O188-F
+-- =============================================================================
 -- DIM_CODE_GROUP: 공통 코드그룹 차원 (CD_ID grain) — CRM_CODE_GROUP (+ 상세코드 수)
 --  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(

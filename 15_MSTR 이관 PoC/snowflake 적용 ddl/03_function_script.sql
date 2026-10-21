@@ -1,17 +1,23 @@
--- Co-authored with CoCo
+-- =============================================================================
+-- Purpose    : 03. GN_DW.MSTR 함수 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
+-- Target     : FUNCTION GN_DW.MSTR.FN_MM_ACT_DATE, FUNCTION GN_DW.MSTR.FN_MM_SPNSR_DVLP
+-- Run order  : 운영계 #10
+-- Depends on : GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO, GN_DW.MSTR.D_SPNSR_BSNS_V, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT
+-- Issue      : O197, O202-B, O202
+-- =============================================================================
 -- =====================================================================
 -- 03. GN_DW.MSTR 함수 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
 --   T-SQL Inline TVF → Snowflake SQL UDTF (RETURNS TABLE · 반환 컬럼 명시)
---   🔴 원본은 UNION ALL 분기마다 SELECT * 로 **위치 기준** 정렬한다 ⇒ 분기별 컬럼 순서를 명시 목록으로 고정
+--   WARN: 원본은 UNION ALL 분기마다 SELECT * 로 **위치 기준** 정렬한다 ⇒ 분기별 컬럼 순서를 명시 목록으로 고정
 --      (분기 앞 9컬럼 = ACMSLT_DEPT_CD2·DVLP_DIV_CD2·RNUM(감액·중단 = SNUM)·RAMT·AAMT·DAMT·SAMT·MAMT·STRD_MT)
---   🔴 BRONZE 테이블의 메타 컬럼(_LOAD_DT·_BATCH_ID·_STDR_YM)은 SELECT * 로 끌어오지 않도록 명시 컬럼만 사용
+--   WARN: BRONZE 테이블의 메타 컬럼(_LOAD_DT·_BATCH_ID·_STDR_YM)은 SELECT * 로 끌어오지 않도록 명시 컬럼만 사용
 --   선행 = 02 의 GN_DW.MSTR.D_SPNSR_BSNS_V
 -- =====================================================================
 USE ROLE GN_DW_ADMIN;
 USE SCHEMA GN_DW.MSTR;
 
 -- [1] FN_MM_ACT_DATE — 기준월 말일에 활동 중인 정기회원과 실제 활동종료일
---     ⚠️ 현재 USP_F_MM_SPNSR_DVLP_SUM 에서는 호출부가 주석 처리돼 있다(원본 동일) — 정의만 이관
+--     WARN: 현재 USP_F_MM_SPNSR_DVLP_SUM 에서는 호출부가 주석 처리돼 있다(원본 동일) — 정의만 이관
 CREATE OR REPLACE FUNCTION GN_DW.MSTR.FN_MM_ACT_DATE(STRD_MT VARCHAR)
 RETURNS TABLE (
   MBER_NO          VARCHAR,
@@ -47,10 +53,10 @@ $$
       CASE
         WHEN R.RE_SPNSR_DE IS NULL THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
         WHEN D.SPNSR_DSCNTC_DE > R.RE_SPNSR_DE THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
-        -- 🆕 [2026-10-06 O202-B · 현업 규칙] 중단일 = 재후원일(같은 날)이면 시각으로 가를 수 없다 ⇒
+        --  [2026-10-06 O202-B · 현업 규칙] 중단일 = 재후원일(같은 날)이면 시각으로 가를 수 없다 ⇒
         --   「재후원한 후원의 번호(SPNSR_NO) > 그날 중단된 후원의 번호」일 때만 재후원으로 인정한다.
         --   원본은 같은 날을 무조건 재후원으로 봤다. 실측(JU93656) = 같은 날 6,018쌍 · 판정 가능 5,959 ·
-        --   재후원 유효 4,690 · 🔴 무효(=중단) 1,269 · 번호 미확인 59(원본대로 재후원 처리 · 창작 금지).
+        --   재후원 유효 4,690 · WARN: 무효(=중단) 1,269 · 번호 미확인 59(원본대로 재후원 처리 · 창작 금지).
         WHEN D.SPNSR_DSCNTC_DE = R.RE_SPNSR_DE AND NN.NEW_NO <= NS.STOP_NO
           THEN DATEADD(DAY, -1, TO_DATE(D.SPNSR_DSCNTC_DE, 'YYYYMMDD'))
         WHEN TO_DATE(R.RE_SPNSR_DE, 'YYYYMMDD') < LAST_DAY(TO_DATE(STRD_MT || '01', 'YYYYMMDD'))
@@ -70,7 +76,7 @@ $$
       QUALIFY ROW_NUMBER() OVER (PARTITION BY MBER_NO ORDER BY RE_SPNSR_DE DESC) = 1
     ) R
       ON D.MBER_NO = R.MBER_NO
-    -- 🆕 [O202-B] 같은 날 중단·재후원의 후원 번호(중단된 후원 최대 · 그날 개시한 후원 최대)
+    --  [O202-B] 같은 날 중단·재후원의 후원 번호(중단된 후원 최대 · 그날 개시한 후원 최대)
     LEFT JOIN (
       SELECT MBER_NO, FST_DE AS DE, MAX(TRY_TO_NUMBER(SPNSR_NO)) AS NEW_NO
       FROM GN_DW.MSTR.D_SPNSR_BSNS_V GROUP BY 1, 2
@@ -121,7 +127,7 @@ COMMENT = 'MSTR 이관 — 기준월 이하 개발실적(1·4 신규재후원 / 
 AS
 $$
   WITH BASE AS (
-    -- 🔴 STRD_MT 를 맨 앞에 둔다: 분기 B1·B3·B4 의 「…, MAMT, A.*」 가 B2 의 「…, MAMT, STRD_MT, 원천」 과 위치 일치
+    -- WARN: STRD_MT 를 맨 앞에 둔다: 분기 B1·B3·B4 의 「…, MAMT, A.*」 가 B2 의 「…, MAMT, STRD_MT, 원천」 과 위치 일치
     SELECT
       LEFT(OCCRRNC_DE, 6) AS STRD_MT,
       SPNSR_NO, SPNSR_BSNS_NO, OCCRRNC_DE, SER_NO, MBER_NO, ACT_DEPT_CD, ACMSLT_DEPT_CD,
@@ -192,10 +198,10 @@ $$
   B3 AS (
     SELECT
       ACMSLT_DEPT_CD AS ACMSLT_DEPT_CD2, '3' AS DVLP_DIV_CD2,
-      -- 🆕 [O202] 동점 해소키 추가(SPNSR_BSNS_NO DESC, SER_NO DESC) — 원본은 SPNSR_NO 만이라 비결정적이다.
+      --  [O202] 동점 해소키 추가(SPNSR_BSNS_NO DESC, SER_NO DESC) — 원본은 SPNSR_NO 만이라 비결정적이다.
       --   실측(2026-01~10 · JU93656) = 감액 그룹 11,700 중 동점 753 · 그중 후원사업이 갈리는 120 그룹은
       --   적재본이 최대 SER_NO 55 / 최소 57 로 임의 선택(법인 귀속이 실행마다 바뀔 수 있다). 금액(MAMT)은 불변.
-      --   🔴 라이브 함수 교체·재적재는 별도 승인 후(R4-4-3) · 원 SQL Server 결과 대조는 IT 회신 대기.
+      --   WARN: 라이브 함수 교체·재적재는 별도 승인 후(R4-4-3) · 원 SQL Server 결과 대조는 IT 회신 대기.
       ROW_NUMBER() OVER (PARTITION BY MBER_NO, STRD_MT ORDER BY SPNSR_NO DESC, SPNSR_BSNS_NO DESC, SER_NO DESC) AS RNUM,
       0 AS RAMT, 0 AS AAMT, 0 AS DAMT, 0 AS SAMT,
       SUM(SPNSR_AMT) OVER (PARTITION BY MBER_NO, STRD_MT) AS MAMT,

@@ -1,10 +1,16 @@
--- Co-authored with CoCo
+-- =============================================================================
+-- Purpose    : 02. GN_DW.MSTR 뷰 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql
+-- Target     : VIEW GN_DW.MSTR.D_DVLP_DIV_CD, VIEW GN_DW.MSTR.D_CPR_DIV_CD, VIEW GN_DW.MSTR.D_SEX_CD, VIEW GN_DW.MSTR.D_AGE_TERM_CD 외 9
+-- Run order  : 운영계 #9
+-- Depends on : GN_DW.MSTR.D_CMMN_DTL_CD, GN_DW.MSTR.D_STRD_CAL_CD, GN_DW.MSTR.D_CM_DEPT_INFO, GN_DW.MSTR.D_CMPGN_CD, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS
+-- Issue      : O197
+-- =============================================================================
 -- =====================================================================
 -- 02. GN_DW.MSTR 뷰 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql
 --   변환 규칙: CONVERT(CHAR(8),d,112) → TO_CHAR(d,'YYYYMMDD') · CONVERT(CHAR(10),d,121) → TO_CHAR(d,'YYYY-MM-DD')
 --             ISNULL → IFNULL · GETDATE() → CURRENT_DATE() · 문자열 + → || · MSTR_ODS.DBO → GN_DW.BRONZE_CRM
---   🔴 상수 행 UNION 은 Snowflake 에서 컬럼 이름이 첫 SELECT 를 따른다(원본과 동일) — 타입은 명시 CAST
---   🔴 실행 순서 = 01 테이블 → 이 파일 → 03 함수(D_SPNSR_BSNS_V 의존)
+--   WARN: 상수 행 UNION 은 Snowflake 에서 컬럼 이름이 첫 SELECT 를 따른다(원본과 동일) — 타입은 명시 CAST
+--   WARN: 실행 순서 = 01 테이블 → 이 파일 → 03 함수(D_SPNSR_BSNS_V 의존)
 -- =====================================================================
 USE ROLE GN_DW_ADMIN;
 USE SCHEMA GN_DW.MSTR;

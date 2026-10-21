@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : BRONZE_CRM_2 / SILVER_2 / GOLD_2 권한 부여 — LOADER / ENGINEER / ADMIN 3역할 한정
+-- Target     : SCHEMA GN_DW.OPS_2
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : -
+-- Issue      : O184, O180
+-- =============================================================================
 -- BRONZE_CRM_2 / SILVER_2 / GOLD_2 권한 부여 — LOADER / ENGINEER / ADMIN 3역할 한정
 --
 -- 근거: 00_개요_및_실행순서.md "역할 계층 관련 중요 정정" — GN_DW_LOADER 와 GN_DW_ENGINEER 는

@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : [O250-E 2026-10-21] 이력 보존 파일 — 신규 구축에서 실행하지 않는다.
+-- Target     : VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V, VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V, SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_AXIS, SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST_AXIS
+-- Run order  : 기존 환경 갱신 #26
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN, GN_DW.GOLD.DIM_ORG, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.GOLD.WIDE_MEMBER_FEE, GN_DW.GOLD.FACT_MEMBER_MONTHLY
+-- Issue      : O250-E, O250, O250-A
+-- =============================================================================
 -- ============================================================================
--- 🔴 [O250-E 2026-10-21] 이력 보존 파일 — 신규 구축에서 실행하지 않는다.
+-- WARN: [O250-E 2026-10-21] 이력 보존 파일 — 신규 구축에서 실행하지 않는다.
 --   정본 = 뷰 2종 → 21_ML_SERVING_뷰_DDL.sql [O250] 절 · SV 2종 → 05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql · 05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql
 --   (문면 무변경 이관 · 토큰 대조 부재 0) · 이 파일을 고치지 말고 정본을 고친다(두 곳 정본 = drift · P23).
 -- ============================================================================
--- ============================================================================
--- 36_DEPLOY_ML_PRED_7AXIS.sql — 🆕 O250-A (2026-10-21 · TRIALADMIN(SR61467))
+-- 36_DEPLOY_ML_PRED_7AXIS.sql — O250-A (2026-10-21 · TRIALADMIN(SR61467))
 --   ML 회원예측(증액·중단·미납·회비) × 7축 서빙 뷰 2종 + SV 2종
 --   · 배경 = 현업 요청: 증액·중단 예측이 캠페인카테고리까지만 보인다
 --     ⇒ 신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명 7축을 함께 본다.
@@ -22,7 +28,6 @@
 --            DROP SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST_AXIS;
 --            DROP VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V;
 --            DROP VIEW GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V;
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

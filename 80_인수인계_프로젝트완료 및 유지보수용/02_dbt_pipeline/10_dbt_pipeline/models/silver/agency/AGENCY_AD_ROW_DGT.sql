@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : BRONZE DGT 전 41컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
+-- Target     : SILVER.AGENCY_AD_ROW_DGT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_agency.DGT_AD_CMPGN_DTLS
+-- Issue      : DEC-11, O182
+-- =============================================================================
 -- AGENCY_AD_ROW_DGT: BRONZE DGT 전 41컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
 -- WARN: [2026-09-28 O182] 원천 12번 재편(36→41컬럼) 반영 — 원천 이름 그대로 보존(개명 금지 규약 유지).
 --    제거 4 = CPR_NM · DMST_OVSEA_DIV_NM · BSNS_CASE_DIV_NM · CMPGN_TY_NM

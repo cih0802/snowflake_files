@@ -1,11 +1,18 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_EXPENSE_RESOLUTION (🆕 O213-F Y3-K)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
+-- Run order  : 운영계 #40
+-- Depends on : GN_DW.GOLD.FACT_EXPENSE_RESOLUTION, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MARKETING_CAMPAIGN, GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION
+-- Issue      : O213-F, O51-F, O114-B, O225-B
+-- =============================================================================
 -- ============================================================================
--- 05_23_SV_DDL_EXPENSE_RESOLUTION.sql — Semantic View DDL 정본: SV_EXPENSE_RESOLUTION (🆕 O213-F Y3-K)
+-- 05_23_SV_DDL_EXPENSE_RESOLUTION.sql — Semantic View DDL 정본: SV_EXPENSE_RESOLUTION ( O213-F Y3-K)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `ERP_EXPENSE_RESOLUTION+`.
+--   · WARN: 선행 = dbt build `ERP_EXPENSE_RESOLUTION+`.
 --   · 왜 신설했나 — 「부서별 지출(집행)」을 물을 곳이 없었다. 예산 SV(SV_BUDGET)의 부서 축은 전건 센티넬(O51-F)이고
 --     결의부서를 가진 원천 BRONZE_ERP.EXPENSE_RESOLUTION 은 소비 모델 0 이었다(O114-B 선언만).
---   · 🔴🔴 SV_BUDGET·SV_BUDGET_YEARLY 와 금액을 대조·합산하지 않는다 — 과목키 일치 0.02% · 금액 규모 약 9.9배(원천·범위 상이).
---   · 🔴 원천 전 컬럼 동일 행 7,287 을 보존했다(반복 명세인지 적재 중복인지 미판별 · 문서20 N-29 ⑧).
+--   · WARN: SV_BUDGET·SV_BUDGET_YEARLY 와 금액을 대조·합산하지 않는다 — 과목키 일치 0.02% · 금액 규모 약 9.9배(원천·범위 상이).
+--   · WARN: 원천 전 컬럼 동일 행 7,287 을 보존했다(반복 명세인지 적재 중복인지 미판별 · 문서20 N-29 ⑧).
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -20,7 +27,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
       PRIMARY KEY (DATE_SK)
       WITH SYNONYMS ('날짜', '결의일')
       COMMENT = '일 차원. [원천] ETL 생성(달력).',
-    -- 🆕 [2026-10-14 O225-B] 세부캠페인코드(콘텐츠구분자) → 마케팅캠페인 축
+    --  [2026-10-14 O225-B] 세부캠페인코드(콘텐츠구분자) → 마케팅캠페인 축
     mkc AS GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
       PRIMARY KEY (MKTG_CAMPAIGN_SK)
       WITH SYNONYMS ('마케팅캠페인', '마케팅 캠페인')

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA4 세션 팩트 (1행 = 1일 × 1세션) · [2026-10-08 O213-F Y3-F]
+-- Target     : GOLD.FACT_BIGQUERY_SESSION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_SESSION, ref IDENTITY_MEMBER_XREF, ref DIM_MEMBER_IDENTITY
+-- Issue      : O213-F, O45, O241
+-- =============================================================================
 -- FACT_BIGQUERY_SESSION: GA4 세션 팩트 (1행 = 1일 × 1세션) · [2026-10-08 O213-F Y3-F]
 -- grain: DATE_SK × BIGQUERY_SESSION_KEY (원천 SILVER.BIGQUERY_SESSION 과 1:1)
 -- 왜 FACT_BIGQUERY_BEHAVIOR 와 분리했나 — 그쪽 grain(일×회원×이벤트×소스×기기×페이지)에 세션 속성 25축을

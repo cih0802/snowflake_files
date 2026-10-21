@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_4_SV_DDL_SERVICE.sql — Semantic View DDL 정본: SV_SERVICE
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
+-- Run order  : 운영계 #21
+-- Depends on : GN_DW.GOLD.FACT_MESSAGE_DISPATCH, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_SERVICE, GN_DW.BRONZE_CRM.SND_REQ_MST, GN_DW.GOLD.DIM_MEMBER, GN_DW.GOLD.DIM_SEND_REQUEST 외 2
+-- Issue      : O225-C, O229, O241, O237 외 1
+-- =============================================================================
 -- ============================================================================
 -- 05_4_SV_DDL_SERVICE.sql — Semantic View DDL 정본: SV_SERVICE
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

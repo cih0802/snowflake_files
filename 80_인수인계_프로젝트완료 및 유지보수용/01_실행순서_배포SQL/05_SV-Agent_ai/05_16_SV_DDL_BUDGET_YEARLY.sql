@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_BUDGET_YEARLY ( O203 · T8 2차)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET_YEARLY
+-- Run order  : 운영계 #33
+-- Depends on : GN_DW.GOLD.FACT_BUDGET_YEARLY, GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER, GN_DW.GOLD.DIM_BUDGET_ITEM
+-- Issue      : O203
+-- =============================================================================
 -- ============================================================================
 -- 05_16_SV_DDL_BUDGET_YEARLY.sql — Semantic View DDL 정본: SV_BUDGET_YEARLY ( O203 · T8 2차)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

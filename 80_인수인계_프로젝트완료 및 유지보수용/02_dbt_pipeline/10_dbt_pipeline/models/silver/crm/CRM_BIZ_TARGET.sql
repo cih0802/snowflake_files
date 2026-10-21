@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : FTG-B 사업목표 — 원천=CRM 확정(2026-07-20, 구 ERP_BIZ_TARGET).
+-- Target     : SILVER.CRM_BIZ_TARGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm_ref.TM_CM_MBER_DVLP_GOAL_DIV
+-- Issue      : O190, O188
+-- =============================================================================
 -- CRM_BIZ_TARGET: FTG-B 사업목표 — 원천=CRM 확정(2026-07-20, 구 ERP_BIZ_TARGET).
 -- 단위=GOAL_TYPE_NM 에 따른다(건·명·원·비율 · O190). TARGET_TYPE(당초/추경)로 GOLD ANNUAL/SUPP 분기.
 --  [2026-09-29 O188] 입고 배선 — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(월 12컬럼) 를 월로 풀어 적재.

@@ -1,31 +1,37 @@
+-- =============================================================================
+-- Purpose    : 발송×회원 상세 = 채널별 상세 ∪ SND 회원리스트 (채널별 dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SEND_MEMBER (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.SND_MEMBER_OPEN_LOG, source bronze_crm.SND_MEMBER_LIST, source bronze_crm.TD_MS_EMAIL_SNDNG_DTLS, source bronze_crm.TD_MS_MSG_AT_SNDNG_DTLS, source bronze_crm.TD_MS_PSTMTR_SNDNG_DTL
+-- Issue      : O59-N, DEC-35, DEC-17-B, O116-B 외 8
+-- =============================================================================
 -- CRM_SEND_MEMBER: 발송×회원 상세 = 채널별 상세 ∪ SND 회원리스트 (채널별 dedup), 정본 09 STEP3.
--- Co-authored with CoCo
 -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 정본 = 문서30 §23-G·§23-J · 매핑 = 문서31 §1·§2.
 --   구조를 바꾼 이유: 종전에는 4원천을 곧바로 UNION ALL 했는데, 라벨 조인을 각 브랜치에 붙이면
 --   같은 조인이 4벌로 복제된다. ⇒ raw 브랜치를 `base` CTE 로 모으고 **조인은 1벌만** 둔다.
---   ⚠️ dedup QUALIFY 는 브랜치 안에 그대로 남긴다(원천별 PK 가 다르므로 밖으로 뺄 수 없다).
+--   WARN: dedup QUALIFY 는 브랜치 안에 그대로 남긴다(원천별 PK 가 다르므로 밖으로 뺄 수 없다).
 --
 --   축 A(채널 상태) = SNDNG_RST_CD(raw 유지) + SEND_STATUS_GROUP(조인키) + SEND_STATUS_NAME(라벨)
---     · MSG_AT → `MS282` (등급 C = 정황) 🔴 **조건부 적용**: 문서20 §M-3 회신이 다르면 되돌린다(§23-J 결정 2).
---     · EMAIL `{0,1}` · SND `{Y,N}` → 🔴 **라벨 만들지 않는다**(§23-J 결정 3) — 코드군이 특정되지 않아
+--     · MSG_AT → `MS282` (등급 C = 정황) WARN: **조건부 적용**: 문서20 §M-3 회신이 다르면 되돌린다(§23-J 결정 2).
+--     · EMAIL `{0,1}` · SND `{Y,N}` → WARN: **라벨 만들지 않는다**(§23-J 결정 3) — 코드군이 특정되지 않아
 --       `CRM_CODE` 에서 가져올 문자열이 없다. 「성공/실패」는 우리 해석이므로 넣으면 라벨 창작이다(DEC-17-B).
 --     · PSTMTR → 원천 컬럼 자체가 없다(구조적 부재 · P21).
 --   축 B(통신사 결과 · 신설) = SEND_RESULT_CD + SEND_RESULT_GROUP + SEND_RESULT_NAME
---     · MSG_AT `TRNSMS_FAILR_CD_ID` · SND `CALL_STATUS` — 🟠 **[2026-08-29 O116-B 부분 부정] 종전 판단은
---       「🟢 conformed(두 채널이 같은 코드공간)」였으나 실측이 이를 부분 부정한다** — 정본 = 문서50 §O116-3 ㉠.
+--     · MSG_AT `TRNSMS_FAILR_CD_ID` · SND `CALL_STATUS` — NOTE: **[2026-08-29 O116-B 부분 부정] 종전 판단은
+--       「 conformed(두 채널이 같은 코드공간)」였으나 실측이 이를 부분 부정한다** — 정본 = 문서50 §O116-3 ㉠.
 --       · 라벨 미부착 1,401,419행(코드 보유 26,252,471 의 **5.34%** · 커버리지 94.66%)의 정체:
 --         ㉠ `SND` 단자리 코드(`0,3,4,5,6,8,9`)가 `MS056` 에 미등재 **824,030**
 --            — `MS056` 의 단자리 등재는 **`1`·`2` 뿐**이다 ⇒ SND 코드체계가 이 코드공간과 완전히 겹치지 않는다.
 --         ㉡ 4자리(`7319`·`7320`·`7321`·`7205`·`9034`)가 사전에 **아예 없음** **577,389**
 --            — `MS057` 은 `7318`·`7322` 를 갖고 있어 **대역 안의 결번**이다(사전이 원천을 못 따라갔다).
---       🔴 **그래도 코드군 지정(MS056~MS059)은 유지한다** — 결번은 「다른 코드군을 골라야 한다」가 아니다.
---       🟠 남은 질문(현업) = SND 단자리 체계가 이 코드공간과 같은 것인가 ⇒ 문서20 질의 후보.
---     · 🟢 코드군을 **리터럴로 지정하지 않는다**: `MS056`~`MS059` 4그룹에 걸쳐 코드값 중복이 0(실측)이므로
+--       WARN: **그래도 코드군 지정(MS056~MS059)은 유지한다** — 결번은 「다른 코드군을 골라야 한다」가 아니다.
+--       NOTE: 남은 질문(현업) = SND 단자리 체계가 이 코드공간과 같은 것인가 ⇒ 문서20 질의 후보.
+--     · 코드군을 **리터럴로 지정하지 않는다**: `MS056`~`MS059` 4그룹에 걸쳐 코드값 중복이 0(실측)이므로
 --       매칭된 `CD_ID` 자체가 코드군이다 ⇒ P31(하드코딩 금지) 준수 · 채널이 늘어도 불변.
---       ⚠️ 이 배타성은 현재 사전 상태의 실측이다 — 사전에 값이 추가되면 깨진다 ⇒ 게이트로 재검한다.
---       🟢 **[O116-B] 그 예고가 실현됐다** — 위 ㉠㉡ 가 「사전이 원천 코드 증가를 못 따라간」 실물이다.
---   ⚠️ fan-out 안전: (CD_ID, DTL_CD_ID) 가 대상 그룹 전건 유일 + 축B 4그룹 교차중복 0 (실측 2026-08-11).
---   ⚠️ 사전 초과값은 라벨 NULL 로 남긴다(DEC-17-B · 센티넬 창작 금지) — `_crm_schema.yml` 이 warn 으로 관측한다.
+--       WARN: 이 배타성은 현재 사전 상태의 실측이다 — 사전에 값이 추가되면 깨진다 ⇒ 게이트로 재검한다.
+--        **[O116-B] 그 예고가 실현됐다** — 위 ㉠㉡ 가 「사전이 원천 코드 증가를 못 따라간」 실물이다.
+--   WARN: fan-out 안전: (CD_ID, DTL_CD_ID) 가 대상 그룹 전건 유일 + 축B 4그룹 교차중복 0 (실측 2026-08-11).
+--   WARN: 사전 초과값은 라벨 NULL 로 남긴다(DEC-17-B · 센티넬 창작 금지) — `_crm_schema.yml` 이 warn 으로 관측한다.
 WITH open_log AS (
   -- [2026-09-16 O162] 원천 SND_MEMBER_LIST.OPEN_DT 삭제 대응:
   --   SND_MEMBER_OPEN_LOG 에서 (REQ_SEQ_NO, R_NUM) 기준 MIN(OPEN_DT) 로 축약 집계
@@ -47,7 +53,7 @@ snd_base AS (
     'SND' AS SEND_CHANNEL,
     NULLIF(TRIM(s.CALL_STATUS),'') AS CALL_STATUS,
     ol.OPEN_DT AS OPEN_DT,
-    -- 🆕 [2026-09-29 O188-F] 발송대상 최초·최종 브랜드(브랜드 마스터 TM_CM_BRND_MNG 체계 · MM297 공통브랜드와 다르다)
+    --  [2026-09-29 O188-F] 발송대상 최초·최종 브랜드(브랜드 마스터 TM_CM_BRND_MNG 체계 · MM297 공통브랜드와 다르다)
     NULLIF(TRIM(s.FRST_BRND_CD),'') AS FRST_BRND_CD,
     NULLIF(TRIM(s.FRST_BRND_NM),'') AS FRST_BRND_NM,
     NULLIF(TRIM(s.LST_BRND_CD),'')  AS LST_BRND_CD,
@@ -64,12 +70,12 @@ snd_base AS (
   ,NULLIF(TRIM(RESPONSED_YN),'') AS RESPONSED_YN
   ,RESPONSED_DT AS RESPONSED_DT
   ,REAL_SEND_DT AS REAL_SEND_DT
-  -- 🆕 [2026-10-08 O213-E] SND 발송 시점 회원 스냅샷 4종(라벨 원문 · 타 채널 NULL) — 혼합 코드 3종(후원구분·중단채널·결연중단유무)은 제외(문서20 N-29)
+  --  [2026-10-08 O213-E] SND 발송 시점 회원 스냅샷 4종(라벨 원문 · 타 채널 NULL) — 혼합 코드 3종(후원구분·중단채널·결연중단유무)은 제외(문서20 N-29)
   ,NULLIF(TRIM(s.SPNSR_NM),'') AS SND_SPNSR_NM
   ,NULLIF(TRIM(s.DSCNTC_RSN_NM),'') AS SND_DSCNTC_RSN_NM
   ,NULLIF(TRIM(s.NEW_CHILD_PROJECT_COUNTRY),'') AS SND_CHILD_PROJECT_COUNTRY
   ,NULLIF(TRIM(s.NEW_CHILD_WORKPLACE_NM),'') AS SND_CHILD_WORKPLACE_NM
-  -- 🆕 [2026-10-14 O225-C] SND 발송 캠페인·최종·현재 캠페인 코드(CRM CMPGN_CD 체계 · 마스터 일치 100% 실측 · 타 채널 NULL)
+  --  [2026-10-14 O225-C] SND 발송 캠페인·최종·현재 캠페인 코드(CRM CMPGN_CD 체계 · 마스터 일치 100% 실측 · 타 채널 NULL)
   ,NULLIF(TRIM(s.CMPGN_CD),'') AS SND_CMPGN_CD
   ,NULLIF(TRIM(s.LAST_CMPGN),'') AS SND_LAST_CMPGN
   ,NULLIF(TRIM(s.CURRENT_CMPGN),'') AS SND_CURRENT_CMPGN
@@ -162,7 +168,7 @@ SELECT
   CURRENT_TIMESTAMP()             AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()             AS DW_UPDATE_TS,
   NULL                            AS DW_BATCH_ID,
-  -- 🔴 신설 컬럼은 **감사컬럼 뒤**다 — 정본 DDL 규약(08_SILVER…sql · 06_DDL.sql:298): 라이브에는
+  -- WARN: 신설 컬럼은 **감사컬럼 뒤**다 — 정본 DDL 규약(08_SILVER…sql · 06_DDL.sql:298): 라이브에는
   --    ALTER ADD COLUMN 으로 붙어 물리 ordinal 이 맨 끝이므로 모델 SELECT 순서도 그에 맞춘다.
   -- 축A: 코드군은 채널이 판별한다. MSG_AT 만 사전 조인이 성립한다(EMAIL·SND 는 §23-J 결정 3 으로 NULL).
   CASE WHEN b.SEND_CHANNEL='MSG_AT' AND b.SNDNG_RST_CD IS NOT NULL THEN 'MS282' END AS SEND_STATUS_GROUP,
@@ -171,11 +177,11 @@ SELECT
   b.SEND_RESULT_CD                AS SEND_RESULT_CD,
   sb.CD_ID                        AS SEND_RESULT_GROUP,
   sb.DTL_CD_NM                    AS SEND_RESULT_NAME,
-  -- 🆕 [2026-08-20 O93] 오픈시각(SND 전용). 신설 컬럼이라 감사컬럼 뒤에 붙인다(DDL ordinal 규약).
-  --   🔴 이 컬럼이 「오픈」 지표의 **유일한 원천**이다 — 이메일·알림톡 집계의 오픈/클릭 컬럼은
+  --  [2026-08-20 O93] 오픈시각(SND 전용). 신설 컬럼이라 감사컬럼 뒤에 붙인다(DDL ordinal 규약).
+  --   WARN: 이 컬럼이 「오픈」 지표의 **유일한 원천**이다 — 이메일·알림톡 집계의 오픈/클릭 컬럼은
   --      전건 NULL 이라(기지 `C-9-R`·이슈 D) 채널 통합 오픈율은 아직 만들 수 없다.
   b.OPEN_DT                       AS OPEN_DT,
-  -- 🆕 [2026-09-29 O188-F] SND 전용 최초·최종 브랜드(타 채널 NULL = 원천 개념 부재). 감사컬럼 뒤 규약 준수.
+  --  [2026-09-29 O188-F] SND 전용 최초·최종 브랜드(타 채널 NULL = 원천 개념 부재). 감사컬럼 뒤 규약 준수.
   b.FRST_BRND_CD                  AS FRST_BRND_CD,
   b.FRST_BRND_NM                  AS FRST_BRND_NM,
   b.LST_BRND_CD                   AS LST_BRND_CD,
@@ -189,12 +195,12 @@ SELECT
   ,b.RESPONSED_YN                   AS RESPONSED_YN
   ,b.RESPONSED_DT                   AS RESPONSED_DT
   ,b.REAL_SEND_DT                   AS REAL_SEND_DT
-  -- 🆕 [2026-10-08 O213-E] SND 발송 시점 회원 스냅샷 4종(감사·누락 컬럼 뒤 · DDL 08 선행)
+  --  [2026-10-08 O213-E] SND 발송 시점 회원 스냅샷 4종(감사·누락 컬럼 뒤 · DDL 08 선행)
   ,b.SND_SPNSR_NM                   AS SND_SPNSR_NM
   ,b.SND_DSCNTC_RSN_NM              AS SND_DSCNTC_RSN_NM
   ,b.SND_CHILD_PROJECT_COUNTRY      AS SND_CHILD_PROJECT_COUNTRY
   ,b.SND_CHILD_WORKPLACE_NM         AS SND_CHILD_WORKPLACE_NM
-  -- 🆕 [2026-10-14 O225-C] SND 캠페인 코드 3종(DDL 08 선행 · 맨 끝 append)
+  --  [2026-10-14 O225-C] SND 캠페인 코드 3종(DDL 08 선행 · 맨 끝 append)
   ,b.SND_CMPGN_CD                   AS SND_CMPGN_CD
   ,b.SND_LAST_CMPGN                 AS SND_LAST_CMPGN
   ,b.SND_CURRENT_CMPGN              AS SND_CURRENT_CMPGN
@@ -203,9 +209,9 @@ LEFT JOIN {{ ref('CRM_CODE') }} sa
   ON sa.CD_ID = 'MS282' AND b.SEND_CHANNEL = 'MSG_AT' AND sa.DTL_CD_ID = b.SNDNG_RST_CD
 LEFT JOIN {{ ref('CRM_CODE') }} sb
   ON sb.CD_ID IN ('MS056','MS057','MS058','MS059') AND sb.DTL_CD_ID = b.SEND_RESULT_CD
--- 🔴 [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
+-- WARN: [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
 --    정의 지점은 `macros/gn_member_master_filter.sql` 하나다 — 여기에 술어를 다시 쓰지 마라(R1-6-17).
---    📏 실측 = 고아 34,246행(회원 8,354명) + `MBER_NO IS NULL` 746행 / 41,970,336
---       ⇒ 적재 후 41,935,344행 예상. 🔴 NULL 746 도 함께 탈락한다(EXISTS 의 성질 · 매크로 헤더 참조).
---    🔴 이 모델이 `GOLD.FACT_MESSAGE_DISPATCH` 의 유일한 상류다 ⇒ 팩트 행수도 같은 폭으로 줄어든다.
+--     실측 = 고아 34,246행(회원 8,354명) + `MBER_NO IS NULL` 746행 / 41,970,336
+--       ⇒ 적재 후 41,935,344행 예상. WARN: NULL 746 도 함께 탈락한다(EXISTS 의 성질 · 매크로 헤더 참조).
+--    WARN: 이 모델이 `GOLD.FACT_MESSAGE_DISPATCH` 의 유일한 상류다 ⇒ 팩트 행수도 같은 폭으로 줄어든다.
 WHERE {{ gn_member_master_filter('b.MBER_NO') }}

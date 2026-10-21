@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_7_SV_DDL_AD.sql — Semantic View DDL 정본: SV_AD
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_AD
+-- Run order  : 운영계 #24 · 기존 환경 갱신 #3
+-- Depends on : GN_DW.GOLD.WIDE_AD_COMBINED, GN_DW.GOLD.DIM_DEVICE, GN_DW.BRONZE_BIGQUERY.EVENTS, GN_DW.GOLD.DIM_MARKETING_CAMPAIGN, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.FACT_AD_PERFORMANCE 외 2
+-- Issue      : O225-C, O232-B, O233
+-- =============================================================================
 -- ============================================================================
 -- 05_7_SV_DDL_AD.sql — Semantic View DDL 정본: SV_AD
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

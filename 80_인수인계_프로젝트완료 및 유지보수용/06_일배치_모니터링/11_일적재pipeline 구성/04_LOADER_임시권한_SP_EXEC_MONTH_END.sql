@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW_LOADER 임시권한 — CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('YYYYMM') 한 줄만 허용
+-- Target     : PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- GN_DW_LOADER 임시권한 — CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('YYYYMM') 한 줄만 허용
 --
 -- 목표: LOADER 가 월마감 프로시저를 CALL 할 수 있게 한다. dbt 는 LOADER 에게 직접 주지 않는다.

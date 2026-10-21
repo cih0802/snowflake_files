@@ -1,7 +1,14 @@
+-- =============================================================================
+-- Purpose    : 05_8_SV_DDL_DEV_ACHIEVEMENT.sql — Semantic View DDL 정본: SV_DEV_ACHIEVEMENT
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
+-- Run order  : 운영계 #25 · 기존 환경 갱신 #32
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT, GN_DW.GOLD.DIM_ORG_SUCCESSION
+-- Issue      : DEC-63-E
+-- =============================================================================
 -- ============================================================================
 -- 05_8_SV_DDL_DEV_ACHIEVEMENT.sql — Semantic View DDL 정본: SV_DEV_ACHIEVEMENT
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -14,7 +21,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
       PRIMARY KEY (MONTH_KEY, ORG_SK, DEV_TYPE)
       WITH SYNONYMS ('개발목표', '개발실적', '목표대비실적', '개발현황')
       COMMENT = '회원개발 부문 목표 대비 실적 달성률 분석 (base: GOLD.FACT_MEMBER_DEV_ACHIEVEMENT). [Grain: 월 × 부서 × 개발구분]. [활성 지표: 월/연 목표건수, 실적건수, 달성률(%)]. [주의: 앵커_경합 방지, 달성률은 GOAL_CNT>0 스코프 필수]. [원천: GOLD.FACT_TARGET_MEMBER_DEV × FACT_MEMBER_EVENT].',
-    -- 🆕 [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(목표·실적이 같은 행이라 함께 옮겨진다)
+    --  [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(목표·실적이 같은 행이라 함께 옮겨진다)
     org_succ AS GN_DW.GOLD.DIM_ORG_SUCCESSION
       PRIMARY KEY (OLD_ORG_SK)
       WITH SYNONYMS ('부서 귀속', '현재 부서 귀속')
@@ -48,7 +55,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DEV_ACHIEVEMENT
     achv.HAS_ACTUAL AS achv.HAS_ACTUAL
       WITH SYNONYMS ('실적발생여부', '실적있음')
       COMMENT = 'TRUE=해당 월×부서×구분에 개발 실적이 발생했다. FALSE 는 목표만 편성된 월이며 **아직 오지 않은 미래월도 포함**한다 — 「미달」로 단정하지 말 것.',
-    -- 🆕 [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축
+    --  [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축
     org_succ.CUR_DEPARTMENT AS COALESCE(org_succ.CUR_DEPARTMENT, '(미매핑 폐지부서)')
       WITH SYNONYMS ('현재 부서', '현재 부서-팀', '귀속 부서', '현재 조직 기준 부서')
       COMMENT = '목표·실적의 부서를 **현재 활성 부서-팀**으로 귀속한 부서명(폐지·개편 부서의 목표와 실적이 함께 현재 부서로 합쳐진다). ''(미매핑 폐지부서)'' = 귀속 대상 없음(합계 보존). 🔴 「부서별 목표·실적·달성율」의 기본 축이다(DEC-63-E · 현업 확인 대기).',

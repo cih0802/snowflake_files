@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : GN_DW_LOADER 임시권한 — CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('YYYYMM') 한 줄만 허용
+-- Target     : PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- GN_DW_LOADER 임시권한 — CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('YYYYMM') 한 줄만 허용
--- Co-authored with CoCo
 --
 -- 목표: LOADER 가 월마감 프로시저를 CALL 할 수 있게 한다. dbt 는 LOADER 에게 직접 주지 않는다.
 -- 원리: 프로시저를 EXECUTE AS OWNER(소유자 권한)로 만든다.
@@ -54,10 +60,10 @@ GRANT USAGE ON SCHEMA    GN_DW.BRONZE_CRM TO ROLE GN_DW_LOADER;
 GRANT USAGE ON WAREHOUSE GN_DW_ETL_WH     TO ROLE GN_DW_LOADER;
 GRANT USAGE ON PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END(VARCHAR) TO ROLE GN_DW_LOADER;
 
--- ⚠️ 소유자(GN_DW_ADMIN) 쪽 전제: ADMIN 이 DBT PROJECT GN_DW.OPS.DW_PIPELINE 을 소유 → 추가 grant 불요.
+-- WARN: 소유자(GN_DW_ADMIN) 쪽 전제: ADMIN 이 DBT PROJECT GN_DW.OPS.DW_PIPELINE 을 소유 → 추가 grant 불요.
 --    프로시저 소유자를 다른 롤로 바꾸면 그 롤에 아래가 필요하다:
 -- GRANT USAGE ON DBT PROJECT GN_DW.OPS.DW_PIPELINE TO ROLE <OWNER_ROLE>;
--- ❌ LOADER 에게 직접 주지 말 것(임의 ARGS 로 dbt 실행 가능해짐):
+-- WARN: LOADER 에게 직접 주지 말 것(임의 ARGS 로 dbt 실행 가능해짐):
 -- GRANT USAGE ON DBT PROJECT GN_DW.OPS.DW_PIPELINE TO ROLE GN_DW_LOADER;
 
 /* =====================================================================
@@ -66,9 +72,9 @@ GRANT USAGE ON PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END(VARCHAR) TO ROLE GN_
 SHOW GRANTS TO ROLE GN_DW_LOADER;
 -- USE ROLE GN_DW_LOADER;
 -- USE WAREHOUSE GN_DW_ETL_WH;
--- CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('202609');   -- 성공 기대
--- CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('2026-09');  -- -20001 오류 기대(인자 검증)
--- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'build';  -- 권한 오류 기대(직접 실행 차단)
+-- CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('202609'); -- 성공 기대
+-- CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('2026-09'); -- -20001 오류 기대(인자 검증)
+-- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'build'; -- 권한 오류 기대(직접 실행 차단)
 
 /* =====================================================================
    E. 임시권한 회수 (임시 기간 종료 시 — 파괴적 작업이므로 승인 후 실행)

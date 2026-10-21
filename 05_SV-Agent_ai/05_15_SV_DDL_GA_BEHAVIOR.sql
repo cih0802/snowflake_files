@@ -1,8 +1,15 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_BEHAVIOR (🆕 O203 · T8 1차 배선)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
+-- Run order  : 운영계 #32
+-- Depends on : GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR, GN_DW.SILVER.BIGQUERY_REFINED_DATA, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_BIGQUERY_EVENT, GN_DW.GOLD.DIM_BIGQUERY_SOURCE, GN_DW.GOLD.DIM_DEVICE
+-- Issue      : O203, O243
+-- =============================================================================
 -- ============================================================================
--- 05_15_SV_DDL_GA_BEHAVIOR.sql — Semantic View DDL 정본: SV_GA_BEHAVIOR (🆕 O203 · T8 1차 배선)
+-- 05_15_SV_DDL_GA_BEHAVIOR.sql — Semantic View DDL 정본: SV_GA_BEHAVIOR ( O203 · T8 1차 배선)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 종전 보류 사유(BigQuery 1일 샤드 · 01_SV-Agent 작업계획 §Phase 2)는 해소 — 2024-01-02~2026-09-15 · 1,536,507행(2026-10-06 실측).
---   · 🔴 grain 실측: 세션·사용자 수는 이벤트 행마다 반복된다(키 420,831 중 302,842 가 다중 이벤트) ⇒ 이벤트 간 합산 금지.
+--   · WARN: grain 실측: 세션·사용자 수는 이벤트 행마다 반복된다(키 420,831 중 302,842 가 다중 이벤트) ⇒ 이벤트 간 합산 금지.
 --   · 공통 규약 = 05_0_SV_DDL.sql
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -71,7 +78,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
     fbq.AVG_ENGAGEMENT_RATE AS AVG(fbq.ENGAGEMENT_RATE)
       WITH SYNONYMS ('참여율')
       COMMENT = '행 단위 참여율의 단순 평균(가중치 없음 · 참고치). 비율(N) — 재합산 금지.',
-    -- 🆕 [O243] 공93 GA 활성사용자 · 공107 스크롤깊이 (사용자 승인 2026-10-18)
+    --  [O243] 공93 GA 활성사용자 · 공107 스크롤깊이 (사용자 승인 2026-10-18)
     fbq.ACTIVE_USERS_ROWSUM AS SUM(fbq.ACTIVE_USERS)
       WITH SYNONYMS ('활성사용자(행 합계)', 'GA 활성사용자', '공93')
       COMMENT = '🔴🔴 GA4 활성사용자(active user) 수 — 팩트 행(일 × 이벤트 × 소스 × 기기 × 페이지) 안에서만 고유하다. 같은 사용자가 여러 행에 반복 집계되므로 **하루 · EVENT_CATEGORY 하나 · 페이지 하나로 고정했을 때만** 쓴다. 기간 전체·전 이벤트 합계를 「총 활성사용자」로 답하지 않는다(그 경우 근사치이며 과대라고 밝힌다).',

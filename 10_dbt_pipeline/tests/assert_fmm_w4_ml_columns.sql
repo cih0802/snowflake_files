@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : W4 회귀 방어: ML 파생 4종의 구조 불변량 검증 (행이 반환되면 위반).
+-- Target     : dbt singular test assert_fmm_w4_ml_columns (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY
+-- Issue      : -
+-- =============================================================================
 -- W4 회귀 방어: ML 파생 4종의 구조 불변량 검증 (행이 반환되면 위반).
--- Co-authored with CoCo
 -- ① NULL 일관성: PAID_SPONSOR_BIZ_CNT·IS_MULTI_PAID_BIZ 는 HAS_BILLING=TRUE 일 때만 non-null.
 --    (HAS_BILLING=FALSE 에 0 을 채우면 "납입 사업 0개"로 오독되어 완납률이 부풀려진다)
 -- ② 플래그 정합: IS_MULTI_PAID_BIZ = (PAID_SPONSOR_BIZ_CNT > 1)

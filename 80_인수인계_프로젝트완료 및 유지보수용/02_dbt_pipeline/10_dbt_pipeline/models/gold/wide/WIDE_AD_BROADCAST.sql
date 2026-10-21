@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 방송광고 위성 팩트(FAD_B) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
+-- Target     : GOLD.WIDE_AD_BROADCAST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_BROADCAST, ref FACT_AD_PERFORMANCE, ref DIM_DATE, ref DIM_CAMPAIGN, ref DIM_AD_CREATIVE
+-- Issue      : DEC-8, O51-F, DEC-9, O16 외 2
+-- =============================================================================
 -- WIDE_AD_BROADCAST: 방송광고 위성 팩트(FAD_B) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- grain = AD_PERF_DK (FAD_B 와 1:1). 원천유형 VIDEO·REBROADCAST 2종의 완전 수직분할 지분이다.
 -- WARN: 행수를 여기에 적지 않는다(규칙 7) — 종전 하드코딩이 재적재로 stale 이 됐고 그 불일치가

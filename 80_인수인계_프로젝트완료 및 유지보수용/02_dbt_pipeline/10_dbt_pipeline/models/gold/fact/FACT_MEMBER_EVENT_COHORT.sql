@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 개발사건(회원 × 사건월 × 개발구분) × 경과월(0~12) 코호트 팩트
+-- Target     : GOLD.FACT_MEMBER_EVENT_COHORT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT, ref FACT_MESSAGE_DISPATCH, ref DIM_SEND_REQUEST, ref DIM_MSG_TEMPLATE, ref FACT_MEMBER_MONTHLY
+-- Issue      : O248
+-- =============================================================================
 -- FACT_MEMBER_EVENT_COHORT: 개발사건(회원 × 사건월 × 개발구분) × 경과월(0~12) 코호트 팩트
 --  [2026-10-20 O248 · 사용자 결정 = 「개발 사건을 기준으로 한 코호트 팩트 하나」 · 회원 Agent 전용]
 --   왜 새 팩트인가 = 회원 Agent 도구는 SV 마다 따로 집계돼 회원 단위로 서로 결합할 수 없다

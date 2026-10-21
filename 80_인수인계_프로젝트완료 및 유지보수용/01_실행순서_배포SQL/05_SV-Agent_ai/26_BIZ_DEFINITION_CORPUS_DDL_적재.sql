@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 24_BIZ_DEFINITION_CORPUS_DDL_적재.sql — 10차(O217) 비즈니스 정의 코퍼스 + Cortex Search (SQL 전용 · python 불필요)
+-- Target     : TABLE GN_DW.SERVING.BIZ_DEFINITION_CORPUS, STAGE GN_DW.OPS.BIZ_DEFINITION_STAGE, FILE FORMAT GN_DW.OPS.FF_BIZ_DEFINITION_CSV, CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION
+-- Run order  : 운영계 #53 · 기존 환경 갱신 #25
+-- Depends on : -
+-- Issue      : O217, O233-B, O237, O237-B
+-- =============================================================================
 -- ============================================================================
 -- 24_BIZ_DEFINITION_CORPUS_DDL_적재.sql — 10차(O217) 비즈니스 정의 코퍼스 + Cortex Search (SQL 전용 · python 불필요)
 --   · 순서 = 22_ML_SV_DDL.sql 다음 · 23_ML_INC_MKTG_CMPGN_DDL.sql · 09_1/09_2(Agent) 앞

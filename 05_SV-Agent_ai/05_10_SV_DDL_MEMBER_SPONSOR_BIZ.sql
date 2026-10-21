@@ -1,10 +1,17 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_MEMBER_SPONSOR_BIZ
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
+-- Run order  : 운영계 #27 · 기존 환경 갱신 #31
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_SPONSORSHIP_SPAN, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.GOLD.DIM_CAMPAIGN, GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY, GN_DW.GOLD.DIM_ORG_SUCCESSION
+-- Issue      : DEC-63, O237-C, DEC-56
+-- =============================================================================
 -- ============================================================================
 -- 05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql — Semantic View DDL 정본: SV_MEMBER_SPONSOR_BIZ
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
---   · 🆕 2026-10-21 DEC-63 = 현재 부서 귀속 축(org_succ = GOLD.DIM_ORG_SUCCESSION) · 지표 STOP_REGISTRATIONS ·
---       규칙 (5) · VQR 1 추가 — 기존 환경 배포순서 = 37_DEPLOY_ORG_SUCCESSION.sql(🔴 dbt build 다음에 실행)
+--   · 2026-10-21 DEC-63 = 현재 부서 귀속 축(org_succ = GOLD.DIM_ORG_SUCCESSION) · 지표 STOP_REGISTRATIONS ·
+--       규칙 (5) · VQR 1 추가 — 기존 환경 배포순서 = 37_DEPLOY_ORG_SUCCESSION.sql(WARN: dbt build 다음에 실행)
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -23,16 +30,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인 차원')
       COMMENT = '캠페인 마스터. PK 유일이라 조인이 행수를 늘리지 않는다.',
-    -- 🆕 [2026-10-16 O237-C] 공#79 후원사업별 미납율 — 월 × 후원사업 팩트(FMM 스파인 · 월 합 = FMM 합)
+    --  [2026-10-16 O237-C] 공#79 후원사업별 미납율 — 월 × 후원사업 팩트(FMM 스파인 · 월 합 = FMM 합)
     fsm AS GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY
       PRIMARY KEY (BASE_MONTH_KEY, SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업별 월 지표', '후원사업 월 팩트')
       COMMENT = '후원사업별 월 지표(활동(건)·납입회비·미납회비) 팩트. [Grain: 기준연월 × 후원사업]. 전 후원사업 합 = FACT_MEMBER_MONTHLY 같은 월 합. [원천: CRM → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_FEE → GOLD.FACT_SPONSORSHIP_MONTHLY].',
-    -- 🆕 [2026-10-21 DEC-63] 폐지·개편 실적부서 → 현재 활성 부서 귀속 차원(약정 실적부서 SPNSR_ACMSLT_DEPT_CD 로 조인)
+    --  [2026-10-21 DEC-63] 폐지·개편 실적부서 → 현재 활성 부서 귀속 차원(약정 실적부서 SPNSR_ACMSLT_DEPT_CD 로 조인)
     org_succ AS GN_DW.GOLD.DIM_ORG_SUCCESSION
       UNIQUE (OLD_DEPT_ID)
       WITH SYNONYMS ('부서 귀속', '현재 부서 귀속', '폐지부서 귀속')
-      COMMENT = '폐지·개편 부서 현재 조직 귀속 차원. 원천 실적부서 1개 = 1행(OLD_DEPT_ID 유일)이라 조인이 행수를 늘리지 않는다. 활성 부서는 자기 자신으로 귀속(SELF). [원천: SILVER.CRM_ORG · GOLD.DIM_ORG · seed ORG_SUCCESSION_MANUAL → GOLD.DIM_ORG_SUCCESSION].'
+      COMMENT = '폐지·개편 부서 현재 조직 귀속 차원. 원천 실적부서당 한 행(OLD_DEPT_ID 유일)이라 조인이 행수를 늘리지 않는다. 활성 부서는 자기 자신으로 귀속(SELF). [원천: SILVER.CRM_ORG · GOLD.DIM_ORG · seed ORG_SUCCESSION_MANUAL → GOLD.DIM_ORG_SUCCESSION].'
   )
   RELATIONSHIPS (
     fmsb_to_sponsorship AS fmsb (SPONSORSHIP_SK) REFERENCES sponsorship,
@@ -54,10 +61,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     campaign.CAMPAIGN_MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 마케팅채널') COMMENT = '캠페인 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
     fmsb.SPNSR_JOIN_PATH_NM AS fmsb.SPNSR_JOIN_PATH_NM WITH SYNONYMS ('후원 가입경로', '가입경로') COMMENT = '후원(약정) 단위 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM).',
     sponsorship.SPONSORSHIP_GROUP4_NAME AS sponsorship.SPONSORSHIP_GROUP4_NAME WITH SYNONYMS ('후원사업 4그룹', '후원사업그룹') COMMENT = '후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).',
-    -- 🆕 [2026-10-16 O237-C] 후원사업 월 팩트 기준연월
+    --  [2026-10-16 O237-C] 후원사업 월 팩트 기준연월
     fsm.BASE_MONTH_KEY AS fsm.BASE_MONTH_KEY WITH SYNONYMS ('기준연월', '조회연월') COMMENT = '후원사업별 월 지표의 기준연월 YYYYMM(정수). 🔴 후원사업별 미납율은 기준연월 하나를 고정해 조회한다(여러 달이면 연월별로 나눈다).',
     fsm.BASE_YEAR AS fsm.BASE_YEAR WITH SYNONYMS ('기준연도') COMMENT = '기준연도 YYYY.',
-    -- 🆕 [2026-10-21 DEC-63] 현재 조직 기준 부서 축(원천 실적부서값은 바꾸지 않는다 · DEC-56)
+    --  [2026-10-21 DEC-63] 현재 조직 기준 부서 축(원천 실적부서값은 바꾸지 않는다 · DEC-56)
     org_succ.CUR_DEPARTMENT AS COALESCE(org_succ.CUR_DEPARTMENT, '(미매핑 폐지부서)')
       WITH SYNONYMS ('현재 부서', '현재 부서-팀', '귀속 부서', '현재 조직 기준 부서')
       COMMENT = '약정 실적부서를 **현재 활성 부서-팀**으로 귀속한 부서명. 활성 부서는 자기 자신 · 폐지·개편 부서는 현업 확정(MANUAL) 또는 자동 추정 규칙으로 귀속한다. ''(미매핑 폐지부서)'' = 귀속 대상 없음(합계 보존용 묶음 · 결측 아님). 🔴 「부서별 중단」·「현재 부서 기준」 드릴다운의 기본 축이다.',
@@ -78,7 +85,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
       COMMENT = 'TRUE = 활성 부서 또는 현업 확정 귀속 · FALSE = 자동 추정 귀속(현업 검토 전). 자동 추정이 섞인 결과는 답변에서 밝힌다.'
   )
   METRICS (
-    -- 🆕 [2026-10-16 O237-C] 공#79 후원사업별 미납율 = 미납(건) ÷ 활동(건) × 100 · 미납(건) = 미납회비 ÷ 10,000
+    --  [2026-10-16 O237-C] 공#79 후원사업별 미납율 = 미납(건) ÷ 활동(건) × 100 · 미납(건) = 미납회비 ÷ 10,000
     fsm.SPONSORSHIP_UNPAID_RATE AS SUM(fsm.UNPAID_BILLED_AMT) / 10000 / NULLIF(SUM(fsm.ACTIVE_CNT), 0) * 100
       WITH SYNONYMS ('후원사업별 미납율', '후원사업별 미납률', '사업별 미납율')
       COMMENT = '공#79 후원사업별 미납율(%) = 후원사업 미납(건) ÷ 후원사업 활동(건) × 100. 미납(건) = 미납회비(원) ÷ 10,000 · 활동(건) = 월말 활동 약정금액 ÷ 10,000. 🔴 기준연월(BASE_MONTH_KEY) 하나를 고정한다 · 분자·분모를 함께 보이고 ROLLUP 전체 행을 낸다(전체 = SV_CAMPAIGN_MONTHLY 전체 미납율과 같다).',
@@ -103,7 +110,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     fmsb.TOTAL_SPNSR_AMT AS SUM(fmsb.SPNSR_AMT)
       WITH SYNONYMS ('약정금액 총계')
       COMMENT = '활동여부 무관 SPNSR_AMT 합(원). F(가산)',
-    -- 🆕 [2026-10-21 DEC-63] 중단 약정건수(중단월 기준 · 현재 부서 드릴다운용)
+    --  [2026-10-21 DEC-63] 중단 약정건수(중단월 기준 · 현재 부서 드릴다운용)
     fmsb.STOP_REGISTRATIONS AS COUNT_IF(fmsb.DSCNTC_MONTH_KEY IS NOT NULL)
       WITH SYNONYMS ('중단 약정건수', '중단건', '부서별 중단건')
       COMMENT = '중단된 약정(SPNSR_BSNS_NO) 행수. F(가산). 기간은 DSCNTC_MONTH_KEY(중단월)로 건다. 🔴 「명」이 아니다 · SV_MEMBER_EVENT 의 TOTAL_STOP_CNT(사건 grain)와 같은 표에서 합산하지 않는다.'
@@ -111,7 +118,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
   COMMENT = '회원×후원약정 기간 및 캠페인/사업별 활동회원 분석 (base: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN). [Grain: 회원 × 후원약정번호]. [활성 지표: 약정 활동회원수]. [주의: 전체 활동회원수 정본은 SV_MEMBER_MONTHLY 사용]. [원천: CRM → SILVER.CRM_MEMBER_SPONSOR_SPAN → GOLD.FACT_MEMBER_SPONSORSHIP_SPAN].'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 활동회원 총계 vs 분해: 전체 활동회원수 총계는 SV_MEMBER_MONTHLY 로 라우팅. 캠페인별/후원사업별 분해 시에만 본 뷰의 CURRENTLY_ACTIVE_MEMBERS 사용. (2) 다중후원 안내: 캠페인/후원사업별 합계 > 전체 활동회원수(다중 후원 정상 현상)임을 명시. (3) 특정 과거월 as-of: 과거 특정월 활동 판정은 START_MONTH_KEY <= 월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 월) 조건으로 직접 구성. (4) 회원 식별: 회원 식별은 항상 MEMBER_DK 기준. (5) 🆕 [DEC-63] 부서별 중단·활동 드릴다운: 기본은 현재 조직 기준 CUR_DEPARTMENT(폐지·개편 부서를 현재 부서-팀에 합산) 이고 「당시 부서」를 명시할 때만 OLD_DEPARTMENT 를 쓴다. 결과에 ''(미매핑 폐지부서)'' 행을 빼지 않고 함께 보인다(합계 보존). IS_CONFIRMED = FALSE(자동 추정) 행이 포함되면 「일부 폐지 부서는 자동 추정 귀속」이라고 밝힌다. (6) 🆕 [DEC-63-D] 부서별 중단률: 분자(그 달 중단 약정)와 분모(전월말 활동 약정 = START_MONTH_KEY <= 전월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 전월))를 **같은 CUR_ORG_PATH(또는 CUR_DEPARTMENT) 축**으로 묶는다 — 분자만 현재 부서로 옮기고 분모를 당시 부서로 두면 흡수 부서의 중단률이 2~3배로 부풀려진다. 분자·분모·비율을 함께 보이고 ROLLUP 전체 행을 낸다. 🔴 이 비율은 **약정 건수 기준**이며 공식 중단율(SV_CAMPAIGN_MONTHLY · 금액 건 · 분모 = 개발 + 전월말 활동)과 산식이 다르다 — 답변에서 밝힌다.'
+  핵심 규칙: (1) 활동회원 총계 vs 분해: 전체 활동회원수 총계는 SV_MEMBER_MONTHLY 로 라우팅. 캠페인별/후원사업별 분해 시에만 본 뷰의 CURRENTLY_ACTIVE_MEMBERS 사용. (2) 다중후원 안내: 캠페인/후원사업별 합계 > 전체 활동회원수(다중 후원 정상 현상)임을 명시. (3) 특정 과거월 as-of: 과거 특정월 활동 판정은 START_MONTH_KEY <= 월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 월) 조건으로 직접 구성. (4) 회원 식별: 회원 식별은 항상 MEMBER_DK 기준. (5) 🆕 [DEC-63] 부서별 중단·활동 드릴다운: 기본은 현재 조직 기준 CUR_DEPARTMENT(폐지·개편 부서를 현재 부서-팀에 합산) 이고 「당시 부서」를 명시할 때만 OLD_DEPARTMENT 를 쓴다. 결과에 ''(미매핑 폐지부서)'' 행을 빼지 않고 함께 보인다(합계 보존). IS_CONFIRMED = FALSE(자동 추정) 행이 포함되면 「일부 폐지 부서는 자동 추정 귀속」이라고 밝힌다. (6) 🆕 [DEC-63-D] 부서별 중단률: 분자(그 달 중단 약정)와 분모(전월말 활동 약정 = START_MONTH_KEY <= 전월 AND (DSCNTC_MONTH_KEY IS NULL OR DSCNTC_MONTH_KEY > 전월))를 **같은 CUR_ORG_PATH(또는 CUR_DEPARTMENT) 축**으로 묶는다 — 분자만 현재 부서로 옮기고 분모를 당시 부서로 두면 흡수 부서의 중단률이 실제보다 크게 부풀려진다. 분자·분모·비율을 함께 보이고 ROLLUP 전체 행을 낸다. 🔴 이 비율은 **약정 건수 기준**이며 공식 중단율(SV_CAMPAIGN_MONTHLY · 금액 건 · 분모 = 개발 + 전월말 활동)과 산식이 다르다 — 답변에서 밝힌다.'
   AI_VERIFIED_QUERIES (
     vqr_active_by_sponsorship AS (
       QUESTION '후원사업별 지금 활동회원 수'
@@ -156,7 +163,7 @@ FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
 SELECT CURRENTLY_ACTIVE_MEMBERS AS total_no_axis
 FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ METRICS CURRENTLY_ACTIVE_MEMBERS);
 
--- 🆕 [DEC-63] 현재 부서 축 합계 보존 — 두 값이 같아야 한다(조인이 행을 늘리거나 잃지 않는다)
+--  [DEC-63] 현재 부서 축 합계 보존 — 두 값이 같아야 한다(조인이 행을 늘리거나 잃지 않는다)
 SELECT (SELECT SUM(STOP_REGISTRATIONS)
           FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
                  DIMENSIONS CUR_DEPARTMENT METRICS STOP_REGISTRATIONS)) AS sv_by_dept,

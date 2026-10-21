@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 지출결의 팩트 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
+-- Target     : GOLD.FACT_EXPENSE_RESOLUTION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CAMPAIGN, ref DIM_MARKETING_CAMPAIGN, ref ERP_EXPENSE_RESOLUTION
+-- Issue      : O213-F, O51-F, O213, O225-B
+-- =============================================================================
 -- FACT_EXPENSE_RESOLUTION: 지출결의 팩트 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
 -- grain: RESOLUTION_NO × ROW_SEQ (SILVER.ERP_EXPENSE_RESOLUTION 과 1:1)
 -- 왜 신설했나 — 「부서별 지출」 질문의 유일한 원천이다(예산 원장 FACT_BUDGET.ORG_SK 는 전건 센티넬 · O51-F).

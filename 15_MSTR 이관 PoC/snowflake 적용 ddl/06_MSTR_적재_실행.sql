@@ -1,12 +1,19 @@
+-- =============================================================================
+-- Purpose    : GN_DW.MSTR 테이블 채우기(적재) · 검증 · 재실행 절차
+-- Target     : PROCEDURE GN_DW.MSTR.USP_RUN_MSTR_1ST (호출)
+-- Run order  : 운영계 #17
+-- Depends on : GN_DW.INFORMATION_SCHEMA.TABLES, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT, GN_DW.MSTR.F_MM_SPNSR_DVLP, GN_DW.MSTR.BCHLOG, GN_DW.SERVING.MSTR_SPNSR_DVLP_V
+-- Issue      : O201-C, O201-D, O207-C
+-- =============================================================================
 -- ============================================================================
 -- 06_MSTR_적재_실행.sql — GN_DW.MSTR 테이블 채우기(적재) · 검증 · 재실행 절차
---   🆕 [2026-10-03 O201-C] 작성
---   🔴 dbt 가 아니다 — MSTR 적재는 저장 프로시저 CALL 이다(dbt 모델·dbt build 와 무관).
+--    [2026-10-03 O201-C] 작성
+--   WARN: dbt 가 아니다 — MSTR 적재는 저장 프로시저 CALL 이다(dbt 모델·dbt build 와 무관).
 --      · 구조(스키마·테이블·뷰·함수·프로시저) = 00~04 파일 · `tools/mstr_pipeline.py --steps deploy --apply`
 --      · 데이터 = 이 파일의 [2] CALL · `tools/mstr_pipeline.py --steps run --apply [--hist]` 와 같은 SQL
 --      · 검증 = [3] SQL · `tools/mstr_pipeline.py --steps verify --ym <YYYYMM>`(manifest baseline 대조)
---   🔴 선행 = BRONZE_CRM 적재 완료 · 00~04 배포 완료(이 파일 [0])
---   🔴 역할 = GN_DW_ADMIN(프로시저 owner · MSTR 테이블 DML)
+--   WARN: 선행 = BRONZE_CRM 적재 완료 · 00~04 배포 완료(이 파일 [0])
+--   WARN: 역할 = GN_DW_ADMIN(프로시저 owner · MSTR 테이블 DML)
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_ETL_WH;
@@ -35,14 +42,14 @@ WHERE TABLE_SCHEMA = 'MSTR' AND TABLE_TYPE = 'BASE TABLE'
 ORDER BY 1;
 
 -- ----------------------------------------------------------------------------
--- [2] 적재 — 🆕 [O201-D 운영계] **2026-01 ~ 원천 최신월만** 적재한다(2026 이전 제외)
+-- [2] 적재 — [O201-D 운영계] **2026-01 ~ 원천 최신월만** 적재한다(2026 이전 제외)
 --   · 매 월 USP_RUN_MSTR_1ST(월, 'OPER', FALSE) = 차원 7종 + 그 달 원장 + 그 달 집계
---   · 🟢 과거 전 월 이력(I_HIST=TRUE)은 더 이상 필요 없다 — 집계의 「후원금액대2(SPNSR_AMT2_CD)」가 쓰던
+--   · 과거 전 월 이력(I_HIST=TRUE)은 더 이상 필요 없다 — 집계의 「후원금액대2(SPNSR_AMT2_CD)」가 쓰던
 --     「후원사업별 최초 개발금액」 조회를 원장(F) 대신 원천(BRONZE)에서 직접 읽도록 04 [9] 를 바꿨다
---     (개발계 대조: 조회 결과 2,092,147건 완전 일치 · 202601 baseline PASS).
---   · 🔴 선행 = 수정된 04_sp_script.sql 을 운영계에 배포(00~04 순서 · 이 파일 [0] 로 확인)
+--     (개발 환경 대조: 조회 결과 2,092,147건 완전 일치 · 202601 baseline PASS).
+--   · WARN: 선행 = 수정된 04_sp_script.sql 을 운영계에 배포(00~04 순서 · 이 파일 [0] 로 확인)
 --   · 원천 월 상한은 오늘 기준 월까지(센티넬 999912 등 미래월 제외)
---   · 예상 소요 = 개발계 실측 기준 월당 약 30초(Small)
+--   · 예상 소요 = 개발 환경 실측 기준 월당 약 30초(Small)
 -- ----------------------------------------------------------------------------
 EXECUTE IMMEDIATE $$
 DECLARE
@@ -65,7 +72,7 @@ BEGIN
 END;
 $$;
 --   기대: 「202601=OK 202602=OK …」 · ERROR 가 있으면 BCHLOG 의 ERRMSG 를 본다
--- CALL GN_DW.MSTR.USP_RUN_MSTR_1ST('202602', 'OPER', FALSE);  -- 이후 월 정기(1개월)
+-- CALL GN_DW.MSTR.USP_RUN_MSTR_1ST('202602', 'OPER', FALSE); -- 이후 월 정기(1개월)
 
 -- ----------------------------------------------------------------------------
 -- [3] 검증

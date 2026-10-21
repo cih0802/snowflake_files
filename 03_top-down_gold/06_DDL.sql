@@ -1,14 +1,21 @@
+-- =============================================================================
+-- Purpose    : GN_DW.GOLD 테이블 DDL — 구조 정본(타입 · COMMENT · PK/FK)
+-- Target     : SCHEMA GN_DW.GOLD, TABLE GN_DW.GOLD.DIM_DATE, TABLE GN_DW.GOLD.DIM_MONTH, TABLE GN_DW.GOLD.DIM_ORG 외 61
+-- Run order  : 운영계 #6 · 기존 환경 갱신 #20
+-- Depends on : -
+-- Issue      : O202-B, O252, DEC-63, O213-D 외 24
+-- =============================================================================
 -- ============================================================================
 -- GN_DW.GOLD 테이블 DDL — 구조 정본(타입 · COMMENT · PK/FK)
 --   · 구성 = CREATE(DIM → FACT) → 제약 절(PK 보강 · 정보성 FK · NOT ENFORCED).
 --   · 실행 = GN_DW_ADMIN · 새 환경은 이 파일 전체 실행 → dbt build.
---   · 🔴 적재된 환경에서 전체 재실행 금지 — CREATE OR REPLACE 가 데이터·FK·GRANT 를 지운다.
+--   · WARN: 적재된 환경에서 전체 재실행 금지 — CREATE OR REPLACE 가 데이터·FK·GRANT 를 지운다.
 --       FK 만 다시 걸 때는 제약 절만 실행한다(선삭제 블록이 있어 멱등).
---   · 🔴🔴 [2026-10-06 O202-B 실사고] 2026-10-05 19:49 PDT 이 파일 전체 실행 → GOLD 48 중 41 테이블 0행 →
+--   · WARN: [2026-10-06 O202-B 실사고] 2026-10-05 19:49 PDT 이 파일 전체 실행 → GOLD 48 중 41 테이블 0행 →
 --       FK 테스트 11 FAIL · ROLLING 팩트(FACT_BIGQUERY_BEHAVIOR)는 전량 build 로도 복구 안 됨(백필 별도 필요).
 --       ⇒ **컬럼 1개 추가는 이 파일을 돌리지 말고** ① 이 파일 선언 수정 ② 그 컬럼만 `ALTER TABLE … ADD COLUMN IF NOT EXISTS`
 --         ③ `SHOW COLUMNS` 확인(INFORMATION_SCHEMA 는 반영이 늦다) ④ dbt build — 이 순서뿐이다.
---   · 🔴 FK 는 참조 PK 와 타입이 정확히 같아야 한다(폭이 넓어도 실패):
+--   · WARN: FK 는 참조 PK 와 타입이 정확히 같아야 한다(폭이 넓어도 실패):
 --       *_DATE_SK NUMBER(8,0) · MONTH_KEY NUMBER(6,0) · *_SK NUMBER(38,0) · MEMBER_DK VARCHAR(10).
 --   · 뷰(WIDE_* · DIM_MEMBER_ACQUISITION 계열 뷰)는 dbt 모델 소관 — 이 파일에서 만들지 않는다.
 --   · 설계근거·실측 이력 = 06_DDL_설계이력_부록.md · 이슈 원장 = 20_issue/00_INDEX_이슈원장.md
@@ -25,7 +32,7 @@ USE SCHEMA GOLD;
 -- ============================================================================
 -- DIM — 차원
 -- ============================================================================
---   ⚠️ 완전 재산출 차원(DIM_MONTH·DIM_MEMBER·DIM_MEMBER_ACQUISITION 등)에 merge 금지 — grain 이동 시 구 행이 남는다.
+--   WARN: 완전 재산출 차원(DIM_MONTH·DIM_MEMBER·DIM_MEMBER_ACQUISITION 등)에 merge 금지 — grain 이동 시 구 행이 남는다.
 
 -- DIM_DATE — 날짜 차원
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DATE (
@@ -46,7 +53,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_DATE (
 ) COMMENT = '날짜 차원. [Grain: DATE_SK (1행=1일)]. [주의: 월/연 집계 시 팬아웃 방지를 위해 월팩트는 DIM_MONTH 조인 권장]. [원천: DW 생성 → BRONZE_CALENDAR → SILVER_DATE].';
 
 -- DIM_MONTH — 월 차원
---   ⚠️ 월 팩트는 DIM_DATE 를 직접 조인하지 말고 이 차원을 쓴다(일 grain 증폭 방지).
+--   WARN: 월 팩트는 DIM_DATE 를 직접 조인하지 말고 이 차원을 쓴다(일 grain 증폭 방지).
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MONTH (
     MONTH_KEY        NUMBER(6,0)     NOT NULL PRIMARY KEY COMMENT '월 conform 키 YYYYMM.',
     YEAR             NUMBER(4,0)     COMMENT '연도.',
@@ -82,8 +89,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
     ACMSLT_DIV_NM        VARCHAR          COMMENT '실적 본부/지부 단위명(ZC 노드 DEPT_NM) · 같은 이름이 여러 ZB 아래 존재'
 ) COMMENT = '조직/부서 차원. [Grain: ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_INFO → SILVER.CRM_ORG].';
 
--- 🆕 [2026-10-21 O252 · DEC-63] DIM_ORG_SUCCESSION — 폐지·개편 부서 → 현재 활성 부서 귀속 차원
---   🔴 IF NOT EXISTS — 이 블록 재실행이 현업 확정 반영분을 지우지 않게 한다(데이터는 dbt merge 가 채운다)
+--  [2026-10-21 O252 · DEC-63] DIM_ORG_SUCCESSION — 폐지·개편 부서 → 현재 활성 부서 귀속 차원
+--   WARN: IF NOT EXISTS — 이 블록 재실행이 현업 확정 반영분을 지우지 않게 한다(데이터는 dbt merge 가 채운다)
 CREATE TABLE IF NOT EXISTS GN_DW.GOLD.DIM_ORG_SUCCESSION (
     OLD_ORG_SK          NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '원천 부서 대리키 (= DIM_ORG.ORG_SK · 팩트 부서 컬럼과 조인)',
     OLD_DEPT_ID         VARCHAR         NOT NULL COMMENT '원천 실적부서코드 (SILVER.CRM_ORG.DEPT_ID · DEC-56 원천 그대로)',
@@ -110,8 +117,8 @@ CREATE TABLE IF NOT EXISTS GN_DW.GOLD.DIM_ORG_SUCCESSION (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '폐지·개편 부서 현재 조직 귀속 차원. [Grain: OLD_ORG_SK (1행=1부서 · DIM_ORG 와 1:1)]. [주의: DEC-56 원천 부서값 보존 · 현재 조직 기준 조회 전용 축 · IS_CONFIRMED=FALSE 는 자동 추정]. [원천: SILVER.CRM_ORG · GOLD.DIM_ORG · SILVER.CRM_MEMBER_SPONSOR_SPAN · SILVER.CRM_MEMBER_DEV · seed ORG_SUCCESSION_MANUAL].';
 
--- 🆕 [2026-10-21 O252] ORG_SUCCESSION_MANUAL — 현업 확정 귀속(dbt seed `seeds/ORG_SUCCESSION_MANUAL.csv` 적재 대상)
---   🔴 GN_DW_DBT 는 GOLD 에 CREATE TABLE 권한이 없다(CREATE VIEW 만) ⇒ 테이블은 DDL 이 만들고 seed 는 TRUNCATE + INSERT 만 한다.
+--  [2026-10-21 O252] ORG_SUCCESSION_MANUAL — 현업 확정 귀속(dbt seed `seeds/ORG_SUCCESSION_MANUAL.csv` 적재 대상)
+--   WARN: GN_DW_DBT 는 GOLD 에 CREATE TABLE 권한이 없다(CREATE VIEW 만) ⇒ 테이블은 DDL 이 만들고 seed 는 TRUNCATE + INSERT 만 한다.
 CREATE TABLE IF NOT EXISTS GN_DW.GOLD.ORG_SUCCESSION_MANUAL (
     OLD_DEPT_ID         VARCHAR         COMMENT '폐지·개편 원천 부서코드(SILVER.CRM_ORG.DEPT_ID)',
     CUR_DEPT_ID         VARCHAR         COMMENT '귀속할 현재 활성 부서코드. NULL = 귀속하지 않기로 현업 확정(MANUAL_UNMAPPED)',
@@ -185,7 +192,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     CHRCTR_RECPTN_YN       VARCHAR(1)      COMMENT '문자수신여부 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     SPECL_MNG_CD1          VARCHAR(100)    COMMENT '특별관리코드1 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
     FDRM_MBER_TRNSFER_FG   BOOLEAN         COMMENT '정기회원이관유무 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_ONCE_MBER_INFO]',
-    -- 🆕 [2026-10-08 O213-D · 7차 Y3-C] 회원 분류 축 라벨 27컬럼 — 코드그룹 실측 확정 · 사전에 없는 코드는 라벨 NULL(코드 보존)
+    --  [2026-10-08 O213-D · 7차 Y3-C] 회원 분류 축 라벨 27컬럼 — 코드그룹 실측 확정 · 사전에 없는 코드는 라벨 NULL(코드 보존)
     RELATNSP_DIV_CD        VARCHAR         COMMENT '결연구분 코드(MM019). 코드id:MM019.',
     RELATNSP_DIV_NAME      VARCHAR         COMMENT '결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원). 일시회원은 NULL(원천 개념 없음).',
     SPECL_MNG_NAME         VARCHAR         COMMENT '특별관리 구분(SPECL_MNG_CD1 의 MM012 라벨 · 예: 일반·더네이버스클럽·평생회원·홍보대사·이사회). 대부분 「일반」.',
@@ -214,12 +221,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER (
     POST_RECV_REGULAR_YN   BOOLEAN         COMMENT '우편물 수신 항목 = 정기우편(MS027 코드 2) 포함 여부.',
     POST_RECV_RELATION_YN  BOOLEAN         COMMENT '우편물 수신 항목 = 결연우편(MS027 코드 3) 포함 여부.',
     POST_RECV_NEW_THANKS_YN BOOLEAN        COMMENT '우편물 수신 항목 = 신규/감사 우편(MS027 코드 4) 포함 여부. 🔴 원천에 사전 밖 코드 5·6·8·10 이 소수 있다(무시).',
-    -- 🆕 [2026-10-16 O237-C] 공#31 최종캠페인(잠정 · 파생) — dbt append_new_columns 로도 추가되지만 정본 DDL 에 등재한다
+    --  [2026-10-16 O237-C] 공#31 최종캠페인(잠정 · 파생) — dbt append_new_columns 로도 추가되지만 정본 DDL 에 등재한다
     LAST_CAMPAIGN          VARCHAR         COMMENT '최종캠페인 코드(공#31 · 잠정) = 회원의 가장 최근 시작 후원약정 대표캠페인(FACT_MEMBER_SPONSORSHIP_SPAN.SPNSR_CMPGN_CD). 후원약정이 없는 회원은 NULL. CRM 발송명단 LAST_CMPGN 과는 정의가 다르다.'
 ) COMMENT = '정규 회원 마스터 차원 (분석 기본 진입점). [Grain: MEMBER_DK (1행=1회원, IS_CURRENT 투영)]. [주의: 과거 시점 상태 분석은 DIM_MEMBER_STATUS_HISTORY 시점조인 사용]. [원천: SILVER.CRM_MEMBER_STATUS_HIST(IS_CURRENT)].';
 
 -- DIM_MEMBER_ACQUISITION — 회원 획득(가입) 귀속 차원
---   ⚠️ 1행 = 1회원 — 팩트 조인은 MEMBER_DK LEFT JOIN(INNER 는 회원을 잃는다).
+--   WARN: 1행 = 1회원 — 팩트 조인은 MEMBER_DK LEFT JOIN(INNER 는 회원을 잃는다).
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_ACQUISITION (
     MEMBER_DK                VARCHAR(10)     NOT NULL PRIMARY KEY COMMENT '불변 비즈니스 식별자',
     ACQ_CAMPAIGN_SK          NUMBER(38,0)    COMMENT '대리키 (PK)',
@@ -318,8 +325,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_CAMPAIGN (
 ) COMMENT = '캠페인 차원. [Grain: CAMPAIGN_SK (1행=1캠페인)]. [주의: 분류체계 카테고리/상위/홍보방법 매핑]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG → SILVER.CRM_CAMPAIGN].';
 
 -- DIM_MARKETING_CAMPAIGN — 마케팅 캠페인 Conformed 차원
---   ⚠️ 광고(AGENCY) ↔ CRM 결합이 성립하는 유일한 grain.
---   ⚠️ DEV_CAMPAIGN_CNT > 1 이면 개발캠페인 단위로 광고비를 내릴 때 그 배수만큼 복제된다.
+--   WARN: 광고(AGENCY) ↔ CRM 결합이 성립하는 유일한 grain.
+--   WARN: DEV_CAMPAIGN_CNT > 1 이면 개발캠페인 단위로 광고비를 내릴 때 그 배수만큼 복제된다.
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (
     MKTG_CAMPAIGN_SK    NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '대리키 (PK)',
     MKTG_CAMPAIGN_BK    VARCHAR         COMMENT 'MKTG_CAMPAIGN_BK.',
@@ -330,17 +337,17 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MARKETING_CAMPAIGN (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- 🆕 [2026-10-14 O225-C] 광고비 분해용 속성 3종(개발캠페인에서 파생 · 다중은 매핑 행수 최다 대표 + 플래그 · 맨 끝 append)
+    --  [2026-10-14 O225-C] 광고비 분해용 속성 3종(개발캠페인에서 파생 · 다중은 매핑 행수 최다 대표 + 플래그 · 맨 끝 append)
     MKTG_UTM_NM                 VARCHAR     COMMENT '마케팅캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001 · 마케팅캠페인당 1개 실측). 개발캠페인 매핑 없으면 NULL.',
     DOMESTIC_OVERSEAS           VARCHAR     COMMENT '캠페인유형 국내/통합/해외(MM295). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).',
     DOMESTIC_OVERSEAS_IS_MULTI  BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 국내/해외 값이 여럿(대표값 사용).',
     BIZ_CASE_TYPE               VARCHAR     COMMENT '캠페인유형 굿즈/기타/사례/사업(MM296). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).',
     BIZ_CASE_TYPE_IS_MULTI      BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 사업/사례 값이 여럿(대표값 사용).',
-    -- 🆕 [2026-10-15 O232-B] 대표 캠페인카테고리(사용자 요청 · 다중 비중 72% 를 플래그로 드러낸다 · 맨 끝 append)
+    --  [2026-10-15 O232-B] 대표 캠페인카테고리(사용자 요청 · 다중 비중 72% 를 플래그로 드러낸다 · 맨 끝 append)
     CMPGN_CTGR_CD               NUMBER(38,0) COMMENT '대표 캠페인카테고리 코드(MM294 · CRM_CAMPAIGN.CMPGN_CTGR_CD). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 코드 오름차순).',
     CMPGN_CTGR_NM               VARCHAR     COMMENT '대표 캠페인카테고리명(코드와 1:1).',
     CMPGN_CTGR_IS_MULTI         BOOLEAN     COMMENT 'TRUE = 이 마케팅캠페인 아래 카테고리가 여럿(대표값 사용 · 마케팅캠페인 273/590).',
-    -- 🆕 [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
+    --  [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
     CMPGN_CTGR_NM_LIST          VARCHAR(1000) COMMENT '카테고리명 나열(표시 전용 · 쉼표 구분 · 매핑 행수 많은 순 · 첫 항목 = CMPGN_CTGR_NM). 매핑 없음 = NULL. GROUP BY·필터·합산 금지.'
 ) COMMENT = '마케팅 캠페인 Conformed 차원. [Grain: MKTG_CAMPAIGN_SK (1행=1마케팅캠페인)]. [주의: 광고(AGENCY)와 CRM 개발 결합의 유일 결합축]. [원천: SILVER.CRM_MARKETING_CAMPAIGN].';
 
@@ -420,7 +427,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SERVICE (
 ) COMMENT = '발송 서비스 채널 차원. [Grain: SERVICE_SK (1행=1채널유형)]. [주의: 대/중/소 상세분류는 DIM_SEND_TYPE 참조]. [원천: CRM → BRONZE_CRM.TM_MS_* → SILVER.CRM_SEND_REQUEST].';
 
 -- DIM_SEND_TYPE — 발송구분 대/중/소 차원
---   ⚠️ 자연키 = (대,중,소) 전체 경로 — 중분류 코드 단독은 모호하다.
+--   WARN: 자연키 = (대,중,소) 전체 경로 — 중분류 코드 단독은 모호하다.
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_TYPE (
     SEND_TYPE_SK        NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '발송구분 대리키 (ETL 해시, PK)',
     SEND_TYPE_BK        VARCHAR         NOT NULL COMMENT '발송구분 업무키 = 대>중>소 코드 경로(자연키). ⚠️중분류 코드는 단독으로 모호하다(코드 16종 vs 라벨 26종) → 반드시 전체 경로로 식별한다',
@@ -654,7 +661,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_PAYMENT_ACCOUNT (
 -- ============================================================================
 -- FACT — 팩트
 -- ============================================================================
---   ⚠️ 분석축 SK 의 0 = (미매핑) 센티넬 멤버다 — 「없음」이 아니다.
+--   WARN: 분석축 SK 의 0 = (미매핑) 센티넬 멤버다 — 「없음」이 아니다.
 
 -- FACT_MEMBER_MONTHLY — 회원 월별 스냅샷 팩트
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
@@ -718,14 +725,14 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_MONTHLY (
     DW_UPDATE_TS                TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     UNPAID_FLAG_BOM             BOOLEAN         COMMENT '월초 미납회원 여부(=전월말 상태) (#80).',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 판정 보조(CAMPAIGN_SK 는 단일 월만 배선 · DEC-41 패턴)
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인 판정 보조(CAMPAIGN_SK 는 단일 월만 배선 · DEC-41 패턴)
     CAMPAIGN_CNT                NUMBER(38,0)    COMMENT '그 달 청구 행에 귀속된 후원 캠페인 수. 1 = CAMPAIGN_SK 배선 · 2 이상 = CAMPAIGN_SK 0(다중). 회비 행 없는 월 NULL.',
     IS_MULTI_CAMPAIGN           BOOLEAN         COMMENT '그 달 후원 캠페인이 여럿인가(CAMPAIGN_SK=0 의 사유 구분자). 캠페인별 정확 금액은 FACT_PAYMENT_BILLING_STATUS.'
 ) COMMENT = '회원 월별 스냅샷 팩트. [Grain: MONTH_KEY × MEMBER_DK (1행=1회원월)]. [주의: FACT_MEMBER_FEE와 합산 시 회비 과대계상 위험(형제팩트중복)]. [원천: SILVER.CRM_PAYMENT_BILLING ∪ CRM_MEMBER_DEV/DISCONTINUE].';
 
 -- FACT_MEMBER_EVENT — 회원 생애주기 전이 팩트
---   ⚠️ ORG_SK 는 DEV 사건 전용 배선 — STOP 행은 0(부서별 중단건을 이 축으로 내지 않는다).
---   ⚠️ SPONSORSHIP_SK(STOP) = 중단일 기준 중단 후원사업 1건 귀속(다중사업이면 시작월 최신 → 최근 후원 · DEC-59) · 미매칭만 0.
+--   WARN: ORG_SK 는 DEV 사건 전용 배선 — STOP 행은 0(부서별 중단건을 이 축으로 내지 않는다).
+--   WARN: SPONSORSHIP_SK(STOP) = 중단일 기준 중단 후원사업 1건 귀속(다중사업이면 시작월 최신 → 최근 후원 · DEC-59) · 미매칭만 0.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT (
     DATE_SK             NUMBER(8,0)     NOT NULL COMMENT '사건일',
     MEMBER_DK           VARCHAR(10)     NOT NULL COMMENT '상태전이 대상 회원 (불변키)',
@@ -825,7 +832,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_TARGET_PROJECT (
 ) COMMENT = '사업/프로젝트 목표 팩트. [Grain: MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM]. [주의: GOAL_TYPE_NM 으로 반드시 필터(9종 · 단위 상이 · 후원사업·회원개발 합산 금지)]. [원천: CRM TM_CM_MBER_DVLP_GOAL_DIV → SILVER.CRM_BIZ_TARGET].';
 
 -- FACT_MESSAGE_DISPATCH — 메시지 발송 및 결과 팩트
---   ⚠️ SEND_STATUS 는 채널별 코드체계가 한 컬럼에 섞여 있다 — SEND_TYPE 동반 필수.
+--   WARN: SEND_STATUS 는 채널별 코드체계가 한 컬럼에 섞여 있다 — SEND_TYPE 동반 필수.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     DATE_SK                     NUMBER(8,0)     NOT NULL COMMENT '발송일',
     MEMBER_DK                   VARCHAR(10)     NOT NULL COMMENT '발송 대상 회원 (불변키)',
@@ -883,13 +890,13 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SND_DSCNTC_RSN_NM      VARCHAR         COMMENT '발송 시점 중단사유명(SND 전용 · 중단 이력 회원만 값) [SILVER.CRM_SEND_MEMBER 승계]',
     SND_CHILD_PROJECT_COUNTRY VARCHAR      COMMENT '발송 시점 신규 결연아동 사업국(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
     SND_CHILD_WORKPLACE_NM VARCHAR         COMMENT '발송 시점 신규 결연아동 사업장명(SND 전용) [SILVER.CRM_SEND_MEMBER 승계]',
-    -- 🆕 [2026-10-14 O225-C] SND 회원 최종·현재 캠페인코드 degen (발송 캠페인 = CAMPAIGN_SK)
+    --  [2026-10-14 O225-C] SND 회원 최종·현재 캠페인코드 degen (발송 캠페인 = CAMPAIGN_SK)
     SND_LAST_CMPGN      VARCHAR            COMMENT '발송 시점 회원 최종 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]',
     SND_CURRENT_CMPGN   VARCHAR            COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용 · CRM CMPGN_CD) [SILVER.CRM_SEND_MEMBER 승계]',
-    -- 🆕 [2026-10-16 O237-C] 신규#33 클릭대비 전환율(잠정) — 클릭일 기준 인정 개발 매칭 · 처리통보성 제목 제외
+    --  [2026-10-16 O237-C] 신규#33 클릭대비 전환율(잠정) — 클릭일 기준 인정 개발 매칭 · 처리통보성 제목 제외
     CLICK_DEV_D5_MEMBERS  NUMBER(1,0)      COMMENT '클릭 후 D+1~D+5 안에 인정 개발(FME DEV_CNT>0)이 있는 클릭 발송 1/0. 클릭이 없는 행·처리통보성 제목은 0. 잠정(창 길이 현업 확인).',
     CLICK_DEV_D30_MEMBERS NUMBER(1,0)      COMMENT '클릭 후 D+1~D+30 안에 인정 개발이 있는 클릭 발송 1/0(D5 를 포함한다). 잠정.',
-    -- 🆕 [2026-10-16 O241] 공91 추천안B(잠정) — 발송 매칭 선물금 · 선물금 1건 = 직전 발송일 1개 귀속
+    --  [2026-10-16 O241] 공91 추천안B(잠정) — 발송 매칭 선물금 · 선물금 1건 = 직전 발송일 1개 귀속
     D5_GIFT_PART_AMT      NUMBER(38,0)     COMMENT '공91 추천안B(잠정) 발송 매칭 선물금(원) = 발송 D+1~D+5 안 선물금 GFTMNEY 합. 선물금 1건은 창 안 가장 가까운 직전 발송일 1개에만 귀속하고, 그 (회원, 발송일)의 비통보성 발송 1행에만 싣는다(기간 합 가산). 처리통보성 제목·매칭 없음은 0.'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
@@ -947,7 +954,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
     CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
     TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)',
-    -- 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10 (AD_PERF_DK 1:1 · 원천 부재 출처 행 = NULL)
+    --  [2026-10-08 O213-F Y3-G] 광고 분류 축 10 (AD_PERF_DK 1:1 · 원천 부재 출처 행 = NULL)
     MEDIA_CHANNEL_NM    VARCHAR         COMMENT '매체/채널명(YOUTUBE·META·EBS 등 원값 · 전 원천).',
     CREATIVE_NM         VARCHAR         COMMENT '소재명(DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM).',
     COST_TYPE           VARCHAR         COMMENT '비용유형 GA·집행·편성.',
@@ -958,23 +965,23 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     BSNS_CASE_DIV_NM    VARCHAR         COMMENT '사업/사례 구분 [VIDEO 전용].',
     CM                  VARCHAR         COMMENT 'CM 구분 전CM·중CM·후CM [VIDEO 전용].',
     DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '국내/해외 구분 [VIDEO 전용].',
-    -- 🆕 [2026-10-14 O225] 마케팅캠페인 귀속 경로·후보 수 (1:N 안전장치 · 감사컬럼 뒤 append)
+    --  [2026-10-14 O225] 마케팅캠페인 귀속 경로·후보 수 (1:N 안전장치 · 감사컬럼 뒤 append)
     MKTG_MAP_METHOD     VARCHAR         COMMENT '마케팅캠페인 귀속 경로 NAME(대행사 캠페인명 일치)·UTM(UTM as-of 규칙)·CREATIVE_MAP(O232 소재 매핑표 · MKTG 수준)·UPPER_CODE(O238 영상 상위캠페인코드 → 하위 캠페인 마케팅캠페인 1:1)·NONE(미매핑 SK=0).',
     MKTG_MAP_CAND_CNT   NUMBER(38,0)    COMMENT 'UTM 경로 후보 캠페인 수(광고일 이전 시작분). 2 이상 = 1:N 대표 선택. NAME·NONE 경로는 NULL(개념 부재).',
-    -- 🆕 [2026-10-15 O232] 소재 매핑(3순위 · SILVER.AD_CREATIVE_CAMPAIGN_MAP) — 맨 끝 append
+    --  [2026-10-15 O232] 소재 매핑(3순위 · SILVER.AD_CREATIVE_CAMPAIGN_MAP) — 맨 끝 append
     AD_MAP_LEVEL        VARCHAR(10)     COMMENT '소재 매핑 연결 수준 MKTG·CTGR·NONE(SILVER.AD_CREATIVE_CAMPAIGN_MAP). 이름매칭·UTM 으로 연결된 행과 매핑표에 없는 소재는 NULL.',
     AD_MAP_CMPGN_CTGR_NM VARCHAR(100)   COMMENT '광고비 귀속 캠페인카테고리(MM294 라벨) — 소재 매핑 MKTG·CTGR 행만. 전 광고행 단일 축은 AD_CTGR_NM.',
-    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — 맨 끝 append
+    --  [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — 맨 끝 append
     AD_CTGR_CD          NUMBER(38,0)    COMMENT '광고비 귀속 캠페인카테고리 코드(MM294). 이름매칭·UTM 연결 = 마케팅캠페인 대표값 · 그 밖 = 소재 매핑 확정 · 귀속 없음 = NULL.',
     AD_CTGR_NM          VARCHAR(200)    COMMENT '광고비 귀속 캠페인카테고리명(코드와 1:1).',
     AD_CTGR_SRC         VARCHAR(20)     COMMENT '카테고리 귀속 출처 MKTG_REP·CREATIVE_MAP·NONE.',
     AD_CTGR_IS_MULTI    BOOLEAN         COMMENT 'TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값(광고비 기준 약 72%). CREATIVE_MAP = FALSE · NONE = NULL.',
-    -- 🆕 [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
+    --  [2026-10-15 O233 #36] 표시 전용 나열 — 맨 끝 append
     AD_CTGR_NM_LIST     VARCHAR(1000)   COMMENT '광고비 귀속 카테고리명 나열(표시 전용 · 첫 항목 = AD_CTGR_NM · 다중 아니면 1개 · 귀속 없음 = NULL). GROUP BY·필터·합산 금지.'
 ) COMMENT = '광고 성과 코어 팩트. [Grain: AD_PERF_DK (1행=1광고집행)]. [주의: 디지털/방송 3원천 공통 지표(비용/노출/클릭)]. [원천: AGENCY 3소스 → SILVER.AGENCY_AD_PERFORMANCE].';
 
 -- FACT_AD_BROADCAST — 방송광고 성과 위성 팩트
---   ⚠️ 코어와 1:1(AD_PERF_DK) · NULL = 두 방송 원천 중 한쪽 전용 속성(결측 아님).
+--   WARN: 코어와 1:1(AD_PERF_DK) · NULL = 두 방송 원천 중 한쪽 전용 속성(결측 아님).
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST (
     AD_PERF_DK          VARCHAR(32)     NOT NULL PRIMARY KEY COMMENT '코어 1:1 조인키(GRAIN·PK, FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
     TIME_BAND           VARCHAR         COMMENT '시간대 ← VIDEO.TIME_RNG / REBRDC.TIME_RNG_DIV_NM(1순위)·BRDC_TIME(대체). 코어에서 이관(종전 CAST(NULL) 하드코딩)',
@@ -1005,7 +1012,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST (
 ) COMMENT = '방송광고 성과 위성 팩트. [Grain: AD_PERF_DK (코어 1:1)]. [주의: TV/케이블 방송 송출 고유 속성]. [원천: AGENCY → SILVER.AGENCY_AD_BROADCAST].';
 
 -- FACT_AD_DIGITAL — 디지털광고 성과 위성 팩트
---   ⚠️ 코어와 1:1(AD_PERF_DK) · _SRC 컬럼 = 대행사 계산값(비율·단가) — 재합산 금지.
+--   WARN: 코어와 1:1(AD_PERF_DK) · _SRC 컬럼 = 대행사 계산값(비율·단가) — 재합산 금지.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_DIGITAL (
     AD_PERF_DK          VARCHAR(32)     NOT NULL PRIMARY KEY COMMENT '코어 1:1 조인키(GRAIN·PK, FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
     PAGE_TYPE           VARCHAR         COMMENT '페이지유형 ← DGT.PAGE_TYPE_NM',
@@ -1030,7 +1037,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_DIGITAL (
 ) COMMENT = '디지털광고 성과 위성 팩트. [Grain: AD_PERF_DK (코어 1:1)]. [주의: 매체별 성과 및 대행사 산정 비율 지표]. [원천: AGENCY → SILVER.AGENCY_AD_DIGITAL].';
 
 -- FACT_AD_BROADCAST_CASE — 방송광고 사례 정규화 위성 팩트
---   ⚠️ 코어에 1:N(AD_PERF_DK × CASE_SEQ) — 코어 measure 와 함께 집계하면 사례 수만큼 중복.
+--   WARN: 코어에 1:N(AD_PERF_DK × CASE_SEQ) — 코어 measure 와 함께 집계하면 사례 수만큼 중복.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_BROADCAST_CASE (
     AD_PERF_DK          VARCHAR(32)     NOT NULL COMMENT 'GRAIN 1/2 · 코어 조인키(FK→FACT_AD_PERFORMANCE). staging 발급값 승계 — 재계산 금지',
     CASE_SEQ            NUMBER(2,0)     NOT NULL COMMENT 'GRAIN 2/2 · 사례 순번 1~3 (원천 CASE1_*~CASE3_* 언피벗축)',
@@ -1193,9 +1200,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT (
 ) COMMENT = '회원 획득 코호트 팩트. [Grain: MEMBER_DK (1행=1회원)]. [주의: 캠페인별 12개월 고정 이탈률 및 유지기간 정본]. [원천: GOLD.FACT_MEMBER_EVENT].';
 
 -- FACT_MEMBER_COHORT_SURVIVAL — 획득 코호트 생존 곡선 팩트(LTV 기대 유지개월 · 확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1))
---   🆕 [2026-10-15 O232] 종전 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL`(O231) → **DDL 소유 테이블**로 전환(사용자 결정).
---   ⚠️ 상한은 컬럼이 아니라 **행 표지 LTV_CAP_AVG_ACTIVE_MONTHS**(🆕 O249 · 구 LTV_CAP_MONTHS · 상한 = 관측 중 회원 평균 유지개월 올림) 다.
---   🆕 [O249] 기존 테이블 = ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL RENAME COLUMN LTV_CAP_MONTHS TO LTV_CAP_AVG_ACTIVE_MONTHS;
+--    [2026-10-15 O232] 종전 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL`(O231) → **DDL 소유 테이블**로 전환(사용자 결정).
+--   WARN: 상한은 컬럼이 아니라 **행 표지 LTV_CAP_AVG_ACTIVE_MONTHS**( O249 · 구 LTV_CAP_MONTHS · 상한 = 관측 중 회원 평균 유지개월 올림) 다.
+--    [O249] 기존 테이블 = ALTER TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL RENAME COLUMN LTV_CAP_MONTHS TO LTV_CAP_AVG_ACTIVE_MONTHS;
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
     AXIS_TYPE           VARCHAR(20)     NOT NULL COMMENT '분류 축. 전체·개발인입경로·캠페인카테고리·캠페인유형1·캠페인유형2(획득 시점 동결값)',
     AXIS_VALUE          VARCHAR(200)    NOT NULL COMMENT '축값. 원천 NULL = (미상). 축 전체이면 전체',
@@ -1219,7 +1226,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL (
 ) COMMENT = '획득 코호트 생존 곡선 팩트(확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)). [Grain: AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH (1행=축값×경과월)]. [주의: AXIS_TYPE 고정 필수(축마다 같은 회원 반복) · 기대 유지개월 = LTV_CAP_AVG_ACTIVE_MONTHS 행의 RMST_CUM · 회원 개인 값 아님]. [원천: GOLD.FACT_MEMBER_COHORT].';
 
 -- FACT_MEMBER_FEE — 회비 분해 팩트
---   ⚠️ PK 미선언 — grain 키 FEE_DIV_CD 가 기부금 행에서 NULL. 유일성은 dbt GROUP BY 가 보증.
+--   WARN: PK 미선언 — grain 키 FEE_DIV_CD 가 기부금 행에서 NULL. 유일성은 dbt GROUP BY 가 보증.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
     MONTH_KEY           NUMBER(6,0)     COMMENT '월 conform 키 YYYYMM.',
     MEMBER_DK           VARCHAR(10)     COMMENT '불변 비즈니스 식별자',
@@ -1243,8 +1250,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_FEE (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '회비 분해 팩트. [Grain: MEMBER_DK × MONTH_KEY × SPONSORSHIP_SK × FEE_DIV × PAYMENT × SETLE (1행=1납입)]. [주의: FACT_MEMBER_MONTHLY와 동일 원천 다른 Grain, 합산 금지]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING].';
 
--- 🆕 [2026-10-08 O213 Y3-D] FACT_PAYMENT_BILLING_STATUS — 회비 청구 처리 상태 팩트(FACT_MEMBER_FEE 와 grain 이 달라 분리 · O45 선례)
---   ⚠️ PK 미선언 — grain 키 FEE_DIV_CD·RQEST_DIV_CD·PRCS_STAT_CD·RETUN_RSN_CD 가 NULL 일 수 있다. 유일성은 dbt GROUP BY 가 보증.
+--  [2026-10-08 O213 Y3-D] FACT_PAYMENT_BILLING_STATUS — 회비 청구 처리 상태 팩트(FACT_MEMBER_FEE 와 grain 이 달라 분리 · O45 선례)
+--   WARN: PK 미선언 — grain 키 FEE_DIV_CD·RQEST_DIV_CD·PRCS_STAT_CD·RETUN_RSN_CD 가 NULL 일 수 있다. 유일성은 dbt GROUP BY 가 보증.
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
     MONTH_KEY           NUMBER(6,0)     COMMENT '월 conform 키 YYYYMM(회비월 우선 · 납입월 폴백 · 0 = Unknown월 · FACT_MEMBER_FEE 와 같은 규칙).',
     SPONSORSHIP_SK      NUMBER(38,0)    COMMENT '납입 대상 후원사업 대리키(FK→DIM_SPONSORSHIP · 0 = 미매핑).',
@@ -1266,12 +1273,12 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS (
     DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인(grain 편입 · 맨 끝 append)
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인(grain 편입 · 맨 끝 append)
     CAMPAIGN_SK         NUMBER(38,0)    COMMENT '캠페인 대리키(FK→DIM_CAMPAIGN). 일시 = ONCE_CMPGN_CD · 정기 = 청구월에 유효한 후원 span 의 캠페인. 0 = (미매핑).'
 ) COMMENT = '회비 청구 처리 상태 팩트. [Grain: MONTH_KEY × SPONSORSHIP_SK × FEE_DIV × PAYMENT_TYPE × 청구구분 × 처리상태 × 환급사유 × 캠페인]. [주의: 회원 축 없음 · FACT_MEMBER_FEE·FACT_MEMBER_MONTHLY 와 동일 원천 다른 Grain, 합산 금지]. [원천: CRM → SILVER.CRM_PAYMENT_BILLING].';
 
 -- ============================================================================
--- 🆕 [2026-10-08 O213-F Y3-F] FACT_SEARCH_CONSOLE · FACT_GA4_DEMOGRAPHIC (GA4/검색 신규 · 종전 GOLD 소비 0)
+--  [2026-10-08 O213-F Y3-F] FACT_SEARCH_CONSOLE · FACT_GA4_DEMOGRAPHIC (GA4/검색 신규 · 종전 GOLD 소비 0)
 --   ℹ️ FACT_BIGQUERY_SESSION DDL 선생성 후 dbt 적재:
 --      DDL 형상/COMMENT 보존을 위해 ADMIN 역할로 테이블을 선생성하고,
 --      최초 적재 시 전 기간 풀적재 var 를 전달하여 실행:
@@ -1319,7 +1326,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_BIGQUERY_SESSION (
     DW_LOAD_TS                       TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS                     TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID                      VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- 🆕 [2026-10-16 O241] 공98 추천안B(잠정) UA식 세션 지속시간 · 맨 끝(append_new_columns 순서)
+    --  [2026-10-16 O241] 공98 추천안B(잠정) UA식 세션 지속시간 · 맨 끝(append_new_columns 순서)
     SESSION_END_TS                   TIMESTAMP_NTZ   COMMENT '그 일자 안 세션 마지막 이벤트 시각 [SILVER.BIGQUERY_SESSION 승계].',
     SESSION_DURATION_SEC             NUMBER          COMMENT '공98 추천안B(잠정) UA식 세션 지속시간(초) = 세션 전체 마지막 − 첫 이벤트 시각. 세션의 첫 일자 행에만 값 · 자정 경계 다음 일자 행은 0(평균 = SUM ÷ 세션키 COUNT DISTINCT). 단일 이벤트 세션은 0.'
 ) COMMENT = 'GA4 세션 팩트. [Grain: DATE_SK × BIGQUERY_SESSION_KEY]. [주의: FACT_BIGQUERY_BEHAVIOR 와 같은 원천 다른 Grain, 합산 금지 · 세션수는 COUNT(DISTINCT BIGQUERY_SESSION_KEY)]. [원천: GA4 → SILVER.BIGQUERY_SESSION].';
@@ -1354,8 +1361,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA4_DEMOGRAPHIC (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = 'GA4 인구통계 일 팩트. [Grain: DATE_SK × 기기 × 성별 × 연령대]. [주의: GA4 Data API 집계 · 이벤트 원천과 모수 상이 · 사용자수 비가산]. [원천: GA4 → SILVER.GA4_USER_DEMOGRAPHIC].';
 
--- 🆕 [2026-10-08 O213-F Y3-K] FACT_EXPENSE_RESOLUTION — 지출결의 팩트(부서별 지출의 유일 원천)
---   🔴 FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지(원천·범위 상이 · 조인 근거 없음) · 동일 행 보존(문서20 N-29 ⑧).
+--  [2026-10-08 O213-F Y3-K] FACT_EXPENSE_RESOLUTION — 지출결의 팩트(부서별 지출의 유일 원천)
+--   WARN: FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지(원천·범위 상이 · 조인 근거 없음) · 동일 행 보존(문서20 N-29 ⑧).
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EXPENSE_RESOLUTION (
     DATE_SK             NUMBER(38,0)    COMMENT '결의 작성일 YYYYMMDD(FK→DIM_DATE · 0 = Unknown).',
     RESOLUTION_NO       VARCHAR         COMMENT '결의번호.',
@@ -1375,7 +1382,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EXPENSE_RESOLUTION (
     DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '최초 적재 시각 (공통감사)',
     DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
-    -- 🆕 [2026-10-14 O225-B] 세부캠페인 → 마케팅캠페인 축 (감사컬럼 뒤 append)
+    --  [2026-10-14 O225-B] 세부캠페인 → 마케팅캠페인 축 (감사컬럼 뒤 append)
     CONTENTS_DELIMITER  VARCHAR         COMMENT '콘텐츠구분자 = 세부캠페인코드(CRM CMPGN_CD · 원값). NULL·「-」 = 원천 미기재.',
     MKTG_CAMPAIGN_SK    NUMBER(38,0)    COMMENT '마케팅캠페인 대리키(FK→DIM_MARKETING_CAMPAIGN). 0 = (미매핑) — 코드 미기재·CRM 미등록·마케팅캠페인 미지정.'
 ) COMMENT = '지출결의 팩트. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지 · 부서별 지출의 유일 원천]. [원천: ERP → SILVER.ERP_EXPENSE_RESOLUTION].';
@@ -1573,8 +1580,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_RELATION_ACTIVITY (
     SETLE_BANK_NAME         VARCHAR         COMMENT '선물금 정산은행명(PM039 라벨 · 사전에 없는 코드는 NULL).'
 ) COMMENT = '결연활동 팩트(서신·선물금). [Grain: ACTIVITY_KEY (1행=1활동)]. [주의: 선물금(GFTMNEY)은 선물금 행만 값 · 서신/선물금 계열 속성은 비해당 NULL]. [원천: SILVER.CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION]. [적재: dbt]';
 
--- 🆕 [2026-10-08 O213-F Y3-J] DIM_RELATIONSHIP — 결연 차원(1행 = 1결연 · 결연 중단 여부·사유의 유일한 GOLD 위치)
---   🔴 중단사유 라벨 코드군 MM002 = 커버리지로 특정(현업 확인 = 문서20 N-29 ⑦).
+--  [2026-10-08 O213-F Y3-J] DIM_RELATIONSHIP — 결연 차원(1행 = 1결연 · 결연 중단 여부·사유의 유일한 GOLD 위치)
+--   WARN: 중단사유 라벨 코드군 MM002 = 커버리지로 특정(현업 확인 = 문서20 N-29 ⑦).
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_RELATIONSHIP (
     RELATNSP_KEY            NUMBER(10,0)    NOT NULL PRIMARY KEY COMMENT '결연키(PK · FACT_RELATION_ACTIVITY.RELATNSP_KEY 조인키).',
     MEMBER_DK               VARCHAR(10)     COMMENT '결연 회원번호(FK→DIM_MEMBER).',
@@ -1637,7 +1644,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_PAYMENT_METHOD_CHANGE (
     DW_BATCH_ID               VARCHAR          COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '결제수단 변경 이력. [원천: SILVER.CRM_PAYMENT_METHOD_HIST]. [적재: dbt]';
 
--- FACT_CAMPAIGN_CUM_STOP — 기준연월 × 캠페인 누계 중단·개발·연도초활동 (🆕 O236 · 신규지표 #17)
+-- FACT_CAMPAIGN_CUM_STOP — 기준연월 × 캠페인 누계 중단·개발·연도초활동 ( O236 · 신규지표 #17)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP (
     BASE_MONTH_KEY        NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM. 누계 = 같은 해 1월 ~ 이 월. 🔴 기준월 하나를 골라 조회한다 — 여러 기준월을 SUM 하면 누계가 겹친다',
     BASE_YEAR             NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도 · 연도초 기준 해)',
@@ -1651,7 +1658,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_CUM_STOP (
     DW_BATCH_ID           VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '캠페인별 누계중단율(신규 #17) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인 합 = FMM 1~기준월 합(연도초는 1월 행)]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT]. [적재: dbt]';
 
--- FACT_CAMPAIGN_MONTHLY — 기준연월 × 캠페인 × 납입방식 월 팩트 (🆕 O237-B · 신규지표 #12~#16 · #19~#25 · #27~#28)
+-- FACT_CAMPAIGN_MONTHLY — 기준연월 × 캠페인 × 납입방식 월 팩트 ( O237-B · 신규지표 #12~#16 · #19~#25 · #27~#28)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY (
     BASE_MONTH_KEY            NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM. 당월 measure = 이 월 · 누계 measure = 같은 해 1월 ~ 이 월. 🔴 기준월 하나를 골라 조회한다',
     BASE_YEAR                 NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도)',
@@ -1676,7 +1683,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '캠페인별 월 지표(활동율·중단율·이탈율·납입율·미납율) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × CAMPAIGN_SK × PAYMENT_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 캠페인·납입방식 합 = FMM 같은 월 합]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_EVENT · FACT_MEMBER_FEE · SILVER.CRM_MEMBER_AMT_CHANGE]. [적재: dbt]';
 
--- FACT_SPONSORSHIP_MONTHLY — 기준연월 × 후원사업 월 팩트 (🆕 O237-C · 공#79 후원사업별 미납율)
+-- FACT_SPONSORSHIP_MONTHLY — 기준연월 × 후원사업 월 팩트 ( O237-C · 공#79 후원사업별 미납율)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY (
     BASE_MONTH_KEY            NUMBER(6,0)     NOT NULL COMMENT '기준연월 YYYYMM',
     BASE_YEAR                 NUMBER(4,0)     NOT NULL COMMENT '기준연도 YYYY(= BASE_MONTH_KEY 의 연도)',
@@ -1690,7 +1697,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '후원사업별 월 지표(미납율) 분자·분모 팩트. [Grain: BASE_MONTH_KEY × SPONSORSHIP_SK]. [대상 집합 = FACT_MEMBER_MONTHLY 회원×월 스파인 — 전 후원사업 합 = FMM 같은 월 합]. [원천: GOLD.FACT_MEMBER_SPONSORSHIP_SPAN · FACT_MEMBER_FEE]. [적재: dbt]';
 
--- FACT_GA_CHILD_VIEW — GA 결연아동 페이지 조회 팩트 (🆕 O239 · 공#122 결연아동코드 · 추천안 A/B 동시 탑재)
+-- FACT_GA_CHILD_VIEW — GA 결연아동 페이지 조회 팩트 ( O239 · 공#122 결연아동코드 · 추천안 A/B 동시 탑재)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_CHILD_VIEW (
     DATE_SK                   NUMBER(8,0)     NOT NULL COMMENT '방문일 YYYYMMDD ※비강제 FK→DIM_DATE · 0 = 범위 밖',
     PAGE_PATH                 VARCHAR         NOT NULL COMMENT '페이지 경로(URL 의 ? 앞)',
@@ -1708,7 +1715,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_GA_CHILD_VIEW (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = 'GA 결연아동 관련 페이지(URL 에 childnum= 포함) 조회 팩트. [Grain: DATE_SK × PAGE_PATH × CHILD_CODE_RAW × URL_MEMBER_DK]. 결연아동코드 집계 = 추천안A(IS_FORMAT_VALID) 또는 추천안B(IS_CRM_MATCHED) 중 하나로 고정. [원천: SILVER.BIGQUERY_EVENT · SILVER.CRM_CHILD]. [적재: dbt]';
 
--- FACT_UNPAID_SERVICE_CONV — 미납서비스 클릭회원 × 이후 납입 전환 팩트 (🆕 O239 · 공#81 미납서비스 전환율 · 추천안 A/B 동시 탑재)
+-- FACT_UNPAID_SERVICE_CONV — 미납서비스 클릭회원 × 이후 납입 전환 팩트 ( O239 · 공#81 미납서비스 전환율 · 추천안 A/B 동시 탑재)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_UNPAID_SERVICE_CONV (
     CLICK_MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '클릭월 YYYYMM',
     MEMBER_DK                 VARCHAR         NOT NULL COMMENT '클릭회원 = GA URL memnum= 값 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
@@ -1726,7 +1733,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_UNPAID_SERVICE_CONV (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '미납서비스 전환율 분자·분모 팩트. [Grain: CLICK_MONTH_KEY × MEMBER_DK × SVC_SCOPE]. 전환율 = 전환 플래그 합 ÷ 행수(같은 SVC_SCOPE). 추천안A = SVC_SCOPE A · ARREAR_PAID_D30_FLAG / 추천안B = SVC_SCOPE B · PAID_D30_FLAG. [원천: SILVER.BIGQUERY_EVENT(GA) · SILVER.CRM_PAYMENT_BILLING(CRM)]. [적재: dbt]';
 
--- FACT_AD_INFLOW_ALLOC — 월 × 마케팅캠페인 × 개발인입경로 광고비 배분 팩트 (🆕 O248 · 인입경로별 개발단가)
+-- FACT_AD_INFLOW_ALLOC — 월 × 마케팅캠페인 × 개발인입경로 광고비 배분 팩트 ( O248 · 인입경로별 개발단가)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_INFLOW_ALLOC (
     MONTH_KEY                 NUMBER(6,0)     NOT NULL COMMENT '실적월 YYYYMM(광고 실적일 · 개발 사건일 같은 월)',
     MKTG_CAMPAIGN_SK          NUMBER(38,0)    NOT NULL COMMENT '대리키 ※비강제 FK→DIM_MARKETING_CAMPAIGN · 0 = 광고행 마케팅캠페인 미매핑',
@@ -1744,7 +1751,7 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_INFLOW_ALLOC (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) COMMENT = '광고비 → 개발인입경로 배분 팩트(인입경로별 개발단가). [Grain: MONTH_KEY × MKTG_CAMPAIGN_SK × INFLOW_PATH × ROW_KIND × UNALLOC_REASON]. 배분 = 광고원천별 허용 인입경로 안에서 같은 월·마케팅캠페인의 CRM 개발(건) 비중. 🔴 배분값이며 실측이 아니다 · 개발단가 = SUM(AD_COST_ALLOC) ÷ SUM(DEV_CNT)(ROW_KIND ALLOC). [원천: GOLD.FACT_AD_PERFORMANCE · FACT_MEMBER_EVENT · DIM_MARKETING_CAMPAIGN]. [적재: dbt]';
 
--- FACT_MEMBER_EVENT_COHORT — 개발사건(회원×사건월×개발구분) × 경과월 코호트 팩트 (🆕 O248 · 회원 Agent)
+-- FACT_MEMBER_EVENT_COHORT — 개발사건(회원×사건월×개발구분) × 경과월 코호트 팩트 ( O248 · 회원 Agent)
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT (
     EVENT_MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '사건월 YYYYMM(코호트 기준 · 대상 = billing_coverage_start_month 이후)',
     MEMBER_DK                 VARCHAR         NOT NULL COMMENT '회원 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
@@ -1802,11 +1809,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT (
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)
 -- ============================================================================
---   ⚠️ FK 미선언 축(참조 대상이 비유일) — 조인 경로를 지킨다:
+--   WARN: FK 미선언 축(참조 대상이 비유일) — 조인 경로를 지킨다:
 --     · MEMBER_DK → DIM_MEMBER_STATUS_HISTORY(SCD2 다중버전) = IS_CURRENT 또는 유효구간 매칭. 현재행은 DIM_MEMBER.
 --     · MONTH_KEY → DIM_MONTH(월 conform). DIM_DATE 직접 조인은 월당 일수만큼 증폭된다.
 --     · 이 축의 논리 관계 정본 = scripts/gold_erd_coverage_gate.py 의 LOGICAL_FK.
---   ⚠️ 위성 광고 팩트 → 코어 FACT_AD_PERFORMANCE FK 는 수직 분할이라 선언한다(FAD_B·FAD_D 1:1 · FAD_BC 1:N).
+--   WARN: 위성 광고 팩트 → 코어 FACT_AD_PERFORMANCE FK 는 수직 분할이라 선언한다(FAD_B·FAD_D 1:1 · FAD_BC 1:N).
 
 -- 멱등화: 같은 이름 제약을 먼저 지운다(Snowflake 는 DROP CONSTRAINT IF EXISTS 미지원 · 목록 = 아래 ADD 전건)
 EXECUTE IMMEDIATE $$
@@ -2044,6 +2051,6 @@ ALTER TABLE GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY ADD CONSTRAINT FK_FSM_DIM_SPONSO
 
 -- 검증(값이 아니라 방법이 정본이다 — 기대 건수를 여기 적지 않는다)
 --   파일 선언 테이블 = grep -oE 'CREATE OR REPLACE TABLE GN_DW\.GOLD\.[A-Z_]+' 06_DDL.sql | sort -u | wc -l
---   파일 FK/PK      = grep -cE '^ALTER TABLE GN_DW\.GOLD\.[A-Z_]+ ADD CONSTRAINT' 06_DDL.sql
---   라이브 대조     = python3 scripts/gold_erd_coverage_gate.py
+--   파일 FK/PK = grep -cE '^ALTER TABLE GN_DW\.GOLD\.[A-Z_]+ ADD CONSTRAINT' 06_DDL.sql
+--   라이브 대조 = python3 scripts/gold_erd_coverage_gate.py
 SHOW IMPORTED KEYS IN SCHEMA GN_DW.GOLD;

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 일시→정기 회원 전환 매핑 이력 정제 (BRONZE TM_MM_FDRM_MBER_DT_DTLS → SILVER)
+-- Target     : SILVER.CRM_MEMBER_CONVERT_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MM_FDRM_MBER_DT_DTLS
+-- Issue      : O162
+-- =============================================================================
 -- CRM_MEMBER_CONVERT_HIST: 일시→정기 회원 전환 매핑 이력 정제 (BRONZE TM_MM_FDRM_MBER_DT_DTLS → SILVER)
 --
 -- ============================================================================

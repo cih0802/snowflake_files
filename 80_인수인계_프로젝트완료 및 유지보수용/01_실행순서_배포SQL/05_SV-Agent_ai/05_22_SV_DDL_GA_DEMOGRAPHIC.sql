@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_DEMOGRAPHIC ( O213-F Y3-F)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC
+-- Run order  : 운영계 #39
+-- Depends on : GN_DW.GOLD.FACT_GA4_DEMOGRAPHIC, GN_DW.GOLD.DIM_DATE, GN_DW.BRONZE_GA4.GA4_USER_DEMOGRAPHIC
+-- Issue      : O213-F
+-- =============================================================================
 -- ============================================================================
 -- 05_22_SV_DDL_GA_DEMOGRAPHIC.sql — Semantic View DDL 정본: SV_GA_DEMOGRAPHIC ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

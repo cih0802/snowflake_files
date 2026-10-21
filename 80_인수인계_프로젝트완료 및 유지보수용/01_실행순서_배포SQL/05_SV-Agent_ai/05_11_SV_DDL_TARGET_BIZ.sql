@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_TARGET_BIZ
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_TARGET_BIZ
+-- Run order  : 운영계 #28
+-- Depends on : GN_DW.GOLD.WIDE_TARGET_BIZ
+-- Issue      : -
+-- =============================================================================
 -- ============================================================================
 -- 05_11_SV_DDL_TARGET_BIZ.sql — Semantic View DDL 정본: SV_TARGET_BIZ
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

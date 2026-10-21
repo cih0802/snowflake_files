@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원×후원사업 정제 (PK dedup QUALIFY) (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_SPONSOR_BIZ (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS
+-- Issue      : -
+-- =============================================================================
 -- CRM_MEMBER_SPONSOR_BIZ: 회원×후원사업 정제 (PK dedup QUALIFY) (BRONZE → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(SPNSR_NO),'')            AS SPNSR_NO,

@@ -1,0 +1,66 @@
+{
+    "path_count": 365,
+    "parsed_path_count": 365,
+    "static_analysis_path_count": 144,
+    "static_analysis_parsed_path_count": 52,
+    "is_partial_parse_enabled": true,
+    "is_static_analysis_enabled": true,
+    "read_files_elapsed": 3.8476919610000095,
+    "load_macros_elapsed": 0.7220494140000255,
+    "parse_project_elapsed": 3.865251274000002,
+    "patch_sources_elapsed": 0.05617288000001963,
+    "process_manifest_elapsed": 0.16441432299995995,
+    "load_all_elapsed": 9.313884523000013,
+    "projects": [
+        {
+            "project_name": "gn_dw_silver",
+            "elapsed": 3.85436241900004,
+            "parsers": [
+                {
+                    "parser": "model",
+                    "elapsed": 1.2036735539999768,
+                    "parsed_path_count": 144
+                },
+                {
+                    "parser": "snapshot",
+                    "elapsed": 0.2430111790000069,
+                    "parsed_path_count": 11
+                },
+                {
+                    "parser": "test",
+                    "elapsed": 0.23789128100003154,
+                    "parsed_path_count": 33
+                },
+                {
+                    "parser": "seed",
+                    "elapsed": 0.14331930900004863,
+                    "parsed_path_count": 1
+                },
+                {
+                    "parser": "test",
+                    "elapsed": 2.0215061799999603,
+                    "parsed_path_count": 9
+                }
+            ],
+            "parsed_path_count": 198
+        },
+        {
+            "project_name": "dbt_snowflake",
+            "elapsed": 0.003938642999969488,
+            "parsers": [],
+            "parsed_path_count": 0
+        },
+        {
+            "project_name": "dbt",
+            "elapsed": 0.004157539999994242,
+            "parsers": [
+                {
+                    "parser": "doc",
+                    "elapsed": 0.00021498900002825394,
+                    "parsed_path_count": 1
+                }
+            ],
+            "parsed_path_count": 1
+        }
+    ]
+}

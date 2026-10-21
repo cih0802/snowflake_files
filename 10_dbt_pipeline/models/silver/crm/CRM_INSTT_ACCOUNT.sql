@@ -1,7 +1,13 @@
--- CRM_INSTT_ACCOUNT: 기관 입금 계좌 (BRONZE TM_PM_INSTT_ACNUT → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = ACNUT_SER_NO (📏 xf98254 유일 실측)
--- 🔴 민감 컬럼 제외(개인·결제 식별정보 · 분석 가치 없음 · 노출 위험): ACCTNO
+-- =============================================================================
+-- Purpose    : 기관 입금 계좌 (BRONZE TM_PM_INSTT_ACNUT → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_INSTT_ACCOUNT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_PM_INSTT_ACNUT
+-- Issue      : O188-F
+-- =============================================================================
+-- CRM_INSTT_ACCOUNT: 기관 입금 계좌 (BRONZE TM_PM_INSTT_ACNUT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = ACNUT_SER_NO ( xf98254 유일 실측)
+-- WARN: 민감 컬럼 제외(개인·결제 식별정보 · 분석 가치 없음 · 노출 위험): ACCTNO
 SELECT
   ACNUT_SER_NO AS ACNUT_SER_NO,
   NULLIF(TRIM(CPR_DIV_CD),'') AS CPR_DIV_CD,

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원실 회비예측 월간 후원 분류별 집계 소비뷰 (O200-A 신설)
+-- Target     : GOLD.WIDE_SPNSR_CLS_AGGR (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.MM_SPNSR_CLS_AGGR_DATA
+-- Issue      : O200-A, O200-D
+-- =============================================================================
 -- WIDE_SPNSR_CLS_AGGR: 회원실 회비예측 월간 후원 분류별 집계 소비뷰 (O200-A 신설)
 -- 원천 = SILVER.MM_SPNSR_CLS_AGGR_DATA(외부 적재 · 부서 자체 수식 · ML 산출물 아님).
 -- 변환 = STDR_MT(TEXT) → MONTH_KEY·CAL_YEAR·CAL_MONTH 숫자 파생 · 나머지 무변경.

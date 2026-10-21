@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원개발 목표 팩트 (CRM_DEV_TARGET, 월×조직×개발구분)
+-- Target     : GOLD.FACT_TARGET_MEMBER_DEV (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_DEV_TARGET, ref DIM_ORG
+-- Issue      : -
+-- =============================================================================
 -- FACT_TARGET_MEMBER_DEV: 회원개발 목표 팩트 (CRM_DEV_TARGET, 월×조직×개발구분)
 {{ config(
     tags=['gold_pending']

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 이벤트 팩트 소스 (07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87, O88
+-- =============================================================================
 -- BIGQUERY_EVENT: 이벤트 팩트 소스 (07 §5-A 세션 채움 2단계 CTE), 정본 09 STEP6.
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').

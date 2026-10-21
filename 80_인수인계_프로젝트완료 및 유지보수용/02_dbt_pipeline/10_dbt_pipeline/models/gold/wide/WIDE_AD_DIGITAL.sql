@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 디지털광고 위성 팩트(FAD_D) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
+-- Target     : GOLD.WIDE_AD_DIGITAL (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_DIGITAL, ref FACT_AD_PERFORMANCE, ref DIM_DATE, ref DIM_CAMPAIGN, ref DIM_AD_CREATIVE, ref DIM_DEVICE
+-- Issue      : DEC-8, O51-F, DEC-10, DEC-9 외 1
+-- =============================================================================
 -- WIDE_AD_DIGITAL: 디지털광고 위성 팩트(FAD_D) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- grain = AD_PERF_DK (FAD_D 와 1:1). 원천유형 DIGITAL 단독 지분이다.
 -- WARN: 행수를 여기에 적지 않는다(규칙 7) — 종전 하드코딩이 재적재로 stale 이 됐다. 규모는 이슈원장 §O51-F.

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송요청 마스터 = EMAIL ∪ MSG_AT ∪ PSTMTR ∪ SND (채널별 dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SEND_REQUEST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MS_EMAIL_SNDNG, source bronze_crm.TM_MS_MSG_AT_SNDNG, source bronze_crm.TM_MS_PSTMTR_SNDNG, source bronze_crm.SND_REQ_MST
+-- Issue      : O26, O191-F, O213-E
+-- =============================================================================
 -- CRM_SEND_REQUEST: 발송요청 마스터 = EMAIL ∪ MSG_AT ∪ PSTMTR ∪ SND (채널별 dedup), 정본 09 STEP3.
 -- [2026-08-03 G3] 정본 코드컬럼 raw 전파 3종 신설. 채널별로 원천 컬럼 보유가 다르므로 미보유 채널은 NULL 이다.
 --   MSG_DIV_CD(MS010)·SNDNG_TIME_DIV_CD(MS267) = MSG_AT 전용 · PSTMTR_PRCS_STAT_CD(MS061) = PSTMTR 전용.

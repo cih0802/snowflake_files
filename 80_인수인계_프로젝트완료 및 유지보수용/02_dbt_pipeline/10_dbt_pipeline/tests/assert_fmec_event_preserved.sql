@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-10-20 O248] FACT_MEMBER_EVENT_COHORT 경과월 0 의 사건 개발(건) 합은 FME DEV 합과 같아야 한다.
+-- Target     : dbt singular test assert_fmec_event_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT, ref FACT_MEMBER_EVENT_COHORT
+-- Issue      : O248
+-- =============================================================================
 -- [2026-10-20 O248] FACT_MEMBER_EVENT_COHORT 경과월 0 의 사건 개발(건) 합은 FME DEV 합과 같아야 한다.
 --
 -- 무엇을 지키는가: 코호트 키(회원 × 사건월 × 개발구분) 축약 · 13개월 스파인 전개가 사건을 잃거나 복제하지 않는다.

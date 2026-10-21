@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 01. GN_DW.MSTR 테이블 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql
+-- Target     : TABLE GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, TABLE GN_DW.MSTR.F_MM_SPNSR_DVLP, TABLE GN_DW.MSTR.D_BRND_CD, TABLE GN_DW.MSTR.D_CMPGN_CD 외 6
+-- Run order  : 운영계 #8
+-- Depends on : -
+-- Issue      : O197
+-- =============================================================================
 -- =====================================================================
 -- 01. GN_DW.MSTR 테이블 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql
 --   변환 규칙: [mart].[X] → GN_DW.MSTR.X · varchar/char/nvarchar → VARCHAR · datetime → TIMESTAMP_NTZ

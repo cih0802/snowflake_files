@@ -1,15 +1,21 @@
+-- =============================================================================
+-- Purpose    : 24_BIZ_DEFINITION_CORPUS_DDL_적재.sql — 🆕 10차(O217) 비즈니스 정의 코퍼스 + Cortex Search (SQL 전용 · python 불필요)
+-- Target     : TABLE GN_DW.SERVING.BIZ_DEFINITION_CORPUS, STAGE GN_DW.OPS.BIZ_DEFINITION_STAGE, FILE FORMAT GN_DW.OPS.FF_BIZ_DEFINITION_CSV, CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION
+-- Run order  : 운영계 #53 · 기존 환경 갱신 #25
+-- Depends on : -
+-- Issue      : O217, O233-B, O237, O237-B
+-- =============================================================================
 -- ============================================================================
--- 24_BIZ_DEFINITION_CORPUS_DDL_적재.sql — 🆕 10차(O217) 비즈니스 정의 코퍼스 + Cortex Search (SQL 전용 · python 불필요)
+-- 24_BIZ_DEFINITION_CORPUS_DDL_적재.sql — 10차(O217) 비즈니스 정의 코퍼스 + Cortex Search (SQL 전용 · python 불필요)
 --   · 순서 = 22_ML_SV_DDL.sql 다음 · 23_ML_INC_MKTG_CMPGN_DDL.sql · 09_1/09_2(Agent) 앞
 --     (Agent spec 의 search_biz_definition 도구가 이 Search 서비스를 참조한다 — 없으면 죽은 도구)
 --   · 적재 원본 = 12_agent개선과제/output/O217_biz_definition_corpus.csv (2,145행)
---     🔴 CSV 를 고쳤으면 먼저 재생성한다: python3 12_agent개선과제/tools/build_biz_definition_corpus.py
+--     WARN: CSV 를 고쳤으면 먼저 재생성한다: python3 12_agent개선과제/tools/build_biz_definition_corpus.py
 --        (라우팅 원본 = 12_agent개선과제/tools/O217_routing_curated.csv · 지표 원본 = 90_provided_definition/)
 --   · 워크스페이스 stage 는 COPY INTO 를 직접 지원하지 않는다(실측: 'WORKSPACE' not supported)
 --     ⇒ COPY FILES 로 OPS 스테이지에 서버측 복사 후 적재한다(09_2 [0-B] 와 같은 방식).
 --   · 재실행 안전 = TRUNCATE + COPY(FORCE) · Search 는 CREATE OR REPLACE
 --   · 롤백 = DROP CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION; DROP TABLE GN_DW.SERVING.BIZ_DEFINITION_CORPUS;
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -29,11 +35,11 @@ CREATE OR REPLACE TABLE GN_DW.SERVING.BIZ_DEFINITION_CORPUS (
     LIMITATION   VARCHAR COMMENT '산출 범위·불가 사유·데이터 출처·합의 필요사항',
     SOURCE_FILE  VARCHAR COMMENT '90_provided_definition 파일:행 또는 사용자 결정 출처',
     SEARCH_TEXT  VARCHAR COMMENT '검색 본문(위 컬럼 합본 · 🆕 O233-B Markdown 포맷)',
-    -- 🆕 [O233-B] 검색 품질용 파생 열 · 원천 내용 창작 없음
+    --  [O233-B] 검색 품질용 파생 열 · 원천 내용 창작 없음
     KEYWORDS     VARCHAR COMMENT '🆕 O233-B 검색 키워드 변형(제목·동의어의 띄어쓰기 제거·율↔률·누계↔누적·단위 괄호 제거 · 규칙 생성)',
     IS_ADDITIVE  VARCHAR COMMENT '🆕 O233-B 가산성. N = 원천 문구에 「비가산」 명시 · 빈 값 = 근거 없음',
     HAS_FORMULA  VARCHAR COMMENT '🆕 O235 산식 등록 여부. Y = FORMULA 값 있음 · N = 원천 공란(산식 질문 필터용)',
-    -- 🆕 [O237] 산식 배선(원천 = 12_agent개선과제/tools/O237_formula_wiring_overlay.csv · 생성 = o237_build_formula_map.py)
+    --  [O237] 산식 배선(원천 = 12_agent개선과제/tools/O237_formula_wiring_overlay.csv · 생성 = o237_build_formula_map.py)
     COVERAGE     VARCHAR COMMENT '🆕 O237 산식 대응 상태. C1_METRIC·C2_COMBINE·C3_CROSS·C4_DIMENSION·C5_PARTIAL = 답변 가능 · G1_NEED_MODEL = 현재 산출 불가(모델 추가 예정) · G2_NEED_CONFIRM = 산식 원문 확인 필요 · 빈 값 = 산식 미등록 행',
     ANSWER_GUIDE VARCHAR COMMENT '🆕 O237 LLM 답변 절차(어느 metric·필터·기간·조합으로 답하는가 · 제약 문구). 수치 아님'
 )
@@ -64,7 +70,7 @@ COPY INTO GN_DW.SERVING.BIZ_DEFINITION_CORPUS
   ON_ERROR = ABORT_STATEMENT
   FORCE = TRUE;
 
--- [5] 🆕 [O233-B] Cortex Search — multi-index 하이브리드(다국어 벡터 + 제목·키워드·본문 키워드 색인)
+-- [5] [O233-B] Cortex Search — multi-index 하이브리드(다국어 벡터 + 제목·키워드·본문 키워드 색인)
 --     원천참고 = BRONZE 물리명은 SQL 식별자로 오용되므로 검색에서 뺀다(테이블에는 보존)
 --     모델 = snowflake-arctic-embed-l-v2.0(다국어) · 종전 = snowflake-arctic-embed-m-v1.5(영어)
 --     평가(40문항) = V1 hit@3=33% → V2 hit@3=45% (jw08094 · 2026-10-15)
@@ -94,7 +100,7 @@ GRANT USAGE ON CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION TO ROLE
 
 -- [7] 검증(ua91864 2026-10-13 기대값 = 라우팅 16 · 지표 236 · 용어 517 · 조직 222 · 원천참고 1,154 · 1순위 RT-19 · RT-14)
 SELECT DOC_TYPE, COUNT(*) AS N FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS GROUP BY DOC_TYPE ORDER BY DOC_TYPE;
--- 🆕 [O237-B] 기대값 = 산식 146 · COVERAGE 146(C1 64 · C2 17 · C3 8 · C4 19 · C5 30 · G1 5 · G2 3) · 도구 배선 141
+--  [O237-B] 기대값 = 산식 146 · COVERAGE 146(C1 64 · C2 17 · C3 8 · C4 19 · C5 30 · G1 5 · G2 3) · 도구 배선 141
 SELECT COVERAGE, COUNT(*) AS N, COUNT_IF(TOOL_NAME <> '') AS WITH_TOOL
 FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS WHERE HAS_FORMULA = 'Y' GROUP BY ROLLUP(COVERAGE) ORDER BY COVERAGE;
 SELECT 'Q_INC' AS Q, PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFINITION',

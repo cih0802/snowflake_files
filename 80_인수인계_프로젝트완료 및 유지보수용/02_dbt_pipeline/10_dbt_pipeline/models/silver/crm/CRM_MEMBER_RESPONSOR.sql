@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 재후원 정제 (BRONZE TM_MM_FDRM_MBER_RE_SPNSR → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_RESPONSOR (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MM_FDRM_MBER_RE_SPNSR
+-- Issue      : O179
+-- =============================================================================
 -- CRM_MEMBER_RESPONSOR: 재후원 정제 (BRONZE TM_MM_FDRM_MBER_RE_SPNSR → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(MBER_NO),'')        AS MBER_NO,

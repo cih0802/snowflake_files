@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : `스킬_MSTR_비교항목.md` 의 V01~V09 검증
+-- Target     : TABLE SK_DEPT, TABLE SK_BSNS, TABLE SK_F, TABLE MS_F
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO, GN_DW.BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_BSNS, GN_DW.BRONZE_CRM.TM_CM_CMPGN_MNG, GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM 외 1
+-- Issue      : -
+-- =============================================================================
 -- =====================================================================
 -- 스킬_MSTR_검증쿼리.sql — `스킬_MSTR_비교항목.md` 의 V01~V09 검증
 --   스킬 측 = BRONZE_CRM 원천 + 스킬 로직(mstr_dept_member_development_to_crm_final_202606.sql) 재계산

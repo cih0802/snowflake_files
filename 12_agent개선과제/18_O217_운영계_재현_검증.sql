@@ -1,8 +1,14 @@
+-- =============================================================================
+-- Purpose    : 10차(O217·O217-B) 운영계 재현용 사전점검 · 사후검증 · 롤백
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.INFORMATION_SCHEMA.VIEWS, GN_DW.INFORMATION_SCHEMA.SEMANTIC_VIEWS, GN_DW.SERVING.BIZ_DEFINITION_CORPUS, GN_DW.SERVING.ML_MEMBER_RISK_V, GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V
+-- Issue      : O217, O217-B
+-- =============================================================================
 -- ============================================================================
 -- 18_O217_운영계_재현_검증.sql — 10차(O217·O217-B) 운영계 재현용 사전점검 · 사후검증 · 롤백
 --   · 순서·명령 정본 = 18_O217_운영계_재현_런북.md (이 파일은 SQL 부분만)
---   · 🔴 계정마다 VERSION 번호가 다르다 — 롤백 버전은 §0 결과로 정한다(번호를 외워 쓰지 않는다)
--- Co-authored with CoCo
+--   · WARN: 계정마다 VERSION 번호가 다르다 — 롤백 버전은 §0 결과로 정한다(번호를 외워 쓰지 않는다)
 -- ============================================================================
 
 -- §0 사전점검(읽기 전용) --------------------------------------------------------
@@ -32,7 +38,7 @@ SHOW CORTEX SEARCH SERVICES LIKE 'SEARCH_BIZ_DEFINITION' IN SCHEMA GN_DW.SERVING
 SHOW SEMANTIC VIEWS LIKE 'SV_ML_INC_CAMPAIGN' IN SCHEMA GN_DW.SERVING;
 
 -- §1 사후검증 -------------------------------------------------------------------
--- 1-1 코퍼스 행수(개발계 ua91864 2026-10-13 = 2,145 · 라우팅 16 · 지표 236 · 용어 517 · 조직 222 · 원천참고 1,154)
+-- 1-1 코퍼스 행수(개발 환경 ua91864 2026-10-13 = 2,145 · 라우팅 16 · 지표 236 · 용어 517 · 조직 222 · 원천참고 1,154)
 SELECT DOC_TYPE, COUNT(*) AS N FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS GROUP BY DOC_TYPE ORDER BY DOC_TYPE;
 
 -- 1-2 Search 1순위(기대 = RT-19 · RT-14)
@@ -49,7 +55,7 @@ SELECT v.STDR_MT, COUNT(*) AS N_ROWS, COUNT(DISTINCT v.MBER_NO) AS PRED, COUNT_I
 FROM GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V v
 GROUP BY v.STDR_MT ORDER BY v.STDR_MT;
 
--- 1-4 SV 조회(개발계 기준월 202609 1위 = 가두캠페인 · 기대 증액 225.5명)
+-- 1-4 SV 조회(개발 환경 기준월 202609 1위 = 가두캠페인 · 기대 증액 225.5명)
 SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_ML_INC_CAMPAIGN
   DIMENSIONS ic.MK_CMPGN_NM
   METRICS ic.PREDICTED_MEMBERS, ic.EXPECTED_INC_MEMBERS, ic.AVG_INC_PROB

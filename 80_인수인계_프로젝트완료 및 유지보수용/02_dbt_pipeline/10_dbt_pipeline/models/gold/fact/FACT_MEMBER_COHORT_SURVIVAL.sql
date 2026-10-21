@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 획득 코호트 생존 곡선 팩트(분류 축 × 획득 후 경과월) — LTV 기대 유지개월 산출용
+-- Target     : GOLD.FACT_MEMBER_COHORT_SURVIVAL (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT
+-- Issue      : O232, O234, O231, O249 외 1
+-- =============================================================================
 -- FACT_MEMBER_COHORT_SURVIVAL: 획득 코호트 생존 곡선 팩트(분류 축 × 획득 후 경과월) — LTV 기대 유지개월 산출용
 --  [2026-10-15 O232 · O234 확정(O234 현업 회신: 상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1)] O231 dbt 뷰 `WIDE_MEMBER_COHORT_SURVIVAL` → **GOLD 테이블**(사용자 결정).
 --   구조 정본 = `03_top-down_gold/06_DDL.sql` FACT_MEMBER_COHORT_SURVIVAL · 모든 컬럼을 DDL 타입으로 CAST 한다

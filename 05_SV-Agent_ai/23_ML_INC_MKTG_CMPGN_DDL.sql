@@ -1,12 +1,18 @@
+-- =============================================================================
+-- Purpose    : 🆕 O217-B (2026-10-13 · ua91864)
+-- Target     : VIEW GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V, SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN
+-- Run order  : 운영계 #48
+-- Depends on : -
+-- Issue      : O217-B
+-- =============================================================================
 -- ============================================================================
--- 23_ML_INC_MKTG_CMPGN_DDL.sql — 🆕 O217-B (2026-10-13 · ua91864)
+-- 23_ML_INC_MKTG_CMPGN_DDL.sql — O217-B (2026-10-13 · ua91864)
 --   ML 회원 증액 예측 × MSTR 마케팅캠페인 귀속 서빙 뷰 + SV(SV_ML_INC_CAMPAIGN)
 --   · 배경 = 채팅 「10월 증액개발이 높을 마케팅캠페인 상위 10」에 Agent 가 ML 예측을 못 찾고
 --     직전 3개월 평균(추세 참고치)으로 답했다. 원인 = 증액 예측(ML_RST_DATA_MBER_INC_12M)에 캠페인 축이 없다.
 --   · 구성 = USE → 뷰 → SV → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 의존 = SERVING.ML_MEMBER_RISK_V(21_) · SERVING.MSTR_SPNSR_DVLP_V(MSTR 이관)
 --   · 롤백 = DROP SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN; DROP VIEW GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V;
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

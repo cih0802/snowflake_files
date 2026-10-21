@@ -1,0 +1,612 @@
+name	size	md5	last_modified
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/.folder	16	55bac10a2a76206cfa1dd3440a57f5e8	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/00_INDEX.csv	122432	2935e59ce50f3a71a775879fed96b393	Wed, 21 Oct 2026 15:03:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/00_README.md	69232	5647657fb779ecf7def36e5527ad1950	Wed, 21 Oct 2026 15:03:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/00_재현프롬프트.md	5696	248cca087a64e98c35ebd542b584e869	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/.folder	16	06d6577b4c450df340b132df7210df92	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/02_GN_DW_building/.folder	16	fb493f411e23c849da74995ad0046318	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql	56448	19dd1d10eed90b972b2350bc56a158c6	Wed, 21 Oct 2026 15:02:50 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/02_GN_DW_building/08_After_Deploy_DBT.sql	13856	ac29c973452608a388f3c0d73f1765e4	Wed, 21 Oct 2026 15:02:50 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/03_top-down_gold/.folder	16	e54047b31b5042c49a15808f0e899535	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/03_top-down_gold/06_DDL.sql	230048	1ea558d15794bd4a0c06c9846760958f	Wed, 21 Oct 2026 15:02:50 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/04_silver_design/.folder	16	b8b0e5ce03b20968c9b78c96cb7ed2af	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/04_silver_design/08_SILVER_테이블DDL_20260714.sql	160384	5955377b7083eae0a5b798c5de4b8e2a	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql	4528	cac310dd5ca75c58bd09a6aa5185e55a	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/.folder	16	28049684971a647ddd6e1bbb88b2fa3e	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql	43408	d1b6b187fc027730dd3bb1780167ccbc	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql	52928	b3ddb70be94351635bb3cb4d335e3a52	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql	36496	3f2cb8ecf7ef4e938fb683a0cbf18558	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql	48608	be7fa2e44bce43253adf09aa9fcd7927	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql	29424	8e014ebebcbc06b44a83d48c97905279	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql	15104	7f35d6264acdb1b03ad1b0db89167cfa	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_07_SV_DDL_AD.sql	38624	9838d445735d6730507ce50cddc2a708	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql	18784	c10a5b7a6afa1f98a1227a35098e04e4	Wed, 21 Oct 2026 15:02:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql	27312	5bf1e20b20b27c082acb0495bae8dfc2	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql	22976	aa3c30fd1ba7173a83606c72ef6c2d66	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql	11968	436e1a8e06b7b237f3cf37d49b02b746	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql	15488	14577edb130d7591adca4f8aa8e20336	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql	26560	57d2234a07d8b8c8c5c40ec41c9b9d15	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql	7536	d03ad21ff0d48aa238bea8362d14c821	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql	15440	5cf2c9928ae05b0a34b3dcbbec2fb41c	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql	9488	4adb018663539effd0931b1b8cd59844	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql	9328	74957e756c8154a6340c9183458563f3	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql	27392	21ae4bd33da1a13117abe00a001e4a7e	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql	15424	da588fb450383eaac79b01bb0a6cc44f	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql	18064	ecff24ad98286a14d0feb7b429472b1a	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql	7872	98ea0d72a2ec2f9ef24971bf4fb0f982	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql	7088	666f564514739c607fdce10b288afe97	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql	9504	578c9a1fe0f06dd558cd233772dd4d18	Wed, 21 Oct 2026 15:02:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql	12624	5293d5f4efd275412e1c38ed9553c3d2	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql	17008	5515e79dd8f17628bd8ef3a7dd2231ba	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql	13552	63c56ee10fc3df32c6fb4f76eb9951a2	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql	6736	bb275de0f1b27eed1cb8eaf1f0155cf5	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql	7760	d6aa25797113c8abd99f3f907d00c3c1	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql	9920	58747afd1a6000a2848d1b164cb663e0	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql	6816	f8a48fd374755d4459788aa8971a9b74	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/09_1_AGENT_생성.sql	29712	05e7d9857b2925c1e9770e87d7369781	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql	35728	f9df7f77d2213646f9831c5ca8ff7664	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql	77040	d4fd6a4d6307ce0f83e5bcc027852b4a	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/22_ML_SV_DDL.sql	101696	ab79dc630314e5346381ad6b93d71ef8	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql	12096	4d220de2dc66129d2ba5303bcbd3395b	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql	16416	638a12ef563e5c1915df160e4316f053	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql	21728	8d3fd67b06525b8325594576c8a4289e	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql	8464	a9d699ac7b3fe278b0f9d83452733051	Wed, 21 Oct 2026 15:02:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql	6512	ac112e5d55dc06352e83ce15ce7a51f9	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql	5968	071f6787e1551e576be5fe92dab72aff	Wed, 21 Oct 2026 07:37:34 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql	9616	e837c5f119e3f7239920a94d35157cf0	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql	8976	f53f08a6a538d9c2db20e9446d693a9d	Wed, 21 Oct 2026 07:37:35 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql	5920	01da044a1d672557d45f6858e3710a66	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql	5456	95119f6c2c82b99675d3d4923665ae61	Wed, 21 Oct 2026 07:37:35 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql	13680	b6be6d0dd0e86fd523d33ee19578ea1c	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql	13120	68218ebc82ff30bd9189de1d0f7a470f	Wed, 21 Oct 2026 07:37:35 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql	31392	cdcaff93734282e16328a134829a12c5	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/36_O250_ML예측_7축확장.sql	30688	b31cbb8fc3ab5dde0f18746ee704f325	Wed, 21 Oct 2026 07:37:35 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql	13168	ca87cefa3e7cf8853cb1fde3249638dc	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/08_mornitoring/.folder	16	df13ea26c73df172712dcfa28aa7c4ff	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql	18688	c4c80bc0e4792ea57245871915da21d0	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql	11024	60481dfb7d5d92bf7edccf538c0dbffc	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql	9632	51b85bda4c1b4be09c05c7ed5574b4c9	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/10_dbt_pipeline/.folder	16	7a7f51aa98045cec87955d595ff91222	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/10_dbt_pipeline/01_deploy_dbt_project.sql	4192	28f7655c0f28cbaa8e28ba407f1a82e7	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/10_dbt_pipeline/02_dbt_parse_compile_build.sql	14048	5a14e2ae764f104866911158fb0ec969	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql	1360	f703666b3daa4240747ef27d0571f87a	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/12_agent개선과제/.folder	16	0c8d77a83a6b385a7ef12e2f7b9e6c12	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/12_agent개선과제/output/.folder	16	c4972bc4e5215f8dbab1eb6eaededc47	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/12_agent개선과제/output/O217_biz_definition_corpus.csv	1187792	ab0580fb74096be0bf8388a1db7fe7e1	Wed, 21 Oct 2026 14:57:38 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/.folder	16	276507476a854dca453b284bc9394248	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/.folder	16	58218bca42bc59ac81fc50f76523da7b	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql	4096	ee366f39373d7d193604c301cf146d12	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql	14176	ac4b5e3751b98943e269995e5482f47a	Wed, 21 Oct 2026 15:02:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql	8464	73349a9b60bc98238acddaba23e93933	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql	11664	1ecbd23e4dea46cf5167c929e8c47b64	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql	49168	1bf1e69d84a4bfdf1a225163921ceac2	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql	51616	be61c874c81b0bae1dfe5ca0bb4a5884	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql	5856	73827f22859c4300830f86f69fa61830	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/문서실행순서.md	11200	bb5fe54bbe9b751bfa8fa495e339672f	Wed, 21 Oct 2026 14:57:14 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/문서실행순서_llm실행.md	23472	dbb289eb5c89fdd9bd87f04d8a8bd9fe	Wed, 21 Oct 2026 14:57:37 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/문서실행순서_보조주석.md	18160	56f476cdff0f8a49175fa8a7df2804c4	Wed, 21 Oct 2026 14:57:37 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/.folder	16	dc423db22791f17cbff452962e24ab89	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/.folder	16	3663bc6297bc16fe1e7f48a2a77a1693	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/00_배포운영_통합_20260715.md	17840	fe0ec5d10c6f7e8b04e58bdabfa712b4	Wed, 21 Oct 2026 14:57:38 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/01_deploy_dbt_project.sql	4192	b93bc6c63672e9494c9a43bfed72b59a	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/02_dbt_parse_compile_build.sql	14048	5381d4023da0358150b05e0fc601cc3a	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md	9056	18fb177704667cdda664f77b5e3cde0c	Wed, 21 Oct 2026 14:57:38 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/11_성능검토_운영리스크_20260716.md	8368	11512fea2cc6b670829d84e63ebe7f90	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/README.md	8800	4b5bbc46002a9ccf072f89755ed0dde7	Wed, 21 Oct 2026 14:57:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql	1360	330bb7430ae52c703d3f91408eeec29a	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/dbt_project.yml	38368	22424ac1af7efb678f626302aa425eef	Wed, 21 Oct 2026 14:57:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/.folder	16	e1cdf635f26183bc47fb0853decbe4a8	Wed, 21 Oct 2026 05:23:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_predicate.sql	10496	3bf01d6c963c4910758838654ecf8746	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_purge.sql	4080	238dd759e1cb9de8dc68cdc8e1dd76d0	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/billing_campaign_asof.sql	2784	899fec4903d6d5ff6bd889014742a32e	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/ga4_union_shards.sql	6384	562fc0484ce448bb15fb3af531a8b330	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/generate_schema_name.sql	976	2777272d627e30869490293dd90e5a98	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gn_biz_codes.sql	4544	2e645fe519a820c15a8144fc5f597a21	Wed, 21 Oct 2026 15:02:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gn_member_master_filter.sql	3776	72b756bb2309933ea51f72c8c28ac737	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gn_no_structural_alter.sql	7104	3779c1e1d431eb26ea43cee5d72b74d7	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gn_view_commented.sql	3824	41b5ccc025dee2cb006a559ffb432dc8	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gold_fact_purge.sql	4208	c49ac695977d216871331dcfeeafad6b	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/gold_helpers.sql	4064	bb12c6ecc27a9858018e2f76b115552c	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/silver_helpers.sql	1184	ebb131071e7b75d49d99ba56bacd7e2b	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/macros/silver_purge.sql	3504	62c81c44e668b1e41cf0b39eab818994	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/.folder	16	48293bb90432383feefedacd1b5c0097	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/.folder	16	efa967e1bb76f3ff0df76b89f02661ef	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/_gold_ready_schema.yml	76448	d79857a9848b46e5e3992e3ddb9f4b0f	Wed, 21 Oct 2026 14:57:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/.folder	16	d6000d00f2d09e884e5b3bee968bde86	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql	5312	7212bad4793f86b40f71c1cf4d74f2a4	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql	1264	ca678300406fd7d54a252f08cb6df7a0	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql	1888	26f1fd823d5067c4c963dd46e6a6a37e	Wed, 21 Oct 2026 15:02:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql	1296	a0a179d08538dc58d82b08ecd5e1fa5d	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql	1792	c8e97205c6a0d9db69f4a6c9e8db1eab	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql	8016	29e1a1388916e0a1e63df364daaac4e8	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql	1344	aa94e448dd56b806e2e00a3d549f17d8	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql	1072	a88a16963a806a95a71ccb6dc2725151	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DATE.sql	5168	46332ac7e62a23f6e469b280ef1c5a90	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql	2864	3381f7070ae634cf37d13b8a60141226	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql	4192	cd09b8f99abe4f8354b7ba41e646240f	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql	9392	772c41f75d79bce47435d8a6f5399dfd	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql	7856	e6f0a5cf8e8367ab4255ce34c35a8da9	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql	8880	85cb77dbd4bc8b7b3a7e110b336def01	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql	2976	c8ebdc83b8d0fe6115839f75a92cc804	Wed, 21 Oct 2026 15:02:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql	9744	0efe7074a3f2ddc1015404348f55e31d	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql	2304	33a1ba7bd5ab216e8abc72bed8fbd09f	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql	2080	96a37abc1b95b9d19f7fb4c4e87e8991	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql	1472	eeb840f5812bb422ce147f483fbcc68f	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_ORG.sql	8080	357240c77c3ef0d6186094f0b202c6b6	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql	9152	a792e138748435c3d111e875b3387602	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql	1392	ca1ddbb11002e4cab8aaab24913f4bd9	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql	1984	3f8d6aab92fedb9fe9d99c59d6b628ae	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_REASON.sql	1360	389c03856c11b4641448ba55ecd81583	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql	2320	9914c786986b3e8adc4f9a98d6cdab7e	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql	4112	60f9775c059a79a31ccfa747e9dfc078	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql	4784	dcafc7dd01dd8e3ba0d079612aab39a0	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql	2032	0eaa474aa64a69656f4bcadc29b4652a	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql	5296	a664a3e3e1d02364169858f31faf2ace	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/.folder	16	3f68f6a93763cbc51c351f1e8a97a987	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql	3744	5b1507c407530eaa6ddd60685bfa09c8	Wed, 21 Oct 2026 15:02:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql	1872	ed387a6f5746234b380ab00015a4c788	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql	3088	b730f20bb69083e94bfb9fe99437f0ab	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql	6944	f802f408aa5a16e9cb851496066d880b	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql	17280	65fcdbc923a5e9bd22b91e2201b1c509	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql	9600	6d8dc76fade99cf7022edd717c0a2790	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql	3936	5f93c2d2fb096010164591f0f332cbd4	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql	5664	69db7196418e1e09b25f906df7d54835	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql	4864	3542f7a77d59e5dbec6d8e9c24df6175	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql	5408	64980f7f1785522b2bf65774825fc262	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql	12432	397591f74ec5df98ec70a95fa2c1c235	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql	7792	00ed66446acd34e107f97733d07d3972	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql	2832	529bada6405790577b81cdea8dd35bff	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql	1280	76358bf70796afaa326fbc5b72243491	Wed, 21 Oct 2026 15:02:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql	3792	72bef718e7b7e265769d5e44ddfaf1b1	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql	20400	12cc1925471b60d018a1c79e52243baf	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql	8032	770254f2d659a5ddb77612b67e9310db	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql	4640	f6facae10c58cefb7160b41fd661205b	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql	23776	2bab3d6eb5806d5215d5f8a85be8d13d	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql	11824	8433f89eb9aa89bae823a5563e6a1704	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql	8544	15cd86a37a9abe10b1fc129a07214d39	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql	42336	9779ebbf8df054d14535a0174220332a	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql	5712	b2548c259fa8820b4096078b3e826107	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql	16224	c176d5837a217d3fbb3802a0bac305b8	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql	6928	155a85705e655a1e729ea159f023e253	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql	1680	4e72cc9ef749e7770d784d286e52772b	Wed, 21 Oct 2026 15:03:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql	2640	05c17830cfe78e4edd2a876aff79ff25	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql	1408	e278510aa5767ce8c4f7cb624f2f5d5c	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql	1232	9e47c6dc8ad22a8df496d36e34b59fb7	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql	1472	7a1ae10d59475f14150a8a114f99568b	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql	3072	d0df51000445eff717cac5315340317d	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql	1232	89967fa3301df1a0c7f09bb4a412308b	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql	4448	0ef9ca3d80711e94699e0ef608c702a0	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql	4400	85b77def202275c34966d0c8b3ef0f01	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/.folder	16	ffa17aa83e784d5276339bca9c8b3a2e	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql	4960	67ad5b50034621b8ee460d6dcc23ed76	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql	3184	9fa165b66cbc6674e9b8b9ba74843f67	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql	5504	46f8f5dc6229d8ccac8f2dcf62c3bc11	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql	4544	eeb7c4020e79ceea73ee25006cb7af5d	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql	3680	fd550378a8d6de24d4377b36893081a9	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql	3584	e07cc3c15c27b22887c16d4f915a4808	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql	2528	de5982437e1139f1fe9f22f87cc3b534	Wed, 21 Oct 2026 15:03:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql	1872	d2c3dd336b422399c041ec98b7a9dbea	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql	6480	9054a67e441e859bd8098c83f66cf0e0	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql	2064	9ab5a9582bbeda7d3694ebf1523f6b7b	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql	10800	1d5aaf6f6c19a5225024ada718de0682	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql	7392	bf5613a6421265e7025341303138b8e0	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql	6080	c70c279136eedf6c088d59cb9e205efe	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql	4160	996a446d9776228b69cbebe331f72652	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql	21280	8ab8def669703ca568294b038b20bf65	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql	5440	ee67884a3c106a9a917fb0d32ad8fbe6	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql	1984	76bd43f4f18030b9081433c7850db10c	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql	2256	ca6ff6a72dd68f87affd8e8e5079409a	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql	1952	eaf29837301ee6da21ab7b47c2f558ef	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_dept_aggr_schema.yml	6160	61e4b573a4608f1a015bfec6b70a8ed3	Wed, 21 Oct 2026 14:57:44 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_schema.yml	219728	dd01d9bcb146670521d6a9a19bcccff1	Wed, 21 Oct 2026 14:57:39 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/.folder	16	a134892a59b58232f02b06cb492816e8	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/_silver_bridge_schema.yml	7200	a3ca072c14f596c0e849d021c70e99f1	Wed, 21 Oct 2026 14:57:44 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/_sources.yml	16832	068518845769b5e0b11eeab8c034e0ce	Wed, 21 Oct 2026 08:43:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/.folder	16	4797992736fe9e880fd4bc92dff54bc8	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql	10672	363ad6e3c8fe3695c1cbe88e22fa8fba	Wed, 21 Oct 2026 15:03:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql	2784	549a08198d1fdc0d5ec705ce9cee3000	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql	2432	f58ea2df818d1d66893f1c368ecb126e	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql	4240	3dd5c0059ec1611e2e53619fee15498a	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql	14160	c1240e7303a5ce4bb6e631413094a3fc	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql	5664	f56a5828897f39698e29f8b737f3d764	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql	3808	52b1563c2c956749b408fb6ef873d988	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql	5456	8940966363893d9a1d4017aa5f55e89e	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/.folder	16	0eb665bdcc95691fb29434b64400fd64	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql	11712	c30f58b956bc51c4ddc30c8c9dcf8cc3	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql	2288	43e4dd4d2f156de6b4634cb608076356	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql	8128	888bae35a78149261957ad3f909f37dc	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql	2464	a9becf903c5d25977187c31fdda0196e	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql	6512	e53b04756068abad2af7c570405f3803	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql	5088	c14d2915dfcdec589eec680d817ea18b	Wed, 21 Oct 2026 15:03:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql	2432	5ced4bfcdca5c1eb9b16a784f8da7dba	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql	2144	868861fdff16c5a7cba84d0f2569a065	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql	2416	1036c0b322efbf99b5728981e2eb074c	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/_bigquery_schema.yml	5600	c56a82ae267e0668d6aac55f53011f75	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/.folder	16	e66a2a7614d5c6159cfb01ae0a0f5c9a	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql	1376	56d00b7fa140ad59431e1e979066b9b5	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql	3392	6455bc688af7831ee5658637aa601a10	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/.folder	16	e4c566162a62a2b1c50d2024e9f58f10	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql	1680	fc7707bfe2c15795c67a60a82be05533	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql	5040	89999e170b6f59f7adaae0e740f9eccf	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql	9136	d7dce4ad4828a3b4018730dbd8ed59a4	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql	1568	e01cb82d8b33462e82d0a92cce98abef	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE.sql	1376	aa530fcb3e7b041e4658022f93177149	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql	1232	9abb9c49775e57126b14ecaed9b2bfab	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql	1360	6f771c4197eb2a6e801fe797f0ca6165	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql	5456	431ccdec936259af0316f1f7ca8c221c	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql	8032	ab5ad5e864e9485bf9b7e771afb6ba91	Wed, 21 Oct 2026 15:03:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql	2512	6038519aa378d80f28e6682ee4607f48	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql	1568	55946308a9cd083e72277e6bd9a01a53	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql	1872	8066f293f0eb0f8dbb3d330de523b065	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql	7040	6e568350d75ab46c0bfa3fccb8630a8a	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql	2432	c65b5e141ba74c04e9e57c32a14cf78c	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql	1872	1c81f13deffdf1578be6ac0ade144665	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql	19216	bab5bfade95281d0eddd78acf95c0d07	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql	2512	6a7a0ca8e7e7a4e9d4bad93ad001a6b3	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql	1376	2bf1b099fa6d6cf96a27467f62ae698f	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql	1440	f233fd5558271bb897989eac7d0386c5	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql	6048	98b28bc98950ee93eb30e65fbe50b7df	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql	2336	599077bb20711c2a52b884c7fc19d13d	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql	2096	3c4ac23719e91605eef0bc8d11f4846d	Wed, 21 Oct 2026 15:03:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql	3728	0bcf7b04e2ccc4f48fff10e3988df831	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql	1472	1c48647052165abb943881a306920178	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_ORG.sql	1440	2c6f622d3be226eab7ba7c8321da0c03	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql	6464	3250358bc34e9150422619c7e9f05aef	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql	3248	9eff241926358b1d2fd9da393045903f	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql	2992	feba97c8436b34e8e2b88ce00c3a863d	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql	3104	d934056e86b69188574eda8a6b2a4c95	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql	1280	10907358302d27434affd0eba1da70fb	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql	1824	342b25546a6eeddcd3eefef3eaacba82	Wed, 21 Oct 2026 15:03:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql	14960	0b273b751d93da0802423f227122d170	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql	2112	fbc6f3353fa4802a9568c7617f2111db	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql	1728	c031ff4f337306d7aa5bc83abb465f32	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql	6368	2928d85106aa6c3904b9c6cb3a2d65ab	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql	3056	55015f564368ce048eee8bd1f68c2e1c	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql	1488	10f45e7503ef156be086bac301ce987e	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql	1392	35e9ed2acd9a58f15322713bba135c1b	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql	2352	0f8032a7a56dba1d7697f7397ffee045	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/_crm_schema.yml	51920	381d1c204222afb76ae163bac8f47026	Wed, 21 Oct 2026 14:57:48 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/.folder	16	ace281103520319a8356d8036ad3b6eb	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql	6064	5faea13087ad90f5f1cb9b8e0e745a23	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql	1792	dcbc2bcd0b34b6431fdff6c78d33b2ca	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql	2736	e96fbf7a46e4cc1347ae6eb561ed798e	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql	2976	4c89a6f39b97b5359cb75ff882c121e0	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/_erp_schema.yml	3728	820f76926eadb01de150929024312b7c	Wed, 21 Oct 2026 14:57:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/seeds/.folder	16	d66d9dfb8b4a4fff1fd045d63ddc604f	Wed, 21 Oct 2026 14:57:40 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv	64	12c13c3a936638ba611dd6ee86747c90	Wed, 21 Oct 2026 14:57:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/seeds/_seeds.yml	896	c5f2cbcb8da2e352b71315f34b220c0e	Wed, 21 Oct 2026 14:57:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/.folder	16	1575541f6a08c9b6427424afe952d29a	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql	880	16dc1c70aafc648818d07f0f8676f7fb	Wed, 21 Oct 2026 15:03:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql	1136	c44cb204ba0c0a36d5c925e2cd971a0d	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql	928	94ea92f6e0805d5611dc1719e9eaeb4d	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql	1344	bad54225359cb3ca0c91415c3fafa310	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql	1056	32b48c1a16754a4fd38b5491a7d35c3f	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql	1056	fa3e4be144f2bc1d972e53522b6a0f86	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql	1088	fed76f9b0d144d1926a1875dada4f2c3	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql	1200	8d3f2b37205909bc15345d3ee308f485	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql	1024	2a6bd2a035135b02a5d87facdf261e45	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql	928	440fb09e1eef2491c78aad4e0a273e44	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql	1232	9dc563c1695b6c7c065672e4b92f0ab1	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/.folder	16	b2e1c38b6b834e486453221eca000a10	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql	4688	0b7109032708565ebf50f0300fbc8d9f	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql	1312	5026b73781b87749e47db221c9b6d82e	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql	2928	7e6959b41aef86faeb5881b49369cda1	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql	2096	29553024b18b7a6fd62136425efedb9c	Wed, 21 Oct 2026 15:03:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql	2352	60d9829e6d44cf8505363c416a4244c7	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql	2976	9c934ccddfd2dad20f4cb6c5410283ee	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql	3712	2f942a7d624d35f244cd765c2a792ce2	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql	3904	2586d6dcc288e0688f1f27d4123483a9	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql	2528	1500495789b1cf3bb2094458742b515b	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmec_event_preserved.sql	1952	411de6c22ad3386f492d34451c7f0365	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql	1568	432041b05161e351d9a0e61dfb6218c7	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql	2032	b8c51106f647760e935fc0d80d90a06d	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql	2768	cfb937c10231fac25a3b86cc13b2a081	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/assert_org_succession_invariants.sql	1680	1701d70f3111510d73e34c81adf95b5e	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql	3904	a5235d22920216ed62ca5cb9b4d8a6cf	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_load_gap.sql	8848	ff1d9b7f9347ebefd6c416e7a6899a16	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql	6032	3058af440ce9930e0458fdae3d8138a2	Wed, 21 Oct 2026 15:03:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql	4976	a3372863b4911d2de1db9dc3f79910e5	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql	2160	b9eefe15cdf9772bf6a94c7e1f6e0d21	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql	2848	dba7d9f29e768ad58b0f066ddbeba62c	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql	4224	bc9929437193b553486d842cc845695b	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql	3024	3a1d8c16a28fb0beac994666660b2b06	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_evt_stat_code_label.sql	2320	b963e289f2c0ef9631cb973cdf794b96	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_grain.sql	1168	ea1f4188c86caa918968849103a6f8ba	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql	992	86f8d322454c570a2fb84c69c85652b6	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql	2048	6b70b8daec988d648894e689f5457139	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql	6960	f85a60cc1ea0a6564c07b22768d8f127	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql	1984	979892d03ad4b92ce613ba3276e34b08	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql	1904	93c5a7bc3f24393d87b75fb4df798584	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql	1328	42b933ab23fb8697380f533f70431e6a	Wed, 21 Oct 2026 15:03:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql	4928	6e90226cf7c438207e523bba2be08fc8	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql	10640	4b86f1fd3902b9296c5c432110d597be	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql	1456	1a828338ce55eb1731c098829a11041a	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/verify_A1_A3_blocking5.sql	7472	c91405a07eba78be066fa72d2e7b1bee	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/.folder	16	8b643fbf24ad351456d493e2065ee666	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/.folder	16	48fc3d001e988fb8f050fe06eac8fded	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md	7968	4429284acba220ebf293c4db8df55ded	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md	10432	cec9f7a9cad29ff564dbca8800a5f027	Wed, 21 Oct 2026 08:43:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/.folder	16	05e23831324a79d74cb4309ccccb35a7	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/.folder	16	f601faf4407beb6fa2831d73c7e0b610	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql	7184	d1aea396f4fddb8147f8a5eb5bad86e8	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql	4640	cefb4f24e8ce05d576a93de7fad13f87	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql	99120	66f51d045e1e87ec4ec89e3b2fb1ca34	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql	11216	fbc1b0c4169f3df37aad79ff34df316d	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql	9104	cb9b2732fb3e728af3bbcf3f67fc4ce1	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql	1696	fb400b36d93ce855b2f1e6351100fe04	Wed, 21 Oct 2026 14:57:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql	115632	9b2822540e210771f7bbc1e3682ae413	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql	1722928	23edaa01cae7de91c9100a47774d1fb5	Wed, 21 Oct 2026 14:57:44 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql	1339456	659a0e48d07d2e0cd57ec39ce6b099ff	Wed, 21 Oct 2026 14:57:45 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql	224352	82284846c43c3576149434cbccfe6da8	Wed, 21 Oct 2026 14:57:46 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/mstr-answer.csv	169472	5590a8c9d49855fdf5e6881ef7d587d0	Wed, 21 Oct 2026 14:57:47 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/.folder	16	ad0ef34940fd7dcf37b37cea5c1cb35c	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql	4096	1512ae0fccae5631190350fa688b5b95	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql	14176	1ff17ff60d0d6e4892afe10aebaa446d	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql	8464	ec27db94d2f0bbc23965bb9a437b90df	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql	11664	3643fd31e906564b361341f9a6a47bfd	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql	49168	486b9238c8c805f2fce74ba0f86073a2	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql	51616	1aa13a0f2b1bcd51ccdc0f82dc22afb4	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql	5856	6575241024b569ff13965a47899592ff	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql	6176	650d2a9c0a2d969968316ae2de31a1de	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql	7968	592881ff4263549c0c839f8f0c215f26	Wed, 21 Oct 2026 15:03:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/.folder	16	fe840792934db71f0f39c5706fa4c7cd	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/README.md	4224	140f5804b8c86eccf0cbeecf76253e14	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/.folder	16	bf588ad79daf6cc0c3545809b0764e72	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/1차.json	4400	9ac8e8fd065d94d4ed4a9331a6d63930	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/manifests/1차_deps.json	8560	656323415110a79e661ef11e69c07596	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_common.py	2016	d98fefdd43dafea72a84793df2dbeb94	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deploy.py	3472	0844b5fa3958a0a49c6fa7ffd27a5833	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_deps.py	4880	04f12dce70523193eb86fe70701818dd	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_extract.py	1744	32915d48f2e4b4ccb4e9f2535d96da19	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_gen.py	3056	99b2de2cf8de277fdda7d75b678ee24d	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_load_answer.py	1920	3c1748a18423b49181ca7b7ddce83d9b	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_pipeline.py	3168	d68ca178aa65dfd2db4ba7260109ab47	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/mstr_verify.py	2304	5b7ada112c8fa58abad4bd4a9835cde9	Wed, 21 Oct 2026 14:57:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/.folder	16	df2c6d3269ef08c6e9e47f34cb6fa3a8	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql	41056	31058cd746cf773d4b0a77ce4897dcae	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_verify.sql	4144	48572c547821941d83d34acdc80fe5ce	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/답안체크용 쿼리.sql	7088	b5aa928ba1b8df5804b0b0faeff70d69	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증결과.md	12256	50873e64501288e4e0db311bffecfeb5	Wed, 21 Oct 2026 14:57:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql	19312	053c9586c7b94eec95428defa2c68f71	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_비교항목.md	4704	1a30ac3c65f955e1253738ecd1bd504d	Wed, 21 Oct 2026 14:57:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/.folder	16	8aff5b218ef2ef1b46e87719dfee6781	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/.folder	16	548a268a244ca2eee7d9a8e6cf620bc5	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/.folder	16	ef4acbbb9105917864b38995675b1f9e	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/.folder	16	0803fb34e1bfe61d7972f5bf3f3c575c	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml	91248	29c48193c6595a35f9e5b829f9ad4670	Wed, 21 Oct 2026 14:57:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_MARKETING/.folder	16	4a12b8a8e1e8bb348638a1ded3dfeb37	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_MARKETING/agent_spec.yaml	118512	8ff9e7bd3304750f7b9174b564430bd2	Wed, 21 Oct 2026 14:57:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_MEMBER/.folder	16	70da49fc0ae8f0bd423647ff0a689b1c	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/AGENT_MEMBER/agent_spec.yaml	136768	1e25068a99c75c6902b374126cc83433	Wed, 21 Oct 2026 14:57:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/cortex-project.yaml	720	c859df896035d9869f2a99224e6455fc	Wed, 21 Oct 2026 14:57:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/.folder	16	7ab8910d472b01025911a06a1a90348d	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/o249/.folder	16	3e84379e7812fe8580700a324ab42134	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/o249/agent_deploy.py	1888	3cd0398f91c8bc6926456eae1bcc417f	Wed, 21 Oct 2026 14:57:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/o250/.folder	16	c53eda01c6dbaa0d2f2f935c5f824527	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/o250/ca_check.py	2656	eb4539f3ac16988e24131dc3a5b1b3c2	Wed, 21 Oct 2026 14:57:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/tmp/o250/deploy_agents.py	3568	2349fe5243e396eef5508ac9d35d3c67	Wed, 21 Oct 2026 14:57:57 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/.folder	16	be0650e7e61bc475e3f4451a5bfe921f	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/.folder	16	063fe0f9e058e0e1c512ecf82e49b5b6	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/output/.folder	16	58d5010dfb17dd86fe283e222d12cca9	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/output/O217_biz_definition_corpus.csv	1187792	23b74eb614a026caf685a2d0d681a67a	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/tools/.folder	16	39c6a3f06f23956ac258d420ceffd30a	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/tools/O217_routing_curated.csv	27040	119b2ce754a9524e71b05f9cb709e602	Wed, 21 Oct 2026 14:57:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/12_agent개선과제/tools/build_biz_definition_corpus.py	14224	7df10eaa84a66e9515dc5c5fb0741fe4	Wed, 21 Oct 2026 14:57:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/.folder	16	67b9e15b61f1cca0a50f0b6a48e1a7ae	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/00_README.md	3168	1d6fe21f279891424e3fa5bb70b3ba12	Wed, 21 Oct 2026 14:58:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/01_원천보고서_인벤토리 인덱스.md	3104	dee62b20b756a3efe590257b8e4c9ef9	Wed, 21 Oct 2026 14:58:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/02_지표사전 공통.md	20688	532099f398bf20cb0f5c14e777a57d17	Wed, 21 Oct 2026 14:58:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/03_지표사전 신규.md	17136	6556d80e4809dba27ac15a725b141468	Wed, 21 Oct 2026 14:58:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/04_마케팅_보고서필드 인벤토리.md	11488	42a701b17281c23daad4c1d41b3da884	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/05_회원_보고서필드 인벤토리.md	25424	17837463dade0483d2cdc1b5b318a3af	Wed, 21 Oct 2026 05:23:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/06_지표용어사전 20260624.md	36848	a4abb1f1eb1a04307bcc1f40d19bdacb	Wed, 21 Oct 2026 14:58:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준.md	7328	06696da7bceaf0028507031b01a2a8f7	Wed, 21 Oct 2026 14:58:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/07_추가_지표사전_20260813기준_raw.txt	3632	255b5de088c04bb3a8dff2fa18663e2b	Wed, 21 Oct 2026 14:58:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/CRM-AGENCY 컬럼명 매핑.csv	640	a5ef181dd06c475469b43fbe6838bd68	Wed, 21 Oct 2026 14:58:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/GA4스키마 20260626.csv	20352	b3cb56ca9eb7c5fd35a1b14949cf27c7	Wed, 21 Oct 2026 14:58:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/agent 질의 피드백_2.csv	34192	72f081bdcf004bfa3dbe3b389025e451	Wed, 21 Oct 2026 14:58:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/gni_실적부서.csv	22480	2bbfffcd3322b6dfcad05c6b3df0ec2d	Wed, 21 Oct 2026 14:58:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/공통지표_flat_20261003.csv	22768	8a885d8169b54c148f967f2c3fb904ce	Wed, 21 Oct 2026 14:58:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv	23264	918fa3a22283cd66361fac08180b168c	Wed, 21 Oct 2026 14:58:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/데이터플랫폼 현업agent 피드백 추가본_20261007.csv	22368	351ce12bbe47168e676bf2a45c8c00fd	Wed, 21 Oct 2026 14:58:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/신규지표_20260820.csv	18480	3399e21812232bd4d2ff3103838f1989	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/조직도_20260914.csv	22480	d9d28152f55a8ac1aed821a89cd9873e	Wed, 21 Oct 2026 14:58:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/지표용어통합 20260623.csv	32944	01917a3d846a0d87d418c84a847beb67	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/컬럼정의서 20260714.csv	68752	44fb4e986742bebdb9e438c58545b06f	Wed, 21 Oct 2026 14:58:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/05_RAG_지표사전/90_provided_definition/테이블정의 20260629.csv	3808	4d4601db2d0cde75f22bd30b8b0f8380	Wed, 21 Oct 2026 14:58:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/.folder	16	e71c6bd885c3e076b7541b8a31d971b1	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/.folder	16	d3002675b2425564802ed86f44204d8a	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/00_README.md	4800	5582705ceeb01bcf52870e349ef5415c	Wed, 21 Oct 2026 14:58:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/01_모니터링_대상 개요.md	3456	1f612cb4d1e01c158a051c65966a4938	Wed, 21 Oct 2026 14:58:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/02_Cortex_AI_사용량 모니터링.md	9152	781ed19f6da1fedeeda4a2ae8b5d923f	Wed, 21 Oct 2026 14:58:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/03_비용제한_예산 쿼터.md	12544	66b72fe122544387519af4fccac46c2e	Wed, 21 Oct 2026 14:58:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/04_알림_및 거버넌스.md	6528	e0c23411f0fd7f35b5f15b7da4d08858	Wed, 21 Oct 2026 14:58:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql	23120	8df95e29791d791673fb73a0d60802d0	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql	24160	1c10bb16edd5b68857bddc1ea9a889c6	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql	18688	1b2f1fd4d35e4151b2131e6ed83ddf45	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql	11024	a7c9cac8879909c5513544f9a5007eff	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql	9632	30959e6a138285a3ff3617fa705342ea	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/10_Cortex_Code_모델별_비용_비교.md	3344	37b361186c2655f8c7ef59a51bbf7cfd	Wed, 21 Oct 2026 14:58:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql	6656	a0d6749fafe86515f3a303512ccefaa4	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql	10896	4b4f7f5e4281fe8893a57930dd8ac03c	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/_archive/.folder	16	a32c651a2786d24a673a2e2f57cffac3	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/_archive/11_BRONZE_개인정보_마스킹정책_미실행.sql	5872	26be45061f52f35a1fd14d2f71418839	Wed, 21 Oct 2026 07:39:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/.folder	16	b3b720a3c358a3c44a20317d930b3d94	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/00_개요_및_실행순서.md	10432	21e35ed07072b5e6ee82c50fe6e591d1	Wed, 21 Oct 2026 14:58:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql	5104	501295e0b70ade19d64fcf5d332ce086	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql	8928	9a8f5a9683f201366fe3ecf36af2e59b	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql	3728	b86d8d9c681252707a69e988ba13cc0d	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql	4480	f1bb1545598d2bb42db602802ecfb19d	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql	4992	caef6b7efc975fe46be16c94faaa6abf	Wed, 21 Oct 2026 15:03:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/.folder	16	8a2af0f8760f587940bd8702aa07fbbf	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/02_GN_DW_building/.folder	16	b842adc60fca441c1297a29cc20c2031	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/02_GN_DW_building/05_ARCHITECTURE.md	14464	45591e82be31f8af6ded7bd3f3fa64c2	Wed, 21 Oct 2026 14:58:15 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/02_GN_DW_building/06_RUNBOOK.md	41904	87e3aefd03bf774eeeb842de30078d7c	Wed, 21 Oct 2026 14:58:15 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/02_GN_DW_building/09_user login mfa리셋.sql	11376	87a047fbde5cd89c4ec176da797640af	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/12_agent개선과제/.folder	16	ffcf130dc80067a6272693bfeafda5e8	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_검증.sql	5056	e7bbddf04544d58ada30a09b81e69a5b	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_런북.md	14880	cc58f524a9faad7e0c29c6df050e5b54	Wed, 21 Oct 2026 14:58:16 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/.folder	16	45916ac5b950cffebda6386086fd9033	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장.md	7024	1cb767c8ea4b477e36ef36e6b0bbaf2d	Wed, 21 Oct 2026 14:58:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/.folder	16	1b43340c260a1e17b56ce0245eccfcf3	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md	9600	a32836e4cab499e20c3ea0dc6503d46b	Wed, 21 Oct 2026 14:58:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md	35024	ae9ecc7be849c9bd38ba0ac8cf3f871f	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md	27808	ec4bb89250ad74d5773decba233ba561	Wed, 21 Oct 2026 14:58:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md	26672	b5d03d85c7bac30207de8cc93d0ec295	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md	25984	6eca626b6763d3e9061b0d240a4636db	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md	26544	98db5154b82e5c3ab9b32ffbf9028730	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md	27296	3d970b1fec50c2ea9cf5707e0fff2208	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md	27472	e3d6cecf88a162c25118502a78bef056	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md	27648	1f3b99d0f1146b53b303436545ad36c4	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md	28016	237e7eff333ef665326544034f06d01d	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md	27552	f5b79e5285d968ecbb39cfcf2ddd8ea8	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md	26864	d968490ab9c83607a67e1359173cf15e	Wed, 21 Oct 2026 14:58:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md	27904	3b9240387e2d449cbe017b6c909dedbc	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md	28224	a62081480d2013c166febd38dbeae23d	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md	27840	712f6c5b57f12e95ddb0972628d68527	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md	28064	670a8d241f1372e8691d58063f8f96cf	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md	11216	d40f3b2b82dde8ce3a81fcda471190a7	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md	26272	c2358d4ac3d0a9cb50878a40f163299f	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md	17888	64b1007358649150c8bf7be9466b4aa9	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/00_INDEX_이슈원장_조각/00_선택표.md	8224	6e6982302e1cdcb4a434e1c0eeede10c	Wed, 21 Oct 2026 14:58:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치.md	11008	f4b853d18208c04480ad5b36e5b4358e	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/.folder	16	9fd2d820cd211eef41b27da3f67d9b7e	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md	21424	4498f3c3bb4e7adfca0e565c93a7c979	Wed, 21 Oct 2026 14:58:20 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md	16912	9cc3ac0012fe3aafb2c116f2538ebf02	Wed, 21 Oct 2026 14:58:20 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-002.md	15520	73c2c98e48733e44c8a157984f0148a4	Wed, 21 Oct 2026 14:58:20 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-003.md	9584	2015c316b2c9948e93cb00a052f6d9e3	Wed, 21 Oct 2026 14:58:21 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-004.md	14944	0a7ef044f820db486da1ea52a38d136d	Wed, 21 Oct 2026 14:58:21 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-005.md	19904	9cd9fea358550289ab7d1f1554f01add	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-006.md	18256	039bf0db671101f147c5e88a9b2753c6	Wed, 21 Oct 2026 14:58:22 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-007.md	16896	c03b8087bba5edebbc46604dd5de1903	Wed, 21 Oct 2026 14:58:23 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-008.md	11488	01daa7fd698caf097158dd050f2562ff	Wed, 21 Oct 2026 14:58:23 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-009.md	16096	060321336fb0b46a0c8a95f4afffe7bb	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-010.md	19328	a8ba0e5cfb175bc46ff67d51f18e09b5	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-011.md	15312	239fe90219b7659f22e779e7d8d37441	Wed, 21 Oct 2026 14:58:25 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-012.md	18704	c8c99393adda43d43695b60444e9823e	Wed, 21 Oct 2026 14:58:25 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-013.md	20176	5e286d100aed5986c290e72da0cfc3a5	Wed, 21 Oct 2026 14:58:26 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-014.md	18000	d154ca08908ba8c54ad9b192d7cb6218	Wed, 21 Oct 2026 14:58:26 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-015.md	10800	850791299c1ccb2af97a8183b44a9026	Wed, 21 Oct 2026 14:58:27 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-016.md	24080	1d3862ebb4e0ea0b31cf82d87b913eff	Wed, 21 Oct 2026 14:58:27 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md	25568	4b49fe90a192d263c050d8246d24e5fa	Wed, 21 Oct 2026 14:58:28 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md	22336	530723967984fd7bef74ae6af7800cf5	Wed, 21 Oct 2026 14:58:28 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-019.md	25568	acde933999ac1d23f24189865acc02c7	Wed, 21 Oct 2026 14:58:29 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-020.md	18064	de1b585d86cc1e67ed17697b06ca44bc	Wed, 21 Oct 2026 14:58:29 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md	13248	a3b98b3b2539bf8591d3bf8d54a060a8	Wed, 21 Oct 2026 14:58:29 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md	12240	43af10e372f001cae4e04351da06776f	Wed, 21 Oct 2026 14:58:30 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md	12560	4dc407d15d674a8a19de688c53723917	Wed, 21 Oct 2026 14:58:30 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md	22992	1db482d8d76799da1c693a61a5b5df4e	Wed, 21 Oct 2026 14:58:31 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/91_사고사례집.md	20320	944fd0af439585d6e7435b87ea555746	Wed, 21 Oct 2026 14:58:31 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/20_issue/92_실측필요_후속작업.md	4064	cfada37d7c80f1b8c919d8ef57ef3ce5	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/PAID_재현_런북_20260722.md	8336	578fb9d944e5cea5c9f3e09f331856b9	Wed, 21 Oct 2026 14:58:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/.folder	16	be8698a6a1156da4715ed34449e8d0bd	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/.folder	16	d4c7c83be29d2a3ed8d77ca1a3767afe	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/00_생성기-문서명 매핑.md	8992	5c41e4fbcb87521c82207083ef24f132	Wed, 21 Oct 2026 14:58:32 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/01_DW_현업활용가이드.md	38368	b28821390e02bfc1ab1f6f488bdbee84	Wed, 21 Oct 2026 14:58:33 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv	173952	663ae5b2abe1a32d0f684c88b231dc43	Wed, 21 Oct 2026 14:58:33 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv	163264	6d0a94faad9058cef1ffceba248da343	Wed, 21 Oct 2026 14:58:34 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv	174032	5a645a52cefd07b40e9379c4bd03837e	Wed, 21 Oct 2026 14:58:35 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv	172384	407728a9eb270d7d7625c0a47a456992	Wed, 21 Oct 2026 14:58:36 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv	403840	f3875aa4b82f4789992154114339ef7c	Wed, 21 Oct 2026 14:58:37 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv	403280	1672711e2b08a15583548f0c8dd28464	Wed, 21 Oct 2026 14:58:37 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv	408080	e3dc0b3baa69cc98ad85bbf20a76cdd8	Wed, 21 Oct 2026 14:58:38 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/03_GN_DW_개념도.html	589488	c84b06e9bd687c8bf241cdc14bda3133	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/04_컬럼계보매핑.csv	136064	c8047a65547a49a7a7b7fe9739af4dcc	Wed, 21 Oct 2026 14:58:40 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/04_컬럼계보매핑.md	159200	fc193965ab0dfd053dda324016d5b45f	Wed, 21 Oct 2026 14:58:41 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/04_컬럼계보매핑.xlsx	64656	dc29ba979ab851d9375ff643b2e2d2a7	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/05_지표GOLD매핑.csv	179952	aa1653f4f7ca8388d09a21117e3b9053	Wed, 21 Oct 2026 14:58:43 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/05_지표GOLD매핑.md	205920	c3b13150a70276708626db0aa2a1884d	Wed, 21 Oct 2026 14:58:44 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/05_지표GOLD매핑.xlsx	64944	fa20aeb3d59cfb0b4de1b419bf69b801	Wed, 21 Oct 2026 14:58:45 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/06_BRONZE노출감사.csv	169328	067aee3cf2be71e4f47f992bac3a6ee1	Wed, 21 Oct 2026 14:58:45 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/06_BRONZE노출감사.md	180624	8821d1c5c4f7c5c09163a941ad252c2d	Wed, 21 Oct 2026 14:58:46 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/06_BRONZE노출감사.xlsx	60336	eecffbffcfa657c69223291be23f7528	Wed, 21 Oct 2026 14:58:47 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/07_코드체계_관문측정.md	38720	7c8615613fa5e0fa7df114060bf6abcc	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.csv	110496	db814d3f0f5866070cd90b0681ae4548	Wed, 21 Oct 2026 14:58:48 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/08_SILVER→GOLD_보존율.md	24704	30b0178851f163bc38cf5fe9b88f69bc	Wed, 21 Oct 2026 14:58:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.csv	241760	22d5e5f1cd3674d0df65a721f6ac372c	Wed, 21 Oct 2026 14:58:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/09_보고서필드_조립가능성.md	67296	df2b5525e2e29b9523985ea85070b72e	Wed, 21 Oct 2026 14:58:50 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/09_섹션배너.json	56960	6b463c777a4196d398c8e1d8ffb18521	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/10_원천입고_결손요약.md	30816	21676abed737970dc55c800823f9ad79	Wed, 21 Oct 2026 14:58:51 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/11_미해결이슈_요약.md	17936	1f1ba3bb92c3557e360a7a19d8101eb3	Wed, 21 Oct 2026 14:58:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/16_파이프라인 배선 수정.md	19280	f479ec3fd369f9256facca1d926d73ab	Wed, 21 Oct 2026 14:58:52 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md	13472	c4c655eea5338549bc58cf9c3ed6d4a9	Wed, 21 Oct 2026 14:58:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/19_원천입고_및_항목신설_대기.md	24560	dfe8f250f6e50b4151f5ea5897621175	Wed, 21 Oct 2026 14:58:53 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/20260826_아키텍처 지도 요약본.html	977680	f1db49faba6cf6c4d268ab9de611d829	Wed, 21 Oct 2026 14:58:54 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/21_원천입고_대기_주니어_해설서.md	23984	9c3b35511956d9adeff0e2c5add110c1	Wed, 21 Oct 2026 14:58:55 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/30_공8_GA개발단가_정의_요약.md	2816	8029789d685be7cf717742ceac00d1c0	Wed, 21 Oct 2026 08:44:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/30_공8및미회신29건_질문요약.md	11824	52db7a51c204ffa6dbff93923695206e	Wed, 21 Oct 2026 14:58:56 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/31_공8_GA개발단가_쿼리근거.sql	3360	20766ede031aec114e019e3f0708353d	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/31_공8및미회신29건_쿼리근거.sql	19104	08d7197d787ed2395cf43dafe6576e7e	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/32_BRONZE_CRM_GOLD반영_설계.md	10128	4d96b6a9d4327b045c693c674ded628f	Wed, 21 Oct 2026 14:58:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/40_현업회신요청_O190.md	4160	263c5c4366c17ea174451130f4e82619	Wed, 21 Oct 2026 14:58:58 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/41_현업회신_F-1_본부지부.md	2592	c1375d7880842be933273e501c2a9be2	Wed, 21 Oct 2026 14:58:59 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/42_현업회신_E-1_모금성비용.md	1040	825c39c47cd227a43ec487dbd99c4c93	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/43_현업회신_F-2_후원사업11개.md	624	6a0d0d558c86ae8d264ec06c05691e3d	Wed, 21 Oct 2026 14:59:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/44_현업회신_F-3_문자오픈.md	656	da61d015c6941b869efaf1859250d875	Wed, 21 Oct 2026 14:59:00 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/45_현업회신_ML_일시후원전환_grain.md	1584	44c07fe5ba560ed6660ae66e296cc1c6	Wed, 21 Oct 2026 14:59:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/46_현업회신_DGT_이전분.md	560	a5fb2061685cee20edf8e01e85701a5a	Wed, 21 Oct 2026 14:59:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/47_신규19종_파생컬럼_COMMENT초안.md	4256	febcf0b3818a21b7f4f01265cdc6eee8	Wed, 21 Oct 2026 14:59:01 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별.html	263056	12b755dfd52c89c7b4ddcffff543739b	Wed, 21 Oct 2026 14:59:02 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별_YAML전용.html	73344	03d64471e2a3875f69a0e6ba23b43423	Wed, 21 Oct 2026 14:59:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv	54432	df0403c38d9e31eff3215c87bf1006b8	Wed, 21 Oct 2026 14:59:03 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx	39888	464c39ff18d033cd127501311ee0968f	Wed, 21 Oct 2026 14:59:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx	39792	1f4c4c9c35669789689f0fc4f1b02efe	Wed, 21 Oct 2026 14:59:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx	40416	0448c9b19dbf9b04b90e17b1fba3b955	Wed, 21 Oct 2026 14:59:04 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx	41472	377ef515b88b529620a6fcd35f26dd06	Wed, 21 Oct 2026 14:59:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/.folder	16	d1fd417668f5fab07bbcb3ceacc89a37	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_AD_CREATIVE.html	28240	ba5236e73dd19cc5107209bfdcd7da5a	Wed, 21 Oct 2026 14:59:05 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_BIGQUERY_EVENT.html	23872	5760b7c53ec83e2f288de49fb3977a14	Wed, 21 Oct 2026 14:59:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_BIGQUERY_SOURCE.html	25216	489f4a753ced16d8bdc9f73e3db9f38b	Wed, 21 Oct 2026 14:59:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_BUDGET_ITEM.html	23632	5adaf02799452450b68df7ba5fa33e12	Wed, 21 Oct 2026 14:59:06 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_CAMPAIGN.html	42304	e30eed63479ae1cacfd137c294c85641	Wed, 21 Oct 2026 14:59:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_DATE.html	31840	bad908fce8f2321b55c52f9b33b9f36c	Wed, 21 Oct 2026 14:59:07 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_DEVICE.html	25904	aa28b9b5b3fbb34bce4584ade7665dad	Wed, 21 Oct 2026 14:59:08 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_EVENT.html	27264	93689c3f5a29b4b5a211f39ab8cf2c0d	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MARKETING_CAMPAIGN.html	29648	9f81887417c08a00f1acf77c35948e42	Wed, 21 Oct 2026 14:59:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MEMBER.html	34400	b18f00b7b07b60475544fd166d3d5d79	Wed, 21 Oct 2026 14:59:09 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_ACQUISITION.html	42352	79add51f6885b6539bf6191595bc3a92	Wed, 21 Oct 2026 14:59:10 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_IDENTITY.html	27744	3590eade5aad807a9228b1605162ae3c	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html	38064	89b4389a13cd54e0febcfe17bacc64a8	Wed, 21 Oct 2026 14:59:11 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_MONTH.html	28640	ed5b69e4d71aea84b116ca5dad3d58b1	Wed, 21 Oct 2026 14:59:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_ORG.html	30256	354c133586d0493bae920ce34b02769b	Wed, 21 Oct 2026 14:59:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_PAYMENT.html	23856	fd99d3611787429ddec3059948fab167	Wed, 21 Oct 2026 14:59:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_REASON.html	23568	6b2df8d9ee577b9a9bbd9b3c6dc3ecd7	Wed, 21 Oct 2026 14:59:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_SEND_TYPE.html	29344	c6f8fa2678e0daf580acc3ee872ed0ae	Wed, 21 Oct 2026 14:59:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_SERVICE.html	23920	e476bfaf79fe009636a4b30f184f7213	Wed, 21 Oct 2026 14:59:14 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/DIM_SPONSORSHIP.html	31360	343a03d2ba4bd7fd5f84cb80fdc6bbe9	Wed, 21 Oct 2026 14:59:14 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST.html	31216	4d83fec7c6e2646178eea4c55fd6221a	Wed, 21 Oct 2026 14:59:14 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_AD_BROADCAST_CASE.html	24368	87c11bcc81bb972bc11c5aa498362559	Wed, 21 Oct 2026 14:59:15 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_AD_DIGITAL.html	27856	094648b527a3ce4526c405281faf7575	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_AD_PERFORMANCE.html	38000	5d7c09af4c59782a911be66847a60cd9	Wed, 21 Oct 2026 14:59:16 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html	41344	e3c452c5714f6e4cc708eaab84949b25	Wed, 21 Oct 2026 14:59:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_BUDGET.html	32240	060eae95bc1436c777a47571ac6ca1fe	Wed, 21 Oct 2026 14:59:17 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_BUDGET_YEARLY.html	33488	7090cbc0aff4073318e1758dd35dd7e1	Wed, 21 Oct 2026 14:59:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_EVENT_ATTENDANCE.html	36608	82218f63d8c57034e6c149d94cd1a1c0	Wed, 21 Oct 2026 14:59:18 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_COHORT.html	53312	30fb48902bbfeac1995bfdba174c87fa	Wed, 21 Oct 2026 14:59:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html	34704	63b180eb601a3252c0e7dab40e79b014	Wed, 21 Oct 2026 14:59:19 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_EVENT.html	55280	1c89600f03c26852d59161c7abe85606	Wed, 21 Oct 2026 14:59:20 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_FEE.html	37648	7d08f17ed8cd26517d4ccfe29649f846	Wed, 21 Oct 2026 14:59:20 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_MONTHLY.html	77984	c043a60ac6dc937316d808a7cab2ef51	Wed, 21 Oct 2026 14:59:21 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html	38944	449f10f7f8c940c831ea695665f85975	Wed, 21 Oct 2026 14:59:21 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_MESSAGE_DISPATCH.html	47728	f5d621c026494e403caff136f4203b2c	Wed, 21 Oct 2026 14:59:22 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_TARGET_MEMBER_DEV.html	23792	b3a1f0b53cb12e650ab6c24977b05d12	Wed, 21 Oct 2026 14:59:22 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/FACT_TARGET_PROJECT.html	29424	2d973636d544cb2542e8985f68da2959	Wed, 21 Oct 2026 14:59:22 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/erd/index.html	86416	22fcfd1e5ad729e71fc207551fb4ea27	Wed, 21 Oct 2026 14:59:23 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/.folder	16	8dc4d9d245792017dd625787673aebef	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/.folder	16	b8b6ffa56176545cda594ada48781961	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/08_AGENT_spec.md	47616	41d4e5b15ce5d94b27d8819dd8ae4703	Wed, 21 Oct 2026 14:59:23 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/09_0_AGENT_정의서.md	5840	419b2a27466281217ce408f6bfe54a9b	Wed, 21 Oct 2026 14:59:23 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/11_거버넌스_운영.md	9440	e78552e230d2b6804c995bae97817ca1	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx	157056	87f7248045e62397a6c3cb3cb7610381	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx	179728	217c4bc1307b644086203d00e271ec07	Wed, 21 Oct 2026 14:59:25 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/06_snapshot/.folder	16	644bf197def599902ffa361417fff26f	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md	14672	8f4de65652dfcf387023a98376e5ef9b	Wed, 21 Oct 2026 14:59:25 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md	13520	3bdbdb8f66ddc648e2f8f67c2c79c304	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql	8768	f6a58fcf6b8eb12377374a8ca6daec65	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/09_streamlit 권한 설정/.folder	16	465102e9e8a51da55a1145a87e07edb2	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/09_streamlit 권한 설정/analyst-selfservice-streamlit.md	17584	98ca930d30eb34d05d10a9d930636999	Wed, 21 Oct 2026 14:59:26 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/09_설계근거_참고/SECURITY.sql	2320	0a7907f45a35fff3cabc5a31922097fd	Wed, 21 Oct 2026 15:03:13 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/__pycache__/.folder	16	e559c59b718cfdc74c4de69c71f28176	Wed, 21 Oct 2026 05:23:12 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/__pycache__/build_handoff.cpython-312.pyc	18976	fa8d23479e3ae26cff7ef41855557e8f	Wed, 21 Oct 2026 15:02:49 GMT
+/versions/live/80_인수인계_프로젝트완료 및 유지보수용/build_handoff.py	15760	c87ec60918a1662a9414a89b4e7f2700	Wed, 21 Oct 2026 15:03:14 GMT
+list: 610 items @ snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/80_인수인계_프로젝트완료 및 유지보수용/

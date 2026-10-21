@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA4 원천의 USER_PSEUDO_ID NULL 을 **기지 창 밖에서만** 관측한다.
+-- Target     : dbt singular test warn_bigquery_null_user_pseudo_id (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.BIGQUERY_REFINED_DATA
+-- Issue      : O91-D, O91-C, O176, O91-F 외 1
+-- =============================================================================
 -- warn_bigquery_null_user_pseudo_id: GA4 원천의 USER_PSEUDO_ID NULL 을 **기지 창 밖에서만** 관측한다.
 --
 -- WARN: 왜 필요한가 (2026-08-20 O91-D · 사용자 결정 「필터 제외」의 짝)

@@ -1,10 +1,16 @@
--- ERP_EXPENSE_RESOLUTION: 지출결의 명세 (1행 = 원천 1행) · 🆕 [2026-10-08 O213-F Y3-K]
--- Co-authored with CoCo
+-- =============================================================================
+-- Purpose    : 지출결의 명세 (1행 = 원천 1행) · 🆕 [2026-10-08 O213-F Y3-K]
+-- Target     : SILVER.ERP_EXPENSE_RESOLUTION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_erp.EXPENSE_RESOLUTION
+-- Issue      : O213-F, O114-B
+-- =============================================================================
+-- ERP_EXPENSE_RESOLUTION: 지출결의 명세 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
 -- 원천 BRONZE_ERP.EXPENSE_RESOLUTION(O114-B 선언 · 종전 소비 모델 0). 값 가공 없음(R2-7) · TRIM/NULLIF 만.
--- 🔴🔴 예산 원장(ERP_BUDGET·FACT_BUDGET)과 합산·조인 금지 — 과목키 일치 0.02% · 금액 약 9.9배(_sources.yml O114-B 실측).
--- 🔴 원천 grain 이 깨끗하지 않다(2026-10-08 실측): 61,785행 · 결의번호 32,746 · 전 컬럼 동일 행 7,287.
+-- WARN: 예산 원장(ERP_BUDGET·FACT_BUDGET)과 합산·조인 금지 — 과목키 일치 0.02% · 금액 약 9.9배(_sources.yml O114-B 실측).
+-- WARN: 원천 grain 이 깨끗하지 않다(2026-10-08 실측): 61,785행 · 결의번호 32,746 · 전 컬럼 동일 행 7,287.
 --    동일 행이 반복 명세인지 적재 중복인지 판별할 수 없어 **제거하지 않는다**(합계 = 원천 212,342,534,942원 보존).
---    ⇒ ROW_SEQ 로 행을 식별한다(결의번호 내 일련 · 결정적 정렬). 🔴 현업 확인 = 문서20 N-29 ⑧.
+--    ⇒ ROW_SEQ 로 행을 식별한다(결의번호 내 일련 · 결정적 정렬). WARN: 현업 확인 = 문서20 N-29 ⑧.
 -- pre-hook = silver_purge 기본(TRUNCATE) · 전량 재적재.
 {{ config(materialized='incremental') }}
 

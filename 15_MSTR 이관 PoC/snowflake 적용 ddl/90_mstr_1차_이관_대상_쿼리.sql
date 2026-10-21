@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : 05. MSTR 1차 이관 대상 리포트 쿼리 — Snowflake 전환본 (O197)
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_STRD_DE_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD 외 10
+-- Issue      : O197
+-- =============================================================================
 use role gn_dw_admin;
--- Co-authored with CoCo
 -- =====================================================================
 -- 05. MSTR 1차 이관 대상 리포트 쿼리 — Snowflake 전환본 (O197)
 --   원본 = mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql
 --   변환: mart.X → GN_DW.MSTR.X (SELECT·JOIN·GROUP BY 는 ANSI 그대로)
---   🟢 ExplCampList 영향 없음 — 이 쿼리는 SPCL_CMPGN_YN · CMPGN_CLS1~3_CD 를 쓰지 않는다
+--    ExplCampList 영향 없음 — 이 쿼리는 SPCL_CMPGN_YN · CMPGN_CLS1~3_CD 를 쓰지 않는다
 --   선행 = CALL GN_DW.MSTR.USP_RUN_MSTR_1ST('202601', 'POC', TRUE);
 -- =====================================================================
 
@@ -82,7 +88,7 @@ GROUP BY
 -- [2] MSTR 분석엔진 계산 단계 (원본 [분석엔진 계산 단계] 블록 — SQL 이 아니므로 아래로 대체)
 --   1) 동적 집계: <사업부/시도권역, 홍보방법, 후원사업> 을 제외한 12개 속성으로 재집계
 --   2) cross-tab: MSTR 화면 렌더링 — Snowflake 에서는 결과셋까지만 제공
---   🔴 [개발(명)] = COUNT(DISTINCT MBER_NO) 는 비가산이라 [1] 결과를 다시 SUM 하면 틀린다
+--   WARN: [개발(명)] = COUNT(DISTINCT MBER_NO) 는 비가산이라 [1] 결과를 다시 SUM 하면 틀린다
 --      ⇒ 원천 팩트에서 12개 속성으로 직접 재집계한다(MSTR 엔진 결과와의 차이는 검증 대상)
 SELECT
   a11.DVLP_DIV_CD, MAX(a12.DVLP_DIV_NM) AS DVLP_DIV_NM, MAX(a12.SORT_ORDR) AS DVLP_SORT,

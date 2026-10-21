@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블. GA4_* 5종의 유일 입력.
+-- Target     : SILVER.BIGQUERY_BASIC (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.BIGQUERY_REFINED_DATA
+-- Issue      : O121
+-- =============================================================================
 -- BIGQUERY_BASIC: source(silver_external,BIGQUERY_REFINED_DATA) 재파생 기반 테이블. GA4_* 5종의 유일 입력.
 --
 --  [2026-08-21] 신설 배경 — `BIGQUERY_REFINED_DATA` 가 외부 Python 적재로 전환되며

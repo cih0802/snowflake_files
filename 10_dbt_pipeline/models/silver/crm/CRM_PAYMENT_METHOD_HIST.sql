@@ -1,7 +1,13 @@
--- CRM_PAYMENT_METHOD_HIST: 결제수단 변경 이력 (BRONZE TH_PM_SETLE_INFO_HIST → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = SETLE_KEY, UPDT_DT (📏 xf98254 유일 실측)
--- 🔴 민감 컬럼 제외(개인·결제 식별정보 · 분석 가치 없음 · 노출 위험): CARD_TRMVT, PAYER_NM, ETC_CTTPC, CRTFC_FILE_NM, CRTFC_DATA_CTNT, BILLKEY, APPLCNT_NM, APPLCNT_ETC_CTTPC, UPDUSR_NM, RGSTR_NM
+-- =============================================================================
+-- Purpose    : 결제수단 변경 이력 (BRONZE TH_PM_SETLE_INFO_HIST → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_PAYMENT_METHOD_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TH_PM_SETLE_INFO_HIST
+-- Issue      : O188-F, O179
+-- =============================================================================
+-- CRM_PAYMENT_METHOD_HIST: 결제수단 변경 이력 (BRONZE TH_PM_SETLE_INFO_HIST → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = SETLE_KEY, UPDT_DT ( xf98254 유일 실측)
+-- WARN: 민감 컬럼 제외(개인·결제 식별정보 · 분석 가치 없음 · 노출 위험): CARD_TRMVT, PAYER_NM, ETC_CTTPC, CRTFC_FILE_NM, CRTFC_DATA_CTNT, BILLKEY, APPLCNT_NM, APPLCNT_ETC_CTTPC, UPDUSR_NM, RGSTR_NM
 SELECT
   SETLE_KEY AS SETLE_KEY,
   UPDT_DT AS UPDT_DT,
@@ -45,5 +51,5 @@ SELECT
   NULL                           AS DW_BATCH_ID
 FROM {{ source('bronze_crm','TH_PM_SETLE_INFO_HIST') }}
 WHERE SETLE_KEY IS NOT NULL AND UPDT_DT IS NOT NULL
-  -- 🔴 O179 이슈 B · 회원 마스터 미실재(고아) 제거 — 정의 = macros/gn_member_master_filter.sql
+  -- WARN: O179 이슈 B · 회원 마스터 미실재(고아) 제거 — 정의 = macros/gn_member_master_filter.sql
   AND {{ gn_member_master_filter("NULLIF(TRIM(MBER_NO),'')") }}

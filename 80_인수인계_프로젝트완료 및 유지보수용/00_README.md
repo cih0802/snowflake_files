@@ -2,6 +2,7 @@
 
 워크스페이스 원천 없이 이 폴더만으로 GN_DW(Snowflake) 를 재구축·운영할 수 있도록 구성했다.
 전체 파일 목록 = `00_INDEX.csv`. 재생성 = `build_handoff.py --apply`.
+SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on · Issue). 사본은 빌드 때 주석만 정제한다(실행 코드는 원본과 같다).
 
 ## 읽는 순서
 
@@ -16,14 +17,14 @@
 
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
-| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 65 |
-| 02_dbt_pipeline | dbt 프로젝트 원본 | 216 |
+| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 66 |
+| 02_dbt_pipeline | dbt 프로젝트 원본 | 220 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
 | 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 7 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
 | 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 19 |
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
-| 08_현업공유_산출물 | 현업 공유 산출물 | 85 |
+| 08_현업공유_산출물 | 현업 공유 산출물 | 90 |
 | 09_설계근거_참고 | 설계 근거 · 보안/권한 참고 | 10 |
 
 ## 권장 추가 사유 (지정 대상 외)
@@ -84,11 +85,12 @@
 | 05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql | 문서실행순서.md 명시 SQL |
-| 05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql | 문서실행순서.md 명시 SQL |
-| 05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql | 문서실행순서.md 명시 SQL |
-| 05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql | 문서실행순서.md 명시 SQL |
-| 05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql | 문서실행순서.md 명시 SQL |
-| 05_SV-Agent_ai/36_O250_ML예측_7축확장.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql | 문서실행순서.md 명시 SQL |
@@ -152,6 +154,7 @@
 | 10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/dim/DIM_ORG.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/dim/DIM_REASON.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -282,6 +285,8 @@
 | 10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/_erp_schema.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/_seeds.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -306,6 +311,7 @@
 | 10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/assert_org_succession_invariants.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_bigquery_load_gap.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -547,6 +553,11 @@
 | 30_output_share/47_신규19종_파생컬럼_COMMENT초안.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/GOLD_ERD_테이블별.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/GOLD_ERD_테이블별_YAML전용.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_AD_CREATIVE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_BIGQUERY_EVENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_BIGQUERY_SOURCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |

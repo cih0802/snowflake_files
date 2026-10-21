@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 광고소재 차원 = 3소스 매체/소재 DISTINCT (MD5 복합키), 정본 09 STEP5.
+-- Target     : SILVER.AGENCY_AD_CREATIVE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_agency.DGT_AD_CMPGN_DTLS, source bronze_agency.REBRDC_AD_CMPGN_DTLS, source bronze_agency.VIDEO_AD_CMPGN_DTLS
+-- Issue      : O182
+-- =============================================================================
 -- AGENCY_AD_CREATIVE: 광고소재 차원 = 3소스 매체/소재 DISTINCT (MD5 복합키), 정본 09 STEP5.
--- Co-authored with CoCo
 SELECT DISTINCT
   MD5(SOURCE_SYSTEM||'|'||COALESCE(MEDIA_CHANNEL_NM,'')||'|'||COALESCE(CREATIVE_NM,'')||'|'||
       COALESCE(CREATIVE_TYPE_NM,'')||'|'||COALESCE(CM_AREA_NM,'')||'|'||COALESCE(AD_SEC_NM,'')) AS CREATIVE_DK,
@@ -21,7 +27,7 @@ FROM (
   UNION ALL
   SELECT 'REBROADCAST', NULLIF(TRIM(CHNNL_NM),''), NULLIF(TRIM(BRDC_NM),''), NULLIF(TRIM(DIV_NM),''),
          NULL, NULL, 'BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS' FROM {{ source('bronze_agency','REBRDC_AD_CMPGN_DTLS') }}
-  -- 🔴 [2026-09-28 O182] REBRDC 원천 개명: CHNNL_CMPNY→CHNNL_NM · 재방유형 RE_BRDC_TY_NM 소멸 → DIV_NM(재송출/방송)
+  -- WARN: [2026-09-28 O182] REBRDC 원천 개명: CHNNL_CMPNY→CHNNL_NM · 재방유형 RE_BRDC_TY_NM 소멸 → DIV_NM(재송출/방송)
   --    VIDEO 의 소재유형은 종전대로 CMPGN_TY_NM 을 쓴다(원천 존속). 신규 MATR_TY_NM 은 staging 에만 보존.
   UNION ALL
   SELECT 'VIDEO', NULLIF(TRIM(CHNNL_NM),''), NULLIF(TRIM(MATR_NM),''), NULLIF(TRIM(CMPGN_TY_NM),''),

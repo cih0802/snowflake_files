@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 마케팅캠페인 마스터 정제 (BRONZE TC_MKTNG_DTL_CD C001 → SILVER)
+-- Target     : SILVER.CRM_MARKETING_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TC_MKTNG_DTL_CD
+-- Issue      : O44, O162
+-- =============================================================================
 -- CRM_MARKETING_CAMPAIGN: 마케팅캠페인 마스터 정제 (BRONZE TC_MKTNG_DTL_CD C001 → SILVER)
 --
 -- ============================================================================

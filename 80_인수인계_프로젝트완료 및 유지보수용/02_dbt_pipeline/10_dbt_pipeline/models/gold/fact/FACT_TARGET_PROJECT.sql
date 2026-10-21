@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 프로젝트/사업목표 팩트 (CRM_BIZ_TARGET, 월×조직×후원사업×캠페인)
+-- Target     : GOLD.FACT_TARGET_PROJECT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_BIZ_TARGET, ref DIM_ORG, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN
+-- Issue      : O188, O188-E, O190
+-- =============================================================================
 -- FACT_TARGET_PROJECT: 프로젝트/사업목표 팩트 (CRM_BIZ_TARGET, 월×조직×후원사업×캠페인)
 {{ config(
     tags=['gold_pending']

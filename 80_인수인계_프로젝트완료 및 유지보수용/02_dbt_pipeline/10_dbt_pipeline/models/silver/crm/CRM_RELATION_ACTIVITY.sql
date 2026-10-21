@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연활동 = 서신 ∪ 선물금 (EHGT 제외, PK dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_RELATION_ACTIVITY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_RM_RELATNSP_LETTER_INFO, source bronze_crm.TM_RM_RELATNSP_GFTMNEY_INFO
+-- Issue      : O191-F, O213-F
+-- =============================================================================
 -- CRM_RELATION_ACTIVITY: 결연활동 = 서신 ∪ 선물금 (EHGT 제외, PK dedup), 정본 09 STEP3.
 SELECT 'LETTER_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),'') AS ACTIVITY_KEY,
   '서신'                           AS ACTIVITY_TYPE,

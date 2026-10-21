@@ -1,19 +1,25 @@
+-- =============================================================================
+-- Purpose    : 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
+-- Target     : GOLD.DIM_SPONSORSHIP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O89, O25, O37, O202 외 2
+-- =============================================================================
 -- DIM_SPONSORSHIP: 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
--- Co-authored with CoCo
 -- [2026-08-19 O89] 분류 3계층 라벨 배선 — DIV_CD/DIV_NAME(CM035) + GROUP_NAME(CM003).
 --   현업 요구 = "후원사업 상위/하위 분류를 각각 라벨로". 실측으로 대상 컬럼이 교정됐다:
---   🔴 현업이 지목한 `SPNSR_BSNS_NO` 는 분류가 아니라 **회원별 후원약정 일련번호**다
+--   WARN: 현업이 지목한 `SPNSR_BSNS_NO` 는 분류가 아니라 **회원별 후원약정 일련번호**다
 --      (distinct 2,170,574 vs ID 29 · 99.999% 가 단일 회원 전속 · 동일 ID 아래 복수 NO).
 --      라벨 원천이 없어 배선 불가다. 하위 실체는 결연 아동(469,402)이고 라벨 가능 축은
 --      사업장(220)·국가(34)지만 **해외아동결연 한정 + 회원 다중결연**이라 이 50행 차원에
 --      들어갈 수 없다(O8 과 동일 fan-out) → 별건 설계 대기.
---   ✅ 실재하는 3계층 = DIV_NAME(정기/일시) → GROUP_NAME(약칭 6종) → SPONSORSHIP_NAME(사업명).
+--    실재하는 3계층 = DIV_NAME(정기/일시) → GROUP_NAME(약칭 6종) → SPONSORSHIP_NAME(사업명).
 --      `SPONSORSHIP_ABBR` 은 기존 컬럼이고 라벨만 없었다(O25/G3/O37 동일 패턴).
---   🟡 SPB-G 근거 확보 · 라이브 대조 대기 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
---      🔴 「종결」이라고 적었던 것은 오판정이라 격하했다(라이브 0행이라 대조 불가 · R2-8-4-c · 계정 NX55103).
---   🔴 `SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다 — "ID=DIM 키(마스터 50)·NO=관계번호·크로스워크"
+--   NOTE: SPB-G 근거 확보 · 라이브 대조 대기 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
+--      WARN: 「종결」이라고 적었던 것은 오판정이라 격하했다(라이브 0행이라 대조 불가 · R2-8-4-c · 계정 NX55103).
+--   WARN: `SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다 — "ID=DIM 키(마스터 50)·NO=관계번호·크로스워크"
 --      (크로스워크 = SILVER.CRM_SPONSOR_RELATION). 위 기술은 Q15 와 일치하며 신규 발견이 아니다.
---   ⚠️ 코드 조인은 USE_YN 무필터다(O37 선례). 원천 코드 부재 시 NULL 이며 '(미매핑)' 창작 금지(P21).
+--   WARN: 코드 조인은 USE_YN 무필터다(O37 선례). 원천 코드 부재 시 NULL 이며 '(미매핑)' 창작 금지(P21).
 {{ config(
     materialized='incremental',
     unique_key='SPONSORSHIP_SK',
@@ -51,7 +57,7 @@ select
     s.SPNSR_DIV_CD                                as SPONSORSHIP_DIV_CD,
     cd_div.DTL_CD_NM                              as SPONSORSHIP_DIV_NAME,
     cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME,
-    -- 🆕 [2026-09-30 O190] F-2 4그룹 접기(사용자 결정 §4 #2) — 라벨 기준(코드 하드코딩 금지 P31) · 규칙 밖 라벨 NULL.
+    --  [2026-09-30 O190] F-2 4그룹 접기(사용자 결정 §4 #2) — 라벨 기준(코드 하드코딩 금지 P31) · 규칙 밖 라벨 NULL.
     CASE cd_grp.DTL_CD_NM
         WHEN '국내'     THEN '국내'
         WHEN '결연'     THEN '결연'
@@ -60,14 +66,14 @@ select
         WHEN '북한'     THEN '기타'
         WHEN '기타'     THEN '기타'
     END                                           as SPONSORSHIP_GROUP4_NAME,
-    -- 🆕 [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SPONSORSHIP 승계(후원사업 grain).
+    --  [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SPONSORSHIP 승계(후원사업 grain).
     s.SORT_ORDR                                   as SORT_ORDR,
     s.USE_YN                                      as USE_YN,
-    -- 🆕 [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업의 법인구분(CM019).
+    --  [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업의 법인구분(CM019).
     --   MSTR `USP_D_SPNSR_BSNS_INFO` 와 같은 원천(TM_CM_SPNSR_BSNS_INFO.CPR_DIV_CD)이다.
     --   CM019 같은 레벨 = A 통합 · I 사단 · S 사복(실측 2026-10-06 · 후원사업 50 = I 42 · S 8 · A 0).
-    --   🔴 MSTR 은 원천 '1'/'2' 를 I/S 로 바꾸는 방어식을 두지만 원천 실측값은 이미 I/S 다 ⇒ 변환하지 않는다.
-    --   🔴 캠페인 법인(`DIM_CAMPAIGN.CPR_DIV_*` · FME `CPR_DIV_*_AT_EVENT`)과 **다른 축**이다.
+    --   WARN: MSTR 은 원천 '1'/'2' 를 I/S 로 바꾸는 방어식을 두지만 원천 실측값은 이미 I/S 다 ⇒ 변환하지 않는다.
+    --   WARN: 캠페인 법인(`DIM_CAMPAIGN.CPR_DIV_*` · FME `CPR_DIV_*_AT_EVENT`)과 **다른 축**이다.
     s.CPR_DIV_CD                                  as CPR_DIV_CD,
     cd_cpr.DTL_CD_NM                              as CPR_DIV_NM
 from s

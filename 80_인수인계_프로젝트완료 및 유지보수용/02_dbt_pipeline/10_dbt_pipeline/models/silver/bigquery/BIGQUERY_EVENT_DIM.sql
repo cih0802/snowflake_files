@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 이벤트 정의 브리지 (event_params 승격: category/label/action), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_EVENT_DIM (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : -
+-- =============================================================================
 -- BIGQUERY_EVENT_DIM: 이벤트 정의 브리지 (event_params 승격: category/label/action), 정본 09 STEP6.
 -- WARN: grain = (EVENT_NAME × EVENT_CATEGORY × EVENT_LABEL × EVENT_ACTION). EVENT_NAME 은 다중행 정상(유일 아님).
 --    GOLD DIM_BIGQUERY_EVENT 가 여기서 distinct (category,label,action) 를 추출해 분류차원 SK 생성 → 조합 커버리지 필수.

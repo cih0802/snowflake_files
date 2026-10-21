@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 방송광고(VIDEO ∪ REBRDC) 고유속성 → GOLD FACT_AD_BROADCAST
+-- Target     : SILVER.AGENCY_AD_BROADCAST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_ROW_VIDEO, ref AGENCY_AD_ROW_REBRDC
+-- Issue      : DEC-8, DEC-9, O16, O182 외 6
+-- =============================================================================
 -- AGENCY_AD_BROADCAST: 방송광고(VIDEO ∪ REBRDC) 고유속성 → GOLD FACT_AD_BROADCAST
 -- 설계: DEC-8(위성 분리) · DEC-9(_SRC 보존) · 설계 §3-A-2
 -- WARN: AD_PERF_DK 는 staging 이 발급한 값을 **그대로 승계**(재계산 금지) → 코어 FAD 와 1:1 보장.

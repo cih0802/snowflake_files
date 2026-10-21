@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : 회원실 연간 회비 예측·실측 소비뷰 (O200-A 신설)
+-- Target     : GOLD.WIDE_MBRFEE_PRDT_ACTL (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.ANNUAL_MBRFEE_PRDT_ACTL_DATA
+-- Issue      : O200-A
+-- =============================================================================
 -- WIDE_MBRFEE_PRDT_ACTL: 회원실 연간 회비 예측·실측 소비뷰 (O200-A 신설)
--- Co-authored with CoCo
 -- 원천 = SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA(외부 적재 · 부서 자체 수식 · ML 산출물 아님).
 -- 변환 = STDR_MT(TEXT) → MONTH_KEY·CAL_YEAR·CAL_MONTH 숫자 파생 · DATA_TYPE_NM → IS_FORECAST 플래그.
 --   measure 23종은 이름·값 무변경(행 grain 유지 — 예측/실측을 열로 펼치면 46열이 되어 SV 가독성이 떨어진다).
 -- grain = MONTH_KEY × DATA_TYPE_NM × SPNSR_BSNS_GRP_NM × NEW_EXST_DIV_NM × HDQ_BRNCH_GRP_NM.
--- 🔴 예측행과 실측행을 같은 합계에 섞지 말 것 — 반드시 DATA_TYPE_NM(또는 IS_FORECAST)으로 스코프한다.
+-- WARN: 예측행과 실측행을 같은 합계에 섞지 말 것 — 반드시 DATA_TYPE_NM(또는 IS_FORECAST)으로 스코프한다.
 {{ config(
     materialized='gn_view_commented'
 ) }}

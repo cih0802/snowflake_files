@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-11 O59-H] `FACT_EVENT_ATTENDANCE.MEMBER_DK`(구 FACT_EVENT_PARTICIPATION) 의 **비수치 회원키**를 관측한다.
+-- Target     : dbt singular test warn_fep_nonnumeric_member_dk (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_EVENT_ATTENDANCE, ref DIM_MEMBER
+-- Issue      : O59-H, O28, O59-I, DEC-17-B 외 2
+-- =============================================================================
 -- [2026-08-11 O59-H] `FACT_EVENT_ATTENDANCE.MEMBER_DK`(구 FACT_EVENT_PARTICIPATION) 의 **비수치 회원키**를 관측한다.
 --
 -- WARN: 왜 필요한가 (실측 경위 — 이 테스트의 1판이 훨씬 큰 것을 잡았다)

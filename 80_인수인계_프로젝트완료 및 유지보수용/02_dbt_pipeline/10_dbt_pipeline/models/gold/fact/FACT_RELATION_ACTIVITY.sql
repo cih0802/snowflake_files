@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연활동 팩트 (ACTIVITY_KEY grain = 1행/서신·선물금 활동) — CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION
+-- Target     : GOLD.FACT_RELATION_ACTIVITY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SPONSOR_RELATION, ref CRM_RELATION_ACTIVITY, ref CRM_CODE
+-- Issue      : O196-D, DEC-58, O191-G, O213-F
+-- =============================================================================
 -- FACT_RELATION_ACTIVITY: 결연활동 팩트 (ACTIVITY_KEY grain = 1행/서신·선물금 활동) — CRM_RELATION_ACTIVITY × CRM_SPONSOR_RELATION
 --  [2026-10-01 O196-D · DEC-58 #2] 신설 — O191-G 보류분 결연활동 12 의 GOLD 반영.
 --    회원 = 결연키 → CRM_SPONSOR_RELATION(결연키당 회원 1명 실측) · 매칭 실패 315행은 MEMBER_DK NULL(고아 결연 · 행은 보존).

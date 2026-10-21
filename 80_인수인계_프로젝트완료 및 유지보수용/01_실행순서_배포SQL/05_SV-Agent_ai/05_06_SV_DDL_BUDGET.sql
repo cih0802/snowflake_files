@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_6_SV_DDL_BUDGET.sql — Semantic View DDL 정본: SV_BUDGET
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET
+-- Run order  : 운영계 #23
+-- Depends on : GN_DW.GOLD.FACT_BUDGET, GN_DW.GOLD.DIM_MONTH, GN_DW.GOLD.DIM_BUDGET_ITEM, GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
+-- Issue      : -
+-- =============================================================================
 -- ============================================================================
 -- 05_6_SV_DDL_BUDGET.sql — Semantic View DDL 정본: SV_BUDGET
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

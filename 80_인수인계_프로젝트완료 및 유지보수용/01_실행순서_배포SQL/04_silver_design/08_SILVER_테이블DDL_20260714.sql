@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW.SILVER 테이블 DDL — 구조 정본(타입 · PK · COMMENT)
+-- Target     : SCHEMA GN_DW.SILVER, TABLE GN_DW.SILVER.CRM_MEMBER, TABLE GN_DW.SILVER.CRM_MEMBER_STATUS_HIST, TABLE GN_DW.SILVER.CRM_MEMBER_DEV 외 60
+-- Run order  : 운영계 #4
+-- Depends on : -
+-- Issue      : O225-C, DR-25, O188-F, O213-F 외 3
+-- =============================================================================
 -- ============================================================================
 -- GN_DW.SILVER 테이블 DDL — 구조 정본(타입 · PK · COMMENT)
 --   · dbt SILVER 모델과 1:1(구조 = 이 파일 · 데이터 = dbt). 적재 쿼리 = 09_SILVER_적재쿼리.

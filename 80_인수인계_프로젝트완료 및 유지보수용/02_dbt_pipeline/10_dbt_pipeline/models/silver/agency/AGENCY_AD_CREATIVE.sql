@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고소재 차원 = 3소스 매체/소재 DISTINCT (MD5 복합키), 정본 09 STEP5.
+-- Target     : SILVER.AGENCY_AD_CREATIVE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_agency.DGT_AD_CMPGN_DTLS, source bronze_agency.REBRDC_AD_CMPGN_DTLS, source bronze_agency.VIDEO_AD_CMPGN_DTLS
+-- Issue      : O182
+-- =============================================================================
 -- AGENCY_AD_CREATIVE: 광고소재 차원 = 3소스 매체/소재 DISTINCT (MD5 복합키), 정본 09 STEP5.
 SELECT DISTINCT
   MD5(SOURCE_SYSTEM||'|'||COALESCE(MEDIA_CHANNEL_NM,'')||'|'||COALESCE(CREATIVE_NM,'')||'|'||

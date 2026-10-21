@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 알림톡 템플릿 버튼 (BRONZE TD_MS_AT_TMPLAT_BTN_LIST → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_MSG_TEMPLATE_BUTTON (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TD_MS_AT_TMPLAT_BTN_LIST
+-- Issue      : O188-F
+-- =============================================================================
 -- CRM_MSG_TEMPLATE_BUTTON: 알림톡 템플릿 버튼 (BRONZE TD_MS_AT_TMPLAT_BTN_LIST → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
 -- grain = TMPLAT_ID, BTN_SEQ ( 이전 계정 유일 실측)
 SELECT

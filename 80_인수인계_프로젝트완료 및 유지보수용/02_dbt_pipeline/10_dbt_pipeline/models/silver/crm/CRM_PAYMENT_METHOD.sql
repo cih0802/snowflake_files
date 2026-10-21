@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결제수단(현재상태, SETLE_KEY dedup) + 수단명(PM040) 라벨, 정본 09 STEP3.
+-- Target     : SILVER.CRM_PAYMENT_METHOD (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_PM_SETLE_INFO
+-- Issue      : O191-E, O179
+-- =============================================================================
 -- CRM_PAYMENT_METHOD: 결제수단(현재상태, SETLE_KEY dedup) + 수단명(PM040) 라벨, 정본 09 STEP3.
 SELECT
   s.SETLE_KEY                      AS SETLE_KEY,

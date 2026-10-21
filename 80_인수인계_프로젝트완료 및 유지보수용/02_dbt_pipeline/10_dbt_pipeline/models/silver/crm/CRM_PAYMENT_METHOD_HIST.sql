@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결제수단 변경 이력 (BRONZE TH_PM_SETLE_INFO_HIST → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_PAYMENT_METHOD_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TH_PM_SETLE_INFO_HIST
+-- Issue      : O188-F, O179
+-- =============================================================================
 -- CRM_PAYMENT_METHOD_HIST: 결제수단 변경 이력 (BRONZE TH_PM_SETLE_INFO_HIST → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
 -- grain = SETLE_KEY, UPDT_DT ( 이전 계정 유일 실측)
 -- WARN: 민감 컬럼 제외(개인·결제 식별정보 · 분석 가치 없음 · 노출 위험): CARD_TRMVT, PAYER_NM, ETC_CTTPC, CRTFC_FILE_NM, CRTFC_DATA_CTNT, BILLKEY, APPLCNT_NM, APPLCNT_ETC_CTTPC, UPDUSR_NM, RGSTR_NM

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송 템플릿 마스터 = 알림톡 ∪ 이메일 (BRONZE → SILVER) · O188-F 2차-A 신설
+-- Target     : SILVER.CRM_MSG_TEMPLATE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MS_AT_TMPLAT_MNG, source bronze_crm.TM_MS_EMAIL_TMPLAT_MNG
+-- Issue      : O188-F
+-- =============================================================================
 -- CRM_MSG_TEMPLATE: 발송 템플릿 마스터 = 알림톡 ∪ 이메일 (BRONZE → SILVER) · O188-F 2차-A 신설
 -- grain = SEND_CHANNEL × TEMPLATE_KEY ( 이전 계정 알림톡 TMPLAT_ID 6,562 · 이메일 TMPLAT_KEY 449 유일)
 --  이메일 템플릿 마스터는 SNAPSHOT(SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG)으로만 흘렀다 ⇒ SILVER·GOLD 에 처음 올린다.

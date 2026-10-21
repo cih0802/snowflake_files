@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_5_SV_DDL_EVENT_PARTICIPATION.sql — Semantic View DDL 정본: SV_EVENT_PARTICIPATION
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
+-- Run order  : 운영계 #22
+-- Depends on : GN_DW.GOLD.FACT_EVENT_ATTENDANCE, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_EVENT, GN_DW.GOLD.DIM_MEMBER
+-- Issue      : -
+-- =============================================================================
 -- ============================================================================
 -- 05_5_SV_DDL_EVENT_PARTICIPATION.sql — Semantic View DDL 정본: SV_EVENT_PARTICIPATION
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

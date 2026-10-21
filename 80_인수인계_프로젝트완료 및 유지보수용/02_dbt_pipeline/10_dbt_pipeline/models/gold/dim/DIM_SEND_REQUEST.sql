@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송 요청 차원 (SNDNG_KEY grain = 1행/발송요청) — CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)
+-- Target     : GOLD.DIM_SEND_REQUEST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SEND_REQUEST, ref CRM_SEND_RESULT, ref CRM_CODE
+-- Issue      : O196-D, DEC-58, O191-G, DEC-58-D 외 4
+-- =============================================================================
 -- DIM_SEND_REQUEST: 발송 요청 차원 (SNDNG_KEY grain = 1행/발송요청) — CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)
 --  [2026-10-01 O196-D · DEC-58 #1] 신설 — O191-G 보류분 발송요청 16 · 발송결과 7 의 GOLD 반영.
 --    실측 = SNDNG_KEY 전역 유일(1,722,090) · 결과는 요청과 1:1(채널+키 유일 · 고아 21행은 차원에 들어오지 않는다).

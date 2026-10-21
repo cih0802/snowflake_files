@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-05 O38] FACT_TARGET_MEMBER_DEV.MONTH_KEY 는 YYYYMM 6자리여야 한다.
+-- Target     : dbt singular test assert_ftg_dev_month_key_yyyymm (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_MEMBER_DEV
+-- Issue      : O38, O178
+-- =============================================================================
 -- [2026-08-05 O38] FACT_TARGET_MEMBER_DEV.MONTH_KEY 는 YYYYMM 6자리여야 한다.
 --
 -- 왜 이 테스트가 필요한가: 종전 모델이 `TRY_TO_NUMBER(STDR_MT)` 로 월 번호(1~12)만 적재했고

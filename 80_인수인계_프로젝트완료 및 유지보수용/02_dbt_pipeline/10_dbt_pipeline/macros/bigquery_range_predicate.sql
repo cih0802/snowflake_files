@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA4 적재 범위 술어의 단일 정의 지점 (2026-08-19 O88 신설)
+-- Target     : macro bigquery_load_window, bigquery_range_predicate, bigquery_range_predicate_text, bigquery_range_predicate_sk
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : -
+-- Issue      : O88, O187, O187-C
+-- =============================================================================
 -- bigquery_range_predicate: GA4 적재 범위 술어의 단일 정의 지점 (2026-08-19 O88 신설)
 {#
   왜 이 매크로가 필요한가 — 두 가지 결함을 동시에 닫는다.

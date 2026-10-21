@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 후원사업 마스터 정제 (BRONZE TM_CM_SPNSR_BSNS_INFO → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SPONSORSHIP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_CM_SPNSR_BSNS_INFO
+-- Issue      : O191-E
+-- =============================================================================
 -- CRM_SPONSORSHIP: 후원사업 마스터 정제 (BRONZE TM_CM_SPNSR_BSNS_INFO → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(SPNSR_BSNS_ID),'')      AS SPNSR_BSNS_ID,

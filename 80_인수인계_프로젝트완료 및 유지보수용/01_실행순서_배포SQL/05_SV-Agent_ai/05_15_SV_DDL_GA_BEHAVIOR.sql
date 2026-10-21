@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_BEHAVIOR ( O203 · T8 1차 배선)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_BEHAVIOR
+-- Run order  : 운영계 #32
+-- Depends on : GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR, GN_DW.SILVER.BIGQUERY_REFINED_DATA, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_BIGQUERY_EVENT, GN_DW.GOLD.DIM_BIGQUERY_SOURCE, GN_DW.GOLD.DIM_DEVICE
+-- Issue      : O203, O243
+-- =============================================================================
 -- ============================================================================
 -- 05_15_SV_DDL_GA_BEHAVIOR.sql — Semantic View DDL 정본: SV_GA_BEHAVIOR ( O203 · T8 1차 배선)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

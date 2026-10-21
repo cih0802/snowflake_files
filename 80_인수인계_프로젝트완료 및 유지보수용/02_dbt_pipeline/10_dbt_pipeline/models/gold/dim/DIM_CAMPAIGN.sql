@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 캠페인 차원 (CRM_CAMPAIGN 기반, 분류 4축 라벨)
+-- Target     : GOLD.DIM_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CAMPAIGN, ref DIM_MARKETING_CAMPAIGN
+-- Issue      : O10, O16, O37, O25 외 8
+-- =============================================================================
 -- DIM_CAMPAIGN: 캠페인 차원 (CRM_CAMPAIGN 기반, 분류 4축 라벨)
 -- WARN: ORG_SK(주관조직 O10 미확정)=0 센티넬.
 -- [2026-07-16 BRONZE 재입고 반영] 캠페인 분류가 원천에서 채워짐 → 3건 교정 + 2컬럼 신설:

@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : GOLD 공통 매크로: 해시 대리키·감사메타·날짜키 (dbt_utils 대체, trial EAI 불가 대응)
+-- Target     : macro gold_sk, gold_meta, date_sk, month_key 외 2
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : -
+-- Issue      : DEC-19
+-- =============================================================================
 -- GOLD 공통 매크로: 해시 대리키·감사메타·날짜키 (dbt_utils 대체, trial EAI 불가 대응)
--- Co-authored with CoCo
 
 -- 해시 대리키(_SK): 비즈니스키 컬럼들로 결정적 SK 생성.
 --   유지보수·인수인계 유리 — 무상태(시퀀스 객체 불필요)·재현성·병렬안전·재빌드 시 값 불변.
@@ -47,9 +53,9 @@
 {%- endmacro %}
 
 -- MONTH_KEY 오프셋: YYYYMM 을 n 개월 이동. as-of 재평가용(DEC-19 「동일 함수에 ADD_MONTHS 적용」).
---   🔴 Unknown 월(0)·무효 월키는 NULL 을 돌려준다 — 0 을 '000001' 로 읽어 유령 월키를 만들지 않기 위함이다
+--   WARN: Unknown 월(0)·무효 월키는 NULL 을 돌려준다 — 0 을 '000001' 로 읽어 유령 월키를 만들지 않기 위함이다
 --      (month_key_clamp 와 동일 철학). 호출측은 NULL 이면 그 축 판정을 건너뛴다.
---   ⚠️ LAG 로 전월을 구하지 않는 이유: FMM 스파인은 sparse 해서(결측월 존재) 직전 「존재하는」 행이
+--   WARN: LAG 로 전월을 구하지 않는 이유: FMM 스파인은 sparse 해서(결측월 존재) 직전 「존재하는」 행이
 --      전월이 아닐 수 있다. 달력상 전월을 직접 계산해야 as-of 정의가 유지된다.
 {% macro month_key_offset(mk_num, n) -%}
     CASE WHEN MOD({{ mk_num }}, 100) BETWEEN 1 AND 12 AND {{ mk_num }} >= 100001

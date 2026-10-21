@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 25_ML_REALTIME_SIMULATOR_DDL.sql — 실시간 경량 ML 시뮬레이터 DDL 정본
+-- Target     : PROCEDURE GN_DW.ML.SP_SIMULATE_CAMPAIGN_DVLP, VIEW GN_DW.SERVING.ML_REALTIME_SIMULATOR_V, SEMANTIC VIEW GN_DW.SERVING.SV_ML_REALTIME_SIMULATOR
+-- Run order  : 운영계 #49
+-- Depends on : GN_DW.GOLD.WIDE_AD_COMBINED, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
+-- Issue      : O220, O229
+-- =============================================================================
 -- ============================================================================
 -- 25_ML_REALTIME_SIMULATOR_DDL.sql — 실시간 경량 ML 시뮬레이터 DDL 정본
 --   · 구성 = USE → SP DDL → SERVING VIEW DDL → SEMANTIC VIEW DDL → GRANT → 스모크

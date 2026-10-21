@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 날짜 차원 (순서9: GA4 의존 제거 → 고정 연속 캘린더 cal_start~cal_end + DATE_SK=0 Unknown)
+-- Target     : GOLD.DIM_DATE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_HOLIDAY
+-- Issue      : O188, DR-25, O178
+-- =============================================================================
 -- DIM_DATE: 날짜 차원 (순서9: GA4 의존 제거 → 고정 연속 캘린더 cal_start~cal_end + DATE_SK=0 Unknown)
 {{ config(
     materialized='incremental',

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 행사 마스터 = 일반행사(EVENT) ∪ 캠페인행사(CRMN), 정본 09 STEP3.
+-- Target     : SILVER.CRM_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_MS_EVENT, source bronze_crm.TM_MS_CRMN
+-- Issue      : O59-N, DEC-35, DEC-17-B, O191-F 외 1
+-- =============================================================================
 -- CRM_EVENT: 행사 마스터 = 일반행사(EVENT) ∪ 캠페인행사(CRMN), 정본 09 STEP3.
 -- [2026-08-11 O59-N · DEC-35 1단계] 행사구분 코드→라벨. 정본 = 문서30 §23-J · 매핑 = 문서31 §4.
 --   WARN: 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자 EVENT_SOURCE 로 갈라 각자의 코드군에 조인한다.

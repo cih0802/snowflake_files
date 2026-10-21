@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 회원개발 목표 정제 (BRONZE TM_CM_MBER_DVLP_GOAL → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_DEV_TARGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_CM_MBER_DVLP_GOAL
+-- Issue      : O145
+-- =============================================================================
 -- CRM_DEV_TARGET: 회원개발 목표 정제 (BRONZE TM_CM_MBER_DVLP_GOAL → SILVER), 정본 09 STEP3.
--- Co-authored with CoCo
 -- [O145-8] 소급 마이그레이션 규칙: 기존 TM_CM_MBER_DVLP_GOAL 2.5만행에 TARGET_TYPE='ORIGINAL'(당초) 부여
 SELECT
   NULLIF(TRIM(STDYY),'')            AS STDYY,

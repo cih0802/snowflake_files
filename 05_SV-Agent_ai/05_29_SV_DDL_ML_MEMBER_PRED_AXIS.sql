@@ -1,11 +1,17 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_ML_MEMBER_PRED_AXIS (🆕 O250 · O250-E 단독 파일로 이관)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_AXIS
+-- Run order  : 운영계 #51
+-- Depends on : -
+-- Issue      : O250, O250-E
+-- =============================================================================
 -- ============================================================================
--- 05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql — Semantic View DDL 정본: SV_ML_MEMBER_PRED_AXIS (🆕 O250 · O250-E 단독 파일로 이관)
+-- 05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql — Semantic View DDL 정본: SV_ML_MEMBER_PRED_AXIS ( O250 · O250-E 단독 파일로 이관)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 대상 = ML 회원예측(중단·증액) + 미납 실적 × 7축 (3 Agent · analyst_ml_pred_axis)
---   · 선행 = GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V(21_ML_SERVING_뷰_DDL.sql [O250] 절) ⇒ 🔴 21_ 다음에 실행
+--   · 선행 = GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V(21_ML_SERVING_뷰_DDL.sql [O250] 절) ⇒ WARN: 21_ 다음에 실행
 --   · 원 배포 파일 = 36_DEPLOY_ML_PRED_7AXIS.sql(이력 보존 · 문면 무변경 이관)
 --   · 공통 규약 = 05_0_SV_DDL.sql
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

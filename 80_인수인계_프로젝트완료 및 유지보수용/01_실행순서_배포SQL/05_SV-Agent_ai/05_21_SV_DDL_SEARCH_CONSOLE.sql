@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_SEARCH_CONSOLE ( O213-F Y3-F)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_SEARCH_CONSOLE
+-- Run order  : 운영계 #38
+-- Depends on : GN_DW.GOLD.FACT_SEARCH_CONSOLE, GN_DW.GOLD.DIM_DATE, GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA
+-- Issue      : O213-F
+-- =============================================================================
 -- ============================================================================
 -- 05_21_SV_DDL_SEARCH_CONSOLE.sql — Semantic View DDL 정본: SV_SEARCH_CONSOLE ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

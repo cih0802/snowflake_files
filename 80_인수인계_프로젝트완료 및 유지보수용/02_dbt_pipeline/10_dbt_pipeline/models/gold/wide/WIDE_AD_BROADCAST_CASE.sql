@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 재방송 사례 위성 팩트(FAD_BC) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
+-- Target     : GOLD.WIDE_AD_BROADCAST_CASE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_BROADCAST_CASE, ref FACT_AD_PERFORMANCE, ref FACT_AD_BROADCAST, ref DIM_DATE, ref DIM_CAMPAIGN
+-- Issue      : DEC-8, O14, O51-C
+-- =============================================================================
 -- WIDE_AD_BROADCAST_CASE: 재방송 사례 위성 팩트(FAD_BC) 평탄화 소비뷰 — 순서9-I 신설(DEC-8)
 -- grain = AD_PERF_DK × CASE_SEQ (FAD_BC 와 1:1, 코어에는 **1:N**). 실측 5,327행.
 --

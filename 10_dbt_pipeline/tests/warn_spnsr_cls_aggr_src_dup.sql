@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 외부 수기 업로드 SILVER.MM_SPNSR_CLS_AGGR_DATA 의 grain 중복 감시(1행 = 중복된 키 1개).
+-- Target     : dbt singular test warn_spnsr_cls_aggr_src_dup (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source silver_external.MM_SPNSR_CLS_AGGR_DATA
+-- Issue      : -
+-- =============================================================================
 -- 외부 수기 업로드 SILVER.MM_SPNSR_CLS_AGGR_DATA 의 grain 중복 감시(1행 = 중복된 키 1개).
--- Co-authored with CoCo
 -- [2026-10-16 사용자 결정] WIDE_SPNSR_CLS_AGGR 는 큰 값 1건을 남겨 grain 을 지킨다 — 이 테스트는 원천 정리 신호다.
 --   실패 행은 OPS 에 고정되고(store_failures) 담당자 메일 알림이 이 테이블을 읽는다.
 {{ config(severity = 'warn', store_failures = true, schema = 'OPS') }}

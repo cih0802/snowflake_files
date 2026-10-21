@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 조직 차원 SCD1 (DEPT_ID grain, 안정 SK) — CRM_ORG
+-- Target     : GOLD.DIM_ORG (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_ORG
+-- Issue      : DEC-2, DEC-5, O16, O188-E 외 2
+-- =============================================================================
 -- DIM_ORG: 조직 차원 SCD1 (DEPT_ID grain, 안정 SK) — CRM_ORG
 -- WARN: SK=hash(DEPT_ID) 안정키(재실행 멱등). DEC-2 SCD1 확정 — 조직 변경이력 소스 없음·as-was org 지표 요구 없음(4개 정의서 검토) → SCD2 예약컬럼(EFFECTIVE_*/IS_CURRENT) 삭제(2026-07-07).
 --    향후 조직 이력추적 필요 시 별도 변경이력 소스 확보 후 재설계.

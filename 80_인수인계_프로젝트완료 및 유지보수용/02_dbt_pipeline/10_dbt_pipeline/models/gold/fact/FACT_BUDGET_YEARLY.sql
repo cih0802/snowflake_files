@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 연 예산 팩트 (SILVER.ERP_BUDGET_YEARLY → YEAR × BUDGET_ITEM), O93 신설.
+-- Target     : GOLD.FACT_BUDGET_YEARLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET_YEARLY
+-- Issue      : O93, O115, DEC-44, O240 외 1
+-- =============================================================================
 -- FACT_BUDGET_YEARLY: 연 예산 팩트 (SILVER.ERP_BUDGET_YEARLY → YEAR × BUDGET_ITEM), O93 신설.
 --
 -- WARN: 존재 이유 = grain 분리. `FACT_BUDGET` 은 월 grain 이라 연 총액을 담으면 12개월에 복제되어

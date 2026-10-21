@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [GN_DW] OPS 알림 수신자 관리 표준 및 파이프라인 에러 이메일 알림 연동
+-- Target     : NOTIFICATION INTEGRATION EMAIL_ALERT_INTEGRATION, TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG, PROCEDURE GN_DW.OPS.USP_SYNC_ALERT_RECIPIENTS, PROCEDURE GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT 외 1
+-- Run order  : 운영계 #2
+-- Depends on : GN_DW.INFORMATION_SCHEMA.COLUMNS
+-- Issue      : O210, A8-08
+-- =============================================================================
 -- ==============================================================================
 -- [GN_DW] OPS 알림 수신자 관리 표준 및 파이프라인 에러 이메일 알림 연동
 -- 문서번호: 08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql

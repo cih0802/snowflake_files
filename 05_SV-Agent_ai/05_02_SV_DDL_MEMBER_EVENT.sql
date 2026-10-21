@@ -1,7 +1,14 @@
+-- =============================================================================
+-- Purpose    : 05_2_SV_DDL_MEMBER_EVENT.sql — Semantic View DDL 정본: SV_MEMBER_EVENT
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
+-- Run order  : 운영계 #19 · 기존 환경 갱신 #15
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_EVENT, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MEMBER, GN_DW.GOLD.DIM_CAMPAIGN, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.GOLD.DIM_MEMBER_ACQUISITION 외 2
+-- Issue      : DEC-63-E
+-- =============================================================================
 -- ============================================================================
 -- 05_2_SV_DDL_MEMBER_EVENT.sql — Semantic View DDL 정본: SV_MEMBER_EVENT
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -37,7 +44,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
       PRIMARY KEY (ORG_SK)
       WITH SYNONYMS ('조직', '부서', '실적부서')
       COMMENT = '조직 차원(SCD1, 부서 grain). PK 유일이라 조인이 행수를 늘리지 않는다. 🔴개발(DEV)행에만 배선된다 — 중단(STOP)행은 원천이 등록부서만 보유해 역할이 달라 전건 ''(미매핑)''(SK=0)이다(결정 대기). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM: TM_CM_DEPT_INFO · SILVER=CRM_ORG.',
-    -- 🆕 [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(개발 DEV 행 전용)
+    --  [2026-10-21 DEC-63-E] 폐지·개편 부서 → 현재 부서 귀속(개발 DEV 행 전용)
     org_succ AS GN_DW.GOLD.DIM_ORG_SUCCESSION
       PRIMARY KEY (OLD_ORG_SK)
       WITH SYNONYMS ('부서 귀속', '현재 부서 귀속')
@@ -83,7 +90,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_EVENT
     org.ORG_PATH AS org.ORG_PATH
       WITH SYNONYMS ('조직 경로', '부서 경로', '공116')
       COMMENT = '조직도 부서 경로(조직 계통 UPPER_DEPT_ID · 루트 제외). 🔴 **실적 계통이 아니다** — 실적 본부/지부는 ORG_DIV_GROUP·ORG_DIV 를 쓴다(두 계통은 다르다). 현재 조직이 아니면 NULL 일 수 있다.',
-    -- 🆕 [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축(개발 DEV 사건 전용)
+    --  [2026-10-21 DEC-63-E] 현재 조직 기준 부서 축(개발 DEV 사건 전용)
     org_succ.CUR_DEPARTMENT AS org_succ.CUR_DEPARTMENT
       WITH SYNONYMS ('현재 부서', '현재 부서-팀', '귀속 부서', '현재 조직 기준 부서')
       COMMENT = '개발 실적부서를 **현재 활성 부서-팀**으로 귀속한 부서명(폐지·개편 부서 실적이 현재 부서에 합쳐진다 · DEC-63-E · 현업 확인 대기). 🔴 개발(DEV) 사건 전용 — 중단(STOP) 행은 원천 부서가 없어 NULL 이다(부서별 중단은 SV_MEMBER_SPONSOR_BIZ.CUR_DEPARTMENT). 개발 행의 NULL = 귀속 대상 없는 폐지 부서((미매핑 폐지부서)로 표시). 🔴 「부서별 개발 실적」 기본 축 · 「당시 부서」를 명시하면 ORG_DEPARTMENT.',

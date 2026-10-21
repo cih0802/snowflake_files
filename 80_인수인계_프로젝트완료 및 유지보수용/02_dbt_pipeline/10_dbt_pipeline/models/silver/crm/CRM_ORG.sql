@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 부서(조직) 마스터 정제 (BRONZE TM_CM_DEPT_INFO → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_ORG (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_CM_DEPT_INFO
+-- Issue      : O188-E
+-- =============================================================================
 -- CRM_ORG: 부서(조직) 마스터 정제 (BRONZE TM_CM_DEPT_INFO → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(DEPT_ID),'')              AS DEPT_ID,

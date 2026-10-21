@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : EVENT_DT 범위 한정 멱등 purge (SILVER GA4 range 모델 전용 pre-hook)
+-- Target     : macro bigquery_range_purge
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 {#
   bigquery_range_purge — EVENT_DT 범위 한정 멱등 purge (SILVER GA4 range 모델 전용 pre-hook)
 

@@ -1,0 +1,37 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+== 축1 예외 유효 (오탐이 사라지는가)
+  🟢 ok    [rule7] 면제됨 — 신뢰구간 수준(95%)
+  🟢 ok    [unit ] 면제됨 — 신뢰구간 수준(95%)
+  🟢 ok    [rule7] 면제됨 — 신뢰구간 수준(99%)
+  🟢 ok    [unit ] 면제됨 — 신뢰구간 수준(99%)
+  🟢 ok    [rule7] 면제됨 — 표기 규약 0%
+  🟢 ok    [unit ] 면제됨 — 표기 규약 0%
+== 축2 무력화 아님 (예외가 규칙을 죽이지 않았는가)
+  🟢 ok    [rule7] 여전히 검출 — 실측 소수 백분율 ['89.34%']
+  🟢 ok    [rule7] 여전히 검출 — 실측 소수 백분율 ['20.83%']
+  🟢 ok    [rule7] 여전히 검출 — 실측 천단위 행수 ['2,170,572']
+  🟢 ok    [rule7] 여전히 검출 — 실측 건수(단위 뒤가 비단어) ['137건']
+  🟢 ok    [rule7] 여전히 검출 — 실측 천단위 + 한국어 서술어(천단위 축이 잡는다) ['31,486']
+  🟢 ok    [rule7] 여전히 검출 — 실측 소수 백분율(신뢰구간 아님) ['95.5%']
+  🟢 ok    [rule7] 여전히 검출 — 실측 정수 백분율(신뢰구간 아님) ['12%']
+== 축3 교차 일관성 (두 게이트가 같은 답을 내는가)
+  🟢 ok    판정 일치(False==False) — 신뢰구간 수준(95%)
+  🟢 ok    판정 일치(False==False) — 신뢰구간 수준(99%)
+  🟢 ok    판정 일치(False==False) — 표기 규약 0%
+   ⚠️ 정수 백분율의 검출 폭 차이는 설계다 — 이 축은 「면제 판정이 갈리지 않는가」만 본다.
+== 축4 공유 실증 (예외 목록을 복제하지 않았는가)
+  🟢 ok    sv_rule7_scan.NUM_EXEMPT is sv_unit_gate.NUM_EXEMPT (동일 객체)
+== 축5 라이브 축 (실제 SV DDL)
+   라이브 도달 위반 = 0건
+  🟢 ok    실제 SV DDL 의 라이브 도달 위반 0건
+== 축6 표면 분리 (문서 주석은 blocking 이 아니다)
+  🟢 ok    문서 주석의 실측치도 토큰으로는 검출된다(관측 축은 살아 있다)
+  🟢 ok    라이브 축 blocking 경로(sys.exit(1))가 실재한다
+  🟢 ok    blocking 조건이 tot_live 뿐이다(문서 주석은 막지 않는다)
+== 축7 알려진 사각지대 (🔴 완화하지 마라 — O119-B 가 영향 범위를 실측했다)
+  🟢 ok    알려진 사각지대 재현 — 조사가 붙은 소규모 건수는 미검출
+  🟢 ok    완화 불요 근거 — 천단위 축이 조사와 무관하게 잡는다
+
+단정 23건 · 실패 0건
+🟢 테스트 통과

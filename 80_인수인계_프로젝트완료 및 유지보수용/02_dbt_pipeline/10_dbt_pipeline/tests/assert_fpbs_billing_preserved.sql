@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-10-14 O225-C] FACT_PAYMENT_BILLING_STATUS 는 캠페인 축(CAMPAIGN_SK)을 grain 에 넣은 뒤에도
+-- Target     : dbt singular test assert_fpbs_billing_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_PAYMENT_BILLING, ref FACT_PAYMENT_BILLING_STATUS
+-- Issue      : O225-C
+-- =============================================================================
 -- [2026-10-14 O225-C] FACT_PAYMENT_BILLING_STATUS 는 캠페인 축(CAMPAIGN_SK)을 grain 에 넣은 뒤에도
 --   원천 청구 행·금액을 잃거나 복제하지 않아야 한다.
 --

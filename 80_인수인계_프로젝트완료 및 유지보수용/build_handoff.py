@@ -103,6 +103,48 @@ READ_ORDER = [
 ]
 
 
+# O256 빌드 훅 — 80 사본에만 적용하는 정제(원본은 개발 이력을 유지한다).
+#   .sql = clean80(서명·표식·계정 값 · 주석만 · 코드 동일 assert) · `mstr DDL 원본/` 제외
+#   .yml = `#` 주석의 계정 값만 · .md/.csv/.html/.txt = scrub254 규칙(비운영 계정 · init_ihcho)
+# 운영계(ZL50263) 값은 남긴다. 도구 정본 = 95_작업기록_인수인계정제/tools/.
+HOOK_TOOLS = ROOT / "95_작업기록_인수인계정제" / "tools"
+HEADER_KEY = re.compile(r"(?m)^-- (Purpose|Target|Run order|Depends on|Issue)\s*: ")
+
+
+def hook(rel80: str, data: bytes) -> bytes:
+    sys.path.insert(0, str(HOOK_TOOLS))
+    import clean80, clean80b, scrub254 as S
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data
+    low = rel80.lower()
+    if low.endswith(".sql"):
+        if any(k in rel80 for k in clean80.SKIP):
+            return data
+        new = clean80.clean(text)[0]
+        assert clean80.strip_comments(new) == clean80.strip_comments(text), rel80
+        # clean80 이 연속 공백을 접어 O256 표준 헤더의 키 정렬이 깨진다 ⇒ 헤더 7줄만 정렬을 복원한다.
+        head, sep, rest = new.partition("\n" + "-- " + "=" * 77 + "\n")
+        if head.startswith("-- " + "=" * 77) and sep:
+            head = HEADER_KEY.sub(lambda m: f"-- {m.group(1):<11}: ", head)
+            new = head + sep + rest
+    elif low.endswith((".yml", ".yaml")):
+        new = clean80b.clean_yml(text)
+        assert clean80b.strip_yml(new) == clean80b.strip_yml(text), rel80
+    elif low.endswith(S.TEXT):
+        new = S.scrub2(S.PRE.sub("", text))
+        for f, old, rep, _ in S.EXACT:
+            if f == f"{OUT.name}/{rel80}":
+                new = new.replace(old, rep)
+        new = "\n".join(l for l in new.split("\n") if not any(d.search(l) for d in S.DROP))
+        # EXACT 표가 만들어진 뒤 생긴 언급(예: O254 원장 행)도 80 에는 남기지 않는다.
+        new = S.IH.sub("세션 초기화 스킬", new)
+    else:
+        return data
+    return new.encode("utf-8")
+
+
 def excluded(rel: Path) -> bool:
     return any(fnmatch.fnmatch(p, pat) for p in rel.parts for pat in EXCLUDE)
 
@@ -188,15 +230,13 @@ def main():
         if args.apply:
             dst = OUT / r["서브폴더"] / r["파일경로"]
             dst.parent.mkdir(parents=True, exist_ok=True)
-            data = body if body is not None else r["_src"].read_bytes()
+            data = hook(f"{r['서브폴더']}/{r['파일경로']}", body if body is not None else r["_src"].read_bytes())
+            r["크기(byte)"] = len(data)
             if dst.exists():
                 if dst.stat().st_size == len(data) and dst.read_bytes() == data:
                     continue  # 동일 파일 — 재실행 시 재개(stage 마운트 쓰기가 느림)
                 print(f"  overwrite: {dst.relative_to(OUT)}")
-            if body is not None:
-                dst.write_bytes(body)
-            else:
-                shutil.copyfile(r["_src"], dst)
+            dst.write_bytes(data)
 
     if args.apply:
         write_index(rows)
@@ -219,7 +259,9 @@ def write_index(rows):
 def write_readme(rows):
     L = ["# 인수인계 — 프로젝트 완료 및 유지보수용", "",
          "워크스페이스 원천 없이 이 폴더만으로 GN_DW(Snowflake) 를 재구축·운영할 수 있도록 구성했다.",
-         "전체 파일 목록 = `00_INDEX.csv`. 재생성 = `build_handoff.py --apply`.", "",
+         "전체 파일 목록 = `00_INDEX.csv`. 재생성 = `build_handoff.py --apply`.",
+         "SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on · Issue). "
+         "사본은 빌드 때 주석만 정제한다(실행 코드는 원본과 같다).", "",
          "## 읽는 순서", ""]
     L += [f"{i}. {s}" for i, s in enumerate(READ_ORDER, 1)]
     L += ["", "## 인수인계 대상", "", "| 서브폴더 | 내용 | 파일 수 |", "|---|---|---|"]

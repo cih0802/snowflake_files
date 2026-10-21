@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_MEMBER_MONTHLY_KPI
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI
+-- Run order  : 운영계 #31
+-- Depends on : GN_DW.GOLD.WIDE_MEMBER_MONTHLY_KPI
+-- Issue      : O201-D
+-- =============================================================================
 -- ============================================================================
 -- 05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql — Semantic View DDL 정본: SV_MEMBER_MONTHLY_KPI
 --   · [2026-10-03 O201-D] 공45·46·47 활동율(누계개발 분모) 전용 SV

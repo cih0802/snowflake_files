@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고성과 위성 — 디지털(DGT) 고유속성. 순서9-I 신설(DEC-8).
+-- Target     : GOLD.FACT_AD_DIGITAL (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_DIGITAL
+-- Issue      : DEC-8, DEC-9, O174
+-- =============================================================================
 -- FACT_AD_DIGITAL: 광고성과 위성 — 디지털(DGT) 고유속성. 순서9-I 신설(DEC-8).
 -- grain: AD_PERF_DK — 코어 FACT_AD_PERFORMANCE 와 **1:1**(디지털 행만 존재, 실측 197,686행).
 -- WARN: 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_DIGITAL d USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.

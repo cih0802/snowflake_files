@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA4 인구통계 일 팩트 (1행 = 일 × 기기 × 성별 × 연령대) · [2026-10-08 O213-F Y3-F]
+-- Target     : GOLD.FACT_GA4_DEMOGRAPHIC (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref GA4_USER_DEMOGRAPHIC
+-- Issue      : O213-F
+-- =============================================================================
 -- FACT_GA4_DEMOGRAPHIC: GA4 인구통계 일 팩트 (1행 = 일 × 기기 × 성별 × 연령대) · [2026-10-08 O213-F Y3-F]
 -- grain: DATE_SK × DEVICE_CATEGORY × USER_GENDER × USER_AGE_BRACKET (원천 SILVER.GA4_USER_DEMOGRAPHIC 과 1:1)
 -- WARN: GA4 Data API 집계값이다 — 이벤트 원천(BIGQUERY_*)과 정의·모수가 달라 세션수가 일치하지 않는다(합산·대조 금지).

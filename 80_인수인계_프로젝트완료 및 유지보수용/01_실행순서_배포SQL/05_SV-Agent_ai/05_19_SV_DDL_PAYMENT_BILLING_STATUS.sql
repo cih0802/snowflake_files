@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_PAYMENT_BILLING_STATUS ( O213 Y3-D)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
+-- Run order  : 운영계 #36
+-- Depends on : GN_DW.GOLD.FACT_PAYMENT_BILLING_STATUS, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.GOLD.DIM_CAMPAIGN, GN_DW.GOLD.FACT_MEMBER_FEE
+-- Issue      : O213, O213-C, O225-C, O237
+-- =============================================================================
 -- ============================================================================
 -- 05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql — Semantic View DDL 정본: SV_PAYMENT_BILLING_STATUS ( O213 Y3-D)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

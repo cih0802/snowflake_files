@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : 행사 마스터 = 일반행사(EVENT) ∪ 캠페인행사(CRMN), 정본 09 STEP3.
+-- Target     : SILVER.CRM_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_MS_EVENT, source bronze_crm.TM_MS_CRMN
+-- Issue      : O59-N, DEC-35, DEC-17-B, O191-F 외 1
+-- =============================================================================
 -- CRM_EVENT: 행사 마스터 = 일반행사(EVENT) ∪ 캠페인행사(CRMN), 정본 09 STEP3.
--- Co-authored with CoCo
 -- [2026-08-11 O59-N · DEC-35 1단계] 행사구분 코드→라벨. 정본 = 문서30 §23-J · 매핑 = 문서31 §4.
---   🔴 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자 EVENT_SOURCE 로 갈라 각자의 코드군에 조인한다.
+--   WARN: 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자 EVENT_SOURCE 로 갈라 각자의 코드군에 조인한다.
 --     · EVENT → `MS286`(등급 B · 5/5 정확 일치 — MS303 7종·MS302 8종은 초과값으로 배제)
---     · CRMN  → `MS002`(등급 B · 도메인 14/16 포함 + 의미 완전 정합)
---   ⚠️ 사전 초과값은 라벨 NULL(DEC-17-B) · fan-out 안전: 두 그룹 (CD_ID, DTL_CD_ID) 유일(실측 2026-08-11).
+--     · CRMN → `MS002`(등급 B · 도메인 14/16 포함 + 의미 완전 정합)
+--   WARN: 사전 초과값은 라벨 NULL(DEC-17-B) · fan-out 안전: 두 그룹 (CD_ID, DTL_CD_ID) 유일(실측 2026-08-11).
 WITH base AS (
   SELECT 'EVENT_'||EVENT_CD          AS EVENT_KEY,
     'EVENT'                          AS EVENT_SOURCE,
@@ -27,7 +33,7 @@ WITH base AS (
   ,CAST(NULL AS VARCHAR(3)) AS CPR_DIV_CD
   ,CAST(NULL AS NUMBER(10,0)) AS ENTRPS_CD
   ,CAST(NULL AS VARCHAR(1)) AS USE_YN
-  ,CAST(NULL AS VARCHAR(1)) AS PART_USE_YN      -- 🆕 [O213-F Y3-I] 캠페인행사 전용 · 일반행사 = 원천 개념 없음
+  ,CAST(NULL AS VARCHAR(1)) AS PART_USE_YN      -- [O213-F Y3-I] 캠페인행사 전용 · 일반행사 = 원천 개념 없음
   FROM {{ source('bronze_crm','TM_MS_EVENT') }} WHERE EVENT_CD IS NOT NULL
   -- [2026-10-16 grain 보정] BRONZE 이중 적재 방어 — 원천 키당 최신 수정·최신 적재 1행.
   QUALIFY ROW_NUMBER() OVER (PARTITION BY EVENT_CD
@@ -46,9 +52,9 @@ WITH base AS (
   ,NULLIF(TRIM(CPR_DIV_CD),'')
   ,ENTRPS_CD
   ,NULLIF(TRIM(USE_YN),'')
-  ,NULLIF(TRIM(PART_USE_YN),'')                  -- 🆕 [O213-F Y3-I] 참여신청 사용 여부 Y/N
+  ,NULLIF(TRIM(PART_USE_YN),'')                  -- [O213-F Y3-I] 참여신청 사용 여부 Y/N
   FROM {{ source('bronze_crm','TM_MS_CRMN') }} WHERE CRMN_CD IS NOT NULL
-  -- [2026-10-16 grain 보정] 📏 7,312행 / CRMN_CD 3,668(내용 다른 버전 15키) ⇒ 최신 1행.
+  -- [2026-10-16 grain 보정] 7,312행 / CRMN_CD 3,668(내용 다른 버전 15키) ⇒ 최신 1행.
   QUALIFY ROW_NUMBER() OVER (PARTITION BY CRMN_CD
                              ORDER BY LAST_UPDT_DT DESC NULLS LAST, _LOAD_DT DESC NULLS LAST) = 1
 )
@@ -66,7 +72,7 @@ SELECT
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
   NULL                             AS DW_BATCH_ID,
-  -- 🔴 신설 컬럼 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝이 된다).
+  -- WARN: 신설 컬럼 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝이 된다).
   CASE WHEN b.EVENT_DIV_CD IS NULL THEN NULL
        WHEN b.EVENT_SOURCE='EVENT' THEN 'MS286' ELSE 'MS002' END AS EVENT_DIV_GROUP,
   dv.DTL_CD_NM                     AS EVENT_DIV_NM
@@ -80,7 +86,7 @@ SELECT
   ,b.CPR_DIV_CD                     AS CPR_DIV_CD
   ,b.ENTRPS_CD                      AS ENTRPS_CD
   ,b.USE_YN                         AS USE_YN
-  ,b.PART_USE_YN                    AS PART_USE_YN   -- 🆕 [O213-F Y3-I]
+  ,b.PART_USE_YN                    AS PART_USE_YN   -- [O213-F Y3-I]
 FROM base b
 LEFT JOIN {{ ref('CRM_CODE') }} dv
   ON dv.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS286' ELSE 'MS002' END

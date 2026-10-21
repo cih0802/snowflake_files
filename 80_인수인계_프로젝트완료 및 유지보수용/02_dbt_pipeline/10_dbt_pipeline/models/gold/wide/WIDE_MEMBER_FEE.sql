@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회비 분해 소비뷰 — 후원사업 × 회비구분 × 결제수단 × 획득귀속
+-- Target     : GOLD.WIDE_MEMBER_FEE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_FEE, ref DIM_SPONSORSHIP, ref DIM_PAYMENT, ref DIM_DATE, ref DIM_MEMBER, ref DIM_MEMBER_ACQUISITION
+-- Issue      : O45, O51-B, O51-D, O89 외 4
+-- =============================================================================
 -- WIDE_MEMBER_FEE: 회비 분해 소비뷰 — 후원사업 × 회비구분 × 결제수단 × 획득귀속
 -- [2026-08-06 O45] 신설. base = FACT_MEMBER_FEE(회원×회비월×후원사업×회비구분×납입유형×결제수단).
 --

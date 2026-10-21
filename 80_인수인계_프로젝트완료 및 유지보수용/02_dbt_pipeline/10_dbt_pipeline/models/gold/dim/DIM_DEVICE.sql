@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 디바이스 차원 (GA4_DEVICE → DEVICE_TYPE DISTINCT, GOLD 축약)
+-- Target     : GOLD.DIM_DEVICE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_DEVICE
+-- Issue      : DEC-10
+-- =============================================================================
 -- DIM_DEVICE: 디바이스 차원 (GA4_DEVICE → DEVICE_TYPE DISTINCT, GOLD 축약)
 -- WARN: [2026-07-28 DEC-10] 멤버 2종 신설/보강 — 근거: 문서30 §1-A · 설계 §3-A-5
 --   1) `(해당없음)` 멤버 신설: 방송광고(VIDEO·REBRDC)는 **기기 개념 자체가 없다**(실측 37,886행 전량 NULL).

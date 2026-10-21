@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 04. GN_DW.MSTR 프로시저 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
+-- Target     : PROCEDURE GN_DW.MSTR.USP_BCHLOG, PROCEDURE GN_DW.MSTR.USP_BCHERR, PROCEDURE GN_DW.MSTR.USP_D_CMMN_DTL_CD, PROCEDURE GN_DW.MSTR.USP_D_STRD_CAL_CD 외 9
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.MSTR.D_CMMN_DTL_CD, GN_DW.BRONZE_CRM.TC_CMMN_CD, GN_DW.BRONZE_CRM.TC_CMMN_DTL_CD, GN_DW.MSTR.D_STRD_CAL_CD, GN_DW.MSTR.D_CM_DEPT_INFO, GN_DW.BRONZE_CRM.TM_CM_DEPT_INFO 외 14
+-- Issue      : O197, O201-D
+-- =============================================================================
 -- =====================================================================
 -- 04. GN_DW.MSTR 프로시저 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
 --   T-SQL → Snowflake Scripting(LANGUAGE SQL). 공통 변환 규칙:

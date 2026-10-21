@@ -1,8 +1,14 @@
+-- =============================================================================
+-- Purpose    : 발송요청 마스터 = EMAIL ∪ MSG_AT ∪ PSTMTR ∪ SND (채널별 dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_SEND_REQUEST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MS_EMAIL_SNDNG, source bronze_crm.TM_MS_MSG_AT_SNDNG, source bronze_crm.TM_MS_PSTMTR_SNDNG, source bronze_crm.SND_REQ_MST
+-- Issue      : O26, O191-F, O213-E
+-- =============================================================================
 -- CRM_SEND_REQUEST: 발송요청 마스터 = EMAIL ∪ MSG_AT ∪ PSTMTR ∪ SND (채널별 dedup), 정본 09 STEP3.
--- Co-authored with CoCo
 -- [2026-08-03 G3] 정본 코드컬럼 raw 전파 3종 신설. 채널별로 원천 컬럼 보유가 다르므로 미보유 채널은 NULL 이다.
 --   MSG_DIV_CD(MS010)·SNDNG_TIME_DIV_CD(MS267) = MSG_AT 전용 · PSTMTR_PRCS_STAT_CD(MS061) = PSTMTR 전용.
---   ⚠️ 0 이나 '' 로 채우지 않는다 — 채널에 개념이 부재한 것이므로 NULL 이 정확하다(P21).
+--   WARN: 0 이나 '' 로 채우지 않는다 — 채널에 개념이 부재한 것이므로 NULL 이 정확하다(P21).
 --   [O26] PSTMTR 접두 = 원천 테이블 TM_MS_PSTMTR_SNDNG 변별토큰. CRM_PAYMENT_BILLING.MBRFEE_PRCS_STAT_CD(PM013)와
 --   동명이의였다 — 실측 도메인 0,1 vs R,F,S 로 완전 분리. 라벨은 수요 확인 후 별도 배선(스캐폴드 금지).
 SELECT SNDNG_KEY AS SNDNG_KEY, 'EMAIL' AS SEND_CHANNEL, NULLIF(TRIM(SNDNG_TY_CD),'') AS SNDNG_TY_CD,
@@ -29,7 +35,7 @@ SELECT SNDNG_KEY AS SNDNG_KEY, 'EMAIL' AS SEND_CHANNEL, NULLIF(TRIM(SNDNG_TY_CD)
   ,CAST(NULL AS VARCHAR(255)) AS MENU_CODE
   ,CAST(NULL AS VARCHAR(100)) AS SERVICE_MENU_CODE
   ,CAST(NULL AS VARCHAR(255)) AS USE_YN
-  -- 🆕 [2026-10-08 O213-E] SND 요청 전용 2종(법인구분 CM019 · 분할방식 once/divide) — 비해당 채널 NULL · 감사·누락 컬럼 뒤
+  --  [2026-10-08 O213-E] SND 요청 전용 2종(법인구분 CM019 · 분할방식 once/divide) — 비해당 채널 NULL · 감사·누락 컬럼 뒤
   ,CAST(NULL AS VARCHAR(10)) AS CORP_TYPE
   ,CAST(NULL AS VARCHAR(20)) AS SEND_SPLIT_TYPE
 FROM {{ source('bronze_crm','TM_MS_EMAIL_SNDNG') }} WHERE SNDNG_KEY IS NOT NULL

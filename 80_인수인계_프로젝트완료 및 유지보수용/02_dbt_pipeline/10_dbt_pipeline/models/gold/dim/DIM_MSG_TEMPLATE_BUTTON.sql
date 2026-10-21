@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 알림톡 템플릿 버튼 (템플릿 × 버튼순번 grain) — CRM_MSG_TEMPLATE_BUTTON
+-- Target     : GOLD.DIM_MSG_TEMPLATE_BUTTON (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MSG_TEMPLATE_BUTTON, ref CRM_MSG_TEMPLATE
+-- Issue      : O188-F, O249, DR-31
+-- =============================================================================
 -- DIM_MSG_TEMPLATE_BUTTON: 알림톡 템플릿 버튼 (템플릿 × 버튼순번 grain) — CRM_MSG_TEMPLATE_BUTTON
 --  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(

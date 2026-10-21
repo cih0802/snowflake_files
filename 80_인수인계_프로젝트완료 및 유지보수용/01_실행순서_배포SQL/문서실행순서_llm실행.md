@@ -191,13 +191,26 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
 | 21 | dbt 재배포 + `build --select FACT_MEMBER_COHORT_SURVIVAL DIM_SEND_REQUEST DIM_MSG_TEMPLATE DIM_MSG_TEMPLATE_BUTTON` | 🔴 사용자가 실행한다(에이전트 정지점) PASS=11 · 고아 0 |
 | 22 · 23 · 25 | 각 파일 첫 줄 ~ 마지막 `GRANT` | 22 = 05_03 → 21 → 22 → 23 순서 · 23(35_) 은 22 다음 |
 | 24 | `tmp/o249/agent_deploy.py`(환경변수 `AG` 로 1종씩) | 27 이 같은 일을 09_2 로 다시 하므로 **27 을 실행하면 24 는 건너뛰어도 된다** |
-| 26 | `36_O250_ML예측_7축확장.sql` 문장 단위(뷰 2 → SV 2 → GRANT 12) · 끝의 스모크 2개로 판정 · 🆕 [O250-E] 아직 안 돌린 환경은 같은 정의의 정본 = `21_` [O250] 절 → `05_29` → `05_30` | 뷰 생성 수 초 · 스모크 = 회원수 = `ML_MEMBER_RISK_V` · 배분 합 = 예측 합(차이는 부동소수 수천 원) |
+| 26 | `36_DEPLOY_ML_PRED_7AXIS.sql` 문장 단위(뷰 2 → SV 2 → GRANT 12) · 끝의 스모크 2개로 판정 · 🆕 [O250-E] 아직 안 돌린 환경은 같은 정의의 정본 = `21_` [O250] 절 → `05_29` → `05_30` | 뷰 생성 수 초 · 스모크 = 회원수 = `ML_MEMBER_RISK_V` · 배분 합 = 예측 합(차이는 부동소수 수천 원) |
 | 27 | 09_2 = [0] 부재 0행 → [0-B] COPY FILES → [0-C] 크기 대조 OK → [1] 롤백 기준 기록 → [2] → [3] | 이전 계정 = MEMBER $5 · EXECUTIVE $5 · MARKETING $6 · 실행기 예 = `tmp/o250/deploy_agents.py pre` → `deploy` |
 | 28 | 09_1 [5] 의 `ALTER AGENT … SET COMMENT … PROFILE` 3문장만 | Agent 설명 = 수치 없는 카테고리 문안 |
 
 - 🔴 [O250] `cortex ws` 마운트에서 **생성기 입력 csv 를 쓴 직후 읽으면 꼬리 행이 빠진다**(실측 = `env_capture` 직후 `b_struct_build` 가 SV 44 중 42 만 읽음) ⇒ 캡처와 생성기 사이에 수십 초 두거나, 생성 후 행 수를 캡처 csv 와 대조한다.
 - 🔴 `SNOWFLAKE.ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 는 새 뷰가 수 시간 늦게 들어온다 ⇒ 계보(D06) 의 view dependency 는 배포 다음 날 다시 만든다.
 - 확인 = SV 질의 4문항(`tmp/o250/ca_check.py` · Cortex Analyst 생성 SQL ↔ 직접 SQL 값 대조 · GN_DW_ANALYST 로 실행 = 권한 확인 겸).
+
+### 3.6 🆕 폐지·개편 부서 현재 조직 귀속(DEC-63) 증분(`문서실행순서.md` 「기존 환경 갱신」 29~31 2026-10-21 실측)
+
+| 순 | 실행 방식 | 실측 |
+|---|---|---|
+| 29 | `37_DEPLOY_ORG_SUCCESSION.sql` 을 첫 줄 ~ [D3] 마지막 SELECT 까지 문장 단위(D2 는 주석이라 실행되지 않는다) | [D1] = `CREATE TABLE IF NOT EXISTS` 2 · 이미 있으면 무해 · 🔴 06_DDL 전체 실행 금지 |
+| 30 | dbt 재배포 + `build --select ORG_SUCCESSION_MANUAL DIM_ORG_SUCCESSION` | 🔴 사용자가 실행한다(에이전트 정지점) PASS=11 · 그 뒤 29 의 [D3] 을 다시 돌려 대사 |
+| 31 | `05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql` 전체(문장 단위) | 14/14 · 합계 보존 스모크 1,381,827 = 1,381,827 · 실행기 예 = `tmp/o255/run_sv_file.py <상대경로>` |
+| 32 | `05_08` → `05_02` 각 파일 전체(문장 단위) | 15/15 · 9/9 · 현재 부서 축 합계 = 당시 부서 축 합계(목표 4,622,103 · 2025 개발 319,305.86) |
+
+- 🔴 순서 = 29 → 30 → 31. 31 을 30 보다 먼저 돌리면 SV 는 생성되지만 귀속 축이 비어 `(미매핑 폐지부서)` 1행만 나온다.
+- 🔴 [D3] 의 기대값은 개발계 실측이다 — 운영계는 부서·중단 수치가 다르다. 판정은 **등식**으로 한다(키 중복 0 · 행수 = DIM_ORG(SK≠0) · 연도별 중단 합계 = 팩트).
+- 현업 회신이 오면 `37` [D5] 로 seed CSV 를 고친 뒤 30 → [D3] 3-2(MANUAL 부서 수 = seed 행수) 만 다시 한다.
 
 ---
 

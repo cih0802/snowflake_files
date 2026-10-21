@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 증액/감액 정제 + AREA_CD(CM018) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_AMT_CHANGE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_MM_FDRM_MBER_IRSD
+-- Issue      : O191-E, O179
+-- =============================================================================
 -- CRM_MEMBER_AMT_CHANGE: 증액/감액 정제 + AREA_CD(CM018) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(s.OCCRRNC_DE),'')     AS OCCRRNC_DE,

@@ -1,0 +1,50 @@
+{#
+  bigquery_range_purge — EVENT_DT 범위 한정 멱등 purge (SILVER GA4 range 모델 전용 pre-hook)
+
+  왜 필요한가 (2026-08-19 O87 신설)
+    SILVER 기본 전략은 `pre-hook: TRUNCATE TABLE IF EXISTS {{ this }}` 다(dbt_project.yml).
+    그것은 「매 run 전량 재적재」를 전제하므로 **월 단위 분할 적재와 상충**한다 —
+    설계문서 `04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md` §7-A 가 이미 경고했다:
+      *"멱등 INSERT OVERWRITE 는 월 단위 분할 적재와 상충한다 — 월별로 돌리면 앞 달이 지워진다.
+        전기간 적재 시 ① 한 번에 전량 OVERWRITE 또는 ② DELETE WHERE EVENT_DT + INSERT 로
+        멱등성을 재설계할 것."*
+    GA4 는 2.86억행이라 ① 이 현실적이지 않다(전기간 환산 ≈ 36분 + 하류). ⇒ **②를 채택한다.**
+
+  동작
+    `DELETE FROM <this> WHERE <bigquery_range_predicate()>`
+    ⇒ 그 범위만 지우고 모델 SELECT 가 같은 범위를 append 하므로 **범위 단위 멱등**이다.
+    범위 밖 데이터는 보존된다 ⇒ 월별 분할 적재가 안전해진다.
+     🔴 [2026-08-19 O88] 술어를 **`macros/bigquery_range_predicate.sql` 로 외부화**했다.
+        종전에는 이 파일과 두 모델이 술어를 **각각 하드코딩**했고, DELETE 범위와 append
+        범위가 어긋나면 행이 남거나(중복) 사라지는데(누락) **그 어긋남을 잡는 게이트가
+        없었다**(`R1-6-17`). 이제 정의 지점이 하나라 어긋남이 구조적으로 불가능하다.
+
+  🔄🔄 [2026-09-22] **창의 성격이 바뀌었다 — 이 매크로의 코드는 그대로다.**
+     종전 창 = `bigquery_dt_ranges` 의 고정 리터럴(= 매 run 그 범위 전량 재적재).
+     현재 창 = `[오늘 - bigquery_lookback_days, ∞)` **롤링 윈도우**(= 일일 증분).
+     ⇒ 위 §동작의 「범위 단위 멱등」이 그대로 **일일 증분의 근거**가 된다. 설계가 이미
+       맞았고 창만 움직이게 만든 것이다(그래서 이 파일은 손대지 않았다).
+     🔴 그 대가 = run 을 lookback 일수보다 오래 건너뛰면 창 아래에 **구멍**이 남는다.
+        감시 = `tests/warn_bigquery_load_gap.sql`(원천에 있고 하류에 없는 일자).
+     🟢 GOLD 팩트에도 같은 처방을 복제했다 — `macros/gold_fact_purge.sql`.
+        이 파일은 **SILVER 전용**이다(`silver_purge` 가 호출한다).
+
+  🔴 적용 대상 = EVENT_DT 를 보유한 range 모델만이다.
+     · BIGQUERY_REFINED_DATA · BIGQUERY_EVENT     → 이 매크로 사용
+     · BIGQUERY_EVENT_DIM · BIGQUERY_DEVICE · BIGQUERY_TRAFFIC_SOURCE · BIGQUERY_IDENTITY
+       → EVENT_DT 가 없는 **DISTINCT/집약 차원**이다. 범위 삭제가 불가능하고,
+         범위 제한해서 만들면 **전기간 값 집합이 소실**된다(예: 특정 월에만 등장한 UTM).
+         ⇒ 그 4종은 기본 TRUNCATE + 전량 재적재를 유지하고 기반 테이블 **전량**을 읽는다.
+
+  ⚠️ 첫 run 에서는 대상 테이블이 없을 수 있다 — `DELETE` 는 IF EXISTS 를 못 쓰므로
+     `is_incremental()` 이 아닐 때는 no-op SQL 을 낸다(TRUNCATE 와 달리 방어가 필요하다).
+     테이블 구조는 `04_silver_design/08_SILVER_테이블DDL_20260714.sql` 이 선생성한다(순서 8-B).
+#}
+{% macro bigquery_range_purge(relation) %}
+  {%- if is_incremental() -%}
+    DELETE FROM {{ relation }}
+     WHERE {{ bigquery_range_predicate('EVENT_DT') }}
+  {%- else -%}
+    SELECT 1 /* bigquery_range_purge no-op: 대상 테이블 미존재(최초 run) */
+  {%- endif -%}
+{% endmacro %}

@@ -1,11 +1,17 @@
+-- =============================================================================
+-- Purpose    : 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
+-- Target     : GOLD.WIDE_MEMBER_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT, ref DIM_DATE, ref DIM_MEMBER_STATUS_HISTORY, ref DIM_CAMPAIGN, ref DIM_SPONSORSHIP, ref DIM_ORG 외 1
+-- Issue      : O51-B, O51-D, O24, O231 외 11
+-- =============================================================================
 -- WIDE_MEMBER_EVENT: 회원 이벤트 팩트(FME) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.2)
--- Co-authored with CoCo
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
---   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--    [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
 --     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
---     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
---     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--     · 뷰 COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     WARN: SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -13,10 +19,10 @@
 select
     f.DATE_SK, f.MEMBER_DK, f.EVENT_TYPE,
     -- [2026-08-03 O24] 개발구분 축 노출. 컬럼명은 BRONZE 원천명 그대로(현업 혼동 방지).
-    --   ⚠️ DVLP_DIV_NM='후원중단' 과 EVENT_TYPE='STOP' 은 동일 사건 중복 → 합산 금지.
+    --   WARN: DVLP_DIV_NM='후원중단' 과 EVENT_TYPE='STOP' 은 동일 사건 중복 → 합산 금지.
     f.DVLP_DIV_CD, f.DVLP_DIV_NM, f.SPNSR_AMT,
     f.DEV_CNT, f.DEV_MEMBERS,
-    -- 🆕 [O231] 상계 전 원천값·0 처리 사유(FME O-HC). DEV_CNT(MSTR 정본)는 불변.
+    --  [O231] 상계 전 원천값·0 처리 사유(FME O-HC). DEV_CNT(MSTR 정본)는 불변.
     f.DEV_CNT_RAW, f.DEV_EXCL_REASON,
     f.STOP_CNT, f.STOP_MEMBERS,
     f.UNPAID_STOP_CNT, f.UNPAID_STOP_MEMBERS,
@@ -39,7 +45,7 @@ select
     m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
     m.AREA_CD             as MEMBER_AREA_CD,          -- [O27] CM018 코드 raw (라벨=MEMBER_REGION)
     m.REGION              as MEMBER_REGION,
-    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. ⚠️연속형 나이 아님
+    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. WARN:연속형 나이 아님
     m.AGE_BAND            as MEMBER_AGE_BAND,
     m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
     m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
@@ -55,23 +61,23 @@ select
     c.CAMPAIGN_NAME       as CAMPAIGN_NAME,
     c.PROMO_METHOD        as CAMPAIGN_PROMO_METHOD,
     -- [2026-07-30 D2] 캠페인 분석 2축 노출. DIM_CAMPAIGN 컬럼명↔업무용어 매핑에 주의:
-    --   CAMPAIGN_TYPE(MM294 CMPGN_CTGR_NM) = 캠페인'카테고리'  → CAMPAIGN_CATEGORY 로 노출
+    --   CAMPAIGN_TYPE(MM294 CMPGN_CTGR_NM) = 캠페인'카테고리' → CAMPAIGN_CATEGORY 로 노출
     --   INFLOW_PATH(MM293 MBER_INFLOW_PATH_NM) = 현업 '주요캠페인' → CAMPAIGN_INFLOW_PATH 로 노출
-    -- 🔴🔴 [2026-08-28 O105] **소스 축 전환 — DIM_CAMPAIGN 실시간 조인 → FME 적재시점 동결값.**
+    -- WARN: [2026-08-28 O105] **소스 축 전환 — DIM_CAMPAIGN 실시간 조인 → FME 적재시점 동결값.**
     --   왜: 같은 9속성을 SV_MEMBER_EVENT 는 이미 `fme.*_AT_EVENT`(동결값)로 쓰는데(2026-08-25 설계부채
     --   해소 · DEC-43 축) 이 뷰만 `c.*` 실시간 조인으로 남아 **같은 이름의 축이 두 표면에서 다른 값이
     --   될 수 있었다**(Streamlit=WIDE ↔ Cowork=SV). 전환 시점 실측으로 두 소스의 값은 전건 동일했다
     --   (불일치 0 / DEV 3,594,843 · CAMPAIGN_SK PK 조인) ⇒ **지금 바꾸면 값 변화가 없고**, 캠페인
     --   마스터가 정정된 뒤에 바꾸면 과거 리포트가 조용히 달라진다. 규모·근거 = 이슈원장 §O105.
-    --   🔴 **컬럼명은 바꾸지 않았다**(`CAMPAIGN_*` 유지) — 소비측(Streamlit·산출물) 파괴를 피하기 위한
+    --   WARN: **컬럼명은 바꾸지 않았다**(`CAMPAIGN_*` 유지) — 소비측(Streamlit·산출물) 파괴를 피하기 위한
     --   의도적 선택이며 SV 가 친화명을 유지한 것과 같은 판단이다. 의미는 「사건 시점 캠페인 속성」이다.
-    --   🟢 **NULL 의 의미는 바뀌지 않는다**(전환 前 라이브 실측으로 확인) — 중단(STOP) 행에서 이 9축은
+    --    **NULL 의 의미는 바뀌지 않는다**(전환 前 라이브 실측으로 확인) — 중단(STOP) 행에서 이 9축은
     --   **전환 전에도 이미 전건 NULL** 이었고 `'(미매핑)'` 은 0건이었다. `DIM_CAMPAIGN` 의 SK=0 시드가
     --   **이름 컬럼(CAMPAIGN_NAME)만** `'(미매핑)'` 으로 채우고 속성 컬럼은 NULL 로 두기 때문이다
-    --   (`R2-7-3` = 식별 컬럼 `(미매핑)` / 속성 컬럼 NULL). ⚠️ 초판 주석은 *「NULL 의 뜻이 바뀐다」*
+    --   (`R2-7-3` = 식별 컬럼 `(미매핑)` / 속성 컬럼 NULL). WARN: 초판 주석은 *「NULL 의 뜻이 바뀐다」*
     --   고 적었는데 **실측 반증으로 철회**했다 — 규모·경위는 이슈원장 §O105. STOP 행 NULL 은
     --   「개발원천에 그 컬럼이 없다」는 구조적 부재이며 0·'미상' 으로 대체 해석하지 않는다(`R2-7-1`).
-    --   🟢 캠페인 자체 속성(BK·BRAND·PARENT·NAME·PROMO_METHOD)은 캠페인 차원에 남긴다(SV 와 동일 경계).
+    --    캠페인 자체 속성(BK·BRAND·PARENT·NAME·PROMO_METHOD)은 캠페인 차원에 남긴다(SV 와 동일 경계).
     f.CMPGN_CTGR_NM_AT_EVENT        as CAMPAIGN_CATEGORY,
     f.MBER_INFLOW_PATH_NM_AT_EVENT  as CAMPAIGN_INFLOW_PATH,
     -- [2026-08-25 안내1 후속] 회원 개발이력 비정규화 요건 잔여 5축.
@@ -91,13 +97,13 @@ select
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
     -- [2026-08-19 O89] 후원사업 분류 3계층 라벨(정기일시 → 약칭 → 사업명).
-    --   🟢 DEV 브랜치는 O45 로 배선(3,594,843) — 분류별 개발실적 집계 경로.
-    --   ⚠️ STOP 브랜치는 SPONSORSHIP_SK 센티넬 0 이라 라벨도 '(미매핑)' 이다(DEC-32 철회 근거·O47).
-    --   🔴🔴 GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
+    --    DEV 브랜치는 O45 로 배선(3,594,843) — 분류별 개발실적 집계 경로.
+    --   WARN: STOP 브랜치는 SPONSORSHIP_SK 센티넬 0 이라 라벨도 '(미매핑)' 이다(DEC-32 철회 근거·O47).
+    --   WARN: GROUP_NAME 단독으로 「해외」를 세지 말 것 — 해외구호(3)와 해외(6)가 갈라진다. (DIV, GROUP) 쌍으로 볼 것.
     s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
     s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,
-    -- 🆕 [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업 법인구분(CM019 · I 사단 · S 사복 · A 통합).
-    --   🔴 「법인」 질의의 기본 축이다 — CAMPAIGN_CPR_DIV_*(세부캠페인 법인)과 다르다.
+    --  [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업 법인구분(CM019 · I 사단 · S 사복 · A 통합).
+    --   WARN: 「법인」 질의의 기본 축이다 — CAMPAIGN_CPR_DIV_*(세부캠페인 법인)과 다르다.
     s.CPR_DIV_CD             as SPONSORSHIP_CPR_DIV_CD,
     s.CPR_DIV_NM             as SPONSORSHIP_CPR_DIV_NM,
     o.CORP                as ORG_CORP,

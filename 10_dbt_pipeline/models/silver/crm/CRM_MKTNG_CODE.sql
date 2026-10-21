@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 마케팅 통합 코드 사전 정제 (BRONZE TC_MKTNG_DTL_CD → SILVER)
+-- Target     : SILVER.CRM_MKTNG_CODE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TC_MKTNG_DTL_CD
+-- Issue      : O162
+-- =============================================================================
 -- CRM_MKTNG_CODE: 마케팅 통합 코드 사전 정제 (BRONZE TC_MKTNG_DTL_CD → SILVER)
--- Co-authored with CoCo
 --
 -- ============================================================================
 -- [2026-09-16 O162 신설]

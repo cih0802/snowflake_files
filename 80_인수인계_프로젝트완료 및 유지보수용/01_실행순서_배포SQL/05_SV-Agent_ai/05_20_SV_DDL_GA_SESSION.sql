@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_SESSION ( O213-F Y3-F)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
+-- Run order  : 운영계 #37 · 기존 환경 갱신 #2 · 기존 환경 갱신 #17
+-- Depends on : GN_DW.GOLD.FACT_BIGQUERY_SESSION, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MEMBER_IDENTITY, GN_DW.SILVER.BIGQUERY_SESSION
+-- Issue      : O213-F, O213, O212, O241
+-- =============================================================================
 -- ============================================================================
 -- 05_20_SV_DDL_GA_SESSION.sql — Semantic View DDL 정본: SV_GA_SESSION ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

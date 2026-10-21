@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : [2026-10-14 O225-B] 지출결의 세부캠페인코드 → 마케팅캠페인 1:N 발생 경고 + 행·금액 보존.
+-- Target     : dbt singular test warn_fer_mktg_campaign_multi (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CAMPAIGN, ref ERP_EXPENSE_RESOLUTION, ref FACT_EXPENSE_RESOLUTION
+-- Issue      : O225-B, O224
+-- =============================================================================
 -- [2026-10-14 O225-B] 지출결의 세부캠페인코드 → 마케팅캠페인 1:N 발생 경고 + 행·금액 보존.
--- Co-authored with CoCo
 --
 -- 왜: 현재 코드 1개 → 마케팅캠페인 최대 1개(1:N 0건 · xh20001 실측)라 `FACT_EXPENSE_RESOLUTION` 은 대표 선정 없이 붙인다.
 --   CRM 원천에서 같은 CMPGN_CD 가 다른 마케팅캠페인으로 등록되면 모델은 행수 최다 1개를 고른다(버리지 않는다)

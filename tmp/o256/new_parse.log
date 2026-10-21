@@ -1,0 +1,19 @@
+[0m14:55:21  Running with dbt=1.11.11
+[0m14:55:21  Registered adapter: snowflake=1.11.5
+[0m14:55:21  Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m14:55:25  [[33mWARNING[0m][MissingArgumentsPropertyInGenericTestDeprecation]: Deprecated
+functionality
+Found top-level arguments to test `accepted_values` defined on
+'DIM_MEMBER_STATUS_HISTORY' in package 'gn_dw_silver'
+(models/gold/_gold_ready_schema.yml). Arguments to generic tests should be
+nested under the `arguments` property.
+[0m14:55:27  Performance info: /tmp/new/target/perf_info.json
+[0m14:55:27  [[33mWARNING[0m][DeprecationsSummary]: Deprecated functionality
+Summary of encountered deprecations:
+- MissingArgumentsPropertyInGenericTestDeprecation: 222 occurrences
+To see all deprecation instances instead of just the first occurrence of each,
+run command again with the `--show-all-deprecations` flag. You may also need to
+run with `--no-partial-parse` as some deprecations are only encountered during
+parsing.
+
+--STDERR--

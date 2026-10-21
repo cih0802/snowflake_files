@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-10-14 O225] FACT_AD_PERFORMANCE 는 마케팅캠페인 귀속 전후로 광고행·광고비를 잃거나 복제하지 않아야 한다.
+-- Target     : dbt singular test assert_fap_ad_cost_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_PERFORMANCE, ref FACT_AD_PERFORMANCE
+-- Issue      : O225, O225-B
+-- =============================================================================
 -- [2026-10-14 O225] FACT_AD_PERFORMANCE 는 마케팅캠페인 귀속 전후로 광고행·광고비를 잃거나 복제하지 않아야 한다.
 --
 -- 무엇을 지키는가: SILVER.AGENCY_AD_PERFORMANCE(원천) ↔ GOLD 팩트의 원천별 행수·광고비 합계(원 단위) 일치.

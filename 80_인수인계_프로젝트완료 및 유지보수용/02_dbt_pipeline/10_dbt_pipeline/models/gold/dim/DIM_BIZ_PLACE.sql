@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연 사업장 차원 (BPLC_CD grain) — CRM_BIZ_PLACE
+-- Target     : GOLD.DIM_BIZ_PLACE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_BIZ_PLACE
+-- Issue      : O188-F
+-- =============================================================================
 -- DIM_BIZ_PLACE: 결연 사업장 차원 (BPLC_CD grain) — CRM_BIZ_PLACE
 --  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-10-14 O225-C] 캠페인 축 배선 후 미매핑(CAMPAIGN_SK = 0) 비율 경고 — 3팩트.
+-- Target     : dbt singular test warn_campaign_axis_unmapped_ratio (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_PAYMENT_BILLING_STATUS, ref FACT_MEMBER_MONTHLY, ref FACT_MESSAGE_DISPATCH
+-- Issue      : O225-C, O224
+-- =============================================================================
 -- [2026-10-14 O225-C] 캠페인 축 배선 후 미매핑(CAMPAIGN_SK = 0) 비율 경고 — 3팩트.
 --
 -- 왜: 캠페인 키는 원천이 비어도 에러 없이 0 으로 떨어진다. 비율이 갑자기 오르면 원천 코드 결손·마스터 미등록·

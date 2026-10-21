@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 공휴일 마스터 — GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천.
+-- Target     : SILVER.CRM_HOLIDAY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm_ref.TM_CM_SCHDUL_MNG
+-- Issue      : DR-25, O188
+-- =============================================================================
 -- CRM_HOLIDAY: 공휴일 마스터 — GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천.
 --  [2026-10-20 DR-25] 종전 DIM_DATE 가 `BRONZE_CRM.TM_CM_SCHDUL_MNG` 를 직접 읽었다(GOLD→BRONZE · 레이어 원칙 위반).
 --   사용자 결정 = SILVER 모델을 끼워 넣는다. 필터 규칙은 DIM_DATE 에서 **그대로 이관**했다(의미 변경 0):

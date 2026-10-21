@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 행사 참여/출석 팩트 (행사별 회원 참여, 출석, 신청, 대기, 취소 현황)
+-- Target     : GOLD.FACT_EVENT_ATTENDANCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_EVENT_PARTICIPATION, ref DIM_EVENT
+-- Issue      : O179, O180, O183, O232 외 1
+-- =============================================================================
 -- FACT_EVENT_ATTENDANCE: 행사 참여/출석 팩트 (행사별 회원 참여, 출석, 신청, 대기, 취소 현황)
 -- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook='TRUNCATE TABLE IF EXISTS <this>' **제거**.
 --    이유 = dbt 는 hook 을 누적하므로 `dbt_project.yml` `gold.fact:+pre-hook: gold_fact_purge(this)`

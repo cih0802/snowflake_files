@@ -26,48 +26,36 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 운영계 = 문서실행순서.md 「기존 환경 갱신」 29 → 30(dbt) → 31 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:38` |
-| ② | 현업 검토 xlsx 회신 → seed CSV → 37 [D5] | 👤 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:39` |
-| ① | 다음 세션 = 80 헤더 통일 재빌드(O254-B-2 순서 그대로 · O256 선점) | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:35` |
-| ② | 현업 검토 요청 = 안내 docx + 검토 xlsx 전달 · 요건(부서장 본인 부서 조회 · 폐지 부서 실적 합산) 방향 확인 질문 동봉 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:36` |
-| ③ | 운영계 29 → 30(dbt) → 31 · 회신 후 37 [D5] | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:37` |
-| ① | 안내문 v2 + 검토 xlsx 현업 전달 · §8 회신(분모 기준) | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md:35` |
-| ② | 회신이 「분모는 당시 부서」면 05_10 규칙 (6) 개정 · DEC-63-D 갱신 | 회신 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md:36` |
-| ① | 안내문 v3 + 검토 xlsx 현업 전달 · §8(분모)·§9(A/B/C) 회신 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:36` |
-| ② | 회신 B·C = 해당 SV 의 DEC-63-E/D 표지 줄 제거 후 재실행(데이터 작업 없음) · DEC-63-D/E 갱신 | 회신 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:37` |
-| ③ | 운영계 = 문서실행순서 29 → 30(dbt) → 31 → 32 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:38` |
+| ② | (승계 O255-D ①) 안내문 v3 + 검토 xlsx 현업 전달 · §8(분모)·§9(A/B/C) 회신 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:40` |
+| ③ | (승계 O255-D ②) 회신 B·C = 해당 SV 의 DEC-63-E/D 표지 줄 제거 후 재실행 · DEC-63-D/E 갱신 | 회신 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:41` |
+| ④ | (승계 O255-D ③) 운영계 = 문서실행순서 29 → 30(dbt) → 31 → 32 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:42` |
+| ② | 운영계(ZL50263) 05_10 재배포 = 문서실행순서 「기존 환경 갱신」 31(05_10)을 O255-D ③(29→30→31→32) 집행 때 함께 실행하면 반영된다(별도 단계 불요) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:37` |
+| ③ | (승계 O255-D ①) 안내문 v3 + 검토 xlsx 현업 전달 · §8(분모)·§9(A/B/C) 회신 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:38` |
+| ④ | (승계 O255-D ②) 회신 B·C = 해당 SV 의 DEC-63-E/D 표지 줄 제거 후 재실행 · DEC-63-D/E 갱신 | 회신 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:39` |
+| ⑤ | (승계 O255-D ③) 운영계 = 문서실행순서 29 → 30(dbt) → 31 → 32 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:40` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0255-D.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0256-B.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md`
+> 🔴🔴 **이 세션은 단위 2개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
 |---|---|
-| ▣ O255-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:17` |
-| ▣ O255-A-1 이번 단위 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:23` |
-| ▣ O255-A-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:34` |
-| ▣ O255-A-3 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:43` |
-| ▣ O255-A-4 ⚪ 결정 완료(재론 금지) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-A.md:48` |
-| ▣ O255-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:17` |
-| ▣ O255-B-1 결정·결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:22` |
-| ▣ O255-B-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:31` |
-| ▣ O255-B-3 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-B.md:39` |
-| ▣ O255-C-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md:17` |
-| ▣ O255-C-1 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md:22` |
-| ▣ O255-C-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-C.md:31` |
-| ▣ O255-D-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:17` |
-| ▣ O255-D-1 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:22` |
-| ▣ O255-D-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0255-D.md:32` |
+| ▣ O256-A-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:17` |
+| ▣ O256-A-1 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:23` |
+| ▣ O256-A-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:35` |
+| ▣ O256-A-3 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-A.md:49` |
+| ▣ O256-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:17` |
+| ▣ O256-B-1 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:22` |
+| ▣ O256-B-2 ㉠ 잔여(이 작업) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:32` |
+| ▣ O256-B-3 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0256-B.md:42` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -79,19 +67,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O255` | 🟡 O255 — DEC-63 현재 부서 귀속 재현 문서화 · SV 배선 · 배포순서 파일명 정리 (2026-10-21 · TRIALADMIN(SR61467) · ㉡ · 사용자 지… | 🟡 05_10 SV 현재 부서 축 개발계 배포 14/14 · 37_DEPLOY_ORG_SUCCESSION.sql … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
-| `O254` | 🟢 O254 — 인수인계 정제 O253 후속(85 운영계 수치 보정 · 80/85 비운영 계정 값·init_ihcho 언급 삭제 · O251 잔여 종료 · TMP_O252_MOD… | 🟢 85 D01·D02·D03·D05·D07·N02·A0 = ZL50263 캡처로 보정 · 80·85(_archi… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O253` | 🟡 O253 — 인수인계 문서 정제 후속(85 N01 운영계 대조 · 80 비SQL 개발 계정 값) (2026-10-21 · TRIALADMIN(SR61467) · ㉡ · 사용자… | 🟡 ① 85 N01 운영계(ZL50263 · O251 캡처) 대조 = 부착 DMF 0 · PK 31 위반 0 · … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O252` | 🟡 O252 — 폐지·개편 실적부서 → 현재 활성 부서-팀 귀속 차원(DIM_ORG_SUCCESSION · seed ORG_SUCCESSION_MANUAL · DEC-63 = D… | 🟡 👤 build PASS=11 · 라이브 = 렌더 결과 1,314/1,314 일치 · 연결률 2024 99.3%… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O251` | 🟢 O251 — 85 정식산출물 운영계(ZL50263) 15종 캡처 · 생성기 4종 재실행 · 운영계 열 최신화 · ANALYST_01 CoCo 한도 0 적용 (2026-10-2… | 🟢 캡처 15/15 OK (B1·B2·D10·D12·N01·N04·N05·N06·N08 및 A0~A7 재캡처) ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O250` | 🟡 O250 — ML 회원예측(증액·중단·미납·회비) 7축 확장 · 3 Agent 배선 · 80/85 최신화 · SV 단독 정본 (2026-10-21 · TRIALADMIN(SR… | 🟡 스모크 2/2 · 배선 pred_axis 3 · fee_axis 2 · SV 답변 4/4 값 일치 · 85 재… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
+| `O256` | 🟢 O256 — 80 헤더 통일 재빌드(원본 헤더·주석 정제 1회 + build_handoff 빌드 훅 · O254-B-2 순서) (2026-10-21 · TRIALADMIN(S… | 🟢 원본 SQL 285 표준 헤더(Purpose·Target·Run order·Depends on·Issue) +… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:105` |
+| `O255` | 🟡 O255 — DEC-63 현재 부서 귀속 재현 문서화 · SV 배선 · 배포순서 파일명 정리 (2026-10-21 · TRIALADMIN(SR61467) · ㉡ · 사용자 지… | 🟡 05_10 SV 현재 부서 축 개발계 배포 14/14 · 37_DEPLOY_ORG_SUCCESSION.sql … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O254` | 🟢 O254 — 인수인계 정제 O253 후속(85 운영계 수치 보정 · 80/85 비운영 계정 값·init_ihcho 언급 삭제 · O251 잔여 종료 · TMP_O252_MOD… | 🟢 85 D01·D02·D03·D05·D07·N02·A0 = ZL50263 캡처로 보정 · 80·85(_archi… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O253` | 🟡 O253 — 인수인계 문서 정제 후속(85 N01 운영계 대조 · 80 비SQL 개발 계정 값) (2026-10-21 · TRIALADMIN(SR61467) · ㉡ · 사용자… | 🟡 ① 85 N01 운영계(ZL50263 · O251 캡처) 대조 = 부착 DMF 0 · PK 31 위반 0 · … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O252` | 🟡 O252 — 폐지·개편 실적부서 → 현재 활성 부서-팀 귀속 차원(DIM_ORG_SUCCESSION · seed ORG_SUCCESSION_MANUAL · DEC-63 = D… | 🟡 👤 build PASS=11 · 라이브 = 렌더 결과 1,314/1,314 일치 · 연결률 2024 99.3%… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O251` | 🟢 O251 — 85 정식산출물 운영계(ZL50263) 15종 캡처 · 생성기 4종 재실행 · 운영계 열 최신화 · ANALYST_01 CoCo 한도 0 적용 (2026-10-2… | 🟢 캡처 15/15 OK (B1·B2·D10·D12·N01·N04·N05·N06·N08 및 A0~A7 재캡처) ·… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 19 | 497,116 | 38,746 | 2,214 🟠 |
-| `01_세션이력` | 89 | 2,288,465 | 38,225 | 5,378 🟠 |
+| `00_INDEX_이슈원장` | 19 | 498,091 | 39,721 | 1,239 🟠 |
+| `01_세션이력` | 90 | 2,292,397 | 38,225 | 39,544 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -113,10 +101,10 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 11,660 | 11,660 | 29,300 |
+| `00_BRIEF` | — | 10,521 | 10,521 | 30,439 |
 | `11_O누적작업_점검_재현_절차` | — | 33,527 | 33,527 | 7,433 🟠 |
 
-> 전 문서군 = **3,316,454 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,318,828 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -124,7 +112,7 @@ END-METADATA -->
 | 게이트 | 판정 | 결론 |
 |---|---|---|
 | `doc_census` | ✅ | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다 |
-| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 4건) |
+| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 3건) |
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 115개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |

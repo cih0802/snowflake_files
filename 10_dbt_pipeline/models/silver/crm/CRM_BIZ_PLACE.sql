@@ -1,6 +1,12 @@
--- CRM_BIZ_PLACE: 결연 사업장 마스터 (BRONZE TM_RM_BPLC_MNG → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = BPLC_CD (📏 xf98254 유일 실측)
+-- =============================================================================
+-- Purpose    : 결연 사업장 마스터 (BRONZE TM_RM_BPLC_MNG → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_BIZ_PLACE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_RM_BPLC_MNG
+-- Issue      : O188-F
+-- =============================================================================
+-- CRM_BIZ_PLACE: 결연 사업장 마스터 (BRONZE TM_RM_BPLC_MNG → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = BPLC_CD ( xf98254 유일 실측)
 SELECT
   NULLIF(TRIM(BPLC_CD),'') AS BPLC_CD,
   NULLIF(TRIM(NATION_CD),'') AS NATION_CD,

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : MSTR 1차 이관 검증 쿼리 (mstr_verify.py 가 문장마다 실행 · 기대값은 manifests/1차.json "baseline")
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_STRD_DE_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD 외 10
+-- Issue      : -
+-- =============================================================================
 -- MSTR 1차 이관 검증 쿼리 (mstr_verify.py 가 문장마다 실행 · 기대값은 manifests/1차.json "baseline")
 -- @CHECK fact_by_dvlp
 SELECT DVLP_DIV_CD, COUNT(*) AS N, COUNT(DISTINCT MBER_NO) AS MBR, SUM(SPNSR_AMT) AS AMT

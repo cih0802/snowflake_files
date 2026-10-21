@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 디지털 광고(DGT) 고유속성 + 대행사 산정 파생값 _SRC 7종 → GOLD FACT_AD_DIGITAL
+-- Target     : SILVER.AGENCY_AD_DIGITAL (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_ROW_DGT, ref AGENCY_AD_PERFORMANCE
+-- Issue      : DEC-8, DEC-9, O182
+-- =============================================================================
 -- AGENCY_AD_DIGITAL: 디지털 광고(DGT) 고유속성 + 대행사 산정 파생값 _SRC 7종 → GOLD FACT_AD_DIGITAL
 -- 설계: DEC-8(위성 분리) · DEC-9(_SRC 전량 보존, 비가산) · 설계 §3-A-3
 -- WARN: AD_PERF_DK 는 staging(AGENCY_AD_ROW_DGT)이 발급한 값을 **그대로 승계**한다(재계산 금지).

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 캠페인 ↔ 후원사업 다대다(1:N) 브릿지 정규화 (DEC-45).
+-- Target     : SILVER.CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_CM_CMPGN_MNG
+-- Issue      : DEC-45
+-- =============================================================================
 -- CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE: 캠페인 ↔ 후원사업 다대다(1:N) 브릿지 정규화 (DEC-45).
 WITH split_base AS (
   SELECT

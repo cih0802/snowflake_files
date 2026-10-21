@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : FACT_MEMBER_MONTHLY 선납 회비월이 **인정 상한(당월 +37개월)** 을 넘는지 관측한다.
+-- Target     : dbt singular test warn_fmm_future_month_cap (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY
+-- Issue      : O216-D, O202
+-- =============================================================================
 -- warn_fmm_future_month_cap: FACT_MEMBER_MONTHLY 선납 회비월이 **인정 상한(당월 +37개월)** 을 넘는지 관측한다.
 --
 --  [2026-10-12 O216-D · BLOCKING-2 A 처방 · 권고 기본안]

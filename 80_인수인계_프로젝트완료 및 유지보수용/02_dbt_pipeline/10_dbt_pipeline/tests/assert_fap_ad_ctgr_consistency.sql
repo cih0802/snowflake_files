@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : FACT_AD_PERFORMANCE 광고비 귀속 카테고리 정합 (O232-B 신설)
+-- Target     : dbt singular test assert_fap_ad_ctgr_consistency (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref CRM_CAMPAIGN, ref DIM_MARKETING_CAMPAIGN
+-- Issue      : O232-B, O233
+-- =============================================================================
 -- assert_fap_ad_ctgr_consistency: FACT_AD_PERFORMANCE 광고비 귀속 카테고리 정합 (O232-B 신설)
 -- WARN: [임시] 2026-10-16 severity=warn 하향: AD_CREATIVE_CAMPAIGN_MAP 원천 코드(MM294 DTL_CD_ID) 불일치 14건으로
 --    운영 build 가 막혀 다운스트림이 SKIP 됨. 원천 CSV(O232_광고_매핑_추천안.csv) 보정·재적재 후 error 로 원복할 것.

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 03. GN_DW.MSTR 함수 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
+-- Target     : FUNCTION GN_DW.MSTR.FN_MM_ACT_DATE, FUNCTION GN_DW.MSTR.FN_MM_SPNSR_DVLP
+-- Run order  : 운영계 #10
+-- Depends on : GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_INFO, GN_DW.MSTR.D_SPNSR_BSNS_V, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR_DSCNTC, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_RE_SPNSR, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT
+-- Issue      : O197, O202-B, O202
+-- =============================================================================
 -- =====================================================================
 -- 03. GN_DW.MSTR 함수 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql
 --   T-SQL Inline TVF → Snowflake SQL UDTF (RETURNS TABLE · 반환 컬럼 명시)

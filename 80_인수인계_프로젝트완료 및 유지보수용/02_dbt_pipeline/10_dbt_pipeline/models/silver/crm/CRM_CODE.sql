@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 공통 코드상세 정제 (BRONZE TC_CMMN_DTL_CD → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_CODE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TC_CMMN_DTL_CD
+-- Issue      : O191-E
+-- =============================================================================
 -- CRM_CODE: 공통 코드상세 정제 (BRONZE TC_CMMN_DTL_CD → SILVER), 정본 09 STEP3.
 SELECT
   NULLIF(TRIM(CD_ID),'')       AS CD_ID,

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고 성과 **코어** 팩트(FAD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.7)
+-- Target     : GOLD.WIDE_AD_PERFORMANCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref DIM_DATE, ref DIM_CAMPAIGN, ref DIM_AD_CREATIVE, ref DIM_DEVICE
+-- Issue      : DEC-8, DEC-10, O51-C
+-- =============================================================================
 -- WIDE_AD_PERFORMANCE: 광고 성과 **코어** 팩트(FAD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.7)
 -- WARN: [2026-07-28 순서9-I DEC-8] 코어에서 위성으로 이관된 방송 degen 5종
 --    (TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)을 본 뷰에서 **제거**했다.

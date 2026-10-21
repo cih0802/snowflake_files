@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 회원 상태이력 SCD2 (MM010 라벨, LEAD 기반 EFFECTIVE_TO/IS_CURRENT), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_STATUS_HIST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TH_MM_FDRM_MBER_STNG_DTLS
+-- Issue      : O179
+-- =============================================================================
 -- CRM_MEMBER_STATUS_HIST: 회원 상태이력 SCD2 (MM010 라벨, LEAD 기반 EFFECTIVE_TO/IS_CURRENT), 정본 09 STEP3.
--- Co-authored with CoCo
 SELECT
   s.MBER_NO                        AS MBER_NO,
   s.SER_NO                         AS SER_NO,
@@ -20,8 +26,8 @@ FROM (SELECT NULLIF(TRIM(MBER_NO),'') MBER_NO, SER_NO,
       WHERE MBER_NO IS NOT NULL AND SER_NO IS NOT NULL) s
 LEFT JOIN {{ ref('CRM_CODE') }} bf ON bf.CD_ID='MM010' AND bf.DTL_CD_ID=s.BF_STAT_CD
 LEFT JOIN {{ ref('CRM_CODE') }} ch ON ch.CD_ID='MM010' AND ch.DTL_CD_ID=s.CHN_STAT_CD
--- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
---    📏 실측 = 고아 86행(회원 38명) / 7,644,228 ⇒ 적재 후 7,644,142행 예상.
---    🟢 윈도우 함수(LEAD)와 안전하다 — WHERE 는 윈도우보다 먼저 적용되지만, 제거 대상은
+-- WARN: [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+--     실측 = 고아 86행(회원 38명) / 7,644,228 ⇒ 적재 후 7,644,142행 예상.
+--     윈도우 함수(LEAD)와 안전하다 — WHERE 는 윈도우보다 먼저 적용되지만, 제거 대상은
 --       **그 회원의 전 행**이므로 잔존 회원의 PARTITION BY MBER_NO 구간은 바뀌지 않는다.
 WHERE {{ gn_member_master_filter('s.MBER_NO') }}

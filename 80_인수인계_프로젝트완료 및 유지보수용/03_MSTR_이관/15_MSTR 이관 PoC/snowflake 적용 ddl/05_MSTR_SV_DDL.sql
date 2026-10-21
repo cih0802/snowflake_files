@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 23_MSTR_SV_DDL.sql — MSTR 서빙뷰 + Semantic View DDL 정본: MSTR_SPNSR_DVLP_V · SV_MSTR_SPNSR_DVLP
+-- Target     : VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V, VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V, VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V, VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V 외 1
+-- Run order  : 운영계 #12
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD, GN_DW.MSTR.D_BRND_CD 외 11
+-- Issue      : O200-B, O200-C, O207, O212 외 2
+-- =============================================================================
 -- ============================================================================
 -- 23_MSTR_SV_DDL.sql — MSTR 서빙뷰 + Semantic View DDL 정본: MSTR_SPNSR_DVLP_V · SV_MSTR_SPNSR_DVLP
 --   · 구성 = USE → CREATE OR REPLACE VIEW → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능.

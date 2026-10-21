@@ -1,10 +1,16 @@
+-- =============================================================================
+-- Purpose    : [2026-10-20 O248] FACT_AD_INFLOW_ALLOC 는 배분 전후로 광고비를 잃거나 복제하지 않아야 한다.
+-- Target     : dbt singular test assert_faia_ad_cost_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref FACT_AD_INFLOW_ALLOC
+-- Issue      : O248, O225-B
+-- =============================================================================
 -- [2026-10-20 O248] FACT_AD_INFLOW_ALLOC 는 배분 전후로 광고비를 잃거나 복제하지 않아야 한다.
--- Co-authored with CoCo
 --
 -- 무엇을 지키는가: FACT_AD_PERFORMANCE(원천) ↔ 배분 팩트의 광고원천별 광고비 합계 일치.
 --   배분은 (월 · 마케팅캠페인 · 원천) 안의 개발(건) 비중이라 비중 합 = 1 이어야 하고,
 --   배분할 개발이 없는 광고비는 UNALLOC 행으로 남아야 한다(버리지 않는다).
---   🔴 행 단위 NUMBER(18,2) 반올림 누적이 있어 원 단위 허용오차 1원 × 배분 행수를 둔다
+--   WARN: 행 단위 NUMBER(18,2) 반올림 누적이 있어 원 단위 허용오차 1원 × 배분 행수를 둔다
 --   (선례 = assert_fap_ad_cost_preserved O225-B 「반올림 누적 거짓 FAIL」).
 --
 -- 판정: 0행이면 PASS.

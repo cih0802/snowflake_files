@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_EXPENSE_RESOLUTION ( O213-F Y3-K)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
+-- Run order  : 운영계 #40
+-- Depends on : GN_DW.GOLD.FACT_EXPENSE_RESOLUTION, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MARKETING_CAMPAIGN, GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION
+-- Issue      : O213-F, O51-F, O114-B, O225-B
+-- =============================================================================
 -- ============================================================================
 -- 05_23_SV_DDL_EXPENSE_RESOLUTION.sql — Semantic View DDL 정본: SV_EXPENSE_RESOLUTION ( O213-F Y3-K)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

@@ -1,16 +1,22 @@
+-- =============================================================================
+-- Purpose    : O53 — `GOLD.WIDE_AD_COMBINED`(dbt 소유 GOLD 뷰) 모델 + yml columns[] 기계 생성.
+-- Target     : GOLD.WIDE_AD_COMBINED (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref FACT_AD_DIGITAL, ref FACT_AD_BROADCAST
+-- Issue      : O53, DEC-34, O174, O213-F 외 3
+-- =============================================================================
 -- O53 — `GOLD.WIDE_AD_COMBINED`(dbt 소유 GOLD 뷰) 모델 + yml columns[] 기계 생성.
--- Co-authored with CoCo
 --
 -- 무엇을 만드는가
 --   광고 팩트 3종(FAP 코어 + FAD 디지털위성 + FAB 방송위성)을 `AD_PERF_DK` 로 1:1 pre-join 한
 --   **51컬럼 GOLD 뷰**. SV_AD 의 새 base 다(재배선은 O53 6단계).
 --
 -- 왜 GOLD 뷰인가 (사용자 제약 3개를 동시에 만족하는 유일 형태)
---   ① 데이터 중복 저장 불가        → 뷰(물리 저장 0)
---   ② SV 는 GOLD 만 본다           → 스키마를 SERVING → GOLD 로 올린다
---   ③ 다음 주 신설 코드 즉시 반영   → dbt 모델 1곳 수정 + ref() 위상정렬·리니지·build 게이트
+--   ① 데이터 중복 저장 불가 → 뷰(물리 저장 0)
+--   ② SV 는 GOLD 만 본다 → 스키마를 SERVING → GOLD 로 올린다
+--   ③ 다음 주 신설 코드 즉시 반영 → dbt 모델 1곳 수정 + ref() 위상정렬·리니지·build 게이트
 --   DEC-34 분류상 **③(팩트를 재구성 → ref() 필수)** 에 정확히 해당한다.
---   ⚠️ 대가: SV_AD 가 「dbt build 없이는 배포 불가」 계열로 편입된다.
+--   WARN: 대가: SV_AD 가 「dbt build 없이는 배포 불가」 계열로 편입된다.
 --
 -- 종전 대비 달라지는 것
 --   · 스키마 SERVING → GOLD · 소유주 SQL 스크립트(05_7_SV_DDL_AD.sql 내부) → dbt 모델
@@ -18,11 +24,11 @@
 --     → helper 뷰가 이 4컬럼을 빼고 있어 SV_AD 에서 방송 시각 축이 도달 불가였다.
 --
 -- 문안: 신규 작성 0 — `06_DDL.sql` 의 세 팩트 인라인 COMMENT 를 파싱해 이관한다.
---   · 이름이 바뀐 컬럼(BRDC_AD_VIEW_RT_SRC)은 접두 사유를 덧붙인다. 🆕 [O174] 방송 CPC 는 접두(BRDC_)가 아니라 **어의 개명**(CPC_CALL_SRC)으로 구분한다 — 접두는 「같은 지표의 다른 출처」로 읽히지만 분모가 다르다(클릭 ↔ 콜).
+--   · 이름이 바뀐 컬럼(BRDC_AD_VIEW_RT_SRC)은 접두 사유를 덧붙인다. [O174] 방송 CPC 는 접두(BRDC_)가 아니라 **어의 개명**(CPC_CALL_SRC)으로 구분한다 — 접두는 「같은 지표의 다른 출처」로 읽히지만 분모가 다르다(클릭 ↔ 콜).
 --   · 방송 전용 컬럼에는 **디지털행 NULL = 원천 부재** 경고를 덧붙인다(P20 — 시간축 NULL 3분류).
 --   · 시간축 4컬럼에는 **VIDEO 전용 · REBRDC 구조적 부재** 를 덧붙인다(원장 §429 기지 사실).
 --
--- ⚠️ 컬럼 COMMENT 정본 = `_wide_schema.yml` columns[] (materialized='gn_view_commented').
+-- WARN: 컬럼 COMMENT 정본 = `_wide_schema.yml` columns[] (materialized='gn_view_commented').
 --   SELECT 컬럼·순서를 바꾸면 `scripts/gen_o53_ad_combined.py` 로 **동시 재생성**할 것 —
 --   Snowflake 는 CREATE VIEW 컬럼목록과 SELECT 개수·순서가 정확히 일치해야 한다.
 {{ config(
@@ -85,7 +91,7 @@ select
     brc.DVLP_CNT,
     brc.AD_VIEW_RT_SRC as BRDC_AD_VIEW_RT_SRC,
     brc.CPC_CALL_SRC as CPC_CALL_SRC,
-    -- 🆕 [2026-10-08 O213-F Y3-G] 광고 분류 축 10(코어 팩트 말미 · _wide_schema.yml columns 같은 순서 필수)
+    --  [2026-10-08 O213-F Y3-G] 광고 분류 축 10(코어 팩트 말미 · _wide_schema.yml columns 같은 순서 필수)
     fap.MEDIA_CHANNEL_NM,
     fap.CREATIVE_NM,
     fap.COST_TYPE,
@@ -96,16 +102,16 @@ select
     fap.BSNS_CASE_DIV_NM,
     fap.CM,
     fap.DMST_OVSEA_DIV_NM,
-    -- 🆕 [2026-10-15 O232] 귀속 경로 + 소재 매핑(카테고리 축) — yml columns[] 맨 끝과 같은 순서.
+    --  [2026-10-15 O232] 귀속 경로 + 소재 매핑(카테고리 축) — yml columns[] 맨 끝과 같은 순서.
     fap.MKTG_MAP_METHOD,
     fap.AD_MAP_LEVEL,
     fap.AD_MAP_CMPGN_CTGR_NM,
-    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — yml columns[] 맨 끝과 같은 순서.
+    --  [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축) — yml columns[] 맨 끝과 같은 순서.
     fap.AD_CTGR_CD,
     fap.AD_CTGR_NM,
     fap.AD_CTGR_SRC,
     fap.AD_CTGR_IS_MULTI,
-    -- 🆕 [2026-10-15 O233 #36] 표시 전용 카테고리명 나열 — yml columns[] 맨 끝과 같은 순서.
+    --  [2026-10-15 O233 #36] 표시 전용 카테고리명 나열 — yml columns[] 맨 끝과 같은 순서.
     fap.AD_CTGR_NM_LIST
 from {{ ref('FACT_AD_PERFORMANCE') }} fap
 -- 위성은 AD_PERF_DK 로 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(fan-out 0).

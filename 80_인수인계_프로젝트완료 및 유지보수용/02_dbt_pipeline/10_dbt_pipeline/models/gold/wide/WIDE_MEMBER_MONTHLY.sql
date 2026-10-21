@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 월 팩트(FMM) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.1)
+-- Target     : GOLD.WIDE_MEMBER_MONTHLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY, ref DIM_MEMBER_STATUS_HISTORY, ref DIM_CAMPAIGN, ref DIM_SPONSORSHIP, ref DIM_PAYMENT, ref DIM_REASON
+-- Issue      : O51-B, O51-D, O26, O27 외 1
+-- =============================================================================
 -- WIDE_MEMBER_MONTHLY: 회원 월 팩트(FMM) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.1)
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).

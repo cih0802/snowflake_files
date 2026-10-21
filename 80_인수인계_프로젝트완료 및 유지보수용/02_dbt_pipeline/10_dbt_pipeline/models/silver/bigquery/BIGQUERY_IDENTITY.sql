@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 신원 1행/pseudo (Q1 접두 분기 + 세션 채움), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_IDENTITY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87, DEC-37, O87-B
+-- =============================================================================
 -- BIGQUERY_IDENTITY: 신원 1행/pseudo (Q1 접두 분기 + 세션 채움), 정본 09 STEP6.
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards + LATERAL FLATTEN → ref('BIGQUERY_REFINED_DATA').

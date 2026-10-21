@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_CAMPAIGN_MONTHLY ( O237-B)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_MONTHLY
+-- Run order  : 운영계 #42
+-- Depends on : GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY, GN_DW.GOLD.DIM_CAMPAIGN, GN_DW.GOLD.DIM_PAYMENT
+-- Issue      : O237-B
+-- =============================================================================
 -- ============================================================================
 -- 05_25_SV_DDL_CAMPAIGN_MONTHLY.sql — Semantic View DDL 정본: SV_CAMPAIGN_MONTHLY ( O237-B)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

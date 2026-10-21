@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-05 O38] FACT_MEMBER_DEV_ACHIEVEMENT 는 목표 행을 하나도 잃지 않아야 한다.
+-- Target     : dbt singular test assert_fact_dev_achv_goal_rows_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_MEMBER_DEV, ref FACT_MEMBER_DEV_ACHIEVEMENT
+-- Issue      : O38, O53
+-- =============================================================================
 -- [2026-08-05 O38] FACT_MEMBER_DEV_ACHIEVEMENT 는 목표 행을 하나도 잃지 않아야 한다.
 -- WARN: [2026-08-10 O53] 대상 개명·테이블화에 따라 파일명·ref 를 갱신했다
 --   (구: WIDE_DEV_ACHIEVEMENT 뷰 → 구: FACT_DEV_ACHIEVEMENT → 현: FACT_MEMBER_DEV_ACHIEVEMENT 테이블).

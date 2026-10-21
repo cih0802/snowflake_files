@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 개발약정 실적 정제 + AREA_CD(CM018)·DVLP_DIV_CD(MM015) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
+-- Target     : SILVER.CRM_MEMBER_DEV (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, ref CRM_CAMPAIGN, source bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT
+-- Issue      : O24, DEC-43, O180, O179 외 3
+-- =============================================================================
 -- CRM_MEMBER_DEV: 개발약정 실적 정제 + AREA_CD(CM018)·DVLP_DIV_CD(MM015) 라벨 (BRONZE → SILVER), 정본 09 STEP3.
 -- [2026-08-03 O24] DVLP_DIV_NM 신설. 원천 DVLP_DIV_CD 는 정본 컬럼정의서(167행)가 코드그룹 MM015 를 지정하며
 --   1=신규 · 2=증액 · 3=감액 · 4=재후원 · 5=후원중단 5종이다(USE_YN 전부 Y). 종전에는 코드만 전파하고

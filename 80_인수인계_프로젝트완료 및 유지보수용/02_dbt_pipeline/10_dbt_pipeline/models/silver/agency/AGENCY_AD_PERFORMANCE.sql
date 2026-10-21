@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고성과 공통 = DIGITAL ∪ REBROADCAST ∪ VIDEO (원천 1행 grain), 정본 09 STEP5.
+-- Target     : SILVER.AGENCY_AD_PERFORMANCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_ROW_DGT, ref AGENCY_AD_ROW_VIDEO, ref AGENCY_AD_ROW_REBRDC
+-- Issue      : DEC-9, DEC-11, DEC-8, O16 외 6
+-- =============================================================================
 -- AGENCY_AD_PERFORMANCE: 광고성과 공통 = DIGITAL ∪ REBROADCAST ∪ VIDEO (원천 1행 grain), 정본 09 STEP5.
 -- 연·월 = DATE 파생(텍스트 파싱 금지) · 인입콜 TRY_TO_NUMBER · 대행사 파생지표는 위성으로 분리(DEC-9).
 -- WARN: [2026-07-28 DEC-11] 원천을 BRONZE 직접참조 → **staging 3종 ref** 로 변경했다.

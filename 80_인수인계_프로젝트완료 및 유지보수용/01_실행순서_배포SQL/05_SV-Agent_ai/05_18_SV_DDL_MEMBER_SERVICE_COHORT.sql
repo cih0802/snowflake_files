@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_MEMBER_SERVICE_COHORT ( O205 · 2차 Agent 개선 B)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
+-- Run order  : 운영계 #35
+-- Depends on : GN_DW.GOLD.WIDE_MEMBER_SERVICE_COHORT
+-- Issue      : O205, O237-B
+-- =============================================================================
 -- ============================================================================
 -- 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_SERVICE_COHORT ( O205 · 2차 Agent 개선 B)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

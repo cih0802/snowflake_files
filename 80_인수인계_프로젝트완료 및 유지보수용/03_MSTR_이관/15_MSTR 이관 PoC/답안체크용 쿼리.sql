@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 답안체크용 쿼리 (O197) — MSTR 원 리포트 답안 ↔ GN_DW.MSTR 이관 결과 대조
+-- Target     : VIEW CHK_OURS, VIEW CHK_ANS, VIEW CHK_RESULT
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM, GN_DW.MSTR.D_DVLP_DIV_CD, GN_DW.MSTR.D_CPR_DIV_CD, GN_DW.MSTR.D_DEPT4_CD, GN_DW.MSTR.D_DEPT_CD, GN_DW.MSTR.D_BRND_CD 외 9
+-- Issue      : O197
+-- =============================================================================
 -- =====================================================================
 -- 답안체크용 쿼리 (O197) — MSTR 원 리포트 답안 ↔ GN_DW.MSTR 이관 결과 대조
 --   답안 원문 = `15_MSTR 이관 PoC/mstr-answer.csv`

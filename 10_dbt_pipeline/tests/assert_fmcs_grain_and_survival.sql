@@ -1,11 +1,17 @@
+-- =============================================================================
+-- Purpose    : FACT_MEMBER_COHORT_SURVIVAL grain 유일성 + 생존 곡선 불변식 (O232 신설)
+-- Target     : dbt singular test assert_fmcs_grain_and_survival (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT_SURVIVAL, ref FACT_MEMBER_COHORT
+-- Issue      : O232, O249, O233
+-- =============================================================================
 -- assert_fmcs_grain_and_survival: FACT_MEMBER_COHORT_SURVIVAL grain 유일성 + 생존 곡선 불변식 (O232 신설)
--- Co-authored with CoCo
 -- 반환 행 = 위반(0행이어야 PASS). dbt_utils 미설치라 singular 테스트로 둔다.
 --   ㉠ grain(AXIS_TYPE × AXIS_VALUE × ELAPSED_MONTH) 중복
 --   ㉡ 생존율 범위 [0, 1] 밖 · SURV_END > SURV_START(곡선은 증가하지 않는다)
---   ㉢ 셀마다 상한 표지(LTV_CAP_AVG_ACTIVE_MONTHS ≠ 9999) 행 수 ≠ 1 — 🆕 [O249] 상한은 계산형 1값(구 ltv_caps 개수)
+--   ㉢ 셀마다 상한 표지(LTV_CAP_AVG_ACTIVE_MONTHS ≠ 9999) 행 수 ≠ 1 — [O249] 상한은 계산형 1값(구 ltv_caps 개수)
 --   ㉣ 축 「전체」 COHORT_MEMBERS ≠ FACT_MEMBER_COHORT 생존분석 대상 회원수(입력 누락·중복)
---   🆕 [O249] ㉥ 상한값 ≠ CEIL(관측 중 회원 평균 유지개월) — 계산식과 표지가 어긋난 경우
+--    [O249] ㉥ 상한값 ≠ CEIL(관측 중 회원 평균 유지개월) — 계산식과 표지가 어긋난 경우
 {%- set n_caps = 1 %}
 select 'GRAIN_DUP:' || AXIS_TYPE || '|' || AXIS_VALUE || '|' || ELAPSED_MONTH as CHECK_NM, COUNT(*) as V
 from {{ ref('FACT_MEMBER_COHORT_SURVIVAL') }}
@@ -27,7 +33,7 @@ having COUNT_IF(LTV_CAP_AVG_ACTIVE_MONTHS <> 9999) <> {{ n_caps }}
 
 union all
 
--- 🆕 [O233] ㉤ 무기한 표지(9999) = 셀의 최대 관측월(관측이 끝난 마지막 경과월) 행에 정확히 1개.
+--  [O233] ㉤ 무기한 표지(9999) = 셀의 최대 관측월(관측이 끝난 마지막 경과월) 행에 정확히 1개.
 --   예외 = 그 경과월이 상한−1 과 겹치면 상한 표지가 우선한다(모델 주석 · RMST 동일).
 --   horizon(ltv_horizon_max)이 최대 관측월보다 짧으면 이 검사가 잡는다.
 select 'UNLIMITED_ROW:' || t.AXIS_TYPE || '|' || t.AXIS_VALUE, COUNT_IF(t.LTV_CAP_AVG_ACTIVE_MONTHS = 9999)

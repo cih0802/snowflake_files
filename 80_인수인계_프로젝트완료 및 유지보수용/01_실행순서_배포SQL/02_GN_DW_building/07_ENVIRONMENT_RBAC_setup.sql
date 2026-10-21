@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
+-- Target     : WAREHOUSE GN_DW_ETL_WH, WAREHOUSE GN_DW_ANALYTICS_WH, WAREHOUSE GN_DW_DEV_WH, WAREHOUSE GN_DW_ML_WH 외 22
+-- Run order  : 운영계 #1
+-- Depends on : -
+-- Issue      : O55, O36, O91, O90 외 9
+-- =============================================================================
 -- GN_DW 0단계 부트스트랩: 환경(웨어하우스)·RBAC(역할·계층·권한)·DATABASE·스키마 9종·CoWork object
 --   ⛔ [2026-08-10 O55] 종전 이 줄 끝의 「helper 뷰 생성」은 **삭제했다** — 이 파일에 helper 생성문이 없었고(O36),
 --      helper 자체가 물리 DROP 됐다(SV base 전건 GOLD).

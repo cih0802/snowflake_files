@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Step 2 — 문법 및 컴파일 검증 (엔지니어 역할: GN_DW_DBT)
+-- Target     : DBT PROJECT GN_DW.OPS.DW_PIPELINE (실행)
+-- Run order  : 운영계 #15
+-- Depends on : GN_DW.SILVER.BIGQUERY_REFINED_DATA, GN_DW.SILVER.BIGQUERY_BASIC, GN_DW.SILVER.BIGQUERY_EVENT, GN_DW.GOLD.FACT_BIGQUERY_BEHAVIOR, GN_DW.OPS.WARN_BIGQUERY_LOAD_GAP, GN_DW.OPS.WARN_GOLD_FACT_BIGQUERY_DATE_SK_ZERO 외 1
+-- Issue      : O178, O177, O187-C, O187
+-- =============================================================================
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Step 2 — 문법 및 컴파일 검증 (엔지니어 역할: GN_DW_DBT)
 -- ─────────────────────────────────────────────────────────────────────────────

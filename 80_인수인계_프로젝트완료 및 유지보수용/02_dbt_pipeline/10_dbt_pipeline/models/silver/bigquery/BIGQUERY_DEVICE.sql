@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 기기 차원 DISTINCT (platform+device.category 조합 파생: APP/M/PC), 정본 09 STEP6.
+-- Target     : SILVER.BIGQUERY_DEVICE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC
+-- Issue      : O87
+-- =============================================================================
 -- BIGQUERY_DEVICE: 기기 차원 DISTINCT (platform+device.category 조합 파생: APP/M/PC), 정본 09 STEP6.
 --
 -- 🔄 [2026-08-19 O87] 소스 전환 — ga4_union_shards 매크로 → ref('BIGQUERY_REFINED_DATA').

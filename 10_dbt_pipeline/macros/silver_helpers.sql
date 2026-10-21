@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 공통 정제 매크로 (BRONZE→SILVER 표준 규칙)
+-- Target     : macro clean_str, dw_meta
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- 공통 정제 매크로 (BRONZE→SILVER 표준 규칙)
--- Co-authored with CoCo
 
 -- 문자열 NULL 표준화: 빈문자·'NULL'·'-'·공백 → NULL, TRIM 적용
 {% macro clean_str(col) -%}

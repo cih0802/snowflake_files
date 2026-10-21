@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_MEMBER_STATUS_ASOF ( O203 · T8 2차)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
+-- Run order  : 운영계 #34
+-- Depends on : GN_DW.GOLD.DIM_MEMBER_STATUS_HISTORY
+-- Issue      : O203
+-- =============================================================================
 -- ============================================================================
 -- 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql — Semantic View DDL 정본: SV_MEMBER_STATUS_ASOF ( O203 · T8 2차)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

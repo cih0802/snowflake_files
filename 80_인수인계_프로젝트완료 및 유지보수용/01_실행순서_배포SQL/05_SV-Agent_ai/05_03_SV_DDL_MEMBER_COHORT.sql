@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_3_SV_DDL_MEMBER_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_COHORT
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_COHORT
+-- Run order  : 운영계 #20 · 기존 환경 갱신 #22
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_COHORT, GN_DW.GOLD.DIM_CAMPAIGN, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_ORG, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL
+-- Issue      : -
+-- =============================================================================
 -- ============================================================================
 -- 05_3_SV_DDL_MEMBER_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_COHORT
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

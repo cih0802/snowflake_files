@@ -1,19 +1,25 @@
+-- =============================================================================
+-- Purpose    : 예산 팩트 (SILVER.ERP_BUDGET 월별 언피벗 → MONTH×BUDGET_ITEM), 순서9-C 신설.
+-- Target     : GOLD.FACT_BUDGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET
+-- Issue      : DEC-57, O175, O93, O240 외 8
+-- =============================================================================
 -- FACT_BUDGET: 예산 팩트 (SILVER.ERP_BUDGET 월별 언피벗 → MONTH×BUDGET_ITEM), 순서9-C 신설.
--- Co-authored with CoCo
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
 --   NULL: EXEC_BUDGET_EST(추정집행 미산출) · FUNDRAISING_COST(DEC-57 · 하나로 정하지 않음 · 정본 = EXEC_DIRECT_MNYRS_1·2).
--- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
+-- WARN: [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
 --    *"E-4 원천부재"* 는 **거짓이었다**. 대행사 원천 3종에 광고비가 전량 실재하고
 --    이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다(원천 합 일치).
---    ⚠️ 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
+--    WARN: 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
 --    `BUDGET_ITEM_SK` 귀속 근거가 없고, 광고 팩트와 이중계상이 된다.
 --    소비 안내: 광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED`).
--- 🔴 [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
+-- WARN: [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
 --    *"추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO"* 는 해소됐다.
 --    원장의 연 총액 4종(편성·추경·조정·집행)은 **`FACT_BUDGET_YEARLY`(연 grain)** 로 분리했다.
---    ⚠️ 여기에 연값을 넣지 말 것 — 이 팩트는 월 grain 이라 12개월에 복제되고 `SUM()` 이 12배가 된다.
+--    WARN: 여기에 연값을 넣지 말 것 — 이 팩트는 월 grain 이라 12개월에 복제되고 `SUM()` 이 12배가 된다.
 --    소비 안내: 연 편성 = `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` · 월 편성 = 아래 `PLAN_BUDGET_MONTH`.
 {{ config(
     tags=['gold_pending']
@@ -30,7 +36,7 @@ with b as (
     from {{ ref('ERP_BUDGET') }}
 ),
 ranked as (
-    -- 🆕 [O240 · O245 문안 정정] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 편성 데이터가 없는 연도는 연사업)
+    --  [O240 · O245 문안 정정] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 편성 데이터가 없는 연도는 연사업)
     select
         *,
         dense_rank() over (partition by BUDGET_YEAR
@@ -49,21 +55,21 @@ select
     0                                     as CAMPAIGN_SK,       -- 원천 연결 없음
     CAST(NULL AS NUMBER(38,0))            as SPONSORSHIP_SK,
     SUM(YEAR_BUDGET_AMT)                  as PLAN_BUDGET_MONTH, -- 월 편성예산
-    -- 🔴 [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍 — O96 판정(§7-B A군) 집행.
+    -- WARN: [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍 — O96 판정(§7-B A군) 집행.
     --    연값은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` 로 이미 분리돼 있어 이 컬럼은 항상 NULL이었다.
     SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
-    -- 🔴 [2026-10-12 O216-E] FUNDRAISING_COST 는 **의도적 NULL** 이다 — 현업 회신 42(DEC-57 · 문서30 -017.md:44)
+    -- WARN: [2026-10-12 O216-E] FUNDRAISING_COST 는 **의도적 NULL** 이다 — 현업 회신 42(DEC-57 · 문서30 -017.md:44)
     --   「모금성비용은 하나로 정하지 않는다 · 직접모금비1·2 를 이름 그대로 나란히」. 정본 = 아래 EXEC_DIRECT_MNYRS_1·2.
-    --   ⚠️ 여기에 YN_1/YN_2 중 하나를 넣지 말 것(O216-E 가 한 번 넣었다가 되돌렸다).
+    --   WARN: 여기에 YN_1/YN_2 중 하나를 넣지 말 것(O216-E 가 한 번 넣었다가 되돌렸다).
     CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- DEC-57 · 정본 = EXEC_DIRECT_MNYRS_1·2
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
     {{ gold_meta('ERP') }},
-    -- 🆕 [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).
-    --   🔴 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH) 유일을 강제한다(O198 확장).
+    --  [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).
+    --   WARN: 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH) 유일을 강제한다(O198 확장).
     SUM(IFF(DIRECT_MNYRS_YN_1 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_1,
     SUM(IFF(DIRECT_MNYRS_YN_2 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_2,
-    -- 🆕 [2026-10-02 O198 · DEC-60] 개발 유입경로 = 퇴화 차원 · grain 키 편입(월×세세목 안에서 2~3종 · 실측 336/2,652 grain).
+    --  [2026-10-02 O198 · DEC-60] 개발 유입경로 = 퇴화 차원 · grain 키 편입(월×세세목 안에서 2~3종 · 실측 336/2,652 grain).
     --   (MONTH_KEY, BUDGET_ITEM_DK, BUDGET_PROCEDURE, DVLP_INBOUND_PATH) = 원천 원장 grain 과 일치(3,096 = 3,096) ⇒ 합계 불변.
     --   NULL 은 NULL 로 둔다(R2-7 · 원장에 경로 미기재).
     DVLP_INBOUND_PATH                     as DVLP_INBOUND_PATH

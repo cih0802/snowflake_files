@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 메시지 발송 메일 오픈 로그 정제 (BRONZE SND_MEMBER_OPEN_LOG → SILVER)
+-- Target     : SILVER.CRM_SEND_MEMBER_OPEN_LOG (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.SND_MEMBER_OPEN_LOG
+-- Issue      : O162
+-- =============================================================================
 -- CRM_SEND_MEMBER_OPEN_LOG: 메시지 발송 메일 오픈 로그 정제 (BRONZE SND_MEMBER_OPEN_LOG → SILVER)
 --
 -- ============================================================================

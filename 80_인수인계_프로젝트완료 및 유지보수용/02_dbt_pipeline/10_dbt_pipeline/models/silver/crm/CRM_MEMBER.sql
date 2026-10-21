@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 마스터 = 정기(FDRM) ∪ 일시(ONCE), SEX/MBER_DIV_NM/상태 라벨·수신동의 정규화, 정본 09 STEP3 배치4.
+-- Target     : SILVER.CRM_MEMBER (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, source bronze_crm.TM_MM_FDRM_MBER_INFO, source bronze_crm.TM_MM_ONCE_MBER_INFO
+-- Issue      : O26, O191-F, O213-D
+-- =============================================================================
 -- CRM_MEMBER: 회원 마스터 = 정기(FDRM) ∪ 일시(ONCE), SEX/MBER_DIV_NM/상태 라벨·수신동의 정규화, 정본 09 STEP3 배치4.
 -- [2026-08-03 O26] SEX 원천 보존 교정 — 종전은 `SEX IN ('1','3')→'M' / ('2','4')→'F' / else 'U'` 로 축약해
 --   원천 CM013 도메인 8종을 3종으로 파괴했다(값 충실도 검사 24건 중 유일한 불일치: SILVER만 3종·BRONZE만 8종).

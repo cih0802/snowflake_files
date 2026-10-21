@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 05_9_SV_DDL_MEMBER_FEE.sql — Semantic View DDL 정본: SV_MEMBER_FEE
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
+-- Run order  : 운영계 #26
+-- Depends on : GN_DW.GOLD.WIDE_MEMBER_FEE, GN_DW.GOLD.FACT_MEMBER_FEE
+-- Issue      : O205, O237
+-- =============================================================================
 -- ============================================================================
 -- 05_9_SV_DDL_MEMBER_FEE.sql — Semantic View DDL 정본: SV_MEMBER_FEE
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).

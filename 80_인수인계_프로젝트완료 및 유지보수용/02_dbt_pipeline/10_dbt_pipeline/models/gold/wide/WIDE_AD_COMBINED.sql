@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : O53 — `GOLD.WIDE_AD_COMBINED`(dbt 소유 GOLD 뷰) 모델 + yml columns[] 기계 생성.
+-- Target     : GOLD.WIDE_AD_COMBINED (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref FACT_AD_DIGITAL, ref FACT_AD_BROADCAST
+-- Issue      : O53, DEC-34, O174, O213-F 외 3
+-- =============================================================================
 -- O53 — `GOLD.WIDE_AD_COMBINED`(dbt 소유 GOLD 뷰) 모델 + yml columns[] 기계 생성.
 --
 -- 무엇을 만드는가

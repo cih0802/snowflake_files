@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 검색 노출·클릭 일 팩트 (1행 = 일 × 검색어 × 페이지 × 국가 × 기기) · [2026-10-08 O213-F Y3-F]
+-- Target     : GOLD.FACT_SEARCH_CONSOLE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref SEARCH_CONSOLE_DATA
+-- Issue      : O213-F
+-- =============================================================================
 -- FACT_SEARCH_CONSOLE: 검색 노출·클릭 일 팩트 (1행 = 일 × 검색어 × 페이지 × 국가 × 기기) · [2026-10-08 O213-F Y3-F]
 -- grain: DATE_SK × QUERY × PAGE × COUNTRY × DEVICE (원천 SILVER.SEARCH_CONSOLE_DATA 와 1:1 · 5키 중복 0 실측)
 -- WARN: CTR·POSITION 은 행 단위 비율/평균 — 합산 금지. 상위 집계 CTR = SUM(CLICKS)/SUM(IMPRESSIONS),

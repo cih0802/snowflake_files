@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 예산 세세목 차원 (SILVER.ERP_BUDGET_ITEM → 세세목명/예산구분), 순서9-C 신설.
+-- Target     : GOLD.DIM_BUDGET_ITEM (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET_ITEM
+-- Issue      : O198, DEC-60, O213-F
+-- =============================================================================
 -- DIM_BUDGET_ITEM: 예산 세세목 차원 (SILVER.ERP_BUDGET_ITEM → 세세목명/예산구분), 순서9-C 신설.
 -- 매핑: BUDGET_ITEM_NAME=최하위 예산과목(세세목 우선 COALESCE) · BUDGET_CATEGORY=수입/지출 구분(INCOME_EXPS_DIV_NM).
 --   장/관/항/목/세목 상위 계층은 GOLD DDL(2속성 최소차원)에 미수용 → 필요 시 DDL 확장 후 추가.

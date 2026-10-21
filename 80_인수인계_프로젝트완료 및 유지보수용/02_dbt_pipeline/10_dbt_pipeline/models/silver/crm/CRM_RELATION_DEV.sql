@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연 개발금액 사건(결연 개발·상태 전이) (BRONZE TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_RELATION_DEV (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT
+-- Issue      : O188-F, O179
+-- =============================================================================
 -- CRM_RELATION_DEV: 결연 개발금액 사건(결연 개발·상태 전이) (BRONZE TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
 -- grain = OCCRRNC_DE, SER_NO ( 이전 계정 유일 실측)
 SELECT

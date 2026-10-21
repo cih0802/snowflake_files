@@ -1,10 +1,16 @@
--- GA4_USER_DEMOGRAPHIC: GA4 인구통계 일 집계 (1행 = 일 × 기기 × 성별 × 연령대) · 🆕 [2026-10-08 O213-F Y3-F]
--- Co-authored with CoCo
+-- =============================================================================
+-- Purpose    : GA4 인구통계 일 집계 (1행 = 일 × 기기 × 성별 × 연령대) · 🆕 [2026-10-08 O213-F Y3-F]
+-- Target     : SILVER.GA4_USER_DEMOGRAPHIC (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_ga4.GA4_USER_DEMOGRAPHIC
+-- Issue      : O213-F
+-- =============================================================================
+-- GA4_USER_DEMOGRAPHIC: GA4 인구통계 일 집계 (1행 = 일 × 기기 × 성별 × 연령대) · [2026-10-08 O213-F Y3-F]
 -- 원천 BRONZE_GA4.GA4_USER_DEMOGRAPHIC(GA4 Data API · 전 컬럼 TEXT) → 타입만 확정. 값 가공 없음(R2-7).
 --   실측: 46,143행 · grain 중복 0 · 지표 숫자 변환 실패 0 · 2022-12-27~.
--- 🔴 TOTAL_USERS·NEW_USERS 는 API 가 grain 단위로 낸 고유 사용자수다 — 상위 축(월·성별 전체 등)으로
+-- WARN: TOTAL_USERS·NEW_USERS 는 API 가 grain 단위로 낸 고유 사용자수다 — 상위 축(월·성별 전체 등)으로
 --    다시 합하면 중복 계상된다(비가산). SESSIONS 만 가산이다.
--- 🔴 'unknown' 은 GA4 가 성별·연령을 추정하지 못한 버킷(원값 보존 · 결측 아님).
+-- WARN: 'unknown' 은 GA4 가 성별·연령을 추정하지 못한 버킷(원값 보존 · 결측 아님).
 -- pre-hook = silver_purge 기본(TRUNCATE) · 전량 재적재.
 {{ config(materialized='incremental') }}
 

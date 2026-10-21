@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-07 O50] GOLD 뷰 COMMENT 커버리지 게이트 — 뷰레벨·컬럼레벨 누락 감시.
+-- Target     : dbt singular test warn_gold_view_comment_coverage (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref WIDE_MEMBER_MONTHLY, ref WIDE_MEMBER_EVENT, ref WIDE_MEMBER_FEE, ref WIDE_TARGET_DEV, ref WIDE_TARGET_BIZ, ref WIDE_SERVICE_EVENT 외 8
+-- Issue      : O50, O51, O42, O53 외 2
+-- =============================================================================
 -- [2026-08-07 O50] GOLD 뷰 COMMENT 커버리지 게이트 — 뷰레벨·컬럼레벨 누락 감시.
 --
 -- 무엇을 지키는가: `GN_DW.GOLD` 의 **모든 뷰**가 뷰 COMMENT 를 갖고, 그 뷰의 **모든 컬럼**이

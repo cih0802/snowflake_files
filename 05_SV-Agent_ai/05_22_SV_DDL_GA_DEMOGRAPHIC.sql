@@ -1,9 +1,16 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_DEMOGRAPHIC (🆕 O213-F Y3-F)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC
+-- Run order  : 운영계 #39
+-- Depends on : GN_DW.GOLD.FACT_GA4_DEMOGRAPHIC, GN_DW.GOLD.DIM_DATE, GN_DW.BRONZE_GA4.GA4_USER_DEMOGRAPHIC
+-- Issue      : O213-F
+-- =============================================================================
 -- ============================================================================
--- 05_22_SV_DDL_GA_DEMOGRAPHIC.sql — Semantic View DDL 정본: SV_GA_DEMOGRAPHIC (🆕 O213-F Y3-F)
+-- 05_22_SV_DDL_GA_DEMOGRAPHIC.sql — Semantic View DDL 정본: SV_GA_DEMOGRAPHIC ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `GA4_USER_DEMOGRAPHIC+`.
+--   · WARN: 선행 = dbt build `GA4_USER_DEMOGRAPHIC+`.
 --   · 원천 BRONZE_GA4.GA4_USER_DEMOGRAPHIC(GA4 Data API 일 집계) 는 종전 SILVER·GOLD·MSTR 소비 0(완전 미배선).
---   · 🔴 사용자수(TOTAL_USERS·NEW_USERS)는 API 가 grain 단위로 낸 고유값 — 합산하면 중복 계상 ⇒ 지표로 노출하지 않는다.
+--   · WARN: 사용자수(TOTAL_USERS·NEW_USERS)는 API 가 grain 단위로 낸 고유값 — 합산하면 중복 계상 ⇒ 지표로 노출하지 않는다.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

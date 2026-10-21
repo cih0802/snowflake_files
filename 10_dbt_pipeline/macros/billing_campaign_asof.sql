@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 청구 행 1건 → 「그 달 후원 캠페인」 코드 1개 (O225-C · 사용자 결정 O225-B)
+-- Target     : macro billing_campaign_asof
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : ref CRM_MEMBER_SPONSOR_SPAN
+-- Issue      : O225-C, O225-B
+-- =============================================================================
 -- billing_campaign_asof: 청구 행 1건 → 「그 달 후원 캠페인」 코드 1개 (O225-C · 사용자 결정 O225-B)
--- Co-authored with CoCo
 --
 -- 정의 지점은 이 매크로 하나다 — FACT_PAYMENT_BILLING_STATUS · FACT_MEMBER_MONTHLY 가 같은 규칙을 쓴다.
 --   규칙: ① 일시후원 ONCE_CMPGN_CD 가 있으면 그것

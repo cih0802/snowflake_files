@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : [2026-08-19 O88] GA4 계열 PK 4키 유일성 게이트 — `GA4-SEQ-1` 의 유일한 기계 검사.
+-- Target     : dbt singular test assert_bigquery_pk_unique (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_BASIC, ref BIGQUERY_EVENT
+-- Issue      : O88, O87-B, O87
+-- =============================================================================
 -- [2026-08-19 O88] GA4 계열 PK 4키 유일성 게이트 — `GA4-SEQ-1` 의 유일한 기계 검사.
 --
 -- 🔄 [2026-08-21] BIGQUERY_REFINED_DATA 가 외부 Python 적재로 전환되며 파생을 잃었다 —

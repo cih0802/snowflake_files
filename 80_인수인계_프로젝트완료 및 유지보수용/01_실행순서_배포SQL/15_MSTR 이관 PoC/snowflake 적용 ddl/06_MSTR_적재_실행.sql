@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW.MSTR 테이블 채우기(적재) · 검증 · 재실행 절차
+-- Target     : PROCEDURE GN_DW.MSTR.USP_RUN_MSTR_1ST (호출)
+-- Run order  : 운영계 #17
+-- Depends on : GN_DW.INFORMATION_SCHEMA.TABLES, GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT, GN_DW.MSTR.F_MM_SPNSR_DVLP, GN_DW.MSTR.BCHLOG, GN_DW.SERVING.MSTR_SPNSR_DVLP_V
+-- Issue      : O201-C, O201-D, O207-C
+-- =============================================================================
 -- ============================================================================
 -- 06_MSTR_적재_실행.sql — GN_DW.MSTR 테이블 채우기(적재) · 검증 · 재실행 절차
 --    [2026-10-03 O201-C] 작성

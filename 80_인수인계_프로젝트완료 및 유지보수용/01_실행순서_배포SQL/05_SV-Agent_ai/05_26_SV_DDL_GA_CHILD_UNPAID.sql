@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_GA_CHILD_UNPAID ( O239 · G1 잔여 2건)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_GA_CHILD_UNPAID
+-- Run order  : 운영계 #43
+-- Depends on : GN_DW.GOLD.FACT_GA_CHILD_VIEW, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.FACT_UNPAID_SERVICE_CONV
+-- Issue      : O239
+-- =============================================================================
 -- ============================================================================
 -- 05_26_SV_DDL_GA_CHILD_UNPAID.sql — Semantic View DDL 정본: SV_GA_CHILD_UNPAID ( O239 · G1 잔여 2건)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : A1/A3 BLOCKING-5 부분해소 검증쿼리 — dbt build 후 실행(읽기전용)
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_MONTHLY, GN_DW.GOLD.FACT_MEMBER_EVENT, GN_DW.GOLD.DIM_SERVICE, GN_DW.GOLD.FACT_MESSAGE_DISPATCH
+-- Issue      : -
+-- =============================================================================
 -- A1/A3 BLOCKING-5 부분해소 검증쿼리 — dbt build 후 실행(읽기전용)
 -- ============================================================================
 -- 대상: FACT_MEMBER_MONTHLY(A1)·FACT_MESSAGE_DISPATCH(구 FACT_SERVICE_EVENT)(A3)

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송 템플릿 차원 (채널 × 템플릿 grain) — CRM_MSG_TEMPLATE (+ 버튼 수)
+-- Target     : GOLD.DIM_MSG_TEMPLATE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MSG_TEMPLATE_BUTTON, ref CRM_MSG_TEMPLATE
+-- Issue      : O188-F, O249, DR-31, A8-29
+-- =============================================================================
 -- DIM_MSG_TEMPLATE: 발송 템플릿 차원 (채널 × 템플릿 grain) — CRM_MSG_TEMPLATE (+ 버튼 수)
 --  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(

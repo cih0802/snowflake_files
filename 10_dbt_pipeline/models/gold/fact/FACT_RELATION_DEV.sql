@@ -1,7 +1,13 @@
+-- =============================================================================
+-- Purpose    : 결연 개발금액 사건 팩트 (발생일 × 일련번호 grain) — CRM_RELATION_DEV
+-- Target     : GOLD.FACT_RELATION_DEV (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_RELATION_DEV
+-- Issue      : O188-F
+-- =============================================================================
 -- FACT_RELATION_DEV: 결연 개발금액 사건 팩트 (발생일 × 일련번호 grain) — CRM_RELATION_DEV
--- Co-authored with CoCo
--- 🆕 [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
--- ⚠️ 상태 코드는 코드군 미확정 ⇒ raw degen. 후원사업 SK 는 SPNSR_BSNS_NO 가 사업 마스터 키가 아니라 두지 않는다(degen 유지).
+--  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
+-- WARN: 상태 코드는 코드군 미확정 ⇒ raw degen. 후원사업 SK 는 SPNSR_BSNS_NO 가 사업 마스터 키가 아니라 두지 않는다(degen 유지).
 {{ config(
     tags=['gold_pending']
 ) }}

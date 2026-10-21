@@ -111,6 +111,27 @@ models:
         description: "O191 실적트리 상위 중 부서코드 접두 ZC 노드 = 본부/지부 단위(서울·경기1·나눔마케팅본부 등) · 자기가 ZC 면 자기 · 도달 못 하면 NULL · 🔴 DIVISION 은 현업 확인 전까지 NULL 유지"
       - name: ACMSLT_DIV_NM
         description: "O191 ACMSLT_DIV_ID 의 부서명(원천 DEPT_NM) · 🔴 같은 이름이 여러 ZB 아래 있다(예: 서울) — 병합 여부 현업 확인 대기"
+  # 🆕 [2026-10-21 O252 · DEC-63] 폐지·개편 부서 → 현재 활성 부서 귀속 차원(DIM_ORG 와 1:1)
+  - name: DIM_ORG_SUCCESSION
+    columns:
+      - name: OLD_ORG_SK
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('DIM_ORG')
+              field: ORG_SK
+      - name: CUR_ORG_SK
+        description: "귀속 현재 부서(활성만). NULL = UNMAPPED·MANUAL_UNMAPPED 뿐이어야 한다 — 아래 expression 테스트"
+        tests:
+          - relationships:
+              to: ref('DIM_ORG')
+              field: ORG_SK
+      - name: MAP_METHOD
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SELF', 'MANUAL', 'MANUAL_UNMAPPED', 'AUTO_NAME', 'AUTO_MEMBER_FLOW', 'AUTO_ACMSLT_PARENT', 'AUTO_ORG_PARENT', 'UNMAPPED']
   # 🆕 [2026-09-29 O188-F 2차-A] 종전 미연결 BRONZE_CRM 원천의 신설 GOLD 차원 — 키 유일성은 BRONZE 실측으로 확인했다.
   - name: DIM_BIZ_PLACE
     columns:

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_DVLP_GOAL_ACMSLT · SV_MBRFEE_PRDT_ACTL · SV_SPNSR_CLS_AGGR
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_DVLP_GOAL_ACMSLT, SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL, SEMANTIC VIEW GN_DW.SERVING.SV_SPNSR_CLS_AGGR
+-- Run order  : 운영계 #30
+-- Depends on : GN_DW.GOLD.WIDE_DVLP_GOAL_ACMSLT, GN_DW.GOLD.WIDE_MBRFEE_PRDT_ACTL, GN_DW.GOLD.WIDE_SPNSR_CLS_AGGR
+-- Issue      : O200-B, O200-A, O200-C
+-- =============================================================================
 -- ============================================================================
 -- 05_13_SV_DDL_DEPT_AGGR.sql — Semantic View DDL 정본: SV_DVLP_GOAL_ACMSLT · SV_MBRFEE_PRDT_ACTL · SV_SPNSR_CLS_AGGR
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능.

@@ -1,7 +1,14 @@
+-- =============================================================================
+-- Purpose    : 05_1_SV_DDL_MEMBER_MONTHLY.sql — Semantic View DDL 정본: SV_MEMBER_MONTHLY
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
+-- Run order  : 운영계 #18 · 기존 환경 갱신 #14
+-- Depends on : GN_DW.GOLD.FACT_MEMBER_MONTHLY, GN_DW.GOLD.DIM_MONTH, GN_DW.GOLD.DIM_MEMBER, GN_DW.GOLD.DIM_REASON, GN_DW.GOLD.DIM_CAMPAIGN
+-- Issue      : O225-C, O226, O237-C, O243 외 3
+-- =============================================================================
 -- ============================================================================
 -- 05_1_SV_DDL_MEMBER_MONTHLY.sql — Semantic View DDL 정본: SV_MEMBER_MONTHLY
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -26,17 +33,17 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       PRIMARY KEY (REASON_SK)
       WITH SYNONYMS ('사유', '미납사유', '결제사유')
       COMMENT = '사유 차원. PK 유일(fan-out 0). 🔴코드그룹이 섞여 있다 — REASON_TYPE 으로 먼저 분리하지 않으면 서로 다른 코드체계를 한 축으로 합산하게 된다(유형). [원천] 시스템=CRM · SILVER=CRM_CODE 파생.',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인(단일 월만 · 다중 월 = (미매핑) + IS_MULTI_CAMPAIGN)
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인(단일 월만 · 다중 월 = (미매핑) + IS_MULTI_CAMPAIGN)
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인', '후원 캠페인', '그 달 캠페인')
       COMMENT = '캠페인 차원(PK 유일 · fan-out 0). 회원×월의 「그 달 후원 캠페인」이 하나일 때만 연결된다 — 여러 캠페인을 후원한 달(IS_MULTI_CAMPAIGN=TRUE)과 회비 행이 없는 달은 (미매핑). [원천] BRONZE_CRM.TM_MM_FDRM_MBER_SPNSR.CMPGN_CD · TM_PM_*.ONCE_CMPGN_CD → TM_CM_CMPGN_MNG.',
-    -- 🆕 [2026-10-14 O226 · campaign_axis_gate GAP] 회원 최초 캠페인(DIM_MEMBER.FIRST_CAMPAIGN = 캠페인 코드) — 같은 마스터를 별칭으로 한 번 더 붙인다
+    --  [2026-10-14 O226 · campaign_axis_gate GAP] 회원 최초 캠페인(DIM_MEMBER.FIRST_CAMPAIGN = 캠페인 코드) — 같은 마스터를 별칭으로 한 번 더 붙인다
     first_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_BK)
       WITH SYNONYMS ('최초 캠페인', '가입 캠페인')
       COMMENT = '회원 최초 캠페인 차원(DIM_CAMPAIGN 을 캠페인 코드 CAMPAIGN_BK 로 조인 · BK 유일 · fan-out 0). 회원 마스터의 현재값이며 월과 무관하다 — 「그 달 후원 캠페인」(campaign)과 다른 축이다. [원천] BRONZE_CRM.TM_MM_FDRM_MBER_INFO.CMPGN_CD → TM_CM_CMPGN_MNG.',
-    -- 🆕 [2026-10-16 O237-C] 회원 최종 캠페인(DIM_MEMBER.LAST_CAMPAIGN = 캠페인 코드 · 잠정) — 같은 마스터를 별칭으로 한 번 더 붙인다
+    --  [2026-10-16 O237-C] 회원 최종 캠페인(DIM_MEMBER.LAST_CAMPAIGN = 캠페인 코드 · 잠정) — 같은 마스터를 별칭으로 한 번 더 붙인다
     last_campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_BK)
       WITH SYNONYMS ('최종 캠페인', '마지막 캠페인')
@@ -87,7 +94,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     member.MEMBER_SPECL_MNG2_NAME AS member.SPECL_MNG2_NAME WITH SYNONYMS ('특별관리2', '특별관리 구분2') COMMENT = '회원 특별관리 구분2(MM012) — 값이 있는 회원은 소수다.',
     member.MEMBER_SLRCLD_LRR_NAME AS member.SLRCLD_LRR_NAME WITH SYNONYMS ('생일 양력/음력', '양음력') COMMENT = '생일 양력/음력(CM029 · 양력·음력·불명확).',
     member.MEMBER_REL_NAME AS member.REL_NAME WITH SYNONYMS ('일시회원 관계') COMMENT = '일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 속성(단일 캠페인 월만 값 · 다중 월 = (미매핑))
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인 속성(단일 캠페인 월만 값 · 다중 월 = (미매핑))
     campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '그 달 후원 캠페인', '캠페인', '공18', '공120') COMMENT = '그 달 후원 캠페인명. 🔴 한 달에 여러 캠페인을 후원한 회원은 (미매핑) — IS_MULTI_CAMPAIGN 으로 구분한다.',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
     campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외', '공17') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
@@ -98,12 +105,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('UTM', 'UTM 캠페인') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
     campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명', '공119') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
     fmm.IS_MULTI_CAMPAIGN AS fmm.IS_MULTI_CAMPAIGN WITH SYNONYMS ('다중 캠페인 여부', '여러 캠페인 후원') COMMENT = '그 달 여러 캠페인을 후원했는가(TRUE = 캠페인 축 (미매핑)의 사유). 회비 행이 없는 달은 FALSE.',
-    -- 🆕 [2026-10-14 O226] 회원 최초 캠페인 축(DIM_MEMBER.FIRST_CAMPAIGN → DIM_CAMPAIGN BK)
+    --  [2026-10-14 O226] 회원 최초 캠페인 축(DIM_MEMBER.FIRST_CAMPAIGN → DIM_CAMPAIGN BK)
     member.FIRST_CAMPAIGN AS member.FIRST_CAMPAIGN WITH SYNONYMS ('최초캠페인코드', '최초 캠페인 코드') COMMENT = '공#29 회원 최초캠페인 원천코드(회원 마스터 현재값). 라벨은 FIRST_CAMPAIGN_NAME. 원천에 값이 없는 회원은 NULL.',
     first_campaign.FIRST_CAMPAIGN_NAME AS first_campaign.CAMPAIGN_NAME WITH SYNONYMS ('최초캠페인', '최초 캠페인', '가입 캠페인', '최초 가입 캠페인') COMMENT = '공#29 회원 최초캠페인명. 🔴 월과 무관한 회원 속성이다 — 「그 달 후원 캠페인」(CAMPAIGN_NAME)과 섞지 않는다. 최초캠페인 코드가 없는 회원은 NULL.',
     first_campaign.FIRST_CAMPAIGN_TYPE AS first_campaign.CAMPAIGN_TYPE WITH SYNONYMS ('최초캠페인 카테고리', '최초 캠페인유형') COMMENT = '최초캠페인의 카테고리(MM294 라벨).',
     first_campaign.FIRST_MARKETING_CAMPAIGN AS first_campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('최초 마케팅캠페인') COMMENT = '최초캠페인의 마케팅캠페인명.',
-    -- 🆕 [2026-10-16 O237-C] 회원 최종 캠페인 축(DIM_MEMBER.LAST_CAMPAIGN → DIM_CAMPAIGN BK · 잠정)
+    --  [2026-10-16 O237-C] 회원 최종 캠페인 축(DIM_MEMBER.LAST_CAMPAIGN → DIM_CAMPAIGN BK · 잠정)
     member.LAST_CAMPAIGN AS member.LAST_CAMPAIGN WITH SYNONYMS ('최종캠페인코드', '최종 캠페인 코드') COMMENT = '공#31 회원 최종캠페인 코드(잠정 · 가장 최근 시작 후원약정의 대표캠페인). 라벨은 LAST_CAMPAIGN_NAME. 후원약정이 없는 회원은 NULL.',
     last_campaign.LAST_CAMPAIGN_NAME AS last_campaign.CAMPAIGN_NAME WITH SYNONYMS ('최종캠페인', '최종 캠페인', '마지막 캠페인') COMMENT = '공#31 회원 최종캠페인명(잠정). 🔴 월과 무관한 회원 속성 — 「그 달 후원 캠페인」(CAMPAIGN_NAME)·「최초캠페인」(FIRST_CAMPAIGN_NAME)과 섞지 않는다. 회원수는 이 축으로 고유회원을 센다. 답변에 「잠정(최근 시작 후원약정 기준)」을 밝힌다.',
     last_campaign.LAST_CAMPAIGN_TYPE AS last_campaign.CAMPAIGN_TYPE WITH SYNONYMS ('최종캠페인 카테고리', '최종 캠페인유형') COMMENT = '최종캠페인의 카테고리(MM294 라벨).'
@@ -121,7 +128,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('월초 미납회원수') COMMENT = '월초(BOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
     fmm.UNPAID_MEMBERS_EOM AS COUNT(DISTINCT CASE WHEN fmm.UNPAID_FLAG_EOM THEN fmm.MEMBER_DK END)
       WITH SYNONYMS ('월말 미납회원수', '공42') COMMENT = '월말(EOM) 미납 회원 고유수. D(distinct). 다월 합산 금지.',
-    -- 🆕 [O243] 공48 직전 연도말 활동회원(명) (사용자 승인 2026-10-18)
+    --  [O243] 공48 직전 연도말 활동회원(명) (사용자 승인 2026-10-18)
     fmm.YEAR_START_ACTIVE_MEMBERS AS COUNT(DISTINCT CASE WHEN fmm.YEAR_START_ACTIVE_CNT > 0 THEN fmm.MEMBER_DK END)
       WITH SYNONYMS ('연도초 활동회원수(명)', '직전 연도말 활동회원(명)', '전년말 활동회원수', '공48')
       COMMENT = '연도초(= 직전 연도말) 활동 후원건이 1건 이상인 회원 고유수(명). D(distinct). 🔴 월 하나를 고정해 쓴다 — 여러 달을 합산하지 않는다. 건 단위는 YEAR_START_ACTIVE_CNT(건)이며 한 회원이 여러 건을 가질 수 있다.',
@@ -170,9 +177,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
       WITH SYNONYMS ('평균 후원기간(개월)', '후원기간') COMMENT = '공#127 최초가입일~조회월 개월수의 평균. 한 달을 지정해 쓴다(회원별 값의 평균).',
     fmm.AVG_PAID_MONTHS AS AVG(fmm.PAID_MONTHS)
       WITH SYNONYMS ('평균 납입개월수', '납입개월수') COMMENT = '공#129 조회월까지 정기납입이 있었던 달 수의 평균. 한 달을 지정해 쓴다.',
-    -- 🆕 [O201-C] 단월 정의가 확정된 비율 5종(정본 = 30_output_share/05_지표GOLD매핑.md:132~134·154~155)
-    --   🔴 공45~47 은 SV_MEMBER_MONTHLY_KPI 소관(누계개발 모집단 집계) · 공54 는 O202 에서 사전 정의 그대로 신설.
-    --   🆕 [O202] 분자 = STOP_AMT_CNT(#35 중단(건) = 금액 ÷ 10,000) — DEV_CNT 가 MSTR 금액 기준이 되어 사건 수(STOP_CNT)와 단위가 어긋났다.
+    --  [O201-C] 단월 정의가 확정된 비율 5종(정본 = 30_output_share/05_지표GOLD매핑.md:132~134·154~155)
+    --   WARN: 공45~47 은 SV_MEMBER_MONTHLY_KPI 소관(누계개발 모집단 집계) · 공54 는 O202 에서 사전 정의 그대로 신설.
+    --    [O202] 분자 = STOP_AMT_CNT(#35 중단(건) = 금액 ÷ 10,000) — DEV_CNT 가 MSTR 금액 기준이 되어 사건 수(STOP_CNT)와 단위가 어긋났다.
     fmm.STOP_RATE_1 AS SUM(fmm.STOP_AMT_CNT) / NULLIF(SUM(fmm.DEV_CNT) + SUM(fmm.YEAR_START_ACTIVE_CNT), 0) * 100
       WITH SYNONYMS ('중단율1', '공54', '활동 대비 중단율') COMMENT = '공54 중단율1(%) = 중단(건) ÷ (개발(건) + 연도초활동회원(건)) ×100 — 지표 사전 정의 그대로(현업 지시). 개발(건)은 그 달 값(누계 아님). 비율(N). 🔴 한 달을 지정한다.',
     fmm.STOP_RATE_2 AS SUM(fmm.STOP_AMT_CNT) / NULLIF(SUM(fmm.DEV_CNT), 0) * 100
@@ -189,7 +196,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY
     fmm.UNPAID_RATE_EXISTING AS SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.UNPAID_CNT END)
         / NULLIF(SUM(CASE WHEN fmm.NEW_EXISTING_FLAG = '기존' THEN fmm.ACTIVE_CNT END), 0) * 100
       WITH SYNONYMS ('기존 미납율', '공78') COMMENT = '공78 기존 미납율(%) 건 기준 = 미납(건)[기존] ÷ 활동(건)[기존] ×100. 비율(N). 스톡 — 한 달을 지정한다.',
-    -- 🆕 [O237] 지표사전 산식 대응 6종(정본 = 12_agent개선과제/tools/O237_formula_wiring_overlay.csv)
+    --  [O237] 지표사전 산식 대응 6종(정본 = 12_agent개선과제/tools/O237_formula_wiring_overlay.csv)
     fmm.STOP_AMT_CNT_SUM AS SUM(fmm.STOP_AMT_CNT)
       WITH SYNONYMS ('중단(건)', '중단 건(금액 기준)', '공35')
       COMMENT = '공35 중단(건) = 중단한 후원사업 약정금액 ÷ 10,000. F(가산). 🔴 TOTAL_STOP_CNT(중단 **사건 수**)와 단위가 다르다 — 「중단(건)」은 이 metric 이다(STOP_RATE_1·2 의 분자와 같은 값).',

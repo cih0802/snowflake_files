@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 31. 공8 + 문서20 미회신 29건 — 질문 쿼리 근거 (문서 30 `30_공8및미회신29건_질문요약.md` 의 수치를 재현)
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : GN_DW.SILVER.BIGQUERY_REFINED_DATA, GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS, GN_DW.SILVER.CRM_ORG, GN_DW.GOLD.DIM_SPONSORSHIP, GN_DW.BRONZE_CRM.TD_MS_EMAIL_LQY_SNDNG, GN_DW.GOLD.FACT_MESSAGE_DISPATCH 외 12
+-- Issue      : O188-B
+-- =============================================================================
 -- 31. 공8 + 문서20 미회신 29건 — 질문 쿼리 근거 (문서 30 `30_공8및미회신29건_질문요약.md` 의 수치를 재현)
 -- 2026-09-29 O188-B · 읽기 전용(변경 없음)
 -- WARN: GA 원천 규칙(사용자 지시 O188-B) = GA/GA4 기준 데이터는

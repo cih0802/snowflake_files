@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 이벤트분류 차원 (BIGQUERY_EVENT_DIM → category/label/action DISTINCT)
+-- Target     : GOLD.DIM_BIGQUERY_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_EVENT_DIM
+-- Issue      : -
+-- =============================================================================
 -- DIM_BIGQUERY_EVENT: 이벤트분류 차원 (BIGQUERY_EVENT_DIM → category/label/action DISTINCT)
--- Co-authored with CoCo
 {{ config(
     materialized='incremental',
     unique_key='BIGQUERY_EVENT_SK',

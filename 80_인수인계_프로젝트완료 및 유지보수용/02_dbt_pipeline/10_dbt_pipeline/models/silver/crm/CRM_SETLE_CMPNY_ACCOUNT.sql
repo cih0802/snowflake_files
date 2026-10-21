@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결제사 계정 (BRONZE TM_PM_SETLE_CMPNY_ACNT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- Target     : SILVER.CRM_SETLE_CMPNY_ACCOUNT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_PM_SETLE_CMPNY_ACNT
+-- Issue      : O188-F
+-- =============================================================================
 -- CRM_SETLE_CMPNY_ACCOUNT: 결제사 계정 (BRONZE TM_PM_SETLE_CMPNY_ACNT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
 -- grain = SETLE_CMPNY_ACNT_NO ( 이전 계정 유일 실측)
 SELECT

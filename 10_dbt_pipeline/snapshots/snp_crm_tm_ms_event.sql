@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : SCD2 이력 스냅샷 — 원천 bronze_crm.TM_MS_EVENT
+-- Target     : snapshot snp_crm_tm_ms_event
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_MS_EVENT
+-- Issue      : -
+-- =============================================================================
 {% snapshot snp_crm_tm_ms_event %}
 {{
     config(

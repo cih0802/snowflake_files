@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고소재/매체 차원 (SILVER.AGENCY_AD_CREATIVE 3소스 UNION → GOLD 소재차원), 순서9-C 신설.
+-- Target     : GOLD.DIM_AD_CREATIVE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_CREATIVE
+-- Issue      : O129, O29, DEC-30, O30 외 2
+-- =============================================================================
 -- DIM_AD_CREATIVE: 광고소재/매체 차원 (SILVER.AGENCY_AD_CREATIVE 3소스 UNION → GOLD 소재차원), 순서9-C 신설.
 -- 매핑 가정(순서9-C 데이터 실측): PLATFORM=SOURCE_SYSTEM(DIGITAL/VIDEO/REBROADCAST 매체구분) · AD_TYPE=소재유형(CREATIVE_TYPE_NM)
 --   · CM_POSITION=CM_AREA_NM · MEDIA_NAME=MEDIA_CHANNEL_NM · CREATIVE=CREATIVE_NM.

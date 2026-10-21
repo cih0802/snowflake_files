@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 광고성과 코어 팩트 (SILVER.AGENCY_AD_PERFORMANCE), 순서9-C 신설 · 9-I 재설계.
+-- Target     : GOLD.FACT_AD_PERFORMANCE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_PERFORMANCE, ref DIM_DEVICE, ref CRM_CAMPAIGN, ref DIM_MARKETING_CAMPAIGN, ref AGENCY_AD_ROW_DGT, ref AGENCY_AD_ROW_VIDEO 외 2
+-- Issue      : DEC-8, DEC-10, O45, O225 외 10
+-- =============================================================================
 -- FACT_AD_PERFORMANCE: 광고성과 코어 팩트 (SILVER.AGENCY_AD_PERFORMANCE), 순서9-C 신설 · 9-I 재설계.
 -- grain: AD_PERF_DK (원천 1행 = 팩트 1행). 분석축 = PERF_DATE × CAMPAIGN × AD_CREATIVE × DEVICE.
 --

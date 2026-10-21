@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : DIM_ORG_SUCCESSION 귀속 정합 (O252 · DEC-63 신설)
+-- Target     : dbt singular test assert_org_succession_invariants (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_ORG_SUCCESSION, ref ORG_SUCCESSION_MANUAL, ref CRM_ORG
+-- Issue      : O252, DEC-63
+-- =============================================================================
 -- assert_org_succession_invariants: DIM_ORG_SUCCESSION 귀속 정합 (O252 · DEC-63 신설)
--- Co-authored with CoCo
 -- 반환 행 = 위반(0행이어야 PASS).
 --   ㉠ CUR_ORG_SK 가 NULL 인데 MAP_METHOD 가 UNMAPPED·MANUAL_UNMAPPED 가 아님
 --      = 현업 확정(seed)이 **비활성 부서**를 가리켰거나 자동 규칙이 활성 아닌 노드를 골랐다

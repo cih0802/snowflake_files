@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : DBT 생성 후 진행
+-- Target     : - (조회·검증 전용 · 객체 생성 없음)
+-- Run order  : 운영계 #14
+-- Depends on : -
+-- Issue      : O54, O55, O36, O193 외 3
+-- =============================================================================
 -- DBT 생성 후 진행
 -- snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/10_dbt_pipeline/deploy_dbt_project.sql
 -- OPS 스키마 + DBT PROJECT 실행권(EXECUTE DBT PROJECT = USAGE ON DBT PROJECT) + run history 조회(MONITOR)
@@ -140,7 +147,7 @@ REVOKE USAGE, MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_ENGIN
       WARN: 기준월은 **실행할 때마다 바꾼다** — 아래 '202609' 는 예시다(마감 대상 월 YYYYMM).
       WARN: SP_EXEC_MONTH_END 는 SILVER 집계(ANNUAL_* · MM_SPNSR_CLS_AGGR_DATA)와 ML 예측결과(ML_RST_DATA_*)를 다시 쓴다
          ⇒ dbt build 와 동시에 돌리지 말 것(같은 SILVER 를 읽고 쓴다).
-      WARN: [2026-10-03 O200-D 실측 · 이전 계정] 이 절은 **이 계정에서 실행할 수 없다**.
+      WARN: [2026-10-03 O200-D 실측 · 이전 계정(개발 환경)] 이 절은 **이 계정에서 실행할 수 없다**.
          · `SP_EXEC_MONTH_END` 부재(`SHOW USER PROCEDURES IN DATABASE GN_DW` = MSTR 13종뿐) · `ML_PROCEDURE_LOG` 부재.
          · 이유 = 이관 범위가 ML **결과 테이블 12종**뿐이고 원천 프로시저·로그는 인도되지 않았다(O198 결정).
          ⇒ O198-C ⑦ 「첫 실행 권한 오류 시 LOADER DML 부여」는 **전제 미충족**이다 — 권한을 미리 만들지 않는다.

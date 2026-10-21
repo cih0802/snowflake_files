@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : `ERP_BUDGET_YEARLY` 가 선언한 불변식을 관측한다.
+-- Target     : dbt singular test warn_erp_budget_yearly_grain (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET_YEARLY
+-- Issue      : O114-B, DEC-44
+-- =============================================================================
 -- warn_erp_budget_yearly_grain: `ERP_BUDGET_YEARLY` 가 선언한 불변식을 관측한다.
 --
 -- WARN: 왜 필요한가 (2026-08-29 O114-B 신설)

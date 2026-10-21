@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 행사 차원 스캐폴드 (CRM_EVENT, Bronze 입고 후 실행)
+-- Target     : GOLD.DIM_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_EVENT
+-- Issue      : O27, O205, DEC-30, O59-N 외 3
+-- =============================================================================
 -- DIM_EVENT: 행사 차원 스캐폴드 (CRM_EVENT, Bronze 입고 후 실행)
 -- WARN: APPLY_CHANNEL 원천/파생규칙 미정(ADMIN A-10 대기).
 {{ config(

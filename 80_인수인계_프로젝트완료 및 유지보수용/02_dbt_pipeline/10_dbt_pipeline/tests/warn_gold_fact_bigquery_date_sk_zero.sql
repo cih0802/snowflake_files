@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 범위 재적재의 **전제 ③** 을 감시한다.
+-- Target     : dbt singular test warn_gold_fact_bigquery_date_sk_zero (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_BIGQUERY_BEHAVIOR
+-- Issue      : O178, O177
+-- =============================================================================
 -- warn_gold_fact_bigquery_date_sk_zero: 범위 재적재의 **전제 ③** 을 감시한다.
 --
 -- WARN: 왜 필요한가 (2026-09-22 · FACT 범위 재적재 전환의 짝)

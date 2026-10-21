@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GN_DW.SERVING ML 예측 뷰 DDL — Semantic View(22_ML_SV_DDL) 의 base 계층 · 구조 정본
+-- Target     : VIEW GN_DW.SERVING.ML_MEMBER_RISK_V, VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V, VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V, VIEW GN_DW.SERVING.ML_FEE_FORECAST_V 외 11
+-- Run order  : 운영계 #46 · 기존 환경 갱신 #12 · 기존 환경 갱신 #18
+-- Depends on : GN_DW.ML.ML_RST_DATA_MBER_CHURN_12M, GN_DW.ML.ML_RST_DATA_MBER_INC_12M, GN_DW.ML.ML_RST_DATA_LOYAL_MBER, GN_DW.ML.ML_RST_DATA_SPNSR_CHURN_12M, GN_DW.SILVER.CRM_SPONSORSHIP, GN_DW.SILVER.CRM_CAMPAIGN 외 19
+-- Issue      : O198, DEC-59, O196, DEC-57 외 10
+-- =============================================================================
 -- ============================================================================
 -- GN_DW.SERVING ML 예측 뷰 DDL — Semantic View(22_ML_SV_DDL) 의 base 계층 · 구조 정본
 --   · GN_DW.ML 예측결과 테이블만 감싼다(학습·중간 테이블 비노출). SV 는 이 뷰만 base 로 쓴다.
@@ -838,7 +845,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_SPONSORSHIP_V TO ROLE GN_DW_SERVI
 -- ============================================================================
 -- [O250] ML_MEMBER_PRED_AXIS_V · ML_FEE_FORECAST_AXIS_V — ML 회원예측·회비예측 × 7축
 --   (신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명 · 사용자 승인 2026-10-21)
---   원 정의 = 36_O250_ML예측_7축확장.sql(문면 무변경 이관 · O250-E) · SV = 05_29 · 05_30
+--   원 정의 = 36_DEPLOY_ML_PRED_7AXIS.sql(문면 무변경 이관 · O250-E) · SV = 05_29 · 05_30
 --   본부지부 = DIM_ORG.ACMSLT_DIV_GROUP_NM 8종 → 본부/지부/기타 3분류 · 법인 = SPAN.ACQ_CPR_DIV_NM
 -- ============================================================================
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_PRED_AXIS_V (

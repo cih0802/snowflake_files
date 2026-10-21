@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : GA 신원↔CRM 회원 브리지 (교차소스 유일 예외), 정본 09 STEP7.
+-- Target     : SILVER.IDENTITY_MEMBER_XREF (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_IDENTITY, ref CRM_MEMBER
+-- Issue      : O87, DEC-17-B
+-- =============================================================================
 -- IDENTITY_MEMBER_XREF: GA 신원↔CRM 회원 브리지 (교차소스 유일 예외), 정본 09 STEP7.
 -- 의존성(7-C): ref 로 BIGQUERY_IDENTITY·CRM_MEMBER 후행 강제. LEFT JOIN(UNMATCHED 보존, C1). CHILD_CODE 제외.
 --

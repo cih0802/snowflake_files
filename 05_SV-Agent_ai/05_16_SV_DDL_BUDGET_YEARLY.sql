@@ -1,5 +1,12 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_BUDGET_YEARLY (🆕 O203 · T8 2차)
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_BUDGET_YEARLY
+-- Run order  : 운영계 #33
+-- Depends on : GN_DW.GOLD.FACT_BUDGET_YEARLY, GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER, GN_DW.GOLD.DIM_BUDGET_ITEM
+-- Issue      : O203
+-- =============================================================================
 -- ============================================================================
--- 05_16_SV_DDL_BUDGET_YEARLY.sql — Semantic View DDL 정본: SV_BUDGET_YEARLY (🆕 O203 · T8 2차)
+-- 05_16_SV_DDL_BUDGET_YEARLY.sql — Semantic View DDL 정본: SV_BUDGET_YEARLY ( O203 · T8 2차)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 근거(2026-10-06 실측): 2024 연 편성 204.9억원은 이 팩트에만 있다(FACT_BUDGET 2024 월 편성 = 0).
 --     2025·2026 은 연 편성·연 집행 합계가 FACT_BUDGET 월 합계와 원 단위까지 일치 ⇒ 같은 원장의 연 grain.

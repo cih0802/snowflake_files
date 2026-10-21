@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : BigQuery 행동 팩트 (BIGQUERY_EVENT + BigQuery DIM 조인, 일 grain)
+-- Target     : GOLD.FACT_BIGQUERY_BEHAVIOR (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_EVENT, ref IDENTITY_MEMBER_XREF, ref DIM_BIGQUERY_EVENT, ref DIM_BIGQUERY_SOURCE, ref DIM_DEVICE, ref DIM_MEMBER_IDENTITY
+-- Issue      : O177, O190, O94
+-- =============================================================================
 -- FACT_BIGQUERY_BEHAVIOR: BigQuery 행동 팩트 (BIGQUERY_EVENT + BigQuery DIM 조인, 일 grain)
 -- grain: DATE_SK×IDENTITY_SK×BIGQUERY_EVENT_SK×BIGQUERY_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH
 -- IDENTITY_SK = IDENTITY_MEMBER_XREF(pseudo→회원) → DIM_MEMBER_IDENTITY 매칭분, 미매칭=0(센티넬). CAMPAIGN_SK=NULL.

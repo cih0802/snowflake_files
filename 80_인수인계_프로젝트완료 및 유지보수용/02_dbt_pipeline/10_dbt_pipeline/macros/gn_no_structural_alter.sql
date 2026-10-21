@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : dbt 의 자동 컬럼 타입 확장(ALTER)을 무효화한다 — 구조 정본은 DDL(GN_DW_ADMIN) 이다.
+-- Target     : macro snowflake__alter_column_type
+-- Run order  : dbt 가 호출 (직접 실행 없음)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- dbt 의 자동 컬럼 타입 확장(ALTER)을 무효화한다 — 구조 정본은 DDL(GN_DW_ADMIN) 이다.
 {#
   gn_no_structural_alter — `snowflake__alter_column_type` 오버라이드 (2026-08-30 O121 신설)

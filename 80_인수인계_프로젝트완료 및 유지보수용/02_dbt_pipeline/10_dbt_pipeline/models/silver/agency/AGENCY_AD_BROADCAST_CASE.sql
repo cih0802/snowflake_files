@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : REBRDC 사례 반복군 CASE1_*~CASE3_* 언피벗 → GOLD FACT_AD_BROADCAST_CASE
+-- Target     : SILVER.AGENCY_AD_BROADCAST_CASE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_ROW_REBRDC
+-- Issue      : DEC-8, O14, O182
+-- =============================================================================
 -- AGENCY_AD_BROADCAST_CASE: REBRDC 사례 반복군 CASE1_*~CASE3_* 언피벗 → GOLD FACT_AD_BROADCAST_CASE
 -- 설계: DEC-8 · 설계 §3-A(FAD_BC) — 원천 5속성 × 3반복 = 15컬럼을 CASE_SEQ 축으로 정규화.
 -- WARN: 정규화 이득: 사례가 4개로 늘어도 DDL 변경이 불필요하다(행 추가로 흡수).

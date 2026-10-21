@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : O232 · O232-B 미연결 광고 소재 → 캠페인 매핑표 적재 (SQL 전용)
+-- Target     : STAGE GN_DW.OPS.AD_CREATIVE_MAP_STAGE, FILE FORMAT GN_DW.OPS.FF_AD_CREATIVE_MAP_CSV
+-- Run order  : 운영계 #5
+-- Depends on : GN_DW.SILVER.CRM_CAMPAIGN, GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP
+-- Issue      : O232, O232-B
+-- =============================================================================
 -- ============================================================================
 -- 09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql — O232 · O232-B 미연결 광고 소재 → 캠페인 매핑표 적재 (SQL 전용)
 --   · 순서 = 08_SILVER_테이블DDL(표 구조 정본) 다음 · dbt build 앞

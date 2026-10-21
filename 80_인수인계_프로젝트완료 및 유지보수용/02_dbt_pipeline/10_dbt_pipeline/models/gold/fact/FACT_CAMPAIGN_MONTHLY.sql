@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 기준연월 × 캠페인 × 납입방식 월 팩트 (캠페인별 활동율·중단율·이탈율·납입율·미납율 분자·분모)
+-- Target     : GOLD.FACT_CAMPAIGN_MONTHLY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_MONTHLY, ref FACT_MEMBER_SPONSORSHIP_SPAN, ref FACT_MEMBER_FEE, ref FACT_MEMBER_EVENT, ref CRM_MEMBER_AMT_CHANGE, ref DIM_CAMPAIGN
+-- Issue      : O237-B, O236, O240
+-- =============================================================================
 -- FACT_CAMPAIGN_MONTHLY: 기준연월 × 캠페인 × 납입방식 월 팩트 (캠페인별 활동율·중단율·이탈율·납입율·미납율 분자·분모)
 --  [2026-10-16 O237-B · 사용자 결정 A = 후원건(후원사업) 캠페인 귀속 · FACT_CAMPAIGN_CUM_STOP 과 같은 규칙]
 --   왜 새 팩트인가 = FACT_MEMBER_MONTHLY 의 CAMPAIGN_SK 는 「그 달 후원 캠페인 1개」일 때만 연결돼

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 발송 서비스 차원 (CRM_SEND_REQUEST DISTINCT) — grain=(CHANNEL, SUBTYPE) 10행 + 센티넬
+-- Target     : GOLD.DIM_SERVICE (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SEND_REQUEST
+-- Issue      : DEC-30, DEC-28
+-- =============================================================================
 -- DIM_SERVICE: 발송 서비스 차원 (CRM_SEND_REQUEST DISTINCT) — grain=(CHANNEL, SUBTYPE) 10행 + 센티넬
 --  [DEC-30 2026-08-04] `SEND_TYPE_L/M/S` 3컬럼을 **DIM_SEND_TYPE 으로 이관**하고 여기서 제거했다.
 --   종전 주석 *"코드체계 검수 대기(설계 §8)"* 는 **원인 오진이었다** — 코드체계는 확정 가능했고

@@ -1,5 +1,11 @@
+-- =============================================================================
+-- Purpose    : 결연활동 = 서신 ∪ 선물금 (EHGT 제외, PK dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_RELATION_ACTIVITY (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : source bronze_crm.TM_RM_RELATNSP_LETTER_INFO, source bronze_crm.TM_RM_RELATNSP_GFTMNEY_INFO
+-- Issue      : O191-F, O213-F
+-- =============================================================================
 -- CRM_RELATION_ACTIVITY: 결연활동 = 서신 ∪ 선물금 (EHGT 제외, PK dedup), 정본 09 STEP3.
--- Co-authored with CoCo
 SELECT 'LETTER_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),'') AS ACTIVITY_KEY,
   '서신'                           AS ACTIVITY_TYPE,
   RELATNSP_KEY                     AS RELATNSP_KEY,
@@ -26,7 +32,7 @@ SELECT 'LETTER_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),'') AS ACT
   ,CAST(NULL AS VARCHAR(30)) AS GFTMNEY_DOLLAR_AMT
   ,CAST(NULL AS DATE) AS APRV_DE
   ,CAST(NULL AS VARCHAR(1)) AS TRNSFER_YN
-  ,CAST(NULL AS VARCHAR(10)) AS SETLE_BANK_CD   -- 🆕 [O213-F Y3-J] 선물금 전용 · 서신 = 원천 개념 없음
+  ,CAST(NULL AS VARCHAR(10)) AS SETLE_BANK_CD   -- [O213-F Y3-J] 선물금 전용 · 서신 = 원천 개념 없음
 FROM {{ source('bronze_crm','TM_RM_RELATNSP_LETTER_INFO') }} WHERE RELATNSP_KEY IS NOT NULL
 QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY RCEPT_DE DESC NULLS LAST)=1
 UNION ALL
@@ -45,6 +51,6 @@ SELECT 'GFT_'||RELATNSP_KEY||'_'||COALESCE(NULLIF(TRIM(MNG_NO),''),''), '선물�
   ,GFTMNEY_DOLLAR_AMT
   ,APRV_DE
   ,NULLIF(TRIM(TRNSFER_YN),'')
-  ,NULLIF(TRIM(SETLE_BANK_CD),'')                -- 🆕 [O213-F Y3-J] 선물금 정산은행(PM039)
+  ,NULLIF(TRIM(SETLE_BANK_CD),'')                -- [O213-F Y3-J] 선물금 정산은행(PM039)
 FROM {{ source('bronze_crm','TM_RM_RELATNSP_GFTMNEY_INFO') }} WHERE RELATNSP_KEY IS NOT NULL
 QUALIFY ROW_NUMBER() OVER (PARTITION BY RELATNSP_KEY, MNG_NO ORDER BY SNDNG_DE DESC NULLS LAST)=1

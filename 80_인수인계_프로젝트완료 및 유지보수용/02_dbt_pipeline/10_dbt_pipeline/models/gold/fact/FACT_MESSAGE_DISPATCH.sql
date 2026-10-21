@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 메시지/서비스 발송 팩트 (이메일·문자·알림톡·우편 발송 및 성공/실패/오픈 현황)
+-- Target     : GOLD.FACT_MESSAGE_DISPATCH (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SEND_MEMBER, ref CRM_SEND_REQUEST, ref CRM_SPONSOR_RELATION, ref CRM_RELATION_ACTIVITY, ref FACT_MEMBER_EVENT, ref FACT_MEMBER_MONTHLY 외 2
+-- Issue      : O179, O180, O183, O241 외 13
+-- =============================================================================
 -- FACT_MESSAGE_DISPATCH: 메시지/서비스 발송 팩트 (이메일·문자·알림톡·우편 발송 및 성공/실패/오픈 현황)
 -- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
 --    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라

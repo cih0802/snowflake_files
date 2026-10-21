@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원개발 목표 팩트(FTG_D) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.3)
+-- Target     : GOLD.WIDE_TARGET_DEV (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_TARGET_MEMBER_DEV, ref DIM_ORG
+-- Issue      : O51-C, O51
+-- =============================================================================
 -- WIDE_TARGET_DEV: 회원개발 목표 팩트(FTG_D) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.3)
 --
 -- 🔬 [2026-08-07 O51-C probe] 본 모델만 커스텀 머티리얼라이제이션 `gn_view_commented` 를 쓴다.

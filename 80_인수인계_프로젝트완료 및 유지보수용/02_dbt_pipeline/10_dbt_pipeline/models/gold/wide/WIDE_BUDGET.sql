@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
+-- Target     : GOLD.WIDE_BUDGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_BUDGET, ref DIM_ORG, ref DIM_BUDGET_ITEM, ref DIM_CAMPAIGN, ref DIM_SPONSORSHIP
+-- Issue      : O175, O51-C, O130, O96
+-- =============================================================================
 -- WIDE_BUDGET: 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
 -- WARN: FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1) 원천부재로 현재 NULL(외부 입고 대기).
 -- WARN: [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯**이다(입고 대기가 아니다) — 종전 「E-4 원천부재」는 거짓.

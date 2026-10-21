@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 행사 참여 = EVENT ∪ CRMN 참여자 (PK dedup), 정본 09 STEP3.
+-- Target     : SILVER.CRM_EVENT_PARTICIPATION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, ref CRM_EVENT, source bronze_crm.TD_MS_EVENT_PRTCPNT_DTL, source bronze_crm.TD_MS_CRMN_PRTCPNT
+-- Issue      : O59-N, DEC-35, O28, O191-F 외 3
+-- =============================================================================
 -- CRM_EVENT_PARTICIPATION: 행사 참여 = EVENT ∪ CRMN 참여자 (PK dedup), 정본 09 STEP3.
 -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 정본 = 문서30 §23-J · 매핑 = 문서31 §3.
 --   WARN: 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자(EVENT_KEY 접두)로 갈라 **각자의 코드군**에 조인한다.

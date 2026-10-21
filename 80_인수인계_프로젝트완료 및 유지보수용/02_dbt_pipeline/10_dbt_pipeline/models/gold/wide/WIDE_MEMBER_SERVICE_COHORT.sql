@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도
+-- Target     : GOLD.WIDE_MEMBER_SERVICE_COHORT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_SEND_REQUEST, ref CRM_CODE, ref CRM_MSG_TEMPLATE, ref CRM_ORG, ref FACT_MESSAGE_DISPATCH, ref DIM_DATE 외 8
+-- Issue      : O205, O206, O205-B, O237-B 외 1
+-- =============================================================================
 -- WIDE_MEMBER_SERVICE_COHORT: 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도
 -- [2026-10-07 O205] 신설 · 2차 Agent 개선(`12_agent개선과제/00_작업계획.md` §8 B).
 --

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 결연 차원 (1행 = 1결연 · RELATNSP_KEY) · [2026-10-08 O213-F Y3-J]
+-- Target     : GOLD.DIM_RELATIONSHIP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_CODE, ref CRM_SPONSOR_RELATION
+-- Issue      : O213-F, O213
+-- =============================================================================
 -- DIM_RELATIONSHIP: 결연 차원 (1행 = 1결연 · RELATNSP_KEY) · [2026-10-08 O213-F Y3-J]
 -- 왜 신설했나 — 결연 중단 여부·중단 사유가 SILVER.CRM_SPONSOR_RELATION 에만 있고 GOLD·SV 어디에도 없었다(O213 Y1 NONE).
 --   GOLD 결연 3팩트(ACTIVITY·CHANGE·DEV)는 전부 사건 grain 이라 결연 상태를 담을 곳이 없다 ⇒ 결연 grain 차원 신설.

@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 일배치 TASK 등록 — dbt build --target dev2 (BRONZE_CRM_2 → SILVER_2/GOLD_2) 자동화
+-- Target     : TASK GN_DW.OPS.TASK_DBT_DAILY_DEV2
+-- Run order  : 수동 실행 (문서실행순서 미등재)
+-- Depends on : -
+-- Issue      : -
+-- =============================================================================
 -- 일배치 TASK 등록 — dbt build --target dev2 (BRONZE_CRM_2 → SILVER_2/GOLD_2) 자동화
 --
 -- 전제: 01_스키마생성_및_구조복제.sql, 02_권한부여_LOADER_ENGINEER_ADMIN.sql 실행 완료 +

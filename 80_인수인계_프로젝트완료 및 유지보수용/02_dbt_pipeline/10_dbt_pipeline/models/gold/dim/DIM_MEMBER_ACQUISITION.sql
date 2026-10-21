@@ -1,3 +1,10 @@
+-- =============================================================================
+-- Purpose    : 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
+-- Target     : GOLD.DIM_MEMBER_ACQUISITION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT, ref DIM_CAMPAIGN, ref DIM_ORG, ref DIM_SPONSORSHIP
+-- Issue      : O53, O45, O44, O43 외 6
+-- =============================================================================
 -- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
 --
 -- ============================================================================

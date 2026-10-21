@@ -1,7 +1,14 @@
+-- =============================================================================
+-- Purpose    : Semantic View DDL 정본: SV_RELATION_ACTIVITY
+-- Target     : SEMANTIC VIEW GN_DW.SERVING.SV_RELATION_ACTIVITY
+-- Run order  : 운영계 #29
+-- Depends on : GN_DW.GOLD.FACT_RELATION_ACTIVITY, GN_DW.GOLD.DIM_DATE, GN_DW.GOLD.DIM_MEMBER, GN_DW.GOLD.DIM_RELATIONSHIP
+-- Issue      : DEC-58, O196-E
+-- =============================================================================
 -- ============================================================================
 -- 05_12_SV_DDL_RELATION_ACTIVITY.sql — Semantic View DDL 정본: SV_RELATION_ACTIVITY
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 신설 근거 = DEC-58 #2 · 사용자 결정 2026-10-01 O196-E
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
