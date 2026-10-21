@@ -1,0 +1,2 @@
+# doc_id: D10 · as_of: 2026-10-21 13:11:15.400 +0900 · account: ZL50263 · query: Q04-1 네트워크 정책 (RUNBOOK §8.1 전제)
+created_on,name,comment,entries_in_allowed_ip_list,entries_in_blocked_ip_list,entries_in_allowed_network_rules,entries_in_blocked_network_rules

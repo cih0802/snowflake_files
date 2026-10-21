@@ -1,0 +1,52 @@
+# doc_id: A6 · as_of: 2026-10-21 13:18:54.957 +0900 · account: ZL50263 · query: Q01-1 dbt 실행 이력 — 최근 7일 (롤 · 상태 · 오류)
+START_TIME,ROLE_NAME,USER_NAME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE,ELAPSED_SEC,QUERY_TEXT
+2026-10-21 12:46:00.189000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,700.3,"EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{""bigquery_dt_ranges"": [[""2026-10-01"", ""9999-12-"
+2026-10-21 12:21:03.618000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,59.5,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ⏎   ARGS = 'build --select FACT_AD_INFLOW_ALLOC FACT_MEMBER_EVENT_COHORT'
+2026-10-21 12:02:45.704000+09:00,ACCOUNTADMIN,CHOIH,SUCCESS,,,35.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ⏎   ARGS = 'build --select FACT_MEMBER_COHORT_SURVIVAL DIM_SEND_REQUEST DIM_MSG_TEMPLATE DIM_MSG_TEMPLATE_BUTTON'
+2026-10-21 12:00:57.148000+09:00,ACCOUNTADMIN,CHOIH,SUCCESS,,,46.7,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7de94-0002-3693-0001"
+2026-10-21 06:01:00.616000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,992.5,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-20 06:01:00.820000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,980.0,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-19 06:01:00.817000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,982.6,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-19 01:24:21.420000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,3829.4,"EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{""bigquery_dt_ranges"": [[""1945-01-01"", ""9999-12-"
+2026-10-19 01:13:37.433000+09:00,GN_DW_DBT,CHOIH,FAIL,000604,SQL execution canceled,583.7,"EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{""bigquery_dt_ranges"": [[""1945-01-01"", ""9999-12-"
+2026-10-19 01:00:33.904000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,776.6,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-19 01:00:06.331000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,26.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-19 00:59:46.644000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,18.8,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-19 00:55:29.694000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,42.1,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7d0bb-0002-32bf-0001"
+2026-10-19 00:54:41.018000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,42.9,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305196/results/query_id_01c7d0ba-0002-3274-0001"
+2026-10-18 06:01:00.853000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,772.7,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-17 06:01:00.819000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,810.1,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-16 22:33:27.921000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,759.7,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 22:33:04.646000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,22.3,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 22:32:45.118000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,19.2,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 21:56:01.399000+09:00,GN_DW_DBT,CHOIH,FAIL,210012,"DBT job failed. Last output lines: ⏎ [0m13:08:08  Got 1 result, configured to warn if != 0 ⏎ [0m13:08:08   ⏎ [0m13:08:08    compiled code at /tmp/dbt_output/target/compiled/gn_dw_silver/tests/warn_fmm_reason_unmapped_f_rows.sql ⏎ [0m13:08:08   ⏎ [0m13:08:08  [33mWarning in test relationships_FACT_MEMBER",738.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 21:55:38.249000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,21.6,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 21:55:17.928000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,18.4,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 21:53:57.425000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,36.7,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7c4c5-0002-2f16-0001"
+2026-10-16 21:53:01.751000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,39.1,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7c4c5-0002-2f16-0001"
+2026-10-16 21:52:14.459000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,41.3,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305192/results/query_id_01c7c4c4-0002-2f16-0001"
+2026-10-16 17:27:42.453000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,741.4,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 17:27:19.974000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,21.7,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 17:27:01.224000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,17.7,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 17:25:53.633000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,36.9,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7c3b9-0002-2f6b-0001"
+2026-10-16 17:25:07.437000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,39.9,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305188/results/query_id_01c7c3b9-0002-314b-0001"
+2026-10-16 16:54:02.224000+09:00,GN_DW_LOADER,CRM_ETL,FAIL,210012,DBT job failed. Last output lines: ⏎   --------------------------------------------------------------------------------------- ⏎   select * from GN_DW.OPS.accepted_values_FACT_EVENT_ATT_a31e050516c23794739ccbd32aaa8c43 ⏎   -----------------------------------------------------------------------------------,1640.5,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build'
+2026-10-16 16:53:37.341000+09:00,GN_DW_DBT,CHOIH,FAIL,210012,DBT job failed. Last output lines: ⏎   --------------------------------------------------------------------------------------- ⏎   select * from GN_DW.OPS.accepted_values_FACT_EVENT_ATT_a31e050516c23794739ccbd32aaa8c43 ⏎   -----------------------------------------------------------------------------------,1555.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'build';
+2026-10-16 16:52:45.840000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,43.1,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline/' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7c398-0002-2f6b-000"
+2026-10-16 06:58:16.237000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,26.4,"execute dbt project from workspace ""USER$"".""PUBLIC"".""snowflake_files"" project_root='/10_dbt_pipeline' args='build --target dev --select FACT_CAMPAIGN_CUM_STOP';"
+2026-10-16 06:01:00.683000+09:00,GN_DW_DBT,SYSTEM,SUCCESS,,,704.1,EXECUTE DBT PROJECT DW_PIPELINE args='build'
+2026-10-16 04:42:56.364000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,698.0,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 04:42:32.900000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,21.8,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 04:42:13.273000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,17.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 04:41:10.152000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,45.7,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305160/results/query_id_01c7c0bd-0002-2f20-0001"
+2026-10-16 04:40:14.586000+09:00,GN_DW_DBT,CHOIH,FAIL,000604,SQL execution canceled,3.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 04:39:47.441000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,20.3,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 04:38:33.704000+09:00,GN_DW_ADMIN,CHOIH,SUCCESS,,,41.0,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/24305184/results/query_id_01c7c0ba-0002-2f1f-0001"
+2026-10-16 04:14:03.543000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,695.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 04:13:34.397000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,21.8,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 04:13:19.052000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,12.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-16 04:12:01.280000+09:00,GN_DW_DBT,CHOIH,FAIL,210012,DBT job failed. Last output lines: ⏎   ---------------------------------------------- ⏎   select * from GN_DW.OPS.warn_bigquery_load_gap ⏎   ---------------------------------------------- ⏎ [0m19:12:51   ⏎ [0m19:12:51  [33mWarning in test warn_fer_mktg_campaign_multi (tests/warn_fer_mktg_campaign_multi.sql,53.3,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select +FACT_AD_PERFORMANCE+';
+2026-10-16 04:11:06.158000+09:00,GN_DW_DBT,CHOIH,FAIL,210012,"DBT job failed. Last output lines: ⏎ [0m19:11:35    Got 271489 results, configured to fail if != 0 ⏎ [0m19:11:35   ⏎ [0m19:11:35    compiled code at /tmp/dbt_output/target/compiled/gn_dw_silver/models/gold/_gold_ready_schema.yml/relationships_FACT_AD_PERFORMA_113fefc940e6a2beee03c97acac8ee59.sql ⏎ [0m19",31.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select FACT_AD_PERFORMANCE';
+2026-10-16 03:38:38.072000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,746.4,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-16 03:38:14.183000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,23.0,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-16 03:37:48.576000+09:00,GN_DW_DBT,CHOIH,SUCCESS,,,21.7,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';

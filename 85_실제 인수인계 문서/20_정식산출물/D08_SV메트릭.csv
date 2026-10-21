@@ -1,4 +1,4 @@
-# 자동 생성 = scripts/b_struct_build.py · account: SR61467 · 생성 2026-10-21 01:23 · 원천 = _ENV/SR61467/B1_*.csv · 손으로 고치지 않는다
+# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-21 04:20 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
 SV_NAME,TABLE,METRIC,DATA_TYPE,EXPRESSION,SYNONYMS,NON_ADDITIVE_DIMENSIONS,COMMENT
 SV_AD,AD,CTR,"NUMBER(38,6)","SUM(IFF(ad.IMPRESSIONS > 0, ad.CLICKS, 0)) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100","[ ⏎   ""클릭률"", ⏎   ""CTR"" ⏎ ]",,공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용. 🔴 O240: 노출 0·클릭>0 행(DIGITAL · 추적링크 직접유입)의 클릭은 분자에서 뺀다 — 분모 없는 클릭이 소재별 CTR 을 상한(전량 클릭) 이상으로 만든다. 전체 클릭수는 TOTAL_CLICKS 로 따로 답한다.
 SV_AD,AD,CVR,"NUMBER(38,6)","SUM(ad.AGENCY_CONV_MEMBERS) / NULLIF(SUM(ad.CLICKS), 0) * 100","[ ⏎   ""전환율"", ⏎   ""CVR"" ⏎ ]",,공10 CVR(%) = 대행사전환회원 ÷ 클릭수 ×100. 비율(N). 디지털 전용.
@@ -277,6 +277,14 @@ SV_ML_LTV_FORECAST,LF,FORECAST_MONTHS,"NUMBER(18,0)",COUNT(DISTINCT lf.TS),"[ �
 SV_ML_LTV_FORECAST,LF,FORECAST_UPPER,FLOAT,AVG(lf.UPPER_BOUND),"[ ⏎   ""LTV 예측 상한"" ⏎ ]",,95% 신뢰구간 상한 평균(원).
 SV_ML_LTV_FORECAST,LF,SERIES_COUNT,"NUMBER(18,0)",COUNT(DISTINCT lf.SERIES_CD),"[ ⏎   ""계열 수"", ⏎   ""채널 수"", ⏎   ""캠페인 수"" ⏎ ]",,예측 대상 계열 수.
 SV_ML_LTV_FORECAST,LF,TOTAL_FORECAST_LTV,FLOAT,SUM(lf.FORECAST),"[ ⏎   ""LTV 예측 합계"", ⏎   ""예측 후원금액 합계"" ⏎ ]",,예측값 합계(원). 🔴🔴 **회원평균 유형(MKTG_CHANNEL_AVG_MEMBER)에서는 합산하지 않는다** — 1인당 평균을 더한 값은 업무 의미가 없다. 총액 유형(CMPGN_TOTAL)에서만 합산한다.
+SV_ML_LTV_SCORE,LS,AVG_ACTIVE_MONTHS,"NUMBER(38,6)",AVG(ls.ACTIVE_MONTHS),"[ ⏎   ""평균 활동개월"" ⏎ ]",,평균 활동 개월수.
+SV_ML_LTV_SCORE,LS,AVG_FUTURE_AMT,FLOAT,AVG(ls.FUTURE_TOTAL_AMT),"[ ⏎   ""미래 예측금액 평균"" ⏎ ]",,미래 구간 예측금액 평균(원). 예측치다.
+SV_ML_LTV_SCORE,LS,AVG_HIST_AMT,FLOAT,AVG(ls.HIST_TOTAL_AMT),"[ ⏎   ""과거 누적금액 평균"" ⏎ ]",,과거 구간 누적금액 평균(원). 🔴이 값은 과거 실적 성격이나 이 SV 의 산출 맥락 안의 값이다 — 회계 실적으로 인용하지 않는다.
+SV_ML_LTV_SCORE,LS,AVG_LTV,FLOAT,AVG(ls.LTV),"[ ⏎   ""평균 LTV"", ⏎   ""LTV"" ⏎ ]",,LTV 스코어 평균(원). LTV유형 고정 상태에서만 의미가 있다.
+SV_ML_LTV_SCORE,LS,MAX_LTV,FLOAT,MAX(ls.LTV),"[ ⏎   ""최대 LTV"" ⏎ ]",,LTV 최대값(원). 상위 계열 정렬에 쓴다.
+SV_ML_LTV_SCORE,LS,MEAN_MONTHLY_ACTUAL,FLOAT,AVG(ls.AVG_MONTHLY_ACTUAL),"[ ⏎   ""월평균 실적금액"" ⏎ ]",,월평균 과거 실적금액(원). 🔴예측과 비교할 때 둘의 성격을 밝힌다.
+SV_ML_LTV_SCORE,LS,MEAN_MONTHLY_FORECAST,FLOAT,AVG(ls.AVG_MONTHLY_FORECAST),"[ ⏎   ""월평균 예측금액"" ⏎ ]",,월평균 예측금액(원). ⚠️metric 이름을 base 컬럼명과 다르게 둔 것은 metric 중첩 회피 때문이다.
+SV_ML_LTV_SCORE,LS,SERIES_COUNT,"NUMBER(18,0)",COUNT(DISTINCT ls.SERIES_CD),"[ ⏎   ""계열 수"", ⏎   ""채널 수"" ⏎ ]",,스코어 산출 대상 계열 수.
 SV_ML_MEMBER_PRED_AXIS,PA,ACTIVE_AGREEMENTS,"NUMBER(30,0)",SUM(pa.ACTIVE_SPNSR_CNT),"[ ⏎   ""활동 약정 수"" ⏎ ]",,기준월 말 활동 약정 수(건).
 SV_ML_MEMBER_PRED_AXIS,PA,AVG_CHURN_PROB,FLOAT,AVG(pa.CHURN_PROB),"[ ⏎   ""평균 중단확률"" ⏎ ]",,중단확률 평균(0~1 · 표기 %). 축 값 안 회원 단순 평균.
 SV_ML_MEMBER_PRED_AXIS,PA,AVG_INC_PROB,FLOAT,AVG(pa.INC_PROB),"[ ⏎   ""평균 증액확률"" ⏎ ]",,증액확률 평균(0~1 · 표기 %).

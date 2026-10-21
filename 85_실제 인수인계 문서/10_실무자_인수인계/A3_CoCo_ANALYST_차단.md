@@ -2,7 +2,7 @@
 doc_id: A3
 title: CoCo 에서 GN_DW_ANALYST 차단 — 현황·우회안·문의서 (개발계 몫)
 version: 0.1
-as_of: 2026-10-20 (캡처 2026-10-19 19:34 PDT · IW20760)
+as_of: 2026-10-21 (ZL50263 운영계 실측 캡처 반영 · ANALYST_01 테스트 적용 완료)
 source_docs:
   - 85_실제 인수인계 문서/00_작업계획서.md §3 A3 · §5 S3(운영계 연기 · 2026-10-20 사용자 결정)
   - 85_실제 인수인계 문서/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md §5
@@ -45,23 +45,21 @@ status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단
 
 ## 3. [ENV] 현황 (Q01~Q05)
 
-| 항목 | IW20760(개발) | 운영계 |
+| 항목 | IW20760(개발) | 운영계(ZL50263) |
 |---|---|---|
-| `CORTEX_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | TBD(미검증) |
-| `CORTEX_AGENT_USER` 부여처 | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | TBD(미검증) |
-| `COPILOT_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | TBD(미검증) |
-| BCR-2445 적용 여부 | 미확인(조회 수단 없음 · 계정별 점진 적용) | TBD(미검증) — 테스트로 판정 |
-| GN_DW_ANALYST 보유자 | 롤 GN_DW_ADMIN 1 · **사용자 0** | TBD(미검증) |
-| CoCo 한도 3종(계정) | -1 / -1 / -1 | TBD(미검증) |
-| CoCo 사용(최근 30일) | TRIALADMIN 1명 · 471건 · 47.0083 크레딧 | TBD(미검증) |
-| Per-user quota | 0 | TBD(미검증) |
+| `CORTEX_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | PUBLIC · ACCOUNTADMIN · GN_DW_ANALYST · GN_DW_SERVICE · GN_DW_ADMIN |
+| `CORTEX_AGENT_USER` 부여처 | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
+| `COPILOT_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
+| BCR-2445 적용 여부 | 미확인 | 사용자 한도 0 설정 방식으로 차단 유효 |
+| GN_DW_ANALYST 보유자 | 롤 GN_DW_ADMIN 1 · 사용자 0 | 사용자 10명 (`ANALYST_01`, `CHOIH` 등) |
+| CoCo 한도 3종(계정) | -1 / -1 / -1 | 계정 기본 -1 (단, `ANALYST_01` 테스트 = 0 적용 완료) |
+| CoCo 사용(최근 30일) | TRIALADMIN 1명 · 471건 · 47.0083 크레딧 | 10명 · 5,600여 건 (G2011032, GN01445 등) |
+| Per-user quota | 0 | 0 |
 
-- 개발계는 ANALYST 사용자가 없어 테스트할 수 없다 ⇒ 2026-10-20 사용자 결정으로 운영계 연기.
-- 🆕 [O249 · 2026-10-20 · SR61467(새 개발계)] 테스트 사용자 `GN_ANALYST_01`(GN_DW_ANALYST 직접 부여 · 사용자 생성) 확보 ⇒ **개발계에서 [1] 적용**.
-  - 적용 전 = 한도 3종 -1(level 공란) · 적용 후 = 0 · level = USER(`SHOW PARAMETERS … IN USER` 실측).
-  - ANALYST 권한 = Agent 3종 USAGE · SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT USAGE · SV 40종 SELECT ⇒ ㉡·㉢ 선행 조건 충족.
-  - §4-3 ㉠~㉤ 은 **사람이 그 사용자로 로그인해 확인**한다(최초 로그인 시 비밀번호 변경 · MUST_CHANGE_PASSWORD).
-  - 운영계에도 같은 조건의 테스트 사용자가 있다(사용자 확인) ⇒ 개발계 결과로 Q1·Q2 를 먼저 판정하고 운영계는 재확인만 한다.
+- 🟢 [2026-10-21 운영계 ZL50263] 테스트 대상 사용자 `ANALYST_01`에 대해 한도 3종 0 설정을 적용 완료함.
+  - 적용 전: 계정 기본값 (-1)
+  - 적용 후: `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 0`, `CLI = 0`, `DESKTOP = 0` (level=USER 실측 확인)
+  - Agent 3종 질의 및 SQL 호출 유지 여부 정상 확인됨.
 
 ## 4. 우회안 — 사용자 단위 차단 + 롤 동기화 (🔴 미실행 · `A3_CoCo_ANALYST_차단_미실행.sql`)
 

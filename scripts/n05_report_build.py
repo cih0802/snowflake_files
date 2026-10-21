@@ -34,9 +34,16 @@ SHEETS = [('dbt실행', 'Q01'), ('dbt결과', 'Q02'), ('실패저장', 'Q03'), (
           ('평가셋', 'Q05'), ('예산분해', 'Q06'), ('Agent평가', 'Q07')]
 
 
+ILLEGAL_CHAR_RE = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x1b]')
+
+
+def sanitize_row(row):
+    return [ILLEGAL_CHAR_RE.sub('', str(c)) if c is not None else '' for c in row]
+
+
 def read_rows(path):
     with open(path, encoding='utf-8') as f:
-        return [r for r in csv.reader(f) if r and not r[0].startswith('#')]
+        return [sanitize_row(r) for r in csv.reader(f) if r and not r[0].startswith('#')]
 
 
 def judge(data):

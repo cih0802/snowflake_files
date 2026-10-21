@@ -2,7 +2,7 @@
 doc_id: N04
 title: 배치 SLA · 스케줄 정의서
 version: 1.0
-as_of: 2026-10-20 (IW20760 · 캡처 2026-10-19 21:01 PDT)
+as_of: 2026-10-21 (ZL50263 운영계 실측 캡처 반영 · 직전 IW20760)
 source_docs:
   - 10_실무자_인수인계/A6_일배치_장애대응_런북.md (일 흐름 · 장애 유형 F1~F9 · 재처리 원칙)
   - 80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql (74행 전량 · 운영계 Task 기재)
@@ -31,17 +31,16 @@ graph LR
 
 - J4 를 J3 의 `AFTER` 로 걸 수 없다(DAG 는 같은 스키마·같은 소유 롤 · MSTR 07 :13~15) ⇒ 운영계는 고정 시각 07:30 이다.
 
-## 2. [ENV] 실측 (IW20760)
+## 2. [ENV] 실측 (IW20760 및 운영계 ZL50263)
 
-| 항목 | 값 | 근거 |
-|---|---|---|
-| GN_DW Task | 0 | Q01 |
-| 최근 30일 Task 실행 | 24건 전부 `AI_EVALS_*`(SERVING · 2026-10-18 평가 1회분 · 시스템 생성) — 배치 아님 | Q05 |
-| dbt build | 4회 전부 SUCCESS · 전체 build 1회 **610초**(Small) · 부분 build 34·36·138초 | Q03·Q04 |
-| dbt compile/parse | ADMIN compile 4(평균 40초 · 배포) · DBT compile 1(27초) · parse 1(15초) | Q03 |
-| MSTR 적재 | 34개월 일괄 1,126초 · 월 1회분 **평균 33초 · 최대 72초**(33 순환) · 오류 0 | Q07 |
-| WARN Alert | 매일 09:00 KST · 6~7초 · 최근 2회 CONDITION_FALSE | Q02·Q06 |
-| 운영계 | 전부 TBD(미검증) — 같은 SQL 을 운영계에서 캡처 | — |
+| 항목 | 개발계(IW20760) | 운영계(ZL50263) | 근거 |
+|---|---|---|---|
+| GN_DW Task | 0 | 9개 (`daily`, `TSK_RUN_MSTR_DAILY`, `AGENCY_*` 등 9개 전체 STARTED) | Q01 |
+| 최근 30일 Task 실행 | 24건 전부 `AI_EVALS_*`(SERVING · 시스템 생성) — 배치 아님 | `AGENCY_*` 태스크 일일 실행 중 (13건 SUCCEEDED) | Q05 |
+| dbt build | 4회 전부 SUCCESS · 전체 build 1회 **610초**(Small) · 부분 build 34·36·138초 | 전체 build 585~610초 (SUCCESS) · 부분 build 15~46초 | Q03·Q04 |
+| dbt compile/parse | ADMIN compile 4(평균 40초) · DBT compile 1(27초) · parse 1(15초) | parse, compile, build 다수 SUCCESS 기록 | Q03 |
+| MSTR 적재 | 34개월 일괄 1,126초 · 월 1회분 **평균 33초 · 최대 72초**(33 순환) · 오류 0 | 151개 월 순환 집계 (평균 9,668초 · 최대 193,933초) | Q07 |
+| WARN Alert | 매일 09:00 KST · 6~7초 · 최근 2회 CONDITION_FALSE | 매일 09:00 KST · 6~9초 · 최근 CONDITION_FALSE 정상 | Q02·Q06 |
 
 - 🔴 MSTR `BCHLOG.RUNKEY` 가 510행 전부 NULL 이다 ⇒ 실행 단위 소요를 직접 셀 수 없어 「월마다 1행 남는 `USP_D_STRD_CAL_CD` 간격」으로 월 1회분을 쟀다(Q07 주석). 운영 일 1회분은 전월+당월 2개월이므로 약 2배다(추정 · 실측 아님).
 - 🟠 BRONZE `LAST_ALTERED`(Q08)는 2026-10-17 재구축 시각이다 — DDL·GRANT 로도 바뀌므로 적재 시각으로 인용하지 않는다. 적재 신선도는 A6 Q09(`_LOAD_DT`)를 쓴다.

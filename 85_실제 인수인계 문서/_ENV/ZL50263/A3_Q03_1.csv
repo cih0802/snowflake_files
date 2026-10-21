@@ -1,0 +1,5 @@
+# doc_id: A3 · as_of: 2026-10-21 13:15:59.968 +0900 · account: ZL50263 · query: Q03-1 CoCo 한도 파라미터 — 계정 기본값
+key,value,default,level,description,type
+CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER,-1,-1,,Daily estimated credit limit per user for Cortex Code CLI usage. A value of -1 means no limit. A value of 0 disables access.,NUMBER
+CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER,-1,-1,,Daily estimated credit limit per user for Cortex Code Desktop usage. A value of -1 means no limit. A value of 0 disables access.,NUMBER
+CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER,-1,-1,,Daily estimated credit limit per user for Cortex Code Snowsight usage. A value of -1 means no limit. A value of 0 disables access.,NUMBER

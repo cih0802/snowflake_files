@@ -1,8 +1,8 @@
-<!-- 자동 생성 = scripts/b_struct_build.py · account: SR61467 · 생성 2026-10-21 01:23 · 원천 = _ENV/SR61467/B1_*.csv · 손으로 고치지 않는다 -->
+<!-- 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-21 04:20 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다 -->
 
 # D05 부록 — GOLD 물리 ERD (FK 실측 · 자동 생성)
 
-- 원천 = `SHOW IMPORTED KEYS IN DATABASE GN_DW`(B1 Q03-2) · FK 72건 · GOLD 테이블 45개
+- 원천 = `SHOW IMPORTED KEYS IN DATABASE GN_DW`(B1 Q03-2) · FK 200건 · GOLD 테이블 45개
 - 관계선 라벨 = FK 컬럼명 · 설명은 `D05_ERD.md` 참조
 
 ```mermaid

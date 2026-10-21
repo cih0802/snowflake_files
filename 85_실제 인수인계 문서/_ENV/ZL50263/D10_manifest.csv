@@ -1,0 +1,9 @@
+# doc_id: D10 · as_of: 2026-10-21 13:11:15.400 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,D10_Q01_1.csv,OK,6,0,SHOW Agent · 기본 버전 (롤백 기준)
+Q02,1,D10_Q02_1.csv,OK,1,0,SHOW 알림 경로 — 알림 통합(이메일)
+Q03,1,D10_Q03_1.csv,OK,1,0,SELECT 알림 수신자 건수 (유형별 · 값 미출력)
+Q04,1,D10_Q04_1.csv,OK,0,0,SHOW 네트워크 정책 (RUNBOOK §8.1 전제)
+Q05,1,D10_Q05_1.csv,OK,2,0,SELECT 보안 감시 — 최근 7일 로그인 실패 · 권한 변경 건수 (RUNBOOK §8.2·§8.3)
+Q06,1,D10_Q06_1.csv,OK,0,0,SELECT 마스킹 정책 부착 현황 (A8-28 적용 여부 · 실행 전 = 0)
+Q07,1,D10_Q07_1.csv,OK,9,0,SHOW Streamlit (RUNBOOK §7 · 기대 = 0)
