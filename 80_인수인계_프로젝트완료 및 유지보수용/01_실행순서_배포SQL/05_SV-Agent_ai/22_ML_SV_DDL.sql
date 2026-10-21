@@ -1,17 +1,17 @@
 -- ============================================================================
 -- 22_ML_SV_DDL.sql — Semantic View DDL 정본: SV_ML_MEMBER_RISK · SV_ML_SPONSOR_RISK · SV_ML_DVLP_FORECAST · SV_ML_FEE_FORECAST · SV_ML_LTV_FORECAST · SV_ML_FEATURE_IMPORTANCE · SV_ML_ONCE_CONVERSION (⛔ SV_ML_LTV_SCORE 폐기)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
---   · 🆕 2026-10-02 O198 — ML 12종(50_handoff/05번) 기준 재정렬. base 뷰 = 21_ML_SERVING_뷰_DDL.sql 같은 날짜 판.
---       MEMBER_RISK  : 회원상태·결제수단·법인구분·피처 축/지표 삭제 · 원천 중복행 컬럼(CHURN_PRED_ROWS)·DUP_SOURCE_MEMBERS 추가
+--   · 2026-10-02 O198 — ML 12종(50_handoff/05번) 기준 재정렬. base 뷰 = 21_ML_SERVING_뷰_DDL.sql 같은 날짜 판.
+--       MEMBER_RISK : 회원상태·결제수단·법인구분·피처 축/지표 삭제 · 원천 중복행 컬럼(CHURN_PRED_ROWS)·DUP_SOURCE_MEMBERS 추가
 --       SPONSOR_RISK : 캠페인·상위캠페인·결제수단·유지개월 축, AT_RISK_AMT·TOTAL_SPNSR_AMT 삭제 · 캠페인카테고리 코드 축 추가
 --       LTV_FORECAST : 유형 UCMPGN_AVG_MEMBER → MKTG_CHANNEL_AVG_MEMBER · CMPGN_TOTAL 의미 = 캠페인 월간 후원금액 · VQR 추가
---       LTV_SCORE    : ⛔ 폐기(원천 이관 제외) · 구 정의 = _archive/22_ML_SV_DDL_pre_O198.sql
+--       LTV_SCORE : ⛔ 폐기(원천 이관 제외) · 구 정의 = _archive/22_ML_SV_DDL_pre_O198.sql
 --       FEATURE_IMPORTANCE : FEATURE_TYPE 주석만 정정(CHANNEL_NEW_SPNSR = NULL)
---       ONCE_CONVERSION    : 관측월·가입월·가입경과월·최신관측 축 폐기 · STDR_MT = 기준월 · PK (STDR_MT, ONCE_MBER_NO) · VQR 교체
---       DVLP/FEE_FORECAST  : base 뷰 컬럼 계약 불변 ⇒ 무변경
---   · 🔴 Agent 도구 설명(SV 이름·기본 분해축)을 함께 갱신해야 한다 — SV_ML_LTV_SCORE 참조 제거 포함.
+--       ONCE_CONVERSION : 관측월·가입월·가입경과월·최신관측 축 폐기 · STDR_MT = 기준월 · PK (STDR_MT, ONCE_MBER_NO) · VQR 교체
+--       DVLP/FEE_FORECAST : base 뷰 컬럼 계약 불변 ⇒ 무변경
+--   · WARN: Agent 도구 설명(SV 이름·기본 분해축)을 함께 갱신해야 한다 — SV_ML_LTV_SCORE 참조 제거 포함.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -335,7 +335,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO R
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_DVLP_FORECAST TO ROLE GN_DW_SERVICE;
 
--- 🆕 [O246] 2026-10-19 · FA = ML_FEE_FORECAST_ALLOC_V(후원사업·마케팅캠페인명·공통브랜드 배분 추정) 추가 · AI_SQL 규칙 (9)
+--  [O246] 2026-10-19 · FA = ML_FEE_FORECAST_ALLOC_V(후원사업·마케팅캠페인명·공통브랜드 배분 추정) 추가 · AI_SQL 규칙 (9)
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_FEE_FORECAST
 	tables (
 		FF as GN_DW.SERVING.ML_FEE_FORECAST_V primary key (STDR_MT,CMPGN_CTGR_CD,FORECAST_TS) with synonyms=('회비 예측','카테고리별 회비 예측','후원금액 예측') comment='캠페인 카테고리별 회비 예측 분석 (base: SERVING.ML_FEE_FORECAST_V). [Grain: 기준월 × 캠페인카테고리 × 예측월]. [활성 지표: 예측 회비금액(원)]. [주의: 단위=원, 개발금액(만원)과 단위 상이(합산 금지)]. [원천: ML 회비예측모델 → SERVING.ML_FEE_FORECAST_V].',
@@ -570,7 +570,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_ONCE_CONVERSION TO ROLE GN_DW_SERVICE;
 
 -- ============================================================================
--- 🆕 [O246-B] SV_ML_MEMBER_PRED_BRIDGE — 회원 브리지 SV(사용자 승인 2026-10-19)
+--  [O246-B] SV_ML_MEMBER_PRED_BRIDGE — 회원 브리지 SV(사용자 승인 2026-10-19)
 -- ============================================================================
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_MEMBER_PRED_BRIDGE
   TABLES (

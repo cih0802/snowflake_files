@@ -2,7 +2,6 @@
 -- [GN_DW] dbt 데이터 품질 경고(WARN 테스트) 이메일 알림 구축
 -- 문서번호: 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql
 -- 세션라벨: 2026-10-16 (dbt grain 보정 후속)
--- Co-authored with CoCo
 --
 -- 왜 07 과 문서를 나누는가
 --   07 = 수신자 관리(누구에게) + 발송 공통 프로시저(어떻게 보내나) — 표준·공용.
@@ -12,8 +11,8 @@
 -- 감시 대상 (store_failures = true, schema = 'OPS' 로 OPS 에 고정되는 dbt WARN 테스트)
 --   · GN_DW.OPS.WARN_SPNSR_CLS_AGGR_SRC_DUP — 외부 수기 업로드 SILVER.MM_SPNSR_CLS_AGGR_DATA grain 중복
 --       (tests/warn_spnsr_cls_aggr_src_dup.sql · 1행 = 중복 키 1개 · GOLD 는 큰 값 1건 유지로 이미 방어됨)
---       📏 2026-10-16 첫 실행 = 459키 (202607·202608·202609 업로드분)
---   🔴 store_failures 테이블은 테스트가 돌 때마다 다시 만들어진다 ⇒ 0행 = 최신 빌드에서 해소됨.
+--        2026-10-16 첫 실행 = 459키 (202607·202608·202609 업로드분)
+--   WARN: store_failures 테이블은 테스트가 돌 때마다 다시 만들어진다 ⇒ 0행 = 최신 빌드에서 해소됨.
 --
 -- 전제
 --   1) 07 실행 완료 (ALERT_RECIPIENT_CONFIG · IS_DBT_ALERT_YN · USP_SEND_PIPELINE_ERROR_ALERT 'DBT_ALERT' 분기)
@@ -23,7 +22,7 @@
 --      (07 2026-10-16 판부터 공통 프로시저 자체가 GN_DW_ADMIN 소유 ⇒ 소유권으로 충족)
 --   5) GN_DW_ADMIN 에 계정 권한 EXECUTE ALERT — 07 §1 (ACCOUNTADMIN 구간)에서 부여.
 --   실행 역할 = 전 구간 GN_DW_ADMIN (ACCOUNTADMIN 불필요 · OPS 소유자 = GN_DW_ADMIN).
---      🔴 07 §4 를 CREATE OR REPLACE 로 다시 배포하면 GRANT 가 사라진다 ⇒ 07 §6 을 반드시 다시 실행.
+--      WARN: 07 §4 를 CREATE OR REPLACE 로 다시 배포하면 GRANT 가 사라진다 ⇒ 07 §6 을 반드시 다시 실행.
 --      (2026-10-16 실측: 재배포 후 §6 누락 → 'Unknown user-defined function USP_SEND_PIPELINE_ERROR_ALERT')
 -- ==============================================================================
 
@@ -35,7 +34,7 @@ USE SCHEMA OPS;
 -- ------------------------------------------------------------------------------
 -- 0. [설정 변수] 실행 시각 — 일일 dbt build(TASK_DW_BUILD_DAILY) 종료 이후로 맞춘다.
 -- ------------------------------------------------------------------------------
---   ⚠️ 2026-10-16 현재 GN_DW_ADMIN 에서 TASK_DW_BUILD_DAILY 가 조회되지 않아 실행 시각을 실측하지 못했다.
+--   WARN: 2026-10-16 현재 GN_DW_ADMIN 에서 TASK_DW_BUILD_DAILY 가 조회되지 않아 실행 시각을 실측하지 못했다.
 --      SHOW TASKS 로 build 스케줄을 확인한 뒤 그보다 늦은 시각으로 고친다.
 SET DBT_ALERT_SCHEDULE = 'USING CRON 0 9 * * * Asia/Seoul';
 
@@ -121,7 +120,7 @@ END;
 $$;
 
 -- ALERT 는 SUSPENDED 로 생성된다 — 수동 시험 발송 후 RESUME.
---   🔴 RESUME 전제 = ALERT 소유 역할(GN_DW_ADMIN)에 계정 권한 EXECUTE ALERT.
+--   WARN: RESUME 전제 = ALERT 소유 역할(GN_DW_ADMIN)에 계정 권한 EXECUTE ALERT.
 --      없으면 'Cannot execute alert, EXECUTE ALERT privilege must be granted to owner role' (2026-10-16 실측).
 --      ⇒ 부여 위치 = 07 §1 (ACCOUNTADMIN 구간). 이 문서는 GN_DW_ADMIN 으로만 실행한다 — 아래는 확인만.
 SHOW GRANTS TO ROLE GN_DW_ADMIN ->> SELECT "privilege" FROM $1 WHERE "privilege" = 'EXECUTE ALERT';   -- 1행 이어야 함
@@ -150,7 +149,7 @@ ORDER BY SCHEDULED_TIME DESC;
 -- ------------------------------------------------------------------------------
 GRANT USAGE ON PROCEDURE GN_DW.OPS.USP_SEND_DBT_WARN_SPNSR_CLS_DUP() TO ROLE GN_DW_ENGINEER;
 GRANT MONITOR ON ALERT GN_DW.OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP TO ROLE GN_DW_ENGINEER;
--- 🔴 CREATE OR REPLACE ALERT/PROCEDURE 는 GRANT 를 지운다 — §2·§3 을 다시 실행했으면 위 2줄도 다시 실행.
+-- WARN: CREATE OR REPLACE ALERT/PROCEDURE 는 GRANT 를 지운다 — §2·§3 을 다시 실행했으면 위 2줄도 다시 실행.
 -- ALERT 소유 역할의 EXECUTE ALERT(계정 권한)는 07 §1 에서 부여된다 — §3 RESUME 앞 확인 쿼리 참조.
 
 

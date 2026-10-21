@@ -2,7 +2,7 @@
 
 > 대상: 이 문서를 읽고 `문서실행순서.md` 의 SQL 을 실행하는 LLM 에이전트.
 > 정본 순서 = `문서실행순서.md`. 이 문서는 **실행 방법·병렬화·예외 처리·금지 사항**만 정한다.
-> 근거 = 2026-10-16 개발계(ua91864) 실측 · 🆕 §3.4 = 2026-10-18 개발계(iw20760 · 데이터 = 운영계와 같음 · 사용자 확인) 실측.
+> 근거 = 2026-10-16 개발계 실측 · 🆕 §3.4 = 2026-10-18 개발계(데이터 = 운영계와 같음 · 사용자 확인) 실측.
 
 ---
 
@@ -156,7 +156,7 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
 | A | 20 · 22 ~ 59 (39파일) | 16 · 18 ~ 55 | 약 4분 · 35/35 OK · FAIL 0 · SKIP 0(실측은 35파일 시점 · 🆕 O250-E 이후 39파일) |
 | B | 21 (MSTR 적재) | 17 | 약 18분(1,096초) · 34/34개월 · 반환 문자열 `ERROR` 없음 |
 
-- 실측 기준 = 개발계 mn11232 · 2026-10-16 15:33~15:52(PDT) · 실행 전 §6.1 실행 중 쿼리 0건 · 두 레인 별도 프로세스·별도 연결.
+- 실측 기준 = 2026-10-16 15:33~15:52(PDT) · 실행 전 §6.1 실행 중 쿼리 0건 · 두 레인 별도 프로세스·별도 연결.
 - 결과 확인(O241) = `SV_SERVICE.D5_GIFT_AMT` 1,303,750,000 · `SV_GA_SESSION` 2026-09 A 31.87초 · B 90.27초 ·
   지표번호 토큰 동의어가 있는 metric 87개 · AGENT_MEMBER·AGENT_MARKETING 기본 = VERSION$4(O241 규칙 포함 · 롤백 = VERSION$3).
 
@@ -168,7 +168,7 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
      (정본 명령 = `10_dbt_pipeline/02_dbt_parse_compile_build.sql` 의 BigQuery 범위 build).
 - 완료 확인 = 배포순서 파일의 `[D3]` 확인 SELECT · Agent 기본 버전에 그 회차 규칙 문자열이 있는가(`SHOW VERSIONS IN AGENT … ->> SELECT "name", "is_default", CONTAINS("agent_spec", '<규칙 표지>') FROM $1`).
 
-### 3.4 🆕 O243~O245 증분(`문서실행순서.md` 「기존 환경 갱신」 14~19 · 개발계 iw20760 2026-10-18 실측)
+### 3.4 🆕 O243~O245 증분(`문서실행순서.md` 「기존 환경 갱신」 14~19 2026-10-18 실측)
 
 | 순 | 실행 방식 | 실측 |
 |---|---|---|
@@ -183,16 +183,16 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
   🔴 러너 자체 판정(`err`·`tok`)은 쓰지 마라 — `err` 는 SV 지침 안의 「invalid identifier」 문구를 오류로 잡는다(전건 오탐).
 - Agent 호출(`DATA_AGENT_RUN`)은 1문항 약 1분이다 ⇒ 백그라운드로 돌리고 `QUERY_HISTORY` 로 진행을 본다(마운트 파일 목록은 수 분 늦게 반영된다 · 실측).
 
-### 3.5 🆕 O249~O250 증분(`문서실행순서.md` 「기존 환경 갱신」 20~28 · 개발계 SR61467 2026-10-20~21 실측)
+### 3.5 🆕 O249~O250 증분(`문서실행순서.md` 「기존 환경 갱신」 20~28 2026-10-20~21 실측)
 
 | 순 | 실행 방식 | 실측 |
 |---|---|---|
 | 20 | `06_DDL.sql` 의 `RENAME COLUMN LTV_CAP_MONTHS TO LTV_CAP_AVG_ACTIVE_MONTHS` **1문장만** — 이미 바뀌었으면(`invalid identifier`) 건너뛴다 | 🔴 파일 전체 실행 금지(GOLD `CREATE OR REPLACE` 가 섞여 있다) |
-| 21 | dbt 재배포 + `build --select FACT_MEMBER_COHORT_SURVIVAL DIM_SEND_REQUEST DIM_MSG_TEMPLATE DIM_MSG_TEMPLATE_BUTTON` | 🔴 사용자가 실행한다(에이전트 정지점) · SR61467 PASS=11 · 고아 0 |
+| 21 | dbt 재배포 + `build --select FACT_MEMBER_COHORT_SURVIVAL DIM_SEND_REQUEST DIM_MSG_TEMPLATE DIM_MSG_TEMPLATE_BUTTON` | 🔴 사용자가 실행한다(에이전트 정지점) PASS=11 · 고아 0 |
 | 22 · 23 · 25 | 각 파일 첫 줄 ~ 마지막 `GRANT` | 22 = 05_03 → 21 → 22 → 23 순서 · 23(35_) 은 22 다음 |
 | 24 | `tmp/o249/agent_deploy.py`(환경변수 `AG` 로 1종씩) | 27 이 같은 일을 09_2 로 다시 하므로 **27 을 실행하면 24 는 건너뛰어도 된다** |
 | 26 | `36_O250_ML예측_7축확장.sql` 문장 단위(뷰 2 → SV 2 → GRANT 12) · 끝의 스모크 2개로 판정 · 🆕 [O250-E] 아직 안 돌린 환경은 같은 정의의 정본 = `21_` [O250] 절 → `05_29` → `05_30` | 뷰 생성 수 초 · 스모크 = 회원수 = `ML_MEMBER_RISK_V` · 배분 합 = 예측 합(차이는 부동소수 수천 원) |
-| 27 | 09_2 = [0] 부재 0행 → [0-B] COPY FILES → [0-C] 크기 대조 OK → [1] 롤백 기준 기록 → [2] → [3] | SR61467 = MEMBER $5 · EXECUTIVE $5 · MARKETING $6 · 실행기 예 = `tmp/o250/deploy_agents.py pre` → `deploy` |
+| 27 | 09_2 = [0] 부재 0행 → [0-B] COPY FILES → [0-C] 크기 대조 OK → [1] 롤백 기준 기록 → [2] → [3] | 이전 계정 = MEMBER $5 · EXECUTIVE $5 · MARKETING $6 · 실행기 예 = `tmp/o250/deploy_agents.py pre` → `deploy` |
 | 28 | 09_1 [5] 의 `ALTER AGENT … SET COMMENT … PROFILE` 3문장만 | Agent 설명 = 수치 없는 카테고리 문안 |
 
 - 🔴 [O250] `cortex ws` 마운트에서 **생성기 입력 csv 를 쓴 직후 읽으면 꼬리 행이 빠진다**(실측 = `env_capture` 직후 `b_struct_build` 가 SV 44 중 42 만 읽음) ⇒ 캡처와 생성기 사이에 수십 초 두거나, 생성 후 행 수를 캡처 csv 와 대조한다.
@@ -209,7 +209,7 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
 | `04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql` | CSV 15열 코드가 `SILVER.CRM_CAMPAIGN` 과 어긋나 dbt 테스트 `assert_fap_ad_ctgr_consistency` FAIL 14 → `GOLD.WIDE_AD_*` 5개 SKIP | **2026-10-16 파일 수정 완료**(이름으로 CRM 코드 조회 우선). 적재 후 기대 = 258행 · MKTG 53 · CTGR 112 · NONE 93 |
 | `15_MSTR 이관 PoC/…/06_MSTR_적재_실행.sql` [2] | 주석은 「2026-01 ~」, 코드는 `BETWEEN '202401' AND 현재월` (34개월) | 코드대로 실행. 결과 문자열에 `ERROR` 가 없어야 한다. 기간 축소 여부는 사용자 결정 |
 | `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` 47행 | 사용자명 `TRIALADMIN` 하드코딩 | §0-3 |
-| 🆕 `10_dbt_pipeline` build — 새 열을 추가한 모델(예: O241 `SILVER.BIGQUERY_SESSION.SESSION_END_TS`) | `003001 Insufficient privileges … must have MODIFY … GN_DW_DBT` — 테이블 소유자는 GN_DW_ADMIN 이고 dbt 역할은 `append_new_columns` 의 `ALTER TABLE ADD COLUMN` 을 못 한다(실측 2026-10-16 mn11232) | 신규 구축 = DDL 정본(`08_SILVER_테이블DDL` · `06_DDL`)에 열이 이미 들어 있어 발생하지 않는다. **기존 환경 갱신** = 배포순서 파일의 `[D1-a]` ALTER(소유자 역할)를 **dbt build 전에** 실행한다. 실패했으면 그 ALTER 를 실행한 뒤 build 만 재실행(이미 성공한 모델은 다시 돌아도 멱등) |
+| 🆕 `10_dbt_pipeline` build — 새 열을 추가한 모델(예: O241 `SILVER.BIGQUERY_SESSION.SESSION_END_TS`) | `003001 Insufficient privileges … must have MODIFY … GN_DW_DBT` — 테이블 소유자는 GN_DW_ADMIN 이고 dbt 역할은 `append_new_columns` 의 `ALTER TABLE ADD COLUMN` 을 못 한다(실측 2026-10-16 이전 계정) | 신규 구축 = DDL 정본(`08_SILVER_테이블DDL` · `06_DDL`)에 열이 이미 들어 있어 발생하지 않는다. **기존 환경 갱신** = 배포순서 파일의 `[D1-a]` ALTER(소유자 역할)를 **dbt build 전에** 실행한다. 실패했으면 그 ALTER 를 실행한 뒤 build 만 재실행(이미 성공한 모델은 다시 돌아도 멱등) |
 | 🆕 `/workspace` 로그 파일 | 실행기가 쓰는 중인 로그를 `tail` 하면 `read error: No such file or directory`(스테이지 마운트 · 실측) | 진행 판정은 **상태 파일(`STATE`)** 과 §6.1 `QUERY_HISTORY` 로 한다. 로그는 프로세스 종료 후 읽는다 |
 | 🆕 [O245] `shutil.copy2` 로 `/workspace` 에 백업 | `FileNotFoundError`(마운트가 xattr 를 지원하지 않는다 · 실측) — 빈 파일이 남을 수 있다 | `shutil.copyfile` 을 쓴다. 백업 후 원본을 쓰기 전에 백업 크기를 확인한다 |
 | 🆕 [O245] 예산(`FACT_BUDGET`·`FACT_BUDGET_YEARLY`) 차수 | 추경(추가경정) 편성 데이터가 없는 연도가 있다(2026 = 편성 0) | 규칙 = 편성액이 있는 차수 중 최신(사용자 결정 · 현행 유지). 추경 목표(공153·155)는 데이터가 없다 — 「산출 불가」로 답한다 |

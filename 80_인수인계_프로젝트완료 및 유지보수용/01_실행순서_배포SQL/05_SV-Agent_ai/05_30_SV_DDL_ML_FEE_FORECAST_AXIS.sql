@@ -1,11 +1,10 @@
 -- ============================================================================
--- 05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql — Semantic View DDL 정본: SV_ML_FEE_FORECAST_AXIS (🆕 O250 · O250-E 단독 파일로 이관)
+-- 05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql — Semantic View DDL 정본: SV_ML_FEE_FORECAST_AXIS ( O250 · O250-E 단독 파일로 이관)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 대상 = ML 회비 예측 × 7축 실적 비중 배분 추정 (MEMBER·MARKETING · analyst_ml_fee_axis)
---   · 선행 = GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V(21_ML_SERVING_뷰_DDL.sql [O250] 절) ⇒ 🔴 21_ 다음에 실행
+--   · 선행 = GN_DW.SERVING.ML_FEE_FORECAST_AXIS_V(21_ML_SERVING_뷰_DDL.sql [O250] 절) ⇒ WARN: 21_ 다음에 실행
 --   · 원 배포 파일 = 36_O250_ML예측_7축확장.sql(이력 보존 · 문면 무변경 이관)
 --   · 공통 규약 = 05_0_SV_DDL.sql
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

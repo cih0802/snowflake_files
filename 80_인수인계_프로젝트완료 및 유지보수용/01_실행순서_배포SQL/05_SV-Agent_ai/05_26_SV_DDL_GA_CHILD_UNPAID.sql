@@ -1,12 +1,11 @@
 -- ============================================================================
--- 05_26_SV_DDL_GA_CHILD_UNPAID.sql — Semantic View DDL 정본: SV_GA_CHILD_UNPAID (🆕 O239 · G1 잔여 2건)
+-- 05_26_SV_DDL_GA_CHILD_UNPAID.sql — Semantic View DDL 정본: SV_GA_CHILD_UNPAID ( O239 · G1 잔여 2건)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 대상 = 공#122 결연아동코드 · 공#81 미납서비스 전환율 — 🔴 추천안 A/B 를 둘 다 metric 으로 싣는다
+--   · 대상 = 공#122 결연아동코드 · 공#81 미납서비스 전환율 — WARN: 추천안 A/B 를 둘 다 metric 으로 싣는다
 --     (사용자 결정 2026-10-16 = 구현 후 Agent 실사용으로 현업이 하나를 고른다 · 고르면 다른 안 metric 을 걷어낸다).
 --   · 선행 = GN_DW.GOLD.FACT_GA_CHILD_VIEW · FACT_UNPAID_SERVICE_CONV(03_top-down_gold/06_DDL.sql · dbt build).
 --   · 두 팩트는 서로 결합하지 않는다(관계 없음) — 질문마다 한 팩트만 쓴다.
 --   · 공통 규약 = 05_0_SV_DDL.sql
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

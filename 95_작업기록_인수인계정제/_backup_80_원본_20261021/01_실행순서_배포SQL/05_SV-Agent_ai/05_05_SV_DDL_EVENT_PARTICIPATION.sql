@@ -1,0 +1,111 @@
+-- ============================================================================
+-- 05_5_SV_DDL_EVENT_PARTICIPATION.sql — Semantic View DDL 정본: SV_EVENT_PARTICIPATION
+--   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
+--   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
+-- ============================================================================
+USE ROLE GN_DW_ADMIN;
+USE WAREHOUSE GN_DW_DEV_WH;
+USE SCHEMA GN_DW.SERVING;
+
+CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION
+  TABLES (
+    fep AS GN_DW.GOLD.FACT_EVENT_ATTENDANCE
+      WITH SYNONYMS ('행사 참여', '이벤트 참여', '행사 출석')
+      COMMENT = '행사/이벤트 신청 및 참석 성과 분석 (base: GOLD.FACT_EVENT_ATTENDANCE). [Grain: 행사일 × 회원 × 행사]. [활성 지표: 모집/신청/대기/취소/참석 인원수]. [주의: 일반/캠페인 행사별 상태코드 구분 집계]. [원천: CRM → BRONZE_CRM → SILVER.CRM_EVENT_PARTICIPATION → GOLD.FACT_EVENT_ATTENDANCE].',
+    date AS GN_DW.GOLD.DIM_DATE
+      PRIMARY KEY (DATE_SK)
+      WITH SYNONYMS ('날짜', '참여일')
+      COMMENT = '일 차원. [원천] ETL 생성(달력) — 업무 원천 시스템 없음.',
+    event AS GN_DW.GOLD.DIM_EVENT
+      PRIMARY KEY (EVENT_SK)
+      WITH SYNONYMS ('행사', '이벤트')
+      COMMENT = '행사 차원. EVENT_SK 고아분은 Unknown(SK=0)으로 라우팅되므로 행사명별 집계는 부분집합이다(이슈 E). [원천] 시스템=CRM(eCRM 행사관리) · BRONZE=GN_DW.BRONZE_CRM: TM_MS_EVENT(EVENT_NM·STRT_DE) ∪ TM_MS_CRMN(캠페인행사) · SILVER=CRM_EVENT.',
+    member AS GN_DW.GOLD.DIM_MEMBER
+      PRIMARY KEY (MEMBER_DK)
+      WITH SYNONYMS ('회원')
+      COMMENT = '정규 회원 마스터 차원 (회원 1명 = 1행 · MEMBER_DK 유일). 🔴 IS_CURRENT 컬럼은 없다 — 상태 이력이 필요하면 DIM_MEMBER_STATUS_HISTORY 를 쓴다. 불변/현재 속성 전용. [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM · SILVER=CRM_MEMBER · GOLD=DIM_MEMBER.'
+  )
+  RELATIONSHIPS (
+    fep_to_date   AS fep (DATE_SK)   REFERENCES date,
+    fep_to_event  AS fep (EVENT_SK)  REFERENCES event,
+    fep_to_member AS fep (MEMBER_DK) REFERENCES member
+  )
+  DIMENSIONS (
+    date.PART_DATE       AS date.FULL_DATE       WITH SYNONYMS ('참여일', '행사일', '일자', '날짜') COMMENT = '참여일',
+    date.FULL_DATE AS date.FULL_DATE  COMMENT = '달력 날짜(DIM_DATE.FULL_DATE) — PART_DATE 와 같은 값이다(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
+    date.CAL_YEAR        AS date.YEAR            WITH SYNONYMS ('연도', '년')  COMMENT = '연도',
+    date.CAL_MONTH       AS date.MONTH           WITH SYNONYMS ('월')         COMMENT = '월(1~12)',
+    date.YEAR AS date.YEAR    COMMENT = '연도(DIM_DATE.YEAR) — CAL_YEAR 와 같은 값(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
+    date.MONTH AS date.MONTH  COMMENT = '월(DIM_DATE.MONTH) — CAL_MONTH 와 같은 값(추측 식별자 실재화). 둘 중 하나만 쓴다.',
+    event.EVENT_NAME     AS event.EVENT_NAME     WITH SYNONYMS ('행사명', '이벤트명') COMMENT = '행사명',
+    event.EVENT_KIND     AS event.EVENT_KIND     WITH SYNONYMS ('행사종류코드', '행사계통코드') COMMENT = '행사 종류 **원천 판별자 코드**. 실제값 2종 + NULL: ''CRMN''·''EVENT'' · NULL(행사 마스터 미매핑). 🔴 이 값은 업무 분류가 아니라 **행사 마스터가 두 원천의 결합이라는 사실**을 나타낸다 — ''EVENT''=일반행사 원천 · ''CRMN''=캠페인행사 원천. ✅ **사람이 읽는 라벨은 EVENT_KIND_NAME 축을 쓴다**(''일반행사''·''캠페인행사''·''(미매핑)''). 🔴 이 코드축으로 답하지 말고 라벨축으로 답할 것 — 현업은 코드를 모른다. ⚠️ 위 2종 외의 값으로 필터하면 0행이다',
+    event.EVENT_KIND_NAME AS event.EVENT_KIND_NAME WITH SYNONYMS ('행사종류', '행사구분계통') COMMENT = '행사 종류 라벨 — **현업 응답용 정본 축**이다. 실제값 3종: ''일반행사''·''캠페인행사''·''(미매핑)''. 🔴 이 라벨은 원천 계통을 뜻한다(일반행사 마스터 / 캠페인행사 마스터) — 온·오프라인 구분이 아니다. ⚠️ ''(미매핑)''은 참여 행이 행사 마스터에 붙지 않은 경우이며 비중이 작지 않다 — 이 축으로 분해하면 그 덩어리를 함께 밝힌다',
+    fep.PART_EVENT_KIND AS fep.EVENT_KIND WITH SYNONYMS ('원천계열코드', '참여원천코드') COMMENT = '원천 계열 판별 **코드 — 팩트 자체 보유**(행사 마스터 조인과 무관). 실제값 2종: ''CRMN''·''EVENT''. 🔴 차원축 EVENT_KIND 와 값은 같지만 **결손이 없다** — 차원축은 행사 미매칭 구간이 ''(미매핑)'' 이라 계열을 알려주지 못한다. ✅ 라벨은 PART_EVENT_KIND_NAME 축을 쓴다(현업 답변에 코드를 내지 말 것). ⚠️ 위 2종 외의 값으로 필터하면 0행이다',
+    fep.PART_EVENT_KIND_NAME AS fep.EVENT_KIND_NAME WITH SYNONYMS ('원천계열', '참여원천', '행사계열') COMMENT = '원천 계열 판별 **라벨 — 계열 분해의 정본 축이다**. 실제값 2종: ''일반행사''·''캠페인행사''. 🔴🔴 **코드·라벨 축이 원천별로 갈리는 문제(참여상태·경로·채널)를 분해할 때는 차원축 EVENT_KIND_NAME 이 아니라 이 축을 동반한다** — 이 축은 팩트가 원천 분기로 보유해 **전건 값을 가지며 ''(미매핑)'' 사각지대가 없다.  차원축은 행사 마스터에 매칭된 행만 계열을 알려주므로 미매칭 구간에서 무력하다. 🔴 이 라벨은 원천 계통을 뜻한다(일반행사 원천 / 캠페인행사 원천) — 온·오프라인 구분이 아니다. ⚠️ 행사명·행사구분 등 **차원 속성별 분해는 여전히 부분집합**이다(미매칭분은 Unknown 으로 라우팅) — 계열이 확정되는 것과 행사가 확정되는 것은 다르다',
+    event.EVENT_CATEGORY AS event.EVENT_CATEGORY WITH SYNONYMS ('행사구분코드') COMMENT = '행사 구분 **원천 코드**(라벨 아님). 🔴🔴 **두 원천의 코드체계가 한 컬럼에 혼재한다** — **일반행사(EVENT) = 백 단위**(''100''~''500'' · 코드군 MS286) · **캠페인행사(CRMN) = 한/두 자리**(''1''~''16'' · 코드군 MS002). 따라서 **PART_EVENT_KIND_NAME 과 함께 보지 않으면 서로 다른 체계를 한 표에 섞는다.** ✅ **사람이 읽는 라벨은 EVENT_CATEGORY_NAME 축을 쓴다**(R1 — 두 코드군 모두 등급 B 확정). ⚠️ 센티넬 행(''(미매핑)'')은 코드가 없어 라벨도 NULL 이다 — 결측이 아니라 조인 대상 부재다. 실제값 19종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''9''·''12''·''13''·''14''·''15''·''16''·''100''·''200''·''300''·''400''·''500'' + NULL',
+    event.EVENT_CATEGORY_NAME AS event.EVENT_CATEGORY_NAME WITH SYNONYMS ('행사구분', '행사구분명', '행사종류구분') COMMENT = '행사 구분 **라벨 — 현업 응답용 정본 축**이다. 「행사 구분별」 질문은 이 축으로 답한다. 실제값 19종 — 일반행사 계열(코드군 MS286): 온라인·앱전용·회지·리플렛·오프라인 / 캠페인행사 계열(코드군 MS002): 국내사업장방문·해외사업장방문·좋은이웃콘서트·굿멤버스데이(본부)·굿멤버스데이(지부)·굿모닝·문화서비스·문화서비스_전시·문화서비스_서적·문화서비스_공연·기업제휴·특성화회원조직·I''m your pen·기타. ⚠️ 값에 아포스트로피가 포함된 라벨(I''m your pen)이 있어 따옴표 열거 규약 대신 **종수 선언 + 나열**로 적는다 — 종수는 게이트가 실측과 대조한다. 🔴🔴 **라벨공간이 원천별로 갈린다** — 두 코드군의 라벨이 한 축에 섞여 있으므로 이 축으로 분해할 때는 **PART_EVENT_KIND_NAME 을 동반**해 어느 계통인지 밝힌다. ⚠️ 센티넬 행은 라벨 NULL 이다(코드 자체가 없다)',
+    fep.PART_STATUS AS fep.PART_STATUS WITH SYNONYMS ('참여상태코드') COMMENT = '참여 상태 **원천 코드**(라벨 아님). 🔴🔴 **두 원천의 코드체계가 혼재한다** — 일반행사(EVENT) = 백 단위(''110''~''220'' · 코드군 MS304) · 캠페인행사(CRMN) = 한 자리(''1''~''6'' · 코드군 MS006) ⇒ **PART_EVENT_KIND_NAME 동반 필수**. 🔴 **두 원천은 「참여」의 정의가 다르다** — MS304 는 **다단계 이벤트의 단계 통과 여부**이고 MS006 은 신청/참여/불참이다. 합산하면 정의가 혼입된다. ✅ 라벨은 PART_STATUS_NAME 축을 쓴다(R1). ⚠️ ''`)`'' 는 **원천 입력 오류(오염값)** 이며 라벨을 붙이지 않는다 — 정상 코드로 취급하지 말 것. 실제값 19종: '')''·''1''·''2''·''3''·''4''·''5''·''6''·''110''·''120''·''130''·''140''·''150''·''160''·''170''·''180''·''190''·''200''·''210''·''220'' + NULL',
+    fep.PART_STATUS_NAME AS fep.PART_STATUS_NAME WITH SYNONYMS ('참여상태', '참여상태명') COMMENT = '참여 상태 **라벨 — 현업 응답용 정본 축**이다. 실제값 18종: ''Success''·''Fail''·''1_step_right''·''1_step_fail''·''2_step_right''·''2_step_fail''·''3_step_right''·''3_step_fail''·''4_step_right''·''4_step_fail''·''5_step_right''·''5_step_fail''·''신청''·''참여''·''불참''·''대기''·''취소''·''대기(결제)'' + NULL. 🔴🔴 **라벨공간이 원천별로 갈린다 — 영문 라벨과 한글 라벨이 섞여 있다**: 영문 계열(Success·Fail·n_step_*)은 **일반행사(MS304)**, 한글 계열(신청·참여·불참·대기·취소·대기(결제))은 **캠페인행사(MS006)** 다. ⇒ 「참여 상태별」로 분해하면 **한 의미가 두 라벨로 갈라진다**(예: 참여 성공이 ''Success'' 와 ''참여'' 로 나뉜다) — **PART_EVENT_KIND_NAME 을 반드시 동반**하고 두 계열을 합산하지 말 것. 🔴 두 원천은 참여의 정의 자체가 다르다(단계 통과 vs 신청/참여). ⚠️ MS304 라벨이 **사전에 영문으로 등재**돼 있어 그대로 노출한다 — 한글 표기는 현업 회신 대기. ⚠️ NULL 은 오염값·센티넬처럼 사전에 없는 코드 행이다(라벨 창작 금지)',
+    fep.PART_PATH AS fep.PART_PATH WITH SYNONYMS ('참여경로코드', '신청경로코드') COMMENT = '참여·신청 경로 **원천 코드**(라벨 아님). 🔴 **두 체계 혼재** — 일반행사 = 백 단위(코드군 MS303 · 원천 컬럼 참여경로) · 캠페인행사 = 한 자리(코드군 MS004 · 원천 컬럼 **신청경로**) ⇒ **PART_EVENT_KIND_NAME 동반 필수**. ✅ 라벨은 PART_PATH_NAME 축을 쓴다. ⚠️ ''`)`'' 는 오염값이며 라벨 없음. 실제값 13종: '')''·''1''·''2''·''3''·''4''·''5''·''6''·''100''·''200''·''300''·''500''·''600''·''700'' + NULL',
+    fep.PART_PATH_NAME AS fep.PART_PATH_NAME WITH SYNONYMS ('참여경로', '신청경로') COMMENT = '참여·신청 경로 **라벨 — 현업 응답용 정본 축**이다. 실제값 12종: ''webmail''·''homepage''·''출석''·''텍스트''·''독자의견''·''독자이벤트''·''홈페이지''·''상담센터''·''초대''·''이메일''·''모바일웹''·''APP'' + NULL. 🔴🔴 **같은 의미가 두 라벨로 갈라져 있다** — ''homepage''(일반행사 MS303)와 ''홈페이지''(캠페인행사 MS004)가 **동시에 존재**한다. 사전 라벨이 원천별로 다르게 등재된 결과이며 우리가 통합 라벨을 만들면 **라벨 창작**이 된다 ⇒ 통합하지 않는다. ⇒ 「참여경로별」로 분해하면 **한 의미가 두 행으로 갈라지므로 PART_EVENT_KIND_NAME 을 반드시 동반**하고, 두 계열을 하나로 합쳐 답하려면 **합쳤다는 사실과 대응 관계를 명시**한다. ⚠️ 오염값·사전 미등재 행은 라벨 NULL 이다',
+    fep.PART_CHANNEL AS fep.PART_CHANNEL WITH SYNONYMS ('참여채널코드') COMMENT = '참여 채널 **원천 코드**(라벨 아님) — **일반행사 계열만 값을 갖는다**(코드군 MS302). 🟢 **캠페인행사 원천에는 채널 컬럼이 아예 없다**(원천 스캔: 캠페인행사 분기의 채널 non-null **0건**) ⇒ 그 참여 행의 NULL 은 **구조적 부재**다. 🔴🔴 **그러나 NULL 전부를 구조적 부재로 읽지 말 것** — 일반행사 계열에도 NULL 이 **소수** 있고(오염값 행 + 원천 미입력 행) 그쪽은 **결측**이다. NULL 을 해석할 때는 계열을 먼저 가른다. ✅ 라벨은 PART_CHANNEL_NAME 축을 쓴다. ⚠️ ''`)`'' 는 오염값이며 라벨 없음. 실제값 9종: '')''·''100''·''200''·''300''·''400''·''500''·''600''·''700''·''800'' + NULL',
+    fep.PART_CHANNEL_NAME AS fep.PART_CHANNEL_NAME WITH SYNONYMS ('참여채널', '참여기기') COMMENT = '참여 채널 **라벨 — 현업 응답용 정본 축**이다(코드군 MS302 · 단일 체계이므로 이 축은 라벨공간이 갈리지 않는다). 실제값 8종: ''PC''·''mobile web''·''APP''·''회지(온라인)''·''회지(오프라인)''·''SNS''·''문자''·''행사'' + NULL. 🔴 **NULL 은 두 가지가 섞여 있다 — 하나로 설명하지 말 것**: ㉠ **캠페인행사 참여 행 전량**은 원천에 채널 컬럼이 없어 NULL 이다(**구조적 부재** · 원천 스캔으로 확인) ㉡ **일반행사 계열의 소수 행**도 NULL 이며 그쪽은 **결측 또는 오염값**이다. ⇒ 이 축으로 분해하면 **캠페인행사 전량이 NULL 버킷에 모이므로 계열을 동반해 그 사실을 밝히고**, 남는 NULL 을 「전부 캠페인행사」라고 단정하지 않는다. ⚠️ 참여 경로(PART_PATH_NAME)와 다른 축이다 — 채널은 기기·매체, 경로는 참여 형태다',
+    fep.SELF_PART_FLAG AS fep.SELF_PART_FLAG WITH SYNONYMS ('본인참여', '본인참여여부', '본인 참여') COMMENT = '본인참여 여부 — 캠페인행사 신청의 자기참여코드(MS060)에서 파생: ''1''(본인만)·''2''(함께) ⇒ TRUE · ''0''(동반자만) ⇒ FALSE. 🔴 **캠페인행사 전용**이다 — 일반행사 원천에는 자기참여 컬럼이 없어 일반행사 행은 전건 NULL 이다(결측이 아니라 구조적 부재) ⇒ 이 축으로 분해할 때는 PART_EVENT_KIND_NAME 을 동반하고 NULL 을 「본인 미참여」로 읽지 않는다. ⚠️ 캠페인행사에도 코드가 비어 있는 소수 행은 NULL 이다',
+    fep.SELF_PARTCPT_CD AS fep.SELF_PARTCPT_CD WITH SYNONYMS ('자기참여코드', '본인참여코드', '참여형태코드') COMMENT = '자기참여 **원천 코드**(코드군 MS060 · 캠페인행사 전용). 실제값 3종: ''0''·''1''·''2'' + NULL. 사전 라벨: ''0''=동반자만 · ''1''=본인만 · ''2''=함께. 🔴 일반행사 행은 전건 NULL(구조적 부재). 여부만 필요하면 SELF_PART_FLAG 를 쓴다',
+    event.CRMN_PLACE_NM AS event.CRMN_PLACE_NM WITH SYNONYMS ('행사장소', '장소', '행사장소명') COMMENT = '행사장소명 — 캠페인행사 마스터(TM_MS_CRMN) 전용 속성. 🔴 일반행사 마스터에는 장소 컬럼이 없어 일반행사는 전건 NULL 이다(구조적 부재). ⚠️ 캠페인행사도 장소를 입력한 행사만 값을 가진다 ⇒ 장소별 집계는 부분집합이며 NULL 덩어리를 함께 밝힌다(채움 비율은 조회로 확인한다)',
+    member.CHRCTR_RECPTN_YN AS member.CHRCTR_RECPTN_YN WITH SYNONYMS ('문자수신여부', '문자수신', 'SMS 수신동의') COMMENT = '회원 문자수신 여부(현재 마스터 스냅샷 · 참여 시점 값이 아니다). 실제값 2종: ''Y''·''N'' + NULL. ⚠️ NULL 은 원천 미입력이며 ''N'' 으로 읽지 않는다',
+    member.GENDER_NAME   AS member.GENDER_NAME   WITH SYNONYMS ('성별')     COMMENT = '회원 성별 — 정본 공#130. 실제값 5종: ''남자''·''여자''·''기업''·''단체''·''기타''(CM017 라벨).',
+    member.SEX           AS member.SEX           WITH SYNONYMS ('성별코드') COMMENT = '성별 원천코드(CM013). 이 차원의 실제값 8종 1~8 (+미기재 NULL). ⚠회원 마스터에 ''0''은 없다 — sentinel ''0''은 개발·증감 원천에만 존재하므로 ''0'' 조건은 0행. 라벨은 GENDER_NAME(분석)·SEX_NM(원천)',
+    member.SEX_NM        AS member.SEX_NM        WITH SYNONYMS ('성별상세', '국내외국인') COMMENT = 'CM013 원천 라벨 8종(국내(남자)·외국인(여자)·단체·기업 등). 국내/외국인 구분용. 실제값 8종: ''기업''·''기타''·''단체''·''국내(남자)''·''국내(여자)''·''외국인(기타)''·''외국인(남자)''·''외국인(여자)'' + NULL',
+    member.MEMBER_STATUS_NAME AS member.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태') COMMENT = '현재 회원상태 라벨(공#132, MM010). 실제값 13종: ''활동회원''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''후원중단''·''(해당없음)''. 🔴 **라벨에 숫자 접두가 없다** — 상태 코드번호를 라벨 앞에 붙인 형태로 필터하면 0행 무증상 오답이다. ⚠️ ''(해당없음)''은 일시회원이며 정기후원 상태축의 **구조적 부재**다 — 결측이 아니다',
+    member.MBER_STAT_CD  AS member.MBER_STAT_CD  WITH SYNONYMS ('회원상태코드') COMMENT = '회원상태 원천코드(MM010 1~12). 실제값 12종: ''1''·''2''·''3''·''4''·''5''·''6''·''7''·''8''·''9''·''10''·''11''·''12'' + NULL',
+    member.MEMBER_TYPE_NAME AS member.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(MM018): 개인·기업·단체. 실제값 3종: ''개인''·''기업''·''단체''',
+    member.MBER_DIV_CD   AS member.MBER_DIV_CD   WITH SYNONYMS ('회원구분코드') COMMENT = '회원구분 원천코드(MM018). 실제값 3종: ''1''·''2''·''3''',
+    member.MEMBER_ENROLL_PATH_NAME AS member.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014) — 회원 마스터 현재값. 일시회원은 (해당없음).',
+    member.MEMBER_RELATNSP_DIV_NAME AS member.RELATNSP_DIV_NAME WITH SYNONYMS ('결연구분', '결연/비결연') COMMENT = '결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원) — 회원 마스터 현재값. 일시회원은 NULL(원천 개념 없음).',
+    member.MEMBER_SPECL_MNG_NAME AS member.SPECL_MNG_NAME WITH SYNONYMS ('특별관리', '회원 특별관리', '특별관리 구분') COMMENT = '회원 특별관리 구분(MM012 · 일반·더네이버스클럽·더네이버스아너스클럽·평생회원·홍보대사·이사회·블랙리스트·테스트회원 등) — 대부분 「일반」. 🔴 테스트회원 포함 여부를 답변에 밝힌다.',
+    member.MEMBER_FIRST_SPONSORSHIP_NAME AS member.FIRST_SPONSORSHIP_NAME WITH SYNONYMS ('최초후원사업', '최초 후원사업') COMMENT = '회원의 최초 후원사업명(회원 마스터 · DIM_SPONSORSHIP 매칭 100%).',
+    member.MEMBER_MOBLPHON_STAT_NAME AS member.MOBLPHON_STAT_NAME WITH SYNONYMS ('휴대폰상태', '휴대폰 상태', '연락처 상태') COMMENT = '휴대폰 상태(MM008 · 정상·결번·타인번호) — 회원 마스터 현재값.',
+    member.MEMBER_EMAIL_STAT_NAME AS member.EMAIL_STAT_NAME WITH SYNONYMS ('이메일상태', '이메일 상태') COMMENT = '이메일 상태(MM009 · 정상·계정없음·도메인오류) — 원천 코드 0 은 사전에 없어 NULL.',
+    member.MEMBER_TSTM_DIV_NAME AS member.TSTM_DIV_NAME WITH SYNONYMS ('TM/TS 거절', '전화 거절구분', 'TM 거절') COMMENT = 'TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 🔴 원천 코드 0(대다수 회원)은 사전에 없어 NULL — 「거절 없음」으로 단정하지 않는다.',
+    event.EVENT_PART_USE_YN AS event.PART_USE_YN WITH SYNONYMS ('참여신청 사용여부', '온라인 참여신청') COMMENT = '행사의 참여신청 기능 사용 여부 Y/N 원값(캠페인행사 전용 · 일반행사 NULL = 원천 개념 없음).'
+  )
+  METRICS (
+    fep.TOTAL_PARTICIPANTS AS SUM(fep.PARTICIPANT_CNT)
+      WITH SYNONYMS ('참여자수', '참가자수') COMMENT = '참여자수 합계. F(가산).',
+    fep.TOTAL_PARTICIPATE_CNT AS SUM(fep.PARTICIPATE_CNT)
+      WITH SYNONYMS ('참여건수') COMMENT = '참여 건수 합계. F(가산).',
+    fep.DISTINCT_PARTICIPANTS AS COUNT(DISTINCT fep.MEMBER_DK)
+      WITH SYNONYMS ('고유 참여회원수') COMMENT = '고유 참여 회원수. D(distinct).',
+    fep.TOTAL_CONFIRM_CNT AS SUM(fep.CONFIRM_CNT)
+      WITH SYNONYMS ('신청확정인원', '확정인원') COMMENT = '신청확정인원 합계 — 캠페인행사(MS006) 신청 중 대기·취소가 아닌 확정 상태(신청·참여·불참). 🔴 일반행사(MS304 다단계) 행은 0 이다(확정 개념 없음) — PART_EVENT_KIND_NAME 동반. F(가산).',
+    fep.AVG_PARTICIPATION_TIMES AS AVG(fep.PARTICIPATION_TIMES)
+      WITH SYNONYMS ('평균 참여횟수', '참여횟수') COMMENT = '그 신청 시점까지 회원의 누적 참여 횟수(참여·Success)의 평균. 🔴 행마다 누적값이라 SUM 하지 말 것 — 회원별 최종 누적은 MAX_PARTICIPATION_TIMES.',
+    fep.MAX_PARTICIPATION_TIMES AS MAX(fep.PARTICIPATION_TIMES)
+      WITH SYNONYMS ('최대 참여횟수') COMMENT = '누적 참여 횟수의 최댓값(회원으로 GROUP BY 하면 그 회원의 기간 내 최종 누적).',
+    fep.MAX_CUM_APPLY_TIMES AS MAX(fep.CUM_APPLY_TIMES)
+      WITH SYNONYMS ('누적신청 횟수', '최대 누적신청') COMMENT = '누적 신청 횟수(상태 무관)의 최댓값. 회원으로 GROUP BY 해 쓴다.',
+    fep.MAX_WAIT_TIMES AS MAX(fep.WAIT_TIMES)
+      WITH SYNONYMS ('대기횟수') COMMENT = '누적 대기 횟수의 최댓값. 회원으로 GROUP BY 해 쓴다.',
+    fep.MAX_ABSENT_TIMES AS MAX(fep.ABSENT_TIMES)
+      WITH SYNONYMS ('불참횟수') COMMENT = '누적 불참 횟수의 최댓값. 회원으로 GROUP BY 해 쓴다.',
+    fep.TOTAL_COMPANION_CNT AS SUM(fep.ACMPNY_PARTCPT_CO)
+      WITH SYNONYMS ('동반참여수', '동반인원', '동반수') COMMENT = '동반참여수 합계(신청 행의 원천 동반참여수 합). F(가산). 🔴 **캠페인행사 전용** — 일반행사 행은 원천에 컬럼이 없어 NULL 이다(합계에서 빠진다) ⇒ PART_EVENT_KIND_NAME 을 동반한다. 🔴 참여자수(TOTAL_PARTICIPANTS)와 더해 「총 인원」을 만들지 말 것 — 신청자 본인이 포함되는지 원천 정의가 확인되지 않았다(본인참여 형태는 SELF_PARTCPT_CD 로 구분한다)'
+  )
+  COMMENT = 'Phase-1 행사 참여 SV (base: GOLD.FACT_EVENT_ATTENDANCE, grain: 행사참여 1행). CRM 일반행사/캠페인행사 참여 건수, 고유 참여회원수(DISTINCT_PARTICIPANTS), 행사구분/참여상태/경로/채널 라벨 뷰. ⚠️ 일반행사(EVENT)와 캠페인행사(CRMN)의 코드군이 상이하므로 계열 판별자 PART_EVENT_KIND_NAME 동반 필수. 행사 미매칭분은 Unknown(0)으로 처리되어 행사명 집계는 부분집합임.'
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
+  핵심 규칙: (1) 라벨축 사용: 행사구분(EVENT_CATEGORY_NAME), 참여상태(PART_STATUS_NAME), 참여경로(PART_PATH_NAME), 참여채널(PART_CHANNEL_NAME) 사용. (2) 계열 동반: 원천별 코드체계 분리를 위해 항상 팩트 보유 축인 PART_EVENT_KIND_NAME 을 동반하여 그루핑 (차원축 EVENT_KIND_NAME 사용 금지). (3) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 GROUP BY ROLLUP((연,월)) 반환. (4) 원천 차이: 일반행사(다단계 통과)와 캠페인행사(신청/참여/불참)는 참여 정의가 다르므로 합산 참여율 생성 금지. (5) 채널 NULL: 캠페인행사는 원천 채널 컬럼 부재로 전량 NULL임을 명시. metric 이름(TOTAL_PARTICIPANTS 등)을 fep 컬럼처럼 참조하지 않는다 — 참여자수는 SUM(fep.PARTICIPANT_CNT), 고유 참여회원수는 COUNT(DISTINCT fep.MEMBER_DK) 로 집계한다. 「최근 N개월」 기준일은 비상관 CTE 1개(SELECT MAX(date.FULL_DATE) FROM fep JOIN date ON fep.DATE_SK = date.DATE_SK)로 구하고 CROSS JOIN 한다. ORDER BY 에는 SELECT 별칭을 글자 그대로 쓴다. (🆕 O206 유사 매핑) 원천 행사구분 이름과 다른 이름으로 물으면(예: 「문화이벤트」·「온라인 이벤트」) 가장 가까운 원천 구분으로 매핑하고 답변에 「정의가 되지 않아 유사한 값으로 매핑했다」를 밝힌다: 「문화이벤트」 = 캠페인행사 중 event.EVENT_CATEGORY_NAME IN (문화서비스·문화서비스_전시·문화서비스_서적·문화서비스_공연) · 「온라인 이벤트」 = 일반행사 중 event.EVENT_CATEGORY_NAME = 온라인. 매핑에 쓴 원천 구분명을 결과에 함께 보인다.'
+  AI_VERIFIED_QUERIES (
+    vqr_o191_kind_status AS (
+      QUESTION '행사종류별 참여자수와 참여상태별 분포'
+      VERIFIED_BY '(DW = O191)'
+      SQL 'SELECT PART_EVENT_KIND_NAME AS "행사종류", PART_STATUS_NAME AS "참여상태", TOTAL_PARTICIPANTS AS "참여자수(명)", DISTINCT_PARTICIPANTS AS "고유 참여 회원수(명)" FROM (SELECT fep.PART_EVENT_KIND_NAME, fep.PART_STATUS_NAME, SUM(fep.PARTICIPANT_CNT) AS TOTAL_PARTICIPANTS, COUNT(DISTINCT fep.MEMBER_DK) AS DISTINCT_PARTICIPANTS FROM fep GROUP BY fep.PART_EVENT_KIND_NAME, fep.PART_STATUS_NAME ORDER BY fep.PART_EVENT_KIND_NAME, TOTAL_PARTICIPANTS DESC NULLS LAST) ORDER BY PART_EVENT_KIND_NAME, TOTAL_PARTICIPANTS DESC NULLS LAST'
+    )
+  );
+
+-- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION TO ROLE GN_DW_ANALYST;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_EVENT_PARTICIPATION TO ROLE GN_DW_SERVICE;

@@ -1,6 +1,5 @@
 -- DIM_MSG_TEMPLATE: 발송 템플릿 차원 (채널 × 템플릿 grain) — CRM_MSG_TEMPLATE (+ 버튼 수)
--- Co-authored with CoCo
--- 🆕 [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
+--  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(
     materialized='incremental',
     unique_key='TEMPLATE_SK',
@@ -25,7 +24,7 @@ from {{ ref('CRM_MSG_TEMPLATE') }} t
 left join btn b on t.SEND_CHANNEL = 'MSG_AT' and b.TMPLAT_ID = t.TEMPLATE_KEY
 
 union all
--- 🆕 [O249 · DR-31 · A8-29] unknown 멤버(SK=0): 템플릿 마스터에 없는 버튼(18 템플릿 · 21행)의 FK 고아 해소.
+--  [O249 · DR-31 · A8-29] unknown 멤버(SK=0): 템플릿 마스터에 없는 버튼(18 템플릿 · 21행)의 FK 고아 해소.
 --   열 순서 = 라이브 28열(SK + 채널·키 + 20 NULL + BUTTON_CNT NULL + 감사 4).
 select 0, '(미매핑)', '(미매핑)',
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,

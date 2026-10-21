@@ -4,7 +4,7 @@
    목적 : GN_DW_LOADER 에 아래 2가지 실행 권한을 임시 부여
           1) CALL GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END('YYYYMM');
           2) EXECUTE DBT PROJECT <dbt 프로젝트>
-   환경 : 개발계에서 작성, 객체는 운영계 기준(GN_DW) → 운영계 계정에서 실행
+   환경 : 개발 환경에서 작성, 객체는 운영계 기준(GN_DW) → 운영계 계정에서 실행
    실행 : 객체 OWNER 역할(또는 SECURITYADMIN / MANAGE GRANTS 보유 역할)
    ※ <...> 표기는 실제 값으로 치환 후 실행
    ===================================================================== */
@@ -16,7 +16,7 @@ USE ROLE GN_DW_ADMIN;   -- 객체 OWNER 역할로 변경 필요 시 수정
    --------------------------------------------------------------------- */
 SHOW PROCEDURES LIKE 'SP_EXEC_MONTH_END' IN SCHEMA GN_DW.BRONZE_CRM;
 DESC PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END(VARCHAR);
--- execute as = OWNER  → 1번 GRANT만으로 CALL 가능
+-- execute as = OWNER → 1번 GRANT만으로 CALL 가능
 -- execute as = CALLER → 프로시저 내부에서 참조하는 테이블/DBT 권한도 LOADER에 필요
 
 SHOW DBT PROJECTS IN DATABASE GN_DW;   -- dbt 프로젝트 FQN 확인
@@ -65,6 +65,6 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'run';
    5. 임시권한 회수 (작업 종료 후)
    --------------------------------------------------------------------- */
 -- USE ROLE GN_DW_ADMIN;
--- REVOKE USAGE   ON PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END(VARCHAR)            FROM ROLE GN_DW_LOADER;
--- REVOKE USAGE   ON DBT PROJECT GN_DW.OPS.DW_PIPELINE       FROM ROLE GN_DW_LOADER;
--- REVOKE MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE       FROM ROLE GN_DW_LOADER;
+-- REVOKE USAGE ON PROCEDURE GN_DW.BRONZE_CRM.SP_EXEC_MONTH_END(VARCHAR) FROM ROLE GN_DW_LOADER;
+-- REVOKE USAGE ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_LOADER;
+-- REVOKE MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE FROM ROLE GN_DW_LOADER;

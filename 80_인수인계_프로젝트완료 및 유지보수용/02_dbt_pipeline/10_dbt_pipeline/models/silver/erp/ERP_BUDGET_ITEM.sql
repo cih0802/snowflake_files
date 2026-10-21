@@ -1,5 +1,4 @@
 -- ERP_BUDGET_ITEM: 예산과목 마스터 (MD5 복합키, TOTAL 요약행 제외), 정본 09 STEP4.
--- Co-authored with CoCo
 SELECT DISTINCT
   MD5(COALESCE(TO_VARCHAR(YEAR),'')||'|'||COALESCE(INCOME_EXPS_DIV_NM,'')||'|'||COALESCE(BDGT_UNIT_NM,'')||'|'||
       COALESCE(JANG_NM,'')||'|'||COALESCE(KWAN_NM,'')||'|'||COALESCE(HANG_NM,'')||'|'||

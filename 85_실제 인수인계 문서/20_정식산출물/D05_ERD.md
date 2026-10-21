@@ -2,7 +2,7 @@
 doc_id: D05
 title: ERD (논리 · 물리)
 version: 1.0
-as_of: 2026-10-20 (IW20760 실측)
+as_of: 2026-10-20 (설계 기준)
 source_docs:
   - 라이브 SHOW IMPORTED KEYS / PRIMARY KEYS IN DATABASE GN_DW (정본)
   - 03_top-down_gold/06_DDL.sql (GOLD 테이블 · FK 선언 정본 · 참고)

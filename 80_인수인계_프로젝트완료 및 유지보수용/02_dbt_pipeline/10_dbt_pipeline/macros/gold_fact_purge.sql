@@ -1,7 +1,7 @@
 {#
   gold_fact_purge — GOLD fact 계층 pre-hook 단일 진입점 (2026-09-22 신설)
 
-  🔴🔴 왜 매크로가 필요한가 — `macros/silver_purge.sql` 과 **완전히 동일한 이유**다.
+  WARN: 왜 매크로가 필요한가 — `macros/silver_purge.sql` 과 **완전히 동일한 이유**다.
      dbt 는 hook 을 **누적(append)** 한다. `dbt_project.yml` 의 `gold.fact:` 에
      `+pre-hook: "TRUNCATE TABLE IF EXISTS {{ this }}"` 를 두고 모델 파일에
      범위 DELETE 를 추가하면 **둘 다 실행되어** 전체가 비워진 뒤 범위만 append 된다.
@@ -12,21 +12,21 @@
 
   분기 규칙
     · RANGED_FACTS (일자 SK 보유 · 범위 재적재) → `bigquery_range_predicate_sk` 범위 DELETE
-    · 그 밖의 GOLD 전 팩트                      → 종전과 동일 `TRUNCATE TABLE IF EXISTS`
+    · 그 밖의 GOLD 전 팩트 → 종전과 동일 `TRUNCATE TABLE IF EXISTS`
 
-  ⚠️ 아래 RANGED_FACTS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 축).
+  WARN: 아래 RANGED_FACTS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 축).
      팩트를 추가·개명하면 여기도 고쳐야 하고, 빠뜨리면 그 팩트는 **조용히 TRUNCATE
      경로로 돌아간다**(= 매 run 전량 재적재로 회귀 · 결과는 맞지만 비용만 늘고 아무도 모른다).
      교차 검증 = `grep -n RANGED_FACTS macros/gold_fact_purge.sql` ↔ 각 모델 헤더 주석.
 
-  🔴 범위 DELETE 를 팩트에 걸어도 되는 **전제 3가지**. 하나라도 깨지면 중복·누락이 된다.
+  WARN: 범위 DELETE 를 팩트에 걸어도 되는 **전제 3가지**. 하나라도 깨지면 중복·누락이 된다.
      ① grain 에 일자 SK 가 포함될 것 — `FACT_BIGQUERY_BEHAVIOR` 는
         `DATE_SK × IDENTITY_SK × BIGQUERY_EVENT_SK × BIGQUERY_SOURCE_SK × DEVICE_SK
          × CAMPAIGN_SK × PAGE_PATH` 로 DATE_SK 가 첫 키다 ⇒ 일자별 재계산이 정확하다.
      ② 집계가 **일자를 넘나들지 않을 것** — `COUNT(DISTINCT …)` 류가 group by 에
         DATE_SK 를 포함하므로 한 일자 안에서 닫힌다(월간 유니크 같은 지표를 나중에
         추가하면 이 전제가 깨진다 ⇒ 그때는 이 목록에서 빼야 한다).
-     ③ 🔴 **센티넬 `DATE_SK = 0` 버킷이 비어 있을 것.**
+     ③ WARN: **센티넬 `DATE_SK = 0` 버킷이 비어 있을 것.**
         `date_sk()` 는 DIM_DATE 범위 밖/NULL 을 NULL 로 클램프하고 팩트가
         `COALESCE(...,0)` 로 0 에 모은다. 0 은 어떤 창에도 속하지 않으므로
         **DELETE 되지 않는데 INSERT 는 된다** ⇒ 0 버킷이 run 마다 중복 누적된다
@@ -38,7 +38,7 @@
            (정본 = `dbt_project.yml` vars `cal_start`·`cal_end` · 여기는 인용이다).
 #}
 {% macro gold_fact_purge(relation) %}
-  {%- set RANGED_FACTS = ['FACT_BIGQUERY_BEHAVIOR', 'FACT_BIGQUERY_SESSION'] -%}  {#- 🆕 O213-F FACT_BIGQUERY_SESSION(grain 첫 키 DATE_SK · 세션 일자 분할) -#}
+  {%- set RANGED_FACTS = ['FACT_BIGQUERY_BEHAVIOR', 'FACT_BIGQUERY_SESSION'] -%}  {#- O213-F FACT_BIGQUERY_SESSION(grain 첫 키 DATE_SK · 세션 일자 분할) -#}
   {%- if relation.identifier | upper in RANGED_FACTS -%}
     {%- if is_incremental() -%}
       DELETE FROM {{ relation }}

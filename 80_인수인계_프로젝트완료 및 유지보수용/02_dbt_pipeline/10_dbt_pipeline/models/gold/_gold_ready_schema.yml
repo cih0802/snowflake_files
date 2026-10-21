@@ -1114,7 +1114,7 @@ models:
               field: SPONSORSHIP_SK
               config: { where: "SPONSORSHIP_SK != 0" }
       # grain 가드: 8컬럼 경로 유일(사전 검증 2026-10-08 = 12,102행 · NULL 키는 '~' 로 접는다)
-      #   🆕 [2026-10-14 O225-C] CAMPAIGN_SK 편입 — dry-run 12,116 → 1,104,308행(xh20001)
+      #   🆕 [2026-10-14 O225-C] CAMPAIGN_SK 편입 — dry-run 12,116 → 1,104,308행
       - name: "MONTH_KEY || '|' || SPONSORSHIP_SK || '|' || COALESCE(FEE_DIV_CD,'~') || '|' || COALESCE(PAYMENT_TYPE,'~') || '|' || COALESCE(RQEST_DIV_CD,'~') || '|' || COALESCE(PRCS_STAT_CD,'~') || '|' || COALESCE(RETUN_RSN_CD,'~') || '|' || CAMPAIGN_SK"
         tests: [unique]
       - name: CAMPAIGN_SK

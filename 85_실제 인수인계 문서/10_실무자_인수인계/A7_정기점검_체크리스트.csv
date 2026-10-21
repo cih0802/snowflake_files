@@ -2,7 +2,7 @@
 ID,주기,영역,점검 항목,확인 SQL,정상 기준,이상 시
 D01,일,파이프라인,dbt build 성공,A6 Q01,최근 1일 build 1건 이상 SUCCESS(정기 Task 계정은 Task 이력 SUCCEEDED),A6 §3 F1·F6
 D02,일,데이터,BIGQUERY 체인 일자 수 정합,A6 Q04,4계층 DAYS_ 동일,A6 §3 F2 · A4 §5 백필
-D03,일,데이터,dbt 테스트 실패 저장 테이블(OPS · GN_DW_DBT 소유 전부),A6 Q03,전건 0행(🔴 2026-10-20 개발계 = 4종 실패 행 · DR-24),A6 §3 F3
+D03,일,데이터,dbt 테스트 실패 저장 테이블(OPS · GN_DW_DBT 소유 전부),A6 Q03,전건 0행(DR-24),A6 §3 F3
 D04,일,알림,Alert 실행 이력,A6 Q05-4,최근 1일 CONDITION_FALSE 또는 TRIGGERED(오류 없음),A6 §3 F4
 D05,일,MSTR,MSTR 최신 적재월,A6 Q06-1,MAX_MT = 당월,A6 §3 F5
 D06,일,비용,서비스별 크레딧 급증,A7 Q01,전주 같은 요일 대비 큰 변화 없음(임계 = 운영계에서 정함),A1 §4-2 수단 검토

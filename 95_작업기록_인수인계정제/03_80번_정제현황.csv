@@ -1,0 +1,307 @@
+path,삭제줄,status
+01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/02_GN_DW_building/08_After_Deploy_DBT.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/03_top-down_gold/06_DDL.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/04_silver_design/08_SILVER_테이블DDL_20260714.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_07_SV_DDL_AD.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/09_1_AGENT_생성.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/22_ML_SV_DDL.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/35_O249_SV_신설_광고비배분_개발사건코호트.sql,2,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/05_SV-Agent_ai/36_O250_ML예측_7축확장.sql,2,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/10_dbt_pipeline/01_deploy_dbt_project.sql,0,변경없음
+01_실행순서_배포SQL/10_dbt_pipeline/02_dbt_parse_compile_build.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,0,변경없음
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,1,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,0,정제완료 · 코드동일 OK
+01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/01_deploy_dbt_project.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/02_dbt_parse_compile_build.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_predicate.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/bigquery_range_purge.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/billing_campaign_asof.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/ga4_union_shards.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/generate_schema_name.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gn_biz_codes.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gn_member_master_filter.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gn_no_structural_alter.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gn_view_commented.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gold_fact_purge.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/gold_helpers.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/silver_helpers.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/macros/silver_purge.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_AD_CREATIVE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIGQUERY_SOURCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BIZ_PLACE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_BUDGET_ITEM.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CAMPAIGN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CHILD.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_CODE_GROUP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DATE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_DEVICE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_IDENTITY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MEMBER_STATUS_HISTORY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_MSG_TEMPLATE_BUTTON.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_ORG.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_PAYMENT_ACCOUNT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_REASON.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_RELATIONSHIP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_REQUEST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SERVICE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST_CASE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_GA_CHILD_VIEW.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_COHORT_SURVIVAL.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_DEV_ACHIEVEMENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_EVENT_COHORT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_FEE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_CHANGE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_RELATION_DEV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SEARCH_CONSOLE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_SPONSORSHIP_MONTHLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_MEMBER_DEV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/fact/FACT_UNPAID_SERVICE_CONV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_BROADCAST_CASE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_COMBINED.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_DIGITAL.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_AD_PERFORMANCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BIGQUERY_BEHAVIOR.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_BUDGET.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_DVLP_GOAL_ACMSLT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_EVENT_PARTICIPATION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MBRFEE_PRDT_ACTL.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_MONTHLY_KPI.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_SERVICE_COHORT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SERVICE_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_SPNSR_CLS_AGGR.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_BIZ.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/WIDE_TARGET_DEV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_BROADCAST_CASE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_CREATIVE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_DIGITAL.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_DGT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_DEVICE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_EVENT_DIM.sql,0,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_SESSION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/BIGQUERY_TRAFFIC_SOURCE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/GA4_USER_DEMOGRAPHIC.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bigquery/SEARCH_CONSOLE_DATA.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/bridge/IDENTITY_MEMBER_XREF.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_PLACE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_BIZ_TARGET.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CAMPAIGN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CHILD.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_CODE_GROUP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_DEV_TARGET.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_EVENT_PARTICIPATION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_HOLIDAY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_INSTT_ACCOUNT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MARKETING_CAMPAIGN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_AMT_CHANGE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_CONVERT_HIST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DISCONTINUE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_RESPONSOR.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_BIZ.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MEMBER_STATUS_HIST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MKTNG_CODE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_ORG.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_ACTIVITY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_CHANGE.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_RELATION_DEV.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_LINK_LOG.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_MEMBER_OPEN_LOG.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_REQUEST.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SEND_RESULT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SETLE_CMPNY_ACCOUNT.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSORSHIP.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/crm/CRM_SPONSOR_RELATION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_ITEM.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_dtl_cd.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_brnd_mng.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_cmpgn_mng.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_dept_info.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_mber_dvlp_goal.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_cm_spnsr_bsns_info.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_crmn.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql,0,변경없음
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_faia_ad_cost_preserved.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_cost_preserved.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fap_ad_ctgr_consistency.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmc_churn_invariants.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmcs_grain_and_survival.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fme_campaign_stop_exclusivity.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmec_event_preserved.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fmm_w4_ml_columns.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_fpbs_billing_preserved.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/assert_ftg_dev_month_key_yyyymm.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_id_scheme_unclassified.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_load_gap.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_bigquery_null_user_pseudo_id_rows.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_campaign_axis_unmapped_ratio.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_month_grain.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_procedure_merge.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_erp_budget_yearly_grain.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_evt_stat_code_label.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_grain.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fact_budget_yearly_grain.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fap_mktg_unmapped_ratio.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fep_nonnumeric_member_dk.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fer_mktg_campaign_multi.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_future_month_cap.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql,1,정제완료 · 코드동일 OK
+02_dbt_pipeline/10_dbt_pipeline/verify_A1_A3_blocking5.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql,0,제외(원본)
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql,0,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql,0,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql,0,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/tools/templates/1차_verify.sql,0,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/답안체크용 쿼리.sql,1,정제완료 · 코드동일 OK
+03_MSTR_이관/15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql,0,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/08_mornitoring/_archive/11_BRONZE_개인정보_마스킹정책_미실행.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql,1,정제완료 · 코드동일 OK
+06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql,0,정제완료 · 코드동일 OK
+06_일배치_모니터링/11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql,1,정제완료 · 코드동일 OK
+07_운영런북_이슈/02_GN_DW_building/09_user login mfa리셋.sql,1,정제완료 · 코드동일 OK
+07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_검증.sql,1,정제완료 · 코드동일 OK
+08_현업공유_산출물/30_output_share/31_공8_GA개발단가_쿼리근거.sql,0,정제완료 · 코드동일 OK
+08_현업공유_산출물/30_output_share/31_공8및미회신29건_쿼리근거.sql,0,정제완료 · 코드동일 OK
+09_설계근거_참고/06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql,0,변경없음
+09_설계근거_참고/SECURITY.sql,1,정제완료 · 코드동일 OK

@@ -1,5 +1,4 @@
 -- FACT_TARGET_MEMBER_DEV: 회원개발 목표 팩트 (CRM_DEV_TARGET, 월×조직×개발구분)
--- Co-authored with CoCo
 {{ config(
     tags=['gold_pending']
 ) }}

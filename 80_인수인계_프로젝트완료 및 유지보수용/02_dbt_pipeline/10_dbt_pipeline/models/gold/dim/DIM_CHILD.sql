@@ -1,7 +1,6 @@
 -- DIM_CHILD: 결연 아동 차원 (CHILD_CD grain) — CRM_CHILD × DIM_BIZ_PLACE
--- Co-authored with CoCo
--- 🆕 [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
--- ⚠️ 상태 코드(RELATNSP_STAT_CD·CHILD_STAT_CD·CHILD_DTL_STAT_CD·REGIST_DIV_CD)는 코드군 미확정 ⇒ raw 유지(라벨 창작 금지).
+--  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
+-- WARN: 상태 코드(RELATNSP_STAT_CD·CHILD_STAT_CD·CHILD_DTL_STAT_CD·REGIST_DIV_CD)는 코드군 미확정 ⇒ raw 유지(라벨 창작 금지).
 {{ config(
     materialized='incremental',
     unique_key='CHILD_SK',

@@ -1,4 +1,3 @@
--- Co-authored with CoCo
 -- =====================================================================
 -- 00. GN_DW.MSTR 스키마 생성 + 롤 매핑 (O197 · MSTR 1차 이관 PoC)
 --   정본 패턴 = 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql (§B.5 · §D.2 · §D.3)
@@ -6,7 +5,7 @@
 --   · 원천 = GN_DW.BRONZE_CRM 읽기 전용 (MSTR_ODS 직접 연결 없음)
 --   · ENGINEER = 개발·적재(DML) / ANALYST·VIEWER·SERVICE = 조회
 --   · 신규 롤 없음 — 기존 GN_DW 롤 체계를 그대로 쓴다
---   🔴 스키마를 드롭·재생성하면 FUTURE grant 까지 사라진다 ⇒ 이 파일 전량 재실행이 DoD (07 머리말 O91)
+--   WARN: 스키마를 드롭·재생성하면 FUTURE grant 까지 사라진다 ⇒ 이 파일 전량 재실행이 DoD (07 머리말 O91)
 -- =====================================================================
 
 -- [1] 스키마 생성 — GN_DW_ADMIN 소유

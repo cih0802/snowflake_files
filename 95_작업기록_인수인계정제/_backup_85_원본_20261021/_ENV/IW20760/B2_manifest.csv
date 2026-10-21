@@ -1,0 +1,5 @@
+# doc_id: B2 · as_of: 2026-10-19 20:28:46.832 -0700 · account: IW20760 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,B2_Q01_1.csv,OK,237,0,SELECT 지표 행 — 정의 · 산식 · 배선(도구 · SV 필드) · 대응 상태
+Q02,1,B2_Q02_1.csv,OK,15,0,SELECT 대응 상태 분포 (지표 행)
+Q03,1,B2_Q03_1.csv,OK,26,0,SELECT 라우팅 행 (질문 → 도구 결정 · 사용자 결정 출처)

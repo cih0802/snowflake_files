@@ -1,11 +1,10 @@
 -- WIDE_SERVICE_EVENT: 서비스/발송 팩트(FSE) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.5)
--- Co-authored with CoCo
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
---   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--    [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
 --     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
---     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
---     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--     · 뷰 COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     WARN: SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -22,10 +21,10 @@ select
     f.SERVICE_MEMBERS, f.SERVICE_CNT,
     f.SEND_TITLE, f.SEND_STATUS, f.SEND_TYPE,
     -- [2026-08-11 O59-P · DEC-35 3단계] 코드+라벨 병기를 **WIDE 층까지 전파**한다(DEC-25 15-D).
-    --   🔴 O59-N 이 SILVER·GOLD 에 라벨을 붙였지만 WIDE 는 **코드축만** 노출하고 있었다 —
+    --   WARN: O59-N 이 SILVER·GOLD 에 라벨을 붙였지만 WIDE 는 **코드축만** 노출하고 있었다 —
     --      소비계층(SV·Analyst·현업 직접조회)이 라벨을 볼 수 없으면 라벨을 만든 목적이 달성되지 않는다.
     --   축A(채널상태) = SEND_STATUS 옆에 코드군·라벨 / 축B(통신사 결과) = 3컬럼 세트 전량.
-    --   ⚠️ SEND_STATUS 단독 필터는 채널 간 오조인이다 — SEND_TYPE 또는 SEND_STATUS_GROUP 동반 필수(§23-G).
+    --   WARN: SEND_STATUS 단독 필터는 채널 간 오조인이다 — SEND_TYPE 또는 SEND_STATUS_GROUP 동반 필수(§23-G).
     f.SEND_STATUS_GROUP, f.SEND_STATUS_NAME,
     f.SEND_RESULT_CD, f.SEND_RESULT_GROUP, f.SEND_RESULT_NAME,
     f.MAIL_RECEIVE_FLAG, f.MEMBER_STOP_FLAG,
@@ -38,7 +37,7 @@ select
     m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
     m.AREA_CD             as MEMBER_AREA_CD,          -- [O27] CM018 코드 raw (라벨=MEMBER_REGION)
     m.REGION              as MEMBER_REGION,
-    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. ⚠️연속형 나이 아님
+    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. WARN:연속형 나이 아님
     m.AGE_BAND            as MEMBER_AGE_BAND,
     m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
     m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)

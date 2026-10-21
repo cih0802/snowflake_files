@@ -1,6 +1,5 @@
--- CRM_RELATION_DEV: 결연 개발금액 사건(결연 개발·상태 전이) (BRONZE TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = OCCRRNC_DE, SER_NO (📏 xf98254 유일 실측)
+-- CRM_RELATION_DEV: 결연 개발금액 사건(결연 개발·상태 전이) (BRONZE TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = OCCRRNC_DE, SER_NO ( 이전 계정 유일 실측)
 SELECT
   NULLIF(TRIM(OCCRRNC_DE),'') AS OCCRRNC_DE,
   SER_NO AS SER_NO,
@@ -20,5 +19,5 @@ SELECT
   NULL                           AS DW_BATCH_ID
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_RELATNSP_DVLP_AMT') }}
 WHERE OCCRRNC_DE IS NOT NULL AND SER_NO IS NOT NULL
-  -- 🔴 O179 이슈 B · 회원 마스터 미실재(고아) 제거 — 정의 = macros/gn_member_master_filter.sql
+  -- WARN: O179 이슈 B · 회원 마스터 미실재(고아) 제거 — 정의 = macros/gn_member_master_filter.sql
   AND {{ gn_member_master_filter("NULLIF(TRIM(MBER_NO),'')") }}

@@ -104,7 +104,7 @@ vars:
   #        · `--vars {\"bigquery_lookback_days\":10}`  → 인용부호가 제거되어 위와 동일하게 무산
   #      ⇒ 오버라이드는 **파일에 적는 것만 신뢰할 수 있다.** `--vars` 로 지시하는 문서를 쓰지 마라.
   #   🟢 [2026-09-28 O187] 위 3형태는 **Workspaces dbt 클라이언트 경로 한정**이다 — `EXECUTE DBT PROJECT … ARGS='compile … --vars ''{"bigquery_lookback_days": 999}'''`
-  #      는 JSON·YAML 두 형태 모두 **전달됐다**(창 하한 20240103 = 실행일 − 999일 · xf98254). 🟢 [O187-C] 리스트 var `bigquery_dt_ranges` 도 전달됨
+  #      는 JSON·YAML 두 형태 모두 **전달됐다**(창 하한 20240103 = 실행일 − 999일). 🟢 [O187-C] 리스트 var `bigquery_dt_ranges` 도 전달됨
   #      ⇒ 백필은 이 파일을 고치지 않고 ARGS 1줄로 한다(정본 = `02_dbt_parse_compile_build.sql` Step 3).
   #   ✅ 이 경로는 실증됐다(2026-09-22) — `['2026-09-14','2026-09-14']` 로 하루만 재적재해
   #      BASIC·EVENT 각 383,645행 / FACT 41,725행을 다시 만들었고 **총 행수는 불변**이었다
@@ -148,7 +148,7 @@ vars:
   #      떨어진다. 에러 없이 `warn_gold_fact_bigquery_date_sk_zero` WARN 하나로만 드러난다(무증상 결함).
   #      이 dbt 를 운영으로 넘기면 몇 년이고 돌아야 하므로 지평을 데이터가 아니라 **운영 수명**에 맞췄다.
   #
-  #   🟢 이 값이 **탐지를 약화시키지 않는다는 실측**(2026-09-22 · 계정 LK96056):
+  #   🟢 이 값이 **탐지를 약화시키지 않는다는 실측**(2026-09-22):
   #      · 전 GOLD 팩트의 실제 DATE_SK 범위 = **19910109 ~ 20260928**
   #        (`FACT_MEMBER_EVENT`·`FACT_BIGQUERY_BEHAVIOR`·`FACT_EVENT_ATTENDANCE`·
   #         `FACT_MESSAGE_DISPATCH`·`FACT_AD_PERFORMANCE`)
@@ -180,7 +180,7 @@ vars:
   cal_start: '1945-01-01'
   cal_end:   '2145-12-31'
   # 🆕 [O240] 회비원장(BRONZE_CRM.TM_PM_MBRFEE_ACMSLT) 전량 적재 시작월.
-  #   실측(ua91864 2026-10-16) = 2021년 6,319행 → 2022년 9,559,984행. 그 이전 FMM 스파인은 1월 2만여 명뿐이라
+  #   실측(이전 계정 2026-10-16) = 2021년 6,319행 → 2022년 9,559,984행. 그 이전 FMM 스파인은 1월 2만여 명뿐이라
   #   연도초·활동 분모가 비고 캠페인 누계중단율이 85~99%로 튄다(2022~ 14~19%).
   #   ⇒ 캠페인 기준월 팩트(FCM·FCCS)는 이 월 이상 · 당월 이하만 기준월로 낸다.
   #   🟢 사용자 확인(2026-10-16) = 운영계 원천도 같다(BigQuery 만 dev 샘플링) ⇒ 원천 시작월로 확정.
@@ -320,7 +320,7 @@ models:
       #     · GOLD 테이블 35(20 DIM+15 FACT) = `03_top-down_gold/06_DDL.sql`   ← CTAS 로부터 타입·FK·COMMENT 보호
       #     · GOLD 뷰 14                      = **dbt** (`models/gold/wide/` 14 — 전부 `WIDE_*`)
       #       🔴 [2026-08-12 O64 실측 정정] 종전 기재 「테이블 31(17 DIM+14 FACT)」·「뷰 16(wide 14 + dim 2)」은 **둘 다 stale** 이었다.
-      #         실측(계정 os09358 · INFORMATION_SCHEMA.TABLES) = BASE TABLE **35**(DIM 20 · FACT 15) · VIEW **14**(전부 `WIDE_*`).
+      #         실측(INFORMATION_SCHEMA.TABLES) = BASE TABLE **35**(DIM 20 · FACT 15) · VIEW **14**(전부 `WIDE_*`).
       #         `models/gold/dim/` 은 **20 모델 전부 incremental 테이블**이라 「dim 뷰 2」는 실체가 없다.
       #         유래 = `DIM_MONTH`·`DIM_MEMBER`(구 DIM_MEMBER_CURRENT)가 원래 SERVING helper **뷰**였고 O53~O55 에서 GOLD BASE TABLE 로
       #         승격됐는데 이 표가 따라오지 않은 것이다(같은 승격이 COMMENT 문안에도 「뷰」를 남겼다 = O63-J ③).

@@ -63,8 +63,8 @@ SELECT "name", "is_default", REGEXP_COUNT("agent_spec", 'tool_spec') AS TOOLS
 ```
 
 - 파일 쪽 = `python3 scripts/sv_identifier_gate.py`(스펙 폴더 자동 탐색 · 참조 SV 실재 대조).
-- 🟢 2026-10-03 O200-D 대조 = 4종 전부 **스펙 도구 수 = 라이브 기본 버전 도구 수**(계정 pw69582). 수치는 위 방법으로 다시 잰다.
-- 🟢 2026-10-08 O213-Y4 대조 = 3종 **스펙 도구 수 = 라이브 VERSION$7(default) 도구 수**(계정 nj58180 · 직전 기본 = VERSION$6 = 롤백 지점). 수치는 위 방법으로 다시 잰다.
-- 🆕 [2026-10-12 O216-F] 🔴 위 VERSION$7 은 **nj58180 계정 번호**다 — CK24285 현행 default = **VERSION$7**(O216-F · 우연히 같은 번호 · 내용은 8·9차 포함 · 롤백 VERSION$6) · 버전 대응표 = `12_agent개선과제/00_작업계획.md` §14.
+- 🟢 2026-10-03 O200-D 대조 = 4종 전부 **스펙 도구 수 = 라이브 기본 버전 도구 수**. 수치는 위 방법으로 다시 잰다.
+- 🟢 2026-10-08 O213-Y4 대조 = 3종 **스펙 도구 수 = 라이브 VERSION$7(default) 도구 수**(직전 기본 = VERSION$6 = 롤백 지점). 수치는 위 방법으로 다시 잰다.
+- 🆕 [2026-10-12 O216-F] 🔴 위 VERSION$7 은 **이전 계정 번호**다 — 이전 계정 현행 default = **VERSION$7**(O216-F · 우연히 같은 번호 · 내용은 8·9차 포함 · 롤백 VERSION$6) · 버전 대응표 = `12_agent개선과제/00_작업계획.md` §14.
 
 _Co-authored with CoCo_

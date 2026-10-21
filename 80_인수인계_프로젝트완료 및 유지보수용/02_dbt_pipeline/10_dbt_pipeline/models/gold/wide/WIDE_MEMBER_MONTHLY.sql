@@ -1,11 +1,10 @@
 -- WIDE_MEMBER_MONTHLY: 회원 월 팩트(FMM) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.1)
--- Co-authored with CoCo
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
---   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--    [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
 --     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
---     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
---     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+--     · 뷰 COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     WARN: SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -40,7 +39,7 @@ select
     m.GENDER_NAME         as MEMBER_GENDER_NAME,      -- CM017 분석 라벨 = 정본 공#130
     m.AREA_CD             as MEMBER_AREA_CD,          -- [O27] CM018 코드 raw (라벨=MEMBER_REGION)
     m.REGION              as MEMBER_REGION,
-    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. ⚠️연속형 나이 아님
+    m.AGE                 as MEMBER_AGE_CD,           -- [O27] CM014 코드 raw. WARN:연속형 나이 아님
     m.AGE_BAND            as MEMBER_AGE_BAND,
     m.MBER_STAT_CD        as MBER_STAT_CD,            -- MM010 코드 raw
     m.MEMBER_STATUS_NAME  as MEMBER_STATUS_NAME,      -- MM010 분석 라벨(#132)
@@ -63,7 +62,7 @@ select
     s.SPONSORSHIP_BK      as SPONSORSHIP_BK,
     s.SPONSORSHIP_NAME    as SPONSORSHIP_NAME,
     s.SPONSORSHIP_ABBR    as SPONSORSHIP_ABBR,
-    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨. ⚠️ 이 뷰의 SPONSORSHIP_SK 는 O8 미회신으로 전건 센티넬(0)
+    -- [2026-08-19 O89] 후원사업 분류 3계층 라벨. WARN: 이 뷰의 SPONSORSHIP_SK 는 O8 미회신으로 전건 센티넬(0)
     --   이므로 이 두 라벨도 '(미매핑)' 이다 — 실제 분류 분석은 WIDE_MEMBER_FEE·WIDE_MEMBER_EVENT 를 쓸 것.
     s.SPONSORSHIP_DIV_NAME   as SPONSORSHIP_DIV_NAME,
     s.SPONSORSHIP_GROUP_NAME as SPONSORSHIP_GROUP_NAME,

@@ -1,10 +1,9 @@
 -- ============================================================================
--- 05_25_SV_DDL_CAMPAIGN_MONTHLY.sql — Semantic View DDL 정본: SV_CAMPAIGN_MONTHLY (🆕 O237-B)
+-- 05_25_SV_DDL_CAMPAIGN_MONTHLY.sql — Semantic View DDL 정본: SV_CAMPAIGN_MONTHLY ( O237-B)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 근거 = 신규지표 #12~#16 · #19 · #21~#25 · #27~#28(90_provided_definition/신규지표_20260820.csv)
 --     캠페인 귀속 = 후원건(후원사업) 캠페인(사용자 결정 A · 2026-10-15) · 납입방식 = 그 달 청구 결제수단(잠정 · 2026-10-16 승인)
 --   · 선행 = GN_DW.GOLD.FACT_CAMPAIGN_MONTHLY(05_25b [0] · dbt build) · 대사 = 05_25b_대사_CAMPAIGN_MONTHLY.sql
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

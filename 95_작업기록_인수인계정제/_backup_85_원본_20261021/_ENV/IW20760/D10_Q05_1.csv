@@ -1,0 +1,4 @@
+# doc_id: D10 · as_of: 2026-10-19 22:36:02.138 -0700 · account: IW20760 · query: Q05-1 보안 감시 — 최근 7일 로그인 실패 · 권한 변경 건수 (RUNBOOK §8.2·§8.3)
+K,N
+LOGIN_FAIL_7D,1
+GRANT_REVOKE_7D,2074

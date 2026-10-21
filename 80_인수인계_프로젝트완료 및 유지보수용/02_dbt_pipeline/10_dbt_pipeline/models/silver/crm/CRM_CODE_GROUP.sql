@@ -1,6 +1,5 @@
--- CRM_CODE_GROUP: 공통 코드그룹 마스터 (BRONZE TC_CMMN_CD → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = CD_ID (📏 xf98254 유일 실측)
+-- CRM_CODE_GROUP: 공통 코드그룹 마스터 (BRONZE TC_CMMN_CD → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = CD_ID ( 이전 계정 유일 실측)
 SELECT
   NULLIF(TRIM(CD_ID),'') AS CD_ID,
   NULLIF(TRIM(CD_NM),'') AS CD_NM,

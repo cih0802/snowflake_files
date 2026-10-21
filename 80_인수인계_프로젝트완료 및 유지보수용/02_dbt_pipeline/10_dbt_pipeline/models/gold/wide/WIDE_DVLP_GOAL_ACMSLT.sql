@@ -1,5 +1,4 @@
 -- WIDE_DVLP_GOAL_ACMSLT: 연간 개발 목표·실적 부서 집계 → 월 행 언피벗 소비뷰 (O200-A 신설)
--- Co-authored with CoCo
 -- 원천 = SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA(외부 적재 · 부서 자체 수식 · ML 산출물 아님).
 -- 변환 = ① M01~M12 열 → 월 행(UNPIVOT INCLUDE NULLS) ② DATA_TYPE_NM(목표/실적) → GOAL_CNT·ACMSLT_CNT 열 분리.
 -- grain = MONTH_KEY × DEPT_DIV_NM × NEW_EXST_DIV_NM × SPNSR_BSNS_GRP_NM (tests/assert_dept_aggr_grain_unique.sql).

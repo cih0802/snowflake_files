@@ -2,7 +2,7 @@
 doc_id: D03
 title: 환경 구성서 + RBAC 권한 매트릭스
 version: 1.0
-as_of: 2026-10-20 (IW20760 실측)
+as_of: 2026-10-20 (설계 기준 · 계정 값 운영계 TBD)
 source_docs:
   - 85_실제 인수인계 문서/10_실무자_인수인계/A0_환경실사_baseline.md · A1_운영자가이드.md · A2_롤별_접근권한_매트릭스.md (원본 · 이 문서는 고객 제출용 재편집)
   - 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql · 08_After_Deploy_DBT.sql
@@ -21,7 +21,7 @@ status: review
 |---|---|---|
 | 데이터베이스 | `GN_DW` (소유 GN_DW_ADMIN) | 스키마 15 · 테이블 240 · 뷰 52 (A0 §3) |
 | 레이어 | BRONZE(원천 6 스키마) → SILVER → GOLD → SERVING(SV·Agent·Search) | ML · MSTR · OPS · SECURITY · DBT_TEST__AUDIT 보조 |
-| 계정 | 개발 = IW20760(AWS_EU_CENTRAL_1) · 운영 = TBD(미검증) | 계정 의존 값은 `[ENV]` 규약으로 계정별 재캡처 |
+| 계정 | 운영 = ZL50263(AWS_AP_NORTHEAST_2) | 계정 의존 값은 `[ENV]` 규약으로 계정별 재캡처 |
 | 정책 | 마스킹·행 접근·네트워크 정책 0 · 사용자 정의 태그 0 · DMF 0(실사 시점) → 🟢 2026-10-20 마스킹 1(BRONZE 12 컬럼) · DMF N01 적용 · A2 권한 조정 2건 적용 | 신규 설계 = N01·N02 |
 
 ## 2. 웨어하우스
@@ -33,7 +33,7 @@ status: review
 | GN_DW_ANALYTICS_WH | Medium | 300 | 분석 · SV/Agent 소비 · Search | ADMIN · ANALYST · VIEWER · SERVICE |
 | GN_DW_ML_WH | Small | 60 | ML 프로시저(실행 중 크기 조정) | LOADER(USAGE+OPERATE+MODIFY) |
 
-- 크기·auto_suspend 는 개발계 실측이다([ENV]). 리소스 모니터는 미배포다(D11 · A8-11).
+- 크기·auto_suspend 는 계정마다 다르다([ENV] · 운영계 값 = N06 §2-2). 리소스 모니터는 미배포다(D11 · A8-11).
 
 ## 3. 롤 계층
 
@@ -74,7 +74,7 @@ graph TD
 - SV·Agent·Streamlit 은 FUTURE grant 가 없어 객체마다 소비 3롤에 직접 부여한다.
 - Cortex·Agent 접근은 모든 롤이 PUBLIC 의 `SNOWFLAKE.CORTEX_USER` 상속으로 얻는다(A3).
 
-## 5. 라이브 대조 결과 (IW20760 · 2026-10-20)
+## 5. 라이브 대조 결과 (2026-10-20 · 운영계 재대조 TBD)
 
 | 판정 | 건수 | 내용 |
 |---|---|---|

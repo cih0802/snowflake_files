@@ -1,0 +1,113 @@
+-- CRM_EVENT_PARTICIPATION: 행사 참여 = EVENT ∪ CRMN 참여자 (PK dedup), 정본 09 STEP3.
+-- Co-authored with CoCo
+-- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 정본 = 문서30 §23-J · 매핑 = 문서31 §3.
+--   🔴 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자(EVENT_KEY 접두)로 갈라 **각자의 코드군**에 조인한다.
+--     · PART_STATUS  : EVENT → `MS304`(등급 B · 12/12 정확 일치) / CRMN → `MS006`(등급 A+B)
+--       ⚠️ `MS304` 사전 라벨은 **영문**이다(`Success`·`1_step_right`…). §23-J 결정 4 로 **그대로 적재**한다 —
+--         한글 표기는 현업 회신 대기(문서20 §M-1). 창작 금지.
+--       🔴 두 원천의 「참여」 정의가 다르다: EVENT 는 **다단계 통과 여부**, CRMN 은 신청/참여/불참/대기/취소.
+--     · PART_PATH    : EVENT → `MS303`(등급 C) / CRMN → `MS004`(등급 C · 원천 컬럼명이 RQST_PATH_CD 다)
+--       🔴 **조건부 적용**(§23-J 결정 2) — 문서20 §M-3 회신이 다르면 이 리터럴과 라벨을 되돌린다.
+--     · PART_CHANNEL : EVENT → `MS302`(등급 B · 8/8 정확 일치) / CRMN 은 원천 컬럼 부재 → NULL
+--   ⚠️ 오염값 `)`(O28)은 사전에 없으므로 라벨 NULL 로 떨어진다 — 정상 동작이다(라벨 부여 금지 · 문서31 §6).
+--   ⚠️ fan-out 안전: 대상 그룹 (CD_ID, DTL_CD_ID) 전건 유일(실측 2026-08-11).
+WITH base AS (
+  SELECT 'EVENT_'||EVENT_CD          AS EVENT_KEY,
+    NULLIF(TRIM(MBER_NO),'')         AS MBER_NO,
+    PARTCPT_SEQ                      AS PARTCPT_SEQ,
+    NULLIF(TRIM(PARTCPT_STAT_CD),'') AS PARTCPT_STAT_CD,
+    NULLIF(TRIM(PARTCPT_CHNNL_CD),'')AS PARTCPT_CHNNL_CD,
+    NULLIF(TRIM(PARTCPT_PATH_CD),'') AS PARTCPT_PATH_CD,
+    PRZWIN_CD                        AS PRZWIN_CD,
+    NULL                             AS RCPMNY_AMT,
+    PARTCPT_DT                       AS PARTCPT_DT,
+    'EVENT'                          AS EVENT_SOURCE,
+    'CRM'                            AS DW_SOURCE_SYSTEM,
+    'BRONZE_CRM.TD_MS_EVENT_PRTCPNT_DTL' AS DW_SOURCE_TABLE
+  -- [2-1 I-2] 홈페이지 테스트/스캐너 이상치(2,058건) 및 비정상 MBER_NO 제외 (정기 7자리, 일시 9자리/S+8자리 정상 회원만 허용)
+  -- [2026-09-30 O191-F 2차-B 2단 2묶음] 누락 컬럼(원천별 분기 · 비해당 원천 = 형 맞춘 NULL · 감사컬럼 뒤)
+  ,NULLIF(TRIM(EVENT_PARTCPT_DIV_CD),'') AS EVENT_PARTCPT_DIV_CD
+  ,CAST(NULL AS VARCHAR(8)) AS RQST_DATE
+  ,CAST(NULL AS VARCHAR(3)) AS SELF_PARTCPT_CD
+  ,CAST(NULL AS NUMBER(10,0)) AS ACMPNY_PARTCPT_CO
+  ,CAST(NULL AS NUMBER(10,0)) AS PARTCPT_TIME_CO
+  ,CAST(NULL AS VARCHAR(3)) AS RCPMNY_STAT_CD
+  ,CAST(NULL AS VARCHAR(8)) AS RCPMNY_DATE
+  ,CAST(NULL AS VARCHAR(8)) AS REFND_DATE
+  FROM {{ source('bronze_crm','TD_MS_EVENT_PRTCPNT_DTL') }}
+  WHERE NULLIF(TRIM(MBER_NO),'') IS NOT NULL
+    AND REGEXP_LIKE(TRIM(MBER_NO), '^[0-9]{7}$|^[0-9]{9}$|^S[0-9]{8}$')
+    AND PARTCPT_SEQ IS NOT NULL
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY EVENT_CD, MBER_NO, PARTCPT_SEQ ORDER BY PARTCPT_DT DESC NULLS LAST)=1
+  UNION ALL
+  SELECT 'CRMN_'||CRMN_CD, NULLIF(TRIM(MBER_NO),''), PRTCPNT_KEY, NULLIF(TRIM(PARTCPT_STAT_CD),''),
+    NULL, NULLIF(TRIM(RQST_PATH_CD),''), NULL, RCPMNY_AMT, TRY_TO_TIMESTAMP(PARTCPT_DATE),
+    'CRMN',
+    'CRM','BRONZE_CRM.TD_MS_CRMN_PRTCPNT'
+  -- [2-1 I-2] 공란 5건 및 비정상 회원번호 제외
+  ,CAST(NULL AS VARCHAR(3))
+  ,NULLIF(TRIM(RQST_DATE),'')
+  ,NULLIF(TRIM(SELF_PARTCPT_CD),'')
+  ,ACMPNY_PARTCPT_CO
+  ,PARTCPT_TIME_CO
+  ,NULLIF(TRIM(RCPMNY_STAT_CD),'')
+  ,NULLIF(TRIM(RCPMNY_DATE),'')
+  ,NULLIF(TRIM(REFND_DATE),'')
+  FROM {{ source('bronze_crm','TD_MS_CRMN_PRTCPNT') }}
+  WHERE NULLIF(TRIM(MBER_NO),'') IS NOT NULL
+    AND REGEXP_LIKE(TRIM(MBER_NO), '^[0-9]{7}$|^[0-9]{9}$|^S[0-9]{8}$')
+    AND PRTCPNT_KEY IS NOT NULL
+  QUALIFY ROW_NUMBER() OVER (PARTITION BY CRMN_CD, MBER_NO, PRTCPNT_KEY ORDER BY TRY_TO_TIMESTAMP(PARTCPT_DATE) DESC NULLS LAST)=1
+)
+SELECT
+  b.EVENT_KEY                      AS EVENT_KEY,
+  b.MBER_NO                        AS MBER_NO,
+  b.PARTCPT_SEQ                    AS PARTCPT_SEQ,
+  b.PARTCPT_STAT_CD                AS PARTCPT_STAT_CD,
+  b.PARTCPT_CHNNL_CD               AS PARTCPT_CHNNL_CD,
+  b.PARTCPT_PATH_CD                AS PARTCPT_PATH_CD,
+  b.PRZWIN_CD                      AS PRZWIN_CD,
+  b.RCPMNY_AMT                     AS RCPMNY_AMT,
+  b.PARTCPT_DT                     AS PARTCPT_DT,
+  b.DW_SOURCE_SYSTEM               AS DW_SOURCE_SYSTEM,
+  b.DW_SOURCE_TABLE                AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
+  NULL                             AS DW_BATCH_ID,
+  -- 🔴 신설 컬럼 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝이 된다).
+  --    코드군 리터럴은 문서31 §3 이 사람이 확정한 매핑이다(DEC-17 방식 · 추론 아님).
+  CASE WHEN b.PARTCPT_STAT_CD IS NULL THEN NULL
+       WHEN b.EVENT_SOURCE='EVENT' THEN 'MS304' ELSE 'MS006' END        AS PARTCPT_STAT_GROUP,
+  st.DTL_CD_NM                     AS PARTCPT_STAT_NM,
+  CASE WHEN b.PARTCPT_CHNNL_CD IS NOT NULL AND b.EVENT_SOURCE='EVENT' THEN 'MS302' END AS PARTCPT_CHNNL_GROUP,
+  ch.DTL_CD_NM                     AS PARTCPT_CHNNL_NM,
+  CASE WHEN b.PARTCPT_PATH_CD IS NULL THEN NULL
+       WHEN b.EVENT_SOURCE='EVENT' THEN 'MS303' ELSE 'MS004' END        AS PARTCPT_PATH_GROUP,
+  pt.DTL_CD_NM                     AS PARTCPT_PATH_NM
+  ,b.EVENT_PARTCPT_DIV_CD           AS EVENT_PARTCPT_DIV_CD
+  ,b.RQST_DATE                      AS RQST_DATE
+  ,b.SELF_PARTCPT_CD                AS SELF_PARTCPT_CD
+  ,b.ACMPNY_PARTCPT_CO              AS ACMPNY_PARTCPT_CO
+  ,b.PARTCPT_TIME_CO                AS PARTCPT_TIME_CO
+  ,b.RCPMNY_STAT_CD                 AS RCPMNY_STAT_CD
+  ,b.RCPMNY_DATE                    AS RCPMNY_DATE
+  ,b.REFND_DATE                     AS REFND_DATE
+FROM base b
+LEFT JOIN {{ ref('CRM_CODE') }} st
+  ON st.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS304' ELSE 'MS006' END
+ AND st.DTL_CD_ID = b.PARTCPT_STAT_CD
+LEFT JOIN {{ ref('CRM_CODE') }} ch
+  ON ch.CD_ID = 'MS302' AND b.EVENT_SOURCE='EVENT' AND ch.DTL_CD_ID = b.PARTCPT_CHNNL_CD
+LEFT JOIN {{ ref('CRM_CODE') }} pt
+  ON pt.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS303' ELSE 'MS004' END
+ AND pt.DTL_CD_ID = b.PARTCPT_PATH_CD
+-- 🔴 [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
+--    정의 지점은 `macros/gn_member_master_filter.sql` 하나다 — 여기에 술어를 다시 쓰지 마라(R1-6-17).
+--    📏 실측 = 고아 10,048행 / 1,258,775 (고아 회원 8,299명) ⇒ 적재 후 1,248,727행 예상.
+--    🔴 위 REGEXP 필터는 「형식이 정상인가」를 보고, 이 술어는 「마스터에 실재하는가」를 본다. 다른 축이다.
+WHERE {{ gn_member_master_filter('b.MBER_NO') }}
+-- 🆕 [2026-10-06 O202-B · 현업 회신 BLOCKING-2 이슈 E] 행사 마스터(CRM_EVENT)에 없는 참여 행 제거.
+--    현업 = 「휴먼에러라 복구 불가 · 마스터에 없는 행사는 GOLD 까지 올리지 마라」.
+--    📏 실측(JU93656) = 고아 279,904행 / 1,274,437 · 고유 키 54 · EVENT_105 204,758 + EVENT_106 73,705 = 99.5%.
+--    🔴 위 회원 필터와 다른 축이다(회원 실재 ↔ 행사 실재) — 둘 다 걸어야 한다.
+  AND EXISTS (SELECT 1 FROM {{ ref('CRM_EVENT') }} ev WHERE ev.EVENT_KEY = b.EVENT_KEY)

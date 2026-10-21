@@ -1,15 +1,14 @@
 -- AGENCY_AD_ROW_VIDEO: BRONZE VIDEO 전 37컬럼 무손실 staging + AD_PERF_DK 발급 (DEC-11 · 설계 §3-A-7)
--- Co-authored with CoCo
--- 🔴🔴 [2026-09-28 O182] 원천 12번 재편(32→37컬럼) 반영 — 원천 이름 그대로 보존.
+-- WARN: [2026-09-28 O182] 원천 12번 재편(32→37컬럼) 반영 — 원천 이름 그대로 보존.
 --    제거 6 = DUR_PD_MATR_CHN · CONV_CALL_CNT · BRDC_MT · CTV_DIV_NM · MKT_CMPGN_NM · SPNSR_BSNS_NM
 --    개명 2 = ACTL_PUR_AD_COST_KRW→LAST_AD_COST('최종광고비') · CPC(TEXT)→CPC_CALL_CNT(FLOAT 'CPC_CALL')
 --    신규 11 = MONTH · AD_TY_NM(TV/CTV/기타/미확인) · BDGT_SOURCE_NM · DEVICE_NM · DAY · SPNSER_CNT('후원자수')
 --            · DVLP_CNT('개발건수') · CMPGN_NM · MATR_TY_NM · EXPSR_CNT('노출수') · CLICK_CNT
---    ⚠️ 실측(2026-09-28): 46,353행 · `BRDC_DATE` NULL 3,336행 — 전건 AD_TY_NM='CTV' 계열 시트이며
+--    WARN: 실측(2026-09-28): 46,353행 · `BRDC_DATE` NULL 3,336행 — 전건 AD_TY_NM='CTV' 계열 시트이며
 --       텍스트 `YEAR`·`MONTH`('03월' 형태)·`DAY` 는 채워져 있다 ⇒ 날짜 보정은 코어에서 한다.
--- ⚠️ AD_PERF_DK **발급 단일지점** — 코어(FAD)·위성(FAD_B)이 동일 DK 를 쓰도록 여기서만 계산한다.
--- ⚠️ 원천 무손실: BRONZE 37컬럼을 이름 그대로 보존(개명·형변환 금지). 정제는 하류에서.
--- ⚠️ DUP_SEQ: 전컬럼 중복 실측 30그룹·최대 3중복 → 해시 단독으로는 충돌하므로 순번 결합 필수.
+-- WARN: AD_PERF_DK **발급 단일지점** — 코어(FAD)·위성(FAD_B)이 동일 DK 를 쓰도록 여기서만 계산한다.
+-- WARN: 원천 무손실: BRONZE 37컬럼을 이름 그대로 보존(개명·형변환 금지). 정제는 하류에서.
+-- WARN: DUP_SEQ: 전컬럼 중복 실측 30그룹·최대 3중복 → 해시 단독으로는 충돌하므로 순번 결합 필수.
 WITH src AS (
     SELECT
         CHNNL_NM                AS CHNNL_NM,
@@ -59,10 +58,10 @@ seq AS (
         src.*,
         ROW_NUMBER() OVER (PARTITION BY ROW_HASH ORDER BY NULL) AS DUP_SEQ
     FROM src
-    -- 🆕 [2026-10-13] 운영계 dbt build 실패 대응 — not_null_AGENCY_AD_PERFORMANCE_AD_DATE 165건.
+    --  [2026-10-13] 운영계 dbt build 실패 대응 — not_null_AGENCY_AD_PERFORMANCE_AD_DATE 165건.
     --   원인 = 원천에 전 컬럼 NULL 빈 행 165건 적재(엑셀 공백 행 추정) → 코어에서 AD_DATE NULL.
     --   처방 = 빈 행만 제외(값이 하나라도 있는 행은 보존 · 원천 무손실 원칙의 예외는 「정보 0 행」뿐).
-    --   ⚠️ 빈 행끼리는 같은 ROW_HASH 라 그들만의 파티션이다 ⇒ 실데이터 행의 DUP_SEQ·AD_PERF_DK 는 불변.
+    --   WARN: 빈 행끼리는 같은 ROW_HASH 라 그들만의 파티션이다 ⇒ 실데이터 행의 DUP_SEQ·AD_PERF_DK 는 불변.
     WHERE NOT IS_ALL_NULL_ROW
 )
 

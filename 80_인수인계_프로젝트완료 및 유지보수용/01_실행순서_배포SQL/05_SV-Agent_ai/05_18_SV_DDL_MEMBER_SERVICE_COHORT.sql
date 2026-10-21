@@ -1,7 +1,7 @@
 -- ============================================================================
--- 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_SERVICE_COHORT (🆕 O205 · 2차 Agent 개선 B)
+-- 05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql — Semantic View DDL 정본: SV_MEMBER_SERVICE_COHORT ( O205 · 2차 Agent 개선 B)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `WIDE_MEMBER_SERVICE_COHORT`(사용자 실행 · R4-1). 뷰가 없으면 이 DDL 은 실패한다.
+--   · WARN: 선행 = dbt build `WIDE_MEMBER_SERVICE_COHORT`(사용자 실행 · R4-1). 뷰가 없으면 이 DDL 은 실패한다.
 --   · 근거(2026-10-07 O205 실측 · 원천 직접 집계):
 --     선넘는좋은일 상위캠페인 가입(2026-01~09) 4,174명 = 즉시 알림톡 수신 3,508 · 미수신 666
 --     일반행사 참여 회원 = 수신 1,173(33.44%) · 미수신 265(39.79%) · D5 중단 매칭 수신 121
@@ -46,7 +46,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
     svc.ACQ_REGION AS svc.ACQ_REGION WITH SYNONYMS ('지역') COMMENT = '획득 시점 지역 — 현재 거주지가 아니다',
     svc.ACQ_GENDER AS svc.ACQ_GENDER WITH SYNONYMS ('성별') COMMENT = '획득 시점 성별',
     svc.EVER_STOPPED_FLAG AS svc.EVER_STOPPED_FLAG WITH SYNONYMS ('중단 이력') COMMENT = '최초 중단 이력 여부',
-    -- 🆕 [O237-B] 서비스 참여 유형 · 유지 · 수신 후 납입 플래그(신규지표 #35~#53)
+    --  [O237-B] 서비스 참여 유형 · 유지 · 수신 후 납입 플래그(신규지표 #35~#53)
     svc.D5_LETTER_FLAG AS svc.D5_LETTER_FLAG WITH SYNONYMS ('서신참여', '서신 참여회원', '5일 내 서신참여', '신규45', '신규46', '신규47', '신규48') COMMENT = '그 해 그 그룹 발송 후 D+1~D+5 서신 참여 여부. 🔴 시간창 매칭(인과 아님) · 미수신 행 FALSE',
     svc.D5_GIFT_FLAG AS svc.D5_GIFT_FLAG WITH SYNONYMS ('선물금참여', '선물금 참여회원', '5일 내 선물금참여', '신규50', '신규51', '신규52', '신규53') COMMENT = '그 해 그 그룹 발송 후 D+1~D+5 선물금 참여 여부(선물금 발송일 매칭). 🔴 시간창 매칭 · 미수신 행 FALSE',
     svc.RETAINED_3M_FLAG AS svc.RETAINED_3M_FLAG WITH SYNONYMS ('3개월 유지') COMMENT = '첫 수신월 + 3개월 시점 미중단 후원사업 보유 여부. NULL = 아직 관측 불가 또는 미수신',
@@ -106,7 +106,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SERVICE_COHORT
     svc.AVG_D5_STOP_SPONSOR_DAYS AS AVG(svc.D5_STOP_SPONSOR_DAYS)
       WITH SYNONYMS ('중단 회원 평균 후원기간')
       COMMENT = 'D5 중단 회원의 평균 후원기간(일 · 획득일 → D5 중단일). 🔴 중단 사건 원천에는 후원금액이 없다 — 중단 회원의 후원금액은 AVG_ACQ_SPNSR_AMT(획득 시점 약정금액)로 답하고 그 전제를 밝힌다.',
-    -- 🆕 [O237-B] 신규지표 #35~#53 — 참여 유형(서신·선물금·증액·참여 전체)은 차원 플래그로 고정하고 아래 비율을 쓴다
+    --  [O237-B] 신규지표 #35~#53 — 참여 유형(서신·선물금·증액·참여 전체)은 차원 플래그로 고정하고 아래 비율을 쓴다
     svc.RETAINED_3M_RATE AS DIV0(COUNT(DISTINCT IFF(svc.RETAINED_3M_FLAG, svc.MEMBER_DK, NULL)), COUNT(DISTINCT IFF(svc.RETAINED_3M_FLAG IS NOT NULL, svc.MEMBER_DK, NULL))) * 100
       WITH SYNONYMS ('3개월 유지율', '참여회원 3개월 유지율', 'N개월 유지율')
       COMMENT = '첫 수신월 + 3개월 유지율(%) = 유지 회원 ÷ 관측 가능 회원. N(비가산). 서신·선물금·증액 참여회원 유지율은 D5_LETTER_FLAG·D5_GIFT_FLAG·D5_INCREASE_FLAG = TRUE 로 거른다. 🔴 관측 불가(NULL) 회원은 분모에서 빠진다.',

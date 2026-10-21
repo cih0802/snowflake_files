@@ -1,5 +1,4 @@
 -- CRM_PAYMENT_METHOD: 결제수단(현재상태, SETLE_KEY dedup) + 수단명(PM040) 라벨, 정본 09 STEP3.
--- Co-authored with CoCo
 SELECT
   s.SETLE_KEY                      AS SETLE_KEY,
   NULLIF(TRIM(s.MBER_NO),'')       AS MBER_NO,
@@ -20,7 +19,7 @@ SELECT
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
   NULL                             AS DW_BATCH_ID,
-  -- 🆕 [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼 13종(문서32 §3) — 🔴 개인정보(결제자명·연락처·카드유효기간·빌키·인증데이터) 제외
+  --  [2026-09-30 O191-E · 2차-B 2단] 누락 컬럼 13종(문서32 §3) — WARN: 개인정보(결제자명·연락처·카드유효기간·빌키·인증데이터) 제외
   s.WTDRW_ASMT_SQNC                      AS WTDRW_ASMT_SQNC,
   NULLIF(TRIM(s.SETLE_ENTRPS_CD),'')     AS SETLE_ENTRPS_CD,
   s.ACNUT_SER_NO                         AS ACNUT_SER_NO,
@@ -37,7 +36,7 @@ SELECT
 FROM {{ source('bronze_crm','TM_PM_SETLE_INFO') }} s
 LEFT JOIN {{ ref('CRM_CODE') }} pm ON pm.CD_ID='PM040' AND pm.DTL_CD_ID = NULLIF(TRIM(s.SETLE_CD),'')
 WHERE s.SETLE_KEY IS NOT NULL
-  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
-  --    📏 실측 = 고아 39행(회원 21명) / 2,589,005 ⇒ 적재 후 2,588,966행 예상.
+  -- WARN: [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --     실측 = 고아 39행(회원 21명) / 2,589,005 ⇒ 적재 후 2,588,966행 예상.
   AND {{ gn_member_master_filter("NULLIF(TRIM(s.MBER_NO),'')") }}
 QUALIFY ROW_NUMBER() OVER (PARTITION BY s.SETLE_KEY ORDER BY s.WTDRW_STRT_DE DESC NULLS LAST)=1

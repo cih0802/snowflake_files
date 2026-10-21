@@ -1,14 +1,13 @@
 -- FACT_AD_BROADCAST: 광고성과 위성 — 방송(VIDEO·REBRDC) 고유속성. 순서9-I 신설(DEC-8).
--- Co-authored with CoCo
 -- grain: AD_PERF_DK — 코어 FACT_AD_PERFORMANCE 와 **1:1**(방송 2원천 행만 존재, 실측 37,886행).
--- ⚠️ 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_BROADCAST b USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
--- ⚠️ 여기 담긴 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)은 종전 코어에
+-- WARN: 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_BROADCAST b USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
+-- WARN: 여기 담긴 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)은 종전 코어에
 --    `CAST(NULL AS ..)` 하드코딩으로 자리만 있던 컬럼이다(값미주입 결함군). 본 위성에서 **실배선**된다.
--- ⚠️ 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
+-- WARN: 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
 --    (예: SPOT_TYPE·DURATION_SEC 는 VIDEO 전용 / RT_TYPE·BRDC_DIV 는 REBRDC 전용).
--- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
+-- WARN: O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
 --    자리에 위치매핑돼 'GA 전환'으로 혼입돼 있던 값을 고유 이름으로 분리했다(문서10 §8-I(8)).
--- ⚠️ `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
+-- WARN: `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
 {{ config(
     tags=['gold_ready']
 ) }}
@@ -35,6 +34,6 @@ select
     DVLP_MEMBER_CNT         as DVLP_MEMBER_CNT,         -- O16: 개발회원수 (REBRDC 전용)
     DVLP_CNT                as DVLP_CNT,                -- O16: 개발건수 (REBRDC 전용)
     AD_VIEW_RT_SRC          as AD_VIEW_RT_SRC,          -- N(비가산) 대행사 산정, 재계산 불가
-    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — 🔴 클릭 분모가 아니다(O174 개명)
+    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — WARN: 클릭 분모가 아니다(O174 개명)
     {{ gold_meta('AGENCY') }}
 from {{ ref('AGENCY_AD_BROADCAST') }}

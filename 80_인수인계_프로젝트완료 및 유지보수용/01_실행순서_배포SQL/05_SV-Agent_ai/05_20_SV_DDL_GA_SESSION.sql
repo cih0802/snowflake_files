@@ -1,7 +1,7 @@
 -- ============================================================================
--- 05_20_SV_DDL_GA_SESSION.sql — Semantic View DDL 정본: SV_GA_SESSION (🆕 O213-F Y3-F)
+-- 05_20_SV_DDL_GA_SESSION.sql — Semantic View DDL 정본: SV_GA_SESSION ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `BIGQUERY_SESSION+` + 전량 백필(--vars bigquery_dt_ranges) — 백필 전에는 최근 3일치뿐이다.
+--   · WARN: 선행 = dbt build `BIGQUERY_SESSION+` + 전량 백필(--vars bigquery_dt_ranges) — 백필 전에는 최근 3일치뿐이다.
 --   · 왜 신설했나 — 현업 「브론즈엔 후원자유형·국가·브라우저가 있는데 왜 답을 못 하나」:
 --     SILVER.BIGQUERY_REFINED_DATA 의 세션 속성 25축이 GOLD·SV 어디에도 없었다(O213 Y1 lineage NONE).
 --     SV_GA_BEHAVIOR(FACT_BIGQUERY_BEHAVIOR · 이벤트×페이지 grain)에 넣으면 grain 이 깨진다 ⇒ 세션 grain SV 분리.
@@ -81,7 +81,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
     gs.AVG_SESSION_ENGAGEMENT_SEC AS SUM(gs.ENGAGEMENT_TIME_MSEC) / 1000 / NULLIF(COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY), 0)
       WITH SYNONYMS ('평균세션시간', 'GA 평균세션시간', '세션당 평균 참여시간', '공98', '평균세션시간(추천안A)', '공98A')
       COMMENT = '공#98 GA 평균세션시간(초) 잠정 = 참여시간 합(engagement_time_msec ÷ 1,000) ÷ 고유 세션수. GA4 「세션당 평균 참여시간」 정의다(UA 세션 지속시간과 다르다 — 답변에 밝힌다). 참여시간 미수집 세션은 0초로 분모에 남는다. 비율(N · 재집계 금지). O240 신설. 🆕 [O241] 추천안A — 추천안B(AVG_SESSION_DURATION_SEC)와 병기한다.',
-    -- 🆕 [2026-10-16 O241] 공98 추천안B(잠정) — UA식 세션 지속시간
+    --  [2026-10-16 O241] 공98 추천안B(잠정) — UA식 세션 지속시간
     gs.AVG_SESSION_DURATION_SEC AS SUM(gs.SESSION_DURATION_SEC) / NULLIF(COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY), 0)
       WITH SYNONYMS ('평균세션시간(추천안B)', 'UA 세션 지속시간', '세션 지속시간', '공98B')
       COMMENT = '공#98 추천안B(잠정) 평균세션시간(초) = 세션 지속시간(마지막 − 첫 이벤트 시각) 합 ÷ 고유 세션수. UA 「평균 세션 시간」 근사다. 한계: 이벤트 1건뿐인 세션은 0초 · 자정을 넘는 세션은 첫 일자 행에만 지속시간이 실린다(월 경계 세션은 다음 달 분모에 0초로 남을 수 있다). 비율(N · 재집계 금지).',

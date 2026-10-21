@@ -1,6 +1,6 @@
--- 🟢 적용 완료 — 2026-10-20 O247 · 개발계 IW20760 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · [1] VIEWER·SERVICE SELECT · [2] 90일 접근 0 확인 후 ANALYST OPS 회수 · 운영계는 [2] 앞 확인 SELECT 부터
+-- 🟢 SQL 확정 — 2026-10-20 O247 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · [1] VIEWER·SERVICE SELECT · [2] 90일 접근 0 확인 후 ANALYST OPS 회수 · 운영계는 [2] 앞 확인 SELECT 부터
 -- doc_id: A2-ADJ · as_of: 2026-10-20 · 🔴 미실행 · 목적: 2026-10-20 사용자 결정 2건 권한 조정 + 롤백 · 설명: A2_롤별_접근권한_매트릭스.md §7 · A8-07·A8-08
--- 🔴 개발계·운영계 모두 승인 후 실행한다. 실행 롤 = GN_DW_ADMIN(객체 소유자).
+-- 🔴 승인 후 실행한다. 실행 롤 = GN_DW_ADMIN(객체 소유자).
 -- 🔴 원본(80번) 배포 SQL 은 고치지 않는다 ⇒ 아래 「재실행 함정」을 지켜야 결정이 유지된다.
 
 USE ROLE GN_DW_ADMIN;
@@ -22,8 +22,8 @@ SHOW GRANTS ON VIEW GN_DW.SERVING.ML_REALTIME_SIMULATOR_V;          -- 기대: S
 
 -- =====================================================================
 -- [2] 결정 A8-08 — ANALYST 의 OPS 접근 회수 (OPS COMMENT「소비 역할 권한 없음」과 정합)
---     근거(2026-10-20 개발계 실측): OPS 객체를 참조하는 SV·뷰·Agent 0건(OBJECT_DEPENDENCIES) ·
---     최근 30일 ANALYST 의 OPS 접근 0건(ACCESS_HISTORY · 단 개발계 ANALYST 사용자 0명) ·
+--     근거(2026-10-20 실측): OPS 객체를 참조하는 SV·뷰·Agent 0건(OBJECT_DEPENDENCIES) ·
+--     최근 30일 ANALYST 의 OPS 접근 0건(ACCESS_HISTORY) ·
 --     부여 출처 07_OPS_알림 :334·:338 에 사유 기재 없음. 알림 「수신」은 표의 IS_ANALYST_YN 플래그로 하며 표 SELECT 권한과 무관.
 -- =====================================================================
 -- 운영계 실행 전 확인: 최근 90일 ANALYST 의 OPS 접근이 0 인지
@@ -40,7 +40,7 @@ REVOKE USAGE ON SCHEMA GN_DW.OPS FROM ROLE GN_DW_ANALYST;
 SHOW GRANTS ON SCHEMA GN_DW.OPS;                                    -- 기대: ANALYST 행 없음
 -- ⚠️ ADMIN 은 ANALYST 를 상속하지만 OPS 소유자라 영향 없다. VIEWER 는 원래 OPS 권한이 없다.
 -- 재실행 함정: 🟢 해소(2026-10-20) — 07_OPS_알림 원본·80번 사본 2개·tmp 스냅샷의 ANALYST GRANT 2줄을 주석 처리했다
---    ⇒ 원본을 다시 돌려도 ANALYST 권한이 되살아나지 않는다. 이 [2] 는 이미 부여된 계정(개발계·운영계)에서 회수만 한다.
+--    ⇒ 원본을 다시 돌려도 ANALYST 권한이 되살아나지 않는다. 이 [2] 는 이미 부여된 운영계에서 회수만 한다.
 
 -- [2-R] 롤백
 -- GRANT USAGE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ANALYST;

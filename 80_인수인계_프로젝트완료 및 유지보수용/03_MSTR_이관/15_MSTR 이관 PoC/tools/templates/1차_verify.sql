@@ -6,7 +6,7 @@ WHERE STRD_MT = '{YM}'
 GROUP BY 1
 ORDER BY 1;
 
--- @CHECK fixed_cols  (ExplCampList 제외 결정 X1 — 전건 고정값이어야 한다)
+-- @CHECK fixed_cols (ExplCampList 제외 결정 X1 — 전건 고정값이어야 한다)
 SELECT
   SUM(IFF(CMPGN_CLS1_CD <> '99', 1, 0)) AS CLS1_NOT_99,
   SUM(IFF(CMPGN_CLS2_CD <> '99', 1, 0)) AS CLS2_NOT_99,
@@ -15,7 +15,7 @@ SELECT
 FROM GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM
 WHERE STRD_MT = '{YM}';
 
--- @CHECK report_summary  (05 리포트 [1] — 행수 · 합계 · 차원명 미매핑)
+-- @CHECK report_summary (05 리포트 [1] — 행수 · 합계 · 차원명 미매핑)
 WITH R AS (
   SELECT a11.OCCRRNC_DE,
          MAX(a12.DVLP_DIV_NM) D1, MAX(a13.STRD_NM) D2, MAX(a14.CPR_DIV_NM) D3, MAX(a15.DEPT4_NM) D4,

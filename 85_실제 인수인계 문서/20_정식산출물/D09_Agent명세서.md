@@ -2,7 +2,7 @@
 doc_id: D09
 title: Agent 명세서
 version: 1.0
-as_of: 2026-10-21 (SR61467 실측 · O250-C 갱신 · 초판 2026-10-20 IW20760)
+as_of: 2026-10-21 (O250-C 갱신 · 버전은 운영계 실측)
 source_docs:
   - 라이브 DESCRIBE AGENT · SHOW GRANTS ON AGENT · SHOW AGENTS IN SNOWFLAKE INTELLIGENCE (정본)
   - cortex_project/agents/*/agent_spec.yaml (spec 정본 파일 · 80번 04_SV_Agent_스펙 과 해시 동일 · DR-20)
@@ -24,7 +24,7 @@ status: review
 |---|---|---|---|
 | 표시명(profile) | 경영·전사 분석 | 마케팅 분석 | 회원 분석 |
 | 위치 · 소유 | `GN_DW.SERVING` · GN_DW_ADMIN | 같음 | 같음 |
-| 기본 버전 [ENV] SR61467 | VERSION$5(롤백 VERSION$4) | VERSION$6(롤백 VERSION$5) | VERSION$5(롤백 VERSION$4) |
+| 기본 버전 [ENV] 운영계(ZL50263) | D10 §2 참조 | D10 §2 참조 | D10 §2 참조 |
 | 오케스트레이션 모델 | auto | auto | auto |
 | 도구 | 19 = Cortex Analyst 18 + Cortex Search 1 | 32 = 31 + 1 | 32 = 31 + 1 |
 | 추천 질문 | 15 | 17 | 24 |
@@ -33,7 +33,7 @@ status: review
 | Snowflake Intelligence 등록 | `SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT` 3/3 | | |
 
 - Search 도구 = `search_biz_definition` → `SERVING.SEARCH_BIZ_DEFINITION`(비즈니스 정의 · 수치는 analyst 도구로만 낸다).
-- 배선 SV 합집합 = SV 전수(D08 · 2026-10-21 SR61467 = 44).
+- 배선 SV 합집합 = SV 전수(D08 · 2026-10-21 ZL50263 = 45).
 
 ## 2. 소관 범위
 
@@ -69,17 +69,17 @@ status: review
 
 ## 5. [ENV] 사용 현황 (최근 7일 · A7 Q03)
 
-| Agent | IW20760 요청 / 크레딧 | 운영계 |
-|---|---|---|
-| MEMBER | 36 / 24.4656 | TBD(미검증) |
-| EXECUTIVE | 22 / 8.1173 | TBD(미검증) |
-| MARKETING | 15 / 5.7293 | TBD(미검증) |
+| Agent | 운영계 |
+|---|---|
+| MEMBER | TBD(미검증) |
+| EXECUTIVE | TBD(미검증) |
+| MARKETING | TBD(미검증) |
 
 ## 6. 드리프트
 
 | # | 문서 기재 | 실측 | 처리 |
 |---|---|---|---|
-| DR-03 | Agent COMMENT「소관 SV 14·25·24종」 | 17·28·28 | 🟢 O250-C 해소 = COMMENT 를 수치 없는 카테고리 문안으로 교체(09_1 [5] · SR61467 적용) |
+| DR-03 | Agent COMMENT「소관 SV 14·25·24종」 | 17·28·28 | 🟢 O250-C 해소 = COMMENT 를 수치 없는 카테고리 문안으로 교체(09_1 [5] · 운영계 반영 대기) |
 | DR-16 | 09_2 [0] 정적 목록 · [3] COMMENT「도구 15·26·25종」 | 도구 18·29·29 | 게이트(`sv_identifier_gate`)를 정본으로 · 🟢 O250-C = [3] COMMENT 수치 제거 · [0] 에 O250 5행 추가 |
 | DR-17 | 09_2 [0-C] 시각 비교 | 계정 이동 직후 `STAGE_STALE` 오탐 | [0-B] 재복사 |
 | DR-04 | 시뮬레이터 SV 3종 배선 ↔ base 뷰 권한 | VIEWER·SERVICE 불가 | 결정 = 뷰 개방(적용 대기) |

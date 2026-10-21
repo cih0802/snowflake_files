@@ -2,7 +2,7 @@
 doc_id: A5
 title: Agent · Semantic View 개발자 가이드
 version: 0.1
-as_of: 2026-10-20 (IW20760 실측 · spec 해시 대조 포함)
+as_of: 2026-10-20 (spec 해시 대조 포함)
 source_docs:
   - 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql (467행 전량)
   - 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql (104행 전량)
@@ -23,8 +23,8 @@ status: draft (S4 게이트 확인 대기)
 
 | 항목 | 값 |
 |---|---|
-| SV | 전부 `GN_DW.SERVING` · 소유 GN_DW_ADMIN · base = GOLD / SERVING 뷰(개수·목록 = `D08_SV요약.csv` · 2026-10-21 SR61467 = 44 · GOLD 30 / SERVING 14) |
-| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] SR61467 = MEMBER VERSION$5 · EXECUTIVE VERSION$5 · MARKETING VERSION$6(O250-B) · IW20760 = VERSION$8(롤백 기준 = 그 직전 버전) |
+| SV | 전부 `GN_DW.SERVING` · 소유 GN_DW_ADMIN · base = GOLD / SERVING 뷰(개수·목록 = `D08_SV요약.csv` · 2026-10-21 ZL50263 = 45 · GOLD 30 / SERVING 15) |
+| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22(롤백 기준 = 그 직전 버전 · D10 §2) |
 | Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 2026-10-21 = 19 / 32 / 32) |
 | Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(2,156행 중 원천참고 제외 1,002) · lag 1 day |
 | spec 정본 | 워크스페이스 `cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |
@@ -93,9 +93,9 @@ python3 12_agent개선과제/tools/build_biz_definition_corpus.py --apply  # TRU
 
 ## 6. [ENV] 운영계 반영 시 확인
 
-| 항목 | IW20760(개발) | 운영계 |
-|---|---|---|
-| Agent 기본 버전 | SR61467 = $5 / $5 / $6(MEMBER / EXECUTIVE / MARKETING) | TBD(미검증) — O250 운영계 반영 대기 |
-| spec 스테이지 size | MEMBER 132,064 · EXECUTIVE 88,848 · MARKETING 113,392 | TBD(미검증) |
-| 코퍼스 행수 | 2,156 | TBD(미검증) |
-| Search `source_data_num_rows` | 1,002 | TBD(미검증) |
+| 항목 | 운영계 |
+|---|---|
+| Agent 기본 버전 | TBD(미검증) — O250 운영계 반영 대기 |
+| spec 스테이지 size | TBD(미검증) |
+| 코퍼스 행수 | TBD(미검증) |
+| Search `source_data_num_rows` | TBD(미검증) |

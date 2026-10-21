@@ -1,0 +1,19 @@
+-- CRM_CODE_GROUP: 공통 코드그룹 마스터 (BRONZE TC_CMMN_CD → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
+-- Co-authored with CoCo
+-- grain = CD_ID (📏 xf98254 유일 실측)
+SELECT
+  NULLIF(TRIM(CD_ID),'') AS CD_ID,
+  NULLIF(TRIM(CD_NM),'') AS CD_NM,
+  NULLIF(TRIM(CD_DC),'') AS CD_DC,
+  SORT_ORDR AS SORT_ORDR,
+  NULLIF(TRIM(RM),'') AS RM,
+  NULLIF(TRIM(USE_YN),'') AS USE_YN,
+  FRST_REGIST_DT AS FRST_REGIST_DT,
+  LAST_UPDT_DT AS LAST_UPDT_DT,
+  'CRM'                          AS DW_SOURCE_SYSTEM,
+  'BRONZE_CRM.TC_CMMN_CD' AS DW_SOURCE_TABLE,
+  CURRENT_TIMESTAMP()            AS DW_LOAD_TS,
+  CURRENT_TIMESTAMP()            AS DW_UPDATE_TS,
+  NULL                           AS DW_BATCH_ID
+FROM {{ source('bronze_crm','TC_CMMN_CD') }}
+WHERE CD_ID IS NOT NULL

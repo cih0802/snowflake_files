@@ -1,19 +1,18 @@
--- FACT_EXPENSE_RESOLUTION: 지출결의 팩트 (1행 = 원천 1행) · 🆕 [2026-10-08 O213-F Y3-K]
--- Co-authored with CoCo
+-- FACT_EXPENSE_RESOLUTION: 지출결의 팩트 (1행 = 원천 1행) · [2026-10-08 O213-F Y3-K]
 -- grain: RESOLUTION_NO × ROW_SEQ (SILVER.ERP_EXPENSE_RESOLUTION 과 1:1)
 -- 왜 신설했나 — 「부서별 지출」 질문의 유일한 원천이다(예산 원장 FACT_BUDGET.ORG_SK 는 전건 센티넬 · O51-F).
 --   결의부서·목·세목·세세목·재원·출처구분이 SILVER/GOLD 어디에도 없었다(O213 Y1 NONE).
--- 🔴🔴 FACT_BUDGET·FACT_BUDGET_YEARLY 와 한 표 합산 금지(원천·범위가 다르다 · 조인 근거 없음).
--- 🔴 전 컬럼 동일 행 7,287 보존(제거 근거 없음) — 금액 합 = 원천 합 · 현업 확인 = 문서20 N-29 ⑧.
+-- WARN: FACT_BUDGET·FACT_BUDGET_YEARLY 와 한 표 합산 금지(원천·범위가 다르다 · 조인 근거 없음).
+-- WARN: 전 컬럼 동일 행 7,287 보존(제거 근거 없음) — 금액 합 = 원천 합 · 현업 확인 = 문서20 N-29 ⑧.
 {{ config(
     tags=['gold_ready']
 ) }}
 
--- 🆕 [2026-10-14 O225-B] 콘텐츠구분자(= 세부캠페인코드 · 현업 확인) → CRM 캠페인 → 마케팅캠페인.
---   실측(xh20001): 값 150종 중 149종이 CRM_CAMPAIGN.CMPGN_CD 와 일치 · 코드 1개 → 마케팅캠페인 최대 1개(1:N 0건)
+--  [2026-10-14 O225-B] 콘텐츠구분자(= 세부캠페인코드 · 현업 확인) → CRM 캠페인 → 마케팅캠페인.
+--   실측: 값 150종 중 149종이 CRM_CAMPAIGN.CMPGN_CD 와 일치 · 코드 1개 → 마케팅캠페인 최대 1개(1:N 0건)
 --   ⇒ 대표 선정 규칙이 필요 없다. 다만 CRM 원천은 같은 CMPGN_CD 가 여러 행일 수 있으므로 코드당 1행으로 접는다
 --   (1:N 이 생기면 행수 최다 → 코드 순으로 결정 · `warn_fer_mktg_campaign_multi` 가 경고한다 · 버리지 않는다).
---   🔴 연결 금액은 현재 2,893,355,860원(1.0%) — NULL·「-」 99% 는 향후 입고 가정(사용자 결정 O225-B).
+--   WARN: 연결 금액은 현재 2,893,355,860원(1.0%) — NULL·「-」 99% 는 향후 입고 가정(사용자 결정 O225-B).
 with cmk as (
     select
         c.CMPGN_CD,

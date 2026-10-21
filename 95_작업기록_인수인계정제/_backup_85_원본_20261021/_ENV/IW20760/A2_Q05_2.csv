@@ -1,0 +1,4 @@
+# doc_id: A2 · as_of: 2026-10-19 19:10:42.494 -0700 · account: IW20760 · query: Q05-2 Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
+created_on,role,granted_to,grantee_name,granted_by
+2026-10-17 22:05:00.098000-07:00,SNOWFLAKE.CORTEX_AGENT_USER,ROLE,ACCOUNTADMIN,ACCOUNTADMIN
+2026-10-17 22:05:00.134000-07:00,SNOWFLAKE.CORTEX_AGENT_USER,APPLICATION,SNOWFLAKE,

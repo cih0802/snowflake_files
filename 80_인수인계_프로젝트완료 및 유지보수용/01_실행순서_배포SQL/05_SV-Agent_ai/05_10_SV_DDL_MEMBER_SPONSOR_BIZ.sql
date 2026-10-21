@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql — Semantic View DDL 정본: SV_MEMBER_SPONSOR_BIZ
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -21,7 +21,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인 차원')
       COMMENT = '캠페인 마스터. PK 유일이라 조인이 행수를 늘리지 않는다.',
-    -- 🆕 [2026-10-16 O237-C] 공#79 후원사업별 미납율 — 월 × 후원사업 팩트(FMM 스파인 · 월 합 = FMM 합)
+    --  [2026-10-16 O237-C] 공#79 후원사업별 미납율 — 월 × 후원사업 팩트(FMM 스파인 · 월 합 = FMM 합)
     fsm AS GN_DW.GOLD.FACT_SPONSORSHIP_MONTHLY
       PRIMARY KEY (BASE_MONTH_KEY, SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업별 월 지표', '후원사업 월 팩트')
@@ -46,12 +46,12 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_SPONSOR_BIZ
     campaign.CAMPAIGN_MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 마케팅채널') COMMENT = '캠페인 마케팅채널(원천 COMMENT = 마케팅 채널명 · C002) — 캠페인 마스터 현재값. 🔴 값 「-」는 원천 코드사전 C002 에 등록된 코드 6 의 라벨이다(결측 아님 · 근거 = 문서20 N-29 머리 실측) — 「채널 미지정 캠페인」으로 읽되 업무 의미는 원천 확인 대상이며, 채널별 순위에서는 「-」를 따로 밝힌다.',
     fmsb.SPNSR_JOIN_PATH_NM AS fmsb.SPNSR_JOIN_PATH_NM WITH SYNONYMS ('후원 가입경로', '가입경로') COMMENT = '후원(약정) 단위 가입경로(MM014 · REG·홈페이지·모바일웹·모바일앱·외주콜센터·CRM).',
     sponsorship.SPONSORSHIP_GROUP4_NAME AS sponsorship.SPONSORSHIP_GROUP4_NAME WITH SYNONYMS ('후원사업 4그룹', '후원사업그룹') COMMENT = '후원사업 4그룹(국내/결연/해외프로젝트/기타 · CM003 라벨 접기 · 규칙 밖 라벨은 NULL).',
-    -- 🆕 [2026-10-16 O237-C] 후원사업 월 팩트 기준연월
+    --  [2026-10-16 O237-C] 후원사업 월 팩트 기준연월
     fsm.BASE_MONTH_KEY AS fsm.BASE_MONTH_KEY WITH SYNONYMS ('기준연월', '조회연월') COMMENT = '후원사업별 월 지표의 기준연월 YYYYMM(정수). 🔴 후원사업별 미납율은 기준연월 하나를 고정해 조회한다(여러 달이면 연월별로 나눈다).',
     fsm.BASE_YEAR AS fsm.BASE_YEAR WITH SYNONYMS ('기준연도') COMMENT = '기준연도 YYYY.'
   )
   METRICS (
-    -- 🆕 [2026-10-16 O237-C] 공#79 후원사업별 미납율 = 미납(건) ÷ 활동(건) × 100 · 미납(건) = 미납회비 ÷ 10,000
+    --  [2026-10-16 O237-C] 공#79 후원사업별 미납율 = 미납(건) ÷ 활동(건) × 100 · 미납(건) = 미납회비 ÷ 10,000
     fsm.SPONSORSHIP_UNPAID_RATE AS SUM(fsm.UNPAID_BILLED_AMT) / 10000 / NULLIF(SUM(fsm.ACTIVE_CNT), 0) * 100
       WITH SYNONYMS ('후원사업별 미납율', '후원사업별 미납률', '사업별 미납율')
       COMMENT = '공#79 후원사업별 미납율(%) = 후원사업 미납(건) ÷ 후원사업 활동(건) × 100. 미납(건) = 미납회비(원) ÷ 10,000 · 활동(건) = 월말 활동 약정금액 ÷ 10,000. 🔴 기준연월(BASE_MONTH_KEY) 하나를 고정한다 · 분자·분모를 함께 보이고 ROLLUP 전체 행을 낸다(전체 = SV_CAMPAIGN_MONTHLY 전체 미납율과 같다).',

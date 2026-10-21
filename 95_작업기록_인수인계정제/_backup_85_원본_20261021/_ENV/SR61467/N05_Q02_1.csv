@@ -1,0 +1,26 @@
+# doc_id: N05 · as_of: 2026-10-20 15:43:29.039 -0700 · account: SR61467 · query: Q02-1 마지막 전체 build 의 dbt 집계 줄 · WARN 테스트 목록
+KIND,LINE
+DONE,Done. PASS=695 WARN=23 ERROR=0 SKIP=0 TOTAL=718
+WARN,Warning in test warn_erp_budget_procedure_merge
+WARN,Warning in test relationships_CRM_SEND_RESULT_SNDNG_KEY__SNDNG_KEY__ref_CRM_SEND_REQUEST_
+WARN,Warning in test not_null_CRM_PAYMENT_BILLING_MBER_NO
+WARN,Warning in test not_null_CRM_PAYMENT_BILLING_RQEST_RST_CD
+WARN,Warning in test relationships_CRM_PAYMENT_BILLING_SPNSR_BSNS_ID__SPNSR_BSNS_ID__ref_CRM_SPONSORSHIP_
+WARN,Warning in test warn_erp_budget_month_grain
+WARN,Warning in test warn_erp_budget_yearly_grain
+WARN,Warning in test relationships_CRM_CAMPAIGN_SPNSR_BSNS_ID__SPNSR_BSNS_ID__ref_CRM_SPONSORSHIP_
+WARN,Warning in test relationships_CRM_MEMBER_CMPGN_CD__CMPGN_CD__ref_CRM_CAMPAIGN_
+WARN,Warning in test relationships_CRM_PAYMENT_BILLING_MBER_NO__MEMBER_DK__ref_CRM_MEMBER_
+WARN,Warning in test warn_bigquery_load_gap
+WARN,Warning in test not_null_CRM_EVENT_PARTICIPATION_PARTCPT_PATH_NM
+WARN,Warning in test not_null_CRM_EVENT_PARTICIPATION_PARTCPT_CHNNL_NM
+WARN,Warning in test not_null_CRM_EVENT_PARTICIPATION_PARTCPT_STAT_NM
+WARN,Warning in test relationships_CRM_MEMBER_DEV_CMPGN_CD__CMPGN_CD__ref_CRM_CAMPAIGN_
+WARN,Warning in test not_null_CRM_SEND_MEMBER_SEND_RESULT_NAME
+WARN,Warning in test relationships_CRM_SEND_MEMBER_SNDNG_KEY__SNDNG_KEY__ref_CRM_SEND_REQUEST_
+WARN,Warning in test accepted_values_FACT_EVENT_ATTENDANCE_PART_STATUS__1__2__3__4__5__6__110__120__130__140__150__160__170__180__190__200__210__220
+WARN,Warning in test assert_fap_ad_ctgr_consistency
+WARN,Warning in test relationships_FACT_MEMBER_FEE_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_
+WARN,Warning in test warn_fmm_reason_unmapped_f_rows
+WARN,Warning in test relationships_FACT_MEMBER_MONTHLY_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_
+WARN,Warning in test warn_gold_view_comment_coverage

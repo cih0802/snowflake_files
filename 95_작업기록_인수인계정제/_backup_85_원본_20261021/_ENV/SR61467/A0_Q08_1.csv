@@ -1,0 +1,3 @@
+# doc_id: A0 · as_of: 2026-10-20 15:38:24.555 -0700 · account: SR61467 · query: Q08-1 정책 · 태그 · DMF
+created_on,name,database_name,schema_name,kind,owner,comment,owner_role_type,options
+2026-10-20 15:33:34.206000-07:00,MP_PII_STRING,GN_DW,SECURITY,MASKING_POLICY,GN_DW_ADMIN,BRONZE PII 문자열(이름·휴대폰·연락처) · 원문 = GN_DW_ADMIN 이상 · 그 외 *** · A8-28,ROLE,

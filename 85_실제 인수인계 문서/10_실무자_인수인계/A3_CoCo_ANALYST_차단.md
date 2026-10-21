@@ -1,6 +1,6 @@
 ---
 doc_id: A3
-title: CoCo 에서 GN_DW_ANALYST 차단 — 현황·우회안·문의서 (개발계 몫)
+title: CoCo 에서 GN_DW_ANALYST 차단 — 현황·우회안·문의서
 version: 0.1
 as_of: 2026-10-21 (ZL50263 운영계 실측 캡처 반영 · ANALYST_01 테스트 적용 완료)
 source_docs:
@@ -13,14 +13,14 @@ source_queries:
   - 85_실제 인수인계 문서/10_실무자_인수인계/A3_CoCo_ANALYST_차단_근거.sql (Q01~Q05 · 읽기 전용)
   - 85_실제 인수인계 문서/10_실무자_인수인계/A3_CoCo_ANALYST_차단_미실행.sql (🔴 미실행 · ALTER USER 2문은 compile-only 통과)
 owner: TBD
-status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단위 차단 유효 · 남은 결정 = [2] 롤 동기화 채택 여부(운영계)
+status: 🟢 테스트 통과(2026-10-20) — 사용자 단위 차단 유효 · 남은 결정 = [2] 롤 동기화 채택 여부(운영계)
 ---
 
 # A3. CoCo 에서 GN_DW_ANALYST 차단
 
 **요구사항**: GN_DW_ANALYST 사용자는 Agent(Snowflake Intelligence·CoWork)를 계속 쓰되 CoCo(Cortex Code)는 못 쓰게 한다.
 
-**개발계에서 한 것**: 현황 실측 · 플랫폼 제약 확인(문서) · 사용자 단위 우회안 SQL(미실행) · 문의서 초안.
+**한 것**: 현황 실측 · 플랫폼 제약 확인(문서) · 사용자 단위 우회안 SQL(미실행) · 문의서 초안.
 **운영계에서 할 것**: 테스트 사용자 1명 적용 → 확인 4항목 → 롤 동기화 채택 또는 문의서 발송(§6).
 
 ## 1. 결론 요약
@@ -28,8 +28,8 @@ status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단
 | 질문 | 답 | 근거 |
 |---|---|---|
 | 롤 단위로 CoCo 만 막을 수 있는가 | **없다(네이티브)** | CoCo 접근 = DB 롤(CORTEX_USER 또는 CORTEX_AGENT_USER) **AND** 사용자 credit limit ≠ 0. DB 롤은 Agent 와 공유 · limit 은 사용자 단위 |
-| CORTEX_USER 를 회수하면 | Agent·AI 함수·Analyst 까지 막힌다 | 같은 DB 롤이 Cortex 전체 접근을 가른다 · 개발계는 PUBLIC 에 부여(§3) |
-| COPILOT_USER 회수는 | BCR-2445 적용 후 효과 없음 · 적용 전에도 PUBLIC 에서 회수하면 **전 사용자** CoCo 차단 | BCR-2445 · 개발계 COPILOT_USER = PUBLIC 부여 |
+| CORTEX_USER 를 회수하면 | Agent·AI 함수·Analyst 까지 막힌다 | 같은 DB 롤이 Cortex 전체 접근을 가른다 · PUBLIC 에 부여 여부는 §3 |
+| COPILOT_USER 회수는 | BCR-2445 적용 후 효과 없음 · 적용 전에도 PUBLIC 에서 회수하면 **전 사용자** CoCo 차단 | BCR-2445 |
 | 실현 가능한 방법 | ANALYST 보유 **사용자마다** CoCo 한도 3종 = 0 + 롤 변동 동기화 | 「Daily credit usage limits for CoCo」 — 0 = 차단 |
 | 부작용 | 그 사용자는 **어떤 롤로 접속해도** CoCo 차단(ADMIN 겸직자 포함) | 파라미터가 사용자 속성이므로 |
 
@@ -45,16 +45,16 @@ status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단
 
 ## 3. [ENV] 현황 (Q01~Q05)
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| `CORTEX_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | PUBLIC · ACCOUNTADMIN · GN_DW_ANALYST · GN_DW_SERVICE · GN_DW_ADMIN |
-| `CORTEX_AGENT_USER` 부여처 | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
-| `COPILOT_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
-| BCR-2445 적용 여부 | 미확인 | 사용자 한도 0 설정 방식으로 차단 유효 |
-| GN_DW_ANALYST 보유자 | 롤 GN_DW_ADMIN 1 · 사용자 0 | 사용자 10명 (`ANALYST_01`, `CHOIH` 등) |
-| CoCo 한도 3종(계정) | -1 / -1 / -1 | 계정 기본 -1 (단, `ANALYST_01` 테스트 = 0 적용 완료) |
-| CoCo 사용(최근 30일) | TRIALADMIN 1명 · 471건 · 47.0083 크레딧 | 10명 · 5,600여 건 (G2011032, GN01445 등) |
-| Per-user quota | 0 | 0 |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| `CORTEX_USER` 부여처 | PUBLIC · ACCOUNTADMIN · GN_DW_ANALYST · GN_DW_SERVICE · GN_DW_ADMIN |
+| `CORTEX_AGENT_USER` 부여처 | ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
+| `COPILOT_USER` 부여처 | PUBLIC · ACCOUNTADMIN · (APPLICATION SNOWFLAKE) |
+| BCR-2445 적용 여부 | 사용자 한도 0 설정 방식으로 차단 유효 |
+| GN_DW_ANALYST 보유자 | 사용자 10명 (`ANALYST_01`, `CHOIH` 등) |
+| CoCo 한도 3종(계정) | 계정 기본 -1 (단, `ANALYST_01` 테스트 = 0 적용 완료) |
+| CoCo 사용(최근 30일) | 10명 · 5,600여 건 (G2011032, GN01445 등) |
+| Per-user quota | 0 |
 
 - 🟢 [2026-10-21 운영계 ZL50263] 테스트 대상 사용자 `ANALYST_01`에 대해 한도 3종 0 설정을 적용 완료함.
   - 적용 전: 계정 기본값 (-1)
@@ -85,7 +85,7 @@ status: 🟢 개발계 테스트 통과(2026-10-20 · SR61467) — 사용자 단
 
 | # | 확인 | 기대 | 결과 |
 |---|---|---|---|
-| ㉠ | Snowsight CoCo 패널 사용 | 차단 | 🟢 차단(SR61467 · GN_ANALYST_01 로그인 · 사용자 확인 2026-10-20) |
+| ㉠ | Snowsight CoCo 패널 사용 | 차단 | 🟢 차단(GN_ANALYST_01 로그인 · 사용자 확인 2026-10-20) |
 | ㉡ | Snowflake Intelligence 에서 Agent 3종 질의 | 정상 | ⏭ 생략(사용자 결정 · ㉢ 로 갈음) |
 | ㉢ | SQL·API 로 Agent / Cortex Analyst 호출 | 정상 | 🟢 정상(GN_DW_ANALYST 롤 · SV_MEMBER_EVENT_COHORT 조회 + DATA_AGENT_RUN(AGENT_MARKETING) 응답 · 🔴 롤 경로 검증 — 한도 0 은 사용자 속성이라 Agent 경로와 무관) |
 | ㉣ | CLI·Desktop(사용 시) | 차단 | ➖ 해당 없음(미사용) · 파라미터 0 확인 |

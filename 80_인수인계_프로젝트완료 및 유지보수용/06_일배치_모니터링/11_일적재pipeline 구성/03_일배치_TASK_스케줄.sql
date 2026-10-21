@@ -1,5 +1,4 @@
 -- 일배치 TASK 등록 — dbt build --target dev2 (BRONZE_CRM_2 → SILVER_2/GOLD_2) 자동화
--- Co-authored with CoCo
 --
 -- 전제: 01_스키마생성_및_구조복제.sql, 02_권한부여_LOADER_ENGINEER_ADMIN.sql 실행 완료 +
 --       `dbt build --target dev2` 수동 1회 테스트 성공(00_개요_및_실행순서.md §실행순서 4).

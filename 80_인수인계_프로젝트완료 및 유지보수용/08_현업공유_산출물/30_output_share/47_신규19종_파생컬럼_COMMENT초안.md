@@ -9,7 +9,7 @@ END-METADATA -->
 
 # 신규 19종 — 파생 컬럼 COMMENT 초안
 
-> 근거 = 모델 SQL(`10_dbt_pipeline/models/…`) + `BRONZE_CRM` 원천 COMMENT(2026-09-30 bt97381 조회).
+> 근거 = 모델 SQL(`10_dbt_pipeline/models/…`) + `BRONZE_CRM` 원천 COMMENT(2026-09-30 이전 계정 조회).
 > 🟢 결론 = **요청서 §2 의 15칸은 전부 현업 회신이 필요 없습니다**. 원천 이름만 바꾼 컬럼이거나, DW 가 로직으로 만든 컬럼입니다.
 > 분류: **상속**(원천 COMMENT 그대로) · **DW**(모델 로직으로 문안 확정) · **확인**(문안 확정 · 회신은 선택).
 

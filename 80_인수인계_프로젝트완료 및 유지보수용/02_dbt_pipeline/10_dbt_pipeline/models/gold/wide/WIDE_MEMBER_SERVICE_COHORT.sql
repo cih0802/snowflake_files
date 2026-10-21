@@ -1,39 +1,38 @@
 -- WIDE_MEMBER_SERVICE_COHORT: 서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도
--- Co-authored with CoCo
 -- [2026-10-07 O205] 신설 · 2차 Agent 개선(`12_agent개선과제/00_작업계획.md` §8 B).
 --
--- 🔴 왜 필요한가
+-- WARN: 왜 필요한가
 --   회원실 질문(수신/미수신 회원의 이벤트 참여율 · 발송 후 5일 내 중단자의 특성 · 수신회원 유지기간)은
 --   발송(FACT_MESSAGE_DISPATCH) · 획득 코호트(DIM_MEMBER_ACQUISITION) · 중단(FACT_MEMBER_EVENT) ·
 --   행사 참여(FACT_EVENT_ATTENDANCE)를 **회원 단위로** 이어야 한다. SV 끼리는 교차결합이 금지라
 --   Agent 가 답하지 못했다 ⇒ 결합을 이 뷰 안에서 끝내고 SV 1개로 노출한다(신규 원천 없음).
 --
--- 🔴 grain
---   · 수신 행   = 회원 × 서비스그룹 × 수신연도(그 해에 그 그룹 발송을 1회 이상 받음)
+-- WARN: grain
+--   · 수신 행 = 회원 × 서비스그룹 × 수신연도(그 해에 그 그룹 발송을 1회 이상 받음)
 --   · 미수신 행 = 회원 × 서비스그룹 1행(RECEIVE_YEAR = NULL · RECEIVED_FLAG = FALSE)
 --     ⇒ 미수신 모집단 = DIM_MEMBER_ACQUISITION 회원(획득 코호트) 중 그 그룹을 한 번도 받지 않은 회원.
---   🔴 한 회원이 여러 해에 받으면 연도마다 행이 생긴다 ⇒ 연도를 고정하지 않은 회원수는 반드시 COUNT DISTINCT.
+--   WARN: 한 회원이 여러 해에 받으면 연도마다 행이 생긴다 ⇒ 연도를 고정하지 않은 회원수는 반드시 COUNT DISTINCT.
 --
--- 🔴🔴 서비스그룹 판정 = [O206 A안 · 사용자 결정 2026-10-07] **코드 우선 → 제목 보조**
+-- WARN: 서비스그룹 판정 = [O206 A안 · 사용자 결정 2026-10-07] **코드 우선 → 제목 보조**
 --   ① 서비스코드(발송코드 MS049 의 상위 서비스코드 = 원천 서비스 카테고리)로 먼저 판정한다
 --      · 개별화 신규(사단) = MS049 상위 43(개별화 서비스 신규(사단))
---      · 장기회원 서비스  = MS049 상위 06·23·24(장기회원감사서비스 사단·사복·통합)
+--      · 장기회원 서비스 = MS049 상위 06·23·24(장기회원감사서비스 사단·사복·통합)
 --   ② 카테고리가 없는 발송(MS0505 「기타」·MS046 결연 등)과 코드 계층에 없는 서비스는 발송 제목으로 판정한다
 --      · 선넘는좋은일 신규 즉시 = 제목(서비스코드 4312 「신규_사단_기타」는 다른 개별화 신규와 섞여 코드만으로 분리 불가)
 --      · 행운의 카드 = 제목(MS046 결연 / ACPI 발송 — 원천에 서비스 카테고리 없음)
 --      · 장기회원 서비스 = 제목 보조(2025~ 대량 발송이 MS0505 「기타」 코드에 실렸다 · O205-B 실측)
 --   ⇒ MATCH_BASIS 로 그 행이 어느 근거로 들었는지 남긴다(SV 가 답변에 「코드 기준」·「제목 매핑」을 밝힌다).
 --   · 한 발송이 여러 그룹에 들 수 있다(그룹 간 합산 금지) · 같은 그룹은 코드 판정이 제목 판정보다 우선한다.
---   🔴 법인 = 서비스코드명의 (사단)/(사복)/(통합) → 없으면 알림톡 템플릿 법인구분(CPR_DIV_CD · CM019).
+--   WARN: 법인 = 서비스코드명의 (사단)/(사복)/(통합) → 없으면 알림톡 템플릿 법인구분(CPR_DIV_CD · CM019).
 --      grain 에 넣지 않는다(평균 지표가 법인 수만큼 중복 가중된다) ⇒ 법인별 수신 플래그 3개로 낸다.
---   🔴 담당부서 = 알림톡 템플릿 담당부서(CHRG_DEPT_ID → CRM_ORG). 처리자ID→부서 마스터는 원천에 없다.
---   🔴 제목·코드·템플릿이 모두 없는 발송(예: 2026-08 제목 「[굿네이버스]」 대량 발송)은 어느 그룹에도 들지 않는다.
+--   WARN: 담당부서 = 알림톡 템플릿 담당부서(CHRG_DEPT_ID → CRM_ORG). 처리자ID→부서 마스터는 원천에 없다.
+--   WARN: 제목·코드·템플릿이 모두 없는 발송(예: 2026-08 제목 「[굿네이버스]」 대량 발송)은 어느 그룹에도 들지 않는다.
 --
--- 🔴 「효과」는 이 뷰가 정의하지 않는다 — 수신·미수신 비교는 단순 차이이며 인과가 아니다.
+-- WARN: 「효과」는 이 뷰가 정의하지 않는다 — 수신·미수신 비교는 단순 차이이며 인과가 아니다.
 --   [O206] 대조군은 원천·DW 어디에도 정의가 없다(실측) ⇒ SV 가 「대조군 없음」을 밝히고 후보군(같은 가입월·캠페인·사업·법인 미수신)을 제시한다.
--- ⚠️ 캠페인행사(CRMN) 참여는 원천에 참여일이 없어(PARTCPT_DATE 전건 NULL) FEA 날짜가 행사 시작일이다
+-- WARN: 캠페인행사(CRMN) 참여는 원천에 참여일이 없어(PARTCPT_DATE 전건 NULL) FEA 날짜가 행사 시작일이다
 --   (종전 1970 계열은 DIM_EVENT 변환 결함이었고 O205-B 에서 교정됐다) ⇒ 수신 전후 구분 없이 총계만 싣는다.
--- 🔴 컬럼 COMMENT 정본 = `_wide_schema.yml` columns[] — SELECT 컬럼 추가·순서 변경 시 함께 고친다(gn_view_commented).
+-- WARN: 컬럼 COMMENT 정본 = `_wide_schema.yml` columns[] — SELECT 컬럼 추가·순서 변경 시 함께 고친다(gn_view_commented).
 {{ config(
     materialized='gn_view_commented',
     tags=['gold_ready']
@@ -84,7 +83,7 @@ disp_raw as (
     -- ① 서비스코드 판정(등가조인)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'CODE' as MATCH_BASIS, f.DATE_SK,
            f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
-           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- 🆕 [O237-B]
+           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join req q                         on q.SEND_REQUEST_SK = f.SEND_REQUEST_SK
     join rules r                       on r.MATCH_BASIS = 'CODE' and q.SNDNG_CD_ID = 'MS049' and q.SVC_UPPER_CD = r.SVC_UPPER_CD
@@ -92,7 +91,7 @@ disp_raw as (
     -- ② 발송 제목 판정(카테고리가 없는 발송 · 코드 계층에 없는 서비스)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'TITLE', f.DATE_SK,
            f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
-           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- 🆕 [O237-B]
+           f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join rules r                       on r.MATCH_BASIS = 'TITLE' and f.SEND_TITLE ilike r.TITLE_PATTERN
     left join req q                    on q.SEND_REQUEST_SK = f.SEND_REQUEST_SK
@@ -123,7 +122,7 @@ rcv as (
         COUNT(DISTINCT SEND_DATE)                   as RECEIVE_ROWS,  -- [O205-B] 수신일 수 · 한 발송이 코드·제목 둘 다에 맞아도 중복되지 않는다
         MAX(IFF(D5_STOP_MEMBERS > 0, 1, 0)) = 1     as D5_STOP_FLAG,
         MAX(IFF(D5_INCREASE_PART_MEMBERS > 0, 1, 0)) = 1 as D5_INCREASE_FLAG,
-        -- 🆕 [O237-B] 발송 후 D+1~D+5 서신·선물금 참여(FACT_MESSAGE_DISPATCH 와 같은 시간창 · 안내성 제목 제외 동일)
+        --  [O237-B] 발송 후 D+1~D+5 서신·선물금 참여(FACT_MESSAGE_DISPATCH 와 같은 시간창 · 안내성 제목 제외 동일)
         MAX(IFF(D5_LETTER_PART_MEMBERS > 0, 1, 0)) = 1 as D5_LETTER_FLAG,
         MAX(IFF(D5_GIFT_PART_MEMBERS > 0, 1, 0)) = 1   as D5_GIFT_FLAG,
         -- [O206] 판정 근거 · 법인 · 담당부서 · 원천 서비스분류
@@ -173,8 +172,8 @@ base as (
         COALESCE(r.RECEIVE_ROWS, 0)                 as RECEIVE_ROWS,
         COALESCE(r.D5_STOP_FLAG, false)             as D5_STOP_FLAG,
         COALESCE(r.D5_INCREASE_FLAG, false)         as D5_INCREASE_FLAG,
-        COALESCE(r.D5_LETTER_FLAG, false)           as D5_LETTER_FLAG,      -- 🆕 [O237-B]
-        COALESCE(r.D5_GIFT_FLAG, false)             as D5_GIFT_FLAG,        -- 🆕 [O237-B]
+        COALESCE(r.D5_LETTER_FLAG, false)           as D5_LETTER_FLAG,      -- [O237-B]
+        COALESCE(r.D5_GIFT_FLAG, false)             as D5_GIFT_FLAG,        -- [O237-B]
         r.MATCHED_BY_CODE_FLAG,
         r.MATCHED_BY_TITLE_FLAG,
         r.RECEIVED_SADAN_FLAG,
@@ -214,12 +213,12 @@ ev_agg as (
     join ev v on v.MEMBER_DK = b.MEMBER_DK
     group by 1, 2, 3
 ),
--- 🆕 [O237-B] 첫 수신월 기준 N개월 유지 · 수신 후 납입(수신 행만 · 미수신 NULL)
+--  [O237-B] 첫 수신월 기준 N개월 유지 · 수신 후 납입(수신 행만 · 미수신 NULL)
 --   · 유지 = 첫 수신월 + N 개월 시점에 미중단 후원사업(FMSS span as-of · FMM 활동 판정과 같은 식)이 있는가
 --   · 관측 = 첫 수신월 + N 이 데이터 최신월(마감된 직전 월 이하 FMM 최대월) 이하일 때만 TRUE/FALSE · 넘으면 NULL(아직 관측 불가)
---   · 🔴 수신 후 납입 = 첫 수신 **다음 달 ~ +3개월** 안에 회비 납입(PAID_FEE_BILLABLE > 0)이 있는가 — 창 길이 잠정(사용자 승인 2026-10-16 · 현업 확인 대상)
+--   · WARN: 수신 후 납입 = 첫 수신 **다음 달 ~ +3개월** 안에 회비 납입(PAID_FEE_BILLABLE > 0)이 있는가 — 창 길이 잠정(사용자 승인 2026-10-16 · 현업 확인 대상)
 max_mk as (
-    -- 🔴 FMM 에는 미래 회비월 청구 행이 있다(2029-11 등 · O237-B 실측) ⇒ 최신월 = 마감된 직전 월 이하의 최대 월
+    -- WARN: FMM 에는 미래 회비월 청구 행이 있다(2029-11 등 · O237-B 실측) ⇒ 최신월 = 마감된 직전 월 이하의 최대 월
     select MAX(MONTH_KEY) as MK from {{ ref('FACT_MEMBER_MONTHLY') }}
     where MONTH_KEY > 0
       and MONTH_KEY <= TRY_TO_NUMBER(TO_CHAR(ADD_MONTHS(CURRENT_DATE(), -1), 'YYYYMM'))
@@ -280,7 +279,7 @@ select
     YEAR(acq_d.FULL_DATE)                           as ACQ_YEAR,
     FLOOR(acq.ACQ_DATE_SK / 100)                    as ACQ_MONTH_KEY,
     acq.ACQ_CAMPAIGN_NAME,
-    -- 🔴 「선넘는좋은일 캠페인 가입」은 캠페인명이 아니라 상위캠페인명(2026_통합_전체사업_선넘는좋은일)에 있다(O205 실측)
+    -- WARN: 「선넘는좋은일 캠페인 가입」은 캠페인명이 아니라 상위캠페인명(2026_통합_전체사업_선넘는좋은일)에 있다(O205 실측)
     acq.ACQ_PARENT_CAMPAIGN_NAME,
     acq.ACQ_CAMPAIGN_TYPE,
     acq.ACQ_INFLOW_PATH,
@@ -312,7 +311,7 @@ select
     COALESCE(v.CULTURE_EVENT_PART_ROWS, 0)          as CULTURE_EVENT_PART_ROWS,
     COALESCE(v.ONLINE_EVENT_PART_ROWS, 0)           as ONLINE_EVENT_PART_ROWS,
     v.ONLINE_EVENT_PART_ROWS_AFTER                  as ONLINE_EVENT_PART_ROWS_AFTER,
-    -- ── 🆕 [O237-B] 참여 플래그 · 유지 · 수신 후 납입(맨 끝 append) ──────────────────
+    -- ── [O237-B] 참여 플래그 · 유지 · 수신 후 납입(맨 끝 append) ──────────────────
     b.D5_LETTER_FLAG,
     b.D5_GIFT_FLAG,
     rt.RETAINED_3M_FLAG,

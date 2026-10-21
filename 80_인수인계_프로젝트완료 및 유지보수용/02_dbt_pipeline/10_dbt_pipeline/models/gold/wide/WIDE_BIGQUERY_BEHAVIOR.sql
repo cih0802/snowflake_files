@@ -1,10 +1,9 @@
 -- WIDE_BIGQUERY_BEHAVIOR: BigQuery 행동 팩트(FGA) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.6)
--- Co-authored with CoCo
 -- 2026-07-15: DIM_MEMBER_IDENTITY 활성화 → IDENTITY_* 4컬럼 실조인 복원(f.IDENTITY_SK = DIM_MEMBER_IDENTITY.IDENTITY_SK).
---    ⚠️[G-5 재확인] 현재 BigQuery 1일 샤드 기반(회원 매칭 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
+--    WARN:[G-5 재확인] 현재 BigQuery 1일 샤드 기반(회원 매칭 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
---   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
+--   WARN: columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -34,9 +33,9 @@ select
     c.CAMPAIGN_BK         as CAMPAIGN_BK,
     c.BRAND               as CAMPAIGN_BRAND,
     c.CAMPAIGN_NAME       as CAMPAIGN_NAME,
-    -- 🆕 [2026-10-12 O216-E · O91-F A4-W BIGQUERY] GA4 캠페인 축 = UTM 원값(팩트 O190 degen 을 소비 뷰에 노출).
+    --  [2026-10-12 O216-E · O91-F A4-W BIGQUERY] GA4 캠페인 축 = UTM 원값(팩트 O190 degen 을 소비 뷰에 노출).
     --   CAMPAIGN_SK 배선은 하지 않는다 — UTM 1개 ↔ 캠페인 최대 902개(DIM_CAMPAIGN.MKTG_UTM_NM · 1:1 67행뿐)라
-    --   팬아웃 또는 임의 대표 선택이 된다(DEC-41). 🔴 말미 추가 = 기존 38컬럼 순서 불변.
+    --   팬아웃 또는 임의 대표 선택이 된다(DEC-41). WARN: 말미 추가 = 기존 38컬럼 순서 불변.
     f.UTM_CAMPAIGN        as UTM_CAMPAIGN
 from {{ ref('FACT_BIGQUERY_BEHAVIOR') }} f
 left join {{ ref('DIM_DATE') }}      d  on f.DATE_SK      = d.DATE_SK

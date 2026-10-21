@@ -1,5 +1,4 @@
 -- CRM_SEND_MEMBER_OPEN_LOG: 메시지 발송 메일 오픈 로그 정제 (BRONZE SND_MEMBER_OPEN_LOG → SILVER)
--- Co-authored with CoCo
 --
 -- ============================================================================
 -- [2026-09-16 O162 신설]

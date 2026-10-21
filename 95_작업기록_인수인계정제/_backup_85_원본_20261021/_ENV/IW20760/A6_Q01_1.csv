@@ -1,0 +1,12 @@
+# doc_id: A6 · as_of: 2026-10-19 20:49:55.137 -0700 · account: IW20760 · query: Q01-1 dbt 실행 이력 — 최근 7일 (롤 · 상태 · 오류)
+START_TIME,ROLE_NAME,USER_NAME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE,ELAPSED_SEC,QUERY_TEXT
+2026-10-19 01:53:08.629000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,36.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'build --select FACT_AD_PERFORMANCE+ FACT_BUDGET FACT_BUDGET_YEARLY';
+2026-10-19 01:52:19.884000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,40.0,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline/' args='compile' upload_url='snow://dbt_project/92614148/results/query_id_01c7d4f0-0208-ec8b-000"
+2026-10-18 05:04:52.472000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,34.4,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS = 'build --select FACT_AD_PERFORMANCE+ FACT_BUDGET FACT_BUDGET_YEARLY';
+2026-10-18 05:04:03.172000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,38.9,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline/' args='compile' upload_url='snow://dbt_project/92614148/results/query_id_01c7d010-0208-e79d-000"
+2026-10-17 22:15:45.806000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,138.1,"EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{""bigquery_dt_ranges"": [[""1945-01-01"", ""9999-12-"
+2026-10-17 22:05:36.150000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,609.5,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-17 22:05:09.137000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,26.7,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-17 22:04:54.331000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,14.8,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-17 22:03:24.329000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,40.3,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/92614148/results/query_id_01c7ce6b-0208-e79d-0005"
+2026-10-17 22:02:36.671000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,41.9,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/92614148/results/query_id_01c7ce6a-0208-e110-0005"

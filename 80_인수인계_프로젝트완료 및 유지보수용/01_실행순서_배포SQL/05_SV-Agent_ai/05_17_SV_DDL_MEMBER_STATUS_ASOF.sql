@@ -1,11 +1,11 @@
 -- ============================================================================
--- 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql — Semantic View DDL 정본: SV_MEMBER_STATUS_ASOF (🆕 O203 · T8 2차)
+-- 05_17_SV_DDL_MEMBER_STATUS_ASOF.sql — Semantic View DDL 정본: SV_MEMBER_STATUS_ASOF ( O203 · T8 2차)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 근거(2026-10-06 실측): DIM_MEMBER_STATUS_HISTORY = SCD2 8,141,302행 · 회원당 현재행 1(1,796,798) · 역전 0.
---     🔴 EFFECTIVE_TO 는 다음 행의 EFFECTIVE_FROM 과 같은 날이다(경계 포함 시 2026-06-30 에 259명 중복)
+--     WARN: EFFECTIVE_TO 는 다음 행의 EFFECTIVE_FROM 과 같은 날이다(경계 포함 시 2026-06-30 에 259명 중복)
 --     ⇒ as-of 조건은 반열림 구간 `EFFECTIVE_FROM <= 기준일 AND (EFFECTIVE_TO > 기준일 OR EFFECTIVE_TO IS NULL)` 로만 쓴다
 --       (2024-12-31·2025-06-30·2026-06-30 3시점 전부 회원당 1행 확인).
---   · 🔴 상태 라벨 기준 「활동회원」(2026-06-30 = 681,134)은 월실적 KPI 활동회원(FACT_MEMBER_MONTHLY 202606 = 723,406)과 정의가 다르다.
+--   · WARN: 상태 라벨 기준 「활동회원」(2026-06-30 = 681,134)은 월실적 KPI 활동회원(FACT_MEMBER_MONTHLY 202606 = 723,406)과 정의가 다르다.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

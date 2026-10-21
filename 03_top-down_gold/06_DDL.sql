@@ -82,6 +82,44 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_ORG (
     ACMSLT_DIV_NM        VARCHAR          COMMENT '실적 본부/지부 단위명(ZC 노드 DEPT_NM) · 같은 이름이 여러 ZB 아래 존재'
 ) COMMENT = '조직/부서 차원. [Grain: ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_INFO → SILVER.CRM_ORG].';
 
+-- 🆕 [2026-10-21 O252 · DEC-63] DIM_ORG_SUCCESSION — 폐지·개편 부서 → 현재 활성 부서 귀속 차원
+--   🔴 IF NOT EXISTS — 이 블록 재실행이 현업 확정 반영분을 지우지 않게 한다(데이터는 dbt merge 가 채운다)
+CREATE TABLE IF NOT EXISTS GN_DW.GOLD.DIM_ORG_SUCCESSION (
+    OLD_ORG_SK          NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '원천 부서 대리키 (= DIM_ORG.ORG_SK · 팩트 부서 컬럼과 조인)',
+    OLD_DEPT_ID         VARCHAR         NOT NULL COMMENT '원천 실적부서코드 (SILVER.CRM_ORG.DEPT_ID · DEC-56 원천 그대로)',
+    OLD_DEPARTMENT      VARCHAR         COMMENT '원천 부서명 (당시 부서 · DEC-56)',
+    OLD_IS_ACTIVE_ORG   BOOLEAN         COMMENT '원천 부서가 현재 활성 조직 트리 소속인가 (= DIM_ORG.IS_ACTIVE_ORG)',
+    CUR_ORG_SK          NUMBER(38,0)    COMMENT '귀속 현재 부서 대리키 (FK→DIM_ORG · 활성 부서만). NULL = 귀속 대상 없음(MAP_METHOD UNMAPPED·MANUAL_UNMAPPED)',
+    CUR_DEPT_ID         VARCHAR         COMMENT '귀속 현재 부서코드. NULL 사유 = CUR_ORG_SK 와 같다',
+    CUR_DEPARTMENT      VARCHAR         COMMENT '귀속 현재 부서명 — 드릴다운 축. NULL 사유 = CUR_ORG_SK 와 같다 · 소비 측 표기 = (미매핑 폐지부서)',
+    CUR_ORG_PATH        VARCHAR         COMMENT '귀속 현재 부서 조직표 경로(루트 제외). NULL 사유 = CUR_ORG_SK 와 같다',
+    CUR_ORG_LEVEL       NUMBER(38,0)    COMMENT '귀속 현재 부서 조직 트리 깊이(루트=0). NULL 사유 = CUR_ORG_SK 와 같다',
+    MAP_METHOD          VARCHAR         NOT NULL COMMENT '귀속 근거. SELF·MANUAL·MANUAL_UNMAPPED·AUTO_NAME·AUTO_MEMBER_FLOW·AUTO_ACMSLT_PARENT·AUTO_ORG_PARENT·UNMAPPED',
+    IS_REMAPPED         BOOLEAN         NOT NULL COMMENT '원천 부서와 다른 현재 부서로 귀속됐는가',
+    IS_CONFIRMED        BOOLEAN         NOT NULL COMMENT '확정 여부 — SELF 또는 현업 확정(MANUAL·MANUAL_UNMAPPED). FALSE = 자동 추정',
+    FLOW_CAND_DEPT_ID   VARCHAR         COMMENT '회원 흐름 lift 1위 후보 부서코드(참고). NULL = 후보 없음(근거 10건 미만 또는 활성 부서)',
+    FLOW_EVIDENCE_CNT   NUMBER(38,0)    COMMENT '회원 흐름 후보의 근거 개발 건수(2022년~). NULL 사유 = FLOW_CAND_DEPT_ID 와 같다',
+    FLOW_SHARE          NUMBER(10,4)    COMMENT '회원 흐름 후보 점유율. NULL 사유 = FLOW_CAND_DEPT_ID 와 같다',
+    FLOW_LIFT           NUMBER(12,2)    COMMENT '회원 흐름 후보 lift = 점유율 ÷ 전체 개발 기준선. NULL 사유 = FLOW_CAND_DEPT_ID 와 같다',
+    CONFIRMED_BY        VARCHAR         COMMENT '현업 확정자(seed ORG_SUCCESSION_MANUAL). NULL = 현업 확정 아님',
+    CONFIRMED_DT        VARCHAR         COMMENT '현업 확정일 YYYYMMDD(seed). NULL 사유 = CONFIRMED_BY 와 같다',
+    NOTE                VARCHAR         COMMENT '현업 확정 비고(seed). NULL 사유 = CONFIRMED_BY 와 같다',
+    DW_SOURCE_SYSTEM    VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS          TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '폐지·개편 부서 현재 조직 귀속 차원. [Grain: OLD_ORG_SK (1행=1부서 · DIM_ORG 와 1:1)]. [주의: DEC-56 원천 부서값 보존 · 현재 조직 기준 조회 전용 축 · IS_CONFIRMED=FALSE 는 자동 추정]. [원천: SILVER.CRM_ORG · GOLD.DIM_ORG · SILVER.CRM_MEMBER_SPONSOR_SPAN · SILVER.CRM_MEMBER_DEV · seed ORG_SUCCESSION_MANUAL].';
+
+-- 🆕 [2026-10-21 O252] ORG_SUCCESSION_MANUAL — 현업 확정 귀속(dbt seed `seeds/ORG_SUCCESSION_MANUAL.csv` 적재 대상)
+--   🔴 GN_DW_DBT 는 GOLD 에 CREATE TABLE 권한이 없다(CREATE VIEW 만) ⇒ 테이블은 DDL 이 만들고 seed 는 TRUNCATE + INSERT 만 한다.
+CREATE TABLE IF NOT EXISTS GN_DW.GOLD.ORG_SUCCESSION_MANUAL (
+    OLD_DEPT_ID         VARCHAR         COMMENT '폐지·개편 원천 부서코드(SILVER.CRM_ORG.DEPT_ID)',
+    CUR_DEPT_ID         VARCHAR         COMMENT '귀속할 현재 활성 부서코드. NULL = 귀속하지 않기로 현업 확정(MANUAL_UNMAPPED)',
+    CONFIRMED_BY        VARCHAR         COMMENT '현업 확정자',
+    CONFIRMED_DT        VARCHAR         COMMENT '현업 확정일 YYYYMMDD',
+    NOTE                VARCHAR         COMMENT '확정 비고(분할 부서 판단 근거 등)'
+) COMMENT = '폐지·개편 부서 귀속 현업 확정분. [Grain: OLD_DEPT_ID]. [주의: dbt seed 적재 · 손으로 INSERT 하지 말고 CSV 를 고친다 · 조직 개편 시 갱신]. [원천: 현업 수기 · seeds/ORG_SUCCESSION_MANUAL.csv].';
+
 -- DIM_MEMBER_STATUS_HISTORY — 회원 상태전이 이력 차원
 CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_MEMBER_STATUS_HISTORY (
     MEMBER_SK           NUMBER(38,0)    NOT NULL PRIMARY KEY COMMENT '버전 대리키',

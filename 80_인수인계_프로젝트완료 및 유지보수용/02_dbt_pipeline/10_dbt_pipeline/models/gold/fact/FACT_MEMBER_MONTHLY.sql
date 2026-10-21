@@ -1,34 +1,33 @@
 -- FACT_MEMBER_MONTHLY: 회원 월 팩트 (billing ∪ FME 스파인) — A1: 개발/중단 FME 롤업 + HAS_BILLING 출처플래그
--- Co-authored with CoCo
 -- [2026-08-03 O27/DEC-28] 회비 3분해(#66·#67·#68) 실배선 — 종전 `0` 하드코딩 폐기.
 --   원천 `CRM_PAYMENT_BILLING.MBRFEE_DIV_CD`(PM010) 97.6% 채움 · 정본 정의는 billing CTE 주석 참조.
---   🔴 3컬럼 합 ≠ PAID_FEE (선물금 G·긴급구호 U 는 정본 정의상 미귀속) — 검산식은 CTE 주석에 실측치로 병기.
--- ✅ A1(2026-07-21): 스파인 = 회비(CRM_PAYMENT_BILLING) ∪ 개발/중단(FACT_MEMBER_EVENT 월 롤업).
+--   WARN: 3컬럼 합 ≠ PAID_FEE (선물금 G·긴급구호 U 는 정본 정의상 미귀속) — 검산식은 CTE 주석에 실측치로 병기.
+--  A1(2026-07-21): 스파인 = 회비(CRM_PAYMENT_BILLING) ∪ 개발/중단(FACT_MEMBER_EVENT 월 롤업).
 --    · 개발/중단이 난 달(납입無 ~2.26M 월×회원)도 포함 → DEV/STOP 온전 집계(과소집계 해소).
---    · HAS_BILLING=TRUE  → 구 billing 스파인(≈37.79M)과 동일. 회비/청구/미납 지표 불변. (보수적 소비: WHERE HAS_BILLING)
+--    · HAS_BILLING=TRUE → 구 billing 스파인(≈37.79M)과 동일. 회비/청구/미납 지표 불변. (보수적 소비: WHERE HAS_BILLING)
 --    · HAS_BILLING=FALSE → 개발/중단만 있는 월(회비 measure NULL). (정확 소비: 필터 없이 전체)
--- ~~⚠️ 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그~~
--- 🟢 [O183] 스캐폴드 잔여 중 정본 정의 + SILVER 원천이 있는 22컬럼 배선(미납·누계·증감·이탈·속성·밴드·기간).
---    🔴 여전히 비워 둔 것 = CAMPAIGN_SK·PAYMENT_SK·CAMPAIGN_UNPAID_CNT(원천 축 부재) · INBOUND/TS_CALL(C-8 미입고).
+-- ~~WARN: 스캐폴드 잔여(전건 0/NULL): ACTIVE/증감/누계/미납건·CAMPAIGN/PAYMENT_SK·DEV_TYPE·밴드·플래그~~
+--  [O183] 스캐폴드 잔여 중 정본 정의 + SILVER 원천이 있는 22컬럼 배선(미납·누계·증감·이탈·속성·밴드·기간).
+--    WARN: 여전히 비워 둔 것 = CAMPAIGN_SK·PAYMENT_SK·CAMPAIGN_UNPAID_CNT(원천 축 부재) · INBOUND/TS_CALL(C-8 미입고).
 --    규칙 근거 = `20_issue/30_설계_의사결정` DEC-55(O183). 수치는 코드에 적지 않는다(R2-6).
 --    → 상태이력(CRM_MEMBER_STATUS_HIST)·금액변경(CRM_MEMBER_AMT_CHANGE) 원천 + O8 grain 규칙(B2) 후속.
--- ✅ DEC-41(2026-08-20 O92): SPONSORSHIP_SK 배선 — **그 달 후원사업이 하나로 확정된 월만** 채운다.
+--  DEC-41(2026-08-20 O92): SPONSORSHIP_SK 배선 — **그 달 후원사업이 하나로 확정된 월만** 채운다.
 --    · 다중 사업 월은 `SPONSORSHIP_SK=0`(센티넬) 유지 + `IS_MULTI_SPONSORSHIP=TRUE` 로 표시한다.
---    · 🔴 대표 규칙(최대 납입액·최빈 등)을 쓰지 않는다 — 금액 기준은 다중 월의 상당 비율에서 **동점**이라
+--    · WARN: 대표 규칙(최대 납입액·최빈 등)을 쓰지 않는다 — 금액 기준은 다중 월의 상당 비율에서 **동점**이라
 --      결정되지 않고, 2차 tiebreak 는 업무 의미 없는 임의 규칙이 된다(P21 창작 금지).
 --      판정 근거·실측 수치는 **`20_issue/30_설계_의사결정.md` §28**(DEC-41)에만 둔다(R2-6 = 코드에 수치 금지).
---    · 🔴 이 결정은 후원사업 축 한정이다 — `PAYMENT_SK`(별건·O51-D-P1 연동)·`CAMPAIGN_SK`(B3 원천 부재)는 그대로 0.
---    · 🔴 `FME.SPONSORSHIP_SK`(STOP 한정)와 **규칙을 합치지 말 것** — 그쪽은 사건 grain 이고 동시중단 팬아웃이 있다.
--- ✅ W3(DEC-24, 2026-07-31): REASON_SK 배선 — 미납(F) 대표사유 = 최종차수(MBRFEE_SQNC 최대)의 결과코드.
+--    · WARN: 이 결정은 후원사업 축 한정이다 — `PAYMENT_SK`(별건·O51-D-P1 연동)·`CAMPAIGN_SK`(B3 원천 부재)는 그대로 0.
+--    · WARN: `FME.SPONSORSHIP_SK`(STOP 한정)와 **규칙을 합치지 말 것** — 그쪽은 사건 grain 이고 동시중단 팬아웃이 있다.
+--  W3(DEC-24, 2026-07-31): REASON_SK 배선 — 미납(F) 대표사유 = 최종차수(MBRFEE_SQNC 최대)의 결과코드.
 --    코드그룹 매핑(SETLE_CD→PM002/PM032/PM018/PM033/PM019) + DIM_REASON 해시 조인.
---    🔴 F 행에 한정. S 행 매핑 시 라벨 의미 역전 — 절대 금지.
---    ⚠️ 대표 1개로 축약하므로 복수사유 1.45% 소실. 사유분포분석은 SILVER 직접 조회.
--- ✅ W4(DEC-22, 2026-07-31): ML 파생 4종 배선.
+--    WARN: F 행에 한정. S 행 매핑 시 라벨 의미 역전 — 절대 금지.
+--    WARN: 대표 1개로 축약하므로 복수사유 1.45% 소실. 사유분포분석은 SILVER 직접 조회.
+--  W4(DEC-22, 2026-07-31): ML 파생 4종 배선.
 --    요건1 = AMT_INCREASE/DECREASE_CUM_CNT (월말까지 누적 증/감액 이력 횟수, CRM_MEMBER_AMT_CHANGE)
 --    요건3 = PAID_SPONSOR_BIZ_CNT·IS_MULTI_PAID_BIZ (그 달 납입 발생 사업수, 회비·PAY_AMT>0 한정)
---    🔴 정본 (건)=약정금액÷10,000 과 다른 실제 개수·횟수 — INCREASE_CNT(#151)·DECREASE_CNT(#38)와 혼용 금지(CONF-2).
---    ⚠️ 요건2(연속미납횟수)는 스파인 sparse(gap>1 3.94%·최대370개월)로 run-length 오판 → W4 제외, dense 스파인 선행 필요.
--- ⚠️ [O202 · 2026-10-06 사용자 결정] DEV_CNT = MSTR 개발(건) = 인정금액/10,000(FME 정본 주석 참조). 종전 「사건수」 폐기.
+--    WARN: 정본 (건)=약정금액÷10,000 과 다른 실제 개수·횟수 — INCREASE_CNT(#151)·DECREASE_CNT(#38)와 혼용 금지(CONF-2).
+--    WARN: 요건2(연속미납횟수)는 스파인 sparse(gap>1 3.94%·최대370개월)로 run-length 오판 → W4 제외, dense 스파인 선행 필요.
+-- WARN: [O202 · 2026-10-06 사용자 결정] DEV_CNT = MSTR 개발(건) = 인정금액/10,000(FME 정본 주석 참조). 종전 「사건수」 폐기.
 -- 순서9(G-1/G-2 해소): incremental+append+pre-hook TRUNCATE(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존, 데이터만 전체 갱신(멱등). append 라 unique_key 불요.
 -- 순서9-C(#80/DEC-4): UNPAID_FLAG_EOM/BOM — 미납 = PAY_STAT_CD IN ('F', NULL).
 {{ config(
@@ -41,9 +40,9 @@ with b as (
 
 -- [2026-08-03 O27/DEC-28] 회비 3분해용 회원유형 lookup.
 --   `CRM_PAYMENT_BILLING` 에는 회원유형 컬럼이 없어 마스터에서 가져온다.
---   🟢 fan-out 0: `CRM_MEMBER` 는 MEMBER_DK 유일(1,763,065행 = 1,763,065 distinct, 실측).
---   ⚠️ MEMBER_DK 의 'S' 접두로 유도하지 않는다 — 실제 컬럼이 있으면 컬럼을 쓴다(DEC-27 §17-D #1 교훈).
---   ⚠️ 키 컬럼을 `MT_MEMBER_DK` 로 개명한다 — `MEMBER_DK` 로 두면 billing 의 `group by MEMBER_DK` 가
+--    fan-out 0: `CRM_MEMBER` 는 MEMBER_DK 유일(1,763,065행 = 1,763,065 distinct, 실측).
+--   WARN: MEMBER_DK 의 'S' 접두로 유도하지 않는다 — 실제 컬럼이 있으면 컬럼을 쓴다(DEC-27 §17-D #1 교훈).
+--   WARN: 키 컬럼을 `MT_MEMBER_DK` 로 개명한다 — `MEMBER_DK` 로 두면 billing 의 `group by MEMBER_DK` 가
 --      별칭(`MBER_NO as MEMBER_DK`) 대신 조인된 컬럼으로 해석돼 컴파일이 깨진다(실측 확인).
 mtype as (
     select MEMBER_DK as MT_MEMBER_DK, MEMBER_TYPE as MT_MEMBER_TYPE from {{ ref('CRM_MEMBER') }}
@@ -58,25 +57,25 @@ billing as (
         SUM(RQEST_AMT)                                as BILLED_AMT,
         -- ── [2026-08-03 O27/DEC-28] 회비 3분해 (정본 지표 #66·#67·#68) ──────────────
         -- 정본 정의(02_지표사전 공통:91~93):
-        --   #66 정기회비          = 정기회원이 **정기후원사업으로** 납입하는 회비
+        --   #66 정기회비 = 정기회원이 **정기후원사업으로** 납입하는 회비
         --   #67 정기회원 일시회비 = 정기회원이 **정기후원사업 외 비지정(기타·국내사업·해외사업)** 으로 납부하는 일시회비
         --   #68 일시회원 일시회비 = **일시회원이 납부하는 회비**(구분 없이 전부)
         -- 원천 = `MBRFEE_DIV_CD` = **PM010** 4종: E=정기 · G=선물금 · I=일시 · U=긴급구호
         --   3원 대조(2026-08-03 실측): PM010 사전 4종 × 실적재 distinct 4종 = **4/4 일치**
-        -- 🟢 회원유형×회비구분 교차 실측이 매핑을 확정한다 — 경계가 완전히 깨끗하다:
+        --  회원유형×회비구분 교차 실측이 매핑을 확정한다 — 경계가 완전히 깨끗하다:
         --   FDRM 은 **항상 값이 있고**(E 46,267,706 · G 82,607 · I 38,617 · U 2,690)
         --   ONCE 는 **항상 NULL**(1,129,938) · 마스터부재 314행도 NULL
         --   ⇒ NULL = 일시회원 이라는 판정이 실측으로 성립한다(추론 아님).
-        -- 🔴 G(선물금)·U(긴급구호)는 3컬럼 어디에도 넣지 않는다 — 정본 #67 이 열거한
+        -- WARN: G(선물금)·U(긴급구호)는 3컬럼 어디에도 넣지 않는다 — 정본 #67 이 열거한
         --    "기타·국내사업·해외사업" 에 선물금·긴급구호가 없고, 선물금은 **별도 지표**가 있다
         --    (#90 선물금참여(명)·#91 선물금참여(원) → `FACT_MESSAGE_DISPATCH.GIFT_PART_*`).
         --    긴급구호는 대응 지표가 없다. 억지로 귀속시키면 정의 창작이다(DEC-17-B).
-        -- ⚠️ 따라서 **3컬럼 합 ≠ PAID_FEE** 다. 검산(2026-08-03 · 본 모델 실행 결과로 확인):
+        -- WARN: 따라서 **3컬럼 합 ≠ PAID_FEE** 다. 검산(2026-08-03 · 본 모델 실행 결과로 확인):
         --    #66 759,530,956,167 + #67 5,365,351,828 + #68 126,337,814,788 = 891,234,122,783
         --    본 모델 PAID_FEE 합 895,178,309,108 − 891,234,122,783 = **3,944,186,325**
         --      = G(선물금) 3,408,190,000 + U(긴급구호) 495,788,354 + 마스터부재 74,880,671
         --        **− 불량 5행 34,672,700**(아래 `MBER_NO is not null` 로 제외되는 행) → 정확히 일치.
-        --    ⚠️ SILVER 원표 전체 합(895,212,981,808)과 다르다 — 그 차이가 곧 불량 5행이다.
+        --    WARN: SILVER 원표 전체 합(895,212,981,808)과 다르다 — 그 차이가 곧 불량 5행이다.
         --       전표 기준으로 검산하면 34,672,700 만큼 어긋나므로 **모델 출력 기준으로 검산**할 것.
         SUM(CASE WHEN m.MT_MEMBER_TYPE = 'FDRM' AND b.MBRFEE_DIV_CD = 'E'
                  THEN b.PAY_AMT END)                   as REGULAR_FEE,
@@ -85,20 +84,20 @@ billing as (
         SUM(CASE WHEN m.MT_MEMBER_TYPE = 'ONCE'
                  THEN b.PAY_AMT END)                   as ONETIME_ONETIME_FEE,
         -- ── [2026-08-05 O40] 납부율·미납금액 모집단 일치 컬럼 2종 신설 ──────────────
-        -- 🔴 결함: `PAID_FEE`(=SUM(PAY_AMT))는 **회비 ∪ 기부금** 이고 `BILLED_AMT`(=SUM(RQEST_AMT))는
+        -- WARN: 결함: `PAID_FEE`(=SUM(PAY_AMT))는 **회비 ∪ 기부금** 이고 `BILLED_AMT`(=SUM(RQEST_AMT))는
         --    **회비뿐**이다. 기부금 원천 `TM_PM_DNTN_DTLS` 에는 청구 컬럼이 아예 없다
         --    (SILVER 실측: PAYMENT_TYPE='기부금' 1,130,252행 전건 `RQEST_AMT` NULL · `MBRFEE_MT` 도 NULL).
         --    → 두 값을 나누면 분자에만 기부금이 더해져 납부율이 구조적으로 과대해진다(P63 모집단 불일치).
         --    무증상이 아니라 **이미 사고가 났다**: 전 기간 `PAYMENT_RATE` **100.36%** · `TOTAL_UNPAID_AMT`
         --    **−3,218,518,220(음수)** 이 실측된다. 2025 는 93.98%(실제 85.65%)로 그럴싸해 더 위험했다.
-        -- 🟢 판별자는 `PAYMENT_TYPE` 이다 — 실측으로 정확하다:
+        --  판별자는 `PAYMENT_TYPE` 이다 — 실측으로 정확하다:
         --    PAYMENT_TYPE='회비' 46,391,620행 = `MBRFEE_DIV_CD` 비NULL 46,391,620행 (**정확 일치**)
         --    PAYMENT_TYPE='기부금' 1,130,252행 = `MBRFEE_DIV_CD` 비NULL 0행
-        --    ⚠️ `ONETIME_ONETIME_FEE`(회원유형 ONCE 기준)로 빼는 방식은 **쓰지 않는다** — 축이 다르고
+        --    WARN: `ONETIME_ONETIME_FEE`(회원유형 ONCE 기준)로 빼는 방식은 **쓰지 않는다** — 축이 다르고
         --       마스터부재 314행이 어느 쪽에도 안 들어가 정의가 새어 나간다(근사 40,000원 어긋남 실측).
         SUM(CASE WHEN b.PAYMENT_TYPE = '회비' THEN b.PAY_AMT END)  as PAID_FEE_BILLABLE,
         -- 정본 DEC-3 미납 정의 = `PAY_STAT_CD IN ('F', NULL)` 인 **청구액**. 차감식(청구−납입)을 폐기한다.
-        --   ⚠️ 분자는 `RQEST_AMT`(청구액)다 — 미납은 "청구했으나 안 들어온 금액"이므로 PAY_AMT 가 아니다.
+        --   WARN: 분자는 `RQEST_AMT`(청구액)다 — 미납은 "청구했으나 안 들어온 금액"이므로 PAY_AMT 가 아니다.
         --   시뮬레이션(2026-08-05 · 본 모델 MONTH_KEY 로직 재현): 2025 = **29,251,314,636** 으로
         --   BRONZE 직접 집계값과 **정확히 일치**(차감식은 12,335,580,090 = 2.37배 과소였다).
         SUM(CASE WHEN {{ gn_is_unpaid('b.PAY_STAT_CD') }}
@@ -147,7 +146,7 @@ reason_rep as (
 ),
 
 -- W4 요건3(DEC-22): 그 달 실제 납입한 후원사업 수 (회비 한정, PAY_AMT>0).
--- 🔴 약정 보유 사업수 아님 — 납입 발생 사업수. 정본 (건)=금액/10,000 과 무관한 실제 개수.
+-- WARN: 약정 보유 사업수 아님 — 납입 발생 사업수. 정본 (건)=금액/10,000 과 무관한 실제 개수.
 paid_biz as (
     select
         COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MBRFEE_MT)') }}, {{ month_key_clamp("TRY_TO_NUMBER(TO_CHAR(PAY_DE,'YYYYMM'))") }}, 0) as MONTH_KEY,
@@ -162,15 +161,15 @@ paid_biz as (
 ),
 
 -- [2026-08-20 O92 / DEC-41] 월×회원 대표 후원사업 — 단일 확정 월만 SK 배선, 다중은 센티넬 0 + 플래그.
--- 🔴 축 주의 — 위 `paid_biz`(W4 요건3)와 **모집단이 다르다.** 두 플래그가 어긋나는 것은 결함이 아니다:
---    · `IS_MULTI_PAID_BIZ`     = 회비 한정 + `PAY_AMT>0` ⇒ 「그 달 실제 **납입이 발생한** 사업이 여럿인가」
---    · `IS_MULTI_SPONSORSHIP`  = 청구·기부금 포함 전 행     ⇒ 「그 달 회비 행이 **귀속된** 사업이 여럿인가」
+-- WARN: 축 주의 — 위 `paid_biz`(W4 요건3)와 **모집단이 다르다.** 두 플래그가 어긋나는 것은 결함이 아니다:
+--    · `IS_MULTI_PAID_BIZ` = 회비 한정 + `PAY_AMT>0` ⇒ 「그 달 실제 **납입이 발생한** 사업이 여럿인가」
+--    · `IS_MULTI_SPONSORSHIP` = 청구·기부금 포함 전 행 ⇒ 「그 달 회비 행이 **귀속된** 사업이 여럿인가」
 --    ⇒ 미납만 있는 월은 앞이 0/FALSE 인데 뒤는 TRUE 일 수 있다. 같은 것을 다르게 재는 것이 아니라 다른 질문이다.
--- 🟢 `MIN(SPNSR_BSNS_ID)` 는 대표 선정이 아니다 — `SPONSOR_BIZ_CNT = 1` 일 때만 쓰므로 그 값이 유일값이다.
+--  `MIN(SPNSR_BSNS_ID)` 는 대표 선정이 아니다 — `SPONSOR_BIZ_CNT = 1` 일 때만 쓰므로 그 값이 유일값이다.
 --    다중 월에서는 이 값을 **쓰지 않는다**(대표를 고르지 않는 것이 DEC-41 의 내용이다).
--- 🟢 DIM_SPONSORSHIP 직접 조인으로 FK 무결성 보장(해시 독립계산 시 orphan 위험 — reason_rep 와 동일 패턴).
+--  DIM_SPONSORSHIP 직접 조인으로 FK 무결성 보장(해시 독립계산 시 orphan 위험 — reason_rep 와 동일 패턴).
 --    fan-out 0 근거 = `SPONSORSHIP_BK` 유일성 **실측 확인**(중복 초과 0 · NULL 0 · 2026-08-20 O92-B).
---    🔴 R2-6: 카디널리티 수치는 여기 적지 않는다 — 정본은 `20_issue/30_설계_의사결정.md` §28-D 다.
+--    WARN: R2-6: 카디널리티 수치는 여기 적지 않는다 — 정본은 `20_issue/30_설계_의사결정.md` §28-D 다.
 --    (O92 가 이 자리에 미실측 수치 「50」을 적었고 실측은 51행이었다 ⇒ 수치를 코드에 두면 이렇게 틀린다.)
 sponsor_rep as (
     select
@@ -193,10 +192,10 @@ sponsor_rep as (
         on ds.SPONSORSHIP_BK = agg.SOLE_SPNSR_BSNS_ID
 ),
 
--- 🆕 [2026-10-14 O225-C] 월×회원 「그 달 후원 캠페인」 — 사용자 결정 O225-B · DEC-41 패턴을 그대로 따른다.
+--  [2026-10-14 O225-C] 월×회원 「그 달 후원 캠페인」 — 사용자 결정 O225-B · DEC-41 패턴을 그대로 따른다.
 --   청구 행별 캠페인 = macros/billing_campaign_asof.sql(정의 지점 하나 · FACT_PAYMENT_BILLING_STATUS 와 공유).
 --   · 그 달 캠페인이 **하나면** CAMPAIGN_SK 배선 · 여럿이면 0(센티넬) + IS_MULTI_CAMPAIGN=TRUE + CAMPAIGN_CNT.
---   · 🔴 대표 1개를 고르지 않는다 — 다중 월이 금액의 10.5%(98,677,368,326원 · xh20001 dry-run)라 임의 귀속은
+--   · WARN: 대표 1개를 고르지 않는다 — 다중 월이 금액의 10.5%(98,677,368,326원 dry-run)라 임의 귀속은
 --      캠페인별 회비를 왜곡한다. 캠페인별 정확 금액은 청구 grain 팩트(FACT_PAYMENT_BILLING_STATUS)가 담는다.
 --   · CAMPAIGN_CNT 는 캠페인이 귀속된 청구 행만 센다(캠페인 미귀속 청구 행은 판정에서 빠진다).
 cmpgn_rep as (
@@ -242,7 +241,7 @@ fme_rollup as (
         SUM(STOP_CNT)                                 as STOP_CNT,      -- 중단 사건수 합
         IFF(SUM(STOP_CNT) > 0, 1, 0)                   as STOP_MEMBERS,
         -- [O183] 개발구분(#121)·증액(#33)·재후원(#34) 월 판정 재료. 개발 사건(1·2·4)만 본다.
-        --   🔴 [O202] DEV_CNT 가 금액 기반으로 바뀌었으므로 사건 판정은 DVLP_DIV_CD 로 한다(종전 결과 보존).
+        --   WARN: [O202] DEV_CNT 가 금액 기반으로 바뀌었으므로 사건 판정은 DVLP_DIV_CD 로 한다(종전 결과 보존).
         COUNT(DISTINCT IFF(DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}), DVLP_DIV_CD, NULL)) as DEV_TYPE_KINDS,
         MAX(IFF(DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}), DVLP_DIV_CD, NULL))            as DEV_TYPE_SOLE,
         BOOLOR_AGG(DVLP_DIV_CD = {{ gn_code('DEV_INCREASE') }})                       as HAS_INCREASE_DEV,
@@ -253,11 +252,11 @@ fme_rollup as (
 ),
 
 -- [O183] 회원 최초가입일(#28 「최초가입일(회원번호 생성일)」) — 후원기간(#127·128)·신규기존(#113)의 기준일.
---   🔴 [O183 자기검토 정정] 1차 배선은 「최초 개발일」 단독이었다 ⇒ 정본 #28 문구(회원번호 생성일)와 어긋났고
+--   WARN: [O183 자기검토 정정] 1차 배선은 「최초 개발일」 단독이었다 ⇒ 정본 #28 문구(회원번호 생성일)와 어긋났고
 --      개발 이력이 없는 회원(청구행 보유)의 기준일이 NULL 로 빠졌다. ⇒ LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일).
 --      등록일 단독도 안 된다 — 등록일이 첫 청구보다 늦은 회원이 다수(레코드 이관 시각 혼입 · 수치 = DEC-55).
 --      가입은 첫 납입보다 늦을 수 없으므로 첫 청구월을 하한 후보로 넣는다(FME member_first_dev 와 같은 식).
---   🔴 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 후보에서 제외(「채워짐」≠「유효함」 · O182 ㉡).
+--   WARN: 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 후보에서 제외(「채워짐」≠「유효함」 · O182 ㉡).
 member_first as (
     select MEMBER_DK, MIN(D) as FIRST_DEV_DATE
     from (
@@ -314,20 +313,20 @@ join_basis as (
 --   #51 = 조회년월 기준 해당월 활동회원 (활동 + 미납1~미납5 포함 = 상태코드 1~11)
 --   #52 = 월 활동회원의 **전체후원사업금액 / 10,000**
 --
--- 🟢 판정축을 상태코드가 아니라 **후원사업 미중단 보유**로 잡았다. 이유 3가지:
+--  판정축을 상태코드가 아니라 **후원사업 미중단 보유**로 잡았다. 이유 3가지:
 --   ① 상태코드는 **현재값**이라 과거 월을 as-of 로 평가할 수 없다(소급 적용은 과거 활동회원 창작이다).
 --   ② 상태이력(`CRM_MEMBER_STATUS_HIST`)은 회원 커버리지가 부분이다 — 이력 없는 회원이
 --      「무변경」인지 「미기록」인지 원천이 구분해 주지 않는다.
 --   ③ 후원사업 중단일은 **사업 단위로 완비**돼 있고, 중단 기록의 부재는 결측이 아니라
 --      「중단하지 않았다」는 정보다 ⇒ 커버리지 공백이 원리적으로 없다.
---   🔴 그리고 이 축이 #52(건)의 분자(`SPNSR_AMT`)를 **같은 판정 안에서** 제공한다 —
+--   WARN: 그리고 이 축이 #52(건)의 분자(`SPNSR_AMT`)를 **같은 판정 안에서** 제공한다 —
 --      상태코드 축으로는 (건)을 만들 수 없다(금액이 상태에 붙어 있지 않다).
---   🟢 현업 앵커(코드 1~11 현재값)와의 대조 결과는 `20_issue/30_설계_의사결정.md` §29 에 둔다(R2-6).
+--    현업 앵커(코드 1~11 현재값)와의 대조 결과는 `20_issue/30_설계_의사결정.md` §29 에 둔다(R2-6).
 --
--- ⚠️ MONTH_KEY=0(Unknown 월)은 as-of 를 정의할 수 없다 ⇒ 활동 measure 를 **NULL** 로 둔다.
---    🔴 0 으로 두지 않는다 — 0 은 「활동 없음」이고 NULL 은 「판정 불가」다. 이 구분이 이 작업의 출발점이었다
+-- WARN: MONTH_KEY=0(Unknown 월)은 as-of 를 정의할 수 없다 ⇒ 활동 measure 를 **NULL** 로 둔다.
+--    WARN: 0 으로 두지 않는다 — 0 은 「활동 없음」이고 NULL 은 「판정 불가」다. 이 구분이 이 작업의 출발점이었다
 --       (전건 0 이 *"활동회원 0명"* 으로 에러 없이 조회되던 문제).
--- ⚠️ (건)은 **비가산 축이 아니다** — 회원 grain 금액/10,000 이므로 회원 간 합산은 정당하다.
+-- WARN: (건)은 **비가산 축이 아니다** — 회원 grain 금액/10,000 이므로 회원 간 합산은 정당하다.
 --    다만 `ACTIVE_CNT` 와 `ACTIVE_MEMBERS` 를 **더하지 말 것**(단위가 다르다).
 active_asof as (
     select
@@ -361,7 +360,7 @@ active_asof as (
 ),
 
 -- W4 요건1 step2: 월말까지 누적 증액/감액 횟수 (running total).
--- 🟢 sparse 스파인에서도 정확 — 직전 행을 참조하지 않고 "그 월 이하 전체 합"이라 결측월 영향 없음.
+--  sparse 스파인에서도 정확 — 직전 행을 참조하지 않고 "그 월 이하 전체 합"이라 결측월 영향 없음.
 --    (요건2 연속미납은 반대로 직전 행 의존이라 gap 3.94%에서 오판 → W4 범위 제외, dense 스파인 선행 필요)
 -- 축 = spine ∪ amt_month: 스파인에 없는 월의 변경 이력도 누적에 반영되도록 union 후 running sum.
 amt_cum as (
@@ -383,7 +382,7 @@ joined as (
     select
         sp.MONTH_KEY,
         sp.MEMBER_DK,
-        COALESCE(cr.CAMPAIGN_SK, 0) as CAMPAIGN_SK,   -- 🆕 [O225-C] 그 달 후원 캠페인(단일 월만 · 다중·미귀속 0)
+        COALESCE(cr.CAMPAIGN_SK, 0) as CAMPAIGN_SK,   -- [O225-C] 그 달 후원 캠페인(단일 월만 · 다중·미귀속 0)
         -- [2026-08-20 O92 / DEC-41] 단일 확정 월만 배선. 다중 월·후원사업 부재 월은 0(센티넬) 유지.
         COALESCE(sr.SPONSORSHIP_SK, 0) as SPONSORSHIP_SK,
         0 as PAYMENT_SK,
@@ -397,13 +396,13 @@ joined as (
              WHEN bl.UNPAID_FLAG_EOM   THEN aa.ACTIVE_BIZ_AMT / 10000
              ELSE 0 END                                          as UNPAID_CNT,
         -- ═══ [2026-08-20 O93] 활동 계열 실배선 — 종전 `0 as …` 하드코딩 폐기 ═══════════
-        -- 🔴 NULL vs 0 의 의미를 분리한다: `active_asof` 미매칭(= Unknown 월이거나 후원사업 이력 없음)은
+        -- WARN: NULL vs 0 의 의미를 분리한다: `active_asof` 미매칭(= Unknown 월이거나 후원사업 이력 없음)은
         --    **NULL**(판정 불가/해당 없음)이고, 매칭됐지만 미중단 사업이 없으면 **0**(활동 아님)이다.
         --    종전에는 둘 다 0 이라 *"활동회원 0명"* 이 정상값처럼 반환됐다.
         aa.ACTIVE_BIZ_AMT / 10000            as ACTIVE_CNT,        -- #52 (건) = 활동 후원사업금액/10,000
         IFF(aa.ACTIVE_BIZ_CNT > 0, 1, 0)     as ACTIVE_MEMBERS,    -- #51 (명) = 월말 활동 1/0 (SUM 시 회원수)
-        -- ~~🔴 누계 2종은 채우지 않는다 — 정본에 `활동 누계`의 정의가 없다.~~
-        -- 🔴 [O183 정정] 위 판정은 틀렸다 — 정본 `02_지표사전 공통.md` #158·#159 에 정의가 있다:
+        -- ~~WARN: 누계 2종은 채우지 않는다 — 정본에 `활동 누계`의 정의가 없다.~~
+        -- WARN: [O183 정정] 위 판정은 틀렸다 — 정본 `02_지표사전 공통.md` #158·#159 에 정의가 있다:
         --    #158 = "월 마감 시 활동하고 있는 사람들의 당해년도 명수 누계" · #159 = "… 약정금액 ÷ 10,000원 누계".
         --    ⇒ 값은 아래 최종 select 의 당해년도 running sum 으로 채운다(여기는 자리표시 · EXCLUDE 대상).
         CAST(NULL AS NUMBER(18,4)) as ACTIVE_CUM_CNT,
@@ -416,19 +415,19 @@ joined as (
         -- [O183] #38 감액(건) = 감액금액/10,000 · CHURN_CNT(신규#20 이탈) = (중단 약정금액 + 감액금액)/10,000.
         COALESCE(am.DEC_AMT, 0) / 10000                                          as DECREASE_CNT,
         (COALESCE(sa.STOP_BIZ_AMT, 0) + COALESCE(am.DEC_AMT, 0)) / 10000        as CHURN_CNT,
-        -- 🆕 [O202] #35 중단(건) = 그 달 중단된 후원사업의 약정금액 ÷ 10,000(정본 「후원중단한 회원의 총 개발 건 = 전체 후원금액/10,000」).
-        --   🔴 왜 신설하나 = DEV_CNT 가 금액 기준(MSTR)으로 바뀌어 공54~57 의 분자 STOP_CNT(사건 수)와 단위가 어긋났다.
+        --  [O202] #35 중단(건) = 그 달 중단된 후원사업의 약정금액 ÷ 10,000(정본 「후원중단한 회원의 총 개발 건 = 전체 후원금액/10,000」).
+        --   WARN: 왜 신설하나 = DEV_CNT 가 금액 기준(MSTR)으로 바뀌어 공54~57 의 분자 STOP_CNT(사건 수)와 단위가 어긋났다.
         --      STOP_CNT(사건 수)는 그대로 둔다(TOTAL_STOP_CNT 소비처 보존) — 비율의 분자는 이 컬럼이다.
         COALESCE(sa.STOP_BIZ_AMT, 0) / 10000                                     as STOP_AMT_CNT,
         aa.YEAR_START_BIZ_AMT / 10000        as YEAR_START_ACTIVE_CNT,   -- 연초(YYYY01) as-of
         aa.YEAR_END_BIZ_AMT   / 10000        as YEAR_END_ACTIVE_CNT,     -- 연말(YYYY12) as-of
-        -- 🟢 당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.
+        --  당월말 = `ACTIVE_CNT` 와 같은 값이다 — 판정 자체가 as-of 월말이므로 축이 하나다.
         --    두 컬럼을 남겨 두는 이유는 DDL 구조 보존(소비 쿼리 호환)이다. 값 불일치가 아니다.
         aa.ACTIVE_BIZ_AMT / 10000            as MONTH_END_ACTIVE_CNT,
         aa.PREV_BIZ_AMT   / 10000            as PREV_MONTH_END_ACTIVE_CNT,  -- DEC-19 (d) ADD_MONTHS(-1)
         -- [O183] #84 회원상태별 미납(건) = 미납회비금액(DEC-3 정본 UNPAID_BILLED_AMT)/10,000.
         --   「회원상태별」은 조회 시 회원상태 차원으로 나누는 축이다(값은 월×회원 미납회비 환산).
-        --   🔴 #83 캠페인별 미납은 [O225-C] 이후 CAMPAIGN_SK 축이 생겼으나 다중 캠페인 월(0)의 귀속 규칙이 미정이라
+        --   WARN: #83 캠페인별 미납은 [O225-C] 이후 CAMPAIGN_SK 축이 생겼으나 다중 캠페인 월(0)의 귀속 규칙이 미정이라
         --      이 컬럼은 0 유지 — 캠페인별 미납 금액은 FACT_PAYMENT_BILLING_STATUS(청구 grain · 정확 귀속)로 답한다.
         0 as CAMPAIGN_UNPAID_CNT,
         bl.UNPAID_BILLED_AMT / 10000   as STATUS_UNPAID_CNT,
@@ -441,7 +440,7 @@ joined as (
         bl.BILLED_AMT,
         bl.PAID_FEE_BILLABLE          as PAID_FEE_BILLABLE,   -- [O40] 회비만 납입액(납부율 분자 정본)
         bl.UNPAID_BILLED_AMT          as UNPAID_BILLED_AMT,   -- [O40] DEC-3 정본 미납 청구액
-        0 as INBOUND_CALL_CNT, 0 as TS_CALL_CNT,       -- ⚠️ 비-CRM 수기 미수령(C-8)
+        0 as INBOUND_CALL_CNT, 0 as TS_CALL_CNT,       -- WARN: 비-CRM 수기 미수령(C-8)
         -- ═══ [O183] 속성 슬롯 실배선 — 종전 전건 NULL/0 상수 폐기 ═══════════════════
         -- #121 개발구분 = 그 달 개발 사건의 구분코드(MM015)가 **하나로 확정될 때만** 채운다(DEC-41 패턴).
         CASE WHEN fr.DEV_TYPE_KINDS = 1 THEN fr.DEV_TYPE_SOLE END   as DEV_TYPE,
@@ -474,21 +473,21 @@ joined as (
              ELSE '기존' END                                        as NEW_EXISTING_FLAG,
         fr.MONTH_STOP_DATE                                          as H_MONTH_STOP_DATE,   -- 보조(EXCLUDE)
         bl.UNPAID_FLAG_EOM,
-        -- W4(DEC-22): ML 전용 파생 4종. 🔴 정본 (건)=금액/10,000 과 다른 실제 개수·횟수 (CONF-2 주의).
+        -- W4(DEC-22): ML 전용 파생 4종. WARN: 정본 (건)=금액/10,000 과 다른 실제 개수·횟수 (CONF-2 주의).
         COALESCE(ac.AMT_INCREASE_CUM_CNT, 0)           as AMT_INCREASE_CUM_CNT,
         COALESCE(ac.AMT_DECREASE_CUM_CNT, 0)           as AMT_DECREASE_CUM_CNT,
         -- HAS_BILLING=FALSE(개발/중단 전용 월)는 NULL — 0으로 채우면 "납입 사업 0개"로 오독되어 완납률 왜곡.
         CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) END  as PAID_SPONSOR_BIZ_CNT,
         CASE WHEN bl.MEMBER_DK IS NOT NULL THEN COALESCE(pb.PAID_SPONSOR_BIZ_CNT, 0) > 1 END as IS_MULTI_PAID_BIZ,
         -- [2026-08-20 O92 / DEC-41] 그 달 귀속 후원사업이 여럿인가 = SPONSORSHIP_SK 가 0 인 이유의 구분자.
-        --   🔴 0 에는 두 사유가 섞인다: ㉠ 다중(여기 TRUE) ㉡ 회비 행에 후원사업 자체가 없음(FALSE).
+        --   WARN: 0 에는 두 사유가 섞인다: ㉠ 다중(여기 TRUE) ㉡ 회비 행에 후원사업 자체가 없음(FALSE).
         --      플래그 없이 0 만 보면 두 사유를 가를 수 없다 — 그것이 이 컬럼의 존재 이유다(감사 가능성).
-        --   ⚠️ HAS_BILLING=FALSE(개발/중단 전용 월)는 FALSE 다 — 회비 행이 없으니 다중일 수 없다.
+        --   WARN: HAS_BILLING=FALSE(개발/중단 전용 월)는 FALSE 다 — 회비 행이 없으니 다중일 수 없다.
         COALESCE(sr.SPONSOR_BIZ_CNT > 1, FALSE)        as IS_MULTI_SPONSORSHIP,
         -- A1: 출처 플래그. billing 매칭 행 존재 여부(billing MEMBER_DK 는 group 키라 매칭 시 non-null).
         IFF(bl.MEMBER_DK IS NOT NULL, TRUE, FALSE)     as HAS_BILLING,
         {{ gold_meta('CRM') }},
-        -- 🆕 [2026-10-14 O225-C] CAMPAIGN_SK 가 0 인 이유의 구분자(IS_MULTI_SPONSORSHIP 와 같은 설계) · 06_DDL 맨 끝 append.
+        --  [2026-10-14 O225-C] CAMPAIGN_SK 가 0 인 이유의 구분자(IS_MULTI_SPONSORSHIP 와 같은 설계) · 06_DDL 맨 끝 append.
         --   회비 행이 없는 월(HAS_BILLING=FALSE)은 CAMPAIGN_CNT NULL · IS_MULTI_CAMPAIGN FALSE.
         cr.CAMPAIGN_CNT                                as CAMPAIGN_CNT,
         COALESCE(cr.CAMPAIGN_CNT > 1, FALSE)           as IS_MULTI_CAMPAIGN
@@ -513,7 +512,7 @@ select
     -- #80 월초(BOM) = 전월말(EOM) 상태. 회원별 월순 LAG(union 스파인 전체 월 기준; 결측월은 직전 존재월 근사).
     LAG(j.UNPAID_FLAG_EOM) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY)  as UNPAID_FLAG_BOM,
     -- [O183] #159·#158 활동누계 = 당해년도 1월부터 그 달까지의 활동(건)·활동(명) 누계. 판정 불가 월은 NULL.
-    --   ⚠️ 스파인이 sparse 라 회비·사건이 없는 월은 누계에 들어오지 않는다(활동 회원은 대개 매월 청구행이 있다).
+    --   WARN: 스파인이 sparse 라 회비·사건이 없는 월은 누계에 들어오지 않는다(활동 회원은 대개 매월 청구행이 있다).
     CASE WHEN j.ACTIVE_CNT IS NOT NULL THEN
         SUM(j.ACTIVE_CNT) OVER (PARTITION BY j.MEMBER_DK, FLOOR(j.MONTH_KEY / 100) ORDER BY j.MONTH_KEY
                                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as ACTIVE_CUM_CNT,
@@ -525,7 +524,7 @@ select
         MAX(IFF(j.MONTH_KEY > 0, j.H_MONTH_STOP_DATE, NULL)) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY
                                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as STOP_DATE,
     -- [O183] #129 납입개월수 = **최초가입일 이후** 그 달까지 정기납입(REGULAR_FEE>0)이 있었던 달 수. 가입 기준 없는 월 NULL.
-    --   🔴 [O183 자기검토 정정] 1차는 가입 전 월까지 셌다 ⇒ 납입개월수 > 후원기간 인 행이 생겼다.
+    --   WARN: [O183 자기검토 정정] 1차는 가입 전 월까지 셌다 ⇒ 납입개월수 > 후원기간 인 행이 생겼다.
     CASE WHEN j.JOIN_DATE IS NOT NULL THEN
         SUM(IFF(j.JOIN_DATE IS NOT NULL AND j.REGULAR_FEE > 0, 1, 0)) OVER (PARTITION BY j.MEMBER_DK ORDER BY j.MONTH_KEY
                                 ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) END      as PAID_MONTHS

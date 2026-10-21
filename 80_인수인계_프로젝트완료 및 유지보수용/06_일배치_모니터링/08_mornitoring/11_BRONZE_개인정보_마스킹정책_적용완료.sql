@@ -1,11 +1,11 @@
--- 🟢 적용 완료 — 2026-10-20 O247 · 개발계 IW20760 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · 부착 12 컬럼 · ADMIN 원문 · DBT(보조 롤 끔) *** 확인 · 운영계는 같은 파일 [0]~[3] 실행
+--  적용 완료 — 2026-10-20 O247 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · 부착 12 컬럼 · ADMIN 원문 · DBT(보조 롤 끔) *** 확인 · 운영계는 같은 파일 [0]~[3] 실행
 -- =====================================================================
--- 11_BRONZE_개인정보_마스킹정책 — 🔴 미실행(사용자 승인 후 GN_DW_ADMIN 이 실행)
+-- 11_BRONZE_개인정보_마스킹정책 — WARN: 미실행(사용자 승인 후 GN_DW_ADMIN 이 실행)
 -- 작성 = 2026-10-20 O247 · 결정 = A8-28(85_실제 인수인계 문서) · 드리프트 DR-30
 -- 목적 = BRONZE_CRM 원천의 이름·휴대폰·연락처 12 컬럼을 GN_DW_ADMIN 이상만 원문으로 보게 한다.
 --        스키마 권한은 그대로 둔다(ANALYST·ENGINEER·DBT 의 BRONZE SELECT 유지 · 값만 '***').
 -- =====================================================================
--- [결정 근거 · 2026-10-20 IW20760 실측]
+-- [결정 근거 · 2026-10-20 이전 계정 실측]
 --   · 값 형태 = 휴대폰 형식 99.8~99.99%(MBTLNUM·APPLCNT_MBTLNUM) · 한글 이름 97.6~98%(PAYER_NM·APPLCNT_NM)
 --     · TM_PM_DNTN_DTLS.PAYER_NM 은 법인명·개인 이름 혼재(한글 이름 형태 17%) — 개인 이름이 있으므로 대상
 --     · 원천에서 이미 '*' 로 가려진 값 = 컬럼당 0~45건 ⇒ 사실상 원문 적재
@@ -75,7 +75,7 @@ ORDER BY 1, 2;
 SELECT COUNT_IF(MBTLNUM = '***') AS MASKED_CNT, COUNT(MBTLNUM) AS NON_NULL_CNT
 FROM GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO;          -- 기대 MASKED_CNT = 0
 
---   ③ DBT 는 가려진다 — 🔴 보조 롤을 먼저 끈다
+--   ③ DBT 는 가려진다 — WARN: 보조 롤을 먼저 끈다
 USE SECONDARY ROLES NONE;
 USE ROLE GN_DW_DBT;
 SELECT COUNT_IF(MBTLNUM = '***') AS MASKED_CNT, COUNT(MBTLNUM) AS NON_NULL_CNT
@@ -83,7 +83,7 @@ FROM GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO;          -- 기대 MASKED_CNT = NON_NULL
 USE ROLE GN_DW_ADMIN;
 USE SECONDARY ROLES ALL;
 
---   ④ 👤 dbt 회귀 = 사용자가 `dbt build` 1회 실행 → ERROR 0 · SKIP 0(A6 Q01)
+--   ④ MANUAL: dbt 회귀 = 사용자가 `dbt build` 1회 실행 → ERROR 0 · SKIP 0(A6 Q01)
 
 -- [9] 롤백
 -- ALTER TABLE GN_DW.BRONZE_CRM.TM_PM_SETLE_INFO MODIFY
@@ -97,4 +97,3 @@ USE SECONDARY ROLES ALL;
 -- ALTER TABLE GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT MODIFY COLUMN PAYER_NM UNSET MASKING POLICY;
 -- DROP MASKING POLICY IF EXISTS GN_DW.SECURITY.MP_PII_STRING;
 
--- _Co-authored with CoCo_

@@ -1,11 +1,10 @@
 -- FACT_AD_DIGITAL: 광고성과 위성 — 디지털(DGT) 고유속성. 순서9-I 신설(DEC-8).
--- Co-authored with CoCo
 -- grain: AD_PERF_DK — 코어 FACT_AD_PERFORMANCE 와 **1:1**(디지털 행만 존재, 실측 197,686행).
--- ⚠️ 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_DIGITAL d USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
--- ⚠️ `_SRC` = 대행사가 계산해 넘긴 파생값(DEC-9 · 설계 §3-A-3). 목적은 **대조**다.
+-- WARN: 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_DIGITAL d USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
+-- WARN: `_SRC` = 대행사가 계산해 넘긴 파생값(DEC-9 · 설계 §3-A-3). 목적은 **대조**다.
 --    DW 는 재계산하지 않고 원천값 그대로 보존하며, SV 가 base measure 로 별도 재계산한다.
 --    전량 **N(비가산)** — 비율·단가이므로 SUM/AVG 재합산 금지. 집계는 base 재계산값 사용.
--- ⚠️ AD_TYPE_NM(원천 광고유형명)은 코어 degen `AD_SOURCE_TYPE`(DIGITAL/VIDEO/REBROADCAST)과 **다른 개념**이다.
+-- WARN: AD_TYPE_NM(원천 광고유형명)은 코어 degen `AD_SOURCE_TYPE`(DIGITAL/VIDEO/REBROADCAST)과 **다른 개념**이다.
 --    코어 AD_SOURCE_TYPE = 원천 테이블 출처축 / 여기 AD_TYPE_NM = 대행사 표기 광고유형 라벨.
 --    DIM_AD_CREATIVE.AD_TYPE(소재 광고유형)과도 별개 — 3자 혼동 주의.
 {{ config(

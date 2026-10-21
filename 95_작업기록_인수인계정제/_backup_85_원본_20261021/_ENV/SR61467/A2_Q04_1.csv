@@ -1,0 +1,13 @@
+# doc_id: A2 · as_of: 2026-10-20 15:38:59.410 -0700 · account: SR61467 · query: Q04-1 GN_DW 객체 수(분모) — 스키마별 테이블·뷰 · SV · Agent (매트릭스 「전건 부여」 판정용)
+SCHEMA_NAME,N_TABLE,N_VIEW
+BRONZE_AGENCY,4,0
+BRONZE_CRM,53,0
+BRONZE_ERP,3,0
+BRONZE_GA4,2,0
+BRONZE_GSC,3,0
+GOLD,62,19
+ML,12,0
+MSTR,10,13
+OPS,14,1
+SERVING,1,19
+SILVER,67,0

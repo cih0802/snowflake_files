@@ -1,11 +1,10 @@
 -- DIM_MEMBER_STATUS_HISTORY: 회원 차원 SCD2 다중 버전 이력 (CRM_MEMBER 현재값 + STATUS_HIST 이력)
--- Co-authored with CoCo
 -- 【회원번호 체계】 CRM은 정식(FDRM)·일시(ONCE)를 별도 테이블로 분리 관리:
 --   FDRM → TM_MM_FDRM_MBER_INFO: 번호 0000000~9999999 (7자리, leading-zero 보존)
 --   ONCE → TM_MM_ONCE_MBER_INFO: 번호 S00000000~S09999999 (S접두+8자리=9자)
 --   GA4 user_id는 이 둘을 단일 필드로 통합 표현 → 'S' 접두 유무로 FDRM/ONCE 판별.
 --   MEMBER_DK=VARCHAR(10) 필수·NUMBER 캐스팅 절대 금지.
--- 🔴 이 테이블은 SCD2 다중 버전(792만 행)이므로, 팩트와 직접 조인하지 말고 정규 1회원 1행인 DIM_MEMBER를 사용하십시오.
+-- WARN: 이 테이블은 SCD2 다중 버전(792만 행)이므로, 팩트와 직접 조인하지 말고 정규 1회원 1행인 DIM_MEMBER를 사용하십시오.
 {{ config(
     materialized='incremental',
     incremental_strategy='append',

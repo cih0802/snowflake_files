@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 05_9_SV_DDL_MEMBER_FEE.sql — Semantic View DDL 정본: SV_MEMBER_FEE
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -74,7 +74,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_FEE
     fee.TOTAL_BILLING_ROWS AS SUM(fee.BILLING_ROWS)
       WITH SYNONYMS ('청구행수', '원천 회비행수')
       COMMENT = '집계된 원천 회비행 수. F(가산). 🔴**금액도 「건수」도 아니다** — 정본 `(건)` 은 금액÷10,000 규약이므로 이 값을 「건」이라 부르면 정의가 깨진다. 재청구 시도 강도를 볼 때만 쓴다.',
-    -- 🆕 [O237] 공178 평균 납입금액
+    --  [O237] 공178 평균 납입금액
     fee.AVG_PAID_PER_MEMBER AS SUM(fee.PAID_FEE_BILLABLE) / NULLIF(COUNT(DISTINCT fee.MEMBER_DK), 0)
       WITH SYNONYMS ('평균 납입금액(원)', '평균 납입금액', '1인당 납입금액', '공178')
       COMMENT = '공178 평균 납입금액(원) = 납입회비(회비만) ÷ 납입(명 · 고유 회원). 비율(N · 재집계 금지) — 기간·축을 바꾸면 다시 계산한다(명은 가산 불가). 행(월×회원) 평균인 SV_MEMBER_MONTHLY.AVG_PAID_FEE 와 다르다.'

@@ -1,10 +1,9 @@
--- Co-authored with CoCo
 -- =====================================================================
 -- 01. GN_DW.MSTR 테이블 DDL (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql
 --   변환 규칙: [mart].[X] → GN_DW.MSTR.X · varchar/char/nvarchar → VARCHAR · datetime → TIMESTAMP_NTZ
 --             bigint/int/smallint/tinyint → NUMBER · float → FLOAT · bit → BOOLEAN · IDENTITY → AUTOINCREMENT
 --             NONCLUSTERED·WITH(...)·ON [PRIMARY] 제거 · PK 는 선언만(Snowflake 미강제)
---   🔴 D_STRD_DE_CD 는 원본에 VIEW 와 USP_D_STRD_DE_CD 적재 TABLE 이 이름 충돌한다
+--   WARN: D_STRD_DE_CD 는 원본에 VIEW 와 USP_D_STRD_DE_CD 적재 TABLE 이 이름 충돌한다
 --      ⇒ VIEW 를 정본으로 채택(02 파일) · 이 파일에 테이블로 만들지 않는다 · 04 의 USP_D_STRD_DE_CD 는 미이관
 -- =====================================================================
 USE ROLE GN_DW_ADMIN;

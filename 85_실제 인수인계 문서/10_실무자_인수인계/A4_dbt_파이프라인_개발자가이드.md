@@ -2,7 +2,7 @@
 doc_id: A4
 title: dbt 파이프라인 개발자 가이드
 version: 0.1
-as_of: 2026-10-20 (IW20760 실측 · 80번 사본 해시 대조 포함)
+as_of: 2026-10-20 (80번 사본 해시 대조 포함)
 source_docs:
   - 80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/README.md (142행 전량)
   - 80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/dbt_project.yml (387행 전량)
@@ -113,16 +113,16 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE
 ```
 
 - 🔴 `--vars` 는 **`EXECUTE DBT PROJECT` 경로 + JSON 표기에서만** 전달된다. Workspaces dbt 클라이언트에서는 조용히 무시된다(:97~108).
-- 하한은 원천 최소일과 대조한다(개발계 = 20240122 · A0 Q09).
+- 하한은 원천 최소일과 대조한다(A0 Q09).
 - `dbt_project.yml` 의 `bigquery_dt_ranges` 주석 슬롯을 여는 방법은 대체 경로다. 열었다면 반드시 다시 잠그고 재배포한다(상주 시 이중 샘플링).
 
 ## 6. [ENV] 정기 실행 실체
 
-| 항목 | IW20760(개발) | 운영계 |
-|---|---|---|
-| dbt 정기 Task | 없음 — 수동 실행(최근 7일 GN_DW_DBT build 4 · compile 1 · parse 1 + 배포 compile 4) | `GN_DW.OPS."daily"` 06:01 KST · 소유 GN_DW_DBT(MSTR 07 :11~17 기재 · 미검증) |
-| dev2 테스트(`_2` 스키마 · `TASK_DBT_DAILY_DEV2`) | 없음 | TBD(미검증) |
-| 최근 build | 2026-10-19 · `build --select FACT_AD_PERFORMANCE+ FACT_BUDGET FACT_BUDGET_YEARLY` · SUCCESS 36.1초 | TBD(미검증) |
+| 항목 | 운영계 |
+|---|---|
+| dbt 정기 Task | `GN_DW.OPS."daily"` 06:01 KST · 소유 GN_DW_DBT(MSTR 07 :11~17 기재 · 미검증) |
+| dev2 테스트(`_2` 스키마 · `TASK_DBT_DAILY_DEV2`) | TBD(미검증) |
+| 최근 build | TBD(미검증) |
 
 - 🔴 `02_dbt_parse_compile_build.sql` Step 4 의 `TASK_DW_SNAPSHOT_DAILY → TASK_DW_BUILD_DAILY` DAG 안은 쓰지 않는다 — 루트가 snapshot 이라 DEC-61 과 충돌한다(DR-01). 정기화가 필요하면 build 단일 Task 로 만든다(A6 §5).
 

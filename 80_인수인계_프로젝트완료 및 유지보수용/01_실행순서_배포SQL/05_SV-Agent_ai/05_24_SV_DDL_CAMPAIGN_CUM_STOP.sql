@@ -1,5 +1,5 @@
 -- ============================================================================
--- 05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql — Semantic View DDL 정본: SV_CAMPAIGN_CUM_STOP (🆕 O236)
+-- 05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql — Semantic View DDL 정본: SV_CAMPAIGN_CUM_STOP ( O236)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 근거 = 신규지표 #17 「캠페인별 누계중단율(%)」 = 캠페인별 누계중단(건) / (캠페인별 누계개발(건) + 캠페인별 연도초활동회원(건))
 --     (90_provided_definition/신규지표_20260820.csv:29). 캠페인 귀속 = 후원건(후원사업) 캠페인(사용자 결정 A · 2026-10-15).
@@ -48,7 +48,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_CUM_STOP
     fccs.CUM_STOP_RATE AS SUM(fccs.CUM_STOP_CNT) / NULLIF(SUM(fccs.CUM_DEV_CNT) + SUM(fccs.YEAR_START_ACTIVE_CNT), 0) * 100
       WITH SYNONYMS ('캠페인별 누계중단율(%)', '누계중단율', '누계중단비중', '누적중단율', '누계중단률', '캠페인별 누계중단비중')
       COMMENT = '신규 #17 캠페인별 누계중단율(%) = 누계중단(건) ÷ (누계개발(건) + 연도초활동회원(건)) ×100. 비율(재합산 금지 · 상위 축은 이 지표를 그대로 다시 계산한다). 25년부터 산출(연도초 기준).',
-    -- 🆕 [O237] 신규 #18 연도별 캠페인 신규 중단율
+    --  [O237] 신규 #18 연도별 캠페인 신규 중단율
     fccs.CUM_STOP_RATE_DEV AS SUM(fccs.CUM_STOP_CNT) / NULLIF(SUM(fccs.CUM_DEV_CNT), 0) * 100
       WITH SYNONYMS ('연도별 캠페인 신규 중단율(%)', '캠페인 신규 중단율', '누계개발 대비 누계중단율', '신규18')
       COMMENT = '신규 #18 연도별 캠페인 신규 중단율(%) = 누계중단(건) ÷ 누계개발(건) ×100 — 분모에 연도초활동을 넣지 않는다(#17 과 다르다). 비율(재합산 금지). 🔴 기준연월 하나 고정 · 🔴 분자(중단 = 후원사업 대표캠페인)와 분모(개발 = 개발 사건 캠페인)의 캠페인 규칙이 달라 100% 를 넘는 캠페인이 있을 수 있다 — 그 사실을 밝히고 분모가 작은 캠페인은 해석 주의.'

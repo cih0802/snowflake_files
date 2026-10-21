@@ -1,12 +1,11 @@
 -- WIDE_BUDGET: 예산 팩트(FBD) 평탄화 소비뷰 — ref() 거버넌스 (정본 09_빅테이블 VIEW.md §3.9)
--- Co-authored with CoCo
--- ⚠️ FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1) 원천부재로 현재 NULL(외부 입고 대기).
--- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯**이다(입고 대기가 아니다) — 종전 「E-4 원천부재」는 거짓.
+-- WARN: FACT_BUDGET 는 편성/집행만 적재. FUNDRAISING_COST(E-1) 원천부재로 현재 NULL(외부 입고 대기).
+-- WARN: [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯**이다(입고 대기가 아니다) — 종전 「E-4 원천부재」는 거짓.
 --    광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED` ← `FACT_AD_PERFORMANCE`).
 -- 🔧 [2026-08-07 O51-C] materialization 전환: view -> gn_view_commented.
 --   깨진 post_hook(`ALTER VIEW ... ALTER COLUMN ... COMMENT` = Snowflake 에 없는 문법) 제거.
 --   COMMENT 정본은 `_wide_schema.yml` 로 이관됨 — 뷰=description · 컬럼=columns[].description.
---   ⚠️ columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
+--   WARN: columns[] 는 SELECT 와 개수·순서가 일치해야 한다(INFORMATION_SCHEMA 순서로 기계 생성).
 {{ config(
     materialized='gn_view_commented'
 ) }}
@@ -16,7 +15,7 @@ select
     FLOOR(f.MONTH_KEY / 100) as CAL_YEAR,
     MOD(f.MONTH_KEY, 100)    as CAL_MONTH,
     f.PLAN_BUDGET_MONTH,
-    -- 🔴 [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍(O96 §7-B A군 집행) — 컬럼 제거.
+    -- WARN: [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍(O96 §7-B A군 집행) — 컬럼 제거.
     f.EXEC_BUDGET_ERP, f.EXEC_BUDGET_EST,
     f.FUNDRAISING_COST, f.AD_COST,
     f.DW_SOURCE_SYSTEM,

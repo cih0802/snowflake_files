@@ -1,7 +1,7 @@
 {#
   silver_purge — SILVER 계층 pre-hook 단일 진입점 (2026-08-19 O87 신설)
 
-  🔴🔴 왜 매크로 1개로 합치는가 — dbt 는 hook 을 **누적(append)** 한다.
+  WARN: 왜 매크로 1개로 합치는가 — dbt 는 hook 을 **누적(append)** 한다.
      프로젝트 레벨 `silver: +pre-hook: TRUNCATE ...` 와 모델 레벨 `config(pre_hook=...)` 를
      함께 두면 **둘 다 실행된다**(더 구체적인 설정이 덮어쓰는 것이 아니다).
      ⇒ GA4 range 모델에 범위 DELETE 를 달아도 그 앞에서 TRUNCATE 가 먼저 돌아
@@ -12,9 +12,9 @@
 
   분기 규칙
     · range 모델(EVENT_DT 보유) → `bigquery_range_purge`: var 범위만 DELETE ⇒ 범위 단위 멱등.
-    · 그 밖의 SILVER 전 모델      → 종전과 동일한 `TRUNCATE TABLE IF EXISTS`(전량 재적재).
+    · 그 밖의 SILVER 전 모델 → 종전과 동일한 `TRUNCATE TABLE IF EXISTS`(전량 재적재).
 
-  ⚠️ 아래 RANGED_MODELS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 「같은 것을
+  WARN: 아래 RANGED_MODELS 는 **모델명을 문자열로 아는 유일한 지점**이다(`R1-6-17` 「같은 것을
      다르게 재는 지점」 축). 모델을 추가·개명하면 여기도 고쳐야 하고, 빠뜨리면
      그 모델은 조용히 TRUNCATE 경로로 돌아간다.
      ⇒ 그래서 대상 모델 파일 주석에도 「pre-hook 은 silver_purge 가 분기한다」를 적어 둔다.
@@ -28,11 +28,11 @@
      (EVENT_DT 보유). BIGQUERY_EVENT 와 동일하게 범위만 DELETE(멱등).
   🔄 [2026-09-22] 창이 고정 리터럴 → **롤링 윈도우**로 바뀌었다(일일 증분). 이 파일의 분기
      로직은 무변경이다 — 바뀐 것은 `bigquery_range_predicate` 가 계산하는 창뿐이다.
-     🟢 같은 처방을 GOLD 팩트에도 복제했다: `macros/gold_fact_purge.sql`(`RANGED_FACTS`).
+      같은 처방을 GOLD 팩트에도 복제했다: `macros/gold_fact_purge.sql`(`RANGED_FACTS`).
         그쪽도 여기와 동일한 「모델명을 문자열로 아는 유일한 지점」 위험을 갖는다.
 #}
 {% macro silver_purge(relation) %}
-  {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC', 'BIGQUERY_SESSION'] -%}  {#- 🆕 O213-F BIGQUERY_SESSION(EVENT_DT 보유 · 일자 내 폐쇄) -#}
+  {%- set RANGED_MODELS = ['BIGQUERY_EVENT', 'BIGQUERY_BASIC', 'BIGQUERY_SESSION'] -%}  {#- O213-F BIGQUERY_SESSION(EVENT_DT 보유 · 일자 내 폐쇄) -#}
   {%- if relation.identifier | upper in RANGED_MODELS -%}
     {{ bigquery_range_purge(relation) }}
   {%- else -%}

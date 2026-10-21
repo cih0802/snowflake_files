@@ -1,0 +1,27 @@
+path,계정값_전,계정값_후,status
+01_실행순서_배포SQL/문서실행순서.md,2,0,정제완료
+01_실행순서_배포SQL/문서실행순서_llm실행.md,8,0,정제완료
+02_dbt_pipeline/10_dbt_pipeline/dbt_project.yml,4,0,정제완료
+02_dbt_pipeline/10_dbt_pipeline/models/gold/_gold_ready_schema.yml,1,0,정제완료
+02_dbt_pipeline/10_dbt_pipeline/models/silver/_sources.yml,3,0,정제완료
+03_MSTR_이관/15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md,1,0,정제완료
+03_MSTR_이관/15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md,2,0,정제완료
+06_일배치_모니터링/11_일적재pipeline 구성/00_개요_및_실행순서.md,2,0,정제완료
+07_운영런북_이슈/12_agent개선과제/18_O217_운영계_재현_런북.md,6,0,정제완료
+08_현업공유_산출물/30_output_share/01_DW_현업활용가이드.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/10_원천입고_결손요약.md,6,0,정제완료
+08_현업공유_산출물/30_output_share/16_파이프라인 배선 수정.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/19_원천입고_및_항목신설_대기.md,2,0,정제완료
+08_현업공유_산출물/30_output_share/20260826_아키텍처 지도 요약본.html,2,0,정제완료
+08_현업공유_산출물/30_output_share/21_원천입고_대기_주니어_해설서.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/30_공8_GA개발단가_정의_요약.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/30_공8및미회신29건_질문요약.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/32_BRONZE_CRM_GOLD반영_설계.md,2,0,정제완료
+08_현업공유_산출물/30_output_share/41_현업회신_F-1_본부지부.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/47_신규19종_파생컬럼_COMMENT초안.md,1,0,정제완료
+08_현업공유_산출물/30_output_share/GOLD_ERD_테이블별.html,1,0,정제완료
+08_현업공유_산출물/30_output_share/erd/DIM_SPONSORSHIP.html,1,0,정제완료
+09_설계근거_참고/05_SV-Agent_ai/08_AGENT_spec.md,4,0,정제완료
+09_설계근거_참고/05_SV-Agent_ai/09_0_AGENT_정의서.md,4,0,정제완료
+09_설계근거_참고/09_streamlit 권한 설정/analyst-selfservice-streamlit.md,1,0,정제완료

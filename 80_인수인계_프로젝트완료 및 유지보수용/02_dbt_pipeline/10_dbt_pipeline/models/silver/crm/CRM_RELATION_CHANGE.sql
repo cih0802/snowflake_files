@@ -1,6 +1,5 @@
--- CRM_RELATION_CHANGE: 결연 교체 이력 (BRONZE TM_RM_RELATNSP_CHG_INFO → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = RELATNSP_KEY (📏 xf98254 유일 실측)
+-- CRM_RELATION_CHANGE: 결연 교체 이력 (BRONZE TM_RM_RELATNSP_CHG_INFO → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = RELATNSP_KEY ( 이전 계정 유일 실측)
 SELECT
   RELATNSP_KEY AS RELATNSP_KEY,
   NULLIF(TRIM(CHG_YN),'') AS CHG_YN,

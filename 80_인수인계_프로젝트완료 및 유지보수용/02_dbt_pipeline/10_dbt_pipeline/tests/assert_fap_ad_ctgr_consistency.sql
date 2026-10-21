@@ -1,8 +1,7 @@
 -- assert_fap_ad_ctgr_consistency: FACT_AD_PERFORMANCE 광고비 귀속 카테고리 정합 (O232-B 신설)
--- ⚠️ [임시] 2026-10-16 severity=warn 하향: AD_CREATIVE_CAMPAIGN_MAP 원천 코드(MM294 DTL_CD_ID) 불일치 14건으로
+-- WARN: [임시] 2026-10-16 severity=warn 하향: AD_CREATIVE_CAMPAIGN_MAP 원천 코드(MM294 DTL_CD_ID) 불일치 14건으로
 --    운영 build 가 막혀 다운스트림이 SKIP 됨. 원천 CSV(O232_광고_매핑_추천안.csv) 보정·재적재 후 error 로 원복할 것.
 {{ config(severity='warn') }}
--- Co-authored with CoCo
 -- 반환 행 = 위반(0행이어야 PASS). dbt_utils 미설치라 singular 테스트로 둔다.
 --   ㉠ 출처 ↔ 값: NONE 이면 코드·이름·다중 플래그가 모두 NULL · 그 밖은 코드·이름·플래그가 모두 있다
 --   ㉡ CREATIVE_MAP 은 확정값이라 다중 플래그 FALSE
@@ -40,7 +39,7 @@ having COUNT(*) > 0
 
 union all
 
--- 🆕 [O233 #36] ㉤ 나열 컬럼: NULL 여부 = AD_CTGR_NM 과 같고 · 첫 항목 = AD_CTGR_NM · 다중 FALSE 이면 이름 1개(나열 = 이름)
+--  [O233 #36] ㉤ 나열 컬럼: NULL 여부 = AD_CTGR_NM 과 같고 · 첫 항목 = AD_CTGR_NM · 다중 FALSE 이면 이름 1개(나열 = 이름)
 select 'NM_LIST', COUNT(*)
 from {{ ref('FACT_AD_PERFORMANCE') }}
 where (AD_CTGR_NM is null) <> (AD_CTGR_NM_LIST is null)

@@ -1,5 +1,4 @@
 -- O37 회귀 방어: FACT_MEMBER_EVENT 의 캠페인 귀속 중단건이 개발원천 코드5 에만 붙는지 검증.
--- Co-authored with CoCo
 --
 -- 왜 필요한가: `CAMPAIGN_STOP_CNT` 와 기존 `STOP_CNT` 는 **같은 중단 사건을 서로 다른 원천에서**
 -- 세는 두 축이다(O24 — 개발원천 코드5 와 중단원천이 동일 회원·일자로 중복 존재). 이 불변식이
@@ -10,7 +9,7 @@
 -- ③ 상호배타: CAMPAIGN_STOP_CNT=1 인 행의 STOP_CNT 는 0 이어야 한다(같은 행에서 두 번 세지 않는다).
 -- ④ 캠페인 축 실재: 코드5 행에 CAMPAIGN_SK 가 배선돼 있어야 한다. 전건 센티넬(0)로 돌아가면
 --    「캠페인별 중단률 산출 불가」 상태로 회귀한 것이므로 반드시 실패해야 한다.
---    ⚠️ 고아 캠페인키는 SK=0 으로 흡수되므로 소수의 0 은 정상이다 → 과반 이상이 0 일 때만 위반.
+--    WARN: 고아 캠페인키는 SK=0 으로 흡수되므로 소수의 0 은 정상이다 → 과반 이상이 0 일 때만 위반.
 {{ config(severity='error') }}
 
 select 'code5_missing_flag' as violation, COUNT(*) as cnt

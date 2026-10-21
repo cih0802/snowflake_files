@@ -1,20 +1,19 @@
--- Co-authored with CoCo
 -- =====================================================================
 -- 04. GN_DW.MSTR 프로시저 (O197) — 원본 = mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql
 --   T-SQL → Snowflake Scripting(LANGUAGE SQL). 공통 변환 규칙:
---     @i_ym/@i_ymd · @i_oper · @o_msg OUTPUT  → I_YM/I_YMD · I_OPER 인자 + RETURNS VARCHAR(메시지)
+--     @i_ym/@i_ymd · @i_oper · @o_msg OUTPUT → I_YM/I_YMD · I_OPER 인자 + RETURNS VARCHAR(메시지)
 --     SET NOCOUNT · READ UNCOMMITTED · WITH(TABLOCK) · WHILE DELETE TOP(10000) → 제거 / DELETE 1회
---     TRUNCATE TABLE (트랜잭션 안)       → DELETE FROM (Snowflake 에서 롤백 가능한 DML 로 유지)
+--     TRUNCATE TABLE (트랜잭션 안) → DELETE FROM (Snowflake 에서 롤백 가능한 DML 로 유지)
 --     @@ROWCOUNT → SQLROWCOUNT · @@PROCID → 프로시저 이름 상수 · GETDATE() → CURRENT_TIMESTAMP()
---     BEGIN TRY/CATCH · XACT_STATE        → EXCEPTION WHEN OTHER THEN ROLLBACK
---     EXEC MART.USP_BCHLOG …             → CALL GN_DW.MSTR.USP_BCHLOG(…)
---     FROM FN_X(@p)                       → FROM TABLE(GN_DW.MSTR.FN_X(:I_YM))
---     MSTR_ODS.DBO.<T>                    → GN_DW.BRONZE_CRM.<T>
---   🔴 미이관 2건(사유):
+--     BEGIN TRY/CATCH · XACT_STATE → EXCEPTION WHEN OTHER THEN ROLLBACK
+--     EXEC MART.USP_BCHLOG … → CALL GN_DW.MSTR.USP_BCHLOG(…)
+--     FROM FN_X(@p) → FROM TABLE(GN_DW.MSTR.FN_X(:I_YM))
+--     MSTR_ODS.DBO.<T> → GN_DW.BRONZE_CRM.<T>
+--   WARN: 미이관 2건(사유):
 --     ㉠ USP_D_CMPGN_EXPL_CD·D_CMPGN_EXPL_CD — 원천 ExplCampList(스페셜 캠페인 하드코딩 · 2년 미갱신) IT 확인 skip ⇒ 테이블·조인 제거
 --        · USP_D_CMPGN_CD 의 ExplCampList UPDATE(SPCL_CMPGN_YN='Y')도 제외 ⇒ 전건 'N'
 --     ㉡ USP_D_STRD_DE_CD — 원본에서 D_STRD_DE_CD 가 VIEW 로도 정의돼 이름 충돌 ⇒ VIEW(02) 채택
---   🔴 BRONZE TM_MM_FDRM_MBER_INFO 에 BRTHDY 가 없다 ⇒ AGE: 원천 AGE 1~9 행 = NULL · 그 외 0(원본 ELSE 그대로)
+--   WARN: BRONZE TM_MM_FDRM_MBER_INFO 에 BRTHDY 가 없다 ⇒ AGE: 원천 AGE 1~9 행 = NULL · 그 외 0(원본 ELSE 그대로)
 --   실행 순서 = USP_RUN_MSTR_1ST(맨 아래) 참조
 -- =====================================================================
 USE ROLE GN_DW_ADMIN;
@@ -436,7 +435,7 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- [5] 차원 — 캠페인 (+ Z~ 없음: 원본 CMPGN_CD = U0027 행 속성 복제)
---     🔴 ExplCampList UPDATE(SPCL_CMPGN_YN = 'Y') 미이관 — IT 확인 skip(2년 미갱신) · 1차 리포트 쿼리 미사용 컬럼
+--     WARN: ExplCampList UPDATE(SPCL_CMPGN_YN = 'Y') 미이관 — IT 확인 skip(2년 미갱신) · 1차 리포트 쿼리 미사용 컬럼
 -- ---------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE GN_DW.MSTR.USP_D_CMPGN_CD(I_YMD VARCHAR, I_OPER VARCHAR)
 RETURNS VARCHAR
@@ -813,9 +812,9 @@ BEGIN
    AND A.DVLP_DIV_CD = G.MBER_DVLP_DIV_CD
   LEFT JOIN (
     -- 후원사업별 최초(일련번호 순) 정상 개발건의 금액 · 이력 전체 대상(원본 동일)
-    --   🆕 [O201-D] F_MM_SPNSR_DVLP 대신 원천(BRONZE)을 직접 읽는다 — F 의 SER_NO·SPNSR_AMT·DVLP_DIV_CD·
+    --    [O201-D] F_MM_SPNSR_DVLP 대신 원천(BRONZE)을 직접 읽는다 — F 의 SER_NO·SPNSR_AMT·DVLP_DIV_CD·
     --   CANCL_RDCAMT_RSN_CD 는 원천 그대로 복사한 값이라 결과가 같고, F 를 과거 전 월로 채우지 않아도 된다
-    --   (운영계 = 2026-01 이후만 적재 · 개발계 202601 대조 = 행·코드 분포 동일 실측)
+    --   (운영계 = 2026-01 이후만 적재 · 개발 환경 202601 대조 = 행·코드 분포 동일 실측)
     SELECT SPNSR_NO, SPNSR_BSNS_NO, LEFT(OCCRRNC_DE, 6) AS STRD_MT, DVLP_DIV_CD AS DVLP_DIV_CD2,
            SPNSR_AMT AS SPNSR_AMT2
     FROM GN_DW.BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT

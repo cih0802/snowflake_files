@@ -2,7 +2,7 @@
 doc_id: A0
 title: 환경 실사 baseline (트랙 A·B 공통 · 트랙 B Phase 0 겸용)
 version: 0.1
-as_of: 2026-10-21 (ZL50263 운영계 실측 캡처 반영 · 직전 IW20760)
+as_of: 2026-10-21 (ZL50263 운영계 실측)
 source_docs:
   - 85_실제 인수인계 문서/00_작업계획서.md §3 A0
   - 80_인수인계_프로젝트완료 및 유지보수용/ (드리프트 대조용 CREATE 문 스캔)
@@ -25,31 +25,30 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 
 | 계정 | 구분 | 캡처 시각 | manifest |
 |---|---|---|---|
-| IW20760 | 개발 | 2026-10-19 19:06 PDT | `_ENV/IW20760/A0_manifest.csv` (26문장 · OK 26) |
 | ZL50263 | 운영 | 2026-10-21 13:16 KST | `_ENV/ZL50263/A0_manifest.csv` (29문장 · OK 29 · ERROR 0) |
 
 ## 1. [ENV] 계정 컨텍스트 (Q00 → `A0_Q00_1.csv`)
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| 계정 로케이터 | IW20760 | ZL50263 |
-| 계정명 / 조직 | IQ36690 / THGVUIA | XC97295 / CMRQTUT |
-| 리전 | AWS_EU_CENTRAL_1 | AWS_AP_NORTHEAST_2 |
-| 조회 롤 / 사용자 | ACCOUNTADMIN / TRIALADMIN | ACCOUNTADMIN / CHOIH |
-| Snowflake 버전 | 10.37.102 | 10.38.100 |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| 계정 로케이터 | ZL50263 |
+| 계정명 / 조직 | XC97295 / CMRQTUT |
+| 리전 | AWS_AP_NORTHEAST_2 |
+| 조회 롤 / 사용자 | ACCOUNTADMIN / CHOIH |
+| Snowflake 버전 | 10.38.100 |
 
 ## 2. [ENV] 데이터베이스 (Q01 → `A0_Q01_1.csv`)
 
 - `[공통]` GN_DW 는 양 계정에 있어야 한다(소유 GN_DW_ADMIN).
 - 그 밖의 DB 는 계정 프로비저닝에 따라 다르다.
 
-| DB | 종류 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|---|
-| GN_DW | STANDARD | 있음 · 소유 GN_DW_ADMIN | 있음 · 소유 GN_DW_ADMIN |
-| SANDBOX | STANDARD | 있음 · 소유 SYSADMIN | 없음 |
-| SNOWFLAKE | ACCOUNT | 있음(프로비저닝) | 있음(프로비저닝) |
-| SNOWFLAKE_SAMPLE_DATA | IMPORTED | 있음(프로비저닝) | 있음(프로비저닝) |
-| USER$&lt;사용자&gt; | PERSONAL | USER$TRIALADMIN 1건 | USER$CHOIH 등 |
+| DB | 종류 | 운영계(ZL50263) |
+|---|---|---|
+| GN_DW | STANDARD | 있음 · 소유 GN_DW_ADMIN |
+| SANDBOX | STANDARD | 없음 |
+| SNOWFLAKE | ACCOUNT | 있음(프로비저닝) |
+| SNOWFLAKE_SAMPLE_DATA | IMPORTED | 있음(프로비저닝) |
+| USER$&lt;사용자&gt; | PERSONAL | USER$CHOIH 등 |
 
 ## 3. [공통] GN_DW 스키마별 객체 수 (Q02 · Q03 → `A0_Q02_1.csv` · `A0_Q03_1.csv`)
 
@@ -84,7 +83,7 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 | 종류 | 건수 | 내역 |
 |---|---|---|
 | Semantic View | 40 | 전부 GN_DW.SERVING · 소유 GN_DW_ADMIN · 목록 = `A0_Q04_1.csv` |
-| Cortex Agent | 3 | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] SR61467 = MEMBER VERSION$5 · EXECUTIVE VERSION$5 · MARKETING VERSION$6(O250-B) · IW20760 = VERSION$8 |
+| Cortex Agent | 3 | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22 |
 | Agent SV 배선(spec 실측) | 17 / 28 / 28 | EXECUTIVE / MARKETING / MEMBER · 각 Search 1 · 합집합 40 = SV 전수(미배선 0) |
 | Cortex Search | 1 | SERVING.SEARCH_BIZ_DEFINITION · lag 1 day · ACTIVE |
 | DBT PROJECT | 1 | OPS.DW_PIPELINE · dbt 1.9.4 · 버전 LIVE |
@@ -99,17 +98,17 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 
 Task·Alert·Streamlit 은 GN_DW 안의 객체지만 **배포 상태가 계정마다 다르다**(운영계 설정 상이) ⇒ `[ENV]`.
 
-| 종류 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| Task (GN_DW) | 0 (계정 전체 1건 = SNOWFLAKE.MODELS 시스템 Task) | 9개 (`daily`, `TSK_RUN_MSTR_DAILY`, `AGENCY_*` 등) |
-| Alert | 1 · OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP · 매일 09:00 KST · started | 1 · OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP · 매일 09:00 KST · started |
-| Streamlit | 0 | 11개 (GN_DW.LAB 9개 + USER$CHOIH 2개) |
-| Git repository | 0 | 1개 (GIT_INTEGRATION 연동) |
-| Integration | 3 · EMAIL_ALERT_INTEGRATION · git_integration · SNOWFLAKE$LOCAL_APPLICATION | 3 · EMAIL_ALERT_INTEGRATION · GIT_INTEGRATION · SNOWFLAKE$LOCAL_APPLICATION |
+| 종류 | 운영계(ZL50263) |
+|---|---|
+| Task (GN_DW) | 9개 (`daily`, `TSK_RUN_MSTR_DAILY`, `AGENCY_*` 등) |
+| Alert | 1 · OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP · 매일 09:00 KST · started |
+| Streamlit | 11개 (GN_DW.LAB 9개 + USER$CHOIH 2개) |
+| Git repository | 1개 (GIT_INTEGRATION 연동) |
+| Integration | 3 · EMAIL_ALERT_INTEGRATION · GIT_INTEGRATION · SNOWFLAKE$LOCAL_APPLICATION |
 
 ## 5. 롤·사용자 (Q06 → `A0_Q06_1~3.csv`)
 
-### 5-1. [ENV] 롤 계층 — 개발계 라이브 기준 · 설계(`07_ENVIRONMENT_RBAC_setup.sql`) 대조는 A2 소관
+### 5-1. [ENV] 롤 계층 — 운영계 라이브 기준 · 설계(`07_ENVIRONMENT_RBAC_setup.sql`) 대조는 A2 소관
 
 롤 계층(USAGE 부여 · 부모 → 자식):
 
@@ -126,12 +125,12 @@ graph TD
 
 ### 5-2. [ENV] 롤·사용자 현황
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| GN_DW 롤 7종 실재 | 7/7 (소유 SECURITYADMIN) | 7/7 (소유 SECURITYADMIN) |
-| 롤 계층 | 위 그림과 같음 | 위 그림과 같음 |
-| 사용자 수 | 1 (TRIALADMIN · 기본 롤 ACCOUNTADMIN · 기본 WH COMPUTE_WH) | 19명 |
-| GN_DW 롤 사용자 할당(`assigned_to_users`) | 7종 전부 0 | 각 롤별 사용자 매핑 완료 (A2 매트릭스 참조) |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| GN_DW 롤 7종 실재 | 7/7 (소유 SECURITYADMIN) |
+| 롤 계층 | 위 그림과 같음 |
+| 사용자 수 | 19명 |
+| GN_DW 롤 사용자 할당(`assigned_to_users`) | 각 롤별 사용자 매핑 완료 (A2 매트릭스 참조) |
 
 ## 6. [ENV] 웨어하우스·비용 가드 (Q07 → `A0_Q07_1~3.csv`)
 
@@ -145,52 +144,52 @@ graph TD
 | SNOWFLAKE_LEARNING_WH | X-Small · 300 · ACCOUNTADMIN · 프로비저닝 | 없음 |
 | SYSTEM$STREAMLIT_NOTEBOOK_WH | X-Small(max 10) · 60 · ACCOUNTADMIN · 시스템 | X-Small · 300 · ACCOUNTADMIN |
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| 리소스 모니터 | 0 | 0 |
-| 예산 | ACCOUNT_ROOT_BUDGET 1건(기본) | ACCOUNT_ROOT_BUDGET 1건(기본) |
-| WH 세대 | 전부 STANDARD_GEN_2 | 전부 STANDARD_GEN_2 |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| 리소스 모니터 | 0 |
+| 예산 | ACCOUNT_ROOT_BUDGET 1건(기본) |
+| WH 세대 | 전부 STANDARD_GEN_2 |
 
 ## 7. [ENV] 거버넌스 (Q08 → `A0_Q08_1~7.csv`)
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| 마스킹 정책 | 0(실사 시점) → 🟢 2026-10-20 1(`SECURITY.MP_PII_STRING`) | 0 (미배포) |
-| 행 접근 정책 | 0 | 0 |
-| 네트워크 정책 | 0 | 0 |
-| 사용자 정의 태그 | 0 (계정의 12건은 전부 SNOWFLAKE.* 시스템 태그) | 0 (계정의 13건은 시스템 태그) |
-| GN_DW 정책 참조 | 0(실사 시점) → 🟢 2026-10-20 12(BRONZE_CRM 12 컬럼) | 0 (미배포) |
-| GN_DW 태그 참조 | 0 | 0 |
-| GN_DW DMF 부착 | 0(실사 시점) → 🟢 2026-10-20 N01 적용(PK 62 · FK 71) | 0 (미배포) |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| 마스킹 정책 | 0 (미배포) |
+| 행 접근 정책 | 0 |
+| 네트워크 정책 | 0 |
+| 사용자 정의 태그 | 0 (계정의 13건은 시스템 태그) |
+| GN_DW 정책 참조 | 0 (미배포) |
+| GN_DW 태그 참조 | 0 |
+| GN_DW DMF 부착 | 0 (미배포) |
 
 ## 8. [ENV] 드리프트 (설계 스크립트 ↔ 라이브)
 
-| # | 설계 객체 | 정의 파일(80번 기준) | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|---|---|
-| D-A0-1 | TASK GN_DW.OPS.TASK_DBT_DAILY_DEV2 | 06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql | 🟡 없음 — `--target dev2` **테스트** Task | 없음 (`GN_DW.OPS."daily"` 정규 운영 task 배포됨) |
-| D-A0-2 | TASK GN_DW.MSTR.TSK_RUN_MSTR_DAILY | 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql | 🔴 없음 | 🟢 배포됨 (`TSK_RUN_MSTR_DAILY` started) |
-| D-A0-3 | TASK GN_DW.MSTR.TSK_RUN_MSTR_1ST | 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql | 🟠 없음 — 1회성 여부 확인 | 1회성 완료 |
-| D-A0-4 | RESOURCE MONITOR ML_WH_MONITOR | 06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql | 🟠 없음 — 비용 가드 미배포 | 🟠 없음 — 비용 가드 미배포 |
-| D-A0-5 | TAG GN_DW.SECURITY.WH_COST_SCOPE | 06_웨어하우스비용가드_구축.sql | 🟠 없음 | 🟠 없음 |
-| D-A0-6 | TAG GN_DW.SECURITY.AI_COST_SCOPE | 06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql | 🟠 없음 | 🟠 없음 |
-| D-A0-7 | STREAMLIT GN_DW.SERVING.* | 01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql | 🟡 Streamlit 0 | 🟢 9개 Streamlit 앱 배포됨 (LAB 스키마) |
-| D-A0-8 | GN_DW 롤 7종 사용자 할당 | 07_ENVIRONMENT_RBAC_setup.sql | 🟡 할당 0 | 🟢 사용자 19명 할당 완료 |
+| # | 설계 객체 | 정의 파일(80번 기준) | 운영계(ZL50263) |
+|---|---|---|---|
+| D-A0-1 | TASK GN_DW.OPS.TASK_DBT_DAILY_DEV2 | 06_일배치_모니터링/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql | 없음 (`GN_DW.OPS."daily"` 정규 운영 task 배포됨) |
+| D-A0-2 | TASK GN_DW.MSTR.TSK_RUN_MSTR_DAILY | 03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql | 🟢 배포됨 (`TSK_RUN_MSTR_DAILY` started) |
+| D-A0-3 | TASK GN_DW.MSTR.TSK_RUN_MSTR_1ST | 01_실행순서_배포SQL/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql | 1회성 완료 |
+| D-A0-4 | RESOURCE MONITOR ML_WH_MONITOR | 06_일배치_모니터링/08_mornitoring/06_웨어하우스비용가드_구축.sql | 🟠 없음 — 비용 가드 미배포 |
+| D-A0-5 | TAG GN_DW.SECURITY.WH_COST_SCOPE | 06_웨어하우스비용가드_구축.sql | 🟠 없음 |
+| D-A0-6 | TAG GN_DW.SECURITY.AI_COST_SCOPE | 06_일배치_모니터링/08_mornitoring/05_AI비용가드_구축.sql | 🟠 없음 |
+| D-A0-7 | STREAMLIT GN_DW.SERVING.* | 01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql | 🟢 9개 Streamlit 앱 배포됨 (LAB 스키마) |
+| D-A0-8 | GN_DW 롤 7종 사용자 할당 | 07_ENVIRONMENT_RBAC_setup.sql | 🟢 사용자 19명 할당 완료 |
 
 ## 9. [ENV] 후속 단계 영향
 
-| 단계 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| S3(A3) CoCo 차단 | 테스트할 ANALYST 사용자가 없다 ⇒ 운영계 연기 | 🟢 analyst_01 유저 대상 CoCo 한도 0 설정 및 테스트 완료 |
-| A6 런북 | 라이브 Task 0 · 온디맨드 build 기준 | 🟢 정규 Task `daily` 및 `TSK_RUN_MSTR_DAILY` 가동 중 |
-| N01·N02 정책 SQL | 정책 0건이 기준선 | 정책 0건 (설계 DDL 보유, 미배포 상태) |
+| 단계 | 운영계(ZL50263) |
+|---|---|
+| S3(A3) CoCo 차단 | 🟢 analyst_01 유저 대상 CoCo 한도 0 설정 및 테스트 완료 |
+| A6 런북 | 🟢 정규 Task `daily` 및 `TSK_RUN_MSTR_DAILY` 가동 중 |
+| N01·N02 정책 SQL | 정책 0건 (설계 DDL 보유, 미배포 상태) |
 
 ## 10. [ENV] 데이터 차이 축 · 실행 이력 (Q09 · Q10 → `A0_Q09_1.csv` · `A0_Q10_1~2.csv`)
 
-| 항목 | IW20760(개발) | 운영계(ZL50263) |
-|---|---|---|
-| `SILVER.BIGQUERY_REFINED_DATA` 행 / 기간 / 적재일 수 | 10,022,871 / 20240122 - 20261004 / 34일(듬성 적재) | 327,026,413 / 20240101 - 20261019 / 1,020일 (전체 정규 적재) |
-| GN_DW Task 실행 이력 | AI Evals 일회성 Task 5종(2026-10-18)뿐 | 22건 (정규 `daily`, `AGENCY_*` 태스크 지속 실행) |
-| dbt 실행(최근 30일) | 수동 10회 성공 | 정기 build 06:01 등 다수 SUCCESS 기록 |
+| 항목 | 운영계(ZL50263) |
+|---|---|
+| `SILVER.BIGQUERY_REFINED_DATA` 행 / 기간 / 적재일 수 | 327,026,413 / 20240101 - 20261019 / 1,020일 (전체 정규 적재) |
+| GN_DW Task 실행 이력 | 22건 (정규 `daily`, `AGENCY_*` 태스크 지속 실행) |
+| dbt 실행(최근 30일) | 정기 build 06:01 등 다수 SUCCESS 기록 |
 
 - `BIGQUERY_REFINED_DATA` 는 외부 Python 이 직접 적재한다(dbt source `silver_external`). 운영계와 다른 유일한 데이터 축이므로 GA 계열 SV(SV_GA_*) 수치는 계정마다 다르다.
 - 🟢 ADMIN 롤 4회는 build 가 아니라 **배포(ADD VERSION) 때 자동으로 도는 compile** 이다(A6 Q01 실측). build 는 전부 GN_DW_DBT.

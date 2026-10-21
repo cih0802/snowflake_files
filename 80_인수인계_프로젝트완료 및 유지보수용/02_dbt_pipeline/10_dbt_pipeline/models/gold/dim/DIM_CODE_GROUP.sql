@@ -1,6 +1,5 @@
 -- DIM_CODE_GROUP: 공통 코드그룹 차원 (CD_ID grain) — CRM_CODE_GROUP (+ 상세코드 수)
--- Co-authored with CoCo
--- 🆕 [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
+--  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
 {{ config(
     materialized='incremental',
     unique_key='CD_ID',

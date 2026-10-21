@@ -1,5 +1,4 @@
 -- CRM_CAMPAIGN_SPONSOR_BIZ_BRIDGE: 캠페인 ↔ 후원사업 다대다(1:N) 브릿지 정규화 (DEC-45).
--- Co-authored with CoCo
 WITH split_base AS (
   SELECT
     NULLIF(TRIM(CMPGN_CD),'')          AS CMPGN_CD,

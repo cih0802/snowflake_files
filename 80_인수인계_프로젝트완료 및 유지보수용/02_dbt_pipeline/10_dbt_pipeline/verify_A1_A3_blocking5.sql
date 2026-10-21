@@ -1,5 +1,4 @@
 -- A1/A3 BLOCKING-5 부분해소 검증쿼리 — dbt build 후 실행(읽기전용)
--- Co-authored with CoCo
 -- ============================================================================
 -- 대상: FACT_MEMBER_MONTHLY(A1)·FACT_MESSAGE_DISPATCH(구 FACT_SERVICE_EVENT)(A3)
 -- 실행 시점: EXECUTE DBT PROJECT ... ARGS='build --select FACT_MEMBER_MONTHLY FACT_MESSAGE_DISPATCH' 후

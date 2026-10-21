@@ -1,7 +1,7 @@
 -- ============================================================================
--- 05_21_SV_DDL_SEARCH_CONSOLE.sql — Semantic View DDL 정본: SV_SEARCH_CONSOLE (🆕 O213-F Y3-F)
+-- 05_21_SV_DDL_SEARCH_CONSOLE.sql — Semantic View DDL 정본: SV_SEARCH_CONSOLE ( O213-F Y3-F)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `SEARCH_CONSOLE_DATA+`.
+--   · WARN: 선행 = dbt build `SEARCH_CONSOLE_DATA+`.
 --   · 원천 BRONZE_GSC.SEARCH_CONSOLE_DATA 는 종전 SILVER·GOLD·MSTR 소비 0(완전 미배선). DATA2 = 중복 복사본(미사용).
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;

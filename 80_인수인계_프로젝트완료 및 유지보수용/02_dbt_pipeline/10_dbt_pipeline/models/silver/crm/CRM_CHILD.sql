@@ -1,6 +1,5 @@
--- CRM_CHILD: 결연 아동 마스터 (BRONZE TM_RM_CHILD_MSTR_INFO → SILVER) · 🆕 O188-F 2차-A 신설(종전 미연결 원천)
--- Co-authored with CoCo
--- grain = CHILD_CD (📏 xf98254 유일 실측)
+-- CRM_CHILD: 결연 아동 마스터 (BRONZE TM_RM_CHILD_MSTR_INFO → SILVER) · O188-F 2차-A 신설(종전 미연결 원천)
+-- grain = CHILD_CD ( 이전 계정 유일 실측)
 SELECT
   CHILD_CD AS CHILD_CD,
   NULLIF(TRIM(CHILD_NO),'') AS CHILD_NO,

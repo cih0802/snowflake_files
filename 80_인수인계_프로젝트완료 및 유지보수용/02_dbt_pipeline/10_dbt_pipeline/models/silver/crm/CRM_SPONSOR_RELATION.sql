@@ -1,5 +1,4 @@
 -- CRM_SPONSOR_RELATION: 결연(아동) 정제 + Q15 NO→ID 크로스워크 (BRONZE → SILVER), 정본 09 STEP3.
--- Co-authored with CoCo
 -- 교차참조: SPNSR_BSNS_ID 는 CRM_MEMBER_SPONSOR_BIZ 에서 조인 채움(단방향 BRONZE→SILVER 예외 아님, SILVER dim 참조).
 SELECT
   r.RELATNSP_KEY                     AS RELATNSP_KEY,
@@ -12,7 +11,7 @@ SELECT
   r.RELATNSP_DSCNTC_DE               AS RELATNSP_DSCNTC_DE,
   NULLIF(TRIM(r.RELATNSP_DSCNTC_YN),'') AS RELATNSP_DSCNTC_YN,
   -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. 원천 타입 NUMBER → CRM_CODE.DTL_CD_ID(VARCHAR) 조인 가능하도록 TO_VARCHAR.
-  --   ⚠️ MM002 30종 중 16종이 폐지코드 → 라벨 조인 시 USE_YN 무필터 필수.
+  --   WARN: MM002 30종 중 16종이 폐지코드 → 라벨 조인 시 USE_YN 무필터 필수.
   NULLIF(TRIM(TO_VARCHAR(r.RELATNSP_DSCNTC_RSN_CD)),'') AS RELATNSP_DSCNTC_RSN_CD,  -- MM002
   'CRM'                              AS DW_SOURCE_SYSTEM,
   CURRENT_TIMESTAMP()                AS DW_LOAD_TS,
@@ -22,6 +21,6 @@ FROM {{ source('bronze_crm','TM_RM_RELATNSP_MSTR_INFO') }} r
 LEFT JOIN {{ ref('CRM_MEMBER_SPONSOR_BIZ') }} biz
   ON biz.SPNSR_NO = NULLIF(TRIM(r.SPNSR_NO),'') AND biz.SPNSR_BSNS_NO = r.SPNSR_BSNS_NO
 WHERE r.RELATNSP_KEY IS NOT NULL
-  -- 🔴 [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
-  --    📏 실측 = 고아 **0행** / 869,027 ⇒ 행수 불변 예상. 🟢 회귀 방어로 붙인다(0 이라고 빼지 마라).
+  -- WARN: [2026-09-22 O179 · 이슈 B] 마스터 미실재 회원 제거 · 정의 = macros/gn_member_master_filter.sql
+  --     실측 = 고아 **0행** / 869,027 ⇒ 행수 불변 예상. 회귀 방어로 붙인다(0 이라고 빼지 마라).
   AND {{ gn_member_master_filter("NULLIF(TRIM(r.MBER_NO),'')") }}

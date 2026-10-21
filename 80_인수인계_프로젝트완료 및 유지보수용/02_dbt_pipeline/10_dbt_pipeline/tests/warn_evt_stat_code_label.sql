@@ -1,5 +1,4 @@
 -- [2026-10-15 O232] 행사 참여상태 코드 ↔ 라벨 드리프트 경고 — FACT_EVENT_ATTENDANCE 는 이제 **코드**로 판정한다.
--- Co-authored with CoCo
 --
 -- 왜: 종전 판정은 라벨 문자열(`'참여'`·`'대기%'`·`'Success'` 등)이라 원천 라벨이 바뀌면 지표가 조용히 0 이 됐다.
 --   O232 에서 상태코드 판정(`macros/gn_biz_codes.sql` gn_evt_stat · gn_evt_attended)으로 바꿨다(실측 결과 동일).

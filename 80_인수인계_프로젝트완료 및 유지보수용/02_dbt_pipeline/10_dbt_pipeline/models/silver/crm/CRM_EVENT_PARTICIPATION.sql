@@ -1,16 +1,15 @@
 -- CRM_EVENT_PARTICIPATION: 행사 참여 = EVENT ∪ CRMN 참여자 (PK dedup), 정본 09 STEP3.
--- Co-authored with CoCo
 -- [2026-08-11 O59-N · DEC-35 1단계] 코드→라벨 계층화. 정본 = 문서30 §23-J · 매핑 = 문서31 §3.
---   🔴 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자(EVENT_KEY 접두)로 갈라 **각자의 코드군**에 조인한다.
---     · PART_STATUS  : EVENT → `MS304`(등급 B · 12/12 정확 일치) / CRMN → `MS006`(등급 A+B)
---       ⚠️ `MS304` 사전 라벨은 **영문**이다(`Success`·`1_step_right`…). §23-J 결정 4 로 **그대로 적재**한다 —
+--   WARN: 두 원천의 코드체계가 완전 분리된다(겹침 0) ⇒ 판별자(EVENT_KEY 접두)로 갈라 **각자의 코드군**에 조인한다.
+--     · PART_STATUS : EVENT → `MS304`(등급 B · 12/12 정확 일치) / CRMN → `MS006`(등급 A+B)
+--       WARN: `MS304` 사전 라벨은 **영문**이다(`Success`·`1_step_right`…). §23-J 결정 4 로 **그대로 적재**한다 —
 --         한글 표기는 현업 회신 대기(문서20 §M-1). 창작 금지.
---       🔴 두 원천의 「참여」 정의가 다르다: EVENT 는 **다단계 통과 여부**, CRMN 은 신청/참여/불참/대기/취소.
---     · PART_PATH    : EVENT → `MS303`(등급 C) / CRMN → `MS004`(등급 C · 원천 컬럼명이 RQST_PATH_CD 다)
---       🔴 **조건부 적용**(§23-J 결정 2) — 문서20 §M-3 회신이 다르면 이 리터럴과 라벨을 되돌린다.
+--       WARN: 두 원천의 「참여」 정의가 다르다: EVENT 는 **다단계 통과 여부**, CRMN 은 신청/참여/불참/대기/취소.
+--     · PART_PATH : EVENT → `MS303`(등급 C) / CRMN → `MS004`(등급 C · 원천 컬럼명이 RQST_PATH_CD 다)
+--       WARN: **조건부 적용**(§23-J 결정 2) — 문서20 §M-3 회신이 다르면 이 리터럴과 라벨을 되돌린다.
 --     · PART_CHANNEL : EVENT → `MS302`(등급 B · 8/8 정확 일치) / CRMN 은 원천 컬럼 부재 → NULL
---   ⚠️ 오염값 `)`(O28)은 사전에 없으므로 라벨 NULL 로 떨어진다 — 정상 동작이다(라벨 부여 금지 · 문서31 §6).
---   ⚠️ fan-out 안전: 대상 그룹 (CD_ID, DTL_CD_ID) 전건 유일(실측 2026-08-11).
+--   WARN: 오염값 `)`(O28)은 사전에 없으므로 라벨 NULL 로 떨어진다 — 정상 동작이다(라벨 부여 금지 · 문서31 §6).
+--   WARN: fan-out 안전: 대상 그룹 (CD_ID, DTL_CD_ID) 전건 유일(실측 2026-08-11).
 WITH base AS (
   SELECT 'EVENT_'||EVENT_CD          AS EVENT_KEY,
     NULLIF(TRIM(MBER_NO),'')         AS MBER_NO,
@@ -74,7 +73,7 @@ SELECT
   CURRENT_TIMESTAMP()              AS DW_LOAD_TS,
   CURRENT_TIMESTAMP()              AS DW_UPDATE_TS,
   NULL                             AS DW_BATCH_ID,
-  -- 🔴 신설 컬럼 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝이 된다).
+  -- WARN: 신설 컬럼 = 감사컬럼 뒤(정본 DDL 규약 · 물리 ordinal 이 ALTER 로 맨 끝이 된다).
   --    코드군 리터럴은 문서31 §3 이 사람이 확정한 매핑이다(DEC-17 방식 · 추론 아님).
   CASE WHEN b.PARTCPT_STAT_CD IS NULL THEN NULL
        WHEN b.EVENT_SOURCE='EVENT' THEN 'MS304' ELSE 'MS006' END        AS PARTCPT_STAT_GROUP,
@@ -101,13 +100,13 @@ LEFT JOIN {{ ref('CRM_CODE') }} ch
 LEFT JOIN {{ ref('CRM_CODE') }} pt
   ON pt.CD_ID = CASE WHEN b.EVENT_SOURCE='EVENT' THEN 'MS303' ELSE 'MS004' END
  AND pt.DTL_CD_ID = b.PARTCPT_PATH_CD
--- 🔴 [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
+-- WARN: [2026-09-22 O179 · 현업 회신 이슈 B] 회원 마스터 정본에 없는 고아 회원 제거.
 --    정의 지점은 `macros/gn_member_master_filter.sql` 하나다 — 여기에 술어를 다시 쓰지 마라(R1-6-17).
---    📏 실측 = 고아 10,048행 / 1,258,775 (고아 회원 8,299명) ⇒ 적재 후 1,248,727행 예상.
---    🔴 위 REGEXP 필터는 「형식이 정상인가」를 보고, 이 술어는 「마스터에 실재하는가」를 본다. 다른 축이다.
+--     실측 = 고아 10,048행 / 1,258,775 (고아 회원 8,299명) ⇒ 적재 후 1,248,727행 예상.
+--    WARN: 위 REGEXP 필터는 「형식이 정상인가」를 보고, 이 술어는 「마스터에 실재하는가」를 본다. 다른 축이다.
 WHERE {{ gn_member_master_filter('b.MBER_NO') }}
--- 🆕 [2026-10-06 O202-B · 현업 회신 BLOCKING-2 이슈 E] 행사 마스터(CRM_EVENT)에 없는 참여 행 제거.
+--  [2026-10-06 O202-B · 현업 회신 BLOCKING-2 이슈 E] 행사 마스터(CRM_EVENT)에 없는 참여 행 제거.
 --    현업 = 「휴먼에러라 복구 불가 · 마스터에 없는 행사는 GOLD 까지 올리지 마라」.
---    📏 실측(JU93656) = 고아 279,904행 / 1,274,437 · 고유 키 54 · EVENT_105 204,758 + EVENT_106 73,705 = 99.5%.
---    🔴 위 회원 필터와 다른 축이다(회원 실재 ↔ 행사 실재) — 둘 다 걸어야 한다.
+--     실측 = 고아 279,904행 / 1,274,437 · 고유 키 54 · EVENT_105 204,758 + EVENT_106 73,705 = 99.5%.
+--    WARN: 위 회원 필터와 다른 축이다(회원 실재 ↔ 행사 실재) — 둘 다 걸어야 한다.
   AND EXISTS (SELECT 1 FROM {{ ref('CRM_EVENT') }} ev WHERE ev.EVENT_KEY = b.EVENT_KEY)

@@ -1,12 +1,11 @@
 -- CRM_CAMPAIGN: 캠페인 + 브랜드/마케팅캠페인/분류코드 라벨 LEFT JOIN 정제 (BRONZE → SILVER), 정본 09 STEP3.
--- Co-authored with CoCo
 -- Q16: MKTG_CMPGN_NM(NUMBER) ↔ MK_CMPGN_CD(TEXT) 조인키 불일치 → TO_VARCHAR 캐스팅 조인. [2026-07-16 재입고로 해소]
 -- Q2·Q3: 캠페인 분류 4축 코드→라벨 병행보존(master §3). 코드사전 = ref('CRM_CODE') (CRM_MEMBER 등 기존 모델과 동일 패턴).
 --   MM294 캠페인 카테고리(56) · MM293 개발인입경로(16) · MM295 유형1 국내/통합/해외(3) · MM296 유형2 굿즈/기타/사례/사업(4)
---   ⚠️ 유형1 ≠ 사업/사례. 유형1=국내/해외 축, 유형2=사업/사례 축 (GOLD DIM_CAMPAIGN 매핑 시 혼동 금지).
+--   WARN: 유형1 ≠ 사업/사례. 유형1=국내/해외 축, 유형2=사업/사례 축 (GOLD DIM_CAMPAIGN 매핑 시 혼동 금지).
 -- 코드 조인키: 캠페인측 코드컬럼=NUMBER vs CRM_CODE.DTL_CD_ID=VARCHAR → TRY_TO_NUMBER(DTL_CD_ID) 로 정규화 비교.
 --   (CRM_MEMBER 는 코드컬럼이 VARCHAR 라 TEXT 직접 비교 — 여기만 숫자 정규화가 필요한 이유.)
---   ⚠️ fan-out 안전: (CD_ID, TRY_TO_NUMBER(DTL_CD_ID)) 실측 유일·비숫자 0 (2026-07-16 검증).
+--   WARN: fan-out 안전: (CD_ID, TRY_TO_NUMBER(DTL_CD_ID)) 실측 유일·비숫자 0 (2026-07-16 검증).
 --   고아 코드는 라벨 NULL로 남긴다(기지: CMPGN_CTGR_CD=58 23행 · CMPGN_TYPE1_BSN=4 740행).
 -- [DEC-신설 예정] 원천 재입고(2026-08-24)로 신규 7컬럼 값 반영 + MM297(공통브랜드) 코드그룹 신설.
 --   CMMN_BRND → MM297(14종, 라벨이 MM293 개발인입경로와 상당 중복 — 현업 확인: 별도 축으로 유지, 배선 유지).
@@ -16,7 +15,7 @@
 -- [DEC-43] 캠페인 SV 3종 스냅샷 동결 12속성 중 잔여 2속성 추가(BRND_NM 은 기존 컬럼 재사용).
 --   PARENT_CAMPAIGN_NAME = UPPER_CMPGN_CD 자기조인(구 GOLD DIM_CAMPAIGN §O37 로직 그대로 SILVER 로 이관).
 --   PROMO_METHOD_NAME = CM008 라벨(PR_MTH_CD). 둘 다 CMPGN_CD 유일이라 fan-out 없음.
--- 🔴 [2026-08-25 O101 시정] 상위캠페인 자기조인이 **BRONZE 를 두 번 스캔**하고 있었다.
+-- WARN: [2026-08-25 O101 시정] 상위캠페인 자기조인이 **BRONZE 를 두 번 스캔**하고 있었다.
 --   종전: `LEFT JOIN source('bronze_crm','TM_CM_CMPGN_MNG') par` — SILVER 모델이 원천을 lookup 으로
 --   재사용하는 **계층 위반**이고, 부모 쪽에는 이 모델의 정제 규칙(`WHERE CMPGN_CD IS NOT NULL`)이
 --   적용되지 않았다. ⇒ 원천을 `base` CTE 로 **한 번만** 읽고 그 CTE 를 자기조인한다

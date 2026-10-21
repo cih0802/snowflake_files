@@ -1,8 +1,8 @@
 -- 31. 공8 + 문서20 미회신 29건 — 질문 쿼리 근거 (문서 30 `30_공8및미회신29건_질문요약.md` 의 수치를 재현)
--- Co-authored with CoCo · 2026-09-29 O188-B · 계정 xf98254 · 읽기 전용(변경 없음)
--- 🔴 GA 원천 규칙(사용자 지시 O188-B) = GA/GA4 기준 데이터는
+-- 2026-09-29 O188-B · 읽기 전용(변경 없음)
+-- WARN: GA 원천 규칙(사용자 지시 O188-B) = GA/GA4 기준 데이터는
 --    ① SILVER.BIGQUERY_REFINED_DATA(GA4 이벤트) ② BRONZE_AGENCY(대행사 리포트) 두 곳뿐이다. 그 외 GA 소스 없음.
--- 🔴 `-- 실측:` 줄은 이 파일을 2026-09-29 에 실행한 결과다(인용 전 재실행 · R2-8-4).
+-- WARN: `-- 실측:` 줄은 이 파일을 2026-09-29 에 실행한 결과다(인용 전 재실행 · R2-8-4).
 -- 선행본 = `31_공8_GA개발단가_쿼리근거.sql`(Q1~Q6 · 공8 1차 정의) — 이 파일이 승계한다.
 
 -- ============================================================
@@ -90,8 +90,8 @@ FROM GN_DW.GOLD.DIM_SPONSORSHIP
 GROUP BY 1, 2
 ORDER BY 1, 2;
 -- 실측: 1 국내 17 · 2 결연 1 · 3 해외구호 6 · 4 북한 3 · 5 기타 21 · 6 해외 2 · NULL 1
---       🟢 J3 전제 변동 — SPONSORSHIP_GROUP_NAME 라벨이 이미 적재돼 있다(질문 1 「라벨표」는 사실상 답이 났다)
---       🔴 남은 것 = 6그룹(북한·해외 분리) ↔ ML 4그룹(국내/결연/해외프로젝트/기타) 접는 규칙 · 「11개」 목록
+--        J3 전제 변동 — SPONSORSHIP_GROUP_NAME 라벨이 이미 적재돼 있다(질문 1 「라벨표」는 사실상 답이 났다)
+--       WARN: 남은 것 = 6그룹(북한·해외 분리) ↔ ML 4그룹(국내/결연/해외프로젝트/기타) 접는 규칙 · 「11개」 목록
 
 -- [F-3] 오픈 원천 — 이메일 오픈 컬럼 채움 / GOLD OPEN_MEMBERS 합
 SELECT 'EMAIL_LQY_OPEN_CNT' AS axis, COUNT(*) AS n, COUNT(URL_OTHBC_CNT_CTNT) AS filled
@@ -100,7 +100,7 @@ UNION ALL
 SELECT 'FMD_OPEN_MEMBERS>0', COUNT(*), COUNT_IF(OPEN_MEMBERS > 0)
 FROM GN_DW.GOLD.FACT_MESSAGE_DISPATCH;
 -- 실측: EMAIL_LQY 오픈건수 채움 0 / 524,033 · FMD OPEN_MEMBERS>0 = 490,762 / 41,935,344행
---       🟢 J3 전제 변동 — 문서20 은 OPEN_MEMBERS 「전건 0」이었으나 지금은 49만행 유값 ⇒ 어느 채널 값인지 재확인 필요
+--        J3 전제 변동 — 문서20 은 OPEN_MEMBERS 「전건 0」이었으나 지금은 49만행 유값 ⇒ 어느 채널 값인지 재확인 필요
 
 -- [F-4] 등급 산출식 — 데이터 질의 없음(현업 사업 규칙 · 정본 xlsx 원문 물음표 4건)
 
@@ -238,8 +238,8 @@ SELECT 'BIZ_CASE_TYPE', BIZ_CASE_TYPE, COUNT(*)
 FROM GN_DW.GOLD.DIM_CAMPAIGN GROUP BY 1, 2
 ORDER BY 1, 3 DESC;
 -- 실측: BIZ_CASE_TYPE 사례 13,573 · 사업 9,242 · 기타 8,024 · 굿즈 4,455 · NULL 1,475
---       DOMESTIC_OVERSEAS 국내 13,433 · 해외 13,104 · 통합 8,010 · 🟢 전체사업 747 · NULL 1,475
---       🟢 J3 전제 변동 — N-6-A 질문2 「전체사업 라이브 0건」은 이제 거짓이다(747행 실재)
+--       DOMESTIC_OVERSEAS 국내 13,433 · 해외 13,104 · 통합 8,010 · 전체사업 747 · NULL 1,475
+--        J3 전제 변동 — N-6-A 질문2 「전체사업 라이브 0건」은 이제 거짓이다(747행 실재)
 
 SELECT COUNT(DISTINCT INFLOW_PATH)   AS inflow_path_kinds,
        COUNT(DISTINCT BRAND)         AS brand_kinds,
@@ -277,7 +277,7 @@ SELECT COUNT(*)              AS n,
        SUM(DVLP_CNT)         AS dvlp_sum
 FROM GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS;
 -- 실측: 46,353행 · CPC_CALL 33,693 채움 · INBOUND_CALL 19,393 · DVLP_CNT 8,756행 합 32,783.6
---       🟢 J3 전제 변동 — 「전환콜 전건 NULL」(CONV_CALL_CNT)은 원천 재편으로 컬럼이 CPC_CALL_CNT 로 바뀌어 유값
+--        J3 전제 변동 — 「전환콜 전건 NULL」(CONV_CALL_CNT)은 원천 재편으로 컬럼이 CPC_CALL_CNT 로 바뀌어 유값
 
 -- ============================================================
 -- [D-2] 사업목표 원천 = CRM 확인 (실측상 답이 났다 · N-25)
@@ -289,7 +289,7 @@ ORDER BY 1, 2;
 -- 실측: 연사업/사단 154 · 팀/사단 68 · 팀/사복 68 ⇒ 사업목표가 BRONZE_CRM 에 있다(CRM 확인만 요청)
 
 -- ============================================================
--- [W-1] GA4 UTM ↔ 캠페인 — 🔴 GA 원천 규칙상 BIGQUERY_REFINED_DATA 기준으로 잰다
+-- [W-1] GA4 UTM ↔ 캠페인 — WARN: GA 원천 규칙상 BIGQUERY_REFINED_DATA 기준으로 잰다
 -- ============================================================
 WITH u AS (
     SELECT STSLC_MC_CAMPAIGN_NAME AS utm, COUNT(*) AS n

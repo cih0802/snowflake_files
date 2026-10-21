@@ -13,11 +13,11 @@
 --   7. [2026-10-16] dbt 경고 알림 수신자 = §3-1 변수 DBT_ALERT_RECIPIENTS (발송 ALERT 는 09 문서)
 --
 -- 실행 역할 (2026-10-16 정정 — 01_환경 Role.md 소유 모델: GN_DW 내부 객체 = GN_DW_ADMIN · 계정 레벨 = ACCOUNTADMIN)
---   §1 ~ §1-1 = ACCOUNTADMIN  (Notification Integration · 계정 권한 EXECUTE ALERT · 기존 객체 소유권 이관)
---   §2 ~ §6   = GN_DW_ADMIN   (OPS 테이블·프로시저·수신자 지정·GRANT)
---   🔴 종전 판은 전 구간 ACCOUNTADMIN 이었다 ⇒ OPS 객체 4종이 ACCOUNTADMIN 소유가 됐고
+--   §1 ~ §1-1 = ACCOUNTADMIN (Notification Integration · 계정 권한 EXECUTE ALERT · 기존 객체 소유권 이관)
+--   §2 ~ §6 = GN_DW_ADMIN (OPS 테이블·프로시저·수신자 지정·GRANT)
+--   WARN: 종전 판은 전 구간 ACCOUNTADMIN 이었다 ⇒ OPS 객체 4종이 ACCOUNTADMIN 소유가 됐고
 --      GN_DW_ADMIN 이 ALTER TABLE 을 못 했다(MODIFY 부재 실측). §1-1 이 이를 바로잡는다.
---   ✅ GN_DW_ADMIN 은 MANAGE GRANTS 보유(07_ENVIRONMENT_RBAC_setup.sql) ⇒ SHOW USERS 의 email 조회 가능(실측) —
+--    GN_DW_ADMIN 은 MANAGE GRANTS 보유(07_ENVIRONMENT_RBAC_setup.sql) ⇒ SHOW USERS 의 email 조회 가능(실측) —
 --      USP_SYNC_ALERT_RECIPIENTS(EXECUTE AS OWNER)를 GN_DW_ADMIN 소유로 둬도 동작한다.
 -- ==============================================================================
 
@@ -87,7 +87,7 @@ COMMENT = '데이터 파이프라인 및 마트 알림 수신자 관리 메타�
 
 -- [2026-10-16 확장] dbt 데이터 품질 경고(WARN 테스트) 알림 수신 플래그 — 기존 테이블에 비파괴 추가.
 --   USP_SYNC_ALERT_RECIPIENTS 의 MERGE 는 이 컬럼을 건드리지 않는다(DEFAULT 'N' · 기존값 보존).
---   🔴 `ADD COLUMN IF NOT EXISTS … DEFAULT` 는 컬럼이 이미 있으면 'ambiguous column name' 으로 실패한다(2026-10-16 실측)
+--   WARN: `ADD COLUMN IF NOT EXISTS … DEFAULT` 는 컬럼이 이미 있으면 'ambiguous column name' 으로 실패한다(2026-10-16 실측)
 --      ⇒ 존재 여부를 먼저 보고 없을 때만 ADD · COMMENT 는 별도 ALTER(재실행 안전).
 EXECUTE IMMEDIATE $$
 BEGIN
@@ -171,8 +171,8 @@ WHERE USER_NAME = 'CHOIH';
 -- 3-1. [dbt 알림 수신자 지정] ★ 수신자 변경은 이 변수 한 줄만 고치고 이 블록을 실행한다 ★
 -- ------------------------------------------------------------------------------
 -- 값 = Snowflake USER_NAME 목록(쉼표 구분 · 대소문자/공백 무관). 이메일은 ALERT_RECIPIENT_CONFIG 의 인증 주소를 쓴다.
---   🔴 목록에 없는 사용자는 'N' 으로 내려간다(선언형 — 이 변수가 dbt 알림 수신자의 정본이다).
---   🔴 USER_NAME 이 테이블에 없으면 먼저 §3 CALL USP_SYNC_ALERT_RECIPIENTS() 로 동기화한다(이메일 미등록 유저는 제외됨).
+--   WARN: 목록에 없는 사용자는 'N' 으로 내려간다(선언형 — 이 변수가 dbt 알림 수신자의 정본이다).
+--   WARN: USER_NAME 이 테이블에 없으면 먼저 §3 CALL USP_SYNC_ALERT_RECIPIENTS() 로 동기화한다(이메일 미등록 유저는 제외됨).
 SET DBT_ALERT_RECIPIENTS = 'TRIALADMIN';
 
 UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG
@@ -336,7 +336,7 @@ GRANT USAGE ON SCHEMA GN_DW.OPS TO ROLE GN_DW_ENGINEER;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG TO ROLE GN_DW_ADMIN;
 GRANT SELECT ON TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG TO ROLE GN_DW_ENGINEER;
--- GRANT SELECT ON TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG TO ROLE GN_DW_ANALYST;   -- 위 결정으로 제외
+-- GRANT SELECT ON TABLE GN_DW.OPS.ALERT_RECIPIENT_CONFIG TO ROLE GN_DW_ANALYST; -- 위 결정으로 제외
 
 GRANT USAGE ON PROCEDURE GN_DW.OPS.USP_SYNC_ALERT_RECIPIENTS() TO ROLE GN_DW_ADMIN;
 GRANT USAGE ON PROCEDURE GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT(STRING, STRING, STRING, STRING) TO ROLE GN_DW_ADMIN;

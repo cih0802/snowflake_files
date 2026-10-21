@@ -1,0 +1,10 @@
+# doc_id: A6 · as_of: 2026-10-20 15:39:37.331 -0700 · account: SR61467 · query: Q01-1 dbt 실행 이력 — 최근 7일 (롤 · 상태 · 오류)
+START_TIME,ROLE_NAME,USER_NAME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE,ELAPSED_SEC,QUERY_TEXT
+2026-10-20 13:45:09.525000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,20.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select FACT_MEMBER_COHORT_SURVIVAL';
+2026-10-20 13:44:14.139000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,40.3,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline/' args='compile' upload_url='snow://dbt_project/92708356/results/query_id_01c7dd58-0208-f4ee-000"
+2026-10-20 06:40:35.922000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,150.7,"EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{""bigquery_dt_ranges"": [[""1945-01-01"", ""9999-12-"
+2026-10-20 06:29:44.972000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,650.9,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+2026-10-20 06:29:20.730000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,24.1,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='compile';
+2026-10-20 06:29:00.229000-08:00,GN_DW_DBT,TRIALADMIN,SUCCESS,,,20.4,EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='parse';
+2026-10-20 06:25:46.864000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,40.0,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/92708356/results/query_id_01c7dba1-0208-f4e9-0005"
+2026-10-20 06:24:53.543000-08:00,GN_DW_ADMIN,TRIALADMIN,SUCCESS,,,46.4,"execute dbt project from 'snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline' args='compile' upload_url='snow://dbt_project/92708356/results/query_id_01c7dba0-0208-f7f4-0005"

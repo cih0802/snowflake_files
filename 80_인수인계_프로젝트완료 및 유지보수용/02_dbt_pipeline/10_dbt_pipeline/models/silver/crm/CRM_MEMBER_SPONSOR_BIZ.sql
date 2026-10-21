@@ -1,5 +1,4 @@
 -- CRM_MEMBER_SPONSOR_BIZ: 회원×후원사업 정제 (PK dedup QUALIFY) (BRONZE → SILVER), 정본 09 STEP3.
--- Co-authored with CoCo
 SELECT
   NULLIF(TRIM(SPNSR_NO),'')            AS SPNSR_NO,
   SPNSR_BSNS_NO                        AS SPNSR_BSNS_NO,

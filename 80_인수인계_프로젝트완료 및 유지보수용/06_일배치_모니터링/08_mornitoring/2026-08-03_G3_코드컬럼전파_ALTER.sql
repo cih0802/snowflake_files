@@ -1,6 +1,5 @@
 -- SILVER/GOLD 코드컬럼 전파 — G3 조치 (BRONZE 코드체계 → SILVER 보존율 37.6%→100% 경로 확보)
--- Co-authored with CoCo
--- 🔴 CREATE OR REPLACE 금지(정보성 FK 38개·GRANT 파괴). ALTER TABLE ADD COLUMN 만 사용.
+-- WARN: CREATE OR REPLACE 금지(정보성 FK 38개·GRANT 파괴). ALTER TABLE ADD COLUMN 만 사용.
 -- 컬럼명 = BRONZE 원천명 그대로(O24 확립 원칙 — 현업이 BRONZE 를 직접 조회 중이라 신개념 도입 금지).
 
 -- SILVER.CRM_CAMPAIGN (+3)

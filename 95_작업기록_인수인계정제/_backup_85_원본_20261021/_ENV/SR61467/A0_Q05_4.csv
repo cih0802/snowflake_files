@@ -1,0 +1,5 @@
+# doc_id: A0 · as_of: 2026-10-20 15:38:24.555 -0700 · account: SR61467 · query: Q05-4 Task · Alert · Git · Integration
+name,type,category,enabled,comment,created_on
+EMAIL_ALERT_INTEGRATION,EMAIL,NOTIFICATION,true,GN_DW 데이터 파이프라인 및 거버넌스 에러 알림 연동,2026-10-20 07:15:00.475000-07:00
+SNOWFLAKE$LOCAL_APPLICATION,OAUTH - LOCAL_APPLICATION,SECURITY,true,https://docs.snowflake.com/user-guide/oauth-local-application,2026-10-19 17:31:25.330000-07:00
+git_integration,EXTERNAL_API,API,true,,2026-10-19 17:42:58.589000-07:00

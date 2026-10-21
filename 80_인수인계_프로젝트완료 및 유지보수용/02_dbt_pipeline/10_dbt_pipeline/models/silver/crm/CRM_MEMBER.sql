@@ -1,13 +1,12 @@
 -- CRM_MEMBER: 회원 마스터 = 정기(FDRM) ∪ 일시(ONCE), SEX/MBER_DIV_NM/상태 라벨·수신동의 정규화, 정본 09 STEP3 배치4.
--- Co-authored with CoCo
 -- [2026-08-03 O26] SEX 원천 보존 교정 — 종전은 `SEX IN ('1','3')→'M' / ('2','4')→'F' / else 'U'` 로 축약해
 --   원천 CM013 도메인 8종을 3종으로 파괴했다(값 충실도 검사 24건 중 유일한 불일치: SILVER만 3종·BRONZE만 8종).
---   🔴 정본 컬럼정의서 비고가 이미 경고했다: "특이사항, 6=단체, 7=기업, 8=기타 값을 보면.
+--   WARN: 정본 컬럼정의서 비고가 이미 경고했다: "특이사항, 6=단체, 7=기업, 8=기타 값을 보면.
 --      컬럼설명은 성별이나 **성별만으로는 사용하지는 않음**" — 종전 구현이 정확히 그 금지된 사용법이었다.
 --   CM013 = 국내/외국인 × 성별 + 법인유형 복합축(1국내남·2국내여·3외국남·4외국여·5외국기타·6단체·7기업·8기타).
 --   조치: `SEX` = 원천 raw 무변환 · `SEX_NM` = CM013 라벨 그대로 신설(국내/외국인 축 복구).
 --   성별 단일축(정본 공#130 "남/여/기업/단체/기타")은 동일 코드의 다른 라벨체계 CM017 이며 GOLD 에서 조인한다.
---   ⚠️ CM013 은 (CD_ID,DTL_CD_ID) PK 라 fan-out 없음(실측 8행=8 distinct).
+--   WARN: CM013 은 (CD_ID,DTL_CD_ID) PK 라 fan-out 없음(실측 8행=8 distinct).
 SELECT
   NULLIF(TRIM(f.MBER_NO),'')       AS MEMBER_DK,
   'FDRM'                           AS MEMBER_TYPE,
@@ -30,8 +29,8 @@ SELECT
        ELSE ARRAY_TO_STRING(ARRAY_SORT(ARRAY_DISTINCT(ARRAY_REMOVE(SPLIT(REPLACE(TRIM(f.PSTMTR_RECPTN_CD),' ',''),','),TO_VARIANT('')))),',') END AS PSTMTR_RECPTN,
   f.FRST_REGIST_DT                 AS FRST_REGIST_DT,
   -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. 라벨은 수요 확인 후 별도 배선(스캐폴드 금지).
-  --   ⚠️ TSTM_DIV_CD·ETC_TSTM_DIV_CD 는 BRONZE 타입이 NUMBER → CRM_CODE.DTL_CD_ID(VARCHAR)와 조인 가능하도록 TO_VARCHAR 정규화.
-  --   ⚠️ EMAIL_RECPTN_CD·PSTMTR_RECPTN_CD 는 이미 EMAIL_RECPTN·PSTMTR_RECPTN 으로 정규화 노출됨 → raw 중복 추가하지 않음.
+  --   WARN: TSTM_DIV_CD·ETC_TSTM_DIV_CD 는 BRONZE 타입이 NUMBER → CRM_CODE.DTL_CD_ID(VARCHAR)와 조인 가능하도록 TO_VARCHAR 정규화.
+  --   WARN: EMAIL_RECPTN_CD·PSTMTR_RECPTN_CD 는 이미 EMAIL_RECPTN·PSTMTR_RECPTN 으로 정규화 노출됨 → raw 중복 추가하지 않음.
   NULLIF(TRIM(f.EMAIL_STAT_CD),'')     AS EMAIL_STAT_CD,      -- MM009
   NULLIF(TRIM(f.ETC_CTTPC_REL_CD),'')  AS ETC_CTTPC_REL_CD,   -- MM008 (사전 심각 불완전 → 라벨 불가)
   NULLIF(TRIM(f.ETC_CTTPC_STAT_CD),'') AS ETC_CTTPC_STAT_CD,  -- MM008
@@ -50,7 +49,7 @@ SELECT
   ,NULLIF(TRIM(f.CHRCTR_RECPTN_YN),'') AS CHRCTR_RECPTN_YN
   ,NULLIF(TRIM(f.SPECL_MNG_CD1),'') AS SPECL_MNG_CD1
   ,CAST(NULL AS BOOLEAN) AS FDRM_MBER_TRNSFER_FG
-  -- 🆕 [2026-10-08 O213-D] 특별관리코드2(MM012) — 감사·이관 컬럼 뒤에 덧붙인다(UNION 양 브랜치 같은 위치 · DDL 08 선행)
+  --  [2026-10-08 O213-D] 특별관리코드2(MM012) — 감사·이관 컬럼 뒤에 덧붙인다(UNION 양 브랜치 같은 위치 · DDL 08 선행)
   ,NULLIF(TRIM(f.SPECL_MNG_CD2),'') AS SPECL_MNG_CD2
 FROM {{ source('bronze_crm','TM_MM_FDRM_MBER_INFO') }} f
 LEFT JOIN {{ ref('CRM_CODE') }} st ON st.CD_ID='MM010' AND st.DTL_CD_ID = NULLIF(TRIM(f.MBER_STAT_CD),'')

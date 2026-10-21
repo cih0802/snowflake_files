@@ -1,16 +1,16 @@
 -- ============================================================================
--- 05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql — Semantic View DDL 정본: SV_PAYMENT_BILLING_STATUS (🆕 O213 Y3-D)
+-- 05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql — Semantic View DDL 정본: SV_PAYMENT_BILLING_STATUS ( O213 Y3-D)
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능.
---   · 🔴 선행 = dbt build `FACT_PAYMENT_BILLING_STATUS`(테이블은 06_DDL 로 선생성 · build 전에는 0행)
+--   · WARN: 선행 = dbt build `FACT_PAYMENT_BILLING_STATUS`(테이블은 06_DDL 로 선생성 · build 전에는 0행)
 --     ⇒ 이 파일은 build 뒤에 실행한다(0행 상태에서 배포하면 Agent 가 「데이터 없음」으로 답한다).
 --   · 근거(2026-10-08 실측 · SILVER.CRM_PAYMENT_BILLING 회원 귀속 50,835,082행):
 --     사전 검증 = 신규 팩트 12,102행 · 청구액·납입액·미납액·원천행수 4종이 FACT_MEMBER_FEE 와 원 단위 일치.
 --     202608 청구구분 = 정기청구 922,963건(17,497,729,843원) · 코드 Y 2,375건 · OCR신규 634건 · 개별청구 84건 · 코드 NULL 1,116건(391,000원).
---     🔴 [O213-C 정정] 코드 NULL 을 종전 「16건」으로 적었다 — 원천 회비월 = 202608 만 센 값이었다. 팩트·SV 는 회비월 무효 시
+--     WARN: [O213-C 정정] 코드 NULL 을 종전 「16건」으로 적었다 — 원천 회비월 = 202608 만 센 값이었다. 팩트·SV 는 회비월 무효 시
 --       납입월로 폴백(FACT_MEMBER_FEE 와 같은 규칙)하므로 회비월 NULL · 청구액 NULL 인 납입행 1,100건이 202608 로 들어온다
 --       (원천 실측 = 회비월 202608 16건 391,000원 + 폴백 1,100건 청구액 0건 ⇒ 청구액 합은 391,000원 그대로).
---   · 🟢 [O213-C] build 후 배포·스모크 = SV·팩트·FACT_MEMBER_FEE 청구액 955,144,520,496원 3값 일치(GN_DW_ANALYST).
---   · 🔴 청구결과(PM002 · 101종 중 89종 사전 불일치)·처리결과(코드그룹 미특정)는 넣지 않았다 — 문서20 현업 확인.
+--   · [O213-C] build 후 배포·스모크 = SV·팩트·FACT_MEMBER_FEE 청구액 955,144,520,496원 3값 일치(GN_DW_ANALYST).
+--   · WARN: 청구결과(PM002 · 101종 중 89종 사전 불일치)·처리결과(코드그룹 미특정)는 넣지 않았다 — 문서20 현업 확인.
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -25,7 +25,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
       PRIMARY KEY (SPONSORSHIP_SK)
       WITH SYNONYMS ('후원사업')
       COMMENT = '후원사업 차원(납입 대상 후원사업).',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 축
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인 축
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인', '후원 캠페인')
@@ -46,7 +46,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
     pbs.PRCS_STAT_NAME AS pbs.PRCS_STAT_NAME WITH SYNONYMS ('처리상태', '회비 처리상태', '청구/완료') COMMENT = '회비 처리상태(PM013 · 청구·완료). 🔴 원천 코드 F 는 코드사전에 없어 라벨이 NULL 이다(현업 확인 대상) — 의미를 추정하지 않는다.',
     pbs.RETUN_RSN_NAME AS pbs.RETUN_RSN_NAME WITH SYNONYMS ('환급사유', '환불사유', '반환사유') COMMENT = '환급사유(PM042 · 11종 · 예: 청구 후 후원중단·회원 오신청·회비이중납부·회원요청). 환급이 아닌 청구행은 NULL(개념 없음) — 환급사유 질문은 값이 있는 행으로 한정한다.',
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명') COMMENT = '납입 대상 후원사업명.',
-    -- 🆕 [2026-10-14 O225-C] 그 달 후원 캠페인 속성(DIM_CAMPAIGN)
+    --  [2026-10-14 O225-C] 그 달 후원 캠페인 속성(DIM_CAMPAIGN)
     campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '후원 캠페인', '캠페인') COMMENT = '그 달 후원 캠페인명(일시 = 일시후원 캠페인 · 정기 = 청구월에 유효한 후원 기간의 캠페인). (미매핑) = 캠페인 미귀속.',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
     campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
@@ -77,7 +77,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
     pbs.BILLED_MEMBER_MAX AS MAX(pbs.BILLED_MEMBERS)
       WITH SYNONYMS ('청구 회원수(조합 최대)')
       COMMENT = '🔴 참고용 — 팩트 행(조합)마다 센 고유 회원수의 최대값이다. 고유 회원수는 조합을 넘어 더할 수 없으므로 「몇 명에게 청구했나」 질문은 SV_MEMBER_FEE 로 답한다.',
-    -- 🆕 [O237] 공83 캠페인별 미납(건)
+    --  [O237] 공83 캠페인별 미납(건)
     pbs.UNPAID_CNT_EQ AS SUM(pbs.UNPAID_BILLED_AMT) / 10000
       WITH SYNONYMS ('캠페인별 미납(건)', '미납(건) 금액 환산', '공83')
       COMMENT = '공83 캠페인별 미납(건) = 미납 청구액(원) ÷ 10,000. F(가산). campaign 차원(그 달 후원 캠페인 · 청구 행 단위 귀속)으로 분해한다. 🔴 SV_MEMBER_MONTHLY.UNPAID_CNT_SUM(공36 · 미납 회원의 **약정금액** ÷ 10,000)과 분자가 다르다 — 「캠페인별 미납(건)」은 이 metric 이다.'

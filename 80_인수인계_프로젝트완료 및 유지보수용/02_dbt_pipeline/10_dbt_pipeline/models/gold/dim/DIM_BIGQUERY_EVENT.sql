@@ -1,5 +1,4 @@
 -- DIM_BIGQUERY_EVENT: 이벤트분류 차원 (BIGQUERY_EVENT_DIM → category/label/action DISTINCT)
--- Co-authored with CoCo
 {{ config(
     materialized='incremental',
     unique_key='BIGQUERY_EVENT_SK',

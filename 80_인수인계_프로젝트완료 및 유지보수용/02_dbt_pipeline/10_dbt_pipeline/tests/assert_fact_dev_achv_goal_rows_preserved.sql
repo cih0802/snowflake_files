@@ -1,9 +1,8 @@
 -- [2026-08-05 O38] FACT_MEMBER_DEV_ACHIEVEMENT 는 목표 행을 하나도 잃지 않아야 한다.
--- 🔴 [2026-08-10 O53] 대상 개명·테이블화에 따라 파일명·ref 를 갱신했다
+-- WARN: [2026-08-10 O53] 대상 개명·테이블화에 따라 파일명·ref 를 갱신했다
 --   (구: WIDE_DEV_ACHIEVEMENT 뷰 → 구: FACT_DEV_ACHIEVEMENT → 현: FACT_MEMBER_DEV_ACHIEVEMENT 테이블).
---   ⚠️ 개명 시 이 파일을 놓치면 dbt parse 가 「존재하지 않는 노드 참조」 경고만 내고 통과한다 —
+--   WARN: 개명 시 이 파일을 놓치면 dbt parse 가 「존재하지 않는 노드 참조」 경고만 내고 통과한다 —
 --      경고는 게이트가 아니다(P105). 실제로 O53 parse 에서 이 경고가 발화해 잡았다.
--- Co-authored with CoCo
 --
 -- 무엇을 지키는가: `FACT_TARGET_MEMBER_DEV` 의 모든 행이 이 팩트에 `HAS_GOAL_ROW=TRUE` 로 살아 있어야 한다.
 --   이 팩트는 목표 × 실적을 **FULL OUTER** 로 묶는데, 조인 키의 타입·널 처리·grain 이 어긋나면
@@ -17,7 +16,7 @@
 --   이제 **행 보존**은 기계적으로 검사할 수 있다.
 --
 -- 위반 조건: 뷰의 `HAS_GOAL_ROW=TRUE` 행수 != 팩트 행수, 또는 목표 합계 불일치.
---   ⚠️ 합계 비교 시 `GOAL_CNT` 는 뷰에서 `COALESCE(...,0)` 되고 팩트는 NULL 을 보존하므로
+--   WARN: 합계 비교 시 `GOAL_CNT` 는 뷰에서 `COALESCE(...,0)` 되고 팩트는 NULL 을 보존하므로
 --      `SUM` 은 NULL 을 무시해 양쪽이 같다(0 과 NULL 의 합 기여가 동일).
 --
 -- 판정: 0행이면 PASS.

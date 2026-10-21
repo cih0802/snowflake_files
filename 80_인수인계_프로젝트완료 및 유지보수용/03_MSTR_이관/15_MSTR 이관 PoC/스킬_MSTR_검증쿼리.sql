@@ -1,4 +1,3 @@
--- Co-authored with CoCo
 -- =====================================================================
 -- 스킬_MSTR_검증쿼리.sql — `스킬_MSTR_비교항목.md` 의 V01~V09 검증
 --   스킬 측 = BRONZE_CRM 원천 + 스킬 로직(mstr_dept_member_development_to_crm_final_202606.sql) 재계산

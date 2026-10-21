@@ -1,0 +1,4 @@
+# doc_id: A3 · as_of: 2026-10-20 15:39:28.449 -0700 · account: SR61467 · query: Q02-1 차단 대상 후보 — GN_DW_ANALYST 를 받은 사용자·롤 (실시간)
+created_on,role,granted_to,grantee_name,granted_by,expires_on
+2026-10-20 09:11:34.372000-07:00,GN_DW_ANALYST,USER,GN_ANALYST_01,SECURITYADMIN,
+2026-10-20 07:14:18.078000-07:00,GN_DW_ANALYST,ROLE,GN_DW_ADMIN,SECURITYADMIN,

@@ -1,60 +1,60 @@
 ﻿# doc_id: D14 · as_of: 2026-10-20 · 실행순서 파일 실재 대조 · 생성 = tmp/o247/d14_order_check.py · 설명 = D14_인수인계서.md
 원본,절,순번,경로,워크스페이스,80번_01_실행순서
-원본,"개발계",1,"02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",O,O
-원본,"개발계",2,"08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql",O,O
-원본,"개발계",3,"08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql",O,O
-원본,"개발계",4,"50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql",O,X
-원본,"개발계",5,"50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql",O,X
-원본,"개발계",6,"50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql",O,X
-원본,"개발계",7,"50_handoff/07_데이터마이그 C_CONSUMER.sql",O,X
-원본,"개발계",8,"04_silver_design/08_SILVER_테이블DDL_20260714.sql",O,O
-원본,"개발계",9,"04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql",O,O
-원본,"개발계",10,"03_top-down_gold/06_DDL.sql",O,O
-원본,"개발계",11,"15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql",O,O
-원본,"개발계",12,"15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql",O,O
-원본,"개발계",13,"15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql",O,O
-원본,"개발계",14,"15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql",O,O
-원본,"개발계",15,"15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql",O,O
-원본,"개발계",16,"15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql",O,O
-원본,"개발계",17,"10_dbt_pipeline/01_deploy_dbt_project.sql",O,O
-원본,"개발계",18,"02_GN_DW_building/08_After_Deploy_DBT.sql",O,O
-원본,"개발계",19,"10_dbt_pipeline/02_dbt_parse_compile_build.sql",O,O
-원본,"개발계",20,"08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql",O,O
-원본,"개발계",21,"15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql",O,O
-원본,"개발계",22,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
-원본,"개발계",23,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
-원본,"개발계",24,"05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql",O,O
-원본,"개발계",25,"05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql",O,O
-원본,"개발계",26,"05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql",O,O
-원본,"개발계",27,"05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql",O,O
-원본,"개발계",28,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
-원본,"개발계",29,"05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql",O,O
-원본,"개발계",30,"05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql",O,O
-원본,"개발계",31,"05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql",O,O
-원본,"개발계",32,"05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql",O,O
-원본,"개발계",33,"05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql",O,O
-원본,"개발계",34,"05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql",O,O
-원본,"개발계",35,"05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql",O,O
-원본,"개발계",36,"05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql",O,O
-원본,"개발계",37,"05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql",O,O
-원본,"개발계",38,"05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql",O,O
-원본,"개발계",39,"05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql",O,O
-원본,"개발계",40,"05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql",O,O
-원본,"개발계",41,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
-원본,"개발계",42,"05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql",O,O
-원본,"개발계",43,"05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql",O,O
-원본,"개발계",44,"05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql",O,O
-원본,"개발계",45,"05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql",O,O
-원본,"개발계",46,"05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql",O,O
-원본,"개발계",47,"05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql",O,O
-원본,"개발계",48,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
-원본,"개발계",49,"05_SV-Agent_ai/22_ML_SV_DDL.sql",O,O
-원본,"개발계",50,"05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql",O,O
-원본,"개발계",51,"05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql",O,O
-원본,"개발계",52,"05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql",O,O
-원본,"개발계",53,"05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",O,O
-원본,"개발계",54,"05_SV-Agent_ai/09_1_AGENT_생성.sql",O,O
-원본,"개발계",55,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+원본,"신규계정 구축",1,"02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",O,O
+원본,"신규계정 구축",2,"08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql",O,O
+원본,"신규계정 구축",3,"08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql",O,O
+원본,"신규계정 구축",4,"50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql",O,X
+원본,"신규계정 구축",5,"50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql",O,X
+원본,"신규계정 구축",6,"50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql",O,X
+원본,"신규계정 구축",7,"50_handoff/07_데이터마이그 C_CONSUMER.sql",O,X
+원본,"신규계정 구축",8,"04_silver_design/08_SILVER_테이블DDL_20260714.sql",O,O
+원본,"신규계정 구축",9,"04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql",O,O
+원본,"신규계정 구축",10,"03_top-down_gold/06_DDL.sql",O,O
+원본,"신규계정 구축",11,"15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql",O,O
+원본,"신규계정 구축",12,"15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql",O,O
+원본,"신규계정 구축",13,"15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql",O,O
+원본,"신규계정 구축",14,"15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql",O,O
+원본,"신규계정 구축",15,"15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql",O,O
+원본,"신규계정 구축",16,"15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql",O,O
+원본,"신규계정 구축",17,"10_dbt_pipeline/01_deploy_dbt_project.sql",O,O
+원본,"신규계정 구축",18,"02_GN_DW_building/08_After_Deploy_DBT.sql",O,O
+원본,"신규계정 구축",19,"10_dbt_pipeline/02_dbt_parse_compile_build.sql",O,O
+원본,"신규계정 구축",20,"08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql",O,O
+원본,"신규계정 구축",21,"15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql",O,O
+원본,"신규계정 구축",22,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
+원본,"신규계정 구축",23,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
+원본,"신규계정 구축",24,"05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql",O,O
+원본,"신규계정 구축",25,"05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql",O,O
+원본,"신규계정 구축",26,"05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql",O,O
+원본,"신규계정 구축",27,"05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql",O,O
+원본,"신규계정 구축",28,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
+원본,"신규계정 구축",29,"05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql",O,O
+원본,"신규계정 구축",30,"05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql",O,O
+원본,"신규계정 구축",31,"05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql",O,O
+원본,"신규계정 구축",32,"05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql",O,O
+원본,"신규계정 구축",33,"05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql",O,O
+원본,"신규계정 구축",34,"05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql",O,O
+원본,"신규계정 구축",35,"05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql",O,O
+원본,"신규계정 구축",36,"05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql",O,O
+원본,"신규계정 구축",37,"05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql",O,O
+원본,"신규계정 구축",38,"05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql",O,O
+원본,"신규계정 구축",39,"05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql",O,O
+원본,"신규계정 구축",40,"05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql",O,O
+원본,"신규계정 구축",41,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
+원본,"신규계정 구축",42,"05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql",O,O
+원본,"신규계정 구축",43,"05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql",O,O
+원본,"신규계정 구축",44,"05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql",O,O
+원본,"신규계정 구축",45,"05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql",O,O
+원본,"신규계정 구축",46,"05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql",O,O
+원본,"신규계정 구축",47,"05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql",O,O
+원본,"신규계정 구축",48,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
+원본,"신규계정 구축",49,"05_SV-Agent_ai/22_ML_SV_DDL.sql",O,O
+원본,"신규계정 구축",50,"05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql",O,O
+원본,"신규계정 구축",51,"05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql",O,O
+원본,"신규계정 구축",52,"05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql",O,O
+원본,"신규계정 구축",53,"05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",O,O
+원본,"신규계정 구축",54,"05_SV-Agent_ai/09_1_AGENT_생성.sql",O,O
+원본,"신규계정 구축",55,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
 원본,"운영계",1,"02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",O,O
 원본,"운영계",2,"08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql",O,O
 원본,"운영계",3,"08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql",O,O
@@ -106,24 +106,24 @@
 원본,"운영계",49,"05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",O,O
 원본,"운영계",50,"05_SV-Agent_ai/09_1_AGENT_생성.sql",O,O
 원본,"운영계",51,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",1,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",2,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",3,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",4,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",5,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",6,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",7,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",9,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",10,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",11,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",12,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",13,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",14,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",15,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",16,"dbt_build_fact_ad_performance_budget.sql",O,X
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",17,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",18,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
-원본,"기존 환경 갱신(증분 · 개발계·운영계 공통)",19,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+원본,"기존 환경 갱신(증분)",1,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",2,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
+원본,"기존 환경 갱신(증분)",3,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
+원본,"기존 환경 갱신(증분)",4,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",5,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+원본,"기존 환경 갱신(증분)",6,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",7,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",9,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+원본,"기존 환경 갱신(증분)",10,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",11,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",12,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
+원본,"기존 환경 갱신(증분)",13,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
+원본,"기존 환경 갱신(증분)",14,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
+원본,"기존 환경 갱신(증분)",15,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
+원본,"기존 환경 갱신(증분)",16,"dbt_build_fact_ad_performance_budget.sql",O,X
+원본,"기존 환경 갱신(증분)",17,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
+원본,"기존 환경 갱신(증분)",18,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
+원본,"기존 환경 갱신(증분)",19,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
 80번,"운영계",1,"02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",O,O
 80번,"운영계",2,"08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql",O,O
 80번,"운영계",3,"08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql",O,O
@@ -175,21 +175,21 @@
 80번,"운영계",49,"05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",O,O
 80번,"운영계",50,"05_SV-Agent_ai/09_1_AGENT_생성.sql",O,O
 80번,"운영계",51,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",1,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",2,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",3,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",4,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",5,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",6,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",7,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",9,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",10,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",11,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",12,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",13,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",14,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",15,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",16,"dbt_build_fact_ad_performance_budget.sql",O,X
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",17,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",18,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
-80번,"기존 환경 갱신(증분 · 개발계·운영계 공통)",19,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+80번,"기존 환경 갱신(증분)",1,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",2,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
+80번,"기존 환경 갱신(증분)",3,"05_SV-Agent_ai/05_07_SV_DDL_AD.sql",O,O
+80번,"기존 환경 갱신(증분)",4,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",5,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+80번,"기존 환경 갱신(증분)",6,"05_SV-Agent_ai/30_O240_실데이터이상치_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",7,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",9,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O
+80번,"기존 환경 갱신(증분)",10,"05_SV-Agent_ai/32_O241_AB병기_SV배선_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",11,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",12,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
+80번,"기존 환경 갱신(증분)",13,"05_SV-Agent_ai/33_O241C_O242_운영계반영_배포순서.sql",O,O
+80번,"기존 환경 갱신(증분)",14,"05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",O,O
+80번,"기존 환경 갱신(증분)",15,"05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",O,O
+80번,"기존 환경 갱신(증분)",16,"dbt_build_fact_ad_performance_budget.sql",O,X
+80번,"기존 환경 갱신(증분)",17,"05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",O,O
+80번,"기존 환경 갱신(증분)",18,"05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",O,O
+80번,"기존 환경 갱신(증분)",19,"05_SV-Agent_ai/09_2_AGENT_버전업.sql",O,O

@@ -1,14 +1,13 @@
 -- FACT_MEMBER_EVENT: 회원 생애주기 사건 팩트 (개발/약정 ∪ 후원중단 이벤트) — 가입, 증액, 감액, 재후원, 중단 등 생애 이벤트 추적
--- Co-authored with CoCo
--- 🔴 [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
---    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 🟢 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라
---    피해 0 이었고 제거 후 기대값도 **행수 불변**이다. 🔴 제거 이유 = `RANGED_FACTS` 등재 시
+-- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
+--    (`gold_fact_purge(this)`)와 **이중 실행**됐다. 둘 다 `TRUNCATE` 를 내고 TRUNCATE 는 멱등이라
+--    피해 0 이었고 제거 후 기대값도 **행수 불변**이다. WARN: 제거 이유 = `RANGED_FACTS` 등재 시
 --    TRUNCATE + 범위 DELETE 동시 실행으로 **에러 없이 창 크기로 쪼그라드는** 잠재 사고였다.
---    🔴 정의 지점 = `macros/gold_fact_purge.sql` 하나 · 여기에 다시 쓰지 마라.
--- 🆕 🔴 [2026-09-22 O180] **위 주석을 config 블록 밖으로 옮겼다** — config 호출은 Jinja 표현식이라
+--    WARN: 정의 지점 = `macros/gold_fact_purge.sql` 하나 · 여기에 다시 쓰지 마라.
+--  WARN: [2026-09-22 O180] **위 주석을 config 블록 밖으로 옮겼다** — config 호출은 Jinja 표현식이라
 --    `--` 가 주석이 아니라 연산자로 파싱돼 컴파일이 깨졌다(`FACT_EVENT_ATTENDANCE` 가 먼저 터졌고
 --    같은 결함이 O179 가 만진 GOLD 팩트 **4건 전건**에 있었다).
---    🔴 판정식 = **config 안에 `--` 주석 금지 · 주석 안에서도 Jinja 태그 인용 금지**
+--    WARN: 판정식 = **config 안에 `--` 주석 금지 · 주석 안에서도 Jinja 태그 인용 금지**
 --       (dbt 는 파일 전체를 Jinja 로 렌더하므로 `--` 도 백틱도 Jinja 를 막지 못한다).
 {{ config(
     materialized='incremental',
@@ -33,11 +32,11 @@ spb_lookup as (
 ),
 stop_single_biz as (
     -- [2026-09-14 O160] 착수표 ⑭ 분해 배선: 단일 후원사업 중단 건 1:1 배선 (팬아웃 0)
-    -- 🆕 [2026-10-01 O196-D · DEC-59 #3·#4 사용자 결정] 다중사업 동시중단도 1건으로 귀속한다:
+    --  [2026-10-01 O196-D · DEC-59 #3·#4 사용자 결정] 다중사업 동시중단도 1건으로 귀속한다:
     --   ① 시작월(START_MONTH_KEY)이 가장 늦은 사업(= 가장 최근에 시작된 중단사업)
     --   ② 같은 달 동률이면 가장 최근 후원(SPNSR_NO · SPNSR_BSNS_NO 내림차순)을 대표로 한다.
     --   ⇒ (회원×중단일)당 1행 · 팬아웃 0 · 미매칭(원천 결손)만 0 센티넬로 남는다.
-    --   🔴 원천 중단이력에 후원사업 식별자가 없으므로 이것은 **업무 귀속 규칙**이지 원천 사실이 아니다.
+    --   WARN: 원천 중단이력에 후원사업 식별자가 없으므로 이것은 **업무 귀속 규칙**이지 원천 사실이 아니다.
     select
         MBER_NO,
         SPNSR_DSCNTC_DE,
@@ -55,7 +54,7 @@ stop_single_biz as (
 -- [O183] #113 신규기존구분 기준일 = 회원 최초가입일(#28) = LEAST(회원 등록일, 최초 개발일, 첫 청구월 1일)
 --   — FMM member_first 와 **같은 규칙·같은 월키 식**(첫 청구월 = FMM billing 의 MONTH_KEY 산식).
 --   사건 연도 = 최초가입 연도 ⇒ 신규 · 그 이전에 가입 ⇒ 기존 · 기준일 없음 ⇒ NULL(창작 금지).
---   🔴 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 기준일 후보에서 제외.
+--   WARN: 원천 센티넬 1900-01-01 은 날짜가 아니다 ⇒ 기준일 후보에서 제외.
 member_first_dev as (
     select MBER_NO, MIN(D) as FIRST_DEV_DATE
     from (
@@ -81,15 +80,15 @@ member_first_dev as (
     group by MBER_NO
 ),
 
--- 🆕 [2026-10-06 O202 · 사용자 결정 「DEV_CNT 를 MSTR 정의로 교체」] 개발(건)·개발(명) = MSTR 기준.
+--  [2026-10-06 O202 · 사용자 결정 「DEV_CNT 를 MSTR 정의로 교체」] 개발(건)·개발(명) = MSTR 기준.
 --   정본 = `15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql` `FN_MM_SPNSR_DVLP` B1·B2
 --        + `04_sp_script.sql` `USP_F_MM_SPNSR_DVLP_SUM`(개발(건) = 인정금액 / 10,000).
 --   · B1 신규·재후원(1·4) = 미중단 후원사업(중단일 > 발생월 말일) · 후원사업×월 금액합 > 0 인 행 · 인정금액 = 그 행 금액.
 --   · B2 증액(2) = 회원×월 합 > 0 · 후원사업×월 증감합(2·3) > 0 · 누적(발생일·일련번호 순) − |감액| > 0 · 인정금액 = 상계 금액(RAMT).
---   🟢 검증(O202 · JU93656 · 2026-10-06) = 202607 SILVER 재현 ↔ `GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM`(1·2·4)
+--    검증(O202 · 2026-10-06) = 202607 SILVER 재현 ↔ `GN_DW.MSTR.F_MM_SPNSR_DVLP_SUM`(1·2·4)
 --      14,188명 · 29,714.1888건 · 15,125행 **전건 일치** · 매체운영팀×사단 5,989명 · 11,956.2055건 일치.
---   🔴 B3 감액·B4 중단은 MSTR 개발(건) 1·2·4 집계에 들어가지 않으므로 여기서 다루지 않는다.
---   🔴 종전 정의(1·2·4 사건 = 1)는 폐기 — 「사건 여부」 판정이 필요한 하류는 `DVLP_DIV_CD in ('1','2','4')` 로 본다.
+--   WARN: B3 감액·B4 중단은 MSTR 개발(건) 1·2·4 집계에 들어가지 않으므로 여기서 다루지 않는다.
+--   WARN: 종전 정의(1·2·4 사건 = 1)는 폐기 — 「사건 여부」 판정이 필요한 하류는 `DVLP_DIV_CD in ('1','2','4')` 로 본다.
 mstr_dev_base as (
     select
         d.SPNSR_NO, d.SPNSR_BSNS_NO, d.SER_NO, d.OCCRRNC_DE, d.MBER_NO, d.DVLP_DIV_CD, d.SPNSR_AMT,
@@ -146,7 +145,7 @@ mstr_dev as (
     union all
     select * from mstr_b2
 ),
--- 🆕 [2026-10-15 O-HC] 0 처리 사유 진단 — mstr_b1·b2 와 **같은 창 정의**를 필터 전 행에 다시 계산한다.
+--  [2026-10-15 O-HC] 0 처리 사유 진단 — mstr_b1·b2 와 **같은 창 정의**를 필터 전 행에 다시 계산한다.
 --   mstr_* 를 고치지 않고 옆에서 재는 이유 = DEV_CNT(MSTR 대사값)가 바뀔 경로를 0 으로 만들기 위해서다.
 --   · B1_BIZ_MT_AMT = b1 QUALIFY 의 후원사업×월 1·4 합 (span 은 후원사업당 1행이라 조인 필터 전후 동일)
 --   · B2_SAMT/B2_MAMT = b2a 의 SAMT/MAMT 와 같은 식(MAMT 는 2·3·5 행만 합산 = b2a WHERE 와 동일)
@@ -178,7 +177,7 @@ dev as (
         d.SPNSR_AMT                                         as SPNSR_AMT,
         case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) then COALESCE(md.MSTR_AMT, 0) / 10000 else 0 end as DEV_CNT,
         case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) and md.MD_SER_NO is not null then 1 else 0 end as DEV_MEMBERS,
-        -- 🆕 [2026-10-15 O-HC] 상계 전 원천값·0 처리 사유 — DEV_CNT 산식은 손대지 않는다(MSTR 대사 보존).
+        --  [2026-10-15 O-HC] 상계 전 원천값·0 처리 사유 — DEV_CNT 산식은 손대지 않는다(MSTR 대사 보존).
         case when d.DVLP_DIV_CD in ({{ gn_code('DEV_RECOGNIZED') }}) then COALESCE(d.SPNSR_AMT, 0) / 10000 else 0 end as DEV_CNT_RAW,
         case when d.DVLP_DIV_CD not in ({{ gn_code('DEV_RECOGNIZED') }}) then CAST(NULL AS VARCHAR)
              when COALESCE(d.SPNSR_AMT, 0) <= 0 then '원금액0이하'
@@ -268,16 +267,16 @@ stop as (
         CAST(NULL AS NUMBER(18,0))                          as SPNSR_AMT,
         0 as DEV_CNT, 0 as DEV_MEMBERS,
         0 as DEV_CNT_RAW, CAST(NULL AS VARCHAR) as DEV_EXCL_REASON,
-        -- 🆕 🟢 [2026-09-16 O168] `UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 배선.
+        --   [2026-09-16 O168] `UNPAID_STOP_CNT`·`UNPAID_STOP_MEMBERS` 배선.
         --   종전 = 스캐폴드 상수 `0` (BLOCKING-5 버킷 B · 라이브 전건 0 실측).
         --   판정 = **중단사유명에 「미납」이 포함된 중단**을 미납중단으로 센다.
-        --   🟢 원천 실측(`SILVER.CRM_MEMBER_DISCONTINUE` 중단사유 20종): 미납 계열 **3종**
+        --    원천 실측(`SILVER.CRM_MEMBER_DISCONTINUE` 중단사유 20종): 미납 계열 **3종**
         --      `14` 장기미납 342,586 · `16` 신규미납 46,338 · `13` 반송미납 86 = **389,010행**.
-        --   🔴 코드 목록을 하드코딩하지 않고 **사유명 술어**로 판정한다 — 원천에 미납 계열 코드가
+        --   WARN: 코드 목록을 하드코딩하지 않고 **사유명 술어**로 판정한다 — 원천에 미납 계열 코드가
         --      추가되면 코드 목록은 조용히 낡지만 술어는 따라간다(코드 3종은 현 실현일 뿐이다).
-        --   🔴 이 판정은 **업무 정의 선택**이다(예: 「반송미납」을 미납으로 볼 것인가).
+        --   WARN: 이 판정은 **업무 정의 선택**이다(예: 「반송미납」을 미납으로 볼 것인가).
         --      근거·대안은 문서30 `DEC-54` 에 등재했다 — 현업이 달리 정하면 술어만 바꾼다.
-        --   ⚠️ `STOP_CNT` 의 부분집합이다(미납중단 ⊂ 중단) ⇒ 두 measure 를 합산하지 마라.
+        --   WARN: `STOP_CNT` 의 부분집합이다(미납중단 ⊂ 중단) ⇒ 두 measure 를 합산하지 마라.
         1 as STOP_CNT, 1 as STOP_MEMBERS,
         case when {{ gn_is_unpaid_stop_reason('s.DSCNTC_RSN_NM') }} then 1 else 0 end as UNPAID_STOP_CNT,
         case when {{ gn_is_unpaid_stop_reason('s.DSCNTC_RSN_NM') }} then 1 else 0 end as UNPAID_STOP_MEMBERS,

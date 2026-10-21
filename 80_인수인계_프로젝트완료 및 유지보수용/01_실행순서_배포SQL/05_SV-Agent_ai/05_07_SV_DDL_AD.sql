@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 05_7_SV_DDL_AD.sql — Semantic View DDL 정본: SV_AD
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -40,7 +40,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     mktg.DEV_CAMPAIGN_CNT   AS mktg.DEV_CAMPAIGN_CNT
       WITH SYNONYMS ('개발캠페인 수', '팬아웃 배수')
       COMMENT = '🔴**팬아웃 경고축**: 이 마케팅캠페인에 매달린 개발캠페인 수. 1 보다 크면 개발캠페인 단위로 광고비를 내릴 때 그 배수만큼 복제된다 — 이 값을 근거로 「개발캠페인별 ROI 는 배분 규칙 없이는 불가」라고 답한다',
-    -- 🆕 [2026-10-14 O225-C] 마케팅캠페인 속성 3종(광고비 분해용 · 인입경로·채널·카테고리는 의도적으로 없다)
+    --  [2026-10-14 O225-C] 마케팅캠페인 속성 3종(광고비 분해용 · 인입경로·채널·카테고리는 의도적으로 없다)
     mktg.MKTG_UTM_NM AS mktg.MKTG_UTM_NM
       WITH SYNONYMS ('UTM', 'UTM 캠페인', '마케팅캠페인 UTM')
       COMMENT = '마케팅캠페인의 UTM 라벨(CRM 마케팅 코드 U001 · 마케팅캠페인당 1개). 광고비를 UTM 별로 나눌 때 쓴다. 대행사 원천의 UTM 태그(UTM_CMPGN_NM)와는 다른 축이다(그쪽은 광고행 원값).',
@@ -56,7 +56,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     mktg.BIZ_CASE_TYPE_IS_MULTI AS mktg.BIZ_CASE_TYPE_IS_MULTI
       WITH SYNONYMS ('사업사례 대표값 여부')
       COMMENT = 'TRUE = 사업/사례 값이 여럿이라 대표값을 쓴 마케팅캠페인.',
-    -- 🆕 [2026-10-15 O232-B] 마케팅캠페인 대표 카테고리(캠페인 목록 속성용 · 광고비 분해는 ad.AD_CTGR_NM)
+    --  [2026-10-15 O232-B] 마케팅캠페인 대표 카테고리(캠페인 목록 속성용 · 광고비 분해는 ad.AD_CTGR_NM)
     mktg.CMPGN_CTGR_NM AS mktg.CMPGN_CTGR_NM
       WITH SYNONYMS ('마케팅캠페인 카테고리', '마케팅캠페인 대표 카테고리')
       COMMENT = '마케팅캠페인 대표 캠페인카테고리(매핑 행수 최다). 🔴 카테고리별 광고비는 이 축이 아니라 ad.AD_CTGR_NM 으로 낸다 — 이 축은 미연결 재방송·영상의 소재 매핑 카테고리를 놓친다.',
@@ -131,7 +131,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.DMST_OVSEA_DIV_NM AS ad.DMST_OVSEA_DIV_NM
       WITH SYNONYMS ('국내/해외', '국내해외 구분', '공15')
       COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL].',
-    -- 🆕 [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축 · 원천 CRM 캠페인카테고리 MM294)
+    --  [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축 · 원천 CRM 캠페인카테고리 MM294)
     ad.AD_CTGR_NM AS ad.AD_CTGR_NM
       WITH SYNONYMS ('광고비 귀속 카테고리', '캠페인 카테고리', '캠페인카테고리', '카테고리별 광고비')
       COMMENT = '광고비 귀속 캠페인카테고리명(원천 CRM 캠페인카테고리). 이름매칭·UTM 으로 마케팅캠페인에 연결된 행 = 그 마케팅캠페인의 대표 카테고리 · 연결되지 않은 재방송·영상 행 = 소재 매핑 확정 카테고리 · 귀속 없음 = NULL. 🔴 대표값이 섞여 있다 — 카테고리별 광고비를 답할 때 AD_CTGR_IS_MULTI = TRUE 광고비 비중과 NULL(귀속 없음) 광고비를 함께 밝힌다.',
@@ -144,7 +144,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.AD_CTGR_IS_MULTI AS ad.AD_CTGR_IS_MULTI
       WITH SYNONYMS ('카테고리 대표값 여부', '카테고리 다중')
       COMMENT = 'TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값을 쓴 행. CREATIVE_MAP = FALSE · NONE = NULL.',
-    -- 🆕 [2026-10-15 O233 #36] 표시 전용 카테고리명 나열(그루핑·필터 금지)
+    --  [2026-10-15 O233 #36] 표시 전용 카테고리명 나열(그루핑·필터 금지)
     ad.AD_CTGR_NM_LIST AS ad.AD_CTGR_NM_LIST
       WITH SYNONYMS ('카테고리 전체 목록', '해당 카테고리 전부')
       COMMENT = '광고비 귀속 카테고리명 나열(쉼표 구분 · 첫 항목 = AD_CTGR_NM). 🔴 표시 전용 — GROUP BY·WHERE·합산에 쓰지 않는다(집계는 AD_CTGR_NM). 다중 캠페인이 어떤 카테고리에 걸쳐 있는지 보여줄 때만 함께 SELECT 한다.'

@@ -1,0 +1,21 @@
+# O252 · DEC-63 — 폐지·개편 부서 → 현재 부서 귀속의 현업 확정분(수기 관리)
+# Co-authored with CoCo
+# 🔴 이 파일이 자동 규칙보다 우선한다(DIM_ORG_SUCCESSION MAP_METHOD = 'MANUAL').
+#    · OLD_DEPT_ID = 원천 실적부서코드(SILVER.CRM_ORG.DEPT_ID) · CUR_DEPT_ID = 귀속할 현재 활성 부서코드
+#    · 귀속하지 않기로 확정한 부서는 CUR_DEPT_ID 를 비운다 ⇒ MAP_METHOD = 'MANUAL_UNMAPPED'
+#    · 조직 개편 시 갱신 주체 = 인사 담당(현업 지정 대기 · O252 백로그)
+version: 2
+seeds:
+  - name: ORG_SUCCESSION_MANUAL
+    config:
+      database: GN_DW
+      schema: GOLD
+      column_types:
+        OLD_DEPT_ID: varchar
+        CUR_DEPT_ID: varchar
+        CONFIRMED_BY: varchar
+        CONFIRMED_DT: varchar
+        NOTE: varchar
+    columns:
+      - name: OLD_DEPT_ID
+        tests: [not_null, unique]

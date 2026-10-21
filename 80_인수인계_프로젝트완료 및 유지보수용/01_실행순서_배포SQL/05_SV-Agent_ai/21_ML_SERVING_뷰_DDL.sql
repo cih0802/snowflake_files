@@ -4,10 +4,10 @@
 --   · 뷰를 끼우는 이유 = ML 테이블 교체 내성 · VARIANT(PREDICTION/PREDICT) 평탄화 · 회원 예측 중복 단일화.
 --   · 실행 = GN_DW_ADMIN · 선행 = GN_DW.ML 결과 테이블 적재(dbt 무관).
 --   · 컬럼 COMMENT 는 뷰 정의 안에 있다 — 재생성해도 유지된다. GRANT 는 재생성 시 사라지므로 같은 파일 말미에 있다.
---   · 🔴 ⛔ 표식 구간 = 원천 삭제로 비활성인 코드(되살리려면 새 사용자 결정).
+--   · WARN: ⛔ 표식 구간 = 원천 삭제로 비활성인 코드(되살리려면 새 사용자 결정).
 --   · 설계근거·실측 이력 = 21_ML_SERVING_뷰_설계이력_부록.md · 설계 = 20_ML_SV_설계.md
 --
---   🆕 2026-10-02 O198 · ML 이관 범위 12종 기준 재정렬 (정본 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql)
+--    2026-10-02 O198 · ML 이관 범위 12종 기준 재정렬 (정본 = 50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql)
 --     · 분류 4종 피처 컬럼 제거 ⇒ ML_MEMBER_RISK_V / ML_SPONSOR_RISK_V 에서 피처·피처 기반 라벨 컬럼 삭제.
 --       └ 회원 예측 중복 단일화 기준(월말 상태 spell · MBER_STAT_CD)이 원천에서 사라졌다 ⇒ 키 단위 집계로 교체
 --         (확률 = 중복행 평균 · 분류 = 하나라도 '1' 이면 '1' · 중복 행수 컬럼 발행). 실측 202606: 101,817 키 중 16,290 키 중복.
@@ -15,7 +15,7 @@
 --     · 시계열 SERIES → 의미 컬럼명(CMPGN_CTGR_CD · CMPGN_CD · MKTG_CHANNEL).
 --     · LTV 4종(UCMPGN_LTV · UCMPGN_LTV_SCORE · CMPGN_LTV · CMPGN_LTV_SCORE) 이관 제외 ⇒
 --       ML_LTV_FORECAST_V 는 신규 2종(MKTG_CHANNEL_MBER_AVG_LTV · CMPGN_SPNSR_AMT_LTV)으로 재구성 · ML_LTV_SCORE_V 는 ⛔ 폐기.
---       🔴 CMPGN_SPNSR_AMT_LTV.MKTG_CHANNEL 은 이름과 달리 **캠페인코드**다(실측 50/50 이 CMPGN_CD 일치 · MKTG_CHANNEL 일치 4는 숫자 우연) — 원천 확인 대상.
+--       WARN: CMPGN_SPNSR_AMT_LTV.MKTG_CHANNEL 은 이름과 달리 **캠페인코드**다(실측 50/50 이 CMPGN_CD 일치 · MKTG_CHANNEL 일치 4는 숫자 우연) — 원천 확인 대상.
 --     · CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 의 FEATURE_TYPE 제거 ⇒ 해당 유형은 NULL.
 --     · ONCE_CONVERSION 이 (STDR_MT, ONCE_MBER_NO, PREDICT) 3컬럼 · STDR_MT 단일(202606) ⇒ 「관측월(가입월부터 6개월)」 해석 폐기,
 --       STDR_MT = 기준월(다른 ML 뷰와 동일 의미)로 재정의. 회원당 다중 예측행은 DEC-59 #1 대로 유지.
@@ -25,10 +25,10 @@ USE WAREHOUSE GN_DW_DEV_WH;
 USE SCHEMA GN_DW.SERVING;
 
 -- [1] ML_MEMBER_RISK_V — ML 회원단위 예측(중단·증액·충성) 통합
---   ⚠️ 원천(중단·증액)이 같은 기준월에 회원당 여러 행(확률 상이)을 담는다 — 실행 순번 컬럼이 없어 최신을 고를 수 없다.
+--   WARN: 원천(중단·증액)이 같은 기준월에 회원당 여러 행(확률 상이)을 담는다 — 실행 순번 컬럼이 없어 최신을 고를 수 없다.
 --      ⇒ 키 단위 집계: 확률 = 평균 · 분류 = MAX(하나라도 '1') · *_PRED_ROWS 로 중복 수를 드러낸다(임의 행 선택 금지).
---   ⚠️ 중단 예측 지평은 발행하지 않는다(테이블명 12M · 원천 테이블 COMMENT 6개월 · 확인 전 기간 미기재).
---   ⚠️ 충성회원은 모집단이 다르다 — FULL 결합 · NULL 허용.
+--   WARN: 중단 예측 지평은 발행하지 않는다(테이블명 12M · 원천 테이블 COMMENT 6개월 · 확인 전 기간 미기재).
+--   WARN: 충성회원은 모집단이 다르다 — FULL 결합 · NULL 허용.
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_RISK_V (
     STDR_MT                COMMENT '기준월 YYYYMM(모델 실행월) — 여러 기준월 합산은 중복계상',
     STDR_MONTH_KEY         COMMENT '기준월 숫자키 YYYYMM(STDR_MT 파생)',
@@ -120,7 +120,7 @@ LEFT JOIN inc   i ON i.STDR_MT = u.STDR_MT AND i.MBER_NO = u.MBER_NO
 LEFT JOIN loyal l ON l.STDR_MT = u.STDR_MT AND l.MBER_NO = u.MBER_NO;
 
 -- [2] ML_SPONSOR_RISK_V — ML 후원건단위 이탈 예측
---   🆕 O198: 원천 6컬럼(STDR_MT, MBER_NO, SPNSR_BSNS_ID, SPNSR_BSNS_NO, CMPGN_CTGR_CD, PREDICTION).
+--    O198: 원천 6컬럼(STDR_MT, MBER_NO, SPNSR_BSNS_ID, SPNSR_BSNS_NO, CMPGN_CTGR_CD, PREDICTION).
 --      캠페인코드·결제수단·피처(유지기간·금액·변경건수 등)는 원천에서 제거됐다 ⇒ 캠페인/상위캠페인 축·금액 지표 삭제.
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_SPONSOR_RISK_V (
     STDR_MT              COMMENT '기준월 YYYYMM(모델 실행월) — 여러 기준월 합산은 중복계상',
@@ -165,7 +165,7 @@ LEFT JOIN (
 ) ctgr ON ctgr.CTGR_CD = r.CMPGN_CTGR_CD;
 
 -- [3] ML_DVLP_FORECAST_V — ML 개발금액 예측 2종(전사·캠페인) 통합
---   ⚠️ 단위 = 만원(회비·LTV 는 원 — 섞지 않는다) · SERIES_TYPE 간 합산은 중복계상.
+--   WARN: 단위 = 만원(회비·LTV 는 원 — 섞지 않는다) · SERIES_TYPE 간 합산은 중복계상.
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_DVLP_FORECAST_V (
     SERIES_TYPE COMMENT '계열유형: TOTAL·CAMPAIGN — 🔴 유형 간 합산은 중복계상 · 항상 고정·그룹 (부서·후원사업·신규기존은 원천 삭제로 비활성)',
     SERIES_CD   COMMENT '계열코드(유형에 따라 캠페인 코드 / (전사))',
@@ -193,7 +193,7 @@ FROM GN_DW.ML.ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT c
 LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN cm ON cm.CMPGN_CD = c.CMPGN_CD;
 
 -- [4] ML_FEE_FORECAST_V — ML 캠페인카테고리별 회비(후원금액) 예측
---   ⚠️ 단위 = 원(개발금액 예측 만원과 다른 뷰에 둔 이유).
+--   WARN: 단위 = 원(개발금액 예측 만원과 다른 뷰에 둔 이유).
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_FEE_FORECAST_V (
     STDR_MT            COMMENT '예측 실행 기준월 YYYYMM',
     STDR_MONTH_KEY     COMMENT '기준월 숫자키 YYYYMM(STDR_MT 파생)',
@@ -224,10 +224,10 @@ LEFT JOIN (
     WHERE CMPGN_CTGR_CD IS NOT NULL
 ) ctgr ON ctgr.CTGR_CD = r.CMPGN_CTGR_CD;
 
--- [5] ML_LTV_FORECAST_V — ML LTV 월별 예측 2종 (🆕 O198 재구성)
+-- [5] ML_LTV_FORECAST_V — ML LTV 월별 예측 2종 ( O198 재구성)
 --   · MKTG_CHANNEL_AVG_MEMBER = ML_RST_DATA_MKTG_CHANNEL_MBER_AVG_LTV (마케팅채널별 회원평균 후원금액 · 계열 = CRM_CAMPAIGN.MKTG_CHANNEL 실측 48/48)
---   · CMPGN_TOTAL             = ML_RST_DATA_CMPGN_SPNSR_AMT_LTV (월간 후원금액 · 🔴 원천 컬럼명 MKTG_CHANNEL 이나 값은 CMPGN_CD — 실측 50/50)
---   🔴 원천 테이블 COMMENT 는 둘 다 「채널별」이라 적었으나 CMPGN_SPNSR_AMT_LTV 의 실제 계열은 캠페인이다 ⇒ 원천 확인 대상(정정되면 이 조인을 바꾼다).
+--   · CMPGN_TOTAL = ML_RST_DATA_CMPGN_SPNSR_AMT_LTV (월간 후원금액 · WARN: 원천 컬럼명 MKTG_CHANNEL 이나 값은 CMPGN_CD — 실측 50/50)
+--   WARN: 원천 테이블 COMMENT 는 둘 다 「채널별」이라 적었으나 CMPGN_SPNSR_AMT_LTV 의 실제 계열은 캠페인이다 ⇒ 원천 확인 대상(정정되면 이 조인을 바꾼다).
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_LTV_FORECAST_V (
     LTV_TYPE      COMMENT 'LTV유형: MKTG_CHANNEL_AVG_MEMBER(마케팅채널 회원평균) · CMPGN_TOTAL(캠페인 월간 후원금액) — 🔴 하나로 고정',
     LTV_TYPE_NAME COMMENT 'LTV유형 라벨',
@@ -268,7 +268,7 @@ LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN cm ON cm.CMPGN_CD = s.MKTG_CHANNEL;
 --   · 되살리려면 원천 스코어 테이블 재공급 + 새 사용자 결정이 필요하다. 구 정의 = 라이브 GET_DDL('VIEW','GN_DW.SERVING.ML_LTV_SCORE_V') (DROP 전).
 
 -- [7] ML_FEATURE_IMPORTANCE_V — ML 요인분석(피처 중요도) 2종
---   🆕 O198: CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 에서 FEATURE_TYPE 이 제거됐다 ⇒ 그 유형은 NULL.
+--    O198: CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION 에서 FEATURE_TYPE 이 제거됐다 ⇒ 그 유형은 NULL.
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_FEATURE_IMPORTANCE_V (
     ANALYSIS_TYPE      COMMENT '분석유형: CHANNEL_NEW_SPNSR · DVLP_INC — 🔴 하나로 고정(유형 내 합계=1)',
     ANALYSIS_TYPE_NAME COMMENT '분석유형 라벨',
@@ -291,10 +291,10 @@ SELECT 'DVLP_INC',
        b.STDR_MT, b.RANK, b.FEATURE, b.SCORE, b.FEATURE_TYPE
 FROM GN_DW.ML.ML_RST_DATA_DVLP_INC_CONTRIBUTION b;
 
--- [8] ML_ONCE_CONVERSION_V — ML 일시후원회원의 정기후원 전환 예측 (🆕 O198 재정의)
+-- [8] ML_ONCE_CONVERSION_V — ML 일시후원회원의 정기후원 전환 예측 ( O198 재정의)
 --   · 원천 3컬럼(STDR_MT, ONCE_MBER_NO, PREDICT) · 실측 202606 단일 기준월 · 13,065행 / 6,718 키.
---   · 🔴 종전 「관측월(가입월부터 6개월)」 해석은 폐기 — STDR_MT 는 다른 ML 뷰와 같은 「기준월」이다(원천 테이블 COMMENT: 향후 6개월 내 전환 가능성).
---   · 🔴 회원당 다중 예측행(실행순번 없음)은 DEC-59 #1 대로 **유지**한다 — 회원수는 반드시 중복제거로 센다.
+--   · WARN: 종전 「관측월(가입월부터 6개월)」 해석은 폐기 — STDR_MT 는 다른 ML 뷰와 같은 「기준월」이다(원천 테이블 COMMENT: 향후 6개월 내 전환 가능성).
+--   · WARN: 회원당 다중 예측행(실행순번 없음)은 DEC-59 #1 대로 **유지**한다 — 회원수는 반드시 중복제거로 센다.
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_ONCE_CONVERSION_V (
     STDR_MT              COMMENT '기준월 YYYYMM(모델 실행월) — 여러 기준월 합산은 중복계상',
     STDR_MONTH_KEY       COMMENT '기준월 숫자키 YYYYMM(STDR_MT 파생)',
@@ -468,11 +468,11 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_CHURN_BY_CMPGN_CTGR_V TO ROLE GN_DW_SERVIC
 -- ============================================================================
 -- [O241-M] ML_MEMBER_ATTR_ASOF_V — ML 예측 회원의 기준월 시점 회원 특성(사용자 승인 2026-10-18)
 --   grain = 기준월(STDR_MT) × 회원번호(MBER_NO) · 대상 = ML_MEMBER_RISK_V ∪ ML_SPONSOR_RISK_V ∪ ML_CHURN_BY_CMPGN_CTGR_V
---   🔴 모델 피처가 아니다 — 예측 결과를 회원 특성으로 나눠 보는 집계용 속성이다.
+--   WARN: 모델 피처가 아니다 — 예측 결과를 회원 특성으로 나눠 보는 집계용 속성이다.
 --   기준 시점 = 기준월 말일(STATUS_HISTORY 유효구간) · 금액대·유지기간·신규기존 = FACT_MEMBER_MONTHLY 그 달 행
 --   결제수단 = WIDE_MEMBER_FEE 그 달 청구액 최대 행의 결제수단(동액이면 이름순) · 미매칭 = '(미매칭)'
 -- ============================================================================
--- 🆕 [O246] 2026-10-19 · 금액대·기간대·신규기존·납입방식 = 기준월 행 부재 시 직전 12개월 최근 월 폴백 · ATTR_SOURCE_MONTH_KEY·ATTR_FALLBACK 추가(고위험 미매칭 94.2% → 0%)
+--  [O246] 2026-10-19 · 금액대·기간대·신규기존·납입방식 = 기준월 행 부재 시 직전 12개월 최근 월 폴백 · ATTR_SOURCE_MONTH_KEY·ATTR_FALLBACK 추가(고위험 미매칭 94.2% → 0%)
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V(
 	STDR_MT COMMENT '모델 실행 기준월(YYYYMM)',
 	MBER_NO COMMENT '회원번호(정기회원 체계 = MEMBER_DK)',
@@ -504,7 +504,7 @@ WITH m AS (
    AND LAST_DAY(TO_DATE(m.STDR_MT, 'YYYYMM')) BETWEEN h.EFFECTIVE_FROM AND COALESCE(h.EFFECTIVE_TO, '9999-12-31'::DATE)
   QUALIFY ROW_NUMBER() OVER (PARTITION BY m.STDR_MT, m.MBER_NO ORDER BY h.EFFECTIVE_FROM DESC) = 1
 ), f AS (
-  -- 🆕 [O246] 기준월 포함 직전 12개월 중 최근 월 1행
+  --  [O246] 기준월 포함 직전 12개월 중 최근 월 1행
   SELECT m.STDR_MT, m.MBER_NO, f.MONTH_KEY, f.AMOUNT_BAND1, f.PERIOD_BAND1, f.NEW_EXISTING_FLAG
   FROM m JOIN GN_DW.GOLD.FACT_MEMBER_MONTHLY f
     ON f.MEMBER_DK = m.MBER_NO
@@ -512,7 +512,7 @@ WITH m AS (
    AND f.MONTH_KEY >  m.STDR_MT::INT - 100
   QUALIFY ROW_NUMBER() OVER (PARTITION BY m.STDR_MT, m.MBER_NO ORDER BY f.MONTH_KEY DESC) = 1
 ), p AS (
-  -- 🆕 [O246] 기준월 포함 직전 12개월 중 최근 청구월 · 그 달 청구액 최대 결제수단
+  --  [O246] 기준월 포함 직전 12개월 중 최근 청구월 · 그 달 청구액 최대 결제수단
   SELECT m.STDR_MT, m.MBER_NO, w.PAYMENT_METHOD_NAME
   FROM m JOIN GN_DW.GOLD.WIDE_MEMBER_FEE w
     ON w.MEMBER_DK = m.MBER_NO
@@ -555,9 +555,9 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V TO ROLE GN_DW_SERVICE;
 
 -- ============================================================================
--- 🆕 [O246] ML_FEE_FORECAST_ALLOC_V — 회비 예측(캠페인카테고리) → 후원사업·마케팅캠페인명·공통브랜드 배분 추정(사용자 승인 2026-10-19)
+--  [O246] ML_FEE_FORECAST_ALLOC_V — 회비 예측(캠페인카테고리) → 후원사업·마케팅캠페인명·공통브랜드 배분 추정(사용자 승인 2026-10-19)
 --   비중 = 기준월 포함 직전 12개월 WIDE_MEMBER_FEE.PAID_FEE · 축별 합 = ML_FEE_FORECAST_V 합(실측 202609 = 190,654,663,995원 일치)
---   🔴 모델 예측치 아님 · (실적 비중 없음) 27.6% = 일시(49) 등 회비 실적 없는 카테고리
+--   WARN: 모델 예측치 아님 · (실적 비중 없음) 27.6% = 일시(49) 등 회비 실적 없는 카테고리
 -- ============================================================================
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_FEE_FORECAST_ALLOC_V(
 	STDR_MT COMMENT '예측 실행 기준월 YYYYMM',
@@ -617,7 +617,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEE_FORECAST_ALLOC_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_FEE_FORECAST_ALLOC_V TO ROLE GN_DW_SERVICE;
 
 -- ============================================================================
--- 🆕 [O246-B] ML_MEMBER_PRED_BRIDGE_V — 회원 단위 예측 × 실적 축·실적 상태 브리지(사용자 승인 2026-10-19)
+--  [O246-B] ML_MEMBER_PRED_BRIDGE_V — 회원 단위 예측 × 실적 축·실적 상태 브리지(사용자 승인 2026-10-19)
 -- ============================================================================
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V (
   STDR_MT COMMENT '모델 실행 기준월(YYYYMM)',
@@ -726,7 +726,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V TO ROLE GN_DW_VIEWER;
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V TO ROLE GN_DW_SERVICE;
 
 -- ============================================================================
--- 🆕 [O246-B] ML_DVLP_FORECAST_ALLOC_V — 개발예측(전사) × 후원사업·마케팅캠페인명·공통브랜드·마케팅채널 배분 추정(사용자 승인 2026-10-19)
+--  [O246-B] ML_DVLP_FORECAST_ALLOC_V — 개발예측(전사) × 후원사업·마케팅캠페인명·공통브랜드·마케팅채널 배분 추정(사용자 승인 2026-10-19)
 -- ============================================================================
 CREATE OR REPLACE VIEW GN_DW.SERVING.ML_DVLP_FORECAST_ALLOC_V (
   STDR_MT COMMENT '예측 실행 기준월 YYYYMM',
@@ -761,7 +761,7 @@ WITH fc AS (
   UNION ALL
   SELECT STDR_MT, '마케팅채널', COALESCE(NULLIF(TRIM(MKTG_CHANNEL_NM), ''), '(미지정)'), SUM(AMT) FROM base GROUP BY 1, 2, 3
   UNION ALL
-  -- 🆕 [O249] 개발구분 축(신규·증액·재후원) — O248-A ② · 예측 = 기준값 1개 + 비중 배분(사용자 결정 2026-10-20)
+  --  [O249] 개발구분 축(신규·증액·재후원) — O248-A ② · 예측 = 기준값 1개 + 비중 배분(사용자 결정 2026-10-20)
   SELECT STDR_MT, '개발구분', DVLP_DIV_NM, SUM(AMT) FROM base GROUP BY 1, 2, 3
 ), sh AS (
   SELECT STDR_MT, ALLOC_AXIS, AXIS_VALUE, AMT / SUM(AMT) OVER (PARTITION BY STDR_MT, ALLOC_AXIS) AS SHARE
@@ -776,7 +776,7 @@ GRANT SELECT ON VIEW GN_DW.SERVING.ML_DVLP_FORECAST_ALLOC_V TO ROLE GN_DW_VIEWER
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_DVLP_FORECAST_ALLOC_V TO ROLE GN_DW_SERVICE;
 
 -- ============================================================================
--- 🆕 [O245] ML_CHURN_BY_SPONSORSHIP_V — ML 중단 예측 × 기준월 말 활동 후원 캠페인카테고리 × 후원사업(사용자 승인 2026-10-18)
+--  [O245] ML_CHURN_BY_SPONSORSHIP_V — ML 중단 예측 × 기준월 말 활동 후원 캠페인카테고리 × 후원사업(사용자 승인 2026-10-18)
 --   ML_CHURN_BY_CMPGN_CTGR_V 와 같은 활동 판정 · 후원사업 축만 더했다(그 뷰의 grain·VQR 은 건드리지 않는다).
 --   후원건 예측은 약정번호(SPNSR_BSNS_NO)로 결합한다(2026-10-18 실측 1,686,360 / 1,686,372 일치).
 -- ============================================================================

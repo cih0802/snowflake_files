@@ -2,7 +2,7 @@
 -- 읽기 전용 · env_capture --id N06 로 _ENV/<계정>/N06_*.csv 캡처 · 작성 2026-10-20 O247
 -- 실행 롤 = ACCOUNTADMIN(ACCOUNT_USAGE · SHOW) · 쿼리 원형 = cost-intelligence 스킬 references/queries/overview·storage
 -- ⚠️ ACCOUNT_USAGE 는 최대 수 시간 지연된다. 당일은 제외한다(< CURRENT_DATE()).
--- ⚠️ 개발계 계정 IW20760 은 2026-10-17 에 재구축됐다 ⇒ 90일 창이라도 실제 이력은 그 이후만 있을 수 있다(Q01 FIRST_DAY 로 확인).
+-- ⚠️ 계정 이력 시작일은 Q01 FIRST_DAY 로 확인한다.
 
 -- Q01 서비스별 크레딧 — 최근 90일 (metering 기준 · 청구 대조용)
 SELECT SERVICE_TYPE,

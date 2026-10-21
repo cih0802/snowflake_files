@@ -4,7 +4,7 @@
 |---|---|
 | 대상 | GN_DW 데이터웨어하우스 (paid 계정) |
 | 설계 결정 | `GN_DW_VIEWER` = 소비자 / `GN_DW_ANALYST` = 소비 + 앱 저작 |
-| 검증 환경 | Trial 계정 `AD50130` (AWS_AP_NORTHEAST_2, v10.29.101) |
+| 검증 환경 | Trial 이전 계정 (AWS_AP_NORTHEAST_2, v10.29.101) |
 | 상태 | 미적용 — paid 계정 적용 대기 |
 
 ---

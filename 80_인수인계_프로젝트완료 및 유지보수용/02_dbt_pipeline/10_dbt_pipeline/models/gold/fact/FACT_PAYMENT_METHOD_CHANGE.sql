@@ -1,7 +1,6 @@
 -- FACT_PAYMENT_METHOD_CHANGE: 결제수단 변경 이력 팩트 (SETLE_KEY × UPDT_DT grain) — CRM_PAYMENT_METHOD_HIST
--- Co-authored with CoCo
--- 🆕 [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
--- 🔴 민감 컬럼(카드번호·빌키·인증데이터·결제자·연락처)은 SILVER 에서 이미 제외됐다.
+--  [2026-09-29 O188-F 2차-A] 신설 — 종전 파이프라인 미연결 BRONZE_CRM 원천의 GOLD 반영
+-- WARN: 민감 컬럼(카드번호·빌키·인증데이터·결제자·연락처)은 SILVER 에서 이미 제외됐다.
 {{ config(
     tags=['gold_pending']
 ) }}

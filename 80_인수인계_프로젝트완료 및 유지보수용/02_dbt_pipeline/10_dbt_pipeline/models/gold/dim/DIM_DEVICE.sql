@@ -1,13 +1,12 @@
 -- DIM_DEVICE: 디바이스 차원 (GA4_DEVICE → DEVICE_TYPE DISTINCT, GOLD 축약)
--- Co-authored with CoCo
--- ⚠️ [2026-07-28 DEC-10] 멤버 2종 신설/보강 — 근거: 문서30 §1-A · 설계 §3-A-5
+-- WARN: [2026-07-28 DEC-10] 멤버 2종 신설/보강 — 근거: 문서30 §1-A · 설계 §3-A-5
 --   1) `(해당없음)` 멤버 신설: 방송광고(VIDEO·REBRDC)는 **기기 개념 자체가 없다**(실측 37,886행 전량 NULL).
 --      이를 `(unknown)`(진짜 미상)과 한 멤버에 담으면 지표 공14(기기별)를 해석할 수 없으므로 의미를 분리한다.
 --      `(해당없음)`은 *값이 확정된 정상 멤버*이므로 **해시 SK** 를 부여한다 — `0` 은 진짜 미상 전용으로 보존.
 --      프로젝트 센티넬 원칙 유지: `-1` 미사용 · `0`=Unknown 정본.
 --   2) `DEVICE_SCOPE_DESC` 컬럼 신설: 멤버 의미 자기설명. 분석가가 **차원만 조회해도** `(해당없음)`의
 --      뜻을 알 수 있게 한다(팩트 조인·문서 참조 없이 식별 가능 — DEC-10 전제조건).
--- ⚠️ `APP` 은 GA4 platform=WEB 단일 실측으로 현 데이터에 미생성(G-5). 분류 로직(GA4_DEVICE)은 유지.
+-- WARN: `APP` 은 GA4 platform=WEB 단일 실측으로 현 데이터에 미생성(G-5). 분류 로직(GA4_DEVICE)은 유지.
 {{ config(
     materialized='incremental',
     unique_key='DEVICE_SK',

@@ -1,6 +1,6 @@
 # 32. BRONZE_CRM → GOLD 전량 반영 설계 (O188-F)
 
-> 작성 2026-09-29 · O188-F · 계정 xf98254 · 🔴 dbt build 전(모델 편집·EXPLAIN 컴파일 검증까지)
+> 작성 2026-09-29 · O188-F · 🔴 dbt build 전(모델 편집·EXPLAIN 컴파일 검증까지)
 > 분모 = BRONZE_CRM 53 테이블 · 판정식 = 컬럼명이 그 테이블을 source 로 쓰는 SILVER 모델 SQL 에 등장하는가
 > (감사 컬럼 `_LOAD_DT`·`_BATCH_ID`·`_STDR_YM`·등록자/수정자 ID 제외)
 
@@ -76,7 +76,7 @@
 
 ### 3-1. 🟢 [2026-09-29 O189-B] 2차-B 1단 집행 — `TM_MM_FDRM_MBER_SPNSR` 2컬럼
 
-| 컬럼 | 채움(xf98254) | SILVER | GOLD |
+| 컬럼 | 채움 | SILVER | GOLD |
 |---|---:|---|---|
 | `CMPGN_CD` | 100% | `CRM_MEMBER_SPONSOR_SPAN.CMPGN_CD` | `FACT_MEMBER_SPONSORSHIP_SPAN.SPNSR_CMPGN_CD` |
 | `ACMSLT_DEPT_CD` | 99.9999% | `CRM_MEMBER_SPONSOR_SPAN.ACMSLT_DEPT_CD` | `FACT_MEMBER_SPONSORSHIP_SPAN.SPNSR_ACMSLT_DEPT_CD` |

@@ -1,0 +1,11 @@
+# doc_id: A7 · as_of: 2026-10-20 15:39:48.562 -0700 · account: SR61467 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,A7_Q01_1.csv,OK,10,0,SELECT [일] 서비스별 크레딧 — 최근 7일 일별 (ACCOUNT_USAGE 지연 최대 수 시간)
+Q02,1,A7_Q02_1.csv,OK,6,0,SELECT [주] 웨어하우스별 크레딧 — 최근 7일
+Q03,1,A7_Q03_1.csv,OK,5,0,SELECT [주] AI 사용 — Agent · Snowflake Intelligence · CoCo 사용자별 최근 7일
+Q04,1,A7_Q04_1.csv,OK,200,0,SELECT [주] 권한 변경 — 최근 7일 GN_DW 롤 대상 부여·회수
+Q04,2,A7_Q04_2.csv,OK,3,0,SELECT [주] 권한 변경 — 최근 7일 GN_DW 롤 대상 부여·회수
+Q05,1,A7_Q05_1.csv,OK,50,0,SELECT [주] 실패 쿼리 — 최근 7일 GN_DW 롤별 오류 상위
+Q06,1,A7_Q06_1.csv,OK,2,0,SELECT [월] 사용자 · 롤 보유 현황 (온보딩/오프보딩 누락 · 장기 미접속)
+Q07,1,A7_Q07_1.csv,OK,15,0,SELECT [월] 객체 수 기준선 — A0 Q02 와 같은 축(달라지면 원인 확인)
+Q07,2,A7_Q07_2.csv,OK,42,0,SHOW [월] 객체 수 기준선 — A0 Q02 와 같은 축(달라지면 원인 확인)

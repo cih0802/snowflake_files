@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 05_4_SV_DDL_SERVICE.sql — Semantic View DDL 정본: SV_SERVICE
 --   · 구성 = USE → CREATE OR ALTER SEMANTIC VIEW → GRANT → 스모크. 파일 단독 실행 가능(파일 간 순서 없음).
---   · 🔴 SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
+--   · WARN: SV 의 규칙·주의는 SV COMMENT · AI_SQL_GENERATION 안에 있다(Agent 가 읽는 곳) — 이 주석에 두지 않는다.
 --   · 공통 규약 = 05_0_SV_DDL.sql · 설계·실측 이력 = 05_SV_DDL_설계이력_부록.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -29,7 +29,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       PRIMARY KEY (SEND_REQUEST_SK)
       WITH SYNONYMS ('발송 요청', '발송 요청 차원')
       COMMENT = '발송 요청 차원(요청당 한 행). 메시지구분(MS010)·발송시간구분(MS267)·우편처리상태(MS061)·법인유형(CM019)·분할발송유형. [원천] 시스템=CRM(UMS) · BRONZE=GN_DW.BRONZE_CRM.SND_REQ_MST · SILVER=CRM_SEND_REQUEST · GOLD=DIM_SEND_REQUEST.',
-    -- 🆕 [2026-10-14 O225-C] 발송 캠페인 축(SND 채널만 값 · 그 외 채널 = (미매핑) SK=0)
+    --  [2026-10-14 O225-C] 발송 캠페인 축(SND 채널만 값 · 그 외 채널 = (미매핑) SK=0)
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인', '발송 캠페인')
@@ -103,7 +103,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.SND_DSCNTC_RSN_NM AS fse.SND_DSCNTC_RSN_NM WITH SYNONYMS ('발송 시점 중단사유', '발송 당시 중단사유') COMMENT = '문자(SND) 발송 시점 수신 회원의 중단사유명(중단 이력 회원만 값 · 원천 스냅샷) — 타 채널 NULL.',
     fse.SND_CHILD_PROJECT_COUNTRY AS fse.SND_CHILD_PROJECT_COUNTRY WITH SYNONYMS ('결연아동 사업국', '신규 결연아동 국가') COMMENT = '문자(SND) 발송 시점 신규 결연아동 사업국(방글라데시·우간다·에티오피아 등) — 결연 안내 발송 분석용 · 타 채널 NULL.',
     fse.SND_CHILD_WORKPLACE_NM AS fse.SND_CHILD_WORKPLACE_NM WITH SYNONYMS ('결연아동 사업장', '신규 결연아동 사업장') COMMENT = '문자(SND) 발송 시점 신규 결연아동 사업장명 — 타 채널 NULL.',
-    -- 🆕 [2026-10-14 O225-C] 발송 캠페인 속성(DIM_CAMPAIGN) + SND 회원 최종·현재 캠페인코드
+    --  [2026-10-14 O225-C] 발송 캠페인 속성(DIM_CAMPAIGN) + SND 회원 최종·현재 캠페인코드
     campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '발송 캠페인', '캠페인') COMMENT = '문자(SND) 발송 캠페인명. 타 채널 = (미매핑)(원천에 캠페인코드 없음).',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
     campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
@@ -117,7 +117,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드') COMMENT = '공통브랜드명(MM297).',
     campaign.CPR_DIV_NM AS campaign.CPR_DIV_NM WITH SYNONYMS ('캠페인 법인구분') COMMENT = '캠페인 법인구분명(CM019).',
     campaign.SPNSR_DIV_NM AS campaign.SPNSR_DIV_NM WITH SYNONYMS ('캠페인 후원구분') COMMENT = '캠페인 후원구분명(CM035 정기/일시).',
-    -- 🆕 [2026-10-14 O229] campaign_axis_gate GAP 해소 = CMPGN_STRT_DE → DIM_CAMPAIGN.CAMPAIGN_OPEN_DATE
+    --  [2026-10-14 O229] campaign_axis_gate GAP 해소 = CMPGN_STRT_DE → DIM_CAMPAIGN.CAMPAIGN_OPEN_DATE
     campaign.CAMPAIGN_OPEN_DATE AS campaign.CAMPAIGN_OPEN_DATE WITH SYNONYMS ('캠페인 시작일', '캠페인 개설일', '공19') COMMENT = '캠페인 시작일(원천 캠페인관리 시작일자). 시작일이 없는 캠페인은 NULL.',
     campaign.IS_PARENT_CAMPAIGN_YN AS campaign.IS_PARENT_CAMPAIGN_YN WITH SYNONYMS ('상위캠페인여부', '상위캠페인 여부') COMMENT = '상위캠페인 여부. 실제값 2종: ''Y''(그 자신이 상위캠페인)·''N''(하위캠페인) + NULL(미매핑 멤버).',
     fse.SND_LAST_CMPGN AS fse.SND_LAST_CMPGN WITH SYNONYMS ('발송 시점 최종캠페인코드') COMMENT = '문자(SND) 발송 시점 수신 회원의 최종 캠페인코드(코드값 · 라벨은 캠페인 SV 로) — 타 채널 NULL.',
@@ -138,7 +138,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       WITH SYNONYMS ('발송후 5일 선물금참여(명)', 'D5 선물금참여', '공90') COMMENT = '공#141 발송 다음날(D+1)~+5일 안에 선물금 참여가 있는 발송 대상 수(중복 포함). ⚠️ 선물금 원천에 접수일이 없어 선물금 발송일로 매칭한다. F(가산).',
     fse.D5_GIFT_CNT AS SUM(fse.D5_GIFT_PART_CNT)
       WITH SYNONYMS ('발송후 5일 선물금참여(건)') COMMENT = '공#142 위 매칭 회원의 활동(건) 합. F(가산).',
-    -- 🆕 [2026-10-16 O241] 공91 추천안B(잠정) — 발송 매칭 선물금(원) · A = SV_RELATION_ACTIVITY.TOTAL_GIFT_AMT
+    --  [2026-10-16 O241] 공91 추천안B(잠정) — 발송 매칭 선물금(원) · A = SV_RELATION_ACTIVITY.TOTAL_GIFT_AMT
     fse.D5_GIFT_AMT AS SUM(fse.D5_GIFT_PART_AMT)
       WITH SYNONYMS ('선물금참여(원)(추천안B)', '발송 매칭 선물금', '발송후 5일 선물금(원)', '공91B')
       COMMENT = '공91 추천안B(잠정) 선물금참여(원) = 발송 다음날(D+1)~+5일 안 선물금 합. 선물금 1건은 창 안 가장 가까운 직전 발송일 1개에만 귀속되므로 기간 합이 중복 없이 가산된다. F(가산). 🔴 추천안A(결연활동 전체 선물금 = SV_RELATION_ACTIVITY.TOTAL_GIFT_AMT)와 다른 팩트다 — 한 쿼리로 결합하지 말고 두 도구 결과를 병기한다. 처리통보성 제목 발송은 귀속 후보에서 제외. 인과가 아니라 시간 창 매칭이다.',
@@ -163,7 +163,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.OPEN_RATE_SND AS SUM(fse.OPEN_MEMBERS) / NULLIF(SUM(CASE WHEN fse.OPEN_MEMBERS IS NOT NULL THEN fse.SEND_MEMBERS END), 0) * 100
       WITH SYNONYMS ('오픈율', '클릭률', '링크 클릭률', '문자 오픈율', '신규32')
       COMMENT = '문자 오픈율(%) = 링크 클릭 ÷ 오픈 기록이 있는 발송(SND) ×100(현업 회신 44). 비율(N · 재집계 금지). 🔴 SND 전용 — 다른 채널 발송은 분모에서 빠진다(오픈 원천 부재).',
-    -- 🆕 [O237] 신규 #44·#49·#34 서비스별 참여율·증액율(잠정 · 분모 = 발송 행 · 현업 확인 대상)
+    --  [O237] 신규 #44·#49·#34 서비스별 참여율·증액율(잠정 · 분모 = 발송 행 · 현업 확인 대상)
     fse.D5_LETTER_RATE AS SUM(fse.D5_LETTER_PART_MEMBERS) / NULLIF(SUM(fse.SEND_MEMBERS), 0) * 100
       WITH SYNONYMS ('서비스별 서신 참여율(%)', '서신 참여율', '신규44')
       COMMENT = '신규 #44 서비스별 서신 참여율(%) 잠정 = 발송 후 D+1~D+5 서신 참여(D5_LETTER_PART_MEMBERS) ÷ 발송(SEND_MEMBERS) ×100. 비율(N · 재집계 금지). 🔴 분모 = 발송 행(중복 포함) — 사전 분모 「해당 서비스 참여회원」을 발송 대상으로 해석했다(현업 확인 대상) ⇒ 답변에 이 해석을 밝힌다. 🔴 인과가 아니라 시간 창 매칭이다.',
@@ -173,7 +173,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     fse.D5_INCREASE_RATE AS SUM(fse.D5_INCREASE_PART_MEMBERS) / NULLIF(SUM(fse.SEND_MEMBERS), 0) * 100
       WITH SYNONYMS ('서비스별 증액율(%)', '서비스 증액율', '신규34')
       COMMENT = '신규 #34 서비스별 증액율(%) 잠정 = 발송 후 D+1~D+5 증액 개발 매칭 ÷ 발송 ×100. 비율(N). 🔴 사전 분모는 「발송 성공 회원」이나 성공 판정이 알림톡(SEND_STATUS_NAME)만 가능해 전체 발송을 분모로 쓴다 — 답변에 이 차이를 밝힌다(현업 확인 대상).',
-    -- 🆕 [2026-10-16 O237-C] 신규 #33 클릭대비 전환율 — 5일·30일 두 창(사용자 결정 · 잠정) · 고유 회원(명) 기준
+    --  [2026-10-16 O237-C] 신규 #33 클릭대비 전환율 — 5일·30일 두 창(사용자 결정 · 잠정) · 고유 회원(명) 기준
     fse.CLICK_MEMBERS_DISTINCT AS COUNT(DISTINCT IFF(fse.OPEN_MEMBERS = 1, fse.MEMBER_DK, NULL))
       WITH SYNONYMS ('클릭 회원수', '서비스 클릭수(명)', '클릭(고유 명)')
       COMMENT = '링크 클릭(오픈) 고유 회원수(명). 문자(SND) 전용. N(비가산 · 그룹 합 금지 · 전체는 따로 COUNT DISTINCT).',

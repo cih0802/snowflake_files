@@ -1,13 +1,12 @@
 -- CRM_HOLIDAY: 공휴일 마스터 — GOLD.DIM_DATE.IS_HOLIDAY 의 SILVER 경유 원천.
--- Co-authored with CoCo
--- 🆕 [2026-10-20 DR-25] 종전 DIM_DATE 가 `BRONZE_CRM.TM_CM_SCHDUL_MNG` 를 직접 읽었다(GOLD→BRONZE · 레이어 원칙 위반).
+--  [2026-10-20 DR-25] 종전 DIM_DATE 가 `BRONZE_CRM.TM_CM_SCHDUL_MNG` 를 직접 읽었다(GOLD→BRONZE · 레이어 원칙 위반).
 --   사용자 결정 = SILVER 모델을 끼워 넣는다. 필터 규칙은 DIM_DATE 에서 **그대로 이관**했다(의미 변경 0):
 --     · SCHDUL_DIV_CD='0' = 공휴일(현업 회신 · 문서20 F-5 · O188).
 --     · 한글 없는 제목(2013-01-01 '123123' 등 2건)은 입력 테스트로 제외(같은 날 '새해' 행이 따로 있다).
---     · ⚠️ 2021·2022 는 13일로 다른 해보다 적다 — 원천 기재 그대로이며 보정하지 않는다.
---   · grain = 일자. 실측(IW20760) 원천 256행 → 251일(5일은 제목 2건) ⇒ 제목은 LISTAGG, 행수는 SRC_ROW_CNT.
---   · 🔴 source 는 `bronze_crm_ref` — dev2 의 BRONZE_CRM_2 에 이 테이블이 없다(_sources.yml 주석).
---   · ⚠️ 구조 정본 = `04_silver_design/08_SILVER_테이블DDL_20260714.sql` 의 CRM_HOLIDAY 블록(DDL 선행 필수).
+--     · WARN: 2021·2022 는 13일로 다른 해보다 적다 — 원천 기재 그대로이며 보정하지 않는다.
+--   · grain = 일자. 실측 원천 256행 → 251일(5일은 제목 2건) ⇒ 제목은 LISTAGG, 행수는 SRC_ROW_CNT.
+--   · WARN: source 는 `bronze_crm_ref` — dev2 의 BRONZE_CRM_2 에 이 테이블이 없다(_sources.yml 주석).
+--   · WARN: 구조 정본 = `04_silver_design/08_SILVER_테이블DDL_20260714.sql` 의 CRM_HOLIDAY 블록(DDL 선행 필수).
 WITH src AS (
     SELECT SCHDUL_DE, TRIM(SCHDUL_TIT) AS SCHDUL_TIT
     FROM {{ source('bronze_crm_ref', 'TM_CM_SCHDUL_MNG') }}

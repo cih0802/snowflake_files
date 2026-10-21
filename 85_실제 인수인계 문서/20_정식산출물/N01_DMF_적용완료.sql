@@ -1,4 +1,4 @@
--- 🟢 적용 완료 — 2026-10-20 O247 · 개발계 IW20760 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · 136문장 OK(스케줄 1 · 스키마 2 · PK 62 · FK 71) · DR-31 2 간선은 위반 관측 대상
+-- 🟢 SQL 확정 — 2026-10-20 O247 · 운영계 실행 대기 · GN_DW_ADMIN(선행 권한 ACCOUNTADMIN) · 136문장 OK(스케줄 1 · 스키마 2 · PK 62 · FK 71) · DR-31 2 간선은 위반 관측 대상
 -- N01 DMF 적용 SQL — 🔴 미실행(설계 산출물 · 실행은 사용자 승인 후 별도 세션)
 -- 생성 = PK(SHOW PRIMARY KEYS IN SCHEMA GN_DW.GOLD · 단일 컬럼 PK) × D05_FK관계.csv(GOLD→GOLD FK) · 2026-10-20
 -- 실행 롤 = GN_DW_ADMIN(GOLD 테이블 소유) · 선행 = [0] 권한 · 기대값(EXPECTATION) 위반은 SNOWFLAKE.LOCAL.DATA_QUALITY_MONITORING_EXPECTATION_STATUS 로 본다

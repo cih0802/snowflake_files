@@ -1,5 +1,4 @@
 -- FACT_MEMBER_COHORT: 회원 획득 코호트 팩트 (1행=1회원) — 캠페인별 중단률·유지기간의 정본
--- Co-authored with CoCo
 --
 -- ============================================================================
 -- [2026-08-05 O37] 신설 — 왜 이 팩트가 필요한가
@@ -7,7 +6,7 @@
 -- 트리거: Agent 가 *"캠페인 축은 개발 사건에만 배선돼 있고 중단 사건에는 캠페인 정보가 원천에
 --   없다 — 따라서 캠페인별 중단률은 구조적으로 산출 불가"* 라고 답했다.
 --
--- 🔴 그 판정은 틀렸다. 중단원천에는 캠페인이 없지만, 개발원천의 `DVLP_DIV_CD='5'`(MM015
+-- WARN: 그 판정은 틀렸다. 중단원천에는 캠페인이 없지만, 개발원천의 `DVLP_DIV_CD='5'`(MM015
 --   후원중단) 행이 `CMPGN_CD` 를 전건 보유하며 `FACT_MEMBER_EVENT.CAMPAIGN_SK` 로 이미
 --   배선돼 있었다. 다만 **그것만으로는 「중단률」이 되지 않는다** — 실측으로 두 함정을 확인했다:
 --
@@ -24,14 +23,14 @@
 --   distinct 로 세게 하면 분모를 틀리기 쉽다. 회원 grain 으로 미리 확정하면 SUM/SUM 이 되어
 --   오답 경로가 구조적으로 사라진다(O35 에서 배운 「축이 갈리면 Agent 가 못 푼다」의 역적용).
 --
--- 🔴 분자·분모 일치를 **데이터로** 강제한다: `STOPPED_12M_MEMBERS` 는 `IS_12M_OBSERVABLE`
+-- WARN: 분자·분모 일치를 **데이터로** 강제한다: `STOPPED_12M_MEMBERS` 는 `IS_12M_OBSERVABLE`
 --   인 회원에 대해서만 1 이 된다. 소비 끝단이 분모를 `ACQ_MEMBERS` 로 잘못 골라도 분자가
 --   이미 관측 가능 집합으로 제한돼 있어 과소추정 방향으로만 틀린다(과대추정 불가).
 --
 -- [2026-08-06 O45] 확장: `ACQ_ORG_SK`·`ACQ_SPONSORSHIP_SK` 2축 추가 → 이 팩트가 뷰
 --   `DIM_MEMBER_ACQUISITION` 을 통해 **회원 귀속 차원**으로 소비된다. `FMM`·`FSE`·`FEP` 가
 --   `MEMBER_DK` 1:1 조인으로 캠페인·부서·후원사업을 분해할 수 있다(O44 차단 41필드·11섹션 해소).
---   🔴 O8(다중귀속) 을 임의로 푼 것이 아니다 — **「획득 시점」이라는 명시 규칙**을 쓴 것이다.
+--   WARN: O8(다중귀속) 을 임의로 푼 것이 아니다 — **「획득 시점」이라는 명시 규칙**을 쓴 것이다.
 --
 -- 상류 = `FACT_MEMBER_EVENT`(GOLD). SILVER 를 다시 읽지 않는다 — FME 가 이미 개발∪중단을
 --   union 하고 conformed SK·사건시점 속성·중단사유 라벨을 확정했으므로 재구현은 드리프트를 만든다.
@@ -47,7 +46,7 @@ with fme as (
     select * from {{ ref('FACT_MEMBER_EVENT') }}
 ),
 
--- 관측 기준일 = 데이터가 실제로 담고 있는 최종 사건일. 🔴 CURRENT_DATE 를 쓰지 않는다 —
+-- 관측 기준일 = 데이터가 실제로 담고 있는 최종 사건일. WARN: CURRENT_DATE 를 쓰지 않는다 —
 --   적재 지연이 있으면 관측창이 실제보다 길게 잡혀 12개월 이탈률이 과소추정된다.
 obs_window as (
     select max(DATE_SK) as MAX_DATE_SK from fme where DATE_SK <> 0
@@ -58,7 +57,7 @@ dev as (
 ),
 
 -- 획득 사건 후보. 우선순위 = ① 신규(MM015 코드1) ② 신규가 없으면 최초 개발 사건(FALLBACK).
---   🔴 정렬 결정성: 무효 일자(DATE_SK=0)를 뒤로 밀고, 동일 일자는 캠페인·금액·지역·연령으로
+--   WARN: 정렬 결정성: 무효 일자(DATE_SK=0)를 뒤로 밀고, 동일 일자는 캠페인·금액·지역·연령으로
 --      결정적으로 깬다. 완전 동일 행이면 어느 것을 골라도 값이 같다(비결정성 무해).
 acq_ranked as (
     select
@@ -92,7 +91,7 @@ acq_ranked as (
                 coalesce(SPNSR_AMT, 0),
                 coalesce(AREA_CD_AT_EVENT, ''),
                 coalesce(AGE_AT_EVENT, -1),
-                -- 🆕 [O231] 결정화 — 종전 키만으로는 회원 18,321명이 동률이라 build 마다 대표행이 바뀌었다.
+                --  [O231] 결정화 — 종전 키만으로는 회원 18,321명이 동률이라 build 마다 대표행이 바뀌었다.
                 --   남은 동률(실측 8,442명)은 아래 해시 = **이 팩트가 승계하는 출력 컬럼 전부**가 같은 행끼리라
                 --   어느 행을 골라도 출력이 같다 ⇒ 결과가 결정적이다(원천 SER_NO 는 FME 에 없다).
                 SPONSORSHIP_SK, ORG_SK, DVLP_DIV_CD,
@@ -111,7 +110,7 @@ acq as (
     select * from acq_ranked where rn = 1
 ),
 
--- 중단 사건. 🔴 **획득일 이후**의 중단만 이 코호트의 이탈로 본다 — 획득 전 중단은 직전
+-- 중단 사건. WARN: **획득일 이후**의 중단만 이 코호트의 이탈로 본다 — 획득 전 중단은 직전
 --   후원관계의 종료이며 이 획득 코호트의 이탈이 아니다(FALLBACK 회원에서 실제로 발생 가능).
 stop_all as (
     select MEMBER_DK, DATE_SK, STOP_REASON_NM from fme where EVENT_TYPE = 'STOP'
@@ -127,7 +126,7 @@ stop_first as (
     group by 1
 ),
 
--- 🆕 [O233 · O234 확정 · 현업 회신 「중단 후 재후원 포함」] 최종 중단 = 획득일 이후 마지막 유효 중단.
+--  [O233 · O234 확정 · 현업 회신 「중단 후 재후원 포함」] 최종 중단 = 획득일 이후 마지막 유효 중단.
 --   그 뒤 개발(DEV) 사건이 있으면 재후원 중 ⇒ 관측 중(IS_STOPPED_OBS_LAST = 0)으로 본다.
 stop_last as (
     select
@@ -198,13 +197,13 @@ joined as (
         sr.STOP_REASON_NM                                           as FIRST_STOP_REASON_NM,
         to_date(to_char(nullif(a.DATE_SK, 0)), 'YYYYMMDD')          as ACQ_DATE,
         to_date(to_char(sf.FIRST_STOP_VALID), 'YYYYMMDD')           as FIRST_STOP_DATE,
-        -- 🆕 [O233] 최종 중단(재후원이 있으면 NULL = 관측 중)
+        --  [O233] 최종 중단(재후원이 있으면 NULL = 관측 중)
         sl.LAST_STOP_VALID                                          as LAST_STOP_DATE_SK,
         case when coalesce(dl.HAS_DEV_AFTER, 0) = 0
              then to_date(to_char(sl.LAST_STOP_VALID), 'YYYYMMDD') end as LAST_STOP_DATE_EFF,
         -- 관측 기준일은 단일 행이므로 cross join 이 fan-out 을 만들지 않는다.
         --   (스칼라 서브쿼리는 Snowflake 가 이 위치에서 허용하지 않는다 — 검증 중 확인)
-        --   ⚠️ CTE 명을 `asof` 로 쓰면 안 된다 — ASOF JOIN 예약어와 충돌한다(검증 중 확인).
+        --   WARN: CTE 명을 `asof` 로 쓰면 안 된다 — ASOF JOIN 예약어와 충돌한다(검증 중 확인).
         ao.MAX_DATE_SK
     from acq a
     cross join obs_window ao
@@ -233,7 +232,7 @@ final as (
         ACQ_CPR_DIV_CD, ACQ_CPR_DIV_NM,
         ACQ_BRAND, ACQ_PARENT_CAMPAIGN_NAME, ACQ_PROMO_METHOD_NAME,
         FIRST_STOP_DATE_SK, FIRST_STOP_REASON_NM,
-        -- 유지기간 = 중단일 − 획득일. 🔴 미중단은 NULL(우절단 관측이다 — 0 이나 현재까지
+        -- 유지기간 = 중단일 − 획득일. WARN: 미중단은 NULL(우절단 관측이다 — 0 이나 현재까지
         --   경과일로 채우면 평균 유지기간이 조용히 틀린다).
         case when ACQ_DATE is not null and FIRST_STOP_DATE is not null
              then datediff(day, ACQ_DATE, FIRST_STOP_DATE) end      as TENURE_DAYS,
@@ -244,7 +243,7 @@ final as (
              then TRUE else FALSE end                               as IS_12M_OBSERVABLE,
         1                                                           as ACQ_MEMBERS,
         case when FIRST_STOP_DATE_SK is not null then 1 else 0 end   as STOPPED_MEMBERS,
-        -- 🔴 분자를 관측 가능 집합으로 **구조적으로 제한**한다(분모 오선택 방어).
+        -- WARN: 분자를 관측 가능 집합으로 **구조적으로 제한**한다(분모 오선택 방어).
         case when ACQ_DATE is not null
                   and add_months(ACQ_DATE, 12)
                       <= to_date(to_char(MAX_DATE_SK), 'YYYYMMDD')
@@ -255,8 +254,8 @@ final as (
                   and add_months(ACQ_DATE, 12)
                       <= to_date(to_char(MAX_DATE_SK), 'YYYYMMDD')
              then 1 else 0 end                                      as OBSERVABLE_12M_MEMBERS,
-        -- 🆕 [O231 · O234 확정] LTV 생존분석 입력 = 관측 유지기간 + 중단 여부(우절단 포함).
-        --   🔴 TENURE_DAYS(중단자 전용)와 다르다 — 관측 중 회원은 기준일까지의 경과를 갖고 IS_STOPPED_OBS=0.
+        --  [O231 · O234 확정] LTV 생존분석 입력 = 관측 유지기간 + 중단 여부(우절단 포함).
+        --   WARN: TENURE_DAYS(중단자 전용)와 다르다 — 관측 중 회원은 기준일까지의 경과를 갖고 IS_STOPPED_OBS=0.
         --   제외(NULL) = 획득일 무효(NULL·1900 센티널) · 중단일 무효만 있는 회원(FIRST_STOP_DATE_SK=0 · 기간 산출 불가).
         --   개월 = FLOOR(일/30.44) — O230 진단과 같은 식(경과월 축).
         case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
@@ -265,7 +264,7 @@ final as (
              else FLOOR(datediff(day, ACQ_DATE, COALESCE(FIRST_STOP_DATE, to_date(to_char(MAX_DATE_SK), 'YYYYMMDD'))) / 30.44) end as OBS_TENURE_MONTHS,
         case when ACQ_DATE is null or YEAR(ACQ_DATE) <= 1900 or FIRST_STOP_DATE_SK = 0 then NULL
               when FIRST_STOP_DATE is not null then 1 else 0 end   as IS_STOPPED_OBS,
-        -- 🆕 [O233 · O234 확정] 최종 중단 기준 생존분석 입력(현업 회신 「재후원 포함」).
+        --  [O233 · O234 확정] 최종 중단 기준 생존분석 입력(현업 회신 「재후원 포함」).
         --   제외 조건은 최초 기준과 같다(같은 회원 집합 ⇒ 두 기준을 같은 분모로 비교한다).
         --   중단 = 획득일 → 마지막 유효 중단일 · 재후원 중·미중단 = 획득일 → 관측기준일.
         LAST_STOP_DATE_SK,

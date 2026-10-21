@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!-- doc_id: N08 · as_of: 2026-10-20 · 설명 = N08_사업완료보고서.md (같은 내용 · 수치 근거 = _근거쿼리/N08_완료보고_근거.sql) -->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>GN_DW 사업 완료 보고서</title>
+<style>
+  body { font-family: -apple-system, "Malgun Gothic", sans-serif; max-width: 960px; margin: 32px auto; color: #1f2937; line-height: 1.55; }
+  h1 { font-size: 26px; border-bottom: 3px solid #29B5E8; padding-bottom: 8px; }
+  h2 { font-size: 18px; margin-top: 28px; color: #11567F; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 14px; }
+  th, td { border: 1px solid #d1d5db; padding: 6px 10px; text-align: left; }
+  th { background: #f3f4f6; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+  .box { border: 2px solid #29B5E8; border-radius: 8px; padding: 8px 12px; background: #f0f9ff; font-size: 13px; text-align: center; }
+  .arrow { color: #6b7280; font-weight: bold; }
+  .note { color: #6b7280; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>GN_DW 사업 완료 보고서 <span class="note">(2026-10-20 · 개발계 IW20760 실측)</span></h1>
+
+<h2>1. 목적</h2>
+<p>CRM · ERP · 광고 · 웹(GA) 데이터를 Snowflake 한 곳에 모아 <b>부서마다 다르던 지표를 한 가지 정의로 맞추고</b>,
+현업이 <b>자연어로 질문해 답을 얻을 수 있게</b> 한다.</p>
+
+<h2>2. 아키텍처</h2>
+<div class="flow">
+  <div class="box">원천<br>CRM · ERP · 광고 · GA4 · 서치콘솔 · 수기</div><span class="arrow">→</span>
+  <div class="box">BRONZE<br>원천 그대로</div><span class="arrow">→ dbt →</span>
+  <div class="box">SILVER<br>정제 · 표준화</div><span class="arrow">→ dbt →</span>
+  <div class="box">GOLD<br>표준 지표</div><span class="arrow">→</span>
+  <div class="box">SERVING<br>Semantic View 40 · Agent 3</div><span class="arrow">→</span>
+  <div class="box">현업<br>CoWork 자연어 질의</div>
+</div>
+<p class="note">보조 경로: BRONZE → 프로시저 → MSTR(기존 리포트 이관) → SERVING · ML 예측 결과 → SERVING.
+계층은 한 방향으로만 참조하고, 권한은 7개 역할로 나눴다.</p>
+
+<h2>3. 구축 규모</h2>
+<table>
+  <tr><th>계층</th><th>테이블</th><th>뷰</th><th>행</th></tr>
+  <tr><td>BRONZE(원천)</td><td class="num">65</td><td class="num">0</td><td class="num">129,520,833</td></tr>
+  <tr><td>SILVER(정제)</td><td class="num">66</td><td class="num">0</td><td class="num">160,247,985</td></tr>
+  <tr><td>GOLD(표준 지표)</td><td class="num">60</td><td class="num">19</td><td class="num">167,710,787</td></tr>
+  <tr><td>ML(예측 결과)</td><td class="num">12</td><td class="num">0</td><td class="num">2,073,961</td></tr>
+  <tr><td>MSTR(기존 리포트)</td><td class="num">10</td><td class="num">13</td><td class="num">1,874,411</td></tr>
+  <tr><td>SERVING(소비)</td><td class="num">13</td><td class="num">19</td><td class="num">2,348</td></tr>
+</table>
+<p>Semantic View <b>40</b>(실적 28 · 예측 11 · MSTR 1) · Cortex Agent <b>3</b>(회원 · 마케팅 · 경영) · Streamlit 0.
+<span class="note">운영계 규모는 운영계에서 같은 SQL 로 다시 잰다.</span></p>
+
+<h2>4. 성과</h2>
+<table>
+  <tr><th>영역</th><th>이전</th><th>지금</th></tr>
+  <tr><td>지표 정의</td><td>부서·보고서마다 다름</td><td>표준 지표 + SV 정의 1곳 · 오독 지표 6종 차단 규칙</td></tr>
+  <tr><td>조회 방식</td><td>엑셀 · 수작업</td><td>Agent 3종 자연어 질의 · 분석가 SV 직접 조회</td></tr>
+  <tr><td>기존 리포트</td><td>MicroStrategy</td><td>MSTR 스키마로 이관</td></tr>
+  <tr><td>예측</td><td>없음</td><td>이탈 위험 · 회비 · 개발 예측(추정치 표기)</td></tr>
+  <tr><td>운영</td><td>문서 흩어짐</td><td>실무자 인수인계 9종 · 정식 산출물 22종 · 계정 값 분리</td></tr>
+</table>
+
+<h2>5. 남은 과제 (운영 이관 전)</h2>
+<ol>
+  <li>개발계 변경분 운영계 일괄 반영</li>
+  <li>분석가 역할의 CoCo 사용 차단 — 운영계 시험 후 결정</li>
+  <li>Agent 최신 버전 스모크 시험</li>
+  <li>원천 개인정보 12개 컬럼 마스킹 적용(결정 완료 · 실행 대기)</li>
+  <li>장애 알림 메일 수신자 지정(현재 0명)</li>
+</ol>
+<p class="note">미결 이슈 전체 29건(P1 6 · P2 8 · P3 15) · 비용 월 추정은 운영 4주 후 재산정.</p>
+
+<h2>6. 운영 체계</h2>
+<table>
+  <tr><th>무엇</th><th>누가</th><th>문서</th></tr>
+  <tr><td>매일 점검 · 장애 대응</td><td>데이터 엔지니어 → DW 관리자 → Snowflake Support</td><td>D10 · A6</td></tr>
+  <tr><td>배치 스케줄</td><td>dbt 06:01 · MSTR 07:30 · 경고 메일 09:00(KST · 운영계 확인 필요)</td><td>N04</td></tr>
+  <tr><td>권한 · 사용자</td><td>DW 관리자</td><td>A1 · A2</td></tr>
+  <tr><td>비용</td><td>DW 관리자(주 1회)</td><td>D11 · N06</td></tr>
+  <tr><td>현업 문의</td><td>DW 관리자</td><td>D12</td></tr>
+</table>
+</body>
+</html>

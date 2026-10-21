@@ -1,12 +1,11 @@
 -- ============================================================================
--- 23_ML_INC_MKTG_CMPGN_DDL.sql — 🆕 O217-B (2026-10-13 · ua91864)
+-- 23_ML_INC_MKTG_CMPGN_DDL.sql — O217-B (2026-10-13
 --   ML 회원 증액 예측 × MSTR 마케팅캠페인 귀속 서빙 뷰 + SV(SV_ML_INC_CAMPAIGN)
 --   · 배경 = 채팅 「10월 증액개발이 높을 마케팅캠페인 상위 10」에 Agent 가 ML 예측을 못 찾고
 --     직전 3개월 평균(추세 참고치)으로 답했다. 원인 = 증액 예측(ML_RST_DATA_MBER_INC_12M)에 캠페인 축이 없다.
 --   · 구성 = USE → 뷰 → SV → GRANT → 스모크. 파일 단독 실행 가능.
 --   · 의존 = SERVING.ML_MEMBER_RISK_V(21_) · SERVING.MSTR_SPNSR_DVLP_V(MSTR 이관)
 --   · 롤백 = DROP SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN; DROP VIEW GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V;
--- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;
@@ -129,7 +128,7 @@ GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN TO RO
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN TO ROLE GN_DW_VIEWER;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN TO ROLE GN_DW_SERVICE;
 
--- 스모크(ua91864 · 2026-10-13 기대값 = 기준월 202609 · 예측 70,158 · 귀속 28,324)
+-- 스모크(2026-10-13 기대값 = 기준월 202609 · 예측 70,158 · 귀속 28,324)
 SELECT STDR_MT, COUNT(DISTINCT MBER_NO) AS PRED, COUNT_IF(IS_LINKED) AS LINKED
 FROM GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V
 GROUP BY STDR_MT ORDER BY STDR_MT;

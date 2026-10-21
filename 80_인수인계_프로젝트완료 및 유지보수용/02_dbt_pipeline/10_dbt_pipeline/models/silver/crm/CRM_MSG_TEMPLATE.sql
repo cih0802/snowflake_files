@@ -1,8 +1,7 @@
--- CRM_MSG_TEMPLATE: 발송 템플릿 마스터 = 알림톡 ∪ 이메일 (BRONZE → SILVER) · 🆕 O188-F 2차-A 신설
--- Co-authored with CoCo
--- grain = SEND_CHANNEL × TEMPLATE_KEY (📏 xf98254 알림톡 TMPLAT_ID 6,562 · 이메일 TMPLAT_KEY 449 유일)
--- 🟢 이메일 템플릿 마스터는 SNAPSHOT(SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG)으로만 흘렀다 ⇒ SILVER·GOLD 에 처음 올린다.
--- ⚠️ 알림톡 전용 컬럼(승인·대체메시지 등)은 이메일 행에서 NULL = 원천 개념 부재.
+-- CRM_MSG_TEMPLATE: 발송 템플릿 마스터 = 알림톡 ∪ 이메일 (BRONZE → SILVER) · O188-F 2차-A 신설
+-- grain = SEND_CHANNEL × TEMPLATE_KEY ( 이전 계정 알림톡 TMPLAT_ID 6,562 · 이메일 TMPLAT_KEY 449 유일)
+--  이메일 템플릿 마스터는 SNAPSHOT(SNP_CRM_TM_MS_EMAIL_TMPLAT_MNG)으로만 흘렀다 ⇒ SILVER·GOLD 에 처음 올린다.
+-- WARN: 알림톡 전용 컬럼(승인·대체메시지 등)은 이메일 행에서 NULL = 원천 개념 부재.
 SELECT
   'MSG_AT'                              AS SEND_CHANNEL,
   NULLIF(TRIM(TMPLAT_ID),'')            AS TEMPLATE_KEY,

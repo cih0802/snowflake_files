@@ -1,0 +1,9 @@
+# doc_id: N05 · as_of: 2026-10-20 15:43:29.039 -0700 · account: SR61467 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,N05_Q01_1.csv,OK,5,0,SELECT dbt 프로젝트 실행 이력 (최근 7일 · 함수 한도)
+Q02,1,N05_Q02_1.csv,OK,24,0,SELECT 마지막 전체 build 의 dbt 집계 줄 · WARN 테스트 목록
+Q03,1,N05_Q03_1.csv,OK,11,0,SELECT dbt 테스트 실패 저장 테이블 (store_failures · OPS 의 GN_DW_DBT 소유 · 0행이 기대값) — A6 Q03 와 같은 기준
+Q04,1,N05_Q04_1.csv,OK,3,0,WITH MSTR 고정 기준값 게이트 V02 (MSTR 측 · 202606 전체법인 · 스킬_MSTR_검증쿼리.sql :123~135 의 MSTR 절만)
+Q05,1,N05_Q05_1.csv,OK,20,0,WITH 평가셋(05_SV-Agent_ai/07_평가셋_eval.md · 기대값 2026-08-10 O57 스냅샷) 단일값 문항 재실행
+Q06,1,N05_Q06_1.csv,OK,3,0,SELECT 예산 이상 분해 (Q05 B3 집행율 > 100% 원인 · GOLD.FACT_BUDGET 연도 × 편성차수)
+Q07,1,N05_Q07_1.csv,OK,0,0,SELECT Agent 평가 실행 흔적 (AI Evals Task · 최근 30일 · 점수 자체는 Snowsight Evaluations 탭 또는 GET_AI_EVALUATION_DATA(실행 이름 필요))
