@@ -1,0 +1,113 @@
+file,model,column,severity,n_values,hangul,values
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,AREA_CD,error,19,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 18
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,REGION,warn,18,1,서울 · 경기 · 인천 · 강원 · 대전 · 충남 · 충북 · 광주 · 전북 · 전남 · 대구 · 경북 · 경남 · 울산 · 부산 · 제주 · 기타 · 세종
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,AGE,error,12,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,AGE_BAND,warn,12,1,10대 미만 · 10대 · 20대 · 30대 · 40대 · 50대 · 60대 · 70대 · 70대 이상 · 단체 · 기업 · 기타
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,PREV_MBER_STAT_CD,error,12,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/gold/_gold_ready_schema.yml,DIM_MEMBER_STATUS_HISTORY,PREV_MEMBER_STATUS_NAME,warn,12,1,활동회원 · 신규미납1 · 신규미납2 · 신규미납3 · 신규미납4 · 신규미납5 · 장기미납1 · 장기미납2 · 장기미납3 · 장기미납4 · 장기미납5 · 후원중단
+models/gold/_gold_ready_schema.yml,DIM_ORG_SUCCESSION,MAP_METHOD,error,8,0,SELF · MANUAL · MANUAL_UNMAPPED · AUTO_NAME · AUTO_MEMBER_FLOW · AUTO_ACMSLT_PARENT · AUTO_ORG_PARENT · UNMAPPED
+models/gold/_gold_ready_schema.yml,DIM_SPONSORSHIP,CPR_DIV_CD,warn,3,0,A · I · S
+models/gold/_gold_ready_schema.yml,FACT_EVENT_ATTENDANCE,PART_STATUS,warn,18,0,1 · 2 · 3 · 4 · 5 · 6 · 110 · 120 · 130 · 140 · 150 · 160 · 170 · 180 · 190 · 200 · 210 · 220
+models/gold/_gold_ready_schema.yml,FACT_EVENT_ATTENDANCE,EVENT_KIND,error,2,0,EVENT · CRMN
+models/gold/_gold_ready_schema.yml,FACT_EVENT_ATTENDANCE,EVENT_KIND_NAME,error,2,1,일반행사 · 캠페인행사
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,DVLP_DIV_CD,error,5,0,1 · 2 · 3 · 4 · 5
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,DVLP_DIV_NM,error,5,1,신규 · 증액 · 감액 · 재후원 · 후원중단
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,STOP_REASON,error,20,0,1 · 8 · 9 · 11 · 13 · 14 · 15 · 16 · 17 · 20 · 21 · 22 · 23 · 25 · 26 · 27 · 28 · 29 · 30 · 31
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,STOP_REASON_NM,warn,20,1,기타 · 명의변경 · 반송미납 · 신규미납 · 아동퇴소 · 약정후원 · 이중가입 · 장기미납 · 회원항의 · 다른곳지원 · 사업장종결 · 지라니기타 · 지라니부재 · 지라니이관 · 기업후원종료 · 일시후원이었음 · 만18세아동퇴소 · 은행자동납부해지 · 개인(경제적)사유 · 지라니TS후원중단
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,STOP_CHANNEL,error,3,0,1 · 2 · 3
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,STOP_CHANNEL_NM,warn,3,1,CRM · 홈페이지 · SYSTEM
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,AGE_AT_EVENT,error,12,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,AGE_BAND_AT_EVENT,warn,12,1,10대 미만 · 10대 · 20대 · 30대 · 40대 · 50대 · 60대 · 70대 · 70대 이상 · 단체 · 기업 · 기타
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,AREA_CD_AT_EVENT,error,19,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 18
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,REGION_AT_EVENT,warn,18,1,서울 · 경기 · 인천 · 강원 · 대전 · 충남 · 충북 · 광주 · 전북 · 전남 · 대구 · 경북 · 경남 · 울산 · 부산 · 제주 · 기타 · 세종
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,SEX_AT_EVENT,error,9,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,GENDER_AT_EVENT,warn,8,1,국내(남자) · 국내(여자) · 외국인(남자) · 외국인(여자) · 외국인(기타) · 단체 · 기업 · 기타
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,DEV_EXCL_REASON,warn,7,1,동월중단 · 사업월상계 · 회원월상계 · 누적상계 · 부분상계 · 후원사업없음 · 원금액0이하
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT,CAMPAIGN_STOP_CNT,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,IS_STOPPED_OBS,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,IS_STOPPED_OBS_LAST,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_BASIS,error,2,0,NEW · FALLBACK
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_DVLP_DIV_CD,error,5,0,1 · 2 · 3 · 4 · 5
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_AGE_CD,error,12,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_AGE_BAND,warn,12,1,10대 미만 · 10대 · 20대 · 30대 · 40대 · 50대 · 60대 · 70대 · 70대 이상 · 단체 · 기업 · 기타
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_AREA_CD,error,19,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 18
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_REGION,warn,18,1,서울 · 경기 · 인천 · 강원 · 대전 · 충남 · 충북 · 광주 · 전북 · 전남 · 대구 · 경북 · 경남 · 울산 · 부산 · 제주 · 기타 · 세종
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_SEX_CD,error,9,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_GENDER,warn,8,1,국내(남자) · 국내(여자) · 외국인(남자) · 외국인(여자) · 외국인(기타) · 단체 · 기업 · 기타
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,ACQ_MEMBERS,error,1,0,1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,STOPPED_MEMBERS,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,STOPPED_12M_MEMBERS,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT,OBSERVABLE_12M_MEMBERS,error,2,0,0 · 1
+models/gold/_gold_ready_schema.yml,FACT_TARGET_MEMBER_DEV,DEV_TYPE,error,3,0,1 · 2 · 4
+models/gold/_gold_ready_schema.yml,FACT_BUDGET,BUDGET_PROCEDURE,error,2,1,연사업 · 추가경정
+models/gold/_gold_ready_schema.yml,FACT_BUDGET_YEARLY,BUDGET_PROCEDURE,error,2,1,연사업 · 추가경정
+models/gold/_gold_ready_schema.yml,FACT_AD_PERFORMANCE,MKTG_MAP_METHOD,error,5,0,NAME · UTM · CREATIVE_MAP · UPPER_CODE · NONE
+models/gold/_gold_ready_schema.yml,FACT_AD_PERFORMANCE,AD_MAP_LEVEL,error,3,0,MKTG · CTGR · NONE
+models/gold/_gold_ready_schema.yml,FACT_AD_PERFORMANCE,AD_CTGR_SRC,error,3,0,MKTG_REP · CREATIVE_MAP · NONE
+models/gold/_gold_ready_schema.yml,FACT_AD_PERFORMANCE,AD_SOURCE_TYPE,error,3,0,DIGITAL · VIDEO · REBROADCAST
+models/gold/_gold_ready_schema.yml,FACT_AD_BROADCAST_CASE,CASE_SEQ,error,3,0,1 · 2 · 3
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_COHORT_SURVIVAL,AXIS_TYPE,error,5,1,전체 · 개발인입경로 · 캠페인카테고리 · 캠페인유형1 · 캠페인유형2
+models/gold/_gold_ready_schema.yml,FACT_UNPAID_SERVICE_CONV,SVC_SCOPE,error,2,0,A · B
+models/gold/_gold_ready_schema.yml,FACT_AD_INFLOW_ALLOC,ROW_KIND,error,3,0,ALLOC · NOT_ALLOWED · UNALLOC
+models/gold/_gold_ready_schema.yml,FACT_MEMBER_EVENT_COHORT,MONTHS_AFTER,error,13,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/gold/wide/_wide_dept_aggr_schema.yml,WIDE_MBRFEE_PRDT_ACTL,DATA_TYPE_NM,warn,4,1,예측 · 실적 · 연도초예측 · 연초예측
+models/gold/wide/_wide_dept_aggr_schema.yml,WIDE_SPNSR_CLS_AGGR,AGGR_TY_NM,error,5,1,감액 · 개발 · 중단 · 활동 · 회비
+models/silver/_silver_bridge_schema.yml,IDENTITY_MEMBER_XREF,MATCH_METHOD,error,3,0,MEMBER_ID_EXACT · UNMATCHED · NOT_A_MEMBER_ID
+models/silver/_silver_bridge_schema.yml,AGENCY_AD_PERFORMANCE,AD_SOURCE_TYPE,error,3,0,DIGITAL · VIDEO · REBROADCAST
+models/silver/_silver_bridge_schema.yml,CRM_BIZ_TARGET,TARGET_TYPE,warn,2,1,당초 · 추경
+models/silver/bigquery/_bigquery_schema.yml,BIGQUERY_BASIC,ID_SCHEME,warn,6,0,MBER_NO · ONCE_MBER_NO · APP · EMAIL · INVALID · UNCLASSIFIED
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,MEMBER_TYPE,error,2,0,FDRM · ONCE
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,SEX,error,9,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,EMAIL_STAT_CD,error,4,0,0 · 1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,ETC_CTTPC_REL_CD,error,14,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,ETC_CTTPC_STAT_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,ETC_TSTM_DIV_CD,error,4,0,0 · 1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,MOBLPHON_STAT_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,REL_CD,error,12,0,0 · 1 · 2 · 3 · 4 · 5 · 7 · 8 · 9 · 11 · 12 · 13
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,RELATNSP_DIV_CD,error,4,0,2 · 3 · 4 · 5
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,SLRCLD_LRR_CD,error,4,0,0 · 1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER,TSTM_DIV_CD,error,4,0,0 · 1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_EVENT,EVENT_DIV_GROUP,error,2,0,MS286 · MS002
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,CMPGN_TYPE1_NM,warn,4,1,국내 · 통합 · 해외 · 전체사업
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,CMPGN_TYPE2_NM,warn,4,1,굿즈 · 기타 · 사례 · 사업
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,CMPGN_TRGET_CD,error,10,0,1 · 2 · 3 · 4 · 5 · 6 · 9 · 10 · 11 · 13
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,CPR_DIV_CD,error,3,0,A · I · S
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,SPNSR_DIV_CD,error,2,0,1 · 2
+models/silver/crm/_crm_schema.yml,CRM_CAMPAIGN,CMMN_BRND,error,17,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17
+models/silver/crm/_crm_schema.yml,CRM_SEND_REQUEST,MSG_DIV_CD,error,4,0,1 · 2 · 3 · 4
+models/silver/crm/_crm_schema.yml,CRM_SEND_REQUEST,PSTMTR_PRCS_STAT_CD,error,2,0,0 · 1
+models/silver/crm/_crm_schema.yml,CRM_SEND_REQUEST,SNDNG_TIME_DIV_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_EVENT_PARTICIPATION,PARTCPT_STAT_GROUP,error,2,0,MS304 · MS006
+models/silver/crm/_crm_schema.yml,CRM_EVENT_PARTICIPATION,PARTCPT_PATH_GROUP,error,2,0,MS303 · MS004
+models/silver/crm/_crm_schema.yml,CRM_EVENT_PARTICIPATION,PARTCPT_CHNNL_GROUP,error,1,0,MS302
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_DEV,CANCL_RDCAMT_RSN_CD,error,31,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 20 · 21 · 22 · 23 · 24 · 25 · 26 · 27 · 28 · 29 · 30 · 31 · 32 · 33
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_DEV,MBER_DIV_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_DEV,SEX,error,9,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_DEV,SPNSR_AMT_CD,error,5,0,1 · 2 · 3 · 4 · 5
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_DISCONTINUE,DSCNTC_PATH_NM,warn,3,1,CRM · 홈페이지 · SYSTEM
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_AMT_CHANGE,MBER_DIV_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_AMT_CHANGE,SETLE_CD,error,7,0,1 · 2 · 4 · 5 · 8 · 11 · 12
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_AMT_CHANGE,SEX,error,9,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8
+models/silver/crm/_crm_schema.yml,CRM_MEMBER_AMT_CHANGE,SPNSR_AMT_CD,error,5,0,1 · 2 · 3 · 4 · 5
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,CPR_DIV_CD,error,3,0,A · I · S
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,MBER_DIV_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,MBRFEE_DIV_CD,error,4,0,E · G · I · U
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,OPERT_DIV_CD,error,6,0,1 · 2 · 3 · 5 · 6 · 7
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,MBRFEE_PRCS_STAT_CD,error,3,0,F · R · S
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,RETUN_RSN_CD,error,11,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_BILLING,RQEST_DIV_CD,error,4,0,1 · 2 · 9 · Y
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,APPLCNT_MBER_REL_CD,error,14,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,CPR_DIV_CD,error,2,0,I · S
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,CRTFC_MTH_CD,error,5,0,1 · 2 · 4 · 5 · 7
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,FNLT_DIV_CD,error,3,0,1 · 2 · 3
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,RCEPT_DIV_CD,error,6,0,0 · 2 · 4 · 5 · 6 · 7
+models/silver/crm/_crm_schema.yml,CRM_PAYMENT_METHOD,RQST_DIV_CD,error,6,0,01 · 02 · 03 · 04 · 08 · 11
+models/silver/crm/_crm_schema.yml,CRM_SEND_MEMBER,SEND_STATUS_GROUP,error,1,0,MS282
+models/silver/crm/_crm_schema.yml,CRM_SEND_MEMBER,SEND_RESULT_GROUP,error,4,0,MS056 · MS057 · MS058 · MS059
+models/silver/crm/_crm_schema.yml,CRM_SPONSOR_RELATION,RELATNSP_DSCNTC_RSN_CD,error,30,0,0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 16 · 17 · 21 · 22 · 23 · 24 · 25 · 26 · 27 · 28 · 29 · 30 · 31 · 32 · 33
+models/silver/crm/_crm_schema.yml,CRM_RELATION_ACTIVITY,ACTIVITY_TYPE,error,2,1,서신 · 선물금
+models/silver/erp/_erp_schema.yml,ERP_BUDGET,MONTH_NO,error,12,0,1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12
+models/silver/erp/_erp_schema.yml,ERP_BUDGET,BUDGET_PROCEDURE,warn,3,1,연사업 · 추가경정 · 추경
+models/silver/erp/_erp_schema.yml,ERP_BUDGET,BDGT_UNIT_NM,warn,7,1,데이터분석센터 · 마케팅기획1팀 · 마케팅기획2팀 · 매체운영팀 · 콘텐츠기획팀 · 컬쳐콘텐츠팀 · 사회복지법인예산
+models/silver/erp/_erp_schema.yml,ERP_BUDGET_ITEM,BDGT_UNIT_NM,warn,7,1,데이터분석센터 · 마케팅기획1팀 · 마케팅기획2팀 · 매체운영팀 · 콘텐츠기획팀 · 컬쳐콘텐츠팀 · 사회복지법인예산
+models/silver/erp/_erp_schema.yml,ERP_BUDGET_YEARLY,BUDGET_PROCEDURE,warn,3,1,연사업 · 추가경정 · 추경

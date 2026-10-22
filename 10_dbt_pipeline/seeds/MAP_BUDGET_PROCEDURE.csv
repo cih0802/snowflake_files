@@ -1,0 +1,4 @@
+SRC_LABEL,PRCD_STD,PRCD_SEQ,TARGET_TYPE,NOTE
+연사업,연사업,1,당초,ERP·CRM 공통 원천 라벨
+추가경정,추가경정,2,추경,ERP·CRM 공통 원천 라벨
+추경,추가경정,2,추경,ERP SILVER accepted_values 허용 표기(현재 0행)

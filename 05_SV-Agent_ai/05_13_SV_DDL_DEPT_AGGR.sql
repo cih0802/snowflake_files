@@ -81,7 +81,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
     mp AS GN_DW.GOLD.WIDE_MBRFEE_PRDT_ACTL
       PRIMARY KEY (MONTH_KEY, DATA_TYPE_NM, SPNSR_BSNS_GRP_NM, NEW_EXST_DIV_NM, HDQ_BRNCH_GRP_NM)
       WITH SYNONYMS ('회비 예측 실측', '회원실 회비예측', '연간 회비 예측', '회비 계획')
-      COMMENT = '회원실 연간 회비 예측·실측 (base: GOLD.WIDE_MBRFEE_PRDT_ACTL). [Grain: 월 × 예측실측구분 × 후원사업그룹 × 신규기존 × 본부지부그룹]. [활성 지표: 개발·중단·감액 건수 · 회비 · 누계 · 비율]. [주의: 부서 자체 수식이며 ML 예측 아님, 예측/실측 행 혼재, 누계 컬럼 월 합산 금지]. [원천: 회원실 집계 → SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA].'
+      COMMENT = '회원실 연간 회비 예측·실측 (base: GOLD.WIDE_MBRFEE_PRDT_ACTL). [Grain: 월 × 구분(예측/연도초예측/실적) × 후원사업그룹 × 신규기존 × 본부지부그룹]. [활성 지표: 개발·중단·감액 건수 · 회비 · 누계 · 비율]. [주의: 부서 자체 수식이며 ML 예측 아님, 예측/연도초예측/실적 행 혼재(DATA_TYPE_STD 로 고정), 누계 컬럼 월 합산 금지]. [원천: 회원실 집계 → SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA].'
   )
   DIMENSIONS (
     mp.MONTH_KEY AS mp.MONTH_KEY
@@ -93,12 +93,15 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
     mp.CAL_MONTH AS mp.CAL_MONTH
       WITH SYNONYMS ('월')
       COMMENT = '월(1~12).',
+    mp.DATA_TYPE_STD AS mp.DATA_TYPE_STD
+      WITH SYNONYMS ('예측실적구분', '예측/실적', '구분', '예측실측구분')
+      COMMENT = '구분 표준값 3종: 예측 · 연도초예측 · 실적. 🔴🔴 반드시 WHERE 로 하나 고정하거나 GROUP BY 에 넣는다. 예측과 연도초예측은 서로 다른 계열이다 — 합산하지 않는다.',
     mp.DATA_TYPE_NM AS mp.DATA_TYPE_NM
-      WITH SYNONYMS ('예측실측구분', '예측/실측', '구분')
-      COMMENT = '예측 실측 구분(예측/실측). 🔴 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.',
+      WITH SYNONYMS ('원천 구분 라벨')
+      COMMENT = '원천 구분 라벨 raw(현업 수기 · 문구가 바뀔 수 있다). 🔴 필터·그룹에 쓰지 않는다 — DATA_TYPE_STD 를 쓴다.',
     mp.IS_FORECAST AS mp.IS_FORECAST
-      WITH SYNONYMS ('예측여부')
-      COMMENT = '예측행 여부(DATA_TYPE_NM=예측).',
+      WITH SYNONYMS ('일반예측여부')
+      COMMENT = '일반 예측행 여부(DATA_TYPE_STD=예측). 🔴 연도초예측은 FALSE 이므로 실적 판별에 쓰지 않는다(실적 = DATA_TYPE_STD=실적).',
     mp.SPNSR_BSNS_GRP_NM AS mp.SPNSR_BSNS_GRP_NM
       WITH SYNONYMS ('후원사업그룹', '후원사업')
       COMMENT = '후원 사업 그룹 명.',
@@ -165,10 +168,10 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
       WITH SYNONYMS ('누계납입율')
       COMMENT = '[비가산] 누계납입율(0~1) 행 평균.'
   )
-  COMMENT = '회원실 연간 회비 예측·실측 SV. base=GOLD.WIDE_MBRFEE_PRDT_ACTL. 🔴🔴 **예측행과 실측행이 함께 있다** — DATA_TYPE_NM 을 고정하거나 그룹에 넣지 않으면 예측과 실측이 합산된다. 🔴🔴 부서 자체 수식이며 ML 예측이 아니다 — ML 회비 예측(SV_ML_FEE_FORECAST)·회비 실적(SV_MEMBER_FEE)과 같은 표에 합산하지 않는다. 🔴🔴 누계(_AT_MONTH) 지표는 한 기준월로 고정해서만 쓴다. 🔴 비율(_RT)은 비가산이다. 단위 = 건수는 건 · 금액은 원. 활성: 개발·중단·감액 건수 · 조정회비 · 누계 · 비율 · 월/구분/후원사업그룹/신규기존/본부지부 축. 비활성: 회원 단위 분해(원천 grain 이 집계).'
+  COMMENT = '회원실 연간 회비 예측·실측 SV. base=GOLD.WIDE_MBRFEE_PRDT_ACTL. 🔴🔴 **예측행·연도초예측행·실적행이 함께 있다** — DATA_TYPE_STD 를 고정하거나 그룹에 넣지 않으면 세 계열이 합산된다. 예측과 연도초예측도 서로 다른 계열이다. 🔴🔴 부서 자체 수식이며 ML 예측이 아니다 — ML 회비 예측(SV_ML_FEE_FORECAST)·회비 실적(SV_MEMBER_FEE)과 같은 표에 합산하지 않는다. 🔴🔴 누계(_AT_MONTH) 지표는 한 기준월로 고정해서만 쓴다. 🔴 비율(_RT)은 비가산이다. 단위 = 건수는 건 · 금액은 원. 활성: 개발·중단·감액 건수 · 조정회비 · 누계 · 비율 · 월/구분/후원사업그룹/신규기존/본부지부 축. 비활성: 회원 단위 분해(원천 grain 이 집계).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행(또는 같은 조건의 별도 집계 쿼리)을 반환한다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
-  핵심 규칙: (1) 🔴🔴 **DATA_TYPE_NM 을 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.** 「예측」 질문은 ''예측'', 「실적·실측」 질문은 ''실측'' 이다. 예측 대비 실측을 물으면 두 값을 열로 나란히 두고 각각을 밝힌다. (2) 🔴🔴 **누계 지표(이름이 _AT_MONTH 로 끝남)는 MONTH_KEY 하나로 고정한다** — 여러 달을 더하지 않는다. 연간 누계를 물으면 해당 연도의 가장 늦은 월 하나를 쓰고 그 월을 밝힌다. (3) 🔴 **비율(AVG_*_RT)을 합하지 않는다** — 그룹별로 제시하고, 여러 그룹을 묶은 평균은 단순평균임을 밝힌다. 비율은 백분율로 바꿔 표기해도 된다. (4) 🔴 **ML 예측과 섞지 않는다** — 이 SV 는 회원실 자체 수식이다. (5) **단위를 밝힌다** — 건수는 건, 금액은 원. (6) **연도 미지정 시 데이터에 존재하는 최신 연도로 한정하고 밝힌다.** (7) 🔴 **회원 단위·캠페인 단위 분해를 물으면 SQL 을 만들지 않는다** — 이 SV 의 grain 이 집계라고 답한다. (8) 적용 조건(그룹 미지정 시): 최신 연도로 한정해 월별 예측·실측 조정회비와 개발건수를 나란히 반환한다. (9) 🔴 metric 이름을 mp 컬럼처럼 참조하지 않는다 — 정의식(SUM(mp.ADJ_MBRFEE_AMT) 등)으로 집계한다.';
+  핵심 규칙: (1) 🔴🔴 **DATA_TYPE_STD 를 반드시 WHERE 로 하나 고정하거나 GROUP BY 에 넣는다**(원천 라벨 DATA_TYPE_NM 으로 필터하지 않는다 — 라벨이 바뀌면 0행이 된다). 「예측」 질문은 ''예측'' 하나만 쓴다 — 🔴 **연도초예측을 섞지 않는다**. 「연도초예측·연초예측」을 명시해 물을 때만 ''연도초예측'' 을 쓴다. 「실적·실측」 질문은 ''실적'' 이다. 예측 대비 실적을 물으면 두 값을 열로 나란히 두고 각각을 밝힌다. 「예측」 질문에 연도초예측 데이터가 함께 있으면 섞지 말고 별도 계열이 존재한다고 한 줄로 밝힌다. (2) 🔴🔴 **누계 지표(이름이 _AT_MONTH 로 끝남)는 MONTH_KEY 하나로 고정한다** — 여러 달을 더하지 않는다. 연간 누계를 물으면 해당 연도의 가장 늦은 월 하나를 쓰고 그 월을 밝힌다. (3) 🔴 **비율(AVG_*_RT)을 합하지 않는다** — 그룹별로 제시하고, 여러 그룹을 묶은 평균은 단순평균임을 밝힌다. 비율은 백분율로 바꿔 표기해도 된다. (4) 🔴 **ML 예측과 섞지 않는다** — 이 SV 는 회원실 자체 수식이다. (5) **단위를 밝힌다** — 건수는 건, 금액은 원. (6) **연도 미지정 시 데이터에 존재하는 최신 연도로 한정하고 밝힌다.** (7) 🔴 **회원 단위·캠페인 단위 분해를 물으면 SQL 을 만들지 않는다** — 이 SV 의 grain 이 집계라고 답한다. (8) 적용 조건(그룹 미지정 시): 최신 연도로 한정해 월별 예측·실적 조정회비와 개발건수를 나란히 반환한다(연도초예측은 묻지 않으면 넣지 않는다). (9) 🔴 metric 이름을 mp 컬럼처럼 참조하지 않는다 — 정의식(SUM(mp.ADJ_MBRFEE_AMT) 등)으로 집계한다.';
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL TO ROLE GN_DW_VIEWER;

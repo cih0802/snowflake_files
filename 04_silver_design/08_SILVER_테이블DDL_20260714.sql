@@ -1693,3 +1693,42 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP (
     CMPGN_CTGR_CD       NUMBER(38,0)    COMMENT '확정 캠페인카테고리 코드(MM294 · SILVER.CRM_CAMPAIGN.CMPGN_CTGR_CD) — CMPGN_CTGR_NM 과 1:1 · NONE 이면 NULL',
     PRIMARY KEY (AD_SOURCE_TYPE, CREATIVE_NM)
 ) COMMENT = '미연결 광고 소재 → 캠페인 매핑(사용자 확정). [Grain: AD_SOURCE_TYPE × CREATIVE_NM (1행=1소재)]. [주의: 이름매칭·UTM 실패 소재 전용 3순위 규칙 · 카테고리 수준 행은 마케팅캠페인으로 배분하지 않는다]. [원천: 12_agent개선과제/output/O232_광고_매핑_추천안.csv (재송출·방송·영상광고 CRM 개발 실적 대조)].';
+
+-- ============================================================================
+-- [2026-10-22 O258] 라벨 매핑 seed 4종 — 원천 라벨 → 표준값(모델 하드코딩 제거)
+--   WARN: dbt seed 적재 대상이다 — 데이터는 10_dbt_pipeline/seeds/MAP_*.csv · 손으로 INSERT 하지 않는다(다음 seed 가 지운다).
+--   WARN: GN_DW_DBT 는 SILVER CREATE TABLE 권한이 없다(07 RBAC §D.9 설계) ⇒ 구조는 이 DDL 이 먼저 만들고
+--      dbt seed 는 FUTURE TABLES 권한(SELECT·INSERT·DELETE·TRUNCATE)으로 비우고 다시 넣는다(GOLD.ORG_SUCCESSION_MANUAL 과 같은 방식).
+--   WARN: 컬럼 이름·순서·타입 = seeds/_seeds.yml column_types 와 같아야 한다(CSV 헤더 순서).
+--   기존 환경 = /05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql (이 4문장 IF NOT EXISTS 사본 · 이 파일 전체 재실행 금지 = SILVER 전량 비워짐).
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_BUDGET_PROCEDURE (
+    SRC_LABEL           VARCHAR         COMMENT '예산 편성 차수 원천 라벨(ERP·CRM 사업목표 BDGT_PRCD_NM)',
+    PRCD_STD            VARCHAR         COMMENT '표준 차수(연사업·추가경정)',
+    PRCD_SEQ            NUMBER(2,0)     COMMENT '차수 순번(1 연사업 · 2 추가경정) — FACT_BUDGET* 최신 편성 차수 판정',
+    TARGET_TYPE         VARCHAR         COMMENT '사업목표 유형(당초·추경) — CRM_BIZ_TARGET.TARGET_TYPE',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '예산 편성 차수 라벨 매핑. [Grain: SRC_LABEL]. [주의: dbt seed 적재 · CSV 를 고친다]. [원천: 10_dbt_pipeline/seeds/MAP_BUDGET_PROCEDURE.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_SPONSORSHIP_GROUP4 (
+    SRC_LABEL           VARCHAR         COMMENT '후원사업 그룹 코드명(CM003 DTL_CD_NM)',
+    GROUP4_NAME         VARCHAR         COMMENT '4그룹(국내·결연·해외프로젝트·기타) — DIM_SPONSORSHIP.SPONSORSHIP_GROUP4_NAME',
+    NOTE                VARCHAR         COMMENT '비고(결정 근거)'
+) COMMENT = '후원사업 4그룹 접기 매핑(O190 F-2). [Grain: SRC_LABEL]. [주의: dbt seed 적재 · 없는 라벨은 4그룹 NULL]. [원천: 10_dbt_pipeline/seeds/MAP_SPONSORSHIP_GROUP4.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_EXT_DATA_TYPE (
+    SOURCE_TABLE        VARCHAR         COMMENT '외부 적재 원천 테이블명(SILVER)',
+    SRC_LABEL           VARCHAR         COMMENT 'DATA_TYPE_NM 수기 라벨',
+    DATA_TYPE_STD       VARCHAR         COMMENT '구분 표준값',
+    IS_FORECAST         BOOLEAN         COMMENT '일반 예측행 여부(회비예측 전용 · 개발목표는 NULL)',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '외부 적재 부서 집계 구분 라벨 매핑. [Grain: SOURCE_TABLE × SRC_LABEL]. [주의: dbt seed 적재 · 라벨 개명 시 행 추가]. [원천: 10_dbt_pipeline/seeds/MAP_EXT_DATA_TYPE.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_SERVICE_GROUP_RULE (
+    SERVICE_GROUP_CD    VARCHAR         COMMENT '서비스 그룹 코드',
+    SERVICE_GROUP_NAME  VARCHAR         COMMENT '서비스 그룹명',
+    MATCH_BASIS         VARCHAR         COMMENT '판정 근거 CODE(MS049 상위코드) · TITLE(발송 제목 ILIKE)',
+    SVC_UPPER_CD        VARCHAR         COMMENT 'CODE 판정 MS049 상위코드(선행 0 보존 · VARCHAR) — TITLE 이면 NULL',
+    TITLE_PATTERN       VARCHAR         COMMENT 'TITLE 판정 ILIKE 패턴 — CODE 이면 NULL',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '서비스 그룹 판정 규칙(O206 A안). [Grain: 규칙 1행]. [주의: dbt seed 적재 · 제목이 바뀌면 TITLE 행 추가]. [원천: 10_dbt_pipeline/seeds/MAP_SERVICE_GROUP_RULE.csv].';

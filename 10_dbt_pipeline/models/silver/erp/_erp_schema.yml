@@ -30,8 +30,10 @@ models:
         description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
         tests:
           - not_null
-          - accepted_values:
-              values: ['연사업', '추가경정', '추경']
+          # [O258] 허용 목록 = seed MAP_BUDGET_PROCEDURE(GOLD FACT_BUDGET* 와 같은 정의 지점 · 종전 3종 목록과 같은 집합)
+          - relationships:
+              to: ref('MAP_BUDGET_PROCEDURE')
+              field: SRC_LABEL
               config:
                 severity: warn
       - name: DVLP_INBOUND_PATH
@@ -88,7 +90,9 @@ models:
         description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
         tests:
           - not_null
-          - accepted_values:
-              values: ['연사업', '추가경정', '추경']
+          # [O258] 허용 목록 = seed MAP_BUDGET_PROCEDURE(ERP_BUDGET 과 같은 정의 지점)
+          - relationships:
+              to: ref('MAP_BUDGET_PROCEDURE')
+              field: SRC_LABEL
               config:
                 severity: warn

@@ -997,8 +997,8 @@ END-METADATA -->
 | **DEPT_DIV_NM** | `DEPT_DIV_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 부서 구분 명 |
 | **NEW_EXST_DIV_NM** | `NEW_EXST_DIV_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 신규기존구분명 |
 | **SPNSR_BSNS_GRP_NM** | `SPNSR_BSNS_GRP_NM` | TEXT | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 후원 사업 그룹 명 |
-| **목표건수** | `GOAL_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 목표 건수 ← DATA_TYPE_NM='목표' 행의 해당 월 값 |
-| **ACMSLT_CNT** | `ACMSLT_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 실적 건수 ← DATA_TYPE_NM='실적' 행의 해당 월 값. 미도래 월은 NULL. |
+| **목표건수** | `GOAL_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 목표 건수 ← 구분 표준값 '목표' 행의 해당 월 값(원천 라벨 → 표준값 = seed MAP_EXT_DATA_TYPE) |
+| **ACMSLT_CNT** | `ACMSLT_CNT` | NUMBER | YES | SILVER.ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA (source silver_external) | 개발 실적 건수 ← 구분 표준값 '실적' 행의 해당 월 값(seed MAP_EXT_DATA_TYPE). 미도래 월은 NULL. |
 
 ---
 
@@ -1021,8 +1021,9 @@ END-METADATA -->
 | **월키(YYYYMM)** | `MONTH_KEY` | NUMBER | YES | 파생 (DERIVED 계산식) | 기준월 YYYYMM ← STDR_MT |
 | **연도(YYYY)** | `CAL_YEAR` | NUMBER | YES | 파생 (DERIVED 계산식) | 연도 ← STDR_MT 앞 4자리 |
 | **월(MM)** | `CAL_MONTH` | NUMBER | YES | 파생 (DERIVED 계산식) | 월(1~12) ← STDR_MT 뒤 2자리 |
-| **예측 실측 구분 명** | `DATA_TYPE_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 예측 실측 구분 명(예측/실측) |
-| **IS_FORECAST** | `IS_FORECAST` | BOOLEAN | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 예측행 여부 ← DATA_TYPE_NM='예측' |
+| **예측 실적 구분 원천 라벨 raw** | `DATA_TYPE_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 예측 실적 구분 원천 라벨 raw(현업 수기 · 문구가 바뀔 수 있다). 🔴 필터·집계에는 DATA_TYPE_STD 를 쓴다 — 원천 라벨로 고정하면 라벨 개명 시 0행이 된다. |
+| **구분 표준값 3종** | `DATA_TYPE_STD` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 구분 표준값 3종: '예측'(일반 예측) · '연도초예측'(연도초 시점 예측 · 원천 라벨 '연초예측' 포함) · '실적'. 🔴🔴 '예측'과 '연도초예측'은 **서로 다른 계열**이다 — 「예측」 질문은 '예측' 하나로 고정하고, 연도초예측은 명시적으로 물을 때만 쓴다. 둘을 합산하지 않는다. NULL = 매핑에 없는 원천 라벨(분류 불가 · 추정 금지). |
+| **IS_FORECAST** | `IS_FORECAST` | BOOLEAN | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 일반 예측행 여부 ← DATA_TYPE_STD='예측'. 🔴 연도초예측은 FALSE 다(별도 계열) — 실적 여부로 쓰지 말 것(실적 = DATA_TYPE_STD='실적'). NULL = 분류 불가 라벨. |
 | **SPNSR_BSNS_GRP_NM** | `SPNSR_BSNS_GRP_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 후원 사업 그룹 명 |
 | **NEW_EXST_DIV_NM** | `NEW_EXST_DIV_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 신규기존구분명 |
 | **HDQ_BRNCH_GRP_NM** | `HDQ_BRNCH_GRP_NM` | TEXT | YES | SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA (source silver_external) | 본부 지부 그룹 명 |
@@ -1136,7 +1137,7 @@ END-METADATA -->
 |---|---|---|---|---|---|
 | **회원식별키(DK)** | `MEMBER_DK` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 회원 대리키. 🔴연도를 고정하지 않으면 한 회원이 여러 행이다 — 회원수는 COUNT DISTINCT. |
 | **서비스그룹 코드** | `SERVICE_GROUP_CD` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 코드(A안 · 서비스코드 우선 → 발송제목 보조) — SNG_INSTANT·PERSONAL_NEW_SADAN·LUCKY_CARD·LONGTERM_THANKS. 🔴반드시 하나로 고정한다(그룹 간 합산 금지 · 한 발송이 여러 그룹에 들 수 있다). |
-| **SERVICE_GROUP_NAME** | `SERVICE_GROUP_NAME` | TEXT | NO | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 이름. 원천 서비스 카테고리명은 SVC_CATEGORY_NAMES 에 따로 있다(이 이름은 4그룹 묶음 라벨). |
+| **SERVICE_GROUP_NAME** | `SERVICE_GROUP_NAME` | TEXT | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 서비스그룹 이름. 원천 서비스 카테고리명은 SVC_CATEGORY_NAMES 에 따로 있다(이 이름은 4그룹 묶음 라벨). |
 | **수신연도** | `RECEIVE_YEAR` | NUMBER | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 수신연도(발송일 연도). 미수신 행은 NULL. |
 | **그 그룹 발송 수신 여부** | `RECEIVED_FLAG` | BOOLEAN | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 그룹 발송 수신 여부(TRUE=수신 · FALSE=미수신 · 미수신은 획득 코호트 회원 중 한 번도 받지 않은 회원). |
 | **FIRST_RECEIVE_DATE** | `FIRST_RECEIVE_DATE` | DATE | YES | GOLD.FACT_MESSAGE_DISPATCH (서비스그룹 수신 집계) FULL OUTER GOLD.DIM_MEMBER_ACQUISITION × 서비스그룹 | 그 연도 첫 수신일. 미수신 NULL. |

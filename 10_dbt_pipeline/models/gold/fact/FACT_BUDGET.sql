@@ -26,14 +26,14 @@
 ) }}
 
 with b as (
+    --  [2026-10-22 O258] 차수 순번 = seed MAP_BUDGET_PROCEDURE(라벨 하드코딩 제거 · 연사업 1 · 추가경정 2 = 종전과 동일).
+    --   변경 1 = 표기 `추경`(SILVER accepted 허용 · 현재 0행)도 2(종전 0) — 같은 차수를 다른 표기로 받는다.
+    --   WARN: 매핑에 없는 원천 라벨은 PRCD_SEQ 0(종전 ELSE 0 과 같다) · tests/warn_map_coverage_budget_procedure 가 알린다.
     select
-        *,
-        case BUDGET_PROCEDURE
-            when '추가경정' then 2
-            when '연사업' then 1
-            else 0
-        end as PRCD_SEQ
-    from {{ ref('ERP_BUDGET') }}
+        b0.*,
+        COALESCE(m.PRCD_SEQ, 0) as PRCD_SEQ
+    from {{ ref('ERP_BUDGET') }} b0
+    left join {{ ref('MAP_BUDGET_PROCEDURE') }} m on m.SRC_LABEL = b0.BUDGET_PROCEDURE
 ),
 ranked as (
     --  [O240 · O245 문안 정정] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 편성 데이터가 없는 연도는 연사업)

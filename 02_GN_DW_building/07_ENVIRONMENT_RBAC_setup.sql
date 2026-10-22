@@ -679,4 +679,11 @@ GRANT SELECT ON FUTURE VIEWS IN SCHEMA GN_DW.GOLD TO ROLE GN_DW_DBT;
 -- [1-d] store_failures · 감사 스키마(D.6 과 같은 범위 — FUTURE 미사용)
 GRANT USAGE, CREATE TABLE, CREATE TASK ON SCHEMA GN_DW.OPS TO ROLE GN_DW_DBT;
 GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit TO ROLE GN_DW_DBT;
+-- [1-f] [2026-10-22 O258] dbt seed — WARN: SILVER·GOLD 에 CREATE TABLE 을 **주지 않는다**(의도된 설계 · 추가 GRANT 없음).
+--   구조 = GN_DW_ADMIN DDL · 데이터 = dbt(위 [1-b]·[1-c] FUTURE TABLES 의 INSERT·DELETE·TRUNCATE).
+--   seed 도 같다 — dbt seed 는 기존 테이블을 TRUNCATE 후 INSERT 하므로 테이블만 먼저 있으면 된다.
+--   ⇒ 새 seed 를 추가하면 그 테이블 DDL 을 먼저 실행한다(없이 seed 하면 003001 「must have CREATE TABLE granted on SCHEMA GN_DW.SILVER」).
+--      SILVER seed = 04_silver_design/08_SILVER_테이블DDL_20260714.sql 끝 MAP_* 4종 · 기존 환경 = 05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql
+--      GOLD seed  = 03_top-down_gold/06_DDL.sql ORG_SUCCESSION_MANUAL · 기존 환경 = 05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql [D1]
+--   WARN: 권한으로 풀지 마라 — dbt 가 만든 테이블은 GN_DW_DBT 소유가 되어 COMMENT·PK 정본(DDL)과 소유 체계(ADMIN)가 갈라진다.
 

@@ -1,0 +1,12 @@
+SERVICE_GROUP_CD,SERVICE_GROUP_NAME,MATCH_BASIS,SVC_UPPER_CD,TITLE_PATTERN,NOTE
+SNG_INSTANT,선넘는좋은일 신규 즉시,TITLE,,%선넘는좋은일%,O206 제목 판정
+PERSONAL_NEW_SADAN,개별화 신규(사단),CODE,43,,MS049 상위 43
+PERSONAL_NEW_SADAN,개별화 신규(사단),TITLE,,%개별화%신규%사단%,
+LUCKY_CARD,행운의 카드,TITLE,,%행운의 카드%,MS046 결연 · 서비스 카테고리 없음
+LONGTERM_THANKS,장기회원 서비스,CODE,06,,MS049 상위 06(사단)
+LONGTERM_THANKS,장기회원 서비스,CODE,23,,MS049 상위 23(사복)
+LONGTERM_THANKS,장기회원 서비스,CODE,24,,MS049 상위 24(통합)
+LONGTERM_THANKS,장기회원 서비스,TITLE,,%장기회원%,
+LONGTERM_THANKS,장기회원 서비스,TITLE,,%년%회원%감사%,O205-B 2026 제목에서 장기회원이 빠짐
+LONGTERM_THANKS,장기회원 서비스,TITLE,,%년 회원서비스%,O205-B
+LONGTERM_THANKS,장기회원 서비스,TITLE,,%년 감사서비스%,O205-B

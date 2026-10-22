@@ -74,9 +74,9 @@ sources:
       # 🆕 [2026-10-02 O200-A] 회원실·기획실 부서 자체 수식 집계 3종(외부 적재 · ML 모델 산출물 아님).
       #   소비자 = `models/gold/wide/WIDE_DVLP_GOAL_ACMSLT`·`WIDE_MBRFEE_PRDT_ACTL`·`WIDE_SPNSR_CLS_AGGR`.
       - name: ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA
-        description: "연간 개발 목표 실적 집계 데이터(월 = M01~M12 열 · DATA_TYPE_NM = 목표/실적)."
+        description: "연간 개발 목표 실적 집계 데이터(월 = M01~M12 열 · DATA_TYPE_NM = 수기 라벨 · 표준값 매핑 = seed MAP_EXT_DATA_TYPE)."
       - name: ANNUAL_MBRFEE_PRDT_ACTL_DATA
-        description: "회원실 연간 회비 예측 실측 데이터(DATA_TYPE_NM = 예측/실측)."
+        description: "회원실 연간 회비 예측 실측 데이터(DATA_TYPE_NM = 수기 라벨 · 표준값 매핑 = seed MAP_EXT_DATA_TYPE)."
       - name: MM_SPNSR_CLS_AGGR_DATA
         description: "회원실 회비예측 월간 후원 분류별 집계(AGGR_TY_NM = 감액/개발/중단/활동/회비)."
       # 🆕 [2026-10-15 O232] 미연결 광고 소재 → 캠페인 매핑(사용자 확정 추천안 · 소유자 롤 적재 · 구조 정본 = 08 DDL).

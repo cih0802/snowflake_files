@@ -1,0 +1,23 @@
+agent,section,column,literal
+AGENT_EXECUTIVE,orchestration,,사단
+AGENT_EXECUTIVE,orchestration,,사단
+AGENT_EXECUTIVE,response,,(미매핑)
+AGENT_EXECUTIVE,response,,미상
+AGENT_EXECUTIVE,response,,알 수 없음
+AGENT_EXECUTIVE,response,,미상
+AGENT_EXECUTIVE,system,,(모바일)·
+AGENT_EXECUTIVE,system,,이며 
+AGENT_MARKETING,orchestration,,사단
+AGENT_MARKETING,orchestration,,사단
+AGENT_MARKETING,response,,(미매핑)
+AGENT_MARKETING,response,,미상
+AGENT_MARKETING,response,,알 수 없음
+AGENT_MARKETING,system,,(모바일)·
+AGENT_MEMBER,orchestration,ACQ_CPR_DIV,사단
+AGENT_MEMBER,orchestration,SPONSORSHIP_CPR_DIV_NM,사단
+AGENT_MEMBER,orchestration,,사단
+AGENT_MEMBER,orchestration,,사단
+AGENT_MEMBER,response,,(미매핑)
+AGENT_MEMBER,response,,미상
+AGENT_MEMBER,response,,알 수 없음
+AGENT_MEMBER,response,,미상

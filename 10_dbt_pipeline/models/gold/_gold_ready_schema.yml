@@ -803,8 +803,8 @@ models:
         description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
         tests:
           - not_null
-          - accepted_values:
-              values: ['연사업', '추가경정']
+          # [O258] 허용 목록 = seed MAP_BUDGET_PROCEDURE(종전 accepted_values ['연사업','추가경정'] 은 SILVER warn 목록과 어긋났다)
+          - relationships: { to: ref('MAP_BUDGET_PROCEDURE'), field: SRC_LABEL }
 
   # 🆕 [2026-08-29 O114-B] `FACT_BUDGET_YEARLY` 는 O93 에 신설됐으나 **이 파일에 등재되지 않아
   #   테스트 0건 · 컬럼 COMMENT 0건**으로 방치돼 있었다(`R3-9 ㉢` — 분모 미등재는 조용히 0을 낸다).
@@ -854,8 +854,8 @@ models:
         description: "예산 편성 차수 (연사업 / 추가경정 · DEC-44)."
         tests:
           - not_null
-          - accepted_values:
-              values: ['연사업', '추가경정']
+          # [O258] 허용 목록 = seed MAP_BUDGET_PROCEDURE(FACT_BUDGET 과 같은 정의 지점)
+          - relationships: { to: ref('MAP_BUDGET_PROCEDURE'), field: SRC_LABEL }
       - name: PLAN_BUDGET_YEAR
         description: >
           연 편성예산. ⚠️ **FACT_BUDGET.PLAN_BUDGET_MONTH 를 12개월 합산한 값과 일치하지 않는다** —
