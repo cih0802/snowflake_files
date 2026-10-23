@@ -1,0 +1,22 @@
+select
+    ABS(HASH(COALESCE(CAST(s.OLD_DEPT_ID AS VARCHAR), '∅')))               as OLD_ORG_SK,
+    s.OLD_DEPT_ID                                  as OLD_DEPT_ID,
+    s.OLD_DEPARTMENT                               as OLD_DEPARTMENT,
+    s.OLD_IS_ACTIVE_ORG                            as OLD_IS_ACTIVE_ORG,
+    IFF(s.CUR_DEPT_ID is null, NULL, ABS(HASH(COALESCE(CAST(s.CUR_DEPT_ID AS VARCHAR), '∅'))))  as CUR_ORG_SK,
+    s.CUR_DEPT_ID                                  as CUR_DEPT_ID,
+    s.CUR_DEPARTMENT                               as CUR_DEPARTMENT,
+    s.CUR_ORG_PATH                                 as CUR_ORG_PATH,
+    s.CUR_ORG_LEVEL                                as CUR_ORG_LEVEL,
+    s.MAP_METHOD                                   as MAP_METHOD,
+    s.IS_REMAPPED                                  as IS_REMAPPED,
+    s.IS_CONFIRMED                                 as IS_CONFIRMED,
+    s.FLOW_CAND_DEPT_ID                            as FLOW_CAND_DEPT_ID,
+    s.FLOW_EVIDENCE_CNT                            as FLOW_EVIDENCE_CNT,
+    s.FLOW_SHARE                                   as FLOW_SHARE,
+    s.FLOW_LIFT                                    as FLOW_LIFT,
+    s.CONFIRMED_BY                                 as CONFIRMED_BY,
+    s.CONFIRMED_DT                                 as CONFIRMED_DT,
+    s.NOTE                                         as NOTE,
+    'CRM' AS DW_SOURCE_SYSTEM, NULL::TIMESTAMP_NTZ AS DW_LOAD_TS, NULL::TIMESTAMP_NTZ AS DW_UPDATE_TS, NULL AS DW_BATCH_ID
+from T_SUCC s

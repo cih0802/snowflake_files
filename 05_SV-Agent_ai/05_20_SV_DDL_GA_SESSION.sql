@@ -98,7 +98,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
   )
   COMMENT = 'GA4 세션 SV. 「회원유형·후원자유형·후원사업유형·국가·기기·브라우저·사이트·유입채널별 방문(세션)·방문자·페이지뷰」 질문에 쓴다. 🔴 페이지 경로·이벤트 분류 질문은 SV_GA_BEHAVIOR 소관(다른 grain · 합산 금지). 🔴 인구통계(성별·연령)는 SV_GA_DEMOGRAPHIC · 구글 검색어·노출은 SV_SEARCH_CONSOLE 소관. 제외 축: EP_GAD_SOURCE(라벨 없는 숫자 코드).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "세션수(회)" · "방문자수(명)"). 영문 식별자를 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행을 반환한다(고유 세션·방문자수 합계는 ROLLUP 이 다시 세므로 그룹 합과 다를 수 있다 — 그 차이를 밝힌다).
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "세션수(회)" · "방문자수(명)"). 영문 식별자를 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙 · O259 개정] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만). 전체 합이 필요하면 행이 아니라 같은 SELECT 의 열로 붙인다(SUM(SUM(x)) OVER () · COUNT DISTINCT·HAVING 이 있으면 그룹 없는 CTE 를 CROSS JOIN) — 답변에서는 그 열을 표에 싣지 않고 표 밖 본문 1줄로 적는다(고유 세션·방문자수 전체는 그룹 없는 CTE 가 다시 세므로 그룹 합과 다를 수 있다 — 그 차이를 밝힌다).
   핵심 규칙: (1) 기간 미지정 시 데이터에 존재하는 최신 월 하나로 한정하고 밝힌다. (2) 세션·방문자수는 일자별 값을 더하지 않는다. (3) NULL 값은 「값 없음(해당 없음)」으로 밝히고 다른 값으로 합치지 않는다. (4) 「{{…}}」 형태 값은 GTM 미치환 수집 오류로 밝힌다. (5) 회원 단위 후원 실적은 이 SV 가 아니라 CRM SV 소관이다.
   🆕 [O241 추천안 A/B 병기] (6) 「평균세션시간」(공98) 질문은 추천안 A·B 두 값을 한 SELECT 로 낸다 — A = AVG_SESSION_ENGAGEMENT_SEC 식(참여시간 합 ÷ 1,000 ÷ 고유 세션수 · GA4 세션당 평균 참여시간) · B = AVG_SESSION_DURATION_SEC 식(SESSION_DURATION_SEC 합 ÷ 고유 세션수 · UA식 세션 지속시간). 각 값 아래 정의를 1줄씩 쓰고 「현업 결정 전 잠정 · 두 안 병기」를 밝힌다. 한쪽만 물으면(「추천안B」·「UA 세션 지속시간」) 그 값만 낸다.'
   AI_VERIFIED_QUERIES (
@@ -110,7 +110,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
     vqr_o213f_donor_type AS (
       QUESTION '2026년 9월 후원자유형별 홈페이지 방문 세션수'
       VERIFIED_BY '(O213-F · 팩트 직접 집계 대조 · 값 없음 52,503 · 개인 992 · 단체 29 · 기업 4)'
-      SQL 'SELECT gs.UP_DONOR_TYPE AS "후원자유형", COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY) AS "세션수(회)" FROM gs WHERE gs.DATE_SK BETWEEN 20260901 AND 20260930 GROUP BY ROLLUP(gs.UP_DONOR_TYPE) ORDER BY 2 DESC'
+      SQL 'SELECT gs.UP_DONOR_TYPE AS "후원자유형", COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY) AS "세션수(회)" FROM gs WHERE gs.DATE_SK BETWEEN 20260901 AND 20260930 GROUP BY gs.UP_DONOR_TYPE ORDER BY 2 DESC'
     )
   );
 

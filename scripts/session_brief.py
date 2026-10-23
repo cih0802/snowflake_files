@@ -570,6 +570,8 @@ GATES = [
     ('null_reason_registry_gate', ['scripts/null_reason_registry_gate.py']),
     # 🆕 [2026-10-14 O225-C] BRONZE 캠페인 컬럼 → SV 배선 등재표(미등재·배선 끊김 FAIL · GAP 경고)
     ('campaign_axis_gate', ['scripts/campaign_axis_gate.py']),
+    # 🆕 [2026-10-23 O259] SV 지시문·VQR 소계/합계 행 유도 금지(ROLLUP·CUBE·GROUPING SETS)
+    ('sv_no_rollup_gate', ['scripts/sv_no_rollup_gate.py']),
 ]
 
 
