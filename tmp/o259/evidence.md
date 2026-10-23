@@ -76,3 +76,30 @@
 - Agent 스테이지 대조 = EXECUTIVE 91360/91360 · MARKETING 118624/118624 · MEMBER 136896/136896 · 전건 OK.
 - default 버전 = MEMBER VERSION$6 · EXECUTIVE VERSION$6 · MARKETING VERSION$7.
 - Analyst 재질의(SV_CAMPAIGN_CUM_STOP · SV_CAMPAIGN_MONTHLY · SV_MEMBER_SPONSOR_BIZ) = 3/3 `GROUP BY <차원>` 평면 · ROLLUP/GROUPING SETS/CUBE 0.
+
+## E7. 세션 정리 (사용자 승인 · SR61467 · 2026-10-23 · 계정 결제수단 정지 없음 = 전 단계 완료)
+
+- rollover = `01_세션이력` 「O259」 · 문서50 「🟡 O259-1」 · 두 건 🟢 PASS(본문 바이트 동일 · 유실 0 · 상한 초과 0).
+- `gen_measure_backlog --write` rc=0 · 음성 테스트 전건 = 1차 FAIL 2(`test_gate_census` · `test_tool_registration` · 원인 = `sv_no_rollup_gate` 가 `gate_census` 미분류) → JUDGE 등재 후 11/11 · 전건 통과.
+- 선택 게이트 13종(`sh scripts/optional_gates.sh` · 「OPTIONAL_GATES_DONE fail=5」):
+
+| 게이트 | rc | 판정 · O259 관련 |
+|---|---|---|
+| comment_drift · decision_closure · doc_line_length · handoff_ddl · rename_stale · stage_mount_size · sv_comment_object · wide_select_yml | 0 | PASS |
+| gold_erd_coverage | 1 | 미분류 6 = `FACT_AD_INFLOW_ALLOC`(O248) 등 · O259 무관 |
+| live_change | 1 | SV·Agent created_on(10-20·10-22) 에 원장 §1 날짜+객체명 행 없음 · 10-20 분은 기존 · 10-22(PT) 분은 O259 재배포(원장 O259 행은 객체명 미열거) |
+| sv_code_label | 143 | 900초 timeout ⇒ **미판정**(R0-8-1) |
+| sv_unit | 1 | `SV_AD_INFLOW_ALLOC.COST_PER_DEV`(O249) · Agent 3종 COMMENT 「소관 SV 종수」 부재(O250 「수치 없음」 결정과 충돌 · 기존) |
+| table_ddl_column | 1 | `DIM_ORG_SUCCESSION` DDL block not found(O252 유래 · 이번에 GOLD DDL 무변경) |
+
+## E8. 후속 2건 (SR61467 · 2026-10-23 · 사용자 지시 「남은 작업 진행」)
+
+- live_change: 원장 O259 행에 `2026-10-22(PT) … REBUILD:ALL` 표기 추가.
+  - 1차로 객체명 41종을 나열했으나 조각 -002 가 41,326 B(상한 초과 366 B)가 되어 `REBUILD:ALL` 표지로 대체 → 40,492 B.
+  - 재판정 = 「무기록 라이브 변경 35건」(rc=1 · 종전 78) · 10-22·10-21 분 0 · 잔여 35건 전부 2026-10-20(O248·O249 세션 · O259 무관).
+  - 🟠 10-21(PT) 분 2건(SV_MEMBER_SPONSOR_BIZ · SV_MSTR_SPNSR_DVLP)은 「날짜+1」 경계로 O259 행에 인정됐다 — 실제 소관 세션 미확인.
+  - line_len PASS · index_row_gate PASS · doc_census stale 0.
+- sv_code_label: `timeout 3500` 단독 재실행 → rc=1(판정 완료 · 미판정 해소).
+  - 「SV 44종 · 컬럼 배킹 차원 898개」 · blocking 4 · advisory(열거누락) 270 · 정보 16.
+  - blocking = SV_AD.DEVICE_TYPE 열거 ['M','PC'] vs 실제 ['(unknown)','(해당없음)'] · SV_GA_BEHAVIOR.DEFAULT_CHANNEL_GROUP 열거 10 vs 실제 0종(코드값·종수 2건) · SV_MEMBER_SPONSOR_BIZ.MAP_METHOD COMMENT 「실제값 8종」 vs 실제 6종.
+  - 🟠 MAP_METHOD 6종은 E5 의 MAP 6분류와 같은 수 ⇒ O259 유래 가능성(미확정 · COMMENT 수정 시 SV 재배포 필요).

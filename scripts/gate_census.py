@@ -89,6 +89,7 @@ JUDGE = {
     'live_change_gate': 'D6 기록 없는 라이브 변경 탐지 — SV·Agent created_on 날짜에 원장 §1 행(날짜+객체명)이 있는가',
     'null_reason_registry_gate': 'NULL 사유 등록부 상설 게이트 — 100% NULL 컬럼 사유 코드 표준화 및 COMMENT 부합 검증',
     'campaign_axis_gate': 'BRONZE 캠페인 컬럼 → SILVER·GOLD·SV 배선 등재표 대조 · 미등재 FAIL · GAP 은 경고',
+    'sv_no_rollup_gate': 'SV 지시문·VQR 의 소계/합계 행 유도(ROLLUP·CUBE·GROUPING SETS) 0 · O259',
 }
 
 OBSERVE = {
