@@ -351,6 +351,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     SPNSR_ENTRPRS_ID    VARCHAR(20)     COMMENT '후원기업ID [원천: BRONZE_CRM.TM_CM_CMPGN_MNG]',
     EMRGNCY_AID_BPLC_CD NUMBER(10,0)    COMMENT '긴급구호사업장코드 [원천: BRONZE_CRM.TM_CM_CMPGN_MNG]',
     BRND_USE_YN         VARCHAR(1)      COMMENT '사용여부 [원천: BRONZE_CRM.TM_CM_BRND_MNG]',
+    CMPGN_TRGET_NM      VARCHAR         COMMENT '캠페인대상명(CM002 라벨 · 코드 = CMPGN_TRGET_CD · 코드 없음 = NULL) [O262-B]',
     PRIMARY KEY (CMPGN_CD)
 ) COMMENT = '캠페인 마스터 (비정규화 통합). [Grain: CMPGN_CD (1행=1캠페인)]. [주의: 카테고리/인입경로/국내해외/마케팅캠페인 속성 통합]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG].';
 
@@ -490,6 +491,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SND_CMPGN_CD        VARCHAR         COMMENT '발송 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD]',
     SND_LAST_CMPGN      VARCHAR         COMMENT '발송 시점 회원 최종 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.LAST_CMPGN]',
     SND_CURRENT_CMPGN   VARCHAR         COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CURRENT_CMPGN]',
+    SND_FRST_SPNSR      VARCHAR         COMMENT 'SND 발송 시점 최초 후원사업명(원천 SND_MEMBER_LIST.FRST_SPNSR · 타 채널 NULL) [O262-B]',
+    SND_CHILD_DTL_NM    VARCHAR         COMMENT 'SND 발송 시점 결연 상세상태명(원천 CHILD_DTL_NM · 결연중 등 · 타 채널 NULL) [O262-B]',
+    SND_NATION_NM       VARCHAR         COMMENT 'SND 발송 시점 결연아동 국가명(원천 NATION_NM · 타 채널 NULL) [O262-B]',
+    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명(원천 BPLC_KOR_NM · 타 채널 NULL) [O262-B]',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 
@@ -1119,7 +1124,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     AD_YEAR             NUMBER(4,0)     COMMENT '광고 집행연도 YYYY',
     AD_MONTH            NUMBER(2,0)     COMMENT '광고 집행월 1~12',
     CAMPAIGN_NM         VARCHAR         COMMENT '캠페인명',
-    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 (VIDEO 전용)',
+    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 (VIDEO 전용) — 원천 VIDEO.UPPER_CMPGN_CD 값 중 이름형(^U[0-9]+$ 아님 · 2026-05 이전 행). 코드형은 UPPER_CAMPAIGN_CD. 그 외 소스는 원천 개념 부재 NULL (O262)',
     MEDIA_CHANNEL_NM    VARCHAR         COMMENT '매체/채널명',
     DEVICE_NM           VARCHAR         COMMENT '디바이스 (DGT만)',
     CREATIVE_NM         VARCHAR         COMMENT '소재명',
@@ -1140,7 +1145,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
     CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
-    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)'
+    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)',
+    UPPER_CAMPAIGN_CD   VARCHAR         COMMENT '상위 캠페인코드 (VIDEO 전용) — 원천 VIDEO.UPPER_CMPGN_CD 값 중 코드형(^U[0-9]+$ · CRM CMPGN_CD). 이름형 행은 NULL(UPPER_CAMPAIGN_NM 에 있음) · 그 외 소스는 원천 개념 부재 NULL (O262)'
 ) COMMENT = '광고 성과 통합 원장. [Grain: AD_PERF_DK (1행=1광고성과)]. [주의: 디지털/방송 3원천 성과 지표 통합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY_AD_ROW_DGT — 디지털 광고 원천 무손실 Staging
@@ -1222,7 +1228,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     LAST_AD_COST        FLOAT           COMMENT '[원천보존] 최종광고비(원) (구 ACTL_PUR_AD_COST_KRW · 코어 AD_COST 원천)',
     INBOUND_CALL_CNT    FLOAT           COMMENT '[원천보존] 인입콜수',
     CPC_CALL_CNT        FLOAT           COMMENT '[원천보존] 대행사 산정 콜당 단가(CPC_CALL · 비가산 · 구 CPC TEXT)',
-    UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명',
+    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (O260 원천 개명 · 구 UPPER_CMPGN_NM · 값은 종전에도 코드)',
     MATR_NM             VARCHAR         COMMENT '[원천보존] 소재명',
     DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 캠페인유형(국내/해외)',
     BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 캠페인유형(사업/사례)',
@@ -1270,8 +1276,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     INBOUND_CALL_CNT    VARCHAR         COMMENT '[원천보존] 인입콜수(TEXT)',
     DVLP_MBER_CNT       FLOAT           COMMENT '[원천보존] 개발(명)',
     DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발(건)',
-    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (실측 전건 NULL)',
-    CMPGN_CD            VARCHAR         COMMENT '[원천보존] 캠페인코드 (실측 전건 NULL)',
+    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (O245 재측정 채움 · FACT 상위캠페인코드 경로 원천)',
+    MKTG_CMPGN_NM       VARCHAR         COMMENT '[원천보존] 마케팅캠페인명 (O260 원천 개명 · 구 CMPGN_CD · 코어 승격 보류)',
     BRDC_SCHDL_COST     FLOAT           COMMENT '[원천보존] 편성비 (코어 AD_COST 원천 · 연속성 유지 결정)',
     CONTENTS_PUR_COST   FLOAT           COMMENT '[원천보존] 콘텐츠구입비',
     CALL_CTR_OPER_COST  FLOAT           COMMENT '[원천보존] 콜센터운영비',
@@ -1693,3 +1699,119 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AD_CREATIVE_CAMPAIGN_MAP (
     CMPGN_CTGR_CD       NUMBER(38,0)    COMMENT '확정 캠페인카테고리 코드(MM294 · SILVER.CRM_CAMPAIGN.CMPGN_CTGR_CD) — CMPGN_CTGR_NM 과 1:1 · NONE 이면 NULL',
     PRIMARY KEY (AD_SOURCE_TYPE, CREATIVE_NM)
 ) COMMENT = '미연결 광고 소재 → 캠페인 매핑(사용자 확정). [Grain: AD_SOURCE_TYPE × CREATIVE_NM (1행=1소재)]. [주의: 이름매칭·UTM 실패 소재 전용 3순위 규칙 · 카테고리 수준 행은 마케팅캠페인으로 배분하지 않는다]. [원천: 12_agent개선과제/output/O232_광고_매핑_추천안.csv (재송출·방송·영상광고 CRM 개발 실적 대조)].';
+
+-- ============================================================================
+-- [2026-10-22 O258] 라벨 매핑 seed 4종 — 원천 라벨 → 표준값(모델 하드코딩 제거)
+--   WARN: dbt seed 적재 대상이다 — 데이터는 10_dbt_pipeline/seeds/MAP_*.csv · 손으로 INSERT 하지 않는다(다음 seed 가 지운다).
+--   WARN: GN_DW_DBT 는 SILVER CREATE TABLE 권한이 없다(07 RBAC §D.9 설계) ⇒ 구조는 이 DDL 이 먼저 만들고
+--      dbt seed 는 FUTURE TABLES 권한(SELECT·INSERT·DELETE·TRUNCATE)으로 비우고 다시 넣는다(GOLD.ORG_SUCCESSION_MANUAL 과 같은 방식).
+--   WARN: 컬럼 이름·순서·타입 = seeds/_seeds.yml column_types 와 같아야 한다(CSV 헤더 순서).
+--   기존 환경 = /05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql (이 4문장 IF NOT EXISTS 사본 · 이 파일 전체 재실행 금지 = SILVER 전량 비워짐).
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_BUDGET_PROCEDURE (
+    SRC_LABEL           VARCHAR         COMMENT '예산 편성 차수 원천 라벨(ERP·CRM 사업목표 BDGT_PRCD_NM)',
+    PRCD_STD            VARCHAR         COMMENT '표준 차수(연사업·추가경정)',
+    PRCD_SEQ            NUMBER(2,0)     COMMENT '차수 순번(1 연사업 · 2 추가경정) — FACT_BUDGET* 최신 편성 차수 판정',
+    TARGET_TYPE         VARCHAR         COMMENT '사업목표 유형(당초·추경) — CRM_BIZ_TARGET.TARGET_TYPE',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '예산 편성 차수 라벨 매핑. [Grain: SRC_LABEL]. [주의: dbt seed 적재 · CSV 를 고친다]. [원천: 10_dbt_pipeline/seeds/MAP_BUDGET_PROCEDURE.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_SPONSORSHIP_GROUP4 (
+    SRC_LABEL           VARCHAR         COMMENT '후원사업 그룹 코드명(CM003 DTL_CD_NM)',
+    GROUP4_NAME         VARCHAR         COMMENT '4그룹(국내·결연·해외프로젝트·기타) — DIM_SPONSORSHIP.SPONSORSHIP_GROUP4_NAME',
+    NOTE                VARCHAR         COMMENT '비고(결정 근거)'
+) COMMENT = '후원사업 4그룹 접기 매핑(O190 F-2). [Grain: SRC_LABEL]. [주의: dbt seed 적재 · 없는 라벨은 4그룹 NULL]. [원천: 10_dbt_pipeline/seeds/MAP_SPONSORSHIP_GROUP4.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_EXT_DATA_TYPE (
+    SOURCE_TABLE        VARCHAR         COMMENT '외부 적재 원천 테이블명(SILVER)',
+    SRC_LABEL           VARCHAR         COMMENT 'DATA_TYPE_NM 수기 라벨',
+    DATA_TYPE_STD       VARCHAR         COMMENT '구분 표준값',
+    IS_FORECAST         BOOLEAN         COMMENT '일반 예측행 여부(회비예측 전용 · 개발목표는 NULL)',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '외부 적재 부서 집계 구분 라벨 매핑. [Grain: SOURCE_TABLE × SRC_LABEL]. [주의: dbt seed 적재 · 라벨 개명 시 행 추가]. [원천: 10_dbt_pipeline/seeds/MAP_EXT_DATA_TYPE.csv].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_SERVICE_GROUP_RULE (
+    SERVICE_GROUP_CD    VARCHAR         COMMENT '서비스 그룹 코드',
+    SERVICE_GROUP_NAME  VARCHAR         COMMENT '서비스 그룹명',
+    MATCH_BASIS         VARCHAR         COMMENT '판정 근거 CODE(MS049 상위코드) · TITLE(발송 제목 ILIKE)',
+    SVC_UPPER_CD        VARCHAR         COMMENT 'CODE 판정 MS049 상위코드(선행 0 보존 · VARCHAR) — TITLE 이면 NULL',
+    TITLE_PATTERN       VARCHAR         COMMENT 'TITLE 판정 ILIKE 패턴 — CODE 이면 NULL',
+    NOTE                VARCHAR         COMMENT '비고'
+) COMMENT = '서비스 그룹 판정 규칙(O206 A안). [Grain: 규칙 1행]. [주의: dbt seed 적재 · 제목이 바뀌면 TITLE 행 추가]. [원천: 10_dbt_pipeline/seeds/MAP_SERVICE_GROUP_RULE.csv].';
+
+-- ============================================================================
+-- [2026-10-23 O259] 조직도 Silver 정제 — CRM_ORG_CLEAN · CRM_ORG_SUCCESSION(dbt 적재) + V_ORG_PICKER(DDL 소유 뷰)
+--   WARN: GN_DW_DBT 는 SILVER CREATE TABLE 권한이 없다(07 RBAC §D.9) ⇒ 구조는 이 DDL 이 먼저 만든다.
+--   WARN: V_ORG_PICKER 는 dbt 모델이 아니다 — SILVER pre-hook(silver_purge = TRUNCATE)이 뷰에서 실패한다.
+--   기존 환경 = /05_SV-Agent_ai/39_DEPLOY_SILVER_ORG_CLEAN.sql (이 블록 사본 · 이 파일 전체 재실행 금지 = SILVER 전량 비워짐).
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_ORG_CLEAN (
+    DEPT_ID                 VARCHAR(20)     NOT NULL COMMENT '부서ID (PK, →CRM_ORG)',
+    DEPT_NM                 VARCHAR(50)     COMMENT '부서명',
+    UPPER_DEPT_ID           VARCHAR(20)     COMMENT '상위부서ID (조직트리 · 원천 그대로)',
+    ACMSLT_UPPER_DEPT_ID    VARCHAR(20)     COMMENT '실적상위부서ID (실적트리 · 원천 그대로)',
+    ACMSLT_DEPT_YN          VARCHAR(1)      COMMENT '실적부서 여부 (원천 그대로)',
+    USE_YN                  VARCHAR(1)      COMMENT '사용여부 (원천 그대로 · 폐기 판정에 단독 사용 금지 — ORG_STATUS 를 쓴다)',
+    LAST_UPDT_DT            TIMESTAMP_NTZ(9) COMMENT '최종수정일시 (원천 그대로 · NULL·9999-12-31 = 비활성 버전)',
+    ORG_STATUS              VARCHAR(10)     NOT NULL COMMENT '활성 트리 기준 상태 ACTIVE·RETIRED (O259 D1 · 자기와 모든 상위가 USE_YN=Y 이고 LAST_UPDT_DT 유효)',
+    RETIRE_REASON           VARCHAR(20)     COMMENT '폐기 사유 SELF_USE_YN·SELF_LAST_UPDT·NOT_IN_TREE·UPPER_RETIRED — ACTIVE 이면 개념이 없어 NULL',
+    IS_ACTIVE_ORG           BOOLEAN         NOT NULL COMMENT '활성 조직 트리 소속 여부 (= ORG_STATUS ACTIVE · GOLD.DIM_ORG 와 같은 값)',
+    ORG_PATH                VARCHAR         COMMENT '조직트리 경로(루트 제외 · 폐기 노드 포함) — 루트 자신과 루트에서 닿지 않는 노드는 경로가 없어 NULL',
+    ORG_LEVEL               NUMBER(3,0)     COMMENT '조직트리 레벨(루트=0) — 루트에서 닿지 않는 노드는 NULL',
+    ACTIVE_PATH             VARCHAR         COMMENT '활성 트리 경로 — RETIRED 노드는 활성 경로가 없어 NULL',
+    ACTIVE_LEVEL            NUMBER(3,0)     COMMENT '활성 트리 레벨 — RETIRED 노드는 NULL',
+    ACTIVE_UPPER_DEPT_ID    VARCHAR(20)     COMMENT '활성 트리 상위부서ID — RETIRED 노드와 루트는 활성 상위가 없어 NULL',
+    ACMSLT_DIV_GROUP_ID     VARCHAR(20)     COMMENT '실적트리 ZB 상위(본부/지부 구분 · O191) — ZB 에 닿지 않으면 NULL',
+    ACMSLT_DIV_GROUP_NM     VARCHAR(50)     COMMENT 'ZB 상위 부서명 — ZB 에 닿지 않으면 NULL',
+    ACMSLT_DIV_ID           VARCHAR(20)     COMMENT '실적트리 ZC 상위(본부/지부 단위 · O191) — ZC 에 닿지 않으면 NULL',
+    ACMSLT_DIV_NM           VARCHAR(50)     COMMENT 'ZC 상위 부서명 — ZC 에 닿지 않으면 NULL',
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 (공통감사)',
+    PRIMARY KEY (DEPT_ID)
+) COMMENT = '조직 마스터 활성 트리 정제(O259). [Grain: DEPT_ID (1행=1부서 · CRM_ORG 전 행 · 삭제 금지 O16)]. [주의: 폐기 판정은 ORG_STATUS 하나 · USE_YN 단독 사용 금지 · 화면 선택은 V_ORG_PICKER]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_INFO → SILVER.CRM_ORG].';
+
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.CRM_ORG_SUCCESSION (
+    OLD_DEPT_ID             VARCHAR(20)     NOT NULL COMMENT '원래 부서ID (PK · 팩트 실적부서값 그대로)',
+    OLD_DEPARTMENT          VARCHAR(50)     COMMENT '원래 부서명',
+    OLD_IS_ACTIVE_ORG       BOOLEAN         COMMENT '원래 부서 활성 여부',
+    OLD_UPPER_DEPT_ID       VARCHAR(20)     COMMENT '원래 조직트리 상위부서ID (원천 그대로) — 루트는 상위가 없어 NULL',
+    OLD_UPPER_CUR_DEPT_ID   VARCHAR(20)     COMMENT '원래 상위부서를 같은 규칙으로 귀속한 현재 부서ID — 상위가 없거나 귀속 실패면 NULL',
+    CUR_DEPT_ID             VARCHAR(20)     COMMENT '귀속된 현재 활성 부서ID — 귀속 규칙 전부 실패(UNMAPPED·MANUAL_UNMAPPED)면 NULL',
+    CUR_DEPARTMENT          VARCHAR(50)     COMMENT '귀속된 현재 부서명 — CUR_DEPT_ID 가 NULL 이면 NULL',
+    CUR_ORG_PATH            VARCHAR         COMMENT '귀속된 현재 부서의 활성 경로 — CUR_DEPT_ID 가 NULL 이면 NULL',
+    CUR_ORG_LEVEL           NUMBER(3,0)     COMMENT '귀속된 현재 부서 레벨 — CUR_DEPT_ID 가 NULL 이면 NULL',
+    CUR_UPPER_DEPT_ID       VARCHAR(20)     COMMENT '귀속된 현재 부서의 활성 상위부서ID(상위부서→팀 쌍) — 귀속 실패 또는 루트면 NULL',
+    MAP_METHOD              VARCHAR(20)     COMMENT '귀속 방식 SELF·MANUAL·MANUAL_UNMAPPED·AUTO_NAME·AUTO_MEMBER_FLOW·AUTO_ACMSLT_PARENT·AUTO_ORG_PARENT·UNMAPPED',
+    IS_REMAPPED             BOOLEAN         COMMENT '다른 부서로 귀속되었는가',
+    IS_CONFIRMED            BOOLEAN         COMMENT '현업 확정(SELF·MANUAL) 여부',
+    FLOW_CAND_DEPT_ID       VARCHAR(20)     COMMENT '회원 흐름 후보 부서ID — 후보(근거 10건 이상)가 없으면 NULL',
+    FLOW_EVIDENCE_CNT       NUMBER(18,0)    COMMENT '회원 흐름 근거 건수 — 후보가 없으면 NULL',
+    FLOW_SHARE              NUMBER(10,4)    COMMENT '회원 흐름 점유율 — 후보가 없으면 NULL',
+    FLOW_LIFT               NUMBER(12,2)    COMMENT '회원 흐름 lift — 후보가 없으면 NULL',
+    CONFIRMED_BY            VARCHAR         COMMENT '현업 확정자(seed) — seed 행이 없으면 NULL',
+    CONFIRMED_DT            VARCHAR         COMMENT '현업 확정일(seed) — seed 행이 없으면 NULL',
+    NOTE                    VARCHAR         COMMENT '비고(seed) — seed 행이 없으면 NULL',
+    DW_SOURCE_SYSTEM        VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS              TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS            TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID             VARCHAR         COMMENT '적재 배치 식별자 (공통감사)',
+    PRIMARY KEY (OLD_DEPT_ID)
+) COMMENT = '폐지·개편 부서 → 현재 활성 부서 귀속(O259 · DEC-63 규칙 Silver 이관). [Grain: OLD_DEPT_ID (1행=1부서)]. [주의: 원천 실적부서값은 바꾸지 않는다(DEC-56) · 미귀속은 CUR_* NULL]. [원천: SILVER.CRM_ORG_CLEAN · CRM_MEMBER_DEV · CRM_MEMBER_SPONSOR_SPAN · GOLD.ORG_SUCCESSION_MANUAL(seed)].';
+
+-- [D2] picker 뷰 (dbt build 후 · CRM_ORG_CLEAN 이 채워진 뒤)
+CREATE OR REPLACE VIEW GN_DW.SILVER.V_ORG_PICKER
+COMMENT = '조직 선택용(상위부서 → 팀) — ACTIVE 노드만(O259). [Grain: DEPT_ID]. [주의: 폐기 부서는 나오지 않는다 · 과거 실적을 현재 부서로 보려면 CRM_ORG_SUCCESSION]. [원천: SILVER.CRM_ORG_CLEAN].'
+AS
+SELECT
+    c.DEPT_ID,
+    c.DEPT_NM,
+    c.ACTIVE_UPPER_DEPT_ID      AS UPPER_DEPT_ID,
+    u.DEPT_NM                   AS UPPER_DEPT_NM,
+    c.ACTIVE_LEVEL              AS ORG_LEVEL,
+    c.ACTIVE_PATH               AS ORG_PATH
+FROM GN_DW.SILVER.CRM_ORG_CLEAN c
+LEFT JOIN GN_DW.SILVER.CRM_ORG_CLEAN u
+       ON u.DEPT_ID = c.ACTIVE_UPPER_DEPT_ID
+WHERE c.ORG_STATUS = 'ACTIVE';

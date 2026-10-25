@@ -1,5 +1,5 @@
 -- B 계정(Broker) 실행 SQL — MIG_SHARE 공유 데이터를 스테이지에 CSV export
--- 2026-08-20 · 🆕 2026-10-03 O200-D 현행화 = 범위 80(브론즈 64 · SILVER 4 · ML 12) · SILVER 필터 4종 IN 목록 · 후속 파일 번호 06번 → 07번(C_CONSUMER) · 🆕 2026-10-18 O244 = 범위 81(브론즈 65 · ERP 3)
+-- 2026-08-20 · 🆕 2026-10-03 O200-D 현행화 = 범위 80(브론즈 64 · SILVER 4 · ML 12) · SILVER 필터 4종 IN 목록 · 후속 파일 번호 06번 → 07번(C_CONSUMER) · 🆕 2026-10-18 O244 = 범위 81(브론즈 65 · ERP 3) · 🆕 2026-10-23 O260 = 범위 80(브론즈 64 · GSC 2 · CRM _TEST 제외)
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -27,14 +27,15 @@
 --   ① BRONZE_CRM (53 테이블)
 --   ② BRONZE_AGENCY (4 테이블)
 --   ③ BRONZE_ERP (3 테이블)
---   ③-2 BRONZE_GA4 (2 테이블) · ③-3 BRONZE_GSC (3 테이블)
+--   ③-2 BRONZE_GA4 (2 테이블) · ③-3 BRONZE_GSC (2 테이블 · 🆕 O260 SEARCH_CONSOLE_DATA2 삭제)
 --   ④ SILVER 4 테이블 = BIGQUERY_REFINED_DATA(118컬럼 · ITEMS 가 ARRAY) + 예측용 집계 3(ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA · ANNUAL_MBRFEE_PRDT_ACTL_DATA · MM_SPNSR_CLS_AGGR_DATA · O198)
 --   ⑤ ML.ML_RST_DATA_* (예측결과 12종만 · 2026-10-02 O198)
---   ⇒ 합계 81 테이블
---   🔴 **[2026-09-17] 종전 기재 69(브론즈 52)·77(브론즈 60)은 stale 이었다 — 현행 78(브론즈 61).**  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--   ⇒ 합계 80 테이블 (🆕 2026-10-23 O260 · 81 → 80)
+--   ⛔ BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST(원천 테스트 테이블)는 A 가 02번 2절에서 REVOKE 한다 ⇒ B 에 보이면 A 에 회수 요청.
+--   🔴 **[2026-09-17] 종전 기재 69(브론즈 52)·77(브론즈 60)은 stale 이었다 — 현행 78(브론즈 61).**  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --      ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 69 → 73
---      ㉡ 2026-09-15 CRM 46 → 50(신규 4 · 삭제 2 · 누락 보완 2) ⇒ 73 → 77  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
---   🔴 **[2026-08-29] 종전 기재 67(CRM 45 · ERP 1)도 stale 이었다** (현행 CRM 50 · 합계 77).  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--      ㉡ 2026-09-15 CRM 46 → 50(신규 4 · 삭제 2 · 누락 보완 2) ⇒ 73 → 77  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
+--   🔴 **[2026-08-29] 종전 기재 67(CRM 45 · ERP 1)도 stale 이었다** (현행 CRM 50 · 합계 77).  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --      A 원천에 TM_CM_MKTNG_UTM · EXPENSE_RESOLUTION 이 추가되었다(04번 2026-08-29 이력).
 --      ⚠️ 그 TM_CM_MKTNG_UTM 은 2026-09-15 자로 **삭제**되었다(TC_MKTNG_DTL_CD 로 통합).
 --      ⇒ 이 수치는 04번 DDL 과 **한 쌍**이다. 한쪽만 고치면 3.1 대조가 조용히 어긋난다.
@@ -83,7 +84,7 @@ SHOW SCHEMAS IN DATABASE GN_DW_SHARED;
 
 SELECT
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
-    WHERE table_schema = 'BRONZE_CRM' AND table_type = 'BASE TABLE')         AS crm_visible,      -- 기대 53
+    WHERE table_schema = 'BRONZE_CRM' AND table_type = 'BASE TABLE')         AS crm_visible,      -- 기대 53 (54 = A 의 _TEST REVOKE 누락)
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
     WHERE table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))  AS silver_visible,   -- 기대 4
   (SELECT COUNT(*) FROM GN_DW_SHARED.INFORMATION_SCHEMA.TABLES
@@ -108,8 +109,8 @@ WHERE table_type = 'BASE TABLE'
 ORDER BY table_schema, table_name;
 
 -- 스키마별 요약
---   기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 3 · BRONZE_GA4 2 · BRONZE_GSC 3
---         · ML 12 · SILVER 4 = 81 테이블
+--   기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 3 · BRONZE_GA4 2 · BRONZE_GSC 2
+--         · ML 12 · SILVER 4 = 80 테이블 (2026-10-23)
 SELECT table_schema,
        COUNT(*)       AS tables,
        SUM(row_count) AS total_rows,
@@ -158,8 +159,8 @@ REMOVE @SANDBOX.TOOLS.my_export_stage;
 LIST @SANDBOX.TOOLS.my_export_stage;
 
 -- 5. INFORMATION_SCHEMA를 순회하며 각 테이블을 동적으로 COPY INTO
---    대상: BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(3) · BRONZE_GA4(2) · BRONZE_GSC(3)
---          · SILVER(4) · ML(12) = 81
+--    대상: BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(3) · BRONZE_GA4(2) · BRONZE_GSC(2)
+--          · SILVER(4) · ML(12) = 80 (2026-10-23)
 --    경로 규칙: @stage/<스키마>/<테이블>/ , GZIP CSV
 --    ⚠️ WHERE 절을 LIKE 'BRONZE_%' 로 바꾸지 말 것 — 공유 구성 변경 시 의도 외 스키마가 섞인다.
 --    ⚠️ EXECUTE IMMEDIATE $$ ... $$ 로 감싼 이유:
@@ -171,7 +172,7 @@ LIST @SANDBOX.TOOLS.my_export_stage;
 --    ℹ️ 반정형 컬럼은 **언로드 쪽에서 할 일이 없다.** CSV 로 나가면 JSON 문자열이 되고,
 --       복원은 C 적재에서 한다 — SILVER.ITEMS(ARRAY) → 07번 A.5,
 --       ML PREDICTION/PREDICT(VARIANT) 5종 → 07번 A.5-B.2.
---    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 81개 테이블' 이 나와야 정상.
+--    ℹ️ 반환값은 커서 대상 테이블 수와 같다 ⇒ 'UNLOAD 완료: 80개 테이블' 이 나와야 정상(2026-10-23).
 --       (0행 테이블도 COPY INTO 는 성공하므로 cnt 에 포함된다. 폴더만 생기지 않는다.)
 EXECUTE IMMEDIATE $$
 DECLARE
@@ -221,7 +222,7 @@ BEGIN
   RETURN 'UNLOAD 완료: ' || cnt || '개 테이블';
 END;
 $$;
--- 기대 반환값: 'UNLOAD 완료: 81개 테이블'
+-- 기대 반환값: 'UNLOAD 완료: 80개 테이블' (2026-10-23)
 --   80 이 아니면 3.0 / 3.1 로 돌아가 공유 구성을 다시 확인한다.
 
 -- 6. Export 결과 확인

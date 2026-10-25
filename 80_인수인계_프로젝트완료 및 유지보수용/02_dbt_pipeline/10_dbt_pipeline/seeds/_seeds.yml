@@ -19,3 +19,70 @@ seeds:
     columns:
       - name: OLD_DEPT_ID
         tests: [not_null, unique]
+
+  # O258 — 원천 라벨 → 표준값 매핑(하드코딩 제거 · 현업이 값을 고치는 곳).
+  #   🔴 모델에 라벨 CASE 를 다시 쓰지 마라 — 라벨이 바뀌면 이 CSV 에 행을 더한다.
+  #   · 원천에 새 라벨이 들어왔는데 여기 없으면 tests/warn_map_coverage_*.sql 이 warn 으로 알린다.
+  #   · 매핑에 없는 라벨은 NULL(=모른다 · R2-7-1) 또는 원천값 그대로(모델별 주석) — 추정하지 않는다.
+  - name: MAP_BUDGET_PROCEDURE
+    description: "예산 편성 차수 원천 라벨(ERP BDGT_PRCD_NM · CRM 사업목표 BDGT_PRCD_NM) → 표준 차수 · 순번 · 목표유형."
+    config:
+      database: GN_DW
+      schema: SILVER
+      column_types:
+        SRC_LABEL: varchar
+        PRCD_STD: varchar
+        PRCD_SEQ: number(2,0)
+        TARGET_TYPE: varchar
+        NOTE: varchar
+    columns:
+      - name: SRC_LABEL
+        tests: [not_null, unique]
+      - name: PRCD_SEQ
+        tests: [not_null]
+  - name: MAP_SPONSORSHIP_GROUP4
+    description: "후원사업 그룹(CM003 코드명) → 4그룹(국내·결연·해외프로젝트·기타) · O190 F-2."
+    config:
+      database: GN_DW
+      schema: SILVER
+      column_types:
+        SRC_LABEL: varchar
+        GROUP4_NAME: varchar
+        NOTE: varchar
+    columns:
+      - name: SRC_LABEL
+        tests: [not_null, unique]
+  - name: MAP_EXT_DATA_TYPE
+    description: "외부 적재 부서 집계의 DATA_TYPE_NM(수기 라벨) → 표준 구분 · 예측 플래그."
+    config:
+      database: GN_DW
+      schema: SILVER
+      column_types:
+        SOURCE_TABLE: varchar
+        SRC_LABEL: varchar
+        DATA_TYPE_STD: varchar
+        IS_FORECAST: boolean
+        NOTE: varchar
+    columns:
+      # dbt_utils 미설치 → 복합 표현식에 unique 를 건다(기존 관례 · _gold_ready_schema.yml)
+      - name: "SOURCE_TABLE || '|' || SRC_LABEL"
+        tests: [unique]
+      - name: SRC_LABEL
+        tests: [not_null]
+  - name: MAP_SERVICE_GROUP_RULE
+    description: "서비스 그룹 판정 규칙(O206 A안 · 코드 우선 → 제목 보조) · CODE = MS049 상위코드 · TITLE = 발송 제목 ILIKE 패턴."
+    config:
+      database: GN_DW
+      schema: SILVER
+      column_types:
+        SERVICE_GROUP_CD: varchar
+        SERVICE_GROUP_NAME: varchar
+        MATCH_BASIS: varchar
+        SVC_UPPER_CD: varchar
+        TITLE_PATTERN: varchar
+        NOTE: varchar
+    columns:
+      - name: MATCH_BASIS
+        tests:
+          - accepted_values:
+              values: ['CODE', 'TITLE']

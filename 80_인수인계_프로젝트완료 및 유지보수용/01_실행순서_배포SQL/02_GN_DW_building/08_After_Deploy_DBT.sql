@@ -120,6 +120,18 @@ GRANT USAGE, MONITOR ON DBT PROJECT GN_DW.OPS.DW_PIPELINE TO ROLE GN_DW_DBT;
 --     대상은 실행 시점에 INFORMATION_SCHEMA 로 다시 뽑는다(목록 하드코딩 금지 · O184 실행기 = 동적 생성).
 --     형태: GRANT OWNERSHIP ON VIEW GN_DW.GOLD.<WIDE_*> TO ROLE GN_DW_DBT COPY CURRENT GRANTS;
 --           GRANT OWNERSHIP ON TABLE GN_DW.OPS.<store_failures> TO ROLE GN_DW_DBT COPY CURRENT GRANTS;
+--     WARN: [2026-10-22 O258] seed 테이블(SILVER.MAP_* 4종 · GOLD.ORG_SUCCESSION_MANUAL)은 **ADMIN 소유 DDL 테이블**이다 — 이관 대상 아님.
+
+-- [2-a] [2026-10-22 O258] dbt seed 실행 전 확인 — seed 테이블이 먼저 있어야 한다(GN_DW_DBT = SILVER·GOLD CREATE TABLE 없음 · 07 §D.9 [1-f]).
+--     없으면 dbt seed 가 003001 「Your primary role GN_DW_DBT must have CREATE TABLE granted on SCHEMA GN_DW.SILVER」 로 실패한다.
+--     처방 = 권한 추가가 아니라 DDL 선실행: 새 구축 = 04_silver_design/08 · 03_top-down_gold/06_DDL 에 이미 포함 ·
+--            기존 환경 = 05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql [D1](SILVER MAP_* 4종) · 37_DEPLOY_ORG_SUCCESSION.sql [D1](GOLD).
+--     확인(기대 = 5행 · 소유자 GN_DW_ADMIN):
+SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_OWNER
+FROM GN_DW.INFORMATION_SCHEMA.TABLES
+WHERE (TABLE_SCHEMA = 'SILVER' AND TABLE_NAME IN ('MAP_BUDGET_PROCEDURE', 'MAP_SPONSORSHIP_GROUP4', 'MAP_EXT_DATA_TYPE', 'MAP_SERVICE_GROUP_RULE'))
+   OR (TABLE_SCHEMA = 'GOLD' AND TABLE_NAME = 'ORG_SUCCESSION_MANUAL')
+ORDER BY 1, 2;
 
 /*
 -- [3] [2026-09-28 O185] ENGINEER 축소 — 전환 검증 후(DW_PIPELINE parse·compile·build 전건 GN_DW_DBT SUCCESS ·

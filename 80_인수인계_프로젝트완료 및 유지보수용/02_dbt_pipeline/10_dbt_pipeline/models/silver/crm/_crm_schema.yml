@@ -283,6 +283,51 @@ models:
       - name: DEPT_ID
         tests: [not_null, unique]
 
+  # 🆕 [2026-10-23 O259] 조직도 Silver 정제 — GOLD.DIM_ORG·DIM_ORG_SUCCESSION 의 규칙 정본(Gold 는 SK 만 붙인다)
+  #   기대값 = 개발계 2026-10-23 렌더 대조(tmp/o259/evidence.md E3 · 신구 MINUS 0 · ACTIVE 223)
+  - name: CRM_ORG_CLEAN
+    columns:
+      - name: DEPT_ID
+        tests:
+          - not_null
+          - unique
+          - relationships: { to: ref('CRM_ORG'), field: DEPT_ID }
+      - name: ORG_STATUS
+        tests:
+          - not_null
+          - accepted_values: { values: ['ACTIVE', 'RETIRED'] }
+      - name: RETIRE_REASON
+        tests:
+          - accepted_values:
+              values: ['SELF_USE_YN', 'SELF_LAST_UPDT', 'NOT_IN_TREE', 'UPPER_RETIRED']
+              config: { where: "RETIRE_REASON is not null" }
+          # ACTIVE ⇔ 사유 NULL(개념 부재) — 한쪽만 채워지면 판정식이 깨진 것이다
+          - not_null: { config: { where: "ORG_STATUS = 'RETIRED'" } }
+      - name: ACTIVE_PATH
+        tests:
+          - not_null: { config: { where: "ORG_STATUS = 'ACTIVE' and ACTIVE_LEVEL > 0" } }
+
+  - name: CRM_ORG_SUCCESSION
+    columns:
+      - name: OLD_DEPT_ID
+        tests:
+          - not_null
+          - unique
+          - relationships: { to: ref('CRM_ORG_CLEAN'), field: DEPT_ID }
+      - name: MAP_METHOD
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['SELF', 'MANUAL', 'MANUAL_UNMAPPED', 'AUTO_NAME', 'AUTO_MEMBER_FLOW',
+                       'AUTO_ACMSLT_PARENT', 'AUTO_ORG_PARENT', 'UNMAPPED']
+      - name: CUR_DEPT_ID
+        tests:
+          # 귀속된 현재 부서는 CRM_ORG_CLEAN 에 실재한다(ACTIVE 여부는 모델의 `c.ACT` 조인이 보장)
+          - relationships:
+              to: ref('CRM_ORG_CLEAN')
+              field: DEPT_ID
+              config: { where: "CUR_DEPT_ID is not null" }
+
   - name: CRM_CODE
     columns:
       - name: CD_ID

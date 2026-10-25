@@ -58,6 +58,24 @@
 --      노출·클릭·기기 = 신규 원천값 배선(사용자 결정 「모두 배선」 · 종전 DEC-10 「방송=기기 없음」은 CTV 행에서 깨졌다).
 --      전환콜 = 원천 소멸 ⇒ NULL. 비용 = `LAST_AD_COST`(구 ACTL_PUR_AD_COST_KRW).
 --    · REBROADCAST = 날짜 `BRDC_DATE`(구 DATE) · 채널 `CHNNL_NM`(구 CHNNL_CMPNY). 비용 = `BRDC_SCHDL_COST` 유지.
+-- WARN: [2026-10-23 O260] 원천 13번 개명 2건 반영 — **출력 계약(컬럼·값)은 불변**이다(이름만 원천에 맞춘 무동작 변경).
+--    · VIDEO `UPPER_CMPGN_NM` → `UPPER_CMPGN_CD` — 값은 종전에도 코드였다(FACT O238 video_code_mk 가 UPPER_CODE 로 조인).
+--      출력 `UPPER_CAMPAIGN_NM` 에 그대로 싣는다 ⇒ WARN: 이 출력은 이름이 _NM 이나 **값은 코드**다(CRM `MKTG_CMPGN_NM` 과 같은 함정).
+--      SILVER 종단 컬럼(조인·GOLD 승격·SV 0건 · O171 실측)이라 개명·NULL 환원은 출력 계약 변경으로 보고 하지 않았다 — 사용자 결정 대상.
+--      ⇒ ~~「값은 종전에도 코드였다」~~ [O262] 실측으로 정정 = 값이 **혼재**다(아래 O262).
+--    · REBROADCAST `CMPGN_CD` → `MKTG_CMPGN_NM` — 출력 CAMPAIGN_NM 은 ~~NULL 유지(승격 보류)~~ ⇒ [O261] **승격**(아래 근거).
+--      이유 = CAMPAIGN_NM 은 FACT 의 마케팅캠페인 **이름매칭 1순위 경로**(DIM_MARKETING_CAMPAIGN)다 ⇒ 값을 넣으면
+--      O245 상위캠페인코드 경로(재방송 1,809행 · 개발 환경 2026-10-18)보다 앞서 잡혀 연결 결과가 바뀐다.
+--      ⇒ 승격 판단 = 원천 반영 계정에서 채움률·DIM 이름 일치율·코드 경로와의 충돌 행수를 실측한 뒤(O259 D4 · R2-3).
+--  [2026-10-24 O261] 실측(build 전) = 채움 286/2,190 · DIM 이름 일치 286/286 ·
+--      현 UPPER_CODE 1,809행 중 이름 보유 1행(같은 캠페인) · 현 NONE 381행 중 이름 보유 285행 ⇒ 다른 캠페인으로 바뀌는 행 0 ⇒ 사용자 결정 「승격」.
+-- WARN: [2026-10-25 O262] VIDEO 상위캠페인을 **형태로 2열 분리**했다(O261-B ㉮ · 출력 계약 변경 = 열 +1).
+--    실측(6,801행 · 43종) = 코드형 `^U[0-9]+$` 9종 2,715행(2026-06~ · CRM CMPGN_CD 9/9) ·
+--      이름형 34종 4,086행(~2026-05 · 원천이 개명 전 값을 그대로 둠) · 오분류 0(`tmp/o261b/evidence.md` E0).
+--    · `UPPER_CAMPAIGN_CD` = 코드형만 · `UPPER_CAMPAIGN_NM` = 이름형만 · 두 열 동시 채움 0 · DIGITAL·REBROADCAST 는 둘 다 NULL.
+--    · 코어는 형태로만 나눈다 — WARN: CRM 마스터 조인 금지(해석은 GOLD FACT_AD_PERFORMANCE 단일 지점 · DEC-11 축).
+--    · WARN: `UPPER_CAMPAIGN_NM` 을 `_CD` 로 개명하지 않는다(이름 4,086행이 코드로 거짓 표기된다).
+--    · 열은 UNION 위치 계약상 맨 끝(DDL ADD COLUMN 과 같은 순서 · 43_ [D1]).
 WITH dgt AS (
     SELECT
         *,
@@ -77,7 +95,9 @@ video AS (
             TRY_TO_DATE("YEAR"
                         || LPAD(REGEXP_REPLACE("MONTH", '[^0-9]', ''), 2, '0')
                         || LPAD(REGEXP_REPLACE("DAY",   '[^0-9]', ''), 2, '0'), 'YYYYMMDD')
-        )                                   AS AD_DATE_RESOLVED
+        )                                   AS AD_DATE_RESOLVED,
+        {{ clean_str('UPPER_CMPGN_CD') }}   AS UPPER_CMPGN_V,         -- O262: 코드·이름 혼재 원값(정제만)
+        REGEXP_LIKE({{ clean_str('UPPER_CMPGN_CD') }}, '^U[0-9]+$') AS UPPER_CMPGN_IS_CD  -- O262: 형태 판정(CRM 조인 없음)
     FROM {{ ref('AGENCY_AD_ROW_VIDEO') }}
 )
 SELECT
@@ -110,7 +130,8 @@ SELECT
     --  [2026-09-29 O188] 신규지표 #9 직접모금비 — REBRDC 비용 분해(DGT·VIDEO 는 원천 개념 부재 ⇒ NULL)
     CAST(NULL AS FLOAT)                     AS CONTENTS_PUR_COST,
     CAST(NULL AS FLOAT)                     AS CALL_CTR_OPER_COST,
-    CAST(NULL AS FLOAT)                     AS TOT_COST
+    CAST(NULL AS FLOAT)                     AS TOT_COST,
+    CAST(NULL AS VARCHAR)                   AS UPPER_CAMPAIGN_CD     -- O262: DIGITAL 원천 개념 부재
 FROM dgt
 -- WARN: [2026-09-30] 날짜 불량(원천 텍스트 '2024-6-31' 등 실재하지 않는 일자) **이면서 실적 전부 0** 인 행만 제외(사용자 결정).
 --   · 실측 = 6행(NSA·GSA·DSA 키워드 · 비용·노출·클릭 0) ⇒ 합계 영향 0.
@@ -127,7 +148,7 @@ SELECT
     BRDC_DATE,                                              -- O182: 구 DATE
     YEAR(BRDC_DATE),
     MONTH(BRDC_DATE),
-    CAST(NULL AS VARCHAR),                                  -- CAMPAIGN_NM: 원천 부재(CMPGN_CD 컬럼 신설됐으나 전건 NULL)
+    {{ clean_str('MKTG_CMPGN_NM') }},                       -- CAMPAIGN_NM: [O261] 원천 MKTG_CMPGN_NM 승격(사용자 결정 실측 = 채움 286 · DIM 이름 일치 100% · UPPER_CODE 경로와 다른 캠페인 0행)
     CAST(NULL AS VARCHAR),                                  -- UPPER_CAMPAIGN_NM: 원천 부재
     {{ clean_str('CHNNL_NM') }},                            -- MEDIA_CHANNEL_NM (O182: 구 CHNNL_CMPNY)
     CAST(NULL AS VARCHAR),                                  -- DEVICE_NM: 방송=기기 개념 없음(DEC-10)
@@ -149,7 +170,8 @@ SELECT
     '{{ invocation_id }}',
     CONTENTS_PUR_COST,                                      -- O188: 콘텐츠구입비
     CALL_CTR_OPER_COST,                                     -- O188: 콜센터운영비
-    TOT_COST                                                -- O188: 편성비+콘텐츠구입비+콜센터운영비(staging 실측 2,104/2,104 일치)
+    TOT_COST,                                               -- O188: 편성비+콘텐츠구입비+콜센터운영비(staging 실측 2,104/2,104 일치)
+    CAST(NULL AS VARCHAR)                                   -- UPPER_CAMPAIGN_CD: O262 원천 부재
 FROM {{ ref('AGENCY_AD_ROW_REBRDC') }}
 
 UNION ALL
@@ -162,7 +184,7 @@ SELECT
     YEAR(AD_DATE_RESOLVED),
     MONTH(AD_DATE_RESOLVED),
     {{ clean_str('CMPGN_NM') }},                            -- O182: 구 MKT_CMPGN_NM 소멸 → CMPGN_NM(CTV 시트만 채움)
-    {{ clean_str('UPPER_CMPGN_NM') }},
+    IFF(UPPER_CMPGN_IS_CD, NULL, UPPER_CMPGN_V),            -- UPPER_CAMPAIGN_NM: O262 이름형만(코드형은 맨 끝 UPPER_CAMPAIGN_CD) — 머리 O262 주석
     {{ clean_str('CHNNL_NM') }},
     {{ clean_str('DEVICE_NM') }},                           -- O182: 신규(종전 DEC-10 NULL)
     {{ clean_str('MATR_NM') }},
@@ -183,5 +205,6 @@ SELECT
     '{{ invocation_id }}',
     CAST(NULL AS FLOAT),                                    -- CONTENTS_PUR_COST: VIDEO 원천 부재
     CAST(NULL AS FLOAT),                                    -- CALL_CTR_OPER_COST: VIDEO 원천 부재
-    CAST(NULL AS FLOAT)                                     -- TOT_COST: VIDEO 원천 부재
+    CAST(NULL AS FLOAT),                                    -- TOT_COST: VIDEO 원천 부재
+    IFF(UPPER_CMPGN_IS_CD, UPPER_CMPGN_V, NULL)             -- UPPER_CAMPAIGN_CD: O262 코드형만(^U[0-9]+$)
 FROM video

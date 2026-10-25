@@ -1,0 +1,43 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[SV 코드값·라벨축 게이트] SV 44종 · 컬럼 배킹 차원 898개 검사
+  🔴 코드값 부재(0행 오답 경로): SV_MEMBER_SPONSOR_BIZ.MAP_METHOD 열거 ['MANUAL', 'MANUAL_UNMAPPED'] · 실제 예 ['AUTO_ACMSLT_PARENT', 'AUTO_MEMBER_FLOW', 'AUTO_NAME', 'AUTO_ORG_PARENT', 'SELF', 'UNMAPPED']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_FEE.ACQ_CPR_DIV ▸ ACQ_CPR_DIV_NM distinct 3종 · 실제 예 ['사단', '사복', '통합']
+  🟠 열거 누락(§6.9-(5)): SV_SERVICE.SEX ▸ SEX distinct 8종 · 실제 예 ['1', '2', '3', '4', '5', '6']
+  🟠 열거 누락(§6.9-(5)): SV_GA_CHILD_UNPAID.SVC_SCOPE ▸ SVC_SCOPE distinct 2종 · 실제 예 ['A', 'B']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_EVENT.SEX ▸ SEX distinct 8종 · 실제 예 ['1', '2', '3', '4', '5', '6']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_EVENT.SPONSORSHIP_CPR_DIV_NM ▸ CPR_DIV_NM distinct 2종 · 실제 예 ['사단', '사복']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_SERVICE_COHORT.CHRG_DEPT_NAMES ▸ CHRG_DEPT_NAMES distinct 12종 · 실제 예 ['회원서비스기획부', '회원서비스기획부 · 회원서비스기획팀', '회원서비스기획부 · 회원서비스기획팀 · 회원참여팀', '회원서비스기획부 · 회원참여팀', '회원서비스기획부 · 후원서비스팀(사복)', '회원서비스기획팀']
+  🟠 열거 누락(§6.9-(5)): SV_ML_MEMBER_RISK.CHURN_GRADE ▸ CHURN_GRADE distinct 3종 · 실제 예 ['고위험', '일반', '주의']
+  🟠 열거 누락(§6.9-(5)): SV_ML_MEMBER_RISK.LOYAL_GRADE ▸ LOYAL_GRADE distinct 4종 · 실제 예 ['상', '중', '최상위', '하']
+  🟠 열거 누락(§6.9-(5)): SV_BUDGET_YEARLY.BUDGET_PROCEDURE ▸ BUDGET_PROCEDURE distinct 2종 · 실제 예 ['연사업', '추가경정']
+  🟠 열거 누락(§6.9-(5)): SV_ML_MEMBER_PRED_AXIS.INC_CLASS ▸ INC_CLASS distinct 2종 · 실제 예 ['0', '1']
+  🟠 열거 누락(§6.9-(5)): SV_ML_REALTIME_SIMULATOR.ASSUMPTIONS ▸ ASSUMPTIONS distinct 1종 · 실제 예 ['광고비 변동률 기반 한계효용 체감 탄력성 계수 0.72 적용 · 가상 추정치(고정 실적치 아님)']
+  🟠 열거 누락(§6.9-(5)): SV_ML_SPONSOR_RISK.CHURN_GRADE ▸ CHURN_GRADE distinct 3종 · 실제 예 ['고위험', '일반', '주의']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_MONTHLY.PERIOD_BAND1 ▸ PERIOD_BAND1 distinct 8종 · 실제 예 ['0~5년 미만', '10~15년 미만', '15~20년 미만', '20~25년 미만', '25~30년 미만', '30~35년 미만']
+  🟠 열거 누락(§6.9-(5)): SV_EVENT_PARTICIPATION.EVENT_CATEGORY_NAME ▸ EVENT_CATEGORY_NAME distinct 19종 · 실제 예 ["I'm your pen", '국내사업장방문', '굿멤버스데이(본부)', '굿멤버스데이(지부)', '굿모닝', '기업제휴']
+  🟠 열거 누락(§6.9-(5)): SV_EVENT_PARTICIPATION.SEX ▸ SEX distinct 8종 · 실제 예 ['1', '2', '3', '4', '5', '6']
+  🟠 열거 누락(§6.9-(5)): SV_TARGET_BIZ.GOAL_TYPE ▸ GOAL_TYPE_NM distinct 9종 · 실제 예 ['신규기존납입율', '신규기존누계납입율', '신규기존활동율', '월말활동회원', '정기회비', '회원개발']
+  🟠 열거 누락(§6.9-(5)): SV_TARGET_BIZ.NEW_OLD_DIV ▸ NEW_OLD_DIV_NM distinct 4종 · 실제 예 ['기존', '신규', '신규합계', '합계']
+  🟠 열거 누락(§6.9-(5)): SV_TARGET_BIZ.ORG_DEPARTMENT ▸ ORG_DEPARTMENT distinct 6종 · 실제 예 ['(미매핑)', '마케팅기획1팀', '마케팅기획2팀', '매체운영팀', '캠페인기획2팀', '회원참여팀']
+  🟠 열거 누락(§6.9-(5)): SV_MEMBER_COHORT.ACQ_DVLP_DIV_CD ▸ ACQ_DVLP_DIV_CD distinct 5종 · 실제 예 ['1', '2', '3', '4', '5']
+  ⚪ SV_SERVICE.SUBTYPE: 라벨 컬럼 부재 확인됨(SUBTYPE) — DEC-35 1~2단계 대상
+  ⚪ SV_GA_CHILD_UNPAID.CRM_CHILD_CD: 코드축인데 LABEL_PAIRS 미등재(CHILD_CD) — 등재 필요
+  ⚪ SV_MEMBER_SERVICE_COHORT.SERVICE_GROUP_CD: 코드축인데 LABEL_PAIRS 미등재(SERVICE_GROUP_CD) — 등재 필요
+  ⚪ SV_ML_ONCE_CONVERSION.MEMBER_DIV_NAME: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(MEMBER_DIV_NAME)
+  ⚪ SV_RELATION_ACTIVITY.GFT_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(GFT_DIV_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.LETTER_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(LETTER_DIV_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.LETTER_STAT_CD: 코드축인데 LABEL_PAIRS 미등재(LETTER_STAT_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.REL_DSCNTC_RSN_CD: 코드축인데 LABEL_PAIRS 미등재(RELATNSP_DSCNTC_RSN_CD) — 등재 필요
+  ⚪ SV_EVENT_PARTICIPATION.SELF_PARTCPT_CD: 코드축인데 LABEL_PAIRS 미등재(SELF_PARTCPT_CD) — 등재 필요
+  ⚪ SV_PAYMENT_BILLING_STATUS.PRCS_STAT_CD: 코드축인데 LABEL_PAIRS 미등재(PRCS_STAT_CD) — 등재 필요
+  ⚪ SV_PAYMENT_BILLING_STATUS.RQEST_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(RQEST_DIV_CD) — 등재 필요
+  ⚪ SV_TARGET_BIZ.CORP_DIV: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(CPR_DIV_NM)
+  ⚪ SV_TARGET_BIZ.ORG_DIV: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(ORG_DIV_NM)
+  ⚪ SV_AD.AD_CTGR_CD: 코드축인데 LABEL_PAIRS 미등재(AD_CTGR_CD) — 등재 필요
+  ⚪ SV_AD.AD_TYPE_NM: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(AD_TYPE_NM)
+  ⚪ SV_AD.PAGE_TYPE: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(PAGE_TYPE)
+  ⇒ 위반 20건 (코드값부재 1 · 종수 0 · 열거누락 19 · 라벨축 0 · 폐기리터럴 0) · 정보 16건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 1건 · advisory(🟠 열거누락) 19건
+🔴 게이트 실패 — 🔴 축은 blocking 이다(0행 오답·거짓 주장 경로).

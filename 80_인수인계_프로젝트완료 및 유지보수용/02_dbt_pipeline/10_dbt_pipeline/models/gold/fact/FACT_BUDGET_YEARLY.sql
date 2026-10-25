@@ -34,14 +34,13 @@
 ) }}
 
 with y as (
+    --  [2026-10-22 O258] 차수 순번 = seed MAP_BUDGET_PROCEDURE(FACT_BUDGET 과 같은 정의 지점 · 연사업 1 · 추가경정 2 = 종전과 동일).
+    --   변경 1 = 표기 `추경`(현재 0행)도 2(종전 0) · 매핑에 없는 라벨은 0(종전 ELSE 0).
     select
-        *,
-        case BUDGET_PROCEDURE
-            when '추가경정' then 2
-            when '연사업' then 1
-            else 0
-        end as PRCD_SEQ
-    from {{ ref('ERP_BUDGET_YEARLY') }}
+        y0.*,
+        COALESCE(m.PRCD_SEQ, 0) as PRCD_SEQ
+    from {{ ref('ERP_BUDGET_YEARLY') }} y0
+    left join {{ ref('MAP_BUDGET_PROCEDURE') }} m on m.SRC_LABEL = y0.BUDGET_PROCEDURE
 ),
 ranked as (
     --  [O240 · O245 문안 정정] 「편성액이 있는 차수 중 최신」 — 추경은 편성 데이터가 없는 연도가 있다

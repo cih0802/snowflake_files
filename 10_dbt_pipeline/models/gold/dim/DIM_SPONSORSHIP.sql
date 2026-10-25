@@ -69,7 +69,9 @@ select
     --   WARN: MSTR 은 원천 '1'/'2' 를 I/S 로 바꾸는 방어식을 두지만 원천 실측값은 이미 I/S 다 ⇒ 변환하지 않는다.
     --   WARN: 캠페인 법인(`DIM_CAMPAIGN.CPR_DIV_*` · FME `CPR_DIV_*_AT_EVENT`)과 **다른 축**이다.
     s.CPR_DIV_CD                                  as CPR_DIV_CD,
-    cd_cpr.DTL_CD_NM                              as CPR_DIV_NM
+    cd_cpr.DTL_CD_NM                              as CPR_DIV_NM,
+    --  [2026-10-25 O262-B · 33 §1] 기부유형 코드 raw(1·3 · 코드군 C = 그룹 특정 불가 ⇒ 라벨 창작 금지 · 06_DDL 동기 · 맨 끝 append)
+    s.DNTN_TY_CD                                  as DNTN_TY_CD
 from s
 left join cd_div on cd_div.DTL_CD_ID = s.SPNSR_DIV_CD
 left join cd_grp on cd_grp.DTL_CD_ID = s.SPNSR_BSNS_ABRV_CD
@@ -82,4 +84,5 @@ select 0, '(미매핑)', '(미매핑)', NULL,
     {{ gold_meta('CRM') }},
     NULL, NULL, NULL, NULL,
     NULL, NULL,
-    NULL, NULL
+    NULL, NULL,
+    NULL    -- O262-B DNTN_TY_CD

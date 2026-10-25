@@ -37,6 +37,12 @@
       'EVT_MS006_CANCEL':  ['5'],
       'EVT_MS006_CONFIRM': ['1', '2', '3'],
       'EVT_MS304_SUCCESS': ['110'],
+      'SEND_TOP_MEMBER_SERVICE': ['MS054'],
+      'EVT_CRMN_CULTURE':  ['6', '14', '15', '16'],
+      'EVT_GENERAL_ONLINE': ['100'],
+      'CPR_TONGHAP':     ['A'],
+      'CPR_SADAN':       ['I'],
+      'CPR_SABOK':       ['S'],
   } -%}
   {%- if key not in codes -%}
     {{ exceptions.raise_compiler_error("gn_code: 미정의 키 '" ~ key ~ "' — macros/gn_biz_codes.sql 에 등록하라") }}
@@ -79,4 +85,12 @@
 {# [O232] ERP 예산 원장의 합계 행 표지 — 원천 BRONZE 에 현재 0건(실측 = 「지출」 405행뿐) · 방어 필터로 유지 #}
 {% macro gn_erp_not_total(col) -%}
   {{ col }} <> 'TOTAL'
+{%- endmacro %}
+
+{# [O258] 이름 속 법인 표기 → CM019 코드. 라벨을 모델에 쓰지 않고 **CM019 사전 라벨과 토큰 정확일치**로 읽는다.
+   토큰 = 이름을 `_ ( ) +` 로 자른 조각. 실측(2026-10-22 이전 계정 BRONZE MS049 414종) = 일치 1개 277 · 0개 137 · 2개 이상 0.
+   WARN: 종전 `LIKE '%사복%' → '%통합%' → '%사단%'` 순서판정은 `통합재후원감사문자_사단` 2종을 통합으로 오분류했다.
+   WARN: 2개 이상 일치하면 판정하지 않는다(NULL · 추정 금지). 사용 = left join … on {{ gn_cpr_token_match('u.DTL_CD_NM', 'cpr.DTL_CD_NM') }} #}
+{% macro gn_cpr_token_match(name_col, cpr_label_col) -%}
+  ARRAY_CONTAINS({{ cpr_label_col }}::VARIANT, SPLIT(REGEXP_REPLACE({{ name_col }}, '[()+]', '_'), '_'))
 {%- endmacro %}

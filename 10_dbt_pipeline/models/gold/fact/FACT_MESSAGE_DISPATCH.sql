@@ -219,7 +219,9 @@ select
         AND row_number() over (
             partition by s.MBER_NO, s.SNDNG_DE::DATE, {{ gn_is_notice_title('r.TIT') }}
             order by s.SNDNG_KEY, s.SEND_CHANNEL, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) = 1,
-        COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT
+        COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT,
+    --  [2026-10-25 O262-B · 33 §1] SND 발송 시점 스냅샷 추가 4종(degen · 타 채널 NULL · O213-E 와 같은 관례) · 06_DDL 동기 맨 끝
+    s.SND_FRST_SPNSR, s.SND_CHILD_DTL_NM, s.SND_NATION_NM, s.SND_BPLC_KOR_NM
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.

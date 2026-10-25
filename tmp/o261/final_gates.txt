@@ -1,0 +1,11 @@
+scripts/doc_type_gate.py rc=0 | ✅ 게이트 통과 — 선언 누락 0 · 상한 초과 0 · 여유 부족 0
+scripts/doc_census.py rc=0 | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다
+scripts/doc_line_length_gate.py rc=0 | 🟢 PASS — 2,000자 초과 0 · 표 열수 위반 0 · 판독 불가 0 (판독 918파일)
+scripts/doc_heading_gate.py rc=0 | ✅ 게이트 통과 — 제목 유실 0
+scripts/jinja_config_gate.py rc=0 | ✅ 게이트 통과 — blocking 0건
+scripts/gate_census.py --final rc=0 | 🟢 PASS — 미분류 0 · 유령 0 · 중복 0
+scripts/test_handoff_write.py rc=0 | 🟢 PASS — 전건 통과
+scripts/test_sv_enum_newvalue_gate.py rc=0 | 실패 0
+scripts/sv_code_label_gate.py --self-check rc=0 | ✅ 자기검사 통과 — 게이트가 살아 있다
+scripts/id_collision_gate.py rc=0 | ✅ 게이트 통과 — 동일 문서 내 정의 중복 0
+scripts/index_row_gate.py rc=0 | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0

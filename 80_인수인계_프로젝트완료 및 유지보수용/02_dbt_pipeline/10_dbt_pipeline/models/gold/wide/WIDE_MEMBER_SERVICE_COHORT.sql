@@ -31,6 +31,7 @@
 --   ⇒ MATCH_BASIS 로 그 행이 어느 근거로 들었는지 남긴다(SV 가 답변에 「코드 기준」·「제목 매핑」을 밝힌다).
 --   · 한 발송이 여러 그룹에 들 수 있다(그룹 간 합산 금지) · 같은 그룹은 코드 판정이 제목 판정보다 우선한다.
 --   WARN: 법인 = 서비스코드명의 (사단)/(사복)/(통합) → 없으면 알림톡 템플릿 법인구분(CPR_DIV_CD · CM019).
+--       [O258] 이름 판정 = CM019 사전 라벨과 **토큰 정확일치**(macros gn_cpr_token_match) · 플래그 = 코드(A/I/S) 비교.
 --      grain 에 넣지 않는다(평균 지표가 법인 수만큼 중복 가중된다) ⇒ 법인별 수신 플래그 3개로 낸다.
 --   WARN: 담당부서 = 알림톡 템플릿 담당부서(CHRG_DEPT_ID → CRM_ORG). 처리자ID→부서 마스터는 원천에 없다.
 --   WARN: 제목·코드·템플릿이 모두 없는 발송(예: 2026-08 제목 「[굿네이버스]」 대량 발송)은 어느 그룹에도 들지 않는다.
@@ -47,23 +48,25 @@
 
 with rules as (
     -- MATCH_BASIS = CODE(서비스코드 MS049 상위코드 등가) · TITLE(발송 제목 부분일치)
-    select * from values
-        ('SNG_INSTANT',        '선넘는좋은일 신규 즉시', 'TITLE', null, '%선넘는좋은일%'),
-        ('PERSONAL_NEW_SADAN', '개별화 신규(사단)',     'CODE',  '43', null),
-        ('PERSONAL_NEW_SADAN', '개별화 신규(사단)',     'TITLE', null, '%개별화%신규%사단%'),
-        ('LUCKY_CARD',         '행운의 카드',          'TITLE', null, '%행운의 카드%'),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'CODE',  '06', null),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'CODE',  '23', null),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'CODE',  '24', null),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'TITLE', null, '%장기회원%'),
-        -- [O205-B] 2026 년 제목에서 「장기회원」이 빠졌다(「사복_2026 굿네이버스 N년 회원 감사서비스」 · BRONZE 서비스코드 MS0505/0201 실측)
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'TITLE', null, '%년%회원%감사%'),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'TITLE', null, '%년 회원서비스%'),
-        ('LONGTERM_THANKS',    '장기회원 서비스',       'TITLE', null, '%년 감사서비스%')
-    as t(SERVICE_GROUP_CD, SERVICE_GROUP_NAME, MATCH_BASIS, SVC_UPPER_CD, TITLE_PATTERN)
+    --  [2026-10-22 O258] 규칙 정의 지점 = seed MAP_SERVICE_GROUP_RULE(인라인 VALUES 11행 제거 · 값 동일).
+    --   제목이 바뀌면(O205-B 처럼) CSV 에 TITLE 행을 더한다 — 이 파일은 고치지 않는다.
+    select SERVICE_GROUP_CD, SERVICE_GROUP_NAME, MATCH_BASIS, SVC_UPPER_CD, TITLE_PATTERN
+    from {{ ref('MAP_SERVICE_GROUP_RULE') }}
 ),
 grp as (
     select distinct SERVICE_GROUP_CD, SERVICE_GROUP_NAME from rules
+),
+--  [2026-10-22 O258] 서비스코드명 속 법인 표기 → CM019 코드(사전 라벨과 토큰 정확일치 · gn_cpr_token_match).
+--   종전 `LIKE '%사복%' → '%통합%' → '%사단%'` 순서판정은 `통합재후원감사문자_사단` 2종을 통합으로 오분류했다(실측 = evidence O258 E6).
+--   WARN: 토큰이 2개 이상 일치하면 판정하지 않는다(NULL → 템플릿 법인으로 폴백 · 실측 0건).
+svc_cpr as (
+    select u.CD_ID, u.DTL_CD_ID, MAX(c.DTL_CD_ID) as CPR_DIV_CD
+    from {{ ref('CRM_CODE') }} u
+    join {{ ref('CRM_CODE') }} c
+      on c.CD_ID = 'CM019'
+     and {{ gn_cpr_token_match('u.DTL_CD_NM', 'c.DTL_CD_NM') }}
+    group by u.CD_ID, u.DTL_CD_ID
+    having COUNT(*) = 1
 ),
 -- 발송요청 × 서비스코드 계층(MS049 상세 → 상위) × 알림톡/메일 템플릿(법인구분 · 담당부서)
 req as (
@@ -72,24 +75,20 @@ req as (
         r.SNDNG_CD_ID,
         u.DTL_CD_ID                                 as SVC_UPPER_CD,
         u.DTL_CD_NM                                 as SVC_CATEGORY_NAME,
-        -- 법인: 서비스코드명의 법인 표기 → 없으면 템플릿 법인구분(CM019)
-        COALESCE(
-            case when u.DTL_CD_NM like '%사복%' then '사복'
-                 when u.DTL_CD_NM like '%통합%' then '통합'
-                 when u.DTL_CD_NM like '%사단%' then '사단' end,
-            cpr.DTL_CD_NM)                          as SEND_CPR_NM,
+        -- 법인: 서비스코드명의 법인 표기 → 없으면 템플릿 법인구분(CM019) · [O258] 코드로 싣는다
+        COALESCE(sc.CPR_DIV_CD, t.CPR_DIV_CD)       as SEND_CPR_CD,
         o.DEPT_NM                                   as CHRG_DEPT_NM
     from {{ ref('DIM_SEND_REQUEST') }} r
     left join {{ ref('CRM_CODE') }} d    on d.CD_ID = r.SNDNG_CD_ID and d.DTL_CD_ID = r.SNDNG_DTL_CD_ID
     left join {{ ref('CRM_CODE') }} u    on u.CD_ID = d.CD_ID and u.DTL_CD_ID = d.UPPER_CD_ID
     left join {{ ref('CRM_MSG_TEMPLATE') }} t on t.TEMPLATE_KEY = r.TMPLAT_ID and t.SEND_CHANNEL = r.SEND_CHANNEL
-    left join {{ ref('CRM_CODE') }} cpr  on cpr.CD_ID = 'CM019' and cpr.DTL_CD_ID = t.CPR_DIV_CD
+    left join svc_cpr sc                 on sc.CD_ID = u.CD_ID and sc.DTL_CD_ID = u.DTL_CD_ID
     left join {{ ref('CRM_ORG') }} o     on o.DEPT_ID = t.CHRG_DEPT_ID
 ),
 disp_raw as (
     -- ① 서비스코드 판정(등가조인)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'CODE' as MATCH_BASIS, f.DATE_SK,
-           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
+           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_CD, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
            f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join req q                         on q.SEND_REQUEST_SK = f.SEND_REQUEST_SK
@@ -97,7 +96,7 @@ disp_raw as (
     union all
     -- ② 발송 제목 판정(카테고리가 없는 발송 · 코드 계층에 없는 서비스)
     select f.MEMBER_DK, r.SERVICE_GROUP_CD, 'TITLE', f.DATE_SK,
-           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_NM, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
+           f.D5_STOP_MEMBERS, f.D5_INCREASE_PART_MEMBERS, q.SEND_CPR_CD, q.CHRG_DEPT_NM, q.SVC_CATEGORY_NAME,
            f.D5_LETTER_PART_MEMBERS, f.D5_GIFT_PART_MEMBERS   -- [O237-B]
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join rules r                       on r.MATCH_BASIS = 'TITLE' and f.SEND_TITLE ilike r.TITLE_PATTERN
@@ -111,7 +110,7 @@ disp as (
         d.FULL_DATE                                 as SEND_DATE,
         x.D5_STOP_MEMBERS,
         x.D5_INCREASE_PART_MEMBERS,
-        x.SEND_CPR_NM,
+        x.SEND_CPR_CD,
         x.CHRG_DEPT_NM,
         x.SVC_CATEGORY_NAME,
         x.D5_LETTER_PART_MEMBERS,
@@ -135,9 +134,10 @@ rcv as (
         -- [O206] 판정 근거 · 법인 · 담당부서 · 원천 서비스분류
         MAX(IFF(MATCH_BASIS = 'CODE', 1, 0)) = 1    as MATCHED_BY_CODE_FLAG,
         MAX(IFF(MATCH_BASIS = 'TITLE', 1, 0)) = 1   as MATCHED_BY_TITLE_FLAG,
-        MAX(IFF(SEND_CPR_NM = '사단', 1, 0)) = 1    as RECEIVED_SADAN_FLAG,
-        MAX(IFF(SEND_CPR_NM = '사복', 1, 0)) = 1    as RECEIVED_SABOK_FLAG,
-        MAX(IFF(SEND_CPR_NM = '통합', 1, 0)) = 1    as RECEIVED_TONGHAP_FLAG,
+        --  [O258] 법인 = CM019 코드 비교(gn_code · 라벨 '사단'/'사복'/'통합' 하드코딩 제거)
+        MAX(IFF(SEND_CPR_CD in ({{ gn_code('CPR_SADAN') }}), 1, 0)) = 1   as RECEIVED_SADAN_FLAG,
+        MAX(IFF(SEND_CPR_CD in ({{ gn_code('CPR_SABOK') }}), 1, 0)) = 1   as RECEIVED_SABOK_FLAG,
+        MAX(IFF(SEND_CPR_CD in ({{ gn_code('CPR_TONGHAP') }}), 1, 0)) = 1 as RECEIVED_TONGHAP_FLAG,
         LISTAGG(DISTINCT CHRG_DEPT_NM, ' · ') WITHIN GROUP (ORDER BY CHRG_DEPT_NM) as CHRG_DEPT_NAMES,
         LISTAGG(DISTINCT SVC_CATEGORY_NAME, ' · ') WITHIN GROUP (ORDER BY SVC_CATEGORY_NAME) as SVC_CATEGORY_NAMES
     from disp
@@ -199,8 +199,9 @@ ev as (
         a.EVENT_KIND,
         d.FULL_DATE                                 as PART_DATE,
         -- [O206] 원천 행사구분: 캠페인행사 MS002 6 문화서비스 · 14 전시 · 15 서적 · 16 공연 / 일반행사 MS286 100 온라인
-        (a.EVENT_KIND = 'CRMN' and e.EVENT_CATEGORY in ('6', '14', '15', '16')) as IS_CULTURE,
-        (a.EVENT_KIND = 'EVENT' and e.EVENT_CATEGORY = '100')                   as IS_ONLINE
+        --  [O258] 코드 목록 정의 지점 = gn_code('EVT_CRMN_CULTURE') · gn_code('EVT_GENERAL_ONLINE')(값 동일)
+        (a.EVENT_KIND = 'CRMN' and e.EVENT_CATEGORY in ({{ gn_code('EVT_CRMN_CULTURE') }})) as IS_CULTURE,
+        (a.EVENT_KIND = 'EVENT' and e.EVENT_CATEGORY in ({{ gn_code('EVT_GENERAL_ONLINE') }})) as IS_ONLINE
     from {{ ref('FACT_EVENT_ATTENDANCE') }} a
     left join {{ ref('DIM_DATE') }} d  on d.DATE_SK = a.DATE_SK
     left join {{ ref('DIM_EVENT') }} e on e.EVENT_SK = a.EVENT_SK

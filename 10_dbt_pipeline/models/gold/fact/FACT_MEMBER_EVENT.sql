@@ -236,7 +236,8 @@ dev as (
         d.CPR_DIV_NM                                         as CPR_DIV_NM_AT_EVENT,
         d.BRND_NM                                            as BRAND_AT_EVENT,
         d.PARENT_CAMPAIGN_NAME                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
-        d.PROMO_METHOD_NAME                                  as PROMO_METHOD_NAME_AT_EVENT
+        d.PROMO_METHOD_NAME                                  as PROMO_METHOD_NAME_AT_EVENT,
+        CAST(NULL AS VARCHAR)                                as REGIST_DEPT_CD          -- O262-B: 개발 분기 = 개념 부재(실적부서 = ORG_SK)
     from {{ ref('CRM_MEMBER_DEV') }} d
     left join campaign_valid c on d.CMPGN_CD = c.CMPGN_CD
     left join code_ageband   cab on to_varchar(d.AGE) = cab.DTL_CD_ID
@@ -325,7 +326,8 @@ stop as (
         CAST(NULL AS VARCHAR)                               as CPR_DIV_NM_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as BRAND_AT_EVENT,
         CAST(NULL AS VARCHAR)                               as PARENT_CAMPAIGN_NAME_AT_EVENT,
-        CAST(NULL AS VARCHAR)                               as PROMO_METHOD_NAME_AT_EVENT
+        CAST(NULL AS VARCHAR)                               as PROMO_METHOD_NAME_AT_EVENT,
+        s.REGIST_DEPT_CD                                    as REGIST_DEPT_CD          -- O262-B: 중단 등록부서 코드 raw(54종 · 실적부서 ORG_SK 와 다른 축)
     from {{ ref('CRM_MEMBER_DISCONTINUE') }} s
     left join stop_single_biz sb
         on s.MBER_NO = sb.MBER_NO and s.SPNSR_DSCNTC_DE = sb.SPNSR_DSCNTC_DE
@@ -360,5 +362,7 @@ select
     BRAND_AT_EVENT, PARENT_CAMPAIGN_NAME_AT_EVENT, PROMO_METHOD_NAME_AT_EVENT,
     {{ gold_meta('CRM') }},
     -- [O231] 물리 위치 = 맨 끝(ALTER ADD COLUMN 규약)
-    DEV_CNT_RAW, DEV_EXCL_REASON
+    DEV_CNT_RAW, DEV_EXCL_REASON,
+    -- [O262-B] 중단 등록부서 코드 raw — 맨 끝(ALTER ADD COLUMN 규약)
+    REGIST_DEPT_CD
 from unioned

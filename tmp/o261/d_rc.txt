@@ -1,0 +1,1 @@
+doc_type_gate rc=0

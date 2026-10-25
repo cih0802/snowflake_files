@@ -1,0 +1,39 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql 13
+05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql 8
+05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql 2
+05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql 24
+05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql 7
+05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql 6
+05_SV-Agent_ai/05_07_SV_DDL_AD.sql 13
+05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql 5
+05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql 2
+05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql 4
+05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql 7
+05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql 13
+05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql 1
+05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql 1
+05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql 5
+05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql 5
+05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql 9
+05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql 13
+05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql 12
+05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql 1
+05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql 3
+05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql 3
+05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql 4
+05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql 5
+05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql 1
+05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql 4
+05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql 5
+05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql 4
+05_SV-Agent_ai/22_ML_SV_DDL.sql 34
+05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql 3
+05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql 3
+05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql 10
+05_SV-Agent_ai/34_DEPLOY_SV_ML_FALLBACK_NOTE.sql 28
+05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql 5
+05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql 9
+15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql 36
+대상 401 · FILL 254 · SKIP 147 · DRY-RUN

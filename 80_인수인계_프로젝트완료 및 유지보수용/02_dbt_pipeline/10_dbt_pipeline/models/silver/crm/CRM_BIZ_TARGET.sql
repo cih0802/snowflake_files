@@ -48,10 +48,9 @@ SELECT
   NULLIF(TRIM(TEAM_NM), '-')   AS ORG_NM,
   NULLIF(TRIM(SPNSR_BSNS_DIV_NM), '-') AS SPONSOR_BIZ_NM,
   CAST(NULL AS VARCHAR)        AS CAMPAIGN_NM,                   -- 원천에 캠페인 축 없음
-  CAST(CASE NULLIF(TRIM(BDGT_PRCD_NM), '-')
-         WHEN '연사업'   THEN '당초'
-         WHEN '추가경정' THEN '추경'                                  -- GOLD FTP `LIKE '추경%'` → SUPP
-         ELSE COALESCE(NULLIF(TRIM(BDGT_PRCD_NM), '-'), '당초') END AS VARCHAR) AS TARGET_TYPE,
+  --  [2026-10-22 O258] 목표유형 = seed MAP_BUDGET_PROCEDURE.TARGET_TYPE(종전 CASE 와 값 동일 · 연사업→당초 · 추가경정→추경).
+  --   매핑에 없는 원천값은 그대로(창작 0 · O190) · 원천 NULL/`-` 은 '당초'(O190 종전 고정값 호환 · 의도된 기본값).
+  CAST(COALESCE(m.TARGET_TYPE, NULLIF(TRIM(u.BDGT_PRCD_NM), '-'), '당초') AS VARCHAR) AS TARGET_TYPE,
   CAST(GOAL_CNT AS NUMBER(18,4)) AS TARGET_CNT,
   CAST('CRM' AS VARCHAR)       AS DW_SOURCE_SYSTEM,
   CAST('BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV' AS VARCHAR) AS DW_SOURCE_TABLE,
@@ -65,3 +64,4 @@ SELECT
   NULLIF(TRIM(DTL_DIV_NM), '-')     AS DTL_DIV_NM,
   NULLIF(TRIM(BDGT_PRCD_NM), '-')   AS BDGT_PRCD_NM
 FROM u
+LEFT JOIN {{ ref('MAP_BUDGET_PROCEDURE') }} m ON m.SRC_LABEL = NULLIF(TRIM(u.BDGT_PRCD_NM), '-')

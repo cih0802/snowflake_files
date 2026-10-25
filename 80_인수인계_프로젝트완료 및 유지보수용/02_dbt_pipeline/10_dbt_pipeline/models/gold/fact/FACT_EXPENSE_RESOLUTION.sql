@@ -48,7 +48,9 @@ select
     SUM_AMT,
     {{ gold_meta('ERP') }},
     e.CONTENTS_DELIMITER                       as CONTENTS_DELIMITER,
-    COALESCE(cmk.MKTG_CAMPAIGN_SK, 0)          as MKTG_CAMPAIGN_SK
+    COALESCE(cmk.MKTG_CAMPAIGN_SK, 0)          as MKTG_CAMPAIGN_SK,
+    --  [2026-10-25 O262-B · 33 §1] 예산항목명(원천 BDGT_ITEM_NM · 20종) — 목·세목·세세목과 다른 축(일치 451/61,785) · 06_DDL 동기 · 맨 끝 append
+    e.BDGT_ITEM_NM                             as BDGT_ITEM_NM
 from {{ ref('ERP_EXPENSE_RESOLUTION') }} e
 left join cmk
        on cmk.CMPGN_CD = TRIM(e.CONTENTS_DELIMITER)

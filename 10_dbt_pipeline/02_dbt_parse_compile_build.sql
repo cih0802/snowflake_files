@@ -36,6 +36,9 @@ USE WAREHOUSE GN_DW_ETL_WH;
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
+-- 🔴 [O261 · 개발계·신규 구축 필수 · 운영계는 백필 제외 R2-9] 신규 구축·재배포 직후 아래 **범위 지정 build 를 반드시** 이어서 돌린다(전체 build 만으로는 BIGQUERY 체인이 롤링 창 밖 과거를 채우지 않는다).
+--   실사고 = 2026-10-24 UM80684 신규 개발계 · 전체 build ERROR 0 인데 GA4 하류 0행(무증상) · 이 줄 실행 후 34일 복구.
+--   🔴 정지점 = Step 3-3 [3-3-a] 원천·SILVER·GOLD 일자 수가 같아야 다음 단계(문서실행순서 개발계 20 · 운영계 16)로 간다 — 운영계에서 어긋나면 멈추고 사용자에게 보고.
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build --select BIGQUERY_BASIC+ BIGQUERY_SESSION+ FACT_MESSAGE_DISPATCH+ FACT_BIGQUERY_SESSION+ --vars ''{"bigquery_dt_ranges": [["1945-01-01", "9999-12-31"]]}''';
 
 -- 운영계 일배치 테스트용 target변경

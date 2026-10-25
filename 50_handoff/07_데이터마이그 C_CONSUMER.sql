@@ -1,5 +1,5 @@
 -- C 계정(Target) 실행 SQL — 브론즈 3개 스키마 + SILVER 4 테이블 + ML 예측결과 12종 적재
--- 2026-08-20 (초판) · 최근 갱신일 : 2026-10-16
+-- 2026-08-20 (초판) · 최근 갱신일 : 2026-10-23
 -- Co-authored with CoCo
 -- =====================================================================
 -- 문서 목적 / PURPOSE
@@ -20,7 +20,7 @@
 --   [작업 절차] 50_handoff/01_데이터마이그레이션 20260730.md
 --              → 5.2(파일포맷/스테이지) / 5.3.1(적재 전 검증) / 5.4(일괄 적재) /
 --                5.5(SILVER) / 5.6(ML) / 6장(검증) / 7장(정리)
---   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql   → 브론즈 65 테이블 생성
+--   [선행 필수] 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql   → 브론즈 64 테이블 생성 (2026-10-23)
 --              50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql   → SILVER 4 테이블 생성
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql       → ML 12 테이블 생성
 --              ⚠️ 셋 다 먼저 실행해야 한다. 미실행 시 loaded tables: 0. 상호 선후 관계는 없다.
@@ -28,6 +28,16 @@
 --              50_handoff/03_데이터마이그 B_BROKER.sql    (B: 공유 마운트/CSV 언로드)
 --
 -- 갱신 이력 / CHANGES
+--   2026-10-23  선행 DDL(04·06번) 원천 재수령분 반영 — 수치·주석만 정정(SQL 본문 무변경).
+--     − BRONZE_GSC.SEARCH_CONSOLE_DATA2 삭제 ⇒ GSC 3 → 2 · 브론즈 65 → 64 · 총계 81 → 80.
+--     ⛔ BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST(원천 11번 신규)는 테스트용이라 이관 제외(사용자 결정) ⇒ CRM 53 유지.
+--        · B 언로드에 이 테이블 폴더가 섞여 와도 C 에 테이블이 없으므로 A.4 는 적재하지 않는다(커서가 C 의 TABLES 기준).
+--          단 A.1 (4) 는 그 폴더를 `TABLE_MISSING` 1건으로 낸다 = 의도된 제외(정상 예외) · 02·03번 공유/언로드 대상에서도 빼는 것이 원칙.
+--     🔴 BRONZE_AGENCY 개명 2건(위치·타입 불변) — REBRDC.CMPGN_CD → MKTG_CMPGN_NM · VIDEO.UPPER_CMPGN_NM → UPPER_CMPGN_CD.
+--        · 위치 기반 COPY 는 영향 없음. 🔴 A.1 (4) 의 헤더 **이름** 대조는 구판 CSV 헤더에서 2건 불일치가 난다
+--          ⇒ 원천 개명 이후 B 에서 다시 언로드한 CSV 로 대조할 것.
+--     · A.4 기대값 정정 = ERP 3(2026-10-16 반영 누락분) · GSC 2. A.6 (1) 기대값 = 80.
+--     · 05번(ML) 은 원천 20번과 차이 0 — 영향 없음.
 --   2026-10-16  선행 DDL(04번) 갱신 반영 — 수치·주석만 정정(SQL 본문 무변경).
 --     + BRONZE_ERP.SYNC_ERR_INFO 신규(4컬럼 · 시퀀스 DEFAULT) ⇒ ERP 2 → 3 · 브론즈 64 → 65 · 총계 80 → 81.
 --        · A.4 `LOAD_BRONZE_SCHEMA('BRONZE_ERP')` 가 스키마 전체를 적재하므로 별도 COPY 불필요. B 언로드 CSV 에 이 테이블이 포함돼야 한다.
@@ -45,9 +55,9 @@
 --        ⇒ A.1 (4) · A.6 의 ML 필터도 명시 목록 12종으로 바꿨다(잔존 구판 테이블이 기대값을 오염시키지 않게).
 --     + SILVER 1 → **4** = ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA(17) · ANNUAL_MBRFEE_PRDT_ACTL_DATA(29) · MM_SPNSR_CLS_AGGR_DATA(8)
 --        · 반정형 없음 ⇒ A.5-A 일반 COPY 3건 신설. A.1 (4) · A.6 필터에 추가.
---     · 브론즈 64 그대로 · TM_CM_MBER_DVLP_GOAL_DIV 20 → **21컬럼**(09-29 BDGT_PRCD_NM 2번째 삽입)  (🔴 2026-10-16 현행 = 브론즈 65 · ERP 3 · 총계 81)
+--     · 브론즈 64 그대로 · TM_CM_MBER_DVLP_GOAL_DIV 20 → **21컬럼**(09-29 BDGT_PRCD_NM 2번째 삽입)  (🔴 2026-10-23 현행 = 브론즈 64 · ERP 3 · GSC 2 · 총계 80)
 --        · M01~M12_GOAL_CNT FLOAT → NUMBER(38,10) — FLOAT 로 이미 만든 C 테이블은 재생성한다.
---     · 총계 82 → **80** (브론즈 64 + SILVER 4 + ML 12).  (🔴 2026-10-16 현행 = 브론즈 65 · ERP 3 · 총계 81)
+--     · 총계 82 → **80** (브론즈 64 + SILVER 4 + ML 12).  (🔴 2026-10-23 현행 = 브론즈 64 · ERP 3 · GSC 2 · 총계 80)
 --   2026-09-28  선행 DDL(04·05번) 갱신 반영  (⚠️ 아래 ML 구조·수치는 2026-10-02 판으로 대체됨) — 🔴 **이번에는 SQL 본문도 고쳤다**(A.5-B).
 --     + ML.ML_RST_DATA_ONCE_CONVERSION 신규(5컬럼 · VARIANT **PREDICT** $5 · 기존 4종과 컬럼명이 다르다).
 --        ⇒ A.5-B.1 제외 목록에 추가 · A.5-B.2 (5) 개별 COPY 신설 · A.5-B.4 (3) 파싱 검사에 추가.
@@ -57,30 +67,30 @@
 --        · TM_CM_MBER_DVLP_GOAL_DIV 는 `_LOAD_DT/_BATCH_ID/_STDR_YM` 이 없다(20컬럼 · 원천 그대로).
 --     🔴 BRONZE_AGENCY 광고 3테이블 컬럼 구성·순서 재편(DGT 41 · REBRDC 21 · VIDEO 37) ⇒ 이전 판 CSV 무효.
 --        스테이지 2026-09-28 업로드분 헤더는 04번과 순서까지 일치(실측) — 그래도 A.1 (4) 를 먼저 통과시킨다.
---     · 브론즈 61 → **64** · ML 16 → **17** · 총계 78 → **82**. (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81) A.6 (1) 기대값의 GSC 2 → **3** 누락도 정정했다.
+--     · 브론즈 61 → **64** · ML 16 → **17** · 총계 78 → **82**. (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80) A.6 (1) 기대값의 GSC 2 → **3** 누락도 정정했다.
 --   2026-09-17  선행 DDL(04번) 갱신에 맞춰 **수치·구조 주의사항만** 정정했다(SQL 본문 무변경).
---     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 마지막 컬럼으로 추가되었다(원천 11번).  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --        ⇒ **CRM CSV 는 전건 재언로드 대상이다**(열이 1개씩 늘었다). 이전 판 CSV 로 적재하면
 --           열 수 불일치로 실패한다. 🔴 A.1 (4) 대조를 반드시 다시 통과시킨 뒤 적재한다.
 --        · SND_MEMBER_LIST 는 76 → **77컬럼**(OPEN_DT 삭제분 + _STDR_YM 추가분이 상계되지 않는다).
 --     🔴 BRONZE_AGENCY.DGT_AD_CMPGN_DTLS 의 28번째 컬럼이 UPPER_CMPGN_NM → CMPGN_UTM_NM 으로
 --        **개명**되었다(컬럼 수·위치 불변) ⇒ 위치 기반 적재에는 영향이 없다.
---     + BRONZE_GSC.SEARCH_CONSOLE_DATA2 신규 ⇒ 브론즈 61 · 총계 78. GSC 는 CSV 대조 대상이 아니다.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     + BRONZE_GSC.SEARCH_CONSOLE_DATA2 신규 ⇒ 브론즈 61 · 총계 78. GSC 는 CSV 대조 대상이 아니다.  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --     🔴 BRONZE_ERP.EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 정정되었다(원천 13번 정본 ·
 --        2026-09-17 사용자 결정). 열 수·순서 불변이라 A.1 (4) 열 대조는 통과하지만
 --        **문자열 → DATE 형변환이 새로 생긴다** ⇒ 🔴 GN_CSV_FORMAT_EUCKR2 로 **소량 시적재해 거부행 0**
 --        을 먼저 확인하고 전량 적재한다. 날짜 표기가 'YYYY-MM-DD' 가 아니면 DATE_FORMAT 지정이 필요하다.
 --   2026-09-15  선행 DDL(04번) 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 52 → **60** · 총계 69 → **77**  (⇒ 2026-09-17 현행 = 브론즈 61 · 총계 78)  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
---       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 61 / 78 은 ㉡·㉢ 이후)  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
---       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77 (현행 61 / 78)  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
---       ㉢ 2026-09-17 GSC 2 → **3** (SEARCH_CONSOLE_DATA2 신규) ⇒ 브론즈 61 · 총계 78  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     · 브론즈 52 → **60** · 총계 69 → **77**  (⇒ 2026-09-17 현행 = 브론즈 61 · 총계 78)  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
+--       ㉠ 2026-09-01 BRONZE_GA4(2)·BRONZE_GSC(2) ⇒ 브론즈 56 · 총계 73 (현행 61 / 78 은 ㉡·㉢ 이후)  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
+--       ㉡ 2026-09-15 CRM 46 → **50** (신규 4 · 삭제 2 · 누락 보완 2) ⇒ 브론즈 60 · 총계 77 (현행 61 / 78)  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
+--       ㉢ 2026-09-17 GSC 2 → **3** (SEARCH_CONSOLE_DATA2 신규) ⇒ 브론즈 61 · 총계 78  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --     · 파일명 정정: 04·06번에서 날짜를 뗐다(구 = *_20260730 / *_20260820).
 --     🔴 SND_MEMBER_LIST 는 OPEN_DT 삭제로 **76컬럼**이다 — 이전 판 CSV(77열)로 적재하면 실패한다.
 --        오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 이동했다 ⇒ 재언로드가 필요하다.
 --     🔴 A.1 (4) 대조를 **반드시 다시 통과**시킨 뒤 적재한다(대상 테이블 집합이 바뀌었다).
 --   2026-08-29  선행 DDL 3종의 2026-08-29 갱신에 맞춰 **수치·파일명만** 정정했다(SQL 본문 무변경).
---     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-28 항목 = 64/82)  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     · 브론즈 50 → 52 (CRM 45 → 46 · ERP 1 → 2) · 총계 67 → 69  (⚠️ 현행은 위 2026-09-28 항목 = 64/82)  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --     · 파일명 정정: 「04_2번 SILVER」 → **06번** (실제 파일명이 06_ 이다)
 --     · 🔴 A.1 [원인 B] 사례(2026-08-13 BDGT_ACMSLT_LEDGER)의 **결론이 뒤집혔다** — 아래 A.1 참조.
 --     · A.1 (4) · A.6 (1) 의 SQL 은 스키마 조건으로 돌기 때문에 **쿼리 수정이 불필요**했다
@@ -90,9 +100,9 @@
 --   적재 스테이지 = @SANDBOX.TOOLS.MIG_LOAD_STAGE/<SCHEMA>/<TABLE>/
 --   파일 포맷 = SANDBOX.TOOLS.FF_CSV_LOAD (적재) · SANDBOX.TOOLS.FF_CSV_PEEK (진단)
 --
--- 적재 대상 / SCOPE (81 테이블 · 2026-10-16)
+-- 적재 대상 / SCOPE (80 테이블 · 2026-10-23)
 --   BRONZE_CRM 53 · BRONZE_AGENCY 4 · BRONZE_ERP 3                  → A.4 프로시저 일괄 적재
---   BRONZE_GA4 2 · BRONZE_GSC 3                                     → 🟢 CSV 이관 대상이 아니다
+--   BRONZE_GA4 2 · BRONZE_GSC 2                                     → 🟢 CSV 이관 대상이 아니다
 --     (Google API 를 호출하는 SP_LOAD_* 가 DELETE 후 재적재한다 · 04번은 빈 구조만 만든다)
 --   SILVER 4                                          → A.5 (BIGQUERY_REFINED_DATA · ITEMS 변환)
 --                                                       + A.5-A (집계 3종 · 일반 COPY)
@@ -105,7 +115,7 @@
 --            · CMPGN_SPNSR_AMT_LTV(6) · CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION(4)
 --            · MONTHLY_CMPGN_DVLP_AMT(6) · DVLP_INC_CONTRIBUTION(5)            (전부 ML_RST_DATA_ 접두)
 --   ML VARIANT 5   : 아래 총람
---   ⚠️ SILVER 원천은 61테이블 · ML 원천은 52테이블이다(이관 대상 = 브론즈 65 · SILVER 4 · ML 12 · 총계 81) — 스키마 단위(LIKE) 필터를 쓰지 마라.
+--   ⚠️ SILVER 원천은 61테이블 · ML 원천은 52테이블이다(이관 대상 = 브론즈 64 · SILVER 4 · ML 12 · 총계 80 · 2026-10-23) — 스키마 단위(LIKE) 필터를 쓰지 마라.
 --
 -- 🔴 반정형 컬럼 총람 (일반 COPY 금지 · 전부 TRY_PARSE_JSON 변환 필요)
 --   SILVER.BIGQUERY_REFINED_DATA    118컬럼 · ARRAY   $118 (ITEMS)         → A.5
@@ -114,7 +124,7 @@
 --   ML.ML_RST_DATA_MBER_INC_12M       3컬럼 · VARIANT $3   (PREDICTION)    → A.5-B.2 (3)
 --   ML.ML_RST_DATA_LOYAL_MBER         3컬럼 · VARIANT $3   (PREDICTION)    → A.5-B.2 (4)
 --   ML.ML_RST_DATA_ONCE_CONVERSION    3컬럼 · VARIANT $3   (🔴 PREDICT)    → A.5-B.2 (5)
---   ⇒ 브론즈 65개 · SILVER 집계 3종 · ML 비VARIANT 7종에는 반정형 컬럼이 없다.
+--   ⇒ 브론즈 64개 · SILVER 집계 3종 · ML 비VARIANT 7종에는 반정형 컬럼이 없다.
 -- =====================================================================
 USE ROLE ACCOUNTADMIN;
 USE WAREHOUSE COMPUTE_WH;
@@ -275,7 +285,7 @@ ORDER BY 1, 2;
 --   COUNT_MISMATCH / ORDER_OR_NAME_MISMATCH 가 나오면 절대 적재하지 말고 DDL 을 먼저 고친다.
 --     · 🔴 **[2026-08-29 정본 교체] 브론즈 정본은 99_provided_definition/11~13(+15·16)번이다.**
 --       종전 기재 「02_1_A DB정보.sql (A 계정 GET_DDL 실측)」은 **낡았다** —
---       그 파일은 CRM 45 · ERP 1 이고 삭제된 MNYRS_COST_DIV_YN 이 남아 있다(1341행 · 현행 CRM 50).  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--       그 파일은 CRM 45 · ERP 1 이고 삭제된 MNYRS_COST_DIV_YN 이 남아 있다(1341행 · 현행 CRM 50).  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --       (현행 CRM 은 50 이다 · 2026-09-15.)
 --       ⇒ 02_1 을 정본으로 쓰면 이 검사에서 나온 불일치를 **거꾸로** 고치게 된다.
 --       근거·판정식은 04번 「병합 규칙」 절을 읽어라.
@@ -351,8 +361,10 @@ $$;
 
 ------------------------------------------------------------
 -- A.4 브론즈 CSV 스키마 적재 실행 (ERP → AGENCY → CRM 순)
---   기대 반환값: ERP 'loaded tables: 2' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 53'
---     / GA4 'loaded tables: 2' · GSC 'loaded tables: 3' (스테이지 폴더가 없으면 COPY 0행 — 정상)
+--   기대 반환값: ERP 'loaded tables: 3' / AGENCY 'loaded tables: 4' / CRM 'loaded tables: 53'
+--     / GA4 'loaded tables: 2' · GSC 'loaded tables: 2' (스테이지 폴더가 없으면 COPY 0행 — 정상)
+--     🔴 2026-10-23 GSC 3 → 2(SEARCH_CONSOLE_DATA2 삭제) · ERP 2 → 3 은 2026-10-16 SYNC_ERR_INFO 신규분 반영 누락 정정.
+--     ⛔ CRM 이 54 로 나오면 원천 테스트 테이블 TM_PM_MBRFEE_ACMSLT_TEST 가 C 에 생성된 것이다(이관 제외 대상 · 04번 참조).
 --   ⚠️ CRM 이 50 이하로 나오면 04번 DDL 구판을 실행한 것이다. 최신판(2026-10-02)으로 다시 생성할 것.
 --   ⚠️ ERP 가 1 로 나오면 EXPENSE_RESOLUTION 이 없는 구판이다. 04번 최신판으로 다시 생성할 것.
 --   🔴 TM_CM_MBER_DVLP_GOAL_DIV 는 21컬럼(2번째 BDGT_PRCD_NM)이고 M01~M12_GOAL_CNT 가 NUMBER(38,10) 이다.
@@ -655,8 +667,8 @@ WHERE table_type = 'BASE TABLE'
                                                    'ML_RST_DATA_CHANNEL_NEW_SPNSR_DVLP_CONTRIBUTION',
                                                    'ML_RST_DATA_MONTHLY_CMPGN_DVLP_AMT','ML_RST_DATA_DVLP_INC_CONTRIBUTION')) )
 GROUP BY 1 ORDER BY 1;
--- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 3 · BRONZE_GA4 2 · BRONZE_GSC 3
---       · ML 12 · SILVER 4 = 81 테이블
+-- 기대: BRONZE_AGENCY 4 · BRONZE_CRM 53 · BRONZE_ERP 3 · BRONZE_GA4 2 · BRONZE_GSC 2
+--       · ML 12 · SILVER 4 = 80 테이블 (2026-10-23)
 --       행수는 03번 3.1 / 02번 5단계 실측값과 일치해야 한다.
 --       🔴 이 수치는 04·05·06번 DDL 의 2026-10-02 판(O198) 기준이다. DDL 을 갱신하면 여기도 함께 고쳐라
 --          (수치가 문서 두 곳에 있으므로 한 곳만 고치면 조용히 어긋난다).

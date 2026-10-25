@@ -1,0 +1,47 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+=== Running file: /workspace/05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql ===
+Total parsed statements: 13
+Finished /workspace/05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql: 13 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql ===
+Total parsed statements: 7
+Finished /workspace/05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql: 7 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql ===
+Total parsed statements: 14
+Finished /workspace/05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql: 14 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql ===
+Total parsed statements: 14
+Finished /workspace/05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql: 14 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql ===
+Total parsed statements: 35
+Finished /workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql: 35 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql ===
+Total parsed statements: 20
+Finished /workspace/05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql: 19 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql ===
+Total parsed statements: 8
+Finished /workspace/05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql: 8 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/34_DEPLOY_SV_ML_FALLBACK_NOTE.sql ===
+Total parsed statements: 13
+Finished /workspace/05_SV-Agent_ai/34_DEPLOY_SV_ML_FALLBACK_NOTE.sql: 13 succeeded, 0 failed.

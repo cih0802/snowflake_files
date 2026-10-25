@@ -351,6 +351,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_CAMPAIGN (
     SPNSR_ENTRPRS_ID    VARCHAR(20)     COMMENT '후원기업ID [원천: BRONZE_CRM.TM_CM_CMPGN_MNG]',
     EMRGNCY_AID_BPLC_CD NUMBER(10,0)    COMMENT '긴급구호사업장코드 [원천: BRONZE_CRM.TM_CM_CMPGN_MNG]',
     BRND_USE_YN         VARCHAR(1)      COMMENT '사용여부 [원천: BRONZE_CRM.TM_CM_BRND_MNG]',
+    CMPGN_TRGET_NM      VARCHAR         COMMENT '캠페인대상명(CM002 라벨 · 코드 = CMPGN_TRGET_CD · 코드 없음 = NULL) [O262-B]',
     PRIMARY KEY (CMPGN_CD)
 ) COMMENT = '캠페인 마스터 (비정규화 통합). [Grain: CMPGN_CD (1행=1캠페인)]. [주의: 카테고리/인입경로/국내해외/마케팅캠페인 속성 통합]. [원천: CRM → BRONZE_CRM.TM_CM_CMPGN_MNG].';
 
@@ -490,6 +491,10 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.CRM_SEND_MEMBER (
     SND_CMPGN_CD        VARCHAR         COMMENT '발송 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD]',
     SND_LAST_CMPGN      VARCHAR         COMMENT '발송 시점 회원 최종 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.LAST_CMPGN]',
     SND_CURRENT_CMPGN   VARCHAR         COMMENT '발송 시점 회원 현재 캠페인코드(SND 전용) [원천: BRONZE_CRM.SND_MEMBER_LIST.CURRENT_CMPGN]',
+    SND_FRST_SPNSR      VARCHAR         COMMENT 'SND 발송 시점 최초 후원사업명(원천 SND_MEMBER_LIST.FRST_SPNSR · 타 채널 NULL) [O262-B]',
+    SND_CHILD_DTL_NM    VARCHAR         COMMENT 'SND 발송 시점 결연 상세상태명(원천 CHILD_DTL_NM · 결연중 등 · 타 채널 NULL) [O262-B]',
+    SND_NATION_NM       VARCHAR         COMMENT 'SND 발송 시점 결연아동 국가명(원천 NATION_NM · 타 채널 NULL) [O262-B]',
+    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명(원천 BPLC_KOR_NM · 타 채널 NULL) [O262-B]',
     PRIMARY KEY (SNDNG_KEY, SNDNG_DTL_KEY)
 ) COMMENT = '메시지 발송 대상 회원 상세. [Grain: SNDNG_REQ_NO × MBER_NO (1행=1발송회원)]. [주의: 수신자별 발송결과 및 오픈일시 관리]. [원천: CRM → BRONZE_CRM.TD_MS_*_DTLS].';
 
@@ -1119,7 +1124,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     AD_YEAR             NUMBER(4,0)     COMMENT '광고 집행연도 YYYY',
     AD_MONTH            NUMBER(2,0)     COMMENT '광고 집행월 1~12',
     CAMPAIGN_NM         VARCHAR         COMMENT '캠페인명',
-    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 (VIDEO 전용)',
+    UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 (VIDEO 전용) — 원천 VIDEO.UPPER_CMPGN_CD 값 중 이름형(^U[0-9]+$ 아님 · 2026-05 이전 행). 코드형은 UPPER_CAMPAIGN_CD. 그 외 소스는 원천 개념 부재 NULL (O262)',
     MEDIA_CHANNEL_NM    VARCHAR         COMMENT '매체/채널명',
     DEVICE_NM           VARCHAR         COMMENT '디바이스 (DGT만)',
     CREATIVE_NM         VARCHAR         COMMENT '소재명',
@@ -1140,7 +1145,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_PERFORMANCE (
     DW_BATCH_ID         VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
     CONTENTS_PUR_COST   NUMBER(38,4)    COMMENT '콘텐츠구입비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
     CALL_CTR_OPER_COST  NUMBER(38,4)    COMMENT '콜센터운영비(원) (REBROADCAST 전용 · 그 외 원천 개념 부재 NULL)',
-    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)'
+    TOT_COST            NUMBER(38,4)    COMMENT '총비용(원) = 편성비(AD_COST)+콘텐츠구입비+콜센터운영비 (REBROADCAST 전용 · 그 외 NULL)',
+    UPPER_CAMPAIGN_CD   VARCHAR         COMMENT '상위 캠페인코드 (VIDEO 전용) — 원천 VIDEO.UPPER_CMPGN_CD 값 중 코드형(^U[0-9]+$ · CRM CMPGN_CD). 이름형 행은 NULL(UPPER_CAMPAIGN_NM 에 있음) · 그 외 소스는 원천 개념 부재 NULL (O262)'
 ) COMMENT = '광고 성과 통합 원장. [Grain: AD_PERF_DK (1행=1광고성과)]. [주의: 디지털/방송 3원천 성과 지표 통합]. [원천: AGENCY 3소스 → BRONZE_AGENCY].';
 
 -- AGENCY_AD_ROW_DGT — 디지털 광고 원천 무손실 Staging
@@ -1222,7 +1228,7 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_VIDEO (
     LAST_AD_COST        FLOAT           COMMENT '[원천보존] 최종광고비(원) (구 ACTL_PUR_AD_COST_KRW · 코어 AD_COST 원천)',
     INBOUND_CALL_CNT    FLOAT           COMMENT '[원천보존] 인입콜수',
     CPC_CALL_CNT        FLOAT           COMMENT '[원천보존] 대행사 산정 콜당 단가(CPC_CALL · 비가산 · 구 CPC TEXT)',
-    UPPER_CMPGN_NM      VARCHAR         COMMENT '[원천보존] 상위 캠페인명',
+    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (O260 원천 개명 · 구 UPPER_CMPGN_NM · 값은 종전에도 코드)',
     MATR_NM             VARCHAR         COMMENT '[원천보존] 소재명',
     DMST_OVSEA_DIV_NM   VARCHAR         COMMENT '[원천보존] 캠페인유형(국내/해외)',
     BSNS_CASE_DIV_NM    VARCHAR         COMMENT '[원천보존] 캠페인유형(사업/사례)',
@@ -1270,8 +1276,8 @@ CREATE OR REPLACE TABLE GN_DW.SILVER.AGENCY_AD_ROW_REBRDC (
     INBOUND_CALL_CNT    VARCHAR         COMMENT '[원천보존] 인입콜수(TEXT)',
     DVLP_MBER_CNT       FLOAT           COMMENT '[원천보존] 개발(명)',
     DVLP_CNT            FLOAT           COMMENT '[원천보존] 개발(건)',
-    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (실측 전건 NULL)',
-    CMPGN_CD            VARCHAR         COMMENT '[원천보존] 캠페인코드 (실측 전건 NULL)',
+    UPPER_CMPGN_CD      VARCHAR         COMMENT '[원천보존] 상위캠페인코드 (O245 재측정 채움 · FACT 상위캠페인코드 경로 원천)',
+    MKTG_CMPGN_NM       VARCHAR         COMMENT '[원천보존] 마케팅캠페인명 (O260 원천 개명 · 구 CMPGN_CD · 코어 승격 보류)',
     BRDC_SCHDL_COST     FLOAT           COMMENT '[원천보존] 편성비 (코어 AD_COST 원천 · 연속성 유지 결정)',
     CONTENTS_PUR_COST   FLOAT           COMMENT '[원천보존] 콘텐츠구입비',
     CALL_CTR_OPER_COST  FLOAT           COMMENT '[원천보존] 콜센터운영비',

@@ -1,0 +1,402 @@
+sv,dimension,kind,why,values
+SV_EVENT_PARTICIPATION,EVENT_CATEGORY_NAME,SKIP,따옴표·줄바꿈,I'm your pen|국내사업장방문|굿멤버스데이(본부)|굿멤버스데이(지부)|굿모닝
+SV_MEMBER_SERVICE_COHORT,CHRG_DEPT_NAMES,SKIP,EXCLUDE,
+SV_AD,AD_CTGR_SRC,SKIP,소스 미발견,CREATIVE_MAP|MKTG_REP|NONE
+SV_AD,AD_SOURCE_TYPE,SKIP,소스 미발견,DIGITAL|REBROADCAST|VIDEO
+SV_AD,BDGT_SOURCE_NM,FILL,,사단|사복|통합
+SV_AD,BRDC_DIV,FILL,,레귤러|보상송출|본방송|삼방송|송출오류|재방송
+SV_AD,BSNS_CASE_DIV_NM,FILL,,굿즈|기타|사례|사업
+SV_AD,CHANNEL_COMPANY_TYPE,FILL,,CTV|TEADS|YOUTUBETV|기타|미확인|종편|지상파|케이블|퍼포머셜
+SV_AD,CM,FILL,,전CM|전SPOT CM|중CM|후CM|후SPOT CM
+SV_AD,CMPGN_TYPE_BSN_NM,FILL,,국내 사례|국내 사업|전체 굿즈|통합 기타|통합 통합|해외 굿즈|해외 사례|해외 사업
+SV_AD,CM_POSITION,SKIP,소스 미발견,E-1st|E-2nd|E-3rd|E-4th|E-5th|E-6th|E-7th|T-1st|T-2nd|T-3rd|T-4th|T-5th|T-6th|T-7th|`|middle
+SV_AD,COST_TYPE,FILL,,GA|집행|편성
+SV_AD,CREATIVE_TYPE,SKIP,소스 미발견,기타|영상|이미지|키워드|해당없음
+SV_AD,CTV_DIV,FILL,,CTV|TV|기타|미확인
+SV_AD,DAY_DIV,FILL,,일|주중|토
+SV_AD,DAY_OF_WEEK,SKIP,소스 미발견,Fri|Mon|Sat|Sun|Thu|Tue|Wed
+SV_AD,DMST_OVSEA_DIV_NM,FILL,,국내|통합|해외
+SV_AD,MATR_TY_NM,FILL,,기타|영상|이미지|키워드|해당없음
+SV_AD,RT_TYPE,SKIP,소스 미발견,방송|재송출
+SV_AD,SPOT_TYPE,SKIP,소스 미발견,CA|PR|SP|TJ
+SV_AD,BIZ_CASE_TYPE,FILL,,(미매핑)|굿즈|기타|사례|사업
+SV_AD,DOMESTIC_OVERSEAS,FILL,,(미매핑)|국내|전체사업|통합|해외
+SV_AD_INFLOW_ALLOC,INFLOW_PATH,FILL,,뉴미디어|디지털|방송|영상광고|오프라인|재송출|콜개발
+SV_BUDGET,DVLP_INBOUND_PATH,FILL,,기타|뉴미디어|디지털|모금시스템|방송|영상광고|재송출|제외|콜개발
+SV_BUDGET,BDGT_UNIT_NM,FILL,,마케팅기획1팀|마케팅기획2팀|매체운영팀|사회복지법인예산|컬쳐콘텐츠팀
+SV_BUDGET,BUDGET_CATEGORY,SKIP,소스 미발견,지출
+SV_BUDGET,ITEM_FUND_SOURCE_NM,FILL,,국내지정|법인전입|비지정일반|사회복지법인예산|이월국내지정|이월비지정일반|이자수익|잡수익
+SV_BUDGET,ITEM_HANG_NM,FILL,,국내아동권리지원사업|나눔문화연구사업|모금관리비|사무국운영사업|사회복지법인예산|해외기획사업|해외아동권리지원및지역개발사업|회원관리비
+SV_BUDGET,ITEM_JANG_NM,FILL,,모금비|사업비|사회복지법인예산|일반관리비
+SV_BUDGET,ITEM_KWAN_NM,FILL,,국내사업비|나눔문화연구사업|모금비|사회복지법인예산|일반관리비|해외사업비
+SV_BUDGET_YEARLY,BUDGET_PROCEDURE,SKIP,소스 미발견,연사업|추가경정
+SV_BUDGET_YEARLY,BDGT_UNIT_NM,FILL,,마케팅기획1팀|마케팅기획2팀|매체운영팀|사회복지법인예산|컬쳐콘텐츠팀
+SV_BUDGET_YEARLY,ITEM_FUND_SOURCE_NM,FILL,,국내지정|법인전입|비지정일반|사회복지법인예산|이월국내지정|이월비지정일반|이자수익|잡수익
+SV_BUDGET_YEARLY,ITEM_HANG_NM,FILL,,국내아동권리지원사업|나눔문화연구사업|모금관리비|사무국운영사업|사회복지법인예산|해외기획사업|해외아동권리지원및지역개발사업|회원관리비
+SV_BUDGET_YEARLY,ITEM_JANG_NM,FILL,,모금비|사업비|사회복지법인예산|일반관리비
+SV_BUDGET_YEARLY,ITEM_KWAN_NM,FILL,,국내사업비|나눔문화연구사업|모금비|사회복지법인예산|일반관리비|해외사업비
+SV_CAMPAIGN_CUM_STOP,BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_CAMPAIGN_CUM_STOP,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|일시|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_CAMPAIGN_CUM_STOP,DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_CAMPAIGN_CUM_STOP,INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_CAMPAIGN_MONTHLY,BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_CAMPAIGN_MONTHLY,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|일시|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_CAMPAIGN_MONTHLY,DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_CAMPAIGN_MONTHLY,INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_CAMPAIGN_MONTHLY,SETTLE_METHOD,FILL,,OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_DEV_ACHIEVEMENT,DEV_TYPE,SKIP,소스 미발견,1|2|4
+SV_DEV_ACHIEVEMENT,DEV_TYPE_NAME,SKIP,소스 미발견,신규|재후원|증액
+SV_DVLP_GOAL_ACMSLT,DEPT_DIV_NM,FILL,,교육기관|기타|나눔마케팅본부|대면모금|지역사회|회원실
+SV_DVLP_GOAL_ACMSLT,NEW_EXST_DIV_NM,FILL,,기존|신규
+SV_DVLP_GOAL_ACMSLT,SPNSR_BSNS_GRP_NM,FILL,,결연|국내|기타|해외프로젝트
+SV_EVENT_PARTICIPATION,EVENT_CATEGORY,SKIP,소스 미발견,1|100|12|13|14|15|16|2|200|3|300|4|400|5|500|6|7|8|9
+SV_EVENT_PARTICIPATION,EVENT_KIND,SKIP,소스 미발견,CRMN|EVENT
+SV_EVENT_PARTICIPATION,EVENT_KIND_NAME,SKIP,소스 미발견,(미매핑)|일반행사|캠페인행사
+SV_EVENT_PARTICIPATION,EVENT_PART_USE_YN,FILL,,N|Y
+SV_EVENT_PARTICIPATION,PART_CHANNEL,SKIP,소스 미발견,)|100|200|300|400|500|600|700|800
+SV_EVENT_PARTICIPATION,PART_CHANNEL_NAME,SKIP,소스 미발견,APP|PC|SNS|mobile web|문자|행사|회지(오프라인)|회지(온라인)
+SV_EVENT_PARTICIPATION,PART_EVENT_KIND,SKIP,소스 미발견,CRMN|EVENT
+SV_EVENT_PARTICIPATION,PART_EVENT_KIND_NAME,SKIP,소스 미발견,일반행사|캠페인행사
+SV_EVENT_PARTICIPATION,PART_PATH,SKIP,소스 미발견,)|1|100|2|200|3|300|4|5|500|6|600|700
+SV_EVENT_PARTICIPATION,PART_PATH_NAME,SKIP,소스 미발견,APP|homepage|webmail|독자의견|독자이벤트|모바일웹|상담센터|이메일|초대|출석|텍스트|홈페이지
+SV_EVENT_PARTICIPATION,PART_STATUS,SKIP,소스 미발견,)|1|110|120|130|140|150|160|170|180|190|2|200|210|220|3|4|5|6
+SV_EVENT_PARTICIPATION,PART_STATUS_NAME,SKIP,소스 미발견,1_step_fail|1_step_right|2_step_fail|2_step_right|3_step_fail|3_step_right|4_step_fail|4_step_right|5_step_fail|5_step_right|Fail|Success|대기|대기(결제)|불참|신청|참여|취소
+SV_EVENT_PARTICIPATION,SELF_PARTCPT_CD,SKIP,소스 미발견,0|1|2
+SV_EVENT_PARTICIPATION,CHRCTR_RECPTN_YN,SKIP,소스 미발견,N|Y
+SV_EVENT_PARTICIPATION,GENDER_NAME,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_EVENT_PARTICIPATION,MBER_DIV_CD,SKIP,소스 미발견,1|2|3
+SV_EVENT_PARTICIPATION,MBER_STAT_CD,SKIP,소스 미발견,1|10|11|12|2|3|4|5|6|7|8|9
+SV_EVENT_PARTICIPATION,MEMBER_EMAIL_STAT_NAME,FILL,,계정없음|도메인오류|정상
+SV_EVENT_PARTICIPATION,MEMBER_ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_EVENT_PARTICIPATION,MEMBER_MOBLPHON_STAT_NAME,FILL,,결번|정상|타인번호
+SV_EVENT_PARTICIPATION,MEMBER_RELATNSP_DIV_NAME,FILL,,결연회원|비결연회원|중단회원|혼합회원
+SV_EVENT_PARTICIPATION,MEMBER_SPECL_MNG_NAME,FILL,,GMN이관|교육전문위원|나눔원정대|더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|블랙리스트|연예인|유명인|유아전문위원|이사회|일반|임효진이음|정회원|좋은이웃가게|지역협력위원|테스트회원|특별결연회원|홍보대사|회원부지정회원
+SV_EVENT_PARTICIPATION,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_EVENT_PARTICIPATION,MEMBER_TSTM_DIV_NAME,FILL,,TM 거절|TMTS거절|TS 거절
+SV_EVENT_PARTICIPATION,MEMBER_TYPE_NAME,SKIP,소스 미발견,개인|기업|단체
+SV_EVENT_PARTICIPATION,SEX,SKIP,소스 미발견,1|2|3|4|5|6|7|8
+SV_EVENT_PARTICIPATION,SEX_NM,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_EXPENSE_RESOLUTION,DTL_ITEM_NM,FILL,,가지급금|사업비|사회복지법인예산|옹호사업
+SV_EXPENSE_RESOLUTION,MOK_NM,FILL,,가지급금|권리옹호사업|기관홍보사업|미디어모금|사업비|사회복지법인예산|아동발달지원사업|온라인모금|위기가정지원사업|인식개선사업|지역사회조직사업|프로젝트사업
+SV_EXPENSE_RESOLUTION,SOURCE_DIV_NM,FILL,,가지급금정산서|구매품의|기안서|대체결의|외화출장품의서|품의서
+SV_GA_BEHAVIOR,DEVICE_TYPE,FILL,,(unknown)|(해당없음)|M|PC
+SV_GA_BEHAVIOR,DEFAULT_CHANNEL_GROUP,SKIP,소스 미발견,AI Assistant|Cross-network|Display|Email|Mobile Push Notifications|Organic Search|Organic Shopping|Organic Social|Organic Video|Paid Other|Paid Search|Paid Social|Paid Video|Referral|SMS|Unassigned
+SV_GA_CHILD_UNPAID,SVC_SCOPE,SKIP,소스 미발견,A|B
+SV_GA_DEMOGRAPHIC,DEVICE_CATEGORY,FILL,,desktop|mobile|tablet
+SV_GA_DEMOGRAPHIC,USER_AGE_BRACKET,FILL,,18-24|25-34|35-44|45-54|55-64|65+|unknown
+SV_GA_DEMOGRAPHIC,USER_GENDER,FILL,,female|male|unknown
+SV_GA_SESSION,DEVICE_CATEGORY,FILL,,desktop|mobile|smart tv|tablet
+SV_GA_SESSION,DEVICE_OPERATING_SYSTEM,FILL,,Android|BlackBerry|Chrome OS|Linux|Macintosh|Tizen|Windows|Windows Phone|iOS
+SV_GA_SESSION,EP_PAYMENT_TYPE,FILL,,계좌이체|네이버페이|신용카드
+SV_GA_SESSION,GEO_CONTINENT,FILL,,(not set)|Africa|Americas|Asia|Europe|Oceania
+SV_GA_SESSION,PLATFORM,FILL,,WEB
+SV_GA_SESSION,STSLC_CRC_DEFAULT_CHANNEL_GROUP,FILL,,AI Assistant|Cross-network|Direct|Display|Email|Mobile Push Notifications|Organic Search|Organic Shopping|Organic Social|Organic Video|Paid Other|Paid Search|Paid Social|Paid Video|Referral|SMS|Unassigned
+SV_GA_SESSION,STSLC_CRC_PRIMARY_CHANNEL_GROUP,FILL,,AI Assistant|Cross-network|Direct|Display|Email|Mobile Push Notifications|Organic Search|Organic Shopping|Organic Social|Organic Video|Paid Other|Paid Search|Paid Social|Paid Video|Referral|SMS|Unassigned
+SV_GA_SESSION,STSLC_CRC_SOURCE_PLATFORM,FILL,,Google Ads|Manual|Meta Ads|Other Ads|Unlabeled
+SV_GA_SESSION,UP_DONATION_TYPE,FILL,,감액|신규후원|재후원|증액|증액후원
+SV_GA_SESSION,UP_DONOR_TYPE,FILL,,개인|기업|단체
+SV_GA_SESSION,UP_LOGIN_STATUS,FILL,,n|y|{{로그인여부}}
+SV_GA_SESSION,UP_MEMBER_TYPE,FILL,,{{정기회원/일시회원/중단회원/앱회원 등}}|비로그인|앱회원|일시회원|일시후원|정기회원|정기후원|중단회원|활동회원|후원중단
+SV_MBRFEE_PRDT_ACTL,DATA_TYPE_NM,FILL,,실측|연도초예측|예측
+SV_MBRFEE_PRDT_ACTL,DATA_TYPE_STD,FILL,,연도초예측|예측
+SV_MBRFEE_PRDT_ACTL,HDQ_BRNCH_GRP_NM,FILL,,기존|본부|본부지부|지부|통합
+SV_MBRFEE_PRDT_ACTL,NEW_EXST_DIV_NM,FILL,,기존|신규
+SV_MBRFEE_PRDT_ACTL,SPNSR_BSNS_GRP_NM,FILL,,국내(사단)|대북지원사업|보건의료지원사업|식수위생지원사업|재난구호지원사업|전체사업지원|좋은이웃|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_MEMBER_COHORT,ACQ_ORG_DIV_GROUP,SKIP,소스 미발견,본부|본부(사복)|시도본부|시도본부 및 중앙|지부|지부(사복)|지부외|협력시설
+SV_MEMBER_COHORT,ACQ_ORG_DIV_GROUP_CODE,FILL,,ZB000001|ZB000002|ZB000003|ZB000004|ZB000005|ZB000006|ZB000007|ZB000008
+SV_MEMBER_COHORT,ACQ_SPONSORSHIP_GROUP4_NAME,FILL,,결연|국내|기타|해외프로젝트
+SV_MEMBER_COHORT,ACQ_AGE_BAND,SKIP,소스 미발견,10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_MEMBER_COHORT,ACQ_AREA_CD,SKIP,소스 미발견,0|1|10|11|12|13|14|15|16|17|18|2|3|4|5|6|7|8|9
+SV_MEMBER_COHORT,ACQ_BASIS,SKIP,소스 미발견,FALLBACK|NEW
+SV_MEMBER_COHORT,ACQ_DVLP_DIV_CD,SKIP,소스 미발견,1|2|3|4|5
+SV_MEMBER_COHORT,ACQ_GENDER,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_COHORT,ACQ_REGION,SKIP,소스 미발견,강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_MEMBER_COHORT,ACQ_SEX_CD,SKIP,소스 미발견,0|1|2|3|4|5|6|7|8
+SV_MEMBER_COHORT,BIZ_CASE_TYPE,SKIP,소스 미발견,굿즈|기타|사례|사업
+SV_MEMBER_COHORT,CAMPAIGN_INFLOW_PATH,SKIP,소스 미발견,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_COHORT,DOMESTIC_OVERSEAS,SKIP,소스 미발견,국내|전체사업|통합|해외
+SV_MEMBER_COHORT,SURV_AXIS_TYPE,SKIP,소스 미발견,개발인입경로|전체|캠페인유형1|캠페인유형2|캠페인카테고리
+SV_MEMBER_EVENT,DAY_OF_WEEK,SKIP,소스 미발견,0|1|2|3|4|5|6
+SV_MEMBER_EVENT,AREA_CD_AT_EVENT,SKIP,소스 미발견,0|1|10|11|12|13|14|15|16|17|18|2|3|4|5|6|7|8|9
+SV_MEMBER_EVENT,BIZ_CASE_TYPE,SKIP,소스 미발견,굿즈|기타|사례|사업
+SV_MEMBER_EVENT,CAMPAIGN_INFLOW_PATH,SKIP,소스 미발견,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_EVENT,CMMN_BRND_NM,SKIP,소스 미발견,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_MEMBER_EVENT,CPR_DIV_NM,SKIP,소스 미발견,사단|사복|통합
+SV_MEMBER_EVENT,DOMESTIC_OVERSEAS,SKIP,소스 미발견,국내|전체사업|통합|해외
+SV_MEMBER_EVENT,DVLP_DIV_CD,SKIP,소스 미발견,1|2|3|4|5
+SV_MEMBER_EVENT,DVLP_DIV_NM,SKIP,소스 미발견,감액|신규|재후원|증액|후원중단
+SV_MEMBER_EVENT,EVENT_TYPE,SKIP,소스 미발견,DEV|STOP
+SV_MEMBER_EVENT,GENDER_AT_EVENT,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_EVENT,NEW_EXISTING_FLAG,SKIP,소스 미발견,기존|신규
+SV_MEMBER_EVENT,SEX_AT_EVENT,SKIP,소스 미발견,0|1|2|3|4|5|6|7|8
+SV_MEMBER_EVENT,SPNSR_DIV_NM,SKIP,소스 미발견,일시후원|정기후원
+SV_MEMBER_EVENT,STOP_CHANNEL_NM,SKIP,소스 미발견,CRM|SYSTEM|홈페이지
+SV_MEMBER_EVENT,CHRCTR_RECPTN_YN,SKIP,소스 미발견,N|Y
+SV_MEMBER_EVENT,GENDER_NAME,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_MEMBER_EVENT,MBER_DIV_CD,SKIP,소스 미발견,1|2|3
+SV_MEMBER_EVENT,MBER_STAT_CD,SKIP,소스 미발견,1|10|11|12|2|3|4|5|6|7|8|9
+SV_MEMBER_EVENT,MEMBER_EMAIL_STAT_NAME,FILL,,계정없음|도메인오류|정상
+SV_MEMBER_EVENT,MEMBER_ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_MEMBER_EVENT,MEMBER_JOIN_CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_MEMBER_EVENT,MEMBER_MOBLPHON_STAT_NAME,FILL,,결번|정상|타인번호
+SV_MEMBER_EVENT,MEMBER_RELATNSP_DIV_NAME,FILL,,결연회원|비결연회원|중단회원|혼합회원
+SV_MEMBER_EVENT,MEMBER_SPECL_MNG_NAME,FILL,,GMN이관|교육전문위원|나눔원정대|더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|블랙리스트|연예인|유명인|유아전문위원|이사회|일반|임효진이음|정회원|좋은이웃가게|지역협력위원|테스트회원|특별결연회원|홍보대사|회원부지정회원
+SV_MEMBER_EVENT,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_MEMBER_EVENT,MEMBER_TSTM_DIV_NAME,FILL,,TM 거절|TMTS거절|TS 거절
+SV_MEMBER_EVENT,MEMBER_TYPE_NAME,SKIP,소스 미발견,개인|기업|단체
+SV_MEMBER_EVENT,SEX,SKIP,소스 미발견,1|2|3|4|5|6|7|8
+SV_MEMBER_EVENT,SEX_NM,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_EVENT,ORG_DIV_GROUP,SKIP,소스 미발견,본부|본부(사복)|시도본부|시도본부 및 중앙|지부|지부(사복)|지부외|협력시설
+SV_MEMBER_EVENT,ORG_DIV_GROUP_CODE,FILL,,ZB000001|ZB000002|ZB000003|ZB000004|ZB000005|ZB000006|ZB000007|ZB000008
+SV_MEMBER_EVENT,SPONSORSHIP_CPR_DIV_NM,SKIP,소스 미발견,사단|사복
+SV_MEMBER_EVENT_COHORT,AGE_BAND_AT_EVENT,FILL,,10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_MEMBER_EVENT_COHORT,GENDER_AT_EVENT,FILL,,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_EVENT_COHORT,INFLOW_PATH_AT_EVENT,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_EVENT_COHORT,NEW_EXISTING_FLAG,FILL,,기존|신규
+SV_MEMBER_FEE,ACQ_AGE_BAND,SKIP,소스 미발견,10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_MEMBER_FEE,ACQ_BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_MEMBER_FEE,ACQ_CMMN_BRAND,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_MEMBER_FEE,ACQ_CPR_DIV,SKIP,소스 미발견,사단|사복|통합
+SV_MEMBER_FEE,ACQ_DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_MEMBER_FEE,ACQ_INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_FEE,ACQ_REGION,SKIP,소스 미발견,강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_MEMBER_FEE,ACQ_SPNSR_DIV,FILL,,일시후원|정기후원
+SV_MEMBER_FEE,FEE_DIV,SKIP,소스 미발견,긴급구호|선물금|일시|정기
+SV_MEMBER_FEE,FEE_DIV_CD,SKIP,소스 미발견,E|G|I|U
+SV_MEMBER_FEE,MEMBER_GENDER,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_MEMBER_FEE,MEMBER_STATUS,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_MEMBER_FEE,MEMBER_TYPE,SKIP,소스 미발견,개인|기업|단체
+SV_MEMBER_FEE,PAYMENT_METHOD,SKIP,소스 미발견,OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_MEMBER_FEE,PAYMENT_TYPE,SKIP,소스 미발견,기부금|회비
+SV_MEMBER_FEE,SETLE_CD,SKIP,소스 미발견,1|10|12|13|2|3|4|5|6|7|8
+SV_MEMBER_MONTHLY,BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_MEMBER_MONTHLY,DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_MEMBER_MONTHLY,INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_MONTHLY,DEV_TYPE,SKIP,소스 미발견,1|2|4
+SV_MEMBER_MONTHLY,NEW_EXISTING_FLAG,SKIP,소스 미발견,기존|신규
+SV_MEMBER_MONTHLY,PERIOD_BAND1,SKIP,소스 미발견,0~5년 미만|10~15년 미만|15~20년 미만|20~25년 미만|25~30년 미만|30~35년 미만|35~40년 미만|5~10년 미만
+SV_MEMBER_MONTHLY,CHRCTR_RECPTN_YN,SKIP,소스 미발견,N|Y
+SV_MEMBER_MONTHLY,GENDER_NAME,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_MEMBER_MONTHLY,MBER_DIV_CD,SKIP,소스 미발견,1|2|3
+SV_MEMBER_MONTHLY,MBER_STAT_CD,SKIP,소스 미발견,1|10|11|12|2|3|4|5|6|7|8|9
+SV_MEMBER_MONTHLY,MEMBER_EMAIL_STAT_NAME,FILL,,계정없음|도메인오류|정상
+SV_MEMBER_MONTHLY,MEMBER_ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_MEMBER_MONTHLY,MEMBER_JOIN_CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_MEMBER_MONTHLY,MEMBER_MOBLPHON_STAT_NAME,FILL,,결번|정상|타인번호
+SV_MEMBER_MONTHLY,MEMBER_RELATNSP_DIV_NAME,FILL,,결연회원|비결연회원|중단회원|혼합회원
+SV_MEMBER_MONTHLY,MEMBER_REL_NAME,FILL,,기업담당자|기타|대표자|동료|배우자|본인|부모|자녀|조부모|친구|형제
+SV_MEMBER_MONTHLY,MEMBER_SLRCLD_LRR_NAME,FILL,,불명확|양력|음력
+SV_MEMBER_MONTHLY,MEMBER_SPECL_MNG2_NAME,FILL,,더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|연예인|유명인|일반|정회원|테스트회원|홍보대사
+SV_MEMBER_MONTHLY,MEMBER_SPECL_MNG_NAME,FILL,,GMN이관|교육전문위원|나눔원정대|더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|블랙리스트|연예인|유명인|유아전문위원|이사회|일반|임효진이음|정회원|좋은이웃가게|지역협력위원|테스트회원|특별결연회원|홍보대사|회원부지정회원
+SV_MEMBER_MONTHLY,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_MEMBER_MONTHLY,MEMBER_TSTM_DIV_NAME,FILL,,TM 거절|TMTS거절|TS 거절
+SV_MEMBER_MONTHLY,MEMBER_TYPE_NAME,SKIP,소스 미발견,개인|기업|단체
+SV_MEMBER_MONTHLY,SEX,SKIP,소스 미발견,1|2|3|4|5|6|7|8
+SV_MEMBER_MONTHLY,SEX_NM,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_MONTHLY_KPI,NEW_EXISTING_FLAG,FILL,,기존|신규
+SV_MEMBER_SERVICE_COHORT,ACQ_AGE_BAND,FILL,,10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_MEMBER_SERVICE_COHORT,ACQ_CPR_DIV_NM,FILL,,사단|사복|통합
+SV_MEMBER_SERVICE_COHORT,ACQ_GENDER,FILL,,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MEMBER_SERVICE_COHORT,ACQ_INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MEMBER_SERVICE_COHORT,ACQ_REGION,FILL,,강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_MEMBER_SERVICE_COHORT,D5_STOP_CHANNEL,FILL,,CRM|SYSTEM|홈페이지
+SV_MEMBER_SERVICE_COHORT,D5_STOP_REASON,FILL,,개인(경제적)사유|기타|다른곳지원|만18세아동퇴소|명의변경|사업장종결|신규미납|아동퇴소|약정후원|이중가입|일시후원이었음|장기미납|회원항의
+SV_MEMBER_SERVICE_COHORT,D5_STOP_SPONSORSHIP,FILL,,국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|식수위생지원사업|재난구호지원사업|전체사업지원|좋은이웃|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_MEMBER_SERVICE_COHORT,MATCH_BASIS,SKIP,소스 미발견,발송제목|서비스코드|서비스코드+발송제목
+SV_MEMBER_SERVICE_COHORT,SERVICE_GROUP_CD,SKIP,소스 미발견,LONGTERM_THANKS|LUCKY_CARD|PERSONAL_NEW_SADAN|SNG_INSTANT
+SV_MEMBER_SERVICE_COHORT,SERVICE_GROUP_NAME,SKIP,소스 미발견,개별화 신규(사단)|선넘는좋은일 신규 즉시|장기회원 서비스|행운의 카드
+SV_MEMBER_SPONSOR_BIZ,SPNSR_JOIN_PATH_NM,FILL,,CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_MEMBER_SPONSOR_BIZ,MAP_METHOD,SKIP,소스 미발견,AUTO_ACMSLT_PARENT|AUTO_MEMBER_FLOW|AUTO_NAME|AUTO_ORG_PARENT|SELF|UNMAPPED
+SV_MEMBER_SPONSOR_BIZ,SPONSORSHIP_ABBR_CATEGORY,SKIP,소스 미발견,결연|국내|기타|북한|해외|해외구호
+SV_MEMBER_SPONSOR_BIZ,SPONSORSHIP_DIV,SKIP,소스 미발견,일시후원|정기후원
+SV_MEMBER_SPONSOR_BIZ,SPONSORSHIP_GROUP4_NAME,FILL,,결연|국내|기타|해외프로젝트
+SV_MEMBER_STATUS_ASOF,ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_MEMBER_STATUS_ASOF,GENDER_NAME,FILL,,기업|기타|남자|단체|여자
+SV_MEMBER_STATUS_ASOF,MEMBER_STATUS_GROUP,FILL,,(해당없음)|미납|정상|중단
+SV_MEMBER_STATUS_ASOF,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_MEMBER_STATUS_ASOF,MEMBER_TYPE_NAME,FILL,,개인|기업|단체
+SV_MEMBER_STATUS_ASOF,PREV_MEMBER_STATUS_NAME,FILL,,신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_ML_CHURN_CAMPAIGN,MEMBER_CHURN_CLASS,SKIP,소스 미발견,0|1
+SV_ML_CHURN_CAMPAIGN,MEMBER_CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_CHURN_CAMPAIGN,SPONSOR_CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_CHURN_CAMPAIGN,SPONSORSHIP_NAME,FILL,,결식아동지원|국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|복지관후원|식수위생지원사업|아동복지시설지원|아동학대예방|재난구호지원사업|저소득가정지원|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_ML_CHURN_CAMPAIGN,SP_MEMBER_CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_CHURN_CAMPAIGN,SP_SPONSOR_CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_CHURN_CAMPAIGN,AGE_BAND,FILL,,(미매칭)|10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_ML_CHURN_CAMPAIGN,CPR_DIV_NAME,FILL,,(미매칭)|사단|사복|통합
+SV_ML_CHURN_CAMPAIGN,GENDER_NAME,FILL,,(미매칭)|기업|기타|남자|단체|여자
+SV_ML_CHURN_CAMPAIGN,MEMBER_STATUS_NAME,FILL,,(미매칭)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_ML_CHURN_CAMPAIGN,MEMBER_TYPE_NAME,FILL,,(미매칭)|개인|기업|단체
+SV_ML_CHURN_CAMPAIGN,NEW_EXISTING,FILL,,(미매칭)|기존|신규
+SV_ML_CHURN_CAMPAIGN,PAYMENT_METHOD_NAME,FILL,,(미매칭)|OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_ML_CHURN_CAMPAIGN,REGION,FILL,,(미매칭)|강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_ML_CHURN_CAMPAIGN,TENURE_BAND,FILL,,(미매칭)|0~5년 미만|10~15년 미만|15~20년 미만|20~25년 미만|25~30년 미만|30~35년 미만|35~40년 미만|5~10년 미만
+SV_ML_DVLP_FORECAST,ALLOC_AXIS,FILL,,개발구분|공통브랜드|마케팅채널|마케팅캠페인명|후원사업
+SV_ML_FEATURE_IMPORTANCE,ANALYSIS_TYPE_NAME,SKIP,소스 미발견,신규 후원 유치 요인|증액 개발 요인
+SV_ML_FEE_FORECAST,ALLOC_AXIS,FILL,,공통브랜드|마케팅캠페인명|후원사업
+SV_ML_FEE_FORECAST_AXIS,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_ML_FEE_FORECAST_AXIS,CPR_DIV_NM,SKIP,소스 미발견,사단|사복|통합
+SV_ML_FEE_FORECAST_AXIS,HQ_BRANCH_NM,SKIP,소스 미발견,기타|본부|지부
+SV_ML_FEE_FORECAST_AXIS,HQ_BRANCH_SRC_NM,FILL,,본부|본부(사복)|시도본부|시도본부 및 중앙|지부|지부(사복)|지부외|협력시설
+SV_ML_FEE_FORECAST_AXIS,NEW_EXISTING,FILL,,기존|신규
+SV_ML_FEE_FORECAST_AXIS,SPONSORSHIP_NAME,FILL,,결식아동지원|국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|복지관후원|식수위생지원사업|아동복지시설지원|아동학대예방|재난구호지원사업|저소득가정지원|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_ML_INC_CAMPAIGN,ATTR_DVLP_DIV_NM,FILL,,신규|재후원|증액
+SV_ML_INC_CAMPAIGN,ATTR_STRD_MT,FILL,,202601|202602|202603|202604|202605|202606|202607|202608|202609
+SV_ML_INC_CAMPAIGN,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_ML_INC_CAMPAIGN,INC_CLASS,SKIP,소스 미발견,0|1
+SV_ML_LTV_FORECAST,LTV_TYPE_NAME,SKIP,소스 미발견,마케팅채널 회원평균 후원금액|캠페인 월간 후원금액
+SV_ML_MEMBER_PRED_AXIS,CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_MEMBER_PRED_AXIS,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_ML_MEMBER_PRED_AXIS,CPR_DIV_NM,SKIP,소스 미발견,사단|사복|통합
+SV_ML_MEMBER_PRED_AXIS,HQ_BRANCH_NM,SKIP,소스 미발견,기타|본부|지부
+SV_ML_MEMBER_PRED_AXIS,HQ_BRANCH_SRC_NM,FILL,,본부|본부(사복)|시도본부|시도본부 및 중앙|지부|지부(사복)|지부외|협력시설
+SV_ML_MEMBER_PRED_AXIS,INC_CLASS,SKIP,소스 미발견,0|1
+SV_ML_MEMBER_PRED_AXIS,NEW_EXISTING,FILL,,(미매칭)|기존|신규
+SV_ML_MEMBER_PRED_AXIS,SPONSORSHIP_NAME,FILL,,결식아동지원|국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|복지관후원|식수위생지원사업|아동복지시설지원|아동학대예방|재난구호지원사업|저소득가정지원|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_ML_MEMBER_PRED_AXIS,SPONSOR_CHURN_GRADE,FILL,,고위험|일반|주의
+SV_ML_MEMBER_PRED_BRIDGE,ACQ_CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_ML_MEMBER_PRED_BRIDGE,ACQ_INFLOW_PATH_NM,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_ML_MEMBER_PRED_BRIDGE,CHURN_GRADE,FILL,,고위험|일반|주의
+SV_ML_MEMBER_PRED_BRIDGE,INC_CLASS,FILL,,0|1
+SV_ML_MEMBER_PRED_BRIDGE,LOYAL_GRADE,FILL,,상|중|최상위|하
+SV_ML_MEMBER_PRED_BRIDGE,PAYMENT_METHOD_NAME,FILL,,(미매칭)|OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_ML_MEMBER_PRED_BRIDGE,REP_SPNSR_SOURCE,FILL,,종료약정|활동약정
+SV_ML_MEMBER_PRED_BRIDGE,SPONSORSHIP_NAME,FILL,,결식아동지원|국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|복지관후원|식수위생지원사업|아동복지시설지원|아동학대예방|재난구호지원사업|저소득가정지원|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_ML_MEMBER_PRED_BRIDGE,TENURE_BAND,FILL,,(미매칭)|0~5년 미만|10~15년 미만|15~20년 미만|20~25년 미만|25~30년 미만|30~35년 미만|35~40년 미만|5~10년 미만
+SV_ML_MEMBER_RISK,AGE_BAND,FILL,,(미매칭)|10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_ML_MEMBER_RISK,CPR_DIV_NAME,FILL,,(미매칭)|사단|사복|통합
+SV_ML_MEMBER_RISK,GENDER_NAME,FILL,,(미매칭)|기업|기타|남자|단체|여자
+SV_ML_MEMBER_RISK,MEMBER_STATUS_NAME,FILL,,(미매칭)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_ML_MEMBER_RISK,MEMBER_TYPE_NAME,FILL,,(미매칭)|개인|기업|단체
+SV_ML_MEMBER_RISK,NEW_EXISTING,FILL,,(미매칭)|기존|신규
+SV_ML_MEMBER_RISK,PAYMENT_METHOD_NAME,FILL,,(미매칭)|OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_ML_MEMBER_RISK,REGION,FILL,,(미매칭)|강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_ML_MEMBER_RISK,TENURE_BAND,FILL,,(미매칭)|0~5년 미만|10~15년 미만|15~20년 미만|20~25년 미만|25~30년 미만|30~35년 미만|35~40년 미만|5~10년 미만
+SV_ML_MEMBER_RISK,CHURN_CLASS,SKIP,소스 미발견,0|1
+SV_ML_MEMBER_RISK,CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_ML_MEMBER_RISK,INC_CLASS,SKIP,소스 미발견,0|1
+SV_ML_MEMBER_RISK,LOYAL_CLASS,SKIP,소스 미발견,0|1
+SV_ML_MEMBER_RISK,LOYAL_GRADE,SKIP,소스 미발견,상|중|최상위|하
+SV_ML_ONCE_CONVERSION,CONVERT_CLASS,SKIP,소스 미발견,0|1
+SV_ML_ONCE_CONVERSION,CPR_DIV_NAME,FILL,,사단|사복
+SV_ML_ONCE_CONVERSION,PAYMENT_METHOD_NAME,FILL,,회비통장
+SV_ML_ONCE_CONVERSION,SEX_NAME,FILL,,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_ML_ONCE_CONVERSION,SPONSORSHIP_NAME,FILL,,국내사례|국내사례(사복)|국내사업후원|국내사업후원(사복)|기타사업후원|긴급구호(법정)|해외사례|해외사업후원
+SV_ML_ONCE_CONVERSION,TENURE_BAND,FILL,,0~5년 미만
+SV_ML_REALTIME_SIMULATOR,ASSUMPTIONS,FILL,,광고비 변동률 기반 한계효용 체감 탄력성 계수 0.72 적용 · 가상 추정치(고정 실적치 아님)
+SV_ML_REALTIME_SIMULATOR,SCENARIO_NAME,FILL,,+10% 소폭 증액|+100% 2배 증액|+20% 증액|+30% 증액|+50% 대폭 증액|-10% 소폭 감액|-20% 감액|-30% 감액|-50% 대폭 감액
+SV_ML_REALTIME_SIMULATOR,SIMULATION_MODEL,FILL,,Cobb-Douglas Elasticity Model (e=0.72)
+SV_ML_SPONSOR_RISK,AGE_BAND,FILL,,(미매칭)|10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_ML_SPONSOR_RISK,CPR_DIV_NAME,FILL,,(미매칭)|사단|사복|통합
+SV_ML_SPONSOR_RISK,GENDER_NAME,FILL,,(미매칭)|기업|기타|남자|단체|여자
+SV_ML_SPONSOR_RISK,MEMBER_STATUS_NAME,FILL,,(미매칭)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_ML_SPONSOR_RISK,MEMBER_TYPE_NAME,FILL,,(미매칭)|개인|기업|단체
+SV_ML_SPONSOR_RISK,NEW_EXISTING,FILL,,(미매칭)|기존|신규
+SV_ML_SPONSOR_RISK,PAYMENT_METHOD_NAME,FILL,,(미매칭)|OCR|네이버페이|신용카드|자동이체|회비통장|휴대폰
+SV_ML_SPONSOR_RISK,REGION,FILL,,(미매칭)|강원|경기|경남|경북|광주|기타|대구|대전|부산|서울|세종|울산|인천|전남|전북|제주|충남|충북
+SV_ML_SPONSOR_RISK,TENURE_BAND,FILL,,(미매칭)|0~5년 미만|10~15년 미만|15~20년 미만|20~25년 미만|25~30년 미만|30~35년 미만|35~40년 미만|5~10년 미만
+SV_ML_SPONSOR_RISK,CHURN_CLASS,SKIP,소스 미발견,0|1
+SV_ML_SPONSOR_RISK,CHURN_GRADE,SKIP,소스 미발견,고위험|일반|주의
+SV_MSTR_SPNSR_DVLP,CLOSED_MONTH_YN,FILL,,N|Y
+SV_MSTR_SPNSR_DVLP,DEPT4_NM,FILL,,본부|본부(사복)|시도본부|시도본부 및 중앙|지부|지부(사복)|지부외|협력시설
+SV_MSTR_SPNSR_DVLP,DVLP_DIV_CD,FILL,,1|2|3|4|5
+SV_MSTR_SPNSR_DVLP,DVLP_DIV_NM,FILL,,감액|신규|재후원|증액|후원중단
+SV_MSTR_SPNSR_DVLP,STRD_YY,FILL,,2024|2025|2026
+SV_MSTR_SPNSR_DVLP,AGE_TERM_NM,FILL,,10대|10대 미만|20대|30대|40대|50대|60대|70대|70대 이상|기업|기타|단체
+SV_MSTR_SPNSR_DVLP,AREA_NM,FILL,,강원도|경기도|경상남도|경상북도|광주광역시|기타|대구광역시|대전광역시|부산광역시|서울특별시|세종특별자치시|울산광역시|인천광역시|전라남도|전라북도|제주특별자치도|충청남도|충청북도
+SV_MSTR_SPNSR_DVLP,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_MSTR_SPNSR_DVLP,CMPGN_TYPE1_NM,FILL,,국내|전체사업|통합|해외
+SV_MSTR_SPNSR_DVLP,CMPGN_TYPE2_NM,FILL,,굿즈|기타|사례|사업
+SV_MSTR_SPNSR_DVLP,CPR_DIV_NM,FILL,,사단|사복
+SV_MSTR_SPNSR_DVLP,DVLP_INFLOW_PATH_NM,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_MSTR_SPNSR_DVLP,MBER_DIV_NM,FILL,,개인|기업|단체
+SV_MSTR_SPNSR_DVLP,SETLE_NM,FILL,,OCR|네이버페이|신용카드|자동이체|자동이체(사복)|회비통장|휴대폰
+SV_MSTR_SPNSR_DVLP,SEX_NM,FILL,,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_MSTR_SPNSR_DVLP,SPNSR_AMT2_NM,FILL,,10만원이상~50만원미만|1만원미만|1만원이상~2만원미만|2만원이상~3만원미만|3만원이상~4만원미만|4만원이상~5만원미만|50만원이상|5만원이상~6만원미만|6만원이상~7만원미만|7만원이상~8만원미만|8만원이상~9만원미만|9만원이상~10만원미만|없음
+SV_MSTR_SPNSR_DVLP,SPNSR_AMT_NM,FILL,,10만원 이상 ~ 50만원 미만|1만원 미만|1만원 이상 ~ 5만원 미만|50만원 이상|5만원 이상 ~ 10만원 미만
+SV_MSTR_SPNSR_DVLP,SPNSR_BSNS2_NM,FILL,,국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|식수위생지원사업|재난구호지원사업|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_MSTR_SPNSR_DVLP,SPNSR_BSNS_ABRV_NM,FILL,,결연|국내|기타|북한|해외구호
+SV_MSTR_SPNSR_DVLP,SPNSR_BSNS_NM,FILL,,결식아동지원|국내사업|국내아동권리보호사업(사단법인)|국내아동권리보호사업(사회복지법인)|대북지원사업|보건의료지원사업|복지관후원|식수위생지원사업|아동복지시설지원|아동학대예방|재난구호지원사업|저소득가정지원|전체사업지원|좋은이웃|좋은이웃(사복)|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_MSTR_SPNSR_DVLP,SPNSR_DIV_NM,FILL,,일시후원|정기후원
+SV_MSTR_SPNSR_DVLP,SPNSR_TERM2_NM,FILL,,10년이상|1년미만|1년이상~2년미만|2년이상~3년미만|3년이상~4년미만|4년이상~5년미만|5년이상~6년미만|6년이상~7년미만|7년이상~8년미만|8년이상~9년미만|9년이상~10년미만
+SV_MSTR_SPNSR_DVLP,SPNSR_TERM_NM,FILL,,10년 이상|1년 미만|1년 이상 ~ 5년 미만|5년 이상 ~ 10년 미만
+SV_MSTR_SPNSR_DVLP,AS_OF_MT,FILL,,202610
+SV_PAYMENT_BILLING_STATUS,BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_PAYMENT_BILLING_STATUS,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|일시|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_PAYMENT_BILLING_STATUS,CPR_DIV_NM,FILL,,사단|사복|통합
+SV_PAYMENT_BILLING_STATUS,DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_PAYMENT_BILLING_STATUS,INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_PAYMENT_BILLING_STATUS,SPNSR_DIV_NM,FILL,,일시후원|정기후원
+SV_PAYMENT_BILLING_STATUS,FEE_DIV_NAME,FILL,,긴급구호|선물금|일시|정기
+SV_PAYMENT_BILLING_STATUS,PAYMENT_TYPE,FILL,,기부금|회비
+SV_PAYMENT_BILLING_STATUS,PRCS_STAT_CD,FILL,,F|R|S
+SV_PAYMENT_BILLING_STATUS,PRCS_STAT_NAME,FILL,,완료|청구
+SV_PAYMENT_BILLING_STATUS,RETUN_RSN_NAME,FILL,,개발시 오입력|기타|사업장이슈(아동퇴소)|청구 후 후원중단|출금주기 부담|회비이중납부|회원 오신청|회원요청|회원항의(서비스불만족)|후원중단 미처리(직원)|후원중단요청 확인불가
+SV_PAYMENT_BILLING_STATUS,RQEST_DIV_CD,FILL,,1|2|9|Y
+SV_PAYMENT_BILLING_STATUS,RQEST_DIV_NAME,FILL,,OCR신규|개별청구|정기청구
+SV_RELATION_ACTIVITY,ACTIVITY_TYPE,SKIP,소스 미발견,서신|선물금
+SV_RELATION_ACTIVITY,GFT_DIV_CD,SKIP,소스 미발견,0|1|2|3|4|5|6
+SV_RELATION_ACTIVITY,ONLINE_POST_WRITNG_YN,SKIP,소스 미발견,0|1
+SV_RELATION_ACTIVITY,TRNSFER_YN,SKIP,소스 미발견,0|1|2
+SV_RELATION_ACTIVITY,GENDER_NAME,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_RELATION_ACTIVITY,MEMBER_EMAIL_STAT_NAME,FILL,,계정없음|도메인오류|정상
+SV_RELATION_ACTIVITY,MEMBER_ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_RELATION_ACTIVITY,MEMBER_MOBLPHON_STAT_NAME,FILL,,결번|정상|타인번호
+SV_RELATION_ACTIVITY,MEMBER_RELATNSP_DIV_NAME,FILL,,결연회원|비결연회원|중단회원|혼합회원
+SV_RELATION_ACTIVITY,MEMBER_SPECL_MNG_NAME,FILL,,GMN이관|교육전문위원|나눔원정대|더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|블랙리스트|연예인|유명인|유아전문위원|이사회|일반|임효진이음|정회원|좋은이웃가게|지역협력위원|테스트회원|특별결연회원|홍보대사|회원부지정회원
+SV_RELATION_ACTIVITY,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_RELATION_ACTIVITY,MEMBER_TSTM_DIV_NAME,FILL,,TM 거절|TMTS거절|TS 거절
+SV_RELATION_ACTIVITY,REL_IS_DISCONTINUED,FILL,,N|Y
+SV_SEARCH_CONSOLE,DEVICE,FILL,,DESKTOP|MOBILE|TABLET
+SV_SERVICE,BIZ_CASE_TYPE,FILL,,굿즈|기타|사례|사업
+SV_SERVICE,CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|일시|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_SERVICE,CPR_DIV_NM,FILL,,사단|사복|통합
+SV_SERVICE,DOMESTIC_OVERSEAS,FILL,,국내|전체사업|통합|해외
+SV_SERVICE,INFLOW_PATH,FILL,,교육기관|기타 기업개발|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|일시|재송출|지역개발|콜개발
+SV_SERVICE,IS_PARENT_CAMPAIGN_YN,SKIP,소스 미발견,N|Y
+SV_SERVICE,SPNSR_DIV_NM,FILL,,일시후원|정기후원
+SV_SERVICE,ALTRTV_MSG_SNDNG_YN,SKIP,소스 미발견,Y
+SV_SERVICE,RESPONSED_YN,SKIP,소스 미발견,N|Y
+SV_SERVICE,SEND_RESULT_GROUP,SKIP,소스 미발견,MS056|MS057|MS058|MS059
+SV_SERVICE,SEND_STATUS,SKIP,소스 미발견,0|1|2|3|4|N|Y
+SV_SERVICE,SEND_STATUS_NAME,SKIP,소스 미발견,발송완료|에러|예약취소
+SV_SERVICE,SEND_TYPE,FILL,,EMAIL|MSG_AT|PSTMTR|SND
+SV_SERVICE,SND_DSCNTC_RSN_NM,FILL,,개인(경제적)사유|기업후원종료|기타|다른곳지원|만18세아동퇴소|명의변경|반송미납|사업장종결|신규미납|아동퇴소|약정후원|은행자동납부해지|이중가입|일시후원이었음|장기미납|지라니이관|회원항의
+SV_SERVICE,CHRCTR_RECPTN_YN,SKIP,소스 미발견,N|Y
+SV_SERVICE,GENDER_NAME,SKIP,소스 미발견,기업|기타|남자|단체|여자
+SV_SERVICE,MBER_DIV_CD,SKIP,소스 미발견,1|2|3
+SV_SERVICE,MBER_STAT_CD,SKIP,소스 미발견,1|10|11|12|2|3|4|5|6|7|8|9
+SV_SERVICE,MEMBER_EMAIL_STAT_NAME,FILL,,계정없음|도메인오류|정상
+SV_SERVICE,MEMBER_ENROLL_PATH_NAME,FILL,,(해당없음)|CRM|REG|모바일앱|모바일웹|외주콜센터|홈페이지
+SV_SERVICE,MEMBER_ETC_CTTPC_STAT_NAME,FILL,,결번|정상|타인번호
+SV_SERVICE,MEMBER_JOIN_CMMN_BRND_NM,FILL,,교육기관|기업|뉴미디어|대면모금|디지털|마케팅콜개발|방송|영상광고|재송출|지역개발|콜개발|회원 기타|회원 오프라인개발|회원 온라인개발|회원 콜개발
+SV_SERVICE,MEMBER_MOBLPHON_STAT_NAME,FILL,,결번|정상|타인번호
+SV_SERVICE,MEMBER_RELATNSP_DIV_NAME,FILL,,결연회원|비결연회원|중단회원|혼합회원
+SV_SERVICE,MEMBER_SPECL_MNG_NAME,FILL,,GMN이관|교육전문위원|나눔원정대|더네이버스레거시클럽|더네이버스아너스클럽|더네이버스클럽|블랙리스트|연예인|유명인|유아전문위원|이사회|일반|임효진이음|정회원|좋은이웃가게|지역협력위원|테스트회원|특별결연회원|홍보대사|회원부지정회원
+SV_SERVICE,MEMBER_STATUS_NAME,SKIP,소스 미발견,(해당없음)|신규미납1|신규미납2|신규미납3|신규미납4|신규미납5|장기미납1|장기미납2|장기미납3|장기미납4|장기미납5|활동회원|후원중단
+SV_SERVICE,MEMBER_TSTM_DIV_NAME,FILL,,TM 거절|TMTS거절|TS 거절
+SV_SERVICE,MEMBER_TYPE_NAME,SKIP,소스 미발견,개인|기업|단체
+SV_SERVICE,SEX,SKIP,소스 미발견,1|2|3|4|5|6|7|8
+SV_SERVICE,SEX_NM,SKIP,소스 미발견,국내(남자)|국내(여자)|기업|기타|단체|외국인(기타)|외국인(남자)|외국인(여자)
+SV_SERVICE,REQ_CORP_TYPE_NAME,FILL,,사단|사복
+SV_SERVICE,REQ_LQY_YN,FILL,,N|Y
+SV_SERVICE,REQ_MSG_DIV_NAME,FILL,,LMS|MMS|SMS|알림톡
+SV_SERVICE,REQ_PSTMTR_PRCS_STAT_NAME,FILL,,발송대기|발송완료
+SV_SERVICE,REQ_RE_SNDNG_YN,FILL,,N|Y
+SV_SERVICE,REQ_SEND_GBN_TOP_NM,FILL,,결연|기타|사업보고|서비스|참여|회비|회원|회원만족|회원서비스
+SV_SERVICE,REQ_SEND_SPLIT_TYPE,FILL,,divide|once
+SV_SERVICE,REQ_SNDNG_TIME_DIV_NAME,FILL,,분할발송|예약발송|즉시발송
+SV_SERVICE,CHANNEL,SKIP,소스 미발견,(미매핑)|EMAIL|MSG_AT|PSTMTR|SND
+SV_SERVICE,SUBTYPE,SKIP,소스 미발견,(미매핑)|0|1|2|3
+SV_SPNSR_CLS_AGGR,AGGR_TY_NM,FILL,,감액|개발|중단|활동|회비
+SV_SPNSR_CLS_AGGR,CPR_NM,FILL,,사단
+SV_SPNSR_CLS_AGGR,HDQ_BRNCH_GRP_NM,FILL,,기존|본부|지부
+SV_SPNSR_CLS_AGGR,NEW_EXST_DIV_NM,FILL,,기존|신규
+SV_SPNSR_CLS_AGGR,SPNSR_BSNS_GRP_NM,FILL,,국내(사단)|대북지원사업|보건의료지원사업|식수위생지원사업|재난구호지원사업|전체사업지원|좋은이웃|해외교육지원사업|해외아동결연|해외지역개발사업|희망학교지원사업
+SV_TARGET_BIZ,DTL_DIV,FILL,,교육기관|뉴미디어|대면모금|디지털|방송|영상광고|오프라인|재송출|지역개발|콜개발
+SV_TARGET_BIZ,GOAL_TYPE,SKIP,소스 미발견,신규기존납입율|신규기존누계납입율|신규기존활동율|월말활동회원|정기회비|회원개발|후원사업|후원사업납입율|후원사업활동율
+SV_TARGET_BIZ,NEW_OLD_DIV,SKIP,소스 미발견,기존|신규|신규합계|합계
+SV_TARGET_BIZ,ORG_DEPARTMENT,SKIP,소스 미발견,(미매핑)|마케팅기획1팀|마케팅기획2팀|매체운영팀|캠페인기획2팀|회원참여팀
+SV_TARGET_BIZ,ORG_PATH,FILL,,본부 > 국내사업본부 > 캠페인사업부 > 캠페인기획2팀|본부 > 나눔마케팅본부 > 마케팅기획1팀|본부 > 나눔마케팅본부 > 마케팅기획2팀|본부 > 나눔마케팅본부 > 매체운영팀|본부 > 회원실 > 회원참여팀
+SV_TARGET_BIZ,SPONSOR_BIZ,FILL,,결연|국내|국내(사단)|기타|대북지원사업|보건의료지원사업|식수위생지원사업|재난구호지원사업|전체사업지원|좋은이웃후원|해외교육지원사업|해외아동결연|해외지역개발사업|해외프로젝트|희망학교지원사업
+SV_TARGET_BIZ,TEAM_NAME,FILL,,교육기관|마케팅기획1팀|마케팅기획2팀|매체운영팀|지역사회|캠페인기획2팀|컬쳐콘텐츠팀|회원참여팀

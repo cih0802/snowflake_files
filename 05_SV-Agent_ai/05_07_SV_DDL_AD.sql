@@ -53,13 +53,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = '마케팅캠페인의 UTM 라벨(CRM 마케팅 코드 U001 · 마케팅캠페인당 1개). 광고비를 UTM 별로 나눌 때 쓴다. 대행사 원천의 UTM 태그(UTM_CMPGN_NM)와는 다른 축이다(그쪽은 광고행 원값).',
     mktg.DOMESTIC_OVERSEAS AS mktg.DOMESTIC_OVERSEAS
       WITH SYNONYMS ('국내해외', '국내/해외', '캠페인 국내해외', '공15')
-      COMMENT = '마케팅캠페인 국내/통합/해외(MM295). 🔴 한 마케팅캠페인 아래 값이 갈리면(소수 · 실측은) 매핑 행수 최다 값을 대표로 쓴다 — DOMESTIC_OVERSEAS_IS_MULTI=TRUE 비중을 함께 밝힌다.',
+      COMMENT = '마케팅캠페인 국내/통합/해외(MM295). 🔴 한 마케팅캠페인 아래 값이 갈리면(소수 · 실측은) 매핑 행수 최다 값을 대표로 쓴다 — DOMESTIC_OVERSEAS_IS_MULTI=TRUE 비중을 함께 밝힌다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''(미매핑)''·''국내''·''전체사업''·''통합''·''해외''',
     mktg.DOMESTIC_OVERSEAS_IS_MULTI AS mktg.DOMESTIC_OVERSEAS_IS_MULTI
       WITH SYNONYMS ('국내해외 대표값 여부')
       COMMENT = 'TRUE = 국내/해외 값이 여럿이라 대표값을 쓴 마케팅캠페인.',
     mktg.BIZ_CASE_TYPE AS mktg.BIZ_CASE_TYPE
       WITH SYNONYMS ('사업사례', '사업/사례', '캠페인 사업사례', '공16')
-      COMMENT = '마케팅캠페인 굿즈/기타/사례/사업(MM296). 🔴 한 마케팅캠페인 아래 값이 갈리면 매핑 행수 최다 값을 대표로 쓴다 — BIZ_CASE_TYPE_IS_MULTI=TRUE 비중을 함께 밝힌다.',
+      COMMENT = '마케팅캠페인 굿즈/기타/사례/사업(MM296). 🔴 한 마케팅캠페인 아래 값이 갈리면 매핑 행수 최다 값을 대표로 쓴다 — BIZ_CASE_TYPE_IS_MULTI=TRUE 비중을 함께 밝힌다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''(미매핑)''·''굿즈''·''기타''·''사례''·''사업''',
     mktg.BIZ_CASE_TYPE_IS_MULTI AS mktg.BIZ_CASE_TYPE_IS_MULTI
       WITH SYNONYMS ('사업사례 대표값 여부')
       COMMENT = 'TRUE = 사업/사례 값이 여럿이라 대표값을 쓴 마케팅캠페인.',
@@ -80,34 +80,34 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     date.YEAR AS date.YEAR    COMMENT = '연도(DIM_DATE.YEAR) — CAL_YEAR 와 같은 값(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
     date.MONTH AS date.MONTH  COMMENT = '월(DIM_DATE.MONTH) — CAL_MONTH 와 같은 값(추측 식별자 실재화). 둘 중 하나만 쓴다.',
     date.CAL_QUARTER  AS date.QUARTER    WITH SYNONYMS ('분기')        COMMENT = '분기(1~4)',
-    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형. 코드값: ''DIGITAL'' · ''VIDEO''(방송 본방) · ''REBROADCAST''(재방송). 디지털/방송 measure 필터 필수. 실제값 3종: ''VIDEO''·''DIGITAL''·''REBROADCAST''',
-    ad.DAY_OF_WEEK    AS ad.DAY_OF_WEEK    WITH SYNONYMS ('요일')   COMMENT = '요일. 실제값 7종: ''Fri''·''Mon''·''Sat''·''Sun''·''Thu''·''Tue''·''Wed''',
+    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형. 코드값: ''DIGITAL'' · ''VIDEO''(방송 본방) · ''REBROADCAST''(재방송). 디지털/방송 measure 필터 필수. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''VIDEO''·''DIGITAL''·''REBROADCAST''',
+    ad.DAY_OF_WEEK    AS ad.DAY_OF_WEEK    WITH SYNONYMS ('요일')   COMMENT = '요일. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''Fri''·''Mon''·''Sat''·''Sun''·''Thu''·''Tue''·''Wed''',
     ad.WEEK_OF_YEAR   AS ad.WEEK_OF_YEAR   WITH SYNONYMS ('주차')   COMMENT = '연중 주차',
     device.DEVICE_TYPE       AS device.DEVICE_TYPE       WITH SYNONYMS ('기기유형', '디바이스유형', '모바일', 'PC', '공14') COMMENT = '기기 유형. 실제 코드값: ''M''=모바일(GA4 mobile/tablet 통합) · ''PC''=데스크톱 · ''(해당없음)''=방송광고(기기 개념 없음) · ''(unknown)''=매핑 실패 센티넬. ⚠필터 시 ''MOBILE''/''TABLET'' 아님 — 모바일은 ''M''.',
     device.DEVICE_SCOPE_DESC AS device.DEVICE_SCOPE_DESC WITH SYNONYMS ('기기범위') COMMENT = '기기 범위 설명(예: 모바일(GA4 device.category=mobile/tablet)).',
     ad.AD_TYPE_NM     AS ad.AD_TYPE_NM     WITH SYNONYMS ('광고유형', '광고타입', '공13') COMMENT = '디지털 광고유형(검색/디스플레이 등). AD_SOURCE_TYPE=DIGITAL 전용. 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다).',
-    ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용. 원천에 일부 행만 채워져 있어 부분집합이다. 실제값 5종: ''기타''·''영상''·''이미지''·''키워드''·''해당없음'' + NULL. ⚠️ ''해당없음''은 원천이 넣은 값이며 NULL 과 다르다(합치지 않는다)',
+    ad.CREATIVE_TYPE  AS ad.CREATIVE_TYPE  WITH SYNONYMS ('소재유형', '크리에이티브유형') COMMENT = '크리에이티브 유형. 디지털 전용. 원천에 일부 행만 채워져 있어 부분집합이다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기타''·''영상''·''이미지''·''키워드''·''해당없음'' + NULL. ⚠️ ''해당없음''은 원천이 넣은 값이며 NULL 과 다르다(합치지 않는다)',
     ad.PAGE_TYPE      AS ad.PAGE_TYPE      WITH SYNONYMS ('페이지유형', '랜딩유형') COMMENT = '랜딩 페이지 유형. 디지털 전용. 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다). ⚠️ ''전체'' 값이 섞여 있고 **그 의미(랜딩 유형인지 대행사 리포트의 묶음 표기인지)는 원천 확인 전**이다 — 유형별 분해에 쓰되 그 사실을 밝히고, 의미를 추측해 설명하지 말 것. 🟢 집계행(총계 중복)은 아니다 — 광고비 합계가 전체와 겹치지 않음을 실측 확인했다',
     ad.AD_GROUP_NM    AS ad.AD_GROUP_NM    WITH SYNONYMS ('광고그룹', '그룹명') COMMENT = '광고 그룹명. 디지털 전용. 고카디널리티이며 원천 재적재로 값이 바뀐다 ⇒ 값 목록은 이 컬럼을 SELECT DISTINCT 로 조회한다(열거를 여기 박지 않는다).',
     ad.CHANNEL_COMPANY AS ad.CHANNEL_COMPANY WITH SYNONYMS ('채널사', '방송사', '매체사', '공12') COMMENT = '방송 채널사. VIDEO/REBROADCAST 전용. ⚠광고비 기준 정렬 시 광고비가 없는 채널사가 섞이므로 NULLS LAST 를 명시할 것.',
     ad.TIME_BAND       AS ad.TIME_BAND       WITH SYNONYMS ('시간대', '광고시간대') COMMENT = '방송 시간대. 방송 전용. ⚠️ 표기 형식이 원천마다 다르다 — VIDEO 는 ''N시대'' 구간 라벨, REBROADCAST 는 ''HH:MM:SS'' 시각이다(원천 재편) ⇒ 두 출처를 섞어 이 축으로 그루핑하지 말고 AD_SOURCE_TYPE 으로 먼저 나눈다.',
     ad.PROGRAM_NM      AS ad.PROGRAM_NM      WITH SYNONYMS ('프로그램', '프로그램명', '방송프로그램') COMMENT = '방송 프로그램명(고카디널리티 — Cortex Search 백킹 후보). 방송 전용.',
-    ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용. 실제값 4종: ''CA''·''PR''·''SP''·''TJ'' + NULL',
-    ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서', '공21') COMMENT = 'CM 내 위치. 방송 전용. 실제값 16종: ''`''(🔴 **오염값** — 백틱 1문자이며 정상 CM 위치가 아니다. 이 값으로 필터하지 말 것 ··''st''·''E-2nd''·''E-3rd''·''th''·''E-5th''·''E-6th''·''E-7th''·''T-1st''·''T-2nd''·''T-3rd''·''T-4th''·''T-5th''·''T-6th''·''T-7th''·''middle'' + NULL',
-    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분', '특집', '특집방송', '특집/재송출') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 실제값 2종: ''재송출''·''방송'' + NULL. 🆕 [O238 W1] 질문의 「특집」 = 값 ''방송''(현업이 보고용 명칭을 「특집」→「방송」으로 합의 · 원천 값은 그대로) ⇒ 「특집」으로 물으면 RT_TYPE = ''방송'' 으로 거르고 답변에 「특집(= 방송)」으로 표기한다.',
-    ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초', '공22') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 🔴 영상(VIDEO) 전용 — 재방송·디지털은 전건 NULL ⇒ AD_SOURCE_TYPE=''VIDEO'' 로 고정해 쓴다. 실제값 4종: 30·60·90·120 + NULL(영상 행 일부).',
+    ad.SPOT_TYPE       AS ad.SPOT_TYPE       WITH SYNONYMS ('스팟유형', '광고위치') COMMENT = '스팟 유형(전CM/중CM/후CM/SB). 방송 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''CA''·''PR''·''SP''·''TJ'' + NULL',
+    ad.CM_POSITION     AS ad.CM_POSITION     WITH SYNONYMS ('CM위치', '광고순서', '공21') COMMENT = 'CM 내 위치. 방송 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''`''(🔴 **오염값** — 백틱 1문자이며 정상 CM 위치가 아니다. 이 값으로 필터하지 말 것 ··''E-1st''·''E-2nd''·''E-3rd''·''E-4th''·''E-5th''·''E-6th''·''E-7th''·''T-1st''·''T-2nd''·''T-3rd''·''T-4th''·''T-5th''·''T-6th''·''T-7th''·''middle'' + NULL',
+    ad.RT_TYPE         AS ad.RT_TYPE         WITH SYNONYMS ('재방유형', '방송유형구분', '특집', '특집방송', '특집/재송출') COMMENT = '본방/재방 유형. REBROADCAST 전용(VIDEO 는 전건 NULL). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''재송출''·''방송'' + NULL. 🆕 [O238 W1] 질문의 「특집」 = 값 ''방송''(현업이 보고용 명칭을 「특집」→「방송」으로 합의 · 원천 값은 그대로) ⇒ 「특집」으로 물으면 RT_TYPE = ''방송'' 으로 거르고 답변에 「특집(= 방송)」으로 표기한다.',
+    ad.DURATION_SEC    AS ad.DURATION_SEC    WITH SYNONYMS ('초수', '광고초수', '영상초수', '광고길이', '초', '공22') COMMENT = '방송 광고 영상 초수(초 단위, 요구사항 #22). 🔴 영상(VIDEO) 전용 — 재방송·디지털은 전건 NULL ⇒ AD_SOURCE_TYPE=''VIDEO'' 로 고정해 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): 30·60·90·120 + NULL(영상 행 일부).',
     ad.BRDC_DIV AS ad.BRDC_DIV
       WITH SYNONYMS ('방송구분', '본방/재방')
-      COMMENT = '방송구분(레귤러·본방송·재방송·삼방송·보상송출·송출오류) — 🔴 REBROADCAST 전용 · 디지털행은 NULL(원천 부재) ⇒ 출처유형 REBROADCAST 로 고정해 쓴다.',
+      COMMENT = '방송구분(레귤러·본방송·재방송·삼방송·보상송출·송출오류) — 🔴 REBROADCAST 전용 · 디지털행은 NULL(원천 부재) ⇒ 출처유형 REBROADCAST 로 고정해 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''레귤러''·''보상송출''·''본방송''·''삼방송''·''송출오류''·''재방송''',
     ad.CHANNEL_COMPANY_TYPE AS ad.CHANNEL_COMPANY_TYPE
       WITH SYNONYMS ('채널사유형', '방송사 유형', '공13')
-      COMMENT = '채널사유형(지상파·종편·케이블·CTV·YOUTUBETV·퍼포머셜·TEADS·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL ⇒ 출처유형 VIDEO 로 고정해 쓴다.',
+      COMMENT = '채널사유형(지상파·종편·케이블·CTV·YOUTUBETV·퍼포머셜·TEADS·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL ⇒ 출처유형 VIDEO 로 고정해 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''CTV''·''TEADS''·''YOUTUBETV''·''기타''·''미확인''·''종편''·''지상파''·''케이블''·''퍼포머셜''',
     ad.CTV_DIV AS ad.CTV_DIV
       WITH SYNONYMS ('CTV구분', 'TV/CTV')
-      COMMENT = 'CTV구분(TV·CTV·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL.',
+      COMMENT = 'CTV구분(TV·CTV·기타·미확인) — 🔴 VIDEO 전용 · 디지털행은 NULL. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''CTV''·''TV''·''기타''·''미확인''',
     ad.DAY_DIV AS ad.DAY_DIV
       WITH SYNONYMS ('요일구분', '주중/주말')
-      COMMENT = '요일구분(주중·토·일) — 🔴 VIDEO 전용 · 디지털행은 NULL.',
+      COMMENT = '요일구분(주중·토·일) — 🔴 VIDEO 전용 · 디지털행은 NULL. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''일''·''주중''·''토''',
     ad.MEDIA_CHANNEL_NM AS ad.MEDIA_CHANNEL_NM
       WITH SYNONYMS ('매체', '매체명', '광고 매체', '매체별', '공12')
       COMMENT = '매체/채널명 원값(YOUTUBE·META·NBRAND·EBS·GDN·MMT 등) — 디지털·영상·재방송 3원천 공통. 「매체별 광고비·성과」 질문의 1순위 축. ⚠️방송 채널사만 보려면 CHANNEL_COMPANY.',
@@ -116,28 +116,31 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = '소재명(디지털 MATR · 영상 MATR_NM · 재방송은 방송명). 원천별 의미가 달라 혼합 집계 전에 AD_SOURCE_TYPE 으로 스코프한다.',
     ad.COST_TYPE AS ad.COST_TYPE
       WITH SYNONYMS ('비용유형', '광고비 산정 기준')
-      COMMENT = '비용유형 GA(디지털)·집행(영상)·편성(재방송) 3값 — 광고비 산정 기준이 원천별로 다르다는 표시(AD_SOURCE_TYPE 과 사실상 1:1).',
+      COMMENT = '비용유형 GA(디지털)·집행(영상)·편성(재방송) 3값 — 광고비 산정 기준이 원천별로 다르다는 표시(AD_SOURCE_TYPE 과 사실상 1:1). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''GA''·''집행''·''편성''',
     ad.BDGT_SOURCE_NM AS ad.BDGT_SOURCE_NM
       WITH SYNONYMS ('예산출처', '법인(사단/사복)', '예산 법인')
-      COMMENT = '예산출처 사단·사복·통합 원값(디지털·영상). 🔴재방송은 원천 개념 없음 = NULL(결측 아님).',
+      COMMENT = '예산출처 사단·사복·통합 원값(디지털·영상). 🔴재방송은 원천 개념 없음 = NULL(결측 아님). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사단''·''사복''·''통합''',
     ad.MATR_TY_NM AS ad.MATR_TY_NM
       WITH SYNONYMS ('소재유형(디지털·영상)', '영상/이미지')
-      COMMENT = '소재유형 원값(영상·이미지 등 · 디지털·영상). 재방송 NULL(원천 부재). ⚠️CREATIVE_TYPE 은 디지털 전용 같은 원천값 — 영상까지 보려면 이 축.',
+      COMMENT = '소재유형 원값(영상·이미지 등 · 디지털·영상). 재방송 NULL(원천 부재). ⚠️CREATIVE_TYPE 은 디지털 전용 같은 원천값 — 영상까지 보려면 이 축. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기타''·''영상''·''이미지''·''키워드''·''해당없음''',
     ad.CMPGN_TYPE_BSN_NM AS ad.CMPGN_TYPE_BSN_NM
       WITH SYNONYMS ('캠페인유형', '사업유형', '국내/해외 사례', '공17')
-      COMMENT = '캠페인유형(사업) 원값 6종: 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 [디지털 전용 · 방송 NULL].',
+      COMMENT = '캠페인유형(사업) 원값: 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 [디지털 전용 · 방송 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내 사례''·''국내 사업''·''전체 굿즈''·''통합 기타''·''통합 통합''·''해외 굿즈''·''해외 사례''·''해외 사업''',
     ad.UTM_CMPGN_NM AS ad.UTM_CMPGN_NM
       WITH SYNONYMS ('UTM 캠페인', 'UTM 태그')
       COMMENT = 'UTM 캠페인 태그 원값(turn24b·children2406 등) [디지털 전용].',
     ad.BSNS_CASE_DIV_NM AS ad.BSNS_CASE_DIV_NM
       WITH SYNONYMS ('사업/사례 구분', '영상 소재 구분', '공16')
-      COMMENT = '사업/사례 구분 원값 사례·굿즈·사업·기타 [영상 전용 · 그 밖 NULL].',
+      COMMENT = '사업/사례 구분 원값 사례·굿즈·사업·기타 [영상 전용 · 그 밖 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''굿즈''·''기타''·''사례''·''사업''',
     ad.CM AS ad.CM
       WITH SYNONYMS ('CM 구분', '전CM/중CM/후CM')
-      COMMENT = 'CM 구분 원값 전CM·중CM·후CM·전SPOT CM·후SPOT CM [영상 전용]. ⚠️CM_POSITION(CM 위치)과 다른 원천 컬럼.',
+      COMMENT = 'CM 구분 원값 전CM·중CM·후CM·전SPOT CM·후SPOT CM [영상 전용]. ⚠️CM_POSITION(CM 위치)과 다른 원천 컬럼. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''전CM''·''전SPOT CM''·''중CM''·''후CM''·''후SPOT CM''',
     ad.DMST_OVSEA_DIV_NM AS ad.DMST_OVSEA_DIV_NM
       WITH SYNONYMS ('국내/해외', '국내해외 구분', '공15')
-      COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL].',
+      COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''통합''·''해외''',
+    ad.CMPGN_TYPE1_BSN_NM AS ad.CMPGN_TYPE1_BSN_NM WITH SYNONYMS ('디지털 국내해외', '캠페인유형1') COMMENT = '디지털 캠페인유형1(사업) 원값 [디지털 전용 · 그 밖 NULL · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''해외''·''통합''·''전체''',
+    ad.CMPGN_TYPE2_BSN_NM AS ad.CMPGN_TYPE2_BSN_NM WITH SYNONYMS ('디지털 사업사례', '캠페인유형2') COMMENT = '디지털 캠페인유형2(사업) 원값 [디지털 전용 · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사례''·''사업''·''굿즈''·''기타''·''통합''',
+    ad.CMPGN_TY_NM AS ad.CMPGN_TY_NM WITH SYNONYMS ('영상 캠페인유형', '영상 국내해외 사업사례') COMMENT = '영상 캠페인유형(국내외×사업사례 결합 원값) [영상 전용 · CTV 시트 외 NULL · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''해외 사례''·''국내 사례''·''해외 굿즈''·''국내 사업''·''통합 기타''·''해외 사업''',
     --  [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축 · 원천 CRM 캠페인카테고리 MM294)
     ad.AD_CTGR_NM AS ad.AD_CTGR_NM
       WITH SYNONYMS ('광고비 귀속 카테고리', '캠페인 카테고리', '캠페인카테고리', '카테고리별 광고비')
@@ -147,7 +150,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = '광고비 귀속 캠페인카테고리 코드(MM294 · AD_CTGR_NM 과 1:1).',
     ad.AD_CTGR_SRC AS ad.AD_CTGR_SRC
       WITH SYNONYMS ('카테고리 귀속 출처', '카테고리 출처')
-      COMMENT = '카테고리 귀속 출처. 실제값 3종: ''MKTG_REP''(마케팅캠페인 대표값)·''CREATIVE_MAP''(소재 매핑 확정)·''NONE''(귀속 없음).',
+      COMMENT = '카테고리 귀속 출처. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''MKTG_REP''(마케팅캠페인 대표값)·''CREATIVE_MAP''(소재 매핑 확정)·''NONE''(귀속 없음).',
     ad.AD_CTGR_IS_MULTI AS ad.AD_CTGR_IS_MULTI
       WITH SYNONYMS ('카테고리 대표값 여부', '카테고리 다중')
       COMMENT = 'TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값을 쓴 행. CREATIVE_MAP = FALSE · NONE = NULL.',

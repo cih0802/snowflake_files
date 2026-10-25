@@ -1,0 +1,115 @@
+# -*- coding: utf-8 -*-
+"""O262 ㉰ — SV AI_SQL_GENERATION 공통 블록 정본화(일회성 변환기 · 사용자 결정 「변형 SV까지 모두 정본으로 교체」).
+
+규칙(R-SV1·R-SV2) = 지시문은 정본 블록으로 시작 → 고유 절 → 「핵심 규칙:」 이하 원문 그대로.
+  · 공통 4절(O216·O241-R·O206·O206-C)은 정본으로 교체한다.
+  · 변형 공통 절에만 있던 문장은 버리지 않고 「[공통 규칙 보충 · 이 SV]」 절로 정본 뒤에 보존한다(정보 손실 0).
+  · 공통 절이 아닌 태그 절(KEEP)은 정본 뒤로 옮긴다.
+사용: python3 _scratch_o262_sv_block.py [--apply] <파일...>   (기본 = 드라이런 · 정본 = 05_01 첫 SV)
+"""
+import io
+import re
+import sys
+
+D = '/workspace/05_SV-Agent_ai/'
+KEY = '핵심 규칙:'
+TAG = re.compile(r'(?=\[O\d+[A-Z\-]*[^\]]*\])')
+COMMON = re.compile(r'^\[(O216 SQL 작성 규칙|O241-R 반올림|O206 출력 규칙|O206-C 합계 규칙)')
+SENT = re.compile(r'(?<=[.)])\s+')
+SUPP = '[공통 규칙 보충 · 이 SV] '
+#: R-SV3 — 「미배분」·「배분 불가」 같은 구분 값 행은 합계·소계 행이 아니다(공통 O206-C 와의 충돌 차단)
+RSV3 = re.compile(r'미배분|배분 불가')
+RSV3_TEXT = ('(R-SV3) 「미배분」·「배분 불가」처럼 구분 값을 가진 행은 합계·소계 행이 아니다 — '
+             '아래 핵심 규칙이 그 행을 따로 붙이라고 하면 공통 규칙의 합계·소계 행 금지와 충돌하지 않는다.')
+
+
+def literals(t):
+    """AI_SQL_GENERATION '…' 리터럴의 (본문 시작, 본문 끝) — '' 이스케이프 처리."""
+    for m in re.finditer(r"AI_SQL_GENERATION\s+'", t, re.I):
+        i = m.end()
+        while True:
+            j = t.index("'", i)
+            if t[j + 1:j + 2] == "'":
+                i = j + 2
+                continue
+            yield m.end(), j
+            break
+
+
+def canon():
+    t = io.open(D + '05_01_SV_DDL_MEMBER_MONTHLY.sql', encoding='utf-8').read()
+    s, e = next(literals(t))
+    body = t[s:e]
+    return body[:body.index(KEY)]
+
+
+CANON = canon()
+CSEG = {}
+for x in TAG.split(CANON):
+    if x.strip():
+        CSEG[COMMON.match(x.strip()).group(1)] = x.strip()
+CSENT = set(y.strip() for v in CSEG.values() for y in SENT.split(v))
+
+
+def rewrite(body):
+    k = body.find(KEY)
+    head, tail = (body[:k], body[k:]) if k >= 0 else (body, '')
+    if head == CANON:
+        return body, None
+    keep, extra, ncommon = [], [], 0
+    for x in TAG.split(head):
+        x = x.strip()
+        if not x:
+            continue
+        m = COMMON.match(x)
+        if m:
+            ncommon += 1
+            if x != CSEG[m.group(1)]:
+                # 태그 머리말(첫 문장의 [..] 부분)은 정본에 있으므로 뺀다
+                for y in SENT.split(x):
+                    y = y.strip()
+                    yy = re.sub(r'^\[[^\]]*\]\s*', '', y)
+                    if y not in CSENT and yy and not any(yy in c for c in CSENT):
+                        extra.append(yy)
+        else:
+            keep.append(x)
+    parts = [CANON.rstrip()]
+    if RSV3.search(head + tail) and RSV3_TEXT not in body:
+        extra.append(RSV3_TEXT)
+    if extra:
+        parts.append(SUPP + ' '.join(extra))
+    parts += keep
+    new_head = ' '.join(parts) + ('\n  ' if tail else '')
+    if (new_head + tail).rstrip() == body.rstrip():
+        return body, None
+    return new_head + tail, dict(ncommon=ncommon, keep=len(keep), extra=len(extra))
+
+
+def main(argv):
+    apply = '--apply' in argv
+    files = [a for a in argv if not a.startswith('--')]
+    for f in files:
+        p = D + f
+        t = io.open(p, encoding='utf-8').read()
+        out, pos, changed = [], 0, []
+        for s, e in literals(t):
+            nb, info = rewrite(t[s:e])
+            out.append(t[pos:s])
+            out.append(nb)
+            pos = e
+            if info:
+                changed.append((s, info, len(t[s:e]), len(nb)))
+        out.append(t[pos:])
+        new = ''.join(out)
+        assert new.lower().count("ai_sql_generation") == t.lower().count("ai_sql_generation"), f
+        for s, info, a, b in changed:
+            print('%s @%d %s len %d→%d' % (f, s, info, a, b))
+        if not changed:
+            print('%s 변경 없음' % f)
+        if apply and changed:
+            io.open(p, 'w', encoding='utf-8', newline='').write(new)
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

@@ -45,28 +45,29 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
   DIMENSIONS (
     pbs.MONTH_KEY AS pbs.MONTH_KEY WITH SYNONYMS ('회비월', '기준월', '연월') COMMENT = '회비월 YYYYMM(정수 · 회비월 우선 · 납입월 폴백 · 0 = Unknown월).',
     pbs.MONTH_LABEL AS CASE WHEN pbs.MONTH_KEY > 0 THEN TO_CHAR(FLOOR(pbs.MONTH_KEY / 100)) || '-' || LPAD(TO_CHAR(MOD(pbs.MONTH_KEY, 100)), 2, '0') END WITH SYNONYMS ('회비월 표시', '월') COMMENT = '회비월 표시용 문자열 YYYY-MM(회비월 라벨 규칙 · 0 = Unknown월은 NULL). 답변 표에는 이 값을 쓴다.',
-    pbs.FEE_DIV_NAME AS pbs.FEE_DIV_NAME WITH SYNONYMS ('회비구분', '정기/선물금/일시/긴급구호') COMMENT = '회비구분(PM010 · 정기·선물금·일시·긴급구호). 기부금 행은 NULL(원천에 회비구분 개념 없음).',
-    pbs.PAYMENT_TYPE AS pbs.PAYMENT_TYPE WITH SYNONYMS ('납입유형', '회비/기부금') COMMENT = '납입유형(회비 · 기부금).',
-    pbs.RQEST_DIV_CD AS pbs.RQEST_DIV_CD WITH SYNONYMS ('청구구분코드') COMMENT = '청구구분 원천 코드(PM024). 라벨 없는 코드 Y 를 구분할 때 쓴다.',
-    pbs.RQEST_DIV_NAME AS pbs.RQEST_DIV_NAME WITH SYNONYMS ('청구구분', '청구 구분', '정기청구/개별청구') COMMENT = '청구구분(PM024 · 정기청구·OCR신규·개별청구). 🔴 원천 코드 Y 는 코드사전에 없어 라벨이 NULL 이다(현업 확인 대상) — 「청구구분별」 표에는 NULL 행을 「코드 Y」로 따로 밝힌다.',
-    pbs.PRCS_STAT_CD AS pbs.PRCS_STAT_CD WITH SYNONYMS ('처리상태코드') COMMENT = '회비 처리상태 원천 코드(PM013). 라벨 없는 코드 F 를 구분할 때 쓴다.',
-    pbs.PRCS_STAT_NAME AS pbs.PRCS_STAT_NAME WITH SYNONYMS ('처리상태', '회비 처리상태', '청구/완료') COMMENT = '회비 처리상태(PM013 · 청구·완료). 🔴 원천 코드 F 는 코드사전에 없어 라벨이 NULL 이다(현업 확인 대상) — 의미를 추정하지 않는다.',
-    pbs.RETUN_RSN_NAME AS pbs.RETUN_RSN_NAME WITH SYNONYMS ('환급사유', '환불사유', '반환사유') COMMENT = '환급사유(PM042 · 11종 · 예: 청구 후 후원중단·회원 오신청·회비이중납부·회원요청). 환급이 아닌 청구행은 NULL(개념 없음) — 환급사유 질문은 값이 있는 행으로 한정한다.',
+    pbs.FEE_DIV_NAME AS pbs.FEE_DIV_NAME WITH SYNONYMS ('회비구분', '정기/선물금/일시/긴급구호') COMMENT = '회비구분(PM010 · 정기·선물금·일시·긴급구호). 기부금 행은 NULL(원천에 회비구분 개념 없음). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''긴급구호''·''선물금''·''일시''·''정기''',
+    pbs.PAYMENT_TYPE AS pbs.PAYMENT_TYPE WITH SYNONYMS ('납입유형', '회비/기부금') COMMENT = '납입유형(회비 · 기부금). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기부금''·''회비''',
+    pbs.RQEST_DIV_CD AS pbs.RQEST_DIV_CD WITH SYNONYMS ('청구구분코드') COMMENT = '청구구분 원천 코드(PM024). 라벨 없는 코드 Y 를 구분할 때 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''1''·''2''·''9''·''Y''',
+    pbs.RQEST_DIV_NAME AS pbs.RQEST_DIV_NAME WITH SYNONYMS ('청구구분', '청구 구분', '정기청구/개별청구') COMMENT = '청구구분(PM024 · 정기청구·OCR신규·개별청구). 🔴 원천 코드 Y 는 코드사전에 없어 라벨이 NULL 이다(현업 확인 대상) — 「청구구분별」 표에는 NULL 행을 「코드 Y」로 따로 밝힌다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''OCR신규''·''개별청구''·''정기청구''',
+    pbs.PRCS_STAT_CD AS pbs.PRCS_STAT_CD WITH SYNONYMS ('처리상태코드') COMMENT = '회비 처리상태 원천 코드(PM013). 라벨 없는 코드 F 를 구분할 때 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''F''·''R''·''S''',
+    pbs.PRCS_STAT_NAME AS pbs.PRCS_STAT_NAME WITH SYNONYMS ('처리상태', '회비 처리상태', '청구/완료') COMMENT = '회비 처리상태(PM013 · 청구·완료). 🔴 원천 코드 F 는 코드사전에 없어 라벨이 NULL 이다(현업 확인 대상) — 의미를 추정하지 않는다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''완료''·''청구''',
+    pbs.RETUN_RSN_NAME AS pbs.RETUN_RSN_NAME WITH SYNONYMS ('환급사유', '환불사유', '반환사유') COMMENT = '환급사유(PM042 · 11종 · 예: 청구 후 후원중단·회원 오신청·회비이중납부·회원요청). 환급이 아닌 청구행은 NULL(개념 없음) — 환급사유 질문은 값이 있는 행으로 한정한다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''개발시 오입력''·''기타''·''사업장이슈(아동퇴소)''·''청구 후 후원중단''·''출금주기 부담''·''회비이중납부''·''회원 오신청''·''회원요청''·''회원항의(서비스불만족)''·''후원중단 미처리(직원)''·''후원중단요청 확인불가''',
     sponsorship.SPONSORSHIP AS sponsorship.SPONSORSHIP_NAME WITH SYNONYMS ('후원사업', '후원사업명') COMMENT = '납입 대상 후원사업명.',
     --  [2026-10-14 O225-C] 그 달 후원 캠페인 속성(DIM_CAMPAIGN)
     campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '후원 캠페인', '캠페인') COMMENT = '그 달 후원 캠페인명(일시 = 일시후원 캠페인 · 정기 = 청구월에 유효한 후원 기간의 캠페인). (미매핑) = 캠페인 미귀속.',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인 카테고리', '주요캠페인', '캠페인유형') COMMENT = '캠페인 카테고리(MM294 라벨).',
-    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
-    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296).',
-    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('인입경로', '회원인입', '개발인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
+    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''전체사업''·''통합''·''해외''',
+    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('사업사례', '사업/사례') COMMENT = '캠페인유형 굿즈/기타/사례/사업(MM296). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''굿즈''·''기타''·''사례''·''사업''',
+    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('인입경로', '회원인입', '개발인입경로') COMMENT = '캠페인 개발인입경로(MM293). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기타 기업개발''·''뉴미디어''·''대면모금''·''디지털''·''방송''·''영상광고''·''오프라인''·''일시''·''재송출''·''지역개발''·''콜개발''',
     campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
     campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002).',
+    campaign.CAMPAIGN_TARGET_NAME AS campaign.CAMPAIGN_TARGET_NAME WITH SYNONYMS ('캠페인대상', '캠페인 대상', '대상 구분') COMMENT = '캠페인 대상 구분(CM002 라벨 · O262-B). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''일반인''·''정기회원''·''후원중단회원''·''기업임직원''·''웹진구독회원''·''일시회원''·''정기/일시회원''·''GNI USA''·''직원''·''일반인/일시회원''. 코드 없음 = NULL(값이 없는 캠페인 · 미매핑 아님).',
     campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('UTM', 'UTM 캠페인') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
     campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.',
     campaign.PROMO_METHOD_NAME AS campaign.PROMO_METHOD_NAME WITH SYNONYMS ('홍보방법') COMMENT = '홍보방법명(CM008).',
-    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드') COMMENT = '공통브랜드명(MM297).',
-    campaign.CPR_DIV_NM AS campaign.CPR_DIV_NM WITH SYNONYMS ('캠페인 법인구분') COMMENT = '캠페인 법인구분명(CM019).',
-    campaign.SPNSR_DIV_NM AS campaign.SPNSR_DIV_NM WITH SYNONYMS ('캠페인 후원구분') COMMENT = '캠페인 후원구분명(CM035 정기/일시).'
+    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드') COMMENT = '공통브랜드명(MM297). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기업''·''뉴미디어''·''대면모금''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''일시''·''재송출''·''지역개발''·''콜개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발''',
+    campaign.CPR_DIV_NM AS campaign.CPR_DIV_NM WITH SYNONYMS ('캠페인 법인구분') COMMENT = '캠페인 법인구분명(CM019). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사단''·''사복''·''통합''',
+    campaign.SPNSR_DIV_NM AS campaign.SPNSR_DIV_NM WITH SYNONYMS ('캠페인 후원구분') COMMENT = '캠페인 후원구분명(CM035 정기/일시). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''일시후원''·''정기후원'''
   )
   METRICS (
     pbs.BILLING_ROW_CNT AS SUM(pbs.BILLING_ROWS)
@@ -91,13 +92,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_PAYMENT_BILLING_STATUS
   )
   COMMENT = '회비 청구 처리 상태 SV. 「청구구분·처리상태·환급사유별 청구 건수·금액」 질문에 쓴다. 활성: 청구(건)·청구액·납입액·미납액 · 회비월/회비구분/납입유형/청구구분/처리상태/환급사유/후원사업/캠페인(그 달 후원 캠페인) 축. 🔴 회원 단위 질문·고유 회원수는 SV_MEMBER_FEE 소관이며 이 SV 와 한 표에 합산하지 않는다(같은 원천 · 다른 grain). 비활성: 청구결과·처리결과(코드 사전 불일치 · 현업 확인 대상).'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
-  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "청구액(원)" · "청구(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. [O206-C 합계 규칙] 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 그룹별 결과와 함께 GROUP BY ROLLUP 합계 행을 반환한다.
-  핵심 규칙: (1) 회비월 미지정 시 데이터에 존재하는 최신 회비월 하나로 한정하고 밝힌다(MONTH_KEY = 0 Unknown월 제외). (2) 회비월은 MONTH_LABEL(YYYY-MM)로 표시한다. (3) 청구구분·처리상태 라벨이 NULL 인 행은 원천 코드(RQEST_DIV_CD · PRCS_STAT_CD)를 함께 반환해 「코드 Y」「코드 F」로 밝히고 의미를 추정하지 않는다. (4) 환급사유 질문은 RETUN_RSN_NAME IS NOT NULL 로 한정한다. (5) 고유 회원수를 묻는 질문에는 이 SV 로 답하지 않는다 — SV_MEMBER_FEE 로 안내한다. (6) [O225-C] 캠페인별 회비(청구·납입·미납)는 이 SV 의 campaign 차원으로 답한다 — 캠페인 = 그 달 후원 캠페인(일시 = 일시후원 캠페인 · 정기 = 청구월에 유효한 후원 기간의 캠페인)이고 금액은 청구 행 단위로 정확히 귀속된다. 결과에 (미매핑) 금액을 ROLLUP 과 함께 표시한다.'
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙 · O259 개정] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만). 전체 합이 필요하면 행이 아니라 같은 SELECT 의 열로 붙인다(SUM(SUM(x)) OVER () · COUNT DISTINCT·HAVING 이 있으면 그룹 없는 CTE 를 CROSS JOIN) — 답변에서는 그 열을 표에 싣지 않고 표 밖 본문 1줄로 적는다. 비율은 분자·분모 measure 를 열로 함께 낸다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다. [공통 규칙 보충 · 이 SV] 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "청구액(원)" · "청구(건)"). 답변에 쓸 합계·총계는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만).
+  핵심 규칙: (1) 회비월 미지정 시 데이터에 존재하는 최신 회비월 하나로 한정하고 밝힌다(MONTH_KEY = 0 Unknown월 제외). (2) 회비월은 MONTH_LABEL(YYYY-MM)로 표시한다. (3) 청구구분·처리상태 라벨이 NULL 인 행은 원천 코드(RQEST_DIV_CD · PRCS_STAT_CD)를 함께 반환해 「코드 Y」「코드 F」로 밝히고 의미를 추정하지 않는다. (4) 환급사유 질문은 RETUN_RSN_NAME IS NOT NULL 로 한정한다. (5) 고유 회원수를 묻는 질문에는 이 SV 로 답하지 않는다 — SV_MEMBER_FEE 로 안내한다. (6) [O225-C] 캠페인별 회비(청구·납입·미납)는 이 SV 의 campaign 차원으로 답한다 — 캠페인 = 그 달 후원 캠페인(일시 = 일시후원 캠페인 · 정기 = 청구월에 유효한 후원 기간의 캠페인)이고 금액은 청구 행 단위로 정확히 귀속된다. 결과에 (미매핑) 금액을 그룹 행으로 함께 표시한다.'
   AI_VERIFIED_QUERIES (
     vqr_o213_rqest_div AS (
       QUESTION '2026년 8월 회비 청구구분별 청구 건수와 청구액'
       VERIFIED_BY '(O213 · 원천 직접 집계 대조 · 정기청구 922,963건 17,497,729,843원 · 코드 Y 2,375건 · OCR신규 634건 · 개별청구 84건)'
-      SQL 'SELECT pbs.RQEST_DIV_NAME AS "청구구분", pbs.RQEST_DIV_CD AS "청구구분코드", SUM(pbs.BILLING_ROWS) AS "청구(건)", SUM(pbs.BILLED_AMT) AS "청구액(원)" FROM pbs WHERE pbs.MONTH_KEY = 202608 GROUP BY ROLLUP(pbs.RQEST_DIV_NAME, pbs.RQEST_DIV_CD) ORDER BY 3 DESC NULLS FIRST'
+      SQL 'SELECT pbs.RQEST_DIV_NAME AS "청구구분", pbs.RQEST_DIV_CD AS "청구구분코드", SUM(pbs.BILLING_ROWS) AS "청구(건)", SUM(pbs.BILLED_AMT) AS "청구액(원)" FROM pbs WHERE pbs.MONTH_KEY = 202608 GROUP BY pbs.RQEST_DIV_NAME, pbs.RQEST_DIV_CD ORDER BY 3 DESC NULLS LAST'
     )
   );
 

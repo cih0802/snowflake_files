@@ -15,6 +15,10 @@
 --    WARN: 실측(2026-09-28): 2,104행 · `CMPGN_CD`·`UPPER_CMPGN_CD` **전건 NULL**(컬럼만 신설) ·
 --       TOT_COST = 편성비+콘텐츠구입비+콜센터운영비 **2,104/2,104 일치**.
 --    WARN: 사례 반복군이 원천에서 사라졌다 ⇒ 하류 AGENCY_AD_BROADCAST_CASE 는 0행이 된다(스키마 유지).
+-- WARN: [2026-10-23 O260] 원천 13번 개명 — 17번째 `CMPGN_CD`('캠페인코드') → `MKTG_CMPGN_NM`('마케팅캠페인명').
+--    O245 실측이 이미 「캠페인코드 열은 마케팅캠페인명 기대 · CRM 코드 일치 0」으로 판정했다 ⇒ 원천이 이름을 실제 의미에 맞췄다.
+--    staging 은 원천명 그대로 보존만 한다. 코어(AGENCY_AD_PERFORMANCE) CAMPAIGN_NM 승격은 ~~보류~~ ⇒ [O261] 승격 — 그 모델 O260·O261 주석 참조.
+--    🔴 ROW_HASH 에 키 이름이 들어간다 ⇒ 이 컬럼 값이 있는 행은 AD_PERF_DK 가 바뀐다(VIDEO 와 같은 축 · 같은 build 에서 하류 동반).
 -- WARN: AD_PERF_DK **발급 단일지점** — 코어(FAD)·위성(FAD_B)이 동일 DK 를 쓰도록 여기서만 계산한다.
 -- WARN: DUP_SEQ: 3종 staging 로직 동일성 유지를 위해 동일하게 부여한다.
 WITH src AS (
@@ -35,7 +39,7 @@ WITH src AS (
         DVLP_MBER_CNT           AS DVLP_MBER_CNT,
         DVLP_CNT                AS DVLP_CNT,
         UPPER_CMPGN_CD          AS UPPER_CMPGN_CD,
-        CMPGN_CD                AS CMPGN_CD,
+        MKTG_CMPGN_NM           AS MKTG_CMPGN_NM,           -- O260: 구 CMPGN_CD
         BRDC_SCHDL_COST         AS BRDC_SCHDL_COST,
         CONTENTS_PUR_COST       AS CONTENTS_PUR_COST,
         CALL_CTR_OPER_COST      AS CALL_CTR_OPER_COST,
@@ -56,7 +60,7 @@ SELECT
     ROW_HASH                AS ROW_HASH,
     DUP_SEQ                 AS DUP_SEQ,
     DIV_NM, YEAR, MONTH, DAY, CHNNL_NM, BRDC_DATE, DOW, WEEK, BRDC_TIME, BRDC_NM, BRDC_DIV_NM,
-    AD_CNT, INBOUND_CALL_CNT, DVLP_MBER_CNT, DVLP_CNT, UPPER_CMPGN_CD, CMPGN_CD,
+    AD_CNT, INBOUND_CALL_CNT, DVLP_MBER_CNT, DVLP_CNT, UPPER_CMPGN_CD, MKTG_CMPGN_NM,
     BRDC_SCHDL_COST, CONTENTS_PUR_COST, CALL_CTR_OPER_COST, TOT_COST,
     'AGENCY'                                AS DW_SOURCE_SYSTEM,
     'BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS'    AS DW_SOURCE_TABLE,

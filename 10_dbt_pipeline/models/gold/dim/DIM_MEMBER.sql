@@ -88,7 +88,10 @@ select
     --    MSTR 로직 없음 · 90 정의서 = 「CRM 최종 캠페인 명」뿐 ⇒ 원천 SND_MEMBER_LIST.LAST_CMPGN(발송 대상 546,221명)과
     --      파생안(1,621,410명)을 비교해 회원수·활동금액이 큰 파생안을 택했다(원천과 일치 58% · 정의 차이 = 잠정 표기).
     --   WARN: 같은 시작월이 여러 개면 SPNSR_CMPGN_CD 가 큰 쪽(결정적 tie-break) · span 이 없는 회원(일시회원 등)은 NULL(R2-7).
-    lc.LAST_CAMPAIGN                              as LAST_CAMPAIGN
+    lc.LAST_CAMPAIGN                              as LAST_CAMPAIGN,
+    --  [2026-10-25 O262-B · 33 §1] 회원 등록부서 코드 raw(정기 FDRM · 일시 ONCE 공통 = CRM_MEMBER.REGIST_DEPT_CD) — 06_DDL 동기 · 맨 끝 append
+    --   WARN: 개발 실적부서(FACT 의 ORG_SK = ACMSLT_DEPT_CD)와 **다른 축**이다. 부서명이 필요하면 DIM_ORG 를 코드로 잇는다.
+    m.REGIST_DEPT_CD                              as REGIST_DEPT_CD
 from {{ ref('DIM_MEMBER_STATUS_HISTORY') }} h
 left join (
     select MEMBER_DK, SPNSR_CMPGN_CD as LAST_CAMPAIGN

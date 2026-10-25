@@ -16,6 +16,11 @@
 -- WARN: AD_PERF_DK **발급 단일지점** — 코어(FAD)·위성(FAD_B)이 동일 DK 를 쓰도록 여기서만 계산한다.
 -- WARN: 원천 무손실: BRONZE 37컬럼을 이름 그대로 보존(개명·형변환 금지). 정제는 하류에서.
 -- WARN: DUP_SEQ: 전컬럼 중복 실측 30그룹·최대 3중복 → 해시 단독으로는 충돌하므로 순번 결합 필수.
+-- WARN: [2026-10-23 O260] 원천 13번 개명 — 19번째 `UPPER_CMPGN_NM`('상위캠페인') → `UPPER_CMPGN_CD`('상위캠페인코드').
+--    값은 원래 코드였다(FACT_AD_PERFORMANCE O238 video_code_mk 가 UPPER_CODE 로 조인) ⇒ 의미 변화 없음 · 이름만 원천에 맞춘다.
+--    WARN: ROW_HASH 는 OBJECT_CONSTRUCT(*) 의 **키 이름까지** 해시한다 ⇒ 값이 있는 행의 AD_PERF_DK 가 전부 바뀐다.
+--       DK 는 build 마다 재계산되는 degenerate 키라 하류(FACT·위성)는 같은 build 에서 함께 바뀐다 — DK 를 외부에 보관한 곳이 있으면 재매핑 대상.
+--    실측(값 분포·DK 변경 행수)은 원천 반영 계정에서 한다(O259 D4 · 2026-10-23 새 개발 환경 이전 계정 = GN_DW 미구축).
 WITH src AS (
     SELECT
         CHNNL_NM                AS CHNNL_NM,
@@ -36,7 +41,7 @@ WITH src AS (
         LAST_AD_COST            AS LAST_AD_COST,
         INBOUND_CALL_CNT        AS INBOUND_CALL_CNT,
         CPC_CALL_CNT            AS CPC_CALL_CNT,
-        UPPER_CMPGN_NM          AS UPPER_CMPGN_NM,
+        UPPER_CMPGN_CD          AS UPPER_CMPGN_CD,          -- O260: 구 UPPER_CMPGN_NM
         MATR_NM                 AS MATR_NM,
         DMST_OVSEA_DIV_NM       AS DMST_OVSEA_DIV_NM,
         BSNS_CASE_DIV_NM        AS BSNS_CASE_DIV_NM,
@@ -79,7 +84,7 @@ SELECT
     DUP_SEQ                 AS DUP_SEQ,
     CHNNL_NM, DOW, BRDC_DATE, TIME_RNG, DAY_DIV_NM, PRG_STRT_TIME, SCHDL_NM,
     CM, CM_AREA, AD_STRT_TIME, AD_END_TIME, SPOT_TY, AD_VIEW_RT, AD_CNT, AD_SEC,
-    LAST_AD_COST, INBOUND_CALL_CNT, CPC_CALL_CNT, UPPER_CMPGN_NM, MATR_NM,
+    LAST_AD_COST, INBOUND_CALL_CNT, CPC_CALL_CNT, UPPER_CMPGN_CD, MATR_NM,
     DMST_OVSEA_DIV_NM, BSNS_CASE_DIV_NM, CMPGN_TY_NM, CHNNL_CMPNY_TY_NM, WEEK, MONTH,
     AD_TY_NM, BDGT_SOURCE_NM, DEVICE_NM, YEAR, DAY, SPNSER_CNT, DVLP_CNT,
     CMPGN_NM, MATR_TY_NM, EXPSR_CNT, CLICK_CNT,

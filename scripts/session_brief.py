@@ -572,6 +572,8 @@ GATES = [
     ('campaign_axis_gate', ['scripts/campaign_axis_gate.py']),
     # 🆕 [2026-10-23 O259] SV 지시문·VQR 소계/합계 행 유도 금지(ROLLUP·CUBE·GROUPING SETS)
     ('sv_no_rollup_gate', ['scripts/sv_no_rollup_gate.py']),
+    # 🆕 [2026-10-24 O261] SV COMMENT 열거 목록 신규값 0 · 「실제값 N종」 잔존 0(라이브 DISTINCT 대조)
+    ('sv_enum_newvalue_gate', ['scripts/sv_enum_newvalue_gate.py']),
 ]
 
 

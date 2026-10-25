@@ -33,6 +33,8 @@ select
     COALESCE(o.ORG_SK, 0)                          as ORG_SK,
     COALESCE(s.SPONSORSHIP_SK, 0)                  as SPONSORSHIP_SK,
     COALESCE(c.CAMPAIGN_SK, 0)                     as CAMPAIGN_SK,      -- O188: 원천에 캠페인 축 없음 ⇒ 0(not_null 테스트)
+    --  [2026-10-22 O258] TARGET_TYPE 은 원천 라벨이 아니라 seed MAP_BUDGET_PROCEDURE 의 **표준 어휘**(당초/추경)다.
+    --   `LIKE '추경%'` 는 매핑 밖 원문 통과값(예: 추경2차)을 SUPP 로 받는 안전장치 — 새 표기는 seed 에 행을 더한다.
     SUM(CASE WHEN t.TARGET_TYPE = '당초'   THEN t.TARGET_CNT END)  as ANNUAL_GOAL_CNT,
     SUM(CASE WHEN t.TARGET_TYPE LIKE '추경%' THEN t.TARGET_CNT END) as SUPP_GOAL_CNT,
     CAST(NULL AS NUMBER(18,4))                     as ANNUAL_CUM_GOAL_CNT,

@@ -1,0 +1,20 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+=== Running file: /workspace/05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql ===
+Total parsed statements: 7
+Finished /workspace/05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql: 7 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_07_SV_DDL_AD.sql ===
+Total parsed statements: 14
+Finished /workspace/05_SV-Agent_ai/05_07_SV_DDL_AD.sql: 14 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql ===
+Total parsed statements: 15
+Finished /workspace/05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql: 15 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql: 9 succeeded, 0 failed.
+=== Running file: /workspace/05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql ===
+Total parsed statements: 9
+Finished /workspace/05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql: 9 succeeded, 0 failed.

@@ -893,7 +893,7 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['NAME', 'UTM', 'CREATIVE_MAP', 'UPPER_CODE', 'NONE']
+              values: ['NAME', 'UTM', 'CREATIVE_MAP', 'UPPER_CODE', 'UPPER_NAME', 'NONE']   # O262 UPPER_NAME 추가
       - name: AD_MAP_LEVEL
         tests:
           - accepted_values:

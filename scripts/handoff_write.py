@@ -46,6 +46,17 @@ HARD = 2000        # `read` 의 1줄 절단 한도(문자) · `R1-5-1`
 SOFT = 1000        # 권고
 MAX_BYTES = 40 * 1024
 MAX_LINES = 300
+KEEP_FULL = 60          # 색인 전체 열 최대 행수(여유 예산 안에서 자동 축소 · O261)
+INDEX_MIN_FREE = 0.20   # 색인 여유 예산 = `doc_type_gate.MIN_FREE` 와 같은 값
+INDEX_FOOT = [
+    '---',
+    '',
+    '> 🔴 **재생성** = `python3 scripts/handoff_write.py --index`',
+    '> 🔴 **새 인수인계** = `python3 scripts/handoff_write.py --label O<번호>-<접미> --entry-file <파일>`',
+    '',
+    TAIL,
+    '',
+]
 
 # 🔴 접미 규격 = **항상 붙인다**(사용자 결정 ⓑ). 최초 단위도 `-A` 이고 무접미는 거부한다.
 #   🔎 A~Z 로 충분한가 = 실측 최대 **21단위**(`O59`) ⇒ 담기지만 여유 5뿐이므로 2자 확장을 허용한다.
@@ -224,6 +235,32 @@ def date_of(text):
     return m.group(1) if m else '—'
 
 
+def index_tables(rows, keep):
+    """색인 표 2단 — 최신 `keep` 행은 전체 열(최신순) · 그 이전은 압축 3열(최신순). rows = 발생 순."""
+    full, old = rows[len(rows) - keep:], rows[:len(rows) - keep]
+    body = ['## 최신 %d건 (전체 열 · 최신순)' % len(full), '',
+            '| 라벨 | 날짜 | 제목 | 줄 | B | 파일 |', '|---|---|---|---|---|---|']
+    body += ['| %s | %s | %s | %d | %s | %s |' % r for r in reversed(full)]
+    body.append('')
+    if old:
+        body += ['## 이전 %d건 (압축 · 최신순 · 제목·크기는 그 파일을 `read`)' % len(old), '',
+                 '| 라벨 | 날짜 | 파일 |', '|---|---|---|']
+        body += ['| %s | %s | %s |' % (r[0], r[1], r[5]) for r in reversed(old)]
+        body.append('')
+    return body
+
+
+def fit_index(head, rows):
+    """여유 예산(상한 × (1 − INDEX_MIN_FREE)) 안에 드는 가장 큰 전체 열 행수로 표를 만든다."""
+    budget = int(MAX_BYTES * (1 - INDEX_MIN_FREE))
+    keep = min(KEEP_FULL, len(rows))
+    while True:
+        body = index_tables(rows, keep)
+        if keep == 0 or len('\n'.join(head + body + INDEX_FOOT).encode('utf-8')) <= budget:
+            return body
+        keep -= min(5, keep)
+
+
 def build_index():
     """`00_인수인계_색인.md` 를 **통째로 다시 쓴다**(자동 생성물)."""
     paths = existing()
@@ -255,24 +292,17 @@ def build_index():
     else:
         cur = os.path.basename(paths[-1])
         out += ['> 🔴🔴 **현행 = `%s%s`**' % (disp, cur), '']
-        out += ['| 라벨 | 날짜 | 제목 | 줄 | B | 파일 |', '|---|---|---|---|---|---|']
+        rows = []
         for p in paths:
             m = rx.match(os.path.basename(p))
             t = io.open(p, encoding='utf-8').read()
-            out.append('| `O%d-%s` | %s | %s | %d | %s | `%s%s` |'
-                       % (int(m.group(1)), m.group(2), date_of(t), title_of(t),
-                          t.count('\n'), format(len(t.encode('utf-8')), ','),
-                          disp, os.path.basename(p)))
-        out.append('')
-    out += [
-        '---',
-        '',
-        '> 🔴 **재생성** = `python3 scripts/handoff_write.py --index`',
-        '> 🔴 **새 인수인계** = `python3 scripts/handoff_write.py --label O<번호>-<접미> --entry-file <파일>`',
-        '',
-        TAIL,
-        '',
-    ]
+            rows.append(('`O%d-%s`' % (int(m.group(1)), m.group(2)), date_of(t), title_of(t),
+                         t.count('\n'), format(len(t.encode('utf-8')), ','), '`%s%s`' % (disp, os.path.basename(p))))
+        # 🆕 [2026-10-24 O261] 색인 여유 확보 — 원장 §0 계약 = 「분할하지 않는다」 ⇒ 파일을 늘리지 않고 **밀도**를 낮춘다.
+        #   최신 KEEP_FULL 행만 전체 열 · 그 이전은 라벨·날짜·파일 3열(제목·크기는 그 파일을 `read`).
+        #   🔴 KEEP_FULL 은 고정값이 아니라 **여유 예산(`doc_type_gate.MIN_FREE` 20%)에 맞춰 줄인다** — 라벨이 늘어도 상한과 경쟁하지 않는다.
+        out += fit_index(out, rows)
+    out += INDEX_FOOT
     text = '\n'.join(out)
     dst = os.path.join(chunk_dir(), INDEX_NAME)
     io.open(dst, 'w', encoding='utf-8').write(text)

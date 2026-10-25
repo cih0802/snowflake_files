@@ -127,11 +127,8 @@ click_dev as (
 -- 「활동건」 = 그 회원의 발송월 활동(건)(#157 = 약정금액/10,000) — FMM 월×회원 유일.
 active_m as (
     select MONTH_KEY, MEMBER_DK, ACTIVE_CNT from {{ ref('FACT_MEMBER_MONTHLY') }}
-),
--- 발송구분(대) 명칭(#133). 「서비스」 = 원천 명칭 「회원서비스」.
-send_l as (
-    select distinct SEND_GBN_TOP, SEND_TYPE_L from {{ ref('DIM_SEND_TYPE') }}
 )
+-- 🗑 [2026-10-22 O258] send_l(발송구분(대) 명칭 · DIM_SEND_TYPE) 제거 — 서비스 판정을 코드(r.SEND_GBN_TOP)로 바꿔 쓰임이 없다.
 
 select
     COALESCE({{ date_sk('s.SNDNG_DE::DATE') }}, 0)  as DATE_SK,
@@ -176,8 +173,9 @@ select
     IFF(d.D5_STOP     AND NOT {{ gn_is_notice_title('r.TIT') }}, 1, 0) as D5_STOP_MEMBERS,
     IFF(d.D5_STOP     AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_STOP_CNT,
     -- [O183] #160 서비스(명) = 발송구분(대) 「회원서비스」 발송 대상 1/0 · #161 서비스(건) = 그 회원의 활동(건).
-    IFF(sl.SEND_TYPE_L = '회원서비스', 1, 0)                           as SERVICE_MEMBERS,
-    IFF(sl.SEND_TYPE_L = '회원서비스', COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
+    --  [2026-10-22 O258] 라벨 비교 → 대분류 **코드** 비교(gn_code('SEND_TOP_MEMBER_SERVICE') = MS054 · BRONZE 실측 1:1).
+    IFF(r.SEND_GBN_TOP in ({{ gn_code('SEND_TOP_MEMBER_SERVICE') }}), 1, 0)                           as SERVICE_MEMBERS,
+    IFF(r.SEND_GBN_TOP in ({{ gn_code('SEND_TOP_MEMBER_SERVICE') }}), COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
     r.TIT                                          as SEND_TITLE,
     s.SNDNG_RST_CD                                as SEND_STATUS,
     -- 🗑 [2026-10-06 O202-C · 사용자 결정 처분 ①] SEND_STATUS2(전건 NULL 자리 컬럼) 제거.
@@ -221,7 +219,9 @@ select
         AND row_number() over (
             partition by s.MBER_NO, s.SNDNG_DE::DATE, {{ gn_is_notice_title('r.TIT') }}
             order by s.SNDNG_KEY, s.SEND_CHANNEL, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) = 1,
-        COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT
+        COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT,
+    --  [2026-10-25 O262-B · 33 §1] SND 발송 시점 스냅샷 추가 4종(degen · 타 채널 NULL · O213-E 와 같은 관례) · 06_DDL 동기 맨 끝
+    s.SND_FRST_SPNSR, s.SND_CHILD_DTL_NM, s.SND_NATION_NM, s.SND_BPLC_KOR_NM
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
@@ -232,5 +232,4 @@ left join click_dev cd on cd.MEMBER_DK = s.MBER_NO and cd.OPEN_DATE = s.OPEN_DT:
 left join gift_attr ga on ga.MEMBER_DK = s.MBER_NO and ga.SEND_DATE = s.SNDNG_DE::DATE
 left join active_m am on am.MEMBER_DK = s.MBER_NO
                      and am.MONTH_KEY = TO_NUMBER(TO_CHAR(s.SNDNG_DE, 'YYYYMM'))
-left join send_l sl   on sl.SEND_GBN_TOP = r.SEND_GBN_TOP
 where s.MBER_NO is not null

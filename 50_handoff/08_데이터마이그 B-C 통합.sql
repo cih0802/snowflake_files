@@ -12,12 +12,12 @@
 --   (오류: "Cannot clone from a schema/table that was imported from a share")
 --   따라서 스테이지 파일 export/import 없이 DB 간 직접 SQL(INSERT OVERWRITE)을 수행하는 것이 가장 저비용·최고속 방법입니다.
 --
--- 이관 대상 / SCOPE (총 81개 테이블)
+-- 이관 대상 / SCOPE (총 80개 테이블 · 🆕 2026-10-23 O260 · GSC 3 → 2 · CRM _TEST 제외)
 --   ① BRONZE_CRM (53 테이블)
 --   ② BRONZE_AGENCY (4 테이블)
 --   ③ BRONZE_ERP (3 테이블)
 --   ④ BRONZE_GA4 (2 테이블)
---   ⑤ BRONZE_GSC (3 테이블)
+--   ⑤ BRONZE_GSC (2 테이블)
 --   ⑥ SILVER (4 테이블: BIGQUERY_REFINED_DATA, ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA, ANNUAL_MBRFEE_PRDT_ACTL_DATA, MM_SPNSR_CLS_AGGR_DATA)
 --   ⑦ ML (12 테이블: ML_RST_DATA_*)
 -- =====================================================================

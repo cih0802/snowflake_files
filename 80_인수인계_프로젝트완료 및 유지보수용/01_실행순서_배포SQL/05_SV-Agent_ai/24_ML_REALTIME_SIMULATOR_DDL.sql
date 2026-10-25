@@ -188,13 +188,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_REALTIME_SIMULATOR
       COMMENT = '마케팅캠페인명 또는 광고 매체채널명.',
     sim.SCENARIO_NAME AS sim.SCENARIO_NAME
       WITH SYNONYMS ('시나리오', '시나리오명', '변동 시나리오')
-      COMMENT = '광고비/예산 변동 시나리오 명칭 (예: +20% 증액, -10% 감액 등).',
+      COMMENT = '광고비/예산 변동 시나리오 명칭 (예: +20% 증액, -10% 감액 등). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''+10% 소폭 증액''·''+100% 2배 증액''·''+20% 증액''·''+30% 증액''·''+50% 대폭 증액''·''-10% 소폭 감액''·''-20% 감액''·''-30% 감액''·''-50% 대폭 감액''',
     sim.CHANGE_PCT AS sim.CHANGE_PCT
       WITH SYNONYMS ('변동률', '광고비 변동률', '증감률')
       COMMENT = '광고비/예산 변동 비율 (%).',
     sim.SIMULATION_MODEL AS sim.SIMULATION_MODEL
       WITH SYNONYMS ('시뮬레이션 모델')
-      COMMENT = '적용된 시뮬레이션 수학/ML 모델 명칭.',
+      COMMENT = '적용된 시뮬레이션 수학/ML 모델 명칭. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''Cobb-Douglas Elasticity Model (e=0.72)''',
     sim.ASSUMPTIONS AS sim.ASSUMPTIONS
       WITH SYNONYMS ('가정 및 한계', '모델 가정')
       COMMENT = '시뮬레이션 산출 가정 및 주의사항 설명.'
@@ -226,8 +226,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_REALTIME_SIMULATOR
       COMMENT = '시뮬레이션으로 인한 개발금액 예상 증감 (원).'
   )
   COMMENT = '실시간 경량 ML 가상 시뮬레이터 SV. base=SERVING.ML_REALTIME_SIMULATOR_V. 🔴🔴 **가상 시뮬레이션 추정치이며 정규 실적이나 고정 예측치가 아니다.** 실적 SV(SV_AD, SV_MEMBER_EVENT 등) 및 정본 배치 예측 SV(SV_ML_DVLP_FORECAST 등)와 같은 표에 합산하지 않고 반드시 분리한다. 🔴 질문 접수 시 "이 항목은 사전 연산된 정규 지표가 아닙니다. 머신러닝 실시간 시뮬레이션 모델을 사용하여 추정치를 계산할까요?" 확인 가드레일을 먼저 거친다.'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다.
-  [O206 출력 규칙] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명".
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙 · O259 개정] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만). 전체 합이 필요하면 행이 아니라 같은 SELECT 의 열로 붙인다(SUM(SUM(x)) OVER () · COUNT DISTINCT·HAVING 이 있으면 그룹 없는 CTE 를 CROSS JOIN) — 답변에서는 그 열을 표에 싣지 않고 표 밖 본문 1줄로 적는다. 비율은 분자·분모 measure 를 열로 함께 낸다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다. [공통 규칙 보충 · 이 SV] 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다. CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다. 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다.
   핵심 규칙: (1) 🔴🔴 **가상 시뮬레이션 결과이므로 표 제목에 「[시뮬레이션 추정치 · 고정값 아님]」을 반드시 표기한다.** (2) 기준월(STDR_MT) 미지정 시 데이터 내 최신월로 한정한다. (3) 시나리오(SCENARIO_NAME 또는 CHANGE_PCT)를 지정하여 조회한다.';
 
 

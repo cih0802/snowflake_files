@@ -11,16 +11,26 @@
 --   measure 23종은 이름·값 무변경(행 grain 유지 — 예측/실측을 열로 펼치면 46열이 되어 SV 가독성이 떨어진다).
 -- grain = MONTH_KEY × DATA_TYPE_NM × SPNSR_BSNS_GRP_NM × NEW_EXST_DIV_NM × HDQ_BRNCH_GRP_NM.
 -- WARN: 예측행과 실측행을 같은 합계에 섞지 말 것 — 반드시 DATA_TYPE_NM(또는 IS_FORECAST)으로 스코프한다.
+-- [2026-10-22] 원천 구분값 3종 = 예측 · 실적 · 연도초예측(현업 회신). 원천 라벨이 수기라 문구가 바뀐다
+--   (운영계 실측 '연초예측' 528행 → 현업 예고 '연도초예측'). 종전 `DATA_TYPE_NM = '예측'` 하드코딩은
+--   라벨이 바뀌자 예측 528행을 IS_FORECAST=FALSE(=실측 취급)로 조용히 오분류했다.
+--   ⇒ ~~라벨 → 표준값 매핑을 이 CASE 한 곳에 둔다. 원천 라벨 추가·개명 시 여기만 고친다.~~ (O258 대체 ↓)
+--    [O258] 매핑 정의 지점을 seed `MAP_EXT_DATA_TYPE`(SOURCE_TABLE = ANNUAL_MBRFEE_PRDT_ACTL_DATA)로 옮겼다
+--      — 모델 CASE 제거 · 값 4종 동일. 라벨 추가·개명 = CSV 에 행 추가(dbt seed) · 이 파일은 고치지 않는다.
+--   WARN: 연도초예측은 일반 예측과 **다른 계열**이다 — 같은 STD 로 합치지 않는다(「예측」 질문에 섞이면 이중계상).
+--   WARN: 매핑에 없는 라벨은 NULL(=모른다) — 실적·예측 어느 쪽으로도 추정하지 않는다. 테스트 warn 으로 드러난다.
 {{ config(
     materialized='gn_view_commented'
 ) }}
 
 select
-    TO_NUMBER(STDR_MT)                 as MONTH_KEY,
-    FLOOR(TO_NUMBER(STDR_MT) / 100)    as CAL_YEAR,
-    MOD(TO_NUMBER(STDR_MT), 100)       as CAL_MONTH,
-    DATA_TYPE_NM,
-    DATA_TYPE_NM = '예측'              as IS_FORECAST,
+    --  [O258] 별칭 = src·dmap(scripts/build_wide_doc.py 전역 별칭표의 d=DIM_DATE · m=DIM_MEMBER_STATUS_HISTORY 와 충돌 회피 · 09 정의서 원천 열 정확성)
+    TO_NUMBER(src.STDR_MT)             as MONTH_KEY,
+    FLOOR(TO_NUMBER(src.STDR_MT) / 100) as CAL_YEAR,
+    MOD(TO_NUMBER(src.STDR_MT), 100)   as CAL_MONTH,
+    src.DATA_TYPE_NM,
+    dmap.DATA_TYPE_STD                 as DATA_TYPE_STD,
+    dmap.IS_FORECAST                   as IS_FORECAST,
     SPNSR_BSNS_GRP_NM,
     NEW_EXST_DIV_NM,
     HDQ_BRNCH_GRP_NM,
@@ -48,4 +58,7 @@ select
     CMLT_PAY_RT,
     CMLT_MBRFEE_AMT,
     MBRFEE_DIFF_AMT
-from {{ source('silver_external', 'ANNUAL_MBRFEE_PRDT_ACTL_DATA') }}
+from {{ source('silver_external', 'ANNUAL_MBRFEE_PRDT_ACTL_DATA') }} src
+left join {{ ref('MAP_EXT_DATA_TYPE') }} dmap
+  on dmap.SOURCE_TABLE = 'ANNUAL_MBRFEE_PRDT_ACTL_DATA'
+ and dmap.SRC_LABEL = TRIM(src.DATA_TYPE_NM)

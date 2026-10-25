@@ -1,0 +1,77 @@
+B CRM SND_MEMBER_LIST SETLE_NM d=6 | 
+     DIM_PAYMENT.sql:17 select distinct SETLE_CD, SETLE_NM
+     DIM_PAYMENT.sql:24 SETLE_NM                                      as SETTLE_METHOD,
+B CRM TD_MS_EVENT_PRTCPNT_DTL PRZWIN_CD d=3 | 
+     FACT_EVENT_ATTENDANCE.sql:71 (p.PRZWIN_CD IS NOT NULL)                     as WIN_FLAG,
+B CRM TD_MS_EVENT_PRTCPNT_DTL PARTCPT_CHNNL_CD d=9 | 
+     FACT_EVENT_ATTENDANCE.sql:77 p.PARTCPT_CHNNL_CD                            as PART_CHANNEL,
+B CRM TD_MS_EVENT_PRTCPNT_DTL PARTCPT_PATH_CD d=7 | 
+     FACT_EVENT_ATTENDANCE.sql:76 p.PARTCPT_PATH_CD                             as PART_PATH,
+B CRM TM_CM_CMPGN_MNG UPPER_CMPGN_YN d=2 | 
+     DIM_CAMPAIGN.sql:83 c.UPPER_CMPGN_YN                               as IS_PARENT_CAMPAIGN_YN
+B CRM TM_CM_CMPGN_MNG PR_MTH_CD d=95 | 
+     DIM_CAMPAIGN.sql:49 c.PR_MTH_CD                                   as PROMO_METHOD,
+B CRM TM_CM_CMPGN_MNG MBER_INFLOW_PATH_CD d=12 | 
+     FACT_MEMBER_EVENT.sql:217 d.MBER_INFLOW_PATH_CD                                as MBER_INFLOW_PATH_CD_AT_EVENT,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:24 MBER_INFLOW_PATH_CD, MBER_INFLOW_PATH_NM,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:43 MBER_INFLOW_PATH_CD, MBER_INFLOW_PATH_NM,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:73 cr.MBER_INFLOW_PATH_CD                           as ACQ_MBER_INFLOW_PATH_CD,
+B CRM TM_CM_CMPGN_MNG CMPGN_TYPE1_BSN d=4 | 
+     DIM_CAMPAIGN.sql:12 --   2) BIZ_CASE_TYPE : CMPGN_TYPE1_BSN(국내/통합/해외) → CMPGN_TYPE2_NM(굿즈/기타/사례/사업) 로 **의미혼입 교정**.
+     FACT_MEMBER_EVENT.sql:221 d.CMPGN_TYPE1_BSN                                    as CMPGN_TYPE1_BSN_AT_EVENT,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:26 CMPGN_TYPE1_BSN, CMPGN_TYPE1_NM,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:45 CMPGN_TYPE1_BSN, CMPGN_TYPE1_NM,
+B CRM TM_CM_CMPGN_MNG CMPGN_TYPE2_BSN d=4 | 
+     FACT_MEMBER_EVENT.sql:223 d.CMPGN_TYPE2_BSN                                    as CMPGN_TYPE2_BSN_AT_EVENT,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:27 CMPGN_TYPE2_BSN, CMPGN_TYPE2_NM,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:46 CMPGN_TYPE2_BSN, CMPGN_TYPE2_NM,
+     FACT_MEMBER_SPONSORSHIP_SPAN.sql:79 cr.CMPGN_TYPE2_BSN                               as ACQ_CMPGN_TYPE2_BSN,
+B CRM TM_CM_MBER_DVLP_GOAL STDYY d=15 | 
+     FACT_TARGET_MEMBER_DEV.sql:19 COALESCE({{ month_key_clamp("TRY_TO_NUMBER(t.STDYY || LPAD(t.STDR_MT, 2, '0'))") }}, 0) as MONTH_KEY,
+     FACT_TARGET_MEMBER_DEV.sql:28 COALESCE({{ month_key_clamp("TRY_TO_NUMBER(t.STDYY || LPAD(t.STDR_MT, 2, '0'))") }}, 0),
+B CRM TM_CM_MBER_DVLP_GOAL MBER_DVLP_DIV_CD d=3 | 
+     FACT_TARGET_MEMBER_DEV.sql:21 t.MBER_DVLP_DIV_CD                            as DEV_TYPE,
+     FACT_TARGET_MEMBER_DEV.sql:30 t.MBER_DVLP_DIV_CD
+B CRM TM_MM_FDRM_MBER_INFO SLRCLD_LRR_CD d=4 | 
+     DIM_MEMBER.sql:112 left join {{ ref('CRM_CODE') }} c_sl  on c_sl.CD_ID  = 'CM029' and c_sl.DTL_CD_ID  = m.SLRCLD_LRR_CD
+B CRM TM_MS_EVENT EVENT_DIV_CD d=5 | 
+     DIM_EVENT.sql:29 EVENT_DIV_CD                                  as EVENT_CATEGORY,
+B CRM TM_PM_INSTT_ACNUT ACNUT_DIV_CD d=2 | 
+     DIM_PAYMENT_ACCOUNT.sql:21 CPR_DIV_CD, ACNUT_DIV_CD as ACCOUNT_DIV_CD, BANK_CD, ACNUT_PRP as ACCOUNT_PURPOSE, ACNUT_ABRV as ACCOUNT_ABBR,
+B ERP BDGT_ACMSLT_LEDGER INCOME_EXPS_DIV_NM d=1 | 
+     DIM_BUDGET_ITEM.sql:9 -- 매핑: BUDGET_ITEM_NAME=최하위 예산과목(세세목 우선 COALESCE) · BUDGET_CATEGORY=수입/지출 구분(INCOME_EXPS_DIV_NM).
+     DIM_BUDGET_ITEM.sql:24 INCOME_EXPS_DIV_NM                                as BUDGET_CATEGORY,    -- 예산구분(수입/지출)
+C AGENCY SYNC_ERR_INFO DATA_TYPE d=2 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-017.md:98
+C CRM SND_MEMBER_LIST SND_YN d=2 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-009.md:79 ; 20_issue/31_코드군_매핑등재부.md:42
+C CRM SND_MEMBER_LIST SPNSR_TYPE d=5 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-010.md:260
+C CRM SND_MEMBER_MAIL_LINK_LOG AGENT d=5 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-001.md:136 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-005.md:64 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-009.md:6
+C CRM TD_MS_MSG_AT_SNDNG_DTLS TRNSMS_STAT_CD d=3 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-005.md:183
+C CRM TM_CM_CMPGN_MNG CMPGN_TRGET_CD d=10 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-010.md:277
+C CRM TM_CM_DEPT_INFO STATS_DEPT_LVL d=2 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-002.md:12 ; 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md:109 ; 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md:110
+C CRM TM_MM_FDRM_MBER_SPNSR_DSCNTC REGIST_DEPT_CD d=54 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-005.md:132
+C CRM TM_MM_ONCE_MBER_INFO REGIST_DEPT_CD d=77 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-005.md:132
+C CRM TM_MS_CRMN RM2 d=9 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-009.md:71
+C CRM TM_PM_MBRFEE_ACMSLT TRNSFER_RSN_CD d=1 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:108
+C CRM TM_RM_RELATNSP_GFTMNEY_INFO EHGT d=150 | 20_issue/90_해소완료_로그_조각/90_해소완료_로그-002.md:11
+C ERP SYNC_ERR_INFO DATA_TYPE d=2 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-017.md:98
+A AGENCY VIDEO_AD_CMPGN_DTLS UPPER_CMPGN_CD d=42 | 20_issue/90_해소완료_로그_조각/90_해소완료_로그-016.md:297
+A AGENCY VIDEO_AD_CMPGN_DTLS AD_TY_NM d=4 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-008.md:74 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-002.md:173
+A AGENCY VIDEO_AD_CMPGN_DTLS DEVICE_NM d=4 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-002.md:79
+A CRM TD_MS_CRMN_PRTCPNT PARTCPT_STAT_CD d=6 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-008.md:119 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-008.md:133 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-009.md:71
+A CRM TD_MS_EMAIL_SNDNG_DTLS SNDNG_RST_CD d=2 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-001.md:220 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-006.md:47 ; 20_issue/31_코드군_매핑등재부.md:40
+A CRM TD_MS_EVENT_PRTCPNT_DTL PARTCPT_STAT_CD d=13 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-008.md:119 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-008.md:133 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-009.md:71
+A CRM TH_MM_FDRM_MBER_STNG_DTLS CHN_STAT_CD d=12 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:94
+A CRM TM_CM_MBER_DVLP_GOAL STDR_MT d=12 | 20_issue/30_설계_의사결정_조각/30_설계_의사결정-017.md:98
+A CRM TM_CM_MBER_DVLP_GOAL_DIV BDGT_PRCD_NM d=1 | 20_issue/30_설계_의사결정_조각/00_선택표.md:67 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-012.md:59
+A CRM TM_CM_SCHDUL_MNG SCHDUL_DIV_CD d=2 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-002.md:112
+A CRM TM_CM_SPNSR_BSNS_INFO SPNSR_BSNS_ABRV_CD d=6 | 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-017.md:103
+A CRM TM_MM_ONCE_MBER_INFO REL_CD d=12 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-006.md:122
+A CRM TM_PM_DNTN_DTLS PAY_STAT_CD d=1 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-001.md:171 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-019.md:91 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:73
+A CRM TM_PM_DNTN_DTLS ACMSLT_DEPT_CD d=32 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-014.md:146
+A CRM TM_PM_MBRFEE_ACMSLT MBRFEE_SQNC d=52 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-019.md:91 ; 20_issue/30_설계_의사결정_조각/00_선택표.md:35 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-004.md:88
+A CRM TM_PM_MBRFEE_ACMSLT PAY_STAT_CD d=2 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-001.md:171 ; 20_issue/10_진단_원인분석_조각/10_진단_원인분석-019.md:91 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:73
+A CRM TM_PM_MBRFEE_ACMSLT RQEST_RST_CD d=100 | 20_issue/10_진단_원인분석_조각/10_진단_원인분석-019.md:91 ; 20_issue/20_현업확인_요청_조각/20_현업확인_요청-010.md:258 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:96
+A CRM TM_PM_MBRFEE_ACMSLT PRCS_RST_CD d=7 | 20_issue/20_현업확인_요청_조각/20_현업확인_요청-010.md:259 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:96 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-001.md:108
+A ERP BDGT_ACMSLT_LEDGER BDGT_PRCD_NM d=2 | 20_issue/30_설계_의사결정_조각/00_선택표.md:67 ; 20_issue/30_설계_의사결정_조각/30_설계_의사결정-012.md:59
+A ERP BDGT_ACMSLT_LEDGER DIRECT_MNYRS_YN_1 d=2 | 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md:40 ; 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-018.md:42 ; 20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md:166
+A ERP BDGT_ACMSLT_LEDGER DIRECT_MNYRS_YN_2 d=2 | 20_issue/90_해소완료_로그_조각/90_해소완료_로그-016.md:293

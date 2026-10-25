@@ -104,6 +104,10 @@ models:
           - not_null
           - accepted_values:
               values: ['DIGITAL', 'VIDEO', 'REBROADCAST']   # DEC-8 출처 명시축
+      - name: UPPER_CAMPAIGN_CD
+        description: "상위 캠페인코드 (VIDEO 전용 · O262) — 원천 VIDEO.UPPER_CMPGN_CD 중 코드형(^U[0-9]+$ · CRM CMPGN_CD) 값만. 이름형 행·DIGITAL·REBROADCAST 는 NULL. 불변식 = tests/assert_aap_upper_cmpgn_split.sql"
+      - name: UPPER_CAMPAIGN_NM
+        description: "상위 캠페인명 (VIDEO 전용 · O262) — 원천 VIDEO.UPPER_CMPGN_CD 중 이름형 값만(2026-05 이전 행 · 원천이 개명 전 값을 둠). 코드형은 UPPER_CAMPAIGN_CD. 두 열 동시 채움 0"
 
   # ─── CRM_BIZ_TARGET 스캐폴드 ───
   - name: CRM_BIZ_TARGET
@@ -112,8 +116,10 @@ models:
         tests: [not_null, unique]
       - name: TARGET_TYPE     # 🆕 O190 BDGT_PRCD_NM 파생(연사업→당초 · 추가경정→추경) — 미지 원천값 유입을 warn 으로 감시
         tests:
-          - accepted_values:
-              values: ['당초', '추경']
+          # [O258] 허용 목록 = seed MAP_BUDGET_PROCEDURE.TARGET_TYPE(종전 accepted ['당초','추경'] 과 같은 집합)
+          - relationships:
+              to: ref('MAP_BUDGET_PROCEDURE')
+              field: TARGET_TYPE
               config: { severity: warn }
 
   # ─── 🆕 [2026-10-20 DR-25] CRM_HOLIDAY (공휴일 마스터 · DIM_DATE.IS_HOLIDAY 원천) ───

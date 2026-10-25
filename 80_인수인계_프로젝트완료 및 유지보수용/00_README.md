@@ -17,8 +17,8 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
-| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 66 |
-| 02_dbt_pipeline | dbt 프로젝트 원본 | 220 |
+| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 72 |
+| 02_dbt_pipeline | dbt 프로젝트 원본 | 230 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
 | 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 7 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
@@ -26,6 +26,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
 | 08_현업공유_산출물 | 현업 공유 산출물 | 90 |
 | 09_설계근거_참고 | 설계 근거 · 보안/권한 참고 | 10 |
+| 10_운영도구_scripts | 운영 점검 도구(SV 게이트 · SQL 실행기 · 접속 헬퍼) — README_운영도구.md 부터 | 7 |
 
 ## 권장 추가 사유 (지정 대상 외)
 
@@ -91,6 +92,11 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/39_DEPLOY_SILVER_ORG_CLEAN.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/42_DEPLOY_AGENCY_AD_SRC_RENAME.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/43_DEPLOY_AGENCY_UPPER_CMPGN_SPLIT.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/44_DEPLOY_CATEGORY_GOLD.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql | 문서실행순서.md 명시 SQL |
@@ -107,6 +113,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 문서실행순서_llm실행.md | 🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항 |
 | 문서실행순서_보조주석.md | 🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조) |
 | 12_agent개선과제/output/O217_biz_definition_corpus.csv | 26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지) |
+| 05_SV-Agent_ai/00_SV_공통지시문.md | 🆕 O262 SV 공통 지시문 블록 정본(R-SV1~3) — sv_common_block_gate 가 SV 폴더에서 읽는다 |
 
 ### 02_dbt_pipeline
 
@@ -265,6 +272,8 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_MSG_TEMPLATE_BUTTON.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_ORG.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/silver/crm/CRM_ORG_CLEAN.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/silver/crm/CRM_ORG_SUCCESSION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_BILLING.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/crm/CRM_PAYMENT_METHOD_HIST.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -285,6 +294,10 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/_erp_schema.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/MAP_BUDGET_PROCEDURE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/MAP_EXT_DATA_TYPE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/MAP_SERVICE_GROUP_RULE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/MAP_SPONSORSHIP_GROUP4.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/seeds/_seeds.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tc_cmmn_cd.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -298,6 +311,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/snapshots/snp_crm_tm_ms_email_tmplat_mng.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tm_ms_event.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/snapshots/snp_crm_tm_rm_bplc_mng.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/assert_aap_upper_cmpgn_split.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_bigquery_pk_unique.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_dept_aggr_grain_unique.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/assert_fact_dev_achv_goal_rows_preserved.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -330,6 +344,9 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/tests/warn_fmm_reason_unmapped_f_rows.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_gold_fact_bigquery_date_sk_zero.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_gold_view_comment_coverage.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/warn_map_coverage_budget_procedure.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/warn_map_coverage_ext_data_type.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/tests/warn_map_coverage_sponsorship_group4.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/tests/warn_spnsr_cls_aggr_src_dup.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/verify_A1_A3_blocking5.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 
@@ -611,3 +628,15 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql | 스냅샷 아키텍처·네이밍룰·구축 SQL |
 | 09_streamlit 권한 설정/analyst-selfservice-streamlit.md | Streamlit 셀프서비스 권한 |
 | SECURITY.sql | Git 자격증명 시크릿 갱신 |
+
+### 10_운영도구_scripts
+
+| 파일 | 설명 |
+|---|---|
+| scripts/README_운영도구.md | 접속·실행 순서·rc 0/1/2 의미 |
+| scripts/sfconn.py | 접속 헬퍼(토큰 OAuth · 없으면 connections.toml · GN_DW_ROLE/GN_DW_WAREHOUSE) |
+| scripts/run_sql_file.py | SQL 파일 문장 단위 실행기(첫 실패에서 멈춤) |
+| scripts/sv_enum_newvalue_gate.py | SV COMMENT 열거 목록 밖 라이브 신규값 · 종수 표기 잔존 검사(라이브) |
+| scripts/sv_code_label_gate.py | SV 코드↔라벨 표기 검사(라이브) |
+| scripts/sv_no_rollup_gate.py | SV 지시문·VQR 소계/합계 행 유도 검사(소스) |
+| scripts/sv_common_block_gate.py | SV 공통 지시문 블록 규칙 R-SV1~3 검사(소스+라이브) |

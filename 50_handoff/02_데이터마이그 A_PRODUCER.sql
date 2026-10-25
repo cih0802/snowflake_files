@@ -23,6 +23,9 @@ GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_ERP    TO SHARE mig_share;
 GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_AGENCY TO SHARE mig_share;
 GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_GA4    TO SHARE mig_share;
 GRANT SELECT  ON ALL TABLES IN SCHEMA GN_DW.BRONZE_GSC    TO SHARE mig_share;
+-- 🆕 [2026-10-23 O260 · 사용자 결정] 원천 테스트 테이블은 이관 제외 — ALL TABLES 로 열린 것을 바로 회수한다.
+--    ⚠️ A 에 그 테이블이 없으면 「does not exist」로 실패한다 — 그 줄은 건너뛴다(정상).
+REVOKE SELECT ON TABLE GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST FROM SHARE mig_share;
 
 ------------------------------------------------------------
 -- 2.1 SILVER 부여 — 정제 테이블 1개 + 🆕 예측용 집계 3종(O198) = 4개만
@@ -105,9 +108,10 @@ ALTER SHARE mig_share ADD ACCOUNTS = PH62230;
 
 ------------------------------------------------------------
 -- 4. 부여 결과 확인
---    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 81(브론즈 65 + SILVER 4 + ML 12)  🆕 [O198] ML 17→12 · SILVER 1→4(예측용 집계 3) · 총계 82→80 · 🆕 [O244] ERP 2→3 · 총계 80→81
---    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
---       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(3) · BRONZE_GA4(2) · BRONZE_GSC(3)
+--    기대: DB 1 + 스키마 7(BRONZE 5 + SILVER + ML) + 테이블 80(브론즈 64 + SILVER 4 + ML 12)  🆕 [O198] ML 17→12 · SILVER 1→4(예측용 집계 3) · 총계 82→80 · 🆕 [O244] ERP 2→3 · 총계 80→81 · 🆕 [O260] GSC 3→2 · 총계 81→80
+--    🔴 [2026-09-17] 종전 기재 「테이블 67(브론즈 50)」·「77(브론즈 60)」은 stale 이었다 — 현행은 브론즈 61 · 총계 78.  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
+--       브론즈 5 = BRONZE_CRM(53) · BRONZE_AGENCY(4) · BRONZE_ERP(3) · BRONZE_GA4(2) · BRONZE_GSC(2)
+--       ⛔ BRONZE_CRM 은 A 에 54개(원천 TM_PM_MBRFEE_ACMSLT_TEST 포함)여도 share 기대값은 53 이다(2절 REVOKE).
 ------------------------------------------------------------
 SHOW GRANTS TO SHARE mig_share;
 SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 함
@@ -115,7 +119,7 @@ SHOW SHARES LIKE 'MIG_SHARE';   -- to 컬럼에 RPKTYWX.JX43598 이 보여야 �
 -- 4.1 부여 집계 점검 (한 번에 판정)
 SHOW GRANTS TO SHARE mig_share;
 SELECT
-  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 50
+  COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.BRONZE_CRM.%') AS crm_tables,        -- 기대 53 (🆕 O260 정정 · 종전 「50」 stale · _TEST 회수 후)
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.ML.%')      AS ml_tables,        -- 기대 12 (O198)
   COUNT_IF("granted_on" = 'TABLE' AND "name" LIKE 'GN_DW.SILVER.%')  AS silver_tables,    -- 기대 4 (O198 · 정제 1 + 예측용 집계 3)
   COUNT_IF("granted_on" = 'SCHEMA')                                  AS schemas,          -- 기대 7
@@ -136,6 +140,7 @@ FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
 SELECT table_schema, table_name, row_count, bytes
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
+  AND table_name <> 'TM_PM_MBRFEE_ACMSLT_TEST'   -- 🆕 O260 이관 제외(원천 테스트 테이블)
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',
@@ -145,14 +150,15 @@ WHERE table_type = 'BASE TABLE'
                                     'ML_RST_DATA_DVLP_INC_CONTRIBUTION','ML_RST_DATA_ONCE_CONVERSION')) )
 ORDER BY table_schema, table_name;
 
--- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 3 · GA4 2 · GSC 3 · ML 12 · SILVER 4 = 81)  🆕 [O198]
---   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+-- 스키마별 요약 (기대: AGENCY 4 · CRM 53 · ERP 3 · GA4 2 · GSC 2 · ML 12 · SILVER 4 = 80)  🆕 [O198] · 🆕 [O260] GSC 3→2 · _TEST 제외
+--   🔴 [2026-09-17] 종전 기재 「CRM 45 · ERP 1 · = 67」·「총계 77」은 stale 이었다 — 현행은 CRM 50 · 총계 78.  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 SELECT table_schema,
-       COUNT(*)       AS tables,z`
+       COUNT(*)       AS tables,   -- 🆕 O260 정정: 종전 「AS tables,z」+백틱 오타(구문 오류)
        SUM(row_count) AS total_rows,
        SUM(CASE WHEN row_count = 0 THEN 1 ELSE 0 END) AS zero_row_tables
 FROM GN_DW.INFORMATION_SCHEMA.TABLES
 WHERE table_type = 'BASE TABLE'
+  AND table_name <> 'TM_PM_MBRFEE_ACMSLT_TEST'   -- 🆕 O260 이관 제외(원천 테스트 테이블)
   AND (    table_schema IN ('BRONZE_CRM', 'BRONZE_ERP', 'BRONZE_AGENCY', 'BRONZE_GA4', 'BRONZE_GSC')
         OR (table_schema = 'SILVER' AND table_name IN ('BIGQUERY_REFINED_DATA','ANNUAL_DVLP_GOAL_ACMSLT_AGGR_DATA','ANNUAL_MBRFEE_PRDT_ACTL_DATA','MM_SPNSR_CLS_AGGR_DATA'))
         OR (table_schema = 'ML'     AND table_name IN ('ML_RST_DATA_SPNSR_CHURN_12M','ML_RST_DATA_MBER_CHURN_12M','ML_RST_DATA_CMPGN_CTGR_AMT',

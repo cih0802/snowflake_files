@@ -89,7 +89,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN
       COMMENT = '회원에 귀속한 마케팅캠페인명(MSTR 개발 이력 기준 · 회원당 1개). 🔴 NULL 은 두 가지다 — IS_LINKED = FALSE 이면 그 해 MSTR 개발 이력이 없어 귀속할 수 없는 회원, IS_LINKED = TRUE 이면 귀속한 개발행의 캠페인에 마케팅캠페인 값이 없는 회원이다. 둘 다 캠페인 순위에서 빼고 회원수를 따로 밝힌다.',
     ic.CMMN_BRND_NM AS ic.CMMN_BRND_NM
       WITH SYNONYMS ('공통브랜드')
-      COMMENT = '귀속 개발행의 공통브랜드(캠페인 마스터 현재값).',
+      COMMENT = '귀속 개발행의 공통브랜드(캠페인 마스터 현재값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기업''·''뉴미디어''·''대면모금''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''재송출''·''지역개발''·''콜개발''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발''',
     ic.MKTG_CHANNEL_NM AS ic.MKTG_CHANNEL_NM
       WITH SYNONYMS ('마케팅채널')
       COMMENT = '귀속 개발행의 마케팅채널(캠페인 마스터 현재값).',
@@ -98,13 +98,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN
       COMMENT = '귀속 개발행의 캠페인카테고리(캠페인 마스터 현재값).',
     ic.ATTR_DVLP_DIV_NM AS ic.ATTR_DVLP_DIV_NM
       WITH SYNONYMS ('귀속 개발구분')
-      COMMENT = '귀속에 쓴 개발행의 개발구분(신규·증액·재후원).',
+      COMMENT = '귀속에 쓴 개발행의 개발구분(신규·증액·재후원). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''신규''·''재후원''·''증액''',
     ic.ATTR_STRD_MT AS ic.ATTR_STRD_MT
       WITH SYNONYMS ('귀속 개발월')
-      COMMENT = '귀속에 쓴 개발행의 MSTR 기준년월(YYYYMM).',
+      COMMENT = '귀속에 쓴 개발행의 MSTR 기준년월(YYYYMM). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''202601''·''202602''·''202603''·''202604''·''202605''·''202606''·''202607''·''202608''·''202609''',
     ic.INC_CLASS AS ic.INC_CLASS
       WITH SYNONYMS ('증액 예측 판정')
-      COMMENT = '모델 기본 임계(0.5) 판정. 실제값 2종: ''0''·''1''. 🔴 ''1'' 회원이 극소수라 캠페인 비교에 쓰지 않는다 — 비교는 기대 증액 회원수·평균 증액확률로 한다.',
+      COMMENT = '모델 기본 임계(0.5) 판정. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''0''·''1''. 🔴 ''1'' 회원이 극소수라 캠페인 비교에 쓰지 않는다 — 비교는 기대 증액 회원수·평균 증액확률로 한다.',
     ic.IS_LINKED AS ic.IS_LINKED
       WITH SYNONYMS ('캠페인 귀속 여부')
       COMMENT = 'TRUE = 마케팅캠페인에 귀속된 예측 회원. 분모를 밝힐 때 쓴다.'
@@ -124,8 +124,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML_INC_CAMPAIGN
       COMMENT = '모델이 증액으로 분류한 회원수(명). 극소수다.'
   )
   COMMENT = 'ML 증액 예측 × 마케팅캠페인 SV. base=SERVING.ML_INC_BY_MKTG_CMPGN_V. 「증액이 높을 것으로 예상되는 마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리」 질문에 쓴다. 🔴🔴 머신러닝 예측치이며 실적이 아니다 — MSTR 증액 실적(SV_MSTR_SPNSR_DVLP)과 같은 표에 합산하지 않고 표를 나눈다. 🔴 머신러닝은 테스트 단계다. 🔴🔴 예측은 회원 단위 증액확률이다 — 캠페인 값은 그 캠페인에 귀속한 회원들의 확률을 모은 것이고 「N월 증액 건수」 예측이 아니다. 🔴 귀속은 Agent 데이터 규칙이다(그 해 MSTR 최근 개발 1건의 마케팅캠페인) · 모델이 캠페인을 학습한 것이 아니다. 🔴 귀속 불가 회원(MK_CMPGN_NM NULL)은 순위에서 빼고 그 회원수를 따로 밝힌다. 활성: 예측 대상 회원수·기대 증액 회원수·평균 증액확률·모델 증액분류 회원수 · 기준월·마케팅캠페인·공통브랜드·마케팅채널·캠페인카테고리 축. 비활성: 증액 금액 예측(원천에 없음) · 월별 증액 건수 예측(원천에 없음).'
-  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. (다) 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다.
-  [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
+  AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
+  [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙 · O259 개정] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만). 전체 합이 필요하면 행이 아니라 같은 SELECT 의 열로 붙인다(SUM(SUM(x)) OVER () · COUNT DISTINCT·HAVING 이 있으면 그룹 없는 CTE 를 CROSS JOIN) — 답변에서는 그 열을 표에 싣지 않고 표 밖 본문 1줄로 적는다. 비율은 분자·분모 measure 를 열로 함께 낸다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다. [공통 규칙 보충 · 이 SV] CTE 를 거쳐 바깥에서 쓰는 차원은 그 CTE 의 SELECT 목록에 먼저 넣는다. 날짜 필터는 이 시맨틱 뷰에 선언된 차원 이름만 쓴다. 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다(WITH SYNONYMS 첫 항목 · 단위 괄호). 영문 식별자를 출력 컬럼명으로 남기지 않는다.
   핵심 규칙: (1) 기준월 미지정 시 최신 기준월(MAX(ic.STDR_MT)) 하나로 한정하고 밝힌다 — 비상관 CTE 로 구해 CROSS JOIN 한다. (2) 「증액이 높을 캠페인 상위 N」 = ic.MK_CMPGN_NM IS NOT NULL 로 한정하고 마케팅캠페인별 SUM(ic.INC_PROB) 내림차순 상위 N 을 반환한다. 열 = 마케팅캠페인 · 예측 대상 회원수 COUNT(DISTINCT ic.MBER_NO) · 기대 증액 회원수 ROUND(SUM(ic.INC_PROB),1) · 평균 증액확률(%) ROUND(AVG(ic.INC_PROB)*100,2) · 구성비(%) = 그 캠페인 SUM(INC_PROB) ÷ 귀속 회원 전체 SUM(INC_PROB) × 100(소수 2자리 · 분모는 SQL 로 구한다). (3) 귀속 불가 회원수(ic.MK_CMPGN_NM IS NULL 의 COUNT DISTINCT)와 전체 예측 대상 회원수를 별도 행 또는 별도 쿼리로 함께 반환한다. (4) 평균 증액확률 순위를 요청받으면 예측 대상 회원 100명 이상 캠페인으로 한정하고 그 하한을 밝힌다. (5) 공통브랜드·마케팅채널·캠페인카테고리별도 같은 방식이다. (6) 🔴 실적 SV 와 조인하지 않는다.';
 
 GRANT SELECT ON VIEW GN_DW.SERVING.ML_INC_BY_MKTG_CMPGN_V TO ROLE GN_DW_ANALYST;

@@ -1,0 +1,19 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+① SV 실재 (blocking) — Agent 스펙 tool_resources
+========================================================================
+  검사 80건 · 라이브 SV 44종
+========================================================================
+② 정규화 참조 SV_X.IDENT (blocking)
+========================================================================
+  검사 15건 · 은퇴 등재 참조 3건(면제)
+    · 05_SV-Agent_ai/01_SV-Agent 작업계획.md:156 SV_MEMBER_EVENT.AVG_RETENTION_MONTHS
+    · 05_SV-Agent_ai/04_SV_설계.md:1011 SV_MEMBER_EVENT.AVG_RETENTION_MONTHS
+    · 05_SV-Agent_ai/06_검증쿼리_VQR.md:24 SV_MEMBER_EVENT.AVG_RETENTION_MONTHS
+========================================================================
+③ 백틱 식별자 (advisory · 종료코드 무영향)
+========================================================================
+  검사 1219건 · SV 식별자 합집합 미포함 909건
+========================================================================
+🟢 PASS — blocking 위반 0건

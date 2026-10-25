@@ -35,6 +35,8 @@ MANIFEST = [
     ("01_실행순서_배포SQL", "문서실행순서_보조주석.md", "🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조)"),
     ("01_실행순서_배포SQL", "12_agent개선과제/output/O217_biz_definition_corpus.csv",
      "26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지)"),
+    ("01_실행순서_배포SQL", "05_SV-Agent_ai/00_SV_공통지시문.md",
+     "🆕 O262 SV 공통 지시문 블록 정본(R-SV1~3) — sv_common_block_gate 가 SV 폴더에서 읽는다"),
 
     ("02_dbt_pipeline", "10_dbt_pipeline", "dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서)"),
 
@@ -79,6 +81,16 @@ MANIFEST = [
     ("09_설계근거_참고", "06_snapshot", "스냅샷 아키텍처·네이밍룰·구축 SQL"),
     ("09_설계근거_참고", "09_streamlit 권한 설정", "Streamlit 셀프서비스 권한"),
     ("09_설계근거_참고", "SECURITY.sql", "Git 자격증명 시크릿 갱신"),
+
+    # 🆕 [O262] 운영 점검 도구 — 원본 이식성 수정(자기 폴더 기준 · sfconn 2경로) 후 편입. .py 는 hook 정제 대상이 아니다
+    #   ⇒ 원본에 계정 값 0 을 편입 조건으로 한다(scrub_acct.ACC 스캔 · 재빌드 후 80 전체 재확인).
+    ("10_운영도구_scripts", "scripts/README_운영도구.md", "접속·실행 순서·rc 0/1/2 의미"),
+    ("10_운영도구_scripts", "scripts/sfconn.py", "접속 헬퍼(토큰 OAuth · 없으면 connections.toml · GN_DW_ROLE/GN_DW_WAREHOUSE)"),
+    ("10_운영도구_scripts", "scripts/run_sql_file.py", "SQL 파일 문장 단위 실행기(첫 실패에서 멈춤)"),
+    ("10_운영도구_scripts", "scripts/sv_enum_newvalue_gate.py", "SV COMMENT 열거 목록 밖 라이브 신규값 · 종수 표기 잔존 검사(라이브)"),
+    ("10_운영도구_scripts", "scripts/sv_code_label_gate.py", "SV 코드↔라벨 표기 검사(라이브)"),
+    ("10_운영도구_scripts", "scripts/sv_no_rollup_gate.py", "SV 지시문·VQR 소계/합계 행 유도 검사(소스)"),
+    ("10_운영도구_scripts", "scripts/sv_common_block_gate.py", "SV 공통 지시문 블록 규칙 R-SV1~3 검사(소스+라이브)"),
 ]
 
 SUBFOLDER_DESC = {
@@ -91,6 +103,7 @@ SUBFOLDER_DESC = {
     "07_운영런북_이슈": "런북 · 이슈 원장 · 사고사례",
     "08_현업공유_산출물": "현업 공유 산출물",
     "09_설계근거_참고": "설계 근거 · 보안/권한 참고",
+    "10_운영도구_scripts": "운영 점검 도구(SV 게이트 · SQL 실행기 · 접속 헬퍼) — README_운영도구.md 부터",
 }
 
 READ_ORDER = [

@@ -1,5 +1,5 @@
 -- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트
--- 최근 갱신일 : 2026-10-16
+-- 최근 갱신일 : 2026-10-23
 -- 🟢 파일명에 날짜를 넣지 않는다(2026-09-15 사용자 결정 · 구 파일명 = *_20260730).
 --    이유 = 갱신마다 개명하면 이 파일을 참조하는 01·02·03·05·07번 문서와 게이트 경로를
 --    매번 함께 고쳐야 하고, 한 곳이라도 놓치면 참조가 깨진다. **날짜는 파일 안에만 적는다.**
@@ -21,14 +21,16 @@
 --              → GN_DW.SILVER.BIGQUERY_REFINED_DATA (118컬럼)
 --              50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql
 --              → GN_DW.ML.ML_RST_DATA_* (예측결과 12종 · O198)
---              ⚠️ 세 파일을 모두 실행해야 이관 대상 81 테이블(브론즈 65 + SILVER 4 + ML 12)이 완성된다. 선후 관계는 없다.
+--              ⚠️ 세 파일을 모두 실행해야 이관 대상 80 테이블(브론즈 64 + SILVER 4 + ML 12 · 2026-10-23)이 완성된다. 선후 관계는 없다.
 --   [실행 SQL] 50_handoff/02_데이터마이그 A_PRODUCER.sql   (A: 공유 생성/GET_DDL)
 --              50_handoff/03_데이터마이그 B_BROKER.sql     (B: 공유 마운트/CSV 언로드)
 --              50_handoff/07_데이터마이그 C_CONSUMER.sql   (C: 파일포맷/프로시저/적재/검증)
 --
 -- 본 파일의 범위 / SCOPE
 --   GN_DW.BRONZE_CRM (53) · GN_DW.BRONZE_AGENCY (4) · GN_DW.BRONZE_ERP (3)
---   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (3) = 65 테이블
+--   · GN_DW.BRONZE_GA4 (2) · GN_DW.BRONZE_GSC (2) = 64 테이블 (2026-10-23)
+--   ⛔ BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST 는 포함하지 않는다 — 원천 11번에 있으나 테스트용이다
+--      (2026-10-23 사용자 결정 · 이관 대상 아님). 게이트 축1 이 「원천에만 있다」로 1건 낸다 = 의도된 제외.
 --   ⛔ GN_DW.BRONZE_BIGQUERY 는 포함하지 않는다 — A 가 공유하지 않는다.
 --      해당 원천의 정제 결과는 06번(SILVER.BIGQUERY_REFINED_DATA)이 대신한다.
 --   🟢 BRONZE_GA4 는 2026-08-20 자로 삭제된 옛 스키마(events_* · BigQuery Export 원본, VARIANT 다수)와는
@@ -50,7 +52,7 @@
 --   🔴 **[2026-08-29 개정] 구조 정본이 02_1_A DB정보.sql → 99_provided_definition/11~13 으로 바뀌었다.**
 --     종전 규칙은 「02_1_A DB정보.sql 을 최우선 정본으로 하고, 원천 정의 문서와 어긋나면 실측값을 따른다」
 --     였다. 그 규칙을 그대로 따르면 2026-08-29 갱신분이 **되돌려진다.**
---     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     근거(실측) — 02_1_A DB정보.sql 의 인벤토리는 **BRONZE_CRM 45(현행 50) · BRONZE_ERP 1 · BRONZE_AGENCY 4  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --       · BRONZE_BIGQUERY 3** 이고, 삭제된 컬럼 `MNYRS_COST_DIV_YN` 이 아직 살아 있다(1341행).
 --       ⇒ 그 파일은 **더 이른 시점의 스냅샷**이다. 「실측」이라는 이유만으로 최신이 되지는 않는다.
 --     ⇒ 규칙 = **날짜가 더 최신인 스냅샷을 정본으로 한다.** 현재는 11~13 이다.
@@ -85,17 +87,35 @@
 --
 -- 메타데이터 / METADATA
 --   - Database    : GN_DW
---   - 갱신일자    : 2026-10-16
+--   - 갱신일자    : 2026-10-23
 --   - 스키마 수   : 5   (BRONZE_CRM, BRONZE_AGENCY, BRONZE_ERP, BRONZE_GA4, BRONZE_GSC)
---   - 테이블 수   : 65  (CRM 53, AGENCY 4, ERP 3, GA4 2, GSC 3)
+--   - 테이블 수   : 64  (CRM 53, AGENCY 4, ERP 3, GA4 2, GSC 2)
 --   - 시퀀스 수   : 4   (BRONZE_AGENCY.SEQ_SYNC_ERR_INFO, BRONZE_ERP.SEQ_SYNC_ERR_INFO,
 --                        BRONZE_GA4.SEQ_SYNC_ERR_INFO, BRONZE_GSC.SEQ_SYNC_ERR_INFO)
---   - 파일 포맷   : 4   (BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
+--   - 파일 포맷   : 5   (BRONZE_CRM.GN_CSV_FORMAT, BRONZE_AGENCY.GN_CSV_FORMAT, BRONZE_ERP.GN_CSV_FORMAT,
 --                        BRONZE_ERP.GN_CSV_FORMAT_EUCKR, BRONZE_ERP.GN_CSV_FORMAT_EUCKR2)
 --                        ※ GA4/GSC 는 API 기반 적재이므로 CSV 파일 포맷이 없다.
 --   - 컬럼 코멘트 : 전 컬럼 부여 완료
 --
 -- 변경 이력 / CHANGES
+--   2026-10-23  (원천 정의 문서 11~20 재수령분 반영 — `scripts/handoff_ddl_gate.py` 6축 기계 대조)
+--     - [TABLE]    GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA2 삭제 — 원천 16번에서 빠졌다(GSC 3 → 2).
+--     ⛔ [TABLE]   GN_DW.BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST (58컬럼 · 원천 11번 1051행) — **반영하지 않음**
+--        · 테스트용 테이블(사용자 결정 2026-10-23) ⇒ 게이트 축1 「원천에만 있다」 1건은 의도된 제외다.
+--     🔴 [COLUMN]  GN_DW.BRONZE_AGENCY 개명 2건 (위치·타입 불변 ⇒ CSV 위치 적재 영향 없음)
+--        · REBRDC_AD_CMPGN_DTLS 17번째 : CMPGN_CD('캠페인코드') → MKTG_CMPGN_NM('마케팅캠페인명')
+--        · VIDEO_AD_CMPGN_DTLS  19번째 : UPPER_CMPGN_NM('상위캠페인') → UPPER_CMPGN_CD('상위캠페인코드')
+--        ⇒ 🔴 컬럼명을 참조하는 SILVER/GOLD dbt 모델은 수정 대상이다(착수표 ② 요건 3 과 같은 건).
+--     ~ [COMMENT]  원천이 COMMENT 를 새로 제공 ⇒ 종전 보강 문안을 원천 문안으로 교체
+--        · SYNC_ERR_INFO(AGENCY/GA4/GSC) 컬럼 7건 · 테이블 3건
+--        · BRONZE_ERP.BDGT_ACMSLT_LEDGER = '나눔마케팅본부 예산현황'
+--        · BRONZE_ERP.EXPENSE_RESOLUTION = '마케팅 캠페인 제작 비용 / 나눔마케팅본부 캠페인 제작비 지출현황'
+--        · BRONZE_GSC.SEARCH_CONSOLE_DATA = '구글 서치 콘솔 데이터'(2026-09-17 원천 오기 해소)
+--        · BRONZE_ERP 스키마 COMMENT = 원천 12번 1행 문안(종전 본문 '예산/목표' 는 원천과 달랐다)
+--     + [FILE FORMAT] GN_DW.BRONZE_CRM.GN_CSV_FORMAT (원천 11번 1293행 · 파일 포맷 4 → 5)
+--     ~ [SEQUENCE] GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO : noorder → order (원천 13번 3행)
+--     * 테이블 65 → 64 · 이관 총계 81 → 80. ERP 타입·DEFAULT 차이 0건.
+--     🟢 GA4/GSC 스키마의 managed access · COMMENT 는 원천에 없으나 본 파일 보강분으로 유지했다.
 --   2026-10-16  (원천 정의 문서 11~20 재수령분 반영 — `scripts/handoff_ddl_gate.py` 6축 기계 대조)
 --     + [SEQUENCE] GN_DW.BRONZE_ERP.SEQ_SYNC_ERR_INFO (ORDER · 원천 12번 3행)
 --     + [TABLE]    GN_DW.BRONZE_ERP.SYNC_ERR_INFO (4컬럼 · ERR_SEQ / ERR_DATETIME / DATA_TYPE / ERR_INFO · 원천 12번 무변경 발췌)
@@ -129,7 +149,7 @@
 --     * 스키마 5 유지 · 테이블 61 → 64(CRM 50 → 53) · 시퀀스 3 유지 · 파일 포맷 4 유지.
 --     * ERP / GA4 / GSC 는 변경 없다(기계 대조 차이 0).
 --   2026-09-17  (원천 정의 문서 11/12/16 갱신분 반영 — 기계 대조로 확정)
---     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     🔴 CRM 50 테이블 **전건**에 `_STDR_YM VARCHAR(6)` 이 추가되었다(마지막 컬럼 · `_BATCH_ID` 뒤).  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --        ⇒ 🔴 **위치 기반 CSV 적재에 직결된다.** 열이 1개씩 늘었으므로 이전 판 CSV 는 열 수가
 --           1개 부족하다 — 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것(재언로드가 정답이다).
 --        · 컬럼 코멘트는 원천 11번에 없어 명명 규칙으로 부여했다(현업 확인 대상).
@@ -178,7 +198,7 @@
 --     🟠 [TABLE]  GN_DW.BRONZE_CRM.TM_PM_SETLE_CMPNY_ACNT    (14컬럼) — 종전 판 **누락분 보완**
 --        ⇒ 이 2개는 이번 개편으로 신설된 것이 아니라 원천 11번에 계속 있었는데 본 파일에 빠져
 --           있었다(게이트 축1 이 적발). 신규분과 구분해 적는다.
---     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--     * 스키마 5 유지 · 테이블 56 → 60(CRM 46 → 50) · 시퀀스 3 유지 · 파일 포맷 4 유지.  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --     * AGENCY 4테이블 · ERP 2테이블 · GA4 2테이블 · GSC 2테이블은 구조·컬럼·코멘트 변경 없다
 --       (12번·18번 기계 대조 결과 차이 0).
 --     * 신규 CRM 테이블·컬럼의 한글 코멘트는 컬럼정의서 CSV 에 **없다**(전건 0건 실측) ⇒
@@ -238,7 +258,7 @@
 --   2) 선행 역할/DB 생성 구문(SYSADMIN / GN_DW_ADMIN, GRANT OWNERSHIP)은 C 환경 RBAC에 맞게 조정.
 --   3) 위에서 아래로 순서대로 실행하여 구조를 생성 ([SCHEMA] → [SEQUENCE] → [TABLE] → [FILE FORMAT]).
 --   4) 이어서 06번(SILVER DDL) · 05번(ML DDL)도 실행한다.
---   5) 생성 확인 (기대: AGENCY 4 / CRM 53 / ERP 3 / GA4 2 / GSC 3 / ML 12 / SILVER 4 = 81 · 2026-10-16):
+--   5) 생성 확인 (기대: AGENCY 4 / CRM 53 / ERP 3 / GA4 2 / GSC 2 / ML 12 / SILVER 4 = 80 · 2026-10-23):
 --        SELECT table_schema, COUNT(*) FROM GN_DW.INFORMATION_SCHEMA.TABLES
 --        WHERE table_type='BASE TABLE'
 --          AND (table_schema IN ('BRONZE_CRM','BRONZE_ERP','BRONZE_AGENCY','BRONZE_GA4','BRONZE_GSC')
@@ -249,8 +269,8 @@
 --
 -- 적재 시 주의 / LOAD NOTES
 --   - CSV는 위치(순서) 기반 적재이며 MATCH_BY_COLUMN_NAME 미지원 → 본 파일의 컬럼 순서를 반드시 유지.
---   - 본 파일의 65개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
---     → CRM/AGENCY/ERP(59개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
+--   - 본 파일의 64개 테이블에는 반정형(VARIANT/ARRAY/OBJECT) 컬럼이 없다.
+--     → CRM/AGENCY/ERP(60개)는 07번 A.4 의 일괄 적재 프로시저로 그대로 처리 가능하다.
 --     반정형 처리가 필요한 것은 SILVER.ITEMS(ARRAY, 06번) 와 ML.PREDICTION/PREDICT(VARIANT 5종, 05번)이며
 --     각각 07번 A.5 · A.5-B.2 가 담당한다.
 --   - SYNC_ERR_INFO 는 운영 로그 테이블이므로 이관 대상 데이터가 없을 수 있다(구조만 생성).
@@ -261,13 +281,13 @@
 --     이전 판 CSV 와는 열 구성이 두 번 어긋났다 — 그대로 적재하면 실패하거나 조용히 밀린다.
 --     재언로드가 정답이다. 07번 A.1 (4) 대조를 다시 통과시킨 뒤 적재할 것.
 --     오픈 이력은 SND_MEMBER_OPEN_LOG · SND_MEMBER_MAIL_LINK_LOG 로 옮겨졌으므로 그 2개도 함께 받는다.
---   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.  (🔴 2026-10-16 현행 = 브론즈 65 · CRM 53 · ERP 3 · SILVER 4 · ML 12 · 총계 81)
+--   - 🔴 2026-09-17 자로 **CRM 50 테이블 전건**에 _STDR_YM(VARCHAR(6))이 마지막 컬럼으로 추가되었다.  (🔴 2026-10-23 현행 = 브론즈 64 · CRM 53 · ERP 3 · GSC 2 · SILVER 4 · ML 12 · 총계 80)
 --     ⇒ CRM CSV 는 **전건 재언로드** 대상이다(열이 1개씩 늘었다).
 --   - 🔴 2026-09-17 자로 EXPENSE_RESOLUTION.WRITE_DATE 가 **VARCHAR → DATE** 로 바뀌었다(원천 13번 정본).
 --     열 수·순서는 그대로이므로 A.1 (4) 열 대조는 통과하지만, **문자열 → DATE 형변환이 새로 생긴다.**
 --     ⇒ EUC-KR CSV(GN_CSV_FORMAT_EUCKR2)로 **소량 시적재해 거부행 0 을 먼저 확인**한다.
 --     날짜 표기가 'YYYY-MM-DD' 가 아니면 파일 포맷에 DATE_FORMAT 을 지정해야 한다.
---   - 🟢 GA4/GSC(5개)는 CSV 이관 대상이 아니다 — Google API 를 직접 호출하는 SP_LOAD_* (본 파일 제외)가
+--   - 🟢 GA4/GSC(4개)는 CSV 이관 대상이 아니다 — Google API 를 직접 호출하는 SP_LOAD_* (본 파일 제외)가
 --     주기적으로 DELETE 후 재적재하는 구조다. 본 파일은 C 계정에 "빈 테이블 구조"만 만든다.
 --     원본(A) 데이터를 그대로 옮기려면 07번 문서에서 별도 CSV 언로드/적재 절차를 확인할 것.
 --
@@ -292,11 +312,14 @@
 --     TM_RM_RELATNSP_GFTMNEY_INFO, TM_RM_RELATNSP_LETTER_INFO, TM_RM_RELATNSP_MSTR_INFO
 --     🔴 2026-09-28 신규 = TM_CM_MBER_DVLP_GOAL_DIV · TM_CM_SCHDUL_MNG · TM_MS_AT_TMPLAT_MNG
 --     🔴 2026-09-15 삭제 = TM_CM_MKTNG_CMPGN_MNG · TM_CM_MKTNG_UTM (TC_MKTNG_DTL_CD 로 통합)
+--     ⛔ 2026-10-23 제외 = TM_PM_MBRFEE_ACMSLT_TEST (원천 11번에 있으나 테스트용 · 사용자 결정)
+--     [FILE FORMAT] GN_CSV_FORMAT (🆕 2026-10-23 · SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --
 --   [SCHEMA] GN_DW.BRONZE_AGENCY — 원천 적재: 대행사 (디지털/DRTV/재송출 광고), 테이블 4개
 --     DGT_AD_CMPGN_DTLS (41), REBRDC_AD_CMPGN_DTLS (21), SYNC_ERR_INFO (4), VIDEO_AD_CMPGN_DTLS (37)
 --     🔴 2026-09-28 광고 3테이블 컬럼 구성·순서 재편(변경 이력 참조) — 이전 판 CSV 로 적재 금지.
---     [SEQUENCE]    SEQ_SYNC_ERR_INFO
+--     🔴 2026-10-23 개명 2건 = REBRDC.CMPGN_CD → MKTG_CMPGN_NM · VIDEO.UPPER_CMPGN_NM → UPPER_CMPGN_CD
+--     [SEQUENCE]    SEQ_SYNC_ERR_INFO (🆕 2026-10-23 · ORDER)
 --     [FILE FORMAT] GN_CSV_FORMAT (SKIP_HEADER=1, FIELD_OPTIONALLY_ENCLOSED_BY='\"')
 --
 --   [SCHEMA] GN_DW.BRONZE_ERP — 원천 적재: ERP (예산/지출 원장), 테이블 3개
@@ -314,12 +337,11 @@
 --     🟢 2026-08-20 삭제된 옛 BRONZE_GA4(events_* · BigQuery Export)와는 무관한 신규 구조.
 --     ⚠️ CSV 미사용 — SP_LOAD_GA_USER_DEMOGRAPHIC(제외 대상)가 GA4 Data API 로 직접 적재한다.
 --
---   [SCHEMA] GN_DW.BRONZE_GSC — 원천 적재: 구글 서치 콘솔 검색 성과, 테이블 3개
---     SEARCH_CONSOLE_DATA, SEARCH_CONSOLE_DATA2, SYNC_ERR_INFO
+--   [SCHEMA] GN_DW.BRONZE_GSC — 원천 적재: 구글 서치 콘솔 검색 성과, 테이블 2개
+--     SEARCH_CONSOLE_DATA, SYNC_ERR_INFO
 --     [SEQUENCE] SEQ_SYNC_ERR_INFO
 --     ⚠️ CSV 미사용 — SP_LOAD_GOOGLE_SEARCH(제외 대상)가 Search Console API 로 직접 적재한다.
---     🔴 2026-09-17 신규 = SEARCH_CONSOLE_DATA2 (구성은 SEARCH_CONSOLE_DATA 와 동일 10컬럼).
---        원천 16번에 적재 경로(SP_LOAD_*)가 없다 — 용도·테이블 COMMENT 문안은 현업 확인 대상이다.
+--     🔴 2026-10-23 삭제 = SEARCH_CONSOLE_DATA2 (2026-09-17 신규분 · 원천 16번에서 빠졌다).
 --
 --   [별도 파일] GN_DW.SILVER.BIGQUERY_REFINED_DATA — 06번 참조 (118컬럼, ITEMS=ARRAY)
 --   [별도 파일] GN_DW.ML.ML_RST_DATA_* 12종(O198)  — 05번 참조 (PREDICTION/PREDICT=VARIANT 5종 포함)
@@ -1611,13 +1633,20 @@ create or replace TABLE GN_DW.BRONZE_CRM.TM_RM_RELATNSP_MSTR_INFO (
   _STDR_YM VARCHAR(6) COMMENT '기준년월 (적재 대상 마감 기준 YYYYMM)'
 );
 
+-- 🆕 2026-10-23 원천 11번 1293행 신규 — BRONZE_CRM 전용 CSV 파일 포맷(AGENCY/ERP GN_CSV_FORMAT 과 동일 옵션).
+CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_CRM.GN_CSV_FORMAT
+  SKIP_HEADER = 1
+  FIELD_OPTIONALLY_ENCLOSED_BY = '\"'
+;
+
 
 -- #####################################################################
 -- # SCHEMA 2/5 : GN_DW.BRONZE_AGENCY  (대행사 원천 - 디지털/DRTV/재송출 광고)
 -- #####################################################################
 create schema if not exists GN_DW.BRONZE_AGENCY with managed access COMMENT='원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)';
 
-create or replace sequence GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
+-- 🔴 2026-10-23 원천 13번 3행 = ORDER (종전 noorder) ⇒ 원천에 맞췄다.
+create or replace sequence GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO start with 1 increment by 1 order;
 
 -- 🔴 2026-09-28 원천 12번 재편 반영 — 36 → 41컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
 --    − CPR_NM, DMST_OVSEA_DIV_NM, BSNS_CASE_DIV_NM, CMPGN_TY_NM, GA_AD_COST, GA_CONV_MBER_CNT, DEV_UNIT_PRICE, CMPGN_UTM_NM
@@ -1670,6 +1699,7 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.DGT_AD_CMPGN_DTLS (
 -- 🔴 2026-09-28 원천 12번 재편 반영 — 34 → 21컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
 --    − RE_BRDC_TY_NM, BRDC_MT, CHNNL_CMPNY, DATE, TIME_RNG_DIV_NM, CELEB_NM, DMST_OVSEA_DIV_NM, CASE1~3_* (15)
 --    + MONTH, DAY, CHNNL_NM, BRDC_DATE, UPPER_CMPGN_CD, CMPGN_CD, CONTENTS_PUR_COST, CALL_CTR_OPER_COST, TOT_COST
+-- 🔴 2026-10-23 원천 13번 개명 — 17번째 CMPGN_CD('캠페인코드') → MKTG_CMPGN_NM('마케팅캠페인명') · 위치·타입 불변.
 create or replace TABLE GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS (
   DIV_NM VARCHAR(16777216) COMMENT '구분',
   YEAR VARCHAR(16777216) COMMENT '연도',
@@ -1687,24 +1717,26 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.REBRDC_AD_CMPGN_DTLS (
   DVLP_MBER_CNT FLOAT COMMENT '개발(명)',
   DVLP_CNT FLOAT COMMENT '개발(건)',
   UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
-  CMPGN_CD VARCHAR(16777216) COMMENT '캠페인코드',
+  MKTG_CMPGN_NM VARCHAR(16777216) COMMENT '마케팅캠페인명',
   BRDC_SCHDL_COST FLOAT COMMENT '편성비',
   CONTENTS_PUR_COST FLOAT COMMENT '콘텐츠구입비',
   CALL_CTR_OPER_COST FLOAT COMMENT '콜센터운영비',
   TOT_COST FLOAT COMMENT '총비용'
 )COMMENT='재송출 광고 성과 내역'
 ;
+-- 🔴 2026-10-23 원천 13번이 컬럼·테이블 COMMENT 를 제공했다 ⇒ 종전 보강 문안을 원천 문안으로 교체.
 create or replace TABLE GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO (
-  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_AGENCY.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 이력 일련번호',
   ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
-  DATA_TYPE VARCHAR(16777216) COMMENT '오류 발생 데이터 구분',
-  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
-)COMMENT='적재 프로시저 오류 로그'
+  DATA_TYPE VARCHAR(16777216) COMMENT '오류 데이터 유형',
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 상세 내용'
+)COMMENT='대행사 외부 데이터 적재 오류 이력'
 ;
 -- 🔴 2026-09-28 원천 12번 재편 반영 — 32 → 37컬럼 · 컬럼 구성·순서 변경(원천 무변경 발췌).
 --    − ACTL_PUR_AD_COST_KRW, CPC, DUR_PD_MATR_CHN, CONV_CALL_CNT, BRDC_MT, CTV_DIV_NM, MKT_CMPGN_NM, SPNSR_BSNS_NM
 --    + LAST_AD_COST, CPC_CALL_CNT, MONTH, AD_TY_NM, BDGT_SOURCE_NM, DEVICE_NM, DAY, SPNSER_CNT, DVLP_CNT,
 --      CMPGN_NM, MATR_TY_NM, EXPSR_CNT, CLICK_CNT
+-- 🔴 2026-10-23 원천 13번 개명 — 19번째 UPPER_CMPGN_NM('상위캠페인') → UPPER_CMPGN_CD('상위캠페인코드') · 위치·타입 불변.
 create or replace TABLE GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS (
   CHNNL_NM VARCHAR(16777216) COMMENT '채널',
   DOW VARCHAR(16777216) COMMENT '요일',
@@ -1724,7 +1756,7 @@ create or replace TABLE GN_DW.BRONZE_AGENCY.VIDEO_AD_CMPGN_DTLS (
   LAST_AD_COST FLOAT COMMENT '최종광고비',
   INBOUND_CALL_CNT FLOAT COMMENT '인입콜',
   CPC_CALL_CNT FLOAT COMMENT 'CPC_CALL',
-  UPPER_CMPGN_NM VARCHAR(16777216) COMMENT '상위캠페인',
+  UPPER_CMPGN_CD VARCHAR(16777216) COMMENT '상위캠페인코드',
   MATR_NM VARCHAR(16777216) COMMENT '소재',
   DMST_OVSEA_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(국내/해외)',
   BSNS_CASE_DIV_NM VARCHAR(16777216) COMMENT '캠페인유형(사업/사례)',
@@ -1755,9 +1787,10 @@ CREATE OR REPLACE FILE FORMAT GN_DW.BRONZE_AGENCY.GN_CSV_FORMAT
 -- #####################################################################
 -- # SCHEMA 3/5 : GN_DW.BRONZE_ERP  (ERP 원천 - 예산/지출 원장)
 -- #####################################################################
--- ⚠️ 스키마 COMMENT 는 원천(13번 1행)의 문안을 그대로 옮긴 것이며 실제 내용과 어긋난다.
+-- ⚠️ 스키마 COMMENT 는 원천(12번 1행)의 문안을 그대로 옮긴 것이며 실제 내용과 어긋난다.
 --    실제 성격은 예산·지출 원장이다. 원천 무변경 원칙에 따라 문안은 고치지 않는다.
-create schema if not exists GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (예산/목표)';
+--    🔴 2026-10-23 종전 본문은 '예산/목표' 로 원천과 달랐다(주석과 본문 불일치) ⇒ 원천 문안으로 맞췄다.
+create schema if not exists GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';
 -- 🆕 2026-10-16 원천 12번 신규 — SYNC_ERR_INFO 의 ERR_SEQ DEFAULT 가 참조한다(원천은 ORDER).
 create or replace sequence GN_DW.BRONZE_ERP.SEQ_SYNC_ERR_INFO start with 1 increment by 1 order;
 
@@ -1833,7 +1866,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER (
   CHN_BDGT_AMT_12 NUMBER(38,0) COMMENT '변경예산_12',
   ADJ_BDGT_AMT_12 NUMBER(38,0) COMMENT '조정예산_12',
   EXEC_AMT_12 NUMBER(38,0) COMMENT '집행금액_12'
-)COMMENT='예산 실적 원장'
+)COMMENT='나눔마케팅본부 예산현황'
 ;
 
 -- 2026-08-29 신규 — 원천 13번 73행 무변경 발췌(COMMENT 포함).
@@ -1856,7 +1889,7 @@ create or replace TABLE GN_DW.BRONZE_ERP.EXPENSE_RESOLUTION (
   DESCRIPTIONVARCHAR VARCHAR(16777216) COMMENT '적요',
   SUM_AMT NUMBER(38,0) COMMENT '합계금액',
   CONTENTS_DELIMITER VARCHAR(16777216) COMMENT '콘텐츠구분자'
-)COMMENT='지출 결의'
+)COMMENT='마케팅 캠페인 제작 비용 / 나눔마케팅본부 캠페인 제작비 지출현황'
 ;
 
 -- 🆕 2026-10-16 원천 12번 신규 (4컬럼 · 원천 무변경 발췌 · 운영 오류 로그 — 원본 0행이면 정상)
@@ -1906,13 +1939,13 @@ create or replace TABLE GN_DW.BRONZE_GA4.GA4_USER_DEMOGRAPHIC (
   TOTAL_USERS VARCHAR(16777216) COMMENT '총 사용자'
 )COMMENT='GA4 사용자 인구통계별 일자 집계 데이터'
 ;
--- ⚠️ 원천 15번 DDL 은 SYNC_ERR_INFO 컬럼 코멘트가 비어 있다. AGENCY.SYNC_ERR_INFO 관례로 보강했다
---    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다. 구조는 변형하지 않았다).
+-- 🔴 2026-10-23 원천 15번이 컬럼·테이블 COMMENT 를 제공했다 ⇒ 종전 보강 문안을 원천 문안으로 교체
+--    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다).
 create or replace TABLE GN_DW.BRONZE_GA4.SYNC_ERR_INFO (
-  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GA4.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 이력 일련번호',
   ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
-  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
-)COMMENT='적재 프로시저 오류 로그'
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 상세 내용'
+)COMMENT='GA4 데이터 적재 오류 이력 데이터'
 ;
 
 
@@ -1926,11 +1959,8 @@ create schema if not exists GN_DW.BRONZE_GSC with managed access COMMENT='원천
 
 create or replace sequence GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO start with 1 increment by 1 noorder;
 
--- ⚠️ [2026-09-17] 원천 16번이 GSC 두 테이블의 **테이블 COMMENT 를 '재송출 광고 성과 내역'** 으로
---    적고 있다(GSC 내용과 어긋나는 **원천 오기**로 보인다). 종전 판은 SEARCH_CONSOLE_DATA 에
---    '구글 서치 콘솔 검색 데이터'를 쓰고 있었으나, 병합 규칙(원천 무변경 · BRONZE_ERP 스키마
---    COMMENT 선례)에 맞춰 **원천 문안으로 되돌렸다**. 실제 성격은 이 주석과 객체 인덱스에 적는다.
---    🔴 현업 확인 후 원천을 고치면 이 문안도 함께 되돌릴 대상이다.
+-- 🔴 [2026-10-23] 원천 16번이 테이블 COMMENT 를 '구글 서치 콘솔 데이터' 로 고쳤다
+--    (2026-09-17 의 '재송출 광고 성과 내역' 원천 오기 해소) ⇒ 원천 문안으로 맞췄다.
 create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
   DATE DATE COMMENT '검색 발생 날짜',
   QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
@@ -1942,30 +1972,14 @@ create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA (
   CTR FLOAT COMMENT '클릭률',
   POSITION FLOAT COMMENT '평균 검색결과 위치',
   RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
-)COMMENT='재송출 광고 성과 내역'
+)COMMENT='구글 서치 콘솔 데이터'
 ;
--- 2026-09-17 신규 — 원천 16번에 SEARCH_CONSOLE_DATA2 가 추가되었다(컬럼 구성은 원본과 동일 10컬럼).
---   ⚠️ 테이블 COMMENT 는 위와 같은 원천 오기 상태다 — 원천 무변경 원칙대로 그대로 옮겼다.
---   ⚠️ 원천 16번의 SP_LOAD_GOOGLE_SEARCH 는 SEARCH_CONSOLE_DATA 만 적재한다
---      (DATA2 를 채우는 적재 경로가 원천 DDL 에 없다) — 용도 확인 대상이다.
-create or replace TABLE GN_DW.BRONZE_GSC.SEARCH_CONSOLE_DATA2 (
-  DATE DATE COMMENT '검색 발생 날짜',
-  QUERY VARCHAR(16777216) COMMENT '사용자 검색 쿼리(키워드)',
-  PAGE VARCHAR(16777216) COMMENT '검색 결과에 노출된 페이지 URL',
-  COUNTRY VARCHAR(16777216) COMMENT '검색이 발생한 국가 코드',
-  DEVICE VARCHAR(16777216) COMMENT '검색에 사용된 디바이스 유형',
-  CLICKS NUMBER(38,0) COMMENT '검색 결과 클릭 수',
-  IMPRESSIONS NUMBER(38,0) COMMENT '검색 결과 노출 수',
-  CTR FLOAT COMMENT '클릭률',
-  POSITION FLOAT COMMENT '평균 검색결과 위치',
-  RESPONSE_AGGREGATION_TYPE VARCHAR(16777216) COMMENT '응답 집계 유형'
-)COMMENT='재송출 광고 성과 내역'
-;
--- ⚠️ 원천 16번 DDL 은 SYNC_ERR_INFO 컬럼 코멘트가 비어 있다. AGENCY.SYNC_ERR_INFO 관례로 보강했다
---    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다. 구조는 변형하지 않았다).
+-- 🔴 2026-10-23 SEARCH_CONSOLE_DATA2 삭제 — 원천 16번에서 빠졌다(2026-09-17 신규분 · GSC 3 → 2).
+-- 🔴 2026-10-23 원천 16번이 컬럼·테이블 COMMENT 를 제공했다 ⇒ 종전 보강 문안을 원천 문안으로 교체
+--    (원천 컬럼 구성은 그대로 3컬럼 — DATA_TYPE 컬럼은 없다).
 create or replace TABLE GN_DW.BRONZE_GSC.SYNC_ERR_INFO (
-  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 순번(시퀀스 SEQ_SYNC_ERR_INFO)',
+  ERR_SEQ NUMBER(38,0) DEFAULT GN_DW.BRONZE_GSC.SEQ_SYNC_ERR_INFO.NEXTVAL COMMENT '오류 이력 일련번호',
   ERR_DATETIME TIMESTAMP_NTZ(9) COMMENT '오류 발생 일시',
-  ERR_INFO VARCHAR(16777216) COMMENT '오류 내용'
-)COMMENT='적재 프로시저 오류 로그'
+  ERR_INFO VARCHAR(16777216) COMMENT '오류 상세 내용'
+)COMMENT='구글 서치 콘솔 데이터 적재 오류 이력 데이터'
 ;

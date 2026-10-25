@@ -1,0 +1,56 @@
+<!-- LLM-METADATA
+doc_id: HANDOFF_O0260_A
+doc_role: 인수인계 — 세션 `O260-A` 가 다음 세션에 넘기는 것(라벨 파일 · O172 규격)
+project: GN_DW (굿네이버스)
+created: 2026-10-23
+created_by: O260-A
+parent: 99_NEXT_SESSION.md
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+<!-- HANDOFF-LABEL O0260-A -->
+
+> 🔴🔴 **이 파일은 인수인계 라벨 파일이다 — 조각이 아니다.**
+> 허브 목차·`--verify` concat·`발행 SHA256` 과 **무관**하다(`O172` 규격).
+> 🟢 **현행 판정식 = 라벨 최대값**(O번호 → 접미 길이 → 접미) ⇒ 취소선 승계 표기가 필요 없다.
+> 🔴 다음 세션은 **이 파일 1개만** 읽으면 된다. 조각에 남은 옛 절은 승계된 것이다.
+### ▣ O260-A-0 🔴 먼저 알아라
+
+- `O260-A` = 원천 DDL(90_provided_definition 11~20) 재수령 반영 + 인수인계 게이트 기준값 갱신 + 요건3 광고 원천 개명 **코드** 반영 (2026-10-23 · TRIALADMIN(UM80684) · ㉡).
+- 직전 단위 = `99_NEXT_SESSION-O0259-A.md` — 그 ㉠ ①③④ 와 ㉡ 는 그대로 유효(아래 승계). ② 는 코드까지 끝났다(아래 ㉠ ①).
+- 사용자 결정 = `BRONZE_CRM.TM_PM_MBRFEE_ACMSLT_TEST` 는 테스트용 ⇒ 이관 제외(04 미수록 · 02 REVOKE · 게이트 `EXCLUDE`).
+- 현행 이관 범위 = 브론즈 64(CRM 53 · AGENCY 4 · ERP 3 · GA4 2 · GSC 2) · SILVER 4 · ML 12 = 80.
+
+### ▣ O260-A-1 현재 작업 계정
+
+| 항목 | 값 |
+|---|---|
+| 계정 | `UM80684`(새 개발계) · 🔴 `GN_DW` 미구축(2026-10-23 실측) |
+| 이 단위의 라이브 판정 | 0건 — 수치는 전부 문서·DDL 기준이다 |
+
+### ▣ O260-A-2 결과
+
+| 항목 | 결과 |
+|---|---|
+| 50_handoff 04~07 | 원천 반영 · `handoff_ddl_gate` 🟢 7축 PASS |
+| 50_handoff 01·02·03·08 | 수치 80/64 · 02 `_TEST` REVOKE · 02 구문 오류(`AS tables,z`) 정정 |
+| 게이트 | `EXCLUDE` 신설 · `STALE_TOKENS` 세대 갱신 · 테스트 17/17 · 음성 `tmp/o260/neg_exclude.py` PASS |
+| 요건3 코드 | staging 2 · 코어 1 · FACT 1 · 08 SILVER DDL · `42_DEPLOY_AGENCY_AD_SRC_RENAME.sql` · 문서실행순서 36 · 개명표 8-E |
+
+### ▣ O260-A-3 ㉠ 잔여 — 이 작업
+
+| 순 | 작업 | 정지점 |
+|---|---|---|
+| ① | 새 계정 구축 후 요건3 실측·검증 — `42_DEPLOY…` [D0]~[D0-c](원천 개명 입고 · 채움률 · DIM 이름 일치율) → 👤 build → [D2] 대사(소스별 행수·광고비 · 상위캠페인코드 경로 행수) | 새 계정 · 👤 build |
+| ② | 사용자 결정 2건 — ㉠ REBRDC `MKTG_CMPGN_NM` 을 코어 `CAMPAIGN_NM` 으로 승격할지(① 실측 후 · FACT 이름매칭 1순위라 O245 코드 경로 결과가 바뀐다) ㉡ 코어 `UPPER_CAMPAIGN_NM`(이름 _NM · 값 코드) 개명 여부 | 👤 결정 |
+| ③ | 80 인수인계 패키지 재빌드(`80_…/build_handoff.py`) — 이번 원본 변경(모델 4 · 08 DDL · 42_ · 문서실행순서)이 80 사본에 아직 없다 | 👤 승인(R4-4-3) |
+
+- 🔴 AD_PERF_DK 는 build 후 바뀐다(ROW_HASH 가 키 이름까지 해시) — DK 를 외부에 저장한 곳이 있으면 재매핑.
+- 🔴 `CMPGN_CD` 전역 치환 금지(CRM 계열 동명) — 이번 변경은 AGENCY 4 파일 한정.
+
+### ▣ O260-A-4 ㉡ 워크스페이스 백로그 (승계)
+
+- O259-A-3 ①(새 개발계 O259 반영 확인) · ③(운영계 33→34→35 → 36) · ④(현업 안내) 그대로.
+- O259-A-4 · O258-A-2 ② · O258-A-3 그대로.
+
+_Co-authored with CoCo_

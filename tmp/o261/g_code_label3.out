@@ -1,0 +1,26 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[SV 코드값·라벨축 게이트] SV 44종 · 컬럼 배킹 차원 898개 검사
+  🟠 열거 누락(§6.9-(5)): SV_EVENT_PARTICIPATION.EVENT_CATEGORY_NAME ▸ EVENT_CATEGORY_NAME distinct 19종 · 실제 예 ["I'm your pen", '국내사업장방문', '굿멤버스데이(본부)', '굿멤버스데이(지부)', '굿모닝', '기업제휴']
+  ⚪ SV_SERVICE.SUBTYPE: 라벨 컬럼 부재 확인됨(SUBTYPE) — DEC-35 1~2단계 대상
+  ⚪ SV_AD.AD_CTGR_CD: 코드축인데 LABEL_PAIRS 미등재(AD_CTGR_CD) — 등재 필요
+  ⚪ SV_AD.AD_TYPE_NM: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(AD_TYPE_NM)
+  ⚪ SV_AD.PAGE_TYPE: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(PAGE_TYPE)
+  ⚪ SV_GA_CHILD_UNPAID.CRM_CHILD_CD: 코드축인데 LABEL_PAIRS 미등재(CHILD_CD) — 등재 필요
+  ⚪ SV_MEMBER_SERVICE_COHORT.SERVICE_GROUP_CD: 코드축인데 LABEL_PAIRS 미등재(SERVICE_GROUP_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.GFT_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(GFT_DIV_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.LETTER_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(LETTER_DIV_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.LETTER_STAT_CD: 코드축인데 LABEL_PAIRS 미등재(LETTER_STAT_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.REL_DSCNTC_RSN_CD: 코드축인데 LABEL_PAIRS 미등재(RELATNSP_DSCNTC_RSN_CD) — 등재 필요
+  ⚪ SV_EVENT_PARTICIPATION.SELF_PARTCPT_CD: 코드축인데 LABEL_PAIRS 미등재(SELF_PARTCPT_CD) — 등재 필요
+  ⚪ SV_ML_ONCE_CONVERSION.MEMBER_DIV_NAME: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(MEMBER_DIV_NAME)
+  ⚪ SV_PAYMENT_BILLING_STATUS.PRCS_STAT_CD: 코드축인데 LABEL_PAIRS 미등재(PRCS_STAT_CD) — 등재 필요
+  ⚪ SV_PAYMENT_BILLING_STATUS.RQEST_DIV_CD: 코드축인데 LABEL_PAIRS 미등재(RQEST_DIV_CD) — 등재 필요
+  ⚪ SV_TARGET_BIZ.CORP_DIV: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(CPR_DIV_NM)
+  ⚪ SV_TARGET_BIZ.ORG_DIV: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(ORG_DIV_NM)
+  ⇒ 위반 1건 (코드값부재 0 · 종수 0 · 열거누락 1 · 라벨축 0 · 폐기리터럴 0) · 정보 16건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 0건 · advisory(🟠 열거누락) 1건
+✅ 게이트 통과 — 🔴 축 0건 (열거 코드값 전량 실재 · 종수 일치 · 라벨축 정상 · 폐기 리터럴 0)
+🟠 잔여 경고 1건 = 저카디널리티 코드축 열거 누락(§6.9-(5)) — blocking 아님.
+   🔴 무시하라는 뜻이 아니다: 열거가 없으면 Agent 가 실재하는 코드값을 누락한 답을 낸다.

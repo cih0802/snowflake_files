@@ -25,7 +25,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_MONTHLY_KPI
   DIMENSIONS (
     kpi.MONTH_KEY AS kpi.MONTH_KEY WITH SYNONYMS ('연월', '조회연월') COMMENT = 'YYYYMM 정수 · 🔴 비율 지표는 한 달을 지정해 쓴다',
     kpi.CAL_YEAR  AS kpi.CAL_YEAR  WITH SYNONYMS ('연도', '년') COMMENT = '연도(YYYY)',
-    kpi.NEW_EXISTING_FLAG AS kpi.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존') COMMENT = '신규기존구분(공113) — 그 달 회원 행의 구분'
+    kpi.NEW_EXISTING_FLAG AS kpi.NEW_EXISTING_FLAG WITH SYNONYMS ('신규기존구분', '신규/기존') COMMENT = '신규기존구분(공113) — 그 달 회원 행의 구분 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''신규'''
   )
   METRICS (
     kpi.DEV_CUM_AMT_CNT_SUM AS SUM(kpi.DEV_CUM_AMT_CNT)

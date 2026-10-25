@@ -1,0 +1,14 @@
+-- GN_DW 0단계 환경/RBAC setup — ★ 정본 이관됨(포인터 스텁)
+-- Co-authored with CoCo
+--
+-- 이 스크립트의 실행/편집 정본은 2026-07-22 아래로 이관되었습니다:
+--   snow://workspace/USER$.PUBLIC."snowflake_files"/versions/head/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql
+--
+-- 사유: 본 스크립트는 SERVING 전용이 아니라 프로젝트 전역 0단계 부트스트랩
+--       (웨어하우스 3 · 역할 6+계층 · WH/스키마 grant · SERVING 스키마 · CoWork object · helper 뷰 2)이며,
+--       설계 정본(02_GN_DW_building/01_환경 Role.md §1.2·§2, 03_GOLD_SERVING.md §3.8)과 짝을 이루므로
+--       02_GN_DW_building 폴더로 이관하여 정본화함.
+--
+-- 하위호환: 05_SV-Agent_ai 문서(01/04/05/09)가 "02_SERVING_setup.sql"을 0단계 선행으로 참조하므로
+--           파일명은 유지하되, 실제 실행/편집은 07_ENVIRONMENT_RBAC_setup.sql 에서 수행하세요.
+--           (내용 중복 방지를 위해 이 파일에는 실행 SQL을 두지 않습니다.)

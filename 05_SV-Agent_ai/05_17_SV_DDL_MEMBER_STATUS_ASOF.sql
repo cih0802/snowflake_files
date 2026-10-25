@@ -29,14 +29,14 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MEMBER_STATUS_ASOF
     msh.EFFECTIVE_FROM AS msh.EFFECTIVE_FROM WITH SYNONYMS ('상태 시작일', '유효 시작일') COMMENT = '이 상태가 시작된 날. as-of 조건 = EFFECTIVE_FROM <= 기준일',
     msh.EFFECTIVE_TO AS msh.EFFECTIVE_TO WITH SYNONYMS ('상태 종료일', '유효 종료일') COMMENT = '이 상태가 끝난 날(다음 상태 시작일과 같은 날 · NULL = 현재 상태). 🔴 as-of 조건 = (EFFECTIVE_TO > 기준일 OR EFFECTIVE_TO IS NULL) — 「>=」 를 쓰면 경계일에 회원이 중복된다',
     msh.IS_CURRENT AS msh.IS_CURRENT WITH SYNONYMS ('현재 상태 여부') COMMENT = '현재 유효 행 여부(회원당 TRUE 단일 행). 「지금」 질문은 이것으로 거른다',
-    msh.MEMBER_STATUS_NAME AS msh.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태', '상태') COMMENT = '회원상태 라벨(MM010). 실제값 13종: ''활동회원''·''후원중단''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''(해당없음)''(일시회원). 🔴 이 라벨의 「활동회원」은 월실적 KPI 활동회원(월말 활동 약정 보유)과 정의가 다르다 — 두 수치를 비교·대체하지 않는다',
-    msh.MEMBER_STATUS_GROUP AS msh.MEMBER_STATUS_GROUP WITH SYNONYMS ('회원상태 그룹', '상태 그룹') COMMENT = '회원상태 상위 그룹',
-    msh.PREV_MEMBER_STATUS_NAME AS msh.PREV_MEMBER_STATUS_NAME WITH SYNONYMS ('직전 회원상태', '이전 상태') COMMENT = '이 상태 직전의 회원상태 라벨(상태 전환 분석용)',
-    msh.MEMBER_TYPE_NAME AS msh.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(개인·기업·단체)',
-    msh.GENDER_NAME AS msh.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '성별 라벨',
+    msh.MEMBER_STATUS_NAME AS msh.MEMBER_STATUS_NAME WITH SYNONYMS ('회원상태', '상태') COMMENT = '회원상태 라벨(MM010). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''활동회원''·''후원중단''·''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''(해당없음)''(일시회원). 🔴 이 라벨의 「활동회원」은 월실적 KPI 활동회원(월말 활동 약정 보유)과 정의가 다르다 — 두 수치를 비교·대체하지 않는다',
+    msh.MEMBER_STATUS_GROUP AS msh.MEMBER_STATUS_GROUP WITH SYNONYMS ('회원상태 그룹', '상태 그룹') COMMENT = '회원상태 상위 그룹 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''(해당없음)''·''미납''·''정상''·''중단''',
+    msh.PREV_MEMBER_STATUS_NAME AS msh.PREV_MEMBER_STATUS_NAME WITH SYNONYMS ('직전 회원상태', '이전 상태') COMMENT = '이 상태 직전의 회원상태 라벨(상태 전환 분석용) 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''신규미납1''·''신규미납2''·''신규미납3''·''신규미납4''·''신규미납5''·''장기미납1''·''장기미납2''·''장기미납3''·''장기미납4''·''장기미납5''·''활동회원''·''후원중단''',
+    msh.MEMBER_TYPE_NAME AS msh.MEMBER_TYPE_NAME WITH SYNONYMS ('회원구분') COMMENT = '회원구분 라벨(개인·기업·단체) 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''개인''·''기업''·''단체''',
+    msh.GENDER_NAME AS msh.GENDER_NAME WITH SYNONYMS ('성별') COMMENT = '성별 라벨 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기업''·''기타''·''남자''·''단체''·''여자''',
     msh.FIRST_JOIN_DATE AS msh.FIRST_JOIN_DATE WITH SYNONYMS ('최초가입일', '가입일') COMMENT = '회원 최초가입일',
     msh.FIRST_JOIN_YEAR AS YEAR(msh.FIRST_JOIN_DATE) WITH SYNONYMS ('가입연도') COMMENT = '회원 최초가입 연도',
-    msh.ENROLL_PATH_NAME AS msh.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014) — 상태이력 기준. 일시회원은 (해당없음).'
+    msh.ENROLL_PATH_NAME AS msh.ENROLL_PATH_NAME WITH SYNONYMS ('가입경로', '회원 가입경로') COMMENT = '회원 가입경로(MM014) — 상태이력 기준. 일시회원은 (해당없음). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''(해당없음)''·''CRM''·''REG''·''모바일앱''·''모바일웹''·''외주콜센터''·''홈페이지'''
   )
   METRICS (
     msh.MEMBER_COUNT AS COUNT(DISTINCT msh.MEMBER_DK)

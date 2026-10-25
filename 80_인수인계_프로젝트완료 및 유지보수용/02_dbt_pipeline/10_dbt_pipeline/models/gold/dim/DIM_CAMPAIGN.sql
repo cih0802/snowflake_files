@@ -80,7 +80,10 @@ select
     --  [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_CAMPAIGN 승계(캠페인 grain · 브랜드 사용여부 = 브랜드 마스터).
     c.USE_DEPT_CD, c.USE_SCOPE, c.USE_YN, c.CMPGN_PRPT_YN, c.SPNSR_ENTRPRS_ID, c.EMRGNCY_AID_BPLC_CD, c.BRND_USE_YN,
     --  [2026-10-14 O229] 상위캠페인 여부(Y = 그 자신이 상위캠페인 · N = 하위캠페인 — SILVER 실측 Y 1,483 · N 35,770 전건 상위코드 보유)
-    c.UPPER_CMPGN_YN                               as IS_PARENT_CAMPAIGN_YN
+    c.UPPER_CMPGN_YN                               as IS_PARENT_CAMPAIGN_YN,
+    --  [2026-10-25 O262-B · 문서20 N-30 ⑤ 코드군 해소] 캠페인대상(CM002 · SILVER 라벨 승계 · 맨 끝 append = 06_DDL ADD COLUMN 규약)
+    c.CMPGN_TRGET_CD                               as CAMPAIGN_TARGET_CD,
+    c.CMPGN_TRGET_NM                               as CAMPAIGN_TARGET_NAME
 from c
 -- [O101 · P85] `parent`·`code_promo` 조인 제거 — 두 라벨을 SILVER 에서 승계하므로 불필요하다.
 --   부수 효과 = `CRM_CAMPAIGN` 재스캔 1회 + `CRM_CODE` 스캔 1회 감소.
@@ -95,4 +98,5 @@ select 0, '(미매핑)', NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL, NULL
     NULL, NULL, NULL, NULL,
     NULL, NULL,
     {{ gold_meta('CRM') }},
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL    -- O262-B CAMPAIGN_TARGET_CD · CAMPAIGN_TARGET_NAME

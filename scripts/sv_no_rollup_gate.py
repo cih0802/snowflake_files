@@ -8,13 +8,18 @@
 분모 = `05_SV-Agent_ai/` 의 SV DDL(05_*·22_·25_·34_) · `_archive` 제외.
 운영자 점검 SQL(26~29·37)은 Agent 출력이 아니므로 분모 밖이다.
 """
+import argparse
 import io
 import os
 import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SV_DIR = os.path.join(ROOT, '05_SV-Agent_ai')
+#: [O262] SV 폴더 자동 탐지 — 워크스페이스(05_SV-Agent_ai/) → 80 패키지 순
+#:   80 사본 = `<80>/10_운영도구_scripts/scripts/이 파일` ⇒ ROOT = `<80>/10_운영도구_scripts` · SV = `<80>/01_실행순서_배포SQL/05_SV-Agent_ai`
+SV_CANDIDATES = (os.path.join(ROOT, '05_SV-Agent_ai'),
+                 os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))
+SV_DIR = next((d for d in SV_CANDIDATES if os.path.isdir(d)), SV_CANDIDATES[0])
 PREFIXES = ('05_', '22_', '25_', '34_')
 #: SV_DIR 기준 상대경로 — 05 폴더 밖 SV 정본
 EXTRA = ('../15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql',)
@@ -29,8 +34,9 @@ RULES = [
 ]
 
 
-def targets():
-    for f in sorted(os.listdir(SV_DIR)):
+def targets(sv_dir=None):
+    sv_dir = sv_dir or SV_DIR
+    for f in sorted(os.listdir(sv_dir)):
         if f.endswith('.sql') and f.startswith(PREFIXES):
             yield f
     # 🆕 [O259] MSTR SV 정본은 05 폴더 밖에 있다(라이브 스캔에서 잔존 1건으로 발견) ⇒ 분모에 명시 편입
@@ -47,11 +53,23 @@ def scan_text(name, body):
     return hits
 
 
-def main():
+def main(argv=None):
+    ap = argparse.ArgumentParser(description='SV 지시문·VQR 소계/합계 행 유도 검사(rc 0 통과 · 1 위반)')
+    ap.add_argument('--sv-dir', default=SV_DIR, help='SV DDL 폴더(기본 = 자동 탐지 %s)' % SV_DIR)
+    a = ap.parse_args(argv)
+    # [O262] EXTRA 부재 = 워크스페이스 정본 폴더면 FAIL(분모 누락) · 그 밖(80 패키지 등)은 🟠 건너뜀
+    strict = os.path.abspath(a.sv_dir) == os.path.abspath(SV_CANDIDATES[0])
     hits, n = [], 0
-    for f in targets():
+    for f in targets(a.sv_dir):
+        p = os.path.join(a.sv_dir, f)
+        if f in EXTRA and not os.path.exists(p):
+            if strict:
+                print('🔴 FAIL — 분모 파일 부재 %s' % f)
+                return 1
+            print('🟠 건너뜀(이 배치에 없음) %s' % f)
+            continue
         n += 1
-        with io.open(os.path.join(SV_DIR, f), encoding='utf-8') as h:
+        with io.open(p, encoding='utf-8') as h:
             hits += scan_text(f, h.read())
     for kind, f, i in hits:
         print('🔴 %s %s:%d' % (kind, f, i))

@@ -42,13 +42,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_DVLP_GOAL_ACMSLT
       COMMENT = '월(1~12).',
     ga.DEPT_DIV_NM AS ga.DEPT_DIV_NM
       WITH SYNONYMS ('부서', '부서구분', '공116')
-      COMMENT = '부서 구분 명(기획실 집계 기준 · DIM_ORG 부서와 같은 조직으로 단정하지 않는다).',
+      COMMENT = '부서 구분 명(기획실 집계 기준 · DIM_ORG 부서와 같은 조직으로 단정하지 않는다). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기타''·''나눔마케팅본부''·''대면모금''·''지역사회''·''회원실''',
     ga.NEW_EXST_DIV_NM AS ga.NEW_EXST_DIV_NM
       WITH SYNONYMS ('신규기존', '신규/기존')
-      COMMENT = '신규기존구분명.',
+      COMMENT = '신규기존구분명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''신규''',
     ga.SPNSR_BSNS_GRP_NM AS ga.SPNSR_BSNS_GRP_NM
       WITH SYNONYMS ('후원사업그룹', '후원사업')
-      COMMENT = '후원 사업 그룹 명.'
+      COMMENT = '후원 사업 그룹 명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''결연''·''국내''·''기타''·''해외프로젝트'''
   )
   METRICS (
     ga.TOTAL_GOAL_CNT AS SUM(ga.GOAL_CNT)
@@ -95,22 +95,22 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
       COMMENT = '월(1~12).',
     mp.DATA_TYPE_STD AS mp.DATA_TYPE_STD
       WITH SYNONYMS ('예측실적구분', '예측/실적', '구분', '예측실측구분')
-      COMMENT = '구분 표준값 3종: 예측 · 연도초예측 · 실적. 🔴🔴 반드시 WHERE 로 하나 고정하거나 GROUP BY 에 넣는다. 예측과 연도초예측은 서로 다른 계열이다 — 합산하지 않는다.',
+      COMMENT = '구분 표준값: 예측 · 연도초예측 · 실적. 🔴🔴 반드시 WHERE 로 하나 고정하거나 GROUP BY 에 넣는다. 예측과 연도초예측은 서로 다른 계열이다 — 합산하지 않는다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''연도초예측''·''예측''',
     mp.DATA_TYPE_NM AS mp.DATA_TYPE_NM
       WITH SYNONYMS ('원천 구분 라벨')
-      COMMENT = '원천 구분 라벨 raw(현업 수기 · 문구가 바뀔 수 있다). 🔴 필터·그룹에 쓰지 않는다 — DATA_TYPE_STD 를 쓴다.',
+      COMMENT = '원천 구분 라벨 raw(현업 수기 · 문구가 바뀔 수 있다). 🔴 필터·그룹에 쓰지 않는다 — DATA_TYPE_STD 를 쓴다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''실측''·''연도초예측''·''예측''',
     mp.IS_FORECAST AS mp.IS_FORECAST
       WITH SYNONYMS ('일반예측여부')
       COMMENT = '일반 예측행 여부(DATA_TYPE_STD=예측). 🔴 연도초예측은 FALSE 이므로 실적 판별에 쓰지 않는다(실적 = DATA_TYPE_STD=실적).',
     mp.SPNSR_BSNS_GRP_NM AS mp.SPNSR_BSNS_GRP_NM
       WITH SYNONYMS ('후원사업그룹', '후원사업')
-      COMMENT = '후원 사업 그룹 명.',
+      COMMENT = '후원 사업 그룹 명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내(사단)''·''대북지원사업''·''보건의료지원사업''·''식수위생지원사업''·''재난구호지원사업''·''전체사업지원''·''좋은이웃''·''해외교육지원사업''·''해외아동결연''·''해외지역개발사업''·''희망학교지원사업''',
     mp.NEW_EXST_DIV_NM AS mp.NEW_EXST_DIV_NM
       WITH SYNONYMS ('신규기존', '신규/기존')
-      COMMENT = '신규기존구분명.',
+      COMMENT = '신규기존구분명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''신규''',
     mp.HDQ_BRNCH_GRP_NM AS mp.HDQ_BRNCH_GRP_NM
       WITH SYNONYMS ('본부지부', '본부/지부', '지부그룹', '공115')
-      COMMENT = '본부 지부 그룹 명(회원실 집계 기준).'
+      COMMENT = '본부 지부 그룹 명(회원실 집계 기준). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''본부''·''본부지부''·''지부''·''통합'''
   )
   METRICS (
     mp.TOTAL_DVLP_CNT AS SUM(mp.DVLP_CNT)
@@ -199,19 +199,19 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SPNSR_CLS_AGGR
       COMMENT = '월(1~12).',
     sc.AGGR_TY_NM AS sc.AGGR_TY_NM
       WITH SYNONYMS ('집계유형', '분류', '후원분류')
-      COMMENT = '집계 유형명(감액/개발/중단/활동/회비). 🔴 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다.',
+      COMMENT = '집계 유형명(감액/개발/중단/활동/회비). 🔴 반드시 WHERE 로 고정하거나 GROUP BY 에 넣는다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''감액''·''개발''·''중단''·''활동''·''회비''',
     sc.CPR_NM AS sc.CPR_NM
       WITH SYNONYMS ('법인', '법인명', '공114')
-      COMMENT = '법인명.',
+      COMMENT = '법인명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사단''',
     sc.SPNSR_BSNS_GRP_NM AS sc.SPNSR_BSNS_GRP_NM
       WITH SYNONYMS ('후원사업그룹', '후원사업')
-      COMMENT = '후원 사업 그룹 명.',
+      COMMENT = '후원 사업 그룹 명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내(사단)''·''대북지원사업''·''보건의료지원사업''·''식수위생지원사업''·''재난구호지원사업''·''전체사업지원''·''좋은이웃''·''해외교육지원사업''·''해외아동결연''·''해외지역개발사업''·''희망학교지원사업''',
     sc.NEW_EXST_DIV_NM AS sc.NEW_EXST_DIV_NM
       WITH SYNONYMS ('신규기존', '신규/기존')
-      COMMENT = '신규기존구분명.',
+      COMMENT = '신규기존구분명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''신규''',
     sc.HDQ_BRNCH_GRP_NM AS sc.HDQ_BRNCH_GRP_NM
       WITH SYNONYMS ('본부지부', '본부/지부')
-      COMMENT = '본부 지부 그룹 명(회원실 집계 기준).'
+      COMMENT = '본부 지부 그룹 명(회원실 집계 기준). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''본부''·''지부'''
   )
   METRICS (
     sc.TOTAL_VALUE1 AS SUM(sc.VALUE1)

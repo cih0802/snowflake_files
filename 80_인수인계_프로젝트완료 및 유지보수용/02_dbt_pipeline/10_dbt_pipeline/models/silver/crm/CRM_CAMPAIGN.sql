@@ -43,7 +43,7 @@ SELECT
   NULLIF(TRIM(par.CMPGN_NM),'')     AS PARENT_CAMPAIGN_NAME, -- 상위캠페인명(자기조인) [DEC-43]
   NULLIF(TRIM(c.SPNSR_BSNS_ID),'')  AS SPNSR_BSNS_ID,
   -- [2026-08-03 G3] 정본 코드컬럼 raw 전파. [2026-08-25] SPNSR_DIV_CD·CPR_DIV_CD 라벨 신설(현업 요건).
-  NULLIF(TRIM(c.CMPGN_TRGET_CD),'') AS CMPGN_TRGET_CD,   -- CM002 (라벨 미배선 — 수요 확인 후 별도)
+  NULLIF(TRIM(c.CMPGN_TRGET_CD),'') AS CMPGN_TRGET_CD,   -- CM002 (라벨 = 맨 끝 CMPGN_TRGET_NM · O262-B)
   NULLIF(TRIM(c.CPR_DIV_CD),'')     AS CPR_DIV_CD,       -- CM019
   NULLIF(TRIM(cpr.DTL_CD_NM),'')    AS CPR_DIV_NM,       -- CM019 라벨(통합/사단/사복)
   NULLIF(TRIM(c.SPNSR_DIV_CD),'')   AS SPNSR_DIV_CD,     -- CM035
@@ -79,6 +79,8 @@ SELECT
   ,NULLIF(TRIM(c.SPNSR_ENTRPRS_ID),'') AS SPNSR_ENTRPRS_ID
   ,c.EMRGNCY_AID_BPLC_CD AS EMRGNCY_AID_BPLC_CD
   ,NULLIF(TRIM(b.USE_YN),'') AS BRND_USE_YN
+  -- [2026-10-25 O262-B · 문서20 N-30 ⑤ 코드군 해소] 캠페인대상 라벨(CM002 · 실측 이전 계정 = 도메인 10/10 · 라벨 35,860/35,860 · 중복코드 0)
+  ,NULLIF(TRIM(trg.DTL_CD_NM),'') AS CMPGN_TRGET_NM
 FROM base c
 LEFT JOIN {{ source('bronze_crm','TM_CM_BRND_MNG') }} b ON c.BRND_ID = b.BRND_ID
 -- [2026-09-16 O162] 마케팅캠페인 라벨. TM_CM_MKTNG_CMPGN_MNG 삭제 → TC_MKTNG_DTL_CD (C001) 통합분 조인.
@@ -100,5 +102,7 @@ LEFT JOIN {{ source('bronze_crm','TC_MKTNG_DTL_CD') }} ch ON ch.CD_ID = 'C002' A
 -- [2026-08-25] CM019/CM035 라벨. CRM_CODE 코드컬럼이 VARCHAR 라 TEXT 직접 비교(TRY_TO_NUMBER 불필요).
 LEFT JOIN {{ ref('CRM_CODE') }} cpr   ON cpr.CD_ID='CM019' AND cpr.DTL_CD_ID = NULLIF(TRIM(c.CPR_DIV_CD),'')
 LEFT JOIN {{ ref('CRM_CODE') }} spnsr ON spnsr.CD_ID='CM035' AND spnsr.DTL_CD_ID = NULLIF(TRIM(c.SPNSR_DIV_CD),'')
+-- [2026-10-25 O262-B] CM002 캠페인대상 라벨. CRM_CODE (CD_ID, DTL_CD_ID) 유일 실측 ⇒ fan-out 0.
+LEFT JOIN {{ ref('CRM_CODE') }} trg   ON trg.CD_ID='CM002' AND trg.DTL_CD_ID = NULLIF(TRIM(c.CMPGN_TRGET_CD),'')
 -- [O101] `WHERE CMPGN_CD IS NOT NULL` 은 `base` CTE 로 올렸다 — 자기조인 부모 쪽에도 같은 규칙이
 --   적용되어야 하므로 필터를 CTE 에 두는 것이 옳다(여기 남기면 부모는 미정제 상태가 된다).

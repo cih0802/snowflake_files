@@ -22,12 +22,12 @@ models:
       - name: SPNSR_BSNS_GRP_NM
         description: "후원 사업 그룹 명"
       - name: GOAL_CNT
-        description: "개발 목표 건수 ← DATA_TYPE_NM='목표' 행의 해당 월 값"
+        description: "개발 목표 건수 ← 구분 표준값 '목표' 행의 해당 월 값(원천 라벨 → 표준값 = seed MAP_EXT_DATA_TYPE)"
       - name: ACMSLT_CNT
-        description: "개발 실적 건수 ← DATA_TYPE_NM='실적' 행의 해당 월 값. 미도래 월은 NULL."
+        description: "개발 실적 건수 ← 구분 표준값 '실적' 행의 해당 월 값(seed MAP_EXT_DATA_TYPE). 미도래 월은 NULL."
 
   - name: WIDE_MBRFEE_PRDT_ACTL
-    description: "회원실 연간 회비 예측·실측(월 grain). 원천 = SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA(부서 자체 수식 · ML 예측 아님). 🔴 예측행과 실측행이 한 뷰에 함께 있다 — 합계·평균 전에 반드시 DATA_TYPE_NM(또는 IS_FORECAST)으로 스코프할 것. 율(_RT) 컬럼은 비가산이다 — 합산하지 말 것."
+    description: "회원실 연간 회비 예측·실측(월 grain). 원천 = SILVER.ANNUAL_MBRFEE_PRDT_ACTL_DATA(부서 자체 수식 · ML 예측 아님). 🔴 예측행·연도초예측행·실적행이 한 뷰에 함께 있다 — 합계·평균 전에 반드시 DATA_TYPE_STD 로 스코프할 것(예측과 연도초예측도 서로 합산 금지). 율(_RT) 컬럼은 비가산이다 — 합산하지 말 것."
     columns:
       - name: MONTH_KEY
         description: "기준월 YYYYMM ← STDR_MT"
@@ -37,12 +37,19 @@ models:
       - name: CAL_MONTH
         description: "월(1~12) ← STDR_MT 뒤 2자리"
       - name: DATA_TYPE_NM
-        description: "예측 실측 구분 명(예측/실측)"
+        description: "예측 실적 구분 원천 라벨 raw(현업 수기 · 문구가 바뀔 수 있다). 🔴 필터·집계에는 DATA_TYPE_STD 를 쓴다 — 원천 라벨로 고정하면 라벨 개명 시 0행이 된다."
+        # [O258] 라벨 목록 accepted_values 제거 — 정의 지점이 seed MAP_EXT_DATA_TYPE 하나로 모였다.
+        #   새 라벨 감시 = tests/warn_map_coverage_ext_data_type.sql + 아래 DATA_TYPE_STD not_null(warn).
+      - name: DATA_TYPE_STD
+        description: "구분 표준값 3종: '예측'(일반 예측) · '연도초예측'(연도초 시점 예측 · 원천 라벨 '연초예측' 포함) · '실적'. 🔴🔴 '예측'과 '연도초예측'은 **서로 다른 계열**이다 — 「예측」 질문은 '예측' 하나로 고정하고, 연도초예측은 명시적으로 물을 때만 쓴다. 둘을 합산하지 않는다. NULL = 매핑에 없는 원천 라벨(분류 불가 · 추정 금지)."
         tests:
-          - accepted_values:
-              values: ['예측', '실측']
+          - not_null:
+              config:
+                severity: warn
+                store_failures: true
+                schema: OPS
       - name: IS_FORECAST
-        description: "예측행 여부 ← DATA_TYPE_NM='예측'"
+        description: "일반 예측행 여부 ← DATA_TYPE_STD='예측'. 🔴 연도초예측은 FALSE 다(별도 계열) — 실적 여부로 쓰지 말 것(실적 = DATA_TYPE_STD='실적'). NULL = 분류 불가 라벨."
       - name: SPNSR_BSNS_GRP_NM
         description: "후원 사업 그룹 명"
       - name: NEW_EXST_DIV_NM

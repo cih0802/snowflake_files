@@ -1,0 +1,30 @@
+/workspace/05_SV-Agent_ai/05_07_SV_DDL_AD.sql
+/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml
+/workspace/10_dbt_pipeline/models/silver/_sources.yml
+/workspace/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+/workspace/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+/workspace/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+/workspace/10_dbt_pipeline/target/compiled/gn_dw_silver/models/silver/_sources.yml
+/workspace/10_dbt_pipeline/target/compiled/gn_dw_silver/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+/workspace/10_dbt_pipeline/target/compiled/gn_dw_silver/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+/workspace/10_dbt_pipeline/target/compiled/gn_dw_silver/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+/workspace/20_issue/32_컬럼개명표.md
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/05_07_SV_DDL_AD.sql
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/_wide_schema.yml
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/_sources.yml
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+/workspace/80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+/workspace/95_작업기록_인수인계정제/_backup_80_원본_20261021/01_실행순서_배포SQL/05_SV-Agent_ai/05_07_SV_DDL_AD.sql
+/workspace/95_작업기록_인수인계정제/_backup_80_원본_20261021/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+/workspace/95_작업기록_인수인계정제/_backup_80_원본_20261021/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+/workspace/95_작업기록_인수인계정제/_backup_80_원본_20261021/02_dbt_pipeline/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+/workspace/95_작업기록_인수인계정제/_backup_80b_원본_20261021/02_dbt_pipeline/10_dbt_pipeline/models/silver/_sources.yml
+/workspace/95_작업기록_인수인계정제/_backup_O256_원본_20261021/05_SV-Agent_ai/05_07_SV_DDL_AD.sql
+/workspace/95_작업기록_인수인계정제/_backup_O256_원본_20261021/10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql
+/workspace/95_작업기록_인수인계정제/_backup_O256_원본_20261021/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_REBRDC.sql
+/workspace/95_작업기록_인수인계정제/_backup_O256_원본_20261021/10_dbt_pipeline/models/silver/agency/AGENCY_AD_ROW_VIDEO.sql
+/workspace/tmp/o228/bak/05_07_SV_DDL_AD.sql.O228-prec3sv
+/workspace/tmp/o237c/bak/05_07.sql.O237C-before
+/workspace/tmp/o241/bak/05_07_SV_DDL_AD.sql.O241-before
+/workspace/tmp/o242b/bak/05_07_SV_DDL_AD.sql

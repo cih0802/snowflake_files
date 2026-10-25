@@ -279,6 +279,22 @@ def main():
         doc_census.ROOT = real_root
         shutil.rmtree(d, ignore_errors=True)
 
+    # ── 축10. 색인 여유 예산 — 라벨이 많아도 색인이 상한 80% 안에 들고, 전 라벨이 빠짐없이 실린다 ──
+    #   🆕 [2026-10-24 O261] 색인은 「분할하지 않는다」(원장 §0) ⇒ 밀도 축소로 여유를 지킨다.
+    #   오염 축 = 라벨 400개(현행 212의 약 2배)로도 예산 초과면 FAIL · 역방향 = 라벨 하나도 빠지면 FAIL ·
+    #   소량(3개)일 때는 압축하지 않아야 한다(정보 손실 없이 전체 열).
+    axis(10, '색인 여유 예산 — 대량 라벨에서 예산 안 · 전건 수록 · 소량은 무압축')
+    rows = [('`O%d-A`' % i, '2026-01-01', '제목 ' + '가' * 60, 60, '9,999',
+             '`X_조각/DOC-O%04d-A.md`' % i) for i in range(1, 401)]
+    budget = int(handoff_write.MAX_BYTES * (1 - handoff_write.INDEX_MIN_FREE))
+    head = ['# 머리말 ' + 'x' * 2000]
+    body = '\n'.join(head + handoff_write.fit_index(head, rows) + handoff_write.INDEX_FOOT)
+    ok(len(body.encode('utf-8')) <= budget, '라벨 400개에서 색인이 예산(%d B)을 넘었다' % budget)
+    ok(all(('DOC-O%04d-A.md' % i) in body for i in range(1, 401)), '압축 과정에서 라벨이 빠졌다')
+    small = '\n'.join(handoff_write.fit_index(head, rows[:3]))
+    ok('이전' not in small and small.count('제목 가') == 3, '소량 라벨을 압축했다(불필요한 정보 손실)')
+    ok(small.index('O0003') < small.index('O0001'), '최신순 정렬이 아니다')
+
     print('=' * 72)
     print('단정 %d건 · 실패 %d건' % (NASSERT[0], len(FAILS)))
     if FAILS:

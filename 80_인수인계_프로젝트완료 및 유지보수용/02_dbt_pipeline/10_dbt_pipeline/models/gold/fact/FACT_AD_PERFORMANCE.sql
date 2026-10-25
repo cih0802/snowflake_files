@@ -84,6 +84,16 @@ video_code_mk as (
     where c.UPPER_CMPGN_CD is not null and c.MKTG_CMPGN_NM is not null
     group by 1
     having COUNT(DISTINCT mk.MKTG_CAMPAIGN_SK) = 1
+),
+--  [2026-10-25 O262 · 사용자 결정 = O261-B ㉮ [5] 채택 · N-29 ⑥ 보류 해제] 영상 이름형 상위캠페인(SILVER UPPER_CAMPAIGN_NM)
+--   → 마케팅캠페인명 정확 일치. 코드 경로(UPPER_CODE) **뒤** 순위 · 이름이 DIM 에서 유일한 것만(HAVING = 1 · 추측 금지).
+--   실측(build 후) = 이름형 4,086행 중 DIM 이름 일치 643행 — 전부 이미 NAME 경로로 **같은 캠페인**(다른 캠페인 0)
+--     ⇒ 현 데이터에서 새로 연결되는 행 0 · 경로는 신규 값 대비. CRM 캠페인명 일치 5종은 CRM 마케팅캠페인명이 비어 경로 없음.
+video_name_mk as (
+    select MKTG_CAMPAIGN_NAME as MKTG_NAME, MIN(MKTG_CAMPAIGN_SK) as MKTG_CAMPAIGN_SK
+    from {{ ref('DIM_MARKETING_CAMPAIGN') }}
+    group by 1
+    having COUNT(*) = 1
 )
 
 select
@@ -118,14 +128,14 @@ select
     --      **광고비 배분 규칙**이 있어야 한다(Q10 재정의 — 원천 입고 사안이 아니다).
     --   WARN: 이름매칭이 유일한 경로다(AGENCY 원천 3종에 캠페인 **코드 컬럼 0개**) → 10.3% 미도달은
     --      센티넬 0 으로 간다. 이 버킷을 「미집행」으로 읽지 말 것.
-    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, vc.MKTG_CAMPAIGN_SK, rc.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · O232: → 소재 매핑(MKTG) · O238: → 영상 상위캠페인코드 · O245: → 재방송 상위캠페인코드 → 0
+    COALESCE(mk.MKTG_CAMPAIGN_SK, up.MKTG_CAMPAIGN_SK, cm_mk.MKTG_CAMPAIGN_SK, vc.MKTG_CAMPAIGN_SK, rc.MKTG_CAMPAIGN_SK, vn.MKTG_CAMPAIGN_SK, 0) as MKTG_CAMPAIGN_SK,   -- O225: 이름 → UTM · O232: → 소재 매핑(MKTG) · O238: → 영상 상위캠페인코드 · O245: → 재방송 상위캠페인코드 · O262: → 영상 상위캠페인명 → 0
     {{ gold_meta('AGENCY') }},
     --  [2026-09-29 O188] 신규지표 #9 「매체별 직접모금비」 — REBRDC 비용 분해 전파(물리 위치 = 맨 끝 · 06_DDL 동기)
     p.CONTENTS_PUR_COST          as CONTENTS_PUR_COST,
     p.CALL_CTR_OPER_COST         as CALL_CTR_OPER_COST,
     p.TOT_COST                   as TOT_COST,
     --  [2026-10-08 O213-F Y3-G] 광고 분류 축 10 — AD_PERF_DK 1:1(ROW_DGT·ROW_VIDEO 키 유일 실측) · 감사컬럼 뒤 append.
-    --   원천 컬럼명 원칙(O212) · 원천에 개념이 없는 출처 행은 NULL(결측 아님). 상위캠페인명(코드·이름 혼재)은 보류(문서20 N-29 ⑥).
+    --   원천 컬럼명 원칙(O212) · 원천에 개념이 없는 출처 행은 NULL(결측 아님). 상위캠페인명(코드·이름 혼재)은 ~~보류(문서20 N-29 ⑥)~~ ⇒ [O262] 분리 후 맨 끝 2열로 승격.
     p.MEDIA_CHANNEL_NM           as MEDIA_CHANNEL_NM,      -- 매체/채널(전 원천)
     p.CREATIVE_NM                as CREATIVE_NM,           -- 소재명(DGT MATR · VIDEO MATR_NM · REBRDC BRDC_NM)
     p.COST_TYPE                  as COST_TYPE,             -- 비용유형 GA/집행/편성
@@ -142,6 +152,7 @@ select
          when cm_mk.MKTG_CAMPAIGN_SK is not null then 'CREATIVE_MAP'
          when vc.MKTG_CAMPAIGN_SK is not null then 'UPPER_CODE'
          when rc.MKTG_CAMPAIGN_SK is not null then 'UPPER_CODE'
+         when vn.MKTG_CAMPAIGN_SK is not null then 'UPPER_NAME'    -- O262
           else 'NONE' end         as MKTG_MAP_METHOD,
     iff(mk.MKTG_CAMPAIGN_SK is null, up.CAND_CNT, NULL)  as MKTG_MAP_CAND_CNT,
     --  [2026-10-15 O232 · 사용자 확정 추천안] 소재 매핑 3순위 — 이름매칭·UTM 실패 행에만 적용한다(06_DDL 동기 · 맨 끝 append).
@@ -171,7 +182,15 @@ select
     --   WARN: 그루핑·필터·합산 금지 — 집계는 AD_CTGR_NM 으로만 한다.
     case when mk.MKTG_CAMPAIGN_SK is not null then iff(mk.CMPGN_CTGR_CD is null, NULL, mk.CMPGN_CTGR_NM_LIST)
          when up.MKTG_CAMPAIGN_SK is not null then iff(up_mk.CMPGN_CTGR_CD is null, NULL, up_mk.CMPGN_CTGR_NM_LIST)
-         else cm.CMPGN_CTGR_NM end                                                as AD_CTGR_NM_LIST
+         else cm.CMPGN_CTGR_NM end                                                as AD_CTGR_NM_LIST,
+    --  [2026-10-25 O262 · N-29 ⑥ 보류 해제] 영상 상위캠페인 코드·이름(SILVER O262 형태 분리 · 06_DDL 동기 · 맨 끝 append)
+    --   VIDEO 전용 · 그 밖 원천 개념 부재 NULL · 두 열 동시 채움 0(SILVER 테스트 assert_aap_upper_cmpgn_split).
+    p.UPPER_CAMPAIGN_CD          as UPPER_CAMPAIGN_CD,     -- 코드형(U####) = CRM 상위캠페인코드
+    p.UPPER_CAMPAIGN_NM          as UPPER_CAMPAIGN_NM,     -- 이름형(~2026-05 · 원천이 개명 전 값을 둠)
+    --  [2026-10-25 O262-B · 33_카테고리_GOLD반영계획 §1] 캠페인 유형 라벨 원값 3열(staging 1:1 · 06_DDL 동기 · 맨 끝 append)
+    d.CMPGN_TYPE1_BSN_NM         as CMPGN_TYPE1_BSN_NM,    -- 국내·해외·통합·전체 [DGT 전용]
+    d.CMPGN_TYPE2_BSN_NM         as CMPGN_TYPE2_BSN_NM,    -- 사례·사업·굿즈·기타·통합 [DGT 전용]
+    v.CMPGN_TY_NM                as CMPGN_TY_NM            -- 「해외 사례」 등 국내외×사업사례 결합 라벨 [VIDEO 전용 · CTV 시트 외 NULL]
 from p
 left join {{ ref('AGENCY_AD_ROW_DGT') }}   d on d.AD_PERF_DK = p.AD_PERF_DK
 left join {{ ref('AGENCY_AD_ROW_VIDEO') }} v on v.AD_PERF_DK = p.AD_PERF_DK
@@ -199,9 +218,10 @@ left join {{ ref('DIM_MARKETING_CAMPAIGN') }} cm_mk
        on cm.MAP_LEVEL = 'MKTG'
        and cm_mk.MKTG_CAMPAIGN_NAME = cm.MKTG_CAMPAIGN_NAME
 --  [2026-10-16 O238] 영상 코드형 상위캠페인 — video_code_mk 는 코드당 1행(HAVING = 1) ⇒ fan-out 0.
+--   [2026-10-23 O260] 원천 13번 개명 `UPPER_CMPGN_NM` → `UPPER_CMPGN_CD`(값 = 종전과 같은 코드 · 조인식 불변).
 left join video_code_mk vc
        on p.AD_SOURCE_TYPE = 'VIDEO'
-      and vc.UPPER_CODE = UPPER(TRIM(v.UPPER_CMPGN_NM))
+      and vc.UPPER_CODE = UPPER(TRIM(v.UPPER_CMPGN_CD))
 --  [2026-10-18 O245 · O238 W6] 재방송(특집·재송출) 상위캠페인코드 — 원천 입고 확인(재측정: 방송 165/237 · 재송출 1,722/1,953 채움 ·
 --   CRM 상위캠페인코드 일치 100%). 영상과 같은 규칙 = 마케팅캠페인이 정확히 1개인 코드만(video_code_mk 재사용 · 1:N 78행은 미매핑 유지).
 --   실측 효과 = 재방송 2,190행 중 1,809행 · 광고비 12,211,671,575원 연결. 「캠페인코드」 열(마케팅캠페인명 기대)은 CRM 일치 0 ⇒ 쓰지 않는다.
@@ -209,3 +229,7 @@ left join {{ ref('AGENCY_AD_ROW_REBRDC') }} rb on rb.AD_PERF_DK = p.AD_PERF_DK
 left join video_code_mk rc
        on p.AD_SOURCE_TYPE = 'REBROADCAST'
       and rc.UPPER_CODE = UPPER(TRIM(rb.UPPER_CMPGN_CD::VARCHAR))
+--  [2026-10-25 O262] 영상 이름형 상위캠페인 — video_name_mk 는 이름당 1행(HAVING = 1) ⇒ fan-out 0.
+left join video_name_mk vn
+       on p.AD_SOURCE_TYPE = 'VIDEO'
+      and vn.MKTG_NAME = p.UPPER_CAMPAIGN_NM

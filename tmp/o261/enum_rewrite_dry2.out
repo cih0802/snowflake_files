@@ -1,0 +1,23 @@
+05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql: 치환 10 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql: 치환 24 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql: 치환 12 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql: 치환 16 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql: 치환 21 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql: 치환 1 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_07_SV_DDL_AD.sql: 치환 8 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql: 치환 2 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql: 치환 10 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql: 치환 3 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql: 치환 8 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql: 치환 1 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql: 치환 1 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql: 치환 1 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql: 치환 3 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql: 치환 3 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql: 치환 2 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/22_ML_SV_DDL.sql: 치환 7 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql: 치환 1 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql: 치환 5 · 잔존 「실제값 N종」 0
+05_SV-Agent_ai/34_DEPLOY_SV_ML_FALLBACK_NOTE.sql: 치환 9 · 잔존 「실제값 N종」 0
+TOTAL 148 · 신규값 추가 차원 1 · DRY-RUN
+ADD SV_GA_BEHAVIOR DEFAULT_CHANNEL_GROUP AI Assistant|Cross-network|Mobile Push Notifications|Organic Shopping|Organic Video|Paid Video

@@ -36,12 +36,13 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_CAMPAIGN_CUM_STOP
     fccs.BASE_YEAR AS fccs.BASE_YEAR WITH SYNONYMS ('기준연도', '연도', '년') COMMENT = '기준연도(연도초 기준 해). 연도만 물으면 그 해 마지막 적재 기준월을 고른다',
     campaign.CAMPAIGN_NAME AS campaign.CAMPAIGN_NAME WITH SYNONYMS ('캠페인명', '캠페인') COMMENT = '후원건 캠페인명. (미매핑) = 후원사업·개발 사건에 캠페인이 연결되지 않은 건',
     campaign.CAMPAIGN_TYPE AS campaign.CAMPAIGN_TYPE WITH SYNONYMS ('캠페인카테고리', '캠페인 카테고리', '주요캠페인') COMMENT = '캠페인 카테고리(MM294 라벨).',
-    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('캠페인유형', '국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295).',
-    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('캠페인유형2', '사업사례', '사업/사례') COMMENT = '캠페인유형2 굿즈/기타/사례/사업(MM296).',
-    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('개발인입경로', '인입경로') COMMENT = '캠페인 개발인입경로(MM293).',
-    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '캠페인 공통브랜드(MM297).',
+    campaign.DOMESTIC_OVERSEAS AS campaign.DOMESTIC_OVERSEAS WITH SYNONYMS ('캠페인유형', '국내해외', '국내/해외') COMMENT = '캠페인유형 국내/통합/해외(MM295). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''전체사업''·''통합''·''해외''',
+    campaign.BIZ_CASE_TYPE AS campaign.BIZ_CASE_TYPE WITH SYNONYMS ('캠페인유형2', '사업사례', '사업/사례') COMMENT = '캠페인유형2 굿즈/기타/사례/사업(MM296). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''굿즈''·''기타''·''사례''·''사업''',
+    campaign.INFLOW_PATH AS campaign.INFLOW_PATH WITH SYNONYMS ('개발인입경로', '인입경로') COMMENT = '캠페인 개발인입경로(MM293). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기타 기업개발''·''뉴미디어''·''대면모금''·''디지털''·''방송''·''영상광고''·''오프라인''·''일시''·''재송출''·''지역개발''·''콜개발''',
+    campaign.CMMN_BRND_NM AS campaign.CMMN_BRND_NM WITH SYNONYMS ('공통브랜드', '공통 브랜드') COMMENT = '캠페인 공통브랜드(MM297). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''교육기관''·''기업''·''뉴미디어''·''대면모금''·''디지털''·''마케팅콜개발''·''방송''·''영상광고''·''일시''·''재송출''·''지역개발''·''콜개발''·''회원 기타''·''회원 오프라인개발''·''회원 온라인개발''·''회원 콜개발''',
     campaign.MARKETING_CAMPAIGN AS campaign.MARKETING_CAMPAIGN WITH SYNONYMS ('마케팅캠페인', '마케팅캠페인명') COMMENT = '마케팅캠페인명.',
     campaign.MKTG_CHANNEL_NM AS campaign.MKTG_CHANNEL_NM WITH SYNONYMS ('마케팅채널', '캠페인 채널') COMMENT = '캠페인 마케팅 채널명(TC_MKTNG_DTL_CD C002).',
+    campaign.CAMPAIGN_TARGET_NAME AS campaign.CAMPAIGN_TARGET_NAME WITH SYNONYMS ('캠페인대상', '캠페인 대상', '대상 구분') COMMENT = '캠페인 대상 구분(CM002 라벨 · O262-B). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''일반인''·''정기회원''·''후원중단회원''·''기업임직원''·''웹진구독회원''·''일시회원''·''정기/일시회원''·''GNI USA''·''직원''·''일반인/일시회원''. 코드 없음 = NULL(값이 없는 캠페인 · 미매핑 아님).',
     campaign.MKTG_UTM_NM AS campaign.MKTG_UTM_NM WITH SYNONYMS ('마케팅UTM', 'UTM') COMMENT = '캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001).',
     campaign.PARENT_CAMPAIGN_NAME AS campaign.PARENT_CAMPAIGN_NAME WITH SYNONYMS ('상위캠페인', '상위캠페인명') COMMENT = '상위캠페인명. 상위가 없으면 NULL.'
   )

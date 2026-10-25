@@ -121,11 +121,14 @@ RETIRED_LITERALS = [
 #   ⚠️ 대가 = 규약(`실제값 N종: 'a'·'b'…`)을 벗어난 문안은 검사 대상 밖(미탐)이다 → DEC-35 R3 로 덮는다.
 # ⚠️ 규약 변형을 흡수한다 — 실측 문안에 `실제값:`·`실제값 N종:`·**`실제 코드값:`**·`실제값 계열:`·`실제값 예:`
 #    가 모두 쓰인다. 3판 초판이 `실제값` 만 봐서 `SV_AD.DEVICE_TYPE`(`실제 코드값:`)을 **검사조차 하지 않았다**.
-COLON = re.compile(r'실제\s*(?:코드\s*)?값[^:：]{0,20}[:：]')
+# 🆕 🔴 [2026-10-24 O261] 「실제값 N종」 폐지 후 표준 문안 = `주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): 'a'·'b'`.
+#   🔴 이 접두를 못 읽어 O261 치환 직후 기존 열거 109건이 **검사 밖**으로 빠지고 「열거 누락」으로 오분류됐다(미탐 + 오분류 동시).
+COLON = re.compile(r'(?:실제\s*(?:코드\s*)?값|주요\s*값)[^:：]{0,40}[:：]')
 # 연속 열거 1항: 앞선 구분자(선택) + 인용값 + 뒤따르는 `=라벨`(선택).
 #   ⚠️ `=라벨` 소비는 **문장부호·이모지에서 멈춘다** — 안 멈추면 `'(unknown)'=매핑 실패 센티넬. ⚠필터 시 'MOBILE'`
 #      에서 라벨을 삼키고 넘어가 `'MOBILE'` 을 열거로 오인한다(부정문을 위반으로 잡는 P114 유형).
-ITEM = re.compile(r"\s*(?:[·,+]|및|또는)?\s*'([^']{1,40})'(?:\s*=\s*[^'·,\n.。⚠🔴🟢·]{0,40})?")
+#   🆕 [O261] `'값'(라벨)` 괄호 주석도 1항으로 소비한다(`AD_CTGR_SRC` 실문안 형태 · 안 먹으면 첫 항 뒤에서 열거가 끊긴다).
+ITEM = re.compile(r"\s*(?:[·,+]|및|또는)?\s*'([^']{1,40})'(?:\s*=\s*[^'·,\n.。⚠🔴🟢·]{0,40}|\s*\([^()'\n]{0,40}\))?")
 # 「실제값 N종」 종수 선언
 CNT = re.compile(r'실제값\s*(\d+)\s*종')
 # 범위 표기 `'1'~'12'`
@@ -177,7 +180,10 @@ ENUM_FORCE = set()
 #   · `STDR_MT` = **모델 실행 기준월(YYYYMM)** — 모델 재실행마다 증가(22_ML_SV_DDL 정본 원칙).
 #   · `FEATURE` = **ML 피처명** — 모델 교체 시 변동(22_ML_SV_DDL 정본 원칙).
 #   · `SPNSR_BSNS_ID` / `SPNSR_BSNS_NAME` = **후원사업 마스터** — 사업 추가마다 변동(22_ML_SV_DDL 정본 원칙).
-ENUM_SKIP = {'DEVICE_SCOPE_DESC', 'STDR_MT', 'FEATURE', 'SPNSR_BSNS_ID', 'SPNSR_BSNS_NAME'}
+#   · 🆕 [2026-10-24 O261] `CHRG_DEPT_NAMES` = 템플릿 담당부서명을 ` · ` 로 이은 **조합 텍스트**(범주 아님 · 조합이 늘면 즉시 낡는다).
+#   · 🆕 [2026-10-24 O261] `ASSUMPTIONS` = 시뮬레이터 가정 **설명문 1행**(코드 차원 아님 · `DEVICE_SCOPE_DESC` 와 같은 근거).
+ENUM_SKIP = {'DEVICE_SCOPE_DESC', 'STDR_MT', 'FEATURE', 'SPNSR_BSNS_ID', 'SPNSR_BSNS_NAME',
+             'CHRG_DEPT_NAMES', 'ASSUMPTIONS'}
 
 
 def is_enum_target(data_type, cardinality, base_col):
@@ -429,6 +435,12 @@ def fixtures():
         ('ZZ_NEG8', 'FSE', 'HAS_BILLING', bt, 'HAS_BILLING', "청구 존재 여부"),
         # 음성⑨ 🔴 **NUMBER 시간축은 ④ 대상이 아니다** — `CAL_QUARTER` 는 자기설명적이다(오탐 대조).
         ('ZZ_NEG9', 'DATE', 'CAL_QUARTER', bt4, 'QUARTER', "분기"),
+        # 🆕 [O261] 양성⑥ **표준 문안(주요 값)** 속 없는 코드값 — 접두를 못 읽으면 미탐한다
+        ('ZZ_POS6', 'FSE', 'SEND_TYPE', bt, 'SEND_TYPE',
+         "발송 채널. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): 'EMAIL'·'FAX'"),
+        # 🆕 [O261] 음성⑩ 표준 문안 + `(라벨)` 괄호 주석 — 전건 실재 ⇒ ① 위반 0 · 열거가 있으므로 ④ 아님
+        ('ZZ_NEG10', 'FSE', 'SEND_TYPE', bt, 'SEND_TYPE',
+         "발송 채널. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): 'EMAIL'(이메일)·'MSG_AT'(알림톡)·'PSTMTR'·'SND'"),
     ]
     exposed = {('ZZ_POS3', bt2): {'MBER_STAT_CD'},
                ('ZZ_NEG3', bt2): {'MBER_STAT_CD', 'MEMBER_STATUS_NAME'},
@@ -436,7 +448,7 @@ def fixtures():
                ('ZZ_NEG7', bt3): {'DEVICE_TYPE'},
                ('ZZ_NEG9', bt4): {'QUARTER'}}
     for sv in ('ZZ_POS1', 'ZZ_POS2', 'ZZ_POS4', 'ZZ_POS5',
-               'ZZ_NEG1', 'ZZ_NEG2', 'ZZ_NEG4', 'ZZ_NEG6', 'ZZ_NEG8'):
+               'ZZ_NEG1', 'ZZ_NEG2', 'ZZ_NEG4', 'ZZ_NEG6', 'ZZ_NEG8', 'ZZ_POS6', 'ZZ_NEG10'):
         exposed[(sv, bt)] = {'SEND_STATUS', 'SEND_TYPE', 'HAS_BILLING'}
     return dims, distinct_map, base_cols, exposed, card, dtype
 
@@ -473,12 +485,12 @@ def main():
         hits_e = {s for s, *_ in e}                              # ④ 열거 누락
         cases = [
             ('①②③ 코드값·라벨축·폐기리터럴', hits_a,
-             {'ZZ_POS1', 'ZZ_POS2', 'ZZ_POS3', 'ZZ_POS4'},
+             {'ZZ_POS1', 'ZZ_POS2', 'ZZ_POS3', 'ZZ_POS4', 'ZZ_POS6'},
              {'ZZ_NEG1', 'ZZ_NEG2', 'ZZ_NEG3', 'ZZ_NEG4', 'ZZ_NEG5',
-              'ZZ_NEG6', 'ZZ_NEG7', 'ZZ_NEG8', 'ZZ_NEG9'}),
+              'ZZ_NEG6', 'ZZ_NEG7', 'ZZ_NEG8', 'ZZ_NEG9', 'ZZ_NEG10'}),
             ('④ 열거 누락(§6.9-(5))', hits_e,
              {'ZZ_POS5'},
-             {'ZZ_NEG8', 'ZZ_NEG9', 'ZZ_NEG1', 'ZZ_NEG6', 'ZZ_NEG7'}),
+             {'ZZ_NEG8', 'ZZ_NEG9', 'ZZ_NEG1', 'ZZ_NEG6', 'ZZ_NEG7', 'ZZ_NEG10'}),
         ]
         print("[자기검사] 합성 입력으로 탐지력을 확인한다(P106 — 위반 0 상태의 통과는 공집합 통과와 구별되지 않는다)")
         ok = True

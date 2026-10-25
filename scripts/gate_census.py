@@ -90,6 +90,8 @@ JUDGE = {
     'null_reason_registry_gate': 'NULL 사유 등록부 상설 게이트 — 100% NULL 컬럼 사유 코드 표준화 및 COMMENT 부합 검증',
     'campaign_axis_gate': 'BRONZE 캠페인 컬럼 → SILVER·GOLD·SV 배선 등재표 대조 · 미등재 FAIL · GAP 은 경고',
     'sv_no_rollup_gate': 'SV 지시문·VQR 의 소계/합계 행 유도(ROLLUP·CUBE·GROUPING SETS) 0 · O259',
+    'sv_enum_newvalue_gate': 'SV COMMENT 열거 목록에 없는 라이브 신규값 0 · ’실제값 N종’ 종수 잔존 0 · O261',
+    'sv_common_block_gate': 'SV AI_SQL_GENERATION 이 정본 공통 블록(00_SV_공통지시문.md)으로 시작하는가 · 소스+라이브 · O262 R-SV1',
 }
 
 OBSERVE = {
@@ -232,6 +234,8 @@ GEN = {
 }
 
 MUTATES = {
+    # 🆕 [2026-10-24 O261] 개발계 구축 중 신설 — `$$` 블록 인식 SQL 파일 실행기(라이브 DDL/DML · `R4-4-3`)
+    'run_sql_file': 'SQL 파일 문장 분리·라이브 실행(`$$` 블록 인식 · GN_DW_ADMIN/GN_DW_DEV_WH · O261)',
     # 🆕 [2026-10-01 O195] O192-B DDL 정본 압축기 3종 — `--write` 가 정본 DDL·부록 md 를 **다중 파일 재작성**한다
     #   (`R4-4-3`). 무인자는 대조만 하지만 `--run` 분모에 넣지 않는다(일회성 이관 도구 · 재실행 = 멱등 확인 용도).
     'o192_ddl_compact': 'SILVER·GOLD DDL 정본 압축(--layer 필수 · --write = 정본+부록 재작성 · O192-B)',
