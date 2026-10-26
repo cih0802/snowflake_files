@@ -1,0 +1,6 @@
+# doc_id: R09 · as_of: 2026-10-25 16:45:41.514 -0700 · account: UM80684 · query: Q01-1 계정 보존 파라미터
+key,value,default,level,description,type
+DATA_RETENTION_TIME_IN_DAYS,1,1,,number of days to retain the old version of deleted/updated data,NUMBER
+MIN_DATA_RETENTION_TIME_IN_DAYS,0,0,,Minimum allowable data retention time for an account. The effective retention time for any entity in the account is the max of this value and the DATA_RETENTION_TIME_IN_DAYS value for that entity.,NUMBER
+MIN_STAGE_UNDROP_RETENTION_TIME_IN_DAYS,0,0,,"Minimum allowable STAGE_UNDROP_RETENTION_TIME_IN_DAYS for an account. Effective named-stage undrop retention is max(this, STAGE_UNDROP_RETENTION_TIME_IN_DAYS). Capped by MAX_DATA_RETENTION_TIME_IN_DAYS.",NUMBER
+STAGE_UNDROP_RETENTION_TIME_IN_DAYS,0,0,,Number of days a dropped stage can be restored with UNDROP STAGE,NUMBER

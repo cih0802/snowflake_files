@@ -1,0 +1,14 @@
+# doc_id: R10 · as_of: 2026-10-25 16:48:26.679 -0700 · account: UM80684 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R10_Q01_1.csv,OK,44,0,WITH 회비: BRONZE_CRM.TM_PM_MBRFEE_ACMSLT ↔ SILVER.CRM_PAYMENT_BILLING (회비월 최근 6개월 · 건수·청구액·납입액)
+Q02,1,R10_Q02_1.csv,OK,44,0,WITH 회비: SILVER.CRM_PAYMENT_BILLING ↔ GOLD.FACT_MEMBER_FEE (회비월 최근 6개월 · 청구액·납입액)
+Q03,1,R10_Q03_1.csv,OK,3,0,WITH 예산: BRONZE_ERP.BDGT_ACMSLT_LEDGER ↔ GOLD.FACT_BUDGET (연도별 집행 총액 · 지출만)
+Q04,1,R10_Q04_1.csv,OK,1,0,SELECT 회원 마스터: BRONZE ↔ SILVER ↔ GOLD 건수
+Q05,1,R10_Q05_1.csv,OK,7,0,SELECT 레이어별 행수 대응(같은 원천 1:1 테이블 · 차이 = 정제 규칙)
+Q06,1,R10_Q06_1.csv,OK,5,0,SELECT 최신성: 레이어별 적재 시각 · 원천 기준일
+Q07,1,R10_Q07_1.csv,OK,3,0,SELECT PK 중복·NULL (GOLD 핵심 팩트 · 키 = dbt unique_key / grain)
+Q08,1,R10_Q08_1.csv,OK,7,0,"WITH 차이 사유 검증(회비): GOLD MONTH_KEY = COALESCE(회비월, 납입월) ⇒ 회비월이 비거나 다른 납입이 납입월로 들어간다. SILVER 를 같은 규칙으로 다시 묶으면 GOLD 와 같아야 한다"
+Q09,1,R10_Q09_1.csv,OK,3,0,WITH 차이 사유 검증(예산): BRONZE 에서 합계행(INCOME_EXPS_DIV_NM='TOTAL')을 빼면 GOLD 와 같아야 한다(macro gn_erp_not_total)
+Q10,1,R10_Q10_1.csv,OK,1,0,SELECT 차이 사유 검증(발송): BRONZE_CRM.SND_MEMBER_LIST 만이 아니라 채널별 발송 원천 4종을 합친다(SILVER.CRM_SEND_MEMBER)
+Q11,1,R10_Q11_1.csv,OK,6,0,WITH 차이 사유 검증(예산 절차): BRONZE 는 같은 연도를 연사업·추가경정 두 절차로 싣는다 ⇒ 절차별 집행액과 GOLD 집행액 대조
+Q12,1,R10_Q12_1.csv,OK,8,0,SELECT 차이 사유 분해(소량 건수): ① 영상광고 빈 행 ② 회원개발 PK NULL·고아 회원 ③ 발송 PK NULL·중복·고아 회원

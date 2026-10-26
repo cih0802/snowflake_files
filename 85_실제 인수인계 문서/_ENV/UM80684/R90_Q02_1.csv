@@ -1,0 +1,3 @@
+# doc_id: R90 · as_of: 2026-10-25 17:02:47.222 -0700 · account: UM80684 · query: Q02-1 [R07 §2] SSO · OAuth · SCIM 보안 통합
+name,type,category,enabled,comment,created_on
+SNOWFLAKE$LOCAL_APPLICATION,OAUTH - LOCAL_APPLICATION,SECURITY,true,https://docs.snowflake.com/user-guide/oauth-local-application,2026-10-20 01:54:45.247000-07:00

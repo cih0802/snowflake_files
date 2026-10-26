@@ -1,0 +1,7 @@
+# doc_id: R06 · as_of: 2026-10-25 16:34:45.005 -0700 · account: UM80684 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R06_Q01_1.csv,OK,1,0,SELECT [MEMBER·EXECUTIVE] 2025년 회비 납부율(회비 납입 ÷ 회비 청구 · 기부금 제외)
+Q02,1,R06_Q02_1.csv,OK,3,0,SELECT [EXECUTIVE] 연도별 편성예산·집행예산·집행율(FACT_BUDGET_YEARLY · 원)
+Q03,1,R06_Q03_1.csv,OK,1,0,SELECT [MEMBER] 2025년 신규 개발 회원수(고유 회원 · 사건 합계가 아님)
+Q04,1,R06_Q04_1.csv,OK,1,0,SELECT [MEMBER] 2025년 서비스 발송 고유 회원수(발송 행 수가 아님)
+Q05,1,R06_Q05_1.csv,OK,1,0,SELECT [MARKETING] 2025년 매체 광고비 합계(원)

@@ -1,0 +1,2 @@
+# doc_id: R00 · as_of: 2026-10-25 16:16:42.843 -0700 · account: UM80684 · query: Q08-1 Task
+created_on,name,id,database_name,schema_name,owner,comment,warehouse,schedule,predecessors,state,definition,condition,allow_overlapping_execution,error_integration,last_committed_on,last_suspended_on,owner_role_type,config,task_relations,last_suspended_reason,success_integration,scheduling_mode,target_completion_interval,execute_as_user,overlap_policy,created_by_user

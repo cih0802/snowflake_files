@@ -1,0 +1,3 @@
+# doc_id: R00 · as_of: 2026-10-25 16:16:42.843 -0700 · account: UM80684 · query: Q07-1 dbt project
+external_access_integrations,name,database_name,schema_name,created_on,updated_on,owner,comment,dbt_version,default_version,default_version_name,default_version_alias,default_version_location_uri,default_version_source_location_uri,dbt_snowflake_version,default_target,default_environment,default_writeback,auto_compile,last_deployed_from
+,DW_PIPELINE,GN_DW,OPS,2026-10-25 15:11:22.697000-07:00,2026-10-25 15:12:57.499000-07:00,GN_DW_ADMIN,BRONZE→SILVER→GOLD. [20261026] AGENT 배선 및 머신러닝 개선2,1.9.4,LIVE,,,snow://dbt/GN_DW.OPS.DW_PIPELINE/versions/live/,"snow://workspace/USER$.PUBLIC.""snowflake_files""/versions/live/10_dbt_pipeline/",1.9.2,,,true,true,

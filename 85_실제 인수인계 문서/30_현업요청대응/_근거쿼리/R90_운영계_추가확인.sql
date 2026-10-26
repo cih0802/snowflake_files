@@ -1,0 +1,26 @@
+-- doc_id: R90 · 운영계 추가 확인(TBD 해소용 · 읽기 전용) · 설명 = 30_현업요청대응/90_운영계_점검기록_실행가이드.md §2
+-- 실행 롤 = ACCOUNTADMIN (Q01 만 ORGADMIN 필요 — 권한 없으면 ERROR 로 기록되고 나머지는 계속 실행된다)
+-- Q01 [R01 §2] 계정 에디션
+SHOW ORGANIZATION ACCOUNTS;
+-- Q02 [R07 §2] SSO · OAuth · SCIM 보안 통합
+SHOW SECURITY INTEGRATIONS;
+-- Q03 [R07 §3] SECRET 객체 위치 · 소유 · 유형(값은 조회되지 않는다)
+SHOW SECRETS IN ACCOUNT;
+-- Q04 [R07 §2] 네트워크 정책
+SHOW NETWORK POLICIES;
+-- Q05 [R07 §2] 인증 정책(MFA 강제 여부)
+SHOW AUTHENTICATION POLICIES IN ACCOUNT;
+-- Q06 [R04 §2 · R05 §4 · R11 §4] dbt 프로젝트 버전 이력 · git commit
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+-- Q07 [R06 §1 · R11 §4] Agent 기본 버전
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
+-- Q08 [R04 §2 · R11 §1] Git 저장소 객체
+SHOW GIT REPOSITORIES IN ACCOUNT;
+-- Q09 [R02 §4 · R07 §4] Streamlit 소유(개인 워크스페이스 의존)
+SHOW STREAMLITS IN ACCOUNT;
+-- Q10 [R05 §2 · R09] 최근 7일 정기 Task 실행 결과
+SELECT database_name, schema_name, name, state, COUNT(*) runs, MAX(scheduled_time) last_run, LISTAGG(DISTINCT LEFT(error_message,120), ' | ') errors FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(SCHEDULED_TIME_RANGE_START => DATEADD(day,-7,CURRENT_TIMESTAMP()), RESULT_LIMIT => 1000)) GROUP BY 1,2,3,4 ORDER BY 1,2,3,4;
+-- Q11 [R09 §2] 운영계 보존기간(계정 파라미터)
+SHOW PARAMETERS LIKE '%RETENTION%' IN ACCOUNT;
