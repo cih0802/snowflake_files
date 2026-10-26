@@ -1,0 +1,57 @@
+-- doc_id: R91 · 미완작업(90 가이드 §4-1 T1~T10 · R10 §5 U · R 문서 TBD) 운영계 재검측 · 읽기 전용(SELECT/SHOW 만)
+-- 실행 = 운영계 ZL50263 · ACCOUNTADMIN · python3 scripts/env_capture.py --id R91 "<이 파일>"
+-- 판정 기준 = 각 Q 머리 주석 · 결과 = _ENV/ZL50263/R91_<Qnn>_<k>.csv
+-- Q01 [T1] TASK_VIDEO 상태(started 이면 해소 · suspended 이면 생성자 결정 대기)
+SHOW TASKS LIKE 'TASK_VIDEO' IN SCHEMA GN_DW.BRONZE_AGENCY;
+-- Q02 [T2·T3] 2026-10-26 이후 정기 Task 실행 결과(daily SUCCEEDED · errors 공란이면 해소)
+SELECT database_name, schema_name, name, state, COUNT(*) runs, MAX(scheduled_time) last_run,
+       LISTAGG(DISTINCT LEFT(error_message, 120), ' | ') errors
+FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(
+       SCHEDULED_TIME_RANGE_START => '2026-10-26 00:00:00'::TIMESTAMP_LTZ,
+       RESULT_LIMIT => 1000))
+GROUP BY 1, 2, 3, 4
+ORDER BY 1, 2, 3, 4;
+-- Q03 [T10] 원천 적재 오류 기록 · 2026-10-26 이후 신규 행(0 이면 해소)
+SELECT 'BRONZE_AGENCY' s, COUNT(*) n_all, COUNT_IF(ERR_DATETIME >= '2026-10-26') n_new, MAX(ERR_DATETIME) last_err
+FROM GN_DW.BRONZE_AGENCY.SYNC_ERR_INFO
+UNION ALL
+SELECT 'BRONZE_ERP', COUNT(*), COUNT_IF(ERR_DATETIME >= '2026-10-26'), MAX(ERR_DATETIME)
+FROM GN_DW.BRONZE_ERP.SYNC_ERR_INFO
+UNION ALL
+SELECT 'BRONZE_GA4', COUNT(*), COUNT_IF(ERR_DATETIME >= '2026-10-26'), MAX(ERR_DATETIME)
+FROM GN_DW.BRONZE_GA4.SYNC_ERR_INFO
+UNION ALL
+SELECT 'BRONZE_GSC', COUNT(*), COUNT_IF(ERR_DATETIME >= '2026-10-26'), MAX(ERR_DATETIME)
+FROM GN_DW.BRONZE_GSC.SYNC_ERR_INFO;
+-- Q04 [T4] 계정 에디션(ORGADMIN 없으면 ERROR · 🟠 유지)
+SHOW ORGANIZATION ACCOUNTS;
+-- Q05 [T5] SECRET 소유(개인 소유 0 이면 해소)
+SHOW SECRETS IN ACCOUNT;
+-- Q06 [T6] dbt 배포 원본(source_location) · 기본 버전
+SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE;
+-- Q07 [T6] Streamlit 소유(개인 소유 0 이면 해소)
+SHOW STREAMLITS IN ACCOUNT;
+-- Q08 [T7 선행 · R06 §1] Agent 기본 버전(오늘 반영 후 값 기록)
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_EXECUTIVE;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MARKETING;
+SHOW VERSIONS IN AGENT GN_DW.SERVING.AGENT_MEMBER;
+-- Q09 [T8 · U1] 2026 예산 절차별 편성·집행(추경 편성이 0 이 아니면 채택 규칙 재검토)
+SELECT YEAR, BDGT_PRCD_NM, COUNT(*) n, SUM(EXEC_TOT_AMT) exec_tot
+FROM GN_DW.BRONZE_ERP.BDGT_ACMSLT_LEDGER
+WHERE YEAR = 2026
+GROUP BY 1, 2
+ORDER BY 2;
+-- Q10 [U7] 영상광고 SILVER → GOLD 대사 범위 확인(GOLD = 영상 + 재방송 이면 차이 0 = 해소)
+SELECT (SELECT COUNT(*) FROM GN_DW.SILVER.AGENCY_AD_ROW_VIDEO) s_video,
+       (SELECT COUNT(*) FROM GN_DW.SILVER.AGENCY_AD_ROW_REBRDC) s_rebrdc,
+       (SELECT COUNT(*) FROM GN_DW.GOLD.FACT_AD_BROADCAST) g_broadcast,
+       g_broadcast - s_video - s_rebrdc diff;
+-- Q11 [R02 · 부서 귀속] 현업 확정 매핑 seed 행수(0 이면 현업 회신 대기)
+SELECT COUNT(*) n_manual FROM GN_DW.GOLD.ORG_SUCCESSION_MANUAL;
+-- Q12 [R07 §2] 마스킹·행 접근 정책 수(0 이면 결정 대기)
+SHOW MASKING POLICIES IN ACCOUNT;
+SHOW ROW ACCESS POLICIES IN ACCOUNT;
+-- Q13 [U6] GN_DW DMF 부착 수(0 이면 결정 대기 · ACCOUNT_USAGE 지연 최대 수 시간)
+SELECT COUNT(*) n_dmf, COUNT(DISTINCT ref_entity_name) n_tables
+FROM SNOWFLAKE.ACCOUNT_USAGE.DATA_METRIC_FUNCTION_REFERENCES
+WHERE ref_database_name = 'GN_DW';

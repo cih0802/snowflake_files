@@ -71,6 +71,22 @@ status: review
 - 증분 전략(키): SILVER = append + TRUNCATE(전량 · 멱등) · GOLD dim = merge(`unique_key`) · GOLD fact = append + 범위 DELETE · GOLD wide = view (A4 §2 표).
 - 업무 변환 규칙 해설 = `80/02_dbt_pipeline/10_dbt_pipeline/README.md` · 각 모델 머리 주석 · 계보 = `85:D06` · 지표 정의 = `85:D01`.
 
+## 3-1. 🆕 부서 귀속 매핑 갱신 (폐지·개편 부서 → 현재 부서-팀 · DEC-63 · 2026-10-26 추가)
+
+폐지·개편 부서의 실적을 현재 부서-팀에 합산하는 축(`GOLD.DIM_ORG_SUCCESSION` · `CUR_DEPARTMENT` · `CUR_ORG_PATH`)은 **자동 추정 + 현업 확정 seed** 로 만든다.
+현재 확정 seed `GOLD.ORG_SUCCESSION_MANUAL` = **0행**(현업 회신 대기 · R02 「행 0 테이블」 행).
+
+| 순 | 누가 | 무엇을 | 파일 · 명령 |
+|---|---|---|---|
+| ① | 현업 | 폐지 부서마다 연결할 현재 부서코드를 적는다 · 연결하지 않을 부서는 코드 칸을 비우고 비고에 「연결안함」 | `30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx`(225행) 의 **`확정_귀속부서코드(현업기입)`** · **`확정_비고(현업기입)`** 열 · 안내 = 같은 폴더 `…_안내_20261021_v3.docx` |
+| ② | 작업자 | 회신을 seed 로 옮긴다 · 열 = `OLD_DEPT_ID` · `CUR_DEPT_ID`(연결안함이면 빈칸) · `CONFIRMED_BY` · `CONFIRMED_DT` · `NOTE` | `10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv` |
+| ③ | 👤 작업자 | dbt 재배포 후 실행 | `build --select ORG_SUCCESSION_MANUAL DIM_ORG_SUCCESSION` |
+| ④ | 작업자 | 대사 = 키 중복 0 · 행 수 = 부서 마스터 · 연도별 중단 합계 보존 · 확정 행은 `MAP_METHOD` = `MANUAL`/`MANUAL_UNMAPPED` | `05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql` [D3] |
+| ⑤ | 현업(인사) | **조직 개편 때마다** ①~④ 를 반복한다 — 담당자 미지정(90 가이드 §4-1 T11) | — |
+
+- 🔴 부서 귀속은 **부서코드 단위**다. 코드는 그대로 두고 이름만 바꾼 부서는 현재 이름으로만 보인다(원천 부서 마스터가 이름 이력을 갖지 않는다 · 스냅샷 미가동).
+- 사용 SV = `SV_MEMBER_SPONSOR_BIZ`(중단·활동) · `SV_DEV_ACHIEVEMENT`(목표·실적·달성율) · `SV_MEMBER_EVENT`(개발 실적). 다른 SV 에 붙이려면 같은 관계(`SPNSR_ACMSLT_DEPT_CD` 등 → `OLD_DEPT_ID`)를 추가한다.
+
 ## 4. 인수자 확인 절차 (현업 확인 기준: 「내부 계정으로 소스를 내려받아 의존성 구성 · 대표 모델과 테스트 실행 · 변환 로직·증분 기준 설명」)
 
 1. 내부 계정 워크스페이스로 소스를 가져온다(80번 `02_dbt_pipeline/10_dbt_pipeline/` 업로드 또는 Git 연결) + `profiles.yml` 추가.
