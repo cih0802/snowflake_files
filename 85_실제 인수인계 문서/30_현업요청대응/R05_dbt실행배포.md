@@ -62,6 +62,11 @@ status: review
 | `TASK_VIDEO` | SUCCEEDED 4 (마지막 2026-10-23 01:10) · 🟠 **suspended**(10-23 11:59 생성자 LEESH 재생성) · 10-26 21:23 작업자가 resume 했다가 원상복구 | 🟠 생성자 결정 대기 → 90 가이드 §4 #9 · T1 |
 | `OPS."daily"`(dbt build) | FAILED 5 · SUCCEEDED 2 (마지막 성공 10-21) · 실패 모델 `AGENCY_AD_ROW_VIDEO` · `AGENCY_AD_ROW_REBRDC`(10-23~26 · 원천 컬럼 개명 O260 미반영 버전 · 수정본 반영 후 정상) · `CRM_HOLIDAY`(10-22 · SILVER CREATE TABLE 권한 · 해소) | 🟢 2026-10-26 수동 build 정상 · 10-27 06:01 정기 실행 확인 남음(90 가이드 T2) |
 
+- 🆕 [재검측 2026-10-27 00:45 KST · `_ENV/ZL50263/R91_Q01_1.csv` · `R91_Q02_1.csv`]
+  - `TASK_VIDEO` = 여전히 `suspended`(USER_SUSPENDED · 10-26 22:21) ⇒ T1 그대로.
+  - `daily` = 10-26 06:01 FAILED(운영계 반영 전) · 다음 = 10-27 06:01 SCHEDULED ⇒ T2 판정 보류. 원천 Task 7종 10-26 전부 SUCCEEDED.
+  - dbt 기본 버전 = `VERSION$29`(2026-10-26 18:42 KST · `R91_Q06_1.csv`).
+
 - 🔴 dbt build 는 모델 일부가 실패해도 나머지는 갱신된다. 실패 모델과 그 하위만 갱신이 멈춘다 ⇒ 실패가 이어지면 영상·재송출 광고 · 휴일 달력 기반 지표가 낡는다.
 
 ## 3. 로그 · 실행 결과 · 알림
