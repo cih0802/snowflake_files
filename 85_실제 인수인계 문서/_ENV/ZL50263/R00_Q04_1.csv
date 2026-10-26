@@ -1,0 +1,25 @@
+# doc_id: R00 · as_of: 2026-10-26 20:56:10.020 +0900 · account: ZL50263 · query: Q04-1 스키마 목록 · 보존기간 · 관리접근
+SCHEMA_NAME,SCHEMA_OWNER,RETENTION_TIME,IS_MANAGED_ACCESS,CREATED,COMMENT
+BRONZE_AGENCY,GN_DW_ADMIN,1,YES,2026-06-10 14:35:48.607000+09:00,원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)
+BRONZE_BIGQUERY,GN_DW_ADMIN,1,YES,2026-06-10 14:35:47.865000+09:00,"원천 데이터 적재 - GA4 (웹/앱 방문, Google 광고)"
+BRONZE_CRM,GN_DW_ADMIN,1,YES,2026-06-10 14:35:47.119000+09:00,원천 데이터 적재 - CRM (회원/납입/캠페인)
+BRONZE_CRM_2,GN_DW_ADMIN,1,YES,2026-08-31 16:41:36.915000+09:00,원천 적재 — CRM(회원/납입/캠페인). 일적재 테스트용
+BRONZE_ERP,GN_DW_ADMIN,1,YES,2026-06-10 14:35:49.338000+09:00,원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)
+BRONZE_GA4,GN_DW_ADMIN,1,NO,2026-08-25 17:21:47.919000+09:00,
+BRONZE_GSC,GN_DW_ADMIN,1,NO,2026-08-21 18:29:29.129000+09:00,
+DBT_TEST__AUDIT,GN_DW_ADMIN,1,NO,2026-09-14 09:12:48.627000+09:00,dbt 테스트 실패 감사 — dbt 자동 생성 회피용 선생성
+GOLD,GN_DW_ADMIN,1,YES,2026-09-30 12:00:17.628000+09:00,분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다
+GOLD_2,GN_DW_ADMIN,1,NO,2026-09-30 13:33:52.338000+09:00,분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다
+GOLD_OLD,GN_DW_ADMIN,1,YES,2026-08-12 14:00:00.765000+09:00,분석 계층 — star schema(DIM + FACT) + 평탄화 WIDE VIEW. 지표 215개 귀속. 객체 수는 INFORMATION_SCHEMA.TABLES 를 TABLE_TYPE 으로 집계해 조회한다
+INFORMATION_SCHEMA,,1,NO,,Views describing the contents of schemas in this database
+LAB,GN_DW_ADMIN,1,NO,2026-08-19 17:29:55.163000+09:00,셀프서비스 계층 — Analyst 저작 Streamlit·프로토타입. 미인증. SERVING 승격은 ADMIN 전용
+ML,GN_DW_ADMIN,1,NO,2026-08-10 18:33:58.588000+09:00,
+MSTR,GN_DW_ADMIN,1,NO,2026-10-04 09:57:42.287000+09:00,MSTR(MicroStrategy) 이관 PoC — 구 SQL Server mart/dbo 객체의 Snowflake 전환본. 원천 = BRONZE_CRM. 중간 산출물 + 최종 마트
+OPS,GN_DW_ADMIN,1,YES,2026-06-10 13:07:25.931000+09:00,ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)
+OPS_2,GN_DW_ADMIN,1,NO,2026-09-30 13:34:58.438000+09:00,ETL 운영 인프라 — dbt 프로젝트(DBT PROJECT DW_PIPELINE) + Cortex Agent 정본 yaml 배포 스냅샷(STAGE AGENT_SPEC_STAGE) + dbt 테스트 실패 감사 테이블. 소비 역할에 권한 없음(배포·운영 전용)
+PUBLIC,GN_DW_ADMIN,1,NO,2026-06-10 13:07:17.826000+09:00,
+SECURITY,GN_DW_ADMIN,1,YES,2026-06-10 13:07:25.213000+09:00,"보안 정책 객체 전용 (Network Rule, Masking Policy, Auth Policy)"
+SERVING,GN_DW_ADMIN,1,NO,2026-08-04 18:11:10.972000+09:00,Serving 계층 — Semantic View·Cortex Agent·Streamlit 배치(P7). GOLD DIM/FACT cross-schema 참조
+SILVER,GN_DW_ADMIN,1,YES,2026-09-30 12:00:16.756000+09:00,정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다
+SILVER_2,GN_DW_ADMIN,1,NO,2026-09-30 13:32:40.563000+09:00,정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다
+SILVER_OLD,GN_DW_ADMIN,1,YES,2026-07-28 14:32:33.312000+09:00,정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다

@@ -1,0 +1,15 @@
+# doc_id: R00 · as_of: 2026-10-26 20:56:10.020 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R00_Q01_1.csv,OK,27,0,SELECT 스키마별 테이블·뷰 수 · 보존기간
+Q02,1,R00_Q02_1.csv,OK,1697,0,SELECT 테이블·뷰 전수(행수·코멘트 유무)
+Q03,1,R00_Q03_1.csv,OK,92,0,SELECT 프로시저·함수·스테이지·시퀀스
+Q04,1,R00_Q04_1.csv,OK,23,0,SELECT 스키마 목록 · 보존기간 · 관리접근
+Q05,1,R00_Q05_1.csv,OK,45,0,SHOW Semantic View
+Q06,1,R00_Q06_1.csv,OK,7,0,SHOW Agent
+Q07,1,R00_Q07_1.csv,OK,2,0,SHOW dbt project
+Q08,1,R00_Q08_1.csv,OK,9,0,SHOW Task
+Q09,1,R00_Q09_1.csv,OK,1,0,SHOW Alert
+Q10,1,R00_Q10_1.csv,OK,1,0,SHOW Cortex Search
+Q11,1,R00_Q11_1.csv,OK,12,0,SHOW Streamlit
+Q12,1,R00_Q12_1.csv,OK,6,0,SHOW Warehouse
+Q13,1,R00_Q13_1.csv,OK,1,0,SHOW Database

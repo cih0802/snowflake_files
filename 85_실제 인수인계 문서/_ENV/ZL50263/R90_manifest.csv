@@ -1,0 +1,15 @@
+# doc_id: R90 · as_of: 2026-10-26 20:56:56.738 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R90_Q01_1.csv,ERROR,0,0,003001 (42501): SQL access control error:
+Q02,1,R90_Q02_1.csv,OK,1,0,SHOW [R07 §2] SSO · OAuth · SCIM 보안 통합
+Q03,1,R90_Q03_1.csv,OK,1,0,SHOW [R07 §3] SECRET 객체 위치 · 소유 · 유형(값은 조회되지 않는다)
+Q04,1,R90_Q04_1.csv,OK,0,0,SHOW [R07 §2] 네트워크 정책
+Q05,1,R90_Q05_1.csv,OK,0,0,SHOW [R07 §2] 인증 정책(MFA 강제 여부)
+Q06,1,R90_Q06_1.csv,OK,29,0,SHOW [R04 §2 · R05 §4 · R11 §4] dbt 프로젝트 버전 이력 · git commit
+Q07,1,R90_Q07_1.csv,OK,20,18,SHOW [R06 §1 · R11 §4] Agent 기본 버전
+Q07,2,R90_Q07_2.csv,OK,23,21,SHOW [R06 §1 · R11 §4] Agent 기본 버전
+Q07,3,R90_Q07_3.csv,OK,27,25,SHOW [R06 §1 · R11 §4] Agent 기본 버전
+Q08,1,R90_Q08_1.csv,OK,0,0,SHOW [R04 §2 · R11 §1] Git 저장소 객체
+Q09,1,R90_Q09_1.csv,OK,14,0,SHOW [R02 §4 · R07 §4] Streamlit 소유(개인 워크스페이스 의존)
+Q10,1,R90_Q10_1.csv,OK,40,0,SELECT [R05 §2 · R09] 최근 7일 정기 Task 실행 결과
+Q11,1,R90_Q11_1.csv,OK,4,0,SHOW [R09 §2] 운영계 보존기간(계정 파라미터)

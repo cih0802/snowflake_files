@@ -1,0 +1,5 @@
+# doc_id: R10 · as_of: 2026-10-26 20:57:42.933 +0900 · account: ZL50263 · query: Q07-1 PK 중복·NULL (GOLD 핵심 팩트 · 키 = dbt unique_key / grain)
+CHK,V
+FACT_MEMBER_MONTHLY null MEMBER_DK,0
+DIM_MEMBER dup MEMBER_DK,0
+DIM_CAMPAIGN dup CAMPAIGN_SK,0
