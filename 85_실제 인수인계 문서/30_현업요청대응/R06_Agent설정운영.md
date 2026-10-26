@@ -1,8 +1,8 @@
 ---
 doc_id: R06
 title: "[현업 D06] Agent 설정과 운영"
-version: 0.1
-as_of: 2026-10-25 (공통 = UM80684 라이브 · 정본 spec · ENV = ZL50263 2026-10-21 캡처 인용)
+version: 0.2
+as_of: 2026-10-26 (운영계 ZL50263 점검 `_ENV/ZL50263/R00_Q05·Q06·Q10` · `R90_Q07` · `R06_Q01~Q05` · 정본 spec)
 source_docs:
   - 85_실제 인수인계 문서/20_정식산출물/D09_Agent명세서.md · D09_Agent도구.csv (v1.0)
   - 85_실제 인수인계 문서/20_정식산출물/D08_시맨틱뷰정의서.md · D08_SV요약.csv · D08_SV메트릭.csv (v1.0)
@@ -10,8 +10,8 @@ source_docs:
   - 85_실제 인수인계 문서/20_정식산출물/N05_테스트결과서.md §4·§5 · D12_현업활용가이드.md §3·§4 (v1.0)
   - 80_인수인계_프로젝트완료 및 유지보수용/04_SV_Agent_스펙/cortex_project/agents/*/agent_spec.yaml
 source_queries:
-  - _ENV/UM80684/R00_Q05_1 (SV) · R00_Q06_1 (Agent) · R00_Q10_1 (Search)
-  - 30_현업요청대응/_근거쿼리/R06_Agent검증_기대값.sql → _ENV/UM80684/R06_Q01~Q05
+  - _ENV/ZL50263/R00_Q05_1 (SV) · R00_Q06_1 (Agent) · R00_Q10_1 (Search) · R90_Q07_1~3 (Agent 버전)
+  - 30_현업요청대응/_근거쿼리/R06_Agent검증_기대값.sql → _ENV/ZL50263/R06_Q01~Q05
 owner: TBD
 status: review
 ---
@@ -38,21 +38,21 @@ status: review
 | 오케스트레이션 모델 | `auto` | `auto` | `auto` |
 | 도구 | Cortex Analyst 18 + Cortex Search 1 | 31 + 1 | 31 + 1 |
 | 연결 대상 | SV(`D09_Agent도구.csv`) + `SERVING.SEARCH_BIZ_DEFINITION` | 같음 | 같음 |
-| 기본 버전 `[ENV]` ZL50263 | VERSION$19 | VERSION$22 | VERSION$26 |
+| 기본 버전(운영계 · 2026-10-26) | VERSION$20 (2026-10-26 19:10) | VERSION$23 | VERSION$27 |
 | 사용 권한 | USAGE = GN_DW_ANALYST · VIEWER · SERVICE | 같음 | 같음 |
 | 지침 정본 | `80/04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml` | `…/AGENT_MARKETING/agent_spec.yaml` | `…/AGENT_MEMBER/agent_spec.yaml` |
 
-- 연결 객체: Semantic View 44(UM80684) / 45(ZL50263) · Cortex Search 1(lag 1 day · WH GN_DW_ANALYTICS_WH · 원천 `SERVING.BIZ_DEFINITION_CORPUS`).
+- 연결 객체: Semantic View 45(운영계 · R00_Q05_1) · Cortex Search 1(lag 1 day · WH GN_DW_ANALYTICS_WH · 원천 `SERVING.BIZ_DEFINITION_CORPUS`).
 - 배포·버전업·롤백 = `85:D09` §4 · A5 §3(`09_2_AGENT_버전업.sql` · `@GN_DW.OPS.AGENT_SPEC_STAGE`). 🔴 Agent 를 `CREATE OR REPLACE` 하지 않는다(버전·GRANT 소실).
 - 서비스 대상 외 Agent 4 = R02 §4.
 
 ## 2. 검증 질문과 기대 결과 [신규]
 
-기대값은 Agent 가 아니라 **GOLD 를 직접 집계한 값**이다(`_근거쿼리/R06_Agent검증_기대값.sql`). Agent 답이 이 값과 다르면 원인을 SV 정의 → 지침 순서로 본다. 값은 계정 데이터에 따라 달라지므로 **운영계에서는 같은 SQL 로 기대값을 다시 만든다**.
+기대값은 Agent 가 아니라 **GOLD 를 직접 집계한 값**이다(`_근거쿼리/R06_Agent검증_기대값.sql`). Agent 답이 이 값과 다르면 원인을 SV 정의 → 지침 순서로 본다. 값은 계정 데이터에 따라 달라지므로 아래 값은 **운영계 ZL50263 에서 같은 SQL 로 다시 만든 값**이다(`_ENV/ZL50263/R06_Q01~Q05_1.csv` · 2026-10-26 20:57).
 
-| # | Agent | 검증 질문 | 기대 결과(UM80684 · 2026-10-25) | 틀리는 방식(오답 신호) |
+| # | Agent | 검증 질문 | 기대 결과(운영계 ZL50263 · 2026-10-26) | 틀리는 방식(오답 신호) |
 |---|---|---|---|---|
-| V1 | MEMBER · EXECUTIVE | 2025년 회비 납부율은? | **85.65%** (회비 납입 175,389,609,655 ÷ 회비 청구 204,764,777,089) | 기부금 포함 총수납 ÷ 청구로 계산 → 과대(`85:D12` §3 #3) |
+| V1 | MEMBER · EXECUTIVE | 2025년 회비 납부율은? | **85.65%** (회비 납입 175,390,669,655 ÷ 회비 청구 204,765,837,089) | 기부금 포함 총수납 ÷ 청구로 계산 → 과대(`85:D12` §3 #3) |
 | V2 | EXECUTIVE | 연도별 편성예산·집행예산·집행율 | 2024 **98.11%** · 2025 **99.69%** · 2026 **67.22%** (편성/집행 = R06_Q02) | 월 SV(SV_BUDGET)와 연 SV 를 합산 · 수입 예산을 찾음(원천 부재) |
 | V3 | MEMBER | 2025년 신규 개발 회원수 | **116,832명**(고유 회원) | 사건 합계 119,509 를 답함(`85:D12` §3 #1) |
 | V4 | MEMBER | 2025년 서비스 발송 회원수 | **841,147명**(고유 회원) | 발송 행 15,477,217 을 답함(`85:D12` §3 #2) |
@@ -62,6 +62,7 @@ status: review
 
 - 기존 평가셋 = ZL50263 `GN_DW.SERVING.EVAL_O224_AGENT_*_V3~V6`(21·14·13 문항 × 4판). 🔴 기대값이 2026-08 스냅샷이라 16/20 이 현재 값과 다르다 — 원인 확인 전에 덮어쓰지 않는다(`85:N05` §4 · A8-26).
 - 점수 수집 = Snowsight » AI & ML » Agents » Evaluations(`85:N05` §5 · 미수집 TBD).
+- 🟡 V1~V5 의 **Agent 답 대조는 아직 하지 않았다**(기대값만 확정). 인수 시 현업이 Snowflake Intelligence 에서 질문하고 위 값과 대조한다(90 가이드 §4-1 T7 · dbt `daily` 정상화 T2 이후 권장).
 
 ## 3. 알려진 한계
 

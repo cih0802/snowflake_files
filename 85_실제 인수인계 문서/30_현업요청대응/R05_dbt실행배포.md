@@ -1,8 +1,8 @@
 ---
 doc_id: R05
 title: "[현업 D05] dbt 실행과 배포"
-version: 0.1
-as_of: 2026-10-25 (공통 = 워크스페이스 소스 · UM80684 라이브 · ENV = ZL50263 2026-10-21 캡처 인용)
+version: 0.2
+as_of: 2026-10-26 (운영계 ZL50263 점검 `_ENV/ZL50263/R00_Q07~Q09` · `R90_Q10` + 워크스페이스 소스)
 source_docs:
   - 85_실제 인수인계 문서/10_실무자_인수인계/A4_dbt_파이프라인_개발자가이드.md §4·§5 (v0.1)
   - 85_실제 인수인계 문서/10_실무자_인수인계/A6_일배치_장애대응_런북.md §1~§6 (v0.1)
@@ -10,7 +10,7 @@ source_docs:
   - Snowflake 문서 ALTER DBT PROJECT · EXECUTE DBT PROJECT (2026-10-25 조회)
 source_queries:
   - _ENV/ZL50263/A0_Q05_1.csv (Task) · A0_Q05_2.csv (Alert) · A0_Q04_4.csv (dbt project)
-  - _ENV/UM80684/R00_Q07_1.csv · R00_Q08_1.csv
+  - _ENV/ZL50263/R00_Q07_1.csv · R00_Q08_1.csv · R00_Q09_1.csv · R90_Q10_1.csv (최근 7일 Task 결과)
 owner: TBD
 status: review
 ---
@@ -37,7 +37,7 @@ status: review
 | 서비스 사용자 | 별도 dbt 서비스 사용자 없음 — Task 가 소유 롤로 실행한다. 수동 실행은 GN_DW_DBT 를 받은 사람 계정 |
 | 환경변수 · 비밀 | `env.yml` · `ENV_VARS` · Snowflake secret **미사용**. 계정·사용자 정보는 profiles 에 없음(세션 인증). 실행 파라미터는 `dbt_project.yml` vars 와 `--vars` JSON 뿐(A4 §5) |
 
-## 2. 스케줄 · 선후행 `[ENV]` 운영계 ZL50263 (시각 = Asia/Seoul)
+## 2. 스케줄 · 선후행 · 운영계 ZL50263 (시각 = Asia/Seoul · 2026-10-26 확인)
 
 | 시각 | 단계 | 객체 | 소유 | 선후행 |
 |---|---|---|---|---|
@@ -52,8 +52,17 @@ status: review
 | 월 1회 | 월마감 | `BRONZE_CRM.SP_EXEC_MONTH_END(YYYYMM)`(SILVER 집계 · ML 예측 연쇄) | GN_DW_LOADER | 🔴 dbt build 와 동시 실행 금지 |
 
 - 외부 오케스트레이터(Airflow 등) **없음**. 스케줄러 = Snowflake Task 뿐이다. 외부 의존은 CRM·ERP 원천 적재(LOADER 팀)와 외부 Python 적재 1개다(D03 범위).
-- SLA(제안 · 미확정) = `85:N04` §3. 시각 근거 = `_ENV/ZL50263/A0_Q05_1.csv`.
-- UM80684 는 Task·Alert 0 — 정기 실행이 없는 재구축 계정이다(`_라이브대조.md`).
+- SLA(제안 · 미확정) = `85:N04` §3. 시각 근거 = `_ENV/ZL50263/R00_Q08_1.csv` · Alert `R00_Q09_1.csv`(started · 2026-10-26 19:15 재생성).
+
+### 2-1. 최근 7일 실행 결과 (2026-10-20~26 · `_ENV/ZL50263/R90_Q10_1.csv`)
+
+| 객체 | 결과 | 판정 |
+|---|---|---|
+| `AGENCY_TASK_MASTER` · `TASK_DGT` · `TASK_REBRDC` · GA4 · GSC · BIGQUERY · `TSK_RUN_MSTR_DAILY` | SUCCEEDED 7/7 | 🟢 |
+| `TASK_VIDEO` | SUCCEEDED 4 (마지막 2026-10-23 01:10) · 🟠 **suspended**(10-23 11:59 생성자 LEESH 재생성) · 10-26 21:23 작업자가 resume 했다가 원상복구 | 🟠 생성자 결정 대기 → 90 가이드 §4 #9 · T1 |
+| `OPS."daily"`(dbt build) | FAILED 5 · SUCCEEDED 2 (마지막 성공 10-21) · 실패 모델 `AGENCY_AD_ROW_VIDEO` · `AGENCY_AD_ROW_REBRDC`(10-23~26 · 원천 컬럼 개명 O260 미반영 버전 · 수정본 반영 후 정상) · `CRM_HOLIDAY`(10-22 · SILVER CREATE TABLE 권한 · 해소) | 🟢 2026-10-26 수동 build 정상 · 10-27 06:01 정기 실행 확인 남음(90 가이드 T2) |
+
+- 🔴 dbt build 는 모델 일부가 실패해도 나머지는 갱신된다. 실패 모델과 그 하위만 갱신이 멈춘다 ⇒ 실패가 이어지면 영상·재송출 광고 · 휴일 달력 기반 지표가 낡는다.
 
 ## 3. 로그 · 실행 결과 · 알림
 
@@ -73,9 +82,9 @@ status: review
 | ① 변경 | 워크스페이스 `10_dbt_pipeline/` 수정. 테이블 구조 변경이면 DDL 정본 + `ALTER` 먼저(A4 §3-1) |
 | ② 검토 | 🟠 현재 코드 리뷰 체계(PR) 없음 — R11 §1 Git 전환 후 PR 리뷰를 권고. 그전까지는 변경 전후 파일 사본 + 이슈 원장(`80/07_운영런북_이슈/20_issue/`) 기록 |
 | ③ 테스트 | `EXECUTE DBT PROJECT FROM WORKSPACE USER$.PUBLIC."<워크스페이스>" ARGS='build --select <모델>+ --target dev2'`(배포 전 · 사본 스키마) 또는 시험 계정 |
-| ④ 배포 `[ENV]` | **버전형(ZL50263)**: `ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE ADD VERSION FROM '<워크스페이스>/versions/live/10_dbt_pipeline'` → 새 `VERSION$n` 이 기본(A4 §4) · **live형(UM80684)**: `ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE DEPLOY FROM '<같은 경로>'`(live 내용을 한 번에 교체) |
+| ④ 배포 | **버전형(운영계 · 현재 기본 `VERSION$29`)**: `ALTER DBT PROJECT GN_DW.OPS.DW_PIPELINE ADD VERSION FROM '<워크스페이스>/versions/live/10_dbt_pipeline'` → 새 `VERSION$n` 이 기본(A4 §4). 참고: 새로 만든 프로젝트는 live 형(`DEPLOY FROM`)이 될 수 있다(`DW2_PIPELINE` = LIVE) |
 | ⑤ 배포 후 검증 | `parse` → `compile` → `build` · BIGQUERY 일자 수 대조(A6 Q04) · 실패 저장 0행(A6 Q03) |
-| ⑥ 되돌리기 `[ENV]` | **버전형**: 직전 정상 버전을 확인(`SHOW VERSIONS IN DBT PROJECT …`)하고 그 버전 소스로 다시 배포한다. **live형**: 이전 버전이 남지 않는다 ⇒ 🔴 배포 전에 소스 사본(Git tag 또는 `80_…/02_dbt_pipeline` 같은 폴더 사본)을 남기고, 되돌릴 때 그 사본을 `DEPLOY FROM` 한다 |
+| ⑥ 되돌리기 | **버전형(운영계)**: 직전 정상 버전을 확인(`SHOW VERSIONS IN DBT PROJECT …`)하고 그 버전 소스로 다시 배포한다. **live형**: 이전 버전이 남지 않는다 ⇒ 🔴 배포 전에 소스 사본(Git tag 또는 `80_…/02_dbt_pipeline` 같은 폴더 사본)을 남기고, 되돌릴 때 그 사본을 `DEPLOY FROM` 한다 |
 | ⑦ 데이터 되돌리기 | 코드를 되돌린 뒤 영향 모델만 `build --select <모델>+` 로 재적재(멱등 · §5). 테이블 손상은 R09 §2(Time Travel 1일) |
 
 - 🔴 `CREATE OR REPLACE DBT PROJECT` 는 실행 이력을 지울 수 있다 — 배포는 `ADD VERSION`/`DEPLOY FROM` 만 쓴다(Snowflake 문서 경고).

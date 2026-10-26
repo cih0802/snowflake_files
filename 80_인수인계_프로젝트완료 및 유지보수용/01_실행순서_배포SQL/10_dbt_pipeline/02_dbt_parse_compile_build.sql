@@ -29,12 +29,14 @@ USE WAREHOUSE GN_DW_ETL_WH;
 -- [3-1] 마스터 스냅샷 실행 (BRONZE 마스터 SCD Type 2 이력 누적)
 -- 전체 스냅샷 실행:
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot';
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='seed';
 
 -- 특정 티어 또는 개별 스냅샷만 실행 시:
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='snapshot --select snp_crm_tm_cm_cmpgn_mng snp_crm_tm_cm_dept_info snp_crm_tm_cm_spnsr_bsns_info';
 
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
+
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- WARN: [O261 · 개발 환경·신규 구축 필수 · 운영계는 백필 제외 R2-9] 신규 구축·재배포 직후 아래 **범위 지정 build 를 반드시** 이어서 돌린다(전체 build 만으로는 BIGQUERY 체인이 롤링 창 밖 과거를 채우지 않는다).
 --   실사고 = 2026-10-24 이전 계정 신규 개발 환경 · 전체 build ERROR 0 인데 GA4 하류 0행(무증상) · 이 줄 실행 후 34일 복구.

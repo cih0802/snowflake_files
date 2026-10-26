@@ -1,15 +1,15 @@
 ---
 doc_id: R02
 title: "[현업 D02] DB와 데이터 구조"
-version: 0.1
-as_of: 2026-10-25 (공통 = UM80684 라이브 · ENV = ZL50263 2026-10-21 캡처 인용)
+version: 0.2
+as_of: 2026-10-26 (운영계 ZL50263 점검 · `_ENV/ZL50263/R00_Q01~Q13` · `R90_Q09`)
 source_docs:
   - 85_실제 인수인계 문서/20_정식산출물/D04_테이블컬럼정의서.md · D04_테이블목록.csv · D04_컬럼정의.csv · .xlsx (v1.0)
   - 85_실제 인수인계 문서/20_정식산출물/D05_ERD.md · D05_FK관계.csv · D06_원천타깃매핑_계보.md · D06_테이블계보.csv (v1.0)
   - 85_실제 인수인계 문서/20_정식산출물/N03_통합데이터사전.md · .csv · .xlsx · .html (v1.0)
   - 85_실제 인수인계 문서/20_정식산출물/D07_ETL_파이프라인설계서.md §3 (v1.0)
 source_queries:
-  - 30_현업요청대응/_근거쿼리/R00_라이브대조.sql (Q01~Q11) → _ENV/UM80684/R00_*
+  - 30_현업요청대응/_근거쿼리/R00_라이브대조.sql (Q01~Q13) → _ENV/ZL50263/R00_*
   - _ENV/ZL50263/A0_Q02_1 · A0_Q04_* · A0_Q05_* · B1_Q01_1 · B1_Q10_1
 owner: TBD
 status: review
@@ -29,38 +29,39 @@ status: review
 | 생성·변경 절차 | 이 문서 §3 (A4 §2·§3 · `85:D10` §5 · `85:D14` §5 요약) | 충족 |
 | 미사용·임시 객체 구분 | 이 문서 §4 | 신규 |
 
-## 1. 스키마 구성 [공통 · UM80684 라이브 2026-10-25]
+## 1. 스키마 구성 [운영계 ZL50263 · 2026-10-26 · `_ENV/ZL50263/R00_Q01_1.csv` · `R00_Q04_1.csv`]
 
-| 스키마 | 레이어/역할 | 테이블 | 뷰 | 소유 · 관리접근 | 운영계 ZL50263 (`[ENV]` · 테이블/뷰) |
-|---|---|---|---|---|---|
-| BRONZE_AGENCY · _CRM · _ERP · _GA4 · _GSC | 원천 사본(외부 LOADER 적재) | 4 · 53 · 3 · 2 · 2 | 0 | GN_DW_ADMIN · managed | 같음 |
-| BRONZE_BIGQUERY | GA4 export 원천 | 0 | 0 | GN_DW_ADMIN · managed | 1,051 (일자 샤드 1,020 등) |
-| SILVER | 정제 · 표준화 | 73 | 1 | GN_DW_ADMIN | 69 · 0 |
-| GOLD | dim · fact(테이블) · wide(뷰) | 64 | 19 | GN_DW_ADMIN(뷰 = GN_DW_DBT) | 62 · 19 |
-| SERVING | AI 소비(SV · Agent · Search · ML/MSTR 서빙 뷰) | 1 | 21 | GN_DW_ADMIN | 1 · 25 |
-| ML | 예측 결과 · 학습 데이터셋 | 12 | 0 | GN_DW_ADMIN | 42 · 5 |
-| MSTR | MSTR 이관 리포트 마트 | 10 | 13 | GN_DW_ADMIN | 같음 |
-| OPS | dbt 프로젝트 · 실패 저장 · 알림 설정 | 12 | 0 | GN_DW_ADMIN | 15 · 2 |
-| SECURITY · DBT_TEST__AUDIT · PUBLIC | 태그/정책 · dbt 감사 · 기본 | 0 | 0 | — | 같음 · LAB(Streamlit 9) 추가 |
+| 스키마 | 레이어/역할 | 테이블 | 뷰 | 소유 · 관리접근 |
+|---|---|---|---|---|
+| BRONZE_AGENCY · _CRM · _ERP · _GA4 · _GSC | 원천 사본(외부 LOADER 적재) | 4 · 54 · 3 · 2 · 2 | 0 | GN_DW_ADMIN · managed(AGENCY·CRM·ERP) · 일반(GA4·GSC) |
+| BRONZE_BIGQUERY | GA4 export 원천 | 1,056 (일자 샤드 다수) | 0 | GN_DW_ADMIN · managed |
+| SILVER | 정제 · 표준화 | 77 | 1 | GN_DW_ADMIN · managed |
+| GOLD | dim · fact(테이블) · wide(뷰) | 64 | 19 | GN_DW_ADMIN(뷰 = GN_DW_DBT) · managed |
+| SERVING | AI 소비(SV · Agent · Search · ML/MSTR 서빙 뷰) | 1 | 25 | GN_DW_ADMIN |
+| ML | 예측 결과 · 학습 데이터셋 | 39 | 5 | GN_DW_ADMIN |
+| MSTR | MSTR 이관 리포트 마트 | 10 | 13 | GN_DW_ADMIN |
+| OPS | dbt 프로젝트 · 실패 저장 · 알림 설정 | 16 | 2 | GN_DW_ADMIN · managed |
+| SECURITY · DBT_TEST__AUDIT · PUBLIC · LAB | 태그/정책 · dbt 감사 · 기본 · 셀프서비스(Streamlit 12) | 0 | 0 | GN_DW_ADMIN (SECURITY = managed) |
+| 백업 사본(§4) | `BRONZE_CRM_2` · `SILVER_2` · `SILVER_OLD` · `GOLD_2` · `GOLD_OLD` · `OPS_2` | 52 · 61 · 57 · 46 · 46 · 10 | 0 · 0 · 0 · 17 · 14 · 1 | GN_DW_ADMIN |
 
-- 테이블·컬럼 상세는 `85:D04`(ZL50263 기준)를 정본으로 쓴다. UM 과의 객체 차이 = `_라이브대조.md` §3.
+- 테이블·컬럼 상세는 `85:D04`(ZL50263 기준)를 정본으로 쓴다. 전수 목록 = `_ENV/ZL50263/R00_Q02_1.csv`(1,697행) · 보존기간 전부 1일.
 - 레이어 규칙(키·감사 컬럼 `DW_*` · BRONZE `_LOAD_DT`·`_BATCH_ID`·`_STDR_YM`) = `85:D04` §2.
 
 ## 2. 비테이블 객체 목록
 
-| 종류 | 위치 | 운영계 ZL50263 `[ENV]` | UM80684 라이브 | 목록 정본 |
-|---|---|---|---|---|
-| 프로시저 · 함수 | BRONZE_*(원천 적재 10) · BRONZE_CRM(월마감 1) · SILVER(수기·연간 집계 8) · MSTR(13 + 함수 2) · OPS(알림 5) · ML(23) | 62 (+ 백업 `SILVER_2` 8) | 16 (MSTR 13 · 함수 2 · ML 시뮬레이터 1) | `85:D07` §3 · `_ENV/ZL50263/B1_Q10_1.csv` |
-| Task | BRONZE_AGENCY `AGENCY_TASK_MASTER`(01:10) → `TASK_DGT`·`TASK_REBRDC`·`TASK_VIDEO` · BRONZE_BIGQUERY `TASK_LOAD_BIGQUERY`(01:40) · BRONZE_GA4 `TASK_GA_USER_DEMOGRAPHIC`(01:20) · BRONZE_GSC `TASK_GOOGLE_SEARCH`(01:30) · OPS `"daily"`(dbt · 06:01) · MSTR `TSK_RUN_MSTR_DAILY`(07:30) · 시각 KST | 9 (전부 started) | 0 | `_ENV/ZL50263/A0_Q05_1.csv` · `85:N04` |
-| Alert | OPS `ALERT_DBT_WARN_SPNSR_CLS_DUP` 09:00 KST | 1 | 0 | A0_Q05_2 |
-| Semantic View | SERVING `SV_*` | 45 | 44 (`SV_ML_LTV_SCORE` 없음) | `85:D08` · `D08_SV요약.csv` |
-| Cortex Agent | SERVING `AGENT_EXECUTIVE`·`AGENT_MARKETING`·`AGENT_MEMBER` (+ 서비스 외 4 · §4) | 7 | 3 | `85:D09` |
-| Cortex Search | SERVING `SEARCH_BIZ_DEFINITION` (lag 1 day · WH ANALYTICS) | 1 | 1 | A0 §4-1 |
-| DBT PROJECT | OPS `DW_PIPELINE` (+ `DW2_PIPELINE` · §4) | 2 | 1 | R04 |
-| Stage | OPS `AGENT_SPEC_STAGE` · `BIZ_DEFINITION_STAGE` · `AD_CREATIVE_MAP_STAGE` (+ BRONZE 적재용 · ZL 14) | 14 | 3 | A0 §3 |
-| Sequence | BRONZE_AGENCY·ERP·GA4·GSC `SEQ_SYNC_ERR_INFO` | — | 4 | R00_Q03 |
-| Streamlit | LAB 9 · 개인 2 | 11 | 0 | A0_Q04_5 |
-| 동적 테이블 · 구체화 뷰 | — | 0 | 0 | A0 §3 |
+| 종류 | 위치 | 운영계 ZL50263 (2026-10-26) | 목록 정본 |
+|---|---|---|---|
+| 프로시저 · 함수 | BRONZE_*(원천 적재 10) · BRONZE_CRM(월마감 1) · SILVER(수기·연간 집계 8) · MSTR(13 + 함수 2) · OPS(알림 5) · ML(23) | 프로시저 63 (+ 백업 `SILVER_2` 8) · 함수 2 | `85:D07` §3 · `_ENV/ZL50263/R00_Q03_1.csv` |
+| Task | BRONZE_AGENCY `AGENCY_TASK_MASTER`(01:10) → `TASK_DGT`·`TASK_REBRDC`·`TASK_VIDEO` · BRONZE_BIGQUERY `TASK_LOAD_BIGQUERY`(01:40) · BRONZE_GA4 `TASK_GA_USER_DEMOGRAPHIC`(01:20) · BRONZE_GSC `TASK_GOOGLE_SEARCH`(01:30) · OPS `"daily"`(dbt · 06:01) · MSTR `TSK_RUN_MSTR_DAILY`(07:30) · 시각 KST | 9 (🔴 `TASK_VIDEO` suspended · 나머지 started · 90 가이드 §4 #9) | `_ENV/ZL50263/R00_Q08_1.csv` · `85:N04` |
+| Alert | OPS `ALERT_DBT_WARN_SPNSR_CLS_DUP` 09:00 KST | 1 | `_ENV/ZL50263/R00_Q09_1.csv` |
+| Semantic View | SERVING `SV_*` | 45 | `85:D08` · `D08_SV요약.csv` · R00_Q05_1 |
+| Cortex Agent | SERVING `AGENT_EXECUTIVE`·`AGENT_MARKETING`·`AGENT_MEMBER` (+ 서비스 외 4 · §4) | 7 | `85:D09` · R00_Q06_1 |
+| Cortex Search | SERVING `SEARCH_BIZ_DEFINITION` (lag 1 day · WH ANALYTICS) | 1 | R00_Q10_1 |
+| DBT PROJECT | OPS `DW_PIPELINE` (+ `DW2_PIPELINE` · §4) | 2 | R04 · R00_Q07_1 |
+| Stage | OPS `AGENT_SPEC_STAGE` · `BIZ_DEFINITION_STAGE` · `AD_CREATIVE_MAP_STAGE` (+ BRONZE 적재용 · ZL 14) | 14 (BRONZE 9 · OPS 3 · LAB 1 · SILVER 1) | R00_Q03_1 |
+| Sequence | BRONZE_AGENCY·BIGQUERY·ERP·GA4·GSC `SEQ_SYNC_ERR_INFO` | 5 | R00_Q03_1 |
+| Streamlit | LAB 12(GN_DW_ANALYST 11 · GN_DW_ADMIN 1) · 개인 `USER$CHOIH` 2 | 14 | R00_Q11_1 · R90_Q09_1 |
+| 동적 테이블 · 구체화 뷰 | — | 0 | A0 §3 |
 
 ## 3. DDL 정본과 생성·변경 절차
 
@@ -88,10 +89,10 @@ status: review
 | 두 번째 dbt 프로젝트 | OPS `DW2_PIPELINE` | ZL50263 | 시험용(dev2) | 유지 여부 결정 |
 | 예시 프로시저 | OPS `SAMPLE_ETL_PIPELINE_PROC` · `SEND_EMAIL_ON_ERROR_SAMPLE`(소유 ACCOUNTADMIN) | ZL50263 | 알림 표준 예시(`85:D07` §3) | 참고용 유지 또는 삭제 |
 | 1회성 초기화 프로시저 | MSTR `USP_F_MM_SPNSR_DVLP_SUM_INIT` | 공통 | 🔴 전체 DELETE · 일 배치 금지(A6 F5) | 유지(호출 금지 표시) |
-| 행 0 테이블 | GOLD `FACT_AD_BROADCAST_CASE` · `ORG_SUCCESSION_MANUAL` · SILVER `AGENCY_AD_BROADCAST_CASE` · BRONZE_GA4/GSC `SYNC_ERR_INFO` | UM80684 | 원천 미발생 또는 수기 입력 대기 · 오류 기록 테이블은 0행이 정상 | 유지 |
+| 행 0 테이블 | GOLD `FACT_AD_BROADCAST_CASE` · `ORG_SUCCESSION_MANUAL` · SILVER `AGENCY_AD_BROADCAST_CASE` · BRONZE_GA4/GSC `SYNC_ERR_INFO` | ZL50263(R00_Q02_1) | 원천 미발생 또는 수기 입력 대기 · 오류 기록 테이블은 0행이 정상. 🟠 `SYNC_ERR_INFO` 는 AGENCY 45 · ERP 16 · BIGQUERY 3 행(AGENCY 최종 기록 2026-10-26 17:19) ⇒ 원천 시트 숫자 열의 `-`·`%`·공란 등(90 가이드 §4-1 T10) | 유지 |
 | dbt 실패 저장 테이블 | OPS `NOT_NULL_*` · `ACCEPTED_VALUES_*` · `WARN_*` (12) | 공통 | dbt `store_failures` 결과 · 다음 build 에서 재생성 | 유지 · 행 있으면 A6 F3 |
 | 비활성 스냅샷 | dbt `snapshots/` 11 | 공통 | 🔴 영구 미가동(DEC-61) · SNAPSHOT 스키마 없음 | 유지(가동 금지) |
-| 개인 Streamlit | `USER$CHOIH` 2 · LAB 의 이름 없는 앱 7 | ZL50263 | 개인 워크스페이스 앱은 사용자 삭제 시 함께 사라진다(A1 §2-3) | 필요한 앱만 SERVICE 롤 소유로 이관 |
+| 개인 Streamlit | `USER$CHOIH` 2 · LAB 의 이름 없는 앱(자동 ID) | ZL50263(R90_Q09_1) | 개인 워크스페이스 앱은 사용자 삭제 시 함께 사라진다(A1 §2-3) | 필요한 앱만 SERVICE 롤 소유로 이관 |
 
 ## 5. 인수자 확인 절차 (현업 확인 기준: 「대표 데이터의 원천부터 최종 테이블까지 추적 · 시험 환경에서 DDL 로 대표 객체 생성」)
 

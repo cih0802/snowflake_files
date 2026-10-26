@@ -1,15 +1,15 @@
 ---
 doc_id: R04
 title: "[현업 D04] dbt 프로젝트"
-version: 0.1
-as_of: 2026-10-25 (공통 = UM80684 라이브 + 워크스페이스 소스 · ENV = ZL50263 2026-10-21 캡처 인용)
+version: 0.2
+as_of: 2026-10-26 (운영계 ZL50263 점검 `_ENV/ZL50263/R00_Q07_1` · `R90_Q06_1` · `R90_Q08_1` + 워크스페이스 소스)
 source_docs:
   - 85_실제 인수인계 문서/10_실무자_인수인계/A4_dbt_파이프라인_개발자가이드.md (v0.1)
   - 85_실제 인수인계 문서/20_정식산출물/D07_ETL_파이프라인설계서.md §2 (v1.0) · N05_테스트결과서.md §1·§2 (v1.0)
   - 80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/ (README.md · dbt_project.yml)
   - 워크스페이스 10_dbt_pipeline/ (profiles.yml · models · macros · seeds · snapshots · tests)
 source_queries:
-  - _ENV/UM80684/R00_Q07_1.csv (SHOW DBT PROJECTS) · SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE
+  - _ENV/ZL50263/R00_Q07_1.csv (SHOW DBT PROJECTS) · R90_Q06_1.csv (SHOW VERSIONS IN DBT PROJECT GN_DW.OPS.DW_PIPELINE)
   - _ENV/ZL50263/A0_Q04_4.csv
 owner: TBD
 status: review
@@ -38,11 +38,11 @@ status: review
 | adapter(dbt-snowflake) 버전 | 1.9.2 | 같음 |
 | 외부 package(`packages.yml`) | **없음** — `dbt deps` 불필요 · 외부 접근 통합(EAI) 불필요 | 소스 트리 · `external_access_integrations = None` |
 | dbt 프로젝트 이름 · 버전 | `gn_dw_silver` · 1.0.0 | `dbt_project.yml` :3~4 |
-| 버전 관리 방식 `[ENV]` | ZL50263 = **버전형**(default = LAST · `VERSION$27` · 2026-10-21) · UM80684 = **단일 live 버전**(2026_06 동작 변경) | A0_Q04_4 · R00_Q07 |
+| 버전 관리 방식 | **버전형**(default = LAST · `VERSION$29` · alias `AGENT_ML_TUNING_20261026140806` · 2026-10-26 18:42 · 누적 VERSION$1~29) | `_ENV/ZL50263/R00_Q07_1.csv` · R90_Q06_1 |
 | 실행 롤 · WH | GN_DW_DBT · GN_DW_ETL_WH(profiles 3 target 공통 · threads 4) | `profiles.yml` |
 | target | `dev`(기본 · 스키마 SILVER) · `dev2`(시험 · SILVER_2 / BRONZE_CRM_2) · `prod`(GOLD) | 같음 |
 | 주요 vars | `bigquery_lookback_days: 3`(GA 롤링 창) · `billing_coverage_start_month: 202201` · `cal_start/cal_end` · `ltv_*` | `dbt_project.yml` :62~187 |
-| 보조 프로젝트 `[ENV]` | ZL50263 `OPS.DW2_PIPELINE`(시험용 · 원천 = 공유 워크스페이스 `GN_DW.PUBLIC.GNI_SHARE`) | A0_Q04_4 · R02 §4 |
+| 보조 프로젝트 | `OPS.DW2_PIPELINE`(시험용 · LIVE 형 · 원천 = 공유 워크스페이스 `GN_DW.PUBLIC.GNI_SHARE` · 최종 갱신 2026-09-30) | R00_Q07_1 · R02 §4 |
 
 - 🔴 `profiles.yml` 은 80번 패키지에 없다(DR-18) — 워크스페이스 `10_dbt_pipeline/profiles.yml` 을 함께 넘긴다. 비밀값은 들어 있지 않다(account·user 공란 · Snowflake 세션 인증).
 
@@ -50,10 +50,10 @@ status: review
 
 | 항목 | 현재 상태 | 근거 |
 |---|---|---|
-| 소스 정본 위치 | Snowsight 개인 워크스페이스 `USER$.PUBLIC."snowflake_files"` 의 `10_dbt_pipeline/` | `default_version_source_location_uri`(UM·ZL 공통) |
+| 소스 정본 위치 | Snowsight 개인 워크스페이스 `USER$.PUBLIC."snowflake_files"` 의 `10_dbt_pipeline/` (기본 VERSION$29 원본). 🟠 과거 버전 29 중 12개(VERSION$1·4~7·9·10·12~15·28)는 공유 워크스페이스 `GN_DW.PUBLIC.GNI_SHARE` 에서 배포 ⇒ 원본이 두 곳에 섞여 있다 | R90_Q06_1 `source_location_uri` |
 | 인계 사본 | `80_인수인계_프로젝트완료 및 유지보수용/02_dbt_pipeline/10_dbt_pipeline/` (워크스페이스와 210/210 해시 일치 · 2026-10-20 · profiles 제외) | A4 §1(DR-18) |
-| Git 저장소 | 🟠 **dbt 프로젝트 배포는 Git 을 거치지 않는다**. ZL50263 에 Git repository 객체 1(GIT_INTEGRATION)이 있으나 dbt 배포 원천은 워크스페이스다 · UM80684 = Git repository 0 | A0 §4-2 · R00 |
-| commit / tag | 🔴 **없음** — `SHOW VERSIONS` 의 `git_commit_hash` = 공란. 배포본 식별자는 dbt 버전 번호(ZL `VERSION$27`)와 프로젝트 COMMENT(예: `[20261021] O249-O250 …` · UM `[20261026] AGENT 배선 및 머신러닝 개선2`)뿐이다 | R00_Q07 · A0_Q04_4 |
+| Git 저장소 | 🟠 **dbt 프로젝트 배포는 Git 을 거치지 않는다**. 2026-10-26 `SHOW GIT REPOSITORIES` = 0(10-21 캡처의 GIT_INTEGRATION 1건은 이번 조회에 없음 · 삭제 여부 확인) · 개인 SECRET `USER$CHOIH.PUBLIC.GIT_SEC` 만 남음(R07 §3) | R90_Q08_1 · R90_Q03_1 |
+| commit / tag | 🔴 **없음** — `SHOW VERSIONS` 의 `git_commit_hash` = 공란. 배포본 식별자는 dbt 버전 번호(`VERSION$29`) · alias(`AGENT_ML_TUNING_20261026140806`)와 프로젝트 COMMENT(`[20261026] AGENT 배선 및 머신러닝 개선2`)뿐이다 | R90_Q06_1 · R00_Q07_1 |
 | 권고 | 인수 직후 워크스페이스 → 내부 Git 저장소(조직 계정) 연결 → 현 소스 commit + tag `handover-YYYYMMDD` → 이후 `DEPLOY FROM '@<git_repo_stage>/branches/main/10_dbt_pipeline'` 로 전환(R11 §1) | Snowflake 문서 ALTER DBT PROJECT |
 
 ## 3. 프로젝트 구성 (사용 항목)

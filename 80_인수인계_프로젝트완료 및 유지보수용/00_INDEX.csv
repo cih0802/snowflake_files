@@ -1,5 +1,5 @@
 ﻿서브폴더,파일경로,파일명,설명,원본경로,크기(byte)
-01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,17053
+01_실행순서_배포SQL,문서실행순서.md,문서실행순서.md,개발계·운영계 배포 실행순서 (정본),문서실행순서.md,17485
 01_실행순서_배포SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,07_ENVIRONMENT_RBAC_setup.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql,57436
 01_실행순서_배포SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,08_After_Deploy_DBT.sql,문서실행순서.md 명시 SQL,02_GN_DW_building/08_After_Deploy_DBT.sql,14957
 01_실행순서_배포SQL,03_top-down_gold/06_DDL.sql,06_DDL.sql,문서실행순서.md 명시 SQL,03_top-down_gold/06_DDL.sql,232742
@@ -58,7 +58,7 @@
 01_실행순서_배포SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,문서실행순서.md 명시 SQL,08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql,11023
 01_실행순서_배포SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,09_OPS_dbt경고_이메일알림_구축.sql,문서실행순서.md 명시 SQL,08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql,9621
 01_실행순서_배포SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/01_deploy_dbt_project.sql,4183
-01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,14709
+01_실행순서_배포SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/02_dbt_parse_compile_build.sql,14765
 01_실행순서_배포SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,1346
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,00_mstr_schema_role.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql,4087
 01_실행순서_배포SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,01_table_script.sql,문서실행순서.md 명시 SQL,15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql,14174
@@ -73,7 +73,7 @@
 01_실행순서_배포SQL,05_SV-Agent_ai/00_SV_공통지시문.md,00_SV_공통지시문.md,🆕 O262 SV 공통 지시문 블록 정본(R-SV1~3) — sv_common_block_gate 가 SV 폴더에서 읽는다,05_SV-Agent_ai/00_SV_공통지시문.md,4731
 02_dbt_pipeline,10_dbt_pipeline/00_배포운영_통합_20260715.md,00_배포운영_통합_20260715.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/00_배포운영_통합_20260715.md,17833
 02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/01_deploy_dbt_project.sql,4183
-02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/02_dbt_parse_compile_build.sql,14709
+02_dbt_pipeline,10_dbt_pipeline/02_dbt_parse_compile_build.sql,02_dbt_parse_compile_build.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/02_dbt_parse_compile_build.sql,14765
 02_dbt_pipeline,10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,10_성능검토_정적코드분석_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md,9054
 02_dbt_pipeline,10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,11_성능검토_운영리스크_20260716.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/11_성능검토_운영리스크_20260716.md,8360
 02_dbt_pipeline,10_dbt_pipeline/README.md,README.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/README.md,8792
@@ -398,8 +398,8 @@
 07_운영런북_이슈,PAID_재현_런북_20260722.md,PAID_재현_런북_20260722.md,PAID 재현 런북,PAID_재현_런북_20260722.md,8320
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,00_INDEX_이슈원장.md,이슈 원장,20_issue/00_INDEX_이슈원장.md,7022
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,00_INDEX_이슈원장-001.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,9599
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,26075
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,28001
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,27004
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,29626
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,27033
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,25909
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,00_INDEX_이슈원장-006.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,27758
@@ -416,7 +416,7 @@
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,00_INDEX_이슈원장-017.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,19630
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,00_INDEX_이슈원장-018.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,26269
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,00_INDEX_이슈원장-019.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,17872
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8229
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8228
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치.md,50_dbt_파이프라인_미결조치.md,dbt 파이프라인 미결 조치,20_issue/50_dbt_파이프라인_미결조치.md,11002
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,00_선택표.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,21546
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,50_dbt_파이프라인_미결조치-001.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,16899
@@ -442,9 +442,9 @@
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md,50_dbt_파이프라인_미결조치-021.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-021.md,13234
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,50_dbt_파이프라인_미결조치-022.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-022.md,12227
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md,50_dbt_파이프라인_미결조치-023.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-023.md,12556
-07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,50_dbt_파이프라인_미결조치-024.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,27620
+07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,50_dbt_파이프라인_미결조치-024.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-024.md,28533
 07_운영런북_이슈,20_issue/91_사고사례집.md,91_사고사례집.md,사고 사례집,20_issue/91_사고사례집.md,20318
-07_운영런북_이슈,20_issue/92_실측필요_후속작업.md,92_실측필요_후속작업.md,실측 필요 후속작업,20_issue/92_실측필요_후속작업.md,4465
+07_운영런북_이슈,20_issue/92_실측필요_후속작업.md,92_실측필요_후속작업.md,실측 필요 후속작업,20_issue/92_실측필요_후속작업.md,4061
 08_현업공유_산출물,30_output_share/00_생성기-문서명 매핑.md,00_생성기-문서명 매핑.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/00_생성기-문서명 매핑.md,8989
 08_현업공유_산출물,30_output_share/01_DW_현업활용가이드.md,01_DW_현업활용가이드.md,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/01_DW_현업활용가이드.md,38359
 08_현업공유_산출물,30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,02_SILVER 스키마 컬럼 인벤토리_20260903.csv,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv,173947
