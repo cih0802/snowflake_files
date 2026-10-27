@@ -12552,3 +12552,724 @@ select
 [0m00:13:39.766580 [debug] [Dummy-1   ]: Resource report: {"command_name": "build", "command_success": true, "command_wall_clock_time": 7.0573583, "process_in_blocks": "0", "process_kernel_time": 1.07, "process_mem_max_rss": "531248", "process_out_blocks": "0", "process_user_time": 6.25}
 [0m00:13:39.767207 [debug] [Dummy-1   ]: Command `cli build` succeeded at 00:13:39.766955 after 7.06 seconds
 [0m00:13:39.767782 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 18:39:09.491044 | 399fa54e-edb0-4d1d-880e-628d34891fba ==============================
+[0m18:39:09.491044 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m18:39:09.491881 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt_effective_profiles_66elpmu8', 'fail_fast': 'False', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'version_check': 'True', 'warn_error': 'None', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'empty': 'None', 'log_format': 'default', 'introspect': 'True', 'static_parser': 'True', 'invocation_command': 'dbt ', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'False'}
+[0m18:39:09.682773 [info ] [Dummy-1   ]: State adapter: dbt-state v0.0.0 is disabled
+[0m18:39:09.770438 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m18:39:10.309443 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m18:39:10.781191 [info ] [Dummy-1   ]: Unable to do partial parsing because profile has changed
+[0m18:39:16.991369 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m18:39:16.995111 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m18:39:17.127031 [info ] [Dummy-1   ]: Found 146 models, 614 data tests, 5 seeds, 65 sources, 504 macros
+[0m18:39:17.142026 [info ] [Dummy-1   ]: 
+[0m18:39:17.142575 [info ] [Dummy-1   ]: Concurrency: 4 threads (target='dev')
+[0m18:39:17.142993 [info ] [Dummy-1   ]: 
+[0m18:39:17.143712 [debug] [Dummy-1   ]: Acquiring new snowflake connection 'master'
+[0m18:39:17.159965 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_GOLD'
+[0m18:39:17.161849 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_SILVER'
+[0m18:39:17.168777 [debug] [ThreadPool]: Acquiring new snowflake connection 'list_GN_DW_OPS'
+[0m18:39:17.257128 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m18:39:17.257833 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m18:39:17.258493 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m18:39:17.258999 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m18:39:17.259490 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m18:39:17.259954 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session set quoted_identifiers_ignore_case = false;
+[0m18:39:17.260435 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m18:39:17.260881 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m18:39:17.261372 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m18:39:17.678373 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.417 seconds
+[0m18:39:17.682742 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m18:39:17.683263 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+show objects in GN_DW.SILVER
+    limit 10000
+    
+;
+[0m18:39:17.751338 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.491 seconds
+[0m18:39:17.753181 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m18:39:17.753810 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.492 seconds
+[0m18:39:17.754313 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+show objects in GN_DW.GOLD
+    limit 10000
+    
+;
+[0m18:39:17.755895 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m18:39:17.756752 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+show objects in GN_DW.OPS
+    limit 10000
+    
+;
+[0m18:39:17.854220 [debug] [ThreadPool]: SQL status: SUCCESS 73 in 0.170 seconds
+[0m18:39:17.857961 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_SILVER"
+[0m18:39:17.858453 [debug] [ThreadPool]: On list_GN_DW_SILVER: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_SILVER"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m18:39:17.904667 [debug] [ThreadPool]: SQL status: SUCCESS 12 in 0.147 seconds
+[0m18:39:17.907187 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_OPS"
+[0m18:39:17.907653 [debug] [ThreadPool]: On list_GN_DW_OPS: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_OPS"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m18:39:17.928557 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.069 seconds
+[0m18:39:17.942085 [debug] [ThreadPool]: SQL status: SUCCESS 83 in 0.186 seconds
+[0m18:39:17.956524 [debug] [ThreadPool]: Using snowflake connection "list_GN_DW_GOLD"
+[0m18:39:17.957085 [debug] [ThreadPool]: On list_GN_DW_GOLD: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "connection_name": "list_GN_DW_GOLD"} */
+alter session unset quoted_identifiers_ignore_case;
+[0m18:39:17.969270 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.061 seconds
+[0m18:39:18.020383 [debug] [ThreadPool]: SQL status: SUCCESS 1 in 0.063 seconds
+[0m18:39:18.056390 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62
+[0m18:39:18.057062 [debug] [Thread-3 (]: Began running node test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e
+[0m18:39:18.057669 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.assert_faia_ad_cost_preserved
+[0m18:39:18.058254 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.assert_fmec_event_preserved
+[0m18:39:18.058785 [info ] [Thread-2 (]: 1 of 15 START test accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC  [RUN]
+[0m18:39:18.059373 [info ] [Thread-3 (]: 2 of 15 START test accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12  [RUN]
+[0m18:39:18.059985 [info ] [Thread-4 (]: 3 of 15 START test assert_faia_ad_cost_preserved ............................... [RUN]
+[0m18:39:18.060515 [info ] [Thread-5 (]: 4 of 15 START test assert_fmec_event_preserved ................................. [RUN]
+[0m18:39:18.061224 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly list_GN_DW_SILVER, now test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62)
+[0m18:39:18.061804 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly list_GN_DW_GOLD, now test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e)
+[0m18:39:18.062562 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly list_GN_DW_OPS, now test.gn_dw_silver.assert_faia_ad_cost_preserved)
+[0m18:39:18.063207 [debug] [Thread-5 (]: Acquiring new snowflake connection 'test.gn_dw_silver.assert_fmec_event_preserved'
+[0m18:39:18.063719 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62
+[0m18:39:18.064236 [debug] [Thread-3 (]: Began compiling node test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e
+[0m18:39:18.064729 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.assert_faia_ad_cost_preserved
+[0m18:39:18.065287 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.assert_fmec_event_preserved
+[0m18:39:18.075340 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62"
+[0m18:39:18.080867 [debug] [Thread-3 (]: Writing injected SQL for node "test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e"
+[0m18:39:18.087540 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.assert_faia_ad_cost_preserved"
+[0m18:39:18.092585 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.assert_fmec_event_preserved"
+[0m18:39:18.094004 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62
+[0m18:39:18.094689 [debug] [Thread-3 (]: Began executing node test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e
+[0m18:39:18.095356 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.assert_faia_ad_cost_preserved
+[0m18:39:18.106805 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.assert_fmec_event_preserved
+[0m18:39:18.118704 [debug] [Thread-2 (]: Writing runtime sql for node "test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62"
+[0m18:39:18.122311 [debug] [Thread-3 (]: Writing runtime sql for node "test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e"
+[0m18:39:18.126917 [debug] [Thread-4 (]: Writing runtime sql for node "test.gn_dw_silver.assert_faia_ad_cost_preserved"
+[0m18:39:18.132441 [debug] [Thread-2 (]: Using snowflake connection "test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62"
+[0m18:39:18.130627 [debug] [Thread-5 (]: Writing runtime sql for node "test.gn_dw_silver.assert_fmec_event_preserved"
+[0m18:39:18.133694 [debug] [Thread-3 (]: Using snowflake connection "test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e"
+[0m18:39:18.134369 [debug] [Thread-2 (]: On test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with all_values as (
+
+    select
+        ROW_KIND as value_field,
+        count(*) as n_records
+
+    from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+    group by ROW_KIND
+
+)
+
+select *
+from all_values
+where value_field not in (
+    'ALLOC','NOT_ALLOWED','UNALLOC'
+)
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.135956 [debug] [Thread-4 (]: Using snowflake connection "test.gn_dw_silver.assert_faia_ad_cost_preserved"
+[0m18:39:18.136712 [debug] [Thread-3 (]: On test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with all_values as (
+
+    select
+        MONTHS_AFTER as value_field,
+        count(*) as n_records
+
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    group by MONTHS_AFTER
+
+)
+
+select *
+from all_values
+where value_field not in (
+    0,1,2,3,4,5,6,7,8,9,10,11,12
+)
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.138446 [debug] [Thread-5 (]: Using snowflake connection "test.gn_dw_silver.assert_fmec_event_preserved"
+[0m18:39:18.139513 [debug] [Thread-4 (]: On test.gn_dw_silver.assert_faia_ad_cost_preserved: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.assert_faia_ad_cost_preserved"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      -- =============================================================================
+-- Purpose    : [2026-10-20 O248] FACT_AD_INFLOW_ALLOC 는 배분 전후로 광고비를 잃거나 복제하지 않아야 한다.
+-- Target     : dbt singular test assert_faia_ad_cost_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_AD_PERFORMANCE, ref FACT_AD_INFLOW_ALLOC
+-- Issue      : O248, O225-B
+-- =============================================================================
+-- [2026-10-20 O248] FACT_AD_INFLOW_ALLOC 는 배분 전후로 광고비를 잃거나 복제하지 않아야 한다.
+--
+-- 무엇을 지키는가: FACT_AD_PERFORMANCE(원천) ↔ 배분 팩트의 광고원천별 광고비 합계 일치.
+--   배분은 (월 · 마케팅캠페인 · 원천) 안의 개발(건) 비중이라 비중 합 = 1 이어야 하고,
+--   배분할 개발이 없는 광고비는 UNALLOC 행으로 남아야 한다(버리지 않는다).
+--   WARN: 행 단위 NUMBER(18,2) 반올림 누적이 있어 원 단위 허용오차 1원 × 배분 행수를 둔다
+--   (선례 = assert_fap_ad_cost_preserved O225-B 「반올림 누적 거짓 FAIL」).
+--
+-- 판정: 0행이면 PASS.
+
+
+with src as (
+    select AD_SOURCE_TYPE, SUM(AD_COST) as COST
+    from GN_DW.GOLD.FACT_AD_PERFORMANCE
+    where PERF_DATE_SK > 0
+    group by 1
+),
+fct as (
+    select 'DIGITAL' as AD_SOURCE_TYPE, SUM(AD_COST_DIGITAL) as COST, count(*) as N from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+    union all
+    select 'VIDEO', SUM(AD_COST_VIDEO), count(*) from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+    union all
+    select 'REBROADCAST', SUM(AD_COST_REBROADCAST), count(*) from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+)
+select
+    COALESCE(s.AD_SOURCE_TYPE, f.AD_SOURCE_TYPE) as AD_SOURCE_TYPE,
+    s.COST as SRC_COST,
+    f.COST as ALLOC_COST,
+    COALESCE(f.COST, 0) - COALESCE(s.COST, 0) as DIFF
+from src s
+full outer join fct f on f.AD_SOURCE_TYPE = s.AD_SOURCE_TYPE
+where ABS(COALESCE(f.COST, 0) - COALESCE(s.COST, 0)) > COALESCE(f.N, 0) * 0.01
+      
+    ) dbt_internal_test
+[0m18:39:18.140518 [debug] [Thread-5 (]: On test.gn_dw_silver.assert_fmec_event_preserved: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.assert_fmec_event_preserved"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      -- =============================================================================
+-- Purpose    : [2026-10-20 O248] FACT_MEMBER_EVENT_COHORT 경과월 0 의 사건 개발(건) 합은 FME DEV 합과 같아야 한다.
+-- Target     : dbt singular test assert_fmec_event_preserved (반환 0행 = PASS)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_EVENT, ref FACT_MEMBER_EVENT_COHORT
+-- Issue      : O248
+-- =============================================================================
+-- [2026-10-20 O248] FACT_MEMBER_EVENT_COHORT 경과월 0 의 사건 개발(건) 합은 FME DEV 합과 같아야 한다.
+--
+-- 무엇을 지키는가: 코호트 키(회원 × 사건월 × 개발구분) 축약 · 13개월 스파인 전개가 사건을 잃거나 복제하지 않는다.
+--   경과월 0 행은 코호트당 1행이고 EVENT_DEV_CNT 는 그 키의 FME DEV_CNT 합이다(O248 실측 1,467,783 = 1,467,783).
+--   WARN: 경과월 전 행을 SUM 하면 13배가 된다 — 이 테스트가 소비 규칙(경과월 고정)의 기준값이다.
+--
+-- 판정: 0행이면 PASS.
+
+
+with fme as (
+    select SUM(DEV_CNT) as DEV_CNT, count(*) as N
+    from GN_DW.GOLD.FACT_MEMBER_EVENT
+    where EVENT_TYPE = 'DEV'
+      and DATE_SK >= 20220101
+      and DVLP_DIV_CD is not null
+),
+coh as (
+    select SUM(EVENT_DEV_CNT) as DEV_CNT, SUM(EVENT_ROWS) as N, count(*) as COHORTS
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    where MONTHS_AFTER = 0
+),
+spine as (
+    select count(*) as ROWS_ from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+)
+select f.DEV_CNT as FME_DEV_CNT, c.DEV_CNT as COH_DEV_CNT, f.N as FME_ROWS, c.N as COH_EVENT_ROWS,
+       c.COHORTS, s.ROWS_
+from fme f cross join coh c cross join spine s
+where ABS(COALESCE(f.DEV_CNT, 0) - COALESCE(c.DEV_CNT, 0)) > 0.01
+   or COALESCE(f.N, 0) <> COALESCE(c.N, 0)
+   or s.ROWS_ <> c.COHORTS * 13
+      
+    ) dbt_internal_test
+[0m18:39:18.141536 [debug] [Thread-5 (]: Opening a new connection, currently in state init
+[0m18:39:18.605645 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.466 seconds
+[0m18:39:18.614564 [info ] [Thread-2 (]: 1 of 15 PASS accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC  [[32mPASS[0m in 0.55s]
+[0m18:39:18.615352 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62
+[0m18:39:18.615950 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856
+[0m18:39:18.616595 [info ] [Thread-2 (]: 5 of 15 START test not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK .............. [RUN]
+[0m18:39:18.617259 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.accepted_values_FACT_AD_INFLOW_ALLOC_ROW_KIND__ALLOC__NOT_ALLOWED__UNALLOC.f5b32bfd62, now test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856)
+[0m18:39:18.617761 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856
+[0m18:39:18.625950 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856"
+[0m18:39:18.626695 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856
+[0m18:39:18.630363 [debug] [Thread-2 (]: Writing runtime sql for node "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856"
+[0m18:39:18.631413 [debug] [Thread-2 (]: Using snowflake connection "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856"
+[0m18:39:18.631945 [debug] [Thread-2 (]: On test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+
+
+select MKTG_CAMPAIGN_SK
+from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+where MKTG_CAMPAIGN_SK is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.728033 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.095 seconds
+[0m18:39:18.730482 [info ] [Thread-2 (]: 5 of 15 PASS not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK .................... [[32mPASS[0m in 0.11s]
+[0m18:39:18.731280 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856
+[0m18:39:18.731883 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9
+[0m18:39:18.732530 [info ] [Thread-2 (]: 6 of 15 START test not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND ...................... [RUN]
+[0m18:39:18.733215 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK.54775cf856, now test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9)
+[0m18:39:18.733726 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9
+[0m18:39:18.740821 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9"
+[0m18:39:18.741640 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 0.601 seconds
+[0m18:39:18.743949 [info ] [Thread-3 (]: 2 of 15 PASS accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12  [[32mPASS[0m in 0.68s]
+[0m18:39:18.744537 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9
+[0m18:39:18.745245 [debug] [Thread-3 (]: Finished running node test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e
+[0m18:39:18.748933 [debug] [Thread-2 (]: Writing runtime sql for node "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9"
+[0m18:39:18.749614 [debug] [Thread-3 (]: Began running node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca
+[0m18:39:18.750434 [info ] [Thread-3 (]: 7 of 15 START test not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK ................. [RUN]
+[0m18:39:18.751434 [debug] [Thread-2 (]: Using snowflake connection "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9"
+[0m18:39:18.752021 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.accepted_values_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER__False__0__1__2__3__4__5__6__7__8__9__10__11__12.5b514d967e, now test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca)
+[0m18:39:18.752587 [debug] [Thread-2 (]: On test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+
+
+select ROW_KIND
+from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+where ROW_KIND is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.753171 [debug] [Thread-3 (]: Began compiling node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca
+[0m18:39:18.758529 [debug] [Thread-3 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca"
+[0m18:39:18.759190 [debug] [Thread-3 (]: Began executing node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca
+[0m18:39:18.762824 [debug] [Thread-3 (]: Writing runtime sql for node "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca"
+[0m18:39:18.763665 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.622 seconds
+[0m18:39:18.765974 [info ] [Thread-4 (]: 3 of 15 PASS assert_faia_ad_cost_preserved ..................................... [[32mPASS[0m in 0.70s]
+[0m18:39:18.766967 [debug] [Thread-3 (]: Using snowflake connection "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca"
+[0m18:39:18.767610 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.assert_faia_ad_cost_preserved
+[0m18:39:18.768175 [debug] [Thread-3 (]: On test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+
+
+select MEMBER_DK
+from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+where MEMBER_DK is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.768810 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785
+[0m18:39:18.769906 [info ] [Thread-4 (]: 8 of 15 START test not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER .............. [RUN]
+[0m18:39:18.770560 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.assert_faia_ad_cost_preserved, now test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785)
+[0m18:39:18.771100 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785
+[0m18:39:18.777085 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785"
+[0m18:39:18.778206 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785
+[0m18:39:18.869352 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 0.100 seconds
+[0m18:39:18.870110 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.116 seconds
+[0m18:39:18.875551 [debug] [Thread-4 (]: Writing runtime sql for node "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785"
+[0m18:39:18.877716 [info ] [Thread-3 (]: 7 of 15 PASS not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK ....................... [[32mPASS[0m in 0.13s]
+[0m18:39:18.879731 [info ] [Thread-2 (]: 6 of 15 PASS not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND ............................ [[32mPASS[0m in 0.15s]
+[0m18:39:18.880809 [debug] [Thread-3 (]: Finished running node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca
+[0m18:39:18.881815 [debug] [Thread-4 (]: Using snowflake connection "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785"
+[0m18:39:18.882477 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9
+[0m18:39:18.883063 [debug] [Thread-3 (]: Began running node test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe
+[0m18:39:18.883693 [debug] [Thread-4 (]: On test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+
+
+select MONTHS_AFTER
+from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+where MONTHS_AFTER is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.884258 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf
+[0m18:39:18.884845 [info ] [Thread-3 (]: 9 of 15 START test relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_  [RUN]
+[0m18:39:18.885753 [info ] [Thread-2 (]: 10 of 15 START test relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_  [RUN]
+[0m18:39:18.886423 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MEMBER_DK.e93dba10ca, now test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe)
+[0m18:39:18.886978 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_FACT_AD_INFLOW_ALLOC_ROW_KIND.66068691f9, now test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf)
+[0m18:39:18.887479 [debug] [Thread-3 (]: Began compiling node test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe
+[0m18:39:18.887965 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf
+[0m18:39:18.894475 [debug] [Thread-3 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe"
+[0m18:39:18.900737 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf"
+[0m18:39:18.901680 [debug] [Thread-3 (]: Began executing node test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe
+[0m18:39:18.905341 [debug] [Thread-3 (]: Writing runtime sql for node "test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe"
+[0m18:39:18.905980 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf
+[0m18:39:18.909850 [debug] [Thread-2 (]: Writing runtime sql for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf"
+[0m18:39:18.911170 [debug] [Thread-3 (]: Using snowflake connection "test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe"
+[0m18:39:18.911999 [debug] [Thread-3 (]: On test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with child as (
+    select MKTG_CAMPAIGN_SK as from_field
+    from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+    where MKTG_CAMPAIGN_SK is not null
+),
+
+parent as (
+    select MKTG_CAMPAIGN_SK as to_field
+    from GN_DW.GOLD.DIM_MARKETING_CAMPAIGN
+)
+
+select
+    from_field
+
+from child
+left join parent
+    on child.from_field = parent.to_field
+
+where parent.to_field is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.913263 [debug] [Thread-2 (]: Using snowflake connection "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf"
+[0m18:39:18.914065 [debug] [Thread-2 (]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with child as (
+    select CAMPAIGN_SK as from_field
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    where CAMPAIGN_SK is not null
+),
+
+parent as (
+    select CAMPAIGN_SK as to_field
+    from GN_DW.GOLD.DIM_CAMPAIGN
+)
+
+select
+    from_field
+
+from child
+left join parent
+    on child.from_field = parent.to_field
+
+where parent.to_field is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:18.977952 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.092 seconds
+[0m18:39:18.979966 [info ] [Thread-4 (]: 8 of 15 PASS not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER .................... [[32mPASS[0m in 0.21s]
+[0m18:39:18.980669 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785
+[0m18:39:18.981295 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3
+[0m18:39:18.981909 [info ] [Thread-4 (]: 11 of 15 START test relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_  [RUN]
+[0m18:39:18.982527 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.not_null_FACT_MEMBER_EVENT_COHORT_MONTHS_AFTER.d9cfcc8785, now test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3)
+[0m18:39:18.983035 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3
+[0m18:39:18.989137 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3"
+[0m18:39:18.989837 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3
+[0m18:39:18.993413 [debug] [Thread-4 (]: Writing runtime sql for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3"
+[0m18:39:18.994689 [debug] [Thread-4 (]: Using snowflake connection "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3"
+[0m18:39:18.995250 [debug] [Thread-4 (]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with child as (
+    select FIRST_EVENT_DATE_SK as from_field
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    where FIRST_EVENT_DATE_SK is not null
+),
+
+parent as (
+    select DATE_SK as to_field
+    from GN_DW.GOLD.DIM_DATE
+)
+
+select
+    from_field
+
+from child
+left join parent
+    on child.from_field = parent.to_field
+
+where parent.to_field is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:19.132664 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 0.219 seconds
+[0m18:39:19.135020 [info ] [Thread-3 (]: 9 of 15 PASS relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_  [[32mPASS[0m in 0.25s]
+[0m18:39:19.135797 [debug] [Thread-3 (]: Finished running node test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe
+[0m18:39:19.136397 [debug] [Thread-3 (]: Began running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06
+[0m18:39:19.137090 [info ] [Thread-3 (]: 12 of 15 START test relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_  [RUN]
+[0m18:39:19.137753 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.relationships_FACT_AD_INFLOW_ALLOC_MKTG_CAMPAIGN_SK__MKTG_CAMPAIGN_SK__ref_DIM_MARKETING_CAMPAIGN_.c29f0adfbe, now test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06)
+[0m18:39:19.138296 [debug] [Thread-3 (]: Began compiling node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06
+[0m18:39:19.144878 [debug] [Thread-3 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06"
+[0m18:39:19.145657 [debug] [Thread-3 (]: Began executing node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06
+[0m18:39:19.149324 [debug] [Thread-3 (]: Writing runtime sql for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06"
+[0m18:39:19.150585 [debug] [Thread-3 (]: Using snowflake connection "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06"
+[0m18:39:19.151117 [debug] [Thread-3 (]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with child as (
+    select MEMBER_DK as from_field
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    where MEMBER_DK is not null
+),
+
+parent as (
+    select MEMBER_DK as to_field
+    from GN_DW.GOLD.DIM_MEMBER
+)
+
+select
+    from_field
+
+from child
+left join parent
+    on child.from_field = parent.to_field
+
+where parent.to_field is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:19.382038 [debug] [Thread-5 (]: SQL status: SUCCESS 1 in 1.240 seconds
+[0m18:39:19.384581 [info ] [Thread-5 (]: 4 of 15 PASS assert_fmec_event_preserved ....................................... [[32mPASS[0m in 1.32s]
+[0m18:39:19.385429 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.assert_fmec_event_preserved
+[0m18:39:19.386057 [debug] [Thread-5 (]: Began running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05
+[0m18:39:19.386712 [info ] [Thread-5 (]: 13 of 15 START test relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_  [RUN]
+[0m18:39:19.387340 [debug] [Thread-5 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.assert_fmec_event_preserved, now test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05)
+[0m18:39:19.387809 [debug] [Thread-5 (]: Began compiling node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05
+[0m18:39:19.398622 [debug] [Thread-5 (]: Writing injected SQL for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05"
+[0m18:39:19.399426 [debug] [Thread-5 (]: Began executing node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05
+[0m18:39:19.403329 [debug] [Thread-5 (]: Writing runtime sql for node "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05"
+[0m18:39:19.404704 [debug] [Thread-5 (]: Using snowflake connection "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05"
+[0m18:39:19.405616 [debug] [Thread-5 (]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+with child as (
+    select SPONSORSHIP_SK as from_field
+    from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+    where SPONSORSHIP_SK is not null
+),
+
+parent as (
+    select SPONSORSHIP_SK as to_field
+    from GN_DW.GOLD.DIM_SPONSORSHIP
+)
+
+select
+    from_field
+
+from child
+left join parent
+    on child.from_field = parent.to_field
+
+where parent.to_field is null
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:19.448132 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.533 seconds
+[0m18:39:19.450792 [info ] [Thread-2 (]: 10 of 15 PASS relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_  [[32mPASS[0m in 0.56s]
+[0m18:39:19.451898 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf
+[0m18:39:19.452781 [debug] [Thread-2 (]: Began running node test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a
+[0m18:39:19.453670 [info ] [Thread-2 (]: 14 of 15 START test unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_  [RUN]
+[0m18:39:19.454357 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_CAMPAIGN_SK__CAMPAIGN_SK__ref_DIM_CAMPAIGN_.836d5b91bf, now test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a)
+[0m18:39:19.454978 [debug] [Thread-2 (]: Began compiling node test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a
+[0m18:39:19.463769 [debug] [Thread-2 (]: Writing injected SQL for node "test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a"
+[0m18:39:19.464526 [debug] [Thread-2 (]: Began executing node test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a
+[0m18:39:19.469440 [debug] [Thread-2 (]: Writing runtime sql for node "test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a"
+[0m18:39:19.471232 [debug] [Thread-2 (]: Using snowflake connection "test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a"
+[0m18:39:19.471964 [debug] [Thread-2 (]: On test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+select
+    MONTH_KEY || '|' || MKTG_CAMPAIGN_SK || '|' || COALESCE(INFLOW_PATH, '~') || '|' || ROW_KIND || '|' || COALESCE(UNALLOC_REASON, '~') as unique_field,
+    count(*) as n_records
+
+from GN_DW.GOLD.FACT_AD_INFLOW_ALLOC
+where MONTH_KEY || '|' || MKTG_CAMPAIGN_SK || '|' || COALESCE(INFLOW_PATH, '~') || '|' || ROW_KIND || '|' || COALESCE(UNALLOC_REASON, '~') is not null
+group by MONTH_KEY || '|' || MKTG_CAMPAIGN_SK || '|' || COALESCE(INFLOW_PATH, '~') || '|' || ROW_KIND || '|' || COALESCE(UNALLOC_REASON, '~')
+having count(*) > 1
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:19.547005 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 0.551 seconds
+[0m18:39:19.549377 [info ] [Thread-4 (]: 11 of 15 PASS relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_  [[32mPASS[0m in 0.57s]
+[0m18:39:19.550207 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3
+[0m18:39:19.550807 [debug] [Thread-4 (]: Began running node test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401
+[0m18:39:19.551402 [info ] [Thread-4 (]: 15 of 15 START test unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER  [RUN]
+[0m18:39:19.552011 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_FIRST_EVENT_DATE_SK__DATE_SK__ref_DIM_DATE_.ac61756da3, now test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401)
+[0m18:39:19.552505 [debug] [Thread-4 (]: Began compiling node test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401
+[0m18:39:19.560305 [debug] [Thread-4 (]: Writing injected SQL for node "test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401"
+[0m18:39:19.561578 [debug] [Thread-4 (]: Began executing node test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401
+[0m18:39:19.565444 [debug] [Thread-4 (]: Writing runtime sql for node "test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401"
+[0m18:39:19.567108 [debug] [Thread-4 (]: Using snowflake connection "test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401"
+[0m18:39:19.567680 [debug] [Thread-4 (]: On test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401: /* {"app": "dbt", "dbt_version": "1.9.4", "profile_name": "default", "target_name": "dev", "node_id": "test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401"} */
+select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+    
+
+select
+    EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER as unique_field,
+    count(*) as n_records
+
+from GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT
+where EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER is not null
+group by EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER
+having count(*) > 1
+
+
+
+      
+    ) dbt_internal_test
+[0m18:39:19.615451 [debug] [Thread-2 (]: SQL status: SUCCESS 1 in 0.143 seconds
+[0m18:39:19.617742 [info ] [Thread-2 (]: 14 of 15 PASS unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_  [[32mPASS[0m in 0.16s]
+[0m18:39:19.618493 [debug] [Thread-2 (]: Finished running node test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a
+[0m18:39:19.831823 [debug] [Thread-3 (]: SQL status: SUCCESS 1 in 0.679 seconds
+[0m18:39:19.837425 [info ] [Thread-3 (]: 12 of 15 PASS relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_  [[32mPASS[0m in 0.70s]
+[0m18:39:19.843194 [debug] [Thread-3 (]: Finished running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06
+[0m18:39:19.854433 [debug] [Thread-5 (]: SQL status: SUCCESS 1 in 0.448 seconds
+[0m18:39:19.857244 [info ] [Thread-5 (]: 13 of 15 PASS relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_  [[32mPASS[0m in 0.47s]
+[0m18:39:19.858788 [debug] [Thread-5 (]: Finished running node test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05
+[0m18:39:20.690489 [debug] [Thread-4 (]: SQL status: SUCCESS 1 in 1.122 seconds
+[0m18:39:20.692769 [info ] [Thread-4 (]: 15 of 15 PASS unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER  [[32mPASS[0m in 1.14s]
+[0m18:39:20.693628 [debug] [Thread-4 (]: Finished running node test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401
+[0m18:39:20.697283 [debug] [Dummy-1   ]: Connection 'master' was properly closed.
+[0m18:39:20.697806 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06' was left open.
+[0m18:39:20.698282 [debug] [Dummy-1   ]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_MEMBER_DK__MEMBER_DK__ref_DIM_MEMBER_.03923add06: Close
+[0m18:39:20.698721 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a' was left open.
+[0m18:39:20.699166 [debug] [Dummy-1   ]: On test.gn_dw_silver.unique_FACT_AD_INFLOW_ALLOC_MONTH_KEY_MKTG_CAMPAIGN_SK_COALESCE_INFLOW_PATH_ROW_KIND_COALESCE_UNALLOC_REASON_.9d707f440a: Close
+[0m18:39:20.699601 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401' was left open.
+[0m18:39:20.700056 [debug] [Dummy-1   ]: On test.gn_dw_silver.unique_FACT_MEMBER_EVENT_COHORT_EVENT_MONTH_KEY_MEMBER_DK_DVLP_DIV_CD_MONTHS_AFTER.c0698b8401: Close
+[0m18:39:20.700469 [debug] [Dummy-1   ]: Connection 'test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05' was left open.
+[0m18:39:20.700900 [debug] [Dummy-1   ]: On test.gn_dw_silver.relationships_FACT_MEMBER_EVENT_COHORT_SPONSORSHIP_SK__SPONSORSHIP_SK__ref_DIM_SPONSORSHIP_.73f48e7a05: Close
+[0m18:39:20.701490 [info ] [Dummy-1   ]: 
+[0m18:39:20.701953 [info ] [Dummy-1   ]: Finished running 15 data tests in 0 hours 0 minutes and 3.56 seconds (3.56s).
+[0m18:39:20.704228 [debug] [Dummy-1   ]: Command end result
+[0m18:39:20.904612 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m18:39:20.908308 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m18:39:20.915623 [debug] [Dummy-1   ]: Wrote artifact RunExecutionResult to /tmp/dbt/target/run_results.json
+[0m18:39:20.916144 [info ] [Dummy-1   ]: 
+[0m18:39:20.916751 [info ] [Dummy-1   ]: [32mCompleted successfully[0m
+[0m18:39:20.917324 [info ] [Dummy-1   ]: 
+[0m18:39:20.917857 [info ] [Dummy-1   ]: Done. PASS=15 WARN=0 ERROR=0 SKIP=0 TOTAL=15
+[0m18:39:20.919537 [debug] [Dummy-1   ]: Resource report: {"command_name": "test", "command_success": true, "command_wall_clock_time": 11.504283, "process_in_blocks": "0", "process_kernel_time": 1.23, "process_mem_max_rss": "531652", "process_out_blocks": "0", "process_user_time": 11.07}
+[0m18:39:20.920139 [debug] [Dummy-1   ]: Command `cli test` succeeded at 18:39:20.919899 after 11.51 seconds
+[0m18:39:20.920648 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 18:49:43.301972 | 7696b2fa-8dca-45c5-a72c-3c87d504acc4 ==============================
+[0m18:49:43.301972 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m18:49:43.302841 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_path': '/tmp/dbt/logs', 'debug': 'False', 'profiles_dir': '/tmp/dbt_effective_profiles_6gew4xbn', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'None', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt ', 'introspect': 'True', 'static_parser': 'True', 'target_path': 'None', 'log_format': 'default', 'send_anonymous_usage_stats': 'False'}
+[0m18:49:43.496501 [info ] [Dummy-1   ]: State adapter: dbt-state v0.0.0 is disabled
+[0m18:49:43.584592 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m18:49:44.147251 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m18:49:44.870400 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m18:49:44.871003 [debug] [Dummy-1   ]: Partial parsing enabled, no changes found, skipping parsing
+[0m18:49:44.964990 [info ] [Dummy-1   ]: Performance info: /tmp/dbt/target/perf_info.json
+[0m18:49:45.349242 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m18:49:45.352933 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m18:49:45.354753 [debug] [Dummy-1   ]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 2.1287107, "process_in_blocks": "0", "process_kernel_time": 0.86, "process_mem_max_rss": "438532", "process_out_blocks": "0", "process_user_time": 4.74}
+[0m18:49:45.355410 [debug] [Dummy-1   ]: Command `cli parse` succeeded at 18:49:45.355139 after 2.13 seconds
+[0m18:49:45.355981 [debug] [Dummy-1   ]: Flushing usage events

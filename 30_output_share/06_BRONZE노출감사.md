@@ -2,7 +2,7 @@
 doc_id: BRONZE_EXPOSURE_AUDIT
 doc_role: BRONZE 전 원천 전면 노출감사 — GOLD 도달 여부 판정 정본
 project: GN_DW
-audit_date: 2026-10-25
+audit_date: 2026-10-27
 generator: scripts/gen_bronze_exposure_audit.py
 runner: scripts/run_bronze_audit_host.py
 principle: P13(커버리지≠정확도)·P14(부재판정은 실측필수)
@@ -11,7 +11,7 @@ END-METADATA -->
 # BRONZE 노출감사 (전 원천 전면)
 
 > ⚙️ **자동 생성물** — 생성기 `scripts/gen_bronze_exposure_audit.py` / 러너 `scripts/run_bronze_audit_host.py`. 직접 편집 금지.
-> **감사일** 2026-10-25 · **범위** BRONZE 전 원천 1314컬럼 (CRM·AGENCY·ERP·GA4)
+> **감사일** 2026-10-27 · **범위** BRONZE 전 원천 1314컬럼 (CRM·AGENCY·ERP·GA4)
 > **목적** "보여줄 수 있는 BRONZE 데이터는 다 보여준다" 충족 여부 실측
 
 ## 0. 판정 기준 및 한계 (필독)
@@ -1923,4 +1923,4 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 - `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). 본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.
 - `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
 
-_감사일 2026-10-25 · Co-authored with CoCo_
+_감사일 2026-10-27 · Co-authored with CoCo_

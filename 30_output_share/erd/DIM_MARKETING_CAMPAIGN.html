@@ -7,7 +7,7 @@
   <title>DIM_MARKETING_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 01:19",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MARKETING_CAMPAIGN",
     "table": "DIM_MARKETING_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -452,7 +478,7 @@
           <span class="badge badge-domain">도메인: AGENCY / 마케팅·광고</span>
           <span class="badge badge-domain">BRONZE 원천: 4개</span>
           <span class="badge badge-domain">SILVER 모델: 3개</span>
-          <span class="badge badge-domain">컬럼 수: 9개</span>
+          <span class="badge badge-domain">컬럼 수: 18개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>마케팅캠페인 conformed 차원(1행 = 1마케팅캠페인 + 센티넬) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 결합 grain. 🔴 `DIM_CAMPAIGN.MARKETING_CAMPAIGN` 은 라벨 컬럼이라 광고 팩트가 참조할 수 없고, 그래서 독립 차원으로 승격했다(O44). 🔴 `DEV_CAMPAIGN_CNT` 는 **팬아웃 경고축**이다 — 1보다 크면 개발캠페인 grain 으로 광고비를 내릴 때 복제된다. ⚠️ 광고측 도달은 **이름매칭**이므로 완전하지 않다 (AGENCY 원천에 캠페인 코드 컬럼이 0개 · P36) ⇒ 커버리지를 「완전」으로 서술하지 말 것. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
       </div>
@@ -537,6 +563,7 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_MARKETING_CAMPAIGN {
     string MKTG_CAMPAIGN_SK PK
@@ -544,6 +571,7 @@ erDiagram
     string DW_BATCH_ID
   }
   FACT_AD_PERFORMANCE {
+    string AD_CTGR_CD FK
     string AD_PERF_DK PK
     string PERF_DATE_SK FK
     string AD_CREATIVE_SK FK
@@ -664,6 +692,60 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>MKTG_UTM_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>마케팅캠페인 UTM 라벨(TC_MKTNG_DTL_CD U001 · 마케팅캠페인당 1개 실측). 개발캠페인 매핑 없으면 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>DOMESTIC_OVERSEAS</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>캠페인유형 국내/통합/해외(MM295). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).</td>
+        </tr>
+        <tr>
+          <td><code>DOMESTIC_OVERSEAS_IS_MULTI</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>TRUE = 이 마케팅캠페인 아래 국내/해외 값이 여럿(대표값 사용).</td>
+        </tr>
+        <tr>
+          <td><code>BIZ_CASE_TYPE</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>캠페인유형 굿즈/기타/사례/사업(MM296). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 값 오름차순).</td>
+        </tr>
+        <tr>
+          <td><code>BIZ_CASE_TYPE_IS_MULTI</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>TRUE = 이 마케팅캠페인 아래 사업/사례 값이 여럿(대표값 사용).</td>
+        </tr>
+        <tr>
+          <td><code>CMPGN_CTGR_CD</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>대표 캠페인카테고리 코드(MM294 · CRM_CAMPAIGN.CMPGN_CTGR_CD). 개발캠페인 간에 갈리면 매핑 행수 최다 값(→ 코드 오름차순).</td>
+        </tr>
+        <tr>
+          <td><code>CMPGN_CTGR_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>대표 캠페인카테고리명(코드와 1:1).</td>
+        </tr>
+        <tr>
+          <td><code>CMPGN_CTGR_IS_MULTI</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>TRUE = 이 마케팅캠페인 아래 카테고리가 여럿(대표값 사용 · 마케팅캠페인 273/590).</td>
+        </tr>
+        <tr>
+          <td><code>CMPGN_CTGR_NM_LIST</code></td>
+          <td><code>VARCHAR(1000)</code></td>
+          <td></td>
+          <td>카테고리명 나열(표시 전용 · 쉼표 구분 · 매핑 행수 많은 순 · 첫 항목 = CMPGN_CTGR_NM). 매핑 없음 = NULL. GROUP BY·필터·합산 금지.</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -675,13 +757,19 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MARKETING_CAMPAIGN.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MARKETING_CAMPAIGN: 마케팅캠페인 conformed 차원 — AGENCY(광고) ↔ CRM(개발실적) 결합축
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 마케팅캠페인 conformed 차원 — AGENCY(광고) ↔ CRM(개발실적) 결합축
+-- Target     : GOLD.DIM_MARKETING_CAMPAIGN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MARKETING_CAMPAIGN, ref CRM_CAMPAIGN
+-- Issue      : O44, O225-C, O225-B, O232-B 외 1
+-- =============================================================================
+-- DIM_MARKETING_CAMPAIGN: 마케팅캠페인 conformed 차원 — AGENCY(광고) ↔ CRM(개발실적) 결합축
 --
 -- ============================================================================
 -- [2026-08-06 O44] 신설 — 광고 ↔ CRM 후원 결합의 유일한 성립 grain
 -- ----------------------------------------------------------------------------
--- 🔴 왜 신설하는가: `DIM_CAMPAIGN.MARKETING_CAMPAIGN` 은 **라벨 컬럼**이라 광고 팩트가
+-- WARN: 왜 신설하는가: `DIM_CAMPAIGN.MARKETING_CAMPAIGN` 은 **라벨 컬럼**이라 광고 팩트가
 --   참조할 수 없다. 양측이 같은 SK 를 쓰게 하려면 독립 차원이어야 한다(conformed dimension).
 --
 -- 실측 근거(2026-08-06):
@@ -691,7 +779,7 @@ erDiagram
 --   · 마케팅캠페인 grain 결합 실측: 79 캠페인 · 광고행 216,481(폭발 0) ·
 --     광고비 34,209,625,719원 · 개발 463,279건 → **개발단가 73,842원**
 --
--- 🔴 이름매칭을 쓰는 이유와 그 한계(P36): AGENCY 원천 3종에 **캠페인 코드 컬럼이 0개**다
+-- WARN: 이름매칭을 쓰는 이유와 그 한계(P36): AGENCY 원천 3종에 **캠페인 코드 컬럼이 0개**다
 --   (`CMPGN_NM`·`UPPER_CMPGN_NM`·`MKT_CMPGN_NM` 전부 이름). 따라서 이름매칭이 유일한 경로이며
 --   **10.3% 는 도달하지 못한다.** 커버리지를 「완전」으로 서술하지 말 것.
 --
@@ -707,9 +795,9 @@ with m as (
     select * from {{ ref('CRM_MARKETING_CAMPAIGN') }}
 ),
 
--- 이 마케팅캠페인에 매달린 개발캠페인 수. 🔴 소비 측이 **팬아웃 위험을 차원에서 즉시 보도록**
+-- 이 마케팅캠페인에 매달린 개발캠페인 수. WARN: 소비 측이 **팬아웃 위험을 차원에서 즉시 보도록**
 --   차원에 실어 둔다(문서를 찾아가야만 알 수 있으면 아무도 모른다 — O44 P86-③).
--- 🔴 [2026-08-06 교정 P89] 종전에는 `ref('DIM_CAMPAIGN')` 을 읽었다 →
+-- WARN: [2026-08-06 교정 P89] 종전에는 `ref('DIM_CAMPAIGN')` 을 읽었다 →
 --   DIM_CAMPAIGN 이 이 차원의 `MKTG_CAMPAIGN_SK` 를 참조하므로 **dbt DAG 순환**이 되어
 --   deploy 가 `Found a cycle: DIM_CAMPAIGN --&gt; DIM_MARKETING_CAMPAIGN` 로 실패했다.
 --   → 같은 사실을 **SILVER 원천에서 직접** 센다. 부수 이득: 종전은 라벨(`MK_CMPGN_NM`)로
@@ -720,6 +808,67 @@ dev_fan as (
     from {{ ref('CRM_CAMPAIGN') }}
     where MKTG_CMPGN_NM is not null
     group by 1
+),
+
+--  [2026-10-14 O225-C] 광고비를 나눌 마케팅캠페인 속성 3종(사용자 결정 O225-B · 인입경로·채널·카테고리는 붙이지 않는다).
+--   마케팅캠페인 1개 아래 개발캠페인이 여럿이라 속성이 갈릴 수 있다(xh20001 실측: 590개 중 UTM 다중 0 · 국내해외 41 · 사업사례 33
+--   · 광고비 기준 다중 4.3%). ⇒ 값 = 매핑 행수 최다 → 값 오름차순(결정성) · `*_IS_MULTI` 로 다중을 표시한다(버리지 않는다).
+--   WARN: 인입경로(97.2%)·채널(95.7%)은 다중이 커서 대표값이 왜곡된다 ⇒ 회원 측 SV 로 본다.
+--   WARN: 카테고리(72.0%)도 같지만 사용자 요청(O232-B)으로 대표값 + CMPGN_CTGR_IS_MULTI 로 올린다 — 다중 비중을 숨기지 않는다.
+attr_long as (
+    select TO_VARCHAR(MKTG_CMPGN_NM) as MK_CD, 'UTM' as K, MKTG_UTM_NM as V from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and MKTG_UTM_NM is not null
+    union all
+    select TO_VARCHAR(MKTG_CMPGN_NM), 'T1', CMPGN_TYPE1_NM from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and CMPGN_TYPE1_NM is not null
+    union all
+    select TO_VARCHAR(MKTG_CMPGN_NM), 'T2', CMPGN_TYPE2_NM from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and CMPGN_TYPE2_NM is not null
+    union all
+    --  [2026-10-15 O232-B · 사용자 요청] 캠페인카테고리(MM294) — 코드로 대표를 고른다(이름↔코드 1:1 실측 59/59).
+    --   WARN: 다중 비중이 크다(마케팅캠페인 273/590 · 광고비 기준 221.1/307.4억 = 72%) ⇒ CMPGN_CTGR_IS_MULTI 를 반드시 함께 쓴다.
+    select TO_VARCHAR(MKTG_CMPGN_NM), 'CT', TO_VARCHAR(CMPGN_CTGR_CD) from {{ ref('CRM_CAMPAIGN') }}
+    where MKTG_CMPGN_NM is not null and CMPGN_CTGR_CD is not null
+),
+ctgr_nm as (
+    select CMPGN_CTGR_CD, min(CMPGN_CTGR_NM) as CMPGN_CTGR_NM
+    from {{ ref('CRM_CAMPAIGN') }}
+    where CMPGN_CTGR_CD is not null
+    group by 1
+),
+attr_cnt as (
+    select MK_CD, K, V, count(*) as ROWS_V
+    from attr_long
+    group by 1, 2, 3
+),
+attr_rep as (
+    select MK_CD, K, V,
+           count(*) over (partition by MK_CD, K)                        as N_V
+    from attr_cnt
+    qualify row_number() over (partition by MK_CD, K order by ROWS_V desc, V) = 1
+),
+attr as (
+    select MK_CD,
+        MAX(IFF(K = 'UTM', V, NULL))        as MKTG_UTM_NM,
+        MAX(IFF(K = 'T1', V, NULL))         as DOMESTIC_OVERSEAS,
+        BOOLOR_AGG(K = 'T1' AND N_V &gt; 1)    as DOMESTIC_OVERSEAS_IS_MULTI,
+        MAX(IFF(K = 'T2', V, NULL))         as BIZ_CASE_TYPE,
+        BOOLOR_AGG(K = 'T2' AND N_V &gt; 1)    as BIZ_CASE_TYPE_IS_MULTI,
+        MAX(IFF(K = 'CT', V, NULL))         as CMPGN_CTGR_CD,
+        BOOLOR_AGG(K = 'CT' AND N_V &gt; 1)    as CMPGN_CTGR_IS_MULTI
+    from attr_rep
+    group by 1
+),
+--  [2026-10-15 O233 · 사용자 결정 #36] 카테고리명 나열(표시 전용) — 다중 캠페인을 대표값 하나로만 보이지 않게 한다.
+--   순서 = 매핑 행수 내림차순 → 코드 오름차순(attr_rep 대표 선정과 동일) ⇒ 첫 항목 = 대표 CMPGN_CTGR_NM.
+--   WARN: 그루핑·필터·합산 금지(문자열 조합이라 같은 카테고리가 여러 값에 흩어진다) · 실측 최대 21개 192자.
+ctgr_list as (
+    select a.MK_CD,
+           LISTAGG(n.CMPGN_CTGR_NM, ', ') WITHIN GROUP (order by a.ROWS_V desc, a.V) as CMPGN_CTGR_NM_LIST
+    from attr_cnt a
+    join ctgr_nm n on TO_VARCHAR(n.CMPGN_CTGR_CD) = a.V
+    where a.K = 'CT'
+    group by 1
 )
 
 select
@@ -727,21 +876,39 @@ select
     m.MK_CMPGN_CD                         as MKTG_CAMPAIGN_BK,
     m.MK_CMPGN_NM                         as MKTG_CAMPAIGN_NAME,
     m.USE_YN                              as USE_YN,
-    -- 🔴 팬아웃 경고축: 이 값이 1 보다 크면 **개발캠페인 단위로 광고비를 내리면 복제**된다.
+    -- WARN: 팬아웃 경고축: 이 값이 1 보다 크면 **개발캠페인 단위로 광고비를 내리면 복제**된다.
     --   실측 2026-08-06 · **이 컬럼의 모집단 = 마스터 전체 323개**: 평균 105.0 · 최대 13,176 · 합 33,915.
     --   실측 2026-08-06 · **광고 도달분 81개 한정**: 평균 120.4 · 최대 901 · 합 9,750.
-    --   ⚠️ 설계문서가 인용해 온 「9,037종 · 평균 118.9」은 **오늘 데이터로 재현되지 않는다**(P89).
+    --   WARN: 설계문서가 인용해 온 「9,037종 · 평균 118.9」은 **오늘 데이터로 재현되지 않는다**(P89).
     --      같은 문서의 `218,402/243,545 = 89.7%` 는 재현된다 — 즉 일부 수치만 낡았다.
     coalesce(f.CNT, 0)                    as DEV_CAMPAIGN_CNT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    --  [O225-C] 속성 3종 + 다중 플래그(06_DDL 동기 · 맨 끝 append) · 개발캠페인 매핑이 없으면 NULL
+    a.MKTG_UTM_NM                         as MKTG_UTM_NM,
+    a.DOMESTIC_OVERSEAS                   as DOMESTIC_OVERSEAS,
+    a.DOMESTIC_OVERSEAS_IS_MULTI          as DOMESTIC_OVERSEAS_IS_MULTI,
+    a.BIZ_CASE_TYPE                       as BIZ_CASE_TYPE,
+    a.BIZ_CASE_TYPE_IS_MULTI              as BIZ_CASE_TYPE_IS_MULTI,
+    --  [2026-10-15 O232-B] 대표 캠페인카테고리 + 다중 플래그(06_DDL 동기 · 맨 끝 append)
+    TO_NUMBER(a.CMPGN_CTGR_CD)            as CMPGN_CTGR_CD,
+    cn.CMPGN_CTGR_NM                      as CMPGN_CTGR_NM,
+    a.CMPGN_CTGR_IS_MULTI                 as CMPGN_CTGR_IS_MULTI,
+    --  [O233 #36] 표시 전용 나열(06_DDL 동기 · 맨 끝 append) · 매핑 없음 = NULL
+    cl.CMPGN_CTGR_NM_LIST                 as CMPGN_CTGR_NM_LIST
 from m
 left join dev_fan f on f.MK_CD = m.MK_CMPGN_CD
+left join attr a    on a.MK_CD = m.MK_CMPGN_CD
+left join ctgr_nm cn on TO_VARCHAR(cn.CMPGN_CTGR_CD) = a.CMPGN_CTGR_CD
+left join ctgr_list cl on cl.MK_CD = m.MK_CMPGN_CD
 
 union all
 -- unknown 멤버(SK=0): 팩트 MKTG_CAMPAIGN_SK=0(미매핑) 조인 유실 방지.
---   🔴 광고측 10.3% 미도달분이 여기 모인다 — 이 버킷을 「미집행」으로 읽으면 안 된다.
+--   WARN: 광고측 10.3% 미도달분이 여기 모인다 — 이 버킷을 「미집행」으로 읽으면 안 된다.
 select 0, '(미매핑)', '(미매핑)', NULL, 0,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    '(미매핑)', '(미매핑)', NULL, '(미매핑)', NULL,
+    NULL, '(미매핑)', NULL,
+    '(미매핑)'
 </code></pre>
           </div>
         </details>

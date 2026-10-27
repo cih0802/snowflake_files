@@ -94,6 +94,18 @@ KNOWN_ORPHANS = {
         "CONFORM",
         "GA URL memnum 회원번호 → DIM_MEMBER.MEMBER_DK(O239). NULL = URL 에 memnum 없음(비식별 · 0 아님).",
     ),
+    # 🆕 [2026-10-27] O248 개발사건 코호트의 월 축 2종 — 등재 누락분(전량판 ERD 가 이것으로 중단됐다).
+    #   같은 팩트의 _SK 3종은 yml relationships(warn) 로 선언했다 ⇒ 여기 두지 않는다.
+    ("FACT_MEMBER_EVENT_COHORT", "EVENT_MONTH_KEY"): (
+        "CONFORM",
+        "역할기반 월 축(사건월) → DIM_MONTH.MONTH_KEY. 실측(UM80684 2026-10-27) 17,510,051행 · NULL 0 · "
+        "distinct 58 · 미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+    ),
+    ("FACT_MEMBER_EVENT_COHORT", "OBS_MONTH_KEY"): (
+        "CONFORM",
+        "역할기반 월 축(관측월 = 사건월 + MONTHS_AFTER) → DIM_MONTH.MONTH_KEY. 실측(UM80684 2026-10-27) "
+        "17,510,051행 · NULL 0 · distinct 70 · 미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+    ),
     ("*", "AD_PERF_DK"): (
         "DEGEN",
         "광고 성과 degenerate key. 코어 FACT_AD_PERFORMANCE 의 PK 이고 위성 3종이 이를 참조한다 "
@@ -269,6 +281,9 @@ LOGICAL_FK = {
     ("FACT_UNPAID_SERVICE_CONV", "MEMBER_DK"):           ("DIM_MEMBER", "MEMBER_DK"),
     ("FACT_GA_CHILD_VIEW", "DATE_SK"):                   ("DIM_DATE", "DATE_SK"),
     ("FACT_GA_CHILD_VIEW", "URL_MEMBER_DK"):             ("DIM_MEMBER", "MEMBER_DK"),
+    # 🆕 [2026-10-27] 위 KNOWN_ORPHANS CONFORM 2건의 대상(test_gold_erd 축7-a)
+    ("FACT_MEMBER_EVENT_COHORT", "EVENT_MONTH_KEY"):     ("DIM_MONTH", "MONTH_KEY"),
+    ("FACT_MEMBER_EVENT_COHORT", "OBS_MONTH_KEY"):       ("DIM_MONTH", "MONTH_KEY"),
 }
 
 #: 고립 판정의 **분모**가 되는 테이블 접두. 🔴 이 한 곳에서만 정한다(`R3-9 ㉡`).

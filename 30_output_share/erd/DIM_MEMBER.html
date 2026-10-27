@@ -7,7 +7,7 @@
   <title>DIM_MEMBER - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 01:19",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER",
     "table": "DIM_MEMBER",
     "domain": "CRM / 회원·후원",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -450,9 +476,9 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
-          <span class="badge badge-domain">BRONZE 원천: 9개</span>
-          <span class="badge badge-domain">SILVER 모델: 6개</span>
-          <span class="badge badge-domain">컬럼 수: 24개</span>
+          <span class="badge badge-domain">BRONZE 원천: 12개</span>
+          <span class="badge badge-domain">SILVER 모델: 11개</span>
+          <span class="badge badge-domain">컬럼 수: 59개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>정규 회원 마스터 차원(1행 = 1회원) — SCD2 DIM_MEMBER_STATUS_HISTORY 의 IS_CURRENT 투영. 분석가 및 Cortex Analyst 기본 진입점이며 회원 팩트와의 순진한 조인이 팬아웃하는 것을 막는다. [O53] 뷰→테이블 전환 · REGION·AGE_BAND·FIRST_SPONSORSHIP·LAST_STOP_DATE 4컬럼 노출. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
       </div>
@@ -476,51 +502,82 @@ flowchart LR
     B_bronze_crm_TH_MM_FDRM_MBER_STNG_DTLS["TH_MM_FDRM_MBER_STNG_DTLS"]:::bronze
     B_bronze_crm_TM_CM_BRND_MNG["TM_CM_BRND_MNG"]:::bronze
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
+    B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT["TM_MM_FDRM_MBER_DVLP_AMT"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_INFO["TM_MM_FDRM_MBER_INFO"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR["TM_MM_FDRM_MBER_SPNSR"]:::bronze
+    B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS["TM_MM_FDRM_MBER_SPNSR_BSNS"]:::bronze
     B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC["TM_MM_FDRM_MBER_SPNSR_DSCNTC"]:::bronze
     B_bronze_crm_TM_MM_ONCE_MBER_INFO["TM_MM_ONCE_MBER_INFO"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CAMPAIGN["CRM_CAMPAIGN"]:::silver
     S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_MARKETING_CAMPAIGN["CRM_MARKETING_CAMPAIGN<br/>마케팅캠페인 마스터(1행 = 1마케팅"]:::silver
     S_CRM_MEMBER["CRM_MEMBER"]:::silver
     S_CRM_MEMBER_DEV["CRM_MEMBER_DEV"]:::silver
     S_CRM_MEMBER_DISCONTINUE["CRM_MEMBER_DISCONTINUE"]:::silver
+    S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
+    S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
     S_CRM_MEMBER_STATUS_HIST["CRM_MEMBER_STATUS_HIST"]:::silver
+    S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_MAP_SPONSORSHIP_GROUP4["MAP_SPONSORSHIP_GROUP4"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_MEMBER["★ DIM_MEMBER<br/>정규 회원 마스터 차원(1행 = 1회원) — "]:::target
+    G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원. [Grain: CAMP"]:::gold
+    G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
     G_DIM_MEMBER_STATUS_HISTORY["DIM_MEMBER_STATUS_HISTORY<br/>회원 상태전이 이력 차원. [Grai"]:::gold
+    G_DIM_SPONSORSHIP["DIM_SPONSORSHIP<br/>후원사업 차원. [Grain: SPO"]:::gold
+    G_FACT_MEMBER_SPONSORSHIP_SPAN["FACT_MEMBER_SPONSORSHIP_SPAN<br/>회원×후원약정 기간 팩트 — grai"]:::gold
   end
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_CAMPAIGN
+  B_bronze_crm_TC_MKTNG_DTL_CD --> S_CRM_MARKETING_CAMPAIGN
   B_bronze_crm_TH_MM_FDRM_MBER_STNG_DTLS --> S_CRM_MEMBER_STATUS_HIST
   B_bronze_crm_TM_CM_BRND_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
+  B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
   B_bronze_crm_TM_MM_FDRM_MBER_DVLP_AMT --> S_CRM_MEMBER_DEV
   B_bronze_crm_TM_MM_FDRM_MBER_INFO --> S_CRM_MEMBER
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR --> S_CRM_MEMBER_SPONSOR_SPAN
+  B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_BSNS --> S_CRM_MEMBER_SPONSOR_BIZ
   B_bronze_crm_TM_MM_FDRM_MBER_SPNSR_DSCNTC --> S_CRM_MEMBER_DISCONTINUE
   B_bronze_crm_TM_MM_ONCE_MBER_INFO --> S_CRM_MEMBER
   G_DIM_MEMBER_STATUS_HISTORY --> G_DIM_MEMBER
+  G_DIM_SPONSORSHIP --> G_DIM_MEMBER
+  G_FACT_MEMBER_SPONSORSHIP_SPAN --> G_DIM_MEMBER
+  S_CRM_CAMPAIGN --> G_DIM_CAMPAIGN
+  S_CRM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
+  S_CRM_CAMPAIGN --> G_DIM_MEMBER
   S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
+  S_CRM_CODE --> G_DIM_MEMBER
   S_CRM_CODE --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_CODE --> G_DIM_SPONSORSHIP
+  S_CRM_CODE --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_CODE --> S_CRM_CAMPAIGN
   S_CRM_CODE --> S_CRM_MEMBER
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> S_CRM_MEMBER_DISCONTINUE
   S_CRM_CODE --> S_CRM_MEMBER_STATUS_HIST
+  S_CRM_MARKETING_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
+  S_CRM_MEMBER --> G_DIM_MEMBER
   S_CRM_MEMBER --> G_DIM_MEMBER_STATUS_HISTORY
   S_CRM_MEMBER_DEV --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_MEMBER_DEV --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_MEMBER_DISCONTINUE --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
+  S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_MEMBER_STATUS_HIST --> G_DIM_MEMBER_STATUS_HISTORY
+  S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_MAP_SPONSORSHIP_GROUP4 --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (12개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
@@ -528,23 +585,31 @@ flowchart LR
 <li><b>bronze_crm.TH_MM_FDRM_MBER_STNG_DTLS</b>: </li>
 <li><b>bronze_crm.TM_CM_BRND_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
+<li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_DVLP_AMT</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_INFO</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR</b>: </li>
+<li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_BSNS</b>: </li>
 <li><b>bronze_crm.TM_MM_FDRM_MBER_SPNSR_DSCNTC</b>: </li>
 <li><b>bronze_crm.TM_MM_ONCE_MBER_INFO</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (6개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (11개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CAMPAIGN</b>: </li>
 <li><b>CRM_CODE</b>: </li>
+<li><b>CRM_MARKETING_CAMPAIGN</b>: 마케팅캠페인 마스터(1행 = 1마케팅캠페인) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 conformed 축. 🔴 `USE_YN` 으로 폐지분을 **제외하지 않는다** — 폐지된 캠페인도 과거 실적에 붙는다. 🔴 광고↔개발 결합은 **마케팅캠페인 grain 에서만** 성립한다(개발캠페인 grain 으로 내리면 광고비가 복제된다).</li>
 <li><b>CRM_MEMBER</b>: </li>
 <li><b>CRM_MEMBER_DEV</b>: </li>
 <li><b>CRM_MEMBER_DISCONTINUE</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
+<li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_MEMBER_STATUS_HIST</b>: </li>
+<li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>MAP_SPONSORSHIP_GROUP4</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -595,6 +660,7 @@ erDiagram
     string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
+    string LAST_STOP_DATE_SK
     string MEMBER_DK PK
     string ACQ_CAMPAIGN_SK FK
     string ACQ_DATE_SK FK
@@ -610,6 +676,15 @@ erDiagram
     string SPONSORSHIP_SK FK
     string ORG_SK FK
     string REASON_SK FK
+    string DW_BATCH_ID
+  }
+  FACT_MEMBER_EVENT_COHORT {
+    string MEMBER_DK FK
+    string EVENT_MONTH_KEY
+    string OBS_MONTH_KEY
+    string FIRST_EVENT_DATE_SK
+    string CAMPAIGN_SK
+    string SPONSORSHIP_SK
     string DW_BATCH_ID
   }
   FACT_MEMBER_FEE {
@@ -647,6 +722,16 @@ erDiagram
     string SERVICE_SK FK
     string CAMPAIGN_SK FK
     string DW_BATCH_ID
+    string RELATNSP_KEY
+    string MNG_NO
+    string MSG_KEY
+    string SEND_REQUEST_SK
+  }
+  FACT_UNPAID_SERVICE_CONV {
+    string MEMBER_DK FK
+    string CLICK_MONTH_KEY
+    string FIRST_CLICK_DATE_SK
+    string DW_BATCH_ID
   }
   DIM_MEMBER ||..o{ DIM_MEMBER_STATUS_HISTORY : "MEMBER_DK"
   DIM_MEMBER ||..o{ DIM_MEMBER_IDENTITY : "MEMBER_DK"
@@ -658,6 +743,8 @@ erDiagram
   DIM_MEMBER ||..o{ DIM_MEMBER_ACQUISITION : "MEMBER_DK"
   DIM_MEMBER ||--o{ FACT_MEMBER_FEE : "MEMBER_DK"
   DIM_MEMBER ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_UNPAID_SERVICE_CONV : "MEMBER_DK"
+  DIM_MEMBER ||--o{ FACT_MEMBER_EVENT_COHORT : "MEMBER_DK"
           </pre>
         </div>
 
@@ -759,6 +846,24 @@ erDiagram
         </tr>
         <tr>
           <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_UNPAID_SERVICE_CONV</code></td>
+          <td><code>MEMBER_DK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
+          <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT_COHORT</code></td>
           <td><code>MEMBER_DK</code></td>
           <td>➔</td>
           <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
@@ -930,6 +1035,216 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>JOIN_CMMN_BRND</code></td>
+          <td><code>NUMBER(10,0)</code></td>
+          <td></td>
+          <td>가입 공통브랜드 코드. 코드id:MM297</td>
+        </tr>
+        <tr>
+          <td><code>JOIN_CMMN_BRND_NM</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>가입 공통브랜드명. 코드id:MM297</td>
+        </tr>
+        <tr>
+          <td><code>CHRCTR_RECPTN_YN</code></td>
+          <td><code>VARCHAR(1)</code></td>
+          <td></td>
+          <td>문자수신여부 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]</td>
+        </tr>
+        <tr>
+          <td><code>SPECL_MNG_CD1</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>특별관리코드1 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_FDRM_MBER_INFO · BRONZE_CRM.TM_MM_ONCE_MBER_INFO]</td>
+        </tr>
+        <tr>
+          <td><code>FDRM_MBER_TRNSFER_FG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>정기회원이관유무 [SILVER.CRM_MEMBER 승계 · 원천 BRONZE_CRM.TM_MM_ONCE_MBER_INFO]</td>
+        </tr>
+        <tr>
+          <td><code>RELATNSP_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>결연구분 코드(MM019). 코드id:MM019.</td>
+        </tr>
+        <tr>
+          <td><code>RELATNSP_DIV_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>결연구분(MM019 · 결연회원·비결연회원·혼합회원·중단회원). 일시회원은 NULL(원천 개념 없음).</td>
+        </tr>
+        <tr>
+          <td><code>SPECL_MNG_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>특별관리 구분(SPECL_MNG_CD1 의 MM012 라벨 · 예: 일반·더네이버스클럽·평생회원·홍보대사·이사회). 대부분 「일반」.</td>
+        </tr>
+        <tr>
+          <td><code>SPECL_MNG_CD2</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>특별관리코드2(MM012). 코드id:MM012.</td>
+        </tr>
+        <tr>
+          <td><code>SPECL_MNG2_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>특별관리 구분2(SPECL_MNG_CD2 의 MM012 라벨) — 값이 있는 회원은 소수다.</td>
+        </tr>
+        <tr>
+          <td><code>FIRST_SPONSORSHIP_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>최초 후원사업명(FIRST_SPONSORSHIP → DIM_SPONSORSHIP.SPONSORSHIP_BK · 2026-10-08 매칭 100%).</td>
+        </tr>
+        <tr>
+          <td><code>MOBLPHON_STAT_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>휴대폰 상태 코드(MM008). 코드id:MM008.</td>
+        </tr>
+        <tr>
+          <td><code>MOBLPHON_STAT_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>휴대폰 상태(MM008 · 정상·결번·타인번호).</td>
+        </tr>
+        <tr>
+          <td><code>ETC_CTTPC_STAT_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>기타연락처 상태 코드(MM008). 코드id:MM008.</td>
+        </tr>
+        <tr>
+          <td><code>ETC_CTTPC_STAT_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>기타연락처 상태(MM008 · 정상·결번·타인번호).</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_STAT_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>이메일 상태 코드(MM009). 코드 0 은 사전에 없다. 코드id:MM009.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_STAT_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>이메일 상태(MM009 · 정상·계정없음·도메인오류). 코드 0 은 라벨 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>TSTM_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>TM/TS 거절구분 코드(MS026). 🔴 코드 0(대다수)은 사전에 없다 — 의미 미확정. 코드id:MS026.</td>
+        </tr>
+        <tr>
+          <td><code>TSTM_DIV_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>TM/TS 거절구분(MS026 · TM 거절·TS 거절·TMTS거절). 코드 0 은 라벨 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>ETC_TSTM_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>기타연락처 TM/TS 거절구분 코드(MS026). 코드 0 은 사전에 없다. 코드id:MS026.</td>
+        </tr>
+        <tr>
+          <td><code>ETC_TSTM_DIV_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>기타연락처 TM/TS 거절구분(MS026). 코드 0 은 라벨 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>REL_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>일시회원 관계(CM009 · 본인·부모·배우자·대표자·기업담당자 등). 정기회원은 NULL(원천 개념 없음).</td>
+        </tr>
+        <tr>
+          <td><code>SLRCLD_LRR_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>생일 양력/음력(CM029 · 양력·음력·불명확). 코드 0 은 라벨 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_REFUSE_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 수신거부(MS028 코드 1) 포함 여부. 원천 구 체계 값(Y·N·0)·NULL 은 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_REGULAR_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 정기우편물(MS028 코드 2) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_RELATION_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 결연이메일(MS028 코드 3) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_THANKS_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 감사서비스(MS028 코드 4) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_WEBZINE_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 웹진(MS028 코드 5) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>EMAIL_RECV_DEV_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>이메일 수신 항목 = 개발이메일(MS028 코드 6) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>POST_RECV_REFUSE_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>우편물 수신 항목 = 수신거부(MS027 코드 1) 포함 여부. 원천 구 체계 값(Y·N·0)·NULL 은 NULL.</td>
+        </tr>
+        <tr>
+          <td><code>POST_RECV_REGULAR_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>우편물 수신 항목 = 정기우편(MS027 코드 2) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>POST_RECV_RELATION_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>우편물 수신 항목 = 결연우편(MS027 코드 3) 포함 여부.</td>
+        </tr>
+        <tr>
+          <td><code>POST_RECV_NEW_THANKS_YN</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>우편물 수신 항목 = 신규/감사 우편(MS027 코드 4) 포함 여부. 🔴 원천에 사전 밖 코드 5·6·8·10 이 소수 있다(무시).</td>
+        </tr>
+        <tr>
+          <td><code>LAST_CAMPAIGN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>최종캠페인 코드(공#31 · 잠정) = 회원의 가장 최근 시작 후원약정 대표캠페인(FACT_MEMBER_SPONSORSHIP_SPAN.SPNSR_CMPGN_CD). 후원약정이 없는 회원은 NULL. CRM 발송명단 LAST_CMPGN 과는 정의가 다르다.</td>
+        </tr>
+        <tr>
+          <td><code>REGIST_DEPT_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>회원 등록부서 코드 raw(정기·일시 공통 · 개발 실적부서와 다른 축) [SILVER.CRM_MEMBER 승계] (O262-B)</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -941,8 +1256,14 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MEMBER: 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
+-- Target     : GOLD.DIM_MEMBER (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_MEMBER_STATUS_HISTORY, ref FACT_MEMBER_SPONSORSHIP_SPAN, ref CRM_MEMBER, ref CRM_CAMPAIGN, ref DIM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O188-F, O191-G, O213-D, O237-C
+-- =============================================================================
+-- DIM_MEMBER: 정규 회원 마스터 차원 (회원 1명 = 1행, IS_CURRENT=TRUE 투영) — 분석가 및 Cortex Analyst 기본 진입점
 {{ config(
     materialized='incremental',
     incremental_strategy='append',
@@ -951,32 +1272,106 @@ erDiagram
 ) }}
 
 select
-    MEMBER_SK,
-    MEMBER_DK,
-    MEMBER_TYPE,
-    SEX,
-    SEX_NM,
-    GENDER_NAME,
-    MBER_STAT_CD,
-    MEMBER_STATUS_NAME,
-    MEMBER_STATUS_GROUP,
-    MBER_DIV_CD,
-    MEMBER_TYPE_NAME,
-    JOIN_PATH_CD,
-    ENROLL_PATH_NAME,
-    FIRST_JOIN_DATE,
-    FIRST_CAMPAIGN,
-    REGION,
-    AGE_BAND,
-    FIRST_SPONSORSHIP,
-    LAST_STOP_DATE,
-    EFFECTIVE_FROM,
-    DW_SOURCE_SYSTEM,
-    DW_LOAD_TS,
-    DW_UPDATE_TS,
-    DW_BATCH_ID
-from {{ ref('DIM_MEMBER_STATUS_HISTORY') }}
-where IS_CURRENT
+    h.MEMBER_SK,
+    h.MEMBER_DK,
+    h.MEMBER_TYPE,
+    h.SEX,
+    h.SEX_NM,
+    h.GENDER_NAME,
+    h.MBER_STAT_CD,
+    h.MEMBER_STATUS_NAME,
+    h.MEMBER_STATUS_GROUP,
+    h.MBER_DIV_CD,
+    h.MEMBER_TYPE_NAME,
+    h.JOIN_PATH_CD,
+    h.ENROLL_PATH_NAME,
+    h.FIRST_JOIN_DATE,
+    h.FIRST_CAMPAIGN,
+    h.REGION,
+    h.AGE_BAND,
+    h.FIRST_SPONSORSHIP,
+    h.LAST_STOP_DATE,
+    h.EFFECTIVE_FROM,
+    h.DW_SOURCE_SYSTEM,
+    h.DW_LOAD_TS,
+    h.DW_UPDATE_TS,
+    h.DW_BATCH_ID,
+    --  [2026-09-29 O188-F] 가입캠페인(CRM_MEMBER.CMPGN_CD)의 공통브랜드(MM297) — 「공통브랜드 기준 가입경로」.
+    --    SILVER 에서 직접 조인한다 — DIM_MEMBER_ACQUISITION(FME→COHORT 경유)을 참조하면 의존이 길어지고
+    --      순환 위험이 생긴다. xf98254 = 1,606,883명 채움 · 획득 차원 ACQ_CMMN_BRND_NM 과 99.73% 일치
+    --      (불일치 = 가입캠페인 ≠ 최초개발캠페인 회원 · 둘은 다른 정의다).
+    c.CMMN_BRND                                   as JOIN_CMMN_BRND,
+    c.CMMN_BRND_NM                                as JOIN_CMMN_BRND_NM,
+    --  [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_MEMBER 승계(회원 grain · 이관유무 = ONCE 전용).
+    m.CHRCTR_RECPTN_YN                            as CHRCTR_RECPTN_YN,
+    m.SPECL_MNG_CD1                               as SPECL_MNG_CD1,
+    m.FDRM_MBER_TRNSFER_FG                        as FDRM_MBER_TRNSFER_FG,
+    --  [2026-10-08 O213-D · 7차 Y3-C] 회원 분류 축 라벨 배선 — 「브론즈에 있는데 Agent 가 답하지 못한다」 해소.
+    --   라벨 정본 = SILVER.CRM_CODE(코드그룹은 2026-10-08 실측 확정 · 사전에 없는 코드는 라벨 NULL + 코드 보존 · R2-7).
+    m.RELATNSP_DIV_CD                             as RELATNSP_DIV_CD,
+    c_rel.DTL_CD_NM                               as RELATNSP_DIV_NAME,
+    c_sp1.DTL_CD_NM                               as SPECL_MNG_NAME,
+    m.SPECL_MNG_CD2                               as SPECL_MNG_CD2,
+    c_sp2.DTL_CD_NM                               as SPECL_MNG2_NAME,
+    sp.SPONSORSHIP_NAME                           as FIRST_SPONSORSHIP_NAME,
+    m.MOBLPHON_STAT_CD                            as MOBLPHON_STAT_CD,
+    c_mob.DTL_CD_NM                               as MOBLPHON_STAT_NAME,
+    m.ETC_CTTPC_STAT_CD                           as ETC_CTTPC_STAT_CD,
+    c_etc.DTL_CD_NM                               as ETC_CTTPC_STAT_NAME,
+    m.EMAIL_STAT_CD                               as EMAIL_STAT_CD,
+    c_eml.DTL_CD_NM                               as EMAIL_STAT_NAME,
+    m.TSTM_DIV_CD                                 as TSTM_DIV_CD,
+    c_ts.DTL_CD_NM                                as TSTM_DIV_NAME,
+    m.ETC_TSTM_DIV_CD                             as ETC_TSTM_DIV_CD,
+    c_ets.DTL_CD_NM                               as ETC_TSTM_DIV_NAME,
+    c_rl.DTL_CD_NM                                as REL_NAME,
+    c_sl.DTL_CD_NM                                as SLRCLD_LRR_NAME,
+    -- 수신동의는 복수 선택 문자열(예: '2,3,5')이다 ⇒ 항목별 플래그로 편다. 코드그룹 = 이메일 MS028 · 우편 MS027.
+    --   WARN: 원천 값 'Y'·'N'·'0'(구 체계 · 항목 미상)과 NULL 은 플래그 NULL 로 둔다 — 항목을 추정하지 않는다.
+    {%- set eml = &quot;m.EMAIL_RECPTN&quot; %}
+    {%- set pst = &quot;m.PSTMTR_RECPTN&quot; %}
+    {%- set eml_ok = eml ~ &quot; is not null and &quot; ~ eml ~ &quot; not in ('Y','N','0')&quot; %}
+    {%- set pst_ok = pst ~ &quot; is not null and &quot; ~ pst ~ &quot; not in ('Y','N','0')&quot; %}
+    iff({{ eml_ok }}, array_contains('1'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_REFUSE_YN,
+    iff({{ eml_ok }}, array_contains('2'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_REGULAR_YN,
+    iff({{ eml_ok }}, array_contains('3'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_RELATION_YN,
+    iff({{ eml_ok }}, array_contains('4'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_THANKS_YN,
+    iff({{ eml_ok }}, array_contains('5'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_WEBZINE_YN,
+    iff({{ eml_ok }}, array_contains('6'::variant, split({{ eml }}, ',')), null) as EMAIL_RECV_DEV_YN,
+    iff({{ pst_ok }}, array_contains('1'::variant, split({{ pst }}, ',')), null) as POST_RECV_REFUSE_YN,
+    iff({{ pst_ok }}, array_contains('2'::variant, split({{ pst }}, ',')), null) as POST_RECV_REGULAR_YN,
+    iff({{ pst_ok }}, array_contains('3'::variant, split({{ pst }}, ',')), null) as POST_RECV_RELATION_YN,
+    iff({{ pst_ok }}, array_contains('4'::variant, split({{ pst }}, ',')), null) as POST_RECV_NEW_THANKS_YN,
+    --  [2026-10-16 O237-C · 공#31 최종캠페인 · 잠정(사용자 결정)] 가장 최근 시작한 후원약정(span)의 대표캠페인 코드.
+    --    MSTR 로직 없음 · 90 정의서 = 「CRM 최종 캠페인 명」뿐 ⇒ 원천 SND_MEMBER_LIST.LAST_CMPGN(발송 대상 546,221명)과
+    --      파생안(1,621,410명)을 비교해 회원수·활동금액이 큰 파생안을 택했다(원천과 일치 58% · 정의 차이 = 잠정 표기).
+    --   WARN: 같은 시작월이 여러 개면 SPNSR_CMPGN_CD 가 큰 쪽(결정적 tie-break) · span 이 없는 회원(일시회원 등)은 NULL(R2-7).
+    lc.LAST_CAMPAIGN                              as LAST_CAMPAIGN,
+    --  [2026-10-25 O262-B · 33 §1] 회원 등록부서 코드 raw(정기 FDRM · 일시 ONCE 공통 = CRM_MEMBER.REGIST_DEPT_CD) — 06_DDL 동기 · 맨 끝 append
+    --   WARN: 개발 실적부서(FACT 의 ORG_SK = ACMSLT_DEPT_CD)와 **다른 축**이다. 부서명이 필요하면 DIM_ORG 를 코드로 잇는다.
+    m.REGIST_DEPT_CD                              as REGIST_DEPT_CD
+from {{ ref('DIM_MEMBER_STATUS_HISTORY') }} h
+left join (
+    select MEMBER_DK, SPNSR_CMPGN_CD as LAST_CAMPAIGN
+    from {{ ref('FACT_MEMBER_SPONSORSHIP_SPAN') }}
+    where SPNSR_CMPGN_CD is not null
+    qualify row_number() over (partition by MEMBER_DK
+                               order by START_MONTH_KEY desc nulls last, SPNSR_CMPGN_CD desc) = 1
+) lc on lc.MEMBER_DK = h.MEMBER_DK
+left join {{ ref('CRM_MEMBER') }}   m on m.MEMBER_DK = h.MEMBER_DK
+left join {{ ref('CRM_CAMPAIGN') }} c on c.CMPGN_CD  = m.CMPGN_CD
+left join {{ ref('DIM_SPONSORSHIP') }} sp on sp.SPONSORSHIP_BK = h.FIRST_SPONSORSHIP
+left join {{ ref('CRM_CODE') }} c_rel on c_rel.CD_ID = 'MM019' and c_rel.DTL_CD_ID = m.RELATNSP_DIV_CD
+left join {{ ref('CRM_CODE') }} c_sp1 on c_sp1.CD_ID = 'MM012' and c_sp1.DTL_CD_ID = m.SPECL_MNG_CD1
+left join {{ ref('CRM_CODE') }} c_sp2 on c_sp2.CD_ID = 'MM012' and c_sp2.DTL_CD_ID = m.SPECL_MNG_CD2
+left join {{ ref('CRM_CODE') }} c_mob on c_mob.CD_ID = 'MM008' and c_mob.DTL_CD_ID = m.MOBLPHON_STAT_CD
+left join {{ ref('CRM_CODE') }} c_etc on c_etc.CD_ID = 'MM008' and c_etc.DTL_CD_ID = m.ETC_CTTPC_STAT_CD
+left join {{ ref('CRM_CODE') }} c_eml on c_eml.CD_ID = 'MM009' and c_eml.DTL_CD_ID = m.EMAIL_STAT_CD
+left join {{ ref('CRM_CODE') }} c_ts  on c_ts.CD_ID  = 'MS026' and c_ts.DTL_CD_ID  = m.TSTM_DIV_CD
+left join {{ ref('CRM_CODE') }} c_ets on c_ets.CD_ID = 'MS026' and c_ets.DTL_CD_ID = m.ETC_TSTM_DIV_CD
+left join {{ ref('CRM_CODE') }} c_rl  on c_rl.CD_ID  = 'CM009' and c_rl.DTL_CD_ID  = m.REL_CD
+left join {{ ref('CRM_CODE') }} c_sl  on c_sl.CD_ID  = 'CM029' and c_sl.DTL_CD_ID  = m.SLRCLD_LRR_CD
+where h.IS_CURRENT
 </code></pre>
           </div>
         </details>

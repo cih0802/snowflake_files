@@ -1,4 +1,4 @@
-﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-10-25
+﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-10-27
 # 자동 생성물 — 생성기 scripts/gen_bronze_exposure_audit.py(+러너 scripts/run_bronze_audit_host.py) 재실행으로 갱신. 직접 편집 금지.
 
 원천시스템,BRONZE_테이블,BRONZE_컬럼,데이터타입,판정,신뢰도,비고

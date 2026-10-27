@@ -231,6 +231,9 @@ GEN = {
     'b_struct_build': '트랙 B 구조 산출물 생성 — _ENV/<계정>/B1 csv + dbt 모델·sources + Agent spec → D04 xlsx/csv · D05 FK csv+mermaid md · D06 테이블 계보 csv · D08 SV 요약 csv · D09 Agent 도구 csv',
     'n03_catalog_build': 'N03 통합 데이터 사전 생성 — D01·D08·D09·D06 csv 를 지표 1행으로 잇고 xlsx·html 산출',
     'n05_report_build': 'N05 테스트 결과서 xlsx 생성 — _ENV/<계정>/N05_*.csv 를 시트별로 모아 합격/불합격 요약',
+    # 🆕 [2026-10-27] 30번 산출물 운영계 실측 키트 — 개발계 리허설 = census_columns 직접 실측과 138테이블 차이 0.
+    'gen_s30_census_sql': '30번 S30 근거 SQL 생성 — 카탈로그 조회만 · 테이블별 census 를 FLATTEN 세로 1문장으로(env_capture 입력)',
+    's30_census_to_json': 'S30 운영계 csv → census json(census_columns 형식) + 12_운영계_실측_<계정>.md(라이브 접속 0)',
 }
 
 MUTATES = {

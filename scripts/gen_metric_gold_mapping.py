@@ -81,7 +81,7 @@ ABBR = {
     "FTG_B": "FACT_TARGET_PROJECT", "FTG-B": "FACT_TARGET_PROJECT",
 }
 
-# 원천 입고 대기(외부 하드블로커)로 물리 측정이 성립하지 않는 지표 — WAIT 고정
+# 원천 입고 대기(외부 하드블로커) 지표 — `FACT_TARGET_PROJECT` 가 0행일 때만 WAIT(derive_status · 2026-10-27 조건화)
 WAIT_SET = frozenset({"공152", "공153", "공154", "공155"})   # 사업목표 FTG-B (E-6)
 # GA↔CRM identity 커버리지 종속 — 측정값이 있어도 PARTIAL 로 강등
 IDENTITY_SET = frozenset({"공81", "공122", "신32", "신33"})
@@ -99,6 +99,9 @@ OK_FILL_MIN = 0.95
 MEASURE_OVERRIDE = {
     "공25": "INBOUND_CALL", "공66": "REGULAR_FEE", "공87": "FAIL_MEMBERS",
     "공91": "D5_GIFT_PART_AMT", "공97": "SESSION_CNT", "공107": "SCROLL_DEPTH",
+    # 🆕 [2026-10-27] 사업목표 FTG-B — 원천 입고·배선 후(O188·O190) 컬럼별로 측정한다(WAIT_SET 참조)
+    "공152": "ANNUAL_GOAL_CNT", "공153": "SUPP_GOAL_CNT",
+    "공154": "ANNUAL_CUM_GOAL_CNT", "공155": "SUPP_CUM_GOAL_CNT",
 }
 
 INV_DELIMS = re.compile(r"\s(?:SUM|COUNT|AVG|COALESCE|비가산|conform|롤업|GA4)|—|"
@@ -505,7 +508,11 @@ def find_column(census, col, prefer=None):
 def derive_status(key, cls, num2base, derived, census):
     """(상태, 근거). 🔴 물리 컬럼을 특정할 수 있으면 census 로 **측정**한다."""
     if key in WAIT_SET:
-        return "WAIT", "추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행"
+        # 🆕 [2026-10-27] 종전 = 무조건 WAIT. 원천 입고·배선 후(UM80684 2026-10-27 = 2,966행)에도
+        #   「원천 미입고 · 0행」을 내보냈다 ⇒ **테이블이 실제로 비었을 때만** WAIT 이고, 아니면 아래에서 측정한다.
+        ent = census.get("GOLD.FACT_TARGET_PROJECT")
+        if not ent or not ent["rows"]:
+            return "WAIT", "추정: 원천 미입고(E-6 CRM 사업목표) — `FACT_TARGET_PROJECT` 0행"
 
     # 측정 대상 컬럼 결정: MEASURE_OVERRIDE → base 카탈로그 → derived 분자 base
     col = MEASURE_OVERRIDE.get(key) or num2base.get(key)

@@ -100,7 +100,11 @@ def main():
             hit_g = [n for n in gcs if tok.search(gold[n]["sql"])]
             hit_s = [n for n in scs if tok.search(silver_models[n]["sql"])]
             if gcs:
-                status = "REFERENCED" if hit_g else "DROPPED"
+                # 🆕 [2026-10-27] GOLD 직접 소비 + SILVER 체인 소비가 겹치는 테이블(AGENCY_AD_ROW_* · CRM_ORG)에서
+                #   GOLD SQL 에 이름이 없어도 SILVER 소비 모델이 그 컬럼을 참조하면 손실이 아니다.
+                #   종전 = DROPPED(실측 68건 허위 손실 · FAP 가 O232~O262 에 staging 을 직접 join 한 뒤 발생).
+                #   🔴 REFERENCED 로 올리지 않는다 — 체인 끝 GOLD 도달은 이 생성기가 증명하지 않는다.
+                status = "REFERENCED" if hit_g else ("SILVER_ONLY_CHAIN" if hit_s else "DROPPED")
             elif scs:
                 # 테이블 자체가 SILVER 내부 체인에서만 소비된다(원 판정 스코프 = 테이블).
                 status = "SILVER_ONLY_CHAIN"

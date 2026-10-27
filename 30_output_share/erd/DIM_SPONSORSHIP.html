@@ -7,7 +7,7 @@
   <title>DIM_SPONSORSHIP - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 01:19",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_SPONSORSHIP",
     "table": "DIM_SPONSORSHIP",
     "domain": "CRM / 회원·후원",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item active"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -451,8 +477,8 @@
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
           <span class="badge badge-domain">BRONZE 원천: 2개</span>
-          <span class="badge badge-domain">SILVER 모델: 2개</span>
-          <span class="badge badge-domain">컬럼 수: 11개</span>
+          <span class="badge badge-domain">SILVER 모델: 3개</span>
+          <span class="badge badge-domain">컬럼 수: 17개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>후원사업 차원. [Grain: SPONSORSHIP_SK (1행=1후원사업)]. [주의: 정기/일시 구분 및 상위 사업군 분류]. [원천: CRM → BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO → SILVER.CRM_SPONSORSHIP].</p>
       </div>
@@ -477,6 +503,7 @@ flowchart LR
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CODE["CRM_CODE"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_MAP_SPONSORSHIP_GROUP4["MAP_SPONSORSHIP_GROUP4"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_SPONSORSHIP["★ DIM_SPONSORSHIP<br/>SPONSORSHIP_SK (1행=1후원사업)"]:::target
@@ -485,6 +512,7 @@ flowchart LR
   B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
   S_CRM_CODE --> G_DIM_SPONSORSHIP
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_MAP_SPONSORSHIP_GROUP4 --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
@@ -500,11 +528,12 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (2개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (3개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CODE</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>MAP_SPONSORSHIP_GROUP4</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -529,6 +558,7 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
   }
   FACT_BUDGET_YEARLY {
@@ -536,6 +566,7 @@ erDiagram
     string ORG_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
   }
   FACT_EVENT_ATTENDANCE {
@@ -547,6 +578,7 @@ erDiagram
     string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
+    string LAST_STOP_DATE_SK
     string MEMBER_DK PK
     string ACQ_CAMPAIGN_SK FK
     string ACQ_DATE_SK FK
@@ -592,6 +624,17 @@ erDiagram
     string DSCNTC_MONTH_KEY FK
     string DW_BATCH_ID
   }
+  FACT_PAYMENT_BILLING_STATUS {
+    string MONTH_KEY FK
+    string SPONSORSHIP_SK FK
+    string CAMPAIGN_SK FK
+    string DW_BATCH_ID
+  }
+  FACT_SPONSORSHIP_MONTHLY {
+    string BASE_MONTH_KEY
+    string SPONSORSHIP_SK FK
+    string DW_BATCH_ID
+  }
   FACT_TARGET_PROJECT {
     string MONTH_KEY FK
     string ORG_SK FK
@@ -606,8 +649,10 @@ erDiagram
   DIM_SPONSORSHIP ||--o{ FACT_BUDGET : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_BUDGET_YEARLY : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_MEMBER_FEE : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_PAYMENT_BILLING_STATUS : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_TARGET_PROJECT : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_SPONSORSHIP_MONTHLY : "SPONSORSHIP_SK"
           </pre>
         </div>
 
@@ -690,6 +735,15 @@ erDiagram
           <td>Physical / Declared FK</td>
         </tr>
         <tr>
+          <td><code>FACT_PAYMENT_BILLING_STATUS</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
           <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>SPONSORSHIP_SK</code></td>
           <td>➔</td>
@@ -700,6 +754,15 @@ erDiagram
         </tr>
         <tr>
           <td><code>FACT_TARGET_PROJECT</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_SPONSORSHIP_MONTHLY</code></td>
           <td><code>SPONSORSHIP_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
@@ -732,6 +795,12 @@ erDiagram
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-dim">PK</span></td>
           <td>후원사업 대리키 (ETL 일련번호, PK)</td>
+        </tr>
+        <tr>
+          <td><code>CPR_DIV_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>후원사업 법인구분 코드(CM019: A 통합 · I 사단 · S 사복) — MSTR 법인 축. 코드id:CM019. [SILVER.CRM_SPONSORSHIP 승계]</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_BK</code></td>
@@ -793,6 +862,36 @@ erDiagram
           <td></td>
           <td>후원약칭명. 코드id:CM003.</td>
         </tr>
+        <tr>
+          <td><code>SPONSORSHIP_GROUP4_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>후원사업 4그룹(ML 요건 · 국내/결연/해외프로젝트/기타) — CM003 라벨 접기: 해외구호·해외→해외프로젝트 · 북한→기타(사용자 결정 §4 #2 · 문서20 F-2). 규칙 밖 라벨은 NULL</td>
+        </tr>
+        <tr>
+          <td><code>SORT_ORDR</code></td>
+          <td><code>NUMBER(10,0)</code></td>
+          <td></td>
+          <td>정렬순서 [SILVER.CRM_SPONSORSHIP 승계 · 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO]</td>
+        </tr>
+        <tr>
+          <td><code>USE_YN</code></td>
+          <td><code>VARCHAR(1)</code></td>
+          <td></td>
+          <td>사용여부 [SILVER.CRM_SPONSORSHIP 승계 · 원천 BRONZE_CRM.TM_CM_SPNSR_BSNS_INFO]</td>
+        </tr>
+        <tr>
+          <td><code>CPR_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>후원사업 법인구분명(통합/사단/사복). 코드id:CM019. 🔴 세부캠페인 법인(FACT_MEMBER_EVENT.CPR_DIV_*_AT_EVENT)과 다른 축.</td>
+        </tr>
+        <tr>
+          <td><code>DNTN_TY_CD</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>기부유형 코드 raw(1·3 · 코드군 미특정 ⇒ 라벨 없음) [SILVER.CRM_SPONSORSHIP 승계] (O262-B)</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -804,22 +903,28 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_SPONSORSHIP.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_SPONSORSHIP: 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
+-- Target     : GOLD.DIM_SPONSORSHIP (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_SPONSORSHIP, ref CRM_CODE
+-- Issue      : O89, O25, O37, O202 외 2
+-- =============================================================================
+-- DIM_SPONSORSHIP: 후원사업 차원 스캐폴드 (CRM_SPONSORSHIP, Bronze 입고 후 실행)
 -- [2026-08-19 O89] 분류 3계층 라벨 배선 — DIV_CD/DIV_NAME(CM035) + GROUP_NAME(CM003).
 --   현업 요구 = &quot;후원사업 상위/하위 분류를 각각 라벨로&quot;. 실측으로 대상 컬럼이 교정됐다:
---   🔴 현업이 지목한 `SPNSR_BSNS_NO` 는 분류가 아니라 **회원별 후원약정 일련번호**다
+--   WARN: 현업이 지목한 `SPNSR_BSNS_NO` 는 분류가 아니라 **회원별 후원약정 일련번호**다
 --      (distinct 2,170,574 vs ID 29 · 99.999% 가 단일 회원 전속 · 동일 ID 아래 복수 NO).
 --      라벨 원천이 없어 배선 불가다. 하위 실체는 결연 아동(469,402)이고 라벨 가능 축은
 --      사업장(220)·국가(34)지만 **해외아동결연 한정 + 회원 다중결연**이라 이 50행 차원에
 --      들어갈 수 없다(O8 과 동일 fan-out) → 별건 설계 대기.
---   ✅ 실재하는 3계층 = DIV_NAME(정기/일시) → GROUP_NAME(약칭 6종) → SPONSORSHIP_NAME(사업명).
+--    실재하는 3계층 = DIV_NAME(정기/일시) → GROUP_NAME(약칭 6종) → SPONSORSHIP_NAME(사업명).
 --      `SPONSORSHIP_ABBR` 은 기존 컬럼이고 라벨만 없었다(O25/G3/O37 동일 패턴).
---   🟡 SPB-G 근거 확보 · 라이브 대조 대기 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
---      🔴 「종결」이라고 적었던 것은 오판정이라 격하했다(라이브 0행이라 대조 불가 · R2-8-4-c · 계정 NX55103).
---   🔴 `SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다 — &quot;ID=DIM 키(마스터 50)·NO=관계번호·크로스워크&quot;
+--   NOTE: SPB-G 근거 확보 · 라이브 대조 대기 — ABBR 코드사전이 CM003(후원약칭)으로 특정됐다.
+--      WARN: 「종결」이라고 적었던 것은 오판정이라 격하했다(라이브 0행이라 대조 불가 · R2-8-4-c · 계정 NX55103).
+--   WARN: `SPNSR_BSNS_NO` 는 Q15 가 이미 닫은 항목이다 — &quot;ID=DIM 키(마스터 50)·NO=관계번호·크로스워크&quot;
 --      (크로스워크 = SILVER.CRM_SPONSOR_RELATION). 위 기술은 Q15 와 일치하며 신규 발견이 아니다.
---   ⚠️ 코드 조인은 USE_YN 무필터다(O37 선례). 원천 코드 부재 시 NULL 이며 '(미매핑)' 창작 금지(P21).
+--   WARN: 코드 조인은 USE_YN 무필터다(O37 선례). 원천 코드 부재 시 NULL 이며 '(미매핑)' 창작 금지(P21).
 {{ config(
     materialized='incremental',
     unique_key='SPONSORSHIP_SK',
@@ -840,6 +945,12 @@ cd_grp as (
     select DTL_CD_ID, DTL_CD_NM
     from {{ ref('CRM_CODE') }}
     where CD_ID = 'CM003'
+),
+-- CM019 법인구분: A=통합 · I=사단 · S=사복 (O202)
+cd_cpr as (
+    select DTL_CD_ID, DTL_CD_NM
+    from {{ ref('CRM_CODE') }}
+    where CD_ID = 'CM019'
 )
 
 select
@@ -850,16 +961,36 @@ select
     {{ gold_meta('CRM') }},
     s.SPNSR_DIV_CD                                as SPONSORSHIP_DIV_CD,
     cd_div.DTL_CD_NM                              as SPONSORSHIP_DIV_NAME,
-    cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME
+    cd_grp.DTL_CD_NM                              as SPONSORSHIP_GROUP_NAME,
+    --  [2026-09-30 O190] F-2 4그룹 접기(사용자 결정 §4 #2) — 라벨 기준(코드 하드코딩 금지 P31) · 규칙 밖 라벨 NULL.
+    --  [2026-10-22 O258] 규칙 = seed MAP_SPONSORSHIP_GROUP4(모델 CASE 제거 · 종전 6종 동일 + 선물금→기타 사용자 결정).
+    g4.GROUP4_NAME                                as SPONSORSHIP_GROUP4_NAME,
+    --  [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_SPONSORSHIP 승계(후원사업 grain).
+    s.SORT_ORDR                                   as SORT_ORDR,
+    s.USE_YN                                      as USE_YN,
+    --  [2026-10-06 O202 · 사용자 결정 「법인 축 = MSTR 기준」] 후원사업의 법인구분(CM019).
+    --   MSTR `USP_D_SPNSR_BSNS_INFO` 와 같은 원천(TM_CM_SPNSR_BSNS_INFO.CPR_DIV_CD)이다.
+    --   CM019 같은 레벨 = A 통합 · I 사단 · S 사복(실측 2026-10-06 · 후원사업 50 = I 42 · S 8 · A 0).
+    --   WARN: MSTR 은 원천 '1'/'2' 를 I/S 로 바꾸는 방어식을 두지만 원천 실측값은 이미 I/S 다 ⇒ 변환하지 않는다.
+    --   WARN: 캠페인 법인(`DIM_CAMPAIGN.CPR_DIV_*` · FME `CPR_DIV_*_AT_EVENT`)과 **다른 축**이다.
+    s.CPR_DIV_CD                                  as CPR_DIV_CD,
+    cd_cpr.DTL_CD_NM                              as CPR_DIV_NM,
+    --  [2026-10-25 O262-B · 33 §1] 기부유형 코드 raw(1·3 · 코드군 C = 그룹 특정 불가 ⇒ 라벨 창작 금지 · 06_DDL 동기 · 맨 끝 append)
+    s.DNTN_TY_CD                                  as DNTN_TY_CD
 from s
 left join cd_div on cd_div.DTL_CD_ID = s.SPNSR_DIV_CD
 left join cd_grp on cd_grp.DTL_CD_ID = s.SPNSR_BSNS_ABRV_CD
+left join cd_cpr on cd_cpr.DTL_CD_ID = s.CPR_DIV_CD
+left join {{ ref('MAP_SPONSORSHIP_GROUP4') }} g4 on g4.SRC_LABEL = cd_grp.DTL_CD_NM
 
 union all
 -- unknown 멤버(SK=0): 팩트 SPONSORSHIP_SK=0(미매핑) 조인 유실 방지
 select 0, '(미매핑)', '(미매핑)', NULL,
     {{ gold_meta('CRM') }},
-    NULL, NULL, NULL
+    NULL, NULL, NULL, NULL,
+    NULL, NULL,
+    NULL, NULL,
+    NULL    -- O262-B DNTN_TY_CD
 </code></pre>
           </div>
         </details>

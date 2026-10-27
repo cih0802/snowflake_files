@@ -7,6 +7,7 @@
 
 사용법
     python3 scripts/env_capture.py --id A0 "85_실제 인수인계 문서/10_실무자_인수인계/A0_환경실사_baseline.sql"
+    python3 scripts/env_capture.py --id S30 --out-root "30_output_share/_ENV" "30_output_share/_근거쿼리/S30_census.sql"
 
 규약([ENV] 분리 · 85번 작업계획서 §1-10)
     · SQL 파일은 `-- Qnn <제목>` 줄로 블록을 나눈다. 블록 안 문장은 `;` 줄끝으로 나눈다.
@@ -88,6 +89,7 @@ def main():
     ap = argparse.ArgumentParser(add_help=True)
     ap.add_argument('sql_path')
     ap.add_argument('--id', required=True, help='산출물 ID (예: A0)')
+    ap.add_argument('--out-root', default=OUT_ROOT, help='출력 루트 (기본 85번 _ENV · 30번은 "30_output_share/_ENV")')
     if len(sys.argv) == 1:
         print(__doc__)
         return 2
@@ -106,7 +108,7 @@ def main():
     cur = con.cursor()
     cur.execute('SELECT CURRENT_ACCOUNT(), CURRENT_TIMESTAMP()::STRING')
     acct, now = cur.fetchone()
-    out_dir = os.path.join(OUT_ROOT, acct)
+    out_dir = os.path.join(a.out_root, acct)
     os.makedirs(out_dir, exist_ok=True)
 
     manifest, rc = [], 0
