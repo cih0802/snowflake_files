@@ -1,4 +1,4 @@
-# doc_id: D12 · as_of: 2026-10-21 13:11:25.243 +0900 · account: ZL50263 · query: Q05-2 소비 객체 — SV · Agent · Streamlit 수
+# doc_id: D12 · as_of: 2026-10-27 11:59:05.666 +0900 · account: ZL50263 · query: Q05-2 소비 객체 — SV · Agent · Streamlit 수
 created_on,name,database_name,schema_name,owner,comment,profile,is_secure
 2026-09-14 10:35:48.819000+09:00,AGENT_EXECUTIVE,GN_DW,SERVING,GN_DW_ADMIN,굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).,"{""display_name"":""경영·전사 분석"",""color"":""#11567F""}",false
 2026-08-20 13:53:57.226000+09:00,AGENT_MARKETING,GN_DW,SERVING,GN_DW_ADMIN,굿네이버스 마케팅 분석 Agent. 조회 데이터 = 마케팅·광고(매체·광고비·개발효율) · 캠페인(캠페인·마케팅캠페인별 개발·회비·활동회원) · 예산(편성·집행) · 개발 목표·실적 · 회원(전환·획득코호트) · 홈페이지 방문(GA4)·검색어 · 지출결의 · 머신러닝 예측(개발금액·증액·중단·회비·LTV·일시회원 정기전환).,"{""display_name"":""마케팅 분석"",""color"":""#FF9F36""}",false

@@ -1,7 +1,7 @@
-# doc_id: A1 · as_of: 2026-10-21 13:17:26.607 +0900 · account: ZL50263 · manifest
+# doc_id: A1 · as_of: 2026-10-27 11:53:55.726 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
-Q01,1,A1_Q01_1.csv,OK,26,0,SELECT 사용자 현황 — 기본 롤·WH·비활성·유형 (이메일 제외)
-Q02,1,A1_Q02_1.csv,OK,42,0,SELECT 사용자 ↔ 롤 할당 (A2 Q06 과 같은 축 · 온보딩 점검)
+Q01,1,A1_Q01_1.csv,OK,29,0,SELECT 사용자 현황 — 기본 롤·WH·비활성·유형 (이메일 제외)
+Q02,1,A1_Q02_1.csv,OK,48,0,SELECT 사용자 ↔ 롤 할당 (A2 Q06 과 같은 축 · 온보딩 점검)
 Q03,1,A1_Q03_1.csv,OK,1,0,SELECT 알림 수신자 플래그 건수 (OPS.ALERT_RECIPIENT_CONFIG · 이메일 제외)
 Q04,1,A1_Q04_1.csv,OK,0,0,SHOW 비용 가드 — quota · 예산 · 리소스 모니터
 Q04,2,A1_Q04_2.csv,OK,0,0,SHOW 비용 가드 — quota · 예산 · 리소스 모니터
@@ -9,7 +9,7 @@ Q04,3,A1_Q04_3.csv,OK,0,0,SHOW 비용 가드 — quota · 예산 · 리소스 �
 Q05,1,A1_Q05_1.csv,OK,3,0,SHOW 계정 파라미터 — CoCo 한도 · Personal DB
 Q05,2,A1_Q05_2.csv,OK,1,0,SHOW 계정 파라미터 — CoCo 한도 · Personal DB
 Q06,1,A1_Q06_1.csv,OK,1,0,SHOW 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
-Q06,2,A1_Q06_2.csv,OK,11,0,SHOW 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
+Q06,2,A1_Q06_2.csv,OK,14,0,SHOW 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
 Q06,3,A1_Q06_3.csv,OK,2,0,SHOW 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
 Q07,1,A1_Q07_1.csv,OK,1,0,SHOW Alert · 알림 통합
 Q07,2,A1_Q07_2.csv,OK,1,0,SHOW Alert · 알림 통합

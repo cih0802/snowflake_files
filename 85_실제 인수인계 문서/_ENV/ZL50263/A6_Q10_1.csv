@@ -1,4 +1,4 @@
-# doc_id: A6 · as_of: 2026-10-21 13:18:54.957 +0900 · account: ZL50263 · query: Q10-1 BRONZE 스키마 쓰기 권한 (06_RUNBOOK §4.2 전제 점검 · DR-26 · 기대 = CREATE TABLE 은 GN_DW_ADMIN 만)
+# doc_id: A6 · as_of: 2026-10-27 11:55:52.051 +0900 · account: ZL50263 · query: Q10-1 BRONZE 스키마 쓰기 권한 (06_RUNBOOK §4.2 전제 점검 · DR-26 · 기대 = CREATE TABLE 은 GN_DW_ADMIN 만)
 created_on,privilege,granted_on,name,granted_to,grantee_name,grant_option,granted_by,granted_by_role_type
 2026-08-19 09:58:04.549000+09:00,ADD SEARCH OPTIMIZATION,SCHEMA,GN_DW.BRONZE_CRM,ROLE,GN_DW_ADMIN,false,GN_DW_ADMIN,ROLE
 2026-08-19 09:58:04.375000+09:00,ADD SEMANTIC VIEW MATERIALIZATION,SCHEMA,GN_DW.BRONZE_CRM,ROLE,GN_DW_ADMIN,false,GN_DW_ADMIN,ROLE

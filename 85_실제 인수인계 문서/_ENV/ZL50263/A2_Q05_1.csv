@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-21 13:17:35.578 +0900 · account: ZL50263 · query: Q05-1 Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
+# doc_id: A2 · as_of: 2026-10-27 11:54:14.294 +0900 · account: ZL50263 · query: Q05-1 Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
 created_on,role,granted_to,grantee_name,granted_by
 2026-06-08 10:04:40.326000+09:00,SNOWFLAKE.CORTEX_USER,ROLE,ACCOUNTADMIN,ACCOUNTADMIN
 2026-06-10 13:13:32.346000+09:00,SNOWFLAKE.CORTEX_USER,ROLE,GN_DW_ANALYST,

@@ -1,4 +1,4 @@
-# doc_id: A0 · as_of: 2026-10-21 13:16:47.498 +0900 · account: ZL50263 · query: Q06-1 롤 · 사용자 · 롤 계층
+# doc_id: A0 · as_of: 2026-10-27 11:53:05.794 +0900 · account: ZL50263 · query: Q06-1 롤 · 사용자 · 롤 계층
 created_on,name,is_default,is_current,is_inherited,assigned_to_users,granted_to_roles,granted_roles,owner,comment,is_from_organization_user_group
 2026-06-08 10:04:39.646000+09:00,ACCOUNTADMIN,N,Y,N,4,0,2,,Account administrator can manage all aspects of the account.,N
 2026-06-09 09:05:39.317000+09:00,GN_DW_ADMIN,Y,N,Y,5,1,5,SECURITYADMIN,"GN_DW DB 관리자 - DDL, 스키마 관리",N

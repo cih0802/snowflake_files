@@ -1,4 +1,4 @@
-# doc_id: R10 · as_of: 2026-10-26 20:57:42.933 +0900 · account: ZL50263 · query: Q11-1 차이 사유 검증(예산 절차): BRONZE 는 같은 연도를 연사업·추가경정 두 절차로 싣는다 ⇒ 절차별 집행액과 GOLD 집행액 대조
+# doc_id: R10 · as_of: 2026-10-27 12:02:46.459 +0900 · account: ZL50263 · query: Q11-1 차이 사유 검증(예산 절차): BRONZE 는 같은 연도를 연사업·추가경정 두 절차로 싣는다 ⇒ 절차별 집행액과 GOLD 집행액 대조
 YR,PROCEDURE_NM,BRONZE_ROWS,BRONZE_EXEC_TOT,BRONZE_EXEC_MONTH_SUM,GOLD_ROWS,GOLD_EXEC_ERP
 2024,연사업,87,20913367058,20913367060,,
 2024,추가경정,86,20913367058,20913367060,984,20913367060.00

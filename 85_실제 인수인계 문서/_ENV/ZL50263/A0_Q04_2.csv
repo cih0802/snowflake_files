@@ -1,4 +1,4 @@
-# doc_id: A0 · as_of: 2026-10-21 13:16:47.498 +0900 · account: ZL50263 · query: Q04-2 SV · Agent · Cortex Search · DBT PROJECT · Streamlit
+# doc_id: A0 · as_of: 2026-10-27 11:53:05.794 +0900 · account: ZL50263 · query: Q04-2 SV · Agent · Cortex Search · DBT PROJECT · Streamlit
 created_on,name,database_name,schema_name,owner,comment,profile,is_secure
 2026-10-01 16:43:03.436000+09:00,AGENT_MSTR_TEST,GN_DW,BRONZE_CRM,GN_DW_ADMIN,,"{""display_name"":""MSTR 테스트""}",false
 2026-09-14 10:35:48.819000+09:00,AGENT_EXECUTIVE,GN_DW,SERVING,GN_DW_ADMIN,굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).,"{""display_name"":""경영·전사 분석"",""color"":""#11567F""}",false

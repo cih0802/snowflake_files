@@ -1,4 +1,4 @@
-# doc_id: A0 · as_of: 2026-10-21 13:16:47.498 +0900 · account: ZL50263 · query: Q01-1 데이터베이스
+# doc_id: A0 · as_of: 2026-10-27 11:53:05.794 +0900 · account: ZL50263 · query: Q01-1 데이터베이스
 created_on,name,is_default,is_current,origin,owner,comment,options,retention_time,kind,owner_role_type,object_visibility,data_quality_monitoring_settings,resharing_settings
 2026-06-10 13:07:17.794000+09:00,GN_DW,Y,Y,,GN_DW_ADMIN,굿네이버스 데이터 웨어하우스,,1,STANDARD,ROLE,,,
 2026-06-08 10:04:40.310000+09:00,SNOWFLAKE,N,N,SNOWFLAKE.ACCOUNT_USAGE,,,,0,APPLICATION,,,,

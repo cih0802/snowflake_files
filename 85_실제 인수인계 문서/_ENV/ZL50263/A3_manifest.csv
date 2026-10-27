@@ -1,4 +1,4 @@
-# doc_id: A3 · as_of: 2026-10-21 13:15:59.968 +0900 · account: ZL50263 · manifest
+# doc_id: A3 · as_of: 2026-10-27 11:55:09.613 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,A3_Q01_1.csv,OK,6,0,SHOW CoCo 접근 결정 DB 롤 부여처 (BCR-2445 적용 후 = CORTEX_USER 또는 CORTEX_AGENT_USER · 적용 전 = + COPILOT_USER)
 Q01,2,A3_Q01_2.csv,OK,2,0,SHOW CoCo 접근 결정 DB 롤 부여처 (BCR-2445 적용 후 = CORTEX_USER 또는 CORTEX_AGENT_USER · 적용 전 = + COPILOT_USER)
@@ -6,5 +6,5 @@ Q01,3,A3_Q01_3.csv,OK,3,0,SHOW CoCo 접근 결정 DB 롤 부여처 (BCR-2445 적
 Q02,1,A3_Q02_1.csv,OK,11,0,SHOW 차단 대상 후보 — GN_DW_ANALYST 를 받은 사용자·롤 (실시간)
 Q02,2,A3_Q02_2.csv,OK,2,0,SHOW 차단 대상 후보 — GN_DW_ANALYST 를 받은 사용자·롤 (실시간)
 Q03,1,A3_Q03_1.csv,OK,3,0,SHOW CoCo 한도 파라미터 — 계정 기본값
-Q04,1,A3_Q04_1.csv,OK,10,0,SELECT CoCo 사용 실적 — 최근 30일 사용자별 (통합 뷰 · 인터페이스별 뷰와 합산 금지)
+Q04,1,A3_Q04_1.csv,OK,11,0,SELECT CoCo 사용 실적 — 최근 30일 사용자별 (통합 뷰 · 인터페이스별 뷰와 합산 금지)
 Q05,1,A3_Q05_1.csv,OK,0,0,SHOW Per-user quota (CORTEX CODE 도메인 차단 대안) 존재 여부

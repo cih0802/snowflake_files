@@ -1,52 +1,52 @@
-# doc_id: A7 · as_of: 2026-10-21 13:19:24.829 +0900 · account: ZL50263 · query: Q05-1 [주] 실패 쿼리 — 최근 7일 GN_DW 롤별 오류 상위
+# doc_id: A7 · as_of: 2026-10-27 11:56:33.556 +0900 · account: ZL50263 · query: Q05-1 [주] 실패 쿼리 — 최근 7일 GN_DW 롤별 오류 상위
 ROLE_NAME,ERROR_CODE,ERROR_MESSAGE,N,LAST_T
-GN_DW_ANALYST,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",1942,2026-10-21 13:14:38.314000+09:00
-GN_DW_ANALYST,099106,There is already a live version. Please commit it first.,315,2026-10-21 13:10:34.850000+09:00
-GN_DW_ANALYST,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege granted,314,2026-10-21 08:45:30.635000+09:00
-GN_DW_ADMIN,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",202,2026-10-21 10:36:57.648000+09:00
-GN_DW_ADMIN,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ADMIN must have USAGE or any other privilege granted on DATABASE SNOWFLAKE_INTELLIGEN,52,2026-10-20 16:13:15.595000+09:00
-GN_DW_DBT,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",45,2026-10-21 13:13:37.334000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121001 is not found.,41,2026-10-20 10:43:18.171000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121005 is not found.,38,2026-10-20 11:21:19.299000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121037 is not found.,36,2026-10-20 10:56:28.713000+09:00
-GN_DW_ADMIN,002003,"SQL compilation error: ⏎ Cortex Agent '""""' does not exist or not authorized.",27,2026-10-21 09:05:27.643000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222120889 is not found.,23,2026-10-19 00:19:52.215000+09:00
-GN_DW_DBT,002003,SQL compilation error: ⏎ Schema 'GN_DW.PUBLIC' does not exist or not authorized. Your primary role GN_DW_DBT must have USAGE or any other privilege granted on SCHEMA GN_DW.PUBLIC.,23,2026-10-21 13:13:37.332000+09:00
-GN_DW_DBT,002003,SQL compilation error: ⏎ Schema 'GN_DW.SERVING' does not exist or not authorized. Your primary role GN_DW_DBT must have USAGE or any other privilege granted on SCHEMA GN_DW.SERVING.,22,2026-10-16 22:56:15.293000+09:00
-GN_DW_ADMIN,099106,There is already a live version. Please commit it first.,20,2026-10-20 16:13:15.453000+09:00
-GN_DW_ADMIN,001006,SQL compilation error: ⏎ invalid parameter 'GET_CATALOG_LINKED_DATABASE_CONFIG is not supported for database GN_DW. The database must be a catalog linked database.',20,2026-10-20 17:05:03.750000+09:00
-GN_DW_ANALYST,000604,SQL execution canceled,18,2026-10-20 11:04:52.792000+09:00
-GN_DW_ADMIN,001003,SQL compilation error: ⏎ syntax error line 1 at position 15 unexpected 'TASKS'.,17,2026-10-20 17:04:58.690000+09:00
-GN_DW_ADMIN,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ADMIN or one of your secondary roles must have USAGE or any other privilege granted o,16,2026-10-16 10:41:38.121000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222120349 is not found.,16,2026-10-14 14:35:16.532000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222120361 is not found.,15,2026-10-14 14:38:59.102000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222120445 is not found.,15,2026-10-15 09:01:50.132000+09:00
-GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222120857 is not found.,14,2026-10-18 14:47:01.058000+09:00
-GN_DW_ADMIN,002020,SQL compilation error: ⏎ Insert value list does not match column list expecting 4 but got 2,11,2026-10-19 11:08:59.866000+09:00
-GN_DW_ANALYST,002003,SQL compilation error: ⏎ Schema 'SNOWFLAKE.ACCOUNT_USAGE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege granted ,10,2026-10-17 22:23:15.252000+09:00
-GN_DW_ADMIN,100051,Division by zero,10,2026-10-15 00:24:24.545000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_B_FAD' does not exist,8,2026-10-19 00:53:46.119000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FPMC_DIM_DATE' does not exist,8,2026-10-19 00:53:49.933000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMM_DIM_PAYMENT' does not exist,8,2026-10-19 00:53:43.099000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSE_DIM_SERVICE' does not exist,8,2026-10-19 00:53:44.273000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMM_DIM_CAMPAIGN' does not exist,8,2026-10-19 00:53:42.905000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FTG_B_DIM_CAMPAIGN' does not exist,8,2026-10-19 00:53:44.056000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBD_DIM_ORG' does not exist,8,2026-10-19 00:53:46.856000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_D_FAD' does not exist,8,2026-10-19 00:53:46.235000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_ORG' does not exist,8,2026-10-19 00:53:43.564000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FRA_DIM_MEMBER' does not exist,8,2026-10-19 00:53:50.473000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMSB_DIM_CAMPAIGN' does not exist,8,2026-10-19 00:53:48.716000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBY_DIM_CAMPAIGN' does not exist,8,2026-10-19 00:53:47.437000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAP_MKTG_CAMPAIGN' does not exist,8,2026-10-19 00:53:48.508000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_BIGQUERY_EVENT' does not exist,8,2026-10-19 00:53:45.401000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FRD_DIM_MEMBER' does not exist,8,2026-10-19 00:53:49.629000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMSB_DIM_SPONSORSHIP' does not exist,8,2026-10-19 00:53:48.596000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FME_DIM_DATE' does not exist,8,2026-10-19 00:53:43.269000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_SPONSORSHIP' does not exist,8,2026-10-19 00:53:47.901000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_BIGQUERY_SOURCE' does not exist,8,2026-10-19 00:53:45.496000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FTG_D_DIM_ORG' does not exist,8,2026-10-19 00:53:43.727000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FSE_DIM_DATE' does not exist,8,2026-10-19 00:53:44.153000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FBQ_DIM_DATE' does not exist,8,2026-10-19 00:53:45.211000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMD_DIM_SEND_REQUEST' does not exist,8,2026-10-19 00:53:50.281000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_PAYMENT' does not exist,8,2026-10-19 00:53:48.029000+09:00
-GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMC_DIM_DATE_STOP' does not exist,8,2026-10-19 00:53:47.809000+09:00
+GN_DW_ANALYST,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",862,2026-10-27 11:28:59.528000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121369 is not found.,243,2026-10-27 10:27:24.405000+09:00
+GN_DW_ADMIN,002030,SQL compilation error: ⏎ Invalid object type: 'ALTER$COLUMN_COMMENT is not supported on objects of type TABLE',190,2026-10-26 18:20:42.097000+09:00
+GN_DW_ANALYST,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege granted,140,2026-10-27 11:24:32.249000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121329 is not found.,132,2026-10-26 11:09:37.345000+09:00
+GN_DW_ADMIN,002030,SQL compilation error: ⏎ Invalid object type: 'ALTER$OBJECT_COMMENT is not supported on objects of type TABLE',105,2026-10-26 18:20:43.272000+09:00
+GN_DW_ANALYST,099106,There is already a live version. Please commit it first.,73,2026-10-27 11:24:32.183000+09:00
+GN_DW_ADMIN,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",73,2026-10-27 11:40:06.370000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121277 is not found.,36,2026-10-23 09:38:47.138000+09:00
+GN_DW_ADMIN,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ADMIN must have USAGE or any other privilege granted on DATABASE SNOWFLAKE_INTELLIGEN,20,2026-10-22 11:22:19.944000+09:00
+GN_DW_DBT,002043,"SQL compilation error: ⏎ Object does not exist, or operation cannot be performed.",20,2026-10-27 11:11:11.169000+09:00
+GN_DW_ADMIN,002003,"SQL compilation error: ⏎ Cortex Agent '""""' does not exist or not authorized.",17,2026-10-27 09:20:15.739000+09:00
+GN_DW_ADMIN,099106,There is already a live version. Please commit it first.,16,2026-10-27 11:40:22.005000+09:00
+GN_DW_ADMIN,002003,SQL compilation error: ⏎ Table 'GN_DW.ML.DVLP_AMT_SNAPSHOT' does not exist or not authorized. Your primary role GN_DW_ADMIN or one of your secondary roles must have at least one privilege granted on TAB,15,2026-10-23 10:22:42.910000+09:00
+GN_DW_DBT,002003,SQL compilation error: ⏎ Schema 'GN_DW.PUBLIC' does not exist or not authorized. Your primary role GN_DW_DBT must have USAGE or any other privilege granted on SCHEMA GN_DW.PUBLIC.,15,2026-10-27 11:11:11.169000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121261 is not found.,15,2026-10-22 13:16:36.574000+09:00
+GN_DW_ADMIN,091421,Unable to update graph with root task GN_DW.BRONZE_AGENCY.AGENCY_TASK_MASTER since that root task is not suspended.,10,2026-10-27 09:19:01.315000+09:00
+GN_DW_ADMIN,001006,SQL compilation error: ⏎ invalid parameter 'GET_CATALOG_LINKED_DATABASE_CONFIG is not supported for database GN_DW. The database must be a catalog linked database.',10,2026-10-27 09:18:23.256000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121305 is not found.,8,2026-10-23 11:18:54.967000+09:00
+GN_DW_ANALYST,000904,SQL compilation error: error line 1 at position 20 ⏎ invalid identifier 'UPPER_CMPGN_NM',8,2026-10-22 16:22:05.290000+09:00
+GN_DW_ADMIN,002030,SQL compilation error: ⏎ Invalid object type: 'ALTER$OBJECT_COMMENT is not supported on objects of type TASK',8,2026-10-27 11:11:06.758000+09:00
+GN_DW_ANALYST,099112,Content of the provided location can not be read: version CP$6222121309 is not found.,7,2026-10-24 23:56:55.332000+09:00
+GN_DW_ADMIN,100051,Division by zero,6,2026-10-21 15:24:06.208000+09:00
+GN_DW_ADMIN,002030,SQL compilation error: ⏎ Invalid object type: 'ALTER$OBJECT_COMMENT is not supported on objects of type STAGE',6,2026-10-26 17:52:04.446000+09:00
+GN_DW_ANALYST,003001,SQL access control error: ⏎ Insufficient privileges to operate on  'SYSTEM'. Your primary role GN_DW_ANALYST or one of your secondary roles must have MANAGE EVENT ROUTING granted on ACCOUNT ZL50263.,6,2026-10-20 17:46:05.021000+09:00
+GN_DW_ADMIN,002003,SQL compilation error: ⏎ Schema 'SNOWFLAKE.ACCOUNT_USAGE' does not exist or not authorized. Your primary role GN_DW_ADMIN must have USAGE or any other privilege granted on SCHEMA SNOWFLAKE.ACCOUNT_USAGE,5,2026-10-21 10:45:51.043000+09:00
+GN_DW_ADMIN,002030,SQL compilation error: ⏎ Invalid object type: 'ALTER$OBJECT_COMMENT is not supported on objects of type SCHEMA',5,2026-10-27 11:11:03.809000+09:00
+GN_DW_ADMIN,001003,"SQL compilation error: ⏎ syntax error line 1 at position 4 unexpected 'V_END_DATE'. ⏎ syntax error line 2 at position 25 unexpected ','.",5,2026-10-20 15:59:15.002000+09:00
+GN_DW_DBT,000904,SQL compilation error: error line 42 at position 8 ⏎ invalid identifier 'UPPER_CMPGN_NM',5,2026-10-26 06:01:27.178000+09:00
+GN_DW_DBT,000904,SQL compilation error: error line 41 at position 8 ⏎ invalid identifier 'CMPGN_CD',5,2026-10-26 06:01:27.178000+09:00
+GN_DW_ADMIN,100051,Uncaught exception of type 'STATEMENT_ERROR' on line 11 at position 4 : Division by zero,5,2026-10-21 15:24:05.498000+09:00
+GN_DW_DBT,002003,SQL compilation error: ⏎ Schema 'GN_DW.SERVING' does not exist or not authorized. Your primary role GN_DW_DBT must have USAGE or any other privilege granted on SCHEMA GN_DW.SERVING.,5,2026-10-26 19:08:58.849000+09:00
+GN_DW_ADMIN,100071,"Failed to cast variant value ""-"" to REAL",4,2026-10-23 12:22:56.368000+09:00
+GN_DW_ANALYST,000904,SQL compilation error: error line 1 at position 28 ⏎ invalid identifier 'UPPER_CMPGN_NM',4,2026-10-22 16:22:29.423000+09:00
+GN_DW_ADMIN,002003,SQL compilation error: ⏎ Database 'SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ADMIN or one of your secondary roles must have USAGE or any other privilege granted o,4,2026-10-22 11:04:40.700000+09:00
+GN_DW_ANALYST,000604,SQL execution canceled,4,2026-10-25 12:08:53.039000+09:00
+GN_DW_ANALYST,002003,SQL compilation error: ⏎ Schema 'SNOWFLAKE.ACCOUNT_USAGE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege granted ,4,2026-10-22 14:30:56.839000+09:00
+GN_DW_ANALYST,000937,"SQL compilation error: error line Streamlit at position {1} ⏎ invalid argument for function [{2}] unexpected argument [{3}] at position {4},",4,2026-10-27 10:38:23.510000+09:00
+GN_DW_ADMIN,001003,SQL compilation error: ⏎ syntax error line 1 at position 15 unexpected 'TASKS'.,3,2026-10-20 17:04:58.690000+09:00
+GN_DW_ADMIN,001003,SQL compilation error: ⏎ syntax error line 11 at position 0 unexpected 'SELECT'. ⏎ syntax error line 12 at position 0 unexpected 'FROM'.,3,2026-10-26 09:52:48.151000+09:00
+GN_DW_ADMIN,000002,Unsupported feature 'assignment from non-constant source expression'.,3,2026-10-20 16:00:58.362000+09:00
+GN_DW_ANALYST,002003,"SQL compilation error: ⏎ Schema '""USER$"".SNOWFLAKE_INTELLIGENCE' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have USAGE or any other privilege g",3,2026-10-27 11:24:32.695000+09:00
+GN_DW_DBT,001003,SQL compilation error: ⏎ syntax error line 1 at position 0 unexpected '말씀'.,3,2026-10-22 16:01:48.369000+09:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_D_FAD' does not exist,2,2026-10-26 18:40:51.060000+09:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FMF_BILL_DATE' does not exist,2,2026-10-26 18:40:52.567000+09:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FEP_DIM_SPONSORSHIP' does not exist,2,2026-10-26 18:40:51.460000+09:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FTG_B_DIM_CAMPAIGN' does not exist,2,2026-10-26 18:40:49.890000+09:00
+GN_DW_ADMIN,001450,SQL compilation error: ⏎ constraint 'FK_FAD_BC_FAD' does not exist,2,2026-10-26 18:40:51.144000+09:00
+GN_DW_ANALYST,002003,"SQL compilation error: ⏎ Workspace '""USER$"".PUBLIC.""★참여팀-회원참여 통합보고서""' does not exist or not authorized. Your primary role GN_DW_ANALYST or one of your secondary roles must have at least one privilege gr",2,2026-10-26 17:33:11.049000+09:00
+GN_DW_ADMIN,000904,SQL compilation error: error line 272 at position 36 ⏎ invalid identifier 'LYEAR_MT',2,2026-10-21 10:22:19.185000+09:00

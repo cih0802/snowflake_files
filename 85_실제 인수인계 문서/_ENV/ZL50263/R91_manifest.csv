@@ -1,11 +1,11 @@
-# doc_id: R91 · as_of: 2026-10-27 00:45:41.722 +0900 · account: ZL50263 · manifest
+# doc_id: R91 · as_of: 2026-10-27 12:04:25.185 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,R91_Q01_1.csv,OK,1,0,SHOW [T1] TASK_VIDEO 상태(started 이면 해소 · suspended 이면 생성자 결정 대기)
-Q02,1,R91_Q02_1.csv,OK,31,0,SELECT [T2·T3] 2026-10-26 이후 정기 Task 실행 결과(daily SUCCEEDED · errors 공란이면 해소)
+Q02,1,R91_Q02_1.csv,OK,32,0,SELECT [T2·T3] 2026-10-26 이후 정기 Task 실행 결과(daily SUCCEEDED · errors 공란이면 해소)
 Q03,1,R91_Q03_1.csv,OK,4,0,SELECT [T10] 원천 적재 오류 기록 · 2026-10-26 이후 신규 행(0 이면 해소)
 Q04,1,R91_Q04_1.csv,ERROR,0,0,003001 (42501): SQL access control error:
 Q05,1,R91_Q05_1.csv,OK,1,0,SHOW [T5] SECRET 소유(개인 소유 0 이면 해소)
-Q06,1,R91_Q06_1.csv,OK,29,0,SHOW [T6] dbt 배포 원본(source_location) · 기본 버전
+Q06,1,R91_Q06_1.csv,OK,30,0,SHOW [T6] dbt 배포 원본(source_location) · 기본 버전
 Q07,1,R91_Q07_1.csv,OK,14,0,SHOW [T6] Streamlit 소유(개인 소유 0 이면 해소)
 Q08,1,R91_Q08_1.csv,OK,20,18,SHOW [T7 선행 · R06 §1] Agent 기본 버전(오늘 반영 후 값 기록)
 Q08,2,R91_Q08_2.csv,OK,23,21,SHOW [T7 선행 · R06 §1] Agent 기본 버전(오늘 반영 후 값 기록)

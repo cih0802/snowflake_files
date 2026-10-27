@@ -1,4 +1,4 @@
-# doc_id: R09 · as_of: 2026-10-26 20:56:37.043 +0900 · account: ZL50263 · query: Q01-1 계정 보존 파라미터
+# doc_id: R09 · as_of: 2026-10-27 12:02:36.353 +0900 · account: ZL50263 · query: Q01-1 계정 보존 파라미터
 key,value,default,level,description,type
 DATA_RETENTION_TIME_IN_DAYS,1,1,,number of days to retain the old version of deleted/updated data,NUMBER
 MIN_DATA_RETENTION_TIME_IN_DAYS,0,0,,Minimum allowable data retention time for an account. The effective retention time for any entity in the account is the max of this value and the DATA_RETENTION_TIME_IN_DAYS value for that entity.,NUMBER

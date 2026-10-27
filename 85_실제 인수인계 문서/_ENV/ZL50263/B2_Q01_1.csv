@@ -1,4 +1,4 @@
-# doc_id: B2 · as_of: 2026-10-21 13:11:12.111 +0900 · account: ZL50263 · query: Q01-1 지표 행 — 정의 · 산식 · 배선(도구 · SV 필드) · 대응 상태
+# doc_id: B2 · as_of: 2026-10-27 11:58:42.120 +0900 · account: ZL50263 · query: Q01-1 지표 행 — 정의 · 산식 · 배선(도구 · SV 필드) · 대응 상태
 DOC_ID,TITLE,SYNONYMS,DEFINITION,FORMULA,AGENT_SCOPE,TOOL_NAME,SV_FIELD,HAS_FORMULA,COVERAGE,IS_ADDITIVE,LIMITATION,SOURCE_FILE
 MET_CMN-1,월 목표대비 개발(%),,[개발] 월 목표 달성율,월 개발건/월 회원개발목표,MARKETING|MEMBER|EXECUTIVE,analyst_dev_achievement,SV_DEV_ACHIEVEMENT.ACHV.ACHIEVEMENT_RATE,Y,C1_METRIC,,데이터 출처: 매체별 목표 : 신규 테이블 마련 필요 ⏎ 개발(건) : crm,공통지표_flat_20261003.csv:2
 MET_CMN-10,GA CVR,,[개발] 클릭수 대비 전환율(%),(광고 전환수 / 광고 클릭수) * 100,MARKETING|MEMBER|EXECUTIVE,analyst_ad,SV_AD.AD.CVR,Y,C1_METRIC,,데이터 출처: 대행사(디지털),공통지표_flat_20261003.csv:11

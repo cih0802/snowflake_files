@@ -1,10 +1,10 @@
-# doc_id: N04 · as_of: 2026-10-21 13:13:00.119 +0900 · account: ZL50263 · manifest
+# doc_id: N04 · as_of: 2026-10-27 11:59:47.750 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,N04_Q01_1.csv,OK,9,0,SHOW Task 목록 (스케줄 · 상태 · 소유 · 선행)
 Q02,1,N04_Q02_1.csv,OK,1,0,SHOW Alert 목록 (스케줄 · 상태)
-Q03,1,N04_Q03_1.csv,OK,23,0,SELECT dbt 실행 집계 — 최근 30일 (롤 · 명령 · 상태별 건수 · 평균/최대 초)
-Q04,1,N04_Q04_1.csv,OK,79,0,SELECT dbt build 실행별 (인자 · 소요 · WH 크기) — 전체 build 와 부분 build 를 가른다
+Q03,1,N04_Q03_1.csv,OK,27,0,SELECT dbt 실행 집계 — 최근 30일 (롤 · 명령 · 상태별 건수 · 평균/최대 초)
+Q04,1,N04_Q04_1.csv,OK,90,0,SELECT dbt build 실행별 (인자 · 소요 · WH 크기) — 전체 build 와 부분 build 를 가른다
 Q05,1,N04_Q05_1.csv,OK,13,0,SELECT Task 실행 이력 집계 — 최근 30일 (Task 별 건수 · 상태 · 평균/최대 초)
-Q06,1,N04_Q06_1.csv,OK,6,0,SELECT Alert 실행 이력 — 최근 6일 (상태 · 소요 · 🔴 함수 한도 「7일 이전 불가」라 -7 은 경계에서 실패 → -6)
+Q06,1,N04_Q06_1.csv,OK,7,0,SELECT Alert 실행 이력 — 최근 6일 (상태 · 소요 · 🔴 함수 한도 「7일 이전 불가」라 -7 은 경계에서 실패 → -6)
 Q07,1,N04_Q07_1.csv,OK,1,0,WITH MSTR 적재 월 1회분 소요 (🔴 BCHLOG.RUNKEY 가 전부 NULL 이라 실행 단위로 묶을 수 없다 ⇒
 Q08,1,N04_Q08_1.csv,OK,8,0,SELECT 원천 객체 최종 변경 시각 (BRONZE 스키마별 · LAST_ALTERED = DDL·DML 포함 ⇒ 🔴 재구축·GRANT 로도 갱신되므로

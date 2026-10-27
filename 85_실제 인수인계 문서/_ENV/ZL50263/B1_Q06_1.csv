@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-21 13:09:53.515 +0900 · account: ZL50263 · query: Q06-1 SV 메트릭 (이름 · 식 · 동의어 · 가산성)
+# doc_id: B1 · as_of: 2026-10-27 11:57:29.540 +0900 · account: ZL50263 · query: Q06-1 SV 메트릭 (이름 · 식 · 동의어 · 가산성)
 SEMANTIC_VIEW_NAME,TABLE_NAME,METRIC_NAME,DATA_TYPE,EXPRESSION,SYNONYMS,NON_ADDITIVE_DIMENSIONS,COMMENT
 SV_AD,AD,CTR,"NUMBER(38,6)","SUM(IFF(ad.IMPRESSIONS > 0, ad.CLICKS, 0)) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100","[ ⏎   ""클릭률"", ⏎   ""CTR"" ⏎ ]",,공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용. 🔴 O240: 노출 0·클릭>0 행(DIGITAL · 추적링크 직접유입)의 클릭은 분자에서 뺀다 — 분모 없는 클릭이 소재별 CTR 을 상한(전량 클릭) 이상으로 만든다. 전체 클릭수는 TOTAL_CLICKS 로 따로 답한다.
 SV_AD,AD,CVR,"NUMBER(38,6)","SUM(ad.AGENCY_CONV_MEMBERS) / NULLIF(SUM(ad.CLICKS), 0) * 100","[ ⏎   ""전환율"", ⏎   ""CVR"" ⏎ ]",,공10 CVR(%) = 대행사전환회원 ÷ 클릭수 ×100. 비율(N). 디지털 전용.
@@ -99,24 +99,24 @@ SV_GA_SESSION,GS,EVENT_SUM,"NUMBER(38,0)",SUM(gs.EVENT_CNT),"[ ⏎   ""이벤트
 SV_GA_SESSION,GS,PAGE_VIEW_SUM,"NUMBER(38,0)",SUM(gs.PAGE_VIEW_CNT),"[ ⏎   ""페이지뷰"", ⏎   ""조회수"", ⏎   ""페이지뷰(회)"", ⏎   ""공96"" ⏎ ]",,page_view 이벤트 수 합(회). F(가산).
 SV_GA_SESSION,GS,SESSION_CNT,"NUMBER(18,0)",COUNT(DISTINCT gs.BIGQUERY_SESSION_KEY),"[ ⏎   ""세션수"", ⏎   ""방문수"", ⏎   ""방문(회)"", ⏎   ""공92"", ⏎   ""공97"" ⏎ ]",,고유 세션수(회). 🔴 비가산 — 일자별 값을 더하지 말고 기간을 한 번에 센다(자정 경계 세션 중복 방지).
 SV_GA_SESSION,GS,USER_CNT,"NUMBER(18,0)",COUNT(DISTINCT gs.USER_PSEUDO_ID),"[ ⏎   ""방문자수"", ⏎   ""사용자수"", ⏎   ""방문자(명)"", ⏎   ""공94"" ⏎ ]",,고유 방문자수(명 · 브라우저/기기 단위 pseudo id). 🔴 비가산.
-SV_MBRFEE_PRDT_ACTL,MP,ADJ_CMLT_DSCNTC_CNT_AT_MONTH,"NUMBER(38,10)",SUM(mp.ADJ_CMLT_DSCNTC_CNT),"[ ⏎   ""조정 누계 중단건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
-SV_MBRFEE_PRDT_ACTL,MP,ADJ_CMLT_MBRFEE_AMT_AT_MONTH,"NUMBER(38,10)",SUM(mp.ADJ_CMLT_MBRFEE_AMT),"[ ⏎   ""조정 누계회비"" ⏎ ]",,🔴 누계(원). 한 기준월로 고정해서만 쓴다.
-SV_MBRFEE_PRDT_ACTL,MP,AVG_ACT_RT,"NUMBER(38,12)",AVG(mp.ACT_RT),"[ ⏎   ""활동율"" ⏎ ]",,[비가산] 활동율(0~1) 행 평균.
-SV_MBRFEE_PRDT_ACTL,MP,AVG_CMLT_PAY_RT,"NUMBER(38,12)",AVG(mp.CMLT_PAY_RT),"[ ⏎   ""누계납입율"" ⏎ ]",,[비가산] 누계납입율(0~1) 행 평균.
-SV_MBRFEE_PRDT_ACTL,MP,AVG_DSCNTC_RT,"NUMBER(38,12)",AVG(mp.DSCNTC_RT),"[ ⏎   ""중단율"" ⏎ ]",,[비가산] 중단율(0~1) 행 평균. 그룹을 묶으면 단순평균이 되어 원천 비율과 다르다.
-SV_MBRFEE_PRDT_ACTL,MP,AVG_RDCAMT_RT,"NUMBER(38,12)",AVG(mp.RDCAMT_RT),"[ ⏎   ""감액율"" ⏎ ]",,[비가산] 감액율(0~1) 행 평균.
-SV_MBRFEE_PRDT_ACTL,MP,CMLT_ACT_MBER_CNT_AT_MONTH,"NUMBER(38,10)",SUM(mp.CMLT_ACT_MBER_CNT),"[ ⏎   ""누적 활동회원건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
-SV_MBRFEE_PRDT_ACTL,MP,CMLT_DVLP_CNT_AT_MONTH,"NUMBER(38,10)",SUM(mp.CMLT_DVLP_CNT),"[ ⏎   ""누적개발건수"", ⏎   ""연누계 개발건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다 — 여러 달을 더하면 중복계상이다.
-SV_MBRFEE_PRDT_ACTL,MP,CMLT_EOM_ACT_MBER_CNT_AT_MONTH,"NUMBER(38,10)",SUM(mp.CMLT_EOM_ACT_MBER_CNT),"[ ⏎   ""누적 월말활동회원건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
-SV_MBRFEE_PRDT_ACTL,MP,CMLT_MBRFEE_AMT_AT_MONTH,"NUMBER(38,10)",SUM(mp.CMLT_MBRFEE_AMT),"[ ⏎   ""누적 회비"", ⏎   ""연누계 회비"" ⏎ ]",,🔴 누계(원). 한 기준월로 고정해서만 쓴다.
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_DSCNTC_CNT,"NUMBER(38,10)",SUM(mp.ADJ_DSCNTC_CNT),"[ ⏎   ""조정 중단건수"" ⏎ ]",,월 조정 중단건수 합계(건).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_MBRFEE_AMT,"NUMBER(38,10)",SUM(mp.ADJ_MBRFEE_AMT),"[ ⏎   ""조정 회비"", ⏎   ""월 회비"" ⏎ ]",,월 조정 회비 합계(원 · 월 합산 가능).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_RDCAMT_CNT,"NUMBER(38,10)",SUM(mp.ADJ_RDCAMT_CNT),"[ ⏎   ""조정 감액건수"" ⏎ ]",,월 조정 감액건수 합계(건).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_DSCNTC_CNT,"NUMBER(38,10)",SUM(mp.DSCNTC_CNT),"[ ⏎   ""중단건수"" ⏎ ]",,월 중단건수 합계(건 · 월 합산 가능).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_DVLP_CNT,"NUMBER(38,10)",SUM(mp.DVLP_CNT),"[ ⏎   ""개발건수"", ⏎   ""월 개발건수"" ⏎ ]",,월 개발건수 합계(건 · 월 합산 가능).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_MBRFEE_DIFF_AMT,"NUMBER(38,10)",SUM(mp.MBRFEE_DIFF_AMT),"[ ⏎   ""회비 차액"" ⏎ ]",,회비 차액 합계(원). 원천 정의 그대로이며 산식을 추정해 설명하지 않는다.
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_RDCAMT_CNT,"NUMBER(38,10)",SUM(mp.RDCAMT_CNT),"[ ⏎   ""감액건수"" ⏎ ]",,월 감액건수 합계(건).
-SV_MBRFEE_PRDT_ACTL,MP,TOTAL_SPNSR_BSNS_CHN_DEC_CNT,"NUMBER(38,10)",SUM(mp.SPNSR_BSNS_CHN_DEC_CNT),"[ ⏎   ""후원사업변경 감소건수"" ⏎ ]",,월 후원사업변경 감소건수 합계(건).
+SV_MBRFEE_PRDT_ACTL,MP,ADJ_CMLT_DSCNTC_CNT_AT_MONTH,"NUMBER(38,18)",SUM(mp.ADJ_CMLT_DSCNTC_CNT),"[ ⏎   ""조정 누계 중단건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
+SV_MBRFEE_PRDT_ACTL,MP,ADJ_CMLT_MBRFEE_AMT_AT_MONTH,"NUMBER(38,18)",SUM(mp.ADJ_CMLT_MBRFEE_AMT),"[ ⏎   ""조정 누계회비"" ⏎ ]",,🔴 누계(원). 한 기준월로 고정해서만 쓴다.
+SV_MBRFEE_PRDT_ACTL,MP,AVG_ACT_RT,"NUMBER(38,18)",AVG(mp.ACT_RT),"[ ⏎   ""활동율"" ⏎ ]",,[비가산] 활동율(0~1) 행 평균.
+SV_MBRFEE_PRDT_ACTL,MP,AVG_CMLT_PAY_RT,"NUMBER(38,18)",AVG(mp.CMLT_PAY_RT),"[ ⏎   ""누계납입율"" ⏎ ]",,[비가산] 누계납입율(0~1) 행 평균.
+SV_MBRFEE_PRDT_ACTL,MP,AVG_DSCNTC_RT,"NUMBER(38,18)",AVG(mp.DSCNTC_RT),"[ ⏎   ""중단율"" ⏎ ]",,[비가산] 중단율(0~1) 행 평균. 그룹을 묶으면 단순평균이 되어 원천 비율과 다르다.
+SV_MBRFEE_PRDT_ACTL,MP,AVG_RDCAMT_RT,"NUMBER(38,18)",AVG(mp.RDCAMT_RT),"[ ⏎   ""감액율"" ⏎ ]",,[비가산] 감액율(0~1) 행 평균.
+SV_MBRFEE_PRDT_ACTL,MP,CMLT_ACT_MBER_CNT_AT_MONTH,"NUMBER(38,18)",SUM(mp.CMLT_ACT_MBER_CNT),"[ ⏎   ""누적 활동회원건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
+SV_MBRFEE_PRDT_ACTL,MP,CMLT_DVLP_CNT_AT_MONTH,"NUMBER(38,18)",SUM(mp.CMLT_DVLP_CNT),"[ ⏎   ""누적개발건수"", ⏎   ""연누계 개발건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다 — 여러 달을 더하면 중복계상이다.
+SV_MBRFEE_PRDT_ACTL,MP,CMLT_EOM_ACT_MBER_CNT_AT_MONTH,"NUMBER(38,18)",SUM(mp.CMLT_EOM_ACT_MBER_CNT),"[ ⏎   ""누적 월말활동회원건수"" ⏎ ]",,🔴 누계(건). 한 기준월로 고정해서만 쓴다.
+SV_MBRFEE_PRDT_ACTL,MP,CMLT_MBRFEE_AMT_AT_MONTH,"NUMBER(38,18)",SUM(mp.CMLT_MBRFEE_AMT),"[ ⏎   ""누적 회비"", ⏎   ""연누계 회비"" ⏎ ]",,🔴 누계(원). 한 기준월로 고정해서만 쓴다.
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_DSCNTC_CNT,"NUMBER(38,18)",SUM(mp.ADJ_DSCNTC_CNT),"[ ⏎   ""조정 중단건수"" ⏎ ]",,월 조정 중단건수 합계(건).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_MBRFEE_AMT,"NUMBER(38,18)",SUM(mp.ADJ_MBRFEE_AMT),"[ ⏎   ""조정 회비"", ⏎   ""월 회비"" ⏎ ]",,월 조정 회비 합계(원 · 월 합산 가능).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_ADJ_RDCAMT_CNT,"NUMBER(38,18)",SUM(mp.ADJ_RDCAMT_CNT),"[ ⏎   ""조정 감액건수"" ⏎ ]",,월 조정 감액건수 합계(건).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_DSCNTC_CNT,"NUMBER(38,18)",SUM(mp.DSCNTC_CNT),"[ ⏎   ""중단건수"" ⏎ ]",,월 중단건수 합계(건 · 월 합산 가능).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_DVLP_CNT,"NUMBER(38,18)",SUM(mp.DVLP_CNT),"[ ⏎   ""개발건수"", ⏎   ""월 개발건수"" ⏎ ]",,월 개발건수 합계(건 · 월 합산 가능).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_MBRFEE_DIFF_AMT,"NUMBER(38,18)",SUM(mp.MBRFEE_DIFF_AMT),"[ ⏎   ""회비 차액"" ⏎ ]",,회비 차액 합계(원). 원천 정의 그대로이며 산식을 추정해 설명하지 않는다.
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_RDCAMT_CNT,"NUMBER(38,18)",SUM(mp.RDCAMT_CNT),"[ ⏎   ""감액건수"" ⏎ ]",,월 감액건수 합계(건).
+SV_MBRFEE_PRDT_ACTL,MP,TOTAL_SPNSR_BSNS_CHN_DEC_CNT,"NUMBER(38,18)",SUM(mp.SPNSR_BSNS_CHN_DEC_CNT),"[ ⏎   ""후원사업변경 감소건수"" ⏎ ]",,월 후원사업변경 감소건수 합계(건).
 SV_MEMBER_COHORT,FMC,AVG_TENURE_DAYS,"NUMBER(27,6)",AVG(fmc.TENURE_DAYS),"[ ⏎   ""중단자 평균 유지일수"", ⏎   ""평균 유지기간"", ⏎   ""평균 유지일수"", ⏎   ""평균 후원기간"" ⏎ ]",,"🔴 [O231 명확화] **중단자 평균** — LTV 의 유지개월로 쓰지 않는다(관측 중 회원이 빠져 과소 · 24개월 코호트 4~8개월 vs 생존분석 14~22개월). 회원 전체의 기대 유지개월은 EXP_TENURE_MONTHS(상한 80 · 무기한 · O234 현업 확정)이다. 이탈 회원의 평균 유지기간(일) = 최초 중단일 − 획득일. N(비가산, 재집계 금지). 🔴 **이탈한 회원만** 모수다(미중단 회원은 유지기간이 NULL = 아직 끝나지 않은 관측이라 평균에서 제외된다). 따라서 이 값은 ""이탈한 사람은 평균 며칠 유지했나""이며 **전체 회원의 평균 후원기간이 아니다** — 아직 유지 중인 회원이 많은 캠페인일수록 이 값만 보면 과소평가된다. 반드시 CHURN_RATE_12M 과 함께 해석한다."
 SV_MEMBER_COHORT,FMC,CHURN_RATE_12M,"NUMBER(38,6)","SUM(fmc.STOPPED_12M_MEMBERS) / NULLIF(SUM(fmc.OBSERVABLE_12M_MEMBERS), 0) * 100","[ ⏎   ""중단률"", ⏎   ""이탈률"", ⏎   ""12개월 이탈률"", ⏎   ""12개월 중단률"", ⏎   ""해지율"", ⏎   ""이탈율"", ⏎   ""신규6"" ⏎ ]",,"🔴**캠페인별 중단률의 정본(단위 %)** = 획득 후 12개월 내 이탈 회원수 ÷ 12개월 관측 가능 회원수 ×100. 비율(N) — 재집계 금지, 분자·분모를 각각 집계한 뒤 나눈다. **왜 12개월 고정인가**: 누적 이탈률은 관측 기간에 지배되어(획득이 이를수록 높다) 실행 연도가 다른 캠페인을 비교하면 오래된 캠페인이 자동으로 「중단률 높음」이 된다 — 값이 정상인데 답이 틀리는 결함이다. 12개월로 고정하면 캠페인 간 공정 비교가 된다. 분모는 IS_12M_OBSERVABLE=TRUE 회원으로 자동 제한된다. 🔴 단위는 **퍼센트**다 — 값을 다시 ×100 하지 말 것."
 SV_MEMBER_COHORT,FMC,STOPPED_MEMBERS_EVER,"NUMBER(38,0)",SUM(fmc.STOPPED_MEMBERS),"[ ⏎   ""누적 이탈회원수"", ⏎   ""전체 이탈회원수"" ⏎ ]",,관측 기간 전체에서 한 번이라도 이탈한 회원수. F(가산). ⚠️ 이 값을 TOTAL_ACQ_MEMBERS 로 나눈 **누적 이탈률로 캠페인을 비교하지 말 것** — 획득 시점이 이를수록 관측 기간이 길어 구조적으로 높게 나온다(실측 확인). 캠페인 비교는 CHURN_RATE_12M 을 쓴다. 이 measure 는 「전체 기간 누적 이탈 규모」를 물을 때만 쓴다.
@@ -226,12 +226,13 @@ SV_MEMBER_SERVICE_COHORT,SVC,RETAINED_6M_RATE,"NUMBER(27,6)","DIV0(COUNT(DISTINC
 SV_MEMBER_SPONSOR_BIZ,FMSB,CURRENTLY_ACTIVE_MEMBERS,"NUMBER(18,0)","COUNT(DISTINCT IFF(fmsb.DSCNTC_MONTH_KEY IS NULL, fmsb.MEMBER_DK, NULL))","[ ⏎   ""지금 활동회원수"", ⏎   ""현재 활동회원"" ⏎ ]",,**지금 시점** 활동회원수(명) = 미중단 약정을 보유한 고유회원. N(비가산). 🔴전체 활동회원수 정본은 SV_MEMBER_MONTHLY.ACTIVE_MEMBERS 다 — 이 metric 을 캠페인·후원사업으로 GROUP BY 하면 한 회원이 여러 축에 중복 집계될 수 있어 **합계가 전체보다 클 수 있다**(다중 후원 정상 현상). 특정 과거월 as-of 는 이 metric 이 아니라 START_MONTH_KEY·DSCNTC_MONTH_KEY 원시축으로 직접 WHERE 를 구성한다.
 SV_MEMBER_SPONSOR_BIZ,FMSB,CURRENTLY_ACTIVE_SPNSR_AMT,"NUMBER(38,0)","SUM(IFF(fmsb.DSCNTC_MONTH_KEY IS NULL, fmsb.SPNSR_AMT, 0))","[ ⏎   ""지금 활동 약정금액"", ⏎   ""현재 활동 후원금액"" ⏎ ]",,**지금 시점** 미중단 약정의 SPNSR_AMT 합(원). F(가산). 🔴정본 (건) 표기로 바꾸려면 이 값을 만원 단위로 환산한다(규약) — 이 SV 는 원단위로 노출하고 환산은 소비 시 명시한다.
 SV_MEMBER_SPONSOR_BIZ,FMSB,DISTINCT_MEMBERS,"NUMBER(18,0)",COUNT(DISTINCT fmsb.MEMBER_DK),"[ ⏎   ""고유회원수"", ⏎   ""약정보유회원수"" ⏎ ]",,"활동여부 무관, 이 팩트에 약정이 하나라도 있는 고유 회원수(명). N(비가산)"
+SV_MEMBER_SPONSOR_BIZ,FMSB,STOP_REGISTRATIONS,"NUMBER(13,0)",COUNT_IF(fmsb.DSCNTC_MONTH_KEY IS NOT NULL),"[ ⏎   ""중단 약정건수"", ⏎   ""중단건"", ⏎   ""부서별 중단건"" ⏎ ]",,"중단된 약정(SPNSR_BSNS_NO) 개수(행 수) — 정본 중단(건)(금액 ÷ 10,000)이 아니다. F(가산). 기간은 DSCNTC_MONTH_KEY(중단월)로 건다. 🔴 「명」이 아니다 · SV_MEMBER_EVENT 의 TOTAL_STOP_CNT(사건 grain)와 같은 표에서 합산하지 않는다."
 SV_MEMBER_SPONSOR_BIZ,FMSB,TOTAL_REGISTRATIONS,"NUMBER(18,0)",COUNT(*),"[ ⏎   ""약정건수"", ⏎   ""등록건수"" ⏎ ]",,"약정(SPNSR_BSNS_NO) 행수. F(가산). 🔴""명""이 아니다 — 회원당 여러 약정을 가질 수 있다"
 SV_MEMBER_SPONSOR_BIZ,FMSB,TOTAL_SPNSR_AMT,"NUMBER(38,0)",SUM(fmsb.SPNSR_AMT),"[ ⏎   ""약정금액 총계"" ⏎ ]",,활동여부 무관 SPNSR_AMT 합(원). F(가산)
 SV_MEMBER_SPONSOR_BIZ,FSM,SPONSORSHIP_ACTIVE_CNT,"NUMBER(30,4)",SUM(fsm.ACTIVE_CNT),"[ ⏎   ""후원사업 활동(건)"", ⏎   ""후원사업별 활동건"" ⏎ ]",,"후원사업 월말 활동(건) = 활동 약정금액 ÷ 10,000. F(가산 · 같은 기준월 안에서 · 여러 달 합산 금지)."
 SV_MEMBER_SPONSOR_BIZ,FSM,SPONSORSHIP_UNPAID_CNT,"NUMBER(36,8)",SUM(fsm.UNPAID_BILLED_AMT) / 10000,"[ ⏎   ""후원사업 미납(건)"", ⏎   ""후원사업별 미납건"" ⏎ ]",,"후원사업 미납(건) = 미납회비 ÷ 10,000. F(가산 · 같은 기준월 안에서)."
 SV_MEMBER_SPONSOR_BIZ,FSM,SPONSORSHIP_UNPAID_FEE,"NUMBER(30,2)",SUM(fsm.UNPAID_BILLED_AMT),"[ ⏎   ""후원사업별 미납회비"" ⏎ ]",,후원사업별 미납회비(원). F(가산).
-SV_MEMBER_SPONSOR_BIZ,FSM,SPONSORSHIP_UNPAID_RATE,"NUMBER(38,12)","SUM(fsm.UNPAID_BILLED_AMT) / 10000 / NULLIF(SUM(fsm.ACTIVE_CNT), 0) * 100","[ ⏎   ""후원사업별 미납율"", ⏎   ""후원사업별 미납률"", ⏎   ""사업별 미납율"" ⏎ ]",,"공#79 후원사업별 미납율(%) = 후원사업 미납(건) ÷ 후원사업 활동(건) × 100. 미납(건) = 미납회비(원) ÷ 10,000 · 활동(건) = 월말 활동 약정금액 ÷ 10,000. 🔴 기준연월(BASE_MONTH_KEY) 하나를 고정한다 · 분자·분모를 함께 보이고 ROLLUP 전체 행을 낸다(전체 = SV_CAMPAIGN_MONTHLY 전체 미납율과 같다)."
+SV_MEMBER_SPONSOR_BIZ,FSM,SPONSORSHIP_UNPAID_RATE,"NUMBER(38,12)","SUM(fsm.UNPAID_BILLED_AMT) / 10000 / NULLIF(SUM(fsm.ACTIVE_CNT), 0) * 100","[ ⏎   ""후원사업별 미납율"", ⏎   ""후원사업별 미납률"", ⏎   ""사업별 미납율"" ⏎ ]",,"공#79 후원사업별 미납율(%) = 후원사업 미납(건) ÷ 후원사업 활동(건) × 100. 미납(건) = 미납회비(원) ÷ 10,000 · 활동(건) = 월말 활동 약정금액 ÷ 10,000. 🔴 기준연월(BASE_MONTH_KEY) 하나를 고정한다 · 분자·분모를 함께 보이고 전체 합 행은 붙이지 않는다(필요하면 전체 합 열 · 표 밖 본문 1줄)(전체 = SV_CAMPAIGN_MONTHLY 전체 미납율과 같다)."
 SV_MEMBER_STATUS_ASOF,MSH,MEMBER_COUNT,"NUMBER(18,0)",COUNT(DISTINCT msh.MEMBER_DK),"[ ⏎   ""회원수"", ⏎   ""회원 수"", ⏎   ""명"", ⏎   ""신규30"" ⏎ ]",,고유 회원수(명). D(distinct). 🔴 as-of 조건(기준일 1개)을 건 상태에서만 의미가 있다.
 SV_ML_CHURN_CAMPAIGN,CC,ACTIVE_MEMBERS,"NUMBER(18,0)",COUNT(DISTINCT cc.MBER_NO),"[ ⏎   ""활동회원수"", ⏎   ""후원 중인 회원수"" ⏎ ]",,기준월 말 활동 중인 고유 회원수(명 · 중복제거). 🔴 카테고리별 값을 더하면 다중 후원 회원이 중복된다.
 SV_ML_CHURN_CAMPAIGN,CC,AVG_MEMBER_CHURN_PROB,FLOAT,AVG(cc.MEMBER_CHURN_PROB),"[ ⏎   ""평균 중단확률"" ⏎ ]",,회원 단위 중단확률 평균(0~1 · 표기는 %로 ×100). 회원당 여러 카테고리 행이 있으면 같은 회원 확률이 중복 반영된다 — 카테고리 하나로 거른 뒤 쓴다.
