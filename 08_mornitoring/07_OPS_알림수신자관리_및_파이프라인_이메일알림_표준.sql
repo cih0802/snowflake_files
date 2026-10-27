@@ -167,11 +167,17 @@ $$;
 -- 동기화 초기 1회 실행
 CALL GN_DW.OPS.USP_SYNC_ALERT_RECIPIENTS();
 
--- 초기 기본 파이프라인 관리자 플래그 부여 예시 (현재 로그인 유저 CHOIH)
+-- 장애(PIPELINE_ADMIN) 수신자 지정 [2026-10-27 A8-10] — 계정별 1명: 운영계 ZL50263 = CHOIH · 개발계 = TRIALADMIN
+--   선언형: 변수에 없는 사용자는 'N' 으로 내려간다. 이메일 인증이 안 된 주소가 하나라도 있으면 SYSTEM$SEND_EMAIL 전체가 실패한다
+--   (2026-10-27 운영계 실측 · 9명 중 7명 미인증).
+SET PIPELINE_ADMIN_RECIPIENTS = (SELECT IFF(CURRENT_ACCOUNT() = 'ZL50263', 'CHOIH', 'TRIALADMIN'));
 UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG
-SET IS_PIPELINE_ADMIN_YN = 'Y',
-    IS_ANALYST_YN = 'Y'
-WHERE USER_NAME = 'CHOIH';
+SET IS_PIPELINE_ADMIN_YN = IFF(ARRAY_CONTAINS(UPPER(USER_NAME)::VARIANT,
+                                              SPLIT(UPPER(REPLACE($PIPELINE_ADMIN_RECIPIENTS, ' ', '')), ',')), 'Y', 'N'),
+    UPDATED_AT = CURRENT_TIMESTAMP(),
+    UPDATED_BY = CURRENT_USER();
+-- 분석가 플래그 예시(종전 유지)
+UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG SET IS_ANALYST_YN = 'Y' WHERE USER_NAME = 'CHOIH';
 
 
 -- ------------------------------------------------------------------------------
@@ -180,7 +186,7 @@ WHERE USER_NAME = 'CHOIH';
 -- 값 = Snowflake USER_NAME 목록(쉼표 구분 · 대소문자/공백 무관). 이메일은 ALERT_RECIPIENT_CONFIG 의 인증 주소를 쓴다.
 --   WARN: 목록에 없는 사용자는 'N' 으로 내려간다(선언형 — 이 변수가 dbt 알림 수신자의 정본이다).
 --   WARN: USER_NAME 이 테이블에 없으면 먼저 §3 CALL USP_SYNC_ALERT_RECIPIENTS() 로 동기화한다(이메일 미등록 유저는 제외됨).
-SET DBT_ALERT_RECIPIENTS = 'TRIALADMIN';
+SET DBT_ALERT_RECIPIENTS = (SELECT IFF(CURRENT_ACCOUNT() = 'ZL50263', 'CHOIH', 'TRIALADMIN'));   -- [2026-10-27] 운영계 CHOIH · 개발계 TRIALADMIN
 
 UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG
 SET IS_DBT_ALERT_YN = IFF(ARRAY_CONTAINS(UPPER(USER_NAME)::VARIANT,
@@ -233,6 +239,9 @@ def send_alert(session: snowpark.Session, pipeline_name: str, error_summary: str
         where_clause += " AND IS_DBT_ALERT_YN = 'Y'"
     elif target_role_category == "ALL":
         where_clause += " AND (IS_PIPELINE_ADMIN_YN = 'Y' OR IS_ANALYST_YN = 'Y' OR IS_BUSINESS_USER_YN = 'Y')"
+    else:
+        # [2026-10-27] 모르는 category 는 거부한다 — 종전엔 필터 없이 활성 수신자 전원에게 보냈다(운영계 'CHOIH' 오입력 → 9명 발송 시도)
+        raise ValueError("Unknown target_role_category: " + str(target_role_category))
     
     sql = f"""
     SELECT DISTINCT LOWER(TRIM(USER_EMAIL)) AS EMAIL

@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Purpose    : [GN_DW] dbt 데이터 품질 경고(WARN 테스트) 이메일 알림 구축
--- Target     : PROCEDURE GN_DW.OPS.USP_SEND_DBT_WARN_SPNSR_CLS_DUP, ALERT GN_DW.OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP
+-- Target     : PROCEDURE GN_DW.OPS.USP_SEND_DBT_WARN_SPNSR_CLS_DUP, ALERT GN_DW.OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP, ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED(§7)
 -- Run order  : 운영계 #16
 -- Depends on : GN_DW.OPS.WARN_SPNSR_CLS_AGGR_SRC_DUP, GN_DW.OPS.ALERT_RECIPIENT_CONFIG
 -- Issue      : -
@@ -167,3 +167,55 @@ GRANT MONITOR ON ALERT GN_DW.OPS.ALERT_DBT_WARN_SPNSR_CLS_DUP TO ROLE GN_DW_ENGI
 --   ② §2 프로시저를 복제해 요약 SELECT 만 바꾼다
 --   ③ §3 ALERT 를 복제해 IF EXISTS 대상 테이블만 바꾼다
 --   수신자는 늘 07 §3-1 변수 하나로 관리한다.
+
+
+-- ------------------------------------------------------------------------------
+-- 7. [ALERT] 정기 dbt build Task("daily") 실패 → PIPELINE_ADMIN 메일  [2026-10-27 · A8-10]
+-- ------------------------------------------------------------------------------
+--   왜: 10-22~10-26 "daily" 실패 5회에 메일이 한 통도 나가지 않았다(85 R92). 공통 프로시저는 SP 내부 예외용이라 Task 실패에 걸려 있지 않았다.
+--   왜 Alert: Task ERROR_INTEGRATION 은 SNS·Event Grid·Pub/Sub 전용 — 이메일 통합은 받지 않는다(Snowflake docs tasks-errors).
+--   수신자 = 07 §3 변수 PIPELINE_ADMIN_RECIPIENTS (운영계 CHOIH · 개발계 TRIALADMIN). 이 문서에는 수신자를 적지 않는다.
+--   🔴 category 는 반드시 'PIPELINE_ADMIN' — 07 §4 2026-10-27 판 이전 프로시저는 모르는 값이면 활성 수신자 전원에게 보낸다.
+--   전제: 10_dbt_pipeline/03_create_daily_task.sql 로 GN_DW.OPS."daily" 실재 (개발계에 없으면 Alert 는 늘 CONDITION_FALSE)
+CREATE OR REPLACE ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED
+  WAREHOUSE = GN_DW_ETL_WH
+  SCHEDULE = 'USING CRON 30 6-23 * * * Asia/Seoul'
+  COMMENT = '"daily" Task 실패 → 07 PIPELINE_ADMIN 수신자 메일 (09 §7 · A8-10)'
+  IF (EXISTS (
+    SELECT SCHEDULED_TIME, COMPLETED_TIME, ERROR_MESSAGE
+    FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(
+           TASK_NAME => 'daily',
+           SCHEDULED_TIME_RANGE_START => DATEADD('day', -1, CURRENT_TIMESTAMP()),
+           ERROR_ONLY => TRUE))
+    WHERE DATABASE_NAME = 'GN_DW' AND SCHEMA_NAME = 'OPS'
+      AND COMPLETED_TIME >  COALESCE(SNOWFLAKE.ALERT.LAST_SUCCESSFUL_SCHEDULED_TIME(), DATEADD('hour', -1, CURRENT_TIMESTAMP()))
+      AND COMPLETED_TIME <= SNOWFLAKE.ALERT.SCHEDULED_TIME()
+  ))
+  THEN
+  EXECUTE IMMEDIATE $$
+  DECLARE
+    v_summary STRING;
+    v_detail  STRING;
+  BEGIN
+    SELECT 'GN_DW.OPS."daily" 실패 ' || COUNT(*) || '건 · 마지막 ' || TO_VARCHAR(MAX(COMPLETED_TIME), 'YYYY-MM-DD HH24:MI'),
+           LEFT(LISTAGG(TO_VARCHAR(SCHEDULED_TIME, 'MM-DD HH24:MI') || ' ' || ERROR_MESSAGE, '\n'), 4000)
+      INTO :v_summary, :v_detail
+      FROM TABLE(RESULT_SCAN(SNOWFLAKE.ALERT.GET_CONDITION_QUERY_UUID()));
+    CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', :v_summary, :v_detail, 'PIPELINE_ADMIN');
+  END;
+  $$;
+
+-- 확인: PIPELINE_ADMIN 수신자 = 1명(운영 CHOIH / 개발 TRIALADMIN)
+SELECT USER_NAME, IS_PIPELINE_ADMIN_YN FROM GN_DW.OPS.ALERT_RECIPIENT_CONFIG WHERE IS_ACTIVE_YN = 'Y' AND IS_PIPELINE_ADMIN_YN = 'Y';
+-- 시험 발송 — 기대: SUCCESS: Alert sent to [<수신자 1명>] · 수신함 확인 후 RESUME
+CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', '[테스트] daily 실패 알림 경로 확인(09 §7)', '실제 장애 아님', 'PIPELINE_ADMIN');
+ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED RESUME;
+GRANT MONITOR ON ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED TO ROLE GN_DW_ENGINEER;
+
+-- 운영 확인(다음날 · 평소 CONDITION_FALSE · 실패일 TRIGGERED)
+SELECT NAME, STATE, SCHEDULED_TIME, COMPLETED_TIME, SQL_ERROR_MESSAGE
+FROM TABLE(GN_DW.INFORMATION_SCHEMA.ALERT_HISTORY(
+       SCHEDULED_TIME_RANGE_START => DATEADD('day', -1, CURRENT_TIMESTAMP()),
+       ALERT_NAME => 'ALERT_DAILY_TASK_FAILED'))
+ORDER BY SCHEDULED_TIME DESC;
+-- ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED SUSPEND;

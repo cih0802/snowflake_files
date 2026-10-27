@@ -1,52 +1,19 @@
--- doc_id: R94 · A8-10 "daily" Task 실패 → 장애 메일 연결(🔴 DDL · 운영계 GN_DW_ADMIN) · 설명 = _ENV/운영계_알림연결_측정_20261027.md
--- 근거: Task ERROR_INTEGRATION 은 이메일 통합을 받지 않는다(docs: tasks-errors · "email and webhook ... aren't supported for ERROR_INTEGRATION")
---       ⇒ TASK_HISTORY 를 보는 커스텀 Alert 가 기존 USP_SEND_PIPELINE_ERROR_ALERT(수신자 = ALERT_RECIPIENT_CONFIG PIPELINE_ADMIN)를 부른다.
--- 개발계: 컴파일 통과(2026-10-27) · 프로시저·"daily" 는 개발계에 없어 실행 검증은 운영계에서.
+-- doc_id: R94 · A8-10 "daily" Task 실패 알림 — 🔁 2026-10-27 정본 이관: 배포 SQL 은 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql §7
+-- 이력: 10-27 운영계 [2-a] 시험 호출 실패(query 01c800f8-0002-403c-0001-72de08680026 · 인덱스 1,2,4~8 불허)
+--   원인 = category 인자를 'PIPELINE_ADMIN' 대신 'CHOIH' 로 호출 → 07 §4 send_alert 가 모르는 값에 필터를 안 걸어 활성 수신자 9명 전원 발송 → 미인증 7명으로 전체 실패.
+--   조치 = ① 07 §3 PIPELINE_ADMIN_RECIPIENTS 변수(운영 CHOIH · 개발 TRIALADMIN) ② 07 §4 모르는 category 거부 ③ Alert 는 09 §7 로 이관.
+--   별도 메일 프로시저(USP_SEND_DAILY_FAIL_MAIL)안은 폐기 — 수신자 관리가 07 표와 둘로 갈라지기 때문.
+-- 운영계 실행 순서(GN_DW_ADMIN): 07 §3(수신자) → 07 §4 → 07 §6(GRANT 재부여) → 09 §7
 
--- [1] 배포
-USE ROLE GN_DW_ADMIN;
-CREATE OR REPLACE ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED
-  WAREHOUSE = GN_DW_ETL_WH
-  SCHEDULE = 'USING CRON 30 6-23 * * * Asia/Seoul'
-  COMMENT = 'A8-10 · "daily" Task 실패마다 PIPELINE_ADMIN 메일 (ERROR_INTEGRATION 은 이메일 미지원)'
-  IF (EXISTS (
-    SELECT SCHEDULED_TIME, COMPLETED_TIME, ERROR_MESSAGE
-    FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(
-           TASK_NAME => 'daily',
-           SCHEDULED_TIME_RANGE_START => DATEADD('day', -1, CURRENT_TIMESTAMP()),
-           ERROR_ONLY => TRUE))
-    WHERE DATABASE_NAME = 'GN_DW' AND SCHEMA_NAME = 'OPS'
-      AND COMPLETED_TIME >  COALESCE(SNOWFLAKE.ALERT.LAST_SUCCESSFUL_SCHEDULED_TIME(), DATEADD('hour', -1, CURRENT_TIMESTAMP()))
-      AND COMPLETED_TIME <= SNOWFLAKE.ALERT.SCHEDULED_TIME()
-  ))
-  THEN
-  EXECUTE IMMEDIATE $$
-  DECLARE
-    v_summary STRING;
-    v_detail  STRING;
-  BEGIN
-    SELECT 'GN_DW.OPS."daily" 실패 ' || COUNT(*) || '건 · 마지막 ' || TO_VARCHAR(MAX(COMPLETED_TIME), 'YYYY-MM-DD HH24:MI'),
-           LEFT(LISTAGG(TO_VARCHAR(SCHEDULED_TIME, 'MM-DD HH24:MI') || ' ' || ERROR_MESSAGE, '\n'), 4000)
-      INTO :v_summary, :v_detail
-      FROM TABLE(RESULT_SCAN(SNOWFLAKE.ALERT.GET_CONDITION_QUERY_UUID()));
-    CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', :v_summary, :v_detail, 'PIPELINE_ADMIN');
-  END;
-  $$;
-ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED RESUME;
-ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED SUSPEND;
--- [2] 수신 확인(강제 실패 대신 · "daily" 를 일부러 깨뜨리지 않는다)
--- 2-a 발송 경로: 프로시저를 직접 불러 CHOIH 수신자가 메일을 받는지 사람이 확인
-CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', '[테스트] A8-10 알림 경로 확인', '실제 장애 아님 · 2026-10-27 R94', 'CHOIH');
--- 2-b 감지 조건: 10-22 06:01 실패를 지금 조건식이 잡는가(1행 이상이어야 한다 · 14일 내에만 유효)
+-- 판정용 읽기 전용 확인 (09 §7 RESUME 뒤)
+-- 감지 조건: 10-22~26 실패를 조건식이 잡는가(5행 기대 · 14일 내에만 유효)
 SELECT SCHEDULED_TIME, COMPLETED_TIME, STATE
 FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(
        TASK_NAME => 'daily',
        SCHEDULED_TIME_RANGE_START => '2026-10-21 00:00:00 +0900'::TIMESTAMP_LTZ,
        ERROR_ONLY => TRUE))
 WHERE DATABASE_NAME = 'GN_DW' AND SCHEMA_NAME = 'OPS';
--- 2-c 다음날 확인: Alert 실행 이력(STATE = CONDITION_FALSE 가 정상 · 실패일엔 TRIGGERED)
-SELECT NAME, STATE, SCHEDULED_TIME, COMPLETED_TIME, SQL_ERROR_MESSAGE
-FROM TABLE(GN_DW.INFORMATION_SCHEMA.ALERT_HISTORY(
-       SCHEDULED_TIME_RANGE_START => DATEADD('day', -1, CURRENT_TIMESTAMP()),
-       ALERT_NAME => 'ALERT_DAILY_TASK_FAILED'))
-ORDER BY SCHEDULED_TIME;
+-- 발송 이력: 시험 발송 SUCCESS 1행 이상
+SELECT CREATED, INTEGRATION_NAME, STATUS, ERROR_MESSAGE
+FROM TABLE(GN_DW.INFORMATION_SCHEMA.NOTIFICATION_HISTORY(START_TIME => DATEADD('day', -1, CURRENT_TIMESTAMP())))
+ORDER BY CREATED;
