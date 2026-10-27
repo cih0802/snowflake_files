@@ -36,7 +36,7 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='seed';
 
 -- [3-2] SILVER / GOLD 정제 및 테스트 실행 (build = run + test 게이트)
 -- 전체 빌드:
-
+EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='test';
 EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- 🔴 [O261 · 개발계·신규 구축 필수 · 운영계는 백필 제외 R2-9] 신규 구축·재배포 직후 아래 **범위 지정 build 를 반드시** 이어서 돌린다(전체 build 만으로는 BIGQUERY 체인이 롤링 창 밖 과거를 채우지 않는다).
 --   실사고 = 2026-10-24 UM80684 신규 개발계 · 전체 build ERROR 0 인데 GA4 하류 0행(무증상) · 이 줄 실행 후 34일 복구.
