@@ -1,0 +1,7 @@
+# doc_id: R93 · as_of: 2026-10-27 14:40:49.026 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R93_Q01_1.csv,OK,4,0,SELECT DR-25 CRM_HOLIDAY 권한(10-22 첫 오류 42501) · 객체 소유 롤과 dbt 실행 롤 권한
+Q02,1,R93_Q02_1.csv,OK,0,0,SELECT SILVER 스키마에 dbt 롤이 가진 권한(CRM_HOLIDAY 생성·교체에 필요한 CREATE TABLE · OWNERSHIP)
+Q03,1,R93_Q03_1.csv,OK,9,0,SELECT AGENCY_AD_ROW_* 원천 개명(O260·O262) 반영 · 모델 테이블 상태
+Q04,1,R93_Q04_1.csv,OK,15,0,SELECT 10-22~26 실패 기간 하류 신선도 · AGENCY·광고 계열 테이블의 최종 갱신(10-26 18:43 수동 build 이후면 따라잡음)
+Q05,1,R93_Q05_1.csv,OK,8,0,SELECT 10-27 이후 정기 build 상태(재발 감시 · 매 측정 시 최근 7일)

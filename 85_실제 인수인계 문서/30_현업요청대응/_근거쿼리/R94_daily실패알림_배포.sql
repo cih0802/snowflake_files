@@ -33,10 +33,10 @@ CREATE OR REPLACE ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED
   END;
   $$;
 ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED RESUME;
-
+ALTER ALERT GN_DW.OPS.ALERT_DAILY_TASK_FAILED SUSPEND;
 -- [2] 수신 확인(강제 실패 대신 · "daily" 를 일부러 깨뜨리지 않는다)
--- 2-a 발송 경로: 프로시저를 직접 불러 PIPELINE_ADMIN 수신자가 메일을 받는지 사람이 확인
-CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', '[테스트] A8-10 알림 경로 확인', '실제 장애 아님 · 2026-10-27 R94', 'PIPELINE_ADMIN');
+-- 2-a 발송 경로: 프로시저를 직접 불러 CHOIH 수신자가 메일을 받는지 사람이 확인
+CALL GN_DW.OPS.USP_SEND_PIPELINE_ERROR_ALERT('daily', '[테스트] A8-10 알림 경로 확인', '실제 장애 아님 · 2026-10-27 R94', 'CHOIH');
 -- 2-b 감지 조건: 10-22 06:01 실패를 지금 조건식이 잡는가(1행 이상이어야 한다 · 14일 내에만 유효)
 SELECT SCHEDULED_TIME, COMPLETED_TIME, STATE
 FROM TABLE(GN_DW.INFORMATION_SCHEMA.TASK_HISTORY(
