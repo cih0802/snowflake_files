@@ -24,7 +24,7 @@ status: draft (S4 게이트 확인 대기)
 | 항목 | 값 |
 |---|---|
 | SV | 전부 `GN_DW.SERVING` · 소유 GN_DW_ADMIN · base = GOLD / SERVING 뷰(개수·목록 = `D08_SV요약.csv` · 2026-10-21 ZL50263 = 45 · GOLD 30 / SERVING 15) |
-| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22(롤백 기준 = 그 직전 버전 · D10 §2) |
+| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$27 · EXECUTIVE VERSION$20 · MARKETING VERSION$23(2026-10-27 A6 Q07)(롤백 기준 = 그 직전 버전 · D10 §2) |
 | Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 2026-10-21 = 19 / 32 / 32) |
 | Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(2,156행 중 원천참고 제외 1,002) · lag 1 day |
 | spec 정본 | 워크스페이스 `cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |

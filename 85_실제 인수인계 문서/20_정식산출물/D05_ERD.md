@@ -22,14 +22,14 @@ status: review
 
 - Snowflake FK 는 **선언만 되고 강제되지 않는다**(정보성 제약). 실제 정합성은 dbt `relationships` 테스트와 Unknown 멤버(`*_SK = 0`) 규약으로 지킨다.
 
-## 1. GOLD 규모 (운영계 ZL50263 실측 · 2026-10-21 `B1_Q01`·`B1_Q03`)
+## 1. GOLD 규모 (운영계 ZL50263 실측 · 2026-10-27 `B1_Q01`·`B1_Q03`)
 
 | 구분 | 수 | 비고 |
 |---|---|---|
-| GOLD 테이블 | 62 = DIM 28 + FACT 34 | 뷰 19(`WIDE_*`)는 ERD 밖(팩트×차원 평탄화) |
+| GOLD 테이블 | 64 = DIM 29 + FACT 34 + seed 1(`ORG_SUCCESSION_MANUAL`) | 뷰 19(`WIDE_*`)는 ERD 밖(팩트×차원 평탄화) |
 | FK 선언 | 71 (GOLD→GOLD) | 다른 스키마로 가는 FK 없음 · OPS 1(`COLUMN_NULL_REGISTRY → NULL_REASON_CODE`) |
-| PK 선언 | 143 컬럼(B1 Q03-1 · 주 스키마 GOLD 39 · SILVER 77 · MSTR 22 · OPS 5) | 백업 사본 스키마(`*_2` · `*_OLD`)의 PK 218 · FK 128 은 제외 |
-| FK 그래프에 들어간 GOLD 테이블 | 45 | FK 없는 GOLD 테이블 17 (§3) |
+| PK 선언 | 147 컬럼(B1 Q03-1 · 주 스키마 GOLD 40 · SILVER 80 · MSTR 22 · OPS 5) | 백업 사본 스키마(`*_2` · `*_OLD`)의 PK 218 · FK 128 은 제외 |
+| FK 그래프에 들어간 GOLD 테이블 | 45 | FK 없는 GOLD 테이블 19 (§3) |
 
 ## 2. 논리 ERD — 핵심 차원 · 팩트 (FK 실측 기준)
 
@@ -70,7 +70,10 @@ erDiagram
 - 팩트 → 팩트 FK 3건: `FACT_AD_DIGITAL`·`FACT_AD_BROADCAST`·`FACT_AD_BROADCAST_CASE` → `FACT_AD_PERFORMANCE`(광고 통합 팩트의 상세 분할).
 - 차원 → 차원 FK 3건: `DIM_CAMPAIGN → DIM_MARKETING_CAMPAIGN·DIM_ORG` · `DIM_CHILD → DIM_BIZ_PLACE` · `DIM_MSG_TEMPLATE_BUTTON → DIM_MSG_TEMPLATE`.
 
-## 3. FK 가 없는 GOLD 테이블 17 (운영계 실측)
+## 3. FK 가 없는 GOLD 테이블 19 (운영계 실측 · 2026-10-27)
+
+> 🆕 [2026-10-27] 10-21 의 17 + 신규 2 = `DIM_ORG_SUCCESSION` · `ORG_SUCCESSION_MANUAL`(조직 승계 · 현업 seed). 아래 표는 17 기준이다.
+> `FACT_AD_INFLOW_ALLOC` · `FACT_MEMBER_EVENT_COHORT` 는 물리 FK 가 여전히 없다. 2026-10-27 dbt yml 에 relationships 테스트(warn) 4종을 선언했다(30_output_share `GOLD_ERD_테이블별.html` 이 이 선언을 관계선으로 그린다).
 
 | 구분 | 테이블 | 해석 |
 |---|---|---|

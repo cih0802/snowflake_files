@@ -50,7 +50,7 @@ graph LR
 - BIGQUERY 계열 = **롤링 윈도우 증분**(`bigquery_lookback_days: 3`). 재배포로 비면 창 밖이 자동으로 채워지지 않는다 ⇒ 재배포 후 일자 수 대조 필수(A6 Q04).
 - 백필 = `EXECUTE DBT PROJECT … ARGS='build --select <모델>+ --vars ''{"bigquery_dt_ranges": [[…]]}'''`(A4 §5).
 - 스냅샷 = 🔴 영구 미가동(DEC-61 · `+enabled: false` · `snapshots/` 11 파일은 기록용).
-- dbt 테스트 실패 저장 = OPS(`store_failures` · 운영계 실패 저장·경고 테이블 12 = `ACCEPTED_VALUES_*` 2 · `NOT_NULL_*` 3 · `WARN_*` 7). 🔴 원천 코드값 `')'` 로 실패 행 발생 이력(DR-24 · 운영계 현재 행 수는 A6 Q03 로 확인).
+- dbt 테스트 실패 저장 = OPS(`store_failures` · 운영계 실패 저장·경고 테이블 13 = `ACCEPTED_VALUES_*` 2 · `NOT_NULL_*` 4 · `WARN_*` 7 · 2026-10-27 A6 Q03). 🆕 10-27 신규 = `NOT_NULL_WIDE_MBRFEE_PRDT_ACTL_DATA_TYPE_STD` 88행(11:11 test 실행분 · 원인 미분해). 🔴 원천 코드값 `')'` 로 실패 행 발생 이력(DR-24 · 운영계 현재 행 수는 A6 Q03 로 확인).
 
 ## 3. 프로시저 · 함수 (Q10 운영계 실측 · 주 스키마 62)
 
@@ -89,5 +89,5 @@ graph LR
 | DR-01 | Step 4 일일 DAG(snapshot → build) · `TASK_DBT_DAILY_DEV2` | 미배포 · 루트 snapshot 은 DEC-61 과 충돌 · dev2 는 테스트용 | 운영계 `"daily"` Task 가 정본(결정) |
 | DR-19 | 01_deploy · 03_일배치「실행 롤 = ENGINEER」 | 실행 롤 = GN_DW_DBT | 기록만 |
 | DR-21 | 운영계 Task 2종 기재 | `"daily"` · `TSK_RUN_MSTR_DAILY` 실재 · started(2026-10-21) | 해소(운영계 확인) |
-| DR-24 | dbt 경고 감시 = 1종 | 운영계 OPS 실패 저장·경고 테이블 12종 | A6 Q03 동적화 · 원천 정정 요청 |
+| DR-24 | dbt 경고 감시 = 1종 | 운영계 OPS 실패 저장·경고 테이블 13종(10-27) | A6 Q03 동적화 · 원천 정정 요청 |
 | — | dbt README「65 models」 | 140 models | 기록만 |

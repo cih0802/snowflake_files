@@ -8,12 +8,12 @@ ORDER BY QUERY_START_TIME;
 
 -- Q02 마지막 전체 build 의 dbt 집계 줄 · WARN 테스트 목록
 --   🔴 SYSTEM$GET_DBT_LOG 인자는 상수만 받는다 ⇒ QUERY_ID 를 하드코딩한다.
---         운영계(ZL50263) = 01c7dd2d-0002-365d-0001-72de071db1be (2026-10-21 06:01 · ARGS='')
-SELECT 'DONE' AS KIND, REGEXP_SUBSTR(SYSTEM$GET_DBT_LOG('01c7dd2d-0002-365d-0001-72de071db1be'),
+--         운영계(ZL50263) = 01c7feed-0002-41a1-0001-72de084be766 (2026-10-27 06:01 · ARGS='' · 🆕 2026-10-27 교체 · 종전 01c7dd2d…71db1be = 10-21)
+SELECT 'DONE' AS KIND, REGEXP_SUBSTR(SYSTEM$GET_DBT_LOG('01c7feed-0002-41a1-0001-72de084be766'),
        'Done\\. PASS=[0-9]+ WARN=[0-9]+ ERROR=[0-9]+ SKIP=[0-9]+[^\\n]*') AS LINE
 UNION ALL
 SELECT 'WARN', REGEXP_SUBSTR(VALUE, 'Warning in test [^ ]+')
-FROM TABLE(SPLIT_TO_TABLE(SYSTEM$GET_DBT_LOG('01c7dd2d-0002-365d-0001-72de071db1be'), '\n'))
+FROM TABLE(SPLIT_TO_TABLE(SYSTEM$GET_DBT_LOG('01c7feed-0002-41a1-0001-72de084be766'), '\n'))
 WHERE VALUE LIKE '%Warning in test%';
 
 -- Q03 dbt 테스트 실패 저장 테이블 (store_failures · OPS 의 GN_DW_DBT 소유 · 0행이 기대값) — A6 Q03 와 같은 기준

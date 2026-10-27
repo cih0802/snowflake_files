@@ -1,4 +1,4 @@
-# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-21 04:20 · 원천 = _ENV/ZL50263/B1_*·B2_*.csv · 손으로 고치지 않는다
+# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-27 04:13 · 원천 = _ENV/ZL50263/B1_*·B2_*.csv · 손으로 고치지 않는다
 DOC_ID,SOURCE_GROUP,METRIC,SYNONYMS,DEFINITION,FORMULA,AGENT_SCOPE,TOOL_NAME,SV_FIELD,COVERAGE,IS_ADDITIVE,SOURCE_FILE
 MET_CMN-1,MET_CMN,월 목표대비 개발(%),,[개발] 월 목표 달성율,월 개발건/월 회원개발목표,MARKETING|MEMBER|EXECUTIVE,analyst_dev_achievement,SV_DEV_ACHIEVEMENT.ACHV.ACHIEVEMENT_RATE,C1_METRIC,,공통지표_flat_20261003.csv:2
 MET_CMN-10,MET_CMN,GA CVR,,[개발] 클릭수 대비 전환율(%),(광고 전환수 / 광고 클릭수) * 100,MARKETING|MEMBER|EXECUTIVE,analyst_ad,SV_AD.AD.CVR,C1_METRIC,,공통지표_flat_20261003.csv:11

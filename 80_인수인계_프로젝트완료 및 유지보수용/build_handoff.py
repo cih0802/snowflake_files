@@ -162,7 +162,21 @@ def hook(rel80: str, data: bytes) -> bytes:
 
 
 def excluded(rel: Path) -> bool:
-    return any(fnmatch.fnmatch(p, pat) for p in rel.parts for pat in EXCLUDE)
+    if any(fnmatch.fnmatch(p, pat) for p in rel.parts for pat in EXCLUDE):
+        return True
+    # 폴더 한정 제외 — 전역 EXCLUDE 에 넣으면 다른 폴더의 같은 이름(예: 05_SV-Agent_ai/30_*.sql)까지 빠진다
+    parts = rel.parts
+    for d, pats in EXCLUDE_UNDER.items():
+        if len(parts) == 2 and parts[0] == d and any(fnmatch.fnmatch(parts[1], p) for p in pats):
+            return True
+    return False
+
+
+# 🆕 [2026-10-27 사용자 결정] 30_output_share 루트의 현업 회신 기록(30~47)·O252 검토 자료는 현업 전달 대상에서 뺀다.
+#   그 시점의 기록이라 최신화하지 않으며, 원본은 워크스페이스 원천에 남는다.
+EXCLUDE_UNDER = {
+    "30_output_share": ["3[0-9]_*", "4[0-7]_*", "O252_*"],
+}
 
 
 # 문서실행순서.md 중 인수인계에 넣을 절(「# 」 제목). 그 밖의 절(예: 개발계 · 50_handoff 데이터 이관)은 사본에서 뺀다.

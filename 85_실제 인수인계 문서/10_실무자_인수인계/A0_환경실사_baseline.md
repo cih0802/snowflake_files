@@ -85,7 +85,7 @@ status: review (운영계 ZL50263 캡처 반영 완료)
 | 종류 | 건수 | 내역 |
 |---|---|---|
 | Semantic View | 45 | 전부 GN_DW.SERVING · 소유 GN_DW_ADMIN · 목록 = `A0_Q04_1.csv` |
-| Cortex Agent | 7 | 서비스 3 = AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] 운영계 = MEMBER VERSION$26 · EXECUTIVE VERSION$19 · MARKETING VERSION$22 · 🟠 그 밖 4 = SERVING `AGENT_MSTR` · `AGENT_OVERALL` · `ASDF` · BRONZE_CRM `AGENT_MSTR_TEST`(서비스 대상 아님 · 정리 후보) |
+| Cortex Agent | 7 | 서비스 3 = AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER — SERVING · 기본 버전 [ENV] 운영계 = MEMBER VERSION$27 · EXECUTIVE VERSION$20 · MARKETING VERSION$23(2026-10-27 A6 Q07) · 🟠 그 밖 4 = SERVING `AGENT_MSTR` · `AGENT_OVERALL` · `ASDF` · BRONZE_CRM `AGENT_MSTR_TEST`(서비스 대상 아님 · 정리 후보) |
 | Agent SV 배선(spec 실측) | 18 / 31 / 31 | EXECUTIVE / MARKETING / MEMBER · 각 Search 1 · 합집합 45 = SV 전수(미배선 0 · D09) |
 | Cortex Search | 1 | SERVING.SEARCH_BIZ_DEFINITION · lag 1 day · ACTIVE · 원천 1,002행 · WH GN_DW_ANALYTICS_WH |
 | DBT PROJECT | 2 | OPS.DW_PIPELINE · OPS.DW2_PIPELINE · dbt 1.9.4 |
