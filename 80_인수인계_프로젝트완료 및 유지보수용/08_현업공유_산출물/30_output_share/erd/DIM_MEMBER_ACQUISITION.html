@@ -7,7 +7,7 @@
   <title>DIM_MEMBER_ACQUISITION - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER_ACQUISITION",
     "table": "DIM_MEMBER_ACQUISITION",
     "domain": "CRM / 회원·후원",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -451,7 +477,7 @@
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
           <span class="badge badge-domain">BRONZE 원천: 14개</span>
-          <span class="badge badge-domain">SILVER 모델: 11개</span>
+          <span class="badge badge-domain">SILVER 모델: 13개</span>
           <span class="badge badge-domain">컬럼 수: 37개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원 획득(가입) 귀속 차원(1행 = 1회원) — base = FACT_MEMBER_COHORT. 모든 ACQ_* 는 획득 시점 값이며 현재 속성이 아니다. 팩트와는 LEFT JOIN 필수. [O53] 뷰→테이블 전환 · 감사컬럼 4종 신설. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
@@ -496,8 +522,10 @@ flowchart LR
     S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
     S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_ORG_CLEAN["CRM_ORG_CLEAN"]:::silver
     S_CRM_PAYMENT_BILLING["CRM_PAYMENT_BILLING"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_MAP_SPONSORSHIP_GROUP4["MAP_SPONSORSHIP_GROUP4"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_MEMBER_ACQUISITION["★ DIM_MEMBER_ACQUISITION<br/>회원 획득(가입) 귀속 차원(1행 = 1회원)"]:::target
@@ -543,9 +571,11 @@ flowchart LR
   S_CRM_MEMBER_DISCONTINUE --> G_FACT_MEMBER_EVENT
   S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
   S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_EVENT
-  S_CRM_ORG --> G_DIM_ORG
+  S_CRM_ORG --> S_CRM_ORG_CLEAN
+  S_CRM_ORG_CLEAN --> G_DIM_ORG
   S_CRM_PAYMENT_BILLING --> G_FACT_MEMBER_EVENT
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_MAP_SPONSORSHIP_GROUP4 --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
@@ -573,7 +603,7 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (11개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (13개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CAMPAIGN</b>: </li>
@@ -585,8 +615,10 @@ flowchart LR
 <li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
 <li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_ORG_CLEAN</b>: </li>
 <li><b>CRM_PAYMENT_BILLING</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>MAP_SPONSORSHIP_GROUP4</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -896,34 +928,40 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MEMBER_ACQUISITION.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
+-- Target     : GOLD.DIM_MEMBER_ACQUISITION (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref FACT_MEMBER_COHORT, ref DIM_CAMPAIGN, ref DIM_ORG, ref DIM_SPONSORSHIP
+-- Issue      : O53, O45, O44, O43 외 6
+-- =============================================================================
+-- DIM_MEMBER_ACQUISITION: 회원 획득 귀속 차원 (1행=1회원) — `FACT_MEMBER_COHORT` 파생 테이블 [O53 뷰→테이블]
 --
 -- ============================================================================
 -- [2026-08-06 O45] 신설 — O8(다중후원 귀속 규칙 미확정)의 우회로
 -- ----------------------------------------------------------------------------
--- 🔴 문제: `FACT_MEMBER_MONTHLY` 의 `CAMPAIGN_SK`·`SPONSORSHIP_SK` 는 **전건 센티넬**이다.
+-- WARN: 문제: `FACT_MEMBER_MONTHLY` 의 `CAMPAIGN_SK`·`SPONSORSHIP_SK` 는 **전건 센티넬**이다.
 --    원천에 캠페인이 없어서가 아니다 — 회원-월 grain 에서 다중캠페인 후원(7.98% · 단일
 --    회원-월 최대 60개)을 어디에 귀속시킬지 규칙이 없어서 0 으로 둔 것이다.
 --    그 결과 보고서필드 **41필드 · 11섹션**이 「브랜드·상위캠페인·캠페인명·홍보방법·후원사업·부서」를
 --    분해할 수 없었다(O44 실측).
 --
--- 🟢 해법: **임의 귀속을 하지 말고 「획득 시점」이라는 명시된 규칙**을 쓴다.
+--  해법: **임의 귀속을 하지 말고 「획득 시점」이라는 명시된 규칙**을 쓴다.
 --    `FACT_MEMBER_COHORT` 는 이미 회원 1행이고 획득 사건의 캠페인·연령·지역·성별을 갖고 있다.
 --    거기에 **획득 부서·획득 후원사업 2축만** 더하면 회원 귀속 차원이 완성된다.
 --
--- 🔴 왜 테이블이 아니라 뷰인가: 같은 사실을 두 곳에 저장하면 반드시 어긋난다(O43 P85 교훈).
+-- WARN: 왜 테이블이 아니라 뷰인가: 같은 사실을 두 곳에 저장하면 반드시 어긋난다(O43 P85 교훈).
 --    FMC 가 단일 정의 지점이고 이 뷰는 **차원으로서의 의미만 부여**한다(저장 중복 0).
 --    SV 에서는 이 뷰를 dimension 으로 선언해 팩트-팩트 조인처럼 보이지 않게 한다.
 --
 -- ── 조인 안전성 실측(2026-08-06) — 팬아웃 0 ────────────────────────────────────
 --   `FACT_MEMBER_COHORT` 1,585,949행 = 1,585,949 고유회원 → **1행/회원 확인**
---   ⋈ `FACT_MEMBER_MONTHLY`      40,054,883 → 39,409,747  (미매칭 1.61%)
---   ⋈ `FACT_MESSAGE_DISPATCH`    38,470,780 → 38,339,810  (99.66%)
---   ⋈ `FACT_EVENT_ATTENDANCE`     1,134,126 →  1,119,559  (98.70%)
+--   ⋈ `FACT_MEMBER_MONTHLY` 40,054,883 → 39,409,747 (미매칭 1.61%)
+--   ⋈ `FACT_MESSAGE_DISPATCH` 38,470,780 → 38,339,810 (99.66%)
+--   ⋈ `FACT_EVENT_ATTENDANCE` 1,134,126 → 1,119,559 (98.70%)
 --   ⇒ 반드시 **LEFT JOIN** 할 것. INNER 로 걸면 개발 사건이 없는 회원(일시회원 등)이 사라진다.
 --
--- 🔴 네이밍 규약 — O34 교훈(`_AT_PLEDGE` vs `_AT_EVENT`)의 재적용:
+-- WARN: 네이밍 규약 — O34 교훈(`_AT_PLEDGE` vs `_AT_EVENT`)의 재적용:
 --    「부서」라는 같은 라벨이 보고서마다 다른 축을 뜻한다.
 --      · **개발실적보고**의 부서 = **사건 부서** → `FACT_MEMBER_EVENT.ORG_SK` 를 쓴다
 --      · **연간분석(회비)**의 부서 = **획득 부서** → 이 차원의 `ACQ_ORG_*` 를 쓴다
@@ -931,17 +969,17 @@ erDiagram
 -- ============================================================================
 -- 🔧 [2026-08-07 O51-B] 깨진 `ALTER VIEW ... ALTER COLUMN ... COMMENT` post_hook 제거.
 --   Snowflake 에 없는 문법이라 이 모델이 build ERROR 를 냈고 컬럼 COMMENT 는 0 이었다(실측).
---   ✅ [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
+--    [2026-08-07 O51-D] 복구 완료 — materialized='gn_view_commented' 전환 + yml columns[] 전량 등재.
 --     · 컬럼 COMMENT 정본 = schema.yml `columns[].description` (SELECT 전 컬럼·순서 일치 필수)
---     · 뷰   COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
---     🔴 SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
--- 🔴🔴 [2026-08-10 O53] **뷰 → 테이블 전환.**
+--     · 뷰 COMMENT 정본 = schema.yml `description` (매크로가 자동 적용) ⇒ post_hook **전량 제거**.
+--     WARN: SELECT 컬럼 추가·삭제·순서 변경 시 yml columns[] 를 **동시에** 재생성할 것 — 불일치는 build ERROR 다.
+-- WARN: [2026-08-10 O53] **뷰 → 테이블 전환.**
 --   ① 컬럼 COMMENT 정본이 `03_top-down_gold/06_DDL.sql` 인라인 COMMENT 로 이동했다(사용자 결정).
 --      schema.yml `columns[]` 는 제거 — 같은 사실을 두 곳에 두면 갈라진다(P85).
 --   ② `incremental` + `append` + `pre_hook TRUNCATE` — merge 금지(완전 재산출 차원에서 grain 이동 시
 --      구 행 잔존 · 문서50 §300 R1 · P131). base 인 FACT_MEMBER_COHORT 가 회원 집합을 매 build 재산출한다.
 --   ③ 감사컬럼 4종을 신설했다(GOLD 35테이블 전수 관례 · 뷰 시절에는 없었다).
---   🔴 SELECT 컬럼 변경 시 06_DDL 블록을 동시에 재생성할 것(`scripts/gen_o53_gold_ddl.py`).
+--   WARN: SELECT 컬럼 변경 시 06_DDL 블록을 동시에 재생성할 것(`scripts/gen_o53_gold_ddl.py`).
 {{ config(
     materialized='incremental',
     incremental_strategy='append',

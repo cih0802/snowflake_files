@@ -7,7 +7,7 @@
   <title>DIM_MEMBER - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MEMBER",
     "table": "DIM_MEMBER",
     "domain": "CRM / 회원·후원",
@@ -680,11 +680,11 @@ erDiagram
   }
   FACT_MEMBER_EVENT_COHORT {
     string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string FIRST_EVENT_DATE_SK FK
     string EVENT_MONTH_KEY
     string OBS_MONTH_KEY
-    string FIRST_EVENT_DATE_SK
-    string CAMPAIGN_SK
-    string SPONSORSHIP_SK
     string DW_BATCH_ID
   }
   FACT_MEMBER_FEE {

@@ -7,7 +7,7 @@
   <title>FACT_AD_INFLOW_ALLOC - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_INFLOW_ALLOC",
     "table": "FACT_AD_INFLOW_ALLOC",
     "domain": "AGENCY / 마케팅·광고",
@@ -672,15 +672,21 @@ flowchart LR
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
 erDiagram
+  DIM_MARKETING_CAMPAIGN {
+    string MKTG_CAMPAIGN_SK PK
+    string MKTG_CAMPAIGN_BK PK
+    string DW_BATCH_ID
+  }
   DIM_MONTH {
     string MONTH_KEY FK
     string DW_BATCH_ID
   }
   FACT_AD_INFLOW_ALLOC {
-    string MKTG_CAMPAIGN_SK
+    string MKTG_CAMPAIGN_SK FK
     string MONTH_KEY FK
     string DW_BATCH_ID
   }
+  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_INFLOW_ALLOC : "MKTG_CAMPAIGN_SK"
   DIM_MONTH ||..o{ FACT_AD_INFLOW_ALLOC : "MONTH_KEY"
           </pre>
         </div>
@@ -700,6 +706,15 @@ erDiagram
               </tr>
             </thead>
             <tbody>
+        <tr>
+          <td><code>FACT_AD_INFLOW_ALLOC</code></td>
+          <td><code>MKTG_CAMPAIGN_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MARKETING_CAMPAIGN.html"><code>DIM_MARKETING_CAMPAIGN</code></a></td>
+          <td><code>MKTG_CAMPAIGN_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
         <tr>
           <td><code>FACT_AD_INFLOW_ALLOC</code></td>
           <td><code>MONTH_KEY</code></td>
@@ -732,7 +747,7 @@ erDiagram
         <tr>
           <td><code>MKTG_CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
-          <td></td>
+          <td><span class="badge badge-fact">FK</span></td>
           <td>대리키 ※비강제 FK→DIM_MARKETING_CAMPAIGN · 0 = 광고행 마케팅캠페인 미매핑</td>
         </tr>
         <tr>

@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_EVENT_COHORT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_EVENT_COHORT",
     "table": "FACT_MEMBER_EVENT_COHORT",
     "domain": "CRM / 회원·후원",
@@ -729,21 +729,40 @@ flowchart LR
         <div class="lineage-diag-wrap">
           <pre class="mermaid">
 erDiagram
+  DIM_CAMPAIGN {
+    string CAMPAIGN_SK PK
+    string MKTG_CAMPAIGN_SK FK
+    string ORG_SK FK
+    string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
+  }
+  DIM_DATE {
+    string DATE_SK PK
+    string MONTH_KEY FK
+    string DW_BATCH_ID
+  }
   DIM_MEMBER {
     string MEMBER_SK
     string MEMBER_DK FK
     string DW_BATCH_ID
   }
+  DIM_SPONSORSHIP {
+    string SPONSORSHIP_SK PK
+    string DW_BATCH_ID
+  }
   FACT_MEMBER_EVENT_COHORT {
     string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string FIRST_EVENT_DATE_SK FK
     string EVENT_MONTH_KEY
     string OBS_MONTH_KEY
-    string FIRST_EVENT_DATE_SK
-    string CAMPAIGN_SK
-    string SPONSORSHIP_SK
     string DW_BATCH_ID
   }
   DIM_MEMBER ||--o{ FACT_MEMBER_EVENT_COHORT : "MEMBER_DK"
+  DIM_CAMPAIGN ||--o{ FACT_MEMBER_EVENT_COHORT : "CAMPAIGN_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT_COHORT : "SPONSORSHIP_SK"
+  DIM_DATE ||--o{ FACT_MEMBER_EVENT_COHORT : "FIRST_EVENT_DATE_SK"
           </pre>
         </div>
 
@@ -768,6 +787,33 @@ erDiagram
           <td>➔</td>
           <td><a href="DIM_MEMBER.html"><code>DIM_MEMBER</code></a></td>
           <td><code>MEMBER_DK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT_COHORT</code></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_CAMPAIGN.html"><code>DIM_CAMPAIGN</code></a></td>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT_COHORT</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT_COHORT</code></td>
+          <td><code>FIRST_EVENT_DATE_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_DATE.html"><code>DIM_DATE</code></a></td>
+          <td><code>DATE_SK</code></td>
           <td><span class="badge badge-domain">dbt YAML</span></td>
           <td>Physical / Declared FK</td>
         </tr>
@@ -796,6 +842,24 @@ erDiagram
           <td><code>VARCHAR</code></td>
           <td><span class="badge badge-fact">FK</span></td>
           <td>회원 ※비강제 FK→DIM_MEMBER.MEMBER_DK</td>
+        </tr>
+        <tr>
+          <td><code>CAMPAIGN_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>대표 사건 캠페인 ※비강제 FK→DIM_CAMPAIGN(첫 사건 · 동률 = 후원금액 큰 것)</td>
+        </tr>
+        <tr>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>대표 사건 후원사업 ※비강제 FK→DIM_SPONSORSHIP</td>
+        </tr>
+        <tr>
+          <td><code>FIRST_EVENT_DATE_SK</code></td>
+          <td><code>NUMBER(8,0)</code></td>
+          <td><span class="badge badge-fact">FK</span></td>
+          <td>그 달 그 개발구분 첫 사건일 YYYYMMDD(발송 창 기준일)</td>
         </tr>
         <tr>
           <td><code>MONTHS_AFTER</code></td>
@@ -834,12 +898,6 @@ erDiagram
           <td>관측월이 적재 기준 현재월 이하인가. FALSE 행의 관측 지표는 NULL(미래) — 유지율 분모에서 뺀다</td>
         </tr>
         <tr>
-          <td><code>FIRST_EVENT_DATE_SK</code></td>
-          <td><code>NUMBER(8,0)</code></td>
-          <td></td>
-          <td>그 달 그 개발구분 첫 사건일 YYYYMMDD(발송 창 기준일)</td>
-        </tr>
-        <tr>
           <td><code>EVENT_ROWS</code></td>
           <td><code>NUMBER(18,0)</code></td>
           <td></td>
@@ -856,18 +914,6 @@ erDiagram
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
           <td>사건 원천 후원금액(원) 합(FME SPNSR_AMT · 증액 = 증액분)</td>
-        </tr>
-        <tr>
-          <td><code>CAMPAIGN_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대표 사건 캠페인 ※비강제 FK→DIM_CAMPAIGN(첫 사건 · 동률 = 후원금액 큰 것)</td>
-        </tr>
-        <tr>
-          <td><code>SPONSORSHIP_SK</code></td>
-          <td><code>NUMBER(38,0)</code></td>
-          <td></td>
-          <td>대표 사건 후원사업 ※비강제 FK→DIM_SPONSORSHIP</td>
         </tr>
         <tr>
           <td><code>MKTG_CMPGN_NM_AT_EVENT</code></td>

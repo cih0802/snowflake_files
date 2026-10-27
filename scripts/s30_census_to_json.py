@@ -17,7 +17,7 @@
     30_output_share/12_운영계_실측_<계정>.md — 0행 테이블 · 전건 NULL · 전건 0 판정(운영계 단독)
 
 판정 규칙 = gen_concept_diagram.py 와 동일(행 0 ⇒ 0행 · nonnull 0 ⇒ 전건 NULL · nonzero 0 ⇒ 전건 0 · 감사 컬럼 제외).
-종료코드 = 0 성공 · 1 입력 없음/manifest ERROR 존재 · 2 사용법 오류.
+종료코드 = 0 성공(실행 시점 부재만 있으면 0) · 1 입력 없음/manifest ERROR 존재 · 2 사용법 오류.
 """
 import argparse
 import csv
@@ -51,8 +51,20 @@ def load_ops(acct):
         print('🔴 %s 없음 — 운영계에서 env_capture 를 먼저 실행하라' % os.path.relpath(mpath, WS))
         sys.exit(1)
     mhead, man = read_csv(mpath)
-    errors = [m for m in man if m['STATUS'] != 'OK']
     _, q01 = read_csv(os.path.join(d, 'S30_Q01_1.csv'))
+    # 🆕 [2026-10-27 운영계 1회차] ① SQL 생성과 ② 실행 사이에 삭제된 객체(날짜 접미 백업 등)는 판정 대상이 아니다.
+    #   실측 = ZL50263 Q142 `SILVER.MM_SPNSR_CLS_AGGR_DATA_261019` ⇒ ② 시점 Q01 에 없으면 「실행 시점 부재」로 분리한다.
+    q_tbl = {}
+    sql_path = os.path.join(WS, '30_output_share', '_근거쿼리', 'S30_census.sql')
+    if os.path.exists(sql_path):
+        for line in io.open(sql_path, encoding='utf-8'):
+            if line.startswith('-- Q') and ' census ' in line:
+                q_tbl[line.split()[1]] = line.split(' census ', 1)[1].strip()
+    live = {'%s.%s' % (r['TABLE_SCHEMA'], r['TABLE_NAME']) for r in q01}
+    bad = [m for m in man if m['STATUS'] != 'OK']
+    gone = [dict(m, TABLE=q_tbl[m['QID']]) for m in bad if q_tbl.get(m['QID']) and q_tbl[m['QID']] not in live]
+    gone_q = {g['QID'] for g in gone}
+    errors = [m for m in bad if m['QID'] not in gone_q]
     _, q02 = read_csv(os.path.join(d, 'S30_Q02_1.csv'))
     types = {(r['TABLE_SCHEMA'], r['TABLE_NAME'], r['COLUMN_NAME']): r['DATA_TYPE'] for r in q02}
     census = {}
@@ -67,7 +79,7 @@ def load_ops(acct):
                 'type': types.get((r['TABLE_SCHEMA'], r['TABLE_NAME'], r['COLUMN_NAME']), ''),
                 'nonnull': to_int(r['NONNULL']), 'nonzero': to_int(r['NONZERO']), 'ndv': to_int(r['NDV']),
             }
-    return mhead, man, errors, q01, census
+    return mhead, man, errors, gone, q01, census
 
 
 def load_base(base):
@@ -101,7 +113,7 @@ def main():
         return 2
     a = ap.parse_args()
 
-    mhead, man, errors, q01, ops = load_ops(a.account)
+    mhead, man, errors, gone, q01, ops = load_ops(a.account)
     base_path, base = load_base(a.base) if a.base else (None, {})
     hb = bool(a.base)
     out_json = os.path.join(ENV, a.account, 'census_S30.json')
@@ -137,9 +149,12 @@ def main():
          '운영계 수치 인용은 이 문서를 근거로 한다. 판정은 운영계 결과 안에서 닫힌다(85번 R90 원칙)'
          + (' · 개발계 열은 참고(`%s`)' % base_path if hb else '') + '.', '',
          '## 1. 실행 결과', '',
-         '- census 문장 %d · OK %d · ERROR %d' % (len(man), len(man) - len(errors), len(errors))]
+         '- census 문장 %d · OK %d · ERROR %d · 실행 시점 부재 %d' % (
+             len(man), len(man) - len(errors) - len(gone), len(errors), len(gone))]
     for m in errors:
         L.append('  - 🔴 `%s` %s — %s' % (m['QID'], m['FILE'], m['NOTE'][:200]))
+    for g in gone:
+        L.append('  - 🟠 `%s` `%s` — ① SQL 생성 후 ② 실행 전에 사라진 객체(② 시점 Q01 에 없음) · 판정 대상 아님' % (g['QID'], g['TABLE']))
     L += ['', '## 2. 0행 테이블 (GOLD·SILVER·SERVING census)', '',
           '| 테이블 | 운영계 행수 |' + (' 개발계(참고) |' if hb else ''), '| :--- | ---: |' + (' ---: |' if hb else '')]
     L += ['| `%s` | %s |' % (k, cnt(o)) + (' %s |' % cnt(b) if hb else '') for k, o, b in zero_tbl] or ['| (없음) | |']

@@ -7,7 +7,7 @@
   <title>DIM_EVENT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_EVENT",
     "table": "DIM_EVENT",
     "domain": "COMMON / 공통 기준",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item active"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -452,7 +478,7 @@
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
           <span class="badge badge-domain">BRONZE 원천: 3개</span>
           <span class="badge badge-domain">SILVER 모델: 2개</span>
-          <span class="badge badge-domain">컬럼 수: 16개</span>
+          <span class="badge badge-domain">컬럼 수: 27개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>행사/이벤트 마스터 차원. [Grain: EVENT_SK (1행=1행사)]. [주의: 일반행사 및 캠페인행사 통합]. [원천: CRM → BRONZE_CRM.TM_MS_EVENT/CRMN → SILVER.CRM_EVENT].</p>
       </div>
@@ -678,6 +704,72 @@ erDiagram
           <td></td>
           <td>EVENT_CATEGORY_NAME.</td>
         </tr>
+        <tr>
+          <td><code>PRZWIN_PSNNL_CO</code></td>
+          <td><code>NUMBER(10,0)</code></td>
+          <td></td>
+          <td>당첨인원수 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_EVENT]</td>
+        </tr>
+        <tr>
+          <td><code>PRZWIN_GFT_SNDNG_DE</code></td>
+          <td><code>VARCHAR(8)</code></td>
+          <td></td>
+          <td>당첨선물발송일 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_EVENT]</td>
+        </tr>
+        <tr>
+          <td><code>CRMN_PLACE_NM</code></td>
+          <td><code>VARCHAR(200)</code></td>
+          <td></td>
+          <td>행사장소명 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>CRMN_PART_STRT_DE</code></td>
+          <td><code>VARCHAR(8)</code></td>
+          <td></td>
+          <td>캠페인참여시작일자 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>CRMN_PART_END_DE</code></td>
+          <td><code>VARCHAR(8)</code></td>
+          <td></td>
+          <td>캠페인참여종료일자 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>TAT</code></td>
+          <td><code>NUMBER(5,0)</code></td>
+          <td></td>
+          <td>소요시간 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>RESRCE_SRVC_FG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>자원봉사유무 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>CPR_DIV_CD</code></td>
+          <td><code>VARCHAR(3)</code></td>
+          <td></td>
+          <td>법인구분코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>ENTRPS_CD</code></td>
+          <td><code>NUMBER(10,0)</code></td>
+          <td></td>
+          <td>업체코드 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>USE_YN</code></td>
+          <td><code>VARCHAR(1)</code></td>
+          <td></td>
+          <td>사용여부 [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
+        <tr>
+          <td><code>PART_USE_YN</code></td>
+          <td><code>VARCHAR(1)</code></td>
+          <td></td>
+          <td>참여신청 사용여부 Y/N(캠페인행사 전용 · 일반행사 NULL) [SILVER.CRM_EVENT 승계 · 원천 BRONZE_CRM.TM_MS_CRMN]</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -689,9 +781,15 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_EVENT.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_EVENT: 행사 차원 스캐폴드 (CRM_EVENT, Bronze 입고 후 실행)
--- Co-authored with CoCo
--- ⚠️ APPLY_CHANNEL 원천/파생규칙 미정(ADMIN A-10 대기).
+            <pre><code>-- =============================================================================
+-- Purpose    : 행사 차원 스캐폴드 (CRM_EVENT, Bronze 입고 후 실행)
+-- Target     : GOLD.DIM_EVENT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_EVENT
+-- Issue      : O27, O205, DEC-30, O59-N 외 3
+-- =============================================================================
+-- DIM_EVENT: 행사 차원 스캐폴드 (CRM_EVENT, Bronze 입고 후 실행)
+-- WARN: APPLY_CHANNEL 원천/파생규칙 미정(ADMIN A-10 대기).
 {{ config(
     materialized='incremental',
     unique_key='EVENT_SK',
@@ -709,37 +807,41 @@ select
     -- [2026-08-03 O27] `ELSE '미상'` 제거 — P31: ELSE 절은 도메인 확장을 조용히 삼킨다.
     --   실측 `EVENT_SOURCE` 도메인은 'EVENT'·'CRMN' 2종뿐이므로 현 데이터에서 동작 변화는 없고,
     --   원천에 3번째 값이 생기면 **NULL 로 드러난다**(종전에는 '미상'으로 은폐됐다).
-    --   ⚠️ 이 컬럼은 코드사전에 대응 그룹이 없는 **파생 라벨**이라 CRM_CODE 조인 대상이 아니다.
+    --   WARN: 이 컬럼은 코드사전에 대응 그룹이 없는 **파생 라벨**이라 CRM_CODE 조인 대상이 아니다.
     CASE EVENT_SOURCE WHEN 'EVENT' THEN '일반행사' WHEN 'CRMN' THEN '캠페인행사' END as EVENT_KIND_NAME,
     EVENT_DIV_CD                                  as EVENT_CATEGORY,
     EVENT_NM                                      as EVENT_NAME,
-    STRT_DE                                       as EVENT_START_DATE,
-    END_DE                                        as EVENT_END_DATE,
-    CAST(NULL AS VARCHAR)                          as APPLY_CHANNEL,   -- ⚠️ A-10 대기
-    -- 🟢 [DEC-30 2026-08-04] 모집인원 이관 — 참여 팩트가 아니라 **행사 차원**이 정본이다.
+    -- WARN: [2026-10-07 O205] 형식 지정 변환. 종전 `STRT_DE` 를 그대로 DATE 컬럼(06_DDL 소유)에 넣어
+    --   'YYYYMMDD' 문자열이 **epoch 초**로 해석됐다('20090228' → 1970-08-21 · DIM_EVENT 4,022행 전건 1970-08 ·
+    --   FACT_EVENT_ATTENDANCE 캠페인행사 166,962행이 참여일 NULL 폴백으로 이 값을 받았다). BRONZE 값은 정상이다.
+    TRY_TO_DATE(STRT_DE, 'YYYYMMDD')              as EVENT_START_DATE,
+    TRY_TO_DATE(END_DE, 'YYYYMMDD')               as EVENT_END_DATE,
+    CAST(NULL AS VARCHAR)                          as APPLY_CHANNEL,   -- WARN: A-10 대기
+    --  [DEC-30 2026-08-04] 모집인원 이관 — 참여 팩트가 아니라 **행사 차원**이 정본이다.
     --   원천 `CRM_EVENT.RCRIT_PSNNL_CO` 채움 3,361/3,786=88.8%·74종.
-    --   🔴 종전엔 `FACT_EVENT_ATTENDANCE.RECRUIT_CNT`(구 FACT_EVENT_PARTICIPATION · 전건 0) 자리에 넣으려 했으나
+    --   WARN: 종전엔 `FACT_EVENT_ATTENDANCE.RECRUIT_CNT`(구 FACT_EVENT_PARTICIPATION · 전건 0) 자리에 넣으려 했으나
     --      모집인원은 행사 속성이라 참여행마다 반복되면 SUM 이 **101.0배 과대계상**된다
     --      (행사 grain 참값 4,513,184 vs 참여 grain 456,007,553 · 최대 3,718참여/행사).
     --      §18-D ②(grain 함수종속) 실패 사례 → FEP 컬럼은 DROP 하고 여기로 옮겼다.
     RCRIT_PSNNL_CO                                as RECRUIT_HEADCOUNT,
     {{ gold_meta('CRM') }},
-    -- 🟢 [2026-08-11 O59-N · DEC-35 2단계] 행사구분 코드→라벨. 전파만 한다 — 코드사전 조인은 SILVER 소관이다
+    --  [2026-08-11 O59-N · DEC-35 2단계] 행사구분 코드→라벨. 전파만 한다 — 코드사전 조인은 SILVER 소관이다
     --    (같은 조인을 두 계층에 두면 갈라진다 · 문서30 §23-J). 신설 위치 = 감사컬럼 뒤(정본 DDL 규약).
     EVENT_DIV_GROUP                               as EVENT_CATEGORY_GROUP,
-    EVENT_DIV_NM                                  as EVENT_CATEGORY_NAME
+    EVENT_DIV_NM                                  as EVENT_CATEGORY_NAME,
+    --  [2026-09-30 O191-G · 2차-B GOLD 전파] SILVER CRM_EVENT 승계(행사 grain · 원천별 비해당 = NULL).
+    --   당첨 2종 = 일반행사(EVENT) 전용 · 나머지 8종 = 캠페인행사(CRMN) 전용.
+    PRZWIN_PSNNL_CO, PRZWIN_GFT_SNDNG_DE, CRMN_PLACE_NM, CRMN_PART_STRT_DE, CRMN_PART_END_DE,
+    TAT, RESRCE_SRVC_FG, CPR_DIV_CD, ENTRPS_CD, USE_YN,
+    PART_USE_YN                                   -- [O213-F Y3-I] 참여신청 사용 여부(캠페인행사 전용 · 일반행사 NULL)
 from e
 
 union all
--- unknown 멤버(SK=0): 팩트 EVENT_SK=0(미매핑) 조인 유실 방지
--- [2026-08-03 O27] 센티넬 표기 통일: EVENT_KIND_NAME 도 '(미매핑)' 을 쓴다.
---   종전에는 같은 한 행 안에서 다른 컬럼은 '(미매핑)' 인데 이 컬럼만 '미상' 이었다(표기 분열).
---   이 1행이 GOLD 전체에 남아 있던 마지막 '미상' 이다(문서10 §14-D 실측) → 이로써 GOLD '미상' 은 소멸.
 select 0, '(미매핑)', NULL, '(미매핑)', NULL, '(미매핑)', NULL, NULL, NULL, NULL,
     {{ gold_meta('CRM') }},
-    -- ⚠️ 센티넬 행도 컬럼 수를 맞춰야 한다(UNION ALL 위치 대응). 코드군·라벨은 값이 없으므로 NULL —
-    --    '(미매핑)' 을 넣지 않는다: 이 행은 「행사 미매핑」을 뜻하고 코드군·라벨 축의 미매핑이 아니다.
-    NULL, NULL
+    NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL
 </code></pre>
           </div>
         </details>

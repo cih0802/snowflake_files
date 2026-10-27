@@ -1374,6 +1374,11 @@ models:
       - name: MKTG_CAMPAIGN_SK
         tests:
           - not_null
+          # [2026-10-27] ERD 고립 해소 — 개발계 1,426행 · distinct 173 · 미해소 0 / 운영계(S30) 1,403행 · NULL 0 · distinct 169. 미해소 판정 = 운영 dbt test ⇒ warn.
+          - relationships:
+              to: ref('DIM_MARKETING_CAMPAIGN')
+              field: MKTG_CAMPAIGN_SK
+              config: { severity: warn }
       - name: ROW_KIND
         tests:
           - not_null
@@ -1393,6 +1398,27 @@ models:
           - relationships:
               to: ref('DIM_MEMBER')
               field: MEMBER_DK
+              config: { severity: warn }
+      # [2026-10-27] ERD 고립 해소 3건 — 개발계 실측 17,510,051행 · NULL 0 · 미해소 0(distinct 13,168 · 19 · 1,756).
+      #   운영계(S30 2026-10-27) 17,535,960행 · NULL 0(distinct 13,180 · 18 · 1,742) · 미해소 판정 = 운영 dbt test ⇒ warn.
+      #   월 키 2종(EVENT_MONTH_KEY · OBS_MONTH_KEY)은 관례대로 coverage gate CONFORM.
+      - name: CAMPAIGN_SK
+        tests:
+          - relationships:
+              to: ref('DIM_CAMPAIGN')
+              field: CAMPAIGN_SK
+              config: { severity: warn }
+      - name: SPONSORSHIP_SK
+        tests:
+          - relationships:
+              to: ref('DIM_SPONSORSHIP')
+              field: SPONSORSHIP_SK
+              config: { severity: warn }
+      - name: FIRST_EVENT_DATE_SK
+        tests:
+          - relationships:
+              to: ref('DIM_DATE')
+              field: DATE_SK
               config: { severity: warn }
       - name: MONTHS_AFTER
         tests:

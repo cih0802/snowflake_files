@@ -99,12 +99,14 @@ KNOWN_ORPHANS = {
     ("FACT_MEMBER_EVENT_COHORT", "EVENT_MONTH_KEY"): (
         "CONFORM",
         "역할기반 월 축(사건월) → DIM_MONTH.MONTH_KEY. 실측(UM80684 2026-10-27) 17,510,051행 · NULL 0 · "
-        "distinct 58 · 미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+        "distinct 58 · 미해소 0 · 운영계(S30 ZL50263 2026-10-27) 17,535,960행 · NULL 0 · distinct 57. "
+        "🔴 ERD 에 논리 관계로 표기한다.",
     ),
     ("FACT_MEMBER_EVENT_COHORT", "OBS_MONTH_KEY"): (
         "CONFORM",
         "역할기반 월 축(관측월 = 사건월 + MONTHS_AFTER) → DIM_MONTH.MONTH_KEY. 실측(UM80684 2026-10-27) "
-        "17,510,051행 · NULL 0 · distinct 70 · 미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+        "17,510,051행 · NULL 0 · distinct 70 · 미해소 0 · 운영계(S30 ZL50263 2026-10-27) NULL 0 · distinct 69. "
+        "🔴 ERD 에 논리 관계로 표기한다.",
     ),
     ("*", "AD_PERF_DK"): (
         "DEGEN",

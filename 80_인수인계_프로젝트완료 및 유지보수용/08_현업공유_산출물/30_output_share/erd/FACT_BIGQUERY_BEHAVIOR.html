@@ -7,7 +7,7 @@
   <title>FACT_BIGQUERY_BEHAVIOR - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_BIGQUERY_BEHAVIOR",
     "table": "FACT_BIGQUERY_BEHAVIOR",
     "domain": "GA4 / 디지털 행동",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item active"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -442,7 +468,7 @@
               <span>FACT_BIGQUERY_BEHAVIOR</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다]</div>
+            <div class="korean-title">DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE × UTM_CAMPAIGN (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -452,9 +478,9 @@
           <span class="badge badge-domain">도메인: GA4 / 디지털 행동</span>
           <span class="badge badge-domain">BRONZE 원천: 4개</span>
           <span class="badge badge-domain">SILVER 모델: 10개</span>
-          <span class="badge badge-domain">컬럼 수: 24개</span>
+          <span class="badge badge-domain">컬럼 수: 25개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>BigQuery 웹/앱 사용자 행동 팩트. [Grain: DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다].</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>BigQuery 웹/앱 사용자 행동 팩트. [Grain: DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE × UTM_CAMPAIGN (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -579,6 +605,7 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_DATE {
     string DATE_SK PK
@@ -744,13 +771,13 @@ erDiagram
           <td><code>PAGE_PATH</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>페이지경로 (#105).</td>
         </tr>
         <tr>
           <td><code>PAGE_LOCATION</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td></td>
+          <td>페이지위치 (#106).</td>
         </tr>
         <tr>
           <td><code>VISITS</code></td>
@@ -848,6 +875,12 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>UTM_CAMPAIGN</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>UTM 캠페인 원값(SILVER.BIGQUERY_EVENT.UTM_CAMPAIGN 그대로 · 차원 없음). 🔴 캠페인 키가 아니다 — 1 UTM 이 다수 캠페인에 걸려 CAMPAIGN_SK 로 조인하면 팬아웃한다(문서20 W-1) · (not set)·(organic) 등 비캠페인 값 포함</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -859,39 +892,45 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_BIGQUERY_BEHAVIOR: BigQuery 행동 팩트 (BIGQUERY_EVENT + BigQuery DIM 조인, 일 grain)
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : BigQuery 행동 팩트 (BIGQUERY_EVENT + BigQuery DIM 조인, 일 grain)
+-- Target     : GOLD.FACT_BIGQUERY_BEHAVIOR (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref BIGQUERY_EVENT, ref IDENTITY_MEMBER_XREF, ref DIM_BIGQUERY_EVENT, ref DIM_BIGQUERY_SOURCE, ref DIM_DEVICE, ref DIM_MEMBER_IDENTITY
+-- Issue      : O177, O190, O94
+-- =============================================================================
+-- FACT_BIGQUERY_BEHAVIOR: BigQuery 행동 팩트 (BIGQUERY_EVENT + BigQuery DIM 조인, 일 grain)
 -- grain: DATE_SK×IDENTITY_SK×BIGQUERY_EVENT_SK×BIGQUERY_SOURCE_SK×DEVICE_SK×CAMPAIGN_SK×PAGE_PATH
 -- IDENTITY_SK = IDENTITY_MEMBER_XREF(pseudo→회원) → DIM_MEMBER_IDENTITY 매칭분, 미매칭=0(센티넬). CAMPAIGN_SK=NULL.
--- ⚠️ [G-5 재확인] IDENTITY 결선은 BigQuery 1일 샤드 기반(회원 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
--- ⚠️ 비/준가산 지표(AVG_SESSION_DURATION·BOUNCE_RATE)는 grain 값 — 상위 재합산 금지(06_DDL §6)
+-- WARN: [G-5 재확인] IDENTITY 결선은 BigQuery 1일 샤드 기반(회원 커버리지 ~4.2%). 전기간 입고 시 재실행·재검증 필요(문서50 G-5 게이트).
+-- WARN: 비/준가산 지표(AVG_SESSION_DURATION·BOUNCE_RATE)는 grain 값 — 상위 재합산 금지(06_DDL §6)
 -- 순서9(G-1/G-2 해소): table→incremental+append+pre-hook(dbt_project.yml gold.fact). DDL 구조·타입·FK 보존. append 라 unique_key 불요.
--- 🔄🔴 [2026-09-22] **전량 TRUNCATE 재적재 → 범위 재적재(일일 증분)로 전환.**
+-- 🔄WARN: [2026-09-22] **전량 TRUNCATE 재적재 → 범위 재적재(일일 증분)로 전환.**
 --   왜: 매 run 전량 재계산은 순수 낭비였다(실측 33일 14.9초 → 전일자 환산 ≈ 7분).
 --   pre-hook 이 `macros/gold_fact_purge.sql` 로 분기한다 — `RANGED_FACTS` 에 이 모델명 등재 필수.
 --     · 그 매크로가 `DELETE … WHERE DATE_SK &lt;창&gt;` 을 내고, 아래 `e` CTE 가 **같은 창**을 append 한다.
 --     · 창 정의 지점은 `macros/bigquery_range_predicate.sql` 의 `bigquery_load_window()` 하나다.
 --       DELETE 는 `_sk`(NUMBER YYYYMMDD) 렌더러, 여기는 DATE 렌더러를 쓰지만 창은 동일하다.
---   🔴 **이 파일에 `pre_hook` 을 쓰지 말 것** — dbt 는 hook 을 누적하므로 TRUNCATE 와 DELETE 가
+--   WARN: **이 파일에 `pre_hook` 을 쓰지 말 것** — dbt 는 hook 을 누적하므로 TRUNCATE 와 DELETE 가
 --      함께 돌아 팩트가 창 크기로 쪼그라든다(에러 없이 행수만 줄어든다 · gold_fact_purge.sql 주석).
---   🔴 범위 DELETE 의 전제 3가지(grain 에 DATE_SK · 집계가 일자 내 폐쇄 · DATE_SK=0 공집합)는
+--   WARN: 범위 DELETE 의 전제 3가지(grain 에 DATE_SK · 집계가 일자 내 폐쇄 · DATE_SK=0 공집합)는
 --      `macros/gold_fact_purge.sql` 헤더에 적혀 있다. 지표를 추가할 때 ②를 깨지 않는지 확인하라
 --      (월간 유니크처럼 일자를 넘나드는 집계를 넣으면 범위 재적재가 틀린 값을 낸다).
---   🔴🔴 **[2026-09-22 O177] 열린 백로그와 직접 맞닿는다 — `A4-W` 배선 6건의 1번이 이 모델이다**
+--   WARN: **[2026-09-22 O177] 열린 백로그와 직접 맞닿는다 — `A4-W` 배선 6건의 1번이 이 모델이다**
 --      (`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0176-A.md:70`). 그 항목은 아래 `CAMPAIGN_SK`
---      센티넬 0 을 `SILVER.BIGQUERY_EVENT.UTM_CAMPAIGN` 으로 배선하라고 지시한다(🟢 컬럼 실재).
---      ⇒ 🟢 **그 배선은 이 범위 재적재와 양립한다** — `UTM_CAMPAIGN` 은 이벤트 행의 속성이므로
+--      센티넬 0 을 `SILVER.BIGQUERY_EVENT.UTM_CAMPAIGN` 으로 배선하라고 지시한다( 컬럼 실재).
+--      ⇒ **그 배선은 이 범위 재적재와 양립한다** — `UTM_CAMPAIGN` 은 이벤트 행의 속성이므로
 --        group by 에 들어가도 집계가 **일자 안에서 닫힌다**(전제 ② 유지).
---      🔴 단 배선 시 **전량 백필이 필요하다** — 창 밖 과거 행의 `CAMPAIGN_SK` 는 센티넬로 남는다
+--      WARN: 단 배선 시 **전량 백필이 필요하다** — 창 밖 과거 행의 `CAMPAIGN_SK` 는 센티넬로 남는다
 --        (롤링 윈도우는 창 밖을 건드리지 않는다) ⇒ `bigquery_dt_ranges` 주석을 풀어 전 구간 재적재하라.
---        ⚠️ 이 「배선 후 백필 의무」는 증분화가 **새로 만든** 절차다. 배선만 하고 끝내면
+--        WARN: 이 「배선 후 백필 의무」는 증분화가 **새로 만든** 절차다. 배선만 하고 끝내면
 --           과거 전체가 센티넬로 남아 **에러 없이** 지표가 틀린다.
 {{ config(
     tags=['gold_ready']
 ) }}
 
 with e as (
-    -- 🔴 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: bigquery_load_window).
+    -- WARN: 창 술어 = pre-hook DELETE 범위와 **반드시 동일**해야 멱등이다(정의 지점: bigquery_load_window).
     select * from {{ ref('BIGQUERY_EVENT') }}
     where {{ bigquery_range_predicate('EVENT_DT') }}
 ),
@@ -919,7 +958,10 @@ joined as (
         e.IS_ACTIVE_USER,
         e.SESSION_ENGAGED,
         e.ENGAGEMENT_TIME_MSEC,
-        e.PERCENT_SCROLLED
+        e.PERCENT_SCROLLED,
+        --  [2026-09-30 O190] W-1 ⓑ — UTM 원값 degen(차원 없음 · CAMPAIGN_SK 배선 아님 · 팬아웃 방지).
+        --   이벤트 행 속성이라 일자 내 집계 폐쇄(전제 ②) 유지 · WARN: 창 밖 과거 행은 NULL ⇒ 전량 백필 필요(위 헤더).
+        e.UTM_CAMPAIGN
     from e
     left join {{ ref('DIM_BIGQUERY_EVENT') }}  gev
         on  EQUAL_NULL(gev.EVENT_CATEGORY, e.EVENT_CATEGORY)
@@ -936,7 +978,7 @@ joined as (
         on  dmi.MEMBER_DK = x.MEMBER_DK
 ),
 
--- ⚠️ [O94] 집계를 CTE 로 분리한 이유 = AVG_ENGAGEMENT_TIME_PER_SESSION 상한 가드를 outer 에서 1회만 걸기 위함.
+-- WARN: [O94] 집계를 CTE 로 분리한 이유 = AVG_ENGAGEMENT_TIME_PER_SESSION 상한 가드를 outer 에서 1회만 걸기 위함.
 --    컬럼 이름·순서는 종전과 동일하다(DDL insert 순서 보존 · WIDE_BIGQUERY_BEHAVIOR 영향 없음).
 agg as (
 select
@@ -957,24 +999,25 @@ select
     MAX(PERCENT_SCROLLED)                                                    as SCROLL_DEPTH,
     COUNT(DISTINCT IFF(IS_ACTIVE_USER, USER_PSEUDO_ID, NULL))               as ACTIVE_USERS,
     COUNT(DISTINCT USER_PSEUDO_ID)                                          as TOTAL_USERS,
-    CAST(NULL AS NUMBER)                                                     as AVG_SESSION_DURATION,  -- ⚠️ 세션지속 산식 미정
-    CAST(NULL AS NUMBER)                                                     as BOUNCE_RATE,           -- ⚠️ 비가산·정의 대기
+    CAST(NULL AS NUMBER)                                                     as AVG_SESSION_DURATION,  -- WARN: 세션지속 산식 미정
+    CAST(NULL AS NUMBER)                                                     as BOUNCE_RATE,           -- WARN: 비가산·정의 대기
     DIV0(
         COUNT(DISTINCT IFF(SESSION_ENGAGED='1', USER_PSEUDO_ID||'|'||BIGQUERY_SESSION_ID, NULL)),
         COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID)
     )                                                                        as ENGAGEMENT_RATE,
     DIV0(SUM(ENGAGEMENT_TIME_MSEC) / 1000.0,
         COUNT(DISTINCT USER_PSEUDO_ID || '|' || BIGQUERY_SESSION_ID))         as AVG_ENGAGEMENT_TIME_PER_SESSION,  -- 초 단위(NUMBER(9,4)) — 상한 가드는 아래 outer select
-    {{ gold_meta('BIGQUERY') }}
+    {{ gold_meta('BIGQUERY') }},
+    UTM_CAMPAIGN                                                             -- O190 · DDL 말미(ALTER ADD) 순서 = 감사컬럼 뒤
 from joined
-group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH
+group by DATE_SK, IDENTITY_SK, BIGQUERY_EVENT_SK, BIGQUERY_SOURCE_SK, DEVICE_SK, CAMPAIGN_SK, PAGE_PATH, UTM_CAMPAIGN
 )
 
--- ⚠️ [O94] 상한 가드 — 봇/크롤러성 장기 세션이 누적 참여시간으로 DDL 타입 NUMBER(9,4) 상한을 넘겨
+-- WARN: [O94] 상한 가드 — 봇/크롤러성 장기 세션이 누적 참여시간으로 DDL 타입 NUMBER(9,4) 상한을 넘겨
 --    build 를 죽였다(100046/22003). 범위 초과분만 NULL 로 두고 타입은 보존한다(06_DDL 무변경).
 --    가드 상수 100000 = NUMBER(9,4) 정수부 5자리 한계에서 나온 값이며 실측치가 아니다(R2-6).
---    🔴 근본 처리(봇 세션 필터 정책 · 임계값 업무 합의)는 미정 — 원장 §O94 승계.
---    🔴 이 가드는 이 1컬럼만 막는다 — EVENT_CNT·SESSION_CNT 등 가산 지표에는 해당 세션이 그대로 남는다.
+--    WARN: 근본 처리(봇 세션 필터 정책 · 임계값 업무 합의)는 미정 — 원장 §O94 승계.
+--    WARN: 이 가드는 이 1컬럼만 막는다 — EVENT_CNT·SESSION_CNT 등 가산 지표에는 해당 세션이 그대로 남는다.
 --    `* replace` 를 쓰는 이유 = 컬럼 이름·순서를 손으로 다시 적지 않아 DDL insert 순서가 어긋날 수 없다.
 select * replace (
     IFF(ABS(AVG_ENGAGEMENT_TIME_PER_SESSION) &lt; 100000,

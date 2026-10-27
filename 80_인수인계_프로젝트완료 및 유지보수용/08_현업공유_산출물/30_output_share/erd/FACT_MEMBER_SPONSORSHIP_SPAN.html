@@ -7,7 +7,7 @@
   <title>FACT_MEMBER_SPONSORSHIP_SPAN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_MEMBER_SPONSORSHIP_SPAN",
     "table": "FACT_MEMBER_SPONSORSHIP_SPAN",
     "domain": "CRM / 회원·후원",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item active"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -451,8 +477,8 @@
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
           <span class="badge badge-domain">BRONZE 원천: 8개</span>
-          <span class="badge badge-domain">SILVER 모델: 7개</span>
-          <span class="badge badge-domain">컬럼 수: 34개</span>
+          <span class="badge badge-domain">SILVER 모델: 8개</span>
+          <span class="badge badge-domain">컬럼 수: 38개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>회원×후원약정 기간 팩트 — grain = MEMBER_DK × SPNSR_BSNS_NO. `SV_MEMBER_SPONSOR_BIZ` 의 base 이며 **「캠페인별/후원사업별 활동회원」 질의의 정본**이다(FMM.CAMPAIGN_SK 는 회원 grain 다중귀속 `O8` 로 전건 센티넬). 🔴 `SPNSR_BSNS_NO` **단독은 PK 가 아니다** — 공동후원 쌍이 실재해 서로 다른 두 회원이 공유한다. 🔴 캠페인 귀속은 **대표캠페인 결정적 규칙**(신규 사건 우선 → 최초일자 → 최소일련번호)이고 다중 사실은 `IS_MULTI_CAMPAIGN` 으로 감추지 않는다. 🔴 as-of 활동 판정은 이 팩트가 하지 않는다 — 소비 계층이 START_MONTH_KEY~DSCNTC_MONTH_KEY 로 계산한다. ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
       </div>
@@ -488,6 +514,7 @@ flowchart LR
     S_CRM_MEMBER_SPONSOR_BIZ["CRM_MEMBER_SPONSOR_BIZ"]:::silver
     S_CRM_MEMBER_SPONSOR_SPAN["CRM_MEMBER_SPONSOR_SPAN<br/>회원×후원사업 활동구간(시작월~중단월"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_MAP_SPONSORSHIP_GROUP4["MAP_SPONSORSHIP_GROUP4"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_FACT_MEMBER_SPONSORSHIP_SPAN["★ FACT_MEMBER_SPONSORSHIP_SPAN<br/>회원×후원약정 기간 팩트 — grain = M"]:::target
@@ -510,6 +537,7 @@ flowchart LR
   S_CRM_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
   S_CRM_CAMPAIGN --> S_CRM_MEMBER_DEV
   S_CRM_CODE --> G_DIM_SPONSORSHIP
+  S_CRM_CODE --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_CODE --> S_CRM_CAMPAIGN
   S_CRM_CODE --> S_CRM_MEMBER_DEV
   S_CRM_MARKETING_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
@@ -517,6 +545,7 @@ flowchart LR
   S_CRM_MEMBER_SPONSOR_BIZ --> S_CRM_MEMBER_SPONSOR_SPAN
   S_CRM_MEMBER_SPONSOR_SPAN --> G_FACT_MEMBER_SPONSORSHIP_SPAN
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_MAP_SPONSORSHIP_GROUP4 --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
@@ -538,7 +567,7 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (7개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (8개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CAMPAIGN</b>: </li>
@@ -548,6 +577,7 @@ flowchart LR
 <li><b>CRM_MEMBER_SPONSOR_BIZ</b>: </li>
 <li><b>CRM_MEMBER_SPONSOR_SPAN</b>: 회원×후원사업 활동구간(시작월~중단월) — 활동회원 as-of 판정의 기반(O93 신설). `GOLD.FACT_MEMBER_SPONSORSHIP_SPAN` 의 상류다. 🔴 `DSCNTC_MONTH_KEY` NULL = **미중단(활동)** 이며 `SPNSR_DSCNTC_DE` 무효값도 NULL 로 떨어져 **활동으로 과대 판정**될 수 있다. ⚠️ 시작월은 후원(SPNSR_NO) 등록월의 **근사**다 — 사업 단위 시작일이 원천에 없어 활동을 이르게 본다. 🔴 `SPNSR_BSNS_NO` 단독은 유일하지 않다(공동후원 쌍) ⇒ 유일 축은 (MBER_NO, SPNSR_BSNS_NO) 쌍이다.</li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>MAP_SPONSORSHIP_GROUP4</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -567,6 +597,7 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_MEMBER {
     string MEMBER_SK
@@ -689,7 +720,7 @@ erDiagram
           <td><code>SPNSR_BSNS_NO</code></td>
           <td><code>NUMBER(19,0)</code></td>
           <td></td>
-          <td>후원사업번호(회원별 약정 일련번호, Q15).</td>
+          <td>후원사업번호(회원별 약정 일련번호).</td>
         </tr>
         <tr>
           <td><code>SPONSORSHIP_SK</code></td>
@@ -713,7 +744,7 @@ erDiagram
           <td><code>SPNSR_NO</code></td>
           <td><code>VARCHAR(9)</code></td>
           <td></td>
-          <td>후원번호(Q15).</td>
+          <td>후원번호.</td>
         </tr>
         <tr>
           <td><code>START_MONTH_KEY</code></td>
@@ -791,7 +822,7 @@ erDiagram
           <td><code>ACQ_MKTG_CMPGN_NM</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>대표캠페인의 마케팅 캠페인명(Q16 라벨) — 동결값</td>
+          <td>대표캠페인의 마케팅 캠페인명(라벨) — 동결값</td>
         </tr>
         <tr>
           <td><code>ACQ_CMMN_BRND</code></td>
@@ -883,6 +914,30 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>SPNSR_JOIN_PATH_CD</code></td>
+          <td><code>VARCHAR(3)</code></td>
+          <td></td>
+          <td>후원(SPNSR_NO) 단위 가입경로 코드 raw. 코드id:MM014</td>
+        </tr>
+        <tr>
+          <td><code>SPNSR_JOIN_PATH_NM</code></td>
+          <td><code>VARCHAR(100)</code></td>
+          <td></td>
+          <td>후원 단위 가입경로명. 코드id:MM014</td>
+        </tr>
+        <tr>
+          <td><code>SPNSR_CMPGN_CD</code></td>
+          <td><code>VARCHAR(20)</code></td>
+          <td></td>
+          <td>후원(SPNSR_NO) 등록 캠페인코드 raw ← SILVER.CRM_MEMBER_SPONSOR_SPAN.CMPGN_CD · 🔴 대표캠페인(CAMPAIGN_SK · 개발사건 규칙)과 다른 축</td>
+        </tr>
+        <tr>
+          <td><code>SPNSR_ACMSLT_DEPT_CD</code></td>
+          <td><code>VARCHAR(10)</code></td>
+          <td></td>
+          <td>후원(SPNSR_NO) 실적부서코드 raw ← SILVER.CRM_MEMBER_SPONSOR_SPAN.ACMSLT_DEPT_CD</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -894,8 +949,14 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_MEMBER_SPONSORSHIP_SPAN: 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
+-- Target     : GOLD.FACT_MEMBER_SPONSORSHIP_SPAN (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_MEMBER_SPONSOR_SPAN, ref CRM_MEMBER_DEV, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN, ref CRM_CODE
+-- Issue      : O188-F, O189-B
+-- =============================================================================
+-- FACT_MEMBER_SPONSORSHIP_SPAN: 회원×후원약정 기간/스팬 팩트 (약정별 시작~중단 기간 및 대표 캠페인 귀속)
 {{ config(
     materialized='incremental',
     unique_key=['MEMBER_DK', 'SPNSR_BSNS_NO'],
@@ -923,7 +984,7 @@ campaign_pick as (
         BRND_NM, PARENT_CAMPAIGN_NAME, PROMO_METHOD_NAME,
         row_number() over (
             partition by SPNSR_BSNS_NO
-            order by iff(DVLP_DIV_CD = '1', 0, 1), OCCRRNC_DE, SER_NO
+            order by iff(DVLP_DIV_CD = {{ gn_code('DEV_NEW') }}, 0, 1), OCCRRNC_DE, SER_NO
         ) as rn
     from {{ ref('CRM_MEMBER_DEV') }}
 ),
@@ -981,7 +1042,15 @@ select
     cr.BRND_NM                                       as ACQ_BRAND,
     cr.PARENT_CAMPAIGN_NAME                          as ACQ_PARENT_CAMPAIGN_NAME,
     cr.PROMO_METHOD_NAME                             as ACQ_PROMO_METHOD_NAME,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    --  [2026-09-29 O188-F] 후원 단위 가입경로(원천 TM_MM_FDRM_MBER_SPNSR.JOIN_PATH_CD · 코드군 MM014)
+    --   회원 단위 가입경로(DIM_MEMBER.ENROLL_PATH_NAME · MBER_INFO)와 **다른 grain** 이다 — 한 회원의 후원건마다 다를 수 있다.
+    span.JOIN_PATH_CD                                as SPNSR_JOIN_PATH_CD,
+    jp.DTL_CD_NM                                     as SPNSR_JOIN_PATH_NM,
+    --  [2026-09-29 O189-B · 2차-B 1단] 후원(SPNSR_NO) 등록 원천 캠페인·실적부서 raw(DDL 선행 적용 완료)
+    --   WARN: 대표캠페인(CAMPAIGN_SK = 개발사건 규칙 · campaign_rep)과 **다른 축**이다 — 값이 갈릴 수 있고 합치지 않는다.
+    span.CMPGN_CD                                    as SPNSR_CMPGN_CD,
+    span.ACMSLT_DEPT_CD                              as SPNSR_ACMSLT_DEPT_CD
 from span
 left join campaign_rep cr
        on cr.SPNSR_BSNS_NO = span.SPNSR_BSNS_NO
@@ -991,6 +1060,9 @@ left join {{ ref('DIM_SPONSORSHIP') }} dsp
        on dsp.SPONSORSHIP_BK = span.SPNSR_BSNS_ID
 left join {{ ref('DIM_CAMPAIGN') }} dcp
        on dcp.CAMPAIGN_BK = cr.CMPGN_CD
+--  O188-F MM014 라벨 — (CD_ID, DTL_CD_ID) 유일이라 fan-out 0
+left join {{ ref('CRM_CODE') }} jp
+       on jp.CD_ID = 'MM014' and jp.DTL_CD_ID = span.JOIN_PATH_CD
 </code></pre>
           </div>
         </details>

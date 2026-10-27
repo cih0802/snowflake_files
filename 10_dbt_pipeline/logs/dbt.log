@@ -13273,3 +13273,35 @@ having count(*) > 1
 [0m18:49:45.354753 [debug] [Dummy-1   ]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 2.1287107, "process_in_blocks": "0", "process_kernel_time": 0.86, "process_mem_max_rss": "438532", "process_out_blocks": "0", "process_user_time": 4.74}
 [0m18:49:45.355410 [debug] [Dummy-1   ]: Command `cli parse` succeeded at 18:49:45.355139 after 2.13 seconds
 [0m18:49:45.355981 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 19:23:12.538531 | 37afc2fb-d561-482d-ae7e-e8b03962ac46 ==============================
+[0m19:23:12.538531 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m19:23:12.539478 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/tmp/dbt_effective_profiles_r4p8mw5n', 'fail_fast': 'False', 'debug': 'False', 'log_path': '/tmp/dbt/logs', 'warn_error': 'None', 'version_check': 'True', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'None', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt ', 'log_format': 'default', 'introspect': 'True', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m19:23:12.738335 [info ] [Dummy-1   ]: State adapter: dbt-state v0.0.0 is disabled
+[0m19:23:12.829719 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m19:23:13.368893 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m19:23:14.101136 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m19:23:14.101759 [debug] [Dummy-1   ]: Partial parsing enabled, no changes found, skipping parsing
+[0m19:23:14.199590 [info ] [Dummy-1   ]: Performance info: /tmp/dbt/target/perf_info.json
+[0m19:23:14.599286 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:23:14.603103 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:23:14.604930 [debug] [Dummy-1   ]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 2.1440034, "process_in_blocks": "0", "process_kernel_time": 0.93, "process_mem_max_rss": "445444", "process_out_blocks": "0", "process_user_time": 4.81}
+[0m19:23:14.605571 [debug] [Dummy-1   ]: Command `cli parse` succeeded at 19:23:14.605315 after 2.14 seconds
+[0m19:23:14.606164 [debug] [Dummy-1   ]: Flushing usage events
+
+
+============================== 19:23:55.061351 | ad9b3ce6-dc2d-4934-9e2a-e286dca29995 ==============================
+[0m19:23:55.061351 [info ] [Dummy-1   ]: Running with dbt=1.9.4
+[0m19:23:55.062211 [debug] [Dummy-1   ]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'fail_fast': 'False', 'profiles_dir': '/tmp/dbt_effective_profiles_u_cyjbwl', 'log_path': '/tmp/dbt/logs', 'version_check': 'True', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'None', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'invocation_command': 'dbt ', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'False'}
+[0m19:23:55.254829 [info ] [Dummy-1   ]: State adapter: dbt-state v0.0.0 is disabled
+[0m19:23:55.343665 [info ] [Dummy-1   ]: Registered adapter: snowflake=1.9.2
+[0m19:23:55.888760 [debug] [Dummy-1   ]: checksum: 53ed91fada2233efb98368d1716b44ab532c83a9c293cf1890b7905d5b45fb25, vars: {}, profile: , target: dev, version: 1.9.4
+[0m19:23:56.583024 [debug] [Dummy-1   ]: Partial parsing enabled: 0 files deleted, 0 files added, 1 files changed.
+[0m19:23:56.588292 [debug] [Dummy-1   ]: Partial parsing: updated file: gn_dw_silver://models/gold/_gold_ready_schema.yml
+[0m19:23:56.945587 [info ] [Dummy-1   ]: Performance info: /tmp/dbt/target/perf_info.json
+[0m19:23:57.326806 [debug] [Dummy-1   ]: Wrote artifact WritableManifest to /tmp/dbt/target/manifest.json
+[0m19:23:57.330510 [debug] [Dummy-1   ]: Wrote artifact SemanticManifest to /tmp/dbt/target/semantic_manifest.json
+[0m19:23:57.332312 [debug] [Dummy-1   ]: Resource report: {"command_name": "parse", "command_success": true, "command_wall_clock_time": 2.3475814, "process_in_blocks": "0", "process_kernel_time": 0.84, "process_mem_max_rss": "444500", "process_out_blocks": "0", "process_user_time": 4.84}
+[0m19:23:57.332907 [debug] [Dummy-1   ]: Command `cli parse` succeeded at 19:23:57.332677 after 2.35 seconds
+[0m19:23:57.333441 [debug] [Dummy-1   ]: Flushing usage events

@@ -7,7 +7,7 @@
   <title>DIM_MARKETING_CAMPAIGN - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MARKETING_CAMPAIGN",
     "table": "DIM_MARKETING_CAMPAIGN",
     "domain": "AGENCY / 마케팅·광고",
@@ -570,6 +570,11 @@ erDiagram
     string MKTG_CAMPAIGN_BK PK
     string DW_BATCH_ID
   }
+  FACT_AD_INFLOW_ALLOC {
+    string MKTG_CAMPAIGN_SK FK
+    string MONTH_KEY FK
+    string DW_BATCH_ID
+  }
   FACT_AD_PERFORMANCE {
     string AD_CTGR_CD FK
     string AD_PERF_DK PK
@@ -582,6 +587,7 @@ erDiagram
   }
   DIM_MARKETING_CAMPAIGN ||--o{ DIM_CAMPAIGN : "MKTG_CAMPAIGN_SK"
   DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_PERFORMANCE : "MKTG_CAMPAIGN_SK"
+  DIM_MARKETING_CAMPAIGN ||--o{ FACT_AD_INFLOW_ALLOC : "MKTG_CAMPAIGN_SK"
           </pre>
         </div>
 
@@ -611,6 +617,15 @@ erDiagram
         </tr>
         <tr>
           <td><code>FACT_AD_PERFORMANCE</code></td>
+          <td><code>MKTG_CAMPAIGN_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MARKETING_CAMPAIGN.html"><code>DIM_MARKETING_CAMPAIGN</code></a></td>
+          <td><code>MKTG_CAMPAIGN_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_AD_INFLOW_ALLOC</code></td>
           <td><code>MKTG_CAMPAIGN_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_MARKETING_CAMPAIGN.html"><code>DIM_MARKETING_CAMPAIGN</code></a></td>

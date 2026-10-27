@@ -7,7 +7,7 @@
   <title>DIM_SPONSORSHIP - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_SPONSORSHIP",
     "table": "DIM_SPONSORSHIP",
     "domain": "CRM / 회원·후원",
@@ -596,6 +596,15 @@ erDiagram
     string REASON_SK FK
     string DW_BATCH_ID
   }
+  FACT_MEMBER_EVENT_COHORT {
+    string MEMBER_DK FK
+    string CAMPAIGN_SK FK
+    string SPONSORSHIP_SK FK
+    string FIRST_EVENT_DATE_SK FK
+    string EVENT_MONTH_KEY
+    string OBS_MONTH_KEY
+    string DW_BATCH_ID
+  }
   FACT_MEMBER_FEE {
     string MONTH_KEY FK
     string MEMBER_DK FK
@@ -653,6 +662,7 @@ erDiagram
   DIM_SPONSORSHIP ||--o{ FACT_MEMBER_SPONSORSHIP_SPAN : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_TARGET_PROJECT : "SPONSORSHIP_SK"
   DIM_SPONSORSHIP ||--o{ FACT_SPONSORSHIP_MONTHLY : "SPONSORSHIP_SK"
+  DIM_SPONSORSHIP ||--o{ FACT_MEMBER_EVENT_COHORT : "SPONSORSHIP_SK"
           </pre>
         </div>
 
@@ -763,6 +773,15 @@ erDiagram
         </tr>
         <tr>
           <td><code>FACT_SPONSORSHIP_MONTHLY</code></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>
+          <td><code>SPONSORSHIP_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_MEMBER_EVENT_COHORT</code></td>
           <td><code>SPONSORSHIP_SK</code></td>
           <td>➔</td>
           <td><a href="DIM_SPONSORSHIP.html"><code>DIM_SPONSORSHIP</code></a></td>

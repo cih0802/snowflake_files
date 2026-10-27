@@ -7,7 +7,7 @@
   <title>FACT_BUDGET - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_BUDGET",
     "table": "FACT_BUDGET",
     "domain": "ERP / 예산·목표",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item active"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -442,7 +468,7 @@
               <span>FACT_BUDGET</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">MONTH_KEY × ORG_SK × BUDGET_ITEM_SK (1행=1예산)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET]</div>
+            <div class="korean-title">MONTH_KEY × BUDGET_ITEM_SK × DVLP_INBOUND_PATH (1행=1예산 · 원천 원장 grain 과 일치)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -451,10 +477,10 @@
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: ERP / 예산·목표</span>
           <span class="badge badge-domain">BRONZE 원천: 1개</span>
-          <span class="badge badge-domain">SILVER 모델: 1개</span>
-          <span class="badge badge-domain">컬럼 수: 15개</span>
+          <span class="badge badge-domain">SILVER 모델: 2개</span>
+          <span class="badge badge-domain">컬럼 수: 18개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>월 예산 팩트. [Grain: MONTH_KEY × ORG_SK × BUDGET_ITEM_SK (1행=1예산)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET].</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>월 예산 팩트. [Grain: MONTH_KEY × BUDGET_ITEM_SK × DVLP_INBOUND_PATH (1행=1예산 · 원천 원장 grain 과 일치)]. [주의: 부서/계정별 편성·집행액 관리]. [원천: ERP → BRONZE_ERP.BDGT_ACMSLT_LEDGER → SILVER.ERP_BUDGET].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -475,12 +501,14 @@ flowchart LR
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_ERP_BUDGET["ERP_BUDGET<br/>ERP 예산 편성/추경/조정/집행 월"]:::silver
+    S_MAP_BUDGET_PROCEDURE["MAP_BUDGET_PROCEDURE"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_BUDGET["★ FACT_BUDGET<br/>MONTH_KEY × ORG_SK × BUDG"]:::target
+    G_FACT_BUDGET["★ FACT_BUDGET<br/>MONTH_KEY × BUDGET_ITEM_S"]:::target
   end
   B_bronze_erp_BDGT_ACMSLT_LEDGER --> S_ERP_BUDGET
   S_ERP_BUDGET --> G_FACT_BUDGET
+  S_MAP_BUDGET_PROCEDURE --> G_FACT_BUDGET
           </pre>
         </div>
 
@@ -495,10 +523,11 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (1개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (2개)
             </div>
             <ul class="flow-step-list">
 <li><b>ERP_BUDGET</b>: ERP 예산 편성/추경/조정/집행 월 grain (wide→long 언피벗). 원천 BRONZE_ERP.BDGT_ACMSLT_LEDGER 1행(12개월) → 12행.</li>
+<li><b>MAP_BUDGET_PROCEDURE</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -522,6 +551,7 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_MONTH {
     string MONTH_KEY FK
@@ -529,6 +559,8 @@ erDiagram
   }
   DIM_ORG {
     string ORG_SK PK
+    string ACMSLT_DIV_GROUP_ID
+    string ACMSLT_DIV_ID
     string ORG_DK
     string ACMSLT_UPPER_DEPT_ID
     string DW_BATCH_ID
@@ -543,13 +575,17 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
+  }
+  MAP_BUDGET_PROCEDURE {
   }
   DIM_MONTH ||..o{ FACT_BUDGET : "MONTH_KEY"
   DIM_BUDGET_ITEM ||--o{ FACT_BUDGET : "BUDGET_ITEM_SK"
   DIM_CAMPAIGN ||--o{ FACT_BUDGET : "CAMPAIGN_SK"
   DIM_SPONSORSHIP ||--o{ FACT_BUDGET : "SPONSORSHIP_SK"
   DIM_ORG ||--o{ FACT_BUDGET : "ORG_SK"
+  MAP_BUDGET_PROCEDURE ||--o{ FACT_BUDGET : "BUDGET_PROCEDURE"
           </pre>
         </div>
 
@@ -613,6 +649,15 @@ erDiagram
           <td><span class="badge badge-domain">dbt YAML</span></td>
           <td>Physical / Declared FK</td>
         </tr>
+        <tr>
+          <td><code>FACT_BUDGET</code></td>
+          <td><code>BUDGET_PROCEDURE</code></td>
+          <td>➔</td>
+          <td><a href="MAP_BUDGET_PROCEDURE.html"><code>MAP_BUDGET_PROCEDURE</code></a></td>
+          <td><code>SRC_LABEL</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -637,7 +682,7 @@ erDiagram
           <td><code>MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td></td>
+          <td>월 conform 키 YYYYMM.</td>
         </tr>
         <tr>
           <td><code>BUDGET_ITEM_SK</code></td>
@@ -666,14 +711,14 @@ erDiagram
         <tr>
           <td><code>BUDGET_PROCEDURE</code></td>
           <td><code>VARCHAR</code></td>
-          <td></td>
+          <td><span class="badge badge-fact">FK</span></td>
           <td>예산 편성 차수 (연사업 / 추가경정 · DEC-44).</td>
         </tr>
         <tr>
           <td><code>PLAN_BUDGET_MONTH</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>편성예산(월 · 원). 🔴🔴 [2026-08-29 O114-B] 12개월 합산해도 FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR 와 일치하지 않는다 — 원천 원장의 월 배분이 부분적이어서 연 총액의 상당 부분이 월 컬럼에 배분되지 않는다(원천 특성 · 모델 결함 아님 · 실측 규모는 이슈원장·이력 소관 R2-6). ⇒ 🔴 「편성예산」을 답할 때 월·연 중 어느 축인지 밝혀라 — 밝히지 않으면 두 답이 갈린다. 🟢 대비: 집행은 연=월 정합이다(EXEC_BUDGET_ERP 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR). 🔴 예산 편성 차수(「연사업」 / 「추가경정」)를 GROUP BY 에 넣지 않으면 본예산과 추경이 합산된다 — 다만 이 테이블은 BUDGET_PROCEDURE 컬럼을 보유하므로 차수별 분해가 가능하다(2026-09-22 O176 실측 · 규모는 이슈원장 소관 R2-6). ⚠️ WIDE_BUDGET 은 이 컬럼을 노출하지 않으므로 거기서는 분해가 불가능하다 — 「차수별 분해 불가」는 뷰 축의 사실이며 이 테이블에는 적용되지 않는다.</td>
+          <td>편성예산(월 · 원). 🔴🔴 12개월 합산해도 FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR 와 일치하지 않는다 — 원천 원장의 월 배분이 부분적이어서 연 총액의 상당 부분이 월 컬럼에 배분되지 않는다(원천 특성 · 모델 결함 아님). ⇒ 🔴 「편성예산」을 답할 때 월·연 중 어느 축인지 밝혀라 — 밝히지 않으면 두 답이 갈린다. 🟢 대비: 집행은 연=월 정합이다(EXEC_BUDGET_ERP 월합 = FACT_BUDGET_YEARLY.EXEC_BUDGET_YEAR). 🔴 예산 편성 차수(「연사업」 / 「추가경정」)를 GROUP BY 에 넣지 않으면 본예산과 추경이 합산된다 — 다만 이 테이블은 BUDGET_PROCEDURE 컬럼을 보유하므로 차수별 분해가 가능하다. ⚠️ WIDE_BUDGET 은 이 컬럼을 노출하지 않으므로 거기서는 분해가 불가능하다 — 「차수별 분해 불가」는 뷰 축의 사실이며 이 테이블에는 적용되지 않는다.</td>
         </tr>
         <tr>
           <td><code>EXEC_BUDGET_ERP</code></td>
@@ -685,19 +730,19 @@ erDiagram
           <td><code>EXEC_BUDGET_EST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>집행예산(추정 · 원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 집행 추정 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 소관 · ⚠️ 종전 문안의 E-4 병기는 O175 가 철회했다 — 광고비는 원천 부재가 아니다). 실측 규모는 이슈원장 §O51-F.</td>
+          <td>집행예산(추정 · 원) 🔴🔴 전건 NULL — 원천 자체가 비어 있다(ERP 집행 추정 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것. 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고.</td>
         </tr>
         <tr>
           <td><code>FUNDRAISING_COST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>모금성비용(원) 🔴🔴 [O51-F 실측] 전건 NULL — 원천 자체가 비어 있다(ERP 모금성비용 원천). 결측이 아니라 대행사가 항목을 보고하지 않는다: 0 이나 「해당없음」 으로 대체 해석하지 말 것(P21). 필터 조건으로 쓰면 전건이 탈락한다. 🔴 외부 원천 미입고(E-1 하드블로커) — 모금성비용은 원천 확정 대기다. 실측 규모는 이슈원장 §O51-F.</td>
+          <td>모금성비용(원) 🔴 의도적 NULL — 현업 회신 42: 모금성비용은 하나로 정하지 않고 원장 플래그 이름 그대로 직접모금비1(EXEC_DIRECT_MNYRS_1)·직접모금비2(EXEC_DIRECT_MNYRS_2)를 나란히 쓴다. 🔴 이 컬럼으로 묻지 말 것 — 두 컬럼을 쓴다.</td>
         </tr>
         <tr>
           <td><code>AD_COST</code></td>
           <td><code>NUMBER(18,2)</code></td>
           <td></td>
-          <td>광고비(원) 🔴🔴 폐기 슬롯이다 — 의도적 영구 NULL(외부 입고 대기가 아니다 · 2026-09-21 O175 판정). 예산 원장에는 광고비 예산항목이 없고, 대행사 원천의 광고비는 이미 GOLD.FACT_AD_PERFORMANCE.AD_COST 로 일 grain 배선돼 있다. 🔴 광고비를 이 컬럼으로 묻지 말 것 — 정본은 SERVING.SV_AD.TOTAL_AD_COST(base GOLD.WIDE_AD_COMBINED)다. 🔴 예산과 같은 표에 합산하지 말 것(원천·grain 이 다르고 광고 팩트와 이중계상이 된다 · 순서9-K 표 분리 근거). ⚠️ 종전 문안의 「원천 자체가 비어 있다 · 대행사가 항목을 보고하지 않는다」는 거짓이었다(경위·규모는 이슈원장 §O175).</td>
+          <td>광고비(원) 🔴🔴 폐기 슬롯이다 — 의도적 영구 NULL(외부 입고 대기가 아니다). 예산 원장에는 광고비 예산항목이 없고, 대행사 원천의 광고비는 이미 GOLD.FACT_AD_PERFORMANCE.AD_COST 로 일 grain 배선돼 있다. 🔴 광고비를 이 컬럼으로 묻지 말 것 — 정본은 SERVING.SV_AD.TOTAL_AD_COST(base GOLD.WIDE_AD_COMBINED)다. 🔴 예산과 같은 표에 합산하지 말 것(원천·grain 이 다르고 광고 팩트와 이중계상이 된다).</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -723,6 +768,24 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>EXEC_DIRECT_MNYRS_1</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>직접모금비1(원천 DIRECT_MNYRS_YN_1=Y) 원장행의 집행액(원) — 🔴 화면·답변에는 「직접모금비1」 이름 그대로 표시하고 직접모금비2 와 나란히 보여준다(현업 회신 42). 하나를 「모금성비용」으로 부르지 않는다. 부분집합이며 EXEC_BUDGET_ERP 이하</td>
+        </tr>
+        <tr>
+          <td><code>EXEC_DIRECT_MNYRS_2</code></td>
+          <td><code>NUMBER(18,2)</code></td>
+          <td></td>
+          <td>직접모금비2(원천 DIRECT_MNYRS_YN_2=Y) 원장행의 집행액(원) — 🔴 모금성비용 **후보 B**(판정 중립 · YN_1 을 포함하는 더 넓은 범위로 보인다). 현업 회신 전이다(문서20 -009)</td>
+        </tr>
+        <tr>
+          <td><code>DVLP_INBOUND_PATH</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>개발 유입경로(ERP 원천 DVLP_INBOUND_PATH 그대로 · 퇴화 차원 · 2026-10-02). 실측 값 7종(디지털·방송·재송출·영상광고·뉴미디어·모금시스템·콜개발). 🔴 NULL = ERP 원장행에 유입경로가 기재되지 않은 예산(개발 비용이 아닌 과목이 대부분 · 집행액 0) — 창작 라벨로 채우지 않는다. 🔴 grain 키의 일부다 — 같은 월·세세목에 경로가 2~3종 있다</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -734,42 +797,53 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_BUDGET: 예산 팩트 (SILVER.ERP_BUDGET 월별 언피벗 → MONTH×BUDGET_ITEM), 순서9-C 신설.
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 예산 팩트 (SILVER.ERP_BUDGET 월별 언피벗 → MONTH×BUDGET_ITEM), 순서9-C 신설.
+-- Target     : GOLD.FACT_BUDGET (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref ERP_BUDGET
+-- Issue      : DEC-57, O175, O93, O240 외 8
+-- =============================================================================
+-- FACT_BUDGET: 예산 팩트 (SILVER.ERP_BUDGET 월별 언피벗 → MONTH×BUDGET_ITEM), 순서9-C 신설.
 -- 보수 매핑(재무 오귀속 방지): EXEC_BUDGET_ERP=EXEC_AMT · PLAN_BUDGET_MONTH=YEAR_BUDGET_AMT(월 편성) 만 확정.
 --   ORG_SK=0: ERP_BUDGET 원장에 조직 귀속 없음(원천 grain=예산과목×월) → Unknown 라우팅.
 --   CAMPAIGN_SK=0·SPONSORSHIP_SK=NULL: 원천 연결 없음.
---   NULL(원천 부재/미해소): EXEC_BUDGET_EST(추정집행)·FUNDRAISING_COST(E-1 원천부재).
--- 🔴 [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
+--   NULL: EXEC_BUDGET_EST(추정집행 미산출) · FUNDRAISING_COST(DEC-57 · 하나로 정하지 않음 · 정본 = EXEC_DIRECT_MNYRS_1·2).
+-- WARN: [2026-09-21 O175] `AD_COST` 는 **폐기 슬롯이다**(의도적 영구 NULL) — 종전 주석의
 --    *&quot;E-4 원천부재&quot;* 는 **거짓이었다**. 대행사 원천 3종에 광고비가 전량 실재하고
 --    이미 `GOLD.FACT_AD_PERFORMANCE.AD_COST` 로 일 grain 배선돼 있다(원천 합 일치).
---    ⚠️ 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
+--    WARN: 여기에 광고비를 넣지 말 것 — 예산 원장에는 광고비 예산항목이 없어
 --    `BUDGET_ITEM_SK` 귀속 근거가 없고, 광고 팩트와 이중계상이 된다.
 --    소비 안내: 광고비 정본 = `SERVING.SV_AD.TOTAL_AD_COST`(base `GOLD.WIDE_AD_COMBINED`).
--- 🔴 [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
+-- WARN: [2026-08-20 O93] `PLAN_BUDGET_YEAR` 는 **의도적으로 NULL 이다** — 종전 주석의
 --    *&quot;추경 CHN·조정 ADJ 는 GOLD 슬롯 부재 → 매핑확인 TODO&quot;* 는 해소됐다.
 --    원장의 연 총액 4종(편성·추경·조정·집행)은 **`FACT_BUDGET_YEARLY`(연 grain)** 로 분리했다.
---    ⚠️ 여기에 연값을 넣지 말 것 — 이 팩트는 월 grain 이라 12개월에 복제되고 `SUM()` 이 12배가 된다.
+--    WARN: 여기에 연값을 넣지 말 것 — 이 팩트는 월 grain 이라 12개월에 복제되고 `SUM()` 이 12배가 된다.
 --    소비 안내: 연 편성 = `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` · 월 편성 = 아래 `PLAN_BUDGET_MONTH`.
 {{ config(
     tags=['gold_pending']
 ) }}
 
 with b as (
+    --  [2026-10-22 O258] 차수 순번 = seed MAP_BUDGET_PROCEDURE(라벨 하드코딩 제거 · 연사업 1 · 추가경정 2 = 종전과 동일).
+    --   변경 1 = 표기 `추경`(SILVER accepted 허용 · 현재 0행)도 2(종전 0) — 같은 차수를 다른 표기로 받는다.
+    --   WARN: 매핑에 없는 원천 라벨은 PRCD_SEQ 0(종전 ELSE 0 과 같다) · tests/warn_map_coverage_budget_procedure 가 알린다.
     select
-        *,
-        case BUDGET_PROCEDURE
-            when '추가경정' then 2
-            when '연사업' then 1
-            else 0
-        end as PRCD_SEQ
-    from {{ ref('ERP_BUDGET') }}
+        b0.*,
+        COALESCE(m.PRCD_SEQ, 0) as PRCD_SEQ
+    from {{ ref('ERP_BUDGET') }} b0
+    left join {{ ref('MAP_BUDGET_PROCEDURE') }} m on m.SRC_LABEL = b0.BUDGET_PROCEDURE
 ),
 ranked as (
+    --  [O240 · O245 문안 정정] FACT_BUDGET_YEARLY 와 같은 차수 규칙 = 편성액이 있는 차수 중 최신(추경 편성 데이터가 없는 연도는 연사업)
     select
         *,
-        dense_rank() over (partition by BUDGET_YEAR order by PRCD_SEQ desc) as rnk
-    from b
+        dense_rank() over (partition by BUDGET_YEAR
+                           order by IFF(PRCD_PLAN_TOT &gt; 0, 1, 0) desc, PRCD_SEQ desc) as rnk
+    from (
+        select b.*, SUM(YEAR_BUDGET_AMT) over (partition by BUDGET_YEAR, BUDGET_PROCEDURE) as PRCD_PLAN_TOT
+        from b
+    )
 )
 
 select
@@ -780,19 +854,31 @@ select
     0                                     as CAMPAIGN_SK,       -- 원천 연결 없음
     CAST(NULL AS NUMBER(38,0))            as SPONSORSHIP_SK,
     SUM(YEAR_BUDGET_AMT)                  as PLAN_BUDGET_MONTH, -- 월 편성예산
-    -- 🔴 [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍 — O96 판정(§7-B A군) 집행.
+    -- WARN: [2026-09-01 O130] `PLAN_BUDGET_YEAR` 드랍 — O96 판정(§7-B A군) 집행.
     --    연값은 `FACT_BUDGET_YEARLY.PLAN_BUDGET_YEAR` 로 이미 분리돼 있어 이 컬럼은 항상 NULL이었다.
     SUM(EXEC_AMT)                         as EXEC_BUDGET_ERP,   -- ERP 집행
     CAST(NULL AS NUMBER(18,2))            as EXEC_BUDGET_EST,   -- 추정집행 미산출
-    CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- E-1 원천부재
+    -- WARN: [2026-10-12 O216-E] FUNDRAISING_COST 는 **의도적 NULL** 이다 — 현업 회신 42(DEC-57 · 문서30 -017.md:44)
+    --   「모금성비용은 하나로 정하지 않는다 · 직접모금비1·2 를 이름 그대로 나란히」. 정본 = 아래 EXEC_DIRECT_MNYRS_1·2.
+    --   WARN: 여기에 YN_1/YN_2 중 하나를 넣지 말 것(O216-E 가 한 번 넣었다가 되돌렸다).
+    CAST(NULL AS NUMBER(18,2))            as FUNDRAISING_COST,  -- DEC-57 · 정본 = EXEC_DIRECT_MNYRS_1·2
     CAST(NULL AS NUMBER(18,2))            as AD_COST,           -- 폐기 슬롯(O175) · 정본=FACT_AD_PERFORMANCE
-    {{ gold_meta('ERP') }}
+    {{ gold_meta('ERP') }},
+    --  [2026-09-30 O190] E-1 선배선 — 모금성비용 후보 2종(판정 중립 · 문서20 -009 회신 전). grain 불변(측정값).
+    --   WARN: 플래그를 grain 에 넣지 않는다 — warn_fact_budget_grain(error) 이 (MONTH_KEY, BUDGET_ITEM_SK, DVLP_INBOUND_PATH) 유일을 강제한다(O198 확장).
+    SUM(IFF(DIRECT_MNYRS_YN_1 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_1,
+    SUM(IFF(DIRECT_MNYRS_YN_2 = 'Y', EXEC_AMT, 0))  as EXEC_DIRECT_MNYRS_2,
+    --  [2026-10-02 O198 · DEC-60] 개발 유입경로 = 퇴화 차원 · grain 키 편입(월×세세목 안에서 2~3종 · 실측 336/2,652 grain).
+    --   (MONTH_KEY, BUDGET_ITEM_DK, BUDGET_PROCEDURE, DVLP_INBOUND_PATH) = 원천 원장 grain 과 일치(3,096 = 3,096) ⇒ 합계 불변.
+    --   NULL 은 NULL 로 둔다(R2-7 · 원장에 경로 미기재).
+    DVLP_INBOUND_PATH                     as DVLP_INBOUND_PATH
 from ranked
 where rnk = 1
 group by
     COALESCE({{ month_key_clamp('TRY_TO_NUMBER(MONTH_KEY)') }}, 0),
     {{ gold_sk(['BUDGET_ITEM_DK']) }},
-    BUDGET_PROCEDURE
+    BUDGET_PROCEDURE,
+    DVLP_INBOUND_PATH
 </code></pre>
           </div>
         </details>

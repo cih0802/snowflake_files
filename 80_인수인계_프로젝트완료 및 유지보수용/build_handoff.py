@@ -24,7 +24,10 @@ ROOT = OUT.parent
 
 # 공통 제외 (경로 세그먼트 또는 파일명 glob)
 EXCLUDE = ["_archive", "__pycache__", "*.pyc", "target", "logs", ".user.yml",
-           "profiles.yml", ".DS_Store"]
+           "profiles.yml", ".DS_Store",
+           # 🆕 [2026-10-27] 계정별 원시 캡처 csv(30_output_share/_ENV · 290여 개) — 재구축에 불필요한 증거.
+           #   판정 결과는 12_운영계_실측_<계정>.md 에 들어 있고, 원본은 워크스페이스 원천에 남는다.
+           "_ENV"]
 
 # (서브폴더, 원본 경로 또는 glob(ROOT 기준), 설명)
 # 디렉터리를 지정하면 하위 전체를 원래 구조대로 복사한다.

@@ -7,7 +7,7 @@
   <title>DIM_MONTH - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MONTH",
     "table": "DIM_MONTH",
     "domain": "COMMON / 공통 기준",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item active"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -450,8 +476,8 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
-          <span class="badge badge-domain">BRONZE 원천: 0개</span>
-          <span class="badge badge-domain">SILVER 모델: 0개</span>
+          <span class="badge badge-domain">BRONZE 원천: 1개</span>
+          <span class="badge badge-domain">SILVER 모델: 1개</span>
           <span class="badge badge-domain">컬럼 수: 8개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>월 차원 — DIM_DATE 의 월 축 사영(1행 = 1개월). 월 팩트(FMM·FBD·FTG_D·FTG_B)를 일 grain 인 DIM_DATE 에 직접 조인하면 월당 일수만큼 팬아웃하므로 월팩트의 시간축은 반드시 이 차원을 쓴다. [O53] 신설 — 종전 SERVING.DIM_MONTH helper 뷰를 GOLD 로 올렸다. ⚠️컬럼 문안 정본 = 06_DDL.sql.</p>
@@ -470,29 +496,37 @@ flowchart LR
   classDef silver fill:#d1fae5,stroke:#059669,stroke-width:1px,color:#065f46;
   classDef gold fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af;
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
+  subgraph BRONZE [1. BRONZE 원천]
+    B_bronze_crm_ref_TM_CM_SCHDUL_MNG["TM_CM_SCHDUL_MNG"]:::bronze
+  end
+  subgraph SILVER [2. SILVER 정제/가공]
+    S_CRM_HOLIDAY["CRM_HOLIDAY"]:::silver
+  end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_MONTH["★ DIM_MONTH<br/>월 차원 — DIM_DATE 의 월 축 사영("]:::target
     G_DIM_DATE["DIM_DATE<br/>날짜 차원. [Grain: DATE_"]:::gold
   end
+  B_bronze_crm_ref_TM_CM_SCHDUL_MNG --> S_CRM_HOLIDAY
   G_DIM_DATE --> G_DIM_MONTH
+  S_CRM_HOLIDAY --> G_DIM_DATE
           </pre>
         </div>
 
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (0개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (1개)
             </div>
             <ul class="flow-step-list">
-<li>직접 참조 원천 없음 (생성 쿼리)</li>
+<li><b>bronze_crm_ref.TM_CM_SCHDUL_MNG</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (0개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (1개)
             </div>
             <ul class="flow-step-list">
-<li>직접 참조 모델 없음</li>
+<li><b>CRM_HOLIDAY</b>: </li>
             </ul>
           </div>
         </div>
@@ -516,12 +550,18 @@ erDiagram
     string MONTH_KEY FK
     string DW_BATCH_ID
   }
+  FACT_AD_INFLOW_ALLOC {
+    string MKTG_CAMPAIGN_SK FK
+    string MONTH_KEY FK
+    string DW_BATCH_ID
+  }
   FACT_BUDGET {
     string MONTH_KEY FK
     string BUDGET_ITEM_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
   }
   FACT_MEMBER_DEV_ACHIEVEMENT {
@@ -557,6 +597,12 @@ erDiagram
     string DSCNTC_MONTH_KEY FK
     string DW_BATCH_ID
   }
+  FACT_PAYMENT_BILLING_STATUS {
+    string MONTH_KEY FK
+    string SPONSORSHIP_SK FK
+    string CAMPAIGN_SK FK
+    string DW_BATCH_ID
+  }
   FACT_TARGET_MEMBER_DEV {
     string MONTH_KEY FK
     string ORG_SK FK
@@ -575,9 +621,11 @@ erDiagram
   DIM_MONTH ||..o{ FACT_BUDGET : "MONTH_KEY"
   DIM_MONTH ||..o{ FACT_MEMBER_DEV_ACHIEVEMENT : "MONTH_KEY"
   DIM_MONTH ||..o{ FACT_MEMBER_FEE : "MONTH_KEY"
+  DIM_MONTH ||..o{ FACT_PAYMENT_BILLING_STATUS : "MONTH_KEY"
   DIM_MONTH ||..o{ FACT_MEMBER_SPONSORSHIP_SPAN : "START_MONTH_KEY"
   DIM_MONTH ||..o{ FACT_MEMBER_SPONSORSHIP_SPAN : "DSCNTC_MONTH_KEY"
   DIM_MONTH ||..o{ FACT_TARGET_PROJECT : "MONTH_KEY"
+  DIM_MONTH ||..o{ FACT_AD_INFLOW_ALLOC : "MONTH_KEY"
           </pre>
         </div>
 
@@ -651,6 +699,15 @@ erDiagram
           <td>월 conform 축 (fan-out 방지)</td>
         </tr>
         <tr>
+          <td><code>FACT_PAYMENT_BILLING_STATUS</code></td>
+          <td><code>MONTH_KEY</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
+          <td><code>MONTH_KEY</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>월 conform 축 (fan-out 방지)</td>
+        </tr>
+        <tr>
           <td><code>FACT_MEMBER_SPONSORSHIP_SPAN</code></td>
           <td><code>START_MONTH_KEY</code></td>
           <td>➔</td>
@@ -670,6 +727,15 @@ erDiagram
         </tr>
         <tr>
           <td><code>FACT_TARGET_PROJECT</code></td>
+          <td><code>MONTH_KEY</code></td>
+          <td>➔</td>
+          <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
+          <td><code>MONTH_KEY</code></td>
+          <td><span class="badge badge-domain">Logical Conform</span></td>
+          <td>월 conform 축 (fan-out 방지)</td>
+        </tr>
+        <tr>
+          <td><code>FACT_AD_INFLOW_ALLOC</code></td>
           <td><code>MONTH_KEY</code></td>
           <td>➔</td>
           <td><a href="DIM_MONTH.html"><code>DIM_MONTH</code></a></td>
@@ -756,26 +822,32 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_MONTH.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_MONTH: 월 차원 (DIM_DATE 의 월 축 사영) [2026-08-10 O53 신설]
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 월 차원 (DIM_DATE 의 월 축 사영) [2026-08-10 O53 신설]
+-- Target     : GOLD.DIM_MONTH (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref DIM_DATE
+-- Issue      : O53, DEC-34
+-- =============================================================================
+-- DIM_MONTH: 월 차원 (DIM_DATE 의 월 축 사영) [2026-08-10 O53 신설]
 --
--- 🔴 왜 필요한가 (fan-out 차단)
+-- WARN: 왜 필요한가 (fan-out 차단)
 --   월 팩트(FACT_MEMBER_MONTHLY·FACT_BUDGET·FACT_TARGET_MEMBER_DEV·FACT_TARGET_PROJECT)의 시간축은 `MONTH_KEY` 다.
 --   그런데 `DIM_DATE` 는 **일 grain**(캘린더 전량)이라 월팩트를 거기에 직접 조인하면 한 달이 그 달의
 --   일수만큼 복제된다 — 금액·건수가 조용히 28~31배로 부푼다. 에러도 경고도 없다.
 --   ⇒ 월 축 전용 차원을 두고 월팩트는 **반드시 이쪽**으로 조인한다(SV 설계 원칙10·R1).
 --
--- 🔴 왜 GOLD 인가 (종전에는 SERVING 에만 있었다)
+-- WARN: 왜 GOLD 인가 (종전에는 SERVING 에만 있었다)
 --   `SERVING.DIM_MONTH` helper 뷰가 같은 일을 하고 있었으나, SV 가 GOLD 만 참조하도록 계층을 정리했다
 --   (DEC-34 · 사용자 결정 2026-08-10). SERVING helper 3종 정리는 로드맵 7단계 소관이다.
 --
--- ⚠️ 정의를 여기서 만들지 않는다 — `DIM_DATE` 의 사영일 뿐이다. 연·월·분기 산식을 이 모델에서
+-- WARN: 정의를 여기서 만들지 않는다 — `DIM_DATE` 의 사영일 뿐이다. 연·월·분기 산식을 이 모델에서
 --   다시 계산하면 두 차원이 갈라진다(P85). `DIM_DATE` 의 컬럼을 그대로 가져온다.
 --
--- ⚠️ 구조·COMMENT 소유주 = `03_top-down_gold/06_DDL.sql`(생성기 `scripts/gen_o53_gold_ddl.py`).
+-- WARN: 구조·COMMENT 소유주 = `03_top-down_gold/06_DDL.sql`(생성기 `scripts/gen_o53_gold_ddl.py`).
 --   SELECT 컬럼·순서를 바꾸면 그 블록을 동시에 재생성할 것.
 --
--- ⚠️ 머티리얼라이제이션 = `incremental` + `append` + `pre_hook TRUNCATE`.
+-- WARN: 머티리얼라이제이션 = `incremental` + `append` + `pre_hook TRUNCATE`.
 --   완전 재산출 차원이라 merge 를 쓰면 캘린더 범위 축소 시 구 월이 잔존한다(문서50 §300 R1 · P131).
 {{ config(
     materialized='incremental',

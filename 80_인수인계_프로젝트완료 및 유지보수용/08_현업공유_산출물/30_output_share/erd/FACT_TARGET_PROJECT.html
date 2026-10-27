@@ -7,7 +7,7 @@
   <title>FACT_TARGET_PROJECT - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_TARGET_PROJECT",
     "table": "FACT_TARGET_PROJECT",
     "domain": "COMMON / 공통 기준",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item active"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -442,7 +468,7 @@
               <span>FACT_TARGET_PROJECT</span>
               <span class="badge badge-fact">팩트 (Fact)</span>
             </h1>
-            <div class="korean-title">사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20). 🔴🔴 **현재 0행**이다 — CRM 신규 목표 테이블 **입고 대기**(문서40 `E-6`)이며 상류 `CRM_BIZ_TARGET` 은 `source()` 를 참조하지 않는 빈 스캐폴드(`WHERE 1=0`)다. ⇒ 🔴 **아래 테스트는 지금 공허하게 통과한다.** 🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒ 입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**. ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`</div>
+            <div class="korean-title">~~현재 0행 · 입고 대기 E-6 · 아래 테스트는 공허하게 통과~~ — 이제 실데이터로 검증된다.) 🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒ 입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**. ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -450,11 +476,11 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
-          <span class="badge badge-domain">BRONZE 원천: 6개</span>
-          <span class="badge badge-domain">SILVER 모델: 6개</span>
-          <span class="badge badge-domain">컬럼 수: 12개</span>
+          <span class="badge badge-domain">BRONZE 원천: 7개</span>
+          <span class="badge badge-domain">SILVER 모델: 9개</span>
+          <span class="badge badge-domain">컬럼 수: 19개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK. 원천 = **CRM 확정**(2026-07-20). 🔴🔴 **현재 0행**이다 — CRM 신규 목표 테이블 **입고 대기**(문서40 `E-6`)이며 상류 `CRM_BIZ_TARGET` 은 `source()` 를 참조하지 않는 빈 스캐폴드(`WHERE 1=0`)다. ⇒ 🔴 **아래 테스트는 지금 공허하게 통과한다.** 🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒ 입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**. ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>사업/프로젝트목표 팩트 — grain = MONTH_KEY × ORG_SK × SPONSORSHIP_SK × CAMPAIGN_SK × GOAL_TYPE_NM × CPR_DIV_NM. 원천 = **CRM 확정**(2026-07-20). 🟢 [2026-09-29 O188] **입고 배선** — `BRONZE_CRM.TM_CM_MBER_DVLP_GOAL_DIV`(월 12컬럼 → 월 행). 🔴🔴 `GOAL_TYPE_NM`(9종 · 단위 상이 · O190)으로 **반드시 필터**하라 — 후원사업·회원개발은 같은 개발 목표의 다른 분해다(문서20 N-24 · 규모는 이슈원장). 🔴 조직 이름 조인은 **유일한 부서명만** 매칭한다(DIM_ORG.DEPARTMENT 중복 4명 → SK=0). (종전 문안: ~~현재 0행 · 입고 대기 E-6 · 아래 테스트는 공허하게 통과~~ — 이제 실데이터로 검증된다.) 🔴 조인은 **이름 기반**이다(ORG=본부/지부 ↔ `DIM_ORG.DEPARTMENT`=부서 grain 불일치 가능 → 미매칭 Unknown(0)) ⇒ 입고 시 **조직 이름 크로스워크 확보 전까지 조직별 분해를 신뢰하지 마라**. ⚠️ 추경 다버전(1차·2차) 공존 시 `SUPP_GOAL_CNT` SUM 은 근사다. 누계 2종은 물리 NULL(SV running sum 파생 · P7). ⚠️ 컬럼 문안 정본 = `03_top-down_gold/06_DDL.sql`.</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -477,6 +503,7 @@ flowchart LR
     B_bronze_crm_TM_CM_CMPGN_MNG["TM_CM_CMPGN_MNG"]:::bronze
     B_bronze_crm_TM_CM_DEPT_INFO["TM_CM_DEPT_INFO"]:::bronze
     B_bronze_crm_TM_CM_SPNSR_BSNS_INFO["TM_CM_SPNSR_BSNS_INFO"]:::bronze
+    B_bronze_crm_ref_TM_CM_MBER_DVLP_GOAL_DIV["TM_CM_MBER_DVLP_GOAL_DIV"]:::bronze
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_BIZ_TARGET["CRM_BIZ_TARGET"]:::silver
@@ -484,10 +511,13 @@ flowchart LR
     S_CRM_CODE["CRM_CODE"]:::silver
     S_CRM_MARKETING_CAMPAIGN["CRM_MARKETING_CAMPAIGN<br/>마케팅캠페인 마스터(1행 = 1마케팅"]:::silver
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_ORG_CLEAN["CRM_ORG_CLEAN"]:::silver
     S_CRM_SPONSORSHIP["CRM_SPONSORSHIP"]:::silver
+    S_MAP_BUDGET_PROCEDURE["MAP_BUDGET_PROCEDURE"]:::silver
+    S_MAP_SPONSORSHIP_GROUP4["MAP_SPONSORSHIP_GROUP4"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
-    G_FACT_TARGET_PROJECT["★ FACT_TARGET_PROJECT<br/>사업/프로젝트목표 팩트 — grain = MO"]:::target
+    G_FACT_TARGET_PROJECT["★ FACT_TARGET_PROJECT<br/>~~현재 0행 · 입고 대기 E-6 · 아래 "]:::target
     G_DIM_CAMPAIGN["DIM_CAMPAIGN<br/>캠페인 차원. [Grain: CAMP"]:::gold
     G_DIM_MARKETING_CAMPAIGN["DIM_MARKETING_CAMPAIGN<br/>마케팅캠페인 conformed 차원("]:::gold
     G_DIM_ORG["DIM_ORG<br/>조직/부서 차원. [Grain: OR"]:::gold
@@ -500,6 +530,7 @@ flowchart LR
   B_bronze_crm_TM_CM_CMPGN_MNG --> S_CRM_CAMPAIGN
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
   B_bronze_crm_TM_CM_SPNSR_BSNS_INFO --> S_CRM_SPONSORSHIP
+  B_bronze_crm_ref_TM_CM_MBER_DVLP_GOAL_DIV --> S_CRM_BIZ_TARGET
   G_DIM_CAMPAIGN --> G_FACT_TARGET_PROJECT
   G_DIM_ORG --> G_FACT_TARGET_PROJECT
   G_DIM_SPONSORSHIP --> G_FACT_TARGET_PROJECT
@@ -509,15 +540,18 @@ flowchart LR
   S_CRM_CODE --> G_DIM_SPONSORSHIP
   S_CRM_CODE --> S_CRM_CAMPAIGN
   S_CRM_MARKETING_CAMPAIGN --> G_DIM_MARKETING_CAMPAIGN
-  S_CRM_ORG --> G_DIM_ORG
+  S_CRM_ORG --> S_CRM_ORG_CLEAN
+  S_CRM_ORG_CLEAN --> G_DIM_ORG
   S_CRM_SPONSORSHIP --> G_DIM_SPONSORSHIP
+  S_MAP_BUDGET_PROCEDURE --> S_CRM_BIZ_TARGET
+  S_MAP_SPONSORSHIP_GROUP4 --> G_DIM_SPONSORSHIP
           </pre>
         </div>
 
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (6개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (7개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
@@ -526,11 +560,12 @@ flowchart LR
 <li><b>bronze_crm.TM_CM_CMPGN_MNG</b>: </li>
 <li><b>bronze_crm.TM_CM_DEPT_INFO</b>: </li>
 <li><b>bronze_crm.TM_CM_SPNSR_BSNS_INFO</b>: </li>
+<li><b>bronze_crm_ref.TM_CM_MBER_DVLP_GOAL_DIV</b>: </li>
             </ul>
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (6개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (9개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_BIZ_TARGET</b>: </li>
@@ -538,7 +573,10 @@ flowchart LR
 <li><b>CRM_CODE</b>: </li>
 <li><b>CRM_MARKETING_CAMPAIGN</b>: 마케팅캠페인 마스터(1행 = 1마케팅캠페인) — AGENCY(광고) ↔ CRM(개발실적)을 잇는 유일한 conformed 축. 🔴 `USE_YN` 으로 폐지분을 **제외하지 않는다** — 폐지된 캠페인도 과거 실적에 붙는다. 🔴 광고↔개발 결합은 **마케팅캠페인 grain 에서만** 성립한다(개발캠페인 grain 으로 내리면 광고비가 복제된다).</li>
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_ORG_CLEAN</b>: </li>
 <li><b>CRM_SPONSORSHIP</b>: </li>
+<li><b>MAP_BUDGET_PROCEDURE</b>: 정제 모델</li>
+<li><b>MAP_SPONSORSHIP_GROUP4</b>: 정제 모델</li>
             </ul>
           </div>
         </div>
@@ -558,6 +596,7 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_MONTH {
     string MONTH_KEY FK
@@ -565,6 +604,8 @@ erDiagram
   }
   DIM_ORG {
     string ORG_SK PK
+    string ACMSLT_DIV_GROUP_ID
+    string ACMSLT_DIV_ID
     string ORG_DK
     string ACMSLT_UPPER_DEPT_ID
     string DW_BATCH_ID
@@ -662,7 +703,7 @@ erDiagram
           <td><code>MONTH_KEY</code></td>
           <td><code>NUMBER(6,0)</code></td>
           <td><span class="badge badge-wide">CONFORM</span></td>
-          <td></td>
+          <td>월 conform 키 YYYYMM.</td>
         </tr>
         <tr>
           <td><code>ORG_SK</code></td>
@@ -680,13 +721,13 @@ erDiagram
           <td><code>CAMPAIGN_SK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-fact">FK</span></td>
-          <td></td>
+          <td>캠페인 (FK→DIM_CAMPAIGN)</td>
         </tr>
         <tr>
           <td><code>ANNUAL_GOAL_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>연사업목표(건) (#152)</td>
+          <td>당초 목표값(#152). 🔴 단위는 GOAL_TYPE_NM 에 따른다(건·명·원·비율) — 유형 필터 없이 합산 금지</td>
         </tr>
         <tr>
           <td><code>SUPP_GOAL_CNT</code></td>
@@ -730,6 +771,48 @@ erDiagram
           <td></td>
           <td>적재 배치 식별자 = dbt invocation_id (공통감사)</td>
         </tr>
+        <tr>
+          <td><code>GOAL_TYPE_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>목표 지표 유형 원천 표기 그대로(9종): 건 = 후원사업·회원개발 / 명 = 월말활동회원 / 원 = 정기회비 / 비율 = 후원사업활동율·신규기존활동율·후원사업납입율·신규기존납입율·신규기존누계납입율. 🔴 유형마다 단위가 달라 섞어 합산하지 말 것 · 후원사업과 회원개발은 같은 개발 목표의 다른 분해</td>
+        </tr>
+        <tr>
+          <td><code>CPR_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>법인구분 (사단/사복)</td>
+        </tr>
+        <tr>
+          <td><code>SRC_TEAM_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 목표표의 팀명 (CRM_BIZ_TARGET.ORG_NM 그대로)</td>
+        </tr>
+        <tr>
+          <td><code>SRC_SPONSOR_BIZ_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>원천 후원사업 표기 그대로 — 후원사업 유형 = 사업명 · 회원개발 유형 = 4그룹(국내/결연/해외프로젝트/기타)</td>
+        </tr>
+        <tr>
+          <td><code>NEW_OLD_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>신규/기존 구분 원천 표기. 🔴 비율 유형에는 소계 행(합계·신규합계)이 있다 — 신규/기존과 함께 합산하면 이중계상. 회원개발 유형은 NULL</td>
+        </tr>
+        <tr>
+          <td><code>ORG_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>조직 구분명 (원천 그대로)</td>
+        </tr>
+        <tr>
+          <td><code>DTL_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>세부구분 원천 표기(채널 등 · 회원개발 유형만 · 그 외 NULL)</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -741,8 +824,14 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_TARGET_PROJECT.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_TARGET_PROJECT: 프로젝트/사업목표 팩트 (CRM_BIZ_TARGET, 월×조직×후원사업×캠페인)
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 프로젝트/사업목표 팩트 (CRM_BIZ_TARGET, 월×조직×후원사업×캠페인)
+-- Target     : GOLD.FACT_TARGET_PROJECT (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_BIZ_TARGET, ref DIM_ORG, ref DIM_SPONSORSHIP, ref DIM_CAMPAIGN
+-- Issue      : O188, O188-E, O190
+-- =============================================================================
+-- FACT_TARGET_PROJECT: 프로젝트/사업목표 팩트 (CRM_BIZ_TARGET, 월×조직×후원사업×캠페인)
 {{ config(
     tags=['gold_pending']
 ) }}
@@ -750,26 +839,57 @@ erDiagram
 with t as (
     select * from {{ ref('CRM_BIZ_TARGET') }}
     where COALESCE(TARGET_CNT, 0) &gt; 0
+),
+-- WARN: [2026-09-29 O188] 이름 조인 팬아웃 차단 — `DIM_ORG.DEPARTMENT` 는 유일하지 않다
+--   (실측: 목표 팀명 중 「사회공헌협력팀」 6행 · 「회원참여팀」·「컬쳐콘텐츠팀」·「사회공헌협력팀(사복)」 각 2행).
+--   종전 스캐폴드는 0행이라 드러나지 않았고, 입고 즉시 목표가 최대 **6배** 복제될 뻔했다.
+--   ⇒ 이름이 유일한 부서만 매칭하고 모호한 이름은 SK=0 으로 보낸다(크로스워크 확보 전 · 문서20 N-24).
+--  [2026-09-29 O188-E] 매칭 모집단을 **활성 조직 트리**(`DIM_ORG.IS_ACTIVE_ORG` · 조직표 CSV 규칙)로 좁힌다.
+--    이전 계정 목표 팀명 10종 유일 매칭 = 4 → **7** · 잔여 = 활성 내 동명 `컬쳐콘텐츠팀`(2코드) 1 ·
+--      조직명이 아닌 `지역사회`·`교육기관` 2 ⇒ 셋 다 SK=0 유지(값 창작 금지 · 현업 확인 = 30번 문서).
+org_u as (
+    select DEPARTMENT, ORG_SK
+    from {{ ref('DIM_ORG') }}
+    where IS_ACTIVE_ORG
+    qualify COUNT(*) over (partition by DEPARTMENT) = 1
 )
 
 select
     COALESCE({{ month_key_clamp('TRY_TO_NUMBER(t.MONTH_KEY)') }}, 0)  as MONTH_KEY,
     COALESCE(o.ORG_SK, 0)                          as ORG_SK,
     COALESCE(s.SPONSORSHIP_SK, 0)                  as SPONSORSHIP_SK,
-    c.CAMPAIGN_SK                                  as CAMPAIGN_SK,
+    COALESCE(c.CAMPAIGN_SK, 0)                     as CAMPAIGN_SK,      -- O188: 원천에 캠페인 축 없음 ⇒ 0(not_null 테스트)
+    --  [2026-10-22 O258] TARGET_TYPE 은 원천 라벨이 아니라 seed MAP_BUDGET_PROCEDURE 의 **표준 어휘**(당초/추경)다.
+    --   `LIKE '추경%'` 는 매핑 밖 원문 통과값(예: 추경2차)을 SUPP 로 받는 안전장치 — 새 표기는 seed 에 행을 더한다.
     SUM(CASE WHEN t.TARGET_TYPE = '당초'   THEN t.TARGET_CNT END)  as ANNUAL_GOAL_CNT,
     SUM(CASE WHEN t.TARGET_TYPE LIKE '추경%' THEN t.TARGET_CNT END) as SUPP_GOAL_CNT,
     CAST(NULL AS NUMBER(18,4))                     as ANNUAL_CUM_GOAL_CNT,
     CAST(NULL AS NUMBER(18,4))                     as SUPP_CUM_GOAL_CNT,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    --  [2026-09-29 O188] 원천 입고 배선 · degen 2축(물리 위치 = 맨 끝 · 06_DDL 동기) — grain 에 포함.
+    --   WARN: GOAL_TYPE_NM 을 group by 에서 빼면 9종(O190 · 단위 상이)이 섞이고 후원사업·회원개발이 이중계상된다(N-24).
+    --   WARN: 매칭 실측(목표&gt;0 월행 · 유일 부서만): 조직 연사업 360/820 · 팀 205/440 ·
+    --      후원사업 연사업 594/820 · 팀 0/440 · 합계 348,024 · 348,000 보존(팬아웃 0)
+    --      (팀 유형의 후원사업은 「국내·결연·기타·해외프로젝트」 그룹명이라 사업 차원과 grain 이 다르다 ⇒ SK=0).
+    t.GOAL_TYPE_NM                                 as GOAL_TYPE_NM,
+    t.CPR_DIV_NM                                   as CPR_DIV_NM,
+    --  [2026-09-29 O188-E] 원천 이름 degen 5축 — SV 노출용. 차원 매칭이 안 되는 팀명 3종·팀 유형 후원사업(4그룹)을
+    --   SK=0 으로만 두면 SV 에서 「(미매핑)」 한 덩어리가 된다 ⇒ 원천 표기를 그대로 함께 싣는다(값 창작 0).
+    --   WARN: grain 이 세분될 뿐 합계는 불변(SUM 은 같은 행을 다시 나눌 뿐이다).
+    t.ORG_NM                                       as SRC_TEAM_NM,
+    t.SPONSOR_BIZ_NM                               as SRC_SPONSOR_BIZ_NM,
+    t.NEW_OLD_DIV_NM                               as NEW_OLD_DIV_NM,
+    t.ORG_DIV_NM                                   as ORG_DIV_NM,
+    t.DTL_DIV_NM                                   as DTL_DIV_NM
 from t
-left join {{ ref('DIM_ORG') }} o
+left join org_u o
     on o.DEPARTMENT = t.ORG_NM
 left join {{ ref('DIM_SPONSORSHIP') }} s
     on s.SPONSORSHIP_NAME = t.SPONSOR_BIZ_NM
 left join {{ ref('DIM_CAMPAIGN') }} c
     on c.CAMPAIGN_NAME = t.CAMPAIGN_NM
-group by 1, 2, 3, 4
+group by 1, 2, 3, 4, t.GOAL_TYPE_NM, t.CPR_DIV_NM,
+         t.ORG_NM, t.SPONSOR_BIZ_NM, t.NEW_OLD_DIV_NM, t.ORG_DIV_NM, t.DTL_DIV_NM
 </code></pre>
           </div>
         </details>

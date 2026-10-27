@@ -7,7 +7,7 @@
   <title>DIM_ORG - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_ORG",
     "table": "DIM_ORG",
     "domain": "COMMON / 공통 기준",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item active"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -442,7 +468,7 @@
               <span>DIM_ORG</span>
               <span class="badge badge-dim">차원 (Dimension)</span>
             </h1>
-            <div class="korean-title">ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_MNG → SILVER.CRM_ORG]</div>
+            <div class="korean-title">ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_INFO → SILVER.CRM_ORG]</div>
           </div>
           <div>
             <a href="index.html" style="font-size: 0.85rem;">◀ 전체 목록으로</a>
@@ -451,10 +477,10 @@
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: COMMON / 공통 기준</span>
           <span class="badge badge-domain">BRONZE 원천: 1개</span>
-          <span class="badge badge-domain">SILVER 모델: 1개</span>
-          <span class="badge badge-domain">컬럼 수: 13개</span>
+          <span class="badge badge-domain">SILVER 모델: 2개</span>
+          <span class="badge badge-domain">컬럼 수: 20개</span>
         </div>
-        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>조직/부서 차원. [Grain: ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_MNG → SILVER.CRM_ORG].</p>
+        <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>조직/부서 차원. [Grain: ORG_SK (1행=1부서, SCD1)]. [주의: 과거 소속 이력 미관리(현재 부서 기준)]. [원천: CRM → BRONZE_CRM.TM_CM_DEPT_INFO → SILVER.CRM_ORG].</p>
       </div>
 
       <!-- 1. Pipeline Lineage Diagram -->
@@ -475,12 +501,14 @@ flowchart LR
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_ORG["CRM_ORG"]:::silver
+    S_CRM_ORG_CLEAN["CRM_ORG_CLEAN"]:::silver
   end
   subgraph GOLD [3. GOLD 마트]
     G_DIM_ORG["★ DIM_ORG<br/>ORG_SK (1행=1부서, SCD1)]. ["]:::target
   end
   B_bronze_crm_TM_CM_DEPT_INFO --> S_CRM_ORG
-  S_CRM_ORG --> G_DIM_ORG
+  S_CRM_ORG --> S_CRM_ORG_CLEAN
+  S_CRM_ORG_CLEAN --> G_DIM_ORG
           </pre>
         </div>
 
@@ -495,10 +523,11 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (1개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (2개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_ORG</b>: </li>
+<li><b>CRM_ORG_CLEAN</b>: </li>
             </ul>
           </div>
         </div>
@@ -518,12 +547,19 @@ erDiagram
     string MKTG_CAMPAIGN_SK FK
     string ORG_SK FK
     string DW_BATCH_ID
+    string SPNSR_ENTRPRS_ID
   }
   DIM_ORG {
     string ORG_SK PK
+    string ACMSLT_DIV_GROUP_ID
+    string ACMSLT_DIV_ID
     string ORG_DK
     string ACMSLT_UPPER_DEPT_ID
     string DW_BATCH_ID
+  }
+  DIM_ORG_SUCCESSION {
+    string OLD_ORG_SK PK
+    string CUR_ORG_SK FK
   }
   FACT_BUDGET {
     string MONTH_KEY FK
@@ -531,6 +567,7 @@ erDiagram
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
     string ORG_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
   }
   FACT_BUDGET_YEARLY {
@@ -538,9 +575,11 @@ erDiagram
     string ORG_SK FK
     string CAMPAIGN_SK FK
     string SPONSORSHIP_SK FK
+    string BUDGET_PROCEDURE FK
     string DW_BATCH_ID
   }
   FACT_MEMBER_COHORT {
+    string LAST_STOP_DATE_SK
     string MEMBER_DK PK
     string ACQ_CAMPAIGN_SK FK
     string ACQ_DATE_SK FK
@@ -570,6 +609,8 @@ erDiagram
     string CAMPAIGN_SK FK
     string DW_BATCH_ID
   }
+  DIM_ORG ||--o{ DIM_ORG_SUCCESSION : "OLD_ORG_SK"
+  DIM_ORG ||--o{ DIM_ORG_SUCCESSION : "CUR_ORG_SK"
   DIM_ORG ||--o{ DIM_CAMPAIGN : "ORG_SK"
   DIM_ORG ||--o{ FACT_MEMBER_EVENT : "ORG_SK"
   DIM_ORG ||--o{ FACT_MEMBER_COHORT : "ACQ_ORG_SK"
@@ -595,6 +636,24 @@ erDiagram
               </tr>
             </thead>
             <tbody>
+        <tr>
+          <td><code>DIM_ORG_SUCCESSION</code></td>
+          <td><code>OLD_ORG_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_ORG.html"><code>DIM_ORG</code></a></td>
+          <td><code>ORG_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>DIM_ORG_SUCCESSION</code></td>
+          <td><code>CUR_ORG_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_ORG.html"><code>DIM_ORG</code></a></td>
+          <td><code>ORG_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
         <tr>
           <td><code>DIM_CAMPAIGN</code></td>
           <td><code>ORG_SK</code></td>
@@ -685,6 +744,48 @@ erDiagram
           <td>조직 대리키 (=hash(DEPT_ID), PK)</td>
         </tr>
         <tr>
+          <td><code>IS_ACTIVE_ORG</code></td>
+          <td><code>BOOLEAN</code></td>
+          <td></td>
+          <td>O188-E 활성 조직 트리 소속 — 자기와 모든 상위가 USE_YN='Y' 이고 LAST_UPDT_DT 가 NULL·9999-12-31 아님(조직표 gni_실적부서.csv 규칙)</td>
+        </tr>
+        <tr>
+          <td><code>ORG_PATH</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>O188-E 조직표 부서 경로(UPPER_DEPT_ID 재귀 · 루트 법인 제외)</td>
+        </tr>
+        <tr>
+          <td><code>ORG_LEVEL</code></td>
+          <td><code>NUMBER(38,0)</code></td>
+          <td></td>
+          <td>O188-E 조직 트리 깊이(루트=0)</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_DIV_GROUP_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>O191 실적트리(ACMSLT_UPPER_DEPT_ID) 상위 중 부서코드 접두 ZB 노드 = 본부/지부 구분(본부·지부·시도본부·지부외·협력시설 등) · 자기가 ZB 면 자기 · 도달 못 하면 NULL</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_DIV_GROUP_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>O191 ACMSLT_DIV_GROUP_ID 의 부서명(원천 DEPT_NM)</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_DIV_ID</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>O191 실적트리 상위 중 부서코드 접두 ZC 노드 = 본부/지부 단위(서울·경기1·나눔마케팅본부 등) · 자기가 ZC 면 자기 · 도달 못 하면 NULL · 🔴 DIVISION 은 현업 확인 전까지 NULL 유지</td>
+        </tr>
+        <tr>
+          <td><code>ACMSLT_DIV_NM</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>O191 ACMSLT_DIV_ID 의 부서명(원천 DEPT_NM) · 🔴 같은 이름이 여러 ZB 아래 있다(예: 서울) — 병합 여부 현업 확인 대기</td>
+        </tr>
+        <tr>
           <td><code>ORG_DK</code></td>
           <td><code>NUMBER(38,0)</code></td>
           <td><span class="badge badge-silver">DK</span></td>
@@ -767,19 +868,25 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/dim/DIM_ORG.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- DIM_ORG: 조직 차원 SCD1 (DEPT_ID grain, 안정 SK) — CRM_ORG
--- Co-authored with CoCo
--- ⚠️ SK=hash(DEPT_ID) 안정키(재실행 멱등). DEC-2 SCD1 확정 — 조직 변경이력 소스 없음·as-was org 지표 요구 없음(4개 정의서 검토) → SCD2 예약컬럼(EFFECTIVE_*/IS_CURRENT) 삭제(2026-07-07).
+            <pre><code>-- =============================================================================
+-- Purpose    : 조직 차원 SCD1 (DEPT_ID grain, 안정 SK) — CRM_ORG
+-- Target     : GOLD.DIM_ORG (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref CRM_ORG_CLEAN (O259 · 종전 ref CRM_ORG)
+-- Issue      : DEC-2, DEC-5, O16, O188-E, O259 외 2
+-- =============================================================================
+-- DIM_ORG: 조직 차원 SCD1 (DEPT_ID grain, 안정 SK) — CRM_ORG
+-- WARN: SK=hash(DEPT_ID) 안정키(재실행 멱등). DEC-2 SCD1 확정 — 조직 변경이력 소스 없음·as-was org 지표 요구 없음(4개 정의서 검토) → SCD2 예약컬럼(EFFECTIVE_*/IS_CURRENT) 삭제(2026-07-07).
 --    향후 조직 이력추적 필요 시 별도 변경이력 소스 확보 후 재설계.
 --
--- ✅ CONF-4(2026-07-31, 정본대조 PROC-2): D6 4단(법인&gt;본부/지부&gt;부서&gt;팀) 중 정본 정합은 DEPARTMENT 1축뿐.
+--  CONF-4(2026-07-31, 정본대조 PROC-2): D6 4단(법인&gt;본부/지부&gt;부서&gt;팀) 중 정본 정합은 DEPARTMENT 1축뿐.
 --    부서 트리가 **2개**임을 확인 — 조직트리 UPPER_DEPT_ID(보고계통) vs 실적트리 ACMSLT_UPPER_DEPT_ID(집계계통).
 --      · 레벨 분포: 조직 9/38/351/672/238/6 vs 실적 300/10/72/422/509/1 (441건 상이·573건 동일·NULL 300)
 --      · 실적부서(455) LVL5 집중도: 조직트리 26% vs 실적트리 **98.0%** → DEC-5 &quot;5th=실적부서&quot;는 실적트리 기준으로 성립
 --
 --    ① DIVISION = **실적지부로 재정의**. 정본 용어사전 430(실적 지부 명)·431(실적지부(본부/지부) 구분).
 --       정본 보고서는 &quot;본부/지부&quot; 단독 사용 0건이고 &quot;실적지부(본부/지부)&quot;(05:275)·&quot;실적지부&quot;(05:311)로만 쓴다.
---       🔴 산출 규칙 미확정 → 값 NULL 유지. 명칭기반 최근접 본부/지부 도달률 418/455=91.9%(미도달 37)이고
+--       WARN: 산출 규칙 미확정 → 값 NULL 유지. 명칭기반 최근접 본부/지부 도달률 418/455=91.9%(미도달 37)이고
 --          명칭 판정은 범주오류 위험(O16 자체 오판 이력) → 규칙 확정 전 채우지 않는다.
 --    ② TEAM = **보류**. 정본 근거는 지표 #152~155(연사업/추경 목표) &quot;각 팀별&quot; 뿐이고 용어사전·회원보고서·
 --       마케팅보고서 실질 0건(검출 3건은 전부 &quot;원천팀/원본팀&quot; 편집주석). 원천 CRM_BIZ_TARGET 미입고(E-6) → 소비처 부재.
@@ -788,36 +895,53 @@ erDiagram
 --       (ZA 구조노드 587부서가 법인 루트 미연결 + 직위 B000007 이사장 + 회원0 재단법인 2개 혼재).
 --       법인 정본 원천 = **회원 속성 CPR_DIV_CD**(CM019: I=사단/S=사복/A=통합) → DIM_MEMBER/팩트 degen 배속 판단 필요.
 --
--- 🟢 원천 계통 3컬럼을 **원천 그대로**(추론 0) 노출 — 후속 규칙 확정 시 즉시 활용.
--- 🔴 USE_YN='N' 764개(58.1%) 제외 금지(O16): 팩트가 대량 참조(ACT_DEPT_CD 미사용 156부서에 410,506명 ·
+--  원천 계통 3컬럼을 **원천 그대로**(추론 0) 노출 — 후속 규칙 확정 시 즉시 활용.
+-- WARN: USE_YN='N' 764개(58.1%) 제외 금지(O16): 팩트가 대량 참조(ACT_DEPT_CD 미사용 156부서에 410,506명 ·
 --    AMT_CHANGE 미사용 189부서에 100,931건) + 필터 시 트리 파편화(LVL1 9→42, 총 1,314→550). 1,314행 전체 유지.
+--
+--  [2026-09-29 O188-E] 활성 조직 트리 3컬럼 — 정본 = `90_provided_definition/gni_실적부서.csv`(현업 제공 조직표).
+--    규칙(하드코딩 0) = 자기와 **모든 상위**(UPPER_DEPT_ID)가 USE_YN='Y' 이고 LAST_UPDT_DT 가 NULL·9999-12-31 이 아님.
+--     이전 계정 = 223노드 ⊇ CSV 222 · 경로 222/222 일치 · 초과 = B000006 해외파견(사용자 결정 O188-E: 포함).
+--    WARN: 행을 지우지 않는다(위 O16) — 판정은 IS_ACTIVE_ORG 플래그로만 한다.
 {{ config(
     materialized='incremental',
     unique_key='ORG_SK',
     tags=['gold_pending']
 ) }}
 
+--  [2026-10-23 O259] 활성 트리·ZB/ZC 판정 규칙은 SILVER.CRM_ORG_CLEAN 으로 이관했다(규칙 정본 = 그 파일).
+--    이 모델은 SK·placeholder 컬럼만 붙인다 — 출력 컬럼·순서 무변경(신구 MINUS 0 이 검증 기준).
+--    O191 · F-1 WARN 유지: DIVISION(실적지부)은 ACMSLT_DIV_* 로 채우지 않는다(`41_현업회신_F-1` 대기).
 with o as (
-    select * from {{ ref('CRM_ORG') }}
+    select * from {{ ref('CRM_ORG_CLEAN') }}
 )
 
 select
-    {{ gold_sk(['DEPT_ID']) }}                    as ORG_SK,
-    ABS(HASH(DEPT_ID))                            as ORG_DK,
+    {{ gold_sk(['o.DEPT_ID']) }}                  as ORG_SK,
+    ABS(HASH(o.DEPT_ID))                          as ORG_DK,
     CAST(NULL AS VARCHAR)                          as CORP,        -- ③ 부서 차원 산출 불가(CONF-4)
     CAST(NULL AS VARCHAR)                          as DIVISION,    -- ① 실적지부 재정의 · 산출규칙 확정 대기
-    DEPT_NM                                       as DEPARTMENT,   -- ✅ 정본 정합
+    o.DEPT_NM                                     as DEPARTMENT,   -- 정본 정합
     CAST(NULL AS VARCHAR)                          as TEAM,        -- ② 보류(E-6 입고 시 재개)
-    ACMSLT_UPPER_DEPT_ID                          as ACMSLT_UPPER_DEPT_ID,  -- 원천 그대로
-    ACMSLT_DEPT_YN                                as ACMSLT_DEPT_YN,        -- 원천 그대로
-    USE_YN                                        as USE_YN,                -- 원천 그대로(제외 금지)
-    {{ gold_meta('CRM') }}
+    o.ACMSLT_UPPER_DEPT_ID                        as ACMSLT_UPPER_DEPT_ID,  -- 원천 그대로
+    o.ACMSLT_DEPT_YN                              as ACMSLT_DEPT_YN,        -- 원천 그대로
+    o.USE_YN                                      as USE_YN,                -- 원천 그대로(제외 금지)
+    {{ gold_meta('CRM') }},
+    o.IS_ACTIVE_ORG                               as IS_ACTIVE_ORG,  -- O188-E 활성 조직 트리 소속(정본 = CRM_ORG_CLEAN)
+    o.ORG_PATH                                    as ORG_PATH,       -- O188-E 조직표 「부서 경로」(루트 제외 · 순환 노드는 NULL)
+    o.ORG_LEVEL                                   as ORG_LEVEL,      -- O188-E 루트=0
+    o.ACMSLT_DIV_GROUP_ID                         as ACMSLT_DIV_GROUP_ID,  -- O191 실적트리 ZB 상위(본부/지부 구분)
+    o.ACMSLT_DIV_GROUP_NM                         as ACMSLT_DIV_GROUP_NM,
+    o.ACMSLT_DIV_ID                               as ACMSLT_DIV_ID,        -- O191 실적트리 ZC 상위(본부/지부 단위)
+    o.ACMSLT_DIV_NM                               as ACMSLT_DIV_NM
 from o
 
 union all
 -- unknown 멤버(SK=0): 팩트 ORG_SK=0(미매핑) 조인 유실 방지
 select 0, 0, NULL, NULL, '(미매핑)', NULL, NULL, NULL, NULL,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    FALSE, NULL, NULL,
+    NULL, NULL, NULL, NULL
 </code></pre>
           </div>
         </details>

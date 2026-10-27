@@ -7,7 +7,7 @@
   <title>FACT_AD_BROADCAST - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-09-28 09:02",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for FACT_AD_BROADCAST",
     "table": "FACT_AD_BROADCAST",
     "domain": "AGENCY / 마케팅·광고",
@@ -390,12 +390,15 @@
       </div>
       <nav class="sidebar-nav">
         <a href="index.html" class="nav-item"><b>🏠 전체 파이프라인 허브</b></a>
-        <div class="nav-group-title">DIMENSION (20)</div>
+        <div class="nav-group-title">DIMENSION (29)</div>
 <a href="DIM_AD_CREATIVE.html" class="nav-item"><span>DIM_AD_CREATIVE</span></a>
 <a href="DIM_BIGQUERY_EVENT.html" class="nav-item"><span>DIM_BIGQUERY_EVENT</span></a>
 <a href="DIM_BIGQUERY_SOURCE.html" class="nav-item"><span>DIM_BIGQUERY_SOURCE</span></a>
+<a href="DIM_BIZ_PLACE.html" class="nav-item"><span>DIM_BIZ_PLACE</span></a>
 <a href="DIM_BUDGET_ITEM.html" class="nav-item"><span>DIM_BUDGET_ITEM</span></a>
 <a href="DIM_CAMPAIGN.html" class="nav-item"><span>DIM_CAMPAIGN</span></a>
+<a href="DIM_CHILD.html" class="nav-item"><span>DIM_CHILD</span></a>
+<a href="DIM_CODE_GROUP.html" class="nav-item"><span>DIM_CODE_GROUP</span></a>
 <a href="DIM_DATE.html" class="nav-item"><span>DIM_DATE</span></a>
 <a href="DIM_DEVICE.html" class="nav-item"><span>DIM_DEVICE</span></a>
 <a href="DIM_EVENT.html" class="nav-item"><span>DIM_EVENT</span></a>
@@ -405,30 +408,53 @@
 <a href="DIM_MEMBER_IDENTITY.html" class="nav-item"><span>DIM_MEMBER_IDENTITY</span></a>
 <a href="DIM_MEMBER_STATUS_HISTORY.html" class="nav-item"><span>DIM_MEMBER_STATUS_HISTORY</span></a>
 <a href="DIM_MONTH.html" class="nav-item"><span>DIM_MONTH</span></a>
+<a href="DIM_MSG_TEMPLATE.html" class="nav-item"><span>DIM_MSG_TEMPLATE</span></a>
+<a href="DIM_MSG_TEMPLATE_BUTTON.html" class="nav-item"><span>DIM_MSG_TEMPLATE_BUTTON</span></a>
 <a href="DIM_ORG.html" class="nav-item"><span>DIM_ORG</span></a>
+<a href="DIM_ORG_SUCCESSION.html" class="nav-item"><span>DIM_ORG_SUCCESSION</span></a>
 <a href="DIM_PAYMENT.html" class="nav-item"><span>DIM_PAYMENT</span></a>
+<a href="DIM_PAYMENT_ACCOUNT.html" class="nav-item"><span>DIM_PAYMENT_ACCOUNT</span></a>
 <a href="DIM_REASON.html" class="nav-item"><span>DIM_REASON</span></a>
+<a href="DIM_RELATIONSHIP.html" class="nav-item"><span>DIM_RELATIONSHIP</span></a>
+<a href="DIM_SEND_REQUEST.html" class="nav-item"><span>DIM_SEND_REQUEST</span></a>
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (17)</div>
+        <div class="nav-group-title">FACT (34)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item active"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
+<a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
+<a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
+<a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
+<a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
+<a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
+<a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
+<a href="FACT_GA_CHILD_VIEW.html" class="nav-item"><span>FACT_GA_CHILD_VIEW</span></a>
 <a href="FACT_MEMBER_COHORT.html" class="nav-item"><span>FACT_MEMBER_COHORT</span></a>
+<a href="FACT_MEMBER_COHORT_SURVIVAL.html" class="nav-item"><span>FACT_MEMBER_COHORT_SURVIVAL</span></a>
 <a href="FACT_MEMBER_DEV_ACHIEVEMENT.html" class="nav-item"><span>FACT_MEMBER_DEV_ACHIEVEMENT</span></a>
 <a href="FACT_MEMBER_EVENT.html" class="nav-item"><span>FACT_MEMBER_EVENT</span></a>
+<a href="FACT_MEMBER_EVENT_COHORT.html" class="nav-item"><span>FACT_MEMBER_EVENT_COHORT</span></a>
 <a href="FACT_MEMBER_FEE.html" class="nav-item"><span>FACT_MEMBER_FEE</span></a>
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
+<a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
+<a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
+<a href="FACT_RELATION_CHANGE.html" class="nav-item"><span>FACT_RELATION_CHANGE</span></a>
+<a href="FACT_RELATION_DEV.html" class="nav-item"><span>FACT_RELATION_DEV</span></a>
+<a href="FACT_SEARCH_CONSOLE.html" class="nav-item"><span>FACT_SEARCH_CONSOLE</span></a>
+<a href="FACT_SPONSORSHIP_MONTHLY.html" class="nav-item"><span>FACT_SPONSORSHIP_MONTHLY</span></a>
 <a href="FACT_TARGET_MEMBER_DEV.html" class="nav-item"><span>FACT_TARGET_MEMBER_DEV</span></a>
 <a href="FACT_TARGET_PROJECT.html" class="nav-item"><span>FACT_TARGET_PROJECT</span></a>
+<a href="FACT_UNPAID_SERVICE_CONV.html" class="nav-item"><span>FACT_UNPAID_SERVICE_CONV</span></a>
       </nav>
     </aside>
 
@@ -527,6 +553,7 @@ erDiagram
     string DW_BATCH_ID
   }
   FACT_AD_PERFORMANCE {
+    string AD_CTGR_CD FK
     string AD_PERF_DK PK
     string PERF_DATE_SK FK
     string AD_CREATIVE_SK FK
@@ -605,7 +632,7 @@ erDiagram
           <td><code>RT_TYPE</code></td>
           <td><code>VARCHAR</code></td>
           <td></td>
-          <td>RT(재방송)유형 ← REBRDC.DIV_NM(재송출/방송 · O182 재편 전 RE_BRDC_TY_NM) [REBRDC 전용]. 코어에서 이관</td>
+          <td>RT(재방송)유형 ← REBRDC.DIV_NM(재송출/방송</td>
         </tr>
         <tr>
           <td><code>AD_START_TIME</code></td>
@@ -653,7 +680,7 @@ erDiagram
           <td><code>DURATION_SEC</code></td>
           <td><code>NUMBER(9,0)</code></td>
           <td></td>
-          <td>🔴 광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용] — **현재 값 신뢰 금지(O29)**. 적재값이 초로 읽을 수 없는 크기라 「초」로 해석하면 오답이다(µs 해석 유력하나 미확정·현업 확인 대기 · 실측값은 문서10 §26). 원천 HH:MM:SS 표기가 캐스팅에서 무성 소실 → 유효 커버리지와 파싱 시 회복률은 문서10 §26. REBRDC NULL 은 결손 아니라 원천 부재</td>
+          <td>🔴 광고 초수 ← VIDEO.AD_SEC(TEXT→TRY_TO_NUMBER) [VIDEO 전용] — **현재 값 신뢰 금지**. 적재값이 초로 읽을 수 없는 크기라 「초」로 해석하면 오답이다(µs 해석 유력하나 미확정·현업 확인 대기). 원천 HH:MM:SS 표기가 캐스팅에서 무성 소실 → 유효 커버리지가 낮다(파싱하면 대부분 회복). REBRDC NULL 은 결손 아니라 원천 부재</td>
         </tr>
         <tr>
           <td><code>DAY_DIV</code></td>
@@ -695,13 +722,13 @@ erDiagram
           <td><code>DVLP_MEMBER_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [VIDEO·REBRDC · O185 정정: O182 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_MEMBERS 로 혼입(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다(해당 행·왜곡 규모는 문서10 §26). 원천값 보존 우선</td>
+          <td>개발회원수 ← REBRDC.DVLP_MBER_CNT [VIDEO·REBRDC · 정정: 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️종전 코어 AGENCY_CONV_MEMBERS 로 혼입(대행사 전환이 아니라 재방송 개발실적). ⚠️소수 척도 유지 이유: 원천에 0.5 단위 값이 실존해 NUMBER(38,0) 은 반올림으로 총합을 왜곡한다. 원천값 보존 우선</td>
         </tr>
         <tr>
           <td><code>DVLP_CNT</code></td>
           <td><code>NUMBER(18,4)</code></td>
           <td></td>
-          <td>개발건수 ← REBRDC.DVLP_CNT [VIDEO·REBRDC · O185 정정: O182 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️O16 이관: 종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님)</td>
+          <td>개발건수 ← REBRDC.DVLP_CNT [VIDEO·REBRDC · 정정: 원천 재편 후 VIDEO 도 일부 행 보고 · 출처별 집계]. ⚠️종전 코어 AGENCY_CONV_CNT 로 혼입(대행사 전환 아님)</td>
         </tr>
         <tr>
           <td><code>AD_VIEW_RT_SRC</code></td>
@@ -713,7 +740,7 @@ erDiagram
           <td><code>CPC_CALL_SRC</code></td>
           <td><code>NUMBER(18,6)</code></td>
           <td></td>
-          <td>[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용]. 🔴 클릭 분모가 아니다 — 디지털 CPC_CLICK_SRC 와 합산 금지 (O174 개명)</td>
+          <td>[비가산 N] 대행사 산정 **콜당** 단가 ← VIDEO.CPC(TEXT) [VIDEO 전용]. 🔴 클릭 분모가 아니다 — 디지털 CPC_CLICK_SRC 와 합산 금지</td>
         </tr>
         <tr>
           <td><code>DW_SOURCE_SYSTEM</code></td>
@@ -750,17 +777,23 @@ erDiagram
         <details>
           <summary>dbt SQL 소스 코드 보기 (10_dbt_pipeline/models/gold/fact/FACT_AD_BROADCAST.sql)</summary>
           <div class="sql-code-box">
-            <pre><code>-- FACT_AD_BROADCAST: 광고성과 위성 — 방송(VIDEO·REBRDC) 고유속성. 순서9-I 신설(DEC-8).
--- Co-authored with CoCo
+            <pre><code>-- =============================================================================
+-- Purpose    : 광고성과 위성 — 방송(VIDEO·REBRDC) 고유속성. 순서9-I 신설(DEC-8).
+-- Target     : GOLD.FACT_AD_BROADCAST (dbt model)
+-- Run order  : dbt build (문서실행순서 dbt 단계)
+-- Depends on : ref AGENCY_AD_BROADCAST
+-- Issue      : DEC-8, O16, DEC-9, O174
+-- =============================================================================
+-- FACT_AD_BROADCAST: 광고성과 위성 — 방송(VIDEO·REBRDC) 고유속성. 순서9-I 신설(DEC-8).
 -- grain: AD_PERF_DK — 코어 FACT_AD_PERFORMANCE 와 **1:1**(방송 2원천 행만 존재, 실측 37,886행).
--- ⚠️ 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_BROADCAST b USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
--- ⚠️ 여기 담긴 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)은 종전 코어에
+-- WARN: 조인: `FACT_AD_PERFORMANCE f JOIN FACT_AD_BROADCAST b USING (AD_PERF_DK)` — 1:1이라 fan-out 없음.
+-- WARN: 여기 담긴 degen 5종(TIME_BAND·CM_POSITION·RT_TYPE·AD_START_TIME·BROADCAST_DATE)은 종전 코어에
 --    `CAST(NULL AS ..)` 하드코딩으로 자리만 있던 컬럼이다(값미주입 결함군). 본 위성에서 **실배선**된다.
--- ⚠️ 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
+-- WARN: 컬럼 내 NULL 은 '두 방송 원천 중 한쪽에만 있는 속성'을 뜻하며 결측이 아니다
 --    (예: SPOT_TYPE·DURATION_SEC 는 VIDEO 전용 / RT_TYPE·BRDC_DIV 는 REBRDC 전용).
--- ⚠️ O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
+-- WARN: O16 해소: DVLP_MEMBER_CNT·DVLP_CNT = 재방송 **개발실적**. 종전 코어의 AGENCY_CONV_MEMBERS·AGENCY_CONV_CNT
 --    자리에 위치매핑돼 'GA 전환'으로 혼입돼 있던 값을 고유 이름으로 분리했다(문서10 §8-I(8)).
--- ⚠️ `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
+-- WARN: `_SRC` = 대행사 산정 파생값(DEC-9). **N(비가산)** — SUM 금지, 집계는 base 재계산값 사용.
 {{ config(
     tags=['gold_ready']
 ) }}
@@ -787,7 +820,7 @@ select
     DVLP_MEMBER_CNT         as DVLP_MEMBER_CNT,         -- O16: 개발회원수 (REBRDC 전용)
     DVLP_CNT                as DVLP_CNT,                -- O16: 개발건수 (REBRDC 전용)
     AD_VIEW_RT_SRC          as AD_VIEW_RT_SRC,          -- N(비가산) 대행사 산정, 재계산 불가
-    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — 🔴 클릭 분모가 아니다(O174 개명)
+    CPC_CALL_SRC               as CPC_CALL_SRC,               -- N(비가산) 대행사 산정 **콜당** — WARN: 클릭 분모가 아니다(O174 개명)
     {{ gold_meta('AGENCY') }}
 from {{ ref('AGENCY_AD_BROADCAST') }}
 </code></pre>

@@ -7,7 +7,7 @@
   <title>DIM_MONTH - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 01:19",
+    "generated": "2026-10-27 02:39",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_MONTH",
     "table": "DIM_MONTH",
     "domain": "COMMON / 공통 기준",
@@ -551,7 +551,7 @@ erDiagram
     string DW_BATCH_ID
   }
   FACT_AD_INFLOW_ALLOC {
-    string MKTG_CAMPAIGN_SK
+    string MKTG_CAMPAIGN_SK FK
     string MONTH_KEY FK
     string DW_BATCH_ID
   }

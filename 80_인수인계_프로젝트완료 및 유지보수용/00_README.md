@@ -24,7 +24,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
 | 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 19 |
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
-| 08_현업공유_산출물 | 현업 공유 산출물 | 90 |
+| 08_현업공유_산출물 | 현업 공유 산출물 | 114 |
 | 09_설계근거_참고 | 설계 근거 · 보안/권한 참고 | 10 |
 | 10_운영도구_scripts | 운영 점검 도구(SV 게이트 · SQL 실행기 · 접속 헬퍼) — README_운영도구.md 부터 | 7 |
 
@@ -525,13 +525,8 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 |---|---|
 | 30_output_share/00_생성기-문서명 매핑.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/01_DW_현업활용가이드.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260903.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260904.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260916.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_SILVER 스키마 컬럼 인벤토리_20260928.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_gold 스키마 컬럼 인벤토리_20260903.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_gold 스키마 컬럼 인벤토리_20260916.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
-| 30_output_share/02_gold 스키마 컬럼 인벤토리_20260928.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/02_SILVER 스키마 컬럼 인벤토리_20261027.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/02_gold 스키마 컬럼 인벤토리_20261027.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/03_GN_DW_개념도.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/04_컬럼계보매핑.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/04_컬럼계보매핑.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
@@ -550,6 +545,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/09_섹션배너.json | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/10_원천입고_결손요약.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/11_미해결이슈_요약.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/12_운영계_실측_ZL50263.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/16_파이프라인 배선 수정.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/18_목표데이터_요건_및_해결이슈_정의서.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/19_원천입고_및_항목신설_대기.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
@@ -568,6 +564,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/45_현업회신_ML_일시후원전환_grain.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/46_현업회신_DGT_이전분.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/47_신규19종_파생컬럼_COMMENT초안.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/90_운영계_실측_실행가이드.md | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/GOLD_ERD_테이블별.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/GOLD_ERD_테이블별_YAML전용.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/O252_폐지부서_귀속_현업리뷰_20261021.csv | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
@@ -575,11 +572,15 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v1.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v2.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/O252_폐지부서_현재부서연결_안내_20261021_v3.docx | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/_근거쿼리/S30_census.sql | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_AD_CREATIVE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_BIGQUERY_EVENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_BIGQUERY_SOURCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_BIZ_PLACE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_BUDGET_ITEM.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_CAMPAIGN.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_CHILD.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_CODE_GROUP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_DATE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_DEVICE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_EVENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
@@ -589,29 +590,52 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/erd/DIM_MEMBER_IDENTITY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_MEMBER_STATUS_HISTORY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_MONTH.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_MSG_TEMPLATE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_MSG_TEMPLATE_BUTTON.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_ORG.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_ORG_SUCCESSION.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_PAYMENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_PAYMENT_ACCOUNT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_REASON.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_RELATIONSHIP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/DIM_SEND_REQUEST.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_SEND_TYPE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_SERVICE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/DIM_SPONSORSHIP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_BROADCAST.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_BROADCAST_CASE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_DIGITAL.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_AD_INFLOW_ALLOC.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_PERFORMANCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_BIGQUERY_SESSION.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BUDGET.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BUDGET_YEARLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_CAMPAIGN_CUM_STOP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_CAMPAIGN_MONTHLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_EVENT_ATTENDANCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_EXPENSE_RESOLUTION.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_GA4_DEMOGRAPHIC.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_GA_CHILD_VIEW.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_COHORT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_MEMBER_COHORT_SURVIVAL.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_DEV_ACHIEVEMENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_EVENT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_MEMBER_EVENT_COHORT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_FEE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_MONTHLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MESSAGE_DISPATCH.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_PAYMENT_BILLING_STATUS.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_PAYMENT_METHOD_CHANGE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_RELATION_ACTIVITY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_RELATION_CHANGE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_RELATION_DEV.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_SEARCH_CONSOLE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_SPONSORSHIP_MONTHLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_TARGET_MEMBER_DEV.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_TARGET_PROJECT.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_UNPAID_SERVICE_CONV.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/index.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 
 ### 09_설계근거_참고

@@ -1374,7 +1374,7 @@ models:
       - name: MKTG_CAMPAIGN_SK
         tests:
           - not_null
-          # [2026-10-27] ERD 고립 해소 — 개발계 실측 1,426행 · distinct 173 · 미해소 0. 운영계 미실측 ⇒ warn.
+          # [2026-10-27] ERD 고립 해소 — 개발계 1,426행 · distinct 173 · 미해소 0 / 운영계(S30) 1,403행 · NULL 0 · distinct 169. 미해소 판정 = 운영 dbt test ⇒ warn.
           - relationships:
               to: ref('DIM_MARKETING_CAMPAIGN')
               field: MKTG_CAMPAIGN_SK
@@ -1400,7 +1400,8 @@ models:
               field: MEMBER_DK
               config: { severity: warn }
       # [2026-10-27] ERD 고립 해소 3건 — 개발계 실측 17,510,051행 · NULL 0 · 미해소 0(distinct 13,168 · 19 · 1,756).
-      #   운영계 미실측 ⇒ warn. 월 키 2종(EVENT_MONTH_KEY · OBS_MONTH_KEY)은 관례대로 coverage gate CONFORM.
+      #   운영계(S30 2026-10-27) 17,535,960행 · NULL 0(distinct 13,180 · 18 · 1,742) · 미해소 판정 = 운영 dbt test ⇒ warn.
+      #   월 키 2종(EVENT_MONTH_KEY · OBS_MONTH_KEY)은 관례대로 coverage gate CONFORM.
       - name: CAMPAIGN_SK
         tests:
           - relationships:
