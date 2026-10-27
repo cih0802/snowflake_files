@@ -1,0 +1,4 @@
+# doc_id: R94 · as_of: 2026-10-27 18:10:07.725 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R94_Q01_1.csv,OK,5,0,SELECT 감지 조건: 10-22~26 실패를 조건식이 잡는가(5행 기대 · 14일 내에만 유효)
+Q02,1,R94_Q02_1.csv,OK,1,0,SELECT 발송 이력: 시험 발송 SUCCESS 1행 이상
