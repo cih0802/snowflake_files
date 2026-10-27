@@ -1,0 +1,2 @@
+# doc_id: R92 · as_of: 2026-10-27 14:12:38.582 +0900 · account: ZL50263 · query: Q02-1 알림 발송 이력 일별·상태별 집계(Q01 이 1,000행에서 잘렸는지 대조용)
+DAY,INTEGRATION_NAME,STATUS,N

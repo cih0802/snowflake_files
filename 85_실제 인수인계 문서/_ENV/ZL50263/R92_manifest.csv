@@ -1,0 +1,6 @@
+# doc_id: R92 · as_of: 2026-10-27 14:12:38.582 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R92_Q01_1.csv,OK,0,0,SELECT 알림 발송 이력(최근 13일 · 이메일 통합 포함 전 통합)
+Q02,1,R92_Q02_1.csv,OK,0,0,"SELECT 알림 발송 이력 일별·상태별 집계(Q01 이 1,000행에서 잘렸는지 대조용)"
+Q03,1,R92_Q03_1.csv,OK,1,0,SELECT 메일 발송 호출 흔적(10-21 ~ 10-27 · SYSTEM$SEND_EMAIL 을 부른 문장 · 수신자 원문은 받지 않는다)
+Q04,1,R92_Q04_1.csv,OK,7,0,SELECT 장애 알림을 보내는 Task·Alert 의 실행 이력(같은 기간 · 이름에 ALERT·NOTIFY·FAIL 포함)

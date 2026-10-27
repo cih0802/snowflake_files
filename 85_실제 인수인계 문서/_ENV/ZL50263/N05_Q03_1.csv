@@ -1,4 +1,4 @@
-# doc_id: N05 · as_of: 2026-10-27 12:00:45.163 +0900 · account: ZL50263 · query: Q03-1 dbt 테스트 실패 저장 테이블 (store_failures · OPS 의 GN_DW_DBT 소유 · 0행이 기대값) — A6 Q03 와 같은 기준
+# doc_id: N05 · as_of: 2026-10-27 14:12:20.099 +0900 · account: ZL50263 · query: Q03-1 dbt 테스트 실패 저장 테이블 (store_failures · OPS 의 GN_DW_DBT 소유 · 0행이 기대값) — A6 Q03 와 같은 기준
 TABLE_NAME,ROW_COUNT,LAST_ALTERED
 NOT_NULL_WIDE_MBRFEE_PRDT_ACTL_DATA_TYPE_STD,88,2026-10-27 11:11:43.732000+09:00
 NOT_NULL_CRM_EVENT_PARTICIPATION_PARTCPT_CHNNL_NM,2,2026-10-27 11:10:57.486000+09:00

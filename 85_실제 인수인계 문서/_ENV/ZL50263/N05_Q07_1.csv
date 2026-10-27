@@ -1,2 +1,2 @@
-# doc_id: N05 · as_of: 2026-10-27 12:00:45.163 +0900 · account: ZL50263 · query: Q07-1 Agent 평가 실행 흔적 (AI Evals Task · 최근 30일 · 점수 자체는 Snowsight Evaluations 탭 또는 GET_AI_EVALUATION_DATA(실행 이름 필요))
+# doc_id: N05 · as_of: 2026-10-27 14:12:20.099 +0900 · account: ZL50263 · query: Q07-1 Agent 평가 실행 흔적 (AI Evals Task · 최근 30일 · 점수 자체는 Snowsight Evaluations 탭 또는 GET_AI_EVALUATION_DATA(실행 이름 필요))
 RUN_ID,N_TASK,N_OK,FIRST_T,LAST_T
