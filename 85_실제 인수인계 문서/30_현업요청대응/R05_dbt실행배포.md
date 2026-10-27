@@ -77,7 +77,7 @@ status: review
 | Task 실행 이력 · 상태 | A6 SQL Q05 (`TASK_HISTORY` · `SHOW TASKS`) | A6 F6 |
 | 데이터 품질 경고 | OPS 실패 저장 테이블(A6 Q03) · 메일 = Alert | A6 F3 |
 | MSTR 적재 로그 | `GN_DW.MSTR.BCHLOG`(오류 = `ERRMSG`) | A6 F5 |
-| 알림 수신자 | `OPS.ALERT_RECIPIENT_CONFIG`(`IS_DBT_ALERT_YN`) · 🔴 PIPELINE_ADMIN 수신자 미지정(A8-10) | A1 §5 |
+| 알림 수신자 | `OPS.ALERT_RECIPIENT_CONFIG`(`IS_DBT_ALERT_YN`) · PIPELINE_ADMIN 1명 · 🔴 Task 실패 알림 경로 없음(A8-10 · 10-27 R92) | A1 §5 |
 | dbt 산출물(manifest · run_results · 로그 zip) | `SYSTEM$LOCATE_DBT_ARTIFACTS('<query_id>')` · `SYSTEM$LOCATE_DBT_ARCHIVE` | Snowflake 문서 |
 
 ## 4. 변경 → 검토 → 테스트 → 배포 → 되돌리기
