@@ -176,6 +176,9 @@ SET IS_PIPELINE_ADMIN_YN = IFF(ARRAY_CONTAINS(UPPER(USER_NAME)::VARIANT,
                                               SPLIT(UPPER(REPLACE($PIPELINE_ADMIN_RECIPIENTS, ' ', '')), ',')), 'Y', 'N'),
     UPDATED_AT = CURRENT_TIMESTAMP(),
     UPDATED_BY = CURRENT_USER();
+-- 확인: 장애 수신자 = 계정별 1명이어야 한다(2026-10-27 운영계 시험 발송에서 수신자 2명이 잡혀 미인증 1명 때문에 실패 · 원인 미확정 · 이메일 인증으로 해결)
+--   🔴 위 SET 과 UPDATE 는 함께 실행한다(SET 없이 UPDATE 만 돌리면 변수 미정의 오류 또는 이전 세션 값 사용).
+SELECT USER_NAME, IS_PIPELINE_ADMIN_YN FROM GN_DW.OPS.ALERT_RECIPIENT_CONFIG WHERE IS_ACTIVE_YN = 'Y' AND IS_PIPELINE_ADMIN_YN = 'Y';
 -- 분석가 플래그 예시(종전 유지)
 UPDATE GN_DW.OPS.ALERT_RECIPIENT_CONFIG SET IS_ANALYST_YN = 'Y' WHERE USER_NAME = 'CHOIH';
 

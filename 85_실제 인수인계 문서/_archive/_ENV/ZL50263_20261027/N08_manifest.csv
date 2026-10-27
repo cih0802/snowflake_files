@@ -1,0 +1,5 @@
+# doc_id: N08 · as_of: 2026-10-27 12:01:42.115 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,N08_Q01_1.csv,OK,6,0,SELECT 계층별 테이블 · 뷰 · 행 수
+Q02,1,N08_Q02_1.csv,OK,2,0,SELECT 소비 객체 수 (SV · Streamlit)
+Q03,1,N08_Q03_1.csv,OK,6,0,SHOW Agent

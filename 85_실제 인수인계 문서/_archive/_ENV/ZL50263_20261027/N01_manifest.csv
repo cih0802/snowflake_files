@@ -1,0 +1,5 @@
+# doc_id: N01 · as_of: 2026-10-27 11:59:21.432 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,N01_Q01_1.csv,OK,31,0,SELECT PK 중복·NULL (단일 컬럼 PK)
+Q02,1,N01_Q02_1.csv,OK,71,0,SELECT FK 고아 행 (GOLD→GOLD · NULL 은 RI 위반으로 세지 않는다)
+Q03,1,N01_Q03_1.csv,OK,0,0,SELECT 현재 DMF 부착 현황 (기대 = 0행 · 붙인 뒤에는 [5] 로 확인)

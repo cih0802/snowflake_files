@@ -1,0 +1,2 @@
+# doc_id: A1 · as_of: 2026-10-27 11:53:55.726 +0900 · account: ZL50263 · query: Q04-3 비용 가드 — quota · 예산 · 리소스 모니터
+name,credit_quota,used_credits,remaining_credits,level,frequency,start_time,end_time,notify_at,suspend_at,suspend_immediately_at,created_on,owner,comment,notify_users

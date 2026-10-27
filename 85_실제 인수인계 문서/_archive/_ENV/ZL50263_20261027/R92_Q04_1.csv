@@ -1,0 +1,9 @@
+# doc_id: R92 · as_of: 2026-10-27 14:12:38.582 +0900 · account: ZL50263 · query: Q04-1 장애 알림을 보내는 Task·Alert 의 실행 이력(같은 기간 · 이름에 ALERT·NOTIFY·FAIL 포함)
+NAME,SCHEMA_NAME,STATE,SCHEDULED_TIME,COMPLETED_TIME,ERROR_HEAD
+daily,OPS,SUCCEEDED,2026-10-21 06:01:00+09:00,2026-10-21 06:17:33.934000+09:00,
+daily,OPS,FAILED,2026-10-22 06:01:00+09:00,2026-10-22 06:18:32.984000+09:00,DBT job failed: 1 model(s) failed out of 718 total (total time: 1020.64s) ⏎ First error in model 'CRM_HOLIDAY': Database Error in model CRM_HOLIDAY (models/silver/crm/CRM_HOLIDAY.sql) ⏎   003001 (42501): 
+daily,OPS,FAILED,2026-10-23 06:01:00+09:00,2026-10-23 06:18:47.936000+09:00,DBT job failed: 2 model(s) failed out of 729 total (total time: 1036.86s) ⏎ First error in model 'AGENCY_AD_ROW_VIDEO': Database Error in model AGENCY_AD_ROW_VIDEO (models/silver/agency/AGENCY_AD_ROW_VI
+daily,OPS,FAILED,2026-10-24 06:01:00+09:00,2026-10-24 06:18:44.458000+09:00,DBT job failed: 2 model(s) failed out of 729 total (total time: 1031.37s) ⏎ First error in model 'AGENCY_AD_ROW_REBRDC': Database Error in model AGENCY_AD_ROW_REBRDC (models/silver/agency/AGENCY_AD_ROW_
+daily,OPS,FAILED,2026-10-25 06:01:00+09:00,2026-10-25 06:19:21.322000+09:00,DBT job failed: 2 model(s) failed out of 729 total (total time: 1060.60s) ⏎ First error in model 'AGENCY_AD_ROW_REBRDC': Database Error in model AGENCY_AD_ROW_REBRDC (models/silver/agency/AGENCY_AD_ROW_
+daily,OPS,FAILED,2026-10-26 06:01:00+09:00,2026-10-26 06:19:13.873000+09:00,DBT job failed: 2 model(s) failed out of 729 total (total time: 1058.38s) ⏎ First error in model 'AGENCY_AD_ROW_VIDEO': Database Error in model AGENCY_AD_ROW_VIDEO (models/silver/agency/AGENCY_AD_ROW_VI
+daily,OPS,SUCCEEDED,2026-10-27 06:01:00+09:00,2026-10-27 06:23:04.625000+09:00,

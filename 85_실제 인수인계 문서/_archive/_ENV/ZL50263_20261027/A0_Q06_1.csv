@@ -1,0 +1,15 @@
+# doc_id: A0 · as_of: 2026-10-27 11:53:05.794 +0900 · account: ZL50263 · query: Q06-1 롤 · 사용자 · 롤 계층
+created_on,name,is_default,is_current,is_inherited,assigned_to_users,granted_to_roles,granted_roles,owner,comment,is_from_organization_user_group
+2026-06-08 10:04:39.646000+09:00,ACCOUNTADMIN,N,Y,N,4,0,2,,Account administrator can manage all aspects of the account.,N
+2026-06-09 09:05:39.317000+09:00,GN_DW_ADMIN,Y,N,Y,5,1,5,SECURITYADMIN,"GN_DW DB 관리자 - DDL, 스키마 관리",N
+2026-06-10 11:45:06.013000+09:00,GN_DW_ANALYST,N,N,Y,10,1,1,SECURITYADMIN,분석가 - SELECT on BRONZE/SILVER/GOLD/SERVING(AGENT 사용),N
+2026-09-29 11:39:35.833000+09:00,GN_DW_DBT,N,N,Y,1,1,0,SECURITYADMIN,dbt 실행 전용(DW_PIPELINE) — 적재·WIDE 뷰·테스트 감사. 사람 작업은 GN_DW_ENGINEER,N
+2026-06-09 09:05:40.113000+09:00,GN_DW_ENGINEER,N,N,Y,2,1,0,SECURITYADMIN,"ETL 개발 - 프로시저, 태스크 운영",N
+2026-06-09 09:05:42.465000+09:00,GN_DW_LOADER,N,N,Y,3,1,0,SECURITYADMIN,외부팀 적재 - BRONZE 쓰기 전용,N
+2026-06-09 09:05:43.243000+09:00,GN_DW_SERVICE,N,N,Y,0,1,0,SECURITYADMIN,"서비스 계정 - API, Streamlit 등",N
+2026-06-09 09:05:41.647000+09:00,GN_DW_VIEWER,N,N,Y,1,1,0,SECURITYADMIN,읽기 전용 - GOLD만 접근,N
+2026-06-08 10:04:40.015000+09:00,ORGADMIN,N,N,N,1,0,0,,Organization administrator can manage organizations and accounts in organizations,N
+2026-06-08 10:04:39.634000+09:00,PUBLIC,N,N,Y,0,0,0,,Public role is automatically available to every user in the account.,N
+2026-06-08 10:04:39.666000+09:00,SECURITYADMIN,N,N,Y,1,1,1,,Security administrator can manage security aspects of the account.,N
+2026-06-08 10:04:39.675000+09:00,SYSADMIN,N,N,Y,0,1,1,,System administrator can create and manage databases and warehouses.,N
+2026-06-08 10:04:39.657000+09:00,USERADMIN,N,N,Y,0,1,0,,User administrator can create and manage users and roles,N

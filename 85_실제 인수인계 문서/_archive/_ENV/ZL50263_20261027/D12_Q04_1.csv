@@ -1,0 +1,4 @@
+# doc_id: D12 · as_of: 2026-10-27 11:59:05.666 +0900 · account: ZL50263 · query: Q04-1 #6 형제 팩트 — 청구 총계 일치(따로 집계하면 같아야 한다 · 조인하면 부푼다)
+SRC,BILLED_AMT,N_ROWS
+FACT_MEMBER_MONTHLY,961981566649.00,42983646
+FACT_MEMBER_FEE,961981566649.00,43389462
