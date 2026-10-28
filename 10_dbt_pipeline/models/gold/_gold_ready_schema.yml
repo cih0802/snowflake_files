@@ -1424,3 +1424,37 @@ models:
         tests:
           - not_null
           - accepted_values: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], quote: false }
+  # [2026-10-28 O265] 코호트 × 사건 전후 발송 브리지(회원참여팀 문의 · 사용자 결정 = 브리지 팩트)
+  - name: FACT_COHORT_DISPATCH
+    description: >
+      개발사건 코호트 × 사건 전후 발송 브리지 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × SEND_REQUEST_SK × SEND_DATE.
+      창 = 첫 사건일 D-30~D+5 · 발송구분 = SEND_TYPE_SK(→ DIM_SEND_TYPE) · MONTHS_AFTER = 0 고정(코호트 복합키 참조).
+      🔴 회원수는 COUNT DISTINCT · 인과가 아니라 시간 창 매칭 · D0 은 대부분 처리 통보(DEC-33).
+    columns:
+      - name: "EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || SEND_REQUEST_SK || '|' || SEND_DATE"
+        tests: [unique]
+      - name: "EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER"
+        tests:
+          - relationships:
+              to: ref('FACT_MEMBER_EVENT_COHORT')
+              field: "EVENT_MONTH_KEY || '|' || MEMBER_DK || '|' || DVLP_DIV_CD || '|' || MONTHS_AFTER"
+      - name: MONTHS_AFTER
+        tests:
+          - accepted_values: { values: [0], quote: false }
+      - name: SEND_WINDOW
+        tests:
+          - not_null
+          - accepted_values: { values: ['D-30~D-1', 'D0', 'D+1~D+5'] }
+      - name: SEND_TYPE_SK
+        tests:
+          - relationships:
+              to: ref('DIM_SEND_TYPE')
+              field: SEND_TYPE_SK
+              config: { severity: warn }
+      - name: SEND_REQUEST_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SEND_REQUEST')
+              field: SEND_REQUEST_SK
+              config: { severity: warn }

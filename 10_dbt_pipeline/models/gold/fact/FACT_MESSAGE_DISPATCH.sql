@@ -27,7 +27,9 @@ with s as (
 ),
 req as (
     select SNDNG_KEY, SEND_CHANNEL, SNDNG_TY_CD, TIT,
-           SEND_GBN_TOP, SEND_GBN_MID, SEND_GBN_BOT
+           SEND_GBN_TOP, SEND_GBN_MID, SEND_GBN_BOT, MSG_DIV_CD, MSG_TYPE,
+           --  [O265] 알림톡 여부 = MSG_AT MS010 '4' · SND MSG_TYPE '1'(템플릿 AT 코드 1,560/1,560 · UM80684)
+           (SEND_CHANNEL = 'MSG_AT' and MSG_DIV_CD = '4') or (SEND_CHANNEL = 'SND' and MSG_TYPE = '1') as IS_ALIMTALK
     from {{ ref('CRM_SEND_REQUEST') }}
 ),
 open_window as (
@@ -127,6 +129,43 @@ click_dev as (
 -- 「활동건」 = 그 회원의 발송월 활동(건)(#157 = 약정금액/10,000) — FMM 월×회원 유일.
 active_m as (
     select MONTH_KEY, MEMBER_DK, ACTIVE_CNT from {{ ref('FACT_MEMBER_MONTHLY') }}
+),
+--  [2026-10-28 O265 · 사용자 결정 = 회원+기간 매칭] 알림톡 「열람」= GA 링크 유입(원천에 알림톡 오픈 기록이 없다).
+--   클릭 = GA URL `memnum`(= 수신 회원번호 · UM80684 99.8% 일치) + utm kakao 계열(URL 파라미터 포함 · UTM 컬럼 결손 보완).
+--   귀속 = 클릭 시각 직전 5일 안 **가장 가까운 알림톡 발송 1건**(QUALIFY) — 연속 발송 이중 계상 방지.
+--   알림톡 = MSG_AT(MS010 '4') + SND 시스템 알림톡(MSG_TYPE '1'). SND 자체 클릭(OPEN_DT)은 2025-11-13 부터 2,061/4,945,750 행뿐이라
+--   GA 판정을 함께 둔다(OPEN_MEMBERS 는 그대로 · 두 값을 합치지 않는다).
+--   WARN: utm 이 kakao 인 클릭은 카카오 채널 게시물 유입도 섞인다 ⇒ 「알림톡 발송 직후 카카오 경로 유입」으로 읽는다(잠정).
+ga_click as (
+    select distinct
+           REGEXP_SUBSTR(PAGE_LOCATION, '[?&]memnum=([0-9A-Za-z]+)', 1, 1, 'e', 1) as MBER_NO,
+           EVENT_TS
+    from {{ ref('BIGQUERY_EVENT') }}
+    where PAGE_LOCATION ilike '%memnum=%'
+      and (COALESCE(UTM_SOURCE, '') ilike 'kakao%' or COALESCE(UTM_MEDIUM, '') ilike 'kakao%'
+           or PAGE_LOCATION ilike '%utm_source=kakao%' or PAGE_LOCATION ilike '%utm_medium=kakao%')
+),
+ga_window as (
+    select MIN(EVENT_TS)::DATE as GA_FROM, MAX(EVENT_TS)::DATE as GA_TO from ga_click
+),
+at_send as (
+    select distinct m.SNDNG_KEY, m.SEND_CHANNEL, m.MBER_NO, m.SNDNG_DE
+    from s m join req q on q.SNDNG_KEY = m.SNDNG_KEY and q.SEND_CHANNEL = m.SEND_CHANNEL
+    where q.IS_ALIMTALK
+      and m.MBER_NO is not null and m.SNDNG_DE is not null
+),
+ga_attr as (
+    select SNDNG_KEY, SEND_CHANNEL, MBER_NO, MIN(EVENT_TS) as GA_CLICK_TS
+    from (
+        select a.SNDNG_KEY, a.SEND_CHANNEL, a.MBER_NO, c.EVENT_TS
+        from ga_click c
+        join at_send a
+          on a.MBER_NO = c.MBER_NO
+         and a.SNDNG_DE <= c.EVENT_TS
+         and a.SNDNG_DE >= DATEADD(day, -5, c.EVENT_TS)
+        qualify row_number() over (partition by c.MBER_NO, c.EVENT_TS order by a.SNDNG_DE desc, a.SEND_CHANNEL, a.SNDNG_KEY desc) = 1
+    )
+    group by SNDNG_KEY, SEND_CHANNEL, MBER_NO
 )
 -- 🗑 [2026-10-22 O258] send_l(발송구분(대) 명칭 · DIM_SEND_TYPE) 제거 — 서비스 판정을 코드(r.SEND_GBN_TOP)로 바꿔 쓰임이 없다.
 
@@ -174,6 +213,8 @@ select
     IFF(d.D5_STOP     AND NOT {{ gn_is_notice_title('r.TIT') }}, COALESCE(am.ACTIVE_CNT, 0), 0) as D5_STOP_CNT,
     -- [O183] #160 서비스(명) = 발송구분(대) 「회원서비스」 발송 대상 1/0 · #161 서비스(건) = 그 회원의 활동(건).
     --  [2026-10-22 O258] 라벨 비교 → 대분류 **코드** 비교(gn_code('SEND_TOP_MEMBER_SERVICE') = MS054 · BRONZE 실측 1:1).
+    --  [2026-10-28 O265 · 사용자 결정 = 전 채널 확대] SILVER 가 EMAIL·MSG_AT 에도 대분류를 채운다 ⇒ #160·#161 이
+    --   이메일 MS054(요청 541,106건 · UM80684 BRONZE)를 포함하게 된다 = **값 증가는 의도된 정의 변경**(현업 공지 대상).
     IFF(r.SEND_GBN_TOP in ({{ gn_code('SEND_TOP_MEMBER_SERVICE') }}), 1, 0)                           as SERVICE_MEMBERS,
     IFF(r.SEND_GBN_TOP in ({{ gn_code('SEND_TOP_MEMBER_SERVICE') }}), COALESCE(am.ACTIVE_CNT, 0), 0)  as SERVICE_CNT,
     r.TIT                                          as SEND_TITLE,
@@ -221,12 +262,27 @@ select
             order by s.SNDNG_KEY, s.SEND_CHANNEL, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) = 1,
         COALESCE(ga.D5_GIFT_AMT, 0), 0)            as D5_GIFT_PART_AMT,
     --  [2026-10-25 O262-B · 33 §1] SND 발송 시점 스냅샷 추가 4종(degen · 타 채널 NULL · O213-E 와 같은 관례) · 06_DDL 동기 맨 끝
-    s.SND_FRST_SPNSR, s.SND_CHILD_DTL_NM, s.SND_NATION_NM, s.SND_BPLC_KOR_NM
+    s.SND_FRST_SPNSR, s.SND_CHILD_DTL_NM, s.SND_NATION_NM, s.SND_BPLC_KOR_NM,
+    --  [2026-10-28 O265] 알림톡 GA 클릭(열람 대용) · 06_DDL 동기 맨 끝.
+    --   값 = 알림톡(MSG_AT·SND) · 발송일이 GA 적재 범위 안이면 1/0 · 범위 밖·비알림톡 = NULL(「안 눌렀다」가 아니라 「모른다」 · R2-7).
+    --   (발송, 회원) 쌍이 중복 행(MSG_AT 35,152행 · UM80684)을 가지므로 **1행에만** 싣는다 ⇒ SUM 이 곧 클릭 수(D5_GIFT_PART_AMT 와 같은 관례).
+    CASE
+        WHEN NOT COALESCE(r.IS_ALIMTALK, FALSE)                           THEN CAST(NULL AS NUMBER(1,0))
+        WHEN s.SNDNG_DE::DATE NOT BETWEEN gw.GA_FROM AND gw.GA_TO          THEN CAST(NULL AS NUMBER(1,0))
+        WHEN row_number() over (
+                 partition by s.SNDNG_KEY, s.SEND_CHANNEL, s.MBER_NO
+                 order by s.SNDNG_DE, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) > 1 THEN 0
+        WHEN gc.GA_CLICK_TS IS NOT NULL                                   THEN 1
+        ELSE 0
+    END                                            as GA_CLICK_MEMBERS,
+    gc.GA_CLICK_TS                                 as GA_CLICK_TS
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
 left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = s.SND_CMPGN_CD
 cross join open_window ow
+cross join ga_window gw
+left join ga_attr gc  on gc.SNDNG_KEY = s.SNDNG_KEY and gc.SEND_CHANNEL = s.SEND_CHANNEL and gc.MBER_NO = s.MBER_NO
 left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
 left join click_dev cd on cd.MEMBER_DK = s.MBER_NO and cd.OPEN_DATE = s.OPEN_DT::DATE
 left join gift_attr ga on ga.MEMBER_DK = s.MBER_NO and ga.SEND_DATE = s.SNDNG_DE::DATE

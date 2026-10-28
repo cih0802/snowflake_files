@@ -907,7 +907,9 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SND_FRST_SPNSR      VARCHAR         COMMENT 'SND 발송 시점 최초 후원사업명 [SND 전용 · 타 채널 NULL] (O262-B)',
     SND_CHILD_DTL_NM    VARCHAR         COMMENT 'SND 발송 시점 결연 상세상태명 [SND 전용] (O262-B)',
     SND_NATION_NM       VARCHAR         COMMENT 'SND 발송 시점 결연아동 국가명 [SND 전용] (O262-B)',
-    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명 [SND 전용] (O262-B)'
+    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명 [SND 전용] (O262-B)',
+    GA_CLICK_MEMBERS    NUMBER(1,0)     COMMENT '알림톡 링크 클릭(GA 유입) 1/0 [알림톡 전용 = MSG_AT MS010 4 + SND MSG_TYPE 1 · 그 밖 NULL] (O265). GA URL memnum = 수신 회원번호 · utm kakao 계열 · 클릭 시각 직전 5일 안 가장 가까운 알림톡 발송 1건에 귀속 · (발송, 회원) 1행에만 싣는다. GA 적재 범위 밖 발송은 NULL.',
+    GA_CLICK_TS         TIMESTAMP_NTZ   COMMENT '그 발송에 귀속된 최초 GA 클릭 시각 [알림톡 전용] (O265)'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -1561,7 +1563,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_REQUEST (
     PSTMTR_PRCS_STAT_NAME   VARCHAR         COMMENT '우편물 처리상태(MS061 · 발송대기·발송완료). 타 채널 NULL.',
     CORP_TYPE               VARCHAR(10)     COMMENT '요청 법인구분 코드(CM019 · 문자 SND 요청 전용 · 대다수 NULL). 코드id:CM019.',
     CORP_TYPE_NAME          VARCHAR         COMMENT '요청 법인구분(CM019 · 사단·사복).',
-    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).'
+    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).',
+    SEND_FORMAT_NAME        VARCHAR         COMMENT '실제 메시지 형식(알림톡·SMS·LMS·MMS·문자·이메일·우편) (O265). MSG_AT = MS010 라벨 · SND = MSG_TYPE 1 → 알림톡(템플릿 AT 코드 1,560/1,560) · 2·3 → 문자 · 🔴 채널(SEND_CHANNEL)과 다르다 — SND 시스템도 알림톡을 보낸다.'
 ) COMMENT = '발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]';
 
 -- FACT_RELATION_ACTIVITY — 결연활동 팩트 · O196-D DEC-58 #2 신설
@@ -1822,6 +1825,31 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) CLUSTER BY (EVENT_MONTH_KEY, DVLP_DIV_CD)
   COMMENT = '개발사건 코호트 × 경과월 팩트(회원 단위 후속 행동). [Grain: EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × MONTHS_AFTER(0~12)]. 사건 시점 속성 + 관측월 활동·납입·미납·중단(FMM) + 후속 증액·재후원·감액·중단(FME) + 사건 전후 발송(FACT_MESSAGE_DISPATCH). 🔴 개발구분·경과월을 각각 하나로 고정해 센다 · 발송 플래그는 코호트 속성이라 MONTHS_AFTER = 0 에서 센다. [원천: GOLD.FACT_MEMBER_EVENT · FACT_MEMBER_MONTHLY · FACT_MESSAGE_DISPATCH · DIM_SEND_REQUEST · DIM_MSG_TEMPLATE]. [적재: dbt]';
+
+-- FACT_COHORT_DISPATCH — 개발사건 코호트 × 사건 전후 발송 브리지 ( O265 · 회원참여팀 문의)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_COHORT_DISPATCH (
+    EVENT_MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '사건월 YYYYMM ※비강제 FK→FACT_MEMBER_EVENT_COHORT(4열 복합키)',
+    MEMBER_DK                 VARCHAR         NOT NULL COMMENT '회원 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
+    DVLP_DIV_CD               VARCHAR         NOT NULL COMMENT '개발구분 코드(MM015) — 코호트 키',
+    MONTHS_AFTER              NUMBER(2,0)     NOT NULL COMMENT '항상 0 — 코호트 복합키 참조용(발송은 사건월 속성)',
+    SEND_DATE                 DATE            NOT NULL COMMENT '발송일',
+    DAYS_FROM_EVENT           NUMBER(3,0)     NOT NULL COMMENT '첫 사건일 대비 발송일(-30~+5)',
+    SEND_WINDOW               VARCHAR         NOT NULL COMMENT '구간 라벨 D-30~D-1 · D0 · D+1~D+5. 🔴 D0 은 대부분 처리 통보(DEC-33)',
+    SEND_REQUEST_SK           NUMBER(38,0)    NOT NULL COMMENT '발송요청 ※비강제 FK→DIM_SEND_REQUEST',
+    SEND_TYPE_SK              NUMBER(38,0)    COMMENT '발송구분(대/중/소) ※비강제 FK→DIM_SEND_TYPE · 0 = 구분 없음(우편·미매핑)',
+    SEND_CHANNEL              VARCHAR         COMMENT '발송 채널(MSG_AT·SND·EMAIL)',
+    SEND_FORMAT_NAME          VARCHAR         COMMENT '실제 메시지 형식(알림톡·SMS·LMS·MMS·문자·이메일) — 채널과 다르다',
+    ATMC_YN                   VARCHAR(1)      COMMENT '알림톡 템플릿 자동발송 여부(Y = 자동 트리거 · N = 수동·캠페인) · 템플릿 미연결 NULL',
+    SEND_TITLE                VARCHAR         COMMENT '발송 제목',
+    SEND_ROWS                 NUMBER(18,0)    COMMENT '같은 (회원, 요청, 발송일)의 원 발송 행 수',
+    SND_OPENED                NUMBER(1,0)     COMMENT '문자 링크 클릭 1/0(SND 오픈 원천) · 판정 불가 NULL',
+    GA_CLICKED                NUMBER(1,0)     COMMENT '알림톡 GA 유입 1/0(O265) · 비알림톡·GA 범위 밖 NULL · SND_OPENED 와 합치지 않는다',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) CLUSTER BY (EVENT_MONTH_KEY, DVLP_DIV_CD)
+  COMMENT = '개발사건 코호트 × 사건 전후 발송 브리지. [Grain: EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × SEND_REQUEST_SK × SEND_DATE]. 창 = 첫 사건일 D-30~D+5. 「신규·증액·재후원 회원이 받은 발송의 발송구분(대/중/소)」 답변용. 🔴 회원수는 COUNT DISTINCT · 인과 아님(시간 창 매칭). [원천: GOLD.FACT_MEMBER_EVENT_COHORT · FACT_MESSAGE_DISPATCH · DIM_SEND_REQUEST · DIM_MSG_TEMPLATE]. [적재: dbt]';
 
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)
