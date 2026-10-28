@@ -97,9 +97,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 12,687 | 12,687 | 28,273 |
+| `00_BRIEF` | — | 10,401 | 10,401 | 30,559 |
 
-> 전 문서군 = **3,351,683 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,350,047 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -114,17 +114,17 @@ END-METADATA -->
 | `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 4건은 사람 판단) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
-| `agent_object_ref_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
+| `agent_object_ref_gate` | 🔴 | 🔴 FAIL — blocking 위반 1건 |
 | `agent_source_lineage_gate` | ✅ | 🟢 PASS — blocking 0건 |
 | `eval_expectation_gate` | ✅ | ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제) |
-| `sv_identifier_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
+| `sv_identifier_gate` | 🔴 | 🔴 FAIL — blocking 위반 1건 |
 | `null_reason_registry_gate` | ✅ | 🟢 PASS — NULL 사유 규격 검증 완료 |
 | `campaign_axis_gate` | ✅ | ✅ 게이트 통과 — 미등재·배선 끊김 0 (🟠 GAP 9 건은 알려진 미배선) |
 | `sv_no_rollup_gate` | ✅ | 🟢 PASS — 소계/합계 행 유도 0건 · 분모 36 파일 |
-| `sv_enum_newvalue_gate 1/4` | ✅ | ✅ 게이트 통과 |
-| `sv_enum_newvalue_gate 2/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 1/4` | 🔴 | 🔴 NEW: SV_AD.CMPGN_TYPE_BSN_NM -|0|전체 사업|전체사업 |
+| `sv_enum_newvalue_gate 2/4` | 🔴 | 🔴 NEW: SV_GA_SESSION.EP_PAYMENT_TYPE |
 | `sv_enum_newvalue_gate 3/4` | ✅ | ✅ 게이트 통과 |
-| `sv_enum_newvalue_gate 4/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 4/4` | 🔴 | 🔴 실행 오류(미판정): 002037 (42601): SQL compilation error: |
 
 > 🔴 **게이트 전수 PASS 는 「지침 준수」의 증거가 아니다**(`R3-9`).
 > 완료 보고 전에 **게이트가 보지 않는 축** ㉠~㉥ 를 자문한다.
