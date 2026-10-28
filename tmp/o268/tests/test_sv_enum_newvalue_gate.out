@@ -1,0 +1,13 @@
+✅ 종수 잔존 · got True · want True
+✅ 종수 공백 변형 · got True · want True
+✅ 종수 변형(원값·실측 값) · got True · want True
+✅ 종수 아님(값 뒤 다른 수) · got False · want False
+✅ 신규값 1건 · got ['D'] · want ['D']
+✅ 목록 낡음 다건 · got ['합계'] · want ['합계']
+✅ 종수 폐지 문구 · got False · want False
+✅ 목록 완전 일치 · got [] · want []
+✅ 예시 나열(커버 미달) · got None · want None
+✅ 고카디널리티 제외 · got None · want None
+✅ 목록 없음 · got None · want None
+✅ NULL 무시 · got [] · want []
+실패 0

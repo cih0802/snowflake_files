@@ -1,0 +1,17 @@
+PASS T1 SV명 파싱
+PASS T2 동의어 토큰(공91B)
+PASS T3 범위 전개(공#139~141)
+PASS T4 신규 #NN → 신NN
+PASS T5 가운뎃점 나열(공88·90)
+PASS T6 차원도 배선(공#130)
+PASS T7 테이블 행 제외(공99)
+PASS T8 SQL 주석 제외(공777)
+PASS T9 AI_SQL_GENERATION 규칙 문장 제외(공500)
+PASS N1 토큰 제거 → 공91 미배선
+PASS N2 범위 토큰 제거 → 공139 미배선
+PASS R1 정본 공91 → SV_SERVICE.D5_GIFT_AMT
+PASS R2 정본 공98 → SV_GA_SESSION 두 metric
+PASS R3 Agent SV_GA_SESSION → AGENT_MARKETING
+PASS R4 괄호 동의어 뒤 토큰(공4)
+
+🟢 PASS — 실패 0건

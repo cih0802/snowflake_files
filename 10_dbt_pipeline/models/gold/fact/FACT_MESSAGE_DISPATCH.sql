@@ -2,8 +2,8 @@
 -- Purpose    : 메시지/서비스 발송 팩트 (이메일·문자·알림톡·우편 발송 및 성공/실패/오픈 현황)
 -- Target     : GOLD.FACT_MESSAGE_DISPATCH (dbt model)
 -- Run order  : dbt build (문서실행순서 dbt 단계)
--- Depends on : ref CRM_SEND_MEMBER, ref CRM_SEND_REQUEST, ref CRM_SPONSOR_RELATION, ref CRM_RELATION_ACTIVITY, ref FACT_MEMBER_EVENT, ref FACT_MEMBER_MONTHLY 외 2
--- Issue      : O179, O180, O183, O241 외 13
+-- Depends on : ref CRM_SEND_MEMBER, ref CRM_SEND_REQUEST, ref CRM_SPONSOR_RELATION, ref CRM_RELATION_ACTIVITY, ref FACT_MEMBER_EVENT, ref FACT_MEMBER_MONTHLY · ref FACT_AT_GA_CLICK · ref FACT_AT_GA_LINK_MAP 외 2
+-- Issue      : O179, O180, O183, O241 외 14
 -- =============================================================================
 -- FACT_MESSAGE_DISPATCH: 메시지/서비스 발송 팩트 (이메일·문자·알림톡·우편 발송 및 성공/실패/오픈 현황)
 -- WARN: [2026-09-22 O179 · I1] 리터럴 pre_hook **제거** — `dbt_project.yml` `gold.fact:+pre-hook`
@@ -28,6 +28,7 @@ with s as (
 req as (
     select SNDNG_KEY, SEND_CHANNEL, SNDNG_TY_CD, TIT,
            SEND_GBN_TOP, SEND_GBN_MID, SEND_GBN_BOT, MSG_DIV_CD, MSG_TYPE,
+           NULLIF(TRIM(TMPLAT_ID), '') as TMPLAT_ID,   -- [O265-C] A 매핑 조인 키
            --  [O265] 알림톡 여부 = MSG_AT MS010 '4' · SND MSG_TYPE '1'(템플릿 AT 코드 1,560/1,560 · UM80684)
            (SEND_CHANNEL = 'MSG_AT' and MSG_DIV_CD = '4') or (SEND_CHANNEL = 'SND' and MSG_TYPE = '1') as IS_ALIMTALK
     from {{ ref('CRM_SEND_REQUEST') }}
@@ -154,18 +155,31 @@ at_send as (
     where q.IS_ALIMTALK
       and m.MBER_NO is not null and m.SNDNG_DE is not null
 ),
+-- 🔄 [2026-10-28 O265-C · 사용자 결정] A = **그 템플릿 링크의 클릭**(현업 정의) — 종전 「직전 5일 최근접 1발송 귀속」 폐기.
+--   종전 방식은 템플릿을 보지 않아 다른 캠페인 클릭이 섞였다(운영계 Q3 = 25kanm·생일·영수증 혼입).
+--   판정 = FACT_AT_GA_CLICK(수신~D+5 클릭) 중 그 템플릿의 매핑 패턴(FACT_AT_GA_LINK_MAP ②③)에 맞는 클릭 존재.
+--   매핑이 없는 템플릿 = NULL(판정 불가) · 질문 시 템플릿 정보(①)는 Agent 가 FACT_AT_GA_CLICK 로 직접 거른다.
+--   A 의 창·클릭 정의 = B 와 같다 ⇒ A ⊆ B 유지.
 ga_attr as (
-    select SNDNG_KEY, SEND_CHANNEL, MBER_NO, MIN(EVENT_TS) as GA_CLICK_TS
-    from (
-        select a.SNDNG_KEY, a.SEND_CHANNEL, a.MBER_NO, c.EVENT_TS
-        from ga_click c
-        join at_send a
-          on a.MBER_NO = c.MBER_NO
-         and a.SNDNG_DE <= c.EVENT_TS
-         and a.SNDNG_DE >= DATEADD(day, -5, c.EVENT_TS)
-        qualify row_number() over (partition by c.MBER_NO, c.EVENT_TS order by a.SNDNG_DE desc, a.SEND_CHANNEL, a.SNDNG_KEY desc) = 1
-    )
-    group by SNDNG_KEY, SEND_CHANNEL, MBER_NO
+    select SEND_REQUEST_SK, SEND_CHANNEL, MEMBER_DK, MIN(CLICK_TS) as GA_CLICK_TS
+    from {{ ref('FACT_AT_GA_CLICK') }}
+    where MAP_MATCHED = 1
+    group by 1, 2, 3
+),
+ga_map as (
+    select TEMPLATE_ID, MIN(MAP_SRC) as MAP_SRC from {{ ref('FACT_AT_GA_LINK_MAP') }} group by 1
+),
+--  [2026-10-28 O265-B-3 · 현업 결정 = 기간 수신일~D+5 · 열람 = GA 링크 클릭] B 축 「어떤 알림톡이라도 열람」.
+--   값 = 이 알림톡 수신 시각 ~ +5일 안에 같은 회원의 카카오 경로 GA 클릭이 1건이라도 있으면 1.
+--   B 는 템플릿을 보지 않고 창 안 클릭 존재만 본다(A = 그 템플릿 링크 클릭 · O265-C).
+--   A 와 창·클릭 정의가 같다 ⇒ A ⊆ B(구조적).
+ga_any as (
+    select distinct a.SNDNG_KEY, a.SEND_CHANNEL, a.MBER_NO
+    from at_send a
+    join ga_click c
+      on c.MBER_NO = a.MBER_NO
+     and c.EVENT_TS >= a.SNDNG_DE
+     and c.EVENT_TS <= DATEADD(day, 5, a.SNDNG_DE)
 )
 -- 🗑 [2026-10-22 O258] send_l(발송구분(대) 명칭 · DIM_SEND_TYPE) 제거 — 서비스 판정을 코드(r.SEND_GBN_TOP)로 바꿔 쓰임이 없다.
 
@@ -266,23 +280,41 @@ select
     --  [2026-10-28 O265] 알림톡 GA 클릭(열람 대용) · 06_DDL 동기 맨 끝.
     --   값 = 알림톡(MSG_AT·SND) · 발송일이 GA 적재 범위 안이면 1/0 · 범위 밖·비알림톡 = NULL(「안 눌렀다」가 아니라 「모른다」 · R2-7).
     --   (발송, 회원) 쌍이 중복 행(MSG_AT 35,152행 · UM80684)을 가지므로 **1행에만** 싣는다 ⇒ SUM 이 곧 클릭 수(D5_GIFT_PART_AMT 와 같은 관례).
+    --   🔄 [O265-C] 템플릿 매핑(②③)이 없는 알림톡도 NULL(판정 불가) — 근거 = GA_CLICK_MAP_SRC 'NONE'.
     CASE
         WHEN NOT COALESCE(r.IS_ALIMTALK, FALSE)                           THEN CAST(NULL AS NUMBER(1,0))
         WHEN s.SNDNG_DE::DATE NOT BETWEEN gw.GA_FROM AND gw.GA_TO          THEN CAST(NULL AS NUMBER(1,0))
+        WHEN gm.TEMPLATE_ID IS NULL                                       THEN CAST(NULL AS NUMBER(1,0))
         WHEN row_number() over (
                  partition by s.SNDNG_KEY, s.SEND_CHANNEL, s.MBER_NO
                  order by s.SNDNG_DE, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) > 1 THEN 0
         WHEN gc.GA_CLICK_TS IS NOT NULL                                   THEN 1
         ELSE 0
     END                                            as GA_CLICK_MEMBERS,
-    gc.GA_CLICK_TS                                 as GA_CLICK_TS
+    gc.GA_CLICK_TS                                 as GA_CLICK_TS,
+    --  [2026-10-28 O265-B-3] B 축 = 수신일~D+5 어떤 알림톡이라도 열람 1/0 · NULL·1행 규칙은 GA_CLICK_MEMBERS 와 같다 · 06_DDL 동기 맨 끝.
+    CASE
+        WHEN NOT COALESCE(r.IS_ALIMTALK, FALSE)                           THEN CAST(NULL AS NUMBER(1,0))
+        WHEN s.SNDNG_DE::DATE NOT BETWEEN gw.GA_FROM AND gw.GA_TO          THEN CAST(NULL AS NUMBER(1,0))
+        WHEN row_number() over (
+                 partition by s.SNDNG_KEY, s.SEND_CHANNEL, s.MBER_NO
+                 order by s.SNDNG_DE, s.MSG_KEY, s.MNG_NO, s.RELATNSP_KEY) > 1 THEN 0
+        WHEN gy.SNDNG_KEY IS NOT NULL                                     THEN 1
+        ELSE 0
+    END                                            as ANY_AT_GA_OPEN_MEMBERS,
+    --  [2026-10-28 O265-C] A 판정 근거 = 매핑 출처(MANUAL·WEB_TEAM·DIRECT·INFER) · 매핑 없음 'NONE' · 비알림톡 NULL · 06_DDL 동기 맨 끝
+    CASE WHEN COALESCE(r.IS_ALIMTALK, FALSE) THEN COALESCE(gm.MAP_SRC, 'NONE') END as GA_CLICK_MAP_SRC
 from s
 left join req r on s.SNDNG_KEY = r.SNDNG_KEY
 -- [O225-C] CAMPAIGN_BK 는 차원에서 유일(SK = gold_sk(CMPGN_CD)) ⇒ fan-out 0.
 left join {{ ref('DIM_CAMPAIGN') }} dc on dc.CAMPAIGN_BK = s.SND_CMPGN_CD
 cross join open_window ow
 cross join ga_window gw
-left join ga_attr gc  on gc.SNDNG_KEY = s.SNDNG_KEY and gc.SEND_CHANNEL = s.SEND_CHANNEL and gc.MBER_NO = s.MBER_NO
+-- [O265-C] FACT_AT_GA_CLICK 의 SEND_REQUEST_SK = gold_sk(SNDNG_KEY) — 아래 SEND_REQUEST_SK 산식과 같다
+left join ga_attr gc  on gc.SEND_REQUEST_SK = {{ gold_sk(['s.SNDNG_KEY']) }}
+                     and gc.SEND_CHANNEL = s.SEND_CHANNEL and gc.MEMBER_DK = s.MBER_NO
+left join ga_map gm   on gm.TEMPLATE_ID = r.TMPLAT_ID
+left join ga_any gy   on gy.SNDNG_KEY = s.SNDNG_KEY and gy.SEND_CHANNEL = s.SEND_CHANNEL and gy.MBER_NO = s.MBER_NO
 left join d5 d        on d.MEMBER_DK = s.MBER_NO and d.SEND_DATE = s.SNDNG_DE::DATE
 left join click_dev cd on cd.MEMBER_DK = s.MBER_NO and cd.OPEN_DATE = s.OPEN_DT::DATE
 left join gift_attr ga on ga.MEMBER_DK = s.MBER_NO and ga.SEND_DATE = s.SNDNG_DE::DATE

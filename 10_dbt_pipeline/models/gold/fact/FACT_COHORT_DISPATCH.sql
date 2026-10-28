@@ -36,7 +36,8 @@ disp as (
         t.ATMC_YN,
         f.SEND_TITLE,
         f.OPEN_MEMBERS,
-        f.GA_CLICK_MEMBERS
+        f.GA_CLICK_MEMBERS,
+        f.ANY_AT_GA_OPEN_MEMBERS
     from {{ ref('FACT_MESSAGE_DISPATCH') }} f
     join {{ ref('DIM_SEND_REQUEST') }} r
       on r.SEND_REQUEST_SK = f.SEND_REQUEST_SK
@@ -69,7 +70,9 @@ select
     -- 오픈 2축(합치지 않는다) · 원천 판정 불가 = NULL(R2-7)
     MAX(d.OPEN_MEMBERS)                                             as SND_OPENED,
     MAX(d.GA_CLICK_MEMBERS)                                         as GA_CLICKED,
-    {{ gold_meta('CRM') }}
+    {{ gold_meta('CRM') }},
+    -- [O265-B-3] B 축 = 수신일~D+5 어떤 알림톡이라도 열람(A ⊆ B) · ALTER ADD 로 붙으므로 감사 4컬럼 뒤 맨 끝(06_DDL 동기)
+    MAX(d.ANY_AT_GA_OPEN_MEMBERS)                                   as ANY_AT_GA_OPENED
 from ev e
 join disp d
   on d.MEMBER_DK = e.MEMBER_DK

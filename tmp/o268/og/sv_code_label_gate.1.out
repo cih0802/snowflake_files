@@ -1,0 +1,11 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[O268] 조각 2/8 — 기반 테이블 이름순 i % 8 == 1
+[SV 코드값·라벨축 게이트] SV 9종 · 컬럼 배킹 차원 76개 검사
+  🔴 코드값 부재(0행 오답 경로): SV_GA_BEHAVIOR.DEFAULT_CHANNEL_GROUP 열거 ['Organic Shopping', 'Paid Video'] · 실제 예 ['AI Assistant', 'Cross-network', 'Display', 'Email', 'Mobile Push Notifications', 'Organic Search', 'Organic Social', 'Organic Video']
+  🟠 열거 누락(§6.9-(5)): SV_SERVICE.GA_CLICK_MAP_SRC ▸ GA_CLICK_MAP_SRC distinct 4종 · 실제 예 ['DIRECT', 'INFER', 'MANUAL', 'NONE']
+  ⚪ SV_GA_CHILD_UNPAID.CRM_CHILD_CD: 코드축인데 LABEL_PAIRS 미등재(CHILD_CD) — 등재 필요
+  ⇒ 위반 2건 (코드값부재 1 · 종수 0 · 열거누락 1 · 라벨축 0 · 폐기리터럴 0) · 정보 1건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 1건 · advisory(🟠 열거누락) 1건
+🔴 게이트 실패 — 🔴 축은 blocking 이다(0행 오답·거짓 주장 경로).

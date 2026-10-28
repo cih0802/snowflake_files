@@ -190,7 +190,11 @@ select
     --  [2026-10-25 O262-B · 33_카테고리_GOLD반영계획 §1] 캠페인 유형 라벨 원값 3열(staging 1:1 · 06_DDL 동기 · 맨 끝 append)
     d.CMPGN_TYPE1_BSN_NM         as CMPGN_TYPE1_BSN_NM,    -- 국내·해외·통합·전체 [DGT 전용]
     d.CMPGN_TYPE2_BSN_NM         as CMPGN_TYPE2_BSN_NM,    -- 사례·사업·굿즈·기타·통합 [DGT 전용]
-    v.CMPGN_TY_NM                as CMPGN_TY_NM            -- 「해외 사례」 등 국내외×사업사례 결합 라벨 [VIDEO 전용 · CTV 시트 외 NULL]
+    v.CMPGN_TY_NM                as CMPGN_TY_NM,           -- 「해외 사례」 등 국내외×사업사례 결합 라벨 [VIDEO 전용 · CTV 시트 외 NULL]
+    --  [2026-10-28 O266 · 사용자 결정 ㉠-b] 최종정산금액(원천 LAST_STMT_AMT = 광고비 + 마크업 + 부가세 · 06_DDL 동기 · 맨 끝 append)
+    --   DGT 전용 — VIDEO 는 정산 개념 컬럼이 없고(LAST_AD_COST = 코어 AD_COST) REBRDC TOT_COST 는 「총비용」(편성+콘텐츠+콜센터)이라 대체물이 아니다 ⇒ NULL.
+    --   실측(ZS83821) = 410.9억 · AD_COST+MARKUP+VAT 일치 238,218/240,105행 · NULL 5행.
+    iff(p.AD_SOURCE_TYPE = 'DIGITAL', d.LAST_STMT_AMT, NULL)  as LAST_STMT_AMT
 from p
 left join {{ ref('AGENCY_AD_ROW_DGT') }}   d on d.AD_PERF_DK = p.AD_PERF_DK
 left join {{ ref('AGENCY_AD_ROW_VIDEO') }} v on v.AD_PERF_DK = p.AD_PERF_DK

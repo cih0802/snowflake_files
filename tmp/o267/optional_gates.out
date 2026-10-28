@@ -1,0 +1,15 @@
+GATE comment_drift_gate rc=1
+GATE decision_closure_gate rc=0
+GATE doc_line_length_gate rc=0
+GATE gold_erd_coverage_gate rc=0
+GATE handoff_ddl_gate rc=0
+GATE live_change_gate rc=1
+GATE rename_stale_gate rc=1
+GATE stage_mount_size_gate rc=0
+GATE sv_code_label_gate rc=143
+GATE sv_comment_object_gate rc=0
+GATE sv_common_block_gate rc=0
+GATE sv_unit_gate rc=1
+GATE table_ddl_column_gate rc=1
+GATE wide_select_yml_gate rc=0
+OPTIONAL_GATES_DONE fail=6 (출력 = /tmp/optional_gates/<게이트>.out)

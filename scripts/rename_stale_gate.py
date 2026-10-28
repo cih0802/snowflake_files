@@ -126,7 +126,10 @@ GEN = ('02_SILVER 스키마 컬럼 인벤토리', '02_gold 스키마 컬럼 인�
 #:   🔴 손으로 고치지 마라(`R1-7-4`) · 🔴 재생성으로도 사라지지 않는다(위 GEN 주석 참조).
 #:   🟢 이 파일들의 개명 반영은 **정본이 고쳐지면 다음 발행에서 따라온다**(감사 이력은 영구 보존).
 SNAPSHOT = ('scripts/golden/', 'scripts/outputs.json', 'scripts/doc_headings.json',
-            'scripts/index_rows.json')
+            'scripts/index_rows.json',
+            # 🆕 [O268] 계정별 라이브 측정 원문(`30_output_share/_ENV/<계정>/S30_*.csv`) = 그 시각 라이브 이름의
+            #   **복사물**이다(as_of 머리줄). 운영계가 개명 전이면 옛 이름이 찍히는 것이 정상 — 고치면 측정이 위조된다.
+            '30_output_share/_ENV/')
 #: 🟢 세션 근거철 = 발행 후 갱신하지 않는 정적 발행물 ⇒ 축3 과 같이 취급한다.
 EVIDENCE = re.compile(r'/_o\d+[a-z]*_')
 

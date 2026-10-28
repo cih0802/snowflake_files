@@ -28,12 +28,20 @@ AUDIT_SQL = ("'{src}' AS DW_SOURCE_SYSTEM,\n"
 
 def gold_ddl_columns(table):
     s = io.open(GOLD_DDL, encoding='utf-8').read()
-    pat = rf'CREATE\s+OR\s+REPLACE\s+TABLE\s+GN_DW\.GOLD\.{table}\s*\('
+    # 🆕 [O268] `CREATE TABLE IF NOT EXISTS` 형도 인정 — 06_DDL `DIM_ORG_SUCCESSION`(O252 · 재실행 안전 형식)을
+    #   「DDL 블록 없음」으로 오탐했다(O267 실측 · 블록은 06_DDL 에 실재).
+    pat = rf'CREATE\s+(?:OR\s+REPLACE\s+TABLE|TABLE\s+IF\s+NOT\s+EXISTS)\s+GN_DW\.GOLD\.{table}\s*\('
     m = re.search(pat, s)
     if not m:
         return None
     i = m.start()
-    j = s.index('\n) COMMENT =', i)
+    # 🆕 [O268] 블록 끝 = 그 CREATE 뒤 **첫 번째 열 0 의 `)`** 줄. 종전 `'\n) COMMENT ='` 고정 검색은
+    #   `) CLUSTER BY (…)` + 다음 줄 `COMMENT =` 형태(O248 FACT_MEMBER_EVENT_COHORT · O265 FACT_COHORT_DISPATCH)를
+    #   못 닫아 **다음 테이블 블록까지** 읽었다 ⇒ 남의 컬럼과 `CREATE`·`COMMENT` 토큰이 「DDL 에만」으로 잡혔다(O267 실측).
+    m_end = re.compile(r'\n\)').search(s, i)
+    if not m_end:
+        return None
+    j = m_end.start()
     out = []
     for line in s[i:j].split('\n')[1:]:
         t = line.strip()
@@ -364,7 +372,9 @@ def main():
     fails = 0
     drift = 0
 
-    gold_tables = re.findall(r'CREATE OR REPLACE TABLE GN_DW\.GOLD\.([A-Z0-9_]+)', io.open(GOLD_DDL, encoding='utf-8').read())
+    gold_tables = list(dict.fromkeys(re.findall(
+        r'CREATE (?:OR REPLACE TABLE|TABLE IF NOT EXISTS) GN_DW\.GOLD\.([A-Z0-9_]+)',  # [O268] IF NOT EXISTS 형 포함
+        io.open(GOLD_DDL, encoding='utf-8').read())))
     gold_model_files = {p.stem: p for p in Path('/workspace/10_dbt_pipeline/models/gold').glob('**/*.sql')}
 
     silver_models = sorted(list(Path('/workspace/10_dbt_pipeline/models/silver').glob('**/*.sql')))
@@ -383,6 +393,10 @@ def main():
     print(f'=== [GOLD 계층: {len(gold_tables)} 테이블] ===')
     for tbl in gold_tables:
         if tbl not in gold_model_files:
+            # 🆕 [O268] seed 로 적재되는 표(`seeds/<이름>.csv`)는 모델이 없는 것이 정상이다 — 대조 대상 밖(⚪).
+            if Path(f'/workspace/10_dbt_pipeline/seeds/{tbl}.csv').exists():
+                print(f'  {tbl:<28} ⚪ seed 적재(모델 아님 · 컬럼 대조 대상 밖)')
+                continue
             print(f'  {tbl:<28} 🔴 Model file not found')
             fails += 1
             continue

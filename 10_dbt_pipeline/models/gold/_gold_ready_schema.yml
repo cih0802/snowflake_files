@@ -888,6 +888,10 @@ models:
 
   - name: FACT_AD_PERFORMANCE
     columns:
+      # 🆕 [2026-10-28 O266] 최종정산금액 = DIGITAL 전용(그 밖 원천은 개념 부재 NULL)
+      - name: "AD_SOURCE_TYPE = 'DIGITAL' OR LAST_STMT_AMT IS NULL"
+        tests:
+          - accepted_values: { values: [true], quote: false }
       # 🆕 [2026-10-15 O232] 귀속 경로·소재 매핑 수준 도메인(값이 늘면 06_DDL COMMENT 와 함께 고친다)
       - name: MKTG_MAP_METHOD
         tests:
@@ -1458,3 +1462,75 @@ models:
               to: ref('DIM_SEND_REQUEST')
               field: SEND_REQUEST_SK
               config: { severity: warn }
+      # [2026-10-28 O265-B-3] B 축(어떤 알림톡이라도 열람) — 값 범위 · A ⊆ B(구조적 성립 · 깨지면 귀속 로직 회귀)
+      - name: ANY_AT_GA_OPENED
+        tests:
+          - accepted_values: { values: [0, 1], quote: false }
+      - name: "COALESCE(GA_CLICKED, 0) <= COALESCE(ANY_AT_GA_OPENED, 0)"
+        tests:
+          - accepted_values: { values: [true], quote: false }
+  # [2026-10-28 O265-C] 알림톡 열람 A 우선순위(① 질문 시 템플릿 정보 > ② 고정 매핑표 > ③ 추정표)
+  - name: FACT_AT_GA_LINK_MAP
+    description: >
+      알림톡 템플릿 → GA 최종 랜딩 패턴 매핑 — grain = TEMPLATE_ID × MATCH_PATTERN · 템플릿마다 한 출처(MAP_PRIORITY 최소)만.
+    columns:
+      - name: "TEMPLATE_ID || '|' || MATCH_PATTERN"
+        tests: [unique]
+      - name: MAP_SRC
+        tests:
+          - not_null
+          - accepted_values: { values: ['MANUAL', 'WEB_TEAM', 'DIRECT', 'INFER'] }
+      # 「템플릿당 한 출처」 판정은 45 [D2-2] 대사 쿼리가 한다(yml 내장 테스트로 표현 불가)
+  - name: FACT_AT_GA_CLICK
+    description: >
+      알림톡 수신 후 D+5 카카오 경로 GA 클릭 — grain = 발송요청 × 채널 × 회원 × 클릭 시각 × 랜딩.
+      (발송, 회원) 집합 = FACT_MESSAGE_DISPATCH 의 B(ANY_AT_GA_OPEN_MEMBERS = 1).
+    columns:
+      - name: DAYS_FROM_SEND
+        tests:
+          - accepted_values: { values: [0, 1, 2, 3, 4, 5], quote: false }
+      - name: MAP_MATCHED
+        tests:
+          - accepted_values: { values: [0, 1], quote: false }
+      - name: "(MAP_SRC IS NULL) = (MAP_MATCHED IS NULL)"
+        tests:
+          - accepted_values: { values: [true], quote: false }
+      - name: DATE_SK
+        tests:
+          - relationships:
+              to: ref('DIM_DATE')
+              field: DATE_SK
+              config: { severity: warn }
+      - name: MEMBER_DK
+        tests:
+          - relationships:
+              to: ref('DIM_MEMBER')
+              field: MEMBER_DK
+              config: { severity: warn }
+      - name: SEND_REQUEST_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_SEND_REQUEST')
+              field: SEND_REQUEST_SK
+              config: { severity: warn }
+  # [2026-10-28 O266] 마케팅캠페인 × 월 비용·개발 결합(현업 피드백 2) — 원천별 합계 대사 = 46 [D2]
+  - name: FACT_MKTG_CAMPAIGN_MONTHLY_COST
+    description: >
+      마케팅캠페인 × 월 광고비·디지털 정산액·제작비(캠페인코드 기재분)·MSTR 개발(건) 결합.
+      🔴 개발단가 = 광고비 ÷ MSTR 개발(건) · 회원수·결의 건수는 월 간 합산 금지.
+    columns:
+      - name: "MKTG_CAMPAIGN_SK || '|' || MONTH_KEY"
+        tests: [unique]
+      - name: MKTG_CAMPAIGN_SK
+        tests:
+          - not_null
+          - relationships:
+              to: ref('DIM_MARKETING_CAMPAIGN')
+              field: MKTG_CAMPAIGN_SK
+              config: { severity: warn }
+      - name: MONTH_KEY
+        tests: [not_null]
+      - name: "MKTG_CAMPAIGN_SK <> 0 OR PROD_COST IS NULL"
+        tests:
+          - accepted_values: { values: [true], quote: false }

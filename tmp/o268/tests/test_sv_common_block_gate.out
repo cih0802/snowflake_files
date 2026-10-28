@@ -1,0 +1,27 @@
+소스 지시문 1 · 라이브 SV - · 위반 0
+✅ 게이트 통과
+✅ ㉠ 정본 + 고유 규칙 = PASS · got 0 · want 0
+소스 지시문 1 · 라이브 SV - · 위반 0
+✅ 게이트 통과
+✅ ㉠ 소문자 키워드도 정본이면 PASS · got 0 · want 0
+  🔴 SRC_MISSING 05_02_a.sql:2 '핵심 규칙: (1) x'
+소스 지시문 1 · 라이브 SV - · 위반 1
+❌ 게이트 실패
+✅ ㉡ 블록 누락 = FAIL · got 1 · want 1
+  🔴 SRC_MISSING 05_03_a.sql:2 "[O216 공통] 지표를 컬럼처럼 쓰지 않는다. ''(미매칭)'' 표기. [O206-C 합계] 합계 행 금지"
+소스 지시문 1 · 라이브 SV - · 위반 1
+❌ 게이트 실패
+✅ ㉢ 1자 변형 = FAIL · got 1 · want 1
+  🔴 SRC_MISSING 22_a.sql:2 "[O9 고유] [O216 공통] 지표를 컬럼처럼 쓰지 않는다. ''(미매칭)'' 표기. [O206-C 합계]"
+소스 지시문 1 · 라이브 SV - · 위반 1
+❌ 게이트 실패
+✅ ㉣ 고유 절이 앞 = FAIL · got 1 · want 1
+  🔴 SRC_MISSING 25_a.sql:4 '변형'
+소스 지시문 2 · 라이브 SV - · 위반 1
+❌ 게이트 실패
+✅ ㉤ 리터럴 하나라도 위반이면 FAIL(두 번째 SV) · got 1 · want 1
+🔴 CANON 실행 오류(미판정): [Errno 2] No such file or directory: '/tmp/tmponwt2weo/00_SV_공통지시문.md'
+✅ ㉥ 정본 문서 부재 = rc 2 · got 2 · want 2
+🔴 SRC_NONE — 분모 지시문 0(경로 확인)
+✅ ㉦ 분모 0 = FAIL · got 1 · want 1
+실패 0

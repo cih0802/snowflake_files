@@ -908,6 +908,12 @@ END-METADATA -->
 | **카테고리 귀속 출처 MKTG_REP** | `AD_CTGR_SRC` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 카테고리 귀속 출처 MKTG_REP(마케팅캠페인 대표값)·CREATIVE_MAP(소재 매핑 확정)·NONE(귀속 없음). |
 | **AD_CTGR_IS_MULTI** | `AD_CTGR_IS_MULTI` | BOOLEAN | YES | GOLD.FACT_AD_PERFORMANCE (fap) | TRUE = 마케팅캠페인 아래 카테고리가 여럿이라 대표값을 썼다(광고비 기준 약 72%). 🔴 카테고리별 광고비를 답할 때 이 비중을 함께 밝힌다. NONE 행 = NULL. |
 | **광고비 귀속 카테고리명 나열** | `AD_CTGR_NM_LIST` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 광고비 귀속 카테고리명 나열(표시 전용 · 쉼표 구분 · 매핑 행수 많은 순 · 첫 항목 = AD_CTGR_NM). 다중이 아니면 AD_CTGR_NM 1개 · 귀속 없음 = NULL. 🔴 GROUP BY·필터·합산 금지 — 집계는 AD_CTGR_NM 으로만. |
+| **상위 캠페인코드** | `UPPER_CAMPAIGN_CD` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 상위 캠페인코드(U#### · CRM 상위캠페인코드) ← VIDEO 상위캠페인 값 중 코드형(2026-06 이후 행) [VIDEO 전용 · 이름형 행·그 밖 원천 NULL]. |
+| **상위 캠페인명** | `UPPER_CAMPAIGN_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 상위 캠페인명 ← VIDEO 상위캠페인 값 중 이름형(2026-05 이전 행 · 원천이 개명 전 값을 둠) [VIDEO 전용]. 코드형은 UPPER_CAMPAIGN_CD · 두 열 동시 채움 없음. |
+| **캠페인유형1(사업)** | `CMPGN_TYPE1_BSN_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 캠페인유형1(사업) 국내·해외·통합·전체 원값 ← DGT.CMPGN_TYPE1_BSN_NM [DGT 전용 · 그 밖 NULL = 원천 부재]. |
+| **캠페인유형2(사업)** | `CMPGN_TYPE2_BSN_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 캠페인유형2(사업) 사례·사업·굿즈·기타·통합 원값 ← DGT.CMPGN_TYPE2_BSN_NM [DGT 전용]. |
+| **캠페인유형(영상)** | `CMPGN_TY_NM` | TEXT | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 캠페인유형(국내외×사업사례 결합 원값 · 예 「해외 사례」) ← VIDEO.CMPGN_TY_NM [VIDEO 전용 · CTV 시트 외 NULL]. |
+| **최종정산금액(원)** | `LAST_STMT_AMT` | NUMBER | YES | GOLD.FACT_AD_PERFORMANCE (fap) | 최종정산금액(원) = 광고비 + 마크업 + 부가세 ← FACT_AD_PERFORMANCE.LAST_STMT_AMT [DGT 전용 · 그 밖 NULL] (O266). |
 
 ---
 

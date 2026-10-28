@@ -50,6 +50,7 @@
 --    · 종전 ANALYST 범위는 SILVER·GOLD 읽기까지였다(01_환경 Role.md §2.2 scope = "SILVER(읽기), GOLD(읽기), SERVING 소비").
 --      BRONZE 가 추가되면서 **owner's rights 경유 확산**이 새 위험으로 들어온다 → §D.7 상단 경고 참조.
 use role accountadmin;
+ALTER ACCOUNT SET TIMEZONE = 'Asia/Seoul';
 alter user identifier('TRIALADMIN') set default_secondary_roles=();
 /* =====================================================================
    A. 웨어하우스 (01_환경 Role.md §1.2)
@@ -686,4 +687,8 @@ GRANT USAGE, CREATE TABLE ON SCHEMA GN_DW.dbt_test__audit TO ROLE GN_DW_DBT;
 --      SILVER seed = 04_silver_design/08_SILVER_테이블DDL_20260714.sql 끝 MAP_* 4종 · 기존 환경 = 05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql
 --      GOLD seed  = 03_top-down_gold/06_DDL.sql ORG_SUCCESSION_MANUAL · 기존 환경 = 05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql [D1]
 --   WARN: 권한으로 풀지 마라 — dbt 가 만든 테이블은 GN_DW_DBT 소유가 되어 COMMENT·PK 정본(DDL)과 소유 체계(ADMIN)가 갈라진다.
+-- [1-g] [2026-10-28 O266] MSTR 읽기 — GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST 가 MSTR 개발(건)(F_MM_SPNSR_DVLP_SUM)을 읽는다.
+--   읽기 전용(SELECT) · MSTR 적재는 MSTR 프로시저 소관(dbt 가 쓰지 않는다).
+--   WARN: 이 파일은 GN_DW.MSTR 스키마 생성 **전**에 실행된다 ⇒ GRANT 본문은 여기 두지 않는다(신규 구축 시 002003 실패).
+--   정본 = 15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql [4-b] · 기존 환경 = 05_SV-Agent_ai/46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql [D0]
 

@@ -1,0 +1,260 @@
+질문: 캠페인카테고리별 회원 LTV를 상한과 무기한 기준으로 표로 보여줘.
+도구: ['analyst_member_cohort', 'analyst_member_fee', 'system_execute_sql'] · SV ['GN_DW.SERVING.SV_MEMBER_COHORT', 'GN_DW.SERVING.SV_MEMBER_FEE'] · 표 2 · 오류 []
+
+## ① 핵심 요약
+- 회원 수가 1만 명 이상인 주요 캠페인카테고리 가운데 **상한(80개월) 기준 회원 LTV는 홈페이지(PC/모바일)가 1,819,021원으로 가장 높습니다**(GN_DW 기준 · 전체 기간).
+- **무기한 기준으로는 홈페이지(PC/모바일)가 4,484,980원, 기타 디지털캠페인이 4,277,302원**으로 상위 두 곳이고, 희망TV가 3,197,792원으로 뒤를 잇습니다.
+- **굿즈캠페인(603,983원)과 가두캠페인(678,313원)은 상한 기준 LTV가 가장 낮습니다.** 유지개월이 짧은 영향이 큽니다.
+
+## ③ 상세
+
+**캠페인카테고리별 회원 LTV (GN_DW 기준 · Agent 계산값 · 고정값 아님 · 회원 수 1만 명 이상 12개 카테고리)**
+
+| 구분 | 유지개월(상한 80) | 유지개월(무기한) | 월평균 납입회비(원) | LTV(상한 80, 원) | LTV(무기한, 원) |
+|---|---|---|---|---|---|
+| 홈페이지(PC/모바일) | 60.03 | 148.01 | 30,301.87 | 1,819,021 | 4,484,980 |
+| 희망TV | 61.50 | 112.75 | 28,361.79 | 1,744,250 | 3,197,792 |
+| 기타 디지털캠페인 | 69.67 | 235.86 | 18,134.92 | 1,263,460 | 4,277,302 |
+| 초등캠페인 | 53.31 | 122.57 | 21,766.63 | 1,160,379 | 2,667,936 |
+| 국내여아지원캠페인 | 51.32 | 65.62 | 21,135.78 | 1,084,688 | 1,386,930 |
+| 국내사례캠페인 | 47.94 | 82.02 | 22,458.88 | 1,076,679 | 1,842,077 |
+| 그외 지역개발캠페인 | 52.90 | 145.36 | 18,422.35 | 974,542 | 2,677,873 |
+| 유아캠페인 | 40.08 | 59.66 | 22,959.35 | 920,211 | 1,369,755 |
+| 기타 영상광고 | 57.02 | 95.38 | 14,868.97 | 847,829 | 1,418,202 |
+| 청소년캠페인 | 41.77 | 57.68 | 17,897.03 | 747,559 | 1,032,301 |
+| 가두캠페인 | 35.18 | 51.66 | 19,281.22 | 678,313 | 996,068 |
+| 굿즈캠페인 | 29.04 | 29.04 | 20,798.31 | 603,983 | 603,983 |
+
+
+[캠페인카테고리별 기대 유지개월(상한·무기한) 전체 74개 · GN_DW 기준]
+캠페인카테고리 | 회원수(명) | 상한(개월) | 유지개월(상한) | 유지개월(무기한)
+위기가정 | 48 | 80 | 80.00 | 80.00
+해외교육 | 53 | 80 | 80.00 | 80.00
+기타 | 24 | 80 | 80.00 | 80.00
+보호종료 | 2 | 80 | 80.00 | 80.00
+참전용사 | 1 | 80 | 80.00 | 80.00
+유어턴 | 1 | 80 | 80.00 | 80.00
+희망학교 | 1 | 80 | 80.00 | 80.00
+트롯챔피언 | 24 | 80 | 76.71 | 76.71
+국내결식 | 19 | 80 | 75.84 | 75.84
+지역후원운영이사회 | 94 | 80 | 74.01 | 74.01
+꿈지원 | 25 | 80 | 73.68 | 73.68
+기타 기업 | 7779 | 80 | 73.45 | 234.71
+지역기부 | 211 | 80 | 73.28 | 73.28
+기존회원캠페인 및 기타 | 10202 | 80 | 72.61 | 211.63
+홈페이지 | 54 | 80 | 71.22 | 71.22
+기타 디지털캠페인 | 48467 | 80 | 69.67 | 235.86
+휴먼다큐소원 | 630 | 80 | 68.20 | 68.20
+참전용사캠페인 | 4663 | 80 | 65.64 | 65.64
+제작DM | 1313 | 80 | 63.70 | 94.45
+기타 방송캠페인 | 24890 | 80 | 61.76 | 170.76
+앱회원마케팅 | 356 | 80 | 61.54 | 61.54
+희망TV | 40288 | 80 | 61.50 | 112.75
+지역 네트워크 | 413 | 80 | 61.29 | 61.29
+콜 기타 | 3915 | 80 | 60.70 | 91.51
+(미상) | 718 | 80 | 60.56 | 92.29
+홈페이지(PC/모바일) | 131918 | 80 | 60.03 | 148.01
+잘먹고잘사는법플러스 | 6991 | 80 | 59.24 | 59.24
+전체사업 | 55 | 80 | 58.19 | 58.19
+기타DM | 283 | 80 | 58.17 | 84.57
+꾸까캠페인 | 14 | 80 | 58.01 | 58.01
+… 외 44행
+
+
+원천: CRM(eCRM) → BRONZE_CRM.TM_MM_FDRM_MBER_DVLP_AMT·TM_MM_FDRM_MBER_SPNSR_DSCNTC → GOLD.FACT_MEMBER_COHORT
+
+
+[캠페인카테고리별 월평균 납입회비 전체 · GN_DW 기준]
+캠페인카테고리 | 납입회비(원) | 납입 회원월(건) | 월평균 납입회비(원)
+초등캠페인 | 192065644544.00 | 8823856 | 21766.63
+홈페이지(PC/모바일) | 102617275816.00 | 3386500 | 30301.87
+기타 영상광고 | 92568710941.00 | 6225631 | 14868.97
+국내여아지원캠페인 | 72800113410.00 | 3444402 | 21135.78
+국내사례캠페인 | 47410172229.00 | 2110977 | 22458.88
+그외 지역개발캠페인 | 36547887825.00 | 1983889 | 18422.35
+유아캠페인 | 34196324063.00 | 1489429 | 22959.35
+기타 디지털캠페인 | 27025516608.00 | 1490247 | 18134.92
+희망TV | 24264219713.00 | 855525 | 28361.79
+인바운드 | 20710702089.00 | 746835 | 27731.30
+기타 방송캠페인 | 17457365963.00 | 629038 | 27752.48
+해외아동결연캠페인 | 16008445956.00 | 446989 | 35813.96
+청소년캠페인 | 15127585827.00 | 845257 | 17897.03
+굿즈캠페인 | 14831024830.00 | 713088 | 20798.31
+글로벌도네이션쇼W | 10434777512.00 | 596176 | 17502.85
+국내사업캠페인 | 10419185887.00 | 440216 | 23668.35
+교회캠페인 | 10024220387.00 | 385373 | 26011.74
+기존회원캠페인 및 기타 | 7624558125.00 | 274818 | 27744.03
+해외캠페인 | 7051102621.00 | 340989 | 20678.39
+기타 기업 | 5945702524.00 | 234886 | 25313.14
+기타 재송출 | 5868323597.00 | 269798 | 21750.80
+고려인캠페인 | 4854046536.00 | 223151 | 21752.30
+자립지원캠페인 | 4447137981.00 | 162058 | 27441.64
+가두캠페인 | 3979604431.00 | 206398 | 19281.22
+후원내역확인및변경 | 3924793282.00 | 128566 | 30527.46
+좋은이웃가게 | 2653052378.00 | 72501 | 36593.32
+콜 기타 | 2610149248.00 | 90879 | 28721.15
+바다건너사랑 | 2599632804.00 | 97136 | 26762.82
+세상에서가장아름다운여행 | 2520302815.00 | 105576 | 23871.93
+기타 마케팅콜개발 | 2378886998.00 | 144525 | 16460.04
+… 외 43행
+
+
+원천: CRM(eCRM) → BRONZE_CRM.TM_PM_MBRFEE_ACMSLT·TM_PM_DNTN_DTLS → GOLD.FACT_MEMBER_FEE
+
+**계산 방법과 한계**
+- 회원 LTV = 월평균 납입회비 × 기대 유지개월입니다. 두 데이터는 단위가 달라 하나로 합쳐 조회하지 않았습니다. 같은 캠페인카테고리 기준으로 각각 조회한 뒤 결과값을 곱했습니다.
+- 기대 유지개월은 회원이 획득 후 평균적으로 얼마나 후원을 유지하는지를 생존분석으로 추정한 값이며, 아직 후원 중인 회원도 포함합니다.
+  - 상한은 아직 후원 중인 회원의 평균 유지개월을 올림한 값으로, 현재 80개월입니다.
+  - 무기한은 관측된 최대 기간과 상한 중 더 긴 기간까지 계산한 값이라 항상 상한 이상입니다.
+  - 중단한 회원만의 평균 유지기간은 실제보다 짧게 나오므로 쓰지 않았습니다.
+- 월평균 납입회비는 회비만 포함하고 기부금은 뺐습니다. 납입 회비를, 회비를 낸 회원별 회비월 수로 나눈 값입니다.
+  - 기간은 전체 기간이며, 당월보다 뒤인 선납분과 회비월이 비어 있는 행은 뺐습니다.
+- 캠페인카테고리는 회원을 처음 데려온(획득 시점) 캠페인 기준입니다.
+- 회원 수가 적은 카테고리는 값이 불안정합니다. 예를 들어 위기가정(48명)은 유지개월이 80.00개월로 나옵니다. 그래서 회원 수 1만 명 이상인 카테고리만 표에 넣었고, 전체 값은 위 두 원천 표에서 볼 수 있습니다.
+- 값이 '(미상)'인 행은 원천에서 캠페인카테고리가 비어 있는 회원입니다.
+
+다음으로 볼 수 있는 기준: 개발인입경로별 LTV · 캠페인유형(국내/해외)별 LTV · 머신러닝 캠페인 LTV 예측
+
+--- SQL ---
+WITH __surv AS (
+  SELECT
+    axis_type,
+    axis_value,
+    cohort_members,
+    rmst_cum
+  FROM GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL
+)
+SELECT
+  axis_value AS "캠페인카테고리",
+  CAST(ROUND(cap_m, 2) AS DECIMAL(38, 2)) AS "유지개월(상한)",
+  cap_n AS "상한(개월)",
+  CAST(ROUND(unl_m, 2) AS DECIMAL(38, 2)) AS "유지개월(무기한)",
+  members AS "회원수(명)"
+FROM (
+  SELECT
+    __surv.axis_value,
+    MAX(__surv.cohort_members) AS members,
+    MAX(
+      IFF(
+        NOT __surv.ltv_cap_avg_active_months IS NULL
+        AND __surv.ltv_cap_avg_active_months <> 9999,
+        __surv.rmst_cum,
+        NULL
+      )
+    ) AS cap_m,
+    MAX(
+      IFF(__surv.ltv_cap_avg_active_months <> 9999, __surv.ltv_cap_avg_active_months, NULL)
+    ) AS cap_n,
+    GREATEST(
+      COALESCE(MAX(IFF(__surv.ltv_cap_avg_active_months = 9999, __surv.rmst_cum, NULL)), 0),
+      COALESCE(
+        MAX(
+          IFF(
+            NOT __surv.ltv_cap_avg_active_months IS NULL
+            AND __surv.ltv_cap_avg_active_months <> 9999,
+            __surv.rmst_cum,
+            NULL
+          )
+        ),
+        0
+      )
+    ) AS unl_m
+  FROM __surv
+  WHERE
+    __surv.axis_type = '캠페인카테고리'
+  GROUP BY
+    __surv.axis_value
+)
+ORDER BY
+  cap_m DESC NULLS LAST /* Generated by Cortex */;
+WITH __surv AS (
+  SELECT
+    ltv_cap_avg_active_months AS surv_ltv_cap_avg_active_months,
+    axis_type,
+    axis_type AS surv_axis_type,
+    axis_value,
+    axis_value AS surv_axis_value,
+    cohort_members,
+    rmst_cum
+  FROM GN_DW.GOLD.FACT_MEMBER_COHORT_SURVIVAL
+)
+SELECT
+  axis_value AS "캠페인카테고리",
+  members AS "회원수(명)",
+  cap_n AS "상한(개월)",
+  CAST(ROUND(cap_m, 2) AS DECIMAL(38, 2)) AS "유지개월(상한)",
+  CAST(ROUND(unl_m, 2) AS DECIMAL(38, 2)) AS "유지개월(무기한)"
+FROM (
+  SELECT
+    __surv.surv_axis_value AS axis_value,
+    MAX(__surv.cohort_members) AS members,
+    MAX(
+      IFF(
+        NOT __surv.surv_ltv_cap_avg_active_months IS NULL
+        AND __surv.surv_ltv_cap_avg_active_months <> 9999,
+        __surv.rmst_cum,
+        NULL
+      )
+    ) AS cap_m,
+    MAX(
+      IFF(
+        __surv.surv_ltv_cap_avg_active_months <> 9999,
+        __surv.surv_ltv_cap_avg_active_months,
+        NULL
+      )
+    ) AS cap_n,
+    GREATEST(
+      COALESCE(MAX(IFF(__surv.surv_ltv_cap_avg_active_months = 9999, __surv.rmst_cum, NULL)), 0),
+      COALESCE(
+        MAX(
+          IFF(
+            NOT __surv.surv_ltv_cap_avg_active_months IS NULL
+            AND __surv.surv_ltv_cap_avg_active_months <> 9999,
+            __surv.rmst_cum,
+            NULL
+          )
+        ),
+        0
+      )
+    ) AS unl_m
+  FROM __surv
+  WHERE
+    __surv.surv_axis_type = '캠페인카테고리'
+  GROUP BY
+    __surv.surv_axis_value
+)
+ORDER BY
+  cap_m DESC NULLS LAST /* Generated by Cortex */;
+WITH __fee AS (
+  SELECT
+    acq_campaign_type,
+    month_key,
+    paid_fee_billable,
+    member_dk
+  FROM GN_DW.GOLD.WIDE_MEMBER_FEE
+)
+SELECT
+  acq_campaign_type AS "캠페인카테고리",
+  paid AS "납입회비(원)",
+  member_months AS "납입 회원월(건)",
+  CAST(ROUND(paid / NULLIF(NULLIF(member_months, 0), 0), 2) AS DECIMAL(38, 2)) AS "월평균 납입회비(원)"
+FROM (
+  SELECT
+    __fee.acq_campaign_type,
+    SUM(__fee.paid_fee_billable) AS paid,
+    COUNT(
+      DISTINCT IFF(
+        __fee.paid_fee_billable > 0,
+        __fee.member_dk || '-' || TO_CHAR(__fee.month_key),
+        NULL
+      )
+    ) AS member_months
+  FROM __fee
+  WHERE
+    __fee.month_key > 0
+    AND __fee.month_key <= TO_NUMBER(TO_CHAR(CURRENT_DATE, 'yyyymm'))
+  GROUP BY
+    __fee.acq_campaign_type
+)
+ORDER BY
+  paid DESC NULLS LAST /* Generated by Cortex */;

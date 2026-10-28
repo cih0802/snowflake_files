@@ -1,0 +1,15 @@
+PASS 축0 정상 문안 PASS
+PASS 축1 리니지 밖 테이블 FAIL
+PASS 축1-B 주석 ref 비리니지
+PASS 축1-C DIM 경유 원천 허용
+PASS 축2 GOLD 리니지 밖 FAIL
+PASS 축2-B 조상 팩트 허용 + 파생 팩트 CORE 하강
+PASS 축3 CORE 누락 advisory
+PASS 축4 미기재 advisory
+PASS 축4-B 미기재 strict FAIL
+PASS 축5 dbt 밖 SV 관측
+PASS 축6-A 차원 원천 집합
+PASS 축6-B 차원 원천 미기재는 ③ 아님
+PASS 축6-C 핵심 누락은 여전히 ③ + DEC 안내
+========================================
+ALL PASS

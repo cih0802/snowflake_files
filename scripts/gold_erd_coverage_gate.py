@@ -108,6 +108,18 @@ KNOWN_ORPHANS = {
         "17,510,051행 · NULL 0 · distinct 70 · 미해소 0 · 운영계(S30 ZL50263 2026-10-27) NULL 0 · distinct 69. "
         "🔴 ERD 에 논리 관계로 표기한다.",
     ),
+    # 🆕 [2026-10-28 O265-B] 코호트 × 사건 전후 발송 브리지 — 코호트 복합키(4열) 중 conform 축 2종.
+    #   같은 팩트의 SEND_TYPE_SK·SEND_REQUEST_SK 는 yml relationships(warn) 로 선언했다 ⇒ 여기 두지 않는다.
+    ("FACT_COHORT_DISPATCH", "EVENT_MONTH_KEY"): (
+        "CONFORM",
+        "역할기반 월 축(사건월) → DIM_MONTH.MONTH_KEY. 코호트 FACT_MEMBER_EVENT_COHORT 4열 복합키의 일부. "
+        "실측(UM80684 2026-10-28) 2,538,548행 · NULL 0 · distinct 35 · 미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+    ),
+    ("FACT_COHORT_DISPATCH", "MEMBER_DK"): (
+        "CONFORM",
+        "회원 축 → DIM_MEMBER.MEMBER_DK. 실측(UM80684 2026-10-28) 2,538,548행 · NULL 0 · distinct 577,690 · "
+        "미해소 0. 🔴 ERD 에 논리 관계로 표기한다.",
+    ),
     ("*", "AD_PERF_DK"): (
         "DEGEN",
         "광고 성과 degenerate key. 코어 FACT_AD_PERFORMANCE 의 PK 이고 위성 3종이 이를 참조한다 "
@@ -286,6 +298,9 @@ LOGICAL_FK = {
     # 🆕 [2026-10-27] 위 KNOWN_ORPHANS CONFORM 2건의 대상(test_gold_erd 축7-a)
     ("FACT_MEMBER_EVENT_COHORT", "EVENT_MONTH_KEY"):     ("DIM_MONTH", "MONTH_KEY"),
     ("FACT_MEMBER_EVENT_COHORT", "OBS_MONTH_KEY"):       ("DIM_MONTH", "MONTH_KEY"),
+    # 🆕 [2026-10-28 O265-B] 위 KNOWN_ORPHANS CONFORM 2건(브리지)의 대상
+    ("FACT_COHORT_DISPATCH", "EVENT_MONTH_KEY"):         ("DIM_MONTH", "MONTH_KEY"),
+    ("FACT_COHORT_DISPATCH", "MEMBER_DK"):               ("DIM_MEMBER", "MEMBER_DK"),
 }
 
 #: 고립 판정의 **분모**가 되는 테이블 접두. 🔴 이 한 곳에서만 정한다(`R3-9 ㉡`).

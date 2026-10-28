@@ -1,0 +1,13 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[O268] 조각 7/8 — 기반 테이블 이름순 i % 8 == 6
+[SV 코드값·라벨축 게이트] SV 8종 · 컬럼 배킹 차원 69개 검사
+  🟠 열거 누락(§6.9-(5)): SV_EVENT_PARTICIPATION.EVENT_CATEGORY_NAME ▸ EVENT_CATEGORY_NAME distinct 19종 · 실제 예 ["I'm your pen", '국내사업장방문', '굿멤버스데이(본부)', '굿멤버스데이(지부)', '굿모닝', '기업제휴']
+  ⚪ SV_EVENT_PARTICIPATION.SELF_PARTCPT_CD: 코드축인데 LABEL_PAIRS 미등재(SELF_PARTCPT_CD) — 등재 필요
+  ⚪ SV_ML_ONCE_CONVERSION.MEMBER_DIV_NAME: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(MEMBER_DIV_NAME)
+  ⇒ 위반 1건 (코드값부재 0 · 종수 0 · 열거누락 1 · 라벨축 0 · 폐기리터럴 0) · 정보 2건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 0건 · advisory(🟠 열거누락) 1건
+✅ 게이트 통과 — 🔴 축 0건 (열거 코드값 전량 실재 · 종수 일치 · 라벨축 정상 · 폐기 리터럴 0)
+🟠 잔여 경고 1건 = 저카디널리티 코드축 열거 누락(§6.9-(5)) — blocking 아님.
+   🔴 무시하라는 뜻이 아니다: 열거가 없으면 Agent 가 실재하는 코드값을 누락한 답을 낸다.

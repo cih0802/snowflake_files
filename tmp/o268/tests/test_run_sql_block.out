@@ -1,0 +1,12 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+  🟢 ① 표지 = D0·D1·D2·D9(날짜 주석 제외)
+  🟢 ① D0 블록 = 문장 2개(SELECT 1 · SELECT 2 · 다음 블록 ALTER 미포함)
+  🟢 ⑦ 날짜 꼴 주석 `-- [2026-…]` 은 표지가 아니다
+  🟢 ② --blocks D1,D0 → 파일 순서(D0 먼저) · dry-run rc=0
+  🟢 ③ 없는 표지 → rc=2
+  🟢 ③ 빈 --blocks → rc=2
+  🟢 ④ 원천 쓰기 블록 → dry-run 에서도 BLOCKED rc=2
+  🟢 ⑤ 원천 읽기 SELECT 는 막지 않는다(rc=0)
+  🟢 ⑥ sfconn import 는 --apply 분기 뒤에만 있다
+🟢 축 9개 · 실패 0건

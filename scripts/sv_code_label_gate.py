@@ -30,6 +30,7 @@
 사용법
   python3 scripts/sv_code_label_gate.py              # 라이브 판정
   python3 scripts/sv_code_label_gate.py --self-check # 탐지력 자기검사(P106 · 라이브 미접속)
+  python3 scripts/sv_code_label_gate.py --shard k/n  # 🆕 [O268] 기반 테이블 k/n 조각만(0 ≤ k < n · 합집합 = 전체)
 """
 import sys, re, os
 
@@ -279,7 +280,7 @@ def judge(dims, distinct_map, base_cols, exposed, card=None, dtype=None):
     return v_ghost, v_count, v_label, v_retired, v_enum, info
 
 
-def load_live():
+def load_live(shard=(0, 1)):
     from sfconn import conn, q
     cn = conn()
     _, tabs = q(f"""select SEMANTIC_VIEW_NAME, NAME, BASE_TABLE_SCHEMA, BASE_TABLE_NAME
@@ -302,6 +303,16 @@ def load_live():
         dims.append((sv, lt, dim, bt, bc, cmt))
         dtype[(bt, bc)] = str(dt or '')
         exposed.setdefault((sv, bt), set()).add(bc)
+
+    # 🆕 [O268] 분해 실행 `--shard k/n` — **기반 테이블**을 이름순으로 정렬해 k/n 조각만 본다
+    #   (sv_enum_newvalue_gate 와 같은 규약 · 조각끼리 겹치지 않고 합집합 = 전체).
+    #   실측(ZS83821 O267) = 무조각 실행이 900초를 넘겨 rc=143(미판정). 비용은 테이블당 카디널리티·distinct
+    #   조회라 테이블 단위로 쪼개면 조각 시간이 줄고 판정식은 변하지 않는다(판정은 (sv, bt) 안에서 닫힌다).
+    k, n = shard
+    if n > 1:
+        keep = {bt for i, bt in enumerate(sorted({d[3] for d in dims})) if i % n == k}
+        dims = [d for d in dims if d[3] in keep]
+        exposed = {key: v for key, v in exposed.items() if key[1] in keep}
 
     base_cols = {}
     for bt in sorted({d[3] for d in dims}):
@@ -505,7 +516,17 @@ def main():
         print("\n" + ("✅ 자기검사 통과 — 게이트가 살아 있다" if ok else "🔴 자기검사 실패"))
         return 0 if ok else 1
 
-    dims, dmap, bcols, exp, card, dtype = load_live()
+    shard = (0, 1)
+    if '--shard' in sys.argv:
+        try:
+            k, n = (int(x) for x in sys.argv[sys.argv.index('--shard') + 1].split('/'))
+            assert 0 <= k < n
+        except Exception:
+            print('🔴 --shard 형식 오류(미판정) — 예: --shard 0/4')
+            return 2
+        shard = (k, n)
+        print(f'[O268] 조각 {k + 1}/{n} — 기반 테이블 이름순 i % {n} == {k}')
+    dims, dmap, bcols, exp, card, dtype = load_live(shard)
     g, c, l, r, e, info = judge(dims, dmap, bcols, exp, card, dtype)
     report(g, c, l, r, e, info, len({d[0] for d in dims}), len(dims))
 

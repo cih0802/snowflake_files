@@ -1739,6 +1739,17 @@ CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_SERVICE_GROUP_RULE (
     NOTE                VARCHAR         COMMENT '비고'
 ) COMMENT = '서비스 그룹 판정 규칙(O206 A안). [Grain: 규칙 1행]. [주의: dbt seed 적재 · 제목이 바뀌면 TITLE 행 추가]. [원천: 10_dbt_pipeline/seeds/MAP_SERVICE_GROUP_RULE.csv].';
 
+-- [2026-10-28 O265-C] 알림톡 템플릿 → GA 랜딩 고정 매핑(A 판정 우선순위 ②) — dbt seed 적재(GN_DW_DBT 는 SILVER CREATE 없음 ⇒ 선생성)
+CREATE TABLE IF NOT EXISTS GN_DW.SILVER.MAP_AT_GA_LINK (
+    TEMPLATE_ID         VARCHAR         COMMENT '알림톡 템플릿 ID(AT…) ※ CRM_MSG_TEMPLATE.TEMPLATE_KEY',
+    MATCH_TYPE          VARCHAR         COMMENT 'UTM(utm_campaign 값) | PATH(호스트 뒤 경로)',
+    MATCH_VALUE         VARCHAR         COMMENT '비교 값(소문자 비교) — 단축·리다이렉트 링크는 최종 랜딩 값',
+    MAP_SRC             VARCHAR         COMMENT 'MANUAL(분석 확정) | WEB_TEAM(웹팀 리다이렉트 대상표)',
+    CONFIRMED_BY        VARCHAR         COMMENT '확정자',
+    CONFIRMED_DT        VARCHAR         COMMENT '확정일',
+    NOTE                VARCHAR         COMMENT '근거·비고'
+) COMMENT = '알림톡 템플릿 → GA 최종 랜딩 패턴 고정 매핑(O265-C). [Grain: 템플릿 × 패턴]. [주의: dbt seed 적재 · DIRECT·INFER 보다 우선]. [원천: 10_dbt_pipeline/seeds/MAP_AT_GA_LINK.csv].';
+
 -- ============================================================================
 -- [2026-10-23 O259] 조직도 Silver 정제 — CRM_ORG_CLEAN · CRM_ORG_SUCCESSION(dbt 적재) + V_ORG_PICKER(DDL 소유 뷰)
 --   WARN: GN_DW_DBT 는 SILVER CREATE TABLE 권한이 없다(07 RBAC §D.9) ⇒ 구조는 이 DDL 이 먼저 만든다.

@@ -1,0 +1,62 @@
+[축1] 라벨 해소 — 하드코딩 부재
+  ✅ 인자 라벨이 최우선
+  ✅ 인자 없으면 환경변수
+  ✅ 둘 다 없으면 UNLABELED(중단하지 않는다)
+  ✅ 공백 라벨은 미지정 취급
+  ✅ 파일명 = <base>.<label>-<op>
+  ✅ 최초 호출은 created
+[축2] 덮어쓰기 금지 — 기존 스냅샷 바이트 불변
+  ✅ 내용이 다르면 suffixed
+  ✅ 접미 .2 신설
+  ✅ 🔴 최초 스냅샷이 덮이지 않았다
+  ✅ 파일 2개(최초 + 접미)
+  ✅ 접미가 .3 으로 증가
+[축3] 멱등 — 같은 내용은 파일을 늘리지 않는다
+  ✅ 바이트 동일 스냅샷이 있으면 reused
+  ✅ reused 는 그 스냅샷 경로를 돌려준다
+  ✅ 파일 수 증가 0
+[축4] 무결성 — 원본과 바이트·해시 동일
+  ✅ 스냅샷 바이트 동일
+  ✅ SHA256 동일
+  ✅ 개행 변환 없음(CRLF 보존)
+[축5] 거부 — 안전하지 않으면 예외로 중단한다
+  ✅ 거부: 경로 구분자 라벨
+  ✅ 거부: 상위 경로 라벨
+  ✅ 거부: 빈 op
+  ✅ 거부: 공백 op
+  ✅ 거부: 구분자 op
+  ✅ 거부: 없는 원본
+  ✅ 거부: 접미 소진(조용한 소실보다 실패가 낫다)
+[축6] 회귀 — split_doc.py 가 스냅샷을 하드코딩하지 않는다
+  ✅ 쓰기 라벨 하드코딩 부재 (잔존: 없음)
+  ✅ ARCHIVE 경로를 손으로 만드는 곳은 legacy 조회 1곳뿐 (1곳)
+  ✅ snapshot_util 을 경유한다
+  ✅ shutil 직접 복사 부재
+  ✅ 스냅샷 지점 4곳이 모두 헬퍼를 쓴다
+[축7] 🔴 전수 회귀 — 스냅샷을 쓰는 도구가 전부 헬퍼를 경유한다
+  ✅ split_doc.py 가 헬퍼를 import 한다
+  ✅ split_doc.py 에 스냅샷 우회 경로 없음 (없음)
+  ✅ retire_rows.py 가 헬퍼를 import 한다
+  ✅ retire_rows.py 에 스냅샷 우회 경로 없음 (없음)
+  ✅ retire_sections.py 가 헬퍼를 import 한다
+  ✅ retire_sections.py 에 스냅샷 우회 경로 없음 (없음)
+  ✅ split_narrative.py 가 헬퍼를 import 한다
+  ✅ split_narrative.py 에 스냅샷 우회 경로 없음 (없음)
+  ✅ fix_stale_counts.py 가 헬퍼를 import 한다
+  ✅ fix_stale_counts.py 에 스냅샷 우회 경로 없음 (없음)
+  ✅ gen_gold_erd.py 가 헬퍼를 import 한다
+  ✅ gen_gold_erd.py 에 스냅샷 우회 경로 없음 (없음)
+[축8] 회귀 — 라벨 기본값에 세션 라벨을 하드코딩하지 않는다
+  ✅ split_doc.py 라벨 기본값 하드코딩 없음 (없음)
+  ✅ retire_rows.py 라벨 기본값 하드코딩 없음 (없음)
+  ✅ retire_sections.py 라벨 기본값 하드코딩 없음 (없음)
+  ✅ split_narrative.py 라벨 기본값 하드코딩 없음 (없음)
+  ✅ fix_stale_counts.py 라벨 기본값 하드코딩 없음 (없음)
+  ✅ gen_gold_erd.py 라벨 기본값 하드코딩 없음 (없음)
+[축9] 🔴 회귀 — 라벨 해소 산식을 **재구현**하지 않는다 (O114-B 신설)
+  ✅ index_row_gate.py 가 resolve_label() 을 경유한다
+  ✅ index_row_gate.py 에 라벨 재구현 줄 없음 (없음)
+  ✅ test_generators.py 가 resolve_label() 을 경유한다
+  ✅ test_generators.py 에 라벨 재구현 줄 없음 (없음)
+
+✅ 전건 통과 — 9축 51개 단정

@@ -102,12 +102,13 @@ check('축5 총수+분해 병기(11종 = 8종+3종) → 통과(경계)', [
     ('AGENT_MARKETING', 'SV 7종.'),
 ], 0)
 
-# 🔴 축6 = 선언 자체가 없으면 FAIL(침묵 통과 금지)
-check('축6 종수 선언 부재 → FAIL', [
+# 🟢 축6 = [O268] 선언 부재는 통과해야 한다 — 사용자 결정 O250-C-4(Agent 설명에 SV N종을 적지 않는다)
+#   🔴 종전 축6(선언 부재 → FAIL)은 그 결정과 충돌했다. 선언이 있으면 축3 이 정합을 계속 본다.
+check('축6 종수 선언 부재 → 통과(O250-C-4)', [
     ('AGENT_MEMBER', '회원 도메인 분석 Agent.'),
     ('AGENT_EXECUTIVE', '실적 SV 4종 + ML 4종.'),
     ('AGENT_MARKETING', 'SV 7종.'),
-], 1, expect_sub=['선언 부재'])
+], 0, expect_not_sub=['선언 부재'])
 
 # 🔴 축7 = 기대 표에 없는 Agent 는 무시한다(분모 밖 오탐 0)
 check('축7 기대 표 밖 Agent → 오탐 0', LIVE + [('AGENT_SANDBOX', '실험용.')], 0)

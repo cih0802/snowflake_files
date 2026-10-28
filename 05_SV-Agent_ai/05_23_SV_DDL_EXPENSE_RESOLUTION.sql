@@ -47,7 +47,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_EXPENSE_RESOLUTION
     exp.BDGT_UNIT_NM AS exp.BDGT_UNIT_NM WITH SYNONYMS ('예산단위') COMMENT = '예산단위명(원값).',
     exp.MOK_NM AS exp.MOK_NM WITH SYNONYMS ('목', '예산 목') COMMENT = '예산 과목 목(원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''가지급금''·''권리옹호사업''·''기관홍보사업''·''미디어모금''·''사업비''·''사회복지법인예산''·''아동발달지원사업''·''온라인모금''·''위기가정지원사업''·''인식개선사업''·''지역사회조직사업''·''프로젝트사업''',
     exp.BDGT_ITEM_NM AS exp.BDGT_ITEM_NM WITH SYNONYMS ('예산항목', '예산항목명') COMMENT = '지출결의 예산항목명(원값 · 목·세목·세세목과 다른 축 · 미기재 NULL · O262-B).',
-    exp.DTL_ITEM_NM AS exp.DTL_ITEM_NM WITH SYNONYMS ('세목') COMMENT = '예산 과목 세목(원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''가지급금''·''사업비''·''사회복지법인예산''·''옹호사업''',
+    exp.DTL_ITEM_NM AS exp.DTL_ITEM_NM WITH SYNONYMS ('세목') COMMENT = '예산 과목 세목(원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''가지급금''·''사업비''·''사회복지법인예산''·''옹호사업''·''업무추진비''·''운영비''',
     exp.SUBDTL_ITEM_NM AS exp.SUBDTL_ITEM_NM WITH SYNONYMS ('세세목', '지출 항목') COMMENT = '예산 과목 세세목(원값).',
     exp.FUND_SOURCE_NM AS exp.FUND_SOURCE_NM WITH SYNONYMS ('재원', '재원명') COMMENT = '재원명(원값).',
     exp.EXPS_RESOLUTION_NM AS exp.EXPS_RESOLUTION_NM WITH SYNONYMS ('지출결의명', '결의 제목') COMMENT = '지출결의명(자유문 · 부분일치 검색용).',

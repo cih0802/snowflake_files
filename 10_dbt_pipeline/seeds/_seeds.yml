@@ -86,3 +86,33 @@ seeds:
         tests:
           - accepted_values:
               values: ['CODE', 'TITLE']
+  # O265-C — 알림톡 템플릿 → GA 랜딩 패턴 고정 매핑(A 판정 우선순위 ②) · 사용자 결정 2026-10-28.
+  #   🔴 이 파일이 원천 직접 URL(DIRECT)·추정(INFER)보다 우선한다(GOLD.FACT_AT_GA_LINK_MAP MAP_PRIORITY 1).
+  #   · MATCH_TYPE = UTM(utm_campaign 값) | PATH(호스트 뒤 경로 · 예 /app/event/x.gn) · 값은 소문자로 비교한다
+  #   · MAP_SRC = MANUAL(분석 확정) | WEB_TEAM(웹팀 리다이렉트 대상표에서 옮긴 행)
+  #   · 단축·리다이렉트 링크(bit.ly · gni.kr/url)는 웹팀 대상표의 **최종 랜딩**을 적는다(GA 는 최종 랜딩만 본다)
+  - name: MAP_AT_GA_LINK
+    description: "알림톡 템플릿 → GA 최종 랜딩 패턴(utm_campaign 또는 경로) 고정 매핑 · A(그 알림톡 열람) 판정 우선순위 ②."
+    config:
+      database: GN_DW
+      schema: SILVER
+      column_types:
+        TEMPLATE_ID: varchar
+        MATCH_TYPE: varchar
+        MATCH_VALUE: varchar
+        MAP_SRC: varchar
+        CONFIRMED_BY: varchar
+        CONFIRMED_DT: varchar
+        NOTE: varchar
+    columns:
+      - name: "TEMPLATE_ID || '|' || MATCH_TYPE || '|' || MATCH_VALUE"
+        tests: [unique]
+      - name: MATCH_TYPE
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['UTM', 'PATH']
+      - name: MAP_SRC
+        tests:
+          - accepted_values:
+              values: ['MANUAL', 'WEB_TEAM']

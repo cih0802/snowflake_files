@@ -1,0 +1,10 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[O268] 조각 6/8 — 기반 테이블 이름순 i % 8 == 5
+[SV 코드값·라벨축 게이트] SV 11종 · 컬럼 배킹 차원 104개 검사
+  ⚪ SV_MEMBER_EVENT.REGIST_DEPT_CD: 코드축인데 LABEL_PAIRS 미등재(REGIST_DEPT_CD) — 등재 필요
+  ⚪ SV_MEMBER_SERVICE_COHORT.SERVICE_GROUP_CD: 코드축인데 LABEL_PAIRS 미등재(SERVICE_GROUP_CD) — 등재 필요
+  ⇒ 위반 0건 (코드값부재 0 · 종수 0 · 열거누락 0 · 라벨축 0 · 폐기리터럴 0) · 정보 2건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 0건 · advisory(🟠 열거누락) 0건
+✅ 게이트 통과 — 열거 코드값 전량 실재 · 저카디널리티 코드축 전량 열거 · 라벨축 노출 정상 · 폐기 리터럴 0

@@ -22,15 +22,15 @@ HARD = 2000          # 절대 상한 — `read` 가 이 지점에서 줄을 자�
 SOFT = 1000          # 권고 목표(안전 마진)
 
 
-def scan(path, hard, soft):
+def scan(path, hard, soft, encoding='utf-8'):
     """(초과, 권고초과) 목록을 돌려준다. 문자 기준이다."""
     over, warn = [], []
     with open(path, 'rb') as fh:
         raw = fh.read()
     try:
-        text = raw.decode('utf-8')
+        text = raw.decode(encoding)
     except UnicodeDecodeError as e:
-        return None, None, '🔴 UTF-8 손상 — %s 바이트 지점에서 절단(부분 write 의심 · C5)' % e.start
+        return None, None, '🔴 %s 손상 — %s 바이트 지점에서 절단(부분 write 의심 · C5)' % (encoding.upper(), e.start)
     for n, line in enumerate(text.split('\n'), 1):
         if len(line) > hard:
             over.append((n, len(line)))
@@ -46,6 +46,11 @@ def main():
     ap.add_argument('--soft', type=int, default=SOFT)
     ap.add_argument('--quiet-soft', action='store_true',
                     help='권고 임계 초과는 출력하지 않는다')
+    # 🆕 [O268] 원래 CP949 인 현업 교환 파일(예: 98_현업요청인수인계/현업요청인수인계목록.csv)용 **명시 인자**.
+    #   🔴 기본값은 UTF-8 그대로다 — 자동 추정(UTF-8 실패 시 CP949 재시도)을 넣으면 **UTF-8 부분 write 손상이
+    #   CP949 로 우연히 풀려 PASS** 할 수 있다(C5 검출력 상실). 인코딩은 호출자가 그 파일에 대해 밝힌다.
+    ap.add_argument('--encoding', default='utf-8',
+                    help='파일 인코딩(기본 utf-8 · CP949 교환 파일만 --encoding cp949)')
     a = ap.parse_args()
 
     total_over = 0
@@ -55,7 +60,7 @@ def main():
             print('🔴 경로 부재: %s' % p)
             total_over += 1
             continue
-        over, warn, err = scan(p, a.limit, a.soft)
+        over, warn, err = scan(p, a.limit, a.soft, a.encoding)
         if err:
             print('%s: %s' % (p, err))
             broken.append(p)

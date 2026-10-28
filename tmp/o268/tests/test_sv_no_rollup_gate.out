@@ -1,0 +1,10 @@
+🟢 PASS — 소계/합계 행 유도 0건 · 분모 36 파일
+🟢 축0 현 정본 위반 0
+🟢 축1 VQR GROUP BY ROLLUP( → SQL_ROLLUP
+🟢 축2 종전 O206-C 문구 → SQL_ROLLUP 또는 TEXT
+🟢 축3 「ROLLUP 전체 행을 붙인다」 → TEXT_ROLLUP_ROW
+🟢 축4 GROUPING SETS → SQL_GROUPING_SETS
+🟢 축5 CUBE → SQL_CUBE
+🟢 축6 GROUPING(차원) → SQL_GROUPING_FN
+🟢 축7 금지 문장은 통과(역방향 오탐 0)
+FAIL 0

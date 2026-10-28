@@ -1,0 +1,7 @@
+🟢 정상 = 전건 OK · 설계외 0
+🟢 스키마 USAGE 제거 ⇒ MISSING
+🟢 테이블 1/2 제거 ⇒ PARTIAL
+🟢 FUTURE 제거 ⇒ MISSING
+🟢 설계 밖 DELETE 추가 ⇒ 설계외부여 1
+🟢 소유자 ALL ⇒ OK(역방향 오탐 없음)
+🟢 정규화 = 따옴표·인자 절단

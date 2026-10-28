@@ -573,7 +573,11 @@ GATES = [
     # 🆕 [2026-10-23 O259] SV 지시문·VQR 소계/합계 행 유도 금지(ROLLUP·CUBE·GROUPING SETS)
     ('sv_no_rollup_gate', ['scripts/sv_no_rollup_gate.py']),
     # 🆕 [2026-10-24 O261] SV COMMENT 열거 목록 신규값 0 · 「실제값 N종」 잔존 0(라이브 DISTINCT 대조)
-    ('sv_enum_newvalue_gate', ['scripts/sv_enum_newvalue_gate.py']),
+    #   🆕 [2026-10-28 O266-B] 단일 실행이 300초 timeout(⚪ 미판정) ⇒ SV 이름순 4조각 순차 실행(조각마다 timeout · 합집합 = 전체)
+    ('sv_enum_newvalue_gate 1/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '0/4']),
+    ('sv_enum_newvalue_gate 2/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '1/4']),
+    ('sv_enum_newvalue_gate 3/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '2/4']),
+    ('sv_enum_newvalue_gate 4/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '3/4']),
 ]
 
 

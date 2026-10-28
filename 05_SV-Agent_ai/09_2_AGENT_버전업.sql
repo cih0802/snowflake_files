@@ -127,6 +127,7 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_ML_INC_CAMPAIGN'),      -- [O217-B] 10차 · 23_ML_INC_MKTG_CMPGN_DDL.sql
     ('AGENT_MARKETING', 'SV_SPNSR_CLS_AGGR'),       -- [O217] 10차 · 회원실 예측(회원 spec 도구 재사용)
     ('AGENT_MARKETING', 'SV_MBRFEE_PRDT_ACTL'),     -- [O217] 10차 · 〃
+    ('AGENT_MARKETING', 'SV_MKTG_CAMPAIGN_COST'),   -- [O266] 마케팅캠페인 × 월 광고비·정산액·제작비·MSTR 개발(05_31)
     -- WARN: [O213-Y4 정정] 아래 EXECUTIVE 7종(O209 X5 재편)은 O212 「4차 상태 롤백」으로 스펙에서 빠졌다(라이브 VERSION$6 도구 10).
     --   SV 가 라이브에 실재해 이 검사는 통과했지만 **스펙과 무관한 행**이었다 ⇒ 주석 처리(정본 = 스펙 · sv_identifier_gate).
     -- ('AGENT_EXECUTIVE', 'SV_MEMBER_EVENT'), ('AGENT_EXECUTIVE', 'SV_DEV_ACHIEVEMENT'), ('AGENT_EXECUTIVE', 'SV_MEMBER_MONTHLY_KPI'),

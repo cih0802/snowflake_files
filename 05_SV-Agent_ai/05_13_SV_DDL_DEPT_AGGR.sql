@@ -110,8 +110,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MBRFEE_PRDT_ACTL
       COMMENT = '신규기존구분명. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''신규''',
     mp.HDQ_BRNCH_GRP_NM AS mp.HDQ_BRNCH_GRP_NM
       WITH SYNONYMS ('본부지부', '본부/지부', '지부그룹', '공115')
-      COMMENT = '본부 지부 그룹 명(회원실 집계 기준). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''본부''·''본부지부''·''지부''·''통합'''
+      COMMENT = '본부 지부 그룹 명(회원실 집계 기준). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기존''·''본부''·''본부지부''·''지부'''
   )
+  -- [O268] ''통합'' 제거 — 2026-10-26 재적재본(1,144행)에 값 0행(개발계 ZS83821 실측 · 운영계 행수 동일) · sv_code_label_gate ① 코드값 부재
   METRICS (
     mp.TOTAL_DVLP_CNT AS SUM(mp.DVLP_CNT)
       WITH SYNONYMS ('개발건수', '월 개발건수')

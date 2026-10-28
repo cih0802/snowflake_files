@@ -1,0 +1,15 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+========================================================================
+[음성 테스트] sv_unit_gate.judge_agent_surface
+========================================================================
+  🟢 축1 분해 표기(8종+3종=11) → 오탐 0 이어야 한다 — 결함 0건 (기대 0)
+  🟢 축2 기대 표 키 오기(AGENT_OVERALL) → 유령 등재 FAIL — 결함 1건 (기대 1)
+  🟢 축3 분해 합 불일치(8종+2종=10 ≠ 11) → FAIL — 결함 1건 (기대 1)
+  🟢 축4 총수 단일 표기(11종) → 통과 — 결함 0건 (기대 0)
+  🟢 축5 총수+분해 병기(11종 = 8종+3종) → 통과(경계) — 결함 0건 (기대 0)
+  🟢 축6 종수 선언 부재 → 통과(O250-C-4) — 결함 0건 (기대 0)
+  🟢 축7 기대 표 밖 Agent → 오탐 0 — 결함 0건 (기대 0)
+  🟢 축8 빈 입력 → 유령 3건 — 결함 3건 (기대 3)
+========================================================================
+🟢 축 8개 · 실패 0건
