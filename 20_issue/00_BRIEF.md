@@ -31,14 +31,30 @@ END-METADATA -->
 | ③ | 01_세션이력 O268 항목 롤오버(tmp/o268/history_O268.md) | R4-4-3 승인 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:48` |
 | ① | 기지 실패 2종(test_mutating_tool_safety run_sql_file · test_pipeline_erd) 결정 | 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:60` |
 | ② | 🟠 열거 누락 2(GA_CLICK_MAP_SRC 「값:」 형식 · EVENT_CATEGORY_NAME 19종) | 미착수 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:61` |
+| ① | 개발계 05_04_SV_DDL_SERVICE.sql · 05_13_SV_DDL_DEPT_AGGR.sql 재배포 | run_sql_file.py · 9/0 · 15/0 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:26` |
+| ① | 템플릿 질문 재확인(tmp/o268/agent_test/) | T1 = 9명(O265 [D2-2] 일치 · 「그 템플릿 링… | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:27` |
+| ① | sv_code_label_gate --shard 0..2/8 | 「통합」 해소(조각 3 rc=0) · 잔여 🔴 GA 4 = … | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:28` |
+| ③ | 01_세션이력 O268 롤오버 | 01_세션이력-090.md · 본문 바이트 동일 · 유실 0 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:29` |
+| ① | 👤 운영계 = 문서실행순서_운영계_LLM실행카드.md 43~58 · 반영 후 13 §13 에 행 추가 | 사용자(진행 중) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:35` |
+| ② | 운영계 sv_code_label_gate 8조각 결과로 GA 4건(Organic Shopping · Paid Video · 후원중단) 실결함 여부 판정 | ① 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:36` |
+| ① | 운영계 sv_code_label_gate 보고 = SV_AD.CMPGN_TYPE1_BSN_NM·CMPGN_TYPE2_BSN_NM·CMPGN_TYPE_BSN_NM 열거 ↔ 운영계 적재값 차이 — 개발계 조각에는 없던 위반이다(개발계는… | 운영계 원문 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:35` |
+| ② | 👤 운영계 Agent 2문항(실행카드 5-②) 사용자 확인 결과 회수 | 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:36` |
+| ③ | 👤 현업 회신 발송 3통(김나경 · 강지영 · 마케팅) — 운영계 반영이 끝나 발송 조건 충족 | 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:37` |
+| ① | 기지 실패 2종 결정(test_mutating_tool_safety run_sql_file · test_pipeline_erd) | 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:43` |
+| ② | 🟠 열거 누락 2(GA_CLICK_MAP_SRC 「값:」 형식 · EVENT_CATEGORY_NAME) | 미착수 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:44` |
+| ③ | 85_실제 인수인계 문서 운영계 수치·버전 갱신 여부(43~58 반영분) | 미착수 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:45` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0268-A.md`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:1`
+> 🔴 **현행 시작점** = `99_NEXT_SESSION-O0268-C.md`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:1`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
+> 🔴🔴 **이 세션은 단위 3개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 | 항목 | 좌표 |
@@ -49,6 +65,14 @@ END-METADATA -->
 | ▣ O268-A-3 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:42` |
 | ▣ O268-A-4 🆕 새로 발견 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:50` |
 | ▣ O268-A-5 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-A.md:56` |
+| ▣ O268-B-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:17` |
+| ▣ O268-B-1 결과 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:22` |
+| ▣ O268-B-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:31` |
+| ▣ O268-B-3 🆕 새로 발견 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-B.md:38` |
+| ▣ O268-C-0 🔴 먼저 알아라 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:17` |
+| ▣ O268-C-1 결과(운영계 보고서 전기) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:23` |
+| ▣ O268-C-2 ㉠ 이 작업의 잔여 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:31` |
+| ▣ O268-C-3 ㉡ 워크스페이스 백로그 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0268-C.md:39` |
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
 
@@ -73,8 +97,8 @@ END-METADATA -->
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 19 | 508,128 | 35,727 | 5,233 🟠 |
-| `01_세션이력` | 90 | 2,315,403 | 38,225 | 16,542 |
+| `00_INDEX_이슈원장` | 19 | 508,674 | 36,273 | 4,687 🟠 |
+| `01_세션이력` | 90 | 2,317,931 | 38,225 | 14,014 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -97,9 +121,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 10,401 | 10,401 | 30,559 |
+| `00_BRIEF` | — | 13,688 | 13,688 | 27,272 |
 
-> 전 문서군 = **3,350,047 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,354,438 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -107,24 +131,24 @@ END-METADATA -->
 | 게이트 | 판정 | 결론 |
 |---|---|---|
 | `doc_census` | ✅ | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다 |
-| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 1건) |
+| `doc_type_gate` | 🔴 | 🔴 게이트 실패 1건 |
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 115개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |
 | `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 4건은 사람 판단) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
-| `agent_object_ref_gate` | 🔴 | 🔴 FAIL — blocking 위반 1건 |
+| `agent_object_ref_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
 | `agent_source_lineage_gate` | ✅ | 🟢 PASS — blocking 0건 |
 | `eval_expectation_gate` | ✅ | ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제) |
-| `sv_identifier_gate` | 🔴 | 🔴 FAIL — blocking 위반 1건 |
+| `sv_identifier_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
 | `null_reason_registry_gate` | ✅ | 🟢 PASS — NULL 사유 규격 검증 완료 |
 | `campaign_axis_gate` | ✅ | ✅ 게이트 통과 — 미등재·배선 끊김 0 (🟠 GAP 9 건은 알려진 미배선) |
 | `sv_no_rollup_gate` | ✅ | 🟢 PASS — 소계/합계 행 유도 0건 · 분모 36 파일 |
-| `sv_enum_newvalue_gate 1/4` | 🔴 | 🔴 NEW: SV_AD.CMPGN_TYPE_BSN_NM -|0|전체 사업|전체사업 |
-| `sv_enum_newvalue_gate 2/4` | 🔴 | 🔴 NEW: SV_GA_SESSION.EP_PAYMENT_TYPE |
+| `sv_enum_newvalue_gate 1/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 2/4` | ✅ | ✅ 게이트 통과 |
 | `sv_enum_newvalue_gate 3/4` | ✅ | ✅ 게이트 통과 |
-| `sv_enum_newvalue_gate 4/4` | 🔴 | 🔴 실행 오류(미판정): 002037 (42601): SQL compilation error: |
+| `sv_enum_newvalue_gate 4/4` | ✅ | ✅ 게이트 통과 |
 
 > 🔴 **게이트 전수 PASS 는 「지침 준수」의 증거가 아니다**(`R3-9`).
 > 완료 보고 전에 **게이트가 보지 않는 축** ㉠~㉥ 를 자문한다.

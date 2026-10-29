@@ -1,0 +1,16 @@
+/opt/coco-sandbox-pydeps/external/python_pip_coco_sandbox_linux_x86_64_snowflake_connector_python/site-packages/snowflake/connector/vendored/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.7.0) or chardet (7.6.0)/charset_normalizer (3.4.7) doesn't match a supported version!
+  warnings.warn(
+[O268] 조각 1/8 — 기반 테이블 이름순 i % 8 == 0
+[SV 코드값·라벨축 게이트] SV 13종 · 컬럼 배킹 차원 199개 검사
+  🔴 코드값 부재(0행 오답 경로): SV_GA_SESSION.STSLC_CRC_DEFAULT_CHANNEL_GROUP 열거 ['Organic Shopping'] · 실제 예 ['AI Assistant', 'Cross-network', 'Direct', 'Display', 'Email', 'Mobile Push Notifications', 'Organic Search', 'Organic Social']
+  🔴 코드값 부재(0행 오답 경로): SV_GA_SESSION.STSLC_CRC_PRIMARY_CHANNEL_GROUP 열거 ['Organic Shopping'] · 실제 예 ['AI Assistant', 'Cross-network', 'Direct', 'Display', 'Email', 'Mobile Push Notifications', 'Organic Search', 'Organic Social']
+  🔴 코드값 부재(0행 오답 경로): SV_GA_SESSION.UP_MEMBER_TYPE 열거 ['후원중단'] · 실제 예 ['{{정기회원/일시회원/중단회원/앱회원 등}}', '비로그인', '앱회원', '일시회원', '일시후원', '정기회원', '정기후원', '중단회원']
+  ⚪ SV_AD.AD_CTGR_CD: 코드축인데 LABEL_PAIRS 미등재(AD_CTGR_CD) — 등재 필요
+  ⚪ SV_AD.AD_TYPE_NM: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(AD_TYPE_NM)
+  ⚪ SV_AD.PAGE_TYPE: 열린 집합 면제(§6.9-(5) · O174) — COMMENT 에 `SELECT DISTINCT` 조회 지침 실재(PAGE_TYPE)
+  ⚪ SV_MEMBER_MONTHLY.REGIST_DEPT_CD: 코드축인데 LABEL_PAIRS 미등재(REGIST_DEPT_CD) — 등재 필요
+  ⚪ SV_RELATION_ACTIVITY.REL_DSCNTC_RSN_CD: 코드축인데 LABEL_PAIRS 미등재(RELATNSP_DSCNTC_RSN_CD) — 등재 필요
+  ⇒ 위반 3건 (코드값부재 3 · 종수 0 · 열거누락 0 · 라벨축 0 · 폐기리터럴 0) · 정보 5건
+
+  ⇒ 판정 분리: blocking(🔴 코드값·종수·라벨축·폐기리터럴) 3건 · advisory(🟠 열거누락) 0건
+🔴 게이트 실패 — 🔴 축은 blocking 이다(0행 오답·거짓 주장 경로).
