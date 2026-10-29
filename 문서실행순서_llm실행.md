@@ -217,7 +217,7 @@ dbt build(개발계 19 · 운영계 15)가 이미 끝났으면 그 **다음 번�
 | 순 | 실행 방식 | 실측 |
 |---|---|---|
 | 37 | dbt 재배포 + `build --select AGENCY_AD_PERFORMANCE+` | 🔴 사용자가 실행한다(에이전트 정지점) · 재방송 NAME 286 · UPPER_CODE 1,808 · NONE 96 |
-| 38 | SV 파일 34개 각 전체(문장 단위) · 순서 = 05_01~05_30 → 22 → 23 → 24 → 25 → 34 → MSTR 05 · 실행기 예 = `python3 scripts/run_sql_file.py <파일…>` | 🔴 `35_`·`36_` 은 이력 파일이라 실행하지 않는다(같은 정의 = 05_27~05_30) · Agent 재버전 불요 |
+| 38 | SV 파일 34개 각 전체(문장 단위) · 순서 = 05_01~05_30 → 22 → 23 → 24 → 25 → 34 → MSTR 05 · 실행기 예 = `python3 scripts/run_sql_file.py <파일…> --apply`(🆕 O270 · 플래그 없으면 dry-run) | 🔴 `35_`·`36_` 은 이력 파일이라 실행하지 않는다(같은 정의 = 05_27~05_30) · Agent 재버전 불요 |
 
 - 🔴 신규 구축(위 개발계 1~59)도 SV 파일에 이번 문안이 이미 들어 있다 — 따로 실행할 것이 없다.
 - 확인 = `scripts/sv_enum_newvalue_gate.py`(NEW 0 · STALE 0 · rc=0 · 대조 차원 0 이면 rc=2 미판정) · `scripts/sv_code_label_gate.py`(🔴 0) · `scripts/sv_no_rollup_gate.py`.

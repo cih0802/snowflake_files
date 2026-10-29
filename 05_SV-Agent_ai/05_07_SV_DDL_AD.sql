@@ -80,7 +80,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     date.YEAR AS date.YEAR    COMMENT = '연도(DIM_DATE.YEAR) — CAL_YEAR 와 같은 값(Analyst 가 추측하는 식별자를 실재화). 둘 중 하나만 쓴다.',
     date.MONTH AS date.MONTH  COMMENT = '월(DIM_DATE.MONTH) — CAL_MONTH 와 같은 값(추측 식별자 실재화). 둘 중 하나만 쓴다.',
     date.CAL_QUARTER  AS date.QUARTER    WITH SYNONYMS ('분기')        COMMENT = '분기(1~4)',
-    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형. 코드값: ''DIGITAL'' · ''VIDEO''(방송 본방) · ''REBROADCAST''(재방송). 디지털/방송 measure 필터 필수. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''VIDEO''·''DIGITAL''·''REBROADCAST''',
+    ad.AD_SOURCE_TYPE AS ad.AD_SOURCE_TYPE WITH SYNONYMS ('출처유형', '광고출처', '매체구분') COMMENT = '광고 출처유형. 코드값: ''DIGITAL''(디지털) · ''VIDEO''(영상광고) · ''REBROADCAST''(방송 · 하위구분 RT_TYPE = 재송출·방송). 🆕 [O270 현업 요청] 답변의 출처명 표기 = 디지털 / 영상광고 / 방송 — REBROADCAST 를 「재방송」이라 쓰지 않는다(특집의 본방송·재방송과 혼동 · 질문의 「재방송」은 이 방송 출처로 해석한다). 디지털/방송 measure 필터 필수. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''VIDEO''·''DIGITAL''·''REBROADCAST''',
     ad.DAY_OF_WEEK    AS ad.DAY_OF_WEEK    WITH SYNONYMS ('요일')   COMMENT = '요일. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''Fri''·''Mon''·''Sat''·''Sun''·''Thu''·''Tue''·''Wed''',
     ad.WEEK_OF_YEAR   AS ad.WEEK_OF_YEAR   WITH SYNONYMS ('주차')   COMMENT = '연중 주차',
     device.DEVICE_TYPE       AS device.DEVICE_TYPE       WITH SYNONYMS ('기기유형', '디바이스유형', '모바일', 'PC', '공14') COMMENT = '기기 유형. 실제 코드값: ''M''=모바일(GA4 mobile/tablet 통합) · ''PC''=데스크톱 · ''(해당없음)''=방송광고(기기 개념 없음) · ''(unknown)''=매핑 실패 센티넬. ⚠필터 시 ''MOBILE''/''TABLET'' 아님 — 모바일은 ''M''.',
@@ -125,7 +125,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
       COMMENT = '소재유형 원값(영상·이미지 등 · 디지털·영상). 재방송 NULL(원천 부재). ⚠️CREATIVE_TYPE 은 디지털 전용 같은 원천값 — 영상까지 보려면 이 축. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''기타''·''영상''·''이미지''·''키워드''·''해당없음''',
     ad.CMPGN_TYPE_BSN_NM AS ad.CMPGN_TYPE_BSN_NM
       WITH SYNONYMS ('캠페인유형', '사업유형', '국내/해외 사례', '공17')
-      COMMENT = '캠페인유형(사업) 원값: 국내 사례·국내 사업·해외 사례·해외 굿즈·통합 기타·통합 통합 [디지털 전용 · 방송 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내 사례''·''국내 사업''·''전체 굿즈''·''통합 기타''·''통합 통합''·''해외 굿즈''·''해외 사례''·''해외 사업''·''전체사업''·''-''·''0'' · 🆕 [O266-C] ''-''·''0'' = 대행사 원천의 미분류 표기(원값 그대로 · 결측·코드 아님) · ''전체사업'' = 원천 원값',
+      COMMENT = '캠페인유형(사업) 원값 [디지털 전용 · 방송 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내 사례''·''국내 사업''·''전체 굿즈''·''통합 기타''·''해외 굿즈''·''해외 사례''·''해외 사업'' · 🆕 [O270] 환경에 따라 대행사 원천의 미분류 표기(하이픈·숫자 0)와 전체사업·통합 통합 원값이 소수 있을 수 있다(결측·코드 아님 · 원값 그대로)',
     ad.UTM_CMPGN_NM AS ad.UTM_CMPGN_NM
       WITH SYNONYMS ('UTM 캠페인', 'UTM 태그')
       COMMENT = 'UTM 캠페인 태그 원값(turn24b·children2406 등) [디지털 전용].',
@@ -138,8 +138,8 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.DMST_OVSEA_DIV_NM AS ad.DMST_OVSEA_DIV_NM
       WITH SYNONYMS ('국내/해외', '국내해외 구분', '공15')
       COMMENT = '국내/해외 구분 원값 국내·해외·통합 [영상 전용 · 그 밖 NULL]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''통합''·''해외''',
-    ad.CMPGN_TYPE1_BSN_NM AS ad.CMPGN_TYPE1_BSN_NM WITH SYNONYMS ('디지털 국내해외', '캠페인유형1') COMMENT = '디지털 캠페인유형1(사업) 원값 [디지털 전용 · 그 밖 NULL · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''해외''·''통합''·''전체''·''전체사업''·''-''·''0'' · 🆕 [O266-C] ''-''·''0'' = 대행사 원천의 미분류 표기(원값 그대로 · 결측·코드 아님) · ''전체사업'' = 원천 원값',
-    ad.CMPGN_TYPE2_BSN_NM AS ad.CMPGN_TYPE2_BSN_NM WITH SYNONYMS ('디지털 사업사례', '캠페인유형2') COMMENT = '디지털 캠페인유형2(사업) 원값 [디지털 전용 · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사례''·''사업''·''굿즈''·''기타''·''통합''',
+    ad.CMPGN_TYPE1_BSN_NM AS ad.CMPGN_TYPE1_BSN_NM WITH SYNONYMS ('디지털 국내해외', '캠페인유형1') COMMENT = '디지털 캠페인유형1(사업) 원값 [디지털 전용 · 그 밖 NULL · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''국내''·''해외''·''통합''·''전체'' · 🆕 [O270] 환경에 따라 대행사 원천의 미분류 표기(하이픈·숫자 0)와 전체사업 원값이 소수 있을 수 있다(결측·코드 아님 · 원값 그대로)',
+    ad.CMPGN_TYPE2_BSN_NM AS ad.CMPGN_TYPE2_BSN_NM WITH SYNONYMS ('디지털 사업사례', '캠페인유형2') COMMENT = '디지털 캠페인유형2(사업) 원값 [디지털 전용 · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사례''·''사업''·''굿즈''·''기타'' · 🆕 [O270] 환경에 따라 통합 원값이 소수 있을 수 있다',
     ad.CMPGN_TY_NM AS ad.CMPGN_TY_NM WITH SYNONYMS ('영상 캠페인유형', '영상 국내해외 사업사례') COMMENT = '영상 캠페인유형(국내외×사업사례 결합 원값) [영상 전용 · CTV 시트 외 NULL · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''해외 사례''·''국내 사례''·''해외 굿즈''·''국내 사업''·''통합 기타''·''해외 사업''',
     --  [2026-10-15 O232-B] 광고비 귀속 카테고리(전 광고행 단일 축 · 원천 CRM 캠페인카테고리 MM294)
     ad.AD_CTGR_NM AS ad.AD_CTGR_NM
@@ -191,7 +191,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_AD
     ad.TOTAL_AD_CNT AS SUM(ad.AD_CNT)
       WITH SYNONYMS ('방송횟수', '광고집행횟수', '편성횟수') COMMENT = '방송 광고 집행 횟수 합계. F(가산). VIDEO/REBROADCAST 전용.',
     ad.TOTAL_DVLP_CNT AS SUM(ad.DVLP_CNT)
-      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '방송 개발건수 합계(대행사 보고). F(가산). VIDEO·REBROADCAST 전용(디지털은 NULL). 🔴 VIDEO 도 개발건을 보고한다(일부 행만 채워짐 · 미보고 행은 NULL). ⚠️ 두 대행사 리포트의 개발 정의가 같은지는 원천 확인 전이다 ⇒ 합계를 물으면 AD_SOURCE_TYPE 별로 나눠 함께 보여준다.',
+      WITH SYNONYMS ('재방송개발건', '방송개발건', '방송 개발회원건수') COMMENT = '방송 개발건수 합계(대행사 보고). F(가산). VIDEO·REBROADCAST 전용(디지털은 NULL). 🔴 VIDEO 도 개발건을 보고한다(일부 행만 채워짐 · 미보고 행은 NULL). ⚠️ 두 대행사 리포트의 개발 정의가 같은지는 원천 확인 전이다 ⇒ 합계를 물으면 AD_SOURCE_TYPE 별로 나눠 함께 보여준다. 🔴🔴 [O270 · 현업 데분_7] 영상광고(VIDEO) 원천은 2026-06 부터 개발건 칸이 전 행 0 으로 들어온다(원천 보고 중단 · 개발계 실측) · 2026-01~05 는 일부 행만 기재 ⇒ 영상광고 개발실적·개발단가를 이 지표로 「0건」·「실제 실적」이라 답하지 않는다 — 「영상광고 대행사 리포트의 개발건 값이 비어(0) 있어 원천 확인이 필요합니다」라고만 밝힌다.',
     ad.TOTAL_DVLP_MEMBER_CNT AS SUM(ad.DVLP_MEMBER_CNT)
       WITH SYNONYMS ('재방송개발회원', '방송개발회원', '방송 개발회원수') COMMENT = '방송 개발회원수 합계(대행사 보고). F(가산). VIDEO·REBROADCAST 전용 — VIDEO 는 일부 행만 채워짐.',
     ad.REBRDC_DEV_UNIT_PRICE AS SUM(CASE WHEN ad.DVLP_CNT IS NOT NULL THEN ad.AD_COST END) / NULLIF(SUM(ad.DVLP_CNT), 0)

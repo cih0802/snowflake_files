@@ -116,12 +116,24 @@ def run_file(file_path):
     print(f'Finished {file_path}: {success} succeeded, {failed} failed.')
     return failed == 0
 
+def dry_run(file_path):
+    # 🆕 [O270] 접속 없이 파싱 결과만 보인다(라이브 무변경)
+    stmts = parse_statements(open(file_path, encoding='utf-8').read())
+    print(f'[dry-run] {file_path}: {len(stmts)} statements (집행 = --apply)')
+    for idx, stmt in enumerate(stmts):
+        print(f'  {idx+1:>3}. ' + stmt[:120].replace('\n', ' '))
+    return True
+
 if __name__ == '__main__':
-    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):  # [O262] 접속 없이 사용법만
-        print('사용: python3 run_sql_file.py <파일.sql> [...]  · 문장 단위 순차 실행 · 첫 실패에서 멈춤(rc=1)\n'
+    # 🆕 [O270 · O269-C-1 ②] 기본 = dry-run · `--apply` 가 있어야 라이브 집행(MUTATES 계약 · test_mutating_tool_safety 축③)
+    args = [a for a in sys.argv[1:] if a != '--apply']
+    apply = '--apply' in sys.argv[1:]
+    if not args or args[0] in ('-h', '--help'):  # [O262] 접속 없이 사용법만
+        print('사용: python3 run_sql_file.py <파일.sql> [...] [--apply]\n'
+              '  기본 = dry-run(접속 없음 · 문장 목록만) · --apply = 문장 단위 순차 실행 · 첫 실패에서 멈춤(rc=1)\n'
               '  접속 = sfconn.conn() · 역할/웨어하우스 = GN_DW_ROLE(기본 GN_DW_ADMIN) · GN_DW_WAREHOUSE(기본 GN_DW_DEV_WH)')
         sys.exit(0)
-    for f in sys.argv[1:]:
-        ok = run_file(f)
+    for f in args:
+        ok = run_file(f) if apply else dry_run(f)
         if not ok:
             sys.exit(1)

@@ -7,14 +7,14 @@
   <title>Good Neighbors DW - Pipeline ERD & Lineage Hub</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 02:39",
+    "generated": "2026-10-29 12:01",
     "intent": "Bronze > Silver > Gold Full Data Pipeline ERD & Lineage Hub",
     "stats": {
-      "bronze_sources": 65,
+      "bronze_sources": 66,
       "silver_models": 64,
-      "gold_tables": 63,
+      "gold_tables": 67,
       "dim_count": 29,
-      "fact_count": 34
+      "fact_count": 38
     }
   }
   </script>
@@ -399,7 +399,7 @@
     <div class="hero-stats">
       <div class="stat-card stat-bronze">
         <div class="stat-label">BRONZE 원천 소스</div>
-        <div class="stat-num">65</div>
+        <div class="stat-num">66</div>
         <div style="font-size:0.75rem; color:var(--text-muted);">CRM, ERP, AGENCY, GA4</div>
       </div>
       <div class="stat-card stat-silver">
@@ -409,8 +409,8 @@
       </div>
       <div class="stat-card stat-gold">
         <div class="stat-label">GOLD 마트 테이블</div>
-        <div class="stat-num">63</div>
-        <div style="font-size:0.75rem; color:var(--text-muted);">DIM 29 + FACT 34</div>
+        <div class="stat-num">67</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">DIM 29 + FACT 38</div>
       </div>
     </div>
 
@@ -418,9 +418,9 @@
     <div class="section-card">
       <div class="filter-bar">
         <span style="font-size: 0.85rem; font-weight: 700; margin-right: 8px;">필터:</span>
-        <button class="filter-btn active" data-filter="all">전체 (63)</button>
+        <button class="filter-btn active" data-filter="all">전체 (67)</button>
         <button class="filter-btn" data-filter="DIM">DIM 차원 (29)</button>
-        <button class="filter-btn" data-filter="FACT">FACT 팩트 (34)</button>
+        <button class="filter-btn" data-filter="FACT">FACT 팩트 (38)</button>
         <button class="filter-btn" data-filter="CRM">회원·후원 (CRM)</button>
         <button class="filter-btn" data-filter="ERP">예산·목표 (ERP)</button>
         <button class="filter-btn" data-filter="AGENCY">마케팅·광고 (AGENCY)</button>
@@ -788,9 +788,9 @@
           <h3 class="card-title"><a href="DIM_SEND_REQUEST.html">DIM_SEND_REQUEST</a></h3>
           <div class="card-desc">SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]</div>
           <div class="card-meta">
-            <div><b>Bronze:</b> 8개 (SND_REQ_MST, TC_CMMN_DTL_CD, TD_MS_EMAIL_LQY_SNDNG, TD_MS_MSG_AT_LQY_SNDNG 외 4개)</div>
-            <div><b>Silver:</b> 3개 (CRM_CODE, CRM_SEND_REQUEST, CRM_SEND_RESULT)</div>
-            <div><b>컬럼:</b> 49개</div>
+            <div><b>Bronze:</b> 9개 (SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TD_MS_EMAIL_LQY_SNDNG 외 5개)</div>
+            <div><b>Silver:</b> 4개 (CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST, CRM_SEND_RESULT)</div>
+            <div><b>컬럼:</b> 50개</div>
           </div>
           <a href="DIM_SEND_REQUEST.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
@@ -802,8 +802,8 @@
           <h3 class="card-title"><a href="DIM_SEND_TYPE.html">DIM_SEND_TYPE</a></h3>
           <div class="card-desc">SEND_TYPE_SK (1행=1분류경로)]. [주의: 발송 메시지 세부 카테고리 매핑]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR → SILVER.CRM_SEND_REQUEST]</div>
           <div class="card-meta">
-            <div><b>Bronze:</b> 4개 (SND_REQ_MST, TM_MS_EMAIL_SNDNG, TM_MS_MSG_AT_SNDNG, TM_MS_PSTMTR_SNDNG)</div>
-            <div><b>Silver:</b> 1개 (CRM_SEND_REQUEST)</div>
+            <div><b>Bronze:</b> 6개 (SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TM_MS_EMAIL_SNDNG 외 2개)</div>
+            <div><b>Silver:</b> 3개 (CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST)</div>
             <div><b>컬럼:</b> 12개</div>
           </div>
           <a href="DIM_SEND_TYPE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
@@ -816,8 +816,8 @@
           <h3 class="card-title"><a href="DIM_SERVICE.html">DIM_SERVICE</a></h3>
           <div class="card-desc">SERVICE_SK (1행=1채널유형)]. [주의: 대/중/소 상세분류는 DIM_SEND_TYPE 참조]. [원천: CRM → BRONZE_CRM.TM_MS_* → SILVER.CRM_SEND_REQUEST]</div>
           <div class="card-meta">
-            <div><b>Bronze:</b> 4개 (SND_REQ_MST, TM_MS_EMAIL_SNDNG, TM_MS_MSG_AT_SNDNG, TM_MS_PSTMTR_SNDNG)</div>
-            <div><b>Silver:</b> 1개 (CRM_SEND_REQUEST)</div>
+            <div><b>Bronze:</b> 6개 (SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TM_MS_EMAIL_SNDNG 외 2개)</div>
+            <div><b>Silver:</b> 3개 (CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST)</div>
             <div><b>컬럼:</b> 7개</div>
           </div>
           <a href="DIM_SERVICE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
@@ -902,9 +902,37 @@
           <div class="card-meta">
             <div><b>Bronze:</b> 9개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 5개)</div>
             <div><b>Silver:</b> 10개 (AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC, AGENCY_AD_ROW_VIDEO 외 6개)</div>
-            <div><b>컬럼:</b> 46개</div>
+            <div><b>컬럼:</b> 48개</div>
           </div>
           <a href="FACT_AD_PERFORMANCE.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
+        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <div class="card-header">
+            <span class="badge badge-fact">FACT</span>
+            <span class="badge badge-domain">GA4</span>
+          </div>
+          <h3 class="card-title"><a href="FACT_AT_GA_CLICK.html">FACT_AT_GA_CLICK</a></h3>
+          <div class="card-desc">알림톡 수신 후 D+5 카카오 경로 GA 클릭 — grain = 발송요청 × 채널 × 회원 × 클릭 시각 × 랜딩. (발송, 회원) 집합 = FACT_MESSAGE_DISPATCH 의 B(ANY_AT_GA_OPEN_MEMBERS = 1)</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 15개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 11개)</div>
+            <div><b>Silver:</b> 10개 (BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CODE 외 6개)</div>
+            <div><b>컬럼:</b> 18개</div>
+          </div>
+          <a href="FACT_AT_GA_CLICK.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
+        <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <div class="card-header">
+            <span class="badge badge-fact">FACT</span>
+            <span class="badge badge-domain">GA4</span>
+          </div>
+          <h3 class="card-title"><a href="FACT_AT_GA_LINK_MAP.html">FACT_AT_GA_LINK_MAP</a></h3>
+          <div class="card-desc">알림톡 템플릿 → GA 최종 랜딩 패턴 매핑 — grain = TEMPLATE_ID × MATCH_PATTERN · 템플릿마다 한 출처(MAP_PRIORITY 최소)만</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 15개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 11개)</div>
+            <div><b>Silver:</b> 10개 (BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CODE 외 6개)</div>
+            <div><b>컬럼:</b> 10개</div>
+          </div>
+          <a href="FACT_AT_GA_LINK_MAP.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
         <div class="table-grid-card" data-domain="GA4 / 디지털 행동" data-type="FACT">
           <div class="card-header">
@@ -989,6 +1017,20 @@
             <div><b>컬럼:</b> 21개</div>
           </div>
           <a href="FACT_CAMPAIGN_MONTHLY.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
+        <div class="table-grid-card" data-domain="COMMON / 공통 기준" data-type="FACT">
+          <div class="card-header">
+            <span class="badge badge-fact">FACT</span>
+            <span class="badge badge-domain">COMMON</span>
+          </div>
+          <h3 class="card-title"><a href="FACT_COHORT_DISPATCH.html">FACT_COHORT_DISPATCH</a></h3>
+          <div class="card-desc">개발사건 코호트 × 사건 전후 발송 브리지 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × SEND_REQUEST_SK × SEND_DATE. 창 = 첫 사건일 D-30~D+5 · 발송구분 = SEND_TYPE_SK(→ DIM_SEND_TYPE) · MONTHS_AFTER = 0 고정(코호트 복합키 참조). 🔴 회원수는 COUNT DISTINCT · 인과가 아니라 시간 창 매칭 · D0 은 대부분 처리 통보(DEC-33)</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 35개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 31개)</div>
+            <div><b>Silver:</b> 26개 (BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 22개)</div>
+            <div><b>컬럼:</b> 22개</div>
+          </div>
+          <a href="FACT_COHORT_DISPATCH.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
         <div class="table-grid-card" data-domain="COMMON / 공통 기준" data-type="FACT">
           <div class="card-header">
@@ -1110,8 +1152,8 @@
           <h3 class="card-title"><a href="FACT_MEMBER_EVENT_COHORT.html">FACT_MEMBER_EVENT_COHORT</a></h3>
           <div class="card-desc">개발사건 코호트 × 경과월 팩트 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × MONTHS_AFTER(0~12). 사건 시점 속성(FME 첫 사건) + 관측월 활동·납입·미납·중단(FMM) + 후속 증액·재후원·감액·중단(FME) + 사건 전후 발송. 🔴 개발구분·경과월을 각각 하나로 고정해 센다 · MONTHS_AFTER = 0 사건 개발(건) 합 = FME DEV 합(같은 구간). 🔴 발송 플래그 NULL = 그 채널 적재 시작 전 사건(「안 보냈다」가 아니다) · 오픈은 문자(SND)만</div>
           <div class="card-meta">
-            <div><b>Bronze:</b> 33개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_DTL_CD 외 29개)</div>
-            <div><b>Silver:</b> 21개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 17개)</div>
+            <div><b>Bronze:</b> 35개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 31개)</div>
+            <div><b>Silver:</b> 26개 (BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 22개)</div>
             <div><b>컬럼:</b> 50개</div>
           </div>
           <a href="FACT_MEMBER_EVENT_COHORT.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
@@ -1166,11 +1208,25 @@
           <h3 class="card-title"><a href="FACT_MESSAGE_DISPATCH.html">FACT_MESSAGE_DISPATCH</a></h3>
           <div class="card-desc">DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST]</div>
           <div class="card-meta">
-            <div><b>Bronze:</b> 27개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_DTL_CD 외 23개)</div>
-            <div><b>Silver:</b> 18개 (CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 14개)</div>
-            <div><b>컬럼:</b> 64개</div>
+            <div><b>Bronze:</b> 32개 (SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 28개)</div>
+            <div><b>Silver:</b> 25개 (BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 21개)</div>
+            <div><b>컬럼:</b> 68개</div>
           </div>
           <a href="FACT_MESSAGE_DISPATCH.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
+        </div>
+        <div class="table-grid-card" data-domain="AGENCY / 마케팅·광고" data-type="FACT">
+          <div class="card-header">
+            <span class="badge badge-fact">FACT</span>
+            <span class="badge badge-domain">AGENCY</span>
+          </div>
+          <h3 class="card-title"><a href="FACT_MKTG_CAMPAIGN_MONTHLY_COST.html">FACT_MKTG_CAMPAIGN_MONTHLY_COST</a></h3>
+          <div class="card-desc">마케팅캠페인 × 월 광고비·디지털 정산액·제작비(캠페인코드 기재분)·MSTR 개발(건) 결합. 🔴 개발단가 = 광고비 ÷ MSTR 개발(건) · 회원수·결의 건수는 월 간 합산 금지</div>
+          <div class="card-meta">
+            <div><b>Bronze:</b> 11개 (DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 7개)</div>
+            <div><b>Silver:</b> 11개 (AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC, AGENCY_AD_ROW_VIDEO 외 7개)</div>
+            <div><b>컬럼:</b> 17개</div>
+          </div>
+          <a href="FACT_MKTG_CAMPAIGN_MONTHLY_COST.html" class="card-btn">상세 계보 & ERD 보기 ➔</a>
         </div>
         <div class="table-grid-card" data-domain="CRM / 회원·후원" data-type="FACT">
           <div class="card-header">
@@ -1562,8 +1618,8 @@
           <td><a href="DIM_SEND_REQUEST.html"><b>DIM_SEND_REQUEST</b></a></td>
           <td>SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>SND_REQ_MST, TC_CMMN_DTL_CD, TD_MS_EMAIL_LQY_SNDNG, TD_MS_MSG_AT_LQY_SNDNG 외 4개</code></td>
-          <td><code>CRM_CODE, CRM_SEND_REQUEST, CRM_SEND_RESULT</code></td>
+          <td><code>SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TD_MS_EMAIL_LQY_SNDNG 외 5개</code></td>
+          <td><code>CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST, CRM_SEND_RESULT</code></td>
           <td><a href="DIM_SEND_REQUEST.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="DIM">
@@ -1571,8 +1627,8 @@
           <td><a href="DIM_SEND_TYPE.html"><b>DIM_SEND_TYPE</b></a></td>
           <td>SEND_TYPE_SK (1행=1분류경로)]. [주의: 발송 메시지 세부 카테고리 매핑]. [원천: CRM → BRONZE_CRM.TM_MS_EMAIL/MSG/PSTMTR → SILVER.CRM_SEND_REQUEST]</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>SND_REQ_MST, TM_MS_EMAIL_SNDNG, TM_MS_MSG_AT_SNDNG, TM_MS_PSTMTR_SNDNG</code></td>
-          <td><code>CRM_SEND_REQUEST</code></td>
+          <td><code>SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TM_MS_EMAIL_SNDNG 외 2개</code></td>
+          <td><code>CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST</code></td>
           <td><a href="DIM_SEND_TYPE.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="DIM">
@@ -1580,8 +1636,8 @@
           <td><a href="DIM_SERVICE.html"><b>DIM_SERVICE</b></a></td>
           <td>SERVICE_SK (1행=1채널유형)]. [주의: 대/중/소 상세분류는 DIM_SEND_TYPE 참조]. [원천: CRM → BRONZE_CRM.TM_MS_* → SILVER.CRM_SEND_REQUEST]</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>SND_REQ_MST, TM_MS_EMAIL_SNDNG, TM_MS_MSG_AT_SNDNG, TM_MS_PSTMTR_SNDNG</code></td>
-          <td><code>CRM_SEND_REQUEST</code></td>
+          <td><code>SND_REQ_MST, TC_CMMN_CD, TC_CMMN_DTL_CD, TM_MS_EMAIL_SNDNG 외 2개</code></td>
+          <td><code>CRM_CODE, CRM_CODE_GROUP, CRM_SEND_REQUEST</code></td>
           <td><a href="DIM_SERVICE.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="DIM">
@@ -1640,6 +1696,24 @@
         </tr>
         <tr data-domain="GA4 / 디지털 행동" data-type="FACT">
           <td><span class="badge badge-fact">FACT</span></td>
+          <td><a href="FACT_AT_GA_CLICK.html"><b>FACT_AT_GA_CLICK</b></a></td>
+          <td>알림톡 수신 후 D+5 카카오 경로 GA 클릭 — grain = 발송요청 × 채널 × 회원 × 클릭 시각 × 랜딩. (발송, 회원) 집합 = FACT_MESSAGE_DISPATCH 의 B(ANY_AT_GA_OPEN_MEMBERS = 1)</td>
+          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
+          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 11개</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CODE 외 6개</code></td>
+          <td><a href="FACT_AT_GA_CLICK.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
+        <tr data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <td><span class="badge badge-fact">FACT</span></td>
+          <td><a href="FACT_AT_GA_LINK_MAP.html"><b>FACT_AT_GA_LINK_MAP</b></a></td>
+          <td>알림톡 템플릿 → GA 최종 랜딩 패턴 매핑 — grain = TEMPLATE_ID × MATCH_PATTERN · 템플릿마다 한 출처(MAP_PRIORITY 최소)만</td>
+          <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
+          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 11개</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CODE 외 6개</code></td>
+          <td><a href="FACT_AT_GA_LINK_MAP.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
+        <tr data-domain="GA4 / 디지털 행동" data-type="FACT">
+          <td><span class="badge badge-fact">FACT</span></td>
           <td><a href="FACT_BIGQUERY_BEHAVIOR.html"><b>FACT_BIGQUERY_BEHAVIOR</b></a></td>
           <td>DATE_SK × IDENTITY_SK × EVENT/SOURCE/DEVICE × PAGE × UTM_CAMPAIGN (1행=1행동)]. [주의: 비가산 지표(활성사용자/이탈률) 단순 합산 금지]. [원천: BIGQUERY → SILVER.BIGQUERY_EVENT]. [적재: 롤링 윈도우 증분 — 창 [오늘-bigquery_lookback_days, 9999-12-31] 만 DELETE 후 재적재(멱등). 원천은 지연도착 종료 후 동결(freeze)돼 입고되므로 lookback 은 지연도착 방어가 아니고 실제 역할은 부분적재·중단 run 의 재처리다. 지연도착 재처리 요건이 생기면 dbt_project.yml vars.bigquery_lookback_days 값만 올려 대응 가능하다(개념 구현 상주 · 현재 3). 창보다 오래 run 을 건너뛴 구멍은 OPS.WARN_BIGQUERY_LOAD_GAP 이 감시한다]</td>
           <td><span class="badge badge-domain">GA4 / 디지털 행동</span></td>
@@ -1691,6 +1765,15 @@
           <td><code>TC_CMMN_DTL_CD, TC_MKTNG_DTL_CD, TM_CM_BRND_MNG, TM_CM_CMPGN_MNG 외 12개</code></td>
           <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 11개</code></td>
           <td><a href="FACT_CAMPAIGN_MONTHLY.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
+        <tr data-domain="COMMON / 공통 기준" data-type="FACT">
+          <td><span class="badge badge-fact">FACT</span></td>
+          <td><a href="FACT_COHORT_DISPATCH.html"><b>FACT_COHORT_DISPATCH</b></a></td>
+          <td>개발사건 코호트 × 사건 전후 발송 브리지 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × SEND_REQUEST_SK × SEND_DATE. 창 = 첫 사건일 D-30~D+5 · 발송구분 = SEND_TYPE_SK(→ DIM_SEND_TYPE) · MONTHS_AFTER = 0 고정(코호트 복합키 참조). 🔴 회원수는 COUNT DISTINCT · 인과가 아니라 시간 창 매칭 · D0 은 대부분 처리 통보(DEC-33)</td>
+          <td><span class="badge badge-domain">COMMON / 공통 기준</span></td>
+          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 31개</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 22개</code></td>
+          <td><a href="FACT_COHORT_DISPATCH.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="COMMON / 공통 기준" data-type="FACT">
           <td><span class="badge badge-fact">FACT</span></td>
@@ -1769,8 +1852,8 @@
           <td><a href="FACT_MEMBER_EVENT_COHORT.html"><b>FACT_MEMBER_EVENT_COHORT</b></a></td>
           <td>개발사건 코호트 × 경과월 팩트 — grain = EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × MONTHS_AFTER(0~12). 사건 시점 속성(FME 첫 사건) + 관측월 활동·납입·미납·중단(FMM) + 후속 증액·재후원·감액·중단(FME) + 사건 전후 발송. 🔴 개발구분·경과월을 각각 하나로 고정해 센다 · MONTHS_AFTER = 0 사건 개발(건) 합 = FME DEV 합(같은 구간). 🔴 발송 플래그 NULL = 그 채널 적재 시작 전 사건(「안 보냈다」가 아니다) · 오픈은 문자(SND)만</td>
           <td><span class="badge badge-domain">CRM / 회원·후원</span></td>
-          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_DTL_CD 외 29개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 17개</code></td>
+          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 31개</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 22개</code></td>
           <td><a href="FACT_MEMBER_EVENT_COHORT.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="FACT">
@@ -1805,9 +1888,18 @@
           <td><a href="FACT_MESSAGE_DISPATCH.html"><b>FACT_MESSAGE_DISPATCH</b></a></td>
           <td>DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST]</td>
           <td><span class="badge badge-domain">COMMON / 공통 기준</span></td>
-          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_DTL_CD 외 23개</code></td>
-          <td><code>CRM_CAMPAIGN, CRM_CODE, CRM_MARKETING_CAMPAIGN, CRM_MEMBER 외 14개</code></td>
+          <td><code>SND_MEMBER_LIST, SND_MEMBER_OPEN_LOG, SND_REQ_MST, TC_CMMN_CD 외 28개</code></td>
+          <td><code>BIGQUERY_BASIC, BIGQUERY_EVENT, BIGQUERY_REFINED_DATA, CRM_CAMPAIGN 외 21개</code></td>
           <td><a href="FACT_MESSAGE_DISPATCH.html" class="badge badge-dim">상세보기</a></td>
+        </tr>
+        <tr data-domain="AGENCY / 마케팅·광고" data-type="FACT">
+          <td><span class="badge badge-fact">FACT</span></td>
+          <td><a href="FACT_MKTG_CAMPAIGN_MONTHLY_COST.html"><b>FACT_MKTG_CAMPAIGN_MONTHLY_COST</b></a></td>
+          <td>마케팅캠페인 × 월 광고비·디지털 정산액·제작비(캠페인코드 기재분)·MSTR 개발(건) 결합. 🔴 개발단가 = 광고비 ÷ MSTR 개발(건) · 회원수·결의 건수는 월 간 합산 금지</td>
+          <td><span class="badge badge-domain">AGENCY / 마케팅·광고</span></td>
+          <td><code>DGT_AD_CMPGN_DTLS, REBRDC_AD_CMPGN_DTLS, VIDEO_AD_CMPGN_DTLS, TC_CMMN_DTL_CD 외 7개</code></td>
+          <td><code>AGENCY_AD_PERFORMANCE, AGENCY_AD_ROW_DGT, AGENCY_AD_ROW_REBRDC, AGENCY_AD_ROW_VIDEO 외 7개</code></td>
+          <td><a href="FACT_MKTG_CAMPAIGN_MONTHLY_COST.html" class="badge badge-dim">상세보기</a></td>
         </tr>
         <tr data-domain="CRM / 회원·후원" data-type="FACT">
           <td><span class="badge badge-fact">FACT</span></td>

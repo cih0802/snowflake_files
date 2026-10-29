@@ -1519,6 +1519,7 @@ models:
     description: >
       마케팅캠페인 × 월 광고비·디지털 정산액·제작비(캠페인코드 기재분)·MSTR 개발(건) 결합.
       🔴 개발단가 = 광고비 ÷ MSTR 개발(건) · 회원수·결의 건수는 월 간 합산 금지.
+      🆕 [O270] FINAL_AD_COST = 디지털 최종정산금액 + 영상 최종광고비 + 방송 총비용(현업 데분_6) · NULL 행 수 = FINAL_AD_COST_NULL_ROWS.
     columns:
       - name: "MKTG_CAMPAIGN_SK || '|' || MONTH_KEY"
         tests: [unique]

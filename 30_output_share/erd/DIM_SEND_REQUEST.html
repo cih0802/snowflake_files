@@ -7,7 +7,7 @@
   <title>DIM_SEND_REQUEST - Pipeline ERD & Lineage</title>
   <script type="application/json" id="snowflake-report-metadata">
   {
-    "generated": "2026-10-27 02:39",
+    "generated": "2026-10-29 12:01",
     "intent": "Bronze > Silver > Gold Pipeline Lineage and ERD for DIM_SEND_REQUEST",
     "table": "DIM_SEND_REQUEST",
     "domain": "CRM / 회원·후원",
@@ -420,18 +420,21 @@
 <a href="DIM_SEND_TYPE.html" class="nav-item"><span>DIM_SEND_TYPE</span></a>
 <a href="DIM_SERVICE.html" class="nav-item"><span>DIM_SERVICE</span></a>
 <a href="DIM_SPONSORSHIP.html" class="nav-item"><span>DIM_SPONSORSHIP</span></a>
-        <div class="nav-group-title">FACT (34)</div>
+        <div class="nav-group-title">FACT (38)</div>
 <a href="FACT_AD_BROADCAST.html" class="nav-item"><span>FACT_AD_BROADCAST</span></a>
 <a href="FACT_AD_BROADCAST_CASE.html" class="nav-item"><span>FACT_AD_BROADCAST_CASE</span></a>
 <a href="FACT_AD_DIGITAL.html" class="nav-item"><span>FACT_AD_DIGITAL</span></a>
 <a href="FACT_AD_INFLOW_ALLOC.html" class="nav-item"><span>FACT_AD_INFLOW_ALLOC</span></a>
 <a href="FACT_AD_PERFORMANCE.html" class="nav-item"><span>FACT_AD_PERFORMANCE</span></a>
+<a href="FACT_AT_GA_CLICK.html" class="nav-item"><span>FACT_AT_GA_CLICK</span></a>
+<a href="FACT_AT_GA_LINK_MAP.html" class="nav-item"><span>FACT_AT_GA_LINK_MAP</span></a>
 <a href="FACT_BIGQUERY_BEHAVIOR.html" class="nav-item"><span>FACT_BIGQUERY_BEHAVIOR</span></a>
 <a href="FACT_BIGQUERY_SESSION.html" class="nav-item"><span>FACT_BIGQUERY_SESSION</span></a>
 <a href="FACT_BUDGET.html" class="nav-item"><span>FACT_BUDGET</span></a>
 <a href="FACT_BUDGET_YEARLY.html" class="nav-item"><span>FACT_BUDGET_YEARLY</span></a>
 <a href="FACT_CAMPAIGN_CUM_STOP.html" class="nav-item"><span>FACT_CAMPAIGN_CUM_STOP</span></a>
 <a href="FACT_CAMPAIGN_MONTHLY.html" class="nav-item"><span>FACT_CAMPAIGN_MONTHLY</span></a>
+<a href="FACT_COHORT_DISPATCH.html" class="nav-item"><span>FACT_COHORT_DISPATCH</span></a>
 <a href="FACT_EVENT_ATTENDANCE.html" class="nav-item"><span>FACT_EVENT_ATTENDANCE</span></a>
 <a href="FACT_EXPENSE_RESOLUTION.html" class="nav-item"><span>FACT_EXPENSE_RESOLUTION</span></a>
 <a href="FACT_GA4_DEMOGRAPHIC.html" class="nav-item"><span>FACT_GA4_DEMOGRAPHIC</span></a>
@@ -445,6 +448,7 @@
 <a href="FACT_MEMBER_MONTHLY.html" class="nav-item"><span>FACT_MEMBER_MONTHLY</span></a>
 <a href="FACT_MEMBER_SPONSORSHIP_SPAN.html" class="nav-item"><span>FACT_MEMBER_SPONSORSHIP_SPAN</span></a>
 <a href="FACT_MESSAGE_DISPATCH.html" class="nav-item"><span>FACT_MESSAGE_DISPATCH</span></a>
+<a href="FACT_MKTG_CAMPAIGN_MONTHLY_COST.html" class="nav-item"><span>FACT_MKTG_CAMPAIGN_MONTHLY_COST</span></a>
 <a href="FACT_PAYMENT_BILLING_STATUS.html" class="nav-item"><span>FACT_PAYMENT_BILLING_STATUS</span></a>
 <a href="FACT_PAYMENT_METHOD_CHANGE.html" class="nav-item"><span>FACT_PAYMENT_METHOD_CHANGE</span></a>
 <a href="FACT_RELATION_ACTIVITY.html" class="nav-item"><span>FACT_RELATION_ACTIVITY</span></a>
@@ -476,9 +480,9 @@
         </div>
         <div class="meta-badges">
           <span class="badge badge-domain">도메인: CRM / 회원·후원</span>
-          <span class="badge badge-domain">BRONZE 원천: 8개</span>
-          <span class="badge badge-domain">SILVER 모델: 3개</span>
-          <span class="badge badge-domain">컬럼 수: 49개</span>
+          <span class="badge badge-domain">BRONZE 원천: 9개</span>
+          <span class="badge badge-domain">SILVER 모델: 4개</span>
+          <span class="badge badge-domain">컬럼 수: 50개</span>
         </div>
         <p style='margin: 12px 0 0 0; font-size: 0.9rem; color: var(--text-muted);'>발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]</p>
       </div>
@@ -498,6 +502,7 @@ flowchart LR
   classDef target fill:#fef3c7,stroke:#d97706,stroke-width:3px,color:#92400e;
   subgraph BRONZE [1. BRONZE 원천]
     B_bronze_crm_SND_REQ_MST["SND_REQ_MST"]:::bronze
+    B_bronze_crm_TC_CMMN_CD["TC_CMMN_CD"]:::bronze
     B_bronze_crm_TC_CMMN_DTL_CD["TC_CMMN_DTL_CD"]:::bronze
     B_bronze_crm_TD_MS_EMAIL_LQY_SNDNG["TD_MS_EMAIL_LQY_SNDNG"]:::bronze
     B_bronze_crm_TD_MS_MSG_AT_LQY_SNDNG["TD_MS_MSG_AT_LQY_SNDNG"]:::bronze
@@ -508,6 +513,7 @@ flowchart LR
   end
   subgraph SILVER [2. SILVER 정제/가공]
     S_CRM_CODE["CRM_CODE"]:::silver
+    S_CRM_CODE_GROUP["CRM_CODE_GROUP"]:::silver
     S_CRM_SEND_REQUEST["CRM_SEND_REQUEST"]:::silver
     S_CRM_SEND_RESULT["CRM_SEND_RESULT"]:::silver
   end
@@ -516,6 +522,7 @@ flowchart LR
   end
   B_bronze_crm_SND_REQ_MST --> S_CRM_SEND_REQUEST
   B_bronze_crm_SND_REQ_MST --> S_CRM_SEND_RESULT
+  B_bronze_crm_TC_CMMN_CD --> S_CRM_CODE_GROUP
   B_bronze_crm_TC_CMMN_DTL_CD --> S_CRM_CODE
   B_bronze_crm_TD_MS_EMAIL_LQY_SNDNG --> S_CRM_SEND_RESULT
   B_bronze_crm_TD_MS_MSG_AT_LQY_SNDNG --> S_CRM_SEND_RESULT
@@ -524,6 +531,8 @@ flowchart LR
   B_bronze_crm_TM_MS_MSG_AT_SNDNG --> S_CRM_SEND_REQUEST
   B_bronze_crm_TM_MS_PSTMTR_SNDNG --> S_CRM_SEND_REQUEST
   S_CRM_CODE --> G_DIM_SEND_REQUEST
+  S_CRM_CODE --> S_CRM_SEND_REQUEST
+  S_CRM_CODE_GROUP --> S_CRM_SEND_REQUEST
   S_CRM_SEND_REQUEST --> G_DIM_SEND_REQUEST
   S_CRM_SEND_RESULT --> G_DIM_SEND_REQUEST
           </pre>
@@ -532,10 +541,11 @@ flowchart LR
         <div class="flow-steps">
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (8개)
+              <span class="badge badge-bronze">BRONZE</span> 원천 테이블 (9개)
             </div>
             <ul class="flow-step-list">
 <li><b>bronze_crm.SND_REQ_MST</b>: </li>
+<li><b>bronze_crm.TC_CMMN_CD</b>: </li>
 <li><b>bronze_crm.TC_CMMN_DTL_CD</b>: </li>
 <li><b>bronze_crm.TD_MS_EMAIL_LQY_SNDNG</b>: </li>
 <li><b>bronze_crm.TD_MS_MSG_AT_LQY_SNDNG</b>: </li>
@@ -547,10 +557,11 @@ flowchart LR
           </div>
           <div class="flow-step-box">
             <div class="flow-step-title">
-              <span class="badge badge-silver">SILVER</span> 중간 모델 (3개)
+              <span class="badge badge-silver">SILVER</span> 중간 모델 (4개)
             </div>
             <ul class="flow-step-list">
 <li><b>CRM_CODE</b>: </li>
+<li><b>CRM_CODE_GROUP</b>: 정제 모델</li>
 <li><b>CRM_SEND_REQUEST</b>: </li>
 <li><b>CRM_SEND_RESULT</b>: </li>
             </ul>
@@ -576,13 +587,62 @@ erDiagram
     string TMPLAT_ID
     string DW_BATCH_ID
   }
-  DIM_SEND_REQUEST {
-    string ID PK
+  FACT_AT_GA_CLICK {
+    string DATE_SK FK
+    string MEMBER_DK FK
+    string SEND_REQUEST_SK FK
+    string TEMPLATE_ID
+    string DW_BATCH_ID
   }
+  FACT_COHORT_DISPATCH {
+    string SEND_TYPE_SK FK
+    string SEND_REQUEST_SK FK
+    string EVENT_MONTH_KEY
+    string MEMBER_DK FK
+    string DW_BATCH_ID
+  }
+  DIM_SEND_REQUEST ||--o{ FACT_COHORT_DISPATCH : "SEND_REQUEST_SK"
+  DIM_SEND_REQUEST ||--o{ FACT_AT_GA_CLICK : "SEND_REQUEST_SK"
           </pre>
         </div>
 
-        <p style='font-size:0.85rem; color:var(--text-muted);'>연결된 외부 참조 관계가 없는 독립 테이블입니다.</p>
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>출발 테이블</th>
+                <th>출발 컬럼</th>
+                <th></th>
+                <th>대상 테이블</th>
+                <th>대상 컬럼</th>
+                <th>관계 출처</th>
+                <th>관계 유형</th>
+              </tr>
+            </thead>
+            <tbody>
+        <tr>
+          <td><code>FACT_COHORT_DISPATCH</code></td>
+          <td><code>SEND_REQUEST_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SEND_REQUEST.html"><code>DIM_SEND_REQUEST</code></a></td>
+          <td><code>SEND_REQUEST_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+        <tr>
+          <td><code>FACT_AT_GA_CLICK</code></td>
+          <td><code>SEND_REQUEST_SK</code></td>
+          <td>➔</td>
+          <td><a href="DIM_SEND_REQUEST.html"><code>DIM_SEND_REQUEST</code></a></td>
+          <td><code>SEND_REQUEST_SK</code></td>
+          <td><span class="badge badge-domain">dbt YAML</span></td>
+          <td>Physical / Declared FK</td>
+        </tr>
+            </tbody>
+          </table>
+        </div>
+        
       </div>
 
       <!-- 3. Column Catalog -->
@@ -893,6 +953,12 @@ erDiagram
           <td></td>
           <td>문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).</td>
         </tr>
+        <tr>
+          <td><code>SEND_FORMAT_NAME</code></td>
+          <td><code>VARCHAR</code></td>
+          <td></td>
+          <td>실제 메시지 형식(알림톡·SMS·LMS·MMS·문자·이메일·우편) (O265). MSG_AT = MS010 라벨 · SND = MSG_TYPE 1 → 알림톡(템플릿 AT 코드 1,560/1,560) · 2·3 → 문자 · 🔴 채널(SEND_CHANNEL)과 다르다 — SND 시스템도 알림톡을 보낸다.</td>
+        </tr>
             </tbody>
           </table>
         </div>
@@ -942,7 +1008,16 @@ select
     c_ps.DTL_CD_NM                                  as PSTMTR_PRCS_STAT_NAME,
     q.CORP_TYPE,                                    -- CM019 · SND 전용
     c_cp.DTL_CD_NM                                  as CORP_TYPE_NAME,
-    q.SEND_SPLIT_TYPE                               -- SND 전용 원천값 once / divide
+    q.SEND_SPLIT_TYPE,                              -- SND 전용 원천값 once / divide
+    --  [2026-10-28 O265] 실제 메시지 형식 — 채널과 다르다(SND 시스템도 알림톡을 보낸다 · UM80684 BRONZE 실측).
+    --   MSG_AT = MS010 라벨(4 = 알림톡 1,201,853 · 1~3 = SMS/LMS/MMS) · SND MSG_TYPE '1' = 템플릿 AT 코드 1,560/1,560 ⇒ 알림톡.
+    --   WARN: SND MSG_TYPE 2·3 의 SMS/LMS 구분 근거는 원천에 없다 ⇒ '문자' 로만 묶는다(창작 금지).
+    CASE q.SEND_CHANNEL
+        WHEN 'MSG_AT' THEN c_md.DTL_CD_NM
+        WHEN 'SND'    THEN CASE q.MSG_TYPE WHEN '1' THEN '알림톡' WHEN '2' THEN '문자' WHEN '3' THEN '문자' END
+        WHEN 'EMAIL'  THEN '이메일'
+        WHEN 'PSTMTR' THEN '우편'
+    END                                             as SEND_FORMAT_NAME
 from {{ ref('CRM_SEND_REQUEST') }} q
 left join {{ ref('CRM_SEND_RESULT') }} r
     on r.SNDNG_KEY = q.SNDNG_KEY and r.SEND_CHANNEL = q.SEND_CHANNEL
@@ -953,14 +1028,15 @@ left join {{ ref('CRM_CODE') }} c_cp on c_cp.CD_ID = 'CM019' and c_cp.DTL_CD_ID 
 
 union all
 --  [O249 · DR-31 · A8-29] unknown 멤버(SK=0): FACT_MESSAGE_DISPATCH.SEND_REQUEST_SK=0(요청 미매핑 3,001행 · SR61467 실측)
---   의 FK 고아 해소 · DIM_SERVICE 와 같은 센티넬 규약. 열 순서 = 라이브 49열(2 + 34 NULL + 감사 4 + 9 NULL).
+--   의 FK 고아 해소 · DIM_SERVICE 와 같은 센티넬 규약. 열 순서 = 라이브 49열(2 + 34 NULL + 감사 4 + 9 NULL) + O265 SEND_FORMAT_NAME 1 = 50열.
 --   WARN: SNDNG_KEY 는 NUMBER 다 ⇒ 센티넬 키 = 0(원천에 0 없음 · 2026-10-20 실측 · 문자 '(미매핑)' 은 100038 로 실패했다).
 select 0, 0,
     '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     {{ gold_meta('CRM') }},
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL
 </code></pre>
           </div>
         </details>

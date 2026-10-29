@@ -52,7 +52,7 @@ WHERE execution_status IN ('RUNNING','QUEUED','BLOCKED') AND query_text NOT ILIK
 | 도구 | 언제 | 형식 |
 |---|---|---|
 | 블록 실행기 | 표에 「블록」이 적힌 단계 | `python3 scripts/run_sql_block.py <파일> --blocks <표지,…>` 로 **먼저 미리 보기** → 원천 쓰기가 없으면 같은 명령 끝에 `--apply` |
-| 파일 실행기 | 표에 「파일 전체」가 적힌 단계 | `python3 scripts/run_sql_file.py <파일>` |
+| 파일 실행기 | 표에 「파일 전체」가 적힌 단계 | `python3 scripts/run_sql_file.py <파일> --apply` (🆕 O270 · `--apply` 없으면 dry-run = 문장 목록만 출력 · 라이브 무변경) |
 
 - 블록 실행기는 `--apply` 가 없으면 아무것도 바꾸지 않는다. 미리 보기에 `BLOCKED` 가 나오면 **멈춘다**.
 - 블록 실행기·파일 실행기가 `FAIL` 을 내면 **멈춘다**(다음 문장으로 넘어가지 않는다).

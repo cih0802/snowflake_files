@@ -12,4 +12,4 @@ EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='build';
 -- after redeploying the dbt project
 -- EXECUTE DBT PROJECT GN_DW.OPS.DW_PIPELINE ARGS='retry';
 
-SELECT 20261029, '오전운영계반영';
+SELECT 20261030, '오전운영계반영';

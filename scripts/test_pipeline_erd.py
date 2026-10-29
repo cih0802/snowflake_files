@@ -26,11 +26,18 @@ def assert_true(cond, msg):
 
 print("=== Pipeline ERD & Lineage Generator Test Suite ===\n")
 
-# [축1] 38개 파일 생성 여부 (index.html + 37개 DIM/FACT 테이블)
+# [축1] 파일 생성 여부 (index.html + DIM/FACT 테이블 전건)
+# 🆕 [O270] 기대 수를 하드코딩(38)하지 않고 생성기 입력 목록에서 유도한다(`R3-9 ㉦` · O269-C-1 ③).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gen_pipeline_erd
+expected_gold = sorted(m for m in gen_pipeline_erd.load_sql_metadata() if m.startswith(("DIM_", "FACT_")))
 all_html_files = glob.glob(f"{ERD_DIR}/*.html")
 html_files = [f for f in all_html_files if os.path.basename(f) == 'index.html' or os.path.basename(f).startswith(('DIM_', 'FACT_'))]
 assert_true(os.path.exists(os.path.join(ERD_DIR, "index.html")), "index.html 실재")
-assert_true(len(html_files) == 38, f"총 38개 HTML 파일 실재 (실측: {len(html_files)})")
+assert_true(len(html_files) == len(expected_gold) + 1,
+            f"HTML 파일 수 = 생성기 GOLD 대상 {len(expected_gold)} + index 1 (실측: {len(html_files)})")
+missing_html = [g for g in expected_gold if not os.path.exists(os.path.join(ERD_DIR, g + ".html"))]
+assert_true(not missing_html, f"생성기 대상 전건의 HTML 실재 (부재: {', '.join(missing_html[:5])})")
 
 # [축2] 메타데이터 태그 및 엄격한 보안 준수 (Strict CSP)
 sample_files = [
