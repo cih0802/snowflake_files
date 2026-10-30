@@ -38,12 +38,115 @@ WHERE TABLE_SCHEMA = 'GOLD' AND TABLE_NAME = 'FACT_MKTG_CAMPAIGN_MONTHLY_COST'
   AND COLUMN_NAME IN ('AD_COST_REBROADCAST_TOT', 'FINAL_AD_COST', 'FINAL_AD_COST_NULL_ROWS', 'DEV_CNT_CRM', 'NEW_DEV_CNT_CRM');
 
 -- [3] 원인 ① — GOLD managed access 해제(설계 정본 복귀)
---     ACCOUNTADMIN = 스키마 소유자(GN_DW_ADMIN) 상위 + MANAGE GRANTS 보유(GOLD 에 FUTURE GRANT 가 있어 필요)
---     🟢 기존 객체 GRANT·FUTURE GRANT 는 그대로 유지된다
+--     🆕 [O271-D 2차] 운영계 실측 = 「One or more future grants exist in the schema. They must be revoked first.」
+--     ⇒ FUTURE GRANT 백업 → 회수 → 해제 → 같은 내용으로 재부여(블록 1개 · 문장별 오류는 백업표에 기록하고 계속)
+--     🟢 기존 객체 GRANT 는 그대로 유지된다(FUTURE 만 잠시 비었다가 복원)
+-- [3-0] 🆕 [O271-D 4차] 백업 복구 — 이전 판(CREATE OR REPLACE)을 재실행해 백업이 0건으로 덮였으면
+--       Time Travel 로 직전 판(원본 41건)을 되살린다 · 백업이 이미 1건 이상이면 아무것도 하지 않는다
 USE ROLE ACCOUNTADMIN;
-ALTER SCHEMA GN_DW.GOLD DISABLE MANAGED ACCESS;
+EXECUTE IMMEDIATE $$
+DECLARE n INTEGER DEFAULT -1; i INTEGER DEFAULT 0; nm VARCHAR;
+BEGIN
+  BEGIN
+    SELECT COUNT(*) INTO :n FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+  EXCEPTION WHEN OTHER THEN
+    RETURN 'SKIP — 백업 표 없음(첫 실행)';
+  END;
+  IF (n > 0) THEN
+    RETURN 'OK — 백업 ' || n || '건 그대로 사용';
+  END IF;
+  -- 0건이면 현재 판을 비켜 두고 직전 판을 되살린다(덮어쓴 횟수만큼 · 최대 5회)
+  WHILE (n = 0 AND i < 5) DO
+    i := i + 1;
+    nm := 'GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK_EMPTY_' || TO_VARCHAR(CURRENT_TIMESTAMP(), 'YYYYMMDDHH24MISSFF3') || '_' || i;
+    EXECUTE IMMEDIATE 'ALTER TABLE GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK RENAME TO ' || nm;
+    BEGIN
+      UNDROP TABLE GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+    EXCEPTION WHEN OTHER THEN
+      EXECUTE IMMEDIATE 'ALTER TABLE ' || nm || ' RENAME TO GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK';
+      RETURN 'FAIL — 되살릴 이전 판 없음(Time Travel 밖) · 다음 단계로 가지 말고 알려 달라';
+    END;
+    SELECT COUNT(*) INTO :n FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+  END WHILE;
+  RETURN 'RECOVERED — Time Travel 복구 ' || n || '건(기대 = 41)';
+END;
+$$;
 
--- [3-확인] 기대 = IS_MANAGED_ACCESS = NO
+-- [3-0b] 진단 — DB 수준 FUTURE GRANT(있으면 스키마 해제를 막을 수 있다 · 개발계 = 0건)
+SHOW FUTURE GRANTS IN DATABASE GN_DW;
+
+-- 🔴 [O271-D 3차] 백업은 최초 1회만 만든다(IF NOT EXISTS) — 재실행해도 원본 41건이 덮이지 않는다
+USE ROLE ACCOUNTADMIN;
+SHOW FUTURE GRANTS IN SCHEMA GN_DW.GOLD;
+CREATE TABLE IF NOT EXISTS GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK AS
+SELECT "privilege" AS PRIV, "grant_on" AS GRANT_ON, "grant_to" AS GRANT_TO, "grantee_name" AS GRANTEE,
+       "grant_option" AS GRANT_OPT, CAST(NULL AS VARCHAR) AS REVOKE_ERR, CAST(NULL AS VARCHAR) AS REGRANT_ERR
+FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+-- 기대 = 원본 건수(운영계 41) · 이미 있던 표면 그 건수가 그대로 나온다
+SELECT COUNT(*) AS FUTURE_GRANTS_BACKED_UP FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+
+-- 블록 = ① 역할·객체유형별 REVOKE ALL ② 남은 FUTURE 가 있으면 해제하지 않고 백업으로 복원 후 남은 목록 반환
+--        ③ 0 이면 해제 ④ 백업 그대로 재부여 · 반환값 = 'DONE' 또는 'ABORT …'
+EXECUTE IMMEDIATE $$
+DECLARE
+  c1 CURSOR FOR SELECT DISTINCT GRANT_ON, GRANT_TO, GRANTEE FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+  c2 CURSOR FOR SELECT PRIV, GRANT_ON, GRANT_TO, GRANTEE, GRANT_OPT::STRING AS GO FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK;
+  p VARCHAR; o VARCHAR; g VARCHAR; tgt VARCHAR; stmt VARCHAR; err VARCHAR; left_cnt INTEGER; left_list VARCHAR; alter_err VARCHAR;
+BEGIN
+  UPDATE GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK SET REVOKE_ERR = NULL, REGRANT_ERR = NULL;
+  FOR r IN c1 DO
+    o := r.GRANT_ON; g := r.GRANTEE;
+    tgt := IFF(r.GRANT_TO = 'DATABASE_ROLE', 'DATABASE ROLE ', 'ROLE ') || g;
+    stmt := 'REVOKE ALL PRIVILEGES ON FUTURE ' || REPLACE(o, '_', ' ') || 'S IN SCHEMA GN_DW.GOLD FROM ' || tgt;
+    BEGIN
+      EXECUTE IMMEDIATE :stmt;
+    EXCEPTION WHEN OTHER THEN
+      err := SQLERRM;
+      UPDATE GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK SET REVOKE_ERR = :err WHERE GRANT_ON = :o AND GRANTEE = :g;
+    END;
+  END FOR;
+
+  SHOW FUTURE GRANTS IN SCHEMA GN_DW.GOLD;
+  SELECT COUNT(*), LISTAGG("privilege" || ' ON ' || "grant_on" || ' TO ' || "grantee_name", ' | ')
+    INTO :left_cnt, :left_list FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
+
+  IF (left_cnt = 0) THEN
+    BEGIN
+      ALTER SCHEMA GN_DW.GOLD DISABLE MANAGED ACCESS;
+    EXCEPTION WHEN OTHER THEN
+      alter_err := SQLERRM;   -- 🔴 [O271-D 4차] 실패해도 아래 재부여는 반드시 돈다
+    END;
+  END IF;
+
+  FOR r IN c2 DO
+    p := r.PRIV; o := r.GRANT_ON; g := r.GRANTEE;
+    tgt := IFF(r.GRANT_TO = 'DATABASE_ROLE', 'DATABASE ROLE ', 'ROLE ') || g;
+    stmt := 'GRANT ' || p || ' ON FUTURE ' || REPLACE(o, '_', ' ') || 'S IN SCHEMA GN_DW.GOLD TO ' || tgt
+            || IFF(LOWER(r.GO) = 'true', ' WITH GRANT OPTION', '');
+    BEGIN
+      EXECUTE IMMEDIATE :stmt;
+    EXCEPTION WHEN OTHER THEN
+      err := SQLERRM;
+      UPDATE GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK SET REGRANT_ERR = :err
+       WHERE PRIV = :p AND GRANT_ON = :o AND GRANTEE = :g;
+    END;
+  END FOR;
+
+  IF (left_cnt > 0) THEN
+    RETURN 'ABORT — 회수 후에도 FUTURE ' || left_cnt || '건 잔존(해제 안 함 · 백업으로 복원함): ' || left_list;
+  END IF;
+  IF (alter_err IS NOT NULL) THEN
+    RETURN 'ABORT — 해제 실패(FUTURE 는 백업으로 복원함): ' || alter_err;
+  END IF;
+  RETURN 'DONE';
+END;
+$$;
+
+-- [3-확인 a] 기대 = 블록 반환 'DONE' + 아래 0행 · 'ABORT' 이거나 행이 있으면 멈추고 결과를 알려 달라
+SELECT * FROM GN_DW.OPS.O271_GOLD_FUTURE_GRANTS_BAK WHERE REVOKE_ERR IS NOT NULL OR REGRANT_ERR IS NOT NULL;
+-- [3-확인 b] 기대 = 백업 건수와 같은 행 수
+SHOW FUTURE GRANTS IN SCHEMA GN_DW.GOLD;
+-- [3-확인 c] 기대 = GOLD 의 IS_MANAGED_ACCESS = NO
 SELECT SCHEMA_NAME, SCHEMA_OWNER, IS_MANAGED_ACCESS
 FROM GN_DW.INFORMATION_SCHEMA.SCHEMATA
 WHERE SCHEMA_NAME IN ('GOLD', 'SERVING', 'SILVER', 'OPS');
