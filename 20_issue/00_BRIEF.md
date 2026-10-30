@@ -30,20 +30,37 @@ END-METADATA -->
 | ② | 1-B OWNERSHIP 이전 승인 여부 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:43` |
 | ③ | 배정표 「확정」 열 · 다역할 4명 사람/서비스 구분 · 보조 역할 영향 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:44` |
 | ④ | 팀장 역할 앱 USAGE 9문 = R97 Q03 앱 이름 목록 받은 뒤 작성 | 운영계 CSV | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:45` |
+| ① | 👤 운영계에서 O271 프롬프트 실행(DROP 은 뷰별 승인) | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:29` |
+| ② | 배정표 분석가 행 「확정」 열 기입 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:30` |
+| ③ | 팀장 역할 앱 USAGE = R97 Q03 앱 이름 목록 받은 뒤 작성 | 운영계 CSV | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:31` |
+| ① | 👤 운영계 O270 단계 3(build) → 4 Agent → 5 코퍼스 → 6 게이트 | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:28` |
+| ② | 운영계 O271 단계 6(SV·뷰 DROP) · 7(50번 [1]·[2]) | 운영계 · 승인 완료 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:29` |
+| ③ | 50번 [3] 앱 소유 권한 범위 · [4] 앱별 이전 · [5] 팀장 앱 목록 | 🔴 [2] 결과 후 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:30` |
+| ④ | 배정표 분석가 「확정」 열 → 50번 [6] | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:31` |
+| ⑤ | 현업 공지 · 구 역할 회수(48번 [6] · ③ 완료 후에만) | 후속 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:32` |
+| ① | 👤 운영계 새 세션 프롬프트 A~H 실행 → 마지막 보고 회수 | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:30` |
+| ② | 배정표 분석가 「확정」 열 · 50번 [3]~[5] 범위 결정([2] 결과 후) | 🔴 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:31` |
+| ③ | OPS · SILVER managed access 해제 여부 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:32` |
+| ④ | 현업 공지 · 구 역할 회수(48번 [6] · 앱 이전 후) | 후속 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:33` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `▣ O271-A-0 🔴 먼저 알아라`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:17`
+> 🔴 **현행 시작점** = `▣ O271-D-0 🔴 먼저 알아라`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:17`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
+> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 > 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**
 > 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.
 > ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**
->   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:17`).
+>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-D.md:17`).
 > 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
@@ -69,7 +86,7 @@ END-METADATA -->
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 19 | 511,400 | 38,999 | 1,961 🟠 |
+| `00_INDEX_이슈원장` | 19 | 511,715 | 39,314 | 1,646 🟠 |
 | `01_세션이력` | 90 | 2,328,355 | 38,225 | 3,590 🟠 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
@@ -93,9 +110,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 20,287 | 20,287 | 20,673 |
+| `00_BRIEF` | — | 10,105 | 10,105 | 30,855 |
 
-> 전 문서군 = **3,367,625 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,360,195 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -110,7 +127,7 @@ END-METADATA -->
 | `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 4건은 사람 판단) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
-| `agent_object_ref_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
+| `agent_object_ref_gate` | 🔴 | (출력 없음) |
 | `agent_source_lineage_gate` | ✅ | 🟢 PASS — blocking 0건 |
 | `eval_expectation_gate` | ✅ | ✅ 위반 0 — 폐기값이 정답으로 쓰인 곳 없음(이력 주석은 면제) |
 | `sv_identifier_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |
