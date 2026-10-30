@@ -21,7 +21,7 @@ END-METADATA -->
 
 1. 한 번에 한 단계만 한다. 끝나면 3줄 이내로 보고하고 「다음 단계 진행할까요?」라고 묻고 멈춘다.
 2. 사람이 「승인」 또는 「진행」이라고 답하기 전에는 다음 단계로 가지 않는다.
-3. 이 프롬프트에 적힌 DROP 4문·OWNERSHIP 1문 외의 DROP·REVOKE·GRANT 는 하지 않는다. dbt 명령은 실행하지 않는다.
+3. 이 프롬프트에 적힌 문장(단계 2 DROP · 단계 4 OWNERSHIP · 단계 6 DROP 2문 · 단계 7 [1] 역할 생성) 외의 DROP·REVOKE·GRANT 는 하지 않는다. dbt 명령은 실행하지 않는다.
 4. 오류가 나면 재실행하지 말고 오류 원문을 보여주고 멈춘다.
 5. 수치는 실행 결과에 있는 값만 쓴다. 「0건」은 정상 종료일 때만 「없다」고 한다(시간 초과·오류 = 「판정 불가」).
 6. 🔴 객체 이름으로 판단하지 마라. 판정은 아래 표의 조건으로만 한다.
@@ -93,6 +93,38 @@ END-METADATA -->
   - 「제외 — 개발자」 행(CHOIH · CRM_ETL · LEESH · SWLEE)은 아무것도 실행하지 마라(역할·보조 역할 모두 그대로).
   - 배정 대상자에게는 `DEFAULT_SECONDARY_ROLES = ()` 를 반드시 함께 실행한다(사용자 승인 완료).
 
+> 🟢 단계 6·7 은 O270 프롬프트를 어디까지 진행했든 **지금 끼워 실행해도 된다**(dbt build 와 무관).
+
+## 단계 6 — 🆕 [O271-C] 남은 잔존 SV·뷰 DROP(사용자 승인 완료 2026-10-30 · 지금 실행 가능 · dbt build 와 무관)
+
+- 배경 = R98 Q09 에서 `SV_ML_LTV_SCORE` 가 `SERVING.ML_LTV_SCORE_V` 를 base 로 써서 뷰가 보류됐다.
+  이 SV 는 개발계에 없다(O198 폐기) · Agent 3종 스펙과 분류표에 참조 0.
+- 먼저 확인(읽기 전용) — 결과가 **0행**이어야 진행한다. 1행 이상이면 멈추고 보고한다.
+  ```sql
+  SELECT SEMANTIC_VIEW_NAME, BASE_TABLE_SCHEMA, BASE_TABLE_NAME
+  FROM GN_DW.INFORMATION_SCHEMA.SEMANTIC_TABLES
+  WHERE BASE_TABLE_SCHEMA = 'SERVING' AND BASE_TABLE_NAME = 'ML_LTV_SCORE_V'
+    AND SEMANTIC_VIEW_NAME <> 'SV_ML_LTV_SCORE';
+  ```
+  그리고 `DESCRIBE AGENT GN_DW.SERVING.AGENT_EXECUTIVE;` · `AGENT_MEMBER` · `AGENT_MARKETING` 결과에 `SV_ML_LTV_SCORE` 문자열이 없어야 한다.
+- 🔴 순서 고정 = **SV 먼저 → 뷰 다음**(GN_DW_ADMIN).
+  ```sql
+  USE ROLE GN_DW_ADMIN;
+  DROP SEMANTIC VIEW IF EXISTS GN_DW.SERVING.SV_ML_LTV_SCORE;
+  DROP VIEW IF EXISTS GN_DW.SERVING.ML_LTV_SCORE_V;
+  ```
+- 확인 = `SHOW SEMANTIC VIEWS LIKE 'SV_ML_LTV%' IN SCHEMA GN_DW.SERVING;` 에 `SV_ML_LTV_FORECAST` 만 남는다.
+  🔴 `SV_ML_LTV_FORECAST` · `ML_LTV_FORECAST_V` 는 현행 객체다 — 지우지 마라.
+- 객체 목록 파일 재저장(단계 3 쿼리 그대로) → 개발계 파일과 비교 = 양쪽 모두 0 이어야 한다.
+
+## 단계 7 — 🆕 [O271-C] 앱 소유 역할 형식 생성 + 앱 읽기 실측(지금 실행 · 권한 0 · 무해)
+
+- 파일 = `05_SV-Agent_ai/50_RBAC_APP_OWNER_USER_ASSIGN.sql`
+- **[1] 만** 실행한다(역할 생성 2문 · SECURITYADMIN).
+- **[2-a]** `SHOW STREAMLITS IN ACCOUNT;` 결과에서 이름·database·schema·owner·query_warehouse 를 표로 보고한다.
+- **[2-b]** 는 `<앱 서비스 사용자>` 를 사람에게 묻고 채워 실행한다 → 객체 목록(스키마별 건수)을 보고한다.
+- 🔴 [3]~[7] 은 실행하지 마라 — 사람이 결정을 내려 주면 별도 지시로 실행한다.
+
 ## 마지막 보고 형식
 
 ```
@@ -100,7 +132,9 @@ END-METADATA -->
 R98: 조건 충족 <n>/4 · DROP <뷰 목록> · 보류 <뷰 목록 · 사유>
 객체 목록: 운영계에만 <n> · 개발계에만 <n>
 소유자 이전: FACT_MKTG_CAMPAIGN_MONTHLY_COST OWNERSHIP = <역할>
-다음: O270 프롬프트 단계 2
+잔존 SV·뷰(단계 6): SV_ML_LTV_SCORE · ML_LTV_SCORE_V = DROP/보류
+앱 소유 역할(단계 7): GN_DW_APP_OWNER 생성 · 앱 <n>개 목록 보고
+다음: O270 프롬프트 단계 2(또는 진행 중 단계)
 ```
 
 === 프롬프트 끝 ===
