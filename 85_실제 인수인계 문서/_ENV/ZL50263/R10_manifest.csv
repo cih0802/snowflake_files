@@ -1,4 +1,4 @@
-# doc_id: R10 · as_of: 2026-10-27 12:02:46.459 +0900 · account: ZL50263 · manifest
+# doc_id: R10 · as_of: 2026-10-31 02:10:54.147 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,R10_Q01_1.csv,OK,44,0,WITH 회비: BRONZE_CRM.TM_PM_MBRFEE_ACMSLT ↔ SILVER.CRM_PAYMENT_BILLING (회비월 최근 6개월 · 건수·청구액·납입액)
 Q02,1,R10_Q02_1.csv,OK,44,0,WITH 회비: SILVER.CRM_PAYMENT_BILLING ↔ GOLD.FACT_MEMBER_FEE (회비월 최근 6개월 · 청구액·납입액)

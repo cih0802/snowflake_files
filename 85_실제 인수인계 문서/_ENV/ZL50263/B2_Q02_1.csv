@@ -1,4 +1,4 @@
-# doc_id: B2 · as_of: 2026-10-27 11:58:42.120 +0900 · account: ZL50263 · query: Q02-1 대응 상태 분포 (지표 행)
+# doc_id: B2 · as_of: 2026-10-31 02:09:48.043 +0900 · account: ZL50263 · query: Q02-1 대응 상태 분포 (지표 행)
 SOURCE_GROUP,COVERAGE,N,N_WITH_TOOL
 MET_CMN,(산식 미등록),97,0
 MET_CMN,C1_METRIC,43,43
@@ -13,5 +13,6 @@ MET_NEW,C3_CROSS,3,3
 MET_NEW,C4_DIMENSION,2,2
 MET_NEW,C5_PARTIAL,26,26
 MET_NEW,G2_NEED_CONFIRM,1,1
+RT,(산식 미등록),7,7
 RT,C1_METRIC,1,1
 RT,C3_CROSS,3,3

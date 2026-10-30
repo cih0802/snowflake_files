@@ -1,4 +1,4 @@
-# doc_id: R06 · as_of: 2026-10-27 12:02:24.068 +0900 · account: ZL50263 · manifest
+# doc_id: R06 · as_of: 2026-10-31 02:10:46.655 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,R06_Q01_1.csv,OK,1,0,SELECT [MEMBER·EXECUTIVE] 2025년 회비 납부율(회비 납입 ÷ 회비 청구 · 기부금 제외)
 Q02,1,R06_Q02_1.csv,OK,3,0,SELECT [EXECUTIVE] 연도별 편성예산·집행예산·집행율(FACT_BUDGET_YEARLY · 원)

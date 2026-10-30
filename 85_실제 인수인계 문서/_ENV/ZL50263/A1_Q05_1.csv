@@ -1,4 +1,4 @@
-# doc_id: A1 · as_of: 2026-10-27 11:53:55.726 +0900 · account: ZL50263 · query: Q05-1 계정 파라미터 — CoCo 한도 · Personal DB
+# doc_id: A1 · as_of: 2026-10-31 02:08:23.242 +0900 · account: ZL50263 · query: Q05-1 계정 파라미터 — CoCo 한도 · Personal DB
 key,value,default,level,description,type
 CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER,-1,-1,,Daily estimated credit limit per user for Cortex Code CLI usage. A value of -1 means no limit. A value of 0 disables access.,NUMBER
 CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER,-1,-1,,Daily estimated credit limit per user for Cortex Code Desktop usage. A value of -1 means no limit. A value of 0 disables access.,NUMBER

@@ -1,4 +1,4 @@
-# doc_id: A3 · as_of: 2026-10-27 11:55:09.613 +0900 · account: ZL50263 · query: Q02-1 차단 대상 후보 — GN_DW_ANALYST 를 받은 사용자·롤 (실시간)
+# doc_id: A3 · as_of: 2026-10-31 02:08:48.610 +0900 · account: ZL50263 · query: Q02-1 차단 대상 후보 — GN_DW_ANALYST 를 받은 사용자·롤 (실시간)
 created_on,role,granted_to,grantee_name,granted_by,expires_on
 2026-10-01 09:26:35.318000+09:00,GN_DW_ANALYST,USER,ANALYST_01,SECURITYADMIN,
 2026-09-02 15:07:36.331000+09:00,GN_DW_ANALYST,USER,CHOIH,SECURITYADMIN,

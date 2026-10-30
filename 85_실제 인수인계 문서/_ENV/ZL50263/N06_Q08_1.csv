@@ -1,3 +1,2 @@
-# doc_id: N06 · as_of: 2026-10-27 12:01:07.407 +0900 · account: ZL50263 · query: Q08-1 비용 통제 객체 — 커스텀 예산 (클래스 인스턴스 · SHOW BUDGETS 는 실패한다)
+# doc_id: N06 · as_of: 2026-10-31 02:10:19.716 +0900 · account: ZL50263 · query: Q08-1 비용 통제 객체 — 커스텀 예산 (클래스 인스턴스 · SHOW BUDGETS 는 실패한다)
 created_on,name,database_name,schema_name,current_version,comment,owner,owner_role_type
-2026-06-08 10:05:18.884000+09:00,ACCOUNT_ROOT_BUDGET,SNOWFLAKE,LOCAL,2.84,,SNOWFLAKE,APPLICATION

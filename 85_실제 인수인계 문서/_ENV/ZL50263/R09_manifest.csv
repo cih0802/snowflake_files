@@ -1,4 +1,4 @@
-# doc_id: R09 · as_of: 2026-10-27 12:02:36.353 +0900 · account: ZL50263 · manifest
+# doc_id: R09 · as_of: 2026-10-31 02:10:49.688 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,R09_Q01_1.csv,OK,4,0,SHOW 계정 보존 파라미터
 Q02,1,R09_Q02_1.csv,OK,23,0,SELECT 스키마별 보존기간

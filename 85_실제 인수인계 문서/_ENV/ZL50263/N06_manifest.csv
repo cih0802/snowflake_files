@@ -1,11 +1,11 @@
-# doc_id: N06 · as_of: 2026-10-27 12:01:07.407 +0900 · account: ZL50263 · manifest
+# doc_id: N06 · as_of: 2026-10-31 02:10:19.716 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
-Q01,1,N06_Q01_1.csv,OK,14,0,SELECT 서비스별 크레딧 — 최근 90일 (metering 기준 · 청구 대조용)
-Q02,1,N06_Q02_1.csv,OK,43,0,SELECT 월별 · 서비스별 크레딧 추세
-Q03,1,N06_Q03_1.csv,OK,6,0,SELECT 웨어하우스별 크레딧 — 최근 90일 (compute · cloud services 분리)
-Q04,1,N06_Q04_1.csv,OK,30,0,SELECT 일별 총 크레딧 (월 추정의 기준 — 최근 14일 평균을 쓴다)
-Q05,1,N06_Q05_1.csv,OK,5,0,SELECT AI 도메인별 크레딧 — 최근 90일 (각 도메인의 정본 뷰만 · 합산 안전 · 08_mornitoring/02 §3)
-Q06,1,N06_Q06_1.csv,OK,16,0,SELECT 스토리지 — GN_DW 최근 7일 평균 (GB)
+Q01,1,N06_Q01_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q02,1,N06_Q02_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q03,1,N06_Q03_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q04,1,N06_Q04_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q05,1,N06_Q05_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q06,1,N06_Q06_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
 Q07,1,N06_Q07_1.csv,OK,0,0,SHOW 비용 통제 객체 — 리소스 모니터
-Q08,1,N06_Q08_1.csv,OK,1,0,SHOW 비용 통제 객체 — 커스텀 예산 (클래스 인스턴스 · SHOW BUDGETS 는 실패한다)
+Q08,1,N06_Q08_1.csv,OK,0,0,SHOW 비용 통제 객체 — 커스텀 예산 (클래스 인스턴스 · SHOW BUDGETS 는 실패한다)
 Q09,1,N06_Q09_1.csv,OK,6,0,SHOW 웨어하우스 설정 (크기 · 자동 정지 · 모니터 연결)

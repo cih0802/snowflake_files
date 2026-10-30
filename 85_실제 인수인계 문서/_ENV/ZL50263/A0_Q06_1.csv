@@ -1,15 +1,24 @@
-# doc_id: A0 · as_of: 2026-10-27 11:53:05.794 +0900 · account: ZL50263 · query: Q06-1 롤 · 사용자 · 롤 계층
+# doc_id: A0 · as_of: 2026-10-31 02:08:06.957 +0900 · account: ZL50263 · query: Q06-1 롤 · 사용자 · 롤 계층
 created_on,name,is_default,is_current,is_inherited,assigned_to_users,granted_to_roles,granted_roles,owner,comment,is_from_organization_user_group
-2026-06-08 10:04:39.646000+09:00,ACCOUNTADMIN,N,Y,N,4,0,2,,Account administrator can manage all aspects of the account.,N
-2026-06-09 09:05:39.317000+09:00,GN_DW_ADMIN,Y,N,Y,5,1,5,SECURITYADMIN,"GN_DW DB 관리자 - DDL, 스키마 관리",N
+2026-06-08 10:04:39.646000+09:00,ACCOUNTADMIN,N,N,N,4,0,2,,Account administrator can manage all aspects of the account.,N
+2026-06-09 09:05:39.317000+09:00,GN_DW_ADMIN,Y,Y,N,5,1,5,SECURITYADMIN,"GN_DW DB 관리자 - DDL, 스키마 관리",N
 2026-06-10 11:45:06.013000+09:00,GN_DW_ANALYST,N,N,Y,10,1,1,SECURITYADMIN,분석가 - SELECT on BRONZE/SILVER/GOLD/SERVING(AGENT 사용),N
+2026-10-30 14:50:56.918000+09:00,GN_DW_APP_OWNER,N,N,N,0,1,0,SECURITYADMIN,O271 Streamlit 앱 소유 전용 역할 — 사람에게 부여하지 않는다 · 구 역할 GN_DW_ANALYST 회수 전 앱 소유권 이전처,N
+2026-10-30 12:07:56.012000+09:00,GN_DW_AR_SRC_AGENCY,N,N,N,0,1,0,SECURITYADMIN,O270 접근 역할 — 원천 AGENCY 유래 객체 SELECT,N
+2026-10-30 12:07:56.306000+09:00,GN_DW_AR_SRC_AGENCY_ERP,N,N,N,0,1,0,SECURITYADMIN,O270 접근 역할 — 원천 AGENCY+ERP 유래 객체 SELECT,N
+2026-10-30 12:07:55.839000+09:00,GN_DW_AR_SRC_COMMON,N,N,N,0,3,0,SECURITYADMIN,O270 접근 역할 — 원천 COMMON 유래 객체 SELECT,N
+2026-10-30 12:07:56.165000+09:00,GN_DW_AR_SRC_ERP,N,N,N,0,2,0,SECURITYADMIN,O270 접근 역할 — 원천 ERP 유래 객체 SELECT,N
 2026-09-29 11:39:35.833000+09:00,GN_DW_DBT,N,N,Y,1,1,0,SECURITYADMIN,dbt 실행 전용(DW_PIPELINE) — 적재·WIDE 뷰·테스트 감사. 사람 작업은 GN_DW_ENGINEER,N
 2026-06-09 09:05:40.113000+09:00,GN_DW_ENGINEER,N,N,Y,2,1,0,SECURITYADMIN,"ETL 개발 - 프로시저, 태스크 운영",N
+2026-10-30 12:07:56.799000+09:00,GN_DW_FR_EXEC,N,N,N,0,1,2,SECURITYADMIN,O270 기능 역할 — 기획실(경영·전사) 분석가 — ERP·공통 · 1인 1기능역할,N
+2026-10-30 12:07:56.934000+09:00,GN_DW_FR_LEAD,N,N,N,0,1,0,SECURITYADMIN,O270 기능 역할 — 팀장급 VIEWER — Streamlit 전용 · SV·테이블·Agent GRANT 0 · 1인 1기능역할,N
+2026-10-30 12:07:56.455000+09:00,GN_DW_FR_MARKETING,N,N,N,0,1,4,SECURITYADMIN,O270 기능 역할 — 마케팅 분석가 — AGENCY·ERP·공통 · 1인 1기능역할,N
+2026-10-30 12:07:56.636000+09:00,GN_DW_FR_MEMBER,N,N,N,0,1,1,SECURITYADMIN,O270 기능 역할 — 회원 분석가 — 공통만 · 1인 1기능역할,N
 2026-06-09 09:05:42.465000+09:00,GN_DW_LOADER,N,N,Y,3,1,0,SECURITYADMIN,외부팀 적재 - BRONZE 쓰기 전용,N
 2026-06-09 09:05:43.243000+09:00,GN_DW_SERVICE,N,N,Y,0,1,0,SECURITYADMIN,"서비스 계정 - API, Streamlit 등",N
 2026-06-09 09:05:41.647000+09:00,GN_DW_VIEWER,N,N,Y,1,1,0,SECURITYADMIN,읽기 전용 - GOLD만 접근,N
 2026-06-08 10:04:40.015000+09:00,ORGADMIN,N,N,N,1,0,0,,Organization administrator can manage organizations and accounts in organizations,N
 2026-06-08 10:04:39.634000+09:00,PUBLIC,N,N,Y,0,0,0,,Public role is automatically available to every user in the account.,N
-2026-06-08 10:04:39.666000+09:00,SECURITYADMIN,N,N,Y,1,1,1,,Security administrator can manage security aspects of the account.,N
-2026-06-08 10:04:39.675000+09:00,SYSADMIN,N,N,Y,0,1,1,,System administrator can create and manage databases and warehouses.,N
-2026-06-08 10:04:39.657000+09:00,USERADMIN,N,N,Y,0,1,0,,User administrator can create and manage users and roles,N
+2026-06-08 10:04:39.666000+09:00,SECURITYADMIN,N,N,N,1,1,1,,Security administrator can manage security aspects of the account.,N
+2026-06-08 10:04:39.675000+09:00,SYSADMIN,N,N,N,0,1,6,,System administrator can create and manage databases and warehouses.,N
+2026-06-08 10:04:39.657000+09:00,USERADMIN,N,N,N,0,1,0,,User administrator can create and manage users and roles,N

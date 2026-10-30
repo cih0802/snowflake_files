@@ -1,3 +1,3 @@
-# doc_id: D10 · as_of: 2026-10-27 11:58:50.158 +0900 · account: ZL50263 · query: Q03-1 알림 수신자 건수 (유형별 · 값 미출력)
+# doc_id: D10 · as_of: 2026-10-31 02:09:50.748 +0900 · account: ZL50263 · query: Q03-1 알림 수신자 건수 (유형별 · 값 미출력)
 N_ALL,N_ACTIVE,N_PIPELINE_ADMIN,N_DBT_ALERT
-9,9,1,1
+9,9,2,2

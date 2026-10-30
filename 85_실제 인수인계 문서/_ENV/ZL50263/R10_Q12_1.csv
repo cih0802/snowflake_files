@@ -1,8 +1,8 @@
-# doc_id: R10 · as_of: 2026-10-27 12:02:46.459 +0900 · account: ZL50263 · query: Q12-1 차이 사유 분해(소량 건수): ① 영상광고 빈 행 ② 회원개발 PK NULL·고아 회원 ③ 발송 PK NULL·중복·고아 회원
+# doc_id: R10 · as_of: 2026-10-31 02:10:54.147 +0900 · account: ZL50263 · query: Q12-1 차이 사유 분해(소량 건수): ① 영상광고 빈 행 ② 회원개발 PK NULL·고아 회원 ③ 발송 PK NULL·중복·고아 회원
 K,V
 VIDEO_ALL_NULL_ROW,165
 DEV_PK_NULL,0
-DEV_ORPHAN_MEMBER,745
+DEV_ORPHAN_MEMBER,121195
 SND_PK_NULL,0
 SND_DUP,160
 EMAIL_DUP_OR_NULL,0
