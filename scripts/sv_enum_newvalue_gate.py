@@ -36,7 +36,9 @@ def listed_values(comment):
 def new_values(comment, live_vals):
     """열거 목록 차원이면 목록 밖 라이브 값 리스트, 대조 대상이 아니면 None."""
     listed = listed_values(comment)
-    vals = [v for v in live_vals if v is not None]
+    # 🆕 [O272-D] 운영계 ZL50263 실측 — 빈 문자열('')·'/' 든 값(GA4 가 OS 칸에 넣은 Android 빌드 지문
+    #   samsung/q4qksx/...:user/release-keys)은 열거 값이 아니다 ⇒ NULL 처럼 대조에서 뺀다
+    vals = [v for v in live_vals if v is not None and v.strip() and '/' not in v]
     if not listed or not vals or len(vals) > MAX_LIVE:
         return None
     if sum(v in listed for v in vals) / len(vals) < MIN_COVER:
