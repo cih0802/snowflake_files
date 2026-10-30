@@ -1,0 +1,4 @@
+# doc_id: R97 · as_of: 2026-10-30 11:09:06.074 +0900 · account: ZL50263 · query: Q01-2 [C4] 구 역할·서비스 역할을 받은 사용자·역할(누가 회수 영향을 받는가)
+created_on,role,granted_to,grantee_name,granted_by,expires_on
+2026-06-10 11:45:08.061000+09:00,GN_DW_VIEWER,ROLE,GN_DW_ANALYST,SECURITYADMIN,
+2026-10-01 13:14:38.429000+09:00,GN_DW_VIEWER,USER,VIEWER_01,SECURITYADMIN,

@@ -1,0 +1,18 @@
+# doc_id: R97 · as_of: 2026-10-30 11:09:06.074 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R97_Q01_1.csv,OK,11,0,SHOW [C4] 구 역할·서비스 역할을 받은 사용자·역할(누가 회수 영향을 받는가)
+Q01,2,R97_Q01_2.csv,OK,2,0,SHOW [C4] 구 역할·서비스 역할을 받은 사용자·역할(누가 회수 영향을 받는가)
+Q01,3,R97_Q01_3.csv,OK,1,0,SHOW [C4] 구 역할·서비스 역할을 받은 사용자·역할(누가 회수 영향을 받는가)
+Q02,1,R97_Q02_1.csv,OK,28,0,SELECT [C1] GN_DW 역할 보유 사용자의 기본·보조 역할 정책(DEFAULT_SECONDARY_ROLES = ALL 이면 분리 무력화)
+Q03,1,R97_Q03_1.csv,OK,14,0,SHOW [C5] Streamlit 목록 · 소유자 · 권한 방식(소유자 권한이면 팀장은 AGENCY 까지 본다)
+Q04,1,R97_Q04_1.csv,OK,87,0,SELECT [C4] 최근 30일 구 역할로 실행된 GN_DW 질의(서비스 의존 실측 · 사용자·창고·건수)
+Q05,1,R97_Q05_1.csv,OK,88,0,SELECT [C4] 최근 30일 구 역할이 읽은 AGENCY·ERP 유래 객체(회수 시 깨지는 소비처)
+Q06,1,R97_Q06_1.csv,OK,117,0,SHOW [C5] CORTEX 데이터베이스 역할이 PUBLIC 에 남아 있는가(남으면 SV 권한만으로 Analyst 직접 호출 가능)
+Q07,1,R97_Q07_1.csv,OK,41,0,SHOW [C6] FUTURE GRANT 현황(GOLD FUTURE VIEWS · SERVING 0 이 개발계 실측)
+Q07,2,R97_Q07_2.csv,OK,0,0,SHOW [C6] FUTURE GRANT 현황(GOLD FUTURE VIEWS · SERVING 0 이 개발계 실측)
+Q08,1,R97_Q08_1.csv,OK,6,0,SHOW [재현 전제] 운영계 Agent 배선(경영 Agent 에 SV_AD·시뮬레이터가 남았는가)
+Q08,2,R97_Q08_2.csv,OK,1,1,DESCRIBE [재현 전제] 운영계 Agent 배선(경영 Agent 에 SV_AD·시뮬레이터가 남았는가)
+Q08,3,R97_Q08_3.csv,OK,1,1,DESCRIBE [재현 전제] 운영계 Agent 배선(경영 Agent 에 SV_AD·시뮬레이터가 남았는가)
+Q09,1,R97_Q09_1.csv,OK,7,0,SELECT [재현 전제] GOLD·SERVING 객체 소유자(테이블 = GN_DW_ADMIN · WIDE 뷰 = GN_DW_DBT 가 개발계 실측)
+Q10,1,R97_Q10_1.csv,OK,0,0,SHOW [재현 전제] O270 역할이 이미 있는가(있으면 48번은 IF NOT EXISTS 로 무해)
+Q10,2,R97_Q10_2.csv,OK,0,0,SHOW [재현 전제] O270 역할이 이미 있는가(있으면 48번은 IF NOT EXISTS 로 무해)
