@@ -1,4 +1,4 @@
-# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-27 04:13 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
+# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-30 16:31 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
 LAYER,SCHEMA,TABLE,TYPE,N_COLUMNS,N_COL_COMMENT,ROW_COUNT,BYTES,OWNER,COMMENT
 BRONZE,BRONZE_AGENCY,DGT_AD_CMPGN_DTLS,BASE TABLE,41,41,197427,9806848,GN_DW_ADMIN,디지털 광고 성과 내역
 BRONZE,BRONZE_AGENCY,REBRDC_AD_CMPGN_DTLS,BASE TABLE,21,21,2190,67584,GN_DW_ADMIN,재송출 광고 성과 내역

@@ -2,7 +2,7 @@
 doc_id: D09
 title: Agent 명세서
 version: 1.0
-as_of: 2026-10-21 (O250-C 갱신 · 버전은 운영계 실측)
+as_of: 2026-10-30 (도구 수 = D09 csv 재생성 · O270 W3 반영 · 버전은 운영계 실측)
 source_docs:
   - 라이브 DESCRIBE AGENT · SHOW GRANTS ON AGENT · SHOW AGENTS IN SNOWFLAKE INTELLIGENCE (정본)
   - cortex_project/agents/*/agent_spec.yaml (spec 정본 파일 · 80번 04_SV_Agent_스펙 과 해시 동일 · DR-20)
@@ -26,7 +26,7 @@ status: review
 | 위치 · 소유 | `GN_DW.SERVING` · GN_DW_ADMIN | 같음 | 같음 |
 | 기본 버전 [ENV] 운영계(ZL50263) | D10 §2 참조 | D10 §2 참조 | D10 §2 참조 |
 | 오케스트레이션 모델 | auto | auto | auto |
-| 도구 | 19 = Cortex Analyst 18 + Cortex Search 1 | 32 = 31 + 1 | 32 = 31 + 1 |
+| 도구 | 17 = Cortex Analyst 16 + Cortex Search 1(🆕 O270 W3 = `analyst_ad`·`analyst_ml_realtime_simulator` 제거) | 33 = 32 + 1 | 31 = 30 + 1 |
 | 추천 질문 | 15 | 17 | 24 |
 | 지침 길이(문자) response / orchestration / system | 5,421 / 15,429 / 5,963 | 5,704 / 16,817 / 3,976 | 4,963 / 22,273 / 6,161 |
 | 사용 권한 | USAGE = ANALYST · VIEWER · SERVICE | 같음 | 같음 |
@@ -39,11 +39,11 @@ status: review
 
 | Agent | 핵심 질문 영역 | 대표 SV |
 |---|---|---|
-| EXECUTIVE | 전사 경영 요약 · 예산 편성/집행 · 광고비 · 회원 월실적 · 지출결의 · ML 개발금액·LTV 예측 | SV_BUDGET · SV_BUDGET_YEARLY · SV_AD · SV_MEMBER_MONTHLY · SV_EXPENSE_RESOLUTION · SV_ML_DVLP_FORECAST |
+| EXECUTIVE | 전사 경영 요약 · 예산 편성/집행 · 회원 월실적 · 지출결의 · ML 개발금액·LTV 예측(🆕 O270 W3 = 광고비 `SV_AD` 도구 제거 → 광고는 MARKETING 소관) | SV_BUDGET · SV_BUDGET_YEARLY · SV_MEMBER_MONTHLY · SV_EXPENSE_RESOLUTION · SV_ML_DVLP_FORECAST |
 | MARKETING | 광고 효율 · 캠페인 · 개발 목표 · GA 방문·검색 · 획득 코호트 · 증액 예측 | SV_AD · SV_AD_INFLOW_ALLOC · SV_GA_* · SV_SEARCH_CONSOLE · SV_CAMPAIGN_* · SV_ML_INC_CAMPAIGN · SV_ML_FEE_FORECAST_AXIS |
 | MEMBER | 회원 상태전이 · 회비 · 서비스 발송 · 행사 · 결연 · 중단·전환 예측 · 부서 자체 집계 | SV_MEMBER_* · SV_SERVICE · SV_EVENT_PARTICIPATION · SV_RELATION_ACTIVITY · SV_ML_MEMBER_RISK · SV_ML_FEE_FORECAST_AXIS |
 
-- 3종 공통 SV 8: SV_CAMPAIGN_CUM_STOP · SV_CAMPAIGN_MONTHLY · SV_ML_CHURN_CAMPAIGN · SV_ML_FEATURE_IMPORTANCE · SV_ML_MEMBER_PRED_AXIS · SV_ML_MEMBER_PRED_BRIDGE · SV_ML_REALTIME_SIMULATOR · SV_MSTR_SPNSR_DVLP.
+- 3종 공통 SV 7(🆕 2026-10-30 csv 교집합 · `SV_ML_REALTIME_SIMULATOR` 는 O270 W3 로 EXECUTIVE 에서 빠져 공통에서 제외): SV_CAMPAIGN_CUM_STOP · SV_CAMPAIGN_MONTHLY · SV_ML_CHURN_CAMPAIGN · SV_ML_FEATURE_IMPORTANCE · SV_ML_MEMBER_PRED_AXIS · SV_ML_MEMBER_PRED_BRIDGE · SV_MSTR_SPNSR_DVLP.
 - 🆕 [O250] 7축 예측 도구 = `analyst_ml_pred_axis`(SV_ML_MEMBER_PRED_AXIS · 3종) · `analyst_ml_fee_axis`(SV_ML_FEE_FORECAST_AXIS · MEMBER·MARKETING) — 증액·중단·미납·회비 예측을 신규기존·본부지부·후원사업·법인·공통브랜드·캠페인카테고리·마케팅캠페인명으로 나눈다.
 
 ## 3. 응답 규칙 (spec `instructions` 요약 · 3종 공통)

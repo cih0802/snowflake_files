@@ -74,6 +74,9 @@ COPY INTO GN_DW.SERVING.BIZ_DEFINITION_CORPUS
 --     원천참고 = BRONZE 물리명은 SQL 식별자로 오용되므로 검색에서 뺀다(테이블에는 보존)
 --     모델 = snowflake-arctic-embed-l-v2.0(다국어) · 종전 = snowflake-arctic-embed-m-v1.5(영어)
 --     평가(40문항) = V1 hit@3=33% → V2 hit@3=45% (2026-10-15)
+--     WARN: [O274 경고] 이 블록은 CREATE OR REPLACE 다 — 다시 만들면 [6] 밖에서 준 USAGE 권한이 사라진다
+--        (실측 = GN_DW_AR_SRC_COMMON · 48번 39행에서 부여) ⇒ 재생성했다면 48번 39행을 다시 실행한다.
+--        데이터(CSV)만 바꿀 때는 이 블록을 돌리지 말고 54_DEPLOY_CORPUS_O273.sql 방식(적재 + REFRESH)을 쓴다.
 CREATE OR REPLACE CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION
     TEXT INDEXES TITLE, KEYWORDS, SEARCH_TEXT
     VECTOR INDEXES SEARCH_TEXT (model='snowflake-arctic-embed-l-v2.0')

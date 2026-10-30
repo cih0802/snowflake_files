@@ -1,4 +1,4 @@
-# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-27 04:13 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
+# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-30 16:31 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
 SV_NAME,TABLE,METRIC,DATA_TYPE,EXPRESSION,SYNONYMS,NON_ADDITIVE_DIMENSIONS,COMMENT
 SV_AD,AD,CTR,"NUMBER(38,6)","SUM(IFF(ad.IMPRESSIONS > 0, ad.CLICKS, 0)) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100","[ ⏎   ""클릭률"", ⏎   ""CTR"" ⏎ ]",,공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용. 🔴 O240: 노출 0·클릭>0 행(DIGITAL · 추적링크 직접유입)의 클릭은 분자에서 뺀다 — 분모 없는 클릭이 소재별 CTR 을 상한(전량 클릭) 이상으로 만든다. 전체 클릭수는 TOTAL_CLICKS 로 따로 답한다.
 SV_AD,AD,CVR,"NUMBER(38,6)","SUM(ad.AGENCY_CONV_MEMBERS) / NULLIF(SUM(ad.CLICKS), 0) * 100","[ ⏎   ""전환율"", ⏎   ""CVR"" ⏎ ]",,공10 CVR(%) = 대행사전환회원 ÷ 클릭수 ×100. 비율(N). 디지털 전용.

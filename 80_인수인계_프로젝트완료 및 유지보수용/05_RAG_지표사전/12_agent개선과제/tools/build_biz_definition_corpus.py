@@ -250,6 +250,12 @@ def build():
     synonym_overlay(out)
     formula_wiring_overlay(out)
     for r in out:
+        # 🆕 [O273] 원천별 접근통제 범위(O270 · 49번 [1] 과 같은 식) — 광고 도구 단독 행 = MARKETING 전용
+        #   49번은 표를 UPDATE 했고 원본 CSV 는 그대로라 재적재하면 되돌아갔다 ⇒ 생성기에서 같은 규칙을 건다
+        #   (curated·overlay 적용 후 마지막 단계 · 혼합 도구 행은 그대로)
+        if r["TOOL_NAME"].strip() == "analyst_ad":
+            r["AGENT_SCOPE"] = "MARKETING"
+    for r in out:
         # 🆕 [O233-B] SEARCH_TEXT = Markdown 헤더·불릿(청크 경계·라벨이 임베딩·LLM 모두에 분명해진다)
         r["KEYWORDS"] = keywords(r)
         r["IS_ADDITIVE"] = is_additive(r)

@@ -1,4 +1,4 @@
-# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-27 04:13 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
+# 자동 생성 = scripts/b_struct_build.py · account: ZL50263 · 생성 2026-10-30 16:31 · 원천 = _ENV/ZL50263/B1_*.csv · 손으로 고치지 않는다
 LAYER,SCHEMA,TABLE,POS,COLUMN,DATA_TYPE,LENGTH,PRECISION,SCALE,NULLABLE,PK,FK_REF,COMMENT
 BRONZE,BRONZE_AGENCY,DGT_AD_CMPGN_DTLS,1,TIME,TEXT,16777216,,,YES,,,시간
 BRONZE,BRONZE_AGENCY,DGT_AD_CMPGN_DTLS,2,YEAR,TEXT,16777216,,,YES,,,연도

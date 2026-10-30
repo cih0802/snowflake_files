@@ -2,7 +2,7 @@
 doc_id: A5
 title: Agent · Semantic View 개발자 가이드
 version: 0.1
-as_of: 2026-10-20 (spec 해시 대조 포함)
+as_of: 2026-10-30 (§1 Agent 도구·지표사전 행 수 갱신 · 그 밖 2026-10-20 spec 해시 대조)
 source_docs:
   - 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql (467행 전량)
   - 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql (104행 전량)
@@ -24,9 +24,9 @@ status: draft (S4 게이트 확인 대기)
 | 항목 | 값 |
 |---|---|
 | SV | 전부 `GN_DW.SERVING` · 소유 GN_DW_ADMIN · base = GOLD / SERVING 뷰(개수·목록 = `D08_SV요약.csv` · 2026-10-21 ZL50263 = 45 · GOLD 30 / SERVING 15) |
-| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$27 · EXECUTIVE VERSION$20 · MARKETING VERSION$23(2026-10-27 A6 Q07)(롤백 기준 = 그 직전 버전 · D10 §2) |
-| Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 2026-10-21 = 19 / 32 / 32) |
-| Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(2,156행 중 원천참고 제외 1,002) · lag 1 day |
+| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$27 · EXECUTIVE VERSION$20 · MARKETING VERSION$23(2026-10-27 A6 Q07)(롤백 기준 = 그 직전 버전 · D10 §2) · 🆕 [2026-10-30 O273-B] EXECUTIVE = `05_SV-Agent_ai/53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` 로 `VERSION$23`(도구 17) 반영 기록 · 운영계 재캡처 전 = TBD(미검증) |
+| Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 🆕 2026-10-30 재생성 = EXECUTIVE 17 / MARKETING 33 / MEMBER 31 · 경영 17 = O270 W3 `analyst_ad`·`analyst_ml_realtime_simulator` 제거 — 다시 넣지 않는다) |
+| Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(🆕 O274 = 2,163행 · 원천참고 1,154 제외 1,009 · RT-31~37 추가) · lag 1 day |
 | spec 정본 | 워크스페이스 `cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |
 | 배포 스테이지 | `@GN_DW.OPS.AGENT_SPEC_STAGE/<AGENT>/agent_spec.yaml` (소비 롤 권한 없음 · ADMIN 전용) |
 | 권한 | Agent = OWNERSHIP ADMIN + USAGE ANALYST·VIEWER·SERVICE · SV = REFERENCES+SELECT 소비 3롤 · CoWork 등록 3/3 |
@@ -88,8 +88,9 @@ python3 12_agent개선과제/tools/build_biz_definition_corpus.py --apply  # TRU
 - 🔴 26 SQL [1] 은 `CREATE OR REPLACE TABLE` 이다 — 다시 돌리면 [6] GRANT 까지 다시 실행한다. 데이터만 바꿀 때는 [3]·[4] 또는 `--apply` 만 쓴다.
 - Search 는 `TARGET_LAG = '1 day'` 라 적재 후 반영까지 시간이 걸릴 수 있다. 바로 반영하려면 서비스를 갱신한다.
 - 검증: 26 [7] 의 DOC_TYPE 기대값은 낡았다(DR-22). 판정 등식을 쓴다.
-  - 산식 행(`HAS_FORMULA='Y'`) = COVERAGE 채워진 행(현재 146 = 146).
-  - Search 원천 행수 = 전체 − 원천참고(현재 2,156 − 1,154 = 1,002 = SHOW CORTEX SEARCH `source_data_num_rows`).
+  - 산식 행(`HAS_FORMULA='Y'`) = COVERAGE 채워진 행(2026-10-20 = 146 = 146).
+    - 🔴 [2026-10-30 재측정 · CSV] `HAS_FORMULA='Y'` 153 ≠ COVERAGE 채워진 행 146 — O274 신규 7행(RT-31~37)이 `HAS_FORMULA='Y'` · COVERAGE 빈칸이다(CSV 실측) ⇒ 등식 재정의 또는 COVERAGE 보강 필요(A8).
+  - Search 원천 행수 = 전체 − 원천참고(2026-10-30 CSV = 2,163 − 1,154 = 1,009 · SHOW CORTEX SEARCH `source_data_num_rows` 대조 = TBD(미검증)).
 
 ## 6. [ENV] 운영계 반영 시 확인
 

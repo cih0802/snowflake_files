@@ -52,6 +52,8 @@ END-METADATA -->
 
 - **왜 2 Agent만**: 회원 4 SV + overall 예산은 Phase-1 데이터로 즉시 응답 가능. 마케팅 전용 Agent는 SV_BIGQUERY 1일 샤드로 유예(01 §2 게이트).
 > ▶ **2026-07-28 정정**: SV_AD "스캐폴드" 전제는 해제됨(광고 measure·축 실적재 → 04 §6). 다만 **별도 마케팅 Agent를 신설하지 않고 AGENT_EXECUTIVE에 `analyst_ad` 도구로 편입**했다 — 광고비/개발단가가 전사·재무 관점 질문(예산과 나란히 비교)에 주로 쓰이고, OVERALL이 이미 광고비를 "Phase-2 예정"으로 안내하던 면책 문구를 실제로 해소하기 때문. SV_BIGQUERY만 Phase-2 잔류.
+>
+> 🔴 **[O273-C · 2026-10-30 정정] 위 편입은 O270(원천별 접근통제 · 사용자 결정)으로 철회됐다.** AGENT_EXECUTIVE 에서 `analyst_ad`(SV_AD)·`analyst_ml_realtime_simulator` 를 제거했고(도구 19 → 17), 광고 지표는 AGENT_MARKETING 소관이다. 경영 Agent 는 광고 질문에 「광고 지표는 마케팅 분석 Agent 소관입니다」로 안내한다. 운영계 반영 = 2026-10-30 VERSION$23(53번).
 - **왜 다중 SV 라우팅**: 한 Agent가 여러 SV를 `cortex_analyst_text_to_sql` 도구로 라우팅(공식 지원). grain이 다른 SV는 **질의마다 단일 SV로 분해**(cross-fact 계산 금지, R1).
 
 ---
@@ -61,7 +63,7 @@ END-METADATA -->
 | Agent (FQN) | 도구(SV) | 질문 도메인 |
 |---|---|---|
 | **`GN_DW.SERVING.AGENT_MEMBER`** (회원) | `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_member_event`→SV_MEMBER_EVENT · `analyst_service`→SV_SERVICE · `analyst_event_participation`→SV_EVENT_PARTICIPATION | 월 회비/납부율/미납, 개발·중단(월/일/주), 발송, 행사 참여 |
-| **`GN_DW.SERVING.AGENT_EXECUTIVE`** (overall) | `analyst_budget`→SV_BUDGET(기본) · **`analyst_ad`→SV_AD** · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), **광고비·CTR·CVR·개발단가·매체/기기별**, 전사 회비·발송 요약(선택 라우팅) |
+| **`GN_DW.SERVING.AGENT_EXECUTIVE`** (overall) | `analyst_budget`→SV_BUDGET(기본) · ~~`analyst_ad`→SV_AD~~(O270 제거 · 마케팅 소관) · `analyst_member_monthly`→SV_MEMBER_MONTHLY · `analyst_service`→SV_SERVICE | 예산 편성/집행/집행율(기본), ~~광고비·CTR·CVR·개발단가·매체/기기별~~(O270 제거), 전사 회비·발송 요약(선택 라우팅) |
 
 > 도구 이름은 두 Agent에서 동일 SV라도 각 Agent 스펙 내 `tool_resources` 키와 1:1 매칭. overall의 MONTHLY/SERVICE는 **전사 요약용 보조 도구**(질의당 단일 SV 분해).
 

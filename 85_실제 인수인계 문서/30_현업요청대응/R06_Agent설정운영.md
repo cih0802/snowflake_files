@@ -36,9 +36,9 @@ status: review
 | 위치 · 소유 | `GN_DW.SERVING` · GN_DW_ADMIN | 같음 | 같음 |
 | 사용자 접점 | Snowflake Intelligence(`SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT` 등록) | 같음 | 같음 |
 | 오케스트레이션 모델 | `auto` | `auto` | `auto` |
-| 도구 | Cortex Analyst 18 + Cortex Search 1 | 31 + 1 | 31 + 1 |
+| 도구 | Cortex Analyst 16 + Cortex Search 1(🆕 2026-10-30 · O270 W3 · D09 csv) | 32 + 1 | 30 + 1 |
 | 연결 대상 | SV(`D09_Agent도구.csv`) + `SERVING.SEARCH_BIZ_DEFINITION` | 같음 | 같음 |
-| 기본 버전(운영계 · 2026-10-26) | VERSION$20 (2026-10-26 19:10) | VERSION$23 | VERSION$27 |
+| 기본 버전(운영계 · 2026-10-26) | VERSION$20 (2026-10-26 19:10) → 🆕 O273-B 53번 SQL 로 VERSION$23 반영 기록(재캡처 전 TBD(미검증)) | VERSION$23 | VERSION$27 |
 | 사용 권한 | USAGE = GN_DW_ANALYST · VIEWER · SERVICE | 같음 | 같음 |
 | 지침 정본 | `80/04_SV_Agent_스펙/cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml` | `…/AGENT_MARKETING/agent_spec.yaml` | `…/AGENT_MEMBER/agent_spec.yaml` |
 

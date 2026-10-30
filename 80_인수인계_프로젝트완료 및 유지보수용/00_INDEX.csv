@@ -24,7 +24,7 @@
 01_실행순서_배포SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql,10673
 01_실행순서_배포SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql,29990
 01_실행순서_배포SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql,19293
-01_실행순서_배포SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,05_20_SV_DDL_GA_SESSION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,21746
+01_실행순서_배포SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,05_20_SV_DDL_GA_SESSION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql,21786
 01_실행순서_배포SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,05_21_SV_DDL_SEARCH_CONSOLE.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql,9372
 01_실행순서_배포SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,05_22_SV_DDL_GA_DEMOGRAPHIC.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql,8874
 01_실행순서_배포SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,05_23_SV_DDL_EXPENSE_RESOLUTION.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql,11823
@@ -37,13 +37,13 @@
 01_실행순서_배포SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql,11224
 01_실행순서_배포SQL,05_SV-Agent_ai/05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql,05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql,15982
 01_실행순서_배포SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,09_1_AGENT_생성.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_1_AGENT_생성.sql,29655
-01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,35826
+01_실행순서_배포SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,09_2_AGENT_버전업.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/09_2_AGENT_버전업.sql,36771
 01_실행순서_배포SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,21_ML_SERVING_뷰_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql,78849
 01_실행순서_배포SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,22_ML_SV_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/22_ML_SV_DDL.sql,117795
 01_실행순서_배포SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,23_ML_INC_MKTG_CMPGN_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql,15457
 01_실행순서_배포SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,24_ML_REALTIME_SIMULATOR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql,19734
 01_실행순서_배포SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,25_ML_CHURN_CMPGN_CTGR_DDL.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql,27660
-01_실행순서_배포SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,8457
+01_실행순서_배포SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql,8851
 01_실행순서_배포SQL,05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql,30_DEPLOY_DATA_ANOMALY.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql,6511
 01_실행순서_배포SQL,05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql,32_DEPLOY_AB_DUAL_SV_WIRING.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql,9603
 01_실행순서_배포SQL,05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql,33_DEPLOY_PROD_ROUNDING_VQR.sql,문서실행순서.md 명시 SQL,05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql,5916
@@ -74,7 +74,7 @@
 01_실행순서_배포SQL,88_인계요청/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,dbt_build_fact_ad_performance_budget.sql,문서실행순서.md 명시 SQL,88_인계요청/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql,1346
 01_실행순서_배포SQL,문서실행순서_llm실행.md,문서실행순서_llm실행.md,🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항,문서실행순서_llm실행.md,25296
 01_실행순서_배포SQL,문서실행순서_보조주석.md,문서실행순서_보조주석.md,🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조),문서실행순서_보조주석.md,24223
-01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지),12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787
+01_실행순서_배포SQL,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지),12_agent개선과제/output/O217_biz_definition_corpus.csv,1201535
 01_실행순서_배포SQL,05_SV-Agent_ai/00_SV_공통지시문.md,00_SV_공통지시문.md,🆕 O262 SV 공통 지시문 블록 정본(R-SV1~3) — sv_common_block_gate 가 SV 폴더에서 읽는다,05_SV-Agent_ai/00_SV_공통지시문.md,4731
 02_dbt_pipeline,10_dbt_pipeline/00_배포운영_통합_20260715.md,00_배포운영_통합_20260715.md,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/00_배포운영_통합_20260715.md,17833
 02_dbt_pipeline,10_dbt_pipeline/01_deploy_dbt_project.sql,01_deploy_dbt_project.sql,dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서),10_dbt_pipeline/01_deploy_dbt_project.sql,4176
@@ -355,11 +355,11 @@
 04_SV_Agent_스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MARKETING/agent_spec.yaml,127535
 04_SV_Agent_스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,agent_spec.yaml,09_2_AGENT_버전업.sql 이 읽는 Agent 정본 YAML 스펙,cortex_project/agents/AGENT_MEMBER/agent_spec.yaml,135952
 04_SV_Agent_스펙,tmp/o249/agent_deploy.py,agent_deploy.py,🆕 O249 Agent 1종씩 버전업 스크립트(spec 스테이지 복사 → 크기 대조 → ADD VERSION · 환경변수 AG),tmp/o249/agent_deploy.py,1886
-04_SV_Agent_스펙,tmp/o250/deploy_agents.py,deploy_agents.py,🆕 O250 09_2 절차 집행기(pre = [0]·[0-B]·[0-C]·[1] · deploy = [2]·[3]·[5]),tmp/o250/deploy_agents.py,3556
+04_SV_Agent_스펙,tmp/o250/deploy_agents.py,deploy_agents.py,🆕 O250 09_2 절차 집행기(pre = [0]·[0-B]·[0-C]·[1] · deploy = [2]·[3]·[5]),tmp/o250/deploy_agents.py,4505
 04_SV_Agent_스펙,tmp/o250/ca_check.py,ca_check.py,🆕 O250 7축 SV 확인 — Cortex Analyst 생성 SQL ↔ 직접 SQL 값 대조(GN_DW_ANALYST),tmp/o250/ca_check.py,2640
-05_RAG_지표사전,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV,12_agent개선과제/output/O217_biz_definition_corpus.csv,1187787
-05_RAG_지표사전,12_agent개선과제/tools/build_biz_definition_corpus.py,build_biz_definition_corpus.py,코퍼스 CSV 재생성 스크립트,12_agent개선과제/tools/build_biz_definition_corpus.py,14209
-05_RAG_지표사전,12_agent개선과제/tools/O217_routing_curated.csv,O217_routing_curated.csv,코퍼스 생성용 라우팅 큐레이션,12_agent개선과제/tools/O217_routing_curated.csv,27039
+05_RAG_지표사전,12_agent개선과제/output/O217_biz_definition_corpus.csv,O217_biz_definition_corpus.csv,RAG(Cortex Search SEARCH_BIZ_DEFINITION) 지표사전 코퍼스 CSV,12_agent개선과제/output/O217_biz_definition_corpus.csv,1201535
+05_RAG_지표사전,12_agent개선과제/tools/build_biz_definition_corpus.py,build_biz_definition_corpus.py,코퍼스 CSV 재생성 스크립트,12_agent개선과제/tools/build_biz_definition_corpus.py,14694
+05_RAG_지표사전,12_agent개선과제/tools/O217_routing_curated.csv,O217_routing_curated.csv,코퍼스 생성용 라우팅 큐레이션,12_agent개선과제/tools/O217_routing_curated.csv,32638
 05_RAG_지표사전,90_provided_definition/00_README.md,00_README.md,현업 제공 정의 자료 안내,90_provided_definition/00_README.md,3157
 05_RAG_지표사전,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,01_원천보고서_인벤토리 인덱스.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/01_원천보고서_인벤토리 인덱스.md,3099
 05_RAG_지표사전,90_provided_definition/02_지표사전 공통.md,02_지표사전 공통.md,지표사전·용어사전·보고서필드 인벤토리 원본,90_provided_definition/02_지표사전 공통.md,20673
@@ -406,27 +406,28 @@
 07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_런북.md,18_O217_운영계_재현_런북.md,기존 계정 덧입힘 런북(백업·diff·롤백),12_agent개선과제/18_O217_운영계_재현_런북.md,14878
 07_운영런북_이슈,12_agent개선과제/18_O217_운영계_재현_검증.sql,18_O217_운영계_재현_검증.sql,운영계 재현 검증 SQL,12_agent개선과제/18_O217_운영계_재현_검증.sql,5043
 07_운영런북_이슈,PAID_재현_런북_20260722.md,PAID_재현_런북_20260722.md,PAID 재현 런북,PAID_재현_런북_20260722.md,8320
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,00_INDEX_이슈원장.md,이슈 원장,20_issue/00_INDEX_이슈원장.md,7022
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장.md,00_INDEX_이슈원장.md,이슈 원장,20_issue/00_INDEX_이슈원장.md,7238
 07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,00_INDEX_이슈원장-001.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-001.md,9599
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,35829
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,29626
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,27033
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,25909
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,00_INDEX_이슈원장-006.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,27758
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,00_INDEX_이슈원장-007.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,28248
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,00_INDEX_이슈원장-008.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,28388
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,00_INDEX_이슈원장-009.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,28293
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,00_INDEX_이슈원장-010.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,26422
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,00_INDEX_이슈원장-011.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,27768
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,00_INDEX_이슈원장-012.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,28333
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,00_INDEX_이슈원장-013.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,28058
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,00_INDEX_이슈원장-014.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,28266
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,00_INDEX_이슈원장-015.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,28267
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,00_INDEX_이슈원장-016.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,26832
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,00_INDEX_이슈원장-017.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,19630
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,00_INDEX_이슈원장-018.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,26269
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,00_INDEX_이슈원장-019.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,17872
-07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8227
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,00_INDEX_이슈원장-002.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md,24148
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,00_INDEX_이슈원장-003.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md,28028
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,00_INDEX_이슈원장-004.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-004.md,27896
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,00_INDEX_이슈원장-005.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-005.md,26728
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,00_INDEX_이슈원장-006.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-006.md,28490
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,00_INDEX_이슈원장-007.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-007.md,26711
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,00_INDEX_이슈원장-008.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-008.md,27931
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,00_INDEX_이슈원장-009.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-009.md,27606
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,00_INDEX_이슈원장-010.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-010.md,27754
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,00_INDEX_이슈원장-011.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-011.md,27281
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,00_INDEX_이슈원장-012.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-012.md,27395
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,00_INDEX_이슈원장-013.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-013.md,26459
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,00_INDEX_이슈원장-014.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-014.md,26951
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,00_INDEX_이슈원장-015.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-015.md,27882
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,00_INDEX_이슈원장-016.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-016.md,26634
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,00_INDEX_이슈원장-017.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-017.md,28049
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,00_INDEX_이슈원장-018.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-018.md,11249
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,00_INDEX_이슈원장-019.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-019.md,26269
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-020.md,00_INDEX_이슈원장-020.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-020.md,17872
+07_운영런북_이슈,20_issue/00_INDEX_이슈원장_조각/00_선택표.md,00_선택표.md,이슈 원장 (분할 조각),20_issue/00_INDEX_이슈원장_조각/00_선택표.md,8573
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치.md,50_dbt_파이프라인_미결조치.md,dbt 파이프라인 미결 조치,20_issue/50_dbt_파이프라인_미결조치.md,11002
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,00_선택표.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/00_선택표.md,21546
 07_운영런북_이슈,20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,50_dbt_파이프라인_미결조치-001.md,dbt 미결 조치 (분할 조각),20_issue/50_dbt_파이프라인_미결조치_조각/50_dbt_파이프라인_미결조치-001.md,16899
@@ -555,7 +556,7 @@
 08_현업공유_산출물,30_output_share/erd/FACT_TARGET_PROJECT.html,FACT_TARGET_PROJECT.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_TARGET_PROJECT.html,38634
 08_현업공유_산출물,30_output_share/erd/FACT_UNPAID_SERVICE_CONV.html,FACT_UNPAID_SERVICE_CONV.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/FACT_UNPAID_SERVICE_CONV.html,32893
 08_현업공유_산출물,30_output_share/erd/index.html,index.html,현업 공유 산출물 (활용가이드·인벤토리·계보·매핑),30_output_share/erd/index.html,143983
-09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,08_AGENT_spec.md,Agent 스펙 설계,05_SV-Agent_ai/08_AGENT_spec.md,47608
+09_설계근거_참고,05_SV-Agent_ai/08_AGENT_spec.md,08_AGENT_spec.md,Agent 스펙 설계,05_SV-Agent_ai/08_AGENT_spec.md,48101
 09_설계근거_참고,05_SV-Agent_ai/09_0_AGENT_정의서.md,09_0_AGENT_정의서.md,Agent 정의서,05_SV-Agent_ai/09_0_AGENT_정의서.md,5838
 09_설계근거_참고,05_SV-Agent_ai/11_거버넌스_운영.md,11_거버넌스_운영.md,SV/Agent 거버넌스 운영,05_SV-Agent_ai/11_거버넌스_운영.md,9427
 09_설계근거_참고,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,AGENT_연결객체_메타데이터.xlsx,Agent 연결객체 메타데이터·원천계보,05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx,157041
@@ -568,7 +569,7 @@
 10_운영도구_scripts,scripts/README_운영도구.md,README_운영도구.md,접속·실행 순서·rc 0/1/2 의미,scripts/README_운영도구.md,2119
 10_운영도구_scripts,scripts/sfconn.py,sfconn.py,접속 헬퍼(토큰 OAuth · 없으면 connections.toml · GN_DW_ROLE/GN_DW_WAREHOUSE),scripts/sfconn.py,1875
 10_운영도구_scripts,scripts/run_sql_file.py,run_sql_file.py,SQL 파일 문장 단위 실행기(첫 실패에서 멈춤),scripts/run_sql_file.py,5343
-10_운영도구_scripts,scripts/sv_enum_newvalue_gate.py,sv_enum_newvalue_gate.py,SV COMMENT 열거 목록 밖 라이브 신규값 · 종수 표기 잔존 검사(라이브),scripts/sv_enum_newvalue_gate.py,7703
+10_운영도구_scripts,scripts/sv_enum_newvalue_gate.py,sv_enum_newvalue_gate.py,SV COMMENT 열거 목록 밖 라이브 신규값 · 종수 표기 잔존 검사(라이브),scripts/sv_enum_newvalue_gate.py,7970
 10_운영도구_scripts,scripts/sv_code_label_gate.py,sv_code_label_gate.py,SV 코드↔라벨 표기 검사(라이브),scripts/sv_code_label_gate.py,39871
 10_운영도구_scripts,scripts/sv_no_rollup_gate.py,sv_no_rollup_gate.py,SV 지시문·VQR 소계/합계 행 유도 검사(소스),scripts/sv_no_rollup_gate.py,3957
 10_운영도구_scripts,scripts/sv_common_block_gate.py,sv_common_block_gate.py,SV 공통 지시문 블록 규칙 R-SV1~3 검사(소스+라이브),scripts/sv_common_block_gate.py,5623
