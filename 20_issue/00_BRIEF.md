@@ -26,50 +26,28 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 운영계 AGENT_EXECUTIVE tool_spec 재조회(㉤) | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:55` |
-| ② | 순서표 보강(㉡) · run_sql_file.py 신규 계정 대응(㉠) | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:56` |
-| ③ | OPS·SILVER managed access 해제 여부(㉢ · 51번 방식) | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:57` |
-| ④ | 50번 [2-b]·[3]~[5] · 배정표 「확정」 → 50번 [6] | 👤 운영계 · 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:58` |
-| ⑤ | 신규 개발계 daily Task 는 생성·RESUME 상태(03 그대로) · 과금 확인 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:59` |
-| ① | 운영계 O272 프롬프트(52번 · EXECUTIVE tool_spec 17/19) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:41` |
-| ② | 운영계 R96(데분_5 원인 · daily FAILED 원문 · 방송 TOT_COST 09·10월 NULL) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:42` |
-| ③ | 운영계 R97 → CSV → 실행카드 §0 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:43` |
-| ④ | 50번 [2-b] 앱 서비스 사용자 이름 · [3] 권한 범위 · [4] 앱 10개 소유자 이전 · [5] 팀장 앱 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:44` |
-| ⑤ | 배정표 「확정」 열 → 50번 [6] | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:45` |
-| ⑥ | 구 역할 회수(48번 [6]) — ③·④ 완료 후에만 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:46` |
-| ⑦ | 현업 회신문(데분 2·3차) · 현업 공지(W9) · O269-A-3 회신 대기 · A-4 공지 2 | 👤 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:47` |
-| ⑧ | LTV 표 이상치 캠페인 임의 제외 → 규칙 보강 | 현업 피드백 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:48` |
-| ⑨ | C-5 ERP YEAR 처방 종결 여부 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:49` |
-| ⑩ | sv_enum NEW 5 = SV_EVENT_PARTICIPATION.EVENT_CATEGORY_NAME 「I'm your pen」 · SV_GA_DEMOGRAPHIC 3차원 (other) · SV_GA_SESSION.DEVICE_… | 개발계 · 🔴 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:50` |
-| ⑪ | SV_AD 최종 광고비 지표(필요 시) · 80 패키지 재빌드 · O270_apply_rbac_dev.py 경로 인자화 | 개발계 후속 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:51` |
-| ⑫ | 개발계 TQ68205 daily Task started(06:01 KST · 과금) | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:52` |
-| ① | 운영계 O272 프롬프트 결과 회수(52번 반환값 · SV 2종 · enum NEW · EXECUTIVE tool_spec 17/19) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:28` |
-| ② | ① 의 tool_spec 이 19 면 운영계 default 버전 spec 출처 조사(정본 yaml = 17) | ① 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:29` |
-| ③ | 운영계 R96(제작비 변동 · daily FAILED 원문 · 방송 총비용 NULL) · R97 CSV | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:30` |
-| ④ | 롤 변경 = IT팀 입력 4종(앱 서비스 사용자 · 50번 [3]~[5] 결정 · 배정표 「확정」) → 50번 [2-b]~[6] | 👤 IT팀 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:31` |
-| ⑤ | AGENT = 현업 회신(LTV 이상치 규칙 · SV_AD 최종 광고비 필요 여부 · 데분_5·7) | 👤 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:32` |
-| ⑥ | 구 역할 회수(48번 [6]) — ④ 전건 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:33` |
-| ① | 개발계 TQ68205 daily Task = suspended — 다시 쓸 때 RESUME(소유 GN_DW_ADMIN 으로) | 필요 시 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:39` |
-| ② | 현업 회신문 · 롤 변경 설계도(대화 산출 · 파일 미저장) — 저장 여부 사용자 결정 | 필요 시 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:40` |
+| ① | 지표사전 운영계 반영 = 계획서 §4 B0~B4 · 옮길 파일 3개(output/O217_biz_definition_corpus.csv · tools/build_biz_definition_corpus.py · 05_SV-Agent_… | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:29` |
+| ② | 운영계 반영 후 현업 회신문 Q3 아래 「운영 화면 반영은 준비 중」 문구 정리 | ① 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:30` |
+| ① | 운영계 O270 단계 6 게이트 재실행(rbac_source_gate.py --live · 음성) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:36` |
+| ② | 롤 전환 = 12_agent개선과제/O273_롤전환_작업순서.md 표 3(A~E) | 👤 IT팀·사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:37` |
+| ③ | 현업 회신문 · W9 공지 발송 · 회신(LTV 이상치 · 방송 총비용 9·10월) · R96 | 👤 데이터팀·현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:38` |
+| ④ | 구 역할 회수(48번 [6]) — 롤 ⑦·⑨ 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:39` |
+| ⑤ | 운영계 enum 게이트 조각 2/4·3/4 미실행 · 운영계 default 고정 원인 미확인 | 선택 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:40` |
+| ⑥ | 🟢 R1-4-3 라벨 선점 = O274 는 착수 첫 쓰기로 선점했다(지연 해소) — 계속 유지 | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:41` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `▣ O272-D-0 🔴 먼저 알아라`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:17`
+> 🔴 **현행 시작점** = `▣ O274-A-0 🔴 먼저 알아라`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:17`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-C.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 > 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**
 > 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.
 > ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**
->   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:17`).
+>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:17`).
 > 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
@@ -84,19 +62,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O272` | 🟡 O272 — 신규 개발계 재구축 · O271 A~G 리허설 · 절차 결함 2 처방 · 52번 (2026-10-30 · TRIALADMIN · TQ68205 개발계 · ㉡ · … | 🟡 1~59 구축 · A·B·C·E·F 운영계 일치 · D EXECUTIVE 17≠19 · run_sql_file… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O271` | 🟡 O271 — O270 운영계 0·1단계 정지 해소 준비(잔존 SERVING 뷰 4 · Q09 소유자 · 배정표 · Streamlit) (2026-10-30 · TRIALADM… | 🟡 4뷰 정본 부재(잔존 후보 · GRANT 0) · R98 신설 · 생성기 인자화(개발계 diff 0) · 48… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O270` | 🟡 O270 — O269-C-4 집행 + 마케팅 피드백 3차(데분_5 제작비 변동 · 데분_6 원천별 광고비 컬럼 · 데분_7 영상 개발실적 · 출처명 재방송→방송) 분석·반영 … | 🟡 테스트 2종 rc=0(run_sql_file dry-run/--apply · ERD 기대 수 유도 → ERD … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O269` | 🟡 O269 — 잔여 작업 전수 정리(20_issue·98·85·60·12 문서 대조) · 사용자 보고 반영(현업 회신 3통 발송 · 운영계 개발계 동일 반영 · T1 TASK_… | 🟡 분류 완료 · 집행 결과 = 라벨 파일 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O268` | 🟡 O268 — 선택 게이트 조각 분해(sv_code_label_gate --shard k/8 · optional_gates 등록표) · 실패 5종 처방(COMMENT 37 동기… | 🟡 게이트 comment_drift·live_change·rename_stale·sv_unit·table_ddl_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
-| `O267` | 🟡 O267 — O266-D-1 착수표 ①②③ + O266-E-2 백로그 ①③ 집행: 김나경·강지영 회신문 2통 · 요청목록 3종 13~15행(O265-1·O265-2·O266-… | 🟢 회신 2통(수치·계정 표현 0) · 3종 일치 · AGENT_MEMBER 템플릿 ID → template_id… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:111` |
+| `O274` | 🟡 O274 — O273 계획 집행 = 지표사전 현업 확정 지표 7종(RT-31~37) 등재 · 개발계 A1~A8 (2026-10-30 · TRIALADMIN · TQ68205 … | 🟡 A1 curated 37행 · A2 생성기 [O273] 광고 단독 → MARKETING · A3 2,163행 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O273` | 🟡 O273 — O272 운영계 결과 처리(enum 신규값 · 경영 Agent default 고정) · 문서 정리 · 현업 회신 · 롤 설계서·작업순서 (2026-10-30 · … | 🟡 [A] 05_20 OS 3값 · 게이트 빈값·'/' 제외 · 음성 13 PASS · 4조각 NEW 0 · 운영… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O272` | 🟡 O272 — 신규 개발계 재구축 · O271 A~G 리허설 · 절차 결함 2 처방 · 52번 (2026-10-30 · TRIALADMIN · TQ68205 개발계 · ㉡ · … | 🟡 1~59 구축 · A·B·C·E·F 운영계 일치 · D EXECUTIVE 17≠19 · run_sql_file… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O271` | 🟡 O271 — O270 운영계 0·1단계 정지 해소 준비(잔존 SERVING 뷰 4 · Q09 소유자 · 배정표 · Streamlit) (2026-10-30 · TRIALADM… | 🟡 4뷰 정본 부재(잔존 후보 · GRANT 0) · R98 신설 · 생성기 인자화(개발계 diff 0) · 48… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:4` |
+| `O270` | 🟡 O270 — O269-C-4 집행 + 마케팅 피드백 3차(데분_5 제작비 변동 · 데분_6 원천별 광고비 컬럼 · 데분_7 영상 개발실적 · 출처명 재방송→방송) 분석·반영 … | 🟡 테스트 2종 rc=0(run_sql_file dry-run/--apply · ERD 기대 수 유도 → ERD … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:5` |
+| `O269` | 🟡 O269 — 잔여 작업 전수 정리(20_issue·98·85·60·12 문서 대조) · 사용자 보고 반영(현업 회신 3통 발송 · 운영계 개발계 동일 반영 · T1 TASK_… | 🟡 분류 완료 · 집행 결과 = 라벨 파일 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:6` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 19 | 512,240 | 39,839 | 1,121 🟠 |
-| `01_세션이력` | 90 | 2,330,766 | 39,781 | 1,179 🟠 |
+| `00_INDEX_이슈원장` | 20 | 514,602 | 28,517 | 12,443 |
+| `01_세션이력` | 91 | 2,335,663 | 39,781 | 36,343 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -119,9 +97,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 11,976 | 11,976 | 28,984 |
+| `00_BRIEF` | — | 12,598 | 12,598 | 28,362 |
 
-> 전 문서군 = **3,363,370 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,368,694 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -129,7 +107,7 @@ END-METADATA -->
 | 게이트 | 판정 | 결론 |
 |---|---|---|
 | `doc_census` | ✅ | ✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다 |
-| `doc_type_gate` | 🟡 | 🟡 통과(경고 1건 · 대상 항목 2건) |
+| `doc_type_gate` | ✅ | ✅ 게이트 통과 — 선언 누락 0 · 상한 초과 0 · 여유 부족 0 |
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 115개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |

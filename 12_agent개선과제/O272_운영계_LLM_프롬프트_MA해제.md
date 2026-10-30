@@ -106,4 +106,26 @@ END-METADATA -->
 
 === 프롬프트 끝 ===
 
+## 운영계 실행 결과(2026-10-30 · 사용자 제공) · 🆕 O273-A·E·F
+
+| 단계 | 결과 | 후속 |
+|---|---|---|
+| 1 진단(전) | GOLD NO · OPS YES · SERVING NO · SILVER YES | — |
+| 2·3 해제 | OPS DONE 백업 0 · SILVER DONE 백업 24 | — |
+| 4 확인 | 오류 0 · 백업 = FUTURE(0 = 0 · 24 = 24) · 4스키마 NO | — |
+| 4-1 SV | 05_22 · 05_20 각 10/10 · 조각 0/4 NEW 0 · **1/4 NEW 2** | O273-A(아래) |
+| 5 Agent | EXECUTIVE default VERSION$20 · tool_spec 19 | O273-B(아래) |
+
+- **O273-A — enum 신규값 2건(운영계에만 있는 값)**
+  - `SV_GA_SESSION.DEVICE_OPERATING_SYSTEM` = `Firefox OS`·`Fuchsia`·`Win32` → `05_20` COMMENT 목록에 추가.
+  - 같은 차원의 Android 빌드 지문 2건(`samsung/…:user/release-keys`)과 `EP_PAYMENT_TYPE` 빈 문자열 `''` → 게이트에서 대조 제외(`scripts/sv_enum_newvalue_gate.py` · 음성 테스트 3건 추가).
+  - 개발계 재배포 10/10 · 게이트 4조각 NEW 0 · 운영계 재배포 10/10 · 1/4 NEW 0(사용자 보고).
+- **O273-B — 경영 Agent default 고정**
+  - 🔴 단계 5 의 기대 「개발계 VERSION$4 · 17」 은 **정답(O270 W3 = analyst_ad·시뮬레이터 제거)** 이었다. 운영계 19 는 드리프트다.
+  - 원인(운영계 실측) = default 가 VERSION$20 에 고정돼 `ADD VERSION` 으로 만든 $21·$22·$23 이 default 가 되지 않았다(에러 없음).
+  - 처방 = `05_SV-Agent_ai/53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` [2] → `DONE — default = VERSION$23 (도구 17)`.
+  - 재발 방지 = `tmp/o250/deploy_agents.py deploy` [5] 가 「default = 최신 명명 버전」 아니면 rc 1 · `09_2` [3] 주석 정정.
+- **O273-C — 문서 정리** = `09_2` [0] 필수 목록의 EXECUTIVE–SV_AD·SV_ML_REALTIME_SIMULATOR 주석 처리 · `08_AGENT_spec.md` O270 정정.
+- 남은 일 = `O272_롤전환_작업순서.md` 참고(운영계 O270 단계 6 게이트 재실행 · 사용자 배정 등).
+
 _Co-authored with CoCo_

@@ -1,0 +1,106 @@
+-- =============================================================================
+-- 54_DEPLOY_CORPUS_O273.sql — 지표사전 코퍼스에 현업 확정 지표 7종(RT-31~37) 등재 · 개발계·운영계 공용
+-- O274 · 2026-10-30 · 계획서 = 12_agent개선과제/O273_지표사전_현업지표추가_작업계획.md §5
+-- 적재 원본 = 12_agent개선과제/output/O217_biz_definition_corpus.csv
+--   🔴 운영계에서는 생성기를 돌리지 않는다 — 개발계에서 만든 CSV 를 그대로 옮겨 적재한다(계획서 R5)
+-- 🔴 검색 서비스는 재생성하지 않는다(26번 [5] CREATE OR REPLACE = 새 역할 USAGE 권한 소실 · 계획서 R2)
+--    ⇒ 데이터만 바꾸고 [3] REFRESH 로 색인을 갱신한다
+-- 🔴 [0-B] 대조가 「추가 7행 · 그 밖의 차이 0」이 아니면 [2] 이후를 실행하지 않는다(계획서 R3)
+-- 롤백 = 계획서 §6(옛 CSV = _archive/O217_biz_definition_corpus.csv.O274-A-pre_O274_corpus 로 [1]~[3] 재실행)
+-- =============================================================================
+USE ROLE GN_DW_ADMIN;
+USE SCHEMA GN_DW.SERVING;
+
+-- [0] 사전 기록 — 행수 · 광고 단독 행 범위 · 검색 권한
+SELECT COUNT(*) AS N_BEFORE
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS;                 -- 개발계 2026-10-30 = 2,156
+
+SELECT COUNT(*) AS AD_NOT_MARKETING
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE TRIM(TOOL_NAME) = 'analyst_ad'
+  AND AGENT_SCOPE <> 'MARKETING';                         -- 기대 0(49번 반영 상태)
+
+SHOW GRANTS ON CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION;
+--   ↑ 결과를 기록한다 — GN_DW_AR_SRC_COMMON USAGE 포함 여부 · [4]⑤ 에서 같은지 본다
+
+-- [1] 워크스페이스 CSV → OPS 스테이지(26번 [3] 과 같다)
+COPY FILES INTO @GN_DW.OPS.BIZ_DEFINITION_STAGE/
+  FROM 'snow://workspace/USER$.PUBLIC."snowflake_files"/versions/live/12_agent개선과제/output/'
+  FILES = ('O217_biz_definition_corpus.csv');
+
+-- [0-B] 🔴 사전 대조(읽기 전용 · blocking) — 스테이지 CSV ↔ 현재 표
+--   기대 = NEW 7행(RT-31~37)뿐 · REMOVED 0 · CHANGED 0 · 그 밖이면 멈춘다
+--   비교 열 = DOC_ID · AGENT_SCOPE · TOOL_NAME · FORMULA · DEFINITION · SV_FIELD · LIMITATION
+WITH NEW_CSV AS (
+    SELECT $1::VARCHAR AS DOC_ID, $5::VARCHAR AS DEFINITION, $6::VARCHAR AS FORMULA,
+           $7::VARCHAR AS AGENT_SCOPE, $8::VARCHAR AS TOOL_NAME, $9::VARCHAR AS SV_FIELD,
+           $10::VARCHAR AS LIMITATION
+    FROM @GN_DW.OPS.BIZ_DEFINITION_STAGE/O217_biz_definition_corpus.csv
+         (FILE_FORMAT => 'GN_DW.OPS.FF_BIZ_DEFINITION_CSV')
+),
+CUR AS (
+    SELECT DOC_ID, DEFINITION, FORMULA, AGENT_SCOPE, TOOL_NAME, SV_FIELD, LIMITATION
+    FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+)
+SELECT CASE WHEN c.DOC_ID IS NULL THEN 'NEW'
+            WHEN n.DOC_ID IS NULL THEN 'REMOVED'
+            ELSE 'CHANGED' END AS KIND,
+       COALESCE(n.DOC_ID, c.DOC_ID) AS DOC_ID
+FROM NEW_CSV n
+FULL OUTER JOIN CUR c ON n.DOC_ID = c.DOC_ID
+WHERE c.DOC_ID IS NULL
+   OR n.DOC_ID IS NULL
+   OR NOT (EQUAL_NULL(TRIM(n.AGENT_SCOPE), TRIM(c.AGENT_SCOPE))
+       AND EQUAL_NULL(TRIM(n.TOOL_NAME), TRIM(c.TOOL_NAME))
+       AND EQUAL_NULL(TRIM(n.FORMULA), TRIM(c.FORMULA))
+       AND EQUAL_NULL(TRIM(n.DEFINITION), TRIM(c.DEFINITION))
+       AND EQUAL_NULL(TRIM(n.SV_FIELD), TRIM(c.SV_FIELD))
+       AND EQUAL_NULL(TRIM(n.LIMITATION), TRIM(c.LIMITATION)))
+ORDER BY KIND, DOC_ID;
+
+-- [2] 적재(덮어쓰기 · 26번 [4] 와 같다)
+TRUNCATE TABLE GN_DW.SERVING.BIZ_DEFINITION_CORPUS;
+COPY INTO GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+  FROM @GN_DW.OPS.BIZ_DEFINITION_STAGE/O217_biz_definition_corpus.csv
+  FILE_FORMAT = (FORMAT_NAME = 'GN_DW.OPS.FF_BIZ_DEFINITION_CSV')
+  ON_ERROR = ABORT_STATEMENT
+  FORCE = TRUE;
+
+-- [3] 검색 서비스 새로고침 — 🔴 CREATE OR REPLACE 금지(권한 소실 · R2)
+ALTER CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION REFRESH;
+
+-- [4] 검증
+-- ① 행수 = 기대 2,163(개발계 · 운영계는 [0] N_BEFORE + 7)
+SELECT COUNT(*) AS N_AFTER
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS;
+
+-- ② 광고 단독 행 MARKETING 아닌 행 = 0
+SELECT COUNT(*) AS AD_NOT_MARKETING
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE TRIM(TOOL_NAME) = 'analyst_ad'
+  AND AGENT_SCOPE <> 'MARKETING';
+
+-- ③ RT-31~37 = 7행 · 전부 MARKETING · analyst_mktg_campaign_cost
+SELECT DOC_ID, TITLE, AGENT_SCOPE, TOOL_NAME, SV_FIELD
+FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS
+WHERE DOC_ID IN ('RT-31', 'RT-32', 'RT-33', 'RT-34', 'RT-35', 'RT-36', 'RT-37')
+ORDER BY DOC_ID;
+
+-- ④-a 새로고침 완료 확인(MANUAL · SUCCEEDED 가 보일 때까지 다시 조회)
+SELECT DATA_TIMESTAMP, STATE, REFRESH_ACTION, REFRESH_TRIGGER, ERROR
+FROM TABLE(GN_DW.INFORMATION_SCHEMA.CORTEX_SEARCH_REFRESH_HISTORY(
+       NAME => 'GN_DW.SERVING.SEARCH_BIZ_DEFINITION', RESULT_LIMIT => 5))
+ORDER BY DATA_TIMESTAMP DESC;
+
+-- ④-b 검색 1순위(④-a SUCCEEDED 후) — 기대 = Q_FINAL RT-31 · Q_BCAST RT-33 · Q_UNIT RT-36
+SELECT 'Q_FINAL' AS Q, PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFINITION',
+  '{"query":"최종 광고비","columns":["DOC_ID"],"limit":1}')):results[0]:DOC_ID::STRING AS TOP1
+UNION ALL
+SELECT 'Q_BCAST', PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFINITION',
+  '{"query":"방송 광고비 총비용","columns":["DOC_ID"],"limit":1}')):results[0]:DOC_ID::STRING
+UNION ALL
+SELECT 'Q_UNIT', PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFINITION',
+  '{"query":"최종 광고비 기준 CRM 개발단가","columns":["DOC_ID"],"limit":1}')):results[0]:DOC_ID::STRING;
+
+-- ⑤ 검색 권한 = [0] 과 같은가(GN_DW_AR_SRC_COMMON USAGE 유지)
+SHOW GRANTS ON CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION;

@@ -96,7 +96,7 @@ WITH required AS (
     ('AGENT_MEMBER',    'SV_ML_FEATURE_IMPORTANCE'),-- 2026-10-06 O203 요인분석(증액 요인 · 회원실 문항 8)
     ('AGENT_EXECUTIVE',   'SV_TARGET_BIZ'),         -- [O200-B] 스펙 실재·목록 누락 보정(O199-A-1 ③)
     ('AGENT_EXECUTIVE',   'SV_BUDGET'),
-    ('AGENT_EXECUTIVE',   'SV_AD'),
+    -- ('AGENT_EXECUTIVE',   'SV_AD'),  -- [O273-C] O270 W3 = 경영 Agent 에서 analyst_ad 제거(사용자 결정 · 광고 = 마케팅 소관)
     ('AGENT_EXECUTIVE',   'SV_MEMBER_MONTHLY'),
     ('AGENT_EXECUTIVE',   'SV_SERVICE'),
     ('AGENT_EXECUTIVE',   'SV_ML_DVLP_FORECAST'),
@@ -144,7 +144,7 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_GA_DEMOGRAPHIC'),         -- 05_22 GA4 인구통계
     --  [O220 13차] 실시간 경량 ML 시뮬레이터 SV (25_ML_REALTIME_SIMULATOR_DDL.sql)
     ('AGENT_MEMBER',    'SV_ML_REALTIME_SIMULATOR'),
-    ('AGENT_EXECUTIVE', 'SV_ML_REALTIME_SIMULATOR'),
+    -- ('AGENT_EXECUTIVE', 'SV_ML_REALTIME_SIMULATOR'),  -- [O273-C] O270 = 광고비 증감 시뮬레이션 → 경영 Agent 제거
     ('AGENT_MARKETING', 'SV_ML_REALTIME_SIMULATOR'),
     --  [O224 14차] ML 중단 예측 × 활동 후원 캠페인카테고리 사전 결합 SV (26_ML_CHURN_CMPGN_CTGR_DDL.sql)
     ('AGENT_MEMBER',    'SV_ML_CHURN_CAMPAIGN'),
@@ -353,6 +353,12 @@ $$;
 -- ============================================================================
 -- [3] ★ 정본 yaml 로 새 버전 발행 — 이 파일의 본체
 --     성공 시 새 VERSION$N 이 생성되고 자동으로 is_default=true 가 된다.
+--      🔴 [O273-B · 2026-10-30 운영계 ZL50263 실측] **단, default 가 고정돼 있으면 옮겨지지 않는다.**
+--        AGENT_EXECUTIVE default = VERSION$20 고정 ⇒ ADD VERSION 으로 만든 $21·$22·$23 모두 is_default=false
+--        (O270 도구 제거판 미반영 · 에러 없음). 고정 원인 = SET DEFAULT_VERSION 이력으로 추정(미확인).
+--        ⇒ **[5] 에서 「default = 최신 명명 버전」 을 반드시 판정**한다(`tmp/o250/deploy_agents.py deploy` = 불일치 시 rc 1)
+--        ⇒ 불일치 처방 = `53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` [2] 방식(조건 검사 후 SET DEFAULT_VERSION).
+--        O184 실측(자동 default)은 「고정 이력 없는 Agent」 에서만 참이다.
 --      [2026-09-28 O184 해소] 아래 모순은 **「자동 is_default」가 옳다**로 종결 — 실측(xf98254)
 --        `AGENT_MEMBER` VERSION$4 is_default=true(SET DEFAULT 미실행) ⇒ P66 기재 철회
 --        (`08_AGENT_spec.md` 정정 · 인용된 yaml 24행은 현행 파일 18행에 부재 = 이미 소멸).

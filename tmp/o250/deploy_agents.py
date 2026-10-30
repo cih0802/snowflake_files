@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """O250-B · 09_2 절차 집행: [0] SV 실재 → [0-B] 스펙 동기화 → [0-C] 대조 → [1] 버전 기록 → [2] live 소진 → [3] ADD VERSION → [5] 검증.
 인자 = 단계(pre | deploy). pre 는 [0]·[0-B]·[0-C]·[1] 까지만 · deploy 는 [2]·[3]·[5]."""
+import json
 import os
 import re
 import sys
@@ -71,10 +72,22 @@ if step == "deploy":
         m = re.search(r"ALTER AGENT GN_DW\.SERVING\." + a + r"\s*\n\s*ADD VERSION FROM [^\n]+\n\s*COMMENT = '[^\n]*';", SRC)
         q(m.group(0).rstrip(";"))
         print("[3]", a, "ADD VERSION OK")
+    # 🆕 [O273-B] 판정 추가 — 운영계 ZL50263 실측: default 가 VERSION$20 에 고정돼 ADD VERSION($21~$23)이
+    #   default 가 되지 않았는데 [5] 는 출력만 하고 rc 0 이었다 ⇒ 「default = 최신 명명 버전」 이 아니면 rc 1
+    #   도구 수 = tools 배열 크기(문자열 'tool_spec' 개수는 지시문 본문 언급까지 센다)
+    bad = 0
     for a in AGENTS:
-        vs = versions(a)
+        vs = [v for v in versions(a) if v["name"]]
+        newest = max(vs, key=lambda v: v["created_on"])["name"] if vs else None
         for v in vs:
             if str(v.get("is_default")).lower() == "true":
                 sp = v.get("agent_spec") or ""
-                print("[5]", a, v["name"], "default · tool_spec", sp.count("tool_spec"),
-                      "· pred_axis", sp.count("analyst_ml_pred_axis") > 0, "· fee_axis", sp.count("analyst_ml_fee_axis") > 0)
+                tools = [t.get("tool_spec", {}).get("name") for t in (json.loads(sp).get("tools") or [])] if sp else []
+                ok = v["name"] == newest
+                bad += not ok
+                print("[5]", a, v["name"], "default · 최신", newest, "OK" if ok else "🔴 MISMATCH",
+                      "· tools", len(tools), "· pred_axis", "analyst_ml_pred_axis" in tools,
+                      "· fee_axis", "analyst_ml_fee_axis" in tools)
+                if not ok:
+                    print(f"    처방 = ALTER AGENT GN_DW.SERVING.{a} SET DEFAULT_VERSION = '{newest}';  (사람 승인 후 · 53번 참고)")
+    sys.exit(1 if bad else 0)

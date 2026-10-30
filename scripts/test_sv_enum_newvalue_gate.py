@@ -29,9 +29,9 @@ check('예시 나열(커버 미달)', g.new_values("예: ''서울''", ['서울',
 check('고카디널리티 제외', g.new_values("''1''", [str(i) for i in range(g.MAX_LIVE + 1)]), None)
 check('목록 없음', g.new_values('설명만 있음', ['A']), None)
 check('NULL 무시', g.new_values("''A''", ['A', None]), [])
-check('빈 문자열 무시(O272-D)', g.new_values("''A''", ['A', '', ' ']), [])
-check('빌드 지문 무시(O272-D)', g.new_values("''Android''", ['Android', 'samsung/q4qksx/q4q:14/UP1A:user/release-keys']), [])
-check('지문 옆 실제 신규값은 잡는다(O272-D)', g.new_values("''Android''", ['Android', 'Fuchsia', 'a/b']), ['Fuchsia'])
+check('빈 문자열 무시(O273-A)', g.new_values("''A''", ['A', '', ' ']), [])
+check('빌드 지문 무시(O273-A)', g.new_values("''Android''", ['Android', 'samsung/q4qksx/q4q:14/UP1A:user/release-keys']), [])
+check('지문 옆 실제 신규값은 잡는다(O273-A)', g.new_values("''Android''", ['Android', 'Fuchsia', 'a/b']), ['Fuchsia'])
 
 print('실패', fails)
 sys.exit(1 if fails else 0)
