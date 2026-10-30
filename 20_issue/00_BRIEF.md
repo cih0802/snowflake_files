@@ -26,36 +26,50 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 👤 운영계 R98 실행 → CSV 회수 → 4뷰 판정(㉠ 분류 후 GRANT ㉡ 미부여 ㉢ DROP 백로그) | 운영계 · 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:42` |
-| ② | 1-B OWNERSHIP 이전 승인 여부 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:43` |
-| ③ | 배정표 「확정」 열 · 다역할 4명 사람/서비스 구분 · 보조 역할 영향 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:44` |
-| ④ | 팀장 역할 앱 USAGE 9문 = R97 Q03 앱 이름 목록 받은 뒤 작성 | 운영계 CSV | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md:45` |
-| ① | 👤 운영계에서 O271 프롬프트 실행(DROP 은 뷰별 승인) | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:29` |
-| ② | 배정표 분석가 행 「확정」 열 기입 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:30` |
-| ③ | 팀장 역할 앱 USAGE = R97 Q03 앱 이름 목록 받은 뒤 작성 | 운영계 CSV | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md:31` |
-| ① | 👤 운영계 O270 단계 3(build) → 4 Agent → 5 코퍼스 → 6 게이트 | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:28` |
-| ② | 운영계 O271 단계 6(SV·뷰 DROP) · 7(50번 [1]·[2]) | 운영계 · 승인 완료 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:29` |
-| ③ | 50번 [3] 앱 소유 권한 범위 · [4] 앱별 이전 · [5] 팀장 앱 목록 | 🔴 [2] 결과 후 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:30` |
-| ④ | 배정표 분석가 「확정」 열 → 50번 [6] | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:31` |
-| ⑤ | 현업 공지 · 구 역할 회수(48번 [6] · ③ 완료 후에만) | 후속 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:32` |
+| ① | 운영계 AGENT_EXECUTIVE tool_spec 재조회(㉤) | 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:55` |
+| ② | 순서표 보강(㉡) · run_sql_file.py 신규 계정 대응(㉠) | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:56` |
+| ③ | OPS·SILVER managed access 해제 여부(㉢ · 51번 방식) | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:57` |
+| ④ | 50번 [2-b]·[3]~[5] · 배정표 「확정」 → 50번 [6] | 👤 운영계 · 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:58` |
+| ⑤ | 신규 개발계 daily Task 는 생성·RESUME 상태(03 그대로) · 과금 확인 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md:59` |
+| ① | 운영계 O272 프롬프트(52번 · EXECUTIVE tool_spec 17/19) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:41` |
+| ② | 운영계 R96(데분_5 원인 · daily FAILED 원문 · 방송 TOT_COST 09·10월 NULL) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:42` |
+| ③ | 운영계 R97 → CSV → 실행카드 §0 | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:43` |
+| ④ | 50번 [2-b] 앱 서비스 사용자 이름 · [3] 권한 범위 · [4] 앱 10개 소유자 이전 · [5] 팀장 앱 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:44` |
+| ⑤ | 배정표 「확정」 열 → 50번 [6] | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:45` |
+| ⑥ | 구 역할 회수(48번 [6]) — ③·④ 완료 후에만 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:46` |
+| ⑦ | 현업 회신문(데분 2·3차) · 현업 공지(W9) · O269-A-3 회신 대기 · A-4 공지 2 | 👤 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:47` |
+| ⑧ | LTV 표 이상치 캠페인 임의 제외 → 규칙 보강 | 현업 피드백 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:48` |
+| ⑨ | C-5 ERP YEAR 처방 종결 여부 | 🔴 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:49` |
+| ⑩ | sv_enum NEW 5 = SV_EVENT_PARTICIPATION.EVENT_CATEGORY_NAME 「I'm your pen」 · SV_GA_DEMOGRAPHIC 3차원 (other) · SV_GA_SESSION.DEVICE_… | 개발계 · 🔴 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:50` |
+| ⑪ | SV_AD 최종 광고비 지표(필요 시) · 80 패키지 재빌드 · O270_apply_rbac_dev.py 경로 인자화 | 개발계 후속 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:51` |
+| ⑫ | 개발계 TQ68205 daily Task started(06:01 KST · 과금) | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md:52` |
+| ① | 운영계 O272 프롬프트 결과 회수(52번 반환값 · SV 2종 · enum NEW · EXECUTIVE tool_spec 17/19) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:28` |
+| ② | ① 의 tool_spec 이 19 면 운영계 default 버전 spec 출처 조사(정본 yaml = 17) | ① 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:29` |
+| ③ | 운영계 R96(제작비 변동 · daily FAILED 원문 · 방송 총비용 NULL) · R97 CSV | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:30` |
+| ④ | 롤 변경 = IT팀 입력 4종(앱 서비스 사용자 · 50번 [3]~[5] 결정 · 배정표 「확정」) → 50번 [2-b]~[6] | 👤 IT팀 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:31` |
+| ⑤ | AGENT = 현업 회신(LTV 이상치 규칙 · SV_AD 최종 광고비 필요 여부 · 데분_5·7) | 👤 현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:32` |
+| ⑥ | 구 역할 회수(48번 [6]) — ④ 전건 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:33` |
+| ① | 개발계 TQ68205 daily Task = suspended — 다시 쓸 때 RESUME(소유 GN_DW_ADMIN 으로) | 필요 시 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:39` |
+| ② | 현업 회신문 · 롤 변경 설계도(대화 산출 · 파일 미저장) — 저장 여부 사용자 결정 | 필요 시 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:40` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `▣ O271-C-0 🔴 먼저 알아라`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:17`
+> 🔴 **현행 시작점** = `▣ O272-D-0 🔴 먼저 알아라`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:17`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 3개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-B.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md`
+> 🔴🔴 **이 세션은 단위 4개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-C.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 > 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**
 > 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.
 > ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**
->   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0271-C.md:17`).
+>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0272-D.md:17`).
 > 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
@@ -70,19 +84,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O271` | 🟡 O271 — O270 운영계 0·1단계 정지 해소 준비(잔존 SERVING 뷰 4 · Q09 소유자 · 배정표 · Streamlit) (2026-10-30 · TRIALADM… | 🟡 4뷰 정본 부재(잔존 후보 · GRANT 0) · R98 신설 · 생성기 인자화(개발계 diff 0) · 48… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O270` | 🟡 O270 — O269-C-4 집행 + 마케팅 피드백 3차(데분_5 제작비 변동 · 데분_6 원천별 광고비 컬럼 · 데분_7 영상 개발실적 · 출처명 재방송→방송) 분석·반영 … | 🟡 테스트 2종 rc=0(run_sql_file dry-run/--apply · ERD 기대 수 유도 → ERD … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O269` | 🟡 O269 — 잔여 작업 전수 정리(20_issue·98·85·60·12 문서 대조) · 사용자 보고 반영(현업 회신 3통 발송 · 운영계 개발계 동일 반영 · T1 TASK_… | 🟡 분류 완료 · 집행 결과 = 라벨 파일 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
-| `O268` | 🟡 O268 — 선택 게이트 조각 분해(sv_code_label_gate --shard k/8 · optional_gates 등록표) · 실패 5종 처방(COMMENT 37 동기… | 🟡 게이트 comment_drift·live_change·rename_stale·sv_unit·table_ddl_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
-| `O267` | 🟡 O267 — O266-D-1 착수표 ①②③ + O266-E-2 백로그 ①③ 집행: 김나경·강지영 회신문 2통 · 요청목록 3종 13~15행(O265-1·O265-2·O266-… | 🟢 회신 2통(수치·계정 표현 0) · 3종 일치 · AGENT_MEMBER 템플릿 ID → template_id… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
-| `O266` | 🟡 O266 — 마케팅 Agent 피드백 1~4(디지털 최종정산금액 병기 · 마케팅캠페인×월 광고비·정산·제작비·MSTR 개발 결합 팩트·SV 신설 · 캠페인명 재시도 · LTV… | 🟡 개발계 기존 환경 갱신 45~55 전건 반영 · [D2] 일치(PK 중복 0 · 3,960행) · AGENT_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:111` |
+| `O272` | 🟡 O272 — 신규 개발계 재구축 · O271 A~G 리허설 · 절차 결함 2 처방 · 52번 (2026-10-30 · TRIALADMIN · TQ68205 개발계 · ㉡ · … | 🟡 1~59 구축 · A·B·C·E·F 운영계 일치 · D EXECUTIVE 17≠19 · run_sql_file… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O271` | 🟡 O271 — O270 운영계 0·1단계 정지 해소 준비(잔존 SERVING 뷰 4 · Q09 소유자 · 배정표 · Streamlit) (2026-10-30 · TRIALADM… | 🟡 4뷰 정본 부재(잔존 후보 · GRANT 0) · R98 신설 · 생성기 인자화(개발계 diff 0) · 48… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O270` | 🟡 O270 — O269-C-4 집행 + 마케팅 피드백 3차(데분_5 제작비 변동 · 데분_6 원천별 광고비 컬럼 · 데분_7 영상 개발실적 · 출처명 재방송→방송) 분석·반영 … | 🟡 테스트 2종 rc=0(run_sql_file dry-run/--apply · ERD 기대 수 유도 → ERD … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O269` | 🟡 O269 — 잔여 작업 전수 정리(20_issue·98·85·60·12 문서 대조) · 사용자 보고 반영(현업 회신 3통 발송 · 운영계 개발계 동일 반영 · T1 TASK_… | 🟡 분류 완료 · 집행 결과 = 라벨 파일 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
+| `O268` | 🟡 O268 — 선택 게이트 조각 분해(sv_code_label_gate --shard k/8 · optional_gates 등록표) · 실패 5종 처방(COMMENT 37 동기… | 🟡 게이트 comment_drift·live_change·rename_stale·sv_unit·table_ddl_… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:110` |
+| `O267` | 🟡 O267 — O266-D-1 착수표 ①②③ + O266-E-2 백로그 ①③ 집행: 김나경·강지영 회신문 2통 · 요청목록 3종 13~15행(O265-1·O265-2·O266-… | 🟢 회신 2통(수치·계정 표현 0) · 3종 일치 · AGENT_MEMBER 템플릿 ID → template_id… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:111` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 19 | 511,715 | 39,314 | 1,646 🟠 |
-| `01_세션이력` | 90 | 2,328,355 | 38,225 | 3,590 🟠 |
+| `00_INDEX_이슈원장` | 19 | 512,240 | 39,839 | 1,121 🟠 |
+| `01_세션이력` | 90 | 2,330,766 | 39,781 | 1,179 🟠 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -105,9 +119,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 12,259 | 12,259 | 28,701 |
+| `00_BRIEF` | — | 11,976 | 11,976 | 28,984 |
 
-> 전 문서군 = **3,361,729 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,363,370 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -129,10 +143,10 @@ END-METADATA -->
 | `null_reason_registry_gate` | ✅ | 🟢 PASS — NULL 사유 규격 검증 완료 |
 | `campaign_axis_gate` | ✅ | ✅ 게이트 통과 — 미등재·배선 끊김 0 (🟠 GAP 9 건은 알려진 미배선) |
 | `sv_no_rollup_gate` | ✅ | 🟢 PASS — 소계/합계 행 유도 0건 · 분모 36 파일 |
-| `sv_enum_newvalue_gate 1/4` | 🔴 | 🔴 실행 오류(미판정): 002037 (42601): SQL compilation error: |
-| `sv_enum_newvalue_gate 2/4` | 🔴 | 🔴 NEW: SV_GA_SESSION.EP_PAYMENT_TYPE |
-| `sv_enum_newvalue_gate 3/4` | 🔴 | 🔴 NEW: SV_BUDGET.ITEM_KWAN_NM 국내아동권리지원사업|모금관리비|사무국운영사업|해외기획사업|해외아동권리지원및지역개발사업|회원관리비 |
-| `sv_enum_newvalue_gate 4/4` | 🔴 | 🔴 NEW: SV_BUDGET_YEARLY.ITEM_KWAN_NM 국내아동권리지원사업|모금관리비|사무국운영사업|해외기획사업|해외아동권리지원및지역개발사업|회원관리비 |
+| `sv_enum_newvalue_gate 1/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 2/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 3/4` | ✅ | ✅ 게이트 통과 |
+| `sv_enum_newvalue_gate 4/4` | ✅ | ✅ 게이트 통과 |
 
 > 🔴 **게이트 전수 PASS 는 「지침 준수」의 증거가 아니다**(`R3-9`).
 > 완료 보고 전에 **게이트가 보지 않는 축** ㉠~㉥ 를 자문한다.
