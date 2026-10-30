@@ -3,14 +3,24 @@
      ② 12_agent개선과제/output/O270_live_object_types_ZS83821_20261029.txt (GOLD·SERVING 실측 유형)
 출력 05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql
 🔴 분류표에 없는 라이브 객체는 GRANT 하지 않고 「미분류」로 머리 주석에 나열한다(fail-safe).
+🆕 [O271-A] 인자 --types <유형 파일> --out <출력 파일> --account <계정 표기>(기본값 = 개발계 · 기본 출력은 종전과 바이트 동일)
+    운영계 판 = --types 12_agent개선과제/output/O270_live_object_types_ZL50263.txt
+                --out 05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql --account ZL50263
 """
-import csv, os
+import argparse, csv, os
 W = '/workspace'
+ap = argparse.ArgumentParser()
+ap.add_argument('--types', default='12_agent개선과제/output/O270_live_object_types_ZS83821_20261029.txt')
+ap.add_argument('--out', default='05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql')
+ap.add_argument('--account', default=None, help='머리 주석 계정 표기(기본 = 생략 · 개발계 판과 동일 출력)')
+args = ap.parse_args()
+TYPES = args.types if os.path.isabs(args.types) else os.path.join(W, args.types)
+OUT = args.out if os.path.isabs(args.out) else os.path.join(W, args.out)
 cls = {}
 for r in csv.DictReader(open(W + '/12_agent개선과제/output/O270_source_class.csv', encoding='utf-8')):
     cls[(r['layer'], r['object'])] = r['source_class']
 live = []
-for line in open(W + '/12_agent개선과제/output/O270_live_object_types_ZS83821_20261029.txt', encoding='utf-8'):
+for line in open(TYPES, encoding='utf-8'):
     k, t = line.strip().split('|')
     s, n = k.split('.')
     live.append((s, n, t))
@@ -43,6 +53,10 @@ A('-- 48_RBAC_SOURCE_ACCESS.sql — 원천별 접근통제(접근 역할 4 · �
 A('-- O270-F · 2026-10-29 · 생성기 = 12_agent개선과제/output/O270_gen_rbac_sql.py (손으로 고치지 말고 재생성)')
 A('-- 정본 분류표 = 12_agent개선과제/output/O270_source_class.csv (W1 · dbt ref/source + OBJECT_DEPENDENCIES)')
 A('-- 계획서 = 12_agent개선과제/O270_원천별_접근통제_작업계획.md (C1~C9 · W4)')
+if args.account:
+    A('-- 🔴 계정 판 = %s · 유형 파일 = %s · 개발계 판(48_RBAC_SOURCE_ACCESS.sql)과 별도 파일'
+      % (args.account, os.path.relpath(TYPES, W)))
+    A('-- 🔴 미분류 객체는 원천 판정(R98) 결정 전까지 GRANT 하지 않는다 — 이름으로 분류하지 마라')
 A('--')
 A('-- 블록 = [1] 역할 생성 [2] 접근 역할 GRANT [3] 기능 역할 조립 [4] 사용자 배정 템플릿')
 A('--        [5] 검증 [6] 기존 역할 회수(🔴 W8 전 실행 금지) [7] 롤백')
@@ -120,5 +134,5 @@ for f, *_ in FR:
     A('-- DROP ROLE IF EXISTS %s;' % f)
 for a in AR.values():
     A('-- DROP ROLE IF EXISTS %s;' % a)
-open(W + '/05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql', 'w', encoding='utf-8').write('\n'.join(L) + '\n')
+open(OUT, 'w', encoding='utf-8').write('\n'.join(L) + '\n')
 print({c: len(g) for c, g in grants.items()}, 'unclassified', unclassified, 'lines', len(L))

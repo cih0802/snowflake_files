@@ -77,6 +77,25 @@ END-METADATA -->
      「운영계에만 있음 / 개발계에만 있음」 목록을 보고한다.
   3. 차이가 0 이면 `05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql` 을 그대로 쓴다.
      차이가 있으면 멈추고 보고한다(사람이 생성기 입력 파일 교체 여부를 정한다).
+- 🆕 [O271-A · 2026-10-30] 운영계 1회차 결과 = 운영계에만 4(SERVING 뷰) · 개발계에만 0 ⇒ **운영계 판 파일을 쓴다**:
+  `05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql`(개발계에서 생성 완료 · 미분류 4건은 GRANT 없음).
+  🔴 유형 파일이 위 결과와 다르게 다시 나오면 멈추고 보고한다(생성기를 직접 다시 돌리지 마라).
+- 보고 후 멈춘다.
+
+## 단계 1-A — 잔존 뷰 원천 판정 실측(읽기 전용 · 🆕 O271-A)
+
+- 실행 = `python3 scripts/env_capture.py --id R98 "85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R98_O270_운영계잔존뷰_원천.sql"`
+- 결과 CSV(`85_실제 인수인계 문서/_ENV/ZL50263/R98_*`)를 사람에게 넘기고 멈춘다. 판정은 개발계에서 한다.
+- 🔴 4개 뷰(DIM_MEMBER_CURRENT · DIM_MONTH · FACT_AD_COMBINED · ML_LTV_SCORE_V)에 GRANT·DROP 하지 마라.
+
+## 단계 1-B — 소유자 정상화(🔴 사람이 「1-B 승인」이라고 답한 경우에만 · 🆕 O271-A)
+
+- 승인이 없으면 이 단계를 건너뛰고 「1-B 미승인 · 건너뜀」이라고 보고한다.
+- 승인 시 ACCOUNTADMIN 으로 1문만 실행한다.
+  ```sql
+  GRANT OWNERSHIP ON TABLE GN_DW.GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;
+  ```
+- 확인 = `SHOW GRANTS ON TABLE GN_DW.GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST;` 의 OWNERSHIP 행 = GN_DW_ADMIN.
 - 보고 후 멈춘다.
 
 ## 단계 2 — 역할·권한 적용(48번 [1]~[3])
@@ -84,6 +103,8 @@ END-METADATA -->
 - 🔴 이 단계는 dbt build 보다 **먼저** 한다(역할이 없으면 build 의 권한 부여가 실패한다).
 - 실행 = `python3 12_agent개선과제/output/O270_apply_rbac_dev.py`
   (파일 이름에 dev 가 있지만 현재 접속 계정에 실행된다 · [4] 이후 블록은 실행하지 않는다)
+  🆕 [O271-A] 이 스크립트는 개발계 판 48번을 읽는다 — 운영계 판과 GRANT 본문이 같아(차이 = 머리 주석뿐) 결과가 같다.
+  🔴 두 파일의 `GRANT` 줄이 다르면(diff 로 확인) 실행하지 말고 멈춘다.
 - 기대 결과 = `OK n of n`(두 숫자가 같아야 한다). 다르면 FAIL 줄 원문을 보여주고 멈춘다.
 - 보고 후 멈춘다.
 
@@ -122,6 +143,8 @@ END-METADATA -->
 ## 단계 7 — 사용자 배정 (사람이 대상자를 정한다)
 
 - 사람에게 「역할별 대상 사용자 목록」을 받는다. 받기 전에는 아무것도 실행하지 않는다.
+- 🆕 [O271-A] 대상 목록 정본 = `12_agent개선과제/O270_운영계_사용자배정표.md` 의 **「확정」 열이 채워진 행만**.
+  「확정」이 빈 행은 실행하지 마라 · 「제안」 열은 실행 근거가 아니다.
 - 규칙 = 사용자 1명에게 기능 역할 1개만 준다(GN_DW_FR_MARKETING · GN_DW_FR_MEMBER · GN_DW_FR_EXEC · GN_DW_FR_LEAD 중 하나).
 - 사용자마다 아래 3줄을 만든 뒤 보여주고, 승인 후 실행한다.
   ```sql
