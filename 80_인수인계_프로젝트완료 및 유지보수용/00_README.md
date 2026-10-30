@@ -17,14 +17,14 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 
 | 서브폴더 | 내용 | 파일 수 |
 |---|---|---|
-| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 72 |
-| 02_dbt_pipeline | dbt 프로젝트 원본 | 230 |
+| 01_실행순서_배포SQL | 문서실행순서.md 와 그 안의 SQL (원래 경로 유지 → 문서 경로 그대로 사용 가능) | 77 |
+| 02_dbt_pipeline | dbt 프로젝트 원본 | 235 |
 | 03_MSTR_이관 | MSTR 이관 PoC 전체 | 39 |
 | 04_SV_Agent_스펙 | Agent YAML 정본 (09_2 배포 필수) | 7 |
 | 05_RAG_지표사전 | RAG 코퍼스 CSV · 원본 정의 · 재생성 도구 | 24 |
 | 06_일배치_모니터링 | 일배치 TASK · 비용/알림 모니터링 | 19 |
 | 07_운영런북_이슈 | 런북 · 이슈 원장 · 사고사례 | 55 |
-| 08_현업공유_산출물 | 현업 공유 산출물 | 96 |
+| 08_현업공유_산출물 | 현업 공유 산출물 | 100 |
 | 09_설계근거_참고 | 설계 근거 · 보안/권한 참고 | 10 |
 | 10_운영도구_scripts | 운영 점검 도구(SV 게이트 · SQL 실행기 · 접속 헬퍼) — README_운영도구.md 부터 | 7 |
 
@@ -78,6 +78,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/09_1_AGENT_생성.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/09_2_AGENT_버전업.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql | 문서실행순서.md 명시 SQL |
@@ -97,12 +98,15 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 05_SV-Agent_ai/42_DEPLOY_AGENCY_AD_SRC_RENAME.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/43_DEPLOY_AGENCY_UPPER_CMPGN_SPLIT.sql | 문서실행순서.md 명시 SQL |
 | 05_SV-Agent_ai/44_DEPLOY_CATEGORY_GOLD.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/45_DEPLOY_SEND_GBN_AT_OPEN.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql | 문서실행순서.md 명시 SQL |
+| 05_SV-Agent_ai/52_FIX_PROD_MANAGED_ACCESS_OPS_SILVER_ZL50263.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql | 문서실행순서.md 명시 SQL |
 | 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql | 문서실행순서.md 명시 SQL |
 | 10_dbt_pipeline/01_deploy_dbt_project.sql | 문서실행순서.md 명시 SQL |
 | 10_dbt_pipeline/02_dbt_parse_compile_build.sql | 문서실행순서.md 명시 SQL |
-| 10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql | 문서실행순서.md 명시 SQL |
@@ -110,6 +114,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql | 문서실행순서.md 명시 SQL |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql | 문서실행순서.md 명시 SQL |
+| 88_인계요청/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql | 문서실행순서.md 명시 SQL |
 | 문서실행순서_llm실행.md | 🆕 O250-D 실행순서를 LLM 이 집행할 때의 방법·병렬화·예외·금지 사항 |
 | 문서실행순서_보조주석.md | 🆕 O250-D 실행순서 단계별 상세 주석·덧입히기 절차(문서실행순서.md 가 참조) |
 | 12_agent개선과제/output/O217_biz_definition_corpus.csv | 26_ SQL 이 읽는 BIZ_DEFINITION 코퍼스 (실행순서 원래 경로 유지) |
@@ -122,10 +127,10 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/00_배포운영_통합_20260715.md | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/01_deploy_dbt_project.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/02_dbt_parse_compile_build.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/03_create_daily_task.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/11_성능검토_운영리스크_20260716.md | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/README.md | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
-| 10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/dbt_project.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/macros/bigquery_range_predicate.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/macros/bigquery_range_purge.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -175,12 +180,15 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_DIGITAL.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_INFLOW_ALLOC.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_AD_PERFORMANCE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_AT_GA_CLICK.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_AT_GA_LINK_MAP.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_SESSION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BUDGET.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_BUDGET_YEARLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_CUM_STOP.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_CAMPAIGN_MONTHLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_COHORT_DISPATCH.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_EVENT_ATTENDANCE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_EXPENSE_RESOLUTION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_GA4_DEMOGRAPHIC.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -194,6 +202,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MEMBER_SPONSORSHIP_SPAN.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_MESSAGE_DISPATCH.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/models/gold/fact/FACT_MKTG_CAMPAIGN_MONTHLY_COST.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_BILLING_STATUS.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_PAYMENT_METHOD_CHANGE.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/gold/fact/FACT_RELATION_ACTIVITY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -294,6 +303,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 10_dbt_pipeline/models/silver/erp/ERP_BUDGET_YEARLY.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/ERP_EXPENSE_RESOLUTION.sql | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/models/silver/erp/_erp_schema.yml | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
+| 10_dbt_pipeline/seeds/MAP_AT_GA_LINK.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/seeds/MAP_BUDGET_PROCEDURE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/seeds/MAP_EXT_DATA_TYPE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
 | 10_dbt_pipeline/seeds/MAP_SERVICE_GROUP_RULE.csv | dbt 프로젝트 (models·macros·snapshots·tests·배포 SQL·운영 문서) |
@@ -589,12 +599,15 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/erd/FACT_AD_DIGITAL.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_INFLOW_ALLOC.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_AD_PERFORMANCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_AT_GA_CLICK.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_AT_GA_LINK_MAP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BIGQUERY_BEHAVIOR.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BIGQUERY_SESSION.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BUDGET.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_BUDGET_YEARLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_CAMPAIGN_CUM_STOP.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_CAMPAIGN_MONTHLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_COHORT_DISPATCH.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_EVENT_ATTENDANCE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_EXPENSE_RESOLUTION.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_GA4_DEMOGRAPHIC.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
@@ -608,6 +621,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 30_output_share/erd/FACT_MEMBER_MONTHLY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MEMBER_SPONSORSHIP_SPAN.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_MESSAGE_DISPATCH.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
+| 30_output_share/erd/FACT_MKTG_CAMPAIGN_MONTHLY_COST.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_PAYMENT_BILLING_STATUS.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_PAYMENT_METHOD_CHANGE.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |
 | 30_output_share/erd/FACT_RELATION_ACTIVITY.html | 현업 공유 산출물 (활용가이드·인벤토리·계보·매핑) |

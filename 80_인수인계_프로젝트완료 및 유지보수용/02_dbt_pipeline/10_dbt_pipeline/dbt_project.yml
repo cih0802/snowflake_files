@@ -375,6 +375,27 @@ models:
       wide:
         +materialized: view
         +tags: ['gold_wide']
+        # 🆕 [O270-F 2026-10-29 · W5 ㉢] 원천별 접근 역할 — 정본 분류 = 12_agent개선과제/output/O270_source_class.csv
+        #   · WIDE 뷰는 dbt 소유·CREATE OR REPLACE 라 GRANT 이 사라질 수 있다(C6) ⇒ gn_view_commented 가
+        #     copy grants + apply_grants(should_revoke=False) 로 이 설정을 적용한다(구 역할은 FUTURE VIEWS 로 계속 받음).
+        #   · GOLD 테이블(dim·fact)은 GN_DW_ADMIN 소유 · incremental·full_refresh:false 로 재생성되지 않아
+        #     48_RBAC_SOURCE_ACCESS.sql 의 GRANT 이 유지된다 ⇒ 여기서 다루지 않는다.
+        #   · 모델 단위 +grants 는 폴더 기본값을 **대체**한다(공통 역할이 원천 뷰에 붙지 않는다).
+        +copy_grants: true
+        +grants:
+          select: ['GN_DW_AR_SRC_COMMON']
+        WIDE_AD_BROADCAST:
+          +grants: {select: ['GN_DW_AR_SRC_AGENCY']}
+        WIDE_AD_BROADCAST_CASE:
+          +grants: {select: ['GN_DW_AR_SRC_AGENCY']}
+        WIDE_AD_COMBINED:
+          +grants: {select: ['GN_DW_AR_SRC_AGENCY']}
+        WIDE_AD_DIGITAL:
+          +grants: {select: ['GN_DW_AR_SRC_AGENCY']}
+        WIDE_AD_PERFORMANCE:
+          +grants: {select: ['GN_DW_AR_SRC_AGENCY']}
+        WIDE_BUDGET:
+          +grants: {select: ['GN_DW_AR_SRC_ERP']}
 
 # ---------------------------------------------------------------------------
 # SNAPSHOT: dbt Snapshot 이력 보존 스키마 (SCD Type 2 영구 보존 영역)

@@ -40,14 +40,22 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     campaign AS GN_DW.GOLD.DIM_CAMPAIGN
       PRIMARY KEY (CAMPAIGN_SK)
       WITH SYNONYMS ('캠페인', '발송 캠페인')
-      COMMENT = '캠페인 차원(PK 유일 · fan-out 0). 🔴 문자(SND) 발송만 캠페인코드가 있다 — 이메일·알림톡·우편은 전건 (미매핑). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD → TM_CM_CMPGN_MNG · SILVER=CRM_CAMPAIGN.'
+      COMMENT = '캠페인 차원(PK 유일 · fan-out 0). 🔴 문자(SND) 발송만 캠페인코드가 있다 — 이메일·알림톡·우편은 전건 (미매핑). [원천] 시스템=CRM(eCRM) · BRONZE=GN_DW.BRONZE_CRM.SND_MEMBER_LIST.CMPGN_CD → TM_CM_CMPGN_MNG · SILVER=CRM_CAMPAIGN.',
+    --  [2026-10-28 O265-C] 알림톡 수신 후 D+5 카카오 경로 GA 클릭(클릭 1건 = 1행)
+    atclk AS GN_DW.GOLD.FACT_AT_GA_CLICK
+      WITH SYNONYMS ('알림톡 클릭', '알림톡 링크 클릭', 'GA 클릭')
+      COMMENT = '알림톡 수신 후 D+5 카카오 경로 GA 클릭(O265-C). [Grain: 발송요청 × 채널 × 회원 × 클릭 시각 × 랜딩]. 질문에 템플릿 ID·링크(경로·utm_campaign)가 주어지면 이 표에서 직접 거른다(우선순위 ①). 🔴 회원수는 COUNT DISTINCT.'
   )
   RELATIONSHIPS (
     fse_to_date    AS fse (DATE_SK)    REFERENCES date,
     fse_to_service AS fse (SERVICE_SK) REFERENCES service,
     fse_to_member  AS fse (MEMBER_DK)  REFERENCES member,
     fse_to_req     AS fse (SEND_REQUEST_SK) REFERENCES req,
-    fse_to_campaign AS fse (CAMPAIGN_SK) REFERENCES campaign
+    fse_to_campaign AS fse (CAMPAIGN_SK) REFERENCES campaign,
+    --  [2026-10-28 O265-C] 알림톡 수신 후 D+5 GA 클릭(① 질문 시 템플릿·링크 패턴 필터용)
+    atclk_to_member AS atclk (MEMBER_DK) REFERENCES member,
+    atclk_to_req    AS atclk (SEND_REQUEST_SK) REFERENCES req,
+    atclk_to_date   AS atclk (DATE_SK) REFERENCES date
   )
   DIMENSIONS (
     date.SEND_DATE  AS date.FULL_DATE  WITH SYNONYMS ('발송일', '일자', '날짜', '공137') COMMENT = '발송일',
@@ -96,9 +104,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     member.MEMBER_POST_RECV_REGULAR_YN AS member.POST_RECV_REGULAR_YN WITH SYNONYMS ('우편물 정기우편 수신', '우편물 수신항목 정기우편') COMMENT = '우편물 수신 항목에 「정기우편」(MS027 코드 2)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
     member.MEMBER_POST_RECV_RELATION_YN AS member.POST_RECV_RELATION_YN WITH SYNONYMS ('우편물 결연우편 수신', '우편물 수신항목 결연우편') COMMENT = '우편물 수신 항목에 「결연우편」(MS027 코드 3)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
     member.MEMBER_POST_RECV_NEW_THANKS_YN AS member.POST_RECV_NEW_THANKS_YN WITH SYNONYMS ('우편물 신규/감사 우편 수신', '우편물 수신항목 신규/감사 우편') COMMENT = '우편물 수신 항목에 「신규/감사 우편」(MS027 코드 4)가 있는가(TRUE/FALSE). 원천 구 체계 값(Y·N·0)·미입력 회원은 NULL — 「수신 동의 회원 수」는 TRUE 만 센다.',
-    req.REQ_SEND_GBN_TOP_NM AS req.SEND_GBN_TOP_NM WITH SYNONYMS ('발송 카테고리(대)', '발송구분 대분류', '발송 대분류', '공133') COMMENT = '발송 카테고리 대분류(회원서비스·결연·회비·회원·참여·사업보고·회원만족·기타 등) — 문자(SND) 요청에 값이 있다. 이메일·알림톡·우편 요청은 NULL(원천 개념 없음). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''결연''·''기타''·''사업보고''·''서비스''·''참여''·''회비''·''회원''·''회원만족''·''회원서비스''',
-    req.REQ_SEND_GBN_MID_NM AS req.SEND_GBN_MID_NM WITH SYNONYMS ('발송 카테고리(중)', '발송구분 중분류', '발송 중분류', '공134') COMMENT = '발송 카테고리 중분류(예: 신규결연회원발송·아동답신·기부금영수증·결제오류·장기회원감사서비스) — 문자(SND) 요청 전용.',
-    req.REQ_SEND_GBN_BOT_NM AS req.SEND_GBN_BOT_NM WITH SYNONYMS ('발송 카테고리(소)', '발송구분 소분류', '발송 소분류', '공135') COMMENT = '발송 카테고리 소분류 — 문자(SND) 요청 전용.',
+    req.REQ_SEND_GBN_TOP_NM AS req.SEND_GBN_TOP_NM WITH SYNONYMS ('발송 카테고리(대)', '발송구분 대분류', '발송 대분류', '발송구분(대)', '공133') COMMENT = '발송구분 대분류 — 문자(SND)·알림톡(MSG_AT)·이메일(EMAIL) 요청 모두 값이 있다(O265 · 알림톡·이메일 = 원천 SNDNG_CD_ID 코드그룹명). 우편(PSTMTR)만 NULL(원천 컬럼 없음). 채널을 묻지 않은 발송구분 질문은 세 채널을 함께 본다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''결연''·''기타''·''데이터''·''사업보고''·''서비스''·''참여''·''회비''·''회원''·''회원만족''·''회원서비스''',
+    req.REQ_SEND_GBN_MID_NM AS req.SEND_GBN_MID_NM WITH SYNONYMS ('발송 카테고리(중)', '발송구분 중분류', '발송 중분류', '발송구분(중)', '공134') COMMENT = '발송구분 중분류(예: ACPI회원발송·신규결연회원발송·아동답신·기부금영수증·결제오류·장기회원감사서비스) — 문자·알림톡·이메일 요청 모두 값이 있다(O265) · 우편만 NULL. 🔴 같은 이름이 여러 대분류 아래 반복된다 ⇒ 대분류와 함께 해석한다.',
+    req.REQ_SEND_GBN_BOT_NM AS req.SEND_GBN_BOT_NM WITH SYNONYMS ('발송 카테고리(소)', '발송구분 소분류', '발송 소분류', '발송구분(소)', '공135') COMMENT = '발송구분 소분류 — 문자·알림톡·이메일 요청 모두 값이 있다(O265) · 우편만 NULL. 🔴 같은 이름이 여러 중분류 아래 반복된다 ⇒ 대·중분류와 함께 해석한다.',
     req.REQ_MSG_DIV_NAME AS req.MSG_DIV_NAME WITH SYNONYMS ('메시지 구분', 'SMS/LMS/MMS', '문자 종류') COMMENT = '메시지 구분(MS010 · SMS·LMS·MMS·알림톡) — 알림톡(MSG_AT) 요청 전용 · 타 채널 NULL. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''LMS''·''MMS''·''SMS''·''알림톡''',
     req.REQ_SNDNG_TIME_DIV_NAME AS req.SNDNG_TIME_DIV_NAME WITH SYNONYMS ('발송 시간 구분', '즉시/예약/분할') COMMENT = '발송 시간 구분(MS267 · 즉시발송·분할발송·예약발송) — 알림톡 요청 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''분할발송''·''예약발송''·''즉시발송''',
     req.REQ_PSTMTR_PRCS_STAT_NAME AS req.PSTMTR_PRCS_STAT_NAME WITH SYNONYMS ('우편물 처리상태', '우편 발송완료 여부') COMMENT = '우편물 처리상태(MS061 · 발송대기·발송완료) — 우편(PSTMTR) 요청 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''발송대기''·''발송완료''',
@@ -106,6 +114,16 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
     req.REQ_LQY_YN AS req.LQY_YN WITH SYNONYMS ('대량발송 여부', '대량 여부') COMMENT = '대량 발송 여부(Y/N) — 우편 요청 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''N''·''Y''',
     req.REQ_CORP_TYPE_NAME AS req.CORP_TYPE_NAME WITH SYNONYMS ('발송 법인구분', '요청 법인') COMMENT = '발송 요청 법인구분(CM019 · 사단·사복) — 문자(SND) 요청 일부에만 값(대다수 NULL). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사단''·''사복''',
     req.REQ_SEND_SPLIT_TYPE AS req.SEND_SPLIT_TYPE WITH SYNONYMS ('문자 분할 방식', '일괄/분할') COMMENT = '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할) — 문자(SND) 요청 전용. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''divide''·''once''',
+    req.REQ_SEND_FORMAT_NAME AS req.SEND_FORMAT_NAME WITH SYNONYMS ('메시지 형식', '발송 형식', '알림톡 여부', '실제 발송 매체') COMMENT = '실제 메시지 형식(O265). 🔴 발송 채널(SEND_TYPE)과 다르다 — 문자 시스템(SND)도 알림톡을 보낸다(예: 2025-09-17 「행운의 카드」). ⇒ 「알림톡」을 물으면 채널이 아니라 이 차원으로 거른다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''알림톡''·''LMS''·''MMS''·''SMS''·''문자''·''이메일''·''우편''',
+    fse.GA_CLICK_TS AS fse.GA_CLICK_TS WITH SYNONYMS ('알림톡 클릭 시각', '알림톡 열람 시각') COMMENT = '그 알림톡 템플릿 링크의 최초 GA 클릭 시각(O265-C) — 알림톡(MSG_AT·문자 시스템 알림톡) 전용 · 그 밖 NULL.',
+    --  [2026-10-28 O265-C] A 판정 근거 · 클릭 grain 차원(① 질문 시 템플릿·링크 필터)
+    fse.GA_CLICK_MAP_SRC AS fse.GA_CLICK_MAP_SRC WITH SYNONYMS ('열람 판정 근거', '알림톡 열람 판정 근거') COMMENT = '그 알림톡 열람(A) 판정 근거 = 템플릿 링크 매핑 출처. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''MANUAL''(분석 확정)·''DIRECT''(템플릿 원문 URL)·''INFER''(수신자 클릭 전용성 추정)·''NONE''(매핑 없음 = A 판정 불가) · 비알림톡 NULL. 🆕 [O269] 웹팀 리다이렉트 대상표가 들어오면 값 WEB_TEAM 이 추가된다(현재 0행 · 이 값으로 필터하면 0행).',
+    atclk.CLICK_TEMPLATE_ID AS atclk.TEMPLATE_ID WITH SYNONYMS ('알림톡 템플릿 ID', '템플릿 ID', '템플릿 코드') COMMENT = '클릭이 일어난 수신 알림톡의 템플릿 ID(AT…). 질문에 템플릿 ID 가 있으면 이 값으로 거른다(우선순위 ①).',
+    atclk.CLICK_LANDING_PATH AS atclk.LANDING_PATH WITH SYNONYMS ('랜딩 경로', '클릭 링크 경로', '링크 URL 경로') COMMENT = '클릭 랜딩 경로(호스트 뒤 · 소문자 · 예 /app/event/25kaomgift/acpi2025.gn). 질문에 링크가 주어지면 ILIKE 로 거른다(우선순위 ①).',
+    atclk.CLICK_UTM_CAMPAIGN AS atclk.UTM_CAMPAIGN WITH SYNONYMS ('utm 캠페인', 'utm_campaign', '링크 캠페인') COMMENT = '클릭 URL 의 utm_campaign(소문자). 질문에 utm 캠페인이 주어지면 이 값으로 거른다(우선순위 ①).',
+    atclk.CLICK_UTM_CONTENT AS atclk.UTM_CONTENT WITH SYNONYMS ('utm 콘텐츠', 'utm_content') COMMENT = '클릭 URL 의 utm_content(소문자).',
+    atclk.CLICK_MAP_MATCHED AS atclk.MAP_MATCHED WITH SYNONYMS ('템플릿 링크 일치') COMMENT = '그 클릭이 템플릿의 매핑 패턴(②③)에 맞으면 1 · 아니면 0 · 템플릿 매핑이 없으면 NULL.',
+    atclk.CLICK_DAYS_FROM_SEND AS atclk.DAYS_FROM_SEND WITH SYNONYMS ('수신 후 경과일') COMMENT = '수신일 대비 클릭일(0~5).',
     fse.SND_SPNSR_NM AS fse.SND_SPNSR_NM WITH SYNONYMS ('발송 시점 후원사업', '발송 당시 후원사업') COMMENT = '문자(SND) 발송 시점 수신 회원의 후원사업명(원천 발송 스냅샷) — 타 채널 NULL. 현재 후원사업과 다를 수 있다.',
     fse.SND_FRST_SPNSR AS fse.SND_FRST_SPNSR WITH SYNONYMS ('발송 시점 최초 후원사업') COMMENT = '문자(SND) 발송 시점 수신 회원의 최초 후원사업명 [SND 전용 · 그 밖 채널 NULL · O262-B].',
     fse.SND_CHILD_DTL_NM AS fse.SND_CHILD_DTL_NM WITH SYNONYMS ('발송 시점 결연상태', '결연 상세상태') COMMENT = '문자(SND) 발송 시점 결연 상세상태명 [SND 전용 · O262-B]. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''결연중''·''비지정결연''·''퇴소예정''·''캠페인지정''·''자동결연지정''·''사업장퇴소대기''·''매칭제한''·''연령제한''·''퇴소''·''홈페이지지정''·''기타''',
@@ -200,13 +218,31 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
       COMMENT = '신규 #33 클릭대비 전환율(%) 5일 = 클릭 후 5일 내 개발회원(명) ÷ 클릭 회원(명) ×100 · 잠정. 🔴 답변은 5일·30일 두 값을 함께 낸다(사용자 결정) — CLICK_TO_DEV_RATE_D30 과 회원수 2종을 같이 보인다. 문자(SND) 클릭만 · 인과가 아니라 시간 창 매칭.',
     fse.CLICK_TO_DEV_RATE_D30 AS COUNT(DISTINCT IFF(fse.CLICK_DEV_D30_MEMBERS = 1, fse.MEMBER_DK, NULL)) / NULLIF(COUNT(DISTINCT IFF(fse.OPEN_MEMBERS = 1, fse.MEMBER_DK, NULL)), 0) * 100
       WITH SYNONYMS ('클릭대비 전환율 30일', '30일 클릭대비 전환율')
-      COMMENT = '신규 #33 클릭대비 전환율(%) 30일 = 클릭 후 30일 내 개발회원(명) ÷ 클릭 회원(명) ×100 · 잠정. 5일 값과 함께 답한다.'
+      COMMENT = '신규 #33 클릭대비 전환율(%) 30일 = 클릭 후 30일 내 개발회원(명) ÷ 클릭 회원(명) ×100 · 잠정. 5일 값과 함께 답한다.',
+    --  [2026-10-28 O265] 알림톡 열람(대용) = GA 링크 유입 · 회원+기간 매칭(사용자 결정)
+    fse.AT_GA_CLICK_MEMBERS_DISTINCT AS COUNT(DISTINCT IFF(fse.GA_CLICK_MEMBERS = 1, fse.MEMBER_DK, NULL))
+      WITH SYNONYMS ('알림톡 오픈 회원수', '알림톡 열람 회원수', '알림톡 클릭 회원수', '알림톡 오픈(명)')
+      COMMENT = '그 알림톡 열람(오픈) 고유 회원수(명) = 알림톡(MSG_AT + 문자 시스템 SND 알림톡) 수신 후 5일 안 카카오 경로로 **그 템플릿의 링크**를 클릭(GA memnum = 회원번호)한 회원(O265-C 재정의). 🔴 원천에 알림톡 오픈 기록이 없어 **GA 링크 클릭을 열람으로 대신한다** — 답변에 이 정의와 판정 근거(GA_CLICK_MAP_SRC)를 밝힌다. 템플릿 링크 매핑이 없는 알림톡·GA 적재 범위 밖 발송은 대상이 아니다(NULL). N(비가산).',
+    fse.AT_GA_CLICK_RATE AS SUM(fse.GA_CLICK_MEMBERS) / NULLIF(COUNT(fse.GA_CLICK_MEMBERS), 0) * 100
+      WITH SYNONYMS ('알림톡 오픈율', '알림톡 열람률', '알림톡 클릭률')
+      COMMENT = '알림톡 열람률(%) = GA 링크 유입 (발송, 회원) ÷ GA 적재 범위 안 알림톡 (발송, 회원) ×100. 비율(N · 재집계 금지). 🔴 정의는 AT_GA_CLICK_MEMBERS_DISTINCT 와 같다 · 문자 오픈율(OPEN_RATE_SND)과 다른 원천이다 ⇒ 두 값을 한 비율로 합치지 마라.',
+    --  [2026-10-28 O265-B-3] B 축 = 수신일~D+5 어떤 알림톡이라도 열람(현업 결정) · A(AT_GA_CLICK_MEMBERS_DISTINCT) ⊆ B
+    fse.AT_ANY_GA_OPEN_MEMBERS_DISTINCT AS COUNT(DISTINCT IFF(fse.ANY_AT_GA_OPEN_MEMBERS = 1, fse.MEMBER_DK, NULL))
+      WITH SYNONYMS ('알림톡 임의 열람 회원수', '어떤 알림톡이라도 열람한 회원수', '알림톡 아무거나 열람 회원수')
+      COMMENT = '수신일~D+5 안에 어떤 알림톡이라도 열람(GA 링크 유입)한 고유 회원수(명) — 그 알림톡 외 다른 알림톡 열람도 포함한다. 거른 알림톡(예: 행운의 카드) 수신 행에서 세면 「그 알림톡 수신자 중 기간 내 어떤 알림톡이라도 연 회원」이 된다. 🔴 AT_GA_CLICK_MEMBERS_DISTINCT(그 알림톡 열람) ⊆ 이 값. N(비가산).',
+    --  [2026-10-28 O265-C] 우선순위 ① — 질문에 템플릿·링크가 주어졌을 때 그 조건(CLICK_* 차원)으로 거른 클릭 회원수
+    atclk.AT_LINK_CLICK_MEMBERS_DISTINCT AS COUNT(DISTINCT atclk.MEMBER_DK)
+      WITH SYNONYMS ('지정 링크 클릭 회원수', '템플릿 링크 클릭 회원수', '해당 링크 열람 회원수')
+      COMMENT = '알림톡 수신 후 D+5 안에 카카오 경로로 클릭한 고유 회원수(명) — 클릭 grain 표(atclk)에서 센다. 질문에 템플릿 ID·링크 경로·utm 캠페인이 주어지면 CLICK_TEMPLATE_ID·CLICK_LANDING_PATH·CLICK_UTM_CAMPAIGN 으로 걸러 이 지표를 쓴다(우선순위 ①). 조건 없이 쓰면 B 와 같은 집합이다. N(비가산).'
   )
   COMMENT = '메시지 발송 성과 및 고객 접점 서비스 분석 (base: GOLD.FACT_MESSAGE_DISPATCH). [Grain: 발송일 × 회원 × 서비스]. [활성 지표: 발송/성공/실패/오픈수, WIDE_BIGQUERY_BEHAVIOR]. [주의: 배분규칙필요 앵커_경합 방지 · 캠페인 축 = 문자(SND) 발송 캠페인만 배선(원천 SND_MEMBER_LIST.CMPGN_CD) — 이메일·알림톡·우편은 원천에 캠페인 키가 없어 (미매핑)(구조적 부재) ⇒ 「캠페인별 발송」은 SND 기준임을 밝힌다]. [원천: CRM → BRONZE_CRM → SILVER.CRM_SEND_MEMBER/REQUEST → GOLD.FACT_MESSAGE_DISPATCH].'
   AI_SQL_GENERATION '[O216 SQL 작성 규칙 · 전 SV 공통] (가) 지표(metric) 이름을 컬럼처럼 SELECT·WHERE·GROUP BY 에 쓰지 않는다 — 지표는 집계 결과이며 `__` 접두 CTE 에는 베이스 컬럼만 있다 ⇒ CTE 안에서는 베이스 컬럼을 SUM·COUNT 로 직접 집계한다. (나) CTE 를 거쳐 바깥 SELECT·GROUP BY·ORDER BY 에서 쓰는 차원은 반드시 그 CTE 의 SELECT 목록에 먼저 넣는다 (CTE 에 선택하지 않은 차원을 바깥에서 참조하면 invalid identifier 다). (다) 연·월·일 필터와 그룹은 이 시맨틱 뷰에 선언된 날짜 차원 이름만 쓴다 — CAL_YEAR·FULL_DATE 같은 물리 컬럼명이나 다른 시맨틱 뷰의 차원 이름을 추측해 쓰지 않는다. 연도가 차원으로 없으면 날짜 차원에 YEAR() 를 적용한다.
   [O241-R 반올림 · 전 SV 공통] 최종 SELECT 에서 비율(%)·평균·확률·초·기여도 등 소수 값은 ROUND(<식>, 2)::NUMBER(38,2) 로 반올림해 출력한다(FLOAT 그대로 두면 0.98999… 처럼 보이므로 NUMBER 로 캐스팅한다 · 집계 식 바깥에 씌우며 정렬·필터에는 원래 식을 쓴다). 금액·건수·명수는 숫자형 그대로 둔다(문자열로 바꾸지 않는다 — 쉼표는 답변 작성 단계에서 붙인다). [O206 출력 규칙 · 전 SV 공통] 최종 SELECT 의 모든 출력 컬럼에 큰따옴표 한글 별칭을 붙인다 — 형식 = <식> AS "한글명". 한글명은 그 차원·지표의 WITH SYNONYMS 첫 항목을 쓰고, 단위가 COMMENT 에 있으면 괄호로 붙인다(예: "연 편성예산(원)" · "집행율(%)" · "개발(건)"). 동의어가 없으면 COMMENT 첫 구절을 쓴다. 영문 식별자·코드명을 출력 컬럼명으로 남기지 않는다. 따옴표 없는 한글 별칭은 문법 오류이므로 반드시 큰따옴표로 감싼다. ORDER BY·GROUP BY 에는 원래 식 또는 순번을 쓴다(한글 별칭을 쓸 때는 큰따옴표 그대로). 이 규칙은 출력 이름만 바꾸며 필터·집계·정렬 로직을 바꾸지 않는다. [O206-C 합계 규칙 · O259 개정] 답변에 쓸 합계·총계·연간 합계·분모(전체 대상 수)는 반드시 SQL 이 낸다 — 단 표에 합계·소계 행을 붙이지 않는다(ROLLUP·CUBE·GROUPING SETS 금지 · 평면 GROUP BY 만). 전체 합이 필요하면 행이 아니라 같은 SELECT 의 열로 붙인다(SUM(SUM(x)) OVER () · COUNT DISTINCT·HAVING 이 있으면 그룹 없는 CTE 를 CROSS JOIN) — 답변에서는 그 열을 표에 싣지 않고 표 밖 본문 1줄로 적는다. 비율은 분자·분모 measure 를 열로 함께 낸다. 중복제거 회원수(COUNT DISTINCT)는 그룹 값을 더하면 틀리므로 전체 값을 따로 COUNT DISTINCT 한다.
   핵심 규칙: (1) 건수 vs 회원수: 발송 건수는 TOTAL_SEND_MEMBERS, 수신 회원수(명)는 DISTINCT_SEND_MEMBERS (distinct) 사용. (2) 상태 라벨 분기: 발송상태 질의는 SEND_STATUS_NAME(시스템 상태) 또는 SEND_RESULT_NAME(통신사 도달결과)을 사용하며 두 축을 혼합 합산하지 않음. (3) 채널 동반 필터: SEND_STATUS 는 채널별 코드체계가 상이하므로 CHANNEL 조건을 동반할 것. (4) 기간 미지정 시: 데이터 최신 연월 기준 직전 12개월로 한정하며 연·월 평면 GROUP BY 로 반환(합계 행 없음). (5) 교차 불가: 발송 앵커 개발실적/중단 결합 요청은 배분 규칙 부재로 SQL 생성 불가 사유 안내. 단 정본 「발송(+5일차)」 지표(D5_* metric: 서신·선물금·증액·중단)는 정의된 시간창 매칭이므로 그 metric 으로 답한다(인과가 아니라 D+1~D+5 창 매칭이며 발송 당일은 처리 통보 역인과 때문에 제외됨을 밝힌다 · DEC-33). 🆕 [O237-C] 「클릭대비 전환율」(신규 #33)도 정의된 시간창 매칭이다 — CLICK_TO_DEV_RATE_D5·CLICK_TO_DEV_RATE_D30 과 회원수(CLICK_MEMBERS_DISTINCT·CLICK_DEV_D5/D30_MEMBERS_DISTINCT)를 **함께** 내고 「클릭일 기준 D+1~5 · D+1~30 · 잠정」을 밝힌다.
   🆕 [O241] 「선물금참여(원)」(공91)은 추천안 A/B 병기 대상이다 — 이 SV 는 B(발송 매칭 선물금 = D5_GIFT_AMT)만 낸다. A(결연활동 전체 선물금)는 SV_RELATION_ACTIVITY 소관이므로 이 SV 에서 다른 팩트와 결합하지 않는다.
+  🆕 [O265 발송구분·알림톡] (가) 발송구분(대)(중)(소) = req.SEND_GBN_TOP_NM·SEND_GBN_MID_NM·SEND_GBN_BOT_NM 은 문자·알림톡·이메일 모두 값이 있다 — 「문자에만 있다」고 답하지 않는다 · 채널 조건 없이 세 채널을 함께 거르고 결과에 채널(SEND_TYPE)을 함께 보인다. (나) 「알림톡」은 채널이 아니라 req.SEND_FORMAT_NAME = ''알림톡'' 으로 거른다(문자 시스템 SND 도 알림톡을 보낸다). (다) 「알림톡을 오픈(열람·클릭)한 회원」은 fse.GA_CLICK_MEMBERS = 1 로 거르고 답변에 「원천에 알림톡 오픈 기록이 없어 수신 후 5일 안 카카오 경로 홈페이지 유입(GA)으로 판정」을 밝힌다 · 이 값은 MSG_AT 과 문자 시스템(SND) 알림톡 모두에 있다 · fse.OPEN_MEMBERS(문자 링크 클릭)와 합치지 않는다. (라) 오픈 회원 수가 30명 미만이면 특성·전략을 일반화하지 말고 표본 수를 먼저 밝힌 뒤 수신 전체·미오픈 집단과 비교해 보인다. (마) 「오픈·열람·클릭」 조건이 붙은 서비스(행운의 카드 등) 질문은 이 SV 소관이다 — 서비스 수신 코호트 SV 에는 오픈 축이 없다.
+  🆕 [O265-B-3 알림톡 열람 2축 · 현업 결정 2026-10-28] (바) 「○○ 알림톡을 열람(오픈)한 회원」 질문은 **두 결과를 나란히** 낸다 — A = 그 알림톡 열람(fse.GA_CLICK_MEMBERS = 1 · 지표 AT_GA_CLICK_MEMBERS_DISTINCT) · B = 그 알림톡 수신자 중 수신일~D+5 에 어떤 알림톡이라도 열람(fse.ANY_AT_GA_OPEN_MEMBERS = 1 · 지표 AT_ANY_GA_OPEN_MEMBERS_DISTINCT). 두 축 모두 대상 알림톡 수신 행(req.SEND_FORMAT_NAME = ''알림톡'' + 제목·발송구분 조건)에서 거른다. (사) 「열람 후 D+5 안 중단」 같은 후속 사건은 같은 행의 D5_STOP_MEMBERS = 1 로 A·B 각각 따로 세고, 표·속성 분석도 A·B 를 분리해 보인다(합치지 않는다 · A ⊆ B). 답변에 「열람 = GA 링크 클릭(카카오 경로) · B 기간 = 수신일~D+5」를 밝힌다.
+  🆕 [O265-C A 판정 우선순위 · 사용자 결정 2026-10-28] (아) 「그 알림톡을 열람」(A)의 근거는 ① 질문에 템플릿 ID·링크(경로·utm 캠페인)가 있으면 그 조건 > ② 고정 매핑표 > ③ 추정표 순이다. ① 이면 atclk 표에서 atclk.CLICK_TEMPLATE_ID·CLICK_LANDING_PATH(ILIKE)·CLICK_UTM_CAMPAIGN 으로 거르고 지표 AT_LINK_CLICK_MEMBERS_DISTINCT 로 센다 — fse.GA_CLICK_MEMBERS 를 쓰지 않는다. 🆕 [O268] ①-a 템플릿 ID 만 있으면 atclk.CLICK_MAP_MATCHED = 1 을 반드시 함께 건다(= 그 템플릿의 링크 클릭 · 이 조건이 없으면 「그 템플릿을 받은 회원의 모든 클릭」이 되어 B 와 섞인다) · ①-b 링크(경로·utm)만 있으면 그 링크 조건으로만 거르고 「같은 링크를 쓴 다른 템플릿 수신자의 클릭도 포함」이라고 밝힌다 · ①-c 둘 다 있으면 두 조건을 함께 건다. ①이 없으면 fse.GA_CLICK_MEMBERS(②③ 적용 결과)를 쓰고 판정 근거 fse.GA_CLICK_MAP_SRC 별 회원수를 함께 보인다 · ''INFER'' 는 「추정 매핑」, ''NONE'' 은 「링크 매핑이 없어 판정 불가」라고 밝힌다(0 으로 세지 않는다). (자) ① 결과와 중단 같은 후속 사건을 함께 물으면 atclk 결과 회원·발송요청(SEND_REQUEST_SK)으로 fse 행을 좁혀 D5_STOP_MEMBERS 를 센다.
   (6) 판정 라벨 [배분규칙필요]: 발송 grain 으로 회비·회원월 measure(개발/중단 건·명, 납입방식)를 요구받으면 도구를 억지로 고르지 않고 「배분(귀속) 규칙이 필요한 업무 판단 사안」이라고 답한다 — SQL 을 만들지 않으며 「데이터가 없다」로도 답하지 않는다(데이터는 있고 귀속 규칙이 없다). (7) 판정 라벨 [앵커_경합]: 개발실적보고 3-x 섹션은 이 뷰와 다른 팩트가 경합하므로 하나를 골라 섹션 전체를 답하지 않는다 — 각 팩트를 따로 호출해 표를 분리하고 표마다 grain 을 밝힌다. (기준시점 규칙) 「최근 N개월」·기간 미지정 질의의 기준 시점은 **비상관 CTE 1개**에서 그 CTE 의 FROM 에 쓴 이름으로만 MAX 를 구하고 본 쿼리에 CROSS JOIN 한다. 스칼라 서브쿼리·상관 서브쿼리·ORDER BY … LIMIT/OFFSET 서브쿼리로 기준 시점을 구하지 않는다. CTE 안에서 그 CTE 의 FROM 에 없는 별칭을 쓰지 않는다. 날짜 조건은 DIMENSIONS 에 선언된 날짜 차원(date.FULL_DATE · 월키 MONTH_KEY)으로만 걸고 팩트에 없는 날짜 컬럼을 팩트 별칭에 붙이지 않는다. metric 이름을 컬럼처럼 참조하지 말고 metric 정의식(SUM(원천컬럼))으로 집계한다. ORDER BY 에는 SELECT 에서 정의한 별칭을 글자 그대로 쓴다. (🆕 O206 서비스명 매핑) 「○○서비스」처럼 서비스(카테고리) 이름으로 물으면, 이 SV 에는 원천 서비스 카테고리 축이 없으므로 fse.SEND_TITLE 부분일치로 매핑하고 답변에 「상위 카테고리 정의에 없어 발송 제목으로 매핑했다(매핑한 제목 패턴: …)」를 반드시 밝힌다. 선넘는좋은일 즉시·개별화 신규(사단)·행운의 카드·장기회원 서비스 4종의 수신 회원 분석은 서비스코드 기준 판정이 있는 서비스 수신 코호트 SV 소관이다. (🆕 O225-C 캠페인 축) 발송 캠페인별 질문은 campaign 차원으로 묶는다 — 캠페인코드는 문자(SND) 발송에만 있으므로 결과에 「(미매핑)」(이메일·알림톡·우편 + 코드 미기재 SND)을 그룹 행으로 함께 표시하고 「문자(SND) 발송 기준」이라고 밝힌다.'
   AI_VERIFIED_QUERIES (
     vqr_monthly_send_members AS (
@@ -229,6 +265,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE
 -- GRANT — SV 재배포(CREATE OR ALTER) 뒤에도 함께 실행
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_SERVICE TO ROLE GN_DW_SERVICE;
 
 USE WAREHOUSE GN_DW_ANALYTICS_WH;

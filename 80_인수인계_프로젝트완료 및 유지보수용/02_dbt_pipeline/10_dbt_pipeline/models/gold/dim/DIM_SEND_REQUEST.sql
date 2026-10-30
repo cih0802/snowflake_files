@@ -36,7 +36,16 @@ select
     c_ps.DTL_CD_NM                                  as PSTMTR_PRCS_STAT_NAME,
     q.CORP_TYPE,                                    -- CM019 · SND 전용
     c_cp.DTL_CD_NM                                  as CORP_TYPE_NAME,
-    q.SEND_SPLIT_TYPE                               -- SND 전용 원천값 once / divide
+    q.SEND_SPLIT_TYPE,                              -- SND 전용 원천값 once / divide
+    --  [2026-10-28 O265] 실제 메시지 형식 — 채널과 다르다(SND 시스템도 알림톡을 보낸다 BRONZE 실측).
+    --   MSG_AT = MS010 라벨(4 = 알림톡 1,201,853 · 1~3 = SMS/LMS/MMS) · SND MSG_TYPE '1' = 템플릿 AT 코드 1,560/1,560 ⇒ 알림톡.
+    --   WARN: SND MSG_TYPE 2·3 의 SMS/LMS 구분 근거는 원천에 없다 ⇒ '문자' 로만 묶는다(창작 금지).
+    CASE q.SEND_CHANNEL
+        WHEN 'MSG_AT' THEN c_md.DTL_CD_NM
+        WHEN 'SND'    THEN CASE q.MSG_TYPE WHEN '1' THEN '알림톡' WHEN '2' THEN '문자' WHEN '3' THEN '문자' END
+        WHEN 'EMAIL'  THEN '이메일'
+        WHEN 'PSTMTR' THEN '우편'
+    END                                             as SEND_FORMAT_NAME
 from {{ ref('CRM_SEND_REQUEST') }} q
 left join {{ ref('CRM_SEND_RESULT') }} r
     on r.SNDNG_KEY = q.SNDNG_KEY and r.SEND_CHANNEL = q.SEND_CHANNEL
@@ -47,11 +56,12 @@ left join {{ ref('CRM_CODE') }} c_cp on c_cp.CD_ID = 'CM019' and c_cp.DTL_CD_ID 
 
 union all
 --  [O249 · DR-31 · A8-29] unknown 멤버(SK=0): FACT_MESSAGE_DISPATCH.SEND_REQUEST_SK=0(요청 미매핑 3,001행 실측)
---   의 FK 고아 해소 · DIM_SERVICE 와 같은 센티넬 규약. 열 순서 = 라이브 49열(2 + 34 NULL + 감사 4 + 9 NULL).
+--   의 FK 고아 해소 · DIM_SERVICE 와 같은 센티넬 규약. 열 순서 = 라이브 49열(2 + 34 NULL + 감사 4 + 9 NULL) + O265 SEND_FORMAT_NAME 1 = 50열.
 --   WARN: SNDNG_KEY 는 NUMBER 다 ⇒ 센티넬 키 = 0(원천에 0 없음 · 2026-10-20 실측 · 문자 '(미매핑)' 은 100038 로 실패했다).
 select 0, 0,
     '(미매핑)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     {{ gold_meta('CRM') }},
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL

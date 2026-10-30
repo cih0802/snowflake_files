@@ -42,7 +42,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
     date.CAL_MONTH AS date.MONTH WITH SYNONYMS ('월') COMMENT = '월(1~12)',
     gs.PLATFORM AS gs.PLATFORM WITH SYNONYMS ('플랫폼', '웹/앱') COMMENT = '플랫폼(GA4 원값 · 2026-10-08 실측 전건 WEB — 앱 데이터는 이 원천에 없다). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''WEB''',
     gs.DEVICE_CATEGORY AS gs.DEVICE_CATEGORY WITH SYNONYMS ('기기', '기기 유형', 'PC/모바일') COMMENT = '기기 카테고리 desktop·mobile·tablet (GA4 원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''desktop''·''mobile''·''smart tv''·''tablet''',
-    gs.DEVICE_OPERATING_SYSTEM AS gs.DEVICE_OPERATING_SYSTEM WITH SYNONYMS ('운영체제', 'OS') COMMENT = '운영체제(Windows·iOS·Android·Macintosh 등 GA4 원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''Android''·''BlackBerry''·''Chrome OS''·''Linux''·''Macintosh''·''Tizen''·''Windows''·''Windows Phone''·''iOS''',
+    gs.DEVICE_OPERATING_SYSTEM AS gs.DEVICE_OPERATING_SYSTEM WITH SYNONYMS ('운영체제', 'OS') COMMENT = '운영체제(Windows·iOS·Android·Macintosh 등 GA4 원값). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''Android''·''BlackBerry''·''Chrome OS''·''Linux''·''Macintosh''·''Tizen''·''Windows''·''Windows Phone''·''iOS''·''PalmOS''·''UNIX''·''FreeBSD''·''Playstation 4''',
     gs.DEVICE_WEB_INFO_BROWSER AS gs.DEVICE_WEB_INFO_BROWSER WITH SYNONYMS ('브라우저') COMMENT = '브라우저(Chrome·Safari·Samsung Internet 등 GA4 원값).',
     gs.DEVICE_LANGUAGE AS gs.DEVICE_LANGUAGE WITH SYNONYMS ('기기 언어', '언어') COMMENT = '기기 언어 설정(ko-kr·ko·ko-cn 등 GA4 원값 · ko-kr 과 ko 는 원천에서 별도 값).',
     gs.DEVICE_MOBILE_BRAND_NAME AS gs.DEVICE_MOBILE_BRAND_NAME WITH SYNONYMS ('휴대폰 제조사', '기기 브랜드') COMMENT = '기기 제조사(Apple·Samsung 등 GA4 원값).',
@@ -116,6 +116,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_SESSION TO ROLE GN_DW_SERVICE;
 
 USE WAREHOUSE GN_DW_ANALYTICS_WH;

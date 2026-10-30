@@ -907,7 +907,11 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MESSAGE_DISPATCH (
     SND_FRST_SPNSR      VARCHAR         COMMENT 'SND 발송 시점 최초 후원사업명 [SND 전용 · 타 채널 NULL] (O262-B)',
     SND_CHILD_DTL_NM    VARCHAR         COMMENT 'SND 발송 시점 결연 상세상태명 [SND 전용] (O262-B)',
     SND_NATION_NM       VARCHAR         COMMENT 'SND 발송 시점 결연아동 국가명 [SND 전용] (O262-B)',
-    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명 [SND 전용] (O262-B)'
+    SND_BPLC_KOR_NM     VARCHAR         COMMENT 'SND 발송 시점 결연아동 사업장명 [SND 전용] (O262-B)',
+    GA_CLICK_MEMBERS    NUMBER(1,0)     COMMENT '그 알림톡 링크 클릭(GA 유입) 1/0 [알림톡 전용 = MSG_AT MS010 4 + SND MSG_TYPE 1 · 그 밖 NULL] (O265 → O265-C 재정의). 수신~D+5 카카오 경로 클릭 중 그 템플릿의 매핑 패턴(FACT_AT_GA_LINK_MAP · 근거 = GA_CLICK_MAP_SRC)에 맞는 클릭이 있으면 1 · 매핑 없는 템플릿·GA 범위 밖 NULL · (발송, 회원) 1행에만 싣는다.',
+    GA_CLICK_TS         TIMESTAMP_NTZ   COMMENT '그 템플릿 링크의 최초 GA 클릭 시각 [알림톡 전용] (O265-C)',
+    ANY_AT_GA_OPEN_MEMBERS NUMBER(1,0)  COMMENT '수신일~D+5 어떤 알림톡이라도 열람(GA 유입) 1/0 [알림톡 전용 · 그 밖 NULL] (O265-B-3). 귀속 없이 창 안 클릭 존재만 본다 ⇒ GA_CLICK_MEMBERS(그 알림톡 열람) ⊆ 이 값. (발송, 회원) 1행에만 싣는다.',
+    GA_CLICK_MAP_SRC    VARCHAR         COMMENT 'A(GA_CLICK_MEMBERS) 판정 근거 = 템플릿 매핑 출처 MANUAL·WEB_TEAM·DIRECT·INFER · 매핑 없음 NONE(A=NULL) · 비알림톡 NULL (O265-C)'
 ) COMMENT = '메시지 발송 및 결과 팩트. [Grain: DATE_SK × MEMBER_DK × SERVICE_SK × CAMPAIGN_SK (1행=1발송)]. [주의: 이메일/문자/알림톡/우편 발송 성공·실패 이력]. [원천: CRM → SILVER.CRM_SEND_MEMBER/REQUEST].';
 
 -- FACT_BIGQUERY_BEHAVIOR — BigQuery 웹/앱 사용자 행동 팩트
@@ -993,7 +997,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AD_PERFORMANCE (
     UPPER_CAMPAIGN_NM   VARCHAR         COMMENT '상위 캠페인명 [VIDEO 전용] — 원천 상위캠페인 값 중 이름형(2026-05 이전 행). 코드형은 UPPER_CAMPAIGN_CD · 그 밖 원천 = NULL.',
     CMPGN_TYPE1_BSN_NM  VARCHAR         COMMENT '캠페인유형1(사업) 국내·해외·통합·전체 원값 [DGT 전용 · 그 밖 NULL] (O262-B)',
     CMPGN_TYPE2_BSN_NM  VARCHAR         COMMENT '캠페인유형2(사업) 사례·사업·굿즈·기타·통합 원값 [DGT 전용] (O262-B)',
-    CMPGN_TY_NM         VARCHAR         COMMENT '캠페인유형(국내외×사업사례 결합 원값 · 예 해외 사례) [VIDEO 전용 · CTV 시트 외 NULL] (O262-B)'
+    CMPGN_TY_NM         VARCHAR         COMMENT '캠페인유형(국내외×사업사례 결합 원값 · 예 해외 사례) [VIDEO 전용 · CTV 시트 외 NULL] (O262-B)',
+    LAST_STMT_AMT       NUMBER(38,2)    COMMENT '최종정산금액(원) = 광고비 + 마크업 + 부가세(원천 DGT_AD_CMPGN_DTLS.LAST_STMT_AMT) [DGT 전용 · VIDEO 는 정산 개념 컬럼 없음 · REBRDC TOT_COST 는 총비용이라 대체물 아님 ⇒ NULL] (O266)'
 ) COMMENT = '광고 성과 코어 팩트. [Grain: AD_PERF_DK (1행=1광고집행)]. [주의: 디지털/방송 3원천 공통 지표(비용/노출/클릭)]. [원천: AGENCY 3소스 → SILVER.AGENCY_AD_PERFORMANCE].';
 
 -- FACT_AD_BROADCAST — 방송광고 성과 위성 팩트
@@ -1404,6 +1409,34 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_EXPENSE_RESOLUTION (
     BDGT_ITEM_NM        VARCHAR         COMMENT '예산항목명(원천 BDGT_ITEM_NM · 목·세목·세세목과 다른 축) (O262-B)'
 ) COMMENT = '지출결의 팩트. [Grain: RESOLUTION_NO × ROW_SEQ (원천 1행)]. [주의: FACT_BUDGET·FACT_BUDGET_YEARLY 와 합산 금지 · 부서별 지출의 유일 원천]. [원천: ERP → SILVER.ERP_EXPENSE_RESOLUTION].';
 
+--  [2026-10-28 O266] FACT_MKTG_CAMPAIGN_MONTHLY_COST — 마케팅캠페인 × 월 광고비·정산액·제작비·MSTR 개발(건) 결합(현업 피드백 2)
+--   기존 환경 = 05_SV-Agent_ai/46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql [D1](CREATE TABLE IF NOT EXISTS 판본)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST (
+    MKTG_CAMPAIGN_SK    NUMBER(38,0)    NOT NULL COMMENT '마케팅캠페인 대리키(FK→DIM_MARKETING_CAMPAIGN). 0 = (미매핑) — 광고·개발이 마케팅캠페인에 닿지 않은 버킷(제작비는 0 버킷에 넣지 않는다).',
+    MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '연월 YYYYMM(광고 = 실적일 · 제작비 = 결의 작성일 · 개발 = MSTR 기준년월).',
+    AD_COST             NUMBER(38,2)    COMMENT '광고비(원) = FACT_AD_PERFORMANCE.AD_COST 합(디지털+영상+재방송). 그 달 광고 행이 없으면 NULL.',
+    AD_COST_DIGITAL     NUMBER(38,2)    COMMENT '디지털 광고비(원) — 대행사 리포트 광고비(마크업·부가세 제외).',
+    AD_COST_VIDEO       NUMBER(38,2)    COMMENT '영상 광고비(원) — 최종광고비(정산 개념 컬럼 없음).',
+    AD_COST_REBROADCAST NUMBER(38,2)    COMMENT '재방송 광고비(원) — 편성비(총비용 TOT_COST 아님).',
+    LAST_STMT_AMT       NUMBER(38,2)    COMMENT '디지털 최종정산금액(원) = 광고비 + 마크업 + 부가세. 디지털 전용 — 영상·재방송 정산액은 원천에 없다.',
+    PROD_COST           NUMBER(38,2)    COMMENT '제작비(원) = 지출결의 금액 중 콘텐츠구분자(CONTENTS_DELIMITER = 세부캠페인코드) 기재분 전체 — 현업 확정 규칙(데분_2 · 2026-10-29). 미기재(NULL·「-」) 지출은 캠페인을 알 수 없어 빠진다.',
+    PROD_RESOLUTION_CNT NUMBER(38,0)    COMMENT '제작비 결의 건수(그 달 · COUNT DISTINCT · 월 간 합산 금지).',
+    --  [2026-10-29 O270 · 현업 데분_1·데분_6] 원천별 「최종 광고비」 통합(디지털 최종정산금액 = 영상 최종광고비 = 방송 총비용 · 같은 개념)
+    AD_COST_REBROADCAST_TOT NUMBER(38,2) COMMENT '방송(재송출·방송) 총비용(원) = 원천 REBRDC TOT_COST 합(편성비+콘텐츠구입비+콜센터운영비). 원천이 NULL 이면 NULL 로 둔다(0 으로 채우지 않는다).',
+    FINAL_AD_COST       NUMBER(38,2)    COMMENT '최종 광고비(원) = 디지털 LAST_STMT_AMT(최종정산금액) + 영상 LAST_AD_COST(최종광고비) + 방송 TOT_COST(총비용) — 현업 확정(데분_6). 원천 값이 NULL 인 행은 더해지지 않는다 ⇒ FINAL_AD_COST_NULL_ROWS 를 함께 본다.',
+    FINAL_AD_COST_NULL_ROWS NUMBER(38,0) COMMENT '최종 광고비 원천 값이 NULL 인 광고 행 수(그 달). 0 보다 크면 FINAL_AD_COST 는 하한값이다(예: 방송 총비용 미입력 월).',
+    DEV_CNT_MSTR        NUMBER(18,4)    COMMENT '개발(건) MSTR 기준 = 후원금액 ÷ 10,000 · 개발구분 신규·증액·재후원(1·2·4). GN_DW 개발건수(사건 건수)와 다르다.',
+    NEW_DEV_CNT_MSTR    NUMBER(18,4)    COMMENT '신규 개발(건) MSTR 기준(개발구분 1).',
+    DEV_MEMBERS_MSTR    NUMBER(38,0)    COMMENT '개발 회원수(그 달 · COUNT DISTINCT · 월 간·캠페인 간 합산 금지).',
+    DEV_CNT_CRM         NUMBER(18,4)    COMMENT '🆕 [O270] CRM 개발(건) = FACT_MEMBER_EVENT.DEV_CNT 합(금액 ÷ 10,000 · 상계 규칙 적용 · 신규·증액·재후원) · 결합 = 사건 시점 마케팅캠페인 코드. 소수가 있다.',
+    NEW_DEV_CNT_CRM     NUMBER(18,4)    COMMENT '🆕 [O270] CRM 신규 개발(건)(개발구분 1).',
+    DW_SOURCE_SYSTEM    VARCHAR(20)     COMMENT '원천 시스템(MULTI = AGENCY·ERP·MSTR 결합).',
+    DW_LOAD_TS          TIMESTAMP_NTZ   COMMENT '적재 시각',
+    DW_UPDATE_TS        TIMESTAMP_NTZ   COMMENT '갱신 시각',
+    DW_BATCH_ID         VARCHAR         COMMENT 'dbt invocation_id',
+    PRIMARY KEY (MKTG_CAMPAIGN_SK, MONTH_KEY)
+) COMMENT = '마케팅캠페인 × 월 비용·개발 결합 팩트. [Grain: MKTG_CAMPAIGN_SK × MONTH_KEY]. [주의: 개발단가 = 광고비 ÷ MSTR 개발(건) — SV_AD 공7(대행사 CRM 개발건)과 분모가 다르다 · 제작비는 캠페인코드 기재분만]. [원천: FACT_AD_PERFORMANCE · FACT_EXPENSE_RESOLUTION · MSTR.F_MM_SPNSR_DVLP_SUM]. (O266)';
+
 -- FACT_MEMBER_DEV_ACHIEVEMENT — 회원개발 목표 대비 실적 월 Conform 팩트
 CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_DEV_ACHIEVEMENT (
     MONTH_KEY         NUMBER(6,0)     NOT NULL COMMENT '월 conform 키 YYYYMM.',
@@ -1561,7 +1594,8 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.DIM_SEND_REQUEST (
     PSTMTR_PRCS_STAT_NAME   VARCHAR         COMMENT '우편물 처리상태(MS061 · 발송대기·발송완료). 타 채널 NULL.',
     CORP_TYPE               VARCHAR(10)     COMMENT '요청 법인구분 코드(CM019 · 문자 SND 요청 전용 · 대다수 NULL). 코드id:CM019.',
     CORP_TYPE_NAME          VARCHAR         COMMENT '요청 법인구분(CM019 · 사단·사복).',
-    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).'
+    SEND_SPLIT_TYPE         VARCHAR(20)     COMMENT '문자 발송 분할 방식 원천값(once = 일괄 · divide = 분할 · SND 요청 전용).',
+    SEND_FORMAT_NAME        VARCHAR         COMMENT '실제 메시지 형식(알림톡·SMS·LMS·MMS·문자·이메일·우편) (O265). MSG_AT = MS010 라벨 · SND = MSG_TYPE 1 → 알림톡(템플릿 AT 코드 1,560/1,560) · 2·3 → 문자 · 🔴 채널(SEND_CHANNEL)과 다르다 — SND 시스템도 알림톡을 보낸다.'
 ) COMMENT = '발송 요청 차원. [Grain: SNDNG_KEY (1행=1발송요청)]. [주의: 발송×회원 팩트 FACT_MESSAGE_DISPATCH 와 SEND_REQUEST_SK 로 조인 · 요청 속성을 팩트에 degen 하지 않는다]. [원천: SILVER.CRM_SEND_REQUEST + CRM_SEND_RESULT(1:1)]. [적재: dbt]';
 
 -- FACT_RELATION_ACTIVITY — 결연활동 팩트 · O196-D DEC-58 #2 신설
@@ -1822,6 +1856,68 @@ CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_MEMBER_EVENT_COHORT (
     DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
 ) CLUSTER BY (EVENT_MONTH_KEY, DVLP_DIV_CD)
   COMMENT = '개발사건 코호트 × 경과월 팩트(회원 단위 후속 행동). [Grain: EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × MONTHS_AFTER(0~12)]. 사건 시점 속성 + 관측월 활동·납입·미납·중단(FMM) + 후속 증액·재후원·감액·중단(FME) + 사건 전후 발송(FACT_MESSAGE_DISPATCH). 🔴 개발구분·경과월을 각각 하나로 고정해 센다 · 발송 플래그는 코호트 속성이라 MONTHS_AFTER = 0 에서 센다. [원천: GOLD.FACT_MEMBER_EVENT · FACT_MEMBER_MONTHLY · FACT_MESSAGE_DISPATCH · DIM_SEND_REQUEST · DIM_MSG_TEMPLATE]. [적재: dbt]';
+
+-- FACT_COHORT_DISPATCH — 개발사건 코호트 × 사건 전후 발송 브리지 ( O265 · 회원참여팀 문의)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_COHORT_DISPATCH (
+    EVENT_MONTH_KEY           NUMBER(6,0)     NOT NULL COMMENT '사건월 YYYYMM ※비강제 FK→FACT_MEMBER_EVENT_COHORT(4열 복합키)',
+    MEMBER_DK                 VARCHAR         NOT NULL COMMENT '회원 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
+    DVLP_DIV_CD               VARCHAR         NOT NULL COMMENT '개발구분 코드(MM015) — 코호트 키',
+    MONTHS_AFTER              NUMBER(2,0)     NOT NULL COMMENT '항상 0 — 코호트 복합키 참조용(발송은 사건월 속성)',
+    SEND_DATE                 DATE            NOT NULL COMMENT '발송일',
+    DAYS_FROM_EVENT           NUMBER(3,0)     NOT NULL COMMENT '첫 사건일 대비 발송일(-30~+5)',
+    SEND_WINDOW               VARCHAR         NOT NULL COMMENT '구간 라벨 D-30~D-1 · D0 · D+1~D+5. 🔴 D0 은 대부분 처리 통보(DEC-33)',
+    SEND_REQUEST_SK           NUMBER(38,0)    NOT NULL COMMENT '발송요청 ※비강제 FK→DIM_SEND_REQUEST',
+    SEND_TYPE_SK              NUMBER(38,0)    COMMENT '발송구분(대/중/소) ※비강제 FK→DIM_SEND_TYPE · 0 = 구분 없음(우편·미매핑)',
+    SEND_CHANNEL              VARCHAR         COMMENT '발송 채널(MSG_AT·SND·EMAIL)',
+    SEND_FORMAT_NAME          VARCHAR         COMMENT '실제 메시지 형식(알림톡·SMS·LMS·MMS·문자·이메일) — 채널과 다르다',
+    ATMC_YN                   VARCHAR(1)      COMMENT '알림톡 템플릿 자동발송 여부(Y = 자동 트리거 · N = 수동·캠페인) · 템플릿 미연결 NULL',
+    SEND_TITLE                VARCHAR         COMMENT '발송 제목',
+    SEND_ROWS                 NUMBER(18,0)    COMMENT '같은 (회원, 요청, 발송일)의 원 발송 행 수',
+    SND_OPENED                NUMBER(1,0)     COMMENT '문자 링크 클릭 1/0(SND 오픈 원천) · 판정 불가 NULL',
+    GA_CLICKED                NUMBER(1,0)     COMMENT '알림톡 GA 유입 1/0(O265) · 비알림톡·GA 범위 밖 NULL · SND_OPENED 와 합치지 않는다',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)',
+    ANY_AT_GA_OPENED          NUMBER(1,0)     COMMENT '수신일~D+5 어떤 알림톡이라도 열람 1/0(O265-B-3) · GA_CLICKED ⊆ 이 값 · 비알림톡·GA 범위 밖 NULL · ALTER ADD 로 붙어 감사 4컬럼 뒤'
+) CLUSTER BY (EVENT_MONTH_KEY, DVLP_DIV_CD)
+  COMMENT = '개발사건 코호트 × 사건 전후 발송 브리지. [Grain: EVENT_MONTH_KEY × MEMBER_DK × DVLP_DIV_CD × SEND_REQUEST_SK × SEND_DATE]. 창 = 첫 사건일 D-30~D+5. 「신규·증액·재후원 회원이 받은 발송의 발송구분(대/중/소)」 답변용. 🔴 회원수는 COUNT DISTINCT · 인과 아님(시간 창 매칭). [원천: GOLD.FACT_MEMBER_EVENT_COHORT · FACT_MESSAGE_DISPATCH · DIM_SEND_REQUEST · DIM_MSG_TEMPLATE]. [적재: dbt]';
+
+-- FACT_AT_GA_LINK_MAP — 알림톡 템플릿 → GA 랜딩 패턴 매핑 (O265-C · A 판정 우선순위 ②③)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AT_GA_LINK_MAP (
+    TEMPLATE_ID               VARCHAR         NOT NULL COMMENT '알림톡 템플릿 ID(AT…)',
+    MATCH_PATTERN             VARCHAR         NOT NULL COMMENT '매칭 패턴 UTM:<utm_campaign> | PATH:<경로> (소문자)',
+    MAP_SRC                   VARCHAR         NOT NULL COMMENT '출처 MANUAL·WEB_TEAM(seed) · DIRECT(원천 직접 URL) · INFER(수신자 클릭 전용성 추정)',
+    MAP_PRIORITY              NUMBER(1,0)     NOT NULL COMMENT '1 = seed · 2 = DIRECT · 3 = INFER — 템플릿마다 가장 작은 값의 행만 남는다',
+    RECV_CLICK_MEMBERS        NUMBER(18,0)    COMMENT 'INFER 근거 = 그 랜딩을 수신 후 클릭한 묶음 수신 회원수(그 밖 NULL)',
+    ALL_CLICK_MEMBERS         NUMBER(18,0)    COMMENT 'INFER 근거 = 그 랜딩을 묶음 첫 수신 이후 클릭한 전체 회원수(그 밖 NULL)',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) COMMENT = '알림톡 템플릿 → GA 최종 랜딩 패턴 매핑(O265-C). [Grain: TEMPLATE_ID × MATCH_PATTERN]. 우선순위 ① 질문 시 템플릿 정보(이 표 밖 · FACT_AT_GA_CLICK 로 직접) > ② seed·DIRECT > ③ INFER. 🔴 템플릿마다 한 출처만 남긴다 · 매핑 없는 템플릿은 A 판정 불가(NULL). [원천: SILVER.MAP_AT_GA_LINK · CRM_MSG_TEMPLATE(_BUTTON) · CRM_SEND_REQUEST/MEMBER · BIGQUERY_EVENT]. [적재: dbt]';
+
+-- FACT_AT_GA_CLICK — 알림톡 수신 후 D+5 카카오 경로 GA 클릭 (O265-C · 클릭 1건 = 1행)
+CREATE OR REPLACE TABLE GN_DW.GOLD.FACT_AT_GA_CLICK (
+    DATE_SK                   NUMBER(8,0)     NOT NULL COMMENT '발송일 YYYYMMDD ※비강제 FK→DIM_DATE',
+    MEMBER_DK                 VARCHAR         NOT NULL COMMENT '회원 ※비강제 FK→DIM_MEMBER.MEMBER_DK',
+    SEND_REQUEST_SK           NUMBER(38,0)    NOT NULL COMMENT '발송요청 ※비강제 FK→DIM_SEND_REQUEST',
+    SEND_CHANNEL              VARCHAR         NOT NULL COMMENT '발송 채널(MSG_AT · SND 알림톡)',
+    TEMPLATE_ID               VARCHAR         COMMENT '알림톡 템플릿 ID(AT…) — 질문에 템플릿이 주어지면(①) 이 값으로 거른다',
+    SEND_TS                   TIMESTAMP_NTZ   COMMENT '수신(발송) 시각',
+    CLICK_TS                  TIMESTAMP_NTZ   COMMENT 'GA 클릭 시각(수신 ~ +5일)',
+    DAYS_FROM_SEND            NUMBER(3,0)     COMMENT '발송일 대비 클릭일(0~5)',
+    LANDING_PATH              VARCHAR         COMMENT '랜딩 경로(호스트 뒤 · 소문자) — ① 경로 패턴 필터 대상',
+    UTM_CAMPAIGN              VARCHAR         COMMENT 'utm_campaign(소문자) — ① 캠페인 패턴 필터 대상',
+    UTM_CONTENT               VARCHAR         COMMENT 'utm_content(소문자)',
+    MAP_SRC                   VARCHAR         COMMENT '그 템플릿의 매핑 출처(FACT_AT_GA_LINK_MAP) · 매핑 없으면 NULL',
+    MAP_MATCHED               NUMBER(1,0)     COMMENT '그 템플릿 매핑 패턴에 맞는 클릭 1/0 · 매핑 없는 템플릿 NULL',
+    DW_SOURCE_SYSTEM          VARCHAR         NOT NULL COMMENT '원천 시스템 식별 (공통감사)',
+    DW_LOAD_TS                TIMESTAMP_NTZ   NOT NULL COMMENT '최초 적재 시각 (공통감사)',
+    DW_UPDATE_TS              TIMESTAMP_NTZ   COMMENT '최종 갱신 시각 (공통감사)',
+    DW_BATCH_ID               VARCHAR         COMMENT '적재 배치 식별자 = dbt invocation_id (공통감사)'
+) CLUSTER BY (DATE_SK)
+  COMMENT = '알림톡 수신 후 D+5 카카오 경로 GA 클릭 팩트(O265-C). [Grain: 발송요청 × 채널 × 회원 × 클릭 시각 × 랜딩]. (발송, 회원) 집합 = FACT_MESSAGE_DISPATCH B(ANY_AT_GA_OPEN_MEMBERS = 1). 🔴 회원수는 COUNT DISTINCT · URL 원문·회원번호 파라미터는 싣지 않는다. [원천: SILVER.CRM_SEND_MEMBER/REQUEST · BIGQUERY_EVENT · GOLD.FACT_AT_GA_LINK_MAP]. [적재: dbt]';
 
 -- ============================================================================
 -- 제약 — PK 보강 · 정보성 FK (NOT ENFORCED · CREATE 전량 뒤에 실행)

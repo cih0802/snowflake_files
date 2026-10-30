@@ -1382,6 +1382,8 @@ models:
         description: "캠페인유형2(사업) 사례·사업·굿즈·기타·통합 원값 ← DGT.CMPGN_TYPE2_BSN_NM [DGT 전용]."
       - name: CMPGN_TY_NM
         description: "캠페인유형(국내외×사업사례 결합 원값 · 예 「해외 사례」) ← VIDEO.CMPGN_TY_NM [VIDEO 전용 · CTV 시트 외 NULL]."
+      - name: LAST_STMT_AMT
+        description: "최종정산금액(원) = 광고비 + 마크업 + 부가세 ← FACT_AD_PERFORMANCE.LAST_STMT_AMT [DGT 전용 · 그 밖 NULL] (O266)."
   - name: WIDE_MEMBER_SERVICE_COHORT
     description: "서비스 수신 코호트 — 회원(획득 코호트) × 서비스그룹 × 수신연도. 발송(FACT_MESSAGE_DISPATCH)·획득(DIM_MEMBER_ACQUISITION)·중단(FACT_MEMBER_EVENT)·행사참여(FACT_EVENT_ATTENDANCE)를 회원 단위로 미리 결합해 SV 간 교차결합 없이 「수신/미수신 비교」·「발송 후 5일 내 중단자 특성」·「수신회원 유지기간·참여횟수」를 답한다. 🔴수신 행 = 그 해 그 그룹 발송을 1회 이상 받은 회원(연도별 1행) · 미수신 행 = 획득 코호트 회원 중 그 그룹을 받은 적 없는 회원(RECEIVE_YEAR NULL 1행). 🟢서비스그룹은 원천 서비스코드(발송코드 MS049 상위 카테고리) 우선 · 카테고리가 없는 발송은 발송 제목 부분일치(MATCH_BASIS 로 근거 구분). 🔴수신·미수신 차이는 인과(효과)가 아니다."
     columns:

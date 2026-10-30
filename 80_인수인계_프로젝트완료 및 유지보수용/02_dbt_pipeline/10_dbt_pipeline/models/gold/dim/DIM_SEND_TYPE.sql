@@ -56,7 +56,9 @@ with src as (
 
 select
     {{ gold_sk(['SEND_GBN_TOP','SEND_GBN_MID','SEND_GBN_BOT']) }} as SEND_TYPE_SK,
-    SEND_GBN_TOP || '>' || SEND_GBN_MID || '>' || SEND_GBN_BOT    as SEND_TYPE_BK,
+    -- WARN: [O265 후속] 알림톡·이메일 분기는 소 코드가 빈 행이 있다(MS047>NULL>NULL 155건 실측) →
+    --    단순 결합은 NULL(NOT NULL 위반) ⇒ gold_sk 와 같은 '∅' 규약으로 안정화. SK 값은 불변.
+    SEND_GBN_TOP || '>' || COALESCE(SEND_GBN_MID, '∅') || '>' || COALESCE(SEND_GBN_BOT, '∅') as SEND_TYPE_BK,
     SEND_GBN_TOP        as SEND_GBN_TOP,
     SEND_GBN_TOP_NM     as SEND_TYPE_L,
     SEND_GBN_MID        as SEND_GBN_MID,

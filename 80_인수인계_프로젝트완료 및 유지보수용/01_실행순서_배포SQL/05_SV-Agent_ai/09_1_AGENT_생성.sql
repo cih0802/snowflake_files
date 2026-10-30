@@ -152,7 +152,7 @@ CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_MEMBER
 --   WARN: [2026-08-18 O85] 「운영 중(VERSION$3)」은 이전 계정 시점 사실이다(`P169`).
 -- WARN: [2026-08-18 O84] 정본 yaml 이 **8종**(예산·광고·회원월실적·발송 + ML 예측 4)이다.
 CREATE AGENT IF NOT EXISTS GN_DW.SERVING.AGENT_EXECUTIVE
-  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).'
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).'
   PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}'
   FROM SPECIFICATION
   $$
@@ -338,7 +338,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER SET
   COMMENT = '굿네이버스 회원 분석 Agent. 조회 데이터 = 회원(월실적·상태전이·후원약정·획득코호트·회원 속성) · 회비(청구·납입·미납·청구 처리) · 캠페인(캠페인·마케팅캠페인별 회원) · 서비스 발송·행사 참여·결연활동 · 개발 목표·실적 · 부서 자체 수식 집계(회원실·기획실) · 머신러닝 예측(중단·증액·충성·회비·일시회원 정기전환).',
   PROFILE = '{"display_name":"회원 분석","color":"#29B5E8"}';
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET
-  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).',
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).',
   PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}';
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING SET
   COMMENT = '굿네이버스 마케팅 분석 Agent. 조회 데이터 = 마케팅·광고(매체·광고비·개발효율) · 캠페인(캠페인·마케팅캠페인별 개발·회비·활동회원) · 예산(편성·집행) · 개발 목표·실적 · 회원(전환·획득코호트) · 홈페이지 방문(GA4)·검색어 · 지출결의 · 머신러닝 예측(개발금액·증액·중단·회비·LTV·일시회원 정기전환).',

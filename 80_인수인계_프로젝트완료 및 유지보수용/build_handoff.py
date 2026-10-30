@@ -184,7 +184,8 @@ EXCLUDE_UNDER = {
 RUN_ORDER_DOC = "문서실행순서.md"
 RUN_ORDER_SKIP_SECTIONS = ["개발계"]
 # 번호 줄: "12. /경로.sql" · "16. 🆕 [O245] /경로.sql — 설명" 처럼 번호와 경로 사이에 '/' 없는 표기가 와도 잡는다.
-RUN_ORDER_LINE = re.compile(r"^\s*\d+\.\s*[^/\n]*?/(\S.*?\.sql)")
+# 🆕 [O272] 경로 안에 백틱을 허용하지 않는다 — 「57. … `python3 scripts/x.py --apply` → … 08_….sql」 처럼 명령 문자열이 경로로 잡히던 오탐(MISSING 1) 제거
+RUN_ORDER_LINE = re.compile(r"^\s*\d+\.\s*[^/\n]*?/([^\s`][^`\n]*?\.sql)")
 
 
 def run_order_text():

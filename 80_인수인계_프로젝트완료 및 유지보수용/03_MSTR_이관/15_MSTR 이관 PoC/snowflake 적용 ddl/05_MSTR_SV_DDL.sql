@@ -155,6 +155,7 @@ LEFT JOIN GN_DW.SILVER.CRM_CAMPAIGN    cc   ON a11.CMPGN_CD        = cc.CMPGN_CD
 
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_SPNSR_DVLP_V TO ROLE GN_DW_SERVICE;
 
 --  [O207 W2] 목표 grain 뷰 — 팩트의 MT/YY_GOAL_CNT 는 행마다 반복돼 합산하면 틀린다 ⇒ 목표는 이 뷰로만 낸다.
@@ -266,9 +267,11 @@ LEFT JOIN l3 ON l3.DEPT_ID = y.DEPT_ID AND l3.DVLP_DIV_CD = y.DVLP_DIV_CD;
 
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_GOAL_V TO ROLE GN_DW_SERVICE;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_V TO ROLE GN_DW_SERVICE;
 
 --  [O207 W2-b] 후원사업2 별 연도말 개발 추세 참고치 — 기획실 「후원사업별 연도말 개발 예측치」(피드백 CSV 기획실 2)
@@ -325,6 +328,7 @@ LEFT JOIN GN_DW.MSTR.D_DVLP_DIV_CD dv ON y.DVLP_DIV_CD = dv.DVLP_DIV_CD;
 
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V TO ROLE GN_DW_ANALYST;
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V TO ROLE GN_DW_VIEWER;
+GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT SELECT ON VIEW GN_DW.SERVING.MSTR_DVLP_YE_TREND_BSNS_V TO ROLE GN_DW_SERVICE;
 
 CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
@@ -360,7 +364,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
       COMMENT = '법인구분명(MSTR 표기). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''사단''·''사복''',
     md.DEPT4_NM AS md.DEPT4_NM
       WITH SYNONYMS ('구분_팀', '부서4')
-      COMMENT = 'MSTR 실적부서4(리포트 「구분_팀」). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''',
+      COMMENT = 'MSTR 실적부서4(리포트 「구분_팀」). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''·''없음''(원천 원값 · 부서4 미지정)',
     md.DEPT3_NM AS md.DEPT3_NM
       WITH SYNONYMS ('본부/지부', '부서3')
       COMMENT = 'MSTR 실적부서3(리포트 「본부/지부」).',
@@ -474,7 +478,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
       COMMENT = '개발구분. 🔴 실질 목표는 신규만 있다 — 목표 질문은 신규로 고정한다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''감액''·''신규''·''재후원''·''증액''·''후원중단''',
     gl.DEPT4_NM AS gl.DEPT4_NM
       WITH SYNONYMS ('목표 구분_팀')
-      COMMENT = '실적부서4(구분_팀). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''',
+      COMMENT = '실적부서4(구분_팀). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''·''없음''(원천 원값 · 부서4 미지정)',
     gl.DEPT3_NM AS gl.DEPT3_NM
       WITH SYNONYMS ('목표 본부/지부')
       COMMENT = '실적부서3(본부/지부).',
@@ -501,7 +505,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
       COMMENT = '개발구분. 🔴 목표 대비 % 는 신규에만 의미가 있다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''감액''·''신규''·''재후원''·''증액''·''후원중단''',
     ye.DEPT4_NM AS ye.DEPT4_NM
       WITH SYNONYMS ('전망 구분_팀')
-      COMMENT = '실적부서4(구분_팀). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''',
+      COMMENT = '실적부서4(구분_팀). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''본부''·''본부(사복)''·''시도본부''·''시도본부 및 중앙''·''지부''·''지부(사복)''·''지부외''·''협력시설''·''없음''(원천 원값 · 부서4 미지정)',
     ye.DEPT3_NM AS ye.DEPT3_NM
       WITH SYNONYMS ('전망 본부/지부')
       COMMENT = '실적부서3(본부/지부).',
@@ -602,4 +606,5 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_MSTR_SPNSR_DVLP TO ROLE GN_DW_SERVICE;

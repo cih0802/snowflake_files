@@ -84,6 +84,17 @@ sources:
       - name: AD_CREATIVE_CAMPAIGN_MAP
         description: "광고 소재(VIDEO·REBROADCAST) → 캠페인카테고리·마케팅캠페인 매핑. grain = AD_SOURCE_TYPE × CREATIVE_NM. 원천 = 12_agent개선과제/output/O232_광고_매핑_추천안.csv."
 
+  # 🆕 [2026-10-28 O266] MSTR 개발 마트(dbt 밖 · MSTR 프로시저 USP_F_MM_SPNSR_DVLP_SUM 적재 · 읽기 전용).
+  #   소비자 = `models/gold/fact/FACT_MKTG_CAMPAIGN_MONTHLY_COST`(마케팅캠페인 × 월 개발(건) MSTR 기준).
+  #   권한 = 15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql [4-b](GN_DW_DBT SELECT).
+  - name: mstr
+    database: GN_DW
+    schema: MSTR
+    description: "MSTR 이관 마트(O197) — dbt 가 쓰지 않는 읽기 전용 원천."
+    tables:
+      - name: F_MM_SPNSR_DVLP_SUM
+        description: "월 후원 개발 집계(STRD_MT × 후원 행). 개발(건) = SPNSR_AMT_CNT(후원금액 ÷ 10,000 · MSTR 정의)."
+
   # 🆕 [2026-09-29 O188] 공휴일 원천 — CRM 일정관리. SCHDUL_DIV_CD='0' = 공휴일(현업 회신 · 문서20 F-5).
   #   🔴 bronze_crm 에 넣지 않는다 — dev2 타깃의 BRONZE_CRM_2 에 이 테이블이 없어 compile 이 깨진다
   #      (2026-09-29 실측 · INFORMATION_SCHEMA.TABLES 에 BRONZE_CRM 1건뿐) ⇒ 스키마를 고정한다.

@@ -127,6 +127,7 @@ WITH required AS (
     ('AGENT_MARKETING', 'SV_ML_INC_CAMPAIGN'),      -- [O217-B] 10차 · 23_ML_INC_MKTG_CMPGN_DDL.sql
     ('AGENT_MARKETING', 'SV_SPNSR_CLS_AGGR'),       -- [O217] 10차 · 회원실 예측(회원 spec 도구 재사용)
     ('AGENT_MARKETING', 'SV_MBRFEE_PRDT_ACTL'),     -- [O217] 10차 · 〃
+    ('AGENT_MARKETING', 'SV_MKTG_CAMPAIGN_COST'),   -- [O266] 마케팅캠페인 × 월 광고비·정산액·제작비·MSTR 개발(05_31)
     -- WARN: [O213-Y4 정정] 아래 EXECUTIVE 7종(O209 X5 재편)은 O212 「4차 상태 롤백」으로 스펙에서 빠졌다(라이브 VERSION$6 도구 10).
     --   SV 가 라이브에 실재해 이 검사는 통과했지만 **스펙과 무관한 행**이었다 ⇒ 주석 처리(정본 = 스펙 · sv_identifier_gate).
     -- ('AGENT_EXECUTIVE', 'SV_MEMBER_EVENT'), ('AGENT_EXECUTIVE', 'SV_DEV_ACHIEVEMENT'), ('AGENT_EXECUTIVE', 'SV_MEMBER_MONTHLY_KPI'),
@@ -376,7 +377,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 -- ---- [3-B] AGENT_EXECUTIVE ----
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).';
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).';
 
 -- ---- [3-C] AGENT_MARKETING ----
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING

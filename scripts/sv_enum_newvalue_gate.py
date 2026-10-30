@@ -41,7 +41,8 @@ def new_values(comment, live_vals):
         return None
     if sum(v in listed for v in vals) / len(vals) < MIN_COVER:
         return None
-    return sorted(v for v in vals if v not in listed)
+    # 🆕 [O272] 아포스트로피가 든 값(I'm your pen)은 따옴표 목록으로 적을 수 없다 ⇒ COMMENT 본문에 그대로 있으면 목록 안으로 본다
+    return sorted(v for v in vals if v not in listed and not ("'" in v and v in (comment or '')))
 
 
 def scan(cur, shard=(0, 1)):

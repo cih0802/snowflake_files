@@ -18,7 +18,7 @@
 |---|---|---|---|
 | 1 | `sv_no_rollup_gate.py` | 소스(SV DDL 파일) | SV DDL 을 고친 뒤 · 배포 전 |
 | 2 | `sv_common_block_gate.py` | 소스 + 라이브 | SV 지시문(AI_SQL_GENERATION)을 고친 뒤 · 배포 후 |
-| 3 | `run_sql_file.py <파일.sql>` | 라이브 | 배포 SQL 집행(문장 단위 · 첫 실패에서 멈춤) |
+| 3 | `run_sql_file.py <파일.sql> --apply` | 라이브 | 배포 SQL 집행(문장 단위 · 첫 실패에서 멈춤) · 🆕 O270 `--apply` 없으면 dry-run(접속 없음 · 문장 목록만) |
 | 4 | `sv_code_label_gate.py` | 라이브 | SV 배포 후 · 원천 코드값이 바뀐 뒤 |
 | 5 | `sv_enum_newvalue_gate.py [--out 파일.csv]` | 라이브 | 정기 점검(월 1회 권장) · 원천 신규 값 유입 의심 시 |
 

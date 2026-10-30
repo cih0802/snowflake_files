@@ -33,9 +33,9 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC
     date.VISIT_DATE AS date.FULL_DATE WITH SYNONYMS ('방문일', '일자', '날짜') COMMENT = '집계 일자.',
     date.CAL_YEAR AS date.YEAR WITH SYNONYMS ('연도', '년') COMMENT = '연도',
     date.CAL_MONTH AS date.MONTH WITH SYNONYMS ('월') COMMENT = '월(1~12)',
-    demo.DEVICE_CATEGORY AS demo.DEVICE_CATEGORY WITH SYNONYMS ('기기', 'PC/모바일') COMMENT = '기기 desktop·mobile·tablet. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''desktop''·''mobile''·''tablet''',
-    demo.USER_GENDER AS demo.USER_GENDER WITH SYNONYMS ('성별', '방문자 성별') COMMENT = '방문자 성별 female(여성)·male(남성)·unknown(GA4 추정 불가). 🔴 unknown 은 결측이 아니라 추정 불가 버킷 — 별도 행으로 밝힌다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''female''·''male''·''unknown''',
-    demo.USER_AGE_BRACKET AS demo.USER_AGE_BRACKET WITH SYNONYMS ('연령대', '나이대', '방문자 연령') COMMENT = '방문자 연령대 18-24·25-34·35-44·45-54·55-64·65+·unknown(추정 불가). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''18-24''·''25-34''·''35-44''·''45-54''·''55-64''·''65+''·''unknown'''
+    demo.DEVICE_CATEGORY AS demo.DEVICE_CATEGORY WITH SYNONYMS ('기기', 'PC/모바일') COMMENT = '기기 desktop·mobile·tablet. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''desktop''·''mobile''·''tablet''·''(other)''',
+    demo.USER_GENDER AS demo.USER_GENDER WITH SYNONYMS ('성별', '방문자 성별') COMMENT = '방문자 성별 female(여성)·male(남성)·unknown(GA4 추정 불가). 🔴 unknown 은 결측이 아니라 추정 불가 버킷 — 별도 행으로 밝힌다. 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''female''·''male''·''unknown''·''(other)''',
+    demo.USER_AGE_BRACKET AS demo.USER_AGE_BRACKET WITH SYNONYMS ('연령대', '나이대', '방문자 연령') COMMENT = '방문자 연령대 18-24·25-34·35-44·45-54·55-64·65+·unknown(추정 불가). 주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인): ''18-24''·''25-34''·''35-44''·''45-54''·''55-64''·''65+''·''unknown''·''(other)'''
   )
   METRICS (
     demo.SESSIONS_SUM AS SUM(demo.SESSIONS)
@@ -56,6 +56,7 @@ CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC
 
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC TO ROLE GN_DW_ANALYST;
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC TO ROLE GN_DW_VIEWER;
+GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC TO ROLE GN_DW_AR_SRC_COMMON;  -- O270 원천별 접근 역할
 GRANT REFERENCES, SELECT ON SEMANTIC VIEW GN_DW.SERVING.SV_GA_DEMOGRAPHIC TO ROLE GN_DW_SERVICE;
 
 USE WAREHOUSE GN_DW_ANALYTICS_WH;

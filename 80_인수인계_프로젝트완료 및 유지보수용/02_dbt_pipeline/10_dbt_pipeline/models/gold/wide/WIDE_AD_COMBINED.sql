@@ -119,7 +119,9 @@ select
     --  [2026-10-25 O262-B] 캠페인 유형 라벨 원값 3열 — yml columns[] 맨 끝과 같은 순서.
     fap.CMPGN_TYPE1_BSN_NM,
     fap.CMPGN_TYPE2_BSN_NM,
-    fap.CMPGN_TY_NM
+    fap.CMPGN_TY_NM,
+    --  [2026-10-28 O266] 디지털 최종정산금액(광고비+마크업+부가세 · DGT 전용) — yml columns[] 맨 끝과 같은 순서.
+    fap.LAST_STMT_AMT
 from {{ ref('FACT_AD_PERFORMANCE') }} fap
 -- 위성은 AD_PERF_DK 로 원천유형별 완전분할이라 LEFT JOIN 이 행수를 늘리지 않는다(fan-out 0).
 --   1:N 위성인 FACT_AD_BROADCAST_CASE 는 **의도적으로 제외**한다 — 사례 수만큼 광고비가 복제된다.

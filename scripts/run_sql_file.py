@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # [O262] 자기 폴더 기준(80 패키지 이식)
 import sfconn
 
@@ -84,6 +84,12 @@ def parse_statements(sql_text):
         statements.append(stmt)
     return statements
 
+def is_comment_only(stmt):
+    # 🆕 [O272] `--` 줄 + `/* */` 블록을 지운 뒤 남는 것이 없으면 주석뿐인 문장(종전 판정은 `--` 줄만 봤다)
+    body = re.sub(r'/\*.*?\*/', ' ', stmt, flags=re.S)
+    body = '\n'.join(l for l in body.split('\n') if not l.strip().startswith('--'))
+    return not body.strip()
+
 def run_file(file_path):
     print(f'=== Running file: {file_path} ===')
     sql = open(file_path, encoding='utf-8').read()
@@ -93,14 +99,16 @@ def run_file(file_path):
     cn = sfconn.conn()
     cur = cn.cursor()
     cur.execute('USE ROLE ' + os.environ.get('GN_DW_ROLE', 'GN_DW_ADMIN'))            # [O262] 환경변수 덮어쓰기(기본값 불변)
-    cur.execute('USE WAREHOUSE ' + os.environ.get('GN_DW_WAREHOUSE', 'GN_DW_DEV_WH'))
-    cur.execute('USE DATABASE GN_DW')
+    for ctx in ('WAREHOUSE ' + os.environ.get('GN_DW_WAREHOUSE', 'GN_DW_DEV_WH'), 'DATABASE GN_DW'):
+        try:
+            cur.execute('USE ' + ctx)
+        except Exception as e:  # 🆕 [O272] 신규 계정 = 창고·GN_DW 부재 → 07 RBAC 이 만든다(종전 = 첫 문장 전 002043)
+            print(f'WARN: USE {ctx} 실패 — 계속 진행(신규 계정이면 정상): {e}')
     
     success = 0
     failed = 0
     for idx, stmt in enumerate(stmts):
-        lines = [l.strip() for l in stmt.split('\n') if l.strip() and not l.strip().startswith('--')]
-        if not lines:
+        if is_comment_only(stmt):  # 🆕 [O272] 주석뿐인 꼬리 블록 = 000900 오탐 방지
             continue
         try:
             cur.execute(stmt)
