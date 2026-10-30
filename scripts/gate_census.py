@@ -92,6 +92,7 @@ JUDGE = {
     'sv_no_rollup_gate': 'SV 지시문·VQR 의 소계/합계 행 유도(ROLLUP·CUBE·GROUPING SETS) 0 · O259',
     'sv_enum_newvalue_gate': 'SV COMMENT 열거 목록에 없는 라이브 신규값 0 · ’실제값 N종’ 종수 잔존 0 · O261',
     'sv_common_block_gate': 'SV AI_SQL_GENERATION 이 정본 공통 블록(00_SV_공통지시문.md)으로 시작하는가 · 소스+라이브 · O262 R-SV1',
+    'rbac_source_gate': 'O270 원천별 접근통제 3축 대조(Agent 배선 ↔ 분류표 ↔ 라이브 GRANT) · 위반 1건 이상 rc=1',
 }
 
 OBSERVE = {

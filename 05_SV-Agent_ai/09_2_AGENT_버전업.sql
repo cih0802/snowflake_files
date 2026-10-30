@@ -377,7 +377,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 -- ---- [3-B] AGENT_EXECUTIVE ----
 ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE
   ADD VERSION FROM '@GN_DW.OPS.AGENT_SPEC_STAGE/AGENT_EXECUTIVE'
-  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 광고(매체·실적) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).';
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).';
 
 -- ---- [3-C] AGENT_MARKETING ----
 ALTER AGENT GN_DW.SERVING.AGENT_MARKETING

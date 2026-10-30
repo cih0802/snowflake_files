@@ -61,6 +61,7 @@
   {% call statement('main') -%}
     create or replace view {{ target_relation }}
     {{ col_list }}
+    copy grants
     {%- if view_comment %}
     comment = $${{ view_comment | replace('$', '[$]') }}$$
     {%- endif %}
@@ -68,6 +69,12 @@
       {{ sql }}
     );
   {%- endcall %}
+
+  {#- [O270-F] 원천별 접근 역할 GRANT 유지(C6) — ① copy grants = 재생성 시 기존 GRANT 보존(48번 SQL 결과 포함)
+      ② apply_grants = dbt `+grants` 설정을 적용(신규 뷰) · should_revoke=False ⇒ 설정 밖 권한을 회수하지 않는다
+      (구 역할 GN_DW_ANALYST·VIEWER·SERVICE 는 GOLD FUTURE VIEWS GRANT 로 받는다 · W8 전 회수 금지) -#}
+  {%- set grant_config = config.get('grants') -%}
+  {%- do apply_grants(target_relation, grant_config, should_revoke=False) -%}
 
   {{ run_hooks(post_hooks) }}
 
