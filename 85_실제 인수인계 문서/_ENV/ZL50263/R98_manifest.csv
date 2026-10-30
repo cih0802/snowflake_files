@@ -1,0 +1,15 @@
+# doc_id: R98 · as_of: 2026-10-30 12:03:00.829 +0900 · account: ZL50263 · manifest
+QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
+Q01,1,R98_Q01_1.csv,OK,4,1,SELECT 정의 원문(원천 판정 1차 근거)
+Q02,1,R98_Q02_1.csv,OK,6,0,WITH 상류 재귀 리니지(BRONZE_* 도달 스키마 = 원천 · 깊이 10)
+Q03,1,R98_Q03_1.csv,OK,0,0,SELECT 최근 30일 사용자(누가 쓰나 · 0 이면 DROP 후보)
+Q04,1,R98_Q04_1.csv,OK,0,0,SELECT 하류 = 이 뷰를 참조하는 객체(SV base 포함 · 0 이면 SV·뷰 영향 없음)
+Q05,1,R98_Q05_1.csv,OK,46,0,SHOW SV 목록(Q04 가 SV 를 못 잡는 경우 대조용 · base 는 DESCRIBE 로 개별 확인)
+Q06,1,R98_Q06_1.csv,OK,4,0,SELECT 4개 뷰의 소유자·생성일·현 GRANT
+Q06,2,R98_Q06_2.csv,OK,4,0,SHOW 4개 뷰의 소유자·생성일·현 GRANT
+Q06,3,R98_Q06_3.csv,OK,4,0,SHOW 4개 뷰의 소유자·생성일·현 GRANT
+Q06,4,R98_Q06_4.csv,OK,4,0,SHOW 4개 뷰의 소유자·생성일·현 GRANT
+Q06,5,R98_Q06_5.csv,OK,4,0,SHOW 4개 뷰의 소유자·생성일·현 GRANT
+Q07,1,R98_Q07_1.csv,OK,3,0,SELECT [Q09 영향] GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST(소유자 ACCOUNTADMIN) 에 대한 최근 30일 dbt 쓰기 성공·실패
+Q08,1,R98_Q08_1.csv,OK,25,0,SHOW [Q09 영향] 그 테이블의 현 GRANT(dbt 역할이 INSERT·TRUNCATE 권한을 갖는가)
+Q09,1,R98_Q09_1.csv,OK,1,0,SELECT [DROP 판정] 이 뷰를 base 로 쓰는 SV(🔴 스키마 SERVING 으로 한정 — GOLD.DIM_MONTH 는 SV 가 실제로 쓴다 · 동명 오판 금지)
