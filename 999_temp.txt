@@ -1,0 +1,234 @@
+세션 시작 및 작업 지침 확인을 위해 `init_ihcho` 스킬을 호출합니다.브리핑 생성을 백그라운드로 실행합니다.
+
+지침 문서 줄 수를 측정합니다.
+
+지침 문서를 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/00_guides/00_작업지침_세션운영규칙.md`
+- offset/limit: 1 / 350
+- 도착 여부: 도착 O (312줄 전량)
+- 고유 토큰: `R0-8 「0건」은 종료코드로 검증한다`, `R1-3-7 읽기 반환 실패 = 미독`, `R4-4-3 🔴 파괴 가능 작업은 이 완화의 예외다`
+
+이제 백그라운드 브리핑 생성 작업의 완료를 대기합니다.백그라운드 브리핑 완료를 계속 대기합니다.백그라운드 브리핑 완료를 계속 대기합니다.프로세스 상태와 진행 로그를 점검합니다.
+
+파이프 없이 순차적으로 프로세스 및 임시 파일 출력을 확인합니다.
+
+`/tmp/session_brief.out` 내용을 확인합니다.
+
+프로세스가 여전히 실행 중인지 확인하고 대기합니다.프로세스 상태 및 어떤 하위 작업을 수행하고 있는지 확인합니다.
+
+`sv_enum_newvalue_gate.py` 샤드 검사들이 진행 중임을 확인했습니다. `bash_output`으로 대기합니다.진행 중인 샤드를 확인합니다.
+
+pid 153 프로세스가 살아있는지 또는 멈춰있는지 확인합니다.
+
+pid 153 상태를 `ps`로 확인합니다.
+
+현재 돌고 있는 python 프로세스를 다시 점검합니다.
+
+샤드 2/4가 돌고 있습니다. `bash_output`으로 대기합니다.어느 샤드가 진행 중인지 확인합니다.
+
+샤드 3/4가 진행 중입니다. 계속 대기합니다.`BRIEF_RC=0`이 정상 출력되었습니다.
+이제 `20_issue/00_BRIEF.md`의 줄 수를 확인하고 전량 독해합니다.
+
+`20_issue/00_BRIEF.md`를 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/20_issue/00_BRIEF.md`
+- offset/limit: 1 / 200
+- 도착 여부: 도착 O (148줄 전량)
+- 고유 토큰: `doc_id: SESSION_BRIEF`, `▣ O271-C-0 🔴 먼저 알아라`, `🟡 O271 — O270 운영계 0·1단계 정지 해소 준비`
+
+사용자 지침에 언급된 문서인 `12_agent개선과제/O271_운영계_LLM_프롬프트_새세션_잔여단계.md`의 줄 수를 확인하고 독해를 준비합니다.
+
+`12_agent개선과제/O271_운영계_LLM_프롬프트_새세션_잔여단계.md`를 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/12_agent개선과제/O271_운영계_LLM_프롬프트_새세션_잔여단계.md`
+- offset/limit: 1 / 150
+- 도착 여부: 도착 O (108줄 전량)
+- 고유 토큰: `doc_id: O271_PROD_LLM_PROMPT_CONTINUE`, `단계 A — 47번 [D2] 대사(읽기 전용)`, `마지막 보고 형식`
+
+초기화 스킬의 Step 3(브리핑 출력) 양식에 맞춰 브리핑을 작성하여 먼저 출력합니다. 지침 §2 Step 3 에 따라 단답형 브리핑을 출력하고, 사용자 지시에 따라 문서에 명시된 3개 사전 파일을 읽은 뒤 단계 A부터 순서대로 진행합니다.
+
+먼저 사전 필독 파일 3개를 확인합니다:
+1. `12_agent개선과제/O270_운영계_LLM_프롬프트.md`
+2. `12_agent개선과제/O271_운영계_LLM_프롬프트_잔존뷰_소유자.md`
+3. `05_SV-Agent_ai/47_DEPLOY_FINAL_AD_COST.sql`
+
+각 파일의 줄 수를 측정하고 순서대로 독해합니다.
+
+3개 파일을 순서대로 전량 독해합니다.
+먼저 `12_agent개선과제/O270_운영계_LLM_프롬프트.md`를 읽습니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/12_agent개선과제/O270_운영계_LLM_프롬프트.md`
+- offset/limit: 1 / 200
+- 도착 여부: 도착 O (177줄 전량)
+- 고유 토큰: `doc_id: O270_PROD_LLM_PROMPT`, `단계 4 — Agent 재배포(경영·회원)`, `단계 5 — 지표사전 코퍼스 범위`, `단계 6 — 게이트`
+
+다음으로 `12_agent개선과제/O271_운영계_LLM_프롬프트_잔존뷰_소유자.md`를 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/12_agent개선과제/O271_운영계_LLM_프롬프트_잔존뷰_소유자.md`
+- offset/limit: 1 / 160
+- 도착 여부: 도착 O (142줄 전량)
+- 고유 토큰: `doc_id: O271_PROD_LLM_PROMPT`, `단계 6 — 🆕 [O271-C] 남은 잔존 SV·뷰 DROP`, `단계 7 — 🆕 [O271-C] 앱 소유 역할 형식 생성 + 앱 읽기 실측`
+
+이어서 3번째 사전 파일인 `05_SV-Agent_ai/47_DEPLOY_FINAL_AD_COST.sql`을 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/05_SV-Agent_ai/47_DEPLOY_FINAL_AD_COST.sql`
+- offset/limit: 1 / 60
+- 도착 여부: 도착 O (49줄 전량)
+- 고유 토큰: `-- Purpose    : 🆕 [2026-10-29 O270] 마케팅 피드백 3차`, `[D2] 대사 — 팩트 최종 광고비`, `[D3] SV 재배포(각 파일 전체 · 문장 단위)`
+
+문서에 따르면 운영계 LLM 세션 진행 절차는:
+1. "읽은 뒤 「읽음: 3개 파일」이라고 보고하고 멈춘다." (또는 다음 단계 진행 여부를 질문)
+2. 규칙 1: "한 단계가 끝나면 3줄 이내로 보고하고 「다음 단계 진행할까요?」라고 묻고 멈춘다. 「승인」·「진행」 전에는 다음으로 가지 않는다."
+3. `init_ihcho` Step 3 단답형 브리핑 출력 의무 준수.
+
+현재 세션 착수 브리핑을 먼저 출력하고, 필독 3개 파일 독해 완료 상태와 단계 A 준비 상태를 보고합니다.지침 로드: OK
+게이트: doc_census ✅ · clause_order ✅ · index_row ✅ · doc_heading ✅ · doc_coord 🟡 · jinja ✅ · 조각수 stale 0
+열린 작업: 12건 — ① 👤 운영계 O270 단계 3(build) → 4 Agent → 5 코퍼스 → 6 게이트, ② 운영계 O271 단계 6(SV·뷰 DROP) · 7(50번 [1]·[2]), ③ 50번 [3]~[5]
+직전 세션 인수인계: O271-C — O270/O271 운영계 잔여 단계 이어서 실행
+문서50 열린 절: 1건
+read 미반환: 0 · 재호출 0
+다음 후보 작업: 단계 A — 47번 [D2] 대사(읽기 전용)
+
+---
+
+읽음: 3개 파일(`12_agent개선과제/O270_운영계_LLM_프롬프트.md`, `12_agent개선과제/O271_운영계_LLM_프롬프트_잔존뷰_소유자.md`, `05_SV-Agent_ai/47_DEPLOY_FINAL_AD_COST.sql`)
+
+다음 단계 A(47번 [D2] 대사 SELECT 1문 실행)를 진행할까요?
+
+단계 A의 [D2] 대사 쿼리를 실행합니다.단계 A 결과 보고:
+- `mcc_final`: 17087303103.81 (FACT_MKTG_CAMPAIGN_MONTHLY_COST 의 NUMBER(38,2) 반올림 합)
+- `fap_final`: 17087303103.8362 (FACT_AD_PERFORMANCE 원천 부동소수점/소수점 합, 정수부 및 소수점 1자리 17,087,303,103.8원 일치)
+- `final_non_null_rows`: 1121
+
+다음 단계 B(47번 [D3] SV 4종 재배포 DDL 실행)를 진행할까요?
+
+단계 B의 첫 번째 파일인 `05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql`을 재배포합니다.
+
+단계 B의 두 번째 파일인 `05_07_SV_DDL_AD.sql`을 재배포합니다.
+
+단계 B의 세 번째 파일인 `05_04_SV_DDL_SERVICE.sql`을 재배포합니다.
+
+단계 B의 네 번째 파일인 `05_05_SV_DDL_EVENT_PARTICIPATION.sql`을 재배포합니다.
+
+단계 B(SV 4종 재배포) 결과 보고:
+- `05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql`: 10 succeeded, 0 failed
+- `05_07_SV_DDL_AD.sql`: 15 succeeded, 0 failed
+- `05_04_SV_DDL_SERVICE.sql`: 10 succeeded, 0 failed
+- `05_05_SV_DDL_EVENT_PARTICIPATION.sql`: 8 succeeded, 0 failed
+
+다음 단계 C(잔존 SV·뷰 DROP: 사전 확인 0행 검증 → `SV_ML_LTV_SCORE` DROP → `ML_LTV_SCORE_V` DROP → 잔존 객체 확인)를 진행할까요?
+
+단계 C를 진행합니다.
+먼저 사전 확인 쿼리를 실행합니다 (`ML_LTV_SCORE_V`를 base로 쓰는 다른 SV가 없는지 확인, 0행 기대).사전 확인 결과 0행입니다.
+이어서 Agent 3종 스펙에 `SV_ML_LTV_SCORE`가 참조되고 있지 않은지 DESCRIBE를 통해 확인합니다.Agent 3종에 `SV_ML_LTV_SCORE`가 포함되어 있는지 bash로 agent spec 파일들을 직접 grep하여 확인합니다.RC=1로 agent spec에는 `SV_ML_LTV_SCORE`가 존재하지 않습니다.
+이제 순서에 따라 GN_DW_ADMIN 역할로 SV를 먼저 DROP하고, 뷰를 다음으로 DROP합니다.
+- `DROP SEMANTIC VIEW IF EXISTS GN_DW.SERVING.SV_ML_LTV_SCORE;`
+- `DROP VIEW IF EXISTS GN_DW.SERVING.ML_LTV_SCORE_V;`
+
+이어서 잔존 뷰 `ML_LTV_SCORE_V`를 DROP합니다.
+
+확인 쿼리를 실행합니다:
+1. `SHOW SEMANTIC VIEWS LIKE 'SV_ML_LTV%' IN SCHEMA GN_DW.SERVING;` 에 `SV_ML_LTV_FORECAST`만 남는지 확인.
+2. `INFORMATION_SCHEMA.TABLES`에서 `ML_LTV_SCORE_V`가 제거되었는지 확인.`ML_LTV_SCORE_V` 제거 상태를 확인합니다.`SV_ML_LTV_SCORE` 및 `ML_LTV_SCORE_V` 가 정상 DROP되었습니다.
+이제 운영계 라이브 객체 목록을 재확인하고 파일 `12_agent개선과제/output/O270_live_object_types_ZL50263.txt`를 갱신한 뒤 개발계 파일과 비교합니다.운영계 라이브 객체 목록(109건)을 `12_agent개선과제/output/O270_live_object_types_ZL50263.txt`에 저장하기 전, 기존 파일을 읽고 줄 수 및 내용을 점검합니다.
+
+`12_agent개선과제/output/O270_live_object_types_ZL50263.txt`의 내용을 읽습니다.`12_agent개선과제/output/O270_live_object_types_ZL50263.txt`의 99번째 줄에 있던 `SERVING.ML_LTV_SCORE_V|VIEW`가 이번 DROP으로 사라졌으므로, 파일을 `edit`하여 해당 줄을 삭제합니다. (이전 110줄 → 109줄)두 파일의 diff를 수행하여 개발계 객체 목록(`O270_live_object_types_ZS83821_20261029.txt`)과 운영계 목록이 완전히 일치하는지 확인합니다.`DIFF_RC=0`으로 개발계와 운영계의 객체 목록(109건)이 정확히 100% 일치합니다.
+`scripts/line_len.py`로 수정한 파일의 줄 길이 가드를 확인합니다.
+
+단계 C(잔존 SV·뷰 DROP 및 객체 목록 검증) 결과 보고:
+- `SV_ML_LTV_SCORE`: DROP 성공 (사전 확인 다른 SV base 참조 0행)
+- `ML_LTV_SCORE_V`: DROP 성공 (`SV_ML_LTV_FORECAST` 정상 유지)
+- 운영계 vs 개발계 객체 목록(`O270_live_object_types_ZL50263.txt` vs `ZS83821_20261029.txt`): 차이 0 (`DIFF_RC=0`, 109건 완벽 일치)
+
+다음 단계 D(Agent 재배포: `tmp/o250/deploy_agents.py pre` → `deploy` → 경영 COMMENT 갱신)를 진행할까요?
+
+단계 D의 첫 번째 명령인 `tmp/o250/deploy_agents.py pre`를 실행합니다.
+
+`pre` 결과에서:
+- `[0] 라이브 부재 SV = 0 []`
+- `[0-C] AGENT_EXECUTIVE 81408 81408 OK`
+- `[0-C] AGENT_MARKETING 127536 127536 OK`
+- `[0-C] AGENT_MEMBER 135968 135968 OK`
+요건을 만족했습니다.
+
+이제 `python3 tmp/o250/deploy_agents.py deploy`를 실행합니다.
+
+이어서 경영 Agent 설명(COMMENT) 갱신 1문을 확인하고 실행합니다.
+`05_SV-Agent_ai/09_1_AGENT_생성.sql`의 [5] 블록에서 `AGENT_EXECUTIVE` 관련 문장을 확인합니다.`05_SV-Agent_ai/09_1_AGENT_생성.sql`의 줄 수를 확인하고 [5] 블록을 읽습니다.`05_SV-Agent_ai/09_1_AGENT_생성.sql`에서 `AGENT_EXECUTIVE`와 `COMMENT` 또는 `[5]`를 검색합니다.`05_SV-Agent_ai/09_1_AGENT_생성.sql`의 335~355번 줄을 읽습니다.경영 Agent 설명 갱신 문장을 실행합니다:
+```sql
+ALTER AGENT GN_DW.SERVING.AGENT_EXECUTIVE SET
+  COMMENT = '굿네이버스 경영·전사 분석 Agent. 조회 데이터 = 사업목표 · 예산(편성·집행·과목) · 회원 월실적 · 서비스 발송 · 지출결의 · 회비 청구 처리 · 머신러닝 예측(개발금액·LTV·기여요인·중단·증액).',
+  PROFILE = '{"display_name":"경영·전사 분석","color":"#11567F"}';
+```
+
+단계 D(Agent 재배포 및 설명 갱신) 결과 보고:
+- `pre`: `[0] 라이브 부재 SV = 0`, `[0-C]` 3개 Agent OK
+- `deploy`: 
+  - `AGENT_MEMBER`: VERSION$29 default · tool_spec 31 · pred_axis True · fee_axis True
+  - `AGENT_EXECUTIVE`: VERSION$20 default · tool_spec 19 · pred_axis True · fee_axis False
+  - `AGENT_MARKETING`: VERSION$25 default · tool_spec 33 · pred_axis True · fee_axis True
+- 경영 Agent 설명 갱신: 완료
+
+다음 단계 E(지표사전 코퍼스 범위 배포: `49_DEPLOY_CORPUS_SCOPE_O270.sql` [0] → [1] → [2])를 진행할까요?
+
+단계 E의 실행 파일인 `05_SV-Agent_ai/49_DEPLOY_CORPUS_SCOPE_O270.sql`을 읽어 내용을 확인합니다.
+(지침: [0] → [1] → [2] 순서 실행, [R] 롤백 블록은 실행 금지)`05_SV-Agent_ai/49_DEPLOY_CORPUS_SCOPE_O270.sql`을 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/05_SV-Agent_ai/49_DEPLOY_CORPUS_SCOPE_O270.sql`
+- offset/limit: 1 / 40
+- 도착 여부: 도착 O (35줄 전량)
+- 고유 토큰: `-- [0] 사전 대조 — 기대 8행`, `SET AGENT_SCOPE = 'MARKETING'`, `SELECT COUNT(*) AS NOT_MARKETING`
+
+단계 E의 [0] 사전 대조 쿼리를 실행합니다.[0] 사전 대조 결과 기대값대로 정확히 8행이 반환되었습니다.
+이제 [1] 적용 UPDATE 쿼리를 실행합니다.
+
+8행이 정상 갱신되었습니다.
+이제 [2] 검증 쿼리를 실행합니다 (기대값 NOT_MARKETING = 0).단계 E(지표사전 코퍼스 범위 배포) 결과 보고:
+- [0] 사전 대조: 8행 (기대값 8행 일치)
+- [1] 갱신: 8행 업데이트 완료
+- [2] 검증: NOT_MARKETING = 0 (기대값 0 일치)
+
+다음 단계 F(게이트 검증: `python3 scripts/rbac_source_gate.py --live` 및 `python3 scripts/test_rbac_source_gate.py`)를 진행할까요?
+
+단계 F의 첫 번째 게이트인 `python3 scripts/rbac_source_gate.py --live`를 실행합니다.
+
+단계 F의 두 번째 게이트인 `python3 scripts/test_rbac_source_gate.py`를 실행합니다.
+
+단계 F(게이트 검증) 결과 보고:
+- `rbac_source_gate.py --live`: 🟢 PASS — A1·A2·A3 위반 0건 · 분류표 154객체
+- `test_rbac_source_gate.py`: 🟢 PASS — 음성 테스트 전건
+
+다음 단계 G(앱 소유 역할 생성 및 앱 실측: `50_RBAC_APP_OWNER_USER_ASSIGN.sql` 의 [1] 역할 생성 실행 및 [2-a] `SHOW STREAMLITS IN ACCOUNT;` 실측)를 진행할까요?
+
+`05_SV-Agent_ai/50_RBAC_APP_OWNER_USER_ASSIGN.sql`의 줄 수를 확인하고 [1]과 [2-a] 블록을 읽습니다.`05_SV-Agent_ai/50_RBAC_APP_OWNER_USER_ASSIGN.sql`을 전량 독해합니다.독해 기록(G5 / R1-3-7-b):
+- 경로: `/workspace/05_SV-Agent_ai/50_RBAC_APP_OWNER_USER_ASSIGN.sql`
+- offset/limit: 1 / 80
+- 도착 여부: 도착 O (74줄 전량)
+- 고유 토큰: `-- [1] 앱 소유 역할 생성(형식만 · 권한 0 · 무해)`, `CREATE ROLE IF NOT EXISTS GN_DW_APP_OWNER`, `SHOW STREAMLITS IN ACCOUNT;`
+
+단계 G의 [1] 앱 소유 역할 생성을 실행합니다 (`SECURITYADMIN` 역할).
+1. `USE ROLE SECURITYADMIN;`
+2. `CREATE ROLE IF NOT EXISTS GN_DW_APP_OWNER COMMENT = 'O271 Streamlit 앱 소유 전용 역할 — 사람에게 부여하지 않는다 · 구 역할 GN_DW_ANALYST 회수 전 앱 소유권 이전처';`
+3. `GRANT ROLE GN_DW_APP_OWNER TO ROLE SYSADMIN;`
+
+`GN_DW_APP_OWNER` 역할 생성 및 `SYSADMIN`에 GRANT가 성공했습니다.
+이어서 [2-a] `SHOW STREAMLITS IN ACCOUNT;` 실측 쿼리를 실행합니다.`SHOW STREAMLITS IN ACCOUNT;` 결과를 정리합니다:
+- 총 14개 앱
+- `GN_DW.LAB` 내 `GN_DW_ANALYST` 소유: 10개
+  - `AE4O8Q2VQMKWF5KV` (RPA_gndata)
+  - `DEV_DASHBOARD` (회원통계보고서)
+  - `HJTMD27EXFUUEWND` (납입방식보고서_0909)
+  - `K2HQP_3PE6IR6TWC` (오류탐색)
+  - `KEBFFP885PVNIDUB` (개발실적보고서_261001)
+  - `MJE2FT3IPENTUJQ7` (마케팅 콘텐츠 통합성과 대시보드)
+  - `UNTITLED_12` (주간중단보고_1007)
+  - `UT35Y5QEK457979C` (월마감회비예측)
+  - `W8PBGER093T61MQA` (월마감_실적보고)
+  - `X39FI0ZHW8A02OFS` (기획실 대시보드)
+- `GN_DW.LAB` 내 `GN_DW_ADMIN` 소유: 1개
+  - `FXDDFO7Z_L_ORZG7` (Copy of 시연통합2 261016)
+- `USER$CHOIH.PUBLIC` 내 `CHOIH` 개인 소유: 3개 (대상 밖)
+
+지침 단계 G에 따르면:
+"[2-b] 는 <앱 서비스 사용자> 를 사람에게 묻고 채워 실행한다 -> 객체 목록(스키마별 건수)을 보고한다. 🔴 50번 [3]~[7] 은 실행하지 마라."단계 G 결과 보고:
+- `GN_DW_APP_OWNER` 역할 생성 및 SYSADMIN 부여 완료
+- Streamlit 실측([2-a]): 총 14개
+  - `GN_DW.LAB` 스키마 내 `GN_DW_ANALYST` 소유: 10개 (창고 `GN_DW_ANALYTICS_WH`)
+  - `GN_DW.LAB` 스키마 내 `GN_DW_ADMIN` 소유: 1개
+  - `USER$CHOIH.PUBLIC` 개인 앱: 3개 (소유자 `CHOIH`)
+
+[2-b] 실행을 위한 `<앱 서비스 사용자>` 이름을 알려주시면 쿼리를 실행할까요? (또는 단계 H 사용자 배정으로 넘어갈까요?)
