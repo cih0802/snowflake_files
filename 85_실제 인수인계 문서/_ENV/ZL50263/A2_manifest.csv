@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · manifest
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
 Q01,1,A2_Q01_1.csv,OK,17951,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
 Q01,2,A2_Q01_2.csv,OK,4236,0,SHOW 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
@@ -23,8 +23,8 @@ Q02,12,A2_Q02_12.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
 Q02,13,A2_Q02_13.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
 Q02,14,A2_Q02_14.csv,OK,0,0,SHOW FUTURE grant — DB + 스키마별
 Q02,15,A2_Q02_15.csv,OK,24,0,SHOW FUTURE grant — DB + 스키마별
-Q03,1,A2_Q03_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q03,1,A2_Q03_1.csv,OK,2003,0,SELECT 매트릭스 원본 — 롤 × 객체종류 × 스키마 × 권한 (직접 부여 · 상속 제외 · OWNERSHIP 포함)
 Q04,1,A2_Q04_1.csv,OK,18,0,SELECT GN_DW 객체 수(분모) — 스키마별 테이블·뷰 · SV · Agent (매트릭스 「전건 부여」 판정용)
-Q05,1,A2_Q05_1.csv,OK,6,0,SHOW Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
+Q05,1,A2_Q05_1.csv,OK,7,0,SHOW Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
 Q05,2,A2_Q05_2.csv,OK,2,0,SHOW Cortex 데이터베이스 롤 부여처 (A3 선행 · CoCo/Agent 접근 결정 축)
-Q06,1,A2_Q06_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q06,1,A2_Q06_1.csv,OK,32,0,SELECT 사용자 ↔ 롤 할당 (온보딩 현황 · A1 연결)

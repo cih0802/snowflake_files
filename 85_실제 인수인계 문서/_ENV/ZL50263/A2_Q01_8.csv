@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q01-8 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q01-8 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
 created_on,privilege,granted_on,name,granted_to,grantee_name,grant_option,granted_by
 2026-06-08 10:04:39.846000+09:00,BIND SERVICE ENDPOINT,ACCOUNT,ZL50263,ROLE,PUBLIC,false,SECURITYADMIN
 2026-07-29 09:40:04.812000+09:00,EXECUTE AGENT TASK,ACCOUNT,ZL50263,ROLE,PUBLIC,false,ACCOUNTADMIN

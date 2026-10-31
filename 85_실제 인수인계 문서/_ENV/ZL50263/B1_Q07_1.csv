@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q07-1 SV 차원 (이름 · 식 · 동의어)
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q07-1 SV 차원 (이름 · 식 · 동의어)
 SEMANTIC_VIEW_NAME,TABLE_NAME,DIMENSION_NAME,DATA_TYPE,EXPRESSION,SYNONYMS
 SV_AD,AD,AD_CTGR_CD,"NUMBER(38,0)",ad.AD_CTGR_CD,"[ ⏎   ""카테고리 코드"", ⏎   ""캠페인카테고리 코드"" ⏎ ]"
 SV_AD,AD,AD_CTGR_IS_MULTI,BOOLEAN,ad.AD_CTGR_IS_MULTI,"[ ⏎   ""카테고리 대표값 여부"", ⏎   ""카테고리 다중"" ⏎ ]"

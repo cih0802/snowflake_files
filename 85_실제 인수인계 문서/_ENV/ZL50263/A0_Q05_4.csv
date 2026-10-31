@@ -1,4 +1,4 @@
-# doc_id: A0 · as_of: 2026-10-31 02:08:06.957 +0900 · account: ZL50263 · query: Q05-4 Task · Alert · Git · Integration
+# doc_id: A0 · as_of: 2026-10-31 02:40:02.630 +0900 · account: ZL50263 · query: Q05-4 Task · Alert · Git · Integration
 name,type,category,enabled,comment,created_on
 EMAIL_ALERT_INTEGRATION,EMAIL,NOTIFICATION,true,GN_DW 데이터 파이프라인 및 거버넌스 에러 알림 연동,2026-10-26 19:13:01.060000+09:00
 GOOGLE_API_ACCESS,EXTERNAL_ACCESS,EXTERNAL_ACCESS,true,,2026-08-26 13:08:29.361000+09:00

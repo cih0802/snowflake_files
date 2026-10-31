@@ -1,7 +1,7 @@
-# doc_id: A1 · as_of: 2026-10-31 02:08:23.242 +0900 · account: ZL50263 · manifest
+# doc_id: A1 · as_of: 2026-10-31 02:40:43.523 +0900 · account: ZL50263 · manifest
 QID,K,FILE,STATUS,ROWS,CUT_CELLS,NOTE
-Q01,1,A1_Q01_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
-Q02,1,A1_Q02_1.csv,ERROR,0,0,002003 (02000): SQL compilation error:
+Q01,1,A1_Q01_1.csv,OK,21,0,SELECT 사용자 현황 — 기본 롤·WH·비활성·유형 (이메일 제외)
+Q02,1,A1_Q02_1.csv,OK,32,0,SELECT 사용자 ↔ 롤 할당 (A2 Q06 과 같은 축 · 온보딩 점검)
 Q03,1,A1_Q03_1.csv,OK,1,0,SELECT 알림 수신자 플래그 건수 (OPS.ALERT_RECIPIENT_CONFIG · 이메일 제외)
 Q04,1,A1_Q04_1.csv,OK,0,0,SHOW 비용 가드 — quota · 예산 · 리소스 모니터
 Q04,2,A1_Q04_2.csv,OK,0,0,SHOW 비용 가드 — quota · 예산 · 리소스 모니터

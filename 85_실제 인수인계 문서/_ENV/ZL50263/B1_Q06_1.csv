@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q06-1 SV 메트릭 (이름 · 식 · 동의어 · 가산성)
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q06-1 SV 메트릭 (이름 · 식 · 동의어 · 가산성)
 SEMANTIC_VIEW_NAME,TABLE_NAME,METRIC_NAME,DATA_TYPE,EXPRESSION,SYNONYMS,NON_ADDITIVE_DIMENSIONS,COMMENT
 SV_AD,AD,AD_SETTLE_AMT,"NUMBER(38,2)",SUM(ad.LAST_STMT_AMT),"[ ⏎   ""최종정산금액"", ⏎   ""정산금액"", ⏎   ""정산액"", ⏎   ""최종 정산 광고비"", ⏎   ""정산 광고비"" ⏎ ]",,🆕 [O266] 디지털 최종정산금액 합계(원) = 광고비 + 마크업 + 부가세(대행사 정산 기준). F(가산). **DIGITAL 전용** — 영상·재방송 원천에는 정산 개념 컬럼이 없어 NULL 이다(재방송 총비용 TOT_COST 는 편성+콘텐츠+콜센터라 정산액이 아니다). 디지털 외 출처를 0 으로 채우거나 광고비로 대체하지 않는다.
 SV_AD,AD,CTR,"NUMBER(38,6)","SUM(IFF(ad.IMPRESSIONS > 0, ad.CLICKS, 0)) / NULLIF(SUM(ad.IMPRESSIONS), 0) * 100","[ ⏎   ""클릭률"", ⏎   ""CTR"" ⏎ ]",,공9 CTR(%) = 클릭수 ÷ 노출수 ×100. 비율(N). 디지털 전용. 🔴 O240: 노출 0·클릭>0 행(DIGITAL · 추적링크 직접유입)의 클릭은 분자에서 뺀다 — 분모 없는 클릭이 소재별 CTR 을 상한(전량 클릭) 이상으로 만든다. 전체 클릭수는 TOTAL_CLICKS 로 따로 답한다.

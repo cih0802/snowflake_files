@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q11-1 SV 별 VQR(검증 질의) 수 — GET_DDL 의 QUESTION 토큰 · SV 목록은 Q04 와 같아야 한다(새 SV 는 한 줄 추가)
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q11-1 SV 별 VQR(검증 질의) 수 — GET_DDL 의 QUESTION 토큰 · SV 목록은 Q04 와 같아야 한다(새 SV 는 한 줄 추가)
 SV_NAME,N_VQR
 SV_AD,5
 SV_BUDGET,2

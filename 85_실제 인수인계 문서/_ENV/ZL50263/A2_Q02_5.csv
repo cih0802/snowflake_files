@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q02-5 FUTURE grant — DB + 스키마별
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q02-5 FUTURE grant — DB + 스키마별
 created_on,privilege,grant_on,name,grant_to,grantee_name,grant_option
 2026-10-19 00:49:31.833000+09:00,SELECT,TABLE,GN_DW.BRONZE_ERP.<TABLE>,ROLE,GN_DW_ANALYST,false
 2026-10-19 00:52:07.562000+09:00,SELECT,TABLE,GN_DW.BRONZE_ERP.<TABLE>,ROLE,GN_DW_DBT,false

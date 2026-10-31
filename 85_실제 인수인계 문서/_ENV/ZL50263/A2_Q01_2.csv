@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q01-2 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q01-2 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
 created_on,privilege,granted_on,name,granted_to,grantee_name,grant_option,granted_by
 2026-06-09 09:05:55.320000+09:00,EXECUTE MANAGED TASK,ACCOUNT,ZL50263,ROLE,GN_DW_ENGINEER,false,ACCOUNTADMIN
 2026-06-09 09:05:54.528000+09:00,EXECUTE TASK,ACCOUNT,ZL50263,ROLE,GN_DW_ENGINEER,false,ACCOUNTADMIN

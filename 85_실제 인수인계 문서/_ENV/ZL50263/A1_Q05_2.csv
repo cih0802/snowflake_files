@@ -1,3 +1,3 @@
-# doc_id: A1 · as_of: 2026-10-31 02:08:23.242 +0900 · account: ZL50263 · query: Q05-2 계정 파라미터 — CoCo 한도 · Personal DB
+# doc_id: A1 · as_of: 2026-10-31 02:40:43.523 +0900 · account: ZL50263 · query: Q05-2 계정 파라미터 — CoCo 한도 · Personal DB
 key,value,default,level,description,type
 ENABLE_PERSONAL_DATABASE,true,true,,Enable Personal Database Feature,BOOLEAN

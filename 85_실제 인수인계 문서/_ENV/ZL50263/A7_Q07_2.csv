@@ -1,4 +1,4 @@
-# doc_id: A7 · as_of: 2026-10-31 02:09:10.258 +0900 · account: ZL50263 · query: Q07-2 [월] 객체 수 기준선 — A0 Q02 와 같은 축(달라지면 원인 확인)
+# doc_id: A7 · as_of: 2026-10-31 03:11:53.730 +0900 · account: ZL50263 · query: Q07-2 [월] 객체 수 기준선 — A0 Q02 와 같은 축(달라지면 원인 확인)
 created_on,name,database_name,schema_name,comment,owner,owner_role_type,extension,max_staleness
 2026-09-14 10:12:22.912000+09:00,SV_AD,GN_DW,SERVING,"Phase-1 광고 실적 SV (base: GOLD.WIDE_AD_COMBINED). 대행사(디지털/방송) 일별 리포트 및 GA4 기반 광고비, 노출, 클릭, 전환, 방송실적 통합 뷰. ⚠️ 디지털/방송 measure는 상호배타적이며, 광고비만 전체 합산 가능. 마케팅캠페인(MKTG_CAMPAIGN_NAME) 축으로 분해 가능(소재별/개별캠페인별 분해 불가). 예산(SV_BUDGET) 및 회원개발실적(SV_MEMBER_EVENT)과의 교차 집계는 불가.",GN_DW_ADMIN,ROLE,"[""AI""]",
 2026-10-21 12:40:53.456000+09:00,SV_AD_INFLOW_ALLOC,GN_DW,SERVING,"광고비 인입경로 배분 SV(O248 · 인입경로별 개발단가). base=GOLD.FACT_AD_INFLOW_ALLOC. 🔴🔴 배분값이며 실측이 아니다 — 광고 실적 SV(SV_AD)의 광고비와 같은 표에 합산하지 않는다(같은 돈을 다시 나눈 것). 🔴 광고비 ÷ CRM 개발건수를 직접 나누지 말고 이 SV 의 개발단가(COST_PER_DEV)를 쓴다. 🔴 VIDEO(방송광고) 허용 인입경로 = 영상광고·방송·콜개발·디지털은 현업 확인 전 가정이며, VIDEO 미배분분은 방송 효과 시차(익월 개발) 가능성이 있다. 미배분(UNALLOC) 광고비를 숨기지 말고 사유와 함께 따로 밝힌다.",GN_DW_ADMIN,ROLE,"[""AI""]",

@@ -1,4 +1,4 @@
-# doc_id: N04 · as_of: 2026-10-31 02:10:06.834 +0900 · account: ZL50263 · query: Q06-1 Alert 실행 이력 — 최근 6일 (상태 · 소요 · 🔴 함수 한도 「7일 이전 불가」라 -7 은 경계에서 실패 → -6)
+# doc_id: N04 · as_of: 2026-10-31 03:14:06.535 +0900 · account: ZL50263 · query: Q06-1 Alert 실행 이력 — 최근 6일 (상태 · 소요 · 🔴 함수 한도 「7일 이전 불가」라 -7 은 경계에서 실패 → -6)
 NAME,STATE,SCHEDULED_TIME,COMPLETED_TIME,SEC,SQL_ERROR_MESSAGE
 ALERT_DBT_WARN_SPNSR_CLS_DUP,SCHEDULED,2026-10-31 09:00:00+09:00,,,
 ALERT_DAILY_TASK_FAILED,SCHEDULED,2026-10-31 06:30:00+09:00,,,

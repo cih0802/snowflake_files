@@ -1,4 +1,4 @@
-# doc_id: A6 · as_of: 2026-10-31 02:08:51.821 +0900 · account: ZL50263 · query: Q06-2 MSTR 적재 상태 (프로시저 적재 · dbt 와 별개)
+# doc_id: A6 · as_of: 2026-10-31 03:11:26.102 +0900 · account: ZL50263 · query: Q06-2 MSTR 적재 상태 (프로시저 적재 · dbt 와 별개)
 LOGKEY,LOGTIME,RUNKEY,LOGMSG,LOGPROC,LOGMAN,ERRNUM,ERRSEVERITY,ERRSTTS,ERRLINE,ERRMSG,ERRNOTE,ALMYN
 4630,2026-10-30 07:31:26.240000,,초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Insert: 25717,USP_F_MM_SPNSR_DVLP_SUM,TASK,,,,,,,False
 4629,2026-10-30 07:31:17.791000,,초기화 : F_회원_정기회원후원개발(F_MM_SPNSR_DVLP)  Delete: 24431,USP_F_MM_SPNSR_DVLP_SUM,TASK,,,,,,,False

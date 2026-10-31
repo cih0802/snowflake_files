@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q03-2 PK · FK (컬럼 단위 · SHOW 는 계정 전체 대신 스키마별)
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q03-2 PK · FK (컬럼 단위 · SHOW 는 계정 전체 대신 스키마별)
 created_on,pk_database_name,pk_schema_name,pk_table_name,pk_column_name,fk_database_name,fk_schema_name,fk_table_name,fk_column_name,key_sequence,update_rule,delete_rule,fk_name,pk_name,deferrability,rely,comment
 2026-10-29 05:54:20.278000+09:00,GN_DW,GOLD,DIM_AD_CREATIVE,AD_CREATIVE_SK,GN_DW,GOLD,FACT_AD_PERFORMANCE,AD_CREATIVE_SK,1,NO ACTION,NO ACTION,FK_FAD_DIM_AD_CREATIVE,SYS_CONSTRAINT_2a1e8e24-143a-47bb-b6ba-c17798bc64f5,NOT DEFERRABLE,false,
 2026-10-29 05:54:15.639000+09:00,GN_DW,GOLD,DIM_BIGQUERY_EVENT,BIGQUERY_EVENT_SK,GN_DW,GOLD,FACT_BIGQUERY_BEHAVIOR,BIGQUERY_EVENT_SK,1,NO ACTION,NO ACTION,FK_FBQ_DIM_BIGQUERY_EVENT,SYS_CONSTRAINT_721b0c18-6646-4ced-a8ff-f230a257413e,NOT DEFERRABLE,false,

@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q01-5 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q01-5 롤별 직접 부여(SHOW GRANTS TO ROLE) — 7종 + PUBLIC
 created_on,privilege,granted_on,name,granted_to,grantee_name,grant_option,granted_by
 2026-09-14 10:36:04.668000+09:00,USAGE,CORTEX_AGENT,GN_DW.SERVING.AGENT_EXECUTIVE,ROLE,GN_DW_SERVICE,false,GN_DW_ADMIN
 2026-08-20 13:54:05.302000+09:00,USAGE,CORTEX_AGENT,GN_DW.SERVING.AGENT_MARKETING,ROLE,GN_DW_SERVICE,false,GN_DW_ADMIN

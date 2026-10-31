@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q02-11 FUTURE grant — DB + 스키마별
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q02-11 FUTURE grant — DB + 스키마별
 created_on,privilege,grant_on,name,grant_to,grantee_name,grant_option
 2026-10-19 00:54:17.086000+09:00,APPLYBUDGET,TABLE,GN_DW.MSTR.<TABLE>,ROLE,GN_DW_ADMIN,false
 2026-10-19 00:54:17.229000+09:00,DELETE,TABLE,GN_DW.MSTR.<TABLE>,ROLE,GN_DW_ADMIN,false

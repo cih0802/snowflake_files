@@ -1,4 +1,4 @@
-# doc_id: N05 · as_of: 2026-10-31 02:10:12.635 +0900 · account: ZL50263 · query: Q02-1 마지막 전체 build 의 dbt 집계 줄 · WARN 테스트 목록
+# doc_id: N05 · as_of: 2026-10-31 03:14:34.028 +0900 · account: ZL50263 · query: Q02-1 마지막 전체 build 의 dbt 집계 줄 · WARN 테스트 목록
 KIND,LINE
 DONE,Done. PASS=735 WARN=26 ERROR=0 SKIP=0 TOTAL=761
 WARN,Warning in test warn_erp_budget_procedure_merge

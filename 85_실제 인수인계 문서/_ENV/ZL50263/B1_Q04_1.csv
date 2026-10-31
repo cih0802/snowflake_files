@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q04-1 SV 요약 — SV 별 논리테이블·차원·메트릭·관계 수 + base 스키마
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q04-1 SV 요약 — SV 별 논리테이블·차원·메트릭·관계 수 + base 스키마
 SV_NAME,N_TABLES,N_DIMENSIONS,N_FACTS,N_METRICS,N_RELATIONSHIPS,BASE_SCHEMAS,CREATED
 SV_AD,4,55,0,18,3,GOLD,2026-09-14 10:12:22.912000+09:00
 SV_AD_INFLOW_ALLOC,2,6,0,6,1,GOLD,2026-10-21 12:40:53.456000+09:00

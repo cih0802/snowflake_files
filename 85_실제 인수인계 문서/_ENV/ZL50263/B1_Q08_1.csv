@@ -1,4 +1,4 @@
-# doc_id: B1 · as_of: 2026-10-31 02:09:15.469 +0900 · account: ZL50263 · query: Q08-1 SV 관계
+# doc_id: B1 · as_of: 2026-10-31 03:12:46.721 +0900 · account: ZL50263 · query: Q08-1 SV 관계
 SEMANTIC_VIEW_NAME,RELATIONSHIP_NAME,TABLE_NAME,FOREIGN_KEYS,REF_TABLE_NAME,REF_KEYS
 SV_AD,AD_TO_DATE,AD,"[ ⏎   ""PERF_DATE_SK"" ⏎ ]",DATE,"[ ⏎   ""DATE_SK"" ⏎ ]"
 SV_AD,AD_TO_DEVICE,AD,"[ ⏎   ""DEVICE_SK"" ⏎ ]",DEVICE,"[ ⏎   ""DEVICE_SK"" ⏎ ]"

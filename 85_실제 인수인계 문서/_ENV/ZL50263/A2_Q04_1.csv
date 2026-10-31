@@ -1,4 +1,4 @@
-# doc_id: A2 · as_of: 2026-10-31 02:08:27.454 +0900 · account: ZL50263 · query: Q04-1 GN_DW 객체 수(분모) — 스키마별 테이블·뷰 · SV · Agent (매트릭스 「전건 부여」 판정용)
+# doc_id: A2 · as_of: 2026-10-31 02:40:51.588 +0900 · account: ZL50263 · query: Q04-1 GN_DW 객체 수(분모) — 스키마별 테이블·뷰 · SV · Agent (매트릭스 「전건 부여」 판정용)
 SCHEMA_NAME,N_TABLE,N_VIEW
 BRONZE_AGENCY,4,0
 BRONZE_BIGQUERY,1032,0
@@ -12,8 +12,8 @@ GOLD_2,46,17
 GOLD_OLD,46,14
 ML,39,5
 MSTR,10,13
-OPS,16,1
-OPS_2,10,0
+OPS,20,2
+OPS_2,10,1
 SERVING,1,21
 SILVER,74,1
 SILVER_2,61,0

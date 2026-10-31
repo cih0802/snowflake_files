@@ -1,4 +1,4 @@
-# doc_id: A1 · as_of: 2026-10-31 02:08:23.242 +0900 · account: ZL50263 · query: Q06-2 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
+# doc_id: A1 · as_of: 2026-10-31 02:40:43.523 +0900 · account: ZL50263 · query: Q06-2 노출 경로 객체 — CoWork object · Streamlit · 컴퓨트 풀
 created_on,name,database_name,schema_name,title,comment,owner,query_warehouse,url_id,owner_role_type,idle_auto_shutdown_time_seconds,scheduled_tasks,artifact_repositories
 2026-10-26 13:42:41.275000+09:00,AE4O8Q2VQMKWF5KV,GN_DW,LAB,RPA_gndata,,GN_DW_ANALYST,GN_DW_ANALYTICS_WH,o562cxehbcyvtce7dspp,ROLE,,,[]
 2026-10-21 13:25:21.869000+09:00,DEV_DASHBOARD,GN_DW,LAB,회원통계보고서,"{""sourceWorkspaceUri"":""workspace:/USER%2524.PUBLIC.DEFAULT%2524/%ED%9A%8C%EC%9B%90%ED%86%B5%EA%B3%84%EB%B3%B4%EA%B3%A0%EC%84%9C"",""sourceWorkspacePath"":""/ws/USER%24/PUBLIC/DEFAULT%24/%ED%9A%8C%EC%9B%90%ED%86%B5%EA%B3%84%EB%B3%B4%EA%B3%A0%EC%84%9C/streamlit_app.py"",""sourceWorkspaceUserId"":""G2011032"",""createActionSource"":""workspaces-publish-targets""}",GN_DW_ANALYST,GN_DW_ANALYTICS_WH,7ljr3zlf4wzksf3gcfbp,ROLE,,,[]
