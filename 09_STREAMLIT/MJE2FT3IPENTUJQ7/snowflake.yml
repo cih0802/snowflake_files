@@ -1,0 +1,25 @@
+definition_version: 2
+entities:
+  streamlit_app:
+    type: streamlit
+    meta:
+      use_mixins:
+        - streamlit_shared
+    identifier:
+      name: MJE2FT3IPENTUJQ7
+      database: GN_DW
+      schema: LAB
+mixins:
+  streamlit_shared:
+    artifacts:
+      - pyproject.toml
+      - streamlit_app.py
+      - .streamlit/config.toml
+    title: Untitled 2
+    query_warehouse: GN_DW_ANALYTICS_WH
+    compute_pool: SYSTEM_COMPUTE_POOL_CPU
+    grants:
+      - privilege: USAGE
+        role: GN_DW_ANALYST
+        with_grant_option: true
+    main_file: streamlit_app.py

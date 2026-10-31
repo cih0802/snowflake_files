@@ -1,0 +1,28 @@
+definition_version: 2
+entities:
+  streamlit_app:
+    type: streamlit
+    meta:
+      use_mixins:
+        - streamlit_shared
+    identifier:
+      name: X39FI0ZHW8A02OFS
+      database: GN_DW
+      schema: LAB
+mixins:
+  streamlit_shared:
+    artifacts:
+      - pyproject.toml
+      - streamlit_app.py
+      - tab5_homepage.py
+      - tab4_target_ref.py
+      - monthly_target_ref.csv
+      - .streamlit/config.toml
+    title: 기획실 대시보드
+    query_warehouse: GN_DW_ANALYTICS_WH
+    compute_pool: SYSTEM_COMPUTE_POOL_CPU
+    grants:
+      - privilege: USAGE
+        role: GN_DW_ANALYST
+        with_grant_option: true
+    main_file: streamlit_app.py
