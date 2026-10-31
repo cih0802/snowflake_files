@@ -24,7 +24,7 @@ status: draft (S4 게이트 확인 대기)
 | 항목 | 값 |
 |---|---|
 | SV | 전부 `GN_DW.SERVING` · 소유 GN_DW_ADMIN · base = GOLD / SERVING 뷰(개수·목록 = `D08_SV요약.csv` · 2026-10-21 ZL50263 = 45 · GOLD 30 / SERVING 15) |
-| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$27 · EXECUTIVE VERSION$20 · MARKETING VERSION$23(2026-10-27 A6 Q07)(롤백 기준 = 그 직전 버전 · D10 §2) · 🆕 [2026-10-30 O273-B] EXECUTIVE = `05_SV-Agent_ai/53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` 로 `VERSION$23`(도구 17) 반영 기록 · 운영계 재캡처 전 = TBD(미검증) |
+| Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$30 · EXECUTIVE VERSION$23 · MARKETING VERSION$26(2026-10-31 A6 Q07 · 3종 모두 10-30 21:39 KST 생성)(롤백 기준 = 그 직전 버전 · D10 §2) |
 | Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 🆕 2026-10-30 재생성 = EXECUTIVE 17 / MARKETING 33 / MEMBER 31 · 경영 17 = O270 W3 `analyst_ad`·`analyst_ml_realtime_simulator` 제거 — 다시 넣지 않는다) |
 | Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(🆕 O274 = 2,163행 · 원천참고 1,154 제외 1,009 · RT-31~37 추가) · lag 1 day |
 | spec 정본 | 워크스페이스 `cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |
@@ -96,7 +96,7 @@ python3 12_agent개선과제/tools/build_biz_definition_corpus.py --apply  # TRU
 
 | 항목 | 운영계 |
 |---|---|
-| Agent 기본 버전 | TBD(미검증) — O250 운영계 반영 대기 |
+| Agent 기본 버전 | MEMBER VERSION$30 · EXECUTIVE VERSION$23 · MARKETING VERSION$26(2026-10-31 A6 Q07) |
 | spec 스테이지 size | TBD(미검증) |
 | 코퍼스 행수 | TBD(미검증) |
 | Search `source_data_num_rows` | TBD(미검증) |
