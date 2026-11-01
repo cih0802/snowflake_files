@@ -14,7 +14,7 @@
 -- WARN: BRONZE·SILVER·ML·MSTR 스키마는 기능 역할에 주지 않는다 — SERVING 뷰는 소유자 권한으로 하위를 읽는다
 --    · Agent(Analyst)는 SV base 테이블(GOLD·SERVING 뷰)에 SQL 을 직접 실행하므로 SV 와 base 를 같은 분류로 준다(C3)
 -- 미분류(라이브에 있으나 분류표에 없음 · GRANT 하지 않음) = 4건
---   · SERVING.DIM_MEMBER_CURRENT
+--   · 종전 잔존 뷰 SERVING.DIM_MEMBER_CURRENT (라이브 실명 · GOLD 개명 무관)
 --   · SERVING.DIM_MONTH
 --   · SERVING.FACT_AD_COMBINED
 --   · SERVING.ML_LTV_SCORE_V

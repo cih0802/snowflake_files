@@ -5,7 +5,7 @@ version: 1.0
 as_of: 2026-10-21 (운영계 ZL50263 · 정책·부착·권한·행 수 = 캡처 · 분류·형태 일치율 = 원천 표본 측정)
 source_docs:
   - 10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md §7 (ANALYST OPS 권한 회수 결정)
-  - 02_GN_DW_building/06_RUNBOOK.md §6.2 (USE SECONDARY ROLES NONE 점검 규칙)
+  - 20_build/21_env_rbac/06_RUNBOOK.md §6.2 (USE SECONDARY ROLES NONE 점검 규칙)
 source_queries:
   - CALL SYSTEM$CLASSIFY(<표>, {'sample_count': 1000}) × 4 — BRONZE_CRM.TM_MM_FDRM_MBER_INFO · GOLD.DIM_MEMBER · GOLD.DIM_PAYMENT_ACCOUNT · OPS.ALERT_RECIPIENT_CONFIG (태그 미부착 · 읽기)
   - INFORMATION_SCHEMA.COLUMNS 컬럼명 패턴 스캔(EMAIL·TEL·ADDR·BIRTH·ACNUT 등) · SHOW GRANTS ON TABLE · INFORMATION_SCHEMA.PROCEDURES · GET_DDL(PROCEDURE)
@@ -59,7 +59,7 @@ status: review
   - `SENDER_EMAIL` 제외 근거 = 값이 **고유값 4종**이고 전부 조직 발신 주소(`@gni.kr` · 회원·직원 개인 주소 아님 · COUNT DISTINCT 실측).
   - 형태 재확인(같은 날 · 정규식 `01[016789]-?[0-9]{3,4}-?[0-9]{4}` · `[가-힣]{2,4}`) = 휴대폰 2컬럼 99.8~99.99% · 이름 4컬럼 97.6~98% · `TM_PM_DNTN_DTLS.PAYER_NM` 은 법인명 혼재(17%)지만 개인 이름이 있어 대상 유지.
   - 원천 값 중 「(임의생성)」 표기가 섞여 있다 — 데이터 일부 가공 가능성 · 실데이터 여부는 원천 담당 확인 전까지 **실데이터로 취급**한다.
-  - 원본 정본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql`(이 산출물의 [2-B] 와 같은 내용).
+  - 원본 정본 = `30_operate/31_monitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql`(이 산출물의 [2-B] 와 같은 내용).
 
 - 형태 기준 = 휴대폰·전화: 숫자만 남겨 `0` 으로 시작하는 9~11자리 · 이름: 한글 2~5자 · 이메일: `x@y.z`. 근사 집계다(형태만 보고 실제 개인 여부는 확인하지 않았다).
 - 읽을 수 있는 롤(운영계 `BRONZE_CRM` 테이블 SELECT 53/53 · A2 Q03 · 2026-10-21) = GN_DW_ADMIN(소유) · **GN_DW_ANALYST · GN_DW_ENGINEER · GN_DW_DBT · GN_DW_LOADER**. ANALYST 의 BRONZE 읽기는 2026-08-18 요건 변경으로 열린 것이다(RUNBOOK §6.2).
@@ -90,6 +90,6 @@ status: review
 
 | # | 기대 | 실측 | 처리 |
 |---|---|---|---|
-| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 🟢 2026-10-20 결정(A8-28) = **12 컬럼 마스킹 · `SENDER_EMAIL` 제외 · 스키마 권한 유지** · 원본 = `08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql` · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
+| DR-30 | 「BRONZE 원천 PII 는 dbt 가 제외하므로 노출 없음」(모델 주석 취지) · 분류기가 PII 를 찾아 준다 | BRONZE 13 컬럼에 이름·휴대폰·연락처·이메일 원문(§2-B) · ANALYST·ENGINEER·DBT 가 SELECT 가능 · 분류기는 이 중 이메일 1개만 검출 | 마스킹 SQL [2-B](미실행) · 🟢 2026-10-20 결정(A8-28) = **12 컬럼 마스킹 · `SENDER_EMAIL` 제외 · 스키마 권한 유지** · 원본 = `30_operate/31_monitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql` · 자동 분류에만 의존하지 말고 COMMENT 기반 형태 점검을 A7 정기점검에 넣을 것을 제안한다(A7 미반영) |
 
 - 정책 0 은 A0 와 일치한다.

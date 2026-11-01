@@ -366,6 +366,7 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 |---|---|
 | 15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
+| 15_MSTR 이관 PoC/mstr-answer.csv | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
@@ -376,7 +377,6 @@ SQL 파일 머리 = 표준 헤더(Purpose · Target · Run order · Depends on �
 | 15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
-| 15_MSTR 이관 PoC/mstr-answer.csv | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |
 | 15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql | MSTR 리포트 이관 PoC: 원본 DDL·Snowflake 적용 DDL·검증·tools |

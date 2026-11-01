@@ -1,0 +1,55 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 12_agent개선과제/output — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 22개 · 하위 폴더 4개 · 하위 전체 파일 178개
+
+## 하위 폴더
+
+| 폴더 | 파일 수(하위 포함) |
+|---|---|
+| `o217_eval/` | 24 |
+| `o217b/` | 39 |
+| `o218/` | 55 |
+| `raw/` | 38 |
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `O217_biz_definition_corpus.csv` | 1MB | 2026-10-31 | - | CSV 헤더: DOC_ID,DOC_TYPE,TITLE,SYNONYMS,DEFINITION,FORMULA,AGENT_SCOPE,TOOL_NAME,SV_FIELD,LIMITATION,SOURCE_FILE,SEARCH_TEXT,KEYWORDS,IS_ADDI… |
+| `O231_LTV_현업비교표.csv` | 17KB | 2026-10-31 | - | CSV 헤더: ﻿분류축,분류값,생존분석 대상 회원수,표본,현행 유지개월(중단자 평균 · 최근24개월 획득),최근24개월 획득 회원수,현행 유지개월(중단자 평균 · 전체 이력),기대 유지개월 상한12,상한24,상한36,상한48,상한60,12개월 생존율(… |
+| `O231_LTV_현업비교표.md` | 12KB | 2026-10-31 | - | 회원 LTV 기대 유지개월 — 상한별 비교 (🟠 잠정 정의 · 현업 확인 요청) |
+| `O232_광고_매핑_추천안.csv` | 62KB | 2026-10-31 | - | CSV 헤더: ﻿광고구분,소재명(원천),미연결 광고비(원),최초집행일,최종집행일,추천등급,추천 캠페인카테고리,추천 마케팅캠페인,후보 마케팅캠페인 수,참고: 개발 최다 마케팅캠페인,현업 확정(○/수정값),확정 연결수준,확정 캠페인카테고리,확정 마케팅캠페… |
+| `O232_광고_매핑_추천안.md` | 5KB | 2026-10-31 | - | 미연결 광고비 → 캠페인 매핑 추천안 (#29 · 실데이터 기반) |
+| `O233_스트림릿_광고비_진단.md` | 4KB | 2026-10-31 | - | 스트림릿 「비용투입 대비 개발성과」 광고비가 0 에 가까운 이유 (O233 · jw08094 · 2026-10-15) |
+| `O233_스트림릿_비용투입대비개발성과_수정안.sql` | 6KB | 2026-10-31 | - | O233 — 스트림릿 「비용투입 대비 개발성과 / 광고비 미집계」 수정안 (jw08094 · 2026-10-15) |
+| `O238_link_key_gap.csv` | 4KB | 2026-10-31 | - | CSV 헤더: BUNDLE,SOURCE_PAIR,SOURCE_KEY,DW_COLUMN,CRM_COLUMN,WIRING_STATUS,DISTINCT_VALS,MATCHED_VALS,ROW_MATCH_PCT,UNMATCHED_NOTE,ACTION,MEAS… |
+| `O239_unmatched_link_values.csv` | 8KB | 2026-10-31 | - | CSV 헤더: BUNDLE,SOURCE_COLUMN,UNMATCHED_VALUE,ROWS,AMOUNT_WON,AMOUNT_BASIS,CRM_LOOKUP,ACTION,MEASURED |
+| `O249_마케팅캠페인_미연결_CRM캠페인.csv` | 91KB | 2026-10-31 | - | CSV 헤더: ﻿CAMPAIGN_BK,CAMPAIGN_NAME,CAMPAIGN_TYPE,PARENT_CAMPAIGN_NAME,BRAND,CMMN_BRND_NM,INFLOW_PATH,MARKETING_CAMPAIGN,USE_YN,CAMPAIGN_OPEN… |
+| `O270_W6_verify.py` | 4KB | 2026-10-31 | - | """O270 W6 — 역할별 허용/차단 검증(개발계 ZS83821 · 2026-10-29). |
+| `O270_W6_검증증거.csv` | 7KB | 2026-10-31 | - | CSV 헤더: role,secondary,object,class,expected,got,verdict |
+| `O270_add_ddl_grants.py` | 2KB | 2026-10-31 | - | """O270 W5 — SV·SERVING 뷰 DDL 파일에 접근 역할 GRANT 줄 추가(일회성 · 2026-10-29 O270-F · 사용자 승인). |
+| `O270_apply_rbac_dev.py` | 2KB | 2026-10-31 | - | file 대상 SQL(기본 05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql · 운영계 판 = 48_RBAC_SOURCE_ACCESS_ZL50263.sql) |
+| `O270_gen_rbac_matrix.py` | 2KB | 2026-10-31 | - | """O270 W9 — 권한 매트릭스(객체 × 기능 역할) 생성기 · 정본 = output/O270_source_class.csv · 손으로 고치지 말고 재생성.""" |
+| `O270_gen_rbac_sql.py` | 9KB | 2026-10-31 | - | out 05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql --account ZL50263 |
+| `O270_live_object_types_ZL50263.txt` | 3KB | 2026-10-31 | - | GOLD.DIM_AD_CREATIVE/TABLE |
+| `O270_live_object_types_ZS83821_20261029.txt` | 3KB | 2026-10-31 | - | GOLD.DIM_AD_CREATIVE/TABLE |
+| `O270_source_class.csv` | 26KB | 2026-10-31 | - | CSV 헤더: layer,object,type,source_class,evidence,parents |
+| `O270_권한매트릭스.md` | 3KB | 2026-10-31 | - | O270 권한 매트릭스(객체 × 기능 역할) |
+| `질문별_답변현황_CACHE_20261006_1721.xlsx` | 92KB | 2026-10-31 | - |  |
+| `질문별_답변현황_ZL50263_20261006_1721.xlsx` | 92KB | 2026-10-31 | - |  |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

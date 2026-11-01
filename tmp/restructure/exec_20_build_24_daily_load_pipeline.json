@@ -1,0 +1,16 @@
+{
+ "group": "20_build/24_daily_load_pipeline/",
+ "start": "2026-10-31 15:49:04",
+ "moved": [
+  "11_일적재pipeline 구성/00_README.md",
+  "11_일적재pipeline 구성/00_개요_및_실행순서.md",
+  "11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql",
+  "11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql",
+  "11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql",
+  "11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql",
+  "11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

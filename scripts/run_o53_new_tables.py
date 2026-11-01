@@ -28,7 +28,7 @@ import sys
 sys.path.insert(0, '/workspace/scripts')
 import sfconn  # noqa: E402
 
-DDL_PATH = '/workspace/03_top-down_gold/06_DDL.sql'
+DDL_PATH = '/workspace/10_design/11_gold_topdown/06_DDL.sql'
 TARGETS = ['DIM_MONTH', 'DIM_MEMBER_CURRENT', 'DIM_MEMBER_ACQUISITION', 'FACT_DEV_ACHIEVEMENT']
 DROP_VIEWS = ['DIM_MEMBER_CURRENT', 'DIM_MEMBER_ACQUISITION', 'WIDE_DEV_ACHIEVEMENT']
 EXPECT_COLS = {'DIM_MONTH': 8, 'DIM_MEMBER_CURRENT': 24,

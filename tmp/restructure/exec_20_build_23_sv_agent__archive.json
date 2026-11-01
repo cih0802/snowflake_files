@@ -1,0 +1,21 @@
+{
+ "group": "20_build/23_sv_agent/_archive/",
+ "start": "2026-10-31 15:49:03",
+ "moved": [
+  "05_SV-Agent_ai/_archive/00_README.md",
+  "05_SV-Agent_ai/_archive/00_SV-Agent 작업계획_legacy.md",
+  "05_SV-Agent_ai/_archive/05_24b_대사_CAMPAIGN_CUM_STOP.sql",
+  "05_SV-Agent_ai/_archive/05_25b_대사_CAMPAIGN_MONTHLY.sql",
+  "05_SV-Agent_ai/_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql",
+  "05_SV-Agent_ai/_archive/09_AGENT_spec_구현_원본_20260722.sql",
+  "05_SV-Agent_ai/_archive/13_SV_AD_배포_추가작업_원본_20260728.sql",
+  "05_SV-Agent_ai/_archive/15_O183_GOLD공란채움_배포.sql",
+  "05_SV-Agent_ai/_archive/1_SV_metric 배속.md",
+  "05_SV-Agent_ai/_archive/22_ML_SV_DDL_pre_O198.sql",
+  "05_SV-Agent_ai/_archive/23_MSTR_SV_DDL.sql",
+  "05_SV-Agent_ai/_archive/24_MSTR_AGENT_배포.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

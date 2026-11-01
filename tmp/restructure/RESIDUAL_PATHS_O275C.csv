@@ -1,0 +1,3 @@
+﻿axis,file,line,token,text
+A,scripts/sv_common_block_gate.py,24,05_SV-Agent_ai,"os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))  # 80 패키지는 고정 영역 · 옛 이름 유지(O275)"
+A,scripts/sv_no_rollup_gate.py,21,05_SV-Agent_ai,"os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))  # 80 패키지는 고정 영역 · 옛 이름 유지(O275)"

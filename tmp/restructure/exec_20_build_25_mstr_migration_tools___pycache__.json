@@ -1,0 +1,11 @@
+{
+ "group": "20_build/25_mstr_migration/tools/__pycache__/",
+ "start": "2026-10-31 15:50:57",
+ "moved": [
+  "15_MSTR 이관 PoC/tools/__pycache__/mstr_common.cpython-312.pyc",
+  "15_MSTR 이관 PoC/tools/__pycache__/mstr_verify.cpython-312.pyc"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

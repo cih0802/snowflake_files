@@ -6,7 +6,7 @@ as_of: 2026-10-21 (ZL50263 운영계 실측)
 source_docs:
   - 10_실무자_인수인계/A6_일배치_장애대응_런북.md (일 흐름 · 장애 유형 F1~F9 · 재처리 원칙)
   - 80_인수인계_프로젝트완료 및 유지보수용/03_MSTR_이관/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql (74행 전량 · 운영계 Task 기재)
-  - 02_GN_DW_building/06_RUNBOOK.md (783행 전량 · §1·§4·§9)
+  - 20_build/21_env_rbac/06_RUNBOOK.md (783행 전량 · §1·§4·§9)
 source_queries:
   - 85_실제 인수인계 문서/_근거쿼리/N04_배치SLA_근거.sql (Q01~Q08 · 읽기 전용)
   - "[ENV] 값 정본 = _ENV/<계정>/N04_*.csv"

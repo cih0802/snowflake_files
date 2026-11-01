@@ -22,16 +22,16 @@ FAKE_INV = {
 def _run(tmpdir, doc_text, agent_text, inv=None, retired=None, undeployed_prefix=None):
     """임시 표면을 분모로 게이트를 돌리고 (종료코드, 출력) 을 준다."""
     os.makedirs(os.path.join(tmpdir, 'docs'), exist_ok=True)
-    os.makedirs(os.path.join(tmpdir, 'cortex_project/agents/A_TEST'), exist_ok=True)
+    os.makedirs(os.path.join(tmpdir, '20_build/28_cortex_project/agents/A_TEST'), exist_ok=True)
     open(os.path.join(tmpdir, 'docs/d.md'), 'w', encoding='utf-8').write(doc_text)
-    open(os.path.join(tmpdir, 'cortex_project/agents/A_TEST/agent_spec.yaml'),
+    open(os.path.join(tmpdir, '20_build/28_cortex_project/agents/A_TEST/agent_spec.yaml'),
          'w', encoding='utf-8').write(agent_text)
 
     o_root, o_glob, o_docs = G.ROOT, G.AGENT_GLOB, G.DOC_GLOBS
     o_ret, o_pre = G.RETIRED_IDENTS, G.UNDEPLOYED_PREFIX
     G.ROOT = tmpdir
-    G.AGENT_GLOB = os.path.join(tmpdir, 'cortex_project/agents/*/agent_spec.yaml')
-    G.DOC_GLOBS = ['docs/*.md', 'cortex_project/agents/*/agent_spec.yaml']
+    G.AGENT_GLOB = os.path.join(tmpdir, '20_build/28_cortex_project/agents/*/agent_spec.yaml')
+    G.DOC_GLOBS = ['docs/*.md', '20_build/28_cortex_project/agents/*/agent_spec.yaml']
     if retired is not None:
         G.RETIRED_IDENTS = retired
     if undeployed_prefix is not None:

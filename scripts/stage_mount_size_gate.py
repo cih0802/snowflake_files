@@ -56,7 +56,7 @@ def stage_list():
 
     🔴🔴 **구분자는 탭이다 — 공백으로 자르지 마라.** O167 초판이 `split('  ')` 로 잘라
     **0건**을 냈다(그리고 0건은 「깨끗하다」가 아니라 **판정식 실패**였다 · `O111 ㉠`).
-    🟢 탭으로 자르면 **공백이 든 파일명**(`Untitled 3.sql` 등)도 정확히 대조된다.
+    🟢 탭으로 자르면 **공백이 든 파일명**(`tmp/root_scratch/Untitled_3.sql` 등)도 정확히 대조된다.
     """
     r = subprocess.run(['cortex', 'ws', 'ls', WS], capture_output=True, text=True, timeout=600)
     if r.returncode != 0:

@@ -6,9 +6,9 @@
 -- 대상(운영계 113 vs 개발계 110 · 운영계에만 4 · 2026-10-30 1단계)
 --   SERVING.DIM_MEMBER_CURRENT · SERVING.DIM_MONTH · SERVING.FACT_AD_COMBINED · SERVING.ML_LTV_SCORE_V
 -- 개발계 정본 검색 근거(O271-A · 2026-10-30 · rc=0)
---   · ML_LTV_SCORE_V = 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql:271 「[6] ⛔ ML_LTV_SCORE_V — [2026-10-02 O198] 원천 2종 … 이관 제외로 폐기」
---   · DIM_MONTH · DIM_MEMBER_CURRENT = 05_SV-Agent_ai/00_README.md:41 「helper 3종 물리 DROP + §G 절 삭제 완료 — 어느 파일도 helper 를 만들지 않는다」
---   · FACT_AD_COMBINED = 05_SV-Agent_ai/00_README.md:44 「05_7 의 SERVING.FACT_AD_COMBINED 동봉은 폐지」
+--   · ML_LTV_SCORE_V = 20_build/23_sv_agent/21_ML_SERVING_뷰_DDL.sql:271 「[6] ⛔ ML_LTV_SCORE_V — [2026-10-02 O198] 원천 2종 … 이관 제외로 폐기」
+--   · DIM_MONTH · DIM_MEMBER_CURRENT = 20_build/23_sv_agent/00_README.md:41 「helper 3종 물리 DROP + §G 절 삭제 완료 — 어느 파일도 helper 를 만들지 않는다」
+--   · FACT_AD_COMBINED = 20_build/23_sv_agent/00_README.md:44 「05_7 의 SERVING.FACT_AD_COMBINED 동봉은 폐지」
 --   ⇒ 4개 모두 현행 정본에 CREATE 없음 = 운영계 잔존 뷰 「후보」 · 🔴 원천 분류는 아래 리니지 결과로만 한다
 --
 -- Q01 정의 원문(원천 판정 1차 근거)

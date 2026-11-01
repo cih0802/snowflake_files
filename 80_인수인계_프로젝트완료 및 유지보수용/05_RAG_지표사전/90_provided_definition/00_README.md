@@ -37,3 +37,37 @@ END-METADATA -->
 ## 소비처
 - `../03_top-down_gold/02_지표분류.md` (215 분류)
 - `../03_top-down_gold/03_설계.md` (15 DIM + 9 FACT)
+
+
+## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
+
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+
+| 파일 | 크기 | 상태 | 비고 |
+|---|---|---|---|
+| `02_지표사전 공통.md` | 20KB | 정본 | - |
+| `03_지표사전 신규.md` | 17KB | 정본 | - |
+| `04_마케팅_보고서필드 인벤토리.md` | 11KB | 정본 | - |
+| `05_회원_보고서필드 인벤토리.md` | 25KB | 정본 | - |
+| `11_bronze_crm_ddl.sql` | 38KB | 정본 | - |
+| `12_bronze_erp_ddl.sql` | 14KB | 정본 | - |
+| `13_bronze_agency_ddl.sql` | 59KB | 정본 | - |
+| `15_bronze_ga4_ddl.sql` | 8KB | 정본 | - |
+| `16_bronze_gsc_ddl.sql` | 7KB | 정본 | - |
+| `18_silver_ddl.sql` | 346KB | 정본 | - |
+| `20_ML_ddl.sql` | 194KB | 정본 | - |
+| `COCO_mstr_dw_reference.md` | 35KB | 참고 | 이름 패턴(부록/이력/근거) |
+| `COCO_mstr_virtual_structure_reference.md` | 35KB | 참고 | 이름 패턴(부록/이력/근거) |
+| `CRM-AGENCY 컬럼명 매핑.csv` | 1KB | 정본 | - |
+| `GA4스키마 20260626.csv` | 20KB | 정본 | - |
+| `agent 질의 피드백_2.csv` | 33KB | 정본 | - |
+| `gni_실적부서.csv` | 22KB | 정본 | - |
+| `공통지표_flat_20261003.csv` | 22KB | 정본 | - |
+| `데이터플랫폼 ML 예측관련_취합_20260730.xlsx` | 32KB | 정본 | - |
+| `데이터플랫폼 ML예측프롬프트_sample.csv` | 23KB | 참고 | 이름 패턴(부록/이력/근거) |
+| `데이터플랫폼 현업agent 피드백 추가본_20261007.csv` | 22KB | 정본 | - |
+| `신규지표_20260820.csv` | 18KB | 정본 | - |
+| `조직도_20260914.csv` | 22KB | 중복 | 내용 동일: gni_실적부서.csv |
+| `지표용어통합 20260623.csv` | 32KB | 정본 | - |
+| `컬럼정의서 20260714.csv` | 67KB | 정본 | - |
+| `테이블정의 20260629.csv` | 4KB | 정본 | - |

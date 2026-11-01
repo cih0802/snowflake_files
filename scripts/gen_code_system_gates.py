@@ -14,7 +14,7 @@
   G7 단위·정의 정합 — 자동 판정 불가(설계 결정 사안)
 
 원칙: P13(커버리지≠정확도) · P14(부재판정은 실측필수) · P27(도메인 부분적재는 자동검증을 통과한다)
-출력: 30_output_share/07_코드체계_관문측정.md
+출력: 60_share/61_output_share/07_코드체계_관문측정.md
 """
 import csv, os, re, sys, json, collections
 from datetime import date
@@ -24,7 +24,7 @@ sys.path.insert(0, "/tmp")
 from sfconn import conn, q
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 BASENAME = "07_코드체계_관문측정"
 GEN_PATH = "scripts/gen_code_system_gates.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())

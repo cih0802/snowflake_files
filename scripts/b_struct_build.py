@@ -12,7 +12,7 @@
 입력
     · _ENV/<계정>/B1_Q01~Q11 csv (라이브 구조 · [공통])
     · 10_dbt_pipeline/models/**/*.sql · models/silver/_sources.yml (dbt 계보 · 파일)
-    · cortex_project/agents/*/agent_spec.yaml (Agent 도구 · 파일)
+    · 20_build/28_cortex_project/agents/*/agent_spec.yaml (Agent 도구 · 파일)
 출력(85_실제 인수인계 문서/20_정식산출물/ · 첫 줄 각주에 계정·생성 시각)
     · D04_테이블컬럼정의서.xlsx  시트 = 요약 · 테이블목록 · 레이어별 컬럼(BRONZE/SILVER/GOLD/SERVING/ML/MSTR/OPS)
     · D04_테이블목록.csv · D04_컬럼정의.csv
@@ -36,7 +36,7 @@ import sys
 BASE = '85_실제 인수인계 문서'
 OUT = os.path.join(BASE, '20_정식산출물')
 DBT = '10_dbt_pipeline'
-AGENTS = 'cortex_project/agents'
+AGENTS = '20_build/28_cortex_project/agents'
 LAYERS = ['BRONZE', 'SILVER', 'GOLD', 'SERVING', 'ML', 'MSTR', 'OPS']
 
 

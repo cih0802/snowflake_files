@@ -1,0 +1,3194 @@
+{
+ "03_top-down_gold": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 13574,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_작업 계획.md",
+    "size": 5811,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GOLD_PLAN"
+   },
+   {
+    "name": "02_지표 분류.md",
+    "size": 30633,
+    "status": "정본",
+    "why": "-",
+    "head": "# GOLD 지표 분류 / 태깅 (1단계 산출물)"
+   },
+   {
+    "name": "03_테이블 설계.md",
+    "size": 70938,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GOLD_DESIGN"
+   },
+   {
+    "name": "04_SV파생 매핑.md",
+    "size": 21888,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GOLD_DERIVED_MAPPING"
+   },
+   {
+    "name": "05_필드 인벤토리.md",
+    "size": 73727,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GOLD_FIELD_INVENTORY"
+   },
+   {
+    "name": "06_DDL.sql",
+    "size": 246512,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "06_DDL_설계이력_부록.md",
+    "size": 177216,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# 06_DDL.sql — 설계·실측 이력 부록"
+   },
+   {
+    "name": "07_메타.md",
+    "size": 9728,
+    "status": "정본",
+    "why": "-",
+    "head": "# GOLD 제약·메타 정의 설명서 (인수인계용)"
+   },
+   {
+    "name": "08_silver의존.md",
+    "size": 24129,
+    "status": "정본",
+    "why": "-",
+    "head": "# GOLD → SILVER 의존(lineage) 설명서 (8단계 산출물 · 인수인계용)"
+   },
+   {
+    "name": "09_빅테이블 VIEW.md",
+    "size": 267232,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GOLD_WIDE_VIEWS"
+   },
+   {
+    "name": "10_WIDE VIEW 코멘트.sql",
+    "size": 53280,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW.GOLD WIDE VIEW 컬럼 COMMENT 참고본 (구 일괄 적용 스크립트)."
+   },
+   {
+    "name": "11_BRONZE적재 컬럼대조.md",
+    "size": 8094,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: BRONZE_GOLD_COVERAGE_CHECK"
+   },
+   {
+    "name": "12_gold 테이블명 변경작업 근거",
+    "size": 2272,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": ""
+   },
+   {
+    "name": "99_next_prompt.md",
+    "size": 6405,
+    "status": "정본",
+    "why": "-",
+    "head": "# GN_DW 다음 스텝 인수인계 (2026-07-20 기준)"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 27
+   }
+  ]
+ },
+ "04_silver_design": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 8692,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md",
+    "size": 22645,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SILVER_BRIDGE_PLAN"
+   },
+   {
+    "name": "03_SILVER_작업계획_CRM전용 20260714.md",
+    "size": 26146,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SILVER_CRM_WORKPLAN"
+   },
+   {
+    "name": "04_SILVER_작업계획_GA4전용 20260714.md",
+    "size": 14549,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SILVER_GA4_WORKPLAN"
+   },
+   {
+    "name": "05_SILVER_작업계획_ERP전용 20260714.md",
+    "size": 9036,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SILVER_ERP_WORKPLAN"
+   },
+   {
+    "name": "06_SILVER_작업계획_AGENCY전용 20260714.md",
+    "size": 15009,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SILVER_AGENCY_WORKPLAN"
+   },
+   {
+    "name": "07_GA4_SILVER_샤드통합 설계결정.md",
+    "size": 32094,
+    "status": "정본",
+    "why": "-",
+    "head": "# GA4 일별 샤드 → SILVER 통합 설계 결정서"
+   },
+   {
+    "name": "08_SILVER_DDL_설계이력_부록.md",
+    "size": 72703,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# 08_SILVER_테이블DDL_20260714.sql — 설계·실측 이력 부록"
+   },
+   {
+    "name": "08_SILVER_테이블DDL_20260714.sql",
+    "size": 174608,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql",
+    "size": 4528,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_SILVER_적재쿼리_20260714.sql",
+    "size": 62416,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW SILVER CRM 정제 적재 쿼리 (STEP 3 INSERT OVERWRITE + 발송 PK ALTER). 테이블 정의 DDL 은 08_SILVER_테이블DDL_20260714.sql 참조."
+   },
+   {
+    "name": "10_SILVER_RUN_이력_비교_20260714.md",
+    "size": 11307,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "14_GA4_작업지시 프롬프트_20260714.md",
+    "size": 8417,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GA4_WORK_PROMPT"
+   },
+   {
+    "name": "15_dbt파이프라인_작업지시 프롬프트_20260714.md",
+    "size": 9973,
+    "status": "정본",
+    "why": "-",
+    "head": "# 순서 7 — dbt 파이프라인 일괄 구성 작업지시 프롬프트"
+   },
+   {
+    "name": "22_GA4_파이프라인_dbt로 작업전_주의사항.md",
+    "size": 13944,
+    "status": "정본",
+    "why": "-",
+    "head": "# GA4 파이프라인 작업 전 주의사항 (dbt 버전)"
+   },
+   {
+    "name": "23_GA4_파이프라인_SP로 작업전_주의사항.md",
+    "size": 5420,
+    "status": "정본",
+    "why": "-",
+    "head": "# GA4 파이프라인 작업 전 주의사항"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "S1_CRM_entity_design_legacy",
+    "files": 16
+   },
+   {
+    "name": "_archive",
+    "files": 18
+   }
+  ]
+ },
+ "06_snapshot": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1060,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_스냅샷_아키텍처_및_네이밍룰.md",
+    "size": 14657,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GN_DW_SNAPSHOT_ARCHITECTURE_AND_NAMING_RULE"
+   },
+   {
+    "name": "02_스냅샷_파이프라인_구축_작업계획.md",
+    "size": 13516,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GN_DW_SNAPSHOT_PIPELINE_IMPLEMENTATION_PLAN"
+   },
+   {
+    "name": "03_스냅샷_환경구축_및_검증쿼리.sql",
+    "size": 8768,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   }
+  ],
+  "subdirs": []
+ },
+ "90_provided_definition": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 3168,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_원천보고서_인벤토리 인덱스.md",
+    "size": 3104,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SRC_INV_INDEX"
+   },
+   {
+    "name": "02_지표사전 공통.md",
+    "size": 20688,
+    "status": "정본",
+    "why": "-",
+    "head": "# 공통 지표 사전 (Common Metric Dictionary)"
+   },
+   {
+    "name": "03_지표사전 신규.md",
+    "size": 17128,
+    "status": "정본",
+    "why": "-",
+    "head": "# 신규 지표 사전 (New Metric Dictionary)"
+   },
+   {
+    "name": "04_마케팅_보고서필드 인벤토리.md",
+    "size": 11488,
+    "status": "정본",
+    "why": "-",
+    "head": "# 마케팅 보고서 × 필드 × 원천(Source-of-Record) 인벤토리"
+   },
+   {
+    "name": "05_회원_보고서필드 인벤토리.md",
+    "size": 25424,
+    "status": "정본",
+    "why": "-",
+    "head": "# 회원 보고서 × 필드 × 원천(Source-of-Record) 인벤토리"
+   },
+   {
+    "name": "06_지표용어사전 20260624.md",
+    "size": 36848,
+    "status": "정본",
+    "why": "-",
+    "head": "# 지표 용어 사전 (Term Dictionary)"
+   },
+   {
+    "name": "07_추가_지표사전_20260813기준.md",
+    "size": 7328,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: METRIC_DICT_ADDITIONAL_20260813"
+   },
+   {
+    "name": "07_추가_지표사전_20260813기준_raw.txt",
+    "size": 3632,
+    "status": "정본",
+    "why": "-",
+    "head": "구분\t순서\t지표명\t정의\t계산식\t데이터 출처"
+   },
+   {
+    "name": "11_bronze_crm_ddl.sql",
+    "size": 39120,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.BRONZE_CRM with managed access COMMENT='원천 데이터 적재 - CRM (회원/납입/캠페인)';"
+   },
+   {
+    "name": "12_bronze_erp_ddl.sql",
+    "size": 14288,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.BRONZE_ERP with managed access COMMENT='원천 데이터 적재 - ERP (SMS/알림톡/마케팅 발송)';"
+   },
+   {
+    "name": "13_bronze_agency_ddl.sql",
+    "size": 60768,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.BRONZE_AGENCY with managed access COMMENT='원천 데이터 적재 - 대행사 (디지털/DRTV/재송출 광고)';"
+   },
+   {
+    "name": "15_bronze_ga4_ddl.sql",
+    "size": 7808,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.BRONZE_GA4;"
+   },
+   {
+    "name": "16_bronze_gsc_ddl.sql",
+    "size": 7200,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.BRONZE_GSC;"
+   },
+   {
+    "name": "18_silver_ddl.sql",
+    "size": 354368,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.SILVER with managed access COMMENT='정제/통합 레이어 — dbt 모델 테이블(CRM·BIGQUERY·ERP·AGENCY·bridge 계열). 객체 수는 INFORMATION_SCHEMA.TABLES 로 조회한다';"
+   },
+   {
+    "name": "20_ML_ddl.sql",
+    "size": 198224,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace schema GN_DW.ML;"
+   },
+   {
+    "name": "BRONZE_CRM 테이블 정보.MD",
+    "size": 83344,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "COCO_mstr_dw_reference.md",
+    "size": 35616,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# Snowflake Streamlit CoCo용 MSTR_DW·MSTR_ODS 통합 참조 문서"
+   },
+   {
+    "name": "COCO_mstr_virtual_structure_reference.md",
+    "size": 36160,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# Snowflake CoCo용 MSTR_DW 가상 구조·CRM 물리 구조 참조 문서"
+   },
+   {
+    "name": "CRM-AGENCY 컬럼명 매핑.csv",
+    "size": 640,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿대행사시트명,CRM컬럼명,시트내컬럼명"
+   },
+   {
+    "name": "GA4스키마 20260626.csv",
+    "size": 20352,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿그룹,최상위 필드,중첩 필드,데이터 타입,모드,설명"
+   },
+   {
+    "name": "agent 질의 피드백_2.csv",
+    "size": 34192,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿팀,순번,질의,머신러닝 여부,개발자 비고,기존 작업 여부 / 정보,답변가능여부,현업 비고,확인사항(261013),비고,확인사항2"
+   },
+   {
+    "name": "gni_실적부서.csv",
+    "size": 22480,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿부서명,부서코드,부서 경로"
+   },
+   {
+    "name": "공통지표_flat_20261003.csv",
+    "size": 22768,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿구분,순서,지표명,정의,계산식,데이터 출처,합의 필요사항,,,,"
+   },
+   {
+    "name": "데이터플랫폼 ML 예측관련_취합_20260730.xlsx",
+    "size": 32400,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "데이터플랫폼 ML예측프롬프트_sample.csv",
+    "size": 23264,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "﻿요청부서,구분,세부구분,프롬프트,필수 조건값,세부 조건값,비고"
+   },
+   {
+    "name": "데이터플랫폼 현업agent 피드백 추가본_20261007.csv",
+    "size": 22368,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿팀,순번,질의,머신러닝 여부,개발자 비고,기존 작업 여부 / 정보,답변가능여부,현업 비고,열1"
+   },
+   {
+    "name": "신규지표_20260820.csv",
+    "size": 18480,
+    "status": "정본",
+    "why": "-",
+    "head": "데이터플랫폼 신규지표,,,,,1차 논의 일자 : 26.05.08,"
+   },
+   {
+    "name": "조직도_20260914.csv",
+    "size": 22480,
+    "status": "중복",
+    "why": "내용 동일: gni_실적부서.csv",
+    "head": "﻿부서명,부서코드,부서 경로"
+   },
+   {
+    "name": "지표용어통합 20260623.csv",
+    "size": 32944,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿지표구분,지표명,구성정보,데이터타입,비고"
+   },
+   {
+    "name": "컬럼정의서 20260714.csv",
+    "size": 68752,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿NO,테이블명,컬럼순서,컬럼명,데이터타입,NULL허용,코드여부,코드그룹ID,컬럼설명(한글),비고"
+   },
+   {
+    "name": "테이블정의 20260629.csv",
+    "size": 3808,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿NO,테이블명,PK,업데이트 컬럼 (증분적재시 필요),테이블설명,컬럼수,코드컬럼수,우선순위,"
+   }
+  ],
+  "subdirs": []
+ },
+ "02_GN_DW_building": {
+  "rows": [
+   {
+    "name": "00_INDEX.md",
+    "size": 11399,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_환경 Role.md",
+    "size": 13036,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "02_DB_BRONZE_SILVER.md",
+    "size": 26034,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "03_GOLD_SERVING.md",
+    "size": 15724,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "04_운영 확인.md",
+    "size": 11703,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "05_ARCHITECTURE.md",
+    "size": 14458,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "06_RUNBOOK.md",
+    "size": 41890,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "07_ENVIRONMENT_RBAC_setup.sql",
+    "size": 58080,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "08_After_Deploy_DBT.sql",
+    "size": 14976,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_user login mfa리셋.sql",
+    "size": 11376,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "10_GOLD_ownership_grants_fix.sql",
+    "size": 6032,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "README.md",
+    "size": 3300,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 4
+   }
+  ]
+ },
+ "05_SV-Agent_ai": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 11523,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_SV_공통지시문.md",
+    "size": 4731,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_COMMON_INSTRUCTION"
+   },
+   {
+    "name": "01_SV-Agent 작업계획.md",
+    "size": 50715,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_WORKPLAN"
+   },
+   {
+    "name": "02_SERVING_setup.sql",
+    "size": 1072,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW 0단계 환경/RBAC setup — ★ 정본 이관됨(포인터 스텁)"
+   },
+   {
+    "name": "03_SV_metric_배속.md",
+    "size": 42809,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_METRIC_ASSIGNMENT_V4"
+   },
+   {
+    "name": "04_SV_설계.md",
+    "size": 127308,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_STRUCTURE_DESIGN_V4"
+   },
+   {
+    "name": "05_01_SV_DDL_MEMBER_MONTHLY.sql",
+    "size": 47952,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_02_SV_DDL_MEMBER_EVENT.sql",
+    "size": 56624,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_03_SV_DDL_MEMBER_COHORT.sql",
+    "size": 41072,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_04_SV_DDL_SERVICE.sql",
+    "size": 66272,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_05_SV_DDL_EVENT_PARTICIPATION.sql",
+    "size": 32223,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_06_SV_DDL_BUDGET.sql",
+    "size": 16912,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_07_SV_DDL_AD.sql",
+    "size": 45456,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_08_SV_DDL_DEV_ACHIEVEMENT.sql",
+    "size": 19328,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_09_SV_DDL_MEMBER_FEE.sql",
+    "size": 29344,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_0_SV_DDL.sql",
+    "size": 4112,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================"
+   },
+   {
+    "name": "05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql",
+    "size": 24768,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_11_SV_DDL_TARGET_BIZ.sql",
+    "size": 14272,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_12_SV_DDL_RELATION_ACTIVITY.sql",
+    "size": 17616,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_13_SV_DDL_DEPT_AGGR.sql",
+    "size": 31151,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql",
+    "size": 8096,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_15_SV_DDL_GA_BEHAVIOR.sql",
+    "size": 16192,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_16_SV_DDL_BUDGET_YEARLY.sql",
+    "size": 11152,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_17_SV_DDL_MEMBER_STATUS_ASOF.sql",
+    "size": 10688,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql",
+    "size": 30000,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql",
+    "size": 19312,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_20_SV_DDL_GA_SESSION.sql",
+    "size": 21792,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_21_SV_DDL_SEARCH_CONSOLE.sql",
+    "size": 9392,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_22_SV_DDL_GA_DEMOGRAPHIC.sql",
+    "size": 8880,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_23_SV_DDL_EXPENSE_RESOLUTION.sql",
+    "size": 11840,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql",
+    "size": 14496,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_25_SV_DDL_CAMPAIGN_MONTHLY.sql",
+    "size": 19104,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_26_SV_DDL_GA_CHILD_UNPAID.sql",
+    "size": 15696,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_27_SV_DDL_AD_INFLOW_ALLOC.sql",
+    "size": 10064,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_28_SV_DDL_MEMBER_EVENT_COHORT.sql",
+    "size": 17840,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql",
+    "size": 14352,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql",
+    "size": 11232,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql",
+    "size": 16000,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "05_SV_DDL_설계이력_부록.md",
+    "size": 129999,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# 05_N_SV_DDL · 22_ML_SV_DDL — 설계·실측 이력 부록"
+   },
+   {
+    "name": "06_검증쿼리_VQR.md",
+    "size": 22103,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_VQR_VERIFICATION"
+   },
+   {
+    "name": "07_평가셋_eval.md",
+    "size": 17710,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_EVAL_SET"
+   },
+   {
+    "name": "08_AGENT_spec.md",
+    "size": 48111,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_SPEC"
+   },
+   {
+    "name": "09_0_AGENT_spec_구현.sql",
+    "size": 4976,
+    "status": "정본",
+    "why": "-",
+    "head": "-- [DEPRECATED 2026-07-31] Agent 대행배포 실행 로그 — 09_1·09_2 로 분해된 포인터 스텁"
+   },
+   {
+    "name": "09_0_AGENT_정의서.md",
+    "size": 5867,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: AGENT_DEFINITION_BRIEF"
+   },
+   {
+    "name": "09_1_AGENT_생성.sql",
+    "size": 29712,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_2_AGENT_버전업.sql",
+    "size": 36820,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_3_AGENT_중단보존.sql",
+    "size": 1280,
+    "status": "정본",
+    "why": "-",
+    "head": "-- [1] 현재 Live(Draft) 버전이 있는 경우 확정 스냅샷으로 커밋하여 Live 상태 닫기"
+   },
+   {
+    "name": "10_SI연결_검증.md",
+    "size": 14518,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_SI_CONNECT"
+   },
+   {
+    "name": "11_거버넌스_운영.md",
+    "size": 9427,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_GOVERNANCE_OPS"
+   },
+   {
+    "name": "12_paid_테스트_실행가이드.md",
+    "size": 8608,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_PAID_TEST_GUIDE"
+   },
+   {
+    "name": "13_SV_AD_배포_추가작업.sql",
+    "size": 5040,
+    "status": "정본",
+    "why": "-",
+    "head": "-- [DEPRECATED 2026-07-31] SV_AD 잔여 배포 작업 — 05·09 로 분해 완료된 포인터 스텁"
+   },
+   {
+    "name": "14_코멘트_표준화_작업계획.md",
+    "size": 4520,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: DOC_SV_COMMENT_STANDARDIZATION_PLAN"
+   },
+   {
+    "name": "20_ML_SV_설계.md",
+    "size": 31576,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: ML_SV_DESIGN"
+   },
+   {
+    "name": "21_ML_SERVING_뷰_DDL.sql",
+    "size": 78864,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "21_ML_SERVING_뷰_설계이력_부록.md",
+    "size": 19986,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# 21_ML_SERVING_뷰_DDL.sql — 설계·실측 이력 부록"
+   },
+   {
+    "name": "22_ML_SV_DDL.sql",
+    "size": 117808,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "23_ML_INC_MKTG_CMPGN_DDL.sql",
+    "size": 15504,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "24_ML_REALTIME_SIMULATOR_DDL.sql",
+    "size": 19744,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "25_ML_CHURN_CMPGN_CTGR_DDL.sql",
+    "size": 27712,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",
+    "size": 8864,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "27_DEPLOY_FORMULA_ALIGN.sql",
+    "size": 7552,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================"
+   },
+   {
+    "name": "28_DEPLOY_G1_RESOLVE.sql",
+    "size": 7600,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================"
+   },
+   {
+    "name": "29_DEPLOY_G1_REMAINDER.sql",
+    "size": 4261,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================"
+   },
+   {
+    "name": "30_DEPLOY_DATA_ANOMALY.sql",
+    "size": 6528,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "30_마케팅_AGENT_설계.md",
+    "size": 37144,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: AGENT_MARKETING_DESIGN"
+   },
+   {
+    "name": "31_O241_AB병기_SV배선_작업계획.md",
+    "size": 11166,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PLAN_O241_AB_SV_WIRING"
+   },
+   {
+    "name": "32_DEPLOY_AB_DUAL_SV_WIRING.sql",
+    "size": 9616,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "33_DEPLOY_PROD_ROUNDING_VQR.sql",
+    "size": 5920,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "34_DEPLOY_SV_ML_FALLBACK_NOTE.sql",
+    "size": 63744,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O246-D 운영계 반영 — SV_ML 3종 폴백 각주 COMMENT(구조 변경 없음) · 개발계 적용 2026-10-19"
+   },
+   {
+    "name": "35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql",
+    "size": 20704,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "36_DEPLOY_ML_PRED_7AXIS.sql",
+    "size": 40144,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "37_DEPLOY_ORG_SUCCESSION.sql",
+    "size": 13152,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "38_DEPLOY_MAP_SEEDS.sql",
+    "size": 5920,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "39_DEPLOY_SILVER_ORG_CLEAN.sql",
+    "size": 9456,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "40_ML예측질문_답변가능성_검토.md",
+    "size": 9170,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: ML_PROMPT_ANSWERABILITY"
+   },
+   {
+    "name": "41_현업요청서_MSTR반영_누계개발.md",
+    "size": 8109,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: BIZ_REQUEST_O201D"
+   },
+   {
+    "name": "42_DEPLOY_AGENCY_AD_SRC_RENAME.sql",
+    "size": 6288,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "43_DEPLOY_AGENCY_UPPER_CMPGN_SPLIT.sql",
+    "size": 6608,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "44_DEPLOY_CATEGORY_GOLD.sql",
+    "size": 7152,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "45_DEPLOY_SEND_GBN_AT_OPEN.sql",
+    "size": 17168,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql",
+    "size": 10032,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "47_DEPLOY_FINAL_AD_COST.sql",
+    "size": 4880,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "48_RBAC_SOURCE_ACCESS.sql",
+    "size": 21552,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "48_RBAC_SOURCE_ACCESS_ZL50263.sql",
+    "size": 21968,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "49_DEPLOY_CORPUS_SCOPE_O270.sql",
+    "size": 1936,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "50_RBAC_APP_OWNER_USER_ASSIGN.sql",
+    "size": 5600,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "51_FIX_PROD_BUILD_ZL50263.sql",
+    "size": 9952,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "52_FIX_PROD_MANAGED_ACCESS_OPS_SILVER_ZL50263.sql",
+    "size": 9514,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql",
+    "size": 4944,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "54_DEPLOY_CORPUS_O273.sql",
+    "size": 5808,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "99_next_prompt.md",
+    "size": 17189,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SV_AGENT_NEXT_PROMPT"
+   },
+   {
+    "name": "AGENT_연결객체_메타데이터.xlsx",
+    "size": 157056,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "AGENT_원천계보_BRONZE까지.xlsx",
+    "size": 179728,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "코멘트_룰_전수조사_결과.xlsx",
+    "size": 231392,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 12
+   }
+  ]
+ },
+ "11_일적재pipeline 구성": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1712,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_개요_및_실행순서.md",
+    "size": 10449,
+    "status": "정본",
+    "why": "-",
+    "head": "# 11_일적재pipeline 구성 — BRONZE_CRM_2 일배치 테스트 파이프라인"
+   },
+   {
+    "name": "01_스키마생성_및_구조복제.sql",
+    "size": 5104,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "02_권한부여_LOADER_ENGINEER_ADMIN.sql",
+    "size": 8928,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "03_일배치_TASK_스케줄.sql",
+    "size": 3728,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "04_LOADER_임시권한_CALL_DBT.sql",
+    "size": 4480,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "04_LOADER_임시권한_SP_EXEC_MONTH_END.sql",
+    "size": 4992,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   }
+  ],
+  "subdirs": []
+ },
+ "15_MSTR 이관 PoC": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1874,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "10_MSTR_일일적재_dbt연동_준비.md",
+    "size": 7981,
+    "status": "정본",
+    "why": "-",
+    "head": "# MSTR 일일 적재 — dbt 연동 준비안 (🟢 O207-C 확정 · 2026-10-07)"
+   },
+   {
+    "name": "MSTR_1차이관_Snowflake전환_작업계획.md",
+    "size": 10450,
+    "status": "정본",
+    "why": "-",
+    "head": "# MSTR 1차 이관 대상 → Snowflake 전환 작업계획"
+   },
+   {
+    "name": "mstr-answer.csv",
+    "size": 169472,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿구분_팀,세부구분,구분_후원사업,기준년월,기준일자,법인,본부/지부,팀/지부,부서,브랜드,상위캠페인,캠페인,CP,개발구분,후원사업2,성별,연령대, 개발(건) ,개발(명),비고,CP"
+   },
+   {
+    "name": "답안체크용 쿼리.sql",
+    "size": 7088,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "스킬_MSTR_검증결과.md",
+    "size": 12253,
+    "status": "정본",
+    "why": "-",
+    "head": "# 스킬 ↔ GN_DW.MSTR 검증 결과"
+   },
+   {
+    "name": "스킬_MSTR_검증쿼리.sql",
+    "size": 19312,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "스킬_MSTR_비교항목.md",
+    "size": 4697,
+    "status": "정본",
+    "why": "-",
+    "head": "# 스킬 ↔ GN_DW.MSTR 비교 항목"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "mstr DDL 원본",
+    "files": 12
+   },
+   {
+    "name": "snowflake 적용 ddl",
+    "files": 10
+   },
+   {
+    "name": "tools",
+    "files": 17
+   }
+  ]
+ },
+ "17_MSTR통한 메달리온 보완": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1122,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_작업계획.md",
+    "size": 9810,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: MSTR_MEDALLION_SUPPLEMENT_PLAN"
+   },
+   {
+    "name": "01_MSTR_SP_인벤토리.md",
+    "size": 12348,
+    "status": "정본",
+    "why": "-",
+    "head": "# 01. MSTR SP 인벤토리 (자동 생성 · O202)"
+   },
+   {
+    "name": "03_규칙카드_A1.md",
+    "size": 4556,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: MSTR_MEDALLION_RULE_CARDS_A1"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "tools",
+    "files": 2
+   }
+  ]
+ },
+ "09_streamlit 권한 설정": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 807,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "analyst-selfservice-streamlit.md",
+    "size": 17575,
+    "status": "정본",
+    "why": "-",
+    "head": "# Analyst 셀프서비스 Streamlit — 설계 및 적용 런북"
+   }
+  ],
+  "subdirs": []
+ },
+ "cortex_project": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 928,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "cortex-project.yaml",
+    "size": 720,
+    "status": "정본",
+    "why": "-",
+    "head": "version: 1"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 27
+   },
+   {
+    "name": "agents",
+    "files": 3
+   }
+  ]
+ },
+ "08_mornitoring": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 4784,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_모니터링_대상 개요.md",
+    "size": 3450,
+    "status": "정본",
+    "why": "-",
+    "head": "# 01. 모니터링 대상 개요"
+   },
+   {
+    "name": "02_Cortex_AI_사용량 모니터링.md",
+    "size": 9149,
+    "status": "정본",
+    "why": "-",
+    "head": "# 02. Cortex AI 사용량 모니터링"
+   },
+   {
+    "name": "03_비용제한_예산 쿼터.md",
+    "size": 12533,
+    "status": "정본",
+    "why": "-",
+    "head": "# 03. 비용 제한: Per-user quota · Budget · RBAC"
+   },
+   {
+    "name": "04_알림_및 거버넌스.md",
+    "size": 6513,
+    "status": "정본",
+    "why": "-",
+    "head": "# 04. 알림 및 거버넌스 전략"
+   },
+   {
+    "name": "05_AI비용가드_구축.sql",
+    "size": 23177,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "06_웨어하우스비용가드_구축.sql",
+    "size": 24160,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql",
+    "size": 20256,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql",
+    "size": 11024,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "09_OPS_dbt경고_이메일알림_구축.sql",
+    "size": 13040,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "10_Cortex_Code_모델별_비용_비교.md",
+    "size": 3329,
+    "status": "정본",
+    "why": "-",
+    "head": "# 10. Cortex Code(CoCo) LLM 모델별 상대 비용 및 크레딧 소모 비교"
+   },
+   {
+    "name": "11_BRONZE_개인정보_마스킹정책_적용완료.sql",
+    "size": 6688,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "2026-08-03_G3_코드컬럼전파_ALTER.sql",
+    "size": 10896,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 2
+   }
+  ]
+ },
+ "12_agent개선과제": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1041,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_작업계획.md",
+    "size": 135904,
+    "status": "정본",
+    "why": "-",
+    "head": "# 12. Agent 개선과제 — 작업계획 (O202 착수)"
+   },
+   {
+    "name": "01_회원실_테스트_피드백.md",
+    "size": 10630,
+    "status": "정본",
+    "why": "-",
+    "head": "# 회원실 Agent 테스트 피드백 (O202)"
+   },
+   {
+    "name": "02_질문별_답변현황_엑셀_실행가이드.md",
+    "size": 6924,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: AGENT_ANSWER_REPORT_GUIDE"
+   },
+   {
+    "name": "03_O205_원천확인쿼리.sql",
+    "size": 4160,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================"
+   },
+   {
+    "name": "04_O206_3차_재측정_원문요지.txt",
+    "size": 14864,
+    "status": "정본",
+    "why": "-",
+    "head": "== R01 tools= ['analyst_member_event', 'data_to_chart'] tables= 2"
+   },
+   {
+    "name": "05_운영계_후속작업_프롬프트_O207.md",
+    "size": 5289,
+    "status": "정본",
+    "why": "-",
+    "head": "# 운영계 CoCo 후속 작업 프롬프트 (O207 마감 · 2026-10-07)"
+   },
+   {
+    "name": "06_O208_문항코퍼스.csv",
+    "size": 13632,
+    "status": "정본",
+    "why": "-",
+    "head": "문항ID,출처,질문,질문단위_초안,질문단위_수정안,정답 Agent(현행),정답 도구,기대 기준,계산 전 확인,현업 예상 Agent,비고"
+   },
+   {
+    "name": "07_5차개선_착수프롬프트_O208.md",
+    "size": 6176,
+    "status": "정본",
+    "why": "-",
+    "head": "# 5차 Agent 개선 착수 프롬프트 (O208 · 질문 단위 재편 + 가이드 Agent)"
+   },
+   {
+    "name": "08_O208B_가이드PoC_procedure.sql",
+    "size": 1584,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 08_O208B_가이드PoC_procedure.sql — O208-B X3 위임형 PoC 프로시저 보존본(라이브 객체는 O208-C 에서 DROP · 사용자 일괄 승인)"
+   },
+   {
+    "name": "08_O208B_가이드PoC_spec.yaml",
+    "size": 1722,
+    "status": "정본",
+    "why": "-",
+    "head": "models:"
+   },
+   {
+    "name": "09_O209_AGENT_GUIDE_create.sql",
+    "size": 720,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O209 X4 — AGENT_GUIDE(안 A 안내형) 생성 · 개발계 ij48528 · 소유 = GN_DW_ADMIN(ACCOUNTADMIN 금지)"
+   },
+   {
+    "name": "09_O209_AGENT_GUIDE_spec.yaml",
+    "size": 4896,
+    "status": "정본",
+    "why": "-",
+    "head": "# O209 X4 — AGENT_GUIDE(안 A 안내형) 스펙 · 생성 = 09_O209_AGENT_GUIDE_create.sql"
+   },
+   {
+    "name": "10_O209_현업안내문.md",
+    "size": 3146,
+    "status": "정본",
+    "why": "-",
+    "head": "# 분석 Agent 이용 안내 (O209 작성 · O211 확정 2026-10-08 · 개발계 nj58180 기준)"
+   },
+   {
+    "name": "11_O209_native_eval_요약.sql",
+    "size": 2992,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O209 X6 — native eval 결과 요약(4지표 · 채점 실패 수) · run_name 을 IN 목록에 넣어 실행"
+   },
+   {
+    "name": "12_O211_4차복원_AGENT_EXECUTIVE_spec.yaml",
+    "size": 47456,
+    "status": "정본",
+    "why": "-",
+    "head": "instructions:"
+   },
+   {
+    "name": "12_O211_4차복원_AGENT_MARKETING_spec.yaml",
+    "size": 66592,
+    "status": "정본",
+    "why": "-",
+    "head": "models:"
+   },
+   {
+    "name": "12_O211_4차복원_AGENT_MEMBER_spec.yaml",
+    "size": 91038,
+    "status": "정본",
+    "why": "-",
+    "head": "models:"
+   },
+   {
+    "name": "13_6차_4차상태롤백_착수프롬프트.md",
+    "size": 6537,
+    "status": "정본",
+    "why": "-",
+    "head": "# 6차 Agent 개선 착수 프롬프트 — 4차 상태로 롤백 · 가이드 Agent 은퇴 (O211-C 작성 · 2026-10-08)"
+   },
+   {
+    "name": "14_O217_작업계획.md",
+    "size": 4365,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 작업계획 — 비즈니스 정의 Cortex Search + 마케팅 Agent 피드백_2 반영"
+   },
+   {
+    "name": "15_O217_백업_AGENT_EXECUTIVE_spec.yaml",
+    "size": 62768,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 백업 = 계정 jw08094 · 2026-10-13 · DEFAULT 버전 spec(agent-read)"
+   },
+   {
+    "name": "15_O217_백업_AGENT_MARKETING_spec.yaml",
+    "size": 85808,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 백업 = 계정 jw08094 · 2026-10-13 · DEFAULT 버전 spec(agent-read)"
+   },
+   {
+    "name": "15_O217_백업_AGENT_MEMBER_spec.yaml",
+    "size": 106848,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 백업 = 계정 jw08094 · 2026-10-13 · DEFAULT 버전 spec(agent-read)"
+   },
+   {
+    "name": "16_O217_BIZ_DEFINITION_create.sql",
+    "size": 2272,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O217 — 비즈니스 정의 코퍼스 테이블 + Cortex Search 서비스 (계정 jw08094 · 2026-10-13)"
+   },
+   {
+    "name": "17_O217_AGENT_EXECUTIVE_spec.yaml",
+    "size": 62480,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 개정안 = 15_O217_백업_AGENT_EXECUTIVE_spec.yaml + tools/o217_patch_search_tool.py"
+   },
+   {
+    "name": "17_O217_AGENT_MARKETING_spec.yaml",
+    "size": 91088,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 개정안 = 15_O217_백업_AGENT_MARKETING_spec.yaml + tools/o217_patch_marketing_spec.py"
+   },
+   {
+    "name": "17_O217_AGENT_MEMBER_spec.yaml",
+    "size": 104144,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 개정안 = 15_O217_백업_AGENT_MEMBER_spec.yaml + tools/o217_patch_search_tool.py"
+   },
+   {
+    "name": "18_O217B_grant_search.sql",
+    "size": 896,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "18_O217_운영계_재현_검증.sql",
+    "size": 5040,
+    "status": "정본",
+    "why": "-",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "18_O217_운영계_재현_런북.md",
+    "size": 14915,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O217_PROD_RUNBOOK"
+   },
+   {
+    "name": "19_O217B_AGENT_MARKETING_spec.yaml",
+    "size": 93200,
+    "status": "정본",
+    "why": "-",
+    "head": "# O217 개정안(B) = 17_O217_AGENT_MARKETING_spec.yaml + tools/o217b_patch_inc_campaign.py"
+   },
+   {
+    "name": "20261019_현업요청사항및대응.md",
+    "size": 8638,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: REQ_20261019"
+   },
+   {
+    "name": "20_O21X_잔여작업_정리.md",
+    "size": 14178,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O21X_REMAINING"
+   },
+   {
+    "name": "21_다음세션_착수프롬프트_O218.md",
+    "size": 4248,
+    "status": "정본",
+    "why": "-",
+    "head": "# 다음 세션 착수 프롬프트 (O218 · 11차 Agent 개선)"
+   },
+   {
+    "name": "22_다음세션_착수프롬프트_O219.md",
+    "size": 1578,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROMPT_O219"
+   },
+   {
+    "name": "24_다음세션_착수프롬프트_O220.md",
+    "size": 1805,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROMPT_O220"
+   },
+   {
+    "name": "25_실시간_경량ML_시뮬레이터_설계계획.md",
+    "size": 2688,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: REALTIME_ML_SIMULATOR_PLAN"
+   },
+   {
+    "name": "26_다음세션_착수프롬프트_O221.md",
+    "size": 1609,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROMPT_O221"
+   },
+   {
+    "name": "27_다음세션_착수프롬프트_O222.md",
+    "size": 1490,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROMPT_O222"
+   },
+   {
+    "name": "28_다음세션_착수프롬프트_O223.md",
+    "size": 1506,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROMPT_O223"
+   },
+   {
+    "name": "O238_원천연결키_작업계획.md",
+    "size": 7588,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O238_SOURCE_LINK_KEY_PLAN"
+   },
+   {
+    "name": "O239_운영계_작업프롬프트.md",
+    "size": 5854,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O239_PROD_SESSION_PROMPT"
+   },
+   {
+    "name": "O246_SV_ML_FEE_FORECAST_create.sql",
+    "size": 10320,
+    "status": "정본",
+    "why": "-",
+    "head": "create or replace semantic view GN_DW.SERVING.SV_ML_FEE_FORECAST"
+   },
+   {
+    "name": "O246_백업_ML_MEMBER_ATTR_ASOF_V.sql",
+    "size": 4192,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O246 백업 — 변경 전 GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V (O245 판) · 롤백 시 그대로 실행"
+   },
+   {
+    "name": "O246_백업_SV_ML_FEE_FORECAST.sql",
+    "size": 7200,
+    "status": "정본",
+    "why": "-",
+    "head": "-- O246 백업 — 변경 전 GN_DW.SERVING.SV_ML_FEE_FORECAST · 롤백 시 USE SCHEMA GN_DW.SERVING; 후 실행"
+   },
+   {
+    "name": "O246_운영계_작업프롬프트.md",
+    "size": 3791,
+    "status": "정본",
+    "why": "-",
+    "head": "# O246 운영계 반영 프롬프트 (개발계 반영 2026-10-19)"
+   },
+   {
+    "name": "O246_현업회신_초안.md",
+    "size": 2298,
+    "status": "정본",
+    "why": "-",
+    "head": "지혜님 안녕하세요, 정리해서 말씀드립니다."
+   },
+   {
+    "name": "O270_W5_권한유지_설계안.md",
+    "size": 5939,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_W5_GRANT_PERSISTENCE_DESIGN"
+   },
+   {
+    "name": "O270_W8_운영계_실행카드.md",
+    "size": 6054,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_W8_PROD_RUNCARD"
+   },
+   {
+    "name": "O270_W9_현업공지_Agent조회범위.md",
+    "size": 1576,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_W9_NOTICE"
+   },
+   {
+    "name": "O270_다음세션_착수프롬프트_운영계0-1단계결과.md",
+    "size": 8585,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_NEXT_SESSION_PROMPT_PROD_STEP01"
+   },
+   {
+    "name": "O270_운영계_LLM_프롬프트.md",
+    "size": 10964,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_PROD_LLM_PROMPT"
+   },
+   {
+    "name": "O270_운영계_사용자배정표.md",
+    "size": 4180,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_PROD_USER_ASSIGN"
+   },
+   {
+    "name": "O270_원천별_접근통제_작업계획.md",
+    "size": 7766,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O270_SOURCE_ACCESS_RBAC_PLAN"
+   },
+   {
+    "name": "O271_운영계_LLM_프롬프트_새세션_잔여단계.md",
+    "size": 5809,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O271_PROD_LLM_PROMPT_CONTINUE"
+   },
+   {
+    "name": "O271_운영계_LLM_프롬프트_잔존뷰_소유자.md",
+    "size": 8891,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O271_PROD_LLM_PROMPT"
+   },
+   {
+    "name": "O272_운영계_LLM_프롬프트_MA해제.md",
+    "size": 8076,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O272_PROD_LLM_PROMPT_MA_OFF"
+   },
+   {
+    "name": "O273_롤설계_추가역할.md",
+    "size": 13806,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O273_ROLE_DESIGN_NEW_ROLES"
+   },
+   {
+    "name": "O273_롤전환_작업순서.md",
+    "size": 8076,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O273_ROLE_TRANSITION_WORKORDER"
+   },
+   {
+    "name": "O273_지표사전_현업지표추가_작업계획.md",
+    "size": 10984,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O273_PLAN_CORPUS_FEEDBACK_METRICS"
+   },
+   {
+    "name": "O273_현업회신_마케팅Agent_3차피드백.md",
+    "size": 7739,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: O273_REPLY_MKTG_FEEDBACK3"
+   },
+   {
+    "name": "작업계획_LTV80_RAG유사_광고비.md",
+    "size": 4005,
+    "status": "정본",
+    "why": "-",
+    "head": "# 작업계획 — LTV 상한80·무기한 / RAG 유사지표 되묻기 / 광고비 미집계 원인"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "output",
+    "files": 184
+   },
+   {
+    "name": "tools",
+    "files": 32
+   }
+  ]
+ },
+ "60_repeat_어카운트시작": {
+  "rows": [
+   {
+    "name": "10_NL스모크_재실행_절차.md",
+    "size": 12576,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: NL_SMOKE_PROCEDURE"
+   },
+   {
+    "name": "11_O누적작업_점검_재현_절차.md",
+    "size": 3680,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: 11_O_HUB"
+   },
+   {
+    "name": "12_GN_DW_재구축_실행순서.md",
+    "size": 10112,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GN_DW_REBUILD_ORDER"
+   },
+   {
+    "name": "13_운영계_반영_20261005이후.md",
+    "size": 23888,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PROD_SYNC_20261005"
+   },
+   {
+    "name": "14_운영계_반영_완료보고_43_58.md",
+    "size": 5104,
+    "status": "정본",
+    "why": "-",
+    "head": "# 운영계(ZL50263) 기존 환경 갱신 43~58 반영 완료 보고서"
+   },
+   {
+    "name": "15_운영계_수치회수_O269_프롬프트.md",
+    "size": 4240,
+    "status": "정본",
+    "why": "-",
+    "head": "# 운영계 수치 회수 O269 — 저가형 LLM 실행 프롬프트"
+   },
+   {
+    "name": "readme.md",
+    "size": 5424,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "11_O누적작업_점검_재현_절차_조각",
+    "files": 3
+   }
+  ]
+ },
+ "50_handoff": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 2624,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_데이터마이그레이션 20260730.md",
+    "size": 62640,
+    "status": "정본",
+    "why": "-",
+    "head": "# 데이터 마이그레이션 작업 문서 (A → B → 로컬 → C)"
+   },
+   {
+    "name": "02_데이터마이그 A_PRODUCER.sql",
+    "size": 22192,
+    "status": "정본",
+    "why": "-",
+    "head": "-- A 계정(Provider) 실행 SQL — Direct Share 생성 및 DDL 추출"
+   },
+   {
+    "name": "03_데이터마이그 B_BROKER.sql",
+    "size": 17088,
+    "status": "정본",
+    "why": "-",
+    "head": "-- B 계정(Broker) 실행 SQL — MIG_SHARE 공유 데이터를 스테이지에 CSV export"
+   },
+   {
+    "name": "04_데이터마이그 GN_DW_BRONZE_DDL.sql",
+    "size": 127392,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW 브론즈 계층 DDL 스냅샷 — C 계정 재현용 테이블 생성 스크립트"
+   },
+   {
+    "name": "05_데이터마이그 GN_DW_ML_DDL_20260814.sql",
+    "size": 22864,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW.ML 예측결과 테이블 DDL 스냅샷 (데이터 마이그레이션 A→B→로컬→C 용 스키마 정의)"
+   },
+   {
+    "name": "06_데이터마이그 GN_DW_SILVER_DDL.sql",
+    "size": 27376,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW.SILVER 정제 테이블 DDL — C 계정 재현용"
+   },
+   {
+    "name": "07_데이터마이그 C_CONSUMER.sql",
+    "size": 53696,
+    "status": "정본",
+    "why": "-",
+    "head": "-- C 계정(Target) 실행 SQL — 브론즈 3개 스키마 + SILVER 4 테이블 + ML 예측결과 12종 적재"
+   },
+   {
+    "name": "08_데이터마이그 B-C 통합.sql",
+    "size": 4960,
+    "status": "정본",
+    "why": "-",
+    "head": "-- B-C 통합 데이터 마이그레이션 SQL (Direct INSERT OVERWRITE from GN_DW_SHARED to GN_DW)"
+   },
+   {
+    "name": "ETL_프로시저 설계.md",
+    "size": 8080,
+    "status": "정본",
+    "why": "-",
+    "head": "# GN_DW ETL 프로시저 설계 (BRONZE → SILVER → GOLD)"
+   },
+   {
+    "name": "GOLD_개발자 전달노트_20260629.md",
+    "size": 1953,
+    "status": "정본",
+    "why": "-",
+    "head": "# GOLD 테이블 만들기 안내 (GN_DW)"
+   },
+   {
+    "name": "IT팀_전달 인덱스.md",
+    "size": 10160,
+    "status": "정본",
+    "why": "-",
+    "head": "# GN_DW IT팀 전달 인덱스 (배포 안내문)"
+   },
+   {
+    "name": "문서검토_체크리스트 20260710.md",
+    "size": 24498,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: DOC_REVIEW_CHECKLIST"
+   },
+   {
+    "name": "예산 안.md",
+    "size": 2496,
+    "status": "정본",
+    "why": "-",
+    "head": "# Snowflake 웨어하우스별 예산 설정 가이드"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_archive",
+    "files": 13
+   }
+  ]
+ },
+ "95_작업기록_인수인계정제": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 2304,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_작업계획.md",
+    "size": 3680,
+    "status": "정본",
+    "why": "-",
+    "head": "# 인수인계 문서 정제 작업계획 (2026-10-21 승인)"
+   },
+   {
+    "name": "01_진행로그.md",
+    "size": 4512,
+    "status": "정본",
+    "why": "-",
+    "head": "# 진행로그 (한 줄 = 한 배치)"
+   },
+   {
+    "name": "02_85번_파일분류표.csv",
+    "size": 5792,
+    "status": "정본",
+    "why": "-",
+    "head": "path,분류,처리,status"
+   },
+   {
+    "name": "03_80번_변경파일목록.txt",
+    "size": 20704,
+    "status": "정본",
+    "why": "-",
+    "head": "01_실행순서_배포SQL/02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql"
+   },
+   {
+    "name": "03_80번_정제현황.csv",
+    "size": 33040,
+    "status": "정본",
+    "why": "-",
+    "head": "path,삭제줄,status"
+   },
+   {
+    "name": "04_80번_비SQL_정제현황.csv",
+    "size": 2434,
+    "status": "정본",
+    "why": "-",
+    "head": "path,계정값_전,계정값_후,status"
+   },
+   {
+    "name": "05_O254_운영계수치_근거.md",
+    "size": 5520,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# O254 — 85 D01·D02·D03·D05·D07·N02 운영계 수치 근거 (2026-10-21)"
+   },
+   {
+    "name": "06_O254_인수인계_본문.md",
+    "size": 3312,
+    "status": "정본",
+    "why": "-",
+    "head": "### ▣ O254-A-0 🔴 먼저 알아라"
+   },
+   {
+    "name": "07_O254B_인수인계_본문.md",
+    "size": 2464,
+    "status": "정본",
+    "why": "-",
+    "head": "### ▣ O254-B-0 🔴 먼저 알아라"
+   },
+   {
+    "name": "08_O254_세션이력_항목.md",
+    "size": 2368,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "## O254-A·B — 인수인계 정제 2차 · 85 운영계 수치 보정 · 80/85 비운영 계정·init_ihcho 제거 · 헤더 통일 계획(dbt 완료 후) (2026-10-21 · TRIALADMIN · ㉡ · 사용자 지시·승인 · 확정위반 3)"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_backup_80_원본_20261021",
+    "files": 280
+   },
+   {
+    "name": "_backup_80b_원본_20261021",
+    "files": 26
+   },
+   {
+    "name": "_backup_85_원본_20261021",
+    "files": 622
+   },
+   {
+    "name": "_backup_O253_원본_20261021",
+    "files": 2
+   },
+   {
+    "name": "_backup_O254_원본_20261021",
+    "files": 33
+   },
+   {
+    "name": "_backup_O256_원본_20261021",
+    "files": 285
+   },
+   {
+    "name": "tools",
+    "files": 20
+   }
+  ]
+ },
+ "80_인수인계_프로젝트완료 및 유지보수용": {
+  "rows": [
+   {
+    "name": "00_INDEX.csv",
+    "size": 130716,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_README.md",
+    "size": 74240,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_재현프롬프트.md",
+    "size": 5696,
+    "status": "정본",
+    "why": "-",
+    "head": "# 인수인계 패키지 재현 프롬프트"
+   },
+   {
+    "name": "build_handoff.py",
+    "size": 18480,
+    "status": "정본",
+    "why": "-",
+    "head": "#!/usr/bin/env python3"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "01_실행순서_배포SQL",
+    "files": 78
+   },
+   {
+    "name": "02_dbt_pipeline",
+    "files": 236
+   },
+   {
+    "name": "03_MSTR_이관",
+    "files": 39
+   },
+   {
+    "name": "04_SV_Agent_스펙",
+    "files": 7
+   },
+   {
+    "name": "05_RAG_지표사전",
+    "files": 24
+   },
+   {
+    "name": "06_일배치_모니터링",
+    "files": 19
+   },
+   {
+    "name": "07_운영런북_이슈",
+    "files": 56
+   },
+   {
+    "name": "08_현업공유_산출물",
+    "files": 100
+   },
+   {
+    "name": "09_설계근거_참고",
+    "files": 10
+   },
+   {
+    "name": "10_운영도구_scripts",
+    "files": 7
+   },
+   {
+    "name": "__pycache__",
+    "files": 1
+   }
+  ]
+ },
+ "85_실제 인수인계 문서": {
+  "rows": [
+   {
+    "name": "00_INDEX_산출물목록.md",
+    "size": 7792,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_작업계획서.md",
+    "size": 13488,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: H00"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "10_실무자_인수인계",
+    "files": 21
+   },
+   {
+    "name": "20_정식산출물",
+    "files": 45
+   },
+   {
+    "name": "30_현업요청대응",
+    "files": 36
+   },
+   {
+    "name": "_ENV",
+    "files": 357
+   },
+   {
+    "name": "_archive",
+    "files": 677
+   },
+   {
+    "name": "_근거쿼리",
+    "files": 10
+   },
+   {
+    "name": "_드리프트",
+    "files": 2
+   }
+  ]
+ },
+ "70_후속 프로젝트 인계용": {
+  "rows": [
+   {
+    "name": "00_README_N07.md",
+    "size": 3168,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "01_RBAC_골격.sql",
+    "size": 6464,
+    "status": "정본",
+    "why": "-",
+    "head": "-- N07 · RBAC 골격 — 🔴 미실행 템플릿 (자리표시자 <PRJ> · <DB> · <WH_*> 를 치환한 뒤 검토 후 실행)"
+   },
+   {
+    "name": "02_dbt_골격.md",
+    "size": 3264,
+    "status": "정본",
+    "why": "-",
+    "head": "# N07-02 · dbt 프로젝트 골격"
+   },
+   {
+    "name": "03_SV_Agent_작성규칙.md",
+    "size": 2912,
+    "status": "정본",
+    "why": "-",
+    "head": "# N07-03 · Semantic View · Cortex Agent 작성 규칙"
+   },
+   {
+    "name": "04_모니터링_SQL.sql",
+    "size": 3984,
+    "status": "정본",
+    "why": "-",
+    "head": "-- N07-04 · 모니터링 SQL (읽기 전용 · ACCOUNTADMIN 또는 ACCOUNT_USAGE 조회 권한)"
+   },
+   {
+    "name": "05_인수인계문서_규약.md",
+    "size": 3584,
+    "status": "정본",
+    "why": "-",
+    "head": "# N07-05 · 인수인계 · 정식 산출물 문서 규약"
+   },
+   {
+    "name": "readme.md",
+    "size": 246,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": []
+ },
+ "88_인계요청": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 928,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "인계요청.md",
+    "size": 4192,
+    "status": "정본",
+    "why": "-",
+    "head": "# 인수인계 자료 추가 전달 요청서 (`인계요청.md`)"
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "05_SV-Agent_ai",
+    "files": 2
+   },
+   {
+    "name": "10_dbt_pipeline",
+    "files": 3
+   },
+   {
+    "name": "scripts",
+    "files": 3
+   }
+  ]
+ },
+ "98_현업요청인수인계": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 1808,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "20261028_강지영_발송이력_알림톡클릭_회신.md",
+    "size": 4768,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "# [현업 회신] 신규·증액·재후원 발송 이력 · 알림톡 클릭 판정 안내 (2026-10-28)"
+   },
+   {
+    "name": "20261028_김나경_알림톡열람_발송구분_회신.md",
+    "size": 4920,
+    "status": "정본",
+    "why": "-",
+    "head": "# [현업 회신] 알림톡 열람 판정 · 발송구분(대·중·소) 질문 안내 (2026-10-28)"
+   },
+   {
+    "name": "20261028_마케팅Agent_피드백_회신.md",
+    "size": 3380,
+    "status": "정본",
+    "why": "-",
+    "head": "# [현업 안내] LTV 「유지개월(무기한)」 계산 기준 변경 (2026-10-28)"
+   },
+   {
+    "name": "현업요청인수인계목록.csv",
+    "size": 7376,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "��ȣ,�μ��ΰ� ����,�ֿ� �μ��ΰ� ����,�ڷ� ID,����,��÷�ڷῡ ������ ����,�μ��� Ȯ�� ����,���� ���ϸ� �� ����,������ġ �� �ش� �塤��"
+   },
+   {
+    "name": "현업요청인수인계목록.md",
+    "size": 23648,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "# 굿네이버스 Snowflake 데이터 플랫폼 구축 프로젝트 인수인계 목록"
+   },
+   {
+    "name": "현업요청인수인계목록.xlsx",
+    "size": 14976,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": ""
+   }
+  ],
+  "subdirs": []
+ },
+ "30_output_share": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 7728,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "00_생성기-문서명 매핑.md",
+    "size": 11968,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GN_DW_OUTPUT_GENERATOR_MAPPING"
+   },
+   {
+    "name": "01_DW_현업활용가이드.md",
+    "size": 41632,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: GN_DW_BUSINESS_GUIDE"
+   },
+   {
+    "name": "02_SILVER 스키마 컬럼 인벤토리_20261027.csv",
+    "size": 278304,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿테이블명,테이블 한글명,GRAIN,테이블유형,컬럼명,컬럼 한글명,타입,NULLABLE,키,FK_타깃,설명,주의_제약(DDL)"
+   },
+   {
+    "name": "02_gold 스키마 컬럼 인벤토리_20261027.csv",
+    "size": 593008,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿테이블명,테이블 한글명,GRAIN,테이블유형,컬럼명,컬럼 한글명,타입,NULLABLE,키,FK_타깃,설명,주의_제약(DDL)"
+   },
+   {
+    "name": "03_GN_DW_개념도.html",
+    "size": 753264,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "04_컬럼계보매핑.csv",
+    "size": 144814,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "﻿WIDE_마트,WIDE_컬럼,GOLD_원천(테이블.컬럼),SILVER_원천(테이블.컬럼),BRONZE_원천(테이블),업무_의미(배포 COMMENT),WIDE→GOLD_확정도,계보_확정도,상태,상태_근거(실측)"
+   },
+   {
+    "name": "04_컬럼계보매핑.md",
+    "size": 168496,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "doc_id: BRONZE_SILVER_GOLD_COLUMN_MAPPING"
+   },
+   {
+    "name": "04_컬럼계보매핑.xlsx",
+    "size": 66848,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": ""
+   },
+   {
+    "name": "05_지표GOLD매핑.csv",
+    "size": 182640,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "﻿# 생성기: scripts/gen_metric_gold_mapping.py | 측정일: 2026-10-27"
+   },
+   {
+    "name": "05_지표GOLD매핑.md",
+    "size": 208976,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "doc_id: METRIC_TO_GOLD_MAPPING"
+   },
+   {
+    "name": "05_지표GOLD매핑.xlsx",
+    "size": 65152,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": ""
+   },
+   {
+    "name": "06_BRONZE노출감사.csv",
+    "size": 173632,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "﻿# 생성기: scripts/gen_bronze_exposure_audit.py | 러너: scripts/run_bronze_audit_host.py | 감사일: 2026-10-27"
+   },
+   {
+    "name": "06_BRONZE노출감사.md",
+    "size": 187152,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "doc_id: BRONZE_EXPOSURE_AUDIT"
+   },
+   {
+    "name": "06_BRONZE노출감사.xlsx",
+    "size": 63408,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": ""
+   },
+   {
+    "name": "07_코드체계_관문측정.md",
+    "size": 38896,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: CODE_SYSTEM_GATE_MEASUREMENT"
+   },
+   {
+    "name": "08_SILVER→GOLD_보존율.csv",
+    "size": 132816,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "﻿SILVER_TABLE,COLUMN,STATUS,판정군,소비GOLD모델,SILVER내부소비,SILVER내부_컬럼참조,채움(non-null),비영(non-zero),고유값(근사),변동(2026-10-27)"
+   },
+   {
+    "name": "08_SILVER→GOLD_보존율.md",
+    "size": 35120,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "doc_id: SILVER_GOLD_RETENTION"
+   },
+   {
+    "name": "09_보고서필드_조립가능성.csv",
+    "size": 241776,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "﻿보고서,영역,섹션,필드값,대응_지표#,GOLD_매핑,매핑근거,매핑교정,종전_매핑,앵커_팩트,앵커_경합,앵커_강제,조립가능도,판정_근거(실측)"
+   },
+   {
+    "name": "09_보고서필드_조립가능성.md",
+    "size": 67952,
+    "status": "정본",
+    "why": "형식 변형(md/csv/xlsx 병행)",
+    "head": "doc_id: REPORT_FIELD_SECTION_ASSEMBLY"
+   },
+   {
+    "name": "09_섹션배너.json",
+    "size": 56960,
+    "status": "정본",
+    "why": "-",
+    "head": "{"
+   },
+   {
+    "name": "10_원천입고_결손요약.md",
+    "size": 34064,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SOURCE_INGEST_GAP_SUMMARY"
+   },
+   {
+    "name": "11_미해결이슈_요약.md",
+    "size": 17680,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: UNRESOLVED_ISSUE_SUMMARY"
+   },
+   {
+    "name": "12_운영계_실측_ZL50263.md",
+    "size": 12352,
+    "status": "정본",
+    "why": "-",
+    "head": "# 30번 산출물 운영계 실측 — ZL50263"
+   },
+   {
+    "name": "16_파이프라인 배선 수정.md",
+    "size": 21840,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: PIPELINE_WIRING_AND_RESOLVED_ISSUES_20260907"
+   },
+   {
+    "name": "18_목표데이터_요건_및_해결이슈_정의서.md",
+    "size": 14800,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: BIZ_TARGET_REQUIREMENTS_AND_RESOLVED_ISSUES_20260908"
+   },
+   {
+    "name": "19_원천입고_및_항목신설_대기.md",
+    "size": 27152,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SOURCE_INTAKE_AND_FIELD_REQUEST_PENDING"
+   },
+   {
+    "name": "20260826_아키텍처 지도 요약본.html",
+    "size": 1339936,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "21_원천입고_대기_주니어_해설서.md",
+    "size": 26557,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: SOURCE_INTAKE_PENDING_JUNIOR_GUIDE"
+   },
+   {
+    "name": "30_공8_GA개발단가_정의_요약.md",
+    "size": 2832,
+    "status": "정본",
+    "why": "-",
+    "head": "# 30. 공8 「GA 개발단가」 정의 확정 요약"
+   },
+   {
+    "name": "30_공8및미회신29건_질문요약.md",
+    "size": 11840,
+    "status": "정본",
+    "why": "-",
+    "head": "# 30. 공8 + 문서20 미회신 29건 — 질문 요약 (결정 여부 대조 포함)"
+   },
+   {
+    "name": "31_공8_GA개발단가_쿼리근거.sql",
+    "size": 3376,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "31_공8및미회신29건_쿼리근거.sql",
+    "size": 19120,
+    "status": "참고",
+    "why": "이름 패턴(부록/이력/근거)",
+    "head": "-- ============================================================================="
+   },
+   {
+    "name": "32_BRONZE_CRM_GOLD반영_설계.md",
+    "size": 10144,
+    "status": "정본",
+    "why": "-",
+    "head": "# 32. BRONZE_CRM → GOLD 전량 반영 설계 (O188-F)"
+   },
+   {
+    "name": "40_현업회신요청_O190.md",
+    "size": 4160,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_REQUEST_O190"
+   },
+   {
+    "name": "41_현업회신_F-1_본부지부.md",
+    "size": 2592,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_F1"
+   },
+   {
+    "name": "42_현업회신_E-1_모금성비용.md",
+    "size": 1040,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_E1"
+   },
+   {
+    "name": "43_현업회신_F-2_후원사업11개.md",
+    "size": 619,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_F2"
+   },
+   {
+    "name": "44_현업회신_F-3_문자오픈.md",
+    "size": 656,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_F3"
+   },
+   {
+    "name": "45_현업회신_ML_일시후원전환_grain.md",
+    "size": 1584,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_ML_GRAIN"
+   },
+   {
+    "name": "46_현업회신_DGT_이전분.md",
+    "size": 560,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_HQ_REPLY_DGT"
+   },
+   {
+    "name": "47_신규19종_파생컬럼_COMMENT초안.md",
+    "size": 4256,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: OUTPUT_DERIVED_COL_COMMENT_DRAFT_O191"
+   },
+   {
+    "name": "90_운영계_실측_실행가이드.md",
+    "size": 7616,
+    "status": "정본",
+    "why": "-",
+    "head": "doc_id: S30"
+   },
+   {
+    "name": "GOLD_ERD_테이블별.html",
+    "size": 501552,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "GOLD_ERD_테이블별_YAML전용.html",
+    "size": 155920,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "O252_폐지부서_귀속_현업리뷰_20261021.csv",
+    "size": 54432,
+    "status": "정본",
+    "why": "-",
+    "head": "﻿폐지부서코드,폐지부서명,폐지부서_조직경로,폐지부서_실적구분,폐지부서_실적본부지부,중단_2024,중단_2025,중단_2026,귀속방법,귀속부서코드,귀속부서명,귀속부서_조직경로,회원흐름_후보코드,회원흐름_후보명,회원흐름_근거건수,회원흐름_점유율,회원흐름_lift,검토우선순위,확정_귀속부서코드(현업기입),확정_비고(현업기입)"
+   },
+   {
+    "name": "O252_폐지부서_연결결과_검토요청_20261021.xlsx",
+    "size": 39888,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "O252_폐지부서_현재부서연결_안내_20261021_v1.docx",
+    "size": 39792,
+    "status": "구버전",
+    "why": "이전판: O252_폐지부서_현재부서연결_안내_20261021_v3.docx",
+    "head": ""
+   },
+   {
+    "name": "O252_폐지부서_현재부서연결_안내_20261021_v2.docx",
+    "size": 40416,
+    "status": "구버전",
+    "why": "이전판: O252_폐지부서_현재부서연결_안내_20261021_v3.docx",
+    "head": ""
+   },
+   {
+    "name": "O252_폐지부서_현재부서연결_안내_20261021_v3.docx",
+    "size": 41472,
+    "status": "정본",
+    "why": "_vN 계열 최신 (3판)",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "_ENV",
+    "files": 291
+   },
+   {
+    "name": "_archive",
+    "files": 197
+   },
+   {
+    "name": "_근거쿼리",
+    "files": 2
+   },
+   {
+    "name": "erd",
+    "files": 68
+   }
+  ]
+ },
+ "07_현업의사결정 회신": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 810,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "현업의사결정 회신.md",
+    "size": 4000,
+    "status": "정본",
+    "why": "-",
+    "head": "해당 내용은 '20 현업의사결정 요청 22개 과제 정리.md' 파일 기준 답변이고 17도 정리하면 공유드리겠습니다."
+   }
+  ],
+  "subdirs": []
+ },
+ "00_PoC_bak": {
+  "rows": [
+   {
+    "name": "ANALYTICS_DDL.sql",
+    "size": 49072,
+    "status": "정본",
+    "why": "-",
+    "head": "-- PoC 당시 ANALYTICS 분석 스키마 및 하위 객체(테이블/뷰/Streamlit)들의 DDL 백업"
+   },
+   {
+    "name": "Excel_to_Table 개선.ipynb",
+    "size": 25232,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "Excel_to_Table 해설.md",
+    "size": 7323,
+    "status": "정본",
+    "why": "-",
+    "head": "# Excel_to_Table.ipynb 해설"
+   },
+   {
+    "name": "Excel_to_Table.ipynb",
+    "size": 115040,
+    "status": "정본",
+    "why": "-",
+    "head": ""
+   },
+   {
+    "name": "RAW_DDL.sql",
+    "size": 15008,
+    "status": "정본",
+    "why": "-",
+    "head": "-- PoC 당시 RAW 스키마와 하위 DDL 백업 (각 쿼리별 설명 주석 포함)"
+   },
+   {
+    "name": "README.md",
+    "size": 4743,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   },
+   {
+    "name": "create agent_GN_DW_AGENT.sql",
+    "size": 26192,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW_AGENT PoC: RAW 테이블·Semantic View·Cortex Agent 생성/정리 스크립트 (방송 매체효율 분석 보강)"
+   },
+   {
+    "name": "semantic_ddl.sql",
+    "size": 51648,
+    "status": "정본",
+    "why": "-",
+    "head": "-- PoC 당시 생성한 Cortex Analyst 시맨틱 뷰(SV_*) 7종의 DDL 백업"
+   }
+  ],
+  "subdirs": []
+ },
+ "01_project_sample_legacy": {
+  "rows": [
+   {
+    "name": "00_GN_DW_PROJECT.md",
+    "size": 38610,
+    "status": "정본",
+    "why": "-",
+    "head": "# GN_DW 프로젝트 구축 작업문서"
+   },
+   {
+    "name": "00_GN_DW_PROJECT_LLM.md",
+    "size": 36725,
+    "status": "정본",
+    "why": "-",
+    "head": "project_id: GN_DW"
+   },
+   {
+    "name": "01_환경 세팅.sql",
+    "size": 960,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 1. 환경 세팅"
+   },
+   {
+    "name": "02_유저_Role 세팅.sql",
+    "size": 3008,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 2. 유저 & Role 세팅"
+   },
+   {
+    "name": "03_01_DB_스키마 생성.sql",
+    "size": 1968,
+    "status": "정본",
+    "why": "-",
+    "head": "-- GN_DW 데이터베이스 및 스키마 생성 (레거시 — SV/Agent/Streamlit을 GOLD에 통합한 PoC 이관본. 정본 SERVING 설계는 02_GN_DW_building/ 참조)"
+   },
+   {
+    "name": "03_02_BRONZE_테이블 생성.sql",
+    "size": 11152,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.3 BRONZE 테이블 생성"
+   },
+   {
+    "name": "03_03_GOLD_View 생성.sql",
+    "size": 46560,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.5 GOLD 분석 View 생성"
+   },
+   {
+    "name": "03_04_Semantic_View 생성.sql",
+    "size": 51088,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.6 Semantic View 생성"
+   },
+   {
+    "name": "03_05_Agent 생성.sql",
+    "size": 3412,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.7 Agent 생성"
+   },
+   {
+    "name": "03_06_권한 부여.sql",
+    "size": 5296,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.8 권한 부여 (GRANT / Future Grants)"
+   },
+   {
+    "name": "03_07_Streamlit 배포.sql",
+    "size": 5792,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 3.9 Streamlit 대시보드 배포"
+   },
+   {
+    "name": "04_프로시저 생성.sql",
+    "size": 34308,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 4. 프로시저 생성"
+   },
+   {
+    "name": "05_태스크 생성.sql",
+    "size": 4912,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 5. 태스크 생성"
+   },
+   {
+    "name": "06_테스트 확인.sql",
+    "size": 7568,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 6. 테스트"
+   },
+   {
+    "name": "07_보안 세팅.sql",
+    "size": 5296,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 7. 보안 세팅"
+   },
+   {
+    "name": "08_모니터링 세팅.sql",
+    "size": 5936,
+    "status": "정본",
+    "why": "-",
+    "head": "-- 8. 모니터링 세팅"
+   },
+   {
+    "name": "README.md",
+    "size": 3680,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": []
+ },
+ "snowflake-mstr-dw-to-ods": {
+  "rows": [
+   {
+    "name": "00_README.md",
+    "size": 695,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": "snowflake-coco-workspace-v3",
+    "files": 22
+   }
+  ]
+ },
+ "snowflake-mstr-ods-crm": {
+  "rows": [
+   {
+    "name": "DIRECTORY_TREE.md",
+    "size": 2960,
+    "status": "정본",
+    "why": "-",
+    "head": "# MSTR_ODS CoCo Workspace 디렉토리 구조"
+   },
+   {
+    "name": "README.md",
+    "size": 2256,
+    "status": "안내",
+    "why": "README/INDEX",
+    "head": ""
+   }
+  ],
+  "subdirs": [
+   {
+    "name": ".cortex",
+    "files": 1
+   },
+   {
+    "name": "snowflake-mstr-ods-crm",
+    "files": 30
+   }
+  ]
+ }
+}

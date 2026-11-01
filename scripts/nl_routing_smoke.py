@@ -14,9 +14,9 @@ from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'tmp', 'nlsmoke')
 SPECS = {
-    'AGENT_MEMBER':    'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
-    'AGENT_MARKETING': 'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
-    'AGENT_EXECUTIVE': 'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
+    'AGENT_MEMBER':    '20_build/28_cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
+    'AGENT_MARKETING': '20_build/28_cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
+    'AGENT_EXECUTIVE': '20_build/28_cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
     # 🔴 [O207-C] AGENT_MSTR 은퇴(DROP · 스펙 파일 삭제) — 항목 제거
 }
 

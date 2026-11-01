@@ -27,7 +27,7 @@ status: draft (S4 게이트 확인 대기)
 | Agent | AGENT_EXECUTIVE · AGENT_MARKETING · AGENT_MEMBER · 기본 버전 [ENV] 운영계 = MEMBER VERSION$30 · EXECUTIVE VERSION$23 · MARKETING VERSION$26(2026-10-31 A6 Q07 · 3종 모두 10-30 21:39 KST 생성)(롤백 기준 = 그 직전 버전 · D10 §2) |
 | Agent 도구 | Cortex Analyst(SV) + `search_biz_definition` 1 · 3종 합집합 = SV 전수(개수 = `D09_Agent도구.csv` · 🆕 2026-10-30 재생성 = EXECUTIVE 17 / MARKETING 33 / MEMBER 31 · 경영 17 = O270 W3 `analyst_ad`·`analyst_ml_realtime_simulator` 제거 — 다시 넣지 않는다) |
 | Search | `SERVING.SEARCH_BIZ_DEFINITION` · 원천 `BIZ_DEFINITION_CORPUS`(🆕 O274 = 2,163행 · 원천참고 1,154 제외 1,009 · RT-31~37 추가) · lag 1 day |
-| spec 정본 | 워크스페이스 `cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |
+| spec 정본 | 워크스페이스 `20_build/28_cortex_project/agents/<AGENT>/agent_spec.yaml` = 80번 `04_SV_Agent_스펙` 과 해시 일치 |
 | 배포 스테이지 | `@GN_DW.OPS.AGENT_SPEC_STAGE/<AGENT>/agent_spec.yaml` (소비 롤 권한 없음 · ADMIN 전용) |
 | 권한 | Agent = OWNERSHIP ADMIN + USAGE ANALYST·VIEWER·SERVICE · SV = REFERENCES+SELECT 소비 3롤 · CoWork 등록 3/3 |
 
@@ -76,10 +76,10 @@ status: draft (S4 게이트 확인 대기)
 ## 5. [공통] RAG 지표사전 코퍼스 재생성
 
 ```
-# ① 코퍼스 CSV 재생성 (워크스페이스 · 원천 = 05_RAG_지표사전/90_provided_definition/ + 12_agent개선과제/tools/*.csv)
-python3 12_agent개선과제/tools/build_biz_definition_corpus.py          # CSV 만
+# ① 코퍼스 CSV 재생성 (워크스페이스 · 원천 = 05_RAG_지표사전/90_provided_definition/ + 30_operate/32_agent_improvement/tools/*.csv)
+python3 30_operate/32_agent_improvement/tools/build_biz_definition_corpus.py          # CSV 만
 # ② Snowflake 적재 — 둘 중 하나
-python3 12_agent개선과제/tools/build_biz_definition_corpus.py --apply  # TRUNCATE + write_pandas
+python3 30_operate/32_agent_improvement/tools/build_biz_definition_corpus.py --apply  # TRUNCATE + write_pandas
 #    또는 26_BIZ_DEFINITION_CORPUS_DDL_적재.sql [3]·[4] (COPY FILES → COPY INTO)
 ```
 

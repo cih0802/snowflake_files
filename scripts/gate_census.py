@@ -205,7 +205,7 @@ GEN = {
     #   · gen_column_mapping  = 라이브 접속 참조 **0** · `.execute` **0** — `ALTER VIEW` 는
     #       dbt 모델 `post_hook` 에서 컬럼 COMMENT 를 **파싱하는 대상 문자열**이다(같은 파일 143행 docstring).
     #   · run_bronze_audit_host = DDL/DML 키워드 **0** · `SELECT`/`INFORMATION_SCHEMA` 조회만 + 파일 기록.
-    #   🔴 오분류의 실해 = 「실행 금지」로 표시돼 **30_output_share 정본 산출물 04·06 을 재생성할 수 없었다.**
+    #   🔴 오분류의 실해 = 「실행 금지」로 표시돼 **60_share/61_output_share 정본 산출물 04·06 을 재생성할 수 없었다.**
     'gen_column_mapping': '컬럼계보매핑 04 — 🔴 라이브 접속 0(모델 파싱 전용)',
     'run_bronze_audit_host': 'BRONZE 노출감사 06 **정본 러너** — 조회 전용(무인자 = 직접조회)',
     # 🆕 [2026-08-30 O124] 손으로 쓴 산출물 `미해결이슈_요약_O102.md` 를 생성기로 대체했다.

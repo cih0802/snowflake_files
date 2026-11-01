@@ -2,7 +2,7 @@
 """[2026-08-10 O51-F] 광고 계열 8뷰 columns[] 를 기계 생성한다.
 
 대상·문안 출처
-  · `WIDE_AD_BROADCAST`(35) · `WIDE_AD_DIGITAL`(33) → **신규 이관**: `03_top-down_gold/10_` §7-A·§7-B
+  · `WIDE_AD_BROADCAST`(35) · `WIDE_AD_DIGITAL`(33) → **신규 이관**: `10_design/11_gold_topdown/10_` §7-A·§7-B
   · `WIDE_AD_PERFORMANCE`·`WIDE_GA_BEHAVIOR`·`WIDE_BUDGET`·`WIDE_TARGET_DEV`·
     `WIDE_AD_BROADCAST_CASE`·`WIDE_TARGET_BIZ` → **기존 yml 보존 + 경고 오버레이만**
 
@@ -16,7 +16,7 @@ from sfconn import q
 import yaml
 import desc_ad as DA
 
-REF  = '/workspace/03_top-down_gold/10_WIDE VIEW 코멘트.sql'
+REF  = '/workspace/10_design/11_gold_topdown/10_WIDE_VIEW_코멘트.sql'
 WYML = '/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml'
 NEW      = ['WIDE_AD_BROADCAST', 'WIDE_AD_DIGITAL']
 OVERLAY  = ['WIDE_AD_PERFORMANCE', 'WIDE_GA_BEHAVIOR', 'WIDE_BUDGET',

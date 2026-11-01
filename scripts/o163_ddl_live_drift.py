@@ -33,8 +33,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 DDL_FILES = [
-    ROOT / "03_top-down_gold" / "06_DDL.sql",
-    ROOT / "04_silver_design" / "08_SILVER_테이블DDL_20260714.sql",
+    ROOT / "10_design/11_gold_topdown" / "06_DDL.sql",
+    ROOT / "10_design/12_silver_design" / "08_SILVER_테이블DDL_20260714.sql",
 ]
 
 # CREATE OR REPLACE TABLE GN_DW.SILVER.FOO ( ... );

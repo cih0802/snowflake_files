@@ -1,0 +1,125 @@
+﻿old_path,new_path,old_order,action,reason
+00_PoC_bak/,70_reference/71_poc_backup/,00,move,§4-1 목적별 재편 · 참조 5건
+00_PoC_bak/Excel_to_Table 개선.ipynb,70_reference/71_poc_backup/Excel_to_Table_개선.ipynb,,rename,공백 제거 · 참조 1건
+00_PoC_bak/Excel_to_Table 해설.md,70_reference/71_poc_backup/Excel_to_Table_해설.md,,rename,공백 제거 · 참조 1건
+00_PoC_bak/create agent_GN_DW_AGENT.sql,70_reference/71_poc_backup/create_agent_GN_DW_AGENT.sql,,rename,공백 제거 · 참조 1건
+01_project_sample_legacy/,70_reference/72_sample_legacy/,01,move,§4-1 목적별 재편 · 참조 3건
+01_project_sample_legacy/01_환경 세팅.sql,70_reference/72_sample_legacy/01_환경_세팅.sql,01,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/02_유저_Role 세팅.sql,70_reference/72_sample_legacy/02_유저_Role_세팅.sql,02,rename,공백 제거 · 참조 3건
+01_project_sample_legacy/03_01_DB_스키마 생성.sql,70_reference/72_sample_legacy/03_01_DB_스키마_생성.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_02_BRONZE_테이블 생성.sql,70_reference/72_sample_legacy/03_02_BRONZE_테이블_생성.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_03_GOLD_View 생성.sql,70_reference/72_sample_legacy/03_03_GOLD_View_생성.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_04_Semantic_View 생성.sql,70_reference/72_sample_legacy/03_04_Semantic_View_생성.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_05_Agent 생성.sql,70_reference/72_sample_legacy/03_05_Agent_생성.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_06_권한 부여.sql,70_reference/72_sample_legacy/03_06_권한_부여.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/03_07_Streamlit 배포.sql,70_reference/72_sample_legacy/03_07_Streamlit_배포.sql,03,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/04_프로시저 생성.sql,70_reference/72_sample_legacy/04_프로시저_생성.sql,04,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/05_태스크 생성.sql,70_reference/72_sample_legacy/05_태스크_생성.sql,05,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/06_테스트 확인.sql,70_reference/72_sample_legacy/06_테스트_확인.sql,06,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/07_보안 세팅.sql,70_reference/72_sample_legacy/07_보안_세팅.sql,07,rename,공백 제거 · 참조 2건
+01_project_sample_legacy/08_모니터링 세팅.sql,70_reference/72_sample_legacy/08_모니터링_세팅.sql,08,rename,공백 제거 · 참조 2건
+snowflake-mstr-dw-to-ods/,70_reference/73_skill_mstr_dw_to_ods/,,move,§4-1 목적별 재편 · 참조 9건
+snowflake-mstr-ods-crm/,70_reference/74_skill_mstr_ods_crm/,,move,§4-1 목적별 재편 · 참조 5건
+30_output_share/,60_share/61_output_share/,30,move,§4-1 목적별 재편 · 참조 325건
+30_output_share/00_생성기-문서명 매핑.md,60_share/61_output_share/00_생성기-문서명_매핑.md,00,rename,공백 제거 · 참조 8건
+30_output_share/02_SILVER 스키마 컬럼 인벤토리_20261027.csv,60_share/61_output_share/02_SILVER_스키마_컬럼_인벤토리_20261027.csv,02,rename,공백 제거 · 참조 3건
+30_output_share/02_gold 스키마 컬럼 인벤토리_20261027.csv,60_share/61_output_share/02_gold_스키마_컬럼_인벤토리_20261027.csv,02,rename,공백 제거 · 참조 3건
+30_output_share/16_파이프라인 배선 수정.md,60_share/61_output_share/16_파이프라인_배선_수정.md,16,rename,공백 제거 · 참조 15건
+30_output_share/20260826_아키텍처 지도 요약본.html,60_share/61_output_share/20260826_아키텍처_지도_요약본.html,20260826,move,날짜<20261001 중복 → stale · 이름 중복: 80_인수인계_프로젝트완료 및 유지보수용/08_현업공유_산출물/30_output_share/20260826_아키텍처 지도 요약본.html · 내용 상이(80 = 95 정제본) → 작업 원본은 _archive 보존 · 🔴 O275-A 정정 = 현행 게이트 입력/생성기 출력 → archive 취소
+07_현업의사결정 회신/,60_share/62_business_decisions/,07,move,§4-1 목적별 재편 · 참조 18건
+07_현업의사결정 회신/현업의사결정 회신.md,60_share/62_business_decisions/현업의사결정_회신.md,,rename,공백 제거 · 참조 15건
+03_top-down_gold/,10_design/11_gold_topdown/,03,move,§4-1 목적별 재편 · 참조 356건
+03_top-down_gold/01_작업 계획.md,10_design/11_gold_topdown/01_작업_계획.md,01,rename,공백 제거 · 참조 5건
+03_top-down_gold/02_지표 분류.md,10_design/11_gold_topdown/02_지표_분류.md,02,rename,공백 제거 · 참조 20건
+03_top-down_gold/03_테이블 설계.md,10_design/11_gold_topdown/03_테이블_설계.md,03,rename,공백 제거 · 참조 40건
+03_top-down_gold/04_SV파생 매핑.md,10_design/11_gold_topdown/04_SV파생_매핑.md,04,rename,공백 제거 · 참조 24건
+03_top-down_gold/05_필드 인벤토리.md,10_design/11_gold_topdown/05_필드_인벤토리.md,05,rename,공백 제거 · 참조 60건
+03_top-down_gold/09_빅테이블 VIEW.md,10_design/11_gold_topdown/09_빅테이블_VIEW.md,09,rename,공백 제거 · 참조 65건
+03_top-down_gold/10_WIDE VIEW 코멘트.sql,10_design/11_gold_topdown/10_WIDE_VIEW_코멘트.sql,10,rename,공백 제거 · 참조 39건
+03_top-down_gold/11_BRONZE적재 컬럼대조.md,10_design/11_gold_topdown/11_BRONZE적재_컬럼대조.md,11,rename,공백 제거 · 참조 16건
+03_top-down_gold/12_gold 테이블명 변경작업 근거,10_design/11_gold_topdown/12_gold_테이블명_변경작업_근거,12,rename,공백 제거 · 참조 12건
+04_silver_design/,10_design/12_silver_design/,04,move,§4-1 목적별 재편 · 참조 208건
+04_silver_design/02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md,10_design/12_silver_design/02_SILVER_작업계획_BRONZE-GOLD연결_20260714.md,02,rename,공백 제거 · 참조 9건
+04_silver_design/03_SILVER_작업계획_CRM전용 20260714.md,10_design/12_silver_design/03_SILVER_작업계획_CRM전용_20260714.md,03,rename,공백 제거 · 참조 6건
+04_silver_design/04_SILVER_작업계획_GA4전용 20260714.md,10_design/12_silver_design/04_SILVER_작업계획_GA4전용_20260714.md,04,rename,공백 제거 · 참조 4건
+04_silver_design/05_SILVER_작업계획_ERP전용 20260714.md,10_design/12_silver_design/05_SILVER_작업계획_ERP전용_20260714.md,05,rename,공백 제거 · 참조 3건
+04_silver_design/06_SILVER_작업계획_AGENCY전용 20260714.md,10_design/12_silver_design/06_SILVER_작업계획_AGENCY전용_20260714.md,06,rename,공백 제거 · 참조 3건
+04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md,10_design/12_silver_design/07_GA4_SILVER_샤드통합_설계결정.md,07,rename,공백 제거 · 참조 15건
+04_silver_design/14_GA4_작업지시 프롬프트_20260714.md,10_design/12_silver_design/14_GA4_작업지시_프롬프트_20260714.md,14,rename,공백 제거 · 참조 4건
+04_silver_design/15_dbt파이프라인_작업지시 프롬프트_20260714.md,10_design/12_silver_design/15_dbt파이프라인_작업지시_프롬프트_20260714.md,15,rename,공백 제거 · 참조 1건
+04_silver_design/22_GA4_파이프라인_dbt로 작업전_주의사항.md,10_design/12_silver_design/22_GA4_파이프라인_dbt로_작업전_주의사항.md,22,rename,공백 제거 · 참조 3건
+04_silver_design/23_GA4_파이프라인_SP로 작업전_주의사항.md,10_design/12_silver_design/23_GA4_파이프라인_SP로_작업전_주의사항.md,23,rename,공백 제거 · 참조 2건
+06_snapshot/,10_design/13_snapshot_design/,06,move,§4-1 목적별 재편 · 참조 27건
+08_mornitoring/,30_operate/31_monitoring/,08,move,§4-1 목적별 재편 · 참조 172건
+08_mornitoring/01_모니터링_대상 개요.md,30_operate/31_monitoring/01_모니터링_대상_개요.md,01,rename,공백 제거 · 참조 8건
+08_mornitoring/02_Cortex_AI_사용량 모니터링.md,30_operate/31_monitoring/02_Cortex_AI_사용량_모니터링.md,02,rename,공백 제거 · 참조 14건
+08_mornitoring/03_비용제한_예산 쿼터.md,30_operate/31_monitoring/03_비용제한_예산_쿼터.md,03,rename,공백 제거 · 참조 14건
+08_mornitoring/04_알림_및 거버넌스.md,30_operate/31_monitoring/04_알림_및_거버넌스.md,04,rename,공백 제거 · 참조 10건
+12_agent개선과제/,30_operate/32_agent_improvement/,12,move,§4-1 목적별 재편 · 참조 232건
+60_repeat_어카운트시작/,30_operate/33_account_bootstrap/,60,move,§4-1 목적별 재편 · 참조 72건
+70_후속 프로젝트 인계용/,50_handover/53_followup_project/,70,move,§4-1 목적별 재편 · 참조 15건
+88_인계요청/,50_handover/54_handover_requests/,88,move,§4-1 목적별 재편 · 참조 11건
+98_현업요청인수인계/,50_handover/55_business_req_handover/,98,move,§4-1 목적별 재편 · 참조 14건
+50_handoff/,40_worklog/41_handoff/,50,move,§4-1 목적별 재편 · 참조 138건
+50_handoff/01_데이터마이그레이션 20260730.md,40_worklog/41_handoff/01_데이터마이그레이션_20260730.md,01,rename,공백 제거 · 참조 19건
+50_handoff/02_데이터마이그 A_PRODUCER.sql,40_worklog/41_handoff/02_데이터마이그_A_PRODUCER.sql,02,rename,공백 제거 · 참조 20건
+50_handoff/03_데이터마이그 B_BROKER.sql,40_worklog/41_handoff/03_데이터마이그_B_BROKER.sql,03,rename,공백 제거 · 참조 13건
+50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql,40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql,04,rename,공백 제거 · 참조 25건
+50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql,40_worklog/41_handoff/05_데이터마이그_GN_DW_ML_DDL_20260814.sql,05,rename,공백 제거 · 참조 25건
+50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql,40_worklog/41_handoff/06_데이터마이그_GN_DW_SILVER_DDL.sql,06,rename,공백 제거 · 참조 20건
+50_handoff/07_데이터마이그 C_CONSUMER.sql,40_worklog/41_handoff/07_데이터마이그_C_CONSUMER.sql,07,rename,공백 제거 · 참조 17건
+50_handoff/08_데이터마이그 B-C 통합.sql,40_worklog/41_handoff/08_데이터마이그_B-C_통합.sql,08,rename,공백 제거 · 참조 3건
+50_handoff/ETL_프로시저 설계.md,40_worklog/41_handoff/ETL_프로시저_설계.md,,rename,공백 제거 · 참조 2건
+50_handoff/GOLD_개발자 전달노트_20260629.md,40_worklog/41_handoff/GOLD_개발자_전달노트_20260629.md,,rename,공백 제거 · 참조 1건
+50_handoff/IT팀_전달 인덱스.md,40_worklog/41_handoff/IT팀_전달_인덱스.md,,rename,공백 제거 · 참조 1건
+50_handoff/문서검토_체크리스트 20260710.md,40_worklog/41_handoff/문서검토_체크리스트_20260710.md,,rename,공백 제거 · 참조 1건
+50_handoff/예산 안.md,40_worklog/41_handoff/예산_안.md,,rename,공백 제거 · 참조 11건
+95_작업기록_인수인계정제/,40_worklog/42_handover_refinement/,95,move,§4-1 목적별 재편 · 참조 17건
+02_GN_DW_building/,20_build/21_env_rbac/,02,move,§4-1 목적별 재편 · 참조 178건
+02_GN_DW_building/01_환경 Role.md,20_build/21_env_rbac/01_환경_Role.md,01,rename,공백 제거 · 참조 42건
+02_GN_DW_building/04_운영 확인.md,20_build/21_env_rbac/04_운영_확인.md,04,rename,공백 제거 · 참조 12건
+02_GN_DW_building/09_user login mfa리셋.sql,20_build/21_env_rbac/09_user_login_mfa리셋.sql,09,rename,공백 제거 · 참조 9건
+05_SV-Agent_ai/,20_build/23_sv_agent/,05,move,§4-1 목적별 재편 · 참조 407건
+05_SV-Agent_ai/01_SV-Agent 작업계획.md,20_build/23_sv_agent/01_SV-Agent_작업계획.md,01,rename,공백 제거 · 참조 20건
+11_일적재pipeline 구성/,20_build/24_daily_load_pipeline/,11,move,§4-1 목적별 재편 · 참조 54건
+15_MSTR 이관 PoC/,20_build/25_mstr_migration/,15,move,§4-1 목적별 재편 · 참조 113건
+15_MSTR 이관 PoC/답안체크용 쿼리.sql,20_build/25_mstr_migration/답안체크용_쿼리.sql,,rename,공백 제거 · 참조 5건
+15_MSTR 이관 PoC/mstr DDL 원본/,20_build/25_mstr_migration/mstr_DDL_원본/,,rename,공백 제거(폴더)
+15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/,20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출/,1,rename,공백 제거(폴더)
+15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql,20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출/mstr_1차_이관_대상_쿼리.sql,,rename,공백 제거 · 참조 13건
+15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql,20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출/갱신_없는_ExplCampList_테이블의_join용_캠페인코드_정보.sql,,rename,공백 제거 · 참조 4건
+15_MSTR 이관 PoC/snowflake 적용 ddl/,20_build/25_mstr_migration/snowflake_적용_ddl/,,rename,공백 제거(폴더)
+17_MSTR통한 메달리온 보완/,20_build/26_mstr_medallion/,17,move,§4-1 목적별 재편 · 참조 10건
+09_streamlit 권한 설정/,20_build/27_streamlit_auth/,09,move,§4-1 목적별 재편 · 참조 15건
+cortex_project/,20_build/28_cortex_project/,,move,§4-1 목적별 재편 · 참조 193건
+.20261016_GNI잔여작업.md,40_worklog/41_handoff/.20261016_GNI잔여작업.md,,move,루트 산재 정리 · 세션 인수인계 메모 · 참조 1건
+95_정식산출물_생성_프롬프트.md,40_worklog/41_handoff/95_정식산출물_생성_프롬프트.md,95,move,루트 산재 정리 · 산출물 생성 프롬프트 · 참조 11건
+temp_20261014_작업내역 정리.md,40_worklog/41_handoff/temp_20261014_작업내역_정리.md,,move,루트 산재 정리 · 작업내역 메모 · 참조 1건
+.brief_run.out,tmp/root_scratch/.brief_run.out,,move,루트 산재 정리 · BRIEF 실행 로그 잔재 · 참조 1건
+999_temp.txt,tmp/root_scratch/999_temp.txt,999,move,루트 산재 정리 · 빈 파일(0B) · 참조 4건
+Untitled.sql,tmp/root_scratch/Untitled.sql,,move,루트 산재 정리 · SANDBOX.TOOLS 생성 스크래치 · 참조 3건
+Untitled 1.sql,tmp/root_scratch/Untitled_1.sql,,move,루트 산재 정리 · Git 시크릿 갱신 스크래치(PAT 자리표시자만) · 참조 1건
+Untitled 2.sql,tmp/root_scratch/Untitled_2.sql,,move,루트 산재 정리 · GN_DW 실존 점검 스크래치 · 참조 1건
+Untitled 3.sql,tmp/root_scratch/Untitled_3.sql,,move,루트 산재 정리 · SELECT 확인 스크래치 · 참조 3건
+Untitled 4.sql,tmp/root_scratch/Untitled_4.sql,,move,루트 산재 정리 · 빈 파일(0B) · 참조 4건
+R96쿼리결과.md,tmp/root_scratch/R96쿼리결과.md,,move,루트 산재 정리 · R95 실행 결과 메모(착수표 ③ R96 관련 · 🟡 검토) · 참조 3건
+GNI조직도피벗.sql,10_design/12_silver_design/GNI조직도피벗.sql,,move,루트 산재 정리 · 조직 계층 Flat 전개 쿼리(90 은 원본 보존 → 설계 폴더) · 참조 1건
+기준년월 보유 테이블 및 컬럼.md,10_design/12_silver_design/기준년월_보유_테이블_및_컬럼.md,,move,루트 산재 정리 · BRONZE 기준년월 인벤토리 · 참조 3건
+OPS.sql,20_build/21_env_rbac/OPS.sql,,move,루트 산재 정리 · 운영 스크립트(크레딧·권한·서비스계정) · 참조 1건
+SECURITY.sql,20_build/21_env_rbac/SECURITY.sql,,move,루트 산재 정리 · Git 자격증명 시크릿 갱신 · 참조 25건
+TEARDOWN.sql,20_build/21_env_rbac/TEARDOWN.sql,,move,루트 산재 정리 · 환경 정리 · 참조 12건
+setup_20260702.sql,20_build/21_env_rbac/setup_20260702.sql,,move,루트 산재 정리 · SANDBOX 초기 셋업 · 참조 3건
+dbt_build.sql,20_build/21_env_rbac/dbt_build.sql,,move,루트 산재 정리 · DW_PIPELINE 수동 빌드 SQL(10_dbt_pipeline 고정 영역 회피) · 참조 2건
+PAID_재현_런북_20260722.md,30_operate/33_account_bootstrap/_archive/PAID_재현_런북_20260722.md,,archive,날짜<20261001 중복 → stale · 이름 중복: 80_인수인계_프로젝트완료 및 유지보수용/07_운영런북_이슈/PAID_재현_런북_20260722.md · 내용 동일(SHA256)
+프로시저 내 email 보내기.sql,30_operate/31_monitoring/프로시저_내_email_보내기.sql,,move,루트 산재 정리 · 프로시저 에러 메일 알림 가이드 · 참조 1건
+agent 사용 이력 조회.sql,30_operate/32_agent_improvement/agent_사용_이력_조회.sql,,move,루트 산재 정리 · Agent 이력 자료 · 참조 3건
+custom tools 롤별 접근 가능성.md,30_operate/32_agent_improvement/custom_tools_롤별_접근_가능성.md,,move,루트 산재 정리 · Agent 도구 권한 자료 · 참조 1건
+gni_경영지원agent질문답변추출_20261021.csv,30_operate/32_agent_improvement/gni_경영지원agent질문답변추출_20261021.csv,,move,루트 산재 정리 · Agent 답변 추출 · 참조 1건
+부서별agent답변.md,30_operate/32_agent_improvement/부서별agent답변.md,,move,루트 산재 정리 · Agent 답변 자료 · 참조 8건
+현업공지용_20261026.md,60_share/61_output_share/현업공지용_20261026.md,,move,루트 산재 정리 · 현업 공유물 · 참조 1건
+문서실행순서.md,50_handover/50_execution_order/문서실행순서.md,,move,루트 산재 정리 · 실행순서 4종 집결(4-E 통합 예정) · 참조 87건
+문서실행순서_llm실행.md,50_handover/50_execution_order/문서실행순서_llm실행.md,,move,루트 산재 정리 · 실행순서 4종 집결 · 참조 15건
+문서실행순서_보조주석.md,50_handover/50_execution_order/문서실행순서_보조주석.md,,move,루트 산재 정리 · 실행순서 4종 집결 · 참조 15건
+문서실행순서_운영계_LLM실행카드.md,50_handover/50_execution_order/문서실행순서_운영계_LLM실행카드.md,,move,루트 산재 정리 · 실행순서 4종 집결 · 참조 10건
+04_silver_design/08_SILVER_테이블DDL_20260714.sql,10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql,08,move,날짜<20261001 중복 → stale · 이름 중복: 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/04_silver_design/08_SILVER_테이블DDL_20260714.sql · 내용 상이(80 = 95 정제본) → 작업 원본은 _archive 보존 · 🔴 O275-A 정정 = 현행 게이트 입력/생성기 출력 → archive 취소
+08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql,30_operate/31_monitoring/_archive/2026-08-03_G3_코드컬럼전파_ALTER.sql,2026,archive,날짜<20261001 중복 → stale · 이름 중복: 80_인수인계_프로젝트완료 및 유지보수용/06_일배치_모니터링/08_mornitoring/2026-08-03_G3_코드컬럼전파_ALTER.sql · 내용 동일(SHA256)

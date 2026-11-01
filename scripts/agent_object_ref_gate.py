@@ -50,7 +50,7 @@ import argparse
 sys.path.insert(0, '/workspace/scripts')
 
 ROOT = '/workspace'
-AGENT_GLOB = os.path.join(ROOT, 'cortex_project/agents/*/agent_spec.yaml')
+AGENT_GLOB = os.path.join(ROOT, '20_build/28_cortex_project/agents/*/agent_spec.yaml')
 DB = 'GN_DW'
 
 # 스키마 「모양」이다 — 라이브 인벤토리로 만들지 않는다.

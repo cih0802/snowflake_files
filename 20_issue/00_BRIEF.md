@@ -26,36 +26,48 @@ END-METADATA -->
 
 | 순 | 작업 | 정지점 | 정본 좌표 |
 |---|---|---|---|
-| ① | 지표사전 운영계 반영 = 계획서 §4 B0~B4 · 옮길 파일 3개(output/O217_biz_definition_corpus.csv · tools/build_biz_definition_corpus.py · 05_SV-Agent_… | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:29` |
-| ② | 운영계 반영 후 현업 회신문 Q3 아래 「운영 화면 반영은 준비 중」 문구 정리 | ① 후 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:30` |
-| ① | 운영계 O270 단계 6 게이트 재실행(rbac_source_gate.py --live · 음성) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:36` |
-| ② | 롤 전환 = 12_agent개선과제/O273_롤전환_작업순서.md 표 3(A~E) | 👤 IT팀·사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:37` |
-| ③ | 현업 회신문 · W9 공지 발송 · 회신(LTV 이상치 · 방송 총비용 9·10월) · R96 | 👤 데이터팀·현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:38` |
-| ④ | 구 역할 회수(48번 [6]) — 롤 ⑦·⑨ 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:39` |
-| ⑤ | 운영계 enum 게이트 조각 2/4·3/4 미실행 · 운영계 default 고정 원인 미확인 | 선택 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:40` |
-| ⑥ | 🟢 R1-4-3 라벨 선점 = O274 는 착수 첫 쓰기로 선점했다(지연 해소) — 계속 유지 | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md:41` |
-| ① | 운영계 O270 단계 6 게이트 재실행(rbac_source_gate.py --live · 음성) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:25` |
-| ② | 롤 전환 = 12_agent개선과제/O273_롤전환_작업순서.md 표 3(A~E) | 👤 IT팀·사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:26` |
-| ③ | 현업 회신문 · W9 공지 발송 · 회신(LTV 이상치 · 방송 총비용 9·10월) · R96 | 👤 데이터팀·현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:27` |
-| ④ | 구 역할 회수(48번 [6]) — 롤 ⑦·⑨ 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:28` |
-| ⑤ | 운영계 enum 게이트 조각 2/4·3/4 · 운영계 default 고정 원인 | 선택 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:29` |
+| ① | 소실 파일 1건 복원(사용자 백업 → 배치 예정 경로) 후 LOST_FILES.csv 에 복원 표기 | 👤 사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:37` |
+| ② | 4-D 스킬 재생성 = 정본(00_guides/03_init_ihcho_스킬_*.md) 경로는 치환됨 → 기존 빌더로 설치본 재생성 · mstr-migration 스킬의 05_SV-Agent_ai/ 참조 갱신 | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:38` |
+| ③ | 최종 검증 = scripts/*.py 하드코딩 옛 경로 잔존 스캔(치환 경계 밖 표기) · 음성 테스트 전건 · 선택 게이트 | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:39` |
+| ④ | 4-E = 새 상위 폴더 README 7개 · _archive 색인 README · 00_WORKSPACE_MAP.md 새 구조 갱신 · 문서실행순서*.md 4종 통합 · tmp 60일 초과 삭제 후보 목록 | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:40` |
+| ⑤ | 🔴 하지 마라 = scripts/golden/*.json 에 경로 치환 재적용 · 80·85·90 이동 · 대용량 그룹 단일 실행(샌드박스 재시작 3회 실측 → chunk_move.py 분할) | 금지 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:41` |
+| ① | 운영계 O270 단계 6 게이트 재실행(rbac_source_gate.py --live · 음성) | 👤 운영계 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:47` |
+| ② | 롤 전환 = 30_operate/32_agent_improvement/O273_롤전환_작업순서.md 표 3(A~E) | 👤 IT팀·사용자 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:48` |
+| ③ | 현업 회신문 · W9 공지 발송 · 회신(LTV 이상치 · 방송 총비용 9·10월) · R96(tmp/root_scratch/R96쿼리결과.md) | 👤 데이터팀·현업 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:49` |
+| ④ | 구 역할 회수(48번 [6]) — 롤 ⑦·⑨ 후에만 | 🔴 사용자 승인 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:50` |
+| ⑤ | 운영계 enum 게이트 조각 2/4·3/4 · 운영계 default 고정 원인 | 선택 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md:51` |
+| ③ | 잔존 재스캔 = python3 tmp/restructure/residual_scan.py tmp/restructure/RESIDUAL_PATHS.csv → 남은 건은 docstring·주석 표기인지 확인 · 선택 게이트(sh scr… | 다음 세션 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-B.md:33` |
+| ① | 실행순서 4종 본문의 옛 경로(/05_SV-Agent_ai/… 등) 치환 여부 결정 — 치환하면 80 패키지 사본과 어긋난다 · 운영계 카드 §2 ④ ls /workspace/문서실행순서.md 는 이동 후 실패 | 👤 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-C.md:39` |
+| ② | 01_세션이력 O275-C 항목 추가 = split_doc.py 20_issue/01_세션이력.md --rollover --entry-file tmp/restructure/history_O275-C.md | 🔴 승인(R4-4-3) | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-C.md:40` |
+| ③ | 선택 게이트 sh scripts/optional_gates.sh | 👤 실행 여부 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-C.md:41` |
+| ④ | 🔴 하지 마라 = scripts/golden/*.json 경로 치환 · 80·85·90 이동 · tmp 삭제(후보 승인 전) | 금지 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-C.md:42` |
+| ① | 80·85 패키지 안 옛 경로 수정 — 재배치 대상 문서가 전부 재배치 완료된 뒤(사용자 결정) · 대상 예 = 80_…/00_INDEX.csv · 01_실행순서_배포SQL/ 사본 · scripts/sv_no_rollup_gate.… | 👤 조건 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-D.md:32` |
+| ② | 🔴 하지 마라 = scripts/golden/*.json 경로 치환 · tmp 삭제(후보 0 · 승인 전) | 금지 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-D.md:33` |
+| ① | O275-D ▣ D-2 ① (80·85 경로 · 재배치 완료 후) | 👤 조건 대기 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-E.md:32` |
+| ② | rename_stale_gate 기준선 판단 · live_change_gate 원장 기록 · sv_unit_gate 예외 등재 | 👤 사용자 판단 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-E.md:33` |
+| ① | 80·85 경로 수정 범위 = 패키지 내부 폴더명은 고정 영역 규칙(이동·이름 변경 금지)과 충돌 → 방식 결정 필요 | 👤 사용자 결정 | `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-F.md:32` |
 
 ## 2. 직전 세션 인수인계 (현행 절만)
 
-> 🔴 **현행 시작점** = `▣ O274-B-0 현황`
-> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:17`
+> 🔴 **현행 시작점** = `▣ O275-G-0 현황`
+> · 좌표 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-G.md:17`
 > · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`
 > 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).
 > 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.
-> 🔴🔴 **이 세션은 단위 2개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-A.md`
->   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md`
+> 🔴🔴 **이 세션은 단위 7개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-A.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-B.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-C.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-D.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-E.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-F.md`
+>   · `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-G.md`
 > · 라벨 파일 색인 = `99_NEXT_SESSION_조각/00_인수인계_색인.md`
 
 > 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**
 > 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.
 > ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**
->   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0274-B.md:17`).
+>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0275-G.md:17`).
 > 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).
 
 ## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)
@@ -70,19 +82,19 @@ END-METADATA -->
 
 | 라벨 | 표제 | 상태 | 좌표 |
 |---|---|---|---|
-| `O274` | 🟡 O274 — O273 계획 집행 = 지표사전 현업 확정 지표 7종(RT-31~37) 등재 · 개발계 A1~A8 (2026-10-30 · TRIALADMIN · TQ68205 … | 🟡 A1 curated 37행 · A2 생성기 [O273] 광고 단독 → MARKETING · A3 2,163행 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
-| `O273` | 🟡 O273 — O272 운영계 결과 처리(enum 신규값 · 경영 Agent default 고정) · 문서 정리 · 현업 회신 · 롤 설계서·작업순서 (2026-10-30 · … | 🟡 [A] 05_20 OS 3값 · 게이트 빈값·'/' 제외 · 음성 13 PASS · 4조각 NEW 0 · 운영… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
-| `O272` | 🟡 O272 — 신규 개발계 재구축 · O271 A~G 리허설 · 절차 결함 2 처방 · 52번 (2026-10-30 · TRIALADMIN · TQ68205 개발계 · ㉡ · … | 🟡 1~59 구축 · A·B·C·E·F 운영계 일치 · D EXECUTIVE 17≠19 · run_sql_file… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O275` | 🟢 O275 — 문서정리 = 워크스페이스 목적별 재편(README 판정 4-A · MOVE_MAP 4-B · 그룹 이동 4-C · 🆕 4-D·4-E O275-C) (2026-10… | 🟢 4-C 완료 = 7그룹 2,665파일 이동 · 스테이지 대조 신규 부재 0 · 원본 잔존 0 · 경로 치환 4… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:106` |
+| `O274` | 🟡 O274 — O273 계획 집행 = 지표사전 현업 확정 지표 7종(RT-31~37) 등재 · 개발계 A1~A8 (2026-10-30 · TRIALADMIN · TQ68205 … | 🟡 A1 curated 37행 · A2 생성기 [O273] 광고 단독 → MARKETING · A3 2,163행 … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:107` |
+| `O273` | 🟡 O273 — O272 운영계 결과 처리(enum 신규값 · 경영 Agent default 고정) · 문서 정리 · 현업 회신 · 롤 설계서·작업순서 (2026-10-30 · … | 🟡 [A] 05_20 OS 3값 · 게이트 빈값·'/' 제외 · 음성 13 PASS · 4조각 NEW 0 · 운영… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:108` |
+| `O272` | 🟡 O272 — 신규 개발계 재구축 · O271 A~G 리허설 · 절차 결함 2 처방 · 52번 (2026-10-30 · TRIALADMIN · TQ68205 개발계 · ㉡ · … | 🟡 1~59 구축 · 🆕 [O275-F] REBUILD:ALL 2026-10-30(TQ68205 개발계 신규 구축… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-002.md:109` |
 | `O271` | 🟡 O271 — O270 운영계 0·1단계 정지 해소 준비(잔존 SERVING 뷰 4 · Q09 소유자 · 배정표 · Streamlit) (2026-10-30 · TRIALADM… | 🟡 4뷰 정본 부재(잔존 후보 · GRANT 0) · R98 신설 · 생성기 인자화(개발계 diff 0) · 48… | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:4` |
 | `O270` | 🟡 O270 — O269-C-4 집행 + 마케팅 피드백 3차(데분_5 제작비 변동 · 데분_6 원천별 광고비 컬럼 · 데분_7 영상 개발실적 · 출처명 재방송→방송) 분석·반영 … | 🟡 테스트 2종 rc=0(run_sql_file dry-run/--apply · ERD 기대 수 유도 → ERD … | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:5` |
-| `O269` | 🟡 O269 — 잔여 작업 전수 정리(20_issue·98·85·60·12 문서 대조) · 사용자 보고 반영(현업 회신 3통 발송 · 운영계 개발계 동일 반영 · T1 TASK_… | 🟡 분류 완료 · 집행 결과 = 라벨 파일 | `20_issue/00_INDEX_이슈원장_조각/00_INDEX_이슈원장-003.md:6` |
 
 ## 5. 문서군 규모 · 독해 예산 (실측)
 
 | 문서 | 조각 | 총 바이트 | max B | 여유 B |
 |---|---|---|---|---|
-| `00_INDEX_이슈원장` | 20 | 514,606 | 28,517 | 12,443 |
-| `01_세션이력` | 91 | 2,335,663 | 39,781 | 36,343 |
+| `00_INDEX_이슈원장` | 20 | 516,634 | 29,925 | 11,035 |
+| `01_세션이력` | 91 | 2,340,460 | 39,781 | 31,546 |
 | `02_상태상세_대시보드_갱신형` | 8 | 112,272 | 28,139 | 12,821 |
 | `03_이슈상세` | 2 | 50,391 | 27,796 | 13,164 |
 | `10_진단_원인분석` | 20 | 383,546 | 27,121 | 13,839 |
@@ -93,7 +105,7 @@ END-METADATA -->
 | `99_NEXT_SESSION` | 35 | 385,742 | 28,852 | 12,108 |
 | `01_문서분할_규약` | 3 | 54,175 | 29,125 | 11,835 |
 | `11_O누적작업_점검_재현_절차` | 2 | 38,683 | 18,632 | 22,328 |
-| `00_작업지침_세션운영규칙` | — | 32,072 | 32,072 | 8,888 |
+| `00_작업지침_세션운영규칙` | — | 32,081 | 32,081 | 8,879 |
 | `02_파일쓰기_안전규약` | — | 13,392 | 13,392 | 27,568 |
 | `04_단계종료_게이트` | — | 10,149 | 10,149 | 30,811 |
 | `03_init_ihcho_스킬_정본` | — | 9,464 | 9,464 | 31,496 |
@@ -105,9 +117,9 @@ END-METADATA -->
 | `40_입고대기_원천의존` | — | 25,033 | 25,033 | 15,927 |
 | `91_사고사례집` | — | 20,859 | 20,859 | 20,101 |
 | `92_실측필요_후속작업` | — | 4,061 | 4,061 | 36,899 |
-| `00_BRIEF` | — | 10,816 | 10,816 | 30,144 |
+| `00_BRIEF` | — | 14,180 | 14,180 | 26,780 |
 
-> 전 문서군 = **3,367,444 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
+> 전 문서군 = **3,374,406 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒
 > 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.
 
 ## 6. 게이트 상태
@@ -119,7 +131,7 @@ END-METADATA -->
 | `clause_order_gate` | ✅ | ✅ 게이트 통과 — 조문 115개 · 역전 0 · 중복 0 (경고 0건) |
 | `index_row_gate` | ✅ | ✅ 게이트 통과 — 행 유실 0 · 골든 대비 중복 증가 0 |
 | `doc_heading_gate` | ✅ | ✅ 게이트 통과 — 제목 유실 0 |
-| `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 4건은 사람 판단) |
+| `doc_coord_gate` | 🟡 | ✅ 게이트 통과 — 경로가 깨진 좌표 0건 (경고 2건은 사람 판단) |
 | `jinja_config_gate` | ✅ | ✅ 게이트 통과 — blocking 0건 |
 | `agent_tool_claim_gate` | ✅ | 🟢 PASS — 가불가 모순 0건 · 스펙 규칙7 수치 혼입 0건 |
 | `agent_object_ref_gate` | ✅ | 🟢 PASS — blocking 위반 0건 |

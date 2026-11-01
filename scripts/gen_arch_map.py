@@ -1,13 +1,13 @@
 # GN_DW 아키텍처 지도 HTML 을 라이브 INFORMATION_SCHEMA + dbt 모델 리니지로 전량 재생성한다.
 # Co-authored with CoCo
 #
-# 왜: 30_output_share/20260826_아키텍처 지도 요약본.html 초판은 노드 목록의 상당 부분이 창작이었다
+# 왜: 60_share/61_output_share/_archive/20260826_아키텍처_지도_요약본.html 초판은 노드 목록의 상당 부분이 창작이었다
 #     ("총 54개 채우기 위한 명세" · GA4_RAW_EVENTS_01 · TM_BZ_* · AGENCY_MEDIA_COST 등).
 #     R2-3(원본 실측) · R2-4(스캔 결과가 완료 기준)에 따라 라이브 스캔 결과만 근거로 삼는다.
 #
 # 입력 = ① GN_DW.INFORMATION_SCHEMA (객체·컬럼·COMMENT) ② SHOW PRIMARY/IMPORTED KEYS
 #        ③ 10_dbt_pipeline/models/**/*.sql 의 source()/ref() ④ SERVING 뷰 정의 문자열
-# 출력 = 30_output_share/20260826_아키텍처 지도 요약본.html (인라인 데이터 · 외부 fetch 없음)
+# 출력 = 60_share/61_output_share/_archive/20260826_아키텍처_지도_요약본.html (인라인 데이터 · 외부 fetch 없음)
 
 import json
 import os
@@ -19,7 +19,7 @@ import snowflake.connector
 
 ROOT = "/workspace"
 MODELS = os.path.join(ROOT, "10_dbt_pipeline", "models")
-OUT = os.path.join(ROOT, "30_output_share", "20260826_아키텍처 지도 요약본.html")
+OUT = os.path.join(ROOT, "60_share/61_output_share", "20260826_아키텍처_지도_요약본.html")
 
 BRONZE_SCHEMAS = ("BRONZE_CRM", "BRONZE_ERP", "BRONZE_AGENCY")
 ALL_SCHEMAS = BRONZE_SCHEMAS + ("SILVER", "GOLD", "SERVING")

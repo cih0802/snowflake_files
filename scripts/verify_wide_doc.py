@@ -31,7 +31,7 @@ def main():
     }
 
     # 3. Read generated 09_빅테이블 VIEW.md
-    doc_path = os.path.join(ROOT, '03_top-down_gold', '09_빅테이블 VIEW.md')
+    doc_path = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블_VIEW.md')
     with open(doc_path, 'r', encoding='utf-8') as f:
         doc_text = f.read()
 

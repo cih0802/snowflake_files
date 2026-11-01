@@ -5,14 +5,14 @@
    "date": "2026-08-28 17:01:09",
    "diff_count": 6,
    "label": "O111-B",
-   "reason": "차이 3건 전량 규명 완료 — 출처는 라이브가 아니라 수기 문서 03_top-down_gold/05_필드 인벤토리.md 이고, 늘어난 3건은 [O89] 가 추가한 DIM_SPONSORSHIP 분류 3계층(SPONSORSHIP_DIV_CD·DIV_NAME·GROUP_NAME)이다. 세 지표(entries·index_keys·desc_cells)가 모두 +3 인 것은 그 3건이 각각 색인·설명셀 자격을 함께 갖기 때문이며 실측으로 3/3/3 확인했다. 동시에 골든 구조를 카운트 → 키 목록으로 바꿔 다음 차이는 원소 단위로 귀속되게 했다."
+   "reason": "차이 3건 전량 규명 완료 — 출처는 라이브가 아니라 수기 문서 10_design/11_gold_topdown/05_필드_인벤토리.md 이고, 늘어난 3건은 [O89] 가 추가한 DIM_SPONSORSHIP 분류 3계층(SPONSORSHIP_DIV_CD·DIV_NAME·GROUP_NAME)이다. 세 지표(entries·index_keys·desc_cells)가 모두 +3 인 것은 그 3건이 각각 색인·설명셀 자격을 함께 갖기 때문이며 실측으로 3/3/3 확인했다. 동시에 골든 구조를 카운트 → 키 목록으로 바꿔 다음 차이는 원소 단위로 귀속되게 했다."
   },
   {
    "date": "2026-08-30 14:18:22",
    "diff_count": 24,
    "label": "O123-C",
    "label_note": "[2026-08-30 O124 소급 보정] 발행 시점 label 은 UNLABELED 였다(착수 직후 export SESSION_LABEL 미이행 · R1-7-10). 귀속 근거 = 이 항목 reason 본문이 스스로 'O123-C:' 로 시작하고, 원장 §1 O123-C 행과 이력 §O123-C 7절이 같은 발행 2건을 지목한다. 🔴 발행을 다시 하지 않았다 — diff_count·metrics·reason 무변경이고 label 1개만 채웠다.",
-   "reason": "O123-C: 30_output_share 산출물 17종 전량 재생성(2026-08-28 골든 → 2026-08-30 실측). 사용자 지시 = 아카이브 후 최신화. 실유실 0 확인 근거: (1) 08 은 행 536→752 이지만 키 중복 0 · 사라진 키 0 · 신규 키 216 순수 증가이고 SILVER 테이블 39→43(BIGQUERY_REFINED_DATA·GA4_BASIC·CRM_MEMBER_SPONSOR_SPAN·ERP_BUDGET_YEARLY 신규)로 규명됨. (2) SILVER_ONLY_CHAIN 127→292 급증은 대부분 GA4 축(118+46)이고 O120 이 실증한 'GA 축이 GOLD 에서 끊긴다'와 정합. (3) 06 은 미노출 586→523 감소·노출 118→138 증가로 개선 방향. (4) 04 rows 548→565 는 WIDE 컬럼 실측 565 와 일치. (5) 계정 KA98941 라이브 조회로 dump_schema(GOLD 뷰14·테이블37·SILVER43·BRONZE52)+census 선행 생성 후 실행. 측정일 갱신은 재생성의 정상 결과다."
+   "reason": "O123-C: 60_share/61_output_share 산출물 17종 전량 재생성(2026-08-28 골든 → 2026-08-30 실측). 사용자 지시 = 아카이브 후 최신화. 실유실 0 확인 근거: (1) 08 은 행 536→752 이지만 키 중복 0 · 사라진 키 0 · 신규 키 216 순수 증가이고 SILVER 테이블 39→43(BIGQUERY_REFINED_DATA·GA4_BASIC·CRM_MEMBER_SPONSOR_SPAN·ERP_BUDGET_YEARLY 신규)로 규명됨. (2) SILVER_ONLY_CHAIN 127→292 급증은 대부분 GA4 축(118+46)이고 O120 이 실증한 'GA 축이 GOLD 에서 끊긴다'와 정합. (3) 06 은 미노출 586→523 감소·노출 118→138 증가로 개선 방향. (4) 04 rows 548→565 는 WIDE 컬럼 실측 565 와 일치. (5) 계정 KA98941 라이브 조회로 dump_schema(GOLD 뷰14·테이블37·SILVER43·BRONZE52)+census 선행 생성 후 실행. 측정일 갱신은 재생성의 정상 결과다."
   },
   {
    "date": "2026-08-30 14:19:11",
@@ -37,7 +37,7 @@
    "date": "2026-09-02 05:41:36",
    "diff_count": 11,
    "label": "UNLABELED",
-   "reason": "O134-B: 라이브 census.json 및 현행 스키마(DEC-46/DEC-44/SV_AD) 기반 30_output_share 전수 재생성 및 골든 갱신"
+   "reason": "O134-B: 라이브 census.json 및 현행 스키마(DEC-46/DEC-44/SV_AD) 기반 60_share/61_output_share 전수 재생성 및 골든 갱신"
   },
   {
    "date": "2026-09-02 06:53:19",

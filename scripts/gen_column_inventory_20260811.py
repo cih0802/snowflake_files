@@ -1,6 +1,6 @@
 """GN_DW SILVER/GOLD 컬럼 인벤토리 CSV 생성 (라이브 메타데이터 기준).
 
-30_output_share/02_{SILVER,gold} 스키마 컬럼 인벤토리_<날짜>.csv 를 생성한다.
+60_share/61_output_share/02_{SILVER,gold} 스키마 컬럼 인벤토리_<날짜>.csv 를 생성한다.
 스키마 구조·COMMENT 의 소유자는 DDL 이며, 본 스크립트는 라이브 카탈로그를 그대로 사영한다.
 """
 import csv
@@ -12,8 +12,8 @@ import snowflake.connector
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
 AS_OF = sys.argv[1] if len(sys.argv) > 1 else "20260903"
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
-PREV_DIR = os.path.join(WS, "30_output_share", "_archive", "20260806")
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
+PREV_DIR = os.path.join(WS, "60_share/61_output_share", "_archive", "20260806")
 PREV_TAG = "20260811"
 
 HEADER = ["테이블명", "테이블 한글명", "GRAIN", "테이블유형", "컬럼명", "컬럼 한글명", "타입", "NULLABLE",

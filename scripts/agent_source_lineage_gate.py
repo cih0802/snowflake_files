@@ -43,9 +43,9 @@ import argparse
 import yaml
 
 ROOT = '/workspace'
-AGENT_GLOB = 'cortex_project/agents/*/agent_spec.yaml'
+AGENT_GLOB = '20_build/28_cortex_project/agents/*/agent_spec.yaml'
 DBT_GLOBS = ('10_dbt_pipeline/models/**/*.sql', '10_dbt_pipeline/snapshots/**/*.sql')
-SV_DDL_GLOB = '05_SV-Agent_ai/*.sql'          # `_archive/` 는 glob 이 내려가지 않는다(의도)
+SV_DDL_GLOB = '20_build/23_sv_agent/*.sql'          # `_archive/` 는 glob 이 내려가지 않는다(의도)
 
 # 코드사전 — CORE(핵심 원천)에서 뺀다. ALLOWED 에는 남는다(적어도 틀린 것은 아니다).
 CODE_TABLE_RE = re.compile(r'^TC_')

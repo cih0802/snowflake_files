@@ -29,7 +29,7 @@ FILES = {
         "select * from {{ ref('CRM_DEV') }} join {{ ref('CRM_CODE') }} join {{ ref('DIM_C') }} join {{ ref('CRM_MEM') }}"
         "\n-- {{ ref('CRM_OTHER') }} 주석 안의 ref 는 리니지가 아니다",
     '10_dbt_pipeline/models/gold/fact/FACT_K.sql': "select * from {{ ref('FACT_E') }}",
-    '05_SV-Agent_ai/05_x.sql':
+    '20_build/23_sv_agent/05_x.sql':
         "CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_E\n tables ( e AS GN_DW.GOLD.FACT_E, c AS GN_DW.GOLD.DIM_C );\n"
         "CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_K\n tables ( k AS GN_DW.GOLD.FACT_K );\n"
         "CREATE OR ALTER SEMANTIC VIEW GN_DW.SERVING.SV_ML\n tables ( m AS GN_DW.SERVING.ML_X_V );\n",
@@ -48,7 +48,7 @@ def run(desc, sv='SV_E', strict=False):
             p = os.path.join(d, rel)
             os.makedirs(os.path.dirname(p), exist_ok=True)
             open(p, 'w', encoding='utf-8').write(body)
-        p = os.path.join(d, 'cortex_project/agents/A_TEST/agent_spec.yaml')
+        p = os.path.join(d, '20_build/28_cortex_project/agents/A_TEST/agent_spec.yaml')
         os.makedirs(os.path.dirname(p), exist_ok=True)
         open(p, 'w', encoding='utf-8').write(spec(desc, sv))
         buf = io.StringIO()

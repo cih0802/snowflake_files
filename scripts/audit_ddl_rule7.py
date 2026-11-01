@@ -31,13 +31,13 @@ import sys
 sys.path.insert(0, '/workspace/scripts')
 from sv_unit_gate import NUM_EXEMPT          # noqa: E402  의미 예외를 1벌로 공유(O59-E)
 
-DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+DDL = '/workspace/10_design/11_gold_topdown/06_DDL.sql'
 # 🔴 [2026-08-11 O59-N] **두 번째 표면 추가.** 이 게이트는 `06_DDL`(GOLD)만 봤고 **SILVER 정본 DDL 은
 #   분모에 없었다** — 그래서 O59-N 에서 내가 SILVER COMMENT 에 실측 수치(`8/8`)를 넣었을 때
 #   아무 게이트도 잡지 못했다(자기검토에서 손으로 발견). 규칙7 은 계층을 가리지 않는다.
 #   ⚠️ SILVER 는 **기지 부채 13건**(선행 세션 유래)이 있어 0 을 요구하면 매번 실패한다 ⇒
 #      `sv_unit_gate.CMT_BASELINE` 선례대로 **신규 유입만 실패**시킨다.
-SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+SILVER_DDL = '/workspace/10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql'
 SILVER_BASELINE = 13
 
 # 위반 패턴 — 실측 수치의 표기

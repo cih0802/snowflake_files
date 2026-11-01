@@ -51,14 +51,14 @@ def spec(system='x', description='y'):
 
 
 def _run(tmpdir, spec_text, inv=None, known_absent=None, neg=None, not_table_reason=None):
-    d = os.path.join(tmpdir, 'cortex_project/agents/A_TEST')
+    d = os.path.join(tmpdir, '20_build/28_cortex_project/agents/A_TEST')
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, 'agent_spec.yaml'), 'w', encoding='utf-8').write(spec_text)
 
     o_root, o_glob, o_ka, o_neg = G.ROOT, G.AGENT_GLOB, G.KNOWN_ABSENT, G.NEG_RE
     o_ntr = G.NOT_TABLE_REASON
     G.ROOT = tmpdir
-    G.AGENT_GLOB = os.path.join(tmpdir, 'cortex_project/agents/*/agent_spec.yaml')
+    G.AGENT_GLOB = os.path.join(tmpdir, '20_build/28_cortex_project/agents/*/agent_spec.yaml')
     if known_absent is not None:
         G.KNOWN_ABSENT = known_absent
     if neg is not None:

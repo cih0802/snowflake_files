@@ -1,0 +1,130 @@
+---
+doc_role: 워크스페이스 전체 지도 + 정리 후보표 (정리 1단계 산출물)
+created: 2026-10-31
+---
+
+# 워크스페이스 지도 (00_WORKSPACE_MAP)
+
+> 1단계에서는 파일을 새로 만들기만 했습니다(이동·삭제 0건). §3 정리 후보는 **승인 후** 2단계에서 처리합니다.
+
+## 1. 최상위 폴더
+
+| 폴더 | 직속 파일 | 하위 전체 | 안내 파일 |
+|---|---|---|---|
+| `70_reference/71_poc_backup/` | 8 | 8 | README.md |
+| `00_guides/` | 14 | 18 | (신규) 00_README.md |
+| `70_reference/72_sample_legacy/` | 17 | 17 | README.md |
+| `02_GN_DW_building/` | 12 | 15 | 00_INDEX.md |
+| `10_design/11_gold_topdown/` | 15 | 41 | 00_README.md |
+| `10_design/12_silver_design/` | 16 | 49 | 00_README.md |
+| `05_SV-Agent_ai/` | 94 | 105 | 00_README.md |
+| `10_design/13_snapshot_design/` | 3 | 3 | (신규) 00_README.md |
+| `60_share/62_business_decisions/` | 1 | 1 | (신규) 00_README.md |
+| `30_operate/31_monitoring/` | 13 | 14 | 00_README.md |
+| `09_streamlit 권한 설정/` | 1 | 1 | (신규) 00_README.md |
+| `10_dbt_pipeline/` | 11 | 256 | README.md |
+| `11_일적재pipeline 구성/` | 6 | 6 | (신규) 00_README.md |
+| `30_operate/32_agent_improvement/` | 61 | 264 | (신규) 00_README.md |
+| `15_MSTR 이관 PoC/` | 7 | 39 | (신규) 00_README.md |
+| `17_MSTR통한 메달리온 보완/` | 3 | 4 | (신규) 00_README.md |
+| `20_issue/` | 41 | 261 | 00_INDEX_이슈원장.md |
+| `60_share/61_output_share/` | 49 | 602 | (신규) 00_README.md |
+| `40_worklog/41_handoff/` | 13 | 25 | (신규) 00_README.md |
+| `30_operate/33_account_bootstrap/` | 7 | 10 | readme.md |
+| `50_handover/53_followup_project/` | 7 | 7 | 00_README_N07.md |
+| `80_인수인계_프로젝트완료 및 유지보수용/` | 4 | 580 | 00_INDEX.csv |
+| `85_실제 인수인계 문서/` | 2 | 1138 | 00_INDEX_산출물목록.md |
+| `50_handover/54_handover_requests/` | 1 | 6 | (신규) 00_README.md |
+| `90_provided_definition/` | 32 | 32 | 00_README.md |
+| `40_worklog/42_handover_refinement/` | 10 | 1272 | (신규) 00_README.md |
+| `50_handover/55_business_req_handover/` | 6 | 6 | (신규) 00_README.md |
+| `_archive/` | 982 | 1021 | 00_INDEX.md.O169-o169-axis1-biwi |
+| `cortex_project/` | 1 | 31 | (신규) 00_README.md |
+| `scripts/` | 261 | 300 | README_운영도구.md |
+| `70_reference/73_skill_mstr_dw_to_ods/` | 0 | 22 | (신규) 00_README.md |
+| `70_reference/74_skill_mstr_ods_crm/` | 2 | 32 | README.md |
+| `tmp/` | 544 | 2740 | (신규) 00_README.md |
+
+제외(README 미생성): `*_조각/`(분할문서 게이트 영역) · `10_dbt_pipeline` 하위(배포 소스) · `80_*` 하위(00_INDEX.csv 관리) · `_backup_*`(원본 백업) · `snowflake-mstr-*` 스킬 내부 · `cortex_project/agents/*` · `__pycache__`·`target`·`logs`
+
+## 2. 기존 README/INDEX 에 언급되지 않은 파일
+
+기존 안내 파일은 수정하지 않았습니다. 아래 파일은 해당 README 본문에 파일명이 없습니다.
+
+- **`70_reference/72_sample_legacy/`** (README.md) — 누락 14건
+  - `01_환경 세팅.sql`, `02_유저_Role 세팅.sql`, `03_01_DB_스키마 생성.sql`, `03_02_BRONZE_테이블 생성.sql`, `03_03_GOLD_View 생성.sql`, `03_04_Semantic_View 생성.sql`, `03_05_Agent 생성.sql`, `03_06_권한 부여.sql`, `03_07_Streamlit 배포.sql`, `04_프로시저 생성.sql`, `05_태스크 생성.sql`, `06_테스트 확인.sql`, `07_보안 세팅.sql`, `08_모니터링 세팅.sql`
+- **`02_GN_DW_building/`** (00_INDEX.md) — 누락 3건
+  - `09_user login mfa리셋.sql`, `10_GOLD_ownership_grants_fix.sql`, `README.md`
+- **`10_design/11_gold_topdown/`** (00_README.md) — 누락 2건
+  - `06_DDL_설계이력_부록.md`, `12_gold 테이블명 변경작업 근거`
+- **`10_design/12_silver_design/`** (00_README.md) — 누락 2건
+  - `08_SILVER_DDL_설계이력_부록.md`, `09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql`
+- **`10_design/12_silver_design/_archive/`** (README.md) — 누락 16건
+  - `01_SILVER_작업계획_축약본 20260630.md`, `02_SILVER_작업계획_BRONZE-GOLD연결 20260630.md`, `03_SILVER_작업계획_CRM전용 20260630.md`, `09_SILVER_DDL_20260702.sql`, `10_SILVER_이슈해결 핸드오버.md`, `11_SILVER_블로커_triage_Q1-Q16_20260714.md`, `GA4_SILVER_샤드통합 설계결정.md`, `GA4_파이프라인_SP로 작업전_주의사항.md`, `GA4_파이프라인_dbt로 작업전_주의사항.md`, `SILVER_DDL_20260702.sql`, `SILVER_검토 결과.md`, `SILVER_이슈해결 핸드오버.md`, `SILVER_작업계획_BRONZE-GOLD연결 20260630.md`, `SILVER_작업계획_CRM전용 20260630.md`, `SILVER_작업계획_축약본 20260630.md`, `silver_stepbystep_ddl.sql`
+- **`05_SV-Agent_ai/`** (00_README.md) — 누락 78건
+  - `00_SV_공통지시문.md`, `05_01_SV_DDL_MEMBER_MONTHLY.sql`, `05_02_SV_DDL_MEMBER_EVENT.sql`, `05_03_SV_DDL_MEMBER_COHORT.sql`, `05_04_SV_DDL_SERVICE.sql`, `05_05_SV_DDL_EVENT_PARTICIPATION.sql`, `05_06_SV_DDL_BUDGET.sql`, `05_07_SV_DDL_AD.sql`, `05_08_SV_DDL_DEV_ACHIEVEMENT.sql`, `05_09_SV_DDL_MEMBER_FEE.sql`, `05_11_SV_DDL_TARGET_BIZ.sql`, `05_12_SV_DDL_RELATION_ACTIVITY.sql`, `05_13_SV_DDL_DEPT_AGGR.sql`, `05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql`, `05_15_SV_DDL_GA_BEHAVIOR.sql`, `05_16_SV_DDL_BUDGET_YEARLY.sql`, `05_17_SV_DDL_MEMBER_STATUS_ASOF.sql`, `05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql`, `05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql`, `05_20_SV_DDL_GA_SESSION.sql`, `05_21_SV_DDL_SEARCH_CONSOLE.sql`, `05_22_SV_DDL_GA_DEMOGRAPHIC.sql`, `05_23_SV_DDL_EXPENSE_RESOLUTION.sql`, `05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql`, `05_25_SV_DDL_CAMPAIGN_MONTHLY.sql` …
+- **`30_operate/31_monitoring/`** (00_README.md) — 누락 4건
+  - `06_웨어하우스비용가드_구축.sql`, `08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql`, `10_Cortex_Code_모델별_비용_비교.md`, `2026-08-03_G3_코드컬럼전파_ALTER.sql`
+- **`10_dbt_pipeline/`** (README.md) — 누락 5건
+  - `.user.yml`, `01_deploy_dbt_project.sql`, `02_dbt_parse_compile_build.sql`, `03_create_daily_task.sql`, `verify_A1_A3_blocking5.sql`
+- **`15_MSTR 이관 PoC/tools/`** (README.md) — 누락 1건
+  - `mstr_load_answer.py`
+- **`20_issue/`** (00_INDEX_이슈원장.md) — 누락 40건
+  - `00_BRIEF.md`, `01_세션이력.md`, `02_상태상세_대시보드_갱신형.md`, `03_이슈상세.md`, `10_진단_원인분석.md`, `20_현업확인_요청.md`, `30_설계_의사결정.md`, `31_코드군_매핑등재부.md`, `32_컬럼개명표.md`, `33_카테고리_GOLD반영계획.md`, `40_입고대기_원천의존.md`, `41_입고요청서_CRM_BIZ_TARGET.md`, `41_입고요청서_CRM_BIZ_TARGET_BRONZE_DDL.sql`, `50_dbt_파이프라인_미결조치.md`, `90_해소완료_로그.md`, `91_사고사례집.md`, `92_실측필요_후속작업.md`, `_o114_measure.md`, `_o114b_silver_gold_impact.md`, `_o115_measure.md`, `_o116_warn_census.md`, `_o118_sv_live_census.md`, `_o123c_evidence.md`, `_o124_evidence.md`, `_o145_evidence.md` …
+- **`30_operate/33_account_bootstrap/`** (readme.md) — 누락 2건
+  - `14_운영계_반영_완료보고_43_58.md`, `15_운영계_수치회수_O269_프롬프트.md`
+- **`50_handover/53_followup_project/`** (00_README_N07.md) — 누락 1건
+  - `readme.md`
+- **`80_인수인계_프로젝트완료 및 유지보수용/`** (00_INDEX.csv) — 누락 2건
+  - `00_재현프롬프트.md`, `build_handoff.py`
+- **`90_provided_definition/`** (00_README.md) — 누락 26건
+  - `02_지표사전 공통.md`, `03_지표사전 신규.md`, `04_마케팅_보고서필드 인벤토리.md`, `05_회원_보고서필드 인벤토리.md`, `11_bronze_crm_ddl.sql`, `12_bronze_erp_ddl.sql`, `13_bronze_agency_ddl.sql`, `15_bronze_ga4_ddl.sql`, `16_bronze_gsc_ddl.sql`, `18_silver_ddl.sql`, `20_ML_ddl.sql`, `COCO_mstr_dw_reference.md`, `COCO_mstr_virtual_structure_reference.md`, `CRM-AGENCY 컬럼명 매핑.csv`, `GA4스키마 20260626.csv`, `agent 질의 피드백_2.csv`, `gni_실적부서.csv`, `공통지표_flat_20261003.csv`, `데이터플랫폼 ML 예측관련_취합_20260730.xlsx`, `데이터플랫폼 ML예측프롬프트_sample.csv`, `데이터플랫폼 현업agent 피드백 추가본_20261007.csv`, `신규지표_20260820.csv`, `조직도_20260914.csv`, `지표용어통합 20260623.csv`, `컬럼정의서 20260714.csv` …
+- **`_archive/`** (00_INDEX.md.O169-o169-axis1-biwi) — 누락 978건
+  - `00_INDEX_이슈원장-001.md.O105-final`, `00_INDEX_이슈원장-001.md.O105-final2`, `00_INDEX_이슈원장-001.md.O105-pre-done`, `00_INDEX_이슈원장-001.md.O105-pre-merge`, `00_INDEX_이슈원장-001.md.O106-prefix`, `00_INDEX_이슈원장-001.md.O125-preretire`, `00_INDEX_이슈원장-001.md.O127-O127-pretailfix`, `00_INDEX_이슈원장-001.md.O167-O167-pre-refrow`, `00_INDEX_이슈원장-001.md.O167-O167-pre-typerow`, `00_INDEX_이슈원장-001.md.O85-preretire`, `00_INDEX_이슈원장-001.md.UNLABELED-O167-pre-row`, `00_INDEX_이슈원장-002.md.O166-edit`, `00_INDEX_이슈원장-002.md.O183-preretire`, `00_INDEX_이슈원장-002.md.O186-B-preretire`, `00_INDEX_이슈원장-002.md.O186-preretire`, `00_INDEX_이슈원장-002.md.O211-C-preretire`, `00_INDEX_이슈원장-010.md.O169-o169-axis1-biwi`, `00_INDEX_이슈원장-013.md.O169-o169-axis1-biwi`, `00_INDEX_이슈원장.md.O107-prehub`, `00_INDEX_이슈원장.md.O107-pretooutdir`, `00_INDEX_이슈원장.md.O109-prehub`, `00_INDEX_이슈원장.md.O109-prehub.2`, `00_INDEX_이슈원장.md.O109-prehub.3`, `00_INDEX_이슈원장.md.O109-prehub.4`, `00_INDEX_이슈원장.md.O110-prehub` …
+- **`cortex_project/_archive/`** (00_README.md) — 누락 18건
+  - `AGENT_EXECUTIVE.agent.yaml`, `AGENT_EXECUTIVE.agent_spec.yaml.O235-before`, `AGENT_MARKETING.agent_spec.yaml.O235-before`, `AGENT_MEMBER.agent_spec.yaml.O235-before`, `AGENT_MEMBER.agent_spec_BAK_20261001.yaml`, `agent_executive_eval_20261007_155611.eval.yaml`, `agent_executive_eval_o208c_v3.eval.yaml`, `agent_executive_eval_o209_x6.eval.yaml`, `agent_marketing_eval_o209_after.eval.yaml`, `agent_marketing_eval_o209_before.eval.yaml`, `agent_member_eval_o209_v10.eval.yaml`, `agent_member_eval_o209_v11.eval.yaml`, `agent_member_eval_o209_v12.eval.yaml`, `o211_executive_eval.eval.yaml`, `o211_executive_eval_v2.eval.yaml`, `o211_marketing_eval.eval.yaml`, `o211_marketing_eval_v2.eval.yaml`, `o211_member_eval.eval.yaml`
+- **`scripts/`** (README_운영도구.md) — 누락 254건
+  - `DDL_backup.sql`, `O51D_BRONZE_codescan.txt`, `_o128_dim_probe.py`, `_o128_probe.py`, `_o128_rel_violations.py`, `_o130_ga4_rename.py`, `_o154b_orphan_comment_fix.py`, `_o154b_pyc_probe.py`, `_o155_rename_scan.py`, `_o166_rename_fix.py`, `_o169_axis1_biwi.py`, `_o169_dump_axis1.py`, `_o169_sv_redeploy.py`, `_o170_gold_unfilled.py`, `_o170_handoff_append.py`, `_o170_reserve.py`, `_o170_retire_driver.py`, `_o170_superseded_census.py`, `_o170_unassigned_probe.py`, `_o170_unfilled_diff.py`, `a2_matrix_build.py`, `add_column_comments.py`, `add_gold_comments.py`, `agent_answer_judge.py`, `agent_object_ref_gate.cpython-312.pyc` …
+- **`scripts/golden/`** (index_rows.json) — 누락 3건
+  - `doc_headings.json`, `outputs.json`, `rename_stale_baseline.json`
+
+## 3. 정리 후보 (루트 산재 파일) — 승인 대기
+
+| 파일 | 수정일 | 제안 | 근거 |
+|---|---|---|---|
+| `40_worklog/41_handoff/.20261016_GNI잔여작업.md` | 2026-10-31 | 유지(세션 인수인계) 또는 40_worklog/41_handoff/ | 세션 운영 문서 |
+| `tmp/root_scratch/.brief_run.out` | 2026-10-31 | 삭제 후보 | 실행 로그 잔재 |
+| `.gitignore` | 2026-10-31 | 검토 필요 | - |
+| `40_worklog/41_handoff/95_정식산출물_생성_프롬프트.md` | 2026-10-31 | 유지(세션 인수인계) 또는 40_worklog/41_handoff/ | 세션 운영 문서 |
+| `tmp/root_scratch/999_temp.txt` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `99_NEXT_SESSION.md` | 2026-10-31 | 유지(세션 인수인계) 또는 40_worklog/41_handoff/ | 세션 운영 문서 |
+| `10_design/12_silver_design/GNI조직도피벗.sql` | 2026-10-31 | 검토 필요 | - |
+| `OPS.sql` | 2026-10-31 | 02_GN_DW_building/ 또는 10_dbt_pipeline/ | 환경·배포 SQL |
+| `30_operate/33_account_bootstrap/_archive/PAID_재현_런북_20260722.md` | 2026-10-31 | 검토 필요 | - |
+| `tmp/root_scratch/R96쿼리결과.md` | 2026-10-31 | 검토 필요 | - |
+| `SECURITY.sql` | 2026-10-31 | 02_GN_DW_building/ 또는 10_dbt_pipeline/ | 환경·배포 SQL |
+| `TEARDOWN.sql` | 2026-10-31 | 02_GN_DW_building/ 또는 10_dbt_pipeline/ | 환경·배포 SQL |
+| `tmp/root_scratch/Untitled_1.sql` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `tmp/root_scratch/Untitled_2.sql` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `tmp/root_scratch/Untitled_3.sql` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `tmp/root_scratch/Untitled_4.sql` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `tmp/root_scratch/Untitled.sql` | 2026-10-31 | 삭제 또는 tmp/ 이동 | 이름 없는 임시 워크시트 |
+| `30_operate/32_agent_improvement/agent_사용_이력_조회.sql` | 2026-10-31 | 30_operate/32_agent_improvement/ | Agent 이력/답변 자료 |
+| `30_operate/32_agent_improvement/custom_tools_롤별_접근_가능성.md` | 2026-10-31 | 30_operate/32_agent_improvement/ | Agent 이력/답변 자료 |
+| `dbt_build.sql` | 2026-10-31 | 02_GN_DW_building/ 또는 10_dbt_pipeline/ | 환경·배포 SQL |
+| `30_operate/32_agent_improvement/gni_경영지원agent질문답변추출_20261021.csv` | 2026-10-31 | 30_operate/32_agent_improvement/ | Agent 이력/답변 자료 |
+| `setup_20260702.sql` | 2026-10-31 | 02_GN_DW_building/ 또는 10_dbt_pipeline/ | 환경·배포 SQL |
+| `40_worklog/41_handoff/temp_20261014_작업내역_정리.md` | 2026-10-31 | 유지(세션 인수인계) 또는 40_worklog/41_handoff/ | 세션 운영 문서 |
+| `10_design/12_silver_design/기준년월_보유_테이블_및_컬럼.md` | 2026-10-31 | 검토 필요 | - |
+| `50_handover/50_execution_order/문서실행순서.md` | 2026-10-31 | 80_ 또는 85_ 이관 | 실행순서 문서 4종 분산 |
+| `50_handover/50_execution_order/문서실행순서_llm실행.md` | 2026-10-31 | 80_ 또는 85_ 이관 | 실행순서 문서 4종 분산 |
+| `50_handover/50_execution_order/문서실행순서_보조주석.md` | 2026-10-31 | 80_ 또는 85_ 이관 | 실행순서 문서 4종 분산 |
+| `50_handover/50_execution_order/문서실행순서_운영계_LLM실행카드.md` | 2026-10-31 | 80_ 또는 85_ 이관 | 실행순서 문서 4종 분산 |
+| `30_operate/32_agent_improvement/부서별agent답변.md` | 2026-10-31 | 30_operate/32_agent_improvement/ | Agent 이력/답변 자료 |
+| `30_operate/31_monitoring/프로시저_내_email_보내기.sql` | 2026-10-31 | 검토 필요 | - |
+| `60_share/61_output_share/현업공지용_20261026.md` | 2026-10-31 | 60_share/61_output_share/ | 현업 공유물 |
+
+## 4. 대용량·임시 영역
+
+- `tmp/`, `_archive/`(루트) — 스냅샷/스크래치. 규약상 `_archive` 는 되돌리기 수단이므로 삭제 대신 보존 기간 정책 결정 필요.
+- `99_NEXT_SESSION_조각/`, `20_issue/*_조각/` — 분할 문서. 정리 대상 아님.

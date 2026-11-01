@@ -42,7 +42,7 @@ WIDE = ['WIDE_MEMBER_MONTHLY','WIDE_MEMBER_EVENT','WIDE_SERVICE_EVENT',
 
 FEE_NOTE = (
 "    # ✅ [2026-08-07 O51-D] 39/39 컬럼 문안 완성 — materialized='gn_view_commented' 전환 완료.\n"
-"    #   경위: 이 뷰의 문안은 `10_WIDE VIEW 코멘트.sql`(13/16뷰)에 **없었고** post_hook 에만 있었으며\n"
+"    #   경위: 이 뷰의 문안은 `10_WIDE_VIEW_코멘트.sql`(13/16뷰)에 **없었고** post_hook 에만 있었으며\n"
 "    #   그 post_hook 자신도 17/39(44%) 만 덮고 있었다 — 「post_hook 이 완전하다」는 O50 의 전제가 여기서도 거짓이었다.\n"
 "    #   잔여 22컬럼은 O51-D 에서 **BRONZE 코드사전 × 실적재 distinct 전수 재스캔**을 근거로 신규 작성했다.\n"
 "    #   🟢 부수 성과 — PAYMENT_METHOD_NAME·SETLE_CD 문안이 지목했던 **O45-B(결제수단 코드그룹 미특정)가 해소**됐다.\n"
@@ -53,7 +53,7 @@ O51D_NOTE = (
 "    # ✅ [2026-08-07 O51-D] 컬럼 문안 전량 등재 · ORDINAL_POSITION 순서로 기계 생성(손 이관 금지).\n"
 "    #   ⚠️ Snowflake 제약: CREATE VIEW 컬럼목록은 SELECT 의 전 컬럼과 **개수·순서가 정확히 일치**해야 한다.\n"
 "    #      모델 SELECT 순서를 바꾸면 이 블록도 동시에 재생성할 것(scripts 없이 손으로 고치지 말 것).\n"
-"    #   문안 출처 = ① `03_top-down_gold/10_WIDE VIEW 코멘트.sql` 이관 ② O51-D BRONZE 전수 재스캔 신규.\n"
+"    #   문안 출처 = ① `10_design/11_gold_topdown/10_WIDE_VIEW_코멘트.sql` 이관 ② O51-D BRONZE 전수 재스캔 신규.\n"
 "    #   🔴 `10_` 의 컬럼명 20건은 O26 리네임 미반영 유령이라 폐기했다(MEMBER_GENDER→MEMBER_GENDER_NAME 등).\n")
 
 new = [head]

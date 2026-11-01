@@ -43,6 +43,8 @@ NOT_RATIO = {
     'COST_PER_DEV':               '인입경로별 개발단가(원/건 · ALLOC 광고비 ÷ ALLOC 개발건수) — O248 05_27 · O268 등재',
     'DEV_UNIT_PRICE_MSTR':        '마케팅캠페인 개발단가(원/건 · 광고비 ÷ MSTR 개발건수) — O266 05_31 · O268 등재',
     'TOTAL_COST_UNIT_PRICE_MSTR': '마케팅캠페인 총비용 단가(원/건 · (광고비+제작비) ÷ MSTR 개발건수) — O266 05_31 · O268 등재',
+    # 🆕 [O275-F] 선택 게이트 rc=1 1건 — 식 실측(05_31:60) = SUM(FINAL_AD_COST) ÷ SUM(DEV_CNT_CRM)(원/건) · percent 아님 · 사용자 승인
+    'DEV_UNIT_PRICE_CRM':         '마케팅캠페인 개발단가(원/건 · 최종 광고비 ÷ CRM 개발건수) — 05_31 · O275-F 등재',
 }
 
 RATIO_HINT = re.compile(r'RATE|RATIO|_PCT|율$|률$')
@@ -64,7 +66,7 @@ def load_required_text():
         'SV_DEV_ACHIEVEMENT': {'앵커_경합'},
         'SV_MEMBER_FEE':     {'배분규칙필요', '형제팩트중복', '앵커_경합', '이중계상'},
     }
-    csv_path = '/workspace/30_output_share/09_보고서필드_조립가능성.csv'
+    csv_path = '/workspace/60_share/61_output_share/09_보고서필드_조립가능성.csv'
     if os.path.exists(csv_path):
         import csv
         FACT_TO_SV = {
@@ -345,7 +347,7 @@ def main():
     #   O52-A 경위 주석을 위반으로 잡았다). ⇒ 실제 판정 지시문 형식(`--  판정: … <= 1.0`)만 본다.
     bad_bound = []
     JUDGE = re.compile(r'(?m)^\s*--\s*판정\s*:\s*[^\n]*<=\s*1\.0')
-    for f in sorted(glob.glob('/workspace/05_SV-Agent_ai/05_*_SV_DDL*.sql')):
+    for f in sorted(glob.glob('/workspace/20_build/23_sv_agent/05_*_SV_DDL*.sql')):
         t = io.open(f, encoding='utf-8').read()
         for m in JUDGE.finditer(t):
             bad_bound.append(f"{os.path.basename(f)}: {m.group(0).strip()[:90]}")
@@ -486,7 +488,7 @@ def main():
     #      「전건 누락」이라는 반대 방향 오판이 난다(O68 착수 중 자기적발).
     req_bad = []
     agent_texts = ""
-    for ag in sorted(glob.glob('/workspace/cortex_project/agents/*/agent_spec.yaml')):
+    for ag in sorted(glob.glob('/workspace/20_build/28_cortex_project/agents/*/agent_spec.yaml')):
         agent_texts += " " + io.open(ag, encoding='utf-8').read()
     cn5 = conn()
     for s in names:

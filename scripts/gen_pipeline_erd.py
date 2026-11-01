@@ -1,6 +1,6 @@
 """
 Pipeline ERD & Lineage Generator (Bronze > Silver > Gold)
-Generates interactive HTML documents in 30_output_share/erd/
+Generates interactive HTML documents in 60_share/61_output_share/erd/
 Co-authored with CoCo
 """
 
@@ -15,8 +15,8 @@ import yaml
 
 ROOT = "/workspace"
 DBT_ROOT = os.path.join(ROOT, "10_dbt_pipeline", "models")
-DDL_PATH = os.path.join(ROOT, "03_top-down_gold", "06_DDL.sql")
-OUT_DIR = os.path.join(ROOT, "30_output_share", "erd")
+DDL_PATH = os.path.join(ROOT, "10_design/11_gold_topdown", "06_DDL.sql")
+OUT_DIR = os.path.join(ROOT, "60_share/61_output_share", "erd")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. Metadata Collection
@@ -1306,7 +1306,7 @@ def main():
                 "name": tname,
                 "description": ddl_info["description"],
                 "columns": ddl_info["columns"],
-                "yaml_path": "03_top-down_gold/06_DDL.sql"
+                "yaml_path": "10_design/11_gold_topdown/06_DDL.sql"
             }
         else:
             if not models_meta[tname]["description"] and ddl_info["description"]:

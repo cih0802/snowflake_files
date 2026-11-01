@@ -9,9 +9,9 @@
   ⇒ 이 게이트는 「몇 개를 봤나」가 아니라 **분모를 고정**한다.
 
 대조 축(소유주 규약 = `dbt_project.yml` 소유주 표):
-  · GOLD **테이블** 컬럼 COMMENT  ← `03_top-down_gold/06_DDL.sql`      (라이브 반영 = `ALTER` 직접 · P199)
+  · GOLD **테이블** 컬럼 COMMENT  ← `10_design/11_gold_topdown/06_DDL.sql`      (라이브 반영 = `ALTER` 직접 · P199)
   · GOLD **뷰**   컬럼 COMMENT  ← `10_dbt_pipeline/.../_wide_schema.yml` (라이브 반영 = `dbt build` 만 · O51)
-  · SILVER **테이블** 컬럼 COMMENT ← `04_silver_design/08_SILVER_테이블DDL_*.sql` (라이브 반영 = `ALTER` 직접)
+  · SILVER **테이블** 컬럼 COMMENT ← `10_design/12_silver_design/08_SILVER_테이블DDL_*.sql` (라이브 반영 = `ALTER` 직접)
 
 🔴 **범위를 이름과 맞춰야 한다(O63 자기검토 2회차 적발)**: 최초 판본은 이름이 `comment_drift_gate` 인데
    GOLD 만 대조하고 **SILVER 717컬럼을 통째로 빼놓았다.** 「분모를 고정한다」고 쓰면서 분모가 부분집합이면
@@ -48,8 +48,8 @@ import sys
 sys.path.insert(0, '/workspace/scripts')
 import sfconn  # noqa: E402
 
-DDL = '/workspace/03_top-down_gold/06_DDL.sql'
-SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+DDL = '/workspace/10_design/11_gold_topdown/06_DDL.sql'
+SILVER_DDL = '/workspace/10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql'
 YML = '/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml'
 
 RE_TABLE = re.compile(r'CREATE (?:OR REPLACE )?TABLE (?:IF NOT EXISTS )?GN_DW\.GOLD\.(\w+)\s*\(')

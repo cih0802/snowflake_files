@@ -1,0 +1,15 @@
+{
+ "group": "20_build/26_mstr_medallion/",
+ "start": "2026-10-31 17:56:51",
+ "moved": [
+  "17_MSTR통한 메달리온 보완/00_README.md",
+  "17_MSTR통한 메달리온 보완/00_작업계획.md",
+  "17_MSTR통한 메달리온 보완/01_MSTR_SP_인벤토리.md",
+  "17_MSTR통한 메달리온 보완/03_규칙카드_A1.md",
+  "17_MSTR통한 메달리온 보완/tools/00_README.md",
+  "17_MSTR통한 메달리온 보완/tools/sp_inventory.py"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

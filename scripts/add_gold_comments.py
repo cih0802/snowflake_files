@@ -3,7 +3,7 @@
 import csv, re, sys
 
 CSV = "/workspace/_archive/gold 스키마 컬럼 인벤토리_20260629.csv"
-DDL = "/workspace/03_top-down_gold/06_DDL.sql"
+DDL = "/workspace/10_design/11_gold_topdown/06_DDL.sql"
 
 # (table, column) -> 설명
 desc = {}

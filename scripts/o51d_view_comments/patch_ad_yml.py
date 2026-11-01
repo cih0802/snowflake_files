@@ -26,7 +26,7 @@ NOTE_NEW = _note([
 "  이미 gn_view_commented 이관을 처방하고 있었다 · DEC-8/DEC-10 이 위성 단독 완결을 설계 의도로 명시한다.",
 "  ⚠️ CREATE VIEW 컬럼목록은 SELECT 전 컬럼과 **개수·순서가 정확히 일치**해야 한다 —",
 "     모델 SELECT 를 바꾸면 이 블록도 동시에 재생성할 것(scripts/o51d_view_comments/build_ad_yml.py).",
-"  문안 출처 = 03_top-down_gold/10_ §7-A·§7-B 이관 + O51-F 실측 경고 오버레이.",
+"  문안 출처 = 10_design/11_gold_topdown/10_ §7-A·§7-B 이관 + O51-F 실측 경고 오버레이.",
 ])
 
 NOTE_OVL = _note([

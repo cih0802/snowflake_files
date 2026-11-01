@@ -5,11 +5,11 @@
 🔴 분류 = `JUDGE`. 이 분류의 계약을 지켜라(정본 = `scripts/gate_census.py`).
 🔴 종료코드가 판정이다 — 위반이면 1, 통과면 0. 🔴 음성 테스트 = `scripts/test_rbac_source_gate.py`(`R3-2`).
 
-축(정본 = 계획서 `12_agent개선과제/O270_원천별_접근통제_작업계획.md` C9 「게이트 1개로 한정」)
-  A1 배선   = Agent 스펙(`cortex_project/agents/*/agent_spec.yaml`)의 SV 원천 분류 ⊆ 그 Agent 허용 원천
+축(정본 = 계획서 `30_operate/32_agent_improvement/O270_원천별_접근통제_작업계획.md` C9 「게이트 1개로 한정」)
+  A1 배선   = Agent 스펙(`20_build/28_cortex_project/agents/*/agent_spec.yaml`)의 SV 원천 분류 ⊆ 그 Agent 허용 원천
   A2 파일   = SV·SERVING 뷰 DDL 파일의 접근 역할 GRANT 줄이 분류표와 같다(누락·오배정 0)
   A3 라이브 = (`--live` 일 때만) 접근 역할 4종의 실제 GRANT 가 분류표와 같다(오배정·누락 0)
-분류표 정본 = `12_agent개선과제/output/O270_source_class.csv`(W1).
+분류표 정본 = `30_operate/32_agent_improvement/output/O270_source_class.csv`(W1).
 
 사용법
     python3 scripts/rbac_source_gate.py           # A1·A2(파일만 · 라이브 무접속)
@@ -22,7 +22,7 @@ import re
 import sys
 
 W = '/workspace'
-CLASS_CSV = W + '/12_agent개선과제/output/O270_source_class.csv'
+CLASS_CSV = W + '/30_operate/32_agent_improvement/output/O270_source_class.csv'
 AR = {'COMMON': 'GN_DW_AR_SRC_COMMON', 'AGENCY': 'GN_DW_AR_SRC_AGENCY',
       'ERP': 'GN_DW_AR_SRC_ERP', 'AGENCY+ERP': 'GN_DW_AR_SRC_AGENCY_ERP'}
 AR_INV = {v: k for k, v in AR.items()}
@@ -31,7 +31,7 @@ ALLOWED = {'AGENT_MARKETING': {'COMMON', 'AGENCY', 'ERP', 'AGENCY+ERP'},
            'AGENT_EXECUTIVE': {'COMMON', 'ERP'}}
 # dbt 밖 · 분류표 미등재지만 48번 SQL 이 COMMON 으로 준 객체(생성기 EXTRA 와 같은 집합)
 EXTRA = {'SERVING.BIZ_DEFINITION_CORPUS': 'COMMON', 'GOLD.ORG_SUCCESSION_MANUAL': 'COMMON'}
-DDL_FILES = sorted(glob.glob(W + '/05_SV-Agent_ai/*.sql')) + [W + '/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql']
+DDL_FILES = sorted(glob.glob(W + '/20_build/23_sv_agent/*.sql')) + [W + '/20_build/25_mstr_migration/snowflake_적용_ddl/05_MSTR_SV_DDL.sql']
 GRANT_RE = re.compile(r'^\s*GRANT\s+[A-Z, ]+?\s+ON\s+(?:SEMANTIC VIEW|VIEW)\s+(?:GN_DW\.)?(?:SERVING\.)?([A-Z0-9_]+)\s+'
                       r'TO\s+ROLE\s+(GN_DW_AR_SRC_[A-Z_]+)\s*;', re.I)
 
@@ -102,7 +102,7 @@ def load_agent_svs():
     import yaml
     out = {}
     for a in ALLOWED:
-        d = yaml.safe_load(open(W + '/cortex_project/agents/%s/agent_spec.yaml' % a, encoding='utf-8'))
+        d = yaml.safe_load(open(W + '/20_build/28_cortex_project/agents/%s/agent_spec.yaml' % a, encoding='utf-8'))
         out[a] = [str(r['semantic_view']).split('.')[-1] for r in d.get('tool_resources', {}).values()
                   if isinstance(r, dict) and r.get('semantic_view')]
     return out

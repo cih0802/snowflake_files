@@ -8,8 +8,8 @@ import re
 import sys
 
 PATHS = [
-    "/workspace/30_output_share/GOLD_ERD_테이블별.html",
-    "/workspace/30_output_share/GOLD_ERD_테이블별_YAML전용.html",
+    "/workspace/60_share/61_output_share/GOLD_ERD_테이블별.html",
+    "/workspace/60_share/61_output_share/GOLD_ERD_테이블별_YAML전용.html",
 ]
 
 # 엔티티 속성행 = TYPE NAME [PK|FK|UK] ["comment"] · 관계행 = A ||--o{ B : "col" 또는 A ||..o{ B : "col"

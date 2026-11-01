@@ -18,14 +18,14 @@ STATUS
 판정군(A/B/C/D/E …) 은 사람 판정이므로 이전 판본에서 **키 단위로 승계**한다.
 승계 후 STATUS 가 뒤집힌 행은 `판정_재검토필요` 로 표시한다(자동 재판정 금지 — P78 계열).
 
-출력: 30_output_share/08_SILVER→GOLD_보존율.{csv,md}
+출력: 60_share/61_output_share/08_SILVER→GOLD_보존율.{csv,md}
 """
 import csv, os, re, sys, json
 from datetime import date
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
-PREV = os.environ.get("GN_DW_PREV", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
+PREV = os.environ.get("GN_DW_PREV", os.path.join(WS, "60_share/61_output_share"))
 BASENAME = "08_SILVER→GOLD_보존율"
 GEN_PATH = "scripts/gen_silver_gold_retention.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())

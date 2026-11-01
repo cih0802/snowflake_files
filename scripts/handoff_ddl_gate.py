@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""인수인계 DDL 게이트 — 원천 정의 문서(90_provided_definition) ↔ 인수인계 DDL(50_handoff) 대조.
+"""인수인계 DDL 게이트 — 원천 정의 문서(90_provided_definition) ↔ 인수인계 DDL(40_worklog/41_handoff) 대조.
 
 왜 필요한가 (O113 실사고):
   O113 이 04번 DDL 을 손으로 고치고 「구조차이 0」이라고 판정했는데,
@@ -209,11 +209,11 @@ TARGETS = [
     #   soft=False = 그 문서가 「컬럼 코멘트 전 컬럼 부여 완료」를 **주장한다** ⇒ 누락은 blocking.
     #   soft=True  = 주장하지 않는다 ⇒ 누락은 🟠 경고(현업 확인 대상).
     ("BRONZE_CRM", ["90_provided_definition/11_bronze_crm_ddl.sql"],
-     "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_CRM.", False),
+     "40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql", "BRONZE_CRM.", False),
     ("BRONZE_AGENCY", ["90_provided_definition/13_bronze_agency_ddl.sql"],
-     "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_AGENCY.", False),
+     "40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql", "BRONZE_AGENCY.", False),
     ("BRONZE_ERP", ["90_provided_definition/12_bronze_erp_ddl.sql"],
-     "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_ERP.", False),
+     "40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql", "BRONZE_ERP.", False),
     # 🆕 [2026-09-17 O171] GA4·GSC 를 분모에 편입했다.
     #   🔴 왜 = 종전 TARGETS 에 두 스키마가 **없었다** ⇒ 축1(테이블 집합)이 그 스키마를
     #      아예 보지 않았고, 실제로 원천 16번의 신규 테이블(SEARCH_CONSOLE_DATA2)을
@@ -221,15 +221,15 @@ TARGETS = [
     #   ⚠️ soft=True 인 이유 = 원천 15/16번은 SYNC_ERR_INFO 컬럼 COMMENT 가 비어 있고
     #      본 파일이 관례로 보강했다 ⇒ 「전 컬럼 부여」 주장을 blocking 으로 걸지 않는다.
     ("BRONZE_GA4", ["90_provided_definition/15_bronze_ga4_ddl.sql"],
-     "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GA4.", True),
+     "40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql", "BRONZE_GA4.", True),
     ("BRONZE_GSC", ["90_provided_definition/16_bronze_gsc_ddl.sql"],
-     "50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql", "BRONZE_GSC.", True),
+     "40_worklog/41_handoff/04_데이터마이그_GN_DW_BRONZE_DDL.sql", "BRONZE_GSC.", True),
     # 🆕 [2026-10-02 O198] 원천 재수령 — 12/13 번호 교환(ERP=12 · AGENCY=13) · 18번 = SILVER 스키마 전체(61) ·
     #   이관 범위는 부분집합이다 ⇒ 6번째 원소 `only` 로 범위를 고정한다(SILVER 4 · ML 12 · 사용자 확정).
     ("SILVER", ["90_provided_definition/18_silver_ddl.sql"],
-     "50_handoff/06_데이터마이그 GN_DW_SILVER_DDL.sql", "SILVER.", True, SILVER_SCOPE),
+     "40_worklog/41_handoff/06_데이터마이그_GN_DW_SILVER_DDL.sql", "SILVER.", True, SILVER_SCOPE),
     ("ML_RST_DATA", ["90_provided_definition/20_ML_ddl.sql"],
-     "50_handoff/05_데이터마이그 GN_DW_ML_DDL_20260814.sql", "ML.", True, ML_SCOPE),
+     "40_worklog/41_handoff/05_데이터마이그_GN_DW_ML_DDL_20260814.sql", "ML.", True, ML_SCOPE),
 ]
 
 # ---------------------------------------------------------------------------
@@ -244,7 +244,7 @@ TARGETS = [
 # 판정식: 아래 STALE_TOKENS 의 옛 표기가 **현행값 없이 단독으로** 나오면 위반이다.
 #   ⚠️ 정정을 설명하는 줄(「50 → 52」)과 과거 실측 기록은 면제한다 — 아래 주석 참조.
 # ---------------------------------------------------------------------------
-DOC_DIR = "50_handoff"
+DOC_DIR = "40_worklog/41_handoff"
 # (옛 표기, 같은 줄에 있으면 면제되는 현행 표기들, 설명)
 #   🟢 판정식 = **「그 줄이 독자에게 현행값을 함께 알려주는가」**.
 #      「50 → 52」·「04_2번 → 06번」처럼 정정을 설명하는 줄은 오해를 만들 수 없으므로 면제한다.

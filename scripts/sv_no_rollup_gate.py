@@ -5,7 +5,7 @@
    (O206-C 「GROUP BY ROLLUP 합계 행을 반환한다」 · 05_24/05_25 「ROLLUP 전체 행을 붙인다」).
    O259 가 문구·VQR 을 평면 GROUP BY 로 바꿨다 ⇒ 다시 들어오면 FAIL 한다.
 🟢 금지 문장 자체(「ROLLUP·CUBE·GROUPING SETS 금지」·「(ROLLUP 금지)」)는 허용한다.
-분모 = `05_SV-Agent_ai/` 의 SV DDL(05_*·22_·25_·34_) · `_archive` 제외.
+분모 = `20_build/23_sv_agent/` 의 SV DDL(05_*·22_·25_·34_) · `_archive` 제외.
 운영자 점검 SQL(26~29·37)은 Agent 출력이 아니므로 분모 밖이다.
 """
 import argparse
@@ -15,14 +15,15 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#: [O262] SV 폴더 자동 탐지 — 워크스페이스(05_SV-Agent_ai/) → 80 패키지 순
+#: [O262] SV 폴더 자동 탐지 — 워크스페이스(20_build/23_sv_agent/) → 80 패키지 순
 #:   80 사본 = `<80>/10_운영도구_scripts/scripts/이 파일` ⇒ ROOT = `<80>/10_운영도구_scripts` · SV = `<80>/01_실행순서_배포SQL/05_SV-Agent_ai`
-SV_CANDIDATES = (os.path.join(ROOT, '05_SV-Agent_ai'),
-                 os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))
+SV_CANDIDATES = (os.path.join(ROOT, '20_build/23_sv_agent'),
+                 os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))  # 80 패키지는 고정 영역 · 옛 이름 유지(O275)
 SV_DIR = next((d for d in SV_CANDIDATES if os.path.isdir(d)), SV_CANDIDATES[0])
 PREFIXES = ('05_', '22_', '25_', '34_')
-#: SV_DIR 기준 상대경로 — 05 폴더 밖 SV 정본
-EXTRA = ('../15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql',)
+#: SV_DIR 기준 상대경로 — 05 폴더 밖 SV 정본 · 🆕 [O275] 워크스페이스 재편 후 / 80 패키지(옛 구조) 를 나눠 둔다
+EXTRA = (('../25_mstr_migration/snowflake_적용_ddl/05_MSTR_SV_DDL.sql',) if SV_DIR == SV_CANDIDATES[0]
+         else ('../15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql',))
 
 #: (종류, 패턴) — SQL 구문과 「붙여라」 지시 문구를 함께 본다.
 RULES = [

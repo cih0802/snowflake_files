@@ -1,0 +1,97 @@
+# 20_build/28_cortex_project/_archive — 폐기된 Agent 스펙 사본
+
+> **복원하지 말 것.** 이 폴더의 파일은 정본이 아니며, 이력 추적을 위해서만 보존한다.
+
+## 왜 이관했는가 (2026-08-05 O38)
+
+Agent 스펙 yaml 이 **두 경로에 존재하고 양쪽이 서로 「정본」이라 선언**돼 있었다.
+
+| 경로 | 상태 |
+|---|---|
+| `20_build/28_cortex_project/AGENT_*.agent.yaml` (루트) | ⛔ **이 폴더로 이관** |
+| `20_build/28_cortex_project/agents/<AGENT>/agent_spec.yaml` | 🟢 **정본** |
+
+**정본 판정 근거는 「배포되는 파일이 정본」이다.** 실제 배포는
+`20_build/23_sv_agent/09_2_AGENT_버전업.sql` 의
+
+```sql
+ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
+  ADD VERSION FROM 'snow://workspace/…/cortex_project/agents/AGENT_MEMBER'
+```
+
+로 **디렉터리**를 stage 에서 직접 읽는다. 즉 라이브 Agent 가 되는 파일은
+`agents/<AGENT>/agent_spec.yaml` 이고, 루트 yaml 은 아무 데도 배포되지 않는 사본이었다.
+(파일명은 반드시 `agent_spec.yaml` — 공식 문서의 `agent.yaml` 예시는 부정확하며
+틀리면 `No spec file present for the agent` 로 실패한다. 2026-07-31 실측)
+
+## 이관 파일
+
+| 파일 | 실측 판정 |
+|---|---|
+| `AGENT_MEMBER.agent_STALE_20260804.yaml` | 🔴 **O33 이전 판본**. 도구 **4개**·샘플 **8개**·`system` 에 O33·O35·O38 흔적 없음. 정본은 도구 **6개**(`analyst_member_cohort`·`analyst_dev_achievement` 추가)·샘플 **19개**. **이 파일로 재배포하면 O33~O38 규칙과 도구 2개가 통째로 소실된다.** |
+| `AGENT_OVERALL.agent_DUPLICATE_20260804.yaml` | 🟢 `agents/AGENT_OVERALL/agent_spec.yaml` 과 **byte-identical** 중복이었다 — 내용 손실 없음. |
+| `AGENT_MEMBER.agent_STALE_20260821.yaml` | 🔴 **동일 결함 재발(2회차)**. `cortex_agent_write` 를 `file_path` 없이 호출해 루트에 `AGENT_MEMBER.agent.yaml` 이 또 생겼다(도구 10개 → 신규 SV_MEMBER_SPONSOR_BIZ 도구 추가분 11개가 정본에 반영 안 된 상태). 정본을 이 파일로 교체하면 `analyst_member_sponsor_biz` 도구가 소실된다. |
+| `AGENT_MARKETING.agent_STALE_20260821.yaml` | 🔴 위와 동일 사유(도구 6개 → 7개 누락분). |
+| `AGENT_GUIDE.agent_spec_RETIRED_20261008.yaml` | 🟢 **은퇴 보존(O213-I · 사용자 지시 「보존 이관」)**. 원 경로 `agents/AGENT_GUIDE/agent_spec.yaml` · sha256 `5ef7df03…` byte-identical 복사 후 원본 폴더 제거. 객체 `SERVING.AGENT_GUIDE` 는 O212-B 에서 DROP(6차 「4차 상태 롤백」) · 도구 0(가이드 라우팅 지시문만). 🔴 폴더가 남아 `agent_object_ref_gate` FAIL·`09_2 [0-C]` MISSING 을 냈다 → 이관으로 해소. 재사용 시 `agents/AGENT_GUIDE/agent_spec.yaml` 로 되돌리고 `09_1` 로 객체부터 만든다. |
+
+## 2026-08-21 재발 경위 (O38 과 동일 결함)
+
+`semantic_studio.cortex_agent_write` 를 `source_object` 만 주고 `file_path` 없이 호출하면
+**루트에 `<AGENT>.agent.yaml`** 을 새로 만든다(정본 `agents/<AGENT>/agent_spec.yaml` 이 아니다).
+🔴 **`file_path` 를 명시해도 `.agent.yaml` 접미가 강제로 붙는다** — `agent_spec.yaml` 을 지정하면
+도구가 `agent_spec.agent.yaml` 을 만든다. 정본 파일명(`agent_spec.yaml`)을 만들려면
+**도구 실행 후 `mv` 로 접미를 제거하는 수작업이 필수**다(도구만으로는 정본 파일명이 나오지 않는다).
+`cortex-project.yaml` 도 도구가 자동으로 `agent_spec.agent.yaml` 항목을 추가하므로 함께 정리해야 한다.
+
+## 함께 정리한 것
+
+- `cortex-project.yaml`: 이관된 루트 경로 2건을 정본 경로로 교체 + **dangling 항목 1건 제거**
+  (`agents/AGENT_MEMBER.agent.yaml` — 2026-08-05 세션 중 `cortex_agent_write` 가 자동 등록했으나
+  해당 파일은 이미 삭제된 상태였다). 실존 검증 완료.
+- **인용처 전수 회수(P62-B)**: 루트 yaml 을 「정본」이라 지목하던 4개 문서를 교정 —
+  `20_build/21_env_rbac/03_GOLD_SERVING.md` · `20_build/23_sv_agent/08_AGENT_spec.md` ·
+  `20_build/23_sv_agent/99_next_prompt.md` · `20_build/23_sv_agent/01_SV-Agent_작업계획.md`.
+  `20_issue/*` 와 `20_build/23_sv_agent/_archive/*` 의 언급은 **이력 기록이므로 원문 보존**한다.
+
+## 🔴 배포 경로 주의
+
+`cortex_agent_save` / `cortex_agent_deploy`(semantic_studio) 는 **live 버전**을 만든다.
+이 프로젝트는 **명명 버전 방식**(`VERSION$n`)이고 `ADD VERSION FROM` 은 **live 가 존재하면 거부**된다.
+
+정상 절차:
+1. `agents/<AGENT>/agent_spec.yaml` 갱신
+2. `ALTER WORKSPACE USER$.PUBLIC."snowflake_files" COMMIT` — stage 에 노출
+3. `09_2_AGENT_버전업.sql` 실행 (`ADD VERSION FROM <디렉터리>`)
+4. `ALTER AGENT … SET DEFAULT_VERSION = 'VERSION$n'`
+   — 🔴 **발행만으로 default 가 되지 않는다**(P66). `SHOW VERSIONS IN AGENT` 로 `is_default` 실측 확인.
+
+---
+_Co-authored with CoCo_
+
+
+## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
+
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+
+| 파일 | 크기 | 상태 | 비고 |
+|---|---|---|---|
+| `AGENT_EXECUTIVE.agent.yaml` | 61KB | 정본 | - |
+| `AGENT_EXECUTIVE.agent_spec.yaml.O235-before` | 71KB | 구버전 | 이름 패턴(이전판/백업) |
+| `AGENT_MARKETING.agent.yaml` | 89KB | 정본 | - |
+| `AGENT_MARKETING.agent_spec.yaml.O235-before` | 94KB | 구버전 | 이름 패턴(이전판/백업) |
+| `AGENT_MEMBER.agent_spec.yaml.O235-before` | 109KB | 구버전 | 이름 패턴(이전판/백업) |
+| `AGENT_MEMBER.agent_spec_BAK_20261001.yaml` | 54KB | 구버전 | 이름 패턴(이전판/백업) |
+| `agent_executive_eval_20261007_155611.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |
+| `agent_executive_eval_o208c_v3.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `agent_executive_eval_o209_x6.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |
+| `agent_marketing_eval_o209_after.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |
+| `agent_marketing_eval_o209_before.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `agent_member_eval_o209_v10.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `agent_member_eval_o209_v11.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `agent_member_eval_o209_v12.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `cortex-project.yaml.O235-before` | 2KB | 구버전 | 이름 패턴(이전판/백업) |
+| `o211_executive_eval.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |
+| `o211_executive_eval_v2.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `o211_marketing_eval.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |
+| `o211_marketing_eval_v2.eval.yaml` | 1KB | 구버전 | 이름 패턴(이전판/백업) |
+| `o211_member_eval.eval.yaml` | 1KB | 참고 | 평가 실행 결과 |

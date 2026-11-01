@@ -10,7 +10,7 @@ import sys
 import glob
 
 ROOT = "/workspace"
-ERD_DIR = os.path.join(ROOT, "30_output_share", "erd")
+ERD_DIR = os.path.join(ROOT, "60_share/61_output_share", "erd")
 
 passed = 0
 failed = 0

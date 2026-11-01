@@ -1,0 +1,49 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 30_operate/32_agent_improvement/tools — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 25개 · 하위 폴더 0개 · 하위 전체 파일 25개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `O217_routing_curated.csv` | 32KB | 2026-10-31 | - | CSV 헤더: DOC_ID,DOC_TYPE,TITLE,SYNONYMS,DEFINITION,FORMULA,AGENT_SCOPE,TOOL_NAME,SV_FIELD,LIMITATION,SOURCE_FILE |
+| `O233_synonym_overlay.csv` | 2KB | 2026-10-31 | - | CSV 헤더: DOC_ID,SYNONYMS,REASON |
+| `O237_formula_wiring_overlay.csv` | 45KB | 2026-10-31 | - | CSV 헤더: DOC_ID,TITLE,COVERAGE,TOOL_NAME,SV_FIELD,ANSWER_GUIDE,GAP_ACTION |
+| `agent_answer_report.py` | 21KB | 2026-10-31 | - | !/usr/bin/env python3 |
+| `build_biz_definition_corpus.py` | 14KB | 2026-10-31 | - | O217 — 비즈니스 정의 코퍼스 생성기 (Cortex Search 원천) |
+| `o217_agent_io.py` | 4KB | 2026-10-31 | - | O217-B — Agent spec 내보내기 · 대조 · 적용(운영계 재현용 · 계정 무관) |
+| `o217_eval_run.sh` | 1KB | 2026-10-31 | - |  |
+| `o217_patch_marketing_spec.py` | 9KB | 2026-10-31 | - | O217 — AGENT_MARKETING spec 개정 생성기 |
+| `o217_patch_search_tool.py` | 3KB | 2026-10-31 | - | O217 — AGENT_MEMBER · AGENT_EXECUTIVE 에 search_biz_definition 도구만 배선 |
+| `o217b_eval_run.sh` | 3KB | 2026-10-31 | - |  |
+| `o217b_patch_inc_campaign.py` | 5KB | 2026-10-31 | - | O217-B — AGENT_MARKETING spec 증액 예측 × 마케팅캠페인 배선 |
+| `o218_eval_run.sh` | 2KB | 2026-10-31 | - |  |
+| `o218_patch_condense.py` | 14KB | 2026-10-31 | - | O218 — AGENT_MARKETING 지침 축약(이관안 승인 · 2026-10-13) + 사용자 결정 Q19·F23 반영 |
+| `o218_patch_single_answer.py` | 2KB | 2026-10-31 | - | O218 — 마케팅 Agent 「① 핵심 요약」 2회 출력 결함 시정(정본 spec 패치 · 재실행 안전) |
+| `o233_ltv_csv_add.py` | 2KB | 2026-10-31 | - | O233 — O231_LTV_현업비교표.csv 에 회신 반영 열(상한80·무기한 × 최초/최종중단)을 키(분류축·분류값)로 덧붙인다. |
+| `o234_confirm_text.py` | 3KB | 2026-10-31 | - | O234 — LTV 현업 확정(상한 80 + 무기한 · 전체 이력 · 재후원 포함 · 셀 최소 1) 문안 일괄 치환 |
+| `o234_dump_live_cols.py` | 755B | 2026-10-31 | - | O234 — 라이브 SILVER·GOLD 컬럼을 o163_ddl_live_drift.py 입력 TSV 로 덤프 |
+| `o234_probe_set.csv` | 1KB | 2026-10-31 | - | CSV 헤더: ID,EXPECT,QUERY |
+| `o234_runorder_note.py` | 3KB | 2026-10-31 | - | O234 — 50_handover/50_execution_order/문서실행순서_보조주석.md 에 O234 주석·덧입히기 절차 추가(건수 검증 후 쓰기) |
+| `o234_search_probe.py` | 2KB | 2026-10-31 | - | O234 — SEARCH_BIZ_DEFINITION 탐침(질의 → 상위 3 DOC_ID) · hit@1/@3 |
+| `o235_patch_search_cols.py` | 4KB | 2026-10-31 | - | O235 — search_biz_definition 도구에 columns_and_descriptions 배선(multi-index 서비스 대응) |
+| `o237_build_formula_map.py` | 54KB | 2026-10-31 | - | O237 — 지표사전 산식(HAS_FORMULA=Y) 전건 ↔ SV metric·dimension·도구 매핑표 생성기 (LLM 소비용) |
+| `o266_patch_marketing_spec.py` | 6KB | 2026-10-31 | - | O266 — AGENT_MARKETING spec 개정 생성기(현업 피드백 1~4) |
+| `o274_corpus_diff.py` | 3KB | 2026-10-31 | - | O274 — 지표사전 새 CSV ↔ 라이브 표 대조(읽기 전용 · 계획서 O273 §4 A4 · 운영계 B1 에도 쓴다) |
+| `run_sql_file.py` | 2KB | 2026-10-31 | - | O217-B — SQL 파일 실행기(세미콜론 분리 · 문자열 리터럴 안의 ; 보존 · 문별 결과 1줄) |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

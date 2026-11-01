@@ -53,7 +53,7 @@ def corrected_gmap(field_value, raw_gmap):
     return raw_gmap, "", "", ""
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 SRC_CSV = os.environ.get("GN_DW_METRIC_CSV", os.path.join(OUT_DIR, "05_지표GOLD매핑.csv"))
 CENSUS = os.environ.get("GN_DW_CENSUS", "/tmp/census.json")
 SCHEMA = os.environ.get("GN_DW_SCHEMA", "/tmp/schema.json")

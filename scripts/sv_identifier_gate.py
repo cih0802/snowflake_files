@@ -31,12 +31,12 @@ import sys, re, os, json, glob, argparse
 sys.path.insert(0, '/workspace/scripts')
 
 ROOT = '/workspace'
-AGENT_GLOB = os.path.join(ROOT, 'cortex_project/agents/*/agent_spec.yaml')
+AGENT_GLOB = os.path.join(ROOT, '20_build/28_cortex_project/agents/*/agent_spec.yaml')
 
 # ③ 축의 분모. 우리가 저작·유지하는 SV·Agent 정본 표면(P229 규약 = 만들 때 분모에 들어온다).
 DOC_GLOBS = [
-    '05_SV-Agent_ai/*.md',
-    'cortex_project/agents/*/agent_spec.yaml',
+    '20_build/23_sv_agent/*.md',
+    '20_build/28_cortex_project/agents/*/agent_spec.yaml',
 ]
 
 # 식별자 모양이지만 SV 식별자가 아닌 것이 확실한 토큰 — 오탐 억제용 명시 목록.

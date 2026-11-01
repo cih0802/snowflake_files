@@ -1,0 +1,16 @@
+{
+ "group": "20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출/",
+ "start": "2026-10-31 15:50:55",
+ "moved": [
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/00_README.md",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

@@ -1,0 +1,30 @@
+{
+ "group": "tmp/root_scratch/",
+ "start": "2026-10-31 17:58:04",
+ "moved": [
+  ".brief_run.out",
+  "999_temp.txt",
+  "Untitled.sql",
+  "Untitled 1.sql",
+  "Untitled 2.sql",
+  "Untitled 3.sql",
+  "Untitled 4.sql",
+  "R96쿼리결과.md"
+ ],
+ "subst": [
+  [
+   "scripts/stage_mount_size_gate.py",
+   1
+  ],
+  [
+   "00_WORKSPACE_MAP.md",
+   8
+  ]
+ ],
+ "errors": [],
+ "lost": [],
+ "old_left": [],
+ "new_missing": [],
+ "residual": [],
+ "end": "2026-10-31 17:58:25"
+}

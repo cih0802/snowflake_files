@@ -20,13 +20,14 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #: 워크스페이스 → 80 패키지 순(sv_no_rollup_gate 와 같은 규칙)
-SV_CANDIDATES = (os.path.join(ROOT, '05_SV-Agent_ai'),
-                 os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))
+SV_CANDIDATES = (os.path.join(ROOT, '20_build/23_sv_agent'),
+                 os.path.join(os.path.dirname(ROOT), '01_실행순서_배포SQL', '05_SV-Agent_ai'))  # 80 패키지는 고정 영역 · 옛 이름 유지(O275)
 SV_DIR = next((d for d in SV_CANDIDATES if os.path.isdir(d)), SV_CANDIDATES[0])
 CANON_DOC = '00_SV_공통지시문.md'
 PREFIX = re.compile(r'^(05_\d{2}_|2[2-5]_|3[4-6]_).*\.sql$')
 #: SV 폴더 밖 SV 정본(sv_no_rollup_gate.EXTRA 와 같은 파일 · SV_DIR 기준 상대) — 없으면 건너뛴다(80 패키지)
-EXTRA = ('../15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql',)
+EXTRA = (('../25_mstr_migration/snowflake_적용_ddl/05_MSTR_SV_DDL.sql',) if SV_DIR == SV_CANDIDATES[0]
+         else ('../15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql',))  # 🆕 [O275] 재편 후 / 80 패키지(옛 구조)
 LIT = re.compile(r"AI_SQL_GENERATION\s+'", re.I)
 
 

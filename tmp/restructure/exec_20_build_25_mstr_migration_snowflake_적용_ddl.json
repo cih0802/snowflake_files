@@ -1,0 +1,19 @@
+{
+ "group": "20_build/25_mstr_migration/snowflake_적용_ddl/",
+ "start": "2026-10-31 15:50:55",
+ "moved": [
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/00_README.md",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

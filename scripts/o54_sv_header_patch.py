@@ -8,7 +8,7 @@
 import io
 import sys
 
-D = '/workspace/05_SV-Agent_ai/'
+D = '/workspace/20_build/23_sv_agent/'
 
 NOTE = '--                🔴 [2026-08-10 O54] SERVING helper 3종 → GOLD 재배선 완료(DEC-34 §0.8-D · helper DROP 은 7단계).\n'
 

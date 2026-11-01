@@ -40,9 +40,9 @@ status: draft (S4 게이트 확인 대기)
 
 | 레이어 | 구조 정본 | dbt 전략(dbt_project.yml) | 핵심 규칙 |
 |---|---|---|---|
-| SILVER | `04_silver_design/08_SILVER_테이블DDL_*.sql` | incremental + **append** + pre-hook `silver_purge` + `full_refresh: false` + `append_new_columns` | 매 run TRUNCATE 후 전량 재적재(멱등) · `merge` 모델 0(CRM_MEMBER_DEV 도 append · DR-05) |
-| GOLD dim | `03_top-down_gold/06_DDL.sql` | incremental(기본 merge · `unique_key`) + `append_new_columns` | UPSERT · DDL 구조 보존 |
-| GOLD fact | `03_top-down_gold/06_DDL.sql` | incremental + append + pre-hook `gold_fact_purge` + `append_new_columns` | 범위 팩트는 `RANGED_FACTS` 만 창 DELETE |
+| SILVER | `10_design/12_silver_design/08_SILVER_테이블DDL_*.sql` | incremental + **append** + pre-hook `silver_purge` + `full_refresh: false` + `append_new_columns` | 매 run TRUNCATE 후 전량 재적재(멱등) · `merge` 모델 0(CRM_MEMBER_DEV 도 append · DR-05) |
+| GOLD dim | `10_design/11_gold_topdown/06_DDL.sql` | incremental(기본 merge · `unique_key`) + `append_new_columns` | UPSERT · DDL 구조 보존 |
+| GOLD fact | `10_design/11_gold_topdown/06_DDL.sql` | incremental + append + pre-hook `gold_fact_purge` + `append_new_columns` | 범위 팩트는 `RANGED_FACTS` 만 창 DELETE |
 | GOLD wide | dbt 소유(`models/gold/wide/` · `_wide_schema.yml`) | view · `gn_view_commented` | 뷰 COMMENT 는 yml 이 정본 · GOLD 뷰 19 전부 GN_DW_DBT 소유(실측) |
 
 규칙(어기면 에러 없이 데이터가 줄어든다):

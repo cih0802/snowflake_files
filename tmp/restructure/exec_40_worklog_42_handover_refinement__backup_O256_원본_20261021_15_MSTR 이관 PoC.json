@@ -1,0 +1,22 @@
+{
+ "group": "40_worklog/42_handover_refinement/_backup_O256_원본_20261021/15_MSTR 이관 PoC/",
+ "start": "2026-10-31 15:44:55",
+ "moved": [
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/tools/templates/1차_verify.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/답안체크용 쿼리.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

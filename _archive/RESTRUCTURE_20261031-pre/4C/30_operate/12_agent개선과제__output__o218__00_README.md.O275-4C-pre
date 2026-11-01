@@ -1,0 +1,79 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 12_agent개선과제/output/o218 — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 55개 · 하위 폴더 0개 · 하위 전체 파일 55개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `after2_F01.rc` | 9B | 2026-10-31 | - |  |
+| `after2_F01.txt` | 2KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_F06.rc` | 9B | 2026-10-31 | - |  |
+| `after2_F06.txt` | 3KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_F16.rc` | 16B | 2026-10-31 | - |  |
+| `after2_F16.txt` | 2KB | 2026-10-31 | - | ① 핵심 요약 |
+| `after2_F17.rc` | 16B | 2026-10-31 | - |  |
+| `after2_F17.txt` | 2KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_F22.rc` | 9B | 2026-10-31 | - |  |
+| `after2_F22.txt` | 3KB | 2026-10-31 | - | 요청하신 분석을 **UTM 조인키 방식 그대로는 실행할 수 없습니다.** 대신 마케팅캠페인을 공통 기준으로 쓰는 방법을 제안드리며, 진행 여부를 확인받고자 합니다. |
+| `after2_M1.rc` | 8B | 2026-10-31 | - |  |
+| `after2_M1.txt` | 3KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_M2.rc` | 8B | 2026-10-31 | - |  |
+| `after2_M2.txt` | 3KB | 2026-10-31 | - | Now extract list of 고위험 members.**핵심 요약** |
+| `after2_M7.rc` | 8B | 2026-10-31 | - |  |
+| `after2_M7.txt` | 3KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_M8.rc` | 8B | 2026-10-31 | - |  |
+| `after2_M8.txt` | 2KB | 2026-10-31 | - | **① 핵심 요약** |
+| `after2_QM4.rc` | 16B | 2026-10-31 | - |  |
+| `after2_QM4.txt` | 3KB | 2026-10-31 | - | **① 핵심 요약** |
+| `before_F01.rc` | 16B | 2026-10-31 | - |  |
+| `before_F01.txt` | 3KB | 2026-10-31 | - | 익월 회원개발 **건수** 예측을 먼저 확인하겠습니다. |
+| `before_F02.rc` | 16B | 2026-10-31 | - |  |
+| `before_F02.txt` | 2KB | 2026-10-31 | - | 연말 신규회원 개발 추세를 조회하겠습니다. |
+| `before_F06.rc` | 9B | 2026-10-31 | - |  |
+| `before_F06.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_F16.rc` | 16B | 2026-10-31 | - |  |
+| `before_F16.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_F17.rc` | 9B | 2026-10-31 | - |  |
+| `before_F17.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_F22.rc` | 16B | 2026-10-31 | - |  |
+| `before_F22.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_F23.rc` | 16B | 2026-10-31 | - |  |
+| `before_F23.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_O218_AGENT_MARKETING.yaml` | 91KB | 2026-10-31 | - | *원천이 다른 데이터를 함께 제시할 때는 표를 분리하고 각 표 아래에 원천을 한 줄로 각주 표기합니다** — 형식 = "원천: <원천시스템> → BRONZE_<스키마>.<테이블>·<테이블> → GOLD.<팩트>" (예: "원천: 대행사 광고 리포트 →… |
+| `before_O218_routing_curated.csv` | 10KB | 2026-10-31 | - | CSV 헤더: DOC_ID,DOC_TYPE,TITLE,SYNONYMS,DEFINITION,FORMULA,AGENT_SCOPE,TOOL_NAME,SV_FIELD,LIMITATION,SOURCE_FILE |
+| `before_P1.rc` | 8B | 2026-10-31 | - |  |
+| `before_P1.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_P2.rc` | 16B | 2026-10-31 | - |  |
+| `before_P2.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_P3.rc` | 16B | 2026-10-31 | - |  |
+| `before_P3.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_Q19.rc` | 16B | 2026-10-31 | - |  |
+| `before_Q19.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_Q24.rc` | 16B | 2026-10-31 | - |  |
+| `before_Q24.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_Q25.rc` | 16B | 2026-10-31 | - |  |
+| `before_Q25.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_QC8.rc` | 16B | 2026-10-31 | - |  |
+| `before_QC8.txt` | 45B | 2026-10-31 | - | {"error":"Agent returned an empty response"} |
+| `before_QM4.rc` | 16B | 2026-10-31 | - |  |
+| `before_QM4.txt` | 3KB | 2026-10-31 | - | 회비 실적과 회원실 회비 예측 두 도구의 모델을 확인하겠습니다. |
+| `live_AGENT_EXECUTIVE.yaml` | 61KB | 2026-10-31 | - | O217 export = GN_DW.SERVING.AGENT_EXECUTIVE VERSION$4 (UA91864) |
+| `live_AGENT_MARKETING.yaml` | 91KB | 2026-10-31 | - | O217 export = GN_DW.SERVING.AGENT_MARKETING VERSION$4 (UA91864) |
+| `live_AGENT_MEMBER.yaml` | 102KB | 2026-10-31 | - | O217 export = GN_DW.SERVING.AGENT_MEMBER VERSION$4 (UA91864) |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

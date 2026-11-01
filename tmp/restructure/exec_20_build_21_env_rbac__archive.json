@@ -1,0 +1,13 @@
+{
+ "group": "20_build/21_env_rbac/_archive/",
+ "start": "2026-10-31 15:45:51",
+ "moved": [
+  "02_GN_DW_building/_archive/00_README.md",
+  "02_GN_DW_building/_archive/20_일배치테스트용.sql",
+  "02_GN_DW_building/_archive/BRONZE_GA4_stage_load_20260702.sql",
+  "02_GN_DW_building/_archive/BRONZE_RAW_load_20260703.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

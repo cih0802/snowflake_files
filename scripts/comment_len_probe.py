@@ -17,7 +17,7 @@ import re
 import sys
 from collections import defaultdict
 
-PATH = '/workspace/03_top-down_gold/06_DDL.sql'
+PATH = '/workspace/10_design/11_gold_topdown/06_DDL.sql'
 
 RE_COL = re.compile(
     r"^\s{2,}(?P<col>[A-Z_0-9]+)\s+.*?\bCOMMENT\s+'(?P<body>.*)'\s*,?\s*$")

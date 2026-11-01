@@ -1,0 +1,266 @@
+{
+ "group": "10_design/",
+ "start": "2026-10-31 11:31:04",
+ "moved": [
+  "03_top-down_gold/00_README.md",
+  "03_top-down_gold/01_작업 계획.md",
+  "03_top-down_gold/02_지표 분류.md",
+  "03_top-down_gold/03_테이블 설계.md",
+  "03_top-down_gold/04_SV파생 매핑.md",
+  "03_top-down_gold/05_필드 인벤토리.md",
+  "03_top-down_gold/06_DDL.sql",
+  "03_top-down_gold/06_DDL_설계이력_부록.md",
+  "03_top-down_gold/07_메타.md",
+  "03_top-down_gold/08_silver의존.md",
+  "03_top-down_gold/09_빅테이블 VIEW.md",
+  "03_top-down_gold/10_WIDE VIEW 코멘트.sql",
+  "03_top-down_gold/11_BRONZE적재 컬럼대조.md",
+  "03_top-down_gold/12_gold 테이블명 변경작업 근거",
+  "03_top-down_gold/99_next_prompt.md",
+  "03_top-down_gold/_archive/00_README.md",
+  "03_top-down_gold/_archive/11_원천요청목록.md",
+  "03_top-down_gold/_archive/13_CRM 확인요청.md",
+  "03_top-down_gold/_archive/30_BRONZE 컨트랙트.md",
+  "03_top-down_gold/_archive/31_BRONZE 작업요청_주니어.md",
+  "03_top-down_gold/_archive/33_오픈액션 입고·의사결정·현업확인.md",
+  "03_top-down_gold/_archive/34_BRONZE-SILVER-GOLD_컬럼매핑_현업.csv",
+  "03_top-down_gold/_archive/34_BRONZE-SILVER-GOLD_컬럼매핑_현업.md",
+  "03_top-down_gold/_archive/34_BRONZE-SILVER-GOLD_컬럼매핑_현업.xlsx",
+  "03_top-down_gold/_archive/34_현업확인 상세설명.md",
+  "03_top-down_gold/_archive/DEC30_STRUCTURE_ALTER.sql",
+  "03_top-down_gold/_archive/GOLD_SILVER 의존.md",
+  "03_top-down_gold/_archive/GOLD_ddl 초안.sql",
+  "03_top-down_gold/_archive/GOLD_메타제약 확인.md",
+  "03_top-down_gold/_archive/GOLD_정의서_업데이트 20260624.md",
+  "03_top-down_gold/_archive/GOLD_차원 설계.md",
+  "03_top-down_gold/_archive/GOLD_파생지표 매핑.md",
+  "03_top-down_gold/_archive/GOLD_팩트 설계.md",
+  "03_top-down_gold/_archive/O27_DIM_MEMBER_ALTER.sql",
+  "03_top-down_gold/_archive/O28_O29_COMMENT_GUARD.sql",
+  "03_top-down_gold/_archive/O28_O29_사문화_COMMENT_2건_20260804.sql",
+  "03_top-down_gold/_archive/O30_REBUILD_DRIFT_REPAIR.sql",
+  "03_top-down_gold/_archive/O39_COMMENT_GUARD.sql",
+  "03_top-down_gold/_archive/O40_PAYMENT_SCOPE_FIX.sql",
+  "03_top-down_gold/_archive/O45_202608/00_README_O45이관안내.md",
+  "03_top-down_gold/_archive/O45_202608/O45_ASSEMBLY_AXES.sql",
+  "03_top-down_gold/_archive/O45_202608/O45_VERIFY.sql",
+  "04_silver_design/00_README.md",
+  "04_silver_design/02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md",
+  "04_silver_design/03_SILVER_작업계획_CRM전용 20260714.md",
+  "04_silver_design/04_SILVER_작업계획_GA4전용 20260714.md",
+  "04_silver_design/05_SILVER_작업계획_ERP전용 20260714.md",
+  "04_silver_design/06_SILVER_작업계획_AGENCY전용 20260714.md",
+  "04_silver_design/07_GA4_SILVER_샤드통합 설계결정.md",
+  "04_silver_design/08_SILVER_DDL_설계이력_부록.md",
+  "04_silver_design/08_SILVER_테이블DDL_20260714.sql",
+  "04_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql",
+  "04_silver_design/09_SILVER_적재쿼리_20260714.sql",
+  "04_silver_design/10_SILVER_RUN_이력_비교_20260714.md",
+  "04_silver_design/14_GA4_작업지시 프롬프트_20260714.md",
+  "04_silver_design/15_dbt파이프라인_작업지시 프롬프트_20260714.md",
+  "04_silver_design/22_GA4_파이프라인_dbt로 작업전_주의사항.md",
+  "04_silver_design/23_GA4_파이프라인_SP로 작업전_주의사항.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/00_README.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/01_CRM_MEMBER_MASTER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/02_CRM_MEMBER_STATUS_HIST.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/03_CRM_SPONSORSHIP_PLEDGE.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/04_CRM_PAYMENT_BILLING.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/05_CRM_PAYMENT_METHOD.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/06_CRM_CAMPAIGN_MASTER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/07_CRM_SPONSORSHIP_MASTER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/08_CRM_ORG_MASTER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/09_CRM_DEV_TARGET.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/10_CRM_SEND_REQUEST.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/11_CRM_SEND_MEMBER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/12_CRM_SEND_RESULT.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/13_CRM_PARTICIPATION_HIST.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/14_CRM_CODE_MASTER.md",
+  "04_silver_design/S1_CRM_entity_design_legacy/15_CRM_SPONSORSHIP_RELATION.md",
+  "04_silver_design/_archive/01_SILVER_작업계획_축약본 20260630.md",
+  "04_silver_design/_archive/02_SILVER_작업계획_BRONZE-GOLD연결 20260630.md",
+  "04_silver_design/_archive/03_SILVER_작업계획_CRM전용 20260630.md",
+  "04_silver_design/_archive/09_SILVER_DDL_20260702.sql",
+  "04_silver_design/_archive/10_SILVER_이슈해결 핸드오버.md",
+  "04_silver_design/_archive/11_SILVER_블로커_triage_Q1-Q16_20260714.md",
+  "04_silver_design/_archive/GA4_SILVER_샤드통합 설계결정.md",
+  "04_silver_design/_archive/GA4_파이프라인_SP로 작업전_주의사항.md",
+  "04_silver_design/_archive/GA4_파이프라인_dbt로 작업전_주의사항.md",
+  "04_silver_design/_archive/README.md",
+  "04_silver_design/_archive/SILVER_DDL_20260702.sql",
+  "04_silver_design/_archive/SILVER_검토 결과.md",
+  "04_silver_design/_archive/SILVER_설계_작업 계획.md",
+  "04_silver_design/_archive/SILVER_이슈해결 핸드오버.md",
+  "04_silver_design/_archive/SILVER_작업계획_BRONZE-GOLD연결 20260630.md",
+  "04_silver_design/_archive/SILVER_작업계획_CRM전용 20260630.md",
+  "04_silver_design/_archive/SILVER_작업계획_축약본 20260630.md",
+  "04_silver_design/_archive/silver_stepbystep_ddl.sql",
+  "06_snapshot/00_README.md",
+  "06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md",
+  "06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md",
+  "06_snapshot/03_스냅샷_환경구축_및_검증쿼리.sql",
+  "GNI조직도피벗.sql",
+  "기준년월 보유 테이블 및 컬럼.md"
+ ],
+ "subst": [
+  [
+   "scripts/_o155_rename_scan.py",
+   2
+  ],
+  [
+   "scripts/build_wide_doc.py",
+   1
+  ],
+  [
+   "scripts/comment_drift_gate.py",
+   2
+  ],
+  [
+   "scripts/doc_headings.json",
+   1
+  ],
+  [
+   "scripts/doc_line_length_gate.py",
+   3
+  ],
+  [
+   "scripts/gen_metric_gold_mapping.py",
+   6
+  ],
+  [
+   "scripts/gen_pipeline_erd.py",
+   2
+  ],
+  [
+   "scripts/mirror_from_stage.sh",
+   1
+  ],
+  [
+   "scripts/o125_layer_census.py",
+   4
+  ],
+  [
+   "scripts/o163_ddl_live_drift.py",
+   2
+  ],
+  [
+   "scripts/outputs.json",
+   1
+  ],
+  [
+   "scripts/rename_stale_gate.py",
+   5
+  ],
+  [
+   "scripts/run_bronze_audit_host.py",
+   2
+  ],
+  [
+   "scripts/table_ddl_column_gate.py",
+   2
+  ],
+  [
+   "scripts/test_doc_coord_gate.py",
+   2
+  ],
+  [
+   "scripts/test_generators.py",
+   1
+  ],
+  [
+   "scripts/test_o125_layer_census.py",
+   2
+  ],
+  [
+   "scripts/test_verify_wide_doc.py",
+   1
+  ],
+  [
+   "scripts/verify_wide_doc.py",
+   1
+  ],
+  [
+   "scripts/ws_stage_verify.py",
+   5
+  ],
+  [
+   "scripts/golden/doc_headings.json",
+   1
+  ],
+  [
+   "scripts/golden/outputs.json",
+   1
+  ],
+  [
+   "scripts/o51d_view_comments/build_ad_yml.py",
+   1
+  ],
+  [
+   "scripts/o51d_view_comments/build_yml.py",
+   1
+  ],
+  [
+   "scripts/o51d_view_comments/patch_ad_yml.py",
+   1
+  ],
+  [
+   "scripts/o51d_view_comments/patch_yml.py",
+   1
+  ],
+  [
+   "00_WORKSPACE_MAP.md",
+   8
+  ],
+  [
+   "70_reference/72_sample_legacy/README.md",
+   1
+  ],
+  [
+   "10_design/11_gold_topdown/_archive/00_README.md",
+   1
+  ],
+  [
+   "10_design/12_silver_design/00_README.md",
+   4
+  ],
+  [
+   "10_design/12_silver_design/S1_CRM_entity_design_legacy/00_README.md",
+   1
+  ],
+  [
+   "10_design/12_silver_design/_archive/README.md",
+   6
+  ],
+  [
+   "10_design/13_snapshot_design/00_README.md",
+   1
+  ],
+  [
+   "02_GN_DW_building/00_INDEX.md",
+   6
+  ],
+  [
+   "02_GN_DW_building/README.md",
+   3
+  ],
+  [
+   "05_SV-Agent_ai/00_README.md",
+   1
+  ],
+  [
+   "05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql",
+   1
+  ],
+  [
+   "05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql",
+   1
+  ]
+ ],
+ "errors": [],
+ "lost": [],
+ "old_left": [
+  "04_silver_design/S1_CRM_entity_design_legacy/04_CRM_PAYMENT_BILLING.md"
+ ],
+ "new_missing": [],
+ "residual": [],
+ "end": "2026-10-31 11:32:48"
+}

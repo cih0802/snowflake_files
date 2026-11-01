@@ -25,7 +25,7 @@ import sys
 sys.path.insert(0, '/workspace/scripts')
 from snapshot_util import snapshot, ARCHIVE  # noqa: E402
 
-DIR = '/workspace/05_SV-Agent_ai'
+DIR = '/workspace/20_build/23_sv_agent'
 APPX = f'{DIR}/05_SV_DDL_설계이력_부록.md'
 
 TAG_RULES = [

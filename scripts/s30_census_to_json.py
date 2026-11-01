@@ -8,13 +8,13 @@
     python3 scripts/s30_census_to_json.py ZL50263 --base UM80684  # 참고용 개발계 열 추가
 
 입력
-    30_output_share/_ENV/<계정>/S30_manifest.csv · S30_Q01_1.csv · S30_Q02_1.csv · S30_Q03_1.csv …
-        (env_capture.py --id S30 --out-root "30_output_share/_ENV" 생성물)
-    (--base 지정 시) 30_output_share/_ENV/<base>/census_*.json 중 최신 — 참고 열일 뿐 판정 기준이 아니다
+    60_share/61_output_share/_ENV/<계정>/S30_manifest.csv · S30_Q01_1.csv · S30_Q02_1.csv · S30_Q03_1.csv …
+        (env_capture.py --id S30 --out-root "60_share/61_output_share/_ENV" 생성물)
+    (--base 지정 시) 60_share/61_output_share/_ENV/<base>/census_*.json 중 최신 — 참고 열일 뿐 판정 기준이 아니다
 출력
-    30_output_share/_ENV/<계정>/census_S30.json  — census_columns.py 와 같은 형식
+    60_share/61_output_share/_ENV/<계정>/census_S30.json  — census_columns.py 와 같은 형식
         ⇒ GN_DW_CENSUS=<이 파일> 로 05·08·09 생성기에 넣을 수 있다.
-    30_output_share/12_운영계_실측_<계정>.md — 0행 테이블 · 전건 NULL · 전건 0 판정(운영계 단독)
+    60_share/61_output_share/12_운영계_실측_<계정>.md — 0행 테이블 · 전건 NULL · 전건 0 판정(운영계 단독)
 
 판정 규칙 = gen_concept_diagram.py 와 동일(행 0 ⇒ 0행 · nonnull 0 ⇒ 전건 NULL · nonzero 0 ⇒ 전건 0 · 감사 컬럼 제외).
 종료코드 = 0 성공(실행 시점 부재만 있으면 0) · 1 입력 없음/manifest ERROR 존재 · 2 사용법 오류.
@@ -28,7 +28,7 @@ import os
 import sys
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENV = os.path.join(WS, '30_output_share', '_ENV')
+ENV = os.path.join(WS, '60_share/61_output_share', '_ENV')
 AUDIT = {'DW_SOURCE_SYSTEM', 'DW_SOURCE_TABLE', 'DW_LOAD_TS', 'DW_UPDATE_TS', 'DW_BATCH_ID'}
 LBL = {'empty': '0행', 'null': '전건 NULL', 'zero': '전건 0', 'ok': '값 있음', None: '부재'}
 
@@ -55,7 +55,7 @@ def load_ops(acct):
     # 🆕 [2026-10-27 운영계 1회차] ① SQL 생성과 ② 실행 사이에 삭제된 객체(날짜 접미 백업 등)는 판정 대상이 아니다.
     #   실측 = ZL50263 Q142 `SILVER.MM_SPNSR_CLS_AGGR_DATA_261019` ⇒ ② 시점 Q01 에 없으면 「실행 시점 부재」로 분리한다.
     q_tbl = {}
-    sql_path = os.path.join(WS, '30_output_share', '_근거쿼리', 'S30_census.sql')
+    sql_path = os.path.join(WS, '60_share/61_output_share', '_근거쿼리', 'S30_census.sql')
     if os.path.exists(sql_path):
         for line in io.open(sql_path, encoding='utf-8'):
             if line.startswith('-- Q') and ' census ' in line:
@@ -169,7 +169,7 @@ def main():
         L += ['', '## 5. 참고 — 행수가 개발계와 다른 테이블', '', '| 테이블 | 운영계 | 개발계 |', '| :--- | ---: | ---: |']
         L += ['| `%s` | %s | %s |' % (k, cnt(o), cnt(b)) for k, o, b in diff_rows] or ['| (없음) | | |']
 
-    out_md = os.path.join(WS, '30_output_share', '12_운영계_실측_%s.md' % a.account)
+    out_md = os.path.join(WS, '60_share/61_output_share', '12_운영계_실측_%s.md' % a.account)
     io.open(out_md, 'w', encoding='utf-8').write('\n'.join(L) + '\n')
     print('🟢 %s · %s' % (os.path.relpath(out_json, WS), os.path.relpath(out_md, WS)))
     print('   0행 %d · 전건NULL/0 컬럼 %d · ERROR %d' % (

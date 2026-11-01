@@ -1,0 +1,75 @@
+   2  85_실제 인수인계 문서/00_INDEX_산출물목록.md  e.g. 70_후속 프로젝트 인계용/
+스냅샷 = _archive/00_INDEX_산출물목록.md.O275-G-pre-movemap  [O275-G · 7,789 B · 18b917f6c16ec4c3]
+   5  85_실제 인수인계 문서/00_작업계획서.md  e.g. 09_streamlit 권한 설정/
+스냅샷 = _archive/00_작업계획서.md.O275-G-pre-movemap  [O275-G · 13,480 B · a754a1dfd01dc761]
+   2  85_실제 인수인계 문서/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md  e.g. 08_mornitoring/
+스냅샷 = _archive/A2_롤별_접근권한_매트릭스.md.O275-G-pre-movemap  [O275-G · 12,939 B · ee34fe0bf0355dc6]
+   3  85_실제 인수인계 문서/10_실무자_인수인계/A4_dbt_파이프라인_개발자가이드.md  e.g. 04_silver_design/
+스냅샷 = _archive/A4_dbt_파이프라인_개발자가이드.md.O275-G-pre-movemap  [O275-G · 10,119 B · 700f70f61194635a]
+   4  85_실제 인수인계 문서/10_실무자_인수인계/A5_Agent_SV_개발자가이드.md  e.g. cortex_project/
+스냅샷 = _archive/A5_Agent_SV_개발자가이드.md.O275-G-pre-movemap  [O275-G · 9,923 B · cfb452c76846f9d0]
+   1  85_실제 인수인계 문서/10_실무자_인수인계/A6_일배치_장애대응_런북.md  e.g. 02_GN_DW_building/06_RUNBOOK.md
+스냅샷 = _archive/A6_일배치_장애대응_런북.md.O275-G-pre-movemap  [O275-G · 11,758 B · b6f98a7682567a8a]
+   2  85_실제 인수인계 문서/10_실무자_인수인계/A8_미결이슈_인계목록.md  e.g. 08_mornitoring/11_BRONZE_개인정보_마스킹정책_적용완료.sql
+스냅샷 = _archive/A8_미결이슈_인계목록.md.O275-G-pre-movemap  [O275-G · 6,260 B · 239aaa38de3569d4]
+   1  85_실제 인수인계 문서/20_정식산출물/00_README.md  e.g. 08_mornitoring/
+스냅샷 = _archive/00_README.md.O275-G-pre-movemap  [O275-G · 6,905 B · 087f0555b5eba156]
+   2  85_실제 인수인계 문서/20_정식산출물/D04_테이블컬럼정의서.md  e.g. 04_silver_design/
+스냅샷 = _archive/D04_테이블컬럼정의서.md.O275-G-pre-movemap  [O275-G · 4,393 B · c4c587cd8f5e48dc]
+   1  85_실제 인수인계 문서/20_정식산출물/D05_ERD.md  e.g. 03_top-down_gold/06_DDL.sql
+스냅샷 = _archive/D05_ERD.md.O275-G-pre-movemap  [O275-G · 5,895 B · 81fbd2753296b4c1]
+   1  85_실제 인수인계 문서/20_정식산출물/D08_시맨틱뷰정의서.md  e.g. cortex_project/
+스냅샷 = _archive/D08_시맨틱뷰정의서.md.O275-G-pre-movemap  [O275-G · 5,096 B · 5137c3e15c5b7a6d]
+   1  85_실제 인수인계 문서/20_정식산출물/D09_Agent명세서.md  e.g. cortex_project/
+스냅샷 = _archive/D09_Agent명세서.md.O275-G-pre-movemap  [O275-G · 5,536 B · ef3aa47190a00b45]
+  11  85_실제 인수인계 문서/20_정식산출물/D10_운영매뉴얼.md  e.g. 02_GN_DW_building/06_RUNBOOK.md
+스냅샷 = _archive/D10_운영매뉴얼.md.O275-G-pre-movemap  [O275-G · 11,586 B · 57f558d9b2907a53]
+  11  85_실제 인수인계 문서/20_정식산출물/D11_모니터링_비용관리정의서.md  e.g. 08_mornitoring/00_README.md
+스냅샷 = _archive/D11_모니터링_비용관리정의서.md.O275-G-pre-movemap  [O275-G · 7,725 B · ec210bfb3c5596b6]
+   1  85_실제 인수인계 문서/20_정식산출물/D12_현업활용가이드.md  e.g. 30_output_share/01_DW_현업활용가이드.md
+스냅샷 = _archive/D12_현업활용가이드.md.O275-G-pre-movemap  [O275-G · 7,925 B · 9ac90b6d0ee0bdc8]
+   1  85_실제 인수인계 문서/20_정식산출물/D13_의사결정_이슈대장.md  e.g. 07_현업의사결정 회신/현업의사결정 회신.md
+스냅샷 = _archive/D13_의사결정_이슈대장.md.O275-G-pre-movemap  [O275-G · 5,993 B · 520ebcfbf999ac29]
+   8  85_실제 인수인계 문서/20_정식산출물/D14_인수인계서.md  e.g. 60_repeat_어카운트시작/12_GN_DW_재구축_실행순서.md
+스냅샷 = _archive/D14_인수인계서.md.O275-G-pre-movemap  [O275-G · 6,848 B · 9943b24acbd8edd0]
+   1  85_실제 인수인계 문서/20_정식산출물/N01_DMF_정의서.md  e.g. 02_GN_DW_building/06_RUNBOOK.md
+스냅샷 = _archive/N01_DMF_정의서.md.O275-G-pre-movemap  [O275-G · 5,859 B · e1c21c1fcc98821b]
+   3  85_실제 인수인계 문서/20_정식산출물/N02_PII_정책정의서.md  e.g. 02_GN_DW_building/06_RUNBOOK.md
+스냅샷 = _archive/N02_PII_정책정의서.md.O275-G-pre-movemap  [O275-G · 9,465 B · c521de33635ac4ac]
+   3  85_실제 인수인계 문서/20_정식산출물/N02_정책_적용_미실행.sql  e.g. 08_mornitoring/
+스냅샷 = _archive/N02_정책_적용_미실행.sql.O275-G-pre-movemap  [O275-G · 7,145 B · dc2505da781205d5]
+   1  85_실제 인수인계 문서/20_정식산출물/N04_배치SLA_스케줄정의서.md  e.g. 02_GN_DW_building/06_RUNBOOK.md
+스냅샷 = _archive/N04_배치SLA_스케줄정의서.md.O275-G-pre-movemap  [O275-G · 4,242 B · f9e56d58439731c9]
+   2  85_실제 인수인계 문서/20_정식산출물/N05_테스트결과서.md  e.g. 05_SV-Agent_ai/07_평가셋_eval.md
+스냅샷 = _archive/N05_테스트결과서.md.O275-G-pre-movemap  [O275-G · 10,587 B · 5410b543f20c242b]
+   3  85_실제 인수인계 문서/20_정식산출물/N06_비용산정_용량계획서.md  e.g. 50_handoff/예산 안.md
+스냅샷 = _archive/N06_비용산정_용량계획서.md.O275-G-pre-movemap  [O275-G · 6,139 B · d1fcac47f0af1c8d]
+   1  85_실제 인수인계 문서/30_현업요청대응/00_매핑표.md  e.g. 98_현업요청인수인계/현업요청인수인계목록.md
+스냅샷 = _archive/00_매핑표.md.O275-G-pre-movemap  [O275-G · 3,439 B · afc6c06a92ca2f18]
+   2  85_실제 인수인계 문서/30_현업요청대응/00_작업계획서.md  e.g. 98_현업요청인수인계/현업요청인수인계목록.md
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/00_작업계획서.md.O275-G-pre-movemap.2  [O275-G · 5,349 B · c0ce1e176f7ee0b5]
+   1  85_실제 인수인계 문서/30_현업요청대응/92_미해소항목_결정자료.md  e.g. 30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx
+스냅샷 = _archive/92_미해소항목_결정자료.md.O275-G-pre-movemap  [O275-G · 12,406 B · 8bdd9b166a47249f]
+   6  85_실제 인수인계 문서/30_현업요청대응/R02_DB_데이터구조.md  e.g. 02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql
+스냅샷 = _archive/R02_DB_데이터구조.md.O275-G-pre-movemap  [O275-G · 10,206 B · bc476d48b53116a3]
+   2  85_실제 인수인계 문서/30_현업요청대응/R04_dbt프로젝트.md  e.g. 30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx
+스냅샷 = _archive/R04_dbt프로젝트.md.O275-G-pre-movemap  [O275-G · 9,836 B · 00341f750f13bf51]
+  11  85_실제 인수인계 문서/30_현업요청대응/R11_소스관리권한이관.md  e.g. 02_GN_DW_building/
+스냅샷 = _archive/R11_소스관리권한이관.md.O275-G-pre-movemap  [O275-G · 7,318 B · 02650eb4a9157dd0]
+   1  85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/00_README.md  e.g. 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/00_README.md.O275-G-pre-movemap.2  [O275-G · 3,432 B · 5592735d9a578258]
+   1  85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R94_daily실패알림_배포.sql  e.g. 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql
+스냅샷 = _archive/R94_daily실패알림_배포.sql.O275-G-pre-movemap  [O275-G · 1,600 B · 593c0d02cb649aaa]
+   1  85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R97_O270_원천접근통제_운영계사전실측.sql  e.g. 12_agent개선과제/O270_원천별_접근통제_작업계획.md
+스냅샷 = _archive/R97_O270_원천접근통제_운영계사전실측.sql.O275-G-pre-movemap  [O275-G · 4,140 B · 1985c20759a26c68]
+   3  85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R98_O270_운영계잔존뷰_원천.sql  e.g. 05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql
+스냅샷 = _archive/R98_O270_운영계잔존뷰_원천.sql.O275-G-pre-movemap  [O275-G · 5,890 B · 183eaf8f5ece49f0]
+   1  85_실제 인수인계 문서/_근거쿼리/D12_현업활용_근거.sql  e.g. 30_output_share/01_DW_현업활용가이드.md
+스냅샷 = _archive/D12_현업활용_근거.sql.O275-G-pre-movemap  [O275-G · 2,030 B · a5c19aa581ddcd1b]
+   1  85_실제 인수인계 문서/_근거쿼리/N05_테스트결과_근거.sql  e.g. 05_SV-Agent_ai/07_평가셋_eval.md
+스냅샷 = _archive/N05_테스트결과_근거.sql.O275-G-pre-movemap  [O275-G · 7,147 B · ce37734978b3bada]
+   1  85_실제 인수인계 문서/_근거쿼리/N06_비용_근거.sql  e.g. 08_mornitoring/
+스냅샷 = _archive/N06_비용_근거.sql.O275-G-pre-movemap  [O275-G · 4,191 B · 382b897f4425c8f0]
+   7  85_실제 인수인계 문서/_드리프트/드리프트_통합.md  e.g. cortex_project/
+스냅샷 = _archive/드리프트_통합.md.O275-G-pre-movemap  [O275-G · 13,238 B · b1db7e32b28ecbd4]
+합계 109 파일 37 80 문맥 제외 54 APPLIED

@@ -1,0 +1,30 @@
+{
+ "group": "20_build/21_env_rbac/",
+ "start": "2026-10-31 15:45:08",
+ "moved": [
+  "02_GN_DW_building/00_INDEX.md",
+  "02_GN_DW_building/01_환경 Role.md",
+  "02_GN_DW_building/02_DB_BRONZE_SILVER.md",
+  "02_GN_DW_building/03_GOLD_SERVING.md",
+  "02_GN_DW_building/04_운영 확인.md",
+  "02_GN_DW_building/05_ARCHITECTURE.md",
+  "02_GN_DW_building/06_RUNBOOK.md",
+  "02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",
+  "02_GN_DW_building/08_After_Deploy_DBT.sql",
+  "02_GN_DW_building/09_user login mfa리셋.sql",
+  "02_GN_DW_building/10_GOLD_ownership_grants_fix.sql",
+  "02_GN_DW_building/README.md",
+  "02_GN_DW_building/_archive/00_README.md",
+  "02_GN_DW_building/_archive/20_일배치테스트용.sql",
+  "02_GN_DW_building/_archive/BRONZE_GA4_stage_load_20260702.sql",
+  "02_GN_DW_building/_archive/BRONZE_RAW_load_20260703.sql",
+  "OPS.sql",
+  "SECURITY.sql",
+  "TEARDOWN.sql",
+  "setup_20260702.sql",
+  "dbt_build.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

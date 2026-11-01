@@ -91,7 +91,7 @@ def main() -> int:
                 }
             )
 
-    out = pathlib.Path("/workspace/30_output_share/_o122_alias_census.csv")
+    out = pathlib.Path("/workspace/60_share/61_output_share/_o122_alias_census.csv")
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["layer", "model", "lineno", "class", "source_name", "alias", "path"])

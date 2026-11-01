@@ -22,7 +22,7 @@ GN_DW BRONZE 노출 감사 스크립트.
   ▶ **정본 실행은 `scripts/run_bronze_audit_host.py` (호스트 러너)** 를 사용한다.
     - dbt 모델 SQL 을 직접 스캔 → 하드코딩/실적재를 모델 스코프로 정확히 판정
     - 계보 매핑 LINEAGE_MAP: (BRONZE 테이블 × 컬럼) → (GOLD 컬럼 × 모델)
-    - 산출물을 workspace 30_output_share/ 에 직접 기록 (md·csv·xlsx)
+    - 산출물을 workspace 60_share/61_output_share/ 에 직접 기록 (md·csv·xlsx)
     - 실행: python3 scripts/run_bronze_audit_host.py <snowflake_sql_execute 캐시디렉터리>
 
   본 파일은 커널에서 Snowpark 로 컬럼 인벤토리를 확인하는 보조 용도로 유지한다.

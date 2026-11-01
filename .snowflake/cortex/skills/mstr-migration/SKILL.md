@@ -5,7 +5,7 @@ description: "MSTR(MicroStrategy · 구 SQL Server mart) 리포트를 GN_DW.MSTR
 
 # MSTR 리포트 이관 (배치 단위)
 
-정본 도구 = `15_MSTR 이관 PoC/tools/` · 🔴 **사용법·변환 규칙·함정의 정본은 `tools/README.md` 다**(이 스킬은 순서·멈춤·금지만 정한다 — 규칙을 여기 복사하지 않는다).
+정본 도구 = `20_build/25_mstr_migration/tools/` · 🔴 **사용법·변환 규칙·함정의 정본은 `tools/README.md` 다**(이 스킬은 순서·멈춤·금지만 정한다 — 규칙을 여기 복사하지 않는다).
 1차 사례 = `manifests/1차.json`(결정 X1~X3 · K1~K3 · baseline 202601) · 작업계획 = `MSTR_1차이관_Snowflake전환_작업계획.md`.
 
 ## 전제 (착수 전 확인)
@@ -23,7 +23,7 @@ description: "MSTR(MicroStrategy · 구 SQL Server mart) 리포트를 GN_DW.MSTR
 
 ### Step 2. deps (무변경)
 ```
-cd "15_MSTR 이관 PoC/tools"
+cd 20_build/25_mstr_migration/tools
 python3 mstr_pipeline.py manifests/<batch>.json --steps deps
 ```
 - ⚠ 로 출력된 미결정 객체를 `objects`(이관) 또는 `evidence`+`decisions`(제외) 로 분류한다.
@@ -36,7 +36,7 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deps
 - 판단(제외·NULL·타입 확대)은 전부 매니페스트 `decisions` 에 `id`·`object`·`action`·`effect`·`basis` 로 남긴다.
 
 ### Step 4. gen (무변경 · 파일)
-`--steps gen` → `snowflake 적용 ddl/` 산출 · 한 줄 2000자 가드(`python3 scripts/line_len.py`).
+`--steps gen` → `snowflake_적용_ddl/` 산출 · 한 줄 2000자 가드(`python3 scripts/line_len.py`).
 **⚠️ STOP**: 라이브 배포 전 사용자 승인.
 
 ### Step 5. deploy → run → verify (🔴 라이브)
@@ -48,13 +48,13 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deploy,run,verify --ym <
 - 배포 후 `mstr_deploy.py manifests/<batch>.json --check` = 매니페스트 ↔ 라이브 일치.
 
 ### Step 6. SV · Agent 배선
-- 서빙뷰 + SV DDL = `05_SV-Agent_ai/23_MSTR_SV_DDL.sql` 형식(파일 단독 실행 · 🔴 `USE ROLE GN_DW_ADMIN` 부터).
-- 도구 추가 = `cortex_project/agents/AGENT_{MEMBER,MARKETING,EXECUTIVE}/agent_spec.yaml` → `05_SV-Agent_ai/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3] · 패치 예 = `tmp/o207_agent_patch.py`.
+- 서빙뷰 + SV DDL = `20_build/23_sv_agent/_archive/23_MSTR_SV_DDL.sql` 형식(파일 단독 실행 · 🔴 `USE ROLE GN_DW_ADMIN` 부터).
+- 도구 추가 = `20_build/28_cortex_project/agents/AGENT_{MEMBER,MARKETING,EXECUTIVE}/agent_spec.yaml` → `20_build/23_sv_agent/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3] · 패치 예 = `tmp/o207_agent_patch.py`.
 - 🟢 [O207 · 2026-10-07 · 사용자 결정 C안 → O207-C AGENT_MSTR 은퇴] MSTR 도구(analyst_mstr_spnsr_dvlp · SV_MSTR_SPNSR_DVLP)는 AGENT_MEMBER·AGENT_MARKETING·AGENT_EXECUTIVE 에 배선돼 있고 개발 실적·목표·연도말 전망의 정본이다. AGENT_MSTR 는 DROP 됐다(스펙 사본 = _archive/agent_spec.yaml.O207-C-retire-agent-mstr).
-- Agent 정의 = `05_SV-Agent_ai/09_0_AGENT_정의서.md`.
+- Agent 정의 = `20_build/23_sv_agent/09_0_AGENT_정의서.md`.
 - ~~🔴 **[O203 · 사용자 결정 2026-10-06] 다른 Agent 배선은 A안(붙이지 않음)이 현행이다.**~~ ➔ 폐기(O207) — 아래 3줄의 질문은 더 하지 않는다. MSTR 도구는 AGENT_MSTR 에만 있고 AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선되지 않았다.
   ⇒ 이 단계에 오면 **사용자에게 반드시 묻는다**: 「MSTR 결과는 아직 AGENT_MSTR 에만 배선돼 있습니다(A안). 회원 분석(AGENT_MEMBER)에도 붙이는 B안으로 전환할까요?」
-  · B안 선택 시 = AGENT_MEMBER 스펙에 SV_MSTR_* 도구 추가 + 답변마다 「MSTR 기준」 표기 문구를 사용자에게 받는다 · 선택지 원문 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md` 요청 1.
+  · B안 선택 시 = AGENT_MEMBER 스펙에 SV_MSTR_* 도구 추가 + 답변마다 「MSTR 기준」 표기 문구를 사용자에게 받는다 · 선택지 원문 = `20_build/23_sv_agent/41_현업요청서_MSTR반영_누계개발.md` 요청 1.
   · 답이 없으면 A안 유지(임의 전환 금지).
 **⚠️ STOP**: B안 전환 여부 질문 · CoWork UI 스모크는 사용자(트라이얼 계정은 Agent NL 실행 불가).
 
@@ -74,6 +74,6 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deploy,run,verify --ym <
 
 ## Output
 
-배치 매니페스트(결정 포함) · `snowflake 적용 ddl/` · 라이브 `GN_DW.MSTR` 객체 + baseline · 서빙뷰·SV·Agent 도구 · 기록 3곳.
+배치 매니페스트(결정 포함) · `snowflake_적용_ddl/` · 라이브 `GN_DW.MSTR` 객체 + baseline · 서빙뷰·SV·Agent 도구 · 기록 3곳.
 
 _Co-authored with CoCo · O200-D (O197-A-1 ③ 스킬화)_

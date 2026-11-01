@@ -1,0 +1,90 @@
+{
+ "group": "50_handover/",
+ "start": "2026-10-31 11:40:06",
+ "moved": [
+  "70_후속 프로젝트 인계용/00_README_N07.md",
+  "70_후속 프로젝트 인계용/01_RBAC_골격.sql",
+  "70_후속 프로젝트 인계용/02_dbt_골격.md",
+  "70_후속 프로젝트 인계용/03_SV_Agent_작성규칙.md",
+  "70_후속 프로젝트 인계용/04_모니터링_SQL.sql",
+  "70_후속 프로젝트 인계용/05_인수인계문서_규약.md",
+  "70_후속 프로젝트 인계용/readme.md",
+  "88_인계요청/00_README.md",
+  "88_인계요청/인계요청.md",
+  "88_인계요청/05_SV-Agent_ai/00_README.md",
+  "88_인계요청/05_SV-Agent_ai/07_평가셋_eval.md",
+  "88_인계요청/10_dbt_pipeline/00_README.md",
+  "88_인계요청/10_dbt_pipeline/dbt_build_fact_ad_performance_budget.sql",
+  "88_인계요청/10_dbt_pipeline/profiles.yml",
+  "88_인계요청/scripts/00_README.md",
+  "88_인계요청/scripts/env_capture.py",
+  "88_인계요청/scripts/sv_identifier_gate.py",
+  "98_현업요청인수인계/00_README.md",
+  "98_현업요청인수인계/20261028_강지영_발송이력_알림톡클릭_회신.md",
+  "98_현업요청인수인계/20261028_김나경_알림톡열람_발송구분_회신.md",
+  "98_현업요청인수인계/20261028_마케팅Agent_피드백_회신.md",
+  "98_현업요청인수인계/현업요청인수인계목록.csv",
+  "98_현업요청인수인계/현업요청인수인계목록.md",
+  "98_현업요청인수인계/현업요청인수인계목록.xlsx",
+  "문서실행순서.md",
+  "문서실행순서_llm실행.md",
+  "문서실행순서_보조주석.md",
+  "문서실행순서_운영계_LLM실행카드.md"
+ ],
+ "subst": [
+  [
+   "scripts/line_len.py",
+   1
+  ],
+  [
+   "scripts/run_sql_block.py",
+   2
+  ],
+  [
+   "00_WORKSPACE_MAP.md",
+   8
+  ],
+  [
+   "30_operate/32_agent_improvement/tools/00_README.md",
+   1
+  ],
+  [
+   "30_operate/33_account_bootstrap/readme.md",
+   2
+  ],
+  [
+   "50_handover/54_handover_requests/00_README.md",
+   1
+  ],
+  [
+   "50_handover/54_handover_requests/05_SV-Agent_ai/00_README.md",
+   1
+  ],
+  [
+   "50_handover/54_handover_requests/10_dbt_pipeline/00_README.md",
+   1
+  ],
+  [
+   "50_handover/54_handover_requests/scripts/00_README.md",
+   1
+  ],
+  [
+   "50_handover/55_business_req_handover/00_README.md",
+   1
+  ],
+  [
+   "95_작업기록_인수인계정제/_backup_85_원본_20261021/00_INDEX_산출물목록.md",
+   2
+  ],
+  [
+   "05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql",
+   2
+  ]
+ ],
+ "errors": [],
+ "lost": [],
+ "old_left": [],
+ "new_missing": [],
+ "residual": [],
+ "end": "2026-10-31 11:40:44"
+}

@@ -6,7 +6,7 @@
 🔴🔴 `--apply` 없이는 **아무것도 실행하지 않는다**(실행될 문장 전문만 보여준다).
 
 왜 필요한가
-    `문서실행순서.md` 기존 환경 갱신 43~47·52 는 파일 **전체가 아니라 [D…] 블록 단위**로 실행한다.
+    `50_handover/50_execution_order/문서실행순서.md` 기존 환경 갱신 43~47·52 는 파일 **전체가 아니라 [D…] 블록 단위**로 실행한다.
     블록 경계(어디서 시작해 어디서 끝나는가)를 사람·LLM 이 눈으로 고르면 틀린다 —
     특히 저가형 모델은 다음 블록까지 이어 실행하거나 앞 블록을 빠뜨린다.
     ⇒ 경계를 **파일의 표지 줄**로 기계가 정한다.
@@ -32,7 +32,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 MARK = re.compile(r'^--\s*\[((?:D\d[\w-]*)|(?:\d[\w-]*))\]')
-#: 운영계 원천 보호(`문서실행순서_llm실행.md` §1 · 실행기 SRC_WRITE 와 같은 식) — dry-run 에서도 검사한다.
+#: 운영계 원천 보호(`50_handover/50_execution_order/문서실행순서_llm실행.md` §1 · 실행기 SRC_WRITE 와 같은 식) — dry-run 에서도 검사한다.
 SRC_WRITE = re.compile(r'^\s*(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|COPY\s+INTO|DROP|'
                        r'CREATE\s+OR\s+REPLACE\s+(TRANSIENT\s+)?TABLE|ALTER\s+TABLE)\b[^;]*\bBRONZE_',
                        re.I | re.S)

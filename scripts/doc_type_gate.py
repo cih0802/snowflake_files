@@ -70,7 +70,7 @@ EXTRA_DOCS = [
     #     O165 는 `doc_heading_gate.DOCS` **한 곳만** 넣었다(같은 결함의 자기 재발).
     #     ⇒ 이 편입은 그 나머지 3곳(여기 · `doc_line_length_gate.CANON` · `doc_census.SINGLES`)의 하나다.
     #     🔴 원장 §0 유형 등재표에도 행을 넣어야 축1 이 통과한다(선언 분모 ↔ 실재 분모는 짝이다).
-    '60_repeat_어카운트시작/11_O누적작업_점검_재현_절차.md',
+    '30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차.md',
 ]
 
 MAX_LINES = 300

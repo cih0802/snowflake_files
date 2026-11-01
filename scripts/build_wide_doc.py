@@ -9,7 +9,7 @@ import re
 ROOT = '/workspace'
 WIDE_DIR = os.path.join(ROOT, '10_dbt_pipeline', 'models', 'gold', 'wide')
 YML_PATH = os.path.join(WIDE_DIR, '_wide_schema.yml')
-OUT_PATH = os.path.join(ROOT, '03_top-down_gold', '09_빅테이블 VIEW.md')
+OUT_PATH = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블_VIEW.md')
 
 sys.path.insert(0, os.path.join(ROOT, 'scripts'))
 from sfconn import conn, q
@@ -493,7 +493,7 @@ def main():
     a(f'> 🟢 **물리 정본 위치**: `10_dbt_pipeline/models/gold/wide/*.sql` (dbt view 모델 {NV}종) 및 `_wide_schema.yml`')
     a('> 🛠️ **자동 생성/동기화 도구**: `python3 scripts/build_wide_doc.py` (dbt 모델 변경 시 이 정의서를 자동 갱신)')
     a(f'> 🔍 **정합성 전수 검증 게이트**: `python3 scripts/verify_wide_doc.py` (Live Snowflake ↔ dbt SQL ↔ 이 문서 간 전 컬럼 100% 일치 검증)')
-    a('> 📊 **자동 계보 매핑 산출물**: `30_output_share/04_컬럼계보매핑.md` (BRONZE→SILVER→GOLD→WIDE 역방향 실측 계보)')
+    a('> 📊 **자동 계보 매핑 산출물**: `60_share/61_output_share/04_컬럼계보매핑.md` (BRONZE→SILVER→GOLD→WIDE 역방향 실측 계보)')
     a('')
     a('---')
     a('')

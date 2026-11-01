@@ -1,0 +1,62 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 12_agent개선과제/output/raw — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 38개 · 하위 폴더 0개 · 하위 전체 파일 38개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `Q01_AGENT_MEMBER.json` | 316KB | 2026-10-31 | - | {"tag": "Q01_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 310.7, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q02_AGENT_MEMBER.json` | 48KB | 2026-10-31 | - | {"tag": "Q02_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 78.9, "raw": "{\"content\":[{\"thinking\":{\"text\":\"\… |
+| `Q03_AGENT_MEMBER.json` | 119KB | 2026-10-31 | - | {"tag": "Q03_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 120.7, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q04_AGENT_MEMBER.json` | 212KB | 2026-10-31 | - | {"tag": "Q04_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 228.9, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q05_AGENT_MEMBER.json` | 114KB | 2026-10-31 | - | {"tag": "Q05_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 161.1, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q06_AGENT_MEMBER.json` | 239KB | 2026-10-31 | - | {"tag": "Q06_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 316.2, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q07_AGENT_MEMBER.json` | 309KB | 2026-10-31 | - | {"tag": "Q07_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 423.5, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q08_AGENT_MEMBER.json` | 117KB | 2026-10-31 | - | {"tag": "Q08_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 112.2, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q09_AGENT_MEMBER.json` | 151KB | 2026-10-31 | - | {"tag": "Q09_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 169.6, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q10A_AGENT_MEMBER.json` | 164KB | 2026-10-31 | - | {"tag": "Q10A_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 117.7, "raw": "{\"content\":[{\"thinking\":{\"text\":\… |
+| `Q10B_AGENT_MEMBER.json` | 61KB | 2026-10-31 | - | {"tag": "Q10B_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 86.1, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q12A_AGENT_MEMBER.json` | 139KB | 2026-10-31 | - | {"tag": "Q12A_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 174.2, "raw": "{\"content\":[{\"thinking\":{\"text\":\… |
+| `Q12B_AGENT_MEMBER.json` | 74KB | 2026-10-31 | - | {"tag": "Q12B_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 83.9, "raw": "{\"content\":[{\"thinking\":{\"text\":\"… |
+| `Q14A_AGENT_MEMBER.json` | 270KB | 2026-10-31 | - | {"tag": "Q14A_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 154.1, "raw": "{\"content\":[{\"thinking\":{\"text\":\… |
+| `Q14B_AGENT_MEMBER.json` | 95KB | 2026-10-31 | - | {"tag": "Q14B_AGENT_MEMBER", "agent": "AGENT_MEMBER", "ok": true, "error": "", "sec": 114.8, "raw": "{\"content\":[{\"thinking\":{\"text\":\… |
+| `Q16_AGENT_MARKETING.json` | 31KB | 2026-10-31 | - | {"tag": "Q16_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 31.6, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q17_AGENT_MARKETING.json` | 33KB | 2026-10-31 | - | {"tag": "Q17_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 34.2, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q18_AGENT_MARKETING.json` | 73KB | 2026-10-31 | - | {"tag": "Q18_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 63.5, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q19_AGENT_MARKETING.json` | 40KB | 2026-10-31 | - | {"tag": "Q19_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 39.9, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q20_AGENT_MARKETING.json` | 4KB | 2026-10-31 | - | {"tag": "Q20_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 26.5, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q21_AGENT_MARKETING.json` | 73KB | 2026-10-31 | - | {"tag": "Q21_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 67.7, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q22_AGENT_MARKETING.json` | 66KB | 2026-10-31 | - | {"tag": "Q22_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 152.6, "raw": "{\"content\":[{\"thinking\":{\"tex… |
+| `Q23_AGENT_MARKETING.json` | 55KB | 2026-10-31 | - | {"tag": "Q23_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 63.3, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q24_AGENT_MARKETING.json` | 59KB | 2026-10-31 | - | {"tag": "Q24_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 76.8, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q25_AGENT_MARKETING.json` | 114KB | 2026-10-31 | - | {"tag": "Q25_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 82.0, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q26_AGENT_MARKETING.json` | 2KB | 2026-10-31 | - | {"tag": "Q26_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 13.3, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q27_AGENT_MARKETING.json` | 3KB | 2026-10-31 | - | {"tag": "Q27_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 16.6, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q28_AGENT_MARKETING.json` | 2KB | 2026-10-31 | - | {"tag": "Q28_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 18.3, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q29_AGENT_MARKETING.json` | 2KB | 2026-10-31 | - | {"tag": "Q29_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 16.5, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q30_AGENT_MARKETING.json` | 3KB | 2026-10-31 | - | {"tag": "Q30_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 19.1, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q31_AGENT_MARKETING.json` | 35KB | 2026-10-31 | - | {"tag": "Q31_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 631.9, "raw": "{\"content\":[{\"thinking\":{\"tex… |
+| `Q32_AGENT_EXECUTIVE.json` | 45KB | 2026-10-31 | - | {"tag": "Q32_AGENT_EXECUTIVE", "agent": "AGENT_EXECUTIVE", "ok": true, "error": "", "sec": 37.1, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q32_AGENT_MARKETING.json` | 74KB | 2026-10-31 | - | {"tag": "Q32_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 48.4, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q33_AGENT_MARKETING.json` | 3KB | 2026-10-31 | - | {"tag": "Q33_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 26.0, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q34_AGENT_EXECUTIVE.json` | 37KB | 2026-10-31 | - | {"tag": "Q34_AGENT_EXECUTIVE", "agent": "AGENT_EXECUTIVE", "ok": true, "error": "", "sec": 29.8, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q34_AGENT_MARKETING.json` | 33KB | 2026-10-31 | - | {"tag": "Q34_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 28.7, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q35_AGENT_MARKETING.json` | 39KB | 2026-10-31 | - | {"tag": "Q35_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 30.5, "raw": "{\"content\":[{\"thinking\":{\"text… |
+| `Q36_AGENT_MARKETING.json` | 75KB | 2026-10-31 | - | {"tag": "Q36_AGENT_MARKETING", "agent": "AGENT_MARKETING", "ok": true, "error": "", "sec": 61.3, "raw": "{\"content\":[{\"thinking\":{\"text… |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

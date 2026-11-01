@@ -19,7 +19,7 @@ import sys, os, re, io
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sv_code_label_gate import load_live, is_enum_target, enumerated_values
 
-ROOT = '/workspace/05_SV-Agent_ai'
+ROOT = '/workspace/20_build/23_sv_agent'
 SV_FILE = {
     'SV_MEMBER_MONTHLY':      '05_1_SV_DDL_MEMBER_MONTHLY.sql',
     'SV_MEMBER_EVENT':        '05_2_SV_DDL_MEMBER_EVENT.sql',

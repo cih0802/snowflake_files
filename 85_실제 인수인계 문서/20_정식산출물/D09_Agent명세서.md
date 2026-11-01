@@ -5,7 +5,7 @@ version: 1.0
 as_of: 2026-10-30 (도구 수 = D09 csv 재생성 · O270 W3 반영 · 버전은 운영계 실측)
 source_docs:
   - 라이브 DESCRIBE AGENT · SHOW GRANTS ON AGENT · SHOW AGENTS IN SNOWFLAKE INTELLIGENCE (정본)
-  - cortex_project/agents/*/agent_spec.yaml (spec 정본 파일 · 80번 04_SV_Agent_스펙 과 해시 동일 · DR-20)
+  - 20_build/28_cortex_project/agents/*/agent_spec.yaml (spec 정본 파일 · 80번 04_SV_Agent_스펙 과 해시 동일 · DR-20)
   - 01_실행순서_배포SQL/05_SV-Agent_ai/09_2_AGENT_버전업.sql (배포 절차)
 source_queries:
   - DESCRIBE AGENT 3종 spec 파싱(2026-10-20 실행) · A6 Q07(버전)

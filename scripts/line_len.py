@@ -46,7 +46,7 @@ def main():
     ap.add_argument('--soft', type=int, default=SOFT)
     ap.add_argument('--quiet-soft', action='store_true',
                     help='권고 임계 초과는 출력하지 않는다')
-    # 🆕 [O268] 원래 CP949 인 현업 교환 파일(예: 98_현업요청인수인계/현업요청인수인계목록.csv)용 **명시 인자**.
+    # 🆕 [O268] 원래 CP949 인 현업 교환 파일(예: 50_handover/55_business_req_handover/현업요청인수인계목록.csv)용 **명시 인자**.
     #   🔴 기본값은 UTF-8 그대로다 — 자동 추정(UTF-8 실패 시 CP949 재시도)을 넣으면 **UTF-8 부분 write 손상이
     #   CP949 로 우연히 풀려 PASS** 할 수 있다(C5 검출력 상실). 인코딩은 호출자가 그 파일에 대해 밝힌다.
     ap.add_argument('--encoding', default='utf-8',

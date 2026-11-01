@@ -3,11 +3,11 @@
 """gen_unresolved_issue_summary.py — 미해결 이슈 요약을 **정본에서 추출해** 산출물로 낸다.
 # Co-authored with CoCo
 
-[2026-08-30 O124 신설 · 인수인계 「30_output_share 미생산 5종 방향 결정」의 참조 구현]
+[2026-08-30 O124 신설 · 인수인계 「60_share/61_output_share 미생산 5종 방향 결정」의 참조 구현]
 
 🔴 왜 필요한가
 --------------------------------------------------------------------------
-`30_output_share/미해결이슈_요약_O102.md` 는 **손으로 쓴 산출물**이었고, 그 결과
+`60_share/61_output_share/미해결이슈_요약_O102.md` 는 **손으로 쓴 산출물**이었고, 그 결과
 ① 파일명에 세션 라벨(`_O102`)이 박혀 판본이 늘어나고
 ② 본문이 즉시 stale 이 됐다. O124 착수 시점 실측 = **2행이 거짓**이었다:
   · 「`decision_closure_gate` `DEC-41`(6)·`DEC-42`(7) 미봉합 인용처 13건」
@@ -30,7 +30,7 @@
 사용
 --------------------------------------------------------------------------
     python3 scripts/gen_unresolved_issue_summary.py           # stdout 미리보기
-    python3 scripts/gen_unresolved_issue_summary.py --write   # 30_output_share/11_… 생성
+    python3 scripts/gen_unresolved_issue_summary.py --write   # 60_share/61_output_share/11_… 생성
 """
 
 import argparse
@@ -40,7 +40,7 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, '30_output_share', '11_미해결이슈_요약.md')
+OUT = os.path.join(ROOT, '60_share/61_output_share', '11_미해결이슈_요약.md')
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from session_brief import (family_lines, open_sections, open_tasks,   # noqa: E402

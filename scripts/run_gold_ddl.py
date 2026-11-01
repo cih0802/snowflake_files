@@ -18,7 +18,7 @@ conn = snowflake.connector.connect(
 )
 cur = conn.cursor()
 
-ddl = open("/workspace/03_top-down_gold/06_DDL.sql", encoding="utf-8").read()
+ddl = open("/workspace/10_design/11_gold_topdown/06_DDL.sql", encoding="utf-8").read()
 
 # Split into statements by semicolon (skip USE, SHOW, pure-comment blocks)
 stmts = []
@@ -32,7 +32,7 @@ for raw in ddl.split(";"):
     stmts.append(sql)
 
 GEN = "scripts/run_gold_ddl.py"
-print(f"[실행기(생성기): {GEN}] source DDL = /workspace/03_top-down_gold/06_DDL.sql")
+print(f"[실행기(생성기): {GEN}] source DDL = /workspace/10_design/11_gold_topdown/06_DDL.sql")
 print(f"Executing {len(stmts)} statements...")
 errors = 0
 for i, stmt in enumerate(stmts, 1):

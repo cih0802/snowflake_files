@@ -22,6 +22,58 @@ from pathlib import Path
 OUT = Path(__file__).resolve().parent
 ROOT = OUT.parent
 
+# 🆕 [O275-G · 사용자 결정 A안 2026-11-01] 워크스페이스 재편(O275) 변환 계층.
+#   80 사본의 내부 경로(`파일경로` · 서브폴더 아래 구조)는 **재편 전 이름을 유지**한다(80 = 고정 영역).
+#   원본을 읽을 때만 MOVE_MAP 으로 새 위치를 찾는다(옛 → 새) · `원본경로` 열 = 실제 원본(새 경로).
+#   실행순서 3종 사본은 본문 경로를 옛 이름으로 되돌린다(새 → 옛) — 80 내부 구조와 문서 경로가 일치해야 한다.
+#   MANIFEST 는 옛 경로로 둔다(80 구조의 정의이기 때문이다).
+import csv as _csv
+_FWD, _REV = {}, {}
+for _mm in ("MOVE_MAP_files.csv", "MOVE_MAP.csv"):
+    _p = ROOT / _mm
+    if _p.exists():
+        for _r in _csv.DictReader(open(_p, encoding="utf-8-sig")):
+            _o, _n = _r["old_path"], _r["new_path"]
+            if _o and _n and _o != _n and _r["action"] in ("move", "rename", "archive"):
+                _FWD.setdefault(_o, _n)
+                _REV.setdefault(_n, _o)
+_FWD_KEYS = sorted(_FWD, key=len, reverse=True)
+_REV_KEYS = sorted(_REV, key=len, reverse=True)
+
+
+def to_new(rel: str) -> str:
+    """옛 상대경로(또는 glob) → 새 상대경로. 정확 일치 → 폴더 접두(끝 '/') 순."""
+    if rel in _FWD:
+        return _FWD[rel]
+    for k in _FWD_KEYS:
+        if k.endswith("/") and (rel + "/" == k or rel.startswith(k)):
+            return _FWD[k].rstrip("/") if rel + "/" == k else _FWD[k] + rel[len(k):]
+    return rel
+
+
+def to_old(rel: str) -> str:
+    """새 상대경로 → 옛 상대경로(80 사본 내부 경로)."""
+    if rel in _REV:
+        return _REV[rel]
+    for k in _REV_KEYS:
+        if k.endswith("/") and rel.startswith(k):
+            return _REV[k] + rel[len(k):]
+    return rel
+
+
+_TXT_REV = re.compile(r"(?:(?<=^)|(?<=[\s/`(\'\"=]))(" + "|".join(re.escape(k) for k in _REV_KEYS if "/" in k) + ")", re.M) if _REV_KEYS else None
+
+
+def text_to_old(text: str) -> str:
+    """실행순서 본문의 새 경로를 옛 이름으로(80 사본 전용). 폴더 없는 루트 파일 행은 건드리지 않는다."""
+    return _TXT_REV.sub(lambda m: _REV[m.group(1)], text) if _TXT_REV else text
+
+
+#: 본문을 옛 경로로 되돌리는 80 사본(실행순서 3종 · 원본은 50_handover/50_execution_order/)
+EXEC_DOCS = {"문서실행순서.md", "문서실행순서_llm실행.md", "문서실행순서_보조주석.md"}
+#: 본문 역변환 대상 확장자(데이터 csv·xlsx·html 은 제외 — 값이지 경로 지시가 아니다)
+REV_TEXT_EXT = {".md", ".sql", ".py", ".yml", ".yaml", ".sh", ".txt"}
+
 # 공통 제외 (경로 세그먼트 또는 파일명 glob)
 EXCLUDE = ["_archive", "__pycache__", "*.pyc", "target", "logs", ".user.yml",
            "profiles.yml", ".DS_Store",
@@ -123,7 +175,7 @@ READ_ORDER = [
 #   .sql = clean80(서명·표식·계정 값 · 주석만 · 코드 동일 assert) · `mstr DDL 원본/` 제외
 #   .yml = `#` 주석의 계정 값만 · .md/.csv/.html/.txt = scrub254 규칙(비운영 계정 · init_ihcho)
 # 운영계(ZL50263) 값은 남긴다. 도구 정본 = 95_작업기록_인수인계정제/tools/.
-HOOK_TOOLS = ROOT / "95_작업기록_인수인계정제" / "tools"
+HOOK_TOOLS = ROOT / to_new("95_작업기록_인수인계정제/tools")
 HEADER_KEY = re.compile(r"(?m)^-- (Purpose|Target|Run order|Depends on|Issue)\s*: ")
 
 
@@ -191,7 +243,7 @@ RUN_ORDER_LINE = re.compile(r"^\s*\d+\.\s*[^/\n]*?/([^\s`][^`\n]*?\.sql)")
 def run_order_text():
     """인수인계 대상 절만 남긴 문서실행순서 본문 — 첫 「# 」 제목 앞 머리말은 유지한다."""
     out, keep = [], True
-    for line in (ROOT / RUN_ORDER_DOC).read_text(encoding="utf-8").splitlines():
+    for line in text_to_old((ROOT / to_new(RUN_ORDER_DOC)).read_text(encoding="utf-8")).splitlines():
         if line.startswith("# "):
             keep = line[2:].strip() not in RUN_ORDER_SKIP_SECTIONS
         if keep:
@@ -213,19 +265,33 @@ def extract_run_order_sql():
 
 
 def expand(pattern: str):
-    """pattern → [(원본 절대경로, ROOT 기준 상대경로)]"""
-    hits = sorted(ROOT.glob(pattern)) if any(c in pattern for c in "*?[") else [ROOT / pattern]
+    """pattern(옛 경로 · 80 구조 정의) → [(원본 절대경로, 80 내부 상대경로 = 옛 경로)]
+    🆕 [O275-G] 원본은 MOVE_MAP 의 새 위치에서 읽고, 상대경로는 옛 이름으로 되돌린다."""
+    npat = to_new(pattern)
+    hits = sorted(ROOT.glob(npat)) if any(c in npat for c in "*?[") else [ROOT / npat]
+    # 🆕 [O275-G] glob 은 옛 경로로도 대조한다 — 재편으로 흩어진 파일(예: 루트 `PAID_재현_런북_*.md` → archive)
+    if any(c in pattern for c in "*?["):
+        hits += sorted(ROOT / _FWD[k] for k in _FWD if fnmatch.fnmatch(k, pattern) and (ROOT / _FWD[k]).exists())
     files = []
     for h in hits:
         if not h.exists():
             continue
         if h.is_dir():
+            base = to_old(str(h.relative_to(ROOT)) + "/")
             for f in sorted(h.rglob("*")):
-                rel = f.relative_to(ROOT)
+                rel = Path(to_old(str(f.relative_to(ROOT))))
+                # 🆕 [O275-G] 재편 때 루트 등에서 이 폴더로 들어온 파일은 80 구조상 이 폴더 소속이 아니다
+                if not str(rel).startswith(base):
+                    continue
+                # 🆕 [O275-G] O275 4-A 워크스페이스 폴더 안내 초안(본문 = 새 경로)은 80 사본에 넣지 않는다
+                if f.name == "00_README.md" and f.is_file() and \
+                        f.read_text(encoding="utf-8", errors="ignore")[:200].find("doc_role: 폴더 안내(README) · 자동 생성 초안") >= 0:
+                    continue
                 if f.is_file() and not excluded(rel):
                     files.append((f, rel))
         else:
-            rel = h.relative_to(ROOT)
+            rel = Path(to_old(str(h.relative_to(ROOT))))
+            # archive 로 간 원본은 경로에 `_archive` 가 생긴다 — 판정은 80 내부 경로(옛 이름)로 한다
             if not excluded(rel):
                 files.append((h, rel))
     return files
@@ -249,13 +315,24 @@ def main():
                 continue
             seen.add(key)
             rows.append({"서브폴더": sub, "파일경로": str(rel), "파일명": rel.name,
-                         "설명": desc, "원본경로": str(rel), "크기(byte)": src.stat().st_size,
+                         "설명": desc, "원본경로": str(src.relative_to(ROOT)), "크기(byte)": src.stat().st_size,
                          "_src": src})
 
     for r in rows:
         print(f"[{'COPY' if args.apply else 'PLAN'}] {r['서브폴더']}/{r['파일경로']}")
         # 문서실행순서.md 는 원본을 그대로 쓰지 않고 인수인계 대상 절만 남긴 본문을 쓴다(RUN_ORDER_SKIP_SECTIONS).
         body = run_order_text().encode("utf-8") if r["파일경로"] == RUN_ORDER_DOC else None
+        # 🆕 [O275-G] 텍스트 사본 전체의 본문 경로를 80 내부(옛 이름)로 되돌린다 — 80 구조와 본문 경로가 일치해야
+        #   「문서 경로 그대로 사용 가능」(SUBFOLDER_DESC) 이 성립한다. 원장·미결 사본(20_issue)은 이력이라 원문 그대로 둔다.
+        if body is None and r["_src"].suffix.lower() in REV_TEXT_EXT and not r["파일경로"].startswith("20_issue/"):
+            try:
+                raw = r["_src"].read_text(encoding="utf-8") if r["_src"].stat().st_size < 5_000_000 else None
+            except UnicodeDecodeError:
+                raw = None  # UTF-16 등 — 원본 바이트 그대로 복사(hook 도 같은 규칙)
+            if raw is not None:
+                rev = text_to_old(raw)
+                if rev != raw:
+                    body = rev.encode("utf-8")
         if body is not None:
             r["크기(byte)"] = len(body)
         if args.apply:

@@ -11,9 +11,9 @@
      ⇒ 지금 구조로는 다음 사고도 우연에 의존한다. 이 파일이 그 의존을 끊는다.
 
 무엇을 검사하는가
-  G  골든 대조     — `30_output_share/{04,05,06,08,09}` 의 행수·판정 분포를 고정한다.
+  G  골든 대조     — `60_share/61_output_share/{04,05,06,08,09}` 의 행수·판정 분포를 고정한다.
   T1 순서 독립     — 앵커 동점 시 판정이 뒤집히는 사고(O47-B). 삽입 순서를 섞어도 결과 동일.
-  T2 라벨 사전     — 수기 문서(`05_필드 인벤토리.md`)가 생성기 라벨 사전을 오염시키는 사고(P98).
+  T2 라벨 사전     — 수기 문서(`05_필드_인벤토리.md`)가 생성기 라벨 사전을 오염시키는 사고(P98).
                     쓰레기 라벨(상태 마커로 시작하는 주석) 색인 **0건**.
   T3 문자열 계약   — 생성기 간 출력 계약(`SV metric` 접두 · O46 §3-① · P92).
                     상수 · 05 생성기 소스 · 05 산출물 · 09 산출물 **4중 대조**.
@@ -45,9 +45,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # 🔴 샌드박스 sys.path[0] 고정 회피(P90-③)
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 GOLDEN = os.path.join(os.path.dirname(os.path.abspath(__file__)), "golden", "outputs.json")
-DOC_INV = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
+DOC_INV = os.path.join(WS, "10_design/11_gold_topdown", "05_필드_인벤토리.md")
 GEN_METRIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gen_metric_gold_mapping.py")
 
 # ── 판정 축 ────────────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ def diff(name, want, got, path=""):
 
 
 def test_golden():
-    print("[G] 골든 대조 — 30_output_share/{04,05,06,08,09} + 산출물별 측정일·기대목록")
+    print("[G] 골든 대조 — 60_share/61_output_share/{04,05,06,08,09} + 산출물별 측정일·기대목록")
     got = measure()
     # 🔴 결손·파싱 실패는 **골든 대조와 별개의 독립 불합격**이다. 골든에 담으면 「결손이 정상」이 된다.
     if got.get("_read_errors"):

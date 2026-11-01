@@ -26,8 +26,8 @@ sys.path.insert(0, "/workspace/scripts")
 from sv_unit_gate import NUM_EXEMPT  # noqa: E402  의미 예외를 1벌로 공유(O59-E 선례)
 import audit_ddl_rule7 as rule7  # noqa: E402  위반 패턴(NUM 4축)을 1벌로 공유
 
-TARGETS = sorted(glob.glob("/workspace/05_SV-Agent_ai/05_*_SV_DDL_*.sql")) + [
-    "/workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql"
+TARGETS = sorted(glob.glob("/workspace/20_build/23_sv_agent/05_*_SV_DDL_*.sql")) + [
+    "/workspace/20_build/23_sv_agent/22_ML_SV_DDL.sql"
 ]
 
 # COMMENT = '...' 의 값 구간. SV DDL 은 홑따옴표 리터럴을 쓰고 내부 이스케이프는 '' 이다.

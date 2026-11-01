@@ -1,0 +1,30 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출 — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 6개 · 하위 폴더 0개 · 하위 전체 파일 6개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `function_script.sql` | 7KB | 2026-10-31 | - | SQL: CREATE FUNCTION [dbo].[FN_MM_SPNSR_DVLP] |
+| `mstr 1차 이관 대상 쿼리.sql` | 5KB | 2026-10-31 | - | SQL: select a11.STRD_MT STRD_MT, |
+| `sp_script.sql` | 97KB | 2026-10-31 | - | SQL: CREATE PROCEDURE [mart].[USP_BCHLOG] |
+| `table_script.sql` | 11KB | 2026-10-31 | - | SQL: CREATE TABLE [mart].[F_MM_SPNSR_DVLP_SUM]( |
+| `view_script.sql` | 9KB | 2026-10-31 | - | SQL: CREATE VIEW [mart].[D_DVLP_DIV_CD] AS |
+| `갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql` | 2KB | 2026-10-31 | - | SQL: 10194 |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

@@ -67,3 +67,15 @@ Snowflake 운영 모니터링 및 AI(CoCo·CoWork·Agent·AI 함수) 사용량·
 - `CREATE SNOWFLAKE.CORE.QUOTA`는 구문검증(compile-only)을 지원하지 않는다. 실제 생성만 가능.
 
 _Co-authored with CoCo_
+
+
+## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
+
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+
+| 파일 | 크기 | 상태 | 비고 |
+|---|---|---|---|
+| `06_웨어하우스비용가드_구축.sql` | 24KB | 정본 | - |
+| `08_OPS_컬럼NULL사유_등록부_및_OPS객체목록.sql` | 11KB | 정본 | - |
+| `10_Cortex_Code_모델별_비용_비교.md` | 3KB | 정본 | - |
+| `2026-08-03_G3_코드컬럼전파_ALTER.sql` | 11KB | 정본 | - |

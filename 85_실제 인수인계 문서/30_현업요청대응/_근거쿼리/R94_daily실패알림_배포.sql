@@ -1,4 +1,4 @@
--- doc_id: R94 · A8-10 "daily" Task 실패 알림 — 🔁 2026-10-27 정본 이관: 배포 SQL 은 08_mornitoring/09_OPS_dbt경고_이메일알림_구축.sql §7
+-- doc_id: R94 · A8-10 "daily" Task 실패 알림 — 🔁 2026-10-27 정본 이관: 배포 SQL 은 30_operate/31_monitoring/09_OPS_dbt경고_이메일알림_구축.sql §7
 -- 이력: 10-27 운영계 [2-a] 시험 호출 실패(query 01c800f8-0002-403c-0001-72de08680026 · 인덱스 1,2,4~8 불허)
 --   원인 = category 인자를 'PIPELINE_ADMIN' 대신 'CHOIH' 로 호출 → 07 §4 send_alert 가 모르는 값에 필터를 안 걸어 활성 수신자 9명 전원 발송 → 미인증 7명으로 전체 실패.
 --   조치 = ① 07 §3 PIPELINE_ADMIN_RECIPIENTS 변수(운영 CHOIH · 개발 TRIALADMIN) ② 07 §4 모르는 category 거부 ③ Alert 는 09 §7 로 이관.

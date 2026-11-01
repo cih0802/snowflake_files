@@ -7,7 +7,7 @@ gen_bronze_exposure_audit.py 의 판정 로직을 호스트 환경에서 실행�
   인수 없이 → Snowflake 직접조회 (snowflake-connector-python + OAuth 토큰)
   인수 있으면 → 기존 캐시 폴백 (호환용)
 
-출력: 30_output_share/06_BRONZE노출감사.{md,csv,xlsx}
+출력: 60_share/61_output_share/06_BRONZE노출감사.{md,csv,xlsx}
 
 dbt 하드코딩 검출은 workspace 파일을 직접 스캔한다(호스트는 read 가능).
 """
@@ -17,7 +17,7 @@ from datetime import date
 # 기본은 workspace FUSE 마운트. 마운트 장애 시 스테이지에서 내려받은 사본 경로를
 # GN_DW_WS 로 지정해 동일 로직을 그대로 재현한다(입력 경로만 다르고 판정은 불변).
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 BASENAME = "06_BRONZE노출감사"
 GEN_PATH = "scripts/gen_bronze_exposure_audit.py"
 RUNNER_PATH = "scripts/run_bronze_audit_host.py"
@@ -773,8 +773,8 @@ def write_md(audit_rows, stats, hardcoded, real):
     L.append("")
     L.append("## 관련 문서")
     L.append("")
-    L.append("- `03_top-down_gold/05_필드 인벤토리.md` — 지표↔GOLD 필드 정본(P12)")
-    L.append("- `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). "
+    L.append("- `10_design/11_gold_topdown/05_필드_인벤토리.md` — 지표↔GOLD 필드 정본(P12)")
+    L.append("- `10_design/11_gold_topdown/11_BRONZE적재_컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). "
              "본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.")
     L.append("- `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단")
     L.append("")

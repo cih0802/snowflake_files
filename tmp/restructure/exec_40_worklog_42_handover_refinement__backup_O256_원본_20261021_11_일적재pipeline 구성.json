@@ -1,0 +1,14 @@
+{
+ "group": "40_worklog/42_handover_refinement/_backup_O256_원본_20261021/11_일적재pipeline 구성/",
+ "start": "2026-10-31 15:44:46",
+ "moved": [
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql",
+  "95_작업기록_인수인계정제/_backup_O256_원본_20261021/11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

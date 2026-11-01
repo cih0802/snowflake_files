@@ -82,7 +82,7 @@ CANON = [
     '99_NEXT_SESSION.md',
     #   🆕 [2026-09-16 O165-B 편입] Inspection 절차 정본 — `R1-6-18 ④` 분모 4곳 중 세 번째.
     #     🔴 O165 는 `doc_heading_gate.DOCS` 한 곳만 넣어 나머지 3곳이 비어 있었다.
-    '60_repeat_어카운트시작/11_O누적작업_점검_재현_절차.md',
+    '30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차.md',
 ]
 
 # ── [2026-08-13 O68 신설] 🔴🔴 **분모 공백 메움 — 이 게이트는 `.md` 만 보고 있었다.**
@@ -93,28 +93,28 @@ CANON = [
 #      `P202`(표면 자체의 누락) · `P224`(게이트를 볼 때는 그 게이트가 가진 축을 본다)의 재현이다.
 #   🔴 그리고 O67-B 가 센 「초과 8줄」도 **하한**이었다: 전 워크스페이스 재측정으로
 #      미편집 SV(`05_5`)에서 1줄이 더 나왔다(`P187` — 「N건」으로 끝내지 않는다).
-#   ⚠️ 대상 선정 기준 = **우리가 저작·유지하는 발행 표면**이다. 자동 생성 산출물(`30_output_share/*.csv`)과
+#   ⚠️ 대상 선정 기준 = **우리가 저작·유지하는 발행 표면**이다. 자동 생성 산출물(`60_share/61_output_share/*.csv`)과
 #      legacy·PoC 는 넣지 않는다 — 항상 빨간 게이트는 무력화된다(`P130`). 그 잔여는 원장에 등재한다.
 CANON_CODE = [
-    '05_SV-Agent_ai/05_0_SV_DDL.sql',
-    '05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql',
-    '05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql',
-    '05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql',
-    '05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql',
-    '05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql',
-    '05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql',
-    '05_SV-Agent_ai/05_07_SV_DDL_AD.sql',
-    '05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql',
-    '05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql',
-    'cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
+    '20_build/23_sv_agent/05_0_SV_DDL.sql',
+    '20_build/23_sv_agent/05_01_SV_DDL_MEMBER_MONTHLY.sql',
+    '20_build/23_sv_agent/05_02_SV_DDL_MEMBER_EVENT.sql',
+    '20_build/23_sv_agent/05_03_SV_DDL_MEMBER_COHORT.sql',
+    '20_build/23_sv_agent/05_04_SV_DDL_SERVICE.sql',
+    '20_build/23_sv_agent/05_05_SV_DDL_EVENT_PARTICIPATION.sql',
+    '20_build/23_sv_agent/05_06_SV_DDL_BUDGET.sql',
+    '20_build/23_sv_agent/05_07_SV_DDL_AD.sql',
+    '20_build/23_sv_agent/05_08_SV_DDL_DEV_ACHIEVEMENT.sql',
+    '20_build/23_sv_agent/05_09_SV_DDL_MEMBER_FEE.sql',
+    '20_build/28_cortex_project/agents/AGENT_MEMBER/agent_spec.yaml',
     # 🔴 [2026-09-10 O154 시정] 종전 `AGENT_OVERALL` 은 **개명으로 소멸한 경로**였다
     #   (O152·O153 이 `AGENT_EXECUTIVE` 로 개명했으나 이 분모를 함께 고치지 않았다).
     #   ⇒ 게이트가 「대상 파일 부재 1건」으로 **blocking FAIL** 을 내고 있었고, 그 결과
     #     `위반 0건` 인데도 rc=1 이라 **진짜 위반과 분모 stale 을 구별할 수 없었다**(`R1-6-25` 축).
-    'cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
-    'cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
-    '03_top-down_gold/06_DDL.sql',
-    '04_silver_design/08_SILVER_테이블DDL_20260714.sql',
+    '20_build/28_cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml',
+    '20_build/28_cortex_project/agents/AGENT_MARKETING/agent_spec.yaml',
+    '10_design/11_gold_topdown/06_DDL.sql',
+    '10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql',
     '10_dbt_pipeline/models/gold/wide/_wide_schema.yml',
     '10_dbt_pipeline/models/gold/_gold_ready_schema.yml',
 ]
@@ -129,7 +129,7 @@ CANON_CODE = [
 #      개별 파일명을 손으로 추가하는 방식은 새 파일이 생길 때마다 빠지므로(3세션 연속 재현)
 #      **glob 패턴**으로 선언한다 — 파일이 늘면 분모가 자동으로 따라온다.
 #   ⚠️ 제외 기준은 그대로다(`P130` — 항상 빨간 게이트는 무력화된다):
-#      자동 생성 산출물(`30_output_share/*.csv` 등) · `_archive` · `logs` · legacy·PoC.
+#      자동 생성 산출물(`60_share/61_output_share/*.csv` 등) · `_archive` · `logs` · legacy·PoC.
 #   🟢 착수 전 실측(2026-08-13): 확장 후보 **149파일 전부 2,000자 초과 0 · 1,000자 관측 0**
 #      ⇒ 넓혀도 FAIL 이 나지 않는다(부분 확장이 아니라 일괄이므로 통과 착시가 아니다).
 CANON_GLOB = [
@@ -149,9 +149,9 @@ CANON_GLOB = [
     #   O76 의 209 와 정확히 일치하지 않을 수 있다(그 시점 이후 파일이 늘었다).
     # 🔴 교훈 = `C7` — 동시 편집 환경에서 discard 는 「내 변경 취소」가 아니라
     #   **그 파일의 미커밋 변경 전부 취소**이며 타 세션 작업까지 지운다.
-    'cortex_project/agents/*/agent_spec.yaml',    # Agent 스펙 (P229 — 신설 2파일이 분모 밖이었다)
-    '03_top-down_gold/*.sql',                     # GOLD DDL 정본
-    '05_SV-Agent_ai/*.md',                        # SV·Agent 설계 정본군
+    '20_build/28_cortex_project/agents/*/agent_spec.yaml',    # Agent 스펙 (P229 — 신설 2파일이 분모 밖이었다)
+    '10_design/11_gold_topdown/*.sql',                     # GOLD DDL 정본
+    '20_build/23_sv_agent/*.md',                        # SV·Agent 설계 정본군
     # ── [2026-08-18 O82-C → 2026-08-28 O108 교체] 조각 분할 산출물 ─────────
     # 🔴 `split_doc.py` 가 정본을 허브 + `-001…-0NN` 조각으로 나누면 CANON 정적 목록은
     #   **허브만** 가리키므로 조각이 검사 밖으로 빠진다. 조각도 사람이 읽는 정본이고
@@ -165,9 +165,9 @@ CANON_GLOB = [
     #   ⇒ 그 조각도 사람이 읽는 정본이므로 편입한다(`R1-6-18 ④` 분모 4곳 중 이 게이트분).
     #   🟢 `00_guides/*_조각/` 로 두면 이후 다른 가이드를 분할해도 자동 추종한다.
     '00_guides/*_조각/*-[0-9][0-9][0-9].md',      # 00_guides 폴더 조각
-    # 🆕 [2026-10-24 O261] `60_repeat_어카운트시작/11_O누적작업…` 분할 ⇒ 조각·사이드카 편입(`R1-6-18 ④`).
-    '60_repeat_어카운트시작/*_조각/*-[0-9][0-9][0-9].md',
-    '60_repeat_어카운트시작/*_조각/00_선택표.md',
+    # 🆕 [2026-10-24 O261] `30_operate/33_account_bootstrap/11_O누적작업…` 분할 ⇒ 조각·사이드카 편입(`R1-6-18 ④`).
+    '30_operate/33_account_bootstrap/*_조각/*-[0-9][0-9][0-9].md',
+    '30_operate/33_account_bootstrap/*_조각/00_선택표.md',
     # 🆕 🔴🔴 [2026-09-17 O170] **조각 폴더 사이드카**(`00_선택표.md`) 편입.
     #   🔴 왜 = 위 패턴은 `-NNN.md` 만 보므로 사이드카가 **분모 밖**이었고
     #     `doc_census.split_denominator_check()` 가 **「조각 1개가 줄길이 분모 밖이다」로 11건** 잡았다

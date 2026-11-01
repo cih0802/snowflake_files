@@ -19,9 +19,9 @@
 import re, sys, io, glob
 
 DEFAULT_FILES = sorted(
-    glob.glob('05_SV-Agent_ai/05_*.sql') +
-    glob.glob('05_SV-Agent_ai/22_ML_SV_DDL.sql') +
-    glob.glob('05_SV-Agent_ai/09_*.sql')
+    glob.glob('20_build/23_sv_agent/05_*.sql') +
+    glob.glob('20_build/23_sv_agent/22_ML_SV_DDL.sql') +
+    glob.glob('20_build/23_sv_agent/09_*.sql')
 )
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 FILES = args if args else DEFAULT_FILES

@@ -36,7 +36,7 @@ SELECT G.DVLP_DIV_CD, G.N AS GATE_N, X.N, G.MBR AS GATE_MBR, X.MBR, G.CNT AS GAT
 FROM G LEFT JOIN X ON G.DVLP_DIV_CD = X.DVLP_DIV_CD
 ORDER BY 1;
 
--- Q05 평가셋(05_SV-Agent_ai/07_평가셋_eval.md · 기대값 2026-08-10 O57 스냅샷) 단일값 문항 재실행
+-- Q05 평가셋(20_build/23_sv_agent/07_평가셋_eval.md · 기대값 2026-08-10 O57 스냅샷) 단일값 문항 재실행
 --   판정 = |실측 − 기대| ≤ 0.01(비율·1,000 미만) 또는 ≤ 0.5(건·원). 🔴 FAIL 은 「결함」이 아니라 「기대값과 다름」이다 — 원인 분류는 N05 §4.
 WITH r AS (
     SELECT 'M1' AS ID, 895178309108::FLOAT AS EXP, (SELECT TOTAL_PAID_ALL FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_MEMBER_MONTHLY METRICS TOTAL_PAID_ALL))::FLOAT AS ACT

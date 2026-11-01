@@ -23,7 +23,7 @@
 | 5 | `sv_enum_newvalue_gate.py [--out 파일.csv]` | 라이브 | 정기 점검(월 1회 권장) · 원천 신규 값 유입 의심 시 |
 
 - SV 폴더 자동 탐지 = `../../01_실행순서_배포SQL/05_SV-Agent_ai/`(사본) · 다르면 `--sv-dir <폴더>`.
-- 사본에서 MSTR SV 정본(`15_MSTR 이관 PoC/…/05_MSTR_SV_DDL.sql`)이 없으면 그 파일만 🟠 건너뛴다.
+- 사본에서 MSTR SV 정본(`20_build/25_mstr_migration/…/05_MSTR_SV_DDL.sql`)이 없으면 그 파일만 🟠 건너뛴다.
 - 접속 없이 사용법 확인 = 각 도구 `--help`.
 
 ## 3. 종료코드

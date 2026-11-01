@@ -5,7 +5,7 @@ version: 1.0
 as_of: 2026-10-21 (운영계 ZL50263 · B1 캡처)
 source_docs:
   - 라이브 SHOW IMPORTED KEYS / PRIMARY KEYS IN DATABASE GN_DW (정본)
-  - 03_top-down_gold/06_DDL.sql (GOLD 테이블 · FK 선언 정본 · 참고)
+  - 10_design/11_gold_topdown/06_DDL.sql (GOLD 테이블 · FK 선언 정본 · 참고)
 source_queries:
   - 85_실제 인수인계 문서/_근거쿼리/B1_구조_근거.sql (Q03-1 · Q03-2)
   - 생성 = python3 scripts/b_struct_build.py <계정> → D05_FK관계.csv · D05_ERD_GOLD_자동생성.md

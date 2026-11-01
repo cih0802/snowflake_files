@@ -1,0 +1,12 @@
+{
+ "group": "20_build/25_mstr_migration/tools/manifests/",
+ "start": "2026-10-31 15:50:57",
+ "moved": [
+  "15_MSTR 이관 PoC/tools/manifests/00_README.md",
+  "15_MSTR 이관 PoC/tools/manifests/1차.json",
+  "15_MSTR 이관 PoC/tools/manifests/1차_deps.json"
+ ],
+ "subst": [],
+ "errors": [],
+ "lost": []
+}

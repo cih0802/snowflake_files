@@ -5,8 +5,8 @@ table_ddl_column_gate.py — DDL 선언 ↔ dbt 모델 SELECT 컬럼 대조 게�
 Co-authored with CoCo
 
 검사 대상:
-  - GOLD 37개 테이블 (models/gold/ ↔ 03_top-down_gold/06_DDL.sql)
-  - SILVER 42개 테이블 (models/silver/ ↔ 04_silver_design/08_SILVER_테이블DDL_20260714.sql)
+  - GOLD 37개 테이블 (models/gold/ ↔ 10_design/11_gold_topdown/06_DDL.sql)
+  - SILVER 42개 테이블 (models/silver/ ↔ 10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql)
 """
 import io
 import os
@@ -17,8 +17,8 @@ from pathlib import Path
 sys.path.insert(0, '/workspace/scripts')
 import sfconn  # noqa: E402
 
-GOLD_DDL = '/workspace/03_top-down_gold/06_DDL.sql'
-SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+GOLD_DDL = '/workspace/10_design/11_gold_topdown/06_DDL.sql'
+SILVER_DDL = '/workspace/10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql'
 
 AUDIT_SQL = ("'{src}' AS DW_SOURCE_SYSTEM,\n"
              "CURRENT_TIMESTAMP()::TIMESTAMP_NTZ AS DW_LOAD_TS,\n"

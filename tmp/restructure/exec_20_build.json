@@ -1,0 +1,487 @@
+{
+ "group": "20_build/",
+ "start": "2026-10-31 18:00:10",
+ "moved": [
+  "02_GN_DW_building/00_INDEX.md",
+  "02_GN_DW_building/01_환경 Role.md",
+  "02_GN_DW_building/02_DB_BRONZE_SILVER.md",
+  "02_GN_DW_building/03_GOLD_SERVING.md",
+  "02_GN_DW_building/04_운영 확인.md",
+  "02_GN_DW_building/05_ARCHITECTURE.md",
+  "02_GN_DW_building/06_RUNBOOK.md",
+  "02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql",
+  "02_GN_DW_building/08_After_Deploy_DBT.sql",
+  "02_GN_DW_building/09_user login mfa리셋.sql",
+  "02_GN_DW_building/10_GOLD_ownership_grants_fix.sql",
+  "02_GN_DW_building/README.md",
+  "02_GN_DW_building/_archive/00_README.md",
+  "02_GN_DW_building/_archive/20_일배치테스트용.sql",
+  "02_GN_DW_building/_archive/BRONZE_GA4_stage_load_20260702.sql",
+  "02_GN_DW_building/_archive/BRONZE_RAW_load_20260703.sql",
+  "05_SV-Agent_ai/00_README.md",
+  "05_SV-Agent_ai/00_SV_공통지시문.md",
+  "05_SV-Agent_ai/01_SV-Agent 작업계획.md",
+  "05_SV-Agent_ai/02_SERVING_setup.sql",
+  "05_SV-Agent_ai/03_SV_metric_배속.md",
+  "05_SV-Agent_ai/04_SV_설계.md",
+  "05_SV-Agent_ai/05_01_SV_DDL_MEMBER_MONTHLY.sql",
+  "05_SV-Agent_ai/05_02_SV_DDL_MEMBER_EVENT.sql",
+  "05_SV-Agent_ai/05_03_SV_DDL_MEMBER_COHORT.sql",
+  "05_SV-Agent_ai/05_04_SV_DDL_SERVICE.sql",
+  "05_SV-Agent_ai/05_05_SV_DDL_EVENT_PARTICIPATION.sql",
+  "05_SV-Agent_ai/05_06_SV_DDL_BUDGET.sql",
+  "05_SV-Agent_ai/05_07_SV_DDL_AD.sql",
+  "05_SV-Agent_ai/05_08_SV_DDL_DEV_ACHIEVEMENT.sql",
+  "05_SV-Agent_ai/05_09_SV_DDL_MEMBER_FEE.sql",
+  "05_SV-Agent_ai/05_0_SV_DDL.sql",
+  "05_SV-Agent_ai/05_10_SV_DDL_MEMBER_SPONSOR_BIZ.sql",
+  "05_SV-Agent_ai/05_11_SV_DDL_TARGET_BIZ.sql",
+  "05_SV-Agent_ai/05_12_SV_DDL_RELATION_ACTIVITY.sql",
+  "05_SV-Agent_ai/05_13_SV_DDL_DEPT_AGGR.sql",
+  "05_SV-Agent_ai/05_14_SV_DDL_MEMBER_MONTHLY_KPI.sql",
+  "05_SV-Agent_ai/05_15_SV_DDL_GA_BEHAVIOR.sql",
+  "05_SV-Agent_ai/05_16_SV_DDL_BUDGET_YEARLY.sql",
+  "05_SV-Agent_ai/05_17_SV_DDL_MEMBER_STATUS_ASOF.sql",
+  "05_SV-Agent_ai/05_18_SV_DDL_MEMBER_SERVICE_COHORT.sql",
+  "05_SV-Agent_ai/05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql",
+  "05_SV-Agent_ai/05_20_SV_DDL_GA_SESSION.sql",
+  "05_SV-Agent_ai/05_21_SV_DDL_SEARCH_CONSOLE.sql",
+  "05_SV-Agent_ai/05_22_SV_DDL_GA_DEMOGRAPHIC.sql",
+  "05_SV-Agent_ai/05_23_SV_DDL_EXPENSE_RESOLUTION.sql",
+  "05_SV-Agent_ai/05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql",
+  "05_SV-Agent_ai/05_25_SV_DDL_CAMPAIGN_MONTHLY.sql",
+  "05_SV-Agent_ai/05_26_SV_DDL_GA_CHILD_UNPAID.sql",
+  "05_SV-Agent_ai/05_27_SV_DDL_AD_INFLOW_ALLOC.sql",
+  "05_SV-Agent_ai/05_28_SV_DDL_MEMBER_EVENT_COHORT.sql",
+  "05_SV-Agent_ai/05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql",
+  "05_SV-Agent_ai/05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql",
+  "05_SV-Agent_ai/05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql",
+  "05_SV-Agent_ai/05_SV_DDL_설계이력_부록.md",
+  "05_SV-Agent_ai/06_검증쿼리_VQR.md",
+  "05_SV-Agent_ai/07_평가셋_eval.md",
+  "05_SV-Agent_ai/08_AGENT_spec.md",
+  "05_SV-Agent_ai/09_0_AGENT_spec_구현.sql",
+  "05_SV-Agent_ai/09_0_AGENT_정의서.md",
+  "05_SV-Agent_ai/09_1_AGENT_생성.sql",
+  "05_SV-Agent_ai/09_2_AGENT_버전업.sql",
+  "05_SV-Agent_ai/09_3_AGENT_중단보존.sql",
+  "05_SV-Agent_ai/10_SI연결_검증.md",
+  "05_SV-Agent_ai/11_거버넌스_운영.md",
+  "05_SV-Agent_ai/12_paid_테스트_실행가이드.md",
+  "05_SV-Agent_ai/13_SV_AD_배포_추가작업.sql",
+  "05_SV-Agent_ai/14_코멘트_표준화_작업계획.md",
+  "05_SV-Agent_ai/20_ML_SV_설계.md",
+  "05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql",
+  "05_SV-Agent_ai/21_ML_SERVING_뷰_설계이력_부록.md",
+  "05_SV-Agent_ai/22_ML_SV_DDL.sql",
+  "05_SV-Agent_ai/23_ML_INC_MKTG_CMPGN_DDL.sql",
+  "05_SV-Agent_ai/24_ML_REALTIME_SIMULATOR_DDL.sql",
+  "05_SV-Agent_ai/25_ML_CHURN_CMPGN_CTGR_DDL.sql",
+  "05_SV-Agent_ai/26_BIZ_DEFINITION_CORPUS_DDL_적재.sql",
+  "05_SV-Agent_ai/27_DEPLOY_FORMULA_ALIGN.sql",
+  "05_SV-Agent_ai/28_DEPLOY_G1_RESOLVE.sql",
+  "05_SV-Agent_ai/29_DEPLOY_G1_REMAINDER.sql",
+  "05_SV-Agent_ai/30_DEPLOY_DATA_ANOMALY.sql",
+  "05_SV-Agent_ai/30_마케팅_AGENT_설계.md",
+  "05_SV-Agent_ai/31_O241_AB병기_SV배선_작업계획.md",
+  "05_SV-Agent_ai/32_DEPLOY_AB_DUAL_SV_WIRING.sql",
+  "05_SV-Agent_ai/33_DEPLOY_PROD_ROUNDING_VQR.sql",
+  "05_SV-Agent_ai/34_DEPLOY_SV_ML_FALLBACK_NOTE.sql",
+  "05_SV-Agent_ai/35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql",
+  "05_SV-Agent_ai/36_DEPLOY_ML_PRED_7AXIS.sql",
+  "05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql",
+  "05_SV-Agent_ai/38_DEPLOY_MAP_SEEDS.sql",
+  "05_SV-Agent_ai/39_DEPLOY_SILVER_ORG_CLEAN.sql",
+  "05_SV-Agent_ai/40_ML예측질문_답변가능성_검토.md",
+  "05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md",
+  "05_SV-Agent_ai/42_DEPLOY_AGENCY_AD_SRC_RENAME.sql",
+  "05_SV-Agent_ai/43_DEPLOY_AGENCY_UPPER_CMPGN_SPLIT.sql",
+  "05_SV-Agent_ai/44_DEPLOY_CATEGORY_GOLD.sql",
+  "05_SV-Agent_ai/45_DEPLOY_SEND_GBN_AT_OPEN.sql",
+  "05_SV-Agent_ai/46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql",
+  "05_SV-Agent_ai/47_DEPLOY_FINAL_AD_COST.sql",
+  "05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql",
+  "05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql",
+  "05_SV-Agent_ai/49_DEPLOY_CORPUS_SCOPE_O270.sql",
+  "05_SV-Agent_ai/50_RBAC_APP_OWNER_USER_ASSIGN.sql",
+  "05_SV-Agent_ai/51_FIX_PROD_BUILD_ZL50263.sql",
+  "05_SV-Agent_ai/52_FIX_PROD_MANAGED_ACCESS_OPS_SILVER_ZL50263.sql",
+  "05_SV-Agent_ai/53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql",
+  "05_SV-Agent_ai/54_DEPLOY_CORPUS_O273.sql",
+  "05_SV-Agent_ai/99_next_prompt.md",
+  "05_SV-Agent_ai/AGENT_연결객체_메타데이터.xlsx",
+  "05_SV-Agent_ai/AGENT_원천계보_BRONZE까지.xlsx",
+  "05_SV-Agent_ai/_archive/00_README.md",
+  "05_SV-Agent_ai/_archive/00_SV-Agent 작업계획_legacy.md",
+  "05_SV-Agent_ai/_archive/05_24b_대사_CAMPAIGN_CUM_STOP.sql",
+  "05_SV-Agent_ai/_archive/05_25b_대사_CAMPAIGN_MONTHLY.sql",
+  "05_SV-Agent_ai/_archive/05_SV_DDL_ORIGINAL_BACKUP_20260805.sql",
+  "05_SV-Agent_ai/_archive/09_AGENT_spec_구현_원본_20260722.sql",
+  "05_SV-Agent_ai/_archive/13_SV_AD_배포_추가작업_원본_20260728.sql",
+  "05_SV-Agent_ai/_archive/15_O183_GOLD공란채움_배포.sql",
+  "05_SV-Agent_ai/_archive/1_SV_metric 배속.md",
+  "05_SV-Agent_ai/_archive/22_ML_SV_DDL_pre_O198.sql",
+  "05_SV-Agent_ai/_archive/23_MSTR_SV_DDL.sql",
+  "05_SV-Agent_ai/_archive/24_MSTR_AGENT_배포.sql",
+  "05_SV-Agent_ai/코멘트_룰_전수조사_결과.xlsx",
+  "09_streamlit 권한 설정/00_README.md",
+  "09_streamlit 권한 설정/analyst-selfservice-streamlit.md",
+  "11_일적재pipeline 구성/00_README.md",
+  "11_일적재pipeline 구성/00_개요_및_실행순서.md",
+  "11_일적재pipeline 구성/01_스키마생성_및_구조복제.sql",
+  "11_일적재pipeline 구성/02_권한부여_LOADER_ENGINEER_ADMIN.sql",
+  "11_일적재pipeline 구성/03_일배치_TASK_스케줄.sql",
+  "11_일적재pipeline 구성/04_LOADER_임시권한_CALL_DBT.sql",
+  "11_일적재pipeline 구성/04_LOADER_임시권한_SP_EXEC_MONTH_END.sql",
+  "15_MSTR 이관 PoC/00_README.md",
+  "15_MSTR 이관 PoC/10_MSTR_일일적재_dbt연동_준비.md",
+  "15_MSTR 이관 PoC/MSTR_1차이관_Snowflake전환_작업계획.md",
+  "15_MSTR 이관 PoC/mstr DDL 원본/00_README.md",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/00_README.md",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/function_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/mstr 1차 이관 대상 쿼리.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/sp_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/table_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/view_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/1차 이관대상 관련 추출/갱신 없는 ExplCampList 테이블의 join용 캠페인코드 정보.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/function_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/sp_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/table_script.sql",
+  "15_MSTR 이관 PoC/mstr DDL 원본/view_script.sql",
+  "15_MSTR 이관 PoC/mstr-answer.csv",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/00_README.md",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/00_mstr_schema_role.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/01_table_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/02_view_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/03_function_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/04_sp_script.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/05_MSTR_SV_DDL.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/06_MSTR_적재_실행.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/07_MSTR_일일적재_TASK.sql",
+  "15_MSTR 이관 PoC/snowflake 적용 ddl/90_mstr_1차_이관_대상_쿼리.sql",
+  "15_MSTR 이관 PoC/tools/README.md",
+  "15_MSTR 이관 PoC/tools/__pycache__/mstr_common.cpython-312.pyc",
+  "15_MSTR 이관 PoC/tools/__pycache__/mstr_verify.cpython-312.pyc",
+  "15_MSTR 이관 PoC/tools/manifests/00_README.md",
+  "15_MSTR 이관 PoC/tools/manifests/1차.json",
+  "15_MSTR 이관 PoC/tools/manifests/1차_deps.json",
+  "15_MSTR 이관 PoC/tools/mstr_common.py",
+  "15_MSTR 이관 PoC/tools/mstr_deploy.py",
+  "15_MSTR 이관 PoC/tools/mstr_deps.py",
+  "15_MSTR 이관 PoC/tools/mstr_extract.py",
+  "15_MSTR 이관 PoC/tools/mstr_gen.py",
+  "15_MSTR 이관 PoC/tools/mstr_load_answer.py",
+  "15_MSTR 이관 PoC/tools/mstr_pipeline.py",
+  "15_MSTR 이관 PoC/tools/mstr_verify.py",
+  "15_MSTR 이관 PoC/tools/templates/00_README.md",
+  "15_MSTR 이관 PoC/tools/templates/1차_04_sp_script.tmpl.sql",
+  "15_MSTR 이관 PoC/tools/templates/1차_verify.sql",
+  "15_MSTR 이관 PoC/답안체크용 쿼리.sql",
+  "15_MSTR 이관 PoC/스킬_MSTR_검증결과.md",
+  "15_MSTR 이관 PoC/스킬_MSTR_검증쿼리.sql",
+  "15_MSTR 이관 PoC/스킬_MSTR_비교항목.md",
+  "17_MSTR통한 메달리온 보완/00_README.md",
+  "17_MSTR통한 메달리온 보완/00_작업계획.md",
+  "17_MSTR통한 메달리온 보완/01_MSTR_SP_인벤토리.md",
+  "17_MSTR통한 메달리온 보완/03_규칙카드_A1.md",
+  "17_MSTR통한 메달리온 보완/tools/00_README.md",
+  "17_MSTR통한 메달리온 보완/tools/sp_inventory.py",
+  "OPS.sql",
+  "SECURITY.sql",
+  "TEARDOWN.sql",
+  "cortex_project/00_README.md",
+  "cortex_project/_archive/00_README.md",
+  "cortex_project/_archive/AGENT_EXECUTIVE.agent.yaml",
+  "cortex_project/_archive/AGENT_EXECUTIVE.agent_spec.yaml.O235-before",
+  "cortex_project/_archive/AGENT_GUIDE.agent_spec_RETIRED_20261008.yaml",
+  "cortex_project/_archive/AGENT_MARKETING.agent.yaml",
+  "cortex_project/_archive/AGENT_MARKETING.agent_STALE_20260821.yaml",
+  "cortex_project/_archive/AGENT_MARKETING.agent_spec.yaml.O235-before",
+  "cortex_project/_archive/AGENT_MEMBER.agent.yaml",
+  "cortex_project/_archive/AGENT_MEMBER.agent_STALE_20260804.yaml",
+  "cortex_project/_archive/AGENT_MEMBER.agent_STALE_20260821.yaml",
+  "cortex_project/_archive/AGENT_MEMBER.agent_spec.yaml.O235-before",
+  "cortex_project/_archive/AGENT_MEMBER.agent_spec_BAK_20261001.yaml",
+  "cortex_project/_archive/AGENT_OVERALL.agent_DUPLICATE_20260804.yaml",
+  "cortex_project/_archive/agent_executive_eval_20261007_155611.eval.yaml",
+  "cortex_project/_archive/agent_executive_eval_o208c_v3.eval.yaml",
+  "cortex_project/_archive/agent_executive_eval_o209_x6.eval.yaml",
+  "cortex_project/_archive/agent_marketing_eval_o209_after.eval.yaml",
+  "cortex_project/_archive/agent_marketing_eval_o209_before.eval.yaml",
+  "cortex_project/_archive/agent_member_eval_o209_v10.eval.yaml",
+  "cortex_project/_archive/agent_member_eval_o209_v11.eval.yaml",
+  "cortex_project/_archive/agent_member_eval_o209_v12.eval.yaml",
+  "cortex_project/_archive/cortex-project.yaml.O235-before",
+  "cortex_project/_archive/o211_executive_eval.eval.yaml",
+  "cortex_project/_archive/o211_executive_eval_v2.eval.yaml",
+  "cortex_project/_archive/o211_marketing_eval.eval.yaml",
+  "cortex_project/_archive/o211_marketing_eval_v2.eval.yaml",
+  "cortex_project/_archive/o211_member_eval.eval.yaml",
+  "cortex_project/agents/AGENT_EXECUTIVE/agent_spec.yaml",
+  "cortex_project/agents/AGENT_MARKETING/agent_spec.yaml",
+  "cortex_project/agents/AGENT_MEMBER/agent_spec.yaml",
+  "cortex_project/cortex-project.yaml",
+  "dbt_build.sql",
+  "setup_20260702.sql"
+ ],
+ "subst": [
+  [
+   "scripts/README_운영도구.md",
+   1
+  ],
+  [
+   "scripts/_o155_rename_scan.py",
+   2
+  ],
+  [
+   "scripts/_o169_axis1_biwi.py",
+   1
+  ],
+  [
+   "scripts/agent_object_ref_gate.py",
+   1
+  ],
+  [
+   "scripts/agent_source_lineage_gate.py",
+   2
+  ],
+  [
+   "scripts/agent_tool_claim_gate.py",
+   1
+  ],
+  [
+   "scripts/b_struct_build.py",
+   2
+  ],
+  [
+   "scripts/campaign_axis_gate.py",
+   1
+  ],
+  [
+   "scripts/doc_headings.json",
+   2
+  ],
+  [
+   "scripts/doc_line_length_gate.py",
+   15
+  ],
+  [
+   "scripts/eval_expectation_gate.py",
+   10
+  ],
+  [
+   "scripts/extract_sv_deploy.py",
+   1
+  ],
+  [
+   "scripts/gen_concept_diagram.py",
+   1
+  ],
+  [
+   "scripts/gen_metric_gold_mapping.py",
+   3
+  ],
+  [
+   "scripts/mirror_from_stage.sh",
+   2
+  ],
+  [
+   "scripts/nl_routing_smoke.py",
+   3
+  ],
+  [
+   "scripts/o125_layer_census.py",
+   3
+  ],
+  [
+   "scripts/o70_stale_scan.py",
+   3
+  ],
+  [
+   "scripts/rbac_source_gate.py",
+   1
+  ],
+  [
+   "scripts/rename_stale_gate.py",
+   3
+  ],
+  [
+   "scripts/sv_common_block_gate.py",
+   3
+  ],
+  [
+   "scripts/sv_identifier_gate.py",
+   3
+  ],
+  [
+   "scripts/sv_no_rollup_gate.py",
+   4
+  ],
+  [
+   "scripts/test_agent_object_ref_gate.py",
+   2
+  ],
+  [
+   "scripts/test_agent_source_lineage_gate.py",
+   2
+  ],
+  [
+   "scripts/test_doc_coord_gate.py",
+   2
+  ],
+  [
+   "scripts/test_o125_layer_census.py",
+   1
+  ],
+  [
+   "scripts/test_sv_identifier_gate.py",
+   4
+  ],
+  [
+   "scripts/ws_stage_verify.py",
+   4
+  ],
+  [
+   "scripts/golden/doc_headings.json",
+   2
+  ],
+  [
+   "00_guides/00_작업지침_세션운영규칙.md",
+   2
+  ],
+  [
+   "00_WORKSPACE_MAP.md",
+   22
+  ],
+  [
+   "70_reference/71_poc_backup/README.md",
+   1
+  ],
+  [
+   "70_reference/72_sample_legacy/README.md",
+   1
+  ],
+  [
+   "10_design/11_gold_topdown/00_README.md",
+   1
+  ],
+  [
+   "10_design/12_silver_design/00_README.md",
+   1
+  ],
+  [
+   "10_design/12_silver_design/_archive/README.md",
+   1
+  ],
+  [
+   "30_operate/32_agent_improvement/output/00_README.md",
+   2
+  ],
+  [
+   "50_handover/53_followup_project/00_README_N07.md",
+   2
+  ],
+  [
+   "50_handover/54_handover_requests/00_README.md",
+   1
+  ],
+  [
+   "20_build/21_env_rbac/00_INDEX.md",
+   3
+  ],
+  [
+   "20_build/21_env_rbac/README.md",
+   2
+  ],
+  [
+   "20_build/21_env_rbac/_archive/00_README.md",
+   1
+  ],
+  [
+   "20_build/23_sv_agent/00_README.md",
+   8
+  ],
+  [
+   "20_build/23_sv_agent/09_1_AGENT_생성.sql",
+   10
+  ],
+  [
+   "20_build/23_sv_agent/09_2_AGENT_버전업.sql",
+   14
+  ],
+  [
+   "20_build/23_sv_agent/30_DEPLOY_DATA_ANOMALY.sql",
+   3
+  ],
+  [
+   "20_build/23_sv_agent/32_DEPLOY_AB_DUAL_SV_WIRING.sql",
+   4
+  ],
+  [
+   "20_build/23_sv_agent/37_DEPLOY_ORG_SUCCESSION.sql",
+   1
+  ],
+  [
+   "20_build/23_sv_agent/_archive/00_README.md",
+   1
+  ],
+  [
+   "20_build/24_daily_load_pipeline/00_README.md",
+   2
+  ],
+  [
+   "20_build/25_mstr_migration/00_README.md",
+   1
+  ],
+  [
+   "20_build/25_mstr_migration/mstr_DDL_원본/00_README.md",
+   1
+  ],
+  [
+   "20_build/25_mstr_migration/mstr_DDL_원본/1차_이관대상_관련_추출/00_README.md",
+   1
+  ],
+  [
+   "20_build/25_mstr_migration/snowflake_적용_ddl/00_README.md",
+   1
+  ],
+  [
+   "20_build/25_mstr_migration/tools/README.md",
+   2
+  ],
+  [
+   "20_build/25_mstr_migration/tools/manifests/00_README.md",
+   1
+  ],
+  [
+   "20_build/25_mstr_migration/tools/templates/00_README.md",
+   1
+  ],
+  [
+   "20_build/26_mstr_medallion/00_README.md",
+   1
+  ],
+  [
+   "20_build/26_mstr_medallion/tools/00_README.md",
+   1
+  ],
+  [
+   "20_build/27_streamlit_auth/00_README.md",
+   1
+  ],
+  [
+   "20_build/28_cortex_project/00_README.md",
+   1
+  ],
+  [
+   "20_build/28_cortex_project/_archive/00_README.md",
+   9
+  ]
+ ],
+ "errors": [],
+ "lost": [],
+ "old_left": [],
+ "new_missing": [],
+ "residual": [],
+ "end": "2026-10-31 18:00:37"
+}

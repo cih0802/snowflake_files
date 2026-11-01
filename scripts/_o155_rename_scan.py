@@ -68,10 +68,10 @@ def walk(base):
 
 
 def main():
-    targets = sys.argv[1:] or ['30_output_share', '03_top-down_gold', '05_SV-Agent_ai',
-                               '10_dbt_pipeline', '04_silver_design', '20_issue',
-                               '99_NEXT_SESSION_조각', '00_guides', 'cortex_project',
-                               '60_repeat_어카운트시작']
+    targets = sys.argv[1:] or ['60_share/61_output_share', '10_design/11_gold_topdown', '20_build/23_sv_agent',
+                               '10_dbt_pipeline', '10_design/12_silver_design', '20_issue',
+                               '99_NEXT_SESSION_조각', '00_guides', '20_build/28_cortex_project',
+                               '30_operate/33_account_bootstrap']
     bad, ok, scanned = [], 0, 0
     for t in targets:
         base = os.path.join(ROOT, t)
@@ -105,7 +105,7 @@ def main():
     #   ㉡ append형 이력·승계된 인수인계 절 = ⚪ **소급 수정 대상이 아니다**(`R1-3-6` 축)
     #   ㉢ 자동 생성 산출물(CSV·MD 인벤토리) = 🟠 **재생성으로 해소**한다(손으로 고치지 않는다)
     HIST = ('20_issue/01_세션이력', '99_NEXT_SESSION_조각', '20_issue/90_해소완료_로그',
-            '20_issue/91_사고사례집', '60_repeat_어카운트시작')
+            '20_issue/91_사고사례집', '30_operate/33_account_bootstrap')
     GENERATED = ('02_SILVER 스키마 컬럼 인벤토리', '02_gold 스키마 컬럼 인벤토리',
                  '04_컬럼계보매핑', '05_지표GOLD매핑', '06_BRONZE노출감사',
                  '08_SILVER→GOLD_보존율', '09_보고서필드_조립가능성', '09_섹션배너',

@@ -18,7 +18,7 @@ from sfconn import conn
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # noqa: E402
 from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
 
-DDL = '/workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql'
+DDL = '/workspace/20_build/23_sv_agent/22_ML_SV_DDL.sql'
 SKIP_TOKEN = 'SV_ML_MEMBER_RISK'
 
 

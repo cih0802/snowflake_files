@@ -103,8 +103,8 @@ SHOW IMPORTED KEYS IN SCHEMA GN_DW.GOLD;
 
 CFG = {
     'silver': dict(
-        ddl=f'{ROOT}/04_silver_design/08_SILVER_테이블DDL_20260714.sql',
-        appendix=f'{ROOT}/04_silver_design/08_SILVER_DDL_설계이력_부록.md',
+        ddl=f'{ROOT}/10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql',
+        appendix=f'{ROOT}/10_design/12_silver_design/08_SILVER_DDL_설계이력_부록.md',
         schema='SILVER', header=HEADER_SILVER,
         groups=[('CRM', 'CRM_'), ('ERP', 'ERP_'), ('AGENCY', 'AGENCY_'), ('BIGQUERY', 'BIGQUERY_'),
                 ('IDENTITY', 'IDENTITY_')],
@@ -140,8 +140,8 @@ CFG = {
         },
     ),
     'gold': dict(
-        ddl=f'{ROOT}/03_top-down_gold/06_DDL.sql',
-        appendix=f'{ROOT}/03_top-down_gold/06_DDL_설계이력_부록.md',
+        ddl=f'{ROOT}/10_design/11_gold_topdown/06_DDL.sql',
+        appendix=f'{ROOT}/10_design/11_gold_topdown/06_DDL_설계이력_부록.md',
         schema='GOLD', header=HEADER_GOLD,
         # 사람 판정(O192): CREATE 문안이 O190 에서 개정됐고 ALTER 는 O188-E 옛 문안 · 타입 동일
         stale_alter_ok={('FACT_TARGET_PROJECT', 'SRC_SPONSOR_BIZ_NM'), ('FACT_TARGET_PROJECT', 'NEW_OLD_DIV_NM'),

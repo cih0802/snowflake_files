@@ -18,13 +18,13 @@ GN_DW 데이터 계보(lineage) 산출물 생성기 — **전량 실측 파생**
 업무 의미는 **WIDE 모델 post_hook 의 컬럼 COMMENT** 에서 가져온다 — 그것이 배포 객체에 실제로
 붙는 문장이고 이슈 교정(O34·O38·O39 …)이 반영되는 유일한 정본이다.
 
-출력: 30_output_share/04_컬럼계보매핑.{md,csv,xlsx}
+출력: 60_share/61_output_share/04_컬럼계보매핑.{md,csv,xlsx}
 """
 import csv, os, re, sys, json, collections
 from datetime import date
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 BASENAME = "04_컬럼계보매핑"
 GEN_PATH = "scripts/gen_column_mapping.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())

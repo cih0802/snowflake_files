@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""30번 산출물 운영계 실측용 근거 SQL 생성 — `30_output_share/_근거쿼리/S30_census.sql`
+"""30번 산출물 운영계 실측용 근거 SQL 생성 — `60_share/61_output_share/_근거쿼리/S30_census.sql`
 
 🔴 분류 = `GEN`. 산출물은 자동 생성물이다 — 손으로 고치지 말고 이 스크립트를 다시 돌린다.
 
@@ -11,7 +11,7 @@
 사용법(개발계에서 생성 → 운영계에서 실행)
     python3 scripts/gen_s30_census_sql.py            # 개발계 카탈로그 기준으로 SQL 생성
     # 운영계 워크스페이스에서:
-    python3 scripts/env_capture.py --id S30 --out-root "30_output_share/_ENV" "30_output_share/_근거쿼리/S30_census.sql"
+    python3 scripts/env_capture.py --id S30 --out-root "60_share/61_output_share/_ENV" "60_share/61_output_share/_근거쿼리/S30_census.sql"
     python3 scripts/s30_census_to_json.py ZL50263    # csv → census json + 개발계 대조표
 
 블록 구성
@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sfconn import conn, q  # noqa: E402
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(WS, '30_output_share', '_근거쿼리', 'S30_census.sql')
+OUT = os.path.join(WS, '60_share/61_output_share', '_근거쿼리', 'S30_census.sql')
 CENSUS_SCHEMAS = ('GOLD', 'SILVER', 'SERVING')  # census_columns.py 와 동일 범위
 ALL_SCHEMAS = ('BRONZE_CRM', 'BRONZE_AGENCY', 'BRONZE_ERP', 'BRONZE_BIGQUERY', 'BRONZE_GA4', 'BRONZE_GSC',
                'SILVER', 'GOLD', 'SERVING')
@@ -85,7 +85,7 @@ def main():
     lines = [
         '-- doc_id: S30 · 30번 산출물 운영계 실측 근거(읽기 전용) · 생성기 = scripts/gen_s30_census_sql.py',
         '-- 생성 기준 = %s 카탈로그 %s · census 대상 %d 테이블 · 손으로 고치지 않는다' % (acct[0][0], acct[0][1], len(trows)),
-        '-- 실행 = python3 scripts/env_capture.py --id S30 --out-root "30_output_share/_ENV" "30_output_share/_근거쿼리/S30_census.sql"',
+        '-- 실행 = python3 scripts/env_capture.py --id S30 --out-root "60_share/61_output_share/_ENV" "60_share/61_output_share/_근거쿼리/S30_census.sql"',
         '-- Q01 전 계층 테이블 목록·행수',
         "SELECT table_schema, table_name, table_type, row_count, last_altered FROM GN_DW.INFORMATION_SCHEMA.TABLES "
         "WHERE table_schema IN (%s) ORDER BY 1, 2;" % sch_in,

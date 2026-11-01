@@ -87,9 +87,9 @@ def main():
         ('20_issue/01_세션이력_조각/01_세션이력-004.md', 'HIST'),
         ('99_NEXT_SESSION_조각/99_NEXT_SESSION-030.md', 'HIST'),
         ('20_issue/_o154_evidence.md', 'HIST'),
-        ('30_output_share/02_gold 스키마 컬럼 인벤토리_20260904.csv', 'GEN'),
+        ('60_share/61_output_share/02_gold 스키마 컬럼 인벤토리_20260904.csv', 'GEN'),
         ('20_issue/00_BRIEF.md', 'GEN'),
-        ('30_output_share/01_DW_현업활용가이드.md', 'LIVE'),
+        ('60_share/61_output_share/01_DW_현업활용가이드.md', 'LIVE'),
         ('10_dbt_pipeline/models/gold/wide/WIDE_MEMBER_FEE.sql', 'LIVE'),
         # 🆕 O169 — 골든·측정 스냅샷은 소급 수정 대상이 아니다(축3 취급).
         ('scripts/golden/doc_headings.json', 'HIST'),
@@ -98,7 +98,7 @@ def main():
         ('scripts/doc_headings.json', 'HIST'),
         ('scripts/index_rows.json', 'HIST'),
         # 🔴 역방향 = 재생성이 실제로 듣는 산출물은 GEN 을 유지해야 한다.
-        ('30_output_share/09_보고서필드_조립가능성_x.md', 'GEN'),
+        ('60_share/61_output_share/09_보고서필드_조립가능성_x.md', 'GEN'),
         ('20_issue/92_실측필요_후속작업.md', 'GEN'),
     ]
     wrong = [(r, G.bucket(r), exp) for r, exp in cases if G.bucket(r) != exp]

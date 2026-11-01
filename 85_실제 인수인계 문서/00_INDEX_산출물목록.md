@@ -61,10 +61,10 @@ status: review
 | N04 | 배치 SLA · 스케줄 | `N04_배치SLA_스케줄정의서.md` · `.csv` | `_근거쿼리/N04_배치SLA_근거.sql` | review |
 | N05 | 테스트 결과서 | `N05_테스트결과서.md` · `.xlsx` | `_근거쿼리/N05_테스트결과_근거.sql` · `scripts/n05_report_build.py` | review |
 | N06 | 비용 산정 · 용량 계획 | `N06_비용산정_용량계획서.md` | `_근거쿼리/N06_비용_근거.sql` | review(월 추정 TBD) |
-| N07 | 범용 표준 템플릿 | `70_후속 프로젝트 인계용/`(6파일) — 목록은 아래 §3 | GN_DW 원본(각 파일 머리) | review |
+| N07 | 범용 표준 템플릿 | `50_handover/53_followup_project/`(6파일) — 목록은 아래 §3 | GN_DW 원본(각 파일 머리) | review |
 | N08 | 사업 완료 보고서 | `N08_사업완료보고서.md` · `.html` | `_근거쿼리/N08_완료보고_근거.sql` | review |
 
-## 3. N07 패키지 (`70_후속 프로젝트 인계용/`)
+## 3. N07 패키지 (`50_handover/53_followup_project/`)
 
 | 파일 | 내용 |
 |---|---|

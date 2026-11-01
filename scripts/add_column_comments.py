@@ -3,7 +3,7 @@
 import csv, re, sys, collections
 
 BASE = "/workspace"
-DDL = f"{BASE}/50_handoff/데이터마이그레이션 GN_DW_BRONZE_DDL_20260713.sql"
+DDL = f"{BASE}/40_worklog/41_handoff/데이터마이그레이션_GN_DW_BRONZE_DDL_20260713.sql"
 CSVF = f"{BASE}/90_provided_definition/컬럼정의서 20260714.csv"
 
 # 1) CSV -> (table, col)->desc  및  col->최빈 desc(폴백)

@@ -26,7 +26,7 @@ ROOT = '/workspace'
 # 🟢 [2026-08-29 O119-B] 축 ③ 의 판정식·예외를 **공유**한다(복제 0 · 근거는 축 ③ 주석).
 sys.path.insert(0, os.path.join(ROOT, 'scripts'))
 import sv_rule7_scan as _r7  # noqa: E402
-AGENT_GLOB = os.path.join(ROOT, 'cortex_project/agents/*/agent_spec.yaml')
+AGENT_GLOB = os.path.join(ROOT, '20_build/28_cortex_project/agents/*/agent_spec.yaml')
 JACCARD_MIN = 0.45      # ② 임계. 근거 = O76-B 관측 0.316 이 「벌어졌다」로 판정된 사례라 그 위.
 
 # ① 축의 개념 어휘. 「이 개념이 가능한가」를 두 Agent 가 반대로 말하면 오답이 된다.

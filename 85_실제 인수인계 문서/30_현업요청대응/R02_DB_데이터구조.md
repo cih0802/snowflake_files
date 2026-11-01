@@ -67,13 +67,13 @@ status: review
 
 | 대상 | DDL 정본(80번 패키지 `01_실행순서_배포SQL/`) | 변경 규칙 |
 |---|---|---|
-| 롤 · WH · 스키마 · FUTURE GRANT | `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql` · `08_After_Deploy_DBT.sql` | 신규 계정만 전체 실행 |
-| GOLD 테이블 | `03_top-down_gold/06_DDL.sql` | 🔴 기존 환경 전체 실행 금지(데이터·FK·GRANT 파괴) · 컬럼 추가 = `ALTER` + 정본 동시 수정(A4 §3-1) |
-| SILVER 테이블 | `04_silver_design/08_SILVER_테이블DDL_20260714.sql` | 같음 · 신규 테이블 = `CREATE TABLE IF NOT EXISTS` 블록 |
+| 롤 · WH · 스키마 · FUTURE GRANT | `20_build/21_env_rbac/07_ENVIRONMENT_RBAC_setup.sql` · `08_After_Deploy_DBT.sql` | 신규 계정만 전체 실행 |
+| GOLD 테이블 | `10_design/11_gold_topdown/06_DDL.sql` | 🔴 기존 환경 전체 실행 금지(데이터·FK·GRANT 파괴) · 컬럼 추가 = `ALTER` + 정본 동시 수정(A4 §3-1) |
+| SILVER 테이블 | `10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql` | 같음 · 신규 테이블 = `CREATE TABLE IF NOT EXISTS` 블록 |
 | GOLD wide 뷰 · SILVER 뷰 | dbt 모델(`02_dbt_pipeline/10_dbt_pipeline/models/gold/wide/`) | SQL 스크립트로 만들지 않는다(A4 §2 규칙 4) |
-| Semantic View | `05_SV-Agent_ai/05_01 ~ 05_30_SV_DDL_*.sql` · `22_ML_SV_DDL.sql` 등 | `CREATE OR REPLACE` 후 파일 끝 GRANT 블록 재실행(A6 F8) |
-| Agent | `05_SV-Agent_ai/09_1_AGENT_생성.sql` · `09_2_AGENT_버전업.sql` + `04_SV_Agent_스펙/` YAML | 버전 추가만 · 재생성 금지(`85:D14` §5) |
-| MSTR | `15_MSTR 이관 PoC/snowflake 적용 ddl/` | R05 §2 |
+| Semantic View | `20_build/23_sv_agent/05_01 ~ 05_30_SV_DDL_*.sql` · `22_ML_SV_DDL.sql` 등 | `CREATE OR REPLACE` 후 파일 끝 GRANT 블록 재실행(A6 F8) |
+| Agent | `20_build/23_sv_agent/09_1_AGENT_생성.sql` · `09_2_AGENT_버전업.sql` + `04_SV_Agent_스펙/` YAML | 버전 추가만 · 재생성 금지(`85:D14` §5) |
+| MSTR | `20_build/25_mstr_migration/snowflake_적용_ddl/` | R05 §2 |
 | 실행 순서 | `문서실행순서.md` (신규 1~51 · 기존 환경 갱신) | `85:D14` §2 · `D14_실행순서_대조.csv` |
 
 ## 4. 미사용 · 임시 · 백업 객체 구분 [신규]

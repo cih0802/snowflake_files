@@ -5,17 +5,17 @@ GN_DW '지표 → GOLD' 추적(traceability) 장표 생성기.
 "원하는 지표가 GOLD 어디에(FACT/DIM/SV·물리컬럼·SV base) 어떻게 매핑됐는지" 한 눈에 본다.
 
 정본(근거) — 전부 파싱해 지표번호로 조인한다. **사실을 리터럴로 보관하지 않는다**(P85-①):
-  · 03_top-down_gold/02_지표 분류.md            (215 지표: 유형·소스·단위·배속)
+  · 10_design/11_gold_topdown/02_지표_분류.md            (215 지표: 유형·소스·단위·배속)
   · 90_provided_definition/02_지표사전 공통.md    (공통 162: 구분·정의·정본 계산식)
   · 90_provided_definition/03_지표사전 신규.md    (신규 53: 〃)
-  · 03_top-down_gold/04_SV파생 매핑.md          (derived → 분자/분모 base + FACT · base 카탈로그)
-  · 03_top-down_gold/05_필드 인벤토리.md         (보고서필드 라벨 → GOLD 물리컬럼 정본)
+  · 10_design/11_gold_topdown/04_SV파생_매핑.md          (derived → 분자/분모 base + FACT · base 카탈로그)
+  · 10_design/11_gold_topdown/05_필드_인벤토리.md         (보고서필드 라벨 → GOLD 물리컬럼 정본)
   · 90_provided_definition/04·05_보고서필드 인벤토리.md (보고서 × 필드)
-  · 30_output_share/04_컬럼계보매핑.csv          (GOLD → SILVER → BRONZE 계보. 🔴 **산출물 파일**로 받는다)
+  · 60_share/61_output_share/04_컬럼계보매핑.csv          (GOLD → SILVER → BRONZE 계보. 🔴 **산출물 파일**로 받는다)
   · /tmp/census.json                            (GOLD 전 컬럼 COUNT / COUNT_IF(<>0) 실측)
   · scripts/field_mapping_override.py           (보고서필드 매핑 교정 등록부 — 큐레이션 분리)
 
-출력: 30_output_share/05_지표GOLD매핑.{md,csv,xlsx}
+출력: 60_share/61_output_share/05_지표GOLD매핑.{md,csv,xlsx}
 
 ────────────────────────────────────────────────────────────────────────────
 [2026-08-06 재작성] 소스 유실 복구 — 종전 판본에서 바꾼 것
@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # 🔴 샌드박
 import field_mapping_override as FMO   # noqa: E402  — 필수 의존. 실패 시 즉시 중단시킨다.
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 CENSUS = os.environ.get("GN_DW_CENSUS", "/tmp/census.json")
 LINEAGE_CSV = os.environ.get("GN_DW_LINEAGE", os.path.join(OUT_DIR, "04_컬럼계보매핑.csv"))
 BASENAME = "05_지표GOLD매핑"
@@ -53,17 +53,17 @@ GEN_PATH = "scripts/gen_metric_gold_mapping.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
 PROV = f"본 파일은 자동 생성물입니다. 직접 수정 금지 — 생성기 {GEN_PATH} 수정 후 재실행하세요."
 
-DOC_CLS = os.path.join(WS, "03_top-down_gold", "02_지표 분류.md")
+DOC_CLS = os.path.join(WS, "10_design/11_gold_topdown", "02_지표_분류.md")
 DOC_COMM = os.path.join(WS, "90_provided_definition", "02_지표사전 공통.md")
 DOC_NEW = os.path.join(WS, "90_provided_definition", "03_지표사전 신규.md")
-DOC_SV = os.path.join(WS, "03_top-down_gold", "04_SV파생 매핑.md")
-DOC_INV = os.path.join(WS, "03_top-down_gold", "05_필드 인벤토리.md")
+DOC_SV = os.path.join(WS, "10_design/11_gold_topdown", "04_SV파생_매핑.md")
+DOC_INV = os.path.join(WS, "10_design/11_gold_topdown", "05_필드_인벤토리.md")
 DOC_MKT = os.path.join(WS, "90_provided_definition", "04_마케팅_보고서필드 인벤토리.md")
 DOC_MEM = os.path.join(WS, "90_provided_definition", "05_회원_보고서필드 인벤토리.md")
 # 🆕 [2026-10-16 O241 · 착수표 ⑥] SV·Agent 배선 축 — 상태(물리 채움률)와 **별개의 축**이다.
 #   상태 WAIT 가 「Agent 산출 불가」로 오독됐다(O240-B ⑥) ⇒ 지표가 어느 SV metric·Agent 로 닿는지를 따로 보인다.
-DIR_SV = os.path.join(WS, "05_SV-Agent_ai")
-DIR_AGENT = os.path.join(WS, "cortex_project", "agents")
+DIR_SV = os.path.join(WS, "20_build/23_sv_agent")
+DIR_AGENT = os.path.join(WS, "20_build/28_cortex_project", "agents")
 
 HEADER = ("지표#", "구분", "지표명", "유형", "소스", "단위", "GOLD_배속",
           "GOLD_매핑(물리컬럼/SV base)", "SILVER_원천", "BRONZE_원천", "정본_계산식",
@@ -852,7 +852,7 @@ def write_md(rows, mkt, mem):
     A("doc_role: 지표번호 → GOLD(FACT/DIM/SV·물리컬럼·SV base) 추적 장표 (현업용)")
     A("project: GN_DW (굿네이버스)")
     A("grounded_on: 02_지표 분류.md · 02·03 지표사전 · 04_SV파생 매핑.md · 05_필드 인벤토리.md · "
-      "30_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · "
+      "60_share/61_output_share/04_컬럼계보매핑.csv(산출물) · census(GOLD 전 컬럼 실측) · "
       "field_mapping_override.py(교정 등록부) · 04·05 보고서필드 인벤토리")
     A(f"generator: {GEN_PATH}")
     A(f"measured: {MEASURED}")
@@ -923,7 +923,7 @@ def write_md(rows, mkt, mem):
     A("")
     A(f"- `SV_배선` 이 채워진 지표 **{sum(1 for r in rows if r[13])}** / {len(rows)} · "
       f"`Agent_배선` 이 채워진 지표 **{sum(1 for r in rows if r[14])}**.")
-    A("- 판정 = SV DDL 정본(`05_SV-Agent_ai/05_*_SV_DDL_*.sql`)의 metric·dimension 동의어·COMMENT 안 "
+    A("- 판정 = SV DDL 정본(`20_build/23_sv_agent/05_*_SV_DDL_*.sql`)의 metric·dimension 동의어·COMMENT 안 "
       "`공NN`·`공#NN`·`신NN`·`신규 #NN` 토큰 → 그 SV 를 `tool_resources` 로 가진 Agent(`agent_spec.yaml`).")
     A("- 🔴 **상태 `WAIT` 는 물리 컬럼 채움률이지 「Agent 산출 불가」가 아니다** — 이 축으로 따로 본다.")
     A("- 🔴 **`SV_배선` 공란 = 「토큰 미표기」일 수 있다** — 미배선으로 단정하기 전에 동의어를 수동 대조한다.")

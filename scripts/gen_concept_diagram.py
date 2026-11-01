@@ -1,7 +1,7 @@
 # GN_DW 개념도(HTML) 생성기 — 계층 인벤토리 · 계보 · 적재 상태 브라우저
 # Co-authored with CoCo
 """
-`30_output_share/03_GN_DW_개념도.html` 를 **실측 파생**으로 생성한다.
+`60_share/61_output_share/03_GN_DW_개념도.html` 를 **실측 파생**으로 생성한다.
 
 ⚠️ 설계 전환 (2026-08-06)
   구 판본은 객체 목록·한글 설명·행수를 HTML 안에 손으로 적어 두었다. 그래서 신설 객체
@@ -16,7 +16,7 @@
   90_provided_definition/테이블정의 20260629.csv (BRONZE_CRM 테이블 설명)
   10_dbt_pipeline/models (ref()/source() 계보)
 
-출력: 30_output_share/03_GN_DW_개념도.html (단일 파일 · 외부 요청 0 · 데이터 전량 인라인)
+출력: 60_share/61_output_share/03_GN_DW_개념도.html (단일 파일 · 외부 요청 0 · 데이터 전량 인라인)
 """
 import csv, json, os, re, sys, html, collections
 from datetime import date
@@ -26,7 +26,7 @@ sys.path.insert(0, "/tmp")
 from sfconn import conn, q
 
 WS = os.environ.get("GN_DW_WS", "/workspace")
-OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "30_output_share"))
+OUT_DIR = os.environ.get("GN_DW_OUT", os.path.join(WS, "60_share/61_output_share"))
 OUT = os.path.join(OUT_DIR, "03_GN_DW_개념도.html")
 GEN_PATH = "scripts/gen_concept_diagram.py"
 MEASURED = os.environ.get("GN_DW_MEASURED", date.today().isoformat())
@@ -131,7 +131,7 @@ def main():
     for name, cm in svs:
         objs.append({"schema": "SERVING", "name": name, "type": "SEMANTIC VIEW", "layer": "SERVING",
                      "rows": None, "ncols": 0, "desc": (cm or "").strip(),
-                     "fill": 0, "zero": 0, "null": 0, "model": "05_SV-Agent_ai/05_*_SV_DDL_*.sql",
+                     "fill": 0, "zero": 0, "null": 0, "model": "20_build/23_sv_agent/05_*_SV_DDL_*.sql",
                      "upstream": [], "cols": []})
 
     # 하류(downstream) 역인덱스

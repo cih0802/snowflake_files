@@ -26,8 +26,8 @@ sys.path.insert(0, '/workspace/scripts')
 from snapshot_util import snapshot, ARCHIVE  # noqa: E402
 
 ROOT = '/workspace'
-PATH = f'{ROOT}/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql'
-APPX = f'{ROOT}/05_SV-Agent_ai/21_ML_SERVING_뷰_설계이력_부록.md'
+PATH = f'{ROOT}/20_build/23_sv_agent/21_ML_SERVING_뷰_DDL.sql'
+APPX = f'{ROOT}/20_build/23_sv_agent/21_ML_SERVING_뷰_설계이력_부록.md'
 RE_VIEW = re.compile(r'^CREATE OR REPLACE VIEW GN_DW\.SERVING\.(\w+)\s*\(?\s*$')
 RE_ALTER = re.compile(r"^ALTER VIEW GN_DW\.SERVING\.(\w+) MODIFY COLUMN (\w+) COMMENT '((?:[^']|'')*)';\s*$")
 

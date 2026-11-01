@@ -13,7 +13,7 @@ import sys, re, os
 sys.path.insert(0, '/workspace/scripts')
 from sfconn import conn
 
-DDL = '/workspace/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql'
+DDL = '/workspace/20_build/23_sv_agent/21_ML_SERVING_뷰_DDL.sql'
 SKIP_TOKEN = None
 
 

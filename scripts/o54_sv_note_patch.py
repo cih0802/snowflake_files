@@ -14,7 +14,7 @@ import os as _gos  # 🔴 [O181 · I2] MUTATES 무플래그 집행 차단 가드
 sys.path.insert(0, _gos.path.dirname(_gos.path.abspath(__file__)))
 from mutating_guard import require_apply  # noqa: E402  🔴 `--apply` 없으면 드라이런 종료
 
-D = '/workspace/05_SV-Agent_ai/'
+D = '/workspace/20_build/23_sv_agent/'
 FILES = ['05_1_SV_DDL_MEMBER_MONTHLY.sql', '05_2_SV_DDL_MEMBER_EVENT.sql',
          '05_4_SV_DDL_SERVICE.sql', '05_5_SV_DDL_EVENT_PARTICIPATION.sql',
          '05_6_SV_DDL_BUDGET.sql', '05_7_SV_DDL_AD.sql']

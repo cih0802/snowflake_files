@@ -61,10 +61,10 @@ def build_fixture(root):
     # 실재하는 대상들
     w(os.path.join(root, '20_issue', '10_진단_원인분석_조각', '10_진단_원인분석-002.md'),
       '머리1\n머리2\n머리3\n본문 24행까지는 없다\n')
-    w(os.path.join(root, '05_SV-Agent_ai', '08_AGENT_spec.md'), 'spec\n')
+    w(os.path.join(root, '20_build/23_sv_agent', '08_AGENT_spec.md'), 'spec\n')
     # 모호성 축 — 같은 파일명이 두 곳에 있다(축10)
-    w(os.path.join(root, '03_top-down_gold', '00_README.md'), 'a\n')
-    w(os.path.join(root, '04_silver_design', '00_README.md'), 'b\n')
+    w(os.path.join(root, '10_design/11_gold_topdown', '00_README.md'), 'a\n')
+    w(os.path.join(root, '10_design/12_silver_design', '00_README.md'), 'b\n')
     w(os.path.join(root, '20_issue', '30_설계_의사결정_조각', '30_설계_의사결정-001.md'),
       '\n'.join(['line%d' % i for i in range(1, 40)]) + '\n')
     # 🆕 [2026-09-23 O181] 축14 대상 — **행이 밀려 빈 줄을 가리키는** 좌표를 만들 파일.
@@ -101,7 +101,7 @@ def build_fixture(root):
     #   🔴 실사고 = `basename_index()` 가 `_archive` 를 가지치기해서, `_archive/` 에만
     #     남은 문서를 인용하면 「어디에도 없다」(축1b)로 찍혔다 ⇒ 실측 9건 중 **8건이 오분류**.
     #     그 결과 인수인계가 **하지 않아도 되는 삭제/개칭 판단 8건**을 다음 세션에 넘겼다.
-    w(os.path.join(root, '30_output_share', '_archive', '20260716', '02_은퇴본.md'),
+    w(os.path.join(root, '60_share/61_output_share', '_archive', '20260716', '02_은퇴본.md'),
       '은퇴본 본문\n')
     w(os.path.join(root, '20_issue', '98_은퇴인용_조각', '98_은퇴인용-001.md'),
       '축11 은퇴본 = `02_은퇴본.md` 를 보라\n')
@@ -126,7 +126,7 @@ def main():
         check('08_AGENT_spec.md' not in coords(dead),
               '다른 폴더 실재 파일을 파일명만으로 쓴 것이 잡혔다')
         grade, got, fix = G.resolve('08_AGENT_spec.md')
-        check(grade == 'bare' and got == '05_SV-Agent_ai/08_AGENT_spec.md',
+        check(grade == 'bare' and got == '20_build/23_sv_agent/08_AGENT_spec.md',
               'resolve 가 bare 로 판정하고 실제 경로를 찾는다 (got=%s)' % grade)
 
         print('[축3] 경로 명시 + 폴더 이전 = 축1a(blocking) + 제안')

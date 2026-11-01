@@ -78,10 +78,10 @@ status: review
 
 | 순 | 누가 | 무엇을 | 파일 · 명령 |
 |---|---|---|---|
-| ① | 현업 | 폐지 부서마다 연결할 현재 부서코드를 적는다 · 연결하지 않을 부서는 코드 칸을 비우고 비고에 「연결안함」 | `30_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx`(225행) 의 **`확정_귀속부서코드(현업기입)`** · **`확정_비고(현업기입)`** 열 · 안내 = 같은 폴더 `…_안내_20261021_v3.docx` |
+| ① | 현업 | 폐지 부서마다 연결할 현재 부서코드를 적는다 · 연결하지 않을 부서는 코드 칸을 비우고 비고에 「연결안함」 | `60_share/61_output_share/O252_폐지부서_연결결과_검토요청_20261021.xlsx`(225행) 의 **`확정_귀속부서코드(현업기입)`** · **`확정_비고(현업기입)`** 열 · 안내 = 같은 폴더 `…_안내_20261021_v3.docx` |
 | ② | 작업자 | 회신을 seed 로 옮긴다 · 열 = `OLD_DEPT_ID` · `CUR_DEPT_ID`(연결안함이면 빈칸) · `CONFIRMED_BY` · `CONFIRMED_DT` · `NOTE` | `10_dbt_pipeline/seeds/ORG_SUCCESSION_MANUAL.csv` |
 | ③ | 👤 작업자 | dbt 재배포 후 실행 | `build --select ORG_SUCCESSION_MANUAL DIM_ORG_SUCCESSION` |
-| ④ | 작업자 | 대사 = 키 중복 0 · 행 수 = 부서 마스터 · 연도별 중단 합계 보존 · 확정 행은 `MAP_METHOD` = `MANUAL`/`MANUAL_UNMAPPED` | `05_SV-Agent_ai/37_DEPLOY_ORG_SUCCESSION.sql` [D3] |
+| ④ | 작업자 | 대사 = 키 중복 0 · 행 수 = 부서 마스터 · 연도별 중단 합계 보존 · 확정 행은 `MAP_METHOD` = `MANUAL`/`MANUAL_UNMAPPED` | `20_build/23_sv_agent/37_DEPLOY_ORG_SUCCESSION.sql` [D3] |
 | ⑤ | 현업(인사) | **조직 개편 때마다** ①~④ 를 반복한다 — 담당자 미지정(90 가이드 §4-1 T11) | — |
 
 - 🔴 부서 귀속은 **부서코드 단위**다. 코드는 그대로 두고 이름만 바꾼 부서는 현재 이름으로만 보인다(원천 부서 마스터가 이름 이력을 갖지 않는다 · 스냅샷 미가동).

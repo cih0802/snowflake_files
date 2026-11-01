@@ -1,0 +1,47 @@
+﻿axis,file,line,token,text
+A,scripts/add_gold_comments.py,6,03_top-down_gold,"DDL = ""/workspace/03_top-down_gold/06_DDL.sql"""
+A,scripts/alias_census.py,94,30_output_share,"out = pathlib.Path(""/workspace/30_output_share/_o122_alias_census.csv"")"
+B,scripts/apply_silver_comment_drift.py,3,08_SILVER_테이블DDL_20260714.sql,"""""""SILVER 컬럼 COMMENT 전파 — `08_SILVER_테이블DDL_20260714.sql` 을 라이브에 반영한다."
+A,scripts/audit_ddl_rule7.py,34,03_top-down_gold,DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/audit_ddl_rule7.py,40,04_silver_design,SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+B,scripts/build_wide_doc.py,12,09_빅테이블 VIEW.md,"OUT_PATH = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블 VIEW.md')"
+A,scripts/comment_drift_gate.py,51,03_top-down_gold,DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/comment_drift_gate.py,52,04_silver_design,SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+A,scripts/comment_len_probe.py,20,03_top-down_gold,PATH = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/deploy_ml_semantic_views.py,21,05_SV-Agent_ai,DDL = '/workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql'
+A,scripts/deploy_ml_serving_views.py,16,05_SV-Agent_ai,DDL = '/workspace/05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql'
+B,scripts/gen_arch_map.py,22,20260826_아키텍처 지도 요약본.html,"OUT = os.path.join(ROOT, ""60_share/61_output_share"", ""20260826_아키텍처 지도 요약본.html"")"
+B,scripts/gen_metric_gold_mapping.py,56,02_지표 분류.md,"DOC_CLS = os.path.join(WS, ""10_design/11_gold_topdown"", ""02_지표 분류.md"")"
+B,scripts/gen_metric_gold_mapping.py,59,04_SV파생 매핑.md,"DOC_SV = os.path.join(WS, ""10_design/11_gold_topdown"", ""04_SV파생 매핑.md"")"
+B,scripts/gen_metric_gold_mapping.py,60,05_필드 인벤토리.md,"DOC_INV = os.path.join(WS, ""10_design/11_gold_topdown"", ""05_필드 인벤토리.md"")"
+A,scripts/gen_o53_ad_combined.py,36,03_top-down_gold,DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+B,scripts/o125_layer_census.py,252,08_SILVER_테이블DDL_20260714.sql,"ROOT / '10_design/12_silver_design' / '08_SILVER_테이블DDL_20260714.sql', 'SILVER'),"
+B,scripts/o163_ddl_live_drift.py,37,08_SILVER_테이블DDL_20260714.sql,"ROOT / ""10_design/12_silver_design"" / ""08_SILVER_테이블DDL_20260714.sql"","
+A,scripts/o192_sv_compact.py,28,05_SV-Agent_ai,DIR = '/workspace/05_SV-Agent_ai'
+A,scripts/o54_sv_header_patch.py,11,05_SV-Agent_ai,D = '/workspace/05_SV-Agent_ai/'
+A,scripts/o54_sv_note_patch.py,17,05_SV-Agent_ai,D = '/workspace/05_SV-Agent_ai/'
+A,scripts/patch_o63k_view_mislabel.py,21,03_top-down_gold,DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/patch_sv_enum_comments.py,22,05_SV-Agent_ai,ROOT = '/workspace/05_SV-Agent_ai'
+A,scripts/polish_sv_enum_comments.py,16,05_SV-Agent_ai,ROOT = '/workspace/05_SV-Agent_ai'
+A,scripts/run_gold_ddl.py,21,03_top-down_gold,"ddl = open(""/workspace/03_top-down_gold/06_DDL.sql"", encoding=""utf-8"").read()"
+A,scripts/run_gold_ddl.py,35,03_top-down_gold,"print(f""[실행기(생성기): {GEN}] source DDL = /workspace/03_top-down_gold/06_DDL.sql"")"
+A,scripts/run_o53_new_tables.py,31,03_top-down_gold,DDL_PATH = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/scan_100pct_null_columns.py,72,12_agent개선과제,out_file = '/workspace/12_agent개선과제/23_100pct_NULL_컬럼_검출목록.json'
+A,scripts/sv_rule7_scan.py,29,05_SV-Agent_ai,"TARGETS = sorted(glob.glob(""/workspace/05_SV-Agent_ai/05_*_SV_DDL_*.sql"")) + ["
+A,scripts/sv_rule7_scan.py,30,05_SV-Agent_ai,"""/workspace/05_SV-Agent_ai/22_ML_SV_DDL.sql"""
+A,scripts/sv_unit_gate.py,67,30_output_share,csv_path = '/workspace/30_output_share/09_보고서필드_조립가능성.csv'
+A,scripts/sv_unit_gate.py,348,05_SV-Agent_ai,for f in sorted(glob.glob('/workspace/05_SV-Agent_ai/05_*_SV_DDL*.sql')):
+A,scripts/sv_unit_gate.py,489,cortex_project,for ag in sorted(glob.glob('/workspace/cortex_project/agents/*/agent_spec.yaml')):
+A,scripts/table_ddl_column_gate.py,20,03_top-down_gold,GOLD_DDL = '/workspace/03_top-down_gold/06_DDL.sql'
+A,scripts/table_ddl_column_gate.py,21,04_silver_design,SILVER_DDL = '/workspace/04_silver_design/08_SILVER_테이블DDL_20260714.sql'
+B,scripts/test_generators.py,16,05_필드 인벤토리.md,T2 라벨 사전     — 수기 문서(`05_필드 인벤토리.md`)가 생성기 라벨 사전을 오염시키는 사고(P98).
+B,scripts/test_generators.py,50,05_필드 인벤토리.md,"DOC_INV = os.path.join(WS, ""10_design/11_gold_topdown"", ""05_필드 인벤토리.md"")"
+A,scripts/test_gold_erd_mermaid.py,11,30_output_share,"""/workspace/30_output_share/GOLD_ERD_테이블별.html"","
+A,scripts/test_gold_erd_mermaid.py,12,30_output_share,"""/workspace/30_output_share/GOLD_ERD_테이블별_YAML전용.html"","
+B,scripts/test_o125_layer_census.py,83,08_SILVER_테이블DDL_20260714.sql,"ROOT / '10_design/12_silver_design' / '08_SILVER_테이블DDL_20260714.sql', 'SILVER')"
+B,scripts/test_verify_wide_doc.py,13,09_빅테이블 VIEW.md,"doc_path = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블 VIEW.md')"
+B,scripts/verify_wide_doc.py,34,09_빅테이블 VIEW.md,"doc_path = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블 VIEW.md')"
+A,scripts/o51d_view_comments/build_ad_yml.py,19,03_top-down_gold,REF  = '/workspace/03_top-down_gold/10_WIDE VIEW 코멘트.sql'
+A,scripts/o51d_view_comments/build_yml.py,11,03_top-down_gold,REF = '/workspace/03_top-down_gold/10_WIDE VIEW 코멘트.sql'
+B,scripts/o51d_view_comments/fix_as_was.py,4,10_WIDE VIEW 코멘트.sql,`10_WIDE VIEW 코멘트.sql` 헤더가 2026-07-07 에 이미 이 사실을 적었는데도 본문 문안은 그대로 남아
+B,scripts/o51d_view_comments/patch_yml.py,45,10_WIDE VIEW 코멘트.sql,"""    #   경위: 이 뷰의 문안은 `10_WIDE VIEW 코멘트.sql`(13/16뷰)에 **없었고** post_hook 에만 있었으며\n"""

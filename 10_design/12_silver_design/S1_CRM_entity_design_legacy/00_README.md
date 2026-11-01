@@ -1,0 +1,39 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 10_design/12_silver_design/S1_CRM_entity_design_legacy — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 15개 · 하위 폴더 0개 · 하위 전체 파일 15개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `01_CRM_MEMBER_MASTER.md` | 10KB | 2026-10-31 | - | S-1 엔티티 설계서 ① `CRM_MEMBER_MASTER` |
+| `02_CRM_MEMBER_STATUS_HIST.md` | 6KB | 2026-10-31 | - | S-1 엔티티 설계서 ② `CRM_MEMBER_STATUS_HIST` |
+| `03_CRM_SPONSORSHIP_PLEDGE.md` | 7KB | 2026-10-31 | - | S-1 엔티티 설계서 ③ `CRM_SPONSORSHIP_PLEDGE` |
+| `04_CRM_PAYMENT_BILLING.md` | 16KB | 2026-10-31 | - | S-1 엔티티 설계서 ④ `CRM_PAYMENT_BILLING` |
+| `05_CRM_PAYMENT_METHOD.md` | 7KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑤ `CRM_PAYMENT_METHOD` |
+| `06_CRM_CAMPAIGN_MASTER.md` | 9KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑥ `CRM_CAMPAIGN_MASTER` |
+| `07_CRM_SPONSORSHIP_MASTER.md` | 5KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑦ `CRM_SPONSORSHIP_MASTER` |
+| `08_CRM_ORG_MASTER.md` | 5KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑧ `CRM_ORG_MASTER` |
+| `09_CRM_DEV_TARGET.md` | 4KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑨ `CRM_DEV_TARGET` |
+| `10_CRM_SEND_REQUEST.md` | 6KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑩ `CRM_SEND_REQUEST` |
+| `11_CRM_SEND_MEMBER.md` | 5KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑪ `CRM_SEND_MEMBER` |
+| `12_CRM_SEND_RESULT.md` | 5KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑫ `CRM_SEND_RESULT` |
+| `13_CRM_PARTICIPATION_HIST.md` | 6KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑬ `CRM_PARTICIPATION_HIST` |
+| `14_CRM_CODE_MASTER.md` | 4KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑭ `CRM_CODE_MASTER` |
+| `15_CRM_SPONSORSHIP_RELATION.md` | 5KB | 2026-10-31 | - | S-1 엔티티 설계서 ⑮ `CRM_SPONSORSHIP_RELATION` |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

@@ -13,7 +13,7 @@
 """
 import io, re, os, sys
 
-ROOT = '/workspace/05_SV-Agent_ai'
+ROOT = '/workspace/20_build/23_sv_agent'
 FILES = [f'05_{i}_SV_DDL_{n}.sql' for i, n in [
     (1, 'MEMBER_MONTHLY'), (2, 'MEMBER_EVENT'), (3, 'MEMBER_COHORT'), (4, 'SERVICE'),
     (5, 'EVENT_PARTICIPATION'), (6, 'BUDGET'), (7, 'AD'), (8, 'DEV_ACHIEVEMENT'),

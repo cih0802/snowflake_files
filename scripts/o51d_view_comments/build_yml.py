@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """[2026-08-07 O51-D] GOLD 뷰 8종 355컬럼 columns[] 를 기계 생성한다.
-문안 3소스 = ① 03_top-down_gold/10_ 참고본 이관 ② 기존 _wide_schema.yml 보존 ③ O51-D 신규 작성.
+문안 3소스 = ① 10_design/11_gold_topdown/10_ 참고본 이관 ② 기존 _wide_schema.yml 보존 ③ O51-D 신규 작성.
 순서는 INFORMATION_SCHEMA.ORDINAL_POSITION 을 정본으로 한다(손 이관 금지)."""
 import sys, re, io, collections
 sys.path.insert(0, '/workspace/scripts')
@@ -8,7 +8,7 @@ sys.path.insert(0, '/workspace/scripts/o51d_view_comments')
 from sfconn import q
 import desc_member as DM, desc_own as DO, desc_fee as DF, desc_dim as DD, desc_emptyaxis as DE
 
-REF = '/workspace/03_top-down_gold/10_WIDE VIEW 코멘트.sql'
+REF = '/workspace/10_design/11_gold_topdown/10_WIDE_VIEW_코멘트.sql'
 WYML = '/workspace/10_dbt_pipeline/models/gold/wide/_wide_schema.yml'
 TARGETS = ['WIDE_MEMBER_MONTHLY','WIDE_MEMBER_EVENT','WIDE_SERVICE_EVENT',
            'WIDE_EVENT_PARTICIPATION','WIDE_MEMBER_FEE','WIDE_DEV_ACHIEVEMENT',

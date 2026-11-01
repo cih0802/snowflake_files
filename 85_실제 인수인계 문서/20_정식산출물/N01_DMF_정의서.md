@@ -5,7 +5,7 @@ version: 1.0
 as_of: 2026-10-21 (운영계 Q01~Q03 캡처 = `_ENV/ZL50263/N01_*.csv` · §1 일부 TBD)
 source_docs:
   - 20_정식산출물/D05_FK관계.csv (GOLD→GOLD FK 71) · N04_배치SLA_스케줄정의서.md §3 (DMF 시각 근거)
-  - 02_GN_DW_building/06_RUNBOOK.md §3.3 (CREATE OR REPLACE 금지)
+  - 20_build/21_env_rbac/06_RUNBOOK.md §3.3 (CREATE OR REPLACE 금지)
 source_queries:
   - SHOW DATA METRIC FUNCTIONS IN SNOWFLAKE.CORE · SHOW PRIMARY KEYS IN SCHEMA GN_DW.GOLD · ACCOUNT_USAGE.DATA_METRIC_FUNCTION_REFERENCES (2026-10-20)
   - 85_실제 인수인계 문서/_근거쿼리/N01_DMF_사전점검.sql (Q01~Q03 · 읽기 전용 · "[ENV] = _ENV/<계정>/N01_*.csv")

@@ -1,0 +1,10 @@
+brief rc=0
+tests TOTAL=63 FAIL=0
+gate doc_line_length_gate rc=0
+gate handoff_ddl_gate rc=0
+gate rename_stale_gate rc=0
+gate live_change_gate rc=0
+gate sv_unit_gate rc=0
+gate table_ddl_column_gate rc=0
+gate stage_mount_size_gate rc=0
+DONE

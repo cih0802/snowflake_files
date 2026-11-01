@@ -10,7 +10,7 @@ def main():
     print("=== test_verify_wide_doc: WIDE 정의서 정합성 검증 테스트 ===")
     
     # 1. 문서 헤더에 도구 명시 확인
-    doc_path = os.path.join(ROOT, '03_top-down_gold', '09_빅테이블 VIEW.md')
+    doc_path = os.path.join(ROOT, '10_design/11_gold_topdown', '09_빅테이블_VIEW.md')
     with open(doc_path, 'r', encoding='utf-8') as f:
         content = f.read()
         

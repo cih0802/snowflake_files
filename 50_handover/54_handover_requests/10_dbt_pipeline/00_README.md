@@ -1,0 +1,26 @@
+---
+doc_role: 폴더 안내(README) · 자동 생성 초안
+created: 2026-10-31
+---
+
+# 50_handover/54_handover_requests/10_dbt_pipeline — 폴더 안내
+
+> 이 파일은 정리 작업 1단계에서 자동 생성한 초안입니다.
+> 「요약」은 각 파일의 제목/첫 주석을 기계적으로 뽑은 것이므로, 폴더 목적은 사람이 보완해 주세요.
+
+## 목적
+
+- (작성 필요)
+
+## 현황
+
+- 직속 파일 2개 · 하위 폴더 0개 · 하위 전체 파일 2개
+
+## 파일 목록
+
+| 파일 | 크기 | 수정일 | 상태 | 요약 |
+|---|---|---|---|---|
+| `dbt_build_fact_ad_performance_budget.sql` | 1KB | 2026-10-31 | - | Purpose : 「기존 환경 갱신」 16번(O245) 정본: W6 재방송 상위캠페인코드 결합 · 예산 차수 주석 |
+| `profiles.yml` | 2KB | 2026-10-31 | - | Snowflake 세션 인증 사용 — password/authenticator/env_var 금지 |
+
+상태: 보관=_archive/legacy/backup · 임시 후보=Untitled/temp/tmp · 인수인계=next prompt/session · -=미분류

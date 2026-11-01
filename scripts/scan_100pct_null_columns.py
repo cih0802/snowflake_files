@@ -69,7 +69,7 @@ def main():
             
     cn.close()
     
-    out_file = '/workspace/12_agent개선과제/23_100pct_NULL_컬럼_검출목록.json'
+    out_file = '/workspace/30_operate/32_agent_improvement/23_100pct_NULL_컬럼_검출목록.json'
     with io.open(out_file, 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     

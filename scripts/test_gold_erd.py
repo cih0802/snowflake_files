@@ -292,7 +292,7 @@ def main():
           os.path.basename(g.ARCHIVE_DIR) == "_rolling", g.ARCHIVE_DIR)
     check("축13-b 날짜 폴더 관례(`_archive/` 최상위)와 층이 다르다",
           os.path.basename(os.path.dirname(g.ARCHIVE_DIR)) == "_archive")
-    live_arch = os.path.join(ROOT, "30_output_share", "_archive")
+    live_arch = os.path.join(ROOT, "60_share/61_output_share", "_archive")
     if os.path.isdir(live_arch):
         stray = [f for f in os.listdir(live_arch)
                  if f.startswith("GOLD_ERD") and f.endswith(".html")]

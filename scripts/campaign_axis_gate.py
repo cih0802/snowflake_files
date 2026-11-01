@@ -30,7 +30,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 M = '10_dbt_pipeline/models/'
-SV = '05_SV-Agent_ai/'
+SV = '20_build/23_sv_agent/'
 F_DIM_CAMPAIGN = M + 'gold/dim/DIM_CAMPAIGN.sql'
 F_FAP = M + 'gold/fact/FACT_AD_PERFORMANCE.sql'
 F_SV_AD = SV + '05_07_SV_DDL_AD.sql'

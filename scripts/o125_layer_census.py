@@ -8,7 +8,7 @@
 #   🔴 ㉢ 을 이 도구의 ✅ 로 덮어 읽으면 **「구성됐다」를 「작동한다」로 오독**한다 —
 #      GOLD 팩트의 measure·차원FK 는 지금도 대규모로 전건 0 이다(정본 = 문서50 `BLOCKING-5`).
 #   🔴 ㉣ 은 `table_ddl_column_gate` 소관(순서 드리프트) · ㉤ 은 `sv_unit_gate`·VQR 소관 ·
-#      ㉥ 은 `05_SV-Agent_ai/04_SV_설계.md` **§0.9**(배포 상태 정본)가 담당한다.
+#      ㉥ 은 `20_build/23_sv_agent/04_SV_설계.md` **§0.9**(배포 상태 정본)가 담당한다.
 #   🟢 그래서 이 도구는 마지막에 **값 축 표본을 함께 재고** 정본 좌표를 출력한다(단정 대체 금지).
 import re
 import sys
@@ -19,7 +19,7 @@ import sfconn  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 MODELS = ROOT / '10_dbt_pipeline' / 'models'
-SV_DIR = ROOT / '05_SV-Agent_ai'
+SV_DIR = ROOT / '20_build/23_sv_agent'
 
 
 def model_names(subdir):
@@ -216,7 +216,7 @@ def main():
     print('O125 — 설계 정본 ↔ 라이브 실재 대조 (읽기 전용)')
     print('  분모 = dbt 모델 파일 · SV DDL 파일 · 배포 스크립트  |  라이브 = INFORMATION_SCHEMA + SHOW')
     print('  🔴 판정 축 = 객체 실재 + 컬럼 이름 집합. 값 적재·선언 순서·SV 값 정합은 판정하지 않는다.')
-    print('  🔴 배포 상태 정본 = 05_SV-Agent_ai/04_SV_설계.md §0.9 · 값 축 정본 = 문서50 BLOCKING-5')
+    print('  🔴 배포 상태 정본 = 20_build/23_sv_agent/04_SV_설계.md §0.9 · 값 축 정본 = 문서50 BLOCKING-5')
     print('=' * 72)
 
     miss = extra = 0
@@ -243,13 +243,13 @@ def main():
     print('-' * 72)
     print('컬럼 집합 대조 (DDL 정본 ↔ 라이브 · 순서는 판정하지 않는다)')
     colbad = column_report(
-        'GOLD (03_top-down_gold/06_DDL.sql)',
-        ddl_table_columns(ROOT / '03_top-down_gold' / '06_DDL.sql', 'GOLD'),
+        'GOLD (10_design/11_gold_topdown/06_DDL.sql)',
+        ddl_table_columns(ROOT / '10_design/11_gold_topdown' / '06_DDL.sql', 'GOLD'),
         live_cols.get('GOLD', {}))
     colbad += column_report(
-        'SILVER (04_silver_design/08_SILVER_테이블DDL_20260714.sql)',
+        'SILVER (10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql)',
         ddl_table_columns(
-            ROOT / '04_silver_design' / '08_SILVER_테이블DDL_20260714.sql', 'SILVER'),
+            ROOT / '10_design/12_silver_design' / '08_SILVER_테이블DDL_20260714.sql', 'SILVER'),
         live_cols.get('SILVER', {}))
 
     # ── 부차 축: dbt schema yml 등재 커버리지(문서 축 · 적재 위험 아님) ──────────

@@ -30,8 +30,8 @@
 #         ERD 문서가 자동 갱신된다. CI/CD 또는 dbt post-hook 에 통합 가능.
 #         🔴 **재실행 전에 커버리지 게이트를 먼저 통과시켜라** — 안 그러면 새 축이 조용히 빠진다.
 #
-# 출력 = 30_output_share/GOLD_ERD_테이블별.html          (전량판)
-#        30_output_share/GOLD_ERD_테이블별_YAML전용.html  (--yaml-only · 불완전 · 배포 금지)
+# 출력 = 60_share/61_output_share/GOLD_ERD_테이블별.html          (전량판)
+#        60_share/61_output_share/GOLD_ERD_테이블별_YAML전용.html  (--yaml-only · 불완전 · 배포 금지)
 
 import os
 import re
@@ -46,10 +46,10 @@ import yaml
 ROOT = "/workspace"
 SCHEMA_YML = os.path.join(ROOT, "10_dbt_pipeline", "models", "gold", "_gold_ready_schema.yml")
 WIDE_YML = os.path.join(ROOT, "10_dbt_pipeline", "models", "gold", "wide", "_wide_schema.yml")
-OUT_HTML = os.path.join(ROOT, "30_output_share", "GOLD_ERD_테이블별.html")
+OUT_HTML = os.path.join(ROOT, "60_share/61_output_share", "GOLD_ERD_테이블별.html")
 # 🔴 [O126] --yaml-only 는 **별도 경로**에 쓴다. 종전 판본은 같은 경로에 써서
 #    불완전 산출물이 전량판을 조용히 덮었다(이 워크스페이스가 4번 당한 「조용한 소실」 유형).
-OUT_HTML_YAML = os.path.join(ROOT, "30_output_share", "GOLD_ERD_테이블별_YAML전용.html")
+OUT_HTML_YAML = os.path.join(ROOT, "60_share/61_output_share", "GOLD_ERD_테이블별_YAML전용.html")
 
 YAML_ONLY = "--yaml-only" in sys.argv
 
@@ -817,7 +817,7 @@ if (typeof mermaid === 'undefined') {{
 #      두 방식은 **다른 질문에 답한다** — 날짜 폴더 = 릴리스 태그(영구) ·
 #      롤링 = undo 버퍼(임시) ⇒ **같은 층에 섞으면 「어느 것이 이력의 정본이냐」가 모호**해진다
 #      (`R3-9 ㉡` 「같은 것을 다르게 재는 지점」). 층을 나누면 중복이 아니다.
-ARCHIVE_DIR = os.path.join(ROOT, "30_output_share", "_archive", "_rolling")
+ARCHIVE_DIR = os.path.join(ROOT, "60_share/61_output_share", "_archive", "_rolling")
 
 #: 비교에서 제외할 휘발성 패턴 — 생성 시각만 지운다.
 #: 🔴 계정·DIM/FACT 수는 **지우지 않는다** — 그것이 바뀌면 **실질 변경**이다
@@ -877,7 +877,7 @@ def rotate_previous(out_path, new_html=None, label=None, archive=None):
 
     🆕 🔴🔴 **[O126 자기시정] `archive` 주입 지점이 없어 음성 테스트가 실 `_archive/` 를
       더럽혔다.** 실측 = 축12-e·축12-f 가 임시 디렉터리를 만들어 놓고도 보관본을
-      `30_output_share/_archive/_rolling/OUT_20260830.html` 로 썼다(모듈 상수를 썼으므로).
+      `60_share/61_output_share/_archive/_rolling/OUT_20260830.html` 로 썼다(모듈 상수를 썼으므로).
       ⚠️ 테스트는 **전건 통과했다** — 오염은 판정에 나타나지 않았다.
       🟢 `snapshot_util` docstring 이 이미 경고한 함정이다(「`archive=` 를 넘겨라 — 안 넘기면
         테스트가 패치한 경로를 벗어나 실 `_archive/` 를 더럽힌다」) ⇒ **그 경고를 이 함수가

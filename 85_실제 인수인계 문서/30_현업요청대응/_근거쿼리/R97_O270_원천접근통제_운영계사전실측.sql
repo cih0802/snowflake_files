@@ -1,7 +1,7 @@
 -- doc_id: R97 · O270 원천별 접근통제 W8 — 운영계 사전 실측(구 역할 회수 전 필수) · 읽기 전용(SELECT/SHOW 만)
 -- 실행 = 운영계 ZL50263 · ACCOUNTADMIN(또는 SECURITYADMIN + GN_DW_ADMIN) · python3 scripts/env_capture.py --id R97 "<이 파일>"
 -- 결과 = 85_실제 인수인계 문서/_ENV/ZL50263/R97_<Qnn>_<k>.csv · 이 폴더를 개발계 워크스페이스로 옮긴다
--- 정본 요청 = 12_agent개선과제/O270_원천별_접근통제_작업계획.md (C1·C4·C5 · W8)
+-- 정본 요청 = 30_operate/32_agent_improvement/O270_원천별_접근통제_작업계획.md (C1·C4·C5 · W8)
 -- 🔴 DDL·DML·GRANT·REVOKE 금지 — 판정은 개발계에서 결과 CSV 로 한다
 
 -- Q01 [C4] 구 역할·서비스 역할을 받은 사용자·역할(누가 회수 영향을 받는가)

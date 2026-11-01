@@ -6,7 +6,7 @@
 
 🔴 왜 이 게이트가 필요한가 — 게이트 11종이 전부 🟢 인데 531건이 남아 있었다
 --------------------------------------------------------------------------
-`03_top-down_gold/12_gold 테이블명 변경작업 근거` 가 GOLD 팩트·차원 **8종 개명**을 확정했다.
+`10_design/11_gold_topdown/12_gold_테이블명_변경작업_근거` 가 GOLD 팩트·차원 **8종 개명**을 확정했다.
 그런데 그 개명을 **감시하는 축이 어느 게이트에도 없었다**:
 
 * `comment_drift_gate` = **파일 ↔ 라이브 해시 일치**만 본다 ⇒ 둘이 **똑같이 틀리면 🟢**.
@@ -50,7 +50,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASELINE = os.path.join(ROOT, 'scripts', 'golden', 'rename_stale_baseline.json')
 
-#: 개명 대응 — 정본 = `03_top-down_gold/12_gold 테이블명 변경작업 근거`
+#: 개명 대응 — 정본 = `10_design/11_gold_topdown/12_gold_테이블명_변경작업_근거`
 #: 🆕 🔴🔴 [2026-09-15 O164 분모 확장] `DEC-50`(O139 · 가공계층 GA→BIGQUERY 전면 전환)의
 #:    **GOLD 개명 4종이 이 표에 없었다** ⇒ 그 개명 잔여는 이 게이트의 **검사 밖**이었다.
 #:    실해 = `SV_SERVICE` 의 **라이브 COMMENT** 가 `WIDE_GA_BEHAVIOR` 를 가리키고 있었는데
@@ -103,7 +103,7 @@ SKIP_DIR = ('_archive', '__pycache__', '.git', '.snowflake', 'logs', 'target',
 #:   특정 세션의 패치·프로브·감사 실행기는 **그 시점의 기술**이고 소급 개명 대상이 아니다
 #:   (`_o###_*` 는 아래 `EVIDENCE` 정규식이 이미 잡는다).
 HIST = ('20_issue/01_세션이력', '99_NEXT_SESSION_조각', '20_issue/90_해소완료_로그',
-        '20_issue/91_사고사례집', '60_repeat_어카운트시작',
+        '20_issue/91_사고사례집', '30_operate/33_account_bootstrap',
         'scripts/o51d_view_comments/', 'scripts/o54_', 'scripts/o59l_', 'scripts/o125_',
         'scripts/patch_', 'scripts/run_o53_', 'scripts/gen_o53_')
 #: 축2 = 자동 생성 산출물(재생성으로 해소).
@@ -114,7 +114,7 @@ HIST = ('20_issue/01_세션이력', '99_NEXT_SESSION_조각', '20_issue/90_해�
 #:      (*"[2026-09-16 O168] … 대응: FACT_TARGET_DEV→FA…"* = **개명을 기록한 문장**) ⇒ append-only 라
 #:      재생성해도 남는다. 🔴 **개명을 기록한 문장이 개명 감시 게이트에 걸린다**(자기참조 계측).
 #:   ㉡ `outputs.json` 의 옛 이름 77건 중 **62건이 `metrics/inv.entry_keys`** 이고 그 원천은
-#:      **수기 문서** `03_top-down_gold/05_필드 인벤토리.md` 다(`test_generators.DOC_INV`) ⇒
+#:      **수기 문서** `10_design/11_gold_topdown/05_필드_인벤토리.md` 다(`test_generators.DOC_INV`) ⇒
 #:      json 은 **정본에서 병기된 문장의 토큰만 복사**한다. 재생성은 그 복사를 되풀이할 뿐이다.
 #:   🟢 판정식 = **「그 버킷의 처방이 그 파일에 통하는가」로 분류하라** — 생성 여부가 아니라 **처방**이 축이다.
 GEN = ('02_SILVER 스키마 컬럼 인벤토리', '02_gold 스키마 컬럼 인벤토리', '04_컬럼계보매핑',
@@ -127,9 +127,9 @@ GEN = ('02_SILVER 스키마 컬럼 인벤토리', '02_gold 스키마 컬럼 인�
 #:   🟢 이 파일들의 개명 반영은 **정본이 고쳐지면 다음 발행에서 따라온다**(감사 이력은 영구 보존).
 SNAPSHOT = ('scripts/golden/', 'scripts/outputs.json', 'scripts/doc_headings.json',
             'scripts/index_rows.json',
-            # 🆕 [O268] 계정별 라이브 측정 원문(`30_output_share/_ENV/<계정>/S30_*.csv`) = 그 시각 라이브 이름의
+            # 🆕 [O268] 계정별 라이브 측정 원문(`60_share/61_output_share/_ENV/<계정>/S30_*.csv`) = 그 시각 라이브 이름의
             #   **복사물**이다(as_of 머리줄). 운영계가 개명 전이면 옛 이름이 찍히는 것이 정상 — 고치면 측정이 위조된다.
-            '30_output_share/_ENV/')
+            '60_share/61_output_share/_ENV/')
 #: 🟢 세션 근거철 = 발행 후 갱신하지 않는 정적 발행물 ⇒ 축3 과 같이 취급한다.
 EVIDENCE = re.compile(r'/_o\d+[a-z]*_')
 
@@ -150,9 +150,9 @@ SELF_REF = ('scripts/rename_stale_gate.py', 'scripts/test_', 'scripts/_o166_rena
 #:   게이트가 없어서가 아니라 **분모가 좁아서** 조용했다.
 #:   🔴 그리고 O165 `D5` 의 판정 *"축1 잔여는 전건 문서·주석 표기"* 는 **이 분모 상태의 판정**이었다
 #:   ⇒ `scripts/` 를 넣으면 **실행 의미를 가진 코드**가 잔여에 포함된다(그 판정은 정정 대상).
-SCAN_DIRS = ('30_output_share', '03_top-down_gold', '05_SV-Agent_ai', '10_dbt_pipeline',
-             '04_silver_design', '20_issue', '99_NEXT_SESSION_조각', '00_guides',
-             'cortex_project', '60_repeat_어카운트시작', '02_GN_DW_building', 'scripts')
+SCAN_DIRS = ('60_share/61_output_share', '10_design/11_gold_topdown', '20_build/23_sv_agent', '10_dbt_pipeline',
+             '10_design/12_silver_design', '20_issue', '99_NEXT_SESSION_조각', '00_guides',
+             '20_build/28_cortex_project', '30_operate/33_account_bootstrap', '20_build/21_env_rbac', 'scripts')
 
 
 #: 🆕 [2026-09-16 O168] 「`구이름` → `새이름`」 인접 = **병기의 정형**이다.
